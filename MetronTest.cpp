@@ -1,22 +1,21 @@
 
-namespace Clorp {
+void derp() {}
 
-  struct Blah {
 
-    int a = 0;
-    int b = 0;
+struct Blah {
 
-    void tick() {
-      a = b + 2;
-    }
+  void a() { b(); }
+  void b() { c(); }
+  void c() { d(); }
+  void d() { e(); }
+  void e() { f(); }
+  void f() { f(); derp(); }
 
-    void tock() {
-      b = a + derp();
-    }
+};
 
-    int derp() {
-      return 3;
-    }
-
-  };
+struct Blee {
+  void derp() {
+    Blah b;
+    b.a();
+  }
 };

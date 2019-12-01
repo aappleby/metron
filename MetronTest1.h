@@ -1,10 +1,18 @@
 #pragma once
 
+#if 1
 //-----------------------------------------------------------------------------
 
 typedef const bool wire;
 
 struct Reg {
+  void reset() {
+    val = 0;
+    clk = 0;
+  }
+
+  void tick() {}
+
   void tock(wire rst_in, wire clk_in, wire reg_in) {
     if (!rst_in) val = 0;
     else if (!clk && clk_in) val = reg_in;
@@ -44,6 +52,12 @@ struct CpuOut {
 
 struct System {
 
+  void reset() {}
+  void resetOtherStuff() {
+    RESET_REG.reset();
+    DIV_15.reset();
+  }
+
   void tick(const CpuIn& cpu_in, const ChipIn& chip_in);
   void tock(const CpuIn& cpu_in, const ChipIn& chip_in);
 
@@ -77,3 +91,4 @@ struct System {
 };
 
 //-----------------------------------------------------------------------------
+#endif

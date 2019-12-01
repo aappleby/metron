@@ -18,6 +18,19 @@ void sprintf(string& out, const char* format, ...);
 string toString(Decl* decl);
 string toString(Stmt* stmt);
 
+typedef set<FunctionDecl*> FunctionSet;
+typedef map<FunctionDecl*, FunctionSet> CallMap;
+typedef vector<FieldDecl*> FieldPath;
+typedef vector<FieldPath>  FieldPaths;
+typedef set<FieldDecl*>    FieldSet;
+
+typedef map<FieldDecl*, FieldSet>    FieldMap;
+typedef map<RecordDecl*, FieldPaths> RecordToFieldPaths;
+
+typedef set<NamedDecl*> DeclSet;
+typedef vector<DeclSet> DeclStack;
+
+
 //-----------------------------------------------------------------------------
 
 /*

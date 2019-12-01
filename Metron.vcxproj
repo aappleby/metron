@@ -159,26 +159,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="CallCollector.cpp" />
-    <ClCompile Include="FieldCollector.cpp" />
-    <ClCompile Include="MethodCollector.cpp" />
     <ClCompile Include="Metron.cpp" />
     <ClCompile Include="MetronTest1.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="MetronTest2.cpp" />
+    <ClCompile Include="MetronTest2.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Utils.cpp" />
-    <ClCompile Include="Validator.cpp" />
     <ClCompile Include="Visitor.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CallCollector.h" />
-    <ClInclude Include="FieldCollector.h" />
-    <ClInclude Include="MethodCollector.h" />
     <ClInclude Include="MetronTest1.h" />
     <ClInclude Include="MetronTest2.h" />
     <ClInclude Include="pch.h" />

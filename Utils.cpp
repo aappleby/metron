@@ -36,6 +36,8 @@ void sprintf(std::string& out, const char* format, ...)
 //-----------------------------------------------------------------------------
 
 std::string toString(Decl* decl) {
+  if (decl == nullptr) return "<decl null>";
+
   switch(decl->getKind()) {
    
   case Decl::Kind::Field: {
@@ -43,11 +45,20 @@ std::string toString(Decl* decl) {
     return f->getParent()->getNameAsString() + "::" + f->getNameAsString();
   }
 
+  case Decl::Kind::CXXConversion:
   case Decl::Kind::CXXMethod: {
     CXXMethodDecl* m = cast<CXXMethodDecl>(decl);
     return m->getParent()->getNameAsString() + "::" + m->getNameAsString();
   }
-  
+
+  case Decl::Kind::CXXRecord: {
+    return cast<CXXRecordDecl>(decl)->getNameAsString();
+  }
+
+  case Decl::Kind::Function: {
+    return cast<FunctionDecl>(decl)->getNameAsString();
+  }
+
   default: {
     dprintf("xxxxx\n");
     decl->dump();
@@ -60,6 +71,8 @@ std::string toString(Decl* decl) {
 //-----------------------------------------------------------------------------
 
 std::string toString(Stmt* stmt) {
+  if (stmt == nullptr) return "<stmt null>";
+
   switch(stmt->getStmtClass()) {
 
   case Stmt::MemberExprClass: {

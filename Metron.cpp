@@ -3,6 +3,8 @@
 
 #include "Visitor.h"
 
+#pragma warning(disable:4189)
+
 static llvm::cl::OptionCategory toolCategory("Metron options");
 
 static llvm::cl::opt<string> opt_filename("o",
@@ -53,65 +55,106 @@ void foldSeries(const FieldSet& alwaysA, const FieldSet& maybeA,
 
 CXXMethodDecl* getMethodByPrefix(CXXRecordDecl* decl, const char* prefix) {
   for (auto m : decl->methods()) {
-    if (m->getNameAsString().starts_with(prefix)) return m;
+    if (m->getNameAsString().starts_with(prefix)) {
+      return dyn_cast<CXXMethodDecl>(m->getDefinition());
+    }
   }
   return nullptr;
 }
 
 //-----------------------------------------------------------------------------
+// Walks down a statement chain until we find a MemberExpr that refers directly
+// to a field of the given record.
 
-void getReadsAndWrites(RecordDecl* record, Stmt* root, FieldSet& outReads, FieldSet& outWrites) {
+MemberExpr* peelExpr(RecordDecl* record, Stmt* stmt) {
+  if (stmt == nullptr) return nullptr;
 
-  // First, put all MemberExprs in the body in the read set.
-  set<MemberExpr*> reads;
-  Visitor::visit(root, Stmt::MemberExprClass, [record, &reads](Stmt* stmt) {
-    reads.insert(cast<MemberExpr>(stmt));
-  });
-
-  // Next, move all MemberExprs on the left hand side of an assignment from the read set to the write set.
-  set<MemberExpr*> writes;
-  Visitor::visit(root, Stmt::BinaryOperatorClass, [record, &reads, &writes](Stmt* stmt) {
-    BinaryOperator* op = cast<BinaryOperator>(stmt);
-    if (!op->isAssignmentOp()) return;
-
-    MemberExpr* lhs = dyn_cast<MemberExpr>(op->getLHS());
-    if (lhs == nullptr) return;
-
-    reads.erase(lhs);
-    writes.insert(lhs);
-  });
-
-  for (auto r : reads) {
-    FieldDecl* field = dyn_cast<FieldDecl>(r->getMemberDecl());
-    if (field == nullptr) return;
-    if (field->getParent() != record) return;
-    outReads.insert(field);
+  if (MemberExpr* member = dyn_cast<MemberExpr>(stmt)) {
+    if(FieldDecl* field = dyn_cast<FieldDecl>(member->getMemberDecl())) {
+      if (field->getParent() == record) return member;
+    }
   }
 
-  for (auto w : writes) {
-    FieldDecl* field = dyn_cast<FieldDecl>(w->getMemberDecl());
-    if (field == nullptr) return;
-    if (field->getParent() != record) return;
-    outWrites.insert(field);
+  /*
+  int child_count = 0;
+  for (auto x : stmt->children()) child_count++;
+  if (child_count > 1) {
+    dprintf("XXXXX child count %d\n", child_count);
+    stmt->dump();
   }
+  */
+
+  for (auto x : stmt->children()) {
+    return peelExpr(record, x);
+  }
+  return nullptr;
 }
 
 //-----------------------------------------------------------------------------
+// All MemberExprs that are on the left hand side of an assignment or that are
+// the target of a non-const member call are "writes".
 
 void getWriteExprs(CXXRecordDecl* record, Stmt* root, set<MemberExpr*>& out) {
   Visitor::visit(root, Stmt::BinaryOperatorClass, [&](Stmt* stmt) {
     BinaryOperator* op = cast<BinaryOperator>(stmt);
     if (!op->isAssignmentOp()) return;
 
-    MemberExpr* lhs = dyn_cast<MemberExpr>(op->getLHS());
-    if (lhs == nullptr) return;
-
-    FieldDecl* field = dyn_cast<FieldDecl>(lhs->getMemberDecl());
-    if (field == nullptr) return;
-    if (field->getParent() != record) return;
-
-    out.insert(lhs);
+    if (MemberExpr* member = peelExpr(record, op->getLHS())) {
+      out.insert(member);
+    }
   });
+
+  Visitor::visit(root, Stmt::CXXMemberCallExprClass, [&](Stmt* stmt) {
+    CXXMemberCallExpr* call = cast<CXXMemberCallExpr>(stmt);
+
+    CXXMethodDecl* method = call->getMethodDecl();
+    if (method->isConst()) return;
+
+    if (MemberExpr* member = peelExpr(record, call->getCallee())) {
+      out.insert(member);
+    }
+  });
+}
+
+//-----------------------------------------------------------------------------
+
+void getReadsAndWrites(CXXRecordDecl* record, Stmt* root, FieldSet& outReads, FieldSet& outWrites) {
+
+  //----------
+  // First, put all MemberExprs in the body in the read set.
+
+  set<MemberExpr*> reads;
+  Visitor::visit(root, Stmt::MemberExprClass, [record, &reads](Stmt* stmt) {
+    MemberExpr* expr = cast<MemberExpr>(stmt);
+    expr = peelExpr(record, expr);
+    if (expr) {
+      reads.insert(expr);
+    }
+  });
+
+  //----------
+  // Next, move all MemberExprs on the left hand side of an assignment from
+  // the read set to the write set.
+
+  set<MemberExpr*> writes;
+  getWriteExprs(record, root, writes);
+  for (auto x : writes) reads.erase(x);
+
+  //----------
+
+  for (auto r : reads) {
+    FieldDecl* field = dyn_cast<FieldDecl>(r->getMemberDecl());
+    if (field == nullptr) continue;
+    if (field->getParent() != record) continue;
+    outReads.insert(field);
+  }
+
+  for (auto w : writes) {
+    FieldDecl* field = dyn_cast<FieldDecl>(w->getMemberDecl());
+    if (field == nullptr) continue;
+    if (field->getParent() != record) continue;
+    outWrites.insert(field);
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -119,14 +162,19 @@ void getWriteExprs(CXXRecordDecl* record, Stmt* root, set<MemberExpr*>& out) {
 bool validateReset(CXXRecordDecl* record, Stmt* root, FieldSet& signals, FieldSet& states, FieldSet& always, FieldSet& maybe) {
   bool result = true;
 
+  const char* name = root->getStmtClassName();
+
   set<MemberExpr*> writes;
   getWriteExprs(record, root, writes);
 
   Visitor v;
   v.stmtCallbackMap[Stmt::MemberExprClass] = [&](Stmt* stmt) {
-    MemberExpr* expr = cast<MemberExpr>(stmt);
+    MemberExpr* expr = peelExpr(record, stmt);
+    if (expr == nullptr) return;
+
     FieldDecl* field = dyn_cast<FieldDecl>(expr->getMemberDecl());
     if (!field) {
+      dprintf("no field!\n");
       expr->dump();
       return;
     }
@@ -191,25 +239,16 @@ bool validateTick(CXXRecordDecl* record, Stmt* root, FieldSet& signals, FieldSet
   bool result = true;
 
   set<MemberExpr*> writes;
-  Visitor::visit(root, Stmt::BinaryOperatorClass, [record, &writes](Stmt* stmt) {
-    BinaryOperator* op = cast<BinaryOperator>(stmt);
-    if (!op->isAssignmentOp()) return;
-
-    MemberExpr* lhs = dyn_cast<MemberExpr>(op->getLHS());
-    if (lhs == nullptr) return;
-
-    FieldDecl* field = dyn_cast<FieldDecl>(lhs->getMemberDecl());
-    if (field == nullptr) return;
-    if (field->getParent() != record) return;
-
-    writes.insert(lhs);
-  });
+  getWriteExprs(record, root, writes);
 
   Visitor v;
   v.stmtCallbackMap[Stmt::MemberExprClass] = [&](Stmt* stmt) {
-    MemberExpr* expr = cast<MemberExpr>(stmt);
+    MemberExpr* expr = peelExpr(record, stmt);
+    if (expr == nullptr) return;
+
     FieldDecl* field = dyn_cast<FieldDecl>(expr->getMemberDecl());
     if (!field) {
+      dprintf("no field!\n");
       expr->dump();
       return;
     }
@@ -278,9 +317,12 @@ bool validateTock(CXXRecordDecl* record, Stmt* root, FieldSet& signals, FieldSet
 
   Visitor v;
   v.stmtCallbackMap[Stmt::MemberExprClass] = [&](Stmt* stmt) {
-    MemberExpr* expr = cast<MemberExpr>(stmt);
+    MemberExpr* expr = peelExpr(record, stmt);
+    if (expr == nullptr) return;
+
     FieldDecl* field = dyn_cast<FieldDecl>(expr->getMemberDecl());
     if (!field) {
+      dprintf("no field!\n");
       expr->dump();
       return;
     }
@@ -468,86 +510,110 @@ void process(ASTContext* context) {
 
     if (!reset || !tick || !tock) continue;
 
-    FieldSet resetReads,resetWrites;
-    FieldSet tickReads,signals;
-    FieldSet tockReads,states;
-
-    getReadsAndWrites(record, reset->getBody(), resetReads, resetWrites);
-    getReadsAndWrites(record, tick->getBody(),  tickReads,  signals);
-    getReadsAndWrites(record, tock->getBody(),  tockReads,  states);
-
     dprintf("----------\n");
     dprintf("Record %s\n", toString(record).c_str());
-    indent();
 
-    dprintf("Signals\n");
-    indent();
-    for (auto x : signals) dprintf("%s\n", toString(x).c_str());
-    dedent();
+    FieldSet resetReads,resetWrites;
+    FieldSet tickReads,tickWrites;
+    FieldSet tockReads,tockWrites;
 
-    dprintf("States\n");
-    indent();
-    for (auto x : states) dprintf("%s\n", toString(x).c_str());
-    dedent();
-
-    dprintf("Reset %s\n", toString(reset).c_str());
-    indent();
-    for (auto x : resetReads)  dprintf("Read   %s\n", toString(x).c_str());
-    for (auto x : resetWrites) dprintf("Write  %s\n", toString(x).c_str());
-    dedent();
-
-    dprintf("Tick %s\n", toString(tick).c_str());
-    indent();
-    for (auto x : tickReads) dprintf("Read   %s\n", toString(x).c_str());
-    for (auto x : signals)   dprintf("Write  %s\n", toString(x).c_str());
-    dedent();
-
-    dprintf("Tock %s\n", toString(tock).c_str());
-    indent();
-    for (auto x : tockReads) dprintf("Read   %s\n", toString(x).c_str());
-    for (auto x : states)    dprintf("Write  %s\n", toString(x).c_str());
-    dedent();
+    getReadsAndWrites(record, reset->getBody(), resetReads, resetWrites);
+    getReadsAndWrites(record, tick->getBody(),  tickReads,  tickWrites);
+    getReadsAndWrites(record, tock->getBody(), tockReads, tockWrites);
 
     {
-      dprintf("Validating reset\n");
-      indent();
+      Indenter indent1;
+
+      dprintf("Reset:\n");
+      {
+        Indenter indent2;
+        dprintf("reads:  ");
+        for (auto x : resetReads) printf("%s ", toString(x).c_str());
+        printf("\n");
+
+        dprintf("writes: ");
+        for (auto x : resetWrites) printf("%s ", toString(x).c_str());
+        printf("\n");
+      }
+
+      dprintf("Tick:\n");
+      {
+        Indenter indent2;
+
+        dprintf("reads:  ");
+        for (auto x : tickReads) printf("%s ", toString(x).c_str());
+        printf("\n");
+
+        dprintf("writes: ");
+        for (auto x : tickWrites)   printf("%s ", toString(x).c_str());
+        printf("\n");
+      }
+
+      dprintf("Tock:\n");
+      {
+        Indenter indent2;
+        dprintf("reads:  ");
+        for (auto x : tockReads) printf("%s ", toString(x).c_str());
+        printf("\n");
+
+        dprintf("writes: ");
+        for (auto x : tockWrites) printf("%s ", toString(x).c_str());
+        printf("\n");
+      }
+    }
+
+    FieldSet signals = tickWrites;
+    FieldSet states = resetWrites;
+
+    {
+      dprintf("----------\n");
+      dprintf("Validating %s\n", toString(reset).c_str());
+
+      //reset->dump();
+      Indenter indent2;
+
       FieldSet always;
       FieldSet maybe;
       validationPassed &= validateReset(record, reset->getBody(), signals, states, always, maybe);
+      
       for (auto x : states) {
         if (!always.contains(x)) {
           dprintf("Reset: State %s was not always written\n", toString(x).c_str());
           validationPassed = false;
         }
       }
-      dedent();
     }
 
     {
-      dprintf("Validating tick\n");
-      indent();
+      dprintf("----------\n");
+      dprintf("Validating %s\n", toString(tick).c_str());
+
+      //tick->dump();
+      Indenter indent2;
+
       FieldSet always;
       FieldSet maybe;
       validationPassed &= validateTick(record, tick->getBody(), signals, states, always, maybe);
+      
       for (auto x : signals) {
         if (!always.contains(x)) {
           dprintf("Tick: Signal %s was not always written\n", toString(x).c_str());
           validationPassed = false;
         }
       }
-      dedent();
     }
 
     {
-      dprintf("Validating tock\n");
-      indent();
+      dprintf("----------\n");
+      dprintf("Validating %s\n", toString(tock).c_str());
+
+      // tock->dump();
+      Indenter indent2;
+
       FieldSet always;
       FieldSet maybe;
       validationPassed &= validateTock(record, tock->getBody(), signals, states, always, maybe);
-      dedent();
     }
-
-    dedent();
   }
 }
 

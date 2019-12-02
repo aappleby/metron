@@ -89,7 +89,9 @@ public:
   virtual void visitBinOp       (BinaryOperator* expr);
   virtual void visitUnaryOp     (UnaryOperator* stmt);
 
-  virtual void visitExprWithCleanups(ExprWithCleanups* stmt);
+  virtual void visitCleanup     (ExprWithCleanups* stmt);
+  virtual void visitBoolLiteral (CXXBoolLiteralExpr* stmt);
+
   virtual void visitOtherStmt   (Stmt* stmt);
 
   //----------

@@ -82,21 +82,23 @@ void Visitor::visit(Stmt* stmt) {
   }
 
   switch(stmt->getStmtClass()) {
-  case Stmt::CallExprClass:          return visitCall(cast<CallExpr>(stmt));
-  case Stmt::CompoundStmtClass:      return visitCompound(cast<CompoundStmt>(stmt));
-  case Stmt::CXXThisExprClass:       return visitThis(cast<CXXThisExpr>(stmt));
-  case Stmt::DeclStmtClass:          return visitDeclStmt(cast<DeclStmt>(stmt));
-  case Stmt::DeclRefExprClass:       return visitDeclRef(cast<DeclRefExpr>(stmt));
-  case Stmt::BinaryOperatorClass:    return visitBinOp(cast<BinaryOperator>(stmt));
-  case Stmt::MemberExprClass:        return visitMemberExpr(cast<MemberExpr>(stmt));
-  case Stmt::CXXMemberCallExprClass: return visitMemberCall(cast<CXXMemberCallExpr>(stmt));
-  case Stmt::ImplicitCastExprClass:  return visitImplicitCast(cast<ImplicitCastExpr>(stmt));
-  case Stmt::ReturnStmtClass:        return visitReturn(cast<ReturnStmt>(stmt));
-  case Stmt::IfStmtClass:            return visitIf(cast<IfStmt>(stmt));
-  case Stmt::IntegerLiteralClass:    return visitLiteral(cast<IntegerLiteral>(stmt));
-  case Stmt::UnaryOperatorClass:     return visitUnaryOp(cast<UnaryOperator>(stmt));
-  case Stmt::ParenExprClass:         return visitParens(cast<ParenExpr>(stmt));
-  case Stmt::ExprWithCleanupsClass:  return visitExprWithCleanups(cast<ExprWithCleanups>(stmt));
+  case Stmt::CallExprClass:           return visitCall(cast<CallExpr>(stmt));
+  case Stmt::CompoundStmtClass:       return visitCompound(cast<CompoundStmt>(stmt));
+  case Stmt::CXXThisExprClass:        return visitThis(cast<CXXThisExpr>(stmt));
+  case Stmt::DeclStmtClass:           return visitDeclStmt(cast<DeclStmt>(stmt));
+  case Stmt::DeclRefExprClass:        return visitDeclRef(cast<DeclRefExpr>(stmt));
+  case Stmt::BinaryOperatorClass:     return visitBinOp(cast<BinaryOperator>(stmt));
+  case Stmt::MemberExprClass:         return visitMemberExpr(cast<MemberExpr>(stmt));
+  case Stmt::CXXMemberCallExprClass:  return visitMemberCall(cast<CXXMemberCallExpr>(stmt));
+  case Stmt::ImplicitCastExprClass:   return visitImplicitCast(cast<ImplicitCastExpr>(stmt));
+  case Stmt::ReturnStmtClass:         return visitReturn(cast<ReturnStmt>(stmt));
+  case Stmt::IfStmtClass:             return visitIf(cast<IfStmt>(stmt));
+  case Stmt::IntegerLiteralClass:     return visitLiteral(cast<IntegerLiteral>(stmt));
+  case Stmt::UnaryOperatorClass:      return visitUnaryOp(cast<UnaryOperator>(stmt));
+  case Stmt::ParenExprClass:          return visitParens(cast<ParenExpr>(stmt));
+  case Stmt::ExprWithCleanupsClass:   return visitCleanup(cast<ExprWithCleanups>(stmt));
+  case Stmt::CXXBoolLiteralExprClass: return visitBoolLiteral(cast<CXXBoolLiteralExpr>(stmt));
+  case Stmt::CStyleCastExprClass:     return visitOtherStmt(stmt);
   }
 
   dprintf("???visit(%s)\n", stmt->getStmtClassName());
@@ -124,6 +126,8 @@ void Visitor::visitChildDecls(Stmt* stmt) {
   case Stmt::UnaryOperatorClass:       return;
   case Stmt::ParenExprClass:           return;
   case Stmt::ExprWithCleanupsClass:    return;
+  case Stmt::CXXBoolLiteralExprClass:  return;
+  case Stmt::CStyleCastExprClass:      return;
   }
 
   dprintf("???visitChildDecls(%s)\n", stmt->getStmtClassName());
@@ -131,7 +135,12 @@ void Visitor::visitChildDecls(Stmt* stmt) {
 }
 
 void Visitor::visitChildStmts(Stmt* s) {
-  for (auto child : s->children()) visit(child);
+  if (s->getStmtClass() == Stmt::DeclStmtClass) {
+    // child statements of a DeclStmt are nested inside the decl, don't iterate over them from here.
+  }
+  else {
+    for (auto child : s->children()) visit(child);
+  }
 }
 
 void Visitor::visitCompound(CompoundStmt* stmt)             { visitOtherStmt(stmt); }
@@ -151,7 +160,8 @@ void Visitor::visitIf(IfStmt* stmt)                         { visitOtherStmt(stm
 void Visitor::visitLiteral(IntegerLiteral* stmt)            { visitOtherStmt(stmt); }
 void Visitor::visitUnaryOp(UnaryOperator* stmt)             { visitOtherStmt(stmt); }
 void Visitor::visitParens(ParenExpr* stmt)                  { visitOtherStmt(stmt); }
-void Visitor::visitExprWithCleanups(ExprWithCleanups* stmt) { visitOtherStmt(stmt); }
+void Visitor::visitCleanup(ExprWithCleanups* stmt)          { visitOtherStmt(stmt); }
+void Visitor::visitBoolLiteral(CXXBoolLiteralExpr* stmt)    { visitOtherStmt(stmt); }
 
 void Visitor::visitOtherStmt(Stmt* stmt) {
   visitChildDecls(stmt);

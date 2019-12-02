@@ -1,6 +1,5 @@
 #pragma once
 
-#if 1
 //-----------------------------------------------------------------------------
 
 typedef const bool wire;
@@ -52,12 +51,7 @@ struct CpuOut {
 
 struct System {
 
-  void reset() {}
-  void resetOtherStuff() {
-    RESET_REG.reset();
-    DIV_15.reset();
-  }
-
+  void reset();
   void tick(const CpuIn& cpu_in, const ChipIn& chip_in);
   void tock(const CpuIn& cpu_in, const ChipIn& chip_in);
 
@@ -88,7 +82,7 @@ struct System {
 
   Reg DIV_15;
   Reg RESET_REG;
+  bool blep;
 };
 
 //-----------------------------------------------------------------------------
-#endif

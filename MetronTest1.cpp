@@ -1,38 +1,22 @@
 #include "MetronTest1.h"
 
-#if 0
-struct Foo {
-  int signalA, signalB, signalC;
-  int stateA, stateB, stateC;
-
-  int other;
-
-  void resetEverything() {
-    stateA = 0;
-    stateB = 0;
-    stateC = 1;
-  }
-
-  void tickStuff() {
-    signalA = 1;
-    signalB = signalA * 2;
-    signalC = signalB * 7;
-  }
-
-  void tockOtherStuff() {
-    stateA = signalA;
-    stateB = signalB;
-    stateC = signalC;
-  }
-};
-#endif
-
-#if 1
 wire _not(wire a)                   { return !a; }
 wire _and(wire a, wire b)           { return a && b; }
 wire _or (wire a, wire b)           { return a || b; }
 wire _nor(wire a, wire b)           { return !(a || b); }
 wire _or (wire a, wire b, wire c)   { return a || b || c; }
+
+//-----------------------------------------------------------------------------
+
+void System::reset() {
+  RESET_REG.reset();
+  DIV_15.reset();
+
+  MODE_DBG1 = false;
+  MODE_DBG2 = false;
+  MODE_PROD = true;
+  DIV_CLK = false;
+}
 
 //-----------------------------------------------------------------------------
 
@@ -81,8 +65,7 @@ void System::tock(const CpuIn& cpu_in, const ChipIn& chip_in) {
   wire RESET_CLK_IN = _not(DIV_CLK);
   wire RESET_REG_IN = _or(_nor(CPU_RESETn, chip_in.RST), chip_in.RST);
 
-  //RESET_REG.tock(_not(DIV_CLK), MODE_PROD, RESET_REG_IN);
+  RESET_REG.tock(_not(DIV_CLK), MODE_PROD, RESET_REG_IN);
 }
 
 //-----------------------------------------------------------------------------
-#endif

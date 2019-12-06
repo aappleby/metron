@@ -42,13 +42,15 @@ std::string toString(Decl* decl) {
    
   case Decl::Kind::Field: {
     FieldDecl* f = cast<FieldDecl>(decl);
-    return f->getParent()->getNameAsString() + "::" + f->getNameAsString();
+    //return f->getParent()->getNameAsString() + "::" + f->getNameAsString();
+    return f->getNameAsString();
   }
 
   case Decl::Kind::CXXConversion:
   case Decl::Kind::CXXMethod: {
     CXXMethodDecl* m = cast<CXXMethodDecl>(decl);
-    return m->getParent()->getNameAsString() + "::" + m->getNameAsString();
+    //return m->getParent()->getNameAsString() + "::" + m->getNameAsString();
+    return m->getNameAsString();
   }
 
   case Decl::Kind::CXXRecord: {

@@ -56,7 +56,11 @@ void foldSeries(const FieldSet& alwaysA, const FieldSet& maybeA,
 CXXMethodDecl* getMethodByPrefix(CXXRecordDecl* decl, const char* prefix) {
   for (auto m : decl->methods()) {
     if (m->getNameAsString().starts_with(prefix)) {
-      return dyn_cast<CXXMethodDecl>(m->getDefinition());
+      auto def = m->getDefinition();
+      if (def) {
+        auto method = dyn_cast<CXXMethodDecl>(def);
+        return method;
+      }
     }
   }
   return nullptr;
@@ -199,9 +203,20 @@ bool validateReset(CXXRecordDecl* record, Stmt* root, FieldSet& signals, FieldSe
       result = false;
     }
 
+    if (isState && isWrite && isWritten) {
+      dprintf("State %s written more than once in reset\n", toString(field).c_str());
+      result = false;
+    }
+
     if (isState && isWrite) {
       always.insert(field);
     }
+  };
+
+  v.stmtCallbackMap[Stmt::CXXMemberCallExprClass] = [&](Stmt* stmt) {
+    auto call = cast<CXXMemberCallExpr>(stmt);
+    for (auto x : call->arguments()) v.visit(x);
+    v.visit(call->getCallee());
   };
 
   v.stmtCallbackMap[Stmt::IfStmtClass] = [&](Stmt* stmt) {
@@ -273,9 +288,20 @@ bool validateTick(CXXRecordDecl* record, Stmt* root, FieldSet& signals, FieldSet
       result = false;
     }
 
+    if (isSignal && isWrite && isWritten) {
+      dprintf("Signal %s written more than once in tick\n", toString(field).c_str());
+      result = false;
+    }
+
     if (isSignal && isWrite) {
       always.insert(field);
     }
+  };
+
+  v.stmtCallbackMap[Stmt::CXXMemberCallExprClass] = [&](Stmt* stmt) {
+    auto call = cast<CXXMemberCallExpr>(stmt);
+    for (auto x : call->arguments()) v.visit(x);
+    v.visit(call->getCallee());
   };
 
   v.stmtCallbackMap[Stmt::IfStmtClass] = [&](Stmt* stmt) {
@@ -347,9 +373,20 @@ bool validateTock(CXXRecordDecl* record, Stmt* root, FieldSet& signals, FieldSet
       result = false;
     }
 
+    if (isState && isWrite && isWritten) {
+      dprintf("State %s written more than once in tock\n", toString(field).c_str());
+      result = false;
+    }
+
     if (isState && isWrite) {
       always.insert(field);
     }
+  };
+
+  v.stmtCallbackMap[Stmt::CXXMemberCallExprClass] = [&](Stmt* stmt) {
+    auto call = cast<CXXMemberCallExpr>(stmt);
+    for (auto x : call->arguments()) v.visit(x);
+    v.visit(call->getCallee());
   };
 
   v.stmtCallbackMap[Stmt::IfStmtClass] = [&](Stmt* stmt) {
@@ -379,51 +416,6 @@ bool validateTock(CXXRecordDecl* record, Stmt* root, FieldSet& signals, FieldSet
 
   v.visit(root);
   return result;
-}
-
-//-----------------------------------------------------------------------------
-
-void getAlwaysMaybe(CXXRecordDecl* record, Stmt* root, FieldSet& always, FieldSet& maybe) {
-
-  set<MemberExpr*> writes;
-  getWriteExprs(record, root, writes);
-
-  // Traverse the block, folding writes across if statement branches.
-  Visitor v;
-
-  v.stmtCallbackMap[Stmt::MemberExprClass] = [&](Stmt* stmt) {
-    MemberExpr* expr = cast<MemberExpr>(stmt);
-    if (writes.contains(expr)) {
-      always.insert(cast<FieldDecl>(expr->getMemberDecl()));
-    }
-  };
-
-  v.stmtCallbackMap[Stmt::IfStmtClass] = [&](Stmt* stmt) {
-    IfStmt* ifStmt = cast<IfStmt>(stmt);
-
-    getAlwaysMaybe(record, ifStmt->getCond(), always, maybe);
-
-    FieldSet alwaysA = always;
-    FieldSet maybeA = maybe;
-    getAlwaysMaybe(record, ifStmt->getThen(), alwaysA, maybeA);
-
-    FieldSet alwaysB = always;
-    FieldSet maybeB = maybe;
-    getAlwaysMaybe(record, ifStmt->getElse(), alwaysB, maybeB);
-
-    FieldSet alwaysNew;
-    FieldSet maybeNew;
-    foldParallel(alwaysA, maybeA, alwaysB, maybeB, alwaysNew, maybeNew);
-
-    FieldSet alwaysOld = always;
-    FieldSet maybeOld = maybe;
-    always.clear();
-    maybe.clear();
-
-    foldSeries(alwaysOld, maybeOld, alwaysNew, maybeNew, always, maybe);
-  };
-
-  v.visit(root);
 }
 
 //-----------------------------------------------------------------------------
@@ -521,6 +513,14 @@ void process(ASTContext* context) {
     getReadsAndWrites(record, tick->getBody(),  tickReads,  tickWrites);
     getReadsAndWrites(record, tock->getBody(), tockReads, tockWrites);
 
+    FieldSet allFields;
+    for (auto x : record->fields()) {
+      if (!tickWrites.contains(x) && !tockWrites.contains(x)) {
+        dprintf("Field %s never written in tick or tock.\n", toString(x).c_str());
+      }
+    }
+
+    /*
     {
       Indenter indent1;
 
@@ -561,6 +561,7 @@ void process(ASTContext* context) {
         printf("\n");
       }
     }
+    */
 
     FieldSet signals = tickWrites;
     FieldSet states = resetWrites;
@@ -613,6 +614,13 @@ void process(ASTContext* context) {
       FieldSet always;
       FieldSet maybe;
       validationPassed &= validateTock(record, tock->getBody(), signals, states, always, maybe);
+
+      for (auto x : states) {
+        if (!always.contains(x) && !maybe.contains(x)) {
+          dprintf("Tock: State %s was never written\n", toString(x).c_str());
+          validationPassed = false;
+        }
+      }
     }
   }
 }
@@ -649,7 +657,21 @@ int main(int argc, const char** argv)
   tooling::CommonOptionsParser OptionsParser(argc, argv, toolCategory);
   tooling::ClangTool Tool(OptionsParser.getCompilations(), OptionsParser.getSourcePathList());
   Tool.run(new MetronFactory());
-  return validationPassed ? 0 : 1;
+
+  if (validationPassed) {
+    printf("-------------------------------------------------\n");
+    printf("|                     PASS!                     |\n");
+    printf("-------------------------------------------------\n");
+    return 0;
+  }
+  else {
+    printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+    printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+    printf("FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL FAIL\n");
+    printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+    printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+    return 1;
+  }
 }
 
 //-----------------------------------------------------------------------------

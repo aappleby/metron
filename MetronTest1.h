@@ -20,6 +20,8 @@ struct Reg {
 
   operator bool() const { return val; }
 
+private:
+
   bool val;
   bool clk;
 };

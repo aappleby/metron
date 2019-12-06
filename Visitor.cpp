@@ -13,20 +13,23 @@ void Visitor::visit(Decl* decl) {
   }
 
   switch(decl->getKind()) {
-  case Decl::Kind::TranslationUnit: return visitUnit(cast<TranslationUnitDecl>(decl));
-  case Decl::Kind::CXXRecord:       return visitCXXRecord(cast<CXXRecordDecl>(decl));
-  case Decl::Kind::Record:          return visitRecord(cast<RecordDecl>(decl));
-  case Decl::Kind::CXXMethod:       return visitMethod(cast<CXXMethodDecl>(decl));
-  case Decl::Kind::Function:        return visitFunction(cast<FunctionDecl>(decl));
-  case Decl::Kind::Var:             return visitVar(cast<VarDecl>(decl));
-  case Decl::Kind::ParmVar:         return visitParmVar(cast<ParmVarDecl>(decl));
-  case Decl::Kind::Field:           return visitField(cast<FieldDecl>(decl));
-  case Decl::Kind::Typedef:         return visitTypedef(cast<TypedefDecl>(decl));
-  case Decl::Kind::CXXConversion:   return visitConversion(cast<CXXConversionDecl>(decl));
+  case Decl::Kind::TranslationUnit:  return visitUnit(cast<TranslationUnitDecl>(decl));
+  case Decl::Kind::CXXRecord:        return visitCXXRecord(cast<CXXRecordDecl>(decl));
+  case Decl::Kind::Record:           return visitRecord(cast<RecordDecl>(decl));
+  case Decl::Kind::CXXMethod:        return visitMethod(cast<CXXMethodDecl>(decl));
+  case Decl::Kind::Function:         return visitFunction(cast<FunctionDecl>(decl));
+  case Decl::Kind::Var:              return visitVar(cast<VarDecl>(decl));
+  case Decl::Kind::ParmVar:          return visitParmVar(cast<ParmVarDecl>(decl));
+  case Decl::Kind::Field:            return visitField(cast<FieldDecl>(decl));
+  case Decl::Kind::Typedef:          return visitTypedef(cast<TypedefDecl>(decl));
+  case Decl::Kind::CXXConversion:    return visitConversion(cast<CXXConversionDecl>(decl));
+  case Decl::Kind::FunctionTemplate: return; // FIXME
+  case Decl::Kind::LinkageSpec:      return; // FIXME
+  case Decl::Kind::PragmaDetectMismatch: return; // FIXME
   }
 
-  dprintf("???visit(%s)\n", decl->getDeclKindName());
-  decl->dump();
+  dprintf("???visitDecl(%s)\n", decl->getDeclKindName());
+  //decl->dump();
 }
 
 void Visitor::visitChildDecls(Decl* decl) {
@@ -51,8 +54,8 @@ void Visitor::visitChildStmts(Decl* decl) {
   case Decl::Kind::CXXConversion:   return visit(cast<CXXConversionDecl>(decl)->getBody());
   }
 
-  dprintf("???visitChildStmts(%s)\n", decl->getDeclKindName());
-  decl->dump();
+  dprintf("???visitDeclChildStmts(%s)\n", decl->getDeclKindName());
+  //decl->dump();
 }
 
 void Visitor::visitUnit(TranslationUnitDecl* decl)     { visitOtherDecl(decl); }
@@ -82,27 +85,31 @@ void Visitor::visit(Stmt* stmt) {
   }
 
   switch(stmt->getStmtClass()) {
-  case Stmt::CallExprClass:           return visitCall(cast<CallExpr>(stmt));
-  case Stmt::CompoundStmtClass:       return visitCompound(cast<CompoundStmt>(stmt));
-  case Stmt::CXXThisExprClass:        return visitThis(cast<CXXThisExpr>(stmt));
-  case Stmt::DeclStmtClass:           return visitDeclStmt(cast<DeclStmt>(stmt));
-  case Stmt::DeclRefExprClass:        return visitDeclRef(cast<DeclRefExpr>(stmt));
-  case Stmt::BinaryOperatorClass:     return visitBinOp(cast<BinaryOperator>(stmt));
-  case Stmt::MemberExprClass:         return visitMemberExpr(cast<MemberExpr>(stmt));
-  case Stmt::CXXMemberCallExprClass:  return visitMemberCall(cast<CXXMemberCallExpr>(stmt));
-  case Stmt::ImplicitCastExprClass:   return visitImplicitCast(cast<ImplicitCastExpr>(stmt));
-  case Stmt::ReturnStmtClass:         return visitReturn(cast<ReturnStmt>(stmt));
-  case Stmt::IfStmtClass:             return visitIf(cast<IfStmt>(stmt));
-  case Stmt::IntegerLiteralClass:     return visitLiteral(cast<IntegerLiteral>(stmt));
-  case Stmt::UnaryOperatorClass:      return visitUnaryOp(cast<UnaryOperator>(stmt));
-  case Stmt::ParenExprClass:          return visitParens(cast<ParenExpr>(stmt));
-  case Stmt::ExprWithCleanupsClass:   return visitCleanup(cast<ExprWithCleanups>(stmt));
-  case Stmt::CXXBoolLiteralExprClass: return visitBoolLiteral(cast<CXXBoolLiteralExpr>(stmt));
-  case Stmt::CStyleCastExprClass:     return visitOtherStmt(stmt);
+  case Stmt::CallExprClass:            return visitCall(cast<CallExpr>(stmt));
+  case Stmt::CompoundStmtClass:        return visitCompound(cast<CompoundStmt>(stmt));
+  case Stmt::CXXThisExprClass:         return visitThis(cast<CXXThisExpr>(stmt));
+  case Stmt::DeclStmtClass:            return visitDeclStmt(cast<DeclStmt>(stmt));
+  case Stmt::DeclRefExprClass:         return visitDeclRef(cast<DeclRefExpr>(stmt));
+  case Stmt::BinaryOperatorClass:      return visitBinOp(cast<BinaryOperator>(stmt));
+  case Stmt::MemberExprClass:          return visitMemberExpr(cast<MemberExpr>(stmt));
+  case Stmt::CXXMemberCallExprClass:   return visitMemberCall(cast<CXXMemberCallExpr>(stmt));
+  case Stmt::ImplicitCastExprClass:    return visitImplicitCast(cast<ImplicitCastExpr>(stmt));
+  case Stmt::ReturnStmtClass:          return visitReturn(cast<ReturnStmt>(stmt));
+  case Stmt::IfStmtClass:              return visitIf(cast<IfStmt>(stmt));
+  case Stmt::IntegerLiteralClass:      return visitLiteral(cast<IntegerLiteral>(stmt));
+  case Stmt::UnaryOperatorClass:       return visitUnaryOp(cast<UnaryOperator>(stmt));
+  case Stmt::ParenExprClass:           return visitParens(cast<ParenExpr>(stmt));
+  case Stmt::ExprWithCleanupsClass:    return visitCleanup(cast<ExprWithCleanups>(stmt));
+  case Stmt::CXXBoolLiteralExprClass:  return visitBoolLiteral(cast<CXXBoolLiteralExpr>(stmt));
+  case Stmt::CStyleCastExprClass:      return visitOtherStmt(stmt); // FIXME
+  case Stmt::StringLiteralClass:       return visitOtherStmt(stmt); // FIXME
+  case Stmt::ConditionalOperatorClass: return visitOtherStmt(stmt); // FIXME
+
+  case Stmt::CXXConstructExprClass: { stmt->dump(); return visitOtherStmt(stmt); }
   }
 
-  dprintf("???visit(%s)\n", stmt->getStmtClassName());
-  stmt->dump();
+  dprintf("???visitStmt(%s)\n", stmt->getStmtClassName());
+  //stmt->dump();
 }
 
 void Visitor::visitChildDecls(Stmt* stmt) {
@@ -128,10 +135,12 @@ void Visitor::visitChildDecls(Stmt* stmt) {
   case Stmt::ExprWithCleanupsClass:    return;
   case Stmt::CXXBoolLiteralExprClass:  return;
   case Stmt::CStyleCastExprClass:      return;
+  case Stmt::StringLiteralClass:       return;
+  case Stmt::ConditionalOperatorClass: return;
   }
 
-  dprintf("???visitChildDecls(%s)\n", stmt->getStmtClassName());
-  stmt->dump();
+  dprintf("???visitStmtChildDecls(%s)\n", stmt->getStmtClassName());
+  //stmt->dump();
 }
 
 void Visitor::visitChildStmts(Stmt* s) {

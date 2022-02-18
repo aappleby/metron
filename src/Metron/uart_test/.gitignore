@@ -1,0 +1,8 @@
+obj_dir
+a.out
+*.asc
+*.bin
+*.json
+*.blif
+*.vcd
+

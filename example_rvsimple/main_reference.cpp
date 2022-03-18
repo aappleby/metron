@@ -6,10 +6,10 @@
 #include "verilated.h"
 #include <stdio.h>
 
-#include "Log.h"
+#include "metron_tools.h"
 
 int run_test(const char* test_name) {
-  LOG_R("running %6s:\n", test_name);
+  LOG_R("running %6s: ", test_name);
 
   char buf1[256];
   char buf2[256];

@@ -31,3 +31,13 @@ rule run_test
 
 rule sv2v
   command = sv2v -w ${out} ${in}
+
+rule run_always
+  command = ${in}
+  pool = console
+
+rule verilate
+  command = verilator $includes --cc $in -Mdir $out_dir
+
+rule make
+  command = make -C $dir -f $makefile

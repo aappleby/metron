@@ -1,6 +1,6 @@
 #include "MtModule.h"
 
-#include "Log.h"
+#include "metron_tools.h"
 #include "MtCursor.h"
 #include "MtMethod.h"
 #include "MtModLibrary.h"

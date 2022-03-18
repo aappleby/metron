@@ -2,8 +2,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "Log.h"
-#include "Logic.h"
+#include "metron_tools.h"
 #include "MtCursor.h"
 #include "MtModLibrary.h"
 #include "MtModule.h"

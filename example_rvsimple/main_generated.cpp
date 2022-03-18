@@ -2,14 +2,14 @@
 // BSD 3-Clause License
 // (c) 2019, Marek Materzok, University of Wrocław
 
+#include "metron_tools.h"
 #include "Vtoplevel.h"
 #include "verilated.h"
+
 #include <stdio.h>
 
-#include "Log.h"
-
 int run_test(const char* test_name) {
-  LOG_R("running %6s:\n", test_name);
+  LOG_R("running %6s: ", test_name);
 
   char buf1[256];
   char buf2[256];

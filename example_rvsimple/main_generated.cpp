@@ -6,16 +6,15 @@
 #include "verilated.h"
 #include <stdio.h>
 
-#include "../../Log.h"
-#include "../../Tests.h"
+#include "Log.h"
 
 int run_test(const char* test_name) {
   LOG_R("running %6s:\n", test_name);
 
   char buf1[256];
   char buf2[256];
-  sprintf(buf1, "+text_file=tests/%s.text.vh", test_name);
-  sprintf(buf2, "+data_file=tests/%s.data.vh", test_name);
+  sprintf(buf1, "+text_file=rv_tests/%s.text.vh", test_name);
+  sprintf(buf2, "+data_file=rv_tests/%s.data.vh", test_name);
   const char* argv2[2] = { buf1, buf2 };
   Verilated::commandArgs(2, argv2);
 

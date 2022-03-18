@@ -1,17 +1,24 @@
 include rules.ninja
 
+rule verilate
+  command = verilator $includes --cc $in -Mdir $out_dir
+
+rule make
+  command = make -C $dir -f $makefile
+
+includes = ${includes} -Isrc
 includes = ${includes} -I/usr/local/share/verilator/include
 includes = ${includes} -I/usr/local/share/verilator/include/vltstd
-includes = ${includes} -I../tree-sitter/lib/src
-includes = ${includes} -I../tree-sitter/lib/include
+includes = ${includes} -Itree-sitter/lib/src
+includes = ${includes} -Itree-sitter/lib/include
 
 ################################################################################
 
-build out/lib.o          : compile_c ../tree-sitter/lib/src/lib.c
-build out/parser.o       : compile_c ../tree-sitter-cpp/src/parser.c
-build out/scanner.o      : compile_c ../tree-sitter-cpp/src/scanner.cc
+build out/lib.o          : compile_c tree-sitter/lib/src/lib.c
+build out/parser.o       : compile_c tree-sitter-cpp/src/parser.c
+build out/scanner.o      : compile_c tree-sitter-cpp/src/scanner.cc
 
-build out/Metron.o       : compile src/Metron.cpp
+build out/MetronApp.o    : compile src/MetronApp.cpp
 build out/MtCursor.o     : compile src/MtCursor.cpp
 build out/MtMethod.o     : compile src/MtMethod.cpp
 build out/MtModLibrary.o : compile src/MtModLibrary.cpp
@@ -20,8 +27,8 @@ build out/MtNode.o       : compile src/MtNode.cpp
 build out/MtSourceFile.o : compile src/MtSourceFile.cpp
 build out/Platform.o     : compile src/Platform.cpp
 
-build metron : link $
-  out/Metron.o $
+build bin/metron : link $
+  out/MetronApp.o $
   out/MtCursor.o $
   out/MtMethod.o $
   out/MtModLibrary.o $
@@ -32,4 +39,77 @@ build metron : link $
   out/lib.o $
   out/parser.o $
   out/scanner.o
-    link_libs = -lSDL2 -ldl -lpthread
+
+
+##########
+
+build out/verilated.o : compile /usr/share/verilator/include/verilated.cpp
+
+##########
+
+
+build out/metron_tools.o : compile src/metron_tools.cpp
+
+build out/example_rvsimple/main_rtl.o : compile example_rvsimple/main_rtl.cpp
+  includes = ${includes} -Iexample_rvsimple/rtl
+
+build bin/example_rvsimple/main_rtl : link out/example_rvsimple/main_rtl.o out/metron_tools.o
+
+
+################################################################################
+
+out_gen = out/example_rvsimple/generated
+
+build $out_gen/Vtoplevel.mk : verilate example_rvsimple/generated/toplevel.sv
+  includes = -Iexample_rvsimple/generated -Isrc
+  out_dir = $out_gen
+
+build $out_gen/main_generated.o : compile example_rvsimple/main_generated.cpp | $out_gen/Vtoplevel.mk
+  includes = ${includes} -I$out_gen
+
+build $out_gen/Vtoplevel__ALL.o : make $out_gen/Vtoplevel.mk
+  dir = $out_gen
+  makefile = Vtoplevel.mk
+
+build bin/example_rvsimple/main_generated : link $out_gen/main_generated.o $out_gen/Vtoplevel__ALL.o out/verilated.o
+
+################################################################################
+
+out_ref = out/example_rvsimple/reference
+
+build $out_ref/Vtoplevel.mk : verilate example_rvsimple/reference/toplevel.sv
+  includes = -Iexample_rvsimple/reference -Isrc
+  out_dir = $out_ref
+
+build $out_ref/main_reference.o : compile example_rvsimple/main_reference.cpp | $out_ref/Vtoplevel.mk
+  includes = ${includes} -I$out_ref
+
+build $out_ref/Vtoplevel__ALL.o : make $out_ref/Vtoplevel.mk
+  dir = $out_ref
+  makefile = Vtoplevel.mk
+
+build bin/example_rvsimple/main_reference : link $out_ref/main_reference.o $out_ref/Vtoplevel__ALL.o out/verilated.o
+
+
+################################################################################
+#verilator -Iexample_rvsimple/reference --cc toplevel.sv -Mdir out/example_rvsimple/reference
+#make -C out/example_rvsimple/reference -f Vtoplevel.mk
+#g++ -O3 -I.. --std=gnu++2a rtl/main.cpp ../metron_tools.cpp -o rtl/testbench
+#SRCS=$(wildcard *.cpp)
+#OBJS=$(SRCS:.cpp=.o)
+#
+#build: Vtoplevel.h main.cpp
+#  ${MAKE} testbench
+#
+#Vtoplevel.h: $(wildcard *.sv)
+#  verilator -I../.. -O3 --x-assign fast --x-initial fast --noassert -Wno-fatal --cc toplevel.sv --Mdir .
+#
+#testbench: ${OBJS}
+#  g++ -O3 ${OBJS}  -o testbench
+#
+#%.o: %.cpp
+#    /usr/share/verilator/include/verilated.cpp
+#  g++ -O3 -I /usr/share/verilator/include -I /usr/share/verilator/include/vltstd -c -o $@ $<
+#
+#clean:
+#  rm -f testbench ${OBJS} $(wildcard V*)

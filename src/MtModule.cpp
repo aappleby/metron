@@ -1,6 +1,6 @@
 #include "MtModule.h"
 
-#include "../CoreLib/Log.h"
+#include "Log.h"
 #include "MtCursor.h"
 #include "MtMethod.h"
 #include "MtModLibrary.h"

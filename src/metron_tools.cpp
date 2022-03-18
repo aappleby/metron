@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "../CoreLib/Log.h"
+#include "Log.h"
 
 #pragma warning(disable : 4996)
 

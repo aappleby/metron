@@ -2,7 +2,7 @@
 
 #include <sys/stat.h>
 
-#include "../CoreLib/Log.h"
+#include "Log.h"
 #include "MtModule.h"
 #include "MtSourceFile.h"
 

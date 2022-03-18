@@ -1,5 +1,8 @@
-#if 1
+#if 0
 
+#include "ibex/ibex_alu.h"
+#include "ibex/ibex_multdiv_slow.h"
+#include "ibex/ibex_pkg.h"
 #include "rvsimple/rtl/adder.h"
 #include "rvsimple/rtl/alu.h"
 #include "rvsimple/rtl/alu_control.h"
@@ -24,9 +27,6 @@
 #include "rvsimple/rtl/singlecycle_ctlpath.h"
 #include "rvsimple/rtl/singlecycle_datapath.h"
 #include "rvsimple/rtl/toplevel.h"
-#include "ibex/ibex_alu.h"
-#include "ibex/ibex_multdiv_slow.h"
-#include "ibex/ibex_pkg.h"
 #include "uart/rtl/uart_hello.h"
 #include "uart/rtl/uart_rx.h"
 #include "uart/rtl/uart_top.h"

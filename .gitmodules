@@ -1,0 +1,6 @@
+[submodule "tree-sitter"]
+	path = tree-sitter
+	url = https://github.com/tree-sitter/tree-sitter
+[submodule "tree-sitter-cpp"]
+	path = tree-sitter-cpp
+	url = https://github.com/tree-sitter/tree-sitter-cpp

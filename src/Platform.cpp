@@ -1,17 +1,11 @@
 #include "Platform.h"
 
-//------------------------------------------------------------------------------
-
 #include <assert.h>
 #include <memory.h>
 #include <stdarg.h>
 #include <stdio.h>
 
 #include <algorithm>
-
-#include "TreeSymbols.h"
-#include "tree_sitter/api.h"
-//#include <compare> // not in gcc?
 #include <functional>
 #include <map>
 #include <regex>
@@ -19,21 +13,66 @@
 #include <string>
 #include <vector>
 
+#include "TreeSymbols.h"
+#include "tree_sitter/api.h"
+
+//------------------------------------------------------------------------------
+
+void print_escaped(char s) {
+  if (s == '\n')
+    printf("\\n");
+  else if (s == '\r')
+    printf("\\r");
+  else if (s == '\t')
+    printf("\\t");
+  else if (s == '"')
+    printf("\\\"");
+  else if (s == '\\')
+    printf("\\\\");
+  else
+    printf("%c", s);
+}
+
+void print_escaped(const char* source, int a, int b) {
+  printf("\"");
+  for (; a < b; a++) {
+    print_escaped(source[a]);
+  }
+  printf("\"");
+}
+
+/*
+int cprintf(uint32_t color, const char *format, ...) {
+  printf("\u001b[38;2;%d;%d;%dm", (color >> 0) & 0xFF, (color >> 8) & 0xFF,
+(color >> 16) & 0xFF); va_list args; va_start (args, format); auto r = vprintf
+(format, args); va_end (args); printf("\u001b[0m"); return r;
+}
+*/
+
+/*
+void print_escaped(char s) {
+  if      (s == '\n') printf("\\n");
+  else if (s == '\r') printf("\\r");
+  else if (s == '\t') printf("\\t");
+  else if (s == '"')  printf("\\\"");
+  else if (s == '\\') printf("\\\\");
+  else                printf("%c", s);
+}
+*/
+
 //------------------------------------------------------------------------------
 // GCC platform
 
 #ifdef __GNUC__
+
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include <csignal>
 
-#include <sys/stat.h>
-
 typedef int64_t LARGE_INTEGER;
 
-int plat_mkdir(const char* path, int mode) {
-  return mkdir(path, mode);
-}
+int plat_mkdir(const char* path, int mode) { return mkdir(path, mode); }
 
 void debugbreak() { raise(SIGTRAP); }
 
@@ -53,13 +92,13 @@ void dprintf(const char* format, ...) {
     LOG_R("cwd %s\n", cwd);
   }
 */
-
 #endif
 
 //------------------------------------------------------------------------------
 // Visual Studio platform
 
 #ifdef _MSC_VER
+
 #include <Windows.h>
 #include <direct.h>
 

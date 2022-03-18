@@ -2,14 +2,15 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "../CoreLib/Log.h"
+#include "Log.h"
 #include "Logic.h"
 #include "MtCursor.h"
 #include "MtModLibrary.h"
 #include "MtModule.h"
 #include "MtSourceFile.h"
 #include "Platform.h"
-#include "metron_tools.h"
+
+//#include "metron_tools.h"
 
 #pragma warning(disable : 4996)
 

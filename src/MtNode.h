@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <string>
+#include <vector>
 
 #include "Platform.h"
 #include "TreeSymbols.h"
@@ -705,8 +706,7 @@ struct MtField : public MtNode {
 //------------------------------------------------------------------------------
 
 struct MtEnum : public MtNode {
-  MtEnum(const MtNode& n) : MtNode(n) {
-  }
+  MtEnum(const MtNode& n) : MtNode(n) {}
 
   std::string name() {
     if (sym == sym_field_declaration) {
@@ -734,8 +734,7 @@ struct MtCall : public MtNode {
 //------------------------------------------------------------------------------
 
 struct MtParam : public MtNode {
-  MtParam(const MtNode& n) : MtNode(n) {
-  }
+  MtParam(const MtNode& n) : MtNode(n) {}
 
   std::string name() {
     if (sym == sym_parameter_declaration) {

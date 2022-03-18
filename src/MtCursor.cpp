@@ -2,13 +2,12 @@
 
 #include <stdarg.h>
 
+#include "Log.h"
 #include "MtModLibrary.h"
 #include "MtModule.h"
 #include "MtNode.h"
 #include "MtSourceFile.h"
 #include "Platform.h"
-
-#include "../CoreLib/Log.h"
 
 void print_escaped(char s);
 
@@ -180,7 +179,6 @@ void MtCursor::comment_out(MtNode n) {
   emit("*/");
   assert(cursor == n.end());
 }
-
 
 //----------------------------------------
 
@@ -446,8 +444,7 @@ void MtCursor::emit(MtCallExpr n) {
   if (func_name == "coerce") {
     // Convert to cast? We probably shouldn't be calling coerce() directly.
     n.error();
-  }
-  else if (func_name == "sra") {
+  } else if (func_name == "sra") {
     auto lhs = args.named_child(0);
     auto rhs = args.named_child(1);
 
@@ -459,11 +456,10 @@ void MtCursor::emit(MtCallExpr n) {
     emit_dispatch(rhs);
     emit(")");
     cursor = n.end();
-    
-    //call.dump_tree();
 
-  }
-  else if (func_name == "signed") {
+    // call.dump_tree();
+
+  } else if (func_name == "signed") {
     emit_replacement(func, "$signed");
     emit(args);
   } else if (func_name == "unsigned") {
@@ -856,7 +852,7 @@ void MtCursor::emit(MtFuncDefinition n) {
           emit_init_declarator_as_assign(c);
         } else {
           skip_over(c);
-          //comment_out(c);
+          // comment_out(c);
         }
         break;
       }
@@ -910,7 +906,6 @@ void MtCursor::emit(MtFuncDefinition n) {
   in_tock = false;
   in_task = false;
   in_func = false;
-
 }
 
 //------------------------------------------------------------------------------
@@ -976,16 +971,14 @@ void MtCursor::emit_field_as_enum_class(MtFieldDecl n) {
     bit_width = 0;
   } else if (n.sym == sym_field_declaration &&
              n.get_field(field_type).sym == sym_enum_specifier &&
-             n.get_field(field_default_value).sym ==
-                 sym_initializer_list) {
+             n.get_field(field_default_value).sym == sym_initializer_list) {
     // TreeSitterCPP BUG - "enum class foo : int = {}" misinterpreted as
     // default_value
 
     enum_name = n.get_field(field_type).get_field(field_name).text();
     node_values = n.get_field(field_default_value);
     bit_width = 0;
-  } else if (n.sym == sym_field_declaration &&
-             n.child_count() == 3 &&
+  } else if (n.sym == sym_field_declaration && n.child_count() == 3 &&
              n.child(0).sym == sym_enum_specifier &&
              n.child(1).sym == sym_bitfield_clause) {
     // TreeSitterCPP BUG - "enum class foo : logic<2> = {}" misinterpreted as
@@ -1001,8 +994,7 @@ void MtCursor::emit_field_as_enum_class(MtFieldDecl n) {
     enum_name = n.get_field(field_type).get_field(field_name).text();
     node_values = node_compound.get_field(field_value);
     bit_width = atoi(node_bitwidth.start());
-  } else if (n.sym == sym_declaration &&
-             n.child_count() == 3 &&
+  } else if (n.sym == sym_declaration && n.child_count() == 3 &&
              n.child(0).sym == sym_enum_specifier &&
              n.child(1).sym == sym_init_declarator) {
     // TreeSitterCPP BUG - "enum class foo : logic<2> = {}" in namespace
@@ -1141,8 +1133,7 @@ void MtCursor::emit(MtFieldDecl n) {
   assert(cursor == n.start());
 
   // Handle "enum class", which is broken a bit in TreeSitterCpp
-  if (n.type().child_count() >= 3 &&
-      n.type().child(0).text() == "enum" &&
+  if (n.type().child_count() >= 3 && n.type().child(0).text() == "enum" &&
       n.type().child(1).text() == "class" &&
       n.type().child(2).sym == alias_sym_type_identifier) {
     emit_field_as_enum_class(n);
@@ -1157,8 +1148,8 @@ void MtCursor::emit(MtFieldDecl n) {
     emit_field_as_enum_class(n);
   } else if (current_mod->has_output(n.name().text())) {
     if (!in_ports) {
-      //skip_to_next_sibling(n);
-      //skip_over(n);
+      // skip_to_next_sibling(n);
+      // skip_over(n);
       comment_out(n);
     } else {
       emit_children(n);
@@ -1397,7 +1388,6 @@ void MtCursor::emit_output_ports() {
     auto submod_mod = lib->get_mod(type_name);
     output_count += (int)submod_mod->outputs->size();
   }
-
 
   int output_index = 0;
 
@@ -1837,8 +1827,8 @@ void MtCursor::emit(MtCaseStatement n) {
   for (int i = 0; i < child_count; i++) {
     auto c = n.child(i);
     if (c.sym == anon_sym_case) {
-      //skip_to_next_sibling(c);
-      //skip_over(c);
+      // skip_to_next_sibling(c);
+      // skip_over(c);
       comment_out(c);
     } else {
       emit_dispatch(c);
@@ -1859,8 +1849,6 @@ void MtCursor::emit(MtSwitchStatement n) {
     if (c.sym == anon_sym_switch) {
       emit_replacement(c, "case");
     } else if (c.field == field_body) {
-
-
       auto gc_count = c.child_count();
       for (int j = 0; j < gc_count; j++) {
         auto gc = c.child(j);
@@ -2015,7 +2003,7 @@ void MtCursor::emit(MtUsingDecl n) {
 */
 
 void MtCursor::emit(MtDecl n) {
-  //n.dump_tree();
+  // n.dump_tree();
 
   assert(cursor == n.start());
 

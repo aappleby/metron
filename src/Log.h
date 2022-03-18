@@ -2,11 +2,8 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-#include <inttypes.h>
-//#include <intrin.h>
-#include <chrono>
-#include <thread>
 #include <time.h>
+#include <stdint.h>
 
 //-----------------------------------------------------------------------------
 

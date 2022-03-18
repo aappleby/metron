@@ -6,8 +6,6 @@
 #include "MtSourceFile.h"
 #include "Platform.h"
 
-void print_escaped(const char* source, uint32_t a, uint32_t b);
-
 const MtNode MtNode::null;
 
 //------------------------------------------------------------------------------
@@ -89,10 +87,10 @@ const char* MtNode::start() {
   auto b = &source->source[end_byte()];
 
   if (sym == sym_preproc_arg) {
-    // TreeSitter bug - #defines include the whitespace before the value, trim it.
-    while(isspace(*a)) a++;
-  }
-  else {
+    // TreeSitter bug - #defines include the whitespace before the value, trim
+    // it.
+    while (isspace(*a)) a++;
+  } else {
     assert(!isspace(a[0]));
   }
 
@@ -209,33 +207,6 @@ void MtNode::visit_tree(NodeVisitor cv) {
 
 //------------------------------------------------------------------------------
 // Node debugging
-
-/*
-int cprintf(uint32_t color, const char *format, ...) {
-  printf("\u001b[38;2;%d;%d;%dm", (color >> 0) & 0xFF, (color >> 8) & 0xFF,
-(color >> 16) & 0xFF); va_list args; va_start (args, format); auto r = vprintf
-(format, args); va_end (args); printf("\u001b[0m"); return r;
-}
-*/
-
-/*
-void print_escaped(char s) {
-  if      (s == '\n') printf("\\n");
-  else if (s == '\r') printf("\\r");
-  else if (s == '\t') printf("\\t");
-  else if (s == '"')  printf("\\\"");
-  else if (s == '\\') printf("\\\\");
-  else                printf("%c", s);
-}
-
-void print_escaped(const char* source, uint32_t a, uint32_t b) {
-  printf("\"");
-  for (; a < b; a++) {
-    print_escaped(source[a]);
-  }
-  printf("\"");
-}
-*/
 
 void MtNode::dump_node(int index, int depth) const {
   if (is_null()) {

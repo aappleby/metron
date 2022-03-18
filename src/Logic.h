@@ -1,9 +1,5 @@
 #pragma once
-#include <assert.h>
 #include <stdint.h>
-
-#include <type_traits>
-
 
 //------------------------------------------------------------------------------
 // This file contains classes to support Verilog-style bit manipulation in C++.
@@ -22,83 +18,84 @@
 
 //------------------------------------------------------------------------------
 // This template converts size-in-bits to a primitive type. There's probably a
-// far better way to do this.
+// far better way to do this, hopefully that doesn't #include the universe...
 
 template <int N>
 struct bitsize_to_basetype {};
 #define DECLARE_SIZE(T, N)        \
   template <>                     \
   struct bitsize_to_basetype<N> { \
-    typedef T type;               \
+    typedef u##T unsigned_type;   \
+    typedef T signed_type;        \
   };
 
-DECLARE_SIZE(uint8_t, 1);
-DECLARE_SIZE(uint8_t, 2);
-DECLARE_SIZE(uint8_t, 3);
-DECLARE_SIZE(uint8_t, 4);
-DECLARE_SIZE(uint8_t, 5);
-DECLARE_SIZE(uint8_t, 6);
-DECLARE_SIZE(uint8_t, 7);
-DECLARE_SIZE(uint8_t, 8);
+DECLARE_SIZE(int8_t, 1);
+DECLARE_SIZE(int8_t, 2);
+DECLARE_SIZE(int8_t, 3);
+DECLARE_SIZE(int8_t, 4);
+DECLARE_SIZE(int8_t, 5);
+DECLARE_SIZE(int8_t, 6);
+DECLARE_SIZE(int8_t, 7);
+DECLARE_SIZE(int8_t, 8);
 
-DECLARE_SIZE(uint16_t, 9);
-DECLARE_SIZE(uint16_t, 10);
-DECLARE_SIZE(uint16_t, 11);
-DECLARE_SIZE(uint16_t, 12);
-DECLARE_SIZE(uint16_t, 13);
-DECLARE_SIZE(uint16_t, 14);
-DECLARE_SIZE(uint16_t, 15);
-DECLARE_SIZE(uint16_t, 16);
+DECLARE_SIZE(int16_t, 9);
+DECLARE_SIZE(int16_t, 10);
+DECLARE_SIZE(int16_t, 11);
+DECLARE_SIZE(int16_t, 12);
+DECLARE_SIZE(int16_t, 13);
+DECLARE_SIZE(int16_t, 14);
+DECLARE_SIZE(int16_t, 15);
+DECLARE_SIZE(int16_t, 16);
 
-DECLARE_SIZE(uint32_t, 17);
-DECLARE_SIZE(uint32_t, 18);
-DECLARE_SIZE(uint32_t, 19);
-DECLARE_SIZE(uint32_t, 20);
-DECLARE_SIZE(uint32_t, 21);
-DECLARE_SIZE(uint32_t, 22);
-DECLARE_SIZE(uint32_t, 23);
-DECLARE_SIZE(uint32_t, 24);
-DECLARE_SIZE(uint32_t, 25);
-DECLARE_SIZE(uint32_t, 26);
-DECLARE_SIZE(uint32_t, 27);
-DECLARE_SIZE(uint32_t, 28);
-DECLARE_SIZE(uint32_t, 29);
-DECLARE_SIZE(uint32_t, 30);
-DECLARE_SIZE(uint32_t, 31);
-DECLARE_SIZE(uint32_t, 32);
+DECLARE_SIZE(int32_t, 17);
+DECLARE_SIZE(int32_t, 18);
+DECLARE_SIZE(int32_t, 19);
+DECLARE_SIZE(int32_t, 20);
+DECLARE_SIZE(int32_t, 21);
+DECLARE_SIZE(int32_t, 22);
+DECLARE_SIZE(int32_t, 23);
+DECLARE_SIZE(int32_t, 24);
+DECLARE_SIZE(int32_t, 25);
+DECLARE_SIZE(int32_t, 26);
+DECLARE_SIZE(int32_t, 27);
+DECLARE_SIZE(int32_t, 28);
+DECLARE_SIZE(int32_t, 29);
+DECLARE_SIZE(int32_t, 30);
+DECLARE_SIZE(int32_t, 31);
+DECLARE_SIZE(int32_t, 32);
 
-DECLARE_SIZE(uint64_t, 33);
-DECLARE_SIZE(uint64_t, 34);
-DECLARE_SIZE(uint64_t, 35);
-DECLARE_SIZE(uint64_t, 36);
-DECLARE_SIZE(uint64_t, 37);
-DECLARE_SIZE(uint64_t, 38);
-DECLARE_SIZE(uint64_t, 39);
-DECLARE_SIZE(uint64_t, 40);
-DECLARE_SIZE(uint64_t, 41);
-DECLARE_SIZE(uint64_t, 42);
-DECLARE_SIZE(uint64_t, 43);
-DECLARE_SIZE(uint64_t, 44);
-DECLARE_SIZE(uint64_t, 45);
-DECLARE_SIZE(uint64_t, 46);
-DECLARE_SIZE(uint64_t, 47);
-DECLARE_SIZE(uint64_t, 48);
-DECLARE_SIZE(uint64_t, 49);
-DECLARE_SIZE(uint64_t, 50);
-DECLARE_SIZE(uint64_t, 51);
-DECLARE_SIZE(uint64_t, 52);
-DECLARE_SIZE(uint64_t, 53);
-DECLARE_SIZE(uint64_t, 54);
-DECLARE_SIZE(uint64_t, 55);
-DECLARE_SIZE(uint64_t, 56);
-DECLARE_SIZE(uint64_t, 57);
-DECLARE_SIZE(uint64_t, 58);
-DECLARE_SIZE(uint64_t, 59);
-DECLARE_SIZE(uint64_t, 60);
-DECLARE_SIZE(uint64_t, 61);
-DECLARE_SIZE(uint64_t, 62);
-DECLARE_SIZE(uint64_t, 63);
-DECLARE_SIZE(uint64_t, 64);
+DECLARE_SIZE(int64_t, 33);
+DECLARE_SIZE(int64_t, 34);
+DECLARE_SIZE(int64_t, 35);
+DECLARE_SIZE(int64_t, 36);
+DECLARE_SIZE(int64_t, 37);
+DECLARE_SIZE(int64_t, 38);
+DECLARE_SIZE(int64_t, 39);
+DECLARE_SIZE(int64_t, 40);
+DECLARE_SIZE(int64_t, 41);
+DECLARE_SIZE(int64_t, 42);
+DECLARE_SIZE(int64_t, 43);
+DECLARE_SIZE(int64_t, 44);
+DECLARE_SIZE(int64_t, 45);
+DECLARE_SIZE(int64_t, 46);
+DECLARE_SIZE(int64_t, 47);
+DECLARE_SIZE(int64_t, 48);
+DECLARE_SIZE(int64_t, 49);
+DECLARE_SIZE(int64_t, 50);
+DECLARE_SIZE(int64_t, 51);
+DECLARE_SIZE(int64_t, 52);
+DECLARE_SIZE(int64_t, 53);
+DECLARE_SIZE(int64_t, 54);
+DECLARE_SIZE(int64_t, 55);
+DECLARE_SIZE(int64_t, 56);
+DECLARE_SIZE(int64_t, 57);
+DECLARE_SIZE(int64_t, 58);
+DECLARE_SIZE(int64_t, 59);
+DECLARE_SIZE(int64_t, 60);
+DECLARE_SIZE(int64_t, 61);
+DECLARE_SIZE(int64_t, 62);
+DECLARE_SIZE(int64_t, 63);
+DECLARE_SIZE(int64_t, 64);
 
 //------------------------------------------------------------------------------
 // A logic behaves like an unsigned integer with any number of bits, up to the
@@ -112,9 +109,9 @@ class logic {
   // type that can hold them.
 
   static const int width = WIDTH;
-  typedef typename bitsize_to_basetype<WIDTH>::type BASE;
-  typedef typename std::make_signed<BASE>::type SBASE;
-  typedef typename std::make_unsigned<BASE>::type UBASE;
+  typedef typename bitsize_to_basetype<WIDTH>::unsigned_type BASE;
+  typedef typename bitsize_to_basetype<WIDTH>::unsigned_type UBASE;
+  typedef typename bitsize_to_basetype<WIDTH>::signed_type   SBASE;
 
   BASE x = 0;
 
@@ -209,8 +206,7 @@ struct bitslice {
 };
 
 template <int HI, int LO, int WIDTH>
-inline auto slice(logic<WIDTH>& x)
-    -> bitslice<HI, LO, WIDTH, typename logic<WIDTH>::BASE> {
+inline bitslice<HI, LO, WIDTH, typename logic<WIDTH>::BASE> slice(logic<WIDTH>& x) {
   return {x.x};
 }
 

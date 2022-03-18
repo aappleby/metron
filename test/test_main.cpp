@@ -1,4 +1,4 @@
-#include "../CoreLib/Tests.h"
+#include "Tests.h"
 #include "test_utils.h"
 
 TestResults test_utils();

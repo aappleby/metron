@@ -1,56 +1,25 @@
 #pragma once
-#include <stdint.h>
-#include <stdio.h>
 
 //------------------------------------------------------------------------------
 
-/*
-#include <assert.h>
-#include <memory.h>
-#include <stdarg.h>
-#include <stdio.h>
-
-#include <algorithm>
-
-#include "TreeSymbols.h"
-//#include <compare> // not in gcc?
-#include <functional>
-#include <map>
-#include <regex>
-#include <set>
-#include <string>
-#include <vector>
-*/
-
-//------------------------------------------------------------------------------
-
-int   plat_mkdir(const char* path, int mode);
-char* plat_getcwd();
-
+int plat_mkdir(const char* path, int mode);
 void debugbreak();
 void dprintf(const char* format = "", ...);
+void print_escaped(char s);
+void print_escaped(const char* source, int a, int b);
 
-inline void print_escaped(char s) {
-  if (s == '\n')
-    printf("\\n");
-  else if (s == '\r')
-    printf("\\r");
-  else if (s == '\t')
-    printf("\\t");
-  else if (s == '"')
-    printf("\\\"");
-  else if (s == '\\')
-    printf("\\\\");
-  else
-    printf("%c", s);
-}
+//------------------------------------------------------------------------------
 
-inline void print_escaped(const char* source, uint32_t a, uint32_t b) {
-  printf("\"");
-  for (; a < b; a++) {
-    print_escaped(source[a]);
-  }
-  printf("\"");
-}
+#ifdef _MSC_VER
+
+#pragma warning(disable : 4996)  // unsafe fopen
+
+#endif
+
+//------------------------------------------------------------------------------
+
+#ifdef __GNUC__
+
+#endif
 
 //------------------------------------------------------------------------------

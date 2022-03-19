@@ -586,6 +586,10 @@ void MtModule::collect_submods() {
       MtSubmod submod(n);
       submod.mod = source_file->lib->get_mod(f.type_name());
       submods->push_back(submod);
+    } else {
+      if (f.type_name() != "logic") {
+        LOG_R("Could not find module for submod %s\n", f.type_name().c_str());
+      }
     }
   }
 }

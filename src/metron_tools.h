@@ -12,6 +12,10 @@
 #include <time.h>
 #include <stdint.h>
 
+#ifdef _MSC_VER
+#pragma warning(disable : 4996)  // unsafe fopen
+#endif
+
 //------------------------------------------------------------------------------
 // This file contains classes to support Verilog-style bit manipulation in C++.
 //
@@ -495,6 +499,7 @@ inline void log_print(uint32_t color, const char* buffer, int len) {
     }
   }
   log_set_color(0);
+  fflush(stdout);
 }
 
 //-----------------------------------------------------------------------------
@@ -670,7 +675,7 @@ inline void parse_hex(const char* src_filename, void* dst_data, int dst_size) {
   // byte past the buffer.
   void* src_data = malloc(src_size + 256);
   memset(src_data, 0, src_size + 256);
-  size_t read = fread(src_data, 1, src_size, f);
+  fread(src_data, 1, src_size, f);
   fclose(f);
 
   uint8_t* sc = (uint8_t*)src_data;

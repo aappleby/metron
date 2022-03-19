@@ -77,7 +77,7 @@ int plat_mkdir(const char* path, int mode) { return mkdir(path, mode); }
 void debugbreak() { raise(SIGTRAP); }
 
 void dprintf(const char* format, ...) {
-  static char buffer[256];
+  //static char buffer[256];
   va_list args;
   va_start(args, format);
   vprintf(format, args);

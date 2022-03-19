@@ -1,7 +1,7 @@
 #include <stdarg.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
+#include <stdio.h>
 #include "metron_tools.h"
 #include "MtCursor.h"
 #include "MtModLibrary.h"
@@ -37,7 +37,7 @@ std::vector<std::string> split_path(const std::string& input) {
 
 std::string join(std::vector<std::string>& path) {
   std::string result = path[0];
-  for (int i = 1; i < path.size(); i++) {
+  for (int i = 1; i < (int)path.size(); i++) {
     result += "/";
     result += path[i];
   }
@@ -51,7 +51,7 @@ void mkdir_all(const std::vector<std::string>& full_path) {
   for (size_t i = 0; i < full_path.size() - 1; i++) {
     if (temp.size()) temp += "/";
     temp += full_path[i];
-    auto d = plat_mkdir(temp.c_str(), 0x777);
+    plat_mkdir(temp.c_str(), 0x777);
   }
 }
 

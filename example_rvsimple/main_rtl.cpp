@@ -11,6 +11,7 @@
 int run_test(const char* test_name) {
   fflush(stdout);
 
+
   char buf1[256];
   char buf2[256];
   sprintf(buf1, "+text_file=rv_tests/%s.text.vh", test_name);
@@ -20,7 +21,7 @@ int run_test(const char* test_name) {
   metron_reset();
   metron_init(2, argv2);
 
-  int time;
+  int time = 0;
   int result = 0;
 
   toplevel top;
@@ -61,6 +62,7 @@ int run_test(const char* test_name) {
 //------------------------------------------------------------------------------
 
 int main(int argc, const char **argv) {
+  LOG_B("Starting benchmark...\n");
   const char* instructions[38] = {
     "add", "addi", "and", "andi", "auipc", "beq", "bge", "bgeu", "blt", "bltu",
     "bne", "jal", "jalr", "lb", "lbu", "lh", "lhu", "lui", "lw", "or", "ori",
@@ -71,7 +73,6 @@ int main(int argc, const char **argv) {
   for (int i = 0; i < 38; i++) {
     run_test(instructions[i]);
   }
-
   return 0;
 }
 

@@ -121,3 +121,4 @@ module singlecycle_ctlpath
 endmodule;
 
 `endif  // RVSIMPLE_SINGLECYCLE_CTLPATH_H
+

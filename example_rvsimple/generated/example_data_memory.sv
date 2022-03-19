@@ -50,3 +50,4 @@ module example_data_memory
 endmodule;
 
 `endif  // RVSIMPLE_EXAMPLE_DATA_MEMORY_H
+

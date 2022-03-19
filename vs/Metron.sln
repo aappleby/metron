@@ -9,6 +9,49 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MetronLib", "MetronLib\Metr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MetronTest", "MetronTest\MetronTest.vcxproj", "{E335445A-590D-446A-9013-2338EA960113}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rvsimple_test", "rvsimple_test\rvsimple_test.vcxproj", "{05C9E889-4D3C-42CD-B608-3E05A7AAC97B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "uart_test", "uart_test\uart_test.vcxproj", "{721F48AF-DA9A-4ECA-AC65-979C195BEAB9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linux", "Linux", "{DCA4F897-6325-4F67-96F4-3A3C0E693FE0}"
+	ProjectSection(SolutionItems) = preProject
+		..\build.ninja = ..\build.ninja
+		..\LICENSE = ..\LICENSE
+		..\meson.build = ..\meson.build
+		..\README.md = ..\README.md
+		..\rules.ninja = ..\rules.ninja
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "rtl", "rtl", "{E32A7AC3-6F15-412A-8A06-50B77F79541C}"
+	ProjectSection(SolutionItems) = preProject
+		..\example_rvsimple\rtl\adder.h = ..\example_rvsimple\rtl\adder.h
+		..\example_rvsimple\rtl\alu.h = ..\example_rvsimple\rtl\alu.h
+		..\example_rvsimple\rtl\alu_control.h = ..\example_rvsimple\rtl\alu_control.h
+		..\example_rvsimple\rtl\config.h = ..\example_rvsimple\rtl\config.h
+		..\example_rvsimple\rtl\constants.h = ..\example_rvsimple\rtl\constants.h
+		..\example_rvsimple\rtl\control_transfer.h = ..\example_rvsimple\rtl\control_transfer.h
+		..\example_rvsimple\rtl\data_memory_interface.h = ..\example_rvsimple\rtl\data_memory_interface.h
+		..\example_rvsimple\rtl\example_data_memory.h = ..\example_rvsimple\rtl\example_data_memory.h
+		..\example_rvsimple\rtl\example_data_memory_bus.h = ..\example_rvsimple\rtl\example_data_memory_bus.h
+		..\example_rvsimple\rtl\example_memory_bus.h = ..\example_rvsimple\rtl\example_memory_bus.h
+		..\example_rvsimple\rtl\example_text_memory.h = ..\example_rvsimple\rtl\example_text_memory.h
+		..\example_rvsimple\rtl\example_text_memory_bus.h = ..\example_rvsimple\rtl\example_text_memory_bus.h
+		..\example_rvsimple\rtl\immediate_generator.h = ..\example_rvsimple\rtl\immediate_generator.h
+		..\example_rvsimple\rtl\instruction_decoder.h = ..\example_rvsimple\rtl\instruction_decoder.h
+		..\example_rvsimple\rtl\multiplexer.h = ..\example_rvsimple\rtl\multiplexer.h
+		..\example_rvsimple\rtl\multiplexer2.h = ..\example_rvsimple\rtl\multiplexer2.h
+		..\example_rvsimple\rtl\multiplexer4.h = ..\example_rvsimple\rtl\multiplexer4.h
+		..\example_rvsimple\rtl\multiplexer8.h = ..\example_rvsimple\rtl\multiplexer8.h
+		..\example_rvsimple\rtl\regfile.h = ..\example_rvsimple\rtl\regfile.h
+		..\example_rvsimple\rtl\register.h = ..\example_rvsimple\rtl\register.h
+		..\example_rvsimple\rtl\riscv_core.h = ..\example_rvsimple\rtl\riscv_core.h
+		..\example_rvsimple\rtl\singlecycle_control.h = ..\example_rvsimple\rtl\singlecycle_control.h
+		..\example_rvsimple\rtl\singlecycle_ctlpath.h = ..\example_rvsimple\rtl\singlecycle_ctlpath.h
+		..\example_rvsimple\rtl\singlecycle_datapath.h = ..\example_rvsimple\rtl\singlecycle_datapath.h
+		..\example_rvsimple\rtl\testbench = ..\example_rvsimple\rtl\testbench
+		..\example_rvsimple\rtl\toplevel.h = ..\example_rvsimple\rtl\toplevel.h
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -41,9 +84,28 @@ Global
 		{E335445A-590D-446A-9013-2338EA960113}.Release|x64.Build.0 = Release|x64
 		{E335445A-590D-446A-9013-2338EA960113}.Release|x86.ActiveCfg = Release|Win32
 		{E335445A-590D-446A-9013-2338EA960113}.Release|x86.Build.0 = Release|Win32
+		{05C9E889-4D3C-42CD-B608-3E05A7AAC97B}.Debug|x64.ActiveCfg = Debug|x64
+		{05C9E889-4D3C-42CD-B608-3E05A7AAC97B}.Debug|x64.Build.0 = Debug|x64
+		{05C9E889-4D3C-42CD-B608-3E05A7AAC97B}.Debug|x86.ActiveCfg = Debug|Win32
+		{05C9E889-4D3C-42CD-B608-3E05A7AAC97B}.Debug|x86.Build.0 = Debug|Win32
+		{05C9E889-4D3C-42CD-B608-3E05A7AAC97B}.Release|x64.ActiveCfg = Release|x64
+		{05C9E889-4D3C-42CD-B608-3E05A7AAC97B}.Release|x64.Build.0 = Release|x64
+		{05C9E889-4D3C-42CD-B608-3E05A7AAC97B}.Release|x86.ActiveCfg = Release|Win32
+		{05C9E889-4D3C-42CD-B608-3E05A7AAC97B}.Release|x86.Build.0 = Release|Win32
+		{721F48AF-DA9A-4ECA-AC65-979C195BEAB9}.Debug|x64.ActiveCfg = Debug|x64
+		{721F48AF-DA9A-4ECA-AC65-979C195BEAB9}.Debug|x64.Build.0 = Debug|x64
+		{721F48AF-DA9A-4ECA-AC65-979C195BEAB9}.Debug|x86.ActiveCfg = Debug|Win32
+		{721F48AF-DA9A-4ECA-AC65-979C195BEAB9}.Debug|x86.Build.0 = Debug|Win32
+		{721F48AF-DA9A-4ECA-AC65-979C195BEAB9}.Release|x64.ActiveCfg = Release|x64
+		{721F48AF-DA9A-4ECA-AC65-979C195BEAB9}.Release|x64.Build.0 = Release|x64
+		{721F48AF-DA9A-4ECA-AC65-979C195BEAB9}.Release|x86.ActiveCfg = Release|Win32
+		{721F48AF-DA9A-4ECA-AC65-979C195BEAB9}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E32A7AC3-6F15-412A-8A06-50B77F79541C} = {DCA4F897-6325-4F67-96F4-3A3C0E693FE0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {08120CEB-80C4-435E-A4A6-E9DD2170BF34}

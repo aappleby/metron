@@ -148,7 +148,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\Log.h" />
-    <ClInclude Include="..\..\src\Logic.h" />
     <ClInclude Include="..\..\src\metron_tools.h" />
     <ClInclude Include="..\..\src\MtCursor.h" />
     <ClInclude Include="..\..\src\MtMethod.h" />
@@ -160,7 +159,6 @@
     <ClInclude Include="..\..\src\TreeSymbols.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\metron_tools.cpp" />
     <ClCompile Include="..\..\src\MtCursor.cpp" />
     <ClCompile Include="..\..\src\MtMethod.cpp" />
     <ClCompile Include="..\..\src\MtModLibrary.cpp" />

@@ -40,4 +40,4 @@ rule verilate
   command = verilator $includes --cc $in -Mdir $out_dir
 
 rule make
-  command = make -C $dir -f $makefile
+  command = make -C $make_dir -f $makefile

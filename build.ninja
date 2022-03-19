@@ -39,36 +39,94 @@ build bin/metron : link $
 build out/verilated.o : compile /usr/share/verilator/include/verilated.cpp
 
 ################################################################################
+# Regenerate example_rvsimple/generated sources from example_rvsimple/rtl
 
-build out/example_rvsimple/main_rtl.o : compile example_rvsimple/main_rtl.cpp
-  includes = ${includes} -Iexample_rvsimple/rtl
+dir_rtl = example_rvsimple/rtl
+dir_gen = example_rvsimple/generated
 
-build bin/example_rvsimple/main_rtl : link out/example_rvsimple/main_rtl.o
+rtl_files = $
+  adder.h alu.h alu_control.h config.h constants.h control_transfer.h $
+  data_memory_interface.h example_data_memory.h example_data_memory_bus.h $
+  example_text_memory.h example_text_memory_bus.h immediate_generator.h $
+  instruction_decoder.h multiplexer.h multiplexer2.h multiplexer4.h $
+  multiplexer8.h regfile.h register.h riscv_core.h singlecycle_control.h $
+  singlecycle_ctlpath.h singlecycle_datapath.h toplevel.h
+
+rule metron
+  command = bin/metron -q -R$dir_root -O$dir_out $rtl_files
+
+build $
+  $dir_gen/adder.sv $
+  $dir_gen/alu.sv $
+  $dir_gen/alu_control.sv $
+  $dir_gen/config.sv $
+  $dir_gen/constants.sv $
+  $dir_gen/control_transfer.sv $
+  $dir_gen/data_memory_interface.sv $
+  $dir_gen/example_data_memory.sv $
+  $dir_gen/example_data_memory_bus.sv $
+  $dir_gen/example_text_memory.sv $
+  $dir_gen/example_text_memory_bus.sv $
+  $dir_gen/immediate_generator.sv $
+  $dir_gen/instruction_decoder.sv $
+  $dir_gen/multiplexer.sv $
+  $dir_gen/multiplexer2.sv $
+  $dir_gen/multiplexer4.sv $
+  $dir_gen/multiplexer8.sv $
+  $dir_gen/regfile.sv $
+  $dir_gen/register.sv $
+  $dir_gen/riscv_core.sv $
+  $dir_gen/singlecycle_control.sv $
+  $dir_gen/singlecycle_ctlpath.sv $
+  $dir_gen/singlecycle_datapath.sv $
+  $dir_gen/toplevel.sv $
+: metron | $
+  bin/metron $
+  $dir_rtl/adder.h $
+  $dir_rtl/alu.h $
+  $dir_rtl/alu_control.h $
+  $dir_rtl/config.h $
+  $dir_rtl/constants.h $
+  $dir_rtl/control_transfer.h $
+  $dir_rtl/data_memory_interface.h $
+  $dir_rtl/example_data_memory.h $
+  $dir_rtl/example_data_memory_bus.h $
+  $dir_rtl/example_text_memory.h $
+  $dir_rtl/example_text_memory_bus.h $
+  $dir_rtl/immediate_generator.h $
+  $dir_rtl/instruction_decoder.h $
+  $dir_rtl/multiplexer.h $
+  $dir_rtl/multiplexer2.h $
+  $dir_rtl/multiplexer4.h $
+  $dir_rtl/multiplexer8.h $
+  $dir_rtl/regfile.h $
+  $dir_rtl/register.h $
+  $dir_rtl/riscv_core.h $
+  $dir_rtl/singlecycle_control.h $
+  $dir_rtl/singlecycle_ctlpath.h $
+  $dir_rtl/singlecycle_datapath.h $
+  $dir_rtl/toplevel.h
+    dir_root = $dir_rtl
+    dir_out = $dir_gen
+    rtl_files = $rtl_files
 
 ################################################################################
+# Build example_rvsimple/rtl/main.cpp
 
-out_gen = out/example_rvsimple/generated
+dir = example_rvsimple/rtl
 
-build $out_gen/Vtoplevel.mk $out_gen/Vtoplevel.h : verilate example_rvsimple/generated/toplevel.sv
-  includes = -Iexample_rvsimple/generated -Isrc
-  out_dir = $out_gen
+build out/$dir/main.o : compile $dir/main.cpp
+  includes = ${includes} -I$dir
 
-build $out_gen/main_generated.o : compile example_rvsimple/main_generated.cpp | $out_gen/Vtoplevel.h
-  includes = ${includes} -I$out_gen
-
-build $out_gen/Vtoplevel__ALL.o : make $out_gen/Vtoplevel.mk
-  dir = $out_gen
-  makefile = Vtoplevel.mk
-
-build bin/example_rvsimple/main_generated : link $out_gen/main_generated.o $out_gen/Vtoplevel__ALL.o out/verilated.o
+build bin/$dir/main : link out/$dir/main.o
 
 ################################################################################
+# Verilate and build example_rvsimple/generated/main.cpp
 
-dir = example_rvsimple/reference
-out_ref = out/$dir
+dir = example_rvsimple/generated
 
-build $out_ref/Vtoplevel.mk $out_ref/Vtoplevel.h : verilate $dir/toplevel.sv $
-| $dir/adder.sv $
+build out/$dir/Vtoplevel.mk out/$dir/Vtoplevel.h : verilate $dir/toplevel.sv | $
+  $dir/adder.sv $
   $dir/alu.sv $
   $dir/alu_control.sv $
   $dir/config.sv $
@@ -89,30 +147,72 @@ build $out_ref/Vtoplevel.mk $out_ref/Vtoplevel.h : verilate $dir/toplevel.sv $
   $dir/register.sv $
   $dir/riscv_core.sv $
   $dir/singlecycle_control.sv $
+  $dir/singlecycle_ctlpath.sv $
   $dir/singlecycle_datapath.sv
     includes = -I$dir -Isrc
-    out_dir = $out_ref
+    out_dir = out/$dir
 
-build $out_ref/main_reference.o : compile example_rvsimple/main_reference.cpp | $out_ref/Vtoplevel.h
-  includes = ${includes} -I$out_ref
+build out/$dir/main.o : compile $dir/main.cpp | out/example_rvsimple/generated/Vtoplevel.h
+  includes = ${includes} -Iout/$dir
 
-build $out_ref/Vtoplevel__ALL.o : make $out_ref/Vtoplevel.mk
-  dir = $out_ref
+build out/$dir/Vtoplevel__ALL.o : make out/$dir/Vtoplevel.mk
+  make_dir = out/$dir
   makefile = Vtoplevel.mk
 
-build bin/example_rvsimple/main_reference : link $out_ref/main_reference.o $out_ref/Vtoplevel__ALL.o out/verilated.o
+build bin/$dir/main : link out/$dir/main.o out/$dir/Vtoplevel__ALL.o out/verilated.o
+
+################################################################################
+# Verilate and build example_rvsimple/reference/main.cpp
+
+dir = example_rvsimple/reference
+
+build out/$dir/Vtoplevel.mk out/$dir/Vtoplevel.h : verilate $dir/toplevel.sv | $
+  $dir/adder.sv $
+  $dir/alu.sv $
+  $dir/alu_control.sv $
+  $dir/config.sv $
+  $dir/constants.sv $
+  $dir/control_transfer.sv $
+  $dir/data_memory_interface.sv $
+  $dir/example_data_memory.sv $
+  $dir/example_data_memory_bus.sv $
+  $dir/example_text_memory.sv $
+  $dir/example_text_memory_bus.sv $
+  $dir/immediate_generator.sv $
+  $dir/instruction_decoder.sv $
+  $dir/multiplexer.sv $
+  $dir/multiplexer2.sv $
+  $dir/multiplexer4.sv $
+  $dir/multiplexer8.sv $
+  $dir/regfile.sv $
+  $dir/register.sv $
+  $dir/riscv_core.sv $
+  $dir/singlecycle_control.sv $
+  $dir/singlecycle_ctlpath.sv $
+  $dir/singlecycle_datapath.sv
+    includes = -I$dir -Isrc
+    out_dir = out/$dir
+
+build out/$dir/main.o : compile $dir/main.cpp | out/$dir/Vtoplevel.h
+  includes = ${includes} -Iout/$dir
+
+build out/$dir/Vtoplevel__ALL.o : make out/$dir/Vtoplevel.mk
+  make_dir = out/$dir
+  makefile = Vtoplevel.mk
+
+build bin/$dir/main : link out/$dir/main.o out/$dir/Vtoplevel__ALL.o out/verilated.o
 
 ################################################################################
 
-build benchmark_reference : run_always bin/example_rvsimple/main_reference
-build benchmark_generated : run_always bin/example_rvsimple/main_generated
-build benchmark_rtl : run_always bin/example_rvsimple/main_rtl
+#build benchmark_reference : run_always bin/example_rvsimple/main_reference
+#build benchmark_generated : run_always bin/example_rvsimple/main_generated
+#build benchmark_rtl : run_always bin/example_rvsimple/main_rtl
 
-build benchmark : phony benchmark_reference benchmark_generated benchmark_rtl
+#build benchmark : phony benchmark_reference benchmark_generated benchmark_rtl
 
 ################################################################################
 
-default bin/metron
-default bin/example_rvsimple/main_reference
-default bin/example_rvsimple/main_generated
-default bin/example_rvsimple/main_rtl
+#default bin/metron
+#default bin/example_rvsimple/main_reference
+#default bin/example_rvsimple/main_generated
+#default bin/example_rvsimple/main_rtl

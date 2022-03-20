@@ -220,9 +220,9 @@ outfile.write("# Regenerate SystemVerilog version of example_uart\n\n");
 metronate_directory("example_uart/rtl", "example_uart/generated")
 outfile.write("\n# ---------- ---------- ---------- ---------- \n\n")
 
-""""
-################################################################################
-# Regenerate SystemVerilog version of example_rvsimple
+outfile.write("\n")
+outfile.write("################################################################################\n");
+outfile.write("# Regenerate SystemVerilog version of example_rvsimple\n\n");
 
 metronate_directory("example_rvsimple/rtl", "example_rvsimple/generated")
 outfile.write("\n# ---------- ---------- ---------- ---------- \n\n")
@@ -236,7 +236,10 @@ uart_rtl_srcs = [path.basename(n) for n in glob.glob(path.join(uart_rtl_dir, "*.
 ninja.build(
   "out/example_uart/rtl/main.o",
   "compile_cpp",
-  "example_uart/rtl/main.cpp"
+  "example_uart/rtl/main.cpp",
+  variables={
+    "includes":"-Isrc"
+  }
 )
 
 ninja.build(
@@ -244,6 +247,8 @@ ninja.build(
   "link",
   "out/example_uart/rtl/main.o",
 )
+
+""""
 
 ################################################################################
 # Verilate and build example_uart/generated/main.cpp

@@ -31,7 +31,7 @@ module uart_hello
 
   //----------------------------------------
 
-  initial begin : init $readmemh("message.hex", memory, 0, 511); end
+  initial begin : init $readmemh("example_uart/message.hex", memory, 0, 511); end
 
   //----------------------------------------
 

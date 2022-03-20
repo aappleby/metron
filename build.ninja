@@ -96,5 +96,68 @@ build example_uart/generated/uart_hello.sv $
 # ---------- ---------- ---------- ---------- 
 
 
+################################################################################
+# Regenerate SystemVerilog version of example_rvsimple
+
+build example_rvsimple/generated/adder.sv example_rvsimple/generated/alu.sv $
+    example_rvsimple/generated/alu_control.sv $
+    example_rvsimple/generated/config.sv $
+    example_rvsimple/generated/constants.sv $
+    example_rvsimple/generated/control_transfer.sv $
+    example_rvsimple/generated/data_memory_interface.sv $
+    example_rvsimple/generated/example_data_memory.sv $
+    example_rvsimple/generated/example_data_memory_bus.sv $
+    example_rvsimple/generated/example_memory_bus.sv $
+    example_rvsimple/generated/example_text_memory.sv $
+    example_rvsimple/generated/example_text_memory_bus.sv $
+    example_rvsimple/generated/immediate_generator.sv $
+    example_rvsimple/generated/instruction_decoder.sv $
+    example_rvsimple/generated/multiplexer.sv $
+    example_rvsimple/generated/multiplexer2.sv $
+    example_rvsimple/generated/multiplexer4.sv $
+    example_rvsimple/generated/multiplexer8.sv $
+    example_rvsimple/generated/regfile.sv $
+    example_rvsimple/generated/register.sv $
+    example_rvsimple/generated/riscv_core.sv $
+    example_rvsimple/generated/singlecycle_control.sv $
+    example_rvsimple/generated/singlecycle_ctlpath.sv $
+    example_rvsimple/generated/singlecycle_datapath.sv $
+    example_rvsimple/generated/toplevel.sv: metron | bin/metron $
+    example_rvsimple/rtl/adder.h example_rvsimple/rtl/alu.h $
+    example_rvsimple/rtl/alu_control.h example_rvsimple/rtl/config.h $
+    example_rvsimple/rtl/constants.h $
+    example_rvsimple/rtl/control_transfer.h $
+    example_rvsimple/rtl/data_memory_interface.h $
+    example_rvsimple/rtl/example_data_memory.h $
+    example_rvsimple/rtl/example_data_memory_bus.h $
+    example_rvsimple/rtl/example_memory_bus.h $
+    example_rvsimple/rtl/example_text_memory.h $
+    example_rvsimple/rtl/example_text_memory_bus.h $
+    example_rvsimple/rtl/immediate_generator.h $
+    example_rvsimple/rtl/instruction_decoder.h $
+    example_rvsimple/rtl/multiplexer.h example_rvsimple/rtl/multiplexer2.h $
+    example_rvsimple/rtl/multiplexer4.h example_rvsimple/rtl/multiplexer8.h $
+    example_rvsimple/rtl/regfile.h example_rvsimple/rtl/register.h $
+    example_rvsimple/rtl/riscv_core.h $
+    example_rvsimple/rtl/singlecycle_control.h $
+    example_rvsimple/rtl/singlecycle_ctlpath.h $
+    example_rvsimple/rtl/singlecycle_datapath.h $
+    example_rvsimple/rtl/toplevel.h
+  src_dir = example_rvsimple/rtl
+  dst_dir = example_rvsimple/generated
+  src_files = adder.h alu.h alu_control.h config.h constants.h $
+      control_transfer.h data_memory_interface.h example_data_memory.h $
+      example_data_memory_bus.h example_memory_bus.h example_text_memory.h $
+      example_text_memory_bus.h immediate_generator.h instruction_decoder.h $
+      multiplexer.h multiplexer2.h multiplexer4.h multiplexer8.h regfile.h $
+      register.h riscv_core.h singlecycle_control.h singlecycle_ctlpath.h $
+      singlecycle_datapath.h toplevel.h
+
+# ---------- ---------- ---------- ---------- 
+
+build out/example_uart/rtl/main.o: compile_cpp example_uart/rtl/main.cpp
+  includes = -Isrc
+build bin/example_uart/rtl/main: link out/example_uart/rtl/main.o
+
 # ---------- ---------- ---------- ---------- 
 

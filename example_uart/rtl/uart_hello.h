@@ -22,7 +22,7 @@ class uart_hello {
 
   //----------------------------------------
 
-  void init() { readmemh("message.hex", memory, 0, 511); }
+  void init() { readmemh("example_uart/message.hex", memory, 0, 511); }
 
   //----------------------------------------
 

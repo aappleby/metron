@@ -38,6 +38,5 @@ localparam string DATA_HEX = "add.data.vh";
 
 endpackage;  // namespace rv_config
 
-/*verilator lint_off width*/
-
 `endif  // RVSIMPLE_CONFIG_H
+

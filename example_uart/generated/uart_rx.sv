@@ -1,5 +1,5 @@
 
-`include "metron_tools.h.sv"
+`include "metron_tools.sv"
 
 //==============================================================================
 
@@ -14,7 +14,6 @@ module uart_rx
   output logic[31:0] o_sum
 );
  /*public:*/
-  /*verilator public_module*/
 
   localparam /*const*/ int cycle_bits = $clog2(cycles_per_bit);
   localparam /*const*/ int cycle_max = cycles_per_bit - 1;
@@ -66,3 +65,4 @@ module uart_rx
 endmodule
 
 //==============================================================================
+

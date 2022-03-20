@@ -38,6 +38,4 @@ static const char* DATA_HEX = "add.data.vh";
 
 };  // namespace rv_config
 
-/*verilator lint_off width*/
-
 #endif  // RVSIMPLE_CONFIG_H

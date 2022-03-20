@@ -1,4 +1,4 @@
-opt = -O3
+opt = -O0
 includes =
 
 rule compile
@@ -12,7 +12,8 @@ rule compile_c
   depfile = ${out}.d
 
 rule link
-  command = g++ -g $opt -Wl,--whole-archive ${in} -Wl,--no-whole-archive ${link_libs} -o ${out}
+  command = g++ -g $opt ${in} ${link_libs} -o ${out}
+#  command = g++ -g $opt -Wl,--whole-archive ${in} -Wl,--no-whole-archive ${link_libs} -o ${out}
 
 rule iverilog
   command = iverilog -g2012 -DIVERILOG ${in} -o ${out}

@@ -9,7 +9,6 @@
 template <int cycles_per_bit = 3>
 class uart_top {
  public:
-  /*verilator public_module*/
 
   // Our "hello world" transmitter.
   uart_hello hello;

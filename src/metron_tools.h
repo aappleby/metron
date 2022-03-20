@@ -1,16 +1,14 @@
 #ifndef METRON_TOOLS_H
 #define METRON_TOOLS_H
 
-#include <stdint.h>
-#include <string>
-#include <vector>
 #include <memory.h>
 #include <stdarg.h>
-
-#include <stdio.h>
-#include <stdarg.h>
-#include <time.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <time.h>
+
+#include <string>
+#include <vector>
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4996)  // unsafe fopen
@@ -126,7 +124,7 @@ class logic {
   static const int width = WIDTH;
   typedef typename bitsize_to_basetype<WIDTH>::unsigned_type BASE;
   typedef typename bitsize_to_basetype<WIDTH>::unsigned_type UBASE;
-  typedef typename bitsize_to_basetype<WIDTH>::signed_type   SBASE;
+  typedef typename bitsize_to_basetype<WIDTH>::signed_type SBASE;
 
   BASE x = 0;
 
@@ -221,7 +219,8 @@ struct bitslice {
 };
 
 template <int HI, int LO, int WIDTH>
-inline bitslice<HI, LO, WIDTH, typename logic<WIDTH>::BASE> slice(logic<WIDTH>& x) {
+inline bitslice<HI, LO, WIDTH, typename logic<WIDTH>::BASE> slice(
+    logic<WIDTH>& x) {
   return {x.x};
 }
 
@@ -448,9 +447,9 @@ inline void log_set_color(uint32_t color) {
 
   if (color == 0) {
     printf("\u001b[0m");
-  }
-  else {
-    printf("\u001b[38;2;%d;%d;%dm", (color >> 0) & 0xFF, (color >> 8) & 0xFF, (color >> 16) & 0xFF);
+  } else {
+    printf("\u001b[38;2;%d;%d;%dm", (color >> 0) & 0xFF, (color >> 8) & 0xFF,
+           (color >> 16) & 0xFF);
   }
 
   log_color = color;
@@ -482,11 +481,9 @@ inline void log_print(uint32_t color, const char* buffer, int len) {
 
     if (c == '\t') {
       log_indent += 2;
-    }
-    else if (c == '\v') {
+    } else if (c == '\v') {
       log_indent -= 2;
-    }
-    else {
+    } else {
       if (log_start_line) {
         log_prefix();
         log_set_color(color);
@@ -515,7 +512,7 @@ inline void log_printf(uint32_t color, const char* format = "", ...) {
 
 //-----------------------------------------------------------------------------
 
-#define LOG(...)   log_printf(0x00000000, __VA_ARGS__);
+#define LOG(...) log_printf(0x00000000, __VA_ARGS__);
 #define LOG_R(...) log_printf(0x008080FF, __VA_ARGS__);
 #define LOG_G(...) log_printf(0x0080FF80, __VA_ARGS__);
 #define LOG_B(...) log_printf(0x00FFA0A0, __VA_ARGS__);
@@ -529,7 +526,7 @@ inline void log_printf(uint32_t color, const char* format = "", ...) {
 #define LOG_DEDENT() log_printf(0, "\v")
 
 struct LogIndenter {
-  LogIndenter()  { LOG_INDENT(); }
+  LogIndenter() { LOG_INDENT(); }
   ~LogIndenter() { LOG_DEDENT(); }
 };
 
@@ -581,7 +578,8 @@ static const uint64_t DONTCARE = 0;
 constexpr int clog2(uint64_t x) {
   if (x == 0) return 0;
   x--;
-  for (int i = 63; i >= 0; i--) if (x & (uint64_t(1) << i)) return i + 1;
+  for (int i = 63; i >= 0; i--)
+    if (x & (uint64_t(1) << i)) return i + 1;
   return 1;
 }
 
@@ -593,9 +591,7 @@ static_assert(clog2(255) == 8);
 static_assert(clog2(256) == 8);
 static_assert(clog2(257) == 9);
 
-constexpr uint64_t pow2(int x) {
-  return (1ull << x);
-}
+constexpr uint64_t pow2(int x) { return (1ull << x); }
 
 void parse_hex(const char* src_filename, void* dst_data, int dst_size);
 
@@ -629,7 +625,7 @@ inline int display(const char* fmt, ...) {
   int len = vsnprintf(buffer, 256, fmt, args);
   va_end(args);
   log_printf(0x88CCFF, "MT> ");
-  log_print (0x88CCFF, buffer, len);
+  log_print(0x88CCFF, buffer, len);
   log_printf(0x88CCFF, "\n");
   return len;
 }
@@ -641,7 +637,7 @@ inline int write(const char* fmt, ...) {
   int len = vsnprintf(buffer, 256, fmt, args);
   va_end(args);
   log_printf(0x88CCFF, "MT> ");
-  log_print (0x88CCFF, buffer, len);
+  log_print(0x88CCFF, buffer, len);
   return len;
 }
 
@@ -649,7 +645,7 @@ inline int write(const char* fmt, ...) {
 // Verilog's signed right shift doesn't work quite the same as C++'s, so we
 // patch around it here.
 
-template<int WIDTH>
+template <int WIDTH>
 inline logic<WIDTH> sra(logic<WIDTH> x, int s) {
   return x.as_signed() >> s;
 }
@@ -657,10 +653,14 @@ inline logic<WIDTH> sra(logic<WIDTH> x, int s) {
 //----------------------------------------
 
 inline int to_hex(uint8_t c) {
-  if      (c >= '0' && c <= '9') return c - '0';
-  else if (c >= 'a' && c <= 'f') return c - 'a' + 10;
-  else if (c >= 'A' && c <= 'F') return c - 'A' + 10;
-  else return -1;
+  if (c >= '0' && c <= '9')
+    return c - '0';
+  else if (c >= 'a' && c <= 'f')
+    return c - 'a' + 10;
+  else if (c >= 'A' && c <= 'F')
+    return c - 'A' + 10;
+  else
+    return -1;
 }
 
 //------------------------------------------------------------------------------
@@ -684,18 +684,17 @@ inline void parse_hex(const char* src_filename, void* dst_data, int dst_size) {
   uint8_t* dc = (uint8_t*)dst_data;
   uint8_t* dc_end = dc + (dst_size == -1 ? 0xFFFFFFFF : dst_size);
 
-  while(sc[0] && sc < sc_end) {
-
+  while (sc[0] && sc < sc_end) {
     // Skip single-line comments
     if (sc[0] == '/' && sc[1] == '/') {
-      while(sc[0] && sc[0] != '\n') sc++;
+      while (sc[0] && sc[0] != '\n') sc++;
       sc++;
       continue;
     }
 
     // Skip multi-line comments
     if (sc[0] == '/' && sc[1] == '*') {
-      while(sc[0] && (sc[0] != '*' || sc[1] != '/')) sc++;
+      while (sc[0] && (sc[0] != '*' || sc[1] != '/')) sc++;
       sc += 2;
       continue;
     }
@@ -714,9 +713,9 @@ inline void parse_hex(const char* src_filename, void* dst_data, int dst_size) {
     }
 
     // We should be at a big-endian hex value now, decode it.
-    int chunk_data= 0;
+    int chunk_data = 0;
     int chunk_size = 0;
-    while(sc[0]) {
+    while (sc[0]) {
       int d = to_hex(sc[0]);
       if (d == -1) break;
       chunk_data <<= 4;
@@ -726,16 +725,16 @@ inline void parse_hex(const char* src_filename, void* dst_data, int dst_size) {
     }
 
     if (!chunk_size || (chunk_size & 1)) {
-      printf("Error loading %s: Invalid vmem character 0x%02x (%c)\n", src_filename, sc[0], sc[0]);
+      printf("Error loading %s: Invalid vmem character 0x%02x (%c)\n",
+             src_filename, sc[0], sc[0]);
       return;
     }
 
     // Store hex value in address or in output stream, little-endian.
     if (is_addr) {
       dc = (uint8_t*)dst_data + (chunk_data * 4);
-    }
-    else {
-      for (;chunk_size; chunk_size -= 2) {
+    } else {
+      for (; chunk_size; chunk_size -= 2) {
         if (dc < dc_end) *dc++ = chunk_data & 0xFF;
         chunk_data >>= 8;
       }
@@ -770,4 +769,4 @@ void print_hex(const char* buf_name, void* src_data, int src_size) {
 
 //------------------------------------------------------------------------------
 
-#endif // METRON_TOOLS_H
+#endif  // METRON_TOOLS_H

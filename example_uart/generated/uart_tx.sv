@@ -1,5 +1,5 @@
 
-`include "metron_tools.h.sv"
+`include "metron_tools.sv"
 
 //==============================================================================
 
@@ -15,7 +15,6 @@ module uart_tx
   output logic o_idle
 );
  /*public:*/
-  /*verilator public_module*/
 
   // 1 start bit, 8 data bits, 1 stop bit, 7 additional stop bits to guarantee
   // that recevier can resync between messages
@@ -41,8 +40,8 @@ module uart_tx
     end else begin
       logic[cycle_bits-1:0] cycle_max;
       logic[cursor_bits-1:0] cursor_max;
-      cycle_max = cycle_bits'(cycles_per_bit - 1);
-      cursor_max = cursor_bits'(10 + extra_stop_bits - 1);
+      cycle_max = (cycle_bits)'(cycles_per_bit - 1);
+      cursor_max = (cursor_bits)'(10 + extra_stop_bits - 1);
 
       if (cursor <= extra_stop_bits && cycle == 0 && i_req) begin
         // Transmit start

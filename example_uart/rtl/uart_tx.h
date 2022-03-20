@@ -6,7 +6,6 @@
 template <int cycles_per_bit = 4>
 class uart_tx {
  public:
-  /*verilator public_module*/
 
   // 1 start bit, 8 data bits, 1 stop bit, 7 additional stop bits to guarantee
   // that recevier can resync between messages

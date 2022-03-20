@@ -9,8 +9,6 @@
 
 module uart_test;
 
-  /*verilator public_module*/
-
   // 12 mhz clock
   logic clk;
   logic clken;

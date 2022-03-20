@@ -1,8 +1,8 @@
 
-`include "metron_tools.h.sv"
-`include "uart_hello.h.sv"
-`include "uart_rx.h.sv"
-`include "uart_tx.h.sv"
+`include "metron_tools.sv"
+`include "uart_hello.sv"
+`include "uart_rx.sv"
+`include "uart_tx.sv"
 
 //==============================================================================
 
@@ -29,7 +29,6 @@ module uart_top
   logic[31:0] rx_o_sum;
 
  /*public:*/
-  /*verilator public_module*/
 
   // Our "hello world" transmitter.
   uart_hello hello(

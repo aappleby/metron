@@ -1,218 +1,100 @@
-include rules.ninja
-
-includes = ${includes} -Isrc
-includes = ${includes} -I/usr/local/share/verilator/include
-includes = ${includes} -I/usr/local/share/verilator/include/vltstd
-includes = ${includes} -Itree-sitter/lib/src
-includes = ${includes} -Itree-sitter/lib/include
-
+opt = -O0
 ################################################################################
+# Rules
 
-build out/lib.o          : compile_c tree-sitter/lib/src/lib.c
-build out/parser.o       : compile_c tree-sitter-cpp/src/parser.c
-build out/scanner.o      : compile_c tree-sitter-cpp/src/scanner.cc
-
-build out/MetronApp.o    : compile src/MetronApp.cpp
-build out/MtCursor.o     : compile src/MtCursor.cpp
-build out/MtMethod.o     : compile src/MtMethod.cpp
-build out/MtModLibrary.o : compile src/MtModLibrary.cpp
-build out/MtModule.o     : compile src/MtModule.cpp
-build out/MtNode.o       : compile src/MtNode.cpp
-build out/MtSourceFile.o : compile src/MtSourceFile.cpp
-build out/Platform.o     : compile src/Platform.cpp
-
-build bin/metron : link $
-  out/MetronApp.o $
-  out/MtCursor.o $
-  out/MtMethod.o $
-  out/MtModLibrary.o $
-  out/MtModule.o $
-  out/MtNode.o $
-  out/MtSourceFile.o $
-  out/Platform.o $
-  out/lib.o $
-  out/parser.o $
-  out/scanner.o
-
-################################################################################
-
-build out/verilated.o : compile /usr/share/verilator/include/verilated.cpp
-
-################################################################################
-# Regenerate example_rvsimple/generated sources from example_rvsimple/rtl
-
-dir_rtl = example_rvsimple/rtl
-dir_gen = example_rvsimple/generated
-
-rtl_files = $
-  adder.h alu.h alu_control.h config.h constants.h control_transfer.h $
-  data_memory_interface.h example_data_memory.h example_data_memory_bus.h $
-  example_text_memory.h example_text_memory_bus.h immediate_generator.h $
-  instruction_decoder.h multiplexer.h multiplexer2.h multiplexer4.h $
-  multiplexer8.h regfile.h register.h riscv_core.h singlecycle_control.h $
-  singlecycle_ctlpath.h singlecycle_datapath.h toplevel.h
-
+rule compile_cpp
+  command = g++ -g $opt -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} $
+      -o ${out}
+  depfile = ${out}.d
+  deps = gcc
+rule compile_c
+  command = gcc -g $opt ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}
+  depfile = ${out}.d
+  deps = gcc
+rule link
+  command = g++ -g $opt ${in} ${link_libs} -o ${out}
+rule iverilog
+  command = iverilog -g2012 -DIVERILOG ${in} -o ${out}
+rule yosys
+  command = yosys -p 'read_verilog -sv ${in}; dump; synth_ice40 -json ${out};'
+rule nextpnr-ice40
+  command = nextpnr-ice40 -q --hx8k --package ct256 --json ${in} --asc $
+      ${out} --pcf ${pcf}
+rule iceprog
+  command = icepack ${in} ${out} && iceprog -S ${out}
+rule run_test
+  command = ${in} | grep "All tests pass." && touch ${out}
+rule run_cmd
+  command = ${cmd}
+rule sv2v
+  command = sv2v -w ${out} ${in}
+rule run_in_console
+  command = ${in}
+  pool = console
+rule verilate
+  command = verilator $includes --cc $top -Mdir $out_dir
+rule make
+  command = make -C $make_dir -f $makefile
 rule metron
-  command = bin/metron -q -R$dir_root -O$dir_out $rtl_files
-
-build $
-  $dir_gen/adder.sv $
-  $dir_gen/alu.sv $
-  $dir_gen/alu_control.sv $
-  $dir_gen/config.sv $
-  $dir_gen/constants.sv $
-  $dir_gen/control_transfer.sv $
-  $dir_gen/data_memory_interface.sv $
-  $dir_gen/example_data_memory.sv $
-  $dir_gen/example_data_memory_bus.sv $
-  $dir_gen/example_text_memory.sv $
-  $dir_gen/example_text_memory_bus.sv $
-  $dir_gen/immediate_generator.sv $
-  $dir_gen/instruction_decoder.sv $
-  $dir_gen/multiplexer.sv $
-  $dir_gen/multiplexer2.sv $
-  $dir_gen/multiplexer4.sv $
-  $dir_gen/multiplexer8.sv $
-  $dir_gen/regfile.sv $
-  $dir_gen/register.sv $
-  $dir_gen/riscv_core.sv $
-  $dir_gen/singlecycle_control.sv $
-  $dir_gen/singlecycle_ctlpath.sv $
-  $dir_gen/singlecycle_datapath.sv $
-  $dir_gen/toplevel.sv $
-: metron | $
-  bin/metron $
-  $dir_rtl/adder.h $
-  $dir_rtl/alu.h $
-  $dir_rtl/alu_control.h $
-  $dir_rtl/config.h $
-  $dir_rtl/constants.h $
-  $dir_rtl/control_transfer.h $
-  $dir_rtl/data_memory_interface.h $
-  $dir_rtl/example_data_memory.h $
-  $dir_rtl/example_data_memory_bus.h $
-  $dir_rtl/example_text_memory.h $
-  $dir_rtl/example_text_memory_bus.h $
-  $dir_rtl/immediate_generator.h $
-  $dir_rtl/instruction_decoder.h $
-  $dir_rtl/multiplexer.h $
-  $dir_rtl/multiplexer2.h $
-  $dir_rtl/multiplexer4.h $
-  $dir_rtl/multiplexer8.h $
-  $dir_rtl/regfile.h $
-  $dir_rtl/register.h $
-  $dir_rtl/riscv_core.h $
-  $dir_rtl/singlecycle_control.h $
-  $dir_rtl/singlecycle_ctlpath.h $
-  $dir_rtl/singlecycle_datapath.h $
-  $dir_rtl/toplevel.h
-    dir_root = $dir_rtl
-    dir_out = $dir_gen
-    rtl_files = $rtl_files
+  command = bin/metron -q -R$src_dir -O$dst_dir $src_files
 
 ################################################################################
-# Build example_rvsimple/rtl/main.cpp
+# Verilator libraries
 
-dir = example_rvsimple/rtl
-
-build out/$dir/main.o : compile $dir/main.cpp
-  includes = ${includes} -I$dir
-
-build bin/$dir/main : link out/$dir/main.o
+build obj/verilated.o: compile_cpp /usr/share/verilator/include/verilated.cpp
+  includes = 
 
 ################################################################################
-# Verilate and build example_rvsimple/generated/main.cpp
+# TreeSitter libraries
 
-dir = example_rvsimple/generated
-
-build out/$dir/Vtoplevel.mk out/$dir/Vtoplevel.h : verilate $dir/toplevel.sv | $
-  $dir/adder.sv $
-  $dir/alu.sv $
-  $dir/alu_control.sv $
-  $dir/config.sv $
-  $dir/constants.sv $
-  $dir/control_transfer.sv $
-  $dir/data_memory_interface.sv $
-  $dir/example_data_memory.sv $
-  $dir/example_data_memory_bus.sv $
-  $dir/example_text_memory.sv $
-  $dir/example_text_memory_bus.sv $
-  $dir/immediate_generator.sv $
-  $dir/instruction_decoder.sv $
-  $dir/multiplexer.sv $
-  $dir/multiplexer2.sv $
-  $dir/multiplexer4.sv $
-  $dir/multiplexer8.sv $
-  $dir/regfile.sv $
-  $dir/register.sv $
-  $dir/riscv_core.sv $
-  $dir/singlecycle_control.sv $
-  $dir/singlecycle_ctlpath.sv $
-  $dir/singlecycle_datapath.sv
-    includes = -I$dir -Isrc
-    out_dir = out/$dir
-
-build out/$dir/main.o : compile $dir/main.cpp | out/example_rvsimple/generated/Vtoplevel.h
-  includes = ${includes} -Iout/$dir
-
-build out/$dir/Vtoplevel__ALL.o : make out/$dir/Vtoplevel.mk
-  make_dir = out/$dir
-  makefile = Vtoplevel.mk
-
-build bin/$dir/main : link out/$dir/main.o out/$dir/Vtoplevel__ALL.o out/verilated.o
+build obj/tree-sitter/lib/src/lib.o: compile_c tree-sitter/lib/src/lib.c
+  includes = -Itree-sitter/lib/include
+build obj/tree-sitter-cpp/src/parser.o: compile_c tree-sitter-cpp/src/parser.c
+  includes = -Itree-sitter/lib/include
+build obj/tree-sitter-cpp/src/scanner.o: compile_c $
+    tree-sitter-cpp/src/scanner.cc
+  includes = -Itree-sitter/lib/include
 
 ################################################################################
-# Verilate and build example_rvsimple/reference/main.cpp
+# Compile Metron itself
 
-dir = example_rvsimple/reference
+build obj/src/MetronApp.o: compile_cpp src/MetronApp.cpp
+  includes = -Itree-sitter/lib/include
+build obj/src/MtCursor.o: compile_cpp src/MtCursor.cpp
+  includes = -Itree-sitter/lib/include
+build obj/src/MtMethod.o: compile_cpp src/MtMethod.cpp
+  includes = -Itree-sitter/lib/include
+build obj/src/MtModLibrary.o: compile_cpp src/MtModLibrary.cpp
+  includes = -Itree-sitter/lib/include
+build obj/src/MtModule.o: compile_cpp src/MtModule.cpp
+  includes = -Itree-sitter/lib/include
+build obj/src/MtNode.o: compile_cpp src/MtNode.cpp
+  includes = -Itree-sitter/lib/include
+build obj/src/MtSourceFile.o: compile_cpp src/MtSourceFile.cpp
+  includes = -Itree-sitter/lib/include
+build obj/src/Platform.o: compile_cpp src/Platform.cpp
+  includes = -Itree-sitter/lib/include
 
-build out/$dir/Vtoplevel.mk out/$dir/Vtoplevel.h : verilate $dir/toplevel.sv | $
-  $dir/adder.sv $
-  $dir/alu.sv $
-  $dir/alu_control.sv $
-  $dir/config.sv $
-  $dir/constants.sv $
-  $dir/control_transfer.sv $
-  $dir/data_memory_interface.sv $
-  $dir/example_data_memory.sv $
-  $dir/example_data_memory_bus.sv $
-  $dir/example_text_memory.sv $
-  $dir/example_text_memory_bus.sv $
-  $dir/immediate_generator.sv $
-  $dir/instruction_decoder.sv $
-  $dir/multiplexer.sv $
-  $dir/multiplexer2.sv $
-  $dir/multiplexer4.sv $
-  $dir/multiplexer8.sv $
-  $dir/regfile.sv $
-  $dir/register.sv $
-  $dir/riscv_core.sv $
-  $dir/singlecycle_control.sv $
-  $dir/singlecycle_ctlpath.sv $
-  $dir/singlecycle_datapath.sv
-    includes = -I$dir -Isrc
-    out_dir = out/$dir
-
-build out/$dir/main.o : compile $dir/main.cpp | out/$dir/Vtoplevel.h
-  includes = ${includes} -Iout/$dir
-
-build out/$dir/Vtoplevel__ALL.o : make out/$dir/Vtoplevel.mk
-  make_dir = out/$dir
-  makefile = Vtoplevel.mk
-
-build bin/$dir/main : link out/$dir/main.o out/$dir/Vtoplevel__ALL.o out/verilated.o
+build bin/metron: link obj/src/MetronApp.o obj/src/MtCursor.o $
+    obj/src/MtMethod.o obj/src/MtModLibrary.o obj/src/MtModule.o $
+    obj/src/MtNode.o obj/src/MtSourceFile.o obj/src/Platform.o $
+    obj/tree-sitter/lib/src/lib.o obj/tree-sitter-cpp/src/parser.o $
+    obj/tree-sitter-cpp/src/scanner.o
 
 ################################################################################
+# Regenerate SystemVerilog version of example_uart
 
-#build benchmark_reference : run_always bin/example_rvsimple/main_reference
-#build benchmark_generated : run_always bin/example_rvsimple/main_generated
-#build benchmark_rtl : run_always bin/example_rvsimple/main_rtl
+build example_uart/generated/uart_hello.sv $
+    example_uart/generated/uart_rx.sv example_uart/generated/uart_top.sv $
+    example_uart/generated/uart_tx.sv: metron | bin/metron $
+    example_uart/rtl/uart_hello.h example_uart/rtl/uart_rx.h $
+    example_uart/rtl/uart_top.h example_uart/rtl/uart_tx.h
+  src_dir = example_uart/rtl
+  dst_dir = example_uart/generated
+  src_files = uart_hello.h uart_rx.h uart_top.h uart_tx.h
 
-#build benchmark : phony benchmark_reference benchmark_generated benchmark_rtl
+# ---------- ---------- ---------- ---------- 
 
-################################################################################
 
-#default bin/metron
-#default bin/example_rvsimple/main_reference
-#default bin/example_rvsimple/main_generated
-#default bin/example_rvsimple/main_rtl
+# ---------- ---------- ---------- ---------- 
+

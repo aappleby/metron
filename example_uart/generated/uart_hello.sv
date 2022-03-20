@@ -1,5 +1,5 @@
 
-`include "metron_tools.h.sv"
+`include "metron_tools.sv"
 
 //==============================================================================
 
@@ -14,7 +14,6 @@ module uart_hello
   output logic o_done
 );
  /*public:*/
-  /*verilator public_module*/
 
   localparam /*const*/ int message_len = 512;
   localparam /*const*/ int cursor_bits = $clog2(message_len);

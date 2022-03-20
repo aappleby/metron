@@ -5,7 +5,6 @@
 
 class uart_hello {
  public:
-  /*verilator public_module*/
 
   static const int message_len = 512;
   static const int cursor_bits = clog2(message_len);

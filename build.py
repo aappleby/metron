@@ -34,12 +34,12 @@ def run_cmd(in_files, cmd, out_files):
     )
 
 
-def metronate_dir(src_dir, dst_dir):
+def metronize_dir(src_dir, dst_dir):
     """
     Convert all .h files in the source directory into .sv files in the destination directory.
     Returns an array of converted filenames.
     """
-    divider(f"Metronate {src_dir} -> {dst_dir}")
+    divider(f"Metronize {src_dir} -> {dst_dir}")
     src_paths = glob.glob(path.join(src_dir, "*.h"))
     src_files = [path.basename(n) for n in src_paths]
     dst_paths = [path.join(dst_dir, swap_ext(n, ".sv")) for n in src_files]
@@ -74,30 +74,21 @@ def verilate_dir(src_dir, src_top, dst_dir):
     return (verilated_hdr, verilated_obj)
 
 
-def cpp_binary(bin_name, src_files, includes, src_objs=[], variables={}, deps=[]):
+def cpp_binary(bin_name, src_files, src_objs=[], deps=[], **kwargs):
     """
     Compiles a C++ binary from the given source files.
     """
     divider(f"Compile {bin_name}")
-    variables["includes"] = includes
     for n in src_files:
         obj_name = path.join(obj_dir, swap_ext(n, ".o"))
-        ninja.build(obj_name, "compile_cpp", n,
-                    implicit=deps, variables=variables)
+        ninja.build(outputs=obj_name,
+                    rule="compile_cpp",
+                    inputs=n,
+                    implicit=deps,
+                    variables=kwargs)
         src_objs.append(obj_name)
     ninja.build(bin_name, "link", src_objs)
 
-
-def ninja_build(**kwargs):
-  ninja.build(outputs=kwargs["outputs"],
-              rule=kwargs["rule"],
-              inputs=kwargs["inputs"],
-              implicit=kwargs.get("implicit"),
-              order_only=kwargs.get("order_only"),
-              implicit_outputs=kwargs.get("implicit_outputs"),
-              pool=kwargs.get("pool"),
-              dyndep=kwargs.get("dyndep"),
-              variables=kwargs)
 
 # ------------------------------------------------------------------------------
 
@@ -122,7 +113,7 @@ ninja.rule(name="compile_cpp",
            depfile="${out}.d")
 
 ninja.rule(name="compile_c",
-           command="gcc -g $opt ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
+           command="gcc -g ${opt} ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
            deps="gcc",
            depfile="${out}.d")
 
@@ -199,7 +190,7 @@ cpp_binary(
 
 # ------------------------------------------------------------------------------
 
-uart_srcs = metronate_dir("example_uart/rtl", "example_uart/generated")
+uart_srcs = metronize_dir("example_uart/rtl", "example_uart/generated")
 
 uart_vhdr, uart_vobj = verilate_dir(
     src_dir="example_uart/generated",
@@ -226,12 +217,12 @@ cpp_binary(
     bin_name="bin/example_rvsimple/rtl/main",
     src_files=["example_rvsimple/rtl/main.cpp"],
     includes=["-Isrc"],
-    variables={"opt": "-O3"},
+    opt="-O3",
 )
 
 # ------------------------------------------------------------------------------
 
-rvsimple_metron_srcs = metronate_dir("example_rvsimple/rtl", "example_rvsimple/generated")
+rvsimple_metron_srcs = metronize_dir("example_rvsimple/rtl", "example_rvsimple/generated")
 
 rvsimple_metron_vhdr, rvsimple_metron_vobj = verilate_dir(
     src_dir="example_rvsimple/generated",
@@ -277,36 +268,44 @@ cpp_binary(
 
 divider("Icarus Verilog uart testbench")
 
-ninja.rule(name="iverilog",
-           command="iverilog -g2012 -DIVERILOG ${includes} ${inputs} -o ${outputs}")
+uart_includes = [
+  "-Isrc",
+  "-Iexample_uart",
+  "-Iexample_uart/generated"
+]
 
-ninja_build(rule="iverilog",
+ninja.rule(name="iverilog",
+           command="iverilog -g2012 ${defines} ${includes} ${in} -o ${out}")
+
+ninja.build(rule="iverilog",
             inputs="example_uart/uart_test_iv.sv",
             outputs="bin/example_uart/generated/uart_test_iv",
-            includes=["-Isrc", "-Iexample_uart", "-Iexample_uart/generated"])
+            includes=uart_includes,
+            defines="-DIVERILOG")
 
 # ------------------------------------------------------------------------------
 
 divider("Yosys/NextPNR uart testbench")
 
-#ninja.rule(name="sv2v", command="sv2v ${includes} -w ${outputs} ${inputs}")
-#ninja_build(rule="sv2v",
+#ninja.rule(name="sv2v", command="sv2v ${includes} -w ${out} ${in}")
+#ninja.build(rule="sv2v",
 #            inputs=["example_uart/uart_test_ice40.sv"],
 #            implicit=uart_srcs,
 #            outputs=["obj/example_uart/uart_test_ice40.sv.v"],
 #            includes=["-Isrc", "-Iexample_uart/generated"])
 
 ninja.rule(name="yosys",
-           command="yosys -p 'read_verilog -Isrc -Iexample_uart/generated -sv ${inputs}; dump; synth_ice40 -json ${outputs};'")
+           command="yosys -p 'read_verilog ${includes} -sv ${in}; dump; synth_ice40 -json ${out};'")
 
-ninja_build(rule="yosys",
+ninja.build(rule="yosys",
             inputs="example_uart/uart_test_ice40.sv",
-            outputs="obj/example_uart/uart_test_ice40.json")
+            outputs="obj/example_uart/uart_test_ice40.json",
+            includes=uart_includes)
 
 ninja.rule(name="nextpnr-ice40",
-           command="nextpnr-ice40 -q --${chip} --package ${package} --json ${inputs} --asc ${outputs} --pcf ${pcf}")
+           command="nextpnr-ice40 -q --${chip} --package ${package} --json ${in} --asc ${out} --pcf ${pcf}")
 
-ninja_build(rule="nextpnr-ice40",
+ninja.build(rule="nextpnr-ice40",
             inputs="obj/example_uart/uart_test_ice40.json",
             outputs="obj/example_uart/uart_test_ice40.asc",
             chip="hx8k",
@@ -315,9 +314,9 @@ ninja_build(rule="nextpnr-ice40",
 
 
 #ninja.rule(name="iceprog", command="icepack ${in} ${out} && iceprog -S ${out}")
-ninja.rule(name="icepack", command="icepack ${inputs} ${outputs}")
+ninja.rule(name="icepack", command="icepack ${in} ${out}")
 
-ninja_build(rule="icepack",
+ninja.build(rule="icepack",
             inputs="obj/example_uart/uart_test_ice40.asc",
             outputs="obj/example_uart/uart_test_ice40.bin")
 

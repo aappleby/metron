@@ -74,7 +74,7 @@ class Writer(object):
             self.variable('deps', deps, indent=1)
 
     def build(self, outputs, rule, inputs=None, implicit=None, order_only=None,
-              variables=None, implicit_outputs=None, pool=None, dyndep=None):
+              variables=None, implicit_outputs=None, pool=None, dyndep=None, **kwargs):
         outputs = as_list(outputs)
         out_outputs = [escape_path(x) for x in outputs]
         all_inputs = [escape_path(x) for x in as_list(inputs)]
@@ -108,6 +108,9 @@ class Writer(object):
 
             for key, val in iterator:
                 self.variable(key, val, indent=1)
+
+        for key, val in kwargs.items():
+            self.variable(key, val, indent=1)
 
         return outputs
 

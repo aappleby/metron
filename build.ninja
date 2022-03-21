@@ -16,7 +16,7 @@ rule compile_cpp
   depfile = ${out}.d
   deps = gcc
 rule compile_c
-  command = gcc -g $opt ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}
+  command = gcc -g ${opt} ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}
   depfile = ${out}.d
   deps = gcc
 rule link
@@ -83,7 +83,7 @@ build bin/example_uart/rtl/main: link obj/example_uart/rtl/main.o
 
 
 ################################################################################
-# Metronate example_uart/rtl -> example_uart/generated
+# Metronize example_uart/rtl -> example_uart/generated
 
 build example_uart/generated/uart_hello.sv $
     example_uart/generated/uart_rx.sv example_uart/generated/uart_top.sv $
@@ -125,13 +125,13 @@ build bin/example_uart/generated/main: link obj/verilated.o $
 
 build obj/example_rvsimple/rtl/main.o: compile_cpp $
     example_rvsimple/rtl/main.cpp
-  opt = -O3
   includes = -Isrc
+  opt = -O3
 build bin/example_rvsimple/rtl/main: link obj/example_rvsimple/rtl/main.o
 
 
 ################################################################################
-# Metronate example_rvsimple/rtl -> example_rvsimple/generated
+# Metronize example_rvsimple/rtl -> example_rvsimple/generated
 
 build example_rvsimple/generated/adder.sv example_rvsimple/generated/alu.sv $
     example_rvsimple/generated/alu_control.sv $
@@ -289,44 +289,34 @@ build bin/example_rvsimple/reference/main: link obj/verilated.o $
 # Icarus Verilog uart testbench
 
 rule iverilog
-  command = iverilog -g2012 -DIVERILOG ${includes} ${inputs} -o ${outputs}
+  command = iverilog -g2012 ${defines} ${includes} ${in} -o ${out}
 build bin/example_uart/generated/uart_test_iv: iverilog $
     example_uart/uart_test_iv.sv
-  rule = iverilog
-  inputs = example_uart/uart_test_iv.sv
-  outputs = bin/example_uart/generated/uart_test_iv
   includes = -Isrc -Iexample_uart -Iexample_uart/generated
+  defines = -DIVERILOG
 
 
 ################################################################################
 # Yosys/NextPNR uart testbench
 
 rule yosys
-  command = yosys -p 'read_verilog -Isrc -Iexample_uart/generated -sv $
-      ${inputs}; dump; synth_ice40 -json ${outputs};'
+  command = yosys -p 'read_verilog ${includes} -sv ${in}; dump; synth_ice40 $
+      -json ${out};'
 build obj/example_uart/uart_test_ice40.json: yosys $
     example_uart/uart_test_ice40.sv
-  rule = yosys
-  inputs = example_uart/uart_test_ice40.sv
-  outputs = obj/example_uart/uart_test_ice40.json
+  includes = -Isrc -Iexample_uart -Iexample_uart/generated
 rule nextpnr-ice40
-  command = nextpnr-ice40 -q --${chip} --package ${package} --json $
-      ${inputs} --asc ${outputs} --pcf ${pcf}
+  command = nextpnr-ice40 -q --${chip} --package ${package} --json ${in} $
+      --asc ${out} --pcf ${pcf}
 build obj/example_uart/uart_test_ice40.asc: nextpnr-ice40 $
     obj/example_uart/uart_test_ice40.json
-  rule = nextpnr-ice40
-  inputs = obj/example_uart/uart_test_ice40.json
-  outputs = obj/example_uart/uart_test_ice40.asc
   chip = hx8k
   package = ct256
   pcf = example_uart/ice40-hx8k-b-evn.pcf
 rule icepack
-  command = icepack ${inputs} ${outputs}
+  command = icepack ${in} ${out}
 build obj/example_uart/uart_test_ice40.bin: icepack $
     obj/example_uart/uart_test_ice40.asc
-  rule = icepack
-  inputs = obj/example_uart/uart_test_ice40.asc
-  outputs = obj/example_uart/uart_test_ice40.bin
 
 
 ################################################################################

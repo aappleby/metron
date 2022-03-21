@@ -16,6 +16,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linux", "Linux", "{DCA4F897-6325-4F67-96F4-3A3C0E693FE0}"
 	ProjectSection(SolutionItems) = preProject
 		..\build.ninja = ..\build.ninja
+		..\build.py = ..\build.py
 		..\LICENSE = ..\LICENSE
 		..\meson.build = ..\meson.build
 		..\README.md = ..\README.md

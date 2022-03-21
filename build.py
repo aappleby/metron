@@ -23,55 +23,15 @@ def divider(text):
     outfile.write(f"# {text}\n\n")
 
 
-# ------------------------------------------------------------------------------
-
-divider("Rules")
-
-ninja.rule(name="compile_cpp",
-           command="g++ -g $opt -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
-           deps="gcc",
-           depfile="${out}.d")
-
-ninja.rule(name="compile_c",
-           command="gcc -g $opt ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
-           deps="gcc",
-           depfile="${out}.d")
-
-ninja.rule(name="link", command="g++ -g $opt ${in} ${link_libs} -o ${out}")
-# command = "g++ -g $opt -Wl,--whole-archive ${in} -Wl,--no-whole-archive ${link_libs} -o ${out}"
-
-ninja.rule(name="iverilog",
-           command="iverilog -g2012 -DIVERILOG ${in} -o ${out}")
-
-ninja.rule(name="yosys",
-           command="yosys -p 'read_verilog -sv ${in}; dump; synth_ice40 -json ${out};'")
-
-ninja.rule(name="nextpnr-ice40",
-           command="nextpnr-ice40 -q --hx8k --package ct256 --json ${in} --asc ${out} --pcf ${pcf}")
-
-ninja.rule(name="iceprog", command="icepack ${in} ${out} && iceprog -S ${out}")
-
-ninja.rule(name="run_test",
-           command="${in} | grep \"All tests pass.\" && touch ${out}")
-
-ninja.rule(name="sv2v", command="sv2v -w ${out} ${in}")
-
-ninja.rule(name="run_in_console", command="${in}", pool="console")
-
-ninja.rule(name="run_cmd", command="${cmd}")
-
-# ------------------------------------------------------------------------------
-
-
 def run_cmd(in_files, cmd, out_files):
     ninja.build(
         out_files,
         "run_cmd",
         in_files,
-        variables={"cmd": cmd}
+        variables={
+          "cmd": cmd,
+        }
     )
-
-# ------------------------------------------------------------------------------
 
 
 def metronate_dir(src_dir, dst_dir):
@@ -88,8 +48,6 @@ def metronate_dir(src_dir, dst_dir):
             out_files=dst_paths)
 
     return dst_paths
-
-# ------------------------------------------------------------------------------
 
 
 def verilate_dir(src_dir, src_top, dst_dir):
@@ -115,10 +73,8 @@ def verilate_dir(src_dir, src_top, dst_dir):
 
     return (verilated_hdr, verilated_obj)
 
-# ------------------------------------------------------------------------------
 
-
-def cpp_binary(bin_name, src_files, includes, src_objs = [], variables = {}, deps = []):
+def cpp_binary(bin_name, src_files, includes, src_objs=[], variables={}, deps=[]):
     """
     Compiles a C++ binary from the given source files.
     """
@@ -132,16 +88,61 @@ def cpp_binary(bin_name, src_files, includes, src_objs = [], variables = {}, dep
     ninja.build(bin_name, "link", src_objs)
 
 
+def ninja_build(**kwargs):
+  ninja.build(outputs=kwargs["outputs"],
+              rule=kwargs["rule"],
+              inputs=kwargs["inputs"],
+              implicit=kwargs.get("implicit"),
+              order_only=kwargs.get("order_only"),
+              implicit_outputs=kwargs.get("implicit_outputs"),
+              pool=kwargs.get("pool"),
+              dyndep=kwargs.get("dyndep"),
+              variables=kwargs)
+
+# ------------------------------------------------------------------------------
+
+outfile.write(
+    "################################################################################\n")
+outfile.write("# Autoupdate this build.ninja from build.py.\n\n")
+
+ninja.rule(name="autoupdate",
+           command="python3 $in",
+           generator=1)
+
+ninja.build("build.ninja", "autoupdate", "build.py")
+
+
+# ------------------------------------------------------------------------------
+
+divider("Rules")
+
+ninja.rule(name="compile_cpp",
+           command="g++ -g ${opt} -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
+           deps="gcc",
+           depfile="${out}.d")
+
+ninja.rule(name="compile_c",
+           command="gcc -g $opt ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
+           deps="gcc",
+           depfile="${out}.d")
+
+ninja.rule(name="link", command="g++ -g $opt ${in} ${link_libs} -o ${out}")
+# command = "g++ -g $opt -Wl,--whole-archive ${in} -Wl,--no-whole-archive ${link_libs} -o ${out}"
+
+ninja.rule(name="run_test",
+           command="${in} | grep \"All tests pass.\" && touch ${out}")
+
+ninja.rule(name="run_in_console", command="${in}", pool="console")
+
+ninja.rule(name="run_cmd", command="${cmd}")
+
 # ------------------------------------------------------------------------------
 divider("Verilator libraries")
 
 ninja.build(
     "obj/verilated.o",
     "compile_cpp",
-    "/usr/share/verilator/include/verilated.cpp",
-    variables={
-        "includes": ""
-    }
+    "/usr/share/verilator/include/verilated.cpp"
 )
 
 # ------------------------------------------------------------------------------
@@ -194,11 +195,13 @@ cpp_binary(
     src_objs=[],
 )
 
+#ninja.default("bin/example_uart/rtl/main")
+
 # ------------------------------------------------------------------------------
 
-metronate_dir("example_uart/rtl", "example_uart/generated")
+uart_srcs = metronate_dir("example_uart/rtl", "example_uart/generated")
 
-uart_generated_hdr, uart_generated_obj = verilate_dir(
+uart_vhdr, uart_vobj = verilate_dir(
     src_dir="example_uart/generated",
     src_top="uart_top",
     dst_dir=path.join(obj_dir, "example_uart/generated")
@@ -213,8 +216,8 @@ cpp_binary(
         "-Iobj/example_uart/generated",
         "-I/usr/local/share/verilator/include"
     ],
-    src_objs=["obj/verilated.o", uart_generated_obj],
-    deps=[uart_generated_hdr]
+    src_objs=["obj/verilated.o", uart_vobj],
+    deps=[uart_vhdr]
 )
 
 # ------------------------------------------------------------------------------
@@ -228,9 +231,9 @@ cpp_binary(
 
 # ------------------------------------------------------------------------------
 
-metronate_dir("example_rvsimple/rtl", "example_rvsimple/generated")
+rvsimple_metron_srcs = metronate_dir("example_rvsimple/rtl", "example_rvsimple/generated")
 
-rvsimple_generated_hdr, rvsimple_generated_obj = verilate_dir(
+rvsimple_metron_vhdr, rvsimple_metron_vobj = verilate_dir(
     src_dir="example_rvsimple/generated",
     src_top="toplevel",
     dst_dir=path.join(obj_dir, "example_rvsimple/generated")
@@ -245,13 +248,13 @@ cpp_binary(
         "-Iobj/example_rvsimple/generated",
         "-I/usr/local/share/verilator/include"
     ],
-    src_objs=["obj/verilated.o", rvsimple_generated_obj],
-    deps=[rvsimple_generated_hdr]
+    src_objs=["obj/verilated.o", rvsimple_metron_vobj],
+    deps=[rvsimple_metron_vhdr]
 )
 
 # ------------------------------------------------------------------------------
 
-rvsimple_reference_hdr, rvsimple_reference_obj = verilate_dir(
+rvsimple_reference_vhdr, rvsimple_reference_vobj = verilate_dir(
     src_dir="example_rvsimple/reference",
     src_top="toplevel",
     dst_dir=path.join(obj_dir, "example_rvsimple/reference")
@@ -266,11 +269,63 @@ cpp_binary(
         "-Iobj/example_rvsimple/reference",
         "-I/usr/local/share/verilator/include"
     ],
-    src_objs=["obj/verilated.o", rvsimple_reference_obj],
-    deps=[rvsimple_reference_hdr]
+    src_objs=["obj/verilated.o", rvsimple_reference_vobj],
+    deps=[rvsimple_reference_vhdr]
 )
 
 # ------------------------------------------------------------------------------
+
+divider("Icarus Verilog uart testbench")
+
+ninja.rule(name="iverilog",
+           command="iverilog -g2012 -DIVERILOG ${includes} ${inputs} -o ${outputs}")
+
+ninja_build(rule="iverilog",
+            inputs="example_uart/uart_test_iv.sv",
+            outputs="bin/example_uart/generated/uart_test_iv",
+            includes=["-Isrc", "-Iexample_uart", "-Iexample_uart/generated"])
+
+# ------------------------------------------------------------------------------
+
+divider("Yosys/NextPNR uart testbench")
+
+#ninja.rule(name="sv2v", command="sv2v ${includes} -w ${outputs} ${inputs}")
+#ninja_build(rule="sv2v",
+#            inputs=["example_uart/uart_test_ice40.sv"],
+#            implicit=uart_srcs,
+#            outputs=["obj/example_uart/uart_test_ice40.sv.v"],
+#            includes=["-Isrc", "-Iexample_uart/generated"])
+
+ninja.rule(name="yosys",
+           command="yosys -p 'read_verilog -Isrc -Iexample_uart/generated -sv ${inputs}; dump; synth_ice40 -json ${outputs};'")
+
+ninja_build(rule="yosys",
+            inputs="example_uart/uart_test_ice40.sv",
+            outputs="obj/example_uart/uart_test_ice40.json")
+
+ninja.rule(name="nextpnr-ice40",
+           command="nextpnr-ice40 -q --${chip} --package ${package} --json ${inputs} --asc ${outputs} --pcf ${pcf}")
+
+ninja_build(rule="nextpnr-ice40",
+            inputs="obj/example_uart/uart_test_ice40.json",
+            outputs="obj/example_uart/uart_test_ice40.asc",
+            chip="hx8k",
+            package="ct256",
+            pcf="example_uart/ice40-hx8k-b-evn.pcf")
+
+
+#ninja.rule(name="iceprog", command="icepack ${in} ${out} && iceprog -S ${out}")
+ninja.rule(name="icepack", command="icepack ${inputs} ${outputs}")
+
+ninja_build(rule="icepack",
+            inputs="obj/example_uart/uart_test_ice40.asc",
+            outputs="obj/example_uart/uart_test_ice40.bin")
+
+##build out/uart_test_ice40.bin   : iceprog out/uart_test_ice40.asc
+
+
+
+
 
 divider("Done!")
 

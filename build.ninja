@@ -1,11 +1,18 @@
+################################################################################
+# Autoupdate this build.ninja from build.py.
+
+rule autoupdate
+  command = python3 $in
+  generator = 1
+build build.ninja: autoupdate build.py
 
 
 ################################################################################
 # Rules
 
 rule compile_cpp
-  command = g++ -g $opt -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} $
-      -o ${out}
+  command = g++ -g ${opt} -std=gnu++2a ${includes} -MMD -MF ${out}.d -c $
+      ${in} -o ${out}
   depfile = ${out}.d
   deps = gcc
 rule compile_c
@@ -14,19 +21,8 @@ rule compile_c
   deps = gcc
 rule link
   command = g++ -g $opt ${in} ${link_libs} -o ${out}
-rule iverilog
-  command = iverilog -g2012 -DIVERILOG ${in} -o ${out}
-rule yosys
-  command = yosys -p 'read_verilog -sv ${in}; dump; synth_ice40 -json ${out};'
-rule nextpnr-ice40
-  command = nextpnr-ice40 -q --hx8k --package ct256 --json ${in} --asc $
-      ${out} --pcf ${pcf}
-rule iceprog
-  command = icepack ${in} ${out} && iceprog -S ${out}
 rule run_test
   command = ${in} | grep "All tests pass." && touch ${out}
-rule sv2v
-  command = sv2v -w ${out} ${in}
 rule run_in_console
   command = ${in}
   pool = console
@@ -38,7 +34,6 @@ rule run_cmd
 # Verilator libraries
 
 build obj/verilated.o: compile_cpp /usr/share/verilator/include/verilated.cpp
-  includes = 
 
 
 ################################################################################
@@ -288,6 +283,50 @@ build obj/example_rvsimple/reference/main.o: compile_cpp $
 build bin/example_rvsimple/reference/main: link obj/verilated.o $
     obj/example_rvsimple/reference/Vtoplevel__ALL.o $
     obj/example_rvsimple/reference/main.o
+
+
+################################################################################
+# Icarus Verilog uart testbench
+
+rule iverilog
+  command = iverilog -g2012 -DIVERILOG ${includes} ${inputs} -o ${outputs}
+build bin/example_uart/generated/uart_test_iv: iverilog $
+    example_uart/uart_test_iv.sv
+  rule = iverilog
+  inputs = example_uart/uart_test_iv.sv
+  outputs = bin/example_uart/generated/uart_test_iv
+  includes = -Isrc -Iexample_uart -Iexample_uart/generated
+
+
+################################################################################
+# Yosys/NextPNR uart testbench
+
+rule yosys
+  command = yosys -p 'read_verilog -Isrc -Iexample_uart/generated -sv $
+      ${inputs}; dump; synth_ice40 -json ${outputs};'
+build obj/example_uart/uart_test_ice40.json: yosys $
+    example_uart/uart_test_ice40.sv
+  rule = yosys
+  inputs = example_uart/uart_test_ice40.sv
+  outputs = obj/example_uart/uart_test_ice40.json
+rule nextpnr-ice40
+  command = nextpnr-ice40 -q --${chip} --package ${package} --json $
+      ${inputs} --asc ${outputs} --pcf ${pcf}
+build obj/example_uart/uart_test_ice40.asc: nextpnr-ice40 $
+    obj/example_uart/uart_test_ice40.json
+  rule = nextpnr-ice40
+  inputs = obj/example_uart/uart_test_ice40.json
+  outputs = obj/example_uart/uart_test_ice40.asc
+  chip = hx8k
+  package = ct256
+  pcf = example_uart/ice40-hx8k-b-evn.pcf
+rule icepack
+  command = icepack ${inputs} ${outputs}
+build obj/example_uart/uart_test_ice40.bin: icepack $
+    obj/example_uart/uart_test_ice40.asc
+  rule = icepack
+  inputs = obj/example_uart/uart_test_ice40.asc
+  outputs = obj/example_uart/uart_test_ice40.bin
 
 
 ################################################################################

@@ -1,5 +1,6 @@
 bin
 out
+obj
 .ninja_deps
 .ninja_log
 __pycache__

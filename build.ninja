@@ -1,4 +1,5 @@
-opt = -O0
+
+
 ################################################################################
 # Rules
 
@@ -24,25 +25,21 @@ rule iceprog
   command = icepack ${in} ${out} && iceprog -S ${out}
 rule run_test
   command = ${in} | grep "All tests pass." && touch ${out}
-rule run_cmd
-  command = ${cmd}
 rule sv2v
   command = sv2v -w ${out} ${in}
 rule run_in_console
   command = ${in}
   pool = console
-rule verilate
-  command = verilator $includes --cc $top -Mdir $out_dir
-rule make
-  command = make -C $make_dir -f $makefile
-rule metron
-  command = bin/metron -q -R$src_dir -O$dst_dir $src_files
+rule run_cmd
+  command = ${cmd}
+
 
 ################################################################################
 # Verilator libraries
 
 build obj/verilated.o: compile_cpp /usr/share/verilator/include/verilated.cpp
   includes = 
+
 
 ################################################################################
 # TreeSitter libraries
@@ -55,8 +52,9 @@ build obj/tree-sitter-cpp/src/scanner.o: compile_c $
     tree-sitter-cpp/src/scanner.cc
   includes = -Itree-sitter/lib/include
 
+
 ################################################################################
-# Compile Metron itself
+# Compile bin/metron
 
 build obj/src/MetronApp.o: compile_cpp src/MetronApp.cpp
   includes = -Itree-sitter/lib/include
@@ -74,30 +72,71 @@ build obj/src/MtSourceFile.o: compile_cpp src/MtSourceFile.cpp
   includes = -Itree-sitter/lib/include
 build obj/src/Platform.o: compile_cpp src/Platform.cpp
   includes = -Itree-sitter/lib/include
+build bin/metron: link obj/tree-sitter/lib/src/lib.o $
+    obj/tree-sitter-cpp/src/parser.o obj/tree-sitter-cpp/src/scanner.o $
+    obj/src/MetronApp.o obj/src/MtCursor.o obj/src/MtMethod.o $
+    obj/src/MtModLibrary.o obj/src/MtModule.o obj/src/MtNode.o $
+    obj/src/MtSourceFile.o obj/src/Platform.o
 
-build bin/metron: link obj/src/MetronApp.o obj/src/MtCursor.o $
-    obj/src/MtMethod.o obj/src/MtModLibrary.o obj/src/MtModule.o $
-    obj/src/MtNode.o obj/src/MtSourceFile.o obj/src/Platform.o $
-    obj/tree-sitter/lib/src/lib.o obj/tree-sitter-cpp/src/parser.o $
-    obj/tree-sitter-cpp/src/scanner.o
 
 ################################################################################
-# Regenerate SystemVerilog version of example_uart
+# Compile bin/example_uart/rtl/main
+
+build obj/example_uart/rtl/main.o: compile_cpp example_uart/rtl/main.cpp
+  includes = -Isrc
+build bin/example_uart/rtl/main: link obj/example_uart/rtl/main.o
+
+
+################################################################################
+# Metronate example_uart/rtl -> example_uart/generated
 
 build example_uart/generated/uart_hello.sv $
     example_uart/generated/uart_rx.sv example_uart/generated/uart_top.sv $
-    example_uart/generated/uart_tx.sv: metron | bin/metron $
+    example_uart/generated/uart_tx.sv: run_cmd bin/metron $
     example_uart/rtl/uart_hello.h example_uart/rtl/uart_rx.h $
     example_uart/rtl/uart_top.h example_uart/rtl/uart_tx.h
-  src_dir = example_uart/rtl
-  dst_dir = example_uart/generated
-  src_files = uart_hello.h uart_rx.h uart_top.h uart_tx.h
-
-# ---------- ---------- ---------- ---------- 
+  cmd = bin/metron -q -Rexample_uart/rtl -Oexample_uart/generated $
+      uart_hello.h uart_rx.h uart_top.h uart_tx.h
 
 
 ################################################################################
-# Regenerate SystemVerilog version of example_rvsimple
+# Verilate uart_top@example_uart/generated -> obj/example_uart/generated
+
+build obj/example_uart/generated/Vuart_top.mk $
+    obj/example_uart/generated/Vuart_top.h: run_cmd $
+    example_uart/generated/uart_hello.sv example_uart/generated/uart_rx.sv $
+    example_uart/generated/uart_top.sv example_uart/generated/uart_tx.sv
+  cmd = verilator -Iexample_uart/generated -Isrc --cc uart_top -Mdir $
+      obj/example_uart/generated
+build obj/example_uart/generated/Vuart_top__ALL.o: run_cmd $
+    obj/example_uart/generated/Vuart_top.mk
+  cmd = make -C obj/example_uart/generated -f Vuart_top.mk
+
+
+################################################################################
+# Compile bin/example_uart/generated/main
+
+build obj/example_uart/generated/main.o: compile_cpp $
+    example_uart/generated/main.cpp | obj/example_uart/generated/Vuart_top.h
+  includes = -Isrc -Itests -Iobj/example_uart/generated $
+      -I/usr/local/share/verilator/include
+build bin/example_uart/generated/main: link obj/verilated.o $
+    obj/example_uart/generated/Vuart_top__ALL.o $
+    obj/example_uart/generated/main.o
+
+
+################################################################################
+# Compile bin/example_rvsimple/rtl/main
+
+build obj/example_rvsimple/rtl/main.o: compile_cpp $
+    example_rvsimple/rtl/main.cpp
+  opt = -O3
+  includes = -Isrc
+build bin/example_rvsimple/rtl/main: link obj/example_rvsimple/rtl/main.o
+
+
+################################################################################
+# Metronate example_rvsimple/rtl -> example_rvsimple/generated
 
 build example_rvsimple/generated/adder.sv example_rvsimple/generated/alu.sv $
     example_rvsimple/generated/alu_control.sv $
@@ -122,7 +161,7 @@ build example_rvsimple/generated/adder.sv example_rvsimple/generated/alu.sv $
     example_rvsimple/generated/singlecycle_control.sv $
     example_rvsimple/generated/singlecycle_ctlpath.sv $
     example_rvsimple/generated/singlecycle_datapath.sv $
-    example_rvsimple/generated/toplevel.sv: metron | bin/metron $
+    example_rvsimple/generated/toplevel.sv: run_cmd bin/metron $
     example_rvsimple/rtl/adder.h example_rvsimple/rtl/alu.h $
     example_rvsimple/rtl/alu_control.h example_rvsimple/rtl/config.h $
     example_rvsimple/rtl/constants.h $
@@ -143,21 +182,114 @@ build example_rvsimple/generated/adder.sv example_rvsimple/generated/alu.sv $
     example_rvsimple/rtl/singlecycle_ctlpath.h $
     example_rvsimple/rtl/singlecycle_datapath.h $
     example_rvsimple/rtl/toplevel.h
-  src_dir = example_rvsimple/rtl
-  dst_dir = example_rvsimple/generated
-  src_files = adder.h alu.h alu_control.h config.h constants.h $
-      control_transfer.h data_memory_interface.h example_data_memory.h $
+  cmd = bin/metron -q -Rexample_rvsimple/rtl -Oexample_rvsimple/generated $
+      adder.h alu.h alu_control.h config.h constants.h control_transfer.h $
+      data_memory_interface.h example_data_memory.h $
       example_data_memory_bus.h example_memory_bus.h example_text_memory.h $
       example_text_memory_bus.h immediate_generator.h instruction_decoder.h $
       multiplexer.h multiplexer2.h multiplexer4.h multiplexer8.h regfile.h $
       register.h riscv_core.h singlecycle_control.h singlecycle_ctlpath.h $
       singlecycle_datapath.h toplevel.h
 
-# ---------- ---------- ---------- ---------- 
 
-build out/example_uart/rtl/main.o: compile_cpp example_uart/rtl/main.cpp
-  includes = -Isrc
-build bin/example_uart/rtl/main: link out/example_uart/rtl/main.o
+################################################################################
+# Verilate toplevel@example_rvsimple/generated -> obj/example_rvsimple/generated
 
-# ---------- ---------- ---------- ---------- 
+build obj/example_rvsimple/generated/Vtoplevel.mk $
+    obj/example_rvsimple/generated/Vtoplevel.h: run_cmd $
+    example_rvsimple/generated/adder.sv example_rvsimple/generated/alu.sv $
+    example_rvsimple/generated/alu_control.sv $
+    example_rvsimple/generated/config.sv $
+    example_rvsimple/generated/constants.sv $
+    example_rvsimple/generated/control_transfer.sv $
+    example_rvsimple/generated/data_memory_interface.sv $
+    example_rvsimple/generated/example_data_memory.sv $
+    example_rvsimple/generated/example_data_memory_bus.sv $
+    example_rvsimple/generated/example_memory_bus.sv $
+    example_rvsimple/generated/example_text_memory.sv $
+    example_rvsimple/generated/example_text_memory_bus.sv $
+    example_rvsimple/generated/immediate_generator.sv $
+    example_rvsimple/generated/instruction_decoder.sv $
+    example_rvsimple/generated/multiplexer.sv $
+    example_rvsimple/generated/multiplexer2.sv $
+    example_rvsimple/generated/multiplexer4.sv $
+    example_rvsimple/generated/multiplexer8.sv $
+    example_rvsimple/generated/regfile.sv $
+    example_rvsimple/generated/register.sv $
+    example_rvsimple/generated/riscv_core.sv $
+    example_rvsimple/generated/singlecycle_control.sv $
+    example_rvsimple/generated/singlecycle_ctlpath.sv $
+    example_rvsimple/generated/singlecycle_datapath.sv $
+    example_rvsimple/generated/toplevel.sv
+  cmd = verilator -Iexample_rvsimple/generated -Isrc --cc toplevel -Mdir $
+      obj/example_rvsimple/generated
+build obj/example_rvsimple/generated/Vtoplevel__ALL.o: run_cmd $
+    obj/example_rvsimple/generated/Vtoplevel.mk
+  cmd = make -C obj/example_rvsimple/generated -f Vtoplevel.mk
+
+
+################################################################################
+# Compile bin/example_rvsimple/generated/main
+
+build obj/example_rvsimple/generated/main.o: compile_cpp $
+    example_rvsimple/generated/main.cpp | $
+    obj/example_rvsimple/generated/Vtoplevel.h
+  includes = -Isrc -Itests -Iobj/example_rvsimple/generated $
+      -I/usr/local/share/verilator/include
+build bin/example_rvsimple/generated/main: link obj/verilated.o $
+    obj/example_rvsimple/generated/Vtoplevel__ALL.o $
+    obj/example_rvsimple/generated/main.o
+
+
+################################################################################
+# Verilate toplevel@example_rvsimple/reference -> obj/example_rvsimple/reference
+
+build obj/example_rvsimple/reference/Vtoplevel.mk $
+    obj/example_rvsimple/reference/Vtoplevel.h: run_cmd $
+    example_rvsimple/reference/adder.sv example_rvsimple/reference/alu.sv $
+    example_rvsimple/reference/alu_control.sv $
+    example_rvsimple/reference/config.sv $
+    example_rvsimple/reference/constants.sv $
+    example_rvsimple/reference/control_transfer.sv $
+    example_rvsimple/reference/data_memory_interface.sv $
+    example_rvsimple/reference/example_data_memory.sv $
+    example_rvsimple/reference/example_data_memory_bus.sv $
+    example_rvsimple/reference/example_memory_bus.sv $
+    example_rvsimple/reference/example_text_memory.sv $
+    example_rvsimple/reference/example_text_memory_bus.sv $
+    example_rvsimple/reference/immediate_generator.sv $
+    example_rvsimple/reference/instruction_decoder.sv $
+    example_rvsimple/reference/multiplexer.sv $
+    example_rvsimple/reference/multiplexer2.sv $
+    example_rvsimple/reference/multiplexer4.sv $
+    example_rvsimple/reference/multiplexer8.sv $
+    example_rvsimple/reference/regfile.sv $
+    example_rvsimple/reference/register.sv $
+    example_rvsimple/reference/riscv_core.sv $
+    example_rvsimple/reference/singlecycle_control.sv $
+    example_rvsimple/reference/singlecycle_ctlpath.sv $
+    example_rvsimple/reference/singlecycle_datapath.sv $
+    example_rvsimple/reference/toplevel.sv
+  cmd = verilator -Iexample_rvsimple/reference -Isrc --cc toplevel -Mdir $
+      obj/example_rvsimple/reference
+build obj/example_rvsimple/reference/Vtoplevel__ALL.o: run_cmd $
+    obj/example_rvsimple/reference/Vtoplevel.mk
+  cmd = make -C obj/example_rvsimple/reference -f Vtoplevel.mk
+
+
+################################################################################
+# Compile bin/example_rvsimple/reference/main
+
+build obj/example_rvsimple/reference/main.o: compile_cpp $
+    example_rvsimple/reference/main.cpp | $
+    obj/example_rvsimple/reference/Vtoplevel.h
+  includes = -Isrc -Itests -Iobj/example_rvsimple/reference $
+      -I/usr/local/share/verilator/include
+build bin/example_rvsimple/reference/main: link obj/verilated.o $
+    obj/example_rvsimple/reference/Vtoplevel__ALL.o $
+    obj/example_rvsimple/reference/main.o
+
+
+################################################################################
+# Done!
 

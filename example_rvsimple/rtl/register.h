@@ -15,19 +15,19 @@ class single_register {
  public:
   logic<WIDTH> value;
 
-  void init() { reg_value = INITIAL; }
+  void init() { value = INITIAL; }
 
   void tick(logic<1> reset, logic<1> write_enable, logic<WIDTH> next) {
     if (reset)
-      reg_value = INITIAL;
+      value = INITIAL;
     else if (write_enable)
-      reg_value = next;
+      value = next;
   }
 
-  void tock() { value = reg_value; }
+  //void tock() { value = reg_value; }
 
- private:
-  logic<WIDTH> reg_value;
+ //private:
+  //logic<WIDTH> reg_value;
 };
 
 #endif  // RVSIMPLE_REGISTER_H

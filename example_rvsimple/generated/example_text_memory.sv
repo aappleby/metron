@@ -19,7 +19,6 @@ module example_text_memory
   output logic[31:0] q
 );
  /*public:*/
-  logic[31:0] mem[2**(TEXT_BITS - 2)];
   /*logic<32> q;*/
 
   initial begin : init
@@ -30,6 +29,9 @@ module example_text_memory
   end
 
   always_comb begin : tock q = mem[address]; end
+
+/*private:*/
+  logic[31:0] mem[2**(TEXT_BITS - 2)];
 endmodule;
 
 `endif  // RVSIMPLE_EXAMPLE_TEXT_MEMORY_H

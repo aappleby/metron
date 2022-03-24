@@ -23,16 +23,33 @@ def divider(text):
     outfile.write(f"# {text}\n\n")
 
 
-def run_cmd(in_files, cmd, out_files):
-    ninja.build(
-        out_files,
-        "run_cmd",
-        in_files,
-        variables={
-          "cmd": cmd,
-        }
-    )
+# ------------------------------------------------------------------------------
 
+outfile.write(
+    "################################################################################\n")
+outfile.write("# Autoupdate this build.ninja from build.py.\n\n")
+
+ninja.rule(name="autoupdate",
+           command="python3 $in",
+           generator=1)
+
+ninja.build("build.ninja", "autoupdate", "build.py")
+
+
+# ------------------------------------------------------------------------------
+
+divider("Rules")
+
+ninja.rule("compile_cpp", command="g++ -g ${opt} -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}", deps="gcc", depfile="${out}.d")
+ninja.rule("compile_c",   command="gcc -g ${opt} ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}", deps="gcc", depfile="${out}.d")
+ninja.rule("metron",      command="bin/metron -q -R${src_dir} -O${dst_dir} ${file_list}")
+ninja.rule("verilator",   command="verilator ${includes} --cc ${src_top} -Mdir ${dst_dir}")
+ninja.rule("make",        command="make -C ${dst_dir} -f ${makefile}")
+ninja.rule("link",        command="g++ -g $opt ${in} ${link_libs} -o ${out}")
+ninja.rule("run_test",    command="${in} | grep \"All tests pass.\" && touch ${out}")
+ninja.rule("console",     command="${in}", pool="console")
+
+# command = "g++ -g $opt -Wl,--whole-archive ${in} -Wl,--no-whole-archive ${link_libs} -o ${out}"
 
 def metronize_dir(src_dir, dst_dir):
     """
@@ -43,9 +60,14 @@ def metronize_dir(src_dir, dst_dir):
     src_paths = glob.glob(path.join(src_dir, "*.h"))
     src_files = [path.basename(n) for n in src_paths]
     dst_paths = [path.join(dst_dir, swap_ext(n, ".sv")) for n in src_files]
-    run_cmd(in_files=["bin/metron"] + src_paths,
-            cmd=f"bin/metron -q -R{src_dir} -O{dst_dir} {' '.join(src_files)}",
-            out_files=dst_paths)
+
+    ninja.build(rule="metron",
+                inputs=src_paths,
+                implicit="bin/metron",
+                outputs=dst_paths,
+                src_dir=src_dir,
+                dst_dir=dst_dir,
+                file_list=src_files)
 
     return dst_paths
 
@@ -62,14 +84,19 @@ def verilate_dir(src_dir, src_top, dst_dir):
     verilated_obj = path.join(dst_dir, f"V{src_top}__ALL.o")
 
     # Verilate and generate makefile + header
-    run_cmd(in_files=glob.glob(f"{src_dir}/*.sv"),
-            cmd=f"verilator -I{src_dir} -Isrc --cc {src_top} -Mdir {dst_dir}",
-            out_files=[verilated_make, verilated_hdr])
+    ninja.build(rule="verilator",
+                inputs=glob.glob(f"{src_dir}/*.sv"),
+                outputs=[verilated_make, verilated_hdr],
+                includes=["-Isrc", f"-I{src_dir}"],
+                src_top=src_top,
+                dst_dir=dst_dir)
 
     # Compile via makefile to generate object file
-    run_cmd(in_files=verilated_make,
-            cmd=f"make -C {dst_dir} -f V{src_top}.mk",
-            out_files=verilated_obj)
+    ninja.build(rule="make",
+                inputs=verilated_make,
+                outputs=verilated_obj,
+                dst_dir=dst_dir,
+                makefile=f"V{src_top}.mk")
 
     return (verilated_hdr, verilated_obj)
 
@@ -89,52 +116,12 @@ def cpp_binary(bin_name, src_files, src_objs=[], deps=[], **kwargs):
         src_objs.append(obj_name)
     ninja.build(bin_name, "link", src_objs)
 
-
-# ------------------------------------------------------------------------------
-
-outfile.write(
-    "################################################################################\n")
-outfile.write("# Autoupdate this build.ninja from build.py.\n\n")
-
-ninja.rule(name="autoupdate",
-           command="python3 $in",
-           generator=1)
-
-ninja.build("build.ninja", "autoupdate", "build.py")
-
-
-# ------------------------------------------------------------------------------
-
-divider("Rules")
-
-ninja.rule(name="compile_cpp",
-           command="g++ -g ${opt} -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
-           deps="gcc",
-           depfile="${out}.d")
-
-ninja.rule(name="compile_c",
-           command="gcc -g ${opt} ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
-           deps="gcc",
-           depfile="${out}.d")
-
-ninja.rule(name="link", command="g++ -g $opt ${in} ${link_libs} -o ${out}")
-# command = "g++ -g $opt -Wl,--whole-archive ${in} -Wl,--no-whole-archive ${link_libs} -o ${out}"
-
-ninja.rule(name="run_test",
-           command="${in} | grep \"All tests pass.\" && touch ${out}")
-
-ninja.rule(name="run_in_console", command="${in}", pool="console")
-
-ninja.rule(name="run_cmd", command="${cmd}")
-
 # ------------------------------------------------------------------------------
 divider("Verilator libraries")
 
-ninja.build(
-    "obj/verilated.o",
-    "compile_cpp",
-    "/usr/share/verilator/include/verilated.cpp"
-)
+ninja.build(rule="compile_cpp",
+            inputs="/usr/share/verilator/include/verilated.cpp",
+            outputs="obj/verilated.o")
 
 # ------------------------------------------------------------------------------
 divider("TreeSitter libraries")
@@ -152,9 +139,7 @@ for n in treesitter_srcs:
         o,
         "compile_c",
         n,
-        variables={
-            "includes": "-Itree-sitter/lib/include"
-        }
+        includes="-Itree-sitter/lib/include"
     )
     treesitter_objs.append(o)
 
@@ -186,7 +171,7 @@ cpp_binary(
     src_objs=[],
 )
 
-#ninja.default("bin/example_uart/rtl/main")
+# ninja.default("bin/example_uart/rtl/main")
 
 # ------------------------------------------------------------------------------
 
@@ -222,7 +207,8 @@ cpp_binary(
 
 # ------------------------------------------------------------------------------
 
-rvsimple_metron_srcs = metronize_dir("example_rvsimple/rtl", "example_rvsimple/generated")
+rvsimple_metron_srcs = metronize_dir(
+    "example_rvsimple/rtl", "example_rvsimple/generated")
 
 rvsimple_metron_vhdr, rvsimple_metron_vobj = verilate_dir(
     src_dir="example_rvsimple/generated",
@@ -269,9 +255,9 @@ cpp_binary(
 divider("Icarus Verilog uart testbench")
 
 uart_includes = [
-  "-Isrc",
-  "-Iexample_uart",
-  "-Iexample_uart/generated"
+    "-Isrc",
+    "-Iexample_uart",
+    "-Iexample_uart/generated"
 ]
 
 ninja.rule(name="iverilog",
@@ -288,7 +274,7 @@ ninja.build(rule="iverilog",
 divider("Yosys/NextPNR uart testbench")
 
 #ninja.rule(name="sv2v", command="sv2v ${includes} -w ${out} ${in}")
-#ninja.build(rule="sv2v",
+# ninja.build(rule="sv2v",
 #            inputs=["example_uart/uart_test_ice40.sv"],
 #            implicit=uart_srcs,
 #            outputs=["obj/example_uart/uart_test_ice40.sv.v"],
@@ -320,10 +306,7 @@ ninja.build(rule="icepack",
             inputs="obj/example_uart/uart_test_ice40.asc",
             outputs="obj/example_uart/uart_test_ice40.bin")
 
-##build out/uart_test_ice40.bin   : iceprog out/uart_test_ice40.asc
-
-
-
+# build out/uart_test_ice40.bin   : iceprog out/uart_test_ice40.asc
 
 
 divider("Done!")

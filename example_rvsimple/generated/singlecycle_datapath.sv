@@ -34,34 +34,14 @@ module singlecycle_datapath
   input logic[1:0] next_pc_select,
   input logic[31:0] data_mem_read_data,
   input logic[2:0] reg_writeback_select,
-  output logic[31:0] pc,
-  output logic[6:0] inst_funct7,
-  output logic[2:0] inst_funct3,
-  output logic[6:0] inst_opcode,
-  output logic[31:0] data_mem_write_data,
   output logic[31:0] data_mem_address,
+  output logic[31:0] data_mem_write_data,
+  output logic[31:0] pc,
+  output logic[6:0] inst_opcode,
+  output logic[2:0] inst_funct3,
+  output logic[6:0] inst_funct7,
   output logic alu_result_equal_zero2
 );
-  // Submodule output port bindings
-  logic[32-1:0] adder_pc_plus_4_result;
-  logic[32-1:0] adder_pc_plus_immediate_result;
-  logic[31:0] alu_core_result;
-  logic alu_core_result_equal_zero;
-  logic[6:0] idec_inst_opcode;
-  logic[2:0] idec_inst_funct3;
-  logic[6:0] idec_inst_funct7;
-  logic[4:0] idec_inst_rd;
-  logic[4:0] idec_inst_rs1;
-  logic[4:0] idec_inst_rs2;
-  logic[31:0] igen_immediate;
-  logic[32-1:0] program_counter_value;
-  logic[32-1:0] mux_next_pc_select_out;
-  logic[32-1:0] mux_operand_a_out;
-  logic[32-1:0] mux_operand_b_out;
-  logic[32-1:0] mux_reg_writeback_out;
-  logic[31:0] regs_rs1_data;
-  logic[31:0] regs_rs2_data;
-
  /*public:*/
   /*logic<32> data_mem_address;*/
   /*logic<32> data_mem_write_data;*/
@@ -86,7 +66,7 @@ module singlecycle_datapath
   //----------------------------------------
 
   always_comb begin : tock_pc
-    /*program_counter.tock();*/
+    //program_counter.tock();
     pc = program_counter_value;
   end
 
@@ -141,6 +121,7 @@ module singlecycle_datapath
     // Outputs
     .result(adder_pc_plus_4_result)
   );
+  logic[32-1:0] adder_pc_plus_4_result;
 
   adder #(32) adder_pc_plus_immediate(
     // Inputs
@@ -150,6 +131,7 @@ module singlecycle_datapath
     // Outputs
     .result(adder_pc_plus_immediate_result)
   );
+  logic[32-1:0] adder_pc_plus_immediate_result;
 
   alu alu_core(
     // Inputs
@@ -161,6 +143,8 @@ module singlecycle_datapath
     .result(alu_core_result), 
     .result_equal_zero(alu_core_result_equal_zero)
   );
+  logic[31:0] alu_core_result;
+  logic alu_core_result_equal_zero;
 
   instruction_decoder idec(
     // Inputs
@@ -174,6 +158,12 @@ module singlecycle_datapath
     .inst_rs1(idec_inst_rs1), 
     .inst_rs2(idec_inst_rs2)
   );
+  logic[6:0] idec_inst_opcode;
+  logic[2:0] idec_inst_funct3;
+  logic[6:0] idec_inst_funct7;
+  logic[4:0] idec_inst_rd;
+  logic[4:0] idec_inst_rs1;
+  logic[4:0] idec_inst_rs2;
 
   immediate_generator igen(
     // Inputs
@@ -182,6 +172,7 @@ module singlecycle_datapath
     // Outputs
     .immediate(igen_immediate)
   );
+  logic[31:0] igen_immediate;
 
   single_register #(32, INITIAL_PC) program_counter(
     // Inputs
@@ -192,6 +183,7 @@ module singlecycle_datapath
     // Outputs
     .value(program_counter_value)
   );
+  logic[32-1:0] program_counter_value;
 
   multiplexer4 #(32) mux_next_pc_select(
     // Inputs
@@ -204,6 +196,7 @@ module singlecycle_datapath
     // Outputs
     .out(mux_next_pc_select_out)
   );
+  logic[32-1:0] mux_next_pc_select_out;
 
   multiplexer2 #(32) mux_operand_a(
     // Inputs
@@ -214,6 +207,7 @@ module singlecycle_datapath
     // Outputs
     .out(mux_operand_a_out)
   );
+  logic[32-1:0] mux_operand_a_out;
 
   multiplexer2 #(32) mux_operand_b(
     // Inputs
@@ -224,6 +218,7 @@ module singlecycle_datapath
     // Outputs
     .out(mux_operand_b_out)
   );
+  logic[32-1:0] mux_operand_b_out;
 
   multiplexer8 #(32) mux_reg_writeback(
     // Inputs
@@ -240,6 +235,7 @@ module singlecycle_datapath
     // Outputs
     .out(mux_reg_writeback_out)
   );
+  logic[32-1:0] mux_reg_writeback_out;
 
   regfile regs(
     // Inputs
@@ -253,6 +249,8 @@ module singlecycle_datapath
     .rs1_data(regs_rs1_data), 
     .rs2_data(regs_rs2_data)
   );
+  logic[31:0] regs_rs1_data;
+  logic[31:0] regs_rs2_data;
 
 endmodule;
 

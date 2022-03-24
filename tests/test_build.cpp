@@ -27,9 +27,15 @@
 #include "rvsimple/rtl/singlecycle_ctlpath.h"
 #include "rvsimple/rtl/singlecycle_datapath.h"
 #include "rvsimple/rtl/toplevel.h"
-#include "uart/rtl/uart_hello.h"
-#include "uart/rtl/uart_rx.h"
-#include "uart/rtl/uart_top.h"
-#include "uart/rtl/uart_tx.h"
-
 #endif
+
+#include "example_uart/rtl/uart_hello.h"
+#include "example_uart/rtl/uart_rx.h"
+#include "example_uart/rtl/uart_top.h"
+#include "example_uart/rtl/uart_tx.h"
+
+
+void blah() {
+  static uart_top<3> top;
+  top.tick(0);
+}

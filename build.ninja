@@ -19,15 +19,19 @@ rule compile_c
   command = gcc -g ${opt} ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}
   depfile = ${out}.d
   deps = gcc
+rule metron
+  command = bin/metron -q -R${src_dir} -O${dst_dir} ${file_list}
+rule verilator
+  command = verilator ${includes} --cc ${src_top} -Mdir ${dst_dir}
+rule make
+  command = make -C ${dst_dir} -f ${makefile}
 rule link
   command = g++ -g $opt ${in} ${link_libs} -o ${out}
 rule run_test
   command = ${in} | grep "All tests pass." && touch ${out}
-rule run_in_console
+rule console
   command = ${in}
   pool = console
-rule run_cmd
-  command = ${cmd}
 
 
 ################################################################################
@@ -87,25 +91,28 @@ build bin/example_uart/rtl/main: link obj/example_uart/rtl/main.o
 
 build example_uart/generated/uart_hello.sv $
     example_uart/generated/uart_rx.sv example_uart/generated/uart_top.sv $
-    example_uart/generated/uart_tx.sv: run_cmd bin/metron $
-    example_uart/rtl/uart_hello.h example_uart/rtl/uart_rx.h $
-    example_uart/rtl/uart_top.h example_uart/rtl/uart_tx.h
-  cmd = bin/metron -q -Rexample_uart/rtl -Oexample_uart/generated $
-      uart_hello.h uart_rx.h uart_top.h uart_tx.h
+    example_uart/generated/uart_tx.sv: metron example_uart/rtl/uart_hello.h $
+    example_uart/rtl/uart_rx.h example_uart/rtl/uart_top.h $
+    example_uart/rtl/uart_tx.h | bin/metron
+  src_dir = example_uart/rtl
+  dst_dir = example_uart/generated
+  file_list = uart_hello.h uart_rx.h uart_top.h uart_tx.h
 
 
 ################################################################################
 # Verilate uart_top@example_uart/generated -> obj/example_uart/generated
 
 build obj/example_uart/generated/Vuart_top.mk $
-    obj/example_uart/generated/Vuart_top.h: run_cmd $
+    obj/example_uart/generated/Vuart_top.h: verilator $
     example_uart/generated/uart_hello.sv example_uart/generated/uart_rx.sv $
     example_uart/generated/uart_top.sv example_uart/generated/uart_tx.sv
-  cmd = verilator -Iexample_uart/generated -Isrc --cc uart_top -Mdir $
-      obj/example_uart/generated
-build obj/example_uart/generated/Vuart_top__ALL.o: run_cmd $
+  includes = -Isrc -Iexample_uart/generated
+  src_top = uart_top
+  dst_dir = obj/example_uart/generated
+build obj/example_uart/generated/Vuart_top__ALL.o: make $
     obj/example_uart/generated/Vuart_top.mk
-  cmd = make -C obj/example_uart/generated -f Vuart_top.mk
+  dst_dir = obj/example_uart/generated
+  makefile = Vuart_top.mk
 
 
 ################################################################################
@@ -156,7 +163,7 @@ build example_rvsimple/generated/adder.sv example_rvsimple/generated/alu.sv $
     example_rvsimple/generated/singlecycle_control.sv $
     example_rvsimple/generated/singlecycle_ctlpath.sv $
     example_rvsimple/generated/singlecycle_datapath.sv $
-    example_rvsimple/generated/toplevel.sv: run_cmd bin/metron $
+    example_rvsimple/generated/toplevel.sv: metron $
     example_rvsimple/rtl/adder.h example_rvsimple/rtl/alu.h $
     example_rvsimple/rtl/alu_control.h example_rvsimple/rtl/config.h $
     example_rvsimple/rtl/constants.h $
@@ -176,10 +183,11 @@ build example_rvsimple/generated/adder.sv example_rvsimple/generated/alu.sv $
     example_rvsimple/rtl/singlecycle_control.h $
     example_rvsimple/rtl/singlecycle_ctlpath.h $
     example_rvsimple/rtl/singlecycle_datapath.h $
-    example_rvsimple/rtl/toplevel.h
-  cmd = bin/metron -q -Rexample_rvsimple/rtl -Oexample_rvsimple/generated $
-      adder.h alu.h alu_control.h config.h constants.h control_transfer.h $
-      data_memory_interface.h example_data_memory.h $
+    example_rvsimple/rtl/toplevel.h | bin/metron
+  src_dir = example_rvsimple/rtl
+  dst_dir = example_rvsimple/generated
+  file_list = adder.h alu.h alu_control.h config.h constants.h $
+      control_transfer.h data_memory_interface.h example_data_memory.h $
       example_data_memory_bus.h example_memory_bus.h example_text_memory.h $
       example_text_memory_bus.h immediate_generator.h instruction_decoder.h $
       multiplexer.h multiplexer2.h multiplexer4.h multiplexer8.h regfile.h $
@@ -191,7 +199,7 @@ build example_rvsimple/generated/adder.sv example_rvsimple/generated/alu.sv $
 # Verilate toplevel@example_rvsimple/generated -> obj/example_rvsimple/generated
 
 build obj/example_rvsimple/generated/Vtoplevel.mk $
-    obj/example_rvsimple/generated/Vtoplevel.h: run_cmd $
+    obj/example_rvsimple/generated/Vtoplevel.h: verilator $
     example_rvsimple/generated/adder.sv example_rvsimple/generated/alu.sv $
     example_rvsimple/generated/alu_control.sv $
     example_rvsimple/generated/config.sv $
@@ -216,11 +224,13 @@ build obj/example_rvsimple/generated/Vtoplevel.mk $
     example_rvsimple/generated/singlecycle_ctlpath.sv $
     example_rvsimple/generated/singlecycle_datapath.sv $
     example_rvsimple/generated/toplevel.sv
-  cmd = verilator -Iexample_rvsimple/generated -Isrc --cc toplevel -Mdir $
-      obj/example_rvsimple/generated
-build obj/example_rvsimple/generated/Vtoplevel__ALL.o: run_cmd $
+  includes = -Isrc -Iexample_rvsimple/generated
+  src_top = toplevel
+  dst_dir = obj/example_rvsimple/generated
+build obj/example_rvsimple/generated/Vtoplevel__ALL.o: make $
     obj/example_rvsimple/generated/Vtoplevel.mk
-  cmd = make -C obj/example_rvsimple/generated -f Vtoplevel.mk
+  dst_dir = obj/example_rvsimple/generated
+  makefile = Vtoplevel.mk
 
 
 ################################################################################
@@ -240,7 +250,7 @@ build bin/example_rvsimple/generated/main: link obj/verilated.o $
 # Verilate toplevel@example_rvsimple/reference -> obj/example_rvsimple/reference
 
 build obj/example_rvsimple/reference/Vtoplevel.mk $
-    obj/example_rvsimple/reference/Vtoplevel.h: run_cmd $
+    obj/example_rvsimple/reference/Vtoplevel.h: verilator $
     example_rvsimple/reference/adder.sv example_rvsimple/reference/alu.sv $
     example_rvsimple/reference/alu_control.sv $
     example_rvsimple/reference/config.sv $
@@ -265,11 +275,13 @@ build obj/example_rvsimple/reference/Vtoplevel.mk $
     example_rvsimple/reference/singlecycle_ctlpath.sv $
     example_rvsimple/reference/singlecycle_datapath.sv $
     example_rvsimple/reference/toplevel.sv
-  cmd = verilator -Iexample_rvsimple/reference -Isrc --cc toplevel -Mdir $
-      obj/example_rvsimple/reference
-build obj/example_rvsimple/reference/Vtoplevel__ALL.o: run_cmd $
+  includes = -Isrc -Iexample_rvsimple/reference
+  src_top = toplevel
+  dst_dir = obj/example_rvsimple/reference
+build obj/example_rvsimple/reference/Vtoplevel__ALL.o: make $
     obj/example_rvsimple/reference/Vtoplevel.mk
-  cmd = make -C obj/example_rvsimple/reference -f Vtoplevel.mk
+  dst_dir = obj/example_rvsimple/reference
+  makefile = Vtoplevel.mk
 
 
 ################################################################################

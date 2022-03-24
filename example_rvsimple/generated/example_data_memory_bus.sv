@@ -21,9 +21,6 @@ module example_data_memory_bus
   input logic read_enable,
   output logic[31:0] read_data
 );
-  // Submodule output port bindings
-  logic[31:0] data_memory_q;
-
  /*public:*/
   /*logic<32> read_data;*/
 
@@ -32,14 +29,14 @@ module example_data_memory_bus
   always_ff @(posedge clock) begin : tick
     /*data_memory.tick(
         bx<DATA_BITS - 2>(address, 2),
-        b1(write_enable && address >= DATA_BEGIN && address <= DATA_END),
+        b1(write_enable && address >= DATA_BEGIN && DATA_END >= address),
         byte_enable, write_data);*/
   end
 
   always_comb begin : tock
     /*data_memory.tock(bx<DATA_BITS - 2>(address, 2));*/
 
-    if (read_enable && address >= DATA_BEGIN && address <= DATA_END) begin
+    if (read_enable && address >= DATA_BEGIN && DATA_END >= address) begin
       read_data = data_memory_q;
     end else begin
       read_data = 32'x;
@@ -51,13 +48,15 @@ module example_data_memory_bus
     // Inputs
     .clock(clock),
     .address(address[DATA_BITS - 2+1:2]), 
-    .wren(1'(write_enable && address >= DATA_BEGIN && address <= DATA_END)), 
+    .wren(1'(write_enable && address >= DATA_BEGIN && DATA_END >= address)), 
     .byteena(byte_enable), 
     .data(write_data), 
     // Outputs
     .q(data_memory_q)
   );
+  logic[31:0] data_memory_q;
 
 endmodule;
 
 `endif  // RVSIMPLE_EXAMPLE_DATA_MEMORY_BUS_H
+

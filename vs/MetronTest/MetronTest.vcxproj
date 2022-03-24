@@ -88,7 +88,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)../tree-sitter/lib/include;$(SolutionDir)../src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..;$(SolutionDir)../tree-sitter/lib/include;$(SolutionDir)../src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -103,7 +104,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)../tree-sitter/lib/include;$(SolutionDir)../src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..;$(SolutionDir)../tree-sitter/lib/include;$(SolutionDir)../src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -118,7 +120,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)../tree-sitter/lib/include;$(SolutionDir)../src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..;$(SolutionDir)../tree-sitter/lib/include;$(SolutionDir)../src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -133,7 +136,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)../tree-sitter/lib/include;$(SolutionDir)../src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..;$(SolutionDir)../tree-sitter/lib/include;$(SolutionDir)../src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -143,26 +147,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="..\..\tests\README.md" />
     <None Include="..\..\test\README.md" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\test\test_build.cpp" />
-    <ClCompile Include="..\..\test\test_deltas.cpp" />
-    <ClCompile Include="..\..\test\test_ibex.cpp" />
-    <ClCompile Include="..\..\test\test_logic.cpp" />
-    <ClCompile Include="..\..\test\test_main.cpp" />
-    <ClCompile Include="..\..\test\test_modules.cpp" />
-    <ClCompile Include="..\..\test\test_rvsimple.cpp" />
-    <ClCompile Include="..\..\test\test_utils.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\test\Tests.h" />
-    <ClInclude Include="..\..\test\test_utils.h" />
+    <ClInclude Include="..\..\tests\Tests.h" />
+    <ClInclude Include="..\..\tests\test_utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MetronLib\MetronLib.vcxproj">
       <Project>{6220c68c-e477-4880-a35a-c321167d9141}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\tests\test_build.cpp" />
+    <ClCompile Include="..\..\tests\test_deltas.cpp" />
+    <ClCompile Include="..\..\tests\test_ibex.cpp" />
+    <ClCompile Include="..\..\tests\test_logic.cpp" />
+    <ClCompile Include="..\..\tests\test_main.cpp" />
+    <ClCompile Include="..\..\tests\test_modules.cpp" />
+    <ClCompile Include="..\..\tests\test_rvsimple.cpp" />
+    <ClCompile Include="..\..\tests\test_utils.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

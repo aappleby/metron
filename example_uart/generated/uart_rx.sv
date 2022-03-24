@@ -14,21 +14,6 @@ module uart_rx
   output logic[31:0] o_sum
 );
  /*public:*/
-
-  localparam /*const*/ int cycle_bits = $clog2(cycles_per_bit);
-  localparam /*const*/ int cycle_max = cycles_per_bit - 1;
-  localparam /*const*/ int cursor_max = 9;
-  localparam /*const*/ int cursor_bits = $clog2(cursor_max);
-
-  logic[cycle_bits-1:0] cycle;
-  logic[cursor_bits-1:0] cursor;
-  logic[7:0] buffer;
-  logic[31:0] sum;
-
-  /*logic<8> o_data;*/
-  /*logic<1> o_valid;*/
-  /*logic<32> o_sum;*/
-
   //----------------------------------------
 
   always_ff @(posedge clock) begin : tick
@@ -54,14 +39,22 @@ module uart_rx
     end
   end
 
+  always_comb begin o_data = buffer; end
+  always_comb begin o_valid = cursor == 1; end
+  always_comb begin o_sum = sum; end
+
   //----------------------------------------
 
-  always_comb begin : tock
-    o_data = buffer;
-    o_valid = cursor == 1;
-    o_sum = sum;
-  end
+ /*private:*/
+  localparam /*const*/ int cycle_bits = $clog2(cycles_per_bit);
+  localparam /*const*/ int cycle_max = cycles_per_bit - 1;
+  localparam /*const*/ int cursor_max = 9;
+  localparam /*const*/ int cursor_bits = $clog2(cursor_max);
 
+  logic[cycle_bits-1:0] cycle;
+  logic[cursor_bits-1:0] cursor;
+  logic[7:0] buffer;
+  logic[31:0] sum;
 endmodule
 
 //==============================================================================

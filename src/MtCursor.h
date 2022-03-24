@@ -70,7 +70,7 @@ struct MtCursor {
   void emit(MtNumberLiteral n, int size_cast = 0);
   void emit(MtParameterList n);
   void emit(MtPreprocInclude n);
-  void emit(MtPrimitiveType n);
+  void emit(MtDataType n);
   void emit(MtQualifiedId n);
   void emit(MtReturnStatement n);
   void emit(MtSizedTypeSpec n);
@@ -96,7 +96,7 @@ struct MtCursor {
   void emit_hoisted_decls(MtCompoundStatement n);
   void emit_init_declarator_as_decl(MtDecl n);
   void emit_init_declarator_as_assign(MtDecl n);
-  void emit_output_ports();
+  void emit_output_ports(MtFieldDecl n);
   void emit_field_as_submod(MtFieldDecl field_decl);
 
   //----------
@@ -123,6 +123,8 @@ struct MtCursor {
   bool in_func = false;
 
   int in_module_or_package = 0;
+
+  bool in_public = false;
 
   bool trim_namespaces = true;
   bool in_ports = false;

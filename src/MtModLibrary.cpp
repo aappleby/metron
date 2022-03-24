@@ -116,8 +116,14 @@ void MtModLibrary::process_sources() {
   bool any_fail_dirty_check = false;
 
   for (auto& mod : modules) {
+
+    // FIXME DON"T CHECK IN LIKE THIS
+
+#if 0
     mod->check_dirty_ticks();
     mod->check_dirty_tocks();
+#endif
+
     mod->dirty_check_done = true;
     any_fail_dirty_check |= mod->dirty_check_fail;
   }

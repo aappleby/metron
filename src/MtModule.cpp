@@ -1,12 +1,12 @@
 #include "MtModule.h"
 
-#include "metron_tools.h"
 #include "MtCursor.h"
 #include "MtMethod.h"
 #include "MtModLibrary.h"
 #include "MtNode.h"
 #include "MtSourceFile.h"
 #include "Platform.h"
+#include "metron_tools.h"
 #include "tree_sitter/api.h"
 
 #pragma warning(disable : 4996)  // unsafe fopen()
@@ -234,6 +234,10 @@ void MtModule::dump_banner() {
   LOG_B("Outputs:\n");
   for (auto &n : *outputs)
     LOG_G("  %s:%s\n", n.name().c_str(), n.type_name().c_str());
+  if (getters) {
+    LOG_B("Getters:\n");
+    dump_method_list(*getters);
+  }
   LOG_B("Regs:\n");
   for (auto &n : *registers)
     LOG_G("  %s:%s\n", n.name().c_str(), n.type_name().c_str());
@@ -344,7 +348,7 @@ void MtModule::load_pass1() {
   for (auto n : mod_body) {
     if (n.sym != sym_field_declaration) continue;
 
-    MtField f(n);
+    // MtField f(n);
 
     // enum class
     if (n.get_field(::field_type).sym == sym_enum_specifier) {
@@ -420,10 +424,25 @@ void MtModule::collect_fields() {
   all_fields = new std::vector<MtField>();
 
   auto mod_body = mod_struct.get_field(field_body).check_null();
+  bool in_public = false;
+
   for (auto n : mod_body) {
+    if (n.sym == sym_access_specifier) {
+      if (n.child(0).text() == "public") {
+        in_public = true;
+      } else if (n.child(0).text() == "protected") {
+        in_public = false;
+      } else if (n.child(0).text() == "private") {
+        in_public = false;
+      } else {
+        n.dump_tree();
+        debugbreak();
+      }
+    }
+
     if (n.sym != sym_field_declaration) continue;
     if (n.get_field(field_type).sym == sym_enum_specifier) continue;
-    all_fields->push_back(MtField(n));
+    all_fields->push_back(MtField(n, in_public));
   }
 }
 
@@ -436,14 +455,30 @@ void MtModule::collect_methods() {
   assert(task_methods == nullptr);
   assert(func_methods == nullptr);
 
+  getters = new std::vector<MtMethod>();
+
   init_methods = new std::vector<MtMethod>();
   tick_methods = new std::vector<MtMethod>();
   tock_methods = new std::vector<MtMethod>();
   task_methods = new std::vector<MtMethod>();
   func_methods = new std::vector<MtMethod>();
 
+  bool in_public = false;
   auto mod_body = mod_struct.get_field(field_body).check_null();
   for (auto n : mod_body) {
+    if (n.sym == sym_access_specifier) {
+      if (n.child(0).text() == "public") {
+        in_public = true;
+      } else if (n.child(0).text() == "protected") {
+        in_public = false;
+      } else if (n.child(0).text() == "private") {
+        in_public = false;
+      } else {
+        n.dump_tree();
+        debugbreak();
+      }
+    }
+
     if (n.sym != sym_function_definition) continue;
     auto func_decl = n.get_field(field_declarator);
     auto func_name = func_decl.get_field(field_declarator).node_to_name();
@@ -463,6 +498,8 @@ void MtModule::collect_methods() {
       tock_methods->push_back(node_to_method(n));
     } else if (is_task) {
       task_methods->push_back(node_to_method(n));
+    } else if (in_public) {
+      getters->push_back(node_to_method(n));
     } else {
       func_methods->push_back(node_to_method(n));
     }
@@ -487,7 +524,7 @@ void MtModule::collect_inputs() {
     auto params = n.get_field(field_declarator).get_field(field_parameters);
     for (auto param : params) {
       if (param.sym != sym_parameter_declaration) continue;
-      MtField f(param);
+      MtField f(param, true);
       if (!dedup.contains(f.name())) {
         inputs->push_back(f);
         dedup.insert(f.name());
@@ -499,7 +536,7 @@ void MtModule::collect_inputs() {
     auto params = n.get_field(field_declarator).get_field(field_parameters);
     for (auto param : params) {
       if (param.sym != sym_parameter_declaration) continue;
-      MtField f(param);
+      MtField f(param, true);
       if (!dedup.contains(f.name())) {
         inputs->push_back(f);
         dedup.insert(f.name());
@@ -517,6 +554,14 @@ void MtModule::collect_outputs() {
 
   std::set<std::string> dedup;
 
+  for (auto f : *all_fields) {
+    if (f.is_public && !f.is_submod() && !f.is_param()) {
+      printf("%s\n", f.text().c_str());
+      outputs->push_back(f);
+    }
+  }
+
+  /*
   for (auto n : *tock_methods) {
     n.visit_tree([&](MtNode child) {
       if (child.sym != sym_assignment_expression) return;
@@ -532,6 +577,7 @@ void MtModule::collect_outputs() {
       if (field) outputs->push_back(*field);
     });
   }
+  */
 }
 
 //------------------------------------------------------------------------------
@@ -552,11 +598,9 @@ void MtModule::collect_registers() {
 
       if (lhs.sym == sym_identifier) {
         lhs_name = lhs.text();
-      }
-      else if (lhs.sym == sym_subscript_expression) {
+      } else if (lhs.sym == sym_subscript_expression) {
         lhs_name = lhs.get_field(field_argument).text();
-      }
-      else {
+      } else {
         lhs.dump_tree();
         debugbreak();
       }
@@ -565,7 +609,7 @@ void MtModule::collect_registers() {
       dedup.insert(lhs_name);
 
       auto field = get_field(lhs_name);
-      if (field) registers->push_back(*field);
+      if (field && !field->is_public) registers->push_back(*field);
     });
   }
 }
@@ -580,7 +624,7 @@ void MtModule::collect_submods() {
   for (auto n : mod_body) {
     if (n.sym != sym_field_declaration) continue;
 
-    MtField f(n);
+    MtField f(n, false);
 
     if (source_file->lib->has_mod(f.type_name())) {
       MtSubmod submod(n);

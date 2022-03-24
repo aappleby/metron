@@ -22,10 +22,6 @@ module example_memory_bus
   input logic read_enable,
   output logic[31:0] read_data
 );
-  // Submodule output port bindings
-  logic[31:0] data_memory_q;
-  logic[31:0] text_memory_q;
-
  /*public:*/
   /*logic<32> read_data;*/
 
@@ -63,6 +59,7 @@ module example_memory_bus
     // Outputs
     .q(data_memory_q)
   );
+  logic[31:0] data_memory_q;
 
   example_text_memory text_memory(
     // Inputs
@@ -71,6 +68,7 @@ module example_memory_bus
     // Outputs
     .q(text_memory_q)
   );
+  logic[31:0] text_memory_q;
 
 endmodule;
 

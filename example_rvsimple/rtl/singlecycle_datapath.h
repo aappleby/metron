@@ -47,7 +47,7 @@ class singlecycle_datapath {
   //----------------------------------------
 
   void tock_pc() {
-    program_counter.tock();
+    //program_counter.tock();
     pc = program_counter.value;
   }
 

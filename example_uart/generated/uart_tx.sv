@@ -15,21 +15,6 @@ module uart_tx
   output logic o_idle
 );
  /*public:*/
-
-  // 1 start bit, 8 data bits, 1 stop bit, 7 additional stop bits to guarantee
-  // that recevier can resync between messages
-  localparam /*const*/ int extra_stop_bits = 7;
-  localparam /*const*/ int cycle_bits = $clog2(cycles_per_bit);
-  localparam /*const*/ int cursor_bits = $clog2(10 + extra_stop_bits);
-
-  logic[cycle_bits-1:0] cycle;
-  logic[cursor_bits-1:0] cursor;
-  logic[8:0] buffer;
-
-  /*logic<1> o_serial;*/
-  /*logic<1> o_cts;*/
-  /*logic<1> o_idle;*/
-
   //----------------------------------------
 
   always_ff @(posedge clock) begin : tick
@@ -43,7 +28,8 @@ module uart_tx
       cycle_max = (cycle_bits)'(cycles_per_bit - 1);
       cursor_max = (cursor_bits)'(10 + extra_stop_bits - 1);
 
-      if (cursor <= extra_stop_bits && cycle == 0 && i_req) begin
+      if (/*cursor <= extra_stop_bits*/ extra_stop_bits >= cursor &&
+          cycle == 0 && i_req) begin
         // Transmit start
         cycle <= cycle_max;
         cursor <= cursor_max;
@@ -62,14 +48,25 @@ module uart_tx
     end
   end
 
+  always_comb begin o_serial = buffer & 1; end
+  always_comb begin
+    o_cts = ((cursor == extra_stop_bits) && (cycle == 0)) ||
+           (cursor < extra_stop_bits);
+  end
+  always_comb begin o_idle = (cursor == 0) && (cycle == 0); end
+
   //----------------------------------------
 
-  always_comb begin : tock
-    o_serial = buffer & 1;
-    o_cts = ((cursor == extra_stop_bits) && (cycle == 0)) ||
-            (cursor < extra_stop_bits);
-    o_idle = (cursor == 0) && (cycle == 0);
-  end
+ /*private:*/
+  // 1 start bit, 8 data bits, 1 stop bit, 7 additional stop bits to guarantee
+  // that recevier can resync between messages
+  localparam /*const*/ int extra_stop_bits = 7;
+  localparam /*const*/ int cycle_bits = $clog2(cycles_per_bit);
+  localparam /*const*/ int cursor_bits = $clog2(10 + extra_stop_bits);
+
+  logic[cycle_bits-1:0] cycle;
+  logic[cursor_bits-1:0] cursor;
+  logic[8:0] buffer;
 endmodule
 
 //==============================================================================

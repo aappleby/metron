@@ -13,16 +13,16 @@ int main(int argc, char** arv) {
   top.tock();
 
   for (int cycle = 0; cycle < 20000; cycle++) {
-    bool old_valid = top.o_valid;
+    bool old_valid = top.o_valid();
     top.tick(1);
     top.tock();
-    if (!old_valid && top.o_valid) printf("%c", (uint8_t)top.o_data);
+    if (!old_valid && top.o_valid()) printf("%c", (uint8_t)top.o_data());
     
-    if (top.o_done) {
+    if (top.o_done()) {
       printf("\n");
       printf("================================================================================\n");
       printf("%d\n", cycle);
-      if (top.o_sum == 0x0000b764) {
+      if (top.o_sum() == 0x0000b764) {
         printf("All tests pass.\n");
         return 0;
       }

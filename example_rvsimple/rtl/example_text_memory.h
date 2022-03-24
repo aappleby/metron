@@ -14,7 +14,6 @@ using namespace rv_config;
 
 class example_text_memory {
  public:
-  logic<32> mem[pow2(TEXT_BITS - 2)];
   logic<32> q;
 
   void init() {
@@ -24,6 +23,9 @@ class example_text_memory {
   }
 
   void tock(logic<TEXT_BITS - 2> address) { q = mem[address]; }
+
+private:
+  logic<32> mem[pow2(TEXT_BITS - 2)];
 };
 
 #endif  // RVSIMPLE_EXAMPLE_TEXT_MEMORY_H

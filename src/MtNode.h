@@ -30,7 +30,9 @@ struct MtNode {
 
   void dump_node(int index, int depth) const;
   void dump_tree(int index, int depth, int maxdepth) const;
-  void dump_tree() const { dump_tree(0, 0, 255); }
+  void dump_tree() const {
+    dump_tree(0, 0, 255);
+  }
   void error() const {
     dump_tree(0, 0, 255);
     debugbreak();
@@ -69,7 +71,7 @@ struct MtNode {
 
   //----------
 
-  MtNode get_field(int field_id);
+  MtNode get_field(int field_id) const;
 
   //----------
 
@@ -260,10 +262,11 @@ struct MtClassSpecifier : public MtNode {
 
 //------------------------------------------------------------------------------
 
-struct MtPrimitiveType : public MtNode {
-  MtPrimitiveType(){};
-  MtPrimitiveType(const MtNode& n) : MtNode(n) {
-    check_sym(sym_primitive_type);
+struct MtDataType : public MtNode {
+  MtDataType(){};
+  MtDataType(const MtNode& n) : MtNode(n) {
+    assert(!is_null());
+    assert(sym == sym_template_type || sym == sym_primitive_type);
   }
 };
 
@@ -325,7 +328,7 @@ struct MtFuncDefinition : public MtNode {
     check_sym(sym_function_definition);
   }
 
-  MtPrimitiveType type() { return MtPrimitiveType(get_field(field_type)); }
+  MtDataType type() { return MtDataType(get_field(field_type)); }
   MtFuncDeclarator decl() {
     return MtFuncDeclarator(get_field(field_declarator));
   }
@@ -511,7 +514,7 @@ struct MtType : public MtNode {
   MtIdentifier as_id() { return MtIdentifier(*this); }
   MtTemplateType as_templ() { return MtTemplateType(*this); }
   MtEnumSpecifier as_enum() { return MtEnumSpecifier(*this); }
-  MtPrimitiveType as_prim() { return MtPrimitiveType(*this); }
+  MtDataType as_prim() { return MtDataType(*this); }
 };
 
 //------------------------------------------------------------------------------
@@ -536,11 +539,11 @@ struct MtFieldDecl : public MtNode {
     return false;
   }
 
-  bool is_enum() { return type().sym == sym_enum_specifier; }
+  bool is_enum() const { return type().sym == sym_enum_specifier; }
 
-  bool is_param() { return is_static() && is_const(); }
+  bool is_param() const { return is_static() && is_const(); }
 
-  MtType type() { return MtType(get_field(field_type)); }
+  MtType type() const { return MtType(get_field(field_type)); }
   MtFieldName name() {
     auto decl = get_field(field_declarator);
     if (decl.sym == sym_array_declarator) {
@@ -694,13 +697,18 @@ struct MtSubmod : public MtNode {
 //------------------------------------------------------------------------------
 
 struct MtField : public MtNode {
-  MtField(const MtNode& n) : MtNode(n) {
+  MtField(const MtNode& n, bool is_public) : is_public(is_public), MtNode(n) {
     assert(sym == sym_field_declaration || sym == sym_parameter_declaration);
   }
 
+  bool is_submod() const;
+  bool is_param() const { return is_static() && is_const(); }
+
   std::string name() { return get_field(field_declarator).text(); }
 
-  std::string type_name() { return get_field(field_type).node_to_type(); }
+  std::string type_name() const { return get_field(field_type).node_to_type(); }
+
+  bool is_public = false;
 };
 
 //------------------------------------------------------------------------------

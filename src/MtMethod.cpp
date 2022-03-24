@@ -223,11 +223,13 @@ void MtMethod::check_dirty_read_submod(MtNode n, MtDelta& d) {
   auto submod_node = mod->get_submod(submod_name);
   auto submod_mod = submod_node->mod;
 
+  /*
   if (!submod_mod->has_output(submod_field)) {
     log_error(n, "%s() read non-output from submodule - %s\n", name.c_str(),
               field.c_str());
     d.error = true;
   }
+  */
 
   //----------
 
@@ -270,7 +272,7 @@ void MtMethod::check_dirty_read_submod(MtNode n, MtDelta& d) {
       d.state_new[field] = DIRTY;
     }
   }
-}
+} 
 
 //------------------------------------------------------------------------------
 
@@ -307,10 +309,13 @@ void MtMethod::check_dirty_write(MtNode n, MtDelta& d) {
 
   //----------
 
+  // allowing reg outputs means outputs can change in tick()
+  /*
   if (is_tick && field_is_output) {
     log_error(n, "%s() wrote output - %s\n", name.c_str(), field.c_str());
     d.error = true;
   }
+  */
 
   if (is_tock && field_is_register) {
     log_error(n, "%s() wrote reg - %s\n", name.c_str(), field.c_str());
@@ -369,6 +374,8 @@ void MtMethod::check_dirty_if(MtNode n, MtDelta& d) {
 // Traverse function calls.
 
 void MtMethod::check_dirty_call(MtNode n, MtDelta& d) {
+  n.dump_tree();
+
   auto call = mod->node_to_call(n);
 
   auto node_args = call.get_field(field_arguments);

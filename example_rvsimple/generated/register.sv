@@ -22,19 +22,19 @@ module single_register
  /*public:*/
   /*logic<WIDTH> value;*/
 
-  initial begin : init reg_value = INITIAL; end
+  initial begin : init value = INITIAL; end
 
   always_ff @(posedge clock) begin : tick
     if (reset)
-      reg_value <= INITIAL;
+      value = INITIAL;
     else if (write_enable)
-      reg_value <= next;
+      value = next;
   end
 
-  always_comb begin : tock value = reg_value; end
+  //void tock() { value = reg_value; }
 
- /*private:*/
-  logic[WIDTH-1:0] reg_value;
+ //private:
+  //logic<WIDTH> reg_value;
 endmodule
 
 `endif  // RVSIMPLE_REGISTER_H

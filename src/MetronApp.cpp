@@ -61,14 +61,23 @@ int main(int argc, char** argv) {
   LOG_B("Metron v0.0.1\n");
 
   std::vector<std::string> args;
-  for (int i = 0; i < argc; i++) {
-    LOG_B("arg[%d] = %s\n", i, argv[i]);
-    if (i) args.push_back(argv[i]);
-  }
-  LOG_B("\n");
+  for (int i = 1; i < argc; i++) args.push_back(argv[i]);
+
+  /*
+  args.clear();
+  args.push_back("-v");
+  args.push_back("-Rexample_uart/rtl");
+  args.push_back("-Oexample_uart/generated");
+  args.push_back("uart_rx.h");
+  */
 
   //----------
   // Parse args
+
+  for (int i = 0; i < args.size(); i++) {
+    LOG_B("arg[%d] = %s\n", i, args[i].c_str());
+  }
+  LOG_B("\n");
 
   // std::vector<std::string> path_names;
   std::vector<std::string> source_names;
@@ -167,7 +176,7 @@ int main(int argc, char** argv) {
 
   //----------
   // Emit all modules.
-
+#if 1
   for (auto& source_file : library.source_files) {
     // Translate the source.
 
@@ -207,6 +216,7 @@ int main(int argc, char** argv) {
       }
     }
   }
+#endif
 
   return 0;
 }

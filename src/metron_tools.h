@@ -110,6 +110,10 @@ DECLARE_SIZE(int64_t, 62);
 DECLARE_SIZE(int64_t, 63);
 DECLARE_SIZE(int64_t, 64);
 
+template< typename T >
+struct always_false {
+    enum { value = false };
+};
 //------------------------------------------------------------------------------
 // A logic behaves like an unsigned integer with any number of bits, up to the
 // largest primitive type in bitsize_to_basetype above.
@@ -171,6 +175,17 @@ class logic {
     const int mask_width = M > WIDTH ? WIDTH : M;
     static const BASE mask = BASE(~0) >> ((sizeof(BASE) * 8) - mask_width);
     x = (x & ~mask) | (y & mask);
+    return *this;
+  }
+
+  //----------
+  // Disallow using "<=" with logic<>s, as it means "non-blocking assign" in
+  // Verilog and "less than or equal" in C - a typo while porting could cause
+  // unexpected behavior.
+
+  template <typename T>
+  logic& operator <= (const T& t) {
+    static_assert(always_false<T>::value, "Using <= with logic<> is forbidden");
     return *this;
   }
 
@@ -375,7 +390,7 @@ DECLARE_BN_SN_HELPERS(64);
 
 template <int WIDTH>
 inline logic<1> reduce_xor(const logic<WIDTH>& x) {
-  auto t = x.get();
+  uint64_t t = x.get();
   t ^= t >> 32;
   t ^= t >> 16;
   t ^= t >> 8;

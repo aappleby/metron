@@ -26,7 +26,7 @@ MtNode::MtNode(TSNode node, int sym, int field, MtSourceFile* source) {
 
 //------------------------------------------------------------------------------
 
-MtNode MtNode::get_field(int field_id) {
+MtNode MtNode::get_field(int field_id) const {
   if (is_null()) return MtNode::null;
 
   for (auto c : *this) {
@@ -62,6 +62,12 @@ MtNode MtNode::named_child(int index) const {
 //----------
 
 MtNode MtNode::first_named_child() const { return named_child(0); }
+
+
+bool MtField::is_submod() const {
+  return (source->lib->has_mod(type_name()));
+}
+
 
 bool MtNode::is_static() const {
   for (auto c : *this) {

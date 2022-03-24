@@ -23,7 +23,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linux", "Linux", "{DCA4F897
 		..\rules.ninja = ..\rules.ninja
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "rtl", "rtl", "{E32A7AC3-6F15-412A-8A06-50B77F79541C}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "rvsimple_rtl", "rvsimple_rtl", "{E32A7AC3-6F15-412A-8A06-50B77F79541C}"
 	ProjectSection(SolutionItems) = preProject
 		..\example_rvsimple\rtl\adder.h = ..\example_rvsimple\rtl\adder.h
 		..\example_rvsimple\rtl\alu.h = ..\example_rvsimple\rtl\alu.h
@@ -51,6 +51,24 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "rtl", "rtl", "{E32A7AC3-6F1
 		..\example_rvsimple\rtl\singlecycle_datapath.h = ..\example_rvsimple\rtl\singlecycle_datapath.h
 		..\example_rvsimple\rtl\testbench = ..\example_rvsimple\rtl\testbench
 		..\example_rvsimple\rtl\toplevel.h = ..\example_rvsimple\rtl\toplevel.h
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "uart_rtl", "uart_rtl", "{2877BC87-6C14-409B-956B-6C07A476BCA9}"
+	ProjectSection(SolutionItems) = preProject
+		..\example_uart\rtl\main.cpp = ..\example_uart\rtl\main.cpp
+		..\example_uart\rtl\uart_hello.h = ..\example_uart\rtl\uart_hello.h
+		..\example_uart\rtl\uart_rx.h = ..\example_uart\rtl\uart_rx.h
+		..\example_uart\rtl\uart_top.h = ..\example_uart\rtl\uart_top.h
+		..\example_uart\rtl\uart_tx.h = ..\example_uart\rtl\uart_tx.h
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "uart_generated", "uart_generated", "{25B75AA5-F151-43F1-828D-2BC253A9AF2C}"
+	ProjectSection(SolutionItems) = preProject
+		..\example_uart\generated\main.cpp = ..\example_uart\generated\main.cpp
+		..\example_uart\generated\uart_hello.sv = ..\example_uart\generated\uart_hello.sv
+		..\example_uart\generated\uart_rx.sv = ..\example_uart\generated\uart_rx.sv
+		..\example_uart\generated\uart_top.sv = ..\example_uart\generated\uart_top.sv
+		..\example_uart\generated\uart_tx.sv = ..\example_uart\generated\uart_tx.sv
 	EndProjectSection
 EndProject
 Global
@@ -107,6 +125,8 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{E32A7AC3-6F15-412A-8A06-50B77F79541C} = {DCA4F897-6325-4F67-96F4-3A3C0E693FE0}
+		{2877BC87-6C14-409B-956B-6C07A476BCA9} = {DCA4F897-6325-4F67-96F4-3A3C0E693FE0}
+		{25B75AA5-F151-43F1-828D-2BC253A9AF2C} = {DCA4F897-6325-4F67-96F4-3A3C0E693FE0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {08120CEB-80C4-435E-A4A6-E9DD2170BF34}

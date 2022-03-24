@@ -17,12 +17,22 @@ module example_text_memory_bus
   input logic[31:0] address,
   output logic[31:0] read_data
 );
-  // Submodule output port bindings
-  logic[31:0] text_memory_q;
-
  /*public:*/
   /*logic<32> read_data;*/
 
+  initial begin : init /*text_memory.init();*/ end
+
+  always_comb begin : tock
+    /*text_memory.tock(bx<TEXT_BITS - 2>(address, 2));*/
+
+    if (address >= TEXT_BEGIN && /*address <= TEXT_END*/ TEXT_END >= address) begin
+      read_data = text_memory_q;
+    end else begin
+      read_data = 32'x;
+    end
+  end
+
+/*private:*/
   example_text_memory text_memory(
     // Inputs
     .clock(clock),
@@ -30,19 +40,9 @@ module example_text_memory_bus
     // Outputs
     .q(text_memory_q)
   );
+  logic[31:0] text_memory_q;
 
-
-  initial begin : init /*text_memory.init();*/ end
-
-  always_comb begin : tock
-    /*text_memory.tock(bx<TEXT_BITS - 2>(address, 2));*/
-
-    if (address >= TEXT_BEGIN && address <= TEXT_END) begin
-      read_data = text_memory_q;
-    end else begin
-      read_data = 32'x;
-    end
-  end
 endmodule;
 
 `endif  // RVSIMPLE_EXAMPLE_TEXT_MEMORY_BUS_H
+

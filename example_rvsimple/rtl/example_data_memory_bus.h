@@ -21,14 +21,14 @@ class example_data_memory_bus {
             logic<32> write_data) {
     data_memory.tick(
         bx<DATA_BITS - 2>(address, 2),
-        b1(write_enable && address >= DATA_BEGIN && address <= DATA_END),
+        b1(write_enable && address >= DATA_BEGIN && DATA_END >= address),
         byte_enable, write_data);
   }
 
   void tock(logic<32> address, logic<1> read_enable) {
     data_memory.tock(bx<DATA_BITS - 2>(address, 2));
 
-    if (read_enable && address >= DATA_BEGIN && address <= DATA_END) {
+    if (read_enable && address >= DATA_BEGIN && DATA_END >= address) {
       read_data = data_memory.q;
     } else {
       read_data = b32(DONTCARE);

@@ -52,6 +52,9 @@ class uart_hello {
   logic<cursor_bits> cursor;
   logic<8> memory[512];
   logic<8> data;
+
+  int blah() const { return 7; }
+  void derp() { s = state::SEND; }
 };
 
 //==============================================================================

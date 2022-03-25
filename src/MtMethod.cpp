@@ -374,8 +374,6 @@ void MtMethod::check_dirty_if(MtNode n, MtDelta& d) {
 // Traverse function calls.
 
 void MtMethod::check_dirty_call(MtNode n, MtDelta& d) {
-  n.dump_tree();
-
   auto call = mod->node_to_call(n);
 
   auto node_args = call.get_field(field_arguments);

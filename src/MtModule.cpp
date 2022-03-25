@@ -92,10 +92,12 @@ MtModule::MtModule(MtSourceFile *source_file, MtClassSpecifier node)
 //------------------------------------------------------------------------------
 
 MtMethod *MtModule::get_method(const std::string &name) {
-  for (auto &n : *tick_methods)
-    if (n.name == name) return &n;
-  for (auto &n : *tock_methods)
-    if (n.name == name) return &n;
+  for (auto &n : *getters)      if (n.name == name) return &n;
+  for (auto &n : *init_methods) if (n.name == name) return &n;
+  for (auto &n : *tick_methods) if (n.name == name) return &n;
+  for (auto &n : *tock_methods) if (n.name == name) return &n;
+  for (auto &n : *task_methods) if (n.name == name) return &n;
+  for (auto &n : *func_methods) if (n.name == name) return &n;
   return nullptr;
 }
 

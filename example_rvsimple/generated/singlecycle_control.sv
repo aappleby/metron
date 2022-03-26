@@ -165,3 +165,4 @@ module singlecycle_control
 endmodule;
 
 `endif  // RVSIMPLE_SINGLECYCLE_CONTROL_H
+

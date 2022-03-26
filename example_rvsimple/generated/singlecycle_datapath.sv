@@ -35,14 +35,13 @@ module singlecycle_datapath
   input logic[31:0] data_mem_read_data,
   input logic[2:0] reg_writeback_select,
   output logic[31:0] data_mem_address,
-  output logic[31:0] data_mem_write_data,
-  output logic  alu_result_equal_zero,
   output logic[2:0]  inst_funct3,
   output logic[6:0]  inst_funct7,
   output logic[6:0]  inst_opcode,
   output logic[31:0] pc2,
   output logic[31:0] data_mem_address2,
-  output logic[31:0] data_mem_write_data2
+  output logic[31:0] data_mem_write_data2,
+  output logic  alu_result_equal_zero2
 );
  /*public:*/
 
@@ -51,8 +50,6 @@ module singlecycle_datapath
   //----------------------------------------
 
   /*logic<32> data_mem_address;*/
-  /*logic<32> data_mem_write_data;*/
-  /*logic<1>  alu_result_equal_zero;*/
 
   always_comb begin inst_funct3 = idec_inst_funct3; end
   always_comb begin inst_funct7 = idec_inst_funct7; end
@@ -60,6 +57,7 @@ module singlecycle_datapath
   always_comb begin pc2 = program_counter_value; end
   always_comb begin data_mem_address2 = alu_core_result; end
   always_comb begin data_mem_write_data2 = regs_rs2_data; end
+  always_comb begin alu_result_equal_zero2 = alu_core_result_equal_zero; end
 
   //----------------------------------------
 
@@ -85,7 +83,6 @@ module singlecycle_datapath
     /*regs.tock(idec.inst_rs1, idec.inst_rs2);*/
     regs_rs1_address = idec_inst_rs1;
     regs_rs2_address = idec_inst_rs2;
-    data_mem_write_data = regs_rs2_data;
   end
 
   always_comb begin : tock_alu
@@ -103,7 +100,6 @@ module singlecycle_datapath
     alu_core_operand_a = mux_operand_a_out;
     alu_core_operand_b = mux_operand_b_out;
     data_mem_address = alu_core_result;
-    alu_result_equal_zero = alu_core_result_equal_zero;
   end
 
   always_comb begin : tock_next_pc

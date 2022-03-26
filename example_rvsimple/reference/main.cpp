@@ -23,7 +23,7 @@ int run_test(const char* test_name) {
   int time;
   int result = 0;
   Vtoplevel top;
-  for (int rep = 0; rep < 100000; rep++) {
+  for (int rep = 0; rep < 10000; rep++) {
     top.reset = 1;
     top.clock = 0;
     top.eval();

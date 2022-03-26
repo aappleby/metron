@@ -20,58 +20,50 @@ module singlecycle_ctlpath
   input logic[2:0] inst_funct3,
   input logic alu_result_equal_zero,
   input logic[6:0] inst_funct7,
-  output logic pc_write_enable,
-  output logic regfile_write_enable,
+  output logic[4:0] alu_function,
+  output logic pc_write_enable2,
+  output logic regfile_write_enable2,
   output logic alu_operand_a_select,
   output logic alu_operand_b_select,
   output logic data_mem_read_enable,
   output logic data_mem_write_enable,
   output logic[2:0] reg_writeback_select,
-  output logic[4:0] alu_function,
   output logic[1:0] next_pc_select
 );
  /*public:*/
-  /*logic<1> pc_write_enable;*/
-  /*logic<1> regfile_write_enable;*/
-  /*logic<1> alu_operand_a_select;*/
-  /*logic<1> alu_operand_b_select;*/
-  /*logic<1> data_mem_read_enable;*/
-  /*logic<1> data_mem_write_enable;*/
-  /*logic<3> reg_writeback_select;*/
-  /*logic<5> alu_function;*/
-  /*logic<2> next_pc_select;*/
+
+  always_comb begin alu_function = alu_ctrl_alu_function; end
+
+  always_comb begin pc_write_enable2 = control_pc_write_enable; end
+  always_comb begin regfile_write_enable2 = control_regfile_write_enable; end
+  always_comb begin alu_operand_a_select = control_alu_operand_a_select; end
+  always_comb begin alu_operand_b_select = control_alu_operand_b_select; end
+  always_comb begin data_mem_read_enable = control_data_mem_read_enable; end
+  always_comb begin data_mem_write_enable = control_data_mem_write_enable; end
+  always_comb begin reg_writeback_select = control_reg_writeback_select; end
+  always_comb begin next_pc_select = control_next_pc_select; end
 
   //----------------------------------------
 
   always_comb begin : tock_decode
     /*control.tock_decode(inst_opcode);*/
     control_inst_opcode = inst_opcode;
-    pc_write_enable = control_pc_write_enable;
-    regfile_write_enable = control_regfile_write_enable;
-    alu_operand_a_select = control_alu_operand_a_select;
-    alu_operand_b_select = control_alu_operand_b_select;
-    data_mem_read_enable = control_data_mem_read_enable;
-    data_mem_write_enable = control_data_mem_write_enable;
-    reg_writeback_select = control_reg_writeback_select;
   end
 
   always_comb begin : tock_next_pc_select
     /*transfer.tock(alu_result_equal_zero, inst_funct3);*/
     transfer_result_equal_zero = alu_result_equal_zero;
     transfer_inst_funct3 = inst_funct3;
-
     /*control.tock_next_pc_select(inst_opcode, transfer.take_branch);*/
     control_inst_opcode = inst_opcode;
     control_take_branch = transfer_take_branch;
-    next_pc_select = control_next_pc_select;
   end
 
   always_comb begin : tock_alu_control
-    /*alu.tock(control.alu_op_type, inst_funct3, inst_funct7);*/
-    alu_alu_op_type = control_alu_op_type;
-    alu_inst_funct3 = inst_funct3;
-    alu_inst_funct7 = inst_funct7;
-    alu_function = alu_alu_function;
+    /*alu_ctrl.tock(control.alu_op_type, inst_funct3, inst_funct7);*/
+    alu_ctrl_alu_op_type = control_alu_op_type;
+    alu_ctrl_inst_funct3 = inst_funct3;
+    alu_ctrl_inst_funct7 = inst_funct7;
   end
 
   //----------------------------------------
@@ -117,19 +109,19 @@ module singlecycle_ctlpath
   logic[2:0] transfer_inst_funct3;
   logic transfer_take_branch;
 
-  alu_control alu(
+  alu_control alu_ctrl(
     // Inputs
     .clock(clock),
-    .alu_op_type(alu_alu_op_type), 
-    .inst_funct3(alu_inst_funct3), 
-    .inst_funct7(alu_inst_funct7), 
+    .alu_op_type(alu_ctrl_alu_op_type), 
+    .inst_funct3(alu_ctrl_inst_funct3), 
+    .inst_funct7(alu_ctrl_inst_funct7), 
     // Outputs
-    .alu_function(alu_alu_function)
+    .alu_function(alu_ctrl_alu_function)
   );
-  logic[1:0] alu_alu_op_type;
-  logic[2:0] alu_inst_funct3;
-  logic[6:0] alu_inst_funct7;
-  logic[4:0] alu_alu_function;
+  logic[1:0] alu_ctrl_alu_op_type;
+  logic[2:0] alu_ctrl_inst_funct3;
+  logic[6:0] alu_ctrl_inst_funct7;
+  logic[4:0] alu_ctrl_alu_function;
 
 endmodule;
 

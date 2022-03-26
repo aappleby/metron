@@ -148,7 +148,6 @@ build example_rvsimple/generated/adder.sv example_rvsimple/generated/alu.sv $
     example_rvsimple/generated/data_memory_interface.sv $
     example_rvsimple/generated/example_data_memory.sv $
     example_rvsimple/generated/example_data_memory_bus.sv $
-    example_rvsimple/generated/example_memory_bus.sv $
     example_rvsimple/generated/example_text_memory.sv $
     example_rvsimple/generated/example_text_memory_bus.sv $
     example_rvsimple/generated/immediate_generator.sv $
@@ -171,7 +170,6 @@ build example_rvsimple/generated/adder.sv example_rvsimple/generated/alu.sv $
     example_rvsimple/rtl/data_memory_interface.h $
     example_rvsimple/rtl/example_data_memory.h $
     example_rvsimple/rtl/example_data_memory_bus.h $
-    example_rvsimple/rtl/example_memory_bus.h $
     example_rvsimple/rtl/example_text_memory.h $
     example_rvsimple/rtl/example_text_memory_bus.h $
     example_rvsimple/rtl/immediate_generator.h $
@@ -188,7 +186,7 @@ build example_rvsimple/generated/adder.sv example_rvsimple/generated/alu.sv $
   dst_dir = example_rvsimple/generated
   file_list = adder.h alu.h alu_control.h config.h constants.h $
       control_transfer.h data_memory_interface.h example_data_memory.h $
-      example_data_memory_bus.h example_memory_bus.h example_text_memory.h $
+      example_data_memory_bus.h example_text_memory.h $
       example_text_memory_bus.h immediate_generator.h instruction_decoder.h $
       multiplexer.h multiplexer2.h multiplexer4.h multiplexer8.h regfile.h $
       register.h riscv_core.h singlecycle_control.h singlecycle_ctlpath.h $
@@ -208,7 +206,6 @@ build obj/example_rvsimple/generated/Vtoplevel.mk $
     example_rvsimple/generated/data_memory_interface.sv $
     example_rvsimple/generated/example_data_memory.sv $
     example_rvsimple/generated/example_data_memory_bus.sv $
-    example_rvsimple/generated/example_memory_bus.sv $
     example_rvsimple/generated/example_text_memory.sv $
     example_rvsimple/generated/example_text_memory_bus.sv $
     example_rvsimple/generated/immediate_generator.sv $

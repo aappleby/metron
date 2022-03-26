@@ -13,22 +13,17 @@
 class data_memory_interface {
  public:
   logic<32> read_data;
-  logic<32> bus_address;
   logic<32> bus_write_data;
   logic<4> bus_byte_enable;
-  logic<1> bus_read_enable;
-  logic<1> bus_write_enable;
 
  private:
   logic<32> position_fix;
   logic<32> sign_fix;
 
  public:
-  void tock_bus(logic<1> read_enable, logic<1> write_enable,
-                logic<3> data_format, logic<32> address, logic<32> write_data) {
-    bus_address = address;
-    bus_write_enable = write_enable;
-    bus_read_enable = read_enable;
+  void tock_bus(logic<3> data_format,
+                logic<32> address,
+                logic<32> write_data) {
     bus_write_data = write_data << (8 * b2(address));
 
     // calculate byte enable
@@ -50,7 +45,7 @@ class data_memory_interface {
 
   // correct for unaligned accesses
   void tock_position_fix(logic<32> address,
-                     logic<32> bus_read_data) {
+                         logic<32> bus_read_data) {
     position_fix = b32(bus_read_data >> (8 * b2(address)));
   }
 

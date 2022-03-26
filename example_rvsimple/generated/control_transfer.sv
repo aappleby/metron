@@ -18,6 +18,9 @@ module control_transfer
   output logic take_branch
 );
  /*public:*/
+
+  // FIXME we should support functions w/ inputs+outputs
+
   /*logic<1> take_branch;*/
 
   always_comb begin : tock
@@ -50,3 +53,4 @@ module control_transfer
 endmodule;
 
 `endif  // RVSIMPLE_CONTROL_TRANSFER_H
+

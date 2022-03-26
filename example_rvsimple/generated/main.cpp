@@ -23,7 +23,7 @@ int run_test(const char* test_name) {
   int time;
   int result = 0;
   Vtoplevel top;
-  for (int rep = 0; rep < 100000; rep++) {
+  for (int rep = 0; rep < 10000; rep++) {
     top.reset = 1;
     top.clock = 0;
     top.eval();
@@ -56,6 +56,7 @@ int run_test(const char* test_name) {
 }
 
 int main(int argc, const char **argv, const char **env) {
+  LOG_B("Starting example_rvsimple/generated/main.cpp benchmark...\n");
   const char* instructions[38] = {
     "add", "addi", "and", "andi", "auipc", "beq", "bge", "bgeu", "blt", "bltu",
     "bne", "jal", "jalr", "lb", "lbu", "lh", "lhu", "lui", "lw", "or", "ori",

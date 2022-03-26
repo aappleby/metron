@@ -23,23 +23,23 @@ using namespace rv_config;
 
 class singlecycle_datapath {
  public:
-  logic<32> data_mem_address;
-  logic<32> data_mem_write_data;
-  logic<32> pc;
-  logic<7> inst_opcode;
-  logic<3> inst_funct3;
-  logic<7> inst_funct7;
-  logic<1> alu_result_equal_zero2;
-
-  //----------------------------------------
 
   void init() { program_counter.init(); }
 
   //----------------------------------------
 
-  void tock_pc() {
-    pc = program_counter.value;
-  }
+  logic<32> data_mem_address;
+  logic<32> data_mem_write_data;
+  logic<1>  alu_result_equal_zero;
+
+  logic<3>  inst_funct3() const { return idec.inst_funct3; }
+  logic<7>  inst_funct7() const { return idec.inst_funct7; }
+  logic<7>  inst_opcode() const { return idec.inst_opcode; }
+  logic<32> pc2() const { return program_counter.value; }
+  logic<32> data_mem_address2() const { return alu_core.result; }
+  logic<32> data_mem_write_data2() const { return regs.rs2_data; }
+
+  //----------------------------------------
 
   void tock_submods(logic<1> reset, logic<1> pc_write_enable,
             logic<1> regfile_write_enable) {
@@ -50,9 +50,6 @@ class singlecycle_datapath {
   void tock_decode(logic<32> inst) {
     idec.tock(inst);
     igen.tock(inst);
-    inst_funct7 = idec.inst_funct7;
-    inst_funct3 = idec.inst_funct3;
-    inst_opcode = idec.inst_opcode;
   }
 
   void tock_regfile() {
@@ -67,14 +64,14 @@ class singlecycle_datapath {
     mux_operand_b.tock(alu_operand_b_select, regs.rs2_data, igen.immediate);
     alu_core.tock(alu_function, mux_operand_a.out, mux_operand_b.out);
     data_mem_address = alu_core.result;
-    alu_result_equal_zero2 = alu_core.result_equal_zero;
+    alu_result_equal_zero = alu_core.result_equal_zero;
   }
 
   void tock_next_pc(logic<2> next_pc_select) {
     logic<32> blep = cat(b31(alu_core.result, 1), b1(0b0));
 
-    adder_pc_plus_immediate.tock(pc, igen.immediate);
-    adder_pc_plus_4.tock(b32(0x00000004), pc);
+    adder_pc_plus_immediate.tock(program_counter.value, igen.immediate);
+    adder_pc_plus_4.tock(b32(0x00000004), program_counter.value);
     mux_next_pc_select.tock(next_pc_select,
                             adder_pc_plus_4.result,
                             adder_pc_plus_immediate.result,
@@ -92,6 +89,7 @@ class singlecycle_datapath {
   //----------------------------------------
 
  private:
+  //logic<32> pc;
   adder<32> adder_pc_plus_4;
   adder<32> adder_pc_plus_immediate;
   alu alu_core;

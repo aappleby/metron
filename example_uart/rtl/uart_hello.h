@@ -9,14 +9,9 @@ class uart_hello {
 
   //----------------------------------------
 
-  void tock() {
-    o_data = data;
-    o_req = s == state::SEND;
-    o_done = s == state::DONE;
-  }
-  logic<8> o_data;
-  logic<1> o_req;
-  logic<1> o_done;
+  logic<8> o_data() const { return data; }
+  logic<1> o_req()  const { return s == state::SEND; }
+  logic<1> o_done() const { return s == state::DONE; }
 
   void tick(logic<1> i_rstn, logic<1> i_cts, logic<1> i_idle) {
     if (!i_rstn) {

@@ -21,7 +21,6 @@ module uart_test;
     timestamp <= timestamp + 1;
   end
 
-  wire ser_tx;
   logic[7:0] out_data;
   logic out_valid;
   logic out_done;
@@ -31,7 +30,6 @@ module uart_test;
   (
     clk,
     rst_n,
-    ser_tx,
     out_data,
     out_valid,
     out_done,

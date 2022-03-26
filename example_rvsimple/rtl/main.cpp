@@ -28,7 +28,7 @@ int run_test(const char* test_name) {
   top.init();
 
   LOG_R("running %6s: ", test_name);
-  for (int rep = 0; rep < 100000; rep++)
+  for (int rep = 0; rep < 10000; rep++)
   {
     top.tock(1);
 
@@ -37,9 +37,9 @@ int run_test(const char* test_name) {
 
       //printf("0x%08x\n", top.bus_address);
 
-      if (top.bus_write_enable && top.bus_address == 0xfffffff0) {
+      if (top.bus_write_enable() && top.bus_address() == 0xfffffff0) {
         //printf("finish at %d\n", time);
-        result = top.bus_write_data;
+        result = top.bus_write_data();
         break;
       }
     }
@@ -60,7 +60,7 @@ int run_test(const char* test_name) {
 //------------------------------------------------------------------------------
 
 int main(int argc, const char **argv) {
-  LOG_B("Starting benchmark...\n");
+  LOG_B("Starting example_rvsimple/rtl/main.cpp benchmark...\n");
   const char* instructions[38] = {
     "add", "addi", "and", "andi", "auipc", "beq", "bge", "bgeu", "blt", "bltu",
     "bne", "jal", "jalr", "lb", "lbu", "lh", "lhu", "lui", "lw", "or", "ori",

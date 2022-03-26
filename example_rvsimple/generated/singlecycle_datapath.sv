@@ -36,30 +36,32 @@ module singlecycle_datapath
   input logic[2:0] reg_writeback_select,
   output logic[31:0] data_mem_address,
   output logic[31:0] data_mem_write_data,
-  output logic[31:0] pc,
-  output logic[6:0] inst_opcode,
-  output logic[2:0] inst_funct3,
-  output logic[6:0] inst_funct7,
-  output logic alu_result_equal_zero2
+  output logic  alu_result_equal_zero,
+  output logic[2:0]  inst_funct3,
+  output logic[6:0]  inst_funct7,
+  output logic[6:0]  inst_opcode,
+  output logic[31:0] pc2,
+  output logic[31:0] data_mem_address2,
+  output logic[31:0] data_mem_write_data2
 );
  /*public:*/
-  /*logic<32> data_mem_address;*/
-  /*logic<32> data_mem_write_data;*/
-  /*logic<32> pc;*/
-  /*logic<7> inst_opcode;*/
-  /*logic<3> inst_funct3;*/
-  /*logic<7> inst_funct7;*/
-  /*logic<1> alu_result_equal_zero2;*/
-
-  //----------------------------------------
 
   initial begin : init /*program_counter.init();*/ end
 
   //----------------------------------------
 
-  always_comb begin : tock_pc
-    pc = program_counter_value;
-  end
+  /*logic<32> data_mem_address;*/
+  /*logic<32> data_mem_write_data;*/
+  /*logic<1>  alu_result_equal_zero;*/
+
+  always_comb begin inst_funct3 = idec_inst_funct3; end
+  always_comb begin inst_funct7 = idec_inst_funct7; end
+  always_comb begin inst_opcode = idec_inst_opcode; end
+  always_comb begin pc2 = program_counter_value; end
+  always_comb begin data_mem_address2 = alu_core_result; end
+  always_comb begin data_mem_write_data2 = regs_rs2_data; end
+
+  //----------------------------------------
 
   always_comb begin : tock_submods
     /*program_counter.tick(reset, pc_write_enable, mux_next_pc_select.out);*/
@@ -77,9 +79,6 @@ module singlecycle_datapath
     idec_inst = inst;
     /*igen.tock(inst);*/
     igen_inst = inst;
-    inst_funct7 = idec_inst_funct7;
-    inst_funct3 = idec_inst_funct3;
-    inst_opcode = idec_inst_opcode;
   end
 
   always_comb begin : tock_regfile
@@ -104,19 +103,19 @@ module singlecycle_datapath
     alu_core_operand_a = mux_operand_a_out;
     alu_core_operand_b = mux_operand_b_out;
     data_mem_address = alu_core_result;
-    alu_result_equal_zero2 = alu_core_result_equal_zero;
+    alu_result_equal_zero = alu_core_result_equal_zero;
   end
 
   always_comb begin : tock_next_pc
     logic[31:0] blep;
     blep = {alu_core.result[31:1], 1'b0};
 
-    /*adder_pc_plus_immediate.tock(pc, igen.immediate);*/
-    adder_pc_plus_immediate_operand_a = pc;
+    /*adder_pc_plus_immediate.tock(program_counter.value, igen.immediate);*/
+    adder_pc_plus_immediate_operand_a = program_counter_value;
     adder_pc_plus_immediate_operand_b = igen_immediate;
-    /*adder_pc_plus_4.tock(b32(0x00000004), pc);*/
+    /*adder_pc_plus_4.tock(b32(0x00000004), program_counter.value);*/
     adder_pc_plus_4_operand_a = 32'h00000004;
-    adder_pc_plus_4_operand_b = pc;
+    adder_pc_plus_4_operand_b = program_counter_value;
     /*mux_next_pc_select.tock(next_pc_select,
                             adder_pc_plus_4.result,
                             adder_pc_plus_immediate.result,
@@ -147,6 +146,7 @@ module singlecycle_datapath
   //----------------------------------------
 
  /*private:*/
+  //logic<32> pc;
   adder #(32) adder_pc_plus_4(
     // Inputs
     .clock(clock),

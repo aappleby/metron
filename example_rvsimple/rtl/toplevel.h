@@ -15,15 +15,15 @@
 
 class toplevel {
  public:
-  logic<32> bus_read_data;
-  logic<32> bus_address;
-  logic<32> bus_write_data;
-  logic<4> bus_byte_enable;
-  logic<1> bus_read_enable;
-  logic<1> bus_write_enable;
+  logic<32> bus_read_data()    const { return data_memory_bus.read_data; }
+  logic<32> bus_address()      const { return core.bus_address2(); }
+  logic<32> bus_write_data()   const { return core.bus_write_data2(); }
+  logic<4>  bus_byte_enable()  const { return core.bus_byte_enable2(); }
+  logic<1>  bus_read_enable()  const { return core.bus_read_enable2(); }
+  logic<1>  bus_write_enable() const { return core.bus_write_enable2(); }
 
-  logic<32> inst;
-  logic<32> pc;
+  logic<32> inst() const { return text_memory_bus.read_data; }
+  logic<32> pc()   const { return core.pc(); }
 
   //----------------------------------------
 
@@ -36,23 +36,13 @@ class toplevel {
   //----------------------------------------
 
   void tock(logic<1> reset) {
-    data_memory_bus.tock_submods(core.bus_address, core.bus_write_enable,
-                         core.bus_byte_enable, core.bus_write_data);
+    data_memory_bus.tock_submods(core.bus_address, core.bus_write_enable2(),
+                         core.bus_byte_enable2(), core.bus_write_data2());
     core.tock_submods(reset);
-    text_memory_bus.tock(core.pc);
+    text_memory_bus.tock(core.pc());
     core.tock_execute(text_memory_bus.read_data);
-    data_memory_bus.tock(core.bus_address, core.bus_read_enable);
+    data_memory_bus.tock(core.bus_address, core.bus_read_enable2());
     core.tock_writeback(data_memory_bus.read_data);
-
-    bus_read_data = data_memory_bus.read_data;
-    bus_address = core.bus_address;
-    bus_write_data = core.bus_write_data;
-    bus_byte_enable = core.bus_byte_enable;
-    bus_read_enable = core.bus_read_enable;
-    bus_write_enable = core.bus_write_enable;
-
-    inst = text_memory_bus.read_data;
-    pc = core.pc;
   }
 
   //----------------------------------------

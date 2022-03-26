@@ -18,14 +18,9 @@ module uart_hello
 
   //----------------------------------------
 
-  always_comb begin : tock
-    o_data = data;
-    o_req = s == SEND;
-    o_done = s == DONE;
-  end
-  /*logic<8> o_data;*/
-  /*logic<1> o_req;*/
-  /*logic<1> o_done;*/
+  always_comb begin o_data = data; end
+  always_comb begin o_req = s == SEND; end
+  always_comb begin o_done = s == DONE; end
 
   always_ff @(posedge clock) begin : tick
     if (!i_rstn) begin

@@ -8,9 +8,9 @@ class uart_rx {
  public:
   //----------------------------------------
 
-  logic<1> valid() const { return cursor == 1; }
-  logic<8> buffer;
-  logic<32> sum;
+  logic<1>  o_valid()  const { return cursor == 1; }
+  logic<8>  o_buffer() const { return buffer; }
+  logic<32> o_sum()    const { return sum; }
 
   void tick(logic<1> i_rstn, logic<1> i_serial) {
     if (!i_rstn) {
@@ -44,6 +44,8 @@ class uart_rx {
 
   logic<cycle_bits> cycle;
   logic<cursor_bits> cursor;
+  logic<8> buffer;
+  logic<32> sum;
 };
 
 //==============================================================================

@@ -11,10 +11,9 @@ module uart_top
 (
   input logic clock,
   input logic i_rstn,
-  output logic o_serial,
-  output logic[7:0] o_data,
-  output logic o_valid,
-  output logic o_done,
+  output logic[7:0]  o_data,
+  output logic  o_valid,
+  output logic  o_done,
   output logic[31:0] o_sum
 );
  /*public:*/
@@ -25,28 +24,28 @@ module uart_top
 
   //----------------------------------------
 
-  always_comb begin o_serial = tx_o_serial; end
-  always_comb begin o_data = rx_buffer; end
-  always_comb begin o_valid = rx_valid; end
+  always_comb begin o_data = rx_o_buffer; end
+  always_comb begin o_valid = rx_o_valid; end
   always_comb begin o_done = hello_o_done && tx_o_idle; end
-  always_comb begin o_sum = rx_sum; end
+  always_comb begin o_sum = rx_o_sum; end
 
   always_comb begin : tock_update
-    /*hello.tock();*/
+    logic[7:0] hello_data;
+    logic hello_req;
+    hello_data = hello_o_data;
+    hello_req = hello_o_req;
+
     /*rx.tick(i_rstn, tx.o_serial());*/
     rx_i_rstn = i_rstn;
     rx_i_serial = tx_o_serial;
-    
     /*hello.tick(i_rstn, tx.o_cts(), tx.o_idle());*/
     hello_i_rstn = i_rstn;
     hello_i_cts = tx_o_cts;
     hello_i_idle = tx_o_idle;
-    
-    /*tx.tick(i_rstn, hello.o_data, hello.o_req);*/
+    /*tx.tick(i_rstn, hello_data, hello_req);*/
     tx_i_rstn = i_rstn;
-    tx_i_data = hello_o_data;
-    tx_i_req = hello_o_req;
-    
+    tx_i_data = hello_data;
+    tx_i_req = hello_req;
   end
 
   //----------------------------------------
@@ -94,15 +93,15 @@ module uart_top
     .i_rstn(rx_i_rstn), 
     .i_serial(rx_i_serial), 
     // Outputs
-    .buffer(rx_buffer), 
-    .sum(rx_sum), 
-    .valid(rx_valid)
+    .o_valid(rx_o_valid), 
+    .o_buffer(rx_o_buffer), 
+    .o_sum(rx_o_sum)
   );
   logic rx_i_rstn;
   logic rx_i_serial;
-  logic[7:0] rx_buffer;
-  logic[31:0] rx_sum;
-  logic rx_valid;
+  logic  rx_o_valid;
+  logic[7:0]  rx_o_buffer;
+  logic[31:0] rx_o_sum;
 
 endmodule
 

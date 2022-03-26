@@ -39,155 +39,125 @@ module singlecycle_control
   always_comb begin : tock_next_pc_select
     import rv_constants::*;
     case (inst_opcode) 
-      /*case*/ OPCODE_BRANCH:
-        next_pc_select = take_branch ? CTL_PC_PC_IMM : CTL_PC_PC4;
-        /*break;*/
-      /*case*/ OPCODE_JALR:
-        next_pc_select = CTL_PC_RS1_IMM;
-        /*break;*/
-      /*case*/ OPCODE_JAL:
-        next_pc_select = CTL_PC_PC_IMM;
-        /*break;*/
-      default:
-        next_pc_select = CTL_PC_PC4;
-        /*break;*/
+      /*case*/ OPCODE_BRANCH: next_pc_select = take_branch ? CTL_PC_PC_IMM : CTL_PC_PC4; /*break;*/
+      /*case*/ OPCODE_JALR:   next_pc_select = CTL_PC_RS1_IMM; /*break;*/
+      /*case*/ OPCODE_JAL:    next_pc_select = CTL_PC_PC_IMM; /*break;*/
+      default:            next_pc_select = CTL_PC_PC4; /*break;*/
     endcase
   end
 
   always_comb begin : tock_decode
     import rv_constants::*;
 
+    pc_write_enable         = 1'b1;
+    regfile_write_enable    = 1'b0;
+    alu_operand_a_select    = 1'x;
+    alu_operand_b_select    = 1'x;
+    alu_op_type             = 2'x;
+    data_mem_read_enable    = 1'b0;
+    data_mem_write_enable   = 1'b0;
+    reg_writeback_select    = 3'x;
+
     case (inst_opcode) 
-      /*case*/ OPCODE_LOAD: begin
-        pc_write_enable = 1'd1;
+      /*case*/ OPCODE_LOAD:
+      begin
         regfile_write_enable = 1'd1;
         alu_operand_a_select = CTL_ALU_A_RS1;
         alu_operand_b_select = CTL_ALU_B_IMM;
         alu_op_type = CTL_ALU_ADD;
         data_mem_read_enable = 1'd1;
-        data_mem_write_enable = 1'd0;
         reg_writeback_select = CTL_WRITEBACK_DATA;
         /*break;*/
       end
 
-      /*case*/ OPCODE_MISC_MEM: begin
+      /*case*/ OPCODE_MISC_MEM:
+      begin
         // Fence - ignore
-        pc_write_enable = 1'd1;
-        regfile_write_enable = 1'd0;
-        alu_operand_a_select = 1'x;
-        alu_operand_b_select = 1'x;
-        alu_op_type = 2'x;
-        data_mem_read_enable = 1'd0;
-        data_mem_write_enable = 1'd0;
-        reg_writeback_select = 3'x;
         /*break;*/
       end
 
-      /*case*/ OPCODE_OP_IMM: begin
-        pc_write_enable = 1'd1;
+      /*case*/ OPCODE_OP_IMM:
+      begin
         regfile_write_enable = 1'd1;
         alu_operand_a_select = CTL_ALU_A_RS1;
         alu_operand_b_select = CTL_ALU_B_IMM;
         alu_op_type = CTL_ALU_OP_IMM;
-        data_mem_read_enable = 1'd0;
-        data_mem_write_enable = 1'd0;
         reg_writeback_select = CTL_WRITEBACK_ALU;
         /*break;*/
       end
 
-      /*case*/ OPCODE_AUIPC: begin
-        pc_write_enable = 1'd1;
+      /*case*/ OPCODE_AUIPC:
+      begin
         regfile_write_enable = 1'd1;
         alu_operand_a_select = CTL_ALU_A_PC;
         alu_operand_b_select = CTL_ALU_B_IMM;
         alu_op_type = CTL_ALU_ADD;
-        data_mem_read_enable = 1'd0;
-        data_mem_write_enable = 1'd0;
         reg_writeback_select = CTL_WRITEBACK_ALU;
         /*break;*/
       end
 
-      /*case*/ OPCODE_STORE: begin
-        pc_write_enable = 1'd1;
-        regfile_write_enable = 1'd0;
+      /*case*/ OPCODE_STORE:
+      begin
         alu_operand_a_select = CTL_ALU_A_RS1;
         alu_operand_b_select = CTL_ALU_B_IMM;
         alu_op_type = CTL_ALU_ADD;
-        data_mem_read_enable = 1'd0;
         data_mem_write_enable = 1'd1;
-        reg_writeback_select = 3'x;
         /*break;*/
       end
 
-      /*case*/ OPCODE_OP: begin
-        pc_write_enable = 1'd1;
+      /*case*/ OPCODE_OP:
+      begin
         regfile_write_enable = 1'd1;
         alu_operand_a_select = CTL_ALU_A_RS1;
         alu_operand_b_select = CTL_ALU_B_RS2;
         reg_writeback_select = CTL_WRITEBACK_ALU;
         alu_op_type = CTL_ALU_OP;
-        data_mem_read_enable = 1'd0;
-        data_mem_write_enable = 1'd0;
         /*break;*/
       end
 
-      /*case*/ OPCODE_LUI: begin
-        pc_write_enable = 1'd1;
+      /*case*/ OPCODE_LUI:
+      begin
         regfile_write_enable = 1'd1;
         alu_operand_a_select = CTL_ALU_A_RS1;
         alu_operand_b_select = CTL_ALU_B_RS2;
-        alu_op_type = 2'x;
-        data_mem_read_enable = 1'd0;
-        data_mem_write_enable = 1'd0;
         reg_writeback_select = CTL_WRITEBACK_IMM;
         /*break;*/
       end
 
-      /*case*/ OPCODE_BRANCH: begin
-        pc_write_enable = 1'd1;
-        regfile_write_enable = 1'd0;
+      /*case*/ OPCODE_BRANCH:
+      begin
         alu_operand_a_select = CTL_ALU_A_RS1;
         alu_operand_b_select = CTL_ALU_B_RS2;
         alu_op_type = CTL_ALU_BRANCH;
-        data_mem_read_enable = 1'd0;
-        data_mem_write_enable = 1'd0;
-        reg_writeback_select = 3'x;
         /*break;*/
       end
 
-      /*case*/ OPCODE_JALR: begin
-        pc_write_enable = 1'd1;
+      /*case*/ OPCODE_JALR:
+      begin
         regfile_write_enable = 1'd1;
         alu_operand_a_select = CTL_ALU_A_RS1;
         alu_operand_b_select = CTL_ALU_B_IMM;
         alu_op_type = CTL_ALU_ADD;
-        data_mem_read_enable = 1'd0;
-        data_mem_write_enable = 1'd0;
         reg_writeback_select = CTL_WRITEBACK_PC4;
         /*break;*/
       end
 
-      /*case*/ OPCODE_JAL: begin
-        pc_write_enable = 1'd1;
+      /*case*/ OPCODE_JAL:
+      begin
         regfile_write_enable = 1'd1;
         alu_operand_a_select = CTL_ALU_A_PC;
         alu_operand_b_select = CTL_ALU_B_IMM;
         alu_op_type = CTL_ALU_ADD;
-        data_mem_read_enable = 1'd0;
-        data_mem_write_enable = 1'd0;
         reg_writeback_select = CTL_WRITEBACK_PC4;
         /*break;*/
       end
 
-      default: begin
+      default:
+      begin
         pc_write_enable = 1'x;
         regfile_write_enable = 1'x;
-        alu_operand_a_select = CTL_ALU_A_RS1;
-        alu_operand_b_select = CTL_ALU_B_IMM;
-        alu_op_type = CTL_ALU_ADD;
         data_mem_read_enable = 1'x;
         data_mem_write_enable = 1'x;
-        reg_writeback_select = 3'x;
         /*break;*/
       end
     endcase

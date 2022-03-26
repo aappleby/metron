@@ -25,6 +25,17 @@ module regfile
   /*logic<32> rs1_data;*/
   /*logic<32> rs2_data;*/
 
+ /*private:*/
+  // 32 registers of 32-bit width
+  logic[31:0] regs[32];
+
+/*public:*/
+  // Read ports for rs1 and rs2
+  always_comb begin : tock
+    rs1_data = regs[rs1_address];
+    rs2_data = regs[rs2_address];
+  end
+
   // Register x0 is always 0
   initial begin : init regs[0] = 32'd0; end
 
@@ -34,16 +45,6 @@ module regfile
       regs[rd_address] = rd_data;
     end
   end
-
-  always_comb begin : tock
-    // Read ports for rs1 and rs2
-    rs1_data = regs[rs1_address];
-    rs2_data = regs[rs2_address];
-  end
-
- /*private:*/
-  // 32 registers of 32-bit width
-  logic[31:0] regs[32];
 endmodule;
 
 `endif  // RVSIMPLE_REGFILE_H

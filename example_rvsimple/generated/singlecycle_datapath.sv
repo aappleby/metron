@@ -101,13 +101,13 @@ module singlecycle_datapath
 
     /*mux_next_pc_select.tock(next_pc_select, adder_pc_plus_4.result,
                             adder_pc_plus_immediate.result,
-                            cat(b31(alu_core.result, 1), b1(0)), b32(0));*/
+                            cat(b31(alu_core.result, 1), b1(0b0)), b32(0b0));*/
   end
 
   always_comb begin : tock_writeback
     /*mux_reg_writeback.tock(reg_writeback_select, alu_core.result,
                            data_mem_read_data, adder_pc_plus_4.result,
-                           igen.immediate, b32(0), b32(0), b32(0), b32(0));*/
+                           igen.immediate, b32(0b0), b32(0b0), b32(0b0), b32(0b0));*/
   end
 
   //----------------------------------------
@@ -146,53 +146,14 @@ module singlecycle_datapath
   logic[31:0] alu_core_result;
   logic alu_core_result_equal_zero;
 
-  instruction_decoder idec(
-    // Inputs
-    .clock(clock),
-    .inst(inst), 
-    // Outputs
-    .inst_opcode(idec_inst_opcode), 
-    .inst_funct3(idec_inst_funct3), 
-    .inst_funct7(idec_inst_funct7), 
-    .inst_rd(idec_inst_rd), 
-    .inst_rs1(idec_inst_rs1), 
-    .inst_rs2(idec_inst_rs2)
-  );
-  logic[6:0] idec_inst_opcode;
-  logic[2:0] idec_inst_funct3;
-  logic[6:0] idec_inst_funct7;
-  logic[4:0] idec_inst_rd;
-  logic[4:0] idec_inst_rs1;
-  logic[4:0] idec_inst_rs2;
-
-  immediate_generator igen(
-    // Inputs
-    .clock(clock),
-    .inst(inst), 
-    // Outputs
-    .immediate(igen_immediate)
-  );
-  logic[31:0] igen_immediate;
-
-  single_register #(32, INITIAL_PC) program_counter(
-    // Inputs
-    .clock(clock),
-    .reset(reset), 
-    .write_enable(pc_write_enable), 
-    .next(mux_next_pc_select_out), 
-    // Outputs
-    .value(program_counter_value)
-  );
-  logic[32-1:0] program_counter_value;
-
   multiplexer4 #(32) mux_next_pc_select(
     // Inputs
     .clock(clock),
     .sel(next_pc_select), 
     .in0(adder_pc_plus_4_result), 
     .in1(adder_pc_plus_immediate_result), 
-    .in2({alu_core.result[31:1], 1'd0}), 
-    .in3(32'd0), 
+    .in2({alu_core.result[31:1], 1'b0}), 
+    .in3(32'b0), 
     // Outputs
     .out(mux_next_pc_select_out)
   );
@@ -228,14 +189,25 @@ module singlecycle_datapath
     .in1(data_mem_read_data), 
     .in2(adder_pc_plus_4_result), 
     .in3(igen_immediate), 
-    .in4(32'd0), 
-    .in5(32'd0), 
-    .in6(32'd0), 
-    .in7(32'd0), 
+    .in4(32'b0), 
+    .in5(32'b0), 
+    .in6(32'b0), 
+    .in7(32'b0), 
     // Outputs
     .out(mux_reg_writeback_out)
   );
   logic[32-1:0] mux_reg_writeback_out;
+
+  single_register #(32, INITIAL_PC) program_counter(
+    // Inputs
+    .clock(clock),
+    .reset(reset), 
+    .write_enable(pc_write_enable), 
+    .next(mux_next_pc_select_out), 
+    // Outputs
+    .value(program_counter_value)
+  );
+  logic[32-1:0] program_counter_value;
 
   regfile regs(
     // Inputs
@@ -251,6 +223,34 @@ module singlecycle_datapath
   );
   logic[31:0] regs_rs1_data;
   logic[31:0] regs_rs2_data;
+
+  instruction_decoder idec(
+    // Inputs
+    .clock(clock),
+    .inst(inst), 
+    // Outputs
+    .inst_opcode(idec_inst_opcode), 
+    .inst_funct3(idec_inst_funct3), 
+    .inst_funct7(idec_inst_funct7), 
+    .inst_rd(idec_inst_rd), 
+    .inst_rs1(idec_inst_rs1), 
+    .inst_rs2(idec_inst_rs2)
+  );
+  logic[6:0] idec_inst_opcode;
+  logic[2:0] idec_inst_funct3;
+  logic[6:0] idec_inst_funct7;
+  logic[4:0] idec_inst_rd;
+  logic[4:0] idec_inst_rs1;
+  logic[4:0] idec_inst_rs2;
+
+  immediate_generator igen(
+    // Inputs
+    .clock(clock),
+    .inst(inst), 
+    // Outputs
+    .immediate(igen_immediate)
+  );
+  logic[31:0] igen_immediate;
 
 endmodule;
 

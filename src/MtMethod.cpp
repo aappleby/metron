@@ -330,6 +330,8 @@ void MtMethod::check_dirty_write(MtNode n, MtDelta& d) {
     }
   }
 
+  // multiple writes doesn't actually break anything
+  /*
   if (d.state_new.contains(field)) {
     if (d.state_new[field] != CLEAN) {
       log_error(n, "%s() wrote dirty new field - %s\n", name.c_str(),
@@ -337,6 +339,7 @@ void MtMethod::check_dirty_write(MtNode n, MtDelta& d) {
       d.error = true;
     }
   }
+  */
 
   d.state_old[field] = CLEAN;
   d.state_new[field] = DIRTY;

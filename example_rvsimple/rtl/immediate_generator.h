@@ -24,64 +24,30 @@ class immediate_generator {
 
   void tock(logic<32> inst) {
     using namespace rv_constants;
-
-    // o_immediate = b32(0);
-    switch (b7(inst)) {
-      // Opcode
-      // FIXME didn't we need to translate fallthrough into "x, y, z:"?
-      case OPCODE_LOAD: {
-        // FIXME comments on the same line as the opening brace are broken
-        // I-type immediate
-        immediate = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20));
-        break;
-      }
-      case OPCODE_LOAD_FP: {
-        // FIXME comments on the same line as the opening brace are broken
-        // I-type immediate
-        immediate = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20));
-        break;
-      }
-      case OPCODE_OP_IMM: {
-        // FIXME comments on the same line as the opening brace are broken
-        // I-type immediate
-        immediate = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20));
-        break;
-      }
-      case OPCODE_JALR: {
-        // FIXME comments on the same line as the opening brace are broken
-        // I-type immediate
-        immediate = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20));
-        break;
-      }
-      case OPCODE_STORE_FP:
-        // S-type immediate
-        immediate = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 7));
-        break;
-      case OPCODE_STORE:
-        // S-type immediate
-        immediate = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 7));
-        break;
-      case OPCODE_BRANCH:
-        // B-type immediate
-        immediate =
-            cat(dup<20>(inst[31]), inst[7], b6(inst, 25), b4(inst, 8), b1(0));
-        break;
-      case OPCODE_AUIPC:
-        // U-type immediate
-        immediate = cat(inst[31], b11(inst, 20), b8(inst, 12), b12(0));
-        break;
-      case OPCODE_LUI:
-        // U-type immediate
-        immediate = cat(inst[31], b11(inst, 20), b8(inst, 12), b12(0));
-        break;
-      case OPCODE_JAL:
-        // J-type immediate
-        immediate = cat(dup<12>(inst[31]), b8(inst, 12), inst[20], b6(inst, 25),
-                        b4(inst, 21), b1(0));
-        break;
+    switch (b7(inst)) { // Opcode
+      // FIXME we need to translate fallthrough into "x, y, z:"?
+      case OPCODE_LOAD: // I-type immediate
+        immediate = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20)); break;
+      case OPCODE_LOAD_FP: // I-type immediate
+        immediate = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20)); break;
+      case OPCODE_OP_IMM: // I-type immediate
+        immediate = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20)); break;
+      case OPCODE_JALR: // I-type immediate
+        immediate = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20)); break;
+      case OPCODE_STORE_FP: // S-type immediate
+        immediate = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 7)); break;
+      case OPCODE_STORE: // S-type immediate
+        immediate = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 7)); break;
+      case OPCODE_BRANCH: // B-type immediate
+        immediate = cat(dup<20>(inst[31]), inst[7], b6(inst, 25), b4(inst, 8), b1(0)); break;
+      case OPCODE_AUIPC: // U-type immediate
+        immediate = cat(inst[31], b11(inst, 20), b8(inst, 12), b12(0)); break;
+      case OPCODE_LUI: // U-type immediate
+        immediate = cat(inst[31], b11(inst, 20), b8(inst, 12), b12(0)); break;
+      case OPCODE_JAL: // J-type immediate
+        immediate = cat(dup<12>(inst[31]), b8(inst, 12), inst[20], b6(inst, 25), b4(inst, 21), b1(0)); break;
       default:
         immediate = b32(0);
-        break;
     }
   }
 };

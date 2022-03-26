@@ -15,6 +15,17 @@ class regfile {
   logic<32> rs1_data;
   logic<32> rs2_data;
 
+ private:
+  // 32 registers of 32-bit width
+  logic<32> regs[32];
+
+public:
+  // Read ports for rs1 and rs2
+  void tock(logic<5> rs1_address, logic<5> rs2_address) {
+    rs1_data = regs[rs1_address];
+    rs2_data = regs[rs2_address];
+  }
+
   // Register x0 is always 0
   void init() { regs[0] = b32(0); }
 
@@ -24,16 +35,6 @@ class regfile {
       regs[rd_address] = rd_data;
     }
   }
-
-  void tock(logic<5> rs1_address, logic<5> rs2_address) {
-    // Read ports for rs1 and rs2
-    rs1_data = regs[rs1_address];
-    rs2_data = regs[rs2_address];
-  }
-
- private:
-  // 32 registers of 32-bit width
-  logic<32> regs[32];
 };
 
 #endif  // RVSIMPLE_REGFILE_H

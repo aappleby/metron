@@ -83,14 +83,14 @@ class singlecycle_datapath {
 
     mux_next_pc_select.tock(next_pc_select, adder_pc_plus_4.result,
                             adder_pc_plus_immediate.result,
-                            cat(b31(alu_core.result, 1), b1(0)), b32(0));
+                            cat(b31(alu_core.result, 1), b1(0b0)), b32(0b0));
   }
 
   void tock_writeback(logic<32> data_mem_read_data,
                       logic<3> reg_writeback_select) {
     mux_reg_writeback.tock(reg_writeback_select, alu_core.result,
                            data_mem_read_data, adder_pc_plus_4.result,
-                           igen.immediate, b32(0), b32(0), b32(0), b32(0));
+                           igen.immediate, b32(0b0), b32(0b0), b32(0b0), b32(0b0));
   }
 
   //----------------------------------------
@@ -99,14 +99,14 @@ class singlecycle_datapath {
   adder<32> adder_pc_plus_4;
   adder<32> adder_pc_plus_immediate;
   alu alu_core;
-  instruction_decoder idec;
-  immediate_generator igen;
-  single_register<32, INITIAL_PC> program_counter;
   multiplexer4<32> mux_next_pc_select;
   multiplexer2<32> mux_operand_a;
   multiplexer2<32> mux_operand_b;
   multiplexer8<32> mux_reg_writeback;
+  single_register<32, INITIAL_PC> program_counter;
   regfile regs;
+  instruction_decoder idec;
+  immediate_generator igen;
 };
 
 #endif  // RVSIMPLE_SINGLECYCLE_DATAPATH_H

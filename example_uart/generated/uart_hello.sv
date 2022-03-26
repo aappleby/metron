@@ -14,9 +14,18 @@ module uart_hello
   output logic o_done
 );
  /*public:*/
+  initial begin : init $readmemh("example_uart/message.hex", memory, 0, 511); end
+
   //----------------------------------------
 
-  initial begin : init $readmemh("example_uart/message.hex", memory, 0, 511); end
+  always_comb begin : tock
+    o_data = data;
+    o_req = s == SEND;
+    o_done = s == DONE;
+  end
+  /*logic<8> o_data;*/
+  /*logic<1> o_req;*/
+  /*logic<1> o_done;*/
 
   always_ff @(posedge clock) begin : tick
     if (!i_rstn) begin
@@ -37,16 +46,6 @@ module uart_hello
         cursor <= 0;
       end
     end
-  end
-
-  /*logic<8> o_data;*/
-  /*logic<1> o_req;*/
-  /*logic<1> o_done;*/
-
-  always_comb begin : tock
-    o_data = data;
-    o_req = s == SEND;
-    o_done = s == DONE;
   end
 
   //----------------------------------------

@@ -1,14 +1,16 @@
 #pragma once
 #include "metron_tools.h"
 
-#define BUTTS 0
-
 //==============================================================================
 
 template <int cycles_per_bit = 4>
 class uart_rx {
  public:
   //----------------------------------------
+
+  logic<1> valid() const { return cursor == 1; }
+  logic<8> buffer;
+  logic<32> sum;
 
   void tick(logic<1> i_rstn, logic<1> i_serial) {
     if (!i_rstn) {
@@ -27,14 +29,10 @@ class uart_rx {
         buffer = temp;
       } else if (i_serial == 0) {
         cycle = cycle_max;
-        cursor = cursor_max + BUTTS;
+        cursor = cursor_max;
       }
     }
   }
-
-  logic<8> buffer;
-  logic<1> valid() const { return cursor == 1; }
-  logic<32> sum;
 
   //----------------------------------------
 

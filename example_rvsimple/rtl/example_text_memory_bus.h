@@ -24,7 +24,7 @@ class example_text_memory_bus {
     logic<32> fetched = text_memory.q;
 
     read_data =
-        address >= TEXT_BEGIN && address <= TEXT_END
+        (address >= TEXT_BEGIN) && (TEXT_END >= address)
         ? fetched
         : b32(DONTCARE);
   }

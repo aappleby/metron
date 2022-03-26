@@ -8,6 +8,15 @@ class uart_tx {
  public:
   //----------------------------------------
 
+  logic<1> o_serial() const { return buffer & 1; }
+
+  logic<1> o_cts() const {
+    return ((cursor == extra_stop_bits) && (cycle == 0)) ||
+           (cursor < extra_stop_bits);
+  }
+
+  logic<1> o_idle() const { return (cursor == 0) && (cycle == 0); }
+
   void tick(logic<1> i_rstn, logic<8> i_data, logic<1> i_req) {
     if (!i_rstn) {
       cycle = 0;
@@ -36,13 +45,6 @@ class uart_tx {
       }
     }
   }
-
-  logic<1> o_serial() const { return buffer & 1; }
-  logic<1> o_cts() const {
-    return ((cursor == extra_stop_bits) && (cycle == 0)) ||
-           (cursor < extra_stop_bits);
-  }
-  logic<1> o_idle() const { return (cursor == 0) && (cycle == 0); }
 
   //----------------------------------------
 

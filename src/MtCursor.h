@@ -118,7 +118,7 @@ struct MtCursor {
   std::map<std::string, std::string> id_replacements;
   std::map<std::string, MtNode> preproc_vars;
 
-  std::stack<MtNode> node_stack;
+  std::vector<MtNode> node_stack;
 
   bool quiet = true;
   bool in_init = false;

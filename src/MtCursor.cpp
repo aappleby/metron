@@ -24,6 +24,9 @@ MtCursor::MtCursor(MtModLibrary* lib, MtSourceFile* source_file,
 
 void MtCursor::dump(const MtNode& n) const {
   LOG_R("Dump!\n");
+  for (auto& s : node_stack) {
+    s.dump_node(0, 0);
+  }
   n.dump_tree();
 }
 
@@ -445,7 +448,7 @@ void MtCursor::emit_dynamic_bit_extract(MtCallExpr call, MtNode bx_node) {
 
 void MtCursor::emit(MtCallExpr n) {
   assert(cursor == n.start());
-  node_stack.push(n);
+  node_stack.push_back(n);
 
   MtFunc func = n.func();
   MtArgList args = n.args();
@@ -687,7 +690,7 @@ void MtCursor::emit(MtCallExpr n) {
     emit_children(n);
   }
 
-  node_stack.pop();
+  node_stack.pop_back();
   assert(cursor == n.end());
 }
 
@@ -802,6 +805,7 @@ void MtCursor::emit_func_decl(MtFuncDeclarator n) {
 
 void MtCursor::emit(MtFuncDefinition n) {
   assert(cursor == n.start());
+  node_stack.push_back(n);
 
   auto return_type = n.type();
   auto func_decl = n.decl();
@@ -909,6 +913,60 @@ void MtCursor::emit(MtFuncDefinition n) {
             c.child(0).child(0).sym == sym_field_expression) {
           // Calls to submodules get commented out.
           comment_out(c);
+
+          auto call_node = c.child(0);
+          auto func_node = call_node.get_field(field_function);
+          auto args_node = call_node.get_field(field_arguments);
+
+          if (args_node.named_child_count() == 0) {
+            cursor = c.end();
+            break;
+          }
+
+          auto inst_id = func_node.get_field(field_argument);
+          auto meth_id = func_node.get_field(field_field);
+
+          //emit_newline();
+          //inst_id.dump_tree();
+          //meth_id.dump_tree();
+          //args_node.dump_tree();
+          //emit_indent();
+
+          //auto submod_mod = lib->get_mod(type_name);
+
+          auto submod = current_mod->get_submod(inst_id.text());
+          assert(submod);
+
+          auto submod_mod = submod->mod;
+          assert(submod_mod);
+
+          auto submod_meth = submod_mod->get_method(meth_id.text());
+          assert(submod_meth);
+
+          emit_newline();
+          emit_indent();
+
+          for (int i = 0; i < submod_meth->params->size(); i++) {
+            auto param = submod_meth->params->at(i);
+            emit("%s_%s = ", inst_id.text().c_str(), param.c_str());
+
+            auto arg_node = args_node.named_child(i);
+            cursor = arg_node.start();
+            emit_dispatch(arg_node);
+            cursor = arg_node.end();
+
+            emit(";");
+            emit_newline();
+            emit_indent();
+          }
+
+          //emit("DONE");
+          /*
+          std::string type_name = n.type().node_to_type();
+          auto submod_mod = lib->get_mod(type_name);
+          */
+          cursor = c.end();
+
         } else {
           // Other calls get translated.
           emit_dispatch(c);
@@ -957,6 +1015,8 @@ void MtCursor::emit(MtFuncDefinition n) {
   in_tock = false;
   in_task = false;
   in_func = false;
+
+  node_stack.pop_back();
 }
 
 //------------------------------------------------------------------------------
@@ -1142,7 +1202,8 @@ void MtCursor::emit_field_as_submod(MtFieldDecl n) {
 
     emit_newline();
     emit_indent();
-    emit(".%s(%s)", n.name().c_str(), (*it).second.c_str());
+    //emit(".%s(%s)", n.name().c_str(), (*it).second.c_str());
+    emit(".%s(%s_%s)", n.name().c_str(), inst_name.c_str(), n.name().c_str());
 
     if (port_index++ < port_count - 1) emit(", ");
   }
@@ -1219,6 +1280,28 @@ void MtCursor::emit_output_ports(MtFieldDecl submod) {
       auto val = args.named_child(i).text();
       replacements[key] = val;
     }
+  }
+
+  for (auto& n : *submod_mod->inputs) {
+    // field_declaration
+    auto output_type = n.get_field(field_type);
+    auto output_decl = n.get_field(field_declarator);
+
+    MtCursor subcursor(lib, submod_mod->source_file, str_out);
+    subcursor.quiet = quiet;
+    subcursor.in_ports = true;
+    subcursor.id_replacements = replacements;
+    subcursor.cursor = output_type.start();
+
+    emit_indent();
+    subcursor.emit_dispatch(output_type);
+    subcursor.emit_ws();
+    emit("%s_", submod_decl.text().c_str());
+    subcursor.emit_dispatch(output_decl);
+    emit(";");
+
+    emit_newline();
+    output_index++;
   }
 
   for (auto& n : *submod_mod->outputs) {
@@ -1320,6 +1403,7 @@ void MtCursor::emit(MtFieldDecl n) {
 
 void MtCursor::emit(MtClassSpecifier n) {
   assert(cursor == n.start());
+  node_stack.push_back(n);
 
   auto struct_lit = n.child(0);
   auto struct_name = n.get_field(field_name);
@@ -1518,6 +1602,8 @@ void MtCursor::emit(MtClassSpecifier n) {
   if (!in_module_or_package) {
     current_mod = nullptr;
   }
+
+  node_stack.pop_back();
   assert(cursor == n.end());
 }
 
@@ -1681,7 +1767,7 @@ void MtCursor::emit(MtEnumeratorList n) {
 void MtCursor::emit(MtTranslationUnit n) {
   assert(cursor == n.start());
 
-  node_stack.push(n);
+  node_stack.push_back(n);
   auto child_count = n.child_count();
   for (int i = 0; i < child_count; i++) {
     auto c = n.child(i);
@@ -1695,7 +1781,7 @@ void MtCursor::emit(MtTranslationUnit n) {
     }
     if (i != child_count - 1) emit_ws();
   }
-  node_stack.pop();
+  node_stack.pop_back();
 
   if (cursor < source_file->source_end) {
     emit_span(cursor, source_file->source_end);
@@ -1754,7 +1840,7 @@ void MtCursor::emit(MtNumberLiteral n, int size_cast) {
 void MtCursor::emit(MtReturnStatement n) {
   assert(cursor == n.start());
   auto func_name = current_function_name;
-  node_stack.push(n);
+  node_stack.push_back(n);
   for (auto c : (MtNode&)n) {
     emit_ws();
     switch (c.sym) {
@@ -1766,7 +1852,7 @@ void MtCursor::emit(MtReturnStatement n) {
         break;
     }
   }
-  node_stack.pop();
+  node_stack.pop_back();
   assert(cursor == n.end());
 }
 
@@ -1863,7 +1949,7 @@ void MtCursor::emit(MtFieldExpr n) {
 
 void MtCursor::emit(MtCaseStatement n) {
   assert(cursor == n.start());
-  node_stack.push(n);
+  node_stack.push_back(n);
   auto child_count = n.child_count();
   for (int i = 0; i < child_count; i++) {
     auto c = n.child(i);
@@ -1874,7 +1960,7 @@ void MtCursor::emit(MtCaseStatement n) {
     }
     if (i != child_count - 1) emit_ws();
   }
-  node_stack.pop();
+  node_stack.pop_back();
   assert(cursor == n.end());
 }
 
@@ -2426,13 +2512,13 @@ void MtCursor::emit_dispatch(MtNode n) {
 
 void MtCursor::emit_children(MtNode n) {
   assert(cursor == n.start());
-  node_stack.push(n);
+  node_stack.push_back(n);
   auto count = n.child_count();
   for (auto i = 0; i < count; i++) {
     emit_dispatch(n.child(i));
     if (i != count - 1) emit_ws();
   }
-  node_stack.pop();
+  node_stack.pop_back();
 }
 
 //------------------------------------------------------------------------------

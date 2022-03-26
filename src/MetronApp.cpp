@@ -64,9 +64,9 @@ int main(int argc, char** argv) {
   for (int i = 1; i < argc; i++) args.push_back(argv[i]);
 
 
-  // -v -Rexample_rvsimple/rtl -Oexample_rvsimple/generated alu.h
   // -v -Rexample_uart/rtl -Oexample_uart/generated uart_top.h uart_hello.h uart_tx.h uart_rx.h
   // -v -Rexample_uart/rtl -Oexample_uart/generated uart_rx.h
+  // -v -Rexample_rvsimple/rtl -Oexample_rvsimple/generated alu.h
   // -q -Rexample_rvsimple/rtl -Oexample_rvsimple/generated adder.h alu.h alu_control.h config.h constants.h control_transfer.h data_memory_interface.h example_data_memory.h example_data_memory_bus.h example_memory_bus.h example_text_memory.h example_text_memory_bus.h immediate_generator.h instruction_decoder.h multiplexer.h multiplexer2.h multiplexer4.h multiplexer8.h regfile.h register.h riscv_core.h singlecycle_control.h singlecycle_ctlpath.h singlecycle_datapath.h toplevel.h
   
   //----------
@@ -175,9 +175,11 @@ int main(int argc, char** argv) {
   //----------
   // Emit all modules.
 #if 1
-  for (auto& source_file : library.source_files) {
-    // Translate the source.
+  for (auto& source_file : library.source_files)
+  {
+    //auto source_file = library.source_files[0];
 
+    // Translate the source.
     auto out_name = source_file->filename;
     assert(out_name.ends_with(".h"));
     out_name.resize(out_name.size() - 2);

@@ -5,9 +5,18 @@
 
 class uart_hello {
  public:
+  void init() { readmemh("example_uart/message.hex", memory, 0, 511); }
+
   //----------------------------------------
 
-  void init() { readmemh("example_uart/message.hex", memory, 0, 511); }
+  void tock() {
+    o_data = data;
+    o_req = s == state::SEND;
+    o_done = s == state::DONE;
+  }
+  logic<8> o_data;
+  logic<1> o_req;
+  logic<1> o_done;
 
   void tick(logic<1> i_rstn, logic<1> i_cts, logic<1> i_idle) {
     if (!i_rstn) {
@@ -28,16 +37,6 @@ class uart_hello {
         cursor = 0;
       }
     }
-  }
-
-  logic<8> o_data;
-  logic<1> o_req;
-  logic<1> o_done;
-
-  void tock() {
-    o_data = data;
-    o_req = s == state::SEND;
-    o_done = s == state::DONE;
   }
 
   //----------------------------------------

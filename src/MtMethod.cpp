@@ -92,7 +92,7 @@ void MtMethod::update_delta() {
   if (delta == nullptr) {
     auto temp_delta = new MtDelta();
     auto body = get_field(field_body);
-    check_dirty_dispatch(body, *temp_delta);
+    //check_dirty_dispatch(body, *temp_delta);
     delta = temp_delta;
   }
 }

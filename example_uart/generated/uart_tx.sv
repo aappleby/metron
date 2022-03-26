@@ -17,6 +17,15 @@ module uart_tx
  /*public:*/
   //----------------------------------------
 
+  always_comb begin o_serial = buffer & 1; end
+
+  always_comb begin
+    o_cts = ((cursor == extra_stop_bits) && (cycle == 0)) ||
+           (cursor < extra_stop_bits);
+  end
+
+  always_comb begin o_idle = (cursor == 0) && (cycle == 0); end
+
   always_ff @(posedge clock) begin : tick
     if (!i_rstn) begin
       cycle <= 0;
@@ -47,13 +56,6 @@ module uart_tx
       end
     end
   end
-
-  always_comb begin o_serial = buffer & 1; end
-  always_comb begin
-    o_cts = ((cursor == extra_stop_bits) && (cycle == 0)) ||
-           (cursor < extra_stop_bits);
-  end
-  always_comb begin o_idle = (cursor == 0) && (cycle == 0); end
 
   //----------------------------------------
 

@@ -29,7 +29,7 @@
 
 void blah() {
   uart_top<3> top;
-  top.tick(0);
+  top.update(0);
 }
 
 void blee() {

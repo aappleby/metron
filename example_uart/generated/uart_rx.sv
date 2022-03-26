@@ -1,8 +1,6 @@
 
 `include "metron_tools.sv"
 
-`define BUTTS 0
-
 //==============================================================================
 
 module uart_rx
@@ -17,6 +15,10 @@ module uart_rx
 );
  /*public:*/
   //----------------------------------------
+
+  always_comb begin valid = cursor == 1; end
+  /*logic<8> buffer;*/
+  /*logic<32> sum;*/
 
   always_ff @(posedge clock) begin : tick
     if (!i_rstn) begin
@@ -36,14 +38,10 @@ module uart_rx
         buffer <= temp;
       end else if (i_serial == 0) begin
         cycle <= cycle_max;
-        cursor <= cursor_max + `BUTTS;
+        cursor <= cursor_max;
       end
     end
   end
-
-  /*logic<8> buffer;*/
-  always_comb begin valid = cursor == 1; end
-  /*logic<32> sum;*/
 
   //----------------------------------------
 

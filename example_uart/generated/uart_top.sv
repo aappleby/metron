@@ -18,22 +18,13 @@ module uart_top
   output logic[31:0] o_sum
 );
  /*public:*/
-  //----------------------------------------
 
   initial begin : init
     $write("uart_top.init()\n");
     /*hello.init();*/
   end
 
-  always_ff @(posedge clock) begin : tick
-    /*rx.tick(i_rstn, tx.o_serial());*/
-    /*hello.tick(i_rstn, tx.o_cts(), tx.o_idle());*/
-    /*tx.tick(i_rstn, hello.o_data, hello.o_req);*/
-  end
-
-  always_comb begin : tock
-    /*hello.tock();*/
-  end
+  //----------------------------------------
 
   always_comb begin o_serial = tx_o_serial; end
   always_comb begin o_data = rx_buffer; end
@@ -41,20 +32,41 @@ module uart_top
   always_comb begin o_done = hello_o_done && tx_o_idle; end
   always_comb begin o_sum = rx_sum; end
 
+  always_comb begin : tock_update
+    /*hello.tock();*/
+    /*rx.tick(i_rstn, tx.o_serial());*/
+    rx_i_rstn = i_rstn;
+    rx_i_serial = tx_o_serial;
+    
+    /*hello.tick(i_rstn, tx.o_cts(), tx.o_idle());*/
+    hello_i_rstn = i_rstn;
+    hello_i_cts = tx_o_cts;
+    hello_i_idle = tx_o_idle;
+    
+    /*tx.tick(i_rstn, hello.o_data, hello.o_req);*/
+    tx_i_rstn = i_rstn;
+    tx_i_data = hello_o_data;
+    tx_i_req = hello_o_req;
+    
+  end
+
   //----------------------------------------
 
  /*private:*/
   uart_hello hello(
     // Inputs
     .clock(clock),
-    .i_rstn(i_rstn), 
-    .i_cts(tx_o_cts), 
-    .i_idle(tx_o_idle), 
+    .i_rstn(hello_i_rstn), 
+    .i_cts(hello_i_cts), 
+    .i_idle(hello_i_idle), 
     // Outputs
     .o_data(hello_o_data), 
     .o_req(hello_o_req), 
     .o_done(hello_o_done)
   );
+  logic hello_i_rstn;
+  logic hello_i_cts;
+  logic hello_i_idle;
   logic[7:0] hello_o_data;
   logic hello_o_req;
   logic hello_o_done;
@@ -62,14 +74,17 @@ module uart_top
   uart_tx #(cycles_per_bit) tx(
     // Inputs
     .clock(clock),
-    .i_rstn(i_rstn), 
-    .i_data(hello_o_data), 
-    .i_req(hello_o_req), 
+    .i_rstn(tx_i_rstn), 
+    .i_data(tx_i_data), 
+    .i_req(tx_i_req), 
     // Outputs
     .o_serial(tx_o_serial), 
     .o_cts(tx_o_cts), 
     .o_idle(tx_o_idle)
   );
+  logic tx_i_rstn;
+  logic[7:0] tx_i_data;
+  logic tx_i_req;
   logic tx_o_serial;
   logic tx_o_cts;
   logic tx_o_idle;
@@ -77,13 +92,15 @@ module uart_top
   uart_rx #(cycles_per_bit) rx(
     // Inputs
     .clock(clock),
-    .i_rstn(i_rstn), 
-    .i_serial(tx_o_serial), 
+    .i_rstn(rx_i_rstn), 
+    .i_serial(rx_i_serial), 
     // Outputs
     .buffer(rx_buffer), 
     .sum(rx_sum), 
     .valid(rx_valid)
   );
+  logic rx_i_rstn;
+  logic rx_i_serial;
   logic[7:0] rx_buffer;
   logic[31:0] rx_sum;
   logic rx_valid;

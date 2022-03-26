@@ -1,6 +1,8 @@
 #pragma once
 #include "metron_tools.h"
 
+#define BUTTS 0
+
 //==============================================================================
 
 template <int cycles_per_bit = 4>
@@ -25,14 +27,14 @@ class uart_rx {
         buffer = temp;
       } else if (i_serial == 0) {
         cycle = cycle_max;
-        cursor = cursor_max;
+        cursor = cursor_max + BUTTS;
       }
     }
   }
 
-  logic<8> o_data() const { return buffer; }
-  logic<1> o_valid() const { return cursor == 1; }
-  logic<32> o_sum() const { return sum; }
+  logic<8> buffer;
+  logic<1> valid() const { return cursor == 1; }
+  logic<32> sum;
 
   //----------------------------------------
 
@@ -44,8 +46,6 @@ class uart_rx {
 
   logic<cycle_bits> cycle;
   logic<cursor_bits> cursor;
-  logic<8> buffer;
-  logic<32> sum;
 };
 
 //==============================================================================

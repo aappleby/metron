@@ -22,6 +22,13 @@ MtCursor::MtCursor(MtModLibrary* lib, MtSourceFile* source_file,
 
 //------------------------------------------------------------------------------
 
+void MtCursor::dump(const MtNode& n) const {
+  LOG_R("Dump!\n");
+  n.dump_tree();
+}
+
+//------------------------------------------------------------------------------
+
 void MtCursor::push_indent(MtNode body) {
   assert(body.sym == sym_compound_statement ||
          body.sym == sym_field_declaration_list);
@@ -283,6 +290,12 @@ void MtCursor::emit(MtAssignmentExpr n) {
         break;
       }
     }
+    for (auto& f : *current_mod->outputs) {
+      if (f.name() == lhs_name) {
+        lhs_is_reg = true;
+        break;
+      }
+    }
   }
 
   std::string lhs_name = lhs.text();
@@ -431,9 +444,8 @@ void MtCursor::emit_dynamic_bit_extract(MtCallExpr call, MtNode bx_node) {
 // init/final/tick/tock calls.
 
 void MtCursor::emit(MtCallExpr n) {
-  // n.dump_tree();
-
   assert(cursor == n.start());
+  node_stack.push(n);
 
   MtFunc func = n.func();
   MtArgList args = n.args();
@@ -675,6 +687,7 @@ void MtCursor::emit(MtCallExpr n) {
     emit_children(n);
   }
 
+  node_stack.pop();
   assert(cursor == n.end());
 }
 
@@ -1489,34 +1502,8 @@ void MtCursor::emit(MtClassSpecifier n) {
       case anon_sym_SEMI:
         emit_replacement(c, "");
         break;
-      case sym_comment:
-        emit(MtComment(c));
-        break;
-      case sym_field_declaration:
-        emit(MtFieldDecl(c));
-        break;
-      case sym_function_definition:
-        emit(MtFuncDefinition(c));
-        break;
-      case sym_access_specifier:
-        if (c.child(0).text() == "public") {
-          in_public = true;
-        } else if (c.child(0).text() == "protected") {
-          in_public = false;
-        } else if (c.child(0).text() == "private") {
-          in_public = false;
-        } else {
-          c.dump_tree();
-          debugbreak();
-        }
-        comment_out(c);
-        break;
-      case sym_preproc_ifdef:
-        emit_dispatch(c);
-        break;
       default:
-        c.dump_tree();
-        debugbreak();
+        emit_dispatch(c);
         break;
     }
     if (i != body_size - 1) emit_ws();
@@ -1537,29 +1524,7 @@ void MtCursor::emit(MtClassSpecifier n) {
 //------------------------------------------------------------------------------
 
 void MtCursor::emit(MtExprStatement n) {
-  assert(cursor == n.start());
-
-  for (auto c : (MtNode&)n) {
-    switch (c.sym) {
-      case sym_call_expression:
-        emit(MtCallExpr(c));
-        break;
-      case sym_assignment_expression:
-        emit(MtAssignmentExpr(c));
-        break;
-      case sym_conditional_expression:
-        emit_children(c);
-        break;
-      case anon_sym_SEMI:
-        emit_text(c);
-        break;
-      default:
-        c.dump_tree();
-        debugbreak();
-        break;
-    }
-  }
-  assert(cursor == n.end());
+  emit_children(n);
 }
 
 //------------------------------------------------------------------------------
@@ -1583,29 +1548,11 @@ void MtCursor::emit(MtCompoundStatement n) {
       case sym_declaration:
         emit_init_declarator_as_assign(c);
         break;
-      case anon_sym_RBRACE: {
+      case anon_sym_RBRACE:
         emit_replacement(c, "end");
         break;
-      }
-      case sym_expression_statement:
-        emit(MtExprStatement(c));
-        break;
-
-      case sym_if_statement:
-        emit(MtIfStatement(c));
-        break;
-
-      case sym_comment:
-        emit(MtComment(c));
-        break;
-
-      case sym_break_statement:
-        emit(MtBreakStatement(c));
-        break;
-
       default:
-        c.dump_tree();
-        debugbreak();
+        emit_dispatch(c);
         break;
     }
     if (i != body_count - 1) emit_ws();
@@ -1711,8 +1658,6 @@ void MtCursor::emit(MtTemplateArgList n) {
 // Enum lists do _not_ turn braces into begin/end.
 
 void MtCursor::emit(MtEnumeratorList n) {
-  assert(cursor == n.start());
-
   for (auto c : (MtNode&)n) {
     switch (c.sym) {
       case anon_sym_LBRACE:
@@ -1736,6 +1681,7 @@ void MtCursor::emit(MtEnumeratorList n) {
 void MtCursor::emit(MtTranslationUnit n) {
   assert(cursor == n.start());
 
+  node_stack.push(n);
   auto child_count = n.child_count();
   for (int i = 0; i < child_count; i++) {
     auto c = n.child(i);
@@ -1749,6 +1695,7 @@ void MtCursor::emit(MtTranslationUnit n) {
     }
     if (i != child_count - 1) emit_ws();
   }
+  node_stack.pop();
 
   if (cursor < source_file->source_end) {
     emit_span(cursor, source_file->source_end);
@@ -1807,6 +1754,7 @@ void MtCursor::emit(MtNumberLiteral n, int size_cast) {
 void MtCursor::emit(MtReturnStatement n) {
   assert(cursor == n.start());
   auto func_name = current_function_name;
+  node_stack.push(n);
   for (auto c : (MtNode&)n) {
     emit_ws();
     switch (c.sym) {
@@ -1818,6 +1766,7 @@ void MtCursor::emit(MtReturnStatement n) {
         break;
     }
   }
+  node_stack.pop();
   assert(cursor == n.end());
 }
 
@@ -1841,6 +1790,7 @@ void MtCursor::emit(MtIdentifier n) {
   if (it != id_replacements.end()) {
     emit_replacement(n, it->second.c_str());
   } else {
+    if (preproc_vars.contains(name)) emit("`");
     emit_text(n);
   }
   assert(cursor == n.end());
@@ -1913,19 +1863,18 @@ void MtCursor::emit(MtFieldExpr n) {
 
 void MtCursor::emit(MtCaseStatement n) {
   assert(cursor == n.start());
-
+  node_stack.push(n);
   auto child_count = n.child_count();
   for (int i = 0; i < child_count; i++) {
     auto c = n.child(i);
     if (c.sym == anon_sym_case) {
-      // skip_to_next_sibling(c);
-      // skip_over(c);
       comment_out(c);
     } else {
       emit_dispatch(c);
     }
     if (i != child_count - 1) emit_ws();
   }
+  node_stack.pop();
   assert(cursor == n.end());
 }
 
@@ -2058,7 +2007,6 @@ void MtCursor::emit(MtEnumSpecifier n) {
 }
 
 //------------------------------------------------------------------------------
-// FIXME - are we using this anywhere?
 
 void MtCursor::emit(MtUsingDecl n) {
   assert(cursor == n.start());
@@ -2220,14 +2168,9 @@ void MtCursor::emit(MtFieldIdentifier n) {
 }
 
 //------------------------------------------------------------------------------
-// Call the correct emit() method based on the node type.
+// FIXME need to do smarter stuff here...
 
-void MtCursor::emit_dispatch(MtNode n) {
-  if (cursor != n.start()) {
-    n.dump_tree();
-    assert(cursor == n.start());
-  }
-
+void MtCursor::emit_preproc(MtNode n) {
   switch (n.sym) {
     case sym_preproc_def: {
       auto lit = n.child(0);
@@ -2241,8 +2184,14 @@ void MtCursor::emit_dispatch(MtNode n) {
         emit_ws();
         emit_dispatch(value);
       }
+
+      preproc_vars[name.text()] = value;
       break;
     }
+
+    case sym_preproc_if:
+      skip_over(n);
+      break;
 
     case sym_preproc_ifdef: {
       emit_children(n);
@@ -2254,19 +2203,58 @@ void MtCursor::emit_dispatch(MtNode n) {
       break;
     }
 
+    case sym_preproc_call:
+      skip_over(n);
+      break;
+
     case sym_preproc_arg: {
       emit_text(n);
       break;
     }
+    case sym_preproc_include: {
+      // FIXME we need to scan the include for types n defines n stuff...
+      emit(MtPreprocInclude(n));
+      break;
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+// Call the correct emit() method based on the node type.
+
+void MtCursor::emit_dispatch(MtNode n) {
+  if (cursor != n.start()) {
+    n.dump_tree();
+    assert(cursor == n.start());
+  }
+
+  switch (n.sym) {
+    case sym_preproc_def:
+    case sym_preproc_if:
+    case sym_preproc_ifdef:
+    case sym_preproc_else:
+    case sym_preproc_call:
+    case sym_preproc_arg:
+    case sym_preproc_include:
+      emit_preproc(n);
+      break;
 
     case sym_type_qualifier:
       comment_out(n);
       break;
 
-    case sym_preproc_call:
     case sym_access_specifier:
-    case sym_preproc_if:
-      skip_over(n);
+      if (n.child(0).text() == "public") {
+        in_public = true;
+      } else if (n.child(0).text() == "protected") {
+        in_public = false;
+      } else if (n.child(0).text() == "private") {
+        in_public = false;
+      } else {
+        n.dump_tree();
+        debugbreak();
+      }
+      comment_out(n);
       break;
 
     case sym_for_statement:
@@ -2340,9 +2328,6 @@ void MtCursor::emit_dispatch(MtNode n) {
       break;
     case sym_template_declaration:
       emit(MtTemplateDecl(n));
-      break;
-    case sym_preproc_include:
-      emit(MtPreprocInclude(n));
       break;
     case sym_field_declaration:
       emit(MtFieldDecl(n));
@@ -2441,11 +2426,13 @@ void MtCursor::emit_dispatch(MtNode n) {
 
 void MtCursor::emit_children(MtNode n) {
   assert(cursor == n.start());
+  node_stack.push(n);
   auto count = n.child_count();
   for (auto i = 0; i < count; i++) {
     emit_dispatch(n.child(i));
     if (i != count - 1) emit_ws();
   }
+  node_stack.pop();
 }
 
 //------------------------------------------------------------------------------

@@ -24,12 +24,11 @@ module example_data_memory
  /*public:*/
   /*logic<32> q;*/
 
-  initial begin : init
-    string s;
-    
-    $value$plusargs("data_file=%s", s);
-    $readmemh(s, mem);
-  end
+/*private:*/
+  logic[31:0] mem[2**(DATA_BITS - 2)];
+
+/*public:*/
+  always_comb begin : tock q = mem[address]; end
 
   always_ff @(posedge clock) begin : tick
     if (wren) begin
@@ -43,10 +42,13 @@ module example_data_memory
     end
   end
 
-  always_comb begin : tock q = mem[address]; end
+  initial begin : init
+    string s;
+    
+    $value$plusargs("data_file=%s", s);
+    $readmemh(s, mem);
+  end
 
- /*private:*/
-  logic[31:0] mem[2**(DATA_BITS - 2)];
 endmodule;
 
 `endif  // RVSIMPLE_EXAMPLE_DATA_MEMORY_H

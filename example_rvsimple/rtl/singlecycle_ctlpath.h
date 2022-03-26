@@ -40,7 +40,7 @@ class singlecycle_ctlpath {
 
   void tock_next_pc_select(logic<7> inst_opcode, logic<3> inst_funct3,
                            logic<1> alu_result_equal_zero) {
-    transfer.tock(inst_funct3, alu_result_equal_zero);
+    transfer.tock(alu_result_equal_zero, inst_funct3);
 
     control.tock_next_pc_select(inst_opcode, transfer.take_branch);
     next_pc_select = control.next_pc_select;

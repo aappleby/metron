@@ -259,10 +259,6 @@ void MtModule::dump_banner() {
   dump_method_list(*task_methods);
   LOG_B("Functions:\n");
   dump_method_list(*func_methods);
-  LOG_B("Tick calls:\n");
-  dump_call_list(*tick_calls);
-  LOG_B("Tock calls:\n");
-  dump_call_list(*tock_calls);
 
   //----------
 
@@ -647,58 +643,21 @@ void MtModule::collect_submods() {
 void MtModule::load_pass2() {
   if (mod_struct.is_null()) return;
 
-  collect_submod_calls();
   build_port_map();
   sanity_check();
 }
 
 //------------------------------------------------------------------------------
 
-void MtModule::collect_submod_calls() {
-  assert(tick_calls == nullptr);
-  tick_calls = new std::vector<MtCall>();
-
-  for (auto n : *tick_methods) {
-    n.visit_tree([&](MtNode child) {
-      if (child.sym != sym_call_expression) return;
-      if (child.get_field(field_function).sym != sym_field_expression) return;
-      tick_calls->push_back(node_to_call(child));
-    });
-  }
-
-  assert(tock_calls == nullptr);
-  tock_calls = new std::vector<MtCall>();
-
-  for (auto n : *tock_methods) {
-    n.visit_tree([&](MtNode child) {
-      if (child.sym != sym_call_expression) return;
-      if (child.get_field(field_function).sym != sym_field_expression) return;
-      tock_calls->push_back(node_to_call(child));
-    });
-  }
-}
-
-//------------------------------------------------------------------------------
-
 void MtModule::build_port_map() {
-  assert(port_map == nullptr);
 
   port_map = new std::map<std::string, std::string>();
 
-  for (auto &call : *tick_calls) {
-    for (auto i = 0; i < call.args->size(); i++) {
-      auto key = call.submod->name() + "." + call.method->params->at(i);
-      auto val = call.args->at(i);
-      auto it = port_map->find(key);
-      if (it != port_map->end()) {
-        assert((*it).second == val);
-      } else {
-        port_map->insert({key, val});
-      }
-    }
-  }
+  mod_struct.visit_tree([&](MtNode child) {
+    if (child.sym != sym_call_expression) return;
+    if (child.get_field(field_function).sym != sym_field_expression) return;
 
-  for (auto &call : *tock_calls) {
+    auto call = node_to_call(child);
     for (auto i = 0; i < call.args->size(); i++) {
       auto key = call.submod->name() + "." + call.method->params->at(i);
       auto val = call.args->at(i);
@@ -709,7 +668,7 @@ void MtModule::build_port_map() {
         port_map->insert({key, val});
       }
     }
-  }
+  });
 }
 
 //------------------------------------------------------------------------------

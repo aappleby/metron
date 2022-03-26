@@ -55,7 +55,7 @@ module singlecycle_ctlpath
   end
 
   always_comb begin : tock_next_pc_select
-    /*transfer.tock(inst_funct3, alu_result_equal_zero);*/
+    /*transfer.tock(alu_result_equal_zero, inst_funct3);*/
 
     /*control.tock_next_pc_select(inst_opcode, transfer.take_branch);*/
     next_pc_select = control_next_pc_select;
@@ -98,8 +98,8 @@ module singlecycle_ctlpath
   control_transfer transfer(
     // Inputs
     .clock(clock),
-    .inst_funct3(inst_funct3), 
     .result_equal_zero(alu_result_equal_zero), 
+    .inst_funct3(inst_funct3), 
     // Outputs
     .take_branch(transfer_take_branch)
   );

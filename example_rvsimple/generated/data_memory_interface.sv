@@ -34,6 +34,11 @@ module data_memory_interface
   /*logic<1> bus_read_enable;*/
   /*logic<1> bus_write_enable;*/
 
+ /*private:*/
+  logic[31:0] position_fix;
+  logic[31:0] sign_fix;
+
+ /*public:*/
   always_comb begin : tock_bus
     bus_address = address;
     bus_write_enable = write_enable;
@@ -57,14 +62,14 @@ module data_memory_interface
     endcase
   end
 
-  always_comb begin : tock_read_data
-    logic[31:0] position_fix;
-    logic[31:0] sign_fix;
-    // correct for unaligned accesses
+  // correct for unaligned accesses
+  always_comb begin : tock_position_fix
     position_fix = 32'(bus_read_data >> (8 * 2'(address)));
+  end
 
-    // sign-extend if necessary
-    
+  // sign-extend if necessary
+  always_comb begin : tock_sign_fix
+
     case (2'(data_format)) 
       /*case*/ 2'b00:
         sign_fix = {{24 {1'(~data_format[2] & position_fix[7])}},
@@ -81,9 +86,9 @@ module data_memory_interface
         sign_fix = 32'x;
         /*break;*/
     endcase
-
-    read_data = sign_fix;
   end
+
+  always_comb begin : tock_read_data read_data = sign_fix; end
 endmodule;
 
 `endif  // RVSIMPLE_DATA_MEMORY_INTERFACE_H

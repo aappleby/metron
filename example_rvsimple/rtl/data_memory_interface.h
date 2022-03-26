@@ -19,6 +19,11 @@ class data_memory_interface {
   logic<1> bus_read_enable;
   logic<1> bus_write_enable;
 
+ private:
+  logic<32> position_fix;
+  logic<32> sign_fix;
+
+ public:
   void tock_bus(logic<1> read_enable, logic<1> write_enable,
                 logic<3> data_format, logic<32> address, logic<32> write_data) {
     bus_address = address;
@@ -43,13 +48,15 @@ class data_memory_interface {
     }
   }
 
-  void tock_read_data(logic<3> data_format, logic<32> address,
-                      logic<32> bus_read_data) {
-    // correct for unaligned accesses
-    logic<32> position_fix = b32(bus_read_data >> (8 * b2(address)));
+  // correct for unaligned accesses
+  void tock_position_fix(logic<32> address,
+                     logic<32> bus_read_data) {
+    position_fix = b32(bus_read_data >> (8 * b2(address)));
+  }
 
-    // sign-extend if necessary
-    logic<32> sign_fix;
+  // sign-extend if necessary
+  void tock_sign_fix(logic<3> data_format) {
+
     switch (b2(data_format)) {
       case 0b00:
         sign_fix = cat(dup<24>(b1(~data_format[2] & position_fix[7])),
@@ -66,9 +73,9 @@ class data_memory_interface {
         sign_fix = b32(DONTCARE);
         break;
     }
-
-    read_data = sign_fix;
   }
+
+  void tock_read_data() { read_data = sign_fix; }
 };
 
 #endif  // RVSIMPLE_DATA_MEMORY_INTERFACE_H

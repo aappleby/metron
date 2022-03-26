@@ -13,8 +13,8 @@
 module control_transfer
 (
   input logic clock,
-  input logic[2:0] inst_funct3,
   input logic result_equal_zero,
+  input logic[2:0] inst_funct3,
   output logic take_branch
 );
  /*public:*/

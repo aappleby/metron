@@ -33,17 +33,6 @@ module example_data_memory_bus
         byte_enable, write_data);*/
   end
 
-  always_comb begin : tock
-    /*data_memory.tock(bx<DATA_BITS - 2>(address, 2));*/
-
-    if (read_enable && address >= DATA_BEGIN && DATA_END >= address) begin
-      read_data = data_memory_q;
-    end else begin
-      read_data = 32'x;
-    end
-  end
-
- /*private:*/
   example_data_memory data_memory(
     // Inputs
     .clock(clock),
@@ -55,6 +44,19 @@ module example_data_memory_bus
     .q(data_memory_q)
   );
   logic[31:0] data_memory_q;
+
+
+  always_comb begin : tock
+    logic[31:0] fetched;
+    logic is_data_memory;
+    /*data_memory.tock(bx<DATA_BITS - 2>(address, 2));*/
+    fetched = data_memory_q;
+    is_data_memory = address >= DATA_BEGIN && DATA_END >= address;
+    read_data =
+      read_enable && is_data_memory
+        ? fetched
+        : 32'x;
+  end
 
 endmodule;
 

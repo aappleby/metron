@@ -82,8 +82,9 @@ module riscv_core
   end
 
   always_comb begin : tock_writeback
-    /*dmem.tock_read_data(datapath.inst_funct3, datapath.data_mem_address,
-                        bus_read_data);*/
+    /*dmem.tock_position_fix(datapath.data_mem_address, bus_read_data);*/
+    /*dmem.tock_sign_fix(datapath.inst_funct3);*/
+    /*dmem.tock_read_data();*/
 
     /*datapath.tock_writeback(dmem.read_data, ctlpath.reg_writeback_select);*/
   end

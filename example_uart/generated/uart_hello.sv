@@ -61,9 +61,6 @@ module uart_hello
   logic[cursor_bits-1:0] cursor;
   logic[7:0] memory[512];
   logic[7:0] data;
-
-  function int blah() /*const*/;  blah = 7; endfunction
-  task derp();  s = SEND; endtask
 endmodule
 
 //==============================================================================

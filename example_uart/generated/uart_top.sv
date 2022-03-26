@@ -36,10 +36,10 @@ module uart_top
   end
 
   always_comb begin o_serial = tx_o_serial; end
-  always_comb begin o_data = rx_o_data; end
-  always_comb begin o_valid = rx_o_valid; end
+  always_comb begin o_data = rx_buffer; end
+  always_comb begin o_valid = rx_valid; end
   always_comb begin o_done = hello_o_done && tx_o_idle; end
-  always_comb begin o_sum = rx_o_sum; end
+  always_comb begin o_sum = rx_sum; end
 
   //----------------------------------------
 
@@ -80,13 +80,13 @@ module uart_top
     .i_rstn(i_rstn), 
     .i_serial(tx_o_serial), 
     // Outputs
-    .o_data(rx_o_data), 
-    .o_valid(rx_o_valid), 
-    .o_sum(rx_o_sum)
+    .buffer(rx_buffer), 
+    .sum(rx_sum), 
+    .valid(rx_valid)
   );
-  logic[7:0] rx_o_data;
-  logic rx_o_valid;
-  logic[31:0] rx_o_sum;
+  logic[7:0] rx_buffer;
+  logic[31:0] rx_sum;
+  logic rx_valid;
 
 endmodule
 

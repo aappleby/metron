@@ -18,10 +18,12 @@ class single_register {
   void init() { value = INITIAL; }
 
   void tick(logic<1> reset, logic<1> write_enable, logic<WIDTH> next) {
-    if (reset)
+    if (reset) {
       value = INITIAL;
-    else if (write_enable)
+    }
+    else if (write_enable) {
       value = next;
+    }
   }
 
   //void tock() { value = reg_value; }

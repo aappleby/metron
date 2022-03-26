@@ -1,5 +1,6 @@
 #pragma once
 #include <map>
+#include <stack>
 
 #include "MtNode.h"
 #include "Platform.h"
@@ -16,6 +17,7 @@ struct MtCursor {
 
   // Debugging
 
+  void dump(const MtNode& n) const;
   void dump_node_line(MtNode n);
   void print_error(MtNode n, const char* fmt, ...);
 
@@ -86,7 +88,7 @@ struct MtCursor {
   void emit(MtUsingDecl n);
 
   // Special-purpose emit()s
-
+  void emit_preproc(MtNode n);
   void emit_field_as_localparam(MtFieldDecl field_decl);
   void emit_func_decl(MtFuncDeclarator n);
   void emit(MtFuncDefinition n);
@@ -114,6 +116,9 @@ struct MtCursor {
   std::string* str_out;
 
   std::map<std::string, std::string> id_replacements;
+  std::map<std::string, MtNode> preproc_vars;
+
+  std::stack<MtNode> node_stack;
 
   bool quiet = true;
   bool in_init = false;

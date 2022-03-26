@@ -14,7 +14,7 @@ class control_transfer {
  public:
   logic<1> take_branch;
 
-  void tock(logic<3> inst_funct3, logic<1> result_equal_zero) {
+  void tock(logic<1> result_equal_zero, logic<3> inst_funct3) {
     using namespace rv_constants;
 
     switch (inst_funct3) {

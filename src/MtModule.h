@@ -44,7 +44,6 @@ struct MtModule {
   void collect_outputs();
   void collect_registers();
   void collect_submods();
-  void collect_submod_calls();
   void build_port_map();
 
   void check_dirty_ticks();
@@ -88,9 +87,6 @@ struct MtModule {
   std::vector<MtMethod>* tock_methods = nullptr;
   std::vector<MtMethod>* task_methods = nullptr;
   std::vector<MtMethod>* func_methods = nullptr;
-
-  std::vector<MtCall>* tick_calls = nullptr;
-  std::vector<MtCall>* tock_calls = nullptr;
 
   std::map<std::string, std::string>* port_map = nullptr;
 };

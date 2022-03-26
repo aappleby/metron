@@ -1,6 +1,8 @@
 
 `include "metron_tools.sv"
 
+`define BUTTS 0
+
 //==============================================================================
 
 module uart_rx
@@ -9,9 +11,9 @@ module uart_rx
   input logic clock,
   input logic i_rstn,
   input logic i_serial,
-  output logic[7:0] o_data,
-  output logic o_valid,
-  output logic[31:0] o_sum
+  output logic[7:0] buffer,
+  output logic[31:0] sum,
+  output logic valid
 );
  /*public:*/
   //----------------------------------------
@@ -34,14 +36,14 @@ module uart_rx
         buffer <= temp;
       end else if (i_serial == 0) begin
         cycle <= cycle_max;
-        cursor <= cursor_max;
+        cursor <= cursor_max + `BUTTS;
       end
     end
   end
 
-  always_comb begin o_data = buffer; end
-  always_comb begin o_valid = cursor == 1; end
-  always_comb begin o_sum = sum; end
+  /*logic<8> buffer;*/
+  always_comb begin valid = cursor == 1; end
+  /*logic<32> sum;*/
 
   //----------------------------------------
 
@@ -53,8 +55,6 @@ module uart_rx
 
   logic[cycle_bits-1:0] cycle;
   logic[cursor_bits-1:0] cursor;
-  logic[7:0] buffer;
-  logic[31:0] sum;
 endmodule
 
 //==============================================================================

@@ -27,10 +27,10 @@ class uart_top {
   }
 
   logic<1> o_serial() const { return tx.o_serial(); }
-  logic<8> o_data() const { return rx.o_data(); }
-  logic<1> o_valid() const { return rx.o_valid(); }
+  logic<8> o_data() const { return rx.buffer; }
+  logic<1> o_valid() const { return rx.valid(); }
   logic<1> o_done() const { return hello.o_done && tx.o_idle(); }
-  logic<32> o_sum() const { return rx.o_sum(); }
+  logic<32> o_sum() const { return rx.sum; }
 
   //----------------------------------------
 

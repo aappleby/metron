@@ -25,10 +25,12 @@ module single_register
   initial begin : init value = INITIAL; end
 
   always_ff @(posedge clock) begin : tick
-    if (reset)
-      value = INITIAL;
-    else if (write_enable)
-      value = next;
+    if (reset) begin
+      value <= INITIAL;
+    end
+    else if (write_enable) begin
+      value <= next;
+    end
   end
 
   //void tock() { value = reg_value; }
@@ -38,3 +40,4 @@ module single_register
 endmodule
 
 `endif  // RVSIMPLE_REGISTER_H
+

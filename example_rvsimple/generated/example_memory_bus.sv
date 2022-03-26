@@ -25,34 +25,10 @@ module example_memory_bus
  /*public:*/
   /*logic<32> read_data;*/
 
-  always_ff @(posedge clock) begin : tick
-    /*data_memory.tick(
-        bx<DATA_BITS - 2>(address),
-        write_enable && address >= DATA_BEGIN && address <= DATA_END,
-        byte_enable, write_data);*/
-  end
-
-  always_comb begin : tock
-    /*data_memory.tock(bx<DATA_BITS - 2>(address));*/
-    /*text_memory.tock(bx<TEXT_BITS - 2>(address));*/
-
-    if (read_enable) begin
-      if (address >= TEXT_BEGIN && address <= TEXT_END)
-        read_data = text_memory_q;
-      else if (address >= DATA_BEGIN && address <= DATA_END)
-        read_data = data_memory_q;
-      else
-        read_data = 32'x;
-    end else begin
-      read_data = 32'x;
-    end
-  end
-
- /*private:*/
   example_data_memory data_memory(
     // Inputs
     .clock(clock),
-    .address((DATA_BITS - 2)'(address)), 
+    .address(address[DATA_BITS - 2+1:2]), 
     .wren(write_enable && address >= DATA_BEGIN && address <= DATA_END), 
     .byteena(byte_enable), 
     .data(write_data), 
@@ -64,12 +40,45 @@ module example_memory_bus
   example_text_memory text_memory(
     // Inputs
     .clock(clock),
-    .address((TEXT_BITS - 2)'(address)), 
+    .address(address[TEXT_BITS - 2+1:2]), 
     // Outputs
     .q(text_memory_q)
   );
   logic[31:0] text_memory_q;
 
+
+  always_ff @(posedge clock) begin : tick
+    /*data_memory.tick(
+        bx<DATA_BITS - 2>(address, 2),
+        write_enable && address >= DATA_BEGIN && address <= DATA_END,
+        byte_enable, write_data);*/
+  end
+
+  always_comb begin : tock
+    logic[31:0] text_fetched;
+    logic[31:0] data_fetched;
+    logic is_data_memory;
+    logic is_text_memory;
+    /*data_memory.tock(bx<DATA_BITS - 2>(address, 2));*/
+    /*text_memory.tock(bx<TEXT_BITS - 2>(address, 2));*/
+
+    text_fetched = text_memory_q;
+    data_fetched = data_memory_q;
+
+    is_data_memory = address >= DATA_BEGIN && address <= DATA_END;
+    is_text_memory = address >= TEXT_BEGIN && address <= TEXT_END;
+
+    if (read_enable) begin
+      if (is_text_memory)
+        read_data = text_memory_q;
+      else if (is_data_memory)
+        read_data = data_memory_q;
+      else
+        read_data = 32'x;
+    end else begin
+      read_data = 32'x;
+    end
+  end
 endmodule;
 
 `endif  // RVSIMPLE_EXAMPLE_MEMORY_BUS_H

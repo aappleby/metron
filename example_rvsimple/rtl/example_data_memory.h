@@ -16,11 +16,11 @@ class example_data_memory {
  public:
   logic<32> q;
 
-  void init() {
-    std::string s;
-    value_plusargs("data_file=%s", s);
-    readmemh(s, mem);
-  }
+private:
+  logic<32> mem[pow2(DATA_BITS - 2)];
+
+public:
+  void tock(logic<DATA_BITS - 2> address) { q = mem[address]; }
 
   void tick(logic<DATA_BITS - 2> address, logic<1> wren, logic<4> byteena,
             logic<32> data) {
@@ -34,10 +34,12 @@ class example_data_memory {
     }
   }
 
-  void tock(logic<DATA_BITS - 2> address) { q = mem[address]; }
+  void init() {
+    std::string s;
+    value_plusargs("data_file=%s", s);
+    readmemh(s, mem);
+  }
 
- private:
-  logic<32> mem[pow2(DATA_BITS - 2)];
 };
 
 #endif  // RVSIMPLE_EXAMPLE_DATA_MEMORY_H

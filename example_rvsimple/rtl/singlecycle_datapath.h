@@ -30,20 +30,21 @@ class singlecycle_datapath {
 
   logic<32> data_mem_address;
 
-  logic<3>  inst_funct3()          const { return idec.inst_funct3; }
-  logic<7>  inst_funct7()          const { return idec.inst_funct7; }
-  logic<7>  inst_opcode()          const { return idec.inst_opcode; }
   logic<32> pc2()                  const { return program_counter.value; }
   logic<32> data_mem_address2()    const { return alu_core.result; }
   logic<32> data_mem_write_data2() const { return regs.rs2_data; }
   logic<1>  alu_result_equal_zero2() const { return alu_core.result_equal_zero; }
 
+  logic<7>  inst_opcode2(logic<32> inst) const { return idec.inst_opcode2(inst); }
+  logic<3>  inst_funct32(logic<32> inst) const { return idec.inst_funct32(inst); }
+  logic<7>  inst_funct72(logic<32> inst) const { return idec.inst_funct72(inst); }
+
   //----------------------------------------
 
-  void tock_submods(logic<1> reset, logic<1> pc_write_enable,
+  void tock_submods(logic<1> reset, logic<32> inst, logic<1> pc_write_enable,
             logic<1> regfile_write_enable) {
     program_counter.tick(reset, pc_write_enable, mux_next_pc_select.out);
-    regs.tick(regfile_write_enable, idec.inst_rd, mux_reg_writeback.out);
+    regs.tick(regfile_write_enable, idec.inst_rd2(inst), mux_reg_writeback.out);
   }
 
   void tock_decode(logic<32> inst) {
@@ -51,8 +52,11 @@ class singlecycle_datapath {
     igen.tock(inst);
   }
 
-  void tock_regfile() {
-    regs.tock(idec.inst_rs1, idec.inst_rs2);
+  void tock_regfile(logic<32> inst) {
+    regs.tock(
+      idec.inst_rs12(inst),
+      idec.inst_rs22(inst)
+    );
   }
 
   void tock_alu(logic<5> alu_function, logic<1> alu_operand_a_select,

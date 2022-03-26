@@ -90,15 +90,21 @@ module uart_top
   uart_rx #(cycles_per_bit) rx(
     // Inputs
     .clock(clock),
+    .a(rx_a), 
+    .b(rx_b), 
     .i_rstn(rx_i_rstn), 
     .i_serial(rx_i_serial), 
     // Outputs
+    .derp(rx_derp), 
     .o_valid(rx_o_valid), 
     .o_buffer(rx_o_buffer), 
     .o_sum(rx_o_sum)
   );
+  logic[31:0] rx_a;
+  logic[31:0] rx_b;
   logic rx_i_rstn;
   logic rx_i_serial;
+  logic[31:0] rx_derp;
   logic  rx_o_valid;
   logic[7:0]  rx_o_buffer;
   logic[31:0] rx_o_sum;

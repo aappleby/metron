@@ -30,9 +30,10 @@ class riscv_core {
     datapath.init();
   }
 
-  void tock_submods(logic<1> reset) {
+  void tock_submods(logic<1> reset, logic<32> inst) {
     datapath.tock_submods(
       reset,
+      inst,
       ctlpath.pc_write_enable2(),
       ctlpath.regfile_write_enable2()
     );
@@ -40,15 +41,15 @@ class riscv_core {
 
   void tock_execute(logic<32> inst) {
     datapath.tock_decode(inst);
-    datapath.tock_regfile();
+    datapath.tock_regfile(inst);
 
     ctlpath.tock_decode(
-      datapath.inst_opcode()
+      datapath.inst_opcode2(inst)
     );
 
     ctlpath.tock_alu_control(
-      datapath.inst_funct3(),
-      datapath.inst_funct7()
+      datapath.inst_funct32(inst),
+      datapath.inst_funct72(inst)
     );
 
     datapath.tock_alu(
@@ -58,24 +59,24 @@ class riscv_core {
     );
 
     ctlpath.tock_next_pc_select(
-      datapath.inst_opcode(),
-      datapath.inst_funct3(),
+      datapath.inst_opcode2(inst),
+      datapath.inst_funct32(inst),
       datapath.alu_result_equal_zero2()
     );
 
     datapath.tock_next_pc(ctlpath.next_pc_select());
 
     dmem.tock_bus(
-      datapath.inst_funct3(),
+      datapath.inst_funct32(inst),
       datapath.data_mem_address,
       datapath.data_mem_write_data2());
 
     bus_address = datapath.data_mem_address;
   }
 
-  void tock_writeback(logic<32> bus_read_data) {
+  void tock_writeback(logic<32> inst, logic<32> bus_read_data) {
     dmem.tock_position_fix(datapath.data_mem_address, bus_read_data);
-    dmem.tock_sign_fix(datapath.inst_funct3());
+    dmem.tock_sign_fix(datapath.inst_funct32(inst));
     dmem.tock_read_data();
     datapath.tock_writeback(dmem.read_data, ctlpath.reg_writeback_select());
   }

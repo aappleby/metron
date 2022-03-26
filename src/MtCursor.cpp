@@ -1195,8 +1195,6 @@ void MtCursor::emit_field_as_submod(MtFieldDecl n) {
 
   for (auto& n : *submod_mod->inputs) {
     auto key = inst_name + "." + n.name();
-    auto it = current_mod->port_map->find(key);
-    assert(it != current_mod->port_map->end());
 
     emit_newline();
     emit_indent();

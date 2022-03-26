@@ -512,12 +512,76 @@ void MtModule::collect_methods() {
 // input ports. Input ports can be declared in multiple tick/tock methods, but
 // we don't want duplicates in the Verilog port list.
 
+/*
+void MtModule::build_port_map() {
+
+  port_map = new std::map<std::string, std::string>();
+
+  mod_struct.visit_tree([&](MtNode child) {
+    if (child.sym != sym_call_expression) return;
+    if (child.get_field(field_function).sym != sym_field_expression) return;
+
+    auto call = node_to_call(child);
+
+    if (!call.method) {
+      child.dump_tree();
+    }
+    assert(call.method);
+
+
+    for (auto i = 0; i < call.args->size(); i++) {
+      auto key = call.submod->name() + "." + call.method->params->at(i);
+      auto val = call.args->at(i);
+      auto it = port_map->find(key);
+      if (it != port_map->end()) {
+        assert((*it).second == val);
+      } else {
+        port_map->insert({key, val});
+      }
+    }
+  });
+}
+*/
+
 void MtModule::collect_inputs() {
   assert(inputs == nullptr);
   inputs = new std::vector<MtField>();
 
   std::set<std::string> dedup;
 
+  bool in_public = false;
+  auto mod_body = mod_struct.get_field(field_body).check_null();
+  for (auto n : mod_body) {
+    if (n.sym == sym_access_specifier) {
+      if (n.child(0).text() == "public") {
+        in_public = true;
+      } else if (n.child(0).text() == "protected") {
+        in_public = false;
+      } else if (n.child(0).text() == "private") {
+        in_public = false;
+      } else {
+        n.dump_tree();
+        debugbreak();
+      }
+      continue;
+    }
+
+    if (n.sym == sym_function_definition) {
+      auto params = n.get_field(field_declarator).get_field(field_parameters);
+
+      for (auto param : params) {
+        if (param.sym != sym_parameter_declaration) continue;
+        MtField f(param, true);
+        if (!dedup.contains(f.name())) {
+          inputs->push_back(f);
+          dedup.insert(f.name());
+        }
+      }
+      continue;
+    }
+  }
+  
+#if 0
   for (auto n : *tick_methods) {
     auto params = n.get_field(field_declarator).get_field(field_parameters);
     for (auto param : params) {
@@ -541,6 +605,7 @@ void MtModule::collect_inputs() {
       }
     }
   }
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -670,7 +735,13 @@ void MtModule::build_port_map() {
       auto val = call.args->at(i);
       auto it = port_map->find(key);
       if (it != port_map->end()) {
-        assert((*it).second == val);
+        if ((*it).second != val) {
+          LOG_R("Error, got multiple different values for %s: '%s' and '%s'\n",
+            key.c_str(),
+            (*it).second.c_str(),
+            val.c_str());
+          debugbreak();
+        }
       } else {
         port_map->insert({key, val});
       }

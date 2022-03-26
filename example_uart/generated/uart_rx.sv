@@ -7,14 +7,21 @@ module uart_rx
 #(parameter int cycles_per_bit = 4)
 (
   input logic clock,
+  input logic[31:0] a,
+  input logic[31:0] b,
   input logic i_rstn,
   input logic i_serial,
+  output logic[31:0] derp,
   output logic  o_valid,
   output logic[7:0]  o_buffer,
   output logic[31:0] o_sum
 );
  /*public:*/
   //----------------------------------------
+
+  always_comb begin
+    derp = a + b;
+  end
 
   always_comb begin o_valid = cursor == 1; end
   always_comb begin o_buffer = buffer; end

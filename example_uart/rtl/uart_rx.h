@@ -8,6 +8,10 @@ class uart_rx {
  public:
   //----------------------------------------
 
+  logic<32> derp(logic<32> a, logic<32> b) {
+    return a + b;
+  }
+
   logic<1>  o_valid()  const { return cursor == 1; }
   logic<8>  o_buffer() const { return buffer; }
   logic<32> o_sum()    const { return sum; }

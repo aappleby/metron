@@ -14,29 +14,30 @@ module instruction_decoder
 (
   input logic clock,
   input logic[31:0] inst,
-  output logic[6:0] inst_opcode,
-  output logic[2:0] inst_funct3,
-  output logic[6:0] inst_funct7,
-  output logic[4:0] inst_rd,
-  output logic[4:0] inst_rs1,
-  output logic[4:0] inst_rs2
+  output logic[6:0] inst_opcode2,
+  output logic[2:0] inst_funct32,
+  output logic[6:0] inst_funct72,
+  output logic[4:0] inst_rd2,
+  output logic[4:0] inst_rs12,
+  output logic[4:0] inst_rs22
 );
  /*public:*/
-  /*logic<7> inst_opcode;*/
-  /*logic<3> inst_funct3;*/
-  /*logic<7> inst_funct7;*/
-  /*logic<5> inst_rd;*/
-  /*logic<5> inst_rs1;*/
-  /*logic<5> inst_rs2;*/
+  always_comb begin inst_opcode2 = inst[6:0]; end
+  always_comb begin inst_funct32 = inst[14:12]; end
+  always_comb begin inst_funct72 = inst[31:25]; end
+  always_comb begin inst_rd2 = inst[11:7]; end
+  always_comb begin inst_rs12 = inst[19:15]; end
+  always_comb begin inst_rs22 = inst[24:20]; end
 
   always_comb begin : tock
-    inst_opcode = inst[6:0];
-    inst_funct3 = inst[14:12];
-    inst_funct7 = inst[31:25];
-    inst_rd = inst[11:7];
-    inst_rs1 = inst[19:15];
-    inst_rs2 = inst[24:20];
+    //inst_opcode = b7(inst, 0);
+    //inst_funct3 = b3(inst, 12);
+    //inst_funct7 = b7(inst, 25);
+    //inst_rd = b5(inst, 7);
+    //inst_rs1 = b5(inst, 15);
+    //inst_rs2 = b5(inst, 20);
   end
 endmodule;
 
 `endif  // RVSIMPLE_INSTRUCTION_DECODER_H
+

@@ -14,7 +14,8 @@ module immediate_generator
 (
   input logic clock,
   input logic[31:0] inst,
-  output logic[31:0] immediate
+  output logic[31:0] immediate,
+  output logic[31:0] immediate2
 );
  /*public:*/
   /*logic<32> immediate;*/
@@ -26,6 +27,35 @@ module immediate_generator
   // B = { {20{inst[31]}}, inst[7],                            inst[30:25], inst[11:8],   1'b0  };
   // U = { {1{inst[31]}},  inst[30:20], inst[19:12],                                      12'b0 };
   // J = { {12{inst[31]}},              inst[19:12], inst[20], inst[30:25], inst[24:21],  1'b0  };
+
+  always_comb begin
+    import rv_constants::*;
+    case (7'(inst))  // Opcode
+      // FIXME we need to translate fallthrough into "x, y, z:"?
+      /*case*/ OPCODE_LOAD: // I-type immediate
+        immediate2 = {{21 {inst[31]}}, inst[30:25], inst[24:20]}; /*break;*/
+      /*case*/ OPCODE_LOAD_FP: // I-type immediate
+        immediate2 = {{21 {inst[31]}}, inst[30:25], inst[24:20]}; /*break;*/
+      /*case*/ OPCODE_OP_IMM: // I-type immediate
+        immediate2 = {{21 {inst[31]}}, inst[30:25], inst[24:20]}; /*break;*/
+      /*case*/ OPCODE_JALR: // I-type immediate
+        immediate2 = {{21 {inst[31]}}, inst[30:25], inst[24:20]}; /*break;*/
+      /*case*/ OPCODE_STORE_FP: // S-type immediate
+        immediate2 = {{21 {inst[31]}}, inst[30:25], inst[11:7]}; /*break;*/
+      /*case*/ OPCODE_STORE: // S-type immediate
+        immediate2 = {{21 {inst[31]}}, inst[30:25], inst[11:7]}; /*break;*/
+      /*case*/ OPCODE_BRANCH: // B-type immediate
+        immediate2 = {{20 {inst[31]}}, inst[7], inst[30:25], inst[11:8], 1'd0}; /*break;*/
+      /*case*/ OPCODE_AUIPC: // U-type immediate
+        immediate2 = {inst[31], inst[30:20], inst[19:12], 12'd0}; /*break;*/
+      /*case*/ OPCODE_LUI: // U-type immediate
+        immediate2 = {inst[31], inst[30:20], inst[19:12], 12'd0}; /*break;*/
+      /*case*/ OPCODE_JAL: // J-type immediate
+        immediate2 = {{12 {inst[31]}}, inst[19:12], inst[20], inst[30:25], inst[24:21], 1'd0}; /*break;*/
+      default:
+        immediate2 = 32'd0;
+    endcase
+  end
 
   always_comb begin : tock
     import rv_constants::*;
@@ -58,3 +88,4 @@ module immediate_generator
 endmodule;
 
 `endif  // RVSIMPLE_IMMEDIATE_GENERATOR_H
+

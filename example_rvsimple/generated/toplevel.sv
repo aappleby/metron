@@ -54,8 +54,9 @@ module toplevel
     data_memory_bus_write_enable = core_bus_write_enable2;
     data_memory_bus_byte_enable = core_bus_byte_enable2;
     data_memory_bus_write_data = core_bus_write_data2;
-    /*core.tock_submods(reset);*/
+    /*core.tock_submods(reset, text_memory_bus.read_data);*/
     core_reset = reset;
+    core_inst = text_memory_bus_read_data;
     /*text_memory_bus.tock(core.pc());*/
     text_memory_bus_address = core_pc;
     /*core.tock_execute(text_memory_bus.read_data);*/
@@ -63,7 +64,8 @@ module toplevel
     /*data_memory_bus.tock(core.bus_address, core.bus_read_enable2());*/
     data_memory_bus_address = core_bus_address;
     data_memory_bus_read_enable = core_bus_read_enable2;
-    /*core.tock_writeback(data_memory_bus.read_data);*/
+    /*core.tock_writeback(text_memory_bus.read_data, data_memory_bus.read_data);*/
+    core_inst = text_memory_bus_read_data;
     core_bus_read_data = data_memory_bus_read_data;
   end
 

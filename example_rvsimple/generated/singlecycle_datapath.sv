@@ -24,10 +24,10 @@ import rv_config::*;
 module singlecycle_datapath
 (
   input logic clock,
+  input logic[31:0] inst,
   input logic reset,
   input logic pc_write_enable,
   input logic regfile_write_enable,
-  input logic[31:0] inst,
   input logic[4:0] alu_function,
   input logic alu_operand_a_select,
   input logic alu_operand_b_select,
@@ -35,13 +35,13 @@ module singlecycle_datapath
   input logic[31:0] data_mem_read_data,
   input logic[2:0] reg_writeback_select,
   output logic[31:0] data_mem_address,
-  output logic[2:0]  inst_funct3,
-  output logic[6:0]  inst_funct7,
-  output logic[6:0]  inst_opcode,
   output logic[31:0] pc2,
   output logic[31:0] data_mem_address2,
   output logic[31:0] data_mem_write_data2,
-  output logic  alu_result_equal_zero2
+  output logic  alu_result_equal_zero2,
+  output logic[6:0]  inst_opcode2,
+  output logic[2:0]  inst_funct32,
+  output logic[6:0]  inst_funct72
 );
  /*public:*/
 
@@ -51,13 +51,14 @@ module singlecycle_datapath
 
   /*logic<32> data_mem_address;*/
 
-  always_comb begin inst_funct3 = idec_inst_funct3; end
-  always_comb begin inst_funct7 = idec_inst_funct7; end
-  always_comb begin inst_opcode = idec_inst_opcode; end
   always_comb begin pc2 = program_counter_value; end
   always_comb begin data_mem_address2 = alu_core_result; end
   always_comb begin data_mem_write_data2 = regs_rs2_data; end
   always_comb begin alu_result_equal_zero2 = alu_core_result_equal_zero; end
+
+  always_comb begin inst_opcode2 = idec_inst_opcode2; end
+  always_comb begin inst_funct32 = idec_inst_funct32; end
+  always_comb begin inst_funct72 = idec_inst_funct72; end
 
   //----------------------------------------
 
@@ -66,9 +67,9 @@ module singlecycle_datapath
     program_counter_reset = reset;
     program_counter_write_enable = pc_write_enable;
     program_counter_next = mux_next_pc_select_out;
-    /*regs.tick(regfile_write_enable, idec.inst_rd, mux_reg_writeback.out);*/
+    /*regs.tick(regfile_write_enable, idec.inst_rd2(inst), mux_reg_writeback.out);*/
     regs_write_enable = regfile_write_enable;
-    regs_rd_address = idec_inst_rd;
+    regs_rd_address = idec_inst_rd2;
     regs_rd_data = mux_reg_writeback_out;
   end
 
@@ -80,9 +81,12 @@ module singlecycle_datapath
   end
 
   always_comb begin : tock_regfile
-    /*regs.tock(idec.inst_rs1, idec.inst_rs2);*/
-    regs_rs1_address = idec_inst_rs1;
-    regs_rs2_address = idec_inst_rs2;
+    /*regs.tock(
+      idec.inst_rs12(inst),
+      idec.inst_rs22(inst)
+    );*/
+    regs_rs1_address = idec_inst_rs12;
+    regs_rs2_address = idec_inst_rs22;
   end
 
   always_comb begin : tock_alu
@@ -272,20 +276,20 @@ module singlecycle_datapath
   regfile regs(
     // Inputs
     .clock(clock),
+    .rs1_address(regs_rs1_address), 
+    .rs2_address(regs_rs2_address), 
     .write_enable(regs_write_enable), 
     .rd_address(regs_rd_address), 
     .rd_data(regs_rd_data), 
-    .rs1_address(regs_rs1_address), 
-    .rs2_address(regs_rs2_address), 
     // Outputs
     .rs1_data(regs_rs1_data), 
     .rs2_data(regs_rs2_data)
   );
+  logic[4:0] regs_rs1_address;
+  logic[4:0] regs_rs2_address;
   logic regs_write_enable;
   logic[4:0] regs_rd_address;
   logic[31:0] regs_rd_data;
-  logic[4:0] regs_rs1_address;
-  logic[4:0] regs_rs2_address;
   logic[31:0] regs_rs1_data;
   logic[31:0] regs_rs2_data;
 
@@ -294,30 +298,32 @@ module singlecycle_datapath
     .clock(clock),
     .inst(idec_inst), 
     // Outputs
-    .inst_opcode(idec_inst_opcode), 
-    .inst_funct3(idec_inst_funct3), 
-    .inst_funct7(idec_inst_funct7), 
-    .inst_rd(idec_inst_rd), 
-    .inst_rs1(idec_inst_rs1), 
-    .inst_rs2(idec_inst_rs2)
+    .inst_opcode2(idec_inst_opcode2), 
+    .inst_funct32(idec_inst_funct32), 
+    .inst_funct72(idec_inst_funct72), 
+    .inst_rd2(idec_inst_rd2), 
+    .inst_rs12(idec_inst_rs12), 
+    .inst_rs22(idec_inst_rs22)
   );
   logic[31:0] idec_inst;
-  logic[6:0] idec_inst_opcode;
-  logic[2:0] idec_inst_funct3;
-  logic[6:0] idec_inst_funct7;
-  logic[4:0] idec_inst_rd;
-  logic[4:0] idec_inst_rs1;
-  logic[4:0] idec_inst_rs2;
+  logic[6:0] idec_inst_opcode2;
+  logic[2:0] idec_inst_funct32;
+  logic[6:0] idec_inst_funct72;
+  logic[4:0] idec_inst_rd2;
+  logic[4:0] idec_inst_rs12;
+  logic[4:0] idec_inst_rs22;
 
   immediate_generator igen(
     // Inputs
     .clock(clock),
     .inst(igen_inst), 
     // Outputs
-    .immediate(igen_immediate)
+    .immediate(igen_immediate), 
+    .immediate2(igen_immediate2)
   );
   logic[31:0] igen_inst;
   logic[31:0] igen_immediate;
+  logic[31:0] igen_immediate2;
 
 endmodule;
 

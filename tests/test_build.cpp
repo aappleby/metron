@@ -29,12 +29,12 @@
 
 void blah() {
   uart_top<3> top;
-  top.update(0);
+  top.tock_update(0);
 }
 
 void blee() {
   toplevel top;
   top.init();
-  top.tick(0);
-  top.tock();
+  //top.tick(0);
+  top.tock(0);
 }

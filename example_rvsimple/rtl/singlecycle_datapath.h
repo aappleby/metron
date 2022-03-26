@@ -37,18 +37,14 @@ class singlecycle_datapath {
 
   //----------------------------------------
 
+  void tock_pc() {
+    pc = program_counter.value;
+  }
+
   void tock_submods(logic<1> reset, logic<1> pc_write_enable,
             logic<1> regfile_write_enable) {
     program_counter.tick(reset, pc_write_enable, mux_next_pc_select.out);
-
     regs.tick(regfile_write_enable, idec.inst_rd, mux_reg_writeback.out);
-  }
-
-  //----------------------------------------
-
-  void tock_pc() {
-    //program_counter.tock();
-    pc = program_counter.value;
   }
 
   void tock_decode(logic<32> inst) {
@@ -68,22 +64,22 @@ class singlecycle_datapath {
                 logic<1> alu_operand_b_select) {
     mux_operand_a.tock(alu_operand_a_select, regs.rs1_data,
                        program_counter.value);
-
     mux_operand_b.tock(alu_operand_b_select, regs.rs2_data, igen.immediate);
-
     alu_core.tock(alu_function, mux_operand_a.out, mux_operand_b.out);
-
     data_mem_address = alu_core.result;
     alu_result_equal_zero2 = alu_core.result_equal_zero;
   }
 
   void tock_next_pc(logic<2> next_pc_select) {
+    logic<32> blep = cat(b31(alu_core.result, 1), b1(0b0));
+
     adder_pc_plus_immediate.tock(pc, igen.immediate);
     adder_pc_plus_4.tock(b32(0x00000004), pc);
-
-    mux_next_pc_select.tock(next_pc_select, adder_pc_plus_4.result,
+    mux_next_pc_select.tock(next_pc_select,
+                            adder_pc_plus_4.result,
                             adder_pc_plus_immediate.result,
-                            cat(b31(alu_core.result, 1), b1(0b0)), b32(0b0));
+                            blep,
+                            b32(0b0));
   }
 
   void tock_writeback(logic<32> data_mem_read_data,

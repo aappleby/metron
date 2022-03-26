@@ -35,15 +35,10 @@ class toplevel {
 
   //----------------------------------------
 
-  void tock_submods(logic<1> reset) {
-    core.tock_submods(reset);
+  void tock(logic<1> reset) {
     data_memory_bus.tock_submods(core.bus_address, core.bus_write_enable,
                          core.bus_byte_enable, core.bus_write_data);
-  }
-  //----------------------------------------
-
-  void tock() {
-    core.tock_pc();
+    core.tock_submods(reset);
     text_memory_bus.tock(core.pc);
     core.tock_execute(text_memory_bus.read_data);
     data_memory_bus.tock(core.bus_address, core.bus_read_enable);

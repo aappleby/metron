@@ -37,7 +37,6 @@ module example_text_memory_bus
     logic[31:0] fetched;
     /*text_memory.tock(bx<TEXT_BITS - 2>(address, 2));*/
     text_memory_address = address[TEXT_BITS - 2+1:2];
-    
     fetched = text_memory_q;
 
     read_data =

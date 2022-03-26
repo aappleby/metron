@@ -35,7 +35,6 @@ module example_data_memory_bus
     data_memory_wren = 1'(write_enable && address >= DATA_BEGIN && DATA_END >= address);
     data_memory_byteena = byte_enable;
     data_memory_data = write_data;
-    
   end
 
   example_data_memory data_memory(
@@ -60,7 +59,6 @@ module example_data_memory_bus
     logic is_data_memory;
     /*data_memory.tock(bx<DATA_BITS - 2>(address, 2));*/
     data_memory_address = address[DATA_BITS - 2+1:2];
-    
     fetched = data_memory_q;
     is_data_memory = address >= DATA_BEGIN && DATA_END >= address;
     read_data =

@@ -46,7 +46,6 @@ module singlecycle_ctlpath
   always_comb begin : tock_decode
     /*control.tock_decode(inst_opcode);*/
     control_inst_opcode = inst_opcode;
-    
     pc_write_enable = control_pc_write_enable;
     regfile_write_enable = control_regfile_write_enable;
     alu_operand_a_select = control_alu_operand_a_select;
@@ -60,12 +59,10 @@ module singlecycle_ctlpath
     /*transfer.tock(alu_result_equal_zero, inst_funct3);*/
     transfer_result_equal_zero = alu_result_equal_zero;
     transfer_inst_funct3 = inst_funct3;
-    
 
     /*control.tock_next_pc_select(inst_opcode, transfer.take_branch);*/
     control_inst_opcode = inst_opcode;
     control_take_branch = transfer_take_branch;
-    
     next_pc_select = control_next_pc_select;
   end
 
@@ -74,7 +71,6 @@ module singlecycle_ctlpath
     alu_alu_op_type = control_alu_op_type;
     alu_inst_funct3 = inst_funct3;
     alu_inst_funct7 = inst_funct7;
-    
     alu_function = alu_alu_function;
   end
 

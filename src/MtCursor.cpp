@@ -943,10 +943,10 @@ void MtCursor::emit(MtFuncDefinition n) {
           auto submod_meth = submod_mod->get_method(meth_id.text());
           assert(submod_meth);
 
-          emit_newline();
-          emit_indent();
 
           for (int i = 0; i < submod_meth->params->size(); i++) {
+            emit_newline();
+            emit_indent();
             auto param = submod_meth->params->at(i);
             emit("%s_%s = ", inst_id.text().c_str(), param.c_str());
 
@@ -956,8 +956,6 @@ void MtCursor::emit(MtFuncDefinition n) {
             cursor = arg_node.end();
 
             emit(";");
-            emit_newline();
-            emit_indent();
           }
 
           //emit("DONE");

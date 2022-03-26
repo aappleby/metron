@@ -61,7 +61,6 @@ module example_memory_bus
     data_memory_wren = write_enable && address >= DATA_BEGIN && address <= DATA_END;
     data_memory_byteena = byte_enable;
     data_memory_data = write_data;
-    
   end
 
   always_comb begin : tock
@@ -71,10 +70,8 @@ module example_memory_bus
     logic is_text_memory;
     /*data_memory.tock(bx<DATA_BITS - 2>(address, 2));*/
     data_memory_address = address[DATA_BITS - 2+1:2];
-    
     /*text_memory.tock(bx<TEXT_BITS - 2>(address, 2));*/
     text_memory_address = address[TEXT_BITS - 2+1:2];
-    
 
     text_fetched = text_memory_q;
     data_fetched = data_memory_q;

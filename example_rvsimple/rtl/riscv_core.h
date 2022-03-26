@@ -28,39 +28,21 @@ class riscv_core {
     datapath.init();
   }
 
-  //----------------------------------------
-
   void tock_submods(logic<1> reset) {
     datapath.tock_submods(reset, ctlpath.pc_write_enable, ctlpath.regfile_write_enable);
-  }
-
-  //----------------------------------------
-
-  void tock_pc() {
     datapath.tock_pc();
     pc = datapath.pc;
   }
 
   void tock_execute(logic<32> inst) {
     datapath.tock_decode(inst);
-
     datapath.tock_regfile();
-
     ctlpath.tock_decode(datapath.inst_opcode);
-
     ctlpath.tock_alu_control(datapath.inst_funct3, datapath.inst_funct7);
-
-    datapath.tock_alu(ctlpath.alu_function, ctlpath.alu_operand_a_select,
-                      ctlpath.alu_operand_b_select);
-
-    ctlpath.tock_next_pc_select(datapath.inst_opcode, datapath.inst_funct3,
-                                datapath.alu_result_equal_zero2);
-
+    datapath.tock_alu(ctlpath.alu_function, ctlpath.alu_operand_a_select, ctlpath.alu_operand_b_select);
+    ctlpath.tock_next_pc_select(datapath.inst_opcode, datapath.inst_funct3, datapath.alu_result_equal_zero2);
     datapath.tock_next_pc(ctlpath.next_pc_select);
-
-    dmem.tock_bus(ctlpath.data_mem_read_enable, ctlpath.data_mem_write_enable,
-                  datapath.inst_funct3, datapath.data_mem_address,
-                  datapath.data_mem_write_data);
+    dmem.tock_bus(ctlpath.data_mem_read_enable, ctlpath.data_mem_write_enable, datapath.inst_funct3, datapath.data_mem_address, datapath.data_mem_write_data);
 
     bus_address = dmem.bus_address;
     bus_write_data = dmem.bus_write_data;

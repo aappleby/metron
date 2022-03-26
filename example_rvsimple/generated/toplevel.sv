@@ -47,35 +47,24 @@ module toplevel
 
   //----------------------------------------
 
-  always_comb begin : tock_submods
-    /*core.tock_submods(reset);*/
-    core_reset = reset;
-    
+  always_comb begin : tock
     /*data_memory_bus.tock_submods(core.bus_address, core.bus_write_enable,
                          core.bus_byte_enable, core.bus_write_data);*/
     data_memory_bus_address = core_bus_address;
     data_memory_bus_write_enable = core_bus_write_enable;
     data_memory_bus_byte_enable = core_bus_byte_enable;
     data_memory_bus_write_data = core_bus_write_data;
-    
-  end
-  //----------------------------------------
-
-  always_comb begin : tock
-    /*core.tock_pc();*/
+    /*core.tock_submods(reset);*/
+    core_reset = reset;
     /*text_memory_bus.tock(core.pc);*/
     text_memory_bus_address = core_pc;
-    
     /*core.tock_execute(text_memory_bus.read_data);*/
     core_inst = text_memory_bus_read_data;
-    
     /*data_memory_bus.tock(core.bus_address, core.bus_read_enable);*/
     data_memory_bus_address = core_bus_address;
     data_memory_bus_read_enable = core_bus_read_enable;
-    
     /*core.tock_writeback(data_memory_bus.read_data);*/
     core_bus_read_data = data_memory_bus_read_data;
-    
 
     bus_read_data = data_memory_bus_read_data;
     bus_address = core_bus_address;
@@ -146,3 +135,4 @@ module toplevel
 endmodule;
 
 `endif  // RVSIMPLE_TOPLEVEL_H
+

@@ -16,16 +16,10 @@ module example_text_memory
 (
   input logic clock,
   input logic[TEXT_BITS - 2-1:0] address,
-  output logic[31:0] q
+  output logic[31:0] q,
+  output logic[31:0] q2
 );
  /*public:*/
-  /*logic<32> q;*/
-
- /*private:*/
-  logic[31:0] mem[2**(TEXT_BITS - 2)];
-
- /*public:*/
-  always_comb begin : tock q = mem[address]; end
 
   initial begin : init
     string s;
@@ -33,6 +27,15 @@ module example_text_memory
     $value$plusargs("text_file=%s", s);
     $readmemh(s, mem);
   end
+
+  /*logic<32> q;*/
+  always_comb begin : tock q = mem[address]; end
+
+  always_comb begin q2 = mem[address]; end
+
+ /*private:*/
+  logic[31:0] mem[2**(TEXT_BITS - 2)];
 endmodule;
 
 `endif  // RVSIMPLE_EXAMPLE_TEXT_MEMORY_H
+

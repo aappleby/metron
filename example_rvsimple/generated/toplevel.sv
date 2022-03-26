@@ -48,14 +48,19 @@ module toplevel
   //----------------------------------------
 
   always_comb begin : tock
-    /*data_memory_bus.tock_submods(core.bus_address, core.bus_write_enable2(),
-                         core.bus_byte_enable2(), core.bus_write_data2());*/
+    /*data_memory_bus.tock_data_memory(
+      core.bus_address,
+      core.bus_write_enable2(),
+      core.bus_byte_enable2(),
+      core.bus_write_data2()
+    );*/
     data_memory_bus_address = core_bus_address;
     data_memory_bus_write_enable = core_bus_write_enable2;
     data_memory_bus_byte_enable = core_bus_byte_enable2;
     data_memory_bus_write_data = core_bus_write_data2;
-    /*core.tock_submods(reset, text_memory_bus.read_data);*/
+    /*core.tock_pc(reset);*/
     core_reset = reset;
+    /*core.tock_regs(text_memory_bus.read_data);*/
     core_inst = text_memory_bus_read_data;
     /*text_memory_bus.tock(core.pc());*/
     text_memory_bus_address = core_pc;

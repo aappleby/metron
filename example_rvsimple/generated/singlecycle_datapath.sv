@@ -62,11 +62,14 @@ module singlecycle_datapath
 
   //----------------------------------------
 
-  always_comb begin : tock_submods
+  always_comb begin : tock_program_counter
     /*program_counter.tick(reset, pc_write_enable, mux_next_pc_select.out);*/
     program_counter_reset = reset;
     program_counter_write_enable = pc_write_enable;
     program_counter_next = mux_next_pc_select_out;
+  end
+
+  always_comb begin : tock_regs
     /*regs.tick(regfile_write_enable, idec.inst_rd2(inst), mux_reg_writeback.out);*/
     regs_write_enable = regfile_write_enable;
     regs_rd_address = idec_inst_rd2;

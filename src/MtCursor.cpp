@@ -909,6 +909,7 @@ void MtCursor::emit(MtFuncDefinition n) {
       }
 
       case sym_expression_statement:
+#if 0
         if (c.child(0).sym == sym_call_expression &&
             c.child(0).child(0).sym == sym_field_expression) {
           // Calls to submodules get commented out.
@@ -969,6 +970,8 @@ void MtCursor::emit(MtFuncDefinition n) {
           // Other calls get translated.
           emit_dispatch(c);
         }
+#endif
+        emit_dispatch(c);
         break;
 
       case anon_sym_RBRACE:
@@ -1606,7 +1609,69 @@ void MtCursor::emit(MtClassSpecifier n) {
 //------------------------------------------------------------------------------
 
 void MtCursor::emit(MtExprStatement n) {
-  emit_children(n);
+  //emit_children(n);
+
+  if (n.child(0).sym == sym_call_expression &&
+      n.child(0).child(0).sym == sym_field_expression) {
+    // Calls to submodules get commented out.
+    comment_out(n);
+
+    auto call_node = n.child(0);
+    auto func_node = call_node.get_field(field_function);
+    auto args_node = call_node.get_field(field_arguments);
+
+    if (args_node.named_child_count() == 0) {
+      cursor = n.end();
+      return;
+    }
+
+    auto inst_id = func_node.get_field(field_argument);
+    auto meth_id = func_node.get_field(field_field);
+
+    //emit_newline();
+    //inst_id.dump_tree();
+    //meth_id.dump_tree();
+    //args_node.dump_tree();
+    //emit_indent();
+
+    //auto submod_mod = lib->get_mod(type_name);
+
+    auto submod = current_mod->get_submod(inst_id.text());
+    assert(submod);
+
+    auto submod_mod = submod->mod;
+    assert(submod_mod);
+
+    auto submod_meth = submod_mod->get_method(meth_id.text());
+    assert(submod_meth);
+
+
+    for (int i = 0; i < submod_meth->params->size(); i++) {
+      emit_newline();
+      emit_indent();
+      auto param = submod_meth->params->at(i);
+      emit("%s_%s = ", inst_id.text().c_str(), param.c_str());
+
+      auto arg_node = args_node.named_child(i);
+      cursor = arg_node.start();
+      emit_dispatch(arg_node);
+      cursor = arg_node.end();
+
+      emit(";");
+    }
+
+    //emit("DONE");
+    /*
+    std::string type_name = n.type().node_to_type();
+    auto submod_mod = lib->get_mod(type_name);
+    */
+    cursor = n.end();
+
+  } else {
+    // Other calls get translated.
+    emit_children(n);
+  }
+
 }
 
 //------------------------------------------------------------------------------

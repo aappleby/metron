@@ -30,11 +30,16 @@ class riscv_core {
     datapath.init();
   }
 
-  void tock_submods(logic<1> reset, logic<32> inst) {
-    datapath.tock_submods(
+  void tock_pc(logic<1> reset) {
+    datapath.tock_program_counter(
       reset,
+      ctlpath.pc_write_enable2()
+    );
+  }
+
+  void tock_regs(logic<32> inst) {
+    datapath.tock_regs(
       inst,
-      ctlpath.pc_write_enable2(),
       ctlpath.regfile_write_enable2()
     );
   }
@@ -78,7 +83,7 @@ class riscv_core {
     dmem.tock_position_fix(datapath.data_mem_address, bus_read_data);
     dmem.tock_sign_fix(datapath.inst_funct32(inst));
     dmem.tock_read_data();
-    datapath.tock_writeback(dmem.read_data, ctlpath.reg_writeback_select());
+    datapath.tock_writeback(dmem.read_data, ctlpath.reg_writeback_select(), inst);
   }
 
   //----------------------------------------

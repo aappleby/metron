@@ -41,9 +41,11 @@ class singlecycle_datapath {
 
   //----------------------------------------
 
-  void tock_submods(logic<1> reset, logic<32> inst, logic<1> pc_write_enable,
-            logic<1> regfile_write_enable) {
+  void tock_program_counter(logic<1> reset, logic<1> pc_write_enable) {
     program_counter.tick(reset, pc_write_enable, mux_next_pc_select.out);
+  }
+
+  void tock_regs(logic<32> inst, logic<1> regfile_write_enable) {
     regs.tick(regfile_write_enable, idec.inst_rd2(inst), mux_reg_writeback.out);
   }
 
@@ -81,7 +83,8 @@ class singlecycle_datapath {
   }
 
   void tock_writeback(logic<32> data_mem_read_data,
-                      logic<3> reg_writeback_select) {
+                      logic<3> reg_writeback_select,
+                      logic<32> inst) {
     mux_reg_writeback.tock(reg_writeback_select, alu_core.result,
                            data_mem_read_data, adder_pc_plus_4.result,
                            igen.immediate, b32(0b0), b32(0b0), b32(0b0), b32(0b0));

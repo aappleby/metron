@@ -32,6 +32,7 @@ module uart_top
   always_comb begin : tock_update
     logic[7:0] hello_data;
     logic hello_req;
+    logic[31:0] blerp;
     hello_data = hello_o_data;
     hello_req = hello_o_req;
 
@@ -46,6 +47,8 @@ module uart_top
     tx_i_rstn = i_rstn;
     tx_i_data = hello_data;
     tx_i_req = hello_req;
+
+    blerp = rx_derp;
   end
 
   //----------------------------------------

@@ -26,7 +26,7 @@ module example_data_memory_bus
 
   initial begin : init /*data_memory.init();*/ end
 
-  always_comb begin : tock_submods
+  always_comb begin : tock_data_memory
     /*data_memory.tick(
         bx<DATA_BITS - 2>(address, 2),
         b1(write_enable && address >= DATA_BEGIN && DATA_END >= address),

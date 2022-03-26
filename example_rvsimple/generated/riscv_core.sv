@@ -43,16 +43,21 @@ module riscv_core
     /*datapath.init();*/
   end
 
-  always_comb begin : tock_submods
-    /*datapath.tock_submods(
+  always_comb begin : tock_pc
+    /*datapath.tock_program_counter(
       reset,
-      inst,
-      ctlpath.pc_write_enable2(),
-      ctlpath.regfile_write_enable2()
+      ctlpath.pc_write_enable2()
     );*/
     datapath_reset = reset;
-    datapath_inst = inst;
     datapath_pc_write_enable = ctlpath_pc_write_enable2;
+  end
+
+  always_comb begin : tock_regs
+    /*datapath.tock_regs(
+      inst,
+      ctlpath.regfile_write_enable2()
+    );*/
+    datapath_inst = inst;
     datapath_regfile_write_enable = ctlpath_regfile_write_enable2;
   end
 
@@ -113,9 +118,10 @@ module riscv_core
     /*dmem.tock_sign_fix(datapath.inst_funct32(inst));*/
     dmem_data_format = datapath_inst_funct32;
     /*dmem.tock_read_data();*/
-    /*datapath.tock_writeback(dmem.read_data, ctlpath.reg_writeback_select());*/
+    /*datapath.tock_writeback(dmem.read_data, ctlpath.reg_writeback_select(), inst);*/
     datapath_data_mem_read_data = dmem_read_data;
     datapath_reg_writeback_select = ctlpath_reg_writeback_select;
+    datapath_inst = inst;
   end
 
   //----------------------------------------

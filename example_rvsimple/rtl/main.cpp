@@ -30,11 +30,11 @@ int run_test(const char* test_name) {
   LOG_R("running %6s: ", test_name);
   for (int rep = 0; rep < 100000; rep++)
   {
-    top.tick(1);
+    top.tock_submods(1);
     top.tock();
 
     for (time = 0; time < 100000; time++) {
-      top.tick(0);
+      top.tock_submods(0);
       top.tock();
 
       //printf("0x%08x\n", top.bus_address);

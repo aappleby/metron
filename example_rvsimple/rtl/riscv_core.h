@@ -30,8 +30,8 @@ class riscv_core {
 
   //----------------------------------------
 
-  void tick(logic<1> reset) {
-    datapath.tick(reset, ctlpath.pc_write_enable, ctlpath.regfile_write_enable);
+  void tock_submods(logic<1> reset) {
+    datapath.tock_submods(reset, ctlpath.pc_write_enable, ctlpath.regfile_write_enable);
   }
 
   //----------------------------------------

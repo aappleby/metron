@@ -17,7 +17,7 @@ class example_data_memory_bus {
 
   void init() { data_memory.init(); }
 
-  void tick(logic<32> address, logic<1> write_enable, logic<4> byte_enable,
+  void tock_submods(logic<32> address, logic<1> write_enable, logic<4> byte_enable,
             logic<32> write_data) {
     data_memory.tick(
         bx<DATA_BITS - 2>(address, 2),

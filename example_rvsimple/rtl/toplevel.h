@@ -35,9 +35,9 @@ class toplevel {
 
   //----------------------------------------
 
-  void tick(logic<1> reset) {
-    core.tick(reset);
-    data_memory_bus.tick(core.bus_address, core.bus_write_enable,
+  void tock_submods(logic<1> reset) {
+    core.tock_submods(reset);
+    data_memory_bus.tock_submods(core.bus_address, core.bus_write_enable,
                          core.bus_byte_enable, core.bus_write_data);
   }
   //----------------------------------------

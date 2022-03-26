@@ -18,7 +18,6 @@ module uart_top
   output logic[31:0] o_sum
 );
  /*public:*/
-
   initial begin : init
     $write("uart_top.init()\n");
     /*hello.init();*/

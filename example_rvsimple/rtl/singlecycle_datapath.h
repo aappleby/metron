@@ -37,7 +37,7 @@ class singlecycle_datapath {
 
   //----------------------------------------
 
-  void tick(logic<1> reset, logic<1> pc_write_enable,
+  void tock_submods(logic<1> reset, logic<1> pc_write_enable,
             logic<1> regfile_write_enable) {
     program_counter.tick(reset, pc_write_enable, mux_next_pc_select.out);
 

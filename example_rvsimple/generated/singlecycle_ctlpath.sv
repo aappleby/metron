@@ -45,6 +45,8 @@ module singlecycle_ctlpath
 
   always_comb begin : tock_decode
     /*control.tock_decode(inst_opcode);*/
+    control_inst_opcode = inst_opcode;
+    
     pc_write_enable = control_pc_write_enable;
     regfile_write_enable = control_regfile_write_enable;
     alu_operand_a_select = control_alu_operand_a_select;
@@ -56,13 +58,23 @@ module singlecycle_ctlpath
 
   always_comb begin : tock_next_pc_select
     /*transfer.tock(alu_result_equal_zero, inst_funct3);*/
+    transfer_result_equal_zero = alu_result_equal_zero;
+    transfer_inst_funct3 = inst_funct3;
+    
 
     /*control.tock_next_pc_select(inst_opcode, transfer.take_branch);*/
+    control_inst_opcode = inst_opcode;
+    control_take_branch = transfer_take_branch;
+    
     next_pc_select = control_next_pc_select;
   end
 
   always_comb begin : tock_alu_control
     /*alu.tock(control.alu_op_type, inst_funct3, inst_funct7);*/
+    alu_alu_op_type = control_alu_op_type;
+    alu_inst_funct3 = inst_funct3;
+    alu_inst_funct7 = inst_funct7;
+    
     alu_function = alu_alu_function;
   end
 
@@ -72,8 +84,8 @@ module singlecycle_ctlpath
   singlecycle_control control(
     // Inputs
     .clock(clock),
-    .inst_opcode(inst_opcode), 
-    .take_branch(transfer_take_branch), 
+    .inst_opcode(control_inst_opcode), 
+    .take_branch(control_take_branch), 
     // Outputs
     .pc_write_enable(control_pc_write_enable), 
     .regfile_write_enable(control_regfile_write_enable), 
@@ -85,6 +97,8 @@ module singlecycle_ctlpath
     .reg_writeback_select(control_reg_writeback_select), 
     .next_pc_select(control_next_pc_select)
   );
+  logic[6:0] control_inst_opcode;
+  logic control_take_branch;
   logic control_pc_write_enable;
   logic control_regfile_write_enable;
   logic control_alu_operand_a_select;
@@ -98,22 +112,27 @@ module singlecycle_ctlpath
   control_transfer transfer(
     // Inputs
     .clock(clock),
-    .result_equal_zero(alu_result_equal_zero), 
-    .inst_funct3(inst_funct3), 
+    .result_equal_zero(transfer_result_equal_zero), 
+    .inst_funct3(transfer_inst_funct3), 
     // Outputs
     .take_branch(transfer_take_branch)
   );
+  logic transfer_result_equal_zero;
+  logic[2:0] transfer_inst_funct3;
   logic transfer_take_branch;
 
   alu_control alu(
     // Inputs
     .clock(clock),
-    .alu_op_type(control_alu_op_type), 
-    .inst_funct3(inst_funct3), 
-    .inst_funct7(inst_funct7), 
+    .alu_op_type(alu_alu_op_type), 
+    .inst_funct3(alu_inst_funct3), 
+    .inst_funct7(alu_inst_funct7), 
     // Outputs
     .alu_function(alu_alu_function)
   );
+  logic[1:0] alu_alu_op_type;
+  logic[2:0] alu_inst_funct3;
+  logic[6:0] alu_inst_funct7;
   logic[4:0] alu_alu_function;
 
 endmodule;

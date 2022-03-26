@@ -26,23 +26,32 @@ module example_data_memory_bus
 
   initial begin : init /*data_memory.init();*/ end
 
-  always_ff @(posedge clock) begin : tick
+  always_comb begin : tock_submods
     /*data_memory.tick(
         bx<DATA_BITS - 2>(address, 2),
         b1(write_enable && address >= DATA_BEGIN && DATA_END >= address),
         byte_enable, write_data);*/
+    data_memory_address = address[DATA_BITS - 2+1:2];
+    data_memory_wren = 1'(write_enable && address >= DATA_BEGIN && DATA_END >= address);
+    data_memory_byteena = byte_enable;
+    data_memory_data = write_data;
+    
   end
 
   example_data_memory data_memory(
     // Inputs
     .clock(clock),
-    .address(address[DATA_BITS - 2+1:2]), 
-    .wren(1'(write_enable && address >= DATA_BEGIN && DATA_END >= address)), 
-    .byteena(byte_enable), 
-    .data(write_data), 
+    .address(data_memory_address), 
+    .wren(data_memory_wren), 
+    .byteena(data_memory_byteena), 
+    .data(data_memory_data), 
     // Outputs
     .q(data_memory_q)
   );
+  logic[DATA_BITS - 2-1:0] data_memory_address;
+  logic data_memory_wren;
+  logic[3:0] data_memory_byteena;
+  logic[31:0] data_memory_data;
   logic[31:0] data_memory_q;
 
 
@@ -50,6 +59,8 @@ module example_data_memory_bus
     logic[31:0] fetched;
     logic is_data_memory;
     /*data_memory.tock(bx<DATA_BITS - 2>(address, 2));*/
+    data_memory_address = address[DATA_BITS - 2+1:2];
+    
     fetched = data_memory_q;
     is_data_memory = address >= DATA_BEGIN && DATA_END >= address;
     read_data =

@@ -658,6 +658,13 @@ void MtModule::build_port_map() {
     if (child.get_field(field_function).sym != sym_field_expression) return;
 
     auto call = node_to_call(child);
+
+    if (!call.method) {
+      child.dump_tree();
+    }
+    assert(call.method);
+
+
     for (auto i = 0; i < call.args->size(); i++) {
       auto key = call.submod->name() + "." + call.method->params->at(i);
       auto val = call.args->at(i);

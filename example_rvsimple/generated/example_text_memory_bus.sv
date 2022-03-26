@@ -24,10 +24,11 @@ module example_text_memory_bus
   example_text_memory text_memory(
     // Inputs
     .clock(clock),
-    .address(address[TEXT_BITS - 2+1:2]), 
+    .address(text_memory_address), 
     // Outputs
     .q(text_memory_q)
   );
+  logic[TEXT_BITS - 2-1:0] text_memory_address;
   logic[31:0] text_memory_q;
 
 
@@ -35,10 +36,12 @@ module example_text_memory_bus
   always_comb begin : tock
     logic[31:0] fetched;
     /*text_memory.tock(bx<TEXT_BITS - 2>(address, 2));*/
+    text_memory_address = address[TEXT_BITS - 2+1:2];
+    
     fetched = text_memory_q;
 
     read_data =
-        address >= TEXT_BEGIN && address <= TEXT_END
+        (address >= TEXT_BEGIN) && (TEXT_END >= address)
         ? fetched
         : 32'x;
   end

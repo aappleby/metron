@@ -28,22 +28,27 @@ module example_memory_bus
   example_data_memory data_memory(
     // Inputs
     .clock(clock),
-    .address(address[DATA_BITS - 2+1:2]), 
-    .wren(write_enable && address >= DATA_BEGIN && address <= DATA_END), 
-    .byteena(byte_enable), 
-    .data(write_data), 
+    .address(data_memory_address), 
+    .wren(data_memory_wren), 
+    .byteena(data_memory_byteena), 
+    .data(data_memory_data), 
     // Outputs
     .q(data_memory_q)
   );
+  logic[DATA_BITS - 2-1:0] data_memory_address;
+  logic data_memory_wren;
+  logic[3:0] data_memory_byteena;
+  logic[31:0] data_memory_data;
   logic[31:0] data_memory_q;
 
   example_text_memory text_memory(
     // Inputs
     .clock(clock),
-    .address(address[TEXT_BITS - 2+1:2]), 
+    .address(text_memory_address), 
     // Outputs
     .q(text_memory_q)
   );
+  logic[TEXT_BITS - 2-1:0] text_memory_address;
   logic[31:0] text_memory_q;
 
 
@@ -52,6 +57,11 @@ module example_memory_bus
         bx<DATA_BITS - 2>(address, 2),
         write_enable && address >= DATA_BEGIN && address <= DATA_END,
         byte_enable, write_data);*/
+    data_memory_address = address[DATA_BITS - 2+1:2];
+    data_memory_wren = write_enable && address >= DATA_BEGIN && address <= DATA_END;
+    data_memory_byteena = byte_enable;
+    data_memory_data = write_data;
+    
   end
 
   always_comb begin : tock
@@ -60,7 +70,11 @@ module example_memory_bus
     logic is_data_memory;
     logic is_text_memory;
     /*data_memory.tock(bx<DATA_BITS - 2>(address, 2));*/
+    data_memory_address = address[DATA_BITS - 2+1:2];
+    
     /*text_memory.tock(bx<TEXT_BITS - 2>(address, 2));*/
+    text_memory_address = address[TEXT_BITS - 2+1:2];
+    
 
     text_fetched = text_memory_q;
     data_fetched = data_memory_q;

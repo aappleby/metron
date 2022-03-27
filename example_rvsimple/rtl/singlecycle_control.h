@@ -12,12 +12,6 @@
 
 class singlecycle_control {
  public:
-  //logic<1> pc_write_enable;
-  //logic<1> regfile_write_enable;
-  //logic<1> alu_operand_a_select;
-  //logic<1> alu_operand_b_select;
-  logic<2> alu_op_type;
-  logic<1> data_mem_read_enable;
   logic<1> data_mem_write_enable;
   logic<3> reg_writeback_select;
   logic<2> next_pc_select;
@@ -91,34 +85,34 @@ class singlecycle_control {
   logic<2> alu_op_type2(logic<7> inst_opcode) const {
     using namespace rv_constants;
     switch (inst_opcode) {
-      case OPCODE_LOAD: return CTL_ALU_ADD;
+      case OPCODE_LOAD:     return CTL_ALU_ADD;
       case OPCODE_MISC_MEM: return b2(DONTCARE);
-      case OPCODE_OP_IMM: return CTL_ALU_OP_IMM;
-      case OPCODE_AUIPC: return CTL_ALU_ADD;
-      case OPCODE_STORE: return CTL_ALU_ADD;
-      case OPCODE_OP: return CTL_ALU_OP;
-      case OPCODE_LUI: return b2(DONTCARE);
-      case OPCODE_BRANCH: return CTL_ALU_BRANCH;
-      case OPCODE_JALR: return CTL_ALU_ADD;
-      case OPCODE_JAL: return CTL_ALU_ADD;
-      default: return b2(DONTCARE);
+      case OPCODE_OP_IMM:   return CTL_ALU_OP_IMM;
+      case OPCODE_AUIPC:    return CTL_ALU_ADD;
+      case OPCODE_STORE:    return CTL_ALU_ADD;
+      case OPCODE_OP:       return CTL_ALU_OP;
+      case OPCODE_LUI:      return b2(DONTCARE);
+      case OPCODE_BRANCH:   return CTL_ALU_BRANCH;
+      case OPCODE_JALR:     return CTL_ALU_ADD;
+      case OPCODE_JAL:      return CTL_ALU_ADD;
+      default:              return b2(DONTCARE);
     }
   }
 
+  logic<1> data_mem_read_enable(logic<7> inst_opcode) const {
+    using namespace rv_constants;
+    return inst_opcode == OPCODE_LOAD;
+  }
 
   void tock_decode(logic<7> inst_opcode) {
     using namespace rv_constants;
 
-    alu_op_type             = b2(DONTCARE);
-    data_mem_read_enable    = b1(0b0);
     data_mem_write_enable   = b1(0b0);
     reg_writeback_select    = b3(DONTCARE);
 
     switch (inst_opcode) {
       case OPCODE_LOAD:
       {
-        alu_op_type = CTL_ALU_ADD;
-        data_mem_read_enable = b1(1);
         reg_writeback_select = CTL_WRITEBACK_DATA;
         break;
       }
@@ -131,21 +125,18 @@ class singlecycle_control {
 
       case OPCODE_OP_IMM:
       {
-        alu_op_type = CTL_ALU_OP_IMM;
         reg_writeback_select = CTL_WRITEBACK_ALU;
         break;
       }
 
       case OPCODE_AUIPC:
       {
-        alu_op_type = CTL_ALU_ADD;
         reg_writeback_select = CTL_WRITEBACK_ALU;
         break;
       }
 
       case OPCODE_STORE:
       {
-        alu_op_type = CTL_ALU_ADD;
         data_mem_write_enable = b1(1);
         break;
       }
@@ -153,7 +144,6 @@ class singlecycle_control {
       case OPCODE_OP:
       {
         reg_writeback_select = CTL_WRITEBACK_ALU;
-        alu_op_type = CTL_ALU_OP;
         break;
       }
 
@@ -165,27 +155,23 @@ class singlecycle_control {
 
       case OPCODE_BRANCH:
       {
-        alu_op_type = CTL_ALU_BRANCH;
         break;
       }
 
       case OPCODE_JALR:
       {
-        alu_op_type = CTL_ALU_ADD;
         reg_writeback_select = CTL_WRITEBACK_PC4;
         break;
       }
 
       case OPCODE_JAL:
       {
-        alu_op_type = CTL_ALU_ADD;
         reg_writeback_select = CTL_WRITEBACK_PC4;
         break;
       }
 
       default:
       {
-        data_mem_read_enable = b1(DONTCARE);
         data_mem_write_enable = b1(DONTCARE);
         break;
       }

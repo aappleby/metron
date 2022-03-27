@@ -15,8 +15,6 @@ module singlecycle_control
   input logic clock,
   input logic[6:0] inst_opcode,
   input logic take_branch,
-  output logic[1:0] alu_op_type,
-  output logic data_mem_read_enable,
   output logic data_mem_write_enable,
   output logic[2:0] reg_writeback_select,
   output logic[1:0] next_pc_select,
@@ -24,15 +22,10 @@ module singlecycle_control
   output logic regfile_write_enable,
   output logic alu_operand_a_select,
   output logic alu_operand_b_select,
-  output logic[1:0] alu_op_type2
+  output logic[1:0] alu_op_type2,
+  output logic data_mem_read_enable
 );
  /*public:*/
-  //logic<1> pc_write_enable;
-  //logic<1> regfile_write_enable;
-  //logic<1> alu_operand_a_select;
-  //logic<1> alu_operand_b_select;
-  /*logic<2> alu_op_type;*/
-  /*logic<1> data_mem_read_enable;*/
   /*logic<1> data_mem_write_enable;*/
   /*logic<3> reg_writeback_select;*/
   /*logic<2> next_pc_select;*/
@@ -106,34 +99,34 @@ module singlecycle_control
   always_comb begin
     import rv_constants::*;
     case (inst_opcode) 
-      /*case*/ OPCODE_LOAD: alu_op_type2 = CTL_ALU_ADD;
+      /*case*/ OPCODE_LOAD:     alu_op_type2 = CTL_ALU_ADD;
       /*case*/ OPCODE_MISC_MEM: alu_op_type2 = 2'x;
-      /*case*/ OPCODE_OP_IMM: alu_op_type2 = CTL_ALU_OP_IMM;
-      /*case*/ OPCODE_AUIPC: alu_op_type2 = CTL_ALU_ADD;
-      /*case*/ OPCODE_STORE: alu_op_type2 = CTL_ALU_ADD;
-      /*case*/ OPCODE_OP: alu_op_type2 = CTL_ALU_OP;
-      /*case*/ OPCODE_LUI: alu_op_type2 = 2'x;
-      /*case*/ OPCODE_BRANCH: alu_op_type2 = CTL_ALU_BRANCH;
-      /*case*/ OPCODE_JALR: alu_op_type2 = CTL_ALU_ADD;
-      /*case*/ OPCODE_JAL: alu_op_type2 = CTL_ALU_ADD;
-      default: alu_op_type2 = 2'x;
+      /*case*/ OPCODE_OP_IMM:   alu_op_type2 = CTL_ALU_OP_IMM;
+      /*case*/ OPCODE_AUIPC:    alu_op_type2 = CTL_ALU_ADD;
+      /*case*/ OPCODE_STORE:    alu_op_type2 = CTL_ALU_ADD;
+      /*case*/ OPCODE_OP:       alu_op_type2 = CTL_ALU_OP;
+      /*case*/ OPCODE_LUI:      alu_op_type2 = 2'x;
+      /*case*/ OPCODE_BRANCH:   alu_op_type2 = CTL_ALU_BRANCH;
+      /*case*/ OPCODE_JALR:     alu_op_type2 = CTL_ALU_ADD;
+      /*case*/ OPCODE_JAL:      alu_op_type2 = CTL_ALU_ADD;
+      default:              alu_op_type2 = 2'x;
     endcase
   end
 
+  always_comb begin
+    import rv_constants::*;
+    data_mem_read_enable = inst_opcode == OPCODE_LOAD;
+  end
 
   always_comb begin : tock_decode
     import rv_constants::*;
 
-    alu_op_type             = 2'x;
-    data_mem_read_enable    = 1'b0;
     data_mem_write_enable   = 1'b0;
     reg_writeback_select    = 3'x;
 
     case (inst_opcode) 
       /*case*/ OPCODE_LOAD:
       begin
-        alu_op_type = CTL_ALU_ADD;
-        data_mem_read_enable = 1'd1;
         reg_writeback_select = CTL_WRITEBACK_DATA;
         /*break;*/
       end
@@ -146,21 +139,18 @@ module singlecycle_control
 
       /*case*/ OPCODE_OP_IMM:
       begin
-        alu_op_type = CTL_ALU_OP_IMM;
         reg_writeback_select = CTL_WRITEBACK_ALU;
         /*break;*/
       end
 
       /*case*/ OPCODE_AUIPC:
       begin
-        alu_op_type = CTL_ALU_ADD;
         reg_writeback_select = CTL_WRITEBACK_ALU;
         /*break;*/
       end
 
       /*case*/ OPCODE_STORE:
       begin
-        alu_op_type = CTL_ALU_ADD;
         data_mem_write_enable = 1'd1;
         /*break;*/
       end
@@ -168,7 +158,6 @@ module singlecycle_control
       /*case*/ OPCODE_OP:
       begin
         reg_writeback_select = CTL_WRITEBACK_ALU;
-        alu_op_type = CTL_ALU_OP;
         /*break;*/
       end
 
@@ -180,27 +169,23 @@ module singlecycle_control
 
       /*case*/ OPCODE_BRANCH:
       begin
-        alu_op_type = CTL_ALU_BRANCH;
         /*break;*/
       end
 
       /*case*/ OPCODE_JALR:
       begin
-        alu_op_type = CTL_ALU_ADD;
         reg_writeback_select = CTL_WRITEBACK_PC4;
         /*break;*/
       end
 
       /*case*/ OPCODE_JAL:
       begin
-        alu_op_type = CTL_ALU_ADD;
         reg_writeback_select = CTL_WRITEBACK_PC4;
         /*break;*/
       end
 
       default:
       begin
-        data_mem_read_enable = 1'x;
         data_mem_write_enable = 1'x;
         /*break;*/
       end

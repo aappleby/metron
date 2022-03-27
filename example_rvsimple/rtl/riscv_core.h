@@ -30,8 +30,14 @@ class riscv_core {
     );
   }
 
-  logic<1>  bus_read_enable2(logic<32> inst)  const { return ctlpath.data_mem_read_enable(datapath.inst_opcode2(inst)); }
-  logic<1>  bus_write_enable2(logic<32> inst) const { return ctlpath.data_mem_write_enable(datapath.inst_opcode2(inst)); }
+  logic<1>  bus_read_enable2(logic<32> inst)  const {
+    logic<7> opcode = datapath.inst_opcode2(inst);
+    return ctlpath.data_mem_read_enable(opcode);
+  }
+  logic<1>  bus_write_enable2(logic<32> inst) const {
+    logic<7> opcode = datapath.inst_opcode2(inst);
+    return ctlpath.data_mem_write_enable(opcode);
+  }
   logic<32> pc()                const { return datapath.pc2(); }
 
   //----------------------------------------
@@ -41,39 +47,45 @@ class riscv_core {
   }
 
   logic<32> alu_result(logic<32> inst) {
-    logic<5> alu_function = ctlpath.alu_function(datapath.inst_opcode2(inst), datapath.inst_funct32(inst), datapath.inst_funct72(inst));
+    logic<7> opcode = datapath.inst_opcode2(inst);
+    logic<3> funct3 = datapath.inst_funct32(inst);
+
+    logic<5> alu_function = ctlpath.alu_function(opcode, funct3, datapath.inst_funct72(inst));
 
     return datapath.alu_result(
       inst,
       alu_function,
-      ctlpath.alu_operand_a_select(datapath.inst_opcode2(inst)),
-      ctlpath.alu_operand_b_select(datapath.inst_opcode2(inst))
+      ctlpath.alu_operand_a_select(opcode),
+      ctlpath.alu_operand_b_select(opcode)
     );
   }
 
-  void tocktick_pc(logic<1> reset, logic<32> inst, logic<32> alu_result2) {
-    datapath.tocktick_pc(
+  void tocktick_regs(logic<1> reset, logic<32> inst, logic<32> bus_read_data, logic<32> alu_result2) {
+    logic<7> opcode = datapath.inst_opcode2(inst);
+    logic<3> funct3 = datapath.inst_funct32(inst);
+
+
+    datapath.tocktick_regs(
       reset,
       inst,
-      ctlpath.next_pc_select(datapath.inst_opcode2(inst), datapath.inst_funct32(inst), alu_result2 == 0),
-      ctlpath.pc_write_enable2(datapath.inst_opcode2(inst)),
-      alu_result2
-    );
-  }
-
-  void tocktick_regs(logic<32> inst, logic<32> bus_read_data, logic<32> alu_result2) {
-    datapath.tocktick_regs(
-      inst,
-      ctlpath.regfile_write_enable2(datapath.inst_opcode2(inst)),
+      ctlpath.regfile_write_enable2(opcode),
       dmem.read_data(
         alu_result2,
         bus_read_data,
         datapath.inst_funct32(inst)
       ),
-      ctlpath.reg_writeback_select(datapath.inst_opcode2(inst)),
+      ctlpath.reg_writeback_select(opcode),
+      alu_result2
+    );
+    datapath.tocktick_pc(
+      reset,
+      inst,
+      ctlpath.next_pc_select(opcode, funct3, alu_result2 == 0),
+      ctlpath.pc_write_enable2(opcode),
       alu_result2
     );
   }
+
 
   //----------------------------------------
 

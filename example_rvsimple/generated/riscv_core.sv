@@ -43,12 +43,20 @@ module riscv_core
     bus_byte_enable2 = dmem_bus_byte_enable;
   end
 
-  always_comb begin ctlpath_inst_opcode = datapath_inst_opcode2;
-datapath_inst = inst;
-bus_read_enable2 = ctlpath_data_mem_read_enable; end
-  always_comb begin ctlpath_inst_opcode = datapath_inst_opcode2;
-datapath_inst = inst;
-bus_write_enable2 = ctlpath_data_mem_write_enable; end
+  always_comb begin
+    logic[6:0] opcode;
+    datapath_inst = inst;
+    opcode = datapath_inst_opcode2;
+    ctlpath_inst_opcode = opcode;
+    bus_read_enable2 = ctlpath_data_mem_read_enable;
+  end
+  always_comb begin
+    logic[6:0] opcode;
+    datapath_inst = inst;
+    opcode = datapath_inst_opcode2;
+    ctlpath_inst_opcode = opcode;
+    bus_write_enable2 = ctlpath_data_mem_write_enable;
+  end
   always_comb begin pc = datapath_pc2; end
 
   //----------------------------------------
@@ -58,12 +66,17 @@ bus_write_enable2 = ctlpath_data_mem_write_enable; end
   end
 
   always_comb begin
+    logic[6:0] opcode;
+    logic[2:0] funct3;
     logic[4:0] alu_function;
-    ctlpath_inst_opcode = datapath_inst_opcode2;
-    ctlpath_inst_funct3 = datapath_inst_funct32;
+    datapath_inst = inst;
+    opcode = datapath_inst_opcode2;
+    datapath_inst = inst;
+    funct3 = datapath_inst_funct32;
+
+    ctlpath_inst_opcode = opcode;
+    ctlpath_inst_funct3 = funct3;
     ctlpath_inst_funct7 = datapath_inst_funct72;
-    datapath_inst = inst;
-    datapath_inst = inst;
     datapath_inst = inst;
     alu_function = ctlpath_alu_function;
 
@@ -71,61 +84,62 @@ bus_write_enable2 = ctlpath_data_mem_write_enable; end
     datapath_alu_function = alu_function;
     datapath_alu_operand_a_select = ctlpath_alu_operand_a_select;
     datapath_alu_operand_b_select = ctlpath_alu_operand_b_select;
-    ctlpath_inst_opcode = datapath_inst_opcode2;
-    datapath_inst = inst;
-    ctlpath_inst_opcode = datapath_inst_opcode2;
-    datapath_inst = inst;
+    ctlpath_inst_opcode = opcode;
+    ctlpath_inst_opcode = opcode;
     alu_result = datapath_alu_result;
   end
 
-  always_comb begin : tocktick_pc
-    datapath_reset = reset;
-    datapath_inst = inst;
-    datapath_next_pc_select = ctlpath_next_pc_select;
-    datapath_pc_write_enable = ctlpath_pc_write_enable2;
-    datapath_alu_result2 = alu_result2;
-    ctlpath_inst_opcode = datapath_inst_opcode2;
-    ctlpath_inst_funct3 = datapath_inst_funct32;
-    ctlpath_alu_result_equal_zero = alu_result2 == 0;
-    datapath_inst = inst;
-    datapath_inst = inst;
-    ctlpath_inst_opcode = datapath_inst_opcode2;
-    datapath_inst = inst;
-    /*datapath.tocktick_pc(
-      reset,
-      inst,
-      ctlpath.next_pc_select(datapath.inst_opcode2(inst), datapath.inst_funct32(inst), alu_result2 == 0),
-      ctlpath.pc_write_enable2(datapath.inst_opcode2(inst)),
-      alu_result2
-    );*/
-  end
-
   always_comb begin : tocktick_regs
+    logic[6:0] opcode;
+    logic[2:0] funct3;
+    datapath_inst = inst;
+    opcode = datapath_inst_opcode2;
+    datapath_inst = inst;
+    funct3 = datapath_inst_funct32;
+
+
+    datapath_reset = reset;
     datapath_inst = inst;
     datapath_regfile_write_enable = ctlpath_regfile_write_enable2;
     datapath_data_mem_read_data = dmem_read_data;
     datapath_reg_writeback_select = ctlpath_reg_writeback_select;
     datapath_alu_result2 = alu_result2;
-    ctlpath_inst_opcode = datapath_inst_opcode2;
-    datapath_inst = inst;
+    ctlpath_inst_opcode = opcode;
     dmem_address = alu_result2;
     dmem_bus_read_data = bus_read_data;
     dmem_data_format = datapath_inst_funct32;
     datapath_inst = inst;
-    ctlpath_inst_opcode = datapath_inst_opcode2;
-    datapath_inst = inst;
+    ctlpath_inst_opcode = opcode;
     /*datapath.tocktick_regs(
+      reset,
       inst,
-      ctlpath.regfile_write_enable2(datapath.inst_opcode2(inst)),
+      ctlpath.regfile_write_enable2(opcode),
       dmem.read_data(
         alu_result2,
         bus_read_data,
         datapath.inst_funct32(inst)
       ),
-      ctlpath.reg_writeback_select(datapath.inst_opcode2(inst)),
+      ctlpath.reg_writeback_select(opcode),
+      alu_result2
+    );*/
+    datapath_reset = reset;
+    datapath_inst = inst;
+    datapath_next_pc_select = ctlpath_next_pc_select;
+    datapath_pc_write_enable = ctlpath_pc_write_enable2;
+    datapath_alu_result2 = alu_result2;
+    ctlpath_inst_opcode = opcode;
+    ctlpath_inst_funct3 = funct3;
+    ctlpath_alu_result_equal_zero = alu_result2 == 0;
+    ctlpath_inst_opcode = opcode;
+    /*datapath.tocktick_pc(
+      reset,
+      inst,
+      ctlpath.next_pc_select(opcode, funct3, alu_result2 == 0),
+      ctlpath.pc_write_enable2(opcode),
       alu_result2
     );*/
   end
+
 
   //----------------------------------------
 
@@ -138,12 +152,12 @@ bus_write_enable2 = ctlpath_data_mem_write_enable; end
     .alu_operand_a_select(datapath_alu_operand_a_select), 
     .alu_operand_b_select(datapath_alu_operand_b_select), 
     .reset(datapath_reset), 
-    .next_pc_select(datapath_next_pc_select), 
-    .pc_write_enable(datapath_pc_write_enable), 
-    .alu_result2(datapath_alu_result2), 
     .regfile_write_enable(datapath_regfile_write_enable), 
     .data_mem_read_data(datapath_data_mem_read_data), 
     .reg_writeback_select(datapath_reg_writeback_select), 
+    .alu_result2(datapath_alu_result2), 
+    .next_pc_select(datapath_next_pc_select), 
+    .pc_write_enable(datapath_pc_write_enable), 
     // Outputs
     .pc2(datapath_pc2), 
     .data_mem_write_data2(datapath_data_mem_write_data2), 
@@ -157,12 +171,12 @@ bus_write_enable2 = ctlpath_data_mem_write_enable; end
   logic datapath_alu_operand_a_select;
   logic datapath_alu_operand_b_select;
   logic datapath_reset;
-  logic[1:0] datapath_next_pc_select;
-  logic datapath_pc_write_enable;
-  logic[31:0] datapath_alu_result2;
   logic datapath_regfile_write_enable;
   logic[31:0] datapath_data_mem_read_data;
   logic[2:0] datapath_reg_writeback_select;
+  logic[31:0] datapath_alu_result2;
+  logic[1:0] datapath_next_pc_select;
+  logic datapath_pc_write_enable;
   logic[31:0] datapath_pc2;
   logic[31:0] datapath_data_mem_write_data2;
   logic[6:0]  datapath_inst_opcode2;

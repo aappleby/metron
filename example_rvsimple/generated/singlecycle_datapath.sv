@@ -29,12 +29,12 @@ module singlecycle_datapath
   input logic alu_operand_a_select,
   input logic alu_operand_b_select,
   input logic reset,
-  input logic[1:0] next_pc_select,
-  input logic pc_write_enable,
-  input logic[31:0] alu_result2,
   input logic regfile_write_enable,
   input logic[31:0] data_mem_read_data,
   input logic[2:0] reg_writeback_select,
+  input logic[31:0] alu_result2,
+  input logic[1:0] next_pc_select,
+  input logic pc_write_enable,
   output logic[31:0] pc2,
   output logic[31:0] data_mem_write_data2,
   output logic[6:0]  inst_opcode2,
@@ -80,27 +80,6 @@ inst_funct72 = idec_inst_funct72; end
     alu_result = alu_core_result;
   end
 
-  always_comb begin : tocktick_pc
-    logic[31:0] out;
-    mux_next_pc_select_sel = next_pc_select;
-    mux_next_pc_select_in0 = adder_pc_plus_4_result;
-    mux_next_pc_select_in1 = adder_pc_plus_immediate_result;
-    mux_next_pc_select_in2 = {alu_result2[31:1], 1'b0};
-    mux_next_pc_select_in3 = 32'b0;
-    adder_pc_plus_4_operand_a = 32'h00000004;
-    adder_pc_plus_4_operand_b = program_counter_value;
-    adder_pc_plus_immediate_operand_a = program_counter_value;
-    adder_pc_plus_immediate_operand_b = igen_immediate;
-    igen_inst = inst;
-    out = mux_next_pc_select_out;
-    program_counter_reset = reset;
-    program_counter_write_enable = pc_write_enable;
-    program_counter_next = out;
-    /*program_counter.tick(reset, pc_write_enable, out);*/
-  end
-
-  //----------------------------------------
-
   always_comb begin : tocktick_regs
     logic[31:0] out;
     mux_reg_writeback_sel = reg_writeback_select;
@@ -122,6 +101,25 @@ inst_funct72 = idec_inst_funct72; end
     idec_inst = inst;
     /*regs.tick(regfile_write_enable, idec.inst_rd2(inst), out);*/
   end
+  always_comb begin : tocktick_pc
+    logic[31:0] out;
+    mux_next_pc_select_sel = next_pc_select;
+    mux_next_pc_select_in0 = adder_pc_plus_4_result;
+    mux_next_pc_select_in1 = adder_pc_plus_immediate_result;
+    mux_next_pc_select_in2 = {alu_result2[31:1], 1'b0};
+    mux_next_pc_select_in3 = 32'b0;
+    adder_pc_plus_4_operand_a = 32'h00000004;
+    adder_pc_plus_4_operand_b = program_counter_value;
+    adder_pc_plus_immediate_operand_a = program_counter_value;
+    adder_pc_plus_immediate_operand_b = igen_immediate;
+    igen_inst = inst;
+    out = mux_next_pc_select_out;
+    program_counter_reset = reset;
+    program_counter_write_enable = pc_write_enable;
+    program_counter_next = out;
+    /*program_counter.tick(reset, pc_write_enable, out);*/
+  end
+
 
   //----------------------------------------
 

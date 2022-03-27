@@ -37,24 +37,27 @@ class toplevel {
   void tock(logic<1> reset) {
     text_memory_bus.tock(core.pc());
     logic<32> inst = text_memory_bus.read_data;
-    o_inst = inst;
 
     core.tock_execute(inst);
     core.tock_writeback(inst, data_memory_bus.read_data(core.bus_address, core.bus_read_enable2()));
 
+    logic<32> write_data = core.bus_write_data2(inst);
+    logic<1> write_enable = core.bus_write_enable2();
+
+    o_inst = inst;
     o_bus_read_data = data_memory_bus.read_data(core.bus_address, core.bus_read_enable2());
     o_bus_address = core.bus_address2();
-    o_bus_write_data = core.bus_write_data2(inst);
+    o_bus_write_data = write_data;
     o_bus_byte_enable = core.bus_byte_enable2(inst);
     o_bus_read_enable = core.bus_read_enable2();
-    o_bus_write_enable = core.bus_write_enable2();
+    o_bus_write_enable = write_enable;
     o_pc = core.pc();
     core.tock_pc(reset);
     data_memory_bus.tock_data_memory(
       core.bus_address,
-      core.bus_write_enable2(),
+      write_enable,
       core.bus_byte_enable2(inst),
-      core.bus_write_data2(inst)
+      write_data
     );
     core.tock_regs(inst);
   }

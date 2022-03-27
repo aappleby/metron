@@ -35,7 +35,6 @@ module singlecycle_datapath
   input logic pc_write_enable,
   input logic regfile_write_enable,
   output logic[31:0] pc2,
-  output logic[31:0] data_mem_address2,
   output logic[31:0] data_mem_write_data2,
   output logic  alu_result_equal_zero2,
   output logic[6:0]  inst_opcode2,
@@ -50,7 +49,6 @@ module singlecycle_datapath
   //----------------------------------------
 
   always_comb begin pc2 = program_counter_value; end
-  always_comb begin data_mem_address2 = alu_core_result; end
   always_comb begin regs_rs2_address = idec_inst_rs22;
 idec_inst = inst;
 data_mem_write_data2 = regs_rs2_data; end

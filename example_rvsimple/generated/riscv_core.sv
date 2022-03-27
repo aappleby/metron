@@ -24,7 +24,6 @@ module riscv_core
   output logic[3:0]  bus_byte_enable2,
   output logic  bus_read_enable2,
   output logic  bus_write_enable2,
-  output logic[31:0] bus_address2,
   output logic[31:0] pc,
   output logic[31:0] alu_result
 );
@@ -46,7 +45,7 @@ module riscv_core
 
   always_comb begin bus_read_enable2 = ctlpath_data_mem_read_enable; end
   always_comb begin bus_write_enable2 = ctlpath_data_mem_write_enable; end
-  always_comb begin bus_address2 = datapath_data_mem_address2; end
+  //logic<32> bus_address2()      const { return datapath.data_mem_address2(); }
   always_comb begin pc = datapath_pc2; end
 
   //----------------------------------------
@@ -159,7 +158,6 @@ module riscv_core
     .regfile_write_enable(datapath_regfile_write_enable), 
     // Outputs
     .pc2(datapath_pc2), 
-    .data_mem_address2(datapath_data_mem_address2), 
     .data_mem_write_data2(datapath_data_mem_write_data2), 
     .alu_result_equal_zero2(datapath_alu_result_equal_zero2), 
     .inst_opcode2(datapath_inst_opcode2), 
@@ -178,7 +176,6 @@ module riscv_core
   logic datapath_pc_write_enable;
   logic datapath_regfile_write_enable;
   logic[31:0] datapath_pc2;
-  logic[31:0] datapath_data_mem_address2;
   logic[31:0] datapath_data_mem_write_data2;
   logic  datapath_alu_result_equal_zero2;
   logic[6:0]  datapath_inst_opcode2;

@@ -29,7 +29,6 @@ class singlecycle_datapath {
   //----------------------------------------
 
   logic<32> pc2()                  const { return program_counter.value; }
-  logic<32> data_mem_address2()    const { return alu_core.result; }
   logic<32> data_mem_write_data2(logic<32> inst) const { return regs.rs2_data(idec.inst_rs22(inst)); }
   logic<1>  alu_result_equal_zero2() const { return alu_core.result_equal_zero(); }
 

@@ -46,24 +46,24 @@ module singlecycle_ctlpath
   //----------------------------------------
 
   always_comb begin : tock_decode
-    /*control.tock_decode(inst_opcode);*/
     control_inst_opcode = inst_opcode;
+    /*control.tock_decode(inst_opcode);*/
   end
 
   always_comb begin : tock_next_pc_select
-    /*transfer.tock(alu_result_equal_zero, inst_funct3);*/
     transfer_result_equal_zero = alu_result_equal_zero;
     transfer_inst_funct3 = inst_funct3;
-    /*control.tock_next_pc_select(inst_opcode, transfer.take_branch);*/
+    /*transfer.tock(alu_result_equal_zero, inst_funct3);*/
     control_inst_opcode = inst_opcode;
     control_take_branch = transfer_take_branch;
+    /*control.tock_next_pc_select(inst_opcode, transfer.take_branch);*/
   end
 
   always_comb begin : tock_alu_control
-    /*alu_ctrl.tock(control.alu_op_type, inst_funct3, inst_funct7);*/
     alu_ctrl_alu_op_type = control_alu_op_type;
     alu_ctrl_inst_funct3 = inst_funct3;
     alu_ctrl_inst_funct7 = inst_funct7;
+    /*alu_ctrl.tock(control.alu_op_type, inst_funct3, inst_funct7);*/
   end
 
   //----------------------------------------

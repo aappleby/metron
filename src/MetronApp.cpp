@@ -175,10 +175,8 @@ int main(int argc, char** argv) {
   //----------
   // Emit all modules.
 #if 1
-  //for (auto& source_file : library.source_files)
+  for (auto& source_file : library.source_files)
   {
-    auto source_file = library.source_files[0];
-
     // Translate the source.
     auto out_name = source_file->filename;
     assert(out_name.ends_with(".h"));

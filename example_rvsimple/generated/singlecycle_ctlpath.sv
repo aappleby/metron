@@ -63,12 +63,6 @@ module singlecycle_ctlpath
     /*control.tock_next_pc_select(inst_opcode, transfer.take_branch(alu_result_equal_zero, inst_funct3));*/
   end
 
-  /*
-  void tock_alu_control(logic<3> inst_funct3, logic<7> inst_funct7) {
-    alu_ctrl.tock(control.alu_op_type, inst_funct3, inst_funct7);
-  }
-  */
-
   //----------------------------------------
 
  /*private:*/

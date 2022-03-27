@@ -21,14 +21,17 @@ module example_data_memory
   input logic[31:0] data,
   output logic[31:0] q
 );
- /*public:*/
-  /*logic<32> q;*/
-
-/*private:*/
-  logic[31:0] mem[2**(DATA_BITS - 2)];
-
 /*public:*/
-  always_comb begin : tock q = mem[address]; end
+  initial begin : init
+    string s;
+    
+    $value$plusargs("data_file=%s", s);
+    $readmemh(s, mem);
+  end
+
+  always_comb begin
+    q = mem[address];
+  end
 
   always_ff @(posedge clock) begin : tick
     if (wren) begin
@@ -42,12 +45,8 @@ module example_data_memory
     end
   end
 
-  initial begin : init
-    string s;
-    
-    $value$plusargs("data_file=%s", s);
-    $readmemh(s, mem);
-  end
+/*private:*/
+  logic[31:0] mem[2**(DATA_BITS - 2)];
 
 endmodule;
 

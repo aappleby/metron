@@ -28,8 +28,7 @@ class example_data_memory_bus {
   example_data_memory data_memory;
 
   void tock(logic<32> address, logic<1> read_enable) {
-    data_memory.tock(bx<DATA_BITS - 2>(address, 2));
-    logic<32> fetched = data_memory.q;
+    logic<32> fetched = data_memory.q(bx<DATA_BITS - 2>(address, 2));
     logic<1> is_data_memory = address >= DATA_BEGIN && DATA_END >= address;
     read_data =
       read_enable && is_data_memory

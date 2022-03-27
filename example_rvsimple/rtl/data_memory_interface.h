@@ -27,8 +27,7 @@ class data_memory_interface {
   }
 
   void tock_bus(logic<3> data_format,
-                logic<32> address,
-                logic<32> write_data) {
+                logic<32> address) {
 
     // calculate byte enable
     switch (b2(data_format)) {

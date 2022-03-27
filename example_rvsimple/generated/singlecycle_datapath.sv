@@ -53,12 +53,17 @@ module singlecycle_datapath
 
   always_comb begin pc2 = program_counter_value; end
   always_comb begin data_mem_address2 = alu_core_result; end
-  always_comb begin data_mem_write_data2 = regs_rs2_data; end
+  always_comb begin regs_rs2_address = idec_inst_rs22;
+idec_inst = inst;
+data_mem_write_data2 = regs_rs2_data; end
   always_comb begin alu_result_equal_zero2 = alu_core_result_equal_zero; end
 
-  always_comb begin inst_opcode2 = idec_inst_opcode2; end
-  always_comb begin inst_funct32 = idec_inst_funct32; end
-  always_comb begin inst_funct72 = idec_inst_funct72; end
+  always_comb begin idec_inst = inst;
+inst_opcode2 = idec_inst_opcode2; end
+  always_comb begin idec_inst = inst;
+inst_funct32 = idec_inst_funct32; end
+  always_comb begin idec_inst = inst;
+inst_funct72 = idec_inst_funct72; end
 
   //----------------------------------------
 

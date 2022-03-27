@@ -30,7 +30,12 @@ module riscv_core
  /*public:*/
   /*logic<32> bus_address;*/
 
-  always_comb begin bus_write_data2 = dmem_bus_write_data; end
+  always_comb begin
+    dmem_address = datapath_data_mem_address;
+    dmem_write_data = datapath_data_mem_write_data2;
+    datapath_inst = inst;
+    bus_write_data2 = dmem_bus_write_data;
+  end
   always_comb begin bus_byte_enable2 = dmem_bus_byte_enable; end
   always_comb begin bus_read_enable2 = ctlpath_data_mem_read_enable; end
   always_comb begin bus_write_enable2 = ctlpath_data_mem_write_enable; end
@@ -108,13 +113,10 @@ module riscv_core
 
     dmem_data_format = datapath_inst_funct32;
     dmem_address = datapath_data_mem_address;
-    dmem_write_data = datapath_data_mem_write_data2;
-    datapath_inst = inst;
     datapath_inst = inst;
     /*dmem.tock_bus(
       datapath.inst_funct32(inst),
-      datapath.data_mem_address,
-      datapath.data_mem_write_data2(inst));*/
+      datapath.data_mem_address);*/
 
     bus_address = datapath_data_mem_address;
   end

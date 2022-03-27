@@ -992,6 +992,7 @@ void MtCursor::emit(MtFuncDefinition n) {
         break;
 
       default:
+        emit_submod_input_port_bindings(c);
         emit_dispatch(c);
         break;
     }

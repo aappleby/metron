@@ -23,7 +23,9 @@ module regfile
 );
  /*public:*/
   // Register x0 is always 0
-  initial begin : init regs[0] = 32'd0; end
+  initial begin : init
+    regs[0] = 32'd0;
+  end
 
   always_comb begin
     rs1_data = regs[rs1_address];

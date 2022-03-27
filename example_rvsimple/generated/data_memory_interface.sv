@@ -30,14 +30,10 @@ module data_memory_interface
   always_comb begin
     // calculate byte enable
     case (2'(data_format)) 
-      /*case*/ 2'b00:
-        bus_byte_enable = 4'b0001 << 2'(address);
-      /*case*/ 2'b01:
-        bus_byte_enable = 4'b0011 << 2'(address);
-      /*case*/ 2'b10:
-        bus_byte_enable = 4'b1111 << 2'(address);
-      default:
-        bus_byte_enable = 4'b0000;
+      /*case*/ 2'b00: bus_byte_enable = 4'b0001 << 2'(address);
+      /*case*/ 2'b01: bus_byte_enable = 4'b0011 << 2'(address);
+      /*case*/ 2'b10: bus_byte_enable = 4'b1111 << 2'(address);
+      default:   bus_byte_enable = 4'b0000;
     endcase
   end
 
@@ -47,14 +43,10 @@ module data_memory_interface
     position_fix = 32'(bus_read_data >> (8 * 2'(address)));
 
     case (2'(data_format)) 
-      /*case*/ 2'b00:
-        read_data = {{24 {1'(~data_format[2] & position_fix[7])}}, 8'(position_fix)};
-      /*case*/ 2'b01:
-        read_data = {{16 {1'(~data_format[2] & position_fix[15])}}, 16'(position_fix)};
-      /*case*/ 2'b10:
-        read_data = 32'(position_fix);
-      default:
-        read_data = 32'x;
+      /*case*/ 2'b00: read_data = {{24 {1'(~data_format[2] & position_fix[7])}}, 8'(position_fix)};
+      /*case*/ 2'b01: read_data = {{16 {1'(~data_format[2] & position_fix[15])}}, 16'(position_fix)};
+      /*case*/ 2'b10: read_data = 32'(position_fix);
+      default:   read_data = 32'x;
     endcase
   end
 endmodule;

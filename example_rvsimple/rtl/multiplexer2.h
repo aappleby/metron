@@ -15,12 +15,9 @@ class multiplexer2 {
  public:
   logic<WIDTH> out(logic<1> sel, logic<WIDTH> in0, logic<WIDTH> in1) {
     switch (sel) {
-      case 0:
-        return in0;
-      case 1:
-        return in1;
-      default:
-        return bx<WIDTH>(DONTCARE);
+      case 0:  return in0;
+      case 1:  return in1;
+      default: return bx<WIDTH>(DONTCARE);
     }
   }
 };

@@ -18,11 +18,8 @@ class example_text_memory_bus {
 
   logic<32> read_data(logic<32> address) {
     logic<32> fetched = text_memory.q(bx<TEXT_BITS - 2>(address, 2));
-
-    return
-        (address >= TEXT_BEGIN) && (TEXT_END >= address)
-        ? fetched
-        : b32(DONTCARE);
+    logic<1> is_text_addr = (address >= TEXT_BEGIN) && (TEXT_END >= address);
+    return is_text_addr ? fetched : b32(DONTCARE);
   }
 
  private:

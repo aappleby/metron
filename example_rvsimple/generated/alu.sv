@@ -24,7 +24,7 @@ module alu
     import rv_constants::*;
 
     case (alu_function) 
-      /*case*/ ALU_ADD:   result = operand_a + operand_b;
+      /*case*/ ALU_ADD:  result = operand_a + operand_b;
       /*case*/ ALU_SUB:  result = operand_a - operand_b;
       /*case*/ ALU_SLL:  result = operand_a << 5'(operand_b);
       /*case*/ ALU_SRL:  result = operand_a >> 5'(operand_b);

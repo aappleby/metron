@@ -23,13 +23,11 @@ module example_text_memory_bus
 
   always_comb begin
     logic[31:0] fetched;
+    logic is_text_addr;
     text_memory_address = address[TEXT_BITS - 2+1:2];
     fetched = text_memory_q;
-
-    read_data =
-        (address >= TEXT_BEGIN) && (TEXT_END >= address)
-        ? fetched
-        : 32'x;
+    is_text_addr = (address >= TEXT_BEGIN) && (TEXT_END >= address);
+    read_data = is_text_addr ? fetched : 32'x;
   end
 
  /*private:*/

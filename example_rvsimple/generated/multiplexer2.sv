@@ -22,12 +22,9 @@ module multiplexer2
  /*public:*/
   always_comb begin
     case (sel) 
-      /*case*/ 0:
-        out = in0;
-      /*case*/ 1:
-        out = in1;
-      default:
-        out = WIDTH'(1'bx);
+      /*case*/ 0:  out = in0;
+      /*case*/ 1:  out = in1;
+      default: out = WIDTH'(1'bx);
     endcase
   end
 endmodule

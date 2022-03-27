@@ -62,16 +62,17 @@ module singlecycle_control
     import rv_constants::*;
 
     case (inst_opcode) 
-      /*case*/ OPCODE_LOAD:     alu_operand_a_select = CTL_ALU_A_RS1;
-      /*case*/ OPCODE_MISC_MEM: alu_operand_a_select = 1'x;
-      /*case*/ OPCODE_OP_IMM:   alu_operand_a_select = CTL_ALU_A_RS1;
       /*case*/ OPCODE_AUIPC:    alu_operand_a_select = CTL_ALU_A_PC;
-      /*case*/ OPCODE_STORE:    alu_operand_a_select = CTL_ALU_A_RS1;
+      /*case*/ OPCODE_JAL:      alu_operand_a_select = CTL_ALU_A_PC;
+
       /*case*/ OPCODE_OP:       alu_operand_a_select = CTL_ALU_A_RS1;
       /*case*/ OPCODE_LUI:      alu_operand_a_select = CTL_ALU_A_RS1;
       /*case*/ OPCODE_BRANCH:   alu_operand_a_select = CTL_ALU_A_RS1;
+
+      /*case*/ OPCODE_LOAD:     alu_operand_a_select = CTL_ALU_A_RS1;
+      /*case*/ OPCODE_STORE:    alu_operand_a_select = CTL_ALU_A_RS1;
+      /*case*/ OPCODE_OP_IMM:   alu_operand_a_select = CTL_ALU_A_RS1;
       /*case*/ OPCODE_JALR:     alu_operand_a_select = CTL_ALU_A_RS1;
-      /*case*/ OPCODE_JAL:      alu_operand_a_select = CTL_ALU_A_PC;
       default:              alu_operand_a_select = 1'x;
     endcase
   end
@@ -79,16 +80,17 @@ module singlecycle_control
   always_comb begin
     import rv_constants::*;
     case (inst_opcode) 
-      /*case*/ OPCODE_LOAD:     alu_operand_b_select = CTL_ALU_B_IMM;
-      /*case*/ OPCODE_MISC_MEM: alu_operand_b_select = 1'x;
-      /*case*/ OPCODE_OP_IMM:   alu_operand_b_select = CTL_ALU_B_IMM;
       /*case*/ OPCODE_AUIPC:    alu_operand_b_select = CTL_ALU_B_IMM;
-      /*case*/ OPCODE_STORE:    alu_operand_b_select = CTL_ALU_B_IMM;
+      /*case*/ OPCODE_JAL:      alu_operand_b_select = CTL_ALU_B_IMM;
+
       /*case*/ OPCODE_OP:       alu_operand_b_select = CTL_ALU_B_RS2;
       /*case*/ OPCODE_LUI:      alu_operand_b_select = CTL_ALU_B_RS2;
       /*case*/ OPCODE_BRANCH:   alu_operand_b_select = CTL_ALU_B_RS2;
+
+      /*case*/ OPCODE_LOAD:     alu_operand_b_select = CTL_ALU_B_IMM;
+      /*case*/ OPCODE_STORE:    alu_operand_b_select = CTL_ALU_B_IMM;
+      /*case*/ OPCODE_OP_IMM:   alu_operand_b_select = CTL_ALU_B_IMM;
       /*case*/ OPCODE_JALR:     alu_operand_b_select = CTL_ALU_B_IMM;
-      /*case*/ OPCODE_JAL:      alu_operand_b_select = CTL_ALU_B_IMM;
       default:              alu_operand_b_select = 1'x;
     endcase
   end
@@ -96,16 +98,16 @@ module singlecycle_control
   always_comb begin
     import rv_constants::*;
     case (inst_opcode) 
-      /*case*/ OPCODE_LOAD:     alu_op_type2 = CTL_ALU_ADD;
-      /*case*/ OPCODE_MISC_MEM: alu_op_type2 = 2'x;
-      /*case*/ OPCODE_OP_IMM:   alu_op_type2 = CTL_ALU_OP_IMM;
       /*case*/ OPCODE_AUIPC:    alu_op_type2 = CTL_ALU_ADD;
-      /*case*/ OPCODE_STORE:    alu_op_type2 = CTL_ALU_ADD;
-      /*case*/ OPCODE_OP:       alu_op_type2 = CTL_ALU_OP;
-      /*case*/ OPCODE_LUI:      alu_op_type2 = 2'x;
-      /*case*/ OPCODE_BRANCH:   alu_op_type2 = CTL_ALU_BRANCH;
-      /*case*/ OPCODE_JALR:     alu_op_type2 = CTL_ALU_ADD;
       /*case*/ OPCODE_JAL:      alu_op_type2 = CTL_ALU_ADD;
+
+      /*case*/ OPCODE_OP:       alu_op_type2 = CTL_ALU_OP;
+      /*case*/ OPCODE_BRANCH:   alu_op_type2 = CTL_ALU_BRANCH;
+
+      /*case*/ OPCODE_LOAD:     alu_op_type2 = CTL_ALU_ADD;
+      /*case*/ OPCODE_STORE:    alu_op_type2 = CTL_ALU_ADD;
+      /*case*/ OPCODE_OP_IMM:   alu_op_type2 = CTL_ALU_OP_IMM;
+      /*case*/ OPCODE_JALR:     alu_op_type2 = CTL_ALU_ADD;
       default:              alu_op_type2 = 2'x;
     endcase
   end
@@ -123,16 +125,13 @@ module singlecycle_control
   always_comb begin
     import rv_constants::*;
     case (inst_opcode) 
-      /*case*/ OPCODE_LOAD:     reg_writeback_select = CTL_WRITEBACK_DATA;
-      /*case*/ OPCODE_MISC_MEM: reg_writeback_select = 3'x;
       /*case*/ OPCODE_OP_IMM:   reg_writeback_select = CTL_WRITEBACK_ALU;
       /*case*/ OPCODE_AUIPC:    reg_writeback_select = CTL_WRITEBACK_ALU;
-      /*case*/ OPCODE_STORE:    reg_writeback_select = 3'x;
       /*case*/ OPCODE_OP:       reg_writeback_select = CTL_WRITEBACK_ALU;
       /*case*/ OPCODE_LUI:      reg_writeback_select = CTL_WRITEBACK_IMM;
-      /*case*/ OPCODE_BRANCH:   reg_writeback_select = 3'x;
       /*case*/ OPCODE_JALR:     reg_writeback_select = CTL_WRITEBACK_PC4;
       /*case*/ OPCODE_JAL:      reg_writeback_select = CTL_WRITEBACK_PC4;
+      /*case*/ OPCODE_LOAD:     reg_writeback_select = CTL_WRITEBACK_DATA;
       default:              reg_writeback_select = 3'x;
     endcase
   end

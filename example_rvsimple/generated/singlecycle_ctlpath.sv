@@ -56,10 +56,12 @@ data_mem_write_enable = control_data_mem_write_enable; end
 reg_writeback_select = control_reg_writeback_select; end
 
   always_comb begin
-    control_inst_opcode = inst_opcode;
-    control_take_branch = transfer_take_branch;
+    logic take_branch;
     transfer_result_equal_zero = alu_result_equal_zero;
     transfer_inst_funct3 = inst_funct3;
+    take_branch = transfer_take_branch;
+    control_inst_opcode = inst_opcode;
+    control_take_branch = take_branch;
     next_pc_select = control_next_pc_select;
   end
 

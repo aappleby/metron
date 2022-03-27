@@ -48,16 +48,17 @@ class singlecycle_control {
     using namespace rv_constants;
 
     switch (inst_opcode) {
-      case OPCODE_LOAD:     return CTL_ALU_A_RS1;
-      case OPCODE_MISC_MEM: return b1(DONTCARE);
-      case OPCODE_OP_IMM:   return CTL_ALU_A_RS1;
       case OPCODE_AUIPC:    return CTL_ALU_A_PC;
-      case OPCODE_STORE:    return CTL_ALU_A_RS1;
+      case OPCODE_JAL:      return CTL_ALU_A_PC;
+
       case OPCODE_OP:       return CTL_ALU_A_RS1;
       case OPCODE_LUI:      return CTL_ALU_A_RS1;
       case OPCODE_BRANCH:   return CTL_ALU_A_RS1;
+
+      case OPCODE_LOAD:     return CTL_ALU_A_RS1;
+      case OPCODE_STORE:    return CTL_ALU_A_RS1;
+      case OPCODE_OP_IMM:   return CTL_ALU_A_RS1;
       case OPCODE_JALR:     return CTL_ALU_A_RS1;
-      case OPCODE_JAL:      return CTL_ALU_A_PC;
       default:              return b1(DONTCARE);
     }
   }
@@ -65,16 +66,17 @@ class singlecycle_control {
   logic<1> alu_operand_b_select(logic<7> inst_opcode) const {
     using namespace rv_constants;
     switch (inst_opcode) {
-      case OPCODE_LOAD:     return CTL_ALU_B_IMM;
-      case OPCODE_MISC_MEM: return b1(DONTCARE);
-      case OPCODE_OP_IMM:   return CTL_ALU_B_IMM;
       case OPCODE_AUIPC:    return CTL_ALU_B_IMM;
-      case OPCODE_STORE:    return CTL_ALU_B_IMM;
+      case OPCODE_JAL:      return CTL_ALU_B_IMM;
+
       case OPCODE_OP:       return CTL_ALU_B_RS2;
       case OPCODE_LUI:      return CTL_ALU_B_RS2;
       case OPCODE_BRANCH:   return CTL_ALU_B_RS2;
+
+      case OPCODE_LOAD:     return CTL_ALU_B_IMM;
+      case OPCODE_STORE:    return CTL_ALU_B_IMM;
+      case OPCODE_OP_IMM:   return CTL_ALU_B_IMM;
       case OPCODE_JALR:     return CTL_ALU_B_IMM;
-      case OPCODE_JAL:      return CTL_ALU_B_IMM;
       default:              return b1(DONTCARE);
     }
   }
@@ -82,16 +84,16 @@ class singlecycle_control {
   logic<2> alu_op_type2(logic<7> inst_opcode) const {
     using namespace rv_constants;
     switch (inst_opcode) {
-      case OPCODE_LOAD:     return CTL_ALU_ADD;
-      case OPCODE_MISC_MEM: return b2(DONTCARE);
-      case OPCODE_OP_IMM:   return CTL_ALU_OP_IMM;
       case OPCODE_AUIPC:    return CTL_ALU_ADD;
-      case OPCODE_STORE:    return CTL_ALU_ADD;
-      case OPCODE_OP:       return CTL_ALU_OP;
-      case OPCODE_LUI:      return b2(DONTCARE);
-      case OPCODE_BRANCH:   return CTL_ALU_BRANCH;
-      case OPCODE_JALR:     return CTL_ALU_ADD;
       case OPCODE_JAL:      return CTL_ALU_ADD;
+
+      case OPCODE_OP:       return CTL_ALU_OP;
+      case OPCODE_BRANCH:   return CTL_ALU_BRANCH;
+
+      case OPCODE_LOAD:     return CTL_ALU_ADD;
+      case OPCODE_STORE:    return CTL_ALU_ADD;
+      case OPCODE_OP_IMM:   return CTL_ALU_OP_IMM;
+      case OPCODE_JALR:     return CTL_ALU_ADD;
       default:              return b2(DONTCARE);
     }
   }
@@ -109,16 +111,13 @@ class singlecycle_control {
   logic<3> reg_writeback_select(logic<7> inst_opcode) const {
     using namespace rv_constants;
     switch (inst_opcode) {
-      case OPCODE_LOAD:     return CTL_WRITEBACK_DATA;
-      case OPCODE_MISC_MEM: return b3(DONTCARE);
       case OPCODE_OP_IMM:   return CTL_WRITEBACK_ALU;
       case OPCODE_AUIPC:    return CTL_WRITEBACK_ALU;
-      case OPCODE_STORE:    return b3(DONTCARE);
       case OPCODE_OP:       return CTL_WRITEBACK_ALU;
       case OPCODE_LUI:      return CTL_WRITEBACK_IMM;
-      case OPCODE_BRANCH:   return b3(DONTCARE);
       case OPCODE_JALR:     return CTL_WRITEBACK_PC4;
       case OPCODE_JAL:      return CTL_WRITEBACK_PC4;
+      case OPCODE_LOAD:     return CTL_WRITEBACK_DATA;
       default:              return b3(DONTCARE);
     }
   }

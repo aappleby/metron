@@ -24,8 +24,7 @@ public:
     return mem[address];
   }
 
-  void tick(logic<DATA_BITS - 2> address, logic<1> wren, logic<4> byteena,
-            logic<32> data) {
+  void tick(logic<DATA_BITS - 2> address, logic<1> wren, logic<4> byteena, logic<32> data) {
     if (wren) {
       logic<32> mask = 0;
       if (byteena[0]) mask = mask | 0x000000FF;

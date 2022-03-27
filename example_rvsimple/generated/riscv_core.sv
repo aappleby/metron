@@ -74,16 +74,18 @@ module riscv_core
   always_comb begin
     logic[6:0] opcode;
     logic[2:0] funct3;
+    logic[6:0] funct7;
     logic[4:0] alu_function;
     datapath_inst = inst;
     opcode = datapath_inst_opcode;
     datapath_inst = inst;
     funct3 = datapath_inst_funct3;
+    datapath_inst = inst;
+    funct7 = datapath_inst_funct7;
 
     ctlpath_inst_opcode = opcode;
     ctlpath_inst_funct3 = funct3;
-    ctlpath_inst_funct7 = datapath_inst_funct7;
-    datapath_inst = inst;
+    ctlpath_inst_funct7 = funct7;
     alu_function = ctlpath_alu_function;
 
     datapath_inst = inst;

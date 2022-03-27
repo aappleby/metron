@@ -29,7 +29,8 @@ class singlecycle_ctlpath {
   logic<3> reg_writeback_select(logic<7> inst_opcode)  const { return control.reg_writeback_select(inst_opcode); }
 
   logic<2> next_pc_select(logic<7> inst_opcode, logic<3> inst_funct3, logic<1> alu_result_equal_zero) const {
-    return control.next_pc_select(inst_opcode, transfer.take_branch(alu_result_equal_zero, inst_funct3));
+    logic<1> take_branch = transfer.take_branch(alu_result_equal_zero, inst_funct3);
+    return control.next_pc_select(inst_opcode, take_branch);
   }
 
   //----------------------------------------

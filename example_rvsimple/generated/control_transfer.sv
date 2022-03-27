@@ -21,22 +21,14 @@ module control_transfer
 
   always_comb begin
     import rv_constants::*;
-
     case (inst_funct3) 
-      /*case*/ FUNCT3_BRANCH_EQ:
-        take_branch = !result_equal_zero;
-      /*case*/ FUNCT3_BRANCH_NE:
-        take_branch = result_equal_zero;
-      /*case*/ FUNCT3_BRANCH_LT:
-        take_branch = !result_equal_zero;
-      /*case*/ FUNCT3_BRANCH_GE:
-        take_branch = result_equal_zero;
-      /*case*/ FUNCT3_BRANCH_LTU:
-        take_branch = !result_equal_zero;
-      /*case*/ FUNCT3_BRANCH_GEU:
-        take_branch = result_equal_zero;
-      default:
-        take_branch = 1'x;
+      /*case*/ FUNCT3_BRANCH_EQ:  take_branch = !result_equal_zero;
+      /*case*/ FUNCT3_BRANCH_NE:  take_branch = result_equal_zero;
+      /*case*/ FUNCT3_BRANCH_LT:  take_branch = !result_equal_zero;
+      /*case*/ FUNCT3_BRANCH_GE:  take_branch = result_equal_zero;
+      /*case*/ FUNCT3_BRANCH_LTU: take_branch = !result_equal_zero;
+      /*case*/ FUNCT3_BRANCH_GEU: take_branch = result_equal_zero;
+      default:                take_branch = 1'x;
     endcase
   end
 endmodule;

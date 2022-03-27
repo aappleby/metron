@@ -17,7 +17,7 @@ class alu {
     using namespace rv_constants;
 
     switch (alu_function) {
-      case ALU_ADD:   return operand_a + operand_b;
+      case ALU_ADD:  return operand_a + operand_b;
       case ALU_SUB:  return operand_a - operand_b;
       case ALU_SLL:  return operand_a << b5(operand_b);
       case ALU_SRL:  return operand_a >> b5(operand_b);

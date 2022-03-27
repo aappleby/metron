@@ -52,6 +52,8 @@ bus_byte_enable = core_bus_byte_enable2; end
   //----------------------------------------
 
   always_comb begin : tock
+    core_reset = reset;
+    /*core.tock_pc(reset);*/
     data_memory_bus_address = core_bus_address;
     data_memory_bus_write_enable = core_bus_write_enable2;
     data_memory_bus_byte_enable = core_bus_byte_enable2;
@@ -64,8 +66,6 @@ bus_byte_enable = core_bus_byte_enable2; end
       core.bus_byte_enable2(text_memory_bus.read_data),
       core.bus_write_data2(text_memory_bus.read_data)
     );*/
-    core_reset = reset;
-    /*core.tock_pc(reset);*/
     core_inst = text_memory_bus_read_data;
     /*core.tock_regs(text_memory_bus.read_data);*/
     text_memory_bus_address = core_pc;
@@ -123,18 +123,18 @@ bus_byte_enable = core_bus_byte_enable2; end
     // Inputs
     .clock(clock),
     .address(data_memory_bus_address), 
+    .read_enable(data_memory_bus_read_enable), 
     .write_enable(data_memory_bus_write_enable), 
     .byte_enable(data_memory_bus_byte_enable), 
     .write_data(data_memory_bus_write_data), 
-    .read_enable(data_memory_bus_read_enable), 
     // Outputs
     .read_data(data_memory_bus_read_data)
   );
   logic[31:0] data_memory_bus_address;
+  logic data_memory_bus_read_enable;
   logic data_memory_bus_write_enable;
   logic[3:0] data_memory_bus_byte_enable;
   logic[31:0] data_memory_bus_write_data;
-  logic data_memory_bus_read_enable;
   logic[31:0] data_memory_bus_read_data;
 
 endmodule;

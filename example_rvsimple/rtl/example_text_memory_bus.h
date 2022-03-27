@@ -19,8 +19,7 @@ class example_text_memory_bus {
   logic<32> read_data;
 
   void tock(logic<32> address) {
-    text_memory.tock(bx<TEXT_BITS - 2>(address, 2));
-    logic<32> fetched = text_memory.q2(bx<TEXT_BITS - 2>(address, 2));
+    logic<32> fetched = text_memory.q(bx<TEXT_BITS - 2>(address, 2));
 
     read_data =
         (address >= TEXT_BEGIN) && (TEXT_END >= address)

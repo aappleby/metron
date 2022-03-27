@@ -74,6 +74,7 @@ module toplevel
     core_inst = inst;
     core_alu_result2 = alu_result2;
     write_data = core_bus_write_data2;
+    core_inst = inst;
     write_enable = core_bus_write_enable2;
 
     data_memory_bus_address = alu_result2;

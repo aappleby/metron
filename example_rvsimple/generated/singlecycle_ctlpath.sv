@@ -50,7 +50,8 @@ alu_operand_a_select = control_alu_operand_a_select; end
 alu_operand_b_select = control_alu_operand_b_select; end
   always_comb begin control_inst_opcode = inst_opcode;
 data_mem_read_enable = control_data_mem_read_enable; end
-  always_comb begin data_mem_write_enable = control_data_mem_write_enable; end
+  always_comb begin control_inst_opcode = inst_opcode;
+data_mem_write_enable = control_data_mem_write_enable; end
   always_comb begin reg_writeback_select = control_reg_writeback_select; end
   always_comb begin next_pc_select = control_next_pc_select; end
 
@@ -78,7 +79,6 @@ data_mem_read_enable = control_data_mem_read_enable; end
     .inst_opcode(control_inst_opcode), 
     .take_branch(control_take_branch), 
     // Outputs
-    .data_mem_write_enable(control_data_mem_write_enable), 
     .reg_writeback_select(control_reg_writeback_select), 
     .next_pc_select(control_next_pc_select), 
     .pc_write_enable(control_pc_write_enable), 
@@ -86,11 +86,11 @@ data_mem_read_enable = control_data_mem_read_enable; end
     .alu_operand_a_select(control_alu_operand_a_select), 
     .alu_operand_b_select(control_alu_operand_b_select), 
     .alu_op_type2(control_alu_op_type2), 
-    .data_mem_read_enable(control_data_mem_read_enable)
+    .data_mem_read_enable(control_data_mem_read_enable), 
+    .data_mem_write_enable(control_data_mem_write_enable)
   );
   logic[6:0] control_inst_opcode;
   logic control_take_branch;
-  logic control_data_mem_write_enable;
   logic[2:0] control_reg_writeback_select;
   logic[1:0] control_next_pc_select;
   logic control_pc_write_enable;
@@ -99,6 +99,7 @@ data_mem_read_enable = control_data_mem_read_enable; end
   logic control_alu_operand_b_select;
   logic[1:0] control_alu_op_type2;
   logic control_data_mem_read_enable;
+  logic control_data_mem_write_enable;
 
   control_transfer transfer(
     // Inputs

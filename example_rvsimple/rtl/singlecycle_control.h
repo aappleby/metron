@@ -12,7 +12,7 @@
 
 class singlecycle_control {
  public:
-  logic<1> data_mem_write_enable;
+  //logic<1> data_mem_write_enable;
   logic<3> reg_writeback_select;
   logic<2> next_pc_select;
 
@@ -104,10 +104,14 @@ class singlecycle_control {
     return inst_opcode == OPCODE_LOAD;
   }
 
+  logic<1> data_mem_write_enable(logic<7> inst_opcode) const {
+    using namespace rv_constants;
+    return inst_opcode == OPCODE_STORE;
+  }
+
   void tock_decode(logic<7> inst_opcode) {
     using namespace rv_constants;
 
-    data_mem_write_enable   = b1(0b0);
     reg_writeback_select    = b3(DONTCARE);
 
     switch (inst_opcode) {
@@ -137,7 +141,6 @@ class singlecycle_control {
 
       case OPCODE_STORE:
       {
-        data_mem_write_enable = b1(1);
         break;
       }
 
@@ -172,7 +175,6 @@ class singlecycle_control {
 
       default:
       {
-        data_mem_write_enable = b1(DONTCARE);
         break;
       }
     }

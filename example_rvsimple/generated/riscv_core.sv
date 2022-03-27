@@ -46,7 +46,9 @@ module riscv_core
   always_comb begin ctlpath_inst_opcode = datapath_inst_opcode2;
 datapath_inst = inst;
 bus_read_enable2 = ctlpath_data_mem_read_enable; end
-  always_comb begin bus_write_enable2 = ctlpath_data_mem_write_enable; end
+  always_comb begin ctlpath_inst_opcode = datapath_inst_opcode2;
+datapath_inst = inst;
+bus_write_enable2 = ctlpath_data_mem_write_enable; end
   always_comb begin pc = datapath_pc2; end
 
   //----------------------------------------

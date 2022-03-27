@@ -31,7 +31,7 @@ class riscv_core {
   }
 
   logic<1>  bus_read_enable2(logic<32> inst)  const { return ctlpath.data_mem_read_enable(datapath.inst_opcode2(inst)); }
-  logic<1>  bus_write_enable2() const { return ctlpath.data_mem_write_enable(); }
+  logic<1>  bus_write_enable2(logic<32> inst) const { return ctlpath.data_mem_write_enable(datapath.inst_opcode2(inst)); }
   logic<32> pc()                const { return datapath.pc2(); }
 
   //----------------------------------------

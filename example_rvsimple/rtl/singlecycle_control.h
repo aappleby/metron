@@ -88,7 +88,7 @@ class singlecycle_control {
     }
   }
 
-  logic<2> alu_op_type2(logic<7> inst_opcode) {
+  logic<2> alu_op_type2(logic<7> inst_opcode) const {
     using namespace rv_constants;
     switch (inst_opcode) {
       case OPCODE_LOAD: return CTL_ALU_ADD;

@@ -47,7 +47,7 @@ class riscv_core {
   }
 
   logic<32> alu_result(logic<32> inst) {
-    logic<5> alu_function = ctlpath.alu_function(datapath.inst_funct32(inst), datapath.inst_funct72(inst));
+    logic<5> alu_function = ctlpath.alu_function(datapath.inst_opcode2(inst), datapath.inst_funct32(inst), datapath.inst_funct72(inst));
 
     return datapath.alu_result(
       inst,

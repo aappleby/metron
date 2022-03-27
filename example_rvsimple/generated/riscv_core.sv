@@ -63,8 +63,10 @@ module riscv_core
 
   always_comb begin
     logic[4:0] alu_function;
+    ctlpath_inst_opcode = datapath_inst_opcode2;
     ctlpath_inst_funct3 = datapath_inst_funct32;
     ctlpath_inst_funct7 = datapath_inst_funct72;
+    datapath_inst = inst;
     datapath_inst = inst;
     datapath_inst = inst;
     alu_function = ctlpath_alu_function;
@@ -182,9 +184,9 @@ module riscv_core
   singlecycle_ctlpath ctlpath(
     // Inputs
     .clock(clock),
+    .inst_opcode(ctlpath_inst_opcode), 
     .inst_funct3(ctlpath_inst_funct3), 
     .inst_funct7(ctlpath_inst_funct7), 
-    .inst_opcode(ctlpath_inst_opcode), 
     .alu_result_equal_zero(ctlpath_alu_result_equal_zero), 
     // Outputs
     .alu_function(ctlpath_alu_function), 
@@ -197,9 +199,9 @@ module riscv_core
     .reg_writeback_select(ctlpath_reg_writeback_select), 
     .next_pc_select(ctlpath_next_pc_select)
   );
+  logic[6:0] ctlpath_inst_opcode;
   logic[2:0] ctlpath_inst_funct3;
   logic[6:0] ctlpath_inst_funct7;
-  logic[6:0] ctlpath_inst_opcode;
   logic ctlpath_alu_result_equal_zero;
   logic[4:0] ctlpath_alu_function;
   logic ctlpath_pc_write_enable2;

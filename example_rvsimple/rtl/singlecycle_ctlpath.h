@@ -16,8 +16,8 @@
 class singlecycle_ctlpath {
  public:
 
-  logic<5> alu_function(logic<3> inst_funct3, logic<7> inst_funct7) const {
-    return alu_ctrl.alu_function(control.alu_op_type, inst_funct3, inst_funct7);
+  logic<5> alu_function(logic<7> inst_opcode, logic<3> inst_funct3, logic<7> inst_funct7) const {
+    return alu_ctrl.alu_function(control.alu_op_type2(inst_opcode), inst_funct3, inst_funct7);
   }
 
   logic<1> pc_write_enable2(logic<7> inst_opcode)      const { return control.pc_write_enable(inst_opcode); }

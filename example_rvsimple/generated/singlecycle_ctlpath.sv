@@ -16,9 +16,9 @@
 module singlecycle_ctlpath
 (
   input logic clock,
+  input logic[6:0] inst_opcode,
   input logic[2:0] inst_funct3,
   input logic[6:0] inst_funct7,
-  input logic[6:0] inst_opcode,
   input logic alu_result_equal_zero,
   output logic[4:0] alu_function,
   output logic pc_write_enable2,
@@ -33,9 +33,10 @@ module singlecycle_ctlpath
  /*public:*/
 
   always_comb begin
-    alu_ctrl_alu_op_type = control_alu_op_type;
+    alu_ctrl_alu_op_type = control_alu_op_type2;
     alu_ctrl_inst_funct3 = inst_funct3;
     alu_ctrl_inst_funct7 = inst_funct7;
+    control_inst_opcode = inst_opcode;
     alu_function = alu_ctrl_alu_function;
   end
 

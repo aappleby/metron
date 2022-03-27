@@ -88,6 +88,23 @@ class singlecycle_control {
     }
   }
 
+  logic<2> alu_op_type2(logic<7> inst_opcode) {
+    using namespace rv_constants;
+    switch (inst_opcode) {
+      case OPCODE_LOAD: return CTL_ALU_ADD;
+      case OPCODE_MISC_MEM: return b2(DONTCARE);
+      case OPCODE_OP_IMM: return CTL_ALU_OP_IMM;
+      case OPCODE_AUIPC: return CTL_ALU_ADD;
+      case OPCODE_STORE: return CTL_ALU_ADD;
+      case OPCODE_OP: return CTL_ALU_OP;
+      case OPCODE_LUI: return b2(DONTCARE);
+      case OPCODE_BRANCH: return CTL_ALU_BRANCH;
+      case OPCODE_JALR: return CTL_ALU_ADD;
+      case OPCODE_JAL: return CTL_ALU_ADD;
+      default: return b2(DONTCARE);
+    }
+  }
+
 
   void tock_decode(logic<7> inst_opcode) {
     using namespace rv_constants;

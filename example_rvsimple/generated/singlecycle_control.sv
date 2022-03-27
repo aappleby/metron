@@ -23,7 +23,8 @@ module singlecycle_control
   output logic pc_write_enable,
   output logic regfile_write_enable,
   output logic alu_operand_a_select,
-  output logic alu_operand_b_select
+  output logic alu_operand_b_select,
+  output logic[1:0] alu_op_type2
 );
  /*public:*/
   //logic<1> pc_write_enable;
@@ -99,6 +100,23 @@ module singlecycle_control
       /*case*/ OPCODE_JALR:     alu_operand_b_select = CTL_ALU_B_IMM;
       /*case*/ OPCODE_JAL:      alu_operand_b_select = CTL_ALU_B_IMM;
       default:              alu_operand_b_select = 1'x;
+    endcase
+  end
+
+  always_comb begin
+    import rv_constants::*;
+    case (inst_opcode) 
+      /*case*/ OPCODE_LOAD: alu_op_type2 = CTL_ALU_ADD;
+      /*case*/ OPCODE_MISC_MEM: alu_op_type2 = 2'x;
+      /*case*/ OPCODE_OP_IMM: alu_op_type2 = CTL_ALU_OP_IMM;
+      /*case*/ OPCODE_AUIPC: alu_op_type2 = CTL_ALU_ADD;
+      /*case*/ OPCODE_STORE: alu_op_type2 = CTL_ALU_ADD;
+      /*case*/ OPCODE_OP: alu_op_type2 = CTL_ALU_OP;
+      /*case*/ OPCODE_LUI: alu_op_type2 = 2'x;
+      /*case*/ OPCODE_BRANCH: alu_op_type2 = CTL_ALU_BRANCH;
+      /*case*/ OPCODE_JALR: alu_op_type2 = CTL_ALU_ADD;
+      /*case*/ OPCODE_JAL: alu_op_type2 = CTL_ALU_ADD;
+      default: alu_op_type2 = 2'x;
     endcase
   end
 

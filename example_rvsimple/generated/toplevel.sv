@@ -64,6 +64,8 @@ module toplevel
     data_memory_bus_read_enable = core_bus_read_enable2;
     core_inst = inst;
     /*core.tock_writeback(inst, data_memory_bus.read_data(alu_result2, core.bus_read_enable2(inst)), alu_result2);*/
+    core_inst = inst;
+    /*core.tocktick_regs(inst);*/
 
     core_inst = inst;
     core_alu_result2 = alu_result2;
@@ -88,8 +90,6 @@ module toplevel
     core_inst = inst;
     core_alu_result2 = alu_result2;
     /*core.tocktick_pc(reset, inst, alu_result2);*/
-    core_inst = inst;
-    /*core.tocktick_regs(inst);*/
     o_inst = inst;
     data_memory_bus_address = alu_result2;
     data_memory_bus_read_enable = core_bus_read_enable2;

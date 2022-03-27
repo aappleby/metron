@@ -65,7 +65,7 @@ class riscv_core {
     ctlpath.tock_next_pc_select(
       datapath.inst_opcode2(inst),
       datapath.inst_funct32(inst),
-      datapath.alu_result_equal_zero2()
+      alu_result2 == 0
     );
   }
 

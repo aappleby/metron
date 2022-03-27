@@ -13,9 +13,6 @@
 class alu {
  public:
   logic<32> result;
-  logic<1> result_equal_zero() const {
-    return (result == b32(0));
-  }
 
   void tock(logic<5> alu_function, logic<32> operand_a, logic<32> operand_b) {
     using namespace rv_constants;

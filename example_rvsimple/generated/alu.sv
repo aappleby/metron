@@ -16,14 +16,10 @@ module alu
   input logic[4:0] alu_function,
   input logic[31:0] operand_a,
   input logic[31:0] operand_b,
-  output logic[31:0] result,
-  output logic result_equal_zero
+  output logic[31:0] result
 );
  /*public:*/
   /*logic<32> result;*/
-  always_comb begin
-    result_equal_zero = (result == 32'd0);
-  end
 
   always_comb begin : tock
     import rv_constants::*;

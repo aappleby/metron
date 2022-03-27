@@ -36,7 +36,6 @@ module singlecycle_datapath
   input logic regfile_write_enable,
   output logic[31:0] pc2,
   output logic[31:0] data_mem_write_data2,
-  output logic  alu_result_equal_zero2,
   output logic[6:0]  inst_opcode2,
   output logic[2:0]  inst_funct32,
   output logic[6:0]  inst_funct72,
@@ -52,7 +51,6 @@ module singlecycle_datapath
   always_comb begin regs_rs2_address = idec_inst_rs22;
 idec_inst = inst;
 data_mem_write_data2 = regs_rs2_data; end
-  always_comb begin alu_result_equal_zero2 = alu_core_result_equal_zero; end
 
   always_comb begin idec_inst = inst;
 inst_opcode2 = idec_inst_opcode2; end
@@ -190,14 +188,12 @@ inst_funct72 = idec_inst_funct72; end
     .operand_a(alu_core_operand_a), 
     .operand_b(alu_core_operand_b), 
     // Outputs
-    .result(alu_core_result), 
-    .result_equal_zero(alu_core_result_equal_zero)
+    .result(alu_core_result)
   );
   logic[4:0] alu_core_alu_function;
   logic[31:0] alu_core_operand_a;
   logic[31:0] alu_core_operand_b;
   logic[31:0] alu_core_result;
-  logic alu_core_result_equal_zero;
 
   multiplexer4 #(32) mux_next_pc_select(
     // Inputs

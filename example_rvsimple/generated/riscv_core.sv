@@ -88,13 +88,13 @@ module riscv_core
   always_comb begin : tock_next_pc_select
     ctlpath_inst_opcode = datapath_inst_opcode2;
     ctlpath_inst_funct3 = datapath_inst_funct32;
-    ctlpath_alu_result_equal_zero = datapath_alu_result_equal_zero2;
+    ctlpath_alu_result_equal_zero = alu_result2 == 0;
     datapath_inst = inst;
     datapath_inst = inst;
     /*ctlpath.tock_next_pc_select(
       datapath.inst_opcode2(inst),
       datapath.inst_funct32(inst),
-      datapath.alu_result_equal_zero2()
+      alu_result2 == 0
     );*/
   end
 
@@ -158,7 +158,6 @@ module riscv_core
     // Outputs
     .pc2(datapath_pc2), 
     .data_mem_write_data2(datapath_data_mem_write_data2), 
-    .alu_result_equal_zero2(datapath_alu_result_equal_zero2), 
     .inst_opcode2(datapath_inst_opcode2), 
     .inst_funct32(datapath_inst_funct32), 
     .inst_funct72(datapath_inst_funct72), 
@@ -176,7 +175,6 @@ module riscv_core
   logic datapath_regfile_write_enable;
   logic[31:0] datapath_pc2;
   logic[31:0] datapath_data_mem_write_data2;
-  logic  datapath_alu_result_equal_zero2;
   logic[6:0]  datapath_inst_opcode2;
   logic[2:0]  datapath_inst_funct32;
   logic[6:0]  datapath_inst_funct72;

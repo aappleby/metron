@@ -47,61 +47,70 @@ module toplevel
   //----------------------------------------
 
   always_comb begin : tock
+    logic[31:0] pc;
     logic[31:0] inst;
     logic[31:0] alu_result2;
     logic[31:0] write_data;
-    logic write_enable;
-    text_memory_bus_address = core_pc;
-    inst = text_memory_bus_read_data;
-
+    logic  write_enable;
+    logic[3:0]  byte_enable;
+    logic  read_enable;
+    logic[31:0] read_data;
+    pc           = core_pc;
+    text_memory_bus_address = pc;
+    inst         = text_memory_bus_read_data;
     core_inst = inst;
-    alu_result2 = core_alu_result;
-
-    core_inst = inst;
-    core_bus_read_data = data_memory_bus_read_data;
-    core_alu_result2 = alu_result2;
-    data_memory_bus_address = alu_result2;
-    data_memory_bus_read_enable = core_bus_read_enable2;
-    core_inst = inst;
-    /*core.tocktick_regs(inst, data_memory_bus.read_data(alu_result2, core.bus_read_enable2(inst)), alu_result2);*/
-
+    alu_result2  = core_alu_result;
     core_inst = inst;
     core_alu_result2 = alu_result2;
-    write_data = core_bus_write_data2;
+    write_data   = core_bus_write_data2;
     core_inst = inst;
     write_enable = core_bus_write_enable2;
+    core_inst = inst;
+    core_alu_result2 = alu_result2;
+    byte_enable  = core_bus_byte_enable2;
+    core_inst = inst;
+    read_enable  = core_bus_read_enable2;
+    data_memory_bus_address = alu_result2;
+    data_memory_bus_read_enable = read_enable;
+    read_data    = data_memory_bus_read_data;
 
     data_memory_bus_address = alu_result2;
     data_memory_bus_write_enable = write_enable;
-    data_memory_bus_byte_enable = core_bus_byte_enable2;
+    data_memory_bus_byte_enable = byte_enable;
     data_memory_bus_write_data = write_data;
-    core_inst = inst;
-    core_alu_result2 = alu_result2;
     /*data_memory_bus.tocktick(
       alu_result2,
       write_enable,
-      core.bus_byte_enable2(inst, alu_result2),
+      byte_enable,
       write_data
+    );*/
+
+    core_inst = inst;
+    core_bus_read_data = read_data;
+    core_alu_result2 = alu_result2;
+    /*core.tocktick_regs(
+      inst,
+      read_data,
+      alu_result2
     );*/
 
     core_reset = reset;
     core_inst = inst;
     core_alu_result2 = alu_result2;
-    /*core.tocktick_pc(reset, inst, alu_result2);*/
+    /*core.tocktick_pc(
+      reset,
+      inst,
+      alu_result2
+    );*/
+
     o_inst = inst;
-    data_memory_bus_address = alu_result2;
-    data_memory_bus_read_enable = core_bus_read_enable2;
-    core_inst = inst;
-    o_bus_read_data = data_memory_bus_read_data;
+    o_bus_read_data = read_data;
     o_bus_address = alu_result2;
     o_bus_write_data = write_data;
-    core_inst = inst;
-    core_alu_result2 = alu_result2;
-    o_bus_byte_enable = core_bus_byte_enable2;
-    core_inst = inst;
-    o_bus_read_enable = core_bus_read_enable2;
+    o_bus_byte_enable = byte_enable;
+    o_bus_read_enable = read_enable;
     o_bus_write_enable = write_enable;
-    o_pc = core_pc;
+    o_pc = pc;
   end
 
   //----------------------------------------

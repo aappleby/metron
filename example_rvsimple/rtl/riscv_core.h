@@ -76,7 +76,7 @@ class riscv_core {
     dmem.tock_bus(
       datapath.inst_funct32(inst),
       datapath.data_mem_address,
-      datapath.data_mem_write_data2());
+      datapath.data_mem_write_data2(inst));
 
     bus_address = datapath.data_mem_address;
   }

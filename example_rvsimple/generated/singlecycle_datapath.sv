@@ -78,27 +78,34 @@ module singlecycle_datapath
   end
 
   always_comb begin : tock_regfile
-    regs_rs1_address = idec_inst_rs12;
-    regs_rs2_address = idec_inst_rs22;
-    idec_inst = inst;
-    idec_inst = inst;
-    /*regs.tock(
-      idec.inst_rs12(inst),
-      idec.inst_rs22(inst)
-    );*/
+    //regs.tock(
+    //  idec.inst_rs12(inst),
+    //  idec.inst_rs22(inst)
+    //);
   end
 
   always_comb begin : tock_alu
     mux_operand_a_sel = alu_operand_a_select;
     mux_operand_a_in0 = regs_rs1_data;
     mux_operand_a_in1 = program_counter_value;
-    /*mux_operand_a.tock(alu_operand_a_select, regs.rs1_data,
-                       program_counter.value);*/
+    regs_rs1_address = idec_inst_rs12;
+    idec_inst = inst;
+    /*mux_operand_a.tock(
+      alu_operand_a_select,
+      regs.rs1_data(idec.inst_rs12(inst)),
+      program_counter.value
+    );*/
     mux_operand_b_sel = alu_operand_b_select;
     mux_operand_b_in0 = regs_rs2_data;
     mux_operand_b_in1 = igen_immediate;
+    regs_rs2_address = idec_inst_rs22;
+    idec_inst = inst;
     igen_inst = inst;
-    /*mux_operand_b.tock(alu_operand_b_select, regs.rs2_data, igen.immediate(inst));*/
+    /*mux_operand_b.tock(
+      alu_operand_b_select,
+      regs.rs2_data(idec.inst_rs22(inst)),
+      igen.immediate(inst)
+    );*/
     alu_core_alu_function = alu_function;
     alu_core_operand_a = mux_operand_a_out;
     alu_core_operand_b = mux_operand_b_out;

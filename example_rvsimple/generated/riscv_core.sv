@@ -113,10 +113,11 @@ module riscv_core
     dmem_address = datapath_data_mem_address;
     dmem_write_data = datapath_data_mem_write_data2;
     datapath_inst = inst;
+    datapath_inst = inst;
     /*dmem.tock_bus(
       datapath.inst_funct32(inst),
       datapath.data_mem_address,
-      datapath.data_mem_write_data2());*/
+      datapath.data_mem_write_data2(inst));*/
 
     bus_address = datapath_data_mem_address;
   end

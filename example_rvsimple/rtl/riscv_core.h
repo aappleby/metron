@@ -16,17 +16,17 @@
 class riscv_core {
  public:
 
-  logic<32> bus_write_data2(logic<32> inst) const {
+  logic<32> bus_write_data2(logic<32> inst, logic<32> alu_result2) const {
     return dmem.bus_write_data(
-      datapath.data_mem_address2(),
+      alu_result2,
       datapath.data_mem_write_data2(inst)
     );
   }
 
-  logic<4>  bus_byte_enable2(logic<32> inst)  const {
+  logic<4>  bus_byte_enable2(logic<32> inst, logic<32> alu_result2)  const {
     return dmem.bus_byte_enable(
       datapath.inst_funct32(inst),
-      datapath.data_mem_address2()
+      alu_result2
     );
   }
 
@@ -58,6 +58,10 @@ class riscv_core {
     );
   }
 
+  logic<32> alu_result() const {
+    return datapath.alu_result();
+  }
+
   void tock_next_pc_select(logic<32> inst) {
     ctlpath.tock_next_pc_select(
       datapath.inst_opcode2(inst),
@@ -66,10 +70,10 @@ class riscv_core {
     );
   }
 
-  void tock_writeback(logic<32> inst, logic<32> bus_read_data) {
+  void tock_writeback(logic<32> inst, logic<32> bus_read_data, logic<32> alu_result2) {
     datapath.tock_writeback(
       dmem.read_data(
-        datapath.data_mem_address2(),
+        alu_result2,
         bus_read_data,
         datapath.inst_funct32(inst)
       ),

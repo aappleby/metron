@@ -56,6 +56,10 @@ class singlecycle_datapath {
     );
   }
 
+  logic<32> alu_result() const {
+    return alu_core.result;
+  }
+
   void tock_writeback(logic<32> data_mem_read_data,
                       logic<3> reg_writeback_select,
                       logic<32> inst) {

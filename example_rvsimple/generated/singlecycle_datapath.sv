@@ -40,7 +40,8 @@ module singlecycle_datapath
   output logic  alu_result_equal_zero2,
   output logic[6:0]  inst_opcode2,
   output logic[2:0]  inst_funct32,
-  output logic[6:0]  inst_funct72
+  output logic[6:0]  inst_funct72,
+  output logic[31:0] alu_result
 );
  /*public:*/
 
@@ -92,6 +93,10 @@ inst_funct72 = idec_inst_funct72; end
         igen.immediate(inst)
       )
     );*/
+  end
+
+  always_comb begin
+    alu_result = alu_core_result;
   end
 
   always_comb begin : tock_writeback

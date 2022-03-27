@@ -48,6 +48,7 @@ module toplevel
 
   always_comb begin : tock
     logic[31:0] inst;
+    logic[31:0] alu_result2;
     logic[31:0] write_data;
     logic write_enable;
     text_memory_bus_address = core_pc;
@@ -57,15 +58,20 @@ module toplevel
     /*core.tock_decode(inst);*/
     core_inst = inst;
     /*core.tock_alu(inst);*/
+
+    alu_result2 = core_alu_result;
+
     core_inst = inst;
     /*core.tock_next_pc_select(inst);*/
     core_inst = inst;
     core_bus_read_data = data_memory_bus_read_data;
+    core_alu_result2 = alu_result2;
     data_memory_bus_address = core_bus_address2;
     data_memory_bus_read_enable = core_bus_read_enable2;
-    /*core.tock_writeback(inst, data_memory_bus.read_data(core.bus_address2(), core.bus_read_enable2()));*/
+    /*core.tock_writeback(inst, data_memory_bus.read_data(core.bus_address2(), core.bus_read_enable2()), alu_result2);*/
 
     core_inst = inst;
+    core_alu_result2 = alu_result2;
     write_data = core_bus_write_data2;
     write_enable = core_bus_write_enable2;
 
@@ -74,10 +80,11 @@ module toplevel
     data_memory_bus_byte_enable = core_bus_byte_enable2;
     data_memory_bus_write_data = write_data;
     core_inst = inst;
+    core_alu_result2 = alu_result2;
     /*data_memory_bus.tocktick(
       core.bus_address2(),
       write_enable,
-      core.bus_byte_enable2(inst),
+      core.bus_byte_enable2(inst, alu_result2),
       write_data
     );*/
 
@@ -93,6 +100,7 @@ module toplevel
     o_bus_address = core_bus_address2;
     o_bus_write_data = write_data;
     core_inst = inst;
+    core_alu_result2 = alu_result2;
     o_bus_byte_enable = core_bus_byte_enable2;
     o_bus_read_enable = core_bus_read_enable2;
     o_bus_write_enable = write_enable;
@@ -106,6 +114,7 @@ module toplevel
     // Inputs
     .clock(clock),
     .inst(core_inst), 
+    .alu_result2(core_alu_result2), 
     .bus_read_data(core_bus_read_data), 
     .reset(core_reset), 
     // Outputs
@@ -114,9 +123,11 @@ module toplevel
     .bus_read_enable2(core_bus_read_enable2), 
     .bus_write_enable2(core_bus_write_enable2), 
     .bus_address2(core_bus_address2), 
-    .pc(core_pc)
+    .pc(core_pc), 
+    .alu_result(core_alu_result)
   );
   logic[31:0] core_inst;
+  logic[31:0] core_alu_result2;
   logic[31:0] core_bus_read_data;
   logic core_reset;
   logic[31:0] core_bus_write_data2;
@@ -125,6 +136,7 @@ module toplevel
   logic  core_bus_write_enable2;
   logic[31:0] core_bus_address2;
   logic[31:0] core_pc;
+  logic[31:0] core_alu_result;
 
   example_text_memory_bus text_memory_bus(
     // Inputs

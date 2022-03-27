@@ -17,6 +17,7 @@ module riscv_core
 (
   input logic clock,
   input logic[31:0] inst,
+  input logic[31:0] alu_result2,
   input logic[31:0] bus_read_data,
   input logic reset,
   output logic[31:0] bus_write_data2,
@@ -24,12 +25,13 @@ module riscv_core
   output logic  bus_read_enable2,
   output logic  bus_write_enable2,
   output logic[31:0] bus_address2,
-  output logic[31:0] pc
+  output logic[31:0] pc,
+  output logic[31:0] alu_result
 );
  /*public:*/
 
   always_comb begin
-    dmem_address = datapath_data_mem_address2;
+    dmem_address = alu_result2;
     dmem_write_data = datapath_data_mem_write_data2;
     datapath_inst = inst;
     bus_write_data2 = dmem_bus_write_data;
@@ -37,7 +39,7 @@ module riscv_core
 
   always_comb begin
     dmem_data_format = datapath_inst_funct32;
-    dmem_address = datapath_data_mem_address2;
+    dmem_address = alu_result2;
     datapath_inst = inst;
     bus_byte_enable2 = dmem_bus_byte_enable;
   end
@@ -81,6 +83,10 @@ module riscv_core
     );*/
   end
 
+  always_comb begin
+    alu_result = datapath_alu_result;
+  end
+
   always_comb begin : tock_next_pc_select
     ctlpath_inst_opcode = datapath_inst_opcode2;
     ctlpath_inst_funct3 = datapath_inst_funct32;
@@ -98,13 +104,13 @@ module riscv_core
     datapath_data_mem_read_data = dmem_read_data;
     datapath_reg_writeback_select = ctlpath_reg_writeback_select;
     datapath_inst = inst;
-    dmem_address = datapath_data_mem_address2;
+    dmem_address = alu_result2;
     dmem_bus_read_data = bus_read_data;
     dmem_data_format = datapath_inst_funct32;
     datapath_inst = inst;
     /*datapath.tock_writeback(
       dmem.read_data(
-        datapath.data_mem_address2(),
+        alu_result2,
         bus_read_data,
         datapath.inst_funct32(inst)
       ),
@@ -158,7 +164,8 @@ module riscv_core
     .alu_result_equal_zero2(datapath_alu_result_equal_zero2), 
     .inst_opcode2(datapath_inst_opcode2), 
     .inst_funct32(datapath_inst_funct32), 
-    .inst_funct72(datapath_inst_funct72)
+    .inst_funct72(datapath_inst_funct72), 
+    .alu_result(datapath_alu_result)
   );
   logic[31:0] datapath_inst;
   logic[4:0] datapath_alu_function;
@@ -177,6 +184,7 @@ module riscv_core
   logic[6:0]  datapath_inst_opcode2;
   logic[2:0]  datapath_inst_funct32;
   logic[6:0]  datapath_inst_funct72;
+  logic[31:0] datapath_alu_result;
 
   singlecycle_ctlpath ctlpath(
     // Inputs

@@ -39,16 +39,19 @@ class toplevel {
 
     core.tock_decode(inst);
     core.tock_alu(inst);
-    core.tock_next_pc_select(inst);
-    core.tock_writeback(inst, data_memory_bus.read_data(core.bus_address2(), core.bus_read_enable2()));
 
-    logic<32> write_data = core.bus_write_data2(inst);
+    logic<32> alu_result2 = core.alu_result();
+
+    core.tock_next_pc_select(inst);
+    core.tock_writeback(inst, data_memory_bus.read_data(core.bus_address2(), core.bus_read_enable2()), alu_result2);
+
+    logic<32> write_data = core.bus_write_data2(inst, alu_result2);
     logic<1> write_enable = core.bus_write_enable2();
 
     data_memory_bus.tocktick(
       core.bus_address2(),
       write_enable,
-      core.bus_byte_enable2(inst),
+      core.bus_byte_enable2(inst, alu_result2),
       write_data
     );
 
@@ -58,7 +61,7 @@ class toplevel {
     o_bus_read_data = data_memory_bus.read_data(core.bus_address2(), core.bus_read_enable2());
     o_bus_address = core.bus_address2();
     o_bus_write_data = write_data;
-    o_bus_byte_enable = core.bus_byte_enable2(inst);
+    o_bus_byte_enable = core.bus_byte_enable2(inst, alu_result2);
     o_bus_read_enable = core.bus_read_enable2();
     o_bus_write_enable = write_enable;
     o_pc = core.pc();

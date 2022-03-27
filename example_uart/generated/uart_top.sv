@@ -36,19 +36,21 @@ module uart_top
     hello_data = hello_o_data;
     hello_req = hello_o_req;
 
-    /*rx.tick(i_rstn, tx.o_serial());*/
+    rx_a = 10;
+    rx_b = 20;
+    blerp = rx_derp;
+
     rx_i_rstn = i_rstn;
     rx_i_serial = tx_o_serial;
-    /*hello.tick(i_rstn, tx.o_cts(), tx.o_idle());*/
+    /*rx.tick(i_rstn, tx.o_serial());*/
     hello_i_rstn = i_rstn;
     hello_i_cts = tx_o_cts;
     hello_i_idle = tx_o_idle;
-    /*tx.tick(i_rstn, hello_data, hello_req);*/
+    /*hello.tick(i_rstn, tx.o_cts(), tx.o_idle());*/
     tx_i_rstn = i_rstn;
     tx_i_data = hello_data;
     tx_i_req = hello_req;
-
-    blerp = rx_derp;
+    /*tx.tick(i_rstn, hello_data, hello_req);*/
   end
 
   //----------------------------------------

@@ -28,8 +28,6 @@ class uart_top {
     rx.tick(i_rstn, tx.o_serial());
     hello.tick(i_rstn, tx.o_cts(), tx.o_idle());
     tx.tick(i_rstn, hello_data, hello_req);
-
-    logic<32> blerp = rx.derp(10, 20);
   }
 
   //----------------------------------------

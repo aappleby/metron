@@ -100,6 +100,7 @@ struct MtCursor {
   void emit_init_declarator_as_assign(MtDecl n);
   void emit_output_ports(MtFieldDecl n);
   void emit_field_as_submod(MtFieldDecl field_decl);
+  void emit_submod_input_port_bindings(MtNode n);
 
   //----------
 

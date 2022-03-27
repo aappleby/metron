@@ -797,6 +797,77 @@ void MtCursor::emit_func_decl(MtFuncDeclarator n) {
   */
 }
 
+
+//------------------------------------------------------------------------------
+
+/*
+[03:000:193] |  |  declaration =
+[00:035:329] |  |  |  type: template_type =
+[00:023:423] |  |  |  |  name: type_identifier = "logic"
+[01:003:332] |  |  |  |  arguments: template_argument_list =
+[00:000:036] |  |  |  |  |  lit = "<"
+[01:000:115] |  |  |  |  |  number_literal = "32"
+[02:000:033] |  |  |  |  |  lit = ">"
+[01:010:230] |  |  |  declarator: init_declarator =
+[00:010:001] |  |  |  |  declarator: identifier = "blerp"
+[01:000:063] |  |  |  |  lit = "="
+[02:037:273] |  |  |  |  value: call_expression =
+[00:016:275] |  |  |  |  |  function: field_expression =
+[00:002:001] |  |  |  |  |  |  argument: identifier = "rx"
+[01:024:113] |  |  |  |  |  |  operator: lit = "."
+[02:015:419] |  |  |  |  |  |  field: field_identifier = "derp"
+[01:003:274] |  |  |  |  |  arguments: argument_list =
+[00:000:005] |  |  |  |  |  |  lit = "("
+[01:000:115] |  |  |  |  |  |  number_literal = "10"
+[02:000:007] |  |  |  |  |  |  lit = ","
+[03:000:115] |  |  |  |  |  |  number_literal = "20"
+[04:000:008] |  |  |  |  |  |  lit = ")"
+[02:000:039] |  |  |  lit = ";"
+*/
+
+void MtCursor::emit_submod_input_port_bindings(MtNode n) {
+  auto old_cursor = cursor;
+
+  n.visit_tree([&](MtNode c) {
+    if (c.sym == sym_call_expression) {
+      auto func_node = c.get_field(field_function);
+      auto args_node = c.get_field(field_arguments);
+
+      if (func_node.sym != sym_field_expression) return;
+
+      if (args_node.named_child_count() == 0) return;
+
+      auto inst_id = func_node.get_field(field_argument);
+      auto meth_id = func_node.get_field(field_field);
+
+      auto submod = current_mod->get_submod(inst_id.text());
+      assert(submod);
+
+      auto submod_mod = submod->mod;
+      assert(submod_mod);
+
+      auto submod_meth = submod_mod->get_method(meth_id.text());
+      assert(submod_meth);
+
+      for (int i = 0; i < submod_meth->params->size(); i++) {
+        auto param = submod_meth->params->at(i);
+        emit("%s_%s = ", inst_id.text().c_str(), param.c_str());
+
+        auto arg_node = args_node.named_child(i);
+        cursor = arg_node.start();
+        emit_dispatch(arg_node);
+        cursor = arg_node.end();
+
+        emit(";");
+        emit_newline();
+        emit_indent();
+      }
+    }
+  });
+
+  cursor = old_cursor;
+}
+
 //------------------------------------------------------------------------------
 // Change "init/tick/tock" to "initial begin / always_comb / always_ff", change
 // void methods to tasks, and change const methods to funcs.
@@ -804,6 +875,8 @@ void MtCursor::emit_func_decl(MtFuncDeclarator n) {
 // func_def = { field_type, field_declarator, field_body }
 
 void MtCursor::emit(MtFuncDefinition n) {
+  //n.dump_tree();
+
   assert(cursor == n.start());
   node_stack.push_back(n);
 
@@ -898,6 +971,7 @@ void MtCursor::emit(MtFuncDefinition n) {
         break;
 
       case sym_declaration: {
+        emit_submod_input_port_bindings(c);
         MtDecl d(c);
         if (d.is_init_decl()) {
           emit_init_declarator_as_assign(c);
@@ -909,68 +983,7 @@ void MtCursor::emit(MtFuncDefinition n) {
       }
 
       case sym_expression_statement:
-#if 0
-        if (c.child(0).sym == sym_call_expression &&
-            c.child(0).child(0).sym == sym_field_expression) {
-          // Calls to submodules get commented out.
-          comment_out(c);
-
-          auto call_node = c.child(0);
-          auto func_node = call_node.get_field(field_function);
-          auto args_node = call_node.get_field(field_arguments);
-
-          if (args_node.named_child_count() == 0) {
-            cursor = c.end();
-            break;
-          }
-
-          auto inst_id = func_node.get_field(field_argument);
-          auto meth_id = func_node.get_field(field_field);
-
-          //emit_newline();
-          //inst_id.dump_tree();
-          //meth_id.dump_tree();
-          //args_node.dump_tree();
-          //emit_indent();
-
-          //auto submod_mod = lib->get_mod(type_name);
-
-          auto submod = current_mod->get_submod(inst_id.text());
-          assert(submod);
-
-          auto submod_mod = submod->mod;
-          assert(submod_mod);
-
-          auto submod_meth = submod_mod->get_method(meth_id.text());
-          assert(submod_meth);
-
-
-          for (int i = 0; i < submod_meth->params->size(); i++) {
-            emit_newline();
-            emit_indent();
-            auto param = submod_meth->params->at(i);
-            emit("%s_%s = ", inst_id.text().c_str(), param.c_str());
-
-            auto arg_node = args_node.named_child(i);
-            cursor = arg_node.start();
-            emit_dispatch(arg_node);
-            cursor = arg_node.end();
-
-            emit(";");
-          }
-
-          //emit("DONE");
-          /*
-          std::string type_name = n.type().node_to_type();
-          auto submod_mod = lib->get_mod(type_name);
-          */
-          cursor = c.end();
-
-        } else {
-          // Other calls get translated.
-          emit_dispatch(c);
-        }
-#endif
+        emit_submod_input_port_bindings(c);
         emit_dispatch(c);
         break;
 
@@ -1609,69 +1622,14 @@ void MtCursor::emit(MtClassSpecifier n) {
 //------------------------------------------------------------------------------
 
 void MtCursor::emit(MtExprStatement n) {
-  //emit_children(n);
-
   if (n.child(0).sym == sym_call_expression &&
       n.child(0).child(0).sym == sym_field_expression) {
     // Calls to submodules get commented out.
     comment_out(n);
-
-    auto call_node = n.child(0);
-    auto func_node = call_node.get_field(field_function);
-    auto args_node = call_node.get_field(field_arguments);
-
-    if (args_node.named_child_count() == 0) {
-      cursor = n.end();
-      return;
-    }
-
-    auto inst_id = func_node.get_field(field_argument);
-    auto meth_id = func_node.get_field(field_field);
-
-    //emit_newline();
-    //inst_id.dump_tree();
-    //meth_id.dump_tree();
-    //args_node.dump_tree();
-    //emit_indent();
-
-    //auto submod_mod = lib->get_mod(type_name);
-
-    auto submod = current_mod->get_submod(inst_id.text());
-    assert(submod);
-
-    auto submod_mod = submod->mod;
-    assert(submod_mod);
-
-    auto submod_meth = submod_mod->get_method(meth_id.text());
-    assert(submod_meth);
-
-
-    for (int i = 0; i < submod_meth->params->size(); i++) {
-      emit_newline();
-      emit_indent();
-      auto param = submod_meth->params->at(i);
-      emit("%s_%s = ", inst_id.text().c_str(), param.c_str());
-
-      auto arg_node = args_node.named_child(i);
-      cursor = arg_node.start();
-      emit_dispatch(arg_node);
-      cursor = arg_node.end();
-
-      emit(";");
-    }
-
-    //emit("DONE");
-    /*
-    std::string type_name = n.type().node_to_type();
-    auto submod_mod = lib->get_mod(type_name);
-    */
-    cursor = n.end();
-
   } else {
     // Other calls get translated.
     emit_children(n);
   }
-
 }
 
 //------------------------------------------------------------------------------

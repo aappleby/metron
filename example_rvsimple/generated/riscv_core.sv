@@ -78,16 +78,6 @@ bus_write_enable2 = ctlpath_data_mem_write_enable; end
     alu_result = datapath_alu_result;
   end
 
-  /*
-  void tock_next_pc_select(logic<32> inst, logic<32> alu_result2) {
-    ctlpath.tock_next_pc_select(
-      datapath.inst_opcode2(inst),
-      datapath.inst_funct32(inst),
-      alu_result2 == 0
-    );
-  }
-  */
-
   always_comb begin : tock_writeback
     datapath_data_mem_read_data = dmem_read_data;
     datapath_reg_writeback_select = ctlpath_reg_writeback_select;
@@ -150,11 +140,11 @@ bus_write_enable2 = ctlpath_data_mem_write_enable; end
     .alu_function(datapath_alu_function), 
     .alu_operand_a_select(datapath_alu_operand_a_select), 
     .alu_operand_b_select(datapath_alu_operand_b_select), 
-    .data_mem_read_data(datapath_data_mem_read_data), 
-    .reg_writeback_select(datapath_reg_writeback_select), 
     .reset(datapath_reset), 
     .next_pc_select(datapath_next_pc_select), 
     .pc_write_enable(datapath_pc_write_enable), 
+    .data_mem_read_data(datapath_data_mem_read_data), 
+    .reg_writeback_select(datapath_reg_writeback_select), 
     .regfile_write_enable(datapath_regfile_write_enable), 
     // Outputs
     .pc2(datapath_pc2), 
@@ -168,11 +158,11 @@ bus_write_enable2 = ctlpath_data_mem_write_enable; end
   logic[4:0] datapath_alu_function;
   logic datapath_alu_operand_a_select;
   logic datapath_alu_operand_b_select;
-  logic[31:0] datapath_data_mem_read_data;
-  logic[2:0] datapath_reg_writeback_select;
   logic datapath_reset;
   logic[1:0] datapath_next_pc_select;
   logic datapath_pc_write_enable;
+  logic[31:0] datapath_data_mem_read_data;
+  logic[2:0] datapath_reg_writeback_select;
   logic datapath_regfile_write_enable;
   logic[31:0] datapath_pc2;
   logic[31:0] datapath_data_mem_write_data2;

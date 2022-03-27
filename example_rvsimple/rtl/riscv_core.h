@@ -51,16 +51,6 @@ class riscv_core {
     );
   }
 
-  /*
-  void tock_next_pc_select(logic<32> inst, logic<32> alu_result2) {
-    ctlpath.tock_next_pc_select(
-      datapath.inst_opcode2(inst),
-      datapath.inst_funct32(inst),
-      alu_result2 == 0
-    );
-  }
-  */
-
   void tock_writeback(logic<32> inst, logic<32> bus_read_data, logic<32> alu_result2) {
     datapath.tock_writeback(
       dmem.read_data(

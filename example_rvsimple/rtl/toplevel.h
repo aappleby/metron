@@ -39,7 +39,6 @@ class toplevel {
 
     logic<32> alu_result2 = core.alu_result(inst);
 
-    //core.tock_next_pc_select(inst, alu_result2);
     core.tock_writeback(inst, data_memory_bus.read_data(alu_result2, core.bus_read_enable2(inst)), alu_result2);
 
     logic<32> write_data = core.bus_write_data2(inst, alu_result2);

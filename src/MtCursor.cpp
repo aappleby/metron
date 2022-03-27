@@ -976,8 +976,8 @@ void MtCursor::emit(MtFuncDefinition n) {
         if (d.is_init_decl()) {
           emit_init_declarator_as_assign(c);
         } else {
-          skip_over(c);
-          // comment_out(c);
+          //skip_over(c);
+          comment_out(c);
         }
         break;
       }

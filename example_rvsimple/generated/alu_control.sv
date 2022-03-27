@@ -28,7 +28,7 @@ module alu_control
     logic[4:0] branch_funct;
     import rv_constants::*;
 
-    
+    /*logic<5> default_funct;*/
     case (inst_funct3) 
       /*case*/ FUNCT3_ALU_ADD_SUB:
         default_funct = ALU_ADD;
@@ -59,7 +59,7 @@ module alu_control
         /*break;*/
     endcase
 
-    
+    /*logic<5> secondary_funct;*/
     case (inst_funct3) 
       /*case*/ FUNCT3_ALU_ADD_SUB:
         secondary_funct = ALU_SUB;
@@ -72,19 +72,19 @@ module alu_control
         /*break;*/
     endcase
 
-    
+    /*logic<5> op_funct;*/
     if (inst_funct7[5])
       op_funct = secondary_funct;
     else
       op_funct = default_funct;
 
-    
+    /*logic<5> op_imm_funct;*/
     if (inst_funct7[5] && 2'(inst_funct3) == 2'b01)
       op_imm_funct = secondary_funct;
     else
       op_imm_funct = default_funct;
 
-    
+    /*logic<5> branch_funct;*/
     case (inst_funct3) 
       /*case*/ FUNCT3_BRANCH_EQ:
         branch_funct = ALU_SEQ;

@@ -27,10 +27,11 @@ class data_memory_interface {
     }
   }
 
-  // correct for unaligned accesses
   logic<32> read_data(logic<32> address, logic<32> bus_read_data, logic<3> data_format) const {
+    // correct for unaligned accesses
     logic<32> position_fix = b32(bus_read_data >> (8 * b2(address)));
 
+    // sign-extend if necessary
     switch (b2(data_format)) {
       case 0b00: return cat(dup<24>(b1(~data_format[2] & position_fix[7])), b8(position_fix));
       case 0b01: return cat(dup<16>(b1(~data_format[2] & position_fix[15])), b16(position_fix));

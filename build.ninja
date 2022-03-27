@@ -256,7 +256,6 @@ build obj/example_rvsimple/reference/Vtoplevel.mk $
     example_rvsimple/reference/data_memory_interface.sv $
     example_rvsimple/reference/example_data_memory.sv $
     example_rvsimple/reference/example_data_memory_bus.sv $
-    example_rvsimple/reference/example_memory_bus.sv $
     example_rvsimple/reference/example_text_memory.sv $
     example_rvsimple/reference/example_text_memory_bus.sv $
     example_rvsimple/reference/immediate_generator.sv $

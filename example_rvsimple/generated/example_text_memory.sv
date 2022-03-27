@@ -22,7 +22,7 @@ module example_text_memory
 
   initial begin : init
     string s;
-    
+    /*std::string s;*/
     $value$plusargs("text_file=%s", s);
     $readmemh(s, mem);
   end

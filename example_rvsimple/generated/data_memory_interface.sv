@@ -37,11 +37,12 @@ module data_memory_interface
     endcase
   end
 
-  // correct for unaligned accesses
   always_comb begin
     logic[31:0] position_fix;
+    // correct for unaligned accesses
     position_fix = 32'(bus_read_data >> (8 * 2'(address)));
 
+    // sign-extend if necessary
     case (2'(data_format)) 
       /*case*/ 2'b00: read_data = {{24 {1'(~data_format[2] & position_fix[7])}}, 8'(position_fix)};
       /*case*/ 2'b01: read_data = {{16 {1'(~data_format[2] & position_fix[15])}}, 16'(position_fix)};

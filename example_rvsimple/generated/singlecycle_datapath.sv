@@ -77,13 +77,6 @@ module singlecycle_datapath
     /*regs.tick(regfile_write_enable, idec.inst_rd2(inst), mux_reg_writeback.out);*/
   end
 
-  always_comb begin : tock_regfile
-    //regs.tock(
-    //  idec.inst_rs12(inst),
-    //  idec.inst_rs22(inst)
-    //);
-  end
-
   always_comb begin : tock_alu
     mux_operand_a_sel = alu_operand_a_select;
     mux_operand_a_in0 = regs_rs1_data;
@@ -109,7 +102,11 @@ module singlecycle_datapath
     alu_core_alu_function = alu_function;
     alu_core_operand_a = mux_operand_a_out;
     alu_core_operand_b = mux_operand_b_out;
-    /*alu_core.tock(alu_function, mux_operand_a.out, mux_operand_b.out);*/
+    /*alu_core.tock(
+      alu_function,
+      mux_operand_a.out,
+      mux_operand_b.out
+    );*/
     data_mem_address = alu_core_result;
   end
 
@@ -127,11 +124,13 @@ module singlecycle_datapath
     adder_pc_plus_immediate_operand_a = program_counter_value;
     adder_pc_plus_immediate_operand_b = igen_immediate;
     igen_inst = inst;
-    /*mux_next_pc_select.tock(next_pc_select,
-                            adder_pc_plus_4.result(b32(0x00000004), program_counter.value),
-                            adder_pc_plus_immediate.result(program_counter.value, igen.immediate(inst)),
-                            blep,
-                            b32(0b0));*/
+    /*mux_next_pc_select.tock(
+      next_pc_select,
+      adder_pc_plus_4.result(b32(0x00000004), program_counter.value),
+      adder_pc_plus_immediate.result(program_counter.value, igen.immediate(inst)),
+      blep,
+      b32(0b0)
+    );*/
   end
 
   always_comb begin : tock_writeback
@@ -147,10 +146,17 @@ module singlecycle_datapath
     adder_pc_plus_4_operand_a = 32'h00000004;
     adder_pc_plus_4_operand_b = program_counter_value;
     igen_inst = inst;
-    /*mux_reg_writeback.tock(reg_writeback_select, alu_core.result,
-                           data_mem_read_data,
-                           adder_pc_plus_4.result(b32(0x00000004), program_counter.value),
-                           igen.immediate(inst), b32(0b0), b32(0b0), b32(0b0), b32(0b0));*/
+    /*mux_reg_writeback.tock(
+      reg_writeback_select,
+      alu_core.result,
+      data_mem_read_data,
+      adder_pc_plus_4.result(b32(0x00000004), program_counter.value),
+      igen.immediate(inst),
+      b32(0b0),
+      b32(0b0),
+      b32(0b0),
+      b32(0b0)
+    );*/
   end
 
   //----------------------------------------

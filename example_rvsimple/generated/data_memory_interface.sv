@@ -13,17 +13,16 @@
 module data_memory_interface
 (
   input logic clock,
-  input logic[2:0] data_format,
   input logic[31:0] address,
   input logic[31:0] write_data,
+  input logic[2:0] data_format,
   input logic[31:0] bus_read_data,
   output logic[31:0] read_data,
-  output logic[31:0] bus_write_data,
-  output logic[3:0] bus_byte_enable
+  output logic[3:0] bus_byte_enable,
+  output logic[31:0] bus_write_data
 );
  /*public:*/
   /*logic<32> read_data;*/
-  /*logic<32> bus_write_data;*/
   /*logic<4> bus_byte_enable;*/
 
  /*private:*/
@@ -31,8 +30,13 @@ module data_memory_interface
   logic[31:0] sign_fix;
 
  /*public:*/
-  always_comb begin : tock_bus
+
+
+  always_comb begin
     bus_write_data = write_data << (8 * 2'(address));
+  end
+
+  always_comb begin : tock_bus
 
     // calculate byte enable
     case (2'(data_format)) 

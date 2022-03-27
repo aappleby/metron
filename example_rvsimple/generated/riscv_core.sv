@@ -16,8 +16,8 @@
 module riscv_core
 (
   input logic clock,
-  input logic reset,
   input logic[31:0] inst,
+  input logic reset,
   input logic[31:0] bus_read_data,
   output logic[31:0] bus_address,
   output logic[31:0] bus_write_data2,
@@ -63,9 +63,6 @@ module riscv_core
 
   always_comb begin : tock_execute
     logic[4:0] alu_function;
-    datapath_inst = inst;
-    /*datapath.tock_regfile(inst);*/
-
     ctlpath_inst_opcode = datapath_inst_opcode2;
     datapath_inst = inst;
     /*ctlpath.tock_decode(
@@ -216,22 +213,22 @@ module riscv_core
   data_memory_interface dmem(
     // Inputs
     .clock(clock),
-    .data_format(dmem_data_format), 
     .address(dmem_address), 
     .write_data(dmem_write_data), 
+    .data_format(dmem_data_format), 
     .bus_read_data(dmem_bus_read_data), 
     // Outputs
     .read_data(dmem_read_data), 
-    .bus_write_data(dmem_bus_write_data), 
-    .bus_byte_enable(dmem_bus_byte_enable)
+    .bus_byte_enable(dmem_bus_byte_enable), 
+    .bus_write_data(dmem_bus_write_data)
   );
-  logic[2:0] dmem_data_format;
   logic[31:0] dmem_address;
   logic[31:0] dmem_write_data;
+  logic[2:0] dmem_data_format;
   logic[31:0] dmem_bus_read_data;
   logic[31:0] dmem_read_data;
-  logic[31:0] dmem_bus_write_data;
   logic[3:0] dmem_bus_byte_enable;
+  logic[31:0] dmem_bus_write_data;
 
 endmodule;
 

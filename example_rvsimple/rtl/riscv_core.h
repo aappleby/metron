@@ -24,8 +24,9 @@ class riscv_core {
   }
 
   logic<4>  bus_byte_enable2(logic<32> inst, logic<32> alu_result2)  const {
+    logic<3> funct3 = datapath.inst_funct32(inst);
     return dmem.bus_byte_enable(
-      datapath.inst_funct32(inst),
+      funct3,
       alu_result2
     );
   }
@@ -63,26 +64,22 @@ class riscv_core {
   void tocktick_regs(logic<1> reset, logic<32> inst, logic<32> bus_read_data, logic<32> alu_result2) {
     logic<7> opcode = datapath.inst_opcode2(inst);
     logic<3> funct3 = datapath.inst_funct32(inst);
+    logic<1> reg_we = ctlpath.regfile_write_enable2(opcode);
 
+    logic<32> mem_data = dmem.read_data(alu_result2, bus_read_data, funct3);
+    logic<3> reg_select = ctlpath.reg_writeback_select(opcode);
+    logic<2> pc_select = ctlpath.next_pc_select(opcode, funct3, alu_result2 == 0);
+    logic<1> pc_we = ctlpath.pc_write_enable2(opcode);
 
     datapath.tocktick_regs(
       reset,
       inst,
-      ctlpath.regfile_write_enable2(opcode),
-      dmem.read_data(
-        alu_result2,
-        bus_read_data,
-        datapath.inst_funct32(inst)
-      ),
-      ctlpath.reg_writeback_select(opcode),
-      alu_result2
-    );
-    datapath.tocktick_pc(
-      reset,
-      inst,
-      ctlpath.next_pc_select(opcode, funct3, alu_result2 == 0),
-      ctlpath.pc_write_enable2(opcode),
-      alu_result2
+      reg_we,
+      mem_data,
+      reg_select,
+      alu_result2,
+      pc_select,
+      pc_we
     );
   }
 

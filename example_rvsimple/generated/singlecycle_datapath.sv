@@ -82,6 +82,7 @@ inst_funct72 = idec_inst_funct72; end
 
   always_comb begin : tocktick_regs
     logic[31:0] out;
+    logic[31:0] out2;
     mux_reg_writeback_sel = reg_writeback_select;
     mux_reg_writeback_in0 = alu_result2;
     mux_reg_writeback_in1 = data_mem_read_data;
@@ -100,9 +101,7 @@ inst_funct72 = idec_inst_funct72; end
     regs_rd_data = out;
     idec_inst = inst;
     /*regs.tick(regfile_write_enable, idec.inst_rd2(inst), out);*/
-  end
-  always_comb begin : tocktick_pc
-    logic[31:0] out;
+
     mux_next_pc_select_sel = next_pc_select;
     mux_next_pc_select_in0 = adder_pc_plus_4_result;
     mux_next_pc_select_in1 = adder_pc_plus_immediate_result;
@@ -113,11 +112,11 @@ inst_funct72 = idec_inst_funct72; end
     adder_pc_plus_immediate_operand_a = program_counter_value;
     adder_pc_plus_immediate_operand_b = igen_immediate;
     igen_inst = inst;
-    out = mux_next_pc_select_out;
+    out2 = mux_next_pc_select_out;
     program_counter_reset = reset;
     program_counter_write_enable = pc_write_enable;
-    program_counter_next = out;
-    /*program_counter.tick(reset, pc_write_enable, out);*/
+    program_counter_next = out2;
+    /*program_counter.tick(reset, pc_write_enable, out2);*/
   end
 
 

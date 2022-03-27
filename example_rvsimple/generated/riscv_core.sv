@@ -37,9 +37,11 @@ module riscv_core
   end
 
   always_comb begin
-    dmem_data_format = datapath_inst_funct32;
-    dmem_address = alu_result2;
+    logic[2:0] funct3;
     datapath_inst = inst;
+    funct3 = datapath_inst_funct32;
+    dmem_data_format = funct3;
+    dmem_address = alu_result2;
     bus_byte_enable2 = dmem_bus_byte_enable;
   end
 
@@ -92,51 +94,48 @@ module riscv_core
   always_comb begin : tocktick_regs
     logic[6:0] opcode;
     logic[2:0] funct3;
+    logic reg_we;
+    logic[31:0] mem_data;
+    logic[2:0] reg_select;
+    logic[1:0] pc_select;
+    logic pc_we;
     datapath_inst = inst;
     opcode = datapath_inst_opcode2;
     datapath_inst = inst;
     funct3 = datapath_inst_funct32;
-
-
-    datapath_reset = reset;
-    datapath_inst = inst;
-    datapath_regfile_write_enable = ctlpath_regfile_write_enable2;
-    datapath_data_mem_read_data = dmem_read_data;
-    datapath_reg_writeback_select = ctlpath_reg_writeback_select;
-    datapath_alu_result2 = alu_result2;
     ctlpath_inst_opcode = opcode;
+    reg_we = ctlpath_regfile_write_enable2;
+
     dmem_address = alu_result2;
     dmem_bus_read_data = bus_read_data;
-    dmem_data_format = datapath_inst_funct32;
-    datapath_inst = inst;
+    dmem_data_format = funct3;
+    mem_data = dmem_read_data;
     ctlpath_inst_opcode = opcode;
-    /*datapath.tocktick_regs(
-      reset,
-      inst,
-      ctlpath.regfile_write_enable2(opcode),
-      dmem.read_data(
-        alu_result2,
-        bus_read_data,
-        datapath.inst_funct32(inst)
-      ),
-      ctlpath.reg_writeback_select(opcode),
-      alu_result2
-    );*/
-    datapath_reset = reset;
-    datapath_inst = inst;
-    datapath_next_pc_select = ctlpath_next_pc_select;
-    datapath_pc_write_enable = ctlpath_pc_write_enable2;
-    datapath_alu_result2 = alu_result2;
+    reg_select = ctlpath_reg_writeback_select;
     ctlpath_inst_opcode = opcode;
     ctlpath_inst_funct3 = funct3;
     ctlpath_alu_result_equal_zero = alu_result2 == 0;
+    pc_select = ctlpath_next_pc_select;
     ctlpath_inst_opcode = opcode;
-    /*datapath.tocktick_pc(
+    pc_we = ctlpath_pc_write_enable2;
+
+    datapath_reset = reset;
+    datapath_inst = inst;
+    datapath_regfile_write_enable = reg_we;
+    datapath_data_mem_read_data = mem_data;
+    datapath_reg_writeback_select = reg_select;
+    datapath_alu_result2 = alu_result2;
+    datapath_next_pc_select = pc_select;
+    datapath_pc_write_enable = pc_we;
+    /*datapath.tocktick_regs(
       reset,
       inst,
-      ctlpath.next_pc_select(opcode, funct3, alu_result2 == 0),
-      ctlpath.pc_write_enable2(opcode),
-      alu_result2
+      reg_we,
+      mem_data,
+      reg_select,
+      alu_result2,
+      pc_select,
+      pc_we
     );*/
   end
 

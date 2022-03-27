@@ -101,10 +101,13 @@ def verilate_dir(src_dir, src_top, dst_dir):
     return (verilated_hdr, verilated_obj)
 
 
-def cpp_binary(bin_name, src_files, src_objs=[], deps=[], **kwargs):
+def cpp_binary(bin_name, src_files, src_objs=None, deps=None, **kwargs):
     """
     Compiles a C++ binary from the given source files.
     """
+    if src_objs is None: src_objs = []
+    if deps is None: deps = []
+
     divider(f"Compile {bin_name}")
     for n in src_files:
         obj_name = path.join(obj_dir, swap_ext(n, ".o"))
@@ -197,6 +200,7 @@ cpp_binary(
 )
 
 # ------------------------------------------------------------------------------
+# RVSimple Metron
 
 cpp_binary(
     bin_name="bin/example_rvsimple/rtl/main",
@@ -206,6 +210,7 @@ cpp_binary(
 )
 
 # ------------------------------------------------------------------------------
+# RVSimple Generated
 
 rvsimple_metron_srcs = metronize_dir(
     "example_rvsimple/rtl", "example_rvsimple/generated")
@@ -230,6 +235,7 @@ cpp_binary(
 )
 
 # ------------------------------------------------------------------------------
+# RVSimple Reference
 
 rvsimple_reference_vhdr, rvsimple_reference_vobj = verilate_dir(
     src_dir="example_rvsimple/reference",
@@ -248,6 +254,41 @@ cpp_binary(
     ],
     src_objs=["obj/verilated.o", rvsimple_reference_vobj],
     deps=[rvsimple_reference_vhdr]
+)
+
+# ------------------------------------------------------------------------------
+# RVTiny Metron
+
+cpp_binary(
+    bin_name="bin/example_rvtiny/rtl/main",
+    src_files=["example_rvtiny/rtl/main.cpp"],
+    includes=["-Isrc"],
+    opt="-O3",
+)
+
+# ------------------------------------------------------------------------------
+# RVTiny Generated
+
+rvtiny_metron_srcs = metronize_dir(
+    "example_rvtiny/rtl", "example_rvtiny/generated")
+
+rvtiny_metron_vhdr, rvtiny_metron_vobj = verilate_dir(
+    src_dir="example_rvtiny/generated",
+    src_top="toplevel",
+    dst_dir=path.join(obj_dir, "example_rvtiny/generated")
+)
+
+cpp_binary(
+    bin_name="bin/example_rvtiny/generated/main",
+    src_files=["example_rvtiny/generated/main.cpp"],
+    includes=[
+        "-Isrc",
+        "-Itests",
+        "-Iobj/example_rvtiny/generated",
+        "-I/usr/local/share/verilator/include"
+    ],
+    src_objs=["obj/verilated.o", rvtiny_metron_vobj],
+    deps=[rvtiny_metron_vhdr]
 )
 
 # ------------------------------------------------------------------------------

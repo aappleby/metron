@@ -41,6 +41,43 @@ class riscv_core {
     datapath.init();
   }
 
+  void tock_decode(logic<32> inst) {
+    ctlpath.tock_decode(
+      datapath.inst_opcode2(inst)
+    );
+  }
+
+  void tock_alu(logic<32> inst) {
+    logic<5> alu_function = ctlpath.alu_function(datapath.inst_funct32(inst), datapath.inst_funct72(inst));
+
+    datapath.tock_alu(
+      inst,
+      alu_function,
+      ctlpath.alu_operand_a_select(),
+      ctlpath.alu_operand_b_select()
+    );
+  }
+
+  void tock_next_pc_select(logic<32> inst) {
+    ctlpath.tock_next_pc_select(
+      datapath.inst_opcode2(inst),
+      datapath.inst_funct32(inst),
+      datapath.alu_result_equal_zero2()
+    );
+  }
+
+  void tock_writeback(logic<32> inst, logic<32> bus_read_data) {
+    datapath.tock_writeback(
+      dmem.read_data(
+        datapath.data_mem_address2(),
+        bus_read_data,
+        datapath.inst_funct32(inst)
+      ),
+      ctlpath.reg_writeback_select(),
+      inst
+    );
+  }
+
   void tocktick_pc(logic<1> reset, logic<32> inst) {
     datapath.tocktick_pc(
       reset,
@@ -54,41 +91,6 @@ class riscv_core {
     datapath.tocktick_regs(
       inst,
       ctlpath.regfile_write_enable2()
-    );
-  }
-
-  void tock_execute(logic<32> inst) {
-    ctlpath.tock_decode(
-      datapath.inst_opcode2(inst)
-    );
-
-    logic<5> alu_function = ctlpath.alu_function(datapath.inst_funct32(inst), datapath.inst_funct72(inst));
-
-    datapath.tock_alu(
-      inst,
-      alu_function,
-      ctlpath.alu_operand_a_select(),
-      ctlpath.alu_operand_b_select()
-    );
-
-    ctlpath.tock_next_pc_select(
-      datapath.inst_opcode2(inst),
-      datapath.inst_funct32(inst),
-      datapath.alu_result_equal_zero2()
-    );
-
-    //datapath.tock_next_pc();
-  }
-
-  void tock_writeback(logic<32> inst, logic<32> bus_read_data) {
-    datapath.tock_writeback(
-      dmem.read_data(
-        datapath.data_mem_address2(),
-        bus_read_data,
-        datapath.inst_funct32(inst)
-      ),
-      ctlpath.reg_writeback_select(),
-      inst
     );
   }
 

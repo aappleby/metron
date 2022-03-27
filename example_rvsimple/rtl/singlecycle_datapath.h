@@ -39,21 +39,6 @@ class singlecycle_datapath {
 
   //----------------------------------------
 
-  void tocktick_pc(logic<1> reset, logic<32> inst, logic<2> next_pc_select, logic<1> pc_write_enable) {
-    mux_next_pc_select.tock(
-      next_pc_select,
-      adder_pc_plus_4.result(b32(0x00000004), program_counter.value),
-      adder_pc_plus_immediate.result(program_counter.value, igen.immediate(inst)),
-      cat(b31(alu_core.result, 1), b1(0b0)),
-      b32(0b0)
-    );
-    program_counter.tick(reset, pc_write_enable, mux_next_pc_select.out);
-  }
-
-  void tocktick_regs(logic<32> inst, logic<1> regfile_write_enable) {
-    regs.tick(regfile_write_enable, idec.inst_rd2(inst), mux_reg_writeback.out);
-  }
-
   void tock_alu(logic<32> inst, logic<5> alu_function, logic<1> alu_operand_a_select,
                 logic<1> alu_operand_b_select) {
     alu_core.tock(
@@ -71,9 +56,6 @@ class singlecycle_datapath {
     );
   }
 
-  //void tock_next_pc(logic<32> inst, logic<2> next_pc_select) {
-  //}
-
   void tock_writeback(logic<32> data_mem_read_data,
                       logic<3> reg_writeback_select,
                       logic<32> inst) {
@@ -88,6 +70,21 @@ class singlecycle_datapath {
       b32(0b0),
       b32(0b0)
     );
+  }
+
+  void tocktick_pc(logic<1> reset, logic<32> inst, logic<2> next_pc_select, logic<1> pc_write_enable) {
+    mux_next_pc_select.tock(
+      next_pc_select,
+      adder_pc_plus_4.result(b32(0x00000004), program_counter.value),
+      adder_pc_plus_immediate.result(program_counter.value, igen.immediate(inst)),
+      cat(b31(alu_core.result, 1), b1(0b0)),
+      b32(0b0)
+    );
+    program_counter.tick(reset, pc_write_enable, mux_next_pc_select.out);
+  }
+
+  void tocktick_regs(logic<32> inst, logic<1> regfile_write_enable) {
+    regs.tick(regfile_write_enable, idec.inst_rd2(inst), mux_reg_writeback.out);
   }
 
   //----------------------------------------

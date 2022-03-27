@@ -37,7 +37,9 @@ class toplevel {
   void tock(logic<1> reset) {
     logic<32> inst = text_memory_bus.read_data(core.pc());
 
-    core.tock_execute(inst);
+    core.tock_decode(inst);
+    core.tock_alu(inst);
+    core.tock_next_pc_select(inst);
     core.tock_writeback(inst, data_memory_bus.read_data(core.bus_address2(), core.bus_read_enable2()));
 
     logic<32> write_data = core.bus_write_data2(inst);

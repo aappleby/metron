@@ -54,7 +54,11 @@ module toplevel
     inst = text_memory_bus_read_data;
 
     core_inst = inst;
-    /*core.tock_execute(inst);*/
+    /*core.tock_decode(inst);*/
+    core_inst = inst;
+    /*core.tock_alu(inst);*/
+    core_inst = inst;
+    /*core.tock_next_pc_select(inst);*/
     core_inst = inst;
     core_bus_read_data = data_memory_bus_read_data;
     data_memory_bus_address = core_bus_address2;
@@ -102,8 +106,8 @@ module toplevel
     // Inputs
     .clock(clock),
     .inst(core_inst), 
-    .reset(core_reset), 
     .bus_read_data(core_bus_read_data), 
+    .reset(core_reset), 
     // Outputs
     .bus_write_data2(core_bus_write_data2), 
     .bus_byte_enable2(core_bus_byte_enable2), 
@@ -113,8 +117,8 @@ module toplevel
     .pc(core_pc)
   );
   logic[31:0] core_inst;
-  logic core_reset;
   logic[31:0] core_bus_read_data;
+  logic core_reset;
   logic[31:0] core_bus_write_data2;
   logic[3:0]  core_bus_byte_enable2;
   logic  core_bus_read_enable2;

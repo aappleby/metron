@@ -13,7 +13,7 @@
 class singlecycle_control {
  public:
   //logic<1> data_mem_write_enable;
-  logic<3> reg_writeback_select;
+  //logic<3> reg_writeback_select;
   logic<2> next_pc_select;
 
   void tock_next_pc_select(logic<7> inst_opcode, logic<1> take_branch) {
@@ -109,74 +109,20 @@ class singlecycle_control {
     return inst_opcode == OPCODE_STORE;
   }
 
-  void tock_decode(logic<7> inst_opcode) {
+  logic<3> reg_writeback_select(logic<7> inst_opcode) const {
     using namespace rv_constants;
-
-    reg_writeback_select    = b3(DONTCARE);
-
     switch (inst_opcode) {
-      case OPCODE_LOAD:
-      {
-        reg_writeback_select = CTL_WRITEBACK_DATA;
-        break;
-      }
-
-      case OPCODE_MISC_MEM:
-      {
-        // Fence - ignore
-        break;
-      }
-
-      case OPCODE_OP_IMM:
-      {
-        reg_writeback_select = CTL_WRITEBACK_ALU;
-        break;
-      }
-
-      case OPCODE_AUIPC:
-      {
-        reg_writeback_select = CTL_WRITEBACK_ALU;
-        break;
-      }
-
-      case OPCODE_STORE:
-      {
-        break;
-      }
-
-      case OPCODE_OP:
-      {
-        reg_writeback_select = CTL_WRITEBACK_ALU;
-        break;
-      }
-
-      case OPCODE_LUI:
-      {
-        reg_writeback_select = CTL_WRITEBACK_IMM;
-        break;
-      }
-
-      case OPCODE_BRANCH:
-      {
-        break;
-      }
-
-      case OPCODE_JALR:
-      {
-        reg_writeback_select = CTL_WRITEBACK_PC4;
-        break;
-      }
-
-      case OPCODE_JAL:
-      {
-        reg_writeback_select = CTL_WRITEBACK_PC4;
-        break;
-      }
-
-      default:
-      {
-        break;
-      }
+      case OPCODE_LOAD:     return CTL_WRITEBACK_DATA;
+      case OPCODE_MISC_MEM: return b3(DONTCARE);
+      case OPCODE_OP_IMM:   return CTL_WRITEBACK_ALU;
+      case OPCODE_AUIPC:    return CTL_WRITEBACK_ALU;
+      case OPCODE_STORE:    return b3(DONTCARE);
+      case OPCODE_OP:       return CTL_WRITEBACK_ALU;
+      case OPCODE_LUI:      return CTL_WRITEBACK_IMM;
+      case OPCODE_BRANCH:   return b3(DONTCARE);
+      case OPCODE_JALR:     return CTL_WRITEBACK_PC4;
+      case OPCODE_JAL:      return CTL_WRITEBACK_PC4;
+      default:              return b3(DONTCARE);
     }
   }
 };

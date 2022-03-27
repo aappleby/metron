@@ -40,12 +40,6 @@ class riscv_core {
     datapath.init();
   }
 
-  void tock_decode(logic<32> inst) {
-    ctlpath.tock_decode(
-      datapath.inst_opcode2(inst)
-    );
-  }
-
   logic<32> alu_result(logic<32> inst) {
     logic<5> alu_function = ctlpath.alu_function(datapath.inst_opcode2(inst), datapath.inst_funct32(inst), datapath.inst_funct72(inst));
 
@@ -72,7 +66,7 @@ class riscv_core {
         bus_read_data,
         datapath.inst_funct32(inst)
       ),
-      ctlpath.reg_writeback_select(),
+      ctlpath.reg_writeback_select(datapath.inst_opcode2(inst)),
       inst
     );
   }

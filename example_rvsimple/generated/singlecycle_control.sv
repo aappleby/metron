@@ -15,7 +15,6 @@ module singlecycle_control
   input logic clock,
   input logic[6:0] inst_opcode,
   input logic take_branch,
-  output logic[2:0] reg_writeback_select,
   output logic[1:0] next_pc_select,
   output logic pc_write_enable,
   output logic regfile_write_enable,
@@ -23,11 +22,12 @@ module singlecycle_control
   output logic alu_operand_b_select,
   output logic[1:0] alu_op_type2,
   output logic data_mem_read_enable,
-  output logic data_mem_write_enable
+  output logic data_mem_write_enable,
+  output logic[2:0] reg_writeback_select
 );
  /*public:*/
   //logic<1> data_mem_write_enable;
-  /*logic<3> reg_writeback_select;*/
+  //logic<3> reg_writeback_select;
   /*logic<2> next_pc_select;*/
 
   always_comb begin : tock_next_pc_select
@@ -123,74 +123,20 @@ module singlecycle_control
     data_mem_write_enable = inst_opcode == OPCODE_STORE;
   end
 
-  always_comb begin : tock_decode
+  always_comb begin
     import rv_constants::*;
-
-    reg_writeback_select    = 3'x;
-
     case (inst_opcode) 
-      /*case*/ OPCODE_LOAD:
-      begin
-        reg_writeback_select = CTL_WRITEBACK_DATA;
-        /*break;*/
-      end
-
-      /*case*/ OPCODE_MISC_MEM:
-      begin
-        // Fence - ignore
-        /*break;*/
-      end
-
-      /*case*/ OPCODE_OP_IMM:
-      begin
-        reg_writeback_select = CTL_WRITEBACK_ALU;
-        /*break;*/
-      end
-
-      /*case*/ OPCODE_AUIPC:
-      begin
-        reg_writeback_select = CTL_WRITEBACK_ALU;
-        /*break;*/
-      end
-
-      /*case*/ OPCODE_STORE:
-      begin
-        /*break;*/
-      end
-
-      /*case*/ OPCODE_OP:
-      begin
-        reg_writeback_select = CTL_WRITEBACK_ALU;
-        /*break;*/
-      end
-
-      /*case*/ OPCODE_LUI:
-      begin
-        reg_writeback_select = CTL_WRITEBACK_IMM;
-        /*break;*/
-      end
-
-      /*case*/ OPCODE_BRANCH:
-      begin
-        /*break;*/
-      end
-
-      /*case*/ OPCODE_JALR:
-      begin
-        reg_writeback_select = CTL_WRITEBACK_PC4;
-        /*break;*/
-      end
-
-      /*case*/ OPCODE_JAL:
-      begin
-        reg_writeback_select = CTL_WRITEBACK_PC4;
-        /*break;*/
-      end
-
-      default:
-      begin
-        /*break;*/
-      end
+      /*case*/ OPCODE_LOAD:     reg_writeback_select = CTL_WRITEBACK_DATA;
+      /*case*/ OPCODE_MISC_MEM: reg_writeback_select = 3'x;
+      /*case*/ OPCODE_OP_IMM:   reg_writeback_select = CTL_WRITEBACK_ALU;
+      /*case*/ OPCODE_AUIPC:    reg_writeback_select = CTL_WRITEBACK_ALU;
+      /*case*/ OPCODE_STORE:    reg_writeback_select = 3'x;
+      /*case*/ OPCODE_OP:       reg_writeback_select = CTL_WRITEBACK_ALU;
+      /*case*/ OPCODE_LUI:      reg_writeback_select = CTL_WRITEBACK_IMM;
+      /*case*/ OPCODE_BRANCH:   reg_writeback_select = 3'x;
+      /*case*/ OPCODE_JALR:     reg_writeback_select = CTL_WRITEBACK_PC4;
+      /*case*/ OPCODE_JAL:      reg_writeback_select = CTL_WRITEBACK_PC4;
+      default:              reg_writeback_select = 3'x;
     endcase
   end
 endmodule;

@@ -57,14 +57,6 @@ bus_write_enable2 = ctlpath_data_mem_write_enable; end
     /*datapath.init();*/
   end
 
-  always_comb begin : tock_decode
-    ctlpath_inst_opcode = datapath_inst_opcode2;
-    datapath_inst = inst;
-    /*ctlpath.tock_decode(
-      datapath.inst_opcode2(inst)
-    );*/
-  end
-
   always_comb begin
     logic[4:0] alu_function;
     ctlpath_inst_opcode = datapath_inst_opcode2;
@@ -107,13 +99,15 @@ bus_write_enable2 = ctlpath_data_mem_write_enable; end
     dmem_bus_read_data = bus_read_data;
     dmem_data_format = datapath_inst_funct32;
     datapath_inst = inst;
+    ctlpath_inst_opcode = datapath_inst_opcode2;
+    datapath_inst = inst;
     /*datapath.tock_writeback(
       dmem.read_data(
         alu_result2,
         bus_read_data,
         datapath.inst_funct32(inst)
       ),
-      ctlpath.reg_writeback_select(),
+      ctlpath.reg_writeback_select(datapath.inst_opcode2(inst)),
       inst
     );*/
   end

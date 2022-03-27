@@ -36,8 +36,8 @@ int run_test(const char* test_name) {
     for (time = 0; time < 100000; time++) {
       top.clock = time & 1;
       top.eval();
-      if (top.bus_write_enable && top.bus_address == 0xfffffff0) {
-        result = top.bus_write_data;
+      if (top.o_bus_write_enable && top.o_bus_address == 0xfffffff0) {
+        result = top.o_bus_write_data;
         break;
       }
     }

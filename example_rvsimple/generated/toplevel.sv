@@ -17,24 +17,24 @@ module toplevel
 (
   input logic clock,
   input logic reset,
-  output logic[31:0] bus_read_data,
-  output logic[31:0] bus_address,
-  output logic[31:0] bus_write_data,
-  output logic[3:0]  bus_byte_enable,
-  output logic  bus_read_enable,
-  output logic  bus_write_enable,
-  output logic[31:0] inst,
-  output logic[31:0] pc
+  output logic[31:0] o_bus_read_data,
+  output logic[31:0] o_bus_address,
+  output logic[31:0] o_bus_write_data,
+  output logic[3:0]  o_bus_byte_enable,
+  output logic  o_bus_read_enable,
+  output logic  o_bus_write_enable,
+  output logic[31:0] o_inst,
+  output logic[31:0] o_pc
 );
  /*public:*/
-  /*logic<32> bus_read_data;*/
-  /*logic<32> bus_address;*/
-  /*logic<32> bus_write_data;*/
-  /*logic<4>  bus_byte_enable;*/
-  /*logic<1>  bus_read_enable;*/
-  /*logic<1>  bus_write_enable;*/
-  /*logic<32> inst;*/
-  /*logic<32> pc;*/
+  /*logic<32> o_bus_read_data;*/
+  /*logic<32> o_bus_address;*/
+  /*logic<32> o_bus_write_data;*/
+  /*logic<4>  o_bus_byte_enable;*/
+  /*logic<1>  o_bus_read_enable;*/
+  /*logic<1>  o_bus_write_enable;*/
+  /*logic<32> o_inst;*/
+  /*logic<32> o_pc;*/
 
   //----------------------------------------
 
@@ -47,9 +47,11 @@ module toplevel
   //----------------------------------------
 
   always_comb begin : tock
+    logic[31:0] inst;
     text_memory_bus_address = core_pc;
     /*text_memory_bus.tock(core.pc());*/
     inst = text_memory_bus_read_data;
+    o_inst = inst;
 
     core_inst = inst;
     /*core.tock_execute(inst);*/
@@ -61,15 +63,15 @@ module toplevel
 
     data_memory_bus_address = core_bus_address;
     data_memory_bus_read_enable = core_bus_read_enable2;
-    bus_read_data = data_memory_bus_read_data;
-    bus_address = core_bus_address2;
+    o_bus_read_data = data_memory_bus_read_data;
+    o_bus_address = core_bus_address2;
     core_inst = inst;
-    bus_write_data = core_bus_write_data2;
+    o_bus_write_data = core_bus_write_data2;
     core_inst = inst;
-    bus_byte_enable = core_bus_byte_enable2;
-    bus_read_enable = core_bus_read_enable2;
-    bus_write_enable = core_bus_write_enable2;
-    pc = core_pc;
+    o_bus_byte_enable = core_bus_byte_enable2;
+    o_bus_read_enable = core_bus_read_enable2;
+    o_bus_write_enable = core_bus_write_enable2;
+    o_pc = core_pc;
     core_reset = reset;
     /*core.tock_pc(reset);*/
     data_memory_bus_address = core_bus_address;

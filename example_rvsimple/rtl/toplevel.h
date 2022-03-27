@@ -15,14 +15,14 @@
 
 class toplevel {
  public:
-  logic<32> bus_read_data;
-  logic<32> bus_address;
-  logic<32> bus_write_data;
-  logic<4>  bus_byte_enable;
-  logic<1>  bus_read_enable;
-  logic<1>  bus_write_enable;
-  logic<32> inst;
-  logic<32> pc;
+  logic<32> o_bus_read_data;
+  logic<32> o_bus_address;
+  logic<32> o_bus_write_data;
+  logic<4>  o_bus_byte_enable;
+  logic<1>  o_bus_read_enable;
+  logic<1>  o_bus_write_enable;
+  logic<32> o_inst;
+  logic<32> o_pc;
 
   //----------------------------------------
 
@@ -36,18 +36,19 @@ class toplevel {
 
   void tock(logic<1> reset) {
     text_memory_bus.tock(core.pc());
-    inst = text_memory_bus.read_data;
+    logic<32> inst = text_memory_bus.read_data;
+    o_inst = inst;
 
     core.tock_execute(inst);
     core.tock_writeback(inst, data_memory_bus.read_data(core.bus_address, core.bus_read_enable2()));
 
-    bus_read_data = data_memory_bus.read_data(core.bus_address, core.bus_read_enable2());
-    bus_address = core.bus_address2();
-    bus_write_data = core.bus_write_data2(inst);
-    bus_byte_enable = core.bus_byte_enable2(inst);
-    bus_read_enable = core.bus_read_enable2();
-    bus_write_enable = core.bus_write_enable2();
-    pc = core.pc();
+    o_bus_read_data = data_memory_bus.read_data(core.bus_address, core.bus_read_enable2());
+    o_bus_address = core.bus_address2();
+    o_bus_write_data = core.bus_write_data2(inst);
+    o_bus_byte_enable = core.bus_byte_enable2(inst);
+    o_bus_read_enable = core.bus_read_enable2();
+    o_bus_write_enable = core.bus_write_enable2();
+    o_pc = core.pc();
     core.tock_pc(reset);
     data_memory_bus.tock_data_memory(
       core.bus_address,

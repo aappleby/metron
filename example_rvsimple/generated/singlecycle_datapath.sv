@@ -34,7 +34,6 @@ module singlecycle_datapath
   input logic[1:0] next_pc_select,
   input logic[31:0] data_mem_read_data,
   input logic[2:0] reg_writeback_select,
-  output logic[31:0] data_mem_address,
   output logic[31:0] pc2,
   output logic[31:0] data_mem_address2,
   output logic[31:0] data_mem_write_data2,
@@ -48,8 +47,6 @@ module singlecycle_datapath
   initial begin : init /*program_counter.init();*/ end
 
   //----------------------------------------
-
-  /*logic<32> data_mem_address;*/
 
   always_comb begin pc2 = program_counter_value; end
   always_comb begin data_mem_address2 = alu_core_result; end
@@ -112,7 +109,6 @@ inst_funct72 = idec_inst_funct72; end
       mux_operand_a.out,
       mux_operand_b.out
     );*/
-    data_mem_address = alu_core_result;
   end
 
   always_comb begin : tock_next_pc

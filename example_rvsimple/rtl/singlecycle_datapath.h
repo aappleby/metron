@@ -28,8 +28,6 @@ class singlecycle_datapath {
 
   //----------------------------------------
 
-  logic<32> data_mem_address;
-
   logic<32> pc2()                  const { return program_counter.value; }
   logic<32> data_mem_address2()    const { return alu_core.result; }
   logic<32> data_mem_write_data2(logic<32> inst) const { return regs.rs2_data(idec.inst_rs22(inst)); }
@@ -66,7 +64,6 @@ class singlecycle_datapath {
       mux_operand_a.out,
       mux_operand_b.out
     );
-    data_mem_address = alu_core.result;
   }
 
   void tock_next_pc(logic<32> inst, logic<2> next_pc_select) {

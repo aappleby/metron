@@ -58,16 +58,32 @@ module toplevel
     /*core.tock_execute(inst);*/
     core_inst = inst;
     core_bus_read_data = data_memory_bus_read_data;
-    data_memory_bus_address = core_bus_address;
+    data_memory_bus_address = core_bus_address2;
     data_memory_bus_read_enable = core_bus_read_enable2;
-    /*core.tock_writeback(inst, data_memory_bus.read_data(core.bus_address, core.bus_read_enable2()));*/
+    /*core.tock_writeback(inst, data_memory_bus.read_data(core.bus_address2(), core.bus_read_enable2()));*/
 
     core_inst = inst;
     write_data = core_bus_write_data2;
     write_enable = core_bus_write_enable2;
 
+    core_reset = reset;
+    /*core.tock_pc(reset);*/
+    data_memory_bus_address = core_bus_address2;
+    data_memory_bus_write_enable = write_enable;
+    data_memory_bus_byte_enable = core_bus_byte_enable2;
+    data_memory_bus_write_data = write_data;
+    core_inst = inst;
+    /*data_memory_bus.tock_data_memory(
+      core.bus_address2(),
+      write_enable,
+      core.bus_byte_enable2(inst),
+      write_data
+    );*/
+    core_inst = inst;
+    /*core.tock_regs(inst);*/
+
     o_inst = inst;
-    data_memory_bus_address = core_bus_address;
+    data_memory_bus_address = core_bus_address2;
     data_memory_bus_read_enable = core_bus_read_enable2;
     o_bus_read_data = data_memory_bus_read_data;
     o_bus_address = core_bus_address2;
@@ -77,21 +93,6 @@ module toplevel
     o_bus_read_enable = core_bus_read_enable2;
     o_bus_write_enable = write_enable;
     o_pc = core_pc;
-    core_reset = reset;
-    /*core.tock_pc(reset);*/
-    data_memory_bus_address = core_bus_address;
-    data_memory_bus_write_enable = write_enable;
-    data_memory_bus_byte_enable = core_bus_byte_enable2;
-    data_memory_bus_write_data = write_data;
-    core_inst = inst;
-    /*data_memory_bus.tock_data_memory(
-      core.bus_address,
-      write_enable,
-      core.bus_byte_enable2(inst),
-      write_data
-    );*/
-    core_inst = inst;
-    /*core.tock_regs(inst);*/
   end
 
   //----------------------------------------
@@ -104,7 +105,6 @@ module toplevel
     .reset(core_reset), 
     .bus_read_data(core_bus_read_data), 
     // Outputs
-    .bus_address(core_bus_address), 
     .bus_write_data2(core_bus_write_data2), 
     .bus_byte_enable2(core_bus_byte_enable2), 
     .bus_read_enable2(core_bus_read_enable2), 
@@ -115,7 +115,6 @@ module toplevel
   logic[31:0] core_inst;
   logic core_reset;
   logic[31:0] core_bus_read_data;
-  logic[31:0] core_bus_address;
   logic[31:0] core_bus_write_data2;
   logic[3:0]  core_bus_byte_enable2;
   logic  core_bus_read_enable2;

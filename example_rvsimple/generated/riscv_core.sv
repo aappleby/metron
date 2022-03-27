@@ -19,7 +19,6 @@ module riscv_core
   input logic[31:0] inst,
   input logic reset,
   input logic[31:0] bus_read_data,
-  output logic[31:0] bus_address,
   output logic[31:0] bus_write_data2,
   output logic[3:0]  bus_byte_enable2,
   output logic  bus_read_enable2,
@@ -28,23 +27,21 @@ module riscv_core
   output logic[31:0] pc
 );
  /*public:*/
-  /*logic<32> bus_address;*/
-
   always_comb begin
-    dmem_address = datapath_data_mem_address;
+    dmem_address = datapath_data_mem_address2;
     dmem_write_data = datapath_data_mem_write_data2;
     datapath_inst = inst;
     bus_write_data2 = dmem_bus_write_data;
   end
   always_comb begin
     dmem_data_format = datapath_inst_funct32;
-    dmem_address = datapath_data_mem_address;
+    dmem_address = datapath_data_mem_address2;
     datapath_inst = inst;
     bus_byte_enable2 = dmem_bus_byte_enable;
   end
   always_comb begin bus_read_enable2 = ctlpath_data_mem_read_enable; end
   always_comb begin bus_write_enable2 = ctlpath_data_mem_write_enable; end
-  always_comb begin bus_address2 = datapath_data_mem_address; end
+  always_comb begin bus_address2 = datapath_data_mem_address2; end
   always_comb begin pc = datapath_pc2; end
 
   //----------------------------------------
@@ -110,21 +107,19 @@ module riscv_core
     datapath_inst = inst;
     datapath_next_pc_select = ctlpath_next_pc_select;
     /*datapath.tock_next_pc(inst, ctlpath.next_pc_select());*/
-
-    bus_address = datapath_data_mem_address;
   end
 
   always_comb begin : tock_writeback
     datapath_data_mem_read_data = dmem_read_data;
     datapath_reg_writeback_select = ctlpath_reg_writeback_select;
     datapath_inst = inst;
-    dmem_address = datapath_data_mem_address;
+    dmem_address = datapath_data_mem_address2;
     dmem_bus_read_data = bus_read_data;
     dmem_data_format = datapath_inst_funct32;
     datapath_inst = inst;
     /*datapath.tock_writeback(
       dmem.read_data(
-        datapath.data_mem_address,
+        datapath.data_mem_address2(),
         bus_read_data,
         datapath.inst_funct32(inst)
       ),
@@ -150,7 +145,6 @@ module riscv_core
     .data_mem_read_data(datapath_data_mem_read_data), 
     .reg_writeback_select(datapath_reg_writeback_select), 
     // Outputs
-    .data_mem_address(datapath_data_mem_address), 
     .pc2(datapath_pc2), 
     .data_mem_address2(datapath_data_mem_address2), 
     .data_mem_write_data2(datapath_data_mem_write_data2), 
@@ -169,7 +163,6 @@ module riscv_core
   logic[1:0] datapath_next_pc_select;
   logic[31:0] datapath_data_mem_read_data;
   logic[2:0] datapath_reg_writeback_select;
-  logic[31:0] datapath_data_mem_address;
   logic[31:0] datapath_pc2;
   logic[31:0] datapath_data_mem_address2;
   logic[31:0] datapath_data_mem_write_data2;

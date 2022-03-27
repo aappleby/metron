@@ -25,15 +25,6 @@ module alu
     result_equal_zero = (result == 32'd0);
   end
 
-`ifdef M_MODULE
- /*private:*/
-  logic[63:0] signed_multiplication;
-  logic[63:0] unsigned_multiplication;
-  logic[63:0] signed_unsigned_multiplication;
-
- /*public:*/
-`endif
-
   always_comb begin : tock
     import rv_constants::*;
 
@@ -71,63 +62,11 @@ module alu
       /*case*/ ALU_AND:
         result = operand_a & operand_b;
         /*break;*/
-
-`ifdef M_MODULE
-      /*case*/ ALU_MUL:
-        result = signed_multiplication[31:0];
-        /*break;*/
-      /*case*/ ALU_MULH:
-        result = signed_multiplication[63:32];
-        /*break;*/
-      /*case*/ ALU_MULHSU:
-        result = signed_unsigned_multiplication[63:32];
-        /*break;*/
-      /*case*/ ALU_MULHU:
-        result = unsigned_multiplication[63:32];
-        /*break;*/
-      /*case*/ ALU_DIV:
-        if (operand_b == ZERO)
-          result = 1;
-        else if ((operand_a == 32'h80000000) && (operand_b == 1))
-          result = 32'h80000000;
-        else
-          result = operand_a / operand_b;
-        /*break;*/
-      /*case*/ ALU_DIVU:
-        if (operand_b == ZERO)
-          result = 1;
-        else
-          result = $unsigned(operand_a) / $unsigned(operand_b);
-        /*break;*/
-      /*case*/ ALU_REM:
-        if (operand_b == ZERO)
-          result = operand_a;
-        else if ((operand_a == 32'h80000000) && (operand_b == 1))
-          result = ZERO;
-        else
-          result = operand_a % operand_b;
-        /*break;*/
-      /*case*/ ALU_REMU:
-        if (operand_b == ZERO)
-          result = operand_a;
-        else
-          result = $unsigned(operand_a) % $unsigned(operand_b);
-        /*break;*/
-`endif
-
       default:
         result = 32'(ZERO);
         /*break;*/
     endcase
   end
-
-`ifdef M_MODULE
-  always_comb begin : tock_mult
-    signed_multiplication = operand_a * operand_b;
-    unsigned_multiplication = $unsigned(operand_a) * $unsigned(operand_b);
-    signed_unsigned_multiplication = $signed(operand_a) * $unsigned(operand_b);
-  end
-`endif
 endmodule;
 
 `endif  // RVSIMPLE_ALU_H

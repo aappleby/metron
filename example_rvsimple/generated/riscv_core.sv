@@ -83,6 +83,7 @@ bus_write_enable2 = ctlpath_data_mem_write_enable; end
     datapath_inst = inst;
     datapath_next_pc_select = ctlpath_next_pc_select;
     datapath_pc_write_enable = ctlpath_pc_write_enable2;
+    datapath_alu_result2 = alu_result2;
     ctlpath_inst_opcode = datapath_inst_opcode2;
     ctlpath_inst_funct3 = datapath_inst_funct32;
     ctlpath_alu_result_equal_zero = alu_result2 == 0;
@@ -94,13 +95,18 @@ bus_write_enable2 = ctlpath_data_mem_write_enable; end
       reset,
       inst,
       ctlpath.next_pc_select(datapath.inst_opcode2(inst), datapath.inst_funct32(inst), alu_result2 == 0),
-      ctlpath.pc_write_enable2(datapath.inst_opcode2(inst))
+      ctlpath.pc_write_enable2(datapath.inst_opcode2(inst)),
+      alu_result2
     );*/
   end
 
   always_comb begin : tocktick_regs
+    datapath_inst = inst;
+    datapath_regfile_write_enable = ctlpath_regfile_write_enable2;
     datapath_data_mem_read_data = dmem_read_data;
     datapath_reg_writeback_select = ctlpath_reg_writeback_select;
+    datapath_alu_result2 = alu_result2;
+    ctlpath_inst_opcode = datapath_inst_opcode2;
     datapath_inst = inst;
     dmem_address = alu_result2;
     dmem_bus_read_data = bus_read_data;
@@ -108,22 +114,16 @@ bus_write_enable2 = ctlpath_data_mem_write_enable; end
     datapath_inst = inst;
     ctlpath_inst_opcode = datapath_inst_opcode2;
     datapath_inst = inst;
-    /*datapath.tock_writeback(
+    /*datapath.tocktick_regs(
+      inst,
+      ctlpath.regfile_write_enable2(datapath.inst_opcode2(inst)),
       dmem.read_data(
         alu_result2,
         bus_read_data,
         datapath.inst_funct32(inst)
       ),
       ctlpath.reg_writeback_select(datapath.inst_opcode2(inst)),
-      inst
-    );*/
-    datapath_inst = inst;
-    datapath_regfile_write_enable = ctlpath_regfile_write_enable2;
-    ctlpath_inst_opcode = datapath_inst_opcode2;
-    datapath_inst = inst;
-    /*datapath.tocktick_regs(
-      inst,
-      ctlpath.regfile_write_enable2(datapath.inst_opcode2(inst))
+      alu_result2
     );*/
   end
 
@@ -140,9 +140,10 @@ bus_write_enable2 = ctlpath_data_mem_write_enable; end
     .reset(datapath_reset), 
     .next_pc_select(datapath_next_pc_select), 
     .pc_write_enable(datapath_pc_write_enable), 
+    .alu_result2(datapath_alu_result2), 
+    .regfile_write_enable(datapath_regfile_write_enable), 
     .data_mem_read_data(datapath_data_mem_read_data), 
     .reg_writeback_select(datapath_reg_writeback_select), 
-    .regfile_write_enable(datapath_regfile_write_enable), 
     // Outputs
     .pc2(datapath_pc2), 
     .data_mem_write_data2(datapath_data_mem_write_data2), 
@@ -158,9 +159,10 @@ bus_write_enable2 = ctlpath_data_mem_write_enable; end
   logic datapath_reset;
   logic[1:0] datapath_next_pc_select;
   logic datapath_pc_write_enable;
+  logic[31:0] datapath_alu_result2;
+  logic datapath_regfile_write_enable;
   logic[31:0] datapath_data_mem_read_data;
   logic[2:0] datapath_reg_writeback_select;
-  logic datapath_regfile_write_enable;
   logic[31:0] datapath_pc2;
   logic[31:0] datapath_data_mem_write_data2;
   logic[6:0]  datapath_inst_opcode2;

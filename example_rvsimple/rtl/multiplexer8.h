@@ -13,39 +13,20 @@
 template <int WIDTH = 32>
 class multiplexer8 {
  public:
-  logic<WIDTH> out;
 
-  void tock(logic<3> sel, logic<WIDTH> in0, logic<WIDTH> in1, logic<WIDTH> in2,
+  logic<WIDTH> out(logic<3> sel, logic<WIDTH> in0, logic<WIDTH> in1, logic<WIDTH> in2,
             logic<WIDTH> in3, logic<WIDTH> in4, logic<WIDTH> in5,
-            logic<WIDTH> in6, logic<WIDTH> in7) {
+            logic<WIDTH> in6, logic<WIDTH> in7) const {
     switch (sel) {
-      case 0:
-        out = in0;
-        break;
-      case 1:
-        out = in1;
-        break;
-      case 2:
-        out = in2;
-        break;
-      case 3:
-        out = in3;
-        break;
-      case 4:
-        out = in3;
-        break;
-      case 5:
-        out = in3;
-        break;
-      case 6:
-        out = in3;
-        break;
-      case 7:
-        out = in3;
-        break;
-      default:
-        out = bx<WIDTH>(DONTCARE);
-        break;
+      case 0:  return in0;
+      case 1:  return in1;
+      case 2:  return in2;
+      case 3:  return in3;
+      case 4:  return in3;
+      case 5:  return in3;
+      case 6:  return in3;
+      case 7:  return in3;
+      default: return bx<WIDTH>(DONTCARE);
     }
   }
 };

@@ -31,9 +31,10 @@ module singlecycle_datapath
   input logic reset,
   input logic[1:0] next_pc_select,
   input logic pc_write_enable,
+  input logic[31:0] alu_result2,
+  input logic regfile_write_enable,
   input logic[31:0] data_mem_read_data,
   input logic[2:0] reg_writeback_select,
-  input logic regfile_write_enable,
   output logic[31:0] pc2,
   output logic[31:0] data_mem_write_data2,
   output logic[6:0]  inst_opcode2,
@@ -76,19 +77,6 @@ inst_funct72 = idec_inst_funct72; end
     regs_rs2_address = idec_inst_rs22;
     idec_inst = inst;
     igen_inst = inst;
-    /*alu_core.tock(
-      alu_function,
-      mux_operand_a.out(
-        alu_operand_a_select,
-        regs.rs1_data(idec.inst_rs12(inst)),
-        program_counter.value
-      ),
-      mux_operand_b.out(
-        alu_operand_b_select,
-        regs.rs2_data(idec.inst_rs22(inst)),
-        igen.immediate(inst)
-      )
-    );*/
     alu_result = alu_core_result;
   end
 
@@ -97,7 +85,7 @@ inst_funct72 = idec_inst_funct72; end
     mux_next_pc_select_sel = next_pc_select;
     mux_next_pc_select_in0 = adder_pc_plus_4_result;
     mux_next_pc_select_in1 = adder_pc_plus_immediate_result;
-    mux_next_pc_select_in2 = {alu_core.result[31:1], 1'b0};
+    mux_next_pc_select_in2 = {alu_result2[31:1], 1'b0};
     mux_next_pc_select_in3 = 32'b0;
     adder_pc_plus_4_operand_a = 32'h00000004;
     adder_pc_plus_4_operand_b = program_counter_value;
@@ -113,9 +101,10 @@ inst_funct72 = idec_inst_funct72; end
 
   //----------------------------------------
 
-  always_comb begin : tock_writeback
+  always_comb begin : tocktick_regs
+    logic[31:0] out;
     mux_reg_writeback_sel = reg_writeback_select;
-    mux_reg_writeback_in0 = alu_core_result;
+    mux_reg_writeback_in0 = alu_result2;
     mux_reg_writeback_in1 = data_mem_read_data;
     mux_reg_writeback_in2 = adder_pc_plus_4_result;
     mux_reg_writeback_in3 = igen_immediate;
@@ -126,25 +115,12 @@ inst_funct72 = idec_inst_funct72; end
     adder_pc_plus_4_operand_a = 32'h00000004;
     adder_pc_plus_4_operand_b = program_counter_value;
     igen_inst = inst;
-    /*mux_reg_writeback.tock(
-      reg_writeback_select,
-      alu_core.result,
-      data_mem_read_data,
-      adder_pc_plus_4.result(b32(0x00000004), program_counter.value),
-      igen.immediate(inst),
-      b32(0b0),
-      b32(0b0),
-      b32(0b0),
-      b32(0b0)
-    );*/
-  end
-
-  always_comb begin : tocktick_regs
+    out = mux_reg_writeback_out;
     regs_write_enable = regfile_write_enable;
     regs_rd_address = idec_inst_rd2;
-    regs_rd_data = mux_reg_writeback_out;
+    regs_rd_data = out;
     idec_inst = inst;
-    /*regs.tick(regfile_write_enable, idec.inst_rd2(inst), mux_reg_writeback.out);*/
+    /*regs.tick(regfile_write_enable, idec.inst_rd2(inst), out);*/
   end
 
   //----------------------------------------

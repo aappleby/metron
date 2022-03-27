@@ -26,37 +26,18 @@ module multiplexer8
   output logic[WIDTH-1:0] out
 );
  /*public:*/
-  /*logic<WIDTH> out;*/
 
-  always_comb begin : tock
+  always_comb begin
     case (sel) 
-      /*case*/ 0:
-        out = in0;
-        /*break;*/
-      /*case*/ 1:
-        out = in1;
-        /*break;*/
-      /*case*/ 2:
-        out = in2;
-        /*break;*/
-      /*case*/ 3:
-        out = in3;
-        /*break;*/
-      /*case*/ 4:
-        out = in3;
-        /*break;*/
-      /*case*/ 5:
-        out = in3;
-        /*break;*/
-      /*case*/ 6:
-        out = in3;
-        /*break;*/
-      /*case*/ 7:
-        out = in3;
-        /*break;*/
-      default:
-        out = WIDTH'(1'bx);
-        /*break;*/
+      /*case*/ 0:  out = in0;
+      /*case*/ 1:  out = in1;
+      /*case*/ 2:  out = in2;
+      /*case*/ 3:  out = in3;
+      /*case*/ 4:  out = in3;
+      /*case*/ 5:  out = in3;
+      /*case*/ 6:  out = in3;
+      /*case*/ 7:  out = in3;
+      default: out = WIDTH'(1'bx);
     endcase
   end
 endmodule

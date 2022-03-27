@@ -38,7 +38,7 @@ class singlecycle_datapath {
   //----------------------------------------
 
   logic<32> alu_result(logic<32> inst, logic<5> alu_function, logic<1> alu_operand_a_select, logic<1> alu_operand_b_select) {
-    alu_core.tock(
+    return alu_core.result(
       alu_function,
       mux_operand_a.out(
         alu_operand_a_select,
@@ -51,15 +51,14 @@ class singlecycle_datapath {
         igen.immediate(inst)
       )
     );
-    return alu_core.result;
   }
 
-  void tocktick_pc(logic<1> reset, logic<32> inst, logic<2> next_pc_select, logic<1> pc_write_enable) {
+  void tocktick_pc(logic<1> reset, logic<32> inst, logic<2> next_pc_select, logic<1> pc_write_enable, logic<32> alu_result2) {
     logic<32> out = mux_next_pc_select.out(
       next_pc_select,
       adder_pc_plus_4.result(b32(0x00000004), program_counter.value),
       adder_pc_plus_immediate.result(program_counter.value, igen.immediate(inst)),
-      cat(b31(alu_core.result, 1), b1(0b0)),
+      cat(b31(alu_result2, 1), b1(0b0)),
       b32(0b0)
     );
     program_counter.tick(reset, pc_write_enable, out);
@@ -67,12 +66,10 @@ class singlecycle_datapath {
 
   //----------------------------------------
 
-  void tock_writeback(logic<32> data_mem_read_data,
-                      logic<3> reg_writeback_select,
-                      logic<32> inst) {
-    mux_reg_writeback.tock(
+  void tocktick_regs(logic<32> inst, logic<1> regfile_write_enable, logic<32> data_mem_read_data, logic<3> reg_writeback_select, logic<32> alu_result2) {
+    logic<32> out = mux_reg_writeback.out(
       reg_writeback_select,
-      alu_core.result,
+      alu_result2,
       data_mem_read_data,
       adder_pc_plus_4.result(b32(0x00000004), program_counter.value),
       igen.immediate(inst),
@@ -81,10 +78,7 @@ class singlecycle_datapath {
       b32(0b0),
       b32(0b0)
     );
-  }
-
-  void tocktick_regs(logic<32> inst, logic<1> regfile_write_enable) {
-    regs.tick(regfile_write_enable, idec.inst_rd2(inst), mux_reg_writeback.out);
+    regs.tick(regfile_write_enable, idec.inst_rd2(inst), out);
   }
 
   //----------------------------------------

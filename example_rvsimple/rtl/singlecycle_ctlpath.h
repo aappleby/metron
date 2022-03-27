@@ -20,7 +20,7 @@ class singlecycle_ctlpath {
     return alu_ctrl.alu_function(control.alu_op_type, inst_funct3, inst_funct7);
   }
 
-  logic<1> pc_write_enable2()      const { return control.pc_write_enable; }
+  logic<1> pc_write_enable2(logic<7> inst_opcode)      const { return control.pc_write_enable(inst_opcode); }
   logic<1> regfile_write_enable2() const { return control.regfile_write_enable; }
   logic<1> alu_operand_a_select()  const { return control.alu_operand_a_select; }
   logic<1> alu_operand_b_select()  const { return control.alu_operand_b_select; }

@@ -39,7 +39,8 @@ module singlecycle_ctlpath
     alu_function = alu_ctrl_alu_function;
   end
 
-  always_comb begin pc_write_enable2 = control_pc_write_enable; end
+  always_comb begin control_inst_opcode = inst_opcode;
+pc_write_enable2 = control_pc_write_enable; end
   always_comb begin regfile_write_enable2 = control_regfile_write_enable; end
   always_comb begin alu_operand_a_select = control_alu_operand_a_select; end
   always_comb begin alu_operand_b_select = control_alu_operand_b_select; end
@@ -72,7 +73,6 @@ module singlecycle_ctlpath
     .inst_opcode(control_inst_opcode), 
     .take_branch(control_take_branch), 
     // Outputs
-    .pc_write_enable(control_pc_write_enable), 
     .regfile_write_enable(control_regfile_write_enable), 
     .alu_operand_a_select(control_alu_operand_a_select), 
     .alu_operand_b_select(control_alu_operand_b_select), 
@@ -80,11 +80,11 @@ module singlecycle_ctlpath
     .data_mem_read_enable(control_data_mem_read_enable), 
     .data_mem_write_enable(control_data_mem_write_enable), 
     .reg_writeback_select(control_reg_writeback_select), 
-    .next_pc_select(control_next_pc_select)
+    .next_pc_select(control_next_pc_select), 
+    .pc_write_enable(control_pc_write_enable)
   );
   logic[6:0] control_inst_opcode;
   logic control_take_branch;
-  logic control_pc_write_enable;
   logic control_regfile_write_enable;
   logic control_alu_operand_a_select;
   logic control_alu_operand_b_select;
@@ -93,6 +93,7 @@ module singlecycle_ctlpath
   logic control_data_mem_write_enable;
   logic[2:0] control_reg_writeback_select;
   logic[1:0] control_next_pc_select;
+  logic control_pc_write_enable;
 
   control_transfer transfer(
     // Inputs

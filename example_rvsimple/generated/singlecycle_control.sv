@@ -15,7 +15,6 @@ module singlecycle_control
   input logic clock,
   input logic[6:0] inst_opcode,
   input logic take_branch,
-  output logic pc_write_enable,
   output logic regfile_write_enable,
   output logic alu_operand_a_select,
   output logic alu_operand_b_select,
@@ -23,10 +22,11 @@ module singlecycle_control
   output logic data_mem_read_enable,
   output logic data_mem_write_enable,
   output logic[2:0] reg_writeback_select,
-  output logic[1:0] next_pc_select
+  output logic[1:0] next_pc_select,
+  output logic pc_write_enable
 );
  /*public:*/
-  /*logic<1> pc_write_enable;*/
+  //logic<1> pc_write_enable;
   /*logic<1> regfile_write_enable;*/
   /*logic<1> alu_operand_a_select;*/
   /*logic<1> alu_operand_b_select;*/
@@ -46,10 +46,14 @@ module singlecycle_control
     endcase
   end
 
+  always_comb begin
+    pc_write_enable = 1'b1;
+  end
+
+
   always_comb begin : tock_decode
     import rv_constants::*;
 
-    pc_write_enable         = 1'b1;
     regfile_write_enable    = 1'b0;
     alu_operand_a_select    = 1'x;
     alu_operand_b_select    = 1'x;
@@ -154,7 +158,6 @@ module singlecycle_control
 
       default:
       begin
-        pc_write_enable = 1'x;
         regfile_write_enable = 1'x;
         data_mem_read_enable = 1'x;
         data_mem_write_enable = 1'x;

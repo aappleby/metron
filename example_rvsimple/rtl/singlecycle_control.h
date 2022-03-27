@@ -12,7 +12,7 @@
 
 class singlecycle_control {
  public:
-  logic<1> pc_write_enable;
+  //logic<1> pc_write_enable;
   logic<1> regfile_write_enable;
   logic<1> alu_operand_a_select;
   logic<1> alu_operand_b_select;
@@ -32,10 +32,14 @@ class singlecycle_control {
     }
   }
 
+  logic<1> pc_write_enable(logic<7> inst_opcode) const {
+    return 0b1;
+  }
+
+
   void tock_decode(logic<7> inst_opcode) {
     using namespace rv_constants;
 
-    pc_write_enable         = b1(0b1);
     regfile_write_enable    = b1(0b0);
     alu_operand_a_select    = b1(DONTCARE);
     alu_operand_b_select    = b1(DONTCARE);
@@ -140,7 +144,6 @@ class singlecycle_control {
 
       default:
       {
-        pc_write_enable = b1(DONTCARE);
         regfile_write_enable = b1(DONTCARE);
         data_mem_read_enable = b1(DONTCARE);
         data_mem_write_enable = b1(DONTCARE);

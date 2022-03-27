@@ -82,7 +82,7 @@ class riscv_core {
       reset,
       inst,
       ctlpath.next_pc_select(),
-      ctlpath.pc_write_enable2()
+      ctlpath.pc_write_enable2(datapath.inst_opcode2(inst))
     );
   }
 

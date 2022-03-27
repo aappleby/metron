@@ -113,11 +113,13 @@ module riscv_core
     datapath_inst = inst;
     datapath_next_pc_select = ctlpath_next_pc_select;
     datapath_pc_write_enable = ctlpath_pc_write_enable2;
+    ctlpath_inst_opcode = datapath_inst_opcode2;
+    datapath_inst = inst;
     /*datapath.tocktick_pc(
       reset,
       inst,
       ctlpath.next_pc_select(),
-      ctlpath.pc_write_enable2()
+      ctlpath.pc_write_enable2(datapath.inst_opcode2(inst))
     );*/
   end
 

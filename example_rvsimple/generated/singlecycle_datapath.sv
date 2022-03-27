@@ -77,11 +77,6 @@ module singlecycle_datapath
     /*regs.tick(regfile_write_enable, idec.inst_rd2(inst), mux_reg_writeback.out);*/
   end
 
-  always_comb begin : tock_decode
-    idec_inst = inst;
-    /*idec.tock(inst);*/
-  end
-
   always_comb begin : tock_regfile
     regs_rs1_address = idec_inst_rs12;
     regs_rs2_address = idec_inst_rs22;

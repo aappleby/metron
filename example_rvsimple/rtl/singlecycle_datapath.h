@@ -49,10 +49,6 @@ class singlecycle_datapath {
     regs.tick(regfile_write_enable, idec.inst_rd2(inst), mux_reg_writeback.out);
   }
 
-  void tock_decode(logic<32> inst) {
-    idec.tock(inst);
-  }
-
   void tock_regfile(logic<32> inst) {
     regs.tock(
       idec.inst_rs12(inst),

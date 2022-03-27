@@ -62,8 +62,7 @@ module riscv_core
   end
 
   always_comb begin : tock_execute
-    datapath_inst = inst;
-    /*datapath.tock_decode(inst);*/
+    logic[4:0] alu_function;
     datapath_inst = inst;
     /*datapath.tock_regfile(inst);*/
 
@@ -82,13 +81,15 @@ module riscv_core
       datapath.inst_funct72(inst)
     );*/
 
+    alu_function = ctlpath_alu_function;
+
     datapath_inst = inst;
-    datapath_alu_function = ctlpath_alu_function;
+    datapath_alu_function = alu_function;
     datapath_alu_operand_a_select = ctlpath_alu_operand_a_select;
     datapath_alu_operand_b_select = ctlpath_alu_operand_b_select;
     /*datapath.tock_alu(
       inst,
-      ctlpath.alu_function(),
+      alu_function,
       ctlpath.alu_operand_a_select(),
       ctlpath.alu_operand_b_select()
     );*/

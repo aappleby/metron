@@ -18,15 +18,6 @@ class instruction_decoder {
   logic<5> inst_rd2(logic<32> inst)     const { return b5(inst, 7); }
   logic<5> inst_rs12(logic<32> inst)    const { return b5(inst, 15); }
   logic<5> inst_rs22(logic<32> inst)    const { return b5(inst, 20); }
-
-  void tock(logic<32> inst) {
-    //inst_opcode = b7(inst, 0);
-    //inst_funct3 = b3(inst, 12);
-    //inst_funct7 = b7(inst, 25);
-    //inst_rd = b5(inst, 7);
-    //inst_rs1 = b5(inst, 15);
-    //inst_rs2 = b5(inst, 20);
-  }
 };
 
 #endif  // RVSIMPLE_INSTRUCTION_DECODER_H

@@ -45,7 +45,6 @@ class riscv_core {
   }
 
   void tock_execute(logic<32> inst) {
-    datapath.tock_decode(inst);
     datapath.tock_regfile(inst);
 
     ctlpath.tock_decode(
@@ -57,9 +56,11 @@ class riscv_core {
       datapath.inst_funct72(inst)
     );
 
+    logic<5> alu_function = ctlpath.alu_function();
+
     datapath.tock_alu(
       inst,
-      ctlpath.alu_function(),
+      alu_function,
       ctlpath.alu_operand_a_select(),
       ctlpath.alu_operand_b_select()
     );

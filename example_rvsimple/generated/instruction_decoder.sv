@@ -28,15 +28,6 @@ module instruction_decoder
   always_comb begin inst_rd2 = inst[11:7]; end
   always_comb begin inst_rs12 = inst[19:15]; end
   always_comb begin inst_rs22 = inst[24:20]; end
-
-  always_comb begin : tock
-    //inst_opcode = b7(inst, 0);
-    //inst_funct3 = b3(inst, 12);
-    //inst_funct7 = b7(inst, 25);
-    //inst_rd = b5(inst, 7);
-    //inst_rs1 = b5(inst, 15);
-    //inst_rs2 = b5(inst, 20);
-  end
 endmodule;
 
 `endif  // RVSIMPLE_INSTRUCTION_DECODER_H

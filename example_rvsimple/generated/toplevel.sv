@@ -62,7 +62,8 @@ module toplevel
     alu_result2 = core_alu_result;
 
     core_inst = inst;
-    /*core.tock_next_pc_select(inst);*/
+    core_alu_result2 = alu_result2;
+    /*core.tock_next_pc_select(inst, alu_result2);*/
     core_inst = inst;
     core_bus_read_data = data_memory_bus_read_data;
     core_alu_result2 = alu_result2;

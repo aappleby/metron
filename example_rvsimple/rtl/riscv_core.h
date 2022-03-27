@@ -32,7 +32,6 @@ class riscv_core {
 
   logic<1>  bus_read_enable2()  const { return ctlpath.data_mem_read_enable(); }
   logic<1>  bus_write_enable2() const { return ctlpath.data_mem_write_enable(); }
-  //logic<32> bus_address2()      const { return datapath.data_mem_address2(); }
   logic<32> pc()                const { return datapath.pc2(); }
 
   //----------------------------------------
@@ -62,7 +61,7 @@ class riscv_core {
     return datapath.alu_result();
   }
 
-  void tock_next_pc_select(logic<32> inst) {
+  void tock_next_pc_select(logic<32> inst, logic<32> alu_result2) {
     ctlpath.tock_next_pc_select(
       datapath.inst_opcode2(inst),
       datapath.inst_funct32(inst),

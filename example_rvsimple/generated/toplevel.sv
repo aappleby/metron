@@ -51,7 +51,6 @@ module toplevel
     logic[31:0] write_data;
     logic write_enable;
     text_memory_bus_address = core_pc;
-    /*text_memory_bus.tock(core.pc());*/
     inst = text_memory_bus_read_data;
 
     core_inst = inst;

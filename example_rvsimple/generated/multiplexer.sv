@@ -20,11 +20,10 @@ module multiplexer
   output logic[WIDTH-1:0] out
 );
  /*public:*/
-  /*logic<WIDTH> out;*/
-
-  always_comb begin : tock
+  always_comb begin
     out = in_bus[sel];
   end
 endmodule
 
 `endif  // RVSIMPLE_MULTIPLEXER_H
+

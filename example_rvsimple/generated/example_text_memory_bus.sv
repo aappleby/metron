@@ -21,9 +21,7 @@ module example_text_memory_bus
 
   initial begin : init /*text_memory.init();*/ end
 
-  /*logic<32> read_data;*/
-
-  always_comb begin : tock
+  always_comb begin
     logic[31:0] fetched;
     text_memory_address = address[TEXT_BITS - 2+1:2];
     fetched = text_memory_q;

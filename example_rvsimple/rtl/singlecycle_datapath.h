@@ -49,20 +49,18 @@ class singlecycle_datapath {
 
   void tock_alu(logic<32> inst, logic<5> alu_function, logic<1> alu_operand_a_select,
                 logic<1> alu_operand_b_select) {
-    mux_operand_a.tock(
-      alu_operand_a_select,
-      regs.rs1_data(idec.inst_rs12(inst)),
-      program_counter.value
-    );
-    mux_operand_b.tock(
-      alu_operand_b_select,
-      regs.rs2_data(idec.inst_rs22(inst)),
-      igen.immediate(inst)
-    );
     alu_core.tock(
       alu_function,
-      mux_operand_a.out,
-      mux_operand_b.out
+      mux_operand_a.out(
+        alu_operand_a_select,
+        regs.rs1_data(idec.inst_rs12(inst)),
+        program_counter.value
+      ),
+      mux_operand_b.out(
+        alu_operand_b_select,
+        regs.rs2_data(idec.inst_rs22(inst)),
+        igen.immediate(inst)
+      )
     );
   }
 

@@ -13,19 +13,14 @@
 template <int WIDTH = 32>
 class multiplexer2 {
  public:
-  logic<WIDTH> out;
-
-  void tock(logic<1> sel, logic<WIDTH> in0, logic<WIDTH> in1) {
+  logic<WIDTH> out(logic<1> sel, logic<WIDTH> in0, logic<WIDTH> in1) {
     switch (sel) {
       case 0:
-        out = in0;
-        break;
+        return in0;
       case 1:
-        out = in1;
-        break;
+        return in1;
       default:
-        out = bx<WIDTH>(DONTCARE);
-        break;
+        return bx<WIDTH>(DONTCARE);
     }
   }
 };

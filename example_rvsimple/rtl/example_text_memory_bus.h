@@ -16,12 +16,10 @@ class example_text_memory_bus {
 
   void init() { text_memory.init(); }
 
-  logic<32> read_data;
-
-  void tock(logic<32> address) {
+  logic<32> read_data(logic<32> address) {
     logic<32> fetched = text_memory.q(bx<TEXT_BITS - 2>(address, 2));
 
-    read_data =
+    return
         (address >= TEXT_BEGIN) && (TEXT_END >= address)
         ? fetched
         : b32(DONTCARE);

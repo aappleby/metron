@@ -80,34 +80,32 @@ inst_funct72 = idec_inst_funct72; end
   end
 
   always_comb begin : tock_alu
+    alu_core_alu_function = alu_function;
+    alu_core_operand_a = mux_operand_a_out;
+    alu_core_operand_b = mux_operand_b_out;
     mux_operand_a_sel = alu_operand_a_select;
     mux_operand_a_in0 = regs_rs1_data;
     mux_operand_a_in1 = program_counter_value;
     regs_rs1_address = idec_inst_rs12;
     idec_inst = inst;
-    /*mux_operand_a.tock(
-      alu_operand_a_select,
-      regs.rs1_data(idec.inst_rs12(inst)),
-      program_counter.value
-    );*/
     mux_operand_b_sel = alu_operand_b_select;
     mux_operand_b_in0 = regs_rs2_data;
     mux_operand_b_in1 = igen_immediate;
     regs_rs2_address = idec_inst_rs22;
     idec_inst = inst;
     igen_inst = inst;
-    /*mux_operand_b.tock(
-      alu_operand_b_select,
-      regs.rs2_data(idec.inst_rs22(inst)),
-      igen.immediate(inst)
-    );*/
-    alu_core_alu_function = alu_function;
-    alu_core_operand_a = mux_operand_a_out;
-    alu_core_operand_b = mux_operand_b_out;
     /*alu_core.tock(
       alu_function,
-      mux_operand_a.out,
-      mux_operand_b.out
+      mux_operand_a.out(
+        alu_operand_a_select,
+        regs.rs1_data(idec.inst_rs12(inst)),
+        program_counter.value
+      ),
+      mux_operand_b.out(
+        alu_operand_b_select,
+        regs.rs2_data(idec.inst_rs22(inst)),
+        igen.immediate(inst)
+      )
     );*/
   end
 

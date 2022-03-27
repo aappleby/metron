@@ -15,8 +15,13 @@ class regfile {
   // Register x0 is always 0
   void init() { regs[0] = b32(0); }
 
-  logic<32> rs1_data(logic<5> rs1_address) const { return regs[rs1_address]; }
-  logic<32> rs2_data(logic<5> rs2_address) const { return regs[rs2_address]; }
+  logic<32> rs1_data(logic<5> rs1_address) const {
+    return regs[rs1_address];
+  }
+
+  logic<32> rs2_data(logic<5> rs2_address) const {
+    return regs[rs2_address];
+  }
 
   // Write port for rd
   void tick(logic<1> write_enable, logic<5> rd_address, logic<32> rd_data) {

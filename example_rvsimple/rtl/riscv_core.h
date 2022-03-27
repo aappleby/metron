@@ -19,12 +19,12 @@ class riscv_core {
   logic<32> bus_write_data2(logic<32> inst, logic<32> alu_result2) const {
     return dmem.bus_write_data(
       alu_result2,
-      datapath.data_mem_write_data2(inst)
+      datapath.rs2_data(inst)
     );
   }
 
   logic<4>  bus_byte_enable2(logic<32> inst, logic<32> alu_result2)  const {
-    logic<3> funct3 = datapath.inst_funct32(inst);
+    logic<3> funct3 = datapath.inst_funct3(inst);
     return dmem.bus_byte_enable(
       funct3,
       alu_result2
@@ -32,14 +32,18 @@ class riscv_core {
   }
 
   logic<1>  bus_read_enable2(logic<32> inst)  const {
-    logic<7> opcode = datapath.inst_opcode2(inst);
+    logic<7> opcode = datapath.inst_opcode(inst);
     return ctlpath.data_mem_read_enable(opcode);
   }
+
   logic<1>  bus_write_enable2(logic<32> inst) const {
-    logic<7> opcode = datapath.inst_opcode2(inst);
+    logic<7> opcode = datapath.inst_opcode(inst);
     return ctlpath.data_mem_write_enable(opcode);
   }
-  logic<32> pc()                const { return datapath.pc2(); }
+
+  logic<32> pc() const {
+    return datapath.pc();
+  }
 
   //----------------------------------------
 
@@ -48,10 +52,10 @@ class riscv_core {
   }
 
   logic<32> alu_result(logic<32> inst) {
-    logic<7> opcode = datapath.inst_opcode2(inst);
-    logic<3> funct3 = datapath.inst_funct32(inst);
+    logic<7> opcode = datapath.inst_opcode(inst);
+    logic<3> funct3 = datapath.inst_funct3(inst);
 
-    logic<5> alu_function = ctlpath.alu_function(opcode, funct3, datapath.inst_funct72(inst));
+    logic<5> alu_function = ctlpath.alu_function(opcode, funct3, datapath.inst_funct7(inst));
 
     return datapath.alu_result(
       inst,
@@ -62,14 +66,14 @@ class riscv_core {
   }
 
   void tocktick_regs(logic<1> reset, logic<32> inst, logic<32> bus_read_data, logic<32> alu_result2) {
-    logic<7> opcode = datapath.inst_opcode2(inst);
-    logic<3> funct3 = datapath.inst_funct32(inst);
-    logic<1> reg_we = ctlpath.regfile_write_enable2(opcode);
+    logic<7> opcode = datapath.inst_opcode(inst);
+    logic<3> funct3 = datapath.inst_funct3(inst);
+    logic<1> reg_we = ctlpath.regfile_write_enable(opcode);
 
     logic<32> mem_data = dmem.read_data(alu_result2, bus_read_data, funct3);
     logic<3> reg_select = ctlpath.reg_writeback_select(opcode);
     logic<2> pc_select = ctlpath.next_pc_select(opcode, funct3, alu_result2 == 0);
-    logic<1> pc_we = ctlpath.pc_write_enable2(opcode);
+    logic<1> pc_we = ctlpath.pc_write_enable(opcode);
 
     datapath.tocktick_regs(
       reset,

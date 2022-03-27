@@ -25,8 +25,13 @@ module regfile
   // Register x0 is always 0
   initial begin : init regs[0] = 32'd0; end
 
-  always_comb begin rs1_data = regs[rs1_address]; end
-  always_comb begin rs2_data = regs[rs2_address]; end
+  always_comb begin
+    rs1_data = regs[rs1_address];
+  end
+
+  always_comb begin
+    rs2_data = regs[rs2_address];
+  end
 
   // Write port for rd
   always_ff @(posedge clock) begin : tick

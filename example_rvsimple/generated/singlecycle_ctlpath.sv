@@ -21,8 +21,8 @@ module singlecycle_ctlpath
   input logic[6:0] inst_funct7,
   input logic alu_result_equal_zero,
   output logic[4:0] alu_function,
-  output logic pc_write_enable2,
-  output logic regfile_write_enable2,
+  output logic pc_write_enable,
+  output logic regfile_write_enable,
   output logic alu_operand_a_select,
   output logic alu_operand_b_select,
   output logic data_mem_read_enable,
@@ -41,9 +41,9 @@ module singlecycle_ctlpath
   end
 
   always_comb begin control_inst_opcode = inst_opcode;
-pc_write_enable2 = control_pc_write_enable; end
+pc_write_enable = control_pc_write_enable; end
   always_comb begin control_inst_opcode = inst_opcode;
-regfile_write_enable2 = control_regfile_write_enable; end
+regfile_write_enable = control_regfile_write_enable; end
   always_comb begin control_inst_opcode = inst_opcode;
 alu_operand_a_select = control_alu_operand_a_select; end
   always_comb begin control_inst_opcode = inst_opcode;

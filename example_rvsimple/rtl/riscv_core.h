@@ -46,19 +46,15 @@ class riscv_core {
     );
   }
 
-  void tock_alu(logic<32> inst) {
+  logic<32> alu_result(logic<32> inst) {
     logic<5> alu_function = ctlpath.alu_function(datapath.inst_funct32(inst), datapath.inst_funct72(inst));
 
-    datapath.tock_alu(
+    return datapath.alu_result(
       inst,
       alu_function,
       ctlpath.alu_operand_a_select(),
       ctlpath.alu_operand_b_select()
     );
-  }
-
-  logic<32> alu_result() const {
-    return datapath.alu_result();
   }
 
   void tock_next_pc_select(logic<32> inst, logic<32> alu_result2) {

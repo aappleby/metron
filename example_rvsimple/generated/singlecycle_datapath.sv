@@ -61,7 +61,7 @@ inst_funct72 = idec_inst_funct72; end
 
   //----------------------------------------
 
-  always_comb begin : tock_alu
+  always_comb begin
     alu_core_alu_function = alu_function;
     alu_core_operand_a = mux_operand_a_out;
     alu_core_operand_b = mux_operand_b_out;
@@ -89,9 +89,6 @@ inst_funct72 = idec_inst_funct72; end
         igen.immediate(inst)
       )
     );*/
-  end
-
-  always_comb begin
     alu_result = alu_core_result;
   end
 

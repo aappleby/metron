@@ -61,7 +61,7 @@ module riscv_core
     );*/
   end
 
-  always_comb begin : tock_alu
+  always_comb begin
     logic[4:0] alu_function;
     ctlpath_inst_funct3 = datapath_inst_funct32;
     ctlpath_inst_funct7 = datapath_inst_funct72;
@@ -73,15 +73,6 @@ module riscv_core
     datapath_alu_function = alu_function;
     datapath_alu_operand_a_select = ctlpath_alu_operand_a_select;
     datapath_alu_operand_b_select = ctlpath_alu_operand_b_select;
-    /*datapath.tock_alu(
-      inst,
-      alu_function,
-      ctlpath.alu_operand_a_select(),
-      ctlpath.alu_operand_b_select()
-    );*/
-  end
-
-  always_comb begin
     alu_result = datapath_alu_result;
   end
 

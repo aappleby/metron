@@ -56,9 +56,8 @@ module toplevel
 
     core_inst = inst;
     /*core.tock_decode(inst);*/
-    core_inst = inst;
-    /*core.tock_alu(inst);*/
 
+    core_inst = inst;
     alu_result2 = core_alu_result;
 
     core_inst = inst;

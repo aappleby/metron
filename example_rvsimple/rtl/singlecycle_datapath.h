@@ -37,8 +37,7 @@ class singlecycle_datapath {
 
   //----------------------------------------
 
-  void tock_alu(logic<32> inst, logic<5> alu_function, logic<1> alu_operand_a_select,
-                logic<1> alu_operand_b_select) {
+  logic<32> alu_result(logic<32> inst, logic<5> alu_function, logic<1> alu_operand_a_select, logic<1> alu_operand_b_select) {
     alu_core.tock(
       alu_function,
       mux_operand_a.out(
@@ -52,9 +51,6 @@ class singlecycle_datapath {
         igen.immediate(inst)
       )
     );
-  }
-
-  logic<32> alu_result() const {
     return alu_core.result;
   }
 

@@ -20,13 +20,33 @@ class singlecycle_ctlpath {
     return alu_ctrl.alu_function(control.alu_op_type2(inst_opcode), inst_funct3, inst_funct7);
   }
 
-  logic<1> pc_write_enable(logic<7> inst_opcode)       const { return control.pc_write_enable(inst_opcode); }
-  logic<1> regfile_write_enable(logic<7> inst_opcode)  const { return control.regfile_write_enable(inst_opcode); }
-  logic<1> alu_operand_a_select(logic<7> inst_opcode)  const { return control.alu_operand_a_select(inst_opcode); }
-  logic<1> alu_operand_b_select(logic<7> inst_opcode)  const { return control.alu_operand_b_select(inst_opcode); }
-  logic<1> data_mem_read_enable(logic<7> inst_opcode)  const { return control.data_mem_read_enable(inst_opcode); }
-  logic<1> data_mem_write_enable(logic<7> inst_opcode) const { return control.data_mem_write_enable(inst_opcode); }
-  logic<3> reg_writeback_select(logic<7> inst_opcode)  const { return control.reg_writeback_select(inst_opcode); }
+  logic<1> pc_write_enable(logic<7> inst_opcode) const {
+    return control.pc_write_enable(inst_opcode);
+  }
+
+  logic<1> regfile_write_enable(logic<7> inst_opcode) const {
+    return control.regfile_write_enable(inst_opcode);
+  }
+
+  logic<1> alu_operand_a_select(logic<7> inst_opcode) const {
+    return control.alu_operand_a_select(inst_opcode);
+  }
+
+  logic<1> alu_operand_b_select(logic<7> inst_opcode) const {
+    return control.alu_operand_b_select(inst_opcode);
+  }
+
+  logic<1> data_mem_read_enable(logic<7> inst_opcode) const {
+    return control.data_mem_read_enable(inst_opcode);
+  }
+
+  logic<1> data_mem_write_enable(logic<7> inst_opcode) const {
+    return control.data_mem_write_enable(inst_opcode);
+  }
+
+  logic<3> reg_writeback_select(logic<7> inst_opcode) const {
+    return control.reg_writeback_select(inst_opcode);
+  }
 
   logic<2> next_pc_select(logic<7> inst_opcode, logic<3> inst_funct3, logic<1> alu_result_equal_zero) const {
     logic<1> take_branch = transfer.take_branch(alu_result_equal_zero, inst_funct3);

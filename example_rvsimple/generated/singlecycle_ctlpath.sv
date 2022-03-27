@@ -40,20 +40,40 @@ module singlecycle_ctlpath
     alu_function = alu_ctrl_alu_function;
   end
 
-  always_comb begin control_inst_opcode = inst_opcode;
-pc_write_enable = control_pc_write_enable; end
-  always_comb begin control_inst_opcode = inst_opcode;
-regfile_write_enable = control_regfile_write_enable; end
-  always_comb begin control_inst_opcode = inst_opcode;
-alu_operand_a_select = control_alu_operand_a_select; end
-  always_comb begin control_inst_opcode = inst_opcode;
-alu_operand_b_select = control_alu_operand_b_select; end
-  always_comb begin control_inst_opcode = inst_opcode;
-data_mem_read_enable = control_data_mem_read_enable; end
-  always_comb begin control_inst_opcode = inst_opcode;
-data_mem_write_enable = control_data_mem_write_enable; end
-  always_comb begin control_inst_opcode = inst_opcode;
-reg_writeback_select = control_reg_writeback_select; end
+  always_comb begin
+    control_inst_opcode = inst_opcode;
+    pc_write_enable = control_pc_write_enable;
+  end
+
+  always_comb begin
+    control_inst_opcode = inst_opcode;
+    regfile_write_enable = control_regfile_write_enable;
+  end
+
+  always_comb begin
+    control_inst_opcode = inst_opcode;
+    alu_operand_a_select = control_alu_operand_a_select;
+  end
+
+  always_comb begin
+    control_inst_opcode = inst_opcode;
+    alu_operand_b_select = control_alu_operand_b_select;
+  end
+
+  always_comb begin
+    control_inst_opcode = inst_opcode;
+    data_mem_read_enable = control_data_mem_read_enable;
+  end
+
+  always_comb begin
+    control_inst_opcode = inst_opcode;
+    data_mem_write_enable = control_data_mem_write_enable;
+  end
+
+  always_comb begin
+    control_inst_opcode = inst_opcode;
+    reg_writeback_select = control_reg_writeback_select;
+  end
 
   always_comb begin
     logic take_branch;

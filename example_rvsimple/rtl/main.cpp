@@ -37,9 +37,9 @@ int run_test(const char* test_name) {
 
       //printf("0x%08x\n", top.bus_address);
 
-      if (top.bus_write_enable() && top.bus_address() == 0xfffffff0) {
+      if (top.bus_write_enable && top.bus_address == 0xfffffff0) {
         //printf("finish at %d\n", time);
-        result = top.bus_write_data();
+        result = top.bus_write_data;
         break;
       }
     }

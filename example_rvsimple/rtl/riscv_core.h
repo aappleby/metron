@@ -89,7 +89,7 @@ class riscv_core {
   void tocktick_regs(logic<32> inst) {
     datapath.tocktick_regs(
       inst,
-      ctlpath.regfile_write_enable2()
+      ctlpath.regfile_write_enable2(datapath.inst_opcode2(inst))
     );
   }
 

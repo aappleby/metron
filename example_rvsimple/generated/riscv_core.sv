@@ -126,9 +126,11 @@ module riscv_core
   always_comb begin : tocktick_regs
     datapath_inst = inst;
     datapath_regfile_write_enable = ctlpath_regfile_write_enable2;
+    ctlpath_inst_opcode = datapath_inst_opcode2;
+    datapath_inst = inst;
     /*datapath.tocktick_regs(
       inst,
-      ctlpath.regfile_write_enable2()
+      ctlpath.regfile_write_enable2(datapath.inst_opcode2(inst))
     );*/
   end
 

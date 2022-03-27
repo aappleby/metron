@@ -20,7 +20,7 @@ public:
     readmemh(s, mem);
   }
 
-  logic<32> q(logic<DATA_BITS - 2> address) {
+  logic<32> q(logic<DATA_BITS - 2> address) const {
     return mem[address];
   }
 

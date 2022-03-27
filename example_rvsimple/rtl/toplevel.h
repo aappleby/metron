@@ -15,7 +15,7 @@
 
 class toplevel {
  public:
-  logic<32> bus_read_data()    const { return data_memory_bus.read_data; }
+  logic<32> bus_read_data()    const { return data_memory_bus.read_data(core.bus_address, core.bus_read_enable2()); }
   logic<32> bus_address()      const { return core.bus_address2(); }
   logic<32> bus_write_data()   const { return core.bus_write_data2(text_memory_bus.read_data); }
   logic<4>  bus_byte_enable()  const { return core.bus_byte_enable2(text_memory_bus.read_data); }
@@ -46,8 +46,8 @@ class toplevel {
     core.tock_regs(text_memory_bus.read_data);
     text_memory_bus.tock(core.pc());
     core.tock_execute(text_memory_bus.read_data);
-    data_memory_bus.tock(core.bus_address, core.bus_read_enable2());
-    core.tock_writeback(text_memory_bus.read_data, data_memory_bus.read_data);
+    //data_memory_bus.tock(core.bus_address, core.bus_read_enable2());
+    core.tock_writeback(text_memory_bus.read_data, data_memory_bus.read_data(core.bus_address, core.bus_read_enable2()));
   }
 
   //----------------------------------------

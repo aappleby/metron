@@ -27,7 +27,9 @@ module toplevel
   output logic[31:0] pc
 );
  /*public:*/
-  always_comb begin bus_read_data = data_memory_bus_read_data; end
+  always_comb begin data_memory_bus_address = core_bus_address;
+data_memory_bus_read_enable = core_bus_read_enable2;
+bus_read_data = data_memory_bus_read_data; end
   always_comb begin bus_address = core_bus_address2; end
   always_comb begin core_inst = text_memory_bus_read_data;
 bus_write_data = core_bus_write_data2; end
@@ -70,12 +72,12 @@ bus_byte_enable = core_bus_byte_enable2; end
     /*text_memory_bus.tock(core.pc());*/
     core_inst = text_memory_bus_read_data;
     /*core.tock_execute(text_memory_bus.read_data);*/
-    data_memory_bus_address = core_bus_address;
-    data_memory_bus_read_enable = core_bus_read_enable2;
-    /*data_memory_bus.tock(core.bus_address, core.bus_read_enable2());*/
+    //data_memory_bus.tock(core.bus_address, core.bus_read_enable2());
     core_inst = text_memory_bus_read_data;
     core_bus_read_data = data_memory_bus_read_data;
-    /*core.tock_writeback(text_memory_bus.read_data, data_memory_bus.read_data);*/
+    data_memory_bus_address = core_bus_address;
+    data_memory_bus_read_enable = core_bus_read_enable2;
+    /*core.tock_writeback(text_memory_bus.read_data, data_memory_bus.read_data(core.bus_address, core.bus_read_enable2()));*/
   end
 
   //----------------------------------------

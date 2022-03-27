@@ -22,8 +22,6 @@ module example_data_memory_bus
   output logic[31:0] read_data
 );
  /*public:*/
-  /*logic<32> read_data;*/
-
   initial begin : init /*data_memory.init();*/ end
 
   always_comb begin : tock_data_memory
@@ -54,16 +52,13 @@ module example_data_memory_bus
   logic[31:0] data_memory_q;
 
 
-  always_comb begin : tock
+  always_comb begin
     logic[31:0] fetched;
     logic is_data_memory;
     data_memory_address = address[DATA_BITS - 2+1:2];
     fetched = data_memory_q;
     is_data_memory = address >= DATA_BEGIN && DATA_END >= address;
-    read_data =
-      read_enable && is_data_memory
-        ? fetched
-        : 32'x;
+    read_data = read_enable && is_data_memory ? fetched : 32'x;
   end
 
 endmodule;

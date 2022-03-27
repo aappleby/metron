@@ -41,15 +41,17 @@ class riscv_core {
     datapath.init();
   }
 
-  void tocktick_pc(logic<1> reset) {
+  void tocktick_pc(logic<1> reset, logic<32> inst) {
     datapath.tocktick_pc(
       reset,
+      inst,
+      ctlpath.next_pc_select(),
       ctlpath.pc_write_enable2()
     );
   }
 
-  void tock_regs(logic<32> inst) {
-    datapath.tock_regs(
+  void tocktick_regs(logic<32> inst) {
+    datapath.tocktick_regs(
       inst,
       ctlpath.regfile_write_enable2()
     );
@@ -75,7 +77,7 @@ class riscv_core {
       datapath.alu_result_equal_zero2()
     );
 
-    datapath.tock_next_pc(inst, ctlpath.next_pc_select());
+    //datapath.tock_next_pc();
   }
 
   void tock_writeback(logic<32> inst, logic<32> bus_read_data) {

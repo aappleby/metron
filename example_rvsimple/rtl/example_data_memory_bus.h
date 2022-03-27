@@ -21,7 +21,7 @@ class example_data_memory_bus {
     return read_enable && is_data_memory ? fetched : b32(DONTCARE);
   }
 
-  void tock_data_memory(logic<32> address, logic<1> write_enable, logic<4> byte_enable, logic<32> write_data) {
+  void tocktick(logic<32> address, logic<1> write_enable, logic<4> byte_enable, logic<32> write_data) {
     data_memory.tick(
         bx<DATA_BITS - 2>(address, 2),
         b1(write_enable && address >= DATA_BEGIN && DATA_END >= address),

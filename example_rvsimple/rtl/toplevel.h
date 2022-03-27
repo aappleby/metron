@@ -43,15 +43,15 @@ class toplevel {
     logic<32> write_data = core.bus_write_data2(inst);
     logic<1> write_enable = core.bus_write_enable2();
 
-    core.tocktick_pc(reset);
-    data_memory_bus.tock_data_memory(
+    data_memory_bus.tocktick(
       core.bus_address2(),
       write_enable,
       core.bus_byte_enable2(inst),
       write_data
     );
-    core.tock_regs(inst);
 
+    core.tocktick_pc(reset, inst);
+    core.tocktick_regs(inst);
     o_inst = inst;
     o_bus_read_data = data_memory_bus.read_data(core.bus_address2(), core.bus_read_enable2());
     o_bus_address = core.bus_address2();

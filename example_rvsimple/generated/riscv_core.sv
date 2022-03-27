@@ -55,17 +55,21 @@ module riscv_core
 
   always_comb begin : tocktick_pc
     datapath_reset = reset;
+    datapath_inst = inst;
+    datapath_next_pc_select = ctlpath_next_pc_select;
     datapath_pc_write_enable = ctlpath_pc_write_enable2;
     /*datapath.tocktick_pc(
       reset,
+      inst,
+      ctlpath.next_pc_select(),
       ctlpath.pc_write_enable2()
     );*/
   end
 
-  always_comb begin : tock_regs
+  always_comb begin : tocktick_regs
     datapath_inst = inst;
     datapath_regfile_write_enable = ctlpath_regfile_write_enable2;
-    /*datapath.tock_regs(
+    /*datapath.tocktick_regs(
       inst,
       ctlpath.regfile_write_enable2()
     );*/
@@ -107,9 +111,7 @@ module riscv_core
       datapath.alu_result_equal_zero2()
     );*/
 
-    datapath_inst = inst;
-    datapath_next_pc_select = ctlpath_next_pc_select;
-    /*datapath.tock_next_pc(inst, ctlpath.next_pc_select());*/
+    //datapath.tock_next_pc();
   end
 
   always_comb begin : tock_writeback
@@ -139,12 +141,12 @@ module riscv_core
     .clock(clock),
     .inst(datapath_inst), 
     .reset(datapath_reset), 
+    .next_pc_select(datapath_next_pc_select), 
     .pc_write_enable(datapath_pc_write_enable), 
     .regfile_write_enable(datapath_regfile_write_enable), 
     .alu_function(datapath_alu_function), 
     .alu_operand_a_select(datapath_alu_operand_a_select), 
     .alu_operand_b_select(datapath_alu_operand_b_select), 
-    .next_pc_select(datapath_next_pc_select), 
     .data_mem_read_data(datapath_data_mem_read_data), 
     .reg_writeback_select(datapath_reg_writeback_select), 
     // Outputs
@@ -158,12 +160,12 @@ module riscv_core
   );
   logic[31:0] datapath_inst;
   logic datapath_reset;
+  logic[1:0] datapath_next_pc_select;
   logic datapath_pc_write_enable;
   logic datapath_regfile_write_enable;
   logic[4:0] datapath_alu_function;
   logic datapath_alu_operand_a_select;
   logic datapath_alu_operand_b_select;
-  logic[1:0] datapath_next_pc_select;
   logic[31:0] datapath_data_mem_read_data;
   logic[2:0] datapath_reg_writeback_select;
   logic[31:0] datapath_pc2;

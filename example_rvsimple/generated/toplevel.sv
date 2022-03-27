@@ -65,22 +65,23 @@ module toplevel
     write_data = core_bus_write_data2;
     write_enable = core_bus_write_enable2;
 
-    core_reset = reset;
-    /*core.tocktick_pc(reset);*/
     data_memory_bus_address = core_bus_address2;
     data_memory_bus_write_enable = write_enable;
     data_memory_bus_byte_enable = core_bus_byte_enable2;
     data_memory_bus_write_data = write_data;
     core_inst = inst;
-    /*data_memory_bus.tock_data_memory(
+    /*data_memory_bus.tocktick(
       core.bus_address2(),
       write_enable,
       core.bus_byte_enable2(inst),
       write_data
     );*/
-    core_inst = inst;
-    /*core.tock_regs(inst);*/
 
+    core_reset = reset;
+    core_inst = inst;
+    /*core.tocktick_pc(reset, inst);*/
+    core_inst = inst;
+    /*core.tocktick_regs(inst);*/
     o_inst = inst;
     data_memory_bus_address = core_bus_address2;
     data_memory_bus_read_enable = core_bus_read_enable2;

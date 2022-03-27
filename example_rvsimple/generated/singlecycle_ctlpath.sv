@@ -54,16 +54,13 @@ data_mem_read_enable = control_data_mem_read_enable; end
 data_mem_write_enable = control_data_mem_write_enable; end
   always_comb begin control_inst_opcode = inst_opcode;
 reg_writeback_select = control_reg_writeback_select; end
-  always_comb begin next_pc_select = control_next_pc_select; end
 
-  //----------------------------------------
-
-  always_comb begin : tock_next_pc_select
+  always_comb begin
     control_inst_opcode = inst_opcode;
     control_take_branch = transfer_take_branch;
     transfer_result_equal_zero = alu_result_equal_zero;
     transfer_inst_funct3 = inst_funct3;
-    /*control.tock_next_pc_select(inst_opcode, transfer.take_branch(alu_result_equal_zero, inst_funct3));*/
+    next_pc_select = control_next_pc_select;
   end
 
   //----------------------------------------

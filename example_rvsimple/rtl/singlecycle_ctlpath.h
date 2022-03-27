@@ -27,13 +27,9 @@ class singlecycle_ctlpath {
   logic<1> data_mem_read_enable(logic<7> inst_opcode)  const { return control.data_mem_read_enable(inst_opcode); }
   logic<1> data_mem_write_enable(logic<7> inst_opcode) const { return control.data_mem_write_enable(inst_opcode); }
   logic<3> reg_writeback_select(logic<7> inst_opcode)  const { return control.reg_writeback_select(inst_opcode); }
-  logic<2> next_pc_select()        const { return control.next_pc_select; }
 
-  //----------------------------------------
-
-  void tock_next_pc_select(logic<7> inst_opcode, logic<3> inst_funct3,
-                           logic<1> alu_result_equal_zero) {
-    control.tock_next_pc_select(inst_opcode, transfer.take_branch(alu_result_equal_zero, inst_funct3));
+  logic<2> next_pc_select(logic<7> inst_opcode, logic<3> inst_funct3, logic<1> alu_result_equal_zero) const {
+    return control.next_pc_select(inst_opcode, transfer.take_branch(alu_result_equal_zero, inst_funct3));
   }
 
   //----------------------------------------

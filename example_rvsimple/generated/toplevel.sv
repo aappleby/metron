@@ -57,9 +57,7 @@ module toplevel
     core_inst = inst;
     alu_result2 = core_alu_result;
 
-    core_inst = inst;
-    core_alu_result2 = alu_result2;
-    /*core.tock_next_pc_select(inst, alu_result2);*/
+    //core.tock_next_pc_select(inst, alu_result2);
     core_inst = inst;
     core_bus_read_data = data_memory_bus_read_data;
     core_alu_result2 = alu_result2;
@@ -89,7 +87,8 @@ module toplevel
 
     core_reset = reset;
     core_inst = inst;
-    /*core.tocktick_pc(reset, inst);*/
+    core_alu_result2 = alu_result2;
+    /*core.tocktick_pc(reset, inst, alu_result2);*/
     core_inst = inst;
     /*core.tocktick_regs(inst);*/
     o_inst = inst;

@@ -51,6 +51,7 @@ class riscv_core {
     );
   }
 
+  /*
   void tock_next_pc_select(logic<32> inst, logic<32> alu_result2) {
     ctlpath.tock_next_pc_select(
       datapath.inst_opcode2(inst),
@@ -58,6 +59,7 @@ class riscv_core {
       alu_result2 == 0
     );
   }
+  */
 
   void tock_writeback(logic<32> inst, logic<32> bus_read_data, logic<32> alu_result2) {
     datapath.tock_writeback(
@@ -71,11 +73,11 @@ class riscv_core {
     );
   }
 
-  void tocktick_pc(logic<1> reset, logic<32> inst) {
+  void tocktick_pc(logic<1> reset, logic<32> inst, logic<32> alu_result2) {
     datapath.tocktick_pc(
       reset,
       inst,
-      ctlpath.next_pc_select(),
+      ctlpath.next_pc_select(datapath.inst_opcode2(inst), datapath.inst_funct32(inst), alu_result2 == 0),
       ctlpath.pc_write_enable2(datapath.inst_opcode2(inst))
     );
   }

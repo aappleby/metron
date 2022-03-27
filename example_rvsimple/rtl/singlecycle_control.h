@@ -12,17 +12,14 @@
 
 class singlecycle_control {
  public:
-  //logic<1> data_mem_write_enable;
-  //logic<3> reg_writeback_select;
-  logic<2> next_pc_select;
 
-  void tock_next_pc_select(logic<7> inst_opcode, logic<1> take_branch) {
+  logic<2> next_pc_select(logic<7> inst_opcode, logic<1> take_branch) const {
     using namespace rv_constants;
     switch (inst_opcode) {
-      case OPCODE_BRANCH: next_pc_select = take_branch ? CTL_PC_PC_IMM : CTL_PC_PC4; break;
-      case OPCODE_JALR:   next_pc_select = CTL_PC_RS1_IMM; break;
-      case OPCODE_JAL:    next_pc_select = CTL_PC_PC_IMM; break;
-      default:            next_pc_select = CTL_PC_PC4; break;
+      case OPCODE_BRANCH: return take_branch ? CTL_PC_PC_IMM : CTL_PC_PC4; break;
+      case OPCODE_JALR:   return CTL_PC_RS1_IMM; break;
+      case OPCODE_JAL:    return CTL_PC_PC_IMM; break;
+      default:            return CTL_PC_PC4; break;
     }
   }
 

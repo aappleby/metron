@@ -26,11 +26,8 @@ module singlecycle_control
   output logic[2:0] reg_writeback_select
 );
  /*public:*/
-  //logic<1> data_mem_write_enable;
-  //logic<3> reg_writeback_select;
-  /*logic<2> next_pc_select;*/
 
-  always_comb begin : tock_next_pc_select
+  always_comb begin
     import rv_constants::*;
     case (inst_opcode) 
       /*case*/ OPCODE_BRANCH: next_pc_select = take_branch ? CTL_PC_PC_IMM : CTL_PC_PC4; /*break;*/

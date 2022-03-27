@@ -78,18 +78,15 @@ bus_write_enable2 = ctlpath_data_mem_write_enable; end
     alu_result = datapath_alu_result;
   end
 
-  always_comb begin : tock_next_pc_select
-    ctlpath_inst_opcode = datapath_inst_opcode2;
-    ctlpath_inst_funct3 = datapath_inst_funct32;
-    ctlpath_alu_result_equal_zero = alu_result2 == 0;
-    datapath_inst = inst;
-    datapath_inst = inst;
-    /*ctlpath.tock_next_pc_select(
+  /*
+  void tock_next_pc_select(logic<32> inst, logic<32> alu_result2) {
+    ctlpath.tock_next_pc_select(
       datapath.inst_opcode2(inst),
       datapath.inst_funct32(inst),
       alu_result2 == 0
-    );*/
-  end
+    );
+  }
+  */
 
   always_comb begin : tock_writeback
     datapath_data_mem_read_data = dmem_read_data;
@@ -118,11 +115,16 @@ bus_write_enable2 = ctlpath_data_mem_write_enable; end
     datapath_next_pc_select = ctlpath_next_pc_select;
     datapath_pc_write_enable = ctlpath_pc_write_enable2;
     ctlpath_inst_opcode = datapath_inst_opcode2;
+    ctlpath_inst_funct3 = datapath_inst_funct32;
+    ctlpath_alu_result_equal_zero = alu_result2 == 0;
+    datapath_inst = inst;
+    datapath_inst = inst;
+    ctlpath_inst_opcode = datapath_inst_opcode2;
     datapath_inst = inst;
     /*datapath.tocktick_pc(
       reset,
       inst,
-      ctlpath.next_pc_select(),
+      ctlpath.next_pc_select(datapath.inst_opcode2(inst), datapath.inst_funct32(inst), alu_result2 == 0),
       ctlpath.pc_write_enable2(datapath.inst_opcode2(inst))
     );*/
   end

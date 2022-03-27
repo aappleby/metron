@@ -13,35 +13,24 @@
 class control_transfer {
  public:
 
-  // FIXME we should support functions w/ inputs+outputs
-
-  logic<1> take_branch;
-
-  void tock(logic<1> result_equal_zero, logic<3> inst_funct3) {
+  logic<1> take_branch(logic<1> result_equal_zero, logic<3> inst_funct3) {
     using namespace rv_constants;
 
     switch (inst_funct3) {
       case FUNCT3_BRANCH_EQ:
-        take_branch = !result_equal_zero;
-        break;
+        return !result_equal_zero;
       case FUNCT3_BRANCH_NE:
-        take_branch = result_equal_zero;
-        break;
+        return result_equal_zero;
       case FUNCT3_BRANCH_LT:
-        take_branch = !result_equal_zero;
-        break;
+        return !result_equal_zero;
       case FUNCT3_BRANCH_GE:
-        take_branch = result_equal_zero;
-        break;
+        return result_equal_zero;
       case FUNCT3_BRANCH_LTU:
-        take_branch = !result_equal_zero;
-        break;
+        return !result_equal_zero;
       case FUNCT3_BRANCH_GEU:
-        take_branch = result_equal_zero;
-        break;
+        return result_equal_zero;
       default:
-        take_branch = b1(DONTCARE);
-        break;
+        return b1(DONTCARE);
     }
   }
 };

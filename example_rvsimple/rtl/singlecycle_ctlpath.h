@@ -35,8 +35,7 @@ class singlecycle_ctlpath {
 
   void tock_next_pc_select(logic<7> inst_opcode, logic<3> inst_funct3,
                            logic<1> alu_result_equal_zero) {
-    transfer.tock(alu_result_equal_zero, inst_funct3);
-    control.tock_next_pc_select(inst_opcode, transfer.take_branch);
+    control.tock_next_pc_select(inst_opcode, transfer.take_branch(alu_result_equal_zero, inst_funct3));
   }
 
   void tock_alu_control(logic<3> inst_funct3, logic<7> inst_funct7) {

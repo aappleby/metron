@@ -19,35 +19,24 @@ module control_transfer
 );
  /*public:*/
 
-  // FIXME we should support functions w/ inputs+outputs
-
-  /*logic<1> take_branch;*/
-
-  always_comb begin : tock
+  always_comb begin
     import rv_constants::*;
 
     case (inst_funct3) 
       /*case*/ FUNCT3_BRANCH_EQ:
         take_branch = !result_equal_zero;
-        /*break;*/
       /*case*/ FUNCT3_BRANCH_NE:
         take_branch = result_equal_zero;
-        /*break;*/
       /*case*/ FUNCT3_BRANCH_LT:
         take_branch = !result_equal_zero;
-        /*break;*/
       /*case*/ FUNCT3_BRANCH_GE:
         take_branch = result_equal_zero;
-        /*break;*/
       /*case*/ FUNCT3_BRANCH_LTU:
         take_branch = !result_equal_zero;
-        /*break;*/
       /*case*/ FUNCT3_BRANCH_GEU:
         take_branch = result_equal_zero;
-        /*break;*/
       default:
         take_branch = 1'x;
-        /*break;*/
     endcase
   end
 endmodule;

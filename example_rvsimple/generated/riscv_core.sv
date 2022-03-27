@@ -53,10 +53,10 @@ module riscv_core
     /*datapath.init();*/
   end
 
-  always_comb begin : tock_pc
+  always_comb begin : tocktick_pc
     datapath_reset = reset;
     datapath_pc_write_enable = ctlpath_pc_write_enable2;
-    /*datapath.tock_program_counter(
+    /*datapath.tocktick_pc(
       reset,
       ctlpath.pc_write_enable2()
     );*/

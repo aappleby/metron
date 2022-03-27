@@ -41,8 +41,8 @@ class riscv_core {
     datapath.init();
   }
 
-  void tock_pc(logic<1> reset) {
-    datapath.tock_program_counter(
+  void tocktick_pc(logic<1> reset) {
+    datapath.tocktick_pc(
       reset,
       ctlpath.pc_write_enable2()
     );

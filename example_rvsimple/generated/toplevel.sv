@@ -66,7 +66,7 @@ module toplevel
     write_enable = core_bus_write_enable2;
 
     core_reset = reset;
-    /*core.tock_pc(reset);*/
+    /*core.tocktick_pc(reset);*/
     data_memory_bus_address = core_bus_address2;
     data_memory_bus_write_enable = write_enable;
     data_memory_bus_byte_enable = core_bus_byte_enable2;

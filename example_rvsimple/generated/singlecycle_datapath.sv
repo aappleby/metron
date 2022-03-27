@@ -64,7 +64,7 @@ inst_funct72 = idec_inst_funct72; end
 
   //----------------------------------------
 
-  always_comb begin : tock_program_counter
+  always_comb begin : tocktick_pc
     program_counter_reset = reset;
     program_counter_write_enable = pc_write_enable;
     program_counter_next = mux_next_pc_select_out;
@@ -110,13 +110,10 @@ inst_funct72 = idec_inst_funct72; end
   end
 
   always_comb begin : tock_next_pc
-    logic[31:0] blep;
-    blep = {alu_core.result[31:1], 1'b0};
-
     mux_next_pc_select_sel = next_pc_select;
     mux_next_pc_select_in0 = adder_pc_plus_4_result;
     mux_next_pc_select_in1 = adder_pc_plus_immediate_result;
-    mux_next_pc_select_in2 = blep;
+    mux_next_pc_select_in2 = {alu_core.result[31:1], 1'b0};
     mux_next_pc_select_in3 = 32'b0;
     adder_pc_plus_4_operand_a = 32'h00000004;
     adder_pc_plus_4_operand_b = program_counter_value;
@@ -127,7 +124,7 @@ inst_funct72 = idec_inst_funct72; end
       next_pc_select,
       adder_pc_plus_4.result(b32(0x00000004), program_counter.value),
       adder_pc_plus_immediate.result(program_counter.value, igen.immediate(inst)),
-      blep,
+      cat(b31(alu_core.result, 1), b1(0b0)),
       b32(0b0)
     );*/
   end

@@ -79,10 +79,15 @@ class riscv_core {
   }
 
   void tock_writeback(logic<32> inst, logic<32> bus_read_data) {
-    dmem.tock_position_fix(datapath.data_mem_address, bus_read_data);
-    dmem.tock_sign_fix(datapath.inst_funct32(inst));
-    dmem.tock_read_data();
-    datapath.tock_writeback(dmem.read_data, ctlpath.reg_writeback_select(), inst);
+    datapath.tock_writeback(
+      dmem.read_data(
+        datapath.data_mem_address,
+        bus_read_data,
+        datapath.inst_funct32(inst)
+      ),
+      ctlpath.reg_writeback_select(),
+      inst
+    );
   }
 
   //----------------------------------------

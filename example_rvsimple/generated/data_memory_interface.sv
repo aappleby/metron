@@ -17,19 +17,11 @@ module data_memory_interface
   input logic[31:0] write_data,
   input logic[2:0] data_format,
   input logic[31:0] bus_read_data,
-  output logic[31:0] read_data,
   output logic[31:0] bus_write_data,
-  output logic[3:0] bus_byte_enable
+  output logic[3:0] bus_byte_enable,
+  output logic[31:0] read_data
 );
  /*public:*/
-  /*logic<32> read_data;*/
-
- /*private:*/
-  logic[31:0] position_fix;
-  logic[31:0] sign_fix;
-
- /*public:*/
-
 
   always_comb begin
     bus_write_data = write_data << (8 * 2'(address));
@@ -50,32 +42,21 @@ module data_memory_interface
   end
 
   // correct for unaligned accesses
-  always_comb begin : tock_position_fix
+  always_comb begin
+    logic[31:0] position_fix;
     position_fix = 32'(bus_read_data >> (8 * 2'(address)));
-  end
-
-  // sign-extend if necessary
-  always_comb begin : tock_sign_fix
 
     case (2'(data_format)) 
       /*case*/ 2'b00:
-        sign_fix = {{24 {1'(~data_format[2] & position_fix[7])}},
-                       8'(position_fix)};
-        /*break;*/
+        read_data = {{24 {1'(~data_format[2] & position_fix[7])}}, 8'(position_fix)};
       /*case*/ 2'b01:
-        sign_fix = {{16 {1'(~data_format[2] & position_fix[15])}},
-                       16'(position_fix)};
-        /*break;*/
+        read_data = {{16 {1'(~data_format[2] & position_fix[15])}}, 16'(position_fix)};
       /*case*/ 2'b10:
-        sign_fix = 32'(position_fix);
-        /*break;*/
+        read_data = 32'(position_fix);
       default:
-        sign_fix = 32'x;
-        /*break;*/
+        read_data = 32'x;
     endcase
   end
-
-  always_comb begin : tock_read_data read_data = sign_fix; end
 endmodule;
 
 `endif  // RVSIMPLE_DATA_MEMORY_INTERFACE_H

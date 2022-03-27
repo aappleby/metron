@@ -120,17 +120,25 @@ module riscv_core
   end
 
   always_comb begin : tock_writeback
-    dmem_address = datapath_data_mem_address;
-    dmem_bus_read_data = bus_read_data;
-    /*dmem.tock_position_fix(datapath.data_mem_address, bus_read_data);*/
-    dmem_data_format = datapath_inst_funct32;
-    datapath_inst = inst;
-    /*dmem.tock_sign_fix(datapath.inst_funct32(inst));*/
-    /*dmem.tock_read_data();*/
+    //dmem.tock_position_fix(datapath.data_mem_address, bus_read_data);
+    //dmem.tock_sign_fix(datapath.inst_funct32(inst));
+    //dmem.tock_read_data();
     datapath_data_mem_read_data = dmem_read_data;
     datapath_reg_writeback_select = ctlpath_reg_writeback_select;
     datapath_inst = inst;
-    /*datapath.tock_writeback(dmem.read_data, ctlpath.reg_writeback_select(), inst);*/
+    dmem_address = datapath_data_mem_address;
+    dmem_bus_read_data = bus_read_data;
+    dmem_data_format = datapath_inst_funct32;
+    datapath_inst = inst;
+    /*datapath.tock_writeback(
+      dmem.read_data(
+        datapath.data_mem_address,
+        bus_read_data,
+        datapath.inst_funct32(inst)
+      ),
+      ctlpath.reg_writeback_select(),
+      inst
+    );*/
   end
 
   //----------------------------------------
@@ -218,17 +226,17 @@ module riscv_core
     .data_format(dmem_data_format), 
     .bus_read_data(dmem_bus_read_data), 
     // Outputs
-    .read_data(dmem_read_data), 
     .bus_write_data(dmem_bus_write_data), 
-    .bus_byte_enable(dmem_bus_byte_enable)
+    .bus_byte_enable(dmem_bus_byte_enable), 
+    .read_data(dmem_read_data)
   );
   logic[31:0] dmem_address;
   logic[31:0] dmem_write_data;
   logic[2:0] dmem_data_format;
   logic[31:0] dmem_bus_read_data;
-  logic[31:0] dmem_read_data;
   logic[31:0] dmem_bus_write_data;
   logic[3:0] dmem_bus_byte_enable;
+  logic[31:0] dmem_read_data;
 
 endmodule;
 

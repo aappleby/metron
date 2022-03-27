@@ -36,7 +36,12 @@ module riscv_core
     datapath_inst = inst;
     bus_write_data2 = dmem_bus_write_data;
   end
-  always_comb begin bus_byte_enable2 = dmem_bus_byte_enable; end
+  always_comb begin
+    dmem_data_format = datapath_inst_funct32;
+    dmem_address = datapath_data_mem_address;
+    datapath_inst = inst;
+    bus_byte_enable2 = dmem_bus_byte_enable;
+  end
   always_comb begin bus_read_enable2 = ctlpath_data_mem_read_enable; end
   always_comb begin bus_write_enable2 = ctlpath_data_mem_write_enable; end
   always_comb begin bus_address2 = datapath_data_mem_address; end
@@ -110,13 +115,6 @@ module riscv_core
     datapath_inst = inst;
     datapath_next_pc_select = ctlpath_next_pc_select;
     /*datapath.tock_next_pc(inst, ctlpath.next_pc_select());*/
-
-    dmem_data_format = datapath_inst_funct32;
-    dmem_address = datapath_data_mem_address;
-    datapath_inst = inst;
-    /*dmem.tock_bus(
-      datapath.inst_funct32(inst),
-      datapath.data_mem_address);*/
 
     bus_address = datapath_data_mem_address;
   end
@@ -221,16 +219,16 @@ module riscv_core
     .bus_read_data(dmem_bus_read_data), 
     // Outputs
     .read_data(dmem_read_data), 
-    .bus_byte_enable(dmem_bus_byte_enable), 
-    .bus_write_data(dmem_bus_write_data)
+    .bus_write_data(dmem_bus_write_data), 
+    .bus_byte_enable(dmem_bus_byte_enable)
   );
   logic[31:0] dmem_address;
   logic[31:0] dmem_write_data;
   logic[2:0] dmem_data_format;
   logic[31:0] dmem_bus_read_data;
   logic[31:0] dmem_read_data;
-  logic[3:0] dmem_bus_byte_enable;
   logic[31:0] dmem_bus_write_data;
+  logic[3:0] dmem_bus_byte_enable;
 
 endmodule;
 

@@ -18,12 +18,11 @@ module data_memory_interface
   input logic[2:0] data_format,
   input logic[31:0] bus_read_data,
   output logic[31:0] read_data,
-  output logic[3:0] bus_byte_enable,
-  output logic[31:0] bus_write_data
+  output logic[31:0] bus_write_data,
+  output logic[3:0] bus_byte_enable
 );
  /*public:*/
   /*logic<32> read_data;*/
-  /*logic<4> bus_byte_enable;*/
 
  /*private:*/
   logic[31:0] position_fix;
@@ -36,22 +35,17 @@ module data_memory_interface
     bus_write_data = write_data << (8 * 2'(address));
   end
 
-  always_comb begin : tock_bus
-
+  always_comb begin
     // calculate byte enable
     case (2'(data_format)) 
       /*case*/ 2'b00:
         bus_byte_enable = 4'b0001 << 2'(address);
-        /*break;*/
       /*case*/ 2'b01:
         bus_byte_enable = 4'b0011 << 2'(address);
-        /*break;*/
       /*case*/ 2'b10:
         bus_byte_enable = 4'b1111 << 2'(address);
-        /*break;*/
       default:
         bus_byte_enable = 4'b0000;
-        /*break;*/
     endcase
   end
 

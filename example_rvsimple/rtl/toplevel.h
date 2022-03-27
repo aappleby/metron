@@ -18,7 +18,7 @@ class toplevel {
   logic<32> bus_read_data()    const { return data_memory_bus.read_data; }
   logic<32> bus_address()      const { return core.bus_address2(); }
   logic<32> bus_write_data()   const { return core.bus_write_data2(text_memory_bus.read_data); }
-  logic<4>  bus_byte_enable()  const { return core.bus_byte_enable2(); }
+  logic<4>  bus_byte_enable()  const { return core.bus_byte_enable2(text_memory_bus.read_data); }
   logic<1>  bus_read_enable()  const { return core.bus_read_enable2(); }
   logic<1>  bus_write_enable() const { return core.bus_write_enable2(); }
 
@@ -39,7 +39,7 @@ class toplevel {
     data_memory_bus.tock_data_memory(
       core.bus_address,
       core.bus_write_enable2(),
-      core.bus_byte_enable2(),
+      core.bus_byte_enable2(text_memory_bus.read_data),
       core.bus_write_data2(text_memory_bus.read_data)
     );
     core.tock_pc(reset);

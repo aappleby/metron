@@ -31,7 +31,8 @@ module toplevel
   always_comb begin bus_address = core_bus_address2; end
   always_comb begin core_inst = text_memory_bus_read_data;
 bus_write_data = core_bus_write_data2; end
-  always_comb begin bus_byte_enable = core_bus_byte_enable2; end
+  always_comb begin core_inst = text_memory_bus_read_data;
+bus_byte_enable = core_bus_byte_enable2; end
   always_comb begin bus_read_enable = core_bus_read_enable2; end
   always_comb begin bus_write_enable = core_bus_write_enable2; end
 
@@ -54,10 +55,11 @@ bus_write_data = core_bus_write_data2; end
     data_memory_bus_byte_enable = core_bus_byte_enable2;
     data_memory_bus_write_data = core_bus_write_data2;
     core_inst = text_memory_bus_read_data;
+    core_inst = text_memory_bus_read_data;
     /*data_memory_bus.tock_data_memory(
       core.bus_address,
       core.bus_write_enable2(),
-      core.bus_byte_enable2(),
+      core.bus_byte_enable2(text_memory_bus.read_data),
       core.bus_write_data2(text_memory_bus.read_data)
     );*/
     core_reset = reset;

@@ -13,7 +13,6 @@
 class data_memory_interface {
  public:
   logic<32> read_data;
-  logic<4> bus_byte_enable;
 
  private:
   logic<32> position_fix;
@@ -26,23 +25,17 @@ class data_memory_interface {
     return write_data << (8 * b2(address));
   }
 
-  void tock_bus(logic<3> data_format,
-                logic<32> address) {
-
+  logic<4> bus_byte_enable(logic<3> data_format, logic<32> address) const {
     // calculate byte enable
     switch (b2(data_format)) {
       case 0b00:
-        bus_byte_enable = b4(0b0001) << b2(address);
-        break;
+        return b4(0b0001) << b2(address);
       case 0b01:
-        bus_byte_enable = b4(0b0011) << b2(address);
-        break;
+        return b4(0b0011) << b2(address);
       case 0b10:
-        bus_byte_enable = b4(0b1111) << b2(address);
-        break;
+        return b4(0b1111) << b2(address);
       default:
-        bus_byte_enable = b4(0b0000);
-        break;
+        return b4(0b0000);
     }
   }
 

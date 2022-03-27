@@ -73,6 +73,8 @@ module riscv_core
     datapath_alu_function = alu_function;
     datapath_alu_operand_a_select = ctlpath_alu_operand_a_select;
     datapath_alu_operand_b_select = ctlpath_alu_operand_b_select;
+    ctlpath_inst_opcode = datapath_inst_opcode2;
+    datapath_inst = inst;
     alu_result = datapath_alu_result;
   end
 

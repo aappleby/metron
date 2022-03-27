@@ -52,7 +52,7 @@ class riscv_core {
     return datapath.alu_result(
       inst,
       alu_function,
-      ctlpath.alu_operand_a_select(),
+      ctlpath.alu_operand_a_select(datapath.inst_opcode2(inst)),
       ctlpath.alu_operand_b_select()
     );
   }

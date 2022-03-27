@@ -15,7 +15,6 @@ module singlecycle_control
   input logic clock,
   input logic[6:0] inst_opcode,
   input logic take_branch,
-  output logic alu_operand_a_select,
   output logic alu_operand_b_select,
   output logic[1:0] alu_op_type,
   output logic data_mem_read_enable,
@@ -23,12 +22,13 @@ module singlecycle_control
   output logic[2:0] reg_writeback_select,
   output logic[1:0] next_pc_select,
   output logic pc_write_enable,
-  output logic regfile_write_enable
+  output logic regfile_write_enable,
+  output logic alu_operand_a_select
 );
  /*public:*/
   //logic<1> pc_write_enable;
   //logic<1> regfile_write_enable;
-  /*logic<1> alu_operand_a_select;*/
+  //logic<1> alu_operand_a_select;
   /*logic<1> alu_operand_b_select;*/
   /*logic<2> alu_op_type;*/
   /*logic<1> data_mem_read_enable;*/
@@ -67,11 +67,28 @@ module singlecycle_control
     endcase
   end
 
+  always_comb begin
+    import rv_constants::*;
+
+    case (inst_opcode) 
+      /*case*/ OPCODE_LOAD:     alu_operand_a_select = CTL_ALU_A_RS1;
+      /*case*/ OPCODE_MISC_MEM: alu_operand_a_select = 1'x;
+      /*case*/ OPCODE_OP_IMM:   alu_operand_a_select = CTL_ALU_A_RS1;
+      /*case*/ OPCODE_AUIPC:    alu_operand_a_select = CTL_ALU_A_PC;
+      /*case*/ OPCODE_STORE:    alu_operand_a_select = CTL_ALU_A_RS1;
+      /*case*/ OPCODE_OP:       alu_operand_a_select = CTL_ALU_A_RS1;
+      /*case*/ OPCODE_LUI:      alu_operand_a_select = CTL_ALU_A_RS1;
+      /*case*/ OPCODE_BRANCH:   alu_operand_a_select = CTL_ALU_A_RS1;
+      /*case*/ OPCODE_JALR:     alu_operand_a_select = CTL_ALU_A_RS1;
+      /*case*/ OPCODE_JAL:      alu_operand_a_select = CTL_ALU_A_PC;
+      default:              alu_operand_a_select = 1'x;
+    endcase
+  end
+
 
   always_comb begin : tock_decode
     import rv_constants::*;
 
-    alu_operand_a_select    = 1'x;
     alu_operand_b_select    = 1'x;
     alu_op_type             = 2'x;
     data_mem_read_enable    = 1'b0;
@@ -81,7 +98,6 @@ module singlecycle_control
     case (inst_opcode) 
       /*case*/ OPCODE_LOAD:
       begin
-        alu_operand_a_select = CTL_ALU_A_RS1;
         alu_operand_b_select = CTL_ALU_B_IMM;
         alu_op_type = CTL_ALU_ADD;
         data_mem_read_enable = 1'd1;
@@ -97,7 +113,6 @@ module singlecycle_control
 
       /*case*/ OPCODE_OP_IMM:
       begin
-        alu_operand_a_select = CTL_ALU_A_RS1;
         alu_operand_b_select = CTL_ALU_B_IMM;
         alu_op_type = CTL_ALU_OP_IMM;
         reg_writeback_select = CTL_WRITEBACK_ALU;
@@ -106,7 +121,6 @@ module singlecycle_control
 
       /*case*/ OPCODE_AUIPC:
       begin
-        alu_operand_a_select = CTL_ALU_A_PC;
         alu_operand_b_select = CTL_ALU_B_IMM;
         alu_op_type = CTL_ALU_ADD;
         reg_writeback_select = CTL_WRITEBACK_ALU;
@@ -115,7 +129,6 @@ module singlecycle_control
 
       /*case*/ OPCODE_STORE:
       begin
-        alu_operand_a_select = CTL_ALU_A_RS1;
         alu_operand_b_select = CTL_ALU_B_IMM;
         alu_op_type = CTL_ALU_ADD;
         data_mem_write_enable = 1'd1;
@@ -124,7 +137,6 @@ module singlecycle_control
 
       /*case*/ OPCODE_OP:
       begin
-        alu_operand_a_select = CTL_ALU_A_RS1;
         alu_operand_b_select = CTL_ALU_B_RS2;
         reg_writeback_select = CTL_WRITEBACK_ALU;
         alu_op_type = CTL_ALU_OP;
@@ -133,7 +145,6 @@ module singlecycle_control
 
       /*case*/ OPCODE_LUI:
       begin
-        alu_operand_a_select = CTL_ALU_A_RS1;
         alu_operand_b_select = CTL_ALU_B_RS2;
         reg_writeback_select = CTL_WRITEBACK_IMM;
         /*break;*/
@@ -141,7 +152,6 @@ module singlecycle_control
 
       /*case*/ OPCODE_BRANCH:
       begin
-        alu_operand_a_select = CTL_ALU_A_RS1;
         alu_operand_b_select = CTL_ALU_B_RS2;
         alu_op_type = CTL_ALU_BRANCH;
         /*break;*/
@@ -149,7 +159,6 @@ module singlecycle_control
 
       /*case*/ OPCODE_JALR:
       begin
-        alu_operand_a_select = CTL_ALU_A_RS1;
         alu_operand_b_select = CTL_ALU_B_IMM;
         alu_op_type = CTL_ALU_ADD;
         reg_writeback_select = CTL_WRITEBACK_PC4;
@@ -158,7 +167,6 @@ module singlecycle_control
 
       /*case*/ OPCODE_JAL:
       begin
-        alu_operand_a_select = CTL_ALU_A_PC;
         alu_operand_b_select = CTL_ALU_B_IMM;
         alu_op_type = CTL_ALU_ADD;
         reg_writeback_select = CTL_WRITEBACK_PC4;

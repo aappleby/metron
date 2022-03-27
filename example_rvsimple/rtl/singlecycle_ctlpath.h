@@ -22,7 +22,7 @@ class singlecycle_ctlpath {
 
   logic<1> pc_write_enable2(logic<7> inst_opcode)      const { return control.pc_write_enable(inst_opcode); }
   logic<1> regfile_write_enable2(logic<7> inst_opcode) const { return control.regfile_write_enable(inst_opcode); }
-  logic<1> alu_operand_a_select()  const { return control.alu_operand_a_select; }
+  logic<1> alu_operand_a_select(logic<7> inst_opcode)  const { return control.alu_operand_a_select(inst_opcode); }
   logic<1> alu_operand_b_select()  const { return control.alu_operand_b_select; }
   logic<1> data_mem_read_enable()  const { return control.data_mem_read_enable; }
   logic<1> data_mem_write_enable() const { return control.data_mem_write_enable; }

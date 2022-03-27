@@ -18,8 +18,8 @@ module riscv_core
   input logic clock,
   input logic[31:0] inst,
   input logic[31:0] alu_result2,
-  input logic[31:0] bus_read_data,
   input logic reset,
+  input logic[31:0] bus_read_data,
   output logic[31:0] bus_write_data2,
   output logic[3:0]  bus_byte_enable2,
   output logic  bus_read_enable2,
@@ -78,27 +78,6 @@ bus_write_enable2 = ctlpath_data_mem_write_enable; end
     alu_result = datapath_alu_result;
   end
 
-  always_comb begin : tock_writeback
-    datapath_data_mem_read_data = dmem_read_data;
-    datapath_reg_writeback_select = ctlpath_reg_writeback_select;
-    datapath_inst = inst;
-    dmem_address = alu_result2;
-    dmem_bus_read_data = bus_read_data;
-    dmem_data_format = datapath_inst_funct32;
-    datapath_inst = inst;
-    ctlpath_inst_opcode = datapath_inst_opcode2;
-    datapath_inst = inst;
-    /*datapath.tock_writeback(
-      dmem.read_data(
-        alu_result2,
-        bus_read_data,
-        datapath.inst_funct32(inst)
-      ),
-      ctlpath.reg_writeback_select(datapath.inst_opcode2(inst)),
-      inst
-    );*/
-  end
-
   always_comb begin : tocktick_pc
     datapath_reset = reset;
     datapath_inst = inst;
@@ -120,6 +99,24 @@ bus_write_enable2 = ctlpath_data_mem_write_enable; end
   end
 
   always_comb begin : tocktick_regs
+    datapath_data_mem_read_data = dmem_read_data;
+    datapath_reg_writeback_select = ctlpath_reg_writeback_select;
+    datapath_inst = inst;
+    dmem_address = alu_result2;
+    dmem_bus_read_data = bus_read_data;
+    dmem_data_format = datapath_inst_funct32;
+    datapath_inst = inst;
+    ctlpath_inst_opcode = datapath_inst_opcode2;
+    datapath_inst = inst;
+    /*datapath.tock_writeback(
+      dmem.read_data(
+        alu_result2,
+        bus_read_data,
+        datapath.inst_funct32(inst)
+      ),
+      ctlpath.reg_writeback_select(datapath.inst_opcode2(inst)),
+      inst
+    );*/
     datapath_inst = inst;
     datapath_regfile_write_enable = ctlpath_regfile_write_enable2;
     ctlpath_inst_opcode = datapath_inst_opcode2;

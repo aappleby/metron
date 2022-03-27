@@ -12,9 +12,8 @@
 
 class alu_control {
  public:
-  logic<5> alu_function;
 
-  void tock(logic<2> alu_op_type, logic<3> inst_funct3, logic<7> inst_funct7) {
+  logic<5> alu_function(logic<2> alu_op_type, logic<3> inst_funct3, logic<7> inst_funct7) const {
     using namespace rv_constants;
 
     logic<5> default_funct;
@@ -100,20 +99,15 @@ class alu_control {
 
     switch (alu_op_type) {
       case CTL_ALU_ADD:
-        alu_function = ALU_ADD;
-        break;
+        return ALU_ADD;
       case CTL_ALU_OP:
-        alu_function = op_funct;
-        break;
+        return op_funct;
       case CTL_ALU_OP_IMM:
-        alu_function = op_imm_funct;
-        break;
+        return op_imm_funct;
       case CTL_ALU_BRANCH:
-        alu_function = branch_funct;
-        break;
+        return branch_funct;
       default:
-        alu_function = b5(DONTCARE);
-        break;
+        return b5(DONTCARE);
     }
   }
 };

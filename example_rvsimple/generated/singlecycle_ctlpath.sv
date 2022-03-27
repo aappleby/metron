@@ -16,10 +16,10 @@
 module singlecycle_ctlpath
 (
   input logic clock,
-  input logic[6:0] inst_opcode,
   input logic[2:0] inst_funct3,
-  input logic alu_result_equal_zero,
   input logic[6:0] inst_funct7,
+  input logic[6:0] inst_opcode,
+  input logic alu_result_equal_zero,
   output logic[4:0] alu_function,
   output logic pc_write_enable2,
   output logic regfile_write_enable2,
@@ -32,7 +32,12 @@ module singlecycle_ctlpath
 );
  /*public:*/
 
-  always_comb begin alu_function = alu_ctrl_alu_function; end
+  always_comb begin
+    alu_ctrl_alu_op_type = control_alu_op_type;
+    alu_ctrl_inst_funct3 = inst_funct3;
+    alu_ctrl_inst_funct7 = inst_funct7;
+    alu_function = alu_ctrl_alu_function;
+  end
 
   always_comb begin pc_write_enable2 = control_pc_write_enable; end
   always_comb begin regfile_write_enable2 = control_regfile_write_enable; end
@@ -58,12 +63,11 @@ module singlecycle_ctlpath
     /*control.tock_next_pc_select(inst_opcode, transfer.take_branch(alu_result_equal_zero, inst_funct3));*/
   end
 
-  always_comb begin : tock_alu_control
-    alu_ctrl_alu_op_type = control_alu_op_type;
-    alu_ctrl_inst_funct3 = inst_funct3;
-    alu_ctrl_inst_funct7 = inst_funct7;
-    /*alu_ctrl.tock(control.alu_op_type, inst_funct3, inst_funct7);*/
-  end
+  /*
+  void tock_alu_control(logic<3> inst_funct3, logic<7> inst_funct7) {
+    alu_ctrl.tock(control.alu_op_type, inst_funct3, inst_funct7);
+  }
+  */
 
   //----------------------------------------
 

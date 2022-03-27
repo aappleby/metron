@@ -16,7 +16,9 @@
 class singlecycle_ctlpath {
  public:
 
-  logic<5> alu_function()          const { return alu_ctrl.alu_function; }
+  logic<5> alu_function(logic<3> inst_funct3, logic<7> inst_funct7) const {
+    return alu_ctrl.alu_function(control.alu_op_type, inst_funct3, inst_funct7);
+  }
 
   logic<1> pc_write_enable2()      const { return control.pc_write_enable; }
   logic<1> regfile_write_enable2() const { return control.regfile_write_enable; }
@@ -38,9 +40,11 @@ class singlecycle_ctlpath {
     control.tock_next_pc_select(inst_opcode, transfer.take_branch(alu_result_equal_zero, inst_funct3));
   }
 
+  /*
   void tock_alu_control(logic<3> inst_funct3, logic<7> inst_funct7) {
     alu_ctrl.tock(control.alu_op_type, inst_funct3, inst_funct7);
   }
+  */
 
   //----------------------------------------
 

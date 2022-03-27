@@ -19,9 +19,8 @@ module alu_control
   output logic[4:0] alu_function
 );
  /*public:*/
-  /*logic<5> alu_function;*/
 
-  always_comb begin : tock
+  always_comb begin
     logic[4:0] default_funct;
     logic[4:0] secondary_funct;
     logic[4:0] op_funct;
@@ -113,19 +112,14 @@ module alu_control
     case (alu_op_type) 
       /*case*/ CTL_ALU_ADD:
         alu_function = ALU_ADD;
-        /*break;*/
       /*case*/ CTL_ALU_OP:
         alu_function = op_funct;
-        /*break;*/
       /*case*/ CTL_ALU_OP_IMM:
         alu_function = op_imm_funct;
-        /*break;*/
       /*case*/ CTL_ALU_BRANCH:
         alu_function = branch_funct;
-        /*break;*/
       default:
         alu_function = 5'x;
-        /*break;*/
     endcase
   end
 endmodule;

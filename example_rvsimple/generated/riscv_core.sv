@@ -83,11 +83,6 @@ module riscv_core
     ctlpath_inst_funct7 = datapath_inst_funct72;
     datapath_inst = inst;
     datapath_inst = inst;
-    /*ctlpath.tock_alu_control(
-      datapath.inst_funct32(inst),
-      datapath.inst_funct72(inst)
-    );*/
-
     alu_function = ctlpath_alu_function;
 
     datapath_inst = inst;
@@ -120,9 +115,6 @@ module riscv_core
   end
 
   always_comb begin : tock_writeback
-    //dmem.tock_position_fix(datapath.data_mem_address, bus_read_data);
-    //dmem.tock_sign_fix(datapath.inst_funct32(inst));
-    //dmem.tock_read_data();
     datapath_data_mem_read_data = dmem_read_data;
     datapath_reg_writeback_select = ctlpath_reg_writeback_select;
     datapath_inst = inst;
@@ -189,10 +181,10 @@ module riscv_core
   singlecycle_ctlpath ctlpath(
     // Inputs
     .clock(clock),
-    .inst_opcode(ctlpath_inst_opcode), 
     .inst_funct3(ctlpath_inst_funct3), 
-    .alu_result_equal_zero(ctlpath_alu_result_equal_zero), 
     .inst_funct7(ctlpath_inst_funct7), 
+    .inst_opcode(ctlpath_inst_opcode), 
+    .alu_result_equal_zero(ctlpath_alu_result_equal_zero), 
     // Outputs
     .alu_function(ctlpath_alu_function), 
     .pc_write_enable2(ctlpath_pc_write_enable2), 
@@ -204,10 +196,10 @@ module riscv_core
     .reg_writeback_select(ctlpath_reg_writeback_select), 
     .next_pc_select(ctlpath_next_pc_select)
   );
-  logic[6:0] ctlpath_inst_opcode;
   logic[2:0] ctlpath_inst_funct3;
-  logic ctlpath_alu_result_equal_zero;
   logic[6:0] ctlpath_inst_funct7;
+  logic[6:0] ctlpath_inst_opcode;
+  logic ctlpath_alu_result_equal_zero;
   logic[4:0] ctlpath_alu_function;
   logic ctlpath_pc_write_enable2;
   logic ctlpath_regfile_write_enable2;

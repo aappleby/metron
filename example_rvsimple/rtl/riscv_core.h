@@ -53,12 +53,7 @@ class riscv_core {
       datapath.inst_opcode2(inst)
     );
 
-    ctlpath.tock_alu_control(
-      datapath.inst_funct32(inst),
-      datapath.inst_funct72(inst)
-    );
-
-    logic<5> alu_function = ctlpath.alu_function();
+    logic<5> alu_function = ctlpath.alu_function(datapath.inst_funct32(inst), datapath.inst_funct72(inst));
 
     datapath.tock_alu(
       inst,

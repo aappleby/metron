@@ -19,11 +19,10 @@ module adder
   output logic[WIDTH-1:0] result
 );
  /*public:*/
-  /*logic<WIDTH> result;*/
-
-  always_comb begin : tock
+  always_comb begin
     result = operand_a + operand_b;
   end
 endmodule
 
 `endif  // RVSIMPLE_ADDER_H
+

@@ -51,7 +51,6 @@ class singlecycle_datapath {
 
   void tock_decode(logic<32> inst) {
     idec.tock(inst);
-    igen.tock(inst);
   }
 
   void tock_regfile(logic<32> inst) {
@@ -61,23 +60,21 @@ class singlecycle_datapath {
     );
   }
 
-  void tock_alu(logic<5> alu_function, logic<1> alu_operand_a_select,
+  void tock_alu(logic<32> inst, logic<5> alu_function, logic<1> alu_operand_a_select,
                 logic<1> alu_operand_b_select) {
     mux_operand_a.tock(alu_operand_a_select, regs.rs1_data,
                        program_counter.value);
-    mux_operand_b.tock(alu_operand_b_select, regs.rs2_data, igen.immediate);
+    mux_operand_b.tock(alu_operand_b_select, regs.rs2_data, igen.immediate(inst));
     alu_core.tock(alu_function, mux_operand_a.out, mux_operand_b.out);
     data_mem_address = alu_core.result;
   }
 
-  void tock_next_pc(logic<2> next_pc_select) {
+  void tock_next_pc(logic<32> inst, logic<2> next_pc_select) {
     logic<32> blep = cat(b31(alu_core.result, 1), b1(0b0));
 
-    adder_pc_plus_immediate.tock(program_counter.value, igen.immediate);
-    adder_pc_plus_4.tock(b32(0x00000004), program_counter.value);
     mux_next_pc_select.tock(next_pc_select,
-                            adder_pc_plus_4.result,
-                            adder_pc_plus_immediate.result,
+                            adder_pc_plus_4.result(b32(0x00000004), program_counter.value),
+                            adder_pc_plus_immediate.result(program_counter.value, igen.immediate(inst)),
                             blep,
                             b32(0b0));
   }
@@ -86,8 +83,9 @@ class singlecycle_datapath {
                       logic<3> reg_writeback_select,
                       logic<32> inst) {
     mux_reg_writeback.tock(reg_writeback_select, alu_core.result,
-                           data_mem_read_data, adder_pc_plus_4.result,
-                           igen.immediate, b32(0b0), b32(0b0), b32(0b0), b32(0b0));
+                           data_mem_read_data,
+                           adder_pc_plus_4.result(b32(0x00000004), program_counter.value),
+                           igen.immediate(inst), b32(0b0), b32(0b0), b32(0b0), b32(0b0));
   }
 
   //----------------------------------------

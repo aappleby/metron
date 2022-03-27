@@ -58,6 +58,7 @@ class riscv_core {
     );
 
     datapath.tock_alu(
+      inst,
       ctlpath.alu_function(),
       ctlpath.alu_operand_a_select(),
       ctlpath.alu_operand_b_select()
@@ -69,7 +70,7 @@ class riscv_core {
       datapath.alu_result_equal_zero2()
     );
 
-    datapath.tock_next_pc(ctlpath.next_pc_select());
+    datapath.tock_next_pc(inst, ctlpath.next_pc_select());
 
     dmem.tock_bus(
       datapath.inst_funct32(inst),

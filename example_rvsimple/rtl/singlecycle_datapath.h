@@ -33,7 +33,7 @@ class singlecycle_datapath {
   logic<32> pc2()                  const { return program_counter.value; }
   logic<32> data_mem_address2()    const { return alu_core.result; }
   logic<32> data_mem_write_data2() const { return regs.rs2_data; }
-  logic<1>  alu_result_equal_zero2() const { return alu_core.result_equal_zero; }
+  logic<1>  alu_result_equal_zero2() const { return alu_core.result_equal_zero(); }
 
   logic<7>  inst_opcode2(logic<32> inst) const { return idec.inst_opcode2(inst); }
   logic<3>  inst_funct32(logic<32> inst) const { return idec.inst_funct32(inst); }

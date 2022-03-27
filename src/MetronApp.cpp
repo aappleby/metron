@@ -174,7 +174,6 @@ int main(int argc, char** argv) {
 
   //----------
   // Emit all modules.
-#if 1
   for (auto& source_file : library.source_files)
   {
     // Translate the source.
@@ -214,7 +213,6 @@ int main(int argc, char** argv) {
       }
     }
   }
-#endif
 
   return 0;
 }

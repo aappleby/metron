@@ -13,7 +13,9 @@
 class alu {
  public:
   logic<32> result;
-  logic<1> result_equal_zero;
+  logic<1> result_equal_zero() const {
+    return (result == b32(0));
+  }
 
 #ifdef M_MODULE
  private:
@@ -109,8 +111,6 @@ class alu {
         result = b32(ZERO);
         break;
     }
-
-    result_equal_zero = (result == b32(0));
   }
 
 #ifdef M_MODULE

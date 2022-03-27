@@ -131,3 +131,4 @@ module alu_control
 endmodule;
 
 `endif  // RVSIMPLE_ALU_CONTROL_H
+

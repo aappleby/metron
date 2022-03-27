@@ -21,7 +21,9 @@ module alu
 );
  /*public:*/
   /*logic<32> result;*/
-  /*logic<1> result_equal_zero;*/
+  always_comb begin
+    result_equal_zero = (result == 32'd0);
+  end
 
 `ifdef M_MODULE
  /*private:*/
@@ -117,8 +119,6 @@ module alu
         result = 32'(ZERO);
         /*break;*/
     endcase
-
-    result_equal_zero = (result == 32'd0);
   end
 
 `ifdef M_MODULE
@@ -131,3 +131,4 @@ module alu
 endmodule;
 
 `endif  // RVSIMPLE_ALU_H
+

@@ -4,14 +4,14 @@
 
 //------------------------------------------------------------------------------
 
-int run_test(const char* test_name) {
+int run_test(const char* test_name, const int reps) {
   fflush(stdout);
 
   char buf1[256];
   char buf2[256];
   sprintf(buf1, "+text_file=rv_tests/%s.text.vh", test_name);
   sprintf(buf2, "+data_file=rv_tests/%s.data.vh", test_name);
-  const char* argv2[2] = { buf1, buf2 };
+  const char* argv2[2] = {buf1, buf2};
 
   metron_reset();
   metron_init(2, argv2);
@@ -23,17 +23,11 @@ int run_test(const char* test_name) {
   top.init();
 
   LOG_R("running %6s: ", test_name);
-  for (int rep = 0; rep < 10000; rep++)
-  {
+  for (int rep = 0; rep < reps; rep++) {
     top.tock(1);
-
     for (time = 0; time < 100000; time++) {
       top.tock(0);
-
-      //printf("0x%08x\n", top.bus_address);
-
       if (top.o_bus_write_enable && top.o_bus_address == 0xfffffff0) {
-        //printf("finish at %d\n", time);
         result = top.o_bus_write_data;
         break;
       }
@@ -54,20 +48,20 @@ int run_test(const char* test_name) {
 
 //------------------------------------------------------------------------------
 
-int main(int argc, const char **argv) {
-  LOG_B("Starting example_tiny/rtl/main.cpp benchmark...\n");
+int main(int argc, const char** argv) {
+  const int reps = 10000;
+  LOG_B("Starting %s @ %d reps...\n", argv[0], reps);
 
   const char* instructions[38] = {
-    "add", "addi", "and", "andi", "auipc", "beq", "bge", "bgeu", "blt", "bltu",
-    "bne", "jal", "jalr", "lb", "lbu", "lh", "lhu", "lui", "lw", "or", "ori",
-    "sb", "sh", "simple", "sll", "slli", "slt", "slti", "sltiu", "sltu", "sra",
-    "srai", "srl", "srli", "sub", "sw", "xor", "xori"
-  };
+      "add", "addi", "and", "andi", "auipc", "beq",  "bge", "bgeu",
+      "blt", "bltu", "bne", "jal",  "jalr",  "lb",   "lbu", "lh",
+      "lhu", "lui",  "lw",  "or",   "ori",   "sb",   "sh",  "simple",
+      "sll", "slli", "slt", "slti", "sltiu", "sltu", "sra", "srai",
+      "srl", "srli", "sub", "sw",   "xor",   "xori"};
 
   for (int i = 0; i < 38; i++) {
-    run_test(instructions[i]);
+    run_test(instructions[i], reps);
   }
-
   return 0;
 }
 

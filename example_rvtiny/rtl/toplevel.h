@@ -41,6 +41,14 @@ class toplevel {
     if (reset) {
       pc = 0;
       regs[0] = b32(0);
+      o_bus_read_data = 0;
+      o_bus_address = 0;
+      o_bus_write_data = 0;
+      o_bus_byte_enable = 0;
+      o_bus_read_enable = 0;
+      o_bus_write_enable = 0;
+      o_inst = 0;
+      o_pc = 0;
       return;
     }
 

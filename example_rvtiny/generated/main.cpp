@@ -56,7 +56,7 @@ int run_test(const char* test_name) {
 }
 
 int main(int argc, const char **argv, const char **env) {
-  LOG_B("Starting example_rvsimple/generated/main.cpp benchmark...\n");
+  LOG_B("Starting example_rvtiny/generated/main.cpp benchmark...\n");
   const char* instructions[38] = {
     "add", "addi", "and", "andi", "auipc", "beq", "bge", "bgeu", "blt", "bltu",
     "bne", "jal", "jalr", "lb", "lbu", "lh", "lhu", "lui", "lw", "or", "ori",

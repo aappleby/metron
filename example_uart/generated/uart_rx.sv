@@ -23,9 +23,17 @@ module uart_rx
     derp = a + b;
   end
 
-  always_comb begin o_valid = cursor == 1; end
-  always_comb begin o_buffer = buffer; end
-  always_comb begin o_sum = sum; end
+  always_comb begin
+    o_valid = cursor == 1;
+  end
+
+  always_comb begin
+    o_buffer = buffer;
+  end
+
+  always_comb begin
+    o_sum = sum;
+  end
 
   always_ff @(posedge clock) begin : tick
     if (!i_rstn) begin

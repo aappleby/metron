@@ -1857,8 +1857,25 @@ void MtCursor::emit(MtNumberLiteral n, int size_cast) {
 //------------------------------------------------------------------------------
 // Change "return x" to "(funcname) = x" to match old Verilog return style.
 
+// FIXME this actually needs a return after it
+
 void MtCursor::emit(MtReturnStatement n) {
   assert(cursor == n.start());
+
+  auto node_lit = n.child(0);
+  auto node_expr = n.child(1);
+  auto node_semi = n.child(2);
+
+  cursor = node_expr.start();
+  emit("%s = ", current_function_name.c_str());
+  emit_dispatch(node_expr);
+  emit(";");
+  //emit_newline();
+  //emit_indent();
+  //emit("return;");
+  cursor = n.end();
+
+  /*
   auto func_name = current_function_name;
   node_stack.push_back(n);
   for (auto c : (MtNode&)n) {
@@ -1873,6 +1890,7 @@ void MtCursor::emit(MtReturnStatement n) {
     }
   }
   node_stack.pop_back();
+  */
   assert(cursor == n.end());
 }
 

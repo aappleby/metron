@@ -1,16 +1,11 @@
-#include "toplevel.h"
 #include <stdio.h>
 
-#include "metron_tools.h"
-//#include "Tests.h"
-
-#pragma warning(disable:4996)
+#include "toplevel.h"
 
 //------------------------------------------------------------------------------
 
 int run_test(const char* test_name) {
   fflush(stdout);
-
 
   char buf1[256];
   char buf2[256];
@@ -28,7 +23,7 @@ int run_test(const char* test_name) {
   top.init();
 
   LOG_R("running %6s: ", test_name);
-  for (int rep = 0; rep < 10000; rep++)
+  //for (int rep = 0; rep < 10000; rep++)
   {
     top.tock(1);
 
@@ -60,7 +55,8 @@ int run_test(const char* test_name) {
 //------------------------------------------------------------------------------
 
 int main(int argc, const char **argv) {
-  LOG_B("Starting example_rvsimple/rtl/main.cpp benchmark...\n");
+  LOG_B("Starting example_tiny/rtl/main.cpp benchmark...\n");
+
   const char* instructions[38] = {
     "add", "addi", "and", "andi", "auipc", "beq", "bge", "bgeu", "blt", "bltu",
     "bne", "jal", "jalr", "lb", "lbu", "lh", "lhu", "lui", "lw", "or", "ori",
@@ -71,6 +67,7 @@ int main(int argc, const char **argv) {
   for (int i = 0; i < 38; i++) {
     run_test(instructions[i]);
   }
+
   return 0;
 }
 

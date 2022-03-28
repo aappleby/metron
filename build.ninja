@@ -305,7 +305,7 @@ build bin/example_rvtiny/rtl/main: link obj/example_rvtiny/rtl/main.o
 ################################################################################
 # Metronize example_rvtiny/rtl -> example_rvtiny/generated
 
-build example_rvtiny/generated/adder.sv example_rvtiny/generated/alu.sv $
+build example_rvtiny/generated/alu.sv $
     example_rvtiny/generated/alu_control.sv $
     example_rvtiny/generated/config.sv $
     example_rvtiny/generated/constants.sv $
@@ -316,44 +316,33 @@ build example_rvtiny/generated/adder.sv example_rvtiny/generated/alu.sv $
     example_rvtiny/generated/example_text_memory.sv $
     example_rvtiny/generated/example_text_memory_bus.sv $
     example_rvtiny/generated/immediate_generator.sv $
-    example_rvtiny/generated/instruction_decoder.sv $
-    example_rvtiny/generated/multiplexer.sv $
-    example_rvtiny/generated/multiplexer2.sv $
-    example_rvtiny/generated/multiplexer4.sv $
-    example_rvtiny/generated/multiplexer8.sv $
     example_rvtiny/generated/regfile.sv $
     example_rvtiny/generated/register.sv $
     example_rvtiny/generated/riscv_core.sv $
     example_rvtiny/generated/singlecycle_control.sv $
     example_rvtiny/generated/singlecycle_ctlpath.sv $
     example_rvtiny/generated/singlecycle_datapath.sv $
-    example_rvtiny/generated/toplevel.sv: metron example_rvtiny/rtl/adder.h $
-    example_rvtiny/rtl/alu.h example_rvtiny/rtl/alu_control.h $
-    example_rvtiny/rtl/config.h example_rvtiny/rtl/constants.h $
-    example_rvtiny/rtl/control_transfer.h $
+    example_rvtiny/generated/toplevel.sv: metron example_rvtiny/rtl/alu.h $
+    example_rvtiny/rtl/alu_control.h example_rvtiny/rtl/config.h $
+    example_rvtiny/rtl/constants.h example_rvtiny/rtl/control_transfer.h $
     example_rvtiny/rtl/data_memory_interface.h $
     example_rvtiny/rtl/example_data_memory.h $
     example_rvtiny/rtl/example_data_memory_bus.h $
     example_rvtiny/rtl/example_text_memory.h $
     example_rvtiny/rtl/example_text_memory_bus.h $
-    example_rvtiny/rtl/immediate_generator.h $
-    example_rvtiny/rtl/instruction_decoder.h $
-    example_rvtiny/rtl/multiplexer.h example_rvtiny/rtl/multiplexer2.h $
-    example_rvtiny/rtl/multiplexer4.h example_rvtiny/rtl/multiplexer8.h $
-    example_rvtiny/rtl/regfile.h example_rvtiny/rtl/register.h $
-    example_rvtiny/rtl/riscv_core.h $
+    example_rvtiny/rtl/immediate_generator.h example_rvtiny/rtl/regfile.h $
+    example_rvtiny/rtl/register.h example_rvtiny/rtl/riscv_core.h $
     example_rvtiny/rtl/singlecycle_control.h $
     example_rvtiny/rtl/singlecycle_ctlpath.h $
     example_rvtiny/rtl/singlecycle_datapath.h example_rvtiny/rtl/toplevel.h $
     | bin/metron
   src_dir = example_rvtiny/rtl
   dst_dir = example_rvtiny/generated
-  file_list = adder.h alu.h alu_control.h config.h constants.h $
-      control_transfer.h data_memory_interface.h example_data_memory.h $
+  file_list = alu.h alu_control.h config.h constants.h control_transfer.h $
+      data_memory_interface.h example_data_memory.h $
       example_data_memory_bus.h example_text_memory.h $
-      example_text_memory_bus.h immediate_generator.h instruction_decoder.h $
-      multiplexer.h multiplexer2.h multiplexer4.h multiplexer8.h regfile.h $
-      register.h riscv_core.h singlecycle_control.h singlecycle_ctlpath.h $
+      example_text_memory_bus.h immediate_generator.h regfile.h register.h $
+      riscv_core.h singlecycle_control.h singlecycle_ctlpath.h $
       singlecycle_datapath.h toplevel.h
 
 
@@ -362,8 +351,7 @@ build example_rvtiny/generated/adder.sv example_rvtiny/generated/alu.sv $
 
 build obj/example_rvtiny/generated/Vtoplevel.mk $
     obj/example_rvtiny/generated/Vtoplevel.h: verilator $
-    example_rvtiny/generated/adder.sv example_rvtiny/generated/alu.sv $
-    example_rvtiny/generated/alu_control.sv $
+    example_rvtiny/generated/alu.sv example_rvtiny/generated/alu_control.sv $
     example_rvtiny/generated/config.sv $
     example_rvtiny/generated/constants.sv $
     example_rvtiny/generated/control_transfer.sv $
@@ -373,11 +361,6 @@ build obj/example_rvtiny/generated/Vtoplevel.mk $
     example_rvtiny/generated/example_text_memory.sv $
     example_rvtiny/generated/example_text_memory_bus.sv $
     example_rvtiny/generated/immediate_generator.sv $
-    example_rvtiny/generated/instruction_decoder.sv $
-    example_rvtiny/generated/multiplexer.sv $
-    example_rvtiny/generated/multiplexer2.sv $
-    example_rvtiny/generated/multiplexer4.sv $
-    example_rvtiny/generated/multiplexer8.sv $
     example_rvtiny/generated/regfile.sv $
     example_rvtiny/generated/register.sv $
     example_rvtiny/generated/riscv_core.sv $

@@ -195,13 +195,18 @@ class logic {
   operator BASE() const { return x; }
 
   SBASE as_signed() const {
-    SBASE t = x;
-    t <<= (sizeof(SBASE) * 8) - WIDTH;
-    t >>= (sizeof(SBASE) * 8) - WIDTH;
-    return t;
+    if (sizeof(SBASE) == (WIDTH * 8)) {
+      return SBASE(x);
+    }
+    else {
+      SBASE t = x;
+      t <<= (sizeof(SBASE) * 8) - WIDTH;
+      t >>= (sizeof(SBASE) * 8) - WIDTH;
+      return t;
+    }
   }
 
-  UBASE as_unsigned() const { return get(); }
+  UBASE as_unsigned() const { return x; }
 
   //----------
   // Logics can be indexed like a bit array.
@@ -468,6 +473,15 @@ inline void log_set_color(uint32_t color) {
   }
 
   log_color = color;
+}
+
+//-----------------------------------------------------------------------------
+
+inline uint64_t timestamp() {
+  timespec ts;
+  timespec_get(&ts, TIME_UTC);
+  uint64_t now = ts.tv_sec * 1000000000ull + ts.tv_nsec;
+  return now;
 }
 
 //-----------------------------------------------------------------------------

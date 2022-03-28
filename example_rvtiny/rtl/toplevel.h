@@ -1,5 +1,5 @@
-#ifndef RVTINY_TOPLEVEL_H
-#define RVTINY_TOPLEVEL_H
+#ifndef RVSIMPLE_TOPLEVEL_H
+#define RVSIMPLE_TOPLEVEL_H
 
 #include "metron_tools.h"
 
@@ -77,8 +77,8 @@ class toplevel {
       switch(f3) {
       case 0: alu_result = (op == OP_ALU) && f7[5] ? op_a - op_b : op_a + op_b; break;
       case 1: alu_result = op_a << b5(op_b); break;
-      case 2: alu_result = signed(op_a) < signed(op_b); break;
-      case 3: alu_result = unsigned(op_a) < unsigned(op_b); break;
+      case 2: alu_result = op_a.as_signed() < op_b.as_signed(); break;
+      case 3: alu_result = op_a < op_b; break;
       case 4: alu_result = op_a ^ op_b; break;
       case 5: alu_result = f7[5] ? sra(op_a, b5(op_b)) : logic<32>(op_a >> b5(op_b)); break;
       case 6: alu_result = op_a | op_b; break;
@@ -143,10 +143,10 @@ class toplevel {
       switch (f3) {
       case 0:  take_branch = op_a == op_b; break;
       case 1:  take_branch = op_a != op_b; break;
-      case 4:  take_branch = signed(op_a) <  signed(op_b); break;
-      case 5:  take_branch = signed(op_a) >= signed(op_b); break;
-      case 6:  take_branch = unsigned(op_a) < unsigned(op_b); break;
-      case 7:  take_branch = unsigned(op_a) >= unsigned(op_b); break;
+      case 4:  take_branch = op_a.as_signed() <  op_b.as_signed(); break;
+      case 5:  take_branch = op_a.as_signed() >= op_b.as_signed(); break;
+      case 6:  take_branch = op_a < op_b; break;
+      case 7:  take_branch = op_a >= op_b; break;
       default: take_branch = b1(DONTCARE); break;
       }
 
@@ -201,4 +201,4 @@ private:
 };
 
 
-#endif  // RVTINY_TOPLEVEL_H
+#endif  // RVSIMPLE_TOPLEVEL_H

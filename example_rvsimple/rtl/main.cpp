@@ -4,6 +4,9 @@
 
 //------------------------------------------------------------------------------
 
+uint64_t total_tocks = 0;
+uint64_t total_time = 0;
+
 int run_test(const char* test_name, const int reps) {
   fflush(stdout);
 
@@ -23,16 +26,22 @@ int run_test(const char* test_name, const int reps) {
   top.init();
 
   LOG_R("running %6s: ", test_name);
+
+  auto time_a = timestamp();
   for (int rep = 0; rep < reps; rep++) {
     top.tock(1);
+    total_tocks++;
     for (time = 0; time < 100000; time++) {
       top.tock(0);
+      total_tocks++;
       if (top.o_bus_write_enable && top.o_bus_address == 0xfffffff0) {
         result = top.o_bus_write_data;
         break;
       }
     }
   }
+  auto time_b = timestamp();
+  total_time += time_b - time_a;
 
   if (time == 100000) {
     LOG_Y("TIMEOUT\n");
@@ -62,6 +71,10 @@ int main(int argc, const char** argv) {
   for (int i = 0; i < 38; i++) {
     run_test(instructions[i], reps);
   }
+
+  double rate = double(total_tocks) / double(total_time);
+  LOG_B("Sim rate %f\n", rate);
+
   return 0;
 }
 

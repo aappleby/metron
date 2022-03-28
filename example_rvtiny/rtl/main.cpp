@@ -23,7 +23,7 @@ int run_test(const char* test_name) {
   top.init();
 
   LOG_R("running %6s: ", test_name);
-  //for (int rep = 0; rep < 10000; rep++)
+  for (int rep = 0; rep < 10000; rep++)
   {
     top.tock(1);
 

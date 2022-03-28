@@ -269,6 +269,7 @@ cpp_binary(
 # ------------------------------------------------------------------------------
 # RVTiny Generated
 
+"""
 rvtiny_metron_srcs = metronize_dir(
     "example_rvtiny/rtl", "example_rvtiny/generated")
 
@@ -290,6 +291,7 @@ cpp_binary(
     src_objs=["obj/verilated.o", rvtiny_metron_vobj],
     deps=[rvtiny_metron_vhdr]
 )
+"""
 
 # ------------------------------------------------------------------------------
 

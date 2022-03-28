@@ -98,14 +98,14 @@ class toplevel {
       logic<32> data = data_mem[b15(addr, 2)] >> (8 * b2(addr));
 
       switch (f3) {
-      case 0:  data = int8_t(data);  break;
-      case 1:  data = int16_t(data); break;
-      case 2:  data = int32_t(data); break;
-      case 3:  data = int64_t(data); break;
-      case 4:  data = uint8_t(data);   break;
-      case 5:  data = uint16_t(data);  break;
-      case 6:  data = uint32_t(data);  break;
-      case 7:  data = uint64_t(data);  break;
+      case 0:  data = int8_t(data);   break;
+      case 1:  data = int16_t(data);  break;
+      case 2:  data = int32_t(data);  break;
+      case 3:  data = int64_t(data);  break;
+      case 4:  data = uint8_t(data);  break;
+      case 5:  data = uint16_t(data); break;
+      case 6:  data = uint32_t(data); break;
+      case 7:  data = uint64_t(data); break;
       }
 
       if (rd) regs[rd] = data;
@@ -194,6 +194,7 @@ class toplevel {
 
   //----------------------------------------
 
+private:
   logic<32> text_mem[0x10000 >> 2];
   logic<32> data_mem[0x20000 >> 2];
   logic<32> pc;

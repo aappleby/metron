@@ -1,5 +1,5 @@
-#ifndef RVSIMPLE_TOPLEVEL_H
-#define RVSIMPLE_TOPLEVEL_H
+#ifndef RVTINY_TOPLEVEL_H
+#define RVTINY_TOPLEVEL_H
 
 #include "metron_tools.h"
 
@@ -70,9 +70,8 @@ class toplevel {
     // but then we duplicate the big ALU switch...
 
     if (op == OP_ALU || op == OP_ALUI) {
-      logic<32> imm = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20));
       logic<32> op_a = regs[r1];
-      logic<32> op_b = op == OP_ALUI ? imm : regs[r2];
+      logic<32> op_b = op == OP_ALUI ? cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20)) : regs[r2];
       logic<32> alu_result;
 
       switch(f3) {
@@ -202,4 +201,4 @@ private:
 };
 
 
-#endif  // RVSIMPLE_TOPLEVEL_H
+#endif  // RVTINY_TOPLEVEL_H

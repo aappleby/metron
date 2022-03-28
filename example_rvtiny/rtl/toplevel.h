@@ -52,7 +52,7 @@ class toplevel {
       return;
     }
 
-    logic<32> inst = text_mem[b16(pc, 2)];
+    logic<32> inst = text_mem[b14(pc, 2)];
 
     logic<7> op = b7(inst, 0);
     logic<5> rd = b5(inst, 7);
@@ -61,7 +61,13 @@ class toplevel {
     logic<5> r2 = b5(inst, 20);
     logic<7> f7 = b7(inst, 25);
 
+    o_bus_address = 0;
+    o_bus_write_enable = 0;
+    o_bus_write_data = 0;
+
     //----------
+    // Metron simulates this a few percent faster if we don't have ALU and ALUI in the same branch,
+    // but then we duplicate the big ALU switch...
 
     if (op == OP_ALU || op == OP_ALUI) {
       logic<32> imm = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20));
@@ -82,12 +88,11 @@ class toplevel {
 
       if (rd) regs[rd] = alu_result;
       pc = pc + 4;
-      return;
     }
 
     //----------
 
-    if (op == OP_LOAD) {
+    else if (op == OP_LOAD) {
       logic<32> imm = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20));
       logic<32> addr = regs[r1] + imm;
       logic<32> data = data_mem[b15(addr, 2)] >> (8 * b2(addr));
@@ -109,12 +114,12 @@ class toplevel {
 
     //----------
 
-    if (op == OP_STORE) {
+    else if (op == OP_STORE) {
       logic<32> imm = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 7));
       logic<32> addr = regs[r1] + imm;
       logic<32> data = regs[r2] << (8 * b2(addr));
 
-      logic<32> mask = 0x00000000;
+      logic<32> mask = 0;
       if (f3 == 0) mask = 0x000000FF << (8 * b2(addr));
       if (f3 == 1) mask = 0x0000FFFF << (8 * b2(addr));
       if (f3 == 2) mask = 0xFFFFFFFF;
@@ -128,15 +133,10 @@ class toplevel {
       o_bus_write_enable = 1;
       o_bus_write_data = regs[r2];
     }
-    else {
-      o_bus_address = 0;
-      o_bus_write_enable = 0;
-      o_bus_write_data = 0;
-    }
 
     //----------
 
-    if (op == OP_BRANCH) {
+    else if (op == OP_BRANCH) {
       logic<32> op_a = regs[r1];
       logic<32> op_b = regs[r2];
 
@@ -161,7 +161,7 @@ class toplevel {
 
     //----------
 
-    if (op == OP_JAL) {
+    else if (op == OP_JAL) {
       logic<32> imm = cat(dup<12>(inst[31]), b8(inst, 12), inst[20], b6(inst, 25), b4(inst, 21), b1(0));
       if (rd) regs[rd] = pc + 4;
       pc = pc + imm;
@@ -169,7 +169,7 @@ class toplevel {
 
     //----------
 
-    if (op == OP_JALR) {
+    else if (op == OP_JALR) {
       logic<32> imm = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20));
       if (rd) regs[rd] = pc + 4;
       pc = regs[r1] + imm;
@@ -177,7 +177,7 @@ class toplevel {
 
     //----------
 
-    if (op == OP_LUI) {
+    else if (op == OP_LUI) {
       logic<32> imm = cat(inst[31], b11(inst, 20), b8(inst, 12), b12(0));
       if (rd) regs[rd] = imm;
       pc = pc + 4;
@@ -185,7 +185,7 @@ class toplevel {
 
     //----------
 
-    if (op == OP_AUIPC) {
+    else if (op == OP_AUIPC) {
       logic<32> imm = cat(inst[31], b11(inst, 20), b8(inst, 12), b12(0));
       if (rd) regs[rd] = pc + imm;
       pc = pc + 4;

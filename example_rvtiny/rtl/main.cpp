@@ -49,7 +49,7 @@ int run_test(const char* test_name, const int reps) {
 //------------------------------------------------------------------------------
 
 int main(int argc, const char** argv) {
-  const int reps = 10000;
+  const int reps = 100000;
   LOG_B("Starting %s @ %d reps...\n", argv[0], reps);
 
   const char* instructions[38] = {

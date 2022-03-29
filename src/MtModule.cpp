@@ -722,6 +722,18 @@ void MtModule::build_port_map() {
     if (child.sym != sym_call_expression) return;
     if (child.get_field(field_function).sym != sym_field_expression) return;
 
+    auto call_func = child.get_field(field_function);
+    auto call_args = child.get_field(field_arguments);
+
+    if (call_func.sym == sym_field_expression) {
+      auto call_this = call_func.get_field(field_argument);
+      auto call_method = call_func.get_field(field_field);
+      if (call_method.text() == "as_signed") {
+        return;
+      }
+    }
+
+
     auto call = node_to_call(child);
 
     if (!call.method) {
@@ -817,11 +829,15 @@ MtCall MtModule::node_to_call(MtNode n) {
     auto call_this = call_func.get_field(field_argument);
     auto call_method = call_func.get_field(field_field);
 
-    auto submod = get_submod(call_this.text());
-    assert(submod);
+    if (call_method.text() == "as_signed") {
+    }
+    else {
+      auto submod = get_submod(call_this.text());
+      assert(submod);
 
-    result.submod = submod;
-    result.method = submod->mod->get_method(call_method.text());
+      result.submod = submod;
+      result.method = submod->mod->get_method(call_method.text());
+    }
   }
 
   result.args = new std::vector<std::string>();

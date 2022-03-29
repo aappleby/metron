@@ -497,6 +497,9 @@ void MtCursor::emit(MtCallExpr n) {
   } else if (func_name == "write") {
     emit_replacement(func, "$write");
     emit(args);
+  } else if (func_name == "sign_extend") {
+    emit_replacement(func, "$signed");
+    emit(args);
   } else if (func_name.starts_with("init")) {
     comment_out(n);
   } else if (func_name.starts_with("final")) {
@@ -647,7 +650,10 @@ void MtCursor::emit(MtCallExpr n) {
   else if (func_name == "cat") {
     // Remove "cat" and replace parens with brackets
     skip_over(func);
-    for (const auto& arg : (MtNode&)args) {
+    auto child_count = args.child_count();
+    //for (const auto& arg : (MtNode&)args) {
+    for (int i = 0; i < child_count; i++) {
+      const auto& arg = args.child(i);
       switch (arg.sym) {
         case anon_sym_LPAREN: {
           emit_replacement(arg, "{");
@@ -661,7 +667,10 @@ void MtCursor::emit(MtCallExpr n) {
           emit_dispatch(arg);
           break;
       }
-      emit_ws();
+      if (i < child_count - 1) emit_ws();
+    }
+    if (cursor != n.end()) {
+      n.dump_tree();
     }
   } else if (func_name == "dup") {
     // Convert "dup<15>(x)" to "{15 {x}}"
@@ -691,6 +700,9 @@ void MtCursor::emit(MtCallExpr n) {
   }
 
   node_stack.pop_back();
+
+  if (cursor != n.end()) n.dump_tree();
+
   assert(cursor == n.end());
 }
 
@@ -714,6 +726,12 @@ void MtCursor::emit_init_declarator_as_decl(MtDecl n) {
 
 void MtCursor::emit_init_declarator_as_assign(MtDecl n) {
   assert(cursor == n.start());
+
+  // We don't need to emit anything for decls without initialization values.
+  if (!n.is_init_decl()) {
+    comment_out(n);
+    return;
+  }
 
   assert(n.is_init_decl());
   cursor = n._init_decl().start();

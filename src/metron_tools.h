@@ -131,6 +131,7 @@ class logic {
   typedef typename bitsize_to_basetype<WIDTH>::signed_type SBASE;
 
   BASE x = 0;
+  static const BASE mask = BASE(~0ull) >> ((sizeof(BASE) * 8) - WIDTH);
 
   //----------
   // Logics can be constructed and assigned from their base type or other logics
@@ -149,7 +150,6 @@ class logic {
 
   BASE get() const { return x; }
   void set(BASE y) {
-    static const BASE mask = BASE(~0) >> ((sizeof(BASE) * 8) - WIDTH);
     x = y & mask;
   }
 
@@ -172,9 +172,7 @@ class logic {
 
   template <int M>
   logic& operator=(const logic<M>& y) {
-    const int mask_width = M > WIDTH ? WIDTH : M;
-    static const BASE mask = BASE(~0) >> ((sizeof(BASE) * 8) - mask_width);
-    x = (x & ~mask) | (y & mask);
+    set(y.x);
     return *this;
   }
 
@@ -461,6 +459,14 @@ inline logic<WIDTH * DUPS> dup(const logic<WIDTH>& a) {
 
 //-----------------------------------------------------------------------------
 
+template<int DST_WIDTH, int SRC_WIDTH>
+inline logic<DST_WIDTH> sign_extend(const logic<SRC_WIDTH> a) {
+  static_assert(DST_WIDTH >= SRC_WIDTH);
+  return cat(dup<DST_WIDTH - SRC_WIDTH + 1>(a[SRC_WIDTH-1]), bx<SRC_WIDTH-1>(a));
+}
+
+//-----------------------------------------------------------------------------
+
 inline void log_set_color(uint32_t color) {
   static uint32_t log_color = 0;
   if (color == log_color) return;
@@ -673,6 +679,8 @@ inline int write(const char* fmt, ...) {
 //----------------------------------------
 // Verilog's signed right shift doesn't work quite the same as C++'s, so we
 // patch around it here.
+
+// FIXME get rid of this now that as_signed() works correctly
 
 template <int WIDTH>
 inline logic<WIDTH> sra(logic<WIDTH> x, int s) {

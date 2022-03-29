@@ -303,6 +303,44 @@ build bin/example_rvtiny/rtl/main: link obj/example_rvtiny/rtl/main.o
 
 
 ################################################################################
+# Metronize example_rvtiny/rtl -> example_rvtiny/generated
+
+build example_rvtiny/generated/toplevel.sv: metron $
+    example_rvtiny/rtl/toplevel.h | bin/metron
+  src_dir = example_rvtiny/rtl
+  dst_dir = example_rvtiny/generated
+  file_list = toplevel.h
+
+
+################################################################################
+# Verilate toplevel@example_rvtiny/generated -> obj/example_rvtiny/generated
+
+build obj/example_rvtiny/generated/Vtoplevel.mk $
+    obj/example_rvtiny/generated/Vtoplevel.h: verilator $
+    example_rvtiny/generated/toplevel.sv
+  includes = -Isrc -Iexample_rvtiny/generated
+  src_top = toplevel
+  dst_dir = obj/example_rvtiny/generated
+build obj/example_rvtiny/generated/Vtoplevel__ALL.o: make $
+    obj/example_rvtiny/generated/Vtoplevel.mk
+  dst_dir = obj/example_rvtiny/generated
+  makefile = Vtoplevel.mk
+
+
+################################################################################
+# Compile bin/example_rvtiny/generated/main
+
+build obj/example_rvtiny/generated/main.o: compile_cpp $
+    example_rvtiny/generated/main.cpp | $
+    obj/example_rvtiny/generated/Vtoplevel.h
+  includes = -Isrc -Itests -Iobj/example_rvtiny/generated $
+      -I/usr/local/share/verilator/include
+build bin/example_rvtiny/generated/main: link obj/verilated.o $
+    obj/example_rvtiny/generated/Vtoplevel__ALL.o $
+    obj/example_rvtiny/generated/main.o
+
+
+################################################################################
 # Icarus Verilog uart testbench
 
 rule iverilog

@@ -73,7 +73,7 @@ int main(int argc, const char** argv) {
   }
 
   double rate = double(total_tocks) / double(total_time);
-  LOG_B("Sim rate %f\n", rate);
+  LOG_B("Sim rate %f mhz\n", rate * 1000.0);
 
   return 0;
 }

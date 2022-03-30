@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="..\..\src\Log.h" />
+    <ClInclude Include="..\..\src\MtCursor.h" />
+    <ClInclude Include="..\..\src\MtMethod.h" />
+    <ClInclude Include="..\..\src\MtModLibrary.h" />
+    <ClInclude Include="..\..\src\MtModule.h" />
+    <ClInclude Include="..\..\src\MtNode.h" />
+    <ClInclude Include="..\..\src\MtSourceFile.h" />
+    <ClInclude Include="..\..\src\Platform.h" />
+    <ClInclude Include="..\..\src\TreeSymbols.h" />
+    <ClInclude Include="..\..\src\metron_tools.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\MtCursor.cpp" />
+    <ClCompile Include="..\..\src\MtMethod.cpp" />
+    <ClCompile Include="..\..\src\MtModLibrary.cpp" />
+    <ClCompile Include="..\..\src\MtModule.cpp" />
+    <ClCompile Include="..\..\src\MtNode.cpp" />
+    <ClCompile Include="..\..\src\MtSourceFile.cpp" />
+    <ClCompile Include="..\..\src\Platform.cpp" />
+    <ClCompile Include="..\..\tree-sitter\lib\src\lib.c">
+      <Filter>tree-sitter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tree-sitter-cpp\src\scanner.cc">
+      <Filter>tree-sitter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tree-sitter-cpp\src\parser.c">
+      <Filter>tree-sitter</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\README.md" />
+    <None Include="..\..\src\metron_tools.sv" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="tree-sitter">
+      <UniqueIdentifier>{dae12e9a-a65f-43bf-9825-ba0ed8496905}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

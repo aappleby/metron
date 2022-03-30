@@ -24,6 +24,7 @@
     <ProjectGuid>{94a92def-dd9a-4873-ab69-5d8e20817cbc}</ProjectGuid>
     <RootNamespace>rvtinytest</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>rvtiny_metron</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -156,14 +157,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\example_rvtiny\rtl\config.h" />
-    <ClInclude Include="..\..\example_rvtiny\rtl\constants.h" />
-    <ClInclude Include="..\..\example_rvtiny\rtl\toplevel.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\example_rvtiny\rtl\main.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

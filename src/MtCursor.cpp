@@ -346,7 +346,7 @@ void MtCursor::emit_static_bit_extract(MtCallExpr call, int bx_width) {
       if (arg0.text() == "DONTCARE") {
         // Size-casting expression
         emit("%d'", bx_width);
-        emit("x");
+        emit("bx");
         cursor = call.end();
       } else {
         // Size-casting expression

@@ -4,3 +4,5 @@ obj
 .ninja_deps
 .ninja_log
 __pycache__
+vivado*.log
+vivado*.jou

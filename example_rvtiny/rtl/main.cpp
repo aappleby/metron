@@ -8,9 +8,9 @@ uint64_t total_tocks = 0;
 uint64_t total_time = 0;
 
 const int reps = 100000;
-const int max_cycles = 1000;
+const int max_cycles = 10000;
 
-int run_test(const char* test_name, const int reps, bool verbose) {
+int run_test(const char* test_name, const int reps, const int timeout, bool verbose) {
   fflush(stdout);
 
   char buf1[256];
@@ -34,7 +34,7 @@ int run_test(const char* test_name, const int reps, bool verbose) {
   for (int rep = 0; rep < reps; rep++) {
     top.tick(1);
     total_tocks++;
-    for (time = 0; time < max_cycles; time++) {
+    for (time = 0; time < timeout; time++) {
       top.tick(0);
       total_tocks++;
 
@@ -74,7 +74,7 @@ int main(int argc, const char** argv) {
 
   LOG_B("Warming up...\n");
   for (int i = 0; i < 38; i++) {
-    run_test(instructions[i], reps / 10, false);
+    run_test(instructions[i], reps / 10, max_cycles, false);
   }
 
   total_tocks = 0;
@@ -82,7 +82,7 @@ int main(int argc, const char** argv) {
 
   LOG_B("Testing...\n");
   for (int i = 0; i < 38; i++) {
-    run_test(instructions[i], reps, true);
+    run_test(instructions[i], reps, max_cycles, true);
   }
 
   double rate = double(total_tocks) / double(total_time);

@@ -5,5 +5,5 @@
 	path = tree-sitter-cpp
 	url = https://github.com/tree-sitter/tree-sitter-cpp
 [submodule "uart16550"]
-	path = uart16550
+	path = examples/uart16550
 	url = https://github.com/freecores/uart16550

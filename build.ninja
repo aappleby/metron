@@ -101,31 +101,31 @@ build examples/uart/metron_sv/uart_hello.sv $
 
 
 ################################################################################
-# Verilate uart_top@examples/uart/metron_sv -> obj/examples/uart/metron_sv
+# Verilate uart_top@examples/uart/metron_sv -> examples/uart/metron_vl
 
-build obj/examples/uart/metron_sv/Vuart_top.mk $
-    obj/examples/uart/metron_sv/Vuart_top.h: verilator $
+build examples/uart/metron_vl/Vuart_top.mk $
+    examples/uart/metron_vl/Vuart_top.h: verilator $
     examples/uart/metron_sv/uart_hello.sv $
     examples/uart/metron_sv/uart_rx.sv examples/uart/metron_sv/uart_top.sv $
     examples/uart/metron_sv/uart_tx.sv
   includes = -Isrc -Iexamples/uart/metron_sv
   src_top = uart_top
-  dst_dir = obj/examples/uart/metron_sv
-build obj/examples/uart/metron_sv/Vuart_top__ALL.o: make $
-    obj/examples/uart/metron_sv/Vuart_top.mk
-  dst_dir = obj/examples/uart/metron_sv
+  dst_dir = examples/uart/metron_vl
+build examples/uart/metron_vl/Vuart_top__ALL.o: make $
+    examples/uart/metron_vl/Vuart_top.mk
+  dst_dir = examples/uart/metron_vl
   makefile = Vuart_top.mk
 
 
 ################################################################################
-# Compile bin/examples/uart_sv
+# Compile bin/examples/uart_vl
 
-build obj/examples/uart/main_sv.o: compile_cpp examples/uart/main_sv.cpp | $
-    obj/examples/uart/metron_sv/Vuart_top.h
+build obj/examples/uart/main_vl.o: compile_cpp examples/uart/main_vl.cpp | $
+    examples/uart/metron_vl/Vuart_top.h
   includes = -Isrc -Itests -Iobj/examples/uart $
       -I/usr/local/share/verilator/include
-build bin/examples/uart_sv: link obj/verilated.o $
-    obj/examples/uart/metron_sv/Vuart_top__ALL.o obj/examples/uart/main_sv.o
+build bin/examples/uart_vl: link obj/verilated.o $
+    examples/uart/metron_vl/Vuart_top__ALL.o obj/examples/uart/main_vl.o
 
 
 ################################################################################
@@ -230,10 +230,10 @@ build examples/rvsimple/metron_sv/adder.sv $
 
 
 ################################################################################
-# Verilate toplevel@examples/rvsimple/metron_sv -> obj/examples/rvsimple/metron_sv
+# Verilate toplevel@examples/rvsimple/metron_sv -> examples/rvsimple/metron_vl
 
-build obj/examples/rvsimple/metron_sv/Vtoplevel.mk $
-    obj/examples/rvsimple/metron_sv/Vtoplevel.h: verilator $
+build examples/rvsimple/metron_vl/Vtoplevel.mk $
+    examples/rvsimple/metron_vl/Vtoplevel.h: verilator $
     examples/rvsimple/metron_sv/adder.sv examples/rvsimple/metron_sv/alu.sv $
     examples/rvsimple/metron_sv/alu_control.sv $
     examples/rvsimple/metron_sv/config.sv $
@@ -259,31 +259,30 @@ build obj/examples/rvsimple/metron_sv/Vtoplevel.mk $
     examples/rvsimple/metron_sv/toplevel.sv
   includes = -Isrc -Iexamples/rvsimple/metron_sv
   src_top = toplevel
-  dst_dir = obj/examples/rvsimple/metron_sv
-build obj/examples/rvsimple/metron_sv/Vtoplevel__ALL.o: make $
-    obj/examples/rvsimple/metron_sv/Vtoplevel.mk
-  dst_dir = obj/examples/rvsimple/metron_sv
+  dst_dir = examples/rvsimple/metron_vl
+build examples/rvsimple/metron_vl/Vtoplevel__ALL.o: make $
+    examples/rvsimple/metron_vl/Vtoplevel.mk
+  dst_dir = examples/rvsimple/metron_vl
   makefile = Vtoplevel.mk
 
 
 ################################################################################
-# Compile bin/examples/rvsimple_sv
+# Compile bin/examples/rvsimple_vl
 
-build obj/examples/rvsimple/main_sv.o: compile_cpp $
-    examples/rvsimple/main_sv.cpp | $
-    obj/examples/rvsimple/metron_sv/Vtoplevel.h
+build obj/examples/rvsimple/main_vl.o: compile_cpp $
+    examples/rvsimple/main_vl.cpp | examples/rvsimple/metron_vl/Vtoplevel.h
   includes = -Isrc -Itests -Iobj/examples/rvsimple $
       -I/usr/local/share/verilator/include
-build bin/examples/rvsimple_sv: link obj/verilated.o $
-    obj/examples/rvsimple/metron_sv/Vtoplevel__ALL.o $
-    obj/examples/rvsimple/main_sv.o
+build bin/examples/rvsimple_vl: link obj/verilated.o $
+    examples/rvsimple/metron_vl/Vtoplevel__ALL.o $
+    obj/examples/rvsimple/main_vl.o
 
 
 ################################################################################
-# Verilate toplevel@examples/rvsimple/reference -> obj/examples/rvsimple/reference
+# Verilate toplevel@examples/rvsimple/reference -> examples/rvsimple/reference_vl
 
-build obj/examples/rvsimple/reference/Vtoplevel.mk $
-    obj/examples/rvsimple/reference/Vtoplevel.h: verilator $
+build examples/rvsimple/reference_vl/Vtoplevel.mk $
+    examples/rvsimple/reference_vl/Vtoplevel.h: verilator $
     examples/rvsimple/reference/adder.sv examples/rvsimple/reference/alu.sv $
     examples/rvsimple/reference/alu_control.sv $
     examples/rvsimple/reference/config.sv $
@@ -309,24 +308,24 @@ build obj/examples/rvsimple/reference/Vtoplevel.mk $
     examples/rvsimple/reference/toplevel.sv
   includes = -Isrc -Iexamples/rvsimple/reference
   src_top = toplevel
-  dst_dir = obj/examples/rvsimple/reference
-build obj/examples/rvsimple/reference/Vtoplevel__ALL.o: make $
-    obj/examples/rvsimple/reference/Vtoplevel.mk
-  dst_dir = obj/examples/rvsimple/reference
+  dst_dir = examples/rvsimple/reference_vl
+build examples/rvsimple/reference_vl/Vtoplevel__ALL.o: make $
+    examples/rvsimple/reference_vl/Vtoplevel.mk
+  dst_dir = examples/rvsimple/reference_vl
   makefile = Vtoplevel.mk
 
 
 ################################################################################
 # Compile bin/examples/rvsimple_ref
 
-build obj/examples/rvsimple/main_ref.o: compile_cpp $
-    examples/rvsimple/main_ref.cpp | $
-    obj/examples/rvsimple/reference/Vtoplevel.h
+build obj/examples/rvsimple/main_ref_vl.o: compile_cpp $
+    examples/rvsimple/main_ref_vl.cpp | $
+    examples/rvsimple/reference_vl/Vtoplevel.h
   includes = -Isrc -Itests -Iobj/examples/rvsimple $
       -I/usr/local/share/verilator/include
 build bin/examples/rvsimple_ref: link obj/verilated.o $
-    obj/examples/rvsimple/reference/Vtoplevel__ALL.o $
-    obj/examples/rvsimple/main_ref.o
+    examples/rvsimple/reference_vl/Vtoplevel__ALL.o $
+    obj/examples/rvsimple/main_ref_vl.o
 
 
 ################################################################################
@@ -349,30 +348,29 @@ build examples/rvtiny/metron_sv/toplevel.sv: metron $
 
 
 ################################################################################
-# Verilate toplevel@examples/rvtiny/metron_sv -> obj/examples/rvtiny/metron_sv
+# Verilate toplevel@examples/rvtiny/metron_sv -> examples/rvtiny/metron_vl
 
-build obj/examples/rvtiny/metron_sv/Vtoplevel.mk $
-    obj/examples/rvtiny/metron_sv/Vtoplevel.h: verilator $
+build examples/rvtiny/metron_vl/Vtoplevel.mk $
+    examples/rvtiny/metron_vl/Vtoplevel.h: verilator $
     examples/rvtiny/metron_sv/toplevel.sv
   includes = -Isrc -Iexamples/rvtiny/metron_sv
   src_top = toplevel
-  dst_dir = obj/examples/rvtiny/metron_sv
-build obj/examples/rvtiny/metron_sv/Vtoplevel__ALL.o: make $
-    obj/examples/rvtiny/metron_sv/Vtoplevel.mk
-  dst_dir = obj/examples/rvtiny/metron_sv
+  dst_dir = examples/rvtiny/metron_vl
+build examples/rvtiny/metron_vl/Vtoplevel__ALL.o: make $
+    examples/rvtiny/metron_vl/Vtoplevel.mk
+  dst_dir = examples/rvtiny/metron_vl
   makefile = Vtoplevel.mk
 
 
 ################################################################################
-# Compile bin/examples/rvtiny_sv
+# Compile bin/examples/rvtiny_vl
 
-build obj/examples/rvtiny/main_sv.o: compile_cpp $
-    examples/rvtiny/main_sv.cpp | obj/examples/rvtiny/metron_sv/Vtoplevel.h
+build obj/examples/rvtiny/main_vl.o: compile_cpp $
+    examples/rvtiny/main_vl.cpp | examples/rvtiny/metron_vl/Vtoplevel.h
   includes = -Isrc -Itests -Iobj/examples/rvtiny $
       -I/usr/local/share/verilator/include
-build bin/examples/rvtiny_sv: link obj/verilated.o $
-    obj/examples/rvtiny/metron_sv/Vtoplevel__ALL.o $
-    obj/examples/rvtiny/main_sv.o
+build bin/examples/rvtiny_vl: link obj/verilated.o $
+    examples/rvtiny/metron_vl/Vtoplevel__ALL.o obj/examples/rvtiny/main_vl.o
 
 
 ################################################################################

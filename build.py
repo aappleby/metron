@@ -182,12 +182,12 @@ uart_srcs = metronize_dir("examples/uart/metron", "examples/uart/metron_sv")
 uart_vhdr, uart_vobj = verilate_dir(
     src_dir="examples/uart/metron_sv",
     src_top="uart_top",
-    dst_dir=path.join(obj_dir, "examples/uart/metron_sv")
+    dst_dir="examples/uart/metron_vl",
 )
 
 cpp_binary(
-    bin_name="bin/examples/uart_sv",
-    src_files=["examples/uart/main_sv.cpp"],
+    bin_name="bin/examples/uart_vl",
+    src_files=["examples/uart/main_vl.cpp"],
     includes=[
         "-Isrc",
         "-Itests",
@@ -259,12 +259,12 @@ rvsimple_metron_srcs = metronize_dir(
 rvsimple_metron_vhdr, rvsimple_metron_vobj = verilate_dir(
     src_dir="examples/rvsimple/metron_sv",
     src_top="toplevel",
-    dst_dir=path.join(obj_dir, "examples/rvsimple/metron_sv")
+    dst_dir="examples/rvsimple/metron_vl"
 )
 
 cpp_binary(
-    bin_name="bin/examples/rvsimple_sv",
-    src_files=["examples/rvsimple/main_sv.cpp"],
+    bin_name="bin/examples/rvsimple_vl",
+    src_files=["examples/rvsimple/main_vl.cpp"],
     includes=[
         "-Isrc",
         "-Itests",
@@ -278,12 +278,12 @@ cpp_binary(
 rvsimple_reference_vhdr, rvsimple_reference_vobj = verilate_dir(
     src_dir="examples/rvsimple/reference",
     src_top="toplevel",
-    dst_dir=path.join(obj_dir, "examples/rvsimple/reference")
+    dst_dir="examples/rvsimple/reference_vl"
 )
 
 cpp_binary(
     bin_name="bin/examples/rvsimple_ref",
-    src_files=["examples/rvsimple/main_ref.cpp"],
+    src_files=["examples/rvsimple/main_ref_vl.cpp"],
     includes=[
         "-Isrc",
         "-Itests",
@@ -310,12 +310,12 @@ rvtiny_metron_srcs = metronize_dir(
 rvtiny_metron_vhdr, rvtiny_metron_vobj = verilate_dir(
     src_dir="examples/rvtiny/metron_sv",
     src_top="toplevel",
-    dst_dir=path.join(obj_dir, "examples/rvtiny/metron_sv")
+    dst_dir="examples/rvtiny/metron_vl"
 )
 
 cpp_binary(
-    bin_name="bin/examples/rvtiny_sv",
-    src_files=["examples/rvtiny/main_sv.cpp"],
+    bin_name="bin/examples/rvtiny_vl",
+    src_files=["examples/rvtiny/main_vl.cpp"],
     includes=[
         "-Isrc",
         "-Itests",

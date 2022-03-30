@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "reference/Vtoplevel.h"
+#include "reference_vl/Vtoplevel.h"
 #include "verilated.h"
 #include "metron_tools.h"
 

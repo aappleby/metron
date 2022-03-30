@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include "Tests.h"
-#include "metron_sv/Vuart_top.h"
+#include "metron_vl/Vuart_top.h"
 
 //------------------------------------------------------------------------------
 

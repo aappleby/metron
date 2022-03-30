@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "uart_top.h"
+#include "metron/uart_top.h"
 
 int main(int argc, char** arv) {
   printf("Metron simulation:\n");

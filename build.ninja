@@ -79,12 +79,11 @@ build bin/metron: link obj/tree-sitter/lib/src/lib.o $
 
 
 ################################################################################
-# Compile bin/examples/uart/metron/main
+# Compile bin/examples/uart
 
-build obj/examples/uart/metron/main.o: compile_cpp $
-    examples/uart/metron/main.cpp
+build obj/examples/uart/main.o: compile_cpp examples/uart/main.cpp
   includes = -Isrc
-build bin/examples/uart/metron/main: link obj/examples/uart/metron/main.o
+build bin/examples/uart: link obj/examples/uart/main.o
 
 
 ################################################################################
@@ -119,15 +118,14 @@ build obj/examples/uart/metron_sv/Vuart_top__ALL.o: make $
 
 
 ################################################################################
-# Compile bin/examples/uart/metron_sv/main
+# Compile bin/examples/uart_sv
 
-build obj/examples/uart/metron_sv/main.o: compile_cpp $
-    examples/uart/metron_sv/main.cpp | obj/examples/uart/metron_sv/Vuart_top.h
-  includes = -Isrc -Itests -Iobj/examples/uart/metron_sv $
+build obj/examples/uart/main_sv.o: compile_cpp examples/uart/main_sv.cpp | $
+    obj/examples/uart/metron_sv/Vuart_top.h
+  includes = -Isrc -Itests -Iobj/examples/uart $
       -I/usr/local/share/verilator/include
-build bin/examples/uart/metron_sv/main: link obj/verilated.o $
-    obj/examples/uart/metron_sv/Vuart_top__ALL.o $
-    obj/examples/uart/metron_sv/main.o
+build bin/examples/uart_sv: link obj/verilated.o $
+    obj/examples/uart/metron_sv/Vuart_top__ALL.o obj/examples/uart/main_sv.o
 
 
 ################################################################################
@@ -135,8 +133,7 @@ build bin/examples/uart/metron_sv/main: link obj/verilated.o $
 
 rule iverilog
   command = iverilog -g2012 ${defines} ${includes} ${in} -o ${out}
-build bin/examples/uart/metron_sv/uart_test_iv: iverilog $
-    examples/uart/uart_test_iv.sv
+build bin/examples/uart_iv: iverilog examples/uart/uart_test_iv.sv
   includes = -Isrc -Iexamples/uart -Iexamples/uart/metron_sv
   defines = -DIVERILOG
 

@@ -170,8 +170,8 @@ cpp_binary(
 # Simple Uart testbench
 
 cpp_binary(
-    bin_name="bin/examples/uart/metron/main",
-    src_files=["examples/uart/metron/main.cpp"],
+    bin_name="bin/examples/uart",
+    src_files=["examples/uart/main.cpp"],
     includes=["-Isrc"],
     # FIXME Why the F does the build break if I don't pass an empty array here?
     src_objs=[],
@@ -186,12 +186,12 @@ uart_vhdr, uart_vobj = verilate_dir(
 )
 
 cpp_binary(
-    bin_name="bin/examples/uart/metron_sv/main",
-    src_files=["examples/uart/metron_sv/main.cpp"],
+    bin_name="bin/examples/uart_sv",
+    src_files=["examples/uart/main_sv.cpp"],
     includes=[
         "-Isrc",
         "-Itests",
-        "-Iobj/examples/uart/metron_sv",
+        "-Iobj/examples/uart",
         "-I/usr/local/share/verilator/include"
     ],
     src_objs=["obj/verilated.o", uart_vobj],
@@ -211,7 +211,7 @@ ninja.rule(name="iverilog",
 
 ninja.build(rule="iverilog",
             inputs="examples/uart/uart_test_iv.sv",
-            outputs="bin/examples/uart/metron_sv/uart_test_iv",
+            outputs="bin/examples/uart_iv",
             includes=uart_includes,
             defines="-DIVERILOG")
 

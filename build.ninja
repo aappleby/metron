@@ -133,7 +133,10 @@ build bin/examples/uart_vl: link obj/verilated.o $
 
 rule iverilog
   command = iverilog -g2012 ${defines} ${includes} ${in} -o ${out}
-build bin/examples/uart_iv: iverilog examples/uart/uart_test_iv.sv
+build bin/examples/uart_iv: iverilog examples/uart/uart_test_iv.sv | $
+    examples/uart/metron_sv/uart_hello.sv $
+    examples/uart/metron_sv/uart_rx.sv examples/uart/metron_sv/uart_top.sv $
+    examples/uart/metron_sv/uart_tx.sv
   includes = -Isrc -Iexamples/uart -Iexamples/uart/metron_sv
   defines = -DIVERILOG
 
@@ -145,7 +148,10 @@ rule yosys
   command = yosys -p 'read_verilog ${includes} -sv ${in}; dump; synth_ice40 $
       -json ${out};'
 build obj/examples/uart/uart_test_ice40.json: yosys $
-    examples/uart/uart_test_ice40.sv
+    examples/uart/uart_test_ice40.sv | $
+    examples/uart/metron_sv/uart_hello.sv $
+    examples/uart/metron_sv/uart_rx.sv examples/uart/metron_sv/uart_top.sv $
+    examples/uart/metron_sv/uart_tx.sv
   includes = -Isrc -Iexamples/uart -Iexamples/uart/metron_sv
 rule nextpnr-ice40
   command = nextpnr-ice40 -q --${chip} --package ${package} --json ${in} $
@@ -371,6 +377,54 @@ build obj/examples/rvtiny/main_vl.o: compile_cpp $
       -I/usr/local/share/verilator/include
 build bin/examples/rvtiny_vl: link obj/verilated.o $
     examples/rvtiny/metron_vl/Vtoplevel__ALL.o obj/examples/rvtiny/main_vl.o
+
+
+################################################################################
+# Compile bin/examples/rvtiny_sync
+
+build obj/examples/rvtiny_sync/main.o: compile_cpp $
+    examples/rvtiny_sync/main.cpp
+  includes = -I. -Isrc
+  opt = -O3
+build bin/examples/rvtiny_sync: link obj/examples/rvtiny_sync/main.o
+
+
+################################################################################
+# Metronize examples/rvtiny_sync/metron -> examples/rvtiny_sync/metron_sv
+
+build examples/rvtiny_sync/metron_sv/toplevel.sv: metron $
+    examples/rvtiny_sync/metron/toplevel.h | bin/metron
+  src_dir = examples/rvtiny_sync/metron
+  dst_dir = examples/rvtiny_sync/metron_sv
+  file_list = toplevel.h
+
+
+################################################################################
+# Verilate toplevel@examples/rvtiny_sync/metron_sv -> examples/rvtiny_sync/metron_vl
+
+build examples/rvtiny_sync/metron_vl/Vtoplevel.mk $
+    examples/rvtiny_sync/metron_vl/Vtoplevel.h: verilator $
+    examples/rvtiny_sync/metron_sv/toplevel.sv
+  includes = -Isrc -Iexamples/rvtiny_sync/metron_sv
+  src_top = toplevel
+  dst_dir = examples/rvtiny_sync/metron_vl
+build examples/rvtiny_sync/metron_vl/Vtoplevel__ALL.o: make $
+    examples/rvtiny_sync/metron_vl/Vtoplevel.mk
+  dst_dir = examples/rvtiny_sync/metron_vl
+  makefile = Vtoplevel.mk
+
+
+################################################################################
+# Compile bin/examples/rvtiny_sync_vl
+
+build obj/examples/rvtiny_sync/main_vl.o: compile_cpp $
+    examples/rvtiny_sync/main_vl.cpp | $
+    examples/rvtiny_sync/metron_vl/Vtoplevel.h
+  includes = -I. -Isrc -Iobj/examples/rvtiny_sync $
+      -I/usr/local/share/verilator/include
+build bin/examples/rvtiny_sync_vl: link obj/verilated.o $
+    examples/rvtiny_sync/metron_vl/Vtoplevel__ALL.o $
+    obj/examples/rvtiny_sync/main_vl.o
 
 
 ################################################################################

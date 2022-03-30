@@ -211,6 +211,7 @@ ninja.rule(name="iverilog",
 
 ninja.build(rule="iverilog",
             inputs="examples/uart/uart_test_iv.sv",
+            implicit=uart_srcs,
             outputs="bin/examples/uart_iv",
             includes=uart_includes,
             defines="-DIVERILOG")
@@ -222,6 +223,7 @@ ninja.rule(name="yosys",
 
 ninja.build(rule="yosys",
             inputs="examples/uart/uart_test_ice40.sv",
+            implicit=uart_srcs,
             outputs="obj/examples/uart/uart_test_ice40.json",
             includes=uart_includes)
 
@@ -327,6 +329,41 @@ cpp_binary(
     ],
     src_objs=["obj/verilated.o", rvtiny_metron_vobj],
     deps=[rvtiny_metron_vhdr]
+)
+
+# ------------------------------------------------------------------------------
+# RVTiny_Sync - synchronous-mem-only version of RVTiny
+
+cpp_binary(
+    bin_name="bin/examples/rvtiny_sync",
+    src_files=["examples/rvtiny_sync/main.cpp"],
+    includes=[
+        "-I.",
+        "-Isrc"
+    ],
+    opt="-O3",
+)
+
+rvtiny_sync_metron_sv = metronize_dir(
+    "examples/rvtiny_sync/metron", "examples/rvtiny_sync/metron_sv")
+
+rvtiny_sync_metron_vl_h, rvtiny_sync_metron_vl_o = verilate_dir(
+    src_dir="examples/rvtiny_sync/metron_sv",
+    src_top="toplevel",
+    dst_dir="examples/rvtiny_sync/metron_vl"
+)
+
+cpp_binary(
+    bin_name="bin/examples/rvtiny_sync_vl",
+    src_files=["examples/rvtiny_sync/main_vl.cpp"],
+    includes=[
+        "-I.",
+        "-Isrc",
+        "-Iobj/examples/rvtiny_sync",
+        "-I/usr/local/share/verilator/include"
+    ],
+    src_objs=["obj/verilated.o", rvtiny_sync_metron_vl_o],
+    deps=[rvtiny_sync_metron_vl_h]
 )
 
 # ------------------------------------------------------------------------------

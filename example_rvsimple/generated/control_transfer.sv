@@ -28,7 +28,7 @@ module control_transfer
       /*case*/ FUNCT3_BRANCH_GE:  take_branch = result_equal_zero;
       /*case*/ FUNCT3_BRANCH_LTU: take_branch = !result_equal_zero;
       /*case*/ FUNCT3_BRANCH_GEU: take_branch = result_equal_zero;
-      default:                take_branch = 1'x;
+      default:                take_branch = 1'bx;
     endcase
   end
 endmodule;

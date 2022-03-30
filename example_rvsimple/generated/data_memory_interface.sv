@@ -47,7 +47,7 @@ module data_memory_interface
       /*case*/ 2'b00: read_data = {{24 {1'(~data_format[2] & position_fix[7])}}, 8'(position_fix)};
       /*case*/ 2'b01: read_data = {{16 {1'(~data_format[2] & position_fix[15])}}, 16'(position_fix)};
       /*case*/ 2'b10: read_data = 32'(position_fix);
-      default:   read_data = 32'x;
+      default:   read_data = 32'bx;
     endcase
   end
 endmodule;

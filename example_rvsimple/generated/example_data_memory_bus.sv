@@ -30,7 +30,7 @@ module example_data_memory_bus
     data_memory_address = address[DATA_BITS - 2+1:2];
     fetched = data_memory_q;
     is_data_memory = address >= DATA_BEGIN && DATA_END >= address;
-    read_data = read_enable && is_data_memory ? fetched : 32'x;
+    read_data = read_enable && is_data_memory ? fetched : 32'bx;
   end
 
   always_comb begin : tocktick

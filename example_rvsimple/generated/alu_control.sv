@@ -55,7 +55,7 @@ module alu_control
         default_funct = ALU_AND;
         /*break;*/
       default:
-        default_funct = 5'x;
+        default_funct = 5'bx;
         /*break;*/
     endcase
 
@@ -68,7 +68,7 @@ module alu_control
         secondary_funct = ALU_SRA;
         /*break;*/
       default:
-        secondary_funct = 5'x;
+        secondary_funct = 5'bx;
         /*break;*/
     endcase
 
@@ -105,7 +105,7 @@ module alu_control
         branch_funct = ALU_SLTU;
         /*break;*/
       default:
-        branch_funct = 5'x;
+        branch_funct = 5'bx;
         /*break;*/
     endcase
 
@@ -119,7 +119,7 @@ module alu_control
       /*case*/ CTL_ALU_BRANCH:
         alu_function = branch_funct;
       default:
-        alu_function = 5'x;
+        alu_function = 5'bx;
     endcase
   end
 endmodule;

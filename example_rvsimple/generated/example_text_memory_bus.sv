@@ -27,7 +27,7 @@ module example_text_memory_bus
     text_memory_address = address[TEXT_BITS - 2+1:2];
     fetched = text_memory_q;
     is_text_addr = (address >= TEXT_BEGIN) && (TEXT_END >= address);
-    read_data = is_text_addr ? fetched : 32'x;
+    read_data = is_text_addr ? fetched : 32'bx;
   end
 
  /*private:*/

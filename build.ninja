@@ -165,14 +165,12 @@ build obj/examples/uart/uart_test_ice40.bin: icepack $
 
 
 ################################################################################
-# Compile bin/examples/rvsimple/metron/main
+# Compile bin/examples/rvsimple
 
-build obj/examples/rvsimple/metron/main.o: compile_cpp $
-    examples/rvsimple/metron/main.cpp
+build obj/examples/rvsimple/main.o: compile_cpp examples/rvsimple/main.cpp
   includes = -Isrc
   opt = -O3
-build bin/examples/rvsimple/metron/main: link $
-    obj/examples/rvsimple/metron/main.o
+build bin/examples/rvsimple: link obj/examples/rvsimple/main.o
 
 
 ################################################################################
@@ -272,16 +270,16 @@ build obj/examples/rvsimple/metron_sv/Vtoplevel__ALL.o: make $
 
 
 ################################################################################
-# Compile bin/examples/rvsimple/metron_sv/main
+# Compile bin/examples/rvsimple_sv
 
-build obj/examples/rvsimple/metron_sv/main.o: compile_cpp $
-    examples/rvsimple/metron_sv/main.cpp | $
+build obj/examples/rvsimple/main_sv.o: compile_cpp $
+    examples/rvsimple/main_sv.cpp | $
     obj/examples/rvsimple/metron_sv/Vtoplevel.h
-  includes = -Isrc -Itests -Iobj/examples/rvsimple/metron_sv $
+  includes = -Isrc -Itests -Iobj/examples/rvsimple $
       -I/usr/local/share/verilator/include
-build bin/examples/rvsimple/metron_sv/main: link obj/verilated.o $
+build bin/examples/rvsimple_sv: link obj/verilated.o $
     obj/examples/rvsimple/metron_sv/Vtoplevel__ALL.o $
-    obj/examples/rvsimple/metron_sv/main.o
+    obj/examples/rvsimple/main_sv.o
 
 
 ################################################################################
@@ -322,26 +320,25 @@ build obj/examples/rvsimple/reference/Vtoplevel__ALL.o: make $
 
 
 ################################################################################
-# Compile bin/examples/rvsimple/reference/main
+# Compile bin/examples/rvsimple_ref
 
-build obj/examples/rvsimple/reference/main.o: compile_cpp $
-    examples/rvsimple/reference/main.cpp | $
+build obj/examples/rvsimple/main_ref.o: compile_cpp $
+    examples/rvsimple/main_ref.cpp | $
     obj/examples/rvsimple/reference/Vtoplevel.h
-  includes = -Isrc -Itests -Iobj/examples/rvsimple/reference $
+  includes = -Isrc -Itests -Iobj/examples/rvsimple $
       -I/usr/local/share/verilator/include
-build bin/examples/rvsimple/reference/main: link obj/verilated.o $
+build bin/examples/rvsimple_ref: link obj/verilated.o $
     obj/examples/rvsimple/reference/Vtoplevel__ALL.o $
-    obj/examples/rvsimple/reference/main.o
+    obj/examples/rvsimple/main_ref.o
 
 
 ################################################################################
-# Compile bin/examples/rvtiny/metron/main
+# Compile bin/examples/rvtiny
 
-build obj/examples/rvtiny/metron/main.o: compile_cpp $
-    examples/rvtiny/metron/main.cpp
+build obj/examples/rvtiny/main.o: compile_cpp examples/rvtiny/main.cpp
   includes = -Isrc
   opt = -O3
-build bin/examples/rvtiny/metron/main: link obj/examples/rvtiny/metron/main.o
+build bin/examples/rvtiny: link obj/examples/rvtiny/main.o
 
 
 ################################################################################
@@ -370,16 +367,15 @@ build obj/examples/rvtiny/metron_sv/Vtoplevel__ALL.o: make $
 
 
 ################################################################################
-# Compile bin/examples/rvtiny/metron_sv/main
+# Compile bin/examples/rvtiny_sv
 
-build obj/examples/rvtiny/metron_sv/main.o: compile_cpp $
-    examples/rvtiny/metron_sv/main.cpp | $
-    obj/examples/rvtiny/metron_sv/Vtoplevel.h
-  includes = -Isrc -Itests -Iobj/examples/rvtiny/metron_sv $
+build obj/examples/rvtiny/main_sv.o: compile_cpp $
+    examples/rvtiny/main_sv.cpp | obj/examples/rvtiny/metron_sv/Vtoplevel.h
+  includes = -Isrc -Itests -Iobj/examples/rvtiny $
       -I/usr/local/share/verilator/include
-build bin/examples/rvtiny/metron_sv/main: link obj/verilated.o $
+build bin/examples/rvtiny_sv: link obj/verilated.o $
     obj/examples/rvtiny/metron_sv/Vtoplevel__ALL.o $
-    obj/examples/rvtiny/metron_sv/main.o
+    obj/examples/rvtiny/main_sv.o
 
 
 ################################################################################

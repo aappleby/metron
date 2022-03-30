@@ -1,16 +1,13 @@
 #include <stdio.h>
 
-#include "toplevel.h"
+#include "metron/toplevel.h"
 
 //------------------------------------------------------------------------------
 
 uint64_t total_tocks = 0;
 uint64_t total_time = 0;
 
-const int reps = 100000;
-const int max_cycles = 1000;
-
-int run_test(const char* test_name, const int reps, const int timeout, bool verbose) {
+int run_test(const char* test_name, const int reps) {
   fflush(stdout);
 
   char buf1[256];
@@ -28,16 +25,15 @@ int run_test(const char* test_name, const int reps, const int timeout, bool verb
   toplevel top;
   top.init();
 
-  if (verbose) LOG_R("running %6s: ", test_name);
+  LOG_R("running %6s: ", test_name);
 
   auto time_a = timestamp();
   for (int rep = 0; rep < reps; rep++) {
-    top.tick(1);
+    top.tock(1);
     total_tocks++;
-    for (time = 0; time < timeout; time++) {
-      top.tick(0);
+    for (time = 0; time < 100000; time++) {
+      top.tock(0);
       total_tocks++;
-
       if (top.o_bus_write_enable && top.o_bus_address == 0xfffffff0) {
         result = top.o_bus_write_data;
         break;
@@ -47,14 +43,14 @@ int run_test(const char* test_name, const int reps, const int timeout, bool verb
   auto time_b = timestamp();
   total_time += time_b - time_a;
 
-  if (time == max_cycles) {
-    if (verbose) LOG_Y("TIMEOUT\n");
+  if (time == 100000) {
+    LOG_Y("TIMEOUT\n");
     return -1;
   } else if (result) {
-    if (verbose) LOG_G("PASS %d @ %d\n", result, time);
+    LOG_G("PASS %d @ %d\n", result, time);
     return 0;
   } else {
-    if (verbose) LOG_R("FAIL %d @ %d\n", result, time);
+    LOG_R("FAIL %d @ %d\n", result, time);
     return -1;
   }
 }
@@ -62,27 +58,18 @@ int run_test(const char* test_name, const int reps, const int timeout, bool verb
 //------------------------------------------------------------------------------
 
 int main(int argc, const char** argv) {
+  const int reps = 100000;
   LOG_B("Starting %s @ %d reps...\n", argv[0], reps);
 
   const char* instructions[38] = {
-    "add", "addi", "and", "andi", "auipc", "beq",  "bge", "bgeu",
-    "blt", "bltu", "bne", "jal",  "jalr",  "lb",   "lbu", "lh",
-    "lhu", "lui",  "lw",  "or",   "ori",   "sb",   "sh",  "simple",
-    "sll", "slli", "slt", "slti", "sltiu", "sltu", "sra", "srai",
-    "srl", "srli", "sub", "sw",   "xor",   "xori"};
+      "add", "addi", "and", "andi", "auipc", "beq",  "bge", "bgeu",
+      "blt", "bltu", "bne", "jal",  "jalr",  "lb",   "lbu", "lh",
+      "lhu", "lui",  "lw",  "or",   "ori",   "sb",   "sh",  "simple",
+      "sll", "slli", "slt", "slti", "sltiu", "sltu", "sra", "srai",
+      "srl", "srli", "sub", "sw",   "xor",   "xori"};
 
-
-  LOG_B("Warming up...\n");
   for (int i = 0; i < 38; i++) {
-    run_test(instructions[i], reps / 10, max_cycles, false);
-  }
-
-  total_tocks = 0;
-  total_time = 0;
-
-  LOG_B("Testing...\n");
-  for (int i = 0; i < 38; i++) {
-    run_test(instructions[i], reps, max_cycles, true);
+    run_test(instructions[i], reps);
   }
 
   double rate = double(total_tocks) / double(total_time);

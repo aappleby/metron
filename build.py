@@ -247,8 +247,8 @@ ninja.build(rule="icepack",
 # RVSimple
 
 cpp_binary(
-    bin_name="bin/examples/rvsimple/metron/main",
-    src_files=["examples/rvsimple/metron/main.cpp"],
+    bin_name="bin/examples/rvsimple",
+    src_files=["examples/rvsimple/main.cpp"],
     includes=["-Isrc"],
     opt="-O3",
 )
@@ -263,20 +263,17 @@ rvsimple_metron_vhdr, rvsimple_metron_vobj = verilate_dir(
 )
 
 cpp_binary(
-    bin_name="bin/examples/rvsimple/metron_sv/main",
-    src_files=["examples/rvsimple/metron_sv/main.cpp"],
+    bin_name="bin/examples/rvsimple_sv",
+    src_files=["examples/rvsimple/main_sv.cpp"],
     includes=[
         "-Isrc",
         "-Itests",
-        "-Iobj/examples/rvsimple/metron_sv",
+        "-Iobj/examples/rvsimple",
         "-I/usr/local/share/verilator/include"
     ],
     src_objs=["obj/verilated.o", rvsimple_metron_vobj],
     deps=[rvsimple_metron_vhdr]
 )
-
-# ------------------------------------------------------------------------------
-# RVSimple Reference
 
 rvsimple_reference_vhdr, rvsimple_reference_vobj = verilate_dir(
     src_dir="examples/rvsimple/reference",
@@ -285,12 +282,12 @@ rvsimple_reference_vhdr, rvsimple_reference_vobj = verilate_dir(
 )
 
 cpp_binary(
-    bin_name="bin/examples/rvsimple/reference/main",
-    src_files=["examples/rvsimple/reference/main.cpp"],
+    bin_name="bin/examples/rvsimple_ref",
+    src_files=["examples/rvsimple/main_ref.cpp"],
     includes=[
         "-Isrc",
         "-Itests",
-        "-Iobj/examples/rvsimple/reference",
+        "-Iobj/examples/rvsimple",
         "-I/usr/local/share/verilator/include"
     ],
     src_objs=["obj/verilated.o", rvsimple_reference_vobj],
@@ -301,8 +298,8 @@ cpp_binary(
 # RVTiny
 
 cpp_binary(
-    bin_name="bin/examples/rvtiny/metron/main",
-    src_files=["examples/rvtiny/metron/main.cpp"],
+    bin_name="bin/examples/rvtiny",
+    src_files=["examples/rvtiny/main.cpp"],
     includes=["-Isrc"],
     opt="-O3",
 )
@@ -317,12 +314,12 @@ rvtiny_metron_vhdr, rvtiny_metron_vobj = verilate_dir(
 )
 
 cpp_binary(
-    bin_name="bin/examples/rvtiny/metron_sv/main",
-    src_files=["examples/rvtiny/metron_sv/main.cpp"],
+    bin_name="bin/examples/rvtiny_sv",
+    src_files=["examples/rvtiny/main_sv.cpp"],
     includes=[
         "-Isrc",
         "-Itests",
-        "-Iobj/examples/rvtiny/metron_sv",
+        "-Iobj/examples/rvtiny",
         "-I/usr/local/share/verilator/include"
     ],
     src_objs=["obj/verilated.o", rvtiny_metron_vobj],

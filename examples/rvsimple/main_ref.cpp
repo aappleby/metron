@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "Vtoplevel.h"
+#include "reference/Vtoplevel.h"
 #include "verilated.h"
 #include "metron_tools.h"
 
@@ -29,7 +29,7 @@ int run_test(const char* test_name, const int reps) {
   auto time_a = timestamp();
   for (int rep = 0; rep < reps; rep++) {
     top.reset = 0;
-    top.clock = 0; top.eval(); top.clock = 1; top.eval();
+    top.clock = 0; top.eval(); top.clock = 1; top.eval(); 
     total_tocks++;
 
     top.reset = 1;
@@ -41,8 +41,8 @@ int run_test(const char* test_name, const int reps) {
       top.clock = 0; top.eval(); top.clock = 1; top.eval();
       total_tocks++;
 
-      if (top.o_bus_write_enable && top.o_bus_address == 0xfffffff0) {
-        result = top.o_bus_write_data;
+      if (top.bus_write_enable && top.bus_address == 0xfffffff0) {
+        result = top.bus_write_data;
         break;
       }
     }

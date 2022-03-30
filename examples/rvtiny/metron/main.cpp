@@ -7,7 +7,7 @@
 uint64_t total_tocks = 0;
 uint64_t total_time = 0;
 
-const int reps = 1000;
+const int reps = 100000;
 const int max_cycles = 1000;
 
 int run_test(const char* test_name, const int reps, const int timeout, bool verbose) {

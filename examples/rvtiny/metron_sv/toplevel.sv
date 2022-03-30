@@ -1,7 +1,7 @@
 `ifndef RVSIMPLE_TOPLEVEL_H
 `define RVSIMPLE_TOPLEVEL_H
 
-//`include "metron_tools.sv"
+`include "metron_tools.sv"
 
 module toplevel
 (
@@ -37,19 +37,18 @@ module toplevel
   localparam /*const*/ int OP_LUI    = 8'h37;
   localparam /*const*/ int OP_AUIPC  = 8'h17;
 
-  /*
   initial begin : init
     string s;
     pc = 0;
     regs[0] = 32'd0;
 
+    /*std::string s;*/
     $value$plusargs("text_file=%s", s);
     $readmemh(s, text_mem);
 
     $value$plusargs("data_file=%s", s);
     $readmemh(s, data_mem);
   end
-  */
 
   always_ff @(posedge clock) begin : tick
     if (reset) begin
@@ -229,7 +228,7 @@ module toplevel
       //----------
 
       else if (op == OP_AUIPC) begin
-        reg[31:0] imm;
+        logic[31:0] imm;
         imm = {inst[31], inst[30:20], inst[19:12], 12'd0};
         if (rd) regs[rd] = pc + imm;
         pc <= pc + 4;
@@ -244,7 +243,7 @@ module toplevel
   logic[31:0] data_mem[32*1024];
   logic[31:0] pc;
   logic[31:0] regs[32];
-endmodule
+endmodule;
 
 
 `endif  // RVSIMPLE_TOPLEVEL_H

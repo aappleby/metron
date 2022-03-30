@@ -79,111 +79,152 @@ build bin/metron: link obj/tree-sitter/lib/src/lib.o $
 
 
 ################################################################################
-# Compile bin/example_uart/rtl/main
+# Compile bin/examples/uart/metron/main
 
-build obj/example_uart/rtl/main.o: compile_cpp example_uart/rtl/main.cpp
+build obj/examples/uart/metron/main.o: compile_cpp $
+    examples/uart/metron/main.cpp
   includes = -Isrc
-build bin/example_uart/rtl/main: link obj/example_uart/rtl/main.o
+build bin/examples/uart/metron/main: link obj/examples/uart/metron/main.o
 
 
 ################################################################################
-# Metronize example_uart/rtl -> example_uart/generated
+# Metronize examples/uart/metron -> examples/uart/metron_sv
 
-build example_uart/generated/uart_hello.sv $
-    example_uart/generated/uart_rx.sv example_uart/generated/uart_top.sv $
-    example_uart/generated/uart_tx.sv: metron example_uart/rtl/uart_hello.h $
-    example_uart/rtl/uart_rx.h example_uart/rtl/uart_top.h $
-    example_uart/rtl/uart_tx.h | bin/metron
-  src_dir = example_uart/rtl
-  dst_dir = example_uart/generated
+build examples/uart/metron_sv/uart_hello.sv $
+    examples/uart/metron_sv/uart_rx.sv examples/uart/metron_sv/uart_top.sv $
+    examples/uart/metron_sv/uart_tx.sv: metron $
+    examples/uart/metron/uart_hello.h examples/uart/metron/uart_rx.h $
+    examples/uart/metron/uart_top.h examples/uart/metron/uart_tx.h | $
+    bin/metron
+  src_dir = examples/uart/metron
+  dst_dir = examples/uart/metron_sv
   file_list = uart_hello.h uart_rx.h uart_top.h uart_tx.h
 
 
 ################################################################################
-# Verilate uart_top@example_uart/generated -> obj/example_uart/generated
+# Verilate uart_top@examples/uart/metron_sv -> obj/examples/uart/metron_sv
 
-build obj/example_uart/generated/Vuart_top.mk $
-    obj/example_uart/generated/Vuart_top.h: verilator $
-    example_uart/generated/uart_hello.sv example_uart/generated/uart_rx.sv $
-    example_uart/generated/uart_top.sv example_uart/generated/uart_tx.sv
-  includes = -Isrc -Iexample_uart/generated
+build obj/examples/uart/metron_sv/Vuart_top.mk $
+    obj/examples/uart/metron_sv/Vuart_top.h: verilator $
+    examples/uart/metron_sv/uart_hello.sv $
+    examples/uart/metron_sv/uart_rx.sv examples/uart/metron_sv/uart_top.sv $
+    examples/uart/metron_sv/uart_tx.sv
+  includes = -Isrc -Iexamples/uart/metron_sv
   src_top = uart_top
-  dst_dir = obj/example_uart/generated
-build obj/example_uart/generated/Vuart_top__ALL.o: make $
-    obj/example_uart/generated/Vuart_top.mk
-  dst_dir = obj/example_uart/generated
+  dst_dir = obj/examples/uart/metron_sv
+build obj/examples/uart/metron_sv/Vuart_top__ALL.o: make $
+    obj/examples/uart/metron_sv/Vuart_top.mk
+  dst_dir = obj/examples/uart/metron_sv
   makefile = Vuart_top.mk
 
 
 ################################################################################
-# Compile bin/example_uart/generated/main
+# Compile bin/examples/uart/metron_sv/main
 
-build obj/example_uart/generated/main.o: compile_cpp $
-    example_uart/generated/main.cpp | obj/example_uart/generated/Vuart_top.h
-  includes = -Isrc -Itests -Iobj/example_uart/generated $
+build obj/examples/uart/metron_sv/main.o: compile_cpp $
+    examples/uart/metron_sv/main.cpp | obj/examples/uart/metron_sv/Vuart_top.h
+  includes = -Isrc -Itests -Iobj/examples/uart/metron_sv $
       -I/usr/local/share/verilator/include
-build bin/example_uart/generated/main: link obj/verilated.o $
-    obj/example_uart/generated/Vuart_top__ALL.o $
-    obj/example_uart/generated/main.o
+build bin/examples/uart/metron_sv/main: link obj/verilated.o $
+    obj/examples/uart/metron_sv/Vuart_top__ALL.o $
+    obj/examples/uart/metron_sv/main.o
 
 
 ################################################################################
-# Compile bin/example_rvsimple/rtl/main
+# Icarus Verilog uart testbench
 
-build obj/example_rvsimple/rtl/main.o: compile_cpp $
-    example_rvsimple/rtl/main.cpp
+rule iverilog
+  command = iverilog -g2012 ${defines} ${includes} ${in} -o ${out}
+build bin/examples/uart/metron_sv/uart_test_iv: iverilog $
+    examples/uart/uart_test_iv.sv
+  includes = -Isrc -Iexamples/uart -Iexamples/uart/metron_sv
+  defines = -DIVERILOG
+
+
+################################################################################
+# Yosys/NextPNR uart testbench
+
+rule yosys
+  command = yosys -p 'read_verilog ${includes} -sv ${in}; dump; synth_ice40 $
+      -json ${out};'
+build obj/examples/uart/uart_test_ice40.json: yosys $
+    examples/uart/uart_test_ice40.sv
+  includes = -Isrc -Iexamples/uart -Iexamples/uart/metron_sv
+rule nextpnr-ice40
+  command = nextpnr-ice40 -q --${chip} --package ${package} --json ${in} $
+      --asc ${out} --pcf ${pcf}
+build obj/examples/uart/uart_test_ice40.asc: nextpnr-ice40 $
+    obj/examples/uart/uart_test_ice40.json
+  chip = hx8k
+  package = ct256
+  pcf = examples/uart/ice40-hx8k-b-evn.pcf
+rule icepack
+  command = icepack ${in} ${out}
+build obj/examples/uart/uart_test_ice40.bin: icepack $
+    obj/examples/uart/uart_test_ice40.asc
+
+
+################################################################################
+# Compile bin/examples/rvsimple/metron/main
+
+build obj/examples/rvsimple/metron/main.o: compile_cpp $
+    examples/rvsimple/metron/main.cpp
   includes = -Isrc
   opt = -O3
-build bin/example_rvsimple/rtl/main: link obj/example_rvsimple/rtl/main.o
+build bin/examples/rvsimple/metron/main: link $
+    obj/examples/rvsimple/metron/main.o
 
 
 ################################################################################
-# Metronize example_rvsimple/rtl -> example_rvsimple/generated
+# Metronize examples/rvsimple/metron -> examples/rvsimple/metron_sv
 
-build example_rvsimple/generated/adder.sv example_rvsimple/generated/alu.sv $
-    example_rvsimple/generated/alu_control.sv $
-    example_rvsimple/generated/config.sv $
-    example_rvsimple/generated/constants.sv $
-    example_rvsimple/generated/control_transfer.sv $
-    example_rvsimple/generated/data_memory_interface.sv $
-    example_rvsimple/generated/example_data_memory.sv $
-    example_rvsimple/generated/example_data_memory_bus.sv $
-    example_rvsimple/generated/example_text_memory.sv $
-    example_rvsimple/generated/example_text_memory_bus.sv $
-    example_rvsimple/generated/immediate_generator.sv $
-    example_rvsimple/generated/instruction_decoder.sv $
-    example_rvsimple/generated/multiplexer.sv $
-    example_rvsimple/generated/multiplexer2.sv $
-    example_rvsimple/generated/multiplexer4.sv $
-    example_rvsimple/generated/multiplexer8.sv $
-    example_rvsimple/generated/regfile.sv $
-    example_rvsimple/generated/register.sv $
-    example_rvsimple/generated/riscv_core.sv $
-    example_rvsimple/generated/singlecycle_control.sv $
-    example_rvsimple/generated/singlecycle_ctlpath.sv $
-    example_rvsimple/generated/singlecycle_datapath.sv $
-    example_rvsimple/generated/toplevel.sv: metron $
-    example_rvsimple/rtl/adder.h example_rvsimple/rtl/alu.h $
-    example_rvsimple/rtl/alu_control.h example_rvsimple/rtl/config.h $
-    example_rvsimple/rtl/constants.h $
-    example_rvsimple/rtl/control_transfer.h $
-    example_rvsimple/rtl/data_memory_interface.h $
-    example_rvsimple/rtl/example_data_memory.h $
-    example_rvsimple/rtl/example_data_memory_bus.h $
-    example_rvsimple/rtl/example_text_memory.h $
-    example_rvsimple/rtl/example_text_memory_bus.h $
-    example_rvsimple/rtl/immediate_generator.h $
-    example_rvsimple/rtl/instruction_decoder.h $
-    example_rvsimple/rtl/multiplexer.h example_rvsimple/rtl/multiplexer2.h $
-    example_rvsimple/rtl/multiplexer4.h example_rvsimple/rtl/multiplexer8.h $
-    example_rvsimple/rtl/regfile.h example_rvsimple/rtl/register.h $
-    example_rvsimple/rtl/riscv_core.h $
-    example_rvsimple/rtl/singlecycle_control.h $
-    example_rvsimple/rtl/singlecycle_ctlpath.h $
-    example_rvsimple/rtl/singlecycle_datapath.h $
-    example_rvsimple/rtl/toplevel.h | bin/metron
-  src_dir = example_rvsimple/rtl
-  dst_dir = example_rvsimple/generated
+build examples/rvsimple/metron_sv/adder.sv $
+    examples/rvsimple/metron_sv/alu.sv $
+    examples/rvsimple/metron_sv/alu_control.sv $
+    examples/rvsimple/metron_sv/config.sv $
+    examples/rvsimple/metron_sv/constants.sv $
+    examples/rvsimple/metron_sv/control_transfer.sv $
+    examples/rvsimple/metron_sv/data_memory_interface.sv $
+    examples/rvsimple/metron_sv/example_data_memory.sv $
+    examples/rvsimple/metron_sv/example_data_memory_bus.sv $
+    examples/rvsimple/metron_sv/example_text_memory.sv $
+    examples/rvsimple/metron_sv/example_text_memory_bus.sv $
+    examples/rvsimple/metron_sv/immediate_generator.sv $
+    examples/rvsimple/metron_sv/instruction_decoder.sv $
+    examples/rvsimple/metron_sv/multiplexer.sv $
+    examples/rvsimple/metron_sv/multiplexer2.sv $
+    examples/rvsimple/metron_sv/multiplexer4.sv $
+    examples/rvsimple/metron_sv/multiplexer8.sv $
+    examples/rvsimple/metron_sv/regfile.sv $
+    examples/rvsimple/metron_sv/register.sv $
+    examples/rvsimple/metron_sv/riscv_core.sv $
+    examples/rvsimple/metron_sv/singlecycle_control.sv $
+    examples/rvsimple/metron_sv/singlecycle_ctlpath.sv $
+    examples/rvsimple/metron_sv/singlecycle_datapath.sv $
+    examples/rvsimple/metron_sv/toplevel.sv: metron $
+    examples/rvsimple/metron/adder.h examples/rvsimple/metron/alu.h $
+    examples/rvsimple/metron/alu_control.h $
+    examples/rvsimple/metron/config.h examples/rvsimple/metron/constants.h $
+    examples/rvsimple/metron/control_transfer.h $
+    examples/rvsimple/metron/data_memory_interface.h $
+    examples/rvsimple/metron/example_data_memory.h $
+    examples/rvsimple/metron/example_data_memory_bus.h $
+    examples/rvsimple/metron/example_text_memory.h $
+    examples/rvsimple/metron/example_text_memory_bus.h $
+    examples/rvsimple/metron/immediate_generator.h $
+    examples/rvsimple/metron/instruction_decoder.h $
+    examples/rvsimple/metron/multiplexer.h $
+    examples/rvsimple/metron/multiplexer2.h $
+    examples/rvsimple/metron/multiplexer4.h $
+    examples/rvsimple/metron/multiplexer8.h $
+    examples/rvsimple/metron/regfile.h examples/rvsimple/metron/register.h $
+    examples/rvsimple/metron/riscv_core.h $
+    examples/rvsimple/metron/singlecycle_control.h $
+    examples/rvsimple/metron/singlecycle_ctlpath.h $
+    examples/rvsimple/metron/singlecycle_datapath.h $
+    examples/rvsimple/metron/toplevel.h | bin/metron
+  src_dir = examples/rvsimple/metron
+  dst_dir = examples/rvsimple/metron_sv
   file_list = adder.h alu.h alu_control.h config.h constants.h $
       control_transfer.h data_memory_interface.h example_data_memory.h $
       example_data_memory_bus.h example_text_memory.h $
@@ -194,184 +235,151 @@ build example_rvsimple/generated/adder.sv example_rvsimple/generated/alu.sv $
 
 
 ################################################################################
-# Verilate toplevel@example_rvsimple/generated -> obj/example_rvsimple/generated
+# Verilate toplevel@examples/rvsimple/metron_sv -> obj/examples/rvsimple/metron_sv
 
-build obj/example_rvsimple/generated/Vtoplevel.mk $
-    obj/example_rvsimple/generated/Vtoplevel.h: verilator $
-    example_rvsimple/generated/adder.sv example_rvsimple/generated/alu.sv $
-    example_rvsimple/generated/alu_control.sv $
-    example_rvsimple/generated/config.sv $
-    example_rvsimple/generated/constants.sv $
-    example_rvsimple/generated/control_transfer.sv $
-    example_rvsimple/generated/data_memory_interface.sv $
-    example_rvsimple/generated/example_data_memory.sv $
-    example_rvsimple/generated/example_data_memory_bus.sv $
-    example_rvsimple/generated/example_text_memory.sv $
-    example_rvsimple/generated/example_text_memory_bus.sv $
-    example_rvsimple/generated/immediate_generator.sv $
-    example_rvsimple/generated/instruction_decoder.sv $
-    example_rvsimple/generated/multiplexer.sv $
-    example_rvsimple/generated/multiplexer2.sv $
-    example_rvsimple/generated/multiplexer4.sv $
-    example_rvsimple/generated/multiplexer8.sv $
-    example_rvsimple/generated/regfile.sv $
-    example_rvsimple/generated/register.sv $
-    example_rvsimple/generated/riscv_core.sv $
-    example_rvsimple/generated/singlecycle_control.sv $
-    example_rvsimple/generated/singlecycle_ctlpath.sv $
-    example_rvsimple/generated/singlecycle_datapath.sv $
-    example_rvsimple/generated/toplevel.sv
-  includes = -Isrc -Iexample_rvsimple/generated
+build obj/examples/rvsimple/metron_sv/Vtoplevel.mk $
+    obj/examples/rvsimple/metron_sv/Vtoplevel.h: verilator $
+    examples/rvsimple/metron_sv/adder.sv examples/rvsimple/metron_sv/alu.sv $
+    examples/rvsimple/metron_sv/alu_control.sv $
+    examples/rvsimple/metron_sv/config.sv $
+    examples/rvsimple/metron_sv/constants.sv $
+    examples/rvsimple/metron_sv/control_transfer.sv $
+    examples/rvsimple/metron_sv/data_memory_interface.sv $
+    examples/rvsimple/metron_sv/example_data_memory.sv $
+    examples/rvsimple/metron_sv/example_data_memory_bus.sv $
+    examples/rvsimple/metron_sv/example_text_memory.sv $
+    examples/rvsimple/metron_sv/example_text_memory_bus.sv $
+    examples/rvsimple/metron_sv/immediate_generator.sv $
+    examples/rvsimple/metron_sv/instruction_decoder.sv $
+    examples/rvsimple/metron_sv/multiplexer.sv $
+    examples/rvsimple/metron_sv/multiplexer2.sv $
+    examples/rvsimple/metron_sv/multiplexer4.sv $
+    examples/rvsimple/metron_sv/multiplexer8.sv $
+    examples/rvsimple/metron_sv/regfile.sv $
+    examples/rvsimple/metron_sv/register.sv $
+    examples/rvsimple/metron_sv/riscv_core.sv $
+    examples/rvsimple/metron_sv/singlecycle_control.sv $
+    examples/rvsimple/metron_sv/singlecycle_ctlpath.sv $
+    examples/rvsimple/metron_sv/singlecycle_datapath.sv $
+    examples/rvsimple/metron_sv/toplevel.sv
+  includes = -Isrc -Iexamples/rvsimple/metron_sv
   src_top = toplevel
-  dst_dir = obj/example_rvsimple/generated
-build obj/example_rvsimple/generated/Vtoplevel__ALL.o: make $
-    obj/example_rvsimple/generated/Vtoplevel.mk
-  dst_dir = obj/example_rvsimple/generated
+  dst_dir = obj/examples/rvsimple/metron_sv
+build obj/examples/rvsimple/metron_sv/Vtoplevel__ALL.o: make $
+    obj/examples/rvsimple/metron_sv/Vtoplevel.mk
+  dst_dir = obj/examples/rvsimple/metron_sv
   makefile = Vtoplevel.mk
 
 
 ################################################################################
-# Compile bin/example_rvsimple/generated/main
+# Compile bin/examples/rvsimple/metron_sv/main
 
-build obj/example_rvsimple/generated/main.o: compile_cpp $
-    example_rvsimple/generated/main.cpp | $
-    obj/example_rvsimple/generated/Vtoplevel.h
-  includes = -Isrc -Itests -Iobj/example_rvsimple/generated $
+build obj/examples/rvsimple/metron_sv/main.o: compile_cpp $
+    examples/rvsimple/metron_sv/main.cpp | $
+    obj/examples/rvsimple/metron_sv/Vtoplevel.h
+  includes = -Isrc -Itests -Iobj/examples/rvsimple/metron_sv $
       -I/usr/local/share/verilator/include
-build bin/example_rvsimple/generated/main: link obj/verilated.o $
-    obj/example_rvsimple/generated/Vtoplevel__ALL.o $
-    obj/example_rvsimple/generated/main.o
+build bin/examples/rvsimple/metron_sv/main: link obj/verilated.o $
+    obj/examples/rvsimple/metron_sv/Vtoplevel__ALL.o $
+    obj/examples/rvsimple/metron_sv/main.o
 
 
 ################################################################################
-# Verilate toplevel@example_rvsimple/reference -> obj/example_rvsimple/reference
+# Verilate toplevel@examples/rvsimple/reference -> obj/examples/rvsimple/reference
 
-build obj/example_rvsimple/reference/Vtoplevel.mk $
-    obj/example_rvsimple/reference/Vtoplevel.h: verilator $
-    example_rvsimple/reference/adder.sv example_rvsimple/reference/alu.sv $
-    example_rvsimple/reference/alu_control.sv $
-    example_rvsimple/reference/config.sv $
-    example_rvsimple/reference/constants.sv $
-    example_rvsimple/reference/control_transfer.sv $
-    example_rvsimple/reference/data_memory_interface.sv $
-    example_rvsimple/reference/example_data_memory.sv $
-    example_rvsimple/reference/example_data_memory_bus.sv $
-    example_rvsimple/reference/example_text_memory.sv $
-    example_rvsimple/reference/example_text_memory_bus.sv $
-    example_rvsimple/reference/immediate_generator.sv $
-    example_rvsimple/reference/instruction_decoder.sv $
-    example_rvsimple/reference/multiplexer.sv $
-    example_rvsimple/reference/multiplexer2.sv $
-    example_rvsimple/reference/multiplexer4.sv $
-    example_rvsimple/reference/multiplexer8.sv $
-    example_rvsimple/reference/regfile.sv $
-    example_rvsimple/reference/register.sv $
-    example_rvsimple/reference/riscv_core.sv $
-    example_rvsimple/reference/singlecycle_control.sv $
-    example_rvsimple/reference/singlecycle_ctlpath.sv $
-    example_rvsimple/reference/singlecycle_datapath.sv $
-    example_rvsimple/reference/toplevel.sv
-  includes = -Isrc -Iexample_rvsimple/reference
+build obj/examples/rvsimple/reference/Vtoplevel.mk $
+    obj/examples/rvsimple/reference/Vtoplevel.h: verilator $
+    examples/rvsimple/reference/adder.sv examples/rvsimple/reference/alu.sv $
+    examples/rvsimple/reference/alu_control.sv $
+    examples/rvsimple/reference/config.sv $
+    examples/rvsimple/reference/constants.sv $
+    examples/rvsimple/reference/control_transfer.sv $
+    examples/rvsimple/reference/data_memory_interface.sv $
+    examples/rvsimple/reference/example_data_memory.sv $
+    examples/rvsimple/reference/example_data_memory_bus.sv $
+    examples/rvsimple/reference/example_text_memory.sv $
+    examples/rvsimple/reference/example_text_memory_bus.sv $
+    examples/rvsimple/reference/immediate_generator.sv $
+    examples/rvsimple/reference/instruction_decoder.sv $
+    examples/rvsimple/reference/multiplexer.sv $
+    examples/rvsimple/reference/multiplexer2.sv $
+    examples/rvsimple/reference/multiplexer4.sv $
+    examples/rvsimple/reference/multiplexer8.sv $
+    examples/rvsimple/reference/regfile.sv $
+    examples/rvsimple/reference/register.sv $
+    examples/rvsimple/reference/riscv_core.sv $
+    examples/rvsimple/reference/singlecycle_control.sv $
+    examples/rvsimple/reference/singlecycle_ctlpath.sv $
+    examples/rvsimple/reference/singlecycle_datapath.sv $
+    examples/rvsimple/reference/toplevel.sv
+  includes = -Isrc -Iexamples/rvsimple/reference
   src_top = toplevel
-  dst_dir = obj/example_rvsimple/reference
-build obj/example_rvsimple/reference/Vtoplevel__ALL.o: make $
-    obj/example_rvsimple/reference/Vtoplevel.mk
-  dst_dir = obj/example_rvsimple/reference
+  dst_dir = obj/examples/rvsimple/reference
+build obj/examples/rvsimple/reference/Vtoplevel__ALL.o: make $
+    obj/examples/rvsimple/reference/Vtoplevel.mk
+  dst_dir = obj/examples/rvsimple/reference
   makefile = Vtoplevel.mk
 
 
 ################################################################################
-# Compile bin/example_rvsimple/reference/main
+# Compile bin/examples/rvsimple/reference/main
 
-build obj/example_rvsimple/reference/main.o: compile_cpp $
-    example_rvsimple/reference/main.cpp | $
-    obj/example_rvsimple/reference/Vtoplevel.h
-  includes = -Isrc -Itests -Iobj/example_rvsimple/reference $
+build obj/examples/rvsimple/reference/main.o: compile_cpp $
+    examples/rvsimple/reference/main.cpp | $
+    obj/examples/rvsimple/reference/Vtoplevel.h
+  includes = -Isrc -Itests -Iobj/examples/rvsimple/reference $
       -I/usr/local/share/verilator/include
-build bin/example_rvsimple/reference/main: link obj/verilated.o $
-    obj/example_rvsimple/reference/Vtoplevel__ALL.o $
-    obj/example_rvsimple/reference/main.o
+build bin/examples/rvsimple/reference/main: link obj/verilated.o $
+    obj/examples/rvsimple/reference/Vtoplevel__ALL.o $
+    obj/examples/rvsimple/reference/main.o
 
 
 ################################################################################
-# Compile bin/example_rvtiny/rtl/main
+# Compile bin/examples/rvtiny/metron/main
 
-build obj/example_rvtiny/rtl/main.o: compile_cpp example_rvtiny/rtl/main.cpp
+build obj/examples/rvtiny/metron/main.o: compile_cpp $
+    examples/rvtiny/metron/main.cpp
   includes = -Isrc
   opt = -O3
-build bin/example_rvtiny/rtl/main: link obj/example_rvtiny/rtl/main.o
+build bin/examples/rvtiny/metron/main: link obj/examples/rvtiny/metron/main.o
 
 
 ################################################################################
-# Metronize example_rvtiny/rtl -> example_rvtiny/generated
+# Metronize examples/rvtiny/metron -> examples/rvtiny/metron_sv
 
-build example_rvtiny/generated/toplevel.sv: metron $
-    example_rvtiny/rtl/toplevel.h | bin/metron
-  src_dir = example_rvtiny/rtl
-  dst_dir = example_rvtiny/generated
+build examples/rvtiny/metron_sv/toplevel.sv: metron $
+    examples/rvtiny/metron/toplevel.h | bin/metron
+  src_dir = examples/rvtiny/metron
+  dst_dir = examples/rvtiny/metron_sv
   file_list = toplevel.h
 
 
 ################################################################################
-# Verilate toplevel@example_rvtiny/generated -> obj/example_rvtiny/generated
+# Verilate toplevel@examples/rvtiny/metron_sv -> obj/examples/rvtiny/metron_sv
 
-build obj/example_rvtiny/generated/Vtoplevel.mk $
-    obj/example_rvtiny/generated/Vtoplevel.h: verilator $
-    example_rvtiny/generated/toplevel.sv
-  includes = -Isrc -Iexample_rvtiny/generated
+build obj/examples/rvtiny/metron_sv/Vtoplevel.mk $
+    obj/examples/rvtiny/metron_sv/Vtoplevel.h: verilator $
+    examples/rvtiny/metron_sv/toplevel.sv
+  includes = -Isrc -Iexamples/rvtiny/metron_sv
   src_top = toplevel
-  dst_dir = obj/example_rvtiny/generated
-build obj/example_rvtiny/generated/Vtoplevel__ALL.o: make $
-    obj/example_rvtiny/generated/Vtoplevel.mk
-  dst_dir = obj/example_rvtiny/generated
+  dst_dir = obj/examples/rvtiny/metron_sv
+build obj/examples/rvtiny/metron_sv/Vtoplevel__ALL.o: make $
+    obj/examples/rvtiny/metron_sv/Vtoplevel.mk
+  dst_dir = obj/examples/rvtiny/metron_sv
   makefile = Vtoplevel.mk
 
 
 ################################################################################
-# Compile bin/example_rvtiny/generated/main
+# Compile bin/examples/rvtiny/metron_sv/main
 
-build obj/example_rvtiny/generated/main.o: compile_cpp $
-    example_rvtiny/generated/main.cpp | $
-    obj/example_rvtiny/generated/Vtoplevel.h
-  includes = -Isrc -Itests -Iobj/example_rvtiny/generated $
+build obj/examples/rvtiny/metron_sv/main.o: compile_cpp $
+    examples/rvtiny/metron_sv/main.cpp | $
+    obj/examples/rvtiny/metron_sv/Vtoplevel.h
+  includes = -Isrc -Itests -Iobj/examples/rvtiny/metron_sv $
       -I/usr/local/share/verilator/include
-build bin/example_rvtiny/generated/main: link obj/verilated.o $
-    obj/example_rvtiny/generated/Vtoplevel__ALL.o $
-    obj/example_rvtiny/generated/main.o
-
-
-################################################################################
-# Icarus Verilog uart testbench
-
-rule iverilog
-  command = iverilog -g2012 ${defines} ${includes} ${in} -o ${out}
-build bin/example_uart/generated/uart_test_iv: iverilog $
-    example_uart/uart_test_iv.sv
-  includes = -Isrc -Iexample_uart -Iexample_uart/generated
-  defines = -DIVERILOG
-
-
-################################################################################
-# Yosys/NextPNR uart testbench
-
-rule yosys
-  command = yosys -p 'read_verilog ${includes} -sv ${in}; dump; synth_ice40 $
-      -json ${out};'
-build obj/example_uart/uart_test_ice40.json: yosys $
-    example_uart/uart_test_ice40.sv
-  includes = -Isrc -Iexample_uart -Iexample_uart/generated
-rule nextpnr-ice40
-  command = nextpnr-ice40 -q --${chip} --package ${package} --json ${in} $
-      --asc ${out} --pcf ${pcf}
-build obj/example_uart/uart_test_ice40.asc: nextpnr-ice40 $
-    obj/example_uart/uart_test_ice40.json
-  chip = hx8k
-  package = ct256
-  pcf = example_uart/ice40-hx8k-b-evn.pcf
-rule icepack
-  command = icepack ${in} ${out}
-build obj/example_uart/uart_test_ice40.bin: icepack $
-    obj/example_uart/uart_test_ice40.asc
+build bin/examples/rvtiny/metron_sv/main: link obj/verilated.o $
+    obj/examples/rvtiny/metron_sv/Vtoplevel__ALL.o $
+    obj/examples/rvtiny/metron_sv/main.o
 
 
 ################################################################################

@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import glob
 import ninja_syntax
 import sys
@@ -165,69 +167,108 @@ cpp_binary(
 )
 
 # ------------------------------------------------------------------------------
+# Simple Uart testbench
 
 cpp_binary(
-    bin_name="bin/example_uart/rtl/main",
-    src_files=["example_uart/rtl/main.cpp"],
+    bin_name="bin/examples/uart/metron/main",
+    src_files=["examples/uart/metron/main.cpp"],
     includes=["-Isrc"],
     # FIXME Why the F does the build break if I don't pass an empty array here?
     src_objs=[],
 )
 
-# ninja.default("bin/example_uart/rtl/main")
-
-# ------------------------------------------------------------------------------
-
-uart_srcs = metronize_dir("example_uart/rtl", "example_uart/generated")
+uart_srcs = metronize_dir("examples/uart/metron", "examples/uart/metron_sv")
 
 uart_vhdr, uart_vobj = verilate_dir(
-    src_dir="example_uart/generated",
+    src_dir="examples/uart/metron_sv",
     src_top="uart_top",
-    dst_dir=path.join(obj_dir, "example_uart/generated")
+    dst_dir=path.join(obj_dir, "examples/uart/metron_sv")
 )
 
 cpp_binary(
-    bin_name="bin/example_uart/generated/main",
-    src_files=["example_uart/generated/main.cpp"],
+    bin_name="bin/examples/uart/metron_sv/main",
+    src_files=["examples/uart/metron_sv/main.cpp"],
     includes=[
         "-Isrc",
         "-Itests",
-        "-Iobj/example_uart/generated",
+        "-Iobj/examples/uart/metron_sv",
         "-I/usr/local/share/verilator/include"
     ],
     src_objs=["obj/verilated.o", uart_vobj],
     deps=[uart_vhdr]
 )
 
+divider("Icarus Verilog uart testbench")
+
+uart_includes = [
+    "-Isrc",
+    "-Iexamples/uart",
+    "-Iexamples/uart/metron_sv"
+]
+
+ninja.rule(name="iverilog",
+           command="iverilog -g2012 ${defines} ${includes} ${in} -o ${out}")
+
+ninja.build(rule="iverilog",
+            inputs="examples/uart/uart_test_iv.sv",
+            outputs="bin/examples/uart/metron_sv/uart_test_iv",
+            includes=uart_includes,
+            defines="-DIVERILOG")
+
+divider("Yosys/NextPNR uart testbench")
+
+ninja.rule(name="yosys",
+           command="yosys -p 'read_verilog ${includes} -sv ${in}; dump; synth_ice40 -json ${out};'")
+
+ninja.build(rule="yosys",
+            inputs="examples/uart/uart_test_ice40.sv",
+            outputs="obj/examples/uart/uart_test_ice40.json",
+            includes=uart_includes)
+
+ninja.rule(name="nextpnr-ice40",
+           command="nextpnr-ice40 -q --${chip} --package ${package} --json ${in} --asc ${out} --pcf ${pcf}")
+
+ninja.build(rule="nextpnr-ice40",
+            inputs="obj/examples/uart/uart_test_ice40.json",
+            outputs="obj/examples/uart/uart_test_ice40.asc",
+            chip="hx8k",
+            package="ct256",
+            pcf="examples/uart/ice40-hx8k-b-evn.pcf")
+
+
+ninja.rule(name="icepack", command="icepack ${in} ${out}")
+ninja.build(rule="icepack",
+            inputs="obj/examples/uart/uart_test_ice40.asc",
+            outputs="obj/examples/uart/uart_test_ice40.bin")
+
+# build out/uart_test_ice40.bin   : iceprog out/uart_test_ice40.asc
+
 # ------------------------------------------------------------------------------
-# RVSimple Metron
+# RVSimple
 
 cpp_binary(
-    bin_name="bin/example_rvsimple/rtl/main",
-    src_files=["example_rvsimple/rtl/main.cpp"],
+    bin_name="bin/examples/rvsimple/metron/main",
+    src_files=["examples/rvsimple/metron/main.cpp"],
     includes=["-Isrc"],
     opt="-O3",
 )
 
-# ------------------------------------------------------------------------------
-# RVSimple Generated
-
 rvsimple_metron_srcs = metronize_dir(
-    "example_rvsimple/rtl", "example_rvsimple/generated")
+    "examples/rvsimple/metron", "examples/rvsimple/metron_sv")
 
 rvsimple_metron_vhdr, rvsimple_metron_vobj = verilate_dir(
-    src_dir="example_rvsimple/generated",
+    src_dir="examples/rvsimple/metron_sv",
     src_top="toplevel",
-    dst_dir=path.join(obj_dir, "example_rvsimple/generated")
+    dst_dir=path.join(obj_dir, "examples/rvsimple/metron_sv")
 )
 
 cpp_binary(
-    bin_name="bin/example_rvsimple/generated/main",
-    src_files=["example_rvsimple/generated/main.cpp"],
+    bin_name="bin/examples/rvsimple/metron_sv/main",
+    src_files=["examples/rvsimple/metron_sv/main.cpp"],
     includes=[
         "-Isrc",
         "-Itests",
-        "-Iobj/example_rvsimple/generated",
+        "-Iobj/examples/rvsimple/metron_sv",
         "-I/usr/local/share/verilator/include"
     ],
     src_objs=["obj/verilated.o", rvsimple_metron_vobj],
@@ -238,18 +279,18 @@ cpp_binary(
 # RVSimple Reference
 
 rvsimple_reference_vhdr, rvsimple_reference_vobj = verilate_dir(
-    src_dir="example_rvsimple/reference",
+    src_dir="examples/rvsimple/reference",
     src_top="toplevel",
-    dst_dir=path.join(obj_dir, "example_rvsimple/reference")
+    dst_dir=path.join(obj_dir, "examples/rvsimple/reference")
 )
 
 cpp_binary(
-    bin_name="bin/example_rvsimple/reference/main",
-    src_files=["example_rvsimple/reference/main.cpp"],
+    bin_name="bin/examples/rvsimple/reference/main",
+    src_files=["examples/rvsimple/reference/main.cpp"],
     includes=[
         "-Isrc",
         "-Itests",
-        "-Iobj/example_rvsimple/reference",
+        "-Iobj/examples/rvsimple/reference",
         "-I/usr/local/share/verilator/include"
     ],
     src_objs=["obj/verilated.o", rvsimple_reference_vobj],
@@ -257,34 +298,31 @@ cpp_binary(
 )
 
 # ------------------------------------------------------------------------------
-# RVTiny Metron
+# RVTiny
 
 cpp_binary(
-    bin_name="bin/example_rvtiny/rtl/main",
-    src_files=["example_rvtiny/rtl/main.cpp"],
+    bin_name="bin/examples/rvtiny/metron/main",
+    src_files=["examples/rvtiny/metron/main.cpp"],
     includes=["-Isrc"],
     opt="-O3",
 )
 
-# ------------------------------------------------------------------------------
-# RVTiny Generated
-
 rvtiny_metron_srcs = metronize_dir(
-    "example_rvtiny/rtl", "example_rvtiny/generated")
+    "examples/rvtiny/metron", "examples/rvtiny/metron_sv")
 
 rvtiny_metron_vhdr, rvtiny_metron_vobj = verilate_dir(
-    src_dir="example_rvtiny/generated",
+    src_dir="examples/rvtiny/metron_sv",
     src_top="toplevel",
-    dst_dir=path.join(obj_dir, "example_rvtiny/generated")
+    dst_dir=path.join(obj_dir, "examples/rvtiny/metron_sv")
 )
 
 cpp_binary(
-    bin_name="bin/example_rvtiny/generated/main",
-    src_files=["example_rvtiny/generated/main.cpp"],
+    bin_name="bin/examples/rvtiny/metron_sv/main",
+    src_files=["examples/rvtiny/metron_sv/main.cpp"],
     includes=[
         "-Isrc",
         "-Itests",
-        "-Iobj/example_rvtiny/generated",
+        "-Iobj/examples/rvtiny/metron_sv",
         "-I/usr/local/share/verilator/include"
     ],
     src_objs=["obj/verilated.o", rvtiny_metron_vobj],
@@ -293,75 +331,18 @@ cpp_binary(
 
 # ------------------------------------------------------------------------------
 
-divider("Icarus Verilog uart testbench")
-
-uart_includes = [
-    "-Isrc",
-    "-Iexample_uart",
-    "-Iexample_uart/generated"
-]
-
-ninja.rule(name="iverilog",
-           command="iverilog -g2012 ${defines} ${includes} ${in} -o ${out}")
-
-ninja.build(rule="iverilog",
-            inputs="example_uart/uart_test_iv.sv",
-            outputs="bin/example_uart/generated/uart_test_iv",
-            includes=uart_includes,
-            defines="-DIVERILOG")
-
-# ------------------------------------------------------------------------------
-
-divider("Yosys/NextPNR uart testbench")
-
-#ninja.rule(name="sv2v", command="sv2v ${includes} -w ${out} ${in}")
-# ninja.build(rule="sv2v",
-#            inputs=["example_uart/uart_test_ice40.sv"],
-#            implicit=uart_srcs,
-#            outputs=["obj/example_uart/uart_test_ice40.sv.v"],
-#            includes=["-Isrc", "-Iexample_uart/generated"])
-
-ninja.rule(name="yosys",
-           command="yosys -p 'read_verilog ${includes} -sv ${in}; dump; synth_ice40 -json ${out};'")
-
-ninja.build(rule="yosys",
-            inputs="example_uart/uart_test_ice40.sv",
-            outputs="obj/example_uart/uart_test_ice40.json",
-            includes=uart_includes)
-
-ninja.rule(name="nextpnr-ice40",
-           command="nextpnr-ice40 -q --${chip} --package ${package} --json ${in} --asc ${out} --pcf ${pcf}")
-
-ninja.build(rule="nextpnr-ice40",
-            inputs="obj/example_uart/uart_test_ice40.json",
-            outputs="obj/example_uart/uart_test_ice40.asc",
-            chip="hx8k",
-            package="ct256",
-            pcf="example_uart/ice40-hx8k-b-evn.pcf")
-
-
-#ninja.rule(name="iceprog", command="icepack ${in} ${out} && iceprog -S ${out}")
-ninja.rule(name="icepack", command="icepack ${in} ${out}")
-
-ninja.build(rule="icepack",
-            inputs="obj/example_uart/uart_test_ice40.asc",
-            outputs="obj/example_uart/uart_test_ice40.bin")
-
-# build out/uart_test_ice40.bin   : iceprog out/uart_test_ice40.asc
-
-
 divider("Done!")
 
 
 """"
-# build benchmark_reference : run_always bin/example_rvsimple/main_reference
-# build benchmark_generated : run_always bin/example_rvsimple/main_generated
-# build benchmark_rtl : run_always bin/example_rvsimple/main_rtl
+# build benchmark_reference : run_always bin/examples/rvsimple/main_reference
+# build benchmark_generated : run_always bin/examples/rvsimple/main_generated
+# build benchmark_rtl : run_always bin/examples/rvsimple/main_rtl
 
 # build benchmark : phony benchmark_reference benchmark_generated benchmark_rtl
 
 # default bin/metron
-# default bin/example_rvsimple/main_reference
-# default bin/example_rvsimple/main_generated
-# default bin/example_rvsimple/main_rtl
+# default bin/examples/rvsimple/main_reference
+# default bin/examples/rvsimple/main_generated
+# default bin/examples/rvsimple/main_rtl
 """

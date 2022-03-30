@@ -5,6 +5,8 @@
 //-----------------------------------------------------------------------------
 
 struct TestResults {
+  TestResults(const char* test_name) : test_name(test_name) {}
+
   void operator += (TestResults r) {
     expect_pass += r.expect_pass;
     expect_fail += r.expect_fail;
@@ -12,6 +14,7 @@ struct TestResults {
     test_fail += r.test_fail;
   }
 
+  const char* test_name;
   int expect_pass = 0;
   int expect_fail = 0;
 
@@ -34,9 +37,27 @@ struct TestResults {
     }
     return *this;
   }
+
+  void show_banner() {
+    LOG_G("%s: %6d expect pass\n", test_name, expect_pass);
+    LOG_G("%s: %6d test pass\n", test_name, test_pass);
+
+    if (expect_fail) {
+      LOG_R("%s: %6d expect fail\n", test_name, expect_fail);
+    }
+
+    if (test_fail) {
+      LOG_R("%s: %6d test fail\n", test_name, test_fail);
+      LOG_R("\n");
+      LOG_R("########################################\n");
+      LOG_R("##               FAIL                 ##\n");
+      LOG_R("########################################\n");
+      LOG_R("\n");
+    }
+  }
 };
 
-#define TEST_INIT(...) TestResults results; do { LOG("%s: ", __FUNCTION__); LOG_B("" __VA_ARGS__); LOG("\n"); LOG_INDENT(); } while(0);
+#define TEST_INIT(...) TestResults results(__FUNCTION__); do { LOG("%s: ", __FUNCTION__); LOG_B("" __VA_ARGS__); LOG("\n"); LOG_INDENT(); } while(0);
 #define TEST_DONE()    do { return results.finish(__FUNCTION__); } while(0);
 #define TEST_PASS()    do { results.test_pass++; return results.finish(__FUNCTION__); } while(0);
 #define TEST_FAIL(...) do { results.test_fail++; LOG_R("\n"); LOG_R("%s: ", __FUNCTION__); LOG_R("" __VA_ARGS__); LOG_R("\n"); return results.finish(__FUNCTION__); } while(0);

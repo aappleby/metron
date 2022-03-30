@@ -16,7 +16,6 @@ int run_test(const char* test_name, const int reps) {
   sprintf(buf2, "+data_file=rv_tests/%s.data.vh", test_name);
   const char* argv2[2] = {buf1, buf2};
 
-  metron_reset();
   metron_init(2, argv2);
 
   int time = 0;

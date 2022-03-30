@@ -300,7 +300,10 @@ cpp_binary(
 cpp_binary(
     bin_name="bin/examples/rvtiny",
     src_files=["examples/rvtiny/main.cpp"],
-    includes=["-Isrc"],
+    includes=[
+        "-I.",
+        "-Isrc"
+    ],
     opt="-O3",
 )
 
@@ -317,8 +320,8 @@ cpp_binary(
     bin_name="bin/examples/rvtiny_vl",
     src_files=["examples/rvtiny/main_vl.cpp"],
     includes=[
+        "-I.",
         "-Isrc",
-        "-Itests",
         "-Iobj/examples/rvtiny",
         "-I/usr/local/share/verilator/include"
     ],

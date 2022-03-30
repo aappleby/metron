@@ -577,14 +577,13 @@ inline std::vector<std::string>& get_plusargs() {
 }
 
 inline void metron_init(int argc, const char** argv) {
+  get_plusargs().clear();
   for (int argi = 0; argi < argc; argi++) {
     if (argv[argi][0] == '+') {
       get_plusargs().push_back(argv[argi] + 1);
     }
   }
 }
-
-inline void metron_reset() { get_plusargs().clear(); }
 
 inline void value_plusargs(const char* fmt, std::string& out) {
   int prefix_len = 0;

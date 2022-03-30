@@ -1,42 +1,37 @@
 #include <stdio.h>
 
 #include "metron_vl/Vtoplevel.h"
-#include "verilated.h"
-#include "metron_tools.h"
+#include "tests/Tests.h"
+
+//------------------------------------------------------------------------------
 
 uint64_t total_tocks = 0;
 uint64_t total_time = 0;
 
-const int reps = 100000;
+const int reps = 10000;
 const int max_cycles = 1000;
 
-int run_test(const char* test_name, const int reps, bool verbose) {
-  if (verbose) LOG_R("running %6s: ", test_name);
+TestResults test_instruction(const char* test_name, const int reps, const int timeout, bool verbose) {
+  TEST_INIT("Testing op %6s, %d reps", test_name, reps);
 
   char buf1[256];
   char buf2[256];
   sprintf(buf1, "+text_file=rv_tests/%s.text.vh", test_name);
   sprintf(buf2, "+data_file=rv_tests/%s.data.vh", test_name);
-  const char* argv2[2] = { buf1, buf2 };
+  const char* argv2[2] = {buf1, buf2};
+
   Verilated::commandArgs(2, argv2);
 
-  fflush(stdout);
-
-  int time;
-  int result = 0;
+  int time = 0;
+  int result = -1;
   Vtoplevel top;
 
   auto time_a = timestamp();
   for (int rep = 0; rep < reps; rep++) {
-    top.reset = 0;
-    top.clock = 0; top.eval(); top.clock = 1; top.eval();
-    total_tocks++;
-
     top.reset = 1;
     top.clock = 0; top.eval(); top.clock = 1; top.eval();
     total_tocks++;
-
-    for (time = 0; time < max_cycles; time++) {
+    for (time = 0; time < timeout; time++) {
       top.reset = 0;
       top.clock = 0; top.eval(); top.clock = 1; top.eval();
       total_tocks++;
@@ -50,45 +45,32 @@ int run_test(const char* test_name, const int reps, bool verbose) {
   auto time_b = timestamp();
   total_time += time_b - time_a;
 
-  if (time == max_cycles) {
-    if (verbose) LOG_Y("TIMEOUT\n");
-    return -1;
-  } else if (result) {
-    if (verbose) LOG_G("PASS %d @ %d\n", result, time);
-    return 0;
-  } else {
-    if (verbose) LOG_R("FAIL %d @ %d\n", result, time);
-    return -1;
-  }
+  if (time == max_cycles) TEST_FAIL("TIMEOUT\n");
+  if (!result) TEST_FAIL("FAIL %d @ %d\n", result, time);
+  TEST_PASS();
 }
 
 //------------------------------------------------------------------------------
 
-int main(int argc, const char **argv, const char **env) {
+int main(int argc, const char** argv) {
   LOG_B("Starting %s @ %d reps...\n", argv[0], reps);
 
   const char* instructions[38] = {
-    "add", "addi", "and", "andi", "auipc", "beq", "bge", "bgeu", "blt", "bltu",
-    "bne", "jal", "jalr", "lb", "lbu", "lh", "lhu", "lui", "lw", "or", "ori",
-    "sb", "sh", "simple", "sll", "slli", "slt", "slti", "sltiu", "sltu", "sra",
-    "srai", "srl", "srli", "sub", "sw", "xor", "xori"
-  };
-
-  LOG_B("Warming up...\n");
-  for (int i = 0; i < 38; i++) {
-    run_test(instructions[i], reps / 10, false);
-  }
+    "add", "addi", "and", "andi", "auipc", "beq",  "bge", "bgeu",
+    "blt", "bltu", "bne", "jal",  "jalr",  "lb",   "lbu", "lh",
+    "lhu", "lui",  "lw",  "or",   "ori",   "sb",   "sh",  "simple",
+    "sll", "slli", "slt", "slti", "sltiu", "sltu", "sra", "srai",
+    "srl", "srli", "sub", "sw",   "xor",   "xori"};
 
   total_tocks = 0;
   total_time = 0;
 
   LOG_B("Testing...\n");
+  TestResults results("main");
   for (int i = 0; i < 38; i++) {
-    run_test(instructions[i], reps, true);
+    results += test_instruction(instructions[i], reps, max_cycles, true);
   }
-
-  //run_test("srai", 1, true);
-
+  results.show_banner();
 
   double rate = double(total_tocks) / double(total_time);
   LOG_B("Sim rate %f mhz\n", rate * 1000.0);

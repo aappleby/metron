@@ -332,7 +332,7 @@ build bin/examples/rvsimple_ref: link obj/verilated.o $
 # Compile bin/examples/rvtiny
 
 build obj/examples/rvtiny/main.o: compile_cpp examples/rvtiny/main.cpp
-  includes = -Isrc
+  includes = -I. -Isrc
   opt = -O3
 build bin/examples/rvtiny: link obj/examples/rvtiny/main.o
 
@@ -367,7 +367,7 @@ build examples/rvtiny/metron_vl/Vtoplevel__ALL.o: make $
 
 build obj/examples/rvtiny/main_vl.o: compile_cpp $
     examples/rvtiny/main_vl.cpp | examples/rvtiny/metron_vl/Vtoplevel.h
-  includes = -Isrc -Itests -Iobj/examples/rvtiny $
+  includes = -I. -Isrc -Iobj/examples/rvtiny $
       -I/usr/local/share/verilator/include
 build bin/examples/rvtiny_vl: link obj/verilated.o $
     examples/rvtiny/metron_vl/Vtoplevel__ALL.o obj/examples/rvtiny/main_vl.o

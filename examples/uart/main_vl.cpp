@@ -49,7 +49,7 @@ TestResults test_lockstep(int argc, char** argv) {
 
 int main(int argc, char** argv) {
   printf("Running Verilated Metron uart test\n");
-  TestResults results;
+  TestResults results("main");
   results += test_lockstep(argc, argv);
   if (results.test_fail) {
     printf("Some tests fail.\n");

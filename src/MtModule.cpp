@@ -286,7 +286,7 @@ void MtModule::dump_banner() {
   //----------
 
   LOG_B("Port map:\n");
-  for (auto &kv : *port_map)
+  for (auto &kv : port_map)
     LOG_G("  %s = %s\n", kv.first.c_str(), kv.second.c_str());
 
   LOG_B("\n");
@@ -710,7 +710,8 @@ void MtModule::load_pass2() {
 //------------------------------------------------------------------------------
 
 void MtModule::build_port_map() {
-  port_map = new std::map<std::string, std::string>();
+  assert(port_map.empty());
+  //port_map = new std::map<std::string, std::string>();
 
   mod_struct.visit_tree([&](MtNode child) {
     if (child.sym != sym_call_expression) return;
@@ -737,15 +738,15 @@ void MtModule::build_port_map() {
     for (auto i = 0; i < call.args->size(); i++) {
       auto key = call.submod->name() + "." + call.method->params[i];
       auto val = call.args->at(i);
-      auto it = port_map->find(key);
-      if (it != port_map->end()) {
+      auto it = port_map.find(key);
+      if (it != port_map.end()) {
         if ((*it).second != val) {
           LOG_R("Error, got multiple different values for %s: '%s' and '%s'\n",
                 key.c_str(), (*it).second.c_str(), val.c_str());
           debugbreak();
         }
       } else {
-        port_map->insert({key, val});
+        port_map.insert({key, val});
       }
     }
   });

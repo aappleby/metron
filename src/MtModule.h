@@ -92,7 +92,7 @@ struct MtModule {
   std::vector<MtMethod*> task_methods;
   std::vector<MtMethod*> func_methods;
 
-  std::map<std::string, std::string>* port_map = nullptr;
+  std::map<std::string, std::string> port_map;
 };
 
 //------------------------------------------------------------------------------

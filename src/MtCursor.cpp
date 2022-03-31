@@ -293,8 +293,8 @@ void MtCursor::emit(MtAssignmentExpr n) {
         break;
       }
     }
-    for (auto& f : *current_mod->outputs) {
-      if (f.name() == lhs_name) {
+    for (auto f : current_mod->outputs) {
+      if (f->name() == lhs_name) {
         lhs_is_reg = true;
         break;
       }
@@ -1238,7 +1238,7 @@ void MtCursor::emit_field_as_submod(MtFieldDecl n) {
   emit(".clock(clock),");
 
   int port_count =
-      int(submod_mod->inputs.size() + submod_mod->outputs->size() +
+      int(submod_mod->inputs.size() + submod_mod->outputs.size() +
           submod_mod->getters.size());
   int port_index = 0;
 
@@ -1257,10 +1257,10 @@ void MtCursor::emit_field_as_submod(MtFieldDecl n) {
   emit_indent();
   emit("// Outputs");
 
-  for (auto& n : *submod_mod->outputs) {
+  for (auto n : submod_mod->outputs) {
     emit_newline();
     emit_indent();
-    emit(".%s(%s_%s)", n.name().c_str(), inst_name.c_str(), n.name().c_str());
+    emit(".%s(%s_%s)", n->name().c_str(), inst_name.c_str(), n->name().c_str());
 
     if (port_index++ < port_count - 1) emit(", ");
   }
@@ -1309,7 +1309,7 @@ void MtCursor::emit_output_ports(MtFieldDecl submod) {
 
   std::string type_name = submod_type.node_to_type();
   auto submod_mod = lib->get_mod(type_name);
-  output_count += (int)submod_mod->outputs->size();
+  output_count += (int)submod_mod->outputs.size();
 
   int output_index = 0;
 
@@ -1349,10 +1349,10 @@ void MtCursor::emit_output_ports(MtFieldDecl submod) {
     output_index++;
   }
 
-  for (auto& n : *submod_mod->outputs) {
+  for (auto n : submod_mod->outputs) {
     // field_declaration
-    auto output_type = n.get_field(field_type);
-    auto output_decl = n.get_field(field_declarator);
+    auto output_type = n->get_field(field_type);
+    auto output_decl = n->get_field(field_declarator);
 
     MtCursor subcursor(lib, submod_mod->source_file, str_out);
     subcursor.quiet = quiet;
@@ -1536,7 +1536,7 @@ void MtCursor::emit(MtClassSpecifier n) {
     emit_newline();
 
     int port_count =
-        int(current_mod->inputs.size() + current_mod->outputs->size() +
+        int(current_mod->inputs.size() + current_mod->outputs.size() +
             current_mod->getters.size());
     int port_index = 0;
 
@@ -1558,16 +1558,16 @@ void MtCursor::emit(MtClassSpecifier n) {
       emit_newline();
     }
 
-    for (auto& output : *current_mod->outputs) {
+    for (auto output : current_mod->outputs) {
       emit_indent();
       emit("output ");
 
-      auto node_type = output.child(0);  // type
-      auto node_decl = output.child(1);  // decl
-      auto node_semi = output.child(2);  // semi
+      auto node_type = output->child(0);  // type
+      auto node_decl = output->child(1);  // decl
+      auto node_semi = output->child(2);  // semi
 
       MtCursor sub_cursor = *this;
-      sub_cursor.cursor = output.start();
+      sub_cursor.cursor = output->start();
       sub_cursor.emit_dispatch(node_type);
       sub_cursor.emit_ws();
       sub_cursor.emit_dispatch(node_decl);

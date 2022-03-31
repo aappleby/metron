@@ -134,13 +134,12 @@ bool MtModule::has_input(const std::string &name) {
 //----------------------------------------
 
 bool MtModule::has_output(const std::string &name) {
-  assert(outputs);
   return get_output(name) != nullptr;
 }
 
 MtField *MtModule::get_output(const std::string &name) {
-  for (auto &n : *outputs)
-    if (n.name() == name) return &n;
+  for (auto n : outputs)
+    if (n->name() == name) return n;
   return nullptr;
 }
 //----------------------------------------
@@ -252,8 +251,8 @@ void MtModule::dump_banner() {
   for (auto n : inputs)
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
   LOG_B("Outputs:\n");
-  for (auto &n : *outputs)
-    LOG_G("  %s:%s\n", n.name().c_str(), n.type_name().c_str());
+  for (auto n : outputs)
+    LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
   if (!getters.empty()) {
     LOG_B("Getters:\n");
     dump_method_list2(getters);
@@ -606,15 +605,14 @@ void MtModule::collect_inputs() {
 // All fields written to in a tock method are outputs.
 
 void MtModule::collect_outputs() {
-  assert(outputs == nullptr);
-  outputs = new std::vector<MtField>();
+  assert(outputs.empty());
 
   std::set<std::string> dedup;
 
   for (auto f : all_fields) {
     if (f->is_public && !f->is_submod() && !f->is_param()) {
       printf("%s\n", f->text().c_str());
-      outputs->push_back(*f);
+      outputs.push_back(f);
     }
   }
 
@@ -766,9 +764,9 @@ void MtModule::sanity_check() {
     field_names.insert(n->name());
   }
 
-  for (auto &n : *outputs) {
-    assert(!field_names.contains(n.name()));
-    field_names.insert(n.name());
+  for (auto n : outputs) {
+    assert(!field_names.contains(n->name()));
+    field_names.insert(n->name());
   }
 
   for (auto &n : *registers) {

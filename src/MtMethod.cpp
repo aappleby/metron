@@ -381,23 +381,30 @@ void MtMethod::check_dirty_call(MnNode n, MtDelta& d) {
   auto node_call = MnCallExpr(n);
   auto node_func = node_call.get_field(field_function);
   auto node_args = node_call.get_field(field_arguments);
+
+  MtModule* call_submod = nullptr;
+  MtMethod* call_method = nullptr;
+
   {
 
 
     if (node_call.sym == sym_field_expression) {
-      auto call_this = node_call.get_field(field_argument);
-      auto call_method = node_call.get_field(field_field);
+      auto node_this = node_call.get_field(field_argument);
+      auto node_method = node_call.get_field(field_field);
 
-      if (call_method.text() == "as_signed") {
+      if (node_method.text() == "as_signed") {
       } else {
-        auto submod = mod->get_submod(call_this.text());
+        auto submod = mod->get_submod(node_this.text());
         assert(submod);
 
         //result->submod = submod;
 
+
         auto submod_mod = mod->source_file->lib->get_mod(submod->type_name());
+        call_submod = submod_mod;
 
         //result->method = submod_mod->get_method(call_method.text());
+        call_method = submod_mod->get_method(node_method.text());
       }
     }
 
@@ -435,11 +442,11 @@ void MtMethod::check_dirty_call(MnNode n, MtDelta& d) {
     // resolve the local task/function calls.
 
   } else if (node_func.sym == sym_field_expression) {
-    assert(call->method);
-    call->method->update_delta();
+    assert(call_method);
+    call_method->update_delta();
 
     MtDelta temp_delta = d;
-    MtDelta call_delta = *call->method->delta;
+    MtDelta call_delta = *call_method->delta;
     call_delta.add_prefix(call->submod->name());
 
     merge_series(temp_delta, call_delta, d);

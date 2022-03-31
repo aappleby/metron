@@ -74,7 +74,7 @@ struct MtModule {
   std::vector<MtParam>* modparams = nullptr;
   std::vector<MtParam>* localparams = nullptr;
 
-  std::vector<MtEnum>* enums = nullptr;
+  std::vector<MtEnum*> enums;
 
   // inputs + outputs + regs + submods
   std::vector<MtField*>  all_fields;

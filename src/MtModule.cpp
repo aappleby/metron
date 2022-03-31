@@ -104,8 +104,8 @@ MtMethod *MtModule::get_method(const std::string &name) {
 //----------------------------------------
 
 bool MtModule::has_enum(const std::string &name) {
-  for (auto &n : *enums) {
-    if (n.name() == name) return true;
+  for (auto n : enums) {
+    if (n->name() == name) return true;
   }
   return false;
 }
@@ -246,7 +246,7 @@ void MtModule::dump_banner() {
   LOG_B("Localparams:\n");
   for (auto &param : *localparams) LOG_G("  %s\n", param.name().c_str());
   LOG_B("Enums:\n");
-  for (auto &n : *enums) LOG_G("  %s\n", n.name().c_str());
+  for (auto n : enums) LOG_G("  %s\n", n->name().c_str());
   LOG_B("Inputs:\n");
   for (auto n : inputs)
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
@@ -357,7 +357,7 @@ void MtModule::load_pass1() {
   collect_registers();
   collect_submods();
 
-  enums = new std::vector<MtEnum>();
+  //enums = new std::vector<MtEnum>();
 
   auto mod_body = mod_struct.get_field(field_body).check_null();
   for (auto n : mod_body) {
@@ -367,7 +367,8 @@ void MtModule::load_pass1() {
 
     // enum class
     if (n.get_field(::field_type).sym == sym_enum_specifier) {
-      enums->push_back(MtEnum(n));
+      auto new_enum = new MtEnum(n);
+      enums.push_back(new_enum);
       continue;
     }
 

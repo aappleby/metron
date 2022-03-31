@@ -33,6 +33,7 @@ struct MtModule {
   void load_pass2();
 
   void dump_method_list(std::vector<MtMethod>& methods);
+  void dump_method_list2(const std::vector<MtMethod*>& methods);
   void dump_call_list(std::vector<MtCall>& calls);
   void dump_banner();
   void dump_deltas();
@@ -53,6 +54,7 @@ struct MtModule {
   void sanity_check();
 
   MtMethod node_to_method(MtNode n);
+  MtMethod* node_to_method2(MtNode n);
   MtCall node_to_call(MtNode n);
 
   //----------
@@ -83,8 +85,10 @@ struct MtModule {
   std::vector<MtField>*  registers = nullptr;
   std::vector<MtSubmod>* submods = nullptr;
 
-  std::vector<MtMethod>* init_methods = nullptr;
-  std::vector<MtMethod>* tick_methods = nullptr;
+  std::vector<MtMethod*> all_methods;
+
+  std::vector<MtMethod*> init_methods;
+  std::vector<MtMethod*> tick_methods;
   std::vector<MtMethod>* tock_methods = nullptr;
   std::vector<MtMethod>* task_methods = nullptr;
   std::vector<MtMethod>* func_methods = nullptr;

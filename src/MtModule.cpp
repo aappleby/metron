@@ -93,8 +93,8 @@ MtModule::MtModule(MtSourceFile *source_file, MtClassSpecifier node)
 
 MtMethod *MtModule::get_method(const std::string &name) {
   for (auto &n : *getters)      if (n.name == name) return &n;
-  for (auto &n : *init_methods) if (n.name == name) return &n;
-  for (auto &n : *tick_methods) if (n.name == name) return &n;
+  for (auto n : init_methods) if (n->name == name) return n;
+  for (auto n : tick_methods) if (n->name == name) return n;
   for (auto &n : *tock_methods) if (n.name == name) return &n;
   for (auto &n : *task_methods) if (n.name == name) return &n;
   for (auto &n : *func_methods) if (n.name == name) return &n;
@@ -184,6 +184,24 @@ void MtModule::dump_method_list(std::vector<MtMethod> &methods) {
   }
 }
 
+void MtModule::dump_method_list2(const std::vector<MtMethod*> &methods) {
+  for (auto n : methods) {
+    LOG_INDENT_SCOPE();
+    LOG_R("%s(", n->name.c_str());
+
+    if (n->params) {
+      int param_count = int(n->params->size());
+      int param_index = 0;
+
+      for (auto &param : *(n->params)) {
+        LOG_R("%s", param.c_str());
+        if (param_index++ != param_count - 1) LOG_C(", ");
+      }
+    }
+    LOG_R(")\n");
+  }
+}
+
 //------------------------------------------------------------------------------
 
 void MtModule::dump_call_list(std::vector<MtCall> &calls) {
@@ -250,9 +268,9 @@ void MtModule::dump_banner() {
   //----------
 
   LOG_B("Init methods:\n");
-  dump_method_list(*init_methods);
+  dump_method_list2(init_methods);
   LOG_B("Tick methods:\n");
-  dump_method_list(*tick_methods);
+  dump_method_list2(tick_methods);
   LOG_B("Tock methods:\n");
   dump_method_list(*tock_methods);
   LOG_B("Tasks:\n");
@@ -278,17 +296,17 @@ void MtModule::dump_deltas() {
   {
     LOG_INDENT_SCOPE();
 
-    for (auto &tick : *tick_methods) {
-      LOG_G("%s error %d\n", tick.name.c_str(), tick.delta->error);
+    for (auto tick : tick_methods) {
+      LOG_G("%s error %d\n", tick->name.c_str(), tick->delta->error);
       LOG_INDENT_SCOPE();
       {
-        for (auto &s : tick.delta->state_old) {
+        for (auto &s : tick->delta->state_old) {
           LOG_G("%s", s.first.c_str());
           LOG_W(" : ");
           log_field_state(s.second);
 
-          if (tick.delta->state_new.contains(s.first)) {
-            auto s2 = tick.delta->state_new[s.first];
+          if (tick->delta->state_new.contains(s.first)) {
+            auto s2 = tick->delta->state_new[s.first];
             if (s2 != s.second) {
               LOG_W(" -> ");
               log_field_state(s2);
@@ -447,16 +465,16 @@ void MtModule::collect_fields() {
 //------------------------------------------------------------------------------
 
 void MtModule::collect_methods() {
-  assert(init_methods == nullptr);
-  assert(tick_methods == nullptr);
+  assert(init_methods.empty());
+  assert(tick_methods.empty());
   assert(tock_methods == nullptr);
   assert(task_methods == nullptr);
   assert(func_methods == nullptr);
 
   getters = new std::vector<MtMethod>();
 
-  init_methods = new std::vector<MtMethod>();
-  tick_methods = new std::vector<MtMethod>();
+  //init_methods = new std::vector<MtMethod>();
+  //tick_methods = new std::vector<MtMethod>();
   tock_methods = new std::vector<MtMethod>();
   task_methods = new std::vector<MtMethod>();
   func_methods = new std::vector<MtMethod>();
@@ -488,22 +506,25 @@ void MtModule::collect_methods() {
     bool is_tick = is_task && func_name.starts_with("tick");
     bool is_tock = is_task && func_name.starts_with("tock");
 
+    auto new_method = node_to_method2(n);
+    all_methods.push_back(new_method);
+
     if (is_init) {
-      init_methods->push_back(node_to_method(n));
+      init_methods.push_back(new_method);
     } else if (is_tick) {
-      tick_methods->push_back(node_to_method(n));
+      tick_methods.push_back(new_method);
     } else if (is_tock) {
-      tock_methods->push_back(node_to_method(n));
+      tock_methods->push_back(*new_method);
     } else if (is_task) {
-      task_methods->push_back(node_to_method(n));
+      task_methods->push_back(*new_method);
     } else if (in_public) {
-      getters->push_back(node_to_method(n));
+      getters->push_back(*new_method);
     } else {
-      func_methods->push_back(node_to_method(n));
+      func_methods->push_back(*new_method);
     }
   }
 
-  for (auto &n : *tick_methods) n.is_tick = true;
+  for (auto n : tick_methods) n->is_tick = true;
   for (auto &n : *tock_methods) n.is_tock = true;
 }
 
@@ -657,8 +678,8 @@ void MtModule::collect_registers() {
 
   std::set<std::string> dedup;
 
-  for (auto n : *tick_methods) {
-    n.node.visit_tree([&](MtNode child) {
+  for (auto n : tick_methods) {
+    n->node.visit_tree([&](MtNode child) {
       if (child.sym != sym_assignment_expression) return;
 
       auto lhs = child.get_field(field_left);
@@ -821,6 +842,30 @@ MtMethod MtModule::node_to_method(MtNode n) {
   return result;
 }
 
+MtMethod* MtModule::node_to_method2(MtNode n) {
+  assert(n.sym == sym_function_definition);
+
+  MtMethod* result = new MtMethod(n, this, source_file->lib);
+
+  auto method_name =
+    n.get_field(field_declarator).get_field(field_declarator).text();
+  auto method_params =
+    n.get_field(field_declarator).get_field(field_parameters);
+
+  result->name = method_name;
+  result->params = new std::vector<std::string>();
+
+  for (int i = 0; i < method_params.child_count(); i++) {
+    auto param = method_params.child(i);
+    if (param.sym != sym_parameter_declaration) continue;
+
+    auto param_name = param.get_field(field_declarator).text();
+    result->params->push_back(param_name);
+  }
+
+  return result;
+}
+
 //------------------------------------------------------------------------------
 
 MtCall MtModule::node_to_call(MtNode n) {
@@ -865,9 +910,9 @@ MtCall MtModule::node_to_call(MtNode n) {
 //------------------------------------------------------------------------------
 
 void MtModule::check_dirty_ticks() {
-  for (auto &tick : *tick_methods) {
-    tick.update_delta();
-    dirty_check_fail |= tick.delta->error;
+  for (auto tick : tick_methods) {
+    tick->update_delta();
+    dirty_check_fail |= tick->delta->error;
   }
 }
 

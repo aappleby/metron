@@ -90,7 +90,7 @@ struct MtModule {
   std::vector<MtMethod*> init_methods;
   std::vector<MtMethod*> tick_methods;
   std::vector<MtMethod*> tock_methods;
-  std::vector<MtMethod>* task_methods = nullptr;
+  std::vector<MtMethod*> task_methods;
   std::vector<MtMethod>* func_methods = nullptr;
 
   std::map<std::string, std::string>* port_map = nullptr;

@@ -1351,8 +1351,8 @@ void MtCursor::emit_output_ports(MnFieldDecl submod) {
 
   for (auto n : submod_mod->outputs) {
     // field_declaration
-    auto output_type = n->node.get_field(field_type);
-    auto output_decl = n->node.get_field(field_declarator);
+    auto output_type = n->get_type_node();
+    auto output_decl = n->get_decl_node();
 
     MtCursor subcursor(lib, submod_mod->source_file, str_out);
     subcursor.quiet = quiet;
@@ -1544,12 +1544,11 @@ void MtCursor::emit(MnClassSpecifier n) {
       emit_indent();
       emit("input ");
 
-      auto node_type = input->node.child(0);  // type
-      auto node_decl = input->node.child(1);  // decl
-      auto node_semi = input->node.child(2);  // semi
+      auto node_type = input->get_type_node();  // type
+      auto node_decl = input->get_decl_node();  // decl
 
       MtCursor sub_cursor = *this;
-      sub_cursor.cursor = input->node.start();
+      sub_cursor.cursor = node_type.start();
       sub_cursor.emit_dispatch(node_type);
       sub_cursor.emit_ws();
       sub_cursor.emit_dispatch(node_decl);
@@ -1562,12 +1561,11 @@ void MtCursor::emit(MnClassSpecifier n) {
       emit_indent();
       emit("output ");
 
-      auto node_type = output->node.child(0);  // type
-      auto node_decl = output->node.child(1);  // decl
-      auto node_semi = output->node.child(2);  // semi
+      auto node_type = output->get_type_node();  // type
+      auto node_decl = output->get_decl_node();  // decl
 
       MtCursor sub_cursor = *this;
-      sub_cursor.cursor = output->node.start();
+      sub_cursor.cursor = node_type.start();
       sub_cursor.emit_dispatch(node_type);
       sub_cursor.emit_ws();
       sub_cursor.emit_dispatch(node_decl);
@@ -1896,7 +1894,6 @@ void MtCursor::emit(MnReturnStatement n) {
 
   auto node_lit = n.child(0);
   auto node_expr = n.child(1);
-  auto node_semi = n.child(2);
 
   if (in_tock) {
     emit("RETURNS IN TOCKS ARE BROKEN DO NOT USE");

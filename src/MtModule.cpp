@@ -620,7 +620,6 @@ void MtModule::collect_outputs() {
 
   for (auto f : all_fields) {
     if (f->is_public && !f->is_submod() && !f->is_param()) {
-      printf("%s\n", f->node.text().c_str());
       outputs.push_back(f);
     }
   }

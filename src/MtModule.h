@@ -48,7 +48,7 @@ struct MtField {
   MnNode get_decl_node() const { return node.get_field(field_declarator); }
 
   bool is_public = false;
-//private:
+private:
   MnNode node;
 };
 

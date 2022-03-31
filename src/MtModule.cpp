@@ -71,6 +71,12 @@ printf("\n");
 
 //------------------------------------------------------------------------------
 
+bool MtField::is_submod() const {
+  return (node.source->lib->has_mod(type_name()));
+}
+
+//------------------------------------------------------------------------------
+
 MtModule::MtModule(MtSourceFile *source_file, MnTemplateDecl node)
     : source_file(source_file) {
   mod_template = node;

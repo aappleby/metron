@@ -64,11 +64,6 @@ MnNode MnNode::named_child(int index) const {
 MnNode MnNode::first_named_child() const { return named_child(0); }
 
 
-bool MtField::is_submod() const {
-  return (node.source->lib->has_mod(type_name()));
-}
-
-
 bool MnNode::is_static() const {
   for (auto c : *this) {
     if (c.sym == sym_storage_class_specifier && c.text() == "static")

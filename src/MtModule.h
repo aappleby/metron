@@ -78,7 +78,7 @@ struct MtModule {
 
   // inputs + outputs + regs + submods
   std::vector<MtField*>  all_fields;
-  std::vector<MtField>*  inputs = nullptr;
+  std::vector<MtField*>  inputs;
   std::vector<MtField>*  outputs = nullptr;
   std::vector<MtField>*  registers = nullptr;
 

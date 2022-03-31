@@ -1238,17 +1238,17 @@ void MtCursor::emit_field_as_submod(MtFieldDecl n) {
   emit(".clock(clock),");
 
   int port_count =
-      int(submod_mod->inputs->size() + submod_mod->outputs->size() +
+      int(submod_mod->inputs.size() + submod_mod->outputs->size() +
           submod_mod->getters.size());
   int port_index = 0;
 
-  for (auto& n : *submod_mod->inputs) {
-    auto key = inst_name + "." + n.name();
+  for (auto n : submod_mod->inputs) {
+    auto key = inst_name + "." + n->name();
 
     emit_newline();
     emit_indent();
     //emit(".%s(%s)", n.name().c_str(), (*it).second.c_str());
-    emit(".%s(%s_%s)", n.name().c_str(), inst_name.c_str(), n.name().c_str());
+    emit(".%s(%s_%s)", n->name().c_str(), inst_name.c_str(), n->name().c_str());
 
     if (port_index++ < port_count - 1) emit(", ");
   }
@@ -1327,10 +1327,10 @@ void MtCursor::emit_output_ports(MtFieldDecl submod) {
     }
   }
 
-  for (auto& n : *submod_mod->inputs) {
+  for (auto n : submod_mod->inputs) {
     // field_declaration
-    auto output_type = n.get_field(field_type);
-    auto output_decl = n.get_field(field_declarator);
+    auto output_type = n->get_field(field_type);
+    auto output_decl = n->get_field(field_declarator);
 
     MtCursor subcursor(lib, submod_mod->source_file, str_out);
     subcursor.quiet = quiet;
@@ -1536,20 +1536,20 @@ void MtCursor::emit(MtClassSpecifier n) {
     emit_newline();
 
     int port_count =
-        int(current_mod->inputs->size() + current_mod->outputs->size() +
+        int(current_mod->inputs.size() + current_mod->outputs->size() +
             current_mod->getters.size());
     int port_index = 0;
 
-    for (auto& input : *current_mod->inputs) {
+    for (auto input : current_mod->inputs) {
       emit_indent();
       emit("input ");
 
-      auto node_type = input.child(0);  // type
-      auto node_decl = input.child(1);  // decl
-      auto node_semi = input.child(2);  // semi
+      auto node_type = input->child(0);  // type
+      auto node_decl = input->child(1);  // decl
+      auto node_semi = input->child(2);  // semi
 
       MtCursor sub_cursor = *this;
-      sub_cursor.cursor = input.start();
+      sub_cursor.cursor = input->start();
       sub_cursor.emit_dispatch(node_type);
       sub_cursor.emit_ws();
       sub_cursor.emit_dispatch(node_decl);

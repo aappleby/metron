@@ -126,8 +126,8 @@ MtField *MtModule::get_field(const std::string &name) {
 //----------------------------------------
 
 bool MtModule::has_input(const std::string &name) {
-  for (auto &f : *inputs)
-    if (f.name() == name) return true;
+  for (auto f : inputs)
+    if (f->name() == name) return true;
   return false;
 }
 
@@ -249,8 +249,8 @@ void MtModule::dump_banner() {
   LOG_B("Enums:\n");
   for (auto &n : *enums) LOG_G("  %s\n", n.name().c_str());
   LOG_B("Inputs:\n");
-  for (auto &n : *inputs)
-    LOG_G("  %s:%s\n", n.name().c_str(), n.type_name().c_str());
+  for (auto n : inputs)
+    LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
   LOG_B("Outputs:\n");
   for (auto &n : *outputs)
     LOG_G("  %s:%s\n", n.name().c_str(), n.type_name().c_str());
@@ -560,8 +560,9 @@ void MtModule::build_port_map() {
 */
 
 void MtModule::collect_inputs() {
-  assert(inputs == nullptr);
-  inputs = new std::vector<MtField>();
+  assert(inputs.empty());
+
+  // FIXME should be iterating over all_fields
 
   std::set<std::string> dedup;
 
@@ -587,41 +588,18 @@ void MtModule::collect_inputs() {
 
       for (auto param : params) {
         if (param.sym != sym_parameter_declaration) continue;
-        MtField f(param, true);
-        if (!dedup.contains(f.name())) {
-          inputs->push_back(f);
-          dedup.insert(f.name());
+        MtField* new_input = new MtField(param, true);
+        if (!dedup.contains(new_input->name())) {
+          inputs.push_back(new_input);
+          dedup.insert(new_input->name());
+        }
+        else {
+          delete new_input;
         }
       }
       continue;
     }
-  }
-  
-#if 0
-  for (auto n : *tick_methods) {
-    auto params = n.get_field(field_declarator).get_field(field_parameters);
-    for (auto param : params) {
-      if (param.sym != sym_parameter_declaration) continue;
-      MtField f(param, true);
-      if (!dedup.contains(f.name())) {
-        inputs->push_back(f);
-        dedup.insert(f.name());
-      }
-    }
-  }
-
-  for (auto n : *tock_methods) {
-    auto params = n.get_field(field_declarator).get_field(field_parameters);
-    for (auto param : params) {
-      if (param.sym != sym_parameter_declaration) continue;
-      MtField f(param, true);
-      if (!dedup.contains(f.name())) {
-        inputs->push_back(f);
-        dedup.insert(f.name());
-      }
-    }
-  }
-#endif
+  } 
 }
 
 //------------------------------------------------------------------------------
@@ -783,9 +761,9 @@ void MtModule::sanity_check() {
 
   std::set<std::string> field_names;
 
-  for (auto &n : *inputs) {
-    assert(!field_names.contains(n.name()));
-    field_names.insert(n.name());
+  for (auto n : inputs) {
+    assert(!field_names.contains(n->name()));
+    field_names.insert(n->name());
   }
 
   for (auto &n : *outputs) {

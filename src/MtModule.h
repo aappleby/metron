@@ -33,8 +33,8 @@ private:
 //------------------------------------------------------------------------------
 
 struct MtField {
-  MtField(const MnNode& n, bool is_public) : is_public(is_public), node(n) {
-    assert(node.sym == sym_field_declaration || node.sym == sym_parameter_declaration);
+  static MtField* construct(const MnNode& n, bool is_public) {
+    return new MtField(n, is_public);
   }
 
   bool is_submod() const;
@@ -48,7 +48,10 @@ struct MtField {
   MnNode get_decl_node() const { return node.get_field(field_declarator); }
 
   bool is_public = false;
-private:
+//private:
+  MtField(const MnNode& n, bool is_public) : is_public(is_public), node(n) {
+    assert(node.sym == sym_field_declaration || node.sym == sym_parameter_declaration);
+  }
   MnNode node;
 };
 

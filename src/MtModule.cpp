@@ -466,9 +466,11 @@ void MtModule::collect_fields() {
     }
 
     if (n.sym != sym_field_declaration) continue;
+
+    // FIXME why are we excluding enums here? because they're not a "field"?
     if (n.get_field(field_type).sym == sym_enum_specifier) continue;
 
-    auto new_field = new MtField(n, in_public);
+    auto new_field = MtField::construct(n, in_public);
 
     all_fields.push_back(new_field);
   }
@@ -571,8 +573,6 @@ void MtModule::build_port_map() {
 void MtModule::collect_inputs() {
   assert(inputs.empty());
 
-  // FIXME should be iterating over all_fields
-
   std::set<std::string> dedup;
 
   bool in_public = false;
@@ -597,7 +597,7 @@ void MtModule::collect_inputs() {
 
       for (auto param : params) {
         if (param.sym != sym_parameter_declaration) continue;
-        MtField *new_input = new MtField(param, true);
+        MtField *new_input = MtField::construct(param, true);
         if (!dedup.contains(new_input->name())) {
           inputs.push_back(new_input);
           dedup.insert(new_input->name());
@@ -681,19 +681,14 @@ void MtModule::collect_registers() {
 void MtModule::collect_submods() {
   assert(submods.empty());
 
-  auto mod_body = mod_struct.get_field(field_body).check_null();
-  for (auto n : mod_body) {
-    if (n.sym != sym_field_declaration) continue;
-
-    MtField f(n, false);
-
-    if (source_file->lib->has_mod(f.type_name())) {
-      MtSubmod *submod = MtSubmod::construct(n);
-      submod->mod = source_file->lib->get_mod(f.type_name());
+  for (auto f : all_fields) {
+    if (source_file->lib->has_mod(f->type_name())) {
+      MtSubmod *submod = MtSubmod::construct(f->node);
+      submod->mod = source_file->lib->get_mod(f->type_name());
       submods.push_back(submod);
     } else {
-      if (f.type_name() != "logic") {
-        LOG_R("Could not find module for submod %s\n", f.type_name().c_str());
+      if (f->type_name() != "logic") {
+        LOG_R("Could not find module for submod %s\n", f->type_name().c_str());
       }
     }
   }

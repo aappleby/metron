@@ -32,10 +32,10 @@ MtSourceFile::MtSourceFile(const std::string& _filename,
 
   TSNode ts_root = ts_tree_root_node(tree);
   auto root_sym = ts_node_symbol(ts_root);
-  mt_root = MnTranslationUnit(MnNode(ts_root, root_sym, 0, this));
+  root_node = MnTranslationUnit(MnNode(ts_root, root_sym, 0, this));
 
   assert(modules.empty());
-  collect_modules(mt_root);
+  collect_modules(root_node);
 }
 
 //------------------------------------------------------------------------------
@@ -76,16 +76,5 @@ void MtSourceFile::collect_modules(MnNode toplevel) {
     }
   }
 }
-
-//------------------------------------------------------------------------------
-
-/*
-MtModule* MtSourceFile::get_module(const std::string& name) {
-  for (auto n : modules) {
-    if (n->mod_name == name) return n;
-  }
-  return nullptr;
-}
-*/
 
 //------------------------------------------------------------------------------

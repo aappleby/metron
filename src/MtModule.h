@@ -62,13 +62,16 @@ private:
 struct MtCall {
   static MtCall* construct(const MnNode& n) { return new MtCall(n); }
 
-  MnNode node;
   MtField* submod = nullptr;
   MtMethod* method = nullptr;
-  std::vector<std::string>* args = nullptr;
+  std::vector<std::string> args;
+
+  MnNode get_func() { return node.get_field(field_function); }
+  MnNode get_args() { return node.get_field(field_arguments); }
 
 private:
 
+  MnNode node;
   MtCall(const MnNode& n) : node(n) { assert(node.sym == sym_call_expression); }
 };
 

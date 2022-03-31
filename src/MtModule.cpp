@@ -219,17 +219,17 @@ void MtModule::dump_call_list(std::vector<MtCall> &calls) {
   for (auto &call : calls) {
     LOG_INDENT_SCOPE();
     LOG_C("%s.%s(", call.submod->name().c_str(), call.method->name.c_str());
-    if (call.args && call.args->size()) {
+    int arg_count = int(call.args.size());
+
+    if (arg_count) {
       LOG_C("\n");
       LOG_INDENT_SCOPE();
 
-      assert(call.method->params.size() == call.args->size());
-      int arg_count = int(call.args->size());
+      assert(call.method->params.size() == arg_count);
       int arg_index = 0;
 
       for (auto i = 0; i < arg_count; i++) {
-        LOG_C("%s = %s", call.method->params[i].c_str(),
-              call.args->at(i).c_str());
+        LOG_C("%s = %s", call.method->params[i].c_str(), call.args[i].c_str());
 
         if (arg_index++ < arg_count - 1) LOG_C(",\n");
       }
@@ -733,9 +733,10 @@ void MtModule::build_port_map() {
     }
     assert(call->method);
 
-    for (auto i = 0; i < call->args->size(); i++) {
+    auto arg_count = call->args.size();
+    for (auto i = 0; i < arg_count; i++) {
       auto key = call->submod->name() + "." + call->method->params[i];
-      auto val = call->args->at(i);
+      auto val = call->args[i];
       auto it = port_map.find(key);
       if (it != port_map.end()) {
         if ((*it).second != val) {
@@ -833,8 +834,6 @@ MtCall* MtModule::node_to_call(MnNode n) {
     }
   }
 
-  result->args = new std::vector<std::string>();
-
   if (call_args.named_child_count()) {
     for (int i = 0; i < call_args.named_child_count(); i++) {
       auto arg_node = call_args.named_child(i);
@@ -843,7 +842,7 @@ MtCall* MtModule::node_to_call(MnNode n) {
       MtCursor cursor(source_file->lib, source_file, &out_string);
       cursor.cursor = arg_node.start();
       cursor.emit_dispatch(arg_node);
-      result->args->push_back(out_string);
+      result->args.push_back(out_string);
     }
   }
 

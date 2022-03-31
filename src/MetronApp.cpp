@@ -192,7 +192,7 @@ int main(int argc, char** argv) {
     cursor.quiet = quiet && !verbose;
     cursor.cursor = source_file->source;
     cursor.source_file = source_file;
-    cursor.emit(source_file->mt_root);
+    cursor.emit(source_file->root_node);
     cursor.emit("\n");
 
     // Save translated source to output directory, if there is one.

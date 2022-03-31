@@ -100,7 +100,7 @@ std::string translate_simple(std::string src) {
   MtCursor cursor(&library, source_file, &out);
   cursor.cursor = source_file->source;
   cursor.source_file = source_file;
-  cursor.emit(source_file->mt_root);
+  cursor.emit(source_file->root_node);
   cursor.emit("\n");
 
   for (auto c : out) assert(c > 0);

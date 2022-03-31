@@ -19,8 +19,6 @@ struct MtSourceFile {
 
   void collect_modules(MnNode toplevel);
 
-  //MtModule* get_module(const std::string& name);
-
   MtModLibrary* lib = nullptr;
 
   const std::string filename;
@@ -28,7 +26,7 @@ struct MtSourceFile {
   const std::string src_blob;
   bool use_utf8_bom = false;
 
-  MnTranslationUnit mt_root;
+  MnTranslationUnit root_node;
 
   const char* source = nullptr;
   const char* source_end = nullptr;

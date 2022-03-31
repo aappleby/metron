@@ -379,11 +379,11 @@ void MtMethod::check_dirty_if(MnNode n, MtDelta& d) {
 void MtMethod::check_dirty_call(MnNode n, MtDelta& d) {
   auto call = mod->node_to_call(n);
 
-  auto node_args = call->node.get_field(field_arguments);
+  auto node_func = call->get_func();
+  auto node_args = call->get_args();
+
   assert(node_args.sym == sym_argument_list);
   check_dirty_dispatch(node_args, d);
-
-  auto node_func = call->node.get_field(field_function);
 
   if (node_func.sym == sym_identifier) {
     // local function call, traverse args and then function body

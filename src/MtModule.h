@@ -59,24 +59,6 @@ private:
 
 //------------------------------------------------------------------------------
 
-struct MtCall {
-  static MtCall* construct(const MnNode& n) { return new MtCall(n); }
-
-  MtField* submod = nullptr;
-  MtMethod* method = nullptr;
-  std::vector<std::string> args;
-
-  MnNode get_func() { return node.get_field(field_function); }
-  MnNode get_args() { return node.get_field(field_arguments); }
-
-private:
-
-  MnNode node;
-  MtCall(const MnNode& n) : node(n) { assert(node.sym == sym_call_expression); }
-};
-
-//------------------------------------------------------------------------------
-
 struct MtParam {
   static MtParam* construct(const MnNode& n) { return new MtParam(n); }
 
@@ -122,7 +104,6 @@ struct MtModule {
 
   void dump_method_list(std::vector<MtMethod>& methods);
   void dump_method_list2(const std::vector<MtMethod*>& methods);
-  void dump_call_list(std::vector<MtCall>& calls);
   void dump_banner();
   void dump_deltas();
 
@@ -142,7 +123,6 @@ struct MtModule {
   void sanity_check();
 
   MtMethod* node_to_method(MnNode n);
-  MtCall* node_to_call(MnNode n);
 
   //----------
 

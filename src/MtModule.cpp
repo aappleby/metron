@@ -215,31 +215,6 @@ void MtModule::dump_method_list2(const std::vector<MtMethod *> &methods) {
 
 //------------------------------------------------------------------------------
 
-void MtModule::dump_call_list(std::vector<MtCall> &calls) {
-  for (auto &call : calls) {
-    LOG_INDENT_SCOPE();
-    LOG_C("%s.%s(", call.submod->name().c_str(), call.method->name.c_str());
-    int arg_count = int(call.args.size());
-
-    if (arg_count) {
-      LOG_C("\n");
-      LOG_INDENT_SCOPE();
-
-      assert(call.method->params.size() == arg_count);
-      int arg_index = 0;
-
-      for (auto i = 0; i < arg_count; i++) {
-        LOG_C("%s = %s", call.method->params[i].c_str(), call.args[i].c_str());
-
-        if (arg_index++ < arg_count - 1) LOG_C(",\n");
-      }
-    }
-    LOG_C(")\n");
-  }
-}
-
-//------------------------------------------------------------------------------
-
 void MtModule::dump_banner() {
   LOG_Y("//----------------------------------------\n");
   if (mod_struct.is_null()) {
@@ -719,6 +694,10 @@ void MtModule::build_port_map() {
     auto node_func = node_call.get_field(field_function);
     auto node_args = node_call.get_field(field_arguments);
 
+    MtField*  call_member = nullptr;
+    MtModule* call_submod = nullptr;
+    MtMethod* call_method = nullptr;
+
     if (node_func.sym == sym_field_expression) {
       auto node_member = node_func.get_field(field_argument);
       auto node_method = node_func.get_field(field_field);
@@ -765,10 +744,6 @@ void MtModule::build_port_map() {
     return result;
     */
 
-    MtField*  call_member = nullptr;
-    MtModule* call_submod = nullptr;
-    MtMethod* call_method = nullptr;
-
     if (node_func.sym == sym_field_expression) {
       auto node_this = node_func.get_field(field_argument);
       auto node_method = node_func.get_field(field_field);
@@ -781,14 +756,20 @@ void MtModule::build_port_map() {
       }
     }
 
-    auto call = node_to_call(child);
-
     //auto arg_count = call->args.size();
     auto arg_count = node_args.named_child_count();
 
     for (auto i = 0; i < arg_count; i++) {
       auto key = call_member->name() + "." + call_method->params[i];
-      auto val = call->args[i];
+      //auto val = call->args[i];
+
+      std::string val;
+      MtCursor cursor(source_file->lib, source_file, &val);
+      auto arg_node = node_args.named_child(i);
+      cursor.cursor = arg_node.start();
+      cursor.emit_dispatch(arg_node);
+
+
       auto it = port_map.find(key);
       if (it != port_map.end()) {
         if ((*it).second != val) {
@@ -800,8 +781,6 @@ void MtModule::build_port_map() {
         port_map.insert({key, val});
       }
     }
-
-    delete call;
   });
 }
 
@@ -855,47 +834,6 @@ MtMethod *MtModule::node_to_method(MnNode n) {
 
     auto param_name = param.get_field(field_declarator).text();
     result->params.push_back(param_name);
-  }
-
-  return result;
-}
-
-//------------------------------------------------------------------------------
-
-MtCall* MtModule::node_to_call(MnNode n) {
-  MtCall* result = MtCall::construct(n);
-
-  auto node_call = MnCallExpr(n);
-  auto node_func = node_call.get_field(field_function);
-  auto node_args = node_call.get_field(field_arguments);
-
-  if (node_func.sym == sym_field_expression) {
-    auto node_this = node_func.get_field(field_argument);
-    auto call_method = node_func.get_field(field_field);
-
-    if (call_method.text() == "as_signed") {
-    } else {
-      auto submod = get_submod(node_this.text());
-      assert(submod);
-
-      result->submod = submod;
-
-      auto submod_mod = source_file->lib->get_mod(submod->type_name());
-
-      result->method = submod_mod->get_method(call_method.text());
-    }
-  }
-
-  if (node_args.named_child_count()) {
-    for (int i = 0; i < node_args.named_child_count(); i++) {
-      auto arg_node = node_args.named_child(i);
-
-      std::string out_string;
-      MtCursor cursor(source_file->lib, source_file, &out_string);
-      cursor.cursor = arg_node.start();
-      cursor.emit_dispatch(arg_node);
-      result->args.push_back(out_string);
-    }
   }
 
   return result;

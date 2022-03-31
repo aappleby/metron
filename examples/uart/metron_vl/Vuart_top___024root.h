@@ -24,12 +24,9 @@ VL_MODULE(Vuart_top___024root) {
     CData/*7:0*/ uart_top__DOT__hello__DOT__data;
     CData/*1:0*/ uart_top__DOT__tx__DOT__cycle;
     CData/*4:0*/ uart_top__DOT__tx__DOT__cursor;
-    CData/*1:0*/ uart_top__DOT__tx__DOT__tick__DOT__unnamedblk1__DOT__cycle_max;
-    CData/*4:0*/ uart_top__DOT__tx__DOT__tick__DOT__unnamedblk1__DOT__cursor_max;
     CData/*1:0*/ uart_top__DOT__rx__DOT__cycle;
     CData/*3:0*/ uart_top__DOT__rx__DOT__cursor;
     CData/*7:0*/ uart_top__DOT__rx__DOT__buffer;
-    CData/*7:0*/ uart_top__DOT__rx__DOT__tick__DOT__unnamedblk1__DOT__temp;
     CData/*0:0*/ __Vclklast__TOP__clock;
     SData/*8:0*/ uart_top__DOT__hello__DOT__cursor;
     SData/*8:0*/ uart_top__DOT__tx__DOT__buffer;

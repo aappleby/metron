@@ -50,7 +50,7 @@ module toplevel
     $readmemh(s, data_mem);
   end
 
-  always_ff @(posedge clock) begin : tick
+  task tick(); 
     if (reset) begin
       pc <= 0;
       regs[0] = 32'd0;
@@ -234,7 +234,8 @@ module toplevel
         pc <= pc + 4;
       end
     end
-  end
+  endtask
+  always_ff @(posedge clock) tick();
 
   //----------------------------------------
 

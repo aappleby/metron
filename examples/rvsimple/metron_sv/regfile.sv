@@ -36,11 +36,12 @@ module regfile
   end
 
   // Write port for rd
-  always_ff @(posedge clock) begin : tick
+  task tick(); 
     if (write_enable && rd_address != 5'd0) begin
       regs[rd_address] = rd_data;
     end
-  end
+  endtask
+  always_ff @(posedge clock) tick();
 
  /*private:*/
   // 32 registers of 32-bit width

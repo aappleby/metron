@@ -9,11 +9,11 @@ int main(int argc, char** arv) {
   const int cycles_per_bit = 3;
   uart_top<cycles_per_bit> top;
   top.init();
-  top.tock_update(0);
+  top.tock(0);
 
   for (int cycle = 0; cycle < 20000; cycle++) {
     bool old_valid = top.o_valid();
-    top.tock_update(1);
+    top.tock(1);
     if (!old_valid && top.o_valid()) printf("%c", (uint8_t)top.o_data());
     
     if (top.o_done()) {

@@ -24,10 +24,11 @@ module single_register
 
   initial begin : init value = INITIAL; end
 
-  always_ff @(posedge clock) begin : tick
+  task tick(); 
     if (reset) value <= INITIAL;
     else if (write_enable) value <= next;
-  end
+  endtask
+  always_ff @(posedge clock) tick();
 endmodule
 
 `endif  // RVSIMPLE_REGISTER_H

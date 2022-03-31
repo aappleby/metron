@@ -21,13 +21,13 @@ class uart_top {
   logic<1>  o_done()  const { return hello.o_done() && tx.o_idle(); }
   logic<32> o_sum()   const { return rx.o_sum(); }
 
-  void tock_update(logic<1> i_rstn) {
+  void tock(logic<1> i_rstn) {
     logic<8> hello_data = hello.o_data();
     logic<1> hello_req = hello.o_req();
 
-    rx.tick(i_rstn, tx.o_serial());
-    hello.tick(i_rstn, tx.o_cts(), tx.o_idle());
-    tx.tick(i_rstn, hello_data, hello_req);
+    rx.tock(i_rstn, tx.o_serial());
+    hello.tock(i_rstn, tx.o_cts(), tx.o_idle());
+    tx.tock(i_rstn, hello_data, hello_req);
   }
 
   //----------------------------------------

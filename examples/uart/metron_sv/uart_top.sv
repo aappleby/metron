@@ -29,7 +29,7 @@ module uart_top
   always_comb begin o_done = hello_o_done && tx_o_idle; end
   always_comb begin o_sum = rx_o_sum; end
 
-  always_comb begin : tock_update
+  always_comb begin : tock
     logic[7:0] hello_data;
     logic hello_req;
     hello_data = hello_o_data;
@@ -37,15 +37,15 @@ module uart_top
 
     rx_i_rstn = i_rstn;
     rx_i_serial = tx_o_serial;
-    /*rx.tick(i_rstn, tx.o_serial());*/
+    /*rx.tock(i_rstn, tx.o_serial());*/
     hello_i_rstn = i_rstn;
     hello_i_cts = tx_o_cts;
     hello_i_idle = tx_o_idle;
-    /*hello.tick(i_rstn, tx.o_cts(), tx.o_idle());*/
+    /*hello.tock(i_rstn, tx.o_cts(), tx.o_idle());*/
     tx_i_rstn = i_rstn;
     tx_i_data = hello_data;
     tx_i_req = hello_req;
-    /*tx.tick(i_rstn, hello_data, hello_req);*/
+    /*tx.tock(i_rstn, hello_data, hello_req);*/
   end
 
   //----------------------------------------
@@ -90,23 +90,17 @@ module uart_top
   uart_rx #(cycles_per_bit) rx(
     // Inputs
     .clock(clock),
-    .a(rx_a), 
-    .b(rx_b), 
     .i_rstn(rx_i_rstn), 
     .i_serial(rx_i_serial), 
     // Outputs
-    .derp(rx_derp), 
     .o_valid(rx_o_valid), 
     .o_buffer(rx_o_buffer), 
     .o_sum(rx_o_sum)
   );
-  logic[31:0] rx_a;
-  logic[31:0] rx_b;
   logic rx_i_rstn;
   logic rx_i_serial;
-  logic[31:0] rx_derp;
-  logic  rx_o_valid;
-  logic[7:0]  rx_o_buffer;
+  logic rx_o_valid;
+  logic[7:0] rx_o_buffer;
   logic[31:0] rx_o_sum;
 
 endmodule

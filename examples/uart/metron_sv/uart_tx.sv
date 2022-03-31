@@ -26,7 +26,14 @@ module uart_tx
 
   always_comb begin o_idle = (cursor == 0) && (cycle == 0); end
 
-  always_ff @(posedge clock) begin : tick
+  always_comb begin : tock
+    /*tick(i_rstn, i_data, i_req)*/;
+  end
+
+  //----------------------------------------
+
+ /*private:*/
+  task tick(); 
     if (!i_rstn) begin
       cycle <= 0;
       cursor <= 0;
@@ -55,11 +62,9 @@ module uart_tx
         buffer <= (buffer >> 1) | 12'h100;
       end
     end
-  end
+  endtask
+  always_ff @(posedge clock) tick();
 
-  //----------------------------------------
-
- /*private:*/
   // 1 start bit, 8 data bits, 1 stop bit, 7 additional stop bits to guarantee
   // that recevier can resync between messages
   localparam /*const*/ int extra_stop_bits = 7;

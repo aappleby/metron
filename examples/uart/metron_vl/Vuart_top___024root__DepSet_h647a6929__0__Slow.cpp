@@ -31,17 +31,16 @@ VL_ATTR_COLD void Vuart_top___024root___settle__TOP__0(Vuart_top___024root* vlSe
     Vuart_top__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     VL_DEBUG_IF(VL_DBG_MSGF("+    Vuart_top___024root___settle__TOP__0\n"); );
     // Init
-    CData/*7:0*/ uart_top__DOT__tock_update__DOT__hello_data;
-    CData/*0:0*/ uart_top__DOT__tock_update__DOT__hello_req;
+    CData/*7:0*/ uart_top__DOT__tock__DOT__hello_data;
+    CData/*0:0*/ uart_top__DOT__tock__DOT__hello_req;
     // Body
     vlSelf->o_data = vlSelf->uart_top__DOT__rx__DOT__buffer;
     vlSelf->o_valid = (1U == (IData)(vlSelf->uart_top__DOT__rx__DOT__cursor));
     vlSelf->o_sum = vlSelf->uart_top__DOT__rx__DOT__sum;
-    uart_top__DOT__tock_update__DOT__hello_data = vlSelf->uart_top__DOT__hello__DOT__data;
-    vlSelf->uart_top__DOT__tx_i_data = uart_top__DOT__tock_update__DOT__hello_data;
-    uart_top__DOT__tock_update__DOT__hello_req = (1U 
-                                                  == (IData)(vlSelf->uart_top__DOT__hello__DOT__s));
-    vlSelf->uart_top__DOT__tx_i_req = uart_top__DOT__tock_update__DOT__hello_req;
+    uart_top__DOT__tock__DOT__hello_data = vlSelf->uart_top__DOT__hello__DOT__data;
+    vlSelf->uart_top__DOT__tx_i_data = uart_top__DOT__tock__DOT__hello_data;
+    uart_top__DOT__tock__DOT__hello_req = (1U == (IData)(vlSelf->uart_top__DOT__hello__DOT__s));
+    vlSelf->uart_top__DOT__tx_i_req = uart_top__DOT__tock__DOT__hello_req;
     vlSelf->uart_top__DOT__tx_o_idle = ((0U == (IData)(vlSelf->uart_top__DOT__tx__DOT__cursor)) 
                                         & (0U == (IData)(vlSelf->uart_top__DOT__tx__DOT__cycle)));
     vlSelf->o_done = ((2U == (IData)(vlSelf->uart_top__DOT__hello__DOT__s)) 
@@ -94,11 +93,8 @@ VL_ATTR_COLD void Vuart_top___024root___ctor_var_reset(Vuart_top___024root* vlSe
     vlSelf->uart_top__DOT__tx__DOT__cycle = VL_RAND_RESET_I(2);
     vlSelf->uart_top__DOT__tx__DOT__cursor = VL_RAND_RESET_I(5);
     vlSelf->uart_top__DOT__tx__DOT__buffer = VL_RAND_RESET_I(9);
-    vlSelf->uart_top__DOT__tx__DOT__tick__DOT__unnamedblk1__DOT__cycle_max = VL_RAND_RESET_I(2);
-    vlSelf->uart_top__DOT__tx__DOT__tick__DOT__unnamedblk1__DOT__cursor_max = VL_RAND_RESET_I(5);
     vlSelf->uart_top__DOT__rx__DOT__cycle = VL_RAND_RESET_I(2);
     vlSelf->uart_top__DOT__rx__DOT__cursor = VL_RAND_RESET_I(4);
     vlSelf->uart_top__DOT__rx__DOT__buffer = VL_RAND_RESET_I(8);
     vlSelf->uart_top__DOT__rx__DOT__sum = VL_RAND_RESET_I(32);
-    vlSelf->uart_top__DOT__rx__DOT__tick__DOT__unnamedblk1__DOT__temp = VL_RAND_RESET_I(8);
 }

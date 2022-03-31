@@ -8,22 +8,14 @@ class uart_rx {
  public:
   //----------------------------------------
 
-  logic<32> derp(logic<32> a, logic<32> b) {
-    return a + b;
-  }
+  logic<1> o_valid() const { return cursor == 1; }
+  logic<8> o_buffer() const { return buffer; }
+  logic<32> o_sum() const { return sum; }
 
-  logic<1>  o_valid()  const {
-    return cursor == 1;
-  }
+  void tock(logic<1> i_rstn, logic<1> i_serial) { tick(i_rstn, i_serial); }
 
-  logic<8>  o_buffer() const {
-    return buffer;
-  }
-
-  logic<32> o_sum() const {
-    return sum;
-  }
-
+  //----------------------------------------
+ private:
   void tick(logic<1> i_rstn, logic<1> i_serial) {
     if (!i_rstn) {
       cycle = 0;
@@ -46,9 +38,6 @@ class uart_rx {
     }
   }
 
-  //----------------------------------------
-
- private:
   static const int cycle_bits = clog2(cycles_per_bit);
   static const int cycle_max = cycles_per_bit - 1;
   static const int cursor_max = 9;

@@ -88,6 +88,7 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
     CData/*0:0*/ toplevel__DOT__text_memory_bus__DOT__unnamedblk1__DOT__is_text_addr;
     IData/*31:0*/ toplevel__DOT__data_memory_bus__DOT__unnamedblk1__DOT__fetched;
     CData/*0:0*/ toplevel__DOT__data_memory_bus__DOT__unnamedblk1__DOT__is_data_memory;
+    IData/*31:0*/ __Vtask_toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__2__unnamedblk1__DOT__mask;
     CData/*7:0*/ __Vtableidx1;
     CData/*6:0*/ __Vtableidx2;
     CData/*6:0*/ __Vtableidx3;
@@ -98,29 +99,29 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
     if ((((IData)(vlSelf->toplevel__DOT__data_memory_bus_write_enable) 
           & (0x80000000U <= vlSelf->toplevel__DOT__data_memory_bus_address)) 
          & (0x8001ffffU >= vlSelf->toplevel__DOT__data_memory_bus_address))) {
-        vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__DOT__unnamedblk1__DOT__mask = 0U;
+        __Vtask_toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__2__unnamedblk1__DOT__mask = 0U;
         if ((1U & (IData)(vlSelf->toplevel__DOT__data_memory_bus_byte_enable))) {
-            vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__DOT__unnamedblk1__DOT__mask 
-                = (0xffU | vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__DOT__unnamedblk1__DOT__mask);
+            __Vtask_toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__2__unnamedblk1__DOT__mask 
+                = (0xffU | __Vtask_toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__2__unnamedblk1__DOT__mask);
         }
         if ((2U & (IData)(vlSelf->toplevel__DOT__data_memory_bus_byte_enable))) {
-            vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__DOT__unnamedblk1__DOT__mask 
-                = (0xff00U | vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__DOT__unnamedblk1__DOT__mask);
+            __Vtask_toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__2__unnamedblk1__DOT__mask 
+                = (0xff00U | __Vtask_toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__2__unnamedblk1__DOT__mask);
         }
         if ((4U & (IData)(vlSelf->toplevel__DOT__data_memory_bus_byte_enable))) {
-            vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__DOT__unnamedblk1__DOT__mask 
-                = (0xff0000U | vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__DOT__unnamedblk1__DOT__mask);
+            __Vtask_toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__2__unnamedblk1__DOT__mask 
+                = (0xff0000U | __Vtask_toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__2__unnamedblk1__DOT__mask);
         }
         if ((8U & (IData)(vlSelf->toplevel__DOT__data_memory_bus_byte_enable))) {
-            vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__DOT__unnamedblk1__DOT__mask 
-                = (0xff000000U | vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__DOT__unnamedblk1__DOT__mask);
+            __Vtask_toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__2__unnamedblk1__DOT__mask 
+                = (0xff000000U | __Vtask_toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__2__unnamedblk1__DOT__mask);
         }
         vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__mem[vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory_address] 
             = ((vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__mem
                 [vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory_address] 
-                & (~ vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__DOT__unnamedblk1__DOT__mask)) 
+                & (~ __Vtask_toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__2__unnamedblk1__DOT__mask)) 
                | (vlSelf->toplevel__DOT__data_memory_bus_write_data 
-                  & vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__DOT__unnamedblk1__DOT__mask));
+                  & __Vtask_toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__2__unnamedblk1__DOT__mask));
     }
     if (((IData)(vlSelf->toplevel__DOT__core__DOT__datapath_regfile_write_enable) 
          & (0U != (0x1fU & (vlSelf->toplevel__DOT__core__DOT__datapath__DOT__idec_inst 

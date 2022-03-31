@@ -17,6 +17,13 @@ class uart_tx {
 
   logic<1> o_idle() const { return (cursor == 0) && (cycle == 0); }
 
+  void tock(logic<1> i_rstn, logic<8> i_data, logic<1> i_req) {
+    tick(i_rstn, i_data, i_req);
+  }
+
+  //----------------------------------------
+
+ private:
   void tick(logic<1> i_rstn, logic<8> i_data, logic<1> i_req) {
     if (!i_rstn) {
       cycle = 0;
@@ -46,9 +53,6 @@ class uart_tx {
     }
   }
 
-  //----------------------------------------
-
- private:
   // 1 start bit, 8 data bits, 1 stop bit, 7 additional stop bits to guarantee
   // that recevier can resync between messages
   static const int extra_stop_bits = 7;

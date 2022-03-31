@@ -13,6 +13,13 @@ class uart_hello {
   logic<1> o_req()  const { return s == state::SEND; }
   logic<1> o_done() const { return s == state::DONE; }
 
+  void tock(logic<1> i_rstn, logic<1> i_cts, logic<1> i_idle) {
+    tick(i_rstn, i_cts, i_idle);
+  }
+
+  //----------------------------------------
+
+ private:
   void tick(logic<1> i_rstn, logic<1> i_cts, logic<1> i_idle) {
     if (!i_rstn) {
       s = state::WAIT;
@@ -34,9 +41,6 @@ class uart_hello {
     }
   }
 
-  //----------------------------------------
-
- private:
   static const int message_len = 512;
   static const int cursor_bits = clog2(message_len);
 

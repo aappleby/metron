@@ -33,7 +33,7 @@ module example_data_memory
     q = mem[address];
   end
 
-  always_ff @(posedge clock) begin : tick
+  task tick(); 
     if (wren) begin
       logic[31:0] mask;
       mask = 0;
@@ -43,7 +43,8 @@ module example_data_memory
       if (byteena[3]) mask = mask | 32'hFF000000;
       mem[address] = (mem[address] & ~mask) | (data & mask);
     end
-  end
+  endtask
+  always_ff @(posedge clock) tick();
 
 /*private:*/
   logic[31:0] mem[2**(DATA_BITS - 2)];

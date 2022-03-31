@@ -918,7 +918,8 @@ void MtCursor::emit(MtFuncDefinition n) {
   } else if (in_tick) {
     skip_over(return_type);
     skip_ws();
-    emit_replacement(func_decl, "always_ff @(posedge clock)");
+    //emit_replacement(func_decl, "always_ff @(posedge clock)");
+    emit_replacement(func_decl, "task %s();", current_function_name.c_str());
   } else if (in_tock) {
     skip_over(return_type);
     skip_ws();
@@ -952,8 +953,10 @@ void MtCursor::emit(MtFuncDefinition n) {
 
   if (in_init)
     emit("begin : %s", current_function_name.c_str());
-  else if (in_tick)
-    emit("begin : %s", current_function_name.c_str());
+  else if (in_tick) {
+    //emit("begin : %s", current_function_name.c_str());
+    //emit(" : %s", current_function_name.c_str());
+  }
   else if (in_tock)
     emit("begin : %s", current_function_name.c_str());
   else if (in_task)
@@ -1023,8 +1026,12 @@ void MtCursor::emit(MtFuncDefinition n) {
 
   if (in_init)
     emit("end");
-  else if (in_tick)
-    emit("end");
+  else if (in_tick) {
+    emit("endtask");
+    emit_newline();
+    emit_indent();
+    emit("always_ff @(posedge clock) %s();", current_function_name.c_str());
+  }
   else if (in_tock)
     emit("end");
   else if (in_task)
@@ -1883,6 +1890,14 @@ void MtCursor::emit(MtReturnStatement n) {
   auto node_lit = n.child(0);
   auto node_expr = n.child(1);
   auto node_semi = n.child(2);
+
+  if (in_tock) {
+    emit("RETURNS IN TOCKS ARE BROKEN DO NOT USE");
+  }
+
+  if (in_tick) {
+    emit("RETURNS IN TICKS ARE BROKEN DO NOT USE");
+  }
 
   cursor = node_expr.start();
   emit("%s = ", current_function_name.c_str());

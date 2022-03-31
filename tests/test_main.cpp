@@ -13,7 +13,7 @@ TestResults test_build();
 //------------------------------------------------------------------------------
 
 int main(int argc, char** argv) {
-  TestResults results;
+  TestResults results("main");
   results += test_utils();  // this looks ok
   results += test_logic();  // this looks ok
   results += test_modules();

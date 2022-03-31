@@ -22,7 +22,14 @@ module uart_hello
   always_comb begin o_req = s == SEND; end
   always_comb begin o_done = s == DONE; end
 
-  task tick();
+  always_comb begin : tock
+    /*tick(i_rstn, i_cts, i_idle)*/;
+  end
+
+  //----------------------------------------
+
+ /*private:*/
+  task tick(); 
     if (!i_rstn) begin
       s <= WAIT;
       cursor <= 0;
@@ -44,9 +51,6 @@ module uart_hello
   endtask
   always_ff @(posedge clock) tick();
 
-  //----------------------------------------
-
- /*private:*/
   localparam /*const*/ int message_len = 512;
   localparam /*const*/ int cursor_bits = $clog2(message_len);
 

@@ -693,7 +693,6 @@ void MtModule::load_pass2() {
 
 void MtModule::build_port_map() {
   assert(port_map.empty());
-  //port_map = new std::map<std::string, std::string>();
 
   mod_struct.visit_tree([&](MnNode child) {
     if (child.sym != sym_call_expression) return;
@@ -727,19 +726,11 @@ void MtModule::build_port_map() {
       }
     }
 
-    //auto arg_count = call->args.size();
     auto arg_count = node_args.named_child_count();
 
     for (auto i = 0; i < arg_count; i++) {
       auto key = call_member->name() + "." + call_method->params[i];
-
-      // The value in the port map is the _translated_ parameter.
-      std::string val;
-      MtCursor cursor(source_file->lib, source_file, &val);
-      auto arg_node = node_args.named_child(i);
-      cursor.cursor = arg_node.start();
-      cursor.emit_dispatch(arg_node);
-
+      std::string val = node_args.named_child(i).text();
 
       auto it = port_map.find(key);
       if (it != port_map.end()) {

@@ -1329,8 +1329,8 @@ void MtCursor::emit_output_ports(MnFieldDecl submod) {
 
   for (auto n : submod_mod->inputs) {
     // field_declaration
-    auto output_type = n->node.get_field(field_type);
-    auto output_decl = n->node.get_field(field_declarator);
+    auto output_type = n->get_type_node();
+    auto output_decl = n->get_decl_node();
 
     MtCursor subcursor(lib, submod_mod->source_file, str_out);
     subcursor.quiet = quiet;

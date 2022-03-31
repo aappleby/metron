@@ -21,10 +21,10 @@ struct MtSubmod {
 
   std::string name() { return node.get_field(field_declarator).text(); }
 
-  MnNode node;
   MtModule* mod;
 
 private:
+  MnNode node;
   MtSubmod(const MnNode& n) : node(n) {
     assert(node.sym == sym_field_declaration);
   }
@@ -44,8 +44,12 @@ struct MtField {
 
   std::string type_name() const { return node.get_field(field_type).node_to_type(); }
 
-  MnNode node;
+  MnNode get_type_node() const { return node.get_field(field_type); }
+  MnNode get_decl_node() const { return node.get_field(field_declarator); }
+
   bool is_public = false;
+//private:
+  MnNode node;
 };
 
 //------------------------------------------------------------------------------

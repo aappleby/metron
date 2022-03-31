@@ -382,6 +382,7 @@ void MtMethod::check_dirty_call(MnNode n, MtDelta& d) {
   auto node_func = node_call.get_field(field_function);
   auto node_args = node_call.get_field(field_arguments);
 
+  MtField*  call_field = nullptr;
   MtModule* call_submod = nullptr;
   MtMethod* call_method = nullptr;
 
@@ -396,6 +397,7 @@ void MtMethod::check_dirty_call(MnNode n, MtDelta& d) {
       } else {
         auto submod = mod->get_submod(node_this.text());
         assert(submod);
+        call_field = submod;
 
         //result->submod = submod;
 
@@ -447,7 +449,7 @@ void MtMethod::check_dirty_call(MnNode n, MtDelta& d) {
 
     MtDelta temp_delta = d;
     MtDelta call_delta = *call_method->delta;
-    call_delta.add_prefix(call->submod->name());
+    call_delta.add_prefix(call_field->name());
 
     merge_series(temp_delta, call_delta, d);
   } else if (node_func.sym == sym_template_function) {

@@ -916,6 +916,13 @@ void MtCursor::emit(MtFuncDefinition n) {
     skip_ws();
     emit_replacement(func_decl, "initial");
   } else if (in_tick) {
+
+    /*
+    if (in_public) {
+      emit("\nXXXXX TICK CANNOT BE PUBLIC XXX\n");
+    }
+    */
+
     skip_over(return_type);
     skip_ws();
     //emit_replacement(func_decl, "always_ff @(posedge clock)");
@@ -1365,8 +1372,8 @@ void MtCursor::emit_output_ports(MtFieldDecl submod) {
   }
 
   for (auto& getter : *submod_mod->getters) {
-    auto getter_type = getter.get_field(field_type);
-    auto getter_decl = getter.get_field(field_declarator);
+    auto getter_type = getter.node.get_field(field_type);
+    auto getter_decl = getter.node.get_field(field_declarator);
     auto getter_name = getter_decl.get_field(field_declarator);
 
     MtCursor sub_cursor(lib, submod_mod->source_file, str_out);
@@ -1575,8 +1582,8 @@ void MtCursor::emit(MtClassSpecifier n) {
 
       MtCursor sub_cursor = *this;
 
-      auto getter_type = getter.get_field(field_type);
-      auto getter_decl = getter.get_field(field_declarator);
+      auto getter_type = getter.node.get_field(field_type);
+      auto getter_decl = getter.node.get_field(field_declarator);
       auto getter_name = getter_decl.get_field(field_declarator);
 
       // getter_decl.dump_tree();

@@ -508,6 +508,11 @@ void MtModule::collect_methods() {
 }
 
 //------------------------------------------------------------------------------
+
+void MtModule::build_call_tree() {
+}
+
+//------------------------------------------------------------------------------
 // Collect all inputs to all tick and tock methods and merge them into a list of
 // input ports. Input ports can be declared in multiple tick/tock methods, but
 // we don't want duplicates in the Verilog port list.
@@ -653,7 +658,7 @@ void MtModule::collect_registers() {
   std::set<std::string> dedup;
 
   for (auto n : *tick_methods) {
-    n.visit_tree([&](MtNode child) {
+    n.node.visit_tree([&](MtNode child) {
       if (child.sym != sym_assignment_expression) return;
 
       auto lhs = child.get_field(field_left);

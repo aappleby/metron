@@ -45,6 +45,7 @@ struct MtModule {
   void collect_registers();
   void collect_submods();
   void build_port_map();
+  void build_call_tree();
 
   void check_dirty_ticks();
   void check_dirty_tocks();

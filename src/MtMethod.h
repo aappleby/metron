@@ -73,9 +73,10 @@ struct MtDelta {
 
 //------------------------------------------------------------------------------
 
-struct MtMethod : public MtNode {
+struct MtMethod {
   MtMethod(MtNode n, MtModule* _mod, MtModLibrary* _lib);
 
+  MtNode node;
   MtModule* mod = nullptr;
   MtModLibrary* lib = nullptr;
   std::string name;
@@ -85,6 +86,7 @@ struct MtMethod : public MtNode {
 
   bool is_tick = false;
   bool is_tock = false;
+  bool is_root = true;
 
   void update_delta();
 

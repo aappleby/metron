@@ -83,7 +83,7 @@ bool merge_series(MtDelta& a, MtDelta& b, MtDelta& out) {
 //------------------------------------------------------------------------------
 
 MtMethod::MtMethod(MtNode n, MtModule* _mod, MtModLibrary* _lib)
-    : MtNode(n), mod(_mod), lib(_lib) {
+    : node(n), mod(_mod), lib(_lib) {
   assert(mod);
   assert(lib);
 }
@@ -91,7 +91,7 @@ MtMethod::MtMethod(MtNode n, MtModule* _mod, MtModLibrary* _lib)
 void MtMethod::update_delta() {
   if (delta == nullptr) {
     auto temp_delta = new MtDelta();
-    auto body = get_field(field_body);
+    auto body = node.get_field(field_body);
     //check_dirty_dispatch(body, *temp_delta);
     delta = temp_delta;
   }

@@ -48,6 +48,11 @@ module uart_top
     /*tx.tock(i_rstn, hello_data, hello_req);*/
   end
 
+  // FIXME need to deduce task vs function by call site, not return type
+
+  //void glarp(logic<1> i_rstn) {
+  //}
+
   //----------------------------------------
 
  /*private:*/

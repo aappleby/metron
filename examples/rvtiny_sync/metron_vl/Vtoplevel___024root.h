@@ -17,6 +17,7 @@ VL_MODULE(Vtoplevel___024root) {
     VL_OUT8(o_bus_byte_enable,3,0);
     VL_OUT8(o_bus_read_enable,0,0);
     VL_OUT8(o_bus_write_enable,0,0);
+    CData/*1:0*/ toplevel__DOT__phase;
     CData/*6:0*/ toplevel__DOT__tick__DOT__unnamedblk1__DOT__op;
     CData/*4:0*/ toplevel__DOT__tick__DOT__unnamedblk1__DOT__rd;
     CData/*2:0*/ toplevel__DOT__tick__DOT__unnamedblk1__DOT__f3;
@@ -32,16 +33,16 @@ VL_MODULE(Vtoplevel___024root) {
     VL_OUT(o_inst,31,0);
     VL_OUT(o_pc,31,0);
     IData/*31:0*/ toplevel__DOT__pc;
-    IData/*31:0*/ toplevel__DOT__tick__DOT__unnamedblk1__DOT__inst;
+    IData/*31:0*/ toplevel__DOT__inst;
     IData/*31:0*/ toplevel__DOT__tick__DOT__unnamedblk1__DOT__unnamedblk2__DOT__op_a;
     IData/*31:0*/ toplevel__DOT__tick__DOT__unnamedblk1__DOT__unnamedblk2__DOT__op_b;
     IData/*31:0*/ toplevel__DOT__tick__DOT__unnamedblk1__DOT__unnamedblk2__DOT__alu_result;
     IData/*31:0*/ toplevel__DOT__tick__DOT__unnamedblk1__DOT__unnamedblk3__DOT__imm;
     IData/*31:0*/ toplevel__DOT__tick__DOT__unnamedblk1__DOT__unnamedblk3__DOT__addr;
-    IData/*31:0*/ toplevel__DOT__tick__DOT__unnamedblk1__DOT__unnamedblk3__DOT__data;
+    IData/*31:0*/ toplevel__DOT__tick__DOT__unnamedblk1__DOT__unnamedblk3__DOT__rdata;
     IData/*31:0*/ toplevel__DOT__tick__DOT__unnamedblk1__DOT__unnamedblk4__DOT__imm;
     IData/*31:0*/ toplevel__DOT__tick__DOT__unnamedblk1__DOT__unnamedblk4__DOT__addr;
-    IData/*31:0*/ toplevel__DOT__tick__DOT__unnamedblk1__DOT__unnamedblk4__DOT__data;
+    IData/*31:0*/ toplevel__DOT__tick__DOT__unnamedblk1__DOT__unnamedblk4__DOT__wdata;
     IData/*31:0*/ toplevel__DOT__tick__DOT__unnamedblk1__DOT__unnamedblk4__DOT__mask;
     IData/*31:0*/ toplevel__DOT__tick__DOT__unnamedblk1__DOT__unnamedblk5__DOT__op_a;
     IData/*31:0*/ toplevel__DOT__tick__DOT__unnamedblk1__DOT__unnamedblk5__DOT__op_b;

@@ -22,7 +22,7 @@ module uart_hello
   always_comb begin o_req = s == SEND; end
   always_comb begin o_done = s == DONE; end
 
-  always_ff @(posedge clock) begin : tick
+  task tick();
     if (!i_rstn) begin
       s <= WAIT;
       cursor <= 0;
@@ -41,7 +41,8 @@ module uart_hello
         cursor <= 0;
       end
     end
-  end
+  endtask
+  always_ff @(posedge clock) tick();
 
   //----------------------------------------
 

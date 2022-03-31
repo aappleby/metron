@@ -721,20 +721,22 @@ struct MtField {
 
 //------------------------------------------------------------------------------
 
-struct MtEnum : public MnNode {
-  MtEnum(const MnNode& n) : MnNode(n) {}
+struct MtEnum {
+  MtEnum(const MnNode& n) : node(n) {}
 
   std::string name() {
-    if (sym == sym_field_declaration) {
-      auto enum_type = get_field(field_type);
+    if (node.sym == sym_field_declaration) {
+      auto enum_type = node.get_field(field_type);
       auto enum_name = enum_type.get_field(field_name);
       return enum_name.text();
     } else {
-      dump_tree();
+      node.dump_tree();
       debugbreak();
       return "";
     }
   }
+
+  MnNode node;
 };
 
 //------------------------------------------------------------------------------

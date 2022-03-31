@@ -58,12 +58,10 @@ struct MtModule {
 
   //----------
 
+  std::string mod_name;
   MtSourceFile* source_file = nullptr;
 
-  std::string mod_name;
-
   bool load_error = false;
-
   bool dirty_check_done = false;
   bool dirty_check_fail = false;
 
@@ -76,12 +74,10 @@ struct MtModule {
 
   std::vector<MtEnum*> enums;
 
-  // inputs + outputs + regs + submods
   std::vector<MtField*>  all_fields;
   std::vector<MtField*>  inputs;
   std::vector<MtField*>  outputs;
   std::vector<MtField*>  registers;
-
   std::vector<MtSubmod*> submods;
 
   std::vector<MtMethod*> all_methods;

@@ -69,6 +69,7 @@ struct MtEnum {
     }
   }
 
+private:
   MnNode node;
 };
 

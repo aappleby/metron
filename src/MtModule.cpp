@@ -117,8 +117,8 @@ bool MtModule::has_field(const std::string &name) {
 }
 
 MtField *MtModule::get_field(const std::string &name) {
-  for (auto &f : *all_fields) {
-    if (f.name() == name) return &f;
+  for (auto f : all_fields) {
+    if (f->name() == name) return f;
   }
   return nullptr;
 }
@@ -436,8 +436,7 @@ void MtModule::collect_params() {
 //------------------------------------------------------------------------------
 
 void MtModule::collect_fields() {
-  assert(all_fields == nullptr);
-  all_fields = new std::vector<MtField>();
+  assert(all_fields.empty());
 
   auto mod_body = mod_struct.get_field(field_body).check_null();
   bool in_public = false;
@@ -458,7 +457,10 @@ void MtModule::collect_fields() {
 
     if (n.sym != sym_field_declaration) continue;
     if (n.get_field(field_type).sym == sym_enum_specifier) continue;
-    all_fields->push_back(MtField(n, in_public));
+
+    auto new_field = new MtField(n, in_public);
+
+    all_fields.push_back(new_field);
   }
 }
 
@@ -631,10 +633,10 @@ void MtModule::collect_outputs() {
 
   std::set<std::string> dedup;
 
-  for (auto f : *all_fields) {
-    if (f.is_public && !f.is_submod() && !f.is_param()) {
-      printf("%s\n", f.text().c_str());
-      outputs->push_back(f);
+  for (auto f : all_fields) {
+    if (f->is_public && !f->is_submod() && !f->is_param()) {
+      printf("%s\n", f->text().c_str());
+      outputs->push_back(*f);
     }
   }
 

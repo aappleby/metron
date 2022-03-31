@@ -77,10 +77,11 @@ struct MtModule {
   std::vector<MtEnum>* enums = nullptr;
 
   // inputs + outputs + regs + submods
-  std::vector<MtField>*  all_fields = nullptr;
+  std::vector<MtField*>  all_fields;
   std::vector<MtField>*  inputs = nullptr;
   std::vector<MtField>*  outputs = nullptr;
   std::vector<MtField>*  registers = nullptr;
+
   std::vector<MtSubmod*> submods;
 
   std::vector<MtMethod*> all_methods;

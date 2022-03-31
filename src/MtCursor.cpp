@@ -867,8 +867,8 @@ void MtCursor::emit_submod_input_port_bindings(MtNode n) {
       auto submod_meth = submod_mod->get_method(meth_id.text());
       assert(submod_meth);
 
-      for (int i = 0; i < submod_meth->params->size(); i++) {
-        auto param = submod_meth->params->at(i);
+      for (int i = 0; i < submod_meth->params.size(); i++) {
+        auto param = submod_meth->params[i];
         emit("%s_%s = ", inst_id.text().c_str(), param.c_str());
 
         auto arg_node = args_node.named_child(i);
@@ -1458,7 +1458,7 @@ void MtCursor::emit(MtClassSpecifier n) {
 
   if (!in_module_or_package) {
     assert(!current_mod);
-    for (auto& mod : *source_file->modules) {
+    for (auto mod : source_file->modules) {
       if (mod->mod_name == struct_name.text()) {
         current_mod = mod;
         break;
@@ -1985,7 +1985,7 @@ void MtCursor::emit(MtTemplateDecl n) {
 
   if (!in_module_or_package) {
     assert(!current_mod);
-    for (auto& mod : *source_file->modules) {
+    for (auto mod : source_file->modules) {
       if (mod->mod_name == struct_name) {
         current_mod = mod;
         break;

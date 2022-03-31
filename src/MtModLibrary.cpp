@@ -100,7 +100,7 @@ void MtModLibrary::process_sources() {
   sources_loaded = true;
   
   for (auto s : source_files) {
-    for (auto m : *s->modules) {
+    for (auto m : s->modules) {
       modules.push_back(m);
     }
   }

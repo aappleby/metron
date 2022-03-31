@@ -72,7 +72,7 @@ struct MtModule {
   MtTemplateParamList mod_param_list;
 
   std::vector<MtParam*> modparams;
-  std::vector<MtParam>* localparams = nullptr;
+  std::vector<MtParam*> localparams;
 
   std::vector<MtEnum*> enums;
 

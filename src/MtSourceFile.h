@@ -36,7 +36,7 @@ struct MtSourceFile {
   TSParser* parser = nullptr;
   TSTree* tree = nullptr;
 
-  std::vector<MtModule*>* modules = nullptr;
+  std::vector<MtModule*> modules;
 };
 
 //------------------------------------------------------------------------------

@@ -84,7 +84,7 @@ struct MtMethod {
   MtModLibrary* lib = nullptr;
   std::string name;
 
-  std::vector<std::string>* params = nullptr;
+  std::vector<std::string> params;
   MtDelta* delta = nullptr;
 
   bool is_tick = false;

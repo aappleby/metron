@@ -34,7 +34,7 @@ MtSourceFile::MtSourceFile(const std::string& _filename,
   auto root_sym = ts_node_symbol(ts_root);
   mt_root = MtTranslationUnit(MtNode(ts_root, root_sym, 0, this));
 
-  modules = new std::vector<MtModule*>();
+  assert(modules.empty());
   find_modules(mt_root);
 }
 
@@ -44,10 +44,8 @@ MtSourceFile::~MtSourceFile() {
   ts_tree_delete(tree);
   ts_parser_delete(parser);
 
-  for (auto m : *modules) delete m;
-  delete modules;
-  modules = nullptr;
-
+  for (auto m : modules) delete m;
+  modules.clear();
   lang = nullptr;
   parser = nullptr;
   tree = nullptr;
@@ -62,13 +60,13 @@ void MtSourceFile::find_modules(MtNode toplevel) {
       case sym_template_declaration: {
         MtNode mod_root(c.node, c.sym, 0, this);
         MtModule* mod = new MtModule(this, MtTemplateDecl(mod_root));
-        modules->push_back(mod);
+        modules.push_back(mod);
         break;
       }
       case sym_class_specifier: {
         MtNode mod_root(c.node, c.sym, 0, this);
         MtModule* mod = new MtModule(this, MtClassSpecifier(mod_root));
-        modules->push_back(mod);
+        modules.push_back(mod);
         break;
       }
       case sym_preproc_ifdef: {
@@ -82,7 +80,7 @@ void MtSourceFile::find_modules(MtNode toplevel) {
 //------------------------------------------------------------------------------
 
 MtModule* MtSourceFile::get_module(const std::string& name) {
-  for (auto n : *modules) {
+  for (auto n : modules) {
     if (n->mod_name == name) return n;
   }
   return nullptr;

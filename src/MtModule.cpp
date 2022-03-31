@@ -92,12 +92,18 @@ MtModule::MtModule(MtSourceFile *source_file, MtClassSpecifier node)
 //------------------------------------------------------------------------------
 
 MtMethod *MtModule::get_method(const std::string &name) {
-  for (auto n : getters)      if (n->name == name) return n;
-  for (auto n : init_methods) if (n->name == name) return n;
-  for (auto n : tick_methods) if (n->name == name) return n;
-  for (auto n : tock_methods) if (n->name == name) return n;
-  for (auto n : task_methods) if (n->name == name) return n;
-  for (auto n : func_methods) if (n->name == name) return n;
+  for (auto n : getters)
+    if (n->name == name) return n;
+  for (auto n : init_methods)
+    if (n->name == name) return n;
+  for (auto n : tick_methods)
+    if (n->name == name) return n;
+  for (auto n : tock_methods)
+    if (n->name == name) return n;
+  for (auto n : task_methods)
+    if (n->name == name) return n;
+  for (auto n : func_methods)
+    if (n->name == name) return n;
   return nullptr;
 }
 
@@ -170,11 +176,11 @@ void MtModule::dump_method_list(std::vector<MtMethod> &methods) {
     LOG_INDENT_SCOPE();
     LOG_R("%s(", n.name.c_str());
 
-    if (n.params) {
-      int param_count = int(n.params->size());
+    if (n.params.size()) {
+      int param_count = int(n.params.size());
       int param_index = 0;
 
-      for (auto &param : *n.params) {
+      for (auto &param : n.params) {
         LOG_R("%s", param.c_str());
         if (param_index++ != param_count - 1) LOG_C(", ");
       }
@@ -183,16 +189,16 @@ void MtModule::dump_method_list(std::vector<MtMethod> &methods) {
   }
 }
 
-void MtModule::dump_method_list2(const std::vector<MtMethod*> &methods) {
+void MtModule::dump_method_list2(const std::vector<MtMethod *> &methods) {
   for (auto n : methods) {
     LOG_INDENT_SCOPE();
     LOG_R("%s(", n->name.c_str());
 
-    if (n->params) {
-      int param_count = int(n->params->size());
+    if (n->params.size()) {
+      int param_count = int(n->params.size());
       int param_index = 0;
 
-      for (auto &param : *(n->params)) {
+      for (auto &param : n->params) {
         LOG_R("%s", param.c_str());
         if (param_index++ != param_count - 1) LOG_C(", ");
       }
@@ -211,12 +217,12 @@ void MtModule::dump_call_list(std::vector<MtCall> &calls) {
       LOG_C("\n");
       LOG_INDENT_SCOPE();
 
-      assert(call.method->params->size() == call.args->size());
+      assert(call.method->params.size() == call.args->size());
       int arg_count = int(call.args->size());
       int arg_index = 0;
 
       for (auto i = 0; i < arg_count; i++) {
-        LOG_C("%s = %s", call.method->params->at(i).c_str(),
+        LOG_C("%s = %s", call.method->params[i].c_str(),
               call.args->at(i).c_str());
 
         if (arg_index++ < arg_count - 1) LOG_C(",\n");
@@ -244,7 +250,7 @@ void MtModule::dump_banner() {
   LOG_B("Modparams:\n")
   for (auto param : modparams) LOG_G("  %s\n", param->name().c_str());
   LOG_B("Localparams:\n");
-  for (auto &param : *localparams) LOG_G("  %s\n", param.name().c_str());
+  for (auto param : localparams) LOG_G("  %s\n", param->name().c_str());
   LOG_B("Enums:\n");
   for (auto n : enums) LOG_G("  %s\n", n->name().c_str());
   LOG_B("Inputs:\n");
@@ -357,7 +363,7 @@ void MtModule::load_pass1() {
   collect_registers();
   collect_submods();
 
-  //enums = new std::vector<MtEnum>();
+  // enums = new std::vector<MtEnum>();
 
   auto mod_body = mod_struct.get_field(field_body).check_null();
   for (auto n : mod_body) {
@@ -421,14 +427,14 @@ void MtModule::collect_params() {
   }
 
   // localparam = static const int
-  assert(localparams == nullptr);
-  localparams = new std::vector<MtParam>();
+  assert(localparams.empty());
   auto mod_body = mod_struct.get_field(field_body).check_null();
   for (auto n : mod_body) {
     if (n.sym != sym_field_declaration) continue;
 
     if (n.is_static() && n.is_const()) {
-      localparams->push_back(MtParam(n));
+      auto new_param = new MtParam(n);
+      localparams.push_back(new_param);
     }
   }
 }
@@ -520,8 +526,7 @@ void MtModule::collect_methods() {
 
 //------------------------------------------------------------------------------
 
-void MtModule::build_call_tree() {
-}
+void MtModule::build_call_tree() {}
 
 //------------------------------------------------------------------------------
 // Collect all inputs to all tick and tock methods and merge them into a list of
@@ -588,18 +593,17 @@ void MtModule::collect_inputs() {
 
       for (auto param : params) {
         if (param.sym != sym_parameter_declaration) continue;
-        MtField* new_input = new MtField(param, true);
+        MtField *new_input = new MtField(param, true);
         if (!dedup.contains(new_input->name())) {
           inputs.push_back(new_input);
           dedup.insert(new_input->name());
-        }
-        else {
+        } else {
           delete new_input;
         }
       }
       continue;
     }
-  } 
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -681,7 +685,7 @@ void MtModule::collect_submods() {
     MtField f(n, false);
 
     if (source_file->lib->has_mod(f.type_name())) {
-      MtSubmod* submod = MtSubmod::construct(n);
+      MtSubmod *submod = MtSubmod::construct(n);
       submod->mod = source_file->lib->get_mod(f.type_name());
       submods.push_back(submod);
     } else {
@@ -706,7 +710,6 @@ void MtModule::load_pass2() {
 //------------------------------------------------------------------------------
 
 void MtModule::build_port_map() {
-
   port_map = new std::map<std::string, std::string>();
 
   mod_struct.visit_tree([&](MtNode child) {
@@ -724,7 +727,6 @@ void MtModule::build_port_map() {
       }
     }
 
-
     auto call = node_to_call(child);
 
     if (!call.method) {
@@ -732,17 +734,14 @@ void MtModule::build_port_map() {
     }
     assert(call.method);
 
-
     for (auto i = 0; i < call.args->size(); i++) {
-      auto key = call.submod->name() + "." + call.method->params->at(i);
+      auto key = call.submod->name() + "." + call.method->params[i];
       auto val = call.args->at(i);
       auto it = port_map->find(key);
       if (it != port_map->end()) {
         if ((*it).second != val) {
           LOG_R("Error, got multiple different values for %s: '%s' and '%s'\n",
-            key.c_str(),
-            (*it).second.c_str(),
-            val.c_str());
+                key.c_str(), (*it).second.c_str(), val.c_str());
           debugbreak();
         }
       } else {
@@ -783,25 +782,25 @@ void MtModule::sanity_check() {
 
 //------------------------------------------------------------------------------
 
-MtMethod* MtModule::node_to_method(MtNode n) {
+MtMethod *MtModule::node_to_method(MtNode n) {
   assert(n.sym == sym_function_definition);
 
-  MtMethod* result = MtMethod::construct(n, this, source_file->lib);
+  MtMethod *result = MtMethod::construct(n, this, source_file->lib);
 
   auto method_name =
-    n.get_field(field_declarator).get_field(field_declarator).text();
+      n.get_field(field_declarator).get_field(field_declarator).text();
   auto method_params =
-    n.get_field(field_declarator).get_field(field_parameters);
+      n.get_field(field_declarator).get_field(field_parameters);
 
   result->name = method_name;
-  result->params = new std::vector<std::string>();
+  assert(result->params.empty());
 
   for (int i = 0; i < method_params.child_count(); i++) {
     auto param = method_params.child(i);
     if (param.sym != sym_parameter_declaration) continue;
 
     auto param_name = param.get_field(field_declarator).text();
-    result->params->push_back(param_name);
+    result->params.push_back(param_name);
   }
 
   return result;
@@ -821,8 +820,7 @@ MtCall MtModule::node_to_call(MtNode n) {
     auto call_method = call_func.get_field(field_field);
 
     if (call_method.text() == "as_signed") {
-    }
-    else {
+    } else {
       auto submod = get_submod(call_this.text());
       assert(submod);
 

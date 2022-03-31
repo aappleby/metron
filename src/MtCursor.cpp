@@ -1293,7 +1293,7 @@ void MtCursor::emit_field_as_submod(MtFieldDecl n) {
 //------------------------------------------------------------------------------
 
 void MtCursor::emit_output_ports(MtFieldDecl submod) {
-  if (current_mod->submods->empty()) return;
+  if (current_mod->submods.empty()) return;
 
   assert(at_newline);
 

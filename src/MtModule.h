@@ -53,8 +53,7 @@ struct MtModule {
 
   void sanity_check();
 
-  MtMethod node_to_method(MtNode n);
-  MtMethod* node_to_method2(MtNode n);
+  MtMethod* node_to_method(MtNode n);
   MtCall node_to_call(MtNode n);
 
   //----------
@@ -82,10 +81,9 @@ struct MtModule {
   std::vector<MtField>*  inputs = nullptr;
   std::vector<MtField>*  outputs = nullptr;
   std::vector<MtField>*  registers = nullptr;
-  std::vector<MtSubmod>* submods = nullptr;
+  std::vector<MtSubmod*> submods;
 
   std::vector<MtMethod*> all_methods;
-
   std::vector<MtMethod*> getters;
   std::vector<MtMethod*> init_methods;
   std::vector<MtMethod*> tick_methods;

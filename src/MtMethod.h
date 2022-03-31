@@ -74,7 +74,10 @@ struct MtDelta {
 //------------------------------------------------------------------------------
 
 struct MtMethod {
-  MtMethod(MtNode n, MtModule* _mod, MtModLibrary* _lib);
+
+  static MtMethod* construct(MtNode n, MtModule* _mod, MtModLibrary* _lib) {
+    return new MtMethod(n, _mod, _lib);
+  }
 
   MtNode node;
   MtModule* mod = nullptr;
@@ -98,6 +101,9 @@ struct MtMethod {
   void check_dirty_if(MtNode n, MtDelta& d);
   void check_dirty_call(MtNode n, MtDelta& d);
   void check_dirty_switch(MtNode n, MtDelta& d);
+
+private:
+  MtMethod(MtNode n, MtModule* _mod, MtModLibrary* _lib);
 };
 
 //------------------------------------------------------------------------------

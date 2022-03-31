@@ -158,8 +158,8 @@ bool MtModule::has_submod(const std::string &name) {
 }
 
 MtSubmod *MtModule::get_submod(const std::string &name) {
-  for (auto &n : *submods) {
-    if (n.name() == name) return &n;
+  for (auto n : submods) {
+    if (n->name() == name) return n;
   }
   return nullptr;
 }
@@ -262,8 +262,8 @@ void MtModule::dump_banner() {
   for (auto &n : *registers)
     LOG_G("  %s:%s\n", n.name().c_str(), n.type_name().c_str());
   LOG_B("Submods:\n");
-  for (auto &submod : *submods)
-    LOG_G("  %s:%s\n", submod.name().c_str(), submod.mod->mod_name.c_str());
+  for (auto submod : submods)
+    LOG_G("  %s:%s\n", submod->name().c_str(), submod->mod->mod_name.c_str());
 
   //----------
 
@@ -494,7 +494,7 @@ void MtModule::collect_methods() {
     bool is_tick = is_task && func_name.starts_with("tick");
     bool is_tock = is_task && func_name.starts_with("tock");
 
-    auto new_method = node_to_method2(n);
+    auto new_method = node_to_method(n);
     all_methods.push_back(new_method);
 
     if (is_init) {
@@ -694,8 +694,7 @@ void MtModule::collect_registers() {
 //------------------------------------------------------------------------------
 
 void MtModule::collect_submods() {
-  assert(submods == nullptr);
-  submods = new std::vector<MtSubmod>();
+  assert(submods.empty());
 
   auto mod_body = mod_struct.get_field(field_body).check_null();
   for (auto n : mod_body) {
@@ -704,9 +703,9 @@ void MtModule::collect_submods() {
     MtField f(n, false);
 
     if (source_file->lib->has_mod(f.type_name())) {
-      MtSubmod submod(n);
-      submod.mod = source_file->lib->get_mod(f.type_name());
-      submods->push_back(submod);
+      MtSubmod* submod = MtSubmod::construct(n);
+      submod->mod = source_file->lib->get_mod(f.type_name());
+      submods.push_back(submod);
     } else {
       if (f.type_name() != "logic") {
         LOG_R("Could not find module for submod %s\n", f.type_name().c_str());
@@ -798,42 +797,18 @@ void MtModule::sanity_check() {
     field_names.insert(n.name());
   }
 
-  for (auto &n : *submods) {
-    assert(!field_names.contains(n.name()));
-    field_names.insert(n.name());
+  for (auto n : submods) {
+    assert(!field_names.contains(n->name()));
+    field_names.insert(n->name());
   }
 }
 
 //------------------------------------------------------------------------------
 
-MtMethod MtModule::node_to_method(MtNode n) {
+MtMethod* MtModule::node_to_method(MtNode n) {
   assert(n.sym == sym_function_definition);
 
-  MtMethod result(n, this, source_file->lib);
-
-  auto method_name =
-      n.get_field(field_declarator).get_field(field_declarator).text();
-  auto method_params =
-      n.get_field(field_declarator).get_field(field_parameters);
-
-  result.name = method_name;
-  result.params = new std::vector<std::string>();
-
-  for (int i = 0; i < method_params.child_count(); i++) {
-    auto param = method_params.child(i);
-    if (param.sym != sym_parameter_declaration) continue;
-
-    auto param_name = param.get_field(field_declarator).text();
-    result.params->push_back(param_name);
-  }
-
-  return result;
-}
-
-MtMethod* MtModule::node_to_method2(MtNode n) {
-  assert(n.sym == sym_function_definition);
-
-  MtMethod* result = new MtMethod(n, this, source_file->lib);
+  MtMethod* result = MtMethod::construct(n, this, source_file->lib);
 
   auto method_name =
     n.get_field(field_declarator).get_field(field_declarator).text();

@@ -684,14 +684,21 @@ struct MtNamespaceDef : public MtNode {
 
 //------------------------------------------------------------------------------
 
-struct MtSubmod : public MtNode {
-  MtSubmod(const MtNode& n) : MtNode(n) {
-    assert(sym == sym_field_declaration);
+struct MtSubmod {
+
+  static MtSubmod* construct(const MtNode& n) {
+    return new MtSubmod(n);
   }
 
-  std::string name() { return get_field(field_declarator).text(); }
+  std::string name() { return node.get_field(field_declarator).text(); }
 
+  MtNode node;
   MtModule* mod;
+
+private:
+  MtSubmod(const MtNode& n) : node(n) {
+    assert(node.sym == sym_field_declaration);
+  }
 };
 
 //------------------------------------------------------------------------------

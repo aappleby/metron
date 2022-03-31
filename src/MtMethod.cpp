@@ -382,53 +382,21 @@ void MtMethod::check_dirty_call(MnNode n, MtDelta& d) {
   auto node_func = node_call.get_field(field_function);
   auto node_args = node_call.get_field(field_arguments);
 
-  MtField*  call_field = nullptr;
+  MtField*  call_member = nullptr;
   MtModule* call_submod = nullptr;
   MtMethod* call_method = nullptr;
 
-  {
+  if (node_call.sym == sym_field_expression) {
+    auto node_this = node_call.get_field(field_argument);
+    auto node_method = node_call.get_field(field_field);
 
-
-    if (node_call.sym == sym_field_expression) {
-      auto node_this = node_call.get_field(field_argument);
-      auto node_method = node_call.get_field(field_field);
-
-      if (node_method.text() == "as_signed") {
-      } else {
-        auto submod = mod->get_submod(node_this.text());
-        assert(submod);
-        call_field = submod;
-
-        //result->submod = submod;
-
-
-        auto submod_mod = mod->source_file->lib->get_mod(submod->type_name());
-        call_submod = submod_mod;
-
-        //result->method = submod_mod->get_method(call_method.text());
-        call_method = submod_mod->get_method(node_method.text());
-      }
+    if (node_method.text() == "as_signed") {
+    } else {
+      call_member = mod->get_submod(node_this.text());
+      call_submod = mod->source_file->lib->get_mod(call_member->type_name());
+      call_method = call_submod->get_method(node_method.text());
     }
-
-    /*
-    if (call_args.named_child_count()) {
-      for (int i = 0; i < call_args.named_child_count(); i++) {
-        auto arg_node = call_args.named_child(i);
-
-        std::string out_string;
-        MtCursor cursor(source_file->lib, source_file, &out_string);
-        cursor.cursor = arg_node.start();
-        cursor.emit_dispatch(arg_node);
-        result->args.push_back(out_string);
-      }
-    }
-    */
   }
-
-  auto call = mod->node_to_call(n);
-
-  //auto node_func = call->get_func();
-  //auto node_args = call->get_args();
 
   assert(node_args.sym == sym_argument_list);
   check_dirty_dispatch(node_args, d);
@@ -444,12 +412,11 @@ void MtMethod::check_dirty_call(MnNode n, MtDelta& d) {
     // resolve the local task/function calls.
 
   } else if (node_func.sym == sym_field_expression) {
-    assert(call_method);
     call_method->update_delta();
 
     MtDelta temp_delta = d;
     MtDelta call_delta = *call_method->delta;
-    call_delta.add_prefix(call_field->name());
+    call_delta.add_prefix(call_member->name());
 
     merge_series(temp_delta, call_delta, d);
   } else if (node_func.sym == sym_template_function) {
@@ -460,8 +427,6 @@ void MtMethod::check_dirty_call(MnNode n, MtDelta& d) {
     n.dump_tree();
     debugbreak();
   }
-
-  delete call;
 }
 
 //------------------------------------------------------------------------------

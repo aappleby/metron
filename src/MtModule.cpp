@@ -726,14 +726,70 @@ void MtModule::build_port_map() {
       }
     }
 
+    /*
+    MtCall* result = MtCall::construct(n);
+
+    auto call = MnCallExpr(n);
+    auto call_func = call.get_field(field_function);
+    auto call_args = call.get_field(field_arguments);
+
+    if (call_func.sym == sym_field_expression) {
+      auto call_this = call_func.get_field(field_argument);
+      auto call_method = call_func.get_field(field_field);
+
+      if (call_method.text() == "as_signed") {
+      } else {
+        auto submod = get_submod(call_this.text());
+        assert(submod);
+
+        result->submod = submod;
+
+        auto submod_mod = source_file->lib->get_mod(submod->type_name());
+
+        result->method = submod_mod->get_method(call_method.text());
+      }
+    }
+
+    if (call_args.named_child_count()) {
+      for (int i = 0; i < call_args.named_child_count(); i++) {
+        auto arg_node = call_args.named_child(i);
+
+        std::string out_string;
+        MtCursor cursor(source_file->lib, source_file, &out_string);
+        cursor.cursor = arg_node.start();
+        cursor.emit_dispatch(arg_node);
+        result->args.push_back(out_string);
+      }
+    }
+
+    return result;
+    */
+
+    auto node_call = MnCallExpr(child);
+    auto node_func = node_call.get_field(field_function);
+    auto node_args = node_call.get_field(field_arguments);
+
+    MtField*  call_member = nullptr;
+    MtModule* call_submod = nullptr;
+    MtMethod* call_method = nullptr;
+
+    if (node_call.sym == sym_field_expression) {
+      auto node_this = node_call.get_field(field_argument);
+      auto node_method = node_call.get_field(field_field);
+
+      if (node_method.text() == "as_signed") {
+      } else {
+        call_member = get_submod(node_this.text());
+        call_submod = source_file->lib->get_mod(call_member->type_name());
+        call_method = call_submod->get_method(node_method.text());
+      }
+    }
+
     auto call = node_to_call(child);
 
-    if (!call->method) {
-      child.dump_tree();
-    }
-    assert(call->method);
+    //auto arg_count = call->args.size();
+    auto arg_count = node_args.named_child_count();
 
-    auto arg_count = call->args.size();
     for (auto i = 0; i < arg_count; i++) {
       auto key = call->submod->name() + "." + call->method->params[i];
       auto val = call->args[i];

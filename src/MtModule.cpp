@@ -92,12 +92,12 @@ MtModule::MtModule(MtSourceFile *source_file, MtClassSpecifier node)
 //------------------------------------------------------------------------------
 
 MtMethod *MtModule::get_method(const std::string &name) {
-  for (auto &n : *getters)      if (n.name == name) return &n;
+  for (auto n : getters)      if (n->name == name) return n;
   for (auto n : init_methods) if (n->name == name) return n;
   for (auto n : tick_methods) if (n->name == name) return n;
   for (auto n : tock_methods) if (n->name == name) return n;
   for (auto n : task_methods) if (n->name == name) return n;
-  for (auto &n : *func_methods) if (n.name == name) return &n;
+  for (auto n : func_methods) if (n->name == name) return n;
   return nullptr;
 }
 
@@ -254,9 +254,9 @@ void MtModule::dump_banner() {
   LOG_B("Outputs:\n");
   for (auto &n : *outputs)
     LOG_G("  %s:%s\n", n.name().c_str(), n.type_name().c_str());
-  if (getters) {
+  if (!getters.empty()) {
     LOG_B("Getters:\n");
-    dump_method_list(*getters);
+    dump_method_list2(getters);
   }
   LOG_B("Regs:\n");
   for (auto &n : *registers)
@@ -276,7 +276,7 @@ void MtModule::dump_banner() {
   LOG_B("Tasks:\n");
   dump_method_list2(task_methods);
   LOG_B("Functions:\n");
-  dump_method_list(*func_methods);
+  dump_method_list2(func_methods);
 
   //----------
 
@@ -465,19 +465,7 @@ void MtModule::collect_fields() {
 //------------------------------------------------------------------------------
 
 void MtModule::collect_methods() {
-  assert(init_methods.empty());
-  assert(tick_methods.empty());
-  assert(tock_methods.empty());
-  assert(task_methods.empty());
-  assert(func_methods == nullptr);
-
-  getters = new std::vector<MtMethod>();
-
-  //init_methods = new std::vector<MtMethod>();
-  //tick_methods = new std::vector<MtMethod>();
-  //tock_methods = new std::vector<MtMethod>();
-  //task_methods = new std::vector<MtMethod>();
-  func_methods = new std::vector<MtMethod>();
+  assert(all_methods.empty());
 
   bool in_public = false;
   auto mod_body = mod_struct.get_field(field_body).check_null();
@@ -518,9 +506,9 @@ void MtModule::collect_methods() {
     } else if (is_task) {
       task_methods.push_back(new_method);
     } else if (in_public) {
-      getters->push_back(*new_method);
+      getters.push_back(new_method);
     } else {
-      func_methods->push_back(*new_method);
+      func_methods.push_back(new_method);
     }
   }
 

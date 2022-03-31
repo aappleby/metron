@@ -81,17 +81,17 @@ struct MtModule {
   std::vector<MtField>*  all_fields = nullptr;
   std::vector<MtField>*  inputs = nullptr;
   std::vector<MtField>*  outputs = nullptr;
-  std::vector<MtMethod>* getters = nullptr;
   std::vector<MtField>*  registers = nullptr;
   std::vector<MtSubmod>* submods = nullptr;
 
   std::vector<MtMethod*> all_methods;
 
+  std::vector<MtMethod*> getters;
   std::vector<MtMethod*> init_methods;
   std::vector<MtMethod*> tick_methods;
   std::vector<MtMethod*> tock_methods;
   std::vector<MtMethod*> task_methods;
-  std::vector<MtMethod>* func_methods = nullptr;
+  std::vector<MtMethod*> func_methods;
 
   std::map<std::string, std::string>* port_map = nullptr;
 };

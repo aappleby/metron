@@ -1239,7 +1239,7 @@ void MtCursor::emit_field_as_submod(MtFieldDecl n) {
 
   int port_count =
       int(submod_mod->inputs->size() + submod_mod->outputs->size() +
-          submod_mod->getters->size());
+          submod_mod->getters.size());
   int port_index = 0;
 
   for (auto& n : *submod_mod->inputs) {
@@ -1265,10 +1265,10 @@ void MtCursor::emit_field_as_submod(MtFieldDecl n) {
     if (port_index++ < port_count - 1) emit(", ");
   }
 
-  for (auto& n : *submod_mod->getters) {
+  for (auto n : submod_mod->getters) {
     emit_newline();
     emit_indent();
-    emit(".%s(%s_%s)", n.name.c_str(), inst_name.c_str(), n.name.c_str());
+    emit(".%s(%s_%s)", n->name.c_str(), inst_name.c_str(), n->name.c_str());
 
     if (port_index++ < port_count - 1) emit(", ");
   }
@@ -1371,9 +1371,9 @@ void MtCursor::emit_output_ports(MtFieldDecl submod) {
     output_index++;
   }
 
-  for (auto& getter : *submod_mod->getters) {
-    auto getter_type = getter.node.get_field(field_type);
-    auto getter_decl = getter.node.get_field(field_declarator);
+  for (auto getter : submod_mod->getters) {
+    auto getter_type = getter->node.get_field(field_type);
+    auto getter_decl = getter->node.get_field(field_declarator);
     auto getter_name = getter_decl.get_field(field_declarator);
 
     MtCursor sub_cursor(lib, submod_mod->source_file, str_out);
@@ -1537,7 +1537,7 @@ void MtCursor::emit(MtClassSpecifier n) {
 
     int port_count =
         int(current_mod->inputs->size() + current_mod->outputs->size() +
-            current_mod->getters->size());
+            current_mod->getters.size());
     int port_index = 0;
 
     for (auto& input : *current_mod->inputs) {
@@ -1576,14 +1576,14 @@ void MtCursor::emit(MtClassSpecifier n) {
       emit_newline();
     }
 
-    for (auto& getter : *current_mod->getters) {
+    for (auto getter : current_mod->getters) {
       emit_indent();
       emit("output ");
 
       MtCursor sub_cursor = *this;
 
-      auto getter_type = getter.node.get_field(field_type);
-      auto getter_decl = getter.node.get_field(field_declarator);
+      auto getter_type = getter->node.get_field(field_type);
+      auto getter_decl = getter->node.get_field(field_declarator);
       auto getter_name = getter_decl.get_field(field_declarator);
 
       // getter_decl.dump_tree();

@@ -65,7 +65,7 @@ MtNode MtNode::first_named_child() const { return named_child(0); }
 
 
 bool MtField::is_submod() const {
-  return (source->lib->has_mod(type_name()));
+  return (node.source->lib->has_mod(type_name()));
 }
 
 

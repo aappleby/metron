@@ -1329,8 +1329,8 @@ void MtCursor::emit_output_ports(MtFieldDecl submod) {
 
   for (auto n : submod_mod->inputs) {
     // field_declaration
-    auto output_type = n->get_field(field_type);
-    auto output_decl = n->get_field(field_declarator);
+    auto output_type = n->node.get_field(field_type);
+    auto output_decl = n->node.get_field(field_declarator);
 
     MtCursor subcursor(lib, submod_mod->source_file, str_out);
     subcursor.quiet = quiet;
@@ -1351,8 +1351,8 @@ void MtCursor::emit_output_ports(MtFieldDecl submod) {
 
   for (auto n : submod_mod->outputs) {
     // field_declaration
-    auto output_type = n->get_field(field_type);
-    auto output_decl = n->get_field(field_declarator);
+    auto output_type = n->node.get_field(field_type);
+    auto output_decl = n->node.get_field(field_declarator);
 
     MtCursor subcursor(lib, submod_mod->source_file, str_out);
     subcursor.quiet = quiet;
@@ -1544,12 +1544,12 @@ void MtCursor::emit(MtClassSpecifier n) {
       emit_indent();
       emit("input ");
 
-      auto node_type = input->child(0);  // type
-      auto node_decl = input->child(1);  // decl
-      auto node_semi = input->child(2);  // semi
+      auto node_type = input->node.child(0);  // type
+      auto node_decl = input->node.child(1);  // decl
+      auto node_semi = input->node.child(2);  // semi
 
       MtCursor sub_cursor = *this;
-      sub_cursor.cursor = input->start();
+      sub_cursor.cursor = input->node.start();
       sub_cursor.emit_dispatch(node_type);
       sub_cursor.emit_ws();
       sub_cursor.emit_dispatch(node_decl);
@@ -1562,12 +1562,12 @@ void MtCursor::emit(MtClassSpecifier n) {
       emit_indent();
       emit("output ");
 
-      auto node_type = output->child(0);  // type
-      auto node_decl = output->child(1);  // decl
-      auto node_semi = output->child(2);  // semi
+      auto node_type = output->node.child(0);  // type
+      auto node_decl = output->node.child(1);  // decl
+      auto node_semi = output->node.child(2);  // semi
 
       MtCursor sub_cursor = *this;
-      sub_cursor.cursor = output->start();
+      sub_cursor.cursor = output->node.start();
       sub_cursor.emit_dispatch(node_type);
       sub_cursor.emit_ws();
       sub_cursor.emit_dispatch(node_decl);

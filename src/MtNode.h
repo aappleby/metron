@@ -703,18 +703,19 @@ private:
 
 //------------------------------------------------------------------------------
 
-struct MtField : public MtNode {
-  MtField(const MtNode& n, bool is_public) : is_public(is_public), MtNode(n) {
-    assert(sym == sym_field_declaration || sym == sym_parameter_declaration);
+struct MtField {
+  MtField(const MtNode& n, bool is_public) : is_public(is_public), node(n) {
+    assert(node.sym == sym_field_declaration || node.sym == sym_parameter_declaration);
   }
 
   bool is_submod() const;
-  bool is_param() const { return is_static() && is_const(); }
+  bool is_param() const { return node.is_static() && node.is_const(); }
 
-  std::string name() { return get_field(field_declarator).text(); }
+  std::string name() { return node.get_field(field_declarator).text(); }
 
-  std::string type_name() const { return get_field(field_type).node_to_type(); }
+  std::string type_name() const { return node.get_field(field_type).node_to_type(); }
 
+  MtNode node;
   bool is_public = false;
 };
 

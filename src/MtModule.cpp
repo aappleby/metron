@@ -715,13 +715,14 @@ void MtModule::build_port_map() {
     if (child.sym != sym_call_expression) return;
     if (child.get_field(field_function).sym != sym_field_expression) return;
 
-    auto call_func = child.get_field(field_function);
-    auto call_args = child.get_field(field_arguments);
+    auto node_call = child;
+    auto node_func = node_call.get_field(field_function);
+    auto node_args = node_call.get_field(field_arguments);
 
-    if (call_func.sym == sym_field_expression) {
-      auto call_this = call_func.get_field(field_argument);
-      auto call_method = call_func.get_field(field_field);
-      if (call_method.text() == "as_signed") {
+    if (node_func.sym == sym_field_expression) {
+      auto node_member = node_func.get_field(field_argument);
+      auto node_method = node_func.get_field(field_field);
+      if (node_method.text() == "as_signed") {
         return;
       }
     }
@@ -753,7 +754,6 @@ void MtModule::build_port_map() {
     if (call_args.named_child_count()) {
       for (int i = 0; i < call_args.named_child_count(); i++) {
         auto arg_node = call_args.named_child(i);
-
         std::string out_string;
         MtCursor cursor(source_file->lib, source_file, &out_string);
         cursor.cursor = arg_node.start();
@@ -765,17 +765,13 @@ void MtModule::build_port_map() {
     return result;
     */
 
-    auto node_call = MnCallExpr(child);
-    auto node_func = node_call.get_field(field_function);
-    auto node_args = node_call.get_field(field_arguments);
-
     MtField*  call_member = nullptr;
     MtModule* call_submod = nullptr;
     MtMethod* call_method = nullptr;
 
-    if (node_call.sym == sym_field_expression) {
-      auto node_this = node_call.get_field(field_argument);
-      auto node_method = node_call.get_field(field_field);
+    if (node_func.sym == sym_field_expression) {
+      auto node_this = node_func.get_field(field_argument);
+      auto node_method = node_func.get_field(field_field);
 
       if (node_method.text() == "as_signed") {
       } else {
@@ -791,7 +787,7 @@ void MtModule::build_port_map() {
     auto arg_count = node_args.named_child_count();
 
     for (auto i = 0; i < arg_count; i++) {
-      auto key = call->submod->name() + "." + call->method->params[i];
+      auto key = call_member->name() + "." + call_method->params[i];
       auto val = call->args[i];
       auto it = port_map.find(key);
       if (it != port_map.end()) {
@@ -869,17 +865,17 @@ MtMethod *MtModule::node_to_method(MnNode n) {
 MtCall* MtModule::node_to_call(MnNode n) {
   MtCall* result = MtCall::construct(n);
 
-  auto call = MnCallExpr(n);
-  auto call_func = call.get_field(field_function);
-  auto call_args = call.get_field(field_arguments);
+  auto node_call = MnCallExpr(n);
+  auto node_func = node_call.get_field(field_function);
+  auto node_args = node_call.get_field(field_arguments);
 
-  if (call_func.sym == sym_field_expression) {
-    auto call_this = call_func.get_field(field_argument);
-    auto call_method = call_func.get_field(field_field);
+  if (node_func.sym == sym_field_expression) {
+    auto node_this = node_func.get_field(field_argument);
+    auto call_method = node_func.get_field(field_field);
 
     if (call_method.text() == "as_signed") {
     } else {
-      auto submod = get_submod(call_this.text());
+      auto submod = get_submod(node_this.text());
       assert(submod);
 
       result->submod = submod;
@@ -890,9 +886,9 @@ MtCall* MtModule::node_to_call(MnNode n) {
     }
   }
 
-  if (call_args.named_child_count()) {
-    for (int i = 0; i < call_args.named_child_count(); i++) {
-      auto arg_node = call_args.named_child(i);
+  if (node_args.named_child_count()) {
+    for (int i = 0; i < node_args.named_child_count(); i++) {
+      auto arg_node = node_args.named_child(i);
 
       std::string out_string;
       MtCursor cursor(source_file->lib, source_file, &out_string);

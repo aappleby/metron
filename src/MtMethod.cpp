@@ -379,11 +379,11 @@ void MtMethod::check_dirty_if(MtNode n, MtDelta& d) {
 void MtMethod::check_dirty_call(MtNode n, MtDelta& d) {
   auto call = mod->node_to_call(n);
 
-  auto node_args = call.get_field(field_arguments);
+  auto node_args = call->node.get_field(field_arguments);
   assert(node_args.sym == sym_argument_list);
   check_dirty_dispatch(node_args, d);
 
-  auto node_func = call.get_field(field_function);
+  auto node_func = call->node.get_field(field_function);
 
   if (node_func.sym == sym_identifier) {
     // local function call, traverse args and then function body
@@ -396,12 +396,12 @@ void MtMethod::check_dirty_call(MtNode n, MtDelta& d) {
     // resolve the local task/function calls.
 
   } else if (node_func.sym == sym_field_expression) {
-    assert(call.method);
-    call.method->update_delta();
+    assert(call->method);
+    call->method->update_delta();
 
     MtDelta temp_delta = d;
-    MtDelta call_delta = *call.method->delta;
-    call_delta.add_prefix(call.submod->name());
+    MtDelta call_delta = *call->method->delta;
+    call_delta.add_prefix(call->submod->name());
 
     merge_series(temp_delta, call_delta, d);
   } else if (node_func.sym == sym_template_function) {
@@ -412,6 +412,8 @@ void MtMethod::check_dirty_call(MtNode n, MtDelta& d) {
     n.dump_tree();
     debugbreak();
   }
+
+  delete call;
 }
 
 //------------------------------------------------------------------------------

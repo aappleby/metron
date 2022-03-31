@@ -54,7 +54,7 @@ struct MtModule {
   void sanity_check();
 
   MtMethod* node_to_method(MtNode n);
-  MtCall node_to_call(MtNode n);
+  MtCall* node_to_call(MtNode n);
 
   //----------
 

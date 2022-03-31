@@ -418,8 +418,7 @@ void MtModule::collect_params() {
       auto child = params.named_child(i);
       if (child.sym == sym_parameter_declaration ||
           child.sym == sym_optional_parameter_declaration) {
-        auto new_param = new MtParam(child);
-        modparams.push_back(new_param);
+        modparams.push_back(MtParam::construct(child));
       } else {
         debugbreak();
       }
@@ -433,8 +432,7 @@ void MtModule::collect_params() {
     if (n.sym != sym_field_declaration) continue;
 
     if (n.is_static() && n.is_const()) {
-      auto new_param = new MtParam(n);
-      localparams.push_back(new_param);
+      localparams.push_back(MtParam::construct(n));
     }
   }
 }
@@ -730,14 +728,14 @@ void MtModule::build_port_map() {
 
     auto call = node_to_call(child);
 
-    if (!call.method) {
+    if (!call->method) {
       child.dump_tree();
     }
-    assert(call.method);
+    assert(call->method);
 
-    for (auto i = 0; i < call.args->size(); i++) {
-      auto key = call.submod->name() + "." + call.method->params[i];
-      auto val = call.args->at(i);
+    for (auto i = 0; i < call->args->size(); i++) {
+      auto key = call->submod->name() + "." + call->method->params[i];
+      auto val = call->args->at(i);
       auto it = port_map.find(key);
       if (it != port_map.end()) {
         if ((*it).second != val) {
@@ -749,6 +747,8 @@ void MtModule::build_port_map() {
         port_map.insert({key, val});
       }
     }
+
+    delete call;
   });
 }
 
@@ -809,8 +809,8 @@ MtMethod *MtModule::node_to_method(MtNode n) {
 
 //------------------------------------------------------------------------------
 
-MtCall MtModule::node_to_call(MtNode n) {
-  MtCall result(n);
+MtCall* MtModule::node_to_call(MtNode n) {
+  MtCall* result = MtCall::construct(n);
 
   auto call = MtCallExpr(n);
   auto call_func = call.get_field(field_function);
@@ -825,12 +825,12 @@ MtCall MtModule::node_to_call(MtNode n) {
       auto submod = get_submod(call_this.text());
       assert(submod);
 
-      result.submod = submod;
-      result.method = submod->mod->get_method(call_method.text());
+      result->submod = submod;
+      result->method = submod->mod->get_method(call_method.text());
     }
   }
 
-  result.args = new std::vector<std::string>();
+  result->args = new std::vector<std::string>();
 
   if (call_args.named_child_count()) {
     for (int i = 0; i < call_args.named_child_count(); i++) {
@@ -840,7 +840,7 @@ MtCall MtModule::node_to_call(MtNode n) {
       MtCursor cursor(source_file->lib, source_file, &out_string);
       cursor.cursor = arg_node.start();
       cursor.emit_dispatch(arg_node);
-      result.args->push_back(out_string);
+      result->args->push_back(out_string);
     }
   }
 

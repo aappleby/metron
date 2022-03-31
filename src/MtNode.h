@@ -738,32 +738,41 @@ struct MtEnum : public MtNode {
 
 //------------------------------------------------------------------------------
 
-struct MtCall : public MtNode {
-  MtCall(const MtNode& n) : MtNode(n) { assert(sym == sym_call_expression); }
+struct MtCall {
+  static MtCall* construct(const MtNode& n) { return new MtCall(n); }
 
+  MtNode node;
   MtSubmod* submod = nullptr;
   MtMethod* method = nullptr;
   std::vector<std::string>* args = nullptr;
+
+private:
+
+  MtCall(const MtNode& n) : node(n) { assert(node.sym == sym_call_expression); }
 };
 
 //------------------------------------------------------------------------------
 
-struct MtParam : public MtNode {
-  MtParam(const MtNode& n) : MtNode(n) {}
+struct MtParam {
+  static MtParam* construct(const MtNode& n) { return new MtParam(n); }
 
   std::string name() {
-    if (sym == sym_parameter_declaration) {
-      return get_field(field_declarator).text();
-    } else if (sym == sym_optional_parameter_declaration) {
-      return get_field(field_declarator).text();
-    } else if (sym == sym_field_declaration) {
-      return get_field(field_declarator).text();
+    if (node.sym == sym_parameter_declaration) {
+      return node.get_field(field_declarator).text();
+    } else if (node.sym == sym_optional_parameter_declaration) {
+      return node.get_field(field_declarator).text();
+    } else if (node.sym == sym_field_declaration) {
+      return node.get_field(field_declarator).text();
     } else {
-      dump_tree();
+      node.dump_tree();
       debugbreak();
       return "";
     }
   }
+
+private:
+  MtParam(const MtNode& n) : node(n) {}
+  MtNode node;
 };
 
 //------------------------------------------------------------------------------

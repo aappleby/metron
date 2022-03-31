@@ -122,8 +122,6 @@ struct MtModule {
 
   void sanity_check();
 
-  MtMethod* node_to_method(MnNode n);
-
   //----------
 
   std::string mod_name;

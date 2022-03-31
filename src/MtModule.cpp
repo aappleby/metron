@@ -495,7 +495,6 @@ void MtModule::collect_methods() {
       new_method2->params.push_back(param_name);
     }
 
-    //auto new_method = node_to_method(n);
     all_methods.push_back(new_method2);
 
     if (is_init) {
@@ -821,32 +820,6 @@ void MtModule::sanity_check() {
     assert(!field_names.contains(n->name()));
     field_names.insert(n->name());
   }
-}
-
-//------------------------------------------------------------------------------
-
-MtMethod *MtModule::node_to_method(MnNode n) {
-  assert(n.sym == sym_function_definition);
-
-  MtMethod *result = MtMethod::construct(n, this, source_file->lib);
-
-  auto method_name =
-      n.get_field(field_declarator).get_field(field_declarator).text();
-  auto method_params =
-      n.get_field(field_declarator).get_field(field_parameters);
-
-  result->name = method_name;
-  assert(result->params.empty());
-
-  for (int i = 0; i < method_params.child_count(); i++) {
-    auto param = method_params.child(i);
-    if (param.sym != sym_parameter_declaration) continue;
-
-    auto param_name = param.get_field(field_declarator).text();
-    result->params.push_back(param_name);
-  }
-
-  return result;
 }
 
 //------------------------------------------------------------------------------

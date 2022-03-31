@@ -287,8 +287,8 @@ void MtCursor::emit(MtAssignmentExpr n) {
   bool lhs_is_reg = false;
   if (lhs.sym == sym_identifier) {
     std::string lhs_name = lhs.text();
-    for (auto& f : *current_mod->registers) {
-      if (f.name() == lhs_name) {
+    for (auto f : current_mod->registers) {
+      if (f->name() == lhs_name) {
         lhs_is_reg = true;
         break;
       }

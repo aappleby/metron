@@ -80,7 +80,7 @@ struct MtModule {
   std::vector<MtField*>  all_fields;
   std::vector<MtField*>  inputs;
   std::vector<MtField*>  outputs;
-  std::vector<MtField>*  registers = nullptr;
+  std::vector<MtField*>  registers;
 
   std::vector<MtSubmod*> submods;
 

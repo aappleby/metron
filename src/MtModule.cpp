@@ -145,8 +145,8 @@ MtField *MtModule::get_output(const std::string &name) {
 //----------------------------------------
 
 bool MtModule::has_register(const std::string &name) {
-  for (auto &f : *registers)
-    if (f.name() == name) return true;
+  for (auto f : registers)
+    if (f->name() == name) return true;
   return false;
 }
 
@@ -258,8 +258,8 @@ void MtModule::dump_banner() {
     dump_method_list2(getters);
   }
   LOG_B("Regs:\n");
-  for (auto &n : *registers)
-    LOG_G("  %s:%s\n", n.name().c_str(), n.type_name().c_str());
+  for (auto n : registers)
+    LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
   LOG_B("Submods:\n");
   for (auto submod : submods)
     LOG_G("  %s:%s\n", submod->name().c_str(), submod->mod->mod_name.c_str());
@@ -639,8 +639,7 @@ void MtModule::collect_outputs() {
 // All fields written to in a tick method are registers.
 
 void MtModule::collect_registers() {
-  assert(registers == nullptr);
-  registers = new std::vector<MtField>();
+  assert(registers.empty());
 
   std::set<std::string> dedup;
 
@@ -664,7 +663,7 @@ void MtModule::collect_registers() {
       dedup.insert(lhs_name);
 
       auto field = get_field(lhs_name);
-      if (field && !field->is_public) registers->push_back(*field);
+      if (field && !field->is_public) registers.push_back(field);
     });
   }
 }
@@ -769,10 +768,10 @@ void MtModule::sanity_check() {
     field_names.insert(n->name());
   }
 
-  for (auto &n : *registers) {
-    auto name = n.name();
+  for (auto n : registers) {
+    auto name = n->name();
     assert(!field_names.contains(name));
-    field_names.insert(n.name());
+    field_names.insert(n->name());
   }
 
   for (auto n : submods) {

@@ -861,8 +861,10 @@ void MtCursor::emit_submod_input_port_bindings(MnNode n) {
       auto submod = current_mod->get_submod(inst_id.text());
       assert(submod);
 
-      auto submod_mod = submod->mod;
-      assert(submod_mod);
+      
+      auto submod_mod = source_file->lib->get_mod(submod->type_name());
+      //auto submod_mod = submod->mod;
+      //assert(submod_mod);
 
       auto submod_meth = submod_mod->get_method(meth_id.text());
       assert(submod_meth);

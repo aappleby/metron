@@ -168,9 +168,9 @@ bool MtModule::has_submod(const std::string &name) {
   return get_submod(name) != nullptr;
 }
 
-MtSubmod *MtModule::get_submod(const std::string &name) {
+MtField* MtModule::get_submod(const std::string &name) {
   for (auto n : submods) {
-    if (n->name == name) return n;
+    if (n->name() == name) return n;
   }
   return nullptr;
 }
@@ -218,7 +218,7 @@ void MtModule::dump_method_list2(const std::vector<MtMethod *> &methods) {
 void MtModule::dump_call_list(std::vector<MtCall> &calls) {
   for (auto &call : calls) {
     LOG_INDENT_SCOPE();
-    LOG_C("%s.%s(", call.submod->name.c_str(), call.method->name.c_str());
+    LOG_C("%s.%s(", call.submod->name().c_str(), call.method->name.c_str());
     if (call.args && call.args->size()) {
       LOG_C("\n");
       LOG_INDENT_SCOPE();
@@ -273,8 +273,10 @@ void MtModule::dump_banner() {
   for (auto n : registers)
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
   LOG_B("Submods:\n");
-  for (auto submod : submods)
-    LOG_G("  %s:%s\n", submod->name.c_str(), submod->mod->mod_name.c_str());
+  for (auto submod : submods) {
+    auto submod_mod = source_file->lib->get_mod(submod->type_name());
+    LOG_G("  %s:%s\n", submod->name().c_str(), submod_mod->mod_name.c_str());
+  }
 
   //----------
 
@@ -683,9 +685,7 @@ void MtModule::collect_submods() {
 
   for (auto f : all_fields) {
     if (source_file->lib->has_mod(f->type_name())) {
-      MtSubmod *submod = new MtSubmod(f->name());
-      submod->mod = source_file->lib->get_mod(f->type_name());
-      submods.push_back(submod);
+      submods.push_back(f);
     } else {
       if (f->type_name() != "logic") {
         LOG_R("Could not find module for submod %s\n", f->type_name().c_str());
@@ -734,7 +734,7 @@ void MtModule::build_port_map() {
     assert(call->method);
 
     for (auto i = 0; i < call->args->size(); i++) {
-      auto key = call->submod->name + "." + call->method->params[i];
+      auto key = call->submod->name() + "." + call->method->params[i];
       auto val = call->args->at(i);
       auto it = port_map.find(key);
       if (it != port_map.end()) {
@@ -776,8 +776,8 @@ void MtModule::sanity_check() {
   }
 
   for (auto n : submods) {
-    assert(!field_names.contains(n->name));
-    field_names.insert(n->name);
+    assert(!field_names.contains(n->name()));
+    field_names.insert(n->name());
   }
 }
 
@@ -826,7 +826,10 @@ MtCall* MtModule::node_to_call(MnNode n) {
       assert(submod);
 
       result->submod = submod;
-      result->method = submod->mod->get_method(call_method.text());
+
+      auto submod_mod = source_file->lib->get_mod(submod->type_name());
+
+      result->method = submod_mod->get_method(call_method.text());
     }
   }
 

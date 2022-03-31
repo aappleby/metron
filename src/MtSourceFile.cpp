@@ -35,7 +35,7 @@ MtSourceFile::MtSourceFile(const std::string& _filename,
   mt_root = MnTranslationUnit(MnNode(ts_root, root_sym, 0, this));
 
   assert(modules.empty());
-  find_modules(mt_root);
+  collect_modules(mt_root);
 }
 
 //------------------------------------------------------------------------------
@@ -54,7 +54,7 @@ MtSourceFile::~MtSourceFile() {
 
 //------------------------------------------------------------------------------
 
-void MtSourceFile::find_modules(MnNode toplevel) {
+void MtSourceFile::collect_modules(MnNode toplevel) {
   for (auto c : toplevel) {
     switch (c.sym) {
       case sym_template_declaration: {
@@ -70,7 +70,7 @@ void MtSourceFile::find_modules(MnNode toplevel) {
         break;
       }
       case sym_preproc_ifdef: {
-        find_modules(c);
+        collect_modules(c);
         break;
       }
     }
@@ -79,11 +79,13 @@ void MtSourceFile::find_modules(MnNode toplevel) {
 
 //------------------------------------------------------------------------------
 
+/*
 MtModule* MtSourceFile::get_module(const std::string& name) {
   for (auto n : modules) {
     if (n->mod_name == name) return n;
   }
   return nullptr;
 }
+*/
 
 //------------------------------------------------------------------------------

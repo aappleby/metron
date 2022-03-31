@@ -13,16 +13,6 @@ typedef std::vector<uint8_t> blob;
 
 //------------------------------------------------------------------------------
 
-struct MtSubmod {
-
-  MtSubmod(const std::string& name) : name(name) {}
-
-  MtModule* mod;
-  std::string name;
-};
-
-//------------------------------------------------------------------------------
-
 struct MtField {
   static MtField* construct(const MnNode& n, bool is_public) {
     return new MtField(n, is_public);
@@ -73,7 +63,7 @@ struct MtCall {
   static MtCall* construct(const MnNode& n) { return new MtCall(n); }
 
   MnNode node;
-  MtSubmod* submod = nullptr;
+  MtField* submod = nullptr;
   MtMethod* method = nullptr;
   std::vector<std::string>* args = nullptr;
 
@@ -121,7 +111,7 @@ struct MtModule {
 
   MtField* get_field(const std::string& name);
   MtField* get_output(const std::string& name);
-  MtSubmod* get_submod(const std::string& name);
+  MtField* get_submod(const std::string& name);
   MtMethod* get_method(const std::string& name);
 
   void load_pass1();
@@ -169,11 +159,11 @@ struct MtModule {
 
   std::vector<MtEnum*> enums;
 
-  std::vector<MtField*>  all_fields;
-  std::vector<MtField*>  inputs;
-  std::vector<MtField*>  outputs;
-  std::vector<MtField*>  registers;
-  std::vector<MtSubmod*> submods;
+  std::vector<MtField*> all_fields;
+  std::vector<MtField*> inputs;
+  std::vector<MtField*> outputs;
+  std::vector<MtField*> registers;
+  std::vector<MtField*> submods;
 
   std::vector<MtMethod*> all_methods;
   std::vector<MtMethod*> getters;

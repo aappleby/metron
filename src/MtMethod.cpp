@@ -221,7 +221,7 @@ void MtMethod::check_dirty_read_submod(MnNode n, MtDelta& d) {
   std::string submod_name = field.substr(0, dot_pos);
   std::string submod_field = field.substr(dot_pos + 1, field.size());
   auto submod_node = mod->get_submod(submod_name);
-  auto submod_mod = submod_node->mod;
+  //auto submod_mod = submod_node->mod;
 
   /*
   if (!submod_mod->has_output(submod_field)) {
@@ -401,7 +401,7 @@ void MtMethod::check_dirty_call(MnNode n, MtDelta& d) {
 
     MtDelta temp_delta = d;
     MtDelta call_delta = *call->method->delta;
-    call_delta.add_prefix(call->submod->name);
+    call_delta.add_prefix(call->submod->name());
 
     merge_series(temp_delta, call_delta, d);
   } else if (node_func.sym == sym_template_function) {

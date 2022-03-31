@@ -485,21 +485,31 @@ void MtModule::collect_methods() {
     bool is_tick = is_task && func_name.starts_with("tick");
     bool is_tock = is_task && func_name.starts_with("tock");
 
-    auto new_method = node_to_method(n);
-    all_methods.push_back(new_method);
+    MtMethod *new_method2 = MtMethod::construct(n, this, source_file->lib);
+    new_method2->name = n.get_field(field_declarator).get_field(field_declarator).text();
+    auto method_params = n.get_field(field_declarator).get_field(field_parameters);
+    for (int i = 0; i < method_params.named_child_count(); i++) {
+      auto param = method_params.named_child(i);
+      assert (param.sym == sym_parameter_declaration);
+      auto param_name = param.get_field(field_declarator).text();
+      new_method2->params.push_back(param_name);
+    }
+
+    //auto new_method = node_to_method(n);
+    all_methods.push_back(new_method2);
 
     if (is_init) {
-      init_methods.push_back(new_method);
+      init_methods.push_back(new_method2);
     } else if (is_tick) {
-      tick_methods.push_back(new_method);
+      tick_methods.push_back(new_method2);
     } else if (is_tock) {
-      tock_methods.push_back(new_method);
+      tock_methods.push_back(new_method2);
     } else if (is_task) {
-      task_methods.push_back(new_method);
+      task_methods.push_back(new_method2);
     } else if (in_public) {
-      getters.push_back(new_method);
+      getters.push_back(new_method2);
     } else {
-      func_methods.push_back(new_method);
+      func_methods.push_back(new_method2);
     }
   }
 

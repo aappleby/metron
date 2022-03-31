@@ -71,7 +71,7 @@ struct MtModule {
   MtTemplateDecl mod_template;
   MtTemplateParamList mod_param_list;
 
-  std::vector<MtParam>* modparams = nullptr;
+  std::vector<MtParam*> modparams;
   std::vector<MtParam>* localparams = nullptr;
 
   std::vector<MtEnum*> enums;

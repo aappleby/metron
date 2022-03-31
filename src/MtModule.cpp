@@ -242,7 +242,7 @@ void MtModule::dump_banner() {
   //----------
 
   LOG_B("Modparams:\n")
-  for (auto &param : *modparams) LOG_G("  %s\n", param.name().c_str());
+  for (auto param : modparams) LOG_G("  %s\n", param->name().c_str());
   LOG_B("Localparams:\n");
   for (auto &param : *localparams) LOG_G("  %s\n", param.name().c_str());
   LOG_B("Enums:\n");
@@ -403,8 +403,7 @@ void MtModule::load_pass1() {
 //------------------------------------------------------------------------------
 
 void MtModule::collect_params() {
-  assert(modparams == nullptr);
-  modparams = new std::vector<MtParam>();
+  assert(modparams.empty());
 
   if (mod_template) {
     auto params = mod_template.get_field(field_parameters);
@@ -413,7 +412,8 @@ void MtModule::collect_params() {
       auto child = params.named_child(i);
       if (child.sym == sym_parameter_declaration ||
           child.sym == sym_optional_parameter_declaration) {
-        modparams->push_back(MtParam(child));
+        auto new_param = new MtParam(child);
+        modparams.push_back(new_param);
       } else {
         debugbreak();
       }

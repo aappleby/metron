@@ -3,6 +3,7 @@
 #include "metron_tools.h"
 #include "MtModLibrary.h"
 #include "MtModule.h"
+#include "MtSourceFile.h"
 
 void log_error(MnNode n, const char* fmt, ...);
 
@@ -377,10 +378,48 @@ void MtMethod::check_dirty_if(MnNode n, MtDelta& d) {
 // Traverse function calls.
 
 void MtMethod::check_dirty_call(MnNode n, MtDelta& d) {
+  auto node_call = MnCallExpr(n);
+  auto node_func = node_call.get_field(field_function);
+  auto node_args = node_call.get_field(field_arguments);
+  {
+
+
+    if (node_call.sym == sym_field_expression) {
+      auto call_this = node_call.get_field(field_argument);
+      auto call_method = node_call.get_field(field_field);
+
+      if (call_method.text() == "as_signed") {
+      } else {
+        auto submod = mod->get_submod(call_this.text());
+        assert(submod);
+
+        //result->submod = submod;
+
+        auto submod_mod = mod->source_file->lib->get_mod(submod->type_name());
+
+        //result->method = submod_mod->get_method(call_method.text());
+      }
+    }
+
+    /*
+    if (call_args.named_child_count()) {
+      for (int i = 0; i < call_args.named_child_count(); i++) {
+        auto arg_node = call_args.named_child(i);
+
+        std::string out_string;
+        MtCursor cursor(source_file->lib, source_file, &out_string);
+        cursor.cursor = arg_node.start();
+        cursor.emit_dispatch(arg_node);
+        result->args.push_back(out_string);
+      }
+    }
+    */
+  }
+
   auto call = mod->node_to_call(n);
 
-  auto node_func = call->get_func();
-  auto node_args = call->get_args();
+  //auto node_func = call->get_func();
+  //auto node_args = call->get_args();
 
   assert(node_args.sym == sym_argument_list);
   check_dirty_dispatch(node_args, d);

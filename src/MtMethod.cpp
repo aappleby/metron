@@ -4,7 +4,7 @@
 #include "MtModLibrary.h"
 #include "MtModule.h"
 
-void log_error(MtNode n, const char* fmt, ...);
+void log_error(MnNode n, const char* fmt, ...);
 
 //-----------------------------------------------------------------------------
 // Given two blocks that execute as branches, merge their dependencies and
@@ -59,7 +59,7 @@ bool merge_series(MtDelta& a, MtDelta& b, MtDelta& out) {
       assert(s2.second != ERROR);
       if (s1.second != s2.second) {
         log_error(
-            MtNode::null,
+            MnNode::null,
             "merge_series error - a.state_new %s = %s, b.state_old %s = %s\n",
             s1.first.c_str(), to_string(s1.second), s2.first.c_str(),
             to_string(s2.second));
@@ -82,7 +82,7 @@ bool merge_series(MtDelta& a, MtDelta& b, MtDelta& out) {
 
 //------------------------------------------------------------------------------
 
-MtMethod::MtMethod(MtNode n, MtModule* _mod, MtModLibrary* _lib)
+MtMethod::MtMethod(MnNode n, MtModule* _mod, MtModLibrary* _lib)
     : node(n), mod(_mod), lib(_lib) {
   assert(mod);
   assert(lib);
@@ -99,7 +99,7 @@ void MtMethod::update_delta() {
 
 //------------------------------------------------------------------------------
 
-void MtMethod::check_dirty_dispatch(MtNode n, MtDelta& d) {
+void MtMethod::check_dirty_dispatch(MnNode n, MtDelta& d) {
   for (auto& n : d.state_old) assert(n.second != ERROR);
   for (auto& n : d.state_new) assert(n.second != ERROR);
 
@@ -143,7 +143,7 @@ void MtMethod::check_dirty_dispatch(MtNode n, MtDelta& d) {
 
 //------------------------------------------------------------------------------
 
-void MtMethod::check_dirty_read_identifier(MtNode n, MtDelta& d) {
+void MtMethod::check_dirty_read_identifier(MnNode n, MtDelta& d) {
   assert(n.sym == sym_identifier);
   auto field = n.text();
 
@@ -213,7 +213,7 @@ void MtMethod::check_dirty_read_identifier(MtNode n, MtDelta& d) {
 
 //------------------------------------------------------------------------------
 
-void MtMethod::check_dirty_read_submod(MtNode n, MtDelta& d) {
+void MtMethod::check_dirty_read_submod(MnNode n, MtDelta& d) {
   assert(n.sym == sym_field_expression);
   auto field = n.text();
 
@@ -276,7 +276,7 @@ void MtMethod::check_dirty_read_submod(MtNode n, MtDelta& d) {
 
 //------------------------------------------------------------------------------
 
-void MtMethod::check_dirty_write(MtNode n, MtDelta& d) {
+void MtMethod::check_dirty_write(MnNode n, MtDelta& d) {
   // If the LHS is a subscript expression, check the source field.
   if (n.sym == sym_subscript_expression) {
     return check_dirty_write(n.get_field(field_argument), d);
@@ -349,7 +349,7 @@ void MtMethod::check_dirty_write(MtNode n, MtDelta& d) {
 // Check for reads on the RHS of an assignment, then check the write on the
 // left.
 
-void MtMethod::check_dirty_assign(MtNode n, MtDelta& d) {
+void MtMethod::check_dirty_assign(MnNode n, MtDelta& d) {
   auto lhs = n.get_field(field_left);
   auto rhs = n.get_field(field_right);
 
@@ -361,7 +361,7 @@ void MtMethod::check_dirty_assign(MtNode n, MtDelta& d) {
 // Check the "if" branch and the "else" branch independently and then merge the
 // results.
 
-void MtMethod::check_dirty_if(MtNode n, MtDelta& d) {
+void MtMethod::check_dirty_if(MnNode n, MtDelta& d) {
   check_dirty_dispatch(n.get_field(field_condition), d);
 
   MtDelta if_delta = d;
@@ -376,7 +376,7 @@ void MtMethod::check_dirty_if(MtNode n, MtDelta& d) {
 //------------------------------------------------------------------------------
 // Traverse function calls.
 
-void MtMethod::check_dirty_call(MtNode n, MtDelta& d) {
+void MtMethod::check_dirty_call(MnNode n, MtDelta& d) {
   auto call = mod->node_to_call(n);
 
   auto node_args = call->node.get_field(field_arguments);
@@ -420,7 +420,7 @@ void MtMethod::check_dirty_call(MtNode n, MtDelta& d) {
 // Check the condition of a switch statement, then check each case
 // independently.
 
-void MtMethod::check_dirty_switch(MtNode n, MtDelta& d) {
+void MtMethod::check_dirty_switch(MnNode n, MtDelta& d) {
   check_dirty_dispatch(n.get_field(field_condition), d);
 
   MtDelta init_delta = d;

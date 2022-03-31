@@ -17,17 +17,17 @@ struct MtCursor {
 
   // Debugging
 
-  void dump(const MtNode& n) const;
-  void dump_node_line(MtNode n);
-  void print_error(MtNode n, const char* fmt, ...);
+  void dump(const MnNode& n) const;
+  void dump_node_line(MnNode n);
+  void print_error(MnNode n, const char* fmt, ...);
 
   // Indentation
 
-  void push_indent(MtNode n);
-  void pop_indent(MtNode n);
+  void push_indent(MnNode n);
+  void pop_indent(MnNode n);
 
-  void push_indent_of(MtNode n);
-  void pop_indent_of(MtNode n);
+  void push_indent_of(MnNode n);
+  void pop_indent_of(MnNode n);
 
   void emit_newline();
   void emit_indent();
@@ -38,69 +38,69 @@ struct MtCursor {
   void emit_ws();
   void emit_ws_to_newline();
   void emit_span(const char* a, const char* b);
-  void emit_text(MtNode n);
+  void emit_text(MnNode n);
   void emit(const char* fmt, ...);
-  void emit_replacement(MtNode n, const char* fmt, ...);
-  void skip_over(MtNode n);
+  void emit_replacement(MnNode n, const char* fmt, ...);
+  void skip_over(MnNode n);
   void skip_ws();
-  void comment_out(MtNode n);
+  void comment_out(MnNode n);
 
   // Per-symbol emit()s.
 
-  void emit_dispatch(MtNode n);
-  void emit_children(MtNode n);
+  void emit_dispatch(MnNode n);
+  void emit_children(MnNode n);
 
-  void emit(MtArgList n);
-  void emit(MtAssignmentExpr n);
-  void emit(MtBreakStatement n);
-  void emit(MtCallExpr n);
-  void emit(MtCaseStatement n);
-  void emit(MtComment n);
-  void emit(MtCompoundStatement n);
-  void emit(MtCondExpr n);
-  void emit(MtDecl n);
-  void emit(MtEnumeratorList n);
-  void emit(MtEnumSpecifier n);
-  void emit(MtExprStatement n);
-  void emit(MtFieldDecl decl);
-  void emit(MtFieldDeclList n);
-  void emit(MtFieldExpr n);
-  void emit(MtFieldIdentifier n);
-  void emit(MtIdentifier n);
-  void emit(MtIfStatement n);
-  void emit(MtNamespaceDef n);
-  void emit(MtNumberLiteral n, int size_cast = 0);
-  void emit(MtParameterList n);
-  void emit(MtPreprocInclude n);
-  void emit(MtDataType n);
-  void emit(MtQualifiedId n);
-  void emit(MtReturnStatement n);
-  void emit(MtSizedTypeSpec n);
-  void emit(MtStorageSpec n);
-  void emit(MtClassSpecifier n);
-  void emit(MtSwitchStatement n);
-  void emit(MtTemplateArgList n);
-  void emit(MtTemplateDecl n);
-  void emit(MtTemplateParamList n);
-  void emit(MtTemplateType n);
-  void emit(MtTranslationUnit n);
-  void emit(MtTypeIdentifier n);
-  void emit(MtUsingDecl n);
+  void emit(MnArgList n);
+  void emit(MnAssignmentExpr n);
+  void emit(MnBreakStatement n);
+  void emit(MnCallExpr n);
+  void emit(MnCaseStatement n);
+  void emit(MnComment n);
+  void emit(MnCompoundStatement n);
+  void emit(MnCondExpr n);
+  void emit(MnDecl n);
+  void emit(MnEnumeratorList n);
+  void emit(MnEnumSpecifier n);
+  void emit(MnExprStatement n);
+  void emit(MnFieldDecl decl);
+  void emit(MnFieldDeclList n);
+  void emit(MnFieldExpr n);
+  void emit(MnFieldIdentifier n);
+  void emit(MnIdentifier n);
+  void emit(MnIfStatement n);
+  void emit(MnNamespaceDef n);
+  void emit(MnNumberLiteral n, int size_cast = 0);
+  void emit(MnParameterList n);
+  void emit(MnPreprocInclude n);
+  void emit(MnDataType n);
+  void emit(MnQualifiedId n);
+  void emit(MnReturnStatement n);
+  void emit(MnSizedTypeSpec n);
+  void emit(MnStorageSpec n);
+  void emit(MnClassSpecifier n);
+  void emit(MnSwitchStatement n);
+  void emit(MnTemplateArgList n);
+  void emit(MnTemplateDecl n);
+  void emit(MnTemplateParamList n);
+  void emit(MnTemplateType n);
+  void emit(MnTranslationUnit n);
+  void emit(MnTypeIdentifier n);
+  void emit(MnUsingDecl n);
 
   // Special-purpose emit()s
-  void emit_preproc(MtNode n);
-  void emit_field_as_localparam(MtFieldDecl field_decl);
-  void emit_func_decl(MtFuncDeclarator n);
-  void emit(MtFuncDefinition n);
-  void emit_field_as_enum_class(MtFieldDecl n);
-  void emit_static_bit_extract(MtCallExpr n, int bx_width);
-  void emit_dynamic_bit_extract(MtCallExpr n, MtNode bx_node);
-  void emit_hoisted_decls(MtCompoundStatement n);
-  void emit_init_declarator_as_decl(MtDecl n);
-  void emit_init_declarator_as_assign(MtDecl n);
-  void emit_output_ports(MtFieldDecl n);
-  void emit_field_as_submod(MtFieldDecl field_decl);
-  void emit_submod_input_port_bindings(MtNode n);
+  void emit_preproc(MnNode n);
+  void emit_field_as_localparam(MnFieldDecl field_decl);
+  void emit_func_decl(MnFuncDeclarator n);
+  void emit(MnFuncDefinition n);
+  void emit_field_as_enum_class(MnFieldDecl n);
+  void emit_static_bit_extract(MnCallExpr n, int bx_width);
+  void emit_dynamic_bit_extract(MnCallExpr n, MnNode bx_node);
+  void emit_hoisted_decls(MnCompoundStatement n);
+  void emit_init_declarator_as_decl(MnDecl n);
+  void emit_init_declarator_as_assign(MnDecl n);
+  void emit_output_ports(MnFieldDecl n);
+  void emit_field_as_submod(MnFieldDecl field_decl);
+  void emit_submod_input_port_bindings(MnNode n);
 
   //----------
 
@@ -117,9 +117,9 @@ struct MtCursor {
   std::string* str_out;
 
   std::map<std::string, std::string> id_replacements;
-  std::map<std::string, MtNode> preproc_vars;
+  std::map<std::string, MnNode> preproc_vars;
 
-  std::vector<MtNode> node_stack;
+  std::vector<MnNode> node_stack;
 
   bool quiet = true;
   bool in_init = false;

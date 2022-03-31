@@ -187,8 +187,8 @@ bool operator!=(const TSTreeCursor& a, const TSTreeCursor& b) {
 struct MtCursor;
 struct MtModule;
 struct MtModLibrary;
-struct MtNode;
-struct MtIterator;
+struct MnNode;
+struct MnIterator;
 
 typedef std::vector<uint8_t> blob;
 

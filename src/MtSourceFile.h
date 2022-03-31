@@ -6,7 +6,7 @@
 #include "Platform.h"
 #include "tree_sitter/api.h"
 
-struct MtTranslationUnit;
+struct MnTranslationUnit;
 struct MtModule;
 struct MtModLibrary;
 typedef std::vector<uint8_t> blob;
@@ -17,7 +17,7 @@ struct MtSourceFile {
   MtSourceFile(const std::string& _filename, const std::string& _full_path, const std::string& _src_blob);
   ~MtSourceFile();
 
-  void find_modules(MtNode toplevel);
+  void find_modules(MnNode toplevel);
 
   MtModule* get_module(const std::string& name);
 
@@ -28,7 +28,7 @@ struct MtSourceFile {
   const std::string src_blob;
   bool use_utf8_bom = false;
 
-  MtTranslationUnit mt_root;
+  MnTranslationUnit mt_root;
 
   const char* source = nullptr;
   const char* source_end = nullptr;

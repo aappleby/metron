@@ -6,18 +6,18 @@
 #include "MtSourceFile.h"
 #include "Platform.h"
 
-const MtNode MtNode::null;
+const MnNode MnNode::null;
 
 //------------------------------------------------------------------------------
 
-MtNode::MtNode() {
+MnNode::MnNode() {
   this->node = {0};
   this->sym = 0;
   this->field = 0;
   this->source = nullptr;
 }
 
-MtNode::MtNode(TSNode node, int sym, int field, MtSourceFile* source) {
+MnNode::MnNode(TSNode node, int sym, int field, MtSourceFile* source) {
   this->node = node;
   this->sym = sym;
   this->field = field;
@@ -26,42 +26,42 @@ MtNode::MtNode(TSNode node, int sym, int field, MtSourceFile* source) {
 
 //------------------------------------------------------------------------------
 
-MtNode MtNode::get_field(int field_id) const {
-  if (is_null()) return MtNode::null;
+MnNode MnNode::get_field(int field_id) const {
+  if (is_null()) return MnNode::null;
 
   for (auto c : *this) {
     if (c.field == field_id) return c;
   }
 
-  return MtNode::null;
+  return MnNode::null;
 }
 
 //------------------------------------------------------------------------------
 
-MtNode MtNode::child(int index) const {
+MnNode MnNode::child(int index) const {
   int i = 0;
   for (auto c : *this) {
     if (index == i) return c;
     i++;
   }
-  return MtNode::null;
+  return MnNode::null;
 }
 
 //----------
 
-MtNode MtNode::named_child(int index) const {
+MnNode MnNode::named_child(int index) const {
   int i = 0;
   for (auto c : *this) {
     if (!c.is_named()) continue;
     if (index == i) return c;
     i++;
   }
-  return MtNode::null;
+  return MnNode::null;
 }
 
 //----------
 
-MtNode MtNode::first_named_child() const { return named_child(0); }
+MnNode MnNode::first_named_child() const { return named_child(0); }
 
 
 bool MtField::is_submod() const {
@@ -69,7 +69,7 @@ bool MtField::is_submod() const {
 }
 
 
-bool MtNode::is_static() const {
+bool MnNode::is_static() const {
   for (auto c : *this) {
     if (c.sym == sym_storage_class_specifier && c.text() == "static")
       return true;
@@ -77,7 +77,7 @@ bool MtNode::is_static() const {
   return false;
 }
 
-bool MtNode::is_const() const {
+bool MnNode::is_const() const {
   for (auto c : *this) {
     if (c.sym == sym_type_qualifier && c.text() == "const") return true;
   }
@@ -86,7 +86,7 @@ bool MtNode::is_const() const {
 
 //------------------------------------------------------------------------------
 
-const char* MtNode::start() {
+const char* MnNode::start() {
   assert(!is_null());
 
   auto a = &source->source[start_byte()];
@@ -103,16 +103,16 @@ const char* MtNode::start() {
   return a;
 }
 
-const char* MtNode::end() {
+const char* MnNode::end() {
   assert(!is_null());
   auto b = &source->source[end_byte()];
   while (isspace(b[-1])) b--;
   return b;
 }
 
-std::string MtNode::text() { return std::string(start(), end()); }
+std::string MnNode::text() { return std::string(start(), end()); }
 
-bool MtNode::match(const char* s) {
+bool MnNode::match(const char* s) {
   assert(!is_null());
   const char* a = start();
   const char* b = end();
@@ -124,7 +124,7 @@ bool MtNode::match(const char* s) {
 
 //------------------------------------------------------------------------------
 
-std::string MtNode::node_to_name() {
+std::string MnNode::node_to_name() {
   assert(!is_null());
 
   switch (sym) {
@@ -180,7 +180,7 @@ std::string MtNode::node_to_name() {
   }
 }
 
-std::string MtNode::node_to_type() {
+std::string MnNode::node_to_type() {
   switch (sym) {
     case alias_sym_type_identifier:
       return text();
@@ -200,7 +200,7 @@ std::string MtNode::node_to_type() {
 
 //------------------------------------------------------------------------------
 
-void MtNode::visit_tree(NodeVisitor cv) {
+void MnNode::visit_tree(NodeVisitor cv) {
   cv(*this);
   for (auto c : *this) {
     if (c.is_null()) {
@@ -214,7 +214,7 @@ void MtNode::visit_tree(NodeVisitor cv) {
 //------------------------------------------------------------------------------
 // Node debugging
 
-void MtNode::dump_node(int index, int depth) const {
+void MnNode::dump_node(int index, int depth) const {
   if (is_null()) {
     printf("### NULL ###\n");
     return;
@@ -246,7 +246,7 @@ void MtNode::dump_node(int index, int depth) const {
 
 //------------------------------------------------------------------------------
 
-void MtNode::dump_tree(int index, int depth, int maxdepth) const {
+void MnNode::dump_tree(int index, int depth, int maxdepth) const {
   if (depth == 0) {
     printf("\n========== tree dump begin\n");
   }

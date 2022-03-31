@@ -14,8 +14,8 @@ typedef std::vector<uint8_t> blob;
 //------------------------------------------------------------------------------
 
 struct MtModule {
-  MtModule(MtSourceFile* source_file, MtTemplateDecl node);
-  MtModule(MtSourceFile* source_file, MtClassSpecifier node);
+  MtModule(MtSourceFile* source_file, MnTemplateDecl node);
+  MtModule(MtSourceFile* source_file, MnClassSpecifier node);
 
   bool has_field(const std::string& name);
   bool has_input(const std::string& name);
@@ -53,8 +53,8 @@ struct MtModule {
 
   void sanity_check();
 
-  MtMethod* node_to_method(MtNode n);
-  MtCall* node_to_call(MtNode n);
+  MtMethod* node_to_method(MnNode n);
+  MtCall* node_to_call(MnNode n);
 
   //----------
 
@@ -65,9 +65,9 @@ struct MtModule {
   bool dirty_check_done = false;
   bool dirty_check_fail = false;
 
-  MtClassSpecifier mod_struct;
-  MtTemplateDecl mod_template;
-  MtTemplateParamList mod_param_list;
+  MnClassSpecifier mod_struct;
+  MnTemplateDecl mod_template;
+  MnTemplateParamList mod_param_list;
 
   std::vector<MtParam*> modparams;
   std::vector<MtParam*> localparams;

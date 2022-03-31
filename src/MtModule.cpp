@@ -33,7 +33,7 @@ void log_field_state(FieldState s) {
 }
 
 // FIXME
-void log_error(MtNode n, const char *fmt, ...) {
+void log_error(MnNode n, const char *fmt, ...) {
   printf("\n########################################\n");
 
   va_list args;
@@ -71,20 +71,20 @@ printf("\n");
 
 //------------------------------------------------------------------------------
 
-MtModule::MtModule(MtSourceFile *source_file, MtTemplateDecl node)
+MtModule::MtModule(MtSourceFile *source_file, MnTemplateDecl node)
     : source_file(source_file) {
   mod_template = node;
-  mod_param_list = MtTemplateParamList(mod_template.child(1));
-  mod_struct = MtClassSpecifier(mod_template.child(2));
+  mod_param_list = MnTemplateParamList(mod_template.child(1));
+  mod_struct = MnClassSpecifier(mod_template.child(2));
   mod_name = mod_struct.get_field(field_name).text();
 }
 
 //------------------------------------------------------------------------------
 
-MtModule::MtModule(MtSourceFile *source_file, MtClassSpecifier node)
+MtModule::MtModule(MtSourceFile *source_file, MnClassSpecifier node)
     : source_file(source_file) {
-  mod_template = MtNode::null;
-  mod_param_list = MtNode::null;
+  mod_template = MnNode::null;
+  mod_param_list = MnNode::null;
   mod_struct = node;
   mod_name = mod_struct.get_field(field_name).text();
 }
@@ -647,7 +647,7 @@ void MtModule::collect_registers() {
   std::set<std::string> dedup;
 
   for (auto n : tick_methods) {
-    n->node.visit_tree([&](MtNode child) {
+    n->node.visit_tree([&](MnNode child) {
       if (child.sym != sym_assignment_expression) return;
 
       auto lhs = child.get_field(field_left);
@@ -711,7 +711,7 @@ void MtModule::build_port_map() {
   assert(port_map.empty());
   //port_map = new std::map<std::string, std::string>();
 
-  mod_struct.visit_tree([&](MtNode child) {
+  mod_struct.visit_tree([&](MnNode child) {
     if (child.sym != sym_call_expression) return;
     if (child.get_field(field_function).sym != sym_field_expression) return;
 
@@ -783,7 +783,7 @@ void MtModule::sanity_check() {
 
 //------------------------------------------------------------------------------
 
-MtMethod *MtModule::node_to_method(MtNode n) {
+MtMethod *MtModule::node_to_method(MnNode n) {
   assert(n.sym == sym_function_definition);
 
   MtMethod *result = MtMethod::construct(n, this, source_file->lib);
@@ -809,10 +809,10 @@ MtMethod *MtModule::node_to_method(MtNode n) {
 
 //------------------------------------------------------------------------------
 
-MtCall* MtModule::node_to_call(MtNode n) {
+MtCall* MtModule::node_to_call(MnNode n) {
   MtCall* result = MtCall::construct(n);
 
-  auto call = MtCallExpr(n);
+  auto call = MnCallExpr(n);
   auto call_func = call.get_field(field_function);
   auto call_args = call.get_field(field_arguments);
 

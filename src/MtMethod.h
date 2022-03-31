@@ -75,11 +75,11 @@ struct MtDelta {
 
 struct MtMethod {
 
-  static MtMethod* construct(MtNode n, MtModule* _mod, MtModLibrary* _lib) {
+  static MtMethod* construct(MnNode n, MtModule* _mod, MtModLibrary* _lib) {
     return new MtMethod(n, _mod, _lib);
   }
 
-  MtNode node;
+  MnNode node;
   MtModule* mod = nullptr;
   MtModLibrary* lib = nullptr;
   std::string name;
@@ -93,17 +93,17 @@ struct MtMethod {
 
   void update_delta();
 
-  void check_dirty_read_identifier(MtNode n, MtDelta& d);
-  void check_dirty_read_submod(MtNode n, MtDelta& d);
-  void check_dirty_write(MtNode n, MtDelta& d);
-  void check_dirty_dispatch(MtNode n, MtDelta& d);
-  void check_dirty_assign(MtNode n, MtDelta& d);
-  void check_dirty_if(MtNode n, MtDelta& d);
-  void check_dirty_call(MtNode n, MtDelta& d);
-  void check_dirty_switch(MtNode n, MtDelta& d);
+  void check_dirty_read_identifier(MnNode n, MtDelta& d);
+  void check_dirty_read_submod(MnNode n, MtDelta& d);
+  void check_dirty_write(MnNode n, MtDelta& d);
+  void check_dirty_dispatch(MnNode n, MtDelta& d);
+  void check_dirty_assign(MnNode n, MtDelta& d);
+  void check_dirty_if(MnNode n, MtDelta& d);
+  void check_dirty_call(MnNode n, MtDelta& d);
+  void check_dirty_switch(MnNode n, MtDelta& d);
 
 private:
-  MtMethod(MtNode n, MtModule* _mod, MtModLibrary* _lib);
+  MtMethod(MnNode n, MtModule* _mod, MtModLibrary* _lib);
 };
 
 //------------------------------------------------------------------------------

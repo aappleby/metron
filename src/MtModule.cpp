@@ -170,7 +170,7 @@ bool MtModule::has_submod(const std::string &name) {
 
 MtSubmod *MtModule::get_submod(const std::string &name) {
   for (auto n : submods) {
-    if (n->name() == name) return n;
+    if (n->name == name) return n;
   }
   return nullptr;
 }
@@ -218,7 +218,7 @@ void MtModule::dump_method_list2(const std::vector<MtMethod *> &methods) {
 void MtModule::dump_call_list(std::vector<MtCall> &calls) {
   for (auto &call : calls) {
     LOG_INDENT_SCOPE();
-    LOG_C("%s.%s(", call.submod->name().c_str(), call.method->name.c_str());
+    LOG_C("%s.%s(", call.submod->name.c_str(), call.method->name.c_str());
     if (call.args && call.args->size()) {
       LOG_C("\n");
       LOG_INDENT_SCOPE();
@@ -274,7 +274,7 @@ void MtModule::dump_banner() {
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
   LOG_B("Submods:\n");
   for (auto submod : submods)
-    LOG_G("  %s:%s\n", submod->name().c_str(), submod->mod->mod_name.c_str());
+    LOG_G("  %s:%s\n", submod->name.c_str(), submod->mod->mod_name.c_str());
 
   //----------
 
@@ -683,7 +683,7 @@ void MtModule::collect_submods() {
 
   for (auto f : all_fields) {
     if (source_file->lib->has_mod(f->type_name())) {
-      MtSubmod *submod = MtSubmod::construct(f->node);
+      MtSubmod *submod = new MtSubmod(f->name());
       submod->mod = source_file->lib->get_mod(f->type_name());
       submods.push_back(submod);
     } else {
@@ -734,7 +734,7 @@ void MtModule::build_port_map() {
     assert(call->method);
 
     for (auto i = 0; i < call->args->size(); i++) {
-      auto key = call->submod->name() + "." + call->method->params[i];
+      auto key = call->submod->name + "." + call->method->params[i];
       auto val = call->args->at(i);
       auto it = port_map.find(key);
       if (it != port_map.end()) {
@@ -776,8 +776,8 @@ void MtModule::sanity_check() {
   }
 
   for (auto n : submods) {
-    assert(!field_names.contains(n->name()));
-    field_names.insert(n->name());
+    assert(!field_names.contains(n->name));
+    field_names.insert(n->name);
   }
 }
 

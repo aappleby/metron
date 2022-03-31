@@ -401,7 +401,7 @@ void MtMethod::check_dirty_call(MnNode n, MtDelta& d) {
 
     MtDelta temp_delta = d;
     MtDelta call_delta = *call->method->delta;
-    call_delta.add_prefix(call->submod->name());
+    call_delta.add_prefix(call->submod->name);
 
     merge_series(temp_delta, call_delta, d);
   } else if (node_func.sym == sym_template_function) {

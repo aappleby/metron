@@ -15,19 +15,10 @@ typedef std::vector<uint8_t> blob;
 
 struct MtSubmod {
 
-  static MtSubmod* construct(const MnNode& n) {
-    return new MtSubmod(n);
-  }
-
-  std::string name() { return node.get_field(field_declarator).text(); }
+  MtSubmod(const std::string& name) : name(name) {}
 
   MtModule* mod;
-
-private:
-  MnNode node;
-  MtSubmod(const MnNode& n) : node(n) {
-    assert(node.sym == sym_field_declaration);
-  }
+  std::string name;
 };
 
 //------------------------------------------------------------------------------
@@ -48,7 +39,7 @@ struct MtField {
   MnNode get_decl_node() const { return node.get_field(field_declarator); }
 
   bool is_public = false;
-//private:
+private:
   MtField(const MnNode& n, bool is_public) : is_public(is_public), node(n) {
     assert(node.sym == sym_field_declaration || node.sym == sym_parameter_declaration);
   }

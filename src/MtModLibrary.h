@@ -21,8 +21,8 @@ struct MtModLibrary {
 
   void process_sources();
 
-  MtModule* get_mod(const std::string& module_name);
-  bool has_mod(const std::string& name);
+  MtModule* get_module(const std::string& module_name);
+  bool has_module(const std::string& name);
 
   //----------
 

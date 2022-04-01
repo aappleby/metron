@@ -89,6 +89,15 @@ MtMethod::MtMethod(MnNode n, MtModule* _mod, MtModLibrary* _lib)
   assert(lib);
 }
 
+//------------------------------------------------------------------------------
+
+void MtMethod::check_temporal() {
+}
+
+//------------------------------------------------------------------------------
+
+#if 0
+
 void MtMethod::update_delta() {
   if (delta == nullptr) {
     auto temp_delta = new MtDelta();
@@ -97,8 +106,6 @@ void MtMethod::update_delta() {
     delta = temp_delta;
   }
 }
-
-//------------------------------------------------------------------------------
 
 void MtMethod::check_dirty_dispatch(MnNode n, MtDelta& d) {
   for (auto& n : d.state_old) assert(n.second != ERROR);
@@ -459,4 +466,5 @@ void MtMethod::check_dirty_switch(MnNode n, MtDelta& d) {
   }
 }
 
+#endif
 //------------------------------------------------------------------------------

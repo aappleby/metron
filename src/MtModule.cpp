@@ -72,7 +72,7 @@ printf("\n");
 //------------------------------------------------------------------------------
 
 bool MtField::is_submod() const {
-  return (node.source->lib->has_mod(type_name()));
+  return (node.source->lib->has_module(type_name()));
 }
 
 //------------------------------------------------------------------------------
@@ -103,13 +103,12 @@ MtMethod *MtModule::get_method(const std::string &name) {
   return nullptr;
 }
 
-MtEnum* MtModule::get_enum(const std::string &name) {
+MtEnum *MtModule::get_enum(const std::string &name) {
   for (auto n : enums) {
     if (n->name() == name) return n;
   }
   return nullptr;
 }
-
 
 MtField *MtModule::get_field(const std::string &name) {
   for (auto f : all_fields) {
@@ -118,7 +117,7 @@ MtField *MtModule::get_field(const std::string &name) {
   return nullptr;
 }
 
-MtField* MtModule::get_input(const std::string &name) {
+MtField *MtModule::get_input(const std::string &name) {
   for (auto f : inputs)
     if (f->name() == name) return f;
   return nullptr;
@@ -130,13 +129,13 @@ MtField *MtModule::get_output(const std::string &name) {
   return nullptr;
 }
 
-MtField* MtModule::get_register(const std::string &name) {
+MtField *MtModule::get_register(const std::string &name) {
   for (auto f : registers)
     if (f->name() == name) return f;
   return nullptr;
 }
 
-MtField* MtModule::get_submod(const std::string &name) {
+MtField *MtModule::get_submod(const std::string &name) {
   for (auto n : submods) {
     if (n->name() == name) return n;
   }
@@ -200,7 +199,7 @@ void MtModule::dump_banner() const {
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
   LOG_B("Submods:\n");
   for (auto submod : submods) {
-    auto submod_mod = source_file->lib->get_mod(submod->type_name());
+    auto submod_mod = source_file->lib->get_module(submod->type_name());
     LOG_G("  %s:%s\n", submod->name().c_str(), submod_mod->mod_name.c_str());
   }
 
@@ -228,6 +227,7 @@ void MtModule::dump_banner() const {
 
 //------------------------------------------------------------------------------
 
+#if 0
 void MtModule::dump_deltas() const {
   if (mod_struct.is_null()) return;
 
@@ -281,6 +281,7 @@ void MtModule::dump_deltas() const {
   }
   LOG_G("\n");
 }
+#endif
 
 //------------------------------------------------------------------------------
 // All modules are now in the library, we can resolve references to other
@@ -430,16 +431,13 @@ void MtModule::collect_methods() {
 
     MtMethod *m = MtMethod::construct(n, this, source_file->lib);
 
-    auto func_type = n.get_field(field_type); // Can be null for constructor/destructor
+    auto func_type =
+        n.get_field(field_type);  // Can be null for constructor/destructor
     auto func_decl = n.get_field(field_declarator);
     auto func_body = n.get_field(field_body);
 
     auto func_name = func_decl.get_field(field_declarator).name4();
     auto func_args = func_decl.get_field(field_parameters);
-
-    if (func_type.is_null()) {
-      //n.dump_tree();
-    }
 
     m->is_public = in_public;
     m->is_task = func_type && func_type.text() == "void";
@@ -448,7 +446,7 @@ void MtModule::collect_methods() {
     m->is_init = func_type.is_null();
     m->is_tick = m->is_task && func_name.starts_with("tick");
     m->is_tock = m->is_task && func_name.starts_with("tock");
-    
+
     m->is_const = false;
     for (auto n : func_decl) {
       if (n.sym == sym_type_qualifier && n.text() == "const") {
@@ -459,11 +457,10 @@ void MtModule::collect_methods() {
 
     for (int i = 0; i < func_args.named_child_count(); i++) {
       auto param = func_args.named_child(i);
-      assert (param.sym == sym_parameter_declaration);
+      assert(param.sym == sym_parameter_declaration);
       auto param_name = param.get_field(field_declarator).text();
       m->params.push_back(param_name);
     }
-
 
     all_methods.push_back(m);
 
@@ -477,7 +474,6 @@ void MtModule::collect_methods() {
       if (m->is_public) {
         printf("PUBLIC TICK METHOD BAD!\n");
         exit(-1);
-
       }
       tick_methods.push_back(m);
     } else if (m->is_tock) {
@@ -503,7 +499,105 @@ void MtModule::collect_methods() {
 
 //------------------------------------------------------------------------------
 
-void MtModule::build_call_tree() {}
+void MtModule::build_call_tree() {
+  // Hook up callee->caller method pointers
+
+  printf("\n");
+  printf("MODULE! %s %d\n", name().c_str(), get_rank());
+  for (auto m : all_methods) {
+    int depth = 1;
+
+    // Only trace public non-const methods that aren't constructors.
+    if (m->is_init || !m->is_public || m->is_const) continue;
+
+    for (int i = 0; i < depth; i++) printf(" ");
+    printf("METHOD! %s\n", m->name().c_str());
+    auto node_body = m->node.get_field(field_body);
+    MtDelta delta;
+    build_call_tree(m, node_body, depth + 1, delta);
+  }
+}
+
+void MtModule::build_call_tree(MtMethod *method, MnNode n, int depth, MtDelta& delta) {
+  for (auto c : n) {
+    if (c.sym == sym_call_expression) {
+      auto node_func = c.get_field(field_function);
+
+      if (node_func.sym == sym_field_expression) {
+        for (int i = 0; i < depth; i++) printf(" ");
+        printf("FCALL! %s.%s -> %s\n",
+               name().c_str(), method->name().c_str(),
+               node_func.text().c_str());
+
+        // Field call. Pull up the submodule and traverse into the method.
+
+        //node_func.dump_tree();
+        auto submod_name = node_func.get_field(field_argument).text();
+        auto submod = get_submod(submod_name);
+        assert(submod);
+        auto submod_type = submod->type_name();
+        auto submod_mod = source_file->lib->get_module(submod_type);
+        assert(submod_mod);
+        auto submod_method = submod_mod->get_method(node_func.get_field(field_field).text());
+        assert(submod_method);
+
+        for (int i = 0; i < depth + 1; i++) printf(" ");
+        printf("TO SUBMOD!\n");
+        submod_mod->build_call_tree(submod_method, submod_method->node.get_field(field_body), depth + 1, delta);
+
+      } else if (node_func.sym == sym_identifier) {
+        //node_func.dump_tree();
+        
+        auto sibling_method = get_method(node_func.text());
+
+        if (sibling_method) {
+          for (int i = 0; i < depth; i++) printf(" ");
+          printf("*** MCALL! %s.%s -> %s\n",
+            name().c_str(), method->name().c_str(),
+            node_func.text().c_str());
+          build_call_tree(sibling_method, sibling_method->node.get_field(field_body), depth + 1, delta);
+        }
+        else {
+          // Utility method call like bN()
+          for (int i = 0; i < depth; i++) printf(" ");
+          printf("XCALL! %s.%s -> %s\n",
+            name().c_str(), method->name().c_str(),
+            node_func.text().c_str());
+        }
+
+      } else if (node_func.sym == sym_template_function) {
+
+        auto sibling_method = get_method(node_func.get_field(field_name).text());
+
+        if (sibling_method) {
+          // Should probably not see any of these yet?
+          debugbreak();
+          for (int i = 0; i < depth; i++) printf(" ");
+          printf("TCALL! %s.%s -> %s\n",
+            name().c_str(), method->name().c_str(),
+            node_func.text().c_str());
+        }
+        else {
+          // Templated utility method call like bx<>, dup<>
+        }
+
+        //node_func.dump_tree();
+
+      } else {
+        // printf("  CALL! %s\n", c.text().c_str());
+        // printf("  CALL! %s\n", c.get_field(field_function).text().c_str());
+
+        LOG_R("MtModule::build_call_tree - don't know what to do with %s\n",
+              c.ts_node_type());
+        c.dump_tree();
+        debugbreak();
+      }
+    }
+    else {
+      build_call_tree(method, c, depth + 1, delta);
+    }
+  }
+}
 
 //------------------------------------------------------------------------------
 // Collect all inputs to all tock and getter methods and merge them into a list
@@ -516,7 +610,8 @@ void MtModule::collect_inputs() {
   std::set<std::string> dedup;
 
   for (auto m : tock_methods) {
-    auto params = m->node.get_field(field_declarator).get_field(field_parameters);
+    auto params =
+        m->node.get_field(field_declarator).get_field(field_parameters);
 
     for (auto param : params) {
       if (param.sym != sym_parameter_declaration) continue;
@@ -529,7 +624,8 @@ void MtModule::collect_inputs() {
   }
 
   for (auto m : getters) {
-    auto params = m->node.get_field(field_declarator).get_field(field_parameters);
+    auto params =
+        m->node.get_field(field_declarator).get_field(field_parameters);
 
     for (auto param : params) {
       if (param.sym != sym_parameter_declaration) continue;
@@ -596,7 +692,7 @@ void MtModule::collect_submods() {
   assert(submods.empty());
 
   for (auto f : all_fields) {
-    if (source_file->lib->has_mod(f->type_name())) {
+    if (source_file->lib->has_module(f->type_name())) {
       submods.push_back(f);
     } else {
       if (f->type_name() != "logic") {
@@ -632,9 +728,9 @@ void MtModule::build_port_map() {
     auto node_func = node_call.get_field(field_function);
     auto node_args = node_call.get_field(field_arguments);
 
-    MtField*  call_member = nullptr;
-    MtModule* call_submod = nullptr;
-    MtMethod* call_method = nullptr;
+    MtField *call_member = nullptr;
+    MtModule *call_submod = nullptr;
+    MtMethod *call_method = nullptr;
 
     if (node_func.sym == sym_field_expression) {
       auto node_member = node_func.get_field(field_argument);
@@ -651,7 +747,7 @@ void MtModule::build_port_map() {
       if (node_method.text() == "as_signed") {
       } else {
         call_member = get_submod(node_this.text());
-        call_submod = source_file->lib->get_mod(call_member->type_name());
+        call_submod = source_file->lib->get_module(call_member->type_name());
         call_method = call_submod->get_method(node_method.text());
       }
     }
@@ -659,17 +755,17 @@ void MtModule::build_port_map() {
     auto arg_count = node_args.named_child_count();
 
     for (auto i = 0; i < arg_count; i++) {
-      //auto key = call_member->name() + "." + call_method->params[i];
-      auto key = call_member->name() + "_" + call_method->name() + "_" + call_method->params[i];
-      
-      //std::string val = node_args.named_child(i).text();
+      // auto key = call_member->name() + "." + call_method->params[i];
+      auto key = call_member->name() + "_" + call_method->name() + "_" +
+                 call_method->params[i];
+
+      // std::string val = node_args.named_child(i).text();
 
       std::string val;
       MtCursor cursor(source_file->lib, source_file, &val);
       auto arg_node = node_args.named_child(i);
       cursor.cursor = arg_node.start();
       cursor.emit_dispatch(arg_node);
-
 
       auto it = port_map.find(key);
       if (it != port_map.end()) {
@@ -715,7 +811,7 @@ void MtModule::sanity_check() {
 }
 
 //------------------------------------------------------------------------------
-
+#if 0
 void MtModule::check_dirty_ticks() {
   for (auto tick : tick_methods) {
     tick->update_delta();
@@ -729,6 +825,24 @@ void MtModule::check_dirty_tocks() {
   for (auto tock : tock_methods) {
     tock->update_delta();
     dirty_check_fail |= tock->delta->error;
+  }
+}
+#endif
+//------------------------------------------------------------------------------
+
+void MtModule::check_temporal() {
+  for (auto m : all_methods) {
+    // if (m->rank() == 0) {
+    // }
+  }
+}
+
+void MtModule::check_temporal_root(MtMethod *root) {
+  MtDelta delta;
+
+  root->node.dump_tree();
+
+  for (auto n : root->node) {
   }
 }
 

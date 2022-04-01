@@ -861,7 +861,7 @@ void MtCursor::emit_submod_input_port_bindings(MnNode n) {
       assert(submod);
 
       
-      auto submod_mod = source_file->lib->get_mod(submod->type_name());
+      auto submod_mod = source_file->lib->get_module(submod->type_name());
       //auto submod_mod = submod->mod;
       //assert(submod_mod);
 
@@ -1190,7 +1190,7 @@ void MtCursor::emit_field_as_enum_class(MnFieldDecl n) {
 
 void MtCursor::emit_field_as_submod(MnFieldDecl n) {
   std::string type_name = n.type5();
-  auto submod_mod = lib->get_mod(type_name);
+  auto submod_mod = lib->get_module(type_name);
 
   auto node_type = n.child(0);  // type
   auto node_decl = n.child(1);  // decl
@@ -1294,7 +1294,7 @@ void MtCursor::emit_output_ports(MnFieldDecl submod) {
   auto submod_semi = submod.child(2);  // semi
 
   std::string type_name = submod_type.type5();
-  auto submod_mod = lib->get_mod(type_name);
+  auto submod_mod = lib->get_module(type_name);
 
   // Swap template arguments with the values from the template
   // instantiation.
@@ -1397,7 +1397,7 @@ void MtCursor::emit(MnFieldDecl n) {
 
   std::string type_name = n.type5();
 
-  if (lib->has_mod(type_name)) {
+  if (lib->has_module(type_name)) {
     emit_field_as_submod(n);
   } else if (n.type().is_enum()) {
     emit_field_as_enum_class(n);

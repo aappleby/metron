@@ -60,6 +60,7 @@ struct MtDelta {
     state_new.clear();
   }
 
+  /*
   void sanity_check() const {
     for (auto& s1 : state_old) {
       auto& s2 = *state_new.find(s1.first);
@@ -69,6 +70,7 @@ struct MtDelta {
       if (s1.second == DIRTY) assert(s2.second == DIRTY);
     }
   }
+  */
 };
 
 //------------------------------------------------------------------------------
@@ -86,7 +88,7 @@ struct MtMethod {
   MtModLibrary* lib = nullptr;
 
   std::vector<std::string> params;
-  MtDelta* delta = nullptr;
+  //MtDelta delta = nullptr;
 
   bool is_init = false;
   bool is_tick = false;
@@ -97,8 +99,17 @@ struct MtMethod {
   bool is_public = false;
   bool is_const = false;
 
-  void update_delta();
+  std::vector<MtMethod*> callers;
 
+  int get_rank() const {
+    return 0;
+  }
+
+  void check_temporal();
+
+
+#if 0
+  void update_delta();
   void check_dirty_read_identifier(MnNode n, MtDelta& d);
   void check_dirty_read_submod(MnNode n, MtDelta& d);
   void check_dirty_write(MnNode n, MtDelta& d);
@@ -107,6 +118,7 @@ struct MtMethod {
   void check_dirty_if(MnNode n, MtDelta& d);
   void check_dirty_call(MnNode n, MtDelta& d);
   void check_dirty_switch(MnNode n, MtDelta& d);
+#endif
 
 private:
   MtMethod(MnNode n, MtModule* _mod, MtModLibrary* _lib);

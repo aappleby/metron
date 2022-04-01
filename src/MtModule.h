@@ -90,7 +90,7 @@ struct MtModule {
 
   void dump_method_list(const std::vector<MtMethod*>& methods) const;
   void dump_banner() const;
-  void dump_deltas() const;
+  //void dump_deltas() const;
 
   void collect_params();
   void collect_fields();
@@ -101,11 +101,16 @@ struct MtModule {
   void collect_submods();
 
   void build_port_map();
+
   void build_call_tree();
+  void build_call_tree(MtMethod* method, MnNode n, int depth, MtDelta& delta);
 
   void sanity_check();
+
+#if 0
   void check_dirty_ticks();
   void check_dirty_tocks();
+#endif
 
   std::string name() const {
     return mod_name;
@@ -120,6 +125,10 @@ struct MtModule {
     }
     return min_rank + 1;
   }
+
+  void check_temporal();
+  void check_temporal_root(MtMethod* root);
+  void check_temporal_dispatch(MtMethod* method, MnNode n);
 
   //----------
 

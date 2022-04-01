@@ -159,20 +159,9 @@ int main(int argc, char** argv) {
   library.process_sources();
 
   //----------
-  // Dump out info on modules for debugging.
+  // Dump out the module tree
 
-  for (auto& mod : library.modules) {
-    if (mod->dirty_check_fail) {
-      printf("Module %s failed dirty check\n", mod->mod_name.c_str());
-      return -1;
-    }
-
-    if (verbose) {
-      mod->dump_banner();
-      mod->dump_deltas();
-    }
-  }
-
+#if 0
   std::function<void(MtModule*, int, bool)> step;
   step = [&](MtModule* m, int rank, bool last) -> void {
     for (int i = 0; i < rank - 1; i++) LOG_Y("|  ");
@@ -193,8 +182,26 @@ int main(int argc, char** argv) {
   for (auto m : library.modules) {
     if (m->parents.empty()) step(m, 0, false);
   }
+#endif
 
-#if 1
+  //----------
+  // Dump out info on modules for debugging.
+
+#if 0
+  for (auto& mod : library.modules) {
+    if (mod->dirty_check_fail) {
+      printf("Module %s failed dirty check\n", mod->mod_name.c_str());
+      return -1;
+    }
+
+    if (verbose) {
+      mod->dump_banner();
+      //mod->dump_deltas();
+    }
+  }
+#endif
+
+#if 0
   //----------
   // Emit all modules.
   for (auto& source_file : library.source_files)

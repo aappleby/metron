@@ -111,7 +111,14 @@ void MtModLibrary::process_sources() {
   // Hook up child->parent module pointers
   for (auto m : modules) {
     for (auto s : m->submods) {
-      get_mod(s->type_name())->parents.push_back(m);
+      get_module(s->type_name())->parents.push_back(m);
+    }
+  }
+
+  // Generate call tree / temporal check for toplevel modules
+  for (auto m : modules) {
+    if (m->get_rank() == 0) {
+      m->build_call_tree();
     }
   }
 
@@ -120,10 +127,10 @@ void MtModLibrary::process_sources() {
   bool any_fail_dirty_check = false;
 
   for (auto& mod : modules) {
+    //mod->check_dirty_ticks();
+    //mod->check_dirty_tocks();
 
-    mod->check_dirty_ticks();
-    mod->check_dirty_tocks();
-
+    mod->check_temporal();
     mod->dirty_check_done = true;
     any_fail_dirty_check |= mod->dirty_check_fail;
   }
@@ -136,7 +143,7 @@ void MtModLibrary::process_sources() {
 
 //------------------------------------------------------------------------------
 
-MtModule* MtModLibrary::get_mod(const std::string& name) {
+MtModule* MtModLibrary::get_module(const std::string& name) {
   assert(sources_loaded);
   for (auto mod : modules) {
     if (mod->mod_name == name) return mod;
@@ -144,9 +151,9 @@ MtModule* MtModLibrary::get_mod(const std::string& name) {
   return nullptr;
 }
 
-bool MtModLibrary::has_mod(const std::string& name) {
+bool MtModLibrary::has_module(const std::string& name) {
   assert(sources_loaded);
-  return get_mod(name) != nullptr;
+  return get_module(name) != nullptr;
 }
 
 //------------------------------------------------------------------------------

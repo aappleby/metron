@@ -32,6 +32,16 @@ rule run_test
 rule console
   command = ${in}
   pool = console
+rule iverilog
+  command = iverilog -g2012 ${defines} ${includes} ${in} -o ${out}
+rule yosys
+  command = yosys -p 'read_verilog ${includes} -sv ${in}; dump; synth_ice40 $
+      -json ${out};'
+rule nextpnr-ice40
+  command = nextpnr-ice40 -q --${chip} --package ${package} --json ${in} $
+      --asc ${out} --pcf ${pcf}
+rule icepack
+  command = icepack ${in} ${out}
 
 
 ################################################################################
@@ -131,8 +141,6 @@ build bin/examples/uart_vl: link obj/verilated.o $
 ################################################################################
 # Icarus Verilog uart testbench
 
-rule iverilog
-  command = iverilog -g2012 ${defines} ${includes} ${in} -o ${out}
 build bin/examples/uart_iv: iverilog examples/uart/uart_test_iv.sv | $
     examples/uart/metron_sv/uart_hello.sv $
     examples/uart/metron_sv/uart_rx.sv examples/uart/metron_sv/uart_top.sv $
@@ -144,25 +152,17 @@ build bin/examples/uart_iv: iverilog examples/uart/uart_test_iv.sv | $
 ################################################################################
 # Yosys/NextPNR uart testbench
 
-rule yosys
-  command = yosys -p 'read_verilog ${includes} -sv ${in}; dump; synth_ice40 $
-      -json ${out};'
 build obj/examples/uart/uart_test_ice40.json: yosys $
     examples/uart/uart_test_ice40.sv | $
     examples/uart/metron_sv/uart_hello.sv $
     examples/uart/metron_sv/uart_rx.sv examples/uart/metron_sv/uart_top.sv $
     examples/uart/metron_sv/uart_tx.sv
   includes = -Isrc -Iexamples/uart -Iexamples/uart/metron_sv
-rule nextpnr-ice40
-  command = nextpnr-ice40 -q --${chip} --package ${package} --json ${in} $
-      --asc ${out} --pcf ${pcf}
 build obj/examples/uart/uart_test_ice40.asc: nextpnr-ice40 $
     obj/examples/uart/uart_test_ice40.json
   chip = hx8k
   package = ct256
   pcf = examples/uart/ice40-hx8k-b-evn.pcf
-rule icepack
-  command = icepack ${in} ${out}
 build obj/examples/uart/uart_test_ice40.bin: icepack $
     obj/examples/uart/uart_test_ice40.asc
 

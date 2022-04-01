@@ -314,7 +314,7 @@ void MtCursor::emit(MnAssignmentExpr n) {
   }
   emit_ws();
 
-  if (in_tick && lhs_is_reg) emit("<");
+  if (current_method->is_tick && lhs_is_reg) emit("<");
   emit_text(n.op());
 
   // Emit_dispatch makes sense here, as we really could have anything on the
@@ -904,21 +904,17 @@ void MtCursor::emit(MnFuncDefinition n) {
   auto return_type = n.get_field(field_type);
   auto func_decl = n.decl();
 
-  current_function_name = n.name4();
-  in_task = return_type.match("void");
-  in_func = !in_task;
-  in_init = in_task && current_function_name.starts_with("init");
-  in_tick = in_task && current_function_name.starts_with("tick");
-  in_tock = in_task && current_function_name.starts_with("tock");
+  current_method = current_mod->get_method(n.name4());
+  assert(current_method);
 
   //----------
   // Emit a block declaration for the type of function we're in.
 
-  if (in_init) {
+  if (current_method->is_init) {
     skip_over(return_type);
     skip_ws();
     emit_replacement(func_decl, "initial");
-  } else if (in_tick) {
+  } else if (current_method->is_tick) {
 
     /*
     if (in_public) {
@@ -929,18 +925,18 @@ void MtCursor::emit(MnFuncDefinition n) {
     skip_over(return_type);
     skip_ws();
     //emit_replacement(func_decl, "always_ff @(posedge clock)");
-    emit_replacement(func_decl, "task %s();", current_function_name.c_str());
-  } else if (in_tock) {
+    emit_replacement(func_decl, "task %s();", current_method->name().c_str());
+  } else if (current_method->is_tock) {
     skip_over(return_type);
     skip_ws();
     emit_replacement(func_decl, "always_comb");
-  } else if (in_task) {
+  } else if (current_method->is_task) {
     skip_over(return_type);
     skip_ws();
     emit("task ");
     emit_dispatch(func_decl);
     emit(";");
-  } else if (in_func) {
+  } else if (current_method->is_func) {
     if (in_public) {
       skip_over(return_type);
       skip_ws();
@@ -961,17 +957,17 @@ void MtCursor::emit(MnFuncDefinition n) {
 
   emit_ws();
 
-  if (in_init)
-    emit("begin : %s", current_function_name.c_str());
-  else if (in_tick) {
+  if (current_method->is_init)
+    emit("begin : %s", current_method->name().c_str());
+  else if (current_method->is_tick) {
     //emit("begin : %s", current_function_name.c_str());
     //emit(" : %s", current_function_name.c_str());
   }
-  else if (in_tock)
-    emit("begin : %s", current_function_name.c_str());
-  else if (in_task)
+  else if (current_method->is_tock)
+    emit("begin : %s", current_method->name().c_str());
+  else if (current_method->is_task)
     emit("");
-  else if (in_func) {
+  else if (current_method->is_func) {
     if (in_public) {
       emit("begin");
     } else {
@@ -1034,20 +1030,20 @@ void MtCursor::emit(MnFuncDefinition n) {
 
   //----------
 
-  if (in_init)
+  if (current_method->is_init)
     emit("end");
-  else if (in_tick) {
+  else if (current_method->is_tick) {
     emit("endtask");
     emit_newline();
     emit_indent();
-    emit("always_ff @(posedge clock) %s();", current_function_name.c_str());
+    emit("always_ff @(posedge clock) %s();", current_method->name().c_str());
   }
-  else if (in_tock)
+  else if (current_method->is_tock)
     emit("end");
-  else if (in_task)
+  else if (current_method->is_task)
     emit("endtask");
-  else if (in_func) {
-    if (in_public) {
+  else if (current_method->is_func) {
+    if (current_method->is_public) {
       emit("end");
     } else {
       emit("endfunction");
@@ -1059,12 +1055,7 @@ void MtCursor::emit(MnFuncDefinition n) {
 
   //----------
 
-  current_function_name = "";
-  in_init = false;
-  in_tick = false;
-  in_tock = false;
-  in_task = false;
-  in_func = false;
+  current_method = nullptr;
 
   node_stack.pop_back();
 }
@@ -1271,7 +1262,7 @@ void MtCursor::emit_field_as_submod(MnFieldDecl n) {
   for (auto n : submod_mod->getters) {
     emit_newline();
     emit_indent();
-    emit(".%s(%s_%s)", n->name.c_str(), inst_name.c_str(), n->name.c_str());
+    emit(".%s(%s_%s)", n->name().c_str(), inst_name.c_str(), n->name().c_str());
 
     if (port_index++ < port_count - 1) emit(", ");
   }
@@ -1905,16 +1896,18 @@ void MtCursor::emit(MnReturnStatement n) {
   auto node_lit = n.child(0);
   auto node_expr = n.child(1);
 
-  if (in_tock) {
-    emit("RETURNS IN TOCKS ARE BROKEN DO NOT USE");
+  if (current_method->is_tock) {
+    printf("RETURNS IN TOCKS ARE BROKEN DO NOT USE");
+    exit(-1);
   }
 
-  if (in_tick) {
-    emit("RETURNS IN TICKS ARE BROKEN DO NOT USE");
+  if (current_method->is_tick) {
+    printf("RETURNS IN TICKS ARE BROKEN DO NOT USE");
+    exit(-1);
   }
 
   cursor = node_expr.start();
-  emit("%s = ", current_function_name.c_str());
+  emit("%s = ", current_method->name().c_str());
   emit_dispatch(node_expr);
   emit(";");
   //emit_newline();

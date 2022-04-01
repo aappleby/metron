@@ -155,21 +155,21 @@ void MtMethod::check_dirty_read_identifier(MnNode n, MtDelta& d) {
   if (is_tick) {
     if (d.state_new.contains(field)) {
       if (d.state_new[field] == MAYBE) {
-        log_error(n, "%s() read maybe new field - %s\n", name.c_str(),
+        log_error(n, "%s() read maybe new field - %s\n", name().c_str(),
                   field.c_str());
         d.error = true;
       } else if (d.state_new[field] == DIRTY) {
-        log_error(n, "%s() read dirty new field - %s\n", name.c_str(),
+        log_error(n, "%s() read dirty new field - %s\n", name().c_str(),
                   field.c_str());
         d.error = true;
       }
     } else if (d.state_old.contains(field)) {
       if (d.state_old[field] == MAYBE) {
-        log_error(n, "%s() read maybe old field - %s\n", name.c_str(),
+        log_error(n, "%s() read maybe old field - %s\n", name().c_str(),
                   field.c_str());
         d.error = true;
       } else if (d.state_old[field] == DIRTY) {
-        log_error(n, "%s() read dirty old field - %s\n", name.c_str(),
+        log_error(n, "%s() read dirty old field - %s\n", name().c_str(),
                   field.c_str());
         d.error = true;
       }
@@ -185,21 +185,21 @@ void MtMethod::check_dirty_read_identifier(MnNode n, MtDelta& d) {
   if (is_tock) {
     if (d.state_new.contains(field)) {
       if (d.state_new[field] == CLEAN) {
-        log_error(n, "%s() read clean new field - %s\n", name.c_str(),
+        log_error(n, "%s() read clean new field - %s\n", name().c_str(),
                   field.c_str());
         d.error = true;
       } else if (d.state_new[field] == MAYBE) {
-        log_error(n, "%s() read maybe new field - %s\n", name.c_str(),
+        log_error(n, "%s() read maybe new field - %s\n", name().c_str(),
                   field.c_str());
         d.error = true;
       }
     } else if (d.state_old.contains(field)) {
       if (d.state_old[field] == CLEAN) {
-        log_error(n, "%s() read clean old field - %s\n", name.c_str(),
+        log_error(n, "%s() read clean old field - %s\n", name().c_str(),
                   field.c_str());
         d.error = true;
       } else if (d.state_old[field] == MAYBE) {
-        log_error(n, "%s() read maybe old field - %s\n", name.c_str(),
+        log_error(n, "%s() read maybe old field - %s\n", name().c_str(),
                   field.c_str());
         d.error = true;
       }
@@ -238,13 +238,13 @@ void MtMethod::check_dirty_read_submod(MnNode n, MtDelta& d) {
   if (is_tick) {
     if (d.state_new.contains(field)) {
       if (d.state_new[field] != CLEAN) {
-        log_error(n, "%s() read dirty new submod field - %s\n", name.c_str(),
+        log_error(n, "%s() read dirty new submod field - %s\n", name().c_str(),
                   field.c_str());
         d.error = true;
       }
     } else if (d.state_old.contains(field)) {
       if (d.state_old[field] != CLEAN) {
-        log_error(n, "%s() read dirty old submod field - %s\n", name.c_str(),
+        log_error(n, "%s() read dirty old submod field - %s\n", name().c_str(),
                   field.c_str());
         d.error = true;
       }
@@ -258,13 +258,13 @@ void MtMethod::check_dirty_read_submod(MnNode n, MtDelta& d) {
   if (is_tock) {
     if (d.state_new.contains(field)) {
       if (d.state_new[field] == CLEAN) {
-        log_error(n, "%s() read clean new submod field - %s\n", name.c_str(),
+        log_error(n, "%s() read clean new submod field - %s\n", name().c_str(),
                   field.c_str());
         d.error = true;
       }
     } else if (d.state_old.contains(field)) {
       if (d.state_old[field] == CLEAN) {
-        log_error(n, "%s() read clean old submod field - %s\n", name.c_str(),
+        log_error(n, "%s() read clean old submod field - %s\n", name().c_str(),
                   field.c_str());
         d.error = true;
       }
@@ -319,13 +319,13 @@ void MtMethod::check_dirty_write(MnNode n, MtDelta& d) {
   */
 
   if (is_tock && field_is_register) {
-    log_error(n, "%s() wrote reg - %s\n", name.c_str(), field.c_str());
+    log_error(n, "%s() wrote reg - %s\n", name().c_str(), field.c_str());
     d.error = true;
   }
 
   if (d.state_old.contains(field)) {
     if (d.state_old[field] != CLEAN) {
-      log_error(n, "%s() wrote dirty old field - %s\n", name.c_str(),
+      log_error(n, "%s() wrote dirty old field - %s\n", name().c_str(),
                 field.c_str());
       d.error = true;
     }

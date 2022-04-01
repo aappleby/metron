@@ -99,7 +99,7 @@ MtModule::MtModule(MtSourceFile *source_file, MnClassSpecifier node)
 
 MtMethod *MtModule::get_method(const std::string &name) {
   for (auto n : all_methods)
-    if (n->name == name) return n;
+    if (n->name() == name) return n;
   return nullptr;
 }
 
@@ -148,7 +148,7 @@ MtField* MtModule::get_submod(const std::string &name) {
 void MtModule::dump_method_list(const std::vector<MtMethod *> &methods) const {
   for (auto n : methods) {
     LOG_INDENT_SCOPE();
-    LOG_R("%s(", n->name.c_str());
+    LOG_R("%s(", n->name().c_str());
 
     if (n->params.size()) {
       int param_count = int(n->params.size());
@@ -235,7 +235,7 @@ void MtModule::dump_deltas() const {
     LOG_INDENT_SCOPE();
 
     for (auto tick : tick_methods) {
-      LOG_G("%s error %d\n", tick->name.c_str(), tick->delta->error);
+      LOG_G("%s error %d\n", tick->name().c_str(), tick->delta->error);
       LOG_INDENT_SCOPE();
       {
         for (auto &s : tick->delta->state_old) {
@@ -257,7 +257,7 @@ void MtModule::dump_deltas() const {
     }
 
     for (auto tock : tock_methods) {
-      LOG_G("%s error %d\n", tock->name.c_str(), tock->delta->error);
+      LOG_G("%s error %d\n", tock->name().c_str(), tock->delta->error);
       LOG_INDENT_SCOPE();
       {
         for (auto &s : tock->delta->state_old) {
@@ -409,16 +409,16 @@ void MtModule::collect_fields() {
 void MtModule::collect_methods() {
   assert(all_methods.empty());
 
-  bool is_public = false;
+  bool in_public = false;
   auto mod_body = mod_struct.get_field(field_body).check_null();
   for (auto n : mod_body) {
     if (n.sym == sym_access_specifier) {
       if (n.child(0).text() == "public") {
-        is_public = true;
+        in_public = true;
       } else if (n.child(0).text() == "protected") {
-        is_public = false;
+        in_public = false;
       } else if (n.child(0).text() == "private") {
-        is_public = false;
+        in_public = false;
       } else {
         n.dump_tree();
         debugbreak();
@@ -427,76 +427,74 @@ void MtModule::collect_methods() {
 
     if (n.sym != sym_function_definition) continue;
 
-    //n.dump_tree();
+    MtMethod *m = MtMethod::construct(n, this, source_file->lib);
 
-    auto func_type = n.get_field(field_type);
+    auto func_type = n.get_field(field_type); // Can be null for constructor/destructor
     auto func_decl = n.get_field(field_declarator);
     auto func_body = n.get_field(field_body);
 
     auto func_name = func_decl.get_field(field_declarator).name4();
     auto func_args = func_decl.get_field(field_parameters);
 
-    bool is_task = func_type && func_type.text() == "void";
-    bool is_func = !is_task;
-    bool is_init = is_task && func_name.starts_with("init");
-    bool is_tick = is_task && func_name.starts_with("tick");
-    bool is_tock = is_task && func_name.starts_with("tock");
+    if (func_type.is_null()) {
+      //n.dump_tree();
+    }
+
+    m->is_public = in_public;
+    m->is_task = func_type && func_type.text() == "void";
+    m->is_func = func_type && func_type.text() != "void";
+
+    m->is_init = (m->is_task && func_name.starts_with("init")) || func_type.is_null();
+    m->is_tick = m->is_task && func_name.starts_with("tick");
+    m->is_tock = m->is_task && func_name.starts_with("tock");
     
-    bool is_const = false;
+    m->is_const = false;
     for (auto n : func_decl) {
       if (n.sym == sym_type_qualifier && n.text() == "const") {
-        is_const = true;
+        m->is_const = true;
         break;
       }
     }
 
-    MtMethod *new_method = MtMethod::construct(n, this, source_file->lib);
-    new_method->name = n.get_field(field_declarator).get_field(field_declarator).text();
     for (int i = 0; i < func_args.named_child_count(); i++) {
       auto param = func_args.named_child(i);
       assert (param.sym == sym_parameter_declaration);
       auto param_name = param.get_field(field_declarator).text();
-      new_method->params.push_back(param_name);
+      m->params.push_back(param_name);
     }
 
-    new_method->is_task = is_task;
-    new_method->is_func = !is_task;
-    new_method->is_tick = is_tick;
-    new_method->is_tock = is_tock;
-    new_method->is_public = is_public;
-    new_method->is_const = is_const;
 
-    all_methods.push_back(new_method);
+    all_methods.push_back(m);
 
-    if (is_init) {
-      if (is_const || is_func || !is_public) {
-        printf("CONST INIT BAD / INIT WITH RETURN VALUE BAD / PRIVATE INIT BAD\n");
+    if (m->is_init) {
+      if (m->is_const || !m->is_public) {
+        printf("CONST INIT BAD / PRIVATE INIT BAD\n");
         exit(-1);
       }
-      init_methods.push_back(new_method);
-    } else if (is_tick) {
-      if (is_public) {
+      init_methods.push_back(m);
+    } else if (m->is_tick) {
+      if (m->is_public) {
         printf("PUBLIC TICK METHOD BAD!\n");
         exit(-1);
 
       }
-      tick_methods.push_back(new_method);
-    } else if (is_tock) {
-      if (is_const) {
+      tick_methods.push_back(m);
+    } else if (m->is_tock) {
+      if (m->is_const) {
         printf("CONST TOCK METHOD BAD!\n");
         exit(-1);
       }
-      tock_methods.push_back(new_method);
-    } else if (is_task) {
-      if (is_const) {
+      tock_methods.push_back(m);
+    } else if (m->is_task) {
+      if (m->is_const) {
         printf("CONST TASK FUNCTION BAD!\n");
         exit(-1);
       }
-      task_methods.push_back(new_method);
-    } else if (is_public && is_const && is_func) {
-      getters.push_back(new_method);
+      task_methods.push_back(m);
+    } else if (m->is_public && m->is_const && m->is_func) {
+      getters.push_back(m);
     } else {
-      func_methods.push_back(new_method);
+      func_methods.push_back(m);
     }
   }
 }
@@ -668,7 +666,7 @@ void MtModule::build_port_map() {
 
     for (auto i = 0; i < arg_count; i++) {
       //auto key = call_member->name() + "." + call_method->params[i];
-      auto key = call_member->name() + "_" + call_method->name + "_" + call_method->params[i];
+      auto key = call_member->name() + "_" + call_method->name() + "_" + call_method->params[i];
       
       //std::string val = node_args.named_child(i).text();
 

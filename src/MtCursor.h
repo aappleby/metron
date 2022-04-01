@@ -108,7 +108,7 @@ struct MtCursor {
   MtSourceFile* source_file = nullptr;
   MtModule* current_mod = nullptr;
   const char* cursor = nullptr;
-  std::string current_function_name;
+  MtMethod* current_method;
   std::vector<std::string> indent_stack;
   bool at_newline = true;
   bool line_dirty = false;
@@ -122,11 +122,6 @@ struct MtCursor {
   std::vector<MnNode> node_stack;
 
   bool quiet = true;
-  bool in_init = false;
-  bool in_tick = false;
-  bool in_tock = false;
-  bool in_task = false;
-  bool in_func = false;
 
   int in_module_or_package = 0;
 

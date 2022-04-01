@@ -155,6 +155,12 @@
   <ItemGroup>
     <ClCompile Include="..\..\examples\uart\main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\examples\uart\metron_sv\uart_hello.sv" />
+    <None Include="..\..\examples\uart\metron_sv\uart_rx.sv" />
+    <None Include="..\..\examples\uart\metron_sv\uart_top.sv" />
+    <None Include="..\..\examples\uart\metron_sv\uart_tx.sv" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

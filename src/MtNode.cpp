@@ -119,7 +119,7 @@ bool MnNode::match(const char* s) {
 
 //------------------------------------------------------------------------------
 
-std::string MnNode::name4() {
+std::string MnNode::name4() const {
   assert(!is_null());
 
   switch (sym) {

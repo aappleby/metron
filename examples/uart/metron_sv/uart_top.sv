@@ -17,7 +17,7 @@ module uart_top
   output logic[31:0] o_sum
 );
  /*public:*/
-  always_comb begin
+  initial begin : uart_top
     $write("uart_top.init()\n");
     //hello.init();
   end

@@ -9,4 +9,23 @@
   <ItemGroup>
     <ClCompile Include="..\..\examples\uart\main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\examples\uart\metron_sv\uart_hello.sv">
+      <Filter>sv</Filter>
+    </None>
+    <None Include="..\..\examples\uart\metron_sv\uart_rx.sv">
+      <Filter>sv</Filter>
+    </None>
+    <None Include="..\..\examples\uart\metron_sv\uart_top.sv">
+      <Filter>sv</Filter>
+    </None>
+    <None Include="..\..\examples\uart\metron_sv\uart_tx.sv">
+      <Filter>sv</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="sv">
+      <UniqueIdentifier>{8bf5acc6-1fb5-4ead-b3df-34011c13b252}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
 </Project>

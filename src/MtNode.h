@@ -75,7 +75,7 @@ struct MnNode {
 
   //----------
 
-  std::string name4();
+  std::string name4() const;
   std::string type5() const;
 
   typedef std::function<void(MnNode)> NodeVisitor;

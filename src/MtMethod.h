@@ -79,19 +79,21 @@ struct MtMethod {
     return new MtMethod(n, _mod, _lib);
   }
 
+  std::string name() const { return node.name4(); }
+
   MnNode node;
   MtModule* mod = nullptr;
   MtModLibrary* lib = nullptr;
-  std::string name;
 
   std::vector<std::string> params;
   MtDelta* delta = nullptr;
 
+  bool is_init = false;
+  bool is_tick = false;
+  bool is_tock = false;
   bool is_task = false;
   bool is_func = false;
   bool is_root = false;
-  bool is_tick = false;
-  bool is_tock = false;
   bool is_public = false;
   bool is_const = false;
 

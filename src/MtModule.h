@@ -63,7 +63,7 @@ struct MtParam {
   static MtParam* construct(const MnNode& n) { return new MtParam(n); }
 
   std::string name3() {
-    return node.get_field(field_declarator).text();
+    return node.name4();
   }
 
 private:
@@ -100,13 +100,13 @@ struct MtModule {
   void collect_outputs();
   void collect_registers();
   void collect_submods();
+
   void build_port_map();
   void build_call_tree();
 
+  void sanity_check();
   void check_dirty_ticks();
   void check_dirty_tocks();
-
-  void sanity_check();
 
   //----------
 

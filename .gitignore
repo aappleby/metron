@@ -8,3 +8,4 @@ vivado*.log
 vivado*.jou
 *__verFiles.dat
 *__ver.d
+*.vcd

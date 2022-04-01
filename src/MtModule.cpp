@@ -444,7 +444,7 @@ void MtModule::collect_methods() {
     m->is_task = func_type && func_type.text() == "void";
     m->is_func = func_type && func_type.text() != "void";
 
-    m->is_init = (m->is_task && func_name.starts_with("init")) || func_type.is_null();
+    m->is_init = func_type.is_null();
     m->is_tick = m->is_task && func_name.starts_with("tick");
     m->is_tock = m->is_task && func_name.starts_with("tock");
     

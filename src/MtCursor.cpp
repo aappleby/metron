@@ -501,8 +501,6 @@ void MtCursor::emit(MnCallExpr n) {
   } else if (func_name == "sign_extend") {
     emit_replacement(func, "$signed");
     emit(args);
-  } else if (func_name.starts_with("init")) {
-    comment_out(n);
   } else if (func_name.starts_with("final")) {
     comment_out(n);
   } else if (func_name.starts_with("tick")) {

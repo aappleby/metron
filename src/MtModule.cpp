@@ -442,7 +442,9 @@ void MtModule::collect_fields() {
       }
     }
 
-    if (n.sym != sym_field_declaration) continue;
+    if (n.sym != sym_field_declaration) {
+      continue;
+    }
 
     // FIXME why are we excluding enums here? because they're not a "field"?
     if (n.get_field(field_type).sym == sym_enum_specifier) continue;

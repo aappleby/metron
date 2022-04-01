@@ -1417,7 +1417,14 @@ void MtCursor::emit(MnFieldDecl n) {
     return;
   }
 
-  std::string type_name = n.type().type5();
+  // Array members aren't appearing in registers...
+  auto field = current_mod->get_field(n.name4());
+  if (!field) {
+    field = current_mod->get_field(n.name4());
+    assert(field);
+  }
+
+  std::string type_name = n.type5();
 
   if (lib->has_mod(type_name)) {
     emit_field_as_submod(n);

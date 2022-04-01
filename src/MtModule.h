@@ -21,7 +21,7 @@ struct MtField {
   bool is_submod() const;
   bool is_param() const { return node.is_static() && node.is_const(); }
 
-  std::string name() { return node.get_field(field_declarator).text(); }
+  std::string name() { return node.name4(); }
 
   std::string type_name() const { return node.get_field(field_type).type5(); }
 

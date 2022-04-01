@@ -75,8 +75,8 @@ struct MnNode {
 
   //----------
 
-  std::string node_to_name();
-  std::string node_to_type();
+  std::string name4();
+  std::string type5();
 
   typedef std::function<void(MnNode)> NodeVisitor;
 
@@ -396,9 +396,9 @@ struct MnFunc : public MnNode {
 
   std::string name() {
     if (sym == sym_field_expression) {
-      return as_field().node_to_name();
+      return as_field().name4();
     } else {
-      return node_to_name();
+      return name4();
     }
   }
 

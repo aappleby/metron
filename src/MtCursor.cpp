@@ -903,7 +903,7 @@ void MtCursor::emit(MnFuncDefinition n) {
   auto return_type = n.type();
   auto func_decl = n.decl();
 
-  current_function_name = func_decl.decl().node_to_name();
+  current_function_name = func_decl.decl().name4();
   in_task = return_type.match("void");
   in_func = !in_task;
   in_init = in_task && current_function_name.starts_with("init");
@@ -1199,7 +1199,7 @@ void MtCursor::emit_field_as_enum_class(MnFieldDecl n) {
 //------------------------------------------------------------------------------
 
 void MtCursor::emit_field_as_submod(MnFieldDecl n) {
-  std::string type_name = n.type().node_to_type();
+  std::string type_name = n.type5();
   auto submod_mod = lib->get_mod(type_name);
 
   auto node_type = n.child(0);  // type
@@ -1309,7 +1309,7 @@ void MtCursor::emit_output_ports(MnFieldDecl submod) {
   auto submod_decl = submod.child(1);  // decl
   auto submod_semi = submod.child(2);  // semi
 
-  std::string type_name = submod_type.node_to_type();
+  std::string type_name = submod_type.type5();
   auto submod_mod = lib->get_mod(type_name);
   output_count += (int)submod_mod->outputs.size();
 
@@ -1417,7 +1417,7 @@ void MtCursor::emit(MnFieldDecl n) {
     return;
   }
 
-  std::string type_name = n.type().node_to_type();
+  std::string type_name = n.type().type5();
 
   if (lib->has_mod(type_name)) {
     emit_field_as_submod(n);
@@ -1948,7 +1948,7 @@ void MtCursor::emit(MnDataType n) {
 void MtCursor::emit(MnIdentifier n) {
   assert(cursor == n.start());
 
-  auto name = n.node_to_name();
+  auto name = n.name4();
   auto it = id_replacements.find(name);
   if (it != id_replacements.end()) {
     emit_replacement(n, it->second.c_str());
@@ -1962,7 +1962,7 @@ void MtCursor::emit(MnIdentifier n) {
 void MtCursor::emit(MnTypeIdentifier n) {
   assert(cursor == n.start());
 
-  auto name = n.node_to_name();
+  auto name = n.name4();
   auto it = id_replacements.find(name);
   if (it != id_replacements.end()) {
     emit_replacement(n, it->second.c_str());

@@ -119,18 +119,18 @@ bool MnNode::match(const char* s) {
 
 //------------------------------------------------------------------------------
 
-std::string MnNode::node_to_name() {
+std::string MnNode::name4() {
   assert(!is_null());
 
   switch (sym) {
     case sym_qualified_identifier:
-      return child(child_count() - 1).node_to_name();
+      return child(child_count() - 1).name4();
 
     case sym_field_expression:
       return text();
 
     case sym_call_expression:
-      return get_field(field_function).node_to_name();
+      return get_field(field_function).name4();
 
     case alias_sym_type_identifier:
     case sym_identifier:
@@ -140,9 +140,9 @@ std::string MnNode::node_to_name() {
     case sym_field_declaration: {
       auto node_type = get_field(field_type);
       if (node_type.sym == sym_enum_specifier) {
-        return node_type.node_to_name();
+        return node_type.name4();
       } else {
-        return get_field(field_declarator).node_to_name();
+        return get_field(field_declarator).name4();
       }
     }
 
@@ -151,20 +151,20 @@ std::string MnNode::node_to_name() {
     case sym_optional_parameter_declaration:
     case sym_function_definition:
     case sym_function_declarator:
-      return get_field(field_declarator).node_to_name();
+      return get_field(field_declarator).name4();
 
     case sym_enum_specifier: {
       auto name = get_field(field_name);
       if (name.is_null()) {
         return "<anonymous enum>";
       } else {
-        return get_field(field_name).node_to_name();
+        return get_field(field_name).name4();
       }
     }
 
     case sym_struct_specifier:
     case sym_template_function:
-      return get_field(field_name).node_to_name();
+      return get_field(field_name).name4();
 
     case sym_primitive_type:
       return text();
@@ -175,18 +175,18 @@ std::string MnNode::node_to_name() {
   }
 }
 
-std::string MnNode::node_to_type() {
+std::string MnNode::type5() {
   switch (sym) {
     case alias_sym_type_identifier:
       return text();
     case sym_primitive_type:
       return text();
     case sym_field_declaration:
-      return get_field(field_type).node_to_type();
+      return get_field(field_type).type5();
     case sym_template_type:
-      return get_field(field_name).node_to_type();
+      return get_field(field_name).type5();
     case sym_enum_specifier:
-      return get_field(field_name).node_to_type();
+      return get_field(field_name).type5();
     default:
       error();
       return "";

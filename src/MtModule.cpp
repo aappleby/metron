@@ -476,7 +476,7 @@ void MtModule::collect_methods() {
 
     if (n.sym != sym_function_definition) continue;
     auto func_decl = n.get_field(field_declarator);
-    auto func_name = func_decl.get_field(field_declarator).node_to_name();
+    auto func_name = func_decl.get_field(field_declarator).name4();
     auto func_args = n.get_field(field_declarator).get_field(field_parameters);
     auto func_type = n.get_field(field_type);
 

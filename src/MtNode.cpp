@@ -81,7 +81,7 @@ bool MnNode::is_const() const {
 
 //------------------------------------------------------------------------------
 
-const char* MnNode::start() {
+const char* MnNode::start() const {
   assert(!is_null());
 
   auto a = &source->source[start_byte()];
@@ -98,14 +98,14 @@ const char* MnNode::start() {
   return a;
 }
 
-const char* MnNode::end() {
+const char* MnNode::end() const {
   assert(!is_null());
   auto b = &source->source[end_byte()];
   while (isspace(b[-1])) b--;
   return b;
 }
 
-std::string MnNode::text() { return std::string(start(), end()); }
+std::string MnNode::text() const { return std::string(start(), end()); }
 
 bool MnNode::match(const char* s) {
   assert(!is_null());
@@ -175,7 +175,7 @@ std::string MnNode::name4() {
   }
 }
 
-std::string MnNode::type5() {
+std::string MnNode::type5() const {
   switch (sym) {
     case alias_sym_type_identifier:
       return text();

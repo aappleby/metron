@@ -23,7 +23,7 @@ struct MtField {
 
   std::string name() { return node.name4(); }
 
-  std::string type_name() const { return node.get_field(field_type).type5(); }
+  std::string type_name() const { return node.type5(); }
 
   MnNode get_type_node() const { return node.get_field(field_type); }
   MnNode get_decl_node() const { return node.get_field(field_declarator); }

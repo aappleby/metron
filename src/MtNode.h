@@ -49,9 +49,9 @@ struct MnNode {
   uint32_t start_byte() const { return ts_node_start_byte(node); }
   uint32_t end_byte() const { return ts_node_end_byte(node); }
 
-  const char* start();
-  const char* end();
-  std::string text();
+  const char* start() const;
+  const char* end() const;
+  std::string text() const;
   bool match(const char* s);
 
   //----------
@@ -76,7 +76,7 @@ struct MnNode {
   //----------
 
   std::string name4();
-  std::string type5();
+  std::string type5() const;
 
   typedef std::function<void(MnNode)> NodeVisitor;
 

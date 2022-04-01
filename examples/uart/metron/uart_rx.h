@@ -8,6 +8,11 @@ class uart_rx {
  public:
   //----------------------------------------
 
+  // yosys doesn't appear to handle return values from functions at all
+  // verilator doesn't allow "return;" if the function has a return value
+  // even if you set it via "func_name = value;" first.
+
+
   logic<1> o_valid() const { return cursor == 1; }
   logic<8> o_buffer() const { return buffer; }
   logic<32> o_sum() const { return sum; }

@@ -173,7 +173,8 @@ void MtModule::dump_banner() const {
     return;
   }
 
-  LOG_Y("// Module %s\n", mod_name.c_str());
+  LOG_Y("// Module %s, rank %d", mod_name.c_str(), get_rank());
+  if (parents.empty()) LOG_Y(" ########## TOP ##########");
   LOG_Y("\n");
 
   //----------
@@ -550,7 +551,7 @@ void MtModule::collect_outputs() {
   std::set<std::string> dedup;
 
   for (auto f : all_fields) {
-    if (f->is_public && !f->is_submod() && !f->is_param()) {
+    if (f->is_public() && !f->is_submod() && !f->is_param()) {
       outputs.push_back(f);
     }
   }
@@ -584,7 +585,7 @@ void MtModule::collect_registers() {
       dedup.insert(lhs_name);
 
       auto field = get_field(lhs_name);
-      if (field && !field->is_public) registers.push_back(field);
+      if (field && !field->is_public()) registers.push_back(field);
     });
   }
 }

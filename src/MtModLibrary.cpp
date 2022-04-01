@@ -105,8 +105,16 @@ void MtModLibrary::process_sources() {
     }
   }
 
-  for (auto& mod : modules) mod->load_pass1();
-  for (auto& mod : modules) mod->load_pass2();
+  for (auto mod : modules) mod->load_pass1();
+  for (auto mod : modules) mod->load_pass2();
+
+  // Hook up child->parent module pointers
+  for (auto m : modules) {
+    for (auto s : m->submods) {
+      get_mod(s->type_name())->parents.push_back(m);
+    }
+  }
+
 
   // Verify that tick()/tock() obey read/write ordering rules.
   bool any_fail_dirty_check = false;

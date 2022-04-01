@@ -13,6 +13,7 @@ typedef logic[63:0] uint64_t;
 */
 
 /*verilator lint_off width*/
+/* verilator lint_off IGNOREDRETURN */
 
 `default_nettype none
 

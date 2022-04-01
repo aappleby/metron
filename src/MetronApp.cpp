@@ -66,9 +66,9 @@ int main(int argc, char** argv) {
 
   // -v -Rexamples/uart/metron -Oexamples/uart/metron_sv uart_top.h uart_hello.h uart_tx.h uart_rx.h
   // -v -Rexample_uart/rtl -Oexample_uart/generated uart_rx.h
-  // -v -Rexample_rvsimple/rtl -Oexample_rvsimple/generated alu.h
-  // -q -Rexample_rvsimple/rtl -Oexample_rvsimple/generated adder.h alu.h alu_control.h config.h constants.h control_transfer.h data_memory_interface.h example_data_memory.h example_data_memory_bus.h example_text_memory.h example_text_memory_bus.h immediate_generator.h instruction_decoder.h multiplexer.h multiplexer2.h multiplexer4.h multiplexer8.h regfile.h register.h riscv_core.h singlecycle_control.h singlecycle_ctlpath.h singlecycle_datapath.h toplevel.h
-  // -v -Rexample_rvtiny/rtl -Oexample_rvtiny/generated toplevel.h
+  // -v -Rexamples/rvsimple/metron -Oexamples/rvsimple/metron_sv alu.h
+  // -v -Rexamples/rvsimple/metron -Oexamples/rvsimple/metron_sv adder.h alu.h alu_control.h config.h constants.h control_transfer.h data_memory_interface.h example_data_memory.h example_data_memory_bus.h example_text_memory.h example_text_memory_bus.h immediate_generator.h instruction_decoder.h multiplexer.h multiplexer2.h multiplexer4.h multiplexer8.h regfile.h register.h riscv_core.h singlecycle_control.h singlecycle_ctlpath.h singlecycle_datapath.h toplevel.h
+  // -v -Rexamples/rvtiny/metron -Oexamples/rvtiny/metron_sv toplevel.h
 
   //----------
   // Parse args
@@ -171,6 +171,27 @@ int main(int argc, char** argv) {
       mod->dump_banner();
       mod->dump_deltas();
     }
+  }
+
+  std::function<void(MtModule*, int, bool)> step;
+  step = [&](MtModule* m, int rank, bool last) -> void {
+    for (int i = 0; i < rank - 1; i++) LOG_Y("|  ");
+    if (last) {
+      if (rank) LOG_Y("\\--");
+    }
+    else {
+      if (rank) LOG_Y("|--");
+    }
+    LOG_Y("%s\n", m->name().c_str());
+    auto submod_count = m->submods.size();
+    for (auto i = 0; i < submod_count; i++) {
+      auto s = m->submods[i];
+      step(library.get_mod(s->type_name()), rank + 1, i == submod_count - 1);
+    }
+  };
+
+  for (auto m : library.modules) {
+    if (m->parents.empty()) step(m, 0, false);
   }
 
 #if 1

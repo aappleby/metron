@@ -20,20 +20,20 @@ struct MtField {
 
   bool is_submod() const;
   bool is_param() const { return node.is_static() && node.is_const(); }
+  bool is_public() const { return _public; }
 
   std::string name() { return node.name4(); }
-
   std::string type_name() const { return node.type5(); }
 
   MnNode get_type_node() const { return node.get_field(field_type); }
   MnNode get_decl_node() const { return node.get_field(field_declarator); }
 
-  bool is_public = false;
 private:
-  MtField(const MnNode& n, bool is_public) : is_public(is_public), node(n) {
+  MtField(const MnNode& n, bool is_public) : _public(is_public), node(n) {
     assert(node.sym == sym_field_declaration || node.sym == sym_parameter_declaration);
   }
   MnNode node;
+  bool _public = false;
 };
 
 //------------------------------------------------------------------------------
@@ -111,6 +111,16 @@ struct MtModule {
     return mod_name;
   }
 
+  int get_rank() const {
+    if (parents.empty()) return 0;
+    int min_rank = 1000000;
+    for (auto p : parents) {
+      int r = p->get_rank();
+      if (r < min_rank) min_rank = r;
+    }
+    return min_rank + 1;
+  }
+
   //----------
 
   std::string mod_name;
@@ -119,6 +129,10 @@ struct MtModule {
   bool load_error = false;
   bool dirty_check_done = false;
   bool dirty_check_fail = false;
+
+  int mark = 0;
+
+  std::vector<MtModule*> parents;
 
   MnClassSpecifier mod_struct;
   MnTemplateDecl mod_template;

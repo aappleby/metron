@@ -1289,21 +1289,12 @@ void MtCursor::emit_output_ports(MnFieldDecl submod) {
 
   assert(at_newline);
 
-  //emit_indent();
-  //emit("// Submodule output port bindings");
-  //emit_newline();
-
-  int output_count = 0;
-
   auto submod_type = submod.child(0);  // type
   auto submod_decl = submod.child(1);  // decl
   auto submod_semi = submod.child(2);  // semi
 
   std::string type_name = submod_type.type5();
   auto submod_mod = lib->get_mod(type_name);
-  output_count += (int)submod_mod->outputs.size();
-
-  int output_index = 0;
 
   // Swap template arguments with the values from the template
   // instantiation.
@@ -1338,7 +1329,6 @@ void MtCursor::emit_output_ports(MnFieldDecl submod) {
     emit(";");
 
     emit_newline();
-    output_index++;
   }
 
   for (auto n : submod_mod->outputs) {
@@ -1360,7 +1350,6 @@ void MtCursor::emit_output_ports(MnFieldDecl submod) {
     emit(";");
 
     emit_newline();
-    output_index++;
   }
 
   for (auto getter : submod_mod->getters) {
@@ -1383,7 +1372,6 @@ void MtCursor::emit_output_ports(MnFieldDecl submod) {
     emit(";");
 
     emit_newline();
-    output_index++;
   }
 }
 
@@ -1405,13 +1393,6 @@ void MtCursor::emit(MnFieldDecl n) {
       n.type().child(2).sym == alias_sym_type_identifier) {
     emit_field_as_enum_class(n);
     return;
-  }
-
-  // Array members aren't appearing in registers...
-  auto field = current_mod->get_field(n.name4());
-  if (!field) {
-    field = current_mod->get_field(n.name4());
-    assert(field);
   }
 
   std::string type_name = n.type5();
@@ -1873,7 +1854,8 @@ void MtCursor::emit(MnNumberLiteral n, int size_cast) {
 //------------------------------------------------------------------------------
 // Change "return x" to "(funcname) = x" to match old Verilog return style.
 
-// FIXME this actually needs a return after it
+// FIXME FIXME FIXME WE NEED TO CHECK THAT THE RETURN DOESN'T EARLY OUT TO
+// MATCH VERILOG SEMANTICS
 
 void MtCursor::emit(MnReturnStatement n) {
   assert(cursor == n.start());
@@ -1895,28 +1877,14 @@ void MtCursor::emit(MnReturnStatement n) {
   emit("%s = ", current_method->name().c_str());
   emit_dispatch(node_expr);
   emit(";");
-  //emit_newline();
-  //emit_indent();
-  //emit("return;");
-  cursor = n.end();
 
+  // FIXME We can only emit a 'return' if we're in a task or function.
   /*
-  auto func_name = current_function_name;
-  node_stack.push_back(n);
-  for (auto c : (MtNode&)n) {
-    emit_ws();
-    switch (c.sym) {
-      case anon_sym_return:
-        emit_replacement(c, "%s =", func_name.c_str());
-        break;
-      default:
-        emit_dispatch(c);
-        break;
-    }
-  }
-  node_stack.pop_back();
+  emit_newline();
+  emit_indent();
+  emit("return;");
   */
-  assert(cursor == n.end());
+  cursor = n.end();
 }
 
 //------------------------------------------------------------------------------

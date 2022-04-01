@@ -494,6 +494,7 @@ void MtModule::collect_methods() {
     } else if (m->is_public && m->is_const && m->is_func) {
       getters.push_back(m);
     } else {
+      assert(m->is_func);
       func_methods.push_back(m);
     }
   }

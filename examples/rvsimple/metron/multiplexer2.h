@@ -13,7 +13,7 @@
 template <int WIDTH = 32>
 class multiplexer2 {
  public:
-  logic<WIDTH> out(logic<1> sel, logic<WIDTH> in0, logic<WIDTH> in1) {
+  logic<WIDTH> out(logic<1> sel, logic<WIDTH> in0, logic<WIDTH> in1) const {
     switch (sel) {
       case 0:  return in0;
       case 1:  return in1;

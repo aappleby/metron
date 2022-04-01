@@ -21,7 +21,7 @@ class immediate_generator {
   // U = { {1{inst[31]}},  inst[30:20], inst[19:12],                                      12'b0 };
   // J = { {12{inst[31]}},              inst[19:12], inst[20], inst[30:25], inst[24:21],  1'b0  };
 
-  logic<32> immediate(logic<32> inst) {
+  logic<32> immediate(logic<32> inst) const {
     using namespace rv_constants;
     switch (b7(inst)) { // Opcode
       // FIXME we need to translate fallthrough into "x, y, z:"?

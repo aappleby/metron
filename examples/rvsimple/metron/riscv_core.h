@@ -51,7 +51,7 @@ class riscv_core {
     datapath.init();
   }
 
-  logic<32> alu_result(logic<32> inst) {
+  logic<32> alu_result(logic<32> inst) const {
     logic<7> opcode = datapath.inst_opcode(inst);
     logic<3> funct3 = datapath.inst_funct3(inst);
     logic<7> funct7 = datapath.inst_funct7(inst);

@@ -13,7 +13,7 @@
 class alu {
  public:
 
-  logic<32> result(logic<5> alu_function, logic<32> operand_a, logic<32> operand_b) {
+  logic<32> result(logic<5> alu_function, logic<32> operand_a, logic<32> operand_b) const {
     using namespace rv_constants;
 
     switch (alu_function) {

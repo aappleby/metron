@@ -43,7 +43,7 @@ class singlecycle_datapath {
 
   //----------------------------------------
 
-  logic<32> alu_result(logic<32> inst, logic<5> alu_function, logic<1> alu_operand_a_select, logic<1> alu_operand_b_select) {
+  logic<32> alu_result(logic<32> inst, logic<5> alu_function, logic<1> alu_operand_a_select, logic<1> alu_operand_b_select) const {
     logic<5> rs1_idx = idec.inst_rs1(inst);
     logic<5> rs2_idx = idec.inst_rs2(inst);
 

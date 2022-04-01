@@ -437,6 +437,7 @@ void MtModule::collect_methods() {
     auto func_args = func_decl.get_field(field_parameters);
 
     bool is_task = func_type.text() == "void";
+    bool is_func = !is_task;
     bool is_init = is_task && func_name.starts_with("init");
     bool is_tick = is_task && func_name.starts_with("tick");
     bool is_tock = is_task && func_name.starts_with("tock");
@@ -475,7 +476,7 @@ void MtModule::collect_methods() {
       tock_methods.push_back(new_method);
     } else if (is_task) {
       task_methods.push_back(new_method);
-    } else if (in_public) {
+    } else if (in_public && is_const && is_func) {
       getters.push_back(new_method);
     } else {
       func_methods.push_back(new_method);

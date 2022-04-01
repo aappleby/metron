@@ -107,6 +107,10 @@ struct MtModule {
   void check_dirty_ticks();
   void check_dirty_tocks();
 
+  std::string name() const {
+    return mod_name;
+  }
+
   //----------
 
   std::string mod_name;

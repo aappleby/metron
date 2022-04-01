@@ -123,8 +123,6 @@ struct MtCursor {
 
   bool quiet = true;
 
-  int in_module_or_package = 0;
-
   bool in_public = false;
 
   bool trim_namespaces = true;

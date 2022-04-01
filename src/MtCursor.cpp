@@ -1457,18 +1457,9 @@ void MtCursor::emit(MnClassSpecifier n) {
 
   //----------
 
-  if (!in_module_or_package) {
-    assert(!current_mod);
-    for (auto mod : source_file->modules) {
-      if (mod->mod_name == struct_name.text()) {
-        current_mod = mod;
-        break;
-      }
-    }
-    assert(current_mod);
-  }
-
-  in_module_or_package++;
+  auto old_mod = current_mod;
+  current_mod = source_file->get_module(struct_name.text());
+  assert(current_mod);
 
   emit_indent();
   emit_replacement(struct_lit, "module");
@@ -1641,11 +1632,7 @@ void MtCursor::emit(MnClassSpecifier n) {
 
   cursor = n.end();
 
-  in_module_or_package--;
-
-  if (!in_module_or_package) {
-    current_mod = nullptr;
-  }
+  current_mod = old_mod;
 
   node_stack.pop_back();
   assert(cursor == n.end());
@@ -1983,6 +1970,7 @@ void MtCursor::emit(MnTemplateDecl n) {
   auto struct_specifier = MnClassSpecifier(n.child(2));
   std::string struct_name = struct_specifier.get_field(field_name).text();
 
+  /*
   if (!in_module_or_package) {
     assert(!current_mod);
     for (auto mod : source_file->modules) {
@@ -1993,18 +1981,15 @@ void MtCursor::emit(MnTemplateDecl n) {
     }
     assert(current_mod);
   }
-
-  in_module_or_package++;
+  */
+  auto old_mod = current_mod;
+  current_mod = source_file->get_module(struct_name);
 
   cursor = struct_specifier.start();
   emit(struct_specifier);
   cursor = n.end();
 
-  in_module_or_package--;
-
-  if (!in_module_or_package) {
-    current_mod = nullptr;
-  }
+  current_mod = old_mod;
   assert(cursor == n.end());
 }
 
@@ -2288,7 +2273,6 @@ void MtCursor::emit(MnSizedTypeSpec n) {
 void MtCursor::emit(MnNamespaceDef n) {
   assert(cursor == n.start());
 
-  in_module_or_package++;
   auto node_name = n.get_field(field_name);
   auto node_body = n.get_field(field_body);
 
@@ -2310,7 +2294,6 @@ void MtCursor::emit(MnNamespaceDef n) {
 
   emit_indent();
   cursor = n.end();
-  in_module_or_package++;
 }
 
 //------------------------------------------------------------------------------

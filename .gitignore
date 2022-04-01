@@ -9,3 +9,5 @@ vivado*.jou
 *__verFiles.dat
 *__ver.d
 *.vcd
+*__ALL.a
+*__ALL.o

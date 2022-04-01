@@ -98,6 +98,9 @@ MtModule::MtModule(MtSourceFile *source_file, MnClassSpecifier node)
 //------------------------------------------------------------------------------
 
 MtMethod *MtModule::get_method(const std::string &name) {
+  for (auto n : all_methods)
+    if (n->name == name) return n;
+  /*
   for (auto n : getters)
     if (n->name == name) return n;
   for (auto n : init_methods)
@@ -110,6 +113,7 @@ MtMethod *MtModule::get_method(const std::string &name) {
     if (n->name == name) return n;
   for (auto n : func_methods)
     if (n->name == name) return n;
+  */
   return nullptr;
 }
 

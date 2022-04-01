@@ -232,7 +232,7 @@ void MnNode::dump_node(int index, int depth) const {
 
   if (field) printf("%s: ", ts_language_field_name_for_id(source->lang, field));
 
-  printf("%s = ", is_named() ? type() : "lit");
+  printf("%s = ", is_named() ? ts_node_type() : "lit");
 
   if (!child_count()) print_escaped(source->source, start_byte(), end_byte());
 

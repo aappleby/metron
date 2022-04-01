@@ -2577,7 +2577,7 @@ void MtCursor::emit_dispatch(MnNode n) {
       else if (passthru_syms.contains(n.sym)) {
         emit_text(n);
       } else {
-        printf("Don't know what to do with %d %s\n", n.sym, n.type());
+        printf("Don't know what to do with %d %s\n", n.sym, n.ts_node_type());
         n.error();
       }
       break;

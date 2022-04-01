@@ -45,7 +45,7 @@ struct MnNode {
     return *this;
   }
 
-  const char* type() const { return ts_node_type(node); }
+  const char* ts_node_type() const { return ::ts_node_type(node); }
   uint32_t start_byte() const { return ts_node_start_byte(node); }
   uint32_t end_byte() const { return ts_node_end_byte(node); }
 

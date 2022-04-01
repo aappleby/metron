@@ -409,16 +409,16 @@ void MtModule::collect_fields() {
 void MtModule::collect_methods() {
   assert(all_methods.empty());
 
-  bool in_public = false;
+  bool is_public = false;
   auto mod_body = mod_struct.get_field(field_body).check_null();
   for (auto n : mod_body) {
     if (n.sym == sym_access_specifier) {
       if (n.child(0).text() == "public") {
-        in_public = true;
+        is_public = true;
       } else if (n.child(0).text() == "protected") {
-        in_public = false;
+        is_public = false;
       } else if (n.child(0).text() == "private") {
-        in_public = false;
+        is_public = false;
       } else {
         n.dump_tree();
         debugbreak();
@@ -463,25 +463,37 @@ void MtModule::collect_methods() {
     new_method->is_func = !is_task;
     new_method->is_tick = is_tick;
     new_method->is_tock = is_tock;
-    new_method->is_public = in_public;
+    new_method->is_public = is_public;
     new_method->is_const = is_const;
 
     all_methods.push_back(new_method);
 
     if (is_init) {
+      if (is_const || is_func || !is_public) {
+        printf("CONST INIT BAD / INIT WITH RETURN VALUE BAD / PRIVATE INIT BAD\n");
+        exit(-1);
+      }
       init_methods.push_back(new_method);
     } else if (is_tick) {
-      if (in_public) {
+      if (is_public) {
         printf("PUBLIC TICK METHOD BAD!\n");
         exit(-1);
 
       }
       tick_methods.push_back(new_method);
     } else if (is_tock) {
+      if (is_const) {
+        printf("CONST TOCK METHOD BAD!\n");
+        exit(-1);
+      }
       tock_methods.push_back(new_method);
     } else if (is_task) {
+      if (is_const) {
+        printf("CONST TASK FUNCTION BAD!\n");
+        exit(-1);
+      }
       task_methods.push_back(new_method);
-    } else if (in_public && is_const && is_func) {
+    } else if (is_public && is_const && is_func) {
       getters.push_back(new_method);
     } else {
       func_methods.push_back(new_method);

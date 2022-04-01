@@ -436,7 +436,7 @@ void MtModule::collect_methods() {
     auto func_name = func_decl.get_field(field_declarator).name4();
     auto func_args = func_decl.get_field(field_parameters);
 
-    bool is_task = func_type.text() == "void";
+    bool is_task = func_type && func_type.text() == "void";
     bool is_func = !is_task;
     bool is_init = is_task && func_name.starts_with("init");
     bool is_tick = is_task && func_name.starts_with("tick");

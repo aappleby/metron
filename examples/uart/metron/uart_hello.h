@@ -5,7 +5,9 @@
 
 class uart_hello {
  public:
-  void init() { readmemh("examples/uart/message.hex", memory, 0, 511); }
+  uart_hello() {
+    readmemh("examples/uart/message.hex", memory, 0, 511);
+  }
 
   //----------------------------------------
 

@@ -167,6 +167,7 @@ void MtCursor::emit_ws_to_newline() {
 //----------------------------------------
 
 void MtCursor::skip_over(MnNode n) {
+  if (n.is_null()) return;
   assert(cursor == n.start());
   cursor = n.end();
   line_elided = true;
@@ -900,10 +901,10 @@ void MtCursor::emit(MnFuncDefinition n) {
   assert(cursor == n.start());
   node_stack.push_back(n);
 
-  auto return_type = n.type();
+  auto return_type = n.get_field(field_type);
   auto func_decl = n.decl();
 
-  current_function_name = func_decl.decl().name4();
+  current_function_name = n.name4();
   in_task = return_type.match("void");
   in_func = !in_task;
   in_init = in_task && current_function_name.starts_with("init");

@@ -8,7 +8,6 @@ int main(int argc, char** arv) {
 
   const int cycles_per_bit = 3;
   uart_top<cycles_per_bit> top;
-  top.init();
   top.tock(0);
 
   for (int cycle = 0; cycle < 20000; cycle++) {

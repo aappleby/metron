@@ -9,9 +9,9 @@
 template <int cycles_per_bit = 3>
 class uart_top {
  public:
-  void init() {
+  uart_top() {
     write("uart_top.init()\n");
-    hello.init();
+    //hello.init();
   }
 
   //----------------------------------------

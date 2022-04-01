@@ -108,7 +108,7 @@ const char* MnNode::end() const {
 std::string MnNode::text() const { return std::string(start(), end()); }
 
 bool MnNode::match(const char* s) {
-  assert(!is_null());
+  if (is_null()) return false;
   const char* a = start();
   const char* b = end();
   while (a != b) {

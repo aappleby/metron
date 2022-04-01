@@ -14,7 +14,9 @@ module uart_hello
   output logic o_done
 );
  /*public:*/
-  initial begin : init $readmemh("examples/uart/message.hex", memory, 0, 511); end
+  always_comb begin
+    $readmemh("examples/uart/message.hex", memory, 0, 511);
+  end
 
   //----------------------------------------
 

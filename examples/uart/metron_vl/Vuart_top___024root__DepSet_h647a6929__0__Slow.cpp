@@ -6,11 +6,13 @@
 
 #include "Vuart_top___024root.h"
 
-VL_ATTR_COLD void Vuart_top___024root___initial__TOP__0(Vuart_top___024root* vlSelf) {
+VL_ATTR_COLD void Vuart_top___024root___settle__TOP__0(Vuart_top___024root* vlSelf) {
     if (false && vlSelf) {}  // Prevent unused
     Vuart_top__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    VL_DEBUG_IF(VL_DBG_MSGF("+    Vuart_top___024root___initial__TOP__0\n"); );
+    VL_DEBUG_IF(VL_DBG_MSGF("+    Vuart_top___024root___settle__TOP__0\n"); );
     // Init
+    CData/*7:0*/ uart_top__DOT__tock__DOT__hello_data;
+    CData/*0:0*/ uart_top__DOT__tock__DOT__hello_req;
     VlWide<7>/*223:0*/ __Vtemp_hb501911b__0;
     // Body
     VL_WRITEF("uart_top.init()\n");
@@ -24,16 +26,6 @@ VL_ATTR_COLD void Vuart_top___024root___initial__TOP__0(Vuart_top___024root* vlS
     VL_READMEM_N(true, 8, 512, 0, VL_CVT_PACK_STR_NW(7, __Vtemp_hb501911b__0)
                  ,  &(vlSelf->uart_top__DOT__hello__DOT__memory)
                  , 0U, 0x1ffU);
-}
-
-VL_ATTR_COLD void Vuart_top___024root___settle__TOP__0(Vuart_top___024root* vlSelf) {
-    if (false && vlSelf) {}  // Prevent unused
-    Vuart_top__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    VL_DEBUG_IF(VL_DBG_MSGF("+    Vuart_top___024root___settle__TOP__0\n"); );
-    // Init
-    CData/*7:0*/ uart_top__DOT__tock__DOT__hello_data;
-    CData/*0:0*/ uart_top__DOT__tock__DOT__hello_req;
-    // Body
     vlSelf->o_data = vlSelf->uart_top__DOT__rx__DOT__buffer;
     vlSelf->o_valid = (1U == (IData)(vlSelf->uart_top__DOT__rx__DOT__cursor));
     vlSelf->o_sum = vlSelf->uart_top__DOT__rx__DOT__sum;
@@ -52,7 +44,6 @@ VL_ATTR_COLD void Vuart_top___024root___eval_initial(Vuart_top___024root* vlSelf
     Vuart_top__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     VL_DEBUG_IF(VL_DBG_MSGF("+    Vuart_top___024root___eval_initial\n"); );
     // Body
-    Vuart_top___024root___initial__TOP__0(vlSelf);
     vlSelf->__Vclklast__TOP__clock = vlSelf->clock;
 }
 

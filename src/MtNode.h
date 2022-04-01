@@ -328,7 +328,18 @@ struct MnFuncDefinition : public MnNode {
     check_sym(sym_function_definition);
   }
 
-  MnDataType type() { return MnDataType(get_field(field_type)); }
+  /*
+  bool has_type() const {
+    auto node_type = get_field(field_type);
+    return !node_type.is_null();
+  }
+
+  MnDataType type() {
+    auto node_type = get_field(field_type);
+    return node_type.is_null() ? MnNode::null : node_type;
+  }
+  */
+
   MnFuncDeclarator decl() {
     return MnFuncDeclarator(get_field(field_declarator));
   }

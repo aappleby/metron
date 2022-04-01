@@ -113,8 +113,6 @@ void MtModLibrary::process_sources() {
 
   for (auto& mod : modules) {
 
-    // FIXME DON"T CHECK IN LIKE THIS
-
     mod->check_dirty_ticks();
     mod->check_dirty_tocks();
 

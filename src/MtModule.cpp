@@ -145,25 +145,7 @@ MtField* MtModule::get_submod(const std::string &name) {
 
 //------------------------------------------------------------------------------
 
-void MtModule::dump_method_list(std::vector<MtMethod> &methods) {
-  for (auto &n : methods) {
-    LOG_INDENT_SCOPE();
-    LOG_R("%s(", n.name.c_str());
-
-    if (n.params.size()) {
-      int param_count = int(n.params.size());
-      int param_index = 0;
-
-      for (auto &param : n.params) {
-        LOG_R("%s", param.c_str());
-        if (param_index++ != param_count - 1) LOG_C(", ");
-      }
-    }
-    LOG_R(")\n");
-  }
-}
-
-void MtModule::dump_method_list2(const std::vector<MtMethod *> &methods) {
+void MtModule::dump_method_list(const std::vector<MtMethod *> &methods) const {
   for (auto n : methods) {
     LOG_INDENT_SCOPE();
     LOG_R("%s(", n->name.c_str());
@@ -183,7 +165,7 @@ void MtModule::dump_method_list2(const std::vector<MtMethod *> &methods) {
 
 //------------------------------------------------------------------------------
 
-void MtModule::dump_banner() {
+void MtModule::dump_banner() const {
   LOG_Y("//----------------------------------------\n");
   if (mod_struct.is_null()) {
     LOG_Y("// Package %s\n", source_file->full_path.c_str());
@@ -210,7 +192,7 @@ void MtModule::dump_banner() {
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
   if (!getters.empty()) {
     LOG_B("Getters:\n");
-    dump_method_list2(getters);
+    dump_method_list(getters);
   }
   LOG_B("Regs:\n");
   for (auto n : registers)
@@ -224,15 +206,15 @@ void MtModule::dump_banner() {
   //----------
 
   LOG_B("Init methods:\n");
-  dump_method_list2(init_methods);
+  dump_method_list(init_methods);
   LOG_B("Tick methods:\n");
-  dump_method_list2(tick_methods);
+  dump_method_list(tick_methods);
   LOG_B("Tock methods:\n");
-  dump_method_list2(tock_methods);
+  dump_method_list(tock_methods);
   LOG_B("Tasks:\n");
-  dump_method_list2(task_methods);
+  dump_method_list(task_methods);
   LOG_B("Functions:\n");
-  dump_method_list2(func_methods);
+  dump_method_list(func_methods);
 
   //----------
 
@@ -245,7 +227,7 @@ void MtModule::dump_banner() {
 
 //------------------------------------------------------------------------------
 
-void MtModule::dump_deltas() {
+void MtModule::dump_deltas() const {
   if (mod_struct.is_null()) return;
 
   LOG_G("%s\n", mod_name.c_str());
@@ -360,8 +342,7 @@ void MtModule::load_pass1() {
 //------------------------------------------------------------------------------
 
 void MtModule::collect_params() {
-  assert(modparams.empty());
-
+  // modparam = struct template parameter
   if (mod_template) {
     auto params = mod_template.get_field(field_parameters);
 
@@ -445,45 +426,52 @@ void MtModule::collect_methods() {
     }
 
     if (n.sym != sym_function_definition) continue;
-    auto func_decl = n.get_field(field_declarator);
-    auto func_name = func_decl.get_field(field_declarator).name4();
-    auto func_args = n.get_field(field_declarator).get_field(field_parameters);
-    auto func_type = n.get_field(field_type);
 
-    bool is_task = func_type.match("void");
+    n.dump_tree();
+
+    auto func_type = n.get_field(field_type);
+    auto func_decl = n.get_field(field_declarator);
+    auto func_body = n.get_field(field_body);
+
+    auto func_name = func_decl.get_field(field_declarator).name4();
+    auto func_args = func_decl.get_field(field_parameters);
+
+    bool is_task = func_type.text() == "void";
     bool is_init = is_task && func_name.starts_with("init");
     bool is_tick = is_task && func_name.starts_with("tick");
     bool is_tock = is_task && func_name.starts_with("tock");
 
-    MtMethod *new_method2 = MtMethod::construct(n, this, source_file->lib);
-    new_method2->name = n.get_field(field_declarator).get_field(field_declarator).text();
-    auto method_params = n.get_field(field_declarator).get_field(field_parameters);
-    for (int i = 0; i < method_params.named_child_count(); i++) {
-      auto param = method_params.named_child(i);
+    MtMethod *new_method = MtMethod::construct(n, this, source_file->lib);
+    new_method->name = n.get_field(field_declarator).get_field(field_declarator).text();
+    for (int i = 0; i < func_args.named_child_count(); i++) {
+      auto param = func_args.named_child(i);
       assert (param.sym == sym_parameter_declaration);
       auto param_name = param.get_field(field_declarator).text();
-      new_method2->params.push_back(param_name);
+      new_method->params.push_back(param_name);
     }
 
-    all_methods.push_back(new_method2);
+    new_method->is_task = is_task;
+    new_method->is_func = !is_task;
+    new_method->is_tick = is_tick;
+    new_method->is_tock = is_tock;
+    new_method->is_public = in_public;
+
+    all_methods.push_back(new_method);
 
     if (is_init) {
-      init_methods.push_back(new_method2);
+      init_methods.push_back(new_method);
     } else if (is_tick) {
-      tick_methods.push_back(new_method2);
+      tick_methods.push_back(new_method);
     } else if (is_tock) {
-      tock_methods.push_back(new_method2);
+      tock_methods.push_back(new_method);
     } else if (is_task) {
-      task_methods.push_back(new_method2);
+      task_methods.push_back(new_method);
     } else if (in_public) {
-      getters.push_back(new_method2);
+      getters.push_back(new_method);
     } else {
-      func_methods.push_back(new_method2);
+      func_methods.push_back(new_method);
     }
   }
-
-  for (auto n : tick_methods) n->is_tick = true;
-  for (auto n : tock_methods) n->is_tock = true;
 }
 
 //------------------------------------------------------------------------------
@@ -494,37 +482,6 @@ void MtModule::build_call_tree() {}
 // Collect all inputs to all tick and tock methods and merge them into a list of
 // input ports. Input ports can be declared in multiple tick/tock methods, but
 // we don't want duplicates in the Verilog port list.
-
-/*
-void MtModule::build_port_map() {
-
-  port_map = new std::map<std::string, std::string>();
-
-  mod_struct.visit_tree([&](MtNode child) {
-    if (child.sym != sym_call_expression) return;
-    if (child.get_field(field_function).sym != sym_field_expression) return;
-
-    auto call = node_to_call(child);
-
-    if (!call.method) {
-      child.dump_tree();
-    }
-    assert(call.method);
-
-
-    for (auto i = 0; i < call.args->size(); i++) {
-      auto key = call.submod->name() + "." + call.method->params->at(i);
-      auto val = call.args->at(i);
-      auto it = port_map->find(key);
-      if (it != port_map->end()) {
-        assert((*it).second == val);
-      } else {
-        port_map->insert({key, val});
-      }
-    }
-  });
-}
-*/
 
 void MtModule::collect_inputs() {
   assert(inputs.empty());

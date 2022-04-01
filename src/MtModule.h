@@ -88,10 +88,9 @@ struct MtModule {
   void load_pass1();
   void load_pass2();
 
-  void dump_method_list(std::vector<MtMethod>& methods);
-  void dump_method_list2(const std::vector<MtMethod*>& methods);
-  void dump_banner();
-  void dump_deltas();
+  void dump_method_list(const std::vector<MtMethod*>& methods) const;
+  void dump_banner() const;
+  void dump_deltas() const;
 
   void collect_params();
   void collect_fields();
@@ -122,7 +121,7 @@ struct MtModule {
   MnTemplateParamList mod_param_list;
 
   std::vector<MtParam*> modparams;
-  std::vector<MtParam*> localparams;
+  std::vector<MtParam*> localparams; // FIXME not actually doing anything with this yet?
 
   std::vector<MtEnum*> enums;
 

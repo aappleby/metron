@@ -87,9 +87,12 @@ struct MtMethod {
   std::vector<std::string> params;
   MtDelta* delta = nullptr;
 
+  bool is_task = false;
+  bool is_func = false;
+  bool is_root = true;
   bool is_tick = false;
   bool is_tock = false;
-  bool is_root = true;
+  bool is_public = false;
 
   void update_delta();
 

@@ -229,9 +229,9 @@ void MtModule::dump_banner() {
   //----------
 
   LOG_B("Modparams:\n")
-  for (auto param : modparams) LOG_G("  %s\n", param->name().c_str());
+  for (auto param : modparams) LOG_G("  %s\n", param->name3().c_str());
   LOG_B("Localparams:\n");
-  for (auto param : localparams) LOG_G("  %s\n", param->name().c_str());
+  for (auto param : localparams) LOG_G("  %s\n", param->name3().c_str());
   LOG_B("Enums:\n");
   for (auto n : enums) LOG_G("  %s\n", n->name().c_str());
   LOG_B("Inputs:\n");
@@ -690,6 +690,8 @@ void MtModule::load_pass2() {
 }
 
 //------------------------------------------------------------------------------
+// Go through all calls in the tree and build a {call_param -> arg} map.
+// FIXME we aren't actually using this now?
 
 void MtModule::build_port_map() {
   assert(port_map.empty());
@@ -729,8 +731,17 @@ void MtModule::build_port_map() {
     auto arg_count = node_args.named_child_count();
 
     for (auto i = 0; i < arg_count; i++) {
-      auto key = call_member->name() + "." + call_method->params[i];
-      std::string val = node_args.named_child(i).text();
+      //auto key = call_member->name() + "." + call_method->params[i];
+      auto key = call_member->name() + "_" + call_method->name + "_" + call_method->params[i];
+      
+      //std::string val = node_args.named_child(i).text();
+
+      std::string val;
+      MtCursor cursor(source_file->lib, source_file, &val);
+      auto arg_node = node_args.named_child(i);
+      cursor.cursor = arg_node.start();
+      cursor.emit_dispatch(arg_node);
+
 
       auto it = port_map.find(key);
       if (it != port_map.end()) {

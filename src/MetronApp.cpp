@@ -173,6 +173,7 @@ int main(int argc, char** argv) {
     }
   }
 
+#if 1
   //----------
   // Emit all modules.
   for (auto& source_file : library.source_files)
@@ -214,6 +215,7 @@ int main(int argc, char** argv) {
       }
     }
   }
+#endif
 
   return 0;
 }

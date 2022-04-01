@@ -1215,7 +1215,7 @@ void MtCursor::emit_field_as_submod(MnFieldDecl n) {
   if (args) {
     int arg_count = args.named_child_count();
     for (int i = 0; i < arg_count; i++) {
-      auto key = submod_mod->modparams[i]->name();
+      auto key = submod_mod->modparams[i]->name3();
       auto val = args.named_child(i).text();
       replacements[key] = val;
     }
@@ -1323,7 +1323,7 @@ void MtCursor::emit_output_ports(MnFieldDecl submod) {
   if (args) {
     int arg_count = args.named_child_count();
     for (int i = 0; i < arg_count; i++) {
-      auto key = submod_mod->modparams[i]->name();
+      auto key = submod_mod->modparams[i]->name3();
       auto val = args.named_child(i).text();
       replacements[key] = val;
     }

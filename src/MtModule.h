@@ -62,18 +62,8 @@ private:
 struct MtParam {
   static MtParam* construct(const MnNode& n) { return new MtParam(n); }
 
-  std::string name() {
-    if (node.sym == sym_parameter_declaration) {
-      return node.get_field(field_declarator).text();
-    } else if (node.sym == sym_optional_parameter_declaration) {
-      return node.get_field(field_declarator).text();
-    } else if (node.sym == sym_field_declaration) {
-      return node.get_field(field_declarator).text();
-    } else {
-      node.dump_tree();
-      debugbreak();
-      return "";
-    }
+  std::string name3() {
+    return node.get_field(field_declarator).text();
   }
 
 private:

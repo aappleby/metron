@@ -471,6 +471,11 @@ void MtModule::collect_methods() {
     if (is_init) {
       init_methods.push_back(new_method);
     } else if (is_tick) {
+      if (in_public) {
+        printf("PUBLIC TICK METHOD BAD!\n");
+        exit(-1);
+
+      }
       tick_methods.push_back(new_method);
     } else if (is_tock) {
       tock_methods.push_back(new_method);

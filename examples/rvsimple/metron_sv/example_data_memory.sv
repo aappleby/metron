@@ -33,6 +33,12 @@ module example_data_memory
     q = mem[address];
   end
 
+  always_comb begin : tock
+    /*tick(address, wren, byteena, data)*/;
+  end
+
+/*private:*/
+
   task tick(); 
     if (wren) begin
       logic[31:0] mask;
@@ -46,7 +52,6 @@ module example_data_memory
   endtask
   always_ff @(posedge clock) tick();
 
-/*private:*/
   logic[31:0] mem[2**(DATA_BITS - 2)];
 
 endmodule;

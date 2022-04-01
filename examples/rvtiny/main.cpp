@@ -29,10 +29,10 @@ TestResults test_instruction(const char* test_name, const int reps, const int ti
 
   auto time_a = timestamp();
   for (int rep = 0; rep < reps; rep++) {
-    top.tick(1);
+    top.tock(1);
     total_tocks++;
     for (time = 0; time < timeout; time++) {
-      top.tick(0);
+      top.tock(0);
       total_tocks++;
 
       if (top.o_bus_write_enable && top.o_bus_address == 0xfffffff0) {

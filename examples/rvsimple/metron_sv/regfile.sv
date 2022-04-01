@@ -23,27 +23,24 @@ module regfile
 );
  /*public:*/
   // Register x0 is always 0
-  initial begin : init
-    regs[0] = 32'd0;
+  initial begin : init regs[0] = 32'd0; end
+
+  always_comb begin rs1_data = regs[rs1_address]; end
+  always_comb begin rs2_data = regs[rs2_address]; end
+
+  always_comb begin : tock
+    /*tick(write_enable, rd_address, rd_data)*/;
   end
 
-  always_comb begin
-    rs1_data = regs[rs1_address];
-  end
-
-  always_comb begin
-    rs2_data = regs[rs2_address];
-  end
-
-  // Write port for rd
+ /*private:*/
   task tick(); 
+    // Write port for rd
     if (write_enable && rd_address != 5'd0) begin
       regs[rd_address] = rd_data;
     end
   endtask
   always_ff @(posedge clock) tick();
 
- /*private:*/
   // 32 registers of 32-bit width
   logic[31:0] regs[32];
 endmodule;

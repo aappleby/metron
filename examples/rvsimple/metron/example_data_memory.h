@@ -24,6 +24,12 @@ public:
     return mem[address];
   }
 
+  void tock(logic<DATA_BITS - 2> address, logic<1> wren, logic<4> byteena, logic<32> data) {
+    tick(address, wren, byteena, data);
+  }
+
+private:
+
   void tick(logic<DATA_BITS - 2> address, logic<1> wren, logic<4> byteena, logic<32> data) {
     if (wren) {
       logic<32> mask = 0;
@@ -35,7 +41,6 @@ public:
     }
   }
 
-private:
   logic<32> mem[pow2(DATA_BITS - 2)];
 
 };

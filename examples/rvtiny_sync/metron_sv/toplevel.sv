@@ -52,6 +52,14 @@ module toplevel
     $readmemh(s, data_mem);
   end
 
+  always_comb begin : tock
+    /*tick(reset)*/;
+  end
+
+  //----------------------------------------
+
+/*private:*/
+
   task tick(); 
     if (reset) begin
       pc <= 0;
@@ -246,9 +254,6 @@ module toplevel
   endtask
   always_ff @(posedge clock) tick();
 
-  //----------------------------------------
-
-/*private:*/
   logic[31:0] pc;
   logic[1:0]  phase;
   logic[31:0] inst;

@@ -57,7 +57,11 @@ int run_test(const char* test_name, const int reps) {
 //------------------------------------------------------------------------------
 
 int main(int argc, const char** argv) {
-  const int reps = 100000;
+#ifdef _DEBUG
+  const int reps = 1;
+#else
+  const int reps = 1000;
+#endif
   LOG_B("Starting %s @ %d reps...\n", argv[0], reps);
 
   const char* instructions[38] = {

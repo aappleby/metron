@@ -39,6 +39,14 @@ class toplevel {
     readmemh(s, data_mem);
   }
 
+  void tock(logic<1> reset) {
+    tick(reset);
+  }
+
+  //----------------------------------------
+
+private:
+
   void tick(logic<1> reset) {
     if (reset) {
       pc = 0;
@@ -207,9 +215,6 @@ class toplevel {
     }
   }
 
-  //----------------------------------------
-
-private:
   logic<32> pc;
   logic<2>  phase;
   logic<32> inst;

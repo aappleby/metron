@@ -92,7 +92,7 @@ inst_funct7 = idec_inst_funct7; end
     alu_result = alu_core_result;
   end
 
-  always_comb begin : tocktick_regs
+  always_comb begin : tock
     logic[31:0] pc_plus_4;
     logic[31:0] pc_plus_imm;
     logic[31:0] pc_data;
@@ -114,7 +114,7 @@ inst_funct7 = idec_inst_funct7; end
     program_counter_reset = reset;
     program_counter_write_enable = pc_write_enable;
     program_counter_next = pc_data;
-    /*program_counter.tick(reset, pc_write_enable, pc_data);*/
+    /*program_counter.tock(reset, pc_write_enable, pc_data);*/
 
     mux_reg_writeback_sel = reg_writeback_select;
     mux_reg_writeback_in0 = alu_result2;
@@ -131,7 +131,7 @@ inst_funct7 = idec_inst_funct7; end
     regs_rd_address = idec_inst_rd;
     regs_rd_data = reg_data;
     idec_inst = inst;
-    /*regs.tick(regfile_write_enable, idec.inst_rd(inst), reg_data);*/
+    /*regs.tock(regfile_write_enable, idec.inst_rd(inst), reg_data);*/
   end
 
 

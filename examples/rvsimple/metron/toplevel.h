@@ -53,8 +53,8 @@ class toplevel {
     o_bus_write_enable = write_enable;
     o_pc = pc;
 
-    data_memory_bus.tocktick(alu_result2, write_enable, byte_enable, write_data);
-    core.tocktick_regs(reset, inst, read_data, alu_result2);
+    data_memory_bus.tock(alu_result2, write_enable, byte_enable, write_data);
+    core.tock(reset, inst, read_data, alu_result2);
   }
 
   //----------------------------------------

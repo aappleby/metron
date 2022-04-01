@@ -24,9 +24,16 @@ module single_register
 
   initial begin : init value = INITIAL; end
 
+  always_comb begin : tock
+    /*tick(reset, write_enable, next)*/;
+  end
+
+ /*private:*/
   task tick(); 
-    if (reset) value <= INITIAL;
-    else if (write_enable) value <= next;
+    if (reset)
+      value <= INITIAL;
+    else if (write_enable)
+      value <= next;
   endtask
   always_ff @(posedge clock) tick();
 endmodule

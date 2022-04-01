@@ -97,7 +97,7 @@ module riscv_core
     alu_result = datapath_alu_result;
   end
 
-  always_comb begin : tocktick_regs
+  always_comb begin : tock
     logic[6:0] opcode;
     logic[2:0] funct3;
     logic reg_we;
@@ -133,7 +133,7 @@ module riscv_core
     datapath_alu_result2 = alu_result2;
     datapath_next_pc_select = pc_select;
     datapath_pc_write_enable = pc_we;
-    /*datapath.tocktick_regs(
+    /*datapath.tock(
       reset,
       inst,
       reg_we,

@@ -77,16 +77,12 @@ struct MtModule {
   MtModule(MtSourceFile* source_file, MnTemplateDecl node);
   MtModule(MtSourceFile* source_file, MnClassSpecifier node);
 
-  bool has_field(const std::string& name);
-  bool has_input(const std::string& name);
-  bool has_output(const std::string& name);
-  bool has_register(const std::string& name);
-  bool has_submod(const std::string& name);
-  bool has_enum(const std::string& name);
-
-  MtField* get_field(const std::string& name);
-  MtField* get_output(const std::string& name);
-  MtField* get_submod(const std::string& name);
+  MtEnum*   get_enum(const std::string& name);
+  MtField*  get_field(const std::string& name);
+  MtField*  get_input(const std::string& name);
+  MtField*  get_output(const std::string& name);
+  MtField*  get_register(const std::string& name);
+  MtField*  get_submod(const std::string& name);
   MtMethod* get_method(const std::string& name);
 
   void load_pass1();

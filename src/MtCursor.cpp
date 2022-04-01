@@ -1430,7 +1430,7 @@ void MtCursor::emit(MnFieldDecl n) {
     emit_field_as_submod(n);
   } else if (n.type().is_enum()) {
     emit_field_as_enum_class(n);
-  } else if (current_mod->has_output(n.name().text())) {
+  } else if (current_mod->get_output(n.name().text())) {
     if (!in_ports) {
       // skip_to_next_sibling(n);
       // skip_over(n);
@@ -1440,7 +1440,7 @@ void MtCursor::emit(MnFieldDecl n) {
     }
   } else if (n.is_static() && n.is_const()) {
     emit_children(n);
-  } else if (current_mod->has_enum(type_name)) {
+  } else if (current_mod->get_enum(type_name)) {
     emit_children(n);
   } else if (type_name == "logic") {
     emit_children(n);

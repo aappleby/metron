@@ -100,37 +100,16 @@ MtModule::MtModule(MtSourceFile *source_file, MnClassSpecifier node)
 MtMethod *MtModule::get_method(const std::string &name) {
   for (auto n : all_methods)
     if (n->name == name) return n;
-  /*
-  for (auto n : getters)
-    if (n->name == name) return n;
-  for (auto n : init_methods)
-    if (n->name == name) return n;
-  for (auto n : tick_methods)
-    if (n->name == name) return n;
-  for (auto n : tock_methods)
-    if (n->name == name) return n;
-  for (auto n : task_methods)
-    if (n->name == name) return n;
-  for (auto n : func_methods)
-    if (n->name == name) return n;
-  */
   return nullptr;
 }
 
-//----------------------------------------
-
-bool MtModule::has_enum(const std::string &name) {
+MtEnum* MtModule::get_enum(const std::string &name) {
   for (auto n : enums) {
-    if (n->name() == name) return true;
+    if (n->name() == name) return n;
   }
-  return false;
+  return nullptr;
 }
 
-//----------------------------------------
-
-bool MtModule::has_field(const std::string &name) {
-  return get_field(name) != nullptr;
-}
 
 MtField *MtModule::get_field(const std::string &name) {
   for (auto f : all_fields) {
@@ -139,18 +118,10 @@ MtField *MtModule::get_field(const std::string &name) {
   return nullptr;
 }
 
-//----------------------------------------
-
-bool MtModule::has_input(const std::string &name) {
+MtField* MtModule::get_input(const std::string &name) {
   for (auto f : inputs)
-    if (f->name() == name) return true;
-  return false;
-}
-
-//----------------------------------------
-
-bool MtModule::has_output(const std::string &name) {
-  return get_output(name) != nullptr;
+    if (f->name() == name) return f;
+  return nullptr;
 }
 
 MtField *MtModule::get_output(const std::string &name) {
@@ -158,18 +129,11 @@ MtField *MtModule::get_output(const std::string &name) {
     if (n->name() == name) return n;
   return nullptr;
 }
-//----------------------------------------
 
-bool MtModule::has_register(const std::string &name) {
+MtField* MtModule::get_register(const std::string &name) {
   for (auto f : registers)
-    if (f->name() == name) return true;
-  return false;
-}
-
-//----------------------------------------
-
-bool MtModule::has_submod(const std::string &name) {
-  return get_submod(name) != nullptr;
+    if (f->name() == name) return f;
+  return nullptr;
 }
 
 MtField* MtModule::get_submod(const std::string &name) {

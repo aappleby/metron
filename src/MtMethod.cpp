@@ -149,7 +149,7 @@ void MtMethod::check_dirty_read_identifier(MnNode n, MtDelta& d) {
   auto field = n.text();
 
   // Only check reads of regs and outputs.
-  if (!mod->has_register(field) && !mod->has_output(field)) return;
+  if (!mod->get_register(field) && !mod->get_output(field)) return;
 
   // Reading from a dirty field in tick() is forbidden.
   if (is_tick) {
@@ -299,12 +299,12 @@ void MtMethod::check_dirty_write(MnNode n, MtDelta& d) {
   auto field = n.text();
 
   // Writing to inputs is forbidden.
-  assert(!mod->has_input(field));
+  assert(!mod->get_input(field));
 
   // Only check writes to regs and outputs
 
-  bool field_is_register = mod->has_register(field);
-  bool field_is_output = mod->has_output(field);
+  bool field_is_register = mod->get_register(field);
+  bool field_is_output = mod->get_output(field);
 
   if (!field_is_register && !field_is_output) return;
 

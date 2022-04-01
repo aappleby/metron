@@ -15,10 +15,10 @@ module example_data_memory_bus
 (
   input logic clock,
   input logic[31:0] address,
-  input logic read_enable,
   input logic write_enable,
   input logic[3:0] byte_enable,
   input logic[31:0] write_data,
+  input logic read_enable,
   output logic[31:0] read_data
 );
  /*public:*/

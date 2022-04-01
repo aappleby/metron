@@ -505,46 +505,38 @@ void MtModule::collect_methods() {
 void MtModule::build_call_tree() {}
 
 //------------------------------------------------------------------------------
-// Collect all inputs to all tick and tock methods and merge them into a list of
-// input ports. Input ports can be declared in multiple tick/tock methods, but
-// we don't want duplicates in the Verilog port list.
+// Collect all inputs to all tock and getter methods and merge them into a list
+// of input ports. Input ports can be declared in multiple tick/tock methods,
+// but we don't want duplicates in the Verilog port list.
 
 void MtModule::collect_inputs() {
   assert(inputs.empty());
 
   std::set<std::string> dedup;
 
-  bool in_public = false;
-  auto mod_body = mod_struct.get_field(field_body).check_null();
-  for (auto n : mod_body) {
-    if (n.sym == sym_access_specifier) {
-      if (n.child(0).text() == "public") {
-        in_public = true;
-      } else if (n.child(0).text() == "protected") {
-        in_public = false;
-      } else if (n.child(0).text() == "private") {
-        in_public = false;
-      } else {
-        n.dump_tree();
-        debugbreak();
-      }
-      continue;
-    }
+  for (auto m : tock_methods) {
+    auto params = m->node.get_field(field_declarator).get_field(field_parameters);
 
-    if (n.sym == sym_function_definition) {
-      auto params = n.get_field(field_declarator).get_field(field_parameters);
-
-      for (auto param : params) {
-        if (param.sym != sym_parameter_declaration) continue;
+    for (auto param : params) {
+      if (param.sym != sym_parameter_declaration) continue;
+      if (!dedup.contains(param.name4())) {
         MtField *new_input = MtField::construct(param, true);
-        if (!dedup.contains(new_input->name())) {
-          inputs.push_back(new_input);
-          dedup.insert(new_input->name());
-        } else {
-          delete new_input;
-        }
+        inputs.push_back(new_input);
+        dedup.insert(new_input->name());
       }
-      continue;
+    }
+  }
+
+  for (auto m : getters) {
+    auto params = m->node.get_field(field_declarator).get_field(field_parameters);
+
+    for (auto param : params) {
+      if (param.sym != sym_parameter_declaration) continue;
+      if (!dedup.contains(param.name4())) {
+        MtField *new_input = MtField::construct(param, true);
+        inputs.push_back(new_input);
+        dedup.insert(new_input->name());
+      }
     }
   }
 }

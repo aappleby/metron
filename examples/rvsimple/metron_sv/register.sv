@@ -20,9 +20,8 @@ module single_register
   output logic[WIDTH-1:0] value
 );
  /*public:*/
+  initial begin : single_register value = INITIAL; end
   /*logic<WIDTH> value;*/
-
-  initial begin : init value = INITIAL; end
 
   always_comb begin : tock
     /*tick(reset, write_enable, next)*/;

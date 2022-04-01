@@ -14,8 +14,6 @@
 class example_text_memory_bus {
  public:
 
-  void init() { text_memory.init(); }
-
   logic<32> read_data(logic<32> address) const {
     logic<32> fetched = text_memory.q(bx<TEXT_BITS - 2>(address, 2));
     logic<1> is_text_addr = (address >= TEXT_BEGIN) && (TEXT_END >= address);

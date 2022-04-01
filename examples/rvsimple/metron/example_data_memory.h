@@ -14,7 +14,7 @@ using namespace rv_config;
 
 class example_data_memory {
 public:
-  void init() {
+  example_data_memory() {
     std::string s;
     value_plusargs("data_file=%s", s);
     readmemh(s, mem);

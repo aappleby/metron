@@ -5,26 +5,7 @@
 
 class toplevel {
  public:
-  logic<32> o_bus_read_data;
-  logic<32> o_bus_address;
-  logic<32> o_bus_write_data;
-  logic<4> o_bus_byte_enable;
-  logic<1> o_bus_read_enable;
-  logic<1> o_bus_write_enable;
-  logic<32> o_inst;
-  logic<32> o_pc;
-
-  static const int OP_ALU = 0x33;
-  static const int OP_ALUI = 0x13;
-  static const int OP_LOAD = 0x03;
-  static const int OP_STORE = 0x23;
-  static const int OP_BRANCH = 0x63;
-  static const int OP_JAL = 0x6F;
-  static const int OP_JALR = 0x67;
-  static const int OP_LUI = 0x37;
-  static const int OP_AUIPC = 0x17;
-
-  void init() {
+  toplevel() {
     pc = 0;
     regs[0] = b32(0);
 
@@ -38,9 +19,28 @@ class toplevel {
 
   void tock(logic<1> reset) { tick(reset); }
 
+  logic<32> o_bus_read_data;
+  logic<32> o_bus_address;
+  logic<32> o_bus_write_data;
+  logic<4> o_bus_byte_enable;
+  logic<1> o_bus_read_enable;
+  logic<1> o_bus_write_enable;
+  logic<32> o_inst;
+  logic<32> o_pc;
+
   //----------------------------------------
 
  private:
+  static const int OP_ALU = 0x33;
+  static const int OP_ALUI = 0x13;
+  static const int OP_LOAD = 0x03;
+  static const int OP_STORE = 0x23;
+  static const int OP_BRANCH = 0x63;
+  static const int OP_JAL = 0x6F;
+  static const int OP_JALR = 0x67;
+  static const int OP_LUI = 0x37;
+  static const int OP_AUIPC = 0x17;
+
   void tick(logic<1> reset) {
     if (reset) {
       pc = 0;

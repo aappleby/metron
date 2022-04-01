@@ -25,7 +25,6 @@ TestResults test_instruction(const char* test_name, const int reps, const int ti
   int time = 0;
   int result = -1;
   toplevel top;
-  top.init();
 
   auto time_a = timestamp();
   for (int rep = 0; rep < reps; rep++) {

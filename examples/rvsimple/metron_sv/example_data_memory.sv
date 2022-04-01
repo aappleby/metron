@@ -22,7 +22,7 @@ module example_data_memory
   output logic[31:0] q
 );
 /*public:*/
-  initial begin : init
+  initial begin : example_data_memory
     string s;
     /*std::string s;*/
     $value$plusargs("data_file=%s", s);

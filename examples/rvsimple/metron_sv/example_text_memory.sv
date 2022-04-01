@@ -19,17 +19,14 @@ module example_text_memory
   output logic[31:0] q
 );
  /*public:*/
-
-  initial begin : init
+  initial begin : example_text_memory
     string s;
     /*std::string s;*/
     $value$plusargs("text_file=%s", s);
     $readmemh(s, mem);
   end
 
-  always_comb begin
-    q = mem[address];
-  end
+  always_comb begin q = mem[address]; end
 
  /*private:*/
   logic[31:0] mem[2**(TEXT_BITS - 2)];

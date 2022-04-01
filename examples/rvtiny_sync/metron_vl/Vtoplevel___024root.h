@@ -29,7 +29,7 @@ VL_MODULE(Vtoplevel___024root) {
     VlUnpacked<IData/*31:0*/, 32768> toplevel__DOT__text_mem;
     VlUnpacked<IData/*31:0*/, 32768> toplevel__DOT__data_mem;
     VlUnpacked<IData/*31:0*/, 32> toplevel__DOT__regs;
-    std::string toplevel__DOT__init__DOT__s;
+    std::string toplevel__DOT__toplevel__DOT__s;
 
     // INTERNAL VARIABLES
     Vtoplevel__Syms* vlSymsp;  // Symbol table

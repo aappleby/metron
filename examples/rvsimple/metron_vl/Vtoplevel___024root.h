@@ -37,8 +37,8 @@ VL_MODULE(Vtoplevel___024root) {
     VlUnpacked<IData/*31:0*/, 32> toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs;
     VlUnpacked<IData/*31:0*/, 16384> toplevel__DOT__text_memory_bus__DOT__text_memory__DOT__mem;
     VlUnpacked<IData/*31:0*/, 32768> toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__mem;
-    std::string toplevel__DOT__text_memory_bus__DOT__text_memory__DOT__init__DOT__s;
-    std::string toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__init__DOT__s;
+    std::string toplevel__DOT__text_memory_bus__DOT__text_memory__DOT__example_text_memory__DOT__s;
+    std::string toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__example_data_memory__DOT__s;
 
     // INTERNAL VARIABLES
     Vtoplevel__Syms* vlSymsp;  // Symbol table

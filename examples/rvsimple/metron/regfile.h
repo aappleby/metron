@@ -13,7 +13,7 @@
 class regfile {
  public:
   // Register x0 is always 0
-  void init() { regs[0] = b32(0); }
+  regfile() { regs[0] = b32(0); }
 
   logic<32> rs1_data(logic<5> rs1_address) const { return regs[rs1_address]; }
   logic<32> rs2_data(logic<5> rs2_address) const { return regs[rs2_address]; }

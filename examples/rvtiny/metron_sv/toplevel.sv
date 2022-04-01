@@ -17,26 +17,7 @@ module toplevel
   output logic[31:0] o_pc
 );
  /*public:*/
-  /*logic<32> o_bus_read_data;*/
-  /*logic<32> o_bus_address;*/
-  /*logic<32> o_bus_write_data;*/
-  /*logic<4> o_bus_byte_enable;*/
-  /*logic<1> o_bus_read_enable;*/
-  /*logic<1> o_bus_write_enable;*/
-  /*logic<32> o_inst;*/
-  /*logic<32> o_pc;*/
-
-  localparam /*const*/ int OP_ALU = 8'h33;
-  localparam /*const*/ int OP_ALUI = 8'h13;
-  localparam /*const*/ int OP_LOAD = 8'h03;
-  localparam /*const*/ int OP_STORE = 8'h23;
-  localparam /*const*/ int OP_BRANCH = 8'h63;
-  localparam /*const*/ int OP_JAL = 8'h6F;
-  localparam /*const*/ int OP_JALR = 8'h67;
-  localparam /*const*/ int OP_LUI = 8'h37;
-  localparam /*const*/ int OP_AUIPC = 8'h17;
-
-  initial begin : init
+  initial begin : toplevel
     string s;
     pc = 0;
     regs[0] = 32'd0;
@@ -51,9 +32,28 @@ module toplevel
 
   always_comb begin : tock /*tick(reset)*/; end
 
+  /*logic<32> o_bus_read_data;*/
+  /*logic<32> o_bus_address;*/
+  /*logic<32> o_bus_write_data;*/
+  /*logic<4> o_bus_byte_enable;*/
+  /*logic<1> o_bus_read_enable;*/
+  /*logic<1> o_bus_write_enable;*/
+  /*logic<32> o_inst;*/
+  /*logic<32> o_pc;*/
+
   //----------------------------------------
 
  /*private:*/
+  localparam /*const*/ int OP_ALU = 8'h33;
+  localparam /*const*/ int OP_ALUI = 8'h13;
+  localparam /*const*/ int OP_LOAD = 8'h03;
+  localparam /*const*/ int OP_STORE = 8'h23;
+  localparam /*const*/ int OP_BRANCH = 8'h63;
+  localparam /*const*/ int OP_JAL = 8'h6F;
+  localparam /*const*/ int OP_JALR = 8'h67;
+  localparam /*const*/ int OP_LUI = 8'h37;
+  localparam /*const*/ int OP_AUIPC = 8'h17;
+
   task tick(); 
     if (reset) begin
       pc <= 0;

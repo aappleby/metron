@@ -22,7 +22,6 @@ module example_data_memory_bus
   output logic[31:0] read_data
 );
  /*public:*/
-  initial begin : init /*data_memory.init();*/ end
 
   always_comb begin
     logic[31:0] fetched;

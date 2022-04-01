@@ -14,16 +14,13 @@ using namespace rv_config;
 
 class example_text_memory {
  public:
-
-  void init() {
+  example_text_memory() {
     std::string s;
     value_plusargs("text_file=%s", s);
     readmemh(s, mem);
   }
 
-  logic<32> q(logic<TEXT_BITS - 2> address) const {
-    return mem[address];
-  }
+  logic<32> q(logic<TEXT_BITS - 2> address) const { return mem[address]; }
 
  private:
   logic<32> mem[pow2(TEXT_BITS - 2)];

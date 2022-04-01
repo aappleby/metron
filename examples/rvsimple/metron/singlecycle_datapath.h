@@ -24,8 +24,6 @@ using namespace rv_config;
 class singlecycle_datapath {
  public:
 
-  void init() { program_counter.init(); }
-
   //----------------------------------------
 
   logic<32> pc() const {

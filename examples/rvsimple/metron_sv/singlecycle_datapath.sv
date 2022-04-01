@@ -44,8 +44,6 @@ module singlecycle_datapath
 );
  /*public:*/
 
-  initial begin : init /*program_counter.init();*/ end
-
   //----------------------------------------
 
   always_comb begin

@@ -26,14 +26,6 @@ class toplevel {
 
   //----------------------------------------
 
-  void init() {
-    core.init();
-    text_memory_bus.init();
-    data_memory_bus.init();
-  }
-
-  //----------------------------------------
-
   void tock(logic<1> reset) {
     logic<32> pc           = core.pc();
     logic<32> inst         = text_memory_bus.read_data(pc);

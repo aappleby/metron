@@ -34,7 +34,6 @@ void blah() {
 
 void blee() {
   toplevel top;
-  top.init();
   //top.tick(0);
   top.tock(0);
 }

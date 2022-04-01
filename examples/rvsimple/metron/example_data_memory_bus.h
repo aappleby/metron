@@ -13,7 +13,6 @@
 
 class example_data_memory_bus {
  public:
-  void init() { data_memory.init(); }
 
   logic<32> read_data(logic<32> address, logic<1> read_enable) const {
     logic<32> fetched = data_memory.q(bx<DATA_BITS - 2>(address, 2));

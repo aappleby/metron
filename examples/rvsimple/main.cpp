@@ -22,7 +22,6 @@ int run_test(const char* test_name, const int reps) {
   int result = 0;
 
   toplevel top;
-  top.init();
 
   LOG_R("running %6s: ", test_name);
 

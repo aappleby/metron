@@ -38,14 +38,6 @@ module toplevel
 
   //----------------------------------------
 
-  initial begin : init
-    /*core.init();*/
-    /*text_memory_bus.init();*/
-    /*data_memory_bus.init();*/
-  end
-
-  //----------------------------------------
-
   always_comb begin : tock
     logic[31:0] pc;
     logic[31:0] inst;

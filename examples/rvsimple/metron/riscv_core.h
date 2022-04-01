@@ -16,7 +16,7 @@
 class riscv_core {
  public:
 
-  logic<32> bus_write_data2(logic<32> inst, logic<32> alu_result2) const {
+   logic<32> bus_write_data2(logic<32> inst, logic<32> alu_result2) const {
     return dmem.bus_write_data(
       alu_result2,
       datapath.rs2_data(inst)
@@ -46,10 +46,6 @@ class riscv_core {
   }
 
   //----------------------------------------
-
-  void init() {
-    datapath.init();
-  }
 
   logic<32> alu_result(logic<32> inst) const {
     logic<7> opcode = datapath.inst_opcode(inst);

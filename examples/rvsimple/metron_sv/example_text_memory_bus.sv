@@ -19,8 +19,6 @@ module example_text_memory_bus
 );
  /*public:*/
 
-  initial begin : init /*text_memory.init();*/ end
-
   always_comb begin
     logic[31:0] fetched;
     logic is_text_addr;

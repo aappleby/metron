@@ -427,7 +427,7 @@ void MtModule::collect_methods() {
 
     if (n.sym != sym_function_definition) continue;
 
-    n.dump_tree();
+    //n.dump_tree();
 
     auto func_type = n.get_field(field_type);
     auto func_decl = n.get_field(field_declarator);
@@ -440,6 +440,14 @@ void MtModule::collect_methods() {
     bool is_init = is_task && func_name.starts_with("init");
     bool is_tick = is_task && func_name.starts_with("tick");
     bool is_tock = is_task && func_name.starts_with("tock");
+    
+    bool is_const = false;
+    for (auto n : func_decl) {
+      if (n.sym == sym_type_qualifier && n.text() == "const") {
+        is_const = true;
+        break;
+      }
+    }
 
     MtMethod *new_method = MtMethod::construct(n, this, source_file->lib);
     new_method->name = n.get_field(field_declarator).get_field(field_declarator).text();
@@ -455,6 +463,7 @@ void MtModule::collect_methods() {
     new_method->is_tick = is_tick;
     new_method->is_tock = is_tock;
     new_method->is_public = in_public;
+    new_method->is_const = is_const;
 
     all_methods.push_back(new_method);
 
@@ -536,24 +545,6 @@ void MtModule::collect_outputs() {
       outputs.push_back(f);
     }
   }
-
-  /*
-  for (auto n : *tock_methods) {
-    n.visit_tree([&](MtNode child) {
-      if (child.sym != sym_assignment_expression) return;
-
-      auto lhs = child.get_field(field_left);
-      assert(lhs.sym == sym_identifier);
-      auto lhs_name = lhs.text();
-
-      if (dedup.contains(lhs_name)) return;
-      dedup.insert(lhs_name);
-
-      auto field = get_field(lhs_name);
-      if (field) outputs->push_back(*field);
-    });
-  }
-  */
 }
 
 //------------------------------------------------------------------------------

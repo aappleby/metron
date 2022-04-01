@@ -89,10 +89,11 @@ struct MtMethod {
 
   bool is_task = false;
   bool is_func = false;
-  bool is_root = true;
+  bool is_root = false;
   bool is_tick = false;
   bool is_tock = false;
   bool is_public = false;
+  bool is_const = false;
 
   void update_delta();
 

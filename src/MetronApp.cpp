@@ -161,7 +161,7 @@ int main(int argc, char** argv) {
   //----------
   // Dump out the module tree
 
-#if 0
+#if 1
   std::function<void(MtModule*, int, bool)> step;
   step = [&](MtModule* m, int rank, bool last) -> void {
     for (int i = 0; i < rank - 1; i++) LOG_Y("|  ");
@@ -175,7 +175,7 @@ int main(int argc, char** argv) {
     auto submod_count = m->submods.size();
     for (auto i = 0; i < submod_count; i++) {
       auto s = m->submods[i];
-      step(library.get_mod(s->type_name()), rank + 1, i == submod_count - 1);
+      step(library.get_module(s->type_name()), rank + 1, i == submod_count - 1);
     }
   };
 
@@ -187,7 +187,7 @@ int main(int argc, char** argv) {
   //----------
   // Dump out info on modules for debugging.
 
-#if 0
+#if 1
   for (auto& mod : library.modules) {
     if (mod->dirty_check_fail) {
       printf("Module %s failed dirty check\n", mod->mod_name.c_str());
@@ -201,7 +201,7 @@ int main(int argc, char** argv) {
   }
 #endif
 
-#if 0
+#if 1
   //----------
   // Emit all modules.
   for (auto& source_file : library.source_files)

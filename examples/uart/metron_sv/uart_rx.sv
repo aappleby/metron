@@ -17,7 +17,7 @@ module uart_rx
   //----------------------------------------
 
   // yosys doesn't appear to handle return values from functions at all
-  // and verilator doesn't allow "return;" if the function has a return value
+  // v*rilator doesn't allow "return;" if the function has a return value
   // even if you set it via "func_name = value;" first.
 
 

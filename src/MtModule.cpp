@@ -519,83 +519,92 @@ void MtModule::build_call_tree() {
 }
 
 void MtModule::build_call_tree(MtMethod *method, MnNode n, int depth, MtDelta& delta) {
-  for (auto c : n) {
-    if (c.sym == sym_call_expression) {
-      auto node_func = c.get_field(field_function);
 
-      if (node_func.sym == sym_field_expression) {
+  if (n.sym == sym_identifier) {
+    if (get_field(n.text())) {
+      for (int i = 0; i < depth; i++) printf(" ");
+      printf("id %s\n", n.text().c_str());
+    }
+    return;
+  }
+
+  if (n.sym == sym_call_expression) {
+    auto node_func = n.get_field(field_function);
+
+    if (node_func.sym == sym_field_expression) {
+      for (int i = 0; i < depth; i++) printf(" ");
+      printf("FCALL! %s.%s -> %s\n",
+        name().c_str(), method->name().c_str(),
+        node_func.text().c_str());
+
+      // Field call. Pull up the submodule and traverse into the method.
+
+      //node_func.dump_tree();
+      auto submod_name = node_func.get_field(field_argument).text();
+      auto submod = get_submod(submod_name);
+      assert(submod);
+      auto submod_type = submod->type_name();
+      auto submod_mod = source_file->lib->get_module(submod_type);
+      assert(submod_mod);
+      auto submod_method = submod_mod->get_method(node_func.get_field(field_field).text());
+      assert(submod_method);
+
+      for (int i = 0; i < depth + 1; i++) printf(" ");
+      printf("TO SUBMOD!\n");
+      submod_mod->build_call_tree(submod_method, submod_method->node.get_field(field_body), depth + 1, delta);
+
+    } else if (node_func.sym == sym_identifier) {
+      //node_func.dump_tree();
+
+      auto sibling_method = get_method(node_func.text());
+
+      if (sibling_method) {
         for (int i = 0; i < depth; i++) printf(" ");
-        printf("FCALL! %s.%s -> %s\n",
-               name().c_str(), method->name().c_str(),
-               node_func.text().c_str());
-
-        // Field call. Pull up the submodule and traverse into the method.
-
-        //node_func.dump_tree();
-        auto submod_name = node_func.get_field(field_argument).text();
-        auto submod = get_submod(submod_name);
-        assert(submod);
-        auto submod_type = submod->type_name();
-        auto submod_mod = source_file->lib->get_module(submod_type);
-        assert(submod_mod);
-        auto submod_method = submod_mod->get_method(node_func.get_field(field_field).text());
-        assert(submod_method);
-
-        for (int i = 0; i < depth + 1; i++) printf(" ");
-        printf("TO SUBMOD!\n");
-        submod_mod->build_call_tree(submod_method, submod_method->node.get_field(field_body), depth + 1, delta);
-
-      } else if (node_func.sym == sym_identifier) {
-        //node_func.dump_tree();
-        
-        auto sibling_method = get_method(node_func.text());
-
-        if (sibling_method) {
-          for (int i = 0; i < depth; i++) printf(" ");
-          printf("*** MCALL! %s.%s -> %s\n",
-            name().c_str(), method->name().c_str(),
-            node_func.text().c_str());
-          build_call_tree(sibling_method, sibling_method->node.get_field(field_body), depth + 1, delta);
-        }
-        else {
-          // Utility method call like bN()
-          for (int i = 0; i < depth; i++) printf(" ");
-          printf("XCALL! %s.%s -> %s\n",
-            name().c_str(), method->name().c_str(),
-            node_func.text().c_str());
-        }
-
-      } else if (node_func.sym == sym_template_function) {
-
-        auto sibling_method = get_method(node_func.get_field(field_name).text());
-
-        if (sibling_method) {
-          // Should probably not see any of these yet?
-          debugbreak();
-          for (int i = 0; i < depth; i++) printf(" ");
-          printf("TCALL! %s.%s -> %s\n",
-            name().c_str(), method->name().c_str(),
-            node_func.text().c_str());
-        }
-        else {
-          // Templated utility method call like bx<>, dup<>
-        }
-
-        //node_func.dump_tree();
-
-      } else {
-        // printf("  CALL! %s\n", c.text().c_str());
-        // printf("  CALL! %s\n", c.get_field(field_function).text().c_str());
-
-        LOG_R("MtModule::build_call_tree - don't know what to do with %s\n",
-              c.ts_node_type());
-        c.dump_tree();
-        debugbreak();
+        printf("*** MCALL! %s.%s -> %s\n",
+          name().c_str(), method->name().c_str(),
+          node_func.text().c_str());
+        build_call_tree(sibling_method, sibling_method->node.get_field(field_body), depth + 1, delta);
       }
+      else {
+        // Utility method call like bN()
+        for (int i = 0; i < depth; i++) printf(" ");
+        printf("XCALL! %s.%s -> %s\n",
+          name().c_str(), method->name().c_str(),
+          node_func.text().c_str());
+      }
+
+    } else if (node_func.sym == sym_template_function) {
+
+      auto sibling_method = get_method(node_func.get_field(field_name).text());
+
+      if (sibling_method) {
+        // Should probably not see any of these yet?
+        debugbreak();
+        for (int i = 0; i < depth; i++) printf(" ");
+        printf("TCALL! %s.%s -> %s\n",
+          name().c_str(), method->name().c_str(),
+          node_func.text().c_str());
+      }
+      else {
+        // Templated utility method call like bx<>, dup<>
+      }
+
+      //node_func.dump_tree();
+
+    } else {
+      // printf("  CALL! %s\n", c.text().c_str());
+      // printf("  CALL! %s\n", c.get_field(field_function).text().c_str());
+
+      LOG_R("MtModule::build_call_tree - don't know what to do with %s\n",
+        n.ts_node_type());
+      n.dump_tree();
+      debugbreak();
     }
-    else {
-      build_call_tree(method, c, depth + 1, delta);
-    }
+    return;
+  }
+
+  for (auto c : n) {
+    build_call_tree(method, c, depth + 1, delta);
   }
 }
 

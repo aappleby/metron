@@ -116,11 +116,13 @@ void MtModLibrary::process_sources() {
   }
 
   // Generate call tree / temporal check for toplevel modules
+#if 0
   for (auto m : modules) {
     if (m->get_rank() == 0) {
       m->build_call_tree();
     }
   }
+#endif
 
 
   // Verify that tick()/tock() obey read/write ordering rules.

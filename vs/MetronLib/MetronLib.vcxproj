@@ -150,21 +150,21 @@
     <ClInclude Include="..\..\src\Log.h" />
     <ClInclude Include="..\..\src\metron_tools.h" />
     <ClInclude Include="..\..\src\MtCursor.h" />
-    <ClInclude Include="..\..\src\MtMethod.h" />
     <ClInclude Include="..\..\src\MtModLibrary.h" />
     <ClInclude Include="..\..\src\MtModule.h" />
     <ClInclude Include="..\..\src\MtNode.h" />
     <ClInclude Include="..\..\src\MtSourceFile.h" />
+    <ClInclude Include="..\..\src\MtTracer.h" />
     <ClInclude Include="..\..\src\Platform.h" />
     <ClInclude Include="..\..\src\TreeSymbols.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\MtCursor.cpp" />
-    <ClCompile Include="..\..\src\MtMethod.cpp" />
     <ClCompile Include="..\..\src\MtModLibrary.cpp" />
     <ClCompile Include="..\..\src\MtModule.cpp" />
     <ClCompile Include="..\..\src\MtNode.cpp" />
     <ClCompile Include="..\..\src\MtSourceFile.cpp" />
+    <ClCompile Include="..\..\src\MtTracer.cpp" />
     <ClCompile Include="..\..\src\Platform.cpp" />
     <ClCompile Include="..\..\tree-sitter-cpp\src\parser.c">
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>

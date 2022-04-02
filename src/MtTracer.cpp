@@ -1,11 +1,10 @@
-#include "MtMethod.h"
+#include "MtTracer.h"
 
-#include "metron_tools.h"
-#include "MtModLibrary.h"
 #include "MtModule.h"
 #include "MtSourceFile.h"
+#include "MtModLibrary.h"
 
-void log_error(MnNode n, const char* fmt, ...);
+#include "metron_tools.h"
 
 //-----------------------------------------------------------------------------
 // Given two blocks that execute as branches, merge their dependencies and
@@ -59,11 +58,14 @@ bool merge_series(MtDelta& a, MtDelta& b, MtDelta& out) {
       assert(s1.second != ERROR);
       assert(s2.second != ERROR);
       if (s1.second != s2.second) {
+        /*
         log_error(
-            MnNode::null,
-            "merge_series error - a.state_new %s = %s, b.state_old %s = %s\n",
-            s1.first.c_str(), to_string(s1.second), s2.first.c_str(),
-            to_string(s2.second));
+          MnNode::null,
+          "merge_series error - a.state_new %s = %s, b.state_old %s = %s\n",
+          s1.first.c_str(), to_string(s1.second), s2.first.c_str(),
+          to_string(s2.second));
+        */
+        LOG_R("merge_series error - a.state_new %s = %s, b.state_old %s = %s\n", s1.first.c_str(), to_string(s1.second), s2.first.c_str(), to_string(s2.second));
         out.error = true;
         return false;
       }
@@ -83,18 +85,160 @@ bool merge_series(MtDelta& a, MtDelta& b, MtDelta& out) {
 
 //------------------------------------------------------------------------------
 
-MtMethod::MtMethod(MnNode n, MtModule* _mod, MtModLibrary* _lib)
-    : node(n), mod(_mod), lib(_lib) {
-  assert(mod);
-  assert(lib);
+void MtTracer::trace_dispatch(MnNode n) {
+  switch(n.sym) {
+  case sym_assignment_expression: trace_assign(n);   break;
+  case sym_call_expression:       trace_call(n);     break;
+  case sym_identifier:            trace_id(n);       break;
+  case sym_if_statement:          trace_if(n);       break;
+  case sym_switch_statement:      trace_switch(n);   break;
+  default:                        trace_children(n); break;
+  }
 }
 
 //------------------------------------------------------------------------------
 
-void MtMethod::check_temporal() {
+void MtTracer::trace_children(MnNode n) {
+  for (auto c : n) {
+    depth++;
+    trace_dispatch(c);
+    depth--;
+  }
 }
 
 //------------------------------------------------------------------------------
+
+void MtTracer::trace_assign(MnNode n) {
+  for (int i = 0; i < depth; i++) printf(" ");
+  printf("ASSIGNMENT %s\n", n.text().c_str());
+  trace_children(n);
+}
+
+//------------------------------------------------------------------------------
+// FIXME I need to traverse the args before stepping into the call
+
+void MtTracer::trace_call(MnNode n) {
+  auto node_func = n.get_field(field_function);
+
+  if (node_func.sym == sym_field_expression) {
+    for (int i = 0; i < depth; i++) printf(" ");
+    printf("FCALL! %s.%s -> %s\n",
+      mod()->name().c_str(), method()->name().c_str(),
+      node_func.text().c_str());
+
+    // Field call. Pull up the submodule and traverse into the method.
+
+    //node_func.dump_tree();
+    auto submod_name = node_func.get_field(field_argument).text();
+    auto submod = mod()->get_submod(submod_name);
+    assert(submod);
+    auto submod_type = submod->type_name();
+    auto submod_mod = mod()->source_file->lib->get_module(submod_type);
+    assert(submod_mod);
+    auto submod_method = submod_mod->get_method(node_func.get_field(field_field).text());
+    assert(submod_method);
+
+    //for (int i = 0; i < depth + 1; i++) printf(" ");
+    //printf("TO SUBMOD!\n");
+
+    depth++;
+    mod_stack.push_back(submod_mod);
+    method_stack.push_back(submod_method);
+    trace_dispatch(submod_method->node.get_field(field_body));
+    method_stack.pop_back();
+    mod_stack.pop_back();
+    depth--;
+
+  } else if (node_func.sym == sym_identifier) {
+    //node_func.dump_tree();
+
+    auto sibling_method = mod()->get_method(node_func.text());
+
+    if (sibling_method) {
+      for (int i = 0; i < depth; i++) printf(" ");
+      printf("MCALL! %s.%s -> %s\n",
+        mod()->name().c_str(), method()->name().c_str(),
+        node_func.text().c_str());
+      depth++;
+      method_stack.push_back(sibling_method);
+      trace_dispatch(sibling_method->node.get_field(field_body));
+      method_stack.pop_back();
+      depth--;
+    }
+    else {
+      // Utility method call like bN()
+      /*
+      for (int i = 0; i < depth; i++) printf(" ");
+      printf("XCALL! %s.%s -> %s\n",
+      name().c_str(), method->name().c_str(),
+      node_func.text().c_str());
+      */
+    }
+
+  } else if (node_func.sym == sym_template_function) {
+
+    auto sibling_method = mod()->get_method(node_func.get_field(field_name).text());
+
+    if (sibling_method) {
+      // Should probably not see any of these yet?
+      debugbreak();
+      for (int i = 0; i < depth; i++) printf(" ");
+      printf("TCALL! %s.%s -> %s\n",
+        mod()->name().c_str(), method()->name().c_str(),
+        node_func.text().c_str());
+    }
+    else {
+      // Templated utility method call like bx<>, dup<>
+    }
+
+    //node_func.dump_tree();
+
+  } else {
+    // printf("  CALL! %s\n", c.text().c_str());
+    // printf("  CALL! %s\n", c.get_field(field_function).text().c_str());
+
+    LOG_R("MtModule::build_call_tree - don't know what to do with %s\n",
+      n.ts_node_type());
+    n.dump_tree();
+    debugbreak();
+  }
+}
+
+//------------------------------------------------------------------------------
+
+void MtTracer::trace_id(MnNode n) {
+  if (mod()->get_field(n.text())) {
+    for (int i = 0; i < depth; i++) printf(" ");
+    printf("{}{}{}{}{} id %s\n", n.text().c_str());
+  }
+}
+
+//------------------------------------------------------------------------------
+
+void MtTracer::trace_if(MnNode n) {
+  for (int i = 0; i < depth; i++) printf(" ");
+  printf("IF STATEMENT\n");
+}
+
+//------------------------------------------------------------------------------
+
+void MtTracer::trace_switch(MnNode n) {
+  for (int i = 0; i < depth; i++) printf(" ");
+  printf("SWITCH STATEMENT\n");
+  trace_children(n);
+}
+
+//------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
 
 #if 0
 
@@ -114,38 +258,38 @@ void MtMethod::check_dirty_dispatch(MnNode n, MtDelta& d) {
   if (n.is_null() || !n.is_named()) return;
 
   switch (n.sym) {
-    case sym_field_expression:
-      check_dirty_read_submod(n, d);
-      break;
-    case sym_identifier:
-      check_dirty_read_identifier(n, d);
-      break;
-    case sym_assignment_expression:
-      check_dirty_assign(n, d);
-      break;
-    case sym_if_statement:
-      check_dirty_if(n, d);
-      break;
-    case sym_call_expression: {
-      if (n.get_field(field_function).sym == sym_field_expression) {
-        // submod.tick()/tock()
-        check_dirty_call(n, d);
-      } else if (n.get_field(field_function).sym == sym_template_function) {
-        // foo = bx<x>(bar);
-        check_dirty_call(n, d);
-      } else {
-        // cat() etc
-        check_dirty_call(n, d);
-      }
-      break;
+  case sym_field_expression:
+    check_dirty_read_submod(n, d);
+    break;
+  case sym_identifier:
+    check_dirty_read_identifier(n, d);
+    break;
+  case sym_assignment_expression:
+    check_dirty_assign(n, d);
+    break;
+  case sym_if_statement:
+    check_dirty_if(n, d);
+    break;
+  case sym_call_expression: {
+    if (n.get_field(field_function).sym == sym_field_expression) {
+      // submod.tick()/tock()
+      check_dirty_call(n, d);
+    } else if (n.get_field(field_function).sym == sym_template_function) {
+      // foo = bx<x>(bar);
+      check_dirty_call(n, d);
+    } else {
+      // cat() etc
+      check_dirty_call(n, d);
     }
-    case sym_switch_statement:
-      check_dirty_switch(n, d);
-      break;
+    break;
+  }
+  case sym_switch_statement:
+    check_dirty_switch(n, d);
+    break;
 
-    default: {
-      for (auto c : n) check_dirty_dispatch(c, d);
-    }
+  default: {
+    for (auto c : n) check_dirty_dispatch(c, d);
+  }
   }
 }
 
@@ -163,21 +307,21 @@ void MtMethod::check_dirty_read_identifier(MnNode n, MtDelta& d) {
     if (d.state_new.contains(field)) {
       if (d.state_new[field] == MAYBE) {
         log_error(n, "%s() read maybe new field - %s\n", name().c_str(),
-                  field.c_str());
+          field.c_str());
         d.error = true;
       } else if (d.state_new[field] == DIRTY) {
         log_error(n, "%s() read dirty new field - %s\n", name().c_str(),
-                  field.c_str());
+          field.c_str());
         d.error = true;
       }
     } else if (d.state_old.contains(field)) {
       if (d.state_old[field] == MAYBE) {
         log_error(n, "%s() read maybe old field - %s\n", name().c_str(),
-                  field.c_str());
+          field.c_str());
         d.error = true;
       } else if (d.state_old[field] == DIRTY) {
         log_error(n, "%s() read dirty old field - %s\n", name().c_str(),
-                  field.c_str());
+          field.c_str());
         d.error = true;
       }
     } else {
@@ -193,21 +337,21 @@ void MtMethod::check_dirty_read_identifier(MnNode n, MtDelta& d) {
     if (d.state_new.contains(field)) {
       if (d.state_new[field] == CLEAN) {
         log_error(n, "%s() read clean new field - %s\n", name().c_str(),
-                  field.c_str());
+          field.c_str());
         d.error = true;
       } else if (d.state_new[field] == MAYBE) {
         log_error(n, "%s() read maybe new field - %s\n", name().c_str(),
-                  field.c_str());
+          field.c_str());
         d.error = true;
       }
     } else if (d.state_old.contains(field)) {
       if (d.state_old[field] == CLEAN) {
         log_error(n, "%s() read clean old field - %s\n", name().c_str(),
-                  field.c_str());
+          field.c_str());
         d.error = true;
       } else if (d.state_old[field] == MAYBE) {
         log_error(n, "%s() read maybe old field - %s\n", name().c_str(),
-                  field.c_str());
+          field.c_str());
         d.error = true;
       }
     } else {
@@ -233,9 +377,9 @@ void MtMethod::check_dirty_read_submod(MnNode n, MtDelta& d) {
 
   /*
   if (!submod_mod->has_output(submod_field)) {
-    log_error(n, "%s() read non-output from submodule - %s\n", name.c_str(),
-              field.c_str());
-    d.error = true;
+  log_error(n, "%s() read non-output from submodule - %s\n", name.c_str(),
+  field.c_str());
+  d.error = true;
   }
   */
 
@@ -246,13 +390,13 @@ void MtMethod::check_dirty_read_submod(MnNode n, MtDelta& d) {
     if (d.state_new.contains(field)) {
       if (d.state_new[field] != CLEAN) {
         log_error(n, "%s() read dirty new submod field - %s\n", name().c_str(),
-                  field.c_str());
+          field.c_str());
         d.error = true;
       }
     } else if (d.state_old.contains(field)) {
       if (d.state_old[field] != CLEAN) {
         log_error(n, "%s() read dirty old submod field - %s\n", name().c_str(),
-                  field.c_str());
+          field.c_str());
         d.error = true;
       }
     } else {
@@ -266,13 +410,13 @@ void MtMethod::check_dirty_read_submod(MnNode n, MtDelta& d) {
     if (d.state_new.contains(field)) {
       if (d.state_new[field] == CLEAN) {
         log_error(n, "%s() read clean new submod field - %s\n", name().c_str(),
-                  field.c_str());
+          field.c_str());
         d.error = true;
       }
     } else if (d.state_old.contains(field)) {
       if (d.state_old[field] == CLEAN) {
         log_error(n, "%s() read clean old submod field - %s\n", name().c_str(),
-                  field.c_str());
+          field.c_str());
         d.error = true;
       }
     } else {
@@ -320,8 +464,8 @@ void MtMethod::check_dirty_write(MnNode n, MtDelta& d) {
   // allowing reg outputs means outputs can change in tick()
   /*
   if (is_tick && field_is_output) {
-    log_error(n, "%s() wrote output - %s\n", name.c_str(), field.c_str());
-    d.error = true;
+  log_error(n, "%s() wrote output - %s\n", name.c_str(), field.c_str());
+  d.error = true;
   }
   */
 
@@ -333,7 +477,7 @@ void MtMethod::check_dirty_write(MnNode n, MtDelta& d) {
   if (d.state_old.contains(field)) {
     if (d.state_old[field] != CLEAN) {
       log_error(n, "%s() wrote dirty old field - %s\n", name().c_str(),
-                field.c_str());
+        field.c_str());
       d.error = true;
     }
   }
@@ -341,11 +485,11 @@ void MtMethod::check_dirty_write(MnNode n, MtDelta& d) {
   // multiple writes doesn't actually break anything
   /*
   if (d.state_new.contains(field)) {
-    if (d.state_new[field] != CLEAN) {
-      log_error(n, "%s() wrote dirty new field - %s\n", name.c_str(),
-                field.c_str());
-      d.error = true;
-    }
+  if (d.state_new[field] != CLEAN) {
+  log_error(n, "%s() wrote dirty new field - %s\n", name.c_str(),
+  field.c_str());
+  d.error = true;
+  }
   }
   */
 

@@ -161,7 +161,7 @@ int main(int argc, char** argv) {
   //----------
   // Dump out the module tree
 
-#if 1
+#if 0
   std::function<void(MtModule*, int, bool)> step;
   step = [&](MtModule* m, int rank, bool last) -> void {
     for (int i = 0; i < rank - 1; i++) LOG_Y("|  ");
@@ -187,7 +187,7 @@ int main(int argc, char** argv) {
   //----------
   // Dump out info on modules for debugging.
 
-#if 1
+#if 0
   for (auto& mod : library.modules) {
     if (mod->dirty_check_fail) {
       printf("Module %s failed dirty check\n", mod->mod_name.c_str());
@@ -201,7 +201,7 @@ int main(int argc, char** argv) {
   }
 #endif
 
-#if 1
+#if 0
   //----------
   // Emit all modules.
   for (auto& source_file : library.source_files)

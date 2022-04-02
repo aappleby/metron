@@ -77,6 +77,8 @@ void MtSourceFile::collect_modules(MnNode toplevel) {
   }
 }
 
+//------------------------------------------------------------------------------
+
 MtModule* MtSourceFile::get_module(const std::string& name) {
   for (auto m : modules) {
     if (m->name() == name) return m;

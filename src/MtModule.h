@@ -2,7 +2,7 @@
 #include <map>
 #include <set>
 
-#include "MtMethod.h"
+#include "MtNode.h"
 #include "Platform.h"
 
 struct MtMethod;
@@ -31,7 +31,11 @@ struct MtField {
 private:
   MtField(const MnNode& n, bool is_public) : _public(is_public), node(n) {
     assert(node.sym == sym_field_declaration || node.sym == sym_parameter_declaration);
+    _name = node.name4();
   }
+
+  std::string _name;
+
   MnNode node;
   bool _public = false;
 };
@@ -73,6 +77,49 @@ private:
 
 //------------------------------------------------------------------------------
 
+struct MtMethod {
+
+  static MtMethod* construct(MnNode n, MtModule* _mod, MtModLibrary* _lib) {
+    return new MtMethod(n, _mod, _lib);
+  }
+
+  std::string name() const { return node.name4(); }
+
+  MnNode node;
+  MtModule* mod = nullptr;
+  MtModLibrary* lib = nullptr;
+
+  std::vector<std::string> params;
+  //MtDelta delta = nullptr;
+
+  bool is_init = false;
+  bool is_tick = false;
+  bool is_tock = false;
+  bool is_task = false;
+  bool is_func = false;
+  bool is_root = false;
+  bool is_public = false;
+  bool is_const = false;
+
+  std::vector<MtMethod*> callers;
+
+  int get_rank() const {
+    return 0;
+  }
+
+  void check_temporal();
+
+private:
+
+  MtMethod(MnNode n, MtModule* _mod, MtModLibrary* _lib)
+    : node(n), mod(_mod), lib(_lib) {
+    assert(mod);
+    assert(lib);
+  }
+};
+
+//------------------------------------------------------------------------------
+
 struct MtModule {
   MtModule(MtSourceFile* source_file, MnTemplateDecl node);
   MtModule(MtSourceFile* source_file, MnClassSpecifier node);
@@ -102,8 +149,7 @@ struct MtModule {
 
   void build_port_map();
 
-  void build_call_tree();
-  void build_call_tree(MtMethod* method, MnNode n, int depth, MtDelta& delta);
+  void trace();
 
   void sanity_check();
 

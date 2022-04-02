@@ -116,10 +116,10 @@ void MtModLibrary::process_sources() {
   }
 
   // Generate call tree / temporal check for toplevel modules
-#if 0
+#if 1
   for (auto m : modules) {
     if (m->get_rank() == 0) {
-      m->build_call_tree();
+      m->trace();
     }
   }
 #endif

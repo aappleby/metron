@@ -3,7 +3,6 @@
   <ItemGroup>
     <ClInclude Include="..\..\src\Log.h" />
     <ClInclude Include="..\..\src\MtCursor.h" />
-    <ClInclude Include="..\..\src\MtMethod.h" />
     <ClInclude Include="..\..\src\MtModLibrary.h" />
     <ClInclude Include="..\..\src\MtModule.h" />
     <ClInclude Include="..\..\src\MtNode.h" />
@@ -11,10 +10,10 @@
     <ClInclude Include="..\..\src\Platform.h" />
     <ClInclude Include="..\..\src\TreeSymbols.h" />
     <ClInclude Include="..\..\src\metron_tools.h" />
+    <ClInclude Include="..\..\src\MtTracer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\MtCursor.cpp" />
-    <ClCompile Include="..\..\src\MtMethod.cpp" />
     <ClCompile Include="..\..\src\MtModLibrary.cpp" />
     <ClCompile Include="..\..\src\MtModule.cpp" />
     <ClCompile Include="..\..\src\MtNode.cpp" />
@@ -29,6 +28,7 @@
     <ClCompile Include="..\..\tree-sitter-cpp\src\parser.c">
       <Filter>tree-sitter</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\MtTracer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\README.md" />

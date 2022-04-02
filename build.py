@@ -193,11 +193,11 @@ def build_metron():
       src_files=[
           "src/MetronApp.cpp",
           "src/MtCursor.cpp",
-          "src/MtMethod.cpp",
           "src/MtModLibrary.cpp",
           "src/MtModule.cpp",
           "src/MtNode.cpp",
           "src/MtSourceFile.cpp",
+          "src/MtTracer.cpp",
           "src/Platform.cpp",
       ],
       includes=["tree-sitter/lib/include"],

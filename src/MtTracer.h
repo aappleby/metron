@@ -1,12 +1,11 @@
-#pragma once
+
 #include <map>
-#include <set>
+#include <string>
 
 #include "MtNode.h"
-#include "Platform.h"
 
 struct MtModule;
-struct MtModLibrary;
+struct MtMethod;
 
 //------------------------------------------------------------------------------
 
@@ -62,50 +61,29 @@ struct MtDelta {
 
   /*
   void sanity_check() const {
-    for (auto& s1 : state_old) {
-      auto& s2 = *state_new.find(s1.first);
-      assert(s1.second != ERROR);
-      assert(s2.second != ERROR);
-      if (s1.second == MAYBE) assert(s2.second != CLEAN);
-      if (s1.second == DIRTY) assert(s2.second == DIRTY);
-    }
+  for (auto& s1 : state_old) {
+  auto& s2 = *state_new.find(s1.first);
+  assert(s1.second != ERROR);
+  assert(s2.second != ERROR);
+  if (s1.second == MAYBE) assert(s2.second != CLEAN);
+  if (s1.second == DIRTY) assert(s2.second == DIRTY);
+  }
   }
   */
 };
 
 //------------------------------------------------------------------------------
 
-struct MtMethod {
+class MtTracer {
+ public:
+  void trace_dispatch(MnNode n);
+  void trace_children(MnNode n);
 
-  static MtMethod* construct(MnNode n, MtModule* _mod, MtModLibrary* _lib) {
-    return new MtMethod(n, _mod, _lib);
-  }
-
-  std::string name() const { return node.name4(); }
-
-  MnNode node;
-  MtModule* mod = nullptr;
-  MtModLibrary* lib = nullptr;
-
-  std::vector<std::string> params;
-  //MtDelta delta = nullptr;
-
-  bool is_init = false;
-  bool is_tick = false;
-  bool is_tock = false;
-  bool is_task = false;
-  bool is_func = false;
-  bool is_root = false;
-  bool is_public = false;
-  bool is_const = false;
-
-  std::vector<MtMethod*> callers;
-
-  int get_rank() const {
-    return 0;
-  }
-
-  void check_temporal();
+  void trace_assign(MnNode n);
+  void trace_call(MnNode n);
+  void trace_id(MnNode n);
+  void trace_if(MnNode n);
+  void trace_switch(MnNode n);
 
 
 #if 0
@@ -120,8 +98,14 @@ struct MtMethod {
   void check_dirty_switch(MnNode n, MtDelta& d);
 #endif
 
-private:
-  MtMethod(MnNode n, MtModule* _mod, MtModLibrary* _lib);
+  MtModule* mod() { return mod_stack.back(); }
+  MtMethod* method() { return method_stack.back(); }
+
+  std::vector<MtModule*> mod_stack;
+  std::vector<MtMethod*> method_stack;
+
+  int depth;
+  MtDelta delta;
 };
 
 //------------------------------------------------------------------------------

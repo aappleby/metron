@@ -27,7 +27,7 @@ class singlecycle_datapath {
   //----------------------------------------
 
   logic<32> pc() const {
-    return program_counter.value;
+    return program_counter.value();
   }
 
   logic<32> rs2_data(logic<32> inst) const {
@@ -50,7 +50,7 @@ class singlecycle_datapath {
       mux_operand_a.out(
         alu_operand_a_select,
         regs.rs1_data(rs1_idx),
-        program_counter.value
+        program_counter.value()
       ),
       mux_operand_b.out(
         alu_operand_b_select,
@@ -70,8 +70,8 @@ class singlecycle_datapath {
     logic<2> next_pc_select,
     logic<1> pc_write_enable
   ) {
-    logic<32> pc_plus_4 = adder_pc_plus_4.result(b32(0x00000004), program_counter.value);
-    logic<32> pc_plus_imm = adder_pc_plus_immediate.result(program_counter.value, igen.immediate(inst));
+    logic<32> pc_plus_4 = adder_pc_plus_4.result(b32(0x00000004), program_counter.value());
+    logic<32> pc_plus_imm = adder_pc_plus_immediate.result(program_counter.value(), igen.immediate(inst));
 
     logic<32> pc_data = mux_next_pc_select.out(
       next_pc_select,

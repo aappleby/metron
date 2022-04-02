@@ -132,18 +132,18 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
             = vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs_rd_data;
     }
     if (vlSelf->reset) {
-        vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value = 0x400000U;
+        vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value = 0x400000U;
     } else if (vlSelf->toplevel__DOT__core__DOT__datapath_pc_write_enable) {
-        vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value 
+        vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value 
             = vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_next;
     }
     toplevel__DOT__core__DOT__datapath__DOT__tock__DOT__pc_plus_4 
-        = ((IData)(4U) + vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value);
+        = ((IData)(4U) + vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value);
     toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_in0 
         = toplevel__DOT__core__DOT__datapath__DOT__tock__DOT__pc_plus_4;
     toplevel__DOT__core__DOT__datapath__DOT__mux_reg_writeback_in2 
         = toplevel__DOT__core__DOT__datapath__DOT__tock__DOT__pc_plus_4;
-    toplevel__DOT__tock__DOT__pc = vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value;
+    toplevel__DOT__tock__DOT__pc = vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value;
     toplevel__DOT__text_memory_bus_address = toplevel__DOT__tock__DOT__pc;
     vlSelf->o_pc = toplevel__DOT__tock__DOT__pc;
     toplevel__DOT__text_memory_bus__DOT__unnamedblk1__DOT__fetched 
@@ -307,7 +307,7 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
                                                    & vlSelf->toplevel__DOT__core__DOT__datapath__DOT__idec_inst);
     toplevel__DOT__core__DOT__ctlpath_inst_opcode = toplevel__DOT__core__DOT__tock__DOT__opcode;
     toplevel__DOT__core__DOT__datapath__DOT__tock__DOT__pc_plus_imm 
-        = (vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value 
+        = (vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value 
            + toplevel__DOT__core__DOT__datapath__DOT__igen_immediate);
     toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_in1 
         = toplevel__DOT__core__DOT__datapath__DOT__tock__DOT__pc_plus_imm;
@@ -432,7 +432,7 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
             ? ((1U == (IData)(toplevel__DOT__core__DOT__datapath_alu_function))
                 ? (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
                      ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
-                         ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value
+                         ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
                          : 0U) : vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs
                     [toplevel__DOT__core__DOT__datapath__DOT__regs_rs1_address]) 
                    + ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
@@ -442,7 +442,7 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
                 : ((2U == (IData)(toplevel__DOT__core__DOT__datapath_alu_function))
                     ? (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
                          ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
-                             ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value
+                             ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
                              : 0U) : vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs
                         [toplevel__DOT__core__DOT__datapath__DOT__regs_rs1_address]) 
                        - ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
@@ -452,7 +452,7 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
                     : ((3U == (IData)(toplevel__DOT__core__DOT__datapath_alu_function))
                         ? (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
                              ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
-                                 ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value
+                                 ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
                                  : 0U) : vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs
                             [toplevel__DOT__core__DOT__datapath__DOT__regs_rs1_address]) 
                            << (0x1fU & ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
@@ -462,7 +462,7 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
                         : ((4U == (IData)(toplevel__DOT__core__DOT__datapath_alu_function))
                             ? (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
                                  ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
-                                     ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value
+                                     ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
                                      : 0U) : vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs
                                 [toplevel__DOT__core__DOT__datapath__DOT__regs_rs1_address]) 
                                >> (0x1fU & ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
@@ -475,7 +475,7 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
                                                  ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
                                                    ? 
                                                   ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
-                                                    ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value
+                                                    ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
                                                     : 0U)
                                                    : 
                                                   vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs
@@ -490,7 +490,7 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
                                 : ((6U == (IData)(toplevel__DOT__core__DOT__datapath_alu_function))
                                     ? (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
                                          ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
-                                             ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value
+                                             ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
                                              : 0U) : 
                                         vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs
                                         [toplevel__DOT__core__DOT__datapath__DOT__regs_rs1_address]) 
@@ -504,7 +504,7 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
                                                      ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
                                                        ? 
                                                       ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
-                                                        ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value
+                                                        ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
                                                         : 0U)
                                                        : 
                                                       vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs
@@ -517,7 +517,7 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
                                                        : toplevel__DOT__core__DOT__datapath__DOT__regs_rs2_data))
                                         : (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
                                              ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
-                                                 ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value
+                                                 ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
                                                  : 0U)
                                              : vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs
                                             [toplevel__DOT__core__DOT__datapath__DOT__regs_rs1_address]) 
@@ -529,7 +529,7 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
             : ((9U == (IData)(toplevel__DOT__core__DOT__datapath_alu_function))
                 ? (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
                      ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
-                         ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value
+                         ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
                          : 0U) : vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs
                     [toplevel__DOT__core__DOT__datapath__DOT__regs_rs1_address]) 
                    ^ ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
@@ -539,7 +539,7 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
                 : ((0xaU == (IData)(toplevel__DOT__core__DOT__datapath_alu_function))
                     ? (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
                          ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
-                             ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value
+                             ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
                              : 0U) : vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs
                         [toplevel__DOT__core__DOT__datapath__DOT__regs_rs1_address]) 
                        | ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
@@ -549,7 +549,7 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
                     : ((0xbU == (IData)(toplevel__DOT__core__DOT__datapath_alu_function))
                         ? (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
                              ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
-                                 ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value
+                                 ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
                                  : 0U) : vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs
                             [toplevel__DOT__core__DOT__datapath__DOT__regs_rs1_address]) 
                            & ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)

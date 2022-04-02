@@ -28,7 +28,7 @@ VL_ATTR_COLD void Vtoplevel___024root___initial__TOP__0(Vtoplevel___024root* vlS
                                                                                 ,  &(vlSelf->toplevel__DOT__text_memory_bus__DOT__text_memory__DOT__mem)
                                                                                 , 0
                                                                                 , ~0ULL);
-    vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value = 0x400000U;
+    vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value = 0x400000U;
     __Vtemp_hfdc9732b__0[0U] = 0x653d2573U;
     __Vtemp_hfdc9732b__0[1U] = 0x5f66696cU;
     __Vtemp_hfdc9732b__0[2U] = 0x64617461U;
@@ -135,12 +135,12 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
     // Body
     vlSelf->toplevel__DOT__core__DOT__datapath_pc_write_enable = 1U;
     toplevel__DOT__core__DOT__datapath__DOT__tock__DOT__pc_plus_4 
-        = ((IData)(4U) + vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value);
+        = ((IData)(4U) + vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value);
     toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_in0 
         = toplevel__DOT__core__DOT__datapath__DOT__tock__DOT__pc_plus_4;
     toplevel__DOT__core__DOT__datapath__DOT__mux_reg_writeback_in2 
         = toplevel__DOT__core__DOT__datapath__DOT__tock__DOT__pc_plus_4;
-    toplevel__DOT__tock__DOT__pc = vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value;
+    toplevel__DOT__tock__DOT__pc = vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value;
     toplevel__DOT__text_memory_bus_address = toplevel__DOT__tock__DOT__pc;
     vlSelf->o_pc = toplevel__DOT__tock__DOT__pc;
     toplevel__DOT__text_memory_bus__DOT__unnamedblk1__DOT__fetched 
@@ -304,7 +304,7 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
                                                    & vlSelf->toplevel__DOT__core__DOT__datapath__DOT__idec_inst);
     toplevel__DOT__core__DOT__ctlpath_inst_opcode = toplevel__DOT__core__DOT__tock__DOT__opcode;
     toplevel__DOT__core__DOT__datapath__DOT__tock__DOT__pc_plus_imm 
-        = (vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value 
+        = (vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value 
            + toplevel__DOT__core__DOT__datapath__DOT__igen_immediate);
     toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_in1 
         = toplevel__DOT__core__DOT__datapath__DOT__tock__DOT__pc_plus_imm;
@@ -429,7 +429,7 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
             ? ((1U == (IData)(toplevel__DOT__core__DOT__datapath_alu_function))
                 ? (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
                      ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
-                         ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value
+                         ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
                          : 0U) : vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs
                     [toplevel__DOT__core__DOT__datapath__DOT__regs_rs1_address]) 
                    + ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
@@ -439,7 +439,7 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
                 : ((2U == (IData)(toplevel__DOT__core__DOT__datapath_alu_function))
                     ? (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
                          ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
-                             ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value
+                             ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
                              : 0U) : vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs
                         [toplevel__DOT__core__DOT__datapath__DOT__regs_rs1_address]) 
                        - ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
@@ -449,7 +449,7 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
                     : ((3U == (IData)(toplevel__DOT__core__DOT__datapath_alu_function))
                         ? (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
                              ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
-                                 ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value
+                                 ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
                                  : 0U) : vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs
                             [toplevel__DOT__core__DOT__datapath__DOT__regs_rs1_address]) 
                            << (0x1fU & ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
@@ -459,7 +459,7 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
                         : ((4U == (IData)(toplevel__DOT__core__DOT__datapath_alu_function))
                             ? (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
                                  ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
-                                     ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value
+                                     ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
                                      : 0U) : vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs
                                 [toplevel__DOT__core__DOT__datapath__DOT__regs_rs1_address]) 
                                >> (0x1fU & ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
@@ -472,7 +472,7 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
                                                  ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
                                                    ? 
                                                   ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
-                                                    ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value
+                                                    ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
                                                     : 0U)
                                                    : 
                                                   vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs
@@ -487,7 +487,7 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
                                 : ((6U == (IData)(toplevel__DOT__core__DOT__datapath_alu_function))
                                     ? (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
                                          ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
-                                             ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value
+                                             ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
                                              : 0U) : 
                                         vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs
                                         [toplevel__DOT__core__DOT__datapath__DOT__regs_rs1_address]) 
@@ -501,7 +501,7 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
                                                      ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
                                                        ? 
                                                       ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
-                                                        ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value
+                                                        ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
                                                         : 0U)
                                                        : 
                                                       vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs
@@ -514,7 +514,7 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
                                                        : toplevel__DOT__core__DOT__datapath__DOT__regs_rs2_data))
                                         : (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
                                              ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
-                                                 ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value
+                                                 ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
                                                  : 0U)
                                              : vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs
                                             [toplevel__DOT__core__DOT__datapath__DOT__regs_rs1_address]) 
@@ -526,7 +526,7 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
             : ((9U == (IData)(toplevel__DOT__core__DOT__datapath_alu_function))
                 ? (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
                      ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
-                         ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value
+                         ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
                          : 0U) : vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs
                     [toplevel__DOT__core__DOT__datapath__DOT__regs_rs1_address]) 
                    ^ ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
@@ -536,7 +536,7 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
                 : ((0xaU == (IData)(toplevel__DOT__core__DOT__datapath_alu_function))
                     ? (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
                          ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
-                             ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value
+                             ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
                              : 0U) : vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs
                         [toplevel__DOT__core__DOT__datapath__DOT__regs_rs1_address]) 
                        | ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
@@ -546,7 +546,7 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
                     : ((0xbU == (IData)(toplevel__DOT__core__DOT__datapath_alu_function))
                         ? (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
                              ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
-                                 ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value
+                                 ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
                                  : 0U) : vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs
                             [toplevel__DOT__core__DOT__datapath__DOT__regs_rs1_address]) 
                            & ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
@@ -760,9 +760,9 @@ VL_ATTR_COLD void Vtoplevel___024root___ctor_var_reset(Vtoplevel___024root* vlSe
     vlSelf->toplevel__DOT__core__DOT__datapath_regfile_write_enable = VL_RAND_RESET_I(1);
     vlSelf->toplevel__DOT__core__DOT__datapath_pc_write_enable = VL_RAND_RESET_I(1);
     vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_next = VL_RAND_RESET_I(32);
-    vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value = VL_RAND_RESET_I(32);
     vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs_rd_data = VL_RAND_RESET_I(32);
     vlSelf->toplevel__DOT__core__DOT__datapath__DOT__idec_inst = VL_RAND_RESET_I(32);
+    vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value = VL_RAND_RESET_I(32);
     for (int __Vi0=0; __Vi0<32; ++__Vi0) {
         vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs[__Vi0] = VL_RAND_RESET_I(32);
     }

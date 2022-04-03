@@ -45,25 +45,6 @@ void log_error(MnNode n, const char *fmt, ...) {
 
   printf("@%04d: ", ts_node_start_point(n.node).row + 1);
 
-  /*
-{
-  auto start = &source[n.start_byte()];
-
-  auto a = start;
-  auto b = start;
-  while (a > source     && *a != '\n' && *a != '\r') a--;
-  while (b < source_end && *b != '\n' && *b != '\r') b++;
-
-  if (*a == '\n' || *a == '\r') a++;
-
-  while (a != b) {
-    putc(*a++, stdout);
-  }
-}
-
-printf("\n");
-*/
-
   // n.error();
   n.dump_tree();
 
@@ -515,14 +496,14 @@ bool MtModule::trace() {
     MtTracer tracer;
     tracer._mod_stack.push_back(this);
     tracer._method_stack.push_back(m);
-    tracer.state_map = new field_state_map();
+    tracer._state_stack.push_back(new state_map());
 
     tracer.trace_dispatch(node_body);
 
     //tracer.dump_trace();
 
-    for (const auto& pair : *tracer.state_map) {
-      if (pair.second == FIELD_XXXXXXX) {
+    for (const auto& pair : tracer.state_top()) {
+      if (pair.second == FIELD_INVALID) {
         LOG_R("Tracing %s.%s failed, field %s is in an invalid state\n", name().c_str(), m->name().c_str(), pair.first.c_str());
         return false;
       }

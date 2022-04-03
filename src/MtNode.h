@@ -28,6 +28,8 @@ struct MnNode {
 
   //----------
 
+  void dump_source_lines() const;
+
   void dump_node(int index, int depth) const;
   void dump_tree(int index, int depth, int maxdepth) const;
   void dump_tree() const {

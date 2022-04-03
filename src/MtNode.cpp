@@ -26,6 +26,24 @@ MnNode::MnNode(TSNode node, int sym, int field, MtSourceFile* source) {
 
 //------------------------------------------------------------------------------
 
+void MnNode::dump_source_lines() const {
+  auto source_start = source->source;
+  auto source_end = source->source_end;
+
+  auto a = start();
+  auto b = end();
+
+  while (a > source_start && *a != '\n' && *a != '\r') a--;
+  while (b < source_end   && *b != '\n' && *b != '\r') b++;
+  if (*a == '\n' || *a == '\r') a++;
+  if (*b == '\n' || *b == '\r') b--;
+
+  while (a != b) putc(*a++, stdout);
+  printf("\n");
+}
+
+//------------------------------------------------------------------------------
+
 MnNode MnNode::get_field(int field_id) const {
   if (is_null()) return MnNode::null;
 

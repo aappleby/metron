@@ -19,7 +19,7 @@ enum FieldDelta {
 };
 
 enum FieldState {
-  FIELD________,
+  FIELD________ = 0,
   FIELD____WR__,
   FIELD____WR_L,
   FIELD_RD_____,
@@ -27,7 +27,7 @@ enum FieldState {
   FIELD_RD_WR_L,
   FIELD____WS__,
   FIELD____WS_L,
-  FIELD_XXXXXXX,
+  FIELD_INVALID,
   FIELD_MAX,
 };
 
@@ -41,13 +41,13 @@ inline const char* to_string(FieldState s) {
   case FIELD_RD_WR_L:  return "FIELD_RD_WR_L";
   case FIELD____WS__:  return "FIELD____WS__";
   case FIELD____WS_L:  return "FIELD____WS_L";
-  case FIELD_XXXXXXX:  return "FIELD_XXXXXXX";
+  case FIELD_INVALID:  return "FIELD_INVALID";
   case FIELD_MAX:      return "FIELD_MAX";
   default:             return "?????";
   }
 }
 
-typedef std::map<std::string, FieldState> field_state_map;
+typedef std::map<std::string, FieldState> state_map;
 
 //------------------------------------------------------------------------------
 
@@ -109,50 +109,24 @@ class MtTracer {
   void trace_method_call(MnNode n);
   void trace_template_call(MnNode n);
 
-  void trace_read(std::string field_name);
-  void trace_write(std::string field_name);
-  void trace_end_fn(std::string field_name);
+  void trace_read(MnNode const& n);
+  void trace_write(MnNode const& n);
+  void trace_end_fn();
 
   void dump_trace();
 
-#if 0
-  void update_delta();
-  void check_dirty_read_identifier(MnNode n, MtDelta& d);
-  void check_dirty_read_submod(MnNode n, MtDelta& d);
-  void check_dirty_write(MnNode n, MtDelta& d);
-  void check_dirty_dispatch(MnNode n, MtDelta& d);
-  void check_dirty_assign(MnNode n, MtDelta& d);
-  void check_dirty_if(MnNode n, MtDelta& d);
-  void check_dirty_call(MnNode n, MtDelta& d);
-  void check_dirty_switch(MnNode n, MtDelta& d);
-#endif
-
   MtModule* mod() { return _mod_stack.back(); }
   MtMethod* method() { return _method_stack.back(); }
+  state_map& state_top() { return *_state_stack.back(); }
 
-  int depth() const { return (int)_method_stack.size(); }
-
-  /*
-  void push(MtModule* mod, MtMethod* method) {
-    _mod_stack.push_back(mod);
-    _method_stack.push_back(method);
-  }
-  void pop(MtModule* mod, MtMethod* method) {
-    assert(_method_stack.back() == method);
-    _method_stack.pop_back();
-    assert(_mod_stack.back() == mod);
-    _mod_stack.pop_back();
-  }
-  */
-
+  int  depth()   const { return (int)_method_stack.size(); }
   bool in_tick() const;
   bool in_tock() const;
 
-  std::vector<MtField*>  _field_stack;
-  std::vector<MtModule*> _mod_stack;
-  std::vector<MtMethod*> _method_stack;
-
-  field_state_map* state_map;
+  std::vector<MtField*>   _field_stack;
+  std::vector<MtModule*>  _mod_stack;
+  std::vector<MtMethod*>  _method_stack;
+  std::vector<state_map*> _state_stack;
 };
 
 //------------------------------------------------------------------------------

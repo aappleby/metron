@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
   std::vector<std::string> source_names;
   std::string out_dir = "";
   std::string root_dir = ".";
-  bool quiet = false;
+  //bool quiet = false;
   bool verbose = false;
   bool show_help = false;
 
@@ -109,10 +109,10 @@ int main(int argc, char** argv) {
           LOG_G("Verbose mode on\n", arg_cursor);
           verbose = true;
           break;
-        case 'q':
-          LOG_G("Quiet mode on\n", arg_cursor);
-          quiet = true;
-          break;
+        //case 'q':
+        //  LOG_G("Quiet mode on\n", arg_cursor);
+        //  quiet = true;
+        //  break;
         case 'h':
           show_help = true;
           break;
@@ -189,7 +189,7 @@ int main(int argc, char** argv) {
   }
 #endif
 
-#if 0
+#if 1
   //----------
   // Emit all modules.
   for (auto& source_file : library.source_files)
@@ -206,7 +206,7 @@ int main(int argc, char** argv) {
 
     std::string out_string;
     MtCursor cursor(&library, source_file, &out_string);
-    cursor.quiet = quiet && !verbose;
+    cursor.quiet = !verbose;
     cursor.cursor = source_file->source;
     cursor.source_file = source_file;
     cursor.emit(source_file->root_node);

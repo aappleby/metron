@@ -69,8 +69,6 @@ build obj/src/MetronApp.o: compile_cpp src/MetronApp.cpp
   includes = -Itree-sitter/lib/include
 build obj/src/MtCursor.o: compile_cpp src/MtCursor.cpp
   includes = -Itree-sitter/lib/include
-build obj/src/MtMethod.o: compile_cpp src/MtMethod.cpp
-  includes = -Itree-sitter/lib/include
 build obj/src/MtModLibrary.o: compile_cpp src/MtModLibrary.cpp
   includes = -Itree-sitter/lib/include
 build obj/src/MtModule.o: compile_cpp src/MtModule.cpp
@@ -79,13 +77,15 @@ build obj/src/MtNode.o: compile_cpp src/MtNode.cpp
   includes = -Itree-sitter/lib/include
 build obj/src/MtSourceFile.o: compile_cpp src/MtSourceFile.cpp
   includes = -Itree-sitter/lib/include
+build obj/src/MtTracer.o: compile_cpp src/MtTracer.cpp
+  includes = -Itree-sitter/lib/include
 build obj/src/Platform.o: compile_cpp src/Platform.cpp
   includes = -Itree-sitter/lib/include
 build bin/metron: link obj/tree-sitter/lib/src/lib.o $
     obj/tree-sitter-cpp/src/parser.o obj/tree-sitter-cpp/src/scanner.o $
-    obj/src/MetronApp.o obj/src/MtCursor.o obj/src/MtMethod.o $
-    obj/src/MtModLibrary.o obj/src/MtModule.o obj/src/MtNode.o $
-    obj/src/MtSourceFile.o obj/src/Platform.o
+    obj/src/MetronApp.o obj/src/MtCursor.o obj/src/MtModLibrary.o $
+    obj/src/MtModule.o obj/src/MtNode.o obj/src/MtSourceFile.o $
+    obj/src/MtTracer.o obj/src/Platform.o
 
 
 ################################################################################

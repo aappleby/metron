@@ -121,7 +121,7 @@ struct MtCursor {
 
   std::vector<MnNode> node_stack;
 
-  bool quiet = true;
+  bool echo = false;
 
   bool in_public = false;
 

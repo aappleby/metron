@@ -69,7 +69,8 @@ int main(int argc, char** argv) {
 
   bool quiet = false;
   bool verbose = false;
-  bool convert = true;
+  bool echo = false;
+  bool convert = false;
   bool stats = false;
   std::string src_root = ".";
   std::string out_root = "";
@@ -78,6 +79,7 @@ int main(int argc, char** argv) {
   // clang-format off
   app.add_flag  ("-q,--quiet",    quiet,        "Quiet mode");
   app.add_flag  ("-v,--verbose",  verbose,      "Verbose mode");
+  app.add_flag  ("-e,--echo",     echo,         "Echo the converted source back to the terminal, with color-coding");
   app.add_flag  ("-c,--convert",  convert,      "Convert sources to SystemVerilog. If not specified, will only check inputs for convertibility.");
   app.add_flag  ("-s,--stats",    stats,        "Print detailed stats about the source modules");
 
@@ -89,11 +91,6 @@ int main(int argc, char** argv) {
   //app.parse(argc, argv);
   CLI11_PARSE(app, argc, argv);
 
-  printf("verbose is %d\n", verbose);
-  for (const auto& f : source_names) {
-    printf("filename %s\n", f.c_str());
-  }
-
   // -v -r examples/uart/metron -o examples/uart/metron_sv uart_top.h uart_hello.h uart_tx.h uart_rx.h
   // -v -r examples/rvsimple/metron -o examples/rvsimple/metron_sv adder.h alu.h alu_control.h config.h constants.h control_transfer.h data_memory_interface.h example_data_memory.h example_data_memory_bus.h example_text_memory.h example_text_memory_bus.h immediate_generator.h instruction_decoder.h multiplexer.h multiplexer2.h multiplexer4.h multiplexer8.h regfile.h register.h riscv_core.h singlecycle_control.h singlecycle_ctlpath.h singlecycle_datapath.h toplevel.h
   // -v -r examples/rvtiny/metron -o examples/rvtiny/metron_sv toplevel.h
@@ -104,6 +101,7 @@ int main(int argc, char** argv) {
   LOG_B("Metron v0.0.1\n");
   LOG_B("Quiet   %d\n", quiet);
   LOG_B("Verbose %d\n", verbose);
+  LOG_B("Echo    %d\n", echo);
   LOG_B("Convert %d\n", convert);
   LOG_B("Stats   %d\n", stats);
   LOG_B("Source root '%s'\n", src_root.c_str());
@@ -112,6 +110,7 @@ int main(int argc, char** argv) {
   for (auto& name : source_names) {
     LOG_B("Header %s\n", name.c_str());
   }
+  LOG_B("\n");
 
   //----------
   // Load all source files.
@@ -119,20 +118,27 @@ int main(int argc, char** argv) {
   MtModLibrary library;
   library.add_search_path(src_root);
 
+  LOG_B("Loading source files\n");
   for (auto& name : source_names) {
     library.load_source(name.c_str());
   }
+  LOG_B("\n");
+
+  LOG_B("Processing source files\n");
   library.process_sources();
 
   if (!library.all_modules_valid) {
     LOG_R("Aborting, some modules invalid\n");
     return -1;
+  } else {
+    LOG_G("\n");
   }
 
   //----------
   // Dump out the module tree
 
   if (verbose) {
+    LOG_Y("Module tree:\n");
     std::function<void(MtModule*, int, bool)> step;
     step = [&](MtModule* m, int rank, bool last) -> void {
       for (int i = 0; i < rank - 1; i++) LOG_Y("|  ");
@@ -153,10 +159,11 @@ int main(int argc, char** argv) {
     for (auto m : library.modules) {
       if (m->parents.empty()) step(m, 0, false);
     }
+    LOG_G("\n");
   }
 
   //----------
-  // Dump out the module tree
+  // Dump out module stats
 
   if (stats) {
     for (auto& mod : library.modules) {
@@ -165,6 +172,7 @@ int main(int argc, char** argv) {
         //mod->dump_deltas();
       }
     }
+    LOG_G("\n");
   }
 
   //----------
@@ -180,12 +188,16 @@ int main(int argc, char** argv) {
       auto out_path = out_root + "/" + out_name + ".sv";
 
       if (out_root.size()) {
-        LOG_G("%s -> %s\n", source_file->full_path.c_str(), out_path.c_str());
+        LOG_G("Converting %s -> %s\n", source_file->full_path.c_str(), out_path.c_str());
+      }
+
+      if (echo) {
+        LOG_G("Converted source:\n");
       }
 
       std::string out_string;
       MtCursor cursor(&library, source_file, &out_string);
-      cursor.quiet = !verbose;
+      cursor.echo = echo;
       cursor.cursor = source_file->source;
       cursor.source_file = source_file;
       cursor.emit(source_file->root_node);
@@ -212,6 +224,7 @@ int main(int argc, char** argv) {
     }
   }
 
+  LOG_G("Done!\n");
   return 0;
 }
 

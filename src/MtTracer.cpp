@@ -280,7 +280,7 @@ void MtTracer::trace_call(MnNode n) {
   }
 
   merge_series(state_top(), state_call, state_top());
-  dump_trace();
+  //dump_trace();
 }
 
 //------------------------------------------------------------------------------
@@ -448,7 +448,7 @@ void MtTracer::trace_switch(MnNode n) {
         _state_stack.pop_back();
 
         merge_parallel(state_top(), state_case, state_top());
-        dump_trace();
+        //dump_trace();
       }
     }
   }
@@ -516,7 +516,7 @@ void MtTracer::trace_read(MnNode const& n) {
   }
 
   state_top()[field_name] = new_state;
-  dump_trace();
+  //dump_trace();
 }
 
 //------------------------------------------------------------------------------
@@ -544,7 +544,7 @@ void MtTracer::trace_write(MnNode const& n) {
   }
 
   state_top()[field_name] = new_state;
-  dump_trace();
+  //dump_trace();
 }
 
 //------------------------------------------------------------------------------

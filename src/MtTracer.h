@@ -51,47 +51,6 @@ typedef std::map<std::string, FieldState> state_map;
 
 //------------------------------------------------------------------------------
 
-#if 0
-struct MtDelta {
-  bool valid = false;
-  bool error = false;
-  field_state_map state_old;
-  field_state_map state_new;
-
-  void add_prefix(const std::string& p) {
-    field_state_map temp_old;
-    field_state_map temp_new;
-
-    temp_old.swap(state_old);
-    temp_new.swap(state_new);
-
-    for (auto& n : temp_old) state_old[p + "." + n.first] = n.second;
-    for (auto& n : temp_new) state_new[p + "." + n.first] = n.second;
-  }
-
-  void wipe() {
-    valid = false;
-    error = false;
-    state_old.clear();
-    state_new.clear();
-  }
-
-  /*
-  void sanity_check() const {
-  for (auto& s1 : state_old) {
-  auto& s2 = *state_new.find(s1.first);
-  assert(s1.second != ERROR);
-  assert(s2.second != ERROR);
-  if (s1.second == MAYBE) assert(s2.second != CLEAN);
-  if (s1.second == DIRTY) assert(s2.second == DIRTY);
-  }
-  }
-  */
-};
-#endif
-
-//------------------------------------------------------------------------------
-
 class MtTracer {
  public:
   void trace_dispatch(MnNode n);

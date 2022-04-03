@@ -456,8 +456,8 @@ void MtModule::collect_methods() {
     } else if (m->is_tick) {
       if (m->is_public) {
         // FIXME do we still care about this?
-        //printf("PUBLIC TICK METHOD BAD!\n");
-        //exit(-1);
+        // printf("PUBLIC TICK METHOD BAD!\n");
+        // exit(-1);
       }
       tick_methods.push_back(m);
     } else if (m->is_tock) {
@@ -501,11 +501,12 @@ bool MtModule::trace() {
 
     tracer.trace_dispatch(node_body);
 
-    //tracer.dump_trace();
+    // tracer.dump_trace();
 
-    for (const auto& pair : tracer.state_top()) {
+    for (const auto &pair : tracer.state_top()) {
       if (pair.second == FIELD_INVALID) {
-        LOG_R("Tracing %s.%s failed, field %s is in an invalid state\n", name().c_str(), m->name().c_str(), pair.first.c_str());
+        LOG_R("Tracing %s.%s failed, field %s is in an invalid state\n",
+              name().c_str(), m->name().c_str(), pair.first.c_str());
         return false;
       }
     }
@@ -612,7 +613,14 @@ void MtModule::collect_submods() {
     if (source_file->lib->has_module(f->type_name())) {
       submods.push_back(f);
     } else {
-      if (f->type_name() != "logic") {
+      if (f->type_name() == "logic") {
+      }
+      else if (f->type_name() == "int") {
+      }
+      else if (get_enum(f->type_name())) {
+        // FIXME this isn't working
+      }
+      else {
         LOG_R("Could not find module for submod %s\n", f->type_name().c_str());
       }
     }

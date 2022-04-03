@@ -142,7 +142,7 @@ void MtCursor::emit_char(char c) {
     line_elided = false;
   }
 
-  if (!quiet) putchar(c);
+  if (echo) putchar(c);
   str_out->push_back(c);
 
   at_newline = c == '\n';
@@ -211,7 +211,7 @@ void MtCursor::emit_text(MnNode n) {
 //----------------------------------------
 
 void MtCursor::emit(const char* fmt, ...) {
-  if (!quiet) printf("\u001b[38;2;128;255;128m");
+  if (echo) printf("\u001b[38;2;128;255;128m");
 
   va_list args;
   va_start(args, fmt);
@@ -227,7 +227,7 @@ void MtCursor::emit(const char* fmt, ...) {
   for (int i = 0; i < size; i++) emit_char(buf[i]);
   delete buf;
 
-  if (!quiet) printf("\u001b[0m");
+  if (echo) printf("\u001b[0m");
 }
 
 //----------------------------------------
@@ -235,7 +235,7 @@ void MtCursor::emit(const char* fmt, ...) {
 void MtCursor::emit_replacement(MnNode n, const char* fmt, ...) {
   assert(cursor == n.start());
 
-  if (!quiet) printf("\u001b[38;2;255;255;128m");
+  if (echo) printf("\u001b[38;2;255;255;128m");
 
   cursor = n.end();
 
@@ -253,7 +253,7 @@ void MtCursor::emit_replacement(MnNode n, const char* fmt, ...) {
   for (int i = 0; i < size; i++) emit_char(buf[i]);
   delete buf;
 
-  if (!quiet) printf("\u001b[0m");
+  if (echo) printf("\u001b[0m");
 }
 
 //------------------------------------------------------------------------------
@@ -1316,7 +1316,7 @@ void MtCursor::emit_output_ports(MnFieldDecl submod) {
     auto output_decl = n->get_decl_node();
 
     MtCursor subcursor(lib, submod_mod->source_file, str_out);
-    subcursor.quiet = quiet;
+    subcursor.echo = echo;
     subcursor.in_ports = true;
     subcursor.id_replacements = replacements;
     subcursor.cursor = output_type.start();
@@ -1337,7 +1337,7 @@ void MtCursor::emit_output_ports(MnFieldDecl submod) {
     auto output_decl = n->get_decl_node();
 
     MtCursor subcursor(lib, submod_mod->source_file, str_out);
-    subcursor.quiet = quiet;
+    subcursor.echo = echo;
     subcursor.in_ports = true;
     subcursor.id_replacements = replacements;
     subcursor.cursor = output_type.start();
@@ -1358,7 +1358,7 @@ void MtCursor::emit_output_ports(MnFieldDecl submod) {
     auto getter_name = getter_decl.get_field(field_declarator);
 
     MtCursor sub_cursor(lib, submod_mod->source_file, str_out);
-    sub_cursor.quiet = quiet;
+    sub_cursor.echo = echo;
     sub_cursor.in_ports = true;
     sub_cursor.id_replacements = replacements;
 

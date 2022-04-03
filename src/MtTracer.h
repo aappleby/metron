@@ -6,28 +6,44 @@
 
 struct MtModule;
 struct MtMethod;
+struct MtField;
 
 //------------------------------------------------------------------------------
 
+enum FieldDelta {
+  DELTA_RD = 0,
+  DELTA_WR,
+  DELTA_WS,
+  DELTA_EF,
+  DELTA_MAX,
+};
+
 enum FieldState {
-  CLEAN = 0,
-  MAYBE = 1,
-  DIRTY = 2,
-  ERROR = 3,
+  FIELD________,
+  FIELD____WR__,
+  FIELD____WR_L,
+  FIELD_RD_____,
+  FIELD_RD_WR__,
+  FIELD_RD_WR_L,
+  FIELD____WS__,
+  FIELD____WS_L,
+  FIELD_XXXXXXX,
+  FIELD_MAX,
 };
 
 inline const char* to_string(FieldState s) {
   switch (s) {
-    case CLEAN:
-      return "CLEAN";
-    case MAYBE:
-      return "MAYBE";
-    case DIRTY:
-      return "DIRTY";
-    case ERROR:
-      return "ERROR";
-    default:
-      return "INVALID";
+  case FIELD________:  return "FIELD________";
+  case FIELD____WR__:  return "FIELD____WR__";
+  case FIELD____WR_L:  return "FIELD____WR_L";
+  case FIELD_RD_____:  return "FIELD_RD_____";
+  case FIELD_RD_WR__:  return "FIELD_RD_WR__";
+  case FIELD_RD_WR_L:  return "FIELD_RD_WR_L";
+  case FIELD____WS__:  return "FIELD____WS__";
+  case FIELD____WS_L:  return "FIELD____WS_L";
+  case FIELD_XXXXXXX:  return "FIELD_XXXXXXX";
+  case FIELD_MAX:      return "FIELD_MAX";
+  default:             return "?????";
   }
 }
 
@@ -35,6 +51,7 @@ typedef std::map<std::string, FieldState> field_state_map;
 
 //------------------------------------------------------------------------------
 
+#if 0
 struct MtDelta {
   bool valid = false;
   bool error = false;
@@ -71,6 +88,7 @@ struct MtDelta {
   }
   */
 };
+#endif
 
 //------------------------------------------------------------------------------
 
@@ -81,10 +99,21 @@ class MtTracer {
 
   void trace_assign(MnNode n);
   void trace_call(MnNode n);
+  void trace_field(MnNode n);
   void trace_id(MnNode n);
   void trace_if(MnNode n);
   void trace_switch(MnNode n);
+  void trace_ternary(MnNode n);
 
+  void trace_submod_call(MnNode n);
+  void trace_method_call(MnNode n);
+  void trace_template_call(MnNode n);
+
+  void trace_read(std::string field_name);
+  void trace_write(std::string field_name);
+  void trace_end_fn(std::string field_name);
+
+  void dump_trace();
 
 #if 0
   void update_delta();
@@ -98,14 +127,32 @@ class MtTracer {
   void check_dirty_switch(MnNode n, MtDelta& d);
 #endif
 
-  MtModule* mod() { return mod_stack.back(); }
-  MtMethod* method() { return method_stack.back(); }
+  MtModule* mod() { return _mod_stack.back(); }
+  MtMethod* method() { return _method_stack.back(); }
 
-  std::vector<MtModule*> mod_stack;
-  std::vector<MtMethod*> method_stack;
+  int depth() const { return (int)_method_stack.size(); }
 
-  int depth;
-  MtDelta delta;
+  /*
+  void push(MtModule* mod, MtMethod* method) {
+    _mod_stack.push_back(mod);
+    _method_stack.push_back(method);
+  }
+  void pop(MtModule* mod, MtMethod* method) {
+    assert(_method_stack.back() == method);
+    _method_stack.pop_back();
+    assert(_mod_stack.back() == mod);
+    _mod_stack.pop_back();
+  }
+  */
+
+  bool in_tick() const;
+  bool in_tock() const;
+
+  std::vector<MtField*>  _field_stack;
+  std::vector<MtModule*> _mod_stack;
+  std::vector<MtMethod*> _method_stack;
+
+  field_state_map* state_map;
 };
 
 //------------------------------------------------------------------------------

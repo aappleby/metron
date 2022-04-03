@@ -107,14 +107,15 @@ struct MtMethod {
     return 0;
   }
 
-  void check_temporal();
-
 private:
+
+  std::string _name;
 
   MtMethod(MnNode n, MtModule* _mod, MtModLibrary* _lib)
     : node(n), mod(_mod), lib(_lib) {
     assert(mod);
     assert(lib);
+    _name = node.name4();
   }
 };
 
@@ -149,7 +150,7 @@ struct MtModule {
 
   void build_port_map();
 
-  void trace();
+  bool trace();
 
   void sanity_check();
 
@@ -171,10 +172,6 @@ struct MtModule {
     }
     return min_rank + 1;
   }
-
-  void check_temporal();
-  void check_temporal_root(MtMethod* root);
-  void check_temporal_dispatch(MtMethod* method, MnNode n);
 
   //----------
 

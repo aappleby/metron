@@ -3,6 +3,7 @@
 #include "metron/uart_top.h"
 
 int main(int argc, char** arv) {
+#if 0
   printf("Metron simulation:\n");
   printf("================================================================================\n");
 
@@ -25,5 +26,6 @@ int main(int argc, char** arv) {
       }
     }
   }
+#endif
   return -1;
 }

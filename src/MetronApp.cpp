@@ -65,8 +65,6 @@ int main(int argc, char** argv) {
 
 
   // -v -Rexamples/uart/metron -Oexamples/uart/metron_sv uart_top.h uart_hello.h uart_tx.h uart_rx.h
-  // -v -Rexample_uart/rtl -Oexample_uart/generated uart_rx.h
-  // -v -Rexamples/rvsimple/metron -Oexamples/rvsimple/metron_sv alu.h
   // -v -Rexamples/rvsimple/metron -Oexamples/rvsimple/metron_sv adder.h alu.h alu_control.h config.h constants.h control_transfer.h data_memory_interface.h example_data_memory.h example_data_memory_bus.h example_text_memory.h example_text_memory_bus.h immediate_generator.h instruction_decoder.h multiplexer.h multiplexer2.h multiplexer4.h multiplexer8.h regfile.h register.h riscv_core.h singlecycle_control.h singlecycle_ctlpath.h singlecycle_datapath.h toplevel.h
   // -v -Rexamples/rvtiny/metron -Oexamples/rvtiny/metron_sv toplevel.h
 
@@ -182,18 +180,8 @@ int main(int argc, char** argv) {
   for (auto m : library.modules) {
     if (m->parents.empty()) step(m, 0, false);
   }
-#endif
 
-  //----------
-  // Dump out info on modules for debugging.
-
-#if 0
   for (auto& mod : library.modules) {
-    if (mod->dirty_check_fail) {
-      printf("Module %s failed dirty check\n", mod->mod_name.c_str());
-      return -1;
-    }
-
     if (verbose) {
       mod->dump_banner();
       //mod->dump_deltas();

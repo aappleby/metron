@@ -16,6 +16,7 @@ extern const TSLanguage *tree_sitter_cpp();
 }
 
 void log_field_state(FieldState s) {
+  /*
   switch (s) {
     case CLEAN:
       LOG_G("clean");
@@ -30,6 +31,7 @@ void log_field_state(FieldState s) {
       LOG_M("error");
       break;
   }
+  */
 }
 
 // FIXME
@@ -444,8 +446,8 @@ void MtModule::collect_methods() {
     m->is_func = func_type && func_type.text() != "void";
 
     m->is_init = func_type.is_null();
-    m->is_tick = m->is_task && func_name.starts_with("tick");
-    m->is_tock = m->is_task && func_name.starts_with("tock");
+    m->is_tick = func_name.starts_with("tick");
+    m->is_tock = func_name.starts_with("tock");
 
     m->is_const = false;
     for (auto n : func_decl) {
@@ -499,29 +501,37 @@ void MtModule::collect_methods() {
 
 //------------------------------------------------------------------------------
 
-void MtModule::trace() {
+bool MtModule::trace() {
   // Hook up callee->caller method pointers
 
-  printf("\n");
-  printf("MODULE! %s %d\n", name().c_str(), get_rank());
   for (auto m : all_methods) {
     int depth = 1;
 
     // Only trace public non-const methods that aren't constructors.
     if (m->is_init || !m->is_public || m->is_const) continue;
 
-    for (int i = 0; i < depth; i++) printf(" ");
-    printf("METHOD! %s\n", m->name().c_str());
     auto node_body = m->node.get_field(field_body);
 
     MtTracer tracer;
-    tracer.depth = 0;
-    tracer.mod_stack.push_back(this);
-    tracer.method_stack.push_back(m);
+    tracer._mod_stack.push_back(this);
+    tracer._method_stack.push_back(m);
+    tracer.state_map = new field_state_map();
+
     tracer.trace_dispatch(node_body);
 
-    //trace(m, node_body, depth + 1, delta);
+    //tracer.dump_trace();
+
+    for (const auto& pair : *tracer.state_map) {
+      if (pair.second == FIELD_XXXXXXX) {
+        LOG_R("Tracing %s.%s failed, field %s is in an invalid state\n", name().c_str(), m->name().c_str(), pair.first.c_str());
+        return false;
+      }
+    }
+
+    LOG_G("Tracing %s.%s pass\n", name().c_str(), m->name().c_str());
   }
+
+  return true;
 }
 
 //------------------------------------------------------------------------------
@@ -753,22 +763,3 @@ void MtModule::check_dirty_tocks() {
   }
 }
 #endif
-//------------------------------------------------------------------------------
-
-void MtModule::check_temporal() {
-  for (auto m : all_methods) {
-    // if (m->rank() == 0) {
-    // }
-  }
-}
-
-void MtModule::check_temporal_root(MtMethod *root) {
-  MtDelta delta;
-
-  root->node.dump_tree();
-
-  for (auto n : root->node) {
-  }
-}
-
-//------------------------------------------------------------------------------

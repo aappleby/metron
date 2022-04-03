@@ -116,29 +116,16 @@ void MtModLibrary::process_sources() {
   }
 
   // Generate call tree / temporal check for toplevel modules
-#if 1
+  bool all_pass = true;
   for (auto m : modules) {
-    if (m->get_rank() == 0) {
-      m->trace();
-    }
-  }
-#endif
-
-
-  // Verify that tick()/tock() obey read/write ordering rules.
-  bool any_fail_dirty_check = false;
-
-  for (auto& mod : modules) {
-    //mod->check_dirty_ticks();
-    //mod->check_dirty_tocks();
-
-    mod->check_temporal();
-    mod->dirty_check_done = true;
-    any_fail_dirty_check |= mod->dirty_check_fail;
+    all_pass &= m->trace();
   }
 
-  if (any_fail_dirty_check) {
-    printf("Dirty check fail!\n");
+  if (!all_pass) {
+    LOG_R("Some modules fail temporal trace!\n");
+  }
+  else {
+    LOG_G("All modules pass temporal trace!\n");
   }
   sources_processed = true;
 }

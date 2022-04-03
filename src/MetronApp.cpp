@@ -9,6 +9,13 @@
 #include "MtSourceFile.h"
 #include "Platform.h"
 
+//#include "cxxopts/include/cxxopts.hpp"
+
+#include "cli11/include/CLI/App.hpp"
+#include "cli11/include/CLI/Formatter.hpp"
+#include "cli11/include/CLI/Config.hpp"
+
+
 //#include "metron_tools.h"
 
 #pragma warning(disable : 4996)
@@ -58,180 +65,152 @@ void mkdir_all(const std::vector<std::string>& full_path) {
 //------------------------------------------------------------------------------
 
 int main(int argc, char** argv) {
-  LOG_B("Metron v0.0.1\n");
+  CLI::App app{"Metron, a C++ to SystemVerilog transpiler."};
 
-  std::vector<std::string> args;
-  for (int i = 1; i < argc; i++) args.push_back(argv[i]);
-
-
-  // -v -Rexamples/uart/metron -Oexamples/uart/metron_sv uart_top.h uart_hello.h uart_tx.h uart_rx.h
-  // -v -Rexamples/rvsimple/metron -Oexamples/rvsimple/metron_sv adder.h alu.h alu_control.h config.h constants.h control_transfer.h data_memory_interface.h example_data_memory.h example_data_memory_bus.h example_text_memory.h example_text_memory_bus.h immediate_generator.h instruction_decoder.h multiplexer.h multiplexer2.h multiplexer4.h multiplexer8.h regfile.h register.h riscv_core.h singlecycle_control.h singlecycle_ctlpath.h singlecycle_datapath.h toplevel.h
-  // -v -Rexamples/rvtiny/metron -Oexamples/rvtiny/metron_sv toplevel.h
-
-  //----------
-  // Parse args
-
-  for (int i = 0; i < args.size(); i++) {
-    LOG_B("arg[%d] = %s\n", i, args[i].c_str());
-  }
-  LOG_B("\n");
-
-  // std::vector<std::string> path_names;
-  std::vector<std::string> source_names;
-  std::string out_dir = "";
-  std::string root_dir = ".";
-  //bool quiet = false;
+  bool quiet = false;
   bool verbose = false;
-  bool show_help = false;
+  bool convert = true;
+  bool stats = false;
+  std::string src_root = ".";
+  std::string out_root = "";
+  std::vector<std::string> source_names;
 
-  for (auto& arg : args) {
-    const char* arg_cursor = arg.c_str();
-    if (*arg_cursor == '-') {
-      arg_cursor++;
-      auto option = *arg_cursor++;
-      while (*arg_cursor && (*arg_cursor == ' ' || *arg_cursor == '='))
-        arg_cursor++;
+  // clang-format off
+  app.add_flag  ("-q,--quiet",    quiet,        "Quiet mode");
+  app.add_flag  ("-v,--verbose",  verbose,      "Verbose mode");
+  app.add_flag  ("-c,--convert",  convert,      "Convert sources to SystemVerilog. If not specified, will only check inputs for convertibility.");
+  app.add_flag  ("-s,--stats",    stats,        "Print detailed stats about the source modules");
 
-      switch (tolower(option)) {
-        case 'r':
-          LOG_G("Adding root directory \"%s\"\n", arg_cursor);
-          root_dir = arg_cursor;
-          break;
-        // case 'I':
-        //   LOG_G("Adding search path \"%s\"\n", arg_cursor);
-        //   path_names.push_back(arg_cursor);
-        //   break;
-        case 'o':
-          LOG_G("Adding output directory \"%s\"\n", arg_cursor);
-          out_dir = arg_cursor;
-          break;
-        case 'v':
-          LOG_G("Verbose mode on\n", arg_cursor);
-          verbose = true;
-          break;
-        //case 'q':
-        //  LOG_G("Quiet mode on\n", arg_cursor);
-        //  quiet = true;
-        //  break;
-        case 'h':
-          show_help = true;
-          break;
-        default:
-          LOG_G("Bad command line arg \"%s\"\n", arg.c_str());
-          return -1;
-      }
-    } else {
-      source_names.push_back(arg_cursor);
-    }
+  app.add_option("-r,--src_root", src_root,     "Root directory of the source to convert");
+  app.add_option("-o,--out_root", out_root,     "Root directory used for output files");
+  app.add_option("headers",       source_names, "List of .h files to convert from C++ to SystemVerilog");
+  // clang-format on
+  
+  //app.parse(argc, argv);
+  CLI11_PARSE(app, argc, argv);
+
+  printf("verbose is %d\n", verbose);
+  for (const auto& f : source_names) {
+    printf("filename %s\n", f.c_str());
   }
-  LOG("\n");
+
+  // -v -r examples/uart/metron -o examples/uart/metron_sv uart_top.h uart_hello.h uart_tx.h uart_rx.h
+  // -v -r examples/rvsimple/metron -o examples/rvsimple/metron_sv adder.h alu.h alu_control.h config.h constants.h control_transfer.h data_memory_interface.h example_data_memory.h example_data_memory_bus.h example_text_memory.h example_text_memory_bus.h immediate_generator.h instruction_decoder.h multiplexer.h multiplexer2.h multiplexer4.h multiplexer8.h regfile.h register.h riscv_core.h singlecycle_control.h singlecycle_ctlpath.h singlecycle_datapath.h toplevel.h
+  // -v -r examples/rvtiny/metron -o examples/rvtiny/metron_sv toplevel.h
 
   //----------
+  // Banner
 
-  if (show_help || source_names.empty()) {
-    LOG_G("Print help screen here.\n");
-    return 0;
-  }
+  LOG_B("Metron v0.0.1\n");
+  LOG_B("Quiet   %d\n", quiet);
+  LOG_B("Verbose %d\n", verbose);
+  LOG_B("Convert %d\n", convert);
+  LOG_B("Stats   %d\n", stats);
+  LOG_B("Source root '%s'\n", src_root.c_str());
+  LOG_B("Output root '%s'\n", out_root.c_str());
 
   for (auto& name : source_names) {
-    if (!name.ends_with(".h")) {
-      LOG_R("Source file %s is not a C++ header\n", name.c_str());
-      return -1;
-    }
+    LOG_B("Header %s\n", name.c_str());
   }
 
   //----------
   // Load all source files.
 
   MtModLibrary library;
-  library.add_search_path("");
-  // for (auto& path : path_names) {
-  //   library.add_search_path(path);
-  // }
-  library.add_search_path(root_dir);
+  library.add_search_path(src_root);
 
   for (auto& name : source_names) {
-    assert(name.ends_with(".h"));
     library.load_source(name.c_str());
   }
   library.process_sources();
 
+  if (!library.all_modules_valid) {
+    LOG_R("Aborting, some modules invalid\n");
+    return -1;
+  }
+
   //----------
   // Dump out the module tree
 
-#if 0
-  std::function<void(MtModule*, int, bool)> step;
-  step = [&](MtModule* m, int rank, bool last) -> void {
-    for (int i = 0; i < rank - 1; i++) LOG_Y("|  ");
-    if (last) {
-      if (rank) LOG_Y("\\--");
-    }
-    else {
-      if (rank) LOG_Y("|--");
-    }
-    LOG_Y("%s\n", m->name().c_str());
-    auto submod_count = m->submods.size();
-    for (auto i = 0; i < submod_count; i++) {
-      auto s = m->submods[i];
-      step(library.get_module(s->type_name()), rank + 1, i == submod_count - 1);
-    }
-  };
+  if (verbose) {
+    std::function<void(MtModule*, int, bool)> step;
+    step = [&](MtModule* m, int rank, bool last) -> void {
+      for (int i = 0; i < rank - 1; i++) LOG_Y("|  ");
+      if (last) {
+        if (rank) LOG_Y("\\--");
+      }
+      else {
+        if (rank) LOG_Y("|--");
+      }
+      LOG_Y("%s\n", m->name().c_str());
+      auto submod_count = m->submods.size();
+      for (auto i = 0; i < submod_count; i++) {
+        auto s = m->submods[i];
+        step(library.get_module(s->type_name()), rank + 1, i == submod_count - 1);
+      }
+    };
 
-  for (auto m : library.modules) {
-    if (m->parents.empty()) step(m, 0, false);
+    for (auto m : library.modules) {
+      if (m->parents.empty()) step(m, 0, false);
+    }
   }
 
-  for (auto& mod : library.modules) {
-    if (verbose) {
-      mod->dump_banner();
-      //mod->dump_deltas();
-    }
-  }
-#endif
-
-#if 1
   //----------
-  // Emit all modules.
-  for (auto& source_file : library.source_files)
-  {
-    // Translate the source.
-    auto out_name = source_file->filename;
-    assert(out_name.ends_with(".h"));
-    out_name.resize(out_name.size() - 2);
-    auto out_path = out_dir + "/" + out_name + ".sv";
+  // Dump out the module tree
 
-    if (out_dir.size()) {
-      LOG_G("%s -> %s\n", source_file->full_path.c_str(), out_path.c_str());
-    }
-
-    std::string out_string;
-    MtCursor cursor(&library, source_file, &out_string);
-    cursor.quiet = !verbose;
-    cursor.cursor = source_file->source;
-    cursor.source_file = source_file;
-    cursor.emit(source_file->root_node);
-    cursor.emit("\n");
-
-    // Save translated source to output directory, if there is one.
-    if (out_dir.size()) {
-      mkdir_all(split_path(out_path));
-
-      FILE* out_file = fopen(out_path.c_str(), "wb");
-      if (!out_file) {
-        LOG_R("ERROR Could not open %s for output\n", out_path.c_str());
-      } else {
-        // Copy the BOM over if needed.
-        if (source_file->use_utf8_bom) {
-          uint8_t bom[3] = {239, 187, 191};
-          fwrite(bom, 1, 3, out_file);
-        }
-
-        fwrite(out_string.data(), 1, out_string.size(), out_file);
-        fclose(out_file);
+  if (stats) {
+    for (auto& mod : library.modules) {
+      if (verbose) {
+        mod->dump_banner();
+        //mod->dump_deltas();
       }
     }
   }
-#endif
+
+  //----------
+  // Emit all modules.
+
+  if (convert) {
+    for (auto& source_file : library.source_files)
+    {
+      // Translate the source.
+      auto out_name = source_file->filename;
+      assert(out_name.ends_with(".h"));
+      out_name.resize(out_name.size() - 2);
+      auto out_path = out_root + "/" + out_name + ".sv";
+
+      if (out_root.size()) {
+        LOG_G("%s -> %s\n", source_file->full_path.c_str(), out_path.c_str());
+      }
+
+      std::string out_string;
+      MtCursor cursor(&library, source_file, &out_string);
+      cursor.quiet = !verbose;
+      cursor.cursor = source_file->source;
+      cursor.source_file = source_file;
+      cursor.emit(source_file->root_node);
+      cursor.emit("\n");
+
+      // Save translated source to output directory, if there is one.
+      if (out_root.size()) {
+        mkdir_all(split_path(out_path));
+
+        FILE* out_file = fopen(out_path.c_str(), "wb");
+        if (!out_file) {
+          LOG_R("ERROR Could not open %s for output\n", out_path.c_str());
+        } else {
+          // Copy the BOM over if needed.
+          if (source_file->use_utf8_bom) {
+            uint8_t bom[3] = {239, 187, 191};
+            fwrite(bom, 1, 3, out_file);
+          }
+
+          fwrite(out_string.data(), 1, out_string.size(), out_file);
+          fclose(out_file);
+        }
+      }
+    }
+  }
 
   return 0;
 }

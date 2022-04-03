@@ -7,7 +7,11 @@ metron_good = glob.glob("tests/metron_good/*.h")
 metron_bad  = glob.glob("tests/metron_bad/*.h")
 
 for filename in metron_good:
-  os.system(f"bin/metron -v {filename}")
+  print("\n\n");
+  result = os.system(f"bin/metron -v {filename}")
+  print(f"Result {result}");
 
 for filename in metron_bad:
-  os.system(f"bin/metron -v {filename}")
+  print("\n\n");
+  result = os.system(f"bin/metron -v {filename}")
+  print(f"Result {result}");

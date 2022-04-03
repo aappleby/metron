@@ -3,6 +3,7 @@
 // Signals that are written after they're read should fail.
 
 class Module {
+public:
 
   void tock() {
     sig = 1;

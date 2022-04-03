@@ -32,6 +32,7 @@ struct MtModLibrary {
 
   bool sources_loaded = false;
   bool sources_processed = false;
+  bool all_modules_valid = false;
 };
 
 //------------------------------------------------------------------------------

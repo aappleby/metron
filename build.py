@@ -200,7 +200,10 @@ def build_metron():
           "src/MtTracer.cpp",
           "src/Platform.cpp",
       ],
-      includes=["tree-sitter/lib/include"],
+      includes=[
+        ".",
+        "tree-sitter/lib/include"
+      ],
       src_objs=treesitter_objs,
   )
 

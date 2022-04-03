@@ -3,6 +3,7 @@
 // Writing a register multiple times in the same function is OK.
 
 class Module {
+public:
 
   void tick() {
     logic<1> temp = reg;

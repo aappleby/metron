@@ -455,8 +455,9 @@ void MtModule::collect_methods() {
       init_methods.push_back(m);
     } else if (m->is_tick) {
       if (m->is_public) {
-        printf("PUBLIC TICK METHOD BAD!\n");
-        exit(-1);
+        // FIXME do we still care about this?
+        //printf("PUBLIC TICK METHOD BAD!\n");
+        //exit(-1);
       }
       tick_methods.push_back(m);
     } else if (m->is_tock) {

@@ -13,7 +13,7 @@ FieldState merge_delta(FieldState a, FieldDelta b) {
 
   static const FieldState field_table[FIELD_MAX][DELTA_MAX] = {
     /*                     DELTA_RD,      DELTA_WR,      DELTA_WS,      DELTA_EF, */
-    /* FIELD________, */ { FIELD________, FIELD____WR__, FIELD____WS__, FIELD________, },
+    /* FIELD________, */ { FIELD_RD_____, FIELD____WR__, FIELD____WS__, FIELD________, },
     /* FIELD____WR__, */ { FIELD_INVALID, FIELD____WR__, FIELD_INVALID, FIELD____WR_L, },
     /* FIELD____WR_L, */ { FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD____WR_L, },
     /* FIELD_RD_____, */ { FIELD_RD_____, FIELD_RD_WR__, FIELD_INVALID, FIELD_RD_____, },
@@ -210,15 +210,15 @@ void MtTracer::trace_assign(MnNode n) {
   trace_dispatch(node_rhs);
 
   if (node_lhs.sym == sym_identifier) {
-    auto name_lhs = node_lhs.text();
-    if (mod()->get_field(name_lhs)) {
-      trace_write(n);
+    auto node_name = node_lhs;
+    if (mod()->get_field(node_name.text())) {
+      trace_write(node_name);
     }
   }
   else if (node_lhs.sym == sym_subscript_expression) {
-    auto name_lhs = node_lhs.get_field(field_argument).text();
-    if (mod()->get_field(name_lhs)) {
-      trace_write(n);
+    auto node_name = node_lhs.get_field(field_argument);
+    if (mod()->get_field(node_name.text())) {
+      trace_write(node_name);
     }
   }
   else {
@@ -280,6 +280,7 @@ void MtTracer::trace_call(MnNode n) {
   }
 
   merge_series(state_top(), state_call, state_top());
+  dump_trace();
 }
 
 //------------------------------------------------------------------------------
@@ -447,7 +448,7 @@ void MtTracer::trace_switch(MnNode n) {
         _state_stack.pop_back();
 
         merge_parallel(state_top(), state_case, state_top());
-        //dump_trace();
+        dump_trace();
       }
     }
   }
@@ -515,6 +516,7 @@ void MtTracer::trace_read(MnNode const& n) {
   }
 
   state_top()[field_name] = new_state;
+  dump_trace();
 }
 
 //------------------------------------------------------------------------------
@@ -542,6 +544,7 @@ void MtTracer::trace_write(MnNode const& n) {
   }
 
   state_top()[field_name] = new_state;
+  dump_trace();
 }
 
 //------------------------------------------------------------------------------

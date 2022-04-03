@@ -10,3 +10,6 @@
 [submodule "cxxopts"]
 	path = cxxopts
 	url = https://github.com/jarro2783/cxxopts
+[submodule "CLI11"]
+	path = CLI11
+	url = https://github.com/CLIUtils/CLI11

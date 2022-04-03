@@ -465,21 +465,15 @@ inline logic<DST_WIDTH> sign_extend(const logic<SRC_WIDTH> a) {
   return cat(dup<DST_WIDTH - SRC_WIDTH + 1>(a[SRC_WIDTH-1]), bx<SRC_WIDTH-1>(a));
 }
 
-//-----------------------------------------------------------------------------
 
-inline void log_set_color(uint32_t color) {
-  static uint32_t log_color = 0;
-  if (color == log_color) return;
 
-  if (color == 0) {
-    printf("\u001b[0m");
-  } else {
-    printf("\u001b[38;2;%d;%d;%dm", (color >> 0) & 0xFF, (color >> 8) & 0xFF,
-           (color >> 16) & 0xFF);
-  }
 
-  log_color = color;
-}
+
+
+
+
+
+
 
 //-----------------------------------------------------------------------------
 
@@ -490,82 +484,138 @@ inline uint64_t timestamp() {
   return now;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //-----------------------------------------------------------------------------
 
-inline void log_prefix() {
-  timespec ts;
-  timespec_get(&ts, TIME_UTC);
-  uint64_t now = ts.tv_sec * 1000000000ull + ts.tv_nsec;
+struct TinyLog {
+  uint32_t color = 0;
+  bool muted = false;
+  int indentation = 0;
+  bool start_line = true;
 
-  static uint64_t time_origin = 0;
-  if (!time_origin) time_origin = now;
+  static TinyLog& get() {
+    static TinyLog log;
+    return log;
+  }
 
-  log_set_color(0);
-  printf("[%07.3f] ", double(now - time_origin) / 1.0e9);
-}
+  void indent() {
+    indentation += 2;
+  }
 
-//-----------------------------------------------------------------------------
+  void dedent() {
+    indentation -= 2;
+    if (indentation < 0) indentation = 0;
+  }
 
-inline void log_print(uint32_t color, const char* buffer, int len) {
-  static int log_indent = 0;
-  static bool log_start_line = true;
+  void set_color(uint32_t new_color) {
+    if (color == new_color) return;
+    color = new_color;
 
-  log_set_color(color);
-  for (int i = 0; i < len; i++) {
-    auto c = buffer[i];
-
-    if (c == '\t') {
-      log_indent += 2;
-    } else if (c == '\v') {
-      log_indent -= 2;
+    if (color == 0) {
+      ::printf("\u001b[0m");
     } else {
-      if (log_start_line) {
-        log_prefix();
-        log_set_color(color);
-        for (int j = 0; j < log_indent; j++) putchar(' ');
-        log_start_line = false;
+      ::printf("\u001b[38;2;%d;%d;%dm", (color >> 0) & 0xFF, (color >> 8) & 0xFF, (color >> 16) & 0xFF);
+    }
+  }
+
+  void print_prefix() {
+    timespec ts;
+    timespec_get(&ts, TIME_UTC);
+    uint64_t now = ts.tv_sec * 1000000000ull + ts.tv_nsec;
+
+    static uint64_t time_origin = 0;
+    if (!time_origin) time_origin = now;
+
+    set_color(0);
+    ::printf("[%07.3f] ", double(now - time_origin) / 1.0e9);
+  }
+
+  void print_buffer(uint32_t color, const char* buffer, int len) {
+    set_color(color);
+    for (int i = 0; i < len; i++) {
+      auto c = buffer[i];
+      if (start_line) {
+        print_prefix();
+        set_color(color);
+        for (int j = 0; j < indentation; j++) putchar(' ');
+        start_line = false;
       }
 
       putchar(c);
-      if (c == '\n') log_start_line = true;
+      if (c == '\n') start_line = true;
     }
+    set_color(0);
+    fflush(stdout);
   }
-  log_set_color(0);
-  fflush(stdout);
-}
 
-//-----------------------------------------------------------------------------
+  void printf(uint32_t color, const char* format = "", ...) {
+    char buffer[256];
+    va_list args;
+    va_start(args, format);
+    int len = vsnprintf(buffer, 256, format, args);
+    va_end(args);
+    print_buffer(color, buffer, len);
+  }
+};
 
-inline void log_printf(uint32_t color, const char* format = "", ...) {
-  char buffer[256];
-  va_list args;
-  va_start(args, format);
-  int len = vsnprintf(buffer, 256, format, args);
-  va_end(args);
-  log_print(color, buffer, len);
-}
 
-//-----------------------------------------------------------------------------
+#define LOG(...)   TinyLog::get().printf(0x00000000, __VA_ARGS__);
+#define LOG_R(...) TinyLog::get().printf(0x008080FF, __VA_ARGS__);
+#define LOG_G(...) TinyLog::get().printf(0x0080FF80, __VA_ARGS__);
+#define LOG_B(...) TinyLog::get().printf(0x00FFA0A0, __VA_ARGS__);
 
-#define LOG(...) log_printf(0x00000000, __VA_ARGS__);
-#define LOG_R(...) log_printf(0x008080FF, __VA_ARGS__);
-#define LOG_G(...) log_printf(0x0080FF80, __VA_ARGS__);
-#define LOG_B(...) log_printf(0x00FFA0A0, __VA_ARGS__);
+#define LOG_C(...) TinyLog::get().printf(0x00FFFF80, __VA_ARGS__);
+#define LOG_M(...) TinyLog::get().printf(0x00FF80FF, __VA_ARGS__);
+#define LOG_Y(...) TinyLog::get().printf(0x0080FFFF, __VA_ARGS__);
+#define LOG_W(...) TinyLog::get().printf(0x00FFFFFF, __VA_ARGS__);
 
-#define LOG_C(...) log_printf(0x00FFFF80, __VA_ARGS__);
-#define LOG_M(...) log_printf(0x00FF80FF, __VA_ARGS__);
-#define LOG_Y(...) log_printf(0x0080FFFF, __VA_ARGS__);
-#define LOG_W(...) log_printf(0x00FFFFFF, __VA_ARGS__);
-
-#define LOG_INDENT() log_printf(0, "\t")
-#define LOG_DEDENT() log_printf(0, "\v")
+#define LOG_INDENT() TinyLog::get().indent()
+#define LOG_DEDENT() TinyLog::get().dedent()
 
 struct LogIndenter {
-  LogIndenter() { LOG_INDENT(); }
+  LogIndenter()  { LOG_INDENT(); }
   ~LogIndenter() { LOG_DEDENT(); }
 };
 
 #define LOG_INDENT_SCOPE() LogIndenter indenter##__LINE__;
+
+//-----------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //------------------------------------------------------------------------------
 // Trivial support for Verilog's "+foo=bar" test arg syntax.
@@ -601,6 +651,30 @@ inline void value_plusargs(const char* fmt, std::string& out) {
     }
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //------------------------------------------------------------------------------
 // "Magic" constant that gets translated to 'x' in Verilog
@@ -658,9 +732,9 @@ inline int display(const char* fmt, ...) {
   va_start(args, fmt);
   int len = vsnprintf(buffer, 256, fmt, args);
   va_end(args);
-  log_printf(0x88CCFF, "MT> ");
-  log_print(0x88CCFF, buffer, len);
-  log_printf(0x88CCFF, "\n");
+  TinyLog::get().printf(0x88CCFF, "MT> ");
+  TinyLog::get().print_buffer(0x88CCFF, buffer, len);
+  TinyLog::get().printf(0x88CCFF, "\n");
   return len;
 }
 
@@ -670,8 +744,8 @@ inline int write(const char* fmt, ...) {
   va_start(args, fmt);
   int len = vsnprintf(buffer, 256, fmt, args);
   va_end(args);
-  log_printf(0x88CCFF, "MT> ");
-  log_print(0x88CCFF, buffer, len);
+  TinyLog::get().printf(0x88CCFF, "MT> ");
+  TinyLog::get().print_buffer(0x88CCFF, buffer, len);
   return len;
 }
 

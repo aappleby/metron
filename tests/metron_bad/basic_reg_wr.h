@@ -3,6 +3,7 @@
 // Registers that are read after they're written should fail.
 
 class Module {
+public:
 
   void tick() {
     sig = 1;

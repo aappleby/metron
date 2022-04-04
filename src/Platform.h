@@ -14,7 +14,7 @@ void print_escaped(const char* source, int a, int b);
 
 #pragma warning(disable : 4996)  // unsafe fopen
 #pragma warning(disable : 26451) // Very picky arithmetic overflow warning
-#pragma warning(disable : 26451) // Unscoped enum
+#pragma warning(disable : 26812) // Unscoped enum
 
 #define CHECK_RETURN _Check_return_
 

@@ -136,14 +136,12 @@ bool MtModLibrary::process_sources() {
   }
 
   // Generate call tree / temporal check for toplevel modules
-  all_modules_valid = true;
   for (auto m : modules) {
-    all_modules_valid &= m->trace();
+    error |= m->trace();
   }
 
-  if (!all_modules_valid) {
+  if (error) {
     LOG_R("Some modules fail temporal trace!\n");
-    error = true;
   }
   else {
     LOG_G("All modules pass temporal trace!\n");

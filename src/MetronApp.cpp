@@ -94,6 +94,8 @@ int main(int argc, char** argv) {
   // -v -r examples/rvsimple/metron -o examples/rvsimple/metron_sv adder.h alu.h alu_control.h config.h constants.h control_transfer.h data_memory_interface.h example_data_memory.h example_data_memory_bus.h example_text_memory.h example_text_memory_bus.h immediate_generator.h instruction_decoder.h multiplexer.h multiplexer2.h multiplexer4.h multiplexer8.h regfile.h register.h riscv_core.h singlecycle_control.h singlecycle_ctlpath.h singlecycle_datapath.h toplevel.h
   // -v -r examples/rvtiny/metron -o examples/rvtiny/metron_sv toplevel.h
 
+  if (quiet) TinyLog::get().mute();
+
   //----------
   // Banner
 
@@ -140,13 +142,6 @@ int main(int argc, char** argv) {
   if (error) {
     LOG_R("Exiting due to error\n");
     return -1;
-  }
-
-  if (!library.all_modules_valid) {
-    LOG_R("Aborting, some modules invalid\n");
-    return -1;
-  } else {
-    LOG_G("\n");
   }
 
   //----------
@@ -211,12 +206,12 @@ int main(int argc, char** argv) {
       }
 
       if (echo) {
-        LOG_G("Converted source:\n");
+        LOG_G("Converted source for %s:\n", source_file->full_path.c_str());
       }
 
       std::string out_string;
       MtCursor cursor(&library, source_file, &out_string);
-      cursor.echo = echo;
+      cursor.echo = echo && !quiet;
       cursor.cursor = source_file->source;
       cursor.source_file = source_file;
       cursor.emit(source_file->root_node);

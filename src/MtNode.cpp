@@ -4,7 +4,8 @@
 #include "MtModule.h"
 #include "MtNode.h"
 #include "MtSourceFile.h"
-#include "Platform.h"
+//#include "Platform.h"
+#include "metron_tools.h"
 
 const MnNode MnNode::null;
 
@@ -38,8 +39,7 @@ void MnNode::dump_source_lines() const {
   if (*a == '\n' || *a == '\r') a++;
   if (*b == '\n' || *b == '\r') b--;
 
-  while (a != b) putc(*a++, stdout);
-  printf("\n");
+  TinyLog::get().print_buffer(0x008080FF, a, int(b-a));
 }
 
 //------------------------------------------------------------------------------

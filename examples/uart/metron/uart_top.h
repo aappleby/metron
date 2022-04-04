@@ -22,12 +22,11 @@ class uart_top {
   logic<32> o_sum()   const { return rx.o_sum(); }
 
   void tock(logic<1> i_rstn) {
+    logic<8> hello_data = hello.o_data();
+    logic<1> hello_req = hello.o_req();
 
     rx.tock(i_rstn, tx.o_serial());
     hello.tock(i_rstn, tx.o_cts(), tx.o_idle());
-
-    logic<8> hello_data = hello.o_data();
-    logic<1> hello_req = hello.o_req();
     tx.tock(i_rstn, hello_data, hello_req);
   }
 

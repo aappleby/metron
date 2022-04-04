@@ -493,9 +493,10 @@ struct TinyLog {
   void unmute() { muted = false; }
 
   void set_color(uint32_t new_color) {
+    if (muted) return;
+
     if (color == new_color) return;
     color = new_color;
-
     if (color == 0) {
       ::printf("\u001b[0m");
     } else {
@@ -505,6 +506,8 @@ struct TinyLog {
   }
 
   void print_prefix() {
+    if (muted) return;
+
     timespec ts;
     (void)timespec_get(&ts, TIME_UTC);
     uint64_t now = ts.tv_sec * 1000000000ull + ts.tv_nsec;
@@ -517,6 +520,7 @@ struct TinyLog {
   }
 
   void print_buffer(uint32_t color, const char* buffer, int len) {
+    if (muted) return;
     set_color(color);
     for (int i = 0; i < len; i++) {
       auto c = buffer[i];
@@ -537,6 +541,7 @@ struct TinyLog {
   }
 
   void printf(uint32_t color, const char* format = "", ...) {
+    if (muted) return;
     char buffer[256];
     va_list args;
     va_start(args, format);
@@ -760,7 +765,7 @@ inline void parse_hex(const char* src_filename, void* dst_data, int dst_size) {
     }
 
     if (!chunk_size || (chunk_size & 1)) {
-      printf("Error loading %s: Invalid vmem character 0x%02x (%c)\n",
+      LOG_R("Error loading %s: Invalid vmem character 0x%02x (%c)\n",
              src_filename, sc[0], sc[0]);
       return;
     }
@@ -789,16 +794,16 @@ void print_hex(const char* buf_name, void* src_data, int src_size) {
     if (*cursor == '.') *cursor = '_';
   }
 
-  printf("uint8_t %s[%d] = {\n", buf_name, src_size);
+  LOG_G("uint8_t %s[%d] = {\n", buf_name, src_size);
   int dst_cursor = 0;
   for (int y = 0; y < dst_size / 16; y++) {
-    printf("  ");
+    LOG_G("  ");
     for (int x = 0; x < 16; x++) {
-      printf("%02x, ", dst_data[dst_cursor++]);
+      LOG_G("%02x, ", dst_data[dst_cursor++]);
     }
-    printf("\n");
+    LOG_G("\n");
   }
-  printf("};\n");
+  LOG_G("};\n");
 }
 */
 

@@ -12,8 +12,8 @@ class uart_hello {
   //----------------------------------------
 
   logic<8> o_data() const { return data; }
-  logic<1> o_req()  const { return s == SEND; }
-  logic<1> o_done() const { return s == DONE; }
+  logic<1> o_req()  const { return state == SEND; }
+  logic<1> o_done() const { return state == DONE; }
 
   void tock(logic<1> i_rstn, logic<1> i_cts, logic<1> i_idle) {
     tick(i_rstn, i_cts, i_idle);
@@ -24,20 +24,20 @@ class uart_hello {
  private:
   void tick(logic<1> i_rstn, logic<1> i_cts, logic<1> i_idle) {
     if (!i_rstn) {
-      s = WAIT;
+      state = WAIT;
       cursor = 0;
     } else {
       data = memory[cursor];
-      if (s == WAIT && i_idle) {
-        s = SEND;
-      } else if (s == SEND && i_cts) {
+      if (state == WAIT && i_idle) {
+        state = SEND;
+      } else if (state == SEND && i_cts) {
         if (cursor == b9(message_len - 1)) {
-          s = DONE;
+          state = DONE;
         } else {
           cursor = cursor + 1;
         }
-      } else if (s == DONE) {
-        // s = WAIT;
+      } else if (state == DONE) {
+        // state = WAIT;
         cursor = 0;
       }
     }
@@ -52,7 +52,7 @@ class uart_hello {
 
   //enum class state : logic<2>::BASE{WAIT, SEND, DONE};
 
-  logic<2> s;
+  logic<2> state;
   logic<cursor_bits> cursor;
   logic<8> memory[512];
   logic<8> data;

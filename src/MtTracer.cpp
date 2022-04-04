@@ -93,8 +93,8 @@ bool merge_parallel(state_map& ma, state_map& mb, state_map& out) {
 
   state_map temp;
   for (const auto& key : keys) {
-    auto sa = ma[key];
-    auto sb = mb[key];
+    auto sa = ma.contains(key) ? ma[key] : FIELD________;
+    auto sb = mb.contains(key) ? mb[key] : FIELD________;
     auto sm = merge_parallel(sa, sb);
     if (sm == FIELD_INVALID) {
       LOG_R("%s: %s || %s = %s\n", key.c_str(), to_string(sa), to_string(sb), to_string(sm));
@@ -117,8 +117,8 @@ bool merge_series(state_map& ma, state_map& mb, state_map& out) {
 
   state_map temp;
   for (const auto& key : keys) {
-    auto sa = ma[key];
-    auto sb = mb[key];
+    auto sa = ma.contains(key) ? ma[key] : FIELD________;
+    auto sb = mb.contains(key) ? mb[key] : FIELD________;
     auto sm = merge_series(sa, sb);
     if (sm == FIELD_INVALID) {
       LOG_R("%s: %s -> %s = %s\n", key.c_str(), to_string(sa), to_string(sb), to_string(sm));
@@ -280,7 +280,7 @@ CHECK_RETURN bool MtTracer::trace_call(MnNode n) {
 
   // Call traced, close the state map and merge.
 
-  for (auto& pair : state_top()) {
+  for (auto& pair : state_call) {
     auto old_state = pair.second;
     auto new_state = merge_delta(old_state, DELTA_EF);
 
@@ -295,8 +295,12 @@ CHECK_RETURN bool MtTracer::trace_call(MnNode n) {
 
   error |= merge_series(state_top(), state_call, state_top());
   if (error) {
-    LOG_R("MtTracer::trace_call failed @\n");
+    LOG_R("MtTracer::trace_call failed - caller state cannot be concatenated with callee state\n");
     n.dump_source_lines();
+    LOG_R("Caller state -\n");
+    dump_trace(state_top());
+    LOG_R("Callee state - \n");
+    dump_trace(state_call);
   }
 
   return error;
@@ -427,7 +431,7 @@ CHECK_RETURN bool MtTracer::trace_id(MnNode n) {
 
   auto field = mod()->get_field(n.text());
 
-  if (field) {
+  if (field && !field->is_param()) {
     error |= trace_read(n);
     // n.dump_tree();
     // debugbreak();
@@ -577,7 +581,7 @@ CHECK_RETURN bool MtTracer::trace_read(MnNode const& n) {
     LOG_R("Field %s was %s, now %s!\n", field_name.c_str(), to_string(old_state), to_string(new_state));
     LOG_R("========== call stack ==========\n");
     for (auto it = _method_stack.rbegin(); it != _method_stack.rend(); ++it) {
-      printf("%s.%s\n", (*it)->mod->name().c_str(), (*it)->name().c_str());
+      LOG_R("%s.%s\n", (*it)->mod->name().c_str(), (*it)->name().c_str());
     }
     LOG_R("========== source ==========\n");
     n.dump_source_lines();
@@ -609,7 +613,7 @@ CHECK_RETURN bool MtTracer::trace_write(MnNode const& n) {
     LOG_R("Field %s was %s, now %s!\n", field_name.c_str(), to_string(old_state), to_string(new_state));
     LOG_R("========== call stack ==========\n");
     for (auto it = _method_stack.rbegin(); it != _method_stack.rend(); ++it) {
-      printf("%s.%s\n", (*it)->mod->name().c_str(), (*it)->name().c_str());
+      LOG_R("%s.%s\n", (*it)->mod->name().c_str(), (*it)->name().c_str());
     }
     LOG_R("========== source ==========\n");
     n.dump_source_lines();
@@ -642,7 +646,7 @@ CHECK_RETURN bool MtTracer::trace_end_fn() {
     LOG_R("Field %s was %s, now %s!\n", field_name.c_str(), to_string(old_state), to_string(new_state));
     LOG_R("========== call stack ==========\n");
     for (auto it = _method_stack.rbegin(); it != _method_stack.rend(); ++it) {
-      printf("%s.%s\n", (*it)->mod->name().c_str(), (*it)->name().c_str());
+      LOG_R("%s.%s\n", (*it)->mod->name().c_str(), (*it)->name().c_str());
     }
     LOG_R("========== source ==========\n");
     n.dump_source_lines();
@@ -657,13 +661,10 @@ CHECK_RETURN bool MtTracer::trace_end_fn() {
 
 //------------------------------------------------------------------------------
 
-void MtTracer::dump_trace() {
-  printf("//----------\n");
-  printf("// Trace\n");
-  for (const auto& pair : state_top()) {
-    printf("%s = %s\n", pair.first.c_str(), to_string(pair.second));
+void MtTracer::dump_trace(state_map& m) {
+  for (const auto& pair : m) {
+    LOG_Y("  %s = %s\n", pair.first.c_str(), to_string(pair.second));
   }
-  printf("//----------\n");
 }
 
 //------------------------------------------------------------------------------

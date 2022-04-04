@@ -120,7 +120,7 @@ void MtCursor::print_error(MnNode n, const char* fmt, ...) {
 
   emit("@%04d: ", ts_node_start_point(n.node).row + 1);
   dump_node_line(n);
-  printf("\n");
+  emit("\n");
 
   n.error();
 

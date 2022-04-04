@@ -581,15 +581,15 @@ CHECK_RETURN bool MtTracer::trace_method_call(MnNode n) {
   auto node_func = n.get_field(field_function);
   auto sibling_method = mod()->get_method(node_func.text());
 
-  if (in_tick()) {
-    if (sibling_method->is_tock) {
-      LOG_R("Calling a tock() while in a tick() method is forbidden\n");
-      error = true;
-      return error;
-    }
-  }
-
   if (sibling_method) {
+    if (in_tick()) {
+      if (sibling_method->is_tock) {
+        LOG_R("Calling a tock() while in a tick() method is forbidden\n");
+        error = true;
+        return error;
+      }
+    }
+
     _method_stack.push_back(sibling_method);
     error |= trace_dispatch(sibling_method->node.get_field(field_body));
     _method_stack.pop_back();

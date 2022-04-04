@@ -40,116 +40,16 @@ FieldState merge_parallel(FieldState a, FieldState b) {
 
   // clang-format off
   static const FieldState field_table[FIELD_MAX][FIELD_MAX] = {
-      /*                     FIELD________, FIELD____WR__, FIELD____WR_L,
-         FIELD_RD_____, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD____WS__,
-         FIELD____WS_L, FIELD_INVALID, */
-      /* FIELD________, */ {
-          FIELD________,
-          FIELD____WR__,
-          FIELD____WR_L,
-          FIELD_RD_____,
-          FIELD_RD_WR__,
-          FIELD_RD_WR_L,
-          FIELD____WS__,
-          FIELD____WS_L,
-          FIELD_INVALID,
-      },
-      /* FIELD____WR__, */
-      {
-          FIELD____WR__,
-          FIELD____WR__,
-          FIELD____WR_L,
-          FIELD_RD_WR__,
-          FIELD_RD_WR__,
-          FIELD_RD_WR_L,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-      },
-      /* FIELD____WR_L, */
-      {
-          FIELD____WR_L,
-          FIELD____WR_L,
-          FIELD____WR_L,
-          FIELD_RD_WR_L,
-          FIELD_RD_WR_L,
-          FIELD_RD_WR_L,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-      },
-      /* FIELD_RD_____, */
-      {
-          FIELD_RD_____,
-          FIELD_RD_WR__,
-          FIELD_RD_WR_L,
-          FIELD_RD_____,
-          FIELD_RD_WR__,
-          FIELD_RD_WR_L,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-      },
-      /* FIELD_RD_WR__, */
-      {
-          FIELD_RD_WR__,
-          FIELD_RD_WR__,
-          FIELD_RD_WR_L,
-          FIELD_RD_WR__,
-          FIELD_RD_WR__,
-          FIELD_RD_WR_L,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-      },
-      /* FIELD_RD_WR_L, */
-      {
-          FIELD_RD_WR_L,
-          FIELD_RD_WR_L,
-          FIELD_RD_WR_L,
-          FIELD_RD_WR_L,
-          FIELD_RD_WR_L,
-          FIELD_RD_WR_L,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-      },
-      /* FIELD____WS__, */
-      {
-          FIELD____WS__,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD____WS__,
-          FIELD____WS_L,
-          FIELD_INVALID,
-      },
-      /* FIELD____WS_L, */
-      {
-          FIELD____WS_L,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD____WS_L,
-          FIELD____WS_L,
-          FIELD_INVALID,
-      },
-      /* FIELD_INVALID, */
-      {
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-      },
+      /*                     FIELD________, FIELD____WR__, FIELD____WR_L, FIELD_RD_____, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD____WS__, FIELD____WS_L, FIELD_INVALID, */
+      /* FIELD________, */ { FIELD________, FIELD____WR__, FIELD____WR_L, FIELD_RD_____, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD____WS__, FIELD____WS_L, FIELD_INVALID, },
+      /* FIELD____WR__, */ { FIELD____WR__, FIELD____WR__, FIELD____WR_L, FIELD_RD_WR__, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
+      /* FIELD____WR_L, */ { FIELD____WR_L, FIELD____WR_L, FIELD____WR_L, FIELD_RD_WR_L, FIELD_RD_WR_L, FIELD_RD_WR_L, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
+      /* FIELD_RD_____, */ { FIELD_RD_____, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD_RD_____, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
+      /* FIELD_RD_WR__, */ { FIELD_RD_WR__, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD_RD_WR__, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
+      /* FIELD_RD_WR_L, */ { FIELD_RD_WR_L, FIELD_RD_WR_L, FIELD_RD_WR_L, FIELD_RD_WR_L, FIELD_RD_WR_L, FIELD_RD_WR_L, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
+      /* FIELD____WS__, */ { FIELD____WS__, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD____WS__, FIELD____WS_L, FIELD_INVALID, },
+      /* FIELD____WS_L, */ { FIELD____WS_L, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD____WS_L, FIELD____WS_L, FIELD_INVALID, },
+      /* FIELD_INVALID, */ { FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
   };
   // clang-format on
   static_assert(sizeof(field_table) ==
@@ -167,116 +67,16 @@ FieldState merge_series(FieldState a, FieldState b) {
 
   // clang-format off
   static const FieldState field_table[FIELD_MAX][FIELD_MAX] = {
-      /*                     FIELD________, FIELD____WR__, FIELD____WR_L,
-         FIELD_RD_____, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD____WS__,
-         FIELD____WS_L, FIELD_INVALID, */
-      /* FIELD________, */ {
-          FIELD________,
-          FIELD____WR__,
-          FIELD____WR_L,
-          FIELD_RD_____,
-          FIELD_RD_WR__,
-          FIELD_RD_WR_L,
-          FIELD____WS__,
-          FIELD____WS_L,
-          FIELD_INVALID,
-      },
-      /* FIELD____WR__, */
-      {
-          FIELD____WR__,
-          FIELD____WR__,
-          FIELD____WR_L,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-      },
-      /* FIELD____WR_L, */
-      {
-          FIELD____WR_L,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-      },
-      /* FIELD_RD_____, */
-      {
-          FIELD_RD_____,
-          FIELD_RD_WR__,
-          FIELD_RD_WR_L,
-          FIELD_RD_____,
-          FIELD_RD_WR__,
-          FIELD_RD_WR_L,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-      },
-      /* FIELD_RD_WR__, */
-      {
-          FIELD_RD_WR__,
-          FIELD_RD_WR__,
-          FIELD_RD_WR_L,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-      },
-      /* FIELD_RD_WR_L, */
-      {
-          FIELD_RD_WR_L,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-      },
-      /* FIELD____WS__, */
-      {
-          FIELD____WS__,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD____WS_L,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD____WS__,
-          FIELD____WS_L,
-          FIELD_INVALID,
-      },
-      /* FIELD____WS_L, */
-      {
-          FIELD____WS_L,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD____WS_L,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-      },
-      /* FIELD_INVALID, */
-      {
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-      },
+      /*                     FIELD________, FIELD____WR__, FIELD____WR_L, FIELD_RD_____, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD____WS__, FIELD____WS_L, FIELD_INVALID, */
+      /* FIELD________, */ { FIELD________, FIELD____WR__, FIELD____WR_L, FIELD_RD_____, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD____WS__, FIELD____WS_L, FIELD_INVALID, },
+      /* FIELD____WR__, */ { FIELD____WR__, FIELD____WR__, FIELD____WR_L, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
+      /* FIELD____WR_L, */ { FIELD____WR_L, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
+      /* FIELD_RD_____, */ { FIELD_RD_____, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD_RD_____, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
+      /* FIELD_RD_WR__, */ { FIELD_RD_WR__, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
+      /* FIELD_RD_WR_L, */ { FIELD_RD_WR_L, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
+      /* FIELD____WS__, */ { FIELD____WS__, FIELD_INVALID, FIELD_INVALID, FIELD____WS_L, FIELD_INVALID, FIELD_INVALID, FIELD____WS__, FIELD____WS_L, FIELD_INVALID, },
+      /* FIELD____WS_L, */ { FIELD____WS_L, FIELD_INVALID, FIELD_INVALID, FIELD____WS_L, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
+      /* FIELD_INVALID, */ { FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
   };
   // clang-format on
 

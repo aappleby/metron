@@ -31,23 +31,14 @@ def print_b(*args):
 ################################################################################
 # Make sure all the examples compile
 
-"""
-cmd = f"  g++ -Isrc --std=gnu++2a -fsyntax-only -c {filename}"
-print(f"  {cmd}")
-result = os.system(cmd)
-if result:
-  print(f"Test file {filename} failed GCC syntax check");
-  error = True
-"""
-
-"""
-cmd = f"g++ -Isrc --std=gnu++2a -fsyntax-only -c {filename}"
-print(f"  {cmd}")
-result = os.system(cmd)
-if result:
-  print(f"Test file {filename} failed GCC syntax check");
-  error = True
-"""
+if 1:
+  all_headers = " ".join(metron_good + metron_bad)
+  cmd = f"  g++ -Isrc --std=gnu++2a -fsyntax-only -c {all_headers}"
+  print(cmd)
+  result = os.system(cmd)
+  if result:
+    print(f"Headers in metron_good/metron_bad failed GCC syntax check");
+    error = True
 
 ################################################################################
 # Make sure all the good examples pass

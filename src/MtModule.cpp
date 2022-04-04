@@ -575,6 +575,12 @@ bool MtModule::trace() {
   // Check that all sigs and regs ended up in a valid state.
   for (auto& pair : state_mod) {
     switch(pair.second) {
+
+    case FIELD_RD_WR_L:
+    case FIELD____WS_L:
+      // Yay written and locked regs/sigs!
+      break;
+
     case FIELD________:
       LOG_R("Field %s was never read or written!\n", pair.first.c_str());
       error = true;
@@ -593,12 +599,8 @@ bool MtModule::trace() {
       LOG_R("Register %s was written but never locked - internal error?\n", pair.first.c_str());
       error = true;
       break;
-    case FIELD_RD_WR_L:
-      break;
     case FIELD____WS__:
       LOG_Y("Signal %s was written but never read - is it an output?\n", pair.first.c_str());
-      break;
-    case FIELD____WS_L:
       break;
     default:
       LOG_R("Field %s has an invalid state %d\n", pair.first.c_str(), pair.second);

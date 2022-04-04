@@ -53,27 +53,25 @@ typedef std::map<std::string, FieldState> state_map;
 
 class MtTracer {
  public:
-  bool trace_dispatch(MnNode n);
-  bool trace_children(MnNode n);
+  CHECK_RETURN bool trace_dispatch(MnNode n);
+  CHECK_RETURN bool trace_children(MnNode n);
 
+  CHECK_RETURN bool trace_assign(MnNode n);
 
-  //_Check_return_
-  bool trace_assign(MnNode n);
+  CHECK_RETURN bool trace_call(MnNode n);
+  CHECK_RETURN bool trace_field(MnNode n);
+  CHECK_RETURN bool trace_id(MnNode n);
+  CHECK_RETURN bool trace_if(MnNode n);
+  CHECK_RETURN bool trace_switch(MnNode n);
+  CHECK_RETURN bool trace_ternary(MnNode n);
 
-  bool trace_call(MnNode n);
-  bool trace_field(MnNode n);
-  bool trace_id(MnNode n);
-  bool trace_if(MnNode n);
-  bool trace_switch(MnNode n);
-  bool trace_ternary(MnNode n);
+  CHECK_RETURN bool trace_submod_call(MnNode n);
+  CHECK_RETURN bool trace_method_call(MnNode n);
+  CHECK_RETURN bool trace_template_call(MnNode n);
 
-  bool trace_submod_call(MnNode n);
-  bool trace_method_call(MnNode n);
-  bool trace_template_call(MnNode n);
-
-  bool trace_read(MnNode const& n);
-  bool trace_write(MnNode const& n);
-  bool trace_end_fn();
+  CHECK_RETURN bool trace_read(MnNode const& n);
+  CHECK_RETURN bool trace_write(MnNode const& n);
+  CHECK_RETURN bool trace_end_fn();
 
   void dump_trace();
 

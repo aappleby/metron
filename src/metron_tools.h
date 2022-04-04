@@ -12,6 +12,7 @@
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4996)  // unsafe fopen
+#pragma warning(disable : 26451) // Very picky arithmetic overflow warning
 #endif
 
 //------------------------------------------------------------------------------
@@ -467,7 +468,7 @@ inline logic<DST_WIDTH> sign_extend(const logic<SRC_WIDTH> a) {
 
 inline uint64_t timestamp() {
   timespec ts;
-  timespec_get(&ts, TIME_UTC);
+  (void)timespec_get(&ts, TIME_UTC);
   uint64_t now = ts.tv_sec * 1000000000ull + ts.tv_nsec;
   return now;
 }
@@ -505,7 +506,7 @@ struct TinyLog {
 
   void print_prefix() {
     timespec ts;
-    timespec_get(&ts, TIME_UTC);
+    (void)timespec_get(&ts, TIME_UTC);
     uint64_t now = ts.tv_sec * 1000000000ull + ts.tv_nsec;
 
     static uint64_t time_origin = 0;
@@ -631,7 +632,7 @@ void parse_hex(const char* src_filename, void* dst_data, int dst_size);
 // 'end' is INCLUSIVE
 
 inline void readmemh(const char* path, void* mem, int begin, int end) {
-  memset(mem, 0, end - begin + 1);
+  memset(mem, 0, end - begin + 1ull);
   parse_hex(path, (uint8_t*)mem + begin, end - begin + 1);
 }
 

@@ -290,7 +290,7 @@ bool MtModule::load_pass1() {
   // enums = new std::vector<MtEnum>();
 
   auto mod_body = mod_class.get_field(field_body).check_null();
-  for (auto n : mod_body) {
+  for (const auto& n : mod_body) {
     if (n.sym != sym_field_declaration) continue;
 
     // MtField f(n);
@@ -354,7 +354,7 @@ bool MtModule::collect_params() {
   // localparam = static const int
   assert(localparams.empty());
   auto mod_body = mod_class.get_field(field_body).check_null();
-  for (auto n : mod_body) {
+  for (const auto& n : mod_body) {
     if (n.sym != sym_field_declaration) continue;
 
     if (n.is_static() && n.is_const()) {
@@ -375,7 +375,7 @@ bool MtModule::collect_fields() {
   auto mod_body = mod_class.get_field(field_body).check_null();
   bool in_public = false;
 
-  for (auto n : mod_body) {
+  for (const auto& n : mod_body) {
     if (n.sym == sym_access_specifier) {
       if (n.child(0).text() == "public") {
         in_public = true;
@@ -413,7 +413,7 @@ bool MtModule::collect_methods() {
 
   bool in_public = false;
   auto mod_body = mod_class.get_field(field_body).check_null();
-  for (auto n : mod_body) {
+  for (const auto& n : mod_body) {
     if (n.sym == sym_access_specifier) {
       if (n.child(0).text() == "public") {
         in_public = true;
@@ -449,7 +449,7 @@ bool MtModule::collect_methods() {
     m->is_tock = func_name.starts_with("tock");
 
     m->is_const = false;
-    for (auto n : func_decl) {
+    for (const auto& n : func_decl) {
       if (n.sym == sym_type_qualifier && n.text() == "const") {
         m->is_const = true;
         break;
@@ -504,6 +504,7 @@ bool MtModule::collect_methods() {
 //------------------------------------------------------------------------------
 
 bool MtModule::trace() {
+  bool error = false;
   // Hook up callee->caller method pointers
 
   for (auto m : all_methods) {
@@ -519,22 +520,22 @@ bool MtModule::trace() {
     tracer._method_stack.push_back(m);
     tracer._state_stack.push_back(new state_map());
 
-    tracer.trace_dispatch(node_body);
-
-    // tracer.dump_trace();
+    error |= tracer.trace_dispatch(node_body);
 
     for (const auto &pair : tracer.state_top()) {
       if (pair.second == FIELD_INVALID) {
         LOG_R("Tracing %s.%s failed, field %s is in an invalid state\n",
               name().c_str(), m->name().c_str(), pair.first.c_str());
-        return false;
+        error = true;
       }
     }
 
-    LOG_G("Tracing %s.%s pass\n", name().c_str(), m->name().c_str());
+    if (!error) {
+      LOG_G("Tracing %s.%s pass\n", name().c_str(), m->name().c_str());
+    }
   }
 
-  return true;
+  return error;
 }
 
 //------------------------------------------------------------------------------
@@ -553,7 +554,7 @@ bool MtModule::collect_inputs() {
     auto params =
         m->node.get_field(field_declarator).get_field(field_parameters);
 
-    for (auto param : params) {
+    for (const auto& param : params) {
       if (param.sym != sym_parameter_declaration) continue;
       if (!dedup.contains(param.name4())) {
         MtField *new_input = MtField::construct(param, true);
@@ -567,7 +568,7 @@ bool MtModule::collect_inputs() {
     auto params =
         m->node.get_field(field_declarator).get_field(field_parameters);
 
-    for (auto param : params) {
+    for (const auto& param : params) {
       if (param.sym != sym_parameter_declaration) continue;
       if (!dedup.contains(param.name4())) {
         MtField *new_input = MtField::construct(param, true);

@@ -8,8 +8,8 @@
 //-----------------------------------------------------------------------------
 
 FieldState merge_delta(FieldState a, FieldDelta b) {
-  assert(a >= 0 && a < FIELD_MAX);
-  assert(b >= 0 && b < DELTA_MAX);
+  if (a < 0 || a >= FIELD_MAX) return FIELD_INVALID;
+  if (b < 0 || b >= DELTA_MAX) return FIELD_INVALID;
 
   static const FieldState field_table[FIELD_MAX][DELTA_MAX] = {
     /*                     DELTA_RD,      DELTA_WR,      DELTA_WS,      DELTA_EF, */
@@ -32,8 +32,8 @@ FieldState merge_delta(FieldState a, FieldDelta b) {
 //-----------------------------------------------------------------------------
 
 FieldState merge_parallel(FieldState a, FieldState b) {
-  assert(a >= 0 && a < FIELD_MAX);
-  assert(b >= 0 && b < FIELD_MAX);
+  if (a < 0 || a >= FIELD_MAX) return FIELD_INVALID;
+  if (b < 0 || b >= FIELD_MAX) return FIELD_INVALID;
 
   static const FieldState field_table[FIELD_MAX][FIELD_MAX] = {
     /*                     FIELD________, FIELD____WR__, FIELD____WR_L, FIELD_RD_____, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD____WR__, FIELD____WS_L, FIELD_INVALID, */
@@ -56,8 +56,8 @@ FieldState merge_parallel(FieldState a, FieldState b) {
 //-----------------------------------------------------------------------------
 
 FieldState merge_series(FieldState a, FieldState b) {
-  assert(a >= 0 && a < FIELD_MAX);
-  assert(b >= 0 && b < FIELD_MAX);
+  if (a < 0 || a >= FIELD_MAX) return FIELD_INVALID;
+  if (b < 0 || b >= FIELD_MAX) return FIELD_INVALID;
 
   static const FieldState field_table[FIELD_MAX][FIELD_MAX] = {
     /*                     FIELD________, FIELD____WR__, FIELD____WR_L, FIELD_RD_____, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD____WR__, FIELD____WS_L, FIELD_INVALID, */
@@ -134,7 +134,7 @@ bool merge_series(state_map& ma, state_map& mb, state_map& out) {
 
 //------------------------------------------------------------------------------
 
-bool MtTracer::trace_dispatch(MnNode n) {
+CHECK_RETURN bool MtTracer::trace_dispatch(MnNode n) {
   bool error = false;
 
   if (!n.is_named()) return error;
@@ -212,9 +212,9 @@ bool MtTracer::trace_dispatch(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-bool MtTracer::trace_children(MnNode n) {
+CHECK_RETURN bool MtTracer::trace_children(MnNode n) {
   bool error = false;
-  for (auto c : n) {
+  for (const auto& c : n) {
     error |= trace_dispatch(c);
   }
   return error;
@@ -222,7 +222,7 @@ bool MtTracer::trace_children(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-bool MtTracer::trace_assign(MnNode n) {
+CHECK_RETURN bool MtTracer::trace_assign(MnNode n) {
   bool error = false;
 
   auto node_lhs = n.get_field(field_left);
@@ -253,7 +253,7 @@ bool MtTracer::trace_assign(MnNode n) {
 //------------------------------------------------------------------------------
 // FIXME I need to traverse the args before stepping into the call
 
-bool MtTracer::trace_call(MnNode n) {
+CHECK_RETURN bool MtTracer::trace_call(MnNode n) {
   bool error = false;
 
   // Trace the args first.
@@ -265,11 +265,11 @@ bool MtTracer::trace_call(MnNode n) {
 
   auto node_func = n.get_field(field_function);
   if (node_func.sym == sym_field_expression) {
-    trace_submod_call(n);
+    error |= trace_submod_call(n);
   } else if (node_func.sym == sym_identifier) {
-    trace_method_call(n);
+    error |= trace_method_call(n);
   } else if (node_func.sym == sym_template_function) {
-    trace_template_call(n);
+    error |= trace_template_call(n);
   } else {
     LOG_R("MtModule::build_call_tree - don't know what to do with %s\n",
           n.ts_node_type());
@@ -304,7 +304,7 @@ bool MtTracer::trace_call(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-bool MtTracer::trace_method_call(MnNode n) {
+CHECK_RETURN bool MtTracer::trace_method_call(MnNode n) {
   bool error = false;
 
   auto node_func = n.get_field(field_function);
@@ -334,7 +334,7 @@ bool MtTracer::trace_method_call(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-bool MtTracer::trace_submod_call(MnNode n) {
+CHECK_RETURN bool MtTracer::trace_submod_call(MnNode n) {
   bool error = false;
 
   // Field call. Pull up the submodule and traverse into the method.
@@ -369,7 +369,7 @@ bool MtTracer::trace_submod_call(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-bool MtTracer::trace_template_call(MnNode n) {
+CHECK_RETURN bool MtTracer::trace_template_call(MnNode n) {
   bool error = false;
 
   auto node_name = n.get_field(field_function).get_field(field_name).text();
@@ -411,7 +411,7 @@ bool MtTracer::trace_template_call(MnNode n) {
 // FIXME why aren't we using this now? Because we switched to getters instead
 // of exposed fields?
 
-bool MtTracer::trace_field(MnNode n) {
+CHECK_RETURN bool MtTracer::trace_field(MnNode n) {
   bool error = false;
   
   n.dump_tree();
@@ -422,7 +422,7 @@ bool MtTracer::trace_field(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-bool MtTracer::trace_id(MnNode n) {
+CHECK_RETURN bool MtTracer::trace_id(MnNode n) {
   bool error = false;
 
   auto field = mod()->get_field(n.text());
@@ -443,7 +443,7 @@ bool MtTracer::trace_id(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-bool MtTracer::trace_if(MnNode n) {
+CHECK_RETURN bool MtTracer::trace_if(MnNode n) {
   bool error = false;
 
   auto node_cond = n.get_field(field_condition);
@@ -487,7 +487,7 @@ bool MtTracer::trace_if(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-bool MtTracer::trace_switch(MnNode n) {
+CHECK_RETURN bool MtTracer::trace_switch(MnNode n) {
   bool error = false;
 
   state_map old_state = state_top();
@@ -498,12 +498,12 @@ bool MtTracer::trace_switch(MnNode n) {
   for (const auto& c : body) {
     if (c.sym == sym_case_statement) {
       if (first_branch) {
-        trace_dispatch(c);
+        error |= trace_dispatch(c);
       } else {
         state_map state_case = old_state;
 
         _state_stack.push_back(&state_case);
-        trace_dispatch(c);
+        error |= trace_dispatch(c);
         _state_stack.pop_back();
 
         error |= merge_parallel(state_top(), state_case, state_top());
@@ -522,7 +522,7 @@ bool MtTracer::trace_switch(MnNode n) {
 //------------------------------------------------------------------------------
 // FIXME this is identical to trace_if, should we merge the two?
 
-bool MtTracer::trace_ternary(MnNode n) {
+CHECK_RETURN bool MtTracer::trace_ternary(MnNode n) {
   bool error = false;
 
   auto node_cond = n.get_field(field_condition);
@@ -561,7 +561,7 @@ bool MtTracer::trace_ternary(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-bool MtTracer::trace_read(MnNode const& n) {
+CHECK_RETURN bool MtTracer::trace_read(MnNode const& n) {
   bool error = false;
 
   std::string field_name = n.text();
@@ -592,7 +592,7 @@ bool MtTracer::trace_read(MnNode const& n) {
 
 //------------------------------------------------------------------------------
 
-bool MtTracer::trace_write(MnNode const& n) {
+CHECK_RETURN bool MtTracer::trace_write(MnNode const& n) {
   bool error = false;
 
   assert(in_tick() || in_tock());
@@ -625,7 +625,7 @@ bool MtTracer::trace_write(MnNode const& n) {
 //------------------------------------------------------------------------------
 // FIXME I guess we handled this above?
 
-bool MtTracer::trace_end_fn() { 
+CHECK_RETURN bool MtTracer::trace_end_fn() { 
   bool error = false;
 
   assert(in_tick() || in_tock());

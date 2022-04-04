@@ -225,7 +225,7 @@ void MtCursor::emit(const char* fmt, ...) {
   va_end(args);
 
   for (int i = 0; i < size; i++) emit_char(buf[i]);
-  delete buf;
+  delete [] buf;
 
   if (echo) printf("\u001b[0m");
 }
@@ -251,7 +251,7 @@ void MtCursor::emit_replacement(MnNode n, const char* fmt, ...) {
   va_end(args);
 
   for (int i = 0; i < size; i++) emit_char(buf[i]);
-  delete buf;
+  delete [] buf;
 
   if (echo) printf("\u001b[0m");
 }
@@ -747,7 +747,7 @@ void MtCursor::emit_init_declarator_as_assign(MnDecl n) {
 void MtCursor::emit_hoisted_decls(MnCompoundStatement n) {
   bool any_to_hoist = false;
 
-  for (auto c : (MnNode&)n) {
+  for (const auto& c : (MnNode&)n) {
     if (c.sym == sym_declaration) {
       bool is_localparam = c.sym == sym_declaration && c.child_count() >= 4 &&
                            c.child(0).text() == "static" &&
@@ -771,7 +771,7 @@ void MtCursor::emit_hoisted_decls(MnCompoundStatement n) {
   }
 
   MtCursor old_cursor = *this;
-  for (auto c : (MnNode&)n) {
+  for (const auto& c : (MnNode&)n) {
     if (c.sym == sym_declaration) {
       bool is_localparam = c.sym == sym_declaration && c.child_count() >= 4 &&
                            c.child(0).text() == "static" &&
@@ -1453,7 +1453,7 @@ void MtCursor::emit(MnClassSpecifier n) {
     emit_indent();
     MtCursor sub_cursor = *this;
     sub_cursor.cursor = current_mod->mod_param_list.start();
-    for (auto c : (MnNode&)current_mod->mod_param_list) {
+    for (const auto& c : (MnNode&)current_mod->mod_param_list) {
       switch (c.sym) {
         case anon_sym_LT:
           sub_cursor.emit_replacement(c, "#(");
@@ -1708,7 +1708,7 @@ void MtCursor::emit(MnTemplateType n) {
 void MtCursor::emit(MnTemplateParamList n) {
   assert(cursor == n.start());
 
-  for (auto c : (MnNode&)n) {
+  for (const auto& c : (MnNode&)n) {
     switch (c.sym) {
       case anon_sym_LT:
         emit_replacement(c, "#(");
@@ -1761,7 +1761,7 @@ void MtCursor::emit(MnTemplateArgList n) {
 // Enum lists do _not_ turn braces into begin/end.
 
 void MtCursor::emit(MnEnumeratorList n) {
-  for (auto c : (MnNode&)n) {
+  for (const auto& c : (MnNode&)n) {
     switch (c.sym) {
       case anon_sym_LBRACE:
         emit_text(c);
@@ -2206,7 +2206,7 @@ void MtCursor::emit(MnDecl n) {
   }
 
   // Regular boring local variable declaration?
-  for (auto c : (MnNode)n) {
+  for (const auto& c : (MnNode)n) {
     emit_ws();
     emit_dispatch(c);
   }
@@ -2245,7 +2245,7 @@ void MtCursor::emit(MnNamespaceDef n) {
   emit("package %s;", node_name.text().c_str());
   cursor = node_body.start();
 
-  for (auto c : node_body) {
+  for (const auto& c : node_body) {
     if (c.sym == anon_sym_LBRACE) {
       emit_replacement(c, "");
     } else if (c.sym == anon_sym_RBRACE) {

@@ -55,7 +55,7 @@ MtSourceFile::~MtSourceFile() {
 //------------------------------------------------------------------------------
 
 void MtSourceFile::collect_modules(MnNode toplevel) {
-  for (auto c : toplevel) {
+  for (const auto& c : toplevel) {
     switch (c.sym) {
       case sym_template_declaration: {
         MnNode mod_root(c.node, c.sym, 0, this);

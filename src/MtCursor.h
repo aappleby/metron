@@ -108,7 +108,7 @@ struct MtCursor {
   MtSourceFile* source_file = nullptr;
   MtModule* current_mod = nullptr;
   const char* cursor = nullptr;
-  MtMethod* current_method;
+  MtMethod* current_method = nullptr;
   std::vector<std::string> indent_stack;
   bool at_newline = true;
   bool line_dirty = false;

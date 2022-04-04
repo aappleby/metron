@@ -83,7 +83,7 @@ MnNode MnNode::first_named_child() const { return named_child(0); }
 
 
 bool MnNode::is_static() const {
-  for (auto c : *this) {
+  for (const auto& c : *this) {
     if (c.sym == sym_storage_class_specifier && c.text() == "static")
       return true;
   }
@@ -91,7 +91,7 @@ bool MnNode::is_static() const {
 }
 
 bool MnNode::is_const() const {
-  for (auto c : *this) {
+  for (const auto& c : *this) {
     if (c.sym == sym_type_qualifier && c.text() == "const") return true;
   }
   return false;

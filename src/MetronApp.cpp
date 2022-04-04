@@ -60,10 +60,20 @@ void mkdir_all(const std::vector<std::string>& full_path) {
 //------------------------------------------------------------------------------
 
 int main(int argc, char** argv) {
-  CLI::App app{"Metron, a C++ to SystemVerilog transpiler."};
+  const char* banner =
+    "                                                        \n" \
+    " ###    ### ####### ######## ######   ######  ###    ## \n" \
+    " ####  #### ##         ##    ##   ## ##    ## ####   ## \n" \
+    " ## #### ## #####      ##    ######  ##    ## ## ##  ## \n" \
+    " ##  ##  ## ##         ##    ##   ## ##    ## ##  ## ## \n" \
+    " ##      ## #######    ##    ##   ##  ######  ##   #### \n" \
+    "                                                        \n" \
+    "            a C++ to SystemVerilog transpiler           \n";
+
+
+  CLI::App app{banner};
 
   bool quiet = false;
-  bool verbose = false;
   bool echo = false;
   bool convert = false;
   bool stats = false;
@@ -73,31 +83,27 @@ int main(int argc, char** argv) {
 
   // clang-format off
   app.add_flag  ("-q,--quiet",    quiet,        "Quiet mode");
-  app.add_flag  ("-v,--verbose",  verbose,      "Verbose mode");
-  app.add_flag  ("-e,--echo",     echo,         "Echo the converted source back to the terminal, with color-coding");
   app.add_flag  ("-c,--convert",  convert,      "Convert sources to SystemVerilog. If not specified, will only check inputs for convertibility.");
-  app.add_flag  ("-s,--stats",    stats,        "Print detailed stats about the source modules");
   app.add_option("-r,--src_root", src_root,     "Root directory of the source to convert");
-  app.add_option("-o,--out_root", out_root,     "Root directory used for output files");
+  app.add_option("-o,--out_root", out_root,     "Root directory used for output files. If not specified, will use source root.");
+  app.add_flag  ("-e,--echo",     echo,         "Echo the converted source back to the terminal, with color-coding.");
+  app.add_flag  ("-s,--stats",    stats,        "Print detailed stats about the source modules.");
   app.add_option("headers",       source_names, "List of .h files to convert from C++ to SystemVerilog");
   // clang-format on
   
   CLI11_PARSE(app, argc, argv);
 
-  // -r examples/uart/metron -o examples/uart/metron_sv uart_top.h uart_hello.h uart_tx.h uart_rx.h
-  // -r examples/rvsimple/metron -o examples/rvsimple/metron_sv adder.h alu.h alu_control.h config.h constants.h control_transfer.h data_memory_interface.h example_data_memory.h example_data_memory_bus.h example_text_memory.h example_text_memory_bus.h immediate_generator.h instruction_decoder.h multiplexer.h multiplexer2.h multiplexer4.h multiplexer8.h regfile.h register.h riscv_core.h singlecycle_control.h singlecycle_ctlpath.h singlecycle_datapath.h toplevel.h
-  // -r examples/rvtiny/metron -o examples/rvtiny/metron_sv toplevel.h
-
+  // -r examples/uart/metron uart_top.h uart_hello.h uart_tx.h uart_rx.h
+  // -r examples/rvtiny/metron toplevel.h
   // -r examples/rvsimple/metron toplevel.h adder.h alu.h alu_control.h config.h constants.h control_transfer.h data_memory_interface.h example_data_memory.h example_data_memory_bus.h example_text_memory.h example_text_memory_bus.h immediate_generator.h instruction_decoder.h multiplexer.h multiplexer2.h multiplexer4.h multiplexer8.h regfile.h register.h riscv_core.h singlecycle_control.h singlecycle_ctlpath.h singlecycle_datapath.h
 
   if (quiet) TinyLog::get().mute();
 
   //----------
-  // Banner
+  // Startup info
 
   LOG_B("Metron v0.0.1\n");
   LOG_B("Quiet   %d\n", quiet);
-  LOG_B("Verbose %d\n", verbose);
   LOG_B("Echo    %d\n", echo);
   LOG_B("Convert %d\n", convert);
   LOG_B("Stats   %d\n", stats);
@@ -141,9 +147,14 @@ int main(int argc, char** argv) {
   }
 
   //----------
-  // Dump out the module tree
+  // Dump out module stats
 
-  if (verbose) {
+  if (stats) {
+    for (auto& mod : library.modules) {
+      mod->dump_banner();
+    }
+    LOG_G("\n");
+
     LOG_Y("Module tree:\n");
     std::function<void(MtModule*, int, bool)> step;
     step = [&](MtModule* m, int rank, bool last) -> void {
@@ -169,24 +180,12 @@ int main(int argc, char** argv) {
   }
 
   //----------
-  // Dump out module stats
-
-  if (stats) {
-    for (auto& mod : library.modules) {
-      if (verbose) {
-        mod->dump_banner();
-        //mod->dump_deltas();
-      }
-    }
-    LOG_G("\n");
-  }
-
-  //----------
   // Emit all modules.
 
-  if (convert) {
-    if (out_root.empty()) {
-      LOG_R("No output root directory specified, converted files will not be written.\n");
+  if (convert || echo) {
+    if (convert && out_root.empty()) {
+      LOG_R("No output root directory specified, using source root.\n");
+      out_root = src_root;
     }
 
     for (auto& source_file : library.source_files)

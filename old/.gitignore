@@ -1,7 +1,0 @@
-.vs
-*.vcxproj.filters
-*.vcxproj.user
-x64
-Debug
-Release
-

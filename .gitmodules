@@ -7,9 +7,6 @@
 [submodule "uart16550"]
 	path = examples/uart16550
 	url = https://github.com/freecores/uart16550
-[submodule "cxxopts"]
-	path = cxxopts
-	url = https://github.com/jarro2783/cxxopts
 [submodule "CLI11"]
 	path = CLI11
 	url = https://github.com/CLIUtils/CLI11

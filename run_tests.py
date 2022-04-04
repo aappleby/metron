@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import sys
 import glob
 import subprocess
 from os import path
@@ -10,9 +11,22 @@ os.system("ninja bin/metron")
 metron_good = glob.glob("tests/metron_good/*.h")
 metron_bad  = glob.glob("tests/metron_bad/*.h")
 
-red_tag   = "\u001b[38;2;255;0;0m"
-green_tag = "\u001b[38;2;0;255;0m"
 reset_tag = "\u001b[0m"
+
+def print_c(color, *args):
+  sys.stdout.write(f"\u001b[38;2;{(color >> 16) & 0xFF};{(color >> 8) & 0xFF};{(color >> 0) & 0xFF}m")
+  print(*args)
+  sys.stdout.write(reset_tag)
+
+def print_r(*args):
+  print_c(0xFF8080, *args)
+
+def print_g(*args):
+  print_c(0x80FF80, *args)
+
+def print_b(*args):
+  print_c(0x8080FF, *args)
+
 
 ################################################################################
 # Make sure all the examples compile
@@ -51,7 +65,7 @@ for filename in metron_good:
   print(f"  {cmd}")
   result = os.system(cmd)
   if result:
-    print(red_tag + f"Test file {filename} - expected pass, got {result}" + reset_tag);
+    print_r(f"Test file {filename} - expected pass, got {result}");
     result = os.system(f"bin/metron {filename}")
     error = True
 
@@ -68,12 +82,10 @@ for filename in metron_good:
     test_src   = open("tests/metron_sv/" + svname, "r").read()
     golden_src = open("tests/metron_ref/" + svname, "r").read()
     if (test_src != golden_src):
-      print(red_tag)
-      print("Golden mismatch!!!")
-      print(reset_tag)
+      print_r("Golden mismatch!!!")
       error = True
   except:
-    print(f"  No golden for {filename}")
+    print_b(f"  No golden for {filename}")
 
 ################################################################################
 # Make sure all the bad examples fail
@@ -96,40 +108,36 @@ print("Running test bin/examples/uart")
 stuff = subprocess.run(['bin/examples/uart'], stdout=subprocess.PIPE).stdout.decode('utf-8')
 if not "All tests pass" in stuff:
   error = True
-  print(stuff)
+  print_r(stuff)
 
 print("Running test bin/examples/uart_vl")
 stuff = subprocess.run(['bin/examples/uart_vl'], stdout=subprocess.PIPE).stdout.decode('utf-8')
 if not "All tests pass" in stuff:
   error = True
-  print(stuff)
+  print_r(stuff)
 
 print("Running test bin/examples/uart_iv")
 stuff = subprocess.run(['bin/examples/uart_iv'], stdout=subprocess.PIPE).stdout.decode('utf-8')
 if not "All tests pass" in stuff:
   error = True
-  print(stuff)
+  print_r(stuff)
 
 ################################################################################
 
 if error:
-  print(red_tag)
-  print("  █████▒▄▄▄       ██▓ ██▓    ")
-  print("▓██   ▒▒████▄    ▓██▒▓██▒    ")
-  print("▒████ ░▒██  ▀█▄  ▒██▒▒██░    ")
-  print("░▓█▒  ░░██▄▄▄▄██ ░██░▒██░    ")
-  print("░▒█░    ▓█   ▓██▒░██░░██████▒")
-  print(" ▒ ░    ▒▒   ▓▒█░░▓  ░ ▒░▓  ░")
-  print(" ░       ▒   ▒▒ ░ ▒ ░░ ░ ▒  ░")
-  print(" ░ ░     ░   ▒    ▒ ░  ░ ░   ")
-  print("             ░  ░ ░      ░  ░")
-  print(reset_tag)
+  print_r("  █████▒▄▄▄       ██▓ ██▓    ")
+  print_r("▓██   ▒▒████▄    ▓██▒▓██▒    ")
+  print_r("▒████ ░▒██  ▀█▄  ▒██▒▒██░    ")
+  print_r("░▓█▒  ░░██▄▄▄▄██ ░██░▒██░    ")
+  print_r("░▒█░    ▓█   ▓██▒░██░░██████▒")
+  print_r(" ▒ ░    ▒▒   ▓▒█░░▓  ░ ▒░▓  ░")
+  print_r(" ░       ▒   ▒▒ ░ ▒ ░░ ░ ▒  ░")
+  print_r(" ░ ░     ░   ▒    ▒ ░  ░ ░   ")
+  print_r("             ░  ░ ░      ░  ░")
 else:
-  print(green_tag)
-  print("██████╗  █████╗ ███████╗███████╗")
-  print("██╔══██╗██╔══██╗██╔════╝██╔════╝")
-  print("██████╔╝███████║███████╗███████╗")
-  print("██╔═══╝ ██╔══██║╚════██║╚════██║")
-  print("██║     ██║  ██║███████║███████║")
-  print("╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝")
-  print(reset_tag)
+  print_g("██████╗  █████╗ ███████╗███████╗")
+  print_g("██╔══██╗██╔══██╗██╔════╝██╔════╝")
+  print_g("██████╔╝███████║███████╗███████╗")
+  print_g("██╔═══╝ ██╔══██║╚════██║╚════██║")
+  print_g("██║     ██║  ██║███████║███████║")
+  print_g("╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝")

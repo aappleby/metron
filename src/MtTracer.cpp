@@ -448,8 +448,6 @@ CHECK_RETURN bool MtTracer::trace_template_call(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
-// FIXME why aren't we using this now? Because we switched to getters instead
-// of exposed fields?
 
 CHECK_RETURN bool MtTracer::trace_field(MnNode n) {
   std::string field_name = n.text();

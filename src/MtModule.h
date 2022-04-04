@@ -203,7 +203,6 @@ struct MtModule {
   std::vector<MtField*> submods;
 
   std::vector<MtMethod*> all_methods;
-  std::vector<MtMethod*> getters;
   std::vector<MtMethod*> init_methods;
   std::vector<MtMethod*> tick_methods;
   std::vector<MtMethod*> tock_methods;

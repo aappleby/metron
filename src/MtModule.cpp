@@ -173,10 +173,6 @@ void MtModule::dump_banner() const {
   LOG_B("Outputs:\n");
   for (auto n : outputs)
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
-  if (!getters.empty()) {
-    LOG_B("Getters:\n");
-    dump_method_list(getters);
-  }
   LOG_B("Regs:\n");
   for (auto n : registers)
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
@@ -518,8 +514,6 @@ CHECK_RETURN bool MtModule::collect_methods() {
         error = true;
       }
       task_methods.push_back(m);
-    } else if (m->is_public && m->is_const && m->is_func) {
-      getters.push_back(m);
     } else {
       assert(m->is_func);
       func_methods.push_back(m);

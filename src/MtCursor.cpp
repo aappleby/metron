@@ -1239,7 +1239,6 @@ void MtCursor::emit_field_as_submod(MnFieldDecl n) {
 
     emit_newline();
     emit_indent();
-    //emit(".%s(%s)", n.name().c_str(), (*it).second.c_str());
     emit(".%s(%s_%s)", n->name().c_str(), inst_name.c_str(), n->name().c_str());
 
     if (port_index++ < port_count - 1) emit(", ");
@@ -1258,23 +1257,14 @@ void MtCursor::emit_field_as_submod(MnFieldDecl n) {
   }
 
   for (auto m : submod_mod->all_methods) {
-    if (!m->is_public || !m->has_return) continue;
-    emit_newline();
-    emit_indent();
-    emit(".%s(%s_%s)", m->name().c_str(), inst_name.c_str(), m->name().c_str());
-
-    if (port_index++ < port_count - 1) emit(", ");
+    if (m->is_public && m->has_return) {
+      emit_newline();
+      emit_indent();
+      emit(".%s(%s_%s)", m->name().c_str(), inst_name.c_str(), m->name().c_str());
+      
+      if (port_index++ < port_count - 1) emit(", ");
+    }
   }
-
-  /*
-  for (auto n : submod_mod->getters) {
-    emit_newline();
-    emit_indent();
-    emit(".%s(%s_%s)", n->name().c_str(), inst_name.c_str(), n->name().c_str());
-
-    if (port_index++ < port_count - 1) emit(", ");
-  }
-  */
 
   indent_stack.pop_back();
 
@@ -1362,30 +1352,6 @@ void MtCursor::emit_output_ports(MnFieldDecl submod) {
 
     emit_newline();
   }
-
-  /*
-  for (auto getter : submod_mod->getters) {
-    auto getter_type = getter->node.get_field(field_type);
-    auto getter_decl = getter->node.get_field(field_declarator);
-    auto getter_name = getter_decl.get_field(field_declarator);
-
-    MtCursor sub_cursor(lib, submod_mod->source_file, str_out);
-    sub_cursor.echo = echo;
-    sub_cursor.in_ports = true;
-    sub_cursor.id_replacements = replacements;
-
-    emit_indent();
-    sub_cursor.cursor = getter_type.start();
-    sub_cursor.skip_ws();
-    sub_cursor.emit_dispatch(getter_type);
-    sub_cursor.emit_ws();
-    emit("%s_", submod_decl.text().c_str());
-    sub_cursor.emit_dispatch(getter_name);
-    emit(";");
-
-    emit_newline();
-  }
-  */
 
   for (auto m : submod_mod->all_methods) {
     if (!m->is_public || !m->has_return) continue;
@@ -1582,30 +1548,6 @@ void MtCursor::emit(MnClassSpecifier n) {
       if (port_index++ < port_count - 1) emit(",");
       emit_newline();
     }
-
-    /*
-    for (auto getter : current_mod->getters) {
-      emit_indent();
-      emit("output ");
-
-      MtCursor sub_cursor = *this;
-
-      auto getter_type = getter->node.get_field(field_type);
-      auto getter_decl = getter->node.get_field(field_declarator);
-      auto getter_name = getter_decl.get_field(field_declarator);
-
-      // getter_decl.dump_tree();
-
-      sub_cursor.cursor = getter_type.start();
-      sub_cursor.emit_dispatch(getter_type);
-      sub_cursor.emit_ws();
-      sub_cursor.cursor = getter_name.start();
-      sub_cursor.emit_dispatch(getter_name);
-
-      if (port_index++ < port_count - 1) emit(",");
-      emit_newline();
-    }
-    */
 
     for (auto m : current_mod->all_methods) {
       if (!m->is_public || !m->has_return) continue;

@@ -115,15 +115,6 @@ bool merge_parallel(state_map& ma, state_map& mb, state_map& out) {
     temp[key] = sm;
   }
 
-  /*
-  LOG_G("MA\n");
-  MtTracer::dump_trace(ma);
-  LOG_G("MB\n");
-  MtTracer::dump_trace(mb);
-  LOG_G("MC\n");
-  MtTracer::dump_trace(temp);
-  */
-
   out.swap(temp);
   return error;
 }

@@ -110,9 +110,9 @@ DECLARE_SIZE(int64_t, 62);
 DECLARE_SIZE(int64_t, 63);
 DECLARE_SIZE(int64_t, 64);
 
-template< typename T >
+template <typename T>
 struct always_false {
-    enum { value = false };
+  enum { value = false };
 };
 //------------------------------------------------------------------------------
 // A logic behaves like an unsigned integer with any number of bits, up to the
@@ -149,9 +149,7 @@ class logic {
   // Logics have a getter, setter, and 'coercer' for convenience.
 
   BASE get() const { return x; }
-  void set(BASE y) {
-    x = y & mask;
-  }
+  void set(BASE y) { x = y & mask; }
 
   template <typename T>
   static logic coerce(const T& a) {
@@ -182,7 +180,7 @@ class logic {
   // unexpected behavior.
 
   template <typename T>
-  logic& operator <= (const T& t) {
+  logic& operator<=(const T& t) {
     static_assert(always_false<T>::value, "Using <= with logic<> is forbidden");
     return *this;
   }
@@ -195,8 +193,7 @@ class logic {
   SBASE as_signed() const {
     if (sizeof(SBASE) == (WIDTH * 8)) {
       return SBASE(x);
-    }
-    else {
+    } else {
       SBASE t = x;
       t <<= (sizeof(SBASE) * 8) - WIDTH;
       t >>= (sizeof(SBASE) * 8) - WIDTH;
@@ -459,21 +456,12 @@ inline logic<WIDTH * DUPS> dup(const logic<WIDTH>& a) {
 
 //-----------------------------------------------------------------------------
 
-template<int DST_WIDTH, int SRC_WIDTH>
+template <int DST_WIDTH, int SRC_WIDTH>
 inline logic<DST_WIDTH> sign_extend(const logic<SRC_WIDTH> a) {
   static_assert(DST_WIDTH >= SRC_WIDTH);
-  return cat(dup<DST_WIDTH - SRC_WIDTH + 1>(a[SRC_WIDTH-1]), bx<SRC_WIDTH-1>(a));
+  return cat(dup<DST_WIDTH - SRC_WIDTH + 1>(a[SRC_WIDTH - 1]),
+             bx<SRC_WIDTH - 1>(a));
 }
-
-
-
-
-
-
-
-
-
-
 
 //-----------------------------------------------------------------------------
 
@@ -484,25 +472,8 @@ inline uint64_t timestamp() {
   return now;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //-----------------------------------------------------------------------------
+// TinyLog - simple console log with color coding, indentation, and timestamps
 
 struct TinyLog {
   uint32_t color = 0;
@@ -515,14 +486,10 @@ struct TinyLog {
     return log;
   }
 
-  void indent() {
-    indentation += 2;
-  }
-
-  void dedent() {
-    indentation -= 2;
-    if (indentation < 0) indentation = 0;
-  }
+  void indent() { indentation += 2; }
+  void dedent() { indentation -= 2; }
+  void mute() { muted = true; }
+  void unmute() { muted = false; }
 
   void set_color(uint32_t new_color) {
     if (color == new_color) return;
@@ -531,7 +498,8 @@ struct TinyLog {
     if (color == 0) {
       ::printf("\u001b[0m");
     } else {
-      ::printf("\u001b[38;2;%d;%d;%dm", (color >> 0) & 0xFF, (color >> 8) & 0xFF, (color >> 16) & 0xFF);
+      ::printf("\u001b[38;2;%d;%d;%dm", (color >> 0) & 0xFF,
+               (color >> 8) & 0xFF, (color >> 16) & 0xFF);
     }
   }
 
@@ -554,11 +522,13 @@ struct TinyLog {
       if (start_line) {
         print_prefix();
         set_color(color);
-        for (int j = 0; j < indentation; j++) putchar(' ');
+        for (int j = 0; j < indentation; j++) {
+          if (!muted) putchar(' ');
+        }
         start_line = false;
       }
 
-      putchar(c);
+      if (!muted) putchar(c);
       if (c == '\n') start_line = true;
     }
     set_color(0);
@@ -575,8 +545,7 @@ struct TinyLog {
   }
 };
 
-
-#define LOG(...)   TinyLog::get().printf(0x00000000, __VA_ARGS__);
+#define LOG(...) TinyLog::get().printf(0x00000000, __VA_ARGS__);
 #define LOG_R(...) TinyLog::get().printf(0x008080FF, __VA_ARGS__);
 #define LOG_G(...) TinyLog::get().printf(0x0080FF80, __VA_ARGS__);
 #define LOG_B(...) TinyLog::get().printf(0x00FFA0A0, __VA_ARGS__);
@@ -590,32 +559,11 @@ struct TinyLog {
 #define LOG_DEDENT() TinyLog::get().dedent()
 
 struct LogIndenter {
-  LogIndenter()  { LOG_INDENT(); }
+  LogIndenter() { LOG_INDENT(); }
   ~LogIndenter() { LOG_DEDENT(); }
 };
 
 #define LOG_INDENT_SCOPE() LogIndenter indenter##__LINE__;
-
-//-----------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 //------------------------------------------------------------------------------
 // Trivial support for Verilog's "+foo=bar" test arg syntax.
@@ -651,30 +599,6 @@ inline void value_plusargs(const char* fmt, std::string& out) {
     }
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 //------------------------------------------------------------------------------
 // "Magic" constant that gets translated to 'x' in Verilog

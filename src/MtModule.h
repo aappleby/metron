@@ -133,26 +133,26 @@ struct MtModule {
   MtField*  get_submod(const std::string& name);
   MtMethod* get_method(const std::string& name);
 
-  void load_pass1();
-  void load_pass2();
+  bool load_pass1();
+  bool load_pass2();
 
   void dump_method_list(const std::vector<MtMethod*>& methods) const;
   void dump_banner() const;
   //void dump_deltas() const;
 
-  void collect_params();
-  void collect_fields();
-  void collect_methods();
-  void collect_inputs();
-  void collect_outputs();
-  void collect_registers();
-  void collect_submods();
+  bool collect_params();
+  bool collect_fields();
+  bool collect_methods();
+  bool collect_inputs();
+  bool collect_outputs();
+  bool collect_registers();
+  bool collect_submods();
 
-  void build_port_map();
+  bool build_port_map();
 
   bool trace();
 
-  void sanity_check();
+  bool sanity_check();
 
 #if 0
   void check_dirty_ticks();
@@ -186,7 +186,7 @@ struct MtModule {
 
   std::vector<MtModule*> parents;
 
-  MnClassSpecifier mod_struct;
+  MnClassSpecifier mod_class;
   MnTemplateDecl mod_template;
   MnTemplateParamList mod_param_list;
 

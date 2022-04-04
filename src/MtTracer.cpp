@@ -76,7 +76,7 @@ FieldState merge_series(FieldState a, FieldState b) {
   auto r = field_table[a][b];
 
   if (r == FIELD_INVALID) {
-    LOG_R("merge_series produced FIELD_INVALID\n");
+    //LOG_R("merge_series produced FIELD_INVALID\n");
   }
 
   return r;
@@ -84,7 +84,8 @@ FieldState merge_series(FieldState a, FieldState b) {
 
 //-----------------------------------------------------------------------------
 
-void merge_parallel(state_map& ma, state_map& mb, state_map& out) {
+bool merge_parallel(state_map& ma, state_map& mb, state_map& out) {
+  bool error = false;
   std::set<std::string> keys;
 
   for (const auto& a : ma) keys.insert(a.first);
@@ -94,13 +95,21 @@ void merge_parallel(state_map& ma, state_map& mb, state_map& out) {
   for (const auto& key : keys) {
     auto sa = ma[key];
     auto sb = mb[key];
-    temp[key] = merge_parallel(sa, sb);
+    auto sm = merge_parallel(sa, sb);
+    if (sm == FIELD_INVALID) {
+      LOG_R("%s: %s || %s = %s\n", key.c_str(), to_string(sa), to_string(sb), to_string(sm));
+      error = true;
+      return error;
+    }
+    temp[key] = sm;
   }
 
   out.swap(temp);
+  return error;
 }
 
-void merge_series(state_map& ma, state_map& mb, state_map& out) {
+bool merge_series(state_map& ma, state_map& mb, state_map& out) {
+  bool error = false;
   std::set<std::string> keys;
 
   for (const auto& a : ma) keys.insert(a.first);
@@ -110,50 +119,59 @@ void merge_series(state_map& ma, state_map& mb, state_map& out) {
   for (const auto& key : keys) {
     auto sa = ma[key];
     auto sb = mb[key];
-    temp[key] = merge_series(sa, sb);
+    auto sm = merge_series(sa, sb);
+    if (sm == FIELD_INVALID) {
+      LOG_R("%s: %s -> %s = %s\n", key.c_str(), to_string(sa), to_string(sb), to_string(sm));
+      error = true;
+      return error;
+    }
+    temp[key] = sm;
   }
 
   out.swap(temp);
+  return error;
 }
 
 //------------------------------------------------------------------------------
 
-void MtTracer::trace_dispatch(MnNode n) {
-  if (!n.is_named()) return;
+bool MtTracer::trace_dispatch(MnNode n) {
+  bool error = false;
+
+  if (!n.is_named()) return error;
 
   switch (n.sym) {
     case sym_assignment_expression:
-      trace_assign(n);
+      error |= trace_assign(n);
       break;
     case sym_call_expression:
-      trace_call(n);
+      error |= trace_call(n);
       break;
     case sym_field_expression:
-      trace_field(n);
+      error |= trace_field(n);
       break;
     case sym_identifier:
-      trace_id(n);
+      error |= trace_id(n);
       break;
     case sym_if_statement:
-      trace_if(n);
+      error |= trace_if(n);
       break;
     case sym_switch_statement:
-      trace_switch(n);
+      error |= trace_switch(n);
       break;
 
     case sym_declaration:
       // do we want to do anything special for this node, like note the
       // existence of the local somewhere?
-      trace_children(n);
+      error |= trace_children(n);
       break;
 
     case sym_init_declarator:
       // Skip the lhs
-      trace_dispatch(n.get_field(field_value));
+      error |= trace_dispatch(n.get_field(field_value));
       break;
 
     case sym_conditional_expression:
-      trace_ternary(n);
+      error |= trace_ternary(n);
       break;
 
     case sym_template_type:
@@ -175,50 +193,53 @@ void MtTracer::trace_dispatch(MnNode n) {
     case sym_unary_expression:
     case sym_qualified_identifier:
     case alias_sym_namespace_identifier:
-      trace_children(n);
+      error |= trace_children(n);
       break;
 
     case sym_subscript_expression:  
       // I don't think we need to do anything special?
-      trace_children(n);
+      error |= trace_children(n);
       break;
 
     default:
       LOG_R("Don't know what to do with %s\n", n.ts_node_type());
-      n.dump_tree();
-      debugbreak();
-      // trace_children(n);
+      error = true;
       break;
   }
+
+  return error;
 }
 
 //------------------------------------------------------------------------------
 
-void MtTracer::trace_children(MnNode n) {
+bool MtTracer::trace_children(MnNode n) {
+  bool error = false;
   for (auto c : n) {
-    trace_dispatch(c);
+    error |= trace_dispatch(c);
   }
+  return error;
 }
 
 //------------------------------------------------------------------------------
 
-void MtTracer::trace_assign(MnNode n) {
+bool MtTracer::trace_assign(MnNode n) {
+  bool error = false;
 
   auto node_lhs = n.get_field(field_left);
   auto node_rhs = n.get_field(field_right);
 
-  trace_dispatch(node_rhs);
+  error |= trace_dispatch(node_rhs);
 
   if (node_lhs.sym == sym_identifier) {
     auto node_name = node_lhs;
     if (mod()->get_field(node_name.text())) {
-      trace_write(node_name);
+      error |= trace_write(node_name);
     }
   }
   else if (node_lhs.sym == sym_subscript_expression) {
     auto node_name = node_lhs.get_field(field_argument);
     if (mod()->get_field(node_name.text())) {
-      trace_write(node_name);
+      error |= trace_write(node_name);
     }
   }
   else {
@@ -226,18 +247,17 @@ void MtTracer::trace_assign(MnNode n) {
     debugbreak();
   }
 
+  return error;
 }
 
 //------------------------------------------------------------------------------
 // FIXME I need to traverse the args before stepping into the call
 
-void MtTracer::trace_call(MnNode n) {
-  // n.dump_tree();
+bool MtTracer::trace_call(MnNode n) {
+  bool error = false;
 
   // Trace the args first.
-  trace_dispatch(n.get_field(field_arguments));
-
-  //printf("Tracing call %s.%s -> %s\n", mod()->name().c_str(), method()->name().c_str(), node_func.text().c_str());
+  error |= trace_dispatch(n.get_field(field_arguments));
 
   // New state map goes on the stack.
   state_map state_call;
@@ -253,8 +273,7 @@ void MtTracer::trace_call(MnNode n) {
   } else {
     LOG_R("MtModule::build_call_tree - don't know what to do with %s\n",
           n.ts_node_type());
-    n.dump_tree();
-    debugbreak();
+    error = true;
   }
 
   _state_stack.pop_back();
@@ -267,35 +286,33 @@ void MtTracer::trace_call(MnNode n) {
 
     if (new_state == FIELD_INVALID) {
       LOG_R("Field %s was %s, now %s!\n", pair.first.c_str(), to_string(old_state), to_string(new_state));
-      //LOG_R("========== call stack ==========\n");
-      //for (auto it = _method_stack.rbegin(); it != _method_stack.rend(); ++it) {
-      //  printf("%s.%s\n", (*it)->mod->name().c_str(), (*it)->name().c_str());
-      //}
-      //LOG_R("========== source ==========\n");
-      //n.dump_source_lines();
-      //LOG_R("============================\n");
+      error = true;
+      break;
     }
 
     pair.second = new_state;
   }
 
-  merge_series(state_top(), state_call, state_top());
-  //dump_trace();
+  error |= merge_series(state_top(), state_call, state_top());
+  if (error) {
+    LOG_R("MtTracer::trace_call failed @\n");
+    n.dump_source_lines();
+  }
+
+  return error;
 }
 
 //------------------------------------------------------------------------------
 
-void MtTracer::trace_method_call(MnNode n) {
-
-  // Now trace the call.
+bool MtTracer::trace_method_call(MnNode n) {
+  bool error = false;
 
   auto node_func = n.get_field(field_function);
-
   auto sibling_method = mod()->get_method(node_func.text());
 
   if (sibling_method) {
     _method_stack.push_back(sibling_method);
-    trace_dispatch(sibling_method->node.get_field(field_body));
+    error |= trace_dispatch(sibling_method->node.get_field(field_body));
     _method_stack.pop_back();
   } else {
     // Utility method call like bN()
@@ -306,11 +323,20 @@ void MtTracer::trace_method_call(MnNode n) {
     node_func.text().c_str());
     */
   }
+
+  if (error) {
+    LOG_R("MtTracer::trace_method_call failed @\n");
+    n.dump_source_lines();
+  }
+
+  return error;
 }
 
 //------------------------------------------------------------------------------
 
-void MtTracer::trace_submod_call(MnNode n) {
+bool MtTracer::trace_submod_call(MnNode n) {
+  bool error = false;
+
   // Field call. Pull up the submodule and traverse into the method.
 
   auto node_func = n.get_field(field_function);
@@ -328,15 +354,23 @@ void MtTracer::trace_submod_call(MnNode n) {
   _field_stack.push_back(submod);
   _mod_stack.push_back(submod_mod);
   _method_stack.push_back(submod_method);
-  trace_dispatch(submod_method->node.get_field(field_body));
+  error |= trace_dispatch(submod_method->node.get_field(field_body));
   _method_stack.pop_back();
   _mod_stack.pop_back();
   _field_stack.pop_back();
+
+  if (error) {
+    LOG_R("MtTracer::trace_submod_call failed @\n");
+    n.dump_source_lines();
+  }
+
+  return error;
 }
 
 //------------------------------------------------------------------------------
 
-void MtTracer::trace_template_call(MnNode n) {
+bool MtTracer::trace_template_call(MnNode n) {
+  bool error = false;
 
   auto node_name = n.get_field(field_function).get_field(field_name).text();
 
@@ -364,22 +398,37 @@ void MtTracer::trace_template_call(MnNode n) {
 
   // node_func.dump_tree();
 #endif
+
+  if (error) {
+    LOG_R("MtTracer::trace_template_call failed @\n");
+    n.dump_source_lines();
+  }
+
+  return error;
 }
 
 //------------------------------------------------------------------------------
+// FIXME why aren't we using this now? Because we switched to getters instead
+// of exposed fields?
 
-void MtTracer::trace_field(MnNode n) {
+bool MtTracer::trace_field(MnNode n) {
+  bool error = false;
+  
   n.dump_tree();
   debugbreak();
+
+  return error;
 }
 
 //------------------------------------------------------------------------------
 
-void MtTracer::trace_id(MnNode n) {
+bool MtTracer::trace_id(MnNode n) {
+  bool error = false;
+
   auto field = mod()->get_field(n.text());
 
   if (field) {
-    trace_read(n);
+    error |= trace_read(n);
     // n.dump_tree();
     // debugbreak();
   } else {
@@ -388,16 +437,20 @@ void MtTracer::trace_id(MnNode n) {
     // n.dump_tree();
     // debugbreak();
   }
+
+  return error;
 }
 
 //------------------------------------------------------------------------------
 
-void MtTracer::trace_if(MnNode n) {
+bool MtTracer::trace_if(MnNode n) {
+  bool error = false;
+
   auto node_cond = n.get_field(field_condition);
   auto node_branch_a = n.get_field(field_consequence);
   auto node_branch_b = n.get_field(field_alternative);
 
-  trace_dispatch(node_cond);
+  error |= trace_dispatch(node_cond);
 
   // FIXME - Does preloading branch_a/b with the current state change anything?
   // I don't think so.
@@ -407,29 +460,35 @@ void MtTracer::trace_if(MnNode n) {
 
   if (!node_branch_a.is_null()) {
     _state_stack.push_back(&branch_a);
-    trace_dispatch(node_branch_a);
+    error |= trace_dispatch(node_branch_a);
     _state_stack.pop_back();
   }
 
   if (!node_branch_b.is_null()) {
     _state_stack.push_back(&branch_b);
-    trace_dispatch(node_branch_a);
+    error |= trace_dispatch(node_branch_a);
     _state_stack.pop_back();
   }
 
   // FIXME - Does series-parallel behave differently than parallel-series?
   // I don't think so.
 
-  merge_series(state_top(), branch_a, branch_a);
-  merge_series(state_top(), branch_b, branch_b);
-  merge_parallel(branch_a, branch_b, state_top());
+  error |= merge_series(state_top(), branch_a, branch_a);
+  error |= merge_series(state_top(), branch_b, branch_b);
+  error |= merge_parallel(branch_a, branch_b, state_top());
 
-  return;
+  if (error) {
+    LOG_R("MtTracer::trace_if - error\n");
+    n.dump_source_lines();
+  }
+
+  return error;
 }
 
 //------------------------------------------------------------------------------
 
-void MtTracer::trace_switch(MnNode n) {
+bool MtTracer::trace_switch(MnNode n) {
+  bool error = false;
 
   state_map old_state = state_top();
 
@@ -447,22 +506,30 @@ void MtTracer::trace_switch(MnNode n) {
         trace_dispatch(c);
         _state_stack.pop_back();
 
-        merge_parallel(state_top(), state_case, state_top());
-        //dump_trace();
+        error |= merge_parallel(state_top(), state_case, state_top());
       }
     }
   }
+
+  if (error) {
+    LOG_R("MtTracer::trace_switch failed @\n");
+    n.dump_source_lines();
+  }
+
+  return error;
 }
 
 //------------------------------------------------------------------------------
 // FIXME this is identical to trace_if, should we merge the two?
 
-void MtTracer::trace_ternary(MnNode n) {
+bool MtTracer::trace_ternary(MnNode n) {
+  bool error = false;
+
   auto node_cond = n.get_field(field_condition);
   auto node_branch_a = n.get_field(field_consequence);
   auto node_branch_b = n.get_field(field_alternative);
 
-  trace_dispatch(node_cond);
+  error |= trace_dispatch(node_cond);
 
   // FIXME - Does preloading branch_a/b with the current state change anything?
   // I don't think so.
@@ -472,29 +539,31 @@ void MtTracer::trace_ternary(MnNode n) {
 
   if (!node_branch_a.is_null()) {
     _state_stack.push_back(&branch_a);
-    trace_dispatch(node_branch_a);
+    error |= trace_dispatch(node_branch_a);
     _state_stack.pop_back();
   }
 
   if (!node_branch_b.is_null()) {
     _state_stack.push_back(&branch_b);
-    trace_dispatch(node_branch_a);
+    error |= trace_dispatch(node_branch_a);
     _state_stack.pop_back();
   }
 
   // FIXME - Does series-parallel behave differently than parallel-series?
   // I don't think so.
 
-  merge_series(state_top(), branch_a, branch_a);
-  merge_series(state_top(), branch_b, branch_b);
-  merge_parallel(branch_a, branch_b, state_top());
+  error |= merge_series(state_top(), branch_a, branch_a);
+  error |= merge_series(state_top(), branch_b, branch_b);
+  error |= merge_parallel(branch_a, branch_b, state_top());
 
-  return;
+  return error;
 }
 
 //------------------------------------------------------------------------------
 
-void MtTracer::trace_read(MnNode const& n) {
+bool MtTracer::trace_read(MnNode const& n) {
+  bool error = false;
+
   std::string field_name = n.text();
 
   for (int i = (int)_field_stack.size() - 1; i >= 0; i--) {
@@ -513,15 +582,19 @@ void MtTracer::trace_read(MnNode const& n) {
     LOG_R("========== source ==========\n");
     n.dump_source_lines();
     LOG_R("============================\n");
+    error = true;
   }
 
   state_top()[field_name] = new_state;
-  //dump_trace();
+
+  return error;
 }
 
 //------------------------------------------------------------------------------
 
-void MtTracer::trace_write(MnNode const& n) {
+bool MtTracer::trace_write(MnNode const& n) {
+  bool error = false;
+
   assert(in_tick() || in_tock());
   std::string field_name = n.text();
 
@@ -541,15 +614,20 @@ void MtTracer::trace_write(MnNode const& n) {
     LOG_R("========== source ==========\n");
     n.dump_source_lines();
     LOG_R("============================\n");
+    error = true;
   }
 
   state_top()[field_name] = new_state;
-  //dump_trace();
+  
+  return error;
 }
 
 //------------------------------------------------------------------------------
+// FIXME I guess we handled this above?
 
-void MtTracer::trace_end_fn() { 
+bool MtTracer::trace_end_fn() { 
+  bool error = false;
+
   assert(in_tick() || in_tock());
 
 #if 0
@@ -573,6 +651,8 @@ void MtTracer::trace_end_fn() {
 
   state_top()[field_name] = new_state;
 #endif
+
+  return error;
 }
 
 //------------------------------------------------------------------------------

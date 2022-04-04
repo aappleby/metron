@@ -72,8 +72,8 @@ int main(int argc, char** argv) {
   bool echo = false;
   bool convert = false;
   bool stats = false;
-  std::string src_root = ".";
-  std::string out_root = "";
+  std::string src_root;
+  std::string out_root;
   std::vector<std::string> source_names;
 
   // clang-format off
@@ -82,7 +82,6 @@ int main(int argc, char** argv) {
   app.add_flag  ("-e,--echo",     echo,         "Echo the converted source back to the terminal, with color-coding");
   app.add_flag  ("-c,--convert",  convert,      "Convert sources to SystemVerilog. If not specified, will only check inputs for convertibility.");
   app.add_flag  ("-s,--stats",    stats,        "Print detailed stats about the source modules");
-
   app.add_option("-r,--src_root", src_root,     "Root directory of the source to convert");
   app.add_option("-o,--out_root", out_root,     "Root directory used for output files");
   app.add_option("headers",       source_names, "List of .h files to convert from C++ to SystemVerilog");
@@ -104,8 +103,8 @@ int main(int argc, char** argv) {
   LOG_B("Echo    %d\n", echo);
   LOG_B("Convert %d\n", convert);
   LOG_B("Stats   %d\n", stats);
-  LOG_B("Source root '%s'\n", src_root.c_str());
-  LOG_B("Output root '%s'\n", out_root.c_str());
+  LOG_B("Source root '%s'\n", src_root.empty() ? "<empty>" : src_root.c_str());
+  LOG_B("Output root '%s'\n", out_root.empty() ? "<empty>" : out_root.c_str());
 
   for (auto& name : source_names) {
     LOG_B("Header %s\n", name.c_str());
@@ -115,17 +114,33 @@ int main(int argc, char** argv) {
   //----------
   // Load all source files.
 
+  bool error = false;
+
+  if (src_root.empty()) {
+    LOG_R("No source root specified, using current directory\n");
+    src_root = ".";
+  }
+
   MtModLibrary library;
   library.add_search_path(src_root);
 
   LOG_B("Loading source files\n");
   for (auto& name : source_names) {
-    library.load_source(name.c_str());
+    error |= library.load_source(name.c_str());
   }
+  if (error) {
+    LOG_R("Exiting due to error\n");
+    return -1;
+  }
+
   LOG_B("\n");
 
   LOG_B("Processing source files\n");
-  library.process_sources();
+  error |= library.process_sources();
+  if (error) {
+    LOG_R("Exiting due to error\n");
+    return -1;
+  }
 
   if (!library.all_modules_valid) {
     LOG_R("Aborting, some modules invalid\n");
@@ -179,6 +194,10 @@ int main(int argc, char** argv) {
   // Emit all modules.
 
   if (convert) {
+    if (out_root.empty()) {
+      LOG_R("No output root directory specified, converted files will not be written.\n");
+    }
+
     for (auto& source_file : library.source_files)
     {
       // Translate the source.

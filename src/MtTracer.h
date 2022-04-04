@@ -53,24 +53,27 @@ typedef std::map<std::string, FieldState> state_map;
 
 class MtTracer {
  public:
-  void trace_dispatch(MnNode n);
-  void trace_children(MnNode n);
+  bool trace_dispatch(MnNode n);
+  bool trace_children(MnNode n);
 
-  void trace_assign(MnNode n);
-  void trace_call(MnNode n);
-  void trace_field(MnNode n);
-  void trace_id(MnNode n);
-  void trace_if(MnNode n);
-  void trace_switch(MnNode n);
-  void trace_ternary(MnNode n);
 
-  void trace_submod_call(MnNode n);
-  void trace_method_call(MnNode n);
-  void trace_template_call(MnNode n);
+  //_Check_return_
+  bool trace_assign(MnNode n);
 
-  void trace_read(MnNode const& n);
-  void trace_write(MnNode const& n);
-  void trace_end_fn();
+  bool trace_call(MnNode n);
+  bool trace_field(MnNode n);
+  bool trace_id(MnNode n);
+  bool trace_if(MnNode n);
+  bool trace_switch(MnNode n);
+  bool trace_ternary(MnNode n);
+
+  bool trace_submod_call(MnNode n);
+  bool trace_method_call(MnNode n);
+  bool trace_template_call(MnNode n);
+
+  bool trace_read(MnNode const& n);
+  bool trace_write(MnNode const& n);
+  bool trace_end_fn();
 
   void dump_trace();
 

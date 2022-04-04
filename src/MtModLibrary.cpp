@@ -44,6 +44,8 @@ MtSourceFile* MtModLibrary::find_source(const std::string& filename) {
 //------------------------------------------------------------------------------
 
 bool MtModLibrary::load_source(const char* filename) {
+  bool error = false;
+
   assert(!sources_loaded);
   bool found = false;
   for (auto& path : search_paths) {
@@ -72,12 +74,13 @@ bool MtModLibrary::load_source(const char* filename) {
       break;
     }
   }
+
   if (!found) {
     LOG_R("Couldn't find %s in path!\n", filename);
-    return false;
+    error = true;
   }
 
-  return true;
+  return error;
 }
 
 //------------------------------------------------------------------------------
@@ -93,7 +96,9 @@ void MtModLibrary::load_blob(const std::string& filename,
 
 //------------------------------------------------------------------------------
 
-void MtModLibrary::process_sources() {
+bool MtModLibrary::process_sources() {
+  bool error = false;
+
   assert(!sources_loaded);
   assert(!sources_processed);
 
@@ -105,8 +110,23 @@ void MtModLibrary::process_sources() {
     }
   }
 
-  for (auto mod : modules) mod->load_pass1();
-  for (auto mod : modules) mod->load_pass2();
+  for (auto mod : modules) {
+    error |= mod->load_pass1();
+  }
+
+  if (error) {
+    LOG_R("process_sources pass 1 failed\n");
+    return error;
+  }
+
+  for (auto mod : modules) {
+    error |= mod->load_pass2();
+  }
+
+  if (error) {
+    LOG_R("process_sources pass 2 failed\n");
+    return error;
+  }
 
   // Hook up child->parent module pointers
   for (auto m : modules) {
@@ -123,11 +143,14 @@ void MtModLibrary::process_sources() {
 
   if (!all_modules_valid) {
     LOG_R("Some modules fail temporal trace!\n");
+    error = true;
   }
   else {
     LOG_G("All modules pass temporal trace!\n");
   }
   sources_processed = true;
+
+  return error;
 }
 
 //------------------------------------------------------------------------------

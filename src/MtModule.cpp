@@ -64,8 +64,8 @@ MtModule::MtModule(MtSourceFile *source_file, MnTemplateDecl node)
     : source_file(source_file) {
   mod_template = node;
   mod_param_list = MnTemplateParamList(mod_template.child(1));
-  mod_struct = MnClassSpecifier(mod_template.child(2));
-  mod_name = mod_struct.get_field(field_name).text();
+  mod_class = MnClassSpecifier(mod_template.child(2));
+  mod_name = mod_class.get_field(field_name).text();
 }
 
 //------------------------------------------------------------------------------
@@ -74,8 +74,8 @@ MtModule::MtModule(MtSourceFile *source_file, MnClassSpecifier node)
     : source_file(source_file) {
   mod_template = MnNode::null;
   mod_param_list = MnNode::null;
-  mod_struct = node;
-  mod_name = mod_struct.get_field(field_name).text();
+  mod_class = node;
+  mod_name = mod_class.get_field(field_name).text();
 }
 
 //------------------------------------------------------------------------------
@@ -149,7 +149,7 @@ void MtModule::dump_method_list(const std::vector<MtMethod *> &methods) const {
 
 void MtModule::dump_banner() const {
   LOG_Y("//----------------------------------------\n");
-  if (mod_struct.is_null()) {
+  if (mod_class.is_null()) {
     LOG_Y("// Package %s\n", source_file->full_path.c_str());
     LOG_Y("\n");
     return;
@@ -270,8 +270,14 @@ void MtModule::dump_deltas() const {
 // All modules are now in the library, we can resolve references to other
 // modules when we're collecting fields.
 
-void MtModule::load_pass1() {
-  if (mod_struct.is_null()) return;
+bool MtModule::load_pass1() {
+  bool error = false;
+
+  if (mod_class.is_null()) {
+    LOG_R("No class found for module\n");
+    error = true;
+    return error;
+  }
 
   collect_params();
   collect_fields();
@@ -283,7 +289,7 @@ void MtModule::load_pass1() {
 
   // enums = new std::vector<MtEnum>();
 
-  auto mod_body = mod_struct.get_field(field_body).check_null();
+  auto mod_body = mod_class.get_field(field_body).check_null();
   for (auto n : mod_body) {
     if (n.sym != sym_field_declaration) continue;
 
@@ -321,12 +327,14 @@ void MtModule::load_pass1() {
     */
   }
 
-  sanity_check();
+  return sanity_check();
 }
 
 //------------------------------------------------------------------------------
 
-void MtModule::collect_params() {
+bool MtModule::collect_params() {
+  bool error = false;
+
   // modparam = struct template parameter
   if (mod_template) {
     auto params = mod_template.get_field(field_parameters);
@@ -337,14 +345,15 @@ void MtModule::collect_params() {
           child.sym == sym_optional_parameter_declaration) {
         modparams.push_back(MtParam::construct(child));
       } else {
-        debugbreak();
+        LOG_R("Unknown template parameter type %s\n", child.ts_node_type());
+        error = true;
       }
     }
   }
 
   // localparam = static const int
   assert(localparams.empty());
-  auto mod_body = mod_struct.get_field(field_body).check_null();
+  auto mod_body = mod_class.get_field(field_body).check_null();
   for (auto n : mod_body) {
     if (n.sym != sym_field_declaration) continue;
 
@@ -352,14 +361,18 @@ void MtModule::collect_params() {
       localparams.push_back(MtParam::construct(n));
     }
   }
+
+  return error;
 }
 
 //------------------------------------------------------------------------------
 
-void MtModule::collect_fields() {
+bool MtModule::collect_fields() {
+  bool error = false;
+
   assert(all_fields.empty());
 
-  auto mod_body = mod_struct.get_field(field_body).check_null();
+  auto mod_body = mod_class.get_field(field_body).check_null();
   bool in_public = false;
 
   for (auto n : mod_body) {
@@ -387,15 +400,19 @@ void MtModule::collect_fields() {
 
     all_fields.push_back(new_field);
   }
+
+  return error;
 }
 
 //------------------------------------------------------------------------------
 
-void MtModule::collect_methods() {
+bool MtModule::collect_methods() {
+  bool error = false;
+
   assert(all_methods.empty());
 
   bool in_public = false;
-  auto mod_body = mod_struct.get_field(field_body).check_null();
+  auto mod_body = mod_class.get_field(field_body).check_null();
   for (auto n : mod_body) {
     if (n.sym == sym_access_specifier) {
       if (n.child(0).text() == "public") {
@@ -405,8 +422,9 @@ void MtModule::collect_methods() {
       } else if (n.child(0).text() == "private") {
         in_public = false;
       } else {
-        n.dump_tree();
-        debugbreak();
+        LOG_R("Unknown access specifier %s\n", n.child(0).text().c_str());
+        n.dump_source_lines();
+        error = true;
       }
     }
 
@@ -449,27 +467,27 @@ void MtModule::collect_methods() {
 
     if (m->is_init) {
       if (m->is_const || !m->is_public) {
-        printf("CONST INIT BAD / PRIVATE INIT BAD\n");
-        exit(-1);
+        LOG_R("CONST INIT BAD / PRIVATE INIT BAD\n");
+        error = true;
       }
       init_methods.push_back(m);
     } else if (m->is_tick) {
       if (m->is_public) {
         // FIXME do we still care about this?
-        // printf("PUBLIC TICK METHOD BAD!\n");
-        // exit(-1);
+        // LOG_R("PUBLIC TICK METHOD BAD!\n");
+        // error = true;
       }
       tick_methods.push_back(m);
     } else if (m->is_tock) {
       if (m->is_const) {
-        printf("CONST TOCK METHOD BAD!\n");
-        exit(-1);
+        LOG_R("CONST TOCK METHOD BAD!\n");
+        error = true;
       }
       tock_methods.push_back(m);
     } else if (m->is_task) {
       if (m->is_const) {
-        printf("CONST TASK FUNCTION BAD!\n");
-        exit(-1);
+        LOG_R("CONST TASK FUNCTION BAD!\n");
+        error = true;
       }
       task_methods.push_back(m);
     } else if (m->is_public && m->is_const && m->is_func) {
@@ -479,6 +497,8 @@ void MtModule::collect_methods() {
       func_methods.push_back(m);
     }
   }
+
+  return error;
 }
 
 //------------------------------------------------------------------------------
@@ -522,7 +542,9 @@ bool MtModule::trace() {
 // of input ports. Input ports can be declared in multiple tick/tock methods,
 // but we don't want duplicates in the Verilog port list.
 
-void MtModule::collect_inputs() {
+bool MtModule::collect_inputs() {
+  bool error = false;
+
   assert(inputs.empty());
 
   std::set<std::string> dedup;
@@ -554,12 +576,16 @@ void MtModule::collect_inputs() {
       }
     }
   }
+
+  return error;
 }
 
 //------------------------------------------------------------------------------
 // All fields written to in a tock method are outputs.
 
-void MtModule::collect_outputs() {
+bool MtModule::collect_outputs() {
+  bool error = false;
+
   assert(outputs.empty());
 
   std::set<std::string> dedup;
@@ -569,12 +595,16 @@ void MtModule::collect_outputs() {
       outputs.push_back(f);
     }
   }
+
+  return error;
 }
 
 //------------------------------------------------------------------------------
 // All fields written to in a tick method are registers.
 
-void MtModule::collect_registers() {
+bool MtModule::collect_registers() {
+  bool error = false;
+
   assert(registers.empty());
 
   std::set<std::string> dedup;
@@ -591,8 +621,10 @@ void MtModule::collect_registers() {
       } else if (lhs.sym == sym_subscript_expression) {
         lhs_name = lhs.get_field(field_argument).text();
       } else {
-        lhs.dump_tree();
-        debugbreak();
+        LOG_R("Unknown type on left side of assignment - %s\n", lhs.ts_node_type());
+        lhs.dump_source_lines();
+        error = true;
+        return;
       }
 
       if (dedup.contains(lhs_name)) return;
@@ -602,11 +634,15 @@ void MtModule::collect_registers() {
       if (field && !field->is_public()) registers.push_back(field);
     });
   }
+
+  return error;
 }
 
 //------------------------------------------------------------------------------
 
-void MtModule::collect_submods() {
+bool MtModule::collect_submods() {
+  bool error = 0;
+
   assert(submods.empty());
 
   for (auto f : all_fields) {
@@ -614,38 +650,44 @@ void MtModule::collect_submods() {
       submods.push_back(f);
     } else {
       if (f->type_name() == "logic") {
-      }
-      else if (f->type_name() == "int") {
-      }
-      else if (get_enum(f->type_name())) {
+      } else if (f->type_name() == "int") {
+      } else if (get_enum(f->type_name())) {
+        LOG_R("???");
         // FIXME this isn't working
-      }
-      else {
+      } else {
         LOG_R("Could not find module for submod %s\n", f->type_name().c_str());
+
+        // FIXME don't make this an error yet
+        //error = true;
       }
     }
   }
+
+  return error;
 }
 
 //------------------------------------------------------------------------------
 // All modules have populated their fields, match up tick/tock calls with their
 // corresponding methods.
 
-void MtModule::load_pass2() {
-  if (mod_struct.is_null()) return;
-
-  build_port_map();
-  sanity_check();
+bool MtModule::load_pass2() {
+  bool error = false;
+  assert (!mod_class.is_null());
+  error |= build_port_map();
+  error |= sanity_check();
+  return error;
 }
 
 //------------------------------------------------------------------------------
 // Go through all calls in the tree and build a {call_param -> arg} map.
 // FIXME we aren't actually using this now?
 
-void MtModule::build_port_map() {
+bool MtModule::build_port_map() {
   assert(port_map.empty());
 
-  mod_struct.visit_tree([&](MnNode child) {
+  bool error = false;
+
+  mod_class.visit_tree([&](MnNode child) {
     if (child.sym != sym_call_expression) return;
     if (child.get_field(field_function).sym != sym_field_expression) return;
 
@@ -672,8 +714,14 @@ void MtModule::build_port_map() {
       if (node_method.text() == "as_signed") {
       } else {
         call_member = get_submod(node_this.text());
-        call_submod = source_file->lib->get_module(call_member->type_name());
-        call_method = call_submod->get_method(node_method.text());
+        if (call_member) {
+          call_submod = source_file->lib->get_module(call_member->type_name());
+          call_method = call_submod->get_method(node_method.text());
+        } else {
+          LOG_R("Submodule %s not found!\n", node_this.text().c_str());
+          error = true;
+          return;
+        }
       }
     }
 
@@ -704,35 +752,56 @@ void MtModule::build_port_map() {
       }
     }
   });
+
+  return error;
 }
 
 //------------------------------------------------------------------------------
 
-void MtModule::sanity_check() {
+bool MtModule::sanity_check() {
+  bool error = false;
+
   // Inputs, outputs, registers, and submods must not overlap.
 
   std::set<std::string> field_names;
 
   for (auto n : inputs) {
-    assert(!field_names.contains(n->name()));
-    field_names.insert(n->name());
+    if (field_names.contains(n->name())) {
+      LOG_R("Duplicate input name %s\n", n->name().c_str());
+      error = true;
+    } else {
+      field_names.insert(n->name());
+    }
   }
 
   for (auto n : outputs) {
-    assert(!field_names.contains(n->name()));
-    field_names.insert(n->name());
+    if (field_names.contains(n->name())) {
+      LOG_R("Duplicate output name %s\n", n->name().c_str());
+      error = true;
+    } else {
+      field_names.insert(n->name());
+    }
   }
 
   for (auto n : registers) {
-    auto name = n->name();
-    assert(!field_names.contains(name));
-    field_names.insert(n->name());
+    if (field_names.contains(n->name())) {
+      LOG_R("Duplicate register name %s\n", n->name().c_str());
+      error = true;
+    } else {
+      field_names.insert(n->name());
+    }
   }
 
   for (auto n : submods) {
-    assert(!field_names.contains(n->name()));
-    field_names.insert(n->name());
+    if (field_names.contains(n->name())) {
+      LOG_R("Duplicate submod name %s\n", n->name().c_str());
+      error = true;
+    } else {
+      field_names.insert(n->name());
+    }
   }
+
+  return error;
 }
 
 //------------------------------------------------------------------------------

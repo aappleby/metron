@@ -89,7 +89,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)../examples/rvsimple/metron; $(SolutionDir)../src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..;$(SolutionDir)../examples/rvsimple/metron; $(SolutionDir)../src</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -105,7 +105,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)../examples/rvsimple/metron; $(SolutionDir)../src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..;$(SolutionDir)../examples/rvsimple/metron; $(SolutionDir)../src</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <FloatingPointModel>Fast</FloatingPointModel>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
@@ -125,7 +125,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)../examples/rvsimple/metron; $(SolutionDir)../src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..;$(SolutionDir)../examples/rvsimple/metron; $(SolutionDir)../src</AdditionalIncludeDirectories>
       <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <Link>
@@ -142,7 +142,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)../examples/rvsimple/metron; $(SolutionDir)../src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..;$(SolutionDir)../examples/rvsimple/metron; $(SolutionDir)../src</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <FloatingPointModel>Fast</FloatingPointModel>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>

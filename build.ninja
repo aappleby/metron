@@ -171,7 +171,7 @@ build obj/examples/uart/uart_test_ice40.bin: icepack $
 # Compile bin/examples/rvsimple
 
 build obj/examples/rvsimple/main.o: compile_cpp examples/rvsimple/main.cpp
-  includes = -Isrc
+  includes = -I. -Isrc
   opt = -O3
 build bin/examples/rvsimple: link obj/examples/rvsimple/main.o
 
@@ -277,7 +277,7 @@ build examples/rvsimple/metron_vl/Vtoplevel__ALL.o: make $
 
 build obj/examples/rvsimple/main_vl.o: compile_cpp $
     examples/rvsimple/main_vl.cpp | examples/rvsimple/metron_vl/Vtoplevel.h
-  includes = -Isrc -Itests -Iobj/examples/rvsimple $
+  includes = -I. -Isrc -Itests -Iobj/examples/rvsimple $
       -I/usr/local/share/verilator/include
 build bin/examples/rvsimple_vl: link obj/verilated.o $
     examples/rvsimple/metron_vl/Vtoplevel__ALL.o $
@@ -327,7 +327,7 @@ build examples/rvsimple/reference_vl/Vtoplevel__ALL.o: make $
 build obj/examples/rvsimple/main_ref_vl.o: compile_cpp $
     examples/rvsimple/main_ref_vl.cpp | $
     examples/rvsimple/reference_vl/Vtoplevel.h
-  includes = -Isrc -Itests -Iobj/examples/rvsimple $
+  includes = -I. -Isrc -Itests -Iobj/examples/rvsimple $
       -I/usr/local/share/verilator/include
 build bin/examples/rvsimple_ref: link obj/verilated.o $
     examples/rvsimple/reference_vl/Vtoplevel__ALL.o $

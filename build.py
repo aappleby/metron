@@ -285,7 +285,10 @@ def build_rvsimple():
   cpp_binary(
       bin_name="bin/examples/rvsimple",
       src_files=["examples/rvsimple/main.cpp"],
-      includes=["src"],
+      includes=[
+        ".",
+        "src"
+      ],
       opt="-O3",
   )
 
@@ -303,6 +306,7 @@ def build_rvsimple():
       bin_name="bin/examples/rvsimple_vl",
       src_files=["examples/rvsimple/main_vl.cpp"],
       includes=[
+          ".",
           "src",
           "tests",
           "obj/examples/rvsimple",
@@ -323,6 +327,7 @@ def build_rvsimple():
       bin_name="bin/examples/rvsimple_ref",
       src_files=["examples/rvsimple/main_ref_vl.cpp"],
       includes=[
+          ".",
           "src",
           "tests",
           "obj/examples/rvsimple",

@@ -27,7 +27,6 @@ def print_g(*args):
 def print_b(*args):
   print_c(0x8080FF, *args)
 
-
 ################################################################################
 # Make sure all the examples compile
 
@@ -98,25 +97,29 @@ for filename in metron_bad:
     error = True
 
 ################################################################################
-# Check uart tests
+# Check standalone tests
 
-print("Running test bin/examples/uart")
-stuff = subprocess.run(['bin/examples/uart'], stdout=subprocess.PIPE).stdout.decode('utf-8')
-if not "All tests pass" in stuff:
-  error = True
-  print_r(stuff)
+def run_simple_test(commandline):
+  print(f"Running test {commandline}")
+  stuff = subprocess.run(commandline.split(" "), stdout=subprocess.PIPE).stdout.decode('utf-8')
+  error = not "All tests pass" in stuff
+  if error:
+    print_r(stuff)
+  return error
 
-print("Running test bin/examples/uart_vl")
-stuff = subprocess.run(['bin/examples/uart_vl'], stdout=subprocess.PIPE).stdout.decode('utf-8')
-if not "All tests pass" in stuff:
-  error = True
-  print_r(stuff)
+error |= run_simple_test("bin/examples/uart")
+error |= run_simple_test("bin/examples/uart_vl")
+error |= run_simple_test("bin/examples/uart_iv")
 
-print("Running test bin/examples/uart_iv")
-stuff = subprocess.run(['bin/examples/uart_iv'], stdout=subprocess.PIPE).stdout.decode('utf-8')
-if not "All tests pass" in stuff:
-  error = True
-  print_r(stuff)
+error |= run_simple_test("bin/examples/rvsimple")
+error |= run_simple_test("bin/examples/rvsimple_vl")
+error |= run_simple_test("bin/examples/rvsimple_ref")
+
+error |= run_simple_test("bin/examples/rvtiny")
+error |= run_simple_test("bin/examples/rvtiny_vl")
+
+error |= run_simple_test("bin/examples/rvtiny_sync")
+error |= run_simple_test("bin/examples/rvtiny_sync_vl")
 
 ################################################################################
 

@@ -9,14 +9,9 @@
 #include "MtSourceFile.h"
 #include "Platform.h"
 
-//#include "cxxopts/include/cxxopts.hpp"
-
 #include "cli11/include/CLI/App.hpp"
 #include "cli11/include/CLI/Formatter.hpp"
 #include "cli11/include/CLI/Config.hpp"
-
-
-//#include "metron_tools.h"
 
 #pragma warning(disable : 4996)
 
@@ -87,7 +82,6 @@ int main(int argc, char** argv) {
   app.add_option("headers",       source_names, "List of .h files to convert from C++ to SystemVerilog");
   // clang-format on
   
-  //app.parse(argc, argv);
   CLI11_PARSE(app, argc, argv);
 
   // -r examples/uart/metron -o examples/uart/metron_sv uart_top.h uart_hello.h uart_tx.h uart_rx.h

@@ -38,7 +38,7 @@ struct TestResults {
     return *this;
   }
 
-  void show_banner() {
+  int show_banner() {
     LOG_G("%s: %6d expect pass\n", test_name, expect_pass);
     LOG_G("%s: %6d test pass\n", test_name, test_pass);
 
@@ -53,6 +53,14 @@ struct TestResults {
       LOG_R("##               FAIL                 ##\n");
       LOG_R("########################################\n");
       LOG_R("\n");
+      return -1;
+    } else {
+      LOG_G("\n");
+      LOG_G("########################################\n");
+      LOG_G("##          All tests pass            ##\n");
+      LOG_G("########################################\n");
+      LOG_G("\n");
+      return 0;
     }
   }
 };

@@ -15,43 +15,6 @@ extern "C" {
 extern const TSLanguage *tree_sitter_cpp();
 }
 
-void log_field_state(FieldState s) {
-  /*
-  switch (s) {
-    case CLEAN:
-      LOG_G("clean");
-      break;
-    case MAYBE:
-      LOG_Y("maybe");
-      break;
-    case DIRTY:
-      LOG_R("dirty");
-      break;
-    case ERROR:
-      LOG_M("error");
-      break;
-  }
-  */
-}
-
-// FIXME
-void log_error(MnNode n, const char *fmt, ...) {
-  printf("\n########################################\n");
-
-  va_list args;
-  va_start(args, fmt);
-  vprintf(fmt, args);
-  va_end(args);
-
-  printf("@%04d: ", ts_node_start_point(n.node).row + 1);
-
-  // n.error();
-  n.dump_tree();
-
-  // printf("halting...\n");
-  printf("########################################\n");
-}
-
 //------------------------------------------------------------------------------
 
 bool MtField::is_submod() const {
@@ -451,7 +414,7 @@ CHECK_RETURN bool MtModule::collect_methods() {
     m->has_return = func_type && func_type.text() != "void";
 
 
-    m->is_init = func_type.is_null();
+    m->is_init = func_name.starts_with("init") || func_type.is_null();
     m->is_tick = func_name.starts_with("tick");
     m->is_tock = func_name.starts_with("tock");
 

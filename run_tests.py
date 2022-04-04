@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import glob
+from os import path
 
 error = False
 
@@ -8,23 +9,61 @@ os.system("ninja bin/metron")
 metron_good = glob.glob("tests/metron_good/*.h")
 metron_bad  = glob.glob("tests/metron_bad/*.h")
 
+################################################################################
+
 for filename in metron_good:
-  result = os.system(f"bin/metron -q {filename}")
+  srcdir = "tests/metron_good"
+  svdir = "tests/metron_sv"
+  basename = path.basename(filename)
+  svname = path.splitext(basename)[0] + ".sv"
+
+  print(f"Checking known-good example {filename}");
+
+  cmd = f"g++ -Isrc --std=gnu++2a -fsyntax-only -c {filename}"
+  print(f"  {cmd}")
+  result = os.system(cmd)
+  if result:
+    print(f"Test file {filename} failed GCC syntax check");
+    error = True
+
+  # Run Metron on the source file
+  cmd = f"bin/metron -q -r tests/metron_good -o tests/metron_sv -c {basename}"
+  print(f"  {cmd}")
+  result = os.system(cmd)
   if result:
     print(f"Test file {filename} - expected pass, got {result}");
     result = os.system(f"bin/metron {filename}")
     error = True
-  else:
-    print(f"Test file {filename} passed as expected");
+
+  # Run Verilator on the translated source file.
+  cmd = f"verilator -Isrc --lint-only tests/metron_sv/{svname}"
+  print(f"  {cmd}")
+  result = os.system(cmd)
+  if result:
+    print(f"Verilator syntax check on {filename} failed");
+    error = True
+
+################################################################################
 
 for filename in metron_bad:
-  result = os.system(f"bin/metron -q {filename}")
+  print(f"Checking known-bad example {filename}");
+
+  cmd = f"g++ -Isrc --std=gnu++2a -fsyntax-only -c {filename}"
+  print(f"  {cmd}")
+  result = os.system(cmd)
+  if result:
+    print(f"Test file {filename} failed GCC syntax check");
+    error = True
+
+  cmd = f"bin/metron -q -r tests/metron_bad -o tets/metron_sv {filename}"
+  print(f"  {cmd}")
+  result = os.system(cmd)
   if result == 0:
     print(f"Test file {filename} - expected fail, got {result}");
     result = os.system(f"bin/metron {filename}")
     error = True
-  else:
-    print(f"Test file {filename} failed as expected");
+
+################################################################################
 
 if error:
   print("Test suite failed!\n")

@@ -6,10 +6,10 @@ class Module {
 public:
 
   void tick() {
-    logic<1> temp = reg;
-    reg = 0;
-    reg = 1;
+    logic<1> temp = my_reg;
+    my_reg = 0;
+    my_reg = 1;
   }
 
-  logic<1> reg;
+  logic<1> my_reg;
 };

@@ -13,13 +13,13 @@ public:
 private:
 
   void tick1() {
-    reg1 = 0;
+    my_reg1 = 0;
   }
 
   void tick2() {
-    reg2 = 1;
+    my_reg2 = 1;
   }
 
-  logic<1> reg1;
-  logic<1> reg2;
+  logic<1> my_reg1;
+  logic<1> my_reg2;
 };

@@ -7,13 +7,13 @@ class Module {
 public:
 
   void tock() {
-    sig = reg;
+    my_sig = my_reg;
   }
 
   void tick() {
-    reg = 1;
+    my_reg = 1;
   }
 
-  logic<1> sig;
-  logic<1> reg;
+  logic<1> my_sig;
+  logic<1> my_reg;
 };

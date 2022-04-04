@@ -6,9 +6,10 @@ class Module {
 public:
 
   void tick() {
-    sig = 1;
-    logic<1> x = sig;
+    logic<1> x = reg;
+    reg = 1;
+    logic<1> y = reg;
   }
 
-  logic<1> sig;
+  logic<1> reg;
 };

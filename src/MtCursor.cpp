@@ -1502,14 +1502,15 @@ void MtCursor::emit(MnClassSpecifier n) {
     in_ports = true;
     trim_namespaces = false;
 
-    emit_indent();
-    emit("input logic clock,");
-    emit_newline();
-
     int port_count =
-        int(current_mod->inputs.size() + current_mod->outputs.size() +
-            current_mod->getters.size());
+      int(current_mod->inputs.size() + current_mod->outputs.size() +
+        current_mod->getters.size());
     int port_index = 0;
+
+    emit_indent();
+    emit("input logic clock");
+    if (port_count) emit(",");
+    emit_newline();
 
     for (auto input : current_mod->inputs) {
       emit_indent();

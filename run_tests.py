@@ -10,6 +10,10 @@ os.system("ninja bin/metron")
 metron_good = glob.glob("tests/metron_good/*.h")
 metron_bad  = glob.glob("tests/metron_bad/*.h")
 
+red_tag   = "\u001b[38;2;255;0;0m"
+green_tag = "\u001b[38;2;0;255;0m"
+reset_tag = "\u001b[0m"
+
 ################################################################################
 # Make sure all the examples compile
 
@@ -47,7 +51,7 @@ for filename in metron_good:
   print(f"  {cmd}")
   result = os.system(cmd)
   if result:
-    print(f"Test file {filename} - expected pass, got {result}");
+    print(red_tag + f"Test file {filename} - expected pass, got {result}" + reset_tag);
     result = os.system(f"bin/metron {filename}")
     error = True
 
@@ -58,6 +62,18 @@ for filename in metron_good:
   if result:
     print(f"Verilator syntax check on {filename} failed");
     error = True
+
+  # Check the translated source against the golden, if present.
+  try:
+    test_src   = open("tests/metron_sv/" + svname, "r").read()
+    golden_src = open("tests/metron_ref/" + svname, "r").read()
+    if (test_src != golden_src):
+      print(red_tag)
+      print("Golden mismatch!!!")
+      print(reset_tag)
+      error = True
+  except:
+    print(f"  No golden for {filename}")
 
 ################################################################################
 # Make sure all the bad examples fail
@@ -96,15 +112,8 @@ if not "All tests pass" in stuff:
 
 ################################################################################
 
-"""
-      ::printf("\u001b[0m");
-    } else {
-      ::printf("\u001b[38;2;255;0;255m", (color >> 0) & 0xFF,
-               (color >> 8) & 0xFF, (color >> 16) & 0xFF);
-"""
-
 if error:
-  print("\u001b[38;2;255;0;0m")
+  print(red_tag)
   print("  █████▒▄▄▄       ██▓ ██▓    ")
   print("▓██   ▒▒████▄    ▓██▒▓██▒    ")
   print("▒████ ░▒██  ▀█▄  ▒██▒▒██░    ")
@@ -114,13 +123,13 @@ if error:
   print(" ░       ▒   ▒▒ ░ ▒ ░░ ░ ▒  ░")
   print(" ░ ░     ░   ▒    ▒ ░  ░ ░   ")
   print("             ░  ░ ░      ░  ░")
-  print("\u001b[0m")
+  print(reset_tag)
 else:
-  print("\u001b[38;2;0;255;0m")
+  print(green_tag)
   print("██████╗  █████╗ ███████╗███████╗")
   print("██╔══██╗██╔══██╗██╔════╝██╔════╝")
   print("██████╔╝███████║███████╗███████╗")
   print("██╔═══╝ ██╔══██║╚════██║╚════██║")
   print("██║     ██║  ██║███████║███████║")
   print("╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝")
-  print("\u001b[0m")
+  print(reset_tag)

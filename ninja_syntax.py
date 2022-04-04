@@ -24,8 +24,10 @@ use Python.
 import re
 import textwrap
 
+
 def escape_path(word):
     return word.replace('$ ', '$$ ').replace(' ', '$ ').replace(':', '$:')
+
 
 class Writer(object):
     def __init__(self, output, width=78):
@@ -145,7 +147,7 @@ class Writer(object):
             while True:
                 space = text.rfind(' ', 0, space)
                 if (space < 0 or
-                    self._count_dollars_before_index(text, space) % 2 == 0):
+                        self._count_dollars_before_index(text, space) % 2 == 0):
                     break
 
             if space < 0:
@@ -154,7 +156,7 @@ class Writer(object):
                 while True:
                     space = text.find(' ', space + 1)
                     if (space < 0 or
-                        self._count_dollars_before_index(text, space) % 2 == 0):
+                            self._count_dollars_before_index(text, space) % 2 == 0):
                         break
             if space < 0:
                 # Give up on breaking.

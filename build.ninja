@@ -86,6 +86,44 @@ build bin/metron: link obj/tree-sitter/lib/src/lib.o $
     obj/src/MetronApp.o obj/src/MtCursor.o obj/src/MtModLibrary.o $
     obj/src/MtModule.o obj/src/MtNode.o obj/src/MtSourceFile.o $
     obj/src/MtTracer.o obj/src/Platform.o
+build rv_tests/add.text.vh rv_tests/addi.text.vh rv_tests/and.text.vh $
+    rv_tests/andi.text.vh rv_tests/auipc.text.vh rv_tests/benchmark.text.vh $
+    rv_tests/beq.text.vh rv_tests/bge.text.vh rv_tests/bgeu.text.vh $
+    rv_tests/blt.text.vh rv_tests/bltu.text.vh rv_tests/bne.text.vh $
+    rv_tests/jal.text.vh rv_tests/jalr.text.vh rv_tests/lb.text.vh $
+    rv_tests/lbu.text.vh rv_tests/lh.text.vh rv_tests/lhu.text.vh $
+    rv_tests/lui.text.vh rv_tests/lw.text.vh rv_tests/or.text.vh $
+    rv_tests/ori.text.vh rv_tests/sb.text.vh rv_tests/sh.text.vh $
+    rv_tests/simple.text.vh rv_tests/sll.text.vh rv_tests/slli.text.vh $
+    rv_tests/slt.text.vh rv_tests/slti.text.vh rv_tests/sltiu.text.vh $
+    rv_tests/sltu.text.vh rv_tests/sra.text.vh rv_tests/srai.text.vh $
+    rv_tests/srl.text.vh rv_tests/srli.text.vh rv_tests/sub.text.vh $
+    rv_tests/sw.text.vh rv_tests/xor.text.vh rv_tests/xori.text.vh $
+    rv_tests/add.data.vh rv_tests/addi.data.vh rv_tests/and.data.vh $
+    rv_tests/andi.data.vh rv_tests/auipc.data.vh rv_tests/benchmark.data.vh $
+    rv_tests/beq.data.vh rv_tests/bge.data.vh rv_tests/bgeu.data.vh $
+    rv_tests/blt.data.vh rv_tests/bltu.data.vh rv_tests/bne.data.vh $
+    rv_tests/jal.data.vh rv_tests/jalr.data.vh rv_tests/lb.data.vh $
+    rv_tests/lbu.data.vh rv_tests/lh.data.vh rv_tests/lhu.data.vh $
+    rv_tests/lui.data.vh rv_tests/lw.data.vh rv_tests/or.data.vh $
+    rv_tests/ori.data.vh rv_tests/sb.data.vh rv_tests/sh.data.vh $
+    rv_tests/simple.data.vh rv_tests/sll.data.vh rv_tests/slli.data.vh $
+    rv_tests/slt.data.vh rv_tests/slti.data.vh rv_tests/sltiu.data.vh $
+    rv_tests/sltu.data.vh rv_tests/sra.data.vh rv_tests/srai.data.vh $
+    rv_tests/srl.data.vh rv_tests/srli.data.vh rv_tests/sub.data.vh $
+    rv_tests/sw.data.vh rv_tests/xor.data.vh rv_tests/xori.data.vh: make $
+    rv_tests/makefile | rv_tests/add.S rv_tests/addi.S rv_tests/and.S $
+    rv_tests/andi.S rv_tests/auipc.S rv_tests/benchmark.S rv_tests/beq.S $
+    rv_tests/bge.S rv_tests/bgeu.S rv_tests/blt.S rv_tests/bltu.S $
+    rv_tests/bne.S rv_tests/jal.S rv_tests/jalr.S rv_tests/lb.S $
+    rv_tests/lbu.S rv_tests/lh.S rv_tests/lhu.S rv_tests/lui.S $
+    rv_tests/lw.S rv_tests/or.S rv_tests/ori.S rv_tests/sb.S rv_tests/sh.S $
+    rv_tests/simple.S rv_tests/sll.S rv_tests/slli.S rv_tests/slt.S $
+    rv_tests/slti.S rv_tests/sltiu.S rv_tests/sltu.S rv_tests/sra.S $
+    rv_tests/srai.S rv_tests/srl.S rv_tests/srli.S rv_tests/sub.S $
+    rv_tests/sw.S rv_tests/xor.S rv_tests/xori.S
+  dst_dir = rv_tests
+  makefile = makefile
 
 
 ################################################################################
@@ -425,8 +463,3 @@ build obj/examples/rvtiny_sync/main_vl.o: compile_cpp $
 build bin/examples/rvtiny_sync_vl: link obj/verilated.o $
     examples/rvtiny_sync/metron_vl/Vtoplevel__ALL.o $
     obj/examples/rvtiny_sync/main_vl.o
-
-
-################################################################################
-# Done!
-

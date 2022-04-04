@@ -443,12 +443,13 @@ CHECK_RETURN bool MtModule::collect_methods() {
     auto func_args = func_decl.get_field(field_parameters);
 
     m->is_public = in_public;
-    m->is_task = func_type && func_type.text() == "void";
-    m->is_func = func_type && func_type.text() != "void";
 
     m->is_init = func_type.is_null();
     m->is_tick = func_name.starts_with("tick");
     m->is_tock = func_name.starts_with("tock");
+
+    m->is_task = func_type && func_type.text() == "void";
+    m->is_func = func_type && func_type.text() != "void";
 
     m->is_const = false;
     for (const auto& n : func_decl) {
@@ -473,24 +474,35 @@ CHECK_RETURN bool MtModule::collect_methods() {
       break;
     }
 
+    if (m->is_init && !m->is_public) {
+      LOG_R("Init method %s is not public\n", m->name().c_str());
+      error = true;
+      break;
+    }
+
+    if (m->is_init && m->is_const) {
+      LOG_R("Init method %s is const\n", m->name().c_str());
+      error = true;
+      break;
+    }
+
+    if (m->is_tick && m->is_const) {
+      LOG_R("Tick method %s is const\n", m->name().c_str());
+      error = true;
+      break;
+    }
+
+    if (m->is_tock && m->is_const) {
+      LOG_R("Tock method %s is const\n", m->name().c_str());
+      error = true;
+      break;
+    }
+
     if (m->is_init) {
-      if (m->is_const || !m->is_public) {
-        LOG_R("CONST INIT BAD / PRIVATE INIT BAD\n");
-        error = true;
-      }
       init_methods.push_back(m);
     } else if (m->is_tick) {
-      if (m->is_public) {
-        // FIXME do we still care about this?
-        // LOG_R("PUBLIC TICK METHOD BAD!\n");
-        // error = true;
-      }
       tick_methods.push_back(m);
     } else if (m->is_tock) {
-      if (m->is_const) {
-        LOG_R("CONST TOCK METHOD BAD!\n");
-        error = true;
-      }
       tock_methods.push_back(m);
     } else if (m->is_task) {
       if (m->is_const) {

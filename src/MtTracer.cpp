@@ -12,18 +12,73 @@ FieldState merge_delta(FieldState a, FieldDelta b) {
   if (b < 0 || b >= DELTA_MAX) return FIELD_INVALID;
 
   static const FieldState field_table[FIELD_MAX][DELTA_MAX] = {
-    /*                     DELTA_RD,      DELTA_WR,      DELTA_WS,      DELTA_EF, */
-    /* FIELD________, */ { FIELD_RD_____, FIELD____WR__, FIELD____WS__, FIELD________, },
-    /* FIELD____WR__, */ { FIELD_INVALID, FIELD____WR__, FIELD_INVALID, FIELD____WR_L, },
-    /* FIELD____WR_L, */ { FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD____WR_L, },
-    /* FIELD_RD_____, */ { FIELD_RD_____, FIELD_RD_WR__, FIELD_INVALID, FIELD_RD_____, },
-    /* FIELD_RD_WR__, */ { FIELD_INVALID, FIELD_RD_WR__, FIELD_INVALID, FIELD_RD_WR_L, },
-    /* FIELD_RD_WR_L, */ { FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_RD_WR_L, },
-    /* FIELD____WS__, */ { FIELD____WS_L, FIELD_INVALID, FIELD____WS__, FIELD____WS_L, },
-    /* FIELD____WS_L, */ { FIELD____WS_L, FIELD_INVALID, FIELD_INVALID, FIELD____WS_L, },
-    /* FIELD_INVALID, */ { FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
+      /*                     DELTA_RD,      DELTA_WR,      DELTA_WS, DELTA_EF,
+       */
+      /* FIELD________, */ {
+          FIELD_RD_____,
+          FIELD____WR__,
+          FIELD____WS__,
+          FIELD________,
+      },
+      /* FIELD____WR__, */
+      {
+          FIELD_INVALID,
+          FIELD____WR__,
+          FIELD_INVALID,
+          FIELD____WR_L,
+      },
+      /* FIELD____WR_L, */
+      {
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD____WR_L,
+      },
+      /* FIELD_RD_____, */
+      {
+          FIELD_RD_____,
+          FIELD_RD_WR__,
+          FIELD_INVALID,
+          FIELD_RD_____,
+      },
+      /* FIELD_RD_WR__, */
+      {
+          FIELD_INVALID,
+          FIELD_RD_WR__,
+          FIELD_INVALID,
+          FIELD_RD_WR_L,
+      },
+      /* FIELD_RD_WR_L, */
+      {
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_RD_WR_L,
+      },
+      /* FIELD____WS__, */
+      {
+          FIELD____WS_L,
+          FIELD_INVALID,
+          FIELD____WS__,
+          FIELD____WS_L,
+      },
+      /* FIELD____WS_L, */
+      {
+          FIELD____WS_L,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD____WS_L,
+      },
+      /* FIELD_INVALID, */
+      {
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+      },
   };
-  static_assert(sizeof(field_table) == sizeof(FieldState) * FIELD_MAX * DELTA_MAX);
+  static_assert(sizeof(field_table) ==
+                sizeof(FieldState) * FIELD_MAX * DELTA_MAX);
 
   auto r = field_table[a][b];
   return r;
@@ -36,18 +91,119 @@ FieldState merge_parallel(FieldState a, FieldState b) {
   if (b < 0 || b >= FIELD_MAX) return FIELD_INVALID;
 
   static const FieldState field_table[FIELD_MAX][FIELD_MAX] = {
-    /*                     FIELD________, FIELD____WR__, FIELD____WR_L, FIELD_RD_____, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD____WR__, FIELD____WS_L, FIELD_INVALID, */
-    /* FIELD________, */ { FIELD________, FIELD____WR__, FIELD____WR_L, FIELD_RD_____, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD____WR__, FIELD____WS_L, FIELD_INVALID, },
-    /* FIELD____WR__, */ { FIELD____WR__, FIELD____WR__, FIELD____WR_L, FIELD_RD_WR__, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
-    /* FIELD____WR_L, */ { FIELD____WR_L, FIELD____WR_L, FIELD____WR_L, FIELD_RD_WR_L, FIELD_RD_WR_L, FIELD_RD_WR_L, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
-    /* FIELD_RD_____, */ { FIELD_RD_____, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD_RD_____, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
-    /* FIELD_RD_WR__, */ { FIELD_RD_WR__, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD_RD_WR__, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
-    /* FIELD_RD_WR_L, */ { FIELD_RD_WR_L, FIELD_RD_WR_L, FIELD_RD_WR_L, FIELD_RD_WR_L, FIELD_RD_WR_L, FIELD_RD_WR_L, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
-    /* FIELD____WR__, */ { FIELD____WR__, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD____WR__, FIELD____WS_L, FIELD_INVALID, },
-    /* FIELD____WS_L, */ { FIELD____WS_L, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD____WS_L, FIELD____WS_L, FIELD_INVALID, },
-    /* FIELD_INVALID, */ { FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
+      /*                     FIELD________, FIELD____WR__, FIELD____WR_L,
+         FIELD_RD_____, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD____WS__,
+         FIELD____WS_L, FIELD_INVALID, */
+      /* FIELD________, */ {
+          FIELD________,
+          FIELD____WR__,
+          FIELD____WR_L,
+          FIELD_RD_____,
+          FIELD_RD_WR__,
+          FIELD_RD_WR_L,
+          FIELD____WS__,
+          FIELD____WS_L,
+          FIELD_INVALID,
+      },
+      /* FIELD____WR__, */
+      {
+          FIELD____WR__,
+          FIELD____WR__,
+          FIELD____WR_L,
+          FIELD_RD_WR__,
+          FIELD_RD_WR__,
+          FIELD_RD_WR_L,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+      },
+      /* FIELD____WR_L, */
+      {
+          FIELD____WR_L,
+          FIELD____WR_L,
+          FIELD____WR_L,
+          FIELD_RD_WR_L,
+          FIELD_RD_WR_L,
+          FIELD_RD_WR_L,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+      },
+      /* FIELD_RD_____, */
+      {
+          FIELD_RD_____,
+          FIELD_RD_WR__,
+          FIELD_RD_WR_L,
+          FIELD_RD_____,
+          FIELD_RD_WR__,
+          FIELD_RD_WR_L,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+      },
+      /* FIELD_RD_WR__, */
+      {
+          FIELD_RD_WR__,
+          FIELD_RD_WR__,
+          FIELD_RD_WR_L,
+          FIELD_RD_WR__,
+          FIELD_RD_WR__,
+          FIELD_RD_WR_L,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+      },
+      /* FIELD_RD_WR_L, */
+      {
+          FIELD_RD_WR_L,
+          FIELD_RD_WR_L,
+          FIELD_RD_WR_L,
+          FIELD_RD_WR_L,
+          FIELD_RD_WR_L,
+          FIELD_RD_WR_L,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+      },
+      /* FIELD____WS__, */
+      {
+          FIELD____WS__,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD____WS__,
+          FIELD____WS_L,
+          FIELD_INVALID,
+      },
+      /* FIELD____WS_L, */
+      {
+          FIELD____WS_L,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD____WS_L,
+          FIELD____WS_L,
+          FIELD_INVALID,
+      },
+      /* FIELD_INVALID, */
+      {
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+      },
   };
-  static_assert(sizeof(field_table) == sizeof(FieldState) * FIELD_MAX * FIELD_MAX);
+  static_assert(sizeof(field_table) ==
+                sizeof(FieldState) * FIELD_MAX * FIELD_MAX);
 
   auto r = field_table[a][b];
   return r;
@@ -60,23 +216,124 @@ FieldState merge_series(FieldState a, FieldState b) {
   if (b < 0 || b >= FIELD_MAX) return FIELD_INVALID;
 
   static const FieldState field_table[FIELD_MAX][FIELD_MAX] = {
-    /*                     FIELD________, FIELD____WR__, FIELD____WR_L, FIELD_RD_____, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD____WR__, FIELD____WS_L, FIELD_INVALID, */
-    /* FIELD________, */ { FIELD________, FIELD____WR__, FIELD____WR_L, FIELD_RD_____, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD____WR__, FIELD____WS_L, FIELD_INVALID, },
-    /* FIELD____WR__, */ { FIELD____WR__, FIELD____WR__, FIELD____WR_L, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
-    /* FIELD____WR_L, */ { FIELD____WR_L, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
-    /* FIELD_RD_____, */ { FIELD_RD_____, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD_RD_____, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
-    /* FIELD_RD_WR__, */ { FIELD_RD_WR__, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
-    /* FIELD_RD_WR_L, */ { FIELD_RD_WR_L, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
-    /* FIELD____WR__, */ { FIELD____WR__, FIELD_INVALID, FIELD_INVALID, FIELD____WS_L, FIELD_INVALID, FIELD_INVALID, FIELD____WR__, FIELD____WS_L, FIELD_INVALID, },
-    /* FIELD____WS_L, */ { FIELD____WS_L, FIELD_INVALID, FIELD_INVALID, FIELD____WS_L, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
-    /* FIELD_INVALID, */ { FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
+      /*                     FIELD________, FIELD____WR__, FIELD____WR_L,
+         FIELD_RD_____, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD____WS__,
+         FIELD____WS_L, FIELD_INVALID, */
+      /* FIELD________, */ {
+          FIELD________,
+          FIELD____WR__,
+          FIELD____WR_L,
+          FIELD_RD_____,
+          FIELD_RD_WR__,
+          FIELD_RD_WR_L,
+          FIELD____WS__,
+          FIELD____WS_L,
+          FIELD_INVALID,
+      },
+      /* FIELD____WR__, */
+      {
+          FIELD____WR__,
+          FIELD____WR__,
+          FIELD____WR_L,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+      },
+      /* FIELD____WR_L, */
+      {
+          FIELD____WR_L,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+      },
+      /* FIELD_RD_____, */
+      {
+          FIELD_RD_____,
+          FIELD_RD_WR__,
+          FIELD_RD_WR_L,
+          FIELD_RD_____,
+          FIELD_RD_WR__,
+          FIELD_RD_WR_L,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+      },
+      /* FIELD_RD_WR__, */
+      {
+          FIELD_RD_WR__,
+          FIELD_RD_WR__,
+          FIELD_RD_WR_L,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+      },
+      /* FIELD_RD_WR_L, */
+      {
+          FIELD_RD_WR_L,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+      },
+      /* FIELD____WS__, */
+      {
+          FIELD____WS__,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD____WS_L,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD____WS__,
+          FIELD____WS_L,
+          FIELD_INVALID,
+      },
+      /* FIELD____WS_L, */
+      {
+          FIELD____WS_L,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD____WS_L,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+      },
+      /* FIELD_INVALID, */
+      {
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+          FIELD_INVALID,
+      },
   };
-  static_assert(sizeof(field_table) == sizeof(FieldState) * FIELD_MAX * FIELD_MAX);
+  static_assert(sizeof(field_table) ==
+                sizeof(FieldState) * FIELD_MAX * FIELD_MAX);
 
   auto r = field_table[a][b];
 
   if (r == FIELD_INVALID) {
-    //LOG_R("merge_series produced FIELD_INVALID\n");
+    // LOG_R("merge_series produced FIELD_INVALID\n");
   }
 
   return r;
@@ -97,7 +354,8 @@ bool merge_parallel(state_map& ma, state_map& mb, state_map& out) {
     auto sb = mb.contains(key) ? mb[key] : FIELD________;
     auto sm = merge_parallel(sa, sb);
     if (sm == FIELD_INVALID) {
-      LOG_R("%s: %s || %s = %s\n", key.c_str(), to_string(sa), to_string(sb), to_string(sm));
+      LOG_R("%s: %s || %s = %s\n", key.c_str(), to_string(sa), to_string(sb),
+            to_string(sm));
       error = true;
       return error;
     }
@@ -121,7 +379,8 @@ bool merge_series(state_map& ma, state_map& mb, state_map& out) {
     auto sb = mb.contains(key) ? mb[key] : FIELD________;
     auto sm = merge_series(sa, sb);
     if (sm == FIELD_INVALID) {
-      LOG_R("%s: %s -> %s = %s\n", key.c_str(), to_string(sa), to_string(sb), to_string(sm));
+      LOG_R("%s: %s -> %s = %s\n", key.c_str(), to_string(sa), to_string(sb),
+            to_string(sm));
       error = true;
       return error;
     }
@@ -141,6 +400,7 @@ CHECK_RETURN bool MtTracer::trace_dispatch(MnNode n) {
 
   switch (n.sym) {
     case sym_assignment_expression:
+      //n.dump_source_lines();
       error |= trace_assign(n);
       break;
     case sym_call_expression:
@@ -196,7 +456,7 @@ CHECK_RETURN bool MtTracer::trace_dispatch(MnNode n) {
       error |= trace_children(n);
       break;
 
-    case sym_subscript_expression:  
+    case sym_subscript_expression:
       // I don't think we need to do anything special?
       error |= trace_children(n);
       break;
@@ -216,6 +476,7 @@ CHECK_RETURN bool MtTracer::trace_children(MnNode n) {
   bool error = false;
   for (const auto& c : n) {
     error |= trace_dispatch(c);
+    if (error) return error;
   }
   return error;
 }
@@ -235,14 +496,12 @@ CHECK_RETURN bool MtTracer::trace_assign(MnNode n) {
     if (mod()->get_field(node_name.text())) {
       error |= trace_write(node_name);
     }
-  }
-  else if (node_lhs.sym == sym_subscript_expression) {
+  } else if (node_lhs.sym == sym_subscript_expression) {
     auto node_name = node_lhs.get_field(field_argument);
     if (mod()->get_field(node_name.text())) {
       error |= trace_write(node_name);
     }
-  }
-  else {
+  } else {
     node_lhs.dump_tree();
     debugbreak();
   }
@@ -278,6 +537,11 @@ CHECK_RETURN bool MtTracer::trace_call(MnNode n) {
 
   _state_stack.pop_back();
 
+  if (error) {
+    LOG_R("MtTracer::trace_call failed\n");
+    return error;
+  }
+
   // Call traced, close the state map and merge.
 
   for (auto& pair : state_call) {
@@ -285,7 +549,8 @@ CHECK_RETURN bool MtTracer::trace_call(MnNode n) {
     auto new_state = merge_delta(old_state, DELTA_EF);
 
     if (new_state == FIELD_INVALID) {
-      LOG_R("Field %s was %s, now %s!\n", pair.first.c_str(), to_string(old_state), to_string(new_state));
+      LOG_R("Field %s was %s, now %s!\n", pair.first.c_str(),
+            to_string(old_state), to_string(new_state));
       error = true;
       break;
     }
@@ -295,7 +560,9 @@ CHECK_RETURN bool MtTracer::trace_call(MnNode n) {
 
   error |= merge_series(state_top(), state_call, state_top());
   if (error) {
-    LOG_R("MtTracer::trace_call failed - caller state cannot be concatenated with callee state\n");
+    LOG_R(
+        "MtTracer::trace_call failed - caller state cannot be concatenated "
+        "with callee state\n");
     n.dump_source_lines();
     LOG_R("Caller state -\n");
     dump_trace(state_top());
@@ -313,6 +580,14 @@ CHECK_RETURN bool MtTracer::trace_method_call(MnNode n) {
 
   auto node_func = n.get_field(field_function);
   auto sibling_method = mod()->get_method(node_func.text());
+
+  if (in_tick()) {
+    if (sibling_method->is_tock) {
+      LOG_R("Calling a tock() while in a tick() method is forbidden\n");
+      error = true;
+      return error;
+    }
+  }
 
   if (sibling_method) {
     _method_stack.push_back(sibling_method);
@@ -355,6 +630,14 @@ CHECK_RETURN bool MtTracer::trace_submod_call(MnNode n) {
       submod_mod->get_method(node_func.get_field(field_field).text());
   assert(submod_method);
 
+  if (in_tick()) {
+    if (submod_method->is_tock) {
+      LOG_R("Calling a tock() on a submodule while in a tick() method is forbidden\n");
+      error = true;
+      return error;
+    }
+  }
+
   _field_stack.push_back(submod);
   _mod_stack.push_back(submod_mod);
   _method_stack.push_back(submod_method);
@@ -379,12 +662,10 @@ CHECK_RETURN bool MtTracer::trace_template_call(MnNode n) {
   auto node_name = n.get_field(field_function).get_field(field_name).text();
 
   if (node_name == "bx" || node_name == "dup") {
-  }
-  else {
+  } else {
     n.dump_tree();
     debugbreak();
   }
-
 
 #if 0
   auto sibling_method =
@@ -417,7 +698,7 @@ CHECK_RETURN bool MtTracer::trace_template_call(MnNode n) {
 
 CHECK_RETURN bool MtTracer::trace_field(MnNode n) {
   bool error = false;
-  
+
   n.dump_tree();
   debugbreak();
 
@@ -470,12 +751,24 @@ CHECK_RETURN bool MtTracer::trace_if(MnNode n) {
 
   if (!node_branch_b.is_null()) {
     _state_stack.push_back(&branch_b);
-    error |= trace_dispatch(node_branch_a);
+    error |= trace_dispatch(node_branch_b);
     _state_stack.pop_back();
   }
 
   // FIXME - Does series-parallel behave differently than parallel-series?
-  // I don't think so.
+  // YES IT DOES - if the branch below is merge-parallel'd before the
+  // merge-series, it ends up invalid because we merge a FIELD_RD_____ with a
+  // FIELD____WS__
+  //
+  // But the paths through the whole thing are write-read and write-write, both
+  // of which are valid.
+
+  // sig = 1;
+  // if (blah) {
+  //   y = sig;
+  // } else {
+  //   sig = 2;
+  // }
 
   error |= merge_series(state_top(), branch_a, branch_a);
   error |= merge_series(state_top(), branch_b, branch_b);
@@ -578,7 +871,8 @@ CHECK_RETURN bool MtTracer::trace_read(MnNode const& n) {
   auto new_state = merge_delta(old_state, DELTA_RD);
 
   if (new_state == FIELD_INVALID) {
-    LOG_R("Field %s was %s, now %s!\n", field_name.c_str(), to_string(old_state), to_string(new_state));
+    LOG_R("Field %s was %s, now %s!\n", field_name.c_str(),
+          to_string(old_state), to_string(new_state));
     LOG_R("========== call stack ==========\n");
     for (auto it = _method_stack.rbegin(); it != _method_stack.rend(); ++it) {
       LOG_R("%s.%s\n", (*it)->mod->name().c_str(), (*it)->name().c_str());
@@ -610,7 +904,8 @@ CHECK_RETURN bool MtTracer::trace_write(MnNode const& n) {
   auto new_state = merge_delta(old_state, in_tick() ? DELTA_WR : DELTA_WS);
 
   if (new_state == FIELD_INVALID) {
-    LOG_R("Field %s was %s, now %s!\n", field_name.c_str(), to_string(old_state), to_string(new_state));
+    LOG_R("Field %s was %s, now %s!\n", field_name.c_str(),
+          to_string(old_state), to_string(new_state));
     LOG_R("========== call stack ==========\n");
     for (auto it = _method_stack.rbegin(); it != _method_stack.rend(); ++it) {
       LOG_R("%s.%s\n", (*it)->mod->name().c_str(), (*it)->name().c_str());
@@ -622,14 +917,14 @@ CHECK_RETURN bool MtTracer::trace_write(MnNode const& n) {
   }
 
   state_top()[field_name] = new_state;
-  
+
   return error;
 }
 
 //------------------------------------------------------------------------------
 // FIXME I guess we handled this above?
 
-CHECK_RETURN bool MtTracer::trace_end_fn() { 
+CHECK_RETURN bool MtTracer::trace_end_fn() {
   bool error = false;
 
   assert(in_tick() || in_tock());
@@ -663,7 +958,7 @@ CHECK_RETURN bool MtTracer::trace_end_fn() {
 
 void MtTracer::dump_trace(state_map& m) {
   for (const auto& pair : m) {
-    LOG_Y("  %s = %s\n", pair.first.c_str(), to_string(pair.second));
+    LOG_Y("%s = %s\n", pair.first.c_str(), to_string(pair.second));
   }
 }
 

@@ -503,35 +503,115 @@ bool MtModule::collect_methods() {
 
 //------------------------------------------------------------------------------
 
+FieldState merge_delta(FieldState a, FieldDelta b);
+bool merge_series(state_map& ma, state_map& mb, state_map& out);
+
 bool MtModule::trace() {
   bool error = false;
-  // Hook up callee->caller method pointers
+  LOG_G("Tracing %s\n", name().c_str());
+  LOG_INDENT_SCOPE();
+
+  // Field state produced by evaluating all public methods in the module in
+  // lexical order.
+  state_map state_mod;
 
   for (auto m : all_methods) {
-    int depth = 1;
 
-    // Only trace public non-const methods that aren't constructors.
-    if (m->is_init || !m->is_public || m->is_const) continue;
+    // Don't trace construtors and private methods.
 
-    auto node_body = m->node.get_field(field_body);
-
-    MtTracer tracer;
-    tracer._mod_stack.push_back(this);
-    tracer._method_stack.push_back(m);
-    tracer._state_stack.push_back(new state_map());
-
-    error |= tracer.trace_dispatch(node_body);
-
-    for (const auto &pair : tracer.state_top()) {
-      if (pair.second == FIELD_INVALID) {
-        LOG_R("Tracing %s.%s failed, field %s is in an invalid state\n",
-              name().c_str(), m->name().c_str(), pair.first.c_str());
-        error = true;
-      }
+    if (m->is_init || !m->is_public) {
+      continue;
     }
 
-    if (!error) {
-      LOG_G("Tracing %s.%s pass\n", name().c_str(), m->name().c_str());
+    // Trace the method.
+
+    MtTracer tracer;
+    state_map state_method;
+    tracer._mod_stack.push_back(this);
+    tracer._method_stack.push_back(m);
+    tracer._state_stack.push_back(&state_method);
+    error |= tracer.trace_dispatch(m->node.get_field(field_body));
+
+    if (error) {
+      LOG_R("Tracing %s.%s failed\n", name().c_str(), m->name().c_str());
+      break;
+    }
+
+    // Lock all states touched by the method.
+
+    for (auto& pair : state_method) {
+      auto old_state = pair.second;
+      auto new_state = merge_delta(old_state, DELTA_EF);
+
+      if (new_state == FIELD_INVALID) {
+        LOG_R("Field %s was %s, now %s!\n", pair.first.c_str(), to_string(old_state), to_string(new_state));
+        error = true;
+        break;
+      }
+
+      pair.second = new_state;
+    }
+
+    // Merge this method's state with the module-wide state.
+
+    error |= merge_series(state_mod, state_method, state_mod);
+    if (error) {
+      LOG_R("MtModule::trace - Cannot merge state_mod->state_method\n");
+
+      LOG_R("state_mod:\n");
+      LOG_INDENT();
+      MtTracer::dump_trace(state_mod);
+      LOG_DEDENT();
+
+      LOG_R("state_method:\n");
+      LOG_INDENT();
+      MtTracer::dump_trace(state_method);
+      LOG_DEDENT();
+    }
+  }
+
+  if (error) return error;
+
+  // Check that all sigs and regs ended up in a valid state.
+  for (auto& pair : state_mod) {
+    switch(pair.second) {
+    case FIELD________:
+      LOG_R("Field %s was never read or written!\n", pair.first.c_str());
+      error = true;
+      break;
+    case FIELD____WR__:
+      LOG_R("Register %s was written but never read or locked - internal error?\n", pair.first.c_str());
+      error = true;
+      break;
+    case FIELD____WR_L:
+      LOG_Y("Register %s was written and locked but never read - is it redundant?\n", pair.first.c_str());
+      break;
+    case FIELD_RD_____:
+      LOG_Y("Field %s was read but never written - should it be const?\n", pair.first.c_str());
+      break;
+    case FIELD_RD_WR__:
+      LOG_R("Register %s was written but never locked - internal error?\n", pair.first.c_str());
+      error = true;
+      break;
+    case FIELD_RD_WR_L:
+      break;
+    case FIELD____WS__:
+      LOG_Y("Signal %s was written but never read - is it an output?\n", pair.first.c_str());
+      break;
+    case FIELD____WS_L:
+      break;
+    default:
+      LOG_R("Field %s has an invalid state %d\n", pair.first.c_str(), pair.second);
+      error = true;
+      break;
+    }
+  }
+
+  // Check that all sigs and regs are represented in the final state map.
+  for (auto f : all_fields) {
+    if (!state_mod.contains(f->name())) {
+      LOG_R("No method in the public interface of %s touched field %s!\n", name().c_str(), f->name().c_str());
+      error = true;
     }
   }
 

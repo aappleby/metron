@@ -14,6 +14,7 @@ template <int WIDTH = 32, int INITIAL = 0>
 class single_register {
  public:
   single_register() { _value = INITIAL; }
+
   logic<WIDTH> value() const { return _value; }
 
   void tock(logic<1> reset, logic<1> write_enable, logic<WIDTH> next) {

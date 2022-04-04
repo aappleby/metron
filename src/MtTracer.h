@@ -73,7 +73,7 @@ class MtTracer {
   CHECK_RETURN bool trace_write(MnNode const& n);
   CHECK_RETURN bool trace_end_fn();
 
-  void dump_trace(state_map& m);
+  static void dump_trace(state_map& m);
 
   MtModule* mod() { return _mod_stack.back(); }
   MtMethod* method() { return _method_stack.back(); }

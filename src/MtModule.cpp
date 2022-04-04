@@ -472,6 +472,12 @@ CHECK_RETURN bool MtModule::collect_methods() {
 
     all_methods.push_back(m);
 
+    if (m->is_tick && m->has_return) {
+      LOG_R("Tick method %s has a return value\n", m->name().c_str());
+      error = true;
+      break;
+    }
+
     if (m->is_public && !m->is_const && !(m->is_tick || m->is_tock || m->is_init)) {
       LOG_R("Public non-init/tick/tock method %s is not const\n", m->name().c_str());
       error = true;

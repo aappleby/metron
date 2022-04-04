@@ -610,6 +610,7 @@ bool MtModule::trace() {
   // Check that all sigs and regs are represented in the final state map.
   for (auto f : all_fields) {
     if (f->is_submod()) continue;
+    if (f->is_param()) continue;
     if (!state_mod.contains(f->name())) {
       LOG_R("No method in the public interface of %s touched field %s!\n", name().c_str(), f->name().c_str());
       error = true;

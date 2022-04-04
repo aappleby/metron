@@ -218,9 +218,10 @@ class toplevel {
       //----------
 
       else if (op == OP_JALR) {
+        logic<32> rr1 = regs[r1]; // Lol, Metron actually found a bug - gotta read r1 before writing
         logic<32> imm = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20));
         if (rd) regs[rd] = pc + 4;
-        pc = regs[r1] + imm;
+        pc = rr1 + imm;
       }
 
       //----------

@@ -16,13 +16,13 @@ VL_INLINE_OPT void Vuart_top___024root___sequent__TOP__0(Vuart_top___024root* vl
     CData/*1:0*/ __Vtask_uart_top__DOT__tx__DOT__tick__1__unnamedblk1__DOT__cycle_max;
     CData/*4:0*/ __Vtask_uart_top__DOT__tx__DOT__tick__1__unnamedblk1__DOT__cursor_max;
     CData/*7:0*/ __Vtask_uart_top__DOT__rx__DOT__tick__2__unnamedblk1__DOT__temp;
-    CData/*1:0*/ __Vdly__uart_top__DOT__hello__DOT__s;
+    CData/*1:0*/ __Vdly__uart_top__DOT__hello__DOT__state;
     CData/*1:0*/ __Vdly__uart_top__DOT__tx__DOT__cycle;
     CData/*4:0*/ __Vdly__uart_top__DOT__tx__DOT__cursor;
     SData/*8:0*/ __Vdly__uart_top__DOT__tx__DOT__buffer;
     // Body
     __Vdly__uart_top__DOT__tx__DOT__buffer = vlSelf->uart_top__DOT__tx__DOT__buffer;
-    __Vdly__uart_top__DOT__hello__DOT__s = vlSelf->uart_top__DOT__hello__DOT__s;
+    __Vdly__uart_top__DOT__hello__DOT__state = vlSelf->uart_top__DOT__hello__DOT__state;
     __Vdly__uart_top__DOT__tx__DOT__cursor = vlSelf->uart_top__DOT__tx__DOT__cursor;
     __Vdly__uart_top__DOT__tx__DOT__cycle = vlSelf->uart_top__DOT__tx__DOT__cycle;
     if (vlSelf->i_rstn) {
@@ -53,20 +53,20 @@ VL_INLINE_OPT void Vuart_top___024root___sequent__TOP__0(Vuart_top___024root* vl
         }
         vlSelf->uart_top__DOT__hello__DOT__data = vlSelf->uart_top__DOT__hello__DOT__memory
             [vlSelf->uart_top__DOT__hello__DOT__cursor];
-        if (((0U == (IData)(vlSelf->uart_top__DOT__hello__DOT__s)) 
+        if (((0U == (IData)(vlSelf->uart_top__DOT__hello__DOT__state)) 
              & (IData)(vlSelf->uart_top__DOT__tx_o_idle))) {
-            __Vdly__uart_top__DOT__hello__DOT__s = 1U;
-        } else if (((1U == (IData)(vlSelf->uart_top__DOT__hello__DOT__s)) 
+            __Vdly__uart_top__DOT__hello__DOT__state = 1U;
+        } else if (((1U == (IData)(vlSelf->uart_top__DOT__hello__DOT__state)) 
                     & (((7U == (IData)(vlSelf->uart_top__DOT__tx__DOT__cursor)) 
                         & (0U == (IData)(vlSelf->uart_top__DOT__tx__DOT__cycle))) 
                        | (7U > (IData)(vlSelf->uart_top__DOT__tx__DOT__cursor))))) {
             if ((0x1ffU == (IData)(vlSelf->uart_top__DOT__hello__DOT__cursor))) {
-                __Vdly__uart_top__DOT__hello__DOT__s = 2U;
+                __Vdly__uart_top__DOT__hello__DOT__state = 2U;
             } else {
                 vlSelf->uart_top__DOT__hello__DOT__cursor 
                     = (0x1ffU & ((IData)(1U) + (IData)(vlSelf->uart_top__DOT__hello__DOT__cursor)));
             }
-        } else if ((2U == (IData)(vlSelf->uart_top__DOT__hello__DOT__s))) {
+        } else if ((2U == (IData)(vlSelf->uart_top__DOT__hello__DOT__state))) {
             vlSelf->uart_top__DOT__hello__DOT__cursor = 0U;
         }
         __Vtask_uart_top__DOT__tx__DOT__tick__1__unnamedblk1__DOT__cycle_max = 2U;
@@ -102,13 +102,13 @@ VL_INLINE_OPT void Vuart_top___024root___sequent__TOP__0(Vuart_top___024root* vl
         vlSelf->uart_top__DOT__rx__DOT__cursor = 0U;
         vlSelf->uart_top__DOT__rx__DOT__buffer = 0U;
         vlSelf->uart_top__DOT__rx__DOT__sum = 0U;
-        __Vdly__uart_top__DOT__hello__DOT__s = 0U;
+        __Vdly__uart_top__DOT__hello__DOT__state = 0U;
         vlSelf->uart_top__DOT__hello__DOT__cursor = 0U;
         __Vdly__uart_top__DOT__tx__DOT__cycle = 0U;
         __Vdly__uart_top__DOT__tx__DOT__cursor = 0U;
         __Vdly__uart_top__DOT__tx__DOT__buffer = 0x1ffU;
     }
-    vlSelf->uart_top__DOT__hello__DOT__s = __Vdly__uart_top__DOT__hello__DOT__s;
+    vlSelf->uart_top__DOT__hello__DOT__state = __Vdly__uart_top__DOT__hello__DOT__state;
     vlSelf->uart_top__DOT__tx__DOT__buffer = __Vdly__uart_top__DOT__tx__DOT__buffer;
     vlSelf->uart_top__DOT__tx__DOT__cycle = __Vdly__uart_top__DOT__tx__DOT__cycle;
     vlSelf->uart_top__DOT__tx__DOT__cursor = __Vdly__uart_top__DOT__tx__DOT__cursor;
@@ -117,11 +117,11 @@ VL_INLINE_OPT void Vuart_top___024root___sequent__TOP__0(Vuart_top___024root* vl
     vlSelf->o_data = vlSelf->uart_top__DOT__rx__DOT__buffer;
     uart_top__DOT__tock__DOT__hello_data = vlSelf->uart_top__DOT__hello__DOT__data;
     vlSelf->uart_top__DOT__tx_i_data = uart_top__DOT__tock__DOT__hello_data;
-    uart_top__DOT__tock__DOT__hello_req = (1U == (IData)(vlSelf->uart_top__DOT__hello__DOT__s));
+    uart_top__DOT__tock__DOT__hello_req = (1U == (IData)(vlSelf->uart_top__DOT__hello__DOT__state));
     vlSelf->uart_top__DOT__tx_i_req = uart_top__DOT__tock__DOT__hello_req;
     vlSelf->uart_top__DOT__tx_o_idle = ((0U == (IData)(vlSelf->uart_top__DOT__tx__DOT__cursor)) 
                                         & (0U == (IData)(vlSelf->uart_top__DOT__tx__DOT__cycle)));
-    vlSelf->o_done = ((2U == (IData)(vlSelf->uart_top__DOT__hello__DOT__s)) 
+    vlSelf->o_done = ((2U == (IData)(vlSelf->uart_top__DOT__hello__DOT__state)) 
                       & (IData)(vlSelf->uart_top__DOT__tx_o_idle));
 }
 

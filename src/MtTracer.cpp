@@ -11,72 +11,20 @@ FieldState merge_delta(FieldState a, FieldDelta b) {
   if (a < 0 || a >= FIELD_MAX) return FIELD_INVALID;
   if (b < 0 || b >= DELTA_MAX) return FIELD_INVALID;
 
+  // clang-format off
   static const FieldState field_table[FIELD_MAX][DELTA_MAX] = {
-      /*                     DELTA_RD,      DELTA_WR,      DELTA_WS, DELTA_EF,
-       */
-      /* FIELD________, */ {
-          FIELD_RD_____,
-          FIELD____WR__,
-          FIELD____WS__,
-          FIELD________,
-      },
-      /* FIELD____WR__, */
-      {
-          FIELD_INVALID,
-          FIELD____WR__,
-          FIELD_INVALID,
-          FIELD____WR_L,
-      },
-      /* FIELD____WR_L, */
-      {
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD____WR_L,
-      },
-      /* FIELD_RD_____, */
-      {
-          FIELD_RD_____,
-          FIELD_RD_WR__,
-          FIELD_INVALID,
-          FIELD_RD_____,
-      },
-      /* FIELD_RD_WR__, */
-      {
-          FIELD_INVALID,
-          FIELD_RD_WR__,
-          FIELD_INVALID,
-          FIELD_RD_WR_L,
-      },
-      /* FIELD_RD_WR_L, */
-      {
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_RD_WR_L,
-      },
-      /* FIELD____WS__, */
-      {
-          FIELD____WS_L,
-          FIELD_INVALID,
-          FIELD____WS__,
-          FIELD____WS_L,
-      },
-      /* FIELD____WS_L, */
-      {
-          FIELD____WS_L,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD____WS_L,
-      },
-      /* FIELD_INVALID, */
-      {
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-          FIELD_INVALID,
-      },
+      /*                     DELTA_RD,      DELTA_WR,      DELTA_WS,      DELTA_EF,   */
+      /* FIELD________, */ { FIELD_RD_____, FIELD____WR__, FIELD____WS__, FIELD________, },
+      /* FIELD____WR__, */ { FIELD_INVALID, FIELD____WR__, FIELD_INVALID, FIELD____WR_L, },
+      /* FIELD____WR_L, */ { FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD____WR_L, },
+      /* FIELD_RD_____, */ { FIELD_RD_____, FIELD_RD_WR__, FIELD_INVALID, FIELD_RD_____, },
+      /* FIELD_RD_WR__, */ { FIELD_INVALID, FIELD_RD_WR__, FIELD_INVALID, FIELD_RD_WR_L, },
+      /* FIELD_RD_WR_L, */ { FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_RD_WR_L, },
+      /* FIELD____WS__, */ { FIELD____WS_L, FIELD_INVALID, FIELD____WS__, FIELD____WS_L, },
+      /* FIELD____WS_L, */ { FIELD____WS_L, FIELD_INVALID, FIELD_INVALID, FIELD____WS_L, },
+      /* FIELD_INVALID, */ { FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, FIELD_INVALID, },
   };
+  // clang-format on
   static_assert(sizeof(field_table) ==
                 sizeof(FieldState) * FIELD_MAX * DELTA_MAX);
 
@@ -90,6 +38,7 @@ FieldState merge_parallel(FieldState a, FieldState b) {
   if (a < 0 || a >= FIELD_MAX) return FIELD_INVALID;
   if (b < 0 || b >= FIELD_MAX) return FIELD_INVALID;
 
+  // clang-format off
   static const FieldState field_table[FIELD_MAX][FIELD_MAX] = {
       /*                     FIELD________, FIELD____WR__, FIELD____WR_L,
          FIELD_RD_____, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD____WS__,
@@ -202,6 +151,7 @@ FieldState merge_parallel(FieldState a, FieldState b) {
           FIELD_INVALID,
       },
   };
+  // clang-format on
   static_assert(sizeof(field_table) ==
                 sizeof(FieldState) * FIELD_MAX * FIELD_MAX);
 
@@ -215,6 +165,7 @@ FieldState merge_series(FieldState a, FieldState b) {
   if (a < 0 || a >= FIELD_MAX) return FIELD_INVALID;
   if (b < 0 || b >= FIELD_MAX) return FIELD_INVALID;
 
+  // clang-format off
   static const FieldState field_table[FIELD_MAX][FIELD_MAX] = {
       /*                     FIELD________, FIELD____WR__, FIELD____WR_L,
          FIELD_RD_____, FIELD_RD_WR__, FIELD_RD_WR_L, FIELD____WS__,
@@ -327,6 +278,8 @@ FieldState merge_series(FieldState a, FieldState b) {
           FIELD_INVALID,
       },
   };
+  // clang-format on
+
   static_assert(sizeof(field_table) ==
                 sizeof(FieldState) * FIELD_MAX * FIELD_MAX);
 
@@ -361,6 +314,15 @@ bool merge_parallel(state_map& ma, state_map& mb, state_map& out) {
     }
     temp[key] = sm;
   }
+
+  /*
+  LOG_G("MA\n");
+  MtTracer::dump_trace(ma);
+  LOG_G("MB\n");
+  MtTracer::dump_trace(mb);
+  LOG_G("MC\n");
+  MtTracer::dump_trace(temp);
+  */
 
   out.swap(temp);
   return error;
@@ -400,7 +362,7 @@ CHECK_RETURN bool MtTracer::trace_dispatch(MnNode n) {
 
   switch (n.sym) {
     case sym_assignment_expression:
-      //n.dump_source_lines();
+      // n.dump_source_lines();
       error |= trace_assign(n);
       break;
     case sym_call_expression:
@@ -632,7 +594,9 @@ CHECK_RETURN bool MtTracer::trace_submod_call(MnNode n) {
 
   if (in_tick()) {
     if (submod_method->is_tock) {
-      LOG_R("Calling a tock() on a submodule while in a tick() method is forbidden\n");
+      LOG_R(
+          "Calling a tock() on a submodule while in a tick() method is "
+          "forbidden\n");
       error = true;
       return error;
     }
@@ -661,7 +625,7 @@ CHECK_RETURN bool MtTracer::trace_template_call(MnNode n) {
 
   auto node_name = n.get_field(field_function).get_field(field_name).text();
 
-  if (node_name == "bx" || node_name == "dup") {
+  if (node_name == "bx" || node_name == "dup" || node_name == "sign_extend") {
   } else {
     n.dump_tree();
     debugbreak();
@@ -775,8 +739,10 @@ CHECK_RETURN bool MtTracer::trace_if(MnNode n) {
   error |= merge_parallel(branch_a, branch_b, state_top());
 
   if (error) {
+    LOG_R("================================================================================\n");
     LOG_R("MtTracer::trace_if - error\n");
     n.dump_source_lines();
+    LOG_R("================================================================================\n");
   }
 
   return error;

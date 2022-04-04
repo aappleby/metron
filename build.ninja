@@ -20,7 +20,7 @@ rule compile_c
   depfile = ${out}.d
   deps = gcc
 rule metron
-  command = bin/metron -q -R${src_dir} -O${dst_dir} ${file_list}
+  command = bin/metron -q -r ${src_dir} -o ${dst_dir} -c ${file_list}
 rule verilator
   command = verilator ${includes} --cc ${src_top} -Mdir ${dst_dir}
 rule make

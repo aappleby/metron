@@ -261,10 +261,12 @@ module toplevel
         //----------
 
         else if (op == OP_JALR) begin
+          logic[31:0] rr1;
           logic[31:0] imm;
+          rr1 = regs[r1]; // Lol, Metron actually found a bug - gotta read r1 before writing
           imm = {{21 {inst[31]}}, inst[30:25], inst[24:20]};
           if (rd) regs[rd] = pc + 4;
-          pc <= regs[r1] + imm;
+          pc <= rr1 + imm;
         end
 
         //----------

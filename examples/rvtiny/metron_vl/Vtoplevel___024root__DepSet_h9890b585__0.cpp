@@ -34,6 +34,7 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
     CData/*0:0*/ __Vtask_toplevel__DOT__tick__0__unnamedblk1__DOT__unnamedblk5__DOT__take_branch;
     IData/*31:0*/ __Vtask_toplevel__DOT__tick__0__unnamedblk1__DOT__unnamedblk5__DOT__unnamedblk6__DOT__imm;
     IData/*31:0*/ __Vtask_toplevel__DOT__tick__0__unnamedblk1__DOT__unnamedblk7__DOT__imm;
+    IData/*31:0*/ __Vtask_toplevel__DOT__tick__0__unnamedblk1__DOT__unnamedblk8__DOT__rr1;
     IData/*31:0*/ __Vtask_toplevel__DOT__tick__0__unnamedblk1__DOT__unnamedblk8__DOT__imm;
     IData/*31:0*/ __Vtask_toplevel__DOT__tick__0__unnamedblk1__DOT__unnamedblk9__DOT__imm;
     IData/*31:0*/ __Vtask_toplevel__DOT__tick__0__unnamedblk1__DOT__unnamedblk10__DOT__imm;
@@ -295,6 +296,8 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
             __Vdly__toplevel__DOT__pc = (vlSelf->toplevel__DOT__pc 
                                          + __Vtask_toplevel__DOT__tick__0__unnamedblk1__DOT__unnamedblk7__DOT__imm);
         } else if ((0x67U == (IData)(__Vtask_toplevel__DOT__tick__0__unnamedblk1__DOT__op))) {
+            __Vtask_toplevel__DOT__tick__0__unnamedblk1__DOT__unnamedblk8__DOT__rr1 
+                = vlSelf->toplevel__DOT__regs[__Vtask_toplevel__DOT__tick__0__unnamedblk1__DOT__r1];
             __Vtask_toplevel__DOT__tick__0__unnamedblk1__DOT__unnamedblk8__DOT__imm 
                 = (((- (IData)((__Vtask_toplevel__DOT__tick__0__unnamedblk1__DOT__inst 
                                 >> 0x1fU))) << 0xbU) 
@@ -304,8 +307,7 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
                 vlSelf->toplevel__DOT__regs[__Vtask_toplevel__DOT__tick__0__unnamedblk1__DOT__rd] 
                     = ((IData)(4U) + vlSelf->toplevel__DOT__pc);
             }
-            __Vdly__toplevel__DOT__pc = (vlSelf->toplevel__DOT__regs
-                                         [__Vtask_toplevel__DOT__tick__0__unnamedblk1__DOT__r1] 
+            __Vdly__toplevel__DOT__pc = (__Vtask_toplevel__DOT__tick__0__unnamedblk1__DOT__unnamedblk8__DOT__rr1 
                                          + __Vtask_toplevel__DOT__tick__0__unnamedblk1__DOT__unnamedblk8__DOT__imm);
         } else if ((0x37U == (IData)(__Vtask_toplevel__DOT__tick__0__unnamedblk1__DOT__op))) {
             __Vtask_toplevel__DOT__tick__0__unnamedblk1__DOT__unnamedblk9__DOT__imm 

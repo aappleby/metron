@@ -21,6 +21,7 @@ module single_register
 );
  /*public:*/
   initial begin : single_register _value = INITIAL; end
+
   always_comb begin value = _value; end
 
   always_comb begin : tock

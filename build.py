@@ -56,7 +56,7 @@ divider("Rules")
 
 ninja.rule("compile_cpp",   command="g++ -g ${opt} -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}", deps="gcc", depfile="${out}.d")
 ninja.rule("compile_c",     command="gcc -g ${opt} ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}", deps="gcc", depfile="${out}.d")
-ninja.rule("metron",        command="bin/metron -q -R${src_dir} -O${dst_dir} ${file_list}")
+ninja.rule("metron",        command="bin/metron -q -r ${src_dir} -o ${dst_dir} -c ${file_list}")
 ninja.rule("verilator",     command="verilator ${includes} --cc ${src_top} -Mdir ${dst_dir}")
 ninja.rule("make",          command="make -C ${dst_dir} -f ${makefile}")
 ninja.rule("link",          command="g++ -g $opt ${in} ${link_libs} -o ${out}")

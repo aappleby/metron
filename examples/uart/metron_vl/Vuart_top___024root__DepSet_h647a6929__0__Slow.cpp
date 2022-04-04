@@ -39,11 +39,11 @@ VL_ATTR_COLD void Vuart_top___024root___settle__TOP__0(Vuart_top___024root* vlSe
     vlSelf->o_sum = vlSelf->uart_top__DOT__rx__DOT__sum;
     uart_top__DOT__tock__DOT__hello_data = vlSelf->uart_top__DOT__hello__DOT__data;
     vlSelf->uart_top__DOT__tx_i_data = uart_top__DOT__tock__DOT__hello_data;
-    uart_top__DOT__tock__DOT__hello_req = (1U == (IData)(vlSelf->uart_top__DOT__hello__DOT__s));
+    uart_top__DOT__tock__DOT__hello_req = (1U == (IData)(vlSelf->uart_top__DOT__hello__DOT__state));
     vlSelf->uart_top__DOT__tx_i_req = uart_top__DOT__tock__DOT__hello_req;
     vlSelf->uart_top__DOT__tx_o_idle = ((0U == (IData)(vlSelf->uart_top__DOT__tx__DOT__cursor)) 
                                         & (0U == (IData)(vlSelf->uart_top__DOT__tx__DOT__cycle)));
-    vlSelf->o_done = ((2U == (IData)(vlSelf->uart_top__DOT__hello__DOT__s)) 
+    vlSelf->o_done = ((2U == (IData)(vlSelf->uart_top__DOT__hello__DOT__state)) 
                       & (IData)(vlSelf->uart_top__DOT__tx_o_idle));
 }
 
@@ -84,7 +84,7 @@ VL_ATTR_COLD void Vuart_top___024root___ctor_var_reset(Vuart_top___024root* vlSe
     vlSelf->uart_top__DOT__tx_i_data = VL_RAND_RESET_I(8);
     vlSelf->uart_top__DOT__tx_i_req = VL_RAND_RESET_I(1);
     vlSelf->uart_top__DOT__tx_o_idle = VL_RAND_RESET_I(1);
-    vlSelf->uart_top__DOT__hello__DOT__s = VL_RAND_RESET_I(2);
+    vlSelf->uart_top__DOT__hello__DOT__state = VL_RAND_RESET_I(2);
     vlSelf->uart_top__DOT__hello__DOT__cursor = VL_RAND_RESET_I(9);
     for (int __Vi0=0; __Vi0<512; ++__Vi0) {
         vlSelf->uart_top__DOT__hello__DOT__memory[__Vi0] = VL_RAND_RESET_I(8);

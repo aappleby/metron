@@ -20,7 +20,7 @@ VL_MODULE(Vuart_top___024root) {
     CData/*7:0*/ uart_top__DOT__tx_i_data;
     CData/*0:0*/ uart_top__DOT__tx_i_req;
     CData/*0:0*/ uart_top__DOT__tx_o_idle;
-    CData/*1:0*/ uart_top__DOT__hello__DOT__s;
+    CData/*1:0*/ uart_top__DOT__hello__DOT__state;
     CData/*7:0*/ uart_top__DOT__hello__DOT__data;
     CData/*1:0*/ uart_top__DOT__tx__DOT__cycle;
     CData/*4:0*/ uart_top__DOT__tx__DOT__cursor;

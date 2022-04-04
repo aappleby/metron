@@ -90,7 +90,7 @@ inst_funct7 = idec_inst_funct7; end
     alu_result = alu_core_result;
   end
 
-  always_comb begin : tock
+  always_comb begin /*tock*/
     logic[31:0] pc_plus_4;
     logic[31:0] pc_plus_imm;
     logic[31:0] pc_data;

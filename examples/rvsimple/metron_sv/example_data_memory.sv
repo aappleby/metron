@@ -22,7 +22,7 @@ module example_data_memory
   output logic[31:0] q
 );
 /*public:*/
-  initial begin : example_data_memory
+  initial begin /*example_data_memory*/
     string s;
     /*std::string s;*/
     $value$plusargs("data_file=%s", s);
@@ -33,7 +33,7 @@ module example_data_memory
     q = mem[address];
   end
 
-  always_comb begin : tock
+  always_comb begin /*tock*/
     /*tick(address, wren, byteena, data)*/;
   end
 

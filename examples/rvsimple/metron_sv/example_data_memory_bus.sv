@@ -32,7 +32,7 @@ module example_data_memory_bus
     read_data = read_enable && is_data_memory ? fetched : 32'bx;
   end
 
-  always_comb begin : tock
+  always_comb begin /*tock*/
     data_memory_address = address[DATA_BITS - 2+1:2];
     data_memory_wren = 1'(write_enable && address >= DATA_BEGIN && DATA_END >= address);
     data_memory_byteena = byte_enable;

@@ -444,24 +444,27 @@ CHECK_RETURN bool MtModule::collect_methods() {
 
     m->is_public = in_public;
 
-    m->is_init = func_type.is_null();
-    m->is_tick = func_name.starts_with("tick");
-    m->is_tock = func_name.starts_with("tock");
-
-    m->is_task = func_type && func_type.text() == "void";
-    m->is_func = func_type && func_type.text() != "void";
-
-    if (m->is_init || m->is_tick || m->is_tock) {
-      m->is_task = false;
-      m->is_func = false;
-    }
-
     m->is_const = false;
     for (const auto& n : func_decl) {
       if (n.sym == sym_type_qualifier && n.text() == "const") {
         m->is_const = true;
         break;
       }
+    }
+
+    m->has_return = func_type && func_type.text() != "void";
+
+
+    m->is_init = func_type.is_null();
+    m->is_tick = func_name.starts_with("tick");
+    m->is_tock = func_name.starts_with("tock");
+
+    m->is_task = !m->has_return;
+    m->is_func = m->has_return;
+
+    if (m->is_init || m->is_tick || m->is_tock) {
+      m->is_task = false;
+      m->is_func = false;
     }
 
     for (int i = 0; i < func_args.named_child_count(); i++) {

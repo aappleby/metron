@@ -17,7 +17,7 @@ module uart_top
   output logic[31:0] o_sum
 );
  /*public:*/
-  initial begin : uart_top
+  initial begin /*uart_top*/
     $write("uart_top.init()\n");
     //hello.init();
   end
@@ -29,7 +29,7 @@ module uart_top
   always_comb begin o_done = hello_o_done && tx_o_idle; end
   always_comb begin o_sum = rx_o_sum; end
 
-  always_comb begin : tock
+  always_comb begin /*tock*/
     logic[7:0] hello_data;
     logic hello_req;
     hello_data = hello_o_data;

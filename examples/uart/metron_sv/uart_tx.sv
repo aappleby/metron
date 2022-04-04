@@ -26,7 +26,7 @@ module uart_tx
 
   always_comb begin o_idle = (cursor == 0) && (cycle == 0); end
 
-  always_comb begin : tock
+  always_comb begin /*tock*/
     /*tick(i_rstn, i_data, i_req)*/;
   end
 

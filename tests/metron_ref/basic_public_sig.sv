@@ -9,7 +9,7 @@ module Module
 );
 /*public:*/
 
-  always_comb begin : tock
+  always_comb begin /*tock*/
     my_sig = 1;
   end
 

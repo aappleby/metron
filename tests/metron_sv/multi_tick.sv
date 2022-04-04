@@ -8,7 +8,7 @@ module Module
 );
 /*public:*/
 
-  always_comb begin : tock
+  always_comb begin /*tock*/
     /*tick1()*/;
     /*tick2()*/;
   end

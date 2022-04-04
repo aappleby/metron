@@ -38,7 +38,7 @@ module toplevel
 
   //----------------------------------------
 
-  always_comb begin : tock
+  always_comb begin /*tock*/
     logic[31:0] pc;
     logic[31:0] inst;
     logic[31:0] alu_result2;

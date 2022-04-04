@@ -100,6 +100,7 @@ struct MtMethod {
   bool is_root = false;
   bool is_public = false;
   bool is_const = false;
+  bool has_return = false;
 
   std::vector<MtMethod*> callers;
 

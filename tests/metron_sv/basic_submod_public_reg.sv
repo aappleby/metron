@@ -28,7 +28,7 @@ module Module
     get_submod_reg = submod_sub_reg;
   end
 
-  always_comb begin : tock
+  always_comb begin /*tock*/
     /*submod.tick();*/
   end
 

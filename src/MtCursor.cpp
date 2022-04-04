@@ -956,13 +956,13 @@ void MtCursor::emit(MnFuncDefinition n) {
   emit_ws();
 
   if (current_method->is_init)
-    emit("begin : %s", current_method->name().c_str());
+    emit("begin /*%s*/", current_method->name().c_str());
   else if (current_method->is_tick) {
     //emit("begin : %s", current_function_name.c_str());
     //emit(" : %s", current_function_name.c_str());
   }
   else if (current_method->is_tock)
-    emit("begin : %s", current_method->name().c_str());
+    emit("begin /*%s*/", current_method->name().c_str());
   else if (current_method->is_task)
     emit("");
   else if (current_method->is_func) {
@@ -1229,9 +1229,9 @@ void MtCursor::emit_field_as_submod(MnFieldDecl n) {
   emit_indent();
   emit(".clock(clock),");
 
-  int port_count =
-      int(submod_mod->inputs.size() + submod_mod->outputs.size() +
-          submod_mod->getters.size());
+  int port_count = int(submod_mod->inputs.size() + submod_mod->outputs.size());
+  for (auto m : submod_mod->all_methods) if (m->is_public && m->has_return) port_count++;
+
   int port_index = 0;
 
   for (auto n : submod_mod->inputs) {
@@ -1257,6 +1257,16 @@ void MtCursor::emit_field_as_submod(MnFieldDecl n) {
     if (port_index++ < port_count - 1) emit(", ");
   }
 
+  for (auto m : submod_mod->all_methods) {
+    if (!m->is_public || !m->has_return) continue;
+    emit_newline();
+    emit_indent();
+    emit(".%s(%s_%s)", m->name().c_str(), inst_name.c_str(), m->name().c_str());
+
+    if (port_index++ < port_count - 1) emit(", ");
+  }
+
+  /*
   for (auto n : submod_mod->getters) {
     emit_newline();
     emit_indent();
@@ -1264,6 +1274,7 @@ void MtCursor::emit_field_as_submod(MnFieldDecl n) {
 
     if (port_index++ < port_count - 1) emit(", ");
   }
+  */
 
   indent_stack.pop_back();
 
@@ -1352,9 +1363,35 @@ void MtCursor::emit_output_ports(MnFieldDecl submod) {
     emit_newline();
   }
 
+  /*
   for (auto getter : submod_mod->getters) {
     auto getter_type = getter->node.get_field(field_type);
     auto getter_decl = getter->node.get_field(field_declarator);
+    auto getter_name = getter_decl.get_field(field_declarator);
+
+    MtCursor sub_cursor(lib, submod_mod->source_file, str_out);
+    sub_cursor.echo = echo;
+    sub_cursor.in_ports = true;
+    sub_cursor.id_replacements = replacements;
+
+    emit_indent();
+    sub_cursor.cursor = getter_type.start();
+    sub_cursor.skip_ws();
+    sub_cursor.emit_dispatch(getter_type);
+    sub_cursor.emit_ws();
+    emit("%s_", submod_decl.text().c_str());
+    sub_cursor.emit_dispatch(getter_name);
+    emit(";");
+
+    emit_newline();
+  }
+  */
+
+  for (auto m : submod_mod->all_methods) {
+    if (!m->is_public || !m->has_return) continue;
+
+    auto getter_type = m->node.get_field(field_type);
+    auto getter_decl = m->node.get_field(field_declarator);
     auto getter_name = getter_decl.get_field(field_declarator);
 
     MtCursor sub_cursor(lib, submod_mod->source_file, str_out);
@@ -1502,9 +1539,9 @@ void MtCursor::emit(MnClassSpecifier n) {
     in_ports = true;
     trim_namespaces = false;
 
-    int port_count =
-      int(current_mod->inputs.size() + current_mod->outputs.size() +
-        current_mod->getters.size());
+    int port_count = int(current_mod->inputs.size() + current_mod->outputs.size());
+    for (auto m : current_mod->all_methods) if (m->is_public && m->has_return) port_count++;
+
     int port_index = 0;
 
     emit_indent();
@@ -1546,6 +1583,7 @@ void MtCursor::emit(MnClassSpecifier n) {
       emit_newline();
     }
 
+    /*
     for (auto getter : current_mod->getters) {
       emit_indent();
       emit("output ");
@@ -1567,6 +1605,32 @@ void MtCursor::emit(MnClassSpecifier n) {
       if (port_index++ < port_count - 1) emit(",");
       emit_newline();
     }
+    */
+
+    for (auto m : current_mod->all_methods) {
+      if (!m->is_public || !m->has_return) continue;
+
+      emit_indent();
+      emit("output ");
+
+      MtCursor sub_cursor = *this;
+
+      auto getter_type = m->node.get_field(field_type);
+      auto getter_decl = m->node.get_field(field_declarator);
+      auto getter_name = getter_decl.get_field(field_declarator);
+
+      // getter_decl.dump_tree();
+
+      sub_cursor.cursor = getter_type.start();
+      sub_cursor.emit_dispatch(getter_type);
+      sub_cursor.emit_ws();
+      sub_cursor.cursor = getter_name.start();
+      sub_cursor.emit_dispatch(getter_name);
+
+      if (port_index++ < port_count - 1) emit(",");
+      emit_newline();
+    }
+
 
     pop_indent(struct_body);
     emit_indent();
@@ -1864,6 +1928,7 @@ void MtCursor::emit(MnReturnStatement n) {
   auto node_lit = n.child(0);
   auto node_expr = n.child(1);
 
+  /*
   if (current_method->is_tock) {
     printf("RETURNS IN TOCKS ARE BROKEN DO NOT USE");
     exit(-1);
@@ -1873,6 +1938,7 @@ void MtCursor::emit(MnReturnStatement n) {
     printf("RETURNS IN TICKS ARE BROKEN DO NOT USE");
     exit(-1);
   }
+  */
 
   cursor = node_expr.start();
   emit("%s = ", current_method->name().c_str());

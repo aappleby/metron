@@ -25,7 +25,7 @@ module uart_rx
   always_comb begin o_buffer = buffer; end
   always_comb begin o_sum = sum; end
 
-  always_comb begin : tock /*tick(i_rstn, i_serial)*/; end
+  always_comb begin /*tock*/ /*tick(i_rstn, i_serial)*/; end
 
   //----------------------------------------
  /*private:*/

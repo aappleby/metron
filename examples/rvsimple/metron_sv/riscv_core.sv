@@ -93,7 +93,7 @@ module riscv_core
     alu_result = datapath_alu_result;
   end
 
-  always_comb begin : tock
+  always_comb begin /*tock*/
     logic[6:0] opcode;
     logic[2:0] funct3;
     logic reg_we;

@@ -14,7 +14,7 @@ module uart_hello
   output logic o_done
 );
  /*public:*/
-  initial begin : uart_hello
+  initial begin /*uart_hello*/
     $readmemh("examples/uart/message.hex", memory, 0, 511);
   end
 
@@ -24,7 +24,7 @@ module uart_hello
   always_comb begin o_req = state == SEND; end
   always_comb begin o_done = state == DONE; end
 
-  always_comb begin : tock
+  always_comb begin /*tock*/
     /*tick(i_rstn, i_cts, i_idle)*/;
   end
 

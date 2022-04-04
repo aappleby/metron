@@ -20,11 +20,11 @@ module single_register
   output logic[WIDTH-1:0] value
 );
  /*public:*/
-  initial begin : single_register _value = INITIAL; end
+  initial begin /*single_register*/ _value = INITIAL; end
 
   always_comb begin value = _value; end
 
-  always_comb begin : tock
+  always_comb begin /*tock*/
     /*tick(reset, write_enable, next)*/;
   end
 

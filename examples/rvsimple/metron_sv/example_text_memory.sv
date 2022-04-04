@@ -19,7 +19,7 @@ module example_text_memory
   output logic[31:0] q
 );
  /*public:*/
-  initial begin : example_text_memory
+  initial begin /*example_text_memory*/
     string s;
     /*std::string s;*/
     $value$plusargs("text_file=%s", s);

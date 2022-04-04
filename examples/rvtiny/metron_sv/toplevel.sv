@@ -17,7 +17,7 @@ module toplevel
   output logic[31:0] o_pc
 );
  /*public:*/
-  initial begin : toplevel
+  initial begin /*toplevel*/
     string s;
     pc = 0;
     regs[0] = 32'd0;
@@ -30,7 +30,7 @@ module toplevel
     $readmemh(s, data_mem);
   end
 
-  always_comb begin : tock /*tick(reset)*/; end
+  always_comb begin /*tock*/ /*tick(reset)*/; end
 
   /*logic<32> o_bus_read_data;*/
   /*logic<32> o_bus_address;*/

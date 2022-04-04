@@ -632,21 +632,9 @@ bool MtModule::collect_inputs() {
 
   std::set<std::string> dedup;
 
-  for (auto m : tock_methods) {
-    auto params =
-        m->node.get_field(field_declarator).get_field(field_parameters);
+  for (auto m : all_methods) {
+    if (!m->is_public) continue;
 
-    for (const auto& param : params) {
-      if (param.sym != sym_parameter_declaration) continue;
-      if (!dedup.contains(param.name4())) {
-        MtField *new_input = MtField::construct(param, true);
-        inputs.push_back(new_input);
-        dedup.insert(new_input->name());
-      }
-    }
-  }
-
-  for (auto m : getters) {
     auto params =
         m->node.get_field(field_declarator).get_field(field_parameters);
 

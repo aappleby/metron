@@ -467,8 +467,8 @@ CHECK_RETURN bool MtModule::collect_methods() {
 
     all_methods.push_back(m);
 
-    if (!m->is_const && !(m->is_tick || m->is_tock || m->is_init)) {
-      LOG_R("Non-init/tick/tock method %s is not const\n", m->name().c_str());
+    if (m->is_public && !m->is_const && !(m->is_tick || m->is_tock || m->is_init)) {
+      LOG_R("Public non-init/tick/tock method %s is not const\n", m->name().c_str());
       error = true;
       break;
     }

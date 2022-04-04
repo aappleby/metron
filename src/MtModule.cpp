@@ -451,6 +451,11 @@ CHECK_RETURN bool MtModule::collect_methods() {
     m->is_task = func_type && func_type.text() == "void";
     m->is_func = func_type && func_type.text() != "void";
 
+    if (m->is_init || m->is_tick || m->is_tock) {
+      m->is_task = false;
+      m->is_func = false;
+    }
+
     m->is_const = false;
     for (const auto& n : func_decl) {
       if (n.sym == sym_type_qualifier && n.text() == "const") {

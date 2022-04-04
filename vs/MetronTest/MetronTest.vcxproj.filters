@@ -9,13 +9,9 @@
     <ClInclude Include="..\..\tests\Tests.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\tests\test_build.cpp" />
-    <ClCompile Include="..\..\tests\test_deltas.cpp" />
     <ClCompile Include="..\..\tests\test_ibex.cpp" />
     <ClCompile Include="..\..\tests\test_logic.cpp" />
     <ClCompile Include="..\..\tests\test_main.cpp" />
-    <ClCompile Include="..\..\tests\test_modules.cpp" />
-    <ClCompile Include="..\..\tests\test_rvsimple.cpp" />
     <ClCompile Include="..\..\tests\test_utils.cpp" />
   </ItemGroup>
 </Project>

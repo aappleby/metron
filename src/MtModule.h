@@ -133,26 +133,26 @@ struct MtModule {
   MtField*  get_submod(const std::string& name);
   MtMethod* get_method(const std::string& name);
 
-  bool load_pass1();
-  bool load_pass2();
+  CHECK_RETURN bool load_pass1();
+  CHECK_RETURN bool load_pass2();
 
   void dump_method_list(const std::vector<MtMethod*>& methods) const;
   void dump_banner() const;
   //void dump_deltas() const;
 
-  bool collect_params();
-  bool collect_fields();
-  bool collect_methods();
-  bool collect_inputs();
-  bool collect_outputs();
-  bool collect_registers();
-  bool collect_submods();
+  CHECK_RETURN bool collect_params();
+  CHECK_RETURN bool collect_fields();
+  CHECK_RETURN bool collect_methods();
+  CHECK_RETURN bool collect_inputs();
+  CHECK_RETURN bool collect_outputs();
+  CHECK_RETURN bool collect_registers();
+  CHECK_RETURN bool collect_submods();
 
-  bool build_port_map();
+  CHECK_RETURN bool build_port_map();
 
-  bool trace();
+  CHECK_RETURN bool trace();
 
-  bool sanity_check();
+  CHECK_RETURN bool sanity_check();
 
 #if 0
   void check_dirty_ticks();

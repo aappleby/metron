@@ -82,9 +82,14 @@ for filename in metron_good:
 # Make sure all the bad examples fail
 
 for filename in metron_bad:
+  srcdir = "tests/metron_bad"
+  svdir = "tests/metron_sv"
+  basename = path.basename(filename)
+  svname = path.splitext(basename)[0] + ".sv"
+
   print(f"Checking known-bad example {filename}");
 
-  cmd = f"bin/metron -q -r tests/metron_bad -o tets/metron_sv {filename}"
+  cmd = f"bin/metron -q -r tests/metron_bad -o tests/metron_sv -c {basename}"
   print(f"  {cmd}")
   result = os.system(cmd)
   if result == 0:

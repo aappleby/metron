@@ -270,7 +270,7 @@ void MtModule::dump_deltas() const {
 // All modules are now in the library, we can resolve references to other
 // modules when we're collecting fields.
 
-bool MtModule::load_pass1() {
+CHECK_RETURN bool MtModule::load_pass1() {
   bool error = false;
 
   if (mod_class.is_null()) {
@@ -279,13 +279,13 @@ bool MtModule::load_pass1() {
     return error;
   }
 
-  collect_params();
-  collect_fields();
-  collect_methods();
-  collect_inputs();
-  collect_outputs();
-  collect_registers();
-  collect_submods();
+  error |= collect_params();
+  error |= collect_fields();
+  error |= collect_methods();
+  error |= collect_inputs();
+  error |= collect_outputs();
+  error |= collect_registers();
+  error |= collect_submods();
 
   // enums = new std::vector<MtEnum>();
 
@@ -327,12 +327,14 @@ bool MtModule::load_pass1() {
     */
   }
 
-  return sanity_check();
+  error |= sanity_check();
+
+  return error;
 }
 
 //------------------------------------------------------------------------------
 
-bool MtModule::collect_params() {
+CHECK_RETURN bool MtModule::collect_params() {
   bool error = false;
 
   // modparam = struct template parameter
@@ -367,7 +369,7 @@ bool MtModule::collect_params() {
 
 //------------------------------------------------------------------------------
 
-bool MtModule::collect_fields() {
+CHECK_RETURN bool MtModule::collect_fields() {
   bool error = false;
 
   assert(all_fields.empty());
@@ -406,7 +408,7 @@ bool MtModule::collect_fields() {
 
 //------------------------------------------------------------------------------
 
-bool MtModule::collect_methods() {
+CHECK_RETURN bool MtModule::collect_methods() {
   bool error = false;
 
   assert(all_methods.empty());
@@ -465,6 +467,12 @@ bool MtModule::collect_methods() {
 
     all_methods.push_back(m);
 
+    if (!m->is_const && !(m->is_tick || m->is_tock || m->is_init)) {
+      LOG_R("Non-init/tick/tock method %s is not const\n", m->name().c_str());
+      error = true;
+      break;
+    }
+
     if (m->is_init) {
       if (m->is_const || !m->is_public) {
         LOG_R("CONST INIT BAD / PRIVATE INIT BAD\n");
@@ -506,7 +514,7 @@ bool MtModule::collect_methods() {
 FieldState merge_delta(FieldState a, FieldDelta b);
 bool merge_series(state_map& ma, state_map& mb, state_map& out);
 
-bool MtModule::trace() {
+CHECK_RETURN bool MtModule::trace() {
   bool error = false;
   LOG_G("Tracing %s\n", name().c_str());
   LOG_INDENT_SCOPE();
@@ -627,7 +635,7 @@ bool MtModule::trace() {
 // of input ports. Input ports can be declared in multiple tick/tock methods,
 // but we don't want duplicates in the Verilog port list.
 
-bool MtModule::collect_inputs() {
+CHECK_RETURN bool MtModule::collect_inputs() {
   bool error = false;
 
   assert(inputs.empty());
@@ -656,7 +664,7 @@ bool MtModule::collect_inputs() {
 //------------------------------------------------------------------------------
 // All fields written to in a tock method are outputs.
 
-bool MtModule::collect_outputs() {
+CHECK_RETURN bool MtModule::collect_outputs() {
   bool error = false;
 
   assert(outputs.empty());
@@ -675,7 +683,7 @@ bool MtModule::collect_outputs() {
 //------------------------------------------------------------------------------
 // All fields written to in a tick method are registers.
 
-bool MtModule::collect_registers() {
+CHECK_RETURN bool MtModule::collect_registers() {
   bool error = false;
 
   assert(registers.empty());
@@ -713,7 +721,7 @@ bool MtModule::collect_registers() {
 
 //------------------------------------------------------------------------------
 
-bool MtModule::collect_submods() {
+CHECK_RETURN bool MtModule::collect_submods() {
   bool error = 0;
 
   assert(submods.empty());
@@ -743,7 +751,7 @@ bool MtModule::collect_submods() {
 // All modules have populated their fields, match up tick/tock calls with their
 // corresponding methods.
 
-bool MtModule::load_pass2() {
+CHECK_RETURN bool MtModule::load_pass2() {
   bool error = false;
   assert (!mod_class.is_null());
   error |= build_port_map();
@@ -755,7 +763,7 @@ bool MtModule::load_pass2() {
 // Go through all calls in the tree and build a {call_param -> arg} map.
 // FIXME we aren't actually using this now?
 
-bool MtModule::build_port_map() {
+CHECK_RETURN bool MtModule::build_port_map() {
   assert(port_map.empty());
 
   bool error = false;
@@ -831,7 +839,7 @@ bool MtModule::build_port_map() {
 
 //------------------------------------------------------------------------------
 
-bool MtModule::sanity_check() {
+CHECK_RETURN bool MtModule::sanity_check() {
   bool error = false;
 
   // Inputs, outputs, registers, and submods must not overlap.

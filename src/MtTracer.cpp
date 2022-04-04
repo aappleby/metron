@@ -452,12 +452,13 @@ CHECK_RETURN bool MtTracer::trace_template_call(MnNode n) {
 // of exposed fields?
 
 CHECK_RETURN bool MtTracer::trace_field(MnNode n) {
-  bool error = false;
+  std::string field_name = n.text();
 
-  n.dump_tree();
-  debugbreak();
+  for (int i = (int)_field_stack.size() - 1; i >= 0; i--) {
+    field_name = _field_stack[i]->name() + "." + field_name;
+  }
 
-  return error;
+  return trace_read(field_name);
 }
 
 //------------------------------------------------------------------------------
@@ -615,21 +616,56 @@ CHECK_RETURN bool MtTracer::trace_ternary(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN bool MtTracer::trace_read(MnNode const& n) {
+CHECK_RETURN bool MtTracer::trace_read(const std::string& field_name) {
   bool error = false;
-
-  std::string field_name = n.text();
-
-  for (int i = (int)_field_stack.size() - 1; i >= 0; i--) {
-    field_name = _field_stack[i]->name() + "." + field_name;
-  }
 
   auto old_state = state_top()[field_name];
   auto new_state = merge_delta(old_state, DELTA_RD);
 
   if (new_state == FIELD_INVALID) {
     LOG_R("Field %s was %s, now %s!\n", field_name.c_str(),
-          to_string(old_state), to_string(new_state));
+      to_string(old_state), to_string(new_state));
+    error = true;
+  }
+
+  state_top()[field_name] = new_state;
+  return error;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN bool MtTracer::trace_write(const std::string& field_name) {
+  bool error = false;
+
+  assert(in_tick() || in_tock());
+
+  auto old_state = state_top()[field_name];
+  auto new_state = merge_delta(old_state, in_tick() ? DELTA_WR : DELTA_WS);
+
+  if (new_state == FIELD_INVALID) {
+    LOG_R("Field %s was %s, now %s!\n", field_name.c_str(),
+      to_string(old_state), to_string(new_state));
+    error = true;
+  }
+
+  state_top()[field_name] = new_state;
+
+  return error;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN bool MtTracer::trace_read(MnNode const& n) {
+  bool error = false;
+
+  std::string field_name = n.text();
+  for (int i = (int)_field_stack.size() - 1; i >= 0; i--) {
+    field_name = _field_stack[i]->name() + "." + field_name;
+  }
+
+  error |= trace_read(field_name);
+
+  if (error) {
     LOG_R("========== call stack ==========\n");
     for (auto it = _method_stack.rbegin(); it != _method_stack.rend(); ++it) {
       LOG_R("%s.%s\n", (*it)->mod->name().c_str(), (*it)->name().c_str());
@@ -637,10 +673,7 @@ CHECK_RETURN bool MtTracer::trace_read(MnNode const& n) {
     LOG_R("========== source ==========\n");
     n.dump_source_lines();
     LOG_R("============================\n");
-    error = true;
   }
-
-  state_top()[field_name] = new_state;
 
   return error;
 }
@@ -657,12 +690,9 @@ CHECK_RETURN bool MtTracer::trace_write(MnNode const& n) {
     field_name = _field_stack[i]->name() + "." + field_name;
   }
 
-  auto old_state = state_top()[field_name];
-  auto new_state = merge_delta(old_state, in_tick() ? DELTA_WR : DELTA_WS);
+  error |= trace_write(field_name);
 
-  if (new_state == FIELD_INVALID) {
-    LOG_R("Field %s was %s, now %s!\n", field_name.c_str(),
-          to_string(old_state), to_string(new_state));
+  if (error) {
     LOG_R("========== call stack ==========\n");
     for (auto it = _method_stack.rbegin(); it != _method_stack.rend(); ++it) {
       LOG_R("%s.%s\n", (*it)->mod->name().c_str(), (*it)->name().c_str());
@@ -670,10 +700,7 @@ CHECK_RETURN bool MtTracer::trace_write(MnNode const& n) {
     LOG_R("========== source ==========\n");
     n.dump_source_lines();
     LOG_R("============================\n");
-    error = true;
   }
-
-  state_top()[field_name] = new_state;
 
   return error;
 }

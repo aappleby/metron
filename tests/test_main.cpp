@@ -3,11 +3,9 @@
 
 TestResults test_utils();
 TestResults test_logic();
-TestResults test_modules();
 TestResults test_uart();
 TestResults test_ibex();
 TestResults test_rvsimple();
-TestResults test_deltas();
 TestResults test_build();
 
 //------------------------------------------------------------------------------
@@ -16,12 +14,7 @@ int main(int argc, char** argv) {
   TestResults results("main");
   results += test_utils();  // this looks ok
   results += test_logic();  // this looks ok
-  results += test_modules();
-  // results += test_uart();
   // results += test_ibex();
-  // results += test_rvsimple();
-  results += test_deltas();
-  // results += test_build();
 
   LOG_G("%s: %6d expect pass\n", __FUNCTION__, results.expect_pass);
   LOG_G("%s: %6d test pass\n", __FUNCTION__, results.test_pass);

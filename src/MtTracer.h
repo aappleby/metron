@@ -69,6 +69,9 @@ class MtTracer {
   CHECK_RETURN bool trace_method_call(MnNode n);
   CHECK_RETURN bool trace_template_call(MnNode n);
 
+  CHECK_RETURN bool trace_read(const std::string& field_name);
+  CHECK_RETURN bool trace_write(const std::string& field_name);
+
   CHECK_RETURN bool trace_read(MnNode const& n);
   CHECK_RETURN bool trace_write(MnNode const& n);
   CHECK_RETURN bool trace_end_fn();

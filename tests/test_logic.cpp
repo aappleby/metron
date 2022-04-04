@@ -116,17 +116,17 @@ TestResults test_logic_decl() {
   LOG_INDENT_SCOPE();
 
   // One-bit logics should _not_ turn into logic[0:0].
-  auto src1 = "struct test { logic<1> n; };";
+  auto src1 = "class test { logic<1> n; };";
   EXPECT(!find_iws(translate_simple(src1), "logic[0:0]"));
   EXPECT(find_iws(translate_simple(src1), "logic n"));
 
   // Multi-bit logics with a literal size should turn into logic[(N-1):0];
-  auto src2 = "struct test { logic<2> n; };";
+  auto src2 = "class test { logic<2> n; };";
   EXPECT(find_iws(translate_simple(src2), "logic[1:0] n"));
 
   // Multi-bit logics with a non-literal size should turn into
   // logic[<name>-1:0];
-  auto src3 = "struct test { logic<foo> n; };";
+  auto src3 = "class test { public logic<foo> n; };";
   EXPECT(find_iws(translate_simple(src3), "logic[foo-1:0] n"));
 
   TEST_DONE();

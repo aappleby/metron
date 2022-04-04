@@ -24,17 +24,17 @@ import rv_config::*;
 module singlecycle_datapath
 (
   input logic clock,
-  input logic reset,
   input logic[31:0] inst,
+  input logic[4:0] alu_function,
+  input logic alu_operand_a_select,
+  input logic alu_operand_b_select,
+  input logic reset,
   input logic regfile_write_enable,
   input logic[31:0] data_mem_read_data,
   input logic[2:0] reg_writeback_select,
   input logic[31:0] alu_result2,
   input logic[1:0] next_pc_select,
   input logic pc_write_enable,
-  input logic[4:0] alu_function,
-  input logic alu_operand_a_select,
-  input logic alu_operand_b_select,
   output logic[31:0] pc,
   output logic[31:0] rs2_data,
   output logic[6:0]  inst_opcode,
@@ -263,20 +263,20 @@ inst_funct7 = idec_inst_funct7; end
   regfile regs(
     // Inputs
     .clock(clock),
+    .rs1_address(regs_rs1_address), 
+    .rs2_address(regs_rs2_address), 
     .write_enable(regs_write_enable), 
     .rd_address(regs_rd_address), 
     .rd_data(regs_rd_data), 
-    .rs1_address(regs_rs1_address), 
-    .rs2_address(regs_rs2_address), 
     // Outputs
     .rs1_data(regs_rs1_data), 
     .rs2_data(regs_rs2_data)
   );
+  logic[4:0] regs_rs1_address;
+  logic[4:0] regs_rs2_address;
   logic regs_write_enable;
   logic[4:0] regs_rd_address;
   logic[31:0] regs_rd_data;
-  logic[4:0] regs_rs1_address;
-  logic[4:0] regs_rs2_address;
   logic[31:0] regs_rs1_data;
   logic[31:0] regs_rs2_data;
 

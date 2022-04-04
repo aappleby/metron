@@ -16,10 +16,10 @@
 module riscv_core
 (
    input logic clock,
-   input logic reset,
    input logic[31:0] inst,
-   input logic[31:0] bus_read_data,
    input logic[31:0] alu_result2,
+   input logic reset,
+   input logic[31:0] bus_read_data,
    output logic[31:0] bus_write_data2,
    output logic[3:0]  bus_byte_enable2,
    output logic  bus_read_enable2,
@@ -148,17 +148,17 @@ module riscv_core
   singlecycle_datapath datapath(
      // Inputs
      .clock(clock),
-     .reset(datapath_reset), 
      .inst(datapath_inst), 
+     .alu_function(datapath_alu_function), 
+     .alu_operand_a_select(datapath_alu_operand_a_select), 
+     .alu_operand_b_select(datapath_alu_operand_b_select), 
+     .reset(datapath_reset), 
      .regfile_write_enable(datapath_regfile_write_enable), 
      .data_mem_read_data(datapath_data_mem_read_data), 
      .reg_writeback_select(datapath_reg_writeback_select), 
      .alu_result2(datapath_alu_result2), 
      .next_pc_select(datapath_next_pc_select), 
      .pc_write_enable(datapath_pc_write_enable), 
-     .alu_function(datapath_alu_function), 
-     .alu_operand_a_select(datapath_alu_operand_a_select), 
-     .alu_operand_b_select(datapath_alu_operand_b_select), 
      // Outputs
      .pc(datapath_pc), 
      .rs2_data(datapath_rs2_data), 
@@ -167,17 +167,17 @@ module riscv_core
      .inst_funct7(datapath_inst_funct7), 
      .alu_result(datapath_alu_result)
    );
-   logic datapath_reset;
    logic[31:0] datapath_inst;
+   logic[4:0] datapath_alu_function;
+   logic datapath_alu_operand_a_select;
+   logic datapath_alu_operand_b_select;
+   logic datapath_reset;
    logic datapath_regfile_write_enable;
    logic[31:0] datapath_data_mem_read_data;
    logic[2:0] datapath_reg_writeback_select;
    logic[31:0] datapath_alu_result2;
    logic[1:0] datapath_next_pc_select;
    logic datapath_pc_write_enable;
-   logic[4:0] datapath_alu_function;
-   logic datapath_alu_operand_a_select;
-   logic datapath_alu_operand_b_select;
    logic[31:0] datapath_pc;
    logic[31:0] datapath_rs2_data;
    logic[6:0]  datapath_inst_opcode;

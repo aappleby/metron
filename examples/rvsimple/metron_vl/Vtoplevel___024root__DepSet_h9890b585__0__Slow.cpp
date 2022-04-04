@@ -57,8 +57,8 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
     VL_DEBUG_IF(VL_DBG_MSGF("+    Vtoplevel___024root___settle__TOP__0\n"); );
     // Init
     IData/*31:0*/ toplevel__DOT__core_inst;
-    IData/*31:0*/ toplevel__DOT__core_bus_read_data;
     IData/*31:0*/ toplevel__DOT__core_alu_result2;
+    IData/*31:0*/ toplevel__DOT__core_bus_read_data;
     IData/*31:0*/ toplevel__DOT__text_memory_bus_address;
     IData/*31:0*/ toplevel__DOT__text_memory_bus_read_data;
     CData/*0:0*/ toplevel__DOT__data_memory_bus_read_enable;
@@ -72,10 +72,10 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
     CData/*0:0*/ toplevel__DOT__tock__DOT__read_enable;
     IData/*31:0*/ toplevel__DOT__tock__DOT__read_data;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath_inst;
+    CData/*4:0*/ toplevel__DOT__core__DOT__datapath_alu_function;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath_data_mem_read_data;
     CData/*2:0*/ toplevel__DOT__core__DOT__datapath_reg_writeback_select;
     CData/*1:0*/ toplevel__DOT__core__DOT__datapath_next_pc_select;
-    CData/*4:0*/ toplevel__DOT__core__DOT__datapath_alu_function;
     CData/*6:0*/ toplevel__DOT__core__DOT__ctlpath_inst_opcode;
     CData/*2:0*/ toplevel__DOT__core__DOT__ctlpath_inst_funct3;
     CData/*6:0*/ toplevel__DOT__core__DOT__ctlpath_inst_funct7;

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import glob
+import subprocess
 from os import path
 
 error = False
@@ -10,6 +11,28 @@ metron_good = glob.glob("tests/metron_good/*.h")
 metron_bad  = glob.glob("tests/metron_bad/*.h")
 
 ################################################################################
+# Make sure all the examples compile
+
+"""
+cmd = f"  g++ -Isrc --std=gnu++2a -fsyntax-only -c {filename}"
+print(f"  {cmd}")
+result = os.system(cmd)
+if result:
+  print(f"Test file {filename} failed GCC syntax check");
+  error = True
+"""
+
+"""
+cmd = f"g++ -Isrc --std=gnu++2a -fsyntax-only -c {filename}"
+print(f"  {cmd}")
+result = os.system(cmd)
+if result:
+  print(f"Test file {filename} failed GCC syntax check");
+  error = True
+"""
+
+################################################################################
+# Make sure all the good examples pass
 
 for filename in metron_good:
   srcdir = "tests/metron_good"
@@ -18,13 +41,6 @@ for filename in metron_good:
   svname = path.splitext(basename)[0] + ".sv"
 
   print(f"Checking known-good example {filename}");
-
-  cmd = f"g++ -Isrc --std=gnu++2a -fsyntax-only -c {filename}"
-  print(f"  {cmd}")
-  result = os.system(cmd)
-  if result:
-    print(f"Test file {filename} failed GCC syntax check");
-    error = True
 
   # Run Metron on the source file
   cmd = f"bin/metron -q -r tests/metron_good -o tests/metron_sv -c {basename}"
@@ -44,16 +60,10 @@ for filename in metron_good:
     error = True
 
 ################################################################################
+# Make sure all the bad examples fail
 
 for filename in metron_bad:
   print(f"Checking known-bad example {filename}");
-
-  cmd = f"g++ -Isrc --std=gnu++2a -fsyntax-only -c {filename}"
-  print(f"  {cmd}")
-  result = os.system(cmd)
-  if result:
-    print(f"Test file {filename} failed GCC syntax check");
-    error = True
 
   cmd = f"bin/metron -q -r tests/metron_bad -o tets/metron_sv {filename}"
   print(f"  {cmd}")
@@ -62,6 +72,27 @@ for filename in metron_bad:
     print(f"Test file {filename} - expected fail, got {result}");
     result = os.system(f"bin/metron {filename}")
     error = True
+
+################################################################################
+# Check uart tests
+
+print("Running test bin/examples/uart")
+stuff = subprocess.run(['bin/examples/uart'], stdout=subprocess.PIPE).stdout.decode('utf-8')
+if not "All tests pass" in stuff:
+  error = True
+  print(stuff)
+
+print("Running test bin/examples/uart_vl")
+stuff = subprocess.run(['bin/examples/uart_vl'], stdout=subprocess.PIPE).stdout.decode('utf-8')
+if not "All tests pass" in stuff:
+  error = True
+  print(stuff)
+
+print("Running test bin/examples/uart_iv")
+stuff = subprocess.run(['bin/examples/uart_iv'], stdout=subprocess.PIPE).stdout.decode('utf-8')
+if not "All tests pass" in stuff:
+  error = True
+  print(stuff)
 
 ################################################################################
 

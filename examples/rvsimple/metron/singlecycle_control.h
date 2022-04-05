@@ -15,12 +15,14 @@ class singlecycle_control {
 
   logic<2> next_pc_select(logic<7> inst_opcode, logic<1> take_branch) const {
     using namespace rv_constants;
+    logic<2> result;
     switch (inst_opcode) {
-      case OPCODE_BRANCH: return take_branch ? CTL_PC_PC_IMM : CTL_PC_PC4; break;
-      case OPCODE_JALR:   return CTL_PC_RS1_IMM; break;
-      case OPCODE_JAL:    return CTL_PC_PC_IMM; break;
-      default:            return CTL_PC_PC4; break;
+      case OPCODE_BRANCH: result = take_branch ? CTL_PC_PC_IMM : CTL_PC_PC4; break;
+      case OPCODE_JALR:   result = CTL_PC_RS1_IMM; break;
+      case OPCODE_JAL:    result = CTL_PC_PC_IMM; break;
+      default:            result = CTL_PC_PC4; break;
     }
+    return result;
   }
 
   logic<1> pc_write_enable(logic<7> inst_opcode) const {
@@ -29,73 +31,81 @@ class singlecycle_control {
 
   logic<1> regfile_write_enable(logic<7> inst_opcode) const {
     using namespace rv_constants;
+    logic<1> result;
     switch (inst_opcode) {
-      case OPCODE_MISC_MEM: return 0;
-      case OPCODE_STORE:    return 0;
-      case OPCODE_BRANCH:   return 0;
-      case OPCODE_LOAD:     return 1;
-      case OPCODE_OP_IMM:   return 1;
-      case OPCODE_AUIPC:    return 1;
-      case OPCODE_OP:       return 1;
-      case OPCODE_LUI:      return 1;
-      case OPCODE_JALR:     return 1;
-      case OPCODE_JAL:      return 1;
-      default:              return b1(DONTCARE);
+      case OPCODE_MISC_MEM: result = 0; break;
+      case OPCODE_STORE:    result = 0; break;
+      case OPCODE_BRANCH:   result = 0; break;
+      case OPCODE_LOAD:     result = 1; break;
+      case OPCODE_OP_IMM:   result = 1; break;
+      case OPCODE_AUIPC:    result = 1; break;
+      case OPCODE_OP:       result = 1; break;
+      case OPCODE_LUI:      result = 1; break;
+      case OPCODE_JALR:     result = 1; break;
+      case OPCODE_JAL:      result = 1; break;
+      default:              result = b1(DONTCARE); break;
     }
+    return result;
   }
 
   logic<1> alu_operand_a_select(logic<7> inst_opcode) const {
     using namespace rv_constants;
 
+    logic<1> result;
     switch (inst_opcode) {
-      case OPCODE_AUIPC:    return CTL_ALU_A_PC;
-      case OPCODE_JAL:      return CTL_ALU_A_PC;
+      case OPCODE_AUIPC:    result = CTL_ALU_A_PC; break;
+      case OPCODE_JAL:      result = CTL_ALU_A_PC; break;
 
-      case OPCODE_OP:       return CTL_ALU_A_RS1;
-      case OPCODE_LUI:      return CTL_ALU_A_RS1;
-      case OPCODE_BRANCH:   return CTL_ALU_A_RS1;
+      case OPCODE_OP:       result = CTL_ALU_A_RS1; break;
+      case OPCODE_LUI:      result = CTL_ALU_A_RS1; break;
+      case OPCODE_BRANCH:   result = CTL_ALU_A_RS1; break;
 
-      case OPCODE_LOAD:     return CTL_ALU_A_RS1;
-      case OPCODE_STORE:    return CTL_ALU_A_RS1;
-      case OPCODE_OP_IMM:   return CTL_ALU_A_RS1;
-      case OPCODE_JALR:     return CTL_ALU_A_RS1;
-      default:              return b1(DONTCARE);
+      case OPCODE_LOAD:     result = CTL_ALU_A_RS1; break;
+      case OPCODE_STORE:    result = CTL_ALU_A_RS1; break;
+      case OPCODE_OP_IMM:   result = CTL_ALU_A_RS1; break;
+      case OPCODE_JALR:     result = CTL_ALU_A_RS1; break;
+      default:              result = b1(DONTCARE); break;
     }
+    return result;
   }
 
   logic<1> alu_operand_b_select(logic<7> inst_opcode) const {
     using namespace rv_constants;
+    logic<1> result;
     switch (inst_opcode) {
-      case OPCODE_AUIPC:    return CTL_ALU_B_IMM;
-      case OPCODE_JAL:      return CTL_ALU_B_IMM;
+      case OPCODE_AUIPC:    result = CTL_ALU_B_IMM; break;
+      case OPCODE_JAL:      result = CTL_ALU_B_IMM; break;
 
-      case OPCODE_OP:       return CTL_ALU_B_RS2;
-      case OPCODE_LUI:      return CTL_ALU_B_RS2;
-      case OPCODE_BRANCH:   return CTL_ALU_B_RS2;
+      case OPCODE_OP:       result = CTL_ALU_B_RS2; break;
+      case OPCODE_LUI:      result = CTL_ALU_B_RS2; break;
+      case OPCODE_BRANCH:   result = CTL_ALU_B_RS2; break;
 
-      case OPCODE_LOAD:     return CTL_ALU_B_IMM;
-      case OPCODE_STORE:    return CTL_ALU_B_IMM;
-      case OPCODE_OP_IMM:   return CTL_ALU_B_IMM;
-      case OPCODE_JALR:     return CTL_ALU_B_IMM;
-      default:              return b1(DONTCARE);
+      case OPCODE_LOAD:     result = CTL_ALU_B_IMM; break;
+      case OPCODE_STORE:    result = CTL_ALU_B_IMM; break;
+      case OPCODE_OP_IMM:   result = CTL_ALU_B_IMM; break;
+      case OPCODE_JALR:     result = CTL_ALU_B_IMM; break;
+      default:              result = b1(DONTCARE); break;
     }
+    return result;
   }
 
   logic<2> alu_op_type2(logic<7> inst_opcode) const {
     using namespace rv_constants;
+    logic<2> result;
     switch (inst_opcode) {
-      case OPCODE_AUIPC:    return CTL_ALU_ADD;
-      case OPCODE_JAL:      return CTL_ALU_ADD;
+      case OPCODE_AUIPC:    result = CTL_ALU_ADD; break;
+      case OPCODE_JAL:      result = CTL_ALU_ADD; break;
 
-      case OPCODE_OP:       return CTL_ALU_OP;
-      case OPCODE_BRANCH:   return CTL_ALU_BRANCH;
+      case OPCODE_OP:       result = CTL_ALU_OP; break;
+      case OPCODE_BRANCH:   result = CTL_ALU_BRANCH; break;
 
-      case OPCODE_LOAD:     return CTL_ALU_ADD;
-      case OPCODE_STORE:    return CTL_ALU_ADD;
-      case OPCODE_OP_IMM:   return CTL_ALU_OP_IMM;
-      case OPCODE_JALR:     return CTL_ALU_ADD;
-      default:              return b2(DONTCARE);
+      case OPCODE_LOAD:     result = CTL_ALU_ADD; break;
+      case OPCODE_STORE:    result = CTL_ALU_ADD; break;
+      case OPCODE_OP_IMM:   result = CTL_ALU_OP_IMM; break;
+      case OPCODE_JALR:     result = CTL_ALU_ADD; break;
+      default:              result = b2(DONTCARE); break;
     }
+    return result;
   }
 
   logic<1> data_mem_read_enable(logic<7> inst_opcode) const {
@@ -110,16 +120,18 @@ class singlecycle_control {
 
   logic<3> reg_writeback_select(logic<7> inst_opcode) const {
     using namespace rv_constants;
+    logic<3> result;
     switch (inst_opcode) {
-      case OPCODE_OP_IMM:   return CTL_WRITEBACK_ALU;
-      case OPCODE_AUIPC:    return CTL_WRITEBACK_ALU;
-      case OPCODE_OP:       return CTL_WRITEBACK_ALU;
-      case OPCODE_LUI:      return CTL_WRITEBACK_IMM;
-      case OPCODE_JALR:     return CTL_WRITEBACK_PC4;
-      case OPCODE_JAL:      return CTL_WRITEBACK_PC4;
-      case OPCODE_LOAD:     return CTL_WRITEBACK_DATA;
-      default:              return b3(DONTCARE);
+      case OPCODE_OP_IMM:   result = CTL_WRITEBACK_ALU; break;
+      case OPCODE_AUIPC:    result = CTL_WRITEBACK_ALU; break;
+      case OPCODE_OP:       result = CTL_WRITEBACK_ALU; break;
+      case OPCODE_LUI:      result = CTL_WRITEBACK_IMM; break;
+      case OPCODE_JALR:     result = CTL_WRITEBACK_PC4; break;
+      case OPCODE_JAL:      result = CTL_WRITEBACK_PC4; break;
+      case OPCODE_LOAD:     result = CTL_WRITEBACK_DATA; break;
+      default:              result = b3(DONTCARE); break;
     }
+    return result;
   }
 };
 

@@ -23,31 +23,33 @@ class immediate_generator {
 
   logic<32> immediate(logic<32> inst) const {
     using namespace rv_constants;
+    logic<32> result;
     switch (b7(inst)) { // Opcode
       // FIXME we need to translate fallthrough into "x, y, z:"?
       case OPCODE_LOAD: // I-type immediate
-        return cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20)); break;
+        result = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20)); break;
       case OPCODE_LOAD_FP: // I-type immediate
-        return cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20)); break;
+        result = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20)); break;
       case OPCODE_OP_IMM: // I-type immediate
-        return cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20)); break;
+        result = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20)); break;
       case OPCODE_JALR: // I-type immediate
-        return cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20)); break;
+        result = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20)); break;
       case OPCODE_STORE_FP: // S-type immediate
-        return cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 7)); break;
+        result = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 7)); break;
       case OPCODE_STORE: // S-type immediate
-        return cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 7)); break;
+        result = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 7)); break;
       case OPCODE_BRANCH: // B-type immediate
-        return cat(dup<20>(inst[31]), inst[7], b6(inst, 25), b4(inst, 8), b1(0)); break;
+        result = cat(dup<20>(inst[31]), inst[7], b6(inst, 25), b4(inst, 8), b1(0)); break;
       case OPCODE_AUIPC: // U-type immediate
-        return cat(inst[31], b11(inst, 20), b8(inst, 12), b12(0)); break;
+        result = cat(inst[31], b11(inst, 20), b8(inst, 12), b12(0)); break;
       case OPCODE_LUI: // U-type immediate
-        return cat(inst[31], b11(inst, 20), b8(inst, 12), b12(0)); break;
+        result = cat(inst[31], b11(inst, 20), b8(inst, 12), b12(0)); break;
       case OPCODE_JAL: // J-type immediate
-        return cat(dup<12>(inst[31]), b8(inst, 12), inst[20], b6(inst, 25), b4(inst, 21), b1(0)); break;
+        result = cat(dup<12>(inst[31]), b8(inst, 12), inst[20], b6(inst, 25), b4(inst, 21), b1(0)); break;
       default:
-        return b32(0);
+        result = b32(0); break;
     }
+    return result;
   }
 };
 

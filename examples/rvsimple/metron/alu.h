@@ -13,23 +13,25 @@
 class alu {
  public:
 
-  logic<32> result(logic<5> alu_function, logic<32> operand_a, logic<32> operand_b) const {
+  logic<32> alu_result(logic<5> alu_function, logic<32> operand_a, logic<32> operand_b) const {
     using namespace rv_constants;
 
+    logic<32> result;
     switch (alu_function) {
-      case ALU_ADD:  return operand_a + operand_b;
-      case ALU_SUB:  return operand_a - operand_b;
-      case ALU_SLL:  return operand_a << b5(operand_b);
-      case ALU_SRL:  return operand_a >> b5(operand_b);
-      case ALU_SRA:  return sra(operand_a, b5(operand_b));
-      case ALU_SEQ:  return cat(b31(0), b1(operand_a == operand_b));
-      case ALU_SLT:  return cat(b31(0), b1(signed(operand_a) < signed(operand_b)));
-      case ALU_SLTU: return cat(b31(0), b1(unsigned(operand_a) < unsigned(operand_b)));
-      case ALU_XOR:  return operand_a ^ operand_b;
-      case ALU_OR:   return operand_a | operand_b;
-      case ALU_AND:  return operand_a & operand_b;
-      default:       return b32(ZERO);
+      case ALU_ADD:  result = operand_a + operand_b; break;
+      case ALU_SUB:  result = operand_a - operand_b; break;
+      case ALU_SLL:  result = operand_a << b5(operand_b); break;
+      case ALU_SRL:  result = operand_a >> b5(operand_b); break;
+      case ALU_SRA:  result = sra(operand_a, b5(operand_b)); break;
+      case ALU_SEQ:  result = cat(b31(0), b1(operand_a == operand_b)); break;
+      case ALU_SLT:  result = cat(b31(0), b1(signed(operand_a) < signed(operand_b))); break;
+      case ALU_SLTU: result = cat(b31(0), b1(unsigned(operand_a) < unsigned(operand_b))); break;
+      case ALU_XOR:  result = operand_a ^ operand_b; break;
+      case ALU_OR:   result = operand_a | operand_b; break;
+      case ALU_AND:  result = operand_a & operand_b; break;
+      default:       result = b32(ZERO); break;
     }
+    return result;
   }
 };
 

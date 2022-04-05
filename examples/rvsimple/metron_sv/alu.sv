@@ -16,27 +16,30 @@ module alu
   input logic[4:0] alu_function,
   input logic[31:0] operand_a,
   input logic[31:0] operand_b,
-  output logic[31:0] result
+  output logic[31:0] alu_result
 );
  /*public:*/
 
   always_comb begin
+    logic[31:0] result;
     import rv_constants::*;
 
+    /*logic<32> result;*/
     case (alu_function) 
-      /*case*/ ALU_ADD:  result = operand_a + operand_b;
-      /*case*/ ALU_SUB:  result = operand_a - operand_b;
-      /*case*/ ALU_SLL:  result = operand_a << 5'(operand_b);
-      /*case*/ ALU_SRL:  result = operand_a >> 5'(operand_b);
-      /*case*/ ALU_SRA:  result = ($signed(operand_a) >>> 5'(operand_b));
-      /*case*/ ALU_SEQ:  result = {31'd0, 1'(operand_a == operand_b)};
-      /*case*/ ALU_SLT:  result = {31'd0, 1'($signed(operand_a) < $signed(operand_b))};
-      /*case*/ ALU_SLTU: result = {31'd0, 1'($unsigned(operand_a) < $unsigned(operand_b))};
-      /*case*/ ALU_XOR:  result = operand_a ^ operand_b;
-      /*case*/ ALU_OR:   result = operand_a | operand_b;
-      /*case*/ ALU_AND:  result = operand_a & operand_b;
-      default:       result = 32'(ZERO);
+      /*case*/ ALU_ADD:  result = operand_a + operand_b; /*break;*/
+      /*case*/ ALU_SUB:  result = operand_a - operand_b; /*break;*/
+      /*case*/ ALU_SLL:  result = operand_a << 5'(operand_b); /*break;*/
+      /*case*/ ALU_SRL:  result = operand_a >> 5'(operand_b); /*break;*/
+      /*case*/ ALU_SRA:  result = ($signed(operand_a) >>> 5'(operand_b)); /*break;*/
+      /*case*/ ALU_SEQ:  result = {31'd0, 1'(operand_a == operand_b)}; /*break;*/
+      /*case*/ ALU_SLT:  result = {31'd0, 1'($signed(operand_a) < $signed(operand_b))}; /*break;*/
+      /*case*/ ALU_SLTU: result = {31'd0, 1'($unsigned(operand_a) < $unsigned(operand_b))}; /*break;*/
+      /*case*/ ALU_XOR:  result = operand_a ^ operand_b; /*break;*/
+      /*case*/ ALU_OR:   result = operand_a | operand_b; /*break;*/
+      /*case*/ ALU_AND:  result = operand_a & operand_b; /*break;*/
+      default:       result = 32'(ZERO); /*break;*/
     endcase
+    alu_result = result;
   end
 endmodule;
 

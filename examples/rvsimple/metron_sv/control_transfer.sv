@@ -20,16 +20,19 @@ module control_transfer
  /*public:*/
 
   always_comb begin
+    logic result;
     import rv_constants::*;
+    /*logic<1> result;*/
     case (inst_funct3) 
-      /*case*/ FUNCT3_BRANCH_EQ:  take_branch = !result_equal_zero;
-      /*case*/ FUNCT3_BRANCH_NE:  take_branch = result_equal_zero;
-      /*case*/ FUNCT3_BRANCH_LT:  take_branch = !result_equal_zero;
-      /*case*/ FUNCT3_BRANCH_GE:  take_branch = result_equal_zero;
-      /*case*/ FUNCT3_BRANCH_LTU: take_branch = !result_equal_zero;
-      /*case*/ FUNCT3_BRANCH_GEU: take_branch = result_equal_zero;
-      default:                take_branch = 1'bx;
+      /*case*/ FUNCT3_BRANCH_EQ:  result = !result_equal_zero; /*break;*/
+      /*case*/ FUNCT3_BRANCH_NE:  result = result_equal_zero; /*break;*/
+      /*case*/ FUNCT3_BRANCH_LT:  result = !result_equal_zero; /*break;*/
+      /*case*/ FUNCT3_BRANCH_GE:  result = result_equal_zero; /*break;*/
+      /*case*/ FUNCT3_BRANCH_LTU: result = !result_equal_zero; /*break;*/
+      /*case*/ FUNCT3_BRANCH_GEU: result = result_equal_zero; /*break;*/
+      default:                result = 1'bx; /*break;*/
     endcase
+    take_branch = result;
   end
 endmodule;
 

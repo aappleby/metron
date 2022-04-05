@@ -54,16 +54,12 @@ module singlecycle_datapath
     logic[4:0] rs2_idx;
     idec_inst = inst;
     rs2_idx = idec_inst_rs2;
-    regs_rs2_address = rs2_idx;
     rs2_data = regs_rs2_data;
   end
 
-  always_comb begin idec_inst = inst;
-inst_opcode = idec_inst_opcode; end
-  always_comb begin idec_inst = inst;
-inst_funct3 = idec_inst_funct3; end
-  always_comb begin idec_inst = inst;
-inst_funct7 = idec_inst_funct7; end
+  always_comb begin inst_opcode = idec_inst_opcode; end
+  always_comb begin inst_funct3 = idec_inst_funct3; end
+  always_comb begin inst_funct7 = idec_inst_funct7; end
 
   //----------------------------------------
 
@@ -75,19 +71,7 @@ inst_funct7 = idec_inst_funct7; end
     idec_inst = inst;
     rs2_idx = idec_inst_rs2;
 
-    alu_core_alu_function = alu_function;
-    alu_core_operand_a = mux_operand_a_out;
-    alu_core_operand_b = mux_operand_b_out;
-    mux_operand_a_sel = alu_operand_a_select;
-    mux_operand_a_in0 = regs_rs1_data;
-    mux_operand_a_in1 = program_counter_value;
-    regs_rs1_address = rs1_idx;
-    mux_operand_b_sel = alu_operand_b_select;
-    mux_operand_b_in0 = regs_rs2_data;
-    mux_operand_b_in1 = igen_immediate;
-    regs_rs2_address = rs2_idx;
-    igen_inst = inst;
-    alu_result = alu_core_result;
+    alu_result = alu_core_alu_result;
   end
 
   always_comb begin /*tock*/
@@ -97,11 +81,11 @@ inst_funct7 = idec_inst_funct7; end
     logic[31:0] reg_data;
     adder_pc_plus_4_operand_a = 32'h00000004;
     adder_pc_plus_4_operand_b = program_counter_value;
-    pc_plus_4 = adder_pc_plus_4_result;
+    pc_plus_4 = adder_pc_plus_4_adder_result;
     adder_pc_plus_immediate_operand_a = program_counter_value;
     adder_pc_plus_immediate_operand_b = igen_immediate;
     igen_inst = inst;
-    pc_plus_imm = adder_pc_plus_immediate_result;
+    pc_plus_imm = adder_pc_plus_immediate_adder_result;
 
     mux_next_pc_select_sel = next_pc_select;
     mux_next_pc_select_in0 = pc_plus_4;
@@ -142,11 +126,11 @@ inst_funct7 = idec_inst_funct7; end
     .operand_a(adder_pc_plus_4_operand_a), 
     .operand_b(adder_pc_plus_4_operand_b), 
     // Outputs
-    .result(adder_pc_plus_4_result)
+    .adder_result(adder_pc_plus_4_adder_result)
   );
   logic[32-1:0] adder_pc_plus_4_operand_a;
   logic[32-1:0] adder_pc_plus_4_operand_b;
-  logic[32-1:0] adder_pc_plus_4_result;
+  logic[32-1:0] adder_pc_plus_4_adder_result;
 
   adder #(32) adder_pc_plus_immediate(
     // Inputs
@@ -154,11 +138,11 @@ inst_funct7 = idec_inst_funct7; end
     .operand_a(adder_pc_plus_immediate_operand_a), 
     .operand_b(adder_pc_plus_immediate_operand_b), 
     // Outputs
-    .result(adder_pc_plus_immediate_result)
+    .adder_result(adder_pc_plus_immediate_adder_result)
   );
   logic[32-1:0] adder_pc_plus_immediate_operand_a;
   logic[32-1:0] adder_pc_plus_immediate_operand_b;
-  logic[32-1:0] adder_pc_plus_immediate_result;
+  logic[32-1:0] adder_pc_plus_immediate_adder_result;
 
   alu alu_core(
     // Inputs
@@ -167,12 +151,12 @@ inst_funct7 = idec_inst_funct7; end
     .operand_a(alu_core_operand_a), 
     .operand_b(alu_core_operand_b), 
     // Outputs
-    .result(alu_core_result)
+    .alu_result(alu_core_alu_result)
   );
   logic[4:0] alu_core_alu_function;
   logic[31:0] alu_core_operand_a;
   logic[31:0] alu_core_operand_b;
-  logic[31:0] alu_core_result;
+  logic[31:0] alu_core_alu_result;
 
   multiplexer4 #(32) mux_next_pc_select(
     // Inputs

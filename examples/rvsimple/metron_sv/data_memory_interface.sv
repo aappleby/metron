@@ -28,27 +28,33 @@ module data_memory_interface
   end
 
   always_comb begin
+    logic[3:0] result;
     // calculate byte enable
+    /*logic<4> result;*/
     case (2'(data_format)) 
-      /*case*/ 2'b00: bus_byte_enable = 4'b0001 << 2'(address);
-      /*case*/ 2'b01: bus_byte_enable = 4'b0011 << 2'(address);
-      /*case*/ 2'b10: bus_byte_enable = 4'b1111 << 2'(address);
-      default:   bus_byte_enable = 4'b0000;
+      /*case*/ 2'b00: result = 4'b0001 << 2'(address); /*break;*/
+      /*case*/ 2'b01: result = 4'b0011 << 2'(address); /*break;*/
+      /*case*/ 2'b10: result = 4'b1111 << 2'(address); /*break;*/
+      default:   result = 4'b0000; /*break;*/
     endcase
+    bus_byte_enable = result;
   end
 
   always_comb begin
     logic[31:0] position_fix;
+    logic[31:0] result;
     // correct for unaligned accesses
     position_fix = 32'(bus_read_data >> (8 * 2'(address)));
 
     // sign-extend if necessary
+    /*logic<32> result;*/
     case (2'(data_format)) 
-      /*case*/ 2'b00: read_data = {{24 {1'(~data_format[2] & position_fix[7])}}, 8'(position_fix)};
-      /*case*/ 2'b01: read_data = {{16 {1'(~data_format[2] & position_fix[15])}}, 16'(position_fix)};
-      /*case*/ 2'b10: read_data = 32'(position_fix);
-      default:   read_data = 32'bx;
+      /*case*/ 2'b00: result = {{24 {1'(~data_format[2] & position_fix[7])}}, 8'(position_fix)}; /*break;*/
+      /*case*/ 2'b01: result = {{16 {1'(~data_format[2] & position_fix[15])}}, 16'(position_fix)}; /*break;*/
+      /*case*/ 2'b10: result = 32'(position_fix); /*break;*/
+      default:   result = 32'bx; /*break;*/
     endcase
+    read_data = result;
   end
 endmodule;
 

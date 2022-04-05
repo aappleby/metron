@@ -19,7 +19,7 @@ def main():
     build_rvsimple()
     build_rvtiny()
     build_rvtiny_sync()
-    build_ibex()
+    #build_ibex()
     print("Done!")
 
 # ------------------------------------------------------------------------------

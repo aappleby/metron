@@ -97,18 +97,20 @@ class alu_control {
         break;
     }
 
+    logic<5> result;
     switch (alu_op_type) {
       case CTL_ALU_ADD:
-        return ALU_ADD;
+        result = ALU_ADD; break;
       case CTL_ALU_OP:
-        return op_funct;
+        result = op_funct; break;
       case CTL_ALU_OP_IMM:
-        return op_imm_funct;
+        result = op_imm_funct; break;
       case CTL_ALU_BRANCH:
-        return branch_funct;
+        result = branch_funct; break;
       default:
-        return b5(DONTCARE);
+        result = b5(DONTCARE); break;
     }
+    return result;
   }
 };
 

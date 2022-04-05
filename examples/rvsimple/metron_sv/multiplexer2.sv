@@ -21,11 +21,14 @@ module multiplexer2
 );
  /*public:*/
   always_comb begin
+    logic[WIDTH-1:0] result;
+    /*logic<WIDTH> result;*/
     case (sel) 
-      /*case*/ 0:  out = in0;
-      /*case*/ 1:  out = in1;
-      default: out = WIDTH'(1'bx);
+      /*case*/ 0:  result = in0; /*break;*/
+      /*case*/ 1:  result = in1; /*break;*/
+      default: result = WIDTH'(1'bx); /*break;*/
     endcase
+    out = result;
   end
 endmodule
 

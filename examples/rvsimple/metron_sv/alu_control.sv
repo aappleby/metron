@@ -26,6 +26,7 @@ module alu_control
     logic[4:0] op_funct;
     logic[4:0] op_imm_funct;
     logic[4:0] branch_funct;
+    logic[4:0] result;
     import rv_constants::*;
 
     /*logic<5> default_funct;*/
@@ -109,18 +110,20 @@ module alu_control
         /*break;*/
     endcase
 
+    /*logic<5> result;*/
     case (alu_op_type) 
       /*case*/ CTL_ALU_ADD:
-        alu_function = ALU_ADD;
+        result = ALU_ADD; /*break;*/
       /*case*/ CTL_ALU_OP:
-        alu_function = op_funct;
+        result = op_funct; /*break;*/
       /*case*/ CTL_ALU_OP_IMM:
-        alu_function = op_imm_funct;
+        result = op_imm_funct; /*break;*/
       /*case*/ CTL_ALU_BRANCH:
-        alu_function = branch_funct;
+        result = branch_funct; /*break;*/
       default:
-        alu_function = 5'bx;
+        result = 5'bx; /*break;*/
     endcase
+    alu_function = result;
   end
 endmodule;
 

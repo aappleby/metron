@@ -28,5 +28,39 @@ void print_escaped(const char* source, int a, int b);
 
 #endif
 
+//------------------------------------------------------------------------------
+
+class Err {
+public:
+
+  Err() {
+    err = false;
+  }
+
+  Err& operator = (bool e) {
+    if (e) {
+      //debugbreak();
+    }
+    err |= e;
+    return *this;
+  }
+
+  Err& operator |= (bool e) {
+    if (e) {
+      //debugbreak();
+    }
+    err |= e;
+    return *this;
+  }
+
+  operator bool() const {
+    return err;
+  }
+
+private:
+  Err(bool x) = delete;
+
+  bool err = false;
+};
 
 //------------------------------------------------------------------------------

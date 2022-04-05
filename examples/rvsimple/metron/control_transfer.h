@@ -15,15 +15,17 @@ class control_transfer {
 
   logic<1> take_branch(logic<1> result_equal_zero, logic<3> inst_funct3) const {
     using namespace rv_constants;
+    logic<1> result;
     switch (inst_funct3) {
-      case FUNCT3_BRANCH_EQ:  return !result_equal_zero;
-      case FUNCT3_BRANCH_NE:  return result_equal_zero;
-      case FUNCT3_BRANCH_LT:  return !result_equal_zero;
-      case FUNCT3_BRANCH_GE:  return result_equal_zero;
-      case FUNCT3_BRANCH_LTU: return !result_equal_zero;
-      case FUNCT3_BRANCH_GEU: return result_equal_zero;
-      default:                return b1(DONTCARE);
+      case FUNCT3_BRANCH_EQ:  result = !result_equal_zero; break;
+      case FUNCT3_BRANCH_NE:  result = result_equal_zero; break;
+      case FUNCT3_BRANCH_LT:  result = !result_equal_zero; break;
+      case FUNCT3_BRANCH_GE:  result = result_equal_zero; break;
+      case FUNCT3_BRANCH_LTU: result = !result_equal_zero; break;
+      case FUNCT3_BRANCH_GEU: result = result_equal_zero; break;
+      default:                result = b1(DONTCARE); break;
     }
+    return result;
   }
 };
 

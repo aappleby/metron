@@ -17,17 +17,19 @@ class multiplexer8 {
   logic<WIDTH> out(logic<3> sel, logic<WIDTH> in0, logic<WIDTH> in1, logic<WIDTH> in2,
             logic<WIDTH> in3, logic<WIDTH> in4, logic<WIDTH> in5,
             logic<WIDTH> in6, logic<WIDTH> in7) const {
+    logic<WIDTH> result;
     switch (sel) {
-      case 0:  return in0;
-      case 1:  return in1;
-      case 2:  return in2;
-      case 3:  return in3;
-      case 4:  return in3;
-      case 5:  return in3;
-      case 6:  return in3;
-      case 7:  return in3;
-      default: return bx<WIDTH>(DONTCARE);
+      case 0:  result = in0; break;
+      case 1:  result = in1; break;
+      case 2:  result = in2; break;
+      case 3:  result = in3; break;
+      case 4:  result = in3; break;
+      case 5:  result = in3; break;
+      case 6:  result = in3; break;
+      case 7:  result = in3; break;
+      default: result = bx<WIDTH>(DONTCARE); break;
     }
+    return result;
   }
 };
 

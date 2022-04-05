@@ -209,8 +209,16 @@ int main(int argc, char** argv) {
       cursor.echo = echo && !quiet;
       cursor.cursor = source_file->source;
       cursor.source_file = source_file;
-      cursor.emit(source_file->root_node);
+
+      //source_file->root_node.dump_tree();
+
+      bool emit_error = cursor.emit(source_file->root_node);
       cursor.emit("\n");
+
+      if (emit_error) {
+        LOG_R("Error during code generation\n");
+        exit(-1);
+      }
 
       // Save translated source to output directory, if there is one.
       if (out_root.size()) {

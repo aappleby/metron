@@ -30,9 +30,6 @@ module riscv_core
  /*public:*/
 
    always_comb begin
-    dmem_address = alu_result2;
-    dmem_write_data = datapath_rs2_data;
-    datapath_inst = inst;
     bus_write_data2 = dmem_bus_write_data;
   end
 
@@ -40,8 +37,6 @@ module riscv_core
     logic[2:0] funct3;
     datapath_inst = inst;
     funct3 = datapath_inst_funct3;
-    dmem_data_format = funct3;
-    dmem_address = alu_result2;
     bus_byte_enable2 = dmem_bus_byte_enable;
   end
 
@@ -49,7 +44,6 @@ module riscv_core
     logic[6:0] opcode;
     datapath_inst = inst;
     opcode = datapath_inst_opcode;
-    ctlpath_inst_opcode = opcode;
     bus_read_enable2 = ctlpath_data_mem_read_enable;
   end
 
@@ -57,7 +51,6 @@ module riscv_core
     logic[6:0] opcode;
     datapath_inst = inst;
     opcode = datapath_inst_opcode;
-    ctlpath_inst_opcode = opcode;
     bus_write_enable2 = ctlpath_data_mem_write_enable;
   end
 
@@ -84,12 +77,6 @@ module riscv_core
     ctlpath_inst_funct7 = funct7;
     alu_function = ctlpath_alu_function;
 
-    datapath_inst = inst;
-    datapath_alu_function = alu_function;
-    datapath_alu_operand_a_select = ctlpath_alu_operand_a_select;
-    datapath_alu_operand_b_select = ctlpath_alu_operand_b_select;
-    ctlpath_inst_opcode = opcode;
-    ctlpath_inst_opcode = opcode;
     alu_result = datapath_alu_result;
   end
 

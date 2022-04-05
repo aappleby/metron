@@ -45,7 +45,7 @@ class singlecycle_datapath {
     logic<5> rs1_idx = idec.inst_rs1(inst);
     logic<5> rs2_idx = idec.inst_rs2(inst);
 
-    return alu_core.result(
+    return alu_core.alu_result(
       alu_function,
       mux_operand_a.out(
         alu_operand_a_select,
@@ -70,8 +70,8 @@ class singlecycle_datapath {
     logic<2> next_pc_select,
     logic<1> pc_write_enable
   ) {
-    logic<32> pc_plus_4 = adder_pc_plus_4.result(b32(0x00000004), program_counter.value());
-    logic<32> pc_plus_imm = adder_pc_plus_immediate.result(program_counter.value(), igen.immediate(inst));
+    logic<32> pc_plus_4 = adder_pc_plus_4.adder_result(b32(0x00000004), program_counter.value());
+    logic<32> pc_plus_imm = adder_pc_plus_immediate.adder_result(program_counter.value(), igen.immediate(inst));
 
     logic<32> pc_data = mux_next_pc_select.out(
       next_pc_select,

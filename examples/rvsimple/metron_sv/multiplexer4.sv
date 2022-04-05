@@ -24,13 +24,16 @@ module multiplexer4
  /*public:*/
 
   always_comb begin
+    logic[WIDTH-1:0] result;
+    /*logic<WIDTH> result;*/
     case (sel) 
-      /*case*/ 0:  out = in0;
-      /*case*/ 1:  out = in1;
-      /*case*/ 2:  out = in2;
-      /*case*/ 3:  out = in3;
-      default: out = WIDTH'(1'bx);
+      /*case*/ 0:  result = in0; /*break;*/
+      /*case*/ 1:  result = in1; /*break;*/
+      /*case*/ 2:  result = in2; /*break;*/
+      /*case*/ 3:  result = in3; /*break;*/
+      default: result = WIDTH'(1'bx); /*break;*/
     endcase
+    out = result;
   end
 endmodule
 

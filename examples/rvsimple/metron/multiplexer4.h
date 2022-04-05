@@ -15,13 +15,15 @@ class multiplexer4 {
  public:
 
   logic<WIDTH> out(logic<2> sel, logic<WIDTH> in0, logic<WIDTH> in1, logic<WIDTH> in2, logic<WIDTH> in3) const {
+    logic<WIDTH> result;
     switch (sel) {
-      case 0:  return in0;
-      case 1:  return in1;
-      case 2:  return in2;
-      case 3:  return in3;
-      default: return bx<WIDTH>(DONTCARE);
+      case 0:  result = in0; break;
+      case 1:  result = in1; break;
+      case 2:  result = in2; break;
+      case 3:  result = in3; break;
+      default: result = bx<WIDTH>(DONTCARE); break;
     }
+    return result;
   }
 };
 

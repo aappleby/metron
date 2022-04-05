@@ -1,18 +1,18 @@
 Metron C++-to-Verilog transpiler.
 
 Requirements (Linux):
-  git
-  ninja
-  python3
-  gcc
-  riscv64-unknown-elf-* toolchain
+- git
+- ninja
+- python3
+- gcc
+- riscv64-unknown-elf-* toolchain
 
 Requirements (Windows):
-  Visual Studio 2022 Community
+- Visual Studio 2022 Community
 
 Building Metron:
-  ./build.py
-  ninja
+- ./build.py
+- ninja
 
 Testing Metron:
-  ./run_tests.py
+- ./run_tests.py

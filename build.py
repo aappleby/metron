@@ -304,15 +304,15 @@ def build_uart():
 
 
 def build_rvtests():
-    src_files = glob.glob("rv_tests/*.S")
+    src_files = glob.glob("tests/rv_tests/*.S")
     dst_text = [swap_ext(f, ".text.vh") for f in src_files]
     dst_data = [swap_ext(f, ".data.vh") for f in src_files]
 
     ninja.build(rule="make",
-                inputs="rv_tests/makefile",
+                inputs="tests/rv_tests/makefile",
                 implicit=src_files,
                 outputs=dst_text + dst_data,
-                dst_dir="rv_tests",
+                dst_dir="tests/rv_tests",
                 makefile="makefile")
 
 # ------------------------------------------------------------------------------

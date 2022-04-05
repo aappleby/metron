@@ -27,8 +27,8 @@ TestResults test_instruction(const char* test_name, const int reps, const int ma
 
   char buf1[256];
   char buf2[256];
-  sprintf(buf1, "+text_file=rv_tests/%s.text.vh", test_name);
-  sprintf(buf2, "+data_file=rv_tests/%s.data.vh", test_name);
+  sprintf(buf1, "+text_file=tests/rv_tests/%s.text.vh", test_name);
+  sprintf(buf2, "+data_file=tests/rv_tests/%s.data.vh", test_name);
   const char* argv2[2] = {buf1, buf2};
 
   metron_init(2, argv2);

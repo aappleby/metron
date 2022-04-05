@@ -54,12 +54,16 @@ module singlecycle_datapath
     logic[4:0] rs2_idx;
     idec_inst = inst;
     rs2_idx = idec_inst_rs2;
+    regs_rs2_address = rs2_idx;
     rs2_data = regs_rs2_data;
   end
 
-  always_comb begin inst_opcode = idec_inst_opcode; end
-  always_comb begin inst_funct3 = idec_inst_funct3; end
-  always_comb begin inst_funct7 = idec_inst_funct7; end
+  always_comb begin idec_inst = inst;
+inst_opcode = idec_inst_opcode; end
+  always_comb begin idec_inst = inst;
+inst_funct3 = idec_inst_funct3; end
+  always_comb begin idec_inst = inst;
+inst_funct7 = idec_inst_funct7; end
 
   //----------------------------------------
 
@@ -71,6 +75,18 @@ module singlecycle_datapath
     idec_inst = inst;
     rs2_idx = idec_inst_rs2;
 
+    alu_core_alu_function = alu_function;
+    alu_core_operand_a = mux_operand_a_out;
+    alu_core_operand_b = mux_operand_b_out;
+    mux_operand_a_sel = alu_operand_a_select;
+    mux_operand_a_in0 = regs_rs1_data;
+    mux_operand_a_in1 = program_counter_value;
+    regs_rs1_address = rs1_idx;
+    mux_operand_b_sel = alu_operand_b_select;
+    mux_operand_b_in0 = regs_rs2_data;
+    mux_operand_b_in1 = igen_immediate;
+    regs_rs2_address = rs2_idx;
+    igen_inst = inst;
     alu_result = alu_core_alu_result;
   end
 

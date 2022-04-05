@@ -495,29 +495,30 @@ Err MtCursor::emit(MnCallExpr n) {
     // call.dump_tree();
 
   } else if (func_name == "signed") {
+
     emit_replacement(func, "$signed");
-    emit(args);
+    error |= emit(args);
   } else if (func_name == "unsigned") {
     emit_replacement(func, "$unsigned");
-    emit(args);
+    error |= emit(args);
   } else if (func_name == "clog2") {
     emit_replacement(func, "$clog2");
-    emit(args);
+    error |= emit(args);
   } else if (func_name == "pow2") {
     emit_replacement(func, "2**");
-    emit(args);
+    error |= emit(args);
   } else if (func_name == "readmemh") {
     emit_replacement(func, "$readmemh");
-    emit(args);
+    error |= emit(args);
   } else if (func_name == "value_plusargs") {
     emit_replacement(func, "$value$plusargs");
-    emit(args);
+    error |= emit(args);
   } else if (func_name == "write") {
     emit_replacement(func, "$write");
-    emit(args);
+    error |= emit(args);
   } else if (func_name == "sign_extend") {
     emit_replacement(func, "$signed");
-    emit(args);
+    error |= emit(args);
   } else if (func_name.starts_with("final")) {
     comment_out(n);
   } else if (func_name.starts_with("tick")) {
@@ -1011,6 +1012,9 @@ Err MtCursor::emit(MnFuncDefinition n) {
   auto body_count = func_body.child_count();
   for (int i = 0; i < body_count; i++) {
     auto c = func_body.child(i);
+
+    error |= emit_submod_input_port_bindings(c);
+
     switch (c.sym) {
       case anon_sym_LBRACE:
         skip_over(c);
@@ -1018,15 +1022,14 @@ Err MtCursor::emit(MnFuncDefinition n) {
         // while (*cursor != '\n') emit_char(*cursor++);
         // emit_char(*cursor++);
         emit_ws_to_newline();
-        emit_hoisted_decls(func_body);
+        error |= emit_hoisted_decls(func_body);
         emit_ws();
         break;
 
       case sym_declaration: {
-        emit_submod_input_port_bindings(c);
         MnDecl d(c);
         if (d.is_init_decl()) {
-          emit_init_declarator_as_assign(c);
+          error |= emit_init_declarator_as_assign(c);
         } else {
           // skip_over(c);
           comment_out(c);
@@ -1035,8 +1038,7 @@ Err MtCursor::emit(MnFuncDefinition n) {
       }
 
       case sym_expression_statement:
-        emit_submod_input_port_bindings(c);
-        emit_dispatch(c);
+        error |= emit_dispatch(c);
         break;
 
       case anon_sym_RBRACE:
@@ -1045,7 +1047,7 @@ Err MtCursor::emit(MnFuncDefinition n) {
 
       case sym_return_statement:
         if (i != body_count - 1) {
-          emit(MnReturnStatement(c));
+          error |= emit(MnReturnStatement(c));
         } else {
           LOG_R("Return statement not at end of function body\n");
           error = true;
@@ -1053,7 +1055,6 @@ Err MtCursor::emit(MnFuncDefinition n) {
         break;
 
       default:
-        error |= emit_submod_input_port_bindings(c);
         error |= emit_dispatch(c);
         break;
     }
@@ -1214,7 +1215,7 @@ Err MtCursor::emit_field_as_enum_class(MnFieldDecl n) {
 
   override_size = bit_width;
   cursor = node_values.start();
-  emit_dispatch(node_values);
+  error |= emit_dispatch(node_values);
   if (enum_name.size()) emit(" %s", enum_name.c_str());
   override_size = 0;
   cursor = n.end();
@@ -1526,13 +1527,13 @@ Err MtCursor::emit(MnClassSpecifier n) {
 
         case sym_parameter_declaration:
           sub_cursor.emit("parameter ");
-          sub_cursor.emit_dispatch(c);
+          error |= sub_cursor.emit_dispatch(c);
           sub_cursor.emit_ws();
           break;
 
         case sym_optional_parameter_declaration:
           sub_cursor.emit("parameter ");
-          sub_cursor.emit_dispatch(c);
+          error |= sub_cursor.emit_dispatch(c);
           sub_cursor.emit_ws();
           break;
 
@@ -1747,7 +1748,7 @@ Err MtCursor::emit(MnTemplateType n) {
 
   assert(cursor == n.start());
 
-  emit(n.name());
+  error |= emit(n.name());
   emit_ws();
 
   auto args = n.args();
@@ -1770,7 +1771,7 @@ Err MtCursor::emit(MnTemplateType n) {
         break;
     }
   } else {
-    emit(args);
+    error |= emit(args);
   }
 
   cursor = n.end();
@@ -2071,7 +2072,7 @@ Err MtCursor::emit(MnTemplateDecl n) {
   current_mod = source_file->get_module(class_name);
 
   cursor = class_specifier.start();
-  emit(class_specifier);
+  error |= emit(class_specifier);
   cursor = n.end();
 
   current_mod = old_mod;
@@ -2130,7 +2131,7 @@ CHECK_RETURN Err MtCursor::emit(MnCaseStatement n) {
           emit_text(c);
         }
       } else {
-        emit_dispatch(c);
+        error |= emit_dispatch(c);
       }
     }
     if (i != child_count - 1) emit_ws();

@@ -46,8 +46,8 @@ module uart_test;
     $write("Icarus simulation:\n");
     $write("================================================================================\n");
 
-    $dumpfile("uart_test_iv.vcd");
-    $dumpvars(0, uart_test);
+    //$dumpfile("uart_test_iv.vcd");
+    //$dumpvars(0, uart_test);
 
     clken = 0;
     clk = 0;

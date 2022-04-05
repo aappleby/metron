@@ -75,18 +75,18 @@ inst_funct7 = idec_inst_funct7; end
     idec_inst = inst;
     rs2_idx = idec_inst_rs2;
 
-    alu_core_alu_function = alu_function;
-    alu_core_operand_a = mux_operand_a_out;
-    alu_core_operand_b = mux_operand_b_out;
+    regs_rs1_address = rs1_idx;
     mux_operand_a_sel = alu_operand_a_select;
     mux_operand_a_in0 = regs_rs1_data;
     mux_operand_a_in1 = program_counter_value;
-    regs_rs1_address = rs1_idx;
+    regs_rs2_address = rs2_idx;
+    igen_inst = inst;
     mux_operand_b_sel = alu_operand_b_select;
     mux_operand_b_in0 = regs_rs2_data;
     mux_operand_b_in1 = igen_immediate;
-    regs_rs2_address = rs2_idx;
-    igen_inst = inst;
+    alu_core_alu_function = alu_function;
+    alu_core_operand_a = mux_operand_a_out;
+    alu_core_operand_b = mux_operand_b_out;
     alu_result = alu_core_alu_result;
   end
 
@@ -98,9 +98,9 @@ inst_funct7 = idec_inst_funct7; end
     adder_pc_plus_4_operand_a = 32'h00000004;
     adder_pc_plus_4_operand_b = program_counter_value;
     pc_plus_4 = adder_pc_plus_4_adder_result;
+    igen_inst = inst;
     adder_pc_plus_immediate_operand_a = program_counter_value;
     adder_pc_plus_immediate_operand_b = igen_immediate;
-    igen_inst = inst;
     pc_plus_imm = adder_pc_plus_immediate_adder_result;
 
     mux_next_pc_select_sel = next_pc_select;
@@ -114,6 +114,7 @@ inst_funct7 = idec_inst_funct7; end
     program_counter_next = pc_data;
     /*program_counter.tock(reset, pc_write_enable, pc_data);*/
 
+    igen_inst = inst;
     mux_reg_writeback_sel = reg_writeback_select;
     mux_reg_writeback_in0 = alu_result2;
     mux_reg_writeback_in1 = data_mem_read_data;
@@ -123,12 +124,11 @@ inst_funct7 = idec_inst_funct7; end
     mux_reg_writeback_in5 = 32'b0;
     mux_reg_writeback_in6 = 32'b0;
     mux_reg_writeback_in7 = 32'b0;
-    igen_inst = inst;
     reg_data = mux_reg_writeback_out;
+    idec_inst = inst;
     regs_write_enable = regfile_write_enable;
     regs_rd_address = idec_inst_rd;
     regs_rd_data = reg_data;
-    idec_inst = inst;
     /*regs.tock(regfile_write_enable, idec.inst_rd(inst), reg_data);*/
   end
 

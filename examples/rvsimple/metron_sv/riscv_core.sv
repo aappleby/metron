@@ -30,9 +30,9 @@ module riscv_core
  /*public:*/
 
    always_comb begin
+    datapath_inst = inst;
     dmem_address = alu_result2;
     dmem_write_data = datapath_rs2_data;
-    datapath_inst = inst;
     bus_write_data2 = dmem_bus_write_data;
   end
 
@@ -84,12 +84,12 @@ module riscv_core
     ctlpath_inst_funct7 = funct7;
     alu_function = ctlpath_alu_function;
 
+    ctlpath_inst_opcode = opcode;
+    ctlpath_inst_opcode = opcode;
     datapath_inst = inst;
     datapath_alu_function = alu_function;
     datapath_alu_operand_a_select = ctlpath_alu_operand_a_select;
     datapath_alu_operand_b_select = ctlpath_alu_operand_b_select;
-    ctlpath_inst_opcode = opcode;
-    ctlpath_inst_opcode = opcode;
     alu_result = datapath_alu_result;
   end
 

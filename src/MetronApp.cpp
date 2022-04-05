@@ -212,8 +212,8 @@ int main(int argc, char** argv) {
 
       //source_file->root_node.dump_tree();
 
-      bool emit_error = cursor.emit(source_file->root_node);
-      cursor.emit("\n");
+      bool emit_error = cursor.emit_translation_unit(source_file->root_node);
+      cursor.emit_printf("\n");
 
       if (emit_error) {
         LOG_R("Error during code generation\n");

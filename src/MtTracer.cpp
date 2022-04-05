@@ -94,8 +94,8 @@ FieldState merge_series(FieldState a, FieldState b) {
 
 //-----------------------------------------------------------------------------
 
-bool merge_parallel(state_map& ma, state_map& mb, state_map& out) {
-  bool error = false;
+Err merge_parallel(state_map& ma, state_map& mb, state_map& out) {
+  Err error;
   std::set<std::string> keys;
 
   for (const auto& a : ma) keys.insert(a.first);
@@ -119,8 +119,8 @@ bool merge_parallel(state_map& ma, state_map& mb, state_map& out) {
   return error;
 }
 
-bool merge_series(state_map& ma, state_map& mb, state_map& out) {
-  bool error = false;
+Err merge_series(state_map& ma, state_map& mb, state_map& out) {
+  Err error;
   std::set<std::string> keys;
 
   for (const auto& a : ma) keys.insert(a.first);
@@ -146,8 +146,8 @@ bool merge_series(state_map& ma, state_map& mb, state_map& out) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN bool MtTracer::trace_dispatch(MnNode n) {
-  bool error = false;
+CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n) {
+  Err error;
 
   if (!n.is_named()) return error;
 
@@ -247,8 +247,8 @@ CHECK_RETURN bool MtTracer::trace_dispatch(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN bool MtTracer::trace_children(MnNode n) {
-  bool error = false;
+CHECK_RETURN Err MtTracer::trace_children(MnNode n) {
+  Err error;
   for (const auto& c : n) {
     error |= trace_dispatch(c);
     if (error) return error;
@@ -258,8 +258,8 @@ CHECK_RETURN bool MtTracer::trace_children(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN bool MtTracer::trace_assign(MnNode n) {
-  bool error = false;
+CHECK_RETURN Err MtTracer::trace_assign(MnNode n) {
+  Err error;
 
   auto node_lhs = n.get_field(field_left);
   auto node_rhs = n.get_field(field_right);
@@ -287,8 +287,8 @@ CHECK_RETURN bool MtTracer::trace_assign(MnNode n) {
 //------------------------------------------------------------------------------
 // FIXME I need to traverse the args before stepping into the call
 
-CHECK_RETURN bool MtTracer::trace_call(MnNode n) {
-  bool error = false;
+CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
+  Err error;
 
   // Trace the args first.
   error |= trace_dispatch(n.get_field(field_arguments));
@@ -350,8 +350,8 @@ CHECK_RETURN bool MtTracer::trace_call(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN bool MtTracer::trace_method_call(MnNode n) {
-  bool error = false;
+CHECK_RETURN Err MtTracer::trace_method_call(MnNode n) {
+  Err error;
 
   auto node_func = n.get_field(field_function);
   auto sibling_method = mod()->get_method(node_func.text());
@@ -388,8 +388,8 @@ CHECK_RETURN bool MtTracer::trace_method_call(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN bool MtTracer::trace_submod_call(MnNode n) {
-  bool error = false;
+CHECK_RETURN Err MtTracer::trace_submod_call(MnNode n) {
+  Err error;
 
   // Field call. Pull up the submodule and traverse into the method.
 
@@ -433,8 +433,8 @@ CHECK_RETURN bool MtTracer::trace_submod_call(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN bool MtTracer::trace_template_call(MnNode n) {
-  bool error = false;
+CHECK_RETURN Err MtTracer::trace_template_call(MnNode n) {
+  Err error;
 
   auto node_name = n.get_field(field_function).get_field(field_name).text();
 
@@ -471,20 +471,22 @@ CHECK_RETURN bool MtTracer::trace_template_call(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN bool MtTracer::trace_field(MnNode n) {
+CHECK_RETURN Err MtTracer::trace_field(MnNode n) {
+  Err error;
   std::string field_name = n.text();
 
   for (int i = (int)_field_stack.size() - 1; i >= 0; i--) {
     field_name = _field_stack[i]->name() + "." + field_name;
   }
 
-  return trace_read(field_name);
+  error |= trace_read(field_name);
+  return error;
 }
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN bool MtTracer::trace_id(MnNode n) {
-  bool error = false;
+CHECK_RETURN Err MtTracer::trace_id(MnNode n) {
+  Err error;
 
   auto field = mod()->get_field(n.text());
 
@@ -504,8 +506,8 @@ CHECK_RETURN bool MtTracer::trace_id(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN bool MtTracer::trace_if(MnNode n) {
-  bool error = false;
+CHECK_RETURN Err MtTracer::trace_if(MnNode n) {
+  Err error;
 
   auto node_cond = n.get_field(field_condition);
   auto node_branch_a = n.get_field(field_consequence);
@@ -562,8 +564,8 @@ CHECK_RETURN bool MtTracer::trace_if(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN bool MtTracer::trace_switch(MnNode n) {
-  bool error = false;
+CHECK_RETURN Err MtTracer::trace_switch(MnNode n) {
+  Err error;
 
   state_map old_state = state_top();
 
@@ -597,8 +599,8 @@ CHECK_RETURN bool MtTracer::trace_switch(MnNode n) {
 //------------------------------------------------------------------------------
 // FIXME this is identical to trace_if, should we merge the two?
 
-CHECK_RETURN bool MtTracer::trace_ternary(MnNode n) {
-  bool error = false;
+CHECK_RETURN Err MtTracer::trace_ternary(MnNode n) {
+  Err error;
 
   auto node_cond = n.get_field(field_condition);
   auto node_branch_a = n.get_field(field_consequence);
@@ -636,8 +638,8 @@ CHECK_RETURN bool MtTracer::trace_ternary(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN bool MtTracer::trace_read(const std::string& field_name) {
-  bool error = false;
+CHECK_RETURN Err MtTracer::trace_read(const std::string& field_name) {
+  Err error;
 
   auto old_state = state_top()[field_name];
   auto new_state = merge_delta(old_state, DELTA_RD);
@@ -654,8 +656,8 @@ CHECK_RETURN bool MtTracer::trace_read(const std::string& field_name) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN bool MtTracer::trace_write(const std::string& field_name) {
-  bool error = false;
+CHECK_RETURN Err MtTracer::trace_write(const std::string& field_name) {
+  Err error;
 
   assert(in_tick() || in_tock());
 
@@ -675,8 +677,8 @@ CHECK_RETURN bool MtTracer::trace_write(const std::string& field_name) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN bool MtTracer::trace_read(MnNode const& n) {
-  bool error = false;
+CHECK_RETURN Err MtTracer::trace_read(MnNode const& n) {
+  Err error;
 
   std::string field_name = n.text();
   for (int i = (int)_field_stack.size() - 1; i >= 0; i--) {
@@ -700,8 +702,8 @@ CHECK_RETURN bool MtTracer::trace_read(MnNode const& n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN bool MtTracer::trace_write(MnNode const& n) {
-  bool error = false;
+CHECK_RETURN Err MtTracer::trace_write(MnNode const& n) {
+  Err error;
 
   assert(in_tick() || in_tock());
   std::string field_name = n.text();
@@ -728,8 +730,8 @@ CHECK_RETURN bool MtTracer::trace_write(MnNode const& n) {
 //------------------------------------------------------------------------------
 // FIXME I guess we handled this above?
 
-CHECK_RETURN bool MtTracer::trace_end_fn() {
-  bool error = false;
+CHECK_RETURN Err MtTracer::trace_end_fn() {
+  Err error;
 
   assert(in_tick() || in_tock());
 

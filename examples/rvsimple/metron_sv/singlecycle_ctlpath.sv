@@ -33,10 +33,10 @@ module singlecycle_ctlpath
  /*public:*/
 
   always_comb begin
+    control_inst_opcode = inst_opcode;
     alu_ctrl_alu_op_type = control_alu_op_type2;
     alu_ctrl_inst_funct3 = inst_funct3;
     alu_ctrl_inst_funct7 = inst_funct7;
-    control_inst_opcode = inst_opcode;
     alu_function = alu_ctrl_alu_function;
   end
 

@@ -270,8 +270,8 @@ void MtModule::dump_deltas() const {
 // All modules are now in the library, we can resolve references to other
 // modules when we're collecting fields.
 
-CHECK_RETURN bool MtModule::load_pass1() {
-  bool error = false;
+CHECK_RETURN Err MtModule::load_pass1() {
+  Err error;
 
   if (mod_class.is_null()) {
     LOG_R("No class found for module\n");
@@ -334,8 +334,8 @@ CHECK_RETURN bool MtModule::load_pass1() {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN bool MtModule::collect_params() {
-  bool error = false;
+CHECK_RETURN Err MtModule::collect_params() {
+  Err error;
 
   // modparam = struct template parameter
   if (mod_template) {
@@ -369,8 +369,8 @@ CHECK_RETURN bool MtModule::collect_params() {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN bool MtModule::collect_fields() {
-  bool error = false;
+CHECK_RETURN Err MtModule::collect_fields() {
+  Err error;
 
   assert(all_fields.empty());
 
@@ -408,8 +408,8 @@ CHECK_RETURN bool MtModule::collect_fields() {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN bool MtModule::collect_methods() {
-  bool error = false;
+CHECK_RETURN Err MtModule::collect_methods() {
+  Err error;
 
   assert(all_methods.empty());
 
@@ -536,10 +536,10 @@ CHECK_RETURN bool MtModule::collect_methods() {
 //------------------------------------------------------------------------------
 
 FieldState merge_delta(FieldState a, FieldDelta b);
-bool merge_series(state_map& ma, state_map& mb, state_map& out);
+Err merge_series(state_map& ma, state_map& mb, state_map& out);
 
-CHECK_RETURN bool MtModule::trace() {
-  bool error = false;
+CHECK_RETURN Err MtModule::trace() {
+  Err error;
   LOG_G("Tracing %s\n", name().c_str());
   LOG_INDENT_SCOPE();
 
@@ -659,8 +659,8 @@ CHECK_RETURN bool MtModule::trace() {
 // of input ports. Input ports can be declared in multiple tick/tock methods,
 // but we don't want duplicates in the Verilog port list.
 
-CHECK_RETURN bool MtModule::collect_inputs() {
-  bool error = false;
+CHECK_RETURN Err MtModule::collect_inputs() {
+  Err error;
 
   assert(inputs.empty());
 
@@ -688,8 +688,8 @@ CHECK_RETURN bool MtModule::collect_inputs() {
 //------------------------------------------------------------------------------
 // All fields written to in a tock method are outputs.
 
-CHECK_RETURN bool MtModule::collect_outputs() {
-  bool error = false;
+CHECK_RETURN Err MtModule::collect_outputs() {
+  Err error;
 
   assert(outputs.empty());
 
@@ -707,8 +707,8 @@ CHECK_RETURN bool MtModule::collect_outputs() {
 //------------------------------------------------------------------------------
 // All fields written to in a tick method are registers.
 
-CHECK_RETURN bool MtModule::collect_registers() {
-  bool error = false;
+CHECK_RETURN Err MtModule::collect_registers() {
+  Err error;
 
   assert(registers.empty());
 
@@ -745,8 +745,8 @@ CHECK_RETURN bool MtModule::collect_registers() {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN bool MtModule::collect_submods() {
-  bool error = 0;
+CHECK_RETURN Err MtModule::collect_submods() {
+  Err error;
 
   assert(submods.empty());
 
@@ -775,8 +775,8 @@ CHECK_RETURN bool MtModule::collect_submods() {
 // All modules have populated their fields, match up tick/tock calls with their
 // corresponding methods.
 
-CHECK_RETURN bool MtModule::load_pass2() {
-  bool error = false;
+CHECK_RETURN Err MtModule::load_pass2() {
+  Err error;
   assert (!mod_class.is_null());
   error |= build_port_map();
   error |= sanity_check();
@@ -787,10 +787,10 @@ CHECK_RETURN bool MtModule::load_pass2() {
 // Go through all calls in the tree and build a {call_param -> arg} map.
 // FIXME we aren't actually using this now?
 
-CHECK_RETURN bool MtModule::build_port_map() {
+CHECK_RETURN Err MtModule::build_port_map() {
   assert(port_map.empty());
 
-  bool error = false;
+  Err error;
 
   mod_class.visit_tree([&](MnNode child) {
     if (child.sym != sym_call_expression) return;
@@ -843,18 +843,22 @@ CHECK_RETURN bool MtModule::build_port_map() {
       MtCursor cursor(source_file->lib, source_file, &val);
       auto arg_node = node_args.named_child(i);
       cursor.cursor = arg_node.start();
-      cursor.emit_dispatch(arg_node);
+      error |= cursor.emit_dispatch(arg_node);
 
+      // FIXME - multiple port bindings are OK? I'm not sure.
+
+      /*
       auto it = port_map.find(key);
       if (it != port_map.end()) {
         if ((*it).second != val) {
           LOG_R("Error, got multiple different values for %s: '%s' and '%s'\n",
                 key.c_str(), (*it).second.c_str(), val.c_str());
-          debugbreak();
+          error = true;
         }
       } else {
         port_map.insert({key, val});
       }
+      */
     }
   });
 
@@ -863,8 +867,8 @@ CHECK_RETURN bool MtModule::build_port_map() {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN bool MtModule::sanity_check() {
-  bool error = false;
+CHECK_RETURN Err MtModule::sanity_check() {
+  Err error;
 
   // Inputs, outputs, registers, and submods must not overlap.
 

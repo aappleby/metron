@@ -103,8 +103,11 @@ bool MnNode::is_const() const {
 const char* MnNode::start() const {
   assert(!is_null());
 
-  auto a = &source->source[start_byte()];
-  auto b = &source->source[end_byte()];
+  auto old_a = &source->source[start_byte()];
+  auto old_b = &source->source[end_byte()];
+
+  auto a = old_a;
+  auto b = old_b;
 
   if (sym == sym_preproc_arg) {
     // TreeSitter bug - #defines include the whitespace before the value, trim

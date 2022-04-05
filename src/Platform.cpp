@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "TreeSymbols.h"
-#include "tree_sitter/api.h"
+#include "submodules/tree-sitter/lib/include/tree_sitter/api.h"
 
 //------------------------------------------------------------------------------
 

@@ -3,9 +3,9 @@
 #include "reference_vl/Vtoplevel.h"
 #include "tests/Tests.h"
 
-#include "cli11/include/CLI/App.hpp"
-#include "cli11/include/CLI/Formatter.hpp"
-#include "cli11/include/CLI/Config.hpp"
+#include "submodules/cli11/include/CLI/App.hpp"
+#include "submodules/cli11/include/CLI/Formatter.hpp"
+#include "submodules/cli11/include/CLI/Config.hpp"
 
 //------------------------------------------------------------------------------
 

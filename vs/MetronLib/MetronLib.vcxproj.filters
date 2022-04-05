@@ -7,10 +7,16 @@
     <ClInclude Include="..\..\src\MtModule.h" />
     <ClInclude Include="..\..\src\MtNode.h" />
     <ClInclude Include="..\..\src\MtSourceFile.h" />
-    <ClInclude Include="..\..\src\Platform.h" />
-    <ClInclude Include="..\..\src\TreeSymbols.h" />
-    <ClInclude Include="..\..\src\metron_tools.h" />
     <ClInclude Include="..\..\src\MtTracer.h" />
+    <ClInclude Include="..\..\src\metron_tools.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Platform.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\TreeSymbols.h">
+      <Filter>utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\MtCursor.cpp" />
@@ -18,25 +24,32 @@
     <ClCompile Include="..\..\src\MtModule.cpp" />
     <ClCompile Include="..\..\src\MtNode.cpp" />
     <ClCompile Include="..\..\src\MtSourceFile.cpp" />
-    <ClCompile Include="..\..\src\Platform.cpp" />
-    <ClCompile Include="..\..\tree-sitter\lib\src\lib.c">
-      <Filter>tree-sitter</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\tree-sitter-cpp\src\scanner.cc">
-      <Filter>tree-sitter</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\tree-sitter-cpp\src\parser.c">
-      <Filter>tree-sitter</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\MtTracer.cpp" />
+    <ClCompile Include="..\..\submodules\tree-sitter\lib\src\lib.c">
+      <Filter>tree-sitter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\submodules\tree-sitter-cpp\src\scanner.cc">
+      <Filter>tree-sitter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\submodules\tree-sitter-cpp\src\parser.c">
+      <Filter>tree-sitter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Platform.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\README.md" />
-    <None Include="..\..\src\metron_tools.sv" />
+    <None Include="..\..\src\metron_tools.sv">
+      <Filter>utils</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="tree-sitter">
       <UniqueIdentifier>{dae12e9a-a65f-43bf-9825-ba0ed8496905}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utils">
+      <UniqueIdentifier>{f1c6c8e4-7c18-4022-862a-33bfb8087902}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

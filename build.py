@@ -188,9 +188,9 @@ def build_treesitter():
     divider("TreeSitter libraries")
 
     treesitter_srcs = [
-        "tree-sitter/lib/src/lib.c",
-        "tree-sitter-cpp/src/parser.c",
-        "tree-sitter-cpp/src/scanner.cc",
+        "submodules/tree-sitter/lib/src/lib.c",
+        "submodules/tree-sitter-cpp/src/parser.c",
+        "submodules/tree-sitter-cpp/src/scanner.cc",
     ]
 
     for n in treesitter_srcs:
@@ -199,7 +199,7 @@ def build_treesitter():
             o,
             "compile_c",
             n,
-            includes="-Itree-sitter/lib/include"
+            includes="-Isubmodules/tree-sitter/lib/include"
         )
         treesitter_objs.append(o)
 
@@ -221,7 +221,7 @@ def build_metron():
         ],
         includes=[
             ".",
-            "tree-sitter/lib/include"
+            "submodules/tree-sitter/lib/include"
         ],
         src_objs=treesitter_objs,
     )

@@ -4,7 +4,7 @@
 
 #include "MtNode.h"
 #include "Platform.h"
-#include "tree_sitter/api.h"
+#include "submodules/tree-sitter/lib/include/tree_sitter/api.h"
 
 struct MnTranslationUnit;
 struct MtModule;

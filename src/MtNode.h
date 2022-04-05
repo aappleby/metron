@@ -7,7 +7,7 @@
 
 #include "Platform.h"
 #include "TreeSymbols.h"
-#include "tree_sitter/api.h"
+#include "submodules/tree-sitter/lib/include/tree_sitter/api.h"
 
 bool operator<(const TSNode& a, const TSNode& b);
 bool operator==(const TSNode& a, const TSNode& b);

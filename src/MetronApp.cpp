@@ -9,9 +9,9 @@
 #include "MtSourceFile.h"
 #include "Platform.h"
 
-#include "cli11/include/CLI/App.hpp"
-#include "cli11/include/CLI/Formatter.hpp"
-#include "cli11/include/CLI/Config.hpp"
+#include "submodules/cli11/include/CLI/App.hpp"
+#include "submodules/cli11/include/CLI/Formatter.hpp"
+#include "submodules/cli11/include/CLI/Config.hpp"
 
 #pragma warning(disable : 4996)
 

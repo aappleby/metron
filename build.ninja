@@ -483,3 +483,12 @@ build obj/examples/rvtiny_sync/main_vl.o: compile_cpp $
 build bin/examples/rvtiny_sync_vl: link obj/verilated.o $
     examples/rvtiny_sync/metron_vl/Vtoplevel__ALL.o $
     obj/examples/rvtiny_sync/main_vl.o
+
+
+################################################################################
+# Compile bin/examples/ibex
+
+build obj/examples/ibex/main.o: compile_cpp examples/ibex/main.cpp
+  includes = -I. -Isrc
+  opt = -O3
+build bin/examples/ibex: link obj/examples/ibex/main.o

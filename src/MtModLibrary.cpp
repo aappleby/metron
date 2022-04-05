@@ -43,7 +43,7 @@ MtSourceFile* MtModLibrary::find_source(const std::string& filename) {
 
 //------------------------------------------------------------------------------
 
-bool MtModLibrary::load_source(const char* filename) {
+CHECK_RETURN bool MtModLibrary::load_source(const char* filename) {
   bool error = false;
 
   assert(!sources_loaded);
@@ -70,7 +70,7 @@ bool MtModLibrary::load_source(const char* filename) {
         use_utf8_bom = true;
         src_blob.erase(src_blob.begin(), src_blob.begin() + 3);
       }
-      load_blob(filename, full_path, src_blob, use_utf8_bom);
+      error |= load_blob(filename, full_path, src_blob, use_utf8_bom);
       break;
     }
   }
@@ -85,13 +85,16 @@ bool MtModLibrary::load_source(const char* filename) {
 
 //------------------------------------------------------------------------------
 
-void MtModLibrary::load_blob(const std::string& filename,
-                             const std::string& full_path,
-                             const std::string& src_blob, bool use_utf8_bom) {
+CHECK_RETURN bool MtModLibrary::load_blob(const std::string& filename, const std::string& full_path, const std::string& src_blob, bool use_utf8_bom) {
+  bool error = false;
+
   assert(!sources_loaded);
-  auto source_file = new MtSourceFile(filename, full_path, src_blob);
+  auto source_file = new MtSourceFile();
+  error |= source_file->init(filename, full_path, src_blob);
   source_file->use_utf8_bom = use_utf8_bom;
   add_source(source_file);
+
+  return error;
 }
 
 //------------------------------------------------------------------------------

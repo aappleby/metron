@@ -123,8 +123,10 @@ private:
 //------------------------------------------------------------------------------
 
 struct MtModule {
-  MtModule(MtSourceFile* source_file, MnTemplateDecl node);
-  MtModule(MtSourceFile* source_file, MnClassSpecifier node);
+  MtModule();
+
+  CHECK_RETURN bool init(MtSourceFile* source_file, MnTemplateDecl node);
+  CHECK_RETURN bool init(MtSourceFile* source_file, MnClassSpecifier node);
 
   MtEnum*   get_enum(const std::string& name);
   MtField*  get_field(const std::string& name);

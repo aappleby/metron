@@ -14,17 +14,18 @@ typedef std::vector<uint8_t> blob;
 //------------------------------------------------------------------------------
 
 struct MtSourceFile {
-  MtSourceFile(const std::string& _filename, const std::string& _full_path, const std::string& _src_blob);
+  MtSourceFile();
+  bool init(const std::string& _filename, const std::string& _full_path, const std::string& _src_blob);
   ~MtSourceFile();
 
-  void collect_modules(MnNode toplevel);
+  CHECK_RETURN bool collect_modules(MnNode toplevel);
   MtModule* get_module(const std::string& name);
 
   MtModLibrary* lib = nullptr;
 
-  const std::string filename;
-  const std::string full_path;
-  const std::string src_blob;
+  std::string filename;
+  std::string full_path;
+  std::string src_blob;
   bool use_utf8_bom = false;
 
   MnTranslationUnit root_node;

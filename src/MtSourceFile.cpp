@@ -11,10 +11,15 @@ extern const TSLanguage* tree_sitter_cpp();
 
 //------------------------------------------------------------------------------
 
-MtSourceFile::MtSourceFile(const std::string& _filename,
-                           const std::string& _full_path,
-                           const std::string& _src_blob)
-    : filename(_filename), full_path(_full_path), src_blob(_src_blob) {
+MtSourceFile::MtSourceFile() {
+}
+
+bool MtSourceFile::init(const std::string& _filename, const std::string& _full_path, const std::string& _src_blob) {
+  bool error = false;
+
+  filename = _filename;
+  full_path = _full_path;
+  src_blob = _src_blob;
   assert(src_blob.back() != 0);
 
   auto blob_size = src_blob.size();
@@ -35,7 +40,9 @@ MtSourceFile::MtSourceFile(const std::string& _filename,
   root_node = MnTranslationUnit(MnNode(ts_root, root_sym, 0, this));
 
   assert(modules.empty());
-  collect_modules(root_node);
+  error |= collect_modules(root_node);
+
+  return error;
 }
 
 //------------------------------------------------------------------------------
@@ -54,27 +61,33 @@ MtSourceFile::~MtSourceFile() {
 
 //------------------------------------------------------------------------------
 
-void MtSourceFile::collect_modules(MnNode toplevel) {
+CHECK_RETURN bool MtSourceFile::collect_modules(MnNode toplevel) {
+  bool error = false;
+
   for (const auto& c : toplevel) {
     switch (c.sym) {
       case sym_template_declaration: {
         MnNode mod_root(c.node, c.sym, 0, this);
-        MtModule* mod = new MtModule(this, MnTemplateDecl(mod_root));
+        MtModule* mod = new MtModule();
+        error |= mod->init(this, MnTemplateDecl(mod_root));
         modules.push_back(mod);
         break;
       }
       case sym_class_specifier: {
         MnNode mod_root(c.node, c.sym, 0, this);
-        MtModule* mod = new MtModule(this, MnClassSpecifier(mod_root));
+        MtModule* mod = new MtModule();
+        error |= mod->init(this, MnClassSpecifier(mod_root));
         modules.push_back(mod);
         break;
       }
       case sym_preproc_ifdef: {
-        collect_modules(c);
+        error |= collect_modules(c);
         break;
       }
     }
   }
+
+  return error;
 }
 
 //------------------------------------------------------------------------------

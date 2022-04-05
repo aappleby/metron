@@ -187,6 +187,27 @@ CHECK_RETURN bool MtTracer::trace_dispatch(MnNode n) {
       error |= trace_ternary(n);
       break;
 
+    case sym_update_expression: {
+      // this is "i++" or similar, which is a read and a write.
+      auto arg = n.get_field(field_argument);
+      if (arg.sym == sym_identifier) {
+        auto field = mod()->get_field(arg.text());
+        if (field) {
+          error |= trace_read(arg);
+          error |= trace_write(arg);
+        }
+        else {
+          // local variable increment
+        }
+      }
+      else {
+        LOG_R("Not sure how to increment a %s\n", n.ts_node_type());
+        error = true;
+      }
+      break;
+    }
+
+    case sym_primitive_type:
     case sym_template_type:
     case sym_number_literal:
     case sym_using_declaration:
@@ -206,6 +227,7 @@ CHECK_RETURN bool MtTracer::trace_dispatch(MnNode n) {
     case sym_unary_expression:
     case sym_qualified_identifier:
     case alias_sym_namespace_identifier:
+    case sym_for_statement:
       error |= trace_children(n);
       break;
 

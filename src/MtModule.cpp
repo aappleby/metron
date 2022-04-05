@@ -23,22 +23,63 @@ bool MtField::is_submod() const {
 
 //------------------------------------------------------------------------------
 
-MtModule::MtModule(MtSourceFile *source_file, MnTemplateDecl node)
-    : source_file(source_file) {
-  mod_template = node;
-  mod_param_list = MnTemplateParamList(mod_template.child(1));
-  mod_class = MnClassSpecifier(mod_template.child(2));
-  mod_name = mod_class.get_field(field_name).text();
+MtModule::MtModule() {
+}
+
+CHECK_RETURN bool MtModule::init(MtSourceFile *_source_file, MnTemplateDecl _node) {
+  bool error = false;
+
+  source_file = _source_file;
+  mod_template = _node;
+
+  for (int i = 0; i < mod_template.child_count(); i++) {
+    auto child = mod_template.child(i);
+
+    if (child.sym == sym_template_parameter_list) {
+      mod_param_list = MnTemplateParamList(child);
+    }
+
+    if (child.sym == sym_class_specifier) {
+      mod_class = MnClassSpecifier(child);
+    }
+  }
+
+  if (mod_param_list.is_null()) {
+    LOG_R("No template parameter list found under template\n");
+    error = true;
+  }
+
+  if (mod_class) {
+    mod_name = mod_class.get_field(field_name).text();
+  }
+  else {
+    LOG_R("No class node found under template\n");
+    error = true;
+  }
+
+
+  return error;
 }
 
 //------------------------------------------------------------------------------
 
-MtModule::MtModule(MtSourceFile *source_file, MnClassSpecifier node)
-    : source_file(source_file) {
+CHECK_RETURN bool MtModule::init(MtSourceFile *_source_file, MnClassSpecifier _node) {
+  bool error = false;
+
+  source_file = _source_file;
   mod_template = MnNode::null;
   mod_param_list = MnNode::null;
-  mod_class = node;
-  mod_name = mod_class.get_field(field_name).text();
+  mod_class = _node;
+
+  if (mod_class) {
+    mod_name = mod_class.get_field(field_name).text();
+  }
+  else {
+    LOG_R("mod_class is null\n");
+    error = true;
+  }
+
+  return error;
 }
 
 //------------------------------------------------------------------------------

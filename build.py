@@ -19,6 +19,7 @@ def main():
     build_rvsimple()
     build_rvtiny()
     build_rvtiny_sync()
+    build_ibex()
     print("Done!")
 
 # ------------------------------------------------------------------------------
@@ -455,6 +456,20 @@ def build_rvtiny_sync():
         ],
         src_objs=["obj/verilated.o", rvtiny_sync_metron_vl_o],
         deps=[rvtiny_sync_metron_vl_h]
+    )
+
+# ------------------------------------------------------------------------------
+# Ibex
+
+def build_ibex():
+    cpp_binary(
+        bin_name="bin/examples/ibex",
+        src_files=["examples/ibex/main.cpp"],
+        includes=[
+            ".",
+            "src"
+        ],
+        opt="-O3",
     )
 
 # ------------------------------------------------------------------------------

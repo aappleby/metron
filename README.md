@@ -16,3 +16,6 @@ Building Metron:
 
 Testing Metron:
 - ./run_tests.py
+
+Docs at
+- https://aappleby.github.io/Metron/

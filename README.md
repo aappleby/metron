@@ -1,4 +1,4 @@
-Metron C++-to-Verilog translator.
+Metron C++-to-Verilog transpiler.
 
 Requirements (Linux):
   git
@@ -11,6 +11,7 @@ Requirements (Windows):
   Visual Studio 2022 Community
 
 Building Metron:
+  ./build.py
   ninja
 
 Testing Metron:

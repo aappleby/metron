@@ -18,6 +18,7 @@ struct MtCursor {
   // Debugging
 
   void dump_node_line(MnNode n);
+  void dump_node_stack();
   void print_error(MnNode n, const char* fmt, ...);
 
   // Indentation
@@ -111,8 +112,6 @@ struct MtCursor {
   bool at_newline = true;
   bool line_dirty = false;
   bool line_elided = false;
-
-  bool at_func_toplevel = false;
 
   std::string* str_out;
 

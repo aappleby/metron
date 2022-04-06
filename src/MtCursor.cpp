@@ -100,6 +100,15 @@ void MtCursor::dump_node_line(MnNode n) {
 
 //------------------------------------------------------------------------------
 
+void MtCursor::dump_node_stack() {
+  for (int i = node_stack.size() - 1; i >= 0; i--) {
+    auto n = node_stack[i];
+    n.dump_node();
+  }
+}
+
+//------------------------------------------------------------------------------
+
 void MtCursor::print_error(MnNode n, const char* fmt, ...) {
   emit_printf("\n########################################\n");
 
@@ -401,7 +410,7 @@ Err MtCursor::emit_static_bit_extract(MnCallExpr call, int bx_width) {
 
 //------------------------------------------------------------------------------
 
-Err MtCursor::emit_dynamic_bit_extract(MnCallExpr call, MnNode bx_node) {
+CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnCallExpr call, MnNode bx_node) {
   Err error;
 
   assert(cursor == call.start());
@@ -452,8 +461,10 @@ Err MtCursor::emit_dynamic_bit_extract(MnCallExpr call, MnNode bx_node) {
 // Replace function names with macro names where needed, comment out explicit
 // init/final/tick/tock calls.
 
-Err MtCursor::emit_call(MnCallExpr n) {
+CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
   Err error;
+
+  //dump_node_stack();
 
   assert(cursor == n.start());
   node_stack.push_back(n);
@@ -1690,6 +1701,7 @@ Err MtCursor::emit_compund(MnCompoundStatement n) {
   Err error;
 
   assert(cursor == n.start());
+  node_stack.push_back(n);
 
   push_indent(n);
 
@@ -1720,6 +1732,8 @@ Err MtCursor::emit_compund(MnCompoundStatement n) {
   }
 
   pop_indent(n);
+
+  node_stack.pop_back();
   error |= cursor != n.end();
   return error;
 }

@@ -356,7 +356,6 @@ struct NodeDumper {
     if (n.sym == sym_return_statement) color = 0x00EEEE;
     if (n.sym == sym_if_statement) color = 0x00EEEE;
 
-
     // Comments dark green like the code theme :)
     if (n.sym == sym_comment) color = 0x00A000;
 
@@ -382,6 +381,11 @@ struct NodeDumper {
 void MnNode::dump_tree(int index, int depth, int maxdepth) const {
   NodeDumper d;
   d.dump_tree(*this, index, depth, maxdepth);
+}
+
+void MnNode::dump_node() const {
+  NodeDumper d;
+  d.dump_node(*this, 0, 0, false);
 }
 
 //------------------------------------------------------------------------------

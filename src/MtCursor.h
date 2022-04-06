@@ -17,7 +17,6 @@ struct MtCursor {
 
   // Debugging
 
-  void dump(const MnNode& n) const;
   void dump_node_line(MnNode n);
   void print_error(MnNode n, const char* fmt, ...);
 

@@ -22,16 +22,6 @@ MtCursor::MtCursor(MtModLibrary* lib, MtSourceFile* source_file,
 
 //------------------------------------------------------------------------------
 
-void MtCursor::dump(const MnNode& n) const {
-  LOG_R("Dump!\n");
-  for (auto& s : node_stack) {
-    s.dump_node(0, 0);
-  }
-  n.dump_tree();
-}
-
-//------------------------------------------------------------------------------
-
 void MtCursor::push_indent(MnNode body) {
   assert(body.sym == sym_compound_statement ||
          body.sym == sym_field_declaration_list);

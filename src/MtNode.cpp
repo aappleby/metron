@@ -1,4 +1,4 @@
-#include "MtNode.h"
+﻿#include "MtNode.h"
 
 #include "MtModLibrary.h"
 #include "MtModule.h"
@@ -235,50 +235,153 @@ void MnNode::visit_tree(NodeVisitor cv) {
 //------------------------------------------------------------------------------
 // Node debugging
 
-void MnNode::dump_node(int index, int depth) const {
-  if (is_null()) {
-    printf("### NULL ###\n");
-    return;
+
+struct NodeDumper {
+
+  //----------------------------------------
+
+  void dump_tree(const MnNode& n, int index, int depth, int maxdepth) {
+    printf("\n========== tree dump begin\n");
+    dump_tree_recurse(n, index, depth, maxdepth, false);
+    printf("========== tree dump end\n");
   }
 
-  uint32_t color = 0x888888;
-  if (sym == sym_template_declaration) color = 0xAADDFF;
-  if (sym == sym_struct_specifier) color = 0xFF00FF;
-  if (sym == sym_class_specifier) color = 0xFFAAFF;
-  if (sym == sym_expression_statement) color = 0xAAFFFF;
-  if (sym == sym_expression_statement) color = 0xAAFFFF;
-  if (sym == sym_compound_statement) color = 0xFFFFFF;
-  if (sym == sym_function_definition) color = 0xAAAAFF;
-  if (sym == sym_field_declaration) color = 0xFFAAAA;
-  if (sym == sym_comment) color = 0xAAFFAA;
+  //----------------------------------------
 
-  printf("[%02d:%03d:%03d] ", index, int16_t(field), int16_t(sym));
+  void dump_tree_recurse(const MnNode& n, int index, int depth, int maxdepth, bool is_last) {
 
-  for (int i = 0; i < depth; i++) printf(color != 0x888888 ? "|--" : "|  ");
+    dump_node(n, index, depth, is_last);
 
-  if (field) printf("%s: ", ts_language_field_name_for_id(source->lang, field));
+    color_stack.push_back(node_to_color(n));
 
-  printf("%s = ", is_named() ? ts_node_type() : "lit");
+    if (!n.is_null() && depth < maxdepth) {
+      for (int i = 0; i < n.child_count(); i++) {
+        dump_tree_recurse(n.child(i), i, depth + 1, maxdepth, i == n.child_count() - 1);
+      }
+    }
 
-  if (!child_count()) print_escaped(source->source, start_byte(), end_byte());
+    color_stack.pop_back();
+  }
 
-  printf("\n");
-}
+  //----------------------------------------
+
+  void set_color(int color) {
+    if (color <= 0) {
+      printf("\u001b[0m");
+    }
+    else {
+      printf("\u001b[38;2;%d;%d;%dm", (color >> 0) & 0xFF, (color >> 8) & 0xFF, (color >> 16) & 0xFF);
+    }
+  }
+
+  void dump_node(const MnNode& n, int index, int depth, bool is_last) {
+    printf(" ");
+    for (int i = 0; i < color_stack.size(); i++) {
+      bool stack_top = i == color_stack.size() - 1;
+      int color = color_stack[i];
+
+      set_color(color);
+
+      if      (color == -1) printf("   ");
+      else if (!stack_top)  printf("\261  ");
+      else if (is_last)     printf("\261\315\315");
+      else                  printf("\261\315\315");
+    }
+    printf("\u001b[0m");
+
+    {
+      set_color(node_to_color(n));
+      if (n.child_count()) {
+        printf("\333 ");
+      }
+      else {
+        printf("\376 ");
+      }
+      if (n.field) printf("%s: ", ts_language_field_name_for_id(n.source->lang, n.field));
+      printf("%s = ", n.is_named() ? n.ts_node_type() : "lit");
+      if (!n.child_count()) print_escaped(n.source->source, n.start_byte(), n.end_byte());
+      printf("\n");
+      set_color(-1);
+    }
+
+    if (is_last) {
+      color_stack.pop_back();
+      color_stack.push_back(-1);
+    }
+  }
+
+  //----------------------------------------
+
+  int node_to_color(const MnNode& n) {
+    int color = 0x999999;
+
+    // Preproc stuff = brown
+    if (n.sym == sym_preproc_include) color = 0x00BBBB;
+
+    // Top-level translation unit = white
+    if (n.sym == sym_translation_unit) color = 0xFFFFFF;
+    
+    // Template decls = yellow
+    if (n.sym == sym_template_declaration) color = 0x00FFFF;
+    if (n.sym == sym_template_parameter_list) color = 0x00FFFF;
+
+    // Struct/class + field decl list = green
+    if (n.sym == sym_struct_specifier) color = 0x00FF00;
+    if (n.sym == sym_class_specifier) color = 0x00FF00;
+    if (n.sym == sym_field_declaration_list) color = 0x00FF00;
+
+    // Template types = cyan
+    if (n.sym == sym_template_type) color = 0xFFFF00;
+    if (n.sym == sym_template_argument_list) color = 0xFFFF00;
+
+    // Functions and function params = red
+    if (n.sym == sym_function_definition) color = 0x0000FF;
+    if (n.sym == sym_function_declarator) color = 0x0000FF;
+    if (n.sym == sym_parameter_list) color = 0x0000FF;
+
+    // Compound statements = blue
+    if (n.sym == sym_compound_statement) color = 0xFF8888;
+    
+    // Identifiers lighter grey
+    //if (n.sym == alias_sym_type_identifier) color = 0xEEEEEE;
+    //if (n.sym == sym_identifier) color = 0xEEEEEE;
+    //if (n.sym == alias_sym_field_identifier) color = 0xEEEEEE;
+
+    // Calls are transitions between modules, magenta
+    if (n.sym == sym_call_expression) color = 0xFF00FF;
+    if (n.sym == sym_argument_list) color = 0xFF00FF;
+
+    // Ifs, assigns and returns are important, bright yellow
+    if (n.sym == sym_assignment_expression) color = 0x00EEEE;
+    if (n.sym == sym_return_statement) color = 0x00EEEE;
+    if (n.sym == sym_if_statement) color = 0x00EEEE;
+
+
+    // Comments dark green like the code theme :)
+    if (n.sym == sym_comment) color = 0x00A000;
+
+    // Dim literals a bit.
+    if (!n.is_named()) color = 0x666666;
+
+    return color;
+  }
+
+  //----------------------------------------
+
+  std::string indent;
+
+  std::vector<int> color_stack;
+};
+
+
+
+
 
 //------------------------------------------------------------------------------
 
 void MnNode::dump_tree(int index, int depth, int maxdepth) const {
-  if (depth == 0) {
-    printf("\n========== tree dump begin\n");
-  }
-  dump_node(index, depth);
-
-  if (!is_null() && depth < maxdepth) {
-    for (int i = 0; i < child_count(); i++) {
-      child(i).dump_tree(i, depth + 1, maxdepth);
-    }
-  }
-  if (depth == 0) printf("========== tree dump end\n");
+  NodeDumper d;
+  d.dump_tree(*this, index, depth, maxdepth);
 }
 
 //------------------------------------------------------------------------------

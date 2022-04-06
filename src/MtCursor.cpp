@@ -881,7 +881,7 @@ CHECK_RETURN Err MtCursor::emit_submod_input_port_bindings(MnNode n) {
         assert(submod_meth);
 
         for (int i = 0; i < submod_meth->params.size(); i++) {
-          auto param = submod_meth->params[i];
+          auto& param = submod_meth->params[i];
           emit_printf("%s_%s = ", inst_id.text().c_str(), param.c_str());
 
           auto arg_node = args_node.named_child(i);

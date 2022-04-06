@@ -847,20 +847,31 @@ CHECK_RETURN Err MtModule::build_port_map() {
 
       // FIXME - multiple port bindings are OK? I'm not sure.
 
-      /*
       auto it = port_map.find(key);
       if (it != port_map.end()) {
         if ((*it).second != val) {
+          /*
           LOG_R("Error, got multiple different values for %s: '%s' and '%s'\n",
                 key.c_str(), (*it).second.c_str(), val.c_str());
           error = true;
+          */
         }
       } else {
         port_map.insert({key, val});
       }
-      */
     }
   });
+
+  // Verify that all input ports of all submods are bound.
+
+  /*
+  for (const auto& submod : submods) {
+    auto submod_mod = source_file->lib->get_module(submod->type_name());
+    printf("%s\n", submod->name().c_str());
+    int x = 1;
+    x++;
+  }
+  */
 
   return error;
 }

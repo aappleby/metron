@@ -83,11 +83,11 @@ int main(int argc, char** argv) {
 
   // clang-format off
   app.add_flag  ("-q,--quiet",    quiet,        "Quiet mode");
+  app.add_flag  ("-v,--verbose",  stats,        "Print detailed stats about the source modules.");
   app.add_flag  ("-c,--convert",  convert,      "Convert sources to SystemVerilog. If not specified, will only check inputs for convertibility.");
+  app.add_flag  ("-e,--echo",     echo,         "Echo the converted source back to the terminal, with color-coding.");
   app.add_option("-r,--src_root", src_root,     "Root directory of the source to convert");
   app.add_option("-o,--out_root", out_root,     "Root directory used for output files. If not specified, will use source root.");
-  app.add_flag  ("-e,--echo",     echo,         "Echo the converted source back to the terminal, with color-coding.");
-  app.add_flag  ("-s,--stats",    stats,        "Print detailed stats about the source modules.");
   app.add_option("headers",       source_names, "List of .h files to convert from C++ to SystemVerilog");
   // clang-format on
   
@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
 
   // -r examples/uart/metron uart_top.h uart_hello.h uart_tx.h uart_rx.h
   // -r examples/rvtiny/metron toplevel.h
-  // -r examples/rvsimple/metron toplevel.h adder.h alu.h alu_control.h config.h constants.h control_transfer.h data_memory_interface.h example_data_memory.h example_data_memory_bus.h example_text_memory.h example_text_memory_bus.h immediate_generator.h instruction_decoder.h multiplexer.h multiplexer2.h multiplexer4.h multiplexer8.h regfile.h register.h riscv_core.h singlecycle_control.h singlecycle_ctlpath.h singlecycle_datapath.h
+  // -v -r examples/rvsimple/metron toplevel.h adder.h alu.h alu_control.h config.h constants.h control_transfer.h data_memory_interface.h example_data_memory.h example_data_memory_bus.h example_text_memory.h example_text_memory_bus.h immediate_generator.h instruction_decoder.h multiplexer.h multiplexer2.h multiplexer4.h multiplexer8.h regfile.h register.h riscv_core.h singlecycle_control.h singlecycle_ctlpath.h singlecycle_datapath.h
 
   if (quiet) TinyLog::get().mute();
 

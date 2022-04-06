@@ -152,25 +152,25 @@ if __name__ == "__main__":
     print()
     print_b("Checking that all headers in tests/metron_good and test/metron_bad compile")
     if any(pool.map(check_compile, metron_good + metron_bad)):
-        print(f"Headers in metron_good/metron_bad failed GCC syntax check")
+        print_r(f"Headers in metron_good/metron_bad failed GCC syntax check")
         error = True
 
     print()
     print_b("Checking that all examples in metron_good convert to SV cleanly")
     if any(pool.map(check_good, metron_good)):
-        print(f"Headers in metron_good/metron_bad failed GCC syntax check")
+        print_r(f"Headers in metron_good failed Metron conversion")
         error = True
 
     print()
     print_b("Checking that all examples in metron_bad fail conversion")
     if any(pool.map(check_bad, metron_bad)):
-        print(f"Headers in metron_good/metron_bad failed GCC syntax check")
+        print_r(f"Headers in metron_bad passed Metron conversion")
         error = True
 
     print()
     print_b("Running standalone tests")
     if any(pool.map(run_simple_test, simple_tests)):
-        print(f"Headers in metron_good/metron_bad failed GCC syntax check")
+        print_r(f"Standalone tests failed")
         error = True
 
     ############################################################

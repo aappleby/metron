@@ -20,6 +20,7 @@ def main():
     build_rvtiny()
     build_rvtiny_sync()
     #build_ibex()
+    build_pong()
     print("Done!")
 
 # ------------------------------------------------------------------------------
@@ -321,6 +322,10 @@ def build_rvtests():
 
 
 def build_rvsimple():
+    mt_root = "examples/rvsimple/metron"
+    sv_root = "examples/rvsimple/metron_sv"
+    vl_root = "examples/rvsimple/metron_vl"
+
     cpp_binary(
         bin_name="bin/examples/rvsimple",
         src_files=["examples/rvsimple/main.cpp"],
@@ -331,14 +336,13 @@ def build_rvsimple():
         opt="-O3",
     )
 
-    rvsimple_metron_srcs = metronize_dir(
-        "examples/rvsimple/metron", "examples/rvsimple/metron_sv")
+    rvsimple_metron_srcs = metronize_dir(mt_root, sv_root)
 
     rvsimple_metron_vhdr, rvsimple_metron_vobj = verilate_dir(
-        src_dir="examples/rvsimple/metron_sv",
+        src_dir=sv_root,
         src_files=rvsimple_metron_srcs,
         src_top="toplevel",
-        dst_dir="examples/rvsimple/metron_vl"
+        dst_dir=vl_root,
     )
 
     cpp_binary(
@@ -385,9 +389,6 @@ def build_rvtiny():
     sv_root = "examples/rvtiny/metron_sv"
     vl_root = "examples/rvtiny/metron_vl"
 
-    obj_root = "obj/exampples/rvtiny"
-    bin_root = "bin/examples"
-
     cpp_binary(
         bin_name="bin/examples/rvtiny",
         src_files=["examples/rvtiny/main.cpp"],
@@ -425,6 +426,10 @@ def build_rvtiny():
 # RVTiny_Sync - synchronous-mem-only version of RVTiny
 
 def build_rvtiny_sync():
+    mt_root = "examples/rvtiny_sync/metron"
+    sv_root = "examples/rvtiny_sync/metron_sv"
+    vl_root = "examples/rvtiny_sync/metron_vl"
+
     cpp_binary(
         bin_name="bin/examples/rvtiny_sync",
         src_files=["examples/rvtiny_sync/main.cpp"],
@@ -435,9 +440,62 @@ def build_rvtiny_sync():
         opt="-O3",
     )
 
-    rvtiny_sync_metron_sv = metronize_dir(
-        "examples/rvtiny_sync/metron", "examples/rvtiny_sync/metron_sv")
+    metronized_src = metronize_dir(mt_root, sv_root)
 
+    verilated_h, verilated_o = verilate_dir(
+        src_dir=sv_root,
+        src_files=metronized_src,
+        src_top="toplevel",
+        dst_dir=vl_root
+    )
+
+    cpp_binary(
+        bin_name="bin/examples/rvtiny_sync_vl",
+        src_files=["examples/rvtiny_sync/main_vl.cpp"],
+        includes=[
+            ".",
+            "src",
+            "/usr/local/share/verilator/include"
+        ],
+        src_objs=["obj/verilated.o", verilated_o],
+        deps=[verilated_h]
+    )
+
+# ------------------------------------------------------------------------------
+# Ibex
+
+def build_ibex():
+    cpp_binary(
+        bin_name="bin/examples/ibex",
+        src_files=["examples/ibex/main.cpp"],
+        includes=[
+            ".",
+            "src"
+        ],
+        opt="-O3",
+    )
+
+# ------------------------------------------------------------------------------
+# Pong
+
+def build_pong():
+    mt_root = "examples/pong/metron"
+    sv_root = "examples/pong/metron_sv"
+    vl_root = "examples/pong/metron_vl"
+
+    cpp_binary(
+        bin_name="bin/examples/pong",
+        src_files=["examples/pong/main.cpp"],
+        includes=[
+            ".",
+            "src"
+        ],
+        opt="-O3",
+    )
+
+    metronized_src = metronize_dir(mt_root, sv_root)
+
+    """
     rvtiny_sync_metron_vl_h, rvtiny_sync_metron_vl_o = verilate_dir(
         src_dir="examples/rvtiny_sync/metron_sv",
         src_files=rvtiny_sync_metron_sv,
@@ -457,20 +515,8 @@ def build_rvtiny_sync():
         src_objs=["obj/verilated.o", rvtiny_sync_metron_vl_o],
         deps=[rvtiny_sync_metron_vl_h]
     )
+    """
 
-# ------------------------------------------------------------------------------
-# Ibex
-
-def build_ibex():
-    cpp_binary(
-        bin_name="bin/examples/ibex",
-        src_files=["examples/ibex/main.cpp"],
-        includes=[
-            ".",
-            "src"
-        ],
-        opt="-O3",
-    )
 
 # ------------------------------------------------------------------------------
 

@@ -478,8 +478,28 @@ build examples/rvtiny_sync/metron_vl/Vtoplevel__ALL.o: make $
 build obj/examples/rvtiny_sync/main_vl.o: compile_cpp $
     examples/rvtiny_sync/main_vl.cpp | $
     examples/rvtiny_sync/metron_vl/Vtoplevel.h
-  includes = -I. -Isrc -Iobj/examples/rvtiny_sync $
-      -I/usr/local/share/verilator/include
+  includes = -I. -Isrc -I/usr/local/share/verilator/include
 build bin/examples/rvtiny_sync_vl: link obj/verilated.o $
     examples/rvtiny_sync/metron_vl/Vtoplevel__ALL.o $
     obj/examples/rvtiny_sync/main_vl.o
+
+
+################################################################################
+# Compile bin/examples/pong
+
+build obj/examples/pong/main.o: compile_cpp examples/pong/main.cpp
+  includes = -I. -Isrc
+  opt = -O3
+build bin/examples/pong: link obj/examples/pong/main.o
+
+
+################################################################################
+# Metronize examples/pong/metron -> examples/pong/metron_sv
+
+build examples/pong/metron_sv/hvsync_generator.sv $
+    examples/pong/metron_sv/pong.sv: metron $
+    examples/pong/metron/hvsync_generator.h examples/pong/metron/pong.h | $
+    bin/metron
+  src_dir = examples/pong/metron
+  dst_dir = examples/pong/metron_sv
+  file_list = hvsync_generator.h pong.h

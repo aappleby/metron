@@ -3,8 +3,6 @@ Should I tack the submod method name to the input port name so that we don't hav
 
 fix #defines
 
-check in the tracer that we bind all submod ports
-
 check in the tracer that if we bind to a dedup'd port, we always end up with the
 same expression at each port... somehow?
 

@@ -833,9 +833,10 @@ CHECK_RETURN Err MtModule::build_port_map() {
     auto arg_count = node_args.named_child_count();
 
     for (auto i = 0; i < arg_count; i++) {
-      // auto key = call_member->name() + "." + call_method->params[i];
-      auto key = call_member->name() + "_" + call_method->name() + "_" +
-                 call_method->params[i];
+      auto key = call_member->name() + "." + call_method->params[i];
+
+      //auto key = call_member->name() + "_" + call_method->name() + "_" +
+      //           call_method->params[i];
 
       // std::string val = node_args.named_child(i).text();
 
@@ -864,14 +865,18 @@ CHECK_RETURN Err MtModule::build_port_map() {
 
   // Verify that all input ports of all submods are bound.
 
-  /*
   for (const auto& submod : submods) {
     auto submod_mod = source_file->lib->get_module(submod->type_name());
-    printf("%s\n", submod->name().c_str());
-    int x = 1;
-    x++;
+
+    for (int i = 0; i < submod_mod->inputs.size(); i++) {
+      auto key = submod->name() + "." + submod_mod->inputs[i]->name();
+
+      if (!port_map.contains(key)) {
+        LOG_R("No input bound to submod port %s\n", key.c_str());
+        error |= true;
+      }
+    }
   }
-  */
 
   return error;
 }

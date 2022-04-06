@@ -75,6 +75,7 @@ int main(int argc, char** argv) {
 
   bool quiet = false;
   bool echo = false;
+  bool dump = false;
   bool convert = false;
   bool stats = false;
   std::string src_root;
@@ -86,6 +87,7 @@ int main(int argc, char** argv) {
   app.add_flag  ("-v,--verbose",  stats,        "Print detailed stats about the source modules.");
   app.add_flag  ("-c,--convert",  convert,      "Convert sources to SystemVerilog. If not specified, will only check inputs for convertibility.");
   app.add_flag  ("-e,--echo",     echo,         "Echo the converted source back to the terminal, with color-coding.");
+  app.add_flag  ("--dump",        dump,         "Dump the syntax tree of the source file(s) to the console.");
   app.add_option("-r,--src_root", src_root,     "Root directory of the source to convert");
   app.add_option("-o,--out_root", out_root,     "Root directory used for output files. If not specified, will use source root.");
   app.add_option("headers",       source_names, "List of .h files to convert from C++ to SystemVerilog");
@@ -180,6 +182,15 @@ int main(int argc, char** argv) {
   }
 
   //----------
+  // Dump syntax trees if requested
+
+  if (dump) {
+    for (auto& source_file : library.source_files) {
+      source_file->root_node.dump_tree();
+    }
+  }
+
+  //----------
   // Emit all modules.
 
   if (convert || echo) {
@@ -209,8 +220,6 @@ int main(int argc, char** argv) {
       cursor.echo = echo && !quiet;
       cursor.cursor = source_file->source;
       cursor.source_file = source_file;
-
-      //source_file->root_node.dump_tree();
 
       bool emit_error = cursor.emit_translation_unit(source_file->root_node);
       cursor.emit_printf("\n");

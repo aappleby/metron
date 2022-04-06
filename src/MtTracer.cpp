@@ -94,7 +94,7 @@ FieldState merge_series(FieldState a, FieldState b) {
 
 //-----------------------------------------------------------------------------
 
-Err merge_parallel(state_map& ma, state_map& mb, state_map& out) {
+CHECK_RETURN Err merge_parallel(state_map& ma, state_map& mb, state_map& out) {
   Err error;
   std::set<std::string> keys;
 
@@ -119,7 +119,7 @@ Err merge_parallel(state_map& ma, state_map& mb, state_map& out) {
   return error;
 }
 
-Err merge_series(state_map& ma, state_map& mb, state_map& out) {
+CHECK_RETURN Err merge_series(state_map& ma, state_map& mb, state_map& out) {
   Err error;
   std::set<std::string> keys;
 

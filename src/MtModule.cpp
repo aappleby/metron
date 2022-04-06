@@ -536,7 +536,7 @@ CHECK_RETURN Err MtModule::collect_methods() {
 //------------------------------------------------------------------------------
 
 FieldState merge_delta(FieldState a, FieldDelta b);
-Err merge_series(state_map& ma, state_map& mb, state_map& out);
+CHECK_RETURN Err merge_series(state_map& ma, state_map& mb, state_map& out);
 
 CHECK_RETURN Err MtModule::trace() {
   Err error;

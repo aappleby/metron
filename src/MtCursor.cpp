@@ -101,7 +101,7 @@ void MtCursor::dump_node_line(MnNode n) {
 //------------------------------------------------------------------------------
 
 void MtCursor::dump_node_stack() {
-  for (int i = node_stack.size() - 1; i >= 0; i--) {
+  for (int i = (int)node_stack.size() - 1; i >= 0; i--) {
     auto n = node_stack[i];
     n.dump_node();
   }
@@ -258,7 +258,7 @@ void MtCursor::emit_replacement(MnNode n, const char* fmt, ...) {
 //------------------------------------------------------------------------------
 // Replace "#include" with "`include" and ".h" with ".sv"
 
-Err MtCursor::emit_preproc_include(MnPreprocInclude n) {
+CHECK_RETURN Err MtCursor::emit_preproc_include(MnPreprocInclude n) {
   Err error;
 
   assert(cursor == n.start());
@@ -282,7 +282,7 @@ Err MtCursor::emit_preproc_include(MnPreprocInclude n) {
 // sym_assignment_expression := { left: identifier, operator: lit, right : expr
 // }
 
-Err MtCursor::emit_assignment(MnAssignmentExpr n) {
+CHECK_RETURN Err MtCursor::emit_assignment(MnAssignmentExpr n) {
   Err error;
 
   assert(cursor == n.start());
@@ -334,7 +334,7 @@ Err MtCursor::emit_assignment(MnAssignmentExpr n) {
 
 //------------------------------------------------------------------------------
 
-Err MtCursor::emit_static_bit_extract(MnCallExpr call, int bx_width) {
+CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnCallExpr call, int bx_width) {
   Err error;
   assert(cursor == call.start());
 
@@ -463,8 +463,6 @@ CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnCallExpr call, MnNode bx_n
 
 CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
   Err error;
-
-  //dump_node_stack();
 
   assert(cursor == n.start());
   node_stack.push_back(n);
@@ -729,7 +727,7 @@ CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
 //------------------------------------------------------------------------------
 // Replace "logic blah = x;" with "logic blah;"
 
-Err MtCursor::emit_init_declarator_as_decl(MnDecl n) {
+CHECK_RETURN Err MtCursor::emit_init_declarator_as_decl(MnDecl n) {
   Err error;
   assert(cursor == n.start());
 
@@ -746,7 +744,7 @@ Err MtCursor::emit_init_declarator_as_decl(MnDecl n) {
 //------------------------------------------------------------------------------
 // Replace "logic blah = x;" with "blah = x;"
 
-Err MtCursor::emit_init_declarator_as_assign(MnDecl n) {
+CHECK_RETURN Err MtCursor::emit_init_declarator_as_assign(MnDecl n) {
   Err error;
 
   assert(cursor == n.start());
@@ -770,7 +768,7 @@ Err MtCursor::emit_init_declarator_as_assign(MnDecl n) {
 //------------------------------------------------------------------------------
 // Emit local variable declarations at the top of the block scope.
 
-Err MtCursor::emit_hoisted_decls(MnCompoundStatement n) {
+CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnCompoundStatement n) {
   Err error;
   bool any_to_hoist = false;
 
@@ -832,7 +830,7 @@ Err MtCursor::emit_hoisted_decls(MnCompoundStatement n) {
 
 //------------------------------------------------------------------------------
 
-Err MtCursor::emit_func_decl(MnFuncDeclarator n) {
+CHECK_RETURN Err MtCursor::emit_func_decl(MnFuncDeclarator n) {
   assert(cursor == n.start());
   return emit_children(n);
 
@@ -846,7 +844,7 @@ Err MtCursor::emit_func_decl(MnFuncDeclarator n) {
 
 //------------------------------------------------------------------------------
 
-Err MtCursor::emit_submod_input_port_bindings(MnNode n) {
+CHECK_RETURN Err MtCursor::emit_submod_input_port_bindings(MnNode n) {
   Err error;
   auto old_cursor = cursor;
 
@@ -909,7 +907,7 @@ Err MtCursor::emit_submod_input_port_bindings(MnNode n) {
 
 // func_def = { field_type, field_declarator, field_body }
 
-Err MtCursor::emit_func_def(MnFuncDefinition n) {
+CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
   Err error;
   // n.dump_tree();
 
@@ -1050,6 +1048,7 @@ Err MtCursor::emit_func_def(MnFuncDefinition n) {
         error |= emit_dispatch(c);
         break;
     }
+    if (error) return error;
     if (i != body_count - 1) emit_ws();
   }
 
@@ -1124,7 +1123,7 @@ Err MtCursor::emit_func_def(MnFuncDefinition n) {
 ========== tree dump end
 */
 
-Err MtCursor::emit_field_as_enum_class(MnFieldDecl n) {
+CHECK_RETURN Err MtCursor::emit_field_as_enum_class(MnFieldDecl n) {
   Err error;
   assert(cursor == n.start());
 
@@ -1221,7 +1220,7 @@ Err MtCursor::emit_field_as_enum_class(MnFieldDecl n) {
 
 //------------------------------------------------------------------------------
 
-Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
+CHECK_RETURN Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
   Err error;
   std::string type_name = n.type5();
   auto submod_mod = lib->get_module(type_name);
@@ -1261,11 +1260,14 @@ Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
 
   emit_newline();
   emit_indent();
-  emit_printf(".clock(clock),");
+  emit_printf(".clock(clock)");
 
   int port_count = int(submod_mod->inputs.size() + submod_mod->outputs.size());
+
   for (auto m : submod_mod->all_methods)
     if (m->is_public && m->has_return) port_count++;
+
+  if (port_count) emit_printf(",");
 
   int port_index = 0;
 
@@ -1323,7 +1325,7 @@ Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
 
 //------------------------------------------------------------------------------
 
-Err MtCursor::emit_output_ports(MnFieldDecl submod) {
+CHECK_RETURN Err MtCursor::emit_output_ports(MnFieldDecl submod) {
   Err error;
 
   if (current_mod->submods.empty()) {
@@ -1431,7 +1433,7 @@ Err MtCursor::emit_output_ports(MnFieldDecl submod) {
 // field_declaration = { type:enum_specifier,  bitfield_clause (TREESITTER BUG)
 // }
 
-Err MtCursor::emit_field_decl(MnFieldDecl n) {
+CHECK_RETURN Err MtCursor::emit_field_decl(MnFieldDecl n) {
   Err error;
 
   assert(cursor == n.start());
@@ -1477,7 +1479,7 @@ Err MtCursor::emit_field_decl(MnFieldDecl n) {
 // Change class/struct to module, add default clk/rst inputs, add input and
 // ouptut ports to module param list.
 
-Err MtCursor::emit_class(MnClassSpecifier n) {
+CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
   Err error;
 
   assert(cursor == n.start());
@@ -1662,6 +1664,7 @@ Err MtCursor::emit_class(MnClassSpecifier n) {
         error |= emit_dispatch(c);
         break;
     }
+    if (error) return error;
     if (i != body_size - 1) emit_ws();
   }
 
@@ -1679,17 +1682,28 @@ Err MtCursor::emit_class(MnClassSpecifier n) {
 
 //------------------------------------------------------------------------------
 
-Err MtCursor::emit_expression(MnExprStatement n) {
+CHECK_RETURN Err MtCursor::emit_expression(MnExprStatement n) {
   Err error;
 
-  if (n.child(0).sym == sym_call_expression &&
-      n.child(0).child(0).sym == sym_field_expression) {
-    // Calls to submodules get commented out.
-    comment_out(n);
-  } else {
-    // Other calls get translated.
-    error |= emit_children(n);
+  //n.dump_tree();
+
+  if (n.child(0).sym == sym_call_expression) {
+    auto call = n.child(0);
+    if ( call.get_field(field_function).sym == sym_field_expression) {
+      // This node is a block-level call to a submodule - since there's nothing
+      // on the LHS to bind the output to, we just comment out the whole call.
+      comment_out(call);
+
+      // There should only be a semicolon after the call...
+      for (int i = 1; i < n.child_count(); i++) {
+        error |= emit_dispatch(n.child(i));
+      }
+      return error;
+    }
   }
+
+  // Other calls get translated.
+  error |= emit_children(n);
 
   return error;
 }
@@ -1697,7 +1711,7 @@ Err MtCursor::emit_expression(MnExprStatement n) {
 //------------------------------------------------------------------------------
 // Change "{ blah(); foo(); int x = 1; }" to "begin blah(); ... end"
 
-Err MtCursor::emit_compund(MnCompoundStatement n) {
+CHECK_RETURN Err MtCursor::emit_compound(MnCompoundStatement n) {
   Err error;
 
   assert(cursor == n.start());
@@ -1741,7 +1755,7 @@ Err MtCursor::emit_compund(MnCompoundStatement n) {
 //------------------------------------------------------------------------------
 // Change logic<N> to logic[N-1:0]
 
-Err MtCursor::emit_template_type(MnTemplateType n) {
+CHECK_RETURN Err MtCursor::emit_template_type(MnTemplateType n) {
   Err error;
 
   assert(cursor == n.start());
@@ -1781,7 +1795,7 @@ Err MtCursor::emit_template_type(MnTemplateType n) {
 // Change (template)<int param, int param> to
 // #(parameter int param, parameter int param)
 
-Err MtCursor::emit_template_param_list(MnTemplateParamList n) {
+CHECK_RETURN Err MtCursor::emit_template_param_list(MnTemplateParamList n) {
   Err error;
   assert(cursor == n.start());
 
@@ -1813,7 +1827,7 @@ Err MtCursor::emit_template_param_list(MnTemplateParamList n) {
 //------------------------------------------------------------------------------
 // Change <param, param> to #(param, param)
 
-Err MtCursor::emit_template_arg_list(MnTemplateArgList n) {
+CHECK_RETURN Err MtCursor::emit_template_arg_list(MnTemplateArgList n) {
   Err error;
   assert(cursor == n.start());
 
@@ -1840,7 +1854,7 @@ Err MtCursor::emit_template_arg_list(MnTemplateArgList n) {
 //------------------------------------------------------------------------------
 // Enum lists do _not_ turn braces into begin/end.
 
-Err MtCursor::emit_enum_list(MnEnumeratorList n) {
+CHECK_RETURN Err MtCursor::emit_enum_list(MnEnumeratorList n) {
   Err error;
 
   for (const auto& c : (MnNode&)n) {
@@ -1864,7 +1878,7 @@ Err MtCursor::emit_enum_list(MnEnumeratorList n) {
 //------------------------------------------------------------------------------
 // Discard any trailing semicolons in the translation unit.
 
-Err MtCursor::emit_translation_unit(MnTranslationUnit n) {
+CHECK_RETURN Err MtCursor::emit_translation_unit(MnTranslationUnit n) {
   Err error;
   assert(cursor == n.start());
 
@@ -1880,6 +1894,7 @@ Err MtCursor::emit_translation_unit(MnTranslationUnit n) {
         error |= emit_dispatch(c);
         break;
     }
+    if (error) return error;
     if (i != child_count - 1) emit_ws();
   }
   node_stack.pop_back();
@@ -1896,7 +1911,7 @@ Err MtCursor::emit_translation_unit(MnTranslationUnit n) {
 // Replace "0b" prefixes with "'b"
 // Add an explicit size prefix if needed.
 
-Err MtCursor::emit_number_literal(MnNumberLiteral n, int size_cast) {
+CHECK_RETURN Err MtCursor::emit_number_literal(MnNumberLiteral n, int size_cast) {
   Err error;
   assert(cursor == n.start());
 
@@ -1944,7 +1959,7 @@ Err MtCursor::emit_number_literal(MnNumberLiteral n, int size_cast) {
 // FIXME FIXME FIXME WE NEED TO CHECK THAT THE RETURN DOESN'T EARLY OUT TO
 // MATCH VERILOG SEMANTICS
 
-Err MtCursor::emit_return(MnReturnStatement n) {
+CHECK_RETURN Err MtCursor::emit_return(MnReturnStatement n) {
   Err error;
   assert(cursor == n.start());
 
@@ -1981,7 +1996,7 @@ Err MtCursor::emit_return(MnReturnStatement n) {
 //------------------------------------------------------------------------------
 // FIXME translate types here
 
-Err MtCursor::emit_data_type(MnDataType n) {
+CHECK_RETURN Err MtCursor::emit_data_type(MnDataType n) {
   Err error;
   assert(cursor == n.start());
   emit_text(n);
@@ -1992,7 +2007,7 @@ Err MtCursor::emit_data_type(MnDataType n) {
 //------------------------------------------------------------------------------
 // FIXME translate types here
 
-Err MtCursor::emit_identifier(MnIdentifier n) {
+CHECK_RETURN Err MtCursor::emit_identifier(MnIdentifier n) {
   Err error;
   assert(cursor == n.start());
 
@@ -2008,7 +2023,7 @@ Err MtCursor::emit_identifier(MnIdentifier n) {
   return error;
 }
 
-Err MtCursor::emit_type_id(MnTypeIdentifier n) {
+CHECK_RETURN Err MtCursor::emit_type_id(MnTypeIdentifier n) {
   Err error;
   assert(cursor == n.start());
 
@@ -2027,7 +2042,7 @@ Err MtCursor::emit_type_id(MnTypeIdentifier n) {
 // For some reason the class's trailing semicolon ends up with the template
 // field_decl, so we prune it here.
 
-Err MtCursor::emit_template_decl(MnTemplateDecl n) {
+CHECK_RETURN Err MtCursor::emit_template_decl(MnTemplateDecl n) {
   Err error;
 
   assert(cursor == n.start());
@@ -2083,7 +2098,7 @@ Err MtCursor::emit_template_decl(MnTemplateDecl n) {
 // Replace foo.bar.baz with foo_bar_baz, so that a field expression instead
 // refers to a glue expression.
 
-Err MtCursor::emit_field_expr(MnFieldExpr n) {
+CHECK_RETURN Err MtCursor::emit_field_expr(MnFieldExpr n) {
   Err error;
   assert(cursor == n.start());
 
@@ -2150,7 +2165,7 @@ CHECK_RETURN Err MtCursor::emit_case_statement(MnCaseStatement n) {
 
 //------------------------------------------------------------------------------
 
-Err MtCursor::emit_switch(MnSwitchStatement n) {
+CHECK_RETURN Err MtCursor::emit_switch(MnSwitchStatement n) {
   Err error;
   assert(cursor == n.start());
 
@@ -2186,7 +2201,7 @@ Err MtCursor::emit_switch(MnSwitchStatement n) {
 //------------------------------------------------------------------------------
 // Unwrap magic /*#foo#*/ comments to pass arbitrary text to Verilog.
 
-Err MtCursor::emit_comment(MnComment n) {
+CHECK_RETURN Err MtCursor::emit_comment(MnComment n) {
   Err error;
   assert(cursor == n.start());
 
@@ -2205,7 +2220,7 @@ Err MtCursor::emit_comment(MnComment n) {
 //------------------------------------------------------------------------------
 // Verilog doesn't use "break"
 
-Err MtCursor::emit_break(MnBreakStatement n) {
+CHECK_RETURN Err MtCursor::emit_break(MnBreakStatement n) {
   Err error;
   assert(cursor == n.start());
   comment_out(n);
@@ -2215,7 +2230,7 @@ Err MtCursor::emit_break(MnBreakStatement n) {
 
 //------------------------------------------------------------------------------
 
-Err MtCursor::emit_field_decl_list(MnFieldDeclList n) {
+CHECK_RETURN Err MtCursor::emit_field_decl_list(MnFieldDeclList n) {
   Err error;
   assert(cursor == n.start());
   error |= emit_children(n);
@@ -2226,7 +2241,7 @@ Err MtCursor::emit_field_decl_list(MnFieldDeclList n) {
 //------------------------------------------------------------------------------
 // TreeSitter nodes slightly broken for "a = b ? c : d;"...
 
-Err MtCursor::emit_condition(MnCondExpr n) {
+CHECK_RETURN Err MtCursor::emit_condition(MnCondExpr n) {
   Err error;
   assert(cursor == n.start());
   error |= emit_children(n);
@@ -2237,7 +2252,7 @@ Err MtCursor::emit_condition(MnCondExpr n) {
 //------------------------------------------------------------------------------
 // Static variables become localparams at module level.
 
-Err MtCursor::emit_storage_spec(MnStorageSpec n) {
+CHECK_RETURN Err MtCursor::emit_storage_spec(MnStorageSpec n) {
   Err error;
   assert(cursor == n.start());
   if (n.match("static")) {
@@ -2253,7 +2268,7 @@ Err MtCursor::emit_storage_spec(MnStorageSpec n) {
 // ...er, this was something about namespace resolution?
 // so this is chopping off the std:: in std::string...
 
-Err MtCursor::emit_qualified_id(MnQualifiedId n) {
+CHECK_RETURN Err MtCursor::emit_qualified_id(MnQualifiedId n) {
   Err error;
   assert(cursor == n.start());
 
@@ -2276,10 +2291,50 @@ Err MtCursor::emit_qualified_id(MnQualifiedId n) {
 }
 
 //------------------------------------------------------------------------------
-// If statements are basically the same.
 
-Err MtCursor::emit_if_statement(MnIfStatement n) {
+bool MtCursor::branch_contains_submod_call(MnNode n) {
+  if (n.sym == sym_call_expression) {
+    if (n.get_field(field_function).sym == sym_field_expression) {
+      return true;
+    }
+  }
+
+  for (const auto& c : n) {
+    if (branch_contains_submod_call(c)) return true;
+  }
+
+  return false;
+}
+
+//------------------------------------------------------------------------------
+// If statements _must_ use {}, otherwise we have no place to insert submodule
+// bindings if the branch contains a submod call.
+
+CHECK_RETURN Err MtCursor::emit_if_statement(MnIfStatement n) {
   Err error;
+
+  //n.dump_tree();
+
+  auto node_then = n.get_field(field_consequence);
+  auto node_else = n.get_field(field_alternative);
+
+  if (!node_then.is_null() && node_then.sym != sym_compound_statement) {
+
+    if (branch_contains_submod_call(node_then)) {
+      LOG_R("If statements that contain submod calls must use {}.\n");
+      error |= true;
+      return error;
+    }
+  }
+
+  if (!node_else.is_null() && node_else.sym != sym_compound_statement) {
+    if (branch_contains_submod_call(node_then)) {
+      LOG_R("Else statements that contain submod calls must use {}.\n");
+      error |= true;
+      return error;
+    }
+  }
+
   assert(cursor == n.start());
   error |= emit_children(n);
   assert(cursor == n.end());
@@ -2289,7 +2344,7 @@ Err MtCursor::emit_if_statement(MnIfStatement n) {
 //------------------------------------------------------------------------------
 // Enums are broken.
 
-Err MtCursor::emit_enum_specifier(MnEnumSpecifier n) {
+CHECK_RETURN Err MtCursor::emit_enum_specifier(MnEnumSpecifier n) {
   Err error;
   assert(cursor == n.start());
   // emit_sym_field_declaration_as_enum_class(MtFieldDecl(n));
@@ -2300,7 +2355,7 @@ Err MtCursor::emit_enum_specifier(MnEnumSpecifier n) {
 
 //------------------------------------------------------------------------------
 
-Err MtCursor::emit_using_decl(MnUsingDecl n) {
+CHECK_RETURN Err MtCursor::emit_using_decl(MnUsingDecl n) {
   Err error;
   assert(cursor == n.start());
   auto name = n.child(2).text();
@@ -2335,7 +2390,7 @@ Err MtCursor::emit_using_decl(MnUsingDecl n) {
 ========== tree dump end
 */
 
-Err MtCursor::emit_decl(MnDecl n) {
+CHECK_RETURN Err MtCursor::emit_decl(MnDecl n) {
   Err error;
   // n.dump_tree();
 
@@ -2398,7 +2453,7 @@ Err MtCursor::emit_decl(MnDecl n) {
 //------------------------------------------------------------------------------
 // "unsigned int" -> "int unsigned"
 
-Err MtCursor::emit_sized_type_spec(MnSizedTypeSpec n) {
+CHECK_RETURN Err MtCursor::emit_sized_type_spec(MnSizedTypeSpec n) {
   Err error;
   assert(cursor == n.start());
 
@@ -2419,7 +2474,7 @@ Err MtCursor::emit_sized_type_spec(MnSizedTypeSpec n) {
 //------------------------------------------------------------------------------
 // FIXME - Do we have a test case for namespaces?
 
-Err MtCursor::emit_namespace_def(MnNamespaceDef n) {
+CHECK_RETURN Err MtCursor::emit_namespace_def(MnNamespaceDef n) {
   Err error;
   assert(cursor == n.start());
 
@@ -2450,17 +2505,17 @@ Err MtCursor::emit_namespace_def(MnNamespaceDef n) {
 //------------------------------------------------------------------------------
 // Arg lists are the same in C and Verilog.
 
-Err MtCursor::emit_arg_list(MnArgList n) {
+CHECK_RETURN Err MtCursor::emit_arg_list(MnArgList n) {
   assert(cursor == n.start());
   return emit_children(n);
 }
 
-Err MtCursor::emit_param_list(MnParameterList n) {
+CHECK_RETURN Err MtCursor::emit_param_list(MnParameterList n) {
   assert(cursor == n.start());
   return emit_children(n);
 }
 
-Err MtCursor::emit_field_id(MnFieldIdentifier n) {
+CHECK_RETURN Err MtCursor::emit_field_id(MnFieldIdentifier n) {
   Err error;
   assert(cursor == n.start());
   emit_text(n);
@@ -2470,7 +2525,7 @@ Err MtCursor::emit_field_id(MnFieldIdentifier n) {
 //------------------------------------------------------------------------------
 // FIXME need to do smarter stuff here...
 
-Err MtCursor::emit_preproc(MnNode n) {
+CHECK_RETURN Err MtCursor::emit_preproc(MnNode n) {
   Err error;
   switch (n.sym) {
     case sym_preproc_def: {
@@ -2524,7 +2579,7 @@ Err MtCursor::emit_preproc(MnNode n) {
 //------------------------------------------------------------------------------
 // Call the correct emit() method based on the node type.
 
-Err MtCursor::emit_dispatch(MnNode n) {
+CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
   Err error;
 
   if (cursor != n.start()) {
@@ -2647,7 +2702,7 @@ Err MtCursor::emit_dispatch(MnNode n) {
       error |= emit_field_decl(MnFieldDecl(n));
       break;
     case sym_compound_statement:
-      error |= emit_compund(MnCompoundStatement(n));
+      error |= emit_compound(MnCompoundStatement(n));
       break;
     case sym_template_type:
       error |= emit_template_type(MnTemplateType(n));
@@ -2733,7 +2788,7 @@ Err MtCursor::emit_dispatch(MnNode n) {
       }
       break;
   }
-  assert(cursor == n.end());
+  assert(error || cursor == n.end());
 
   /*
   if (error) {
@@ -2748,7 +2803,7 @@ Err MtCursor::emit_dispatch(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-Err MtCursor::emit_children(MnNode n) {
+CHECK_RETURN Err MtCursor::emit_children(MnNode n) {
   Err error;
 
   assert(cursor == n.start());

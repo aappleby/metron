@@ -28,7 +28,7 @@ module Module
 /*public:*/
 
   initial begin /*init*/
-    /*submod.init();*/
+    /*submod.init()*/;
   end
 
 /*private:*/

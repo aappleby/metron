@@ -138,7 +138,7 @@ module riscv_core
       alu_result2,
       pc_select,
       pc_we
-    );*/
+    )*/;
   end
 
 

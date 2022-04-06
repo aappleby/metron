@@ -112,7 +112,7 @@ inst_funct7 = idec_inst_funct7; end
     program_counter_reset = reset;
     program_counter_write_enable = pc_write_enable;
     program_counter_next = pc_data;
-    /*program_counter.tock(reset, pc_write_enable, pc_data);*/
+    /*program_counter.tock(reset, pc_write_enable, pc_data)*/;
 
     igen_inst = inst;
     mux_reg_writeback_sel = reg_writeback_select;
@@ -129,7 +129,7 @@ inst_funct7 = idec_inst_funct7; end
     regs_write_enable = regfile_write_enable;
     regs_rd_address = idec_inst_rd;
     regs_rd_data = reg_data;
-    /*regs.tock(regfile_write_enable, idec.inst_rd(inst), reg_data);*/
+    /*regs.tock(regfile_write_enable, idec.inst_rd(inst), reg_data)*/;
   end
 
 

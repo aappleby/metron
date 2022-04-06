@@ -25,7 +25,7 @@ module Module
 /*public:*/
 
   task tick(); 
-    /*submod.tick();*/
+    /*submod.tick()*/;
   endtask
   always_ff @(posedge clock) tick();
 

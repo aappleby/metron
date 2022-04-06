@@ -40,7 +40,7 @@ module example_data_memory_bus
     /*data_memory.tock(
         bx<DATA_BITS - 2>(address, 2),
         b1(write_enable && address >= DATA_BEGIN && DATA_END >= address),
-        byte_enable, write_data);*/
+        byte_enable, write_data)*/;
   end
 
 /*private:*/

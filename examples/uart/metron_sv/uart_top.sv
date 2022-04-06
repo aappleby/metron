@@ -37,15 +37,15 @@ module uart_top
 
     rx_i_rstn = i_rstn;
     rx_i_serial = tx_o_serial;
-    /*rx.tock(i_rstn, tx.o_serial());*/
+    /*rx.tock(i_rstn, tx.o_serial())*/;
     hello_i_rstn = i_rstn;
     hello_i_cts = tx_o_cts;
     hello_i_idle = tx_o_idle;
-    /*hello.tock(i_rstn, tx.o_cts(), tx.o_idle());*/
+    /*hello.tock(i_rstn, tx.o_cts(), tx.o_idle())*/;
     tx_i_rstn = i_rstn;
     tx_i_data = hello_data;
     tx_i_req = hello_req;
-    /*tx.tock(i_rstn, hello_data, hello_req);*/
+    /*tx.tock(i_rstn, hello_data, hello_req)*/;
   end
 
   // FIXME need to deduce task vs function by call site, not return type

@@ -83,49 +83,11 @@ void MtCursor::emit_indent() {
 
 //------------------------------------------------------------------------------
 
-void MtCursor::dump_node_line(MnNode n) {
-  auto start = &(source_file->source[n.start_byte()]);
-
-  auto a = start;
-  auto b = start;
-  while (a > source_file->source && *a != '\n' && *a != '\r') a--;
-  while (b < source_file->source_end && *b != '\n' && *b != '\r') b++;
-
-  if (*a == '\n' || *a == '\r') a++;
-
-  while (a != b) {
-    fputc(*a++, stdout);
-  }
-}
-
-//------------------------------------------------------------------------------
-
 void MtCursor::dump_node_stack() {
   for (int i = (int)node_stack.size() - 1; i >= 0; i--) {
     auto n = node_stack[i];
     n.dump_node();
   }
-}
-
-//------------------------------------------------------------------------------
-
-void MtCursor::print_error(MnNode n, const char* fmt, ...) {
-  emit_printf("\n########################################\n");
-
-  va_list args;
-  va_start(args, fmt);
-  vprintf(fmt, args);
-  va_end(args);
-
-  emit_printf("@%04d: ", ts_node_start_point(n.node).row + 1);
-  dump_node_line(n);
-  emit_printf("\n");
-
-  n.error();
-
-  emit_printf("halting...\n");
-  emit_printf("########################################\n");
-  debugbreak();
 }
 
 //------------------------------------------------------------------------------

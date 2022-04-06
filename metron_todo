@@ -9,6 +9,9 @@ check in the tracer that if we bind to a dedup'd port, we always end up with the
 same expression at each port... somehow?
 
 
+Tick methods must _not_ be allowed to call getters that take params
+
+
 
 
 

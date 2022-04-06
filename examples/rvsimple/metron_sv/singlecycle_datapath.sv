@@ -35,12 +35,17 @@ module singlecycle_datapath
   input logic[31:0] alu_result2,
   input logic[1:0] next_pc_select,
   input logic pc_write_enable,
-  output logic[31:0] pc,
-  output logic[31:0] rs2_data,
+  output logic[4:0]  inst_rd,
+  output logic[4:0]  inst_rs1,
+  output logic[4:0]  inst_rs2,
   output logic[6:0]  inst_opcode,
   output logic[2:0]  inst_funct3,
   output logic[6:0]  inst_funct7,
-  output logic[31:0] alu_result
+  output logic[31:0] inst_immediate,
+  output logic[31:0] temp_rs1_data,
+  output logic[31:0] temp_rs2_data,
+  output logic[31:0] pc,
+  output logic[31:0] tock_alu_result
 );
  /*public:*/
 
@@ -50,45 +55,57 @@ module singlecycle_datapath
     pc = program_counter_value;
   end
 
-  always_comb begin
-    logic[4:0] rs2_idx;
-    idec_inst = inst;
-    rs2_idx = idec_inst_rs2;
-    regs_rs2_address = rs2_idx;
-    rs2_data = regs_rs2_data;
-  end
+  //----------------------------------------
 
-  always_comb begin idec_inst = inst;
-inst_opcode = idec_inst_opcode; end
-  always_comb begin idec_inst = inst;
-inst_funct3 = idec_inst_funct3; end
-  always_comb begin idec_inst = inst;
-inst_funct7 = idec_inst_funct7; end
+  /*logic<5>  inst_rd;*/
+  /*logic<5>  inst_rs1;*/
+  /*logic<5>  inst_rs2;*/
+  /*logic<7>  inst_opcode;*/
+  /*logic<3>  inst_funct3;*/
+  /*logic<7>  inst_funct7;*/
+  /*logic<32> inst_immediate;*/
+
+  always_comb begin /*tock_inst*/
+    idec_inst = inst;
+    inst_opcode    = idec_inst_opcode;
+    idec_inst = inst;
+    inst_funct3    = idec_inst_funct3;
+    idec_inst = inst;
+    inst_funct7    = idec_inst_funct7;
+    idec_inst = inst;
+    inst_rd        = idec_inst_rd;
+    idec_inst = inst;
+    inst_rs1       = idec_inst_rs1;
+    idec_inst = inst;
+    inst_rs2       = idec_inst_rs2;
+    igen_inst = inst;
+    inst_immediate = igen_immediate;
+  end
 
   //----------------------------------------
 
-  always_comb begin
-    logic[4:0] rs1_idx;
-    logic[4:0] rs2_idx;
-    idec_inst = inst;
-    rs1_idx = idec_inst_rs1;
-    idec_inst = inst;
-    rs2_idx = idec_inst_rs2;
+  /*logic<32> temp_rs1_data;*/
+  /*logic<32> temp_rs2_data;*/
 
-    regs_rs1_address = rs1_idx;
+  always_comb begin /*tock_alu_result*/
+    regs_rs1_address = inst_rs1;
+    temp_rs1_data = regs_rs1_data;
+    regs_rs2_address = inst_rs2;
+    temp_rs2_data = regs_rs2_data;
+
     mux_operand_a_sel = alu_operand_a_select;
-    mux_operand_a_in0 = regs_rs1_data;
+    mux_operand_a_in0 = temp_rs1_data;
     mux_operand_a_in1 = program_counter_value;
-    regs_rs2_address = rs2_idx;
-    igen_inst = inst;
     mux_operand_b_sel = alu_operand_b_select;
-    mux_operand_b_in0 = regs_rs2_data;
-    mux_operand_b_in1 = igen_immediate;
+    mux_operand_b_in0 = temp_rs2_data;
+    mux_operand_b_in1 = inst_immediate;
     alu_core_alu_function = alu_function;
     alu_core_operand_a = mux_operand_a_out;
     alu_core_operand_b = mux_operand_b_out;
-    alu_result = alu_core_alu_result;
+    tock_alu_result = alu_core_alu_result;
   end
+
+  //----------------------------------------
 
   always_comb begin /*tock*/
     logic[31:0] pc_plus_4;
@@ -98,9 +115,8 @@ inst_funct7 = idec_inst_funct7; end
     adder_pc_plus_4_operand_a = 32'h00000004;
     adder_pc_plus_4_operand_b = program_counter_value;
     pc_plus_4 = adder_pc_plus_4_adder_result;
-    igen_inst = inst;
     adder_pc_plus_immediate_operand_a = program_counter_value;
-    adder_pc_plus_immediate_operand_b = igen_immediate;
+    adder_pc_plus_immediate_operand_b = inst_immediate;
     pc_plus_imm = adder_pc_plus_immediate_adder_result;
 
     mux_next_pc_select_sel = next_pc_select;
@@ -114,22 +130,20 @@ inst_funct7 = idec_inst_funct7; end
     program_counter_next = pc_data;
     /*program_counter.tock(reset, pc_write_enable, pc_data)*/;
 
-    igen_inst = inst;
     mux_reg_writeback_sel = reg_writeback_select;
     mux_reg_writeback_in0 = alu_result2;
     mux_reg_writeback_in1 = data_mem_read_data;
     mux_reg_writeback_in2 = pc_plus_4;
-    mux_reg_writeback_in3 = igen_immediate;
+    mux_reg_writeback_in3 = inst_immediate;
     mux_reg_writeback_in4 = 32'b0;
     mux_reg_writeback_in5 = 32'b0;
     mux_reg_writeback_in6 = 32'b0;
     mux_reg_writeback_in7 = 32'b0;
     reg_data = mux_reg_writeback_out;
-    idec_inst = inst;
     regs_write_enable = regfile_write_enable;
-    regs_rd_address = idec_inst_rd;
+    regs_rd_address = inst_rd;
     regs_rd_data = reg_data;
-    /*regs.tock(regfile_write_enable, idec.inst_rd(inst), reg_data)*/;
+    /*regs.tock(regfile_write_enable, inst_rd, reg_data)*/;
   end
 
 

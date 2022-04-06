@@ -19,14 +19,14 @@ public:
 class Module {
 public:
 
-  void tick() {
+  logic<8> tock(logic<8> old_counter) {
     // Two bindings should end up here.
-    counter = submod1.add_one(submod2.add_two(counter));
+    logic<8> new_counter = submod1.add_one(submod2.add_two(old_counter));
+    return new_counter;
   }
 
 private:
 
   Submod1 submod1;
   Submod2 submod2;
-  logic<8> counter;
 };

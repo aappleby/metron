@@ -96,6 +96,7 @@
     <ClInclude Include="..\..\src\MtTracer.h" />
     <ClInclude Include="..\..\src\Platform.h" />
     <ClInclude Include="..\..\src\TreeSymbols.h" />
+    <ClInclude Include="..\..\submodules\tree-sitter\lib\include\tree_sitter\api.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\MtCursor.cpp" />

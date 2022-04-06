@@ -17,6 +17,9 @@
     <ClInclude Include="..\..\src\TreeSymbols.h">
       <Filter>utils</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\submodules\tree-sitter\lib\include\tree_sitter\api.h">
+      <Filter>tree-sitter</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\MtCursor.cpp" />

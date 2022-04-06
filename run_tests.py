@@ -67,7 +67,7 @@ def check_good(filename):
         test_src = open("tests/metron_sv/" + svname, "r").read()
         golden_src = open("tests/metron_ref/" + svname, "r").read()
         if (test_src != golden_src):
-            print_r("Golden mismatch!!!")
+            print_r(f"Golden mismatch for {svname}")
             error = 1
     except:
         print_b(f"  No golden for {filename}")

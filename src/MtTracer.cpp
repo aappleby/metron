@@ -195,12 +195,10 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n) {
         if (field) {
           error |= trace_read(arg);
           error |= trace_write(arg);
-        }
-        else {
+        } else {
           // local variable increment
         }
-      }
-      else {
+      } else {
         LOG_R("Not sure how to increment a %s\n", n.ts_node_type());
         error = true;
       }
@@ -343,6 +341,7 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
     dump_trace(state_top());
     LOG_R("Callee state - \n");
     dump_trace(state_call);
+    dump_stack();
   }
 
   return error;
@@ -391,6 +390,8 @@ CHECK_RETURN Err MtTracer::trace_method_call(MnNode n) {
 CHECK_RETURN Err MtTracer::trace_submod_call(MnNode n) {
   Err error;
 
+  //n.dump_tree();
+
   // Field call. Pull up the submodule and traverse into the method.
 
   auto node_func = n.get_field(field_function);
@@ -413,6 +414,22 @@ CHECK_RETURN Err MtTracer::trace_submod_call(MnNode n) {
       error = true;
       return error;
     }
+  }
+
+  // Calling a submod function that takes arguments is logically equivalent to
+  // writing a signal - we write the params into the input ports and read the
+  // result from the output port. Because of this, we have to apply
+  // signal-tracing rules to submod function calls.
+
+  if (n.get_field(field_arguments).named_child_count() > 0) {
+    std::string field_name = node_func.text();
+
+    for (int i = (int)_field_stack.size() - 1; i >= 0; i--) {
+      field_name = _field_stack[i]->name() + "." + field_name;
+    }
+
+    error |= trace_write(field_name);
+    error |= trace_read(field_name);
   }
 
   _field_stack.push_back(submod);
@@ -553,10 +570,14 @@ CHECK_RETURN Err MtTracer::trace_if(MnNode n) {
   error |= merge_parallel(branch_a, branch_b, state_top());
 
   if (error) {
-    LOG_R("================================================================================\n");
+    LOG_R(
+        "======================================================================"
+        "==========\n");
     LOG_R("MtTracer::trace_if - error\n");
     n.dump_source_lines();
-    LOG_R("================================================================================\n");
+    LOG_R(
+        "======================================================================"
+        "==========\n");
   }
 
   return error;
@@ -646,7 +667,7 @@ CHECK_RETURN Err MtTracer::trace_read(const std::string& field_name) {
 
   if (new_state == FIELD_INVALID) {
     LOG_R("Field %s was %s, now %s!\n", field_name.c_str(),
-      to_string(old_state), to_string(new_state));
+          to_string(old_state), to_string(new_state));
     error = true;
   }
 
@@ -659,14 +680,16 @@ CHECK_RETURN Err MtTracer::trace_read(const std::string& field_name) {
 CHECK_RETURN Err MtTracer::trace_write(const std::string& field_name) {
   Err error;
 
-  assert(in_tick() || in_tock());
+  // Don't assert this, calls to submod functions with args are considered a
+  // signal write
+  //assert(in_tick() || in_tock());
 
   auto old_state = state_top()[field_name];
   auto new_state = merge_delta(old_state, in_tick() ? DELTA_WR : DELTA_WS);
 
   if (new_state == FIELD_INVALID) {
     LOG_R("Field %s was %s, now %s!\n", field_name.c_str(),
-      to_string(old_state), to_string(new_state));
+          to_string(old_state), to_string(new_state));
     error = true;
   }
 
@@ -766,6 +789,43 @@ void MtTracer::dump_trace(state_map& m) {
   for (const auto& pair : m) {
     LOG_Y("%s = %s\n", pair.first.c_str(), to_string(pair.second));
   }
+}
+
+//------------------------------------------------------------------------------
+
+void MtTracer::dump_stack() {
+
+  //std::vector<MtField*>   _field_stack;
+  //std::vector<MtModule*>  _mod_stack;
+  //std::vector<MtMethod*>  _method_stack;
+
+  LOG_B("Field Stack:\n");
+  for (int i = (int)_field_stack.size() - 1; i >= 0; i--) {
+    auto f = _field_stack[i];
+    LOG_G("%s\n", f->name().c_str());
+  }
+  LOG_B("\n");
+
+  LOG_B("Mod Stack:\n");
+  for (int i = (int)_mod_stack.size() - 1; i >= 0; i--) {
+    auto m = _mod_stack[i];
+    LOG_G("%s\n", m->name().c_str());
+  }
+  LOG_B("\n");
+
+  LOG_B("Method Stack:\n");
+  for (int i = (int)_method_stack.size() - 1; i >= 0; i--) {
+    auto m = _method_stack[i];
+    LOG_G("%s\n", m->name().c_str());
+  }
+  LOG_B("\n");
+
+
+  /*
+  for (const auto& pair : m) {
+    LOG_Y("%s = %s\n", pair.first.c_str(), to_string(pair.second));
+  }
+  */
 }
 
 //------------------------------------------------------------------------------

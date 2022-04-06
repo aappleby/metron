@@ -30,9 +30,9 @@ VL_MODULE(Vtoplevel___024root) {
     VL_OUT(o_pc,31,0);
     IData/*31:0*/ toplevel__DOT__data_memory_bus_address;
     IData/*31:0*/ toplevel__DOT__data_memory_bus_write_data;
+    IData/*31:0*/ toplevel__DOT__core__DOT__datapath_inst;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__program_counter_next;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__regs_rd_data;
-    IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__idec_inst;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value;
     VlUnpacked<IData/*31:0*/, 32> toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs;
     VlUnpacked<IData/*31:0*/, 16384> toplevel__DOT__text_memory_bus__DOT__text_memory__DOT__mem;

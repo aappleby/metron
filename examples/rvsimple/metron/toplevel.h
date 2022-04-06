@@ -29,8 +29,11 @@ class toplevel {
   void tock(logic<1> reset) {
     logic<32> pc           = core.pc();
     logic<32> inst         = text_memory_bus.read_data(pc);
-    logic<32> alu_result2  = core.alu_result(inst);
-    logic<32> write_data   = core.bus_write_data2(inst, alu_result2);
+
+    core.tock_inst(inst);
+
+    logic<32> alu_result2  = core.tock_alu_result(inst);
+    logic<32> write_data   = core.bus_write_data2(alu_result2);
     logic<1>  write_enable = core.bus_write_enable2(inst);
     logic<4>  byte_enable  = core.bus_byte_enable2(inst, alu_result2);
     logic<1>  read_enable  = core.bus_read_enable2(inst);

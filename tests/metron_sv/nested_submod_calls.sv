@@ -28,17 +28,20 @@ endmodule
 
 module Module
 (
-  input logic clock
+  input logic clock,
+  input logic[7:0] old_counter,
+  output logic[7:0] tock
 );
 /*public:*/
 
-  task tick(); 
+  always_comb begin /*tock*/
+    logic[7:0] new_counter;
     // Two bindings should end up here.
-    submod2_a = counter;
+    submod2_a = old_counter;
     submod1_a = submod2_add_two;
-    counter <= submod1_add_one;
-  endtask
-  always_ff @(posedge clock) tick();
+    new_counter = submod1_add_one;
+    tock = new_counter;
+  end
 
 /*private:*/
 
@@ -62,6 +65,5 @@ module Module
   logic[7:0] submod2_a;
   logic[7:0] submod2_add_two;
 
-  logic[7:0] counter;
 endmodule
 

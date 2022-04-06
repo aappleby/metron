@@ -30,35 +30,51 @@ class singlecycle_datapath {
     return program_counter.value();
   }
 
-  logic<32> rs2_data(logic<32> inst) const {
-    logic<5> rs2_idx = idec.inst_rs2(inst);
-    return regs.rs2_data(rs2_idx);
-  }
+  //----------------------------------------
 
-  logic<7>  inst_opcode(logic<32> inst) const { return idec.inst_opcode(inst); }
-  logic<3>  inst_funct3(logic<32> inst) const { return idec.inst_funct3(inst); }
-  logic<7>  inst_funct7(logic<32> inst) const { return idec.inst_funct7(inst); }
+  logic<5>  inst_rd;
+  logic<5>  inst_rs1;
+  logic<5>  inst_rs2;
+  logic<7>  inst_opcode;
+  logic<3>  inst_funct3;
+  logic<7>  inst_funct7;
+  logic<32> inst_immediate;
+
+  void tock_inst(logic<32> inst) {
+    inst_opcode    = idec.inst_opcode(inst);
+    inst_funct3    = idec.inst_funct3(inst);
+    inst_funct7    = idec.inst_funct7(inst);
+    inst_rd        = idec.inst_rd(inst);
+    inst_rs1       = idec.inst_rs1(inst);
+    inst_rs2       = idec.inst_rs2(inst);
+    inst_immediate = igen.immediate(inst);
+  }
 
   //----------------------------------------
 
-  logic<32> alu_result(logic<32> inst, logic<5> alu_function, logic<1> alu_operand_a_select, logic<1> alu_operand_b_select) const {
-    logic<5> rs1_idx = idec.inst_rs1(inst);
-    logic<5> rs2_idx = idec.inst_rs2(inst);
+  logic<32> temp_rs1_data;
+  logic<32> temp_rs2_data;
+
+  logic<32> tock_alu_result(logic<32> inst, logic<5> alu_function, logic<1> alu_operand_a_select, logic<1> alu_operand_b_select) {
+    temp_rs1_data = regs.rs1_data(inst_rs1);
+    temp_rs2_data = regs.rs2_data(inst_rs2);
 
     return alu_core.alu_result(
       alu_function,
       mux_operand_a.out(
         alu_operand_a_select,
-        regs.rs1_data(rs1_idx),
+        temp_rs1_data,
         program_counter.value()
       ),
       mux_operand_b.out(
         alu_operand_b_select,
-        regs.rs2_data(rs2_idx),
-        igen.immediate(inst)
+        temp_rs2_data,
+        inst_immediate
       )
     );
   }
+
+  //----------------------------------------
 
   void tock(
     logic<1> reset,
@@ -71,7 +87,7 @@ class singlecycle_datapath {
     logic<1> pc_write_enable
   ) {
     logic<32> pc_plus_4 = adder_pc_plus_4.adder_result(b32(0x00000004), program_counter.value());
-    logic<32> pc_plus_imm = adder_pc_plus_immediate.adder_result(program_counter.value(), igen.immediate(inst));
+    logic<32> pc_plus_imm = adder_pc_plus_immediate.adder_result(program_counter.value(), inst_immediate);
 
     logic<32> pc_data = mux_next_pc_select.out(
       next_pc_select,
@@ -87,13 +103,13 @@ class singlecycle_datapath {
       alu_result2,
       data_mem_read_data,
       pc_plus_4,
-      igen.immediate(inst),
+      inst_immediate,
       b32(0b0),
       b32(0b0),
       b32(0b0),
       b32(0b0)
     );
-    regs.tock(regfile_write_enable, idec.inst_rd(inst), reg_data);
+    regs.tock(regfile_write_enable, inst_rd, reg_data);
   }
 
 

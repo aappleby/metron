@@ -17,9 +17,7 @@ struct MtCursor {
 
   // Debugging
 
-  void dump_node_line(MnNode n);
   void dump_node_stack();
-  void print_error(MnNode n, const char* fmt, ...);
 
   // Indentation
 

@@ -77,6 +77,8 @@ class MtTracer {
   CHECK_RETURN Err trace_end_fn();
 
   static void dump_trace(state_map& m);
+  void dump_stack();
+
 
   MtModule* mod() { return _mod_stack.back(); }
   MtMethod* method() { return _method_stack.back(); }

@@ -1,5 +1,17 @@
-fix fallthrough cases
 fix #defines
-support tock return types
+
+check in the tracer that we bind all submod ports
+
+
+
+
+
+
+
+----------
+
 assert that submodules are only bound once?
-submod calls can only be at toplevel
+  no, they can be bound multiple times, won't break anything
+submod calls can only be at toplevel?
+  no, but they have to be in a compound statement so we have a place to put bindings
+

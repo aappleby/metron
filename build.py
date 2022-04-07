@@ -29,6 +29,7 @@ def main():
 obj_dir = "obj"
 outfile = open("build.ninja", "w+")
 ninja = ninja_syntax.Writer(outfile)
+opt_mode = "-O3"
 
 
 def swap_ext(name, new_ext):
@@ -70,22 +71,15 @@ ninja.rule("compile_c",
 #           command="bin/metron -q -r ${src_dir} -o ${dst_dir} -c ${file_list}")
 
 # Noisy Metron
-ninja.rule("metron",
-           command="bin/metron -r ${src_dir} -o ${dst_dir} -c ${file_list}")
-
-ninja.rule("verilator",
-           command="verilator ${includes} --cc ${src_top} -Mdir ${dst_dir}")
+ninja.rule("metron",        command="bin/metron -r ${src_dir} -o ${dst_dir} -c ${file_list}")
+ninja.rule("verilator",     command="verilator ${includes} --cc ${src_top} -Mdir ${dst_dir}")
 ninja.rule("make",          command="make -C ${dst_dir} -f ${makefile}")
 ninja.rule("link",          command="g++ -g $opt ${in} ${link_libs} -o ${out}")
-ninja.rule("run_test",
-           command="${in} | grep \"All tests pass.\" && touch ${out}")
+ninja.rule("run_test",      command="${in} | grep \"All tests pass.\" && touch ${out}")
 ninja.rule("console",       command="${in}", pool="console")
-ninja.rule("iverilog",
-           command="iverilog -g2012 ${defines} ${includes} ${in} -o ${out}")
-ninja.rule("yosys",
-           command="yosys -p 'read_verilog ${includes} -sv ${in}; dump; synth_ice40 -json ${out};'")
-ninja.rule("nextpnr-ice40",
-           command="nextpnr-ice40 -q --${chip} --package ${package} --json ${in} --asc ${out} --pcf ${pcf}")
+ninja.rule("iverilog",      command="iverilog -g2012 ${defines} ${includes} ${in} -o ${out}")
+ninja.rule("yosys",         command="yosys -p 'read_verilog ${includes} -sv ${in}; dump; synth_ice40 -json ${out};'")
+ninja.rule("nextpnr-ice40", command="nextpnr-ice40 -q --${chip} --package ${package} --json ${in} --asc ${out} --pcf ${pcf}")
 ninja.rule("icepack",       command="icepack ${in} ${out}")
 
 
@@ -166,7 +160,10 @@ def cpp_binary(bin_name, src_files, src_objs=None, deps=None, **kwargs):
                     implicit=deps,
                     variables=kwargs)
         src_objs.append(obj_name)
-    ninja.build(bin_name, "link", src_objs)
+    ninja.build(outputs=bin_name,
+                rule="link",
+                inputs=src_objs,
+                variables=kwargs)
 
 
 def iverilog_binary(bin_name, src_top, src_files, includes):
@@ -340,7 +337,7 @@ def build_rvsimple():
             ".",
             "src"
         ],
-        opt="-O3",
+        opt=opt_mode,
     )
 
     rvsimple_metron_srcs = metronize_dir(mt_root, sv_root)
@@ -403,7 +400,7 @@ def build_rvtiny():
             ".",
             "src"
         ],
-        opt="-O3",
+        opt=opt_mode,
     )
 
     rvtiny_metron_srcs = metronize_dir(mt_root, sv_root)
@@ -444,7 +441,7 @@ def build_rvtiny_sync():
             ".",
             "src"
         ],
-        opt="-O3",
+        opt=opt_mode,
     )
 
     metronized_src = metronize_dir(mt_root, sv_root)
@@ -479,7 +476,7 @@ def build_ibex():
             ".",
             "src"
         ],
-        opt="-O3",
+        opt=opt_mode,
     )
 
 # ------------------------------------------------------------------------------
@@ -497,7 +494,8 @@ def build_pong():
             ".",
             "src"
         ],
-        opt="-O3",
+        link_libs="-lSDL2",
+        opt=opt_mode,
     )
 
     metronized_src = metronize_dir(mt_root, sv_root)

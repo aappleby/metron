@@ -7,6 +7,8 @@ import multiprocessing
 import time
 from os import path
 
+#kcov_prefix = "kcov --include-pattern=Metron/src coverage "
+kcov_prefix = ""
 
 def print_c(color, *args):
     sys.stdout.write(
@@ -48,7 +50,7 @@ def check_good(filename):
     print(f"  Checking known-good example {filename}")
 
     # Run Metron on the source file
-    cmd = f"bin/metron -q -r tests/metron_good -o tests/metron_sv -c {basename}"
+    cmd = kcov_prefix + f"bin/metron -q -r tests/metron_good -o tests/metron_sv -c {basename}"
     result = os.system(cmd)
     if result:
         print_r(f"Test file {filename} - expected pass, got {result}")
@@ -60,6 +62,13 @@ def check_good(filename):
     result = os.system(cmd)
     if result:
         print(f"Verilator syntax check on {filename} failed")
+        error = 1
+
+    # Run Icarus on the translated source file.
+    cmd = f"iverilog -g2012 -Wall -Isrc -o bin/{svname}.o tests/metron_sv/{svname}"
+    result = os.system(cmd)
+    if result:
+        print(f"Icarus syntax check on {filename} failed")
         error = 1
 
     # Check the translated source against the golden, if present.
@@ -85,7 +94,7 @@ def check_bad(filename):
 
     print(f"  Checking known-bad example {filename}")
 
-    cmd = f"bin/metron -q -r tests/metron_bad -o tests/metron_sv -c {basename}"
+    cmd = kcov_prefix + f"bin/metron -q -r tests/metron_bad -o tests/metron_sv -c {basename}"
     #print(f"  {cmd}")
     result = os.system(cmd)
     if result == 0:
@@ -98,9 +107,11 @@ def check_bad(filename):
 
 
 def run_simple_test(commandline):
+    #cmd = kcov_prefix + commandline
+    cmd = commandline
     error = 0
-    print(f"  Running test {commandline}")
-    stuff = subprocess.run(commandline.split(
+    print(f"  Running test {cmd}")
+    stuff = subprocess.run(cmd.split(
         " "), stdout=subprocess.PIPE).stdout.decode('utf-8')
     if not "All tests pass" in stuff:
         print_r(stuff)
@@ -134,7 +145,7 @@ if __name__ == "__main__":
     simple_tests = [
         "bin/examples/uart",
         "bin/examples/uart_vl",
-        "bin/examples/uart_iv",
+        #"bin/examples/uart_iv",
         "bin/examples/rvsimple",
         "bin/examples/rvsimple_vl",
         "bin/examples/rvsimple_ref",
@@ -158,18 +169,21 @@ if __name__ == "__main__":
     print()
     print_b("Checking that all examples in metron_good convert to SV cleanly")
     if any(pool.map(check_good, metron_good)):
+    #if any(map(check_good, metron_good)):
         print_r(f"Headers in metron_good failed Metron conversion")
         error = True
 
     print()
     print_b("Checking that all examples in metron_bad fail conversion")
     if any(pool.map(check_bad, metron_bad)):
+    #if any(map(check_bad, metron_bad)):
         print_r(f"Headers in metron_bad passed Metron conversion")
         error = True
 
     print()
     print_b("Running standalone tests")
     if any(pool.map(run_simple_test, simple_tests)):
+    #if any(map(run_simple_test, simple_tests)):
         print_r(f"Standalone tests failed")
         error = True
 

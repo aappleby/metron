@@ -29,7 +29,9 @@ module Pong
 	output logic vga_vsync,
 	output logic vga_R,
 	output logic vga_G,
-	output logic vga_B
+	output logic vga_B,
+	output logic[9:0] pix_x,
+	output logic[9:0] pix_y
 );
 /*public:*/
 
@@ -57,6 +59,11 @@ module Pong
 		quad_a = 0;
 		quad_b = 0;
 	end
+
+	//----------------------------------------
+
+	always_comb begin pix_x = px; end
+	always_comb begin pix_y = py; end
 
 	//----------------------------------------
 

@@ -89,6 +89,7 @@ build bin/metron: link obj/submodules/tree-sitter/lib/src/lib.o $
     obj/src/MtCursor.o obj/src/MtModLibrary.o obj/src/MtModule.o $
     obj/src/MtNode.o obj/src/MtSourceFile.o obj/src/MtTracer.o $
     obj/src/Platform.o
+  includes = -I. -Isubmodules/tree-sitter/lib/include
 build tests/rv_tests/add.text.vh tests/rv_tests/addi.text.vh $
     tests/rv_tests/and.text.vh tests/rv_tests/andi.text.vh $
     tests/rv_tests/auipc.text.vh tests/rv_tests/benchmark.text.vh $
@@ -152,6 +153,7 @@ build tests/rv_tests/add.text.vh tests/rv_tests/addi.text.vh $
 build obj/examples/uart/main.o: compile_cpp examples/uart/main.cpp
   includes = -Isrc
 build bin/examples/uart: link obj/examples/uart/main.o
+  includes = -Isrc
 
 
 ################################################################################
@@ -194,6 +196,8 @@ build obj/examples/uart/main_vl.o: compile_cpp examples/uart/main_vl.cpp | $
       -I/usr/local/share/verilator/include
 build bin/examples/uart_vl: link obj/verilated.o $
     examples/uart/metron_vl/Vuart_top__ALL.o obj/examples/uart/main_vl.o
+  includes = -Isrc -Itests -Iobj/examples/uart $
+      -I/usr/local/share/verilator/include
 
 
 ################################################################################
@@ -232,6 +236,8 @@ build obj/examples/rvsimple/main.o: compile_cpp examples/rvsimple/main.cpp
   includes = -I. -Isrc
   opt = -O3
 build bin/examples/rvsimple: link obj/examples/rvsimple/main.o
+  includes = -I. -Isrc
+  opt = -O3
 
 
 ################################################################################
@@ -340,6 +346,8 @@ build obj/examples/rvsimple/main_vl.o: compile_cpp $
 build bin/examples/rvsimple_vl: link obj/verilated.o $
     examples/rvsimple/metron_vl/Vtoplevel__ALL.o $
     obj/examples/rvsimple/main_vl.o
+  includes = -I. -Isrc -Itests -Iobj/examples/rvsimple $
+      -I/usr/local/share/verilator/include
 
 
 ################################################################################
@@ -390,6 +398,8 @@ build obj/examples/rvsimple/main_ref_vl.o: compile_cpp $
 build bin/examples/rvsimple_ref: link obj/verilated.o $
     examples/rvsimple/reference_vl/Vtoplevel__ALL.o $
     obj/examples/rvsimple/main_ref_vl.o
+  includes = -I. -Isrc -Itests -Iobj/examples/rvsimple $
+      -I/usr/local/share/verilator/include
 
 
 ################################################################################
@@ -399,6 +409,8 @@ build obj/examples/rvtiny/main.o: compile_cpp examples/rvtiny/main.cpp
   includes = -I. -Isrc
   opt = -O3
 build bin/examples/rvtiny: link obj/examples/rvtiny/main.o
+  includes = -I. -Isrc
+  opt = -O3
 
 
 ################################################################################
@@ -435,6 +447,8 @@ build obj/examples/rvtiny/main_vl.o: compile_cpp $
       -I/usr/local/share/verilator/include
 build bin/examples/rvtiny_vl: link obj/verilated.o $
     examples/rvtiny/metron_vl/Vtoplevel__ALL.o obj/examples/rvtiny/main_vl.o
+  includes = -I. -Isrc -Iobj/examples/rvtiny $
+      -I/usr/local/share/verilator/include
 
 
 ################################################################################
@@ -445,6 +459,8 @@ build obj/examples/rvtiny_sync/main.o: compile_cpp $
   includes = -I. -Isrc
   opt = -O3
 build bin/examples/rvtiny_sync: link obj/examples/rvtiny_sync/main.o
+  includes = -I. -Isrc
+  opt = -O3
 
 
 ################################################################################
@@ -482,6 +498,7 @@ build obj/examples/rvtiny_sync/main_vl.o: compile_cpp $
 build bin/examples/rvtiny_sync_vl: link obj/verilated.o $
     examples/rvtiny_sync/metron_vl/Vtoplevel__ALL.o $
     obj/examples/rvtiny_sync/main_vl.o
+  includes = -I. -Isrc -I/usr/local/share/verilator/include
 
 
 ################################################################################
@@ -489,8 +506,12 @@ build bin/examples/rvtiny_sync_vl: link obj/verilated.o $
 
 build obj/examples/pong/main.o: compile_cpp examples/pong/main.cpp
   includes = -I. -Isrc
+  link_libs = -lSDL2
   opt = -O3
 build bin/examples/pong: link obj/examples/pong/main.o
+  includes = -I. -Isrc
+  link_libs = -lSDL2
+  opt = -O3
 
 
 ################################################################################

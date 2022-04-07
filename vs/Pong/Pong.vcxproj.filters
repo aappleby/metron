@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\examples\pong\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="metron">
+      <UniqueIdentifier>{9234ce46-d054-459a-9486-aa5c08566945}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="metron_sv">
+      <UniqueIdentifier>{e263ee3e-1d20-4e1f-a2aa-6dc99238d908}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\examples\pong\metron\pong.h">
+      <Filter>metron</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\examples\pong\metron\pong.mt">
+      <Filter>metron</Filter>
+    </None>
+    <None Include="..\..\examples\pong\metron\README.md">
+      <Filter>metron</Filter>
+    </None>
+    <None Include="..\..\examples\pong\metron_sv\pong.sv">
+      <Filter>metron_sv</Filter>
+    </None>
+    <None Include="..\..\examples\pong\metron_sv\README.md">
+      <Filter>metron_sv</Filter>
+    </None>
+  </ItemGroup>
+</Project>

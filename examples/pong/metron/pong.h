@@ -50,6 +50,11 @@ public:
 
 	//----------------------------------------
 
+	logic<10> pix_x() const { return px; }
+	logic<10> pix_y() const { return py; }
+
+	//----------------------------------------
+
 	void tock() {
 		vga_hsync = !((px >= 656) && (py <= 751));
 		vga_vsync = !((py >= 490) && (py <= 491));

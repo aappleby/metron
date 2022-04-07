@@ -29,11 +29,7 @@ module Pong
 	output logic vga_vsync,
 	output logic vga_R,
 	output logic vga_G,
-	output logic vga_B,
-	output logic border,
-	output logic paddle,
-	output logic ball,
-	output logic checker
+	output logic vga_B
 );
 /*public:*/
 
@@ -42,30 +38,6 @@ module Pong
 	/*logic<1> vga_R;*/
 	/*logic<1> vga_G;*/
 	/*logic<1> vga_B;*/
-
-	//----------------------------------------
-
-	always_comb begin
-		border = (px <= 7) || (px >= 633) || (py <= 7) || (py >= 473);
-	end
-
-	always_comb begin
-		paddle = (px >= pad_x - 63) &&
-		       (px <= pad_x + 63) &&
-		       (py >= pad_y -  3) &&
-		       (py <= pad_y +  3);
-	end
-
-	always_comb begin
-		ball = (px >= ball_x - 7) &&
-		       (px <= ball_x + 7) &&
-		       (py >= ball_y - 7) &&
-		       (py <= ball_y + 7);
-	end
-
-	always_comb begin
-		checker = px[3] ^ py[3];
-	end
 
 	//----------------------------------------
 
@@ -92,14 +64,14 @@ module Pong
 		vga_hsync = !((px >= 656) && (py <= 751));
 		vga_vsync = !((py >= 490) && (py <= 491));
 
-		vga_R = 0;
-		vga_G = 0;
-		vga_B = 0;
-
 		if ((px < 640) && (py < 480)) begin
-			vga_R = border() | paddle() | ball() | checker();
-			vga_G = border() | paddle() | ball();
-			vga_B = border() | paddle() | ball();
+			vga_R = in_border() | in_paddle() | in_ball() | in_checker();
+			vga_G = in_border() | in_paddle() | in_ball();
+			vga_B = in_border() | in_paddle() | in_ball();
+		end else begin
+			vga_R = 0;
+			vga_G = 0;
+			vga_B = 0;
 		end
 	end
 
@@ -125,9 +97,10 @@ module Pong
 		if (new_px == 800) begin
 			new_px = 0;
 			new_py = new_py + 1;
-			if (new_py == 525) begin
-				new_py = 0;
-			end
+		end
+
+		if (new_py == 525) begin
+			new_py = 0;
 		end
 
 		//----------
@@ -146,14 +119,14 @@ module Pong
 		end
 
 		//----------
-		// Update ball
+		// Update in_ball
 
 		new_ball_x = ball_x;
 		new_ball_y = ball_y;
 		new_ball_dx = ball_dx;
 		new_ball_dy = ball_dy;
 
-		if (border() | paddle()) begin
+		if (in_border() | in_paddle()) begin
 			if((px == ball_x - 7) & (py == ball_y + 0)) new_ball_dx = 1;
 			if((px == ball_x + 7) & (py == ball_y + 0)) new_ball_dx = 0;
 			if((px == ball_x + 0) & (py == ball_y - 7)) new_ball_dy = 1;
@@ -188,6 +161,28 @@ module Pong
 	//----------------------------------------
 
 /*private:*/
+
+	function logic in_border() /*const*/; 
+		in_border = (px <= 7) || (px >= 633) || (py <= 7) || (py >= 473);
+	endfunction
+
+	function logic in_paddle() /*const*/; 
+		in_paddle = (px >= pad_x - 63) &&
+		       (px <= pad_x + 63) &&
+		       (py >= pad_y -  3) &&
+		       (py <= pad_y +  3);
+	endfunction
+
+	function logic in_ball() /*const*/; 
+		in_ball = (px >= ball_x - 7) &&
+		       (px <= ball_x + 7) &&
+		       (py >= ball_y - 7) &&
+		       (py <= ball_y + 7);
+	endfunction
+
+	function logic in_checker() /*const*/; 
+		in_checker = px[3] ^ py[3];
+	endfunction
 
 	logic[9:0] px;
 	logic[9:0] py;

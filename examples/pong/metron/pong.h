@@ -31,30 +31,6 @@ public:
 
 	//----------------------------------------
 
-	logic<1> border() const {
-		return (px <= 7) || (px >= 633) || (py <= 7) || (py >= 473);
-	}
-
-	logic<1> paddle() const {
-		return (px >= pad_x - 63) &&
-		       (px <= pad_x + 63) &&
-		       (py >= pad_y -  3) &&
-		       (py <= pad_y +  3);
-	}
-
-	logic<1> ball() const {
-		return (px >= ball_x - 7) &&
-		       (px <= ball_x + 7) &&
-		       (py >= ball_y - 7) &&
-		       (py <= ball_y + 7);
-	}
-
-	logic<1> checker() const {
-		return px[3] ^ py[3];
-	}
-
-	//----------------------------------------
-
 	void init() {
 		px = 0;
 		py = 0;
@@ -78,14 +54,14 @@ public:
 		vga_hsync = !((px >= 656) && (py <= 751));
 		vga_vsync = !((py >= 490) && (py <= 491));
 
-		vga_R = 0;
-		vga_G = 0;
-		vga_B = 0;
-
 		if ((px < 640) && (py < 480)) {
-			vga_R = border() | paddle() | ball() | checker();
-			vga_G = border() | paddle() | ball();
-			vga_B = border() | paddle() | ball();
+			vga_R = in_border() | in_paddle() | in_ball() | in_checker();
+			vga_G = in_border() | in_paddle() | in_ball();
+			vga_B = in_border() | in_paddle() | in_ball();
+		} else {
+			vga_R = 0;
+			vga_G = 0;
+			vga_B = 0;
 		}
 	}
 
@@ -102,6 +78,7 @@ public:
 			new_px = 0;
 			new_py = new_py + 1;
 		}
+
 		if (new_py == 525) {
 			new_py = 0;
 		}
@@ -122,14 +99,14 @@ public:
 		}
 
 		//----------
-		// Update ball
+		// Update in_ball
 
 		logic<10> new_ball_x = ball_x;
 		logic<10> new_ball_y = ball_y;
 		logic<1> new_ball_dx = ball_dx;
 		logic<1> new_ball_dy = ball_dy;
 
-		if (border() | paddle()) {
+		if (in_border() | in_paddle()) {
 			if((px == ball_x - 7) & (py == ball_y + 0)) new_ball_dx = 1;
 			if((px == ball_x + 7) & (py == ball_y + 0)) new_ball_dx = 0;
 			if((px == ball_x + 0) & (py == ball_y - 7)) new_ball_dy = 1;
@@ -163,6 +140,28 @@ public:
 	//----------------------------------------
 
 private:
+
+	logic<1> in_border() const {
+		return (px <= 7) || (px >= 633) || (py <= 7) || (py >= 473);
+	}
+
+	logic<1> in_paddle() const {
+		return (px >= pad_x - 63) &&
+		       (px <= pad_x + 63) &&
+		       (py >= pad_y -  3) &&
+		       (py <= pad_y +  3);
+	}
+
+	logic<1> in_ball() const {
+		return (px >= ball_x - 7) &&
+		       (px <= ball_x + 7) &&
+		       (py >= ball_y - 7) &&
+		       (py <= ball_y + 7);
+	}
+
+	logic<1> in_checker() const {
+		return px[3] ^ py[3];
+	}
 
 	logic<10> px;
 	logic<10> py;

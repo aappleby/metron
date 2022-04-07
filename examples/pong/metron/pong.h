@@ -1,111 +1,185 @@
+#ifndef PONG_H
+#define PONG_H
+
 #include "metron_tools.h"
+
+//------------------------------------------------------------------------------
+
+/*
+640x480x60
+Pixel clock 25.175 MHz
+
+Screen X    [000-639]
+Front porch [640-655]
+HSync       [656-751]
+Back porch  [752-799]
+
+Screen Y    [000-479]
+Front porch [480-489]
+VSync       [490-491]
+Back porch  [492-524]
+*/
 
 class Pong {
 public:
 
-	void tock() {
+	logic<1> vga_hsync;
+	logic<1> vga_vsync;
+	logic<1> vga_R;
+	logic<1> vga_G;
+	logic<1> vga_B;
+
+	//----------------------------------------
+
+	logic<1> border() const {
+		return (px <= 7) || (px >= 633) || (py <= 7) || (py >= 473);
 	}
 
+	logic<1> paddle() const {
+		return (px >= pad_x - 63) &&
+		       (px <= pad_x + 63) &&
+		       (py >= pad_y -  3) &&
+		       (py <= pad_y +  3);
+	}
+
+	logic<1> ball() const {
+		return (px >= ball_x - 7) &&
+		       (px <= ball_x + 7) &&
+		       (py >= ball_y - 7) &&
+		       (py <= ball_y + 7);
+	}
+
+	logic<1> checker() const {
+		return px[3] ^ py[3];
+	}
+
+	//----------------------------------------
+
+	void init() {
+		px = 0;
+		py = 0;
+
+		ball_x = 320;
+		ball_y = 240;
+
+		ball_dx = 1;
+		ball_dy = 1;
+
+		pad_x = 240;
+		pad_y = 400;
+
+		quad_a = 0;
+		quad_b = 0;
+	}
+
+	//----------------------------------------
+
+	void tock() {
+		vga_hsync = !((px >= 656) && (py <= 751));
+		vga_vsync = !((py >= 490) && (py <= 491));
+
+		vga_R = 0;
+		vga_G = 0;
+		vga_B = 0;
+
+		if ((px < 640) && (py < 480)) {
+			vga_R = border() | paddle() | ball() | checker();
+			vga_G = border() | paddle() | ball();
+			vga_B = border() | paddle() | ball();
+		}
+	}
+
+	//----------------------------------------
+
+	void tick(logic<1> in_quad_a, logic<1> in_quad_b) {
+		logic<10> new_px = px + 1;
+		logic<10> new_py = py;
+
+		//----------
+		// Update screen coord
+
+		if (new_px == 800) {
+			new_px = 0;
+			new_py = new_py + 1;
+			if (new_py == 525) {
+				new_py = 0;
+			}
+		}
+
+		//----------
+		// Update quadrature encoder
+
+		logic<1> quad_dir  = quad_a[1] ^ quad_b[0];
+		logic<1> quad_step = quad_a[1] ^ quad_a[0] ^ quad_b[1] ^ quad_b[0];
+
+		logic<10> new_pad_x = pad_x;
+		logic<10> new_pad_y = pad_y;
+
+		if (quad_step) {
+			new_pad_x = pad_x + quad_dir ? 1 : 0;
+			if (new_pad_x < 120) new_pad_x = 120;
+			if (new_pad_x > 520) new_pad_x = 520;
+		}
+
+		//----------
+		// Update ball
+
+		logic<10> new_ball_x = ball_x;
+		logic<10> new_ball_y = ball_y;
+		logic<1> new_ball_dx = ball_dx;
+		logic<1> new_ball_dy = ball_dy;
+
+		if (border() | paddle()) {
+			if((px == ball_x - 7) & (py == ball_y + 0)) new_ball_dx = 1;
+			if((px == ball_x + 7) & (py == ball_y + 0)) new_ball_dx = 0;
+			if((px == ball_x + 0) & (py == ball_y - 7)) new_ball_dy = 1;
+			if((px == ball_x + 0) & (py == ball_y + 7)) new_ball_dy = 0;
+		}
+
+		if (new_px == 0 && new_py == 0) {
+			new_ball_x = ball_x + (new_ball_dx ? 1 : -1);
+			new_ball_y = ball_y + (new_ball_dy ? 1 : -1);
+		}
+
+		//----------
+		// Commit
+
+		px = new_px;
+		py = new_py;
+
+		pad_x = new_pad_x;
+		pad_y = new_pad_y;
+
+		ball_x = new_ball_x;
+		ball_y = new_ball_y;
+
+		ball_dx = new_ball_dx;
+		ball_dy = new_ball_dy;
+
+		quad_a = quad_a << 1 | in_quad_a;
+		quad_b = quad_b << 1 | in_quad_b;
+	}
+
+	//----------------------------------------
+
 private:
+
+	logic<10> px;
+	logic<10> py;
+
+	logic<10> pad_x;
+	logic<10> pad_y;
+
+	logic<10> ball_x;
+	logic<10> ball_y;
+
+	logic<1>  ball_dx;
+	logic<1>  ball_dy;
+
+	logic<2>  quad_a;
+	logic<2>  quad_b;
 };
 
+//------------------------------------------------------------------------------
 
-#if 0
-// Pong VGA game
-// (c) fpga4fun.com
-
-module pong(clk, vga_h_sync, vga_v_sync, vga_R, vga_G, vga_B, quadA, quadB);
-input clk;
-output vga_h_sync, vga_v_sync, vga_R, vga_G, vga_B;
-input quadA, quadB;
-
-wire inDisplayArea;
-wire [9:0] CounterX;
-wire [8:0] CounterY;
-
-hvsync_generator syncgen(.clk(clk), .vga_h_sync(vga_h_sync), .vga_v_sync(vga_v_sync), 
-  .inDisplayArea(inDisplayArea), .CounterX(CounterX), .CounterY(CounterY));
-
-/////////////////////////////////////////////////////////////////
-reg [8:0] PaddlePosition;
-reg [2:0] quadAr, quadBr;
-always @(posedge clk) quadAr <= {quadAr[1:0], quadA};
-always @(posedge clk) quadBr <= {quadBr[1:0], quadB};
-
-always @(posedge clk)
-if(quadAr[2] ^ quadAr[1] ^ quadBr[2] ^ quadBr[1])
-begin
-	if(quadAr[2] ^ quadBr[1])
-	begin
-		if(~&PaddlePosition)        // make sure the value doesn't overflow
-			PaddlePosition <= PaddlePosition + 1;
-	end
-	else
-	begin
-		if(|PaddlePosition)        // make sure the value doesn't underflow
-			PaddlePosition <= PaddlePosition - 1;
-	end
-end
-
-/////////////////////////////////////////////////////////////////
-reg [9:0] ballX;
-reg [8:0] ballY;
-reg ball_inX, ball_inY;
-
-always @(posedge clk)
-if(ball_inX==0) ball_inX <= (CounterX==ballX) & ball_inY; else ball_inX <= !(CounterX==ballX+16);
-
-always @(posedge clk)
-if(ball_inY==0) ball_inY <= (CounterY==ballY); else ball_inY <= !(CounterY==ballY+16);
-
-wire ball = ball_inX & ball_inY;
-
-/////////////////////////////////////////////////////////////////
-wire border = (CounterX[9:3]==0) || (CounterX[9:3]==79) || (CounterY[8:3]==0) || (CounterY[8:3]==59);
-wire paddle = (CounterX>=PaddlePosition+8) && (CounterX<=PaddlePosition+120) && (CounterY[8:4]==27);
-wire BouncingObject = border | paddle; // active if the border or paddle is redrawing itself
-
-reg ResetCollision;
-always @(posedge clk) ResetCollision <= (CounterY==500) & (CounterX==0);  // active only once for every video frame
-
-reg CollisionX1, CollisionX2, CollisionY1, CollisionY2;
-always @(posedge clk) if(ResetCollision) CollisionX1<=0; else if(BouncingObject & (CounterX==ballX   ) & (CounterY==ballY+ 8)) CollisionX1<=1;
-always @(posedge clk) if(ResetCollision) CollisionX2<=0; else if(BouncingObject & (CounterX==ballX+16) & (CounterY==ballY+ 8)) CollisionX2<=1;
-always @(posedge clk) if(ResetCollision) CollisionY1<=0; else if(BouncingObject & (CounterX==ballX+ 8) & (CounterY==ballY   )) CollisionY1<=1;
-always @(posedge clk) if(ResetCollision) CollisionY2<=0; else if(BouncingObject & (CounterX==ballX+ 8) & (CounterY==ballY+16)) CollisionY2<=1;
-
-/////////////////////////////////////////////////////////////////
-wire UpdateBallPosition = ResetCollision;  // update the ball position at the same time that we reset the collision detectors
-
-reg ball_dirX, ball_dirY;
-always @(posedge clk)
-if(UpdateBallPosition)
-begin
-	if(~(CollisionX1 & CollisionX2))        // if collision on both X-sides, don't move in the X direction
-	begin
-		ballX <= ballX + (ball_dirX ? -1 : 1);
-		if(CollisionX2) ball_dirX <= 1; else if(CollisionX1) ball_dirX <= 0;
-	end
-
-	if(~(CollisionY1 & CollisionY2))        // if collision on both Y-sides, don't move in the Y direction
-	begin
-		ballY <= ballY + (ball_dirY ? -1 : 1);
-		if(CollisionY2) ball_dirY <= 1; else if(CollisionY1) ball_dirY <= 0;
-	end
-end 
-
-/////////////////////////////////////////////////////////////////
-wire R = BouncingObject | ball | (CounterX[3] ^ CounterY[3]);
-wire G = BouncingObject | ball;
-wire B = BouncingObject | ball;
-
-reg vga_R, vga_G, vga_B;
-always @(posedge clk)
-begin
-	vga_R <= R & inDisplayArea;
-	vga_G <= G & inDisplayArea;
-	vga_B <= B & inDisplayArea;
-end
-
-endmodule
-#endif
+#endif // PONG_H

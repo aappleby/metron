@@ -64,8 +64,15 @@ ninja.rule("compile_cpp",
            command="g++ -g ${opt} -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}", deps="gcc", depfile="${out}.d")
 ninja.rule("compile_c",
            command="gcc -g ${opt} ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}", deps="gcc", depfile="${out}.d")
+
+# Quiet Metron
+#ninja.rule("metron",
+#           command="bin/metron -q -r ${src_dir} -o ${dst_dir} -c ${file_list}")
+
+# Noisy Metron
 ninja.rule("metron",
-           command="bin/metron -q -r ${src_dir} -o ${dst_dir} -c ${file_list}")
+           command="bin/metron -r ${src_dir} -o ${dst_dir} -c ${file_list}")
+
 ninja.rule("verilator",
            command="verilator ${includes} --cc ${src_top} -Mdir ${dst_dir}")
 ninja.rule("make",          command="make -C ${dst_dir} -f ${makefile}")

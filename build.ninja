@@ -20,7 +20,7 @@ rule compile_c
   depfile = ${out}.d
   deps = gcc
 rule metron
-  command = bin/metron -q -r ${src_dir} -o ${dst_dir} -c ${file_list}
+  command = bin/metron -r ${src_dir} -o ${dst_dir} -c ${file_list}
 rule verilator
   command = verilator ${includes} --cc ${src_top} -Mdir ${dst_dir}
 rule make
@@ -496,10 +496,8 @@ build bin/examples/pong: link obj/examples/pong/main.o
 ################################################################################
 # Metronize examples/pong/metron -> examples/pong/metron_sv
 
-build examples/pong/metron_sv/hvsync_generator.sv $
-    examples/pong/metron_sv/pong.sv: metron $
-    examples/pong/metron/hvsync_generator.h examples/pong/metron/pong.h | $
+build examples/pong/metron_sv/pong.sv: metron examples/pong/metron/pong.h | $
     bin/metron
   src_dir = examples/pong/metron
   dst_dir = examples/pong/metron_sv
-  file_list = hvsync_generator.h pong.h
+  file_list = pong.h

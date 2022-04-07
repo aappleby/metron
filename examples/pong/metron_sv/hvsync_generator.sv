@@ -1,4 +1,9 @@
+`ifndef HVSYNC_GENERATOR_H
+`define HVSYNC_GENERATOR_H
+
 `include "metron_tools.sv"
+
+//------------------------------------------------------------------------------
 
 module HVSyncGenerator
 (
@@ -17,40 +22,24 @@ module HVSyncGenerator
 	/*logic<10> CounterX;*/
 	/*logic<9>  CounterY;*/
 
-	always_comb begin /*tock*/
-		vga_h_sync = !vga_HS;
-		vga_v_sync = !vga_VS;
+	task tick_counters(); 
+		logic[9:0] next_x;
+		logic[9:0] next_y;
+		next_x = CounterX == 767 ? 0 : CounterX + 1;
+		next_y = next_x == 0 ? 10'(CounterY + 1) : 10'(CounterY);
 
-		/*tick()*/;
-	end
+		vga_h_sync <= !((next_x >= 720) && (735 >= next_y));
+		vga_v_sync <= !(next_y == 500);
 
-/*private:*/
+		inDisplayArea <= (next_x < 640) && (next_y < 480);
 
-	function logic CounterXmaxed() /*const*/; 
-		CounterXmaxed = CounterX == 10'h2FF;
-	endfunction
-
-	task tick(); 
-
-		vga_HS <= CounterX[9:4] == 6'h2D; // change this value to move the display horizontally
-		vga_VS <= CounterY == 500; // change this value to move the display vertically
-
-		if(inDisplayArea==0)
-			inDisplayArea <= CounterXmaxed() && (CounterY < 480);
-		else
-			inDisplayArea <= CounterX != 639;
-
-		if (CounterXmaxed()) begin
-			CounterX <= 0;
-			CounterY <= CounterY + 1;
-		end
-		else begin
-			CounterX <= CounterX + 1;
-		end
+		CounterX <= next_x;
+		CounterY <= next_y;
 	endtask
-	always_ff @(posedge clock) tick();
+	always_ff @(posedge clock) tick_counters();
+endmodule;
 
-	logic vga_HS;
-	logic vga_VS;
-endmodule
+//------------------------------------------------------------------------------
+
+`endif // HVSYNC_GENERATOR_H
 

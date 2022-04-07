@@ -180,11 +180,15 @@ class logic {
   // Verilog and "less than or equal" in C - a typo while porting could cause
   // unexpected behavior.
 
+  // Maybe this isn't needed? FIXME - We should add a test...
+
+#if 0
   template <typename T>
   logic& operator<=(const T& t) {
     static_assert(always_false<T>::value, "Using <= with logic<> is forbidden");
     return *this;
   }
+#endif
 
   //----------
   // Logics decay to BASE.

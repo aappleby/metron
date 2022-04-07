@@ -1,5 +1,4 @@
 #include "metron/pong.h"
-#include "metron/hvsync_generator.h"
 
 #include <stdio.h>
 

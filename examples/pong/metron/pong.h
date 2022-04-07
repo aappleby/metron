@@ -101,9 +101,9 @@ public:
 		if (new_px == 800) {
 			new_px = 0;
 			new_py = new_py + 1;
-			if (new_py == 525) {
-				new_py = 0;
-			}
+		}
+		if (new_py == 525) {
+			new_py = 0;
 		}
 
 		//----------

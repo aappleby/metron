@@ -5,7 +5,6 @@
 #include "MtModule.h"
 #include "MtSourceFile.h"
 
-//------------------------------------------------------------------------------
 
 bool comp_iws(const char* a, const char* b) {
   if (!a) return false;
@@ -79,13 +78,16 @@ void parse_simple(std::string src, MtModLibrary& library) {
   }
   */
 
-  library.load_blob("test.h", "test.h", src);
-  library.process_sources();
+  Err err;
+
+  err |= library.load_blob("test.h", "test.h", src);
+  err |= library.process_sources();
 }
 
 //------------------------------------------------------------------------------
 
 std::string translate_simple(std::string src) {
+  Err err;
   std::string out;
 
   MtModLibrary library;
@@ -100,7 +102,7 @@ std::string translate_simple(std::string src) {
   MtCursor cursor(&library, source_file, &out);
   cursor.cursor = source_file->source;
   cursor.source_file = source_file;
-  cursor.emit_translation_unit(source_file->root_node);
+  err |= cursor.emit_translation_unit(source_file->root_node);
   cursor.emit_printf("\n");
 
   for (auto c : out) assert(c > 0);
@@ -122,14 +124,14 @@ static TestResults test_dummy() {
 static TestResults test_comp() {
   TEST_INIT("Text comparison should treat all whitespace as \"\\w+\"");
 
-  EXPECT(comp_iws("foo bar", "foo\nbar"));
-  EXPECT(comp_iws("foo bar", "foo\tbar"));
-  EXPECT(comp_iws("foo\nbar", "foo\tbar"));
-  EXPECT(comp_iws("foo\nbar", "foo bar"));
-  EXPECT(comp_iws("foo\tbar", "foo\nbar"));
-  EXPECT(comp_iws("foo\tbar", "foo bar"));
+  EXPECT(comp_iws("foo bar", "foo\nbar"), "x");
+  EXPECT(comp_iws("foo bar", "foo\tbar"), "x");
+  EXPECT(comp_iws("foo\nbar", "foo\tbar"), "x");
+  EXPECT(comp_iws("foo\nbar", "foo bar"), "x");
+  EXPECT(comp_iws("foo\tbar", "foo\nbar"), "x");
+  EXPECT(comp_iws("foo\tbar", "foo bar"), "x");
 
-  EXPECT(!comp_iws("foo bar", "foobar"));
+  EXPECT(!comp_iws("foo bar", "foobar"), "x");
 
   TEST_DONE();
 }
@@ -140,25 +142,25 @@ static TestResults test_match() {
   TEST_INIT("Substring find should treat all whitespace as \"\\w+\"");
   LOG_INDENT_SCOPE();
 
-  EXPECT(+find_iws("foobarbaz", "bar"));
-  EXPECT(!find_iws("foobarbaz", " bar"));
-  EXPECT(!find_iws("foobarbaz", "bar "));
-  EXPECT(!find_iws("foobarbaz", " bar "));
+  EXPECT(+find_iws("foobarbaz", "bar"), "x");
+  EXPECT(!find_iws("foobarbaz", " bar"), "x");
+  EXPECT(!find_iws("foobarbaz", "bar "), "x");
+  EXPECT(!find_iws("foobarbaz", " bar "), "x");
 
-  EXPECT(+find_iws("foo barbaz", "bar"));
-  EXPECT(+find_iws("foo barbaz", " bar"));
-  EXPECT(!find_iws("foo barbaz", "bar "));
-  EXPECT(!find_iws("foo barbaz", " bar "));
+  EXPECT(+find_iws("foo barbaz", "bar"), "x");
+  EXPECT(+find_iws("foo barbaz", " bar"), "x");
+  EXPECT(!find_iws("foo barbaz", "bar "), "x");
+  EXPECT(!find_iws("foo barbaz", " bar "), "x");
 
-  EXPECT(+find_iws("foobar baz", "bar"));
-  EXPECT(!find_iws("foobar baz", " bar"));
-  EXPECT(+find_iws("foobar baz", "bar "));
-  EXPECT(!find_iws("foobar baz", " bar "));
+  EXPECT(+find_iws("foobar baz", "bar"), "x");
+  EXPECT(!find_iws("foobar baz", " bar"), "x");
+  EXPECT(+find_iws("foobar baz", "bar "), "x");
+  EXPECT(!find_iws("foobar baz", " bar "), "x");
 
-  EXPECT(+find_iws("foo bar baz", "bar"));
-  EXPECT(+find_iws("foo bar baz", " bar"));
-  EXPECT(+find_iws("foo bar baz", "bar "));
-  EXPECT(+find_iws("foo bar baz", " bar "));
+  EXPECT(+find_iws("foo bar baz", "bar"), "x");
+  EXPECT(+find_iws("foo bar baz", " bar"), "x");
+  EXPECT(+find_iws("foo bar baz", "bar "), "x");
+  EXPECT(+find_iws("foo bar baz", " bar "), "x");
 
   TEST_DONE();
 }

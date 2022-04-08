@@ -19,14 +19,17 @@ rule compile_c
   command = gcc -g ${opt} ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}
   depfile = ${out}.d
   deps = gcc
+rule static_lib
+  command = ar rcs ${out} ${in}
+rule link
+  command = g++ -g $opt ${in} -Wl,--whole-archive ${local_libs} $
+      -Wl,--no-whole-archive ${global_libs} -o ${out}
 rule metron
   command = bin/metron -r ${src_dir} -o ${dst_dir} -c ${file_list}
 rule verilator
   command = verilator ${includes} --cc ${src_top} -Mdir ${dst_dir}
 rule make
   command = make -C ${dst_dir} -f ${makefile}
-rule link
-  command = g++ -g $opt ${in} ${link_libs} -o ${out}
 rule run_test
   command = ${in} | grep "All tests pass." && touch ${out}
 rule console
@@ -65,10 +68,8 @@ build obj/submodules/tree-sitter-cpp/src/scanner.o: compile_c $
 
 
 ################################################################################
-# Compile bin/metron
+# Create static library bin/libmetron.a
 
-build obj/src/MetronApp.o: compile_cpp src/MetronApp.cpp
-  includes = -I. -Isubmodules/tree-sitter/lib/include
 build obj/src/MtCursor.o: compile_cpp src/MtCursor.cpp
   includes = -I. -Isubmodules/tree-sitter/lib/include
 build obj/src/MtModLibrary.o: compile_cpp src/MtModLibrary.cpp
@@ -83,13 +84,43 @@ build obj/src/MtTracer.o: compile_cpp src/MtTracer.cpp
   includes = -I. -Isubmodules/tree-sitter/lib/include
 build obj/src/Platform.o: compile_cpp src/Platform.cpp
   includes = -I. -Isubmodules/tree-sitter/lib/include
-build bin/metron: link obj/submodules/tree-sitter/lib/src/lib.o $
+build bin/libmetron.a: static_lib obj/submodules/tree-sitter/lib/src/lib.o $
     obj/submodules/tree-sitter-cpp/src/parser.o $
-    obj/submodules/tree-sitter-cpp/src/scanner.o obj/src/MetronApp.o $
-    obj/src/MtCursor.o obj/src/MtModLibrary.o obj/src/MtModule.o $
-    obj/src/MtNode.o obj/src/MtSourceFile.o obj/src/MtTracer.o $
-    obj/src/Platform.o
+    obj/submodules/tree-sitter-cpp/src/scanner.o obj/src/MtCursor.o $
+    obj/src/MtModLibrary.o obj/src/MtModule.o obj/src/MtNode.o $
+    obj/src/MtSourceFile.o obj/src/MtTracer.o obj/src/Platform.o
   includes = -I. -Isubmodules/tree-sitter/lib/include
+
+
+################################################################################
+# Compile bin/metron
+
+build obj/src/MetronApp.o: compile_cpp src/MetronApp.cpp
+  includes = -I. -Ibin -Isubmodules/tree-sitter/lib/include
+  implicit = bin/libmetron.a
+  local_libs = bin/libmetron.a
+build bin/metron: link obj/src/MetronApp.o
+  includes = -I. -Ibin -Isubmodules/tree-sitter/lib/include
+  implicit = bin/libmetron.a
+  local_libs = bin/libmetron.a
+
+
+################################################################################
+# Compile bin/metron_test
+
+build obj/tests/test_main.o: compile_cpp tests/test_main.cpp
+  includes = -I. -Isrc -Itests
+  local_libs = bin/libmetron.a
+build obj/tests/test_logic.o: compile_cpp tests/test_logic.cpp
+  includes = -I. -Isrc -Itests
+  local_libs = bin/libmetron.a
+build obj/tests/test_utils.o: compile_cpp tests/test_utils.cpp
+  includes = -I. -Isrc -Itests
+  local_libs = bin/libmetron.a
+build bin/metron_test: link obj/tests/test_main.o obj/tests/test_logic.o $
+    obj/tests/test_utils.o
+  includes = -I. -Isrc -Itests
+  local_libs = bin/libmetron.a
 build tests/rv_tests/add.text.vh tests/rv_tests/addi.text.vh $
     tests/rv_tests/and.text.vh tests/rv_tests/andi.text.vh $
     tests/rv_tests/auipc.text.vh tests/rv_tests/benchmark.text.vh $
@@ -506,11 +537,11 @@ build bin/examples/rvtiny_sync_vl: link obj/verilated.o $
 
 build obj/examples/pong/main.o: compile_cpp examples/pong/main.cpp
   includes = -I. -Isrc
-  link_libs = -lSDL2
+  global_libs = -lSDL2
   opt = -O3
 build bin/examples/pong: link obj/examples/pong/main.o
   includes = -I. -Isrc
-  link_libs = -lSDL2
+  global_libs = -lSDL2
   opt = -O3
 
 

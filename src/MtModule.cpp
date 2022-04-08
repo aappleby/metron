@@ -379,16 +379,7 @@ CHECK_RETURN Err MtModule::collect_fields() {
 
   for (const auto& n : mod_body) {
     if (n.sym == sym_access_specifier) {
-      if (n.child(0).text() == "public") {
-        in_public = true;
-      } else if (n.child(0).text() == "protected") {
-        in_public = false;
-      } else if (n.child(0).text() == "private") {
-        in_public = false;
-      } else {
-        n.dump_tree();
-        debugbreak();
-      }
+      in_public = n.child(0).text() == "public";
     }
 
     if (n.sym != sym_field_declaration) {
@@ -417,17 +408,7 @@ CHECK_RETURN Err MtModule::collect_methods() {
   auto mod_body = mod_class.get_field(field_body).check_null();
   for (const auto& n : mod_body) {
     if (n.sym == sym_access_specifier) {
-      if (n.child(0).text() == "public") {
-        in_public = true;
-      } else if (n.child(0).text() == "protected") {
-        in_public = false;
-      } else if (n.child(0).text() == "private") {
-        in_public = false;
-      } else {
-        LOG_R("Unknown access specifier %s\n", n.child(0).text().c_str());
-        n.dump_source_lines();
-        error = true;
-      }
+      in_public = n.child(0).text() == "public";
     }
 
     if (n.sym != sym_function_definition) continue;

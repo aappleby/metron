@@ -12,19 +12,16 @@ Tick methods must _not_ be allowed to call getters that take params
 If we don't emit anything for a tock(), we should not emit the tock itself
 
 
+Member variables as input ports should be added back in
+
+
+
 tests to increase coverage
-  byte order mark
   bad output dir
   no output dir
   echo
-  stats
-  dump
   no source root
-  remove push_indent_of
-  dump_node_stack
   lhs of assignment is array
-  emit_static_bit_extract
-  emit_dynamic_bit_extract
   sra
   $signed $unsigned $clog2 pow2 readmemh valueplusargs write cat dup
   final block?
@@ -48,8 +45,6 @@ tests to increase coverage
   emit_sized_type_spec?
   emit_namespace_def
   most of the emit_preproc branches
-  protected:
-  emit_dispatch(translation_unit)
   string literal?
   MtModLibrary::reset
   MtModLibrary::find_source

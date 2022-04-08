@@ -1,0 +1,24 @@
+#include "metron_tools.h"
+
+// Simple anonymous enums should work.
+// FIXME DIS DOESNT WORK
+
+class Module {
+public:
+
+  enum {
+    FOO,
+    BAR,
+    BAZ
+  };
+
+  void tock() {
+    logic<2> x = FOO;
+    logic<2> y = BAR;
+
+    if (x == FOO) {
+      y = BAZ;
+    }
+  }
+
+};

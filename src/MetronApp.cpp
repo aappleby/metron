@@ -37,17 +37,6 @@ std::vector<std::string> split_path(const std::string& input) {
 
 //------------------------------------------------------------------------------
 
-std::string join(std::vector<std::string>& path) {
-  std::string result = path[0];
-  for (int i = 1; i < (int)path.size(); i++) {
-    result += "/";
-    result += path[i];
-  }
-  return result;
-}
-
-//------------------------------------------------------------------------------
-
 void mkdir_all(const std::vector<std::string>& full_path) {
   std::string temp;
   for (size_t i = 0; i < full_path.size() - 1; i++) {
@@ -221,7 +210,7 @@ int main(int argc, char** argv) {
       cursor.cursor = source_file->source;
       cursor.source_file = source_file;
 
-      bool emit_error = cursor.emit_translation_unit(source_file->root_node);
+      bool emit_error = cursor.emit_dispatch(source_file->root_node);
       cursor.emit_printf("\n");
 
       if (emit_error) {

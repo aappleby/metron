@@ -15,17 +15,10 @@ struct MtModLibrary;
 struct MtCursor {
   MtCursor(MtModLibrary* lib, MtSourceFile* source_file, std::string* out);
 
-  // Debugging
-
-  void dump_node_stack();
-
   // Indentation
 
   void push_indent(MnNode n);
   void pop_indent(MnNode n);
-
-  void push_indent_of(MnNode n);
-  void pop_indent_of(MnNode n);
 
   void emit_newline();
   void emit_indent();
@@ -61,7 +54,7 @@ struct MtCursor {
   CHECK_RETURN Err emit_enum_specifier(MnEnumSpecifier n);
   CHECK_RETURN Err emit_expression(MnExprStatement n);
   CHECK_RETURN Err emit_field_decl(MnFieldDecl decl);
-  CHECK_RETURN Err emit_field_decl_list(MnFieldDeclList n);
+  //CHECK_RETURN Err emit_field_decl_list(MnFieldDeclList n);
   CHECK_RETURN Err emit_field_expr(MnFieldExpr n);
   CHECK_RETURN Err emit_field_id(MnFieldIdentifier n);
   CHECK_RETURN Err emit_identifier(MnIdentifier n);

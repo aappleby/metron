@@ -13,7 +13,9 @@ def main():
     print("Regenerating build.ninja...")
     build_verilator()
     build_treesitter()
-    build_metron()
+    build_metron_lib()
+    build_metron_app()
+    build_metron_test()
     build_rvtests()
     build_uart()
     build_rvsimple()
@@ -61,10 +63,10 @@ ninja.build("build.ninja", "autoupdate", "build.py")
 
 divider("Rules")
 
-ninja.rule("compile_cpp",
-           command="g++ -g ${opt} -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}", deps="gcc", depfile="${out}.d")
-ninja.rule("compile_c",
-           command="gcc -g ${opt} ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}", deps="gcc", depfile="${out}.d")
+ninja.rule("compile_cpp",   command="g++ -g ${opt} -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}", deps="gcc", depfile="${out}.d")
+ninja.rule("compile_c",     command="gcc -g ${opt} ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}", deps="gcc", depfile="${out}.d")
+ninja.rule("static_lib",    command="ar rcs ${out} ${in}")
+ninja.rule("link",          command="g++ -g $opt ${in} -Wl,--whole-archive ${local_libs} -Wl,--no-whole-archive ${global_libs} -o ${out}")
 
 # Quiet Metron
 #ninja.rule("metron",
@@ -74,7 +76,6 @@ ninja.rule("compile_c",
 ninja.rule("metron",        command="bin/metron -r ${src_dir} -o ${dst_dir} -c ${file_list}")
 ninja.rule("verilator",     command="verilator ${includes} --cc ${src_top} -Mdir ${dst_dir}")
 ninja.rule("make",          command="make -C ${dst_dir} -f ${makefile}")
-ninja.rule("link",          command="g++ -g $opt ${in} ${link_libs} -o ${out}")
 ninja.rule("run_test",      command="${in} | grep \"All tests pass.\" && touch ${out}")
 ninja.rule("console",       command="${in}", pool="console")
 ninja.rule("iverilog",      command="iverilog -g2012 ${defines} ${includes} ${in} -o ${out}")
@@ -165,6 +166,34 @@ def cpp_binary(bin_name, src_files, src_objs=None, deps=None, **kwargs):
                 inputs=src_objs,
                 variables=kwargs)
 
+def cpp_library(lib_name, src_files, src_objs=None, deps=None, **kwargs):
+    """
+    Compiles a C++ binary from the given source files.
+    """
+    if deps is None:
+        deps = []
+
+    divider(f"Create static library {lib_name}")
+
+    # Tack -I onto the includes
+    if kwargs["includes"] is not None:
+        kwargs["includes"] = ["-I" + path for path in kwargs["includes"]]
+
+    for n in src_files:
+        obj_name = path.join(obj_dir, swap_ext(n, ".o"))
+        ninja.build(outputs=obj_name,
+                    rule="compile_cpp",
+                    inputs=n,
+                    implicit=deps,
+                    variables=kwargs)
+        src_objs.append(obj_name)
+    ninja.build(outputs=lib_name,
+                rule="static_lib",
+                inputs=src_objs,
+                variables=kwargs)
+
+
+
 
 def iverilog_binary(bin_name, src_top, src_files, includes):
     ninja.build(rule="iverilog",
@@ -210,13 +239,12 @@ def build_treesitter():
         treesitter_objs.append(o)
 
 # ------------------------------------------------------------------------------
+# Build Metron itself
 
-
-def build_metron():
-    cpp_binary(
-        bin_name="bin/metron",
+def build_metron_lib():
+  cpp_library(
+        lib_name="bin/libmetron.a",
         src_files=[
-            "src/MetronApp.cpp",
             "src/MtCursor.cpp",
             "src/MtModLibrary.cpp",
             "src/MtModule.cpp",
@@ -230,7 +258,43 @@ def build_metron():
             "submodules/tree-sitter/lib/include"
         ],
         src_objs=treesitter_objs,
+  )
+
+# ------------------------------------------------------------------------------
+
+def build_metron_app():
+    cpp_binary(
+        bin_name="bin/metron",
+        src_files=[
+            "src/MetronApp.cpp",
+        ],
+        includes=[
+            ".",
+            "bin",
+            "submodules/tree-sitter/lib/include"
+        ],
+        implicit=["bin/libmetron.a"],
+        local_libs="bin/libmetron.a",
     )
+
+# ------------------------------------------------------------------------------
+# Low-level tests
+
+def build_metron_test():
+  cpp_binary(
+    bin_name = "bin/metron_test",
+    src_files = [
+      "tests/test_main.cpp",
+      "tests/test_logic.cpp",
+      "tests/test_utils.cpp",
+    ],
+    includes=[
+      ".",
+      "src",
+      "tests"
+    ],
+    local_libs="bin/libmetron.a",
+  )
 
 # ------------------------------------------------------------------------------
 # Simple Uart testbench
@@ -494,7 +558,7 @@ def build_pong():
             ".",
             "src"
         ],
-        link_libs="-lSDL2",
+        global_libs="-lSDL2",
         opt=opt_mode,
     )
 

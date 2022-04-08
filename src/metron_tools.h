@@ -555,7 +555,7 @@ struct TinyLog {
   }
 };
 
-#define LOG(...) TinyLog::get().printf(0x00000000, __VA_ARGS__);
+#define LOG(...)   TinyLog::get().printf(0x00000000, __VA_ARGS__);
 #define LOG_R(...) TinyLog::get().printf(0x008080FF, __VA_ARGS__);
 #define LOG_G(...) TinyLog::get().printf(0x0080FF80, __VA_ARGS__);
 #define LOG_B(...) TinyLog::get().printf(0x00FFA0A0, __VA_ARGS__);

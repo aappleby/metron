@@ -85,7 +85,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="..\..\tests\README.md" />
-    <None Include="..\..\test\README.md" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\tests\Tests.h" />
@@ -97,7 +96,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\tests\test_ibex.cpp" />
     <ClCompile Include="..\..\tests\test_logic.cpp" />
     <ClCompile Include="..\..\tests\test_main.cpp" />
     <ClCompile Include="..\..\tests\test_utils.cpp" />

@@ -56,38 +56,10 @@ void MtCursor::push_indent(MnNode body) {
 
 void MtCursor::pop_indent(MnNode class_body) { indent_stack.pop_back(); }
 
-void MtCursor::push_indent_of(MnNode n) {
-  if (n) {
-    auto begin = n.start() - 1;
-    auto end = n.start();
-
-    while (*begin != '\n' && *begin != '{') begin--;
-    if (*begin == '{') begin++;
-
-    std::string indent(begin + 1, end);
-    for (auto c : indent) assert(isspace(c));
-
-    indent_stack.push_back(indent);
-  } else {
-    indent_stack.push_back("");
-  }
-}
-
-void MtCursor::pop_indent_of(MnNode class_body) { indent_stack.pop_back(); }
-
 void MtCursor::emit_newline() { emit_char('\n'); }
 
 void MtCursor::emit_indent() {
   for (auto c : indent_stack.back()) emit_char(c);
-}
-
-//------------------------------------------------------------------------------
-
-void MtCursor::dump_node_stack() {
-  for (int i = (int)node_stack.size() - 1; i >= 0; i--) {
-    auto n = node_stack[i];
-    n.dump_node();
-  }
 }
 
 //------------------------------------------------------------------------------
@@ -1447,20 +1419,20 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
   assert(cursor == n.start());
   node_stack.push_back(n);
 
-  auto struct_lit = n.child(0);
-  auto struct_name = n.get_field(field_name);
-  auto struct_body = n.get_field(field_body);
+  auto class_lit = n.child(0);
+  auto class_name = n.get_field(field_name);
+  auto class_body = n.get_field(field_body);
 
   //----------
 
   auto old_mod = current_mod;
-  current_mod = source_file->get_module(struct_name.text());
+  current_mod = source_file->get_module(class_name.text());
   assert(current_mod);
 
   emit_indent();
-  emit_replacement(struct_lit, "module");
+  emit_replacement(class_lit, "module");
   emit_ws();
-  error |= emit_dispatch(struct_name);
+  error |= emit_dispatch(class_name);
   emit_newline();
 
   // Patch the template parameter list in after the module declaration, before
@@ -1514,7 +1486,7 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
   {
     // Save the indentation level of the struct body so we can use it in the
     // port list.
-    push_indent(struct_body);
+    push_indent(class_body);
 
     in_ports = true;
     trim_namespaces = false;
@@ -1589,7 +1561,7 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
       emit_newline();
     }
 
-    pop_indent(struct_body);
+    pop_indent(class_body);
     emit_indent();
     emit_printf(");");
     trim_namespaces = true;
@@ -1604,13 +1576,13 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
   // Replace the closing brace with "endmodule"
   // Discard the seimcolon at the end of class{};"
 
-  assert(struct_body.sym == sym_field_declaration_list);
+  assert(class_body.sym == sym_field_declaration_list);
 
-  push_indent(struct_body);
+  push_indent(class_body);
 
-  auto body_size = struct_body.child_count();
+  auto body_size = class_body.child_count();
   for (int i = 0; i < body_size; i++) {
-    auto c = struct_body.child(i);
+    auto c = class_body.child(i);
     switch (c.sym) {
       case anon_sym_LBRACE:
         skip_over(c);
@@ -1630,7 +1602,7 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
     if (i != body_size - 1) emit_ws();
   }
 
-  pop_indent(struct_body);
+  pop_indent(class_body);
 
   cursor = n.end();
 
@@ -2192,13 +2164,13 @@ CHECK_RETURN Err MtCursor::emit_break(MnBreakStatement n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_field_decl_list(MnFieldDeclList n) {
-  Err error;
-  assert(cursor == n.start());
-  error |= emit_children(n);
-  assert(cursor == n.end());
-  return error;
-}
+//CHECK_RETURN Err MtCursor::emit_field_decl_list(MnFieldDeclList n) {
+//  Err error;
+//  assert(cursor == n.start());
+//  error |= emit_children(n);
+//  assert(cursor == n.end());
+//  return error;
+//}
 
 //------------------------------------------------------------------------------
 // TreeSitter nodes slightly broken for "a = b ? c : d;"...
@@ -2567,16 +2539,7 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
       break;
 
     case sym_access_specifier:
-      if (n.child(0).text() == "public") {
-        in_public = true;
-      } else if (n.child(0).text() == "protected") {
-        in_public = false;
-      } else if (n.child(0).text() == "private") {
-        in_public = false;
-      } else {
-        n.dump_tree();
-        debugbreak();
-      }
+      in_public = n.child(0).text() == "public";
       comment_out(n);
       break;
 
@@ -2629,9 +2592,9 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
     case sym_conditional_expression:
       error |= emit_condition(MnCondExpr(n));
       break;
-    case sym_field_declaration_list:
-      error |= emit_field_decl_list(MnFieldDeclList(n));
-      break;
+    //case sym_field_declaration_list:
+    //  error |= emit_field_decl_list(MnFieldDeclList(n));
+    //  break;
     case sym_break_statement:
       error |= emit_break(MnBreakStatement(n));
       break;

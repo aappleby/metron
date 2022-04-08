@@ -7,8 +7,9 @@ import multiprocessing
 import time
 from os import path
 
-kcov_prefix = "kcov --include-pattern=Metron/src coverage "
-#kcov_prefix = ""
+coverage = True
+
+kcov_prefix = "kcov --include-pattern=Metron --exclude-pattern=submodules coverage " if coverage else ""
 
 def print_c(color, *args):
     sys.stdout.write(
@@ -30,7 +31,7 @@ def print_b(*args):
     print_c(0x8080FF, *args)
 
 ################################################################################
-
+# Check that the given file is a syntactically valid C++ header.
 
 def check_compile(file):
     cmd = f"  g++ -Isrc --std=gnu++2a -fsyntax-only -c {file}"
@@ -38,67 +39,88 @@ def check_compile(file):
     return os.system(cmd)
 
 ################################################################################
-
+# Check that Metron can translate the source file to SystemVerilog
 
 def check_good(filename):
     error = 0
-    srcdir = "tests/metron_good"
-    svdir = "tests/metron_sv"
     basename = path.basename(filename)
     svname = path.splitext(basename)[0] + ".sv"
 
-    print(f"  Checking known-good example {filename}")
-
-    # Run Metron on the source file
     cmd = kcov_prefix + f"bin/metron -q -r tests/metron_good -o tests/metron_sv -c {basename}"
+    print(f"  {cmd}")
     result = os.system(cmd)
     if result:
         print_r(f"Test file {filename} - expected pass, got {result}")
         result = os.system(f"bin/metron {filename}")
         error = 1
+    return error
 
-    # Run Verilator on the translated source file.
+################################################################################
+# Run Icarus on the translated source file.
+
+# Icarus generates a bunch of possibly-spurious warnings and can't handle
+# utf-8 with a BOM
+
+def check_icarus(filename):
+    error = 0
+    basename = path.basename(filename)
+    svname = path.splitext(basename)[0] + ".sv"
+
+    cmd = f"iverilog -g2012 -Wall -Isrc -o bin/{svname}.o tests/metron_sv/{svname}"
+    result = os.system(cmd)
+    if result:
+        print(f"Icarus syntax check on {filename} failed")
+        error = 1
+    return error
+
+###############################################################################
+# Run Verilator on the translated source file.
+
+def check_verilator(filename):
+    error = 0
+    basename = path.basename(filename)
+    svname = path.splitext(basename)[0] + ".sv"
+
     cmd = f"verilator -Isrc --lint-only tests/metron_sv/{svname}"
+    print(f"  {cmd}")
     result = os.system(cmd)
     if result:
         print(f"Verilator syntax check on {filename} failed")
         error = 1
-
-    # Icarus generates a bunch of possibly-spurious warnings and can't handle
-    # utf-8 with a BOM
-
-    # Run Icarus on the translated source file.
-    #cmd = f"iverilog -g2012 -Wall -Isrc -o bin/{svname}.o tests/metron_sv/{svname}"
-    #result = os.system(cmd)
-    #if result:
-    #    print(f"Icarus syntax check on {filename} failed")
-    #    error = 1
-
-    # Check the translated source against the golden, if present.
-    try:
-        test_src = open("tests/metron_sv/" + svname, "r").read()
-        golden_src = open("tests/metron_ref/" + svname, "r").read()
-        if (test_src != golden_src):
-            print_r(f"Golden mismatch for {svname}")
-            error = 1
-    except:
-        print_b(f"  No golden for {filename}")
     return error
 
-############################################################
+###############################################################################
+# Check the translated source against the golden, if present.
 
+def check_golden(filename):
+    error = 0
+    basename = path.basename(filename)
+    svname = path.splitext(basename)[0] + ".sv"
+    test_filename = "tests/metron_sv/" + svname
+    golden_filename = "tests/metron_ref/" + svname
+
+    try:
+        test_src = open(test_filename, "r").read()
+        golden_src = open(golden_filename, "r").read()
+        if (test_src != golden_src):
+          print_r(f"  Mismatch,  {test_filename} != {golden_filename}")
+          error = 1
+        else:
+          print(f"  {test_filename} == {golden_filename}")
+    except:
+        print_b(f"  No golden for {golden_filename}")
+    return error
+
+###############################################################################
+# Check that the given source does _not_ translate cleanly
 
 def check_bad(filename):
     error = 0
-    srcdir = "tests/metron_bad"
-    svdir = "tests/metron_sv"
     basename = path.basename(filename)
     svname = path.splitext(basename)[0] + ".sv"
 
-    print(f"  Checking known-bad example {filename}")
-
     cmd = kcov_prefix + f"bin/metron -q -r tests/metron_bad -o tests/metron_sv -c {basename}"
-    #print(f"  {cmd}")
+    print(f"  {cmd}")
     result = os.system(cmd)
     if result == 0:
         print(f"Test file {filename} - expected fail, got {result}")
@@ -106,18 +128,31 @@ def check_bad(filename):
         error = 1
     return error
 
-############################################################
-
+###############################################################################
+# Run a command that passes if the output contains "All tests pass"
 
 def run_simple_test(commandline):
-    #cmd = kcov_prefix + commandline
-    cmd = commandline
+    cmd = kcov_prefix + commandline
     error = 0
-    print(f"  Running test {cmd}")
+    print(f"  {cmd}")
     stuff = subprocess.run(cmd.split(
         " "), stdout=subprocess.PIPE).stdout.decode('utf-8')
     if not "All tests pass" in stuff:
         print_r(stuff)
+        error = 1
+    return error
+
+###############################################################################
+# Run an arbitrary command as a test
+
+def run_command(commandline):
+    cmd = kcov_prefix + commandline
+    error = 0
+    print(f"  {cmd}")
+
+    result = os.system(cmd)
+    if result != 0:
+        print(f"Command \"{cmd}\" failed")
         error = 1
     return error
 
@@ -145,20 +180,8 @@ if __name__ == "__main__":
     metron_good = glob.glob("tests/metron_good/*.h")
     metron_bad = glob.glob("tests/metron_bad/*.h")
 
-    simple_tests = [
-        "bin/examples/uart",
-        "bin/examples/uart_vl",
-        #"bin/examples/uart_iv",
-        "bin/examples/rvsimple",
-        "bin/examples/rvsimple_vl",
-        "bin/examples/rvsimple_ref",
-        "bin/examples/rvtiny",
-        "bin/examples/rvtiny_vl",
-        "bin/examples/rvtiny_sync",
-        "bin/examples/rvtiny_sync_vl",
-    ]
-
-    pool = multiprocessing.Pool()
+    pool = multiprocessing.Pool(1) if coverage else multiprocessing.Pool()
+    #pool = multiprocessing.Pool(1)
     error = False
 
     ############################################################
@@ -171,22 +194,70 @@ if __name__ == "__main__":
 
     print()
     print_b("Checking that all examples in metron_good convert to SV cleanly")
-    #if any(pool.map(check_good, metron_good)):
-    if any(map(check_good, metron_good)):
+    if any(pool.map(check_good, metron_good)):
+        print_r(f"Headers in metron_good failed Metron conversion")
+        error = True
+
+    print()
+    print_b("Checking that all converted files can be parsed by Verilator")
+    if any(pool.map(check_verilator, metron_good)):
+        print_r(f"Headers in metron_good failed Metron conversion")
+        error = True
+
+    """
+    print()
+    print_b("Checking that all converted files can be parsed by Icarus")
+    if any(pool.map(check_icarus, metron_good)):
+        print_r(f"Headers in metron_good failed Metron conversion")
+        error = True
+    """
+
+    print()
+    print_b("Checking that all converted files match their golden version, if present")
+    if any(pool.map(check_golden, metron_good)):
         print_r(f"Headers in metron_good failed Metron conversion")
         error = True
 
     print()
     print_b("Checking that all examples in metron_bad fail conversion")
-    #if any(pool.map(check_bad, metron_bad)):
-    if any(map(check_bad, metron_bad)):
+    if any(pool.map(check_bad, metron_bad)):
         print_r(f"Headers in metron_bad passed Metron conversion")
         error = True
 
+    ############################################################
+
     print()
     print_b("Running standalone tests")
+
+    simple_tests = [
+        "bin/metron_test",
+        "bin/examples/uart",
+        "bin/examples/uart_vl",
+        #"bin/examples/uart_iv",
+        "bin/examples/rvsimple",
+        "bin/examples/rvsimple_vl",
+        "bin/examples/rvsimple_ref",
+        "bin/examples/rvtiny",
+        "bin/examples/rvtiny_vl",
+        "bin/examples/rvtiny_sync",
+        "bin/examples/rvtiny_sync_vl",
+    ]
+
     if any(pool.map(run_simple_test, simple_tests)):
-    #if any(map(run_simple_test, simple_tests)):
+        print_r(f"Standalone tests failed")
+        error = True
+
+    ############################################################
+
+    print()
+    print_b("Running misc commands")
+
+    commands = [
+        "bin/metron -e examples/rvtiny/metron/toplevel.h > /dev/null",
+        "bin/metron -v examples/rvtiny/metron/toplevel.h > /dev/null",
+    ]
+
+    if any(pool.map(run_command, commands)):
         print_r(f"Standalone tests failed")
         error = True
 

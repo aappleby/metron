@@ -18,6 +18,7 @@
 
 //------------------------------------------------------------------------------
 
+// KCOV_OFF
 void print_escaped(char s) {
   if (s == '\n')
     printf("\\n");
@@ -59,6 +60,7 @@ void print_escaped(char s) {
   else                printf("%c", s);
 }
 */
+// KCOV_ON
 
 //------------------------------------------------------------------------------
 // GCC platform
@@ -76,6 +78,7 @@ int plat_mkdir(const char* path, int mode) { return mkdir(path, mode); }
 
 void debugbreak() { raise(SIGTRAP); }
 
+// KCOV_OFF
 void dprintf(const char* format, ...) {
   //static char buffer[256];
   va_list args;
@@ -83,6 +86,7 @@ void dprintf(const char* format, ...) {
   vprintf(format, args);
   va_end(args);
 }
+// KCOV_ON
 
 /*
   {
@@ -128,68 +132,3 @@ void dprintf(const char* format, ...) {
 
 #endif
 
-//------------------------------------------------------------------------------
-
-bool operator<(const TSNode& a, const TSNode& b) {
-  if (a.context[0] < b.context[0]) return true;
-  if (a.context[0] > b.context[0]) return false;
-  if (a.context[1] < b.context[1]) return true;
-  if (a.context[1] > b.context[1]) return false;
-  if (a.context[2] < b.context[2]) return true;
-  if (a.context[2] > b.context[2]) return false;
-  if (a.context[3] < b.context[3]) return true;
-  if (a.context[3] > b.context[3]) return false;
-  if (a.id < b.id) return true;
-  if (a.id > b.id) return false;
-  if (a.tree < b.tree) return true;
-  if (a.tree > b.tree) return false;
-  return false;
-}
-
-bool operator==(const TSNode& a, const TSNode& b) {
-  if (a.context[0] != b.context[0]) return false;
-  if (a.context[1] != b.context[1]) return false;
-  if (a.context[2] != b.context[2]) return false;
-  if (a.context[3] != b.context[3]) return false;
-  if (a.id != b.id) return false;
-  if (a.tree != b.tree) return false;
-  return true;
-}
-
-bool operator!=(const TSNode& a, const TSNode& b) { return !(a == b); }
-
-bool operator<(const TSTreeCursor& a, const TSTreeCursor& b) {
-  if (a.context[0] < b.context[0]) return true;
-  if (a.context[0] > b.context[0]) return false;
-  if (a.context[1] < b.context[1]) return true;
-  if (a.context[1] > b.context[1]) return false;
-  if (a.tree < b.tree) return true;
-  if (a.tree > b.tree) return false;
-  if (a.id < b.id) return true;
-  if (a.id > b.id) return false;
-  return false;
-}
-
-bool operator==(const TSTreeCursor& a, const TSTreeCursor& b) {
-  if (a.context[0] != b.context[0]) return false;
-  if (a.context[1] != b.context[1]) return false;
-  if (a.tree != b.tree) return false;
-  if (a.id != b.id) return false;
-  return true;
-}
-
-bool operator!=(const TSTreeCursor& a, const TSTreeCursor& b) {
-  return !(a == b);
-}
-
-//------------------------------------------------------------------------------
-
-struct MtCursor;
-struct MtModule;
-struct MtModLibrary;
-struct MnNode;
-struct MnIterator;
-
-typedef std::vector<uint8_t> blob;
-
-//------------------------------------------------------------------------------

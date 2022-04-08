@@ -39,7 +39,7 @@ public:
 
   Err& operator = (bool e) {
     if (e) {
-      //debugbreak();
+      debugbreak();
     }
     err |= e;
     return *this;
@@ -47,7 +47,7 @@ public:
 
   Err& operator |= (bool e) {
     if (e) {
-      //debugbreak();
+      debugbreak();
     }
     err |= e;
     return *this;

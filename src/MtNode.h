@@ -9,13 +9,6 @@
 #include "TreeSymbols.h"
 #include "submodules/tree-sitter/lib/include/tree_sitter/api.h"
 
-bool operator<(const TSNode& a, const TSNode& b);
-bool operator==(const TSNode& a, const TSNode& b);
-bool operator!=(const TSNode& a, const TSNode& b);
-bool operator<(const TSTreeCursor& a, const TSTreeCursor& b);
-bool operator==(const TSTreeCursor& a, const TSTreeCursor& b);
-bool operator!=(const TSTreeCursor& a, const TSTreeCursor& b);
-
 struct MtModule;
 struct MtSourceFile;
 struct MtMethod;
@@ -29,13 +22,8 @@ struct MnNode {
   //----------
 
   void dump_source_lines() const;
-  void dump_node() const;
   void dump_tree(int index = 0, int depth = 0, int maxdepth = 255) const;
-  void error() const {
-    dump_tree();
-    debugbreak();
-  }
-
+  
   operator bool() const { return !ts_node_is_null(node); }
 
   MnNode& check_null() {
@@ -128,8 +116,8 @@ struct MnConstIterator {
     return *this;
   }
 
-  bool operator<(const MnConstIterator& b) const { return cursor < b.cursor; }
-  bool operator!=(const MnConstIterator& b) const { return cursor != b.cursor; }
+  //bool operator<(const MnConstIterator& b) const;
+  bool operator!=(const MnConstIterator& b) const;
 
   const MnNode operator*() const {
     auto child = ts_tree_cursor_current_node(&cursor);
@@ -174,8 +162,8 @@ struct MnIterator {
     return *this;
   }
 
-  bool operator<(const MnIterator& b) const { return cursor < b.cursor; }
-  bool operator!=(const MnIterator& b) const { return cursor != b.cursor; }
+  //bool operator<(const MnIterator& b) const;
+  bool operator!=(const MnIterator& b) const;
 
   MnNode operator*() const {
     auto child = ts_tree_cursor_current_node(&cursor);
@@ -399,7 +387,8 @@ struct MnFunc : public MnNode {
   MnFunc(const MnNode& n) : MnNode(n) {
     if (is_null() || is_id() || is_templ() || is_field() || is_prim()) {
     } else {
-      error();
+      dump_tree();
+      debugbreak();
     }
   }
 

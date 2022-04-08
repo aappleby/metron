@@ -9,6 +9,34 @@
 
 const MnNode MnNode::null;
 
+/*
+bool operator<(const TSTreeCursor& a, const TSTreeCursor& b) {
+  if (a.context[0] < b.context[0]) return true;
+  if (a.context[0] > b.context[0]) return false;
+  if (a.context[1] < b.context[1]) return true;
+  if (a.context[1] > b.context[1]) return false;
+  if (a.tree < b.tree) return true;
+  if (a.tree > b.tree) return false;
+  if (a.id < b.id) return true;
+  if (a.id > b.id) return false;
+  return false;
+}
+*/
+
+bool operator==(const TSTreeCursor& a, const TSTreeCursor& b) {
+  if (a.context[0] != b.context[0]) return false;
+  if (a.context[1] != b.context[1]) return false;
+  if (a.tree != b.tree) return false;
+  if (a.id != b.id) return false;
+  return true;
+}
+
+//bool MnConstIterator::operator<(const MnConstIterator& b) const { return cursor < b.cursor; }
+bool MnConstIterator::operator!=(const MnConstIterator& b) const { return !(cursor == b.cursor); }
+
+//bool MnIterator::operator<(const MnIterator& b) const { return cursor < b.cursor; }
+bool MnIterator::operator!=(const MnIterator& b) const { return !(cursor == b.cursor); }
+
 //------------------------------------------------------------------------------
 
 MnNode::MnNode() {
@@ -195,7 +223,8 @@ std::string MnNode::name4() const {
       return text();
 
     default:
-      error();
+      dump_tree();
+      debugbreak();
       return "";
   }
 }
@@ -217,7 +246,8 @@ std::string MnNode::type5() const {
     case sym_optional_parameter_declaration:
       return get_field(field_type).type5();
     default:
-      error();
+      dump_tree();
+      debugbreak();
       return "";
   }
 }
@@ -375,20 +405,11 @@ struct NodeDumper {
   std::vector<int> color_stack;
 };
 
-
-
-
-
 //------------------------------------------------------------------------------
 
 void MnNode::dump_tree(int index, int depth, int maxdepth) const {
   NodeDumper d;
   d.dump_tree(*this, index, depth, maxdepth);
-}
-
-void MnNode::dump_node() const {
-  NodeDumper d;
-  d.dump_node(*this, 0, 0, false);
 }
 
 //------------------------------------------------------------------------------

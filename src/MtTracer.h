@@ -31,6 +31,7 @@ enum FieldState {
   FIELD_MAX,
 };
 
+// KCOV_OFF
 inline const char* to_string(FieldState s) {
   switch (s) {
   case FIELD________:  return "FIELD________";
@@ -46,6 +47,7 @@ inline const char* to_string(FieldState s) {
   default:             return "?????";
   }
 }
+// KCOV_ON
 
 typedef std::map<std::string, FieldState> state_map;
 

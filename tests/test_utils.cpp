@@ -103,7 +103,7 @@ std::string translate_simple(std::string src) {
   cursor.cursor = source_file->source;
   cursor.source_file = source_file;
   err |= cursor.emit_translation_unit(source_file->root_node);
-  cursor.emit_printf("\n");
+  err |= cursor.emit_printf("\n");
 
   for (auto c : out) assert(c > 0);
 

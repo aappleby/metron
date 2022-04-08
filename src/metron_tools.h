@@ -493,7 +493,7 @@ struct TinyLog {
 
   void indent() { indentation += 2; }
   void dedent() { indentation -= 2; }
-  void mute() { muted = true; }
+  void mute()   { muted = true; }
   void unmute() { muted = false; }
 
   void set_color(uint32_t new_color) {

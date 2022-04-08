@@ -20,21 +20,21 @@ struct MtCursor {
   void push_indent(MnNode n);
   void pop_indent(MnNode n);
 
-  void emit_newline();
-  void emit_indent();
+  CHECK_RETURN Err emit_newline();
+  CHECK_RETURN Err emit_indent();
 
   // Generic emit()s.
 
-  void emit_char(char c);
-  void emit_ws();
-  void emit_ws_to_newline();
-  void emit_span(const char* a, const char* b);
-  void emit_text(MnNode n);
-  void emit_printf(const char* fmt, ...);
-  void emit_replacement(MnNode n, const char* fmt, ...);
-  void skip_over(MnNode n);
-  void skip_ws();
-  void comment_out(MnNode n);
+  CHECK_RETURN Err emit_char(char c);
+  CHECK_RETURN Err emit_ws();
+  CHECK_RETURN Err emit_ws_to_newline();
+  CHECK_RETURN Err emit_span(const char* a, const char* b);
+  CHECK_RETURN Err emit_text(MnNode n);
+  CHECK_RETURN Err emit_printf(const char* fmt, ...);
+  CHECK_RETURN Err emit_replacement(MnNode n, const char* fmt, ...);
+  CHECK_RETURN Err skip_over(MnNode n);
+  CHECK_RETURN Err skip_ws();
+  CHECK_RETURN Err comment_out(MnNode n);
 
   // Per-symbol emit()s.
 
@@ -72,7 +72,6 @@ struct MtCursor {
   CHECK_RETURN Err emit_switch(MnSwitchStatement n);
   CHECK_RETURN Err emit_template_arg_list(MnTemplateArgList n);
   CHECK_RETURN Err emit_template_decl(MnTemplateDecl n);
-  CHECK_RETURN Err emit_template_param_list(MnTemplateParamList n);
   CHECK_RETURN Err emit_template_type(MnTemplateType n);
   CHECK_RETURN Err emit_translation_unit(MnTranslationUnit n);
   CHECK_RETURN Err emit_type_id(MnTypeIdentifier n);

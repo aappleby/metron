@@ -95,26 +95,26 @@ build bin/libmetron.a: static_lib obj/submodules/tree-sitter/lib/src/lib.o $
 ################################################################################
 # Compile bin/metron
 
-build obj/src/MetronApp.o: compile_cpp src/MetronApp.cpp
+build obj/src/MetronApp.o: compile_cpp src/MetronApp.cpp | bin/libmetron.a
   includes = -I. -Ibin -Isubmodules/tree-sitter/lib/include
-  implicit = bin/libmetron.a
   local_libs = bin/libmetron.a
 build bin/metron: link obj/src/MetronApp.o
   includes = -I. -Ibin -Isubmodules/tree-sitter/lib/include
-  implicit = bin/libmetron.a
   local_libs = bin/libmetron.a
 
 
 ################################################################################
 # Compile bin/metron_test
 
-build obj/tests/test_main.o: compile_cpp tests/test_main.cpp
+build obj/tests/test_main.o: compile_cpp tests/test_main.cpp | bin/libmetron.a
   includes = -I. -Isrc -Itests
   local_libs = bin/libmetron.a
-build obj/tests/test_logic.o: compile_cpp tests/test_logic.cpp
+build obj/tests/test_logic.o: compile_cpp tests/test_logic.cpp | $
+    bin/libmetron.a
   includes = -I. -Isrc -Itests
   local_libs = bin/libmetron.a
-build obj/tests/test_utils.o: compile_cpp tests/test_utils.cpp
+build obj/tests/test_utils.o: compile_cpp tests/test_utils.cpp | $
+    bin/libmetron.a
   includes = -I. -Isrc -Itests
   local_libs = bin/libmetron.a
 build bin/metron_test: link obj/tests/test_main.o obj/tests/test_logic.o $

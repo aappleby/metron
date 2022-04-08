@@ -597,6 +597,7 @@ CHECK_RETURN Err MtTracer::trace_switch(MnNode n) {
     if (c.sym == sym_case_statement) {
       if (first_branch) {
         error |= trace_dispatch(c);
+        first_branch = false;
       } else {
         state_map state_case = old_state;
 

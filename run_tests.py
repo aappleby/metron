@@ -7,9 +7,10 @@ import multiprocessing
 import time
 from os import path
 
-coverage = True
+coverage = False
 
-kcov_prefix = "kcov --include-pattern=Metron --exclude-pattern=submodules coverage " if coverage else ""
+kcov_prefix = "kcov --exclude-region=KCOV_OFF:KCOV_ON --include-pattern=Metron --exclude-pattern=submodules coverage " if coverage else ""
+
 
 def print_c(color, *args):
     sys.stdout.write(
@@ -145,14 +146,25 @@ def run_simple_test(commandline):
 ###############################################################################
 # Run an arbitrary command as a test
 
-def run_command(commandline):
+def run_good_command(commandline):
     cmd = kcov_prefix + commandline
     error = 0
     print(f"  {cmd}")
 
     result = os.system(cmd)
     if result != 0:
-        print(f"Command \"{cmd}\" failed")
+        print(f"Command \"{cmd}\" should have passed, but it failed.")
+        error = 1
+    return error
+
+def run_bad_command(commandline):
+    cmd = kcov_prefix + commandline
+    error = 0
+    print(f"  {cmd}")
+
+    result = os.system(cmd)
+    if result == 0:
+        print(f"Command \"{cmd}\" should have failed, but it passed.")
         error = 1
     return error
 
@@ -204,6 +216,7 @@ if __name__ == "__main__":
         print_r(f"Headers in metron_good failed Metron conversion")
         error = True
 
+    # Icarus bein' too picky
     """
     print()
     print_b("Checking that all converted files can be parsed by Icarus")
@@ -215,7 +228,7 @@ if __name__ == "__main__":
     print()
     print_b("Checking that all converted files match their golden version, if present")
     if any(pool.map(check_golden, metron_good)):
-        print_r(f"Headers in metron_good failed Metron conversion")
+        print_r(f"Some headers failed golden check")
         error = True
 
     print()
@@ -252,13 +265,22 @@ if __name__ == "__main__":
     print()
     print_b("Running misc commands")
 
-    commands = [
+    good_commands = [
         "bin/metron -e examples/rvtiny/metron/toplevel.h > /dev/null",
         "bin/metron -v examples/rvtiny/metron/toplevel.h > /dev/null",
+        "bin/metron --dump examples/rvtiny/metron/toplevel.h > /dev/null",
     ]
 
-    if any(pool.map(run_command, commands)):
-        print_r(f"Standalone tests failed")
+    bad_commands = [
+        "bin/metron skjdlsfjkhdfsjhdf.h > /dev/null",
+        "bin/metron -c skjdlsfjkhdfsjhdf.h > /dev/null",
+        "bin/metron -o sdkjfshkdjfshyry skjdlsfjkhdfsjhdf.h > /dev/null",
+    ]
+
+    if any(pool.map(run_good_command, good_commands)):
+        error = True
+
+    if any(pool.map(run_bad_command, bad_commands)):
         error = True
 
     ############################################################

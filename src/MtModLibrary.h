@@ -10,11 +10,9 @@ struct MtSourceFile;
 //------------------------------------------------------------------------------
 
 struct MtModLibrary {
-  void reset();
   void add_search_path(const std::string& path);
   void add_source(MtSourceFile* source_file);
-  MtSourceFile* find_source(const std::string& filename);
-
+  
   CHECK_RETURN bool load_source(const char* name);
   CHECK_RETURN bool load_blob(const std::string& filename, const std::string& full_path,
                  const std::string& src_blob, bool use_utf8_bom = false);
@@ -23,6 +21,8 @@ struct MtModLibrary {
 
   MtModule* get_module(const std::string& module_name);
   bool has_module(const std::string& name);
+
+  void teardown();
 
   //----------
 

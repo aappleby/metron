@@ -138,7 +138,7 @@ int main(int argc, char** argv) {
   }
 
   //----------
-  // Dump out module stats
+  // Print module stats
 
   if (stats) {
     for (auto& mod : library.modules) {
@@ -190,6 +190,10 @@ int main(int argc, char** argv) {
 
     for (auto& source_file : library.source_files)
     {
+      //if (source_file->filename != "example_data_memory.h") continue;
+
+      Err err;
+
       // Translate the source.
       auto out_name = source_file->filename;
       assert(out_name.ends_with(".h"));
@@ -211,7 +215,7 @@ int main(int argc, char** argv) {
       cursor.source_file = source_file;
 
       bool emit_error = cursor.emit_dispatch(source_file->root_node);
-      cursor.emit_printf("\n");
+      err |= cursor.emit_printf("\n");
 
       if (emit_error) {
         LOG_R("Error during code generation\n");
@@ -240,6 +244,9 @@ int main(int argc, char** argv) {
   }
 
   LOG_G("Done!\n");
+
+  library.teardown();
+
   return 0;
 }
 

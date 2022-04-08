@@ -58,7 +58,11 @@ tests to increase coverage
   Delete source file objects on shutdown
   prefix and postfix operators - x++ ++x
   trace sym_subscript_expression? handled elsewhere?
-  switch statements?
+  private init
+  const init
+  const tick
+  const tock
+  const task
 
 
 

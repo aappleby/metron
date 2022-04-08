@@ -1,0 +1,7 @@
+#include "metron_tools.h"
+
+// Increment/decrement should _not_ return a value.
+
+class Module {
+public:
+};

@@ -273,7 +273,7 @@ def build_metron_app():
             "bin",
             "submodules/tree-sitter/lib/include"
         ],
-        implicit=["bin/libmetron.a"],
+        deps=["bin/libmetron.a"],
         local_libs="bin/libmetron.a",
     )
 
@@ -293,6 +293,7 @@ def build_metron_test():
       "src",
       "tests"
     ],
+    deps=["bin/libmetron.a"],
     local_libs="bin/libmetron.a",
   )
 

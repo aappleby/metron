@@ -10,13 +10,6 @@
 
 //------------------------------------------------------------------------------
 
-void MtModLibrary::reset() {
-  for (auto module : modules) delete module;
-  modules.clear();
-}
-
-//------------------------------------------------------------------------------
-
 void MtModLibrary::add_search_path(const std::string& path) {
   assert(!sources_loaded);
   search_paths.push_back(path);
@@ -28,17 +21,6 @@ void MtModLibrary::add_source(MtSourceFile* source_file) {
   assert(!sources_loaded);
   source_file->lib = this;
   source_files.push_back(source_file);
-}
-
-//------------------------------------------------------------------------------
-
-MtSourceFile* MtModLibrary::find_source(const std::string& filename) {
-  for (auto& s : source_files) {
-    if (s->filename == filename) {
-      return s;
-    }
-  }
-  return nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -171,6 +153,15 @@ MtModule* MtModLibrary::get_module(const std::string& name) {
 bool MtModLibrary::has_module(const std::string& name) {
   assert(sources_loaded);
   return get_module(name) != nullptr;
+}
+
+//------------------------------------------------------------------------------
+
+void MtModLibrary::teardown() {
+  modules.clear();
+  for (auto s : source_files) {
+    delete s;
+  }
 }
 
 //------------------------------------------------------------------------------

@@ -713,6 +713,11 @@ CHECK_RETURN Err MtModule::collect_input_arguments() {
 
     for (const auto& param : params) {
       if (param.sym != sym_parameter_declaration) continue;
+
+      if (dedup.contains(param.name4())) {
+        LOG_R("Public module interface for %s contains duplicate input argument \"%s\"\n", name().c_str(), param.name4().c_str());
+      }
+
       if (!dedup.contains(param.name4())) {
         /*
         MtField *new_input = MtField::construct(param, true);

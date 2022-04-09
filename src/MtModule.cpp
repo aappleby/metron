@@ -309,9 +309,9 @@ CHECK_RETURN Err MtModule::load_pass1() {
     return error;
   }
 
+  error |= collect_params();
   error |= collect_fields();
   error |= collect_methods();
-  error |= collect_params();
 
   // enums = new std::vector<MtEnum>();
 
@@ -352,11 +352,6 @@ CHECK_RETURN Err MtModule::load_pass1() {
     }
     */
   }
-
-  error |= collect_input_params();
-  error |= collect_registers();
-  error |= collect_submods();
-  error |= collect_output_fields();
 
   return error;
 }
@@ -805,6 +800,12 @@ CHECK_RETURN Err MtModule::collect_submods() {
 CHECK_RETURN Err MtModule::load_pass2() {
   Err error;
   assert (!mod_class.is_null());
+
+  error |= collect_input_params();
+  error |= collect_registers();
+  error |= collect_submods();
+  error |= collect_output_fields();
+
   error |= build_port_map();
   error |= sanity_check();
   return error;

@@ -432,10 +432,10 @@ CHECK_RETURN Err MtModule::collect_field_and_submods() {
 
     auto new_field = MtField::construct(n, in_public);
 
+    all_fields.push_back(new_field);
+
     if (source_file->lib->has_module(new_field->type_name())) {
       submods.push_back(new_field);
-    } else {
-      all_fields.push_back(new_field);
     }
   }
 
@@ -736,16 +736,13 @@ CHECK_RETURN Err MtModule::categorize_fields() {
   std::set<std::string> dedup;
 
   for (auto f : all_fields) {
-    if (f->is_submod()) {
-      assert(!f->is_public());
-      continue;
-    }
-
     if (f->is_param()) {
       continue;
     }
-
-    if (f->is_public()) {
+    else if (f->is_submod()) {
+      continue;
+    }
+    else if (f->is_public()) {
       if (f->state == FIELD_RD_____) {
         input_signals.push_back(f);
       }
@@ -755,9 +752,11 @@ CHECK_RETURN Err MtModule::categorize_fields() {
       else if (f->state == FIELD____WR_L || f->state == FIELD_RD_WR_L) {
         output_registers.push_back(f);
       }
+      // KCOV_OFF
       else {
         debugbreak();
       }
+      // KCOV_ON
     }
     else {
       if (f->state == FIELD____WS_L) {
@@ -775,9 +774,11 @@ CHECK_RETURN Err MtModule::categorize_fields() {
       else if (f->state == FIELD_RD_WR_L) {
         private_registers.push_back(f);
       }
+      // KCOV_OFF
       else {
         debugbreak();
       }
+      // KCOV_ON
     }
   }
 

@@ -37,9 +37,10 @@ class riscv_core {
 
     logic<5> alu_function = ctlpath.tock_alu_function(funct7);
 
-    alu_result = datapath.tock_alu_result(alu_function,
+    datapath.tock_alu_result(alu_function,
                                     ctlpath.alu_operand_a_select(),
                                     ctlpath.alu_operand_b_select());
+    alu_result = datapath.alu_result;
     dmem.tock_inputs(alu_result, funct3);
     return alu_result;
   }

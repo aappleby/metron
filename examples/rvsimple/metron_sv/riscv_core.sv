@@ -59,7 +59,10 @@ module riscv_core
     datapath_alu_function = alu_function;
     datapath_alu_operand_a_select = ctlpath_alu_operand_a_select;
     datapath_alu_operand_b_select = ctlpath_alu_operand_b_select;
-    alu_result = datapath_tock_alu_result;
+    /*datapath.tock_alu_result(alu_function,
+                                    ctlpath.alu_operand_a_select(),
+                                    ctlpath.alu_operand_b_select())*/;
+    alu_result = datapath_alu_result;
     dmem_address = alu_result;
     dmem_data_format = funct3;
     /*dmem.tock_inputs(alu_result, funct3)*/;
@@ -147,8 +150,8 @@ module riscv_core
      .inst_immediate(datapath_inst_immediate), 
      .temp_rs1_data(datapath_temp_rs1_data), 
      .temp_rs2_data(datapath_temp_rs2_data), 
-     .pc(datapath_pc), 
-     .tock_alu_result(datapath_tock_alu_result)
+     .alu_result(datapath_alu_result), 
+     .pc(datapath_pc)
    );
    logic[31:0] datapath_inst;
    logic[4:0] datapath_alu_function;
@@ -170,8 +173,8 @@ module riscv_core
    logic[31:0] datapath_inst_immediate;
    logic[31:0] datapath_temp_rs1_data;
    logic[31:0] datapath_temp_rs2_data;
+   logic[31:0] datapath_alu_result;
    logic[31:0] datapath_pc;
-   logic[31:0] datapath_tock_alu_result;
 
   singlecycle_ctlpath ctlpath(
      // Inputs

@@ -44,8 +44,8 @@ module singlecycle_datapath
   output logic[31:0] inst_immediate,
   output logic[31:0] temp_rs1_data,
   output logic[31:0] temp_rs2_data,
-  output logic[31:0] pc,
-  output logic[31:0] tock_alu_result
+  output logic[31:0] alu_result,
+  output logic[31:0] pc
 );
  /*public:*/
 
@@ -84,6 +84,7 @@ module singlecycle_datapath
 
   /*logic<32> temp_rs1_data;*/
   /*logic<32> temp_rs2_data;*/
+  /*logic<32> alu_result;*/
 
   always_comb begin /*tock_alu_result*/
     regs_rs1_address = inst_rs1;
@@ -113,8 +114,7 @@ module singlecycle_datapath
         inst_immediate
       )
     )*/;
-
-    tock_alu_result = alu_core_result;
+    alu_result = alu_core_result;
   end
 
   //----------------------------------------

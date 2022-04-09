@@ -37,7 +37,9 @@ class toplevel {
     logic<1>  write_enable = core.bus_write_enable2(inst);
     logic<4>  byte_enable  = core.bus_byte_enable2(inst, alu_result2);
     logic<1>  read_enable  = core.bus_read_enable2(inst);
-    logic<32> read_data    = data_memory_bus.read_data(alu_result2, read_enable);
+
+    data_memory_bus.address = alu_result2;
+    logic<32> read_data    = data_memory_bus.read_data(read_enable);
 
     o_inst = inst;
     o_bus_read_data = read_data;
@@ -48,7 +50,7 @@ class toplevel {
     o_bus_write_enable = write_enable;
     o_pc = pc;
 
-    data_memory_bus.tock(alu_result2, write_enable, byte_enable, write_data);
+    data_memory_bus.tock(write_enable, byte_enable, write_data);
     core.tock(reset, inst, read_data, alu_result2);
   }
 

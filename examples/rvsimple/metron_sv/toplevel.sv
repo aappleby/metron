@@ -65,6 +65,7 @@ module toplevel
     byte_enable  = core_bus_byte_enable2;
     core_inst = inst;
     read_enable  = core_bus_read_enable2;
+
     data_memory_bus_address = alu_result2;
     data_memory_bus_read_enable = read_enable;
     read_data    = data_memory_bus_read_data;
@@ -78,11 +79,10 @@ module toplevel
     o_bus_write_enable = write_enable;
     o_pc = pc;
 
-    data_memory_bus_address = alu_result2;
     data_memory_bus_write_enable = write_enable;
     data_memory_bus_byte_enable = byte_enable;
     data_memory_bus_write_data = write_data;
-    /*data_memory_bus.tock(alu_result2, write_enable, byte_enable, write_data)*/;
+    /*data_memory_bus.tock(write_enable, byte_enable, write_data)*/;
     core_reset = reset;
     core_inst = inst;
     core_bus_read_data = read_data;

@@ -552,9 +552,9 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
     toplevel__DOT__core__DOT__datapath__DOT__alu_core_alu_result 
         = toplevel__DOT__core__DOT__datapath__DOT__alu_core__DOT__unnamedblk1__DOT__result;
     toplevel__DOT__unnamedblk1__DOT__alu_result2 = toplevel__DOT__core__DOT__datapath__DOT__alu_core_alu_result;
-    vlSelf->o_bus_address = toplevel__DOT__unnamedblk1__DOT__alu_result2;
     vlSelf->toplevel__DOT__data_memory_bus_address 
         = toplevel__DOT__unnamedblk1__DOT__alu_result2;
+    vlSelf->o_bus_address = toplevel__DOT__unnamedblk1__DOT__alu_result2;
     toplevel__DOT__core_alu_result2 = toplevel__DOT__unnamedblk1__DOT__alu_result2;
     toplevel__DOT__core__DOT__dmem_address = toplevel__DOT__core_alu_result2;
     toplevel__DOT__core__DOT__ctlpath__DOT__transfer__DOT__unnamedblk1__DOT__result 

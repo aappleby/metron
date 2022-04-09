@@ -13,6 +13,8 @@
 class data_memory_interface {
  public:
 
+   logic<32> address2;
+
   logic<32> bus_write_data(logic<32> address, logic<32> write_data) const {
     return write_data << (8 * b2(address));
   }
@@ -29,9 +31,9 @@ class data_memory_interface {
     return result;
   }
 
-  logic<32> read_data(logic<32> address, logic<32> bus_read_data, logic<3> data_format) const {
+  logic<32> read_data(logic<32> bus_read_data, logic<3> data_format) const {
     // correct for unaligned accesses
-    logic<32> position_fix = b32(bus_read_data >> (8 * b2(address)));
+    logic<32> position_fix = b32(bus_read_data >> (8 * b2(address2)));
 
     // sign-extend if necessary
     logic<32> result;

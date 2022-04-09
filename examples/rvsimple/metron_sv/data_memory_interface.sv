@@ -12,16 +12,19 @@
 
 module data_memory_interface
 (
-  input logic clock,
-  input logic[31:0] address,
-  input logic[31:0] write_data,
-  input logic[2:0] data_format,
-  input logic[31:0] bus_read_data,
-  output logic[31:0] bus_write_data,
-  output logic[3:0] bus_byte_enable,
-  output logic[31:0] read_data
+   input logic clock,
+   input logic[31:0] address2,
+   input logic[31:0] address,
+   input logic[31:0] write_data,
+   input logic[2:0] data_format,
+   input logic[31:0] bus_read_data,
+   output logic[31:0] bus_write_data,
+   output logic[3:0] bus_byte_enable,
+   output logic[31:0] read_data
 );
  /*public:*/
+
+   /*logic<32> address2;*/
 
   always_comb begin
     bus_write_data = write_data << (8 * 2'(address));
@@ -44,7 +47,7 @@ module data_memory_interface
     logic[31:0] position_fix;
     logic[31:0] result;
     // correct for unaligned accesses
-    position_fix = 32'(bus_read_data >> (8 * 2'(address)));
+    position_fix = 32'(bus_read_data >> (8 * 2'(address2)));
 
     // sign-extend if necessary
     /*logic<32> result;*/

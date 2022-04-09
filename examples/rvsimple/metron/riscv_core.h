@@ -40,7 +40,7 @@ class riscv_core {
     alu_result = datapath.tock_alu_result(alu_function,
                                     ctlpath.alu_operand_a_select(),
                                     ctlpath.alu_operand_b_select());
-    dmem.tock_address(alu_result);
+    dmem.tock_inputs(alu_result, funct3);
     return alu_result;
   }
 
@@ -52,7 +52,7 @@ class riscv_core {
     logic<3> funct3 = datapath.inst_funct3;
     logic<1> reg_we = ctlpath.regfile_write_enable();
 
-    logic<32> mem_data = dmem.read_data(bus_read_data, funct3);
+    logic<32> mem_data = dmem.read_data(bus_read_data);
     logic<3> reg_select = ctlpath.reg_writeback_select();
     logic<2> pc_select =
       ctlpath.next_pc_select(alu_result == 0);
@@ -73,7 +73,7 @@ class riscv_core {
 
   logic<4> bus_byte_enable2() const {
     logic<3> funct3 = datapath.inst_funct3;
-    return dmem.bus_byte_enable(funct3);
+    return dmem.bus_byte_enable();
   }
 
   logic<1> bus_read_enable2() const {

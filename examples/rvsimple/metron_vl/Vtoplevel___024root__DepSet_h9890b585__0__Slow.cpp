@@ -85,7 +85,6 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
     IData/*31:0*/ toplevel__DOT__core__DOT__unnamedblk2__DOT__mem_data;
     CData/*2:0*/ toplevel__DOT__core__DOT__unnamedblk2__DOT__reg_select;
     CData/*1:0*/ toplevel__DOT__core__DOT__unnamedblk2__DOT__pc_select;
-    CData/*2:0*/ toplevel__DOT__core__DOT__unnamedblk3__DOT__funct3;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__alu_core_alu_result;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_in0;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_in1;
@@ -161,10 +160,6 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
     toplevel__DOT__unnamedblk1__DOT__inst = toplevel__DOT__text_memory_bus_read_data;
     vlSelf->toplevel__DOT__core___05Finst = toplevel__DOT__unnamedblk1__DOT__inst;
     vlSelf->o_inst = toplevel__DOT__unnamedblk1__DOT__inst;
-    toplevel__DOT__core__DOT__unnamedblk3__DOT__funct3 
-        = (7U & (vlSelf->toplevel__DOT__core___05Finst 
-                 >> 0xcU));
-    toplevel__DOT__core__DOT__dmem_data_format = toplevel__DOT__core__DOT__unnamedblk3__DOT__funct3;
     toplevel__DOT__core__DOT__datapath_temp_rs1_data 
         = vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs
         [(0x1fU & (vlSelf->toplevel__DOT__core___05Finst 
@@ -306,6 +301,7 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
         = (7U & (vlSelf->toplevel__DOT__core___05Finst 
                  >> 0xcU));
     toplevel__DOT__core__DOT__ctlpath_inst_funct3 = toplevel__DOT__core__DOT__unnamedblk1__DOT__funct3;
+    toplevel__DOT__core__DOT__dmem_data_format = toplevel__DOT__core__DOT__unnamedblk1__DOT__funct3;
     toplevel__DOT__core__DOT__unnamedblk1__DOT__opcode 
         = (0x7fU & vlSelf->toplevel__DOT__core___05Finst);
     toplevel__DOT__core__DOT__ctlpath_inst_opcode = toplevel__DOT__core__DOT__unnamedblk1__DOT__opcode;

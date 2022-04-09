@@ -14,19 +14,21 @@ class data_memory_interface {
  public:
 
    logic<32> address2;
+   logic<3> data_format2;
 
-   void tock_address(logic<32> address) {
+   void tock_inputs(logic<32> address, logic<3> data_format) {
      address2 = address;
+     data_format2 = data_format;
    }
 
   logic<32> bus_write_data(logic<32> write_data) const {
     return write_data << (8 * b2(address2));
   }
 
-  logic<4> bus_byte_enable(logic<3> data_format) const {
+  logic<4> bus_byte_enable() const {
     // calculate byte enable
     logic<4> result;
-    switch (b2(data_format)) {
+    switch (b2(data_format2)) {
       case 0b00: result = b4(0b0001) << b2(address2); break;
       case 0b01: result = b4(0b0011) << b2(address2); break;
       case 0b10: result = b4(0b1111) << b2(address2); break;
@@ -35,15 +37,15 @@ class data_memory_interface {
     return result;
   }
 
-  logic<32> read_data(logic<32> bus_read_data, logic<3> data_format) const {
+  logic<32> read_data(logic<32> bus_read_data) const {
     // correct for unaligned accesses
     logic<32> position_fix = b32(bus_read_data >> (8 * b2(address2)));
 
     // sign-extend if necessary
     logic<32> result;
-    switch (b2(data_format)) {
-      case 0b00: result = cat(dup<24>(b1(~data_format[2] & position_fix[7])), b8(position_fix)); break;
-      case 0b01: result = cat(dup<16>(b1(~data_format[2] & position_fix[15])), b16(position_fix)); break;
+    switch (b2(data_format2)) {
+      case 0b00: result = cat(dup<24>(b1(~data_format2[2] & position_fix[7])), b8(position_fix)); break;
+      case 0b01: result = cat(dup<16>(b1(~data_format2[2] & position_fix[15])), b16(position_fix)); break;
       case 0b10: result = b32(position_fix); break;
       default:   result = b32(DONTCARE); break;
     }

@@ -14,10 +14,11 @@ module data_memory_interface
 (
    input logic clock,
    input logic[31:0] address,
-   input logic[31:0] write_data,
    input logic[2:0] data_format,
+   input logic[31:0] write_data,
    input logic[31:0] bus_read_data,
    output logic[31:0] address2,
+   output logic[2:0] data_format2,
    output logic[31:0] bus_write_data,
    output logic[3:0] bus_byte_enable,
    output logic[31:0] read_data
@@ -25,9 +26,11 @@ module data_memory_interface
  /*public:*/
 
    /*logic<32> address2;*/
+   /*logic<3> data_format2;*/
 
-   always_comb begin /*tock_address*/
+   always_comb begin /*tock_inputs*/
      address2 = address;
+     data_format2 = data_format;
    end
 
   always_comb begin
@@ -38,7 +41,7 @@ module data_memory_interface
     logic[3:0] result;
     // calculate byte enable
     /*logic<4> result;*/
-    case (2'(data_format)) 
+    case (2'(data_format2)) 
       /*case*/ 2'b00: result = 4'b0001 << 2'(address2); /*break;*/
       /*case*/ 2'b01: result = 4'b0011 << 2'(address2); /*break;*/
       /*case*/ 2'b10: result = 4'b1111 << 2'(address2); /*break;*/
@@ -55,9 +58,9 @@ module data_memory_interface
 
     // sign-extend if necessary
     /*logic<32> result;*/
-    case (2'(data_format)) 
-      /*case*/ 2'b00: result = {{24 {1'(~data_format[2] & position_fix[7])}}, 8'(position_fix)}; /*break;*/
-      /*case*/ 2'b01: result = {{16 {1'(~data_format[2] & position_fix[15])}}, 16'(position_fix)}; /*break;*/
+    case (2'(data_format2)) 
+      /*case*/ 2'b00: result = {{24 {1'(~data_format2[2] & position_fix[7])}}, 8'(position_fix)}; /*break;*/
+      /*case*/ 2'b01: result = {{16 {1'(~data_format2[2] & position_fix[15])}}, 16'(position_fix)}; /*break;*/
       /*case*/ 2'b10: result = 32'(position_fix); /*break;*/
       default:   result = 32'bx; /*break;*/
     endcase

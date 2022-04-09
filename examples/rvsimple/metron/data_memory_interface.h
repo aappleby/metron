@@ -19,17 +19,17 @@ class data_memory_interface {
      address2 = address;
    }
 
-  logic<32> bus_write_data(logic<32> address, logic<32> write_data) const {
-    return write_data << (8 * b2(address));
+  logic<32> bus_write_data(logic<32> write_data) const {
+    return write_data << (8 * b2(address2));
   }
 
-  logic<4> bus_byte_enable(logic<3> data_format, logic<32> address) const {
+  logic<4> bus_byte_enable(logic<3> data_format) const {
     // calculate byte enable
     logic<4> result;
     switch (b2(data_format)) {
-      case 0b00: result = b4(0b0001) << b2(address); break;
-      case 0b01: result = b4(0b0011) << b2(address); break;
-      case 0b10: result = b4(0b1111) << b2(address); break;
+      case 0b00: result = b4(0b0001) << b2(address2); break;
+      case 0b01: result = b4(0b0011) << b2(address2); break;
+      case 0b10: result = b4(0b1111) << b2(address2); break;
       default:   result = b4(0b0000); break;
     }
     return result;

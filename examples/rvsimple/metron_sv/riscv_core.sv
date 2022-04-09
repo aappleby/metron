@@ -102,7 +102,6 @@ module riscv_core
 
 
   always_comb begin
-    dmem_address = alu_result;
     dmem_write_data = datapath_temp_rs2_data;
     bus_write_data2 = dmem_bus_write_data;
   end
@@ -115,7 +114,6 @@ module riscv_core
     logic[2:0] funct3;
     funct3 = datapath_inst_funct3;
     dmem_data_format = funct3;
-    dmem_address = alu_result;
     bus_byte_enable2 = dmem_bus_byte_enable;
   end
 

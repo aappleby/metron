@@ -31,7 +31,7 @@ module data_memory_interface
    end
 
   always_comb begin
-    bus_write_data = write_data << (8 * 2'(address));
+    bus_write_data = write_data << (8 * 2'(address2));
   end
 
   always_comb begin
@@ -39,9 +39,9 @@ module data_memory_interface
     // calculate byte enable
     /*logic<4> result;*/
     case (2'(data_format)) 
-      /*case*/ 2'b00: result = 4'b0001 << 2'(address); /*break;*/
-      /*case*/ 2'b01: result = 4'b0011 << 2'(address); /*break;*/
-      /*case*/ 2'b10: result = 4'b1111 << 2'(address); /*break;*/
+      /*case*/ 2'b00: result = 4'b0001 << 2'(address2); /*break;*/
+      /*case*/ 2'b01: result = 4'b0011 << 2'(address2); /*break;*/
+      /*case*/ 2'b10: result = 4'b1111 << 2'(address2); /*break;*/
       default:   result = 4'b0000; /*break;*/
     endcase
     bus_byte_enable = result;

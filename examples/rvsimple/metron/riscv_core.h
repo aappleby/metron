@@ -64,7 +64,7 @@ class riscv_core {
 
 
   logic<32> bus_write_data2() const {
-    return dmem.bus_write_data(alu_result, datapath.temp_rs2_data);
+    return dmem.bus_write_data(datapath.temp_rs2_data);
   }
 
   logic<1> bus_write_enable2() const {
@@ -73,7 +73,7 @@ class riscv_core {
 
   logic<4> bus_byte_enable2() const {
     logic<3> funct3 = datapath.inst_funct3;
-    return dmem.bus_byte_enable(funct3, alu_result);
+    return dmem.bus_byte_enable(funct3);
   }
 
   logic<1> bus_read_enable2() const {

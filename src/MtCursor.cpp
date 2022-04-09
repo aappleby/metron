@@ -261,36 +261,19 @@ CHECK_RETURN Err MtCursor::emit_assignment(MnAssignmentExpr n) {
   auto lhs = n.lhs();
   auto rhs = n.rhs();
 
-  bool lhs_is_reg = false;
-  if (lhs.sym == sym_identifier) {
-    std::string lhs_name = lhs.text();
-    for (auto f : current_mod->registers) {
-      if (f->name() == lhs_name) {
-        lhs_is_reg = true;
-        break;
-      }
-    }
-    for (auto f : current_mod->outputs) {
-      if (f->name() == lhs_name) {
-        lhs_is_reg = true;
-        break;
-      }
-    }
+  bool lhs_is_reg1 = false;
+
+  std::string lhs_name = lhs.name4();
+
+  auto lhs_field = current_mod->get_field(lhs_name);
+  if (lhs_field) {
+    lhs_is_reg1 = (lhs_field->state == FIELD_RD_WR_L) || (lhs_field->state == FIELD____WR_L);
   }
 
-  std::string lhs_name = lhs.text();
-
-  if (lhs.sym == sym_identifier) {
-    err |= emit_identifier(MnIdentifier(lhs));
-  } else if (lhs.sym == sym_subscript_expression) {
-    err |= emit_children(lhs);
-  } else {
-    lhs.dump_tree();
-    debugbreak();
-  }
+  err |= emit_dispatch(lhs);
   err |= emit_ws();
 
-  if (current_method->is_tick && lhs_is_reg) {
+  if (current_method->is_tick && lhs_is_reg1) {
     err |= emit_printf("<");
   }
   err |= emit_text(n.op());

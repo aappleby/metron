@@ -40,20 +40,50 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
     IData/*31:0*/ __Vdly__toplevel__DOT__pc;
     CData/*1:0*/ __Vdly__toplevel__DOT__phase;
     IData/*31:0*/ __Vdly__toplevel__DOT__inst;
+    CData/*0:0*/ __Vdlyvset__toplevel__DOT__regs__v0;
+    CData/*4:0*/ __Vdlyvdim0__toplevel__DOT__regs__v1;
+    IData/*31:0*/ __Vdlyvval__toplevel__DOT__regs__v1;
+    CData/*0:0*/ __Vdlyvset__toplevel__DOT__regs__v1;
+    CData/*4:0*/ __Vdlyvdim0__toplevel__DOT__regs__v2;
+    IData/*31:0*/ __Vdlyvval__toplevel__DOT__regs__v2;
+    CData/*0:0*/ __Vdlyvset__toplevel__DOT__regs__v2;
+    SData/*14:0*/ __Vdlyvdim0__toplevel__DOT__data_mem__v0;
+    IData/*31:0*/ __Vdlyvval__toplevel__DOT__data_mem__v0;
+    CData/*0:0*/ __Vdlyvset__toplevel__DOT__data_mem__v0;
+    CData/*4:0*/ __Vdlyvdim0__toplevel__DOT__regs__v3;
+    IData/*31:0*/ __Vdlyvval__toplevel__DOT__regs__v3;
+    CData/*0:0*/ __Vdlyvset__toplevel__DOT__regs__v3;
+    CData/*4:0*/ __Vdlyvdim0__toplevel__DOT__regs__v4;
+    IData/*31:0*/ __Vdlyvval__toplevel__DOT__regs__v4;
+    CData/*0:0*/ __Vdlyvset__toplevel__DOT__regs__v4;
+    CData/*4:0*/ __Vdlyvdim0__toplevel__DOT__regs__v5;
+    IData/*31:0*/ __Vdlyvval__toplevel__DOT__regs__v5;
+    CData/*0:0*/ __Vdlyvset__toplevel__DOT__regs__v5;
+    CData/*4:0*/ __Vdlyvdim0__toplevel__DOT__regs__v6;
+    IData/*31:0*/ __Vdlyvval__toplevel__DOT__regs__v6;
+    CData/*0:0*/ __Vdlyvset__toplevel__DOT__regs__v6;
     // Body
     __Vdly__toplevel__DOT__inst = vlSelf->toplevel__DOT__inst;
     __Vdly__toplevel__DOT__phase = vlSelf->toplevel__DOT__phase;
     __Vdly__toplevel__DOT__pc = vlSelf->toplevel__DOT__pc;
+    __Vdlyvset__toplevel__DOT__data_mem__v0 = 0U;
+    __Vdlyvset__toplevel__DOT__regs__v0 = 0U;
+    __Vdlyvset__toplevel__DOT__regs__v1 = 0U;
+    __Vdlyvset__toplevel__DOT__regs__v2 = 0U;
+    __Vdlyvset__toplevel__DOT__regs__v3 = 0U;
+    __Vdlyvset__toplevel__DOT__regs__v4 = 0U;
+    __Vdlyvset__toplevel__DOT__regs__v5 = 0U;
+    __Vdlyvset__toplevel__DOT__regs__v6 = 0U;
     if (vlSelf->reset) {
-        vlSelf->o_pc = 0U;
-        vlSelf->o_inst = 0U;
         vlSelf->o_bus_read_enable = 0U;
-        vlSelf->o_bus_byte_enable = 0U;
+        vlSelf->o_inst = 0U;
         vlSelf->o_bus_read_data = 0U;
-        vlSelf->toplevel__DOT__regs[0U] = 0U;
+        vlSelf->o_pc = 0U;
+        vlSelf->o_bus_byte_enable = 0U;
         __Vdly__toplevel__DOT__pc = 0U;
         __Vdly__toplevel__DOT__phase = 0U;
         __Vdly__toplevel__DOT__inst = 0U;
+        __Vdlyvset__toplevel__DOT__regs__v0 = 1U;
         vlSelf->o_bus_address = 0U;
         vlSelf->o_bus_write_data = 0U;
         vlSelf->o_bus_write_enable = 0U;
@@ -140,8 +170,11 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
                                                    & __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk3__DOT__op_b))))))));
             }
             if ((0U != (IData)(__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__rd))) {
-                vlSelf->toplevel__DOT__regs[__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__rd] 
+                __Vdlyvval__toplevel__DOT__regs__v1 
                     = __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk3__DOT__alu_result;
+                __Vdlyvset__toplevel__DOT__regs__v1 = 1U;
+                __Vdlyvdim0__toplevel__DOT__regs__v1 
+                    = __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__rd;
             }
         } else if ((3U == (IData)(__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__op))) {
             __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk4__DOT__imm 
@@ -182,8 +215,11 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
                     = (0xffffU & __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk4__DOT__rdata);
             }
             if ((0U != (IData)(__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__rd))) {
-                vlSelf->toplevel__DOT__regs[__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__rd] 
+                __Vdlyvval__toplevel__DOT__regs__v2 
                     = __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk4__DOT__rdata;
+                __Vdlyvset__toplevel__DOT__regs__v2 = 1U;
+                __Vdlyvdim0__toplevel__DOT__regs__v2 
+                    = __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__rd;
             }
         } else if ((0x23U == (IData)(__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__op))) {
             __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk5__DOT__imm 
@@ -234,12 +270,15 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
             __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk5__DOT__phys_addr 
                 = (0x7fffU & (__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk5__DOT__addr 
                               >> 2U));
-            vlSelf->toplevel__DOT__data_mem[__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk5__DOT__phys_addr] 
+            __Vdlyvval__toplevel__DOT__data_mem__v0 
                 = ((vlSelf->toplevel__DOT__data_mem
                     [__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk5__DOT__phys_addr] 
                     & (~ __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk5__DOT__mask)) 
                    | (__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk5__DOT__wdata 
                       & __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk5__DOT__mask));
+            __Vdlyvset__toplevel__DOT__data_mem__v0 = 1U;
+            __Vdlyvdim0__toplevel__DOT__data_mem__v0 
+                = __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk5__DOT__phys_addr;
             vlSelf->o_bus_address = __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk5__DOT__addr;
             vlSelf->o_bus_write_data = vlSelf->toplevel__DOT__regs
                 [__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__r2];
@@ -295,8 +334,11 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
                                                   & (vlSelf->toplevel__DOT__inst 
                                                      >> 0x14U))))));
             if ((0U != (IData)(__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__rd))) {
-                vlSelf->toplevel__DOT__regs[__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__rd] 
+                __Vdlyvval__toplevel__DOT__regs__v3 
                     = ((IData)(4U) + vlSelf->toplevel__DOT__pc);
+                __Vdlyvset__toplevel__DOT__regs__v3 = 1U;
+                __Vdlyvdim0__toplevel__DOT__regs__v3 
+                    = __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__rd;
             }
             __Vdly__toplevel__DOT__pc = (vlSelf->toplevel__DOT__pc 
                                          + __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk8__DOT__imm);
@@ -309,8 +351,11 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
                    | (0x7ffU & (vlSelf->toplevel__DOT__inst 
                                 >> 0x14U)));
             if ((0U != (IData)(__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__rd))) {
-                vlSelf->toplevel__DOT__regs[__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__rd] 
+                __Vdlyvval__toplevel__DOT__regs__v4 
                     = ((IData)(4U) + vlSelf->toplevel__DOT__pc);
+                __Vdlyvset__toplevel__DOT__regs__v4 = 1U;
+                __Vdlyvdim0__toplevel__DOT__regs__v4 
+                    = __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__rd;
             }
             __Vdly__toplevel__DOT__pc = (__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk9__DOT__rr1 
                                          + __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk9__DOT__imm);
@@ -320,15 +365,21 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
             __Vdly__toplevel__DOT__pc = ((IData)(4U) 
                                          + vlSelf->toplevel__DOT__pc);
             if ((0U != (IData)(__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__rd))) {
-                vlSelf->toplevel__DOT__regs[__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__rd] 
+                __Vdlyvval__toplevel__DOT__regs__v5 
                     = __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk10__DOT__imm;
+                __Vdlyvset__toplevel__DOT__regs__v5 = 1U;
+                __Vdlyvdim0__toplevel__DOT__regs__v5 
+                    = __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__rd;
             }
         } else if ((0x17U == (IData)(__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__op))) {
             __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk11__DOT__imm 
                 = (0xfffff000U & vlSelf->toplevel__DOT__inst);
             if ((0U != (IData)(__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__rd))) {
-                vlSelf->toplevel__DOT__regs[__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__rd] 
+                __Vdlyvval__toplevel__DOT__regs__v6 
                     = (vlSelf->toplevel__DOT__pc + __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk11__DOT__imm);
+                __Vdlyvset__toplevel__DOT__regs__v6 = 1U;
+                __Vdlyvdim0__toplevel__DOT__regs__v6 
+                    = __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__rd;
             }
             __Vdly__toplevel__DOT__pc = ((IData)(4U) 
                                          + vlSelf->toplevel__DOT__pc);
@@ -337,6 +388,37 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
     vlSelf->toplevel__DOT__phase = __Vdly__toplevel__DOT__phase;
     vlSelf->toplevel__DOT__pc = __Vdly__toplevel__DOT__pc;
     vlSelf->toplevel__DOT__inst = __Vdly__toplevel__DOT__inst;
+    if (__Vdlyvset__toplevel__DOT__data_mem__v0) {
+        vlSelf->toplevel__DOT__data_mem[__Vdlyvdim0__toplevel__DOT__data_mem__v0] 
+            = __Vdlyvval__toplevel__DOT__data_mem__v0;
+    }
+    if (__Vdlyvset__toplevel__DOT__regs__v0) {
+        vlSelf->toplevel__DOT__regs[0U] = 0U;
+    }
+    if (__Vdlyvset__toplevel__DOT__regs__v1) {
+        vlSelf->toplevel__DOT__regs[__Vdlyvdim0__toplevel__DOT__regs__v1] 
+            = __Vdlyvval__toplevel__DOT__regs__v1;
+    }
+    if (__Vdlyvset__toplevel__DOT__regs__v2) {
+        vlSelf->toplevel__DOT__regs[__Vdlyvdim0__toplevel__DOT__regs__v2] 
+            = __Vdlyvval__toplevel__DOT__regs__v2;
+    }
+    if (__Vdlyvset__toplevel__DOT__regs__v3) {
+        vlSelf->toplevel__DOT__regs[__Vdlyvdim0__toplevel__DOT__regs__v3] 
+            = __Vdlyvval__toplevel__DOT__regs__v3;
+    }
+    if (__Vdlyvset__toplevel__DOT__regs__v4) {
+        vlSelf->toplevel__DOT__regs[__Vdlyvdim0__toplevel__DOT__regs__v4] 
+            = __Vdlyvval__toplevel__DOT__regs__v4;
+    }
+    if (__Vdlyvset__toplevel__DOT__regs__v5) {
+        vlSelf->toplevel__DOT__regs[__Vdlyvdim0__toplevel__DOT__regs__v5] 
+            = __Vdlyvval__toplevel__DOT__regs__v5;
+    }
+    if (__Vdlyvset__toplevel__DOT__regs__v6) {
+        vlSelf->toplevel__DOT__regs[__Vdlyvdim0__toplevel__DOT__regs__v6] 
+            = __Vdlyvval__toplevel__DOT__regs__v6;
+    }
 }
 
 void Vtoplevel___024root___eval(Vtoplevel___024root* vlSelf) {

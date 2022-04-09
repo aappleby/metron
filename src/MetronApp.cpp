@@ -190,7 +190,7 @@ int main(int argc, char** argv) {
 
     for (auto& source_file : library.source_files)
     {
-      //if (source_file->filename != "example_data_memory.h") continue;
+      //if (source_file->filename != "singlecycle_datapath.h") continue;
 
       Err err;
 

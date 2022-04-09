@@ -61,7 +61,7 @@ module toplevel
       pc <= 0;
       phase <= 0;
       inst <= 0;
-      regs[0] = 32'd0;
+      regs[0] <= 32'd0;
       o_bus_read_data <= 0;
       o_bus_address <= 0;
       o_bus_write_data <= 0;
@@ -144,7 +144,7 @@ module toplevel
               /*break;*/
           endcase
 
-          if (rd) regs[rd] = alu_result;
+          if (rd) regs[rd] <= alu_result;
           pc <= pc + 4;
         end
 
@@ -173,7 +173,7 @@ module toplevel
               /*break;*/
           endcase
 
-          if (rd) regs[rd] = rdata;
+          if (rd) regs[rd] <= rdata;
           pc <= pc + 4;
         end
 
@@ -195,7 +195,7 @@ module toplevel
           if (f3 == 2) mask = 32'hFFFFFFFF;
 
           phys_addr = addr[16:2];
-          data_mem[phys_addr] = (data_mem[phys_addr] & ~mask) | (wdata & mask);
+          data_mem[phys_addr] <= (data_mem[phys_addr] & ~mask) | (wdata & mask);
 
           pc <= pc + 4;
 
@@ -254,7 +254,7 @@ module toplevel
           logic[31:0] imm;
           imm = {{12 {inst[31]}}, inst[19:12], inst[20],
                               inst[30:25], inst[24:21], 1'd0};
-          if (rd) regs[rd] = pc + 4;
+          if (rd) regs[rd] <= pc + 4;
           pc <= pc + imm;
         end
 
@@ -265,7 +265,7 @@ module toplevel
           logic[31:0] imm;
           rr1 = regs[r1]; // Lol, Metron actually found a bug - gotta read r1 before writing
           imm = {{21 {inst[31]}}, inst[30:25], inst[24:20]};
-          if (rd) regs[rd] = pc + 4;
+          if (rd) regs[rd] <= pc + 4;
           pc <= rr1 + imm;
         end
 
@@ -274,7 +274,7 @@ module toplevel
         else if (op == OP_LUI) begin
           logic[31:0] imm;
           imm = {inst[31], inst[30:20], inst[19:12], 12'd0};
-          if (rd) regs[rd] = imm;
+          if (rd) regs[rd] <= imm;
           pc <= pc + 4;
         end
 
@@ -283,7 +283,7 @@ module toplevel
         else if (op == OP_AUIPC) begin
           logic[31:0] imm;
           imm = {inst[31], inst[30:20], inst[19:12], 12'd0};
-          if (rd) regs[rd] = pc + imm;
+          if (rd) regs[rd] <= pc + imm;
           pc <= pc + 4;
         end
       end

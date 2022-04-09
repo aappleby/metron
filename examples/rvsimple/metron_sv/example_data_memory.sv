@@ -47,7 +47,7 @@ module example_data_memory
       if (byteena[1]) mask = mask | 32'h0000FF00;
       if (byteena[2]) mask = mask | 32'h00FF0000;
       if (byteena[3]) mask = mask | 32'hFF000000;
-      mem[address] = (mem[address] & ~mask) | (data & mask);
+      mem[address] <= (mem[address] & ~mask) | (data & mask);
     end
   endtask
   always_ff @(posedge clock) tick();

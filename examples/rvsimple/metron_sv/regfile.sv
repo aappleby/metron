@@ -36,7 +36,7 @@ module regfile
   task tick(); 
     // Write port for rd
     if (write_enable && rd_address != 5'd0) begin
-      regs[rd_address] = rd_data;
+      regs[rd_address] <= rd_data;
     end
   endtask
   always_ff @(posedge clock) tick();

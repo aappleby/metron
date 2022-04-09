@@ -122,11 +122,7 @@ bool MtModLibrary::process_sources() {
 
   // Generate call tree / temporal check for toplevel modules
   for (auto m : modules) {
-
-    // FIXME check all modules not just top - don't check in like this
-    if (m->get_rank() == 0) {
-      error |= m->trace();
-    }
+    error |= m->trace();
   }
 
   if (error) {

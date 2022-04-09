@@ -176,6 +176,9 @@ std::string MnNode::name4() const {
   assert(!is_null());
 
   switch (sym) {
+    case sym_subscript_expression:
+      return get_field(field_argument).name4();
+
     case sym_qualified_identifier:
       return child(child_count() - 1).name4();
 

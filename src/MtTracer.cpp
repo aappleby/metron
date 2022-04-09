@@ -706,12 +706,14 @@ CHECK_RETURN Err MtTracer::trace_read(MnNode const& n) {
 
   std::string field_name = n.text();
 
+  /*
   {
     auto field = mod()->get_field(field_name);
     if (field) {
       field->is_read = true;
     }
   }
+  */
 
   for (int i = (int)_field_stack.size() - 1; i >= 0; i--) {
     field_name = _field_stack[i]->name() + "." + field_name;
@@ -740,6 +742,7 @@ CHECK_RETURN Err MtTracer::trace_write(MnNode const& n) {
   assert(in_tick() || in_tock());
   std::string field_name = n.text();
 
+  /*
   {
     auto field = mod()->get_field(field_name);
     if (field) {
@@ -754,6 +757,7 @@ CHECK_RETURN Err MtTracer::trace_write(MnNode const& n) {
       }
     }
   }
+  */
 
   for (int i = (int)_field_stack.size() - 1; i >= 0; i--) {
     field_name = _field_stack[i]->name() + "." + field_name;

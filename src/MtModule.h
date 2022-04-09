@@ -4,6 +4,7 @@
 
 #include "MtNode.h"
 #include "Platform.h"
+#include "MtTracer.h"
 
 struct MtMethod;
 struct MtModLibrary;
@@ -22,17 +23,13 @@ struct MtField {
   bool is_param() const { return node.is_static() && node.is_const(); }
   bool is_public() const { return _public; }
 
-  bool is_input()  const { return _public && is_read && !is_signal && !is_register; }
-
   std::string name() { return node.name4(); }
   std::string type_name() const { return node.type5(); }
 
   MnNode get_type_node() const { return node.get_field(field_type); }
   MnNode get_decl_node() const { return node.get_field(field_declarator); }
 
-  bool is_read = false;
-  bool is_signal = false;
-  bool is_register = false;
+  FieldState state;
 
 private:
   MtField(const MnNode& n, bool is_public) : _public(is_public), node(n) {
@@ -192,6 +189,10 @@ struct MtModule {
   bool dirty_check_fail = false;
 
   int mark = 0;
+
+  // Field state produced by evaluating all public methods in the module in
+  // lexical order.
+  state_map mod_states;
 
   std::vector<MtModule*> parents;
 

@@ -173,19 +173,10 @@ void MtModule::dump_banner() const {
   for (auto n : enums) LOG_G("  %s\n", n->name().c_str());
   LOG_B("All Fields:\n");
   for (auto n : all_fields) {
-    LOG_G("  %s:%s\n",
+    LOG_G("  %s:%s %s\n",
       n->name().c_str(),
       n->type_name().c_str(),
-      n->is_public(),
-      n->is_read,
-      n->is_signal,
-      n->is_register
-    );
-    LOG_G("    is_public %d is_read %d is_signal %d is_register %d\n",
-      n->is_public(),
-      n->is_read,
-      n->is_signal,
-      n->is_register
+      to_string(n->state)
     );
   }
   LOG_B("Inputs:\n");
@@ -221,6 +212,10 @@ void MtModule::dump_banner() const {
   LOG_B("Port map:\n");
   for (auto &kv : port_map)
     LOG_G("  %s = %s\n", kv.first.c_str(), kv.second.c_str());
+
+  LOG_B("State map:\n");
+  for (auto &kv : mod_states)
+    LOG_G("  %s = %s\n", kv.first.c_str(), to_string(kv.second));
 
   LOG_B("\n");
 }
@@ -541,10 +536,6 @@ CHECK_RETURN Err MtModule::trace() {
   LOG_G("Tracing %s\n", name().c_str());
   LOG_INDENT_SCOPE();
 
-  // Field state produced by evaluating all public methods in the module in
-  // lexical order.
-  state_map state_mod;
-
   for (auto m : all_methods) {
 
     // Don't trace construtors and private methods.
@@ -584,13 +575,13 @@ CHECK_RETURN Err MtModule::trace() {
 
     // Merge this method's state with the module-wide state.
 
-    error |= merge_series(state_mod, state_method, state_mod);
+    error |= merge_series(mod_states, state_method, mod_states);
     if (error) {
       LOG_R("MtModule::trace - Cannot merge state_mod->state_method\n");
 
       LOG_R("state_mod:\n");
       LOG_INDENT();
-      MtTracer::dump_trace(state_mod);
+      MtTracer::dump_trace(mod_states);
       LOG_DEDENT();
 
       LOG_R("state_method:\n");
@@ -603,7 +594,14 @@ CHECK_RETURN Err MtModule::trace() {
   if (error) return error;
 
   // Check that all sigs and regs ended up in a valid state.
-  for (auto& pair : state_mod) {
+  for (auto& pair : mod_states) {
+
+    auto field = get_field(pair.first);
+    if (field) {
+      field->state = pair.second;
+    }
+
+
     switch(pair.second) {
 
     case FIELD_RD_WR_L:
@@ -643,7 +641,7 @@ CHECK_RETURN Err MtModule::trace() {
   for (auto f : all_fields) {
     if (f->is_submod()) continue;
     if (f->is_param()) continue;
-    if (!state_mod.contains(f->name())) {
+    if (!mod_states.contains(f->name())) {
       LOG_R("No method in the public interface of %s touched field %s!\n", name().c_str(), f->name().c_str());
       error = true;
     }

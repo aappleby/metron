@@ -32,7 +32,6 @@ module singlecycle_datapath
   input logic regfile_write_enable,
   input logic[31:0] data_mem_read_data,
   input logic[2:0] reg_writeback_select,
-  input logic[31:0] alu_result2,
   input logic[1:0] next_pc_select,
   input logic pc_write_enable,
   output logic[4:0]  inst_rd,
@@ -138,7 +137,7 @@ module singlecycle_datapath
     mux_next_pc_select_sel = next_pc_select;
     mux_next_pc_select_in0 = pc_plus_4;
     mux_next_pc_select_in1 = pc_plus_imm;
-    mux_next_pc_select_in2 = {alu_result2[31:1], 1'b0};
+    mux_next_pc_select_in2 = {alu_result[31:1], 1'b0};
     mux_next_pc_select_in3 = 32'b0;
     pc_data = mux_next_pc_select_out;
     program_counter_reset = reset;
@@ -147,7 +146,7 @@ module singlecycle_datapath
     /*program_counter.tock(reset, pc_write_enable, pc_data)*/;
 
     mux_reg_writeback_sel = reg_writeback_select;
-    mux_reg_writeback_in0 = alu_result2;
+    mux_reg_writeback_in0 = alu_result;
     mux_reg_writeback_in1 = data_mem_read_data;
     mux_reg_writeback_in2 = pc_plus_4;
     mux_reg_writeback_in3 = inst_immediate;

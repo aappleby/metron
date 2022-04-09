@@ -655,7 +655,7 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
             : ((1U == (IData)(toplevel__DOT__core__DOT__datapath_next_pc_select))
                 ? toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_in1
                 : ((2U == (IData)(toplevel__DOT__core__DOT__datapath_next_pc_select))
-                    ? (0xfffffffeU & toplevel__DOT__core_alu_result)
+                    ? (0xfffffffeU & toplevel__DOT__core__DOT__datapath__DOT__alu_core_result)
                     : 0U)));
     toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_out 
         = toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select__DOT__unnamedblk1__DOT__result;
@@ -677,12 +677,12 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
              | (6U == (IData)(toplevel__DOT__core__DOT__datapath_reg_writeback_select))) 
             | (7U == (IData)(toplevel__DOT__core__DOT__datapath_reg_writeback_select)))
             ? ((0U == (IData)(toplevel__DOT__core__DOT__datapath_reg_writeback_select))
-                ? toplevel__DOT__core_alu_result : 
-               ((1U == (IData)(toplevel__DOT__core__DOT__datapath_reg_writeback_select))
-                 ? toplevel__DOT__core__DOT__datapath_data_mem_read_data
-                 : ((2U == (IData)(toplevel__DOT__core__DOT__datapath_reg_writeback_select))
-                     ? toplevel__DOT__core__DOT__datapath__DOT__mux_reg_writeback_in2
-                     : toplevel__DOT__core__DOT__datapath__DOT__igen_immediate)))
+                ? toplevel__DOT__core__DOT__datapath__DOT__alu_core_result
+                : ((1U == (IData)(toplevel__DOT__core__DOT__datapath_reg_writeback_select))
+                    ? toplevel__DOT__core__DOT__datapath_data_mem_read_data
+                    : ((2U == (IData)(toplevel__DOT__core__DOT__datapath_reg_writeback_select))
+                        ? toplevel__DOT__core__DOT__datapath__DOT__mux_reg_writeback_in2
+                        : toplevel__DOT__core__DOT__datapath__DOT__igen_immediate)))
             : 0U);
     toplevel__DOT__core__DOT__datapath__DOT__mux_reg_writeback_out 
         = toplevel__DOT__core__DOT__datapath__DOT__mux_reg_writeback__DOT__unnamedblk1__DOT__result;

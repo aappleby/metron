@@ -95,11 +95,9 @@ module riscv_core
     datapath_regfile_write_enable = reg_we;
     datapath_data_mem_read_data = mem_data;
     datapath_reg_writeback_select = reg_select;
-    datapath_alu_result2 = alu_result;
     datapath_next_pc_select = pc_select;
     datapath_pc_write_enable = pc_we;
-    /*datapath.tock(reset, reg_we, mem_data, reg_select, alu_result,
-      pc_select, pc_we)*/;
+    /*datapath.tock(reset, reg_we, mem_data, reg_select, pc_select, pc_we)*/;
   end
 
 
@@ -136,7 +134,6 @@ module riscv_core
      .regfile_write_enable(datapath_regfile_write_enable), 
      .data_mem_read_data(datapath_data_mem_read_data), 
      .reg_writeback_select(datapath_reg_writeback_select), 
-     .alu_result2(datapath_alu_result2), 
      .next_pc_select(datapath_next_pc_select), 
      .pc_write_enable(datapath_pc_write_enable), 
      // Outputs
@@ -160,7 +157,6 @@ module riscv_core
    logic datapath_regfile_write_enable;
    logic[31:0] datapath_data_mem_read_data;
    logic[2:0] datapath_reg_writeback_select;
-   logic[31:0] datapath_alu_result2;
    logic[1:0] datapath_next_pc_select;
    logic datapath_pc_write_enable;
    logic[4:0]  datapath_inst_rd;

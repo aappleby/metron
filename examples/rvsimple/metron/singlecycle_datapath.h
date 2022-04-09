@@ -91,7 +91,6 @@ class singlecycle_datapath {
     logic<1> regfile_write_enable,
     logic<32> data_mem_read_data,
     logic<3> reg_writeback_select,
-    logic<32> alu_result2,
     logic<2> next_pc_select,
     logic<1> pc_write_enable
   ) {
@@ -102,14 +101,14 @@ class singlecycle_datapath {
       next_pc_select,
       pc_plus_4,
       pc_plus_imm,
-      cat(b31(alu_result2, 1), b1(0b0)),
+      cat(b31(alu_result, 1), b1(0b0)),
       b32(0b0)
     );
     program_counter.tock(reset, pc_write_enable, pc_data);
 
     logic<32> reg_data = mux_reg_writeback.out(
       reg_writeback_select,
-      alu_result2,
+      alu_result,
       data_mem_read_data,
       pc_plus_4,
       inst_immediate,

@@ -69,9 +69,11 @@ private:
 struct MtParam {
   static MtParam* construct(const MnNode& n) { return new MtParam(n); }
 
-  std::string name3() {
-    return node.name4();
-  }
+  std::string name() { return node.name4(); }
+  std::string type_name() const { return node.type5(); }
+
+  MnNode get_type_node() const { return node.get_field(field_type); }
+  MnNode get_decl_node() const { return node.get_field(field_declarator); }
 
 private:
   MtParam(const MnNode& n) : node(n) {}
@@ -133,7 +135,8 @@ struct MtModule {
 
   MtEnum*   get_enum(const std::string& name);
   MtField*  get_field(const std::string& name);
-  MtField*  get_input(const std::string& name);
+  MtField*  get_input_field(const std::string& name);
+  MtParam*  get_input_param(const std::string& name);
   MtField*  get_output(const std::string& name);
   MtField*  get_register(const std::string& name);
   MtField*  get_submod(const std::string& name);
@@ -206,7 +209,10 @@ struct MtModule {
   std::vector<MtEnum*> enums;
 
   std::vector<MtField*> all_fields;
-  std::vector<MtField*> inputs;
+
+  std::vector<MtField*> input_fields;
+  std::vector<MtParam*> input_params;
+
   std::vector<MtField*> outputs;
   std::vector<MtField*> registers;
   std::vector<MtField*> submods;

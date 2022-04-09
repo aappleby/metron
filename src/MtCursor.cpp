@@ -1187,7 +1187,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
   if (args) {
     int arg_count = args.named_child_count();
     for (int i = 0; i < arg_count; i++) {
-      auto key = submod_mod->modparams[i]->name3();
+      auto key = submod_mod->modparams[i]->name();
       auto val = args.named_child(i).text();
       replacements[key] = val;
     }
@@ -1211,7 +1211,11 @@ CHECK_RETURN Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
   err << emit_indent();
   err << emit_printf(".clock(clock)");
 
-  int port_count = int(submod_mod->inputs.size() + submod_mod->outputs.size());
+  int port_count = int(
+    submod_mod->input_fields.size() +
+    submod_mod->input_params.size() +
+    submod_mod->outputs.size()
+   );
 
   /*
   int port_count1 = int(submod_mod->inputs.size() + submod_mod->outputs.size());
@@ -1238,7 +1242,19 @@ CHECK_RETURN Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
 
   int port_index = 0;
 
-  for (auto n : submod_mod->inputs) {
+  for (auto n : submod_mod->input_fields) {
+    auto key = inst_name + "." + n->name();
+
+    err << emit_newline();
+    err << emit_indent();
+    err << emit_printf(".%s(%s_%s)", n->name().c_str(), inst_name.c_str(), n->name().c_str());
+
+    if (port_index++ < port_count - 1) {
+      err << emit_printf(", ");
+    }
+  }
+
+  for (auto n : submod_mod->input_params) {
     auto key = inst_name + "." + n->name();
 
     err << emit_newline();
@@ -1322,13 +1338,33 @@ CHECK_RETURN Err MtCursor::emit_output_ports(MnFieldDecl submod) {
   if (args) {
     int arg_count = args.named_child_count();
     for (int i = 0; i < arg_count; i++) {
-      auto key = submod_mod->modparams[i]->name3();
+      auto key = submod_mod->modparams[i]->name();
       auto val = args.named_child(i).text();
       replacements[key] = val;
     }
   }
 
-  for (auto n : submod_mod->inputs) {
+  for (auto n : submod_mod->input_fields) {
+    // field_declaration
+    auto output_type = n->get_type_node();
+    auto output_decl = n->get_decl_node();
+
+    MtCursor subcursor(lib, submod_mod->source_file, str_out);
+    subcursor.echo = echo;
+    subcursor.in_ports = true;
+    subcursor.id_replacements = replacements;
+    subcursor.cursor = output_type.start();
+
+    err << emit_indent();
+    err << subcursor.emit_dispatch(output_type);
+    err << subcursor.emit_ws();
+    err << emit_printf("%s_", submod_decl.text().c_str());
+    err << subcursor.emit_dispatch(output_decl);
+    err << emit_printf(";");
+    err << emit_newline();
+  }
+
+  for (auto n : submod_mod->input_params) {
     // field_declaration
     auto output_type = n->get_type_node();
     auto output_decl = n->get_decl_node();
@@ -1528,8 +1564,11 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
     in_ports = true;
     trim_namespaces = false;
 
-    int port_count =
-        int(current_mod->inputs.size() + current_mod->outputs.size());
+    int port_count = int(
+      current_mod->input_fields.size() +
+      current_mod->input_params.size() +
+      current_mod->outputs.size()
+    );
     for (auto m : current_mod->all_methods)
       if (m->is_public && m->has_return) port_count++;
 
@@ -1542,7 +1581,26 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
     }
     err << emit_newline();
 
-    for (auto input : current_mod->inputs) {
+    for (auto input : current_mod->input_fields) {
+      err << emit_indent();
+      err << emit_printf("input ");
+
+      auto node_type = input->get_type_node();  // type
+      auto node_decl = input->get_decl_node();  // decl
+
+      MtCursor sub_cursor = *this;
+      sub_cursor.cursor = node_type.start();
+      err << sub_cursor.emit_dispatch(node_type);
+      err << sub_cursor.emit_ws();
+      err << sub_cursor.emit_dispatch(node_decl);
+
+      if (port_index++ < port_count - 1) {
+        err << emit_printf(",");
+      }
+      err << emit_newline();
+    }
+
+    for (auto input : current_mod->input_params) {
       err << emit_indent();
       err << emit_printf("input ");
 

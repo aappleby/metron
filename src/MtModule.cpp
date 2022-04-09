@@ -104,9 +104,15 @@ MtField *MtModule::get_field(const std::string &name) {
   return nullptr;
 }
 
-MtField *MtModule::get_input(const std::string &name) {
-  for (auto f : inputs)
+MtField *MtModule::get_input_field(const std::string &name) {
+  for (auto f : input_fields)
     if (f->name() == name) return f;
+  return nullptr;
+}
+
+MtParam *MtModule::get_input_param(const std::string &name) {
+  for (auto p : input_params)
+    if (p->name() == name) return p;
   return nullptr;
 }
 
@@ -166,9 +172,9 @@ void MtModule::dump_banner() const {
   //----------
 
   LOG_B("Modparams:\n")
-  for (auto param : modparams) LOG_G("  %s\n", param->name3().c_str());
+  for (auto param : modparams) LOG_G("  %s\n", param->name().c_str());
   LOG_B("Localparams:\n");
-  for (auto param : localparams) LOG_G("  %s\n", param->name3().c_str());
+  for (auto param : localparams) LOG_G("  %s\n", param->name().c_str());
   LOG_B("Enums:\n");
   for (auto n : enums) LOG_G("  %s\n", n->name().c_str());
   LOG_B("All Fields:\n");
@@ -179,8 +185,11 @@ void MtModule::dump_banner() const {
       to_string(n->state)
     );
   }
-  LOG_B("Inputs:\n");
-  for (auto n : inputs)
+  LOG_B("Input Fields:\n");
+  for (auto n : input_fields)
+    LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
+  LOG_B("Input Params:\n");
+  for (auto n : input_params)
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
   LOG_B("Outputs:\n");
   for (auto n : outputs)
@@ -658,7 +667,7 @@ CHECK_RETURN Err MtModule::trace() {
 CHECK_RETURN Err MtModule::collect_inputs() {
   Err error;
 
-  assert(inputs.empty());
+  assert(input_params.empty());
 
   std::set<std::string> dedup;
 
@@ -671,8 +680,13 @@ CHECK_RETURN Err MtModule::collect_inputs() {
     for (const auto& param : params) {
       if (param.sym != sym_parameter_declaration) continue;
       if (!dedup.contains(param.name4())) {
+        /*
         MtField *new_input = MtField::construct(param, true);
         inputs.push_back(new_input);
+        dedup.insert(new_input->name());
+        */
+        MtParam* new_input = MtParam::construct(param);
+        input_params.push_back(new_input);
         dedup.insert(new_input->name());
       }
     }
@@ -864,6 +878,29 @@ CHECK_RETURN Err MtModule::build_port_map() {
   for (const auto& submod : submods) {
     auto submod_mod = source_file->lib->get_module(submod->type_name());
 
+    for (int i = 0; i < submod_mod->input_fields.size(); i++) {
+      auto key = submod->name() + "." + submod_mod->input_fields[i]->name();
+
+      if (!port_map.contains(key)) {
+        LOG_R("No input bound to submod port %s\n", key.c_str());
+        error |= true;
+      }
+    }
+
+    for (int i = 0; i < submod_mod->input_params.size(); i++) {
+      auto key = submod->name() + "." + submod_mod->input_params[i]->name();
+
+      if (!port_map.contains(key)) {
+        LOG_R("No input bound to submod port %s\n", key.c_str());
+        error |= true;
+      }
+    }
+  }
+    
+  /*
+  for (const auto& submod : submods) {
+    auto submod_mod = source_file->lib->get_module(submod->type_name());
+
     for (int i = 0; i < submod_mod->inputs.size(); i++) {
       auto key = submod->name() + "." + submod_mod->inputs[i]->name();
 
@@ -873,6 +910,7 @@ CHECK_RETURN Err MtModule::build_port_map() {
       }
     }
   }
+  */
 
   return error;
 }
@@ -886,7 +924,16 @@ CHECK_RETURN Err MtModule::sanity_check() {
 
   std::set<std::string> field_names;
 
-  for (auto n : inputs) {
+  for (auto n : input_fields) {
+    if (field_names.contains(n->name())) {
+      LOG_R("Duplicate input name %s\n", n->name().c_str());
+      error = true;
+    } else {
+      field_names.insert(n->name());
+    }
+  }
+
+  for (auto n : input_params) {
     if (field_names.contains(n->name())) {
       LOG_R("Duplicate input name %s\n", n->name().c_str());
       error = true;

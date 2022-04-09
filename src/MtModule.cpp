@@ -309,13 +309,9 @@ CHECK_RETURN Err MtModule::load_pass1() {
     return error;
   }
 
-  error |= collect_params();
   error |= collect_fields();
   error |= collect_methods();
-  error |= collect_input_params();
-  error |= collect_output_fields();
-  error |= collect_registers();
-  error |= collect_submods();
+  error |= collect_params();
 
   // enums = new std::vector<MtEnum>();
 
@@ -357,7 +353,10 @@ CHECK_RETURN Err MtModule::load_pass1() {
     */
   }
 
-  error |= sanity_check();
+  error |= collect_input_params();
+  error |= collect_registers();
+  error |= collect_submods();
+  error |= collect_output_fields();
 
   return error;
 }
@@ -717,6 +716,15 @@ CHECK_RETURN Err MtModule::collect_output_fields() {
   for (auto f : all_fields) {
     if (f->is_public() && !f->is_submod() && !f->is_param()) {
       output_fields.push_back(f);
+      /*
+      // can't use this until after trace
+      if (f->state == FIELD____WS_L) {
+        output_fields.push_back(f);
+      }
+      else {
+        debugbreak();
+      }
+      */
     }
   }
 

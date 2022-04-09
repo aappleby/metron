@@ -75,8 +75,9 @@ class riscv_core {
   }
 
 
-  logic<32> bus_write_data2() const {
-    return dmem.bus_write_data(datapath.temp_rs2_data);
+  logic<32> tock_bus_write_data2() {
+    dmem.write_data = datapath.temp_rs2_data;
+    return dmem.bus_write_data();
   }
 
   logic<1> bus_write_enable2() const {

@@ -18,13 +18,14 @@ class data_memory_interface {
    logic<32> bus_read_data;
    logic<32> address;
    logic<3> data_format;
+   logic<32> write_data;
 
    void tock_inputs() {
      address2 = address;
      data_format2 = data_format;
    }
 
-  logic<32> bus_write_data(logic<32> write_data) const {
+  logic<32> bus_write_data() const {
     return write_data << (8 * b2(address2));
   }
 

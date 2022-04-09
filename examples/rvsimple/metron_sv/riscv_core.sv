@@ -22,7 +22,7 @@ module riscv_core
    output logic[31:0] alu_result,
    output logic[31:0] pc,
    output logic[31:0] tock_alu_result,
-   output logic[31:0] bus_write_data2,
+   output logic[31:0] tock_bus_write_data2,
    output logic bus_write_enable2,
    output logic[3:0] bus_byte_enable2,
    output logic bus_read_enable2
@@ -99,9 +99,9 @@ module riscv_core
   end
 
 
-  always_comb begin
+  always_comb begin /*tock_bus_write_data2*/
     dmem_write_data = datapath_temp_rs2_data;
-    bus_write_data2 = dmem_bus_write_data;
+    tock_bus_write_data2 = dmem_bus_write_data;
   end
 
   always_comb begin

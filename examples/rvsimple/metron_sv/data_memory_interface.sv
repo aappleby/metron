@@ -30,6 +30,7 @@ module data_memory_interface
    /*logic<32> bus_read_data;*/
    /*logic<32> address;*/
    /*logic<3> data_format;*/
+   /*logic<32> write_data;*/
 
    always_comb begin /*tock_inputs*/
      address2 = address;

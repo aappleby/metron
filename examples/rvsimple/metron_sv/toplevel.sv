@@ -51,19 +51,15 @@ module toplevel
     text_memory_bus_address = pc;
     inst         = text_memory_bus_read_data;
 
-    core_inst = inst;
+    core__inst = inst;
     /*core.tock_inst(inst)*/;
 
-    core_inst = inst;
     alu_result2  = core_tock_alu_result;
     data_memory_bus_address = alu_result2;
 
     write_data   = core_bus_write_data2;
-    core_inst = inst;
     write_enable = core_bus_write_enable2;
-    core_inst = inst;
     byte_enable  = core_bus_byte_enable2;
-    core_inst = inst;
     read_enable  = core_bus_read_enable2;
 
     data_memory_bus_read_enable = read_enable;
@@ -83,9 +79,8 @@ module toplevel
     data_memory_bus_write_data = write_data;
     /*data_memory_bus.tock(write_enable, byte_enable, write_data)*/;
     core_reset = reset;
-    core_inst = inst;
     core_bus_read_data = read_data;
-    /*core.tock(reset, inst, read_data)*/;
+    /*core.tock(reset, read_data)*/;
   end
 
   //----------------------------------------
@@ -94,10 +89,11 @@ module toplevel
   riscv_core core(
     // Inputs
     .clock(clock),
-    .inst(core_inst), 
+    ._inst(core__inst), 
     .reset(core_reset), 
     .bus_read_data(core_bus_read_data), 
     // Outputs
+    .inst(core_inst), 
     .alu_result(core_alu_result), 
     .pc(core_pc), 
     .tock_alu_result(core_tock_alu_result), 
@@ -106,9 +102,10 @@ module toplevel
     .bus_byte_enable2(core_bus_byte_enable2), 
     .bus_read_enable2(core_bus_read_enable2)
   );
-  logic[31:0] core_inst;
+  logic[31:0] core__inst;
   logic core_reset;
   logic[31:0] core_bus_read_data;
+  logic[31:0] core_inst;
   logic[31:0] core_alu_result;
   logic[31:0] core_pc;
   logic[31:0] core_tock_alu_result;

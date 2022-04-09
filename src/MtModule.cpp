@@ -725,10 +725,13 @@ CHECK_RETURN Err MtModule::collect_input_params() {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtModule::collect_input_fields() {
+CHECK_RETURN Err MtModule::categorize_fields() {
   Err error;
 
   assert(input_signals.empty());
+  assert(output_signals.empty());
+  assert(output_registers.empty());
+  assert(output_returns.empty());
 
   std::set<std::string> dedup;
 
@@ -739,20 +742,6 @@ CHECK_RETURN Err MtModule::collect_input_fields() {
       }
     }
   }
-
-  return error;
-}
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtModule::collect_output_fields() {
-  Err error;
-
-  assert(output_signals.empty());
-  assert(output_registers.empty());
-  assert(output_returns.empty());
-
-  std::set<std::string> dedup;
 
   for (auto f : all_fields) {
     if (f->is_public() && !f->is_submod() && !f->is_param()) {
@@ -812,9 +801,7 @@ CHECK_RETURN Err MtModule::load_pass2() {
   assert (!mod_class.is_null());
 
   error |= collect_input_params();
-  //error |= collect_registers();
-  error |= collect_input_fields();
-  error |= collect_output_fields();
+  error |= categorize_fields();
 
   error |= build_port_map();
   error |= sanity_check();

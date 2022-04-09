@@ -155,8 +155,7 @@ struct MtModule {
   CHECK_RETURN Err collect_methods();
   CHECK_RETURN Err collect_input_params();
 
-  CHECK_RETURN Err collect_input_fields();
-  CHECK_RETURN Err collect_output_fields();
+  CHECK_RETURN Err categorize_fields();
 
   //CHECK_RETURN Err collect_registers();
 
@@ -217,15 +216,18 @@ struct MtModule {
 
   std::vector<MtEnum*> enums;
 
-  std::vector<MtField*> input_signals;
-  std::vector<MtParam*> input_params;
+  std::vector<MtField*>  input_signals;
+  std::vector<MtParam*>  input_params;
 
-  std::vector<MtField*> output_signals;
-  std::vector<MtField*> output_registers;
+  std::vector<MtField*>  output_signals;
+  std::vector<MtField*>  output_registers;
   std::vector<MtMethod*> output_returns;
 
-  //std::vector<MtField*> registers;
-  std::vector<MtField*> submods;
+  std::vector<MtField*>  private_signals;
+  std::vector<MtField*>  private_registers;
+
+  std::vector<MtField*>  submods;
+
   std::vector<MtMethod*> init_methods;
   std::vector<MtMethod*> tick_methods;
   std::vector<MtMethod*> tock_methods;

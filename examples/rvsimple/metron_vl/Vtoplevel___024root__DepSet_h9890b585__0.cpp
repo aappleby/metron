@@ -38,6 +38,7 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
     CData/*2:0*/ toplevel__DOT__core__DOT__dmem_data_format;
     CData/*3:0*/ toplevel__DOT__core__DOT__dmem_bus_byte_enable;
     IData/*31:0*/ toplevel__DOT__core__DOT__dmem_read_data;
+    CData/*6:0*/ toplevel__DOT__core__DOT__unnamedblk1__DOT__opcode;
     CData/*6:0*/ toplevel__DOT__core__DOT__unnamedblk1__DOT__funct7;
     CData/*4:0*/ toplevel__DOT__core__DOT__unnamedblk1__DOT__alu_function;
     CData/*2:0*/ toplevel__DOT__core__DOT__unnamedblk2__DOT__funct3;
@@ -45,7 +46,6 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
     IData/*31:0*/ toplevel__DOT__core__DOT__unnamedblk2__DOT__mem_data;
     CData/*2:0*/ toplevel__DOT__core__DOT__unnamedblk2__DOT__reg_select;
     CData/*1:0*/ toplevel__DOT__core__DOT__unnamedblk2__DOT__pc_select;
-    CData/*6:0*/ toplevel__DOT__core__DOT__unnamedblk5__DOT__opcode;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__alu_core_alu_result;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_in0;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_in1;
@@ -326,9 +326,9 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
         = (7U & (vlSelf->toplevel__DOT__core_inst >> 0xcU));
     toplevel__DOT__core__DOT__dmem_data_format = toplevel__DOT__core__DOT__unnamedblk2__DOT__funct3;
     toplevel__DOT__core__DOT__ctlpath_inst_funct3 = toplevel__DOT__core__DOT__unnamedblk2__DOT__funct3;
-    toplevel__DOT__core__DOT__unnamedblk5__DOT__opcode 
+    toplevel__DOT__core__DOT__unnamedblk1__DOT__opcode 
         = (0x7fU & vlSelf->toplevel__DOT__core_inst);
-    toplevel__DOT__core__DOT__ctlpath_inst_opcode = toplevel__DOT__core__DOT__unnamedblk5__DOT__opcode;
+    toplevel__DOT__core__DOT__ctlpath_inst_opcode = toplevel__DOT__core__DOT__unnamedblk1__DOT__opcode;
     toplevel__DOT__core__DOT__datapath__DOT__unnamedblk1__DOT__pc_plus_imm 
         = (vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value 
            + toplevel__DOT__core__DOT__datapath__DOT__igen_immediate);

@@ -137,9 +137,9 @@ struct MtModule {
   MtField*  get_field(const std::string& name);
   MtField*  get_input_field(const std::string& name);
   MtParam*  get_input_param(const std::string& name);
-  MtField*  get_output_field(const std::string& name);
+  MtField*  get_output_signal(const std::string& name);
+  MtField*  get_output_register(const std::string& name);
   MtMethod* get_output_return(const std::string& name);
-  MtField*  get_register(const std::string& name);
   MtField*  get_submod(const std::string& name);
   MtMethod* get_method(const std::string& name);
 
@@ -158,7 +158,7 @@ struct MtModule {
   CHECK_RETURN Err collect_input_fields();
   CHECK_RETURN Err collect_output_fields();
 
-  CHECK_RETURN Err collect_registers();
+  //CHECK_RETURN Err collect_registers();
 
   CHECK_RETURN Err build_port_map();
 
@@ -216,11 +216,15 @@ struct MtModule {
   // populated by load_pass2
 
   std::vector<MtEnum*> enums;
-  std::vector<MtField*> input_fields;
+
+  std::vector<MtField*> input_signals;
   std::vector<MtParam*> input_params;
-  std::vector<MtField*> output_fields;
+
+  std::vector<MtField*> output_signals;
+  std::vector<MtField*> output_registers;
   std::vector<MtMethod*> output_returns;
-  std::vector<MtField*> registers;
+
+  //std::vector<MtField*> registers;
   std::vector<MtField*> submods;
   std::vector<MtMethod*> init_methods;
   std::vector<MtMethod*> tick_methods;

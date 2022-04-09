@@ -204,14 +204,14 @@ struct MtModule {
   MnTemplateParamList mod_param_list;
 
   //----------
-  // populated by load_pass1
+  // Populated by load_pass1, these collections are required by trace().
 
   std::vector<MtField*>  all_fields;
   std::vector<MtMethod*> all_methods;
   std::vector<MtField*>  all_submods;
 
   //----------
-  // populated by load_pass2
+  // Populated by load_pass2 using the results from trace().
 
   std::vector<MtParam*>  modparams;
   std::vector<MtParam*>  localparams; // FIXME not actually doing anything with this yet?

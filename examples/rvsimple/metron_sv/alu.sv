@@ -12,19 +12,19 @@
 
 module alu
 (
-  input logic clock,
-  input logic[4:0] alu_function,
-  input logic[31:0] operand_a,
-  input logic[31:0] operand_b,
-  output logic[31:0] alu_result
+   input logic clock,
+   input logic[4:0] alu_function,
+   input logic[31:0] operand_a,
+   input logic[31:0] operand_b,
+   output logic[31:0] result
 );
  /*public:*/
 
-  always_comb begin
-    logic[31:0] result;
+   /*logic<32> result;*/
+
+  always_comb begin /*tock*/
     import rv_constants::*;
 
-    /*logic<32> result;*/
     case (alu_function) 
       /*case*/ ALU_ADD:  result = operand_a + operand_b; /*break;*/
       /*case*/ ALU_SUB:  result = operand_a - operand_b; /*break;*/
@@ -39,7 +39,6 @@ module alu
       /*case*/ ALU_AND:  result = operand_a & operand_b; /*break;*/
       default:       result = 32'(ZERO); /*break;*/
     endcase
-    alu_result = result;
   end
 endmodule;
 

@@ -47,7 +47,7 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
     IData/*31:0*/ toplevel__DOT__core__DOT__unnamedblk2__DOT__mem_data;
     CData/*2:0*/ toplevel__DOT__core__DOT__unnamedblk2__DOT__reg_select;
     CData/*1:0*/ toplevel__DOT__core__DOT__unnamedblk2__DOT__pc_select;
-    IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__alu_core_alu_result;
+    IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__alu_core_result;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_in0;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_in1;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_out;
@@ -62,7 +62,6 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__unnamedblk1__DOT__pc_plus_imm;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__unnamedblk1__DOT__pc_data;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__unnamedblk1__DOT__reg_data;
-    IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__alu_core__DOT__unnamedblk1__DOT__result;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select__DOT__unnamedblk1__DOT__result;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a__DOT__unnamedblk1__DOT__result;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b__DOT__unnamedblk1__DOT__result;
@@ -526,7 +525,7 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
         = toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl_alu_function;
     toplevel__DOT__core__DOT__datapath_alu_function 
         = toplevel__DOT__core__DOT__unnamedblk1__DOT__alu_function;
-    toplevel__DOT__core__DOT__datapath__DOT__alu_core__DOT__unnamedblk1__DOT__result 
+    toplevel__DOT__core__DOT__datapath__DOT__alu_core_result 
         = (((((((((1U == (IData)(toplevel__DOT__core__DOT__datapath_alu_function)) 
                   | (2U == (IData)(toplevel__DOT__core__DOT__datapath_alu_function))) 
                  | (3U == (IData)(toplevel__DOT__core__DOT__datapath_alu_function))) 
@@ -568,9 +567,7 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
                         ? (toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_out 
                            & toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_out)
                         : 0U))));
-    toplevel__DOT__core__DOT__datapath__DOT__alu_core_alu_result 
-        = toplevel__DOT__core__DOT__datapath__DOT__alu_core__DOT__unnamedblk1__DOT__result;
-    toplevel__DOT__core_alu_result = toplevel__DOT__core__DOT__datapath__DOT__alu_core_alu_result;
+    toplevel__DOT__core_alu_result = toplevel__DOT__core__DOT__datapath__DOT__alu_core_result;
     toplevel__DOT__core__DOT__dmem_address = toplevel__DOT__core_alu_result;
     toplevel__DOT__core_tock_alu_result = toplevel__DOT__core_alu_result;
     toplevel__DOT__unnamedblk1__DOT__write_data = (

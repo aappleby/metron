@@ -13,10 +13,11 @@
 class alu {
  public:
 
-  logic<32> alu_result(logic<5> alu_function, logic<32> operand_a, logic<32> operand_b) const {
+   logic<32> result;
+
+  void tock(logic<5> alu_function, logic<32> operand_a, logic<32> operand_b) {
     using namespace rv_constants;
 
-    logic<32> result;
     switch (alu_function) {
       case ALU_ADD:  result = operand_a + operand_b; break;
       case ALU_SUB:  result = operand_a - operand_b; break;
@@ -31,7 +32,6 @@ class alu {
       case ALU_AND:  result = operand_a & operand_b; break;
       default:       result = b32(ZERO); break;
     }
-    return result;
   }
 };
 

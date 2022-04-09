@@ -100,7 +100,21 @@ module singlecycle_datapath
     alu_core_alu_function = alu_function;
     alu_core_operand_a = mux_operand_a_out;
     alu_core_operand_b = mux_operand_b_out;
-    tock_alu_result = alu_core_alu_result;
+    /*alu_core.tock(
+      alu_function,
+      mux_operand_a.out(
+        alu_operand_a_select,
+        temp_rs1_data,
+        program_counter.value()
+      ),
+      mux_operand_b.out(
+        alu_operand_b_select,
+        temp_rs2_data,
+        inst_immediate
+      )
+    )*/;
+
+    tock_alu_result = alu_core_result;
   end
 
   //----------------------------------------
@@ -179,12 +193,12 @@ module singlecycle_datapath
     .operand_a(alu_core_operand_a), 
     .operand_b(alu_core_operand_b), 
     // Outputs
-    .alu_result(alu_core_alu_result)
+    .result(alu_core_result)
   );
   logic[4:0] alu_core_alu_function;
   logic[31:0] alu_core_operand_a;
   logic[31:0] alu_core_operand_b;
-  logic[31:0] alu_core_alu_result;
+  logic[31:0] alu_core_result;
 
   multiplexer4 #(32) mux_next_pc_select(
     // Inputs

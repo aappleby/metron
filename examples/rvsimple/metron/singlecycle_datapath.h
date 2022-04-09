@@ -63,7 +63,7 @@ class singlecycle_datapath {
     temp_rs1_data = regs.rs1_data(inst_rs1);
     temp_rs2_data = regs.rs2_data(inst_rs2);
 
-    return alu_core.alu_result(
+    alu_core.tock(
       alu_function,
       mux_operand_a.out(
         alu_operand_a_select,
@@ -76,6 +76,8 @@ class singlecycle_datapath {
         inst_immediate
       )
     );
+
+    return alu_core.result;
   }
 
   //----------------------------------------

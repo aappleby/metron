@@ -116,8 +116,14 @@ MtParam *MtModule::get_input_param(const std::string &name) {
   return nullptr;
 }
 
-MtField *MtModule::get_output(const std::string &name) {
-  for (auto n : outputs)
+MtField *MtModule::get_output_field(const std::string &name) {
+  for (auto n : output_fields)
+    if (n->name() == name) return n;
+  return nullptr;
+}
+
+MtField *MtModule::get_output_return(const std::string &name) {
+  for (auto n : output_returns)
     if (n->name() == name) return n;
   return nullptr;
 }
@@ -191,8 +197,11 @@ void MtModule::dump_banner() const {
   LOG_B("Input Params:\n");
   for (auto n : input_params)
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
-  LOG_B("Outputs:\n");
-  for (auto n : outputs)
+  LOG_B("Output Fields:\n");
+  for (auto n : output_fields)
+    LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
+  LOG_B("Output Returns:\n");
+  for (auto n : output_returns)
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
   LOG_B("Regs:\n");
   for (auto n : registers)
@@ -303,8 +312,8 @@ CHECK_RETURN Err MtModule::load_pass1() {
   error |= collect_params();
   error |= collect_fields();
   error |= collect_methods();
-  error |= collect_inputs();
-  error |= collect_outputs();
+  error |= collect_input_params();
+  error |= collect_output_fields();
   error |= collect_registers();
   error |= collect_submods();
 
@@ -664,7 +673,7 @@ CHECK_RETURN Err MtModule::trace() {
 // of input ports. Input ports can be declared in multiple tick/tock methods,
 // but we don't want duplicates in the Verilog port list.
 
-CHECK_RETURN Err MtModule::collect_inputs() {
+CHECK_RETURN Err MtModule::collect_input_params() {
   Err error;
 
   assert(input_params.empty());
@@ -698,16 +707,16 @@ CHECK_RETURN Err MtModule::collect_inputs() {
 //------------------------------------------------------------------------------
 // All fields written to in a tock method are outputs.
 
-CHECK_RETURN Err MtModule::collect_outputs() {
+CHECK_RETURN Err MtModule::collect_output_fields() {
   Err error;
 
-  assert(outputs.empty());
+  assert(output_fields.empty());
 
   std::set<std::string> dedup;
 
   for (auto f : all_fields) {
     if (f->is_public() && !f->is_submod() && !f->is_param()) {
-      outputs.push_back(f);
+      output_fields.push_back(f);
     }
   }
 
@@ -942,7 +951,7 @@ CHECK_RETURN Err MtModule::sanity_check() {
     }
   }
 
-  for (auto n : outputs) {
+  for (auto n : output_fields) {
     if (field_names.contains(n->name())) {
       LOG_R("Duplicate output name %s\n", n->name().c_str());
       error = true;

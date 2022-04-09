@@ -137,7 +137,8 @@ struct MtModule {
   MtField*  get_field(const std::string& name);
   MtField*  get_input_field(const std::string& name);
   MtParam*  get_input_param(const std::string& name);
-  MtField*  get_output(const std::string& name);
+  MtField*  get_output_field(const std::string& name);
+  MtField*  get_output_return(const std::string& name);
   MtField*  get_register(const std::string& name);
   MtField*  get_submod(const std::string& name);
   MtMethod* get_method(const std::string& name);
@@ -152,8 +153,8 @@ struct MtModule {
   CHECK_RETURN Err collect_params();
   CHECK_RETURN Err collect_fields();
   CHECK_RETURN Err collect_methods();
-  CHECK_RETURN Err collect_inputs();
-  CHECK_RETURN Err collect_outputs();
+  CHECK_RETURN Err collect_input_params();
+  CHECK_RETURN Err collect_output_fields();
   CHECK_RETURN Err collect_registers();
   CHECK_RETURN Err collect_submods();
 
@@ -213,7 +214,9 @@ struct MtModule {
   std::vector<MtField*> input_fields;
   std::vector<MtParam*> input_params;
 
-  std::vector<MtField*> outputs;
+  std::vector<MtField*> output_fields;
+  std::vector<MtField*> output_returns;
+
   std::vector<MtField*> registers;
   std::vector<MtField*> submods;
 

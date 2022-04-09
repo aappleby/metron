@@ -45,7 +45,10 @@ class riscv_core {
 
     datapath.tock_alu_result();
     alu_result = datapath.alu_result;
-    dmem.tock_inputs(alu_result, funct3);
+
+    dmem.address = alu_result;
+    dmem.data_format = funct3;
+    dmem.tock_inputs();
     return alu_result;
   }
 

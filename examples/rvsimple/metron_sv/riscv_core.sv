@@ -62,9 +62,10 @@ module riscv_core
 
     /*datapath.tock_alu_result()*/;
     alu_result = datapath_alu_result;
+
     dmem_address = alu_result;
     dmem_data_format = funct3;
-    /*dmem.tock_inputs(alu_result, funct3)*/;
+    /*dmem.tock_inputs()*/;
     tock_alu_result = alu_result;
   end
 

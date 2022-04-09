@@ -16,8 +16,10 @@ class data_memory_interface {
    logic<32> address2;
    logic<3> data_format2;
    logic<32> bus_read_data;
+   logic<32> address;
+   logic<3> data_format;
 
-   void tock_inputs(logic<32> address, logic<3> data_format) {
+   void tock_inputs() {
      address2 = address;
      data_format2 = data_format;
    }

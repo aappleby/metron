@@ -45,8 +45,8 @@ module riscv_core
     funct7 = datapath_inst_funct7;
 
     ctlpath_inst_opcode = opcode;
-
     ctlpath_inst_funct3 = funct3;
+
     ctlpath_inst_funct7 = funct7;
     alu_function = ctlpath_alu_function;
 
@@ -76,7 +76,6 @@ module riscv_core
     dmem_data_format = funct3;
     mem_data = dmem_read_data;
     reg_select = ctlpath_reg_writeback_select;
-    ctlpath_inst_funct3 = funct3;
     ctlpath_alu_result_equal_zero = alu_result2 == 0;
     pc_select =
       ctlpath_next_pc_select;

@@ -33,6 +33,7 @@ module singlecycle_ctlpath
  /*public:*/
 
    /*logic<7> inst_opcode;*/
+   /*logic<3> inst_funct3;*/
 
   always_comb begin
     control_inst_opcode = inst_opcode;

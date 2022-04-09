@@ -28,8 +28,9 @@ class riscv_core {
     logic<7> funct7 = datapath.inst_funct7;
 
     ctlpath.inst_opcode = opcode;
+    ctlpath.inst_funct3 = funct3;
 
-    logic<5> alu_function = ctlpath.alu_function(funct3, funct7);
+    logic<5> alu_function = ctlpath.alu_function(funct7);
 
     return datapath.tock_alu_result(alu_function,
                                     ctlpath.alu_operand_a_select(),
@@ -49,7 +50,7 @@ class riscv_core {
     logic<32> mem_data = dmem.read_data(bus_read_data, funct3);
     logic<3> reg_select = ctlpath.reg_writeback_select();
     logic<2> pc_select =
-      ctlpath.next_pc_select(funct3, alu_result2 == 0);
+      ctlpath.next_pc_select(alu_result2 == 0);
     logic<1> pc_we = ctlpath.pc_write_enable();
 
     datapath.tock(reset, reg_we, mem_data, reg_select, alu_result2,

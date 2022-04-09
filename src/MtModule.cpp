@@ -741,21 +741,20 @@ CHECK_RETURN Err MtModule::categorize_fields() {
       continue;
     }
 
+    if (f->is_param()) {
+      //debugbreak();
+      continue;
+    }
+
     if (f->is_public()) {
-      if (!f->is_param()) {
-        if (f->state == FIELD_RD_____) {
-          input_signals.push_back(f);
-        }
+      if (f->state == FIELD_RD_____) {
+        input_signals.push_back(f);
       }
-      if (!f->is_param()) {
-        if (f->state == FIELD____WS_L) {
-          output_signals.push_back(f);
-        }
+      if (f->state == FIELD____WS_L) {
+        output_signals.push_back(f);
       }
-      if (!f->is_param()) {
-        if (f->state == FIELD____WR_L || f->state == FIELD_RD_WR_L) {
-          output_registers.push_back(f);
-        }
+      if (f->state == FIELD____WR_L || f->state == FIELD_RD_WR_L) {
+        output_registers.push_back(f);
       }
     }
     else {

@@ -15,6 +15,7 @@ class data_memory_interface {
 
    logic<32> address2;
    logic<3> data_format2;
+   logic<32> bus_read_data;
 
    void tock_inputs(logic<32> address, logic<3> data_format) {
      address2 = address;
@@ -37,7 +38,7 @@ class data_memory_interface {
     return result;
   }
 
-  logic<32> read_data(logic<32> bus_read_data) const {
+  logic<32> read_data() const {
     // correct for unaligned accesses
     logic<32> position_fix = b32(bus_read_data >> (8 * b2(address2)));
 

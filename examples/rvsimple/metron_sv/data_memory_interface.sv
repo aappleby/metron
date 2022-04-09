@@ -13,10 +13,10 @@
 module data_memory_interface
 (
    input logic clock,
+   input logic[31:0] bus_read_data,
    input logic[31:0] address,
    input logic[2:0] data_format,
    input logic[31:0] write_data,
-   input logic[31:0] bus_read_data,
    output logic[31:0] address2,
    output logic[2:0] data_format2,
    output logic[31:0] bus_write_data,
@@ -27,6 +27,7 @@ module data_memory_interface
 
    /*logic<32> address2;*/
    /*logic<3> data_format2;*/
+   /*logic<32> bus_read_data;*/
 
    always_comb begin /*tock_inputs*/
      address2 = address;

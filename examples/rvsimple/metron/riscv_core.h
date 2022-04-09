@@ -49,17 +49,14 @@ class riscv_core {
   }
 
   void tock() {
-
-
-
     logic<7> opcode = datapath.inst_opcode;
     logic<3> funct3 = datapath.inst_funct3;
     logic<1> reg_we = ctlpath.regfile_write_enable();
 
-    logic<32> mem_data = dmem.read_data(bus_read_data);
+    dmem.bus_read_data = bus_read_data;
+    logic<32> mem_data = dmem.read_data();
     logic<3> reg_select = ctlpath.reg_writeback_select();
-    logic<2> pc_select =
-      ctlpath.next_pc_select(alu_result == 0);
+    logic<2> pc_select = ctlpath.next_pc_select(alu_result == 0);
     logic<1> pc_we = ctlpath.pc_write_enable();
 
     datapath.reset = reset;

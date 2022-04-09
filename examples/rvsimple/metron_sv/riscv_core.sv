@@ -76,9 +76,6 @@ module riscv_core
     logic[2:0] reg_select;
     logic[1:0] pc_select;
     logic pc_we;
-
-
-
     opcode = datapath_inst_opcode;
     funct3 = datapath_inst_funct3;
     reg_we = ctlpath_regfile_write_enable;
@@ -87,8 +84,7 @@ module riscv_core
     mem_data = dmem_read_data;
     reg_select = ctlpath_reg_writeback_select;
     ctlpath_alu_result_equal_zero = alu_result == 0;
-    pc_select =
-      ctlpath_next_pc_select;
+    pc_select = ctlpath_next_pc_select;
     pc_we = ctlpath_pc_write_enable;
 
     datapath_reset = reset;
@@ -206,10 +202,10 @@ module riscv_core
   data_memory_interface dmem(
      // Inputs
      .clock(clock),
+     .bus_read_data(dmem_bus_read_data), 
      .address(dmem_address), 
      .data_format(dmem_data_format), 
      .write_data(dmem_write_data), 
-     .bus_read_data(dmem_bus_read_data), 
      // Outputs
      .address2(dmem_address2), 
      .data_format2(dmem_data_format2), 
@@ -217,10 +213,10 @@ module riscv_core
      .bus_byte_enable(dmem_bus_byte_enable), 
      .read_data(dmem_read_data)
    );
+   logic[31:0] dmem_bus_read_data;
    logic[31:0] dmem_address;
    logic[2:0] dmem_data_format;
    logic[31:0] dmem_write_data;
-   logic[31:0] dmem_bus_read_data;
    logic[31:0] dmem_address2;
    logic[2:0] dmem_data_format2;
    logic[31:0] dmem_bus_write_data;

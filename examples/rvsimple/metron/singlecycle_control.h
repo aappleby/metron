@@ -13,7 +13,9 @@
 class singlecycle_control {
  public:
 
-  logic<2> next_pc_select(logic<7> inst_opcode, logic<1> take_branch) const {
+   logic<7> inst_opcode;
+
+  logic<2> next_pc_select(logic<1> take_branch) const {
     using namespace rv_constants;
     logic<2> result;
     switch (inst_opcode) {
@@ -25,11 +27,11 @@ class singlecycle_control {
     return result;
   }
 
-  logic<1> pc_write_enable(logic<7> inst_opcode) const {
+  logic<1> pc_write_enable() const {
     return 0b1;
   }
 
-  logic<1> regfile_write_enable(logic<7> inst_opcode) const {
+  logic<1> regfile_write_enable() const {
     using namespace rv_constants;
     logic<1> result;
     switch (inst_opcode) {
@@ -48,7 +50,7 @@ class singlecycle_control {
     return result;
   }
 
-  logic<1> alu_operand_a_select(logic<7> inst_opcode) const {
+  logic<1> alu_operand_a_select() const {
     using namespace rv_constants;
 
     logic<1> result;
@@ -69,7 +71,7 @@ class singlecycle_control {
     return result;
   }
 
-  logic<1> alu_operand_b_select(logic<7> inst_opcode) const {
+  logic<1> alu_operand_b_select() const {
     using namespace rv_constants;
     logic<1> result;
     switch (inst_opcode) {
@@ -89,7 +91,7 @@ class singlecycle_control {
     return result;
   }
 
-  logic<2> alu_op_type2(logic<7> inst_opcode) const {
+  logic<2> alu_op_type2() const {
     using namespace rv_constants;
     logic<2> result;
     switch (inst_opcode) {
@@ -108,17 +110,17 @@ class singlecycle_control {
     return result;
   }
 
-  logic<1> data_mem_read_enable(logic<7> inst_opcode) const {
+  logic<1> data_mem_read_enable() const {
     using namespace rv_constants;
     return inst_opcode == OPCODE_LOAD;
   }
 
-  logic<1> data_mem_write_enable(logic<7> inst_opcode) const {
+  logic<1> data_mem_write_enable() const {
     using namespace rv_constants;
     return inst_opcode == OPCODE_STORE;
   }
 
-  logic<3> reg_writeback_select(logic<7> inst_opcode) const {
+  logic<3> reg_writeback_select() const {
     using namespace rv_constants;
     logic<3> result;
     switch (inst_opcode) {

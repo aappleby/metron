@@ -48,7 +48,7 @@ module riscv_core
     ctlpath_inst_funct3 = funct3;
 
     ctlpath_inst_funct7 = funct7;
-    alu_function = ctlpath_alu_function;
+    alu_function = ctlpath_tock_alu_function;
 
     datapath_alu_function = alu_function;
     datapath_alu_operand_a_select = ctlpath_alu_operand_a_select;
@@ -176,7 +176,7 @@ module riscv_core
     .inst_funct7(ctlpath_inst_funct7), 
     .alu_result_equal_zero(ctlpath_alu_result_equal_zero), 
     // Outputs
-    .alu_function(ctlpath_alu_function), 
+    .tock_alu_function(ctlpath_tock_alu_function), 
     .pc_write_enable(ctlpath_pc_write_enable), 
     .regfile_write_enable(ctlpath_regfile_write_enable), 
     .alu_operand_a_select(ctlpath_alu_operand_a_select), 
@@ -190,7 +190,7 @@ module riscv_core
   logic[2:0] ctlpath_inst_funct3;
   logic[6:0] ctlpath_inst_funct7;
   logic ctlpath_alu_result_equal_zero;
-  logic[4:0] ctlpath_alu_function;
+  logic[4:0] ctlpath_tock_alu_function;
   logic ctlpath_pc_write_enable;
   logic ctlpath_regfile_write_enable;
   logic ctlpath_alu_operand_a_select;

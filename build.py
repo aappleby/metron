@@ -429,8 +429,8 @@ def build_rvsimple():
     )
 
     rvsimple_reference_vhdr, rvsimple_reference_vobj = verilate_dir(
-        src_dir="examples/rvsimple/reference",
-        src_files=glob.glob("examples/rvsimple/reference/*.sv"),
+        src_dir="examples/rvsimple/reference_sv",
+        src_files=glob.glob("examples/rvsimple/reference_sv/*.sv"),
         src_top="toplevel",
         dst_dir="examples/rvsimple/reference_vl"
     )

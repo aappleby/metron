@@ -112,10 +112,10 @@ module singlecycle_datapath
     logic[31:0] reg_data;
     adder_pc_plus_4_operand_a = 32'h00000004;
     adder_pc_plus_4_operand_b = program_counter_value;
-    pc_plus_4 = adder_pc_plus_4_adder_result;
+    pc_plus_4 = adder_pc_plus_4_result;
     adder_pc_plus_immediate_operand_a = program_counter_value;
     adder_pc_plus_immediate_operand_b = inst_immediate;
-    pc_plus_imm = adder_pc_plus_immediate_adder_result;
+    pc_plus_imm = adder_pc_plus_immediate_result;
 
     mux_next_pc_select_sel = next_pc_select;
     mux_next_pc_select_in0 = pc_plus_4;
@@ -154,11 +154,11 @@ module singlecycle_datapath
     .operand_a(adder_pc_plus_4_operand_a), 
     .operand_b(adder_pc_plus_4_operand_b), 
     // Outputs
-    .adder_result(adder_pc_plus_4_adder_result)
+    .result(adder_pc_plus_4_result)
   );
   logic[32-1:0] adder_pc_plus_4_operand_a;
   logic[32-1:0] adder_pc_plus_4_operand_b;
-  logic[32-1:0] adder_pc_plus_4_adder_result;
+  logic[32-1:0] adder_pc_plus_4_result;
 
   adder #(32) adder_pc_plus_immediate(
     // Inputs
@@ -166,11 +166,11 @@ module singlecycle_datapath
     .operand_a(adder_pc_plus_immediate_operand_a), 
     .operand_b(adder_pc_plus_immediate_operand_b), 
     // Outputs
-    .adder_result(adder_pc_plus_immediate_adder_result)
+    .result(adder_pc_plus_immediate_result)
   );
   logic[32-1:0] adder_pc_plus_immediate_operand_a;
   logic[32-1:0] adder_pc_plus_immediate_operand_b;
-  logic[32-1:0] adder_pc_plus_immediate_adder_result;
+  logic[32-1:0] adder_pc_plus_immediate_result;
 
   alu alu_core(
     // Inputs

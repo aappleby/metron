@@ -29,7 +29,7 @@ VL_ATTR_COLD void Vtoplevel___024root___initial__TOP__0(Vtoplevel___024root* vlS
             goto __Vlabel1;
         } else {
             VL_WRITEF("Data memory file not supplied.\n");
-            VL_FINISH_MT("examples/rvsimple/reference/config.sv", 50, "");
+            VL_FINISH_MT("examples/rvsimple/reference_sv/config.sv", 50, "");
         }
         __Vlabel1: ;
     }
@@ -48,7 +48,7 @@ VL_ATTR_COLD void Vtoplevel___024root___initial__TOP__0(Vtoplevel___024root* vlS
             goto __Vlabel2;
         } else {
             VL_WRITEF("Text memory file not supplied.\n");
-            VL_FINISH_MT("examples/rvsimple/reference/config.sv", 40, "");
+            VL_FINISH_MT("examples/rvsimple/reference_sv/config.sv", 40, "");
         }
         __Vlabel2: ;
     }

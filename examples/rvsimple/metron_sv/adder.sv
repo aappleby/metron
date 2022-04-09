@@ -16,11 +16,11 @@ module adder
   input logic clock,
   input logic[WIDTH-1:0] operand_a,
   input logic[WIDTH-1:0] operand_b,
-  output logic[WIDTH-1:0] adder_result
+  output logic[WIDTH-1:0] result
 );
  /*public:*/
   always_comb begin
-    adder_result = operand_a + operand_b;
+    result = operand_a + operand_b;
   end
 endmodule
 

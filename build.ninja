@@ -382,34 +382,35 @@ build bin/examples/rvsimple_vl: link obj/verilated.o $
 
 
 ################################################################################
-# Verilate toplevel@examples/rvsimple/reference -> examples/rvsimple/reference_vl
+# Verilate toplevel@examples/rvsimple/reference_sv -> examples/rvsimple/reference_vl
 
 build examples/rvsimple/reference_vl/Vtoplevel.mk $
     examples/rvsimple/reference_vl/Vtoplevel.h: verilator $
-    examples/rvsimple/reference/adder.sv examples/rvsimple/reference/alu.sv $
-    examples/rvsimple/reference/alu_control.sv $
-    examples/rvsimple/reference/config.sv $
-    examples/rvsimple/reference/constants.sv $
-    examples/rvsimple/reference/control_transfer.sv $
-    examples/rvsimple/reference/data_memory_interface.sv $
-    examples/rvsimple/reference/example_data_memory.sv $
-    examples/rvsimple/reference/example_data_memory_bus.sv $
-    examples/rvsimple/reference/example_text_memory.sv $
-    examples/rvsimple/reference/example_text_memory_bus.sv $
-    examples/rvsimple/reference/immediate_generator.sv $
-    examples/rvsimple/reference/instruction_decoder.sv $
-    examples/rvsimple/reference/multiplexer.sv $
-    examples/rvsimple/reference/multiplexer2.sv $
-    examples/rvsimple/reference/multiplexer4.sv $
-    examples/rvsimple/reference/multiplexer8.sv $
-    examples/rvsimple/reference/regfile.sv $
-    examples/rvsimple/reference/register.sv $
-    examples/rvsimple/reference/riscv_core.sv $
-    examples/rvsimple/reference/singlecycle_control.sv $
-    examples/rvsimple/reference/singlecycle_ctlpath.sv $
-    examples/rvsimple/reference/singlecycle_datapath.sv $
-    examples/rvsimple/reference/toplevel.sv
-  includes = -Isrc -Iexamples/rvsimple/reference
+    examples/rvsimple/reference_sv/adder.sv $
+    examples/rvsimple/reference_sv/alu.sv $
+    examples/rvsimple/reference_sv/alu_control.sv $
+    examples/rvsimple/reference_sv/config.sv $
+    examples/rvsimple/reference_sv/constants.sv $
+    examples/rvsimple/reference_sv/control_transfer.sv $
+    examples/rvsimple/reference_sv/data_memory_interface.sv $
+    examples/rvsimple/reference_sv/example_data_memory.sv $
+    examples/rvsimple/reference_sv/example_data_memory_bus.sv $
+    examples/rvsimple/reference_sv/example_text_memory.sv $
+    examples/rvsimple/reference_sv/example_text_memory_bus.sv $
+    examples/rvsimple/reference_sv/immediate_generator.sv $
+    examples/rvsimple/reference_sv/instruction_decoder.sv $
+    examples/rvsimple/reference_sv/multiplexer.sv $
+    examples/rvsimple/reference_sv/multiplexer2.sv $
+    examples/rvsimple/reference_sv/multiplexer4.sv $
+    examples/rvsimple/reference_sv/multiplexer8.sv $
+    examples/rvsimple/reference_sv/regfile.sv $
+    examples/rvsimple/reference_sv/register.sv $
+    examples/rvsimple/reference_sv/riscv_core.sv $
+    examples/rvsimple/reference_sv/singlecycle_control.sv $
+    examples/rvsimple/reference_sv/singlecycle_ctlpath.sv $
+    examples/rvsimple/reference_sv/singlecycle_datapath.sv $
+    examples/rvsimple/reference_sv/toplevel.sv
+  includes = -Isrc -Iexamples/rvsimple/reference_sv
   src_top = toplevel
   dst_dir = examples/rvsimple/reference_vl
 build examples/rvsimple/reference_vl/Vtoplevel__ALL.o: make $

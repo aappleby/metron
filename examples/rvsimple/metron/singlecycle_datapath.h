@@ -89,8 +89,8 @@ class singlecycle_datapath {
     logic<2> next_pc_select,
     logic<1> pc_write_enable
   ) {
-    logic<32> pc_plus_4 = adder_pc_plus_4.adder_result(b32(0x00000004), program_counter.value());
-    logic<32> pc_plus_imm = adder_pc_plus_immediate.adder_result(program_counter.value(), inst_immediate);
+    logic<32> pc_plus_4 = adder_pc_plus_4.result(b32(0x00000004), program_counter.value());
+    logic<32> pc_plus_imm = adder_pc_plus_immediate.result(program_counter.value(), inst_immediate);
 
     logic<32> pc_data = mux_next_pc_select.out(
       next_pc_select,

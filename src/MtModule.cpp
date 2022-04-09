@@ -171,6 +171,23 @@ void MtModule::dump_banner() const {
   for (auto param : localparams) LOG_G("  %s\n", param->name3().c_str());
   LOG_B("Enums:\n");
   for (auto n : enums) LOG_G("  %s\n", n->name().c_str());
+  LOG_B("All Fields:\n");
+  for (auto n : all_fields) {
+    LOG_G("  %s:%s\n",
+      n->name().c_str(),
+      n->type_name().c_str(),
+      n->is_public(),
+      n->is_read,
+      n->is_signal,
+      n->is_register
+    );
+    LOG_G("    is_public %d is_read %d is_signal %d is_register %d\n",
+      n->is_public(),
+      n->is_read,
+      n->is_signal,
+      n->is_register
+    );
+  }
   LOG_B("Inputs:\n");
   for (auto n : inputs)
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());

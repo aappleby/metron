@@ -34,6 +34,7 @@ VL_ATTR_COLD void Vuart_top___024root___settle__TOP__0(Vuart_top___024root* vlSe
     CData/*7:0*/ uart_top__DOT__unnamedblk1__DOT__hello_data;
     CData/*0:0*/ uart_top__DOT__unnamedblk1__DOT__hello_req;
     // Body
+    vlSelf->o_serial = (1U & (IData)(vlSelf->uart_top__DOT__tx__DOT__buffer));
     vlSelf->o_data = vlSelf->uart_top__DOT__rx__DOT__buffer;
     vlSelf->o_valid = (1U == (IData)(vlSelf->uart_top__DOT__rx__DOT__cursor));
     vlSelf->o_sum = vlSelf->uart_top__DOT__rx__DOT__sum;
@@ -78,6 +79,7 @@ VL_ATTR_COLD void Vuart_top___024root___ctor_var_reset(Vuart_top___024root* vlSe
     // Body
     vlSelf->clock = VL_RAND_RESET_I(1);
     vlSelf->i_rstn = VL_RAND_RESET_I(1);
+    vlSelf->o_serial = VL_RAND_RESET_I(1);
     vlSelf->o_data = VL_RAND_RESET_I(8);
     vlSelf->o_valid = VL_RAND_RESET_I(1);
     vlSelf->o_done = VL_RAND_RESET_I(1);

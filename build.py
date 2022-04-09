@@ -353,7 +353,7 @@ def build_uart():
 
     ninja.build(rule="yosys",
                 inputs="examples/uart/uart_test_ice40.sv",
-                implicit=uart_srcs,
+                implicit=uart_srcs + ["examples/uart/SB_PLL40_CORE.v"],
                 outputs="obj/examples/uart/uart_test_ice40.json",
                 includes=uart_includes)
 

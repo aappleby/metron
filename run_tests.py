@@ -9,6 +9,10 @@ from os import path
 
 coverage = False
 
+for i, arg in enumerate(sys.argv):
+    if (arg == "--coverage"):
+        coverage = True
+
 kcov_prefix = "kcov --exclude-region=KCOV_OFF:KCOV_ON --include-pattern=Metron --exclude-pattern=submodules coverage " if coverage else ""
 
 
@@ -127,6 +131,9 @@ def check_bad(filename):
         print(f"Test file {filename} - expected fail, got {result}")
         result = os.system(f"bin/metron {filename}")
         error = 1
+    elif result == 34048:
+      print(f"Test file {filename} - expected fail, but it threw an exception")
+      error = 1
     return error
 
 ###############################################################################
@@ -246,7 +253,7 @@ if __name__ == "__main__":
         "bin/metron_test",
         "bin/examples/uart",
         "bin/examples/uart_vl",
-        #"bin/examples/uart_iv",
+        "bin/examples/uart_iv",
         "bin/examples/rvsimple",
         "bin/examples/rvsimple_vl",
         "bin/examples/rvsimple_ref",

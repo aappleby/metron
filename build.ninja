@@ -249,7 +249,7 @@ build obj/examples/uart/uart_test_ice40.json: yosys $
     examples/uart/uart_test_ice40.sv | $
     examples/uart/metron_sv/uart_hello.sv $
     examples/uart/metron_sv/uart_rx.sv examples/uart/metron_sv/uart_top.sv $
-    examples/uart/metron_sv/uart_tx.sv
+    examples/uart/metron_sv/uart_tx.sv examples/uart/SB_PLL40_CORE.v
   includes = -Isrc -Iexamples/uart -Iexamples/uart/metron_sv
 build obj/examples/uart/uart_test_ice40.asc: nextpnr-ice40 $
     obj/examples/uart/uart_test_ice40.json

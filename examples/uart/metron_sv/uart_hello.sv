@@ -4,6 +4,7 @@
 //==============================================================================
 
 module uart_hello
+#(parameter int repeat_msg = 0)
 (
   input logic clock,
   input logic i_rstn,
@@ -46,7 +47,7 @@ module uart_hello
           cursor <= cursor + 1;
         end
       end else if (state == DONE) begin
-        // state = WAIT;
+        if (repeat_msg) state <= WAIT;
         cursor <= 0;
       end
     end

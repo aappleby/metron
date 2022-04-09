@@ -14,6 +14,7 @@ VL_MODULE(Vuart_top___024root) {
     // DESIGN SPECIFIC STATE
     VL_IN8(clock,0,0);
     VL_IN8(i_rstn,0,0);
+    VL_OUT8(o_serial,0,0);
     VL_OUT8(o_data,7,0);
     VL_OUT8(o_valid,0,0);
     VL_OUT8(o_done,0,0);

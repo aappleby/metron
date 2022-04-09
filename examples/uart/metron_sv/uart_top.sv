@@ -7,10 +7,11 @@
 //==============================================================================
 
 module uart_top
-#(parameter int cycles_per_bit = 3)
+#(parameter int cycles_per_bit = 3, parameter int repeat_msg = 0)
 (
   input logic clock,
   input logic i_rstn,
+  output logic  o_serial,
   output logic[7:0]  o_data,
   output logic  o_valid,
   output logic  o_done,
@@ -19,11 +20,11 @@ module uart_top
  /*public:*/
   initial begin /*uart_top*/
     $write("uart_top.init()\n");
-    //hello.init();
   end
 
   //----------------------------------------
 
+  always_comb begin o_serial = tx_o_serial; end
   always_comb begin o_data = rx_o_buffer; end
   always_comb begin o_valid = rx_o_valid; end
   always_comb begin o_done = hello_o_done && tx_o_idle; end
@@ -48,15 +49,10 @@ module uart_top
     /*tx.tock(i_rstn, hello_data, hello_req)*/;
   end
 
-  // FIXME need to deduce task vs function by call site, not return type
-
-  //void glarp(logic<1> i_rstn) {
-  //}
-
   //----------------------------------------
 
  /*private:*/
-  uart_hello hello(
+  uart_hello #(repeat_msg) hello(
     // Inputs
     .clock(clock),
     .i_rstn(hello_i_rstn), 

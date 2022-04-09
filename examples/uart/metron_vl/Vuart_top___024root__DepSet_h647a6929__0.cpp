@@ -120,6 +120,7 @@ VL_INLINE_OPT void Vuart_top___024root___sequent__TOP__0(Vuart_top___024root* vl
     uart_top__DOT__unnamedblk1__DOT__hello_req = (1U 
                                                   == (IData)(vlSelf->uart_top__DOT__hello__DOT__state));
     vlSelf->uart_top__DOT__tx_i_req = uart_top__DOT__unnamedblk1__DOT__hello_req;
+    vlSelf->o_serial = (1U & (IData)(vlSelf->uart_top__DOT__tx__DOT__buffer));
     vlSelf->uart_top__DOT__tx_o_idle = ((0U == (IData)(vlSelf->uart_top__DOT__tx__DOT__cursor)) 
                                         & (0U == (IData)(vlSelf->uart_top__DOT__tx__DOT__cycle)));
     vlSelf->o_done = ((2U == (IData)(vlSelf->uart_top__DOT__hello__DOT__state)) 

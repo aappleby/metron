@@ -21,6 +21,7 @@ module uart_test;
     timestamp <= timestamp + 1;
   end
 
+  logic out_serial;
   logic[7:0] out_data;
   logic out_valid;
   logic out_done;
@@ -30,6 +31,7 @@ module uart_test;
   (
     clk,
     rst_n,
+    out_serial,
     out_data,
     out_valid,
     out_done,

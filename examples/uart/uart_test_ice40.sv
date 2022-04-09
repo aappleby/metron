@@ -11,13 +11,13 @@ module uart_ice40(
   input logic CLK,
 
   // Serial port to host
-  //output logic SER_DCDn,
-  //output logic SER_DSRn,
-  //input  logic SER_DTRn,
-  //input  logic SER_RTSn,
-  //output logic SER_CTSn,
+  output logic SER_DCDn,
+  output logic SER_DSRn,
+  input  logic SER_DTRn,
+  input  logic SER_RTSn,
+  output logic SER_CTSn,
   output logic SER_TX,
-  //input  logic SER_RX,
+  input  logic SER_RX,
 
   // On-board LEDs
   output logic [7:0] LEDS,
@@ -59,16 +59,19 @@ module uart_ice40(
   localparam ser_clk_rate   =     1200;
   localparam cycles_per_bit = pll_clk_rate / ser_clk_rate;
 
-  logic ser_tx;
-  logic[7:0] out_data;
-  logic out_valid;
+  //logic ser_tx;
+  logic o_serial;
+  logic[7:0] o_data;
+  logic o_valid;
+  logic o_done;
+  logic[31:0] o_sum;
 
-  uart_top #(.cycles_per_bit(cycles_per_bit)) dut(pll_clk, rst_n, ser_tx, out_data, out_valid);
+  uart_top #(.cycles_per_bit(cycles_per_bit), .repeat_msg(1)) dut(pll_clk, rst_n, o_serial, o_data, o_valid, o_done, o_sum);
 
   always_comb begin
-    SER_TX = ser_tx;
-    LOGIC7 = ser_tx;
-    LEDS = out_valid ? out_data : '0;
+    SER_TX = o_serial;
+    LOGIC7 = o_serial;
+    LEDS = o_valid ? o_data : 0;
   end
 
 endmodule

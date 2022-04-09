@@ -3,6 +3,7 @@
 
 //==============================================================================
 
+template<int repeat_msg = 0>
 class uart_hello {
  public:
   uart_hello() {
@@ -37,7 +38,7 @@ class uart_hello {
           cursor = cursor + 1;
         }
       } else if (state == DONE) {
-        // state = WAIT;
+        if (repeat_msg) state = WAIT;
         cursor = 0;
       }
     }

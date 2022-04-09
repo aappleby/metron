@@ -1,0 +1,22 @@
+#include "metron_tools.h"
+
+// Public fields that are read by the module but never written become input
+// ports.
+
+class Module {
+public:
+
+  logic<8> i_signal;
+  logic<8> o_signal;
+  logic<8> o_reg;
+
+  logic<8> tock() {
+    o_signal = i_signal + 1;
+    return o_signal;
+  }
+
+  void tick() {
+    o_reg = o_reg + 1;
+  }
+
+};

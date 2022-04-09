@@ -18,8 +18,8 @@ module singlecycle_ctlpath
    input logic clock,
    input logic[6:0] inst_opcode,
    input logic[2:0] inst_funct3,
-   input logic[6:0] inst_funct7,
    input logic alu_result_equal_zero,
+   input logic[6:0] inst_funct7,
    output logic[4:0] tock_alu_function,
    output logic pc_write_enable,
    output logic regfile_write_enable,
@@ -34,6 +34,8 @@ module singlecycle_ctlpath
 
    /*logic<7> inst_opcode;*/
    /*logic<3> inst_funct3;*/
+   /*logic<1> alu_result_equal_zero;*/
+   /*logic<7> inst_funct7;*/
 
   always_comb begin /*tock_alu_function*/
     control_inst_opcode = inst_opcode;

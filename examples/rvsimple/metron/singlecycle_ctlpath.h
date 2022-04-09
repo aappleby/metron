@@ -18,8 +18,10 @@ class singlecycle_ctlpath {
 
    logic<7> inst_opcode;
    logic<3> inst_funct3;
+   logic<1> alu_result_equal_zero;
+   logic<7> inst_funct7;
 
-  logic<5> tock_alu_function(logic<7> inst_funct7) {
+  logic<5> tock_alu_function() {
     control.inst_opcode = inst_opcode;
 
     return alu_ctrl.alu_function(control.alu_op_type2(), inst_funct3, inst_funct7);
@@ -53,7 +55,7 @@ class singlecycle_ctlpath {
     return control.reg_writeback_select();
   }
 
-  logic<2> next_pc_select(logic<1> alu_result_equal_zero) const {
+  logic<2> next_pc_select() const {
     logic<1> take_branch = transfer.take_branch(alu_result_equal_zero, inst_funct3);
     return control.next_pc_select(take_branch);
   }

@@ -83,6 +83,7 @@ module riscv_core
     dmem_bus_read_data = bus_read_data;
     mem_data = dmem_read_data;
     reg_select = ctlpath_reg_writeback_select;
+
     ctlpath_alu_result_equal_zero = alu_result == 0;
     pc_select = ctlpath_next_pc_select;
     pc_we = ctlpath_pc_write_enable;
@@ -172,8 +173,8 @@ module riscv_core
      .clock(clock),
      .inst_opcode(ctlpath_inst_opcode), 
      .inst_funct3(ctlpath_inst_funct3), 
-     .inst_funct7(ctlpath_inst_funct7), 
      .alu_result_equal_zero(ctlpath_alu_result_equal_zero), 
+     .inst_funct7(ctlpath_inst_funct7), 
      // Outputs
      .tock_alu_function(ctlpath_tock_alu_function), 
      .pc_write_enable(ctlpath_pc_write_enable), 
@@ -187,8 +188,8 @@ module riscv_core
    );
    logic[6:0] ctlpath_inst_opcode;
    logic[2:0] ctlpath_inst_funct3;
-   logic[6:0] ctlpath_inst_funct7;
    logic ctlpath_alu_result_equal_zero;
+   logic[6:0] ctlpath_inst_funct7;
    logic[4:0] ctlpath_tock_alu_function;
    logic ctlpath_pc_write_enable;
    logic ctlpath_regfile_write_enable;

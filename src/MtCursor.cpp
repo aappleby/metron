@@ -234,16 +234,15 @@ CHECK_RETURN Err MtCursor::emit_preproc_include(MnPreprocInclude n) {
 
   assert(cursor == n.start());
 
-  err |= emit_replacement(n.child(0), "`include");
-  err |= emit_ws();
+  err << emit_replacement(n.child(0), "`include") << emit_ws();
+
   auto path = n.path_node().text();
   assert(path.ends_with(".h\""));
   path.resize(path.size() - 3);
   path = path + ".sv\"";
-  err |= emit_printf(path.c_str());
-  cursor = n.end();
-  assert(cursor == n.end());
+  err << emit_printf(path.c_str());
 
+  cursor = n.end();
   return err;
 }
 
@@ -261,28 +260,21 @@ CHECK_RETURN Err MtCursor::emit_assignment(MnAssignmentExpr n) {
   auto lhs = n.lhs();
   auto rhs = n.rhs();
 
-  err |= emit_dispatch(lhs);
-  err |= emit_ws();
+  err << emit_dispatch(lhs) << emit_ws();
 
   if (current_method->is_tick) {
     auto lhs_field = current_mod->get_field(lhs.name4());
     if (lhs_field) {
       bool lhs_is_reg1 = (lhs_field->state == FIELD_RD_WR_L) || (lhs_field->state == FIELD____WR_L);
       if (lhs_is_reg1) {
-        err |= emit_printf("<");
+        err << emit_printf("<");
       }
     }
   }
-  err |= emit_text(n.op());
 
   // Emit_dispatch makes sense here, as we really could have anything on the
-  // rhs.
-  err |= emit_ws();
-  err |= emit_dispatch(rhs);
 
-  assert(cursor == n.end());
-
-  return err;
+  return err << emit_text(n.op()) << emit_ws() << emit_dispatch(rhs) << (cursor != n.end());
 }
 
 //------------------------------------------------------------------------------
@@ -307,26 +299,19 @@ CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnCallExpr call, int bx_width
                arg0.sym == sym_subscript_expression) {
       if (arg0.text() == "DONTCARE") {
         // Size-casting expression
-        err |= emit_printf("%d'", bx_width);
-        err |= emit_printf("bx");
+        err |= emit_printf("%d'bx", bx_width);
         cursor = call.end();
       } else {
         // Size-casting expression
         cursor = arg0.start();
-        err |= emit_printf("%d'", bx_width);
-        err |= emit_printf("(");
-        err |= emit_dispatch(arg0);
-        err |= emit_printf(")");
+        err << emit_printf("%d'(", bx_width) << emit_dispatch(arg0) << emit_printf(")");
         cursor = call.end();
       }
 
     } else {
       // Size-casting expression
       cursor = arg0.start();
-      err |= emit_printf("%d'", bx_width);
-      err |= emit_printf("(");
-      err |= emit_dispatch(arg0);
-      err |= emit_printf(")");
+      err << emit_printf("%d'(", bx_width) << emit_dispatch(arg0) << emit_printf(")");
       cursor = call.end();
     }
   } else if (arg_count == 2) {

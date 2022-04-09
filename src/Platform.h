@@ -57,6 +57,16 @@ public:
     return *this;
   }
 
+  Err& operator << (bool e) {
+    /*
+    if (e) {
+    debugbreak();
+    }
+    */
+    err |= e;
+    return *this;
+  }
+
   operator bool() const {
     return err;
   }

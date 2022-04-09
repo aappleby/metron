@@ -57,7 +57,9 @@ module toplevel
     alu_result2  = core_tock_alu_result;
     data_memory_bus_address = alu_result2;
 
-    write_data   = core_tock_bus_write_data2;
+    /*core.tock_bus_write_data2()*/;
+    write_data   = core_bus_write_data;
+
     write_enable = core_bus_write_enable2;
     byte_enable  = core_bus_byte_enable2;
     read_enable  = core_bus_read_enable2;
@@ -95,9 +97,9 @@ module toplevel
     .bus_read_data(core_bus_read_data), 
     // Outputs
     .alu_result(core_alu_result), 
+    .bus_write_data(core_bus_write_data), 
     .pc(core_pc), 
     .tock_alu_result(core_tock_alu_result), 
-    .tock_bus_write_data2(core_tock_bus_write_data2), 
     .bus_write_enable2(core_bus_write_enable2), 
     .bus_byte_enable2(core_bus_byte_enable2), 
     .bus_read_enable2(core_bus_read_enable2)
@@ -106,9 +108,9 @@ module toplevel
   logic core_reset;
   logic[31:0] core_bus_read_data;
   logic[31:0] core_alu_result;
+  logic[31:0] core_bus_write_data;
   logic[31:0] core_pc;
   logic[31:0] core_tock_alu_result;
-  logic[31:0] core_tock_bus_write_data2;
   logic core_bus_write_enable2;
   logic[3:0] core_bus_byte_enable2;
   logic core_bus_read_enable2;

@@ -36,7 +36,9 @@ class toplevel {
     logic<32> alu_result2  = core.tock_alu_result();
     data_memory_bus.address = alu_result2;
 
-    logic<32> write_data   = core.tock_bus_write_data2();
+    core.tock_bus_write_data2();
+    logic<32> write_data   = core.bus_write_data;
+
     logic<1>  write_enable = core.bus_write_enable2();
     logic<4>  byte_enable  = core.bus_byte_enable2();
     logic<1>  read_enable  = core.bus_read_enable2();

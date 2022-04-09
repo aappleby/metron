@@ -86,6 +86,10 @@ module singlecycle_datapath
   /*logic<32> temp_rs2_data;*/
   /*logic<32> alu_result;*/
 
+  /*logic<5> alu_function;*/
+  /*logic<1> alu_operand_a_select;*/
+  /*logic<1> alu_operand_b_select;*/
+
   always_comb begin /*tock_alu_result*/
     regs_rs1_address = inst_rs1;
     temp_rs1_data = regs_rs1_data;

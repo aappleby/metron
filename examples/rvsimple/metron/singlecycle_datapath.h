@@ -60,7 +60,11 @@ class singlecycle_datapath {
   logic<32> temp_rs2_data;
   logic<32> alu_result;
 
-  void tock_alu_result(logic<5> alu_function, logic<1> alu_operand_a_select, logic<1> alu_operand_b_select) {
+  logic<5> alu_function;
+  logic<1> alu_operand_a_select;
+  logic<1> alu_operand_b_select;
+
+  void tock_alu_result() {
     temp_rs1_data = regs.rs1_data(inst_rs1);
     temp_rs2_data = regs.rs2_data(inst_rs2);
 

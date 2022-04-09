@@ -24,6 +24,10 @@ module example_data_memory_bus
  /*public:*/
 
    /*logic<32> address;*/
+   /*logic<1> read_enable;*/
+   /*logic<1> write_enable;*/
+   /*logic<4> byte_enable;*/
+   /*logic<32> write_data;*/
 
   always_comb begin /*tock_q*/
     logic[31:0] fetched;

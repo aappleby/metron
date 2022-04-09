@@ -77,7 +77,7 @@ module toplevel
     data_memory_bus_write_enable = write_enable;
     data_memory_bus_byte_enable = byte_enable;
     data_memory_bus_write_data = write_data;
-    /*data_memory_bus.tock(write_enable, byte_enable, write_data)*/;
+    /*data_memory_bus.tock()*/;
 
     core_reset = reset;
     core_bus_read_data = read_data;

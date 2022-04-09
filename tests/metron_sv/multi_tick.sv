@@ -4,13 +4,17 @@
 
 module Module
 (
-  input logic clock
+  input logic clock,
+  output logic[7:0] tock
 );
 /*public:*/
 
   always_comb begin /*tock*/
+    logic[7:0] result;
+    result = my_reg1 + my_reg2;
     /*tick1()*/;
     /*tick2()*/;
+    tock = result;
   end
 
 /*private:*/
@@ -25,7 +29,7 @@ module Module
   endtask
   always_ff @(posedge clock) tick2();
 
-  logic my_reg1;
-  logic my_reg2;
+  logic[7:0] my_reg1;
+  logic[7:0] my_reg2;
 endmodule
 

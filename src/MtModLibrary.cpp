@@ -95,42 +95,57 @@ bool MtModLibrary::process_sources() {
     }
   }
 
+  //----------------------------------------
+
   for (auto mod : modules) {
     error |= mod->load_pass1();
   }
-
   if (error) {
-    LOG_R("process_sources pass 1 failed\n");
+    LOG_R("Load pass 1 failed\n");
     return error;
   }
+  else {
+    LOG_G("Load pass 1 ok\n");
+  }
 
+  //----------------------------------------
   // Generate call tree / temporal check for toplevel modules
+
   for (auto m : modules) {
     error |= m->trace();
   }
+  if (error) {
+    LOG_R("Temporal trace failed\n");
+    return error;
+  }
+  else {
+    LOG_G("Temporal trace pass\n");
+  }
+
+  //----------------------------------------
 
   for (auto mod : modules) {
     error |= mod->load_pass2();
   }
-
   if (error) {
-    LOG_R("process_sources pass 2 failed\n");
+    LOG_R("Load pass 2 failed\n");
     return error;
   }
+  else {
+    LOG_G("Load pass 2 ok\n");
+  }
 
+  //----------------------------------------
   // Hook up child->parent module pointers
+
   for (auto m : modules) {
     for (auto s : m->submods) {
       get_module(s->type_name())->parents.push_back(m);
     }
   }
 
-  if (error) {
-    LOG_R("Some modules fail temporal trace!\n");
-  }
-  else {
-    LOG_G("All modules pass temporal trace!\n");
-  }
+  //----------------------------------------
+
   sources_processed = true;
 
   return error;

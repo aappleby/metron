@@ -742,7 +742,6 @@ CHECK_RETURN Err MtModule::categorize_fields() {
     }
 
     if (f->is_param()) {
-      //debugbreak();
       continue;
     }
 
@@ -750,14 +749,35 @@ CHECK_RETURN Err MtModule::categorize_fields() {
       if (f->state == FIELD_RD_____) {
         input_signals.push_back(f);
       }
-      if (f->state == FIELD____WS_L) {
+      else if (f->state == FIELD____WS_L) {
         output_signals.push_back(f);
       }
-      if (f->state == FIELD____WR_L || f->state == FIELD_RD_WR_L) {
+      else if (f->state == FIELD____WR_L || f->state == FIELD_RD_WR_L) {
         output_registers.push_back(f);
+      }
+      else {
+        debugbreak();
       }
     }
     else {
+      if (f->state == FIELD____WS_L) {
+        private_signals.push_back(f);
+      }
+      else if (f->state == FIELD_RD_____) {
+        // Read-only memory loaded in init() - I guess this is OK?
+        private_registers.push_back(f);
+      }
+      else if (f->state == FIELD____WR_L) {
+        // Write-only field?
+        private_registers.push_back(f);
+        LOG_R("Private register %s was written but never read\n", f->name().c_str());
+      }
+      else if (f->state == FIELD_RD_WR_L) {
+        private_registers.push_back(f);
+      }
+      else {
+        debugbreak();
+      }
     }
   }
 

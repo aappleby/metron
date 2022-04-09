@@ -736,26 +736,29 @@ CHECK_RETURN Err MtModule::categorize_fields() {
   std::set<std::string> dedup;
 
   for (auto f : all_fields) {
-    if (f->is_public() && !f->is_submod() && !f->is_param()) {
-      if (f->state == FIELD_RD_____) {
-        input_signals.push_back(f);
+    if (f->is_submod()) {
+      assert(!f->is_public());
+      continue;
+    }
+
+    if (f->is_public()) {
+      if (!f->is_param()) {
+        if (f->state == FIELD_RD_____) {
+          input_signals.push_back(f);
+        }
+      }
+      if (!f->is_param()) {
+        if (f->state == FIELD____WS_L) {
+          output_signals.push_back(f);
+        }
+      }
+      if (!f->is_param()) {
+        if (f->state == FIELD____WR_L || f->state == FIELD_RD_WR_L) {
+          output_registers.push_back(f);
+        }
       }
     }
-  }
-
-  for (auto f : all_fields) {
-    if (f->is_public() && !f->is_submod() && !f->is_param()) {
-      if (f->state == FIELD____WS_L) {
-        output_signals.push_back(f);
-      }
-    }
-  }
-
-  for (auto f : all_fields) {
-    if (f->is_public() && !f->is_submod() && !f->is_param()) {
-      if (f->state == FIELD____WR_L || f->state == FIELD_RD_WR_L) {
-        output_registers.push_back(f);
-      }
+    else {
     }
   }
 

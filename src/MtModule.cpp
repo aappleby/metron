@@ -701,7 +701,26 @@ CHECK_RETURN Err MtModule::collect_input_params() {
 }
 
 //------------------------------------------------------------------------------
-// All fields written to in a tock method are outputs.
+
+CHECK_RETURN Err MtModule::collect_input_fields() {
+  Err error;
+
+  assert(input_fields.empty());
+
+  std::set<std::string> dedup;
+
+  for (auto f : all_fields) {
+    if (f->is_public() && !f->is_submod() && !f->is_param()) {
+      if (f->state == FIELD_RD_____) {
+        input_fields.push_back(f);
+      }
+    }
+  }
+
+  return error;
+}
+
+//------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtModule::collect_output_fields() {
   Err error;
@@ -712,15 +731,8 @@ CHECK_RETURN Err MtModule::collect_output_fields() {
 
   for (auto f : all_fields) {
     if (f->is_public() && !f->is_submod() && !f->is_param()) {
-      //output_fields.push_back(f);
-      // can't use this until after trace
       if (f->state == FIELD____WS_L || f->state == FIELD____WR_L || f->state == FIELD_RD_WR_L) {
         output_fields.push_back(f);
-      }
-      else {
-        //printf("###### output field state %s\n", to_string(f->state));
-        //debugbreak();
-        //output_fields.push_back(f);
       }
     }
   }
@@ -777,6 +789,7 @@ CHECK_RETURN Err MtModule::load_pass2() {
 
   error |= collect_input_params();
   error |= collect_registers();
+  error |= collect_input_fields();
   error |= collect_output_fields();
 
   error |= build_port_map();

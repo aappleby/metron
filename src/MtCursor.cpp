@@ -1491,10 +1491,14 @@ CHECK_RETURN Err MtCursor::emit_field_decl(MnFieldDecl n) {
     err << emit_field_as_submod(n);
   } else if (n.type().is_enum()) {
     err << emit_field_as_enum_class(n);
+  } else if (current_mod->get_input_field(n.name().text())) {
+    if (!in_ports) {
+      err << comment_out(n);
+    } else {
+      err << emit_children(n);
+    }
   } else if (current_mod->get_output_field(n.name().text())) {
     if (!in_ports) {
-      // skip_to_next_sibling(n);
-      // skip_over(n);
       err << comment_out(n);
     } else {
       err << emit_children(n);

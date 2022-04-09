@@ -747,33 +747,6 @@ CHECK_RETURN Err MtModule::collect_output_fields() {
     }
   }
 
-
-  /*
-  for (auto m : submod_mod->all_methods) {
-    if (!m->is_public || !m->has_return) continue;
-
-    auto getter_type = m->node.get_field(field_type);
-    auto getter_decl = m->node.get_field(field_declarator);
-    auto getter_name = getter_decl.get_field(field_declarator);
-
-    MtCursor sub_cursor(lib, submod_mod->source_file, str_out);
-    sub_cursor.echo = echo;
-    sub_cursor.in_ports = true;
-    sub_cursor.id_replacements = replacements;
-
-    sub_cursor.cursor = getter_type.start();
-
-    err << emit_indent();
-    err << sub_cursor.skip_ws();
-    err << sub_cursor.emit_dispatch(getter_type);
-    err << sub_cursor.emit_ws();
-    err << emit_printf("%s_", submod_decl.text().c_str());
-    err << sub_cursor.emit_dispatch(getter_name);
-    err << emit_printf(";");
-    err << emit_newline();
-  }
-  */
-
   return error;
 }
 
@@ -785,32 +758,15 @@ CHECK_RETURN Err MtModule::collect_registers() {
 
   assert(registers.empty());
 
-  std::set<std::string> dedup;
-
-  for (auto n : tick_methods) {
-    n->node.visit_tree([&](MnNode child) {
-      if (child.sym != sym_assignment_expression) return;
-
-      auto lhs = child.get_field(field_left);
-      std::string lhs_name;
-
-      if (lhs.sym == sym_identifier) {
-        lhs_name = lhs.text();
-      } else if (lhs.sym == sym_subscript_expression) {
-        lhs_name = lhs.get_field(field_argument).text();
-      } else {
-        LOG_R("Unknown type on left side of assignment - %s\n", lhs.ts_node_type());
-        lhs.dump_source_lines();
-        error = true;
-        return;
+  for (auto f : all_fields) {
+    if (f->is_public() && !f->is_submod() && !f->is_param()) {
+      if (f->state == FIELD____WR__ ||
+          f->state == FIELD____WR_L ||
+          f->state == FIELD_RD_WR__ ||
+          f->state == FIELD_RD_WR_L) {
+        registers.push_back(f);
       }
-
-      if (dedup.contains(lhs_name)) return;
-      dedup.insert(lhs_name);
-
-      auto field = get_field(lhs_name);
-      if (field && !field->is_public()) registers.push_back(field);
-    });
+    }
   }
 
   return error;
@@ -1011,6 +967,7 @@ CHECK_RETURN Err MtModule::sanity_check() {
     }
   }
 
+  /*
   for (auto n : registers) {
     if (field_names.contains(n->name())) {
       LOG_R("Duplicate register name %s\n", n->name().c_str());
@@ -1019,6 +976,7 @@ CHECK_RETURN Err MtModule::sanity_check() {
       field_names.insert(n->name());
     }
   }
+  */
 
   for (auto n : submods) {
     if (field_names.contains(n->name())) {

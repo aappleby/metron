@@ -206,23 +206,22 @@ struct MtModule {
   MnTemplateDecl mod_template;
   MnTemplateParamList mod_param_list;
 
+  // populated by load_pass1
+
   std::vector<MtParam*> modparams;
   std::vector<MtParam*> localparams; // FIXME not actually doing anything with this yet?
+  std::vector<MtField*> all_fields;
+  std::vector<MtMethod*> all_methods;
+
+  // populated by load_pass2
 
   std::vector<MtEnum*> enums;
-
-  std::vector<MtField*> all_fields;
-
   std::vector<MtField*> input_fields;
   std::vector<MtParam*> input_params;
-
   std::vector<MtField*> output_fields;
   std::vector<MtMethod*> output_returns;
-
   std::vector<MtField*> registers;
   std::vector<MtField*> submods;
-
-  std::vector<MtMethod*> all_methods;
   std::vector<MtMethod*> init_methods;
   std::vector<MtMethod*> tick_methods;
   std::vector<MtMethod*> tock_methods;

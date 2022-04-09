@@ -632,10 +632,14 @@ CHECK_RETURN Err MtModule::trace() {
       error = true;
       break;
     case FIELD____WR_L:
-      LOG_Y("Register %s was written and locked but never read - is it redundant?\n", pair.first.c_str());
+      if (field && !field->is_public()) {
+        LOG_Y("Private register %s was written and locked but never read - is it redundant?\n", pair.first.c_str());
+      }
       break;
     case FIELD_RD_____:
-      LOG_Y("Field %s was read but never written - should it be const?\n", pair.first.c_str());
+      if (field && !field->is_public()) {
+        LOG_Y("Private field %s was read but never written - should it be const?\n", pair.first.c_str());
+      }
       break;
     case FIELD_RD_WR__:
       LOG_R("Register %s was written but never locked - internal error?\n", pair.first.c_str());
@@ -805,6 +809,25 @@ CHECK_RETURN Err MtModule::build_port_map() {
   assert(port_map.empty());
 
   Err error;
+
+  mod_class.visit_tree([&](MnNode child) {
+    if (child.sym != sym_assignment_expression) return;
+
+    auto node_lhs = child.get_field(field_left);
+    auto node_rhs = child.get_field(field_right);
+
+    if (node_lhs.sym != sym_field_expression) return;
+
+    auto key = node_lhs.text();
+    auto val = node_rhs.text();
+
+    port_map[key] = val;
+
+    //child.dump_source_lines();
+    //child.dump_tree();
+    //printf("%s\n", child.text().c_str());
+  });
+
 
   mod_class.visit_tree([&](MnNode child) {
     if (child.sym != sym_call_expression) return;

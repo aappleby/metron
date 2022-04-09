@@ -274,7 +274,12 @@ CHECK_RETURN Err MtTracer::trace_assign(MnNode n) {
     if (mod()->get_field(node_name.text())) {
       error |= trace_write(node_name);
     }
-  } else {
+  }
+  else if (node_lhs.sym == sym_field_expression) {
+    //printf("%s\n", node_lhs.text().c_str());
+    error |= trace_write(node_lhs.text());
+  }
+  else {
     node_lhs.dump_tree();
     debugbreak();
   }
@@ -706,15 +711,6 @@ CHECK_RETURN Err MtTracer::trace_read(MnNode const& n) {
 
   std::string field_name = n.text();
 
-  /*
-  {
-    auto field = mod()->get_field(field_name);
-    if (field) {
-      field->is_read = true;
-    }
-  }
-  */
-
   for (int i = (int)_field_stack.size() - 1; i >= 0; i--) {
     field_name = _field_stack[i]->name() + "." + field_name;
   }
@@ -741,23 +737,6 @@ CHECK_RETURN Err MtTracer::trace_write(MnNode const& n) {
 
   assert(in_tick() || in_tock());
   std::string field_name = n.text();
-
-  /*
-  {
-    auto field = mod()->get_field(field_name);
-    if (field) {
-      if (in_tick()) {
-        field->is_register = true;
-      }
-      else if (in_tock()) {
-        field->is_signal = true;
-      }
-      else {
-        debugbreak();
-      }
-    }
-  }
-  */
 
   for (int i = (int)_field_stack.size() - 1; i >= 0; i--) {
     field_name = _field_stack[i]->name() + "." + field_name;

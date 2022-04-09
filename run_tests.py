@@ -63,9 +63,6 @@ def check_good(filename):
 ################################################################################
 # Run Icarus on the translated source file.
 
-# Icarus generates a bunch of possibly-spurious warnings and can't handle
-# utf-8 with a BOM
-
 def check_icarus(filename):
     error = 0
     basename = path.basename(filename)
@@ -223,7 +220,9 @@ if __name__ == "__main__":
         print_r(f"Headers in metron_good failed Metron conversion")
         error = True
 
-    # Icarus bein' too picky
+    # Icarus generates a bunch of possibly-spurious warnings and can't handle
+    # utf-8 with a BOM
+
     """
     print()
     print_b("Checking that all converted files can be parsed by Icarus")

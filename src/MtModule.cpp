@@ -303,16 +303,11 @@ void MtModule::dump_deltas() const {
 CHECK_RETURN Err MtModule::load_pass1() {
   Err error;
 
-  if (mod_class.is_null()) {
-    LOG_R("No class found for module\n");
-    error = true;
-    return error;
-  }
-
   error |= collect_params();
-  error |= collect_fields();
   error |= collect_methods();
+  error |= collect_field_and_submods();
 
+#if 0
   // enums = new std::vector<MtEnum>();
 
   auto mod_body = mod_class.get_field(field_body).check_null();
@@ -352,6 +347,7 @@ CHECK_RETURN Err MtModule::load_pass1() {
     }
     */
   }
+#endif
 
   return error;
 }
@@ -393,10 +389,12 @@ CHECK_RETURN Err MtModule::collect_params() {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtModule::collect_fields() {
+CHECK_RETURN Err MtModule::collect_field_and_submods() {
   Err error;
 
   assert(all_fields.empty());
+  assert(submods.empty());
+
 
   auto mod_body = mod_class.get_field(field_body).check_null();
   bool in_public = false;
@@ -415,7 +413,11 @@ CHECK_RETURN Err MtModule::collect_fields() {
 
     auto new_field = MtField::construct(n, in_public);
 
-    all_fields.push_back(new_field);
+    if (source_file->lib->has_module(new_field->type_name())) {
+      submods.push_back(new_field);
+    } else {
+      all_fields.push_back(new_field);
+    }
   }
 
   return error;
@@ -710,16 +712,16 @@ CHECK_RETURN Err MtModule::collect_output_fields() {
 
   for (auto f : all_fields) {
     if (f->is_public() && !f->is_submod() && !f->is_param()) {
-      output_fields.push_back(f);
-      /*
+      //output_fields.push_back(f);
       // can't use this until after trace
-      if (f->state == FIELD____WS_L) {
+      if (f->state == FIELD____WS_L || f->state == FIELD____WR_L || f->state == FIELD_RD_WR_L) {
         output_fields.push_back(f);
       }
       else {
-        debugbreak();
+        //printf("###### output field state %s\n", to_string(f->state));
+        //debugbreak();
+        //output_fields.push_back(f);
       }
-      */
     }
   }
 
@@ -766,34 +768,6 @@ CHECK_RETURN Err MtModule::collect_registers() {
 }
 
 //------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtModule::collect_submods() {
-  Err error;
-
-  assert(submods.empty());
-
-  for (auto f : all_fields) {
-    if (source_file->lib->has_module(f->type_name())) {
-      submods.push_back(f);
-    } else {
-      if (f->type_name() == "logic") {
-      } else if (f->type_name() == "int") {
-      } else if (get_enum(f->type_name())) {
-        LOG_R("???");
-        // FIXME this isn't working
-      } else {
-        LOG_R("Could not find module for submod %s\n", f->type_name().c_str());
-
-        // FIXME don't make this an error yet
-        //error = true;
-      }
-    }
-  }
-
-  return error;
-}
-
-//------------------------------------------------------------------------------
 // All modules have populated their fields, match up tick/tock calls with their
 // corresponding methods.
 
@@ -803,7 +777,6 @@ CHECK_RETURN Err MtModule::load_pass2() {
 
   error |= collect_input_params();
   error |= collect_registers();
-  error |= collect_submods();
   error |= collect_output_fields();
 
   error |= build_port_map();

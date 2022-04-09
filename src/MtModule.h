@@ -151,12 +151,11 @@ struct MtModule {
   //void dump_deltas() const;
 
   CHECK_RETURN Err collect_params();
-  CHECK_RETURN Err collect_fields();
+  CHECK_RETURN Err collect_field_and_submods();
   CHECK_RETURN Err collect_methods();
   CHECK_RETURN Err collect_input_params();
   CHECK_RETURN Err collect_output_fields();
   CHECK_RETURN Err collect_registers();
-  CHECK_RETURN Err collect_submods();
 
   CHECK_RETURN Err build_port_map();
 

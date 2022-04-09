@@ -8,10 +8,14 @@ import time
 from os import path
 
 coverage = False
+max_threads = multiprocessing.cpu_count()
 
 for i, arg in enumerate(sys.argv):
     if (arg == "--coverage"):
         coverage = True
+        max_threads = 1
+    if (arg == "--serial"):
+        max_threads = 1
 
 kcov_prefix = "kcov --exclude-region=KCOV_OFF:KCOV_ON --include-pattern=Metron --exclude-pattern=submodules coverage " if coverage else ""
 
@@ -196,8 +200,7 @@ if __name__ == "__main__":
     metron_good = glob.glob("tests/metron_good/*.h")
     metron_bad = glob.glob("tests/metron_bad/*.h")
 
-    pool = multiprocessing.Pool(1) if coverage else multiprocessing.Pool()
-    #pool = multiprocessing.Pool(1)
+    pool = multiprocessing.Pool(max_threads)
     error = False
 
     ############################################################

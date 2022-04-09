@@ -104,6 +104,11 @@ bool MtModLibrary::process_sources() {
     return error;
   }
 
+  // Generate call tree / temporal check for toplevel modules
+  for (auto m : modules) {
+    error |= m->trace();
+  }
+
   for (auto mod : modules) {
     error |= mod->load_pass2();
   }
@@ -118,11 +123,6 @@ bool MtModLibrary::process_sources() {
     for (auto s : m->submods) {
       get_module(s->type_name())->parents.push_back(m);
     }
-  }
-
-  // Generate call tree / temporal check for toplevel modules
-  for (auto m : modules) {
-    error |= m->trace();
   }
 
   if (error) {

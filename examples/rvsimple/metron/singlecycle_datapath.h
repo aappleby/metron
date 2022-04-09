@@ -32,7 +32,13 @@ class singlecycle_datapath {
 
   //----------------------------------------
 
+  logic<1>  reset;
   logic<32> inst;
+  logic<1>  regfile_write_enable;
+  logic<32> data_mem_read_data;
+  logic<3>  reg_writeback_select;
+  logic<2>  next_pc_select;
+  logic<1>  pc_write_enable;
 
   logic<5>  inst_rd;
   logic<5>  inst_rs1;
@@ -86,14 +92,7 @@ class singlecycle_datapath {
 
   //----------------------------------------
 
-  void tock(
-    logic<1> reset,
-    logic<1> regfile_write_enable,
-    logic<32> data_mem_read_data,
-    logic<3> reg_writeback_select,
-    logic<2> next_pc_select,
-    logic<1> pc_write_enable
-  ) {
+  void tock() {
     logic<32> pc_plus_4 = adder_pc_plus_4.result(b32(0x00000004), program_counter.value());
     logic<32> pc_plus_imm = adder_pc_plus_immediate.result(program_counter.value(), inst_immediate);
 

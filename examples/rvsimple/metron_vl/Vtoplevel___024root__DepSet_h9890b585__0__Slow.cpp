@@ -64,10 +64,10 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
     CData/*3:0*/ toplevel__DOT__unnamedblk1__DOT__byte_enable;
     CData/*0:0*/ toplevel__DOT__unnamedblk1__DOT__read_enable;
     IData/*31:0*/ toplevel__DOT__unnamedblk1__DOT__read_data;
-    CData/*4:0*/ toplevel__DOT__core__DOT__datapath_alu_function;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath_data_mem_read_data;
     CData/*2:0*/ toplevel__DOT__core__DOT__datapath_reg_writeback_select;
     CData/*1:0*/ toplevel__DOT__core__DOT__datapath_next_pc_select;
+    CData/*4:0*/ toplevel__DOT__core__DOT__datapath_alu_function;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath_temp_rs1_data;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath_temp_rs2_data;
     CData/*6:0*/ toplevel__DOT__core__DOT__ctlpath_inst_opcode;

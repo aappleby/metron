@@ -61,7 +61,13 @@ class riscv_core {
       ctlpath.next_pc_select(alu_result == 0);
     logic<1> pc_we = ctlpath.pc_write_enable();
 
-    datapath.tock(reset, reg_we, mem_data, reg_select, pc_select, pc_we);
+    datapath.reset = reset;
+    datapath.regfile_write_enable = reg_we;
+    datapath.data_mem_read_data = mem_data;
+    datapath.reg_writeback_select = reg_select;
+    datapath.next_pc_select = pc_select;
+    datapath.pc_write_enable = pc_we;
+    datapath.tock();
   }
 
 

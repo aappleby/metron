@@ -24,16 +24,16 @@ import rv_config::*;
 module singlecycle_datapath
 (
   input logic clock,
+  input logic  reset,
   input logic[31:0] inst,
+  input logic  regfile_write_enable,
+  input logic[31:0] data_mem_read_data,
+  input logic[2:0]  reg_writeback_select,
+  input logic[1:0]  next_pc_select,
+  input logic  pc_write_enable,
   input logic[4:0] alu_function,
   input logic alu_operand_a_select,
   input logic alu_operand_b_select,
-  input logic reset,
-  input logic regfile_write_enable,
-  input logic[31:0] data_mem_read_data,
-  input logic[2:0] reg_writeback_select,
-  input logic[1:0] next_pc_select,
-  input logic pc_write_enable,
   output logic[4:0]  inst_rd,
   output logic[4:0]  inst_rs1,
   output logic[4:0]  inst_rs2,
@@ -56,7 +56,13 @@ module singlecycle_datapath
 
   //----------------------------------------
 
+  /*logic<1>  reset;*/
   /*logic<32> inst;*/
+  /*logic<1>  regfile_write_enable;*/
+  /*logic<32> data_mem_read_data;*/
+  /*logic<3>  reg_writeback_select;*/
+  /*logic<2>  next_pc_select;*/
+  /*logic<1>  pc_write_enable;*/
 
   /*logic<5>  inst_rd;*/
   /*logic<5>  inst_rs1;*/

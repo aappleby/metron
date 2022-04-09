@@ -32,7 +32,7 @@ module riscv_core
 
   always_comb begin /*tock_inst*/
     datapath_inst = inst;
-    /*datapath.tock_inst(inst)*/;
+    /*datapath.tock_inst()*/;
   end
 
   always_comb begin /*tock_alu_result*/
@@ -51,7 +51,6 @@ module riscv_core
 
     ctlpath_inst_opcode = opcode;
     ctlpath_inst_opcode = opcode;
-    datapath_inst = inst;
     datapath_alu_function = alu_function;
     datapath_alu_operand_a_select = ctlpath_alu_operand_a_select;
     datapath_alu_operand_b_select = ctlpath_alu_operand_b_select;
@@ -89,14 +88,13 @@ module riscv_core
     pc_we = ctlpath_pc_write_enable;
 
     datapath_reset = reset;
-    datapath_inst = inst;
     datapath_regfile_write_enable = reg_we;
     datapath_data_mem_read_data = mem_data;
     datapath_reg_writeback_select = reg_select;
     datapath_alu_result2 = alu_result2;
     datapath_next_pc_select = pc_select;
     datapath_pc_write_enable = pc_we;
-    /*datapath.tock(reset, inst, reg_we, mem_data, reg_select, alu_result2,
+    /*datapath.tock(reset, reg_we, mem_data, reg_select, alu_result2,
       pc_select, pc_we)*/;
   end
 

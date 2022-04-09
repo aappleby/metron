@@ -32,6 +32,8 @@ class singlecycle_datapath {
 
   //----------------------------------------
 
+  logic<32> inst;
+
   logic<5>  inst_rd;
   logic<5>  inst_rs1;
   logic<5>  inst_rs2;
@@ -40,7 +42,7 @@ class singlecycle_datapath {
   logic<7>  inst_funct7;
   logic<32> inst_immediate;
 
-  void tock_inst(logic<32> inst) {
+  void tock_inst() {
     idec.inst = inst;
 
     inst_opcode    = idec.inst_opcode();
@@ -57,7 +59,7 @@ class singlecycle_datapath {
   logic<32> temp_rs1_data;
   logic<32> temp_rs2_data;
 
-  logic<32> tock_alu_result(logic<32> inst, logic<5> alu_function, logic<1> alu_operand_a_select, logic<1> alu_operand_b_select) {
+  logic<32> tock_alu_result(logic<5> alu_function, logic<1> alu_operand_a_select, logic<1> alu_operand_b_select) {
     temp_rs1_data = regs.rs1_data(inst_rs1);
     temp_rs2_data = regs.rs2_data(inst_rs2);
 
@@ -80,7 +82,6 @@ class singlecycle_datapath {
 
   void tock(
     logic<1> reset,
-    logic<32> inst,
     logic<1> regfile_write_enable,
     logic<32> data_mem_read_data,
     logic<3> reg_writeback_select,

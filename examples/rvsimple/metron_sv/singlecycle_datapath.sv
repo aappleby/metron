@@ -57,6 +57,8 @@ module singlecycle_datapath
 
   //----------------------------------------
 
+  /*logic<32> inst;*/
+
   /*logic<5>  inst_rd;*/
   /*logic<5>  inst_rs1;*/
   /*logic<5>  inst_rs2;*/

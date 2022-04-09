@@ -18,7 +18,8 @@ class riscv_core {
   logic<32> pc() const { return datapath.pc(); }
 
   void tock_inst(logic<32> inst) {
-    datapath.tock_inst(inst);
+    datapath.inst = inst;
+    datapath.tock_inst();
   }
 
   logic<32> tock_alu_result(logic<32> inst) {
@@ -28,7 +29,7 @@ class riscv_core {
 
     logic<5> alu_function = ctlpath.alu_function(opcode, funct3, funct7);
 
-    return datapath.tock_alu_result(inst, alu_function,
+    return datapath.tock_alu_result(alu_function,
                                     ctlpath.alu_operand_a_select(opcode),
                                     ctlpath.alu_operand_b_select(opcode));
   }
@@ -49,7 +50,7 @@ class riscv_core {
       ctlpath.next_pc_select(opcode, funct3, alu_result2 == 0);
     logic<1> pc_we = ctlpath.pc_write_enable(opcode);
 
-    datapath.tock(reset, inst, reg_we, mem_data, reg_select, alu_result2,
+    datapath.tock(reset, reg_we, mem_data, reg_select, alu_result2,
       pc_select, pc_we);
   }
 

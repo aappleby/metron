@@ -11,7 +11,6 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
     Vtoplevel__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     VL_DEBUG_IF(VL_DBG_MSGF("+    Vtoplevel___024root___sequent__TOP__0\n"); );
     // Init
-    IData/*31:0*/ toplevel__DOT__core_inst;
     IData/*31:0*/ toplevel__DOT__core_bus_read_data;
     IData/*31:0*/ toplevel__DOT__core_alu_result2;
     IData/*31:0*/ toplevel__DOT__text_memory_bus_address;
@@ -141,13 +140,13 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
                           >> 2U));
     }
     if (((IData)(vlSelf->toplevel__DOT__core__DOT__datapath_regfile_write_enable) 
-         & (0U != (0x1fU & (vlSelf->toplevel__DOT__core__DOT__datapath_inst 
+         & (0U != (0x1fU & (vlSelf->toplevel__DOT__core_inst 
                             >> 7U))))) {
         __Vdlyvval__toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs__v0 
             = vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs_rd_data;
         __Vdlyvset__toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs__v0 = 1U;
         __Vdlyvdim0__toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs__v0 
-            = (0x1fU & (vlSelf->toplevel__DOT__core__DOT__datapath_inst 
+            = (0x1fU & (vlSelf->toplevel__DOT__core_inst 
                         >> 7U));
     }
     if (vlSelf->reset) {
@@ -185,154 +184,150 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
                                                  : 0U);
     toplevel__DOT__unnamedblk1__DOT__inst = toplevel__DOT__text_memory_bus_read_data;
     vlSelf->o_inst = toplevel__DOT__unnamedblk1__DOT__inst;
-    toplevel__DOT__core_inst = toplevel__DOT__unnamedblk1__DOT__inst;
-    vlSelf->toplevel__DOT__core__DOT__datapath_inst 
-        = toplevel__DOT__core_inst;
+    vlSelf->toplevel__DOT__core_inst = toplevel__DOT__unnamedblk1__DOT__inst;
     toplevel__DOT__core__DOT__datapath_temp_rs1_data 
         = vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs
-        [(0x1fU & (vlSelf->toplevel__DOT__core__DOT__datapath_inst 
+        [(0x1fU & (vlSelf->toplevel__DOT__core_inst 
                    >> 0xfU))];
     toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_in0 
         = toplevel__DOT__core__DOT__datapath_temp_rs1_data;
     toplevel__DOT__core__DOT__datapath_temp_rs2_data 
         = vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs
-        [(0x1fU & (vlSelf->toplevel__DOT__core__DOT__datapath_inst 
+        [(0x1fU & (vlSelf->toplevel__DOT__core_inst 
                    >> 0x14U))];
     toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_in0 
         = toplevel__DOT__core__DOT__datapath_temp_rs2_data;
     toplevel__DOT__core__DOT__datapath__DOT__igen__DOT__unnamedblk1__DOT__result 
-        = (((((((((3U == (0x7fU & vlSelf->toplevel__DOT__core__DOT__datapath_inst)) 
-                  | (7U == (0x7fU & vlSelf->toplevel__DOT__core__DOT__datapath_inst))) 
-                 | (0x13U == (0x7fU & vlSelf->toplevel__DOT__core__DOT__datapath_inst))) 
-                | (0x67U == (0x7fU & vlSelf->toplevel__DOT__core__DOT__datapath_inst))) 
-               | (0x27U == (0x7fU & vlSelf->toplevel__DOT__core__DOT__datapath_inst))) 
-              | (0x23U == (0x7fU & vlSelf->toplevel__DOT__core__DOT__datapath_inst))) 
-             | (0x63U == (0x7fU & vlSelf->toplevel__DOT__core__DOT__datapath_inst))) 
-            | (0x17U == (0x7fU & vlSelf->toplevel__DOT__core__DOT__datapath_inst)))
-            ? ((3U == (0x7fU & vlSelf->toplevel__DOT__core__DOT__datapath_inst))
-                ? (((- (IData)((vlSelf->toplevel__DOT__core__DOT__datapath_inst 
+        = (((((((((3U == (0x7fU & vlSelf->toplevel__DOT__core_inst)) 
+                  | (7U == (0x7fU & vlSelf->toplevel__DOT__core_inst))) 
+                 | (0x13U == (0x7fU & vlSelf->toplevel__DOT__core_inst))) 
+                | (0x67U == (0x7fU & vlSelf->toplevel__DOT__core_inst))) 
+               | (0x27U == (0x7fU & vlSelf->toplevel__DOT__core_inst))) 
+              | (0x23U == (0x7fU & vlSelf->toplevel__DOT__core_inst))) 
+             | (0x63U == (0x7fU & vlSelf->toplevel__DOT__core_inst))) 
+            | (0x17U == (0x7fU & vlSelf->toplevel__DOT__core_inst)))
+            ? ((3U == (0x7fU & vlSelf->toplevel__DOT__core_inst))
+                ? (((- (IData)((vlSelf->toplevel__DOT__core_inst 
                                 >> 0x1fU))) << 0xbU) 
-                   | (0x7ffU & (vlSelf->toplevel__DOT__core__DOT__datapath_inst 
+                   | (0x7ffU & (vlSelf->toplevel__DOT__core_inst 
                                 >> 0x14U))) : ((7U 
                                                 == 
                                                 (0x7fU 
-                                                 & vlSelf->toplevel__DOT__core__DOT__datapath_inst))
+                                                 & vlSelf->toplevel__DOT__core_inst))
                                                 ? (
                                                    ((- (IData)(
-                                                               (vlSelf->toplevel__DOT__core__DOT__datapath_inst 
+                                                               (vlSelf->toplevel__DOT__core_inst 
                                                                 >> 0x1fU))) 
                                                     << 0xbU) 
                                                    | (0x7ffU 
-                                                      & (vlSelf->toplevel__DOT__core__DOT__datapath_inst 
+                                                      & (vlSelf->toplevel__DOT__core_inst 
                                                          >> 0x14U)))
                                                 : (
                                                    (0x13U 
                                                     == 
                                                     (0x7fU 
-                                                     & vlSelf->toplevel__DOT__core__DOT__datapath_inst))
+                                                     & vlSelf->toplevel__DOT__core_inst))
                                                     ? 
                                                    (((- (IData)(
-                                                                (vlSelf->toplevel__DOT__core__DOT__datapath_inst 
+                                                                (vlSelf->toplevel__DOT__core_inst 
                                                                  >> 0x1fU))) 
                                                      << 0xbU) 
                                                     | (0x7ffU 
-                                                       & (vlSelf->toplevel__DOT__core__DOT__datapath_inst 
+                                                       & (vlSelf->toplevel__DOT__core_inst 
                                                           >> 0x14U)))
                                                     : 
                                                    ((0x67U 
                                                      == 
                                                      (0x7fU 
-                                                      & vlSelf->toplevel__DOT__core__DOT__datapath_inst))
+                                                      & vlSelf->toplevel__DOT__core_inst))
                                                      ? 
                                                     (((- (IData)(
-                                                                 (vlSelf->toplevel__DOT__core__DOT__datapath_inst 
+                                                                 (vlSelf->toplevel__DOT__core_inst 
                                                                   >> 0x1fU))) 
                                                       << 0xbU) 
                                                      | (0x7ffU 
-                                                        & (vlSelf->toplevel__DOT__core__DOT__datapath_inst 
+                                                        & (vlSelf->toplevel__DOT__core_inst 
                                                            >> 0x14U)))
                                                      : 
                                                     ((0x27U 
                                                       == 
                                                       (0x7fU 
-                                                       & vlSelf->toplevel__DOT__core__DOT__datapath_inst))
+                                                       & vlSelf->toplevel__DOT__core_inst))
                                                       ? 
                                                      (((- (IData)(
-                                                                  (vlSelf->toplevel__DOT__core__DOT__datapath_inst 
+                                                                  (vlSelf->toplevel__DOT__core_inst 
                                                                    >> 0x1fU))) 
                                                        << 0xbU) 
                                                       | ((0x7e0U 
-                                                          & (vlSelf->toplevel__DOT__core__DOT__datapath_inst 
+                                                          & (vlSelf->toplevel__DOT__core_inst 
                                                              >> 0x14U)) 
                                                          | (0x1fU 
-                                                            & (vlSelf->toplevel__DOT__core__DOT__datapath_inst 
+                                                            & (vlSelf->toplevel__DOT__core_inst 
                                                                >> 7U))))
                                                       : 
                                                      ((0x23U 
                                                        == 
                                                        (0x7fU 
-                                                        & vlSelf->toplevel__DOT__core__DOT__datapath_inst))
+                                                        & vlSelf->toplevel__DOT__core_inst))
                                                        ? 
                                                       (((- (IData)(
-                                                                   (vlSelf->toplevel__DOT__core__DOT__datapath_inst 
+                                                                   (vlSelf->toplevel__DOT__core_inst 
                                                                     >> 0x1fU))) 
                                                         << 0xbU) 
                                                        | ((0x7e0U 
-                                                           & (vlSelf->toplevel__DOT__core__DOT__datapath_inst 
+                                                           & (vlSelf->toplevel__DOT__core_inst 
                                                               >> 0x14U)) 
                                                           | (0x1fU 
-                                                             & (vlSelf->toplevel__DOT__core__DOT__datapath_inst 
+                                                             & (vlSelf->toplevel__DOT__core_inst 
                                                                 >> 7U))))
                                                        : 
                                                       ((0x63U 
                                                         == 
                                                         (0x7fU 
-                                                         & vlSelf->toplevel__DOT__core__DOT__datapath_inst))
+                                                         & vlSelf->toplevel__DOT__core_inst))
                                                         ? 
                                                        (((- (IData)(
-                                                                    (vlSelf->toplevel__DOT__core__DOT__datapath_inst 
+                                                                    (vlSelf->toplevel__DOT__core_inst 
                                                                      >> 0x1fU))) 
                                                          << 0xcU) 
                                                         | ((0x800U 
-                                                            & (vlSelf->toplevel__DOT__core__DOT__datapath_inst 
+                                                            & (vlSelf->toplevel__DOT__core_inst 
                                                                << 4U)) 
                                                            | ((0x7e0U 
-                                                               & (vlSelf->toplevel__DOT__core__DOT__datapath_inst 
+                                                               & (vlSelf->toplevel__DOT__core_inst 
                                                                   >> 0x14U)) 
                                                               | (0x1eU 
-                                                                 & (vlSelf->toplevel__DOT__core__DOT__datapath_inst 
+                                                                 & (vlSelf->toplevel__DOT__core_inst 
                                                                     >> 7U)))))
                                                         : 
                                                        (0xfffff000U 
-                                                        & vlSelf->toplevel__DOT__core__DOT__datapath_inst))))))))
-            : ((0x37U == (0x7fU & vlSelf->toplevel__DOT__core__DOT__datapath_inst))
-                ? (0xfffff000U & vlSelf->toplevel__DOT__core__DOT__datapath_inst)
-                : ((0x6fU == (0x7fU & vlSelf->toplevel__DOT__core__DOT__datapath_inst))
-                    ? (((- (IData)((vlSelf->toplevel__DOT__core__DOT__datapath_inst 
+                                                        & vlSelf->toplevel__DOT__core_inst))))))))
+            : ((0x37U == (0x7fU & vlSelf->toplevel__DOT__core_inst))
+                ? (0xfffff000U & vlSelf->toplevel__DOT__core_inst)
+                : ((0x6fU == (0x7fU & vlSelf->toplevel__DOT__core_inst))
+                    ? (((- (IData)((vlSelf->toplevel__DOT__core_inst 
                                     >> 0x1fU))) << 0x14U) 
-                       | ((0xff000U & vlSelf->toplevel__DOT__core__DOT__datapath_inst) 
-                          | ((0x800U & (vlSelf->toplevel__DOT__core__DOT__datapath_inst 
+                       | ((0xff000U & vlSelf->toplevel__DOT__core_inst) 
+                          | ((0x800U & (vlSelf->toplevel__DOT__core_inst 
                                         >> 9U)) | (
                                                    (0x7e0U 
-                                                    & (vlSelf->toplevel__DOT__core__DOT__datapath_inst 
+                                                    & (vlSelf->toplevel__DOT__core_inst 
                                                        >> 0x14U)) 
                                                    | (0x1eU 
-                                                      & (vlSelf->toplevel__DOT__core__DOT__datapath_inst 
+                                                      & (vlSelf->toplevel__DOT__core_inst 
                                                          >> 0x14U))))))
                     : 0U)));
     toplevel__DOT__core__DOT__datapath__DOT__igen_immediate 
         = toplevel__DOT__core__DOT__datapath__DOT__igen__DOT__unnamedblk1__DOT__result;
     toplevel__DOT__core__DOT__unnamedblk1__DOT__funct7 
-        = (vlSelf->toplevel__DOT__core__DOT__datapath_inst 
-           >> 0x19U);
+        = (vlSelf->toplevel__DOT__core_inst >> 0x19U);
     toplevel__DOT__core__DOT__ctlpath_inst_funct7 = toplevel__DOT__core__DOT__unnamedblk1__DOT__funct7;
     toplevel__DOT__core__DOT__unnamedblk2__DOT__funct3 
-        = (7U & (vlSelf->toplevel__DOT__core__DOT__datapath_inst 
-                 >> 0xcU));
+        = (7U & (vlSelf->toplevel__DOT__core_inst >> 0xcU));
     toplevel__DOT__core__DOT__dmem_data_format = toplevel__DOT__core__DOT__unnamedblk2__DOT__funct3;
     toplevel__DOT__core__DOT__ctlpath_inst_funct3 = toplevel__DOT__core__DOT__unnamedblk2__DOT__funct3;
     toplevel__DOT__core__DOT__unnamedblk5__DOT__opcode 
-        = (0x7fU & vlSelf->toplevel__DOT__core__DOT__datapath_inst);
+        = (0x7fU & vlSelf->toplevel__DOT__core_inst);
     toplevel__DOT__core__DOT__ctlpath_inst_opcode = toplevel__DOT__core__DOT__unnamedblk5__DOT__opcode;
     toplevel__DOT__core__DOT__datapath__DOT__unnamedblk1__DOT__pc_plus_imm 
         = (vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value 

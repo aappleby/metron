@@ -15,6 +15,10 @@ class data_memory_interface {
 
    logic<32> address2;
 
+   void tock_address(logic<32> address) {
+     address2 = address;
+   }
+
   logic<32> bus_write_data(logic<32> address, logic<32> write_data) const {
     return write_data << (8 * b2(address));
   }

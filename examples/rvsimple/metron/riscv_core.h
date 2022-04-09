@@ -40,12 +40,12 @@ class riscv_core {
     alu_result = datapath.tock_alu_result(alu_function,
                                     ctlpath.alu_operand_a_select(),
                                     ctlpath.alu_operand_b_select());
+    dmem.tock_address(alu_result);
     return alu_result;
   }
 
   void tock(logic<1> reset, logic<32> bus_read_data) {
 
-    dmem.address2 = alu_result;
 
 
     logic<7> opcode = datapath.inst_opcode;

@@ -60,6 +60,8 @@ module riscv_core
     datapath_alu_operand_a_select = ctlpath_alu_operand_a_select;
     datapath_alu_operand_b_select = ctlpath_alu_operand_b_select;
     alu_result = datapath_tock_alu_result;
+    dmem_address = alu_result;
+    /*dmem.tock_address(alu_result)*/;
     tock_alu_result = alu_result;
   end
 
@@ -72,7 +74,6 @@ module riscv_core
     logic[1:0] pc_select;
     logic pc_we;
 
-    dmem_address2 = alu_result;
 
 
     opcode = datapath_inst_opcode;
@@ -210,21 +211,21 @@ module riscv_core
   data_memory_interface dmem(
      // Inputs
      .clock(clock),
-     .address2(dmem_address2), 
      .address(dmem_address), 
      .write_data(dmem_write_data), 
      .data_format(dmem_data_format), 
      .bus_read_data(dmem_bus_read_data), 
      // Outputs
+     .address2(dmem_address2), 
      .bus_write_data(dmem_bus_write_data), 
      .bus_byte_enable(dmem_bus_byte_enable), 
      .read_data(dmem_read_data)
    );
-   logic[31:0] dmem_address2;
    logic[31:0] dmem_address;
    logic[31:0] dmem_write_data;
    logic[2:0] dmem_data_format;
    logic[31:0] dmem_bus_read_data;
+   logic[31:0] dmem_address2;
    logic[31:0] dmem_bus_write_data;
    logic[3:0] dmem_bus_byte_enable;
    logic[31:0] dmem_read_data;

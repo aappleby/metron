@@ -261,20 +261,17 @@ CHECK_RETURN Err MtCursor::emit_assignment(MnAssignmentExpr n) {
   auto lhs = n.lhs();
   auto rhs = n.rhs();
 
-  bool lhs_is_reg1 = false;
-
-  std::string lhs_name = lhs.name4();
-
-  auto lhs_field = current_mod->get_field(lhs_name);
-  if (lhs_field) {
-    lhs_is_reg1 = (lhs_field->state == FIELD_RD_WR_L) || (lhs_field->state == FIELD____WR_L);
-  }
-
   err |= emit_dispatch(lhs);
   err |= emit_ws();
 
-  if (current_method->is_tick && lhs_is_reg1) {
-    err |= emit_printf("<");
+  if (current_method->is_tick) {
+    auto lhs_field = current_mod->get_field(lhs.name4());
+    if (lhs_field) {
+      bool lhs_is_reg1 = (lhs_field->state == FIELD_RD_WR_L) || (lhs_field->state == FIELD____WR_L);
+      if (lhs_is_reg1) {
+        err |= emit_printf("<");
+      }
+    }
   }
   err |= emit_text(n.op());
 

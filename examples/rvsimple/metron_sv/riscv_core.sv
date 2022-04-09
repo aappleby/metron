@@ -16,10 +16,9 @@
 module riscv_core
 (
    input logic clock,
-   input logic[31:0] _inst,
+   input logic[31:0] inst,
    input logic reset,
    input logic[31:0] bus_read_data,
-   output logic[31:0] inst,
    output logic[31:0] alu_result,
    output logic[31:0] pc,
    output logic[31:0] tock_alu_result,
@@ -32,12 +31,13 @@ module riscv_core
 
    /*logic<32> inst;*/
    /*logic<32> alu_result;*/
+   /*logic<1> reset;*/
+   /*logic<32> bus_read_data;*/
 
   always_comb begin pc = datapath_pc; end
 
   always_comb begin /*tock_inst*/
-    inst = _inst;
-    datapath_inst = _inst;
+    datapath_inst = inst;
     /*datapath.tock_inst()*/;
   end
 

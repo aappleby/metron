@@ -30,7 +30,8 @@ class toplevel {
     logic<32> pc           = core.pc();
     logic<32> inst         = text_memory_bus.read_data(pc);
 
-    core.tock_inst(inst);
+    core.inst = inst;
+    core.tock_inst();
 
     logic<32> alu_result2  = core.tock_alu_result();
     data_memory_bus.address = alu_result2;
@@ -52,7 +53,10 @@ class toplevel {
     o_pc = pc;
 
     data_memory_bus.tock(write_enable, byte_enable, write_data);
-    core.tock(reset, read_data);
+
+    core.reset = reset;
+    core.bus_read_data = read_data;
+    core.tock();
   }
 
   //----------------------------------------

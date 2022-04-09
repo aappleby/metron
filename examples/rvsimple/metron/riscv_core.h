@@ -18,12 +18,13 @@ class riscv_core {
 
    logic<32> inst;
    logic<32> alu_result;
+   logic<1> reset;
+   logic<32> bus_read_data;
 
   logic<32> pc() const { return datapath.pc(); }
 
-  void tock_inst(logic<32> _inst) {
-    inst = _inst;
-    datapath.inst = _inst;
+  void tock_inst() {
+    datapath.inst = inst;
     datapath.tock_inst();
   }
 
@@ -47,7 +48,7 @@ class riscv_core {
     return alu_result;
   }
 
-  void tock(logic<1> reset, logic<32> bus_read_data) {
+  void tock() {
 
 
 

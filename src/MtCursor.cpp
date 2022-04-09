@@ -1213,7 +1213,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
 
   int port_count = int(
     submod_mod->input_signals.size() +
-    submod_mod->input_params.size() +
+    submod_mod->input_arguments.size() +
     submod_mod->output_signals.size() + 
     submod_mod->output_registers.size() + 
     submod_mod->output_returns.size()
@@ -1237,7 +1237,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
     }
   }
 
-  for (auto n : submod_mod->input_params) {
+  for (auto n : submod_mod->input_arguments) {
     auto key = inst_name + "." + n->name();
 
     err << emit_newline();
@@ -1307,7 +1307,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
 CHECK_RETURN Err MtCursor::emit_output_ports(MnFieldDecl submod) {
   Err err;
 
-  if (current_mod->submods.empty()) {
+  if (current_mod->all_submods.empty()) {
     return err;
   }
 
@@ -1354,7 +1354,7 @@ CHECK_RETURN Err MtCursor::emit_output_ports(MnFieldDecl submod) {
     err << emit_newline();
   }
 
-  for (auto n : submod_mod->input_params) {
+  for (auto n : submod_mod->input_arguments) {
     // field_declaration
     auto output_type = n->get_type_node();
     auto output_decl = n->get_decl_node();
@@ -1595,7 +1595,7 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
 
     int port_count = int(
       current_mod->input_signals.size() +
-      current_mod->input_params.size() +
+      current_mod->input_arguments.size() +
       current_mod->output_signals.size() +
       current_mod->output_registers.size() +
       current_mod->output_returns.size()
@@ -1629,7 +1629,7 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
       err << emit_newline();
     }
 
-    for (auto input : current_mod->input_params) {
+    for (auto input : current_mod->input_arguments) {
       err << emit_indent();
       err << emit_printf("input ");
 

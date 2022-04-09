@@ -15,6 +15,9 @@ extern "C" {
 extern const TSLanguage *tree_sitter_cpp();
 }
 
+FieldState merge_delta(FieldState a, FieldDelta b);
+CHECK_RETURN Err merge_series(state_map& ma, state_map& mb, state_map& out);
+
 //------------------------------------------------------------------------------
 
 bool MtField::is_submod() const {
@@ -111,7 +114,7 @@ MtField *MtModule::get_input_field(const std::string &name) {
 }
 
 MtParam *MtModule::get_input_param(const std::string &name) {
-  for (auto p : input_params)
+  for (auto p : input_arguments)
     if (p->name() == name) return p;
   return nullptr;
 }
@@ -135,7 +138,7 @@ MtMethod *MtModule::get_output_return(const std::string &name) {
 }
 
 MtField *MtModule::get_submod(const std::string &name) {
-  for (auto n : submods) {
+  for (auto n : all_submods) {
     if (n->name() == name) return n;
   }
   return nullptr;
@@ -200,7 +203,7 @@ void MtModule::dump_banner() const {
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
   
   LOG_B("Input Params:\n");
-  for (auto n : input_params)
+  for (auto n : input_arguments)
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
   
   LOG_B("Output Signals:\n");
@@ -222,7 +225,7 @@ void MtModule::dump_banner() const {
   */
   
   LOG_B("Submods:\n");
-  for (auto submod : submods) {
+  for (auto submod : all_submods) {
     auto submod_mod = source_file->lib->get_module(submod->type_name());
     LOG_G("  %s:%s\n", submod->name().c_str(), submod_mod->mod_name.c_str());
   }
@@ -322,7 +325,7 @@ void MtModule::dump_deltas() const {
 CHECK_RETURN Err MtModule::load_pass1() {
   Err error;
 
-  error |= collect_params();
+  error |= collect_modparams();
   error |= collect_methods();
   error |= collect_field_and_submods();
 
@@ -373,10 +376,9 @@ CHECK_RETURN Err MtModule::load_pass1() {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtModule::collect_params() {
+CHECK_RETURN Err MtModule::collect_modparams() {
   Err error;
 
-  // modparam = struct template parameter
   if (mod_template) {
     auto params = mod_template.get_field(field_parameters);
 
@@ -392,17 +394,6 @@ CHECK_RETURN Err MtModule::collect_params() {
     }
   }
 
-  // localparam = static const int
-  assert(localparams.empty());
-  auto mod_body = mod_class.get_field(field_body).check_null();
-  for (const auto& n : mod_body) {
-    if (n.sym != sym_field_declaration) continue;
-
-    if (n.is_static() && n.is_const()) {
-      localparams.push_back(MtParam::construct(n));
-    }
-  }
-
   return error;
 }
 
@@ -412,11 +403,12 @@ CHECK_RETURN Err MtModule::collect_field_and_submods() {
   Err error;
 
   assert(all_fields.empty());
-  assert(submods.empty());
-
+  assert(all_submods.empty());
+  assert(localparams.empty());
 
   auto mod_body = mod_class.get_field(field_body).check_null();
   bool in_public = false;
+
 
   for (const auto& n : mod_body) {
     if (n.sym == sym_access_specifier) {
@@ -432,10 +424,11 @@ CHECK_RETURN Err MtModule::collect_field_and_submods() {
 
     auto new_field = MtField::construct(n, in_public);
 
-    all_fields.push_back(new_field);
-
-    if (source_file->lib->has_module(new_field->type_name())) {
-      submods.push_back(new_field);
+    if (new_field->is_submod()) {
+      all_submods.push_back(new_field);
+    }
+    else {
+      all_fields.push_back(new_field);
     }
   }
 
@@ -561,9 +554,6 @@ CHECK_RETURN Err MtModule::collect_methods() {
 
 //------------------------------------------------------------------------------
 
-FieldState merge_delta(FieldState a, FieldDelta b);
-CHECK_RETURN Err merge_series(state_map& ma, state_map& mb, state_map& out);
-
 CHECK_RETURN Err MtModule::trace() {
   Err error;
   LOG_G("Tracing %s\n", name().c_str());
@@ -688,14 +678,30 @@ CHECK_RETURN Err MtModule::trace() {
 }
 
 //------------------------------------------------------------------------------
+// All modules have populated their fields, match up tick/tock calls with their
+// corresponding methods.
+
+CHECK_RETURN Err MtModule::load_pass2() {
+  Err error;
+  assert (!mod_class.is_null());
+
+  error |= collect_input_arguments();
+  error |= categorize_fields();
+
+  error |= build_port_map();
+  error |= sanity_check();
+  return error;
+}
+
+//------------------------------------------------------------------------------
 // Collect all inputs to all tock and getter methods and merge them into a list
 // of input ports. Input ports can be declared in multiple tick/tock methods,
 // but we don't want duplicates in the Verilog port list.
 
-CHECK_RETURN Err MtModule::collect_input_params() {
+CHECK_RETURN Err MtModule::collect_input_arguments() {
   Err error;
 
-  assert(input_params.empty());
+  assert(input_arguments.empty());
 
   std::set<std::string> dedup;
 
@@ -714,7 +720,7 @@ CHECK_RETURN Err MtModule::collect_input_params() {
         dedup.insert(new_input->name());
         */
         MtParam* new_input = MtParam::construct(param);
-        input_params.push_back(new_input);
+        input_arguments.push_back(new_input);
         dedup.insert(new_input->name());
       }
     }
@@ -728,6 +734,7 @@ CHECK_RETURN Err MtModule::collect_input_params() {
 CHECK_RETURN Err MtModule::categorize_fields() {
   Err error;
 
+  assert(localparams.empty());
   assert(input_signals.empty());
   assert(output_signals.empty());
   assert(output_registers.empty());
@@ -736,11 +743,9 @@ CHECK_RETURN Err MtModule::categorize_fields() {
   std::set<std::string> dedup;
 
   for (auto f : all_fields) {
+
     if (f->is_param()) {
-      continue;
-    }
-    else if (f->is_submod()) {
-      continue;
+      localparams.push_back(MtParam::construct(f->node));
     }
     else if (f->is_public()) {
       if (f->state == FIELD_RD_____) {
@@ -788,46 +793,6 @@ CHECK_RETURN Err MtModule::categorize_fields() {
     }
   }
 
-  return error;
-}
-
-//------------------------------------------------------------------------------
-// All fields written to in a tick method are registers.
-
-/*
-CHECK_RETURN Err MtModule::collect_registers() {
-  Err error;
-
-  assert(registers.empty());
-
-  for (auto f : all_fields) {
-    if (f->is_public() && !f->is_submod() && !f->is_param()) {
-      if (f->state == FIELD____WR__ ||
-          f->state == FIELD____WR_L ||
-          f->state == FIELD_RD_WR__ ||
-          f->state == FIELD_RD_WR_L) {
-        registers.push_back(f);
-      }
-    }
-  }
-
-  return error;
-}
-*/
-
-//------------------------------------------------------------------------------
-// All modules have populated their fields, match up tick/tock calls with their
-// corresponding methods.
-
-CHECK_RETURN Err MtModule::load_pass2() {
-  Err error;
-  assert (!mod_class.is_null());
-
-  error |= collect_input_params();
-  error |= categorize_fields();
-
-  error |= build_port_map();
-  error |= sanity_check();
   return error;
 }
 
@@ -930,7 +895,7 @@ CHECK_RETURN Err MtModule::build_port_map() {
 
   // Verify that all input ports of all submods are bound.
 
-  for (const auto& submod : submods) {
+  for (const auto& submod : all_submods) {
     auto submod_mod = source_file->lib->get_module(submod->type_name());
 
     for (int i = 0; i < submod_mod->input_signals.size(); i++) {
@@ -942,8 +907,8 @@ CHECK_RETURN Err MtModule::build_port_map() {
       }
     }
 
-    for (int i = 0; i < submod_mod->input_params.size(); i++) {
-      auto key = submod->name() + "." + submod_mod->input_params[i]->name();
+    for (int i = 0; i < submod_mod->input_arguments.size(); i++) {
+      auto key = submod->name() + "." + submod_mod->input_arguments[i]->name();
 
       if (!port_map.contains(key)) {
         LOG_R("No input bound to submod port %s\n", key.c_str());
@@ -973,7 +938,7 @@ CHECK_RETURN Err MtModule::sanity_check() {
     }
   }
 
-  for (auto n : input_params) {
+  for (auto n : input_arguments) {
     if (field_names.contains(n->name())) {
       LOG_R("Duplicate input name %s\n", n->name().c_str());
       error = true;
@@ -1011,7 +976,7 @@ CHECK_RETURN Err MtModule::sanity_check() {
   }
   */
 
-  for (auto n : submods) {
+  for (auto n : all_submods) {
     if (field_names.contains(n->name())) {
       LOG_R("Duplicate submod name %s\n", n->name().c_str());
       error = true;

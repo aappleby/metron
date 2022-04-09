@@ -157,9 +157,9 @@ int main(int argc, char** argv) {
         if (rank) LOG_Y("|--");
       }
       LOG_Y("%s\n", m->name().c_str());
-      auto submod_count = m->submods.size();
+      auto submod_count = m->all_submods.size();
       for (auto i = 0; i < submod_count; i++) {
-        auto s = m->submods[i];
+        auto s = m->all_submods[i];
         step(library.get_module(s->type_name()), rank + 1, i == submod_count - 1);
       }
     };

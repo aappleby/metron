@@ -139,7 +139,7 @@ bool MtModLibrary::process_sources() {
   // Hook up child->parent module pointers
 
   for (auto m : modules) {
-    for (auto s : m->submods) {
+    for (auto s : m->all_submods) {
       get_module(s->type_name())->parents.push_back(m);
     }
   }

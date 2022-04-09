@@ -30,17 +30,15 @@ struct MtField {
   MnNode get_decl_node() const { return node.get_field(field_declarator); }
 
   FieldState state;
+  MnNode node;
+  std::string _name;
+  bool _public = false;
 
 private:
   MtField(const MnNode& n, bool is_public) : _public(is_public), node(n) {
     assert(node.sym == sym_field_declaration || node.sym == sym_parameter_declaration);
     _name = node.name4();
   }
-
-  std::string _name;
-
-  MnNode node;
-  bool _public = false;
 };
 
 //------------------------------------------------------------------------------
@@ -150,10 +148,10 @@ struct MtModule {
   void dump_banner() const;
   //void dump_deltas() const;
 
-  CHECK_RETURN Err collect_params();
+  CHECK_RETURN Err collect_modparams();
   CHECK_RETURN Err collect_field_and_submods();
   CHECK_RETURN Err collect_methods();
-  CHECK_RETURN Err collect_input_params();
+  CHECK_RETURN Err collect_input_arguments();
 
   CHECK_RETURN Err categorize_fields();
 
@@ -201,23 +199,26 @@ struct MtModule {
 
   std::vector<MtModule*> parents;
 
-  MnClassSpecifier mod_class;
-  MnTemplateDecl mod_template;
+  MnClassSpecifier    mod_class;
+  MnTemplateDecl      mod_template;
   MnTemplateParamList mod_param_list;
 
+  //----------
   // populated by load_pass1
 
-  std::vector<MtParam*> modparams;
-  std::vector<MtParam*> localparams; // FIXME not actually doing anything with this yet?
-  std::vector<MtField*> all_fields;
+  std::vector<MtField*>  all_fields;
   std::vector<MtMethod*> all_methods;
+  std::vector<MtField*>  all_submods;
 
+  //----------
   // populated by load_pass2
 
-  std::vector<MtEnum*> enums;
+  std::vector<MtParam*>  modparams;
+  std::vector<MtParam*>  localparams; // FIXME not actually doing anything with this yet?
+  std::vector<MtEnum*>   enums;
 
   std::vector<MtField*>  input_signals;
-  std::vector<MtParam*>  input_params;
+  std::vector<MtParam*>  input_arguments;
 
   std::vector<MtField*>  output_signals;
   std::vector<MtField*>  output_registers;
@@ -226,7 +227,7 @@ struct MtModule {
   std::vector<MtField*>  private_signals;
   std::vector<MtField*>  private_registers;
 
-  std::vector<MtField*>  submods;
+  //----------
 
   std::vector<MtMethod*> init_methods;
   std::vector<MtMethod*> tick_methods;

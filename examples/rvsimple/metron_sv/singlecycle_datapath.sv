@@ -67,16 +67,12 @@ module singlecycle_datapath
 
   always_comb begin /*tock_inst*/
     idec_inst = inst;
+
     inst_opcode    = idec_inst_opcode;
-    idec_inst = inst;
     inst_funct3    = idec_inst_funct3;
-    idec_inst = inst;
     inst_funct7    = idec_inst_funct7;
-    idec_inst = inst;
     inst_rd        = idec_inst_rd;
-    idec_inst = inst;
     inst_rs1       = idec_inst_rs1;
-    idec_inst = inst;
     inst_rs2       = idec_inst_rs2;
     igen_inst = inst;
     inst_immediate = igen_immediate;

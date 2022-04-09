@@ -12,16 +12,18 @@
 
 module instruction_decoder
 (
-  input logic clock,
-  input logic[31:0] inst,
-  output logic[6:0] inst_opcode,
-  output logic[2:0] inst_funct3,
-  output logic[6:0] inst_funct7,
-  output logic[4:0] inst_rd,
-  output logic[4:0] inst_rs1,
-  output logic[4:0] inst_rs2
+   input logic clock,
+   input logic[31:0] inst,
+   output logic[6:0] inst_opcode,
+   output logic[2:0] inst_funct3,
+   output logic[6:0] inst_funct7,
+   output logic[4:0] inst_rd,
+   output logic[4:0] inst_rs1,
+   output logic[4:0] inst_rs2
 );
  /*public:*/
+   /*logic<32> inst;*/
+
   always_comb begin inst_opcode = inst[6:0]; end
   always_comb begin inst_funct3 = inst[14:12]; end
   always_comb begin inst_funct7 = inst[31:25]; end

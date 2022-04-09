@@ -41,12 +41,14 @@ class singlecycle_datapath {
   logic<32> inst_immediate;
 
   void tock_inst(logic<32> inst) {
-    inst_opcode    = idec.inst_opcode(inst);
-    inst_funct3    = idec.inst_funct3(inst);
-    inst_funct7    = idec.inst_funct7(inst);
-    inst_rd        = idec.inst_rd(inst);
-    inst_rs1       = idec.inst_rs1(inst);
-    inst_rs2       = idec.inst_rs2(inst);
+    idec.inst = inst;
+
+    inst_opcode    = idec.inst_opcode();
+    inst_funct3    = idec.inst_funct3();
+    inst_funct7    = idec.inst_funct7();
+    inst_rd        = idec.inst_rd();
+    inst_rs1       = idec.inst_rs1();
+    inst_rs2       = idec.inst_rs2();
     inst_immediate = igen.immediate(inst);
   }
 

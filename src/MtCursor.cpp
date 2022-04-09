@@ -1218,26 +1218,6 @@ CHECK_RETURN Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
     submod_mod->output_returns.size()
    );
 
-  for (auto m : submod_mod->all_methods)
-    if (m->is_public && m->has_return) port_count++;
-
-
-  /*
-  int port_count1 = int(submod_mod->inputs.size() + submod_mod->outputs.size());
-  int port_count2 = 0;
-  for (auto f : submod_mod->all_fields) {
-    if (f->is_public()) port_count2++;
-  }
-
-  if (port_count1 != port_count2) {
-    n.dump_tree();
-    debugbreak();
-  }
-
-  int port_count = port_count1;
-  */
-
-
   if (port_count) {
     err << emit_printf(",");
   }
@@ -1289,19 +1269,6 @@ CHECK_RETURN Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
 
     if (port_index++ < port_count - 1) {
       err << emit_printf(", ");
-    }
-  }
-
-  for (auto m : submod_mod->all_methods) {
-    if (m->is_public && m->has_return) {
-      err << emit_newline();
-      err << emit_indent();
-      err << emit_printf(".%s(%s_%s)", m->name().c_str(), inst_name.c_str(),
-           m->name().c_str());
-
-      if (port_index++ < port_count - 1) {
-        err << emit_printf(", ");
-      }
     }
   }
 
@@ -1416,29 +1383,7 @@ CHECK_RETURN Err MtCursor::emit_output_ports(MnFieldDecl submod) {
     err << emit_newline();
   }
 
-  for (auto n : submod_mod->output_returns) {
-    // field_declaration
-    auto output_type = n->get_type_node();
-    auto output_decl = n->get_decl_node();
-
-    MtCursor subcursor(lib, submod_mod->source_file, str_out);
-    subcursor.echo = echo;
-    subcursor.in_ports = true;
-    subcursor.id_replacements = replacements;
-    subcursor.cursor = output_type.start();
-
-    err << emit_indent();
-    err << subcursor.emit_dispatch(output_type);
-    err << subcursor.emit_ws();
-    err << emit_printf("%s_", submod_decl.text().c_str());
-    err << subcursor.emit_dispatch(output_decl);
-    err << emit_printf(";");
-    err << emit_newline();
-  }
-
-  for (auto m : submod_mod->all_methods) {
-    if (!m->is_public || !m->has_return) continue;
-
+  for (auto m : submod_mod->output_returns) {
     auto getter_type = m->node.get_field(field_type);
     auto getter_decl = m->node.get_field(field_declarator);
     auto getter_name = getter_decl.get_field(field_declarator);
@@ -1616,9 +1561,7 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
       current_mod->input_params.size() +
       current_mod->output_fields.size() +
       current_mod->output_returns.size()
-      );
-    for (auto m : current_mod->all_methods)
-      if (m->is_public && m->has_return) port_count++;
+    );
 
     int port_index = 0;
 
@@ -1686,28 +1629,7 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
       err << emit_newline();
     }
 
-    for (auto output : current_mod->output_returns) {
-      err << emit_indent();
-      err << emit_printf("output ");
-
-      auto node_type = output->get_type_node();  // type
-      auto node_decl = output->get_decl_node();  // decl
-
-      MtCursor sub_cursor = *this;
-      sub_cursor.cursor = node_type.start();
-      err << sub_cursor.emit_dispatch(node_type);
-      err << sub_cursor.emit_ws();
-      err << sub_cursor.emit_dispatch(node_decl);
-
-      if (port_index++ < port_count - 1) {
-        err << emit_printf(",");
-      }
-      err << emit_newline();
-    }
-
-    for (auto m : current_mod->all_methods) {
-      if (!m->is_public || !m->has_return) continue;
-
+    for (auto m : current_mod->output_returns) {
       err << emit_indent();
       err << emit_printf("output ");
 

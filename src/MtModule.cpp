@@ -122,7 +122,7 @@ MtField *MtModule::get_output_field(const std::string &name) {
   return nullptr;
 }
 
-MtField *MtModule::get_output_return(const std::string &name) {
+MtMethod *MtModule::get_output_return(const std::string &name) {
   for (auto n : output_returns)
     if (n->name() == name) return n;
   return nullptr;
@@ -202,7 +202,7 @@ void MtModule::dump_banner() const {
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
   LOG_B("Output Returns:\n");
   for (auto n : output_returns)
-    LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
+    LOG_G("  %s:%s\n", n->name().c_str(), n->node.get_field(field_type).text().c_str());
   LOG_B("Regs:\n");
   for (auto n : registers)
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
@@ -740,6 +740,39 @@ CHECK_RETURN Err MtModule::collect_output_fields() {
       }
     }
   }
+
+  for (auto m : all_methods) {
+    if (m->is_public && m->has_return) {
+      output_returns.push_back(m);
+    }
+  }
+
+
+  /*
+  for (auto m : submod_mod->all_methods) {
+    if (!m->is_public || !m->has_return) continue;
+
+    auto getter_type = m->node.get_field(field_type);
+    auto getter_decl = m->node.get_field(field_declarator);
+    auto getter_name = getter_decl.get_field(field_declarator);
+
+    MtCursor sub_cursor(lib, submod_mod->source_file, str_out);
+    sub_cursor.echo = echo;
+    sub_cursor.in_ports = true;
+    sub_cursor.id_replacements = replacements;
+
+    sub_cursor.cursor = getter_type.start();
+
+    err << emit_indent();
+    err << sub_cursor.skip_ws();
+    err << sub_cursor.emit_dispatch(getter_type);
+    err << sub_cursor.emit_ws();
+    err << emit_printf("%s_", submod_decl.text().c_str());
+    err << sub_cursor.emit_dispatch(getter_name);
+    err << emit_printf(";");
+    err << emit_newline();
+  }
+  */
 
   return error;
 }

@@ -22,7 +22,6 @@ VL_MODULE(Vtoplevel___024root) {
     CData/*0:0*/ toplevel__DOT__core__DOT__datapath_regfile_write_enable;
     CData/*0:0*/ toplevel__DOT__core__DOT__datapath_pc_write_enable;
     CData/*0:0*/ __Vclklast__TOP__clock;
-    SData/*14:0*/ toplevel__DOT__data_memory_bus__DOT__data_memory_address;
     VL_OUT(o_bus_read_data,31,0);
     VL_OUT(o_bus_address,31,0);
     VL_OUT(o_bus_write_data,31,0);

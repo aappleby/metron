@@ -29,12 +29,14 @@ module example_data_memory
     $readmemh(s, mem);
   end
 
+  /*logic<DATA_BITS - 2> address;*/
+
   always_comb begin
     q = mem[address];
   end
 
   always_comb begin /*tock*/
-    /*tick(address, wren, byteena, data)*/;
+    /*tick(wren, byteena, data)*/;
   end
 
 /*private:*/

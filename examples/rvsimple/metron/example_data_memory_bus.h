@@ -16,15 +16,17 @@ class example_data_memory_bus {
 
    logic<32> address;
 
-  logic<32> read_data(logic<1> read_enable) const {
-    logic<32> fetched = data_memory.q(bx<DATA_BITS - 2>(address, 2));
+  logic<32> tock_q(logic<1> read_enable) {
+
+    data_memory.address = bx<DATA_BITS - 2>(address, 2);
+
+    logic<32> fetched = data_memory.q();
     logic<1> is_data_memory = address >= DATA_BEGIN && DATA_END >= address;
     return read_enable && is_data_memory ? fetched : b32(DONTCARE);
   }
 
   void tock(logic<1> write_enable, logic<4> byte_enable, logic<32> write_data) {
     data_memory.tock(
-        bx<DATA_BITS - 2>(address, 2),
         b1(write_enable && address >= DATA_BEGIN && DATA_END >= address),
         byte_enable, write_data);
   }

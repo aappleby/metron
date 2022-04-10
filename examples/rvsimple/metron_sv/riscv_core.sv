@@ -22,9 +22,9 @@ module riscv_core
    output logic[31:0] alu_result,
    output logic[31:0] bus_write_data,
    output logic[31:0] pc,
-   output logic bus_read_enable2,
    output logic bus_write_enable2,
-   output logic[3:0] bus_byte_enable2
+   output logic[3:0] bus_byte_enable2,
+   output logic bus_read_enable2
 );
  /*public:*/
 
@@ -93,11 +93,13 @@ module riscv_core
     bus_write_data = dmem_bus_write_data;
   end
 
-  always_comb begin
+  /*logic<1> bus_write_enable2;*/
+  always_comb begin /*tock_bus_write_enable2*/
     bus_write_enable2 = ctlpath_data_mem_write_enable;
   end
 
-  always_comb begin
+  /*logic<4> bus_byte_enable2;*/
+  always_comb begin /*tock_bus_byte_enable2*/
     logic[2:0] funct3;
     funct3 = datapath_inst_funct3;
     bus_byte_enable2 = dmem_bus_byte_enable;

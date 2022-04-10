@@ -17,8 +17,8 @@ VL_MODULE(Vtoplevel___024root) {
     VL_OUT8(o_bus_byte_enable,3,0);
     VL_OUT8(o_bus_read_enable,0,0);
     VL_OUT8(o_bus_write_enable,0,0);
-    CData/*0:0*/ toplevel__DOT__data_memory_bus_write_enable;
-    CData/*3:0*/ toplevel__DOT__data_memory_bus_byte_enable;
+    CData/*6:0*/ toplevel__DOT__core__DOT__ctlpath_inst_opcode;
+    CData/*3:0*/ toplevel__DOT__core__DOT__dmem_bus_byte_enable;
     CData/*0:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__control_regfile_write_enable;
     CData/*0:0*/ __Vclklast__TOP__clock;
     VL_OUT(o_bus_read_data,31,0);
@@ -26,9 +26,9 @@ VL_MODULE(Vtoplevel___024root) {
     VL_OUT(o_bus_write_data,31,0);
     VL_OUT(o_inst,31,0);
     VL_OUT(o_pc,31,0);
+    IData/*31:0*/ toplevel__DOT__core_alu_result;
     IData/*31:0*/ toplevel__DOT__text_memory_bus_read_data;
-    IData/*31:0*/ toplevel__DOT__data_memory_bus_address;
-    IData/*31:0*/ toplevel__DOT__data_memory_bus_write_data;
+    IData/*31:0*/ toplevel__DOT__core__DOT__dmem_bus_write_data;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__program_counter_next;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__regs_rd_data;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value;

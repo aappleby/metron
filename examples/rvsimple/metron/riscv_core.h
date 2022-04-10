@@ -78,13 +78,15 @@ class riscv_core {
     bus_write_data = dmem.bus_write_data();
   }
 
-  logic<1> bus_write_enable2() const {
-    return ctlpath.data_mem_write_enable();
+  logic<1> bus_write_enable2;
+  void tock_bus_write_enable2() {
+    bus_write_enable2 = ctlpath.data_mem_write_enable();
   }
 
-  logic<4> bus_byte_enable2() const {
+  logic<4> bus_byte_enable2;
+  void tock_bus_byte_enable2() {
     logic<3> funct3 = datapath.inst_funct3;
-    return dmem.bus_byte_enable();
+    bus_byte_enable2 = dmem.bus_byte_enable();
   }
 
   logic<1> bus_read_enable2;

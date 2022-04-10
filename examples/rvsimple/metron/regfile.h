@@ -12,37 +12,33 @@
 
 class regfile {
  public:
-  // Register x0 is always 0
-  regfile() { regs[0] = b32(0); }
-
-  logic<5> rs1_address;
-  logic<5> rs2_address;
-
-  logic<32> rs1_data;
-  logic<32> rs2_data;
   logic<1> write_enable;
   logic<5> rd_address;
+  logic<5> rs1_address;
+  logic<5> rs2_address;
   logic<32> rd_data;
-
-  void tock1() {
-    rs1_data = regs[rs1_address];
-    rs2_data = regs[rs2_address];
-  }
-
-  void tock2() {
-    tick();
-  }
+  logic<32> rs1_data;
+  logic<32> rs2_data;
 
  private:
-  void tick() {
-    // Write port for rd
-    if (write_enable && rd_address != b5(0)) {
-      regs[rd_address] = rd_data;
-    }
+  // 32 registers of 32-bit width
+  logic<32> _register[32];
+
+ public:
+  // Read ports for rs1 and rs1
+  void tock1() {
+    rs1_data = _register[rs1_address];
+    rs2_data = _register[rs2_address];
   }
 
-  // 32 registers of 32-bit width
-  logic<32> regs[32];
+  // Register x0 is always 0
+  regfile() { _register[0] = b32(0b0); }
+
+  // Write port for rd
+  void tick() {
+    if (write_enable)
+      if (rd_address != b5(0b0)) _register[rd_address] = rd_data;
+  }
 };
 
 #endif  // RVSIMPLE_REGFILE_H

@@ -185,7 +185,7 @@ module singlecycle_datapath
   always_comb begin /*tock_reg_writeback*/
     regs_write_enable = regfile_write_enable;
     regs_rd_data = mux_reg_writeback_out;
-    /*regs.tock2()*/;
+    /*regs.tick()*/;
   end
 
   //----------------------------------------
@@ -320,19 +320,19 @@ module singlecycle_datapath
   regfile regs(
     // Inputs
     .clock(clock),
-    .rs1_address(regs_rs1_address), 
-    .rs2_address(regs_rs2_address), 
     .write_enable(regs_write_enable), 
     .rd_address(regs_rd_address), 
+    .rs1_address(regs_rs1_address), 
+    .rs2_address(regs_rs2_address), 
     .rd_data(regs_rd_data), 
     // Outputs
     .rs1_data(regs_rs1_data), 
     .rs2_data(regs_rs2_data)
   );
-  logic[4:0] regs_rs1_address;
-  logic[4:0] regs_rs2_address;
   logic regs_write_enable;
   logic[4:0] regs_rd_address;
+  logic[4:0] regs_rs1_address;
+  logic[4:0] regs_rs2_address;
   logic[31:0] regs_rd_data;
   logic[31:0] regs_rs1_data;
   logic[31:0] regs_rs2_data;

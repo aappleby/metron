@@ -186,7 +186,7 @@ public:
   void tock_reg_writeback() {
     regs.write_enable = regfile_write_enable;
     regs.rd_data = mux_reg_writeback.out;
-    regs.tock2();
+    regs.tick();
   }
 
   //----------------------------------------

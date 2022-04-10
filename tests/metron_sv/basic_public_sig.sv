@@ -7,12 +7,10 @@ module Module
   input logic clock,
   output logic my_sig
 );
-/*public:*/
 
   always_comb begin /*tock*/
     my_sig = 1;
   end
 
-  /*logic<1> my_sig;*/
 endmodule
 

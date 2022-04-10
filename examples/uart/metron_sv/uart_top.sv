@@ -1,4 +1,3 @@
-
 `include "metron_tools.sv"
 `include "uart_hello.sv"
 `include "uart_rx.sv"
@@ -17,7 +16,6 @@ module uart_top
   output logic  o_done,
   output logic[31:0] o_sum
 );
- /*public:*/
   initial begin /*uart_top*/
     $write("uart_top.init()\n");
   end
@@ -33,6 +31,7 @@ module uart_top
   always_comb begin /*tock*/
     logic[7:0] hello_data;
     logic hello_req;
+
     hello_data = hello_o_data;
     hello_req = hello_o_req;
 
@@ -51,16 +50,15 @@ module uart_top
 
   //----------------------------------------
 
- /*private:*/
   uart_hello #(repeat_msg) hello(
     // Inputs
     .clock(clock),
-    .i_rstn(hello_i_rstn), 
-    .i_cts(hello_i_cts), 
-    .i_idle(hello_i_idle), 
+    .i_rstn(hello_i_rstn),
+    .i_cts(hello_i_cts),
+    .i_idle(hello_i_idle),
     // Outputs
-    .o_data(hello_o_data), 
-    .o_req(hello_o_req), 
+    .o_data(hello_o_data),
+    .o_req(hello_o_req),
     .o_done(hello_o_done)
   );
   logic hello_i_rstn;
@@ -73,12 +71,12 @@ module uart_top
   uart_tx #(cycles_per_bit) tx(
     // Inputs
     .clock(clock),
-    .i_rstn(tx_i_rstn), 
-    .i_data(tx_i_data), 
-    .i_req(tx_i_req), 
+    .i_rstn(tx_i_rstn),
+    .i_data(tx_i_data),
+    .i_req(tx_i_req),
     // Outputs
-    .o_serial(tx_o_serial), 
-    .o_cts(tx_o_cts), 
+    .o_serial(tx_o_serial),
+    .o_cts(tx_o_cts),
     .o_idle(tx_o_idle)
   );
   logic tx_i_rstn;
@@ -91,11 +89,11 @@ module uart_top
   uart_rx #(cycles_per_bit) rx(
     // Inputs
     .clock(clock),
-    .i_rstn(rx_i_rstn), 
-    .i_serial(rx_i_serial), 
+    .i_rstn(rx_i_rstn),
+    .i_serial(rx_i_serial),
     // Outputs
-    .o_valid(rx_o_valid), 
-    .o_buffer(rx_o_buffer), 
+    .o_valid(rx_o_valid),
+    .o_buffer(rx_o_buffer),
     .o_sum(rx_o_sum)
   );
   logic rx_i_rstn;

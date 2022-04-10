@@ -8,7 +8,6 @@ module Module
   output logic[7:0] tock2,
   output logic[7:0] tock3
 );
-/*public:*/
 
   //logic<8> tock1() {
   //  return DONTCARE;

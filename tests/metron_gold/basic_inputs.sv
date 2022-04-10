@@ -8,13 +8,11 @@ module Module
   output logic[6:0] my_reg,
   input logic[6:0] my_input
 );
-/*public:*/
 
-  task tick(); 
+  task tick();
     my_reg <= my_reg + my_input;
   endtask
   always_ff @(posedge clock) tick();
 
-  /*logic<7> my_reg;*/
 endmodule
 

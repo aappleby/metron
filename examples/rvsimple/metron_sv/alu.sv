@@ -19,30 +19,24 @@ module alu
   output logic[31:0] result,
   output logic result_equal_zero
 );
- /*public:*/
-  /*logic<5> alu_function;*/
-  /*logic<32> operand_a;*/
-  /*logic<32> operand_b;*/
-  /*logic<32> result;*/
-  /*logic<1> result_equal_zero;*/
 
   always_comb begin /*tock*/
     import rv_constants::*;
 
     // clang-format off
-    case (alu_function) 
-      /*case*/ ALU_ADD:  result = operand_a + operand_b; /*break;*/
-      /*case*/ ALU_SUB:  result = operand_a - operand_b; /*break;*/
-      /*case*/ ALU_SLL:  result = operand_a << 5'(operand_b); /*break;*/
-      /*case*/ ALU_SRL:  result = operand_a >> 5'(operand_b); /*break;*/
-      /*case*/ ALU_SRA:  result = ($signed(operand_a) >>> 5'(operand_b)); /*break;*/
-      /*case*/ ALU_SEQ:  result = {31'b0, 1'(operand_a == operand_b)}; /*break;*/
-      /*case*/ ALU_SLT:  result = {31'b0, 1'($signed(operand_a) < $signed(operand_b))}; /*break;*/
-      /*case*/ ALU_SLTU: result = {31'b0, 1'($unsigned(operand_a) < $unsigned(operand_b))}; /*break;*/
-      /*case*/ ALU_XOR:  result = operand_a ^ operand_b; /*break;*/
-      /*case*/ ALU_OR:   result = operand_a | operand_b; /*break;*/
-      /*case*/ ALU_AND:  result = operand_a & operand_b; /*break;*/
-      default:       result = 32'(ZERO); /*break;*/
+    case (alu_function)
+      ALU_ADD:  result = operand_a + operand_b;
+      ALU_SUB:  result = operand_a - operand_b;
+      ALU_SLL:  result = operand_a << 5'(operand_b);
+      ALU_SRL:  result = operand_a >> 5'(operand_b);
+      ALU_SRA:  result = ($signed(operand_a) >>> 5'(operand_b));
+      ALU_SEQ:  result = {31'b0, 1'(operand_a == operand_b)};
+      ALU_SLT:  result = {31'b0, 1'($signed(operand_a) < $signed(operand_b))};
+      ALU_SLTU: result = {31'b0, 1'($unsigned(operand_a) < $unsigned(operand_b))};
+      ALU_XOR:  result = operand_a ^ operand_b;
+      ALU_OR:   result = operand_a | operand_b;
+      ALU_AND:  result = operand_a & operand_b;
+      default:       result = 32'(ZERO);
     endcase
     // clang-format on
 

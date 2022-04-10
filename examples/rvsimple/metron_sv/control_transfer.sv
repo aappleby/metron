@@ -17,22 +17,18 @@ module control_transfer
    input logic[2:0] inst_funct3,
    output logic take_branch
 );
- /*public:*/
-   /*logic<1> result_equal_zero;*/
-   /*logic<3> inst_funct3;*/
-   /*logic<1> take_branch;*/
 
   always_comb begin /*tock_take_branch*/
     import rv_constants::*;
     // clang-format off
-    case (inst_funct3) 
-      /*case*/ FUNCT3_BRANCH_EQ:  take_branch = !result_equal_zero; /*break;*/
-      /*case*/ FUNCT3_BRANCH_NE:  take_branch = result_equal_zero; /*break;*/
-      /*case*/ FUNCT3_BRANCH_LT:  take_branch = !result_equal_zero; /*break;*/
-      /*case*/ FUNCT3_BRANCH_GE:  take_branch = result_equal_zero; /*break;*/
-      /*case*/ FUNCT3_BRANCH_LTU: take_branch = !result_equal_zero; /*break;*/
-      /*case*/ FUNCT3_BRANCH_GEU: take_branch = result_equal_zero; /*break;*/
-      default:                take_branch = 1'bx; /*break;*/
+    case (inst_funct3)
+      FUNCT3_BRANCH_EQ:  take_branch = !result_equal_zero;
+      FUNCT3_BRANCH_NE:  take_branch = result_equal_zero;
+      FUNCT3_BRANCH_LT:  take_branch = !result_equal_zero;
+      FUNCT3_BRANCH_GE:  take_branch = result_equal_zero;
+      FUNCT3_BRANCH_LTU: take_branch = !result_equal_zero;
+      FUNCT3_BRANCH_GEU: take_branch = result_equal_zero;
+      default:                take_branch = 1'bx;
     endcase
     // clang-format on
   end

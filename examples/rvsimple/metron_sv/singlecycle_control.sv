@@ -25,27 +25,15 @@ module singlecycle_control
   output logic[2:0] reg_writeback_select,
   output logic[1:0] next_pc_select
 );
- /*public:*/
-  /*logic<7> inst_opcode;*/
-  /*logic<1> take_branch;*/
-  /*logic<1> pc_write_enable;*/
-  /*logic<1> regfile_write_enable;*/
-  /*logic<1> alu_operand_a_select;*/
-  /*logic<1> alu_operand_b_select;*/
-  /*logic<2> alu_op_type;*/
-  /*logic<1> data_mem_read_enable;*/
-  /*logic<1> data_mem_write_enable;*/
-  /*logic<3> reg_writeback_select;*/
-  /*logic<2> next_pc_select;*/
 
   always_comb begin /*tock_next_pc_select*/
     import rv_constants::*;
     // clang-format off
-    case (inst_opcode) 
-      /*case*/ OPCODE_BRANCH: next_pc_select = take_branch ? CTL_PC_PC_IMM : CTL_PC_PC4; /*break;*/
-      /*case*/ OPCODE_JALR:   next_pc_select = CTL_PC_RS1_IMM; /*break;*/
-      /*case*/ OPCODE_JAL:    next_pc_select = CTL_PC_PC_IMM; /*break;*/
-      default:            next_pc_select = CTL_PC_PC4; /*break;*/
+    case (inst_opcode)
+      OPCODE_BRANCH: next_pc_select = take_branch ? CTL_PC_PC_IMM : CTL_PC_PC4;
+      OPCODE_JALR:   next_pc_select = CTL_PC_RS1_IMM;
+      OPCODE_JAL:    next_pc_select = CTL_PC_PC_IMM;
+      default:            next_pc_select = CTL_PC_PC4;
     endcase
     // clang-format on
   end
@@ -55,18 +43,18 @@ module singlecycle_control
   always_comb begin /*tock_regfile_write_enable*/
     import rv_constants::*;
     // clang-format off
-    case (inst_opcode) 
-      /*case*/ OPCODE_MISC_MEM: regfile_write_enable = 0; /*break;*/
-      /*case*/ OPCODE_STORE:    regfile_write_enable = 0; /*break;*/
-      /*case*/ OPCODE_BRANCH:   regfile_write_enable = 0; /*break;*/
-      /*case*/ OPCODE_LOAD:     regfile_write_enable = 1; /*break;*/
-      /*case*/ OPCODE_OP_IMM:   regfile_write_enable = 1; /*break;*/
-      /*case*/ OPCODE_AUIPC:    regfile_write_enable = 1; /*break;*/
-      /*case*/ OPCODE_OP:       regfile_write_enable = 1; /*break;*/
-      /*case*/ OPCODE_LUI:      regfile_write_enable = 1; /*break;*/
-      /*case*/ OPCODE_JALR:     regfile_write_enable = 1; /*break;*/
-      /*case*/ OPCODE_JAL:      regfile_write_enable = 1; /*break;*/
-      default:              regfile_write_enable = 1'bx; /*break;*/
+    case (inst_opcode)
+      OPCODE_MISC_MEM: regfile_write_enable = 0;
+      OPCODE_STORE:    regfile_write_enable = 0;
+      OPCODE_BRANCH:   regfile_write_enable = 0;
+      OPCODE_LOAD:     regfile_write_enable = 1;
+      OPCODE_OP_IMM:   regfile_write_enable = 1;
+      OPCODE_AUIPC:    regfile_write_enable = 1;
+      OPCODE_OP:       regfile_write_enable = 1;
+      OPCODE_LUI:      regfile_write_enable = 1;
+      OPCODE_JALR:     regfile_write_enable = 1;
+      OPCODE_JAL:      regfile_write_enable = 1;
+      default:              regfile_write_enable = 1'bx;
     endcase
     // clang-format on
   end
@@ -75,19 +63,19 @@ module singlecycle_control
     import rv_constants::*;
 
     // clang-format off
-    case (inst_opcode) 
-      /*case*/ OPCODE_AUIPC:    alu_operand_a_select = CTL_ALU_A_PC; /*break;*/
-      /*case*/ OPCODE_JAL:      alu_operand_a_select = CTL_ALU_A_PC; /*break;*/
+    case (inst_opcode)
+      OPCODE_AUIPC:    alu_operand_a_select = CTL_ALU_A_PC;
+      OPCODE_JAL:      alu_operand_a_select = CTL_ALU_A_PC;
 
-      /*case*/ OPCODE_OP:       alu_operand_a_select = CTL_ALU_A_RS1; /*break;*/
-      /*case*/ OPCODE_LUI:      alu_operand_a_select = CTL_ALU_A_RS1; /*break;*/
-      /*case*/ OPCODE_BRANCH:   alu_operand_a_select = CTL_ALU_A_RS1; /*break;*/
+      OPCODE_OP:       alu_operand_a_select = CTL_ALU_A_RS1;
+      OPCODE_LUI:      alu_operand_a_select = CTL_ALU_A_RS1;
+      OPCODE_BRANCH:   alu_operand_a_select = CTL_ALU_A_RS1;
 
-      /*case*/ OPCODE_LOAD:     alu_operand_a_select = CTL_ALU_A_RS1; /*break;*/
-      /*case*/ OPCODE_STORE:    alu_operand_a_select = CTL_ALU_A_RS1; /*break;*/
-      /*case*/ OPCODE_OP_IMM:   alu_operand_a_select = CTL_ALU_A_RS1; /*break;*/
-      /*case*/ OPCODE_JALR:     alu_operand_a_select = CTL_ALU_A_RS1; /*break;*/
-      default:              alu_operand_a_select = 1'bx; /*break;*/
+      OPCODE_LOAD:     alu_operand_a_select = CTL_ALU_A_RS1;
+      OPCODE_STORE:    alu_operand_a_select = CTL_ALU_A_RS1;
+      OPCODE_OP_IMM:   alu_operand_a_select = CTL_ALU_A_RS1;
+      OPCODE_JALR:     alu_operand_a_select = CTL_ALU_A_RS1;
+      default:              alu_operand_a_select = 1'bx;
     endcase
     // clang-format on
   end
@@ -96,19 +84,19 @@ module singlecycle_control
     import rv_constants::*;
 
     // clang-format off
-    case (inst_opcode) 
-      /*case*/ OPCODE_AUIPC:    alu_operand_b_select = CTL_ALU_B_IMM; /*break;*/
-      /*case*/ OPCODE_JAL:      alu_operand_b_select = CTL_ALU_B_IMM; /*break;*/
+    case (inst_opcode)
+      OPCODE_AUIPC:    alu_operand_b_select = CTL_ALU_B_IMM;
+      OPCODE_JAL:      alu_operand_b_select = CTL_ALU_B_IMM;
 
-      /*case*/ OPCODE_OP:       alu_operand_b_select = CTL_ALU_B_RS2; /*break;*/
-      /*case*/ OPCODE_LUI:      alu_operand_b_select = CTL_ALU_B_RS2; /*break;*/
-      /*case*/ OPCODE_BRANCH:   alu_operand_b_select = CTL_ALU_B_RS2; /*break;*/
+      OPCODE_OP:       alu_operand_b_select = CTL_ALU_B_RS2;
+      OPCODE_LUI:      alu_operand_b_select = CTL_ALU_B_RS2;
+      OPCODE_BRANCH:   alu_operand_b_select = CTL_ALU_B_RS2;
 
-      /*case*/ OPCODE_LOAD:     alu_operand_b_select = CTL_ALU_B_IMM; /*break;*/
-      /*case*/ OPCODE_STORE:    alu_operand_b_select = CTL_ALU_B_IMM; /*break;*/
-      /*case*/ OPCODE_OP_IMM:   alu_operand_b_select = CTL_ALU_B_IMM; /*break;*/
-      /*case*/ OPCODE_JALR:     alu_operand_b_select = CTL_ALU_B_IMM; /*break;*/
-      default:              alu_operand_b_select = 1'bx; /*break;*/
+      OPCODE_LOAD:     alu_operand_b_select = CTL_ALU_B_IMM;
+      OPCODE_STORE:    alu_operand_b_select = CTL_ALU_B_IMM;
+      OPCODE_OP_IMM:   alu_operand_b_select = CTL_ALU_B_IMM;
+      OPCODE_JALR:     alu_operand_b_select = CTL_ALU_B_IMM;
+      default:              alu_operand_b_select = 1'bx;
     endcase
     // clang-format on
   end
@@ -117,18 +105,18 @@ module singlecycle_control
     import rv_constants::*;
 
     // clang-format off
-    case (inst_opcode) 
-      /*case*/ OPCODE_AUIPC:    alu_op_type = CTL_ALU_ADD; /*break;*/
-      /*case*/ OPCODE_JAL:      alu_op_type = CTL_ALU_ADD; /*break;*/
+    case (inst_opcode)
+      OPCODE_AUIPC:    alu_op_type = CTL_ALU_ADD;
+      OPCODE_JAL:      alu_op_type = CTL_ALU_ADD;
 
-      /*case*/ OPCODE_OP:       alu_op_type = CTL_ALU_OP; /*break;*/
-      /*case*/ OPCODE_BRANCH:   alu_op_type = CTL_ALU_BRANCH; /*break;*/
+      OPCODE_OP:       alu_op_type = CTL_ALU_OP;
+      OPCODE_BRANCH:   alu_op_type = CTL_ALU_BRANCH;
 
-      /*case*/ OPCODE_LOAD:     alu_op_type = CTL_ALU_ADD; /*break;*/
-      /*case*/ OPCODE_STORE:    alu_op_type = CTL_ALU_ADD; /*break;*/
-      /*case*/ OPCODE_OP_IMM:   alu_op_type = CTL_ALU_OP_IMM; /*break;*/
-      /*case*/ OPCODE_JALR:     alu_op_type = CTL_ALU_ADD; /*break;*/
-      default:              alu_op_type = 2'bx; /*break;*/
+      OPCODE_LOAD:     alu_op_type = CTL_ALU_ADD;
+      OPCODE_STORE:    alu_op_type = CTL_ALU_ADD;
+      OPCODE_OP_IMM:   alu_op_type = CTL_ALU_OP_IMM;
+      OPCODE_JALR:     alu_op_type = CTL_ALU_ADD;
+      default:              alu_op_type = 2'bx;
     endcase
     // clang-format on
   end
@@ -147,15 +135,15 @@ module singlecycle_control
     import rv_constants::*;
 
     // clang-format off
-    case (inst_opcode) 
-      /*case*/ OPCODE_OP_IMM:   reg_writeback_select = CTL_WRITEBACK_ALU; /*break;*/
-      /*case*/ OPCODE_AUIPC:    reg_writeback_select = CTL_WRITEBACK_ALU; /*break;*/
-      /*case*/ OPCODE_OP:       reg_writeback_select = CTL_WRITEBACK_ALU; /*break;*/
-      /*case*/ OPCODE_LUI:      reg_writeback_select = CTL_WRITEBACK_IMM; /*break;*/
-      /*case*/ OPCODE_JALR:     reg_writeback_select = CTL_WRITEBACK_PC4; /*break;*/
-      /*case*/ OPCODE_JAL:      reg_writeback_select = CTL_WRITEBACK_PC4; /*break;*/
-      /*case*/ OPCODE_LOAD:     reg_writeback_select = CTL_WRITEBACK_DATA; /*break;*/
-      default:              reg_writeback_select = 3'bx; /*break;*/
+    case (inst_opcode)
+      OPCODE_OP_IMM:   reg_writeback_select = CTL_WRITEBACK_ALU;
+      OPCODE_AUIPC:    reg_writeback_select = CTL_WRITEBACK_ALU;
+      OPCODE_OP:       reg_writeback_select = CTL_WRITEBACK_ALU;
+      OPCODE_LUI:      reg_writeback_select = CTL_WRITEBACK_IMM;
+      OPCODE_JALR:     reg_writeback_select = CTL_WRITEBACK_PC4;
+      OPCODE_JAL:      reg_writeback_select = CTL_WRITEBACK_PC4;
+      OPCODE_LOAD:     reg_writeback_select = CTL_WRITEBACK_DATA;
+      default:              reg_writeback_select = 3'bx;
     endcase
     // clang-format on
   end

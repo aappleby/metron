@@ -9,18 +9,15 @@ module Module
   output logic my_sig,
   output logic my_reg
 );
-/*public:*/
 
   always_comb begin /*tock*/
     my_sig = my_reg;
   end
 
-  task tick(); 
+  task tick();
     my_reg <= 1;
   endtask
   always_ff @(posedge clock) tick();
 
-  /*logic<1> my_sig;*/
-  /*logic<1> my_reg;*/
 endmodule
 

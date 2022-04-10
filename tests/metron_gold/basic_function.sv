@@ -6,16 +6,14 @@ module Module
 (
   input logic clock
 );
-/*public:*/
 
-  task tick(); 
+  task tick();
     my_reg <= my_reg + some_func();
   endtask
   always_ff @(posedge clock) tick();
 
-/*private:*/
 
-  function logic[7:0] some_func(); 
+  function logic[7:0] some_func();
     some_func = 3;
   endfunction
 

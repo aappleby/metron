@@ -1,4 +1,3 @@
-
 `include "metron_tools.sv"
 
 //==============================================================================
@@ -13,7 +12,6 @@ module uart_rx
   output logic[7:0] o_buffer,
   output logic[31:0] o_sum
 );
- /*public:*/
   //----------------------------------------
 
   // yosys doesn't appear to handle return values from functions at all
@@ -28,8 +26,7 @@ module uart_rx
   always_comb begin /*tock*/ /*tick(i_rstn, i_serial)*/; end
 
   //----------------------------------------
- /*private:*/
-  task tick(); 
+  task tick();
     if (!i_rstn) begin
       cycle <= 0;
       cursor <= 0;
@@ -40,6 +37,7 @@ module uart_rx
         cycle <= cycle - 1;
       end else if (cursor != 0) begin
         logic[7:0] temp;
+
         temp = (i_serial << 7) | (buffer >> 1);
         if (cursor - 1 == 1) sum <= sum + temp;
         cycle <= cycle_max;

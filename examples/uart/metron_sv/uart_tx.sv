@@ -1,4 +1,3 @@
-
 `include "metron_tools.sv"
 
 //==============================================================================
@@ -14,7 +13,6 @@ module uart_tx
   output logic o_cts,
   output logic o_idle
 );
- /*public:*/
   //----------------------------------------
 
   always_comb begin o_serial = buffer & 1; end
@@ -32,8 +30,7 @@ module uart_tx
 
   //----------------------------------------
 
- /*private:*/
-  task tick(); 
+  task tick();
     if (!i_rstn) begin
       cycle <= 0;
       cursor <= 0;
@@ -41,6 +38,7 @@ module uart_tx
     end else begin
       logic[cycle_bits-1:0] cycle_max;
       logic[cursor_bits-1:0] cursor_max;
+
       cycle_max = (cycle_bits)'(cycles_per_bit - 1);
       cursor_max = (cursor_bits)'(10 + extra_stop_bits - 1);
 

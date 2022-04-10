@@ -26,25 +26,10 @@ module data_memory_interface
   output logic  bus_read_enable,
   output logic  bus_write_enable
 );
- /*public:*/
-  /*logic<1>  read_enable;*/
-  /*logic<1>  write_enable;*/
-  /*logic<3>  data_format;*/
-  /*logic<32> address;*/
-  /*logic<32> write_data;*/
-  /*logic<32> read_data;*/
 
-  /*logic<32> bus_address;*/
-  /*logic<32> bus_read_data;*/
-  /*logic<32> bus_write_data;*/
-  /*logic<4>  bus_byte_enable;*/
-  /*logic<1>  bus_read_enable;*/
-  /*logic<1>  bus_write_enable;*/
 
-/*private:*/
   logic[31:0] position_fix;
   logic[31:0] sign_fix;
-/*public:*/
 
   always_comb begin /*tock_bus*/
     bus_address      = address;
@@ -54,11 +39,11 @@ module data_memory_interface
 
     // calculate byte enable
     // clang-format off
-    case (2'(data_format)) 
-      /*case*/ 2'b00: bus_byte_enable = 4'b0001 << 2'(address); /*break;*/
-      /*case*/ 2'b01: bus_byte_enable = 4'b0011 << 2'(address); /*break;*/
-      /*case*/ 2'b10: bus_byte_enable = 4'b1111 << 2'(address); /*break;*/
-      default:   bus_byte_enable = 4'b0000; /*break;*/
+    case (2'(data_format))
+      2'b00: bus_byte_enable = 4'b0001 << 2'(address);
+      2'b01: bus_byte_enable = 4'b0011 << 2'(address);
+      2'b10: bus_byte_enable = 4'b1111 << 2'(address);
+      default:   bus_byte_enable = 4'b0000;
     endcase
     // clang-format on
   end
@@ -69,11 +54,11 @@ module data_memory_interface
 
     // sign-extend if necessary
     // clang-format off
-    case (2'(data_format)) 
-      /*case*/ 2'b00: sign_fix = {{24 {1'(~data_format[2] & position_fix[7])}}, 8'(position_fix)}; /*break;*/
-      /*case*/ 2'b01: sign_fix = {{16 {1'(~data_format[2] & position_fix[15])}}, 16'(position_fix)}; /*break;*/
-      /*case*/ 2'b10: sign_fix = 32'(position_fix); /*break;*/
-      default:   sign_fix = 32'bx; /*break;*/
+    case (2'(data_format))
+      2'b00: sign_fix = {{24 {1'(~data_format[2] & position_fix[7])}}, 8'(position_fix)};
+      2'b01: sign_fix = {{16 {1'(~data_format[2] & position_fix[15])}}, 16'(position_fix)};
+      2'b10: sign_fix = 32'(position_fix);
+      default:   sign_fix = 32'bx;
     endcase
     // clang-format on
 

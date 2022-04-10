@@ -18,10 +18,6 @@ module adder
   input logic[WIDTH-1:0] operand_b,
   output logic[WIDTH-1:0] result
 );
- /*public:*/
-  /*logic<WIDTH> operand_a;*/
-  /*logic<WIDTH> operand_b;*/
-  /*logic<WIDTH> result;*/
 
   always_comb begin /*tock*/ result = operand_a + operand_b; end
 endmodule

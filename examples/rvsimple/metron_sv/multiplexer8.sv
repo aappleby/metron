@@ -25,30 +25,19 @@ module multiplexer8
   input logic[2:0] sel,
   output logic[WIDTH-1:0] out
 );
- /*public:*/
-  /*logic<WIDTH> in0;*/
-  /*logic<WIDTH> in1;*/
-  /*logic<WIDTH> in2;*/
-  /*logic<WIDTH> in3;*/
-  /*logic<WIDTH> in4;*/
-  /*logic<WIDTH> in5;*/
-  /*logic<WIDTH> in6;*/
-  /*logic<WIDTH> in7;*/
-  /*logic<3> sel;*/
-  /*logic<WIDTH> out;*/
 
   always_comb begin /*tock*/
     // clang-format off
-    case (sel) 
-      /*case*/ 0:  out = in0; /*break;*/
-      /*case*/ 1:  out = in1; /*break;*/
-      /*case*/ 2:  out = in2; /*break;*/
-      /*case*/ 3:  out = in3; /*break;*/
-      /*case*/ 4:  out = in4; /*break;*/
-      /*case*/ 5:  out = in5; /*break;*/
-      /*case*/ 6:  out = in6; /*break;*/
-      /*case*/ 7:  out = in7; /*break;*/
-      default: out = WIDTH'(1'bx); /*break;*/
+    case (sel)
+      0:  out = in0;
+      1:  out = in1;
+      2:  out = in2;
+      3:  out = in3;
+      4:  out = in4;
+      5:  out = in5;
+      6:  out = in6;
+      7:  out = in7;
+      default: out = WIDTH'(1'bx);
     endcase
     // clang-format on
   end

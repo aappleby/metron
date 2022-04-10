@@ -7,7 +7,6 @@ module Module
 (
   input logic clock
 );
-/*public:*/
 
   always_comb begin /*tock*/
   end

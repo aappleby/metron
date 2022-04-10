@@ -26,17 +26,7 @@ module toplevel
   output logic[31:0] inst,
   output logic[31:0] pc
 );
- /*public:*/
-  /*logic<1>  reset;*/
-  /*logic<32> bus_read_data;*/
-  /*logic<32> bus_address;*/
-  /*logic<32> bus_write_data;*/
-  /*logic<4>  bus_byte_enable;*/
-  /*logic<1>  bus_read_enable;*/
-  /*logic<1>  bus_write_enable;*/
 
-  /*logic<32> inst;*/
-  /*logic<32> pc;*/
 
   //----------------------------------------
 
@@ -74,19 +64,18 @@ module toplevel
 
   //----------------------------------------
 
- /*private:*/
   riscv_core core(
     // Inputs
     .clock(clock),
-    .reset(core_reset), 
-    .bus_read_data(core_bus_read_data), 
-    .inst(core_inst), 
+    .reset(core_reset),
+    .bus_read_data(core_bus_read_data),
+    .inst(core_inst),
     // Outputs
-    .bus_address(core_bus_address), 
-    .bus_write_data(core_bus_write_data), 
-    .bus_byte_enable(core_bus_byte_enable), 
-    .bus_read_enable(core_bus_read_enable), 
-    .bus_write_enable(core_bus_write_enable), 
+    .bus_address(core_bus_address),
+    .bus_write_data(core_bus_write_data),
+    .bus_byte_enable(core_bus_byte_enable),
+    .bus_read_enable(core_bus_read_enable),
+    .bus_write_enable(core_bus_write_enable),
     .pc(core_pc)
   );
   logic  core_reset;
@@ -102,7 +91,7 @@ module toplevel
   example_text_memory_bus text_memory_bus(
     // Inputs
     .clock(clock),
-    .address(text_memory_bus_address), 
+    .address(text_memory_bus_address),
     // Outputs
     .read_data(text_memory_bus_read_data)
   );
@@ -112,11 +101,11 @@ module toplevel
   example_data_memory_bus data_memory_bus(
     // Inputs
     .clock(clock),
-    .address(data_memory_bus_address), 
-    .write_data(data_memory_bus_write_data), 
-    .byte_enable(data_memory_bus_byte_enable), 
-    .read_enable(data_memory_bus_read_enable), 
-    .write_enable(data_memory_bus_write_enable), 
+    .address(data_memory_bus_address),
+    .write_data(data_memory_bus_write_data),
+    .byte_enable(data_memory_bus_byte_enable),
+    .read_enable(data_memory_bus_read_enable),
+    .write_enable(data_memory_bus_write_enable),
     // Outputs
     .read_data(data_memory_bus_read_data)
   );
@@ -130,6 +119,5 @@ module toplevel
 endmodule;
 
 `endif  // RVSIMPLE_TOPLEVEL_H
-
 
 

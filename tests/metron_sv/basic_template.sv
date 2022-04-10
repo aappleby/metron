@@ -9,25 +9,22 @@ module Submod
   output logic[WIDTH-1:0] my_width,
   output logic[HEIGHT-1:0] my_height
 );
-/*public:*/
 
   always_comb begin /*tock*/
     my_width = (WIDTH)'(100);
     my_height = (HEIGHT)'(200);
   end
 
-  /*logic<WIDTH> my_width;*/
-  /*logic<HEIGHT> my_height;*/
 endmodule
 
 module Module
 (
   input logic clock
 );
-/*public:*/
 
   always_comb begin /*tock*/
     logic[19:0] foo;
+
     /*submodule.tock()*/;
     foo = submodule_my_width + submodule_my_height;
   end
@@ -36,7 +33,7 @@ module Module
     // Inputs
     .clock(clock),
     // Outputs
-    .my_width(submodule_my_width), 
+    .my_width(submodule_my_width),
     .my_height(submodule_my_height)
   );
   logic[10-1:0] submodule_my_width;

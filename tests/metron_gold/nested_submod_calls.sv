@@ -8,7 +8,6 @@ module Submod1
   input logic[7:0] a,
   output logic[7:0] add_one
 );
-/*public:*/
   always_comb begin
     add_one = a + 1;
   end
@@ -20,7 +19,6 @@ module Submod2
   input logic[7:0] a,
   output logic[7:0] add_two
 );
-/*public:*/
   always_comb begin
     add_two = a + 1;
   end
@@ -32,10 +30,10 @@ module Module
   input logic[7:0] old_counter,
   output logic[7:0] tock
 );
-/*public:*/
 
   always_comb begin /*tock*/
     logic[7:0] new_counter;
+
     // Two bindings should end up here.
     submod2_a = old_counter;
     submod1_a = submod2_add_two;
@@ -43,12 +41,11 @@ module Module
     tock = new_counter;
   end
 
-/*private:*/
 
   Submod1 submod1(
     // Inputs
     .clock(clock),
-    .a(submod1_a), 
+    .a(submod1_a),
     // Outputs
     .add_one(submod1_add_one)
   );
@@ -58,7 +55,7 @@ module Module
   Submod2 submod2(
     // Inputs
     .clock(clock),
-    .a(submod2_a), 
+    .a(submod2_a),
     // Outputs
     .add_two(submod2_add_two)
   );

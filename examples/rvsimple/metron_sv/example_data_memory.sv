@@ -19,27 +19,19 @@ module example_data_memory
   input logic[3:0] byteena,
   input logic[31:0] data
 );
- /*public:*/
-  /*logic<rv_config::DATA_BITS - 2> address;*/
-  /*logic<32> q;*/
-  /*logic<1> wren;*/
-  /*logic<4> byteena;*/
-  /*logic<32> data;*/
 
- /*private:*/
   (* nomem2reg *)
   logic[31:0] mem[2**(rv_config::DATA_BITS - 2)];
 
- /*public:*/
   always_comb begin /*tock*/
     q = mem[address];
     /*tick()*/;
   end
 
- /*private:*/
-  task tick(); 
+  task tick();
     if (wren) begin
       logic[31:0] mask;
+
       // doing this slightly differently from rvsimple so we don't have to do
       // sub-array writes to mem.
       mask = 0;
@@ -52,10 +44,9 @@ module example_data_memory
   endtask
   always_ff @(posedge clock) tick();
 
- /*public:*/
   initial begin /*example_data_memory*/
     string s;
-    /*std::string s;*/
+
     $value$plusargs("data_file=%s", s);
     $readmemh(s, mem);
   end

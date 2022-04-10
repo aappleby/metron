@@ -33,13 +33,7 @@ module Pong
 	output logic[9:0] pix_x,
 	output logic[9:0] pix_y
 );
-/*public:*/
 
-	/*logic<1> vga_hsync;*/
-	/*logic<1> vga_vsync;*/
-	/*logic<1> vga_R;*/
-	/*logic<1> vga_G;*/
-	/*logic<1> vga_B;*/
 
 	//----------------------------------------
 
@@ -84,7 +78,7 @@ module Pong
 
 	//----------------------------------------
 
-	task tick(); 
+	task tick();
 		logic[9:0] new_px;
 		logic[9:0] new_py;
 		logic quad_dir;
@@ -95,6 +89,7 @@ module Pong
 		logic[9:0] new_ball_y;
 		logic new_ball_dx;
 		logic new_ball_dy;
+
 		new_px = px + 1;
 		new_py = py;
 
@@ -167,27 +162,26 @@ module Pong
 
 	//----------------------------------------
 
-/*private:*/
 
-	function logic in_border() /*const*/; 
+	function logic in_border() /*const*/;
 		in_border = (px <= 7) || (px >= 633) || (py <= 7) || (py >= 473);
 	endfunction
 
-	function logic in_paddle() /*const*/; 
+	function logic in_paddle() /*const*/;
 		in_paddle = (px >= pad_x - 63) &&
 		       (px <= pad_x + 63) &&
 		       (py >= pad_y -  3) &&
 		       (py <= pad_y +  3);
 	endfunction
 
-	function logic in_ball() /*const*/; 
+	function logic in_ball() /*const*/;
 		in_ball = (px >= ball_x - 7) &&
 		       (px <= ball_x + 7) &&
 		       (py >= ball_y - 7) &&
 		       (py <= ball_y + 7);
 	endfunction
 
-	function logic in_checker() /*const*/; 
+	function logic in_checker() /*const*/;
 		in_checker = px[3] ^ py[3];
 	endfunction
 

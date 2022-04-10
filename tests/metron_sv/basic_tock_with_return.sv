@@ -7,7 +7,6 @@ module Module
   input logic clock,
   output logic[7:0] tock
 );
-/*public:*/
 
   always_comb begin /*tock*/
     tock = 123;

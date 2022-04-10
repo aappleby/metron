@@ -16,15 +16,14 @@ module toplevel
   output logic[31:0] o_pc,
   input logic reset
 );
- /*public:*/
   initial begin /*toplevel*/
     string s;
+
     pc = 0;
     phase = 0;
     inst = 0;
     regs[0] = 32'd0;
 
-    /*std::string s;*/
     $value$plusargs("text_file=%s", s);
     $readmemh(s, text_mem);
 
@@ -34,18 +33,9 @@ module toplevel
 
   always_comb begin /*tock*/ /*tick(reset)*/; end
 
-  /*logic<32> o_bus_read_data;*/
-  /*logic<32> o_bus_address;*/
-  /*logic<32> o_bus_write_data;*/
-  /*logic<4> o_bus_byte_enable;*/
-  /*logic<1> o_bus_read_enable;*/
-  /*logic<1> o_bus_write_enable;*/
-  /*logic<32> o_inst;*/
-  /*logic<32> o_pc;*/
 
   //----------------------------------------
 
- /*private:*/
   localparam /*const*/ int OP_ALU = 8'h33;
   localparam /*const*/ int OP_ALUI = 8'h13;
   localparam /*const*/ int OP_LOAD = 8'h03;
@@ -56,7 +46,7 @@ module toplevel
   localparam /*const*/ int OP_LUI = 8'h37;
   localparam /*const*/ int OP_AUIPC = 8'h17;
 
-  task tick(); 
+  task tick();
     if (reset) begin
       pc <= 0;
       phase <= 0;
@@ -81,6 +71,7 @@ module toplevel
         logic[4:0] r1;
         logic[4:0] r2;
         logic[6:0] f7;
+
         phase <= 0;
 
         op = inst[6:0];
@@ -102,29 +93,24 @@ module toplevel
           logic[31:0] op_a;
           logic[31:0] op_b;
           logic[31:0] alu_result;
+
           op_a = regs[r1];
           op_b =
               op == OP_ALUI ? {{21 {inst[31]}}, inst[30:25], inst[24:20]}
                             : regs[r2];
-          /*logic<32> alu_result;*/
 
-          case (f3) 
-            /*case*/ 0:
+          case (f3)
+            0:
               alu_result = (op == OP_ALU) && f7[5] ? op_a - op_b : op_a + op_b;
-              /*break;*/
-            /*case*/ 1:
+            1:
               alu_result = op_a << 5'(op_b);
-              /*break;*/
-            /*case*/ 2:
+            2:
               alu_result = $signed(op_a) < $signed(op_b);
-              /*break;*/
-            /*case*/ 3:
+            3:
               alu_result = op_a < op_b;
-              /*break;*/
-            /*case*/ 4:
+            4:
               alu_result = op_a ^ op_b;
-              /*break;*/
-            /*case*/ 5: begin
+            5: begin
               // FIXME BUG Verilator isn't handling this ternary expression
               // correctly.
               // alu_result = f7[5] ? sra(op_a, b5(op_b)) : b32(op_a >>
@@ -134,14 +120,11 @@ module toplevel
               end else begin
                 alu_result = op_a >> 5'(op_b);
               end
-              /*break;*/
             end
-            /*case*/ 6:
+            6:
               alu_result = op_a | op_b;
-              /*break;*/
-            /*case*/ 7:
+            7:
               alu_result = op_a & op_b;
-              /*break;*/
           endcase
 
           if (rd) regs[rd] <= alu_result;
@@ -154,23 +137,20 @@ module toplevel
           logic[31:0] imm;
           logic[31:0] addr;
           logic[31:0] rdata;
+
           imm = {{21 {inst[31]}}, inst[30:25], inst[24:20]};
           addr = regs[r1] + imm;
           rdata = data_mem[addr[16:2]] >> (8 * 2'(addr));
 
-          case (f3) 
-            /*case*/ 0:
+          case (f3)
+            0:
               rdata = $signed(8'(rdata));
-              /*break;*/
-            /*case*/ 1:
+            1:
               rdata = $signed(16'(rdata));
-              /*break;*/
-            /*case*/ 4:
+            4:
               rdata = 8'(rdata);
-              /*break;*/
-            /*case*/ 5:
+            5:
               rdata = 16'(rdata);
-              /*break;*/
           endcase
 
           if (rd) regs[rd] <= rdata;
@@ -185,6 +165,7 @@ module toplevel
           logic[31:0] wdata;
           logic[31:0] mask;
           logic[14:0] phys_addr;
+
           imm = {{21 {inst[31]}}, inst[30:25], inst[11:7]};
           addr = regs[r1] + imm;
           wdata = regs[r2] << (8 * 2'(addr));
@@ -210,36 +191,30 @@ module toplevel
           logic[31:0] op_a;
           logic[31:0] op_b;
           logic take_branch;
+
           op_a = regs[r1];
           op_b = regs[r2];
 
-          /*logic<1> take_branch;*/
-          case (f3) 
-            /*case*/ 0:
+          case (f3)
+            0:
               take_branch = op_a == op_b;
-              /*break;*/
-            /*case*/ 1:
+            1:
               take_branch = op_a != op_b;
-              /*break;*/
-            /*case*/ 4:
+            4:
               take_branch = $signed(op_a) < $signed(op_b);
-              /*break;*/
-            /*case*/ 5:
+            5:
               take_branch = $signed(op_a) >= $signed(op_b);
-              /*break;*/
-            /*case*/ 6:
+            6:
               take_branch = op_a < op_b;
-              /*break;*/
-            /*case*/ 7:
+            7:
               take_branch = op_a >= op_b;
-              /*break;*/
             default:
               take_branch = 1'bx;
-              /*break;*/
           endcase
 
           if (take_branch) begin
             logic[31:0] imm;
+
             imm = {{20 {inst[31]}}, inst[7], inst[30:25],
                                 inst[11:8], 1'd0};
             pc <= pc + imm;
@@ -252,6 +227,7 @@ module toplevel
 
         else if (op == OP_JAL) begin
           logic[31:0] imm;
+
           imm = {{12 {inst[31]}}, inst[19:12], inst[20],
                               inst[30:25], inst[24:21], 1'd0};
           if (rd) regs[rd] <= pc + 4;
@@ -263,6 +239,7 @@ module toplevel
         else if (op == OP_JALR) begin
           logic[31:0] rr1;
           logic[31:0] imm;
+
           rr1 = regs[r1]; // Lol, Metron actually found a bug - gotta read r1 before writing
           imm = {{21 {inst[31]}}, inst[30:25], inst[24:20]};
           if (rd) regs[rd] <= pc + 4;
@@ -273,6 +250,7 @@ module toplevel
 
         else if (op == OP_LUI) begin
           logic[31:0] imm;
+
           imm = {inst[31], inst[30:20], inst[19:12], 12'd0};
           if (rd) regs[rd] <= imm;
           pc <= pc + 4;
@@ -282,6 +260,7 @@ module toplevel
 
         else if (op == OP_AUIPC) begin
           logic[31:0] imm;
+
           imm = {inst[31], inst[30:20], inst[19:12], 12'd0};
           if (rd) regs[rd] <= pc + imm;
           pc <= pc + 4;

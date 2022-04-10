@@ -1,4 +1,3 @@
-
 `include "metron_tools.sv"
 
 //==============================================================================
@@ -14,7 +13,6 @@ module uart_hello
   output logic o_req,
   output logic o_done
 );
- /*public:*/
   initial begin /*uart_hello*/
     $readmemh("examples/uart/message.hex", memory, 0, 511);
   end
@@ -31,8 +29,7 @@ module uart_hello
 
   //----------------------------------------
 
- /*private:*/
-  task tick(); 
+  task tick();
     if (!i_rstn) begin
       state <= WAIT;
       cursor <= 0;

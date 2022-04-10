@@ -4,11 +4,11 @@ module Module
 (
   input logic clock
 );
-/*public:*/
 
   always_comb begin /*tock_dup1*/
     logic a1;
     logic b1;
+
     a1 = 1'b1;
     b1 = {1 {a1}};
   end
@@ -30,6 +30,7 @@ module Module
     logic[27:0] b7;
     logic[7:0]  a8;
     logic[31:0] b8;
+
     a1 = 1'b1;
     b1 = {4 {a1}};
 

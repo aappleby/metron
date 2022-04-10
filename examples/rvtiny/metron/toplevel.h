@@ -78,22 +78,13 @@ class toplevel {
                           : regs[r2];
         logic<32> alu_result;
 
+        // clang-format off
         switch (f3) {
-          case 0:
-            alu_result = (op == OP_ALU) && f7[5] ? op_a - op_b : op_a + op_b;
-            break;
-          case 1:
-            alu_result = op_a << b5(op_b);
-            break;
-          case 2:
-            alu_result = signed(op_a) < signed(op_b);
-            break;
-          case 3:
-            alu_result = op_a < op_b;
-            break;
-          case 4:
-            alu_result = op_a ^ op_b;
-            break;
+          case 0: alu_result = (op == OP_ALU) && f7[5] ? op_a - op_b : op_a + op_b; break;
+          case 1: alu_result = op_a << b5(op_b); break;
+          case 2: alu_result = signed(op_a) < signed(op_b); break;
+          case 3: alu_result = op_a < op_b; break;
+          case 4: alu_result = op_a ^ op_b; break;
           case 5: {
             // FIXME BUG Verilator isn't handling this ternary expression
             // correctly.
@@ -106,13 +97,10 @@ class toplevel {
             }
             break;
           }
-          case 6:
-            alu_result = op_a | op_b;
-            break;
-          case 7:
-            alu_result = op_a & op_b;
-            break;
+          case 6: alu_result = op_a | op_b; break;
+          case 7: alu_result = op_a & op_b; break;
         }
+        // clang-format on
 
         if (rd) regs[rd] = alu_result;
         pc = pc + 4;
@@ -125,20 +113,14 @@ class toplevel {
         logic<32> addr = regs[r1] + imm;
         logic<32> data = data_mem[b15(addr, 2)] >> (8 * b2(addr));
 
+        // clang-format off
         switch (f3) {
-          case 0:
-            data = sign_extend<32>(b8(data));
-            break;
-          case 1:
-            data = sign_extend<32>(b16(data));
-            break;
-          case 4:
-            data = b8(data);
-            break;
-          case 5:
-            data = b16(data);
-            break;
+          case 0: data = sign_extend<32>(b8(data)); break;
+          case 1: data = sign_extend<32>(b16(data)); break;
+          case 4: data = b8(data); break;
+          case 5: data = b16(data); break;
         }
+        // clang-format on
 
         if (rd) regs[rd] = data;
         pc = pc + 4;
@@ -172,30 +154,18 @@ class toplevel {
         logic<32> op_a = regs[r1];
         logic<32> op_b = regs[r2];
 
+        // clang-format off
         logic<1> take_branch;
         switch (f3) {
-          case 0:
-            take_branch = op_a == op_b;
-            break;
-          case 1:
-            take_branch = op_a != op_b;
-            break;
-          case 4:
-            take_branch = signed(op_a) < signed(op_b);
-            break;
-          case 5:
-            take_branch = signed(op_a) >= signed(op_b);
-            break;
-          case 6:
-            take_branch = op_a < op_b;
-            break;
-          case 7:
-            take_branch = op_a >= op_b;
-            break;
-          default:
-            take_branch = b1(DONTCARE);
-            break;
+          case 0: take_branch = op_a == op_b; break;
+          case 1: take_branch = op_a != op_b; break;
+          case 4: take_branch = signed(op_a) < signed(op_b); break;
+          case 5: take_branch = signed(op_a) >= signed(op_b); break;
+          case 6: take_branch = op_a < op_b; break;
+          case 7: take_branch = op_a >= op_b; break;
+          default: take_branch = b1(DONTCARE); break;
         }
+        // clang-format on
 
         if (take_branch) {
           logic<32> imm =

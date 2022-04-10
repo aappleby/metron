@@ -7,7 +7,6 @@ module Module
   input logic clock,
   output logic[7:0] tock
 );
-/*public:*/
 
   initial begin /*init*/
     my_reg = 7;
@@ -17,7 +16,6 @@ module Module
     tock = my_reg;
   end
 
-/*private:*/
 
   logic[7:0] my_reg;
 endmodule

@@ -6,7 +6,6 @@
 `ifndef RVSIMPLE_CONFIG_H
 `define RVSIMPLE_CONFIG_H
 
-
 `include "metron_tools.sv"
 
 package rv_config;

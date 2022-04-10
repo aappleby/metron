@@ -8,17 +8,15 @@ module Module
   output logic[6:0] my_reg,
   output logic[6:0] get_reg
 );
-/*public:*/
 
   always_comb begin
     get_reg = my_reg;
   end
 
-  task tick(); 
+  task tick();
     my_reg <= my_reg + 1;
   endtask
   always_ff @(posedge clock) tick();
 
-  /*logic<7> my_reg;*/
 endmodule
 

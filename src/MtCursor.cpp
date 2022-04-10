@@ -75,18 +75,43 @@ CHECK_RETURN Err MtCursor::emit_indent() {
 }
 
 CHECK_RETURN Err MtCursor::emit_char(char c) {
+  if (c == '\r') return Err();
+
   Err err;
   if (c < 0 || !isspace(c)) {
     line_dirty = true;
   }
 
   if (c == '\n') {
+
+    // Strip trailing whitespace
+    while(str_out->size() && str_out->back() == ' ') {
+      str_out->pop_back();
+    }
+
+    // Discard the line if it contained only whitespace after elisions
+    if (!line_dirty && line_elided) {
+      if (echo) {
+        printf("\u001b[38;2;128;128;255m");
+        printf(" (Line elided)");
+        printf("\u001b[0m");
+      }
+      while(str_out->size() && str_out->back() != '\n') {
+        str_out->pop_back();
+      }
+    }
+    else {
+      str_out->push_back(c);
+    }
+
     line_dirty = false;
     line_elided = false;
   }
+  else {
+    str_out->push_back(c);
+  }
 
   if (echo) putchar(c);
-  str_out->push_back(c);
 
   at_newline = c == '\n';
   return err;
@@ -121,6 +146,12 @@ CHECK_RETURN Err MtCursor::skip_over(MnNode n) {
   if (n.is_null()) {
     err << ERR("Skipping over null node");
   } else {
+    if (echo) {
+      printf("\u001b[38;2;255;128;128m");
+      printf("/*%s*/", n.text().c_str());
+      printf("\u001b[0m");
+    }
+
     assert(cursor == n.start());
     cursor = n.end();
     line_elided = true;
@@ -698,7 +729,8 @@ CHECK_RETURN Err MtCursor::emit_init_declarator_as_assign(MnDecl n) {
 
   // We don't need to emit anything for decls without initialization values.
   if (!n.is_init_decl()) {
-    err << comment_out(n);
+    //err << comment_out(n);
+    err << skip_over(n);
     return err;
   }
 
@@ -772,6 +804,8 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnCompoundStatement n) {
     }
   }
   *this = old_cursor;
+
+  emit_newline();
 
   assert(at_newline);
   return err;
@@ -970,8 +1004,8 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
         if (d.is_init_decl()) {
           err << emit_init_declarator_as_assign(c);
         } else {
-          // skip_over(c);
-          err << comment_out(c);
+          err << skip_over(c);
+          //err << comment_out(c);
         }
         break;
       }
@@ -1476,19 +1510,22 @@ CHECK_RETURN Err MtCursor::emit_field_decl(MnFieldDecl n) {
     err << emit_field_as_enum_class(n);
   } else if (current_mod->get_input_field(n.name().text())) {
     if (!in_ports) {
-      err << comment_out(n);
+      //err << comment_out(n);
+      err << skip_over(n);
     } else {
       err << emit_children(n);
     }
   } else if (current_mod->get_output_signal(n.name().text())) {
     if (!in_ports) {
-      err << comment_out(n);
+      //err << comment_out(n);
+      err << skip_over(n);
     } else {
       err << emit_children(n);
     }
   } else if (current_mod->get_output_register(n.name().text())) {
     if (!in_ports) {
-      err << comment_out(n);
+      //err << comment_out(n);
+      err << skip_over(n);
     } else {
       err << emit_children(n);
     }
@@ -2170,9 +2207,12 @@ CHECK_RETURN Err MtCursor::emit_case_statement(MnCaseStatement n) {
     if (c.sym == sym_break_statement) {
       // break_statement
       // got_break = true;
-      err << comment_out(c);
+      //err << comment_out(c);
+      err << skip_over(c);
     } else if (c.sym == anon_sym_case) {
-      err << comment_out(c);
+      //err << comment_out(c);
+      err << skip_over(c);
+      err << skip_ws();
     } else {
       if (c.sym == anon_sym_COLON) {
         // If there's nothing after the colon, emit a comma.
@@ -2268,7 +2308,8 @@ CHECK_RETURN Err MtCursor::emit_comment(MnComment n) {
 CHECK_RETURN Err MtCursor::emit_break(MnBreakStatement n) {
   Err err;
   assert(cursor == n.start());
-  err << comment_out(n);
+  //err << comment_out(n);
+  err << skip_over(n);
   assert(cursor == n.end());
   return err;
 }
@@ -2293,7 +2334,8 @@ CHECK_RETURN Err MtCursor::emit_storage_spec(MnStorageSpec n) {
   if (n.match("static")) {
     err << emit_replacement(n, "localparam");
   } else {
-    err << comment_out(n);
+    //err << comment_out(n);
+    err << skip_over(n);
   }
   assert(cursor == n.end());
   return err;
@@ -2662,7 +2704,8 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
 
     case sym_access_specifier:
       in_public = n.child(0).text() == "public";
-      err << comment_out(n);
+      //err << comment_out(n);
+      err << skip_over(n);
       break;
 
     case sym_for_statement:

@@ -14,7 +14,11 @@ struct MtModLibrary;
 //------------------------------------------------------------------------------
 
 struct MtCursor {
-  MtCursor(MtModLibrary* lib, MtSourceFile* source_file, std::string* out);
+  MtCursor(
+    MtModLibrary* lib,
+    MtSourceFile* source_file,
+    std::string* out
+  );
 
   // Indentation
 

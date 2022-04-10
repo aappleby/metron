@@ -40,39 +40,18 @@ module singlecycle_datapath
   input logic[1:0]  next_pc_select,
   input logic[4:0]  alu_function
 );
-/*public:*/
 
-  /*logic<1>  reset;*/
-  /*logic<32> data_mem_read_data;*/
-  /*logic<32> data_mem_address;*/
-  /*logic<32> data_mem_write_data;*/
 
-  /*logic<32> inst;*/
-  /*logic<32> pc;*/
-  /*logic<7>  inst_opcode;*/
-  /*logic<3>  inst_funct3;*/
-  /*logic<7>  inst_funct7;*/
-  /*logic<1>  alu_result_equal_zero;*/
 
   // control signals
-  /*logic<1>  pc_write_enable;*/
-  /*logic<1>  regfile_write_enable;*/
-  /*logic<1>  alu_operand_a_select;*/
-  /*logic<1>  alu_operand_b_select;*/
-  /*logic<3>  reg_writeback_select;*/
-  /*logic<2>  next_pc_select;*/
-  /*logic<5>  alu_function;*/
 
 
-
-/*private:*/
   logic[31:0] rs1_data;
   logic[31:0] rs2_data;
 
   logic[4:0] inst_rd;
   logic[4:0] inst_rs1;
   logic[4:0] inst_rs2;
-/*public:*/
 
   //----------------------------------------
 
@@ -188,12 +167,11 @@ module singlecycle_datapath
 
   //----------------------------------------
 
- /*private:*/
   adder #(32) adder_pc_plus_4(
     // Inputs
     .clock(clock),
-    .operand_a(adder_pc_plus_4_operand_a), 
-    .operand_b(adder_pc_plus_4_operand_b), 
+    .operand_a(adder_pc_plus_4_operand_a),
+    .operand_b(adder_pc_plus_4_operand_b),
     // Outputs
     .result(adder_pc_plus_4_result)
   );
@@ -204,8 +182,8 @@ module singlecycle_datapath
   adder #(32) adder_pc_plus_immediate(
     // Inputs
     .clock(clock),
-    .operand_a(adder_pc_plus_immediate_operand_a), 
-    .operand_b(adder_pc_plus_immediate_operand_b), 
+    .operand_a(adder_pc_plus_immediate_operand_a),
+    .operand_b(adder_pc_plus_immediate_operand_b),
     // Outputs
     .result(adder_pc_plus_immediate_result)
   );
@@ -216,11 +194,11 @@ module singlecycle_datapath
   alu alu_core(
     // Inputs
     .clock(clock),
-    .alu_function(alu_core_alu_function), 
-    .operand_a(alu_core_operand_a), 
-    .operand_b(alu_core_operand_b), 
+    .alu_function(alu_core_alu_function),
+    .operand_a(alu_core_operand_a),
+    .operand_b(alu_core_operand_b),
     // Outputs
-    .result(alu_core_result), 
+    .result(alu_core_result),
     .result_equal_zero(alu_core_result_equal_zero)
   );
   logic[4:0] alu_core_alu_function;
@@ -232,11 +210,11 @@ module singlecycle_datapath
   multiplexer4 #(32) mux_next_pc_select(
     // Inputs
     .clock(clock),
-    .in0(mux_next_pc_select_in0), 
-    .in1(mux_next_pc_select_in1), 
-    .in2(mux_next_pc_select_in2), 
-    .in3(mux_next_pc_select_in3), 
-    .sel(mux_next_pc_select_sel), 
+    .in0(mux_next_pc_select_in0),
+    .in1(mux_next_pc_select_in1),
+    .in2(mux_next_pc_select_in2),
+    .in3(mux_next_pc_select_in3),
+    .sel(mux_next_pc_select_sel),
     // Outputs
     .out(mux_next_pc_select_out)
   );
@@ -250,9 +228,9 @@ module singlecycle_datapath
   multiplexer2 #(32) mux_operand_a(
     // Inputs
     .clock(clock),
-    .in0(mux_operand_a_in0), 
-    .in1(mux_operand_a_in1), 
-    .sel(mux_operand_a_sel), 
+    .in0(mux_operand_a_in0),
+    .in1(mux_operand_a_in1),
+    .sel(mux_operand_a_sel),
     // Outputs
     .out(mux_operand_a_out)
   );
@@ -264,9 +242,9 @@ module singlecycle_datapath
   multiplexer2 #(32) mux_operand_b(
     // Inputs
     .clock(clock),
-    .in0(mux_operand_b_in0), 
-    .in1(mux_operand_b_in1), 
-    .sel(mux_operand_b_sel), 
+    .in0(mux_operand_b_in0),
+    .in1(mux_operand_b_in1),
+    .sel(mux_operand_b_sel),
     // Outputs
     .out(mux_operand_b_out)
   );
@@ -278,15 +256,15 @@ module singlecycle_datapath
   multiplexer8 #(32) mux_reg_writeback(
     // Inputs
     .clock(clock),
-    .in0(mux_reg_writeback_in0), 
-    .in1(mux_reg_writeback_in1), 
-    .in2(mux_reg_writeback_in2), 
-    .in3(mux_reg_writeback_in3), 
-    .in4(mux_reg_writeback_in4), 
-    .in5(mux_reg_writeback_in5), 
-    .in6(mux_reg_writeback_in6), 
-    .in7(mux_reg_writeback_in7), 
-    .sel(mux_reg_writeback_sel), 
+    .in0(mux_reg_writeback_in0),
+    .in1(mux_reg_writeback_in1),
+    .in2(mux_reg_writeback_in2),
+    .in3(mux_reg_writeback_in3),
+    .in4(mux_reg_writeback_in4),
+    .in5(mux_reg_writeback_in5),
+    .in6(mux_reg_writeback_in6),
+    .in7(mux_reg_writeback_in7),
+    .sel(mux_reg_writeback_sel),
     // Outputs
     .out(mux_reg_writeback_out)
   );
@@ -304,9 +282,9 @@ module singlecycle_datapath
   single_register #(32, rv_config::INITIAL_PC) program_counter(
     // Inputs
     .clock(clock),
-    .reset(program_counter_reset), 
-    .write_enable(program_counter_write_enable), 
-    .next(program_counter_next), 
+    .reset(program_counter_reset),
+    .write_enable(program_counter_write_enable),
+    .next(program_counter_next),
     // Outputs
     .value(program_counter_value)
   );
@@ -318,13 +296,13 @@ module singlecycle_datapath
   regfile regs(
     // Inputs
     .clock(clock),
-    .write_enable(regs_write_enable), 
-    .rd_address(regs_rd_address), 
-    .rs1_address(regs_rs1_address), 
-    .rs2_address(regs_rs2_address), 
-    .rd_data(regs_rd_data), 
+    .write_enable(regs_write_enable),
+    .rd_address(regs_rd_address),
+    .rs1_address(regs_rs1_address),
+    .rs2_address(regs_rs2_address),
+    .rd_data(regs_rd_data),
     // Outputs
-    .rs1_data(regs_rs1_data), 
+    .rs1_data(regs_rs1_data),
     .rs2_data(regs_rs2_data)
   );
   logic regs_write_enable;
@@ -338,13 +316,13 @@ module singlecycle_datapath
   instruction_decoder idec(
     // Inputs
     .clock(clock),
-    .inst(idec_inst), 
+    .inst(idec_inst),
     // Outputs
-    .inst_opcode(idec_inst_opcode), 
-    .inst_funct3(idec_inst_funct3), 
-    .inst_funct7(idec_inst_funct7), 
-    .inst_rd(idec_inst_rd), 
-    .inst_rs1(idec_inst_rs1), 
+    .inst_opcode(idec_inst_opcode),
+    .inst_funct3(idec_inst_funct3),
+    .inst_funct7(idec_inst_funct7),
+    .inst_rd(idec_inst_rd),
+    .inst_rs1(idec_inst_rs1),
     .inst_rs2(idec_inst_rs2)
   );
   logic[31:0] idec_inst;
@@ -358,7 +336,7 @@ module singlecycle_datapath
   immediate_generator igen(
     // Inputs
     .clock(clock),
-    .inst(igen_inst), 
+    .inst(igen_inst),
     // Outputs
     .immediate(igen_immediate)
   );

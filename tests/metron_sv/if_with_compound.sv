@@ -4,9 +4,8 @@ module Submod
 (
   input logic clock
 );
-/*public:*/
 
-  task tick(); 
+  task tick();
   endtask
   always_ff @(posedge clock) tick();
 endmodule
@@ -16,9 +15,8 @@ module Module
 (
   input logic clock
 );
-/*public:*/
 
-  task tick(); 
+  task tick();
     if (1) begin
       /*submod.tick()*/;
     end

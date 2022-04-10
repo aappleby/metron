@@ -19,15 +19,10 @@ module single_register
   input logic[WIDTH-1:0] next,
   output logic[WIDTH-1:0] value
 );
- /*public:*/
-  /*logic<1> reset;*/
-  /*logic<1> write_enable;*/
-  /*logic<WIDTH> next;*/
-  /*logic<WIDTH> value;*/
 
   initial begin /*single_register*/ value = INITIAL; end
 
-  task tick(); 
+  task tick();
     if (reset)
       value <= INITIAL;
     else if (write_enable)

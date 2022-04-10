@@ -41,19 +41,18 @@ class data_memory_interface {
     return result;
   }
 
-  logic<32> read_data() const {
+  logic<32> read_data;
+  void tock_read_data() {
     // correct for unaligned accesses
     logic<32> position_fix = b32(bus_read_data >> (8 * b2(address2)));
 
     // sign-extend if necessary
-    logic<32> result;
     switch (b2(data_format2)) {
-      case 0b00: result = cat(dup<24>(b1(~data_format2[2] & position_fix[7])), b8(position_fix)); break;
-      case 0b01: result = cat(dup<16>(b1(~data_format2[2] & position_fix[15])), b16(position_fix)); break;
-      case 0b10: result = b32(position_fix); break;
-      default:   result = b32(DONTCARE); break;
+      case 0b00: read_data = cat(dup<24>(b1(~data_format2[2] & position_fix[7])), b8(position_fix)); break;
+      case 0b01: read_data = cat(dup<16>(b1(~data_format2[2] & position_fix[15])), b16(position_fix)); break;
+      case 0b10: read_data = b32(position_fix); break;
+      default:   read_data = b32(DONTCARE); break;
     }
-    return result;
   }
 };
 

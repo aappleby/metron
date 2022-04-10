@@ -17,3 +17,16 @@ private:
 
   logic<8> my_reg;
 };
+
+/*#
+`ifdef IVERILOG
+module Test;
+  logic clock;
+  logic[7:0] tock;
+  Module mod(.clock(clock), .tock(tock));
+  initial begin
+    if (tock != 7) $display("FAIL");
+  end
+endmodule
+`endif
+#*/

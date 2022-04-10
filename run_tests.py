@@ -12,6 +12,7 @@ max_threads = multiprocessing.cpu_count()
 
 for i, arg in enumerate(sys.argv):
     if (arg == "--coverage"):
+        os.system("rm -rf coverage")
         coverage = True
         max_threads = 1
     if (arg == "--serial"):

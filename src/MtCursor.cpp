@@ -18,6 +18,9 @@ MtCursor::MtCursor(MtModLibrary* lib, MtSourceFile* source_file,
     : lib(lib), source_file(source_file), str_out(out) {
   indent_stack.push_back("");
   cursor = source_file->source;
+
+  // FIXME preproc_vars should be a set
+  preproc_vars["IV_TEST"] = MnNode();
 }
 
 //------------------------------------------------------------------------------

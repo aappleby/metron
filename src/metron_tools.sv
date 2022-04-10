@@ -17,4 +17,12 @@ typedef logic[63:0] uint64_t;
 
 `default_nettype none
 
+/*
+`ifdef IVERILOG
+`define IV_TEST(A,B) initial #1 if (A != B) $display("FAIL", A, B);
+`else
+`define IV_TEST(A,B)
+`endif
+*/
+
 `endif

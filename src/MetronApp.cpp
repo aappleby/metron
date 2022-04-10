@@ -133,6 +133,9 @@ int main(int argc, char** argv) {
 
   LOG_B("\n");
 
+  //library.source_files[0]->root_node.dump_tree();
+  //exit(1);
+
 #if 0
   {
     Err err;

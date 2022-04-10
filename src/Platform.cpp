@@ -16,9 +16,10 @@
 #include "TreeSymbols.h"
 #include "submodules/tree-sitter/lib/include/tree_sitter/api.h"
 
+// KCOV_OFF
+
 //------------------------------------------------------------------------------
 
-// KCOV_OFF
 void print_escaped(char s) {
   if (s == '\n')
     printf("\\n");
@@ -60,7 +61,6 @@ void print_escaped(char s) {
   else                printf("%c", s);
 }
 */
-// KCOV_ON
 
 //------------------------------------------------------------------------------
 // GCC platform
@@ -78,7 +78,6 @@ int plat_mkdir(const char* path, int mode) { return mkdir(path, mode); }
 
 void debugbreak() { raise(SIGTRAP); }
 
-// KCOV_OFF
 void dprintf(const char* format, ...) {
   //static char buffer[256];
   va_list args;
@@ -86,7 +85,6 @@ void dprintf(const char* format, ...) {
   vprintf(format, args);
   va_end(args);
 }
-// KCOV_ON
 
 /*
   {
@@ -132,3 +130,4 @@ void dprintf(const char* format, ...) {
 
 #endif
 
+// KCOV_ON

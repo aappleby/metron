@@ -68,6 +68,14 @@ module singlecycle_datapath
   /*logic<3> inst_funct3;*/
   /*logic<7> inst_funct7;*/
   /*logic<32> inst_immediate;*/
+  /*logic<32> alu_result;*/
+  /*logic<5> alu_function;*/
+  /*logic<1> alu_operand_a_select;*/
+  /*logic<1> alu_operand_b_select;*/
+
+  /*logic<32> temp_rs1_data;*/
+  /*logic<32> temp_rs2_data;*/
+
 
   always_comb begin /*tock_inst*/
     idec_inst = inst;
@@ -86,14 +94,6 @@ module singlecycle_datapath
   end
 
   //----------------------------------------
-
-  /*logic<32> alu_result;*/
-  /*logic<5> alu_function;*/
-  /*logic<1> alu_operand_a_select;*/
-  /*logic<1> alu_operand_b_select;*/
-
-  /*logic<32> temp_rs1_data;*/
-  /*logic<32> temp_rs2_data;*/
 
   always_comb begin /*tock_alu_result*/
 
@@ -144,7 +144,7 @@ module singlecycle_datapath
     program_counter_reset = reset;
     program_counter_write_enable = pc_write_enable;
     program_counter_next = mux_next_pc_select_out;
-    /*program_counter.tock(reset, pc_write_enable, mux_next_pc_select.out)*/;
+    /*program_counter.tock()*/;
 
     mux_reg_writeback_sel = reg_writeback_select;
 

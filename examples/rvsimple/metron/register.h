@@ -13,23 +13,25 @@
 template <int WIDTH = 32, int INITIAL = 0>
 class single_register {
  public:
-  single_register() { _value = INITIAL; }
+  single_register() { value = INITIAL; }
 
-  logic<WIDTH> value() const { return _value; }
+  logic<WIDTH> value;
+  logic<1> reset;
+  logic<1> write_enable;
+  logic<WIDTH> next;
 
-  void tock(logic<1> reset, logic<1> write_enable, logic<WIDTH> next) {
-    tick(reset, write_enable, next);
+  void tock() {
+    tick();
   }
 
  private:
-  void tick(logic<1> reset, logic<1> write_enable, logic<WIDTH> next) {
+  void tick() {
     if (reset)
-      _value = INITIAL;
+      value = INITIAL;
     else if (write_enable)
-      _value = next;
+      value = next;
   }
 
-  logic<WIDTH> _value;
 };
 
 #endif  // RVSIMPLE_REGISTER_H

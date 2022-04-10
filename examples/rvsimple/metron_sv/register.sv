@@ -20,24 +20,26 @@ module single_register
   output logic[WIDTH-1:0] value
 );
  /*public:*/
-  initial begin /*single_register*/ _value = INITIAL; end
+  initial begin /*single_register*/ value = INITIAL; end
 
-  always_comb begin value = _value; end
+  /*logic<WIDTH> value;*/
+  /*logic<1> reset;*/
+  /*logic<1> write_enable;*/
+  /*logic<WIDTH> next;*/
 
   always_comb begin /*tock*/
-    /*tick(reset, write_enable, next)*/;
+    /*tick()*/;
   end
 
  /*private:*/
   task tick(); 
     if (reset)
-      _value <= INITIAL;
+      value <= INITIAL;
     else if (write_enable)
-      _value <= next;
+      value <= next;
   endtask
   always_ff @(posedge clock) tick();
 
-  logic[WIDTH-1:0] _value;
 endmodule
 
 `endif  // RVSIMPLE_REGISTER_H

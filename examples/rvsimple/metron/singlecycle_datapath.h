@@ -25,7 +25,7 @@ class singlecycle_datapath {
  public:
   //----------------------------------------
 
-  logic<32> pc() const { return program_counter.value(); }
+  logic<32> pc() const { return program_counter.value; }
 
   //----------------------------------------
 
@@ -44,6 +44,14 @@ class singlecycle_datapath {
   logic<3> inst_funct3;
   logic<7> inst_funct7;
   logic<32> inst_immediate;
+  logic<32> alu_result;
+  logic<5> alu_function;
+  logic<1> alu_operand_a_select;
+  logic<1> alu_operand_b_select;
+
+  logic<32> temp_rs1_data;
+  logic<32> temp_rs2_data;
+
 
   void tock_inst() {
     idec.inst = inst;
@@ -63,14 +71,6 @@ class singlecycle_datapath {
 
   //----------------------------------------
 
-  logic<32> alu_result;
-  logic<5> alu_function;
-  logic<1> alu_operand_a_select;
-  logic<1> alu_operand_b_select;
-
-  logic<32> temp_rs1_data;
-  logic<32> temp_rs2_data;
-
   void tock_alu_result() {
 
     regs.rs1_address = inst_rs1;
@@ -83,7 +83,7 @@ class singlecycle_datapath {
 
     mux_operand_a.sel = alu_operand_a_select;
     mux_operand_a.in0 = regs.rs1_data;
-    mux_operand_a.in1 = program_counter.value();
+    mux_operand_a.in1 = program_counter.value;
     mux_operand_a.tock();
 
     mux_operand_b.sel = alu_operand_b_select;
@@ -103,10 +103,10 @@ class singlecycle_datapath {
 
   void tock() {
     adder_pc_plus_4.operand_a = b32(0x00000004);
-    adder_pc_plus_4.operand_b = program_counter.value();
+    adder_pc_plus_4.operand_b = program_counter.value;
     adder_pc_plus_4.tock();
 
-    adder_pc_plus_immediate.operand_a = program_counter.value();
+    adder_pc_plus_immediate.operand_a = program_counter.value;
     adder_pc_plus_immediate.operand_b = inst_immediate;
     adder_pc_plus_immediate.tock();
 
@@ -117,7 +117,10 @@ class singlecycle_datapath {
     mux_next_pc_select.in3 = b32(0b0);
     mux_next_pc_select.tock();
 
-    program_counter.tock(reset, pc_write_enable, mux_next_pc_select.out);
+    program_counter.reset = reset;
+    program_counter.write_enable = pc_write_enable;
+    program_counter.next = mux_next_pc_select.out;
+    program_counter.tock();
 
     mux_reg_writeback.sel = reg_writeback_select;
 

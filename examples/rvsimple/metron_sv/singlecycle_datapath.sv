@@ -153,16 +153,16 @@ module singlecycle_datapath
     data_mem_write_data = regs_rs2_data;
   end
 
-  //----------------------------------------
-
-  always_comb begin /*tock3*/
+  always_comb begin /*tock_mux_next_pc_select*/
     mux_next_pc_select_sel = next_pc_select;
     mux_next_pc_select_in0 = adder_pc_plus_4_result;
     mux_next_pc_select_in1 = adder_pc_plus_immediate_result;
     mux_next_pc_select_in2 = {alu_core.result[31:1], 1'b0};
     mux_next_pc_select_in3 = 32'b0;
     /*mux_next_pc_select.tock()*/;
+  end
 
+  always_comb begin /*tock3a*/
     program_counter_reset = reset;
     program_counter_write_enable = pc_write_enable;
     program_counter_next = mux_next_pc_select_out;

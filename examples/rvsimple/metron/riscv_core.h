@@ -26,16 +26,18 @@ public:
   /*I*/ logic<32> inst;
   /*O*/ logic<32> pc; 
 
-  void tock1() {
+  void tock_datapath_pc() {
     datapath.tock_pc();
     pc = datapath.pc;
   }
 
-  void tock2() {
+  void tock_datapath_decode() {
     datapath.inst = inst;
     datapath.tock_instruction_decoder();
     datapath.tock_immediate_generator();
+  }
 
+  void tock2a() {
     ctlpath.inst_opcode = datapath.inst_opcode;
     ctlpath.inst_funct3 = datapath.inst_funct3;
     ctlpath.inst_funct7 = datapath.inst_funct7;
@@ -76,13 +78,16 @@ public:
     dmem.bus_read_data = bus_read_data;
     dmem.tock2();
 
+    datapath.next_pc_select       = ctlpath.next_pc_select;
+    datapath.tock_mux_next_pc_select();
+
     datapath.regfile_write_enable = ctlpath.regfile_write_enable;
     datapath.reg_writeback_select = ctlpath.reg_writeback_select;
-    datapath.next_pc_select       = ctlpath.next_pc_select;
     datapath.pc_write_enable      = ctlpath.pc_write_enable;
     datapath.reset                = reset;
     datapath.data_mem_read_data   = dmem.read_data;
-    datapath.tock3();
+
+    datapath.tock3a();
   }
 
   //----------------------------------------

@@ -38,16 +38,18 @@ module riscv_core
   /*I*/ /*logic<32> inst;*/
   /*O*/ /*logic<32> pc;*/ 
 
-  always_comb begin /*tock1*/
+  always_comb begin /*tock_datapath_pc*/
     /*datapath.tock_pc()*/;
     pc = datapath_pc;
   end
 
-  always_comb begin /*tock2*/
+  always_comb begin /*tock_datapath_decode*/
     datapath_inst = inst;
     /*datapath.tock_instruction_decoder()*/;
     /*datapath.tock_immediate_generator()*/;
+  end
 
+  always_comb begin /*tock2a*/
     ctlpath_inst_opcode = datapath_inst_opcode;
     ctlpath_inst_funct3 = datapath_inst_funct3;
     ctlpath_inst_funct7 = datapath_inst_funct7;
@@ -88,13 +90,16 @@ module riscv_core
     dmem_bus_read_data = bus_read_data;
     /*dmem.tock2()*/;
 
+    datapath_next_pc_select       = ctlpath_next_pc_select;
+    /*datapath.tock_mux_next_pc_select()*/;
+
     datapath_regfile_write_enable = ctlpath_regfile_write_enable;
     datapath_reg_writeback_select = ctlpath_reg_writeback_select;
-    datapath_next_pc_select       = ctlpath_next_pc_select;
     datapath_pc_write_enable      = ctlpath_pc_write_enable;
     datapath_reset                = reset;
     datapath_data_mem_read_data   = dmem_read_data;
-    /*datapath.tock3()*/;
+
+    /*datapath.tock3a()*/;
   end
 
   //----------------------------------------

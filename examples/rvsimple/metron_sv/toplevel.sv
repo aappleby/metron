@@ -40,13 +40,14 @@ module toplevel
 
   always_comb begin /*tock*/
     core_reset = reset;
-    /*core.tock1()*/;
+    /*core.tock_datapath_pc()*/;
 
     text_memory_bus_address = core_pc;
     /*text_memory_bus.tock_read_data()*/;
 
     core_inst = text_memory_bus_read_data;
-    /*core.tock2()*/;
+    /*core.tock_datapath_decode()*/;
+    /*core.tock2a()*/;
 
     data_memory_bus_address      = core_bus_address;
     data_memory_bus_read_enable  = core_bus_read_enable;

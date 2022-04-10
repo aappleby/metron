@@ -154,16 +154,16 @@ public:
     data_mem_write_data = regs.rs2_data;
   }
 
-  //----------------------------------------
-
-  void tock3() {
+  void tock_mux_next_pc_select() {
     mux_next_pc_select.sel = next_pc_select;
     mux_next_pc_select.in0 = adder_pc_plus_4.result;
     mux_next_pc_select.in1 = adder_pc_plus_immediate.result;
     mux_next_pc_select.in2 = cat(b31(alu_core.result, 1), b1(0b0));
     mux_next_pc_select.in3 = b32(0b0);
     mux_next_pc_select.tock();
+  }
 
+  void tock3a() {
     program_counter.reset = reset;
     program_counter.write_enable = pc_write_enable;
     program_counter.next = mux_next_pc_select.out;

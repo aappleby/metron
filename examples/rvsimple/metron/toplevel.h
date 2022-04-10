@@ -28,13 +28,14 @@ class toplevel {
 
   void tock(logic<1> reset) {
     core.reset = reset;
-    core.tock1();
+    core.tock_datapath_pc();
 
     text_memory_bus.address = core.pc;
     text_memory_bus.tock_read_data();
 
     core.inst = text_memory_bus.read_data;
-    core.tock2();
+    core.tock_datapath_decode();
+    core.tock2a();
 
     data_memory_bus.address      = core.bus_address;
     data_memory_bus.read_enable  = core.bus_read_enable;

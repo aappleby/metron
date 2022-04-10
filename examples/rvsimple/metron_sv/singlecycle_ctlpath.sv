@@ -49,8 +49,6 @@ module singlecycle_ctlpath
   always_comb begin /*tock_control*/
     control_inst_opcode = inst_opcode;
     /*control.tock_alu_op_type2()*/;
-    /*control.tock_alu_operand_a_select()*/;
-    /*control.tock_alu_operand_b_select()*/;
   end
 
   always_comb begin /*tock_alu_control*/
@@ -58,8 +56,10 @@ module singlecycle_ctlpath
     alu_ctrl_inst_funct3 = inst_funct3;
     alu_ctrl_inst_funct7 = inst_funct7;
     /*alu_ctrl.tock_alu_function()*/;
-
     alu_function         = alu_ctrl_alu_function;
+
+    /*control.tock_alu_operand_a_select()*/;
+    /*control.tock_alu_operand_b_select()*/;
     alu_operand_a_select = control_alu_operand_a_select;
     alu_operand_b_select = control_alu_operand_b_select;
   end

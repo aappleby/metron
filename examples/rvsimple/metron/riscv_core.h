@@ -46,7 +46,8 @@ public:
     datapath.alu_operand_b_select = ctlpath.alu_operand_b_select;
     
     datapath.tock_regs1();
-    datapath.tock2a();
+    datapath.tock_mux_operand_a();
+    datapath.tock2b();
 
     dmem.read_enable  = ctlpath.data_mem_read_enable;
     dmem.write_enable = ctlpath.data_mem_write_enable;

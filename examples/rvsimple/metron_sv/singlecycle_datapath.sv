@@ -114,12 +114,15 @@ module singlecycle_datapath
     rs2_data = regs_rs2_data;
   end
 
-  always_comb begin /*tock2a*/
+  always_comb begin /*tock_mux_operand_a*/
     mux_operand_a_sel = alu_operand_a_select;
     mux_operand_a_in0 = regs_rs1_data;
     mux_operand_a_in1 = program_counter_value;
     /*mux_operand_a.tock()*/;
 
+  end
+
+  always_comb begin /*tock2b*/
     mux_operand_b_sel = alu_operand_b_select;
     mux_operand_b_in0 = regs_rs2_data;
     mux_operand_b_in1 = igen_immediate;

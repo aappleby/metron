@@ -115,12 +115,15 @@ public:
     rs2_data = regs.rs2_data;
   }
 
-  void tock2a() {
+  void tock_mux_operand_a() {
     mux_operand_a.sel = alu_operand_a_select;
     mux_operand_a.in0 = regs.rs1_data;
     mux_operand_a.in1 = program_counter.value;
     mux_operand_a.tock();
 
+  }
+
+  void tock2b() {
     mux_operand_b.sel = alu_operand_b_select;
     mux_operand_b.in0 = regs.rs2_data;
     mux_operand_b.in1 = igen.immediate;

@@ -58,7 +58,8 @@ module riscv_core
     datapath_alu_operand_b_select = ctlpath_alu_operand_b_select;
     
     /*datapath.tock_regs1()*/;
-    /*datapath.tock2a()*/;
+    /*datapath.tock_mux_operand_a()*/;
+    /*datapath.tock2b()*/;
 
     dmem_read_enable  = ctlpath_data_mem_read_enable;
     dmem_write_enable = ctlpath_data_mem_write_enable;

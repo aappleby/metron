@@ -15,6 +15,7 @@
 
 class toplevel {
  public:
+  logic<1>  reset;
   logic<32> o_bus_read_data;
   logic<32> o_bus_address;
   logic<32> o_bus_write_data;
@@ -26,7 +27,7 @@ class toplevel {
 
   //----------------------------------------
 
-  void tock(logic<1> reset) {
+  void tock() {
     core.reset = reset;
     core.tock_datapath_pc();
 

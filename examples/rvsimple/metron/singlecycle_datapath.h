@@ -106,7 +106,7 @@ public:
 
   //----------------------------------------
 
-  void tock_rsN_data() {
+  void tock_reg_read() {
     regs.rd_address  = idec.inst_rd;
     regs.rs1_address = idec.inst_rs1;
     regs.rs2_address = idec.inst_rs2;

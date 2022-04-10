@@ -42,19 +42,18 @@ public:
 
     ctlpath.tock_alu_function();
     ctlpath.tock_alu_operand_select();
-    ctlpath.tock_data_mem_enable();
 
     datapath.alu_function         = ctlpath.alu_function;
     datapath.alu_operand_a_select = ctlpath.alu_operand_a_select;
     datapath.alu_operand_b_select = ctlpath.alu_operand_b_select;
     
-    datapath.tock_rsN_data();
+    datapath.tock_reg_read();
     datapath.tock_mux_operand_a();
     datapath.tock_mux_operand_b();
     datapath.tock_alu();
 
+    ctlpath.tock_data_mem_enable();
     datapath.tock_data_mem_write_data();
-
     dmem.read_enable  = ctlpath.data_mem_read_enable;
     dmem.write_enable = ctlpath.data_mem_write_enable;
     dmem.data_format  = datapath.inst_funct3;

@@ -16,7 +16,7 @@
 module toplevel
 (
   input logic clock,
-  input logic reset,
+  input logic  reset,
   output logic[31:0] o_bus_read_data,
   output logic[31:0] o_bus_address,
   output logic[31:0] o_bus_write_data,
@@ -27,6 +27,7 @@ module toplevel
   output logic[31:0] o_pc
 );
  /*public:*/
+  /*logic<1>  reset;*/
   /*logic<32> o_bus_read_data;*/
   /*logic<32> o_bus_address;*/
   /*logic<32> o_bus_write_data;*/

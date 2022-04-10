@@ -164,26 +164,22 @@ module riscv_core
   data_memory_interface dmem(
     // Inputs
     .clock(clock),
-    .bus_read_data(dmem_bus_read_data), 
     .address(dmem_address), 
     .data_format(dmem_data_format), 
     .write_data(dmem_write_data), 
+    .bus_read_data(dmem_bus_read_data), 
     // Outputs
-    .address2(dmem_address2), 
-    .data_format2(dmem_data_format2), 
-    .bus_write_data(dmem_bus_write_data), 
     .read_data(dmem_read_data), 
+    .bus_write_data(dmem_bus_write_data), 
     .bus_byte_enable(dmem_bus_byte_enable)
   );
-  logic[31:0] dmem_bus_read_data;
   logic[31:0] dmem_address;
   logic[2:0] dmem_data_format;
   logic[31:0] dmem_write_data;
-  logic[31:0] dmem_address2;
-  logic[2:0] dmem_data_format2;
-  logic[31:0] dmem_bus_write_data;
+  logic[31:0] dmem_bus_read_data;
   logic[31:0] dmem_read_data;
-  logic[3:0] dmem_bus_byte_enable;
+  logic[31:0] dmem_bus_write_data;
+  logic[3:0]  dmem_bus_byte_enable;
 
 endmodule;
 

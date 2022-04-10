@@ -28,9 +28,9 @@ class alu {
       case ALU_SLL:  result = operand_a << b5(operand_b); break;
       case ALU_SRL:  result = operand_a >> b5(operand_b); break;
       case ALU_SRA:  result = sra(operand_a, b5(operand_b)); break;
-      case ALU_SEQ:  result = cat(b31(0), b1(operand_a == operand_b)); break;
-      case ALU_SLT:  result = cat(b31(0), b1(signed(operand_a) < signed(operand_b))); break;
-      case ALU_SLTU: result = cat(b31(0), b1(unsigned(operand_a) < unsigned(operand_b))); break;
+      case ALU_SEQ:  result = cat(b31(0b0), b1(operand_a == operand_b)); break;
+      case ALU_SLT:  result = cat(b31(0b0), b1(signed(operand_a) < signed(operand_b))); break;
+      case ALU_SLTU: result = cat(b31(0b0), b1(unsigned(operand_a) < unsigned(operand_b))); break;
       case ALU_XOR:  result = operand_a ^ operand_b; break;
       case ALU_OR:   result = operand_a | operand_b; break;
       case ALU_AND:  result = operand_a & operand_b; break;

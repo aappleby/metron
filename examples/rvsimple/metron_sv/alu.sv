@@ -36,9 +36,9 @@ module alu
       /*case*/ ALU_SLL:  result = operand_a << 5'(operand_b); /*break;*/
       /*case*/ ALU_SRL:  result = operand_a >> 5'(operand_b); /*break;*/
       /*case*/ ALU_SRA:  result = ($signed(operand_a) >>> 5'(operand_b)); /*break;*/
-      /*case*/ ALU_SEQ:  result = {31'd0, 1'(operand_a == operand_b)}; /*break;*/
-      /*case*/ ALU_SLT:  result = {31'd0, 1'($signed(operand_a) < $signed(operand_b))}; /*break;*/
-      /*case*/ ALU_SLTU: result = {31'd0, 1'($unsigned(operand_a) < $unsigned(operand_b))}; /*break;*/
+      /*case*/ ALU_SEQ:  result = {31'b0, 1'(operand_a == operand_b)}; /*break;*/
+      /*case*/ ALU_SLT:  result = {31'b0, 1'($signed(operand_a) < $signed(operand_b))}; /*break;*/
+      /*case*/ ALU_SLTU: result = {31'b0, 1'($unsigned(operand_a) < $unsigned(operand_b))}; /*break;*/
       /*case*/ ALU_XOR:  result = operand_a ^ operand_b; /*break;*/
       /*case*/ ALU_OR:   result = operand_a | operand_b; /*break;*/
       /*case*/ ALU_AND:  result = operand_a & operand_b; /*break;*/

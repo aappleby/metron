@@ -80,8 +80,8 @@ void parse_simple(std::string src, MtModLibrary& library) {
 
   Err err;
 
-  err |= library.load_blob("test.h", "test.h", src);
-  err |= library.process_sources();
+  err << library.load_blob("test.h", "test.h", src);
+  err << library.process_sources();
 }
 
 //------------------------------------------------------------------------------
@@ -102,8 +102,8 @@ std::string translate_simple(std::string src) {
   MtCursor cursor(&library, source_file, &out);
   cursor.cursor = source_file->source;
   cursor.source_file = source_file;
-  err |= cursor.emit_translation_unit(source_file->root_node);
-  err |= cursor.emit_printf("\n");
+  err << cursor.emit_translation_unit(source_file->root_node);
+  err << cursor.emit_printf("\n");
 
   for (auto c : out) assert(c > 0);
 

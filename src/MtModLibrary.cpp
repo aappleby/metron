@@ -29,8 +29,7 @@ CHECK_RETURN Err MtModLibrary::load_source(const char* filename, MtSourceFile*& 
   Err err;
 
   if (get_source(filename)) {
-    LOG_Y("Duplicate filename %s\n", filename);
-    return err;
+    return WARN("Duplicate filename %s\n", filename);
   }
 
   assert(!sources_loaded);
@@ -63,8 +62,7 @@ CHECK_RETURN Err MtModLibrary::load_source(const char* filename, MtSourceFile*& 
   }
 
   if (!found) {
-    LOG_R("Couldn't find %s in path!\n", filename);
-    err << true;
+    err << ERR("Couldn't find %s in path!", filename);
   }
 
   return err;
@@ -112,8 +110,8 @@ CHECK_RETURN Err MtModLibrary::load_blob(const std::string& filename, const std:
 
 //------------------------------------------------------------------------------
 
-bool MtModLibrary::process_sources() {
-  bool error = false;
+CHECK_RETURN Err MtModLibrary::process_sources() {
+  Err err;
 
   assert(!sources_loaded);
   assert(!sources_processed);
@@ -129,11 +127,11 @@ bool MtModLibrary::process_sources() {
   //----------------------------------------
 
   for (auto mod : modules) {
-    error |= mod->load_pass1();
+    err << mod->load_pass1();
   }
-  if (error) {
+  if (err.has_err()) {
     LOG_R("Load pass 1 failed\n");
-    return error;
+    return err;
   }
   else {
     LOG_G("Load pass 1 ok\n");
@@ -143,11 +141,11 @@ bool MtModLibrary::process_sources() {
   // Generate call tree / temporal check for toplevel modules
 
   for (auto m : modules) {
-    error |= m->trace();
+    err << m->trace();
   }
-  if (error) {
+  if (err.has_err()) {
     LOG_R("Temporal trace failed\n");
-    return error;
+    return err;
   }
   else {
     LOG_G("Temporal trace pass\n");
@@ -156,11 +154,11 @@ bool MtModLibrary::process_sources() {
   //----------------------------------------
 
   for (auto mod : modules) {
-    error |= mod->load_pass2();
+    err << mod->load_pass2();
   }
-  if (error) {
+  if (err.has_err()) {
     LOG_R("Load pass 2 failed\n");
-    return error;
+    return err;
   }
   else {
     LOG_G("Load pass 2 ok\n");
@@ -179,7 +177,7 @@ bool MtModLibrary::process_sources() {
 
   sources_processed = true;
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------

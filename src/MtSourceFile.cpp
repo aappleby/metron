@@ -14,8 +14,8 @@ extern const TSLanguage* tree_sitter_cpp();
 MtSourceFile::MtSourceFile() {
 }
 
-bool MtSourceFile::init(const std::string& _filename, const std::string& _full_path, const std::string& _src_blob) {
-  bool error = false;
+CHECK_RETURN Err MtSourceFile::init(const std::string& _filename, const std::string& _full_path, const std::string& _src_blob) {
+  Err err;
 
   filename = _filename;
   full_path = _full_path;
@@ -40,9 +40,9 @@ bool MtSourceFile::init(const std::string& _filename, const std::string& _full_p
   root_node = MnTranslationUnit(MnNode(ts_root, root_sym, 0, this));
 
   assert(modules.empty());
-  error |= collect_modules(root_node);
+  err << collect_modules(root_node);
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
@@ -61,33 +61,33 @@ MtSourceFile::~MtSourceFile() {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN bool MtSourceFile::collect_modules(MnNode toplevel) {
-  bool error = false;
+CHECK_RETURN Err MtSourceFile::collect_modules(MnNode toplevel) {
+  Err err;
 
   for (const auto& c : toplevel) {
     switch (c.sym) {
       case sym_template_declaration: {
         MnNode mod_root(c.node, c.sym, 0, this);
         MtModule* mod = new MtModule();
-        error |= mod->init(this, MnTemplateDecl(mod_root));
+        err << mod->init(this, MnTemplateDecl(mod_root));
         modules.push_back(mod);
         break;
       }
       case sym_class_specifier: {
         MnNode mod_root(c.node, c.sym, 0, this);
         MtModule* mod = new MtModule();
-        error |= mod->init(this, MnClassSpecifier(mod_root));
+        err << mod->init(this, MnClassSpecifier(mod_root));
         modules.push_back(mod);
         break;
       }
       case sym_preproc_ifdef: {
-        error |= collect_modules(c);
+        err << collect_modules(c);
         break;
       }
     }
   }
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------

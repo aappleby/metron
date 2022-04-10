@@ -109,7 +109,7 @@ int main(int argc, char** argv) {
   //----------
   // Load all source files.
 
-  bool error = false;
+  Err err;
 
   if (src_root.empty()) {
     LOG_R("No source root specified, using current directory\n");
@@ -122,20 +122,31 @@ int main(int argc, char** argv) {
   LOG_B("Loading source files\n");
   for (auto& name : source_names) {
     MtSourceFile* source;
-    error |= library.load_source(name.c_str(), source);
+    err << library.load_source(name.c_str(), source);
   }
-  if (error) {
+  if (err.has_err()) {
     LOG_R("Exiting due to error\n");
     return -1;
   }
 
   LOG_B("\n");
 
+#if 0
+  {
+    Err err;
+    err << ERR("Butts are butts.");
+    err << WARN("Beets are beets.");
+
+    if (err & 1) printf("There was a warning.\n");
+    if (err & 2) printf("There was an error.\n");
+  }
+
   exit(0);
+#endif
 
   LOG_B("Processing source files\n");
-  error |= library.process_sources();
-  if (error) {
+  err << library.process_sources();
+  if (err.has_err()) {
     LOG_R("Exiting due to error\n");
     return -1;
   }
@@ -212,10 +223,10 @@ int main(int argc, char** argv) {
     cursor.cursor = source_file->source;
     cursor.source_file = source_file;
 
-    bool emit_error = cursor.emit_dispatch(source_file->root_node);
-    err |= cursor.emit_printf("\n");
+    err << cursor.emit_dispatch(source_file->root_node);
+    err << cursor.emit_printf("\n");
 
-    if (emit_error) {
+    if (err.has_err()) {
       LOG_R("Error during code generation\n");
       exit(-1);
     }

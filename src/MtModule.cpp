@@ -29,8 +29,8 @@ bool MtField::is_submod() const {
 MtModule::MtModule() {
 }
 
-CHECK_RETURN bool MtModule::init(MtSourceFile *_source_file, MnTemplateDecl _node) {
-  bool error = false;
+CHECK_RETURN Err MtModule::init(MtSourceFile *_source_file, MnTemplateDecl _node) {
+  Err err;
 
   source_file = _source_file;
   mod_template = _node;
@@ -48,26 +48,24 @@ CHECK_RETURN bool MtModule::init(MtSourceFile *_source_file, MnTemplateDecl _nod
   }
 
   if (mod_param_list.is_null()) {
-    LOG_R("No template parameter list found under template\n");
-    error = true;
+    err << ERR("No template parameter list found under template");
   }
 
   if (mod_class) {
     mod_name = mod_class.get_field(field_name).text();
   }
   else {
-    LOG_R("No class node found under template\n");
-    error = true;
+    err << ERR("No class node found under template");
   }
 
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN bool MtModule::init(MtSourceFile *_source_file, MnClassSpecifier _node) {
-  bool error = false;
+CHECK_RETURN Err MtModule::init(MtSourceFile *_source_file, MnClassSpecifier _node) {
+  Err err;
 
   source_file = _source_file;
   mod_template = MnNode::null;
@@ -78,11 +76,10 @@ CHECK_RETURN bool MtModule::init(MtSourceFile *_source_file, MnClassSpecifier _n
     mod_name = mod_class.get_field(field_name).text();
   }
   else {
-    LOG_R("mod_class is null\n");
-    error = true;
+    err << ERR("mod_class is null");
   }
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
@@ -323,11 +320,11 @@ void MtModule::dump_deltas() const {
 // modules when we're collecting fields.
 
 CHECK_RETURN Err MtModule::load_pass1() {
-  Err error;
+  Err err;
 
-  error |= collect_modparams();
-  error |= collect_methods();
-  error |= collect_field_and_submods();
+  err << collect_modparams();
+  err << collect_methods();
+  err << collect_field_and_submods();
 
 #if 0
   // enums = new std::vector<MtEnum>();
@@ -371,13 +368,13 @@ CHECK_RETURN Err MtModule::load_pass1() {
   }
 #endif
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtModule::collect_modparams() {
-  Err error;
+  Err err;
 
   if (mod_template) {
     auto params = mod_template.get_field(field_parameters);
@@ -388,19 +385,18 @@ CHECK_RETURN Err MtModule::collect_modparams() {
           child.sym == sym_optional_parameter_declaration) {
         modparams.push_back(MtParam::construct(child));
       } else {
-        LOG_R("Unknown template parameter type %s\n", child.ts_node_type());
-        error = true;
+        err << ERR("Unknown template parameter type %s", child.ts_node_type());
       }
     }
   }
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtModule::collect_field_and_submods() {
-  Err error;
+  Err err;
 
   assert(all_fields.empty());
   assert(all_submods.empty());
@@ -432,13 +428,13 @@ CHECK_RETURN Err MtModule::collect_field_and_submods() {
     }
   }
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtModule::collect_methods() {
-  Err error;
+  Err err;
 
   assert(all_methods.empty());
 
@@ -496,38 +492,32 @@ CHECK_RETURN Err MtModule::collect_methods() {
     all_methods.push_back(m);
 
     if (m->is_tick && m->has_return) {
-      LOG_R("Tick method %s has a return value\n", m->name().c_str());
-      error = true;
+      err << ERR("Tick method %s has a return value", m->name().c_str());
       break;
     }
 
     if (m->is_public && !m->is_const && !(m->is_tick || m->is_tock || m->is_init)) {
-      LOG_R("Public non-init/tick/tock method %s is not const\n", m->name().c_str());
-      error = true;
+      err << ERR("Public non-init/tick/tock method %s is not const", m->name().c_str());
       break;
     }
 
     if (m->is_init && !m->is_public) {
-      LOG_R("Init method %s is not public\n", m->name().c_str());
-      error = true;
+      err << ERR("Init method %s is not public", m->name().c_str());
       break;
     }
 
     if (m->is_init && m->is_const) {
-      LOG_R("Init method %s is const\n", m->name().c_str());
-      error = true;
+      err << ERR("Init method %s is const", m->name().c_str());
       break;
     }
 
     if (m->is_tick && m->is_const) {
-      LOG_R("Tick method %s is const\n", m->name().c_str());
-      error = true;
+      err << ERR("Tick method %s is const", m->name().c_str());
       break;
     }
 
     if (m->is_tock && m->is_const) {
-      LOG_R("Tock method %s is const\n", m->name().c_str());
-      error = true;
+      err << ERR("Tock method %s is const\n", m->name().c_str());
       break;
     }
 
@@ -539,8 +529,7 @@ CHECK_RETURN Err MtModule::collect_methods() {
       tock_methods.push_back(m);
     } else if (m->is_task) {
       if (m->is_const) {
-        LOG_R("CONST TASK FUNCTION BAD!\n");
-        error = true;
+        err << ERR("CONST TASK FUNCTION BAD!\n");
       }
       task_methods.push_back(m);
     } else {
@@ -549,13 +538,13 @@ CHECK_RETURN Err MtModule::collect_methods() {
     }
   }
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtModule::trace() {
-  Err error;
+  Err err;
   LOG_G("Tracing %s\n", name().c_str());
   LOG_INDENT_SCOPE();
 
@@ -574,9 +563,9 @@ CHECK_RETURN Err MtModule::trace() {
     tracer._mod_stack.push_back(this);
     tracer._method_stack.push_back(m);
     tracer._state_stack.push_back(&state_method);
-    error |= tracer.trace_dispatch(m->node.get_field(field_body));
+    err << tracer.trace_dispatch(m->node.get_field(field_body));
 
-    if (error) {
+    if (err.has_err()) {
       LOG_R("Tracing %s.%s failed\n", name().c_str(), m->name().c_str());
       break;
     }
@@ -588,8 +577,7 @@ CHECK_RETURN Err MtModule::trace() {
       auto new_state = merge_delta(old_state, DELTA_EF);
 
       if (new_state == FIELD_INVALID) {
-        LOG_R("Field %s was %s, now %s!\n", pair.first.c_str(), to_string(old_state), to_string(new_state));
-        error = true;
+        err << ERR("Field %s was %s, now %s!", pair.first.c_str(), to_string(old_state), to_string(new_state));
         break;
       }
 
@@ -598,8 +586,8 @@ CHECK_RETURN Err MtModule::trace() {
 
     // Merge this method's state with the module-wide state.
 
-    error |= merge_series(mod_states, state_method, mod_states);
-    if (error) {
+    err << merge_series(mod_states, state_method, mod_states);
+    if (err.has_err()) {
       LOG_R("MtModule::trace - Cannot merge state_mod->state_method\n");
 
       LOG_R("state_mod:\n");
@@ -614,7 +602,7 @@ CHECK_RETURN Err MtModule::trace() {
     }
   }
 
-  if (error) return error;
+  if (err.has_err()) return err;
 
   // Check that all sigs and regs ended up in a valid state.
   for (auto& pair : mod_states) {
@@ -633,33 +621,29 @@ CHECK_RETURN Err MtModule::trace() {
       break;
 
     case FIELD________:
-      LOG_R("Field %s was never read or written!\n", pair.first.c_str());
-      error = true;
+      err << ERR("Field %s was never read or written!\n", pair.first.c_str());
       break;
     case FIELD____WR__:
-      LOG_R("Register %s was written but never read or locked - internal error?\n", pair.first.c_str());
-      error = true;
+      err << ERR("Register %s was written but never read or locked - internal error?\n", pair.first.c_str());
       break;
     case FIELD____WR_L:
       if (field && !field->is_public()) {
-        LOG_Y("Private register %s was written and locked but never read - is it redundant?\n", pair.first.c_str());
+        err << WARN("Private register %s was written and locked but never read - is it redundant?\n", pair.first.c_str());
       }
       break;
     case FIELD_RD_____:
       if (field && !field->is_public()) {
-        LOG_Y("Private field %s was read but never written - should it be const?\n", pair.first.c_str());
+        err << WARN("Private field %s was read but never written - should it be const?\n", pair.first.c_str());
       }
       break;
     case FIELD_RD_WR__:
-      LOG_R("Register %s was written but never locked - internal error?\n", pair.first.c_str());
-      error = true;
+      err << ERR("Register %s was written but never locked - internal error?\n", pair.first.c_str());
       break;
     case FIELD____WS__:
-      LOG_Y("Signal %s was written but never read - is it an output?\n", pair.first.c_str());
+      err << WARN("Signal %s was written but never read - is it an output?\n", pair.first.c_str());
       break;
     default:
-      LOG_R("Field %s has an invalid state %d\n", pair.first.c_str(), pair.second);
-      error = true;
+      err << ERR("Field %s has an invalid state %d\n", pair.first.c_str(), pair.second);
       break;
     }
   }
@@ -669,12 +653,11 @@ CHECK_RETURN Err MtModule::trace() {
     if (f->is_submod()) continue;
     if (f->is_param()) continue;
     if (!mod_states.contains(f->name())) {
-      LOG_R("No method in the public interface of %s touched field %s!\n", name().c_str(), f->name().c_str());
-      error = true;
+      err << ERR("No method in the public interface of %s touched field %s!\n", name().c_str(), f->name().c_str());
     }
   }
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
@@ -682,15 +665,15 @@ CHECK_RETURN Err MtModule::trace() {
 // corresponding methods.
 
 CHECK_RETURN Err MtModule::load_pass2() {
-  Err error;
+  Err err;
   assert (!mod_class.is_null());
 
-  error |= collect_input_arguments();
-  error |= categorize_fields();
+  err << collect_input_arguments();
+  err << categorize_fields();
 
-  error |= build_port_map();
-  error |= sanity_check();
-  return error;
+  err << build_port_map();
+  err << sanity_check();
+  return err;
 }
 
 //------------------------------------------------------------------------------
@@ -699,7 +682,7 @@ CHECK_RETURN Err MtModule::load_pass2() {
 // but we don't want duplicates in the Verilog port list.
 
 CHECK_RETURN Err MtModule::collect_input_arguments() {
-  Err error;
+  Err err;
 
   assert(input_arguments.empty());
 
@@ -731,13 +714,13 @@ CHECK_RETURN Err MtModule::collect_input_arguments() {
     }
   }
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtModule::categorize_fields() {
-  Err error;
+  Err err;
 
   assert(localparams.empty());
   assert(input_signals.empty());
@@ -798,7 +781,7 @@ CHECK_RETURN Err MtModule::categorize_fields() {
     }
   }
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
@@ -808,7 +791,7 @@ CHECK_RETURN Err MtModule::categorize_fields() {
 CHECK_RETURN Err MtModule::build_port_map() {
   assert(port_map.empty());
 
-  Err error;
+  Err err;
 
   //----------------------------------------
   // Assignments to submod fields bind ports.
@@ -860,8 +843,7 @@ CHECK_RETURN Err MtModule::build_port_map() {
           call_submod = source_file->lib->get_module(call_member->type_name());
           call_method = call_submod->get_method(node_method.text());
         } else {
-          LOG_R("Submodule %s not found!\n", node_this.text().c_str());
-          error = true;
+          err << ERR("Submodule %s not found!\n", node_this.text().c_str());
           return;
         }
       }
@@ -876,7 +858,7 @@ CHECK_RETURN Err MtModule::build_port_map() {
       MtCursor cursor(source_file->lib, source_file, &val);
       auto arg_node = node_args.named_child(i);
       cursor.cursor = arg_node.start();
-      error |= cursor.emit_dispatch(arg_node);
+      err << cursor.emit_dispatch(arg_node);
 
       // FIXME - multiple port bindings are OK? I'm not sure.
 
@@ -907,8 +889,7 @@ CHECK_RETURN Err MtModule::build_port_map() {
       auto key = submod->name() + "." + submod_mod->input_signals[i]->name();
 
       if (!port_map.contains(key)) {
-        LOG_R("No input bound to submod port %s\n", key.c_str());
-        error |= true;
+        err << ERR("No input bound to submod port %s\n", key.c_str());
       }
     }
 
@@ -916,19 +897,18 @@ CHECK_RETURN Err MtModule::build_port_map() {
       auto key = submod->name() + "." + submod_mod->input_arguments[i]->name();
 
       if (!port_map.contains(key)) {
-        LOG_R("No input bound to submod port %s\n", key.c_str());
-        error |= true;
+        err << ERR("No input bound to submod port %s\n", key.c_str());
       }
     }
   }
     
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtModule::sanity_check() {
-  Err error;
+  Err err;
 
   // Inputs, outputs, registers, and submods must not overlap.
 
@@ -936,8 +916,7 @@ CHECK_RETURN Err MtModule::sanity_check() {
 
   for (auto n : input_signals) {
     if (field_names.contains(n->name())) {
-      LOG_R("Duplicate input name %s\n", n->name().c_str());
-      error = true;
+      err << ERR("Duplicate input name %s\n", n->name().c_str());
     } else {
       field_names.insert(n->name());
     }
@@ -945,8 +924,7 @@ CHECK_RETURN Err MtModule::sanity_check() {
 
   for (auto n : input_arguments) {
     if (field_names.contains(n->name())) {
-      LOG_R("Duplicate input name %s\n", n->name().c_str());
-      error = true;
+      err << ERR("Duplicate input name %s\n", n->name().c_str());
     } else {
       field_names.insert(n->name());
     }
@@ -954,8 +932,7 @@ CHECK_RETURN Err MtModule::sanity_check() {
 
   for (auto n : output_signals) {
     if (field_names.contains(n->name())) {
-      LOG_R("Duplicate output name %s\n", n->name().c_str());
-      error = true;
+      err << ERR("Duplicate output name %s\n", n->name().c_str());
     } else {
       field_names.insert(n->name());
     }
@@ -963,8 +940,7 @@ CHECK_RETURN Err MtModule::sanity_check() {
 
   for (auto n : output_registers) {
     if (field_names.contains(n->name())) {
-      LOG_R("Duplicate output name %s\n", n->name().c_str());
-      error = true;
+      err << ERR("Duplicate output name %s\n", n->name().c_str());
     } else {
       field_names.insert(n->name());
     }
@@ -983,14 +959,13 @@ CHECK_RETURN Err MtModule::sanity_check() {
 
   for (auto n : all_submods) {
     if (field_names.contains(n->name())) {
-      LOG_R("Duplicate submod name %s\n", n->name().c_str());
-      error = true;
+      err << ERR("Duplicate submod name %s\n", n->name().c_str());
     } else {
       field_names.insert(n->name());
     }
   }
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------

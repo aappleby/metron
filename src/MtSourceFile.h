@@ -15,10 +15,10 @@ typedef std::vector<uint8_t> blob;
 
 struct MtSourceFile {
   MtSourceFile();
-  bool init(const std::string& _filename, const std::string& _full_path, const std::string& _src_blob);
+  CHECK_RETURN Err init(const std::string& _filename, const std::string& _full_path, const std::string& _src_blob);
   ~MtSourceFile();
 
-  CHECK_RETURN bool collect_modules(MnNode toplevel);
+  CHECK_RETURN Err collect_modules(MnNode toplevel);
   MtModule* get_module(const std::string& name);
 
   MtModLibrary* lib = nullptr;

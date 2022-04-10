@@ -116,7 +116,7 @@ CHECK_RETURN Err MtCursor::emit_ws_to_newline() {
 CHECK_RETURN Err MtCursor::skip_over(MnNode n) {
   Err err;
   if (n.is_null()) {
-    err = 1;
+    err << ERR("Skipping over null node");
   } else {
     assert(cursor == n.start());
     cursor = n.end();
@@ -270,8 +270,13 @@ CHECK_RETURN Err MtCursor::emit_assignment(MnAssignmentExpr n) {
   }
 
   // Emit_dispatch makes sense here, as we really could have anything on the
+  err << emit_text(n.op()) << emit_ws() << emit_dispatch(rhs);
 
-  return err << emit_text(n.op()) << emit_ws() << emit_dispatch(rhs) << (cursor != n.end());
+  if (cursor != n.end()) {
+    err << ERR("Cursor not at end");
+  }
+
+  return err;
 }
 
 //------------------------------------------------------------------------------
@@ -980,8 +985,7 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
         if (i != body_count - 1) {
           err << emit_return(MnReturnStatement(c));
         } else {
-          LOG_R("Return statement not at end of function body\n");
-          err = true;
+          err << ERR("Return statement not at end of function body\n");
         }
         break;
 
@@ -989,7 +993,7 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
         err << emit_dispatch(c);
         break;
     }
-    if (err) return err;
+    if (err.has_err()) return err;
     if (i != body_count - 1) err << emit_ws();
   }
 
@@ -1716,7 +1720,7 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
         err << emit_dispatch(c);
         break;
     }
-    if (err) return err;
+    if (err.has_err()) return err;
     if (i != body_size - 1) {
       err << emit_ws();
     }
@@ -1804,7 +1808,7 @@ CHECK_RETURN Err MtCursor::emit_compound(MnCompoundStatement n) {
   pop_indent(n);
 
   node_stack.pop_back();
-  err << (cursor != n.end());
+  if (cursor != n.end()) err << ERR("Cursor not at end");
   return err;
 }
 
@@ -1845,7 +1849,6 @@ CHECK_RETURN Err MtCursor::emit_template_type(MnTemplateType n) {
   }
 
   cursor = n.end();
-  assert(cursor == n.end());
   return err;
 }
 
@@ -1874,7 +1877,7 @@ CHECK_RETURN Err MtCursor::emit_template_arg_list(MnTemplateArgList n) {
       err << emit_ws();
     }
   }
-  assert(cursor == n.end());
+  if (cursor != n.end()) err << ERR("Cursor not at end");
   return err;
 }
 
@@ -1921,7 +1924,7 @@ CHECK_RETURN Err MtCursor::emit_translation_unit(MnTranslationUnit n) {
         err << emit_dispatch(c);
         break;
     }
-    if (err) return err;
+    if (err.has_err()) return err;
     if (i != child_count - 1) {
       err << emit_ws();
     }
@@ -2270,11 +2273,11 @@ CHECK_RETURN Err MtCursor::emit_break(MnBreakStatement n) {
 //------------------------------------------------------------------------------
 
 //CHECK_RETURN Err MtCursor::emit_field_decl_list(MnFieldDeclList n) {
-//  Err error;
+//  Err err;
 //  assert(cursor == n.start());
-//  error |= emit_children(n);
+//  err |= emit_children(n);
 //  assert(cursor == n.end());
-//  return error;
+//  return err;
 //}
 
 //------------------------------------------------------------------------------
@@ -2365,17 +2368,13 @@ CHECK_RETURN Err MtCursor::emit_if_statement(MnIfStatement n) {
   if (!node_then.is_null() && node_then.sym != sym_compound_statement) {
 
     if (branch_contains_submod_call(node_then)) {
-      LOG_R("If statements that contain submod calls must use {}.\n");
-      err << true;
-      return err;
+      return ERR("If statements that contain submod calls must use {}.");
     }
   }
 
   if (!node_else.is_null() && node_else.sym != sym_compound_statement) {
     if (branch_contains_submod_call(node_then)) {
-      LOG_R("Else statements that contain submod calls must use {}.\n");
-      err << true;
-      return err;
+      return ERR("Else statements that contain submod calls must use {}.");
     }
   }
 
@@ -2741,13 +2740,7 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
       err << emit_field_expr(MnFieldExpr(n));
       break;
     case sym_return_statement:
-      LOG_R("\n");
-      LOG_R(
-          "Saw a return statement somewhere other than the end of a function "
-          "body\n");
-      n.dump_source_lines();
-      err = true;
-      // emit(MnReturnStatement(n));
+      err << ERR("Saw a return statement somewhere other than the end of a block");
       err << skip_over(n);
       break;
     case sym_template_declaration:
@@ -2846,7 +2839,7 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
       }
       break;
   }
-  assert(err || cursor == n.end());
+  assert(err.has_err() || cursor == n.end());
 
   /*
   if (error) {

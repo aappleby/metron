@@ -140,8 +140,8 @@ private:
 struct MtModule {
   MtModule();
 
-  CHECK_RETURN bool init(MtSourceFile* source_file, MnTemplateDecl node);
-  CHECK_RETURN bool init(MtSourceFile* source_file, MnClassSpecifier node);
+  CHECK_RETURN Err init(MtSourceFile* source_file, MnTemplateDecl node);
+  CHECK_RETURN Err init(MtSourceFile* source_file, MnClassSpecifier node);
 
   MtEnum*   get_enum(const std::string& name);
   MtField*  get_field(const std::string& name);

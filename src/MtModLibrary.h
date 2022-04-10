@@ -17,7 +17,7 @@ struct MtModLibrary {
   CHECK_RETURN Err load_blob(const std::string& filename, const std::string& full_path,
                  const std::string& src_blob, bool use_utf8_bom = false);
 
-  bool process_sources();
+  CHECK_RETURN Err process_sources();
 
   MtModule* get_module(const std::string& module_name);
   MtSourceFile* get_source(const std::string& filename);

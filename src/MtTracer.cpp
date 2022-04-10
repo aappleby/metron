@@ -95,7 +95,7 @@ FieldState merge_series(FieldState a, FieldState b) {
 //-----------------------------------------------------------------------------
 
 CHECK_RETURN Err merge_parallel(state_map& ma, state_map& mb, state_map& out) {
-  Err error;
+  Err err;
   std::set<std::string> keys;
 
   for (const auto& a : ma) keys.insert(a.first);
@@ -107,20 +107,18 @@ CHECK_RETURN Err merge_parallel(state_map& ma, state_map& mb, state_map& out) {
     auto sb = mb.contains(key) ? mb[key] : FIELD________;
     auto sm = merge_parallel(sa, sb);
     if (sm == FIELD_INVALID) {
-      LOG_R("%s: %s || %s = %s\n", key.c_str(), to_string(sa), to_string(sb),
+      return ERR("%s: %s || %s = %s\n", key.c_str(), to_string(sa), to_string(sb),
             to_string(sm));
-      error = true;
-      return error;
     }
     temp[key] = sm;
   }
 
   out.swap(temp);
-  return error;
+  return err;
 }
 
 CHECK_RETURN Err merge_series(state_map& ma, state_map& mb, state_map& out) {
-  Err error;
+  Err err;
   std::set<std::string> keys;
 
   for (const auto& a : ma) keys.insert(a.first);
@@ -132,59 +130,57 @@ CHECK_RETURN Err merge_series(state_map& ma, state_map& mb, state_map& out) {
     auto sb = mb.contains(key) ? mb[key] : FIELD________;
     auto sm = merge_series(sa, sb);
     if (sm == FIELD_INVALID) {
-      LOG_R("%s: %s -> %s = %s\n", key.c_str(), to_string(sa), to_string(sb),
+      return ERR("%s: %s -> %s = %s\n", key.c_str(), to_string(sa), to_string(sb),
             to_string(sm));
-      error = true;
-      return error;
     }
     temp[key] = sm;
   }
 
   out.swap(temp);
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n) {
-  Err error;
+  Err err;
 
-  if (!n.is_named()) return error;
+  if (!n.is_named()) return err;
 
   switch (n.sym) {
     case sym_assignment_expression:
       // n.dump_source_lines();
-      error |= trace_assign(n);
+      err << trace_assign(n);
       break;
     case sym_call_expression:
-      error |= trace_call(n);
+      err << trace_call(n);
       break;
     case sym_field_expression:
-      error |= trace_field(n);
+      err << trace_field(n);
       break;
     case sym_identifier:
-      error |= trace_id(n);
+      err << trace_id(n);
       break;
     case sym_if_statement:
-      error |= trace_if(n);
+      err << trace_if(n);
       break;
     case sym_switch_statement:
-      error |= trace_switch(n);
+      err << trace_switch(n);
       break;
 
     case sym_declaration:
       // do we want to do anything special for this node, like note the
       // existence of the local somewhere?
-      error |= trace_children(n);
+      err << trace_children(n);
       break;
 
     case sym_init_declarator:
       // Skip the lhs
-      error |= trace_dispatch(n.get_field(field_value));
+      err << trace_dispatch(n.get_field(field_value));
       break;
 
     case sym_conditional_expression:
-      error |= trace_ternary(n);
+      err << trace_ternary(n);
       break;
 
     case sym_update_expression: {
@@ -193,14 +189,13 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n) {
       if (arg.sym == sym_identifier) {
         auto field = mod()->get_field(arg.text());
         if (field) {
-          error |= trace_read(arg);
-          error |= trace_write(arg);
+          err << trace_read(arg);
+          err << trace_write(arg);
         } else {
           // local variable increment
         }
       } else {
-        LOG_R("Not sure how to increment a %s\n", n.ts_node_type());
-        error = true;
+        err << ERR("Not sure how to increment a %s\n", n.ts_node_type());
       }
       break;
     }
@@ -226,75 +221,73 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n) {
     case sym_qualified_identifier:
     case alias_sym_namespace_identifier:
     case sym_for_statement:
-      error |= trace_children(n);
+      err << trace_children(n);
       break;
 
     case sym_subscript_expression:
       // I don't think we need to do anything special?
-      error |= trace_children(n);
+      err << trace_children(n);
       break;
 
     default:
-      LOG_R("Don't know what to do with %s\n", n.ts_node_type());
-      error = true;
+      err << ERR("Don't know what to do with %s\n", n.ts_node_type());
       break;
   }
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer::trace_children(MnNode n) {
-  Err error;
+  Err err;
   for (const auto& c : n) {
-    error |= trace_dispatch(c);
-    if (error) return error;
+    err << trace_dispatch(c);
   }
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer::trace_assign(MnNode n) {
-  Err error;
+  Err err;
 
   auto node_lhs = n.get_field(field_left);
   auto node_rhs = n.get_field(field_right);
 
-  error |= trace_dispatch(node_rhs);
+  err << trace_dispatch(node_rhs);
 
   if (node_lhs.sym == sym_identifier) {
     auto node_name = node_lhs;
     if (mod()->get_field(node_name.text())) {
-      error |= trace_write(node_name);
+      err << trace_write(node_name);
     }
   } else if (node_lhs.sym == sym_subscript_expression) {
     auto node_name = node_lhs.get_field(field_argument);
     if (mod()->get_field(node_name.text())) {
-      error |= trace_write(node_name);
+      err << trace_write(node_name);
     }
   }
   else if (node_lhs.sym == sym_field_expression) {
     //printf("%s\n", node_lhs.text().c_str());
-    error |= trace_write(node_lhs.text());
+    err << trace_write(node_lhs.text());
   }
   else {
     node_lhs.dump_tree();
     debugbreak();
   }
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
 // FIXME I need to traverse the args before stepping into the call
 
 CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
-  Err error;
+  Err err;
 
   // Trace the args first.
-  error |= trace_dispatch(n.get_field(field_arguments));
+  err << trace_dispatch(n.get_field(field_arguments));
 
   // New state map goes on the stack.
   state_map state_call;
@@ -302,22 +295,21 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
 
   auto node_func = n.get_field(field_function);
   if (node_func.sym == sym_field_expression) {
-    error |= trace_submod_call(n);
+    err << trace_submod_call(n);
   } else if (node_func.sym == sym_identifier) {
-    error |= trace_method_call(n);
+    err << trace_method_call(n);
   } else if (node_func.sym == sym_template_function) {
-    error |= trace_template_call(n);
+    err << trace_template_call(n);
   } else {
-    LOG_R("MtModule::build_call_tree - don't know what to do with %s\n",
+    err << ERR("MtModule::build_call_tree - don't know what to do with %s\n",
           n.ts_node_type());
-    error = true;
   }
 
   _state_stack.pop_back();
 
-  if (error) {
+  if (err.has_err()) {
     LOG_R("MtTracer::trace_call failed\n");
-    return error;
+    return err;
   }
 
   // Call traced, close the state map and merge.
@@ -327,17 +319,16 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
     auto new_state = merge_delta(old_state, DELTA_EF);
 
     if (new_state == FIELD_INVALID) {
-      LOG_R("Field %s was %s, now %s!\n", pair.first.c_str(),
+      err << ERR("Field %s was %s, now %s!\n", pair.first.c_str(),
             to_string(old_state), to_string(new_state));
-      error = true;
       break;
     }
 
     pair.second = new_state;
   }
 
-  error |= merge_series(state_top(), state_call, state_top());
-  if (error) {
+  err << merge_series(state_top(), state_call, state_top());
+  if (err.has_err()) {
     LOG_R(
         "MtTracer::trace_call failed - caller state cannot be concatenated "
         "with callee state\n");
@@ -349,13 +340,13 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
     dump_stack();
   }
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer::trace_method_call(MnNode n) {
-  Err error;
+  Err err;
 
   auto node_func = n.get_field(field_function);
   auto sibling_method = mod()->get_method(node_func.text());
@@ -363,14 +354,13 @@ CHECK_RETURN Err MtTracer::trace_method_call(MnNode n) {
   if (sibling_method) {
     if (in_tick()) {
       if (sibling_method->is_tock) {
-        LOG_R("Calling a tock() while in a tick() method is forbidden\n");
-        error = true;
-        return error;
+        err << ERR("Calling a tock() while in a tick() method is forbidden\n");
+        return err;
       }
     }
 
     _method_stack.push_back(sibling_method);
-    error |= trace_dispatch(sibling_method->node.get_field(field_body));
+    err << trace_dispatch(sibling_method->node.get_field(field_body));
     _method_stack.pop_back();
   } else {
     // Utility method call like bN()
@@ -382,18 +372,18 @@ CHECK_RETURN Err MtTracer::trace_method_call(MnNode n) {
     */
   }
 
-  if (error) {
-    LOG_R("MtTracer::trace_method_call failed @\n");
+  if (err.has_err()) {
+    err << ERR("MtTracer::trace_method_call failed @\n");
     n.dump_source_lines();
   }
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer::trace_submod_call(MnNode n) {
-  Err error;
+  Err err;
 
   //n.dump_tree();
 
@@ -405,9 +395,7 @@ CHECK_RETURN Err MtTracer::trace_submod_call(MnNode n) {
   auto submod = mod()->get_submod(submod_name);
 
   if (!submod) {
-    LOG_R("Could not find submodule %s\n", submod_name.c_str());
-    error = true;
-    return error;
+    return ERR("Could not find submodule %s\n", submod_name.c_str());
   }
 
   assert(submod);
@@ -420,11 +408,9 @@ CHECK_RETURN Err MtTracer::trace_submod_call(MnNode n) {
 
   if (in_tick()) {
     if (submod_method->is_tock) {
-      LOG_R(
+      return ERR(
           "Calling a tock() on a submodule while in a tick() method is "
           "forbidden\n");
-      error = true;
-      return error;
     }
   }
 
@@ -440,30 +426,30 @@ CHECK_RETURN Err MtTracer::trace_submod_call(MnNode n) {
       field_name = _field_stack[i]->name() + "." + field_name;
     }
 
-    error |= trace_write(field_name);
-    error |= trace_read(field_name);
+    err << trace_write(field_name);
+    err << trace_read(field_name);
   }
 
   _field_stack.push_back(submod);
   _mod_stack.push_back(submod_mod);
   _method_stack.push_back(submod_method);
-  error |= trace_dispatch(submod_method->node.get_field(field_body));
+  err << trace_dispatch(submod_method->node.get_field(field_body));
   _method_stack.pop_back();
   _mod_stack.pop_back();
   _field_stack.pop_back();
 
-  if (error) {
+  if (err.has_err()) {
     LOG_R("MtTracer::trace_submod_call failed @\n");
     n.dump_source_lines();
   }
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer::trace_template_call(MnNode n) {
-  Err error;
+  Err err;
 
   auto node_name = n.get_field(field_function).get_field(field_name).text();
 
@@ -490,37 +476,37 @@ CHECK_RETURN Err MtTracer::trace_template_call(MnNode n) {
   // node_func.dump_tree();
 #endif
 
-  if (error) {
-    LOG_R("MtTracer::trace_template_call failed @\n");
+  if (err.has_err()) {
+    err << ERR("MtTracer::trace_template_call failed @\n");
     n.dump_source_lines();
   }
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer::trace_field(MnNode n) {
-  Err error;
+  Err err;
   std::string field_name = n.text();
 
   for (int i = (int)_field_stack.size() - 1; i >= 0; i--) {
     field_name = _field_stack[i]->name() + "." + field_name;
   }
 
-  error |= trace_read(field_name);
-  return error;
+  err << trace_read(field_name);
+  return err;
 }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer::trace_id(MnNode n) {
-  Err error;
+  Err err;
 
   auto field = mod()->get_field(n.text());
 
   if (field && !field->is_param()) {
-    error |= trace_read(n);
+    err << trace_read(n);
     // n.dump_tree();
     // debugbreak();
   } else {
@@ -530,19 +516,19 @@ CHECK_RETURN Err MtTracer::trace_id(MnNode n) {
     // debugbreak();
   }
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer::trace_if(MnNode n) {
-  Err error;
+  Err err;
 
   auto node_cond = n.get_field(field_condition);
   auto node_branch_a = n.get_field(field_consequence);
   auto node_branch_b = n.get_field(field_alternative);
 
-  error |= trace_dispatch(node_cond);
+  err << trace_dispatch(node_cond);
 
   // FIXME - Does preloading branch_a/b with the current state change anything?
   // I don't think so.
@@ -552,13 +538,13 @@ CHECK_RETURN Err MtTracer::trace_if(MnNode n) {
 
   if (!node_branch_a.is_null()) {
     _state_stack.push_back(&branch_a);
-    error |= trace_dispatch(node_branch_a);
+    err << trace_dispatch(node_branch_a);
     _state_stack.pop_back();
   }
 
   if (!node_branch_b.is_null()) {
     _state_stack.push_back(&branch_b);
-    error |= trace_dispatch(node_branch_b);
+    err << trace_dispatch(node_branch_b);
     _state_stack.pop_back();
   }
 
@@ -577,30 +563,25 @@ CHECK_RETURN Err MtTracer::trace_if(MnNode n) {
   //   sig = 2;
   // }
 
-  error |= merge_series(state_top(), branch_a, branch_a);
-  error |= merge_series(state_top(), branch_b, branch_b);
-  error |= merge_parallel(branch_a, branch_b, state_top());
+  err << merge_series(state_top(), branch_a, branch_a);
+  err << merge_series(state_top(), branch_b, branch_b);
+  err << merge_parallel(branch_a, branch_b, state_top());
 
-  if (error) {
-    LOG_R(
-        "======================================================================"
-        "==========\n");
-    LOG_R("MtTracer::trace_if - error\n");
-    n.dump_source_lines();
-    LOG_R(
-        "======================================================================"
-        "==========\n");
+  if (err.has_err()) {
+    err << ERR("MtTracer::trace_if - error\n");
+    // FIXME - How can I add the node dump to the error log?
+    //n.dump_source_lines();
   }
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer::trace_switch(MnNode n) {
-  Err error;
+  Err err;
 
-  trace_dispatch(n.get_field(field_condition));
+  err << trace_dispatch(n.get_field(field_condition));
 
   state_map old_state = state_top();
 
@@ -610,39 +591,39 @@ CHECK_RETURN Err MtTracer::trace_switch(MnNode n) {
   for (const auto& c : body) {
     if (c.sym == sym_case_statement) {
       if (first_branch) {
-        error |= trace_dispatch(c);
+        err << trace_dispatch(c);
         first_branch = false;
       } else {
         state_map state_case = old_state;
 
         _state_stack.push_back(&state_case);
-        error |= trace_dispatch(c);
+        err << trace_dispatch(c);
         _state_stack.pop_back();
 
-        error |= merge_parallel(state_top(), state_case, state_top());
+        err << merge_parallel(state_top(), state_case, state_top());
       }
     }
   }
 
-  if (error) {
-    LOG_R("MtTracer::trace_switch failed @\n");
-    n.dump_source_lines();
+  if (err.has_err()) {
+    err << ERR("MtTracer::trace_switch failed @\n");
+    //n.dump_source_lines();
   }
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
 // FIXME this is identical to trace_if, should we merge the two?
 
 CHECK_RETURN Err MtTracer::trace_ternary(MnNode n) {
-  Err error;
+  Err err;
 
   auto node_cond = n.get_field(field_condition);
   auto node_branch_a = n.get_field(field_consequence);
   auto node_branch_b = n.get_field(field_alternative);
 
-  error |= trace_dispatch(node_cond);
+  err << trace_dispatch(node_cond);
 
   // FIXME - Does preloading branch_a/b with the current state change anything?
   // I don't think so.
@@ -652,48 +633,47 @@ CHECK_RETURN Err MtTracer::trace_ternary(MnNode n) {
 
   if (!node_branch_a.is_null()) {
     _state_stack.push_back(&branch_a);
-    error |= trace_dispatch(node_branch_a);
+    err << trace_dispatch(node_branch_a);
     _state_stack.pop_back();
   }
 
   if (!node_branch_b.is_null()) {
     _state_stack.push_back(&branch_b);
-    error |= trace_dispatch(node_branch_a);
+    err << trace_dispatch(node_branch_a);
     _state_stack.pop_back();
   }
 
   // FIXME - Does series-parallel behave differently than parallel-series?
   // I don't think so.
 
-  error |= merge_series(state_top(), branch_a, branch_a);
-  error |= merge_series(state_top(), branch_b, branch_b);
-  error |= merge_parallel(branch_a, branch_b, state_top());
+  err << merge_series(state_top(), branch_a, branch_a);
+  err << merge_series(state_top(), branch_b, branch_b);
+  err << merge_parallel(branch_a, branch_b, state_top());
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer::trace_read(const std::string& field_name) {
-  Err error;
+  Err err;
 
   auto old_state = state_top()[field_name];
   auto new_state = merge_delta(old_state, DELTA_RD);
 
   if (new_state == FIELD_INVALID) {
-    LOG_R("Field %s was %s, now %s!\n", field_name.c_str(),
+    err << ERR("Field %s was %s, now %s!\n", field_name.c_str(),
           to_string(old_state), to_string(new_state));
-    error = true;
   }
 
   state_top()[field_name] = new_state;
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer::trace_write(const std::string& field_name) {
-  Err error;
+  Err err;
 
   // Don't assert this, calls to submod functions with args are considered a
   // signal write
@@ -703,20 +683,19 @@ CHECK_RETURN Err MtTracer::trace_write(const std::string& field_name) {
   auto new_state = merge_delta(old_state, in_tick() ? DELTA_WR : DELTA_WS);
 
   if (new_state == FIELD_INVALID) {
-    LOG_R("Field %s was %s, now %s!\n", field_name.c_str(),
+    err << ERR("Field %s was %s, now %s!\n", field_name.c_str(),
           to_string(old_state), to_string(new_state));
-    error = true;
   }
 
   state_top()[field_name] = new_state;
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer::trace_read(MnNode const& n) {
-  Err error;
+  Err err;
 
   std::string field_name = n.text();
 
@@ -724,9 +703,9 @@ CHECK_RETURN Err MtTracer::trace_read(MnNode const& n) {
     field_name = _field_stack[i]->name() + "." + field_name;
   }
 
-  error |= trace_read(field_name);
+  err << trace_read(field_name);
 
-  if (error) {
+  if (err.has_err()) {
     LOG_R("========== call stack ==========\n");
     for (auto it = _method_stack.rbegin(); it != _method_stack.rend(); ++it) {
       LOG_R("%s.%s\n", (*it)->mod->name().c_str(), (*it)->name().c_str());
@@ -736,13 +715,13 @@ CHECK_RETURN Err MtTracer::trace_read(MnNode const& n) {
     LOG_R("============================\n");
   }
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer::trace_write(MnNode const& n) {
-  Err error;
+  Err err;
 
   assert(in_tick() || in_tock());
   std::string field_name = n.text();
@@ -751,9 +730,9 @@ CHECK_RETURN Err MtTracer::trace_write(MnNode const& n) {
     field_name = _field_stack[i]->name() + "." + field_name;
   }
 
-  error |= trace_write(field_name);
+  err << trace_write(field_name);
 
-  if (error) {
+  if (err.has_err()) {
     LOG_R("========== call stack ==========\n");
     for (auto it = _method_stack.rbegin(); it != _method_stack.rend(); ++it) {
       LOG_R("%s.%s\n", (*it)->mod->name().c_str(), (*it)->name().c_str());
@@ -763,14 +742,14 @@ CHECK_RETURN Err MtTracer::trace_write(MnNode const& n) {
     LOG_R("============================\n");
   }
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
 // FIXME I guess we handled this above?
 
 CHECK_RETURN Err MtTracer::trace_end_fn() {
-  Err error;
+  Err err;
 
   assert(in_tick() || in_tock());
 
@@ -796,7 +775,7 @@ CHECK_RETURN Err MtTracer::trace_end_fn() {
   state_top()[field_name] = new_state;
 #endif
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------

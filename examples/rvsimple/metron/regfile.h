@@ -15,8 +15,14 @@ class regfile {
   // Register x0 is always 0
   regfile() { regs[0] = b32(0); }
 
-  logic<32> rs1_data(logic<5> rs1_address) const { return regs[rs1_address]; }
-  logic<32> rs2_data(logic<5> rs2_address) const { return regs[rs2_address]; }
+  logic<5> rs1_address;
+  logic<5> rs2_address;
+
+  logic<32> rs1_data;
+  logic<32> rs2_data;
+
+  void tock_rs1_data() { rs1_data = regs[rs1_address]; }
+  void tock_rs2_data() { rs2_data = regs[rs2_address]; }
 
   void tock(logic<1> write_enable, logic<5> rd_address, logic<32> rd_data) {
     tick(write_enable, rd_address, rd_data);

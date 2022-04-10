@@ -63,34 +63,40 @@ class singlecycle_datapath {
 
   //----------------------------------------
 
-  logic<32> temp_rs1_data;
-  logic<32> temp_rs2_data;
   logic<32> alu_result;
-
   logic<5> alu_function;
   logic<1> alu_operand_a_select;
   logic<1> alu_operand_b_select;
 
-  void tock_alu_result() {
-    temp_rs1_data = regs.rs1_data(inst_rs1);
-    temp_rs2_data = regs.rs2_data(inst_rs2);
+  logic<32> temp_rs1_data;
+  logic<32> temp_rs2_data;
 
-    alu_core.alu_function = alu_function;
+  void tock_alu_result() {
+
+    regs.rs1_address = inst_rs1;
+    regs.rs2_address = inst_rs2;
+
+    regs.tock_rs1_data();
+    regs.tock_rs2_data();
+
+    temp_rs1_data = regs.rs1_data;
+    temp_rs2_data = regs.rs2_data;
 
     mux_operand_a.sel = alu_operand_a_select;
-    mux_operand_a.in0 = temp_rs1_data;
+    mux_operand_a.in0 = regs.rs1_data;
     mux_operand_a.in1 = program_counter.value();
     mux_operand_a.tock();
-    alu_core.operand_a = mux_operand_a.out;
 
     mux_operand_b.sel = alu_operand_b_select;
-    mux_operand_b.in0 = temp_rs2_data;
+    mux_operand_b.in0 = regs.rs2_data;
     mux_operand_b.in1 = inst_immediate;
     mux_operand_b.tock();
 
+    alu_core.alu_function = alu_function;
+    alu_core.operand_a = mux_operand_a.out;
     alu_core.operand_b = mux_operand_b.out;
-
     alu_core.tock();
+
     alu_result = alu_core.result;
   }
 

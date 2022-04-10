@@ -109,9 +109,9 @@ module riscv_core
     .inst_funct3(datapath_inst_funct3), 
     .inst_funct7(datapath_inst_funct7), 
     .inst_immediate(datapath_inst_immediate), 
+    .alu_result(datapath_alu_result), 
     .temp_rs1_data(datapath_temp_rs1_data), 
     .temp_rs2_data(datapath_temp_rs2_data), 
-    .alu_result(datapath_alu_result), 
     .pc(datapath_pc)
   );
   logic datapath_reset;
@@ -131,9 +131,9 @@ module riscv_core
   logic[2:0] datapath_inst_funct3;
   logic[6:0] datapath_inst_funct7;
   logic[31:0] datapath_inst_immediate;
+  logic[31:0] datapath_alu_result;
   logic[31:0] datapath_temp_rs1_data;
   logic[31:0] datapath_temp_rs2_data;
-  logic[31:0] datapath_alu_result;
   logic[31:0] datapath_pc;
 
   singlecycle_ctlpath ctlpath(

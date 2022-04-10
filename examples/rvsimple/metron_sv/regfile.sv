@@ -25,8 +25,14 @@ module regfile
   // Register x0 is always 0
   initial begin /*regfile*/ regs[0] = 32'd0; end
 
-  always_comb begin rs1_data = regs[rs1_address]; end
-  always_comb begin rs2_data = regs[rs2_address]; end
+  /*logic<5> rs1_address;*/
+  /*logic<5> rs2_address;*/
+
+  /*logic<32> rs1_data;*/
+  /*logic<32> rs2_data;*/
+
+  always_comb begin /*tock_rs1_data*/ rs1_data = regs[rs1_address]; end
+  always_comb begin /*tock_rs2_data*/ rs2_data = regs[rs2_address]; end
 
   always_comb begin /*tock*/
     /*tick(write_enable, rd_address, rd_data)*/;

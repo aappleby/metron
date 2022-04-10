@@ -41,9 +41,9 @@ module singlecycle_datapath
   output logic[2:0] inst_funct3,
   output logic[6:0] inst_funct7,
   output logic[31:0] inst_immediate,
+  output logic[31:0] alu_result,
   output logic[31:0] temp_rs1_data,
   output logic[31:0] temp_rs2_data,
-  output logic[31:0] alu_result,
   output logic[31:0] pc
 );
  /*public:*/
@@ -87,36 +87,40 @@ module singlecycle_datapath
 
   //----------------------------------------
 
-  /*logic<32> temp_rs1_data;*/
-  /*logic<32> temp_rs2_data;*/
   /*logic<32> alu_result;*/
-
   /*logic<5> alu_function;*/
   /*logic<1> alu_operand_a_select;*/
   /*logic<1> alu_operand_b_select;*/
 
+  /*logic<32> temp_rs1_data;*/
+  /*logic<32> temp_rs2_data;*/
+
   always_comb begin /*tock_alu_result*/
+
     regs_rs1_address = inst_rs1;
-    temp_rs1_data = regs_rs1_data;
     regs_rs2_address = inst_rs2;
+
+    /*regs.tock_rs1_data()*/;
+    /*regs.tock_rs2_data()*/;
+
+    temp_rs1_data = regs_rs1_data;
     temp_rs2_data = regs_rs2_data;
 
-    alu_core_alu_function = alu_function;
-
     mux_operand_a_sel = alu_operand_a_select;
-    mux_operand_a_in0 = temp_rs1_data;
+    mux_operand_a_in0 = regs_rs1_data;
     mux_operand_a_in1 = program_counter_value;
     /*mux_operand_a.tock()*/;
-    alu_core_operand_a = mux_operand_a_out;
 
     mux_operand_b_sel = alu_operand_b_select;
-    mux_operand_b_in0 = temp_rs2_data;
+    mux_operand_b_in0 = regs_rs2_data;
     mux_operand_b_in1 = inst_immediate;
     /*mux_operand_b.tock()*/;
 
+    alu_core_alu_function = alu_function;
+    alu_core_operand_a = mux_operand_a_out;
     alu_core_operand_b = mux_operand_b_out;
-
     /*alu_core.tock()*/;
+
     alu_result = alu_core_result;
   end
 

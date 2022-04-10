@@ -12,86 +12,91 @@
 
 module singlecycle_control
 (
-   input logic clock,
-   input logic[6:0] inst_opcode,
-   input logic take_branch,
-   output logic alu_operand_b_select,
-   output logic[1:0] alu_op_type2,
-   output logic data_mem_read_enable,
-   output logic data_mem_write_enable,
-   output logic[2:0] reg_writeback_select,
-   output logic[1:0] next_pc_select,
-   output logic pc_write_enable,
-   output logic regfile_write_enable,
-   output logic alu_operand_a_select
+  input logic clock,
+  input logic[6:0] inst_opcode,
+  input logic take_branch,
+  output logic[1:0] next_pc_select,
+  output logic pc_write_enable,
+  output logic regfile_write_enable,
+  output logic alu_operand_a_select,
+  output logic alu_operand_b_select,
+  output logic[1:0] alu_op_type2,
+  output logic data_mem_read_enable,
+  output logic data_mem_write_enable,
+  output logic[2:0] reg_writeback_select
 );
  /*public:*/
+  /*logic<7> inst_opcode;*/
+  /*logic<1> take_branch;*/
 
-   /*logic<7> inst_opcode;*/
-   /*logic<1> take_branch;*/
-
-  always_comb begin
-    logic[1:0] result;
-    import rv_constants::*;
-    /*logic<2> result;*/
-    case (inst_opcode) 
-      /*case*/ OPCODE_BRANCH: result = take_branch ? CTL_PC_PC_IMM : CTL_PC_PC4; /*break;*/
-      /*case*/ OPCODE_JALR:   result = CTL_PC_RS1_IMM; /*break;*/
-      /*case*/ OPCODE_JAL:    result = CTL_PC_PC_IMM; /*break;*/
-      default:            result = CTL_PC_PC4; /*break;*/
-    endcase
-    next_pc_select = result;
-  end
-
-  always_comb begin
-    pc_write_enable = 1'b1;
-  end
-
-  always_comb begin
-    logic result;
-    import rv_constants::*;
-    /*logic<1> result;*/
-    case (inst_opcode) 
-      /*case*/ OPCODE_MISC_MEM: result = 0; /*break;*/
-      /*case*/ OPCODE_STORE:    result = 0; /*break;*/
-      /*case*/ OPCODE_BRANCH:   result = 0; /*break;*/
-      /*case*/ OPCODE_LOAD:     result = 1; /*break;*/
-      /*case*/ OPCODE_OP_IMM:   result = 1; /*break;*/
-      /*case*/ OPCODE_AUIPC:    result = 1; /*break;*/
-      /*case*/ OPCODE_OP:       result = 1; /*break;*/
-      /*case*/ OPCODE_LUI:      result = 1; /*break;*/
-      /*case*/ OPCODE_JALR:     result = 1; /*break;*/
-      /*case*/ OPCODE_JAL:      result = 1; /*break;*/
-      default:              result = 1'bx; /*break;*/
-    endcase
-    regfile_write_enable = result;
-  end
-
-  always_comb begin
-    logic result;
-    import rv_constants::*;
-
-    /*logic<1> result;*/
-    case (inst_opcode) 
-      /*case*/ OPCODE_AUIPC:    result = CTL_ALU_A_PC; /*break;*/
-      /*case*/ OPCODE_JAL:      result = CTL_ALU_A_PC; /*break;*/
-
-      /*case*/ OPCODE_OP:       result = CTL_ALU_A_RS1; /*break;*/
-      /*case*/ OPCODE_LUI:      result = CTL_ALU_A_RS1; /*break;*/
-      /*case*/ OPCODE_BRANCH:   result = CTL_ALU_A_RS1; /*break;*/
-
-      /*case*/ OPCODE_LOAD:     result = CTL_ALU_A_RS1; /*break;*/
-      /*case*/ OPCODE_STORE:    result = CTL_ALU_A_RS1; /*break;*/
-      /*case*/ OPCODE_OP_IMM:   result = CTL_ALU_A_RS1; /*break;*/
-      /*case*/ OPCODE_JALR:     result = CTL_ALU_A_RS1; /*break;*/
-      default:              result = 1'bx; /*break;*/
-    endcase
-    alu_operand_a_select = result;
-  end
-
+  /*logic<2> next_pc_select;*/
+  /*logic<1> pc_write_enable;*/
+  /*logic<1> regfile_write_enable;*/
+  /*logic<1> alu_operand_a_select;*/
   /*logic<1> alu_operand_b_select;*/
+  /*logic<2> alu_op_type2;*/
+  /*logic<1> data_mem_read_enable;*/
+  /*logic<1> data_mem_write_enable;*/
+  /*logic<3> reg_writeback_select;*/
+
+  always_comb begin /*tock_next_pc_select*/
+    import rv_constants::*;
+    // clang-format off
+    case (inst_opcode) 
+      /*case*/ OPCODE_BRANCH: next_pc_select = take_branch ? CTL_PC_PC_IMM : CTL_PC_PC4; /*break;*/
+      /*case*/ OPCODE_JALR:   next_pc_select = CTL_PC_RS1_IMM; /*break;*/
+      /*case*/ OPCODE_JAL:    next_pc_select = CTL_PC_PC_IMM; /*break;*/
+      default:            next_pc_select = CTL_PC_PC4; /*break;*/
+    endcase
+    // clang-format on
+  end
+
+  always_comb begin /*tock_pc_write_enable*/ pc_write_enable = 1'b1; end
+
+  always_comb begin /*tock_regfile_write_enable*/
+    import rv_constants::*;
+    // clang-format off
+    case (inst_opcode) 
+      /*case*/ OPCODE_MISC_MEM: regfile_write_enable = 0; /*break;*/
+      /*case*/ OPCODE_STORE:    regfile_write_enable = 0; /*break;*/
+      /*case*/ OPCODE_BRANCH:   regfile_write_enable = 0; /*break;*/
+      /*case*/ OPCODE_LOAD:     regfile_write_enable = 1; /*break;*/
+      /*case*/ OPCODE_OP_IMM:   regfile_write_enable = 1; /*break;*/
+      /*case*/ OPCODE_AUIPC:    regfile_write_enable = 1; /*break;*/
+      /*case*/ OPCODE_OP:       regfile_write_enable = 1; /*break;*/
+      /*case*/ OPCODE_LUI:      regfile_write_enable = 1; /*break;*/
+      /*case*/ OPCODE_JALR:     regfile_write_enable = 1; /*break;*/
+      /*case*/ OPCODE_JAL:      regfile_write_enable = 1; /*break;*/
+      default:              regfile_write_enable = 1'bx; /*break;*/
+    endcase
+    // clang-format on
+  end
+
+  always_comb begin /*tock_alu_operand_a_select*/
+    import rv_constants::*;
+
+    // clang-format off
+    case (inst_opcode) 
+      /*case*/ OPCODE_AUIPC:    alu_operand_a_select = CTL_ALU_A_PC; /*break;*/
+      /*case*/ OPCODE_JAL:      alu_operand_a_select = CTL_ALU_A_PC; /*break;*/
+
+      /*case*/ OPCODE_OP:       alu_operand_a_select = CTL_ALU_A_RS1; /*break;*/
+      /*case*/ OPCODE_LUI:      alu_operand_a_select = CTL_ALU_A_RS1; /*break;*/
+      /*case*/ OPCODE_BRANCH:   alu_operand_a_select = CTL_ALU_A_RS1; /*break;*/
+
+      /*case*/ OPCODE_LOAD:     alu_operand_a_select = CTL_ALU_A_RS1; /*break;*/
+      /*case*/ OPCODE_STORE:    alu_operand_a_select = CTL_ALU_A_RS1; /*break;*/
+      /*case*/ OPCODE_OP_IMM:   alu_operand_a_select = CTL_ALU_A_RS1; /*break;*/
+      /*case*/ OPCODE_JALR:     alu_operand_a_select = CTL_ALU_A_RS1; /*break;*/
+      default:              alu_operand_a_select = 1'bx; /*break;*/
+    endcase
+    // clang-format on
+  end
+
   always_comb begin /*tock_alu_operand_b_select*/
     import rv_constants::*;
+
+    // clang-format off
     case (inst_opcode) 
       /*case*/ OPCODE_AUIPC:    alu_operand_b_select = CTL_ALU_B_IMM; /*break;*/
       /*case*/ OPCODE_JAL:      alu_operand_b_select = CTL_ALU_B_IMM; /*break;*/
@@ -106,11 +111,13 @@ module singlecycle_control
       /*case*/ OPCODE_JALR:     alu_operand_b_select = CTL_ALU_B_IMM; /*break;*/
       default:              alu_operand_b_select = 1'bx; /*break;*/
     endcase
+    // clang-format on
   end
 
-  /*logic<2> alu_op_type2;*/
   always_comb begin /*tock_alu_op_type2*/
     import rv_constants::*;
+
+    // clang-format off
     case (inst_opcode) 
       /*case*/ OPCODE_AUIPC:    alu_op_type2 = CTL_ALU_ADD; /*break;*/
       /*case*/ OPCODE_JAL:      alu_op_type2 = CTL_ALU_ADD; /*break;*/
@@ -124,23 +131,23 @@ module singlecycle_control
       /*case*/ OPCODE_JALR:     alu_op_type2 = CTL_ALU_ADD; /*break;*/
       default:              alu_op_type2 = 2'bx; /*break;*/
     endcase
+    // clang-format on
   end
 
-  /*logic<1> data_mem_read_enable;*/
   always_comb begin /*tock_data_mem_read_enable*/
     import rv_constants::*;
     data_mem_read_enable = inst_opcode == OPCODE_LOAD;
   end
 
-  /*logic<1> data_mem_write_enable;*/
   always_comb begin /*tock_data_mem_write_enable*/
-      import rv_constants::*;
-      data_mem_write_enable = inst_opcode == OPCODE_STORE;
+    import rv_constants::*;
+    data_mem_write_enable = inst_opcode == OPCODE_STORE;
   end
 
-  /*logic<3> reg_writeback_select;*/
   always_comb begin /*tock_reg_writeback_select*/
     import rv_constants::*;
+
+    // clang-format off
     case (inst_opcode) 
       /*case*/ OPCODE_OP_IMM:   reg_writeback_select = CTL_WRITEBACK_ALU; /*break;*/
       /*case*/ OPCODE_AUIPC:    reg_writeback_select = CTL_WRITEBACK_ALU; /*break;*/
@@ -151,6 +158,7 @@ module singlecycle_control
       /*case*/ OPCODE_LOAD:     reg_writeback_select = CTL_WRITEBACK_DATA; /*break;*/
       default:              reg_writeback_select = 3'bx; /*break;*/
     endcase
+    // clang-format on
   end
 endmodule;
 

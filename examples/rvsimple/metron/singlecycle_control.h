@@ -12,69 +12,77 @@
 
 class singlecycle_control {
  public:
+  logic<7> inst_opcode;
+  logic<1> take_branch;
 
-   logic<7> inst_opcode;
-   logic<1> take_branch;
-
-  logic<2> next_pc_select() const {
-    using namespace rv_constants;
-    logic<2> result;
-    switch (inst_opcode) {
-      case OPCODE_BRANCH: result = take_branch ? CTL_PC_PC_IMM : CTL_PC_PC4; break;
-      case OPCODE_JALR:   result = CTL_PC_RS1_IMM; break;
-      case OPCODE_JAL:    result = CTL_PC_PC_IMM; break;
-      default:            result = CTL_PC_PC4; break;
-    }
-    return result;
-  }
-
-  logic<1> pc_write_enable() const {
-    return 0b1;
-  }
-
-  logic<1> regfile_write_enable() const {
-    using namespace rv_constants;
-    logic<1> result;
-    switch (inst_opcode) {
-      case OPCODE_MISC_MEM: result = 0; break;
-      case OPCODE_STORE:    result = 0; break;
-      case OPCODE_BRANCH:   result = 0; break;
-      case OPCODE_LOAD:     result = 1; break;
-      case OPCODE_OP_IMM:   result = 1; break;
-      case OPCODE_AUIPC:    result = 1; break;
-      case OPCODE_OP:       result = 1; break;
-      case OPCODE_LUI:      result = 1; break;
-      case OPCODE_JALR:     result = 1; break;
-      case OPCODE_JAL:      result = 1; break;
-      default:              result = b1(DONTCARE); break;
-    }
-    return result;
-  }
-
-  logic<1> alu_operand_a_select() const {
-    using namespace rv_constants;
-
-    logic<1> result;
-    switch (inst_opcode) {
-      case OPCODE_AUIPC:    result = CTL_ALU_A_PC; break;
-      case OPCODE_JAL:      result = CTL_ALU_A_PC; break;
-
-      case OPCODE_OP:       result = CTL_ALU_A_RS1; break;
-      case OPCODE_LUI:      result = CTL_ALU_A_RS1; break;
-      case OPCODE_BRANCH:   result = CTL_ALU_A_RS1; break;
-
-      case OPCODE_LOAD:     result = CTL_ALU_A_RS1; break;
-      case OPCODE_STORE:    result = CTL_ALU_A_RS1; break;
-      case OPCODE_OP_IMM:   result = CTL_ALU_A_RS1; break;
-      case OPCODE_JALR:     result = CTL_ALU_A_RS1; break;
-      default:              result = b1(DONTCARE); break;
-    }
-    return result;
-  }
-
+  logic<2> next_pc_select;
+  logic<1> pc_write_enable;
+  logic<1> regfile_write_enable;
+  logic<1> alu_operand_a_select;
   logic<1> alu_operand_b_select;
+  logic<2> alu_op_type2;
+  logic<1> data_mem_read_enable;
+  logic<1> data_mem_write_enable;
+  logic<3> reg_writeback_select;
+
+  void tock_next_pc_select() {
+    using namespace rv_constants;
+    // clang-format off
+    switch (inst_opcode) {
+      case OPCODE_BRANCH: next_pc_select = take_branch ? CTL_PC_PC_IMM : CTL_PC_PC4; break;
+      case OPCODE_JALR:   next_pc_select = CTL_PC_RS1_IMM; break;
+      case OPCODE_JAL:    next_pc_select = CTL_PC_PC_IMM; break;
+      default:            next_pc_select = CTL_PC_PC4; break;
+    }
+    // clang-format on
+  }
+
+  void tock_pc_write_enable() { pc_write_enable = 0b1; }
+
+  void tock_regfile_write_enable() {
+    using namespace rv_constants;
+    // clang-format off
+    switch (inst_opcode) {
+      case OPCODE_MISC_MEM: regfile_write_enable = 0; break;
+      case OPCODE_STORE:    regfile_write_enable = 0; break;
+      case OPCODE_BRANCH:   regfile_write_enable = 0; break;
+      case OPCODE_LOAD:     regfile_write_enable = 1; break;
+      case OPCODE_OP_IMM:   regfile_write_enable = 1; break;
+      case OPCODE_AUIPC:    regfile_write_enable = 1; break;
+      case OPCODE_OP:       regfile_write_enable = 1; break;
+      case OPCODE_LUI:      regfile_write_enable = 1; break;
+      case OPCODE_JALR:     regfile_write_enable = 1; break;
+      case OPCODE_JAL:      regfile_write_enable = 1; break;
+      default:              regfile_write_enable = b1(DONTCARE); break;
+    }
+    // clang-format on
+  }
+
+  void tock_alu_operand_a_select() {
+    using namespace rv_constants;
+
+    // clang-format off
+    switch (inst_opcode) {
+      case OPCODE_AUIPC:    alu_operand_a_select = CTL_ALU_A_PC; break;
+      case OPCODE_JAL:      alu_operand_a_select = CTL_ALU_A_PC; break;
+
+      case OPCODE_OP:       alu_operand_a_select = CTL_ALU_A_RS1; break;
+      case OPCODE_LUI:      alu_operand_a_select = CTL_ALU_A_RS1; break;
+      case OPCODE_BRANCH:   alu_operand_a_select = CTL_ALU_A_RS1; break;
+
+      case OPCODE_LOAD:     alu_operand_a_select = CTL_ALU_A_RS1; break;
+      case OPCODE_STORE:    alu_operand_a_select = CTL_ALU_A_RS1; break;
+      case OPCODE_OP_IMM:   alu_operand_a_select = CTL_ALU_A_RS1; break;
+      case OPCODE_JALR:     alu_operand_a_select = CTL_ALU_A_RS1; break;
+      default:              alu_operand_a_select = b1(DONTCARE); break;
+    }
+    // clang-format on
+  }
+
   void tock_alu_operand_b_select() {
     using namespace rv_constants;
+
+    // clang-format off
     switch (inst_opcode) {
       case OPCODE_AUIPC:    alu_operand_b_select = CTL_ALU_B_IMM; break;
       case OPCODE_JAL:      alu_operand_b_select = CTL_ALU_B_IMM; break;
@@ -89,11 +97,13 @@ class singlecycle_control {
       case OPCODE_JALR:     alu_operand_b_select = CTL_ALU_B_IMM; break;
       default:              alu_operand_b_select = b1(DONTCARE); break;
     }
+    // clang-format on
   }
 
-  logic<2> alu_op_type2;
   void tock_alu_op_type2() {
     using namespace rv_constants;
+
+    // clang-format off
     switch (inst_opcode) {
       case OPCODE_AUIPC:    alu_op_type2 = CTL_ALU_ADD; break;
       case OPCODE_JAL:      alu_op_type2 = CTL_ALU_ADD; break;
@@ -107,23 +117,23 @@ class singlecycle_control {
       case OPCODE_JALR:     alu_op_type2 = CTL_ALU_ADD; break;
       default:              alu_op_type2 = b2(DONTCARE); break;
     }
+    // clang-format on
   }
 
-  logic<1> data_mem_read_enable;
   void tock_data_mem_read_enable() {
     using namespace rv_constants;
     data_mem_read_enable = inst_opcode == OPCODE_LOAD;
   }
 
-  logic<1> data_mem_write_enable;
   void tock_data_mem_write_enable() {
-      using namespace rv_constants;
-      data_mem_write_enable = inst_opcode == OPCODE_STORE;
+    using namespace rv_constants;
+    data_mem_write_enable = inst_opcode == OPCODE_STORE;
   }
 
-  logic<3> reg_writeback_select;
   void tock_reg_writeback_select() {
     using namespace rv_constants;
+
+    // clang-format off
     switch (inst_opcode) {
       case OPCODE_OP_IMM:   reg_writeback_select = CTL_WRITEBACK_ALU; break;
       case OPCODE_AUIPC:    reg_writeback_select = CTL_WRITEBACK_ALU; break;
@@ -134,6 +144,7 @@ class singlecycle_control {
       case OPCODE_LOAD:     reg_writeback_select = CTL_WRITEBACK_DATA; break;
       default:              reg_writeback_select = b3(DONTCARE); break;
     }
+    // clang-format on
   }
 };
 

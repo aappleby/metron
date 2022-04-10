@@ -40,7 +40,10 @@ class singlecycle_ctlpath {
 
     alu_ctrl.tock_alu_function();
     alu_function = alu_ctrl.alu_function;
-    alu_operand_a_select = control.alu_operand_a_select();
+    
+    control.tock_alu_operand_a_select();
+    alu_operand_a_select = control.alu_operand_a_select;
+
     control.tock_alu_operand_b_select();
     alu_operand_b_select = control.alu_operand_b_select;
 
@@ -53,8 +56,11 @@ class singlecycle_ctlpath {
 
 
   void tock2() {
-    pc_write_enable = control.pc_write_enable();
-    regfile_write_enable = control.regfile_write_enable();
+    control.tock_pc_write_enable();
+    pc_write_enable = control.pc_write_enable;
+
+    control.tock_regfile_write_enable();
+    regfile_write_enable = control.regfile_write_enable;
 
     control.tock_reg_writeback_select();
     reg_writeback_select = control.reg_writeback_select;
@@ -62,10 +68,11 @@ class singlecycle_ctlpath {
     transfer.result_equal_zero = alu_result_equal_zero;
     transfer.inst_funct3 = inst_funct3;
     transfer.tock_take_branch();
-    logic<1> take_branch = transfer.take_branch;
 
-    control.take_branch = take_branch;
-    next_pc_select = control.next_pc_select();
+    control.take_branch = transfer.take_branch;
+
+    control.tock_next_pc_select();
+    next_pc_select = control.next_pc_select;
   }
 
   //----------------------------------------

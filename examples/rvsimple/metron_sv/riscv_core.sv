@@ -70,29 +70,18 @@ module riscv_core
   end
 
   always_comb begin /*tock*/
-    logic[6:0] opcode;
-    logic[2:0] funct3;
-    logic reg_we;
-    logic[31:0] mem_data;
-    opcode = datapath_inst_opcode;
-    funct3 = datapath_inst_funct3;
-    /*ctlpath.tock_regfile_write_enable()*/;
-    reg_we = ctlpath_regfile_write_enable;
-
-    dmem_bus_read_data = bus_read_data;
-    
-    /*dmem.tock_read_data()*/;
-    mem_data = dmem_read_data;
-
-    /*ctlpath.tock_reg_writeback_select()*/;
-
     ctlpath_alu_result_equal_zero = alu_result == 0;
+    /*ctlpath.tock_regfile_write_enable()*/;
+    /*ctlpath.tock_reg_writeback_select()*/;
     /*ctlpath.tock_next_pc_select()*/;
     /*ctlpath.tock_pc_write_enable()*/;
 
+    dmem_bus_read_data = bus_read_data;
+    /*dmem.tock_read_data()*/;
+
     datapath_reset = reset;
-    datapath_regfile_write_enable = reg_we;
-    datapath_data_mem_read_data = mem_data;
+    datapath_regfile_write_enable = ctlpath_regfile_write_enable;
+    datapath_data_mem_read_data = dmem_read_data;
     datapath_reg_writeback_select = ctlpath_reg_writeback_select;
     datapath_next_pc_select = ctlpath_next_pc_select;
     datapath_pc_write_enable = ctlpath_pc_write_enable;

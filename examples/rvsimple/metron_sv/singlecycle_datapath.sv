@@ -166,7 +166,7 @@ module singlecycle_datapath
     program_counter_reset = reset;
     program_counter_write_enable = pc_write_enable;
     program_counter_next = mux_next_pc_select_out;
-    /*program_counter.tock()*/;
+    /*program_counter.tick()*/;
   end
 
   always_comb begin /*tock_mux_reg_writeback*/

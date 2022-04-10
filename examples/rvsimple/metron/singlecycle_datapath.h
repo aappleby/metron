@@ -167,7 +167,7 @@ public:
     program_counter.reset = reset;
     program_counter.write_enable = pc_write_enable;
     program_counter.next = mux_next_pc_select.out;
-    program_counter.tock();
+    program_counter.tick();
   }
 
   void tock_mux_reg_writeback() {

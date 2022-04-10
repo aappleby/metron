@@ -13,18 +13,14 @@
 template <int WIDTH = 32, int INITIAL = 0>
 class single_register {
  public:
-  single_register() { value = INITIAL; }
 
-  logic<WIDTH> value;
   logic<1> reset;
   logic<1> write_enable;
   logic<WIDTH> next;
+  logic<WIDTH> value;
 
-  void tock() {
-    tick();
-  }
+  single_register() { value = INITIAL; }
 
- private:
   void tick() {
     if (reset)
       value = INITIAL;

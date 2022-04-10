@@ -17,10 +17,9 @@ class singlecycle_ctlpath {
  public:
   logic<7> inst_opcode;
   logic<3> inst_funct3;
-  logic<1> alu_result_equal_zero;
   logic<7> inst_funct7;
+  logic<1> alu_result_equal_zero;
 
-  logic<5> alu_function;
   logic<1> pc_write_enable;
   logic<1> regfile_write_enable;
   logic<1> alu_operand_a_select;
@@ -28,6 +27,7 @@ class singlecycle_ctlpath {
   logic<1> data_mem_read_enable;
   logic<1> data_mem_write_enable;
   logic<3> reg_writeback_select;
+  logic<5> alu_function;
   logic<2> next_pc_select;
 
   void tock_alu_function() {

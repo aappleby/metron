@@ -18,9 +18,8 @@ module singlecycle_ctlpath
   input logic clock,
   input logic[6:0] inst_opcode,
   input logic[2:0] inst_funct3,
-  input logic alu_result_equal_zero,
   input logic[6:0] inst_funct7,
-  output logic[4:0] alu_function,
+  input logic alu_result_equal_zero,
   output logic pc_write_enable,
   output logic regfile_write_enable,
   output logic alu_operand_a_select,
@@ -28,15 +27,15 @@ module singlecycle_ctlpath
   output logic data_mem_read_enable,
   output logic data_mem_write_enable,
   output logic[2:0] reg_writeback_select,
+  output logic[4:0] alu_function,
   output logic[1:0] next_pc_select
 );
  /*public:*/
   /*logic<7> inst_opcode;*/
   /*logic<3> inst_funct3;*/
-  /*logic<1> alu_result_equal_zero;*/
   /*logic<7> inst_funct7;*/
+  /*logic<1> alu_result_equal_zero;*/
 
-  /*logic<5> alu_function;*/
   /*logic<1> pc_write_enable;*/
   /*logic<1> regfile_write_enable;*/
   /*logic<1> alu_operand_a_select;*/
@@ -44,6 +43,7 @@ module singlecycle_ctlpath
   /*logic<1> data_mem_read_enable;*/
   /*logic<1> data_mem_write_enable;*/
   /*logic<3> reg_writeback_select;*/
+  /*logic<5> alu_function;*/
   /*logic<2> next_pc_select;*/
 
   always_comb begin /*tock_alu_function*/

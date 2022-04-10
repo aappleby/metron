@@ -43,7 +43,8 @@ module singlecycle_ctlpath
     alu_ctrl_alu_op_type = control_alu_op_type2;
     alu_ctrl_inst_funct3 = inst_funct3;
     alu_ctrl_inst_funct7 = inst_funct7;
-    /*alu_ctrl.tock_alu_function(control.alu_op_type2(), inst_funct3, inst_funct7)*/;
+
+    /*alu_ctrl.tock_alu_function()*/;
     tock_alu_function = alu_ctrl_alu_function;
   end
 

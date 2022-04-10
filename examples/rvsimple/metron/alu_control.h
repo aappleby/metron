@@ -23,8 +23,12 @@ private:
   logic<5> branch_funct;
 public:
 
+  logic<2> alu_op_type;
+  logic<3> inst_funct3;
+  logic<7> inst_funct7;
+
   // clang-format off
-  void tock_alu_function(logic<2> alu_op_type, logic<3> inst_funct3, logic<7> inst_funct7) {
+  void tock_alu_function() {
     using namespace rv_constants;
 
     switch (inst_funct3) {

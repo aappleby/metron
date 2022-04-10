@@ -30,6 +30,10 @@ module alu_control
   logic[4:0] branch_funct;
 /*public:*/
 
+  /*logic<2> alu_op_type;*/
+  /*logic<3> inst_funct3;*/
+  /*logic<7> inst_funct7;*/
+
   // clang-format off
   always_comb begin /*tock_alu_function*/
     import rv_constants::*;

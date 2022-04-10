@@ -35,23 +35,17 @@ class riscv_core {
     ctlpath.inst_opcode = datapath.inst_opcode;
     ctlpath.inst_funct3 = datapath.inst_funct3;
     ctlpath.inst_funct7 = datapath.inst_funct7;
-    ctlpath.tock_alu_function();
-    ctlpath.tock_alu_operand_a_select();
-    ctlpath.tock_alu_operand_b_select();
-    ctlpath.tock_data_mem_write_enable();
-    ctlpath.tock_data_mem_read_enable();
+    ctlpath.tock1();
 
     datapath.alu_function = ctlpath.alu_function;
     datapath.alu_operand_a_select = ctlpath.alu_operand_a_select;
     datapath.alu_operand_b_select = ctlpath.alu_operand_b_select;
     datapath.tock_alu_result();
-    alu_result = datapath.alu_result;
 
-    dmem.address = alu_result;
+    dmem.address = datapath.alu_result;
     dmem.data_format = datapath.inst_funct3;
-    dmem.tock_inputs();
-
     dmem.write_data = datapath.temp_rs2_data;
+    dmem.tock_inputs();
     dmem.tock_bus_write_data();
     dmem.tock_bus_byte_enable();
 
@@ -59,6 +53,8 @@ class riscv_core {
     bus_write_enable2 = ctlpath.data_mem_write_enable;
     bus_byte_enable2  = dmem.bus_byte_enable;
     bus_read_enable2  = ctlpath.data_mem_read_enable;
+
+    alu_result = datapath.alu_result;
   }
 
   void tock2() {

@@ -47,23 +47,17 @@ module riscv_core
     ctlpath_inst_opcode = datapath_inst_opcode;
     ctlpath_inst_funct3 = datapath_inst_funct3;
     ctlpath_inst_funct7 = datapath_inst_funct7;
-    /*ctlpath.tock_alu_function()*/;
-    /*ctlpath.tock_alu_operand_a_select()*/;
-    /*ctlpath.tock_alu_operand_b_select()*/;
-    /*ctlpath.tock_data_mem_write_enable()*/;
-    /*ctlpath.tock_data_mem_read_enable()*/;
+    /*ctlpath.tock1()*/;
 
     datapath_alu_function = ctlpath_alu_function;
     datapath_alu_operand_a_select = ctlpath_alu_operand_a_select;
     datapath_alu_operand_b_select = ctlpath_alu_operand_b_select;
     /*datapath.tock_alu_result()*/;
-    alu_result = datapath_alu_result;
 
-    dmem_address = alu_result;
+    dmem_address = datapath_alu_result;
     dmem_data_format = datapath_inst_funct3;
-    /*dmem.tock_inputs()*/;
-
     dmem_write_data = datapath_temp_rs2_data;
+    /*dmem.tock_inputs()*/;
     /*dmem.tock_bus_write_data()*/;
     /*dmem.tock_bus_byte_enable()*/;
 
@@ -71,6 +65,8 @@ module riscv_core
     bus_write_enable2 = ctlpath_data_mem_write_enable;
     bus_byte_enable2  = dmem_bus_byte_enable;
     bus_read_enable2  = ctlpath_data_mem_read_enable;
+
+    alu_result = datapath_alu_result;
   end
 
   always_comb begin /*tock2*/

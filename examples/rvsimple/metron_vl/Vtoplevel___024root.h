@@ -25,9 +25,9 @@ VL_MODULE(Vtoplevel___024root) {
     VL_OUT(o_bus_write_data,31,0);
     VL_OUT(o_inst,31,0);
     VL_OUT(o_pc,31,0);
-    IData/*31:0*/ toplevel__DOT__core_alu_result;
     IData/*31:0*/ toplevel__DOT__text_memory_bus_read_data;
     IData/*31:0*/ toplevel__DOT__core__DOT__dmem_bus_write_data;
+    IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__alu_core_result;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__program_counter_next;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__regs_rd_data;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value;

@@ -46,7 +46,7 @@ module singlecycle_ctlpath
   /*logic<3> reg_writeback_select;*/
   /*logic<2> next_pc_select;*/
 
-  always_comb begin /*tock_alu_function*/
+  always_comb begin /*tock1*/
     control_inst_opcode = inst_opcode;
 
     alu_ctrl_alu_op_type = control_alu_op_type2;
@@ -55,7 +55,13 @@ module singlecycle_ctlpath
 
     /*alu_ctrl.tock_alu_function()*/;
     alu_function = alu_ctrl_alu_function;
+    alu_operand_a_select = control_alu_operand_a_select;
+    /*control.tock_alu_operand_b_select()*/;
+    alu_operand_b_select = control_alu_operand_b_select;
+    data_mem_read_enable = control_data_mem_read_enable;
+    data_mem_write_enable = control_data_mem_write_enable;
   end
+
 
   always_comb begin /*tock_pc_write_enable*/ pc_write_enable = control_pc_write_enable; end
 
@@ -63,22 +69,6 @@ module singlecycle_ctlpath
     regfile_write_enable = control_regfile_write_enable;
   end
 
-  always_comb begin /*tock_alu_operand_a_select*/
-    alu_operand_a_select = control_alu_operand_a_select;
-  end
-
-  always_comb begin /*tock_alu_operand_b_select*/
-    /*control.tock_alu_operand_b_select()*/;
-    alu_operand_b_select = control_alu_operand_b_select;
-  end
-
-  always_comb begin /*tock_data_mem_read_enable*/
-    data_mem_read_enable = control_data_mem_read_enable;
-  end
-
-  always_comb begin /*tock_data_mem_write_enable*/
-    data_mem_write_enable = control_data_mem_write_enable;
-  end
 
   always_comb begin /*tock_reg_writeback_select*/
     reg_writeback_select = control_reg_writeback_select;

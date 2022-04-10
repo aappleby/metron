@@ -14,16 +14,15 @@ VL_MODULE(Vtoplevel___024root) {
     // DESIGN SPECIFIC STATE
     VL_IN8(clock,0,0);
     VL_IN8(reset,0,0);
-    VL_OUT8(o_bus_byte_enable,3,0);
-    VL_OUT8(o_bus_read_enable,0,0);
-    VL_OUT8(o_bus_write_enable,0,0);
+    VL_OUT8(bus_byte_enable,3,0);
+    VL_OUT8(bus_read_enable,0,0);
+    VL_OUT8(bus_write_enable,0,0);
     CData/*0:0*/ __Vclklast__TOP__clock;
-    VL_OUT(o_bus_read_data,31,0);
-    VL_OUT(o_bus_address,31,0);
-    VL_OUT(o_bus_write_data,31,0);
-    VL_OUT(o_inst,31,0);
-    VL_OUT(o_pc,31,0);
-    IData/*31:0*/ toplevel__DOT__pc;
+    VL_OUT(bus_read_data,31,0);
+    VL_OUT(bus_address,31,0);
+    VL_OUT(bus_write_data,31,0);
+    VL_OUT(inst,31,0);
+    VL_OUT(pc,31,0);
     VlUnpacked<IData/*31:0*/, 32768> toplevel__DOT__text_mem;
     VlUnpacked<IData/*31:0*/, 32768> toplevel__DOT__data_mem;
     VlUnpacked<IData/*31:0*/, 32> toplevel__DOT__regs;

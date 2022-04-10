@@ -14,7 +14,7 @@ VL_ATTR_COLD void Vtoplevel___024root___initial__TOP__0(Vtoplevel___024root* vlS
     VlWide<3>/*95:0*/ __Vtemp_hded71218__0;
     VlWide<3>/*95:0*/ __Vtemp_hfdc9732b__0;
     // Body
-    vlSelf->toplevel__DOT__pc = 0U;
+    vlSelf->pc = 0U;
     vlSelf->toplevel__DOT__regs[0U] = 0U;
     __Vtemp_hded71218__0[0U] = 0x653d2573U;
     __Vtemp_hded71218__0[1U] = 0x5f66696cU;
@@ -72,21 +72,20 @@ VL_ATTR_COLD void Vtoplevel___024root___ctor_var_reset(Vtoplevel___024root* vlSe
     // Body
     vlSelf->clock = VL_RAND_RESET_I(1);
     vlSelf->reset = VL_RAND_RESET_I(1);
-    vlSelf->o_bus_read_data = VL_RAND_RESET_I(32);
-    vlSelf->o_bus_address = VL_RAND_RESET_I(32);
-    vlSelf->o_bus_write_data = VL_RAND_RESET_I(32);
-    vlSelf->o_bus_byte_enable = VL_RAND_RESET_I(4);
-    vlSelf->o_bus_read_enable = VL_RAND_RESET_I(1);
-    vlSelf->o_bus_write_enable = VL_RAND_RESET_I(1);
-    vlSelf->o_inst = VL_RAND_RESET_I(32);
-    vlSelf->o_pc = VL_RAND_RESET_I(32);
+    vlSelf->bus_read_data = VL_RAND_RESET_I(32);
+    vlSelf->bus_address = VL_RAND_RESET_I(32);
+    vlSelf->bus_write_data = VL_RAND_RESET_I(32);
+    vlSelf->bus_byte_enable = VL_RAND_RESET_I(4);
+    vlSelf->bus_read_enable = VL_RAND_RESET_I(1);
+    vlSelf->bus_write_enable = VL_RAND_RESET_I(1);
+    vlSelf->inst = VL_RAND_RESET_I(32);
+    vlSelf->pc = VL_RAND_RESET_I(32);
     for (int __Vi0=0; __Vi0<32768; ++__Vi0) {
         vlSelf->toplevel__DOT__text_mem[__Vi0] = VL_RAND_RESET_I(32);
     }
     for (int __Vi0=0; __Vi0<32768; ++__Vi0) {
         vlSelf->toplevel__DOT__data_mem[__Vi0] = VL_RAND_RESET_I(32);
     }
-    vlSelf->toplevel__DOT__pc = VL_RAND_RESET_I(32);
     for (int __Vi0=0; __Vi0<32; ++__Vi0) {
         vlSelf->toplevel__DOT__regs[__Vi0] = VL_RAND_RESET_I(32);
     }

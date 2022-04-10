@@ -26,14 +26,14 @@ class Vtoplevel VL_NOT_FINAL {
     // propagate new values into/out from the Verilated model.
     VL_IN8(&clock,0,0);
     VL_IN8(&reset,0,0);
-    VL_OUT8(&o_bus_byte_enable,3,0);
-    VL_OUT8(&o_bus_read_enable,0,0);
-    VL_OUT8(&o_bus_write_enable,0,0);
-    VL_OUT(&o_bus_read_data,31,0);
-    VL_OUT(&o_bus_address,31,0);
-    VL_OUT(&o_bus_write_data,31,0);
-    VL_OUT(&o_inst,31,0);
-    VL_OUT(&o_pc,31,0);
+    VL_OUT8(&bus_byte_enable,3,0);
+    VL_OUT8(&bus_read_enable,0,0);
+    VL_OUT8(&bus_write_enable,0,0);
+    VL_OUT(&bus_read_data,31,0);
+    VL_OUT(&bus_address,31,0);
+    VL_OUT(&bus_write_data,31,0);
+    VL_OUT(&inst,31,0);
+    VL_OUT(&pc,31,0);
 
     // CELLS
     // Public to allow access to /* verilator public */ items.

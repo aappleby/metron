@@ -26,7 +26,7 @@ public:
   /*I*/ logic<32> inst;
   /*O*/ logic<32> pc; 
 
-  void tock_datapath_pc() {
+  void tock_pc() {
     datapath.tock_pc();
     pc = datapath.pc;
   }

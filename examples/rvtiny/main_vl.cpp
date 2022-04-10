@@ -48,8 +48,8 @@ TestResults test_instruction(const char* test_name, const int reps, const int ma
       top.reset = 0; top.clock = 0; top.eval(); top.clock = 1; top.eval();
       total_tocks++;
 
-      if (top.o_bus_address == 0xfffffff0 && top.o_bus_write_enable) {
-        test_result = top.o_bus_write_data;
+      if (top.bus_address == 0xfffffff0 && top.bus_write_enable) {
+        test_result = top.  bus_write_data;
         break;
       }
     }

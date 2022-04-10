@@ -19,14 +19,14 @@ class toplevel {
 
   void tock(logic<1> reset) { tick(reset); }
 
-  logic<32> o_bus_read_data;
-  logic<32> o_bus_address;
-  logic<32> o_bus_write_data;
-  logic<4> o_bus_byte_enable;
-  logic<1> o_bus_read_enable;
-  logic<1> o_bus_write_enable;
-  logic<32> o_inst;
-  logic<32> o_pc;
+  logic<32> bus_read_data;
+  logic<32> bus_address;
+  logic<32> bus_write_data;
+  logic<4>  bus_byte_enable;
+  logic<1>  bus_read_enable;
+  logic<1>  bus_write_enable;
+  logic<32> inst;
+  logic<32> pc;
 
   //----------------------------------------
 
@@ -45,14 +45,14 @@ class toplevel {
     if (reset) {
       pc = 0;
       regs[0] = b32(0);
-      o_bus_read_data = 0;
-      o_bus_address = 0;
-      o_bus_write_data = 0;
-      o_bus_byte_enable = 0;
-      o_bus_read_enable = 0;
-      o_bus_write_enable = 0;
-      o_inst = 0;
-      o_pc = 0;
+      bus_read_data = 0;
+      bus_address = 0;
+      bus_write_data = 0;
+      bus_byte_enable = 0;
+      bus_read_enable = 0;
+      bus_write_enable = 0;
+      inst = 0;
+      pc = 0;
     } else {
       logic<32> inst = text_mem[b14(pc, 2)];
 
@@ -63,9 +63,9 @@ class toplevel {
       logic<5> r2 = b5(inst, 20);
       logic<7> f7 = b7(inst, 25);
 
-      o_bus_address = 0;
-      o_bus_write_enable = 0;
-      o_bus_write_data = 0;
+      bus_address = 0;
+      bus_write_enable = 0;
+      bus_write_data = 0;
 
       //----------
       // Metron simulates this a few percent faster if we don't have ALU and
@@ -161,9 +161,9 @@ class toplevel {
 
         pc = pc + 4;
 
-        o_bus_address = addr;
-        o_bus_write_enable = 1;
-        o_bus_write_data = regs[r2];
+        bus_address = addr;
+        bus_write_enable = 1;
+        bus_write_data = regs[r2];
       }
 
       //----------
@@ -244,7 +244,6 @@ class toplevel {
 
   logic<32> text_mem[32 * 1024];
   logic<32> data_mem[32 * 1024];
-  logic<32> pc;
   logic<32> regs[32];
 };
 

@@ -7,14 +7,14 @@ module toplevel
 (
   input logic clock,
   input logic reset,
-  output logic[31:0] o_bus_read_data,
-  output logic[31:0] o_bus_address,
-  output logic[31:0] o_bus_write_data,
-  output logic[3:0] o_bus_byte_enable,
-  output logic o_bus_read_enable,
-  output logic o_bus_write_enable,
-  output logic[31:0] o_inst,
-  output logic[31:0] o_pc
+  output logic[31:0] bus_read_data,
+  output logic[31:0] bus_address,
+  output logic[31:0] bus_write_data,
+  output logic[3:0]  bus_byte_enable,
+  output logic  bus_read_enable,
+  output logic  bus_write_enable,
+  output logic[31:0] inst,
+  output logic[31:0] pc
 );
  /*public:*/
   initial begin /*toplevel*/
@@ -32,14 +32,14 @@ module toplevel
 
   always_comb begin /*tock*/ /*tick(reset)*/; end
 
-  /*logic<32> o_bus_read_data;*/
-  /*logic<32> o_bus_address;*/
-  /*logic<32> o_bus_write_data;*/
-  /*logic<4> o_bus_byte_enable;*/
-  /*logic<1> o_bus_read_enable;*/
-  /*logic<1> o_bus_write_enable;*/
-  /*logic<32> o_inst;*/
-  /*logic<32> o_pc;*/
+  /*logic<32> bus_read_data;*/
+  /*logic<32> bus_address;*/
+  /*logic<32> bus_write_data;*/
+  /*logic<4>  bus_byte_enable;*/
+  /*logic<1>  bus_read_enable;*/
+  /*logic<1>  bus_write_enable;*/
+  /*logic<32> inst;*/
+  /*logic<32> pc;*/
 
   //----------------------------------------
 
@@ -58,14 +58,14 @@ module toplevel
     if (reset) begin
       pc <= 0;
       regs[0] <= 32'd0;
-      o_bus_read_data <= 0;
-      o_bus_address <= 0;
-      o_bus_write_data <= 0;
-      o_bus_byte_enable <= 0;
-      o_bus_read_enable <= 0;
-      o_bus_write_enable <= 0;
-      o_inst <= 0;
-      o_pc <= 0;
+      bus_read_data <= 0;
+      bus_address <= 0;
+      bus_write_data <= 0;
+      bus_byte_enable <= 0;
+      bus_read_enable <= 0;
+      bus_write_enable <= 0;
+      inst <= 0;
+      pc <= 0;
     end else begin
       logic[31:0] inst;
       logic[6:0] op;
@@ -83,9 +83,9 @@ module toplevel
       r2 = inst[24:20];
       f7 = inst[31:25];
 
-      o_bus_address <= 0;
-      o_bus_write_enable <= 0;
-      o_bus_write_data <= 0;
+      bus_address <= 0;
+      bus_write_enable <= 0;
+      bus_write_data <= 0;
 
       //----------
       // Metron simulates this a few percent faster if we don't have ALU and
@@ -192,9 +192,9 @@ module toplevel
 
         pc <= pc + 4;
 
-        o_bus_address <= addr;
-        o_bus_write_enable <= 1;
-        o_bus_write_data <= regs[r2];
+        bus_address <= addr;
+        bus_write_enable <= 1;
+        bus_write_data <= regs[r2];
       end
 
       //----------
@@ -285,7 +285,6 @@ module toplevel
 
   logic[31:0] text_mem[32 * 1024];
   logic[31:0] data_mem[32 * 1024];
-  logic[31:0] pc;
   logic[31:0] regs[32];
 endmodule;
 

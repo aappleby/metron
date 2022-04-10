@@ -38,7 +38,7 @@ module riscv_core
   /*I*/ /*logic<32> inst;*/
   /*O*/ /*logic<32> pc;*/ 
 
-  always_comb begin /*tock_datapath_pc*/
+  always_comb begin /*tock_pc*/
     /*datapath.tock_pc()*/;
     pc = datapath_pc;
   end

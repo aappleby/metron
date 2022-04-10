@@ -38,7 +38,7 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
     IData/*31:0*/ __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk9__DOT__imm;
     IData/*31:0*/ __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk10__DOT__imm;
     IData/*31:0*/ __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk11__DOT__imm;
-    IData/*31:0*/ __Vdly__toplevel__DOT__pc;
+    IData/*31:0*/ __Vdly__pc;
     CData/*0:0*/ __Vdlyvset__toplevel__DOT__regs__v0;
     CData/*4:0*/ __Vdlyvdim0__toplevel__DOT__regs__v1;
     IData/*31:0*/ __Vdlyvval__toplevel__DOT__regs__v1;
@@ -62,7 +62,7 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
     IData/*31:0*/ __Vdlyvval__toplevel__DOT__regs__v6;
     CData/*0:0*/ __Vdlyvset__toplevel__DOT__regs__v6;
     // Body
-    __Vdly__toplevel__DOT__pc = vlSelf->toplevel__DOT__pc;
+    __Vdly__pc = vlSelf->pc;
     __Vdlyvset__toplevel__DOT__data_mem__v0 = 0U;
     __Vdlyvset__toplevel__DOT__regs__v0 = 0U;
     __Vdlyvset__toplevel__DOT__regs__v1 = 0U;
@@ -72,20 +72,20 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
     __Vdlyvset__toplevel__DOT__regs__v5 = 0U;
     __Vdlyvset__toplevel__DOT__regs__v6 = 0U;
     if (vlSelf->reset) {
-        vlSelf->o_pc = 0U;
-        vlSelf->o_inst = 0U;
-        vlSelf->o_bus_read_enable = 0U;
-        vlSelf->o_bus_byte_enable = 0U;
-        vlSelf->o_bus_read_data = 0U;
-        __Vdly__toplevel__DOT__pc = 0U;
+        vlSelf->inst = 0U;
+        vlSelf->bus_read_enable = 0U;
+        vlSelf->bus_byte_enable = 0U;
+        vlSelf->bus_read_data = 0U;
+        __Vdly__pc = 0U;
         __Vdlyvset__toplevel__DOT__regs__v0 = 1U;
-        vlSelf->o_bus_address = 0U;
-        vlSelf->o_bus_write_data = 0U;
-        vlSelf->o_bus_write_enable = 0U;
+        vlSelf->bus_address = 0U;
+        vlSelf->bus_write_data = 0U;
+        vlSelf->bus_write_enable = 0U;
+        __Vdly__pc = 0U;
     } else {
         __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__inst 
             = vlSelf->toplevel__DOT__text_mem[(0x3fffU 
-                                               & (vlSelf->toplevel__DOT__pc 
+                                               & (vlSelf->pc 
                                                   >> 2U))];
         __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__op 
             = (0x7fU & __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__inst);
@@ -104,15 +104,14 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
         __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__f7 
             = (__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__inst 
                >> 0x19U);
-        vlSelf->o_bus_address = 0U;
-        vlSelf->o_bus_write_enable = 0U;
-        vlSelf->o_bus_write_data = 0U;
+        vlSelf->bus_address = 0U;
+        vlSelf->bus_write_enable = 0U;
+        vlSelf->bus_write_data = 0U;
         if (((0x33U == (IData)(__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__op)) 
              | (0x13U == (IData)(__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__op)))) {
             __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk3__DOT__op_a 
                 = vlSelf->toplevel__DOT__regs[__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__r1];
-            __Vdly__toplevel__DOT__pc = ((IData)(4U) 
-                                         + vlSelf->toplevel__DOT__pc);
+            __Vdly__pc = ((IData)(4U) + vlSelf->pc);
             __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk3__DOT__op_b 
                 = ((0x13U == (IData)(__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__op))
                     ? (((- (IData)((__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__inst 
@@ -177,8 +176,7 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
                                 >> 0x1fU))) << 0xbU) 
                    | (0x7ffU & (__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__inst 
                                 >> 0x14U)));
-            __Vdly__toplevel__DOT__pc = ((IData)(4U) 
-                                         + vlSelf->toplevel__DOT__pc);
+            __Vdly__pc = ((IData)(4U) + vlSelf->pc);
             __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk4__DOT__addr 
                 = (vlSelf->toplevel__DOT__regs[__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__r1] 
                    + __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk4__DOT__imm);
@@ -224,8 +222,7 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
                                  >> 0x14U)) | (0x1fU 
                                                & (__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__inst 
                                                   >> 7U))));
-            __Vdly__toplevel__DOT__pc = ((IData)(4U) 
-                                         + vlSelf->toplevel__DOT__pc);
+            __Vdly__pc = ((IData)(4U) + vlSelf->pc);
             __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk5__DOT__addr 
                 = (vlSelf->toplevel__DOT__regs[__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__r1] 
                    + __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk5__DOT__imm);
@@ -239,7 +236,7 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
                                                     & (__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk5__DOT__addr 
                                                        << 3U)))
                     : 0U);
-            vlSelf->o_bus_write_enable = 1U;
+            vlSelf->bus_write_enable = 1U;
             __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk5__DOT__mask = 0U;
             if ((0U == (IData)(__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__f3))) {
                 __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk5__DOT__mask 
@@ -274,8 +271,8 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
             __Vdlyvset__toplevel__DOT__data_mem__v0 = 1U;
             __Vdlyvdim0__toplevel__DOT__data_mem__v0 
                 = __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk5__DOT__phys_addr;
-            vlSelf->o_bus_address = __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk5__DOT__addr;
-            vlSelf->o_bus_write_data = vlSelf->toplevel__DOT__regs
+            vlSelf->bus_address = __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk5__DOT__addr;
+            vlSelf->bus_write_data = vlSelf->toplevel__DOT__regs
                 [__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__r2];
         } else if ((0x63U == (IData)(__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__op))) {
             __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk6__DOT__op_a 
@@ -310,11 +307,9 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
                                                 | (0x1eU 
                                                    & (__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__inst 
                                                       >> 7U)))));
-                __Vdly__toplevel__DOT__pc = (vlSelf->toplevel__DOT__pc 
-                                             + __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk6__DOT__unnamedblk7__DOT__imm);
+                __Vdly__pc = (vlSelf->pc + __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk6__DOT__unnamedblk7__DOT__imm);
             } else {
-                __Vdly__toplevel__DOT__pc = ((IData)(4U) 
-                                             + vlSelf->toplevel__DOT__pc);
+                __Vdly__pc = ((IData)(4U) + vlSelf->pc);
             }
         } else if ((0x6fU == (IData)(__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__op))) {
             __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk8__DOT__imm 
@@ -330,13 +325,12 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
                                                      >> 0x14U))))));
             if ((0U != (IData)(__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__rd))) {
                 __Vdlyvval__toplevel__DOT__regs__v3 
-                    = ((IData)(4U) + vlSelf->toplevel__DOT__pc);
+                    = ((IData)(4U) + vlSelf->pc);
                 __Vdlyvset__toplevel__DOT__regs__v3 = 1U;
                 __Vdlyvdim0__toplevel__DOT__regs__v3 
                     = __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__rd;
             }
-            __Vdly__toplevel__DOT__pc = (vlSelf->toplevel__DOT__pc 
-                                         + __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk8__DOT__imm);
+            __Vdly__pc = (vlSelf->pc + __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk8__DOT__imm);
         } else if ((0x67U == (IData)(__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__op))) {
             __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk9__DOT__rr1 
                 = vlSelf->toplevel__DOT__regs[__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__r1];
@@ -347,18 +341,17 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
                                 >> 0x14U)));
             if ((0U != (IData)(__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__rd))) {
                 __Vdlyvval__toplevel__DOT__regs__v4 
-                    = ((IData)(4U) + vlSelf->toplevel__DOT__pc);
+                    = ((IData)(4U) + vlSelf->pc);
                 __Vdlyvset__toplevel__DOT__regs__v4 = 1U;
                 __Vdlyvdim0__toplevel__DOT__regs__v4 
                     = __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__rd;
             }
-            __Vdly__toplevel__DOT__pc = (__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk9__DOT__rr1 
-                                         + __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk9__DOT__imm);
+            __Vdly__pc = (__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk9__DOT__rr1 
+                          + __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk9__DOT__imm);
         } else if ((0x37U == (IData)(__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__op))) {
             __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk10__DOT__imm 
                 = (0xfffff000U & __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__inst);
-            __Vdly__toplevel__DOT__pc = ((IData)(4U) 
-                                         + vlSelf->toplevel__DOT__pc);
+            __Vdly__pc = ((IData)(4U) + vlSelf->pc);
             if ((0U != (IData)(__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__rd))) {
                 __Vdlyvval__toplevel__DOT__regs__v5 
                     = __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk10__DOT__imm;
@@ -371,16 +364,15 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
                 = (0xfffff000U & __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__inst);
             if ((0U != (IData)(__Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__rd))) {
                 __Vdlyvval__toplevel__DOT__regs__v6 
-                    = (vlSelf->toplevel__DOT__pc + __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk11__DOT__imm);
+                    = (vlSelf->pc + __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__unnamedblk11__DOT__imm);
                 __Vdlyvset__toplevel__DOT__regs__v6 = 1U;
                 __Vdlyvdim0__toplevel__DOT__regs__v6 
                     = __Vtask_toplevel__DOT__tick__0__unnamedblk2__DOT__rd;
             }
-            __Vdly__toplevel__DOT__pc = ((IData)(4U) 
-                                         + vlSelf->toplevel__DOT__pc);
+            __Vdly__pc = ((IData)(4U) + vlSelf->pc);
         }
     }
-    vlSelf->toplevel__DOT__pc = __Vdly__toplevel__DOT__pc;
+    vlSelf->pc = __Vdly__pc;
     if (__Vdlyvset__toplevel__DOT__data_mem__v0) {
         vlSelf->toplevel__DOT__data_mem[__Vdlyvdim0__toplevel__DOT__data_mem__v0] 
             = __Vdlyvval__toplevel__DOT__data_mem__v0;

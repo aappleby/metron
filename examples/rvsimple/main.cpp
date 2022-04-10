@@ -49,8 +49,8 @@ TestResults test_instruction(const char* test_name, const int reps, const int ma
     for (elapsed_cycles = 0; elapsed_cycles < max_cycles; elapsed_cycles++) {
       top.tock();
       total_tocks++;
-      if (top.o_bus_address == 0xfffffff0 && top.o_bus_write_enable) {
-        test_result = top.o_bus_write_data;
+      if (top.bus_address == 0xfffffff0 && top.bus_write_enable) {
+        test_result = top.bus_write_data;
         break;
       }
     }

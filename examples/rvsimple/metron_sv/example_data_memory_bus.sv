@@ -13,60 +13,58 @@
 
 module example_data_memory_bus
 (
-   input logic clock,
-   input logic[31:0] address,
-   input logic read_enable,
-   input logic write_enable,
-   input logic[3:0] byte_enable,
-   input logic[31:0] write_data,
-   output logic[31:0] q
+  input logic clock,
+  input logic[31:0] address,
+  input logic read_enable,
+  input logic write_enable,
+  input logic[3:0] byte_enable,
+  input logic[31:0] write_data,
+  output logic[31:0] q
 );
  /*public:*/
+  /*logic<32> address;*/
+  /*logic<1> read_enable;*/
+  /*logic<1> write_enable;*/
+  /*logic<4> byte_enable;*/
+  /*logic<32> write_data;*/
+  /*logic<32> q;*/
 
-   /*logic<32> address;*/
-   /*logic<1> read_enable;*/
-   /*logic<1> write_enable;*/
-   /*logic<4> byte_enable;*/
-   /*logic<32> write_data;*/
-
-   /*logic<32> q;*/
   always_comb begin /*tock_q*/
     logic[31:0] fetched;
     logic is_data_memory;
-
     data_memory_address = address[DATA_BITS - 2+1:2];
 
+    /*data_memory.tock_q()*/;
     fetched = data_memory_q;
     is_data_memory = address >= DATA_BEGIN && DATA_END >= address;
     q = read_enable && is_data_memory ? fetched : 32'bx;
   end
 
   always_comb begin /*tock*/
-    data_memory_wren = 1'(write_enable && address >= DATA_BEGIN && DATA_END >= address);
+    data_memory_wren =
+        1'(write_enable && address >= DATA_BEGIN && DATA_END >= address);
     data_memory_byteena = byte_enable;
     data_memory_data = write_data;
-    /*data_memory.tock(
-        b1(write_enable && address >= DATA_BEGIN && DATA_END >= address),
-        byte_enable, write_data)*/;
+
+    /*data_memory.tock()*/;
   end
 
-/*private:*/
-
+ /*private:*/
   example_data_memory data_memory(
-     // Inputs
-     .clock(clock),
-     .address(data_memory_address), 
-     .wren(data_memory_wren), 
-     .byteena(data_memory_byteena), 
-     .data(data_memory_data), 
-     // Outputs
-     .q(data_memory_q)
-   );
-   logic[DATA_BITS - 2-1:0] data_memory_address;
-   logic data_memory_wren;
-   logic[3:0] data_memory_byteena;
-   logic[31:0] data_memory_data;
-   logic[31:0] data_memory_q;
+    // Inputs
+    .clock(clock),
+    .address(data_memory_address), 
+    .wren(data_memory_wren), 
+    .byteena(data_memory_byteena), 
+    .data(data_memory_data), 
+    // Outputs
+    .q(data_memory_q)
+  );
+  logic[DATA_BITS - 2-1:0] data_memory_address;
+  logic data_memory_wren;
+  logic[3:0] data_memory_byteena;
+  logic[31:0] data_memory_data;
+  logic[31:0] data_memory_q;
 
 endmodule;
 

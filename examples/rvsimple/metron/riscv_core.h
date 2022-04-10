@@ -15,14 +15,17 @@
 
 class riscv_core {
  public:
-
-   logic<32> inst;
-   logic<32> alu_result;
-   logic<1> reset;
-   logic<32> bus_read_data;
-   logic<32> bus_write_data;
+  logic<32> inst;
+  logic<32> alu_result;
+  logic<1> reset;
+  logic<32> bus_read_data;
+  logic<32> bus_write_data;
 
   logic<32> pc;
+  logic<1> bus_write_enable2;
+  logic<4> bus_byte_enable2;
+  logic<1> bus_read_enable2;
+
   void tock_pc() { pc = datapath.pc(); }
 
   void tock_inst() {
@@ -72,26 +75,26 @@ class riscv_core {
     datapath.tock();
   }
 
-
   void tock_bus_write_data2() {
     dmem.write_data = datapath.temp_rs2_data;
-    bus_write_data = dmem.bus_write_data();
+    dmem.tock_bus_write_data();
+    bus_write_data = dmem.bus_write_data;
   }
 
-  logic<1> bus_write_enable2;
   void tock_bus_write_enable2() {
-    bus_write_enable2 = ctlpath.data_mem_write_enable();
+    ctlpath.tock_data_mem_write_enable();
+    bus_write_enable2 = ctlpath.data_mem_write_enable;
   }
 
-  logic<4> bus_byte_enable2;
   void tock_bus_byte_enable2() {
     logic<3> funct3 = datapath.inst_funct3;
-    bus_byte_enable2 = dmem.bus_byte_enable();
+    dmem.tock_bus_byte_enable();
+    bus_byte_enable2 = dmem.bus_byte_enable;
   }
 
-  logic<1> bus_read_enable2;
-    void tock_bus_read_enable2() {
-      bus_read_enable2 = ctlpath.data_mem_read_enable();
+  void tock_bus_read_enable2() {
+    ctlpath.tock_data_mem_read_enable();
+    bus_read_enable2 = ctlpath.data_mem_read_enable;
   }
 
   //----------------------------------------

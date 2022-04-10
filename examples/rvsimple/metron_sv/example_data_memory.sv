@@ -31,12 +31,17 @@ module example_data_memory
 
   /*logic<DATA_BITS - 2> address;*/
 
-  always_comb begin
+  /*logic<32> q;*/
+  always_comb begin /*tock_q*/
     q = mem[address];
   end
 
+  /*logic<1> wren;*/
+  /*logic<4> byteena;*/
+  /*logic<32> data;*/
+
   always_comb begin /*tock*/
-    /*tick(wren, byteena, data)*/;
+    /*tick()*/;
   end
 
 /*private:*/

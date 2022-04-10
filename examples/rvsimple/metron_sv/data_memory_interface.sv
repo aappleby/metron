@@ -19,8 +19,8 @@ module data_memory_interface
    input logic[31:0] write_data,
    output logic[31:0] address2,
    output logic[2:0] data_format2,
-   output logic[31:0] read_data,
    output logic[31:0] bus_write_data,
+   output logic[31:0] read_data,
    output logic[3:0] bus_byte_enable
 );
  /*public:*/
@@ -31,30 +31,29 @@ module data_memory_interface
    /*logic<32> address;*/
    /*logic<3> data_format;*/
    /*logic<32> write_data;*/
+   /*logic<32> bus_write_data;*/
+   /*logic<32> read_data;*/
+   /*logic<4> bus_byte_enable;*/
 
    always_comb begin /*tock_inputs*/
      address2 = address;
      data_format2 = data_format;
    end
 
-  always_comb begin
+  always_comb begin /*tock_bus_write_data*/
     bus_write_data = write_data << (8 * 2'(address2));
   end
 
-  always_comb begin
-    logic[3:0] result;
+  always_comb begin /*tock_bus_byte_enable*/
     // calculate byte enable
-    /*logic<4> result;*/
     case (2'(data_format2)) 
-      /*case*/ 2'b00: result = 4'b0001 << 2'(address2); /*break;*/
-      /*case*/ 2'b01: result = 4'b0011 << 2'(address2); /*break;*/
-      /*case*/ 2'b10: result = 4'b1111 << 2'(address2); /*break;*/
-      default:   result = 4'b0000; /*break;*/
+      /*case*/ 2'b00: bus_byte_enable = 4'b0001 << 2'(address2); /*break;*/
+      /*case*/ 2'b01: bus_byte_enable = 4'b0011 << 2'(address2); /*break;*/
+      /*case*/ 2'b10: bus_byte_enable = 4'b1111 << 2'(address2); /*break;*/
+      default:   bus_byte_enable = 4'b0000; /*break;*/
     endcase
-    bus_byte_enable = result;
   end
 
-  /*logic<32> read_data;*/
   always_comb begin /*tock_read_data*/
     logic[31:0] position_fix;
     // correct for unaligned accesses

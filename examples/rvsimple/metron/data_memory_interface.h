@@ -19,29 +19,29 @@ class data_memory_interface {
    logic<32> address;
    logic<3> data_format;
    logic<32> write_data;
+   logic<32> bus_write_data;
+   logic<32> read_data;
+   logic<4> bus_byte_enable;
 
    void tock_inputs() {
      address2 = address;
      data_format2 = data_format;
    }
 
-  logic<32> bus_write_data() const {
-    return write_data << (8 * b2(address2));
+  void tock_bus_write_data() {
+    bus_write_data = write_data << (8 * b2(address2));
   }
 
-  logic<4> bus_byte_enable() const {
+  void tock_bus_byte_enable() {
     // calculate byte enable
-    logic<4> result;
     switch (b2(data_format2)) {
-      case 0b00: result = b4(0b0001) << b2(address2); break;
-      case 0b01: result = b4(0b0011) << b2(address2); break;
-      case 0b10: result = b4(0b1111) << b2(address2); break;
-      default:   result = b4(0b0000); break;
+      case 0b00: bus_byte_enable = b4(0b0001) << b2(address2); break;
+      case 0b01: bus_byte_enable = b4(0b0011) << b2(address2); break;
+      case 0b10: bus_byte_enable = b4(0b1111) << b2(address2); break;
+      default:   bus_byte_enable = b4(0b0000); break;
     }
-    return result;
   }
 
-  logic<32> read_data;
   void tock_read_data() {
     // correct for unaligned accesses
     logic<32> position_fix = b32(bus_read_data >> (8 * b2(address2)));

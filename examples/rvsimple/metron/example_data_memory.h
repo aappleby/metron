@@ -22,17 +22,22 @@ public:
 
   logic<DATA_BITS - 2> address;
 
-  logic<32> q() const {
-    return mem[address];
+  logic<32> q;
+  void tock_q() {
+    q = mem[address];
   }
 
-  void tock(logic<1> wren, logic<4> byteena, logic<32> data) {
-    tick(wren, byteena, data);
+  logic<1> wren;
+  logic<4> byteena;
+  logic<32> data;
+
+  void tock() {
+    tick();
   }
 
 private:
 
-  void tick(logic<1> wren, logic<4> byteena, logic<32> data) {
+  void tick() {
     if (wren) {
       logic<32> mask = 0;
       if (byteena[0]) mask = mask | 0x000000FF;

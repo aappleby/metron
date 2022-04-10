@@ -805,7 +805,7 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnCompoundStatement n) {
   }
   *this = old_cursor;
 
-  emit_newline();
+  err << emit_newline();
 
   assert(at_newline);
   return err;

@@ -88,9 +88,7 @@ module toplevel
         logic[31:0] alu_result;
 
         op_a = regs[r1];
-        op_b =
-            op == OP_ALUI ? {{21 {inst[31]}}, inst[30:25], inst[24:20]}
-                          : regs[r2];
+        op_b = op == OP_ALUI ? {{21 {inst[31]}}, inst[30:25], inst[24:20]} : regs[r2];
 
         // clang-format off
         case (f3)
@@ -196,8 +194,7 @@ module toplevel
         if (take_branch) begin
           logic[31:0] imm;
 
-          imm =
-              {{20 {inst[31]}}, inst[7], inst[30:25], inst[11:8], 1'd0};
+          imm = {{20 {inst[31]}}, inst[7], inst[30:25], inst[11:8], 1'd0};
           pc <= pc + imm;
         end else begin
           pc <= pc + 4;
@@ -209,8 +206,7 @@ module toplevel
       else if (op == OP_JAL) begin
         logic[31:0] imm;
 
-        imm = {{12 {inst[31]}}, inst[19:12], inst[20],
-                            inst[30:25], inst[24:21], 1'd0};
+        imm = {{12 {inst[31]}}, inst[19:12], inst[20], inst[30:25], inst[24:21], 1'd0};
         if (rd) regs[rd] <= pc + 4;
         pc <= pc + imm;
       end

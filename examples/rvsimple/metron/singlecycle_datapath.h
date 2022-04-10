@@ -163,12 +163,15 @@ public:
     mux_next_pc_select.tock();
   }
 
-  void tock3a() {
+  void tock_program_counter() {
     program_counter.reset = reset;
     program_counter.write_enable = pc_write_enable;
     program_counter.next = mux_next_pc_select.out;
     program_counter.tock();
 
+  }
+
+  void tock3b() {
     mux_reg_writeback.sel = reg_writeback_select;
     mux_reg_writeback.in0 = alu_core.result;
     mux_reg_writeback.in1 = data_mem_read_data;

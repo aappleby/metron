@@ -81,13 +81,15 @@ public:
     datapath.next_pc_select       = ctlpath.next_pc_select;
     datapath.tock_mux_next_pc_select();
 
+    datapath.reset                = reset;
+    datapath.pc_write_enable      = ctlpath.pc_write_enable;
+    datapath.tock_program_counter();
+
     datapath.regfile_write_enable = ctlpath.regfile_write_enable;
     datapath.reg_writeback_select = ctlpath.reg_writeback_select;
-    datapath.pc_write_enable      = ctlpath.pc_write_enable;
-    datapath.reset                = reset;
     datapath.data_mem_read_data   = dmem.read_data;
 
-    datapath.tock3a();
+    datapath.tock3b();
   }
 
   //----------------------------------------

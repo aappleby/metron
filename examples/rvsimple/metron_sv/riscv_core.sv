@@ -93,13 +93,15 @@ module riscv_core
     datapath_next_pc_select       = ctlpath_next_pc_select;
     /*datapath.tock_mux_next_pc_select()*/;
 
+    datapath_reset                = reset;
+    datapath_pc_write_enable      = ctlpath_pc_write_enable;
+    /*datapath.tock_program_counter()*/;
+
     datapath_regfile_write_enable = ctlpath_regfile_write_enable;
     datapath_reg_writeback_select = ctlpath_reg_writeback_select;
-    datapath_pc_write_enable      = ctlpath_pc_write_enable;
-    datapath_reset                = reset;
     datapath_data_mem_read_data   = dmem_read_data;
 
-    /*datapath.tock3a()*/;
+    /*datapath.tock3b()*/;
   end
 
   //----------------------------------------

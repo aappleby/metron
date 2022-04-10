@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#include "Platform.h"
 #include "metron_vl/Vtoplevel.h"
 #include "tests/Tests.h"
 

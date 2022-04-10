@@ -8,6 +8,7 @@
 #include <SDL2/SDL.h>
 #endif
 
+#include "Platform.h"
 #include "metron/pong.h"
 
 #define SCREEN_WIDTH 640

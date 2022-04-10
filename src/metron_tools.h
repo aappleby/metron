@@ -1,12 +1,9 @@
 #ifndef METRON_TOOLS_H
 #define METRON_TOOLS_H
 
-#include <memory.h>
-#include <stdarg.h>
-#include <stdint.h>
 #include <stdio.h>
-#include <time.h>
-
+#include <stdarg.h>
+#include <memory.h>
 #include <string>
 #include <vector>
 
@@ -468,15 +465,6 @@ inline logic<DST_WIDTH> sign_extend(const logic<SRC_WIDTH> a) {
              bx<SRC_WIDTH - 1>(a));
 }
 
-//-----------------------------------------------------------------------------
-
-inline uint64_t timestamp() {
-  timespec ts;
-  (void)timespec_get(&ts, TIME_UTC);
-  uint64_t now = ts.tv_sec * 1000000000ull + ts.tv_nsec;
-  return now;
-}
-
 //------------------------------------------------------------------------------
 // Trivial support for Verilog's "+foo=bar" test arg syntax.
 // This only works for $value$plusargs("NAME=%s", s);
@@ -623,7 +611,7 @@ inline void parse_hex(const char* src_filename, void* dst_data, int dst_size) {
   // byte past the buffer.
   void* src_data = malloc(src_size + 256);
   memset(src_data, 0, src_size + 256);
-  fread(src_data, 1, src_size, f);
+  (void)fread(src_data, 1, src_size, f);
   fclose(f);
 
   uint8_t* sc = (uint8_t*)src_data;

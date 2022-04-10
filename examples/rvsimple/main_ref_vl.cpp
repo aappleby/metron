@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#include "Platform.h"
 #include "reference_vl/Vtoplevel.h"
 #include "tests/Tests.h"
 

@@ -105,7 +105,7 @@ module singlecycle_datapath
 
   //----------------------------------------
 
-  always_comb begin /*tock_regs1*/
+  always_comb begin /*tock_rsN_data*/
     regs_rd_address  = idec_inst_rd;
     regs_rs1_address = idec_inst_rs1;
     regs_rs2_address = idec_inst_rs2;

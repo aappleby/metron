@@ -31,37 +31,32 @@ public:
     pc = datapath.pc;
   }
 
-  void tock_datapath_decode() {
+  void tock_execute() {
     datapath.inst = inst;
     datapath.tock_instruction_decoder();
     datapath.tock_immediate_generator();
-  }
 
-  void tock_execute() {
     ctlpath.inst_opcode = datapath.inst_opcode;
-    ctlpath.tock_control();
-
     ctlpath.inst_funct3 = datapath.inst_funct3;
     ctlpath.inst_funct7 = datapath.inst_funct7;
-    ctlpath.tock_alu_control();
+
+    ctlpath.tock_alu_function();
+    ctlpath.tock_alu_operand_select();
     ctlpath.tock_data_mem_enable();
 
     datapath.alu_function         = ctlpath.alu_function;
     datapath.alu_operand_a_select = ctlpath.alu_operand_a_select;
     datapath.alu_operand_b_select = ctlpath.alu_operand_b_select;
     
-    datapath.tock_regs1();
+    datapath.tock_rsN_data();
     datapath.tock_mux_operand_a();
     datapath.tock_mux_operand_b();
     datapath.tock_alu();
-    datapath.tock_adder_pc_plus_4();
-    datapath.tock_adder_pc_plus_immediate();
+
     datapath.tock_data_mem_write_data();
 
     dmem.read_enable  = ctlpath.data_mem_read_enable;
     dmem.write_enable = ctlpath.data_mem_write_enable;
-
-
     dmem.data_format  = datapath.inst_funct3;
     dmem.address      = datapath.data_mem_address;
     dmem.write_data   = datapath.data_mem_write_data;
@@ -71,7 +66,6 @@ public:
     ctlpath.tock_pc_write_enable();
     ctlpath.tock_regfile_write_enable();
     ctlpath.tock_reg_writeback_select();
-    ctlpath.tock_control_transfer();
     ctlpath.tock_next_pc_select();
 
     //----------
@@ -88,6 +82,8 @@ public:
     dmem.tock2();
 
     datapath.next_pc_select       = ctlpath.next_pc_select;
+    datapath.tock_adder_pc_plus_4();
+    datapath.tock_adder_pc_plus_immediate();
     datapath.tock_mux_next_pc_select();
 
     datapath.reset                = reset;

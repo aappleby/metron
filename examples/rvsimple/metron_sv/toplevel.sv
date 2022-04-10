@@ -46,7 +46,6 @@ module toplevel
     /*text_memory_bus.tock_read_data()*/;
 
     core_inst = text_memory_bus_read_data;
-    /*core.tock_datapath_decode()*/;
     /*core.tock_execute()*/;
 
     data_memory_bus_address      = core_bus_address;

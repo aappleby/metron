@@ -21,7 +21,8 @@ class singlecycle_ctlpath {
    logic<1> alu_result_equal_zero;
    logic<7> inst_funct7;
 
-  logic<5> tock_alu_function() {
+   logic<5> alu_function;
+  void tock_alu_function() {
     control.inst_opcode = inst_opcode;
 
     alu_ctrl.alu_op_type = control.alu_op_type2();
@@ -29,7 +30,7 @@ class singlecycle_ctlpath {
     alu_ctrl.inst_funct7 = inst_funct7;
 
     alu_ctrl.tock_alu_function();
-    return alu_ctrl.alu_function;
+    alu_function = alu_ctrl.alu_function;
   }
 
   logic<1> pc_write_enable() const {
@@ -40,8 +41,9 @@ class singlecycle_ctlpath {
     return control.regfile_write_enable();
   }
 
-  logic<1> alu_operand_a_select() const {
-    return control.alu_operand_a_select();
+  logic<1> alu_operand_a_select;
+  void tock_alu_operand_a_select() {
+    alu_operand_a_select = control.alu_operand_a_select();
   }
 
   logic<1> alu_operand_b_select;

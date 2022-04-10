@@ -46,24 +46,20 @@ module riscv_core
     logic[6:0] opcode;
     logic[2:0] funct3;
     logic[6:0] funct7;
-    logic[4:0] alu_function;
     opcode = datapath_inst_opcode;
     funct3 = datapath_inst_funct3;
     funct7 = datapath_inst_funct7;
 
     ctlpath_inst_opcode = opcode;
     ctlpath_inst_funct3 = funct3;
-
     ctlpath_inst_funct7 = funct7;
-    alu_function = ctlpath_tock_alu_function;
-
-    datapath_alu_function = alu_function;
-    datapath_alu_operand_a_select = ctlpath_alu_operand_a_select;
-
-
+    /*ctlpath.tock_alu_function()*/;
+    /*ctlpath.tock_alu_operand_a_select()*/;
     /*ctlpath.tock_alu_operand_b_select()*/;
-    datapath_alu_operand_b_select = ctlpath_alu_operand_b_select;
 
+    datapath_alu_function = ctlpath_alu_function;
+    datapath_alu_operand_a_select = ctlpath_alu_operand_a_select;
+    datapath_alu_operand_b_select = ctlpath_alu_operand_b_select;
     /*datapath.tock_alu_result()*/;
     alu_result = datapath_alu_result;
 
@@ -181,11 +177,11 @@ module riscv_core
      .alu_result_equal_zero(ctlpath_alu_result_equal_zero), 
      .inst_funct7(ctlpath_inst_funct7), 
      // Outputs
+     .alu_function(ctlpath_alu_function), 
+     .alu_operand_a_select(ctlpath_alu_operand_a_select), 
      .alu_operand_b_select(ctlpath_alu_operand_b_select), 
-     .tock_alu_function(ctlpath_tock_alu_function), 
      .pc_write_enable(ctlpath_pc_write_enable), 
      .regfile_write_enable(ctlpath_regfile_write_enable), 
-     .alu_operand_a_select(ctlpath_alu_operand_a_select), 
      .data_mem_read_enable(ctlpath_data_mem_read_enable), 
      .data_mem_write_enable(ctlpath_data_mem_write_enable), 
      .reg_writeback_select(ctlpath_reg_writeback_select), 
@@ -195,11 +191,11 @@ module riscv_core
    logic[2:0] ctlpath_inst_funct3;
    logic ctlpath_alu_result_equal_zero;
    logic[6:0] ctlpath_inst_funct7;
+   logic[4:0] ctlpath_alu_function;
+   logic ctlpath_alu_operand_a_select;
    logic ctlpath_alu_operand_b_select;
-   logic[4:0] ctlpath_tock_alu_function;
    logic ctlpath_pc_write_enable;
    logic ctlpath_regfile_write_enable;
-   logic ctlpath_alu_operand_a_select;
    logic ctlpath_data_mem_read_enable;
    logic ctlpath_data_mem_write_enable;
    logic[2:0] ctlpath_reg_writeback_select;

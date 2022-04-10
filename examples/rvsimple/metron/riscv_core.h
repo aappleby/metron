@@ -36,17 +36,14 @@ class riscv_core {
 
     ctlpath.inst_opcode = opcode;
     ctlpath.inst_funct3 = funct3;
-
     ctlpath.inst_funct7 = funct7;
-    logic<5> alu_function = ctlpath.tock_alu_function();
-
-    datapath.alu_function = alu_function;
-    datapath.alu_operand_a_select = ctlpath.alu_operand_a_select();
-
-
+    ctlpath.tock_alu_function();
+    ctlpath.tock_alu_operand_a_select();
     ctlpath.tock_alu_operand_b_select();
-    datapath.alu_operand_b_select = ctlpath.alu_operand_b_select;
 
+    datapath.alu_function = ctlpath.alu_function;
+    datapath.alu_operand_a_select = ctlpath.alu_operand_a_select;
+    datapath.alu_operand_b_select = ctlpath.alu_operand_b_select;
     datapath.tock_alu_result();
     alu_result = datapath.alu_result;
 

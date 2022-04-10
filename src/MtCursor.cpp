@@ -2271,16 +2271,6 @@ CHECK_RETURN Err MtCursor::emit_break(MnBreakStatement n) {
 }
 
 //------------------------------------------------------------------------------
-
-//CHECK_RETURN Err MtCursor::emit_field_decl_list(MnFieldDeclList n) {
-//  Err err;
-//  assert(cursor == n.start());
-//  err |= emit_children(n);
-//  assert(cursor == n.end());
-//  return err;
-//}
-
-//------------------------------------------------------------------------------
 // TreeSitter nodes slightly broken for "a = b ? c : d;"...
 
 CHECK_RETURN Err MtCursor::emit_condition(MnCondExpr n) {

@@ -1,7 +1,8 @@
+Don't emit lines whose content has all been elided
+
+
 Should I tack the submod method name to the input port name so that we don't have to dedup the ports?
   Maybe only if there's a collision?
-
-fix #defines
 
 check in the tracer that if we bind to a dedup'd port, we always end up with the
 same expression at each port... somehow?
@@ -14,8 +15,6 @@ If we don't emit anything for a tock(), we should not emit the tock itself
 
 Member variables as input ports should be added back in
 
-
-
 tests to increase coverage
   bad output dir
   no output dir
@@ -23,7 +22,6 @@ tests to increase coverage
   no source root
   lhs of assignment is array
   sra
-  $signed $unsigned $clog2 pow2 readmemh valueplusargs write cat dup
   final block?
   all the discrete bit extract sizes
   decl without initialization value
@@ -36,7 +34,6 @@ tests to increase coverage
   emit_enum_list
   emit_number_literal with hex and binary literals
   emit_break
-  emit_field_decl_list? probably because we're doing it in emit_class
   emit_condition - ternary
   emit_qualified_id?
   emit_enum_specifier

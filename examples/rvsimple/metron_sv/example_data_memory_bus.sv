@@ -19,7 +19,7 @@ module example_data_memory_bus
    input logic write_enable,
    input logic[3:0] byte_enable,
    input logic[31:0] write_data,
-   output logic[31:0] tock_q
+   output logic[31:0] q
 );
  /*public:*/
 
@@ -29,6 +29,7 @@ module example_data_memory_bus
    /*logic<4> byte_enable;*/
    /*logic<32> write_data;*/
 
+   /*logic<32> q;*/
   always_comb begin /*tock_q*/
     logic[31:0] fetched;
     logic is_data_memory;
@@ -37,7 +38,7 @@ module example_data_memory_bus
 
     fetched = data_memory_q;
     is_data_memory = address >= DATA_BEGIN && DATA_END >= address;
-    tock_q = read_enable && is_data_memory ? fetched : 32'bx;
+    q = read_enable && is_data_memory ? fetched : 32'bx;
   end
 
   always_comb begin /*tock*/

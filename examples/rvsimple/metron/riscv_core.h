@@ -87,8 +87,9 @@ class riscv_core {
     return dmem.bus_byte_enable();
   }
 
-  logic<1> bus_read_enable2() const {
-    return ctlpath.data_mem_read_enable();
+  logic<1> bus_read_enable2;
+    void tock_bus_read_enable2() {
+      bus_read_enable2 = ctlpath.data_mem_read_enable();
   }
 
   //----------------------------------------

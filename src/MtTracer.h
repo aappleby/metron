@@ -2,6 +2,7 @@
 #include <map>
 #include <string>
 
+#include "Err.h"
 #include "MtNode.h"
 
 struct MtModule;

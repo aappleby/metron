@@ -1,5 +1,6 @@
 #include "MtModule.h"
 
+#include "Log.h"
 #include "MtCursor.h"
 #include "MtModLibrary.h"
 #include "MtNode.h"

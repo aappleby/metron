@@ -2,6 +2,7 @@
 #include <map>
 #include <stack>
 
+#include "Err.h"
 #include "MtNode.h"
 #include "Platform.h"
 

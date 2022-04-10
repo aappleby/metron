@@ -2,6 +2,7 @@
 
 #include <sys/stat.h>
 
+#include "Log.h"
 #include "metron_tools.h"
 #include "MtModule.h"
 #include "MtSourceFile.h"

@@ -1,5 +1,6 @@
 #include "MtTracer.h"
 
+#include "Log.h"
 #include "MtModLibrary.h"
 #include "MtModule.h"
 #include "MtSourceFile.h"
@@ -308,7 +309,7 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
   _state_stack.pop_back();
 
   if (err.has_err()) {
-    LOG_R("MtTracer::trace_call failed\n");
+    //LOG_R("MtTracer::trace_call failed\n");
     return err;
   }
 

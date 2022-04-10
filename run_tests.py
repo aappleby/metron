@@ -103,7 +103,7 @@ def check_golden(filename):
     basename = path.basename(filename)
     svname = path.splitext(basename)[0] + ".sv"
     test_filename = "tests/metron_sv/" + svname
-    golden_filename = "tests/metron_ref/" + svname
+    golden_filename = "tests/metron_gold/" + svname
 
     try:
         test_src = open(test_filename, "r").read()
@@ -126,6 +126,7 @@ def check_bad(filename):
     svname = path.splitext(basename)[0] + ".sv"
 
     cmd = kcov_prefix + f"bin/metron -q -r tests/metron_bad -o tests/metron_sv -c {basename}"
+    #cmd = kcov_prefix + f"bin/metron -r tests/metron_bad -o tests/metron_sv -c {basename}"
     print(f"  {cmd}")
     result = os.system(cmd)
     if result == 0:

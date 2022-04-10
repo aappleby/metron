@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 
+#include "Err.h"
 #include "Platform.h"
 
 struct MtModule;

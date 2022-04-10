@@ -1,5 +1,6 @@
 ﻿#include "MtNode.h"
 
+#include "Log.h"
 #include "MtModLibrary.h"
 #include "MtModule.h"
 #include "MtNode.h"
@@ -58,6 +59,7 @@ MnNode::MnNode(TSNode node, int sym, int field, MtSourceFile* source) {
 void MnNode::dump_source_lines() const {
 
   TSPoint p = ts_node_start_point(node);
+  TinyLog::get().printf(0xFFFFFF, "==========\n");
   TinyLog::get().printf(0xFFFFFF, "%s(%d,%d):\n", source->full_path.c_str(), p.row + 1, p.column + 1);
   auto source_start = source->source;
   auto source_end = source->source_end;
@@ -72,6 +74,7 @@ void MnNode::dump_source_lines() const {
 
   TinyLog::get().print_buffer(0x008080FF, a, int(b-a));
   TinyLog::get().printf(0x008080FF, "\n");
+  TinyLog::get().printf(0xFFFFFF, "==========\n");
 }
 
 //------------------------------------------------------------------------------

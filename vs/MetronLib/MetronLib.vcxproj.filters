@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="..\..\src\Log.h" />
     <ClInclude Include="..\..\src\MtCursor.h" />
     <ClInclude Include="..\..\src\MtModLibrary.h" />
     <ClInclude Include="..\..\src\MtModule.h" />
@@ -19,6 +18,12 @@
     </ClInclude>
     <ClInclude Include="..\..\submodules\tree-sitter\lib\include\tree_sitter\api.h">
       <Filter>tree-sitter</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Log.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Err.h">
+      <Filter>utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -38,6 +43,15 @@
       <Filter>tree-sitter</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Platform.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Log.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\metron_tools.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Err.cpp">
       <Filter>utils</Filter>
     </ClCompile>
   </ItemGroup>

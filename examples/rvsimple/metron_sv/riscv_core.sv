@@ -77,7 +77,8 @@ module riscv_core
     /*dmem.tock1()*/;
 
     ctlpath_alu_result_equal_zero = datapath_alu_result_equal_zero;
-    /*ctlpath.tock2a()*/;
+    /*ctlpath.tock2b()*/;
+    /*ctlpath.tock_control_transfer()*/;
     /*ctlpath.tock_next_pc_select()*/;
 
     //----------

@@ -65,7 +65,8 @@ public:
     dmem.tock1();
 
     ctlpath.alu_result_equal_zero = datapath.alu_result_equal_zero;
-    ctlpath.tock2a();
+    ctlpath.tock2b();
+    ctlpath.tock_control_transfer();
     ctlpath.tock_next_pc_select();
 
     //----------

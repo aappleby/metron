@@ -54,7 +54,7 @@ class singlecycle_ctlpath {
   }
 
 
-  void tock2a() {
+  void tock2b() {
     control.tock_pc_write_enable();
     control.tock_regfile_write_enable();
     control.tock_reg_writeback_select();
@@ -62,7 +62,9 @@ class singlecycle_ctlpath {
     pc_write_enable      = control.pc_write_enable;
     regfile_write_enable = control.regfile_write_enable;
     reg_writeback_select = control.reg_writeback_select;
+  }
 
+  void tock_control_transfer() {
     transfer.result_equal_zero = alu_result_equal_zero;
     transfer.inst_funct3 = inst_funct3;
     transfer.tock_take_branch();

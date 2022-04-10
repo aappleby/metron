@@ -35,7 +35,7 @@ class toplevel {
 
     core.inst = text_memory_bus.read_data;
     core.tock_datapath_decode();
-    core.tock2a();
+    core.tock_execute();
 
     data_memory_bus.address      = core.bus_address;
     data_memory_bus.read_enable  = core.bus_read_enable;
@@ -45,7 +45,7 @@ class toplevel {
     data_memory_bus.tock();
 
     core.bus_read_data = data_memory_bus.q;
-    core.tock3();
+    core.tock_writeback();
 
     //----------
 

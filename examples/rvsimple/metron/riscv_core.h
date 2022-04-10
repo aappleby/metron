@@ -37,13 +37,14 @@ public:
     datapath.tock_immediate_generator();
   }
 
-  void tock2a() {
+  void tock_execute() {
     ctlpath.inst_opcode = datapath.inst_opcode;
     ctlpath.tock_control();
 
     ctlpath.inst_funct3 = datapath.inst_funct3;
     ctlpath.inst_funct7 = datapath.inst_funct7;
-    ctlpath.tock1a();
+    ctlpath.tock_alu_control();
+    ctlpath.tock_data_mem_enable();
 
     datapath.alu_function         = ctlpath.alu_function;
     datapath.alu_operand_a_select = ctlpath.alu_operand_a_select;
@@ -55,10 +56,12 @@ public:
     datapath.tock_alu();
     datapath.tock_adder_pc_plus_4();
     datapath.tock_adder_pc_plus_immediate();
-    datapath.tock_data_mem_out();
+    datapath.tock_data_mem_write_data();
 
     dmem.read_enable  = ctlpath.data_mem_read_enable;
     dmem.write_enable = ctlpath.data_mem_write_enable;
+
+
     dmem.data_format  = datapath.inst_funct3;
     dmem.address      = datapath.data_mem_address;
     dmem.write_data   = datapath.data_mem_write_data;
@@ -80,7 +83,7 @@ public:
     bus_write_enable = dmem.bus_write_enable;
   }
 
-  void tock3() {
+  void tock_writeback() {
     dmem.bus_read_data = bus_read_data;
     dmem.tock2();
 

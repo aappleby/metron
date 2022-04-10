@@ -149,7 +149,7 @@ public:
     adder_pc_plus_immediate.tock();
   }
 
-  void tock_data_mem_out() {
+  void tock_data_mem_write_data() {
     data_mem_address    = alu_core.result;
     data_mem_write_data = regs.rs2_data;
   }

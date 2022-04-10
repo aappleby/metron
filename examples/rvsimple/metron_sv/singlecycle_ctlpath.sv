@@ -51,11 +51,9 @@ module singlecycle_ctlpath
     /*control.tock_alu_op_type2()*/;
     /*control.tock_alu_operand_a_select()*/;
     /*control.tock_alu_operand_b_select()*/;
-    /*control.tock_data_mem_read_enable()*/;
-    /*control.tock_data_mem_write_enable()*/;
   end
 
-  always_comb begin /*tock1a*/
+  always_comb begin /*tock_alu_control*/
     alu_ctrl_alu_op_type = control_alu_op_type2;
     alu_ctrl_inst_funct3 = inst_funct3;
     alu_ctrl_inst_funct7 = inst_funct7;
@@ -64,7 +62,11 @@ module singlecycle_ctlpath
     alu_function         = alu_ctrl_alu_function;
     alu_operand_a_select = control_alu_operand_a_select;
     alu_operand_b_select = control_alu_operand_b_select;
+  end
 
+  always_comb begin /*tock_data_mem_enable*/
+    /*control.tock_data_mem_read_enable()*/;
+    /*control.tock_data_mem_write_enable()*/;
     data_mem_read_enable  = control_data_mem_read_enable;
     data_mem_write_enable = control_data_mem_write_enable;
   end

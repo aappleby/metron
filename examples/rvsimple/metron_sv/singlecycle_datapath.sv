@@ -148,7 +148,7 @@ module singlecycle_datapath
     /*adder_pc_plus_immediate.tock()*/;
   end
 
-  always_comb begin /*tock_data_mem_out*/
+  always_comb begin /*tock_data_mem_write_data*/
     data_mem_address    = alu_core_result;
     data_mem_write_data = regs_rs2_data;
   end

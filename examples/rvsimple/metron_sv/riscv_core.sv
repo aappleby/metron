@@ -49,13 +49,14 @@ module riscv_core
     /*datapath.tock_immediate_generator()*/;
   end
 
-  always_comb begin /*tock2a*/
+  always_comb begin /*tock_execute*/
     ctlpath_inst_opcode = datapath_inst_opcode;
     /*ctlpath.tock_control()*/;
 
     ctlpath_inst_funct3 = datapath_inst_funct3;
     ctlpath_inst_funct7 = datapath_inst_funct7;
-    /*ctlpath.tock1a()*/;
+    /*ctlpath.tock_alu_control()*/;
+    /*ctlpath.tock_data_mem_enable()*/;
 
     datapath_alu_function         = ctlpath_alu_function;
     datapath_alu_operand_a_select = ctlpath_alu_operand_a_select;
@@ -67,10 +68,12 @@ module riscv_core
     /*datapath.tock_alu()*/;
     /*datapath.tock_adder_pc_plus_4()*/;
     /*datapath.tock_adder_pc_plus_immediate()*/;
-    /*datapath.tock_data_mem_out()*/;
+    /*datapath.tock_data_mem_write_data()*/;
 
     dmem_read_enable  = ctlpath_data_mem_read_enable;
     dmem_write_enable = ctlpath_data_mem_write_enable;
+
+
     dmem_data_format  = datapath_inst_funct3;
     dmem_address      = datapath_data_mem_address;
     dmem_write_data   = datapath_data_mem_write_data;
@@ -92,7 +95,7 @@ module riscv_core
     bus_write_enable = dmem_bus_write_enable;
   end
 
-  always_comb begin /*tock3*/
+  always_comb begin /*tock_writeback*/
     dmem_bus_read_data = bus_read_data;
     /*dmem.tock2()*/;
 

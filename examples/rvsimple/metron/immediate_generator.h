@@ -28,30 +28,24 @@ class immediate_generator {
   void tock() {
     using namespace rv_constants;
     // clang-format off
+    immediate = b32(0b0);
     switch (b7(inst)) { // Opcode
-      // FIXME we need to translate fallthrough into "x, y, z:"?
-      case OPCODE_LOAD: // I-type immediate
-        immediate = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20)); break;
-      case OPCODE_LOAD_FP: // I-type immediate
-        immediate = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20)); break;
-      case OPCODE_OP_IMM: // I-type immediate
-        immediate = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20)); break;
+      case OPCODE_LOAD:
+      case OPCODE_LOAD_FP:
+      case OPCODE_OP_IMM:
       case OPCODE_JALR: // I-type immediate
         immediate = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20)); break;
-      case OPCODE_STORE_FP: // S-type immediate
-        immediate = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 7)); break;
+      case OPCODE_STORE_FP:
       case OPCODE_STORE: // S-type immediate
         immediate = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 7)); break;
       case OPCODE_BRANCH: // B-type immediate
-        immediate = cat(dup<20>(inst[31]), inst[7], b6(inst, 25), b4(inst, 8), b1(0)); break;
-      case OPCODE_AUIPC: // U-type immediate
-        immediate = cat(inst[31], b11(inst, 20), b8(inst, 12), b12(0)); break;
+        immediate = cat(dup<20>(inst[31]), inst[7], b6(inst, 25), b4(inst, 8), b1(0b0)); break;
+      case OPCODE_AUIPC:
       case OPCODE_LUI: // U-type immediate
-        immediate = cat(inst[31], b11(inst, 20), b8(inst, 12), b12(0)); break;
+        immediate = cat(inst[31], b11(inst, 20), b8(inst, 12), b12(0b0)); break;
       case OPCODE_JAL: // J-type immediate
-        immediate = cat(dup<12>(inst[31]), b8(inst, 12), inst[20], b6(inst, 25), b4(inst, 21), b1(0)); break;
-      default:
-        immediate = b32(0); break;
+        immediate = cat(dup<12>(inst[31]), b8(inst, 12), inst[20], b6(inst, 25), b4(inst, 21), b1(0b0)); break;
+      default: immediate = b32(0b0); break;
     }
     // clang-format on
   }

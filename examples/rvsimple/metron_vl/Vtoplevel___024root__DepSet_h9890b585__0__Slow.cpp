@@ -113,125 +113,77 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
     toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select 
         = Vtoplevel__ConstPool__TABLE_h0f0752ae_0[__Vtableidx3];
     vlSelf->toplevel__DOT__core__DOT__datapath__DOT__igen_immediate 
-        = (((((((((3U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data)) 
-                  | (7U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
-                 | (0x13U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
-                | (0x67U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
-               | (0x27U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
-              | (0x23U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
-             | (0x63U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
-            | (0x17U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data)))
-            ? ((3U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))
-                ? (((- (IData)((vlSelf->toplevel__DOT__text_memory_bus_read_data 
-                                >> 0x1fU))) << 0xbU) 
-                   | (0x7ffU & (vlSelf->toplevel__DOT__text_memory_bus_read_data 
-                                >> 0x14U))) : ((7U 
-                                                == 
-                                                (0x7fU 
-                                                 & vlSelf->toplevel__DOT__text_memory_bus_read_data))
-                                                ? (
-                                                   ((- (IData)(
-                                                               (vlSelf->toplevel__DOT__text_memory_bus_read_data 
-                                                                >> 0x1fU))) 
-                                                    << 0xbU) 
-                                                   | (0x7ffU 
-                                                      & (vlSelf->toplevel__DOT__text_memory_bus_read_data 
-                                                         >> 0x14U)))
-                                                : (
-                                                   (0x13U 
-                                                    == 
-                                                    (0x7fU 
-                                                     & vlSelf->toplevel__DOT__text_memory_bus_read_data))
-                                                    ? 
-                                                   (((- (IData)(
-                                                                (vlSelf->toplevel__DOT__text_memory_bus_read_data 
-                                                                 >> 0x1fU))) 
-                                                     << 0xbU) 
-                                                    | (0x7ffU 
-                                                       & (vlSelf->toplevel__DOT__text_memory_bus_read_data 
-                                                          >> 0x14U)))
-                                                    : 
-                                                   ((0x67U 
+        = (((((3U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data)) 
+              | (7U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
+             | (0x13U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
+            | (0x67U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data)))
+            ? (((- (IData)((vlSelf->toplevel__DOT__text_memory_bus_read_data 
+                            >> 0x1fU))) << 0xbU) | 
+               (0x7ffU & (vlSelf->toplevel__DOT__text_memory_bus_read_data 
+                          >> 0x14U))) : (((0x27U == 
+                                           (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data)) 
+                                          | (0x23U 
+                                             == (0x7fU 
+                                                 & vlSelf->toplevel__DOT__text_memory_bus_read_data)))
+                                          ? (((- (IData)(
+                                                         (vlSelf->toplevel__DOT__text_memory_bus_read_data 
+                                                          >> 0x1fU))) 
+                                              << 0xbU) 
+                                             | ((0x7e0U 
+                                                 & (vlSelf->toplevel__DOT__text_memory_bus_read_data 
+                                                    >> 0x14U)) 
+                                                | (0x1fU 
+                                                   & (vlSelf->toplevel__DOT__text_memory_bus_read_data 
+                                                      >> 7U))))
+                                          : ((0x63U 
+                                              == (0x7fU 
+                                                  & vlSelf->toplevel__DOT__text_memory_bus_read_data))
+                                              ? (((- (IData)(
+                                                             (vlSelf->toplevel__DOT__text_memory_bus_read_data 
+                                                              >> 0x1fU))) 
+                                                  << 0xcU) 
+                                                 | ((0x800U 
+                                                     & (vlSelf->toplevel__DOT__text_memory_bus_read_data 
+                                                        << 4U)) 
+                                                    | ((0x7e0U 
+                                                        & (vlSelf->toplevel__DOT__text_memory_bus_read_data 
+                                                           >> 0x14U)) 
+                                                       | (0x1eU 
+                                                          & (vlSelf->toplevel__DOT__text_memory_bus_read_data 
+                                                             >> 7U)))))
+                                              : (((0x17U 
+                                                   == 
+                                                   (0x7fU 
+                                                    & vlSelf->toplevel__DOT__text_memory_bus_read_data)) 
+                                                  | (0x37U 
                                                      == 
                                                      (0x7fU 
-                                                      & vlSelf->toplevel__DOT__text_memory_bus_read_data))
-                                                     ? 
-                                                    (((- (IData)(
-                                                                 (vlSelf->toplevel__DOT__text_memory_bus_read_data 
-                                                                  >> 0x1fU))) 
-                                                      << 0xbU) 
-                                                     | (0x7ffU 
-                                                        & (vlSelf->toplevel__DOT__text_memory_bus_read_data 
-                                                           >> 0x14U)))
-                                                     : 
-                                                    ((0x27U 
-                                                      == 
-                                                      (0x7fU 
-                                                       & vlSelf->toplevel__DOT__text_memory_bus_read_data))
-                                                      ? 
-                                                     (((- (IData)(
-                                                                  (vlSelf->toplevel__DOT__text_memory_bus_read_data 
-                                                                   >> 0x1fU))) 
-                                                       << 0xbU) 
-                                                      | ((0x7e0U 
+                                                      & vlSelf->toplevel__DOT__text_memory_bus_read_data)))
+                                                  ? 
+                                                 (0xfffff000U 
+                                                  & vlSelf->toplevel__DOT__text_memory_bus_read_data)
+                                                  : 
+                                                 ((0x6fU 
+                                                   == 
+                                                   (0x7fU 
+                                                    & vlSelf->toplevel__DOT__text_memory_bus_read_data))
+                                                   ? 
+                                                  (((- (IData)(
+                                                               (vlSelf->toplevel__DOT__text_memory_bus_read_data 
+                                                                >> 0x1fU))) 
+                                                    << 0x14U) 
+                                                   | ((0xff000U 
+                                                       & vlSelf->toplevel__DOT__text_memory_bus_read_data) 
+                                                      | ((0x800U 
                                                           & (vlSelf->toplevel__DOT__text_memory_bus_read_data 
-                                                             >> 0x14U)) 
-                                                         | (0x1fU 
-                                                            & (vlSelf->toplevel__DOT__text_memory_bus_read_data 
-                                                               >> 7U))))
-                                                      : 
-                                                     ((0x23U 
-                                                       == 
-                                                       (0x7fU 
-                                                        & vlSelf->toplevel__DOT__text_memory_bus_read_data))
-                                                       ? 
-                                                      (((- (IData)(
-                                                                   (vlSelf->toplevel__DOT__text_memory_bus_read_data 
-                                                                    >> 0x1fU))) 
-                                                        << 0xbU) 
-                                                       | ((0x7e0U 
-                                                           & (vlSelf->toplevel__DOT__text_memory_bus_read_data 
-                                                              >> 0x14U)) 
-                                                          | (0x1fU 
+                                                             >> 9U)) 
+                                                         | ((0x7e0U 
                                                              & (vlSelf->toplevel__DOT__text_memory_bus_read_data 
-                                                                >> 7U))))
-                                                       : 
-                                                      ((0x63U 
-                                                        == 
-                                                        (0x7fU 
-                                                         & vlSelf->toplevel__DOT__text_memory_bus_read_data))
-                                                        ? 
-                                                       (((- (IData)(
-                                                                    (vlSelf->toplevel__DOT__text_memory_bus_read_data 
-                                                                     >> 0x1fU))) 
-                                                         << 0xcU) 
-                                                        | ((0x800U 
-                                                            & (vlSelf->toplevel__DOT__text_memory_bus_read_data 
-                                                               << 4U)) 
-                                                           | ((0x7e0U 
+                                                                >> 0x14U)) 
+                                                            | (0x1eU 
                                                                & (vlSelf->toplevel__DOT__text_memory_bus_read_data 
-                                                                  >> 0x14U)) 
-                                                              | (0x1eU 
-                                                                 & (vlSelf->toplevel__DOT__text_memory_bus_read_data 
-                                                                    >> 7U)))))
-                                                        : 
-                                                       (0xfffff000U 
-                                                        & vlSelf->toplevel__DOT__text_memory_bus_read_data))))))))
-            : ((0x37U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))
-                ? (0xfffff000U & vlSelf->toplevel__DOT__text_memory_bus_read_data)
-                : ((0x6fU == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))
-                    ? (((- (IData)((vlSelf->toplevel__DOT__text_memory_bus_read_data 
-                                    >> 0x1fU))) << 0x14U) 
-                       | ((0xff000U & vlSelf->toplevel__DOT__text_memory_bus_read_data) 
-                          | ((0x800U & (vlSelf->toplevel__DOT__text_memory_bus_read_data 
-                                        >> 9U)) | (
-                                                   (0x7e0U 
-                                                    & (vlSelf->toplevel__DOT__text_memory_bus_read_data 
-                                                       >> 0x14U)) 
-                                                   | (0x1eU 
-                                                      & (vlSelf->toplevel__DOT__text_memory_bus_read_data 
-                                                         >> 0x14U))))))
-                    : 0U)));
+                                                                  >> 0x14U))))))
+                                                   : 0U)))));
     toplevel__DOT__core__DOT__datapath__DOT__regs_rs2_data 
         = vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT___register
         [(0x1fU & (vlSelf->toplevel__DOT__text_memory_bus_read_data 

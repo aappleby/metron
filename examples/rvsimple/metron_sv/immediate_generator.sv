@@ -30,7 +30,7 @@ module immediate_generator
   // J = { {12{inst[31]}},              inst[19:12], inst[20], inst[30:25], inst[24:21],  1'b0  };
   // clang-format on
 
-  always_comb begin /*tock_immediate*/
+  always_comb begin /*tock*/
     import rv_constants::*;
     // clang-format off
     case (7'(inst))  // Opcode

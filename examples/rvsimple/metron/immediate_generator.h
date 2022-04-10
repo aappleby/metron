@@ -25,7 +25,7 @@ class immediate_generator {
   // J = { {12{inst[31]}},              inst[19:12], inst[20], inst[30:25], inst[24:21],  1'b0  };
   // clang-format on
 
-  void tock_immediate() {
+  void tock() {
     using namespace rv_constants;
     // clang-format off
     switch (b7(inst)) { // Opcode

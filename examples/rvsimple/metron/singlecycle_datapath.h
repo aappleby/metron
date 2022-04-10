@@ -37,13 +37,9 @@ class singlecycle_datapath {
   logic<2> next_pc_select;
   logic<1> pc_write_enable;
 
-  logic<5> inst_rd;
-  logic<5> inst_rs1;
-  logic<5> inst_rs2;
   logic<7> inst_opcode;
   logic<3> inst_funct3;
   logic<7> inst_funct7;
-  logic<32> inst_immediate;
   logic<32> alu_result;
   logic<5> alu_function;
   logic<1> alu_operand_a_select;
@@ -60,21 +56,17 @@ class singlecycle_datapath {
     inst_opcode = idec.inst_opcode;
     inst_funct3 = idec.inst_funct3;
     inst_funct7 = idec.inst_funct7;
-    inst_rd = idec.inst_rd;
-    inst_rs1 = idec.inst_rs1;
-    inst_rs2 = idec.inst_rs2;
 
     igen.inst = inst;
-    igen.tock_immediate();
-    inst_immediate = igen.immediate;
+    igen.tock();
   }
 
   //----------------------------------------
 
   void tock_alu_result() {
 
-    regs.rs1_address = inst_rs1;
-    regs.rs2_address = inst_rs2;
+    regs.rs1_address = idec.inst_rs1;
+    regs.rs2_address = idec.inst_rs2;
 
     regs.tock1();
 
@@ -88,7 +80,7 @@ class singlecycle_datapath {
 
     mux_operand_b.sel = alu_operand_b_select;
     mux_operand_b.in0 = regs.rs2_data;
-    mux_operand_b.in1 = inst_immediate;
+    mux_operand_b.in1 = igen.immediate;
     mux_operand_b.tock();
 
     alu_core.alu_function = alu_function;
@@ -107,7 +99,7 @@ class singlecycle_datapath {
     adder_pc_plus_4.tock();
 
     adder_pc_plus_immediate.operand_a = program_counter.value;
-    adder_pc_plus_immediate.operand_b = inst_immediate;
+    adder_pc_plus_immediate.operand_b = igen.immediate;
     adder_pc_plus_immediate.tock();
 
     mux_next_pc_select.sel = next_pc_select;
@@ -127,7 +119,7 @@ class singlecycle_datapath {
     mux_reg_writeback.in0 = alu_result;
     mux_reg_writeback.in1 = data_mem_read_data;
     mux_reg_writeback.in2 = adder_pc_plus_4.result;
-    mux_reg_writeback.in3 = inst_immediate;
+    mux_reg_writeback.in3 = igen.immediate;
     mux_reg_writeback.in4 = b32(0b0);
     mux_reg_writeback.in5 = b32(0b0);
     mux_reg_writeback.in6 = b32(0b0);
@@ -135,7 +127,7 @@ class singlecycle_datapath {
     mux_reg_writeback.tock();
 
     regs.write_enable = regfile_write_enable;
-    regs.rd_address = inst_rd;
+    regs.rd_address = idec.inst_rd;
     regs.rd_data = mux_reg_writeback.out;
     regs.tock2();
   }

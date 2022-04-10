@@ -34,13 +34,9 @@ module singlecycle_datapath
   input logic[4:0] alu_function,
   input logic alu_operand_a_select,
   input logic alu_operand_b_select,
-  output logic[4:0] inst_rd,
-  output logic[4:0] inst_rs1,
-  output logic[4:0] inst_rs2,
   output logic[6:0] inst_opcode,
   output logic[2:0] inst_funct3,
   output logic[6:0] inst_funct7,
-  output logic[31:0] inst_immediate,
   output logic[31:0] alu_result,
   output logic[31:0] temp_rs1_data,
   output logic[31:0] temp_rs2_data,
@@ -61,13 +57,9 @@ module singlecycle_datapath
   /*logic<2> next_pc_select;*/
   /*logic<1> pc_write_enable;*/
 
-  /*logic<5> inst_rd;*/
-  /*logic<5> inst_rs1;*/
-  /*logic<5> inst_rs2;*/
   /*logic<7> inst_opcode;*/
   /*logic<3> inst_funct3;*/
   /*logic<7> inst_funct7;*/
-  /*logic<32> inst_immediate;*/
   /*logic<32> alu_result;*/
   /*logic<5> alu_function;*/
   /*logic<1> alu_operand_a_select;*/
@@ -84,21 +76,17 @@ module singlecycle_datapath
     inst_opcode = idec_inst_opcode;
     inst_funct3 = idec_inst_funct3;
     inst_funct7 = idec_inst_funct7;
-    inst_rd = idec_inst_rd;
-    inst_rs1 = idec_inst_rs1;
-    inst_rs2 = idec_inst_rs2;
 
     igen_inst = inst;
-    /*igen.tock_immediate()*/;
-    inst_immediate = igen_immediate;
+    /*igen.tock()*/;
   end
 
   //----------------------------------------
 
   always_comb begin /*tock_alu_result*/
 
-    regs_rs1_address = inst_rs1;
-    regs_rs2_address = inst_rs2;
+    regs_rs1_address = idec_inst_rs1;
+    regs_rs2_address = idec_inst_rs2;
 
     /*regs.tock1()*/;
 
@@ -112,7 +100,7 @@ module singlecycle_datapath
 
     mux_operand_b_sel = alu_operand_b_select;
     mux_operand_b_in0 = regs_rs2_data;
-    mux_operand_b_in1 = inst_immediate;
+    mux_operand_b_in1 = igen_immediate;
     /*mux_operand_b.tock()*/;
 
     alu_core_alu_function = alu_function;
@@ -131,7 +119,7 @@ module singlecycle_datapath
     /*adder_pc_plus_4.tock()*/;
 
     adder_pc_plus_immediate_operand_a = program_counter_value;
-    adder_pc_plus_immediate_operand_b = inst_immediate;
+    adder_pc_plus_immediate_operand_b = igen_immediate;
     /*adder_pc_plus_immediate.tock()*/;
 
     mux_next_pc_select_sel = next_pc_select;
@@ -151,7 +139,7 @@ module singlecycle_datapath
     mux_reg_writeback_in0 = alu_result;
     mux_reg_writeback_in1 = data_mem_read_data;
     mux_reg_writeback_in2 = adder_pc_plus_4_result;
-    mux_reg_writeback_in3 = inst_immediate;
+    mux_reg_writeback_in3 = igen_immediate;
     mux_reg_writeback_in4 = 32'b0;
     mux_reg_writeback_in5 = 32'b0;
     mux_reg_writeback_in6 = 32'b0;
@@ -159,7 +147,7 @@ module singlecycle_datapath
     /*mux_reg_writeback.tock()*/;
 
     regs_write_enable = regfile_write_enable;
-    regs_rd_address = inst_rd;
+    regs_rd_address = idec_inst_rd;
     regs_rd_data = mux_reg_writeback_out;
     /*regs.tock2()*/;
   end

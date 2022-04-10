@@ -102,13 +102,9 @@ module riscv_core
     .alu_operand_a_select(datapath_alu_operand_a_select), 
     .alu_operand_b_select(datapath_alu_operand_b_select), 
     // Outputs
-    .inst_rd(datapath_inst_rd), 
-    .inst_rs1(datapath_inst_rs1), 
-    .inst_rs2(datapath_inst_rs2), 
     .inst_opcode(datapath_inst_opcode), 
     .inst_funct3(datapath_inst_funct3), 
     .inst_funct7(datapath_inst_funct7), 
-    .inst_immediate(datapath_inst_immediate), 
     .alu_result(datapath_alu_result), 
     .temp_rs1_data(datapath_temp_rs1_data), 
     .temp_rs2_data(datapath_temp_rs2_data), 
@@ -124,13 +120,9 @@ module riscv_core
   logic[4:0] datapath_alu_function;
   logic datapath_alu_operand_a_select;
   logic datapath_alu_operand_b_select;
-  logic[4:0] datapath_inst_rd;
-  logic[4:0] datapath_inst_rs1;
-  logic[4:0] datapath_inst_rs2;
   logic[6:0] datapath_inst_opcode;
   logic[2:0] datapath_inst_funct3;
   logic[6:0] datapath_inst_funct7;
-  logic[31:0] datapath_inst_immediate;
   logic[31:0] datapath_alu_result;
   logic[31:0] datapath_temp_rs1_data;
   logic[31:0] datapath_temp_rs2_data;

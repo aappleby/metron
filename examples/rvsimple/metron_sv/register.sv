@@ -14,10 +14,10 @@ module single_register
 #(parameter int WIDTH = 32, parameter int INITIAL = 0)
 (
   input logic clock,
+  output logic[WIDTH-1:0] value,
   input logic reset,
   input logic write_enable,
-  input logic[WIDTH-1:0] next,
-  output logic[WIDTH-1:0] value
+  input logic[WIDTH-1:0] next
 );
  /*public:*/
   initial begin /*single_register*/ value = INITIAL; end

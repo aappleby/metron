@@ -10,10 +10,10 @@
 Vtoplevel::Vtoplevel(VerilatedContext* _vcontextp__, const char* _vcname__)
     : vlSymsp{new Vtoplevel__Syms(_vcontextp__, _vcname__, this)}
     , clock{vlSymsp->TOP.clock}
-    , reset{vlSymsp->TOP.reset}
     , o_bus_byte_enable{vlSymsp->TOP.o_bus_byte_enable}
     , o_bus_read_enable{vlSymsp->TOP.o_bus_read_enable}
     , o_bus_write_enable{vlSymsp->TOP.o_bus_write_enable}
+    , reset{vlSymsp->TOP.reset}
     , o_bus_read_data{vlSymsp->TOP.o_bus_read_data}
     , o_bus_address{vlSymsp->TOP.o_bus_address}
     , o_bus_write_data{vlSymsp->TOP.o_bus_write_data}

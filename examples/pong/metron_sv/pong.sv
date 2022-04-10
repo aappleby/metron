@@ -23,13 +23,13 @@ Back porch  [492-524]
 module Pong
 (
 	input logic clock,
-	input logic in_quad_a,
-	input logic in_quad_b,
 	output logic vga_hsync,
 	output logic vga_vsync,
 	output logic vga_R,
 	output logic vga_G,
 	output logic vga_B,
+	input logic in_quad_a,
+	input logic in_quad_b,
 	output logic[9:0] pix_x,
 	output logic[9:0] pix_y
 );

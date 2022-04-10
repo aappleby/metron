@@ -7,9 +7,9 @@ module Submod
 (
   input logic clock,
   input logic[7:0] i_signal,
-  input logic[7:0] i_param,
   output logic[7:0] o_signal,
   output logic[7:0] o_reg,
+  input logic[7:0] i_param,
   output logic[7:0] tock
 );
 /*public:*/

@@ -15,9 +15,9 @@ module multiplexer
 #(parameter int WIDTH = 32, parameter int CHANNELS = 2, parameter int SEL_BITS = $clog2(CHANNELS))
 (
   input logic clock,
+  output logic[WIDTH-1:0] out,
   input logic[WIDTH-1:0] in_bus[CHANNELS],
-  input logic[SEL_BITS-1:0] sel,
-  output logic[WIDTH-1:0] out
+  input logic[SEL_BITS-1:0] sel
 );
  /*public:*/
   /*logic<WIDTH> out;*/

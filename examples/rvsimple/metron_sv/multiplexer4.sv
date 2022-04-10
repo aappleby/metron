@@ -14,12 +14,12 @@ module multiplexer4
 #(parameter int WIDTH = 32)
 (
    input logic clock,
+   output logic[WIDTH-1:0] out,
    input logic[1:0] sel,
    input logic[WIDTH-1:0] in0,
    input logic[WIDTH-1:0] in1,
    input logic[WIDTH-1:0] in2,
-   input logic[WIDTH-1:0] in3,
-   output logic[WIDTH-1:0] out
+   input logic[WIDTH-1:0] in3
 );
  /*public:*/
    /*logic<WIDTH> out;*/

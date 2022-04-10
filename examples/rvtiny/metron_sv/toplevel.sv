@@ -6,7 +6,6 @@
 module toplevel
 (
   input logic clock,
-  input logic reset,
   output logic[31:0] bus_read_data,
   output logic[31:0] bus_address,
   output logic[31:0] bus_write_data,
@@ -14,7 +13,8 @@ module toplevel
   output logic  bus_read_enable,
   output logic  bus_write_enable,
   output logic[31:0] inst,
-  output logic[31:0] pc
+  output logic[31:0] pc,
+  input logic reset
 );
  /*public:*/
   initial begin /*toplevel*/

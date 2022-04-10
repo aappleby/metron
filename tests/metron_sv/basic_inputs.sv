@@ -5,8 +5,8 @@
 module Module
 (
   input logic clock,
-  input logic[6:0] my_input,
-  output logic[6:0] my_reg
+  output logic[6:0] my_reg,
+  input logic[6:0] my_input
 );
 /*public:*/
 

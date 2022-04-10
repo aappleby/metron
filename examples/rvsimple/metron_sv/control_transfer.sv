@@ -13,9 +13,9 @@
 module control_transfer
 (
   input logic clock,
+  output logic take_branch,
   input logic result_equal_zero,
-  input logic[2:0] inst_funct3,
-  output logic take_branch
+  input logic[2:0] inst_funct3
 );
  /*public:*/
   /*logic<1> take_branch;*/

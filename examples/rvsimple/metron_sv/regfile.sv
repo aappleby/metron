@@ -15,11 +15,11 @@ module regfile
   input logic clock,
   input logic[4:0] rs1_address,
   input logic[4:0] rs2_address,
+  output logic[31:0] rs1_data,
+  output logic[31:0] rs2_data,
   input logic write_enable,
   input logic[4:0] rd_address,
-  input logic[31:0] rd_data,
-  output logic[31:0] rs1_data,
-  output logic[31:0] rs2_data
+  input logic[31:0] rd_data
 );
  /*public:*/
   // Register x0 is always 0

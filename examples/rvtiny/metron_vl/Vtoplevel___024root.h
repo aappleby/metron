@@ -13,10 +13,10 @@ VL_MODULE(Vtoplevel___024root) {
 
     // DESIGN SPECIFIC STATE
     VL_IN8(clock,0,0);
-    VL_IN8(reset,0,0);
     VL_OUT8(bus_byte_enable,3,0);
     VL_OUT8(bus_read_enable,0,0);
     VL_OUT8(bus_write_enable,0,0);
+    VL_IN8(reset,0,0);
     CData/*0:0*/ __Vclklast__TOP__clock;
     VL_OUT(bus_read_data,31,0);
     VL_OUT(bus_address,31,0);

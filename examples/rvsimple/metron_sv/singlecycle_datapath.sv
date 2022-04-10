@@ -26,21 +26,21 @@ module singlecycle_datapath
   input logic clock,
   input logic  reset,
   input logic[31:0] data_mem_read_data,
+  output logic[31:0] data_mem_address,
+  output logic[31:0] data_mem_write_data,
   input logic[31:0] inst,
+  output logic[31:0] pc,
+  output logic[6:0]  inst_opcode,
+  output logic[2:0]  inst_funct3,
+  output logic[6:0]  inst_funct7,
+  output logic  alu_result_equal_zero,
   input logic  pc_write_enable,
   input logic  regfile_write_enable,
   input logic  alu_operand_a_select,
   input logic  alu_operand_b_select,
   input logic[2:0]  reg_writeback_select,
   input logic[1:0]  next_pc_select,
-  input logic[4:0]  alu_function,
-  output logic[31:0] data_mem_address,
-  output logic[31:0] data_mem_write_data,
-  output logic[31:0] pc,
-  output logic[6:0]  inst_opcode,
-  output logic[2:0]  inst_funct3,
-  output logic[6:0]  inst_funct7,
-  output logic  alu_result_equal_zero
+  input logic[4:0]  alu_function
 );
 /*public:*/
 

@@ -753,13 +753,13 @@ CHECK_RETURN Err MtModule::categorize_fields() {
       localparams.push_back(MtParam::construct(f->node));
     }
     else if (f->is_public()) {
-      if (f->state == FIELD_RD_____) {
+      if (f->is_input_signal()) {
         input_signals.push_back(f);
       }
-      else if (f->state == FIELD____WS_L) {
+      else if (f->is_output_signal()) {
         output_signals.push_back(f);
       }
-      else if (f->state == FIELD____WR_L || f->state == FIELD_RD_WR_L) {
+      else if (f->is_output_register()) {
         output_registers.push_back(f);
       }
       // KCOV_OFF

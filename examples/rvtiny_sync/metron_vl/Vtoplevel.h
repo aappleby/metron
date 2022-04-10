@@ -25,10 +25,10 @@ class Vtoplevel VL_NOT_FINAL {
     // The application code writes and reads these signals to
     // propagate new values into/out from the Verilated model.
     VL_IN8(&clock,0,0);
-    VL_IN8(&reset,0,0);
     VL_OUT8(&o_bus_byte_enable,3,0);
     VL_OUT8(&o_bus_read_enable,0,0);
     VL_OUT8(&o_bus_write_enable,0,0);
+    VL_IN8(&reset,0,0);
     VL_OUT(&o_bus_read_data,31,0);
     VL_OUT(&o_bus_address,31,0);
     VL_OUT(&o_bus_write_data,31,0);

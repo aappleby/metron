@@ -16,10 +16,10 @@ module example_data_memory
 (
   input logic clock,
   input logic[DATA_BITS - 2-1:0] address,
+  output logic[31:0] q,
   input logic wren,
   input logic[3:0] byteena,
-  input logic[31:0] data,
-  output logic[31:0] q
+  input logic[31:0] data
 );
  /*public:*/
   initial begin /*example_data_memory*/

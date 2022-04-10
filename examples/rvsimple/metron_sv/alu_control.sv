@@ -13,10 +13,10 @@
 module alu_control
 (
    input logic clock,
+   output logic[4:0] alu_function,
    input logic[1:0] alu_op_type,
    input logic[2:0] inst_funct3,
-   input logic[6:0] inst_funct7,
-   output logic[4:0] alu_function
+   input logic[6:0] inst_funct7
 );
  /*public:*/
 

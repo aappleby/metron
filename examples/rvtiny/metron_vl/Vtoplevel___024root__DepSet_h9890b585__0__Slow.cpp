@@ -71,7 +71,6 @@ VL_ATTR_COLD void Vtoplevel___024root___ctor_var_reset(Vtoplevel___024root* vlSe
     VL_DEBUG_IF(VL_DBG_MSGF("+    Vtoplevel___024root___ctor_var_reset\n"); );
     // Body
     vlSelf->clock = VL_RAND_RESET_I(1);
-    vlSelf->reset = VL_RAND_RESET_I(1);
     vlSelf->bus_read_data = VL_RAND_RESET_I(32);
     vlSelf->bus_address = VL_RAND_RESET_I(32);
     vlSelf->bus_write_data = VL_RAND_RESET_I(32);
@@ -80,6 +79,7 @@ VL_ATTR_COLD void Vtoplevel___024root___ctor_var_reset(Vtoplevel___024root* vlSe
     vlSelf->bus_write_enable = VL_RAND_RESET_I(1);
     vlSelf->inst = VL_RAND_RESET_I(32);
     vlSelf->pc = VL_RAND_RESET_I(32);
+    vlSelf->reset = VL_RAND_RESET_I(1);
     for (int __Vi0=0; __Vi0<32768; ++__Vi0) {
         vlSelf->toplevel__DOT__text_mem[__Vi0] = VL_RAND_RESET_I(32);
     }

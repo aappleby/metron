@@ -19,6 +19,18 @@ struct MtField {
     return new MtField(n, is_public);
   }
 
+  bool is_input_signal() const {
+    return is_public() && (state == FIELD_RD_____);
+  }
+
+  bool is_output_signal() const {
+    return is_public() && (state == FIELD____WS_L);
+  }
+
+  bool is_output_register() const {
+    return is_public() && ((state == FIELD____WR_L) || (state == FIELD_RD_WR_L));
+  }
+
   bool is_submod() const;
   bool is_param() const { return node.is_static() && node.is_const(); }
   bool is_public() const { return _public; }
@@ -218,10 +230,10 @@ struct MtModule {
   std::vector<MtEnum*>   enums;
 
   std::vector<MtField*>  input_signals;
-  std::vector<MtParam*>  input_arguments;
-
   std::vector<MtField*>  output_signals;
   std::vector<MtField*>  output_registers;
+
+  std::vector<MtParam*>  input_arguments;
   std::vector<MtMethod*> output_returns;
 
   std::vector<MtField*>  private_signals;

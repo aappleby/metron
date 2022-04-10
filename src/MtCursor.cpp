@@ -1610,12 +1610,23 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
     }
     err << emit_newline();
 
-    for (auto input : current_mod->input_signals) {
-      err << emit_indent();
-      err << emit_printf("input ");
+    // We emit input signals, output signals, and output registers together so that
+    // if the source was ported over to Metron from Verilog and has explicit ports,
+    // the ports stay in the same order.
 
-      auto node_type = input->get_type_node();  // type
-      auto node_decl = input->get_decl_node();  // decl
+    for (auto f : current_mod->all_fields) {
+      if (!f->is_input_signal() && !f->is_output_signal() && !f->is_output_register()) continue;
+
+      err << emit_indent();
+
+      if (f->is_input_signal()) {
+        err << emit_printf("input ");
+      } else {
+        err << emit_printf("output ");
+      }
+
+      auto node_type = f->get_type_node();  // type
+      auto node_decl = f->get_decl_node();  // decl
 
       MtCursor sub_cursor = *this;
       sub_cursor.cursor = node_type.start();
@@ -1635,44 +1646,6 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
 
       auto node_type = input->get_type_node();  // type
       auto node_decl = input->get_decl_node();  // decl
-
-      MtCursor sub_cursor = *this;
-      sub_cursor.cursor = node_type.start();
-      err << sub_cursor.emit_dispatch(node_type);
-      err << sub_cursor.emit_ws();
-      err << sub_cursor.emit_dispatch(node_decl);
-
-      if (port_index++ < port_count - 1) {
-        err << emit_printf(",");
-      }
-      err << emit_newline();
-    }
-
-    for (auto output : current_mod->output_signals) {
-      err << emit_indent();
-      err << emit_printf("output ");
-
-      auto node_type = output->get_type_node();  // type
-      auto node_decl = output->get_decl_node();  // decl
-
-      MtCursor sub_cursor = *this;
-      sub_cursor.cursor = node_type.start();
-      err << sub_cursor.emit_dispatch(node_type);
-      err << sub_cursor.emit_ws();
-      err << sub_cursor.emit_dispatch(node_decl);
-
-      if (port_index++ < port_count - 1) {
-        err << emit_printf(",");
-      }
-      err << emit_newline();
-    }
-
-    for (auto output : current_mod->output_registers) {
-      err << emit_indent();
-      err << emit_printf("output ");
-
-      auto node_type = output->get_type_node();  // type
-      auto node_decl = output->get_decl_node();  // decl
 
       MtCursor sub_cursor = *this;
       sub_cursor.cursor = node_type.start();

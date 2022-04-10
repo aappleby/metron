@@ -16,7 +16,8 @@ module alu
    input logic[4:0]  alu_function,
    input logic[31:0] operand_a,
    input logic[31:0] operand_b,
-   output logic[31:0] result
+   output logic[31:0] result,
+   output logic  result_equal_zero
 );
  /*public:*/
 
@@ -24,6 +25,7 @@ module alu
    /*logic<32> operand_a;*/
    /*logic<32> operand_b;*/
    /*logic<32> result;*/
+   /*logic<1>  result_equal_zero;*/
 
   always_comb begin /*tock*/
     import rv_constants::*;
@@ -42,6 +44,8 @@ module alu
       /*case*/ ALU_AND:  result = operand_a & operand_b; /*break;*/
       default:       result = 32'(ZERO); /*break;*/
     endcase
+
+    result_equal_zero = (result == 32'd0);
   end
 endmodule;
 

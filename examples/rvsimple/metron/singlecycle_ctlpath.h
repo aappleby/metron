@@ -24,7 +24,8 @@ class singlecycle_ctlpath {
   logic<5> tock_alu_function() {
     control.inst_opcode = inst_opcode;
 
-    return alu_ctrl.alu_function(control.alu_op_type2(), inst_funct3, inst_funct7);
+    alu_ctrl.tock_alu_function(control.alu_op_type2(), inst_funct3, inst_funct7);
+    return alu_ctrl.alu_function;
   }
 
   logic<1> pc_write_enable() const {

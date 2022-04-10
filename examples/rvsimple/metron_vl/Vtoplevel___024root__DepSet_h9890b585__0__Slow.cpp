@@ -122,12 +122,11 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
     CData/*1:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__control__DOT__unnamedblk5__DOT__result;
     CData/*2:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__control__DOT__unnamedblk6__DOT__result;
     CData/*0:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__transfer__DOT__unnamedblk1__DOT__result;
-    CData/*4:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__unnamedblk1__DOT__default_funct;
-    CData/*4:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__unnamedblk1__DOT__secondary_funct;
-    CData/*4:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__unnamedblk1__DOT__op_funct;
-    CData/*4:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__unnamedblk1__DOT__op_imm_funct;
-    CData/*4:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__unnamedblk1__DOT__branch_funct;
-    CData/*4:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__unnamedblk1__DOT__result;
+    CData/*4:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__default_funct;
+    CData/*4:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__secondary_funct;
+    CData/*4:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__op_funct;
+    CData/*4:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__op_imm_funct;
+    CData/*4:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__branch_funct;
     CData/*3:0*/ toplevel__DOT__core__DOT__dmem__DOT__unnamedblk1__DOT__result;
     IData/*31:0*/ toplevel__DOT__core__DOT__dmem__DOT__unnamedblk2__DOT__position_fix;
     IData/*31:0*/ toplevel__DOT__core__DOT__dmem__DOT__unnamedblk2__DOT__result;
@@ -431,7 +430,7 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
                 : 0U) : toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_in0);
     toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_out 
         = toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b__DOT__unnamedblk1__DOT__result;
-    toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__unnamedblk1__DOT__default_funct 
+    toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__default_funct 
         = (((((((((0U == (IData)(toplevel__DOT__core__DOT__ctlpath_inst_funct3)) 
                   | (1U == (IData)(toplevel__DOT__core__DOT__ctlpath_inst_funct3))) 
                  | (2U == (IData)(toplevel__DOT__core__DOT__ctlpath_inst_funct3))) 
@@ -458,20 +457,20 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
                                                       ? 0xaU
                                                       : 0xbU)))))))
             : 0U);
-    toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__unnamedblk1__DOT__secondary_funct 
+    toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__secondary_funct 
         = ((0U == (IData)(toplevel__DOT__core__DOT__ctlpath_inst_funct3))
             ? 2U : ((5U == (IData)(toplevel__DOT__core__DOT__ctlpath_inst_funct3))
                      ? 5U : 0U));
-    toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__unnamedblk1__DOT__op_funct 
+    toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__op_funct 
         = ((0x20U & (IData)(toplevel__DOT__core__DOT__ctlpath_inst_funct7))
-            ? (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__unnamedblk1__DOT__secondary_funct)
-            : (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__unnamedblk1__DOT__default_funct));
-    toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__unnamedblk1__DOT__op_imm_funct 
+            ? (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__secondary_funct)
+            : (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__default_funct));
+    toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__op_imm_funct 
         = ((((IData)(toplevel__DOT__core__DOT__ctlpath_inst_funct7) 
              >> 5U) & (1U == (3U & (IData)(toplevel__DOT__core__DOT__ctlpath_inst_funct3))))
-            ? (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__unnamedblk1__DOT__secondary_funct)
-            : (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__unnamedblk1__DOT__default_funct));
-    toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__unnamedblk1__DOT__branch_funct 
+            ? (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__secondary_funct)
+            : (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__default_funct));
+    toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__branch_funct 
         = ((0U == (IData)(toplevel__DOT__core__DOT__ctlpath_inst_funct3))
             ? 6U : ((1U == (IData)(toplevel__DOT__core__DOT__ctlpath_inst_funct3))
                      ? 6U : ((4U == (IData)(toplevel__DOT__core__DOT__ctlpath_inst_funct3))
@@ -484,17 +483,15 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
                                                     == (IData)(toplevel__DOT__core__DOT__ctlpath_inst_funct3))
                                                     ? 8U
                                                     : 0U))))));
-    toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__unnamedblk1__DOT__result 
+    toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl_alu_function 
         = ((0U == (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_op_type2))
             ? 1U : ((2U == (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_op_type2))
-                     ? (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__unnamedblk1__DOT__op_funct)
+                     ? (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__op_funct)
                      : ((3U == (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_op_type2))
-                         ? (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__unnamedblk1__DOT__op_imm_funct)
+                         ? (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__op_imm_funct)
                          : ((1U == (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_op_type2))
-                             ? (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__unnamedblk1__DOT__branch_funct)
+                             ? (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__branch_funct)
                              : 0U))));
-    toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl_alu_function 
-        = toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__unnamedblk1__DOT__result;
     toplevel__DOT__core__DOT__unnamedblk1__DOT__alu_function 
         = toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl_alu_function;
     toplevel__DOT__core__DOT__datapath_alu_function 

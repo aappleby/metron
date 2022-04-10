@@ -191,12 +191,14 @@ module singlecycle_datapath
     .operand_a(alu_core_operand_a), 
     .operand_b(alu_core_operand_b), 
     // Outputs
-    .result(alu_core_result)
+    .result(alu_core_result), 
+    .result_equal_zero(alu_core_result_equal_zero)
   );
   logic[4:0]  alu_core_alu_function;
   logic[31:0] alu_core_operand_a;
   logic[31:0] alu_core_operand_b;
   logic[31:0] alu_core_result;
+  logic  alu_core_result_equal_zero;
 
   multiplexer4 #(32) mux_next_pc_select(
     // Inputs

@@ -69,14 +69,18 @@ module singlecycle_ctlpath
     data_mem_write_enable = control_data_mem_write_enable;
   end
 
-
-  always_comb begin /*tock2b*/
+  always_comb begin /*tock_pc_write_enable*/
     /*control.tock_pc_write_enable()*/;
-    /*control.tock_regfile_write_enable()*/;
-    /*control.tock_reg_writeback_select()*/;
-
     pc_write_enable      = control_pc_write_enable;
+  end
+
+  always_comb begin /*tock_regfile_write_enable*/
+    /*control.tock_regfile_write_enable()*/;
     regfile_write_enable = control_regfile_write_enable;
+  end
+
+  always_comb begin /*tock_reg_writeback_select*/
+    /*control.tock_reg_writeback_select()*/;
     reg_writeback_select = control_reg_writeback_select;
   end
 

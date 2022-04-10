@@ -53,14 +53,18 @@ class singlecycle_ctlpath {
     data_mem_write_enable = control.data_mem_write_enable;
   }
 
-
-  void tock2b() {
+  void tock_pc_write_enable() {
     control.tock_pc_write_enable();
-    control.tock_regfile_write_enable();
-    control.tock_reg_writeback_select();
-
     pc_write_enable      = control.pc_write_enable;
+  }
+
+  void tock_regfile_write_enable() {
+    control.tock_regfile_write_enable();
     regfile_write_enable = control.regfile_write_enable;
+  }
+
+  void tock_reg_writeback_select() {
+    control.tock_reg_writeback_select();
     reg_writeback_select = control.reg_writeback_select;
   }
 

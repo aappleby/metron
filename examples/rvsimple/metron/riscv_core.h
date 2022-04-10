@@ -33,7 +33,8 @@ public:
 
   void tock2() {
     datapath.inst = inst;
-    datapath.tock1();
+    datapath.tock_instruction_decoder();
+    datapath.tock_immediate_generator();
 
     ctlpath.inst_opcode = datapath.inst_opcode;
     ctlpath.inst_funct3 = datapath.inst_funct3;
@@ -43,7 +44,9 @@ public:
     datapath.alu_function         = ctlpath.alu_function;
     datapath.alu_operand_a_select = ctlpath.alu_operand_a_select;
     datapath.alu_operand_b_select = ctlpath.alu_operand_b_select;
-    datapath.tock2();
+    
+    datapath.tock_regs1();
+    datapath.tock2a();
 
     dmem.read_enable  = ctlpath.data_mem_read_enable;
     dmem.write_enable = ctlpath.data_mem_write_enable;

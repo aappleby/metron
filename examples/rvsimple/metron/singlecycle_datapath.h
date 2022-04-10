@@ -68,33 +68,54 @@ public:
   logic [31:0] immediate;
 #endif
 
+private:
+  logic<32> rs1_data;
+  logic<32> rs2_data;
+
+  logic<5> inst_rd;
+  logic<5> inst_rs1;
+  logic<5> inst_rs2;
+public:
+
   //----------------------------------------
 
-  void tock_pc() { pc = program_counter.value; }
-
-  //----------------------------------------
-
-  void tock1() {
-    idec.inst = inst;
-    idec.tock();
-
-    igen.inst = inst;
-    igen.tock();
-
-    //----------
-
-    inst_opcode = idec.inst_opcode;
-    inst_funct3 = idec.inst_funct3;
-    inst_funct7 = idec.inst_funct7;
+  void tock_pc() {
+    pc = program_counter.value;
   }
 
   //----------------------------------------
 
-  void tock2() {
+  void tock_instruction_decoder() {
+    idec.inst = inst;
+    idec.tock();
+
+    inst_opcode = idec.inst_opcode;
+    inst_funct3 = idec.inst_funct3;
+    inst_funct7 = idec.inst_funct7;
+    inst_rd     = idec.inst_rd;
+    inst_rs1    = idec.inst_rs1;
+    inst_rs2    = idec.inst_rs2;
+  }
+
+  //----------------------------------------
+
+  void tock_immediate_generator() {
+    igen.inst = inst;
+    igen.tock();
+  }
+
+  //----------------------------------------
+
+  void tock_regs1() {
+    regs.rd_address  = idec.inst_rd;
     regs.rs1_address = idec.inst_rs1;
     regs.rs2_address = idec.inst_rs2;
     regs.tock1();
+    rs1_data = regs.rs1_data;
+    rs2_data = regs.rs2_data;
+  }
 
+  void tock2a() {
     mux_operand_a.sel = alu_operand_a_select;
     mux_operand_a.in0 = regs.rs1_data;
     mux_operand_a.in1 = program_counter.value;
@@ -154,7 +175,6 @@ public:
     mux_reg_writeback.tock();
 
     regs.write_enable = regfile_write_enable;
-    regs.rd_address = idec.inst_rd;
     regs.rd_data = mux_reg_writeback.out;
     regs.tock2();
   }

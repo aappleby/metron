@@ -44,8 +44,10 @@ class singlecycle_ctlpath {
     return control.alu_operand_a_select();
   }
 
-  logic<1> alu_operand_b_select() const {
-    return control.alu_operand_b_select();
+  logic<1> alu_operand_b_select;
+  void tock_alu_operand_b_select() {
+    control.tock_alu_operand_b_select();
+    alu_operand_b_select = control.alu_operand_b_select;
   }
 
   logic<1> data_mem_read_enable() const {

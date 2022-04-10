@@ -71,24 +71,23 @@ class singlecycle_control {
     return result;
   }
 
-  logic<1> alu_operand_b_select() const {
+  logic<1> alu_operand_b_select;
+  void tock_alu_operand_b_select() {
     using namespace rv_constants;
-    logic<1> result;
     switch (inst_opcode) {
-      case OPCODE_AUIPC:    result = CTL_ALU_B_IMM; break;
-      case OPCODE_JAL:      result = CTL_ALU_B_IMM; break;
+      case OPCODE_AUIPC:    alu_operand_b_select = CTL_ALU_B_IMM; break;
+      case OPCODE_JAL:      alu_operand_b_select = CTL_ALU_B_IMM; break;
 
-      case OPCODE_OP:       result = CTL_ALU_B_RS2; break;
-      case OPCODE_LUI:      result = CTL_ALU_B_RS2; break;
-      case OPCODE_BRANCH:   result = CTL_ALU_B_RS2; break;
+      case OPCODE_OP:       alu_operand_b_select = CTL_ALU_B_RS2; break;
+      case OPCODE_LUI:      alu_operand_b_select = CTL_ALU_B_RS2; break;
+      case OPCODE_BRANCH:   alu_operand_b_select = CTL_ALU_B_RS2; break;
 
-      case OPCODE_LOAD:     result = CTL_ALU_B_IMM; break;
-      case OPCODE_STORE:    result = CTL_ALU_B_IMM; break;
-      case OPCODE_OP_IMM:   result = CTL_ALU_B_IMM; break;
-      case OPCODE_JALR:     result = CTL_ALU_B_IMM; break;
-      default:              result = b1(DONTCARE); break;
+      case OPCODE_LOAD:     alu_operand_b_select = CTL_ALU_B_IMM; break;
+      case OPCODE_STORE:    alu_operand_b_select = CTL_ALU_B_IMM; break;
+      case OPCODE_OP_IMM:   alu_operand_b_select = CTL_ALU_B_IMM; break;
+      case OPCODE_JALR:     alu_operand_b_select = CTL_ALU_B_IMM; break;
+      default:              alu_operand_b_select = b1(DONTCARE); break;
     }
-    return result;
   }
 
   logic<2> alu_op_type2() const {

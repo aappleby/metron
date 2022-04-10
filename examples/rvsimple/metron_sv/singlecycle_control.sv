@@ -15,11 +15,11 @@ module singlecycle_control
    input logic clock,
    input logic[6:0] inst_opcode,
    input logic take_branch,
+   output logic alu_operand_b_select,
    output logic[1:0] next_pc_select,
    output logic pc_write_enable,
    output logic regfile_write_enable,
    output logic alu_operand_a_select,
-   output logic alu_operand_b_select,
    output logic[1:0] alu_op_type2,
    output logic data_mem_read_enable,
    output logic data_mem_write_enable,
@@ -88,25 +88,23 @@ module singlecycle_control
     alu_operand_a_select = result;
   end
 
-  always_comb begin
-    logic result;
+  /*logic<1> alu_operand_b_select;*/
+  always_comb begin /*tock_alu_operand_b_select*/
     import rv_constants::*;
-    /*logic<1> result;*/
     case (inst_opcode) 
-      /*case*/ OPCODE_AUIPC:    result = CTL_ALU_B_IMM; /*break;*/
-      /*case*/ OPCODE_JAL:      result = CTL_ALU_B_IMM; /*break;*/
+      /*case*/ OPCODE_AUIPC:    alu_operand_b_select = CTL_ALU_B_IMM; /*break;*/
+      /*case*/ OPCODE_JAL:      alu_operand_b_select = CTL_ALU_B_IMM; /*break;*/
 
-      /*case*/ OPCODE_OP:       result = CTL_ALU_B_RS2; /*break;*/
-      /*case*/ OPCODE_LUI:      result = CTL_ALU_B_RS2; /*break;*/
-      /*case*/ OPCODE_BRANCH:   result = CTL_ALU_B_RS2; /*break;*/
+      /*case*/ OPCODE_OP:       alu_operand_b_select = CTL_ALU_B_RS2; /*break;*/
+      /*case*/ OPCODE_LUI:      alu_operand_b_select = CTL_ALU_B_RS2; /*break;*/
+      /*case*/ OPCODE_BRANCH:   alu_operand_b_select = CTL_ALU_B_RS2; /*break;*/
 
-      /*case*/ OPCODE_LOAD:     result = CTL_ALU_B_IMM; /*break;*/
-      /*case*/ OPCODE_STORE:    result = CTL_ALU_B_IMM; /*break;*/
-      /*case*/ OPCODE_OP_IMM:   result = CTL_ALU_B_IMM; /*break;*/
-      /*case*/ OPCODE_JALR:     result = CTL_ALU_B_IMM; /*break;*/
-      default:              result = 1'bx; /*break;*/
+      /*case*/ OPCODE_LOAD:     alu_operand_b_select = CTL_ALU_B_IMM; /*break;*/
+      /*case*/ OPCODE_STORE:    alu_operand_b_select = CTL_ALU_B_IMM; /*break;*/
+      /*case*/ OPCODE_OP_IMM:   alu_operand_b_select = CTL_ALU_B_IMM; /*break;*/
+      /*case*/ OPCODE_JALR:     alu_operand_b_select = CTL_ALU_B_IMM; /*break;*/
+      default:              alu_operand_b_select = 1'bx; /*break;*/
     endcase
-    alu_operand_b_select = result;
   end
 
   always_comb begin

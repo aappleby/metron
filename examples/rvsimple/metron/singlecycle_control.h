@@ -90,49 +90,49 @@ class singlecycle_control {
     }
   }
 
-  logic<2> alu_op_type2() const {
+  logic<2> alu_op_type2;
+  void tock_alu_op_type2() {
     using namespace rv_constants;
-    logic<2> result;
     switch (inst_opcode) {
-      case OPCODE_AUIPC:    result = CTL_ALU_ADD; break;
-      case OPCODE_JAL:      result = CTL_ALU_ADD; break;
+      case OPCODE_AUIPC:    alu_op_type2 = CTL_ALU_ADD; break;
+      case OPCODE_JAL:      alu_op_type2 = CTL_ALU_ADD; break;
 
-      case OPCODE_OP:       result = CTL_ALU_OP; break;
-      case OPCODE_BRANCH:   result = CTL_ALU_BRANCH; break;
+      case OPCODE_OP:       alu_op_type2 = CTL_ALU_OP; break;
+      case OPCODE_BRANCH:   alu_op_type2 = CTL_ALU_BRANCH; break;
 
-      case OPCODE_LOAD:     result = CTL_ALU_ADD; break;
-      case OPCODE_STORE:    result = CTL_ALU_ADD; break;
-      case OPCODE_OP_IMM:   result = CTL_ALU_OP_IMM; break;
-      case OPCODE_JALR:     result = CTL_ALU_ADD; break;
-      default:              result = b2(DONTCARE); break;
+      case OPCODE_LOAD:     alu_op_type2 = CTL_ALU_ADD; break;
+      case OPCODE_STORE:    alu_op_type2 = CTL_ALU_ADD; break;
+      case OPCODE_OP_IMM:   alu_op_type2 = CTL_ALU_OP_IMM; break;
+      case OPCODE_JALR:     alu_op_type2 = CTL_ALU_ADD; break;
+      default:              alu_op_type2 = b2(DONTCARE); break;
     }
-    return result;
   }
 
-  logic<1> data_mem_read_enable() const {
+  logic<1> data_mem_read_enable;
+  void tock_data_mem_read_enable() {
     using namespace rv_constants;
-    return inst_opcode == OPCODE_LOAD;
+    data_mem_read_enable = inst_opcode == OPCODE_LOAD;
   }
 
-  logic<1> data_mem_write_enable() const {
-    using namespace rv_constants;
-    return inst_opcode == OPCODE_STORE;
+  logic<1> data_mem_write_enable;
+  void tock_data_mem_write_enable() {
+      using namespace rv_constants;
+      data_mem_write_enable = inst_opcode == OPCODE_STORE;
   }
 
-  logic<3> reg_writeback_select() const {
+  logic<3> reg_writeback_select;
+  void tock_reg_writeback_select() {
     using namespace rv_constants;
-    logic<3> result;
     switch (inst_opcode) {
-      case OPCODE_OP_IMM:   result = CTL_WRITEBACK_ALU; break;
-      case OPCODE_AUIPC:    result = CTL_WRITEBACK_ALU; break;
-      case OPCODE_OP:       result = CTL_WRITEBACK_ALU; break;
-      case OPCODE_LUI:      result = CTL_WRITEBACK_IMM; break;
-      case OPCODE_JALR:     result = CTL_WRITEBACK_PC4; break;
-      case OPCODE_JAL:      result = CTL_WRITEBACK_PC4; break;
-      case OPCODE_LOAD:     result = CTL_WRITEBACK_DATA; break;
-      default:              result = b3(DONTCARE); break;
+      case OPCODE_OP_IMM:   reg_writeback_select = CTL_WRITEBACK_ALU; break;
+      case OPCODE_AUIPC:    reg_writeback_select = CTL_WRITEBACK_ALU; break;
+      case OPCODE_OP:       reg_writeback_select = CTL_WRITEBACK_ALU; break;
+      case OPCODE_LUI:      reg_writeback_select = CTL_WRITEBACK_IMM; break;
+      case OPCODE_JALR:     reg_writeback_select = CTL_WRITEBACK_PC4; break;
+      case OPCODE_JAL:      reg_writeback_select = CTL_WRITEBACK_PC4; break;
+      case OPCODE_LOAD:     reg_writeback_select = CTL_WRITEBACK_DATA; break;
+      default:              reg_writeback_select = b3(DONTCARE); break;
     }
-    return result;
   }
 };
 

@@ -120,9 +120,19 @@ class singlecycle_datapath {
 
     program_counter.tock(reset, pc_write_enable, mux_next_pc_select.out);
 
-    logic<32> reg_data = mux_reg_writeback.out(
-        reg_writeback_select, alu_result, data_mem_read_data, adder_pc_plus_4.result,
-        inst_immediate, b32(0b0), b32(0b0), b32(0b0), b32(0b0));
+    mux_reg_writeback.sel = reg_writeback_select;
+
+    mux_reg_writeback.in0 = alu_result;
+    mux_reg_writeback.in1 = data_mem_read_data;
+    mux_reg_writeback.in2 = adder_pc_plus_4.result;
+    mux_reg_writeback.in3 = inst_immediate;
+    mux_reg_writeback.in4 = b32(0b0);
+    mux_reg_writeback.in5 = b32(0b0);
+    mux_reg_writeback.in6 = b32(0b0);
+    mux_reg_writeback.in7 = b32(0b0);
+    mux_reg_writeback.tock();
+
+    logic<32> reg_data = mux_reg_writeback.out;
     regs.tock(regfile_write_enable, inst_rd, reg_data);
   }
 

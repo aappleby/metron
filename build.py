@@ -65,28 +65,23 @@ divider("Rules")
 
 ninja.rule("compile_cpp",   command="g++ -g ${opt} -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}", deps="gcc", depfile="${out}.d")
 ninja.rule("compile_c",     command="gcc -g ${opt} ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}", deps="gcc", depfile="${out}.d")
-ninja.rule("static_lib",    command="ar rcs ${out} ${in}")
+ninja.rule("static_lib",    command="ar rcs ${out} ${in} > /dev/null")
 ninja.rule("link",          command="g++ -g $opt ${in} -Wl,--whole-archive ${local_libs} -Wl,--no-whole-archive ${global_libs} -o ${out}")
 
-# Quiet Metron
-#ninja.rule("metron",
-#           command="bin/metron -q -r ${src_dir} -o ${dst_dir} -c ${file_list}")
-
-# Noisy Metron
-ninja.rule("metron",        command="bin/metron -r ${src_dir} -o ${dst_dir} -c ${file_list}")
+ninja.rule("metron",        command="bin/metron -q -r ${src_dir} -o ${dst_dir} -c ${src_top}")
 ninja.rule("verilator",     command="verilator ${includes} --cc ${src_top} -Mdir ${dst_dir}")
-ninja.rule("make",          command="make -C ${dst_dir} -f ${makefile}")
+ninja.rule("make",          command="make --quiet -C ${dst_dir} -f ${makefile} > /dev/null")
 ninja.rule("run_test",      command="${in} | grep \"All tests pass.\" && touch ${out}")
 ninja.rule("console",       command="${in}", pool="console")
 ninja.rule("iverilog",      command="iverilog -g2012 ${defines} ${includes} ${in} -o ${out}")
-ninja.rule("yosys",         command="yosys -p 'read_verilog ${includes} -sv ${in}; dump; synth_ice40 -json ${out};'")
+ninja.rule("yosys",         command="yosys -q -p 'read_verilog ${includes} -sv ${in}; dump; synth_ice40 -json ${out};'")
 ninja.rule("nextpnr-ice40", command="nextpnr-ice40 -q --${chip} --package ${package} --json ${in} --asc ${out} --pcf ${pcf}")
 ninja.rule("icepack",       command="icepack ${in} ${out}")
 
 
 # command = "g++ -g $opt -Wl,--whole-archive ${in} -Wl,--no-whole-archive ${link_libs} -o ${out}"
 
-def metronize_dir(src_dir, dst_dir):
+def metronize_dir(src_dir, src_top, dst_dir):
     """
     Convert all .h files in the source directory into .sv files in the destination directory.
     Returns an array of converted filenames.
@@ -99,11 +94,11 @@ def metronize_dir(src_dir, dst_dir):
 
     ninja.build(rule="metron",
                 inputs=src_paths,
-                implicit="bin/metron",
+                implicit=["bin/metron"] + src_paths,
                 outputs=dst_paths,
                 src_dir=src_dir,
                 dst_dir=dst_dir,
-                file_list=src_files)
+                src_top=src_top)
 
     return dst_paths
 
@@ -312,7 +307,7 @@ def build_uart():
         src_objs=[],
     )
 
-    uart_srcs = metronize_dir("examples/uart/metron",
+    uart_srcs = metronize_dir("examples/uart/metron", "uart_top.h",
                               "examples/uart/metron_sv")
 
     uart_vhdr, uart_vobj = verilate_dir(
@@ -405,7 +400,7 @@ def build_rvsimple():
         opt=opt_mode,
     )
 
-    rvsimple_metron_srcs = metronize_dir(mt_root, sv_root)
+    rvsimple_metron_srcs = metronize_dir(mt_root, "toplevel.h", sv_root)
 
     rvsimple_metron_vhdr, rvsimple_metron_vobj = verilate_dir(
         src_dir=sv_root,
@@ -468,7 +463,7 @@ def build_rvtiny():
         opt=opt_mode,
     )
 
-    rvtiny_metron_srcs = metronize_dir(mt_root, sv_root)
+    rvtiny_metron_srcs = metronize_dir(mt_root, "toplevel.h", sv_root)
 
     rvtiny_metron_vhdr, rvtiny_metron_vobj = verilate_dir(
         src_dir=sv_root,
@@ -509,7 +504,7 @@ def build_rvtiny_sync():
         opt=opt_mode,
     )
 
-    metronized_src = metronize_dir(mt_root, sv_root)
+    metronized_src = metronize_dir(mt_root, "toplevel.h", sv_root)
 
     verilated_h, verilated_o = verilate_dir(
         src_dir=sv_root,
@@ -563,7 +558,7 @@ def build_pong():
         opt=opt_mode,
     )
 
-    metronized_src = metronize_dir(mt_root, sv_root)
+    metronized_src = metronize_dir(mt_root, "pong.h", sv_root)
 
     """
     rvtiny_sync_metron_vl_h, rvtiny_sync_metron_vl_o = verilate_dir(

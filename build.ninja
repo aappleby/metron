@@ -20,16 +20,16 @@ rule compile_c
   depfile = ${out}.d
   deps = gcc
 rule static_lib
-  command = ar rcs ${out} ${in}
+  command = ar rcs ${out} ${in} > /dev/null
 rule link
   command = g++ -g $opt ${in} -Wl,--whole-archive ${local_libs} $
       -Wl,--no-whole-archive ${global_libs} -o ${out}
 rule metron
-  command = bin/metron -r ${src_dir} -o ${dst_dir} -c ${file_list}
+  command = bin/metron -q -r ${src_dir} -o ${dst_dir} -c ${src_top}
 rule verilator
   command = verilator ${includes} --cc ${src_top} -Mdir ${dst_dir}
 rule make
-  command = make -C ${dst_dir} -f ${makefile}
+  command = make --quiet -C ${dst_dir} -f ${makefile} > /dev/null
 rule run_test
   command = ${in} | grep "All tests pass." && touch ${out}
 rule console
@@ -38,8 +38,8 @@ rule console
 rule iverilog
   command = iverilog -g2012 ${defines} ${includes} ${in} -o ${out}
 rule yosys
-  command = yosys -p 'read_verilog ${includes} -sv ${in}; dump; synth_ice40 $
-      -json ${out};'
+  command = yosys -q -p 'read_verilog ${includes} -sv ${in}; dump; $
+      synth_ice40 -json ${out};'
 rule nextpnr-ice40
   command = nextpnr-ice40 -q --${chip} --package ${package} --json ${in} $
       --asc ${out} --pcf ${pcf}
@@ -195,10 +195,12 @@ build examples/uart/metron_sv/uart_hello.sv $
     examples/uart/metron_sv/uart_tx.sv: metron $
     examples/uart/metron/uart_hello.h examples/uart/metron/uart_rx.h $
     examples/uart/metron/uart_top.h examples/uart/metron/uart_tx.h | $
-    bin/metron
+    bin/metron examples/uart/metron/uart_hello.h $
+    examples/uart/metron/uart_rx.h examples/uart/metron/uart_top.h $
+    examples/uart/metron/uart_tx.h
   src_dir = examples/uart/metron
   dst_dir = examples/uart/metron_sv
-  file_list = uart_hello.h uart_rx.h uart_top.h uart_tx.h
+  src_top = uart_top.h
 
 
 ################################################################################
@@ -287,7 +289,6 @@ build examples/rvsimple/metron_sv/adder.sv $
     examples/rvsimple/metron_sv/example_text_memory_bus.sv $
     examples/rvsimple/metron_sv/immediate_generator.sv $
     examples/rvsimple/metron_sv/instruction_decoder.sv $
-    examples/rvsimple/metron_sv/multiplexer.sv $
     examples/rvsimple/metron_sv/multiplexer2.sv $
     examples/rvsimple/metron_sv/multiplexer4.sv $
     examples/rvsimple/metron_sv/multiplexer8.sv $
@@ -309,7 +310,6 @@ build examples/rvsimple/metron_sv/adder.sv $
     examples/rvsimple/metron/example_text_memory_bus.h $
     examples/rvsimple/metron/immediate_generator.h $
     examples/rvsimple/metron/instruction_decoder.h $
-    examples/rvsimple/metron/multiplexer.h $
     examples/rvsimple/metron/multiplexer2.h $
     examples/rvsimple/metron/multiplexer4.h $
     examples/rvsimple/metron/multiplexer8.h $
@@ -318,16 +318,30 @@ build examples/rvsimple/metron_sv/adder.sv $
     examples/rvsimple/metron/singlecycle_control.h $
     examples/rvsimple/metron/singlecycle_ctlpath.h $
     examples/rvsimple/metron/singlecycle_datapath.h $
-    examples/rvsimple/metron/toplevel.h | bin/metron
+    examples/rvsimple/metron/toplevel.h | bin/metron $
+    examples/rvsimple/metron/adder.h examples/rvsimple/metron/alu.h $
+    examples/rvsimple/metron/alu_control.h $
+    examples/rvsimple/metron/config.h examples/rvsimple/metron/constants.h $
+    examples/rvsimple/metron/control_transfer.h $
+    examples/rvsimple/metron/data_memory_interface.h $
+    examples/rvsimple/metron/example_data_memory.h $
+    examples/rvsimple/metron/example_data_memory_bus.h $
+    examples/rvsimple/metron/example_text_memory.h $
+    examples/rvsimple/metron/example_text_memory_bus.h $
+    examples/rvsimple/metron/immediate_generator.h $
+    examples/rvsimple/metron/instruction_decoder.h $
+    examples/rvsimple/metron/multiplexer2.h $
+    examples/rvsimple/metron/multiplexer4.h $
+    examples/rvsimple/metron/multiplexer8.h $
+    examples/rvsimple/metron/regfile.h examples/rvsimple/metron/register.h $
+    examples/rvsimple/metron/riscv_core.h $
+    examples/rvsimple/metron/singlecycle_control.h $
+    examples/rvsimple/metron/singlecycle_ctlpath.h $
+    examples/rvsimple/metron/singlecycle_datapath.h $
+    examples/rvsimple/metron/toplevel.h
   src_dir = examples/rvsimple/metron
   dst_dir = examples/rvsimple/metron_sv
-  file_list = adder.h alu.h alu_control.h config.h constants.h $
-      control_transfer.h data_memory_interface.h example_data_memory.h $
-      example_data_memory_bus.h example_text_memory.h $
-      example_text_memory_bus.h immediate_generator.h instruction_decoder.h $
-      multiplexer.h multiplexer2.h multiplexer4.h multiplexer8.h regfile.h $
-      register.h riscv_core.h singlecycle_control.h singlecycle_ctlpath.h $
-      singlecycle_datapath.h toplevel.h
+  src_top = toplevel.h
 
 
 ################################################################################
@@ -347,7 +361,6 @@ build examples/rvsimple/metron_vl/Vtoplevel.mk $
     examples/rvsimple/metron_sv/example_text_memory_bus.sv $
     examples/rvsimple/metron_sv/immediate_generator.sv $
     examples/rvsimple/metron_sv/instruction_decoder.sv $
-    examples/rvsimple/metron_sv/multiplexer.sv $
     examples/rvsimple/metron_sv/multiplexer2.sv $
     examples/rvsimple/metron_sv/multiplexer4.sv $
     examples/rvsimple/metron_sv/multiplexer8.sv $
@@ -450,10 +463,11 @@ build bin/examples/rvtiny: link obj/examples/rvtiny/main.o
 # Metronize examples/rvtiny/metron -> examples/rvtiny/metron_sv
 
 build examples/rvtiny/metron_sv/toplevel.sv: metron $
-    examples/rvtiny/metron/toplevel.h | bin/metron
+    examples/rvtiny/metron/toplevel.h | bin/metron $
+    examples/rvtiny/metron/toplevel.h
   src_dir = examples/rvtiny/metron
   dst_dir = examples/rvtiny/metron_sv
-  file_list = toplevel.h
+  src_top = toplevel.h
 
 
 ################################################################################
@@ -500,10 +514,11 @@ build bin/examples/rvtiny_sync: link obj/examples/rvtiny_sync/main.o
 # Metronize examples/rvtiny_sync/metron -> examples/rvtiny_sync/metron_sv
 
 build examples/rvtiny_sync/metron_sv/toplevel.sv: metron $
-    examples/rvtiny_sync/metron/toplevel.h | bin/metron
+    examples/rvtiny_sync/metron/toplevel.h | bin/metron $
+    examples/rvtiny_sync/metron/toplevel.h
   src_dir = examples/rvtiny_sync/metron
   dst_dir = examples/rvtiny_sync/metron_sv
-  file_list = toplevel.h
+  src_top = toplevel.h
 
 
 ################################################################################
@@ -551,7 +566,7 @@ build bin/examples/pong: link obj/examples/pong/main.o
 # Metronize examples/pong/metron -> examples/pong/metron_sv
 
 build examples/pong/metron_sv/pong.sv: metron examples/pong/metron/pong.h | $
-    bin/metron
+    bin/metron examples/pong/metron/pong.h
   src_dir = examples/pong/metron
   dst_dir = examples/pong/metron_sv
-  file_list = pong.h
+  src_top = pong.h

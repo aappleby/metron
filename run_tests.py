@@ -65,6 +65,27 @@ def check_good(filename):
         error = 1
     return error
 
+###############################################################################
+# Check that the given source does _not_ translate cleanly
+
+def check_bad(filename):
+    error = 0
+    basename = path.basename(filename)
+    svname = path.splitext(basename)[0] + ".sv"
+
+    cmd = kcov_prefix + f"bin/metron -q -r tests/metron_bad -o tests/metron_sv -c {basename}"
+    #cmd = kcov_prefix + f"bin/metron -r tests/metron_bad -o tests/metron_sv -c {basename}"
+    print(f"  {cmd}")
+    result = os.system(cmd)
+    if result == 0:
+        print(f"Test file {filename} - expected fail, got {result}")
+        result = os.system(f"bin/metron {filename}")
+        error = 1
+    elif result == 34048:
+      print(f"Test file {filename} - expected fail, but it threw an exception")
+      error = 1
+    return error
+
 ################################################################################
 # Run Icarus on the translated source file.
 
@@ -116,27 +137,6 @@ def check_golden(filename):
           print(f"  {test_filename} == {golden_filename}")
     except:
         print_b(f"  No golden for {golden_filename}")
-    return error
-
-###############################################################################
-# Check that the given source does _not_ translate cleanly
-
-def check_bad(filename):
-    error = 0
-    basename = path.basename(filename)
-    svname = path.splitext(basename)[0] + ".sv"
-
-    cmd = kcov_prefix + f"bin/metron -q -r tests/metron_bad -o tests/metron_sv -c {basename}"
-    #cmd = kcov_prefix + f"bin/metron -r tests/metron_bad -o tests/metron_sv -c {basename}"
-    print(f"  {cmd}")
-    result = os.system(cmd)
-    if result == 0:
-        print(f"Test file {filename} - expected fail, got {result}")
-        result = os.system(f"bin/metron {filename}")
-        error = 1
-    elif result == 34048:
-      print(f"Test file {filename} - expected fail, but it threw an exception")
-      error = 1
     return error
 
 ###############################################################################

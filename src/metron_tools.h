@@ -611,7 +611,8 @@ inline void parse_hex(const char* src_filename, void* dst_data, int dst_size) {
   // byte past the buffer.
   void* src_data = malloc(src_size + 256);
   memset(src_data, 0, src_size + 256);
-  (void)fread(src_data, 1, src_size, f);
+  size_t count = fread(src_data, 1, src_size, f);
+  (void)count;
   fclose(f);
 
   uint8_t* sc = (uint8_t*)src_data;

@@ -54,7 +54,6 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
     // Init
     IData/*31:0*/ toplevel__DOT__core_bus_read_data;
     IData/*31:0*/ toplevel__DOT__core_alu_result;
-    IData/*31:0*/ toplevel__DOT__core_tock_alu_result;
     IData/*31:0*/ toplevel__DOT__text_memory_bus_address;
     IData/*31:0*/ toplevel__DOT__text_memory_bus_read_data;
     CData/*0:0*/ toplevel__DOT__data_memory_bus_read_enable;
@@ -507,7 +506,6 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
                         : 0U))));
     toplevel__DOT__core_alu_result = toplevel__DOT__core__DOT__datapath__DOT__alu_core_result;
     toplevel__DOT__core__DOT__dmem_address = toplevel__DOT__core_alu_result;
-    toplevel__DOT__core_tock_alu_result = toplevel__DOT__core_alu_result;
     toplevel__DOT__unnamedblk1__DOT__write_data = (
                                                    (0x1fU 
                                                     >= 
@@ -539,7 +537,7 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
                      << 3U) | (IData)(toplevel__DOT__core__DOT__ctlpath_inst_funct3));
     toplevel__DOT__core__DOT__ctlpath__DOT__transfer_take_branch 
         = Vtoplevel__ConstPool__TABLE_hfd21f17e_0[__Vtableidx2];
-    toplevel__DOT__unnamedblk1__DOT__alu_result2 = toplevel__DOT__core_tock_alu_result;
+    toplevel__DOT__unnamedblk1__DOT__alu_result2 = toplevel__DOT__core_alu_result;
     vlSelf->toplevel__DOT__data_memory_bus_address 
         = toplevel__DOT__unnamedblk1__DOT__alu_result2;
     vlSelf->o_bus_address = toplevel__DOT__unnamedblk1__DOT__alu_result2;

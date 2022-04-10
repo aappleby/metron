@@ -13,13 +13,15 @@
 
 module example_text_memory_bus
 (
-  input logic clock,
-  input logic[31:0] address,
-  output logic[31:0] read_data
+   input logic clock,
+   input logic[31:0] address,
+   output logic[31:0] read_data
 );
  /*public:*/
 
-  always_comb begin
+   /*logic<32> address;*/
+   /*logic<32> read_data;*/
+  always_comb begin /*tock_read_data*/
     logic[31:0] fetched;
     logic is_text_addr;
     text_memory_address = address[TEXT_BITS - 2+1:2];
@@ -30,14 +32,14 @@ module example_text_memory_bus
 
  /*private:*/
   example_text_memory text_memory(
-    // Inputs
-    .clock(clock),
-    .address(text_memory_address), 
-    // Outputs
-    .q(text_memory_q)
-  );
-  logic[TEXT_BITS - 2-1:0] text_memory_address;
-  logic[31:0] text_memory_q;
+     // Inputs
+     .clock(clock),
+     .address(text_memory_address), 
+     // Outputs
+     .q(text_memory_q)
+   );
+   logic[TEXT_BITS - 2-1:0] text_memory_address;
+   logic[31:0] text_memory_q;
 
 endmodule;
 

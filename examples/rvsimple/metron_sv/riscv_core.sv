@@ -22,7 +22,6 @@ module riscv_core
    output logic[31:0] alu_result,
    output logic[31:0] bus_write_data,
    output logic[31:0] pc,
-   output logic[31:0] tock_alu_result,
    output logic bus_write_enable2,
    output logic[3:0] bus_byte_enable2,
    output logic bus_read_enable2
@@ -35,7 +34,8 @@ module riscv_core
    /*logic<32> bus_read_data;*/
    /*logic<32> bus_write_data;*/
 
-  always_comb begin pc = datapath_pc; end
+  /*logic<32> pc;*/
+  always_comb begin /*tock_pc*/ pc = datapath_pc; end
 
   always_comb begin /*tock_inst*/
     datapath_inst = inst;
@@ -66,7 +66,6 @@ module riscv_core
     dmem_address = alu_result;
     dmem_data_format = funct3;
     /*dmem.tock_inputs()*/;
-    tock_alu_result = alu_result;
   end
 
   always_comb begin /*tock*/

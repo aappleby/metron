@@ -47,14 +47,18 @@ module toplevel
     logic[3:0]  byte_enable;
     logic  read_enable;
     logic[31:0] read_data;
-    pc           = core_pc;
+    /*core.tock_pc()*/;
+    pc = core_pc;
+
     text_memory_bus_address = pc;
-    inst         = text_memory_bus_read_data;
+    /*text_memory_bus.tock_read_data()*/;
+    inst = text_memory_bus_read_data;
 
     core_inst = inst;
     /*core.tock_inst()*/;
 
-    alu_result2  = core_tock_alu_result;
+    /*core.tock_alu_result()*/;
+    alu_result2 = core_alu_result;
     data_memory_bus_address = alu_result2;
 
     /*core.tock_bus_write_data2()*/;
@@ -99,7 +103,6 @@ module toplevel
     .alu_result(core_alu_result), 
     .bus_write_data(core_bus_write_data), 
     .pc(core_pc), 
-    .tock_alu_result(core_tock_alu_result), 
     .bus_write_enable2(core_bus_write_enable2), 
     .bus_byte_enable2(core_bus_byte_enable2), 
     .bus_read_enable2(core_bus_read_enable2)
@@ -110,7 +113,6 @@ module toplevel
   logic[31:0] core_alu_result;
   logic[31:0] core_bus_write_data;
   logic[31:0] core_pc;
-  logic[31:0] core_tock_alu_result;
   logic core_bus_write_enable2;
   logic[3:0] core_bus_byte_enable2;
   logic core_bus_read_enable2;

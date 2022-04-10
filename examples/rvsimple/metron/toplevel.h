@@ -27,13 +27,18 @@ class toplevel {
   //----------------------------------------
 
   void tock(logic<1> reset) {
-    logic<32> pc           = core.pc();
-    logic<32> inst         = text_memory_bus.read_data(pc);
+    core.tock_pc();
+    logic<32> pc = core.pc;
+
+    text_memory_bus.address = pc;
+    text_memory_bus.tock_read_data();
+    logic<32> inst = text_memory_bus.read_data;
 
     core.inst = inst;
     core.tock_inst();
 
-    logic<32> alu_result2  = core.tock_alu_result();
+    core.tock_alu_result();
+    logic<32> alu_result2 = core.alu_result;
     data_memory_bus.address = alu_result2;
 
     core.tock_bus_write_data2();

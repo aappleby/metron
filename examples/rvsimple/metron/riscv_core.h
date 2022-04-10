@@ -22,14 +22,15 @@ class riscv_core {
    logic<32> bus_read_data;
    logic<32> bus_write_data;
 
-  logic<32> pc() const { return datapath.pc(); }
+  logic<32> pc;
+  void tock_pc() { pc = datapath.pc(); }
 
   void tock_inst() {
     datapath.inst = inst;
     datapath.tock_inst();
   }
 
-  logic<32> tock_alu_result() {
+  void tock_alu_result() {
     logic<7> opcode = datapath.inst_opcode;
     logic<3> funct3 = datapath.inst_funct3;
     logic<7> funct7 = datapath.inst_funct7;
@@ -50,7 +51,6 @@ class riscv_core {
     dmem.address = alu_result;
     dmem.data_format = funct3;
     dmem.tock_inputs();
-    return alu_result;
   }
 
   void tock() {

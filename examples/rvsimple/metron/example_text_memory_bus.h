@@ -13,13 +13,14 @@
 
 class example_text_memory_bus {
  public:
+  logic<32> address;
+  logic<32> read_data;
 
-   logic<32> address;
-   logic<32> read_data;
   void tock_read_data() {
-    logic<32> fetched = text_memory.q(bx<TEXT_BITS - 2>(address, 2));
+    text_memory.address = bx<TEXT_BITS - 2>(address, 2);
+    text_memory.tock_q();
     logic<1> is_text_addr = (address >= TEXT_BEGIN) && (TEXT_END >= address);
-    read_data = is_text_addr ? fetched : b32(DONTCARE);
+    read_data = is_text_addr ? text_memory.q : b32(DONTCARE);
   }
 
  private:

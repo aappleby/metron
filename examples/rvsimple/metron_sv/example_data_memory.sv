@@ -21,7 +21,7 @@ module example_data_memory
   input logic[31:0] data,
   output logic[31:0] q
 );
-/*public:*/
+ /*public:*/
   initial begin /*example_data_memory*/
     string s;
     /*std::string s;*/
@@ -30,22 +30,15 @@ module example_data_memory
   end
 
   /*logic<DATA_BITS - 2> address;*/
-
   /*logic<32> q;*/
-  always_comb begin /*tock_q*/
-    q = mem[address];
-  end
-
   /*logic<1> wren;*/
   /*logic<4> byteena;*/
   /*logic<32> data;*/
 
-  always_comb begin /*tock*/
-    /*tick()*/;
-  end
+  always_comb begin /*tock_q*/ q = mem[address]; end
+  always_comb begin /*tock*/ /*tick()*/; end
 
-/*private:*/
-
+ /*private:*/
   task tick(); 
     if (wren) begin
       logic[31:0] mask;
@@ -60,7 +53,6 @@ module example_data_memory
   always_ff @(posedge clock) tick();
 
   logic[31:0] mem[2**(DATA_BITS - 2)];
-
 endmodule;
 
 `endif  // RVSIMPLE_EXAMPLE_DATA_MEMORY_H

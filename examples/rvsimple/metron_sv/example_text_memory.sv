@@ -26,7 +26,9 @@ module example_text_memory
     $readmemh(s, mem);
   end
 
-  always_comb begin q = mem[address]; end
+  /*logic<TEXT_BITS - 2> address;*/
+  /*logic<32> q;*/
+  always_comb begin /*tock_q*/ q = mem[address]; end
 
  /*private:*/
   logic[31:0] mem[2**(TEXT_BITS - 2)];

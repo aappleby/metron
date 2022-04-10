@@ -12,16 +12,16 @@
 
 class alu {
  public:
-
-   logic<5>  alu_function;
-   logic<32> operand_a;
-   logic<32> operand_b;
-   logic<32> result;
-   logic<1>  result_equal_zero;
+  logic<5> alu_function;
+  logic<32> operand_a;
+  logic<32> operand_b;
+  logic<32> result;
+  logic<1> result_equal_zero;
 
   void tock() {
     using namespace rv_constants;
 
+    // clang-format off
     switch (alu_function) {
       case ALU_ADD:  result = operand_a + operand_b; break;
       case ALU_SUB:  result = operand_a - operand_b; break;
@@ -36,6 +36,7 @@ class alu {
       case ALU_AND:  result = operand_a & operand_b; break;
       default:       result = b32(ZERO); break;
     }
+    // clang-format on
 
     result_equal_zero = (result == b32(0));
   }

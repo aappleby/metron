@@ -54,7 +54,10 @@ class singlecycle_datapath {
     inst_rd = idec.inst_rd();
     inst_rs1 = idec.inst_rs1();
     inst_rs2 = idec.inst_rs2();
-    inst_immediate = igen.immediate(inst);
+
+    igen.inst = inst;
+    igen.tock_immediate();
+    inst_immediate = igen.immediate;
   }
 
   //----------------------------------------

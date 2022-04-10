@@ -12,7 +12,10 @@
 
 class immediate_generator {
  public:
+  logic<32> inst;
+  logic<32> immediate;
 
+  // clang-format off
   // Immediate format
   //       31.............30........20.19........12.11.....11.10.........5.4..........1.0.....0
   // I = { {21{inst[31]}},                                     inst[30:25], inst[24:20]         };
@@ -20,36 +23,37 @@ class immediate_generator {
   // B = { {20{inst[31]}}, inst[7],                            inst[30:25], inst[11:8],   1'b0  };
   // U = { {1{inst[31]}},  inst[30:20], inst[19:12],                                      12'b0 };
   // J = { {12{inst[31]}},              inst[19:12], inst[20], inst[30:25], inst[24:21],  1'b0  };
+  // clang-format on
 
-  logic<32> immediate(logic<32> inst) const {
+  void tock_immediate() {
     using namespace rv_constants;
-    logic<32> result;
+    // clang-format off
     switch (b7(inst)) { // Opcode
       // FIXME we need to translate fallthrough into "x, y, z:"?
       case OPCODE_LOAD: // I-type immediate
-        result = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20)); break;
+        immediate = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20)); break;
       case OPCODE_LOAD_FP: // I-type immediate
-        result = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20)); break;
+        immediate = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20)); break;
       case OPCODE_OP_IMM: // I-type immediate
-        result = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20)); break;
+        immediate = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20)); break;
       case OPCODE_JALR: // I-type immediate
-        result = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20)); break;
+        immediate = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20)); break;
       case OPCODE_STORE_FP: // S-type immediate
-        result = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 7)); break;
+        immediate = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 7)); break;
       case OPCODE_STORE: // S-type immediate
-        result = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 7)); break;
+        immediate = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 7)); break;
       case OPCODE_BRANCH: // B-type immediate
-        result = cat(dup<20>(inst[31]), inst[7], b6(inst, 25), b4(inst, 8), b1(0)); break;
+        immediate = cat(dup<20>(inst[31]), inst[7], b6(inst, 25), b4(inst, 8), b1(0)); break;
       case OPCODE_AUIPC: // U-type immediate
-        result = cat(inst[31], b11(inst, 20), b8(inst, 12), b12(0)); break;
+        immediate = cat(inst[31], b11(inst, 20), b8(inst, 12), b12(0)); break;
       case OPCODE_LUI: // U-type immediate
-        result = cat(inst[31], b11(inst, 20), b8(inst, 12), b12(0)); break;
+        immediate = cat(inst[31], b11(inst, 20), b8(inst, 12), b12(0)); break;
       case OPCODE_JAL: // J-type immediate
-        result = cat(dup<12>(inst[31]), b8(inst, 12), inst[20], b6(inst, 25), b4(inst, 21), b1(0)); break;
+        immediate = cat(dup<12>(inst[31]), b8(inst, 12), inst[20], b6(inst, 25), b4(inst, 21), b1(0)); break;
       default:
-        result = b32(0); break;
+        immediate = b32(0); break;
     }
-    return result;
+    // clang-format on
   }
 };
 

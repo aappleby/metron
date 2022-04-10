@@ -12,13 +12,13 @@
 
 class control_transfer {
  public:
+  logic<1> take_branch;
+  logic<1> result_equal_zero;
+  logic<3> inst_funct3;
 
-   logic<1> take_branch;
-   logic<1> result_equal_zero;
-   logic<3> inst_funct3;
-
-  void tock_take_branch()  {
+  void tock_take_branch() {
     using namespace rv_constants;
+    // clang-format off
     switch (inst_funct3) {
       case FUNCT3_BRANCH_EQ:  take_branch = !result_equal_zero; break;
       case FUNCT3_BRANCH_NE:  take_branch = result_equal_zero; break;
@@ -28,6 +28,7 @@ class control_transfer {
       case FUNCT3_BRANCH_GEU: take_branch = result_equal_zero; break;
       default:                take_branch = b1(DONTCARE); break;
     }
+    // clang-format on
   }
 };
 

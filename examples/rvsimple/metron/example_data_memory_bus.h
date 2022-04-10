@@ -22,11 +22,9 @@ class example_data_memory_bus {
 
   void tock_q() {
     data_memory.address = bx<DATA_BITS - 2>(address, 2);
-
     data_memory.tock_q();
-    logic<32> fetched = data_memory.q;
     logic<1> is_data_memory = address >= DATA_BEGIN && DATA_END >= address;
-    q = read_enable && is_data_memory ? fetched : b32(DONTCARE);
+    q = read_enable && is_data_memory ? data_memory.q : b32(DONTCARE);
   }
 
   void tock() {

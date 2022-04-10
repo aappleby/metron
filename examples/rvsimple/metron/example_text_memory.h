@@ -20,7 +20,9 @@ class example_text_memory {
     readmemh(s, mem);
   }
 
-  logic<32> q(logic<TEXT_BITS - 2> address) const { return mem[address]; }
+  logic<TEXT_BITS - 2> address;
+  logic<32> q;
+  void tock_q() { q = mem[address]; }
 
  private:
   logic<32> mem[pow2(TEXT_BITS - 2)];

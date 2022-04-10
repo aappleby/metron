@@ -12,24 +12,24 @@
 
 module alu
 (
-   input logic clock,
-   input logic[4:0]  alu_function,
-   input logic[31:0] operand_a,
-   input logic[31:0] operand_b,
-   output logic[31:0] result,
-   output logic  result_equal_zero
+  input logic clock,
+  input logic[4:0] alu_function,
+  input logic[31:0] operand_a,
+  input logic[31:0] operand_b,
+  output logic[31:0] result,
+  output logic result_equal_zero
 );
  /*public:*/
-
-   /*logic<5>  alu_function;*/
-   /*logic<32> operand_a;*/
-   /*logic<32> operand_b;*/
-   /*logic<32> result;*/
-   /*logic<1>  result_equal_zero;*/
+  /*logic<5> alu_function;*/
+  /*logic<32> operand_a;*/
+  /*logic<32> operand_b;*/
+  /*logic<32> result;*/
+  /*logic<1> result_equal_zero;*/
 
   always_comb begin /*tock*/
     import rv_constants::*;
 
+    // clang-format off
     case (alu_function) 
       /*case*/ ALU_ADD:  result = operand_a + operand_b; /*break;*/
       /*case*/ ALU_SUB:  result = operand_a - operand_b; /*break;*/
@@ -44,6 +44,7 @@ module alu
       /*case*/ ALU_AND:  result = operand_a & operand_b; /*break;*/
       default:       result = 32'(ZERO); /*break;*/
     endcase
+    // clang-format on
 
     result_equal_zero = (result == 32'd0);
   end

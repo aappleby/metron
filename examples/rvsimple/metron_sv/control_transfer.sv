@@ -12,19 +12,19 @@
 
 module control_transfer
 (
-   input logic clock,
-   input logic result_equal_zero,
-   input logic[2:0] inst_funct3,
-   output logic take_branch
+  input logic clock,
+  input logic result_equal_zero,
+  input logic[2:0] inst_funct3,
+  output logic take_branch
 );
  /*public:*/
+  /*logic<1> take_branch;*/
+  /*logic<1> result_equal_zero;*/
+  /*logic<3> inst_funct3;*/
 
-   /*logic<1> take_branch;*/
-   /*logic<1> result_equal_zero;*/
-   /*logic<3> inst_funct3;*/
-
-  always_comb  begin /*tock_take_branch*/
+  always_comb begin /*tock_take_branch*/
     import rv_constants::*;
+    // clang-format off
     case (inst_funct3) 
       /*case*/ FUNCT3_BRANCH_EQ:  take_branch = !result_equal_zero; /*break;*/
       /*case*/ FUNCT3_BRANCH_NE:  take_branch = result_equal_zero; /*break;*/
@@ -34,6 +34,7 @@ module control_transfer
       /*case*/ FUNCT3_BRANCH_GEU: take_branch = result_equal_zero; /*break;*/
       default:                take_branch = 1'bx; /*break;*/
     endcase
+    // clang-format on
   end
 endmodule;
 

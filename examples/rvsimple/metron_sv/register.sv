@@ -20,7 +20,6 @@ module single_register
   output logic[WIDTH-1:0] value
 );
  /*public:*/
-
   /*logic<1> reset;*/
   /*logic<1> write_enable;*/
   /*logic<WIDTH> next;*/
@@ -35,7 +34,6 @@ module single_register
       value <= next;
   endtask
   always_ff @(posedge clock) tick();
-
 endmodule
 
 `endif  // RVSIMPLE_REGISTER_H

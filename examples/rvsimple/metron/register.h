@@ -13,7 +13,6 @@
 template <int WIDTH = 32, int INITIAL = 0>
 class single_register {
  public:
-
   logic<1> reset;
   logic<1> write_enable;
   logic<WIDTH> next;
@@ -27,7 +26,6 @@ class single_register {
     else if (write_enable)
       value = next;
   }
-
 };
 
 #endif  // RVSIMPLE_REGISTER_H

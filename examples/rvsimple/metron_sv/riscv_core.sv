@@ -97,11 +97,12 @@ module riscv_core
     datapath_pc_write_enable      = ctlpath_pc_write_enable;
     /*datapath.tock_program_counter()*/;
 
-    datapath_regfile_write_enable = ctlpath_regfile_write_enable;
     datapath_reg_writeback_select = ctlpath_reg_writeback_select;
     datapath_data_mem_read_data   = dmem_read_data;
+    /*datapath.tock_mux_reg_writeback()*/;
 
-    /*datapath.tock3b()*/;
+    datapath_regfile_write_enable = ctlpath_regfile_write_enable;
+    /*datapath.tock_reg_writeback()*/;
   end
 
   //----------------------------------------

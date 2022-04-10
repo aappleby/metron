@@ -167,10 +167,9 @@ module singlecycle_datapath
     program_counter_write_enable = pc_write_enable;
     program_counter_next = mux_next_pc_select_out;
     /*program_counter.tock()*/;
-
   end
 
-  always_comb begin /*tock3b*/
+  always_comb begin /*tock_mux_reg_writeback*/
     mux_reg_writeback_sel = reg_writeback_select;
     mux_reg_writeback_in0 = alu_core_result;
     mux_reg_writeback_in1 = data_mem_read_data;
@@ -181,7 +180,9 @@ module singlecycle_datapath
     mux_reg_writeback_in6 = 32'b0;
     mux_reg_writeback_in7 = 32'b0;
     /*mux_reg_writeback.tock()*/;
+  end
 
+  always_comb begin /*tock_reg_writeback*/
     regs_write_enable = regfile_write_enable;
     regs_rd_data = mux_reg_writeback_out;
     /*regs.tock2()*/;

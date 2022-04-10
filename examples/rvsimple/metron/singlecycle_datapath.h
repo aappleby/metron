@@ -168,10 +168,9 @@ public:
     program_counter.write_enable = pc_write_enable;
     program_counter.next = mux_next_pc_select.out;
     program_counter.tock();
-
   }
 
-  void tock3b() {
+  void tock_mux_reg_writeback() {
     mux_reg_writeback.sel = reg_writeback_select;
     mux_reg_writeback.in0 = alu_core.result;
     mux_reg_writeback.in1 = data_mem_read_data;
@@ -182,7 +181,9 @@ public:
     mux_reg_writeback.in6 = b32(0b0);
     mux_reg_writeback.in7 = b32(0b0);
     mux_reg_writeback.tock();
+  }
 
+  void tock_reg_writeback() {
     regs.write_enable = regfile_write_enable;
     regs.rd_data = mux_reg_writeback.out;
     regs.tock2();

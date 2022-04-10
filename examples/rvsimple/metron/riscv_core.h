@@ -85,11 +85,12 @@ public:
     datapath.pc_write_enable      = ctlpath.pc_write_enable;
     datapath.tock_program_counter();
 
-    datapath.regfile_write_enable = ctlpath.regfile_write_enable;
     datapath.reg_writeback_select = ctlpath.reg_writeback_select;
     datapath.data_mem_read_data   = dmem.read_data;
+    datapath.tock_mux_reg_writeback();
 
-    datapath.tock3b();
+    datapath.regfile_write_enable = ctlpath.regfile_write_enable;
+    datapath.tock_reg_writeback();
   }
 
   //----------------------------------------

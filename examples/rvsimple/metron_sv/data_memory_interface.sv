@@ -13,26 +13,39 @@
 module data_memory_interface
 (
   input logic clock,
+  input logic  read_enable,
+  input logic  write_enable,
+  input logic[2:0]  data_format,
   input logic[31:0] address,
-  input logic[2:0] data_format,
   input logic[31:0] write_data,
   input logic[31:0] bus_read_data,
   output logic[31:0] read_data,
+  output logic[31:0] bus_address,
   output logic[31:0] bus_write_data,
-  output logic[3:0]  bus_byte_enable
+  output logic[3:0]  bus_byte_enable,
+  output logic  bus_write_enable,
+  output logic  bus_read_enable
 );
  /*public:*/
+  /*logic<1>  read_enable;*/
+  /*logic<1>  write_enable;*/
+  /*logic<3>  data_format;*/
   /*logic<32> address;*/
-  /*logic<3> data_format;*/
   /*logic<32> write_data;*/
   /*logic<32> read_data;*/
 
+  /*logic<32> bus_address;*/
   /*logic<32> bus_read_data;*/
   /*logic<32> bus_write_data;*/
   /*logic<4>  bus_byte_enable;*/
+  /*logic<1>  bus_write_enable;*/
+  /*logic<1>  bus_read_enable;*/
 
   always_comb begin /*tock1*/
-    bus_write_data = write_data << (8 * 2'(address));
+    bus_address      = address;
+    bus_write_enable = write_enable;
+    bus_read_enable  = read_enable;
+    bus_write_data   = write_data << (8 * 2'(address));
 
     // calculate byte enable
     // clang-format off

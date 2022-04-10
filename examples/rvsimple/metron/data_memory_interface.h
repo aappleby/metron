@@ -12,17 +12,25 @@
 
 class data_memory_interface {
  public:
+  logic<1>  read_enable;
+  logic<1>  write_enable;
+  logic<3>  data_format;
   logic<32> address;
-  logic<3> data_format;
   logic<32> write_data;
   logic<32> read_data;
 
+  logic<32> bus_address;
   logic<32> bus_read_data;
   logic<32> bus_write_data;
   logic<4>  bus_byte_enable;
+  logic<1>  bus_write_enable;
+  logic<1>  bus_read_enable;
 
   void tock1() {
-    bus_write_data = write_data << (8 * b2(address));
+    bus_address      = address;
+    bus_write_enable = write_enable;
+    bus_read_enable  = read_enable;
+    bus_write_data   = write_data << (8 * b2(address));
 
     // calculate byte enable
     // clang-format off

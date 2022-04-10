@@ -29,18 +29,18 @@ module example_text_memory_bus
     // Outputs
     .q(text_memory_q)
   );
-  logic[TEXT_BITS - 2-1:0] text_memory_address;
+  logic[rv_config::TEXT_BITS - 2-1:0] text_memory_address;
   logic[31:0] text_memory_q;
 
 
  /*public:*/
   always_comb begin /*tock_read_data*/
     logic[31:0] fetched;
-    text_memory_address = address[TEXT_BITS - 2+1:2];
+    text_memory_address = address[rv_config::TEXT_BITS - 2+1:2];
     /*text_memory.tock_q()*/;
     fetched = text_memory_q;
     read_data =
-      (address >= TEXT_BEGIN) && (TEXT_END >= address)
+      (address >= rv_config::TEXT_BEGIN) && (rv_config::TEXT_END >= address)
       ? fetched
       : 32'bx;
   end

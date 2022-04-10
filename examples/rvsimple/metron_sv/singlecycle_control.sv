@@ -113,7 +113,7 @@ module singlecycle_control
     // clang-format on
   end
 
-  always_comb begin /*tock_alu_op_type2*/
+  always_comb begin /*tock_alu_op_type*/
     import rv_constants::*;
 
     // clang-format off

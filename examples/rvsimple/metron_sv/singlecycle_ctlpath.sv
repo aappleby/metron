@@ -48,7 +48,7 @@ module singlecycle_ctlpath
 
   always_comb begin /*tock_alu_function*/
     control_inst_opcode = inst_opcode;
-    /*control.tock_alu_op_type2()*/;
+    /*control.tock_alu_op_type()*/;
     alu_ctrl_alu_op_type = control_alu_op_type;
     alu_ctrl_inst_funct3 = inst_funct3;
     alu_ctrl_inst_funct7 = inst_funct7;

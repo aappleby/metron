@@ -21,11 +21,11 @@ class example_text_memory_bus {
 
  public:
   void tock_read_data() {
-    text_memory.address = bx<TEXT_BITS - 2>(address, 2);
+    text_memory.address = bx<rv_config::TEXT_BITS - 2>(address, 2);
     text_memory.tock_q();
     logic<32> fetched = text_memory.q;
     read_data =
-      (address >= TEXT_BEGIN) && (TEXT_END >= address)
+      (address >= rv_config::TEXT_BEGIN) && (rv_config::TEXT_END >= address)
       ? fetched
       : b32(DONTCARE);
   }

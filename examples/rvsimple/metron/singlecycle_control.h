@@ -99,7 +99,7 @@ class singlecycle_control {
     // clang-format on
   }
 
-  void tock_alu_op_type2() {
+  void tock_alu_op_type() {
     using namespace rv_constants;
 
     // clang-format off

@@ -15,7 +15,6 @@
 
 // INCLUDE MODULE CLASSES
 #include "Vtoplevel___024root.h"
-#include "Vtoplevel___024unit.h"
 
 // SYMS CLASS (contains all model state)
 class Vtoplevel__Syms final : public VerilatedSyms {

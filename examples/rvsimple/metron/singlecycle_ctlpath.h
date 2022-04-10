@@ -32,7 +32,7 @@ class singlecycle_ctlpath {
 
   void tock_alu_function() {
     control.inst_opcode = inst_opcode;
-    control.tock_alu_op_type2();
+    control.tock_alu_op_type();
     alu_ctrl.alu_op_type = control.alu_op_type;
     alu_ctrl.inst_funct3 = inst_funct3;
     alu_ctrl.inst_funct7 = inst_funct7;

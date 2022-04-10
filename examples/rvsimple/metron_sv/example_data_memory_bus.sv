@@ -15,28 +15,28 @@ module example_data_memory_bus
 (
   input logic clock,
   input logic[31:0] address,
-  input logic read_enable,
-  input logic write_enable,
-  input logic[3:0] byte_enable,
+  output logic[31:0] read_data,
   input logic[31:0] write_data,
-  output logic[31:0] q
+  input logic[3:0]  byte_enable,
+  input logic  read_enable,
+  input logic  write_enable
 );
  /*public:*/
   /*logic<32> address;*/
-  /*logic<1> read_enable;*/
-  /*logic<1> write_enable;*/
-  /*logic<4> byte_enable;*/
+  /*logic<32> read_data;*/
   /*logic<32> write_data;*/
-  /*logic<32> q;*/
+  /*logic<4>  byte_enable;*/
+  /*logic<1>  read_enable;*/
+  /*logic<1>  write_enable;*/
 
   always_comb begin /*tock*/
     logic is_data_memory;
-    data_memory_address = address[DATA_BITS - 2+1:2];
+    data_memory_address = address[rv_config::DATA_BITS - 2+1:2];
     /*data_memory.tock_q()*/;
-    is_data_memory = address >= DATA_BEGIN && DATA_END >= address;
-    q = read_enable && is_data_memory ? data_memory_q : 32'bx;
+    is_data_memory = address >= rv_config::DATA_BEGIN && rv_config::DATA_END >= address;
+    read_data = read_enable && is_data_memory ? data_memory_q : 32'bx;
     data_memory_wren =
-        1'(write_enable && address >= DATA_BEGIN && DATA_END >= address);
+        1'(write_enable && address >= rv_config::DATA_BEGIN && rv_config::DATA_END >= address);
     data_memory_byteena = byte_enable;
     data_memory_data = write_data;
 
@@ -54,7 +54,7 @@ module example_data_memory_bus
     // Outputs
     .q(data_memory_q)
   );
-  logic[DATA_BITS - 2-1:0] data_memory_address;
+  logic[rv_config::DATA_BITS - 2-1:0] data_memory_address;
   logic data_memory_wren;
   logic[3:0] data_memory_byteena;
   logic[31:0] data_memory_data;

@@ -19,8 +19,6 @@
 `include "regfile.sv"
 `include "register.sv"
 
-import rv_config::*;
-
 module singlecycle_datapath
 (
   input logic clock,
@@ -303,7 +301,7 @@ module singlecycle_datapath
   logic[2:0] mux_reg_writeback_sel;
   logic[32-1:0] mux_reg_writeback_out;
 
-  single_register #(32, INITIAL_PC) program_counter(
+  single_register #(32, rv_config::INITIAL_PC) program_counter(
     // Inputs
     .clock(clock),
     .reset(program_counter_reset), 

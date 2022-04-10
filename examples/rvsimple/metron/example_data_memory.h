@@ -10,8 +10,6 @@
 #include "constants.h"
 #include "metron_tools.h"
 
-using namespace rv_config;
-
 class example_data_memory {
  public:
   example_data_memory() {
@@ -20,7 +18,7 @@ class example_data_memory {
     readmemh(s, mem);
   }
 
-  logic<DATA_BITS - 2> address;
+  logic<rv_config::DATA_BITS - 2> address;
   logic<32> q;
   logic<1> wren;
   logic<4> byteena;
@@ -41,7 +39,7 @@ class example_data_memory {
     }
   }
 
-  logic<32> mem[pow2(DATA_BITS - 2)];
+  logic<32> mem[pow2(rv_config::DATA_BITS - 2)];
 };
 
 #endif  // RVSIMPLE_EXAMPLE_DATA_MEMORY_H

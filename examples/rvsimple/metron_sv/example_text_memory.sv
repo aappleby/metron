@@ -10,12 +10,10 @@
 `include "constants.sv"
 `include "metron_tools.sv"
 
-import rv_config::*;
-
 module example_text_memory
 (
   input logic clock,
-  input logic[TEXT_BITS - 2-1:0] address,
+  input logic[rv_config::TEXT_BITS - 2-1:0] address,
   output logic[31:0] q
 );
  /*public:*/
@@ -26,12 +24,12 @@ module example_text_memory
     $readmemh(s, mem);
   end
 
-  /*logic<TEXT_BITS - 2> address;*/
+  /*logic<rv_config::TEXT_BITS - 2> address;*/
   /*logic<32> q;*/
   always_comb begin /*tock_q*/ q = mem[address]; end
 
  /*private:*/
-  logic[31:0] mem[2**(TEXT_BITS - 2)];
+  logic[31:0] mem[2**(rv_config::TEXT_BITS - 2)];
 endmodule;
 
 `endif  // RVSIMPLE_EXAMPLE_TEXT_MEMORY_H

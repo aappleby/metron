@@ -19,8 +19,6 @@
 #include "regfile.h"
 #include "register.h"
 
-using namespace rv_config;
-
 class singlecycle_datapath {
 public:
 
@@ -199,7 +197,7 @@ public:
   multiplexer2<32> mux_operand_a;
   multiplexer2<32> mux_operand_b;
   multiplexer8<32> mux_reg_writeback;
-  single_register<32, INITIAL_PC> program_counter;
+  single_register<32, rv_config::INITIAL_PC> program_counter;
   regfile regs;
   instruction_decoder idec;
   immediate_generator igen;

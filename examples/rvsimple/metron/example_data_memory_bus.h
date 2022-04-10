@@ -14,19 +14,19 @@
 class example_data_memory_bus {
  public:
   logic<32> address;
-  logic<1> read_enable;
-  logic<1> write_enable;
-  logic<4> byte_enable;
+  logic<32> read_data;
   logic<32> write_data;
-  logic<32> q;
+  logic<4>  byte_enable;
+  logic<1>  read_enable;
+  logic<1>  write_enable;
 
   void tock() {
-    data_memory.address = bx<DATA_BITS - 2>(address, 2);
+    data_memory.address = bx<rv_config::DATA_BITS - 2>(address, 2);
     data_memory.tock_q();
-    logic<1> is_data_memory = address >= DATA_BEGIN && DATA_END >= address;
-    q = read_enable && is_data_memory ? data_memory.q : b32(DONTCARE);
+    logic<1> is_data_memory = address >= rv_config::DATA_BEGIN && rv_config::DATA_END >= address;
+    read_data = read_enable && is_data_memory ? data_memory.q : b32(DONTCARE);
     data_memory.wren =
-        b1(write_enable && address >= DATA_BEGIN && DATA_END >= address);
+        b1(write_enable && address >= rv_config::DATA_BEGIN && rv_config::DATA_END >= address);
     data_memory.byteena = byte_enable;
     data_memory.data = write_data;
 

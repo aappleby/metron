@@ -57,12 +57,12 @@ module toplevel
     data_memory_bus_write_data   = core_bus_write_data;
     /*data_memory_bus.tock()*/;
 
-    core_bus_read_data = data_memory_bus_q;
+    core_bus_read_data = data_memory_bus_read_data;
     /*core.tock_writeback()*/;
 
     //----------
 
-    bus_read_data    = data_memory_bus_q;
+    bus_read_data    = data_memory_bus_read_data;
     bus_address      = core_bus_address;
     bus_write_data   = core_bus_write_data;
     bus_byte_enable  = core_bus_byte_enable;
@@ -113,19 +113,19 @@ module toplevel
     // Inputs
     .clock(clock),
     .address(data_memory_bus_address), 
+    .write_data(data_memory_bus_write_data), 
+    .byte_enable(data_memory_bus_byte_enable), 
     .read_enable(data_memory_bus_read_enable), 
     .write_enable(data_memory_bus_write_enable), 
-    .byte_enable(data_memory_bus_byte_enable), 
-    .write_data(data_memory_bus_write_data), 
     // Outputs
-    .q(data_memory_bus_q)
+    .read_data(data_memory_bus_read_data)
   );
   logic[31:0] data_memory_bus_address;
-  logic data_memory_bus_read_enable;
-  logic data_memory_bus_write_enable;
-  logic[3:0] data_memory_bus_byte_enable;
   logic[31:0] data_memory_bus_write_data;
-  logic[31:0] data_memory_bus_q;
+  logic[3:0]  data_memory_bus_byte_enable;
+  logic  data_memory_bus_read_enable;
+  logic  data_memory_bus_write_enable;
+  logic[31:0] data_memory_bus_read_data;
 
 endmodule;
 

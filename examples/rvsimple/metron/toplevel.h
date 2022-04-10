@@ -45,12 +45,12 @@ class toplevel {
     data_memory_bus.write_data   = core.bus_write_data;
     data_memory_bus.tock();
 
-    core.bus_read_data = data_memory_bus.q;
+    core.bus_read_data = data_memory_bus.read_data;
     core.tock_writeback();
 
     //----------
 
-    bus_read_data    = data_memory_bus.q;
+    bus_read_data    = data_memory_bus.read_data;
     bus_address      = core.bus_address;
     bus_write_data   = core.bus_write_data;
     bus_byte_enable  = core.bus_byte_enable;

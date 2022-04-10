@@ -73,6 +73,7 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
     IData/*31:0*/ toplevel__DOT__core__DOT__dmem__DOT__unnamedblk1__DOT__position_fix;
     IData/*31:0*/ toplevel__DOT__text_memory_bus__DOT__unnamedblk1__DOT__fetched;
     CData/*0:0*/ toplevel__DOT__data_memory_bus__DOT__unnamedblk1__DOT__is_data_memory;
+    IData/*31:0*/ toplevel__DOT__data_memory_bus__DOT__unnamedblk1__DOT__fetched;
     CData/*7:0*/ __Vtableidx1;
     CData/*6:0*/ __Vtableidx2;
     CData/*6:0*/ __Vtableidx3;
@@ -500,16 +501,19 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
     toplevel__DOT__data_memory_bus__DOT__unnamedblk1__DOT__is_data_memory 
         = ((0x80000000U <= vlSelf->toplevel__DOT__core__DOT__datapath__DOT__alu_core_result) 
            & (0x8001ffffU >= vlSelf->toplevel__DOT__core__DOT__datapath__DOT__alu_core_result));
+    vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory_wren 
+        = ((0x23U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data)) 
+           & (IData)(toplevel__DOT__data_memory_bus__DOT__unnamedblk1__DOT__is_data_memory));
+    toplevel__DOT__data_memory_bus__DOT__unnamedblk1__DOT__fetched 
+        = vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__mem
+        [(0x7fffU & (vlSelf->toplevel__DOT__core__DOT__datapath__DOT__alu_core_result 
+                     >> 2U))];
     toplevel__DOT__data_memory_bus_read_data = (((3U 
                                                   == 
                                                   (0x7fU 
                                                    & vlSelf->toplevel__DOT__text_memory_bus_read_data)) 
                                                  & (IData)(toplevel__DOT__data_memory_bus__DOT__unnamedblk1__DOT__is_data_memory))
-                                                 ? 
-                                                vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__mem
-                                                [(0x7fffU 
-                                                  & (vlSelf->toplevel__DOT__core__DOT__datapath__DOT__alu_core_result 
-                                                     >> 2U))]
+                                                 ? toplevel__DOT__data_memory_bus__DOT__unnamedblk1__DOT__fetched
                                                  : 0U);
     __Vtableidx1 = (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__transfer_take_branch) 
                      << 7U) | (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data));
@@ -615,6 +619,7 @@ VL_ATTR_COLD void Vtoplevel___024root___ctor_var_reset(Vtoplevel___024root* vlSe
     for (int __Vi0=0; __Vi0<16384; ++__Vi0) {
         vlSelf->toplevel__DOT__text_memory_bus__DOT__text_memory__DOT__mem[__Vi0] = VL_RAND_RESET_I(32);
     }
+    vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory_wren = VL_RAND_RESET_I(1);
     for (int __Vi0=0; __Vi0<32768; ++__Vi0) {
         vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__mem[__Vi0] = VL_RAND_RESET_I(32);
     }

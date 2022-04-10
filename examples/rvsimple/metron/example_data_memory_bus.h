@@ -16,25 +16,26 @@ class example_data_memory_bus {
   logic<32> address;
   logic<32> read_data;
   logic<32> write_data;
-  logic<4>  byte_enable;
-  logic<1>  read_enable;
-  logic<1>  write_enable;
-
-  void tock() {
-    data_memory.address = bx<rv_config::DATA_BITS - 2>(address, 2);
-    data_memory.tock_q();
-    logic<1> is_data_memory = address >= rv_config::DATA_BEGIN && rv_config::DATA_END >= address;
-    read_data = read_enable && is_data_memory ? data_memory.q : b32(DONTCARE);
-    data_memory.wren =
-        b1(write_enable && address >= rv_config::DATA_BEGIN && rv_config::DATA_END >= address);
-    data_memory.byteena = byte_enable;
-    data_memory.data = write_data;
-
-    data_memory.tock();
-  }
+  logic<4> byte_enable;
+  logic<1> read_enable;
+  logic<1> write_enable;
 
  private:
   example_data_memory data_memory;
+
+ public:
+  void tock() {
+    logic<1> is_data_memory = address >= rv_config::DATA_BEGIN && rv_config::DATA_END >= address;
+
+    data_memory.address = bx<rv_config::DATA_BITS - 2>(address, 2);
+    data_memory.byteena = byte_enable;
+    data_memory.data = write_data;
+    data_memory.wren = write_enable & is_data_memory;
+    data_memory.tock();
+
+    logic<32> fetched = data_memory.q;
+    read_data = read_enable && is_data_memory ? fetched : b32(DONTCARE);
+  }
 };
 
 #endif  // RVSIMPLE_EXAMPLE_DATA_MEMORY_BUS_H

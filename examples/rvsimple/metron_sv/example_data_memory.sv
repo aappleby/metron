@@ -33,8 +33,10 @@ module example_data_memory
   /*logic<4> byteena;*/
   /*logic<32> data;*/
 
-  always_comb begin /*tock_q*/ q = mem[address]; end
-  always_comb begin /*tock*/ /*tick()*/; end
+  always_comb begin /*tock*/
+    q = mem[address];
+    /*tick()*/;
+  end
 
  /*private:*/
   task tick(); 

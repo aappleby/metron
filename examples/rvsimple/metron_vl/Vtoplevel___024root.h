@@ -20,6 +20,7 @@ VL_MODULE(Vtoplevel___024root) {
     CData/*3:0*/ toplevel__DOT__core__DOT__dmem_bus_byte_enable;
     CData/*0:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__control_regfile_write_enable;
     CData/*2:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__control_reg_writeback_select;
+    CData/*0:0*/ toplevel__DOT__data_memory_bus__DOT__data_memory_wren;
     CData/*0:0*/ __Vclklast__TOP__clock;
     VL_OUT(bus_read_data,31,0);
     VL_OUT(bus_address,31,0);

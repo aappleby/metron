@@ -24,8 +24,10 @@ class example_data_memory {
   logic<4> byteena;
   logic<32> data;
 
-  void tock_q() { q = mem[address]; }
-  void tock() { tick(); }
+  void tock() {
+    q = mem[address];
+    tick();
+  }
 
  private:
   void tick() {

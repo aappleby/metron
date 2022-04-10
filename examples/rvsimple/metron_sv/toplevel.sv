@@ -122,9 +122,9 @@ module toplevel
   );
   logic[31:0] data_memory_bus_address;
   logic[31:0] data_memory_bus_write_data;
-  logic[3:0]  data_memory_bus_byte_enable;
-  logic  data_memory_bus_read_enable;
-  logic  data_memory_bus_write_enable;
+  logic[3:0] data_memory_bus_byte_enable;
+  logic data_memory_bus_read_enable;
+  logic data_memory_bus_write_enable;
   logic[31:0] data_memory_bus_read_data;
 
 endmodule;

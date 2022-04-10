@@ -25,8 +25,13 @@ void MtModLibrary::add_source(MtSourceFile* source_file) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN bool MtModLibrary::load_source(const char* filename) {
-  bool error = false;
+CHECK_RETURN Err MtModLibrary::load_source(const char* filename, MtSourceFile*& out_source) {
+  Err err;
+
+  if (get_source(filename)) {
+    LOG_Y("Duplicate filename %s\n", filename);
+    return err;
+  }
 
   assert(!sources_loaded);
   bool found = false;
@@ -52,31 +57,57 @@ CHECK_RETURN bool MtModLibrary::load_source(const char* filename) {
         use_utf8_bom = true;
         src_blob.erase(src_blob.begin(), src_blob.begin() + 3);
       }
-      error |= load_blob(filename, full_path, src_blob, use_utf8_bom);
+      err << load_blob(filename, full_path, src_blob, use_utf8_bom);
       break;
     }
   }
 
   if (!found) {
     LOG_R("Couldn't find %s in path!\n", filename);
-    error = true;
+    err << true;
   }
 
-  return error;
+  return err;
 }
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN bool MtModLibrary::load_blob(const std::string& filename, const std::string& full_path, const std::string& src_blob, bool use_utf8_bom) {
-  bool error = false;
+CHECK_RETURN Err MtModLibrary::load_blob(const std::string& filename, const std::string& full_path, const std::string& src_blob, bool use_utf8_bom) {
+  Err err;
 
   assert(!sources_loaded);
   auto source_file = new MtSourceFile();
-  error |= source_file->init(filename, full_path, src_blob);
+  err << source_file->init(filename, full_path, src_blob);
   source_file->use_utf8_bom = use_utf8_bom;
   add_source(source_file);
 
-  return error;
+  // Recurse through #includes
+
+  std::vector<std::string> includes;
+
+  source_file->root_node.visit_tree([&](MnNode child) {
+    if (child.sym != sym_preproc_include) return;
+
+    //child.dump_tree();
+
+    std::string filename = child.get_field(field_path).text();
+    filename.erase(filename.begin());
+    filename.pop_back();
+    includes.push_back(filename);
+  });
+
+  for (const auto& file : includes) {
+    if (file == "metron_tools.h") continue;
+
+    if (!get_source(file)) {
+      MtSourceFile* source = nullptr;
+      err << load_source(file.c_str(), source);
+    }
+
+    source_file->includes.push_back(get_source(file));
+  }
+
+  return err;
 }
 
 //------------------------------------------------------------------------------
@@ -161,9 +192,11 @@ MtModule* MtModLibrary::get_module(const std::string& name) {
   return nullptr;
 }
 
-bool MtModLibrary::has_module(const std::string& name) {
-  assert(sources_loaded);
-  return get_module(name) != nullptr;
+MtSourceFile* MtModLibrary::get_source(const std::string& name) {
+  for (auto s : source_files) {
+    if (s->filename == name) return s;
+  }
+  return nullptr;
 }
 
 //------------------------------------------------------------------------------

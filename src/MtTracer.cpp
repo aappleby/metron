@@ -403,6 +403,13 @@ CHECK_RETURN Err MtTracer::trace_submod_call(MnNode n) {
 
   auto submod_name = node_func.get_field(field_argument).text();
   auto submod = mod()->get_submod(submod_name);
+
+  if (!submod) {
+    LOG_R("Could not find submodule %s\n", submod_name.c_str());
+    error = true;
+    return error;
+  }
+
   assert(submod);
   auto submod_type = submod->type_name();
   auto submod_mod = mod()->source_file->lib->get_module(submod_type);

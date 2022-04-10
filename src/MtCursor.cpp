@@ -1463,7 +1463,7 @@ CHECK_RETURN Err MtCursor::emit_field_decl(MnFieldDecl n) {
 
   std::string type_name = n.type5();
 
-  if (lib->has_module(type_name)) {
+  if (lib->get_module(type_name)) {
     err << emit_field_as_submod(n);
   } else if (n.type().is_enum()) {
     err << emit_field_as_enum_class(n);
@@ -2049,8 +2049,11 @@ CHECK_RETURN Err MtCursor::emit_identifier(MnIdentifier n) {
   } else {
     if (preproc_vars.contains(name)) {
       err << emit_printf("`");
+      err << emit_text(n);
     }
-    err << emit_text(n);
+    else {
+      err << emit_text(n);
+    }
   }
   assert(cursor == n.end());
   return err;
@@ -2570,6 +2573,8 @@ CHECK_RETURN Err MtCursor::emit_preproc(MnNode n) {
   Err err;
   switch (n.sym) {
     case sym_preproc_def: {
+      //n.dump_tree();
+
       auto lit = n.child(0);
       auto name = n.get_field(field_name);
       auto value = n.get_field(field_value);
@@ -2605,7 +2610,24 @@ CHECK_RETURN Err MtCursor::emit_preproc(MnNode n) {
       break;
 
     case sym_preproc_arg: {
-      err << emit_text(n);
+
+      // If we see any other #defined constants inside a #defined value, prefix them
+      // with '`'
+      std::string arg = n.text();
+      std::string new_arg;
+
+      for (int i = 0; i < arg.size(); i++) {
+        for (const auto& def_pair : preproc_vars) {
+          if (def_pair.first == arg) continue;
+          if (strncmp(&arg[i], def_pair.first.c_str(), def_pair.first.size()) == 0) {
+            new_arg.push_back('`');
+            break;
+          }
+        }
+        new_arg.push_back(arg[i]);
+      }
+
+      err << emit_replacement(n, new_arg.c_str());
       break;
     }
     case sym_preproc_include: {

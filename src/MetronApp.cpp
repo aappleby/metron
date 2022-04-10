@@ -121,7 +121,8 @@ int main(int argc, char** argv) {
 
   LOG_B("Loading source files\n");
   for (auto& name : source_names) {
-    error |= library.load_source(name.c_str());
+    MtSourceFile* source;
+    error |= library.load_source(name.c_str(), source);
   }
   if (error) {
     LOG_R("Exiting due to error\n");
@@ -129,6 +130,8 @@ int main(int argc, char** argv) {
   }
 
   LOG_B("\n");
+
+  exit(0);
 
   LOG_B("Processing source files\n");
   error |= library.process_sources();
@@ -182,63 +185,57 @@ int main(int argc, char** argv) {
   //----------
   // Emit all modules.
 
-  if (convert || echo) {
-    if (convert && out_root.empty()) {
-      LOG_R("No output root directory specified, using source root.\n");
-      out_root = src_root;
+  if (convert && out_root.empty()) {
+    LOG_R("No output root directory specified, using source root.\n");
+    out_root = src_root;
+  }
+
+  for (auto& source_file : library.source_files)
+  {
+    //if (source_file->filename != "singlecycle_datapath.h") continue;
+
+    Err err;
+
+    // Translate the source.
+    auto out_name = source_file->filename;
+    assert(out_name.ends_with(".h"));
+    out_name.resize(out_name.size() - 2);
+    auto out_path = out_root + "/" + out_name + ".sv";
+
+    if (out_root.size()) {
+      LOG_G("Converting %s -> %s\n", source_file->full_path.c_str(), out_path.c_str());
     }
 
-    for (auto& source_file : library.source_files)
-    {
-      //if (source_file->filename != "singlecycle_datapath.h") continue;
+    std::string out_string;
+    MtCursor cursor(&library, source_file, &out_string);
+    cursor.echo = echo && !quiet;
+    cursor.cursor = source_file->source;
+    cursor.source_file = source_file;
 
-      Err err;
+    bool emit_error = cursor.emit_dispatch(source_file->root_node);
+    err |= cursor.emit_printf("\n");
 
-      // Translate the source.
-      auto out_name = source_file->filename;
-      assert(out_name.ends_with(".h"));
-      out_name.resize(out_name.size() - 2);
-      auto out_path = out_root + "/" + out_name + ".sv";
+    if (emit_error) {
+      LOG_R("Error during code generation\n");
+      exit(-1);
+    }
 
-      if (out_root.size()) {
-        LOG_G("Converting %s -> %s\n", source_file->full_path.c_str(), out_path.c_str());
-      }
+    // Save translated source to output directory, if there is one.
+    if (convert && out_root.size()) {
+      mkdir_all(split_path(out_path));
 
-      if (echo) {
-        LOG_G("Converted source for %s:\n", source_file->full_path.c_str());
-      }
-
-      std::string out_string;
-      MtCursor cursor(&library, source_file, &out_string);
-      cursor.echo = echo && !quiet;
-      cursor.cursor = source_file->source;
-      cursor.source_file = source_file;
-
-      bool emit_error = cursor.emit_dispatch(source_file->root_node);
-      err |= cursor.emit_printf("\n");
-
-      if (emit_error) {
-        LOG_R("Error during code generation\n");
-        exit(-1);
-      }
-
-      // Save translated source to output directory, if there is one.
-      if (out_root.size()) {
-        mkdir_all(split_path(out_path));
-
-        FILE* out_file = fopen(out_path.c_str(), "wb");
-        if (!out_file) {
-          LOG_R("ERROR Could not open %s for output\n", out_path.c_str());
-        } else {
-          // Copy the BOM over if needed.
-          if (source_file->use_utf8_bom) {
-            uint8_t bom[3] = {239, 187, 191};
-            fwrite(bom, 1, 3, out_file);
-          }
-
-          fwrite(out_string.data(), 1, out_string.size(), out_file);
-          fclose(out_file);
+      FILE* out_file = fopen(out_path.c_str(), "wb");
+      if (!out_file) {
+        LOG_R("ERROR Could not open %s for output\n", out_path.c_str());
+      } else {
+        // Copy the BOM over if needed.
+        if (source_file->use_utf8_bom) {
+          uint8_t bom[3] = {239, 187, 191};
+          fwrite(bom, 1, 3, out_file);
         }
+
+        fwrite(out_string.data(), 1, out_string.size(), out_file);
+        fclose(out_file);
       }
     }
   }

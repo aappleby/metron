@@ -21,7 +21,7 @@ CHECK_RETURN Err merge_series(state_map& ma, state_map& mb, state_map& out);
 //------------------------------------------------------------------------------
 
 bool MtField::is_submod() const {
-  return (node.source->lib->has_module(type_name()));
+  return (node.source->lib->get_module(type_name()));
 }
 
 //------------------------------------------------------------------------------

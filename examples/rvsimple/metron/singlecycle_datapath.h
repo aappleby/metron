@@ -22,27 +22,51 @@
 using namespace rv_config;
 
 class singlecycle_datapath {
- public:
+public:
 
-  logic<32> pc;
-  logic<1> reset;
-  logic<32> inst;
-  logic<1> regfile_write_enable;
+  logic<1>  reset;
   logic<32> data_mem_read_data;
-  logic<3> reg_writeback_select;
-  logic<2> next_pc_select;
-  logic<1> pc_write_enable;
+  logic<32> data_mem_address;
+  logic<32> data_mem_write_data;
 
-  logic<7> inst_opcode;
-  logic<3> inst_funct3;
-  logic<7> inst_funct7;
-  logic<32> alu_result;
-  logic<5> alu_function;
-  logic<1> alu_operand_a_select;
-  logic<1> alu_operand_b_select;
+  logic<32> inst;
+  logic<32> pc;
+  logic<7>  inst_opcode;
+  logic<3>  inst_funct3;
+  logic<7>  inst_funct7;
+  logic<1>  alu_result_equal_zero;
 
-  logic<32> temp_rs1_data;
-  logic<32> temp_rs2_data;
+  // control signals
+  logic<1>  pc_write_enable;
+  logic<1>  regfile_write_enable;
+  logic<1>  alu_operand_a_select;
+  logic<1>  alu_operand_b_select;
+  logic<3>  reg_writeback_select;
+  logic<2>  next_pc_select;
+  logic<5>  alu_function;
+
+#if 0
+  // register file inputs and outputs
+  logic [31:0]  rd_data;
+  logic [31:0]  rs1_data;
+  logic [31:0]  rs2_data;
+  logic  [4:0]  inst_rd;
+  logic  [4:0]  inst_rs1;
+  logic  [4:0]  inst_rs2;
+
+  // program counter signals
+  logic [31:0] pc_plus_4;
+  logic [31:0] pc_plus_immediate;
+  logic [31:0] next_pc;
+
+  // ALU signals
+  logic [31:0] alu_operand_a;
+  logic [31:0] alu_operand_b;
+  logic [31:0] alu_result;
+
+  // immediate
+  logic [31:0] immediate;
+#endif
 
   //----------------------------------------
 
@@ -88,14 +112,6 @@ class singlecycle_datapath {
 
     //----------
 
-    alu_result = alu_core.result;
-    temp_rs1_data = regs.rs1_data;
-    temp_rs2_data = regs.rs2_data;
-  }
-
-  //----------------------------------------
-
-  void tock3() {
     adder_pc_plus_4.operand_a = b32(0x00000004);
     adder_pc_plus_4.operand_b = program_counter.value;
     adder_pc_plus_4.tock();
@@ -104,10 +120,20 @@ class singlecycle_datapath {
     adder_pc_plus_immediate.operand_b = igen.immediate;
     adder_pc_plus_immediate.tock();
 
+    //----------
+
+    alu_result_equal_zero = alu_core.result_equal_zero;
+    data_mem_address    = alu_core.result;
+    data_mem_write_data = regs.rs2_data;
+  }
+
+  //----------------------------------------
+
+  void tock3() {
     mux_next_pc_select.sel = next_pc_select;
     mux_next_pc_select.in0 = adder_pc_plus_4.result;
     mux_next_pc_select.in1 = adder_pc_plus_immediate.result;
-    mux_next_pc_select.in2 = cat(b31(alu_result, 1), b1(0b0));
+    mux_next_pc_select.in2 = cat(b31(alu_core.result, 1), b1(0b0));
     mux_next_pc_select.in3 = b32(0b0);
     mux_next_pc_select.tock();
 
@@ -117,7 +143,7 @@ class singlecycle_datapath {
     program_counter.tock();
 
     mux_reg_writeback.sel = reg_writeback_select;
-    mux_reg_writeback.in0 = alu_result;
+    mux_reg_writeback.in0 = alu_core.result;
     mux_reg_writeback.in1 = data_mem_read_data;
     mux_reg_writeback.in2 = adder_pc_plus_4.result;
     mux_reg_writeback.in3 = igen.immediate;

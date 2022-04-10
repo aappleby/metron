@@ -24,45 +24,48 @@ import rv_config::*;
 module singlecycle_datapath
 (
   input logic clock,
-  input logic reset,
-  input logic[31:0] inst,
-  input logic regfile_write_enable,
+  input logic  reset,
   input logic[31:0] data_mem_read_data,
-  input logic[2:0] reg_writeback_select,
-  input logic[1:0] next_pc_select,
-  input logic pc_write_enable,
-  input logic[4:0] alu_function,
-  input logic alu_operand_a_select,
-  input logic alu_operand_b_select,
+  input logic[31:0] inst,
+  input logic  pc_write_enable,
+  input logic  regfile_write_enable,
+  input logic  alu_operand_a_select,
+  input logic  alu_operand_b_select,
+  input logic[2:0]  reg_writeback_select,
+  input logic[1:0]  next_pc_select,
+  input logic[4:0]  alu_function,
+  output logic[31:0] data_mem_address,
+  output logic[31:0] data_mem_write_data,
   output logic[31:0] pc,
-  output logic[6:0] inst_opcode,
-  output logic[2:0] inst_funct3,
-  output logic[6:0] inst_funct7,
-  output logic[31:0] alu_result,
-  output logic[31:0] temp_rs1_data,
-  output logic[31:0] temp_rs2_data
+  output logic[6:0]  inst_opcode,
+  output logic[2:0]  inst_funct3,
+  output logic[6:0]  inst_funct7,
+  output logic  alu_result_equal_zero
 );
- /*public:*/
+/*public:*/
 
-  /*logic<32> pc;*/
-  /*logic<1> reset;*/
-  /*logic<32> inst;*/
-  /*logic<1> regfile_write_enable;*/
+  /*logic<1>  reset;*/
   /*logic<32> data_mem_read_data;*/
-  /*logic<3> reg_writeback_select;*/
-  /*logic<2> next_pc_select;*/
-  /*logic<1> pc_write_enable;*/
+  /*logic<32> data_mem_address;*/
+  /*logic<32> data_mem_write_data;*/
 
-  /*logic<7> inst_opcode;*/
-  /*logic<3> inst_funct3;*/
-  /*logic<7> inst_funct7;*/
-  /*logic<32> alu_result;*/
-  /*logic<5> alu_function;*/
-  /*logic<1> alu_operand_a_select;*/
-  /*logic<1> alu_operand_b_select;*/
+  /*logic<32> inst;*/
+  /*logic<32> pc;*/
+  /*logic<7>  inst_opcode;*/
+  /*logic<3>  inst_funct3;*/
+  /*logic<7>  inst_funct7;*/
+  /*logic<1>  alu_result_equal_zero;*/
 
-  /*logic<32> temp_rs1_data;*/
-  /*logic<32> temp_rs2_data;*/
+  // control signals
+  /*logic<1>  pc_write_enable;*/
+  /*logic<1>  regfile_write_enable;*/
+  /*logic<1>  alu_operand_a_select;*/
+  /*logic<1>  alu_operand_b_select;*/
+  /*logic<3>  reg_writeback_select;*/
+  /*logic<2>  next_pc_select;*/
+  /*logic<5>  alu_function;*/
+
+
 
   //----------------------------------------
 
@@ -108,14 +111,6 @@ module singlecycle_datapath
 
     //----------
 
-    alu_result = alu_core_result;
-    temp_rs1_data = regs_rs1_data;
-    temp_rs2_data = regs_rs2_data;
-  end
-
-  //----------------------------------------
-
-  always_comb begin /*tock3*/
     adder_pc_plus_4_operand_a = 32'h00000004;
     adder_pc_plus_4_operand_b = program_counter_value;
     /*adder_pc_plus_4.tock()*/;
@@ -124,10 +119,20 @@ module singlecycle_datapath
     adder_pc_plus_immediate_operand_b = igen_immediate;
     /*adder_pc_plus_immediate.tock()*/;
 
+    //----------
+
+    alu_result_equal_zero = alu_core_result_equal_zero;
+    data_mem_address    = alu_core_result;
+    data_mem_write_data = regs_rs2_data;
+  end
+
+  //----------------------------------------
+
+  always_comb begin /*tock3*/
     mux_next_pc_select_sel = next_pc_select;
     mux_next_pc_select_in0 = adder_pc_plus_4_result;
     mux_next_pc_select_in1 = adder_pc_plus_immediate_result;
-    mux_next_pc_select_in2 = {alu_result[31:1], 1'b0};
+    mux_next_pc_select_in2 = {alu_core.result[31:1], 1'b0};
     mux_next_pc_select_in3 = 32'b0;
     /*mux_next_pc_select.tock()*/;
 
@@ -137,7 +142,7 @@ module singlecycle_datapath
     /*program_counter.tock()*/;
 
     mux_reg_writeback_sel = reg_writeback_select;
-    mux_reg_writeback_in0 = alu_result;
+    mux_reg_writeback_in0 = alu_core_result;
     mux_reg_writeback_in1 = data_mem_read_data;
     mux_reg_writeback_in2 = adder_pc_plus_4_result;
     mux_reg_writeback_in3 = igen_immediate;

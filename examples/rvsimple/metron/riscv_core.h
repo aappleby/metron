@@ -48,18 +48,12 @@ public:
     dmem.read_enable  = ctlpath.data_mem_read_enable;
     dmem.write_enable = ctlpath.data_mem_write_enable;
     dmem.data_format  = datapath.inst_funct3;
-    dmem.address      = datapath.alu_result;
-    dmem.write_data   = datapath.temp_rs2_data;
+    dmem.address      = datapath.data_mem_address;
+    dmem.write_data   = datapath.data_mem_write_data;
     dmem.tock1();
 
-    ctlpath.alu_result_equal_zero = datapath.alu_result == 0;
+    ctlpath.alu_result_equal_zero = datapath.alu_result_equal_zero;
     ctlpath.tock2();
-
-    datapath.regfile_write_enable = ctlpath.regfile_write_enable;
-    datapath.reg_writeback_select = ctlpath.reg_writeback_select;
-    datapath.next_pc_select = ctlpath.next_pc_select;
-    datapath.pc_write_enable = ctlpath.pc_write_enable;
-    datapath.reset = reset;
 
     //----------
 
@@ -74,7 +68,12 @@ public:
     dmem.bus_read_data = bus_read_data;
     dmem.tock2();
 
-    datapath.data_mem_read_data = dmem.read_data;
+    datapath.regfile_write_enable = ctlpath.regfile_write_enable;
+    datapath.reg_writeback_select = ctlpath.reg_writeback_select;
+    datapath.next_pc_select       = ctlpath.next_pc_select;
+    datapath.pc_write_enable      = ctlpath.pc_write_enable;
+    datapath.reset                = reset;
+    datapath.data_mem_read_data   = dmem.read_data;
     datapath.tock3();
   }
 

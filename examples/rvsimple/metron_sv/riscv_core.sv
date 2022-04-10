@@ -60,18 +60,12 @@ module riscv_core
     dmem_read_enable  = ctlpath_data_mem_read_enable;
     dmem_write_enable = ctlpath_data_mem_write_enable;
     dmem_data_format  = datapath_inst_funct3;
-    dmem_address      = datapath_alu_result;
-    dmem_write_data   = datapath_temp_rs2_data;
+    dmem_address      = datapath_data_mem_address;
+    dmem_write_data   = datapath_data_mem_write_data;
     /*dmem.tock1()*/;
 
-    ctlpath_alu_result_equal_zero = datapath_alu_result == 0;
+    ctlpath_alu_result_equal_zero = datapath_alu_result_equal_zero;
     /*ctlpath.tock2()*/;
-
-    datapath_regfile_write_enable = ctlpath_regfile_write_enable;
-    datapath_reg_writeback_select = ctlpath_reg_writeback_select;
-    datapath_next_pc_select = ctlpath_next_pc_select;
-    datapath_pc_write_enable = ctlpath_pc_write_enable;
-    datapath_reset = reset;
 
     //----------
 
@@ -86,7 +80,12 @@ module riscv_core
     dmem_bus_read_data = bus_read_data;
     /*dmem.tock2()*/;
 
-    datapath_data_mem_read_data = dmem_read_data;
+    datapath_regfile_write_enable = ctlpath_regfile_write_enable;
+    datapath_reg_writeback_select = ctlpath_reg_writeback_select;
+    datapath_next_pc_select       = ctlpath_next_pc_select;
+    datapath_pc_write_enable      = ctlpath_pc_write_enable;
+    datapath_reset                = reset;
+    datapath_data_mem_read_data   = dmem_read_data;
     /*datapath.tock3()*/;
   end
 
@@ -97,41 +96,41 @@ module riscv_core
     // Inputs
     .clock(clock),
     .reset(datapath_reset), 
-    .inst(datapath_inst), 
-    .regfile_write_enable(datapath_regfile_write_enable), 
     .data_mem_read_data(datapath_data_mem_read_data), 
-    .reg_writeback_select(datapath_reg_writeback_select), 
-    .next_pc_select(datapath_next_pc_select), 
+    .inst(datapath_inst), 
     .pc_write_enable(datapath_pc_write_enable), 
-    .alu_function(datapath_alu_function), 
+    .regfile_write_enable(datapath_regfile_write_enable), 
     .alu_operand_a_select(datapath_alu_operand_a_select), 
     .alu_operand_b_select(datapath_alu_operand_b_select), 
+    .reg_writeback_select(datapath_reg_writeback_select), 
+    .next_pc_select(datapath_next_pc_select), 
+    .alu_function(datapath_alu_function), 
     // Outputs
+    .data_mem_address(datapath_data_mem_address), 
+    .data_mem_write_data(datapath_data_mem_write_data), 
     .pc(datapath_pc), 
     .inst_opcode(datapath_inst_opcode), 
     .inst_funct3(datapath_inst_funct3), 
     .inst_funct7(datapath_inst_funct7), 
-    .alu_result(datapath_alu_result), 
-    .temp_rs1_data(datapath_temp_rs1_data), 
-    .temp_rs2_data(datapath_temp_rs2_data)
+    .alu_result_equal_zero(datapath_alu_result_equal_zero)
   );
-  logic datapath_reset;
-  logic[31:0] datapath_inst;
-  logic datapath_regfile_write_enable;
+  logic  datapath_reset;
   logic[31:0] datapath_data_mem_read_data;
-  logic[2:0] datapath_reg_writeback_select;
-  logic[1:0] datapath_next_pc_select;
-  logic datapath_pc_write_enable;
-  logic[4:0] datapath_alu_function;
-  logic datapath_alu_operand_a_select;
-  logic datapath_alu_operand_b_select;
+  logic[31:0] datapath_inst;
+  logic  datapath_pc_write_enable;
+  logic  datapath_regfile_write_enable;
+  logic  datapath_alu_operand_a_select;
+  logic  datapath_alu_operand_b_select;
+  logic[2:0]  datapath_reg_writeback_select;
+  logic[1:0]  datapath_next_pc_select;
+  logic[4:0]  datapath_alu_function;
+  logic[31:0] datapath_data_mem_address;
+  logic[31:0] datapath_data_mem_write_data;
   logic[31:0] datapath_pc;
-  logic[6:0] datapath_inst_opcode;
-  logic[2:0] datapath_inst_funct3;
-  logic[6:0] datapath_inst_funct7;
-  logic[31:0] datapath_alu_result;
-  logic[31:0] datapath_temp_rs1_data;
-  logic[31:0] datapath_temp_rs2_data;
+  logic[6:0]  datapath_inst_opcode;
+  logic[2:0]  datapath_inst_funct3;
+  logic[6:0]  datapath_inst_funct7;
+  logic  datapath_alu_result_equal_zero;
 
   singlecycle_ctlpath   ctlpath(
     // Inputs

@@ -15,29 +15,28 @@ module singlecycle_control
   input logic clock,
   input logic[6:0] inst_opcode,
   input logic take_branch,
-  output logic[1:0] next_pc_select,
   output logic pc_write_enable,
   output logic regfile_write_enable,
   output logic alu_operand_a_select,
   output logic alu_operand_b_select,
-  output logic[1:0] alu_op_type2,
+  output logic[1:0] alu_op_type,
   output logic data_mem_read_enable,
   output logic data_mem_write_enable,
-  output logic[2:0] reg_writeback_select
+  output logic[2:0] reg_writeback_select,
+  output logic[1:0] next_pc_select
 );
  /*public:*/
   /*logic<7> inst_opcode;*/
   /*logic<1> take_branch;*/
-
-  /*logic<2> next_pc_select;*/
   /*logic<1> pc_write_enable;*/
   /*logic<1> regfile_write_enable;*/
   /*logic<1> alu_operand_a_select;*/
   /*logic<1> alu_operand_b_select;*/
-  /*logic<2> alu_op_type2;*/
+  /*logic<2> alu_op_type;*/
   /*logic<1> data_mem_read_enable;*/
   /*logic<1> data_mem_write_enable;*/
   /*logic<3> reg_writeback_select;*/
+  /*logic<2> next_pc_select;*/
 
   always_comb begin /*tock_next_pc_select*/
     import rv_constants::*;
@@ -119,17 +118,17 @@ module singlecycle_control
 
     // clang-format off
     case (inst_opcode) 
-      /*case*/ OPCODE_AUIPC:    alu_op_type2 = CTL_ALU_ADD; /*break;*/
-      /*case*/ OPCODE_JAL:      alu_op_type2 = CTL_ALU_ADD; /*break;*/
+      /*case*/ OPCODE_AUIPC:    alu_op_type = CTL_ALU_ADD; /*break;*/
+      /*case*/ OPCODE_JAL:      alu_op_type = CTL_ALU_ADD; /*break;*/
 
-      /*case*/ OPCODE_OP:       alu_op_type2 = CTL_ALU_OP; /*break;*/
-      /*case*/ OPCODE_BRANCH:   alu_op_type2 = CTL_ALU_BRANCH; /*break;*/
+      /*case*/ OPCODE_OP:       alu_op_type = CTL_ALU_OP; /*break;*/
+      /*case*/ OPCODE_BRANCH:   alu_op_type = CTL_ALU_BRANCH; /*break;*/
 
-      /*case*/ OPCODE_LOAD:     alu_op_type2 = CTL_ALU_ADD; /*break;*/
-      /*case*/ OPCODE_STORE:    alu_op_type2 = CTL_ALU_ADD; /*break;*/
-      /*case*/ OPCODE_OP_IMM:   alu_op_type2 = CTL_ALU_OP_IMM; /*break;*/
-      /*case*/ OPCODE_JALR:     alu_op_type2 = CTL_ALU_ADD; /*break;*/
-      default:              alu_op_type2 = 2'bx; /*break;*/
+      /*case*/ OPCODE_LOAD:     alu_op_type = CTL_ALU_ADD; /*break;*/
+      /*case*/ OPCODE_STORE:    alu_op_type = CTL_ALU_ADD; /*break;*/
+      /*case*/ OPCODE_OP_IMM:   alu_op_type = CTL_ALU_OP_IMM; /*break;*/
+      /*case*/ OPCODE_JALR:     alu_op_type = CTL_ALU_ADD; /*break;*/
+      default:              alu_op_type = 2'bx; /*break;*/
     endcase
     // clang-format on
   end

@@ -69,7 +69,7 @@ module singlecycle_datapath
   /*logic<32> temp_rs2_data;*/
 
 
-  always_comb begin /*tock_inst*/
+  always_comb begin /*tock1*/
     idec_inst = inst;
     /*idec.tock()*/;
 
@@ -83,7 +83,7 @@ module singlecycle_datapath
 
   //----------------------------------------
 
-  always_comb begin /*tock_alu_result*/
+  always_comb begin /*tock2*/
 
     regs_rs1_address = idec_inst_rs1;
     regs_rs2_address = idec_inst_rs2;
@@ -113,7 +113,7 @@ module singlecycle_datapath
 
   //----------------------------------------
 
-  always_comb begin /*tock*/
+  always_comb begin /*tock3*/
     adder_pc_plus_4_operand_a = 32'h00000004;
     adder_pc_plus_4_operand_b = program_counter_value;
     /*adder_pc_plus_4.tock()*/;
@@ -135,7 +135,6 @@ module singlecycle_datapath
     /*program_counter.tock()*/;
 
     mux_reg_writeback_sel = reg_writeback_select;
-
     mux_reg_writeback_in0 = alu_result;
     mux_reg_writeback_in1 = data_mem_read_data;
     mux_reg_writeback_in2 = adder_pc_plus_4_result;

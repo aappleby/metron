@@ -34,17 +34,12 @@ module data_memory_interface
   /*logic<32> read_data;*/
   /*logic<4> bus_byte_enable;*/
 
-  always_comb begin /*tock_inputs*/
+  always_comb begin /*tock1*/
     address2 = address;
     data_format2 = data_format;
-  end
-
-  always_comb begin /*tock_bus_write_data*/
     bus_write_data = write_data << (8 * 2'(address2));
-  end
 
-  // calculate byte enable
-  always_comb begin /*tock_bus_byte_enable*/
+    // calculate byte enable
     // clang-format off
     case (2'(data_format2)) 
       /*case*/ 2'b00: bus_byte_enable = 4'b0001 << 2'(address2); /*break;*/
@@ -56,7 +51,7 @@ module data_memory_interface
   end
 
   // correct for unaligned accesses
-  always_comb begin /*tock_read_data*/
+  always_comb begin /*tock2*/
     logic[31:0] position_fix;
     position_fix = 32'(bus_read_data >> (8 * 2'(address2)));
 

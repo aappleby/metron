@@ -22,9 +22,9 @@ module riscv_core
   output logic[31:0] alu_result,
   output logic[31:0] bus_write_data,
   output logic[31:0] pc,
-  output logic bus_write_enable2,
-  output logic[3:0] bus_byte_enable2,
-  output logic bus_read_enable2
+  output logic bus_write_enable,
+  output logic[3:0] bus_byte_enable,
+  output logic bus_read_enable
 );
  /*public:*/
   /*logic<32> inst;*/
@@ -34,55 +34,53 @@ module riscv_core
   /*logic<32> bus_write_data;*/
 
   /*logic<32> pc;*/
-  /*logic<1> bus_write_enable2;*/
-  /*logic<4> bus_byte_enable2;*/
-  /*logic<1> bus_read_enable2;*/
+  /*logic<1> bus_write_enable;*/
+  /*logic<4> bus_byte_enable;*/
+  /*logic<1> bus_read_enable;*/
 
-  always_comb begin /*tock_pc*/ pc = datapath_pc; end
+  always_comb begin /*tock1*/ pc = datapath_pc; end
 
-  always_comb begin /*tock1*/
+  always_comb begin /*tock2*/
     datapath_inst = inst;
-    /*datapath.tock_inst()*/;
+    /*datapath.tock1()*/;
 
     ctlpath_inst_opcode = datapath_inst_opcode;
     ctlpath_inst_funct3 = datapath_inst_funct3;
     ctlpath_inst_funct7 = datapath_inst_funct7;
     /*ctlpath.tock1()*/;
 
-    datapath_alu_function = ctlpath_alu_function;
+    datapath_alu_function         = ctlpath_alu_function;
     datapath_alu_operand_a_select = ctlpath_alu_operand_a_select;
     datapath_alu_operand_b_select = ctlpath_alu_operand_b_select;
-    /*datapath.tock_alu_result()*/;
+    /*datapath.tock2()*/;
 
     dmem_address = datapath_alu_result;
     dmem_data_format = datapath_inst_funct3;
     dmem_write_data = datapath_temp_rs2_data;
-    /*dmem.tock_inputs()*/;
-    /*dmem.tock_bus_write_data()*/;
-    /*dmem.tock_bus_byte_enable()*/;
-
-    bus_write_data    = dmem_bus_write_data;
-    bus_write_enable2 = ctlpath_data_mem_write_enable;
-    bus_byte_enable2  = dmem_bus_byte_enable;
-    bus_read_enable2  = ctlpath_data_mem_read_enable;
+    /*dmem.tock1()*/;
 
     alu_result = datapath_alu_result;
-  end
-
-  always_comb begin /*tock2*/
     ctlpath_alu_result_equal_zero = alu_result == 0;
     /*ctlpath.tock2()*/;
 
-    dmem_bus_read_data = bus_read_data;
-    /*dmem.tock_read_data()*/;
-
-    datapath_reset = reset;
     datapath_regfile_write_enable = ctlpath_regfile_write_enable;
-    datapath_data_mem_read_data = dmem_read_data;
     datapath_reg_writeback_select = ctlpath_reg_writeback_select;
     datapath_next_pc_select = ctlpath_next_pc_select;
     datapath_pc_write_enable = ctlpath_pc_write_enable;
-    /*datapath.tock()*/;
+    datapath_reset = reset;
+
+    bus_write_data    = dmem_bus_write_data;
+    bus_write_enable = ctlpath_data_mem_write_enable;
+    bus_byte_enable  = dmem_bus_byte_enable;
+    bus_read_enable  = ctlpath_data_mem_read_enable;
+  end
+
+  always_comb begin /*tock3*/
+    dmem_bus_read_data = bus_read_data;
+    /*dmem.tock2()*/;
+
+    datapath_data_mem_read_data = dmem_read_data;
+    /*datapath.tock3()*/;
   end
 
   //----------------------------------------

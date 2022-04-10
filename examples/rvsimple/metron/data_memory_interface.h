@@ -22,17 +22,12 @@ class data_memory_interface {
   logic<32> read_data;
   logic<4> bus_byte_enable;
 
-  void tock_inputs() {
+  void tock1() {
     address2 = address;
     data_format2 = data_format;
-  }
-
-  void tock_bus_write_data() {
     bus_write_data = write_data << (8 * b2(address2));
-  }
 
-  // calculate byte enable
-  void tock_bus_byte_enable() {
+    // calculate byte enable
     // clang-format off
     switch (b2(data_format2)) {
       case 0b00: bus_byte_enable = b4(0b0001) << b2(address2); break;
@@ -44,7 +39,7 @@ class data_memory_interface {
   }
 
   // correct for unaligned accesses
-  void tock_read_data() {
+  void tock2() {
     logic<32> position_fix = b32(bus_read_data >> (8 * b2(address2)));
 
     // sign-extend if necessary

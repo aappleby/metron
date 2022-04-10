@@ -49,7 +49,7 @@ class singlecycle_datapath {
   logic<32> temp_rs2_data;
 
 
-  void tock_inst() {
+  void tock1() {
     idec.inst = inst;
     idec.tock();
 
@@ -63,7 +63,7 @@ class singlecycle_datapath {
 
   //----------------------------------------
 
-  void tock_alu_result() {
+  void tock2() {
 
     regs.rs1_address = idec.inst_rs1;
     regs.rs2_address = idec.inst_rs2;
@@ -93,7 +93,7 @@ class singlecycle_datapath {
 
   //----------------------------------------
 
-  void tock() {
+  void tock3() {
     adder_pc_plus_4.operand_a = b32(0x00000004);
     adder_pc_plus_4.operand_b = program_counter.value;
     adder_pc_plus_4.tock();
@@ -115,7 +115,6 @@ class singlecycle_datapath {
     program_counter.tock();
 
     mux_reg_writeback.sel = reg_writeback_select;
-
     mux_reg_writeback.in0 = alu_result;
     mux_reg_writeback.in1 = data_mem_read_data;
     mux_reg_writeback.in2 = adder_pc_plus_4.result;

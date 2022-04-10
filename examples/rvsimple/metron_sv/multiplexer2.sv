@@ -20,15 +20,17 @@ module multiplexer2
   output logic[WIDTH-1:0] out
 );
  /*public:*/
-  always_comb begin
-    logic[WIDTH-1:0] result;
-    /*logic<WIDTH> result;*/
+  /*logic<WIDTH> out;*/
+  /*logic<1> sel;*/
+  /*logic<WIDTH> in0;*/
+  /*logic<WIDTH> in1;*/
+  
+  always_comb begin /*tock*/
     case (sel) 
-      /*case*/ 0:  result = in0; /*break;*/
-      /*case*/ 1:  result = in1; /*break;*/
-      default: result = WIDTH'(1'bx); /*break;*/
+      /*case*/ 0:  out = in0; /*break;*/
+      /*case*/ 1:  out = in1; /*break;*/
+      default: out = WIDTH'(1'bx); /*break;*/
     endcase
-    out = result;
   end
 endmodule
 

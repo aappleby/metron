@@ -14,7 +14,11 @@
 template <int WIDTH = 32, int CHANNELS = 2, int SEL_BITS = clog2(CHANNELS)>
 class multiplexer {
  public:
-  logic<WIDTH> out(logic<WIDTH> in_bus[CHANNELS], logic<SEL_BITS> sel) const {
+  logic<WIDTH> out;
+  logic<WIDTH> in_bus[CHANNELS];
+  logic<SEL_BITS> sel;
+  
+  void tock() {
     out = in_bus[sel];
   }
 };

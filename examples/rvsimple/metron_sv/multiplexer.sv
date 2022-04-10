@@ -20,7 +20,11 @@ module multiplexer
   output logic[WIDTH-1:0] out
 );
  /*public:*/
-  always_comb begin
+  /*logic<WIDTH> out;*/
+  /*logic<WIDTH> in_bus[CHANNELS];*/
+  /*logic<SEL_BITS> sel;*/
+  
+  always_comb begin /*tock*/
     out = in_bus[sel];
   end
 endmodule

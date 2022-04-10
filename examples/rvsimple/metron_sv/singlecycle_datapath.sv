@@ -102,15 +102,19 @@ module singlecycle_datapath
     temp_rs2_data = regs_rs2_data;
 
     alu_core_alu_function = alu_function;
+
     mux_operand_a_sel = alu_operand_a_select;
     mux_operand_a_in0 = temp_rs1_data;
     mux_operand_a_in1 = program_counter_value;
+    /*mux_operand_a.tock()*/;
     alu_core_operand_a = mux_operand_a_out;
+
     mux_operand_b_sel = alu_operand_b_select;
     mux_operand_b_in0 = temp_rs2_data;
     mux_operand_b_in1 = inst_immediate;
-    alu_core_operand_b =
-        mux_operand_b_out;
+    /*mux_operand_b.tock()*/;
+
+    alu_core_operand_b = mux_operand_b_out;
 
     /*alu_core.tock()*/;
     alu_result = alu_core_result;

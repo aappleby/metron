@@ -64,9 +64,7 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_in1;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_out;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_in0;
-    IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_out;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_in0;
-    IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_out;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_reg_writeback_in2;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_reg_writeback_out;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__igen_immediate;
@@ -75,10 +73,9 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__unnamedblk1__DOT__pc_data;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__unnamedblk1__DOT__reg_data;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select__DOT__unnamedblk1__DOT__result;
-    IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a__DOT__unnamedblk1__DOT__result;
-    IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b__DOT__unnamedblk1__DOT__result;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_reg_writeback__DOT__unnamedblk1__DOT__result;
     CData/*1:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__control_next_pc_select;
+    CData/*0:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select;
     CData/*0:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select;
     CData/*1:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_op_type2;
     CData/*2:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__control_reg_writeback_select;
@@ -123,6 +120,17 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
     __Vtableidx5 = (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data);
     toplevel__DOT__core__DOT__ctlpath__DOT__control_reg_writeback_select 
         = Vtoplevel__ConstPool__TABLE_h7ffbd43f_0[__Vtableidx5];
+    toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select 
+        = (((((((((0x17U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data)) 
+                  | (0x6fU == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
+                 | (0x33U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
+                | (0x37U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
+               | (0x63U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
+              | (3U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
+             | (0x23U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
+            | (0x13U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
+           & ((0x17U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data)) 
+              | (0x6fU == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))));
     toplevel__DOT__core__DOT__datapath_temp_rs1_data 
         = vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs
         [(0x1fU & (vlSelf->toplevel__DOT__text_memory_bus_read_data 
@@ -132,9 +140,6 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
     __Vtableidx3 = (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data);
     toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select 
         = Vtoplevel__ConstPool__TABLE_h0f0752ae_0[__Vtableidx3];
-    __Vtableidx4 = (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data);
-    toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_op_type2 
-        = Vtoplevel__ConstPool__TABLE_hf7367149_0[__Vtableidx4];
     toplevel__DOT__core__DOT__datapath_temp_rs2_data 
         = vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs
         [(0x1fU & (vlSelf->toplevel__DOT__text_memory_bus_read_data 
@@ -261,31 +266,14 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
                                                       & (vlSelf->toplevel__DOT__text_memory_bus_read_data 
                                                          >> 0x14U))))))
                     : 0U)));
-    toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a__DOT__unnamedblk1__DOT__result 
-        = ((((((((((0x17U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data)) 
-                   | (0x6fU == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
-                  | (0x33U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
-                 | (0x37U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
-                | (0x63U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
-               | (3U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
-              | (0x23U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
-             | (0x13U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
-            & ((0x17U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data)) 
-               | (0x6fU == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))))
-            ? ((((((((((0x17U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data)) 
-                       | (0x6fU == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
-                      | (0x33U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
-                     | (0x37U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
-                    | (0x63U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
-                   | (3U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
-                  | (0x23U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
-                 | (0x13U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))) 
-                & ((0x17U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data)) 
-                   | (0x6fU == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data))))
-                ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
-                : 0U) : toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_in0);
-    toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_out 
-        = toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a__DOT__unnamedblk1__DOT__result;
+    __Vtableidx4 = (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data);
+    toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_op_type2 
+        = Vtoplevel__ConstPool__TABLE_hf7367149_0[__Vtableidx4];
+    toplevel__DOT__core__DOT__datapath__DOT__unnamedblk1__DOT__pc_plus_imm 
+        = (vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value 
+           + toplevel__DOT__core__DOT__datapath__DOT__igen_immediate);
+    toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_in1 
+        = toplevel__DOT__core__DOT__datapath__DOT__unnamedblk1__DOT__pc_plus_imm;
     toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__default_funct 
         = (((((((((0U == (7U & (vlSelf->toplevel__DOT__text_memory_bus_read_data 
                                 >> 0xcU))) | (1U == 
@@ -406,18 +394,6 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
                          : ((1U == (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_op_type2))
                              ? (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__branch_funct)
                              : 0U))));
-    toplevel__DOT__core__DOT__datapath__DOT__unnamedblk1__DOT__pc_plus_imm 
-        = (vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value 
-           + toplevel__DOT__core__DOT__datapath__DOT__igen_immediate);
-    toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_in1 
-        = toplevel__DOT__core__DOT__datapath__DOT__unnamedblk1__DOT__pc_plus_imm;
-    toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b__DOT__unnamedblk1__DOT__result 
-        = ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
-            ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
-                ? toplevel__DOT__core__DOT__datapath__DOT__igen_immediate
-                : 0U) : toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_in0);
-    toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_out 
-        = toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b__DOT__unnamedblk1__DOT__result;
     vlSelf->toplevel__DOT__core__DOT__datapath__DOT__alu_core_result 
         = (((((((((1U == (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl_alu_function)) 
                   | (2U == (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl_alu_function))) 
@@ -428,37 +404,118 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
              | (7U == (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl_alu_function))) 
             | (8U == (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl_alu_function)))
             ? ((1U == (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl_alu_function))
-                ? (toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_out 
-                   + toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_out)
+                ? (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
+                     ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
+                         ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
+                         : 0U) : toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_in0) 
+                   + ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
+                       ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
+                           ? toplevel__DOT__core__DOT__datapath__DOT__igen_immediate
+                           : 0U) : toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_in0))
                 : ((2U == (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl_alu_function))
-                    ? (toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_out 
-                       - toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_out)
+                    ? (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
+                         ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
+                             ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
+                             : 0U) : toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_in0) 
+                       - ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
+                           ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
+                               ? toplevel__DOT__core__DOT__datapath__DOT__igen_immediate
+                               : 0U) : toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_in0))
                     : ((3U == (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl_alu_function))
-                        ? (toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_out 
-                           << (0x1fU & toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_out))
+                        ? (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
+                             ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
+                                 ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
+                                 : 0U) : toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_in0) 
+                           << (0x1fU & ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
+                                         ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
+                                             ? toplevel__DOT__core__DOT__datapath__DOT__igen_immediate
+                                             : 0U) : toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_in0)))
                         : ((4U == (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl_alu_function))
-                            ? (toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_out 
-                               >> (0x1fU & toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_out))
+                            ? (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
+                                 ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
+                                     ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
+                                     : 0U) : toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_in0) 
+                               >> (0x1fU & ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
+                                             ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
+                                                 ? toplevel__DOT__core__DOT__datapath__DOT__igen_immediate
+                                                 : 0U)
+                                             : toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_in0)))
                             : ((5U == (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl_alu_function))
-                                ? VL_SHIFTRS_III(32,32,5, toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_out, 
+                                ? VL_SHIFTRS_III(32,32,5, 
+                                                 ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
+                                                   ? 
+                                                  ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
+                                                    ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
+                                                    : 0U)
+                                                   : toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_in0), 
                                                  (0x1fU 
-                                                  & toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_out))
+                                                  & ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
+                                                      ? 
+                                                     ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
+                                                       ? toplevel__DOT__core__DOT__datapath__DOT__igen_immediate
+                                                       : 0U)
+                                                      : toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_in0)))
                                 : ((6U == (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl_alu_function))
-                                    ? (toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_out 
-                                       == toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_out)
+                                    ? (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
+                                         ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
+                                             ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
+                                             : 0U) : toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_in0) 
+                                       == ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
+                                            ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
+                                                ? toplevel__DOT__core__DOT__datapath__DOT__igen_immediate
+                                                : 0U)
+                                            : toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_in0))
                                     : ((7U == (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl_alu_function))
-                                        ? VL_LTS_III(32, toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_out, toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_out)
-                                        : (toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_out 
-                                           < toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_out))))))))
+                                        ? VL_LTS_III(32, 
+                                                     ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
+                                                       ? 
+                                                      ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
+                                                        ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
+                                                        : 0U)
+                                                       : toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_in0), 
+                                                     ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
+                                                       ? 
+                                                      ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
+                                                        ? toplevel__DOT__core__DOT__datapath__DOT__igen_immediate
+                                                        : 0U)
+                                                       : toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_in0))
+                                        : (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
+                                             ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
+                                                 ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
+                                                 : 0U)
+                                             : toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_in0) 
+                                           < ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
+                                               ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
+                                                   ? toplevel__DOT__core__DOT__datapath__DOT__igen_immediate
+                                                   : 0U)
+                                               : toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_in0)))))))))
             : ((9U == (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl_alu_function))
-                ? (toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_out 
-                   ^ toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_out)
+                ? (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
+                     ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
+                         ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
+                         : 0U) : toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_in0) 
+                   ^ ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
+                       ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
+                           ? toplevel__DOT__core__DOT__datapath__DOT__igen_immediate
+                           : 0U) : toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_in0))
                 : ((0xaU == (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl_alu_function))
-                    ? (toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_out 
-                       | toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_out)
+                    ? (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
+                         ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
+                             ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
+                             : 0U) : toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_in0) 
+                       | ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
+                           ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
+                               ? toplevel__DOT__core__DOT__datapath__DOT__igen_immediate
+                               : 0U) : toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_in0))
                     : ((0xbU == (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl_alu_function))
-                        ? (toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_out 
-                           & toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_out)
+                        ? (((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
+                             ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select)
+                                 ? vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value
+                                 : 0U) : toplevel__DOT__core__DOT__datapath__DOT__mux_operand_a_in0) 
+                           & ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
+                               ? ((IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_b_select)
+                                   ? toplevel__DOT__core__DOT__datapath__DOT__igen_immediate
+                                   : 0U) : toplevel__DOT__core__DOT__datapath__DOT__mux_operand_b_in0))
                         : 0U))));
     vlSelf->o_bus_address = vlSelf->toplevel__DOT__core__DOT__datapath__DOT__alu_core_result;
     vlSelf->toplevel__DOT__core__DOT__dmem_bus_write_data 

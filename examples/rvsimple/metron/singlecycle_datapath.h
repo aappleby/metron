@@ -76,10 +76,19 @@ class singlecycle_datapath {
     temp_rs2_data = regs.rs2_data(inst_rs2);
 
     alu_core.alu_function = alu_function;
-    alu_core.operand_a = mux_operand_a.out(alu_operand_a_select, temp_rs1_data,
-                                           program_counter.value());
-    alu_core.operand_b =
-        mux_operand_b.out(alu_operand_b_select, temp_rs2_data, inst_immediate);
+
+    mux_operand_a.sel = alu_operand_a_select;
+    mux_operand_a.in0 = temp_rs1_data;
+    mux_operand_a.in1 = program_counter.value();
+    mux_operand_a.tock();
+    alu_core.operand_a = mux_operand_a.out;
+
+    mux_operand_b.sel = alu_operand_b_select;
+    mux_operand_b.in0 = temp_rs2_data;
+    mux_operand_b.in1 = inst_immediate;
+    mux_operand_b.tock();
+
+    alu_core.operand_b = mux_operand_b.out;
 
     alu_core.tock();
     alu_result = alu_core.result;

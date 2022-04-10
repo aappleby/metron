@@ -64,8 +64,11 @@ class singlecycle_ctlpath {
     return control.reg_writeback_select();
   }
 
-  logic<2> next_pc_select() const {
-    logic<1> take_branch = transfer.take_branch(alu_result_equal_zero, inst_funct3);
+  logic<2> tock_next_pc_select() {
+    transfer.result_equal_zero = alu_result_equal_zero;
+    transfer.inst_funct3 = inst_funct3;
+    transfer.tock_take_branch();
+    logic<1> take_branch = transfer.take_branch;
     return control.next_pc_select(take_branch);
   }
 

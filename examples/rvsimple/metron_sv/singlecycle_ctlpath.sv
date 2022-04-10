@@ -28,7 +28,7 @@ module singlecycle_ctlpath
    output logic data_mem_read_enable,
    output logic data_mem_write_enable,
    output logic[2:0] reg_writeback_select,
-   output logic[1:0] next_pc_select
+   output logic[1:0] tock_next_pc_select
 );
  /*public:*/
 
@@ -80,13 +80,14 @@ module singlecycle_ctlpath
     reg_writeback_select = control_reg_writeback_select;
   end
 
-  always_comb begin
+  always_comb begin /*tock_next_pc_select*/
     logic take_branch;
     transfer_result_equal_zero = alu_result_equal_zero;
     transfer_inst_funct3 = inst_funct3;
+    /*transfer.tock_take_branch()*/;
     take_branch = transfer_take_branch;
     control_take_branch = take_branch;
-    next_pc_select = control_next_pc_select;
+    tock_next_pc_select = control_next_pc_select;
   end
 
   //----------------------------------------

@@ -45,6 +45,7 @@ VL_ATTR_COLD void Vtoplevel___024root___initial__TOP__0(Vtoplevel___024root* vlS
 }
 
 extern const VlUnpacked<CData/*0:0*/, 128> Vtoplevel__ConstPool__TABLE_h0f0752ae_0;
+extern const VlUnpacked<CData/*0:0*/, 16> Vtoplevel__ConstPool__TABLE_hfd21f17e_0;
 
 VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSelf) {
     if (false && vlSelf) {}  // Prevent unused
@@ -120,7 +121,6 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
     CData/*0:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__control__DOT__unnamedblk3__DOT__result;
     CData/*1:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__control__DOT__unnamedblk4__DOT__result;
     CData/*2:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__control__DOT__unnamedblk5__DOT__result;
-    CData/*0:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__transfer__DOT__unnamedblk1__DOT__result;
     CData/*4:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__default_funct;
     CData/*4:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__secondary_funct;
     CData/*4:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__op_funct;
@@ -134,6 +134,7 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
     IData/*31:0*/ toplevel__DOT__data_memory_bus__DOT__unnamedblk1__DOT__fetched;
     CData/*0:0*/ toplevel__DOT__data_memory_bus__DOT__unnamedblk1__DOT__is_data_memory;
     CData/*6:0*/ __Vtableidx1;
+    CData/*3:0*/ __Vtableidx2;
     // Body
     vlSelf->toplevel__DOT__core__DOT__datapath_pc_write_enable = 1U;
     toplevel__DOT__core__DOT__datapath__DOT__unnamedblk1__DOT__pc_plus_4 
@@ -552,21 +553,10 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
                             : 0U))));
     toplevel__DOT__core__DOT__dmem_bus_byte_enable 
         = toplevel__DOT__core__DOT__dmem__DOT__unnamedblk1__DOT__result;
-    toplevel__DOT__core__DOT__ctlpath__DOT__transfer__DOT__unnamedblk1__DOT__result 
-        = ((0U == (IData)(toplevel__DOT__core__DOT__ctlpath_inst_funct3))
-            ? (0U != toplevel__DOT__core_alu_result)
-            : ((1U == (IData)(toplevel__DOT__core__DOT__ctlpath_inst_funct3))
-                ? (0U == toplevel__DOT__core_alu_result)
-                : ((4U == (IData)(toplevel__DOT__core__DOT__ctlpath_inst_funct3))
-                    ? (0U != toplevel__DOT__core_alu_result)
-                    : ((5U == (IData)(toplevel__DOT__core__DOT__ctlpath_inst_funct3))
-                        ? (0U == toplevel__DOT__core_alu_result)
-                        : ((6U == (IData)(toplevel__DOT__core__DOT__ctlpath_inst_funct3))
-                            ? (0U != toplevel__DOT__core_alu_result)
-                            : ((7U == (IData)(toplevel__DOT__core__DOT__ctlpath_inst_funct3)) 
-                               & (0U == toplevel__DOT__core_alu_result)))))));
+    __Vtableidx2 = (((0U == toplevel__DOT__core_alu_result) 
+                     << 3U) | (IData)(toplevel__DOT__core__DOT__ctlpath_inst_funct3));
     toplevel__DOT__core__DOT__ctlpath__DOT__transfer_take_branch 
-        = toplevel__DOT__core__DOT__ctlpath__DOT__transfer__DOT__unnamedblk1__DOT__result;
+        = Vtoplevel__ConstPool__TABLE_hfd21f17e_0[__Vtableidx2];
     toplevel__DOT__unnamedblk1__DOT__alu_result2 = toplevel__DOT__core_tock_alu_result;
     vlSelf->toplevel__DOT__data_memory_bus_address 
         = toplevel__DOT__unnamedblk1__DOT__alu_result2;

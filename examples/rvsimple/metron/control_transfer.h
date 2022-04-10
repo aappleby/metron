@@ -13,19 +13,21 @@
 class control_transfer {
  public:
 
-  logic<1> take_branch(logic<1> result_equal_zero, logic<3> inst_funct3) const {
+   logic<1> take_branch;
+   logic<1> result_equal_zero;
+   logic<3> inst_funct3;
+
+  void tock_take_branch()  {
     using namespace rv_constants;
-    logic<1> result;
     switch (inst_funct3) {
-      case FUNCT3_BRANCH_EQ:  result = !result_equal_zero; break;
-      case FUNCT3_BRANCH_NE:  result = result_equal_zero; break;
-      case FUNCT3_BRANCH_LT:  result = !result_equal_zero; break;
-      case FUNCT3_BRANCH_GE:  result = result_equal_zero; break;
-      case FUNCT3_BRANCH_LTU: result = !result_equal_zero; break;
-      case FUNCT3_BRANCH_GEU: result = result_equal_zero; break;
-      default:                result = b1(DONTCARE); break;
+      case FUNCT3_BRANCH_EQ:  take_branch = !result_equal_zero; break;
+      case FUNCT3_BRANCH_NE:  take_branch = result_equal_zero; break;
+      case FUNCT3_BRANCH_LT:  take_branch = !result_equal_zero; break;
+      case FUNCT3_BRANCH_GE:  take_branch = result_equal_zero; break;
+      case FUNCT3_BRANCH_LTU: take_branch = !result_equal_zero; break;
+      case FUNCT3_BRANCH_GEU: take_branch = result_equal_zero; break;
+      default:                take_branch = b1(DONTCARE); break;
     }
-    return result;
   }
 };
 

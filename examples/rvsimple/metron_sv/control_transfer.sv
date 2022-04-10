@@ -12,27 +12,28 @@
 
 module control_transfer
 (
-  input logic clock,
-  input logic result_equal_zero,
-  input logic[2:0] inst_funct3,
-  output logic take_branch
+   input logic clock,
+   input logic result_equal_zero,
+   input logic[2:0] inst_funct3,
+   output logic take_branch
 );
  /*public:*/
 
-  always_comb begin
-    logic result;
+   /*logic<1> take_branch;*/
+   /*logic<1> result_equal_zero;*/
+   /*logic<3> inst_funct3;*/
+
+  always_comb  begin /*tock_take_branch*/
     import rv_constants::*;
-    /*logic<1> result;*/
     case (inst_funct3) 
-      /*case*/ FUNCT3_BRANCH_EQ:  result = !result_equal_zero; /*break;*/
-      /*case*/ FUNCT3_BRANCH_NE:  result = result_equal_zero; /*break;*/
-      /*case*/ FUNCT3_BRANCH_LT:  result = !result_equal_zero; /*break;*/
-      /*case*/ FUNCT3_BRANCH_GE:  result = result_equal_zero; /*break;*/
-      /*case*/ FUNCT3_BRANCH_LTU: result = !result_equal_zero; /*break;*/
-      /*case*/ FUNCT3_BRANCH_GEU: result = result_equal_zero; /*break;*/
-      default:                result = 1'bx; /*break;*/
+      /*case*/ FUNCT3_BRANCH_EQ:  take_branch = !result_equal_zero; /*break;*/
+      /*case*/ FUNCT3_BRANCH_NE:  take_branch = result_equal_zero; /*break;*/
+      /*case*/ FUNCT3_BRANCH_LT:  take_branch = !result_equal_zero; /*break;*/
+      /*case*/ FUNCT3_BRANCH_GE:  take_branch = result_equal_zero; /*break;*/
+      /*case*/ FUNCT3_BRANCH_LTU: take_branch = !result_equal_zero; /*break;*/
+      /*case*/ FUNCT3_BRANCH_GEU: take_branch = result_equal_zero; /*break;*/
+      default:                take_branch = 1'bx; /*break;*/
     endcase
-    take_branch = result;
   end
 endmodule;
 

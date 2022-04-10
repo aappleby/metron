@@ -75,24 +75,15 @@ class riscv_core {
     datapath.tock();
   }
 
-  void tock_bus_write_data2() {
+  void tock_bus() {
     dmem.write_data = datapath.temp_rs2_data;
     dmem.tock_bus_write_data();
     bus_write_data = dmem.bus_write_data;
-  }
-
-  void tock_bus_write_enable2() {
     ctlpath.tock_data_mem_write_enable();
     bus_write_enable2 = ctlpath.data_mem_write_enable;
-  }
-
-  void tock_bus_byte_enable2() {
     logic<3> funct3 = datapath.inst_funct3;
     dmem.tock_bus_byte_enable();
     bus_byte_enable2 = dmem.bus_byte_enable;
-  }
-
-  void tock_bus_read_enable2() {
     ctlpath.tock_data_mem_read_enable();
     bus_read_enable2 = ctlpath.data_mem_read_enable;
   }

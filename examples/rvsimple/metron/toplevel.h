@@ -35,10 +35,7 @@ class toplevel {
     core.inst = text_memory_bus.read_data;
     core.tock_inst();
     core.tock_alu_result();
-    core.tock_bus_write_data2();
-    core.tock_bus_write_enable2();
-    core.tock_bus_byte_enable2();
-    core.tock_bus_read_enable2();
+    core.tock_bus();
 
     data_memory_bus.address = core.alu_result;
     data_memory_bus.read_enable = core.bus_read_enable2;

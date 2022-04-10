@@ -90,25 +90,16 @@ module riscv_core
     /*datapath.tock()*/;
   end
 
-  always_comb begin /*tock_bus_write_data2*/
+  always_comb begin /*tock_bus*/
+    logic[2:0] funct3;
     dmem_write_data = datapath_temp_rs2_data;
     /*dmem.tock_bus_write_data()*/;
     bus_write_data = dmem_bus_write_data;
-  end
-
-  always_comb begin /*tock_bus_write_enable2*/
     /*ctlpath.tock_data_mem_write_enable()*/;
     bus_write_enable2 = ctlpath_data_mem_write_enable;
-  end
-
-  always_comb begin /*tock_bus_byte_enable2*/
-    logic[2:0] funct3;
     funct3 = datapath_inst_funct3;
     /*dmem.tock_bus_byte_enable()*/;
     bus_byte_enable2 = dmem_bus_byte_enable;
-  end
-
-  always_comb begin /*tock_bus_read_enable2*/
     /*ctlpath.tock_data_mem_read_enable()*/;
     bus_read_enable2 = ctlpath_data_mem_read_enable;
   end

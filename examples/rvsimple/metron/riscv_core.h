@@ -56,22 +56,25 @@ class riscv_core {
   void tock() {
     logic<7> opcode = datapath.inst_opcode;
     logic<3> funct3 = datapath.inst_funct3;
-    logic<1> reg_we = ctlpath.regfile_write_enable();
+    ctlpath.tock_regfile_write_enable();
+    logic<1> reg_we = ctlpath.regfile_write_enable;
 
     dmem.bus_read_data = bus_read_data;
     logic<32> mem_data = dmem.read_data();
-    logic<3> reg_select = ctlpath.reg_writeback_select();
+    ctlpath.tock_reg_writeback_select();
+    logic<3> reg_select = ctlpath.reg_writeback_select;
 
     ctlpath.alu_result_equal_zero = alu_result == 0;
-    logic<2> pc_select = ctlpath.tock_next_pc_select();
-    logic<1> pc_we = ctlpath.pc_write_enable();
+    ctlpath.tock_next_pc_select();
+    logic<2> pc_select = ctlpath.next_pc_select;
+    ctlpath.tock_pc_write_enable();
 
     datapath.reset = reset;
     datapath.regfile_write_enable = reg_we;
     datapath.data_mem_read_data = mem_data;
     datapath.reg_writeback_select = reg_select;
     datapath.next_pc_select = pc_select;
-    datapath.pc_write_enable = pc_we;
+    datapath.pc_write_enable = ctlpath.pc_write_enable;
     datapath.tock();
   }
 

@@ -136,7 +136,6 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
     CData/*6:0*/ __Vtableidx1;
     CData/*3:0*/ __Vtableidx2;
     // Body
-    vlSelf->toplevel__DOT__core__DOT__datapath_pc_write_enable = 1U;
     toplevel__DOT__core__DOT__datapath__DOT__unnamedblk1__DOT__pc_plus_4 
         = ((IData)(4U) + vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value);
     toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_in0 
@@ -706,7 +705,6 @@ VL_ATTR_COLD void Vtoplevel___024root___ctor_var_reset(Vtoplevel___024root* vlSe
     vlSelf->toplevel__DOT__data_memory_bus_byte_enable = VL_RAND_RESET_I(4);
     vlSelf->toplevel__DOT__data_memory_bus_write_data = VL_RAND_RESET_I(32);
     vlSelf->toplevel__DOT__core__DOT__datapath_regfile_write_enable = VL_RAND_RESET_I(1);
-    vlSelf->toplevel__DOT__core__DOT__datapath_pc_write_enable = VL_RAND_RESET_I(1);
     vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_next = VL_RAND_RESET_I(32);
     vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs_rd_data = VL_RAND_RESET_I(32);
     vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value = VL_RAND_RESET_I(32);

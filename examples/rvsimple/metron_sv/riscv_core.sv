@@ -76,25 +76,27 @@ module riscv_core
     logic[31:0] mem_data;
     logic[2:0] reg_select;
     logic[1:0] pc_select;
-    logic pc_we;
     opcode = datapath_inst_opcode;
     funct3 = datapath_inst_funct3;
+    /*ctlpath.tock_regfile_write_enable()*/;
     reg_we = ctlpath_regfile_write_enable;
 
     dmem_bus_read_data = bus_read_data;
     mem_data = dmem_read_data;
+    /*ctlpath.tock_reg_writeback_select()*/;
     reg_select = ctlpath_reg_writeback_select;
 
     ctlpath_alu_result_equal_zero = alu_result == 0;
-    pc_select = ctlpath_tock_next_pc_select;
-    pc_we = ctlpath_pc_write_enable;
+    /*ctlpath.tock_next_pc_select()*/;
+    pc_select = ctlpath_next_pc_select;
+    /*ctlpath.tock_pc_write_enable()*/;
 
     datapath_reset = reset;
     datapath_regfile_write_enable = reg_we;
     datapath_data_mem_read_data = mem_data;
     datapath_reg_writeback_select = reg_select;
     datapath_next_pc_select = pc_select;
-    datapath_pc_write_enable = pc_we;
+    datapath_pc_write_enable = ctlpath_pc_write_enable;
     /*datapath.tock()*/;
   end
 
@@ -178,28 +180,28 @@ module riscv_core
      .inst_funct7(ctlpath_inst_funct7), 
      // Outputs
      .alu_function(ctlpath_alu_function), 
-     .alu_operand_a_select(ctlpath_alu_operand_a_select), 
-     .alu_operand_b_select(ctlpath_alu_operand_b_select), 
      .pc_write_enable(ctlpath_pc_write_enable), 
      .regfile_write_enable(ctlpath_regfile_write_enable), 
-     .data_mem_read_enable(ctlpath_data_mem_read_enable), 
-     .data_mem_write_enable(ctlpath_data_mem_write_enable), 
+     .alu_operand_a_select(ctlpath_alu_operand_a_select), 
+     .alu_operand_b_select(ctlpath_alu_operand_b_select), 
      .reg_writeback_select(ctlpath_reg_writeback_select), 
-     .tock_next_pc_select(ctlpath_tock_next_pc_select)
+     .next_pc_select(ctlpath_next_pc_select), 
+     .data_mem_read_enable(ctlpath_data_mem_read_enable), 
+     .data_mem_write_enable(ctlpath_data_mem_write_enable)
    );
    logic[6:0] ctlpath_inst_opcode;
    logic[2:0] ctlpath_inst_funct3;
    logic ctlpath_alu_result_equal_zero;
    logic[6:0] ctlpath_inst_funct7;
    logic[4:0] ctlpath_alu_function;
-   logic ctlpath_alu_operand_a_select;
-   logic ctlpath_alu_operand_b_select;
    logic ctlpath_pc_write_enable;
    logic ctlpath_regfile_write_enable;
+   logic ctlpath_alu_operand_a_select;
+   logic ctlpath_alu_operand_b_select;
+   logic[2:0] ctlpath_reg_writeback_select;
+   logic[1:0] ctlpath_next_pc_select;
    logic ctlpath_data_mem_read_enable;
    logic ctlpath_data_mem_write_enable;
-   logic[2:0] ctlpath_reg_writeback_select;
-   logic[1:0] ctlpath_tock_next_pc_select;
 
   data_memory_interface dmem(
      // Inputs

@@ -33,12 +33,14 @@ class singlecycle_ctlpath {
     alu_function = alu_ctrl.alu_function;
   }
 
-  logic<1> pc_write_enable() const {
-    return control.pc_write_enable();
+  logic<1> pc_write_enable;
+  void tock_pc_write_enable() {
+    pc_write_enable = control.pc_write_enable();
   }
 
-  logic<1> regfile_write_enable() const {
-    return control.regfile_write_enable();
+  logic<1> regfile_write_enable;
+  void tock_regfile_write_enable() {
+    regfile_write_enable = control.regfile_write_enable();
   }
 
   logic<1> alu_operand_a_select;
@@ -60,16 +62,18 @@ class singlecycle_ctlpath {
     return control.data_mem_write_enable();
   }
 
-  logic<3> reg_writeback_select() const {
-    return control.reg_writeback_select();
+  logic<3> reg_writeback_select;
+  void tock_reg_writeback_select() {
+    reg_writeback_select = control.reg_writeback_select();
   }
 
-  logic<2> tock_next_pc_select() {
+  logic<2> next_pc_select;
+  void tock_next_pc_select() {
     transfer.result_equal_zero = alu_result_equal_zero;
     transfer.inst_funct3 = inst_funct3;
     transfer.tock_take_branch();
     logic<1> take_branch = transfer.take_branch;
-    return control.next_pc_select(take_branch);
+    next_pc_select = control.next_pc_select(take_branch);
   }
 
   //----------------------------------------

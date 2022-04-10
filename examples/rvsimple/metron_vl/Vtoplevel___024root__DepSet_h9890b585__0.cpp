@@ -148,12 +148,8 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
             = (0x1fU & (vlSelf->toplevel__DOT__core_inst 
                         >> 7U));
     }
-    if (vlSelf->reset) {
-        vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value = 0x400000U;
-    } else if (vlSelf->toplevel__DOT__core__DOT__datapath_pc_write_enable) {
-        vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value 
-            = vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_next;
-    }
+    vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value 
+        = ((IData)(vlSelf->reset) ? 0x400000U : vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_next);
     if (__Vdlyvset__toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__mem__v0) {
         vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__mem[__Vdlyvdim0__toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__mem__v0] 
             = __Vdlyvval__toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__mem__v0;

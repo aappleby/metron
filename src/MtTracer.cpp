@@ -593,6 +593,8 @@ CHECK_RETURN Err MtTracer::trace_if(MnNode n) {
 CHECK_RETURN Err MtTracer::trace_switch(MnNode n) {
   Err error;
 
+  trace_dispatch(n.get_field(field_condition));
+
   state_map old_state = state_top();
 
   bool first_branch = true;

@@ -13,9 +13,12 @@
 class alu {
  public:
 
+   logic<5>  alu_function;
+   logic<32> operand_a;
+   logic<32> operand_b;
    logic<32> result;
 
-  void tock(logic<5> alu_function, logic<32> operand_a, logic<32> operand_b) {
+  void tock() {
     using namespace rv_constants;
 
     switch (alu_function) {

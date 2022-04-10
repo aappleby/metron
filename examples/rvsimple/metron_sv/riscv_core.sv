@@ -148,22 +148,22 @@ module riscv_core
      .alu_result(datapath_alu_result), 
      .pc(datapath_pc)
    );
-   logic  datapath_reset;
+   logic datapath_reset;
    logic[31:0] datapath_inst;
-   logic  datapath_regfile_write_enable;
+   logic datapath_regfile_write_enable;
    logic[31:0] datapath_data_mem_read_data;
-   logic[2:0]  datapath_reg_writeback_select;
-   logic[1:0]  datapath_next_pc_select;
-   logic  datapath_pc_write_enable;
+   logic[2:0] datapath_reg_writeback_select;
+   logic[1:0] datapath_next_pc_select;
+   logic datapath_pc_write_enable;
    logic[4:0] datapath_alu_function;
    logic datapath_alu_operand_a_select;
    logic datapath_alu_operand_b_select;
-   logic[4:0]  datapath_inst_rd;
-   logic[4:0]  datapath_inst_rs1;
-   logic[4:0]  datapath_inst_rs2;
-   logic[6:0]  datapath_inst_opcode;
-   logic[2:0]  datapath_inst_funct3;
-   logic[6:0]  datapath_inst_funct7;
+   logic[4:0] datapath_inst_rd;
+   logic[4:0] datapath_inst_rs1;
+   logic[4:0] datapath_inst_rs2;
+   logic[6:0] datapath_inst_opcode;
+   logic[2:0] datapath_inst_funct3;
+   logic[6:0] datapath_inst_funct7;
    logic[31:0] datapath_inst_immediate;
    logic[31:0] datapath_temp_rs1_data;
    logic[31:0] datapath_temp_rs2_data;

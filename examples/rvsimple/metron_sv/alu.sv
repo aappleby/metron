@@ -13,13 +13,16 @@
 module alu
 (
    input logic clock,
-   input logic[4:0] alu_function,
+   input logic[4:0]  alu_function,
    input logic[31:0] operand_a,
    input logic[31:0] operand_b,
    output logic[31:0] result
 );
  /*public:*/
 
+   /*logic<5>  alu_function;*/
+   /*logic<32> operand_a;*/
+   /*logic<32> operand_b;*/
    /*logic<32> result;*/
 
   always_comb begin /*tock*/

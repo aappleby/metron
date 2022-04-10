@@ -1,6 +1,3 @@
-Don't emit lines whose content has all been elided
-
-
 Should I tack the submod method name to the input port name so that we don't have to dedup the ports?
   Maybe only if there's a collision?
 
@@ -10,10 +7,7 @@ same expression at each port... somehow?
 
 Tick methods must _not_ be allowed to call getters that take params
 
-If we don't emit anything for a tock(), we should not emit the tock itself
-
-
-Member variables as input ports should be added back in
+If we don't emit anything for a tick() or tock(), we should not emit the tock itself
 
 tests to increase coverage
   bad output dir

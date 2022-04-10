@@ -125,7 +125,7 @@ def check_golden(filename):
     basename = path.basename(filename)
     svname = path.splitext(basename)[0] + ".sv"
     test_filename = "tests/metron_sv/" + svname
-    golden_filename = "tests/metron_gold/" + svname
+    golden_filename = "tests/metron_golden/" + svname
 
     try:
         test_src = open(test_filename, "r").read()

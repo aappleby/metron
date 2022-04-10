@@ -120,33 +120,36 @@ public:
     mux_operand_a.in0 = regs.rs1_data;
     mux_operand_a.in1 = program_counter.value;
     mux_operand_a.tock();
-
   }
 
-  void tock2b() {
+  void tock_mux_operand_b() {
     mux_operand_b.sel = alu_operand_b_select;
     mux_operand_b.in0 = regs.rs2_data;
     mux_operand_b.in1 = igen.immediate;
     mux_operand_b.tock();
+  }
 
+  void tock_alu() {
     alu_core.alu_function = alu_function;
     alu_core.operand_a = mux_operand_a.out;
     alu_core.operand_b = mux_operand_b.out;
     alu_core.tock();
+    alu_result_equal_zero = alu_core.result_equal_zero;
+  }
 
-    //----------
-
+  void tock_adder_pc_plus_4() {
     adder_pc_plus_4.operand_a = b32(0x00000004);
     adder_pc_plus_4.operand_b = program_counter.value;
     adder_pc_plus_4.tock();
+  }
 
+  void tock_adder_pc_plus_immediate() {
     adder_pc_plus_immediate.operand_a = program_counter.value;
     adder_pc_plus_immediate.operand_b = igen.immediate;
     adder_pc_plus_immediate.tock();
+  }
 
-    //----------
-
-    alu_result_equal_zero = alu_core.result_equal_zero;
+  void tock_data_mem_out() {
     data_mem_address    = alu_core.result;
     data_mem_write_data = regs.rs2_data;
   }

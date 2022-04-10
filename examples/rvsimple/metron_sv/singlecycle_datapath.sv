@@ -119,33 +119,36 @@ module singlecycle_datapath
     mux_operand_a_in0 = regs_rs1_data;
     mux_operand_a_in1 = program_counter_value;
     /*mux_operand_a.tock()*/;
-
   end
 
-  always_comb begin /*tock2b*/
+  always_comb begin /*tock_mux_operand_b*/
     mux_operand_b_sel = alu_operand_b_select;
     mux_operand_b_in0 = regs_rs2_data;
     mux_operand_b_in1 = igen_immediate;
     /*mux_operand_b.tock()*/;
+  end
 
+  always_comb begin /*tock_alu*/
     alu_core_alu_function = alu_function;
     alu_core_operand_a = mux_operand_a_out;
     alu_core_operand_b = mux_operand_b_out;
     /*alu_core.tock()*/;
+    alu_result_equal_zero = alu_core_result_equal_zero;
+  end
 
-    //----------
-
+  always_comb begin /*tock_adder_pc_plus_4*/
     adder_pc_plus_4_operand_a = 32'h00000004;
     adder_pc_plus_4_operand_b = program_counter_value;
     /*adder_pc_plus_4.tock()*/;
+  end
 
+  always_comb begin /*tock_adder_pc_plus_immediate*/
     adder_pc_plus_immediate_operand_a = program_counter_value;
     adder_pc_plus_immediate_operand_b = igen_immediate;
     /*adder_pc_plus_immediate.tock()*/;
+  end
 
-    //----------
-
-    alu_result_equal_zero = alu_core_result_equal_zero;
+  always_comb begin /*tock_data_mem_out*/
     data_mem_address    = alu_core_result;
     data_mem_write_data = regs_rs2_data;
   end

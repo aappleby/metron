@@ -59,7 +59,11 @@ module riscv_core
     
     /*datapath.tock_regs1()*/;
     /*datapath.tock_mux_operand_a()*/;
-    /*datapath.tock2b()*/;
+    /*datapath.tock_mux_operand_b()*/;
+    /*datapath.tock_alu()*/;
+    /*datapath.tock_adder_pc_plus_4()*/;
+    /*datapath.tock_adder_pc_plus_immediate()*/;
+    /*datapath.tock_data_mem_out()*/;
 
     dmem_read_enable  = ctlpath_data_mem_read_enable;
     dmem_write_enable = ctlpath_data_mem_write_enable;

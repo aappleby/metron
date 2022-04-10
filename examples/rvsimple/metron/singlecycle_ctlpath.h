@@ -32,37 +32,33 @@ class singlecycle_ctlpath {
 
   void tock1() {
     control.inst_opcode = inst_opcode;
-
     control.tock_alu_op_type2();
+    control.tock_alu_operand_a_select();
+    control.tock_alu_operand_b_select();
+    control.tock_data_mem_read_enable();
+    control.tock_data_mem_write_enable();
+
     alu_ctrl.alu_op_type = control.alu_op_type2;
     alu_ctrl.inst_funct3 = inst_funct3;
     alu_ctrl.inst_funct7 = inst_funct7;
-
     alu_ctrl.tock_alu_function();
-    alu_function = alu_ctrl.alu_function;
-    
-    control.tock_alu_operand_a_select();
-    alu_operand_a_select = control.alu_operand_a_select;
 
-    control.tock_alu_operand_b_select();
+    alu_function         = alu_ctrl.alu_function;
+    alu_operand_a_select = control.alu_operand_a_select;
     alu_operand_b_select = control.alu_operand_b_select;
 
-    control.tock_data_mem_read_enable();
-    data_mem_read_enable = control.data_mem_read_enable;
-
-    control.tock_data_mem_write_enable();
+    data_mem_read_enable  = control.data_mem_read_enable;
     data_mem_write_enable = control.data_mem_write_enable;
   }
 
 
   void tock2() {
     control.tock_pc_write_enable();
-    pc_write_enable = control.pc_write_enable;
-
     control.tock_regfile_write_enable();
-    regfile_write_enable = control.regfile_write_enable;
-
     control.tock_reg_writeback_select();
+
+    pc_write_enable      = control.pc_write_enable;
+    regfile_write_enable = control.regfile_write_enable;
     reg_writeback_select = control.reg_writeback_select;
 
     transfer.result_equal_zero = alu_result_equal_zero;
@@ -70,8 +66,8 @@ class singlecycle_ctlpath {
     transfer.tock_take_branch();
 
     control.take_branch = transfer.take_branch;
-
     control.tock_next_pc_select();
+
     next_pc_select = control.next_pc_select;
   }
 

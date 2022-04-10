@@ -70,7 +70,7 @@ module singlecycle_ctlpath
   end
 
 
-  always_comb begin /*tock2*/
+  always_comb begin /*tock2a*/
     /*control.tock_pc_write_enable()*/;
     /*control.tock_regfile_write_enable()*/;
     /*control.tock_reg_writeback_select()*/;
@@ -82,10 +82,11 @@ module singlecycle_ctlpath
     transfer_result_equal_zero = alu_result_equal_zero;
     transfer_inst_funct3 = inst_funct3;
     /*transfer.tock_take_branch()*/;
+  end
 
+  always_comb begin /*tock_next_pc_select*/
     control_take_branch = transfer_take_branch;
     /*control.tock_next_pc_select()*/;
-
     next_pc_select = control_next_pc_select;
   end
 

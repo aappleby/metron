@@ -13,7 +13,6 @@
 template <int WIDTH = 32>
 class multiplexer8 {
  public:
-  logic<3> sel;
   logic<WIDTH> in0;
   logic<WIDTH> in1;
   logic<WIDTH> in2;
@@ -22,6 +21,7 @@ class multiplexer8 {
   logic<WIDTH> in5;
   logic<WIDTH> in6;
   logic<WIDTH> in7;
+  logic<3> sel;
   logic<WIDTH> out;
 
   void tock() {

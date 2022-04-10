@@ -14,17 +14,17 @@ module multiplexer2
 #(parameter int WIDTH = 32)
 (
   input logic clock,
-  output logic[WIDTH-1:0] out,
-  input logic sel,
   input logic[WIDTH-1:0] in0,
-  input logic[WIDTH-1:0] in1
+  input logic[WIDTH-1:0] in1,
+  input logic sel,
+  output logic[WIDTH-1:0] out
 );
  /*public:*/
-  /*logic<WIDTH> out;*/
-  /*logic<1> sel;*/
   /*logic<WIDTH> in0;*/
   /*logic<WIDTH> in1;*/
-  
+  /*logic<1> sel;*/
+  /*logic<WIDTH> out;*/
+
   always_comb begin /*tock*/
     case (sel) 
       /*case*/ 0:  out = in0; /*break;*/

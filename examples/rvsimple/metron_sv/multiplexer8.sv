@@ -14,7 +14,6 @@ module multiplexer8
 #(parameter int WIDTH = 32)
 (
   input logic clock,
-  input logic[2:0] sel,
   input logic[WIDTH-1:0] in0,
   input logic[WIDTH-1:0] in1,
   input logic[WIDTH-1:0] in2,
@@ -23,10 +22,10 @@ module multiplexer8
   input logic[WIDTH-1:0] in5,
   input logic[WIDTH-1:0] in6,
   input logic[WIDTH-1:0] in7,
+  input logic[2:0] sel,
   output logic[WIDTH-1:0] out
 );
  /*public:*/
-  /*logic<3> sel;*/
   /*logic<WIDTH> in0;*/
   /*logic<WIDTH> in1;*/
   /*logic<WIDTH> in2;*/
@@ -35,6 +34,7 @@ module multiplexer8
   /*logic<WIDTH> in5;*/
   /*logic<WIDTH> in6;*/
   /*logic<WIDTH> in7;*/
+  /*logic<3> sel;*/
   /*logic<WIDTH> out;*/
 
   always_comb begin /*tock*/

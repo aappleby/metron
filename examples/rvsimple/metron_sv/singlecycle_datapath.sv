@@ -100,8 +100,7 @@ module singlecycle_datapath
     regs_rs1_address = inst_rs1;
     regs_rs2_address = inst_rs2;
 
-    /*regs.tock_rs1_data()*/;
-    /*regs.tock_rs2_data()*/;
+    /*regs.tock1()*/;
 
     temp_rs1_data = regs_rs1_data;
     temp_rs2_data = regs_rs2_data;
@@ -162,7 +161,7 @@ module singlecycle_datapath
     regs_write_enable = regfile_write_enable;
     regs_rd_address = inst_rd;
     regs_rd_data = mux_reg_writeback_out;
-    /*regs.tock()*/;
+    /*regs.tock2()*/;
   end
 
   //----------------------------------------

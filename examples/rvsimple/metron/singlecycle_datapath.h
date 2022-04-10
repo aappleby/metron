@@ -76,8 +76,7 @@ class singlecycle_datapath {
     regs.rs1_address = inst_rs1;
     regs.rs2_address = inst_rs2;
 
-    regs.tock_rs1_data();
-    regs.tock_rs2_data();
+    regs.tock1();
 
     temp_rs1_data = regs.rs1_data;
     temp_rs2_data = regs.rs2_data;
@@ -135,7 +134,7 @@ class singlecycle_datapath {
     regs.write_enable = regfile_write_enable;
     regs.rd_address = inst_rd;
     regs.rd_data = mux_reg_writeback.out;
-    regs.tock();
+    regs.tock2();
   }
 
   //----------------------------------------

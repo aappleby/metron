@@ -34,10 +34,12 @@ module regfile
   /*logic<5> rd_address;*/
   /*logic<32> rd_data;*/
 
-  always_comb begin /*tock_rs1_data*/ rs1_data = regs[rs1_address]; end
-  always_comb begin /*tock_rs2_data*/ rs2_data = regs[rs2_address]; end
+  always_comb begin /*tock1*/
+    rs1_data = regs[rs1_address];
+    rs2_data = regs[rs2_address];
+  end
 
-  always_comb begin /*tock*/
+  always_comb begin /*tock2*/
     /*tick()*/;
   end
 

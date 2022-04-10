@@ -24,10 +24,12 @@ class regfile {
   logic<5> rd_address;
   logic<32> rd_data;
 
-  void tock_rs1_data() { rs1_data = regs[rs1_address]; }
-  void tock_rs2_data() { rs2_data = regs[rs2_address]; }
+  void tock1() {
+    rs1_data = regs[rs1_address];
+    rs2_data = regs[rs2_address];
+  }
 
-  void tock() {
+  void tock2() {
     tick();
   }
 

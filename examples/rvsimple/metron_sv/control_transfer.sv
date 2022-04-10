@@ -12,15 +12,15 @@
 
 module control_transfer
 (
-  input logic clock,
-  output logic take_branch,
-  input logic result_equal_zero,
-  input logic[2:0] inst_funct3
+   input logic clock,
+   input logic result_equal_zero,
+   input logic[2:0] inst_funct3,
+   output logic take_branch
 );
  /*public:*/
-  /*logic<1> take_branch;*/
-  /*logic<1> result_equal_zero;*/
-  /*logic<3> inst_funct3;*/
+   /*logic<1> result_equal_zero;*/
+   /*logic<3> inst_funct3;*/
+   /*logic<1> take_branch;*/
 
   always_comb begin /*tock_take_branch*/
     import rv_constants::*;

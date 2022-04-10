@@ -12,9 +12,9 @@
 
 class control_transfer {
  public:
-  logic<1> take_branch;
-  logic<1> result_equal_zero;
-  logic<3> inst_funct3;
+   logic<1> result_equal_zero;
+   logic<3> inst_funct3;
+   logic<1> take_branch;
 
   void tock_take_branch() {
     using namespace rv_constants;

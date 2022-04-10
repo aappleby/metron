@@ -12,7 +12,9 @@
 
 class alu_control {
  public:
-
+   logic<2> alu_op_type;
+   logic<3> inst_funct3;
+   logic<7> inst_funct7;
    logic<5> alu_function;
 
 private:
@@ -22,10 +24,6 @@ private:
   logic<5> op_imm_funct;
   logic<5> branch_funct;
 public:
-
-  logic<2> alu_op_type;
-  logic<3> inst_funct3;
-  logic<7> inst_funct7;
 
   // clang-format off
   void tock_alu_function() {

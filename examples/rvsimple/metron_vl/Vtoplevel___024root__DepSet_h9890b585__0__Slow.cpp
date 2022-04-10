@@ -92,8 +92,8 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
            [(0x3fffU & (vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_value 
                         >> 2U))] : 0U);
     vlSelf->o_inst = vlSelf->toplevel__DOT__text_memory_bus_read_data;
-    vlSelf->o_bus_read_enable = (3U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data));
     vlSelf->o_bus_write_enable = (0x23U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data));
+    vlSelf->o_bus_read_enable = (3U == (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data));
     __Vtableidx2 = (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data);
     vlSelf->toplevel__DOT__core__DOT__ctlpath__DOT__control_regfile_write_enable 
         = Vtoplevel__ConstPool__TABLE_hcae45265_0[__Vtableidx2];

@@ -23,12 +23,8 @@ using namespace rv_config;
 
 class singlecycle_datapath {
  public:
-  //----------------------------------------
 
-  logic<32> pc() const { return program_counter.value; }
-
-  //----------------------------------------
-
+  logic<32> pc;
   logic<1> reset;
   logic<32> inst;
   logic<1> regfile_write_enable;
@@ -48,30 +44,32 @@ class singlecycle_datapath {
   logic<32> temp_rs1_data;
   logic<32> temp_rs2_data;
 
+  //----------------------------------------
+
+  void tock_pc() { pc = program_counter.value; }
+
+  //----------------------------------------
 
   void tock1() {
     idec.inst = inst;
     idec.tock();
 
+    igen.inst = inst;
+    igen.tock();
+
+    //----------
+
     inst_opcode = idec.inst_opcode;
     inst_funct3 = idec.inst_funct3;
     inst_funct7 = idec.inst_funct7;
-
-    igen.inst = inst;
-    igen.tock();
   }
 
   //----------------------------------------
 
   void tock2() {
-
     regs.rs1_address = idec.inst_rs1;
     regs.rs2_address = idec.inst_rs2;
-
     regs.tock1();
-
-    temp_rs1_data = regs.rs1_data;
-    temp_rs2_data = regs.rs2_data;
 
     mux_operand_a.sel = alu_operand_a_select;
     mux_operand_a.in0 = regs.rs1_data;
@@ -88,7 +86,11 @@ class singlecycle_datapath {
     alu_core.operand_b = mux_operand_b.out;
     alu_core.tock();
 
+    //----------
+
     alu_result = alu_core.result;
+    temp_rs1_data = regs.rs1_data;
+    temp_rs2_data = regs.rs2_data;
   }
 
   //----------------------------------------

@@ -48,26 +48,27 @@ module toplevel
     core_inst = text_memory_bus_read_data;
     /*core.tock2()*/;
 
-    data_memory_bus_address = core_alu_result;
-    data_memory_bus_read_enable = core_bus_read_enable;
-    /*data_memory_bus.tock_q()*/;
-
-    o_inst = text_memory_bus_read_data;
-    o_bus_read_data = data_memory_bus_q;
-    o_bus_address = core_alu_result;
-    o_bus_write_data = core_bus_write_data;
-    o_bus_byte_enable = core_bus_byte_enable;
-    o_bus_read_enable = core_bus_read_enable;
-    o_bus_write_enable = core_bus_write_enable;
-    o_pc = core_pc;
-
+    data_memory_bus_address      = core_alu_result;
+    data_memory_bus_read_enable  = core_bus_read_enable;
     data_memory_bus_write_enable = core_bus_write_enable;
-    data_memory_bus_byte_enable = core_bus_byte_enable;
-    data_memory_bus_write_data = core_bus_write_data;
+    data_memory_bus_byte_enable  = core_bus_byte_enable;
+    data_memory_bus_write_data   = core_bus_write_data;
     /*data_memory_bus.tock()*/;
 
     core_bus_read_data = data_memory_bus_q;
     /*core.tock3()*/;
+
+    //----------
+
+    o_pc   = core_pc;
+    o_inst = text_memory_bus_read_data;
+
+    o_bus_read_data    = data_memory_bus_q;
+    o_bus_address      = core_alu_result;
+    o_bus_write_data   = core_bus_write_data;
+    o_bus_byte_enable  = core_bus_byte_enable;
+    o_bus_read_enable  = core_bus_read_enable;
+    o_bus_write_enable = core_bus_write_enable;
   end
 
   //----------------------------------------

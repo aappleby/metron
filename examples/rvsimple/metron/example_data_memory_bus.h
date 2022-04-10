@@ -20,14 +20,11 @@ class example_data_memory_bus {
   logic<32> write_data;
   logic<32> q;
 
-  void tock_q() {
+  void tock() {
     data_memory.address = bx<DATA_BITS - 2>(address, 2);
     data_memory.tock_q();
     logic<1> is_data_memory = address >= DATA_BEGIN && DATA_END >= address;
     q = read_enable && is_data_memory ? data_memory.q : b32(DONTCARE);
-  }
-
-  void tock() {
     data_memory.wren =
         b1(write_enable && address >= DATA_BEGIN && DATA_END >= address);
     data_memory.byteena = byte_enable;

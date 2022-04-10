@@ -26,7 +26,10 @@ class riscv_core {
   logic<4> bus_byte_enable;
   logic<1> bus_read_enable;
 
-  void tock1() { pc = datapath.pc(); }
+  void tock1() {
+    datapath.tock_pc();
+    pc = datapath.pc;
+  }
 
   void tock2() {
     datapath.inst = inst;

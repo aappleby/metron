@@ -38,7 +38,10 @@ module riscv_core
   /*logic<4> bus_byte_enable;*/
   /*logic<1> bus_read_enable;*/
 
-  always_comb begin /*tock1*/ pc = datapath_pc; end
+  always_comb begin /*tock1*/
+    /*datapath.tock_pc()*/;
+    pc = datapath_pc;
+  end
 
   always_comb begin /*tock2*/
     datapath_inst = inst;
@@ -100,13 +103,13 @@ module riscv_core
     .alu_operand_a_select(datapath_alu_operand_a_select), 
     .alu_operand_b_select(datapath_alu_operand_b_select), 
     // Outputs
+    .pc(datapath_pc), 
     .inst_opcode(datapath_inst_opcode), 
     .inst_funct3(datapath_inst_funct3), 
     .inst_funct7(datapath_inst_funct7), 
     .alu_result(datapath_alu_result), 
     .temp_rs1_data(datapath_temp_rs1_data), 
-    .temp_rs2_data(datapath_temp_rs2_data), 
-    .pc(datapath_pc)
+    .temp_rs2_data(datapath_temp_rs2_data)
   );
   logic datapath_reset;
   logic[31:0] datapath_inst;
@@ -118,13 +121,13 @@ module riscv_core
   logic[4:0] datapath_alu_function;
   logic datapath_alu_operand_a_select;
   logic datapath_alu_operand_b_select;
+  logic[31:0] datapath_pc;
   logic[6:0] datapath_inst_opcode;
   logic[2:0] datapath_inst_funct3;
   logic[6:0] datapath_inst_funct7;
   logic[31:0] datapath_alu_result;
   logic[31:0] datapath_temp_rs1_data;
   logic[31:0] datapath_temp_rs2_data;
-  logic[31:0] datapath_pc;
 
   singlecycle_ctlpath ctlpath(
     // Inputs

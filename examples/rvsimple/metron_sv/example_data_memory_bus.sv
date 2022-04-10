@@ -29,15 +29,12 @@ module example_data_memory_bus
   /*logic<32> write_data;*/
   /*logic<32> q;*/
 
-  always_comb begin /*tock_q*/
+  always_comb begin /*tock*/
     logic is_data_memory;
     data_memory_address = address[DATA_BITS - 2+1:2];
     /*data_memory.tock_q()*/;
     is_data_memory = address >= DATA_BEGIN && DATA_END >= address;
     q = read_enable && is_data_memory ? data_memory_q : 32'bx;
-  end
-
-  always_comb begin /*tock*/
     data_memory_wren =
         1'(write_enable && address >= DATA_BEGIN && DATA_END >= address);
     data_memory_byteena = byte_enable;

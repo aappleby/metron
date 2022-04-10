@@ -17,7 +17,6 @@ VL_MODULE(Vtoplevel___024root) {
     VL_OUT8(o_bus_byte_enable,3,0);
     VL_OUT8(o_bus_read_enable,0,0);
     VL_OUT8(o_bus_write_enable,0,0);
-    CData/*6:0*/ toplevel__DOT__core__DOT__ctlpath_inst_opcode;
     CData/*3:0*/ toplevel__DOT__core__DOT__dmem_bus_byte_enable;
     CData/*0:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__control_regfile_write_enable;
     CData/*0:0*/ __Vclklast__TOP__clock;

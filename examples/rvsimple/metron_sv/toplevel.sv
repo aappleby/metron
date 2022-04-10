@@ -45,9 +45,7 @@ module toplevel
     /*text_memory_bus.tock_read_data()*/;
 
     core_inst = text_memory_bus_read_data;
-    /*core.tock_inst()*/;
-    /*core.tock_alu_result()*/;
-    /*core.tock_bus()*/;
+    /*core.tock1()*/;
 
     data_memory_bus_address = core_alu_result;
     data_memory_bus_read_enable = core_bus_read_enable2;
@@ -69,7 +67,7 @@ module toplevel
 
     core_reset = reset;
     core_bus_read_data = data_memory_bus_q;
-    /*core.tock()*/;
+    /*core.tock2()*/;
   end
 
   //----------------------------------------

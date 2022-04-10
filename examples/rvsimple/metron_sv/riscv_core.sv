@@ -40,25 +40,18 @@ module riscv_core
 
   always_comb begin /*tock_pc*/ pc = datapath_pc; end
 
-  always_comb begin /*tock_inst*/
+  always_comb begin /*tock1*/
     datapath_inst = inst;
     /*datapath.tock_inst()*/;
-  end
 
-  always_comb begin /*tock_alu_result*/
-    logic[6:0] opcode;
-    logic[2:0] funct3;
-    logic[6:0] funct7;
-    opcode = datapath_inst_opcode;
-    funct3 = datapath_inst_funct3;
-    funct7 = datapath_inst_funct7;
-
-    ctlpath_inst_opcode = opcode;
-    ctlpath_inst_funct3 = funct3;
-    ctlpath_inst_funct7 = funct7;
+    ctlpath_inst_opcode = datapath_inst_opcode;
+    ctlpath_inst_funct3 = datapath_inst_funct3;
+    ctlpath_inst_funct7 = datapath_inst_funct7;
     /*ctlpath.tock_alu_function()*/;
     /*ctlpath.tock_alu_operand_a_select()*/;
     /*ctlpath.tock_alu_operand_b_select()*/;
+    /*ctlpath.tock_data_mem_write_enable()*/;
+    /*ctlpath.tock_data_mem_read_enable()*/;
 
     datapath_alu_function = ctlpath_alu_function;
     datapath_alu_operand_a_select = ctlpath_alu_operand_a_select;
@@ -67,11 +60,20 @@ module riscv_core
     alu_result = datapath_alu_result;
 
     dmem_address = alu_result;
-    dmem_data_format = funct3;
+    dmem_data_format = datapath_inst_funct3;
     /*dmem.tock_inputs()*/;
+
+    dmem_write_data = datapath_temp_rs2_data;
+    /*dmem.tock_bus_write_data()*/;
+    /*dmem.tock_bus_byte_enable()*/;
+
+    bus_write_data    = dmem_bus_write_data;
+    bus_write_enable2 = ctlpath_data_mem_write_enable;
+    bus_byte_enable2  = dmem_bus_byte_enable;
+    bus_read_enable2  = ctlpath_data_mem_read_enable;
   end
 
-  always_comb begin /*tock*/
+  always_comb begin /*tock2*/
     ctlpath_alu_result_equal_zero = alu_result == 0;
     /*ctlpath.tock_regfile_write_enable()*/;
     /*ctlpath.tock_reg_writeback_select()*/;
@@ -88,20 +90,6 @@ module riscv_core
     datapath_next_pc_select = ctlpath_next_pc_select;
     datapath_pc_write_enable = ctlpath_pc_write_enable;
     /*datapath.tock()*/;
-  end
-
-  always_comb begin /*tock_bus*/
-    logic[2:0] funct3;
-    dmem_write_data = datapath_temp_rs2_data;
-    /*dmem.tock_bus_write_data()*/;
-    bus_write_data = dmem_bus_write_data;
-    /*ctlpath.tock_data_mem_write_enable()*/;
-    bus_write_enable2 = ctlpath_data_mem_write_enable;
-    funct3 = datapath_inst_funct3;
-    /*dmem.tock_bus_byte_enable()*/;
-    bus_byte_enable2 = dmem_bus_byte_enable;
-    /*ctlpath.tock_data_mem_read_enable()*/;
-    bus_read_enable2 = ctlpath_data_mem_read_enable;
   end
 
   //----------------------------------------

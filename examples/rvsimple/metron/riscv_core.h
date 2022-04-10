@@ -28,22 +28,18 @@ class riscv_core {
 
   void tock_pc() { pc = datapath.pc(); }
 
-  void tock_inst() {
+  void tock1() {
     datapath.inst = inst;
     datapath.tock_inst();
-  }
 
-  void tock_alu_result() {
-    logic<7> opcode = datapath.inst_opcode;
-    logic<3> funct3 = datapath.inst_funct3;
-    logic<7> funct7 = datapath.inst_funct7;
-
-    ctlpath.inst_opcode = opcode;
-    ctlpath.inst_funct3 = funct3;
-    ctlpath.inst_funct7 = funct7;
+    ctlpath.inst_opcode = datapath.inst_opcode;
+    ctlpath.inst_funct3 = datapath.inst_funct3;
+    ctlpath.inst_funct7 = datapath.inst_funct7;
     ctlpath.tock_alu_function();
     ctlpath.tock_alu_operand_a_select();
     ctlpath.tock_alu_operand_b_select();
+    ctlpath.tock_data_mem_write_enable();
+    ctlpath.tock_data_mem_read_enable();
 
     datapath.alu_function = ctlpath.alu_function;
     datapath.alu_operand_a_select = ctlpath.alu_operand_a_select;
@@ -52,11 +48,20 @@ class riscv_core {
     alu_result = datapath.alu_result;
 
     dmem.address = alu_result;
-    dmem.data_format = funct3;
+    dmem.data_format = datapath.inst_funct3;
     dmem.tock_inputs();
+
+    dmem.write_data = datapath.temp_rs2_data;
+    dmem.tock_bus_write_data();
+    dmem.tock_bus_byte_enable();
+
+    bus_write_data    = dmem.bus_write_data;
+    bus_write_enable2 = ctlpath.data_mem_write_enable;
+    bus_byte_enable2  = dmem.bus_byte_enable;
+    bus_read_enable2  = ctlpath.data_mem_read_enable;
   }
 
-  void tock() {
+  void tock2() {
     ctlpath.alu_result_equal_zero = alu_result == 0;
     ctlpath.tock_regfile_write_enable();
     ctlpath.tock_reg_writeback_select();
@@ -73,19 +78,6 @@ class riscv_core {
     datapath.next_pc_select = ctlpath.next_pc_select;
     datapath.pc_write_enable = ctlpath.pc_write_enable;
     datapath.tock();
-  }
-
-  void tock_bus() {
-    dmem.write_data = datapath.temp_rs2_data;
-    dmem.tock_bus_write_data();
-    bus_write_data = dmem.bus_write_data;
-    ctlpath.tock_data_mem_write_enable();
-    bus_write_enable2 = ctlpath.data_mem_write_enable;
-    logic<3> funct3 = datapath.inst_funct3;
-    dmem.tock_bus_byte_enable();
-    bus_byte_enable2 = dmem.bus_byte_enable;
-    ctlpath.tock_data_mem_read_enable();
-    bus_read_enable2 = ctlpath.data_mem_read_enable;
   }
 
   //----------------------------------------

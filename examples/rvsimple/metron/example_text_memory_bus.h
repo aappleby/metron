@@ -16,15 +16,19 @@ class example_text_memory_bus {
   logic<32> address;
   logic<32> read_data;
 
+ private:
+  example_text_memory text_memory;
+
+ public:
   void tock_read_data() {
     text_memory.address = bx<TEXT_BITS - 2>(address, 2);
     text_memory.tock_q();
-    logic<1> is_text_addr = (address >= TEXT_BEGIN) && (TEXT_END >= address);
-    read_data = is_text_addr ? text_memory.q : b32(DONTCARE);
+    logic<32> fetched = text_memory.q;
+    read_data =
+      (address >= TEXT_BEGIN) && (TEXT_END >= address)
+      ? fetched
+      : b32(DONTCARE);
   }
-
- private:
-  example_text_memory text_memory;
 };
 
 #endif  // RVSIMPLE_EXAMPLE_TEXT_MEMORY_BUS_H

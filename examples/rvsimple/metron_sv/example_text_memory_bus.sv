@@ -21,14 +21,6 @@ module example_text_memory_bus
   /*logic<32> address;*/
   /*logic<32> read_data;*/
 
-  always_comb begin /*tock_read_data*/
-    logic is_text_addr;
-    text_memory_address = address[TEXT_BITS - 2+1:2];
-    /*text_memory.tock_q()*/;
-    is_text_addr = (address >= TEXT_BEGIN) && (TEXT_END >= address);
-    read_data = is_text_addr ? text_memory_q : 32'bx;
-  end
-
  /*private:*/
   example_text_memory text_memory(
     // Inputs
@@ -40,6 +32,18 @@ module example_text_memory_bus
   logic[TEXT_BITS - 2-1:0] text_memory_address;
   logic[31:0] text_memory_q;
 
+
+ /*public:*/
+  always_comb begin /*tock_read_data*/
+    logic[31:0] fetched;
+    text_memory_address = address[TEXT_BITS - 2+1:2];
+    /*text_memory.tock_q()*/;
+    fetched = text_memory_q;
+    read_data =
+      (address >= TEXT_BEGIN) && (TEXT_END >= address)
+      ? fetched
+      : 32'bx;
+  end
 endmodule;
 
 `endif  // RVSIMPLE_EXAMPLE_TEXT_MEMORY_BUS_H

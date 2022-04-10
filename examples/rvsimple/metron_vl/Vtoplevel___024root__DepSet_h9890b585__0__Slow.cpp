@@ -58,18 +58,10 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
     // Init
     IData/*31:0*/ toplevel__DOT__data_memory_bus_q;
     IData/*31:0*/ toplevel__DOT__core__DOT__dmem_read_data;
-    IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_in0;
-    IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_in1;
-    IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_out;
-    IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_reg_writeback_in2;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_reg_writeback_out;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__regs_rs2_data;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__igen_immediate;
-    IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__unnamedblk1__DOT__pc_plus_4;
-    IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__unnamedblk1__DOT__pc_plus_imm;
-    IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__unnamedblk1__DOT__pc_data;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__unnamedblk1__DOT__reg_data;
-    IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select__DOT__unnamedblk1__DOT__result;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_reg_writeback__DOT__unnamedblk1__DOT__result;
     CData/*1:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__control_next_pc_select;
     CData/*0:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_operand_a_select;
@@ -94,12 +86,6 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
     CData/*3:0*/ __Vtableidx6;
     // Body
     vlSelf->o_pc = vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value;
-    toplevel__DOT__core__DOT__datapath__DOT__unnamedblk1__DOT__pc_plus_4 
-        = ((IData)(4U) + vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value);
-    toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_in0 
-        = toplevel__DOT__core__DOT__datapath__DOT__unnamedblk1__DOT__pc_plus_4;
-    toplevel__DOT__core__DOT__datapath__DOT__mux_reg_writeback_in2 
-        = toplevel__DOT__core__DOT__datapath__DOT__unnamedblk1__DOT__pc_plus_4;
     toplevel__DOT__text_memory_bus__DOT__unnamedblk1__DOT__is_text_addr 
         = ((0x400000U <= vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value) 
            & (0x40ffffU >= vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value));
@@ -258,11 +244,6 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
     __Vtableidx4 = (0x7fU & vlSelf->toplevel__DOT__text_memory_bus_read_data);
     toplevel__DOT__core__DOT__ctlpath__DOT__control_alu_op_type2 
         = Vtoplevel__ConstPool__TABLE_hf7367149_0[__Vtableidx4];
-    toplevel__DOT__core__DOT__datapath__DOT__unnamedblk1__DOT__pc_plus_imm 
-        = (vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value 
-           + toplevel__DOT__core__DOT__datapath__DOT__igen_immediate);
-    toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_in1 
-        = toplevel__DOT__core__DOT__datapath__DOT__unnamedblk1__DOT__pc_plus_imm;
     toplevel__DOT__core__DOT__ctlpath__DOT__alu_ctrl__DOT__default_funct 
         = (((((((((0U == (7U & (vlSelf->toplevel__DOT__text_memory_bus_read_data 
                                 >> 0xcU))) | (1U == 
@@ -632,16 +613,15 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
                                                        >> 0xcU)))
                                                    ? toplevel__DOT__core__DOT__dmem__DOT__unnamedblk1__DOT__position_fix
                                                    : 0U)));
-    toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select__DOT__unnamedblk1__DOT__result 
+    vlSelf->toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_out 
         = ((0U == (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_next_pc_select))
-            ? toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_in0
+            ? ((IData)(4U) + vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value)
             : ((1U == (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_next_pc_select))
-                ? toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_in1
+                ? (vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value 
+                   + toplevel__DOT__core__DOT__datapath__DOT__igen_immediate)
                 : ((2U == (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_next_pc_select))
                     ? (0xfffffffeU & vlSelf->toplevel__DOT__core__DOT__datapath__DOT__alu_core_result)
                     : 0U)));
-    toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_out 
-        = toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select__DOT__unnamedblk1__DOT__result;
     toplevel__DOT__core__DOT__datapath__DOT__mux_reg_writeback__DOT__unnamedblk1__DOT__result 
         = (((((((((0U == (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_reg_writeback_select)) 
                   | (1U == (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_reg_writeback_select))) 
@@ -656,15 +636,11 @@ VL_ATTR_COLD void Vtoplevel___024root___settle__TOP__0(Vtoplevel___024root* vlSe
                 : ((1U == (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_reg_writeback_select))
                     ? toplevel__DOT__core__DOT__dmem_read_data
                     : ((2U == (IData)(toplevel__DOT__core__DOT__ctlpath__DOT__control_reg_writeback_select))
-                        ? toplevel__DOT__core__DOT__datapath__DOT__mux_reg_writeback_in2
+                        ? ((IData)(4U) + vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value)
                         : toplevel__DOT__core__DOT__datapath__DOT__igen_immediate)))
             : 0U);
     toplevel__DOT__core__DOT__datapath__DOT__mux_reg_writeback_out 
         = toplevel__DOT__core__DOT__datapath__DOT__mux_reg_writeback__DOT__unnamedblk1__DOT__result;
-    toplevel__DOT__core__DOT__datapath__DOT__unnamedblk1__DOT__pc_data 
-        = toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_out;
-    vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_next 
-        = toplevel__DOT__core__DOT__datapath__DOT__unnamedblk1__DOT__pc_data;
     toplevel__DOT__core__DOT__datapath__DOT__unnamedblk1__DOT__reg_data 
         = toplevel__DOT__core__DOT__datapath__DOT__mux_reg_writeback_out;
     vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs_rd_data 
@@ -713,7 +689,7 @@ VL_ATTR_COLD void Vtoplevel___024root___ctor_var_reset(Vtoplevel___024root* vlSe
     vlSelf->toplevel__DOT__core__DOT__dmem_bus_write_data = VL_RAND_RESET_I(32);
     vlSelf->toplevel__DOT__core__DOT__dmem_bus_byte_enable = VL_RAND_RESET_I(4);
     vlSelf->toplevel__DOT__core__DOT__datapath__DOT__alu_core_result = VL_RAND_RESET_I(32);
-    vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter_next = VL_RAND_RESET_I(32);
+    vlSelf->toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_out = VL_RAND_RESET_I(32);
     vlSelf->toplevel__DOT__core__DOT__datapath__DOT__regs_rd_data = VL_RAND_RESET_I(32);
     vlSelf->toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value = VL_RAND_RESET_I(32);
     for (int __Vi0=0; __Vi0<32; ++__Vi0) {

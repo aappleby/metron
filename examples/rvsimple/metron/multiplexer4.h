@@ -13,17 +13,21 @@
 template <int WIDTH = 32>
 class multiplexer4 {
  public:
+   logic<WIDTH> out;
+   logic<2> sel;
+   logic<WIDTH> in0;
+   logic<WIDTH> in1;
+   logic<WIDTH> in2;
+   logic<WIDTH> in3;
 
-  logic<WIDTH> out(logic<2> sel, logic<WIDTH> in0, logic<WIDTH> in1, logic<WIDTH> in2, logic<WIDTH> in3) const {
-    logic<WIDTH> result;
+  void tock() {
     switch (sel) {
-      case 0:  result = in0; break;
-      case 1:  result = in1; break;
-      case 2:  result = in2; break;
-      case 3:  result = in3; break;
-      default: result = bx<WIDTH>(DONTCARE); break;
+      case 0:  out = in0; break;
+      case 1:  out = in1; break;
+      case 2:  out = in2; break;
+      case 3:  out = in3; break;
+      default: out = bx<WIDTH>(DONTCARE); break;
     }
-    return result;
   }
 };
 

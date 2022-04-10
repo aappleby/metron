@@ -127,35 +127,31 @@ module singlecycle_datapath
   //----------------------------------------
 
   always_comb begin /*tock*/
-    logic[31:0] pc_plus_4;
-    logic[31:0] pc_plus_imm;
-    logic[31:0] pc_data;
     logic[31:0] reg_data;
     adder_pc_plus_4_operand_a = 32'h00000004;
     adder_pc_plus_4_operand_b = program_counter_value;
-    pc_plus_4 =
-        adder_pc_plus_4_result;
+    /*adder_pc_plus_4.tock()*/;
+
     adder_pc_plus_immediate_operand_a = program_counter_value;
     adder_pc_plus_immediate_operand_b = inst_immediate;
-    pc_plus_imm =
-        adder_pc_plus_immediate_result;
+    /*adder_pc_plus_immediate.tock()*/;
 
     mux_next_pc_select_sel = next_pc_select;
-    mux_next_pc_select_in0 = pc_plus_4;
-    mux_next_pc_select_in1 = pc_plus_imm;
+    mux_next_pc_select_in0 = adder_pc_plus_4_result;
+    mux_next_pc_select_in1 = adder_pc_plus_immediate_result;
     mux_next_pc_select_in2 = {alu_result[31:1], 1'b0};
     mux_next_pc_select_in3 = 32'b0;
-    pc_data =
-        mux_next_pc_select_out;
+    /*mux_next_pc_select.tock()*/;
+
     program_counter_reset = reset;
     program_counter_write_enable = pc_write_enable;
-    program_counter_next = pc_data;
-    /*program_counter.tock(reset, pc_write_enable, pc_data)*/;
+    program_counter_next = mux_next_pc_select_out;
+    /*program_counter.tock(reset, pc_write_enable, mux_next_pc_select.out)*/;
 
     mux_reg_writeback_sel = reg_writeback_select;
     mux_reg_writeback_in0 = alu_result;
     mux_reg_writeback_in1 = data_mem_read_data;
-    mux_reg_writeback_in2 = pc_plus_4;
+    mux_reg_writeback_in2 = adder_pc_plus_4_result;
     mux_reg_writeback_in3 = inst_immediate;
     mux_reg_writeback_in4 = 32'b0;
     mux_reg_writeback_in5 = 32'b0;

@@ -13,27 +13,30 @@
 module multiplexer4
 #(parameter int WIDTH = 32)
 (
-  input logic clock,
-  input logic[1:0] sel,
-  input logic[WIDTH-1:0] in0,
-  input logic[WIDTH-1:0] in1,
-  input logic[WIDTH-1:0] in2,
-  input logic[WIDTH-1:0] in3,
-  output logic[WIDTH-1:0] out
+   input logic clock,
+   input logic[1:0] sel,
+   input logic[WIDTH-1:0] in0,
+   input logic[WIDTH-1:0] in1,
+   input logic[WIDTH-1:0] in2,
+   input logic[WIDTH-1:0] in3,
+   output logic[WIDTH-1:0] out
 );
  /*public:*/
+   /*logic<WIDTH> out;*/
+   /*logic<2> sel;*/
+   /*logic<WIDTH> in0;*/
+   /*logic<WIDTH> in1;*/
+   /*logic<WIDTH> in2;*/
+   /*logic<WIDTH> in3;*/
 
-  always_comb begin
-    logic[WIDTH-1:0] result;
-    /*logic<WIDTH> result;*/
+  always_comb begin /*tock*/
     case (sel) 
-      /*case*/ 0:  result = in0; /*break;*/
-      /*case*/ 1:  result = in1; /*break;*/
-      /*case*/ 2:  result = in2; /*break;*/
-      /*case*/ 3:  result = in3; /*break;*/
-      default: result = WIDTH'(1'bx); /*break;*/
+      /*case*/ 0:  out = in0; /*break;*/
+      /*case*/ 1:  out = in1; /*break;*/
+      /*case*/ 2:  out = in2; /*break;*/
+      /*case*/ 3:  out = in3; /*break;*/
+      default: out = WIDTH'(1'bx); /*break;*/
     endcase
-    out = result;
   end
 endmodule
 

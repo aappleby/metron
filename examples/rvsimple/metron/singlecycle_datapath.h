@@ -103,18 +103,25 @@ class singlecycle_datapath {
   //----------------------------------------
 
   void tock() {
-    logic<32> pc_plus_4 =
-        adder_pc_plus_4.result(b32(0x00000004), program_counter.value());
-    logic<32> pc_plus_imm =
-        adder_pc_plus_immediate.result(program_counter.value(), inst_immediate);
+    adder_pc_plus_4.operand_a = b32(0x00000004);
+    adder_pc_plus_4.operand_b = program_counter.value();
+    adder_pc_plus_4.tock();
 
-    logic<32> pc_data =
-        mux_next_pc_select.out(next_pc_select, pc_plus_4, pc_plus_imm,
-                               cat(b31(alu_result, 1), b1(0b0)), b32(0b0));
-    program_counter.tock(reset, pc_write_enable, pc_data);
+    adder_pc_plus_immediate.operand_a = program_counter.value();
+    adder_pc_plus_immediate.operand_b = inst_immediate;
+    adder_pc_plus_immediate.tock();
+
+    mux_next_pc_select.sel = next_pc_select;
+    mux_next_pc_select.in0 = adder_pc_plus_4.result;
+    mux_next_pc_select.in1 = adder_pc_plus_immediate.result;
+    mux_next_pc_select.in2 = cat(b31(alu_result, 1), b1(0b0));
+    mux_next_pc_select.in3 = b32(0b0);
+    mux_next_pc_select.tock();
+
+    program_counter.tock(reset, pc_write_enable, mux_next_pc_select.out);
 
     logic<32> reg_data = mux_reg_writeback.out(
-        reg_writeback_select, alu_result, data_mem_read_data, pc_plus_4,
+        reg_writeback_select, alu_result, data_mem_read_data, adder_pc_plus_4.result,
         inst_immediate, b32(0b0), b32(0b0), b32(0b0), b32(0b0));
     regs.tock(regfile_write_enable, inst_rd, reg_data);
   }

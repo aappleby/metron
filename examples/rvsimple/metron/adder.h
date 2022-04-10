@@ -13,9 +13,11 @@
 template <int WIDTH = 32>
 class adder {
  public:
-  logic<WIDTH> result(logic<WIDTH> operand_a, logic<WIDTH> operand_b) const {
-    return operand_a + operand_b;
-  }
+  logic<WIDTH> operand_a;
+  logic<WIDTH> operand_b;
+  logic<WIDTH> result;
+
+  void tock() { result = operand_a + operand_b; }
 };
 
 #endif  // RVSIMPLE_ADDER_H

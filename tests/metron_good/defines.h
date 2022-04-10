@@ -1,6 +1,7 @@
 #include "metron_tools.h"
 
-// Basic #defines should work
+// Basic #defines should work as long as their contents are simultaneously
+// valid C++ and SV
 
 #define MY_CONSTANT1 10
 #define MY_CONSTANT2 20

@@ -19,6 +19,7 @@ VL_MODULE(Vtoplevel___024root) {
     VL_OUT8(o_bus_write_enable,0,0);
     CData/*3:0*/ toplevel__DOT__core__DOT__dmem_bus_byte_enable;
     CData/*0:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__control_regfile_write_enable;
+    CData/*2:0*/ toplevel__DOT__core__DOT__ctlpath__DOT__control_reg_writeback_select;
     CData/*0:0*/ __Vclklast__TOP__clock;
     VL_OUT(o_bus_read_data,31,0);
     VL_OUT(o_bus_address,31,0);
@@ -27,9 +28,10 @@ VL_MODULE(Vtoplevel___024root) {
     VL_OUT(o_pc,31,0);
     IData/*31:0*/ toplevel__DOT__text_memory_bus_read_data;
     IData/*31:0*/ toplevel__DOT__core__DOT__dmem_bus_write_data;
+    IData/*31:0*/ toplevel__DOT__core__DOT__dmem_read_data;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__alu_core_result;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_out;
-    IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__regs_rd_data;
+    IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__igen_immediate;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__program_counter__DOT___value;
     VlUnpacked<IData/*31:0*/, 32> toplevel__DOT__core__DOT__datapath__DOT__regs__DOT__regs;
     VlUnpacked<IData/*31:0*/, 16384> toplevel__DOT__text_memory_bus__DOT__text_memory__DOT__mem;

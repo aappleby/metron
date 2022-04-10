@@ -20,16 +20,19 @@ class regfile {
 
   logic<32> rs1_data;
   logic<32> rs2_data;
+  logic<1> write_enable;
+  logic<5> rd_address;
+  logic<32> rd_data;
 
   void tock_rs1_data() { rs1_data = regs[rs1_address]; }
   void tock_rs2_data() { rs2_data = regs[rs2_address]; }
 
-  void tock(logic<1> write_enable, logic<5> rd_address, logic<32> rd_data) {
-    tick(write_enable, rd_address, rd_data);
+  void tock() {
+    tick();
   }
 
  private:
-  void tick(logic<1> write_enable, logic<5> rd_address, logic<32> rd_data) {
+  void tick() {
     // Write port for rd
     if (write_enable && rd_address != b5(0)) {
       regs[rd_address] = rd_data;

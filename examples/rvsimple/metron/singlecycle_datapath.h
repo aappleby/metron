@@ -132,8 +132,10 @@ class singlecycle_datapath {
     mux_reg_writeback.in7 = b32(0b0);
     mux_reg_writeback.tock();
 
-    logic<32> reg_data = mux_reg_writeback.out;
-    regs.tock(regfile_write_enable, inst_rd, reg_data);
+    regs.write_enable = regfile_write_enable;
+    regs.rd_address = inst_rd;
+    regs.rd_data = mux_reg_writeback.out;
+    regs.tock();
   }
 
   //----------------------------------------

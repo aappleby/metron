@@ -30,12 +30,15 @@ module regfile
 
   /*logic<32> rs1_data;*/
   /*logic<32> rs2_data;*/
+  /*logic<1> write_enable;*/
+  /*logic<5> rd_address;*/
+  /*logic<32> rd_data;*/
 
   always_comb begin /*tock_rs1_data*/ rs1_data = regs[rs1_address]; end
   always_comb begin /*tock_rs2_data*/ rs2_data = regs[rs2_address]; end
 
   always_comb begin /*tock*/
-    /*tick(write_enable, rd_address, rd_data)*/;
+    /*tick()*/;
   end
 
  /*private:*/

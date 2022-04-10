@@ -127,7 +127,6 @@ module singlecycle_datapath
   //----------------------------------------
 
   always_comb begin /*tock*/
-    logic[31:0] reg_data;
     adder_pc_plus_4_operand_a = 32'h00000004;
     adder_pc_plus_4_operand_b = program_counter_value;
     /*adder_pc_plus_4.tock()*/;
@@ -160,11 +159,10 @@ module singlecycle_datapath
     mux_reg_writeback_in7 = 32'b0;
     /*mux_reg_writeback.tock()*/;
 
-    reg_data = mux_reg_writeback_out;
     regs_write_enable = regfile_write_enable;
     regs_rd_address = inst_rd;
-    regs_rd_data = reg_data;
-    /*regs.tock(regfile_write_enable, inst_rd, reg_data)*/;
+    regs_rd_data = mux_reg_writeback_out;
+    /*regs.tock()*/;
   end
 
   //----------------------------------------

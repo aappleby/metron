@@ -13,13 +13,21 @@
 class instruction_decoder {
  public:
    logic<32> inst;
+   logic<7> inst_opcode;
+   logic<3> inst_funct3;
+   logic<7> inst_funct7;
+   logic<5> inst_rd;
+   logic<5> inst_rs1;
+   logic<5> inst_rs2;
 
-  logic<7> inst_opcode() const { return b7(inst, 0); }
-  logic<3> inst_funct3() const { return b3(inst, 12); }
-  logic<7> inst_funct7() const { return b7(inst, 25); }
-  logic<5> inst_rd()     const { return b5(inst, 7); }
-  logic<5> inst_rs1()    const { return b5(inst, 15); }
-  logic<5> inst_rs2()    const { return b5(inst, 20); }
+   void tock() {
+     inst_opcode = b7(inst, 0);
+     inst_funct3 = b3(inst, 12);
+     inst_funct7 = b7(inst, 25);
+     inst_rd     = b5(inst, 7);
+     inst_rs1    = b5(inst, 15);
+     inst_rs2    = b5(inst, 20);
+   }
 };
 
 #endif  // RVSIMPLE_INSTRUCTION_DECODER_H

@@ -39,9 +39,11 @@ public:
 
   void tock2a() {
     ctlpath.inst_opcode = datapath.inst_opcode;
+    ctlpath.tock_control();
+
     ctlpath.inst_funct3 = datapath.inst_funct3;
     ctlpath.inst_funct7 = datapath.inst_funct7;
-    ctlpath.tock1();
+    ctlpath.tock1a();
 
     datapath.alu_function         = ctlpath.alu_function;
     datapath.alu_operand_a_select = ctlpath.alu_operand_a_select;

@@ -30,14 +30,16 @@ class singlecycle_ctlpath {
   logic<3> reg_writeback_select;
   logic<2> next_pc_select;
 
-  void tock1() {
+  void tock_control() {
     control.inst_opcode = inst_opcode;
     control.tock_alu_op_type2();
     control.tock_alu_operand_a_select();
     control.tock_alu_operand_b_select();
     control.tock_data_mem_read_enable();
     control.tock_data_mem_write_enable();
+  }
 
+  void tock1a() {
     alu_ctrl.alu_op_type = control.alu_op_type2;
     alu_ctrl.inst_funct3 = inst_funct3;
     alu_ctrl.inst_funct7 = inst_funct7;

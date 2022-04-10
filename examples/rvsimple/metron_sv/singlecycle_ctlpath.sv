@@ -46,14 +46,16 @@ module singlecycle_ctlpath
   /*logic<3> reg_writeback_select;*/
   /*logic<2> next_pc_select;*/
 
-  always_comb begin /*tock1*/
+  always_comb begin /*tock_control*/
     control_inst_opcode = inst_opcode;
     /*control.tock_alu_op_type2()*/;
     /*control.tock_alu_operand_a_select()*/;
     /*control.tock_alu_operand_b_select()*/;
     /*control.tock_data_mem_read_enable()*/;
     /*control.tock_data_mem_write_enable()*/;
+  end
 
+  always_comb begin /*tock1a*/
     alu_ctrl_alu_op_type = control_alu_op_type2;
     alu_ctrl_inst_funct3 = inst_funct3;
     alu_ctrl_inst_funct7 = inst_funct7;

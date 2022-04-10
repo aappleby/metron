@@ -51,9 +51,11 @@ module riscv_core
 
   always_comb begin /*tock2a*/
     ctlpath_inst_opcode = datapath_inst_opcode;
+    /*ctlpath.tock_control()*/;
+
     ctlpath_inst_funct3 = datapath_inst_funct3;
     ctlpath_inst_funct7 = datapath_inst_funct7;
-    /*ctlpath.tock1()*/;
+    /*ctlpath.tock1a()*/;
 
     datapath_alu_function         = ctlpath_alu_function;
     datapath_alu_operand_a_select = ctlpath_alu_operand_a_select;

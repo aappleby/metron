@@ -63,19 +63,11 @@ module singlecycle_ctlpath
   end
 
 
-  always_comb begin /*tock_pc_write_enable*/ pc_write_enable = control_pc_write_enable; end
-
-  always_comb begin /*tock_regfile_write_enable*/
-    regfile_write_enable = control_regfile_write_enable;
-  end
-
-
-  always_comb begin /*tock_reg_writeback_select*/
-    reg_writeback_select = control_reg_writeback_select;
-  end
-
-  always_comb begin /*tock_next_pc_select*/
+  always_comb begin /*tock2*/
     logic take_branch;
+    pc_write_enable = control_pc_write_enable;
+    regfile_write_enable = control_regfile_write_enable;
+    reg_writeback_select = control_reg_writeback_select;
     transfer_result_equal_zero = alu_result_equal_zero;
     transfer_inst_funct3 = inst_funct3;
     /*transfer.tock_take_branch()*/;

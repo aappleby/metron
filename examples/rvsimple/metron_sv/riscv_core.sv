@@ -71,10 +71,7 @@ module riscv_core
 
   always_comb begin /*tock2*/
     ctlpath_alu_result_equal_zero = alu_result == 0;
-    /*ctlpath.tock_regfile_write_enable()*/;
-    /*ctlpath.tock_reg_writeback_select()*/;
-    /*ctlpath.tock_next_pc_select()*/;
-    /*ctlpath.tock_pc_write_enable()*/;
+    /*ctlpath.tock2()*/;
 
     dmem_bus_read_data = bus_read_data;
     /*dmem.tock_read_data()*/;

@@ -59,7 +59,7 @@ public:
     dmem.data_format  = datapath.inst_funct3;
     dmem.address      = datapath.data_mem_address;
     dmem.write_data   = datapath.data_mem_write_data;
-    dmem.tock1();
+    dmem.tock_bus();
 
     ctlpath.alu_result_equal_zero = datapath.alu_result_equal_zero;
     ctlpath.tock_pc_write_enable();
@@ -78,7 +78,7 @@ public:
 
   void tock_writeback() {
     dmem.bus_read_data = bus_read_data;
-    dmem.tock2();
+    dmem.tock_read_data();
 
     datapath.next_pc_select       = ctlpath.next_pc_select;
     datapath.tock_adder_pc_plus_4();

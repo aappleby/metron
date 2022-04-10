@@ -23,10 +23,15 @@ class data_memory_interface {
   logic<32> bus_read_data;
   logic<32> bus_write_data;
   logic<4>  bus_byte_enable;
-  logic<1>  bus_write_enable;
   logic<1>  bus_read_enable;
+  logic<1>  bus_write_enable;
 
-  void tock1() {
+private:
+  logic<32> position_fix;
+  logic<32> sign_fix;
+public:
+
+  void tock_bus() {
     bus_address      = address;
     bus_write_enable = write_enable;
     bus_read_enable  = read_enable;
@@ -44,18 +49,20 @@ class data_memory_interface {
   }
 
   // correct for unaligned accesses
-  void tock2() {
-    logic<32> position_fix = b32(bus_read_data >> (8 * b2(address)));
+  void tock_read_data() {
+    position_fix = b32(bus_read_data >> (8 * b2(address)));
 
     // sign-extend if necessary
     // clang-format off
     switch (b2(data_format)) {
-      case 0b00: read_data = cat(dup<24>(b1(~data_format[2] & position_fix[7])), b8(position_fix)); break;
-      case 0b01: read_data = cat(dup<16>(b1(~data_format[2] & position_fix[15])), b16(position_fix)); break;
-      case 0b10: read_data = b32(position_fix); break;
-      default:   read_data = b32(DONTCARE); break;
+      case 0b00: sign_fix = cat(dup<24>(b1(~data_format[2] & position_fix[7])), b8(position_fix)); break;
+      case 0b01: sign_fix = cat(dup<16>(b1(~data_format[2] & position_fix[15])), b16(position_fix)); break;
+      case 0b10: sign_fix = b32(position_fix); break;
+      default:   sign_fix = b32(DONTCARE); break;
     }
     // clang-format on
+
+    read_data = sign_fix;
   }
 };
 

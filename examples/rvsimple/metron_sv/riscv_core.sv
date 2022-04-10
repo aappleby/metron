@@ -71,7 +71,7 @@ module riscv_core
     dmem_data_format  = datapath_inst_funct3;
     dmem_address      = datapath_data_mem_address;
     dmem_write_data   = datapath_data_mem_write_data;
-    /*dmem.tock1()*/;
+    /*dmem.tock_bus()*/;
 
     ctlpath_alu_result_equal_zero = datapath_alu_result_equal_zero;
     /*ctlpath.tock_pc_write_enable()*/;
@@ -90,7 +90,7 @@ module riscv_core
 
   always_comb begin /*tock_writeback*/
     dmem_bus_read_data = bus_read_data;
-    /*dmem.tock2()*/;
+    /*dmem.tock_read_data()*/;
 
     datapath_next_pc_select       = ctlpath_next_pc_select;
     /*datapath.tock_adder_pc_plus_4()*/;
@@ -198,8 +198,8 @@ module riscv_core
     .bus_address(dmem_bus_address), 
     .bus_write_data(dmem_bus_write_data), 
     .bus_byte_enable(dmem_bus_byte_enable), 
-    .bus_write_enable(dmem_bus_write_enable), 
-    .bus_read_enable(dmem_bus_read_enable)
+    .bus_read_enable(dmem_bus_read_enable), 
+    .bus_write_enable(dmem_bus_write_enable)
   );
   logic  dmem_read_enable;
   logic  dmem_write_enable;
@@ -211,8 +211,8 @@ module riscv_core
   logic[31:0] dmem_bus_address;
   logic[31:0] dmem_bus_write_data;
   logic[3:0]  dmem_bus_byte_enable;
-  logic  dmem_bus_write_enable;
   logic  dmem_bus_read_enable;
+  logic  dmem_bus_write_enable;
 
 endmodule;
 

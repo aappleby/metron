@@ -23,8 +23,8 @@ module data_memory_interface
   input logic[31:0] bus_read_data,
   output logic[31:0] bus_write_data,
   output logic[3:0]  bus_byte_enable,
-  output logic  bus_write_enable,
-  output logic  bus_read_enable
+  output logic  bus_read_enable,
+  output logic  bus_write_enable
 );
  /*public:*/
   /*logic<1>  read_enable;*/
@@ -38,10 +38,15 @@ module data_memory_interface
   /*logic<32> bus_read_data;*/
   /*logic<32> bus_write_data;*/
   /*logic<4>  bus_byte_enable;*/
-  /*logic<1>  bus_write_enable;*/
   /*logic<1>  bus_read_enable;*/
+  /*logic<1>  bus_write_enable;*/
 
-  always_comb begin /*tock1*/
+/*private:*/
+  logic[31:0] position_fix;
+  logic[31:0] sign_fix;
+/*public:*/
+
+  always_comb begin /*tock_bus*/
     bus_address      = address;
     bus_write_enable = write_enable;
     bus_read_enable  = read_enable;
@@ -59,19 +64,20 @@ module data_memory_interface
   end
 
   // correct for unaligned accesses
-  always_comb begin /*tock2*/
-    logic[31:0] position_fix;
+  always_comb begin /*tock_read_data*/
     position_fix = 32'(bus_read_data >> (8 * 2'(address)));
 
     // sign-extend if necessary
     // clang-format off
     case (2'(data_format)) 
-      /*case*/ 2'b00: read_data = {{24 {1'(~data_format[2] & position_fix[7])}}, 8'(position_fix)}; /*break;*/
-      /*case*/ 2'b01: read_data = {{16 {1'(~data_format[2] & position_fix[15])}}, 16'(position_fix)}; /*break;*/
-      /*case*/ 2'b10: read_data = 32'(position_fix); /*break;*/
-      default:   read_data = 32'bx; /*break;*/
+      /*case*/ 2'b00: sign_fix = {{24 {1'(~data_format[2] & position_fix[7])}}, 8'(position_fix)}; /*break;*/
+      /*case*/ 2'b01: sign_fix = {{16 {1'(~data_format[2] & position_fix[15])}}, 16'(position_fix)}; /*break;*/
+      /*case*/ 2'b10: sign_fix = 32'(position_fix); /*break;*/
+      default:   sign_fix = 32'bx; /*break;*/
     endcase
     // clang-format on
+
+    read_data = sign_fix;
   end
 endmodule;
 

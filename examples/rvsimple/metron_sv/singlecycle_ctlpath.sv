@@ -80,6 +80,7 @@ module singlecycle_ctlpath
     transfer_inst_funct3 = inst_funct3;
     /*transfer.tock_take_branch()*/;
     take_branch = transfer_take_branch;
+
     control_take_branch = take_branch;
     next_pc_select = control_next_pc_select;
   end

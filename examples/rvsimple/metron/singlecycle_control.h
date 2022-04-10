@@ -14,8 +14,9 @@ class singlecycle_control {
  public:
 
    logic<7> inst_opcode;
+   logic<1> take_branch;
 
-  logic<2> next_pc_select(logic<1> take_branch) const {
+  logic<2> next_pc_select() const {
     using namespace rv_constants;
     logic<2> result;
     switch (inst_opcode) {

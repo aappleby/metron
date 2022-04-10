@@ -63,7 +63,9 @@ class singlecycle_ctlpath {
     transfer.inst_funct3 = inst_funct3;
     transfer.tock_take_branch();
     logic<1> take_branch = transfer.take_branch;
-    next_pc_select = control.next_pc_select(take_branch);
+
+    control.take_branch = take_branch;
+    next_pc_select = control.next_pc_select();
   }
 
   //----------------------------------------

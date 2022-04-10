@@ -28,6 +28,7 @@ module singlecycle_control
  /*public:*/
 
    /*logic<7> inst_opcode;*/
+   /*logic<1> take_branch;*/
 
   always_comb begin
     logic[1:0] result;

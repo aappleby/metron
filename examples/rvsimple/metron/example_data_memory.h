@@ -12,18 +12,17 @@
 
 class example_data_memory {
  public:
-  example_data_memory() {
-    std::string s;
-    value_plusargs("data_file=%s", s);
-    readmemh(s, mem);
-  }
-
   logic<rv_config::DATA_BITS - 2> address;
   logic<32> q;
   logic<1> wren;
   logic<4> byteena;
   logic<32> data;
 
+ private:
+  /*#(* nomem2reg *)#*/
+  logic<32> mem[pow2(rv_config::DATA_BITS - 2)];
+
+ public:
   void tock() {
     q = mem[address];
     tick();
@@ -32,6 +31,8 @@ class example_data_memory {
  private:
   void tick() {
     if (wren) {
+      // doing this slightly differently from rvsimple so we don't have to do
+      // sub-array writes to mem.
       logic<32> mask = 0;
       if (byteena[0]) mask = mask | 0x000000FF;
       if (byteena[1]) mask = mask | 0x0000FF00;
@@ -41,7 +42,12 @@ class example_data_memory {
     }
   }
 
-  logic<32> mem[pow2(rv_config::DATA_BITS - 2)];
+ public:
+  example_data_memory() {
+    std::string s;
+    value_plusargs("data_file=%s", s);
+    readmemh(s, mem);
+  }
 };
 
 #endif  // RVSIMPLE_EXAMPLE_DATA_MEMORY_H

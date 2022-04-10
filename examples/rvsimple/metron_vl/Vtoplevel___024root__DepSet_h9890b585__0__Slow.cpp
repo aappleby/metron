@@ -32,12 +32,12 @@ VL_ATTR_COLD void Vtoplevel___024root___initial__TOP__0(Vtoplevel___024root* vlS
     __Vtemp_hfdc9732b__0[1U] = 0x5f66696cU;
     __Vtemp_hfdc9732b__0[2U] = 0x64617461U;
     (void)VL_VALUEPLUSARGS_INN(64, VL_CVT_PACK_STR_NW(3, __Vtemp_hfdc9732b__0), 
-                               vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__unnamedblk1__DOT__s);VL_READMEM_N(true
+                               vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__unnamedblk2__DOT__s);VL_READMEM_N(true
                                                                                 , 32
                                                                                 , 32768
                                                                                 , 0
                                                                                 , 
-                                                                                VL_CVT_PACK_STR_NN(vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__unnamedblk1__DOT__s)
+                                                                                VL_CVT_PACK_STR_NN(vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__unnamedblk2__DOT__s)
                                                                                 ,  &(vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__mem)
                                                                                 , 0
                                                                                 , ~0ULL);

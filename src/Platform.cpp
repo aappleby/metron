@@ -94,6 +94,22 @@ void dprintf(const char* format, ...) {
     LOG_R("cwd %s\n", cwd);
   }
 */
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+/* Paste this on the file you want to debug. */
+#include <stdio.h>
+#include <execinfo.h>
+void print_trace(void) {
+  void *array[1024];
+  size_t size = backtrace(array, 1024);
+  char **strings = backtrace_symbols(array, size);
+  for (int i = 0; i < size; i++) printf("%s\n", strings[i]);
+  free(strings);
+}
+
 #endif
 
 //------------------------------------------------------------------------------
@@ -127,6 +143,10 @@ void dprintf(const char* format, ...) {
     LOG_R("cwd %s\n", cwd);
   }
 */
+
+
+void print_trace() {
+}
 
 #endif
 

@@ -31,7 +31,8 @@ def main():
 obj_dir = "obj"
 outfile = open("build.ninja", "w+")
 ninja = ninja_syntax.Writer(outfile)
-opt_mode = "-O3"
+#opt_mode = "-O3"
+opt_mode = ""
 
 
 def swap_ext(name, new_ext):
@@ -63,10 +64,10 @@ ninja.build("build.ninja", "autoupdate", "build.py")
 
 divider("Rules")
 
-ninja.rule("compile_cpp",   command="g++ -g ${opt} -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}", deps="gcc", depfile="${out}.d")
-ninja.rule("compile_c",     command="gcc -g ${opt} ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}", deps="gcc", depfile="${out}.d")
+ninja.rule("compile_cpp",   command="g++ -rdynamic -g ${opt} -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}", deps="gcc", depfile="${out}.d")
+ninja.rule("compile_c",     command="gcc -rdynamic -g ${opt} ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}", deps="gcc", depfile="${out}.d")
 ninja.rule("static_lib",    command="ar rcs ${out} ${in} > /dev/null")
-ninja.rule("link",          command="g++ -g $opt ${in} -Wl,--whole-archive ${local_libs} -Wl,--no-whole-archive ${global_libs} -o ${out}")
+ninja.rule("link",          command="g++ -rdynamic -g $opt ${in} -Wl,--whole-archive ${local_libs} -Wl,--no-whole-archive ${global_libs} -o ${out}")
 
 ninja.rule("metron",        command="bin/metron -q -r ${src_dir} -o ${dst_dir} -c ${src_top}")
 ninja.rule("verilator",     command="verilator ${includes} --cc ${src_top} -Mdir ${dst_dir}")

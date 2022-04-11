@@ -11,18 +11,19 @@ build build.ninja: autoupdate build.py
 # Rules
 
 rule compile_cpp
-  command = g++ -g ${opt} -std=gnu++2a ${includes} -MMD -MF ${out}.d -c $
-      ${in} -o ${out}
+  command = g++ -rdynamic -g ${opt} -std=gnu++2a ${includes} -MMD -MF $
+      ${out}.d -c ${in} -o ${out}
   depfile = ${out}.d
   deps = gcc
 rule compile_c
-  command = gcc -g ${opt} ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}
+  command = gcc -rdynamic -g ${opt} ${includes} -MMD -MF ${out}.d -c ${in} $
+      -o ${out}
   depfile = ${out}.d
   deps = gcc
 rule static_lib
   command = ar rcs ${out} ${in} > /dev/null
 rule link
-  command = g++ -g $opt ${in} -Wl,--whole-archive ${local_libs} $
+  command = g++ -rdynamic -g $opt ${in} -Wl,--whole-archive ${local_libs} $
       -Wl,--no-whole-archive ${global_libs} -o ${out}
 rule metron
   command = bin/metron -q -r ${src_dir} -o ${dst_dir} -c ${src_top}
@@ -267,10 +268,10 @@ build obj/examples/uart/uart_test_ice40.bin: icepack $
 
 build obj/examples/rvsimple/main.o: compile_cpp examples/rvsimple/main.cpp
   includes = -I. -Isrc
-  opt = -O3
+  opt = 
 build bin/examples/rvsimple: link obj/examples/rvsimple/main.o
   includes = -I. -Isrc
-  opt = -O3
+  opt = 
 
 
 ################################################################################
@@ -453,10 +454,10 @@ build bin/examples/rvsimple_ref: link obj/verilated.o $
 
 build obj/examples/rvtiny/main.o: compile_cpp examples/rvtiny/main.cpp
   includes = -I. -Isrc
-  opt = -O3
+  opt = 
 build bin/examples/rvtiny: link obj/examples/rvtiny/main.o
   includes = -I. -Isrc
-  opt = -O3
+  opt = 
 
 
 ################################################################################
@@ -504,10 +505,10 @@ build bin/examples/rvtiny_vl: link obj/verilated.o $
 build obj/examples/rvtiny_sync/main.o: compile_cpp $
     examples/rvtiny_sync/main.cpp
   includes = -I. -Isrc
-  opt = -O3
+  opt = 
 build bin/examples/rvtiny_sync: link obj/examples/rvtiny_sync/main.o
   includes = -I. -Isrc
-  opt = -O3
+  opt = 
 
 
 ################################################################################
@@ -555,11 +556,11 @@ build bin/examples/rvtiny_sync_vl: link obj/verilated.o $
 build obj/examples/pong/main.o: compile_cpp examples/pong/main.cpp
   includes = -I. -Isrc
   global_libs = -lSDL2
-  opt = -O3
+  opt = 
 build bin/examples/pong: link obj/examples/pong/main.o
   includes = -I. -Isrc
   global_libs = -lSDL2
-  opt = -O3
+  opt = 
 
 
 ################################################################################

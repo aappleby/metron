@@ -237,16 +237,16 @@ int main(int argc, char** argv) {
     err << cursor.emit_dispatch(source_file->root_node);
     err << cursor.emit_printf("\n");
 
+    if (err.has_err()) {
+      LOG_R("Error during code generation\n");
+      exit(-1);
+    }
+
     if (echo) {
       LOG_G("--------------------------------------------------------------------------------\n");
       LOG_G("Final converted source:\n");
       printf("%s", out_string.c_str());
       LOG_G("--------------------------------------------------------------------------------\n");
-    }
-
-    if (err.has_err()) {
-      LOG_R("Error during code generation\n");
-      exit(-1);
     }
 
     // Save translated source to output directory, if there is one.

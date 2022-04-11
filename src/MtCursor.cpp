@@ -1799,12 +1799,37 @@ CHECK_RETURN Err MtCursor::emit_expression(MnExprStatement n) {
 
   //n.dump_tree();
 
+  // FIXME having this handling of sym_call_expression here is confusing and bad
+
   if (n.child(0).sym == sym_call_expression) {
-    auto call = n.child(0);
-    if ( call.get_field(field_function).sym == sym_field_expression) {
+
+    auto call_node = n.child(0);
+    auto func_node = call_node.get_field(field_function);
+    if (func_node.sym == sym_field_expression) {
+      // Submod call
+
+      auto inst_id = func_node.get_field(field_argument);
+      auto meth_id = func_node.get_field(field_field);
+      auto submod = current_mod->get_submod(inst_id.text());
+      assert(submod);
+      auto submod_mod = source_file->lib->get_module(submod->type_name());
+      auto submod_meth = submod_mod->get_method(meth_id.text());
+
+      if (current_method->is_tick) {
+        if (submod_meth->params.size()) {
+          return ERR("Tick methods can't call submod methods with parameters");
+        }
+        if (call_node.get_field(field_function).get_field(field_field).text().starts_with("tick")) {
+          return ERR("Tick methods can't call submod tick methods");
+        }
+        if (call_node.get_field(field_function).get_field(field_field).text().starts_with("tock")) {
+          return ERR("Tick methods can't call submod tock methods");
+        }
+      }
+
       // This node is a block-level call to a submodule - since there's nothing
       // on the LHS to bind the output to, we just comment out the whole call.
-      err << comment_out(call);
+      err << comment_out(call_node);
 
       // There should only be a semicolon after the call...
       for (int i = 1; i < n.child_count(); i++) {

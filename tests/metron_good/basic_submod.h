@@ -15,7 +15,7 @@ public:
 class Module {
 public:
 
-  void tick() {
+  void tock() {
     submod.tick();
   }
 

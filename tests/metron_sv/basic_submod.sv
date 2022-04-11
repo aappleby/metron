@@ -21,7 +21,7 @@ module Module
 );
 /*public:*/
 
-  always_ff @(posedge clock) begin : tick
+  always_comb begin /*tock*/
     /*submod.tick()*/;
   end
 

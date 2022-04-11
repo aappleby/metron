@@ -15,7 +15,7 @@ module Module
 /*public:*/
 
   always_comb begin /*tock1*/
-    tock1 = foo;
+    tock1 = MyPackage::foo;
   end
 
   always_comb begin /*tock2*/

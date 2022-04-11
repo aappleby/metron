@@ -9,12 +9,9 @@ namespace MyPackage {
 class Module {
 public:
 
-  /*
-  // FIXME the namespace is getting pruned off this...
   logic<8> tock1() {
     return MyPackage::foo;
   }
-  */
 
   logic<8> tock2() {
     using namespace MyPackage;

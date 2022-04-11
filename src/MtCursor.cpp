@@ -148,7 +148,7 @@ CHECK_RETURN Err MtCursor::skip_over(MnNode n) {
   } else {
     if (echo) {
       printf("\u001b[38;2;255;128;128m");
-      printf("/*%s*/", n.text().c_str());
+      printf("%s", n.text().c_str());
       printf("\u001b[0m");
     }
 
@@ -163,9 +163,42 @@ CHECK_RETURN Err MtCursor::skip_over(MnNode n) {
 
 CHECK_RETURN Err MtCursor::skip_ws() {
   Err err;
+
+  if (echo) {
+    printf("\u001b[38;2;255;128;128m");
+  }
+
   while (*cursor && isspace(*cursor)) {
+    if (echo) printf("_");
     cursor++;
   }
+
+  if (echo) {
+    printf("\u001b[0m");
+  }
+
+  return err;
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err MtCursor::prune_trailing_ws() {
+  Err err;
+
+  if (echo) {
+    printf("\u001b[38;2;255;128;128m");
+  }
+
+  while (isspace(str_out->back())) {
+    if (echo) printf("^H");
+    str_out->pop_back();
+  }
+
+
+  if (echo) {
+    printf("\u001b[0m");
+  }
+
   return err;
 }
 
@@ -606,6 +639,7 @@ CHECK_RETURN Err MtCursor::emit_init_declarator_as_decl(MnDecl n) {
   err << emit_template_type(n._type());
   err << emit_ws();
   err << emit_identifier(n._init_decl().decl());
+  err << prune_trailing_ws();
   err << emit_printf(";");
   cursor = n.end();
 
@@ -631,6 +665,7 @@ CHECK_RETURN Err MtCursor::emit_init_declarator_as_assign(MnDecl n) {
   assert(n.is_init_decl());
   cursor = n._init_decl().start();
   err << emit_dispatch(n._init_decl());
+  err << prune_trailing_ws();
   err << emit_printf(";");
   cursor = n.end();
 
@@ -775,6 +810,7 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
           err << emit_dispatch(arg_node);
           cursor = arg_node.end();
 
+          err << prune_trailing_ws();
           err << emit_printf(";");
           err << emit_newline();
           err << emit_indent();
@@ -803,6 +839,7 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
         err << emit_dispatch(arg_node);
         cursor = arg_node.end();
 
+        err << prune_trailing_ws();
         err << emit_printf(";");
         err << emit_newline();
         err << emit_indent();
@@ -867,6 +904,7 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
       subcursor.cursor = param_name.start();
       err << subcursor.emit_dispatch(param_name);
 
+      err << prune_trailing_ws();
       err << emit_printf(";");
       err << emit_newline();
       err << emit_indent();
@@ -894,6 +932,7 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
     err << skip_ws();
     err << emit_printf("task ");
     err << emit_dispatch(func_decl);
+    err << prune_trailing_ws();
     err << emit_printf(";");
   } else if (current_method->is_func) {
     if (in_public) {
@@ -907,6 +946,7 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
       err << emit_dispatch(return_type);
       err << emit_ws();
       err << emit_dispatch(func_decl);
+      err << prune_trailing_ws();
       err << emit_printf(";");
     }
   } else {
@@ -1164,7 +1204,10 @@ CHECK_RETURN Err MtCursor::emit_field_as_enum_class(MnFieldDecl n) {
   cursor = n.end();
 
   // BUG: Trailing semicolons are inconsistent.
-  if (n.text().back() == ';') err << emit_printf(";");
+  if (n.text().back() == ';') {
+    err << prune_trailing_ws();
+    err << emit_printf(";");
+  }
   assert(cursor == n.end());
 
   return err;
@@ -1356,6 +1399,7 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl submod) {
     err << subcursor.emit_ws();
     err << emit_printf("%s_", submod_decl.text().c_str());
     err << subcursor.emit_dispatch(output_decl);
+    err << prune_trailing_ws();
     err << emit_printf(";");
     err << emit_newline();
   }
@@ -1376,6 +1420,7 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl submod) {
     err << subcursor.emit_ws();
     err << emit_printf("%s_%s_", submod_decl.text().c_str(), n->func_name.c_str());
     err << subcursor.emit_dispatch(output_decl);
+    err << prune_trailing_ws();
     err << emit_printf(";");
     err << emit_newline();
   }
@@ -1396,6 +1441,7 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl submod) {
     err << subcursor.emit_ws();
     err << emit_printf("%s_", submod_decl.text().c_str());
     err << subcursor.emit_dispatch(output_decl);
+    err << prune_trailing_ws();
     err << emit_printf(";");
     err << emit_newline();
   }
@@ -1416,6 +1462,7 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl submod) {
     err << subcursor.emit_ws();
     err << emit_printf("%s_", submod_decl.text().c_str());
     err << subcursor.emit_dispatch(output_decl);
+    err << prune_trailing_ws();
     err << emit_printf(";");
     err << emit_newline();
   }
@@ -1438,6 +1485,7 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl submod) {
     err << sub_cursor.emit_ws();
     err << emit_printf("%s_", submod_decl.text().c_str());
     err << sub_cursor.emit_dispatch(getter_name);
+    err << prune_trailing_ws();
     err << emit_printf(";");
     err << emit_newline();
   }
@@ -2021,6 +2069,7 @@ CHECK_RETURN Err MtCursor::emit_return(MnReturnStatement n) {
   cursor = node_expr.start();
   err << emit_printf("%s = ", current_method->name().c_str());
   err << emit_dispatch(node_expr);
+  err << prune_trailing_ws();
   err << emit_printf(";");
 
   // FIXME We can only emit a 'return' if we're in a task or function.
@@ -2455,6 +2504,7 @@ CHECK_RETURN Err MtCursor::emit_decl(MnDecl n) {
       auto val = init_decl.get_field(field_value);
       cursor = val.start();
       err << emit_text(val);
+      err << prune_trailing_ws();
       err << emit_printf(";");
       cursor = n.end();
       return err;
@@ -2556,7 +2606,10 @@ CHECK_RETURN Err MtCursor::emit_arg_list(MnArgList n) {
 
 CHECK_RETURN Err MtCursor::emit_param_list(MnParameterList n) {
   assert(cursor == n.start());
-  return emit_children(n);
+  Err err;
+  err << emit_children(n);
+  //err << emit_ws_to_newline();
+  return err;
 }
 
 CHECK_RETURN Err MtCursor::emit_field_id(MnFieldIdentifier n) {
@@ -2665,7 +2718,9 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
       break;
 
     case sym_type_qualifier:
-      err << comment_out(n);
+      //err << comment_out(n);
+      err << skip_over(n);
+      err << skip_ws();
       break;
 
     case sym_access_specifier:
@@ -2841,17 +2896,26 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
       }
       break;
   }
-  assert(err.has_err() || cursor == n.end());
 
-  /*
-  if (error) {
-    n.dump_source_lines();
-    n.dump_tree();
-    debugbreak();
-  }
-  */
+  err << check_done(n);
 
   return err;
+}
+
+CHECK_RETURN Err MtCursor::check_done(MnNode n) {
+  if (cursor < n.end()) {
+    return ERR("Cursor was left inside the current node\n");
+  }
+
+  if (cursor > n.end()) {
+    for (auto c = n.end(); c < cursor; c++) {
+      if (!isspace(*c)) {
+        return ERR("Cursor ended up protruding into the next node\n");
+      }
+    }
+  }
+
+  return Err();
 }
 
 //------------------------------------------------------------------------------
@@ -2874,3 +2938,4 @@ CHECK_RETURN Err MtCursor::emit_children(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
+

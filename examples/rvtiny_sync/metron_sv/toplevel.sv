@@ -39,15 +39,15 @@ module toplevel
   //----------------------------------------
 
  /*private:*/
-  localparam /*const*/ int OP_ALU = 8'h33;
-  localparam /*const*/ int OP_ALUI = 8'h13;
-  localparam /*const*/ int OP_LOAD = 8'h03;
-  localparam /*const*/ int OP_STORE = 8'h23;
-  localparam /*const*/ int OP_BRANCH = 8'h63;
-  localparam /*const*/ int OP_JAL = 8'h6F;
-  localparam /*const*/ int OP_JALR = 8'h67;
-  localparam /*const*/ int OP_LUI = 8'h37;
-  localparam /*const*/ int OP_AUIPC = 8'h17;
+  localparam int OP_ALU = 8'h33;
+  localparam int OP_ALUI = 8'h13;
+  localparam int OP_LOAD = 8'h03;
+  localparam int OP_STORE = 8'h23;
+  localparam int OP_BRANCH = 8'h63;
+  localparam int OP_JAL = 8'h6F;
+  localparam int OP_JALR = 8'h67;
+  localparam int OP_LUI = 8'h37;
+  localparam int OP_AUIPC = 8'h17;
 
   logic tick_reset;
   always_ff @(posedge clock) begin : tick

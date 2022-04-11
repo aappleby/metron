@@ -164,25 +164,25 @@ module Pong
 
 /*private:*/
 
-	function logic in_border() /*const*/;
+	function logic in_border();
 		in_border = (px <= 7) || (px >= 633) || (py <= 7) || (py >= 473);
 	endfunction
 
-	function logic in_paddle() /*const*/;
+	function logic in_paddle();
 		in_paddle = (px >= pad_x - 63) &&
 		       (px <= pad_x + 63) &&
 		       (py >= pad_y -  3) &&
 		       (py <= pad_y +  3);
 	endfunction
 
-	function logic in_ball() /*const*/;
+	function logic in_ball();
 		in_ball = (px >= ball_x - 7) &&
 		       (px <= ball_x + 7) &&
 		       (py >= ball_y - 7) &&
 		       (py <= ball_y + 7);
 	endfunction
 
-	function logic in_checker() /*const*/;
+	function logic in_checker();
 		in_checker = px[3] ^ py[3];
 	endfunction
 

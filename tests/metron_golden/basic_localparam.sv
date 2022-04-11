@@ -9,7 +9,7 @@ module Module
 );
 /*public:*/
 
-  localparam /*const*/ int my_val = 7;
+  localparam int my_val = 7;
 
   always_ff @(posedge clock) begin : tick
     my_reg <= my_val;

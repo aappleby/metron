@@ -8,7 +8,7 @@ module Module
 );
 /*public:*/
 
-  localparam /*const*/ int some_size = 7;
+  localparam int some_size = 7;
 
   always_comb begin /*tock_bN*/
     logic[63:0] src;
@@ -315,8 +315,8 @@ module Module
     dst9 = src[16:9];
   end
 
-  localparam /*const*/ int some_size1 = 64;
-  localparam /*const*/ int some_size2 = 8;
+  localparam int some_size1 = 64;
+  localparam int some_size2 = 8;
 
   always_comb begin /*tock_bx_param*/
     logic[some_size1-1:0] a;

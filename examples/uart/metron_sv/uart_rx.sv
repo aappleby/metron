@@ -56,10 +56,10 @@ tick_i_serial = tock_i_serial;
     end
   end
 
-  localparam /*const*/ int cycle_bits = $clog2(cycles_per_bit);
-  localparam /*const*/ int cycle_max = cycles_per_bit - 1;
-  localparam /*const*/ int cursor_max = 9;
-  localparam /*const*/ int cursor_bits = $clog2(cursor_max);
+  localparam int cycle_bits = $clog2(cycles_per_bit);
+  localparam int cycle_max = cycles_per_bit - 1;
+  localparam int cursor_max = 9;
+  localparam int cursor_bits = $clog2(cursor_max);
 
   logic[cycle_bits-1:0] cycle;
   logic[cursor_bits-1:0] cursor;

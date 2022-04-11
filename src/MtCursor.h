@@ -39,6 +39,7 @@ struct MtCursor {
   CHECK_RETURN Err emit_replacement(MnNode n, const char* fmt, ...);
   CHECK_RETURN Err skip_over(MnNode n);
   CHECK_RETURN Err skip_ws();
+  CHECK_RETURN Err prune_trailing_ws();
   CHECK_RETURN Err comment_out(MnNode n);
 
   // Per-symbol emit()s.
@@ -96,6 +97,8 @@ struct MtCursor {
   CHECK_RETURN Err emit_input_port_bindings(MnNode n);
 
   bool branch_contains_submod_call(MnNode n);
+
+  CHECK_RETURN Err check_done(MnNode n);
 
   //----------
 

@@ -58,12 +58,12 @@ module uart_hello
     end
   end
 
-  localparam /*const*/ int message_len = 512;
-  localparam /*const*/ int cursor_bits = $clog2(message_len);
+  localparam int message_len = 512;
+  localparam int cursor_bits = $clog2(message_len);
 
-  localparam /*const*/ int WAIT = 0;
-  localparam /*const*/ int SEND = 1;
-  localparam /*const*/ int DONE = 2;
+  localparam int WAIT = 0;
+  localparam int SEND = 1;
+  localparam int DONE = 2;
 
   //enum class state : logic<2>::BASE{WAIT, SEND, DONE};
 

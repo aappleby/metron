@@ -76,8 +76,6 @@ typedef int64_t LARGE_INTEGER;
 
 int plat_mkdir(const char* path, int mode) { return mkdir(path, mode); }
 
-void debugbreak() { raise(SIGTRAP); }
-
 void dprintf(const char* format, ...) {
   //static char buffer[256];
   va_list args;
@@ -109,6 +107,12 @@ void print_trace(void) {
   for (int i = 0; i < size; i++) printf("%s\n", strings[i]);
   free(strings);
 }
+
+void debugbreak() {
+  print_trace();
+  raise(SIGTRAP);
+}
+
 
 #endif
 

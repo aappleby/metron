@@ -644,17 +644,18 @@ CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
 // Replace "logic blah = x;" with "logic blah;"
 
 CHECK_RETURN Err MtCursor::emit_init_declarator_as_decl(MnDecl n) {
+  //n.dump_tree();
+
   Err err;
   assert(cursor == n.start());
 
-  err << emit_template_type(n._type());
+  err << emit_dispatch(n.get_field(field_type));
   err << emit_ws();
-  err << emit_identifier(n._init_decl().decl());
+  err << emit_dispatch(n.get_field(field_declarator).get_field(field_declarator));
   err << prune_trailing_ws();
   err << emit_printf(";");
-  cursor = n.end();
 
-  assert(cursor == n.end());
+  cursor = n.end();
   return err;
 }
 

@@ -245,8 +245,15 @@ std::string MnNode::type5() const {
       return get_field(field_type).type5();
     case sym_template_type:
       return get_field(field_name).type5();
-    case sym_enum_specifier:
-      return get_field(field_name).type5();
+    case sym_enum_specifier: {
+      auto name = get_field(field_name);
+      if (name) {
+        return name.type5();
+      }
+      else {
+        return "<anon enum>";
+      }
+    }
     case sym_parameter_declaration:
       return get_field(field_type).type5();
     case sym_optional_parameter_declaration:

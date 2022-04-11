@@ -2,6 +2,8 @@
 If we don't emit anything for a tick() or tock(), we should not emit the tock itself
   soooooo... if all the body elements are submod calls without args?
 
+Structs? Unions?
+
 
 Coverage
   Err.h

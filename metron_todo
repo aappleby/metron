@@ -5,9 +5,11 @@ check in the tracer that if we bind to a dedup'd port, we always end up with the
 same expression at each port... somehow?
 
 
-Tick methods must _not_ be allowed to call getters that take params
-
 If we don't emit anything for a tick() or tock(), we should not emit the tock itself
+  soooooo... if all the body elements are submod calls without args?
+
+Use tracer to check for correct return positioning
+
 
 tests to increase coverage
   bad output dir

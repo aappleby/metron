@@ -50,7 +50,10 @@ inline const char* to_string(FieldState s) {
 }
 // KCOV_ON
 
-typedef std::map<std::string, FieldState> state_map;
+struct MtStateMap {
+  std::map<std::string, FieldState> s;
+};
+
 
 //------------------------------------------------------------------------------
 
@@ -79,13 +82,13 @@ class MtTracer {
   CHECK_RETURN Err trace_write(MnNode const& n);
   CHECK_RETURN Err trace_end_fn();
 
-  static void dump_trace(state_map& m);
+  static void dump_trace(MtStateMap& m);
   void dump_stack();
 
 
   MtModule* mod() { return _mod_stack.back(); }
   MtMethod* method() { return _method_stack.back(); }
-  state_map& state_top() { return *_state_stack.back(); }
+  MtStateMap& state_top() { return *_state_stack.back(); }
 
   int  depth()   const { return (int)_method_stack.size(); }
   bool in_tick() const;
@@ -94,7 +97,7 @@ class MtTracer {
   std::vector<MtField*>   _field_stack;
   std::vector<MtModule*>  _mod_stack;
   std::vector<MtMethod*>  _method_stack;
-  std::vector<state_map*> _state_stack;
+  std::vector<MtStateMap*> _state_stack;
 };
 
 //------------------------------------------------------------------------------

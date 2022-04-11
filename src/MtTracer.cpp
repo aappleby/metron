@@ -95,49 +95,50 @@ FieldState merge_series(FieldState a, FieldState b) {
 
 //-----------------------------------------------------------------------------
 
-CHECK_RETURN Err merge_parallel(state_map& ma, state_map& mb, state_map& out) {
+CHECK_RETURN Err merge_parallel(MtStateMap & ma, MtStateMap & mb, MtStateMap & out) {
   Err err;
   std::set<std::string> keys;
 
-  for (const auto& a : ma) keys.insert(a.first);
-  for (const auto& b : mb) keys.insert(b.first);
+  for (const auto& a : ma.s) keys.insert(a.first);
+  for (const auto& b : mb.s) keys.insert(b.first);
 
-  state_map temp;
+  MtStateMap temp;
   for (const auto& key : keys) {
-    auto sa = ma.contains(key) ? ma[key] : FIELD________;
-    auto sb = mb.contains(key) ? mb[key] : FIELD________;
+    auto sa = ma.s.contains(key) ? ma.s[key] : FIELD________;
+    auto sb = mb.s.contains(key) ? mb.s[key] : FIELD________;
     auto sm = merge_parallel(sa, sb);
     if (sm == FIELD_INVALID) {
       return ERR("%s: %s || %s = %s\n", key.c_str(), to_string(sa), to_string(sb),
             to_string(sm));
     }
-    temp[key] = sm;
+    temp.s[key] = sm;
   }
 
-  out.swap(temp);
+  out.s.swap(temp.s);
+
   return err;
 }
 
-CHECK_RETURN Err merge_series(state_map& ma, state_map& mb, state_map& out) {
+CHECK_RETURN Err merge_series(MtStateMap& ma, MtStateMap& mb, MtStateMap& out) {
   Err err;
   std::set<std::string> keys;
 
-  for (const auto& a : ma) keys.insert(a.first);
-  for (const auto& b : mb) keys.insert(b.first);
+  for (const auto& a : ma.s) keys.insert(a.first);
+  for (const auto& b : mb.s) keys.insert(b.first);
 
-  state_map temp;
+  MtStateMap temp;
   for (const auto& key : keys) {
-    auto sa = ma.contains(key) ? ma[key] : FIELD________;
-    auto sb = mb.contains(key) ? mb[key] : FIELD________;
+    auto sa = ma.s.contains(key) ? ma.s[key] : FIELD________;
+    auto sb = mb.s.contains(key) ? mb.s[key] : FIELD________;
     auto sm = merge_series(sa, sb);
     if (sm == FIELD_INVALID) {
       return ERR("%s: %s -> %s = %s\n", key.c_str(), to_string(sa), to_string(sb),
             to_string(sm));
     }
-    temp[key] = sm;
+    temp.s[key] = sm;
   }
 
-  out.swap(temp);
+  out.s.swap(temp.s);
   return err;
 }
 
@@ -210,11 +211,15 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n) {
       // do-nothing nodes
       break;
 
+    case sym_return_statement:
+      // This trace path has hit a return, 
+      err << trace_children(n);
+      break;
+
     case sym_argument_list:
     case sym_parenthesized_expression:
     case sym_binary_expression:
     case sym_compound_statement:
-    case sym_return_statement:
     case sym_case_statement:
     case sym_expression_statement:
     case sym_condition_clause:
@@ -291,7 +296,7 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
   err << trace_dispatch(n.get_field(field_arguments));
 
   // New state map goes on the stack.
-  state_map state_call;
+  MtStateMap state_call;
   _state_stack.push_back(&state_call);
 
   auto node_func = n.get_field(field_function);
@@ -315,7 +320,7 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
 
   // Call traced, close the state map and merge.
 
-  for (auto& pair : state_call) {
+  for (auto& pair : state_call.s) {
     auto old_state = pair.second;
     auto new_state = merge_delta(old_state, DELTA_EF);
 
@@ -534,8 +539,8 @@ CHECK_RETURN Err MtTracer::trace_if(MnNode n) {
   // FIXME - Does preloading branch_a/b with the current state change anything?
   // I don't think so.
 
-  state_map branch_a;
-  state_map branch_b;
+  MtStateMap branch_a;
+  MtStateMap branch_b;
 
   if (!node_branch_a.is_null()) {
     _state_stack.push_back(&branch_a);
@@ -584,7 +589,7 @@ CHECK_RETURN Err MtTracer::trace_switch(MnNode n) {
 
   err << trace_dispatch(n.get_field(field_condition));
 
-  state_map old_state = state_top();
+  MtStateMap old_state = state_top();
 
   bool first_branch = true;
 
@@ -595,7 +600,7 @@ CHECK_RETURN Err MtTracer::trace_switch(MnNode n) {
         err << trace_dispatch(c);
         first_branch = false;
       } else {
-        state_map state_case = old_state;
+        MtStateMap state_case = old_state;
 
         _state_stack.push_back(&state_case);
         err << trace_dispatch(c);
@@ -629,8 +634,8 @@ CHECK_RETURN Err MtTracer::trace_ternary(MnNode n) {
   // FIXME - Does preloading branch_a/b with the current state change anything?
   // I don't think so.
 
-  state_map branch_a;
-  state_map branch_b;
+  MtStateMap branch_a;
+  MtStateMap branch_b;
 
   if (!node_branch_a.is_null()) {
     _state_stack.push_back(&branch_a);
@@ -659,7 +664,7 @@ CHECK_RETURN Err MtTracer::trace_ternary(MnNode n) {
 CHECK_RETURN Err MtTracer::trace_read(const std::string& field_name) {
   Err err;
 
-  auto old_state = state_top()[field_name];
+  auto old_state = state_top().s[field_name];
   auto new_state = merge_delta(old_state, DELTA_RD);
 
   if (new_state == FIELD_INVALID) {
@@ -667,7 +672,7 @@ CHECK_RETURN Err MtTracer::trace_read(const std::string& field_name) {
           to_string(old_state), to_string(new_state));
   }
 
-  state_top()[field_name] = new_state;
+  state_top().s[field_name] = new_state;
   return err;
 }
 
@@ -680,7 +685,7 @@ CHECK_RETURN Err MtTracer::trace_write(const std::string& field_name) {
   // signal write
   //assert(in_tick() || in_tock());
 
-  auto old_state = state_top()[field_name];
+  auto old_state = state_top().s[field_name];
   auto new_state = merge_delta(old_state, in_tick() ? DELTA_WR : DELTA_WS);
 
   if (new_state == FIELD_INVALID) {
@@ -688,7 +693,7 @@ CHECK_RETURN Err MtTracer::trace_write(const std::string& field_name) {
           to_string(old_state), to_string(new_state));
   }
 
-  state_top()[field_name] = new_state;
+  state_top().s[field_name] = new_state;
 
   return err;
 }
@@ -781,8 +786,8 @@ CHECK_RETURN Err MtTracer::trace_end_fn() {
 
 //------------------------------------------------------------------------------
 
-void MtTracer::dump_trace(state_map& m) {
-  for (const auto& pair : m) {
+void MtTracer::dump_trace(MtStateMap& m) {
+  for (const auto& pair : m.s) {
     LOG_Y("%s = %s\n", pair.first.c_str(), to_string(pair.second));
   }
 }

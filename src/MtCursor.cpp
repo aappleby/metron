@@ -2822,8 +2822,9 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
       err << emit_field_expr(MnFieldExpr(n));
       break;
     case sym_return_statement:
-      err << ERR("Saw a return statement somewhere other than the end of a block");
-      err << skip_over(n);
+      //err << ERR("Saw a return statement somewhere other than the end of a block");
+      //err << skip_over(n);
+      err << emit_return(MnReturnStatement(n));
       break;
     case sym_template_declaration:
       err << emit_template_decl(MnTemplateDecl(n));

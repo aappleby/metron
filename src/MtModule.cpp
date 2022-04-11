@@ -17,7 +17,7 @@ extern const TSLanguage *tree_sitter_cpp();
 }
 
 FieldState merge_delta(FieldState a, FieldDelta b);
-CHECK_RETURN Err merge_series(state_map& ma, state_map& mb, state_map& out);
+CHECK_RETURN Err merge_series(MtStateMap & ma, MtStateMap & mb, MtStateMap & out);
 
 //------------------------------------------------------------------------------
 
@@ -252,7 +252,7 @@ void MtModule::dump_banner() const {
     LOG_G("  %s = %s\n", kv.first.c_str(), kv.second.c_str());
 
   LOG_B("State map:\n");
-  for (auto &kv : mod_states)
+  for (auto &kv : mod_states.s)
     LOG_G("  %s = %s\n", kv.first.c_str(), to_string(kv.second));
 
   LOG_B("\n");
@@ -561,7 +561,7 @@ CHECK_RETURN Err MtModule::trace() {
     // Trace the method.
 
     MtTracer tracer;
-    state_map state_method;
+    MtStateMap state_method;
     tracer._mod_stack.push_back(this);
     tracer._method_stack.push_back(m);
     tracer._state_stack.push_back(&state_method);
@@ -574,7 +574,7 @@ CHECK_RETURN Err MtModule::trace() {
 
     // Lock all states touched by the method.
 
-    for (auto& pair : state_method) {
+    for (auto& pair : state_method.s) {
       auto old_state = pair.second;
       auto new_state = merge_delta(old_state, DELTA_EF);
 
@@ -607,7 +607,7 @@ CHECK_RETURN Err MtModule::trace() {
   if (err.has_err()) return err;
 
   // Check that all sigs and regs ended up in a valid state.
-  for (auto& pair : mod_states) {
+  for (auto& pair : mod_states.s) {
 
     auto field = get_field(pair.first);
     if (field) {
@@ -654,7 +654,7 @@ CHECK_RETURN Err MtModule::trace() {
   for (auto f : all_fields) {
     if (f->is_submod()) continue;
     if (f->is_param()) continue;
-    if (!mod_states.contains(f->name())) {
+    if (!mod_states.s.contains(f->name())) {
       err << ERR("No method in the public interface of %s touched field %s!\n", name().c_str(), f->name().c_str());
     }
   }

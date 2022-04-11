@@ -209,7 +209,7 @@ struct MtModule {
 
   // Field state produced by evaluating all public methods in the module in
   // lexical order.
-  state_map mod_states;
+  MtStateMap mod_states;
 
   std::vector<MtModule*> parents;
 

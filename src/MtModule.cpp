@@ -588,6 +588,9 @@ CHECK_RETURN Err MtModule::trace() {
 
     // Merge this method's state with the module-wide state.
 
+    mod_states.hit_return = false;
+    state_method.hit_return = false;
+
     err << merge_series(mod_states, state_method, mod_states);
     if (err.has_err()) {
       LOG_R("MtModule::trace - Cannot merge state_mod->state_method\n");

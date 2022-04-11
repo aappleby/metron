@@ -16,7 +16,7 @@ enum class SEV_TYPE {
 
 class ErrType {
 public:
-  ErrType(SEV_TYPE v, const char* file, int line, const char* format, ...) : sev(v) {
+  ErrType(SEV_TYPE v, const char* file, int line, const char* func, const char* format, ...) : sev(v) {
     char msg[256];
     if (format) {
       va_list args;
@@ -26,15 +26,15 @@ public:
     }
 
     if (v == SEV_TYPE::INFO) {
-      LOG_G("Info @ %s : %d\n", file, line);
+      LOG_G("Info @ %s : %d : %s\n", file, line, func);
       LOG_G("  %s\n", msg);
     }
     else if (v == SEV_TYPE::WARN) {
-      LOG_Y("Warning @ %s : %d\n", file, line);
+      LOG_Y("Warning @ %s : %d : %s\n", file, line, func);
       LOG_Y("  %s\n", msg);
     }
     else if (v == SEV_TYPE::ERR) {
-      LOG_R("Error @ %s : %d\n", file, line);
+      LOG_R("Error @ %s : %d : %s\n", file, line, func);
       LOG_R("  %s\n", msg);
     }
     else {
@@ -81,8 +81,8 @@ private:
   int err;
 };
 
-#define INFO(...) ErrType(SEV_TYPE::INFO, __FILE__, __LINE__, __VA_ARGS__)
-#define WARN(...) ErrType(SEV_TYPE::WARN, __FILE__, __LINE__, __VA_ARGS__)
-#define ERR(...)  ErrType(SEV_TYPE::ERR,  __FILE__, __LINE__, __VA_ARGS__)
+#define INFO(...) ErrType(SEV_TYPE::INFO, __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define WARN(...) ErrType(SEV_TYPE::WARN, __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define ERR(...)  ErrType(SEV_TYPE::ERR,  __FILE__, __LINE__, __func__, __VA_ARGS__)
 
 //------------------------------------------------------------------------------

@@ -99,6 +99,10 @@ CHECK_RETURN Err merge_parallel(MtStateMap & ma, MtStateMap & mb, MtStateMap & o
   Err err;
   std::set<std::string> keys;
 
+  if (ma.hit_return != mb.hit_return) {
+    return ERR("MtTracer::merge_parallel - one branch returned, one branch didn't");
+  }
+
   for (const auto& a : ma.s) keys.insert(a.first);
   for (const auto& b : mb.s) keys.insert(b.first);
 
@@ -123,6 +127,10 @@ CHECK_RETURN Err merge_series(MtStateMap& ma, MtStateMap& mb, MtStateMap& out) {
   Err err;
   std::set<std::string> keys;
 
+  if (ma.hit_return) {
+    return ERR("MtTracer::merge_series - branch A returned before branch B started");
+  }
+
   for (const auto& a : ma.s) keys.insert(a.first);
   for (const auto& b : mb.s) keys.insert(b.first);
 
@@ -139,6 +147,8 @@ CHECK_RETURN Err merge_series(MtStateMap& ma, MtStateMap& mb, MtStateMap& out) {
   }
 
   out.s.swap(temp.s);
+  out.hit_return = mb.hit_return;
+
   return err;
 }
 
@@ -148,6 +158,12 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n) {
   Err err;
 
   if (!n.is_named()) return err;
+
+  if (state_top().hit_return) {
+    return ERR("Return in the middle of a function");
+    //n.dump_tree();
+    //printf("Return in the middle of a function");
+  }
 
   switch (n.sym) {
     case sym_assignment_expression:
@@ -214,6 +230,7 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n) {
     case sym_return_statement:
       // This trace path has hit a return, 
       err << trace_children(n);
+      state_top().hit_return = true;
       break;
 
     case sym_argument_list:
@@ -320,6 +337,7 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
 
   // Call traced, close the state map and merge.
 
+  state_call.hit_return = false;
   for (auto& pair : state_call.s) {
     auto old_state = pair.second;
     auto new_state = merge_delta(old_state, DELTA_EF);

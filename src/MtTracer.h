@@ -52,6 +52,7 @@ inline const char* to_string(FieldState s) {
 
 struct MtStateMap {
   std::map<std::string, FieldState> s;
+  bool hit_return = false; // This doesn't feel right...
 };
 
 

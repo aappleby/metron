@@ -1,14 +1,57 @@
-Should I tack the submod method name to the input port name so that we don't have to dedup the ports?
-  Maybe only if there's a collision?
-
-check in the tracer that if we bind to a dedup'd port, we always end up with the
-same expression at each port... somehow?
-
 
 If we don't emit anything for a tick() or tock(), we should not emit the tock itself
   soooooo... if all the body elements are submod calls without args?
 
-Use tracer to check for correct return positioning
+
+Coverage
+  Err.h
+    fine, skip it
+  Log.h
+    Why is mute() not hitting?
+  MetronApp.cpp
+    skip if (stats)
+    convert && out_root.empty()
+    !out_file
+  MtCursor.cpp
+    // Discard the line if it contained only whitespace after elisions
+    Skipping over null node
+    emit_assignment Cursor not at end
+    emit_static_bit_extract arg0 is suscript expression?
+    emit_static_bit_extract Size-casting expression
+    Slice width 1
+    bx<>
+    debugbreaks
+    func_name.starts_with(final)
+    Local call to private tock
+    emit_input_port_bindings
+      Submod method is not public
+      Can't find method name
+      Method is not private
+    Return statement not at end of function body? Remove this
+    emit_field_as_enum_class
+    emit_port_decls
+      all_submods.empty()
+    emit_field_decl
+      emit_field_as_enum_class
+      in_ports?
+    emit_expression
+      child(0).sym == sym_call_expression && current_method->is_tick
+        wat?
+    emit_enum_list
+    emit_number_literal
+      spacers
+    emit_if_statement
+      "Else statements that contain submod calls...
+    emit_enum_specifier
+    emit_using_decl?
+    emit_decl static const
+    emit_sized_type_spec
+    emit_namespace_def
+
+
+
+
+
 
 
 tests to increase coverage

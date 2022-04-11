@@ -14,8 +14,8 @@ public:
   }
 
 private:
-  logic<8> my_reg1;
-  logic<8> my_reg2;
-  logic<8> my_reg3;
-  logic<8> my_reg4;
+  int my_reg1;
+  int my_reg2;
+  int my_reg3;
+  int my_reg4;
 };

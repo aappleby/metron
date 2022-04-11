@@ -37,6 +37,7 @@ struct MtCursor {
   CHECK_RETURN Err emit_text(MnNode n);
   CHECK_RETURN Err emit_printf(const char* fmt, ...);
   CHECK_RETURN Err emit_replacement(MnNode n, const char* fmt, ...);
+  CHECK_RETURN Err emit_splice(MnNode n);
   CHECK_RETURN Err skip_over(MnNode n);
   CHECK_RETURN Err skip_ws();
   CHECK_RETURN Err prune_trailing_ws();

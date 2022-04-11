@@ -293,6 +293,17 @@ CHECK_RETURN Err MtCursor::emit_replacement(MnNode n, const char* fmt, ...) {
   return err;
 }
 
+//----------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_splice(MnNode n) {
+  Err err;
+  auto old_cursor = cursor;
+  cursor = n.start();
+  err << emit_dispatch(n);
+  cursor = old_cursor;
+  return err;
+}
+
 //------------------------------------------------------------------------------
 // Replace "#include" with "`include" and ".h" with ".sv"
 
@@ -1559,6 +1570,8 @@ CHECK_RETURN Err MtCursor::emit_field_decl(MnFieldDecl n) {
     err << emit_children(n);
   } else if (type_name == "logic") {
     err << emit_children(n);
+  } else if (type_name == "int") {
+    err << emit_children(n);
   } else {
     n.dump_tree();
     debugbreak();
@@ -2754,6 +2767,27 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
       //err << skip_over(n);
       break;
 
+    case sym_update_expression: {
+      auto id = n.get_field(field_argument);
+      auto op = n.get_field(field_operator);
+
+      if (n.get_field(field_operator).text() == "++") {
+        err << emit_splice(id) << emit_printf(" = ") << emit_splice(id) << emit_printf(" + 1");
+      }
+      else if (n.get_field(field_operator).text() == "--") {
+        err << emit_splice(id) << emit_printf(" = ") << emit_splice(id) << emit_printf(" - 1");
+      }
+      else {
+        debugbreak();
+      }
+
+      cursor = n.end();
+
+      //n.dump_tree();
+      //err << emit_children(n);
+      break;
+    }
+
     case sym_for_statement:
     case sym_parenthesized_expression:
     case sym_parameter_declaration:
@@ -2769,7 +2803,6 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
     case sym_init_declarator:
     case sym_initializer_list:
     case sym_declaration_list:
-    case sym_update_expression:
       err << emit_children(n);
       break;
 

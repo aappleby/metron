@@ -19,16 +19,20 @@ module example_data_memory
   input logic[3:0] byteena,
   input logic[31:0] data
 );
+ /*public:*/
 
+ /*private:*/
   (* nomem2reg *)
   logic[31:0] mem[2**(rv_config::DATA_BITS - 2)];
 
+ /*public:*/
   always_comb begin /*tock*/
     q = mem[address];
     /*tick()*/;
   end
 
-  task tick();
+ /*private:*/
+  always_ff @(posedge clock) begin : tick
     if (wren) begin
       logic[31:0] mask;
 
@@ -41,9 +45,9 @@ module example_data_memory
       if (byteena[3]) mask = mask | 32'hFF000000;
       mem[address] <= (mem[address] & ~mask) | (data & mask);
     end
-  endtask
-  always_ff @(posedge clock) tick();
+  end
 
+ /*public:*/
   initial begin /*example_data_memory*/
     string s;
 

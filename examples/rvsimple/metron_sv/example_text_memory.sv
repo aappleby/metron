@@ -16,6 +16,7 @@ module example_text_memory
   input logic[rv_config::TEXT_BITS - 2-1:0] address,
   output logic[31:0] q
 );
+ /*public:*/
   initial begin /*example_text_memory*/
     string s;
 
@@ -25,6 +26,7 @@ module example_text_memory
 
   always_comb begin /*tock_q*/ q = mem[address]; end
 
+ /*private:*/
   logic[31:0] mem[2**(rv_config::TEXT_BITS - 2)];
 endmodule;
 

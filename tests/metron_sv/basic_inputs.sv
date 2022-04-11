@@ -6,13 +6,13 @@ module Module
 (
   input logic clock,
   output logic[6:0] my_reg,
-  input logic[6:0] my_input
+  input logic[6:0] tick_my_input
 );
+/*public:*/
 
-  task tick();
-    my_reg <= my_reg + my_input;
-  endtask
-  always_ff @(posedge clock) tick();
+  always_ff @(posedge clock) begin : tick
+    my_reg <= my_reg + tick_my_input;
+  end
 
 endmodule
 

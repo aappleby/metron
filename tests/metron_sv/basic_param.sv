@@ -8,11 +8,11 @@ module Module
   input logic clock,
   output logic[6:0] my_reg
 );
+/*public:*/
 
-  task tick();
+  always_ff @(posedge clock) begin : tick
     my_reg <= SOME_CONSTANT;
-  endtask
-  always_ff @(posedge clock) tick();
+  end
 
 endmodule
 

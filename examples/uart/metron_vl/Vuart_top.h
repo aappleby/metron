@@ -25,7 +25,7 @@ class Vuart_top VL_NOT_FINAL {
     // The application code writes and reads these signals to
     // propagate new values into/out from the Verilated model.
     VL_IN8(&clock,0,0);
-    VL_IN8(&i_rstn,0,0);
+    VL_IN8(&tock_i_rstn,0,0);
     VL_OUT8(&o_serial,0,0);
     VL_OUT8(&o_data,7,0);
     VL_OUT8(&o_valid,0,0);

@@ -12,7 +12,7 @@ TestResults test_lockstep(int argc, char** argv) {
 
   // Synchronous reset cycle.
   Vuart_top vtop;
-  vtop.i_rstn = 0;
+  vtop.tock_i_rstn = 0;
   vtop.clock = 0;
   vtop.eval();
   vtop.clock = 1;
@@ -20,7 +20,7 @@ TestResults test_lockstep(int argc, char** argv) {
 
   // Reset done, clock starts low.
   vtop.clock = 0;
-  vtop.i_rstn = 1;
+  vtop.tock_i_rstn = 1;
   vtop.eval();
 
   LOG_B("========================================\n");

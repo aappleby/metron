@@ -6,12 +6,13 @@ module uart_rx
 #(parameter int cycles_per_bit = 4)
 (
   input logic clock,
-  input logic i_rstn,
-  input logic i_serial,
+  input logic tock_i_rstn,
+  input logic tock_i_serial,
   output logic o_valid,
   output logic[7:0] o_buffer,
   output logic[31:0] o_sum
 );
+ /*public:*/
   //----------------------------------------
 
   // yosys doesn't appear to handle return values from functions at all
@@ -23,11 +24,16 @@ module uart_rx
   always_comb begin o_buffer = buffer; end
   always_comb begin o_sum = sum; end
 
-  always_comb begin /*tock*/ /*tick(i_rstn, i_serial)*/; end
+  always_comb begin /*tock*/ tick_i_rstn = tock_i_rstn;
+tick_i_serial = tock_i_serial;
+/*tick(i_rstn, i_serial)*/; end
 
   //----------------------------------------
-  task tick();
-    if (!i_rstn) begin
+ /*private:*/
+  logic tick_i_rstn;
+  logic tick_i_serial;
+  always_ff @(posedge clock) begin : tick
+    if (!tick_i_rstn) begin
       cycle <= 0;
       cursor <= 0;
       buffer <= 0;
@@ -38,18 +44,17 @@ module uart_rx
       end else if (cursor != 0) begin
         logic[7:0] temp;
 
-        temp = (i_serial << 7) | (buffer >> 1);
+        temp = (tick_i_serial << 7) | (buffer >> 1);
         if (cursor - 1 == 1) sum <= sum + temp;
         cycle <= cycle_max;
         cursor <= cursor - 1;
         buffer <= temp;
-      end else if (i_serial == 0) begin
+      end else if (tick_i_serial == 0) begin
         cycle <= cycle_max;
         cursor <= cursor_max;
       end
     end
-  endtask
-  always_ff @(posedge clock) tick();
+  end
 
   localparam /*const*/ int cycle_bits = $clog2(cycles_per_bit);
   localparam /*const*/ int cycle_max = cycles_per_bit - 1;

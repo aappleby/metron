@@ -21,6 +21,7 @@ module multiplexer4
    input logic[1:0] sel,
    output logic[WIDTH-1:0] out
 );
+ /*public:*/
 
   always_comb begin /*tock*/
     case (sel)

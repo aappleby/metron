@@ -6,6 +6,7 @@ module Module
 (
   input logic clock
 );
+/*public:*/
 
   localparam /*const*/ int some_size = 7;
 

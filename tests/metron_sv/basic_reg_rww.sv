@@ -7,15 +7,15 @@ module Module
   input logic clock,
   output logic my_reg
 );
+/*public:*/
 
-  task tick();
+  always_ff @(posedge clock) begin : tick
     logic temp;
 
     temp = my_reg;
     my_reg <= 0;
     my_reg <= 1;
-  endtask
-  always_ff @(posedge clock) tick();
+  end
 
 endmodule
 

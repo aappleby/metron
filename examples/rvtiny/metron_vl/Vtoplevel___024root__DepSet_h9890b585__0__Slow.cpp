@@ -79,7 +79,7 @@ VL_ATTR_COLD void Vtoplevel___024root___ctor_var_reset(Vtoplevel___024root* vlSe
     vlSelf->bus_write_enable = VL_RAND_RESET_I(1);
     vlSelf->inst = VL_RAND_RESET_I(32);
     vlSelf->pc = VL_RAND_RESET_I(32);
-    vlSelf->reset = VL_RAND_RESET_I(1);
+    vlSelf->tock_reset = VL_RAND_RESET_I(1);
     for (int __Vi0=0; __Vi0<32768; ++__Vi0) {
         vlSelf->toplevel__DOT__text_mem[__Vi0] = VL_RAND_RESET_I(32);
     }
@@ -89,4 +89,31 @@ VL_ATTR_COLD void Vtoplevel___024root___ctor_var_reset(Vtoplevel___024root* vlSe
     for (int __Vi0=0; __Vi0<32; ++__Vi0) {
         vlSelf->toplevel__DOT__regs[__Vi0] = VL_RAND_RESET_I(32);
     }
-    }
+    vlSelf->toplevel__DOT__tick__DOT__unnamedblk2__DOT__inst = VL_RAND_RESET_I(32);
+    vlSelf->toplevel__DOT__tick__DOT__unnamedblk2__DOT__op = VL_RAND_RESET_I(7);
+    vlSelf->toplevel__DOT__tick__DOT__unnamedblk2__DOT__rd = VL_RAND_RESET_I(5);
+    vlSelf->toplevel__DOT__tick__DOT__unnamedblk2__DOT__f3 = VL_RAND_RESET_I(3);
+    vlSelf->toplevel__DOT__tick__DOT__unnamedblk2__DOT__r1 = VL_RAND_RESET_I(5);
+    vlSelf->toplevel__DOT__tick__DOT__unnamedblk2__DOT__r2 = VL_RAND_RESET_I(5);
+    vlSelf->toplevel__DOT__tick__DOT__unnamedblk2__DOT__f7 = VL_RAND_RESET_I(7);
+    vlSelf->toplevel__DOT__tick__DOT__unnamedblk2__DOT__unnamedblk3__DOT__op_a = VL_RAND_RESET_I(32);
+    vlSelf->toplevel__DOT__tick__DOT__unnamedblk2__DOT__unnamedblk3__DOT__op_b = VL_RAND_RESET_I(32);
+    vlSelf->toplevel__DOT__tick__DOT__unnamedblk2__DOT__unnamedblk3__DOT__alu_result = VL_RAND_RESET_I(32);
+    vlSelf->toplevel__DOT__tick__DOT__unnamedblk2__DOT__unnamedblk4__DOT__imm = VL_RAND_RESET_I(32);
+    vlSelf->toplevel__DOT__tick__DOT__unnamedblk2__DOT__unnamedblk4__DOT__addr = VL_RAND_RESET_I(32);
+    vlSelf->toplevel__DOT__tick__DOT__unnamedblk2__DOT__unnamedblk4__DOT__data = VL_RAND_RESET_I(32);
+    vlSelf->toplevel__DOT__tick__DOT__unnamedblk2__DOT__unnamedblk5__DOT__imm = VL_RAND_RESET_I(32);
+    vlSelf->toplevel__DOT__tick__DOT__unnamedblk2__DOT__unnamedblk5__DOT__addr = VL_RAND_RESET_I(32);
+    vlSelf->toplevel__DOT__tick__DOT__unnamedblk2__DOT__unnamedblk5__DOT__data = VL_RAND_RESET_I(32);
+    vlSelf->toplevel__DOT__tick__DOT__unnamedblk2__DOT__unnamedblk5__DOT__mask = VL_RAND_RESET_I(32);
+    vlSelf->toplevel__DOT__tick__DOT__unnamedblk2__DOT__unnamedblk5__DOT__phys_addr = VL_RAND_RESET_I(15);
+    vlSelf->toplevel__DOT__tick__DOT__unnamedblk2__DOT__unnamedblk6__DOT__op_a = VL_RAND_RESET_I(32);
+    vlSelf->toplevel__DOT__tick__DOT__unnamedblk2__DOT__unnamedblk6__DOT__op_b = VL_RAND_RESET_I(32);
+    vlSelf->toplevel__DOT__tick__DOT__unnamedblk2__DOT__unnamedblk6__DOT__take_branch = VL_RAND_RESET_I(1);
+    vlSelf->toplevel__DOT__tick__DOT__unnamedblk2__DOT__unnamedblk6__DOT__unnamedblk7__DOT__imm = VL_RAND_RESET_I(32);
+    vlSelf->toplevel__DOT__tick__DOT__unnamedblk2__DOT__unnamedblk8__DOT__imm = VL_RAND_RESET_I(32);
+    vlSelf->toplevel__DOT__tick__DOT__unnamedblk2__DOT__unnamedblk9__DOT__rr1 = VL_RAND_RESET_I(32);
+    vlSelf->toplevel__DOT__tick__DOT__unnamedblk2__DOT__unnamedblk9__DOT__imm = VL_RAND_RESET_I(32);
+    vlSelf->toplevel__DOT__tick__DOT__unnamedblk2__DOT__unnamedblk10__DOT__imm = VL_RAND_RESET_I(32);
+    vlSelf->toplevel__DOT__tick__DOT__unnamedblk2__DOT__unnamedblk11__DOT__imm = VL_RAND_RESET_I(32);
+}

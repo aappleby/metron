@@ -7,11 +7,11 @@ module Submod
   input logic clock,
   output logic[7:0] sub_reg
 );
+/*public:*/
 
-  task tick();
+  always_ff @(posedge clock) begin : tick
     sub_reg <= sub_reg + 1;
-  endtask
-  always_ff @(posedge clock) tick();
+  end
 
 endmodule
 
@@ -20,6 +20,7 @@ module Module
   input logic clock,
   output logic[7:0] get_submod_reg
 );
+/*public:*/
 
   always_comb begin
     get_submod_reg = submod_sub_reg;

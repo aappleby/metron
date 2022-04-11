@@ -4,6 +4,7 @@ module Module
 (
   input logic clock
 );
+/*public:*/
 
   always_comb begin /*tock_dup1*/
     logic a1;

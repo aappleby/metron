@@ -384,7 +384,7 @@ CHECK_RETURN Err MtModule::collect_modparams() {
       auto child = params.named_child(i);
       if (child.sym == sym_parameter_declaration ||
           child.sym == sym_optional_parameter_declaration) {
-        modparams.push_back(MtParam::construct(child));
+        modparams.push_back(MtParam::construct("<template>", child));
       } else {
         err << ERR("Unknown template parameter type %s", child.ts_node_type());
       }
@@ -488,6 +488,7 @@ CHECK_RETURN Err MtModule::collect_methods() {
       assert(param.sym == sym_parameter_declaration);
       auto param_name = param.get_field(field_declarator).text();
       m->params.push_back(param_name);
+      m->param_nodes.push_back(param);
     }
 
     all_methods.push_back(m);
@@ -708,7 +709,7 @@ CHECK_RETURN Err MtModule::collect_input_arguments() {
         inputs.push_back(new_input);
         dedup.insert(new_input->name());
         */
-        MtParam* new_input = MtParam::construct(param);
+        MtParam* new_input = MtParam::construct(m->name(), param);
         input_arguments.push_back(new_input);
         dedup.insert(new_input->name());
       }
@@ -734,7 +735,7 @@ CHECK_RETURN Err MtModule::categorize_fields() {
   for (auto f : all_fields) {
 
     if (f->is_param()) {
-      localparams.push_back(MtParam::construct(f->node));
+      localparams.push_back(MtParam::construct("<localparam>", f->node));
     }
     else if (f->is_public()) {
       if (f->is_input_signal()) {
@@ -923,6 +924,7 @@ CHECK_RETURN Err MtModule::sanity_check() {
     }
   }
 
+  /*
   for (auto n : input_arguments) {
     if (field_names.contains(n->name())) {
       err << ERR("Duplicate input name %s\n", n->name().c_str());
@@ -930,6 +932,7 @@ CHECK_RETURN Err MtModule::sanity_check() {
       field_names.insert(n->name());
     }
   }
+  */
 
   for (auto n : output_signals) {
     if (field_names.contains(n->name())) {

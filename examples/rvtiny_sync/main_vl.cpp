@@ -43,10 +43,14 @@ TestResults test_instruction(const char* test_name, const int reps, const int ma
   Vtoplevel top;
 
   for (int rep = 0; rep < reps; rep++) {
-    top.reset = 1; top.clock = 0; top.eval(); top.clock = 1; top.eval();
+    top.tock_reset = 1;
+    top.clock = 0; top.eval();
+    top.clock = 1; top.eval();
+    top.tock_reset = 0;
     total_tocks++;
     for (elapsed_cycles = 0; elapsed_cycles < max_cycles; elapsed_cycles++) {
-      top.reset = 0; top.clock = 0; top.eval(); top.clock = 1; top.eval();
+      top.clock = 0; top.eval();
+      top.clock = 1; top.eval();
       total_tocks++;
 
       if (top.o_bus_address == 0xfffffff0 && top.o_bus_write_enable) {

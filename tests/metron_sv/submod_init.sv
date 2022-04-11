@@ -7,6 +7,7 @@ module Submod
   input logic clock,
   output logic[7:0] tock
 );
+/*public:*/
 
   initial begin /*init*/
     sub_reg = 3;
@@ -16,6 +17,7 @@ module Submod
     tock = sub_reg;
   end
 
+/*private:*/
   logic[7:0] sub_reg;
 endmodule
 
@@ -23,11 +25,13 @@ module Module
 (
   input logic clock
 );
+/*public:*/
 
   initial begin /*init*/
     /*submod.init()*/;
   end
 
+/*private:*/
 
   Submod submod(
     // Inputs

@@ -438,8 +438,7 @@ CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnCallExpr call, MnNode bx_n
 CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
   Err err;
 
-  assert(cursor == n.start());
-  node_stack.push_back(n);
+  //n.dump_tree();
 
   MnFunc func = n.func();
   MnArgList args = n.args();
@@ -448,6 +447,29 @@ CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
   // function and not the whole foo.bar().
 
   std::string func_name = func.name();
+
+  //----------
+  // Handle bN
+
+  if (func_name[0] == 'b' && func_name.size() == 2) {
+    auto x = func_name[1];
+    if (x >= '0' && x <= '9') {
+      return emit_static_bit_extract(n, x - '0');
+    }
+  }
+
+  if (func_name[0] == 'b' && func_name.size() == 3) {
+    auto x = func_name[1];
+    auto y = func_name[2];
+    if (x >= '0' && x <= '9' && y >= '0' && y <= '9') {
+      return emit_static_bit_extract(n, (x - '0') * 10 + (y - '0'));
+    }
+  }
+
+  //----------
+
+  assert(cursor == n.start());
+  node_stack.push_back(n);
 
   if (func_name == "coerce") {
     // Convert to cast? We probably shouldn't be calling coerce() directly.
@@ -497,148 +519,20 @@ CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
   } else if (func_name.starts_with("final")) {
     err << comment_out(n);
   } else if (func_name.starts_with("tick")) {
+
+    // Local call to tick() - bind args.
     err << comment_out(n);
+
   } else if (func_name.starts_with("tock")) {
+
+    // Local call to private tock() - bind args.
     err << comment_out(n);
+
   } else if (func_name == "bx") {
     // Bit extract.
     auto template_arg = func.as_templ().args().named_child(0);
     err << emit_dynamic_bit_extract(n, template_arg);
-  } else if (func_name == "b1")
-    err << emit_static_bit_extract(n, 1);
-  else if (func_name == "b2")
-    err << emit_static_bit_extract(n, 2);
-  else if (func_name == "b3")
-    err << emit_static_bit_extract(n, 3);
-  else if (func_name == "b4")
-    err << emit_static_bit_extract(n, 4);
-  else if (func_name == "b5")
-    err << emit_static_bit_extract(n, 5);
-  else if (func_name == "b6")
-    err << emit_static_bit_extract(n, 6);
-  else if (func_name == "b7")
-    err << emit_static_bit_extract(n, 7);
-  else if (func_name == "b8")
-    err << emit_static_bit_extract(n, 8);
-  else if (func_name == "b9")
-    err << emit_static_bit_extract(n, 9);
-
-  else if (func_name == "b10")
-    err << emit_static_bit_extract(n, 10);
-  else if (func_name == "b11")
-    err << emit_static_bit_extract(n, 11);
-  else if (func_name == "b12")
-    err << emit_static_bit_extract(n, 12);
-  else if (func_name == "b13")
-    err << emit_static_bit_extract(n, 13);
-  else if (func_name == "b14")
-    err << emit_static_bit_extract(n, 14);
-  else if (func_name == "b15")
-    err << emit_static_bit_extract(n, 15);
-  else if (func_name == "b16")
-    err << emit_static_bit_extract(n, 16);
-  else if (func_name == "b17")
-    err << emit_static_bit_extract(n, 17);
-  else if (func_name == "b18")
-    err << emit_static_bit_extract(n, 18);
-  else if (func_name == "b19")
-    err << emit_static_bit_extract(n, 19);
-
-  else if (func_name == "b20")
-    err << emit_static_bit_extract(n, 20);
-  else if (func_name == "b21")
-    err << emit_static_bit_extract(n, 21);
-  else if (func_name == "b22")
-    err << emit_static_bit_extract(n, 22);
-  else if (func_name == "b23")
-    err << emit_static_bit_extract(n, 23);
-  else if (func_name == "b24")
-    err << emit_static_bit_extract(n, 24);
-  else if (func_name == "b25")
-    err << emit_static_bit_extract(n, 25);
-  else if (func_name == "b26")
-    err << emit_static_bit_extract(n, 26);
-  else if (func_name == "b27")
-    err << emit_static_bit_extract(n, 27);
-  else if (func_name == "b28")
-    err << emit_static_bit_extract(n, 28);
-  else if (func_name == "b29")
-    err << emit_static_bit_extract(n, 29);
-
-  else if (func_name == "b30")
-    err << emit_static_bit_extract(n, 30);
-  else if (func_name == "b31")
-    err << emit_static_bit_extract(n, 31);
-  else if (func_name == "b32")
-    err << emit_static_bit_extract(n, 32);
-  else if (func_name == "b33")
-    err << emit_static_bit_extract(n, 33);
-  else if (func_name == "b34")
-    err << emit_static_bit_extract(n, 34);
-  else if (func_name == "b35")
-    err << emit_static_bit_extract(n, 35);
-  else if (func_name == "b36")
-    err << emit_static_bit_extract(n, 36);
-  else if (func_name == "b37")
-    err << emit_static_bit_extract(n, 37);
-  else if (func_name == "b38")
-    err << emit_static_bit_extract(n, 38);
-  else if (func_name == "b39")
-    err << emit_static_bit_extract(n, 39);
-
-  else if (func_name == "b40")
-    err << emit_static_bit_extract(n, 40);
-  else if (func_name == "b41")
-    err << emit_static_bit_extract(n, 41);
-  else if (func_name == "b42")
-    err << emit_static_bit_extract(n, 42);
-  else if (func_name == "b43")
-    err << emit_static_bit_extract(n, 43);
-  else if (func_name == "b44")
-    err << emit_static_bit_extract(n, 44);
-  else if (func_name == "b45")
-    err << emit_static_bit_extract(n, 45);
-  else if (func_name == "b46")
-    err << emit_static_bit_extract(n, 46);
-  else if (func_name == "b47")
-    err << emit_static_bit_extract(n, 47);
-  else if (func_name == "b48")
-    err << emit_static_bit_extract(n, 48);
-  else if (func_name == "b49")
-    err << emit_static_bit_extract(n, 49);
-
-  else if (func_name == "b50")
-    err << emit_static_bit_extract(n, 50);
-  else if (func_name == "b51")
-    err << emit_static_bit_extract(n, 51);
-  else if (func_name == "b52")
-    err << emit_static_bit_extract(n, 52);
-  else if (func_name == "b53")
-    err << emit_static_bit_extract(n, 53);
-  else if (func_name == "b54")
-    err << emit_static_bit_extract(n, 54);
-  else if (func_name == "b55")
-    err << emit_static_bit_extract(n, 55);
-  else if (func_name == "b56")
-    err << emit_static_bit_extract(n, 56);
-  else if (func_name == "b57")
-    err << emit_static_bit_extract(n, 57);
-  else if (func_name == "b58")
-    err << emit_static_bit_extract(n, 58);
-  else if (func_name == "b59")
-    err << emit_static_bit_extract(n, 59);
-
-  else if (func_name == "b60")
-    err << emit_static_bit_extract(n, 60);
-  else if (func_name == "b61")
-    err << emit_static_bit_extract(n, 61);
-  else if (func_name == "b62")
-    err << emit_static_bit_extract(n, 62);
-  else if (func_name == "b63")
-    err << emit_static_bit_extract(n, 63);
-  else if (func_name == "b64")
-    err << emit_static_bit_extract(n, 64);
-
+  }
   else if (func_name == "cat") {
     // Remove "cat" and replace parens with brackets
     err << skip_over(func);
@@ -827,7 +721,7 @@ CHECK_RETURN Err MtCursor::emit_func_decl(MnFuncDeclarator n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_submod_input_port_bindings(MnNode n) {
+CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
   Err err;
   auto old_cursor = cursor;
 
@@ -837,13 +731,15 @@ CHECK_RETURN Err MtCursor::emit_submod_input_port_bindings(MnNode n) {
   for (int i = 0; i < n.child_count(); i++) {
     auto c = n.child(i);
     if (n.sym != sym_compound_statement) {
-      err << emit_submod_input_port_bindings(c);
+      err << emit_input_port_bindings(c);
     }
   }
 
   // OK, now we can emit bindings for the call we're at.
 
   if (n.sym == sym_call_expression) {
+    //n.dump_tree();
+
     auto func_node = n.get_field(field_function);
     auto args_node = n.get_field(field_arguments);
 
@@ -863,9 +759,16 @@ CHECK_RETURN Err MtCursor::emit_submod_input_port_bindings(MnNode n) {
         auto submod_meth = submod_mod->get_method(meth_id.text());
         assert(submod_meth);
 
+        if (!submod_meth->is_public) {
+          return ERR("Submod method %s.%s is not public", inst_id.text().c_str(), meth_id.text().c_str());
+        }
+
         for (int i = 0; i < submod_meth->params.size(); i++) {
           auto& param = submod_meth->params[i];
-          err << emit_printf("%s_%s = ", inst_id.text().c_str(), param.c_str());
+          err << emit_printf("%s_%s_%s = ",
+            inst_id.text().c_str(),
+            submod_meth->name().c_str(),
+            param.c_str());
 
           auto arg_node = args_node.named_child(i);
           cursor = arg_node.start();
@@ -877,6 +780,37 @@ CHECK_RETURN Err MtCursor::emit_submod_input_port_bindings(MnNode n) {
           err << emit_indent();
         }
       }
+    }
+    else if (func_node.sym == sym_identifier && func_node.text().starts_with("tick")) {
+      auto method = current_mod->get_method(func_node.text().c_str());
+      if (!method) {
+        return ERR("Can't find method name %s", func_node.text().c_str());
+      }
+      if (method->is_public) {
+        return ERR("Method %s is not private", func_node.text().c_str());
+      }
+
+      //err << emit_printf("%s", method->name().c_str());
+      //err << emit_newline();
+      //err << emit_indent();
+
+      for (int i = 0; i < method->params.size(); i++) {
+        auto& param = method->params[i];
+        err << emit_printf("%s_%s = ", func_node.text().c_str(), param.c_str());
+
+        auto arg_node = args_node.named_child(i);
+        cursor = arg_node.start();
+        err << emit_dispatch(arg_node);
+        cursor = arg_node.end();
+
+        err << emit_printf(";");
+        err << emit_newline();
+        err << emit_indent();
+      }
+
+
+    }
+    else if (func_node.sym == sym_identifier && func_node.text().starts_with("tock")) {
     }
   }
 
@@ -903,9 +837,41 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
   current_method = current_mod->get_method(n.name4());
   assert(current_method);
 
-  if (current_method->is_tick) {
-    int x = 1;
-    x++;
+  auto old_replacements = id_replacements;
+
+  for (auto p : current_method->params) {
+    id_replacements[p] = current_method->name() + "_" + p;
+  }
+
+  //----------
+  // Local function input port decls go _before_ the function definition.
+
+  if (!current_method->is_public) {
+
+    for (auto n : current_method->param_nodes) {
+      //n.dump_tree();
+
+      auto param_type = n.get_field(field_type);
+      auto param_name = n.get_field(field_declarator);
+
+      MtCursor subcursor(lib, current_mod->source_file, str_out);
+      subcursor.echo = echo;
+      subcursor.in_ports = true;
+
+      subcursor.cursor = param_type.start();
+      err << subcursor.emit_dispatch(param_type);
+      err << subcursor.emit_ws();
+
+      err << emit_printf("%s_", current_method->name().c_str());
+
+      subcursor.cursor = param_name.start();
+      err << subcursor.emit_dispatch(param_name);
+
+      err << emit_printf(";");
+      err << emit_newline();
+      err << emit_indent();
+
+    }
   }
 
   //----------
@@ -916,16 +882,9 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
     err << skip_ws();
     err << emit_replacement(func_decl, "initial");
   } else if (current_method->is_tick) {
-    /*
-    if (in_public) {
-      emit("\nXXXXX TICK CANNOT BE PUBLIC XXX\n");
-    }
-    */
-
     err << skip_over(return_type);
     err << skip_ws();
-    // emit_replacement(func_decl, "always_ff @(posedge clock)");
-    err << emit_replacement(func_decl, "task %s();", current_method->name().c_str());
+    err << emit_replacement(func_decl, "always_ff @(posedge clock)");
   } else if (current_method->is_tock) {
     err << skip_over(return_type);
     err << skip_ws();
@@ -944,7 +903,6 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
       err << emit_ws();
 
     } else {
-      // emit("function %s ", n.type().text().c_str());
       err << emit_printf("function ");
       err << emit_dispatch(return_type);
       err << emit_ws();
@@ -960,8 +918,7 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
   if (current_method->is_init)
     err << emit_printf("begin /*%s*/", current_method->name().c_str());
   else if (current_method->is_tick) {
-    // emit("begin : %s", current_function_name.c_str());
-    // emit(" : %s", current_function_name.c_str());
+    err << emit_printf("begin : %s", current_method->name().c_str());
   } else if (current_method->is_tock)
     err << emit_printf("begin /*%s*/", current_method->name().c_str());
   else if (current_method->is_task)
@@ -986,7 +943,7 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
   for (int i = 0; i < body_count; i++) {
     auto c = func_body.child(i);
 
-    err << emit_submod_input_port_bindings(c);
+    err << emit_input_port_bindings(c);
 
     switch (c.sym) {
       case anon_sym_LBRACE:
@@ -1042,10 +999,13 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
     err << emit_printf("end");
   }
   else if (current_method->is_tick) {
+    err << emit_printf("end");
+    /*
     err << emit_printf("endtask");
     err << emit_newline();
     err << emit_indent();
     err << emit_printf("always_ff @(posedge clock) %s();", current_method->name().c_str());
+    */
   } else if (current_method->is_tock) {
     err << emit_printf("end");
   }
@@ -1068,6 +1028,8 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
   current_method = nullptr;
 
   node_stack.pop_back();
+
+  id_replacements.swap(old_replacements);
 
   return err;
 }
@@ -1283,7 +1245,12 @@ CHECK_RETURN Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
 
     err << emit_newline();
     err << emit_indent();
-    err << emit_printf(".%s(%s_%s)", n->name().c_str(), inst_name.c_str(), n->name().c_str());
+    err << emit_printf(".%s_%s(%s_%s_%s)",
+      n->func_name.c_str(),
+      n->name().c_str(),
+      inst_name.c_str(),
+      n->func_name.c_str(),
+      n->name().c_str());
 
     if (port_index++ < port_count - 1) {
       err << emit_printf(", ");
@@ -1332,9 +1299,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
   err << emit_dispatch(node_semi);
   err << emit_newline();
 
-  // emit("Output ports go here!\n");
-  // emit_newline();
-  err << emit_output_ports(n);
+  err << emit_port_decls(n);
 
   cursor = n.end();
 
@@ -1345,7 +1310,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_output_ports(MnFieldDecl submod) {
+CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl submod) {
   Err err;
 
   if (current_mod->all_submods.empty()) {
@@ -1409,7 +1374,7 @@ CHECK_RETURN Err MtCursor::emit_output_ports(MnFieldDecl submod) {
     err << emit_indent();
     err << subcursor.emit_dispatch(output_type);
     err << subcursor.emit_ws();
-    err << emit_printf("%s_", submod_decl.text().c_str());
+    err << emit_printf("%s_%s_", submod_decl.text().c_str(), n->func_name.c_str());
     err << subcursor.emit_dispatch(output_decl);
     err << emit_printf(";");
     err << emit_newline();
@@ -1695,6 +1660,7 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
       sub_cursor.cursor = node_type.start();
       err << sub_cursor.emit_dispatch(node_type);
       err << sub_cursor.emit_ws();
+      err << sub_cursor.emit_printf("%s_", input->func_name.c_str());
       err << sub_cursor.emit_dispatch(node_decl);
 
       if (port_index++ < port_count - 1) {
@@ -1821,7 +1787,7 @@ CHECK_RETURN Err MtCursor::emit_compound(MnCompoundStatement n) {
   for (int i = 0; i < body_count; i++) {
     auto c = n.child(i);
 
-    err << emit_submod_input_port_bindings(c);
+    err << emit_input_port_bindings(c);
 
     switch (c.sym) {
       case anon_sym_LBRACE:
@@ -2704,8 +2670,8 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
 
     case sym_access_specifier:
       in_public = n.child(0).text() == "public";
-      //err << comment_out(n);
-      err << skip_over(n);
+      err << comment_out(n);
+      //err << skip_over(n);
       break;
 
     case sym_for_statement:

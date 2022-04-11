@@ -21,6 +21,7 @@ module instruction_decoder
    output logic[4:0] inst_rs1,
    output logic[4:0] inst_rs2
 );
+ /*public:*/
 
    always_comb begin /*tock*/
      inst_opcode = inst[6:0];

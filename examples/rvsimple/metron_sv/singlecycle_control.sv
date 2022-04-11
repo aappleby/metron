@@ -25,6 +25,7 @@ module singlecycle_control
   output logic[2:0] reg_writeback_select,
   output logic[1:0] next_pc_select
 );
+ /*public:*/
 
   always_comb begin /*tock_next_pc_select*/
     import rv_constants::*;

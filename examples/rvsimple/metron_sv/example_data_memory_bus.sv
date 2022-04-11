@@ -21,7 +21,9 @@ module example_data_memory_bus
   input logic read_enable,
   input logic write_enable
 );
+ /*public:*/
 
+ /*private:*/
   example_data_memory data_memory(
     // Inputs
     .clock(clock),
@@ -39,6 +41,7 @@ module example_data_memory_bus
   logic[31:0] data_memory_q;
 
 
+ /*public:*/
   always_comb begin /*tock*/
     logic is_data_memory;
     logic[31:0] fetched;

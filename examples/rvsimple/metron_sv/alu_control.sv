@@ -18,12 +18,15 @@ module alu_control
    input logic[6:0] inst_funct7,
    output logic[4:0] alu_function
 );
+ /*public:*/
 
+/*private:*/
   logic[4:0] default_funct;
   logic[4:0] secondary_funct;
   logic[4:0] op_funct;
   logic[4:0] op_imm_funct;
   logic[4:0] branch_funct;
+/*public:*/
 
   // clang-format off
   always_comb begin /*tock_alu_function*/

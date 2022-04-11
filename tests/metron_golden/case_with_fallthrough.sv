@@ -8,6 +8,7 @@ module Module
   input logic clock,
   output logic[7:0] tock
 );
+/*public:*/
 
   always_comb begin /*tock*/
     logic[7:0] result;
@@ -26,11 +27,11 @@ module Module
     tock = result;
   end
 
-  task tick();
+  always_ff @(posedge clock) begin : tick
     my_reg <= my_reg + 1;
-  endtask
-  always_ff @(posedge clock) tick();
+  end
 
+/*private:*/
 
   logic[7:0] my_reg;
 endmodule

@@ -14,8 +14,9 @@ module toplevel
   output logic  bus_write_enable,
   output logic[31:0] inst,
   output logic[31:0] pc,
-  input logic reset
+  input logic tock_reset
 );
+ /*public:*/
   initial begin /*toplevel*/
     string s;
 
@@ -29,11 +30,13 @@ module toplevel
     $readmemh(s, data_mem);
   end
 
-  always_comb begin /*tock*/ /*tick(reset)*/; end
+  always_comb begin /*tock*/ tick_reset = tock_reset;
+/*tick(reset)*/; end
 
 
   //----------------------------------------
 
+ /*private:*/
   localparam /*const*/ int OP_ALU = 8'h33;
   localparam /*const*/ int OP_ALUI = 8'h13;
   localparam /*const*/ int OP_LOAD = 8'h03;
@@ -44,8 +47,9 @@ module toplevel
   localparam /*const*/ int OP_LUI = 8'h37;
   localparam /*const*/ int OP_AUIPC = 8'h17;
 
-  task tick();
-    if (reset) begin
+  logic tick_reset;
+  always_ff @(posedge clock) begin : tick
+    if (tick_reset) begin
       pc <= 0;
       regs[0] <= 32'd0;
       bus_read_data <= 0;
@@ -243,8 +247,7 @@ module toplevel
         pc <= pc + 4;
       end
     end
-  endtask
-  always_ff @(posedge clock) tick();
+  end
 
   logic[31:0] text_mem[32 * 1024];
   logic[31:0] data_mem[32 * 1024];

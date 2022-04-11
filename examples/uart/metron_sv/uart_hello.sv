@@ -6,13 +6,14 @@ module uart_hello
 #(parameter int repeat_msg = 0)
 (
   input logic clock,
-  input logic i_rstn,
-  input logic i_cts,
-  input logic i_idle,
+  input logic tock_i_rstn,
+  input logic tock_i_cts,
+  input logic tock_i_idle,
   output logic[7:0] o_data,
   output logic o_req,
   output logic o_done
 );
+ /*public:*/
   initial begin /*uart_hello*/
     $readmemh("examples/uart/message.hex", memory, 0, 511);
   end
@@ -24,20 +25,27 @@ module uart_hello
   always_comb begin o_done = state == DONE; end
 
   always_comb begin /*tock*/
+    tick_i_rstn = tock_i_rstn;
+    tick_i_cts = tock_i_cts;
+    tick_i_idle = tock_i_idle;
     /*tick(i_rstn, i_cts, i_idle)*/;
   end
 
   //----------------------------------------
 
-  task tick();
-    if (!i_rstn) begin
+ /*private:*/
+  logic tick_i_rstn;
+  logic tick_i_cts;
+  logic tick_i_idle;
+  always_ff @(posedge clock) begin : tick
+    if (!tick_i_rstn) begin
       state <= WAIT;
       cursor <= 0;
     end else begin
       data <= memory[cursor];
-      if (state == WAIT && i_idle) begin
+      if (state == WAIT && tick_i_idle) begin
         state <= SEND;
-      end else if (state == SEND && i_cts) begin
+      end else if (state == SEND && tick_i_cts) begin
         if (cursor == 9'(message_len - 1)) begin
           state <= DONE;
         end else begin
@@ -48,8 +56,7 @@ module uart_hello
         cursor <= 0;
       end
     end
-  endtask
-  always_ff @(posedge clock) tick();
+  end
 
   localparam /*const*/ int message_len = 512;
   localparam /*const*/ int cursor_bits = $clog2(message_len);

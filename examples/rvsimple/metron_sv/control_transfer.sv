@@ -17,6 +17,7 @@ module control_transfer
    input logic[2:0] inst_funct3,
    output logic take_branch
 );
+ /*public:*/
 
   always_comb begin /*tock_take_branch*/
     import rv_constants::*;

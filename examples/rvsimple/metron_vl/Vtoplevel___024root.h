@@ -34,6 +34,7 @@ VL_MODULE(Vtoplevel___024root) {
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__mux_next_pc_select_out;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__program_counter_value;
     IData/*31:0*/ toplevel__DOT__core__DOT__datapath__DOT__igen_immediate;
+    IData/*31:0*/ toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__DOT__unnamedblk1__DOT__mask;
     VlUnpacked<IData/*31:0*/, 32> toplevel__DOT__core__DOT__datapath__DOT__regs__DOT___register;
     VlUnpacked<IData/*31:0*/, 16384> toplevel__DOT__text_memory_bus__DOT__text_memory__DOT__mem;
     VlUnpacked<IData/*31:0*/, 32768> toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__mem;

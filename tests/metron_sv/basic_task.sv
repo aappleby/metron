@@ -6,12 +6,13 @@ module Module
 (
   input logic clock
 );
+/*public:*/
 
-  task tick();
+  always_ff @(posedge clock) begin : tick
     some_task();
-  endtask
-  always_ff @(posedge clock) tick();
+  end
 
+/*private:*/
 
   task some_task();
     my_reg = my_reg + 3;

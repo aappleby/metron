@@ -26,6 +26,7 @@ module toplevel
   output logic[31:0] inst,
   output logic[31:0] pc
 );
+ /*public:*/
 
 
   //----------------------------------------
@@ -64,6 +65,7 @@ module toplevel
 
   //----------------------------------------
 
+ /*private:*/
   riscv_core core(
     // Inputs
     .clock(clock),

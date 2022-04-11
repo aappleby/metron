@@ -19,6 +19,7 @@ module multiplexer2
   input logic sel,
   output logic[WIDTH-1:0] out
 );
+ /*public:*/
 
   always_comb begin /*tock*/
     case (sel)

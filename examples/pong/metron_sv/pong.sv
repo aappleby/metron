@@ -28,11 +28,12 @@ module Pong
 	output logic vga_R,
 	output logic vga_G,
 	output logic vga_B,
-	input logic in_quad_a,
-	input logic in_quad_b,
+	input logic tick_in_quad_a,
+	input logic tick_in_quad_b,
 	output logic[9:0] pix_x,
 	output logic[9:0] pix_y
 );
+/*public:*/
 
 
 	//----------------------------------------
@@ -78,7 +79,7 @@ module Pong
 
 	//----------------------------------------
 
-	task tick();
+	always_ff @(posedge clock) begin : tick
 		logic[9:0] new_px;
 		logic[9:0] new_py;
 		logic quad_dir;
@@ -155,13 +156,13 @@ module Pong
 		ball_dx <= new_ball_dx;
 		ball_dy <= new_ball_dy;
 
-		quad_a <= quad_a << 1 | in_quad_a;
-		quad_b <= quad_b << 1 | in_quad_b;
-	endtask
-	always_ff @(posedge clock) tick();
+		quad_a <= quad_a << 1 | tick_in_quad_a;
+		quad_b <= quad_b << 1 | tick_in_quad_b;
+	end
 
 	//----------------------------------------
 
+/*private:*/
 
 	function logic in_border() /*const*/;
 		in_border = (px <= 7) || (px >= 633) || (py <= 7) || (py >= 473);

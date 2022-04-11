@@ -18,6 +18,7 @@ module adder
   input logic[WIDTH-1:0] operand_b,
   output logic[WIDTH-1:0] result
 );
+ /*public:*/
 
   always_comb begin /*tock*/ result = operand_a + operand_b; end
 endmodule

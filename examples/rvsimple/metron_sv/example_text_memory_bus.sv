@@ -17,7 +17,9 @@ module example_text_memory_bus
   input logic[31:0] address,
   output logic[31:0] read_data
 );
+ /*public:*/
 
+ /*private:*/
   example_text_memory text_memory(
     // Inputs
     .clock(clock),
@@ -29,6 +31,7 @@ module example_text_memory_bus
   logic[31:0] text_memory_q;
 
 
+ /*public:*/
   always_comb begin /*tock_read_data*/
     logic[31:0] fetched;
 

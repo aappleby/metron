@@ -19,16 +19,16 @@ module single_register
   input logic[WIDTH-1:0] next,
   output logic[WIDTH-1:0] value
 );
+ /*public:*/
 
   initial begin /*single_register*/ value = INITIAL; end
 
-  task tick();
+  always_ff @(posedge clock) begin : tick
     if (reset)
       value <= INITIAL;
     else if (write_enable)
       value <= next;
-  endtask
-  always_ff @(posedge clock) tick();
+  end
 endmodule
 
 `endif  // RVSIMPLE_REGISTER_H

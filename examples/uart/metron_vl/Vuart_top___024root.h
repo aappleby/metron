@@ -13,21 +13,24 @@ VL_MODULE(Vuart_top___024root) {
 
     // DESIGN SPECIFIC STATE
     VL_IN8(clock,0,0);
-    VL_IN8(i_rstn,0,0);
+    VL_IN8(tock_i_rstn,0,0);
     VL_OUT8(o_serial,0,0);
     VL_OUT8(o_data,7,0);
     VL_OUT8(o_valid,0,0);
     VL_OUT8(o_done,0,0);
-    CData/*7:0*/ uart_top__DOT__tx_i_data;
-    CData/*0:0*/ uart_top__DOT__tx_i_req;
+    CData/*7:0*/ uart_top__DOT__tx_tock_i_data;
+    CData/*0:0*/ uart_top__DOT__tx_tock_i_req;
     CData/*0:0*/ uart_top__DOT__tx_o_idle;
     CData/*1:0*/ uart_top__DOT__hello__DOT__state;
     CData/*7:0*/ uart_top__DOT__hello__DOT__data;
     CData/*1:0*/ uart_top__DOT__tx__DOT__cycle;
     CData/*4:0*/ uart_top__DOT__tx__DOT__cursor;
+    CData/*1:0*/ uart_top__DOT__tx__DOT__tick__DOT__unnamedblk1__DOT__cycle_max;
+    CData/*4:0*/ uart_top__DOT__tx__DOT__tick__DOT__unnamedblk1__DOT__cursor_max;
     CData/*1:0*/ uart_top__DOT__rx__DOT__cycle;
     CData/*3:0*/ uart_top__DOT__rx__DOT__cursor;
     CData/*7:0*/ uart_top__DOT__rx__DOT__buffer;
+    CData/*7:0*/ uart_top__DOT__rx__DOT__tick__DOT__unnamedblk1__DOT__temp;
     CData/*0:0*/ __Vclklast__TOP__clock;
     SData/*8:0*/ uart_top__DOT__hello__DOT__cursor;
     SData/*8:0*/ uart_top__DOT__tx__DOT__buffer;

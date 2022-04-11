@@ -16,6 +16,7 @@ module immediate_generator
   input logic[31:0] inst,
   output logic[31:0] immediate
 );
+ /*public:*/
 
   // clang-format off
   // Immediate format

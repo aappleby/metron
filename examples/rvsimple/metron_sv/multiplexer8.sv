@@ -25,6 +25,7 @@ module multiplexer8
   input logic[2:0] sel,
   output logic[WIDTH-1:0] out
 );
+ /*public:*/
 
   always_comb begin /*tock*/
     // clang-format off

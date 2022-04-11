@@ -13,7 +13,7 @@ Vtoplevel::Vtoplevel(VerilatedContext* _vcontextp__, const char* _vcname__)
     , bus_byte_enable{vlSymsp->TOP.bus_byte_enable}
     , bus_read_enable{vlSymsp->TOP.bus_read_enable}
     , bus_write_enable{vlSymsp->TOP.bus_write_enable}
-    , reset{vlSymsp->TOP.reset}
+    , tock_reset{vlSymsp->TOP.tock_reset}
     , bus_read_data{vlSymsp->TOP.bus_read_data}
     , bus_address{vlSymsp->TOP.bus_address}
     , bus_write_data{vlSymsp->TOP.bus_write_data}

@@ -26,6 +26,7 @@ module riscv_core
   input logic[31:0] inst,
   output logic[31:0] pc
 );
+/*public:*/
   /*I*/
   /*O*/
   /*I*/
@@ -110,6 +111,7 @@ module riscv_core
 
   //----------------------------------------
 
+ /*private:*/
   singlecycle_datapath  datapath(
     // Inputs
     .clock(clock),

@@ -91,9 +91,9 @@ struct MtCursor {
   CHECK_RETURN Err emit_hoisted_decls(MnCompoundStatement n);
   CHECK_RETURN Err emit_init_declarator_as_decl(MnDecl n);
   CHECK_RETURN Err emit_init_declarator_as_assign(MnDecl n);
-  CHECK_RETURN Err emit_output_ports(MnFieldDecl n);
+  CHECK_RETURN Err emit_port_decls(MnFieldDecl n);
   CHECK_RETURN Err emit_field_as_submod(MnFieldDecl field_decl);
-  CHECK_RETURN Err emit_submod_input_port_bindings(MnNode n);
+  CHECK_RETURN Err emit_input_port_bindings(MnNode n);
 
   bool branch_contains_submod_call(MnNode n);
 

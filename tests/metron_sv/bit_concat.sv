@@ -6,6 +6,7 @@ module Module
 (
   input logic clock
 );
+/*public:*/
 
   initial begin /*init*/
     $write("Hello World?\n");

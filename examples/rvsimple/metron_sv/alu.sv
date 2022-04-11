@@ -19,6 +19,7 @@ module alu
   output logic[31:0] result,
   output logic result_equal_zero
 );
+ /*public:*/
 
   always_comb begin /*tock*/
     import rv_constants::*;

@@ -230,12 +230,18 @@ int main(int argc, char** argv) {
     cursor.cursor = source_file->source;
     cursor.source_file = source_file;
 
+    //source_file->root_node.dump_tree();
+
+    if (echo) LOG_G("--------------------------------------------------------------------------------\n");
+
     err << cursor.emit_dispatch(source_file->root_node);
     err << cursor.emit_printf("\n");
 
     if (echo) {
+      LOG_G("--------------------------------------------------------------------------------\n");
       LOG_G("Final converted source:\n");
       printf("%s", out_string.c_str());
+      LOG_G("--------------------------------------------------------------------------------\n");
     }
 
     if (err.has_err()) {

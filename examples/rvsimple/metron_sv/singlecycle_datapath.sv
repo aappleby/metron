@@ -40,18 +40,21 @@ module singlecycle_datapath
   input logic[1:0]  next_pc_select,
   input logic[4:0]  alu_function
 );
+/*public:*/
 
 
 
   // control signals
 
 
+/*private:*/
   logic[31:0] rs1_data;
   logic[31:0] rs2_data;
 
   logic[4:0] inst_rd;
   logic[4:0] inst_rs1;
   logic[4:0] inst_rs2;
+/*public:*/
 
   //----------------------------------------
 
@@ -167,6 +170,7 @@ module singlecycle_datapath
 
   //----------------------------------------
 
+ /*private:*/
   adder #(32) adder_pc_plus_4(
     // Inputs
     .clock(clock),

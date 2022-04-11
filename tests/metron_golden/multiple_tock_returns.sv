@@ -5,12 +5,15 @@
 module Module
 (
   input logic clock,
-  input logic[7:0] data,
+  input logic[7:0] tock_data,
   output logic[7:0] tock
 );
 /*public:*/
 
   always_comb begin /*tock*/
+    if (tock_data > 10) begin
+      tock = 12;
+    end
     tock = 11;
   end
 endmodule

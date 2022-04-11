@@ -683,15 +683,12 @@ CHECK_RETURN Err MtModule::load_pass2() {
 
 //------------------------------------------------------------------------------
 // Collect all inputs to all tock and getter methods and merge them into a list
-// of input ports. Input ports can be declared in multiple tick/tock methods,
-// but we don't want duplicates in the Verilog port list.
+// of input ports.
 
 CHECK_RETURN Err MtModule::collect_input_arguments() {
   Err err;
 
   assert(input_arguments.empty());
-
-  std::set<std::string> dedup;
 
   for (auto m : all_methods) {
     if (!m->is_public) continue;
@@ -701,21 +698,8 @@ CHECK_RETURN Err MtModule::collect_input_arguments() {
 
     for (const auto& param : params) {
       if (param.sym != sym_parameter_declaration) continue;
-
-      if (dedup.contains(param.name4())) {
-        LOG_R("Public module interface for %s contains duplicate input argument \"%s\"\n", name().c_str(), param.name4().c_str());
-      }
-
-      if (!dedup.contains(param.name4())) {
-        /*
-        MtField *new_input = MtField::construct(param, true);
-        inputs.push_back(new_input);
-        dedup.insert(new_input->name());
-        */
-        MtParam* new_input = MtParam::construct(m->name(), param);
-        input_arguments.push_back(new_input);
-        dedup.insert(new_input->name());
-      }
+      MtParam* new_input = MtParam::construct(m->name(), param);
+      input_arguments.push_back(new_input);
     }
   }
 

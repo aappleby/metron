@@ -1793,10 +1793,32 @@ CHECK_RETURN Err MtCursor::emit_struct(MnNode n) {
 
   // FIXME - Do we _have_ to mark it as packed?
 
-  err << emit_dispatch(n.child(0)); // lit = "struct"
-  err << emit_ws();
-  err << emit_printf("packed ");
-  err << emit_dispatch(n.child(1)); // body: field_declaration_list
+  auto node_name = n.get_field(field_name);
+  auto node_body = n.get_field(field_body);
+
+  if (node_name) {
+    // struct Foo {};
+
+    err << emit_printf("typedef ");
+    err << emit_dispatch(n.child(0)); // lit = "struct"
+    err << emit_ws();
+    err << emit_printf("packed ");
+    cursor = node_body.start();
+    err << emit_dispatch(node_body); // body: field_declaration_list
+    err << emit_printf(" ");
+    err << emit_splice(node_name);
+    err << emit_printf(";");
+    cursor = n.end();
+  }
+  else {
+    // typedef struct {} Foo;
+
+    err << emit_dispatch(n.child(0)); // lit = "struct"
+    err << emit_ws();
+    err << emit_printf("packed ");
+    err << emit_dispatch(node_body); // body: field_declaration_list  
+  }
+
 
   return err;
 }

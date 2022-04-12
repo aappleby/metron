@@ -6,7 +6,13 @@ typedef struct packed {
   logic[7:0] a;
   int b;
   logic[1:0] c;
-} MyStruct;
+} MyStruct1;
+
+typedef struct packed {
+  logic[7:0] a;
+  int b;
+  logic[1:0] c;
+} MyStruct2;
 
 module Module
 (
@@ -15,11 +21,17 @@ module Module
 );
 /*public:*/
   always_comb begin /*tock*/
-    MyStruct my_struct;
+    MyStruct1 my_struct1;
+    MyStruct2 my_struct2;
 
-    my_struct.a = 8'd1234;
-    my_struct.b = 12;
-    my_struct.c = 2'b01;
+    my_struct1.a = 8'd1234;
+    my_struct1.b = 12;
+    my_struct1.c = 2'b01;
+
+    my_struct2.a = 8'd1234;
+    my_struct2.b = 12;
+    my_struct2.c = 2'b01;
+
     tock = 17;
   end
 endmodule

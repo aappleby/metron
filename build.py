@@ -69,7 +69,9 @@ ninja.rule("compile_c",     command="gcc -rdynamic -g ${opt} ${includes} -MMD -M
 ninja.rule("static_lib",    command="ar rcs ${out} ${in} > /dev/null")
 ninja.rule("link",          command="g++ -rdynamic -g $opt ${in} -Wl,--whole-archive ${local_libs} -Wl,--no-whole-archive ${global_libs} -o ${out}")
 
-ninja.rule("metron",        command="bin/metron -q -r ${src_dir} -o ${dst_dir} -c ${src_top}")
+# yes, we run metron with quiet and verbose both on for test coverage
+ninja.rule("metron",        command="bin/metron -q -v -r ${src_dir} -o ${dst_dir} -c ${src_top}")
+
 ninja.rule("verilator",     command="verilator ${includes} --cc ${src_top} -Mdir ${dst_dir}")
 ninja.rule("make",          command="make --quiet -C ${dst_dir} -f ${makefile} > /dev/null")
 ninja.rule("run_test",      command="${in} | grep \"All tests pass.\" && touch ${out}")

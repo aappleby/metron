@@ -185,16 +185,6 @@ struct MtModule {
 
   std::string name() const { return mod_name; }
 
-  int get_rank() const {
-    if (parents.empty()) return 0;
-    int min_rank = 1000000;
-    for (auto p : parents) {
-      int r = p->get_rank();
-      if (r < min_rank) min_rank = r;
-    }
-    return min_rank + 1;
-  }
-
   //----------
 
   std::string mod_name;

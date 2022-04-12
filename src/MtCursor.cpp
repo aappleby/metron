@@ -73,7 +73,7 @@ CHECK_RETURN Err MtCursor::emit_indent() {
   return err;
 }
 
-CHECK_RETURN Err MtCursor::emit_char(char c) {
+CHECK_RETURN Err MtCursor::emit_char(char c, uint32_t color) {
   if (c == '\r') return Err();
 
   Err err;
@@ -91,9 +91,7 @@ CHECK_RETURN Err MtCursor::emit_char(char c) {
     // Discard the line if it contained only whitespace after elisions
     if (!line_dirty && line_elided) {
       if (echo) {
-        printf("\u001b[38;2;128;128;255m");
-        printf(" (Line elided)");
-        printf("\u001b[0m");
+        LOG_C(0xFF8080, " (Line elided)");
       }
       while(str_out->size() && str_out->back() != '\n') {
         str_out->pop_back();
@@ -110,7 +108,9 @@ CHECK_RETURN Err MtCursor::emit_char(char c) {
     str_out->push_back(c);
   }
 
-  if (echo) putchar(c);
+  if (echo) {
+    LOG_C(color, "%c", c);
+  }
 
   at_newline = c == '\n';
   return err;
@@ -146,9 +146,7 @@ CHECK_RETURN Err MtCursor::skip_over(MnNode n) {
     err << ERR("Skipping over null node");
   } else {
     if (echo) {
-      printf("\u001b[38;2;255;128;128m");
-      printf("%s", n.text().c_str());
-      printf("\u001b[0m");
+      LOG_C(0x8080FF, "%s", n.text().c_str());
     }
 
     assert(cursor == n.start());
@@ -163,17 +161,11 @@ CHECK_RETURN Err MtCursor::skip_over(MnNode n) {
 CHECK_RETURN Err MtCursor::skip_ws() {
   Err err;
 
-  if (echo) {
-    printf("\u001b[38;2;255;128;128m");
-  }
-
   while (*cursor && isspace(*cursor)) {
-    if (echo) printf("_");
+    if (echo) {
+      LOG_C(0x8080FF, "_");
+    }
     cursor++;
-  }
-
-  if (echo) {
-    printf("\u001b[0m");
   }
 
   return err;
@@ -184,18 +176,11 @@ CHECK_RETURN Err MtCursor::skip_ws() {
 CHECK_RETURN Err MtCursor::prune_trailing_ws() {
   Err err;
 
-  if (echo) {
-    printf("\u001b[38;2;255;128;128m");
-  }
-
   while (isspace(str_out->back())) {
-    if (echo) printf("^H");
+    if (echo) {
+      LOG_C(0x8080FF, "^H");
+    }
     str_out->pop_back();
-  }
-
-
-  if (echo) {
-    printf("\u001b[0m");
   }
 
   return err;
@@ -206,9 +191,9 @@ CHECK_RETURN Err MtCursor::prune_trailing_ws() {
 CHECK_RETURN Err MtCursor::comment_out(MnNode n) {
   Err err;
   assert(cursor == n.start());
-  err << emit_printf("/*");
+  err << emit_print("/*");
   err << emit_text(n);
-  err << emit_printf("*/");
+  err << emit_print("*/");
   assert(cursor == n.end());
   return err;
 }
@@ -238,9 +223,8 @@ CHECK_RETURN Err MtCursor::emit_text(MnNode n) {
 
 //----------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_printf(const char* fmt, ...) {
+CHECK_RETURN Err MtCursor::emit_print(const char* fmt, ...) {
   Err err;
-  if (echo) printf("\u001b[38;2;128;255;128m");
 
   va_list args;
   va_start(args, fmt);
@@ -254,11 +238,10 @@ CHECK_RETURN Err MtCursor::emit_printf(const char* fmt, ...) {
   va_end(args);
 
   for (int i = 0; i < size; i++) {
-    err << emit_char(buf[i]);
+    err << emit_char(buf[i], 0x80FF80);
   }
   delete[] buf;
 
-  if (echo) printf("\u001b[0m");
   return err;
 }
 
@@ -267,8 +250,6 @@ CHECK_RETURN Err MtCursor::emit_printf(const char* fmt, ...) {
 CHECK_RETURN Err MtCursor::emit_replacement(MnNode n, const char* fmt, ...) {
   Err err;
   assert(cursor == n.start());
-
-  if (echo) printf("\u001b[38;2;255;255;128m");
 
   cursor = n.end();
 
@@ -284,11 +265,10 @@ CHECK_RETURN Err MtCursor::emit_replacement(MnNode n, const char* fmt, ...) {
   va_end(args);
 
   for (int i = 0; i < size; i++) {
-    err << emit_char(buf[i]);
+    err << emit_char(buf[i], 0x80FFFF);
   }
   delete[] buf;
 
-  if (echo) printf("\u001b[0m");
   return err;
 }
 
@@ -317,7 +297,7 @@ CHECK_RETURN Err MtCursor::emit_preproc_include(MnPreprocInclude n) {
   assert(path.ends_with(".h\""));
   path.resize(path.size() - 3);
   path = path + ".sv\"";
-  err << emit_printf(path.c_str());
+  err << emit_print(path.c_str());
 
   cursor = n.end();
   return err;
@@ -341,7 +321,7 @@ CHECK_RETURN Err MtCursor::emit_assignment(MnAssignmentExpr n) {
     if (lhs_field) {
       bool lhs_is_reg1 = (lhs_field->state == FIELD_RD_WR_L) || (lhs_field->state == FIELD____WR_L);
       if (lhs_is_reg1) {
-        err << emit_printf("<");
+        err << emit_print("<");
       }
     }
   }
@@ -378,19 +358,19 @@ CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnCallExpr call, int bx_width
                arg0.sym == sym_subscript_expression) {
       if (arg0.text() == "DONTCARE") {
         // Size-casting expression
-        err << emit_printf("%d'bx", bx_width);
+        err << emit_print("%d'bx", bx_width);
         cursor = call.end();
       } else {
         // Size-casting expression
         cursor = arg0.start();
-        err << emit_printf("%d'(", bx_width) << emit_dispatch(arg0) << emit_printf(")");
+        err << emit_print("%d'(", bx_width) << emit_dispatch(arg0) << emit_print(")");
         cursor = call.end();
       }
 
     } else {
       // Size-casting expression
       cursor = arg0.start();
-      err << emit_printf("%d'(", bx_width) << emit_dispatch(arg0) << emit_printf(")");
+      err << emit_print("%d'(", bx_width) << emit_dispatch(arg0) << emit_print(")");
       cursor = call.end();
     }
   } else if (arg_count == 2) {
@@ -442,17 +422,17 @@ CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnCallExpr call, MnNode bx_n
     if (arg0.text() == "DONTCARE") {
       cursor = bx_node.start();
       err << emit_dispatch(bx_node);
-      err << emit_printf("'(1'bx)");
+      err << emit_print("'(1'bx)");
       cursor = call.end();
     } else {
       cursor = bx_node.start();
-      err << emit_printf("(");
+      err << emit_print("(");
       err << emit_dispatch(bx_node);
-      err << emit_printf(")");
-      err << emit_printf("'(");
+      err << emit_print(")");
+      err << emit_print("'(");
       cursor = arg0.start();
       err << emit_dispatch(arg0);
-      err << emit_printf(")");
+      err << emit_print(")");
       cursor = call.end();
     }
 
@@ -465,7 +445,7 @@ CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnCallExpr call, MnNode bx_n
     if (arg1.sym != sym_number_literal) debugbreak();
     int offset = atoi(arg1.start());
 
-    err << emit_printf("[%s+%d:%d]", bx_node.text().c_str(), offset - 1, offset);
+    err << emit_print("[%s+%d:%d]", bx_node.text().c_str(), offset - 1, offset);
     cursor = call.end();
   } else {
     debugbreak();
@@ -520,13 +500,13 @@ CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
     auto lhs = args.named_child(0);
     auto rhs = args.named_child(1);
 
-    err << emit_printf("($signed(");
+    err << emit_print("($signed(");
     cursor = lhs.start();
     err << emit_dispatch(lhs);
-    err << emit_printf(") >>> ");
+    err << emit_print(") >>> ");
     cursor = rhs.start();
     err << emit_dispatch(rhs);
-    err << emit_printf(")");
+    err << emit_print(")");
     cursor = n.end();
 
   } else if (func_name == "signed") {
@@ -604,14 +584,14 @@ CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
 
     auto template_arg = func.as_templ().args().named_child(0);
     int dup_count = atoi(template_arg.start());
-    err << emit_printf("{%d ", dup_count);
-    err << emit_printf("{");
+    err << emit_print("{%d ", dup_count);
+    err << emit_print("{");
 
     auto func_arg = args.named_child(0);
     cursor = func_arg.start();
     err << emit_dispatch(func_arg);
 
-    err << emit_printf("}}");
+    err << emit_print("}}");
     cursor = n.end();
   } else if (func.sym == sym_field_expression) {
     // Submod output getter call - just translate the field expression
@@ -640,7 +620,7 @@ CHECK_RETURN Err MtCursor::emit_init_declarator_as_decl(MnDecl n) {
   err << emit_ws();
   err << emit_dispatch(n.get_field(field_declarator).get_field(field_declarator));
   err << prune_trailing_ws();
-  err << emit_printf(";");
+  err << emit_print(";");
 
   cursor = n.end();
   return err;
@@ -665,7 +645,7 @@ CHECK_RETURN Err MtCursor::emit_init_declarator_as_assign(MnDecl n) {
   cursor = n._init_decl().start();
   err << emit_dispatch(n._init_decl());
   err << prune_trailing_ws();
-  err << emit_printf(";");
+  err << emit_print(";");
   cursor = n.end();
 
   assert(cursor == n.end());
@@ -798,7 +778,7 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
 
         for (int i = 0; i < submod_meth->params.size(); i++) {
           auto& param = submod_meth->params[i];
-          err << emit_printf("%s_%s_%s = ",
+          err << emit_print("%s_%s_%s = ",
             inst_id.text().c_str(),
             submod_meth->name().c_str(),
             param.c_str());
@@ -809,7 +789,7 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
           cursor = arg_node.end();
 
           err << prune_trailing_ws();
-          err << emit_printf(";");
+          err << emit_print(";");
           err << emit_newline();
           err << emit_indent();
         }
@@ -830,7 +810,7 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
 
       for (int i = 0; i < method->params.size(); i++) {
         auto& param = method->params[i];
-        err << emit_printf("%s_%s = ", func_node.text().c_str(), param.c_str());
+        err << emit_print("%s_%s = ", func_node.text().c_str(), param.c_str());
 
         auto arg_node = args_node.named_child(i);
         cursor = arg_node.start();
@@ -838,7 +818,7 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
         cursor = arg_node.end();
 
         err << prune_trailing_ws();
-        err << emit_printf(";");
+        err << emit_print(";");
         err << emit_newline();
         err << emit_indent();
       }
@@ -895,13 +875,13 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
       err << subcursor.emit_dispatch(param_type);
       err << subcursor.emit_ws();
 
-      err << emit_printf("%s_", current_method->name().c_str());
+      err << emit_print("%s_", current_method->name().c_str());
 
       subcursor.cursor = param_name.start();
       err << subcursor.emit_dispatch(param_name);
 
       err << prune_trailing_ws();
-      err << emit_printf(";");
+      err << emit_print(";");
       err << emit_newline();
       err << emit_indent();
 
@@ -926,10 +906,10 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
   } else if (current_method->is_task) {
     err << skip_over(return_type);
     err << skip_ws();
-    err << emit_printf("task ");
+    err << emit_print("task ");
     err << emit_dispatch(func_decl);
     err << prune_trailing_ws();
-    err << emit_printf(";");
+    err << emit_print(";");
   } else if (current_method->is_func) {
     if (in_public) {
       err << skip_over(return_type);
@@ -938,12 +918,12 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
       err << emit_ws();
 
     } else {
-      err << emit_printf("function ");
+      err << emit_print("function ");
       err << emit_dispatch(return_type);
       err << emit_ws();
       err << emit_dispatch(func_decl);
       err << prune_trailing_ws();
-      err << emit_printf(";");
+      err << emit_print(";");
     }
   } else {
     debugbreak();
@@ -952,18 +932,18 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
   err << emit_ws();
 
   if (current_method->is_init)
-    err << emit_printf("begin /*%s*/", current_method->name().c_str());
+    err << emit_print("begin /*%s*/", current_method->name().c_str());
   else if (current_method->is_tick) {
-    err << emit_printf("begin : %s", current_method->name().c_str());
+    err << emit_print("begin : %s", current_method->name().c_str());
   } else if (current_method->is_tock)
-    err << emit_printf("begin /*%s*/", current_method->name().c_str());
+    err << emit_print("begin /*%s*/", current_method->name().c_str());
   else if (current_method->is_task)
-    err << emit_printf("");
+    err << emit_print("");
   else if (current_method->is_func) {
     if (in_public) {
-      err << emit_printf("begin");
+      err << emit_print("begin");
     } else {
-      err << emit_printf("");
+      err << emit_print("");
     }
   } else
     debugbreak();
@@ -1032,10 +1012,10 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
   //----------
 
   if (current_method->is_init) {
-    err << emit_printf("end");
+    err << emit_print("end");
   }
   else if (current_method->is_tick) {
-    err << emit_printf("end");
+    err << emit_print("end");
     /*
     err << emit_printf("endtask");
     err << emit_newline();
@@ -1043,16 +1023,16 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
     err << emit_printf("always_ff @(posedge clock) %s();", current_method->name().c_str());
     */
   } else if (current_method->is_tock) {
-    err << emit_printf("end");
+    err << emit_print("end");
   }
   else if (current_method->is_task) {
-    err << emit_printf("endtask");
+    err << emit_print("endtask");
   }
   else if (current_method->is_func) {
     if (current_method->is_public) {
-      err << emit_printf("end");
+      err << emit_print("end");
     } else {
-      err << emit_printf("endfunction");
+      err << emit_print("endfunction");
     }
   } else
     debugbreak();
@@ -1102,17 +1082,17 @@ CHECK_RETURN Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
   err << emit_dispatch(node_decl);
   err << emit_ws();
 
-  err << emit_printf("(");
+  err << emit_print("(");
 
   indent_stack.push_back(indent_stack.back() + "  ");
 
   err << emit_newline();
   err << emit_indent();
-  err << emit_printf("// Inputs");
+  err << emit_print("// Inputs");
 
   err << emit_newline();
   err << emit_indent();
-  err << emit_printf(".clock(clock)");
+  err << emit_print(".clock(clock)");
 
   int port_count = int(
     submod_mod->input_signals.size() +
@@ -1123,7 +1103,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
    );
 
   if (port_count) {
-    err << emit_printf(",");
+    err << emit_print(",");
   }
 
   int port_index = 0;
@@ -1133,10 +1113,10 @@ CHECK_RETURN Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
 
     err << emit_newline();
     err << emit_indent();
-    err << emit_printf(".%s(%s_%s)", n->name().c_str(), inst_name.c_str(), n->name().c_str());
+    err << emit_print(".%s(%s_%s)", n->name().c_str(), inst_name.c_str(), n->name().c_str());
 
     if (port_index++ < port_count - 1) {
-      err << emit_printf(", ");
+      err << emit_print(", ");
     }
   }
 
@@ -1145,7 +1125,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
 
     err << emit_newline();
     err << emit_indent();
-    err << emit_printf(".%s_%s(%s_%s_%s)",
+    err << emit_print(".%s_%s(%s_%s_%s)",
       n->func_name.c_str(),
       n->name().c_str(),
       inst_name.c_str(),
@@ -1153,41 +1133,41 @@ CHECK_RETURN Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
       n->name().c_str());
 
     if (port_index++ < port_count - 1) {
-      err << emit_printf(", ");
+      err << emit_print(", ");
     }
   }
 
   err << emit_newline();
   err << emit_indent();
-  err << emit_printf("// Outputs");
+  err << emit_print("// Outputs");
 
   for (auto n : submod_mod->output_signals) {
     err << emit_newline();
     err << emit_indent();
-    err << emit_printf(".%s(%s_%s)", n->name().c_str(), inst_name.c_str(), n->name().c_str());
+    err << emit_print(".%s(%s_%s)", n->name().c_str(), inst_name.c_str(), n->name().c_str());
 
     if (port_index++ < port_count - 1) {
-      err << emit_printf(", ");
+      err << emit_print(", ");
     }
   }
 
   for (auto n : submod_mod->output_registers) {
     err << emit_newline();
     err << emit_indent();
-    err << emit_printf(".%s(%s_%s)", n->name().c_str(), inst_name.c_str(), n->name().c_str());
+    err << emit_print(".%s(%s_%s)", n->name().c_str(), inst_name.c_str(), n->name().c_str());
 
     if (port_index++ < port_count - 1) {
-      err << emit_printf(", ");
+      err << emit_print(", ");
     }
   }
 
   for (auto n : submod_mod->output_returns) {
     err << emit_newline();
     err << emit_indent();
-    err << emit_printf(".%s(%s_%s)", n->name().c_str(), inst_name.c_str(), n->name().c_str());
+    err << emit_print(".%s(%s_%s)", n->name().c_str(), inst_name.c_str(), n->name().c_str());
 
     if (port_index++ < port_count - 1) {
-      err << emit_printf(", ");
+      err << emit_print(", ");
     }
   }
 
@@ -1195,7 +1175,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
 
   err << emit_newline();
   err << emit_indent();
-  err << emit_printf(")");
+  err << emit_print(")");
   err << emit_dispatch(node_semi);
   err << emit_newline();
 
@@ -1254,10 +1234,10 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl submod) {
     err << emit_indent();
     err << subcursor.emit_dispatch(output_type);
     err << subcursor.emit_ws();
-    err << emit_printf("%s_", submod_decl.text().c_str());
+    err << emit_print("%s_", submod_decl.text().c_str());
     err << subcursor.emit_dispatch(output_decl);
     err << prune_trailing_ws();
-    err << emit_printf(";");
+    err << emit_print(";");
     err << emit_newline();
   }
 
@@ -1275,10 +1255,10 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl submod) {
     err << emit_indent();
     err << subcursor.emit_dispatch(output_type);
     err << subcursor.emit_ws();
-    err << emit_printf("%s_%s_", submod_decl.text().c_str(), n->func_name.c_str());
+    err << emit_print("%s_%s_", submod_decl.text().c_str(), n->func_name.c_str());
     err << subcursor.emit_dispatch(output_decl);
     err << prune_trailing_ws();
-    err << emit_printf(";");
+    err << emit_print(";");
     err << emit_newline();
   }
 
@@ -1296,10 +1276,10 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl submod) {
     err << emit_indent();
     err << subcursor.emit_dispatch(output_type);
     err << subcursor.emit_ws();
-    err << emit_printf("%s_", submod_decl.text().c_str());
+    err << emit_print("%s_", submod_decl.text().c_str());
     err << subcursor.emit_dispatch(output_decl);
     err << prune_trailing_ws();
-    err << emit_printf(";");
+    err << emit_print(";");
     err << emit_newline();
   }
 
@@ -1317,10 +1297,10 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl submod) {
     err << emit_indent();
     err << subcursor.emit_dispatch(output_type);
     err << subcursor.emit_ws();
-    err << emit_printf("%s_", submod_decl.text().c_str());
+    err << emit_print("%s_", submod_decl.text().c_str());
     err << subcursor.emit_dispatch(output_decl);
     err << prune_trailing_ws();
-    err << emit_printf(";");
+    err << emit_print(";");
     err << emit_newline();
   }
 
@@ -1340,10 +1320,10 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl submod) {
     err << sub_cursor.skip_ws();
     err << sub_cursor.emit_dispatch(getter_type);
     err << sub_cursor.emit_ws();
-    err << emit_printf("%s_", submod_decl.text().c_str());
+    err << emit_print("%s_", submod_decl.text().c_str());
     err << sub_cursor.emit_dispatch(getter_name);
     err << prune_trailing_ws();
-    err << emit_printf(";");
+    err << emit_print(";");
     err << emit_newline();
   }
 
@@ -1424,15 +1404,15 @@ CHECK_RETURN Err MtCursor::emit_simple_enum(MnFieldDecl n) {
   });
 
 
-  err << emit_printf("typedef enum ");
+  err << emit_print("typedef enum ");
   if (node_prim_type) {
     err << emit_splice(node_prim_type);
-    err << emit_printf(" ");
+    err << emit_print(" ");
   }
   err << emit_splice(node_vals);
-  err << emit_printf(" ");
+  err << emit_print(" ");
   err << emit_splice(node_name);
-  err << emit_printf(";");
+  err << emit_print(";");
 
   cursor = n.end();
 
@@ -1497,11 +1477,11 @@ CHECK_RETURN Err MtCursor::emit_broken_enum(MnFieldDecl n, MnNode node_bitfield)
 
   auto node_vals = node_bitfield.child(1).get_field(field_value);
 
-  err << emit_printf("typedef enum logic[%d:0] ", enum_width - 1);
+  err << emit_print("typedef enum logic[%d:0] ", enum_width - 1);
   err << emit_splice(node_vals);
-  err << emit_printf(" ");
+  err << emit_print(" ");
   err << emit_splice(node_name);
-  err << emit_printf(";");
+  err << emit_print(";");
 
   cursor = n.end();
 
@@ -1661,15 +1641,15 @@ CHECK_RETURN Err MtCursor::emit_struct(MnNode n) {
   if (node_name) {
     // struct Foo {};
 
-    err << emit_printf("typedef ");
+    err << emit_print("typedef ");
     err << emit_dispatch(n.child(0)); // lit = "struct"
     err << emit_ws();
-    err << emit_printf("packed ");
+    err << emit_print("packed ");
     cursor = node_body.start();
     err << emit_dispatch(node_body); // body: field_declaration_list
-    err << emit_printf(" ");
+    err << emit_print(" ");
     err << emit_splice(node_name);
-    err << emit_printf(";");
+    err << emit_print(";");
     cursor = n.end();
   }
   else {
@@ -1677,7 +1657,7 @@ CHECK_RETURN Err MtCursor::emit_struct(MnNode n) {
 
     err << emit_dispatch(n.child(0)); // lit = "struct"
     err << emit_ws();
-    err << emit_printf("packed ");
+    err << emit_print("packed ");
     err << emit_dispatch(node_body); // body: field_declaration_list  
   }
 
@@ -1738,13 +1718,13 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
           break;
 
         case sym_parameter_declaration:
-          err << sub_cursor.emit_printf("parameter ");
+          err << sub_cursor.emit_print("parameter ");
           err << sub_cursor.emit_dispatch(c);
           err << sub_cursor.emit_ws();
           break;
 
         case sym_optional_parameter_declaration:
-          err << sub_cursor.emit_printf("parameter ");
+          err << sub_cursor.emit_print("parameter ");
           err << sub_cursor.emit_dispatch(c);
           err << sub_cursor.emit_ws();
           break;
@@ -1763,7 +1743,7 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
   }
 
   err << emit_indent();
-  err << emit_printf("(");
+  err << emit_print("(");
   err << emit_newline();
 
   {
@@ -1785,9 +1765,9 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
     int port_index = 0;
 
     err << emit_indent();
-    err << emit_printf("input logic clock");
+    err << emit_print("input logic clock");
     if (port_count) {
-      err << emit_printf(",");
+      err << emit_print(",");
     }
     err << emit_newline();
 
@@ -1801,9 +1781,9 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
       err << emit_indent();
 
       if (f->is_input_signal()) {
-        err << emit_printf("input ");
+        err << emit_print("input ");
       } else {
-        err << emit_printf("output ");
+        err << emit_print("output ");
       }
 
       auto node_type = f->get_type_node();  // type
@@ -1816,14 +1796,14 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
       err << sub_cursor.emit_dispatch(node_decl);
 
       if (port_index++ < port_count - 1) {
-        err << emit_printf(",");
+        err << emit_print(",");
       }
       err << emit_newline();
     }
 
     for (auto input : current_mod->input_arguments) {
       err << emit_indent();
-      err << emit_printf("input ");
+      err << emit_print("input ");
 
       auto node_type = input->get_type_node();  // type
       auto node_decl = input->get_decl_node();  // decl
@@ -1832,18 +1812,18 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
       sub_cursor.cursor = node_type.start();
       err << sub_cursor.emit_dispatch(node_type);
       err << sub_cursor.emit_ws();
-      err << sub_cursor.emit_printf("%s_", input->func_name.c_str());
+      err << sub_cursor.emit_print("%s_", input->func_name.c_str());
       err << sub_cursor.emit_dispatch(node_decl);
 
       if (port_index++ < port_count - 1) {
-        err << emit_printf(",");
+        err << emit_print(",");
       }
       err << emit_newline();
     }
 
     for (auto m : current_mod->output_returns) {
       err << emit_indent();
-      err << emit_printf("output ");
+      err << emit_print("output ");
 
       MtCursor sub_cursor = *this;
 
@@ -1858,14 +1838,14 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
       err << sub_cursor.emit_dispatch(getter_name);
 
       if (port_index++ < port_count - 1) {
-        err << emit_printf(",");
+        err << emit_print(",");
       }
       err << emit_newline();
     }
 
     pop_indent(class_body);
     err << emit_indent();
-    err << emit_printf(");");
+    err << emit_print(");");
     trim_namespaces = true;
     in_ports = false;
   }
@@ -2038,9 +2018,9 @@ CHECK_RETURN Err MtCursor::emit_template_type(MnTemplateType n) {
       }
       default:
         cursor = logic_size.start();
-        err << emit_printf("[");
+        err << emit_print("[");
         err << emit_dispatch(logic_size);
-        err << emit_printf("-1:0]");
+        err << emit_print("-1:0]");
         break;
     }
   } else {
@@ -2115,6 +2095,7 @@ CHECK_RETURN Err MtCursor::emit_everything() {
   cursor = current_source->source;
   err << emit_ws();
   err << emit_dispatch(current_source->root_node);
+  err << emit_print("\n");
   return err;
 }
 
@@ -2178,19 +2159,19 @@ CHECK_RETURN Err MtCursor::emit_number_literal(MnNumberLiteral n, int size_cast)
   if (body.starts_with("0x")) {
     prefix_count = 2;
     if (!size_cast) size_cast = ((int)body.size() - 2 - spacer_count) * 4;
-    err << emit_printf("%d'h", size_cast);
+    err << emit_print("%d'h", size_cast);
   } else if (body.starts_with("0b")) {
     prefix_count = 2;
     if (!size_cast) size_cast = (int)body.size() - 2 - spacer_count;
-    err << emit_printf("%d'b", size_cast);
+    err << emit_print("%d'b", size_cast);
   } else {
     if (size_cast) {
-      err << emit_printf("%d'd", size_cast);
+      err << emit_print("%d'd", size_cast);
     }
   }
 
   if (spacer_count) {
-    err << emit_printf(body.c_str() + prefix_count);
+    err << emit_print(body.c_str() + prefix_count);
   } else {
     err << emit_span(n.start() + prefix_count, n.end());
   }
@@ -2226,10 +2207,10 @@ CHECK_RETURN Err MtCursor::emit_return(MnReturnStatement n) {
   */
 
   cursor = node_expr.start();
-  err << emit_printf("%s = ", current_method->name().c_str());
+  err << emit_print("%s = ", current_method->name().c_str());
   err << emit_dispatch(node_expr);
   err << prune_trailing_ws();
-  err << emit_printf(";");
+  err << emit_print(";");
 
   // FIXME We can only emit a 'return' if we're in a task or function.
   /*
@@ -2265,7 +2246,7 @@ CHECK_RETURN Err MtCursor::emit_identifier(MnIdentifier n) {
     err << emit_replacement(n, it->second.c_str());
   } else {
     if (preproc_vars.contains(name)) {
-      err << emit_printf("`");
+      err << emit_print("`");
       err << emit_text(n);
     }
     else {
@@ -2661,19 +2642,19 @@ CHECK_RETURN Err MtCursor::emit_decl(MnDecl n) {
   if (n.is_static() && n.is_const()) {
     auto node_type = n.get_field(field_type);
     if (node_type.text() == "char") {
-      err << emit_printf("localparam string ");
+      err << emit_print("localparam string ");
       auto init_decl = n.get_field(field_declarator);
       auto pointer_decl = init_decl.get_field(field_declarator);
       auto name = pointer_decl.get_field(field_declarator);
       cursor = name.start();
       err << emit_text(name);
-      err << emit_printf(" = ");
+      err << emit_print(" = ");
 
       auto val = init_decl.get_field(field_value);
       cursor = val.start();
       err << emit_text(val);
       err << prune_trailing_ws();
-      err << emit_printf(";");
+      err << emit_print(";");
       cursor = n.end();
       return err;
     }
@@ -2690,7 +2671,7 @@ CHECK_RETURN Err MtCursor::emit_decl(MnDecl n) {
 
   if (n.child_count() >= 5 && n.child(0).text() == "static" &&
       n.child(1).text() == "const") {
-    err << emit_printf("parameter ");
+    err << emit_print("parameter ");
     cursor = n.child(2).start();
     err << emit_dispatch(n.child(2));
     err << emit_ws();
@@ -2743,7 +2724,7 @@ CHECK_RETURN Err MtCursor::emit_namespace_def(MnNamespaceDef n) {
   auto node_name = n.get_field(field_name);
   auto node_body = n.get_field(field_body);
 
-  err << emit_printf("package %s;", node_name.text().c_str());
+  err << emit_print("package %s;", node_name.text().c_str());
   cursor = node_body.start();
 
   for (const auto& c : node_body) {
@@ -2757,7 +2738,7 @@ CHECK_RETURN Err MtCursor::emit_namespace_def(MnNamespaceDef n) {
     err << emit_ws();
   }
 
-  err << emit_printf("endpackage");
+  err << emit_print("endpackage");
 
   err << emit_indent();
   cursor = n.end();
@@ -2895,10 +2876,10 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
       auto op = n.get_field(field_operator);
 
       if (n.get_field(field_operator).text() == "++") {
-        err << emit_splice(id) << emit_printf(" = ") << emit_splice(id) << emit_printf(" + 1");
+        err << emit_splice(id) << emit_print(" = ") << emit_splice(id) << emit_print(" + 1");
       }
       else if (n.get_field(field_operator).text() == "--") {
-        err << emit_splice(id) << emit_printf(" = ") << emit_splice(id) << emit_printf(" - 1");
+        err << emit_splice(id) << emit_print(" = ") << emit_splice(id) << emit_print(" - 1");
       }
       else {
         debugbreak();

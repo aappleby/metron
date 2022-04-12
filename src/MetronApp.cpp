@@ -139,10 +139,6 @@ int main(int argc, char** argv) {
 
   LOG_B("Processing source files\n");
   err << library.process_sources();
-  if (err.has_err()) {
-    LOG_R("Exiting due to error\n");
-    return -1;
-  }
 
   //----------
   // Print module stats
@@ -187,6 +183,13 @@ int main(int argc, char** argv) {
   }
 
   //----------
+
+  if (err.has_err()) {
+    LOG_R("Exiting due to error\n");
+    return -1;
+  }
+
+  //----------
   // Emit all modules.
 
   if (convert && out_root.empty()) {
@@ -211,23 +214,22 @@ int main(int argc, char** argv) {
     std::string out_string;
     MtCursor cursor(&library, source_file, nullptr, &out_string);
     cursor.echo = echo && !quiet;
-    cursor.cursor = source_file->source;
 
-    if (echo) LOG_G("--------------------------------------------------------------------------------\n");
+    if (echo) {
+      LOG_G("--------------------------------------------------------------------------------\n\n");
+    }
 
-    err << cursor.emit_dispatch(source_file->root_node);
-    err << cursor.emit_printf("\n");
-
+    err << cursor.emit_everything();
     if (err.has_err()) {
       LOG_R("Error during code generation\n");
       exit(-1);
     }
 
     if (echo) {
-      LOG_G("--------------------------------------------------------------------------------\n");
-      LOG_G("Final converted source:\n");
-      printf("%s", out_string.c_str());
-      LOG_G("--------------------------------------------------------------------------------\n");
+      LOG_G("\n--------------------------------------------------------------------------------\n");
+      LOG_G("Final converted source:\n\n");
+      LOG_W("%s", out_string.c_str());
+      LOG_G("\n--------------------------------------------------------------------------------\n");
     }
 
     // Save translated source to output directory, if there is one.

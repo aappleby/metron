@@ -26,7 +26,7 @@ rule link
   command = g++ -rdynamic -g $opt ${in} -Wl,--whole-archive ${local_libs} $
       -Wl,--no-whole-archive ${global_libs} -o ${out}
 rule metron
-  command = bin/metron -q -r ${src_dir} -o ${dst_dir} -c ${src_top}
+  command = bin/metron -q -v -r ${src_dir} -o ${dst_dir} -c ${src_top}
 rule verilator
   command = verilator ${includes} --cc ${src_top} -Mdir ${dst_dir}
 rule make

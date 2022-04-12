@@ -59,8 +59,9 @@ MnNode::MnNode(TSNode node, int sym, int field, MtSourceFile* source) {
 void MnNode::dump_source_lines() const {
 
   TSPoint p = ts_node_start_point(node);
-  TinyLog::get().printf(0xFFFFFF, "==========\n");
-  TinyLog::get().printf(0xFFFFFF, "%s(%d,%d):\n", source->full_path.c_str(), p.row + 1, p.column + 1);
+
+  LOG_C(0xFFFFFF, "==========\n");
+  LOG_C(0xFFFFFF, "%s(%d,%d):\n", source->full_path.c_str(), p.row + 1, p.column + 1);
   auto source_start = source->source;
   auto source_end = source->source_end;
 
@@ -73,8 +74,10 @@ void MnNode::dump_source_lines() const {
   if (*b == '\n' || *b == '\r') b--;
 
   TinyLog::get().print_buffer(0x008080FF, a, int(b-a));
-  TinyLog::get().printf(0x008080FF, "\n");
-  TinyLog::get().printf(0xFFFFFF, "==========\n");
+
+  LOG("\n");
+
+  LOG_C(0xFFFFFF, "==========\n");
 }
 
 //------------------------------------------------------------------------------
@@ -269,7 +272,6 @@ void MnNode::visit_tree(NodeVisitor cv) {
   cv(*this);
   for (auto c : *this) {
     if (c.is_null()) {
-      printf("NULL!\n");
       debugbreak();
     }
     c.visit_tree(cv);
@@ -280,14 +282,31 @@ void MnNode::visit_tree(NodeVisitor cv) {
 // Node debugging
 
 
+std::string escape(const char* source, int a, int b) {
+  std::string result;
+  result.push_back('"');
+  for (; a < b; a++) {
+    switch(source[a]) {
+    case '\n': result.append("\\n"); break;
+    case '\r': result.append("\\r"); break;
+    case '\t': result.append("\\t"); break;
+    case '"':  result.append("\\\""); break;
+    case '\\': result.append("\\\\"); break;
+    default:   result.push_back(source[a]);
+    }
+  }
+  result.push_back('"');
+  return result;
+}
+
 struct NodeDumper {
 
   //----------------------------------------
 
   void dump_tree(const MnNode& n, int index, int depth, int maxdepth) {
-    printf("\n========== tree dump begin\n");
+    LOG("\n========== tree dump begin\n");
     dump_tree_recurse(n, index, depth, maxdepth, false);
-    printf("========== tree dump end\n");
+    LOG("========== tree dump end\n");
   }
 
   //----------------------------------------
@@ -309,43 +328,40 @@ struct NodeDumper {
 
   //----------------------------------------
 
-  void set_color(int color) {
-    if (color <= 0) {
-      printf("\u001b[0m");
-    }
-    else {
-      printf("\u001b[38;2;%d;%d;%dm", (color >> 0) & 0xFF, (color >> 8) & 0xFF, (color >> 16) & 0xFF);
-    }
-  }
-
   void dump_node(const MnNode& n, int index, int depth, bool is_last) {
-    printf(" ");
+    LOG(" ");
     for (int i = 0; i < color_stack.size(); i++) {
       bool stack_top = i == color_stack.size() - 1;
-      int color = color_stack[i];
+      uint32_t color = color_stack[i];
 
-      set_color(color);
-
-      if      (color == -1) printf("   ");
-      else if (!stack_top)  printf("\261  ");
-      else if (is_last)     printf("\261\315\315");
-      else                  printf("\261\315\315");
+      if      (color == -1) LOG_C(0x000000, "   ");
+      else if (!stack_top)  LOG_C(color, "\261  ");
+      else if (is_last)     LOG_C(color, "\261\315\315");
+      else                  LOG_C(color, "\261\315\315");
     }
-    printf("\u001b[0m");
 
     {
-      set_color(node_to_color(n));
+      auto color = node_to_color(n);
+
       if (n.child_count()) {
-        printf("\333 ");
+        LOG_C(color, "\333 ");
       }
       else {
-        printf("\376 ");
+        LOG_C(color, "\376 ");
       }
-      if (n.field) printf("%s: ", ts_language_field_name_for_id(n.source->lang, n.field));
-      printf("%s = ", n.is_named() ? n.ts_node_type() : "lit");
-      if (!n.child_count()) print_escaped(n.source->source, n.start_byte(), n.end_byte());
-      printf("\n");
-      set_color(-1);
+      
+      if (n.field) {
+        LOG_C(color, "%s: ", ts_language_field_name_for_id(n.source->lang, n.field));
+      }
+      
+      LOG_C(color, "%s = ", n.is_named() ? n.ts_node_type() : "lit");
+      
+      if (!n.child_count()) {
+        std::string escaped = escape(n.source->source, n.start_byte(), n.end_byte());
+        LOG_C(color, escaped.c_str());
+      }
+      
+      LOG_C(color, "\n");
     }
 
     if (is_last) {
@@ -413,7 +429,7 @@ struct NodeDumper {
 
   std::string indent;
 
-  std::vector<int> color_stack;
+  std::vector<uint32_t> color_stack;
 };
 
 //------------------------------------------------------------------------------

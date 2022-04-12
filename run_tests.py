@@ -7,6 +7,9 @@ import multiprocessing
 import time
 from os import path
 
+
+metron_default_args = "-v -e --dump"
+
 coverage = False
 max_threads = multiprocessing.cpu_count()
 
@@ -56,7 +59,7 @@ def check_good(filename):
     basename = path.basename(filename)
     svname = path.splitext(basename)[0] + ".sv"
 
-    cmd = kcov_prefix + f"bin/metron -q -r tests/metron_good -o tests/metron_sv -c {basename}"
+    cmd = f"{kcov_prefix} bin/metron {metron_default_args} -r tests/metron_good -o tests/metron_sv -c {basename} >> /dev/null"
     print(f"  {cmd}")
     result = os.system(cmd)
     if result:
@@ -73,8 +76,7 @@ def check_bad(filename):
     basename = path.basename(filename)
     svname = path.splitext(basename)[0] + ".sv"
 
-    cmd = kcov_prefix + f"bin/metron -q -r tests/metron_bad -o tests/metron_sv -c {basename}"
-    #cmd = kcov_prefix + f"bin/metron -r tests/metron_bad -o tests/metron_sv -c {basename}"
+    cmd = f"{kcov_prefix} bin/metron {metron_default_args} -r tests/metron_bad -o tests/metron_sv -c {basename} >> /dev/null"
     print(f"  {cmd}")
     result = os.system(cmd)
     if result == 0:
@@ -277,15 +279,16 @@ if __name__ == "__main__":
     print_b("Running misc commands")
 
     good_commands = [
-        "bin/metron -e examples/rvtiny/metron/toplevel.h > /dev/null",
-        "bin/metron -v examples/rvtiny/metron/toplevel.h > /dev/null",
-        "bin/metron --dump examples/rvtiny/metron/toplevel.h > /dev/null",
+        f"bin/metron {metron_default_args} -r examples/uart/metron uart_top.h > /dev/null",
+        f"bin/metron {metron_default_args} -r examples/rvsimple/metron toplevel.h > /dev/null",
+        f"bin/metron {metron_default_args} -r examples/rvtiny/metron toplevel.h > /dev/null",
+        f"bin/metron {metron_default_args} -r examples/rvtiny_sync/metron toplevel.h > /dev/null",
     ]
 
     bad_commands = [
-        "bin/metron skjdlsfjkhdfsjhdf.h > /dev/null",
-        "bin/metron -c skjdlsfjkhdfsjhdf.h > /dev/null",
-        "bin/metron -o sdkjfshkdjfshyry skjdlsfjkhdfsjhdf.h > /dev/null",
+        f"bin/metron {metron_default_args} skjdlsfjkhdfsjhdf.h > /dev/null",
+        f"bin/metron {metron_default_args} -c skjdlsfjkhdfsjhdf.h > /dev/null",
+        f"bin/metron {metron_default_args} -o sdkjfshkdjfshyry skjdlsfjkhdfsjhdf.h > /dev/null",
     ]
 
     if any(pool.map(run_good_command, good_commands)):

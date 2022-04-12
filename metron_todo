@@ -1,3 +1,6 @@
+treat all call args/return values as fields that have to be traced
+
+
 A bunch of the subcursor stuff could be replaced with splice
   probably all of it if you add a submod context param to splice
 

@@ -155,7 +155,7 @@ void MtModule::dump_method_list(const std::vector<MtMethod *> &methods) const {
 
       for (auto &param : n->params) {
         LOG_R("%s", param.c_str());
-        if (param_index++ != param_count - 1) LOG_C(", ");
+        if (param_index++ != param_count - 1) LOG_R(", ");
       }
     }
     LOG_R(")\n");
@@ -172,13 +172,13 @@ void MtModule::dump_banner() const {
     return;
   }
 
-  LOG_Y("// Module %s, rank %d", mod_name.c_str(), get_rank());
+  LOG_Y("// Module %s", mod_name.c_str());
   if (parents.empty()) LOG_Y(" ########## TOP ##########");
   LOG_Y("\n");
 
   //----------
 
-  LOG_B("Modparams:\n")
+  LOG_B("Modparams:\n");
   for (auto param : modparams) LOG_G("  %s\n", param->name().c_str());
   
   LOG_B("Localparams:\n");
@@ -794,9 +794,10 @@ CHECK_RETURN Err MtModule::build_port_map() {
     auto node_rhs = child.get_field(field_right);
 
     if (node_lhs.sym == sym_field_expression) {
-      auto key = node_lhs.text();
-      auto val = node_rhs.text();
-      port_map[key] = val;
+      auto submod_name = node_lhs.get_field(field_argument).text();
+      if (get_submod(submod_name)) {
+        port_map[node_lhs.text()] = node_rhs.text();
+      }
     }
   });
 
@@ -851,16 +852,9 @@ CHECK_RETURN Err MtModule::build_port_map() {
       cursor.cursor = arg_node.start();
       err << cursor.emit_dispatch(arg_node);
 
-      // FIXME - multiple port bindings are OK? I'm not sure.
-
       auto it = port_map.find(key);
       if (it != port_map.end()) {
         if ((*it).second != val) {
-          /*
-          LOG_R("Error, got multiple different values for %s: '%s' and '%s'\n",
-                key.c_str(), (*it).second.c_str(), val.c_str());
-          error = true;
-          */
         }
       } else {
         port_map.insert({key, val});

@@ -44,14 +44,6 @@ void print_escaped(const char* source, int a, int b) {
 }
 
 /*
-int cprintf(uint32_t color, const char *format, ...) {
-  printf("\u001b[38;2;%d;%d;%dm", (color >> 0) & 0xFF, (color >> 8) & 0xFF,
-(color >> 16) & 0xFF); va_list args; va_start (args, format); auto r = vprintf
-(format, args); va_end (args); printf("\u001b[0m"); return r;
-}
-*/
-
-/*
 void print_escaped(char s) {
   if      (s == '\n') printf("\\n");
   else if (s == '\r') printf("\\r");
@@ -129,15 +121,6 @@ void debugbreak() {
 void debugbreak() { __debugbreak(); }
 
 int plat_mkdir(const char* path, int mode) { return _mkdir(path); }
-
-void dprintf(const char* format, ...) {
-  static char buffer[256];
-  va_list args;
-  va_start(args, format);
-  vsnprintf(buffer, 256, format, args);
-  va_end(args);
-  OutputDebugString(buffer);
-}
 
 /*
   {

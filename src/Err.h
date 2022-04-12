@@ -17,30 +17,28 @@ enum class SEV_TYPE {
 class ErrType {
 public:
   ErrType(SEV_TYPE v, const char* file, int line, const char* func, const char* format, ...) : sev(v) {
-    char msg[256];
-    if (format) {
-      va_list args;
-      va_start(args, format);
-      int len = vsnprintf(msg, 256, format, args);
-      va_end(args);
-    }
+    va_list args;
+    va_start(args, format);
 
     if (v == SEV_TYPE::INFO) {
+      // KCOV_OFF
       LOG_G("Info @ %s : %d : %s\n", file, line, func);
-      LOG_G("  %s\n", msg);
+      LOG_G("  ");
+      LOG_GV(format, args);
+      // KCOV_ON
     }
     else if (v == SEV_TYPE::WARN) {
       LOG_Y("Warning @ %s : %d : %s\n", file, line, func);
-      LOG_Y("  %s\n", msg);
+      LOG_Y("  ");
+      LOG_YV(format, args);
     }
     else if (v == SEV_TYPE::ERR) {
       LOG_R("Error @ %s : %d : %s\n", file, line, func);
-      LOG_R("  %s\n", msg);
-    }
-    else {
-      LOG_R("Error type %d??? @ %s : %d\n", int(v), file, line);
+      LOG_R("  ");
+      LOG_RV(format, args);
     }
 
+    va_end(args);
   }
   SEV_TYPE sev;
 };

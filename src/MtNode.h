@@ -70,7 +70,7 @@ struct MnNode {
 
   void check_sym(TSSymbol sym) {
     if (!is_null() && this->sym != sym) {
-      dump_tree();
+      debugbreak();
     }
     assert(is_null() || this->sym == sym);
   }
@@ -387,7 +387,6 @@ struct MnFunc : public MnNode {
   MnFunc(const MnNode& n) : MnNode(n) {
     if (is_null() || is_id() || is_templ() || is_field() || is_prim()) {
     } else {
-      dump_tree();
       debugbreak();
     }
   }

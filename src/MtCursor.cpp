@@ -1791,8 +1791,12 @@ CHECK_RETURN Err MtCursor::emit_field_decl(MnFieldDecl n) {
 CHECK_RETURN Err MtCursor::emit_struct(MnNode n) {
   Err err;
 
-  //n.dump_tree();
-  err << emit_children(n);
+  // FIXME - Do we _have_ to mark it as packed?
+
+  err << emit_dispatch(n.child(0)); // lit = "struct"
+  err << emit_ws();
+  err << emit_printf("packed ");
+  err << emit_dispatch(n.child(1)); // body: field_declaration_list
 
   return err;
 }
@@ -2454,11 +2458,19 @@ CHECK_RETURN Err MtCursor::emit_field_expr(MnFieldExpr n) {
   Err err;
   assert(cursor == n.start());
 
-  auto field = n.text();
-  for (auto& c : field) {
-    if (c == '.') c = '_';
+  auto node_submod = n.get_field(field_argument);
+
+  if (current_mod && current_mod->get_submod(node_submod.text())) {
+    auto field = n.text();
+      for (auto& c : field) {
+        if (c == '.') c = '_';
+      }
+    err << emit_replacement(n, field.c_str());
   }
-  err << emit_replacement(n, field.c_str());
+  else {
+    err << emit_text(n);
+  }
+
   assert(cursor == n.end());
   return err;
 }

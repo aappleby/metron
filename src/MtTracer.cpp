@@ -161,13 +161,10 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n) {
 
   if (state_top().hit_return) {
     return ERR("Return in the middle of a function");
-    //n.dump_tree();
-    //printf("Return in the middle of a function");
   }
 
   switch (n.sym) {
     case sym_assignment_expression:
-      // n.dump_source_lines();
       err << trace_assign(n);
       break;
     case sym_call_expression:
@@ -297,7 +294,6 @@ CHECK_RETURN Err MtTracer::trace_assign(MnNode n) {
     err << trace_write(node_lhs.text());
   }
   else {
-    node_lhs.dump_tree();
     debugbreak();
   }
 
@@ -410,8 +406,6 @@ CHECK_RETURN Err MtTracer::trace_method_call(MnNode n) {
 CHECK_RETURN Err MtTracer::trace_submod_call(MnNode n) {
   Err err;
 
-  //n.dump_tree();
-
   // Field call. Pull up the submodule and traverse into the method.
 
   auto node_func = n.get_field(field_function);
@@ -480,7 +474,6 @@ CHECK_RETURN Err MtTracer::trace_template_call(MnNode n) {
 
   if (node_name == "bx" || node_name == "dup" || node_name == "sign_extend") {
   } else {
-    n.dump_tree();
     debugbreak();
   }
 
@@ -498,7 +491,6 @@ CHECK_RETURN Err MtTracer::trace_template_call(MnNode n) {
     // Templated utility method call like bx<>, dup<>
   }
 
-  // node_func.dump_tree();
 #endif
 
   if (err.has_err()) {
@@ -532,12 +524,9 @@ CHECK_RETURN Err MtTracer::trace_id(MnNode n) {
 
   if (field && !field->is_param()) {
     err << trace_read(n);
-    // n.dump_tree();
     // debugbreak();
   } else {
     // Either a param or a local variable, ignore.
-
-    // n.dump_tree();
     // debugbreak();
   }
 

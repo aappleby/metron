@@ -16,7 +16,8 @@ struct MtModLibrary;
 struct MtCursor {
   MtCursor(
     MtModLibrary* lib,
-    MtSourceFile* source_file,
+    MtSourceFile* source,
+    MtModule* mod,
     std::string* out
   );
 
@@ -110,10 +111,13 @@ struct MtCursor {
   //----------
 
   MtModLibrary* lib = nullptr;
-  MtSourceFile* source_file = nullptr;
-  MtModule* current_mod = nullptr;
+  MtSourceFile* current_source = nullptr;
+  MtModule*     current_mod = nullptr;
+  MtMethod*     current_method = nullptr;
+
   const char* cursor = nullptr;
-  MtMethod* current_method = nullptr;
+
+
   std::vector<std::string> indent_stack;
   bool at_newline = true;
   bool line_dirty = false;

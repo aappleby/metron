@@ -99,9 +99,8 @@ std::string translate_simple(std::string src) {
     if (mod->dirty_check_fail) return "DCF";
   }
 
-  MtCursor cursor(&library, source_file, &out);
+  MtCursor cursor(&library, source_file, nullptr, &out);
   cursor.cursor = source_file->source;
-  cursor.source_file = source_file;
   err << cursor.emit_translation_unit(source_file->root_node);
   err << cursor.emit_printf("\n");
 

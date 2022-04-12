@@ -91,8 +91,8 @@ MtMethod *MtModule::get_method(const std::string &name) {
   return nullptr;
 }
 
-MtEnum *MtModule::get_enum(const std::string &name) {
-  for (auto n : enums) {
+MtField* MtModule::get_enum(const std::string &name) {
+  for (auto n : all_enums) {
     if (n->name() == name) return n;
   }
   return nullptr;
@@ -185,7 +185,7 @@ void MtModule::dump_banner() const {
   for (auto param : localparams) LOG_G("  %s\n", param->name().c_str());
   
   LOG_B("Enums:\n");
-  for (auto n : enums) LOG_G("  %s\n", n->name().c_str());
+  for (auto n : all_enums) LOG_G("  %s\n", n->name().c_str());
   
   LOG_B("All Fields:\n");
   for (auto n : all_fields) {
@@ -416,12 +416,14 @@ CHECK_RETURN Err MtModule::collect_field_and_submods() {
       continue;
     }
 
-    // FIXME why are we excluding enums here? because they're not a "field"?
-    if (n.get_field(field_type).sym == sym_enum_specifier) continue;
-
     auto new_field = MtField::construct(n, in_public);
 
-    if (new_field->is_submod()) {
+
+    // FIXME why are we excluding enums here? because they're not a "field"?
+    if (n.get_field(field_type).sym == sym_enum_specifier) {
+      all_enums.push_back(new_field);
+    }
+    else if (new_field->is_submod()) {
       all_submods.push_back(new_field);
     }
     else {
@@ -844,7 +846,7 @@ CHECK_RETURN Err MtModule::build_port_map() {
       auto key = call_member->name() + "." + call_method->params[i];
 
       std::string val;
-      MtCursor cursor(source_file->lib, source_file, &val);
+      MtCursor cursor(source_file->lib, source_file, this, &val);
       auto arg_node = node_args.named_child(i);
       cursor.cursor = arg_node.start();
       err << cursor.emit_dispatch(arg_node);

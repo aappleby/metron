@@ -15,6 +15,8 @@
 #include "submodules/cli11/include/CLI/Formatter.hpp"
 #include "submodules/cli11/include/CLI/Config.hpp"
 
+//#include "../scratch.h"
+
 #pragma warning(disable : 4996)
 
 //------------------------------------------------------------------------------
@@ -135,22 +137,6 @@ int main(int argc, char** argv) {
 
   LOG_B("\n");
 
-  //library.source_files[0]->root_node.dump_tree();
-  //exit(1);
-
-#if 0
-  {
-    Err err;
-    err << ERR("Butts are butts.");
-    err << WARN("Beets are beets.");
-
-    if (err & 1) printf("There was a warning.\n");
-    if (err & 2) printf("There was an error.\n");
-  }
-
-  exit(0);
-#endif
-
   LOG_B("Processing source files\n");
   err << library.process_sources();
   if (err.has_err()) {
@@ -210,8 +196,6 @@ int main(int argc, char** argv) {
 
   for (auto& source_file : library.source_files)
   {
-    //if (source_file->filename != "singlecycle_datapath.h") continue;
-
     Err err;
 
     // Translate the source.
@@ -225,12 +209,9 @@ int main(int argc, char** argv) {
     }
 
     std::string out_string;
-    MtCursor cursor(&library, source_file, &out_string);
+    MtCursor cursor(&library, source_file, nullptr, &out_string);
     cursor.echo = echo && !quiet;
     cursor.cursor = source_file->source;
-    cursor.source_file = source_file;
-
-    //source_file->root_node.dump_tree();
 
     if (echo) LOG_G("--------------------------------------------------------------------------------\n");
 

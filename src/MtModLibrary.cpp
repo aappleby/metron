@@ -87,8 +87,6 @@ CHECK_RETURN Err MtModLibrary::load_blob(const std::string& filename, const std:
   source_file->root_node.visit_tree([&](MnNode child) {
     if (child.sym != sym_preproc_include) return;
 
-    //child.dump_tree();
-
     std::string filename = child.get_field(field_path).text();
     filename.erase(filename.begin());
     filename.pop_back();

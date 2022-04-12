@@ -66,7 +66,6 @@ struct MtEnum {
       auto enum_name = enum_type.get_field(field_name);
       return enum_name.text();
     } else {
-      node.dump_tree();
       debugbreak();
       return "";
     }
@@ -147,7 +146,7 @@ struct MtModule {
   CHECK_RETURN Err init(MtSourceFile* source_file, MnTemplateDecl node);
   CHECK_RETURN Err init(MtSourceFile* source_file, MnClassSpecifier node);
 
-  MtEnum* get_enum(const std::string& name);
+  MtField* get_enum(const std::string& name);
   MtField* get_field(const std::string& name);
   MtField* get_input_field(const std::string& name);
   MtParam* get_input_param(const std::string& name);
@@ -220,17 +219,19 @@ struct MtModule {
   //----------
   // Populated by load_pass1, these collections are required by trace().
 
-  std::vector<MtField*> all_fields;
+  std::vector<MtField*>  all_fields;
+  std::vector<MtField*>  all_enums;
   std::vector<MtMethod*> all_methods;
-  std::vector<MtField*> all_submods;
+  std::vector<MtField*>  all_submods;
 
   //----------
   // Populated by load_pass2 using the results from trace().
 
   std::vector<MtParam*> modparams;
-  std::vector<MtParam*>
-      localparams;  // FIXME not actually doing anything with this yet?
-  std::vector<MtEnum*> enums;
+
+  // FIXME not actually doing anything with this yet?
+  std::vector<MtParam*> localparams;
+
 
   std::vector<MtField*> input_signals;
   std::vector<MtField*> output_signals;

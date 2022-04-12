@@ -98,7 +98,6 @@ struct MtCursor {
   CHECK_RETURN Err emit_preproc(MnNode n);
   CHECK_RETURN Err emit_func_decl(MnFuncDeclarator n);
   CHECK_RETURN Err emit_func_def(MnFuncDefinition n);
-  CHECK_RETURN Err emit_field_as_enum_class(MnFieldDecl n);
   CHECK_RETURN Err emit_static_bit_extract(MnCallExpr n, int bx_width);
   CHECK_RETURN Err emit_dynamic_bit_extract(MnCallExpr n, MnNode bx_node);
   CHECK_RETURN Err emit_hoisted_decls(MnCompoundStatement n);

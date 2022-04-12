@@ -29,7 +29,7 @@ public:
   enum class enum_class1 { A5, B5, C5 };
   enum class enum_class2 { A6 = 0b01, B6 = 0x02, C6 = 3 };
 
-  enum class fancy_enum : int { FOO = 0b01, BAR = 0x02, BAZ = 3 };
+  enum class typed_enum : int { A7 = 0b01, B7 = 0x02, C7 = 3 };
 
   void tock() {
     simple_enum1 e1 = A1;
@@ -38,5 +38,6 @@ public:
     anon_enum_field2 = A4;
     enum_class1 ec1 = enum_class1::B5;
     enum_class2 ec2 = enum_class2::C6;
+    typed_enum te1 = typed_enum::A7;
   }
 };

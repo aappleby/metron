@@ -1555,7 +1555,18 @@ CHECK_RETURN Err MtCursor::emit_simple_enum(MnFieldDecl n) {
   auto node_name = node_type.get_field(field_name);
   auto node_vals = n.get_field(field_default_value);
 
+  MnNode node_prim_type;
+
+  n.visit_tree([&](MnNode c) {
+    if (c.sym == sym_primitive_type) node_prim_type = c;
+  });
+
+
   err << emit_printf("typedef enum ");
+  if (node_prim_type) {
+    err << emit_splice(node_prim_type);
+    err << emit_printf(" ");
+  }
   err << emit_splice(node_vals);
   err << emit_printf(" ");
   err << emit_splice(node_name);

@@ -229,7 +229,6 @@ std::string MnNode::name4() const {
       return text();
 
     default:
-      dump_tree();
       debugbreak();
       return "";
   }
@@ -259,7 +258,6 @@ std::string MnNode::type5() const {
     case sym_optional_parameter_declaration:
       return get_field(field_type).type5();
     default:
-      dump_tree();
       debugbreak();
       return "";
   }

@@ -6,7 +6,7 @@
 // typedef enum { FOO, BAR=0, BAZ=1 } blem;
 
 // good
-// enum { FOO, BAR, BAZ } blem;
+// OK enum { FOO, BAR, BAZ } blem;
 // enum { FOO=0, BAR=1, BAZ=2 } blem;
 // typedef enum { FOO, BAR, BAZ } blem;
 // typedef enum { FOO=0, BAR=1, BAZ=2 } blem;
@@ -23,19 +23,20 @@ module Module
 );
 /*public:*/
 
-  typedef enum { FOO, BAR, BAZ } blem;
+  typedef enum { A1, B1, C1 } simple_enum1;
+  typedef enum { A2 = 2'b01, B2 = 8'h02, C2 = 3 } simple_enum2;
+
+  enum { A3, B3, C3 } anon_enum_field1;
+  enum { A4 = 2'b01, B4 = 8'h02, C4 = 3 } anon_enum_field2;
 
   always_comb begin /*tock*/
-    logic[1:0] x;
-    blem y;
+    simple_enum1 e1;
+    simple_enum2 e2;
 
-    x = FOO;
-    y = BAR;
-
-    if (x == FOO) begin
-      y = BAZ;
-    end
+    e1 = A1;
+    e2 = B2;
+    anon_enum_field1 = C3;
+    anon_enum_field2 = A4;
   end
-
 endmodule
 

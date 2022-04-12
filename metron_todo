@@ -5,6 +5,15 @@ If we don't emit anything for a tick() or tock(), we should not emit the tock it
 Structs? Unions?
 
 
+
+Make lockstep test framework for all the metron_good tests
+  Make all of them have a toplevel "logic<32> tock();"
+  Run for N cycles and check that return values from both
+  versions match, but don't care about the actual value.
+
+
+
+
 Coverage
   Err.h
     fine, skip it
@@ -37,7 +46,7 @@ Coverage
       emit_field_as_enum_class
       in_ports?
     emit_expression
-      child(0).sym == sym_call_expression && current_method->is_tick
+      child(0).sym == sym_call_expression && current_method->is_tick           
         wat?
     emit_enum_list
     emit_number_literal

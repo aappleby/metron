@@ -84,6 +84,12 @@ struct MtCursor {
   CHECK_RETURN Err emit_using_decl(MnUsingDecl n);
 
   // Special-purpose emit()s
+  CHECK_RETURN Err emit_enum(MnFieldDecl n);
+  
+  CHECK_RETURN Err emit_simple_enum(MnFieldDecl n);
+  CHECK_RETURN Err emit_anonymous_enum(MnFieldDecl n);
+
+
   CHECK_RETURN Err emit_preproc(MnNode n);
   CHECK_RETURN Err emit_func_decl(MnFuncDeclarator n);
   CHECK_RETURN Err emit_func_def(MnFuncDefinition n);

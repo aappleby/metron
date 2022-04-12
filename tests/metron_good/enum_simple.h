@@ -6,7 +6,7 @@
 // typedef enum { FOO, BAR=0, BAZ=1 } blem;
 
 // good
-// enum { FOO, BAR, BAZ } blem;
+// OK enum { FOO, BAR, BAZ } blem;
 // enum { FOO=0, BAR=1, BAZ=2 } blem;
 // typedef enum { FOO, BAR, BAZ } blem;
 // typedef enum { FOO=0, BAR=1, BAZ=2 } blem;
@@ -20,15 +20,16 @@
 class Module {
 public:
 
-  enum blem { FOO, BAR, BAZ };
+  enum simple_enum1 { A1, B1, C1 };
+  enum simple_enum2 { A2 = 0b01, B2 = 0x02, C2 = 3 };
+
+  enum { A3, B3, C3 } anon_enum_field1;
+  enum { A4 = 0b01, B4 = 0x02, C4 = 3 } anon_enum_field2;
 
   void tock() {
-    logic<2> x = FOO;
-    blem y = BAR;
-
-    if (x == FOO) {
-      y = BAZ;
-    }
+    simple_enum1 e1 = A1;
+    simple_enum2 e2 = B2;
+    anon_enum_field1 = C3;
+    anon_enum_field2 = A4;
   }
-
 };

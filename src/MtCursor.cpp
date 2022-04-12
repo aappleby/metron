@@ -1,4 +1,4 @@
-#include "MtCursor.h"
+﻿#include "MtCursor.h"
 
 #include <stdarg.h>
 
@@ -337,7 +337,7 @@ CHECK_RETURN Err MtCursor::emit_assignment(MnAssignmentExpr n) {
 
   err << emit_dispatch(lhs) << emit_ws();
 
-  if (current_method->is_tick) {
+  if (current_method && current_method->is_tick) {
     auto lhs_field = current_mod->get_field(lhs.name4());
     if (lhs_field) {
       bool lhs_is_reg1 = (lhs_field->state == FIELD_RD_WR_L) || (lhs_field->state == FIELD____WR_L);
@@ -644,8 +644,6 @@ CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
 // Replace "logic blah = x;" with "logic blah;"
 
 CHECK_RETURN Err MtCursor::emit_init_declarator_as_decl(MnDecl n) {
-  //n.dump_tree();
-
   Err err;
   assert(cursor == n.start());
 
@@ -1506,6 +1504,124 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl submod) {
 }
 
 //------------------------------------------------------------------------------
+// enum { FOO, BAR } e; => enum { FOO, BAR } e;
+
+/*
+enum { FOO, BAR, BAZ } blom;
+
+========== tree dump begin
+█ field_declaration =
+▒══█ type: enum_specifier =
+▒  ▒══■ lit = "enum"
+▒  ▒══█ body: enumerator_list =
+▒     ▒══■ lit = "{"
+▒     ▒══█ enumerator =
+▒     ▒  ▒══■ name: identifier = "FOO"
+▒     ▒══■ lit = ","
+▒     ▒══█ enumerator =
+▒     ▒  ▒══■ name: identifier = "BAR"
+▒     ▒══■ lit = ","
+▒     ▒══█ enumerator =
+▒     ▒  ▒══■ name: identifier = "BAZ"
+▒     ▒══■ lit = "}"
+▒══■ declarator: field_identifier = "blom"
+▒══■ lit = ";"
+========== tree dump end
+*/
+
+
+CHECK_RETURN Err MtCursor::emit_anonymous_enum(MnFieldDecl n) {
+  Err err;
+
+  err << emit_children(n);
+
+  return err;
+}
+
+
+//------------------------------------------------------------------------------
+// enum e { FOO, BAR }; => typedef enum { FOO, BAR } e;
+
+/*
+enum blom { FOO, BAR, BAZ };
+
+========== tree dump begin
+█ field_declaration =
+▒══█ type: enum_specifier =
+▒  ▒══■ lit = "enum"
+▒  ▒══■ name: type_identifier = "blom"
+▒══█ default_value: initializer_list =
+▒  ▒══■ lit = "{"
+▒  ▒══■ identifier = "FOO"
+▒  ▒══■ lit = ","
+▒  ▒══■ identifier = "BAR"
+▒  ▒══■ lit = ","
+▒  ▒══■ identifier = "BAZ"
+▒  ▒══■ lit = "}"
+▒══■ lit = ";"
+========== tree dump end
+*/
+
+
+CHECK_RETURN Err MtCursor::emit_simple_enum(MnFieldDecl n) {
+  Err err;
+
+  auto node_type = n.get_field(field_type);
+  auto node_name = node_type.get_field(field_name);
+  auto node_vals = n.get_field(field_default_value);
+
+  err << emit_printf("typedef enum ");
+  err << emit_splice(node_vals);
+  err << emit_printf(" ");
+  err << emit_splice(node_name);
+  err << emit_printf(";");
+
+  cursor = n.end();
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+/*
+
+========== tree dump begin
+█ field_declaration =
+▒══█ type: enum_specifier =
+▒  ▒══■ lit = "enum"
+▒  ▒══█ body: enumerator_list =
+▒     ▒══■ lit = "{"
+▒     ▒══█ enumerator =
+▒     ▒  ▒══■ name: identifier = "A3"
+▒     ▒══■ lit = ","
+▒     ▒══█ enumerator =
+▒     ▒  ▒══■ name: identifier = "B3"
+▒     ▒══■ lit = ","
+▒     ▒══█ enumerator =
+▒     ▒  ▒══■ name: identifier = "C3"
+▒     ▒══■ lit = "}"
+▒══■ declarator: field_identifier = "anon_enum_field1"
+▒══■ lit = ";"
+========== tree dump end
+
+*/
+
+CHECK_RETURN Err MtCursor::emit_enum(MnFieldDecl n) {
+  auto node_type = n.get_field(field_type);
+  if (node_type.sym != sym_enum_specifier) {
+    return ERR("Field type is not an enum specifier");
+  }
+
+  if (node_type.get_field(field_name)) {
+    return emit_simple_enum(n);
+  }
+  else {
+    return emit_anonymous_enum(n);
+  }
+}
+
+
+//------------------------------------------------------------------------------
 // Emit field declarations. For submodules, also emit glue declarations and
 // append the glue parameter list to the field.
 
@@ -1514,11 +1630,21 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl submod) {
 // field_declaration = { type:enum_specifier,  bitfield_clause (TREESITTER BUG)
 // }
 
+
 CHECK_RETURN Err MtCursor::emit_field_decl(MnFieldDecl n) {
   Err err;
 
   assert(cursor == n.start());
 
+  auto node_type = n.get_field(field_type);
+  assert(node_type);
+
+  if (node_type.sym == sym_enum_specifier) {
+    return emit_enum(n);
+  }
+
+
+  /*
   // Handle "enum class", which is broken a bit in TreeSitterCpp
   if (n.type().child_count() >= 3 && n.type().child(0).text() == "enum" &&
       n.type().child(1).text() == "class" &&
@@ -1526,13 +1652,12 @@ CHECK_RETURN Err MtCursor::emit_field_decl(MnFieldDecl n) {
     err << emit_field_as_enum_class(n);
     return err;
   }
+  */
 
   std::string type_name = n.type5();
 
   if (lib->get_module(type_name)) {
     err << emit_field_as_submod(n);
-  } else if (n.type().is_enum()) {
-    err << emit_field_as_enum_class(n);
   } else if (current_mod->get_input_field(n.name().text())) {
     if (!in_ports) {
       //err << comment_out(n);
@@ -1980,7 +2105,9 @@ CHECK_RETURN Err MtCursor::emit_template_arg_list(MnTemplateArgList n) {
 CHECK_RETURN Err MtCursor::emit_enum_list(MnEnumeratorList n) {
   Err err;
 
-  for (const auto& c : (MnNode&)n) {
+  auto child_count = n.child_count();
+  for (int i = 0; i < child_count; i++) {
+    auto c = n.child(i);
     switch (c.sym) {
       case anon_sym_LBRACE:
         err << emit_text(c);
@@ -1992,7 +2119,9 @@ CHECK_RETURN Err MtCursor::emit_enum_list(MnEnumeratorList n) {
         err << emit_dispatch(c);
         break;
     }
-    err << emit_ws();
+    if (i != child_count - 1) {
+      err << emit_ws();
+    }
   }
   assert(cursor == n.end());
   return err;
@@ -2478,10 +2607,13 @@ CHECK_RETURN Err MtCursor::emit_if_statement(MnIfStatement n) {
 
 CHECK_RETURN Err MtCursor::emit_enum_specifier(MnEnumSpecifier n) {
   Err err;
-  assert(cursor == n.start());
+
+  err << emit_children(n);
+
+  //assert(cursor == n.start());
   // err << emit_sym_field_declaration_as_enum_class(MtFieldDecl(n));
   // for (auto c : n) err << emit_dispatch(c);
-  debugbreak();
+  //debugbreak();
   return err;
 }
 
@@ -2789,6 +2921,10 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
       break;
     }
 
+    case sym_initializer_list:
+      err << emit_children(n);
+      break;
+
     case sym_for_statement:
     case sym_parenthesized_expression:
     case sym_parameter_declaration:
@@ -2802,7 +2938,6 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
     case sym_array_declarator:
     case sym_type_descriptor:
     case sym_init_declarator:
-    case sym_initializer_list:
     case sym_declaration_list:
       err << emit_children(n);
       break;

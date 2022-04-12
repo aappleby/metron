@@ -87,6 +87,7 @@ struct MtCursor {
   // Special-purpose emit()s
   CHECK_RETURN Err emit_enum(MnFieldDecl n);
   
+  CHECK_RETURN Err emit_broken_enum(MnFieldDecl n, MnNode node_bitfield);
   CHECK_RETURN Err emit_simple_enum(MnFieldDecl n);
   CHECK_RETURN Err emit_anonymous_enum(MnFieldDecl n);
 

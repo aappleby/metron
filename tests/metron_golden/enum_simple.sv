@@ -33,6 +33,7 @@ module Module
   typedef enum { A6 = 2'b01, B6 = 8'h02, C6 = 3 } enum_class2;
 
   typedef enum int { A7 = 2'b01, B7 = 8'h02, C7 = 3 } typed_enum;
+  typedef enum logic[7:0] { A8 = 2'b01, B8 = 8'h02, C8 = 3 } sized_enum;
 
   always_comb begin /*tock*/
     simple_enum1 e1;
@@ -40,6 +41,7 @@ module Module
     enum_class1 ec1;
     enum_class2 ec2;
     typed_enum te1;
+    sized_enum se1;
 
     e1 = A1;
     e2 = B2;
@@ -48,6 +50,7 @@ module Module
     ec1 = B5;
     ec2 = C6;
     te1 = A7;
+    se1 = B8;
   end
 endmodule
 

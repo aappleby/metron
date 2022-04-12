@@ -1580,6 +1580,75 @@ CHECK_RETURN Err MtCursor::emit_simple_enum(MnFieldDecl n) {
 //------------------------------------------------------------------------------
 
 /*
+========== tree dump begin
+█ field_declaration =
+▒══█ type: enum_specifier =
+▒  ▒══■ lit = "enum"
+▒  ▒══■ lit = "class"
+▒  ▒══■ name: type_identifier = "sized_enum"
+▒══█ bitfield_clause =
+▒  ▒══■ lit = ":"
+▒  ▒══█ compound_literal_expression =
+▒     ▒══█ type: qualified_identifier =
+▒     ▒  ▒══█ scope: template_type =
+▒     ▒  ▒  ▒══■ name: type_identifier = "logic"
+▒     ▒  ▒  ▒══█ arguments: template_argument_list =
+▒     ▒  ▒     ▒══■ lit = "<"
+▒     ▒  ▒     ▒══■ number_literal = "8"
+▒     ▒  ▒     ▒══■ lit = ">"
+▒     ▒  ▒══■ lit = "::"
+▒     ▒  ▒══■ name: type_identifier = "BASE"
+▒     ▒══█ value: initializer_list =
+▒        ▒══■ lit = "{"
+▒        ▒══█ assignment_expression =
+▒        ▒  ▒══■ left: identifier = "A8"
+▒        ▒  ▒══■ operator: lit = "="
+▒        ▒  ▒══■ right: number_literal = "0b01"
+▒        ▒══■ lit = ","
+▒        ▒══█ assignment_expression =
+▒        ▒  ▒══■ left: identifier = "B8"
+▒        ▒  ▒══■ operator: lit = "="
+▒        ▒  ▒══■ right: number_literal = "0x02"
+▒        ▒══■ lit = ","
+▒        ▒══█ assignment_expression =
+▒        ▒  ▒══■ left: identifier = "C8"
+▒        ▒  ▒══■ operator: lit = "="
+▒        ▒  ▒══■ right: number_literal = "3"
+▒        ▒══■ lit = "}"
+▒══■ lit = ";"
+========== tree dump end
+*/
+
+CHECK_RETURN Err MtCursor::emit_broken_enum(MnFieldDecl n, MnNode node_bitfield) {
+  Err err;
+
+  auto node_type = n.get_field(field_type);
+  auto node_name = node_type.get_field(field_name);
+
+  auto node_type2 = node_bitfield.child(1).get_field(field_type);
+
+  node_type2 = node_type2.get_field(field_scope).get_field(field_arguments).named_child(0);
+
+  int enum_width = atoi(node_type2.start());
+
+  if (!enum_width) return ERR("Enum is 0 bits wide?");
+
+  auto node_vals = node_bitfield.child(1).get_field(field_value);
+
+  err << emit_printf("typedef enum logic[%d:0] ", enum_width - 1);
+  err << emit_splice(node_vals);
+  err << emit_printf(" ");
+  err << emit_splice(node_name);
+  err << emit_printf(";");
+
+  cursor = n.end();
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+/*
 
 ========== tree dump begin
 █ field_declaration =
@@ -1609,7 +1678,18 @@ CHECK_RETURN Err MtCursor::emit_enum(MnFieldDecl n) {
     return ERR("Field type is not an enum specifier");
   }
 
-  if (node_type.get_field(field_name)) {
+  // TreeSitter is broken for "enum foo : logic<8>::BASE {}".
+  // Work around it by manually extracting the required field
+  MnNode node_bitfield;
+
+  n.visit_tree([&](MnNode c) {
+    if (c.sym == sym_bitfield_clause) node_bitfield = c;
+  });
+
+  if (node_bitfield) {
+    return emit_broken_enum(n, node_bitfield);
+  }
+  else if (node_type.get_field(field_name)) {
     return emit_simple_enum(n);
   }
   else {

@@ -104,11 +104,11 @@ TestResults test_logic_dup() {
 TestResults test_logic() {
   TEST_INIT("Test logic<> behavior and translation");
 
-  results += test_logic_truncate();
-  results += test_logic_add();
-  results += test_logic_cat();
-  results += test_logic_slice();
-  results += test_logic_dup();
+  results << test_logic_truncate();
+  results << test_logic_add();
+  results << test_logic_cat();
+  results << test_logic_slice();
+  results << test_logic_dup();
 
   TEST_DONE();
 }

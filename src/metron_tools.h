@@ -662,11 +662,13 @@ inline void parse_hex(const char* src_filename, void* dst_data, int dst_size) {
     }
 
     if (!chunk_size || (chunk_size & 1)) {
+      // KCOV_OFF
       printf("Error loading %s: Invalid vmem character 0x%02x (%c)\n",
              src_filename, sc[0], sc[0]);
       //LOG_R("Error loading %s: Invalid vmem character 0x%02x (%c)\n",
       //       src_filename, sc[0], sc[0]);
       return;
+      // KCOV_ON
     }
 
     // Store hex value in address or in output stream, little-endian.

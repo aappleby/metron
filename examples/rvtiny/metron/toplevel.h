@@ -161,7 +161,9 @@ class toplevel {
           case 5: take_branch = signed(op_a) >= signed(op_b); break;
           case 6: take_branch = op_a < op_b; break;
           case 7: take_branch = op_a >= op_b; break;
+          // KCOV_OFF
           default: take_branch = b1(DONTCARE); break;
+          // KCOV_ON
         }
         // clang-format on
 

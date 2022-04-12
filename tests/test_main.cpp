@@ -16,8 +16,8 @@ TestResults test_build();
 int main(int argc, char** argv) {
   TestResults results("main");
 
-  results += test_utils();  // this looks ok
-  results += test_logic();  // this looks ok
+  results << test_utils();  // this looks ok
+  results << test_logic();  // this looks ok
   // results += test_ibex();
 
   LOG_G("%s: %6d expect pass\n", __FUNCTION__, results.expect_pass);

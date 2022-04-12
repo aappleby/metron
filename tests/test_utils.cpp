@@ -86,9 +86,8 @@ void parse_simple(std::string src, MtModLibrary& library) {
 
 //------------------------------------------------------------------------------
 
-std::string translate_simple(std::string src) {
+Err translate_simple(std::string src, std::string& out) {
   Err err;
-  std::string out;
 
   MtModLibrary library;
   parse_simple(src, library);
@@ -96,17 +95,59 @@ std::string translate_simple(std::string src) {
   auto source_file = library.source_files[0];
 
   for (auto mod : source_file->modules) {
-    if (mod->dirty_check_fail) return "DCF";
+    if (mod->dirty_check_fail) return ERR("DCF");
   }
 
   MtCursor cursor(&library, source_file, nullptr, &out);
-  cursor.cursor = source_file->source;
-  err << cursor.emit_translation_unit(source_file->root_node);
+  err << cursor.emit_everything();
   err << cursor.emit_printf("\n");
 
-  for (auto c : out) assert(c > 0);
+  for (auto c : out) {
+    if (c < 0) {
+      err << ERR("Non-ascii character in output?");
+      break;
+    }
+  }
 
-  return out;
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+TestResults test_translate_simple() {
+  TEST_INIT();
+
+  std::string source = R"(
+
+#include "metron_tools.h"
+
+class Module {
+public:
+
+  logic<8> tock(logic<8> in) {
+    logic<8> out = my_reg + 7;
+    tick(in + 7);
+    return out;
+  }
+
+private:
+  
+  logic<8> my_reg;
+
+  void tick(logic<8> in) {
+    my_reg = in - 12;
+  }
+};
+
+)";
+
+  std::string out;
+
+  Err err = translate_simple(source, out);
+
+  EXPECT(!err.has_err(), "Translation failed");
+
+  TEST_DONE();
 }
 
 //------------------------------------------------------------------------------
@@ -120,7 +161,7 @@ static TestResults test_dummy() {
 
 //------------------------------------------------------------------------------
 
-static TestResults test_comp() {
+TestResults test_comp() {
   TEST_INIT("Text comparison should treat all whitespace as \"\\w+\"");
 
   EXPECT(comp_iws("foo bar", "foo\nbar"), "x");
@@ -137,7 +178,7 @@ static TestResults test_comp() {
 
 //------------------------------------------------------------------------------
 
-static TestResults test_match() {
+TestResults test_match() {
   TEST_INIT("Substring find should treat all whitespace as \"\\w+\"");
   LOG_INDENT_SCOPE();
 
@@ -168,9 +209,10 @@ static TestResults test_match() {
 
 TestResults test_utils() {
   TEST_INIT();
-  results += test_dummy();
-  results += test_comp();
-  results += test_match();
+  results << test_translate_simple();
+  results << test_dummy();
+  results << test_comp();
+  results << test_match();
   TEST_DONE();
 }
 

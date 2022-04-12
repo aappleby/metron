@@ -44,6 +44,9 @@ struct MtCursor {
   CHECK_RETURN Err prune_trailing_ws();
   CHECK_RETURN Err comment_out(MnNode n);
 
+  // Top-level emit function
+  CHECK_RETURN Err emit_everything();
+
   // Per-symbol emit()s.
 
   CHECK_RETURN Err emit_dispatch(MnNode n);

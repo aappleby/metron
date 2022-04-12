@@ -191,7 +191,9 @@ module toplevel
           5: take_branch = $signed(op_a) >= $signed(op_b);
           6: take_branch = op_a < op_b;
           7: take_branch = op_a >= op_b;
+          // KCOV_OFF
           default: take_branch = 1'bx;
+          // KCOV_ON
         endcase
         // clang-format on
 

@@ -12,3 +12,4 @@ vivado*.jou
 *.vcd
 *__ALL.a
 *__ALL.o
+scratch.h

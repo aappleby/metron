@@ -59,7 +59,9 @@ struct TinyLog {
         print_prefix();
         set_color(color);
         for (int j = 0; j < indentation; j++) {
-          if (!muted) putchar(' ');
+          if (!muted) {
+            putchar(' ');
+          }
         }
         start_line = false;
       }

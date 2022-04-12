@@ -87,7 +87,7 @@ int main(int argc, const char** argv) {
   LOG_B("Testing...\n");
   TestResults results("main");
   for (int i = 0; i < 38; i++) {
-    results += test_instruction(instructions[i], reps, max_cycles);
+    results << test_instruction(instructions[i], reps, max_cycles);
   }
 
   double rate = double(total_tocks) / double(total_time);

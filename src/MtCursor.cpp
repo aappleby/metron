@@ -2109,6 +2109,16 @@ CHECK_RETURN Err MtCursor::emit_enum_list(MnEnumeratorList n) {
 }
 
 //------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_everything() {
+  Err err;
+  cursor = current_source->source;
+  err << emit_ws();
+  err << emit_dispatch(current_source->root_node);
+  return err;
+}
+
+//------------------------------------------------------------------------------
 // Discard any trailing semicolons in the translation unit.
 
 CHECK_RETURN Err MtCursor::emit_translation_unit(MnTranslationUnit n) {

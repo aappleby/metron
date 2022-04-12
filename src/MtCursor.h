@@ -84,6 +84,9 @@ struct MtCursor {
   CHECK_RETURN Err emit_type_id(MnTypeIdentifier n);
   CHECK_RETURN Err emit_using_decl(MnUsingDecl n);
 
+  CHECK_RETURN Err emit_struct(MnNode n);
+  CHECK_RETURN Err emit_field_decl_list(MnNode n);
+
   // Special-purpose emit()s
   CHECK_RETURN Err emit_enum(MnFieldDecl n);
   

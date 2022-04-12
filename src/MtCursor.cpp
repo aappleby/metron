@@ -1733,7 +1733,10 @@ CHECK_RETURN Err MtCursor::emit_field_decl(MnFieldDecl n) {
 
   std::string type_name = n.type5();
 
-  if (lib->get_module(type_name)) {
+  if (current_mod == nullptr) {
+    // Struct outside of class
+    err << emit_children(n);
+  } else if (lib->get_module(type_name)) {
     err << emit_field_as_submod(n);
   } else if (current_mod->get_input_field(n.name().text())) {
     if (!in_ports) {
@@ -1779,6 +1782,25 @@ CHECK_RETURN Err MtCursor::emit_field_decl(MnFieldDecl n) {
     debugbreak();
   }
   assert(cursor == n.end());
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_struct(MnNode n) {
+  Err err;
+
+  //n.dump_tree();
+  err << emit_children(n);
+
+  return err;
+}
+
+CHECK_RETURN Err MtCursor::emit_field_decl_list(MnNode n) {
+  Err err;
+
+  err << emit_children(n);
 
   return err;
 }
@@ -3042,9 +3064,22 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
     case sym_identifier:
       err << emit_identifier(MnIdentifier(n));
       break;
+
+    case sym_struct_specifier:
+      err << emit_struct(n);
+      break;
+
+    case sym_field_declaration_list:
+      // FIXME should use this for both struct and class if possible
+      err << emit_field_decl_list(n);
+      break;
+
     case sym_class_specifier:
       err << emit_class(MnClassSpecifier(n));
       break;
+
+
+
     case sym_number_literal:
       err << emit_number_literal(MnNumberLiteral(n));
       break;

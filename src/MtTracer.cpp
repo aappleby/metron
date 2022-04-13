@@ -301,7 +301,6 @@ CHECK_RETURN Err MtTracer::trace_assign(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
-// FIXME I need to traverse the args before stepping into the call
 
 CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
   Err err;
@@ -370,20 +369,11 @@ CHECK_RETURN Err MtTracer::trace_method_call(MnNode n) {
   Err err;
 
   auto node_func = n.get_field(field_function);
-  auto sibling_method = mod()->get_method(node_func.text());
 
-  if (sibling_method) {
-    if (in_tick()) {
-      if (sibling_method->is_tock) {
-        err << ERR("Calling a tock() while in a tick() method is forbidden\n");
-        return err;
-      }
-    }
+  auto src_method = method();
+  auto dst_method = mod()->get_method(node_func.text());
 
-    _method_stack.push_back(sibling_method);
-    err << trace_dispatch(sibling_method->node.get_field(field_body));
-    _method_stack.pop_back();
-  } else {
+  if (!dst_method) {
     // Utility method call like bN()
     /*
     for (int i = 0; i < depth; i++) printf(" ");
@@ -391,7 +381,78 @@ CHECK_RETURN Err MtTracer::trace_method_call(MnNode n) {
     name().c_str(), method->name().c_str(),
     node_func.text().c_str());
     */
+    return err;
   }
+
+  //----------------------------------------
+
+  // We must be either in a tick or a tock, or Metron is broken.
+  assert(in_tick() ^ in_tock());
+
+  // Public tasks should not exist. They can't be called from outside the module,
+  // and from inside the module they should be private tasks.
+  if (dst_method->is_public && dst_method->is_task) {
+    return ERR("Public tasks should not exist\n");
+  }
+
+  // Public ticks can only be called from outside the module.
+  if (dst_method->is_public && dst_method->is_tick) {
+    return ERR("Public tick()s can only be called from outside the module.\n");
+  }
+
+  // Public tocks can only be called from outside the module.
+  if (dst_method->is_public && dst_method->is_tock) {
+    return ERR("Public tick()s can only be called from outside the module.\n");
+  }
+
+  // Functions can only call other functions.
+  if (src_method->is_func && !dst_method->is_func) {
+    return ERR("Can't call non-function %s from function %s.\n", dst_method->name().c_str(), src_method->name().c_str());
+  }
+
+  // Tick methods with params require input port bindings to call. If we're in a tick(), we can't do that.
+  if (in_tick() && dst_method->is_tick && dst_method->params.size()) {
+    return ERR("Can't call %s from a tick() as it requires a port binding, and port bindings can only be in tock()s.\n", dst_method->name());
+  }
+
+  // Tock methods write signals and can only do so from inside another tock(). If we're in a tick, that's bad.
+  if (in_tick() && dst_method->is_tock) {
+    return ERR("Can't call %s from tick method %s\n", dst_method->name().c_str(), src_method->name().c_str());
+  }
+
+  //----------------------------------------
+  // OK, the call should be valid. If the method requires port bindings, build the port names from the current field stack plus the method name.
+
+  std::string method_port_base = node_func.text();
+  for (int i = (int)_field_stack.size() - 1; i >= 0; i--) {
+    method_port_base = _field_stack[i]->name() + "." + method_port_base;
+  }
+
+  // If we're calling a method that requires port bindings and it has params, trace the params as if they were input ports.
+
+  if ((dst_method->is_tick || dst_method->is_tock) && dst_method->params.size()) {
+    for (const auto& param : dst_method->params) {
+      std::string port_name = method_port_base + "." + param;
+      err << trace_write(port_name);
+    }
+  }
+
+  // Now trace the method.
+
+  _method_stack.push_back(dst_method);
+  err << trace_dispatch(dst_method->node.get_field(field_body));
+  _method_stack.pop_back();
+
+  // If we're calling a method that requires port bindings and it has a return value, trace the return value as if it was an output port.
+
+  if ((dst_method->is_tick || dst_method->is_tock) && dst_method->has_return) {
+    if (n.get_field(field_arguments).named_child_count() > 0) {
+      err << trace_read(method_port_base);
+    }
+  }
+
+  //----------------------------------------
+  // Done.
 
   if (err.has_err()) {
     err << ERR("MtTracer::trace_method_call failed @\n");

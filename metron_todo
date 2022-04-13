@@ -1,4 +1,22 @@
+method type call restriction breakdown
+  in_tick
+  in_tock
+
+  public_tick
+  public_tock
+  public_function
+  public_task
+
+  private_tick
+  private_tock
+  private_function
+  private_task
+
+
+
 treat all call args/return values as fields that have to be traced
+  // FIXME trace arg bindings / return bindings
+  // FIXME check that all method port bindings are valid too
 
 
 A bunch of the subcursor stuff could be replaced with splice

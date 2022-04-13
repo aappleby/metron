@@ -461,6 +461,7 @@ CHECK_RETURN Err MtModule::collect_methods() {
     auto func_args = func_decl.get_field(field_parameters);
 
     m->is_public = in_public;
+    m->is_private = !in_public;
 
     m->is_const = false;
     for (const auto& n : func_decl) {
@@ -612,6 +613,8 @@ CHECK_RETURN Err MtModule::trace() {
   if (err.has_err()) return err;
 
   // Check that all sigs and regs ended up in a valid state.
+  // FIXME check that all method port bindings are valid too
+
   for (auto& pair : mod_states.s) {
 
     auto field = get_field(pair.first);

@@ -4,14 +4,19 @@ deal with that... but if you can't express it in c do we care?
 treat all call args/return values as fields that have to be traced
   ok now we need test cases
 
-
 A bunch of the subcursor stuff could be replaced with splice
   probably all of it if you add a submod context param to splice
 
 If we don't emit anything for a tick() or tock(), we should not emit the tock itself
   soooooo... if all the body elements are submod calls without args?
+  not worth
 
 Unions?
+
+
+do a preproc if else test
+
+
 
 
 

@@ -1915,18 +1915,6 @@ CHECK_RETURN Err MtCursor::emit_expression(MnExprStatement n) {
       auto submod_mod = lib->get_module(submod->type_name());
       auto submod_meth = submod_mod->get_method(meth_id.text());
 
-      if (current_method->is_tick) {
-        if (submod_meth->params.size()) {
-          return ERR("Tick methods can't call submod methods with parameters");
-        }
-        if (call_node.get_field(field_function).get_field(field_field).text().starts_with("tick")) {
-          return ERR("Tick methods can't call submod tick methods");
-        }
-        if (call_node.get_field(field_function).get_field(field_field).text().starts_with("tock")) {
-          return ERR("Tick methods can't call submod tock methods");
-        }
-      }
-
       // This node is a block-level call to a submodule - since there's nothing
       // on the LHS to bind the output to, we just comment out the whole call.
       err << comment_out(call_node);
@@ -2658,15 +2646,6 @@ CHECK_RETURN Err MtCursor::emit_decl(MnDecl n) {
       cursor = n.end();
       return err;
     }
-  }
-
-  // Check for enum classes, which are broken.
-  auto node_type = n.get_field(field_type);
-  if (node_type.child_count() >= 2 && node_type.child(0).text() == "enum" &&
-      node_type.child(1).text() == "class") {
-    debugbreak();
-    // emit_field_decl_as_enum_class(MtFieldDecl(n));
-    return err;
   }
 
   if (n.child_count() >= 5 && n.child(0).text() == "static" &&

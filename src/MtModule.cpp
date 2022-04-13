@@ -555,9 +555,9 @@ CHECK_RETURN Err MtModule::trace() {
 
   for (auto m : all_methods) {
 
-    // Don't trace construtors and private methods.
+    // Trace only public tick/tock methods.
 
-    if (m->is_init || !m->is_public) {
+    if (!(m->is_public && (m->is_tick || m->is_tock))) {
       continue;
     }
 
@@ -570,11 +570,6 @@ CHECK_RETURN Err MtModule::trace() {
     tracer._state_stack.push_back(&state_method);
     err << tracer.trace_dispatch(m->node.get_field(field_body));
 
-    if (err.has_err()) {
-      LOG_R("Tracing %s.%s failed\n", name().c_str(), m->name().c_str());
-      break;
-    }
-
     // Lock all states touched by the method.
 
     for (auto& pair : state_method.s) {
@@ -583,7 +578,6 @@ CHECK_RETURN Err MtModule::trace() {
 
       if (new_state == FIELD_INVALID) {
         err << ERR("Field %s was %s, now %s!", pair.first.c_str(), to_string(old_state), to_string(new_state));
-        break;
       }
 
       pair.second = new_state;
@@ -610,41 +604,26 @@ CHECK_RETURN Err MtModule::trace() {
     }
   }
 
-  if (err.has_err()) return err;
-
-  // Check that all sigs and regs ended up in a valid state.
-  // FIXME check that all method port bindings are valid too
+  // Check that all entries in the state map ended up in a valid state.
 
   for (auto& pair : mod_states.s) {
 
-    auto field = get_field(pair.first);
-    if (field) {
-      field->state = pair.second;
-    }
-
-
     switch(pair.second) {
 
+      // These states are OK.
+    case FIELD_RD_____:
+    case FIELD____WR_L:
     case FIELD_RD_WR_L:
     case FIELD____WS_L:
-      // Yay written and locked regs/sigs!
       break;
 
+      // These states are bad, but we would error out of tracing before we got here, so they can't currently be hit.
+      // KCOV_OFF
     case FIELD________:
       err << ERR("Field %s was never read or written!\n", pair.first.c_str());
       break;
     case FIELD____WR__:
       err << ERR("Register %s was written but never read or locked - internal error?\n", pair.first.c_str());
-      break;
-    case FIELD____WR_L:
-      if (field && !field->is_public()) {
-        err << WARN("Private register %s was written and locked but never read - is it redundant?\n", pair.first.c_str());
-      }
-      break;
-    case FIELD_RD_____:
-      if (field && !field->is_public()) {
-        err << WARN("Private field %s was read but never written - should it be const?\n", pair.first.c_str());
-      }
       break;
     case FIELD_RD_WR__:
       err << ERR("Register %s was written but never locked - internal error?\n", pair.first.c_str());
@@ -655,10 +634,34 @@ CHECK_RETURN Err MtModule::trace() {
     default:
       err << ERR("Field %s has an invalid state %d\n", pair.first.c_str(), pair.second);
       break;
+      // KCOV_ON
     }
   }
 
-  // Check that all sigs and regs are represented in the final state map.
+
+  // Assign the final merged states back from the map to the fields.
+
+  for (auto& pair : mod_states.s) {
+
+    auto field = get_field(pair.first);
+    if (field) {
+      field->state = pair.second;
+
+      if (!field->is_public()) {
+        if (pair.second == FIELD____WR_L) {
+          err << WARN("Private register %s was written and locked but never read - is it redundant?\n", pair.first.c_str());
+        }
+
+        if (pair.second == FIELD_RD_____) {
+          err << WARN("Private field %s was read but never written - should it be const?\n", pair.first.c_str());
+        }
+      }
+    }
+  }
+
+
+  // Check that all fields got a state assigned to them.
+
   for (auto f : all_fields) {
     if (f->is_submod()) continue;
     if (f->is_param()) continue;

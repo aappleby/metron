@@ -42,7 +42,7 @@ struct MtField {
   MnNode get_type_node() const { return node.get_field(field_type); }
   MnNode get_decl_node() const { return node.get_field(field_declarator); }
 
-  FieldState state;
+  FieldState state = FIELD_INVALID;
   MnNode node;
   std::string _name;
   bool _public = false;

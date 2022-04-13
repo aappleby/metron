@@ -21,7 +21,7 @@ for i, arg in enumerate(sys.argv):
     if (arg == "--serial"):
         max_threads = 1
 
-kcov_prefix = "kcov --exclude-region=KCOV_OFF:KCOV_ON --include-pattern=Metron --exclude-pattern=submodules coverage " if coverage else ""
+kcov_prefix = "kcov --exclude-region=KCOV_OFF:KCOV_ON --include-pattern=Metron --exclude-pattern=submodules --exclude-line=debugbreak coverage " if coverage else ""
 
 
 def print_c(color, *args):
@@ -145,7 +145,10 @@ def check_golden(filename):
 # Run a command that passes if the output contains "All tests pass"
 
 def run_simple_test(commandline):
-    cmd = kcov_prefix + commandline
+    cmd = commandline
+    # The Icarus output isn't actually a binary, kcov can't run it.
+    if (commandline != "bin/examples/uart_iv"):
+        cmd = kcov_prefix + cmd
     error = 0
     print(f"  {cmd}")
     stuff = subprocess.run(cmd.split(

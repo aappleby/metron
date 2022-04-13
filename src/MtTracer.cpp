@@ -290,7 +290,6 @@ CHECK_RETURN Err MtTracer::trace_assign(MnNode n) {
     }
   }
   else if (node_lhs.sym == sym_field_expression) {
-    //printf("%s\n", node_lhs.text().c_str());
     err << trace_write(node_lhs.text());
   }
   else {
@@ -390,19 +389,14 @@ CHECK_RETURN Err MtTracer::trace_method_call(MnNode n) {
   assert(in_tick() ^ in_tock());
 
   // Public tasks should not exist. They can't be called from outside the module,
-  // and from inside the module they should be private tasks.
+  // and from inside the module they should be private tasks. FIXME check this elsewhere
   if (dst_method->is_public && dst_method->is_task) {
     return ERR("Public tasks should not exist\n");
   }
 
-  // Public ticks can only be called from outside the module.
-  if (dst_method->is_public && dst_method->is_tick) {
-    return ERR("Public tick()s can only be called from outside the module.\n");
-  }
-
-  // Public tocks can only be called from outside the module.
-  if (dst_method->is_public && dst_method->is_tock) {
-    return ERR("Public tick()s can only be called from outside the module.\n");
+  // Public methods can only be called from outside the module.
+  if (dst_method->is_public) {
+    return ERR("Public method %s can only be called from outside the module.\n", dst_method->name().c_str());
   }
 
   // Functions can only call other functions.
@@ -410,8 +404,8 @@ CHECK_RETURN Err MtTracer::trace_method_call(MnNode n) {
     return ERR("Can't call non-function %s from function %s.\n", dst_method->name().c_str(), src_method->name().c_str());
   }
 
-  // Tick methods with params require input port bindings to call. If we're in a tick(), we can't do that.
-  if (in_tick() && dst_method->is_tick && dst_method->params.size()) {
+  // Public methods with params require input port bindings to call. If we're in a tick(), we can't do that.
+  if (in_tick() && dst_method->params.size()) {
     return ERR("Can't call %s from a tick() as it requires a port binding, and port bindings can only be in tock()s.\n", dst_method->name());
   }
 
@@ -423,7 +417,7 @@ CHECK_RETURN Err MtTracer::trace_method_call(MnNode n) {
   //----------------------------------------
   // OK, the call should be valid. If the method requires port bindings, build the port names from the current field stack plus the method name.
 
-  std::string method_port_base = node_func.text();
+  std::string method_port_base = dst_method->name();
   for (int i = (int)_field_stack.size() - 1; i >= 0; i--) {
     method_port_base = _field_stack[i]->name() + "." + method_port_base;
   }
@@ -463,60 +457,97 @@ CHECK_RETURN Err MtTracer::trace_method_call(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
+// Submodule call "submod.method()". Pull up the submodule and traverse into the method.
 
 CHECK_RETURN Err MtTracer::trace_submod_call(MnNode n) {
   Err err;
 
-  // Field call. Pull up the submodule and traverse into the method.
-
   auto node_func = n.get_field(field_function);
+  auto submod_field_name  = node_func.get_field(field_argument).text();
+  auto submod_method_name = node_func.get_field(field_field).text();
 
-  auto submod_name = node_func.get_field(field_argument).text();
-  auto submod = mod()->get_submod(submod_name);
-
-  if (!submod) {
-    return ERR("Could not find submodule %s\n", submod_name.c_str());
+  auto submod_field = mod()->get_submod(submod_field_name);
+  if (!submod_field) {
+    return ERR("Could not find submodule %s\n", submod_field_name.c_str());
   }
 
-  assert(submod);
-  auto submod_type = submod->type_name();
+  auto submod_type = submod_field->type_name();
   auto submod_mod = mod()->source_file->lib->get_module(submod_type);
-  assert(submod_mod);
-  auto submod_method =
-      submod_mod->get_method(node_func.get_field(field_field).text());
-  assert(submod_method);
 
-  if (in_tick()) {
-    if (submod_method->is_tock) {
-      return ERR(
-          "Calling a tock() on a submodule while in a tick() method is "
-          "forbidden\n");
+  if (!submod_mod) {
+    return ERR("Could not find module %s for submod %s\n", submod_type.c_str(), submod_field_name.c_str());
+  }
+
+  auto src_method = method();
+  auto dst_method = submod_mod->get_method(submod_method_name);
+
+  if (!dst_method) {
+    return ERR("Submodule %s has no method %s\n", submod_field_name.c_str(), submod_method_name.c_str());
+  }
+
+  //----------------------------------------
+
+  // The target must be a public tick, tock, or function.
+  if (dst_method->is_private) {
+    return ERR("Can't call private method %s on a submodule\n", submod_method_name.c_str());
+  }
+
+  // Public tasks are forbidden.
+  if (dst_method->is_task) {
+    return ERR("Can't call public task %s, it should not exist.\n", submod_method_name.c_str());
+  }
+
+  // Public methods with params require input port bindings to call. If we're in a tick(), we can't do that.
+  if (in_tick() && dst_method->params.size()) {
+    return ERR("Can't call %s from a tick() as it requires a port binding, and port bindings can only be in tock()s.\n", dst_method->name());
+  }
+
+  // Tock methods write signals and can only do so from inside another tock(). If we're in a tick, that's bad.
+  if (in_tick() && dst_method->is_tock) {
+    return ERR("Can't call %s from tick method %s\n", dst_method->name().c_str(), src_method->name().c_str());
+  }
+
+  //----------------------------------------
+  // OK, the call should be valid. If the method requires port bindings, build the port names from the current field stack plus the method name.
+
+  std::string method_port_base = submod_field_name + "." + dst_method->name();
+  for (int i = (int)_field_stack.size() - 1; i >= 0; i--) {
+    method_port_base = _field_stack[i]->name() + "." + method_port_base;
+  }
+
+  // If we're calling a method that has params, trace the params as if they were input ports.
+
+  if (dst_method->params.size()) {
+    for (const auto& param : dst_method->params) {
+      std::string port_name = method_port_base + "." + param;
+      // We trace them as both write and read as the current method is writing them and the submod, presumably, is reading them.
+      err << trace_write(port_name);
+      err << trace_read(port_name);
     }
   }
 
-  // Calling a submod function that takes arguments is logically equivalent to
-  // writing a signal - we write the params into the input ports and read the
-  // result from the output port. Because of this, we have to apply
-  // signal-tracing rules to submod function calls.
+  // Now trace the method.
 
-  if (n.get_field(field_arguments).named_child_count() > 0) {
-    std::string field_name = node_func.text();
-
-    for (int i = (int)_field_stack.size() - 1; i >= 0; i--) {
-      field_name = _field_stack[i]->name() + "." + field_name;
-    }
-
-    err << trace_write(field_name);
-    err << trace_read(field_name);
-  }
-
-  _field_stack.push_back(submod);
+  _field_stack.push_back(submod_field);
   _mod_stack.push_back(submod_mod);
-  _method_stack.push_back(submod_method);
-  err << trace_dispatch(submod_method->node.get_field(field_body));
+  _method_stack.push_back(dst_method);
+  err << trace_dispatch(dst_method->node.get_field(field_body));
   _method_stack.pop_back();
   _mod_stack.pop_back();
   _field_stack.pop_back();
+
+  // If we're calling a method that requires port bindings and it has a return value, trace the return value as if it was an output port.
+
+  if ((dst_method->is_tick || dst_method->is_tock) && dst_method->has_return) {
+    if (n.get_field(field_arguments).named_child_count() > 0) {
+      // The submod wrote it, the current method is reading it.
+      err << trace_write(method_port_base);
+      err << trace_read(method_port_base);
+    }
+  }
+
+  //----------------------------------------
+  // Done.
 
   if (err.has_err()) {
     LOG_R("MtTracer::trace_submod_call failed @\n");

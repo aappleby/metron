@@ -1,22 +1,8 @@
-method type call restriction breakdown
-  in_tick
-  in_tock
-
-  public_tick
-  public_tock
-  public_function
-  public_task
-
-  private_tick
-  private_tock
-  private_function
-  private_task
-
-
+packed structs are going to behave differently if bitsliced, not sure how to
+deal with that... but if you can't express it in c do we care?
 
 treat all call args/return values as fields that have to be traced
-  // FIXME trace arg bindings / return bindings
-  // FIXME check that all method port bindings are valid too
+  ok now we need test cases
 
 
 A bunch of the subcursor stuff could be replaced with splice

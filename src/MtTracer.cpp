@@ -384,29 +384,41 @@ CHECK_RETURN Err MtTracer::trace_method_call(MnNode n) {
 
   //----------------------------------------
 
-  bool requires_input_binding  = dst_method->is_public && dst_method->params.size();
+  bool requires_input_binding  = (dst_method->is_tick || dst_method->is_tock) && dst_method->params.size();
 
   // We must be either in a tick or a tock, or Metron is broken.
   assert(in_tick() ^ in_tock());
 
+  /*
   // Methods that require input port bindings cannot be called from inside the module.
   if (requires_input_binding) {
     err << ERR("Method %s requires input port bindings and can only be called from outside the module.\n", dst_method->name().c_str());
+    n.dump_source_lines();
+  }
+  */
+
+  // Tasks can only call tasks and functions.
+  if (src_method->is_task && !(dst_method->is_func || dst_method->is_task)) {
+    err << ERR("Can't call non-function/task %s from task %s.\n", dst_method->name().c_str(), src_method->name().c_str());
+    n.dump_source_lines();
   }
 
   // Functions can only call other functions.
   if (src_method->is_func && !dst_method->is_func) {
     err << ERR("Can't call non-function %s from function %s.\n", dst_method->name().c_str(), src_method->name().c_str());
+    n.dump_source_lines();
   }
 
   // Public methods with params require input port bindings to call. If we're in a tick(), we can't do that.
   if (in_tick() && requires_input_binding) {
     err << ERR("Can't call %s from a tick() as it requires input port bindings, and port bindings can only be in tock()s.\n", dst_method->name().c_str());
+    n.dump_source_lines();
   }
 
   // Tock methods write signals and can only do so from inside another tock(). If we're in a tick, that's bad.
   if (in_tick() && dst_method->is_tock) {
     err << ERR("Can't call %s from tick method %s\n", dst_method->name().c_str(), src_method->name().c_str());
+    n.dump_source_lines();
   }
 
   //----------------------------------------

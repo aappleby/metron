@@ -2765,7 +2765,6 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
       break;
 
     case sym_type_qualifier:
-      //err << comment_out(n);
       err << skip_over(n);
       err << skip_ws();
       break;
@@ -2773,7 +2772,6 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
     case sym_access_specifier:
       in_public = n.child(0).text() == "public";
       err << comment_out(n);
-      //err << skip_over(n);
       break;
 
     case sym_update_expression: {
@@ -2791,8 +2789,6 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
       }
 
       cursor = n.end();
-
-      //err << emit_children(n);
       break;
     }
 
@@ -2800,7 +2796,42 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
       err << emit_children(n);
       break;
 
+
+
+
+
+
     case sym_for_statement:
+      err << emit_children(n);
+      break;
+    case sym_expression_statement:
+      err << emit_expression(MnExprStatement(n));
+      break;
+    case sym_if_statement:
+      err << emit_if_statement(MnIfStatement(n));
+      break;
+    case sym_break_statement:
+      err << emit_break(MnBreakStatement(n));
+      break;
+    case sym_return_statement:
+      err << emit_return(MnReturnStatement(n));
+      break;
+    case sym_compound_statement:
+      err << emit_compound(MnCompoundStatement(n));
+      break;
+    case sym_case_statement:
+      err << emit_case_statement(MnCaseStatement(n));
+      break;
+    case sym_switch_statement:
+      err << emit_switch(MnSwitchStatement(n));
+      break;
+
+
+
+
+
+
+
     case sym_parenthesized_expression:
     case sym_parameter_declaration:
     case sym_optional_parameter_declaration:
@@ -2826,17 +2857,11 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
     case sym_function_declarator:
       err << emit_func_decl(MnFuncDeclarator(n));
       break;
-    case sym_expression_statement:
-      err << emit_expression(MnExprStatement(n));
-      break;
     case sym_argument_list:
       err << emit_arg_list(MnArgList(n));
       break;
     case sym_enum_specifier:
       err << emit_enum_specifier(MnEnumSpecifier(n));
-      break;
-    case sym_if_statement:
-      err << emit_if_statement(MnIfStatement(n));
       break;
     case sym_qualified_identifier:
       err << emit_qualified_id(MnQualifiedId(n));
@@ -2846,12 +2871,6 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
       break;
     case sym_conditional_expression:
       err << emit_condition(MnCondExpr(n));
-      break;
-    //case sym_field_declaration_list:
-    //  error |= emit_field_decl_list(MnFieldDeclList(n));
-    //  break;
-    case sym_break_statement:
-      err << emit_break(MnBreakStatement(n));
       break;
     case sym_identifier:
       err << emit_identifier(MnIdentifier(n));
@@ -2878,19 +2897,11 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
     case sym_field_expression:
       err << emit_field_expr(MnFieldExpr(n));
       break;
-    case sym_return_statement:
-      //err << ERR("Saw a return statement somewhere other than the end of a block");
-      //err << skip_over(n);
-      err << emit_return(MnReturnStatement(n));
-      break;
     case sym_template_declaration:
       err << emit_template_decl(MnTemplateDecl(n));
       break;
     case sym_field_declaration:
       err << emit_field_decl(MnFieldDecl(n));
-      break;
-    case sym_compound_statement:
-      err << emit_compound(MnCompoundStatement(n));
       break;
     case sym_template_type:
       err << emit_template_type(MnTemplateType(n));
@@ -2921,12 +2932,6 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
       break;
     case sym_enumerator_list:
       err << emit_enum_list(MnEnumeratorList(n));
-      break;
-    case sym_case_statement:
-      err << emit_case_statement(MnCaseStatement(n));
-      break;
-    case sym_switch_statement:
-      err << emit_switch(MnSwitchStatement(n));
       break;
     case sym_using_declaration:
       err << emit_using_decl(MnUsingDecl(n));

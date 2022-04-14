@@ -710,12 +710,10 @@ CHECK_RETURN Err MtTracer::trace_switch(MnNode n) {
         continue;
       }
 
-      /*
       if (!ends_with_break(c)) {
-        debugbreak();
+        err << ERR("Case statement doesn't end with break.\n");
+        c.dump_source_lines();
       }
-      */
-
 
       if (first_branch) {
         err << trace_dispatch(c);
@@ -975,17 +973,26 @@ bool MtTracer::in_tock() const {
 //------------------------------------------------------------------------------
 
 bool MtTracer::ends_with_break(MnNode n) {
-  n.dump_tree();
-
   switch(n.sym) {
-    case sym_case_statement:
-      return ends_with_break(n.named_child(n.named_child_count() - 1));
-    case sym_return_statement:
-      return false;
     case sym_break_statement:
       return true;
+
+    case sym_for_statement:
+    case sym_goto_statement:
+    case sym_continue_statement:
+    case sym_return_statement:
+    case sym_expression_statement:
+    case sym_switch_statement:
+    case sym_do_statement:
+    case sym_while_statement:
+        return false;
+
+    case sym_case_statement:
+        return ends_with_break(n.named_child(n.named_child_count() - 1));
+
     case sym_compound_statement:
       return ends_with_break(n.named_child(n.named_child_count() - 1));
+
     case sym_if_statement: {
       auto node_then = n.get_field(field_consequence);
       auto node_else = n.get_field(field_alternative);
@@ -993,7 +1000,6 @@ bool MtTracer::ends_with_break(MnNode n) {
       return ends_with_break(node_then) && ends_with_break(node_else);
     }
     default:
-      debugbreak();
       return false;
   }
 }

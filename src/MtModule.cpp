@@ -753,13 +753,12 @@ CHECK_RETURN Err MtModule::categorize_fields() {
         private_signals.push_back(f);
       }
       else if (f->state == FIELD_RD_____) {
-        // Read-only memory loaded in init() - I guess this is OK?
+        // Probably a read-only memory loaded in init().
         private_registers.push_back(f);
       }
       else if (f->state == FIELD____WR_L) {
-        // Write-only field?
+        // Write-only field. Not a bug, tracer will warn about it.
         private_registers.push_back(f);
-        LOG_R("Private register %s was written but never read\n", f->name().c_str());
       }
       else if (f->state == FIELD_RD_WR_L) {
         private_registers.push_back(f);

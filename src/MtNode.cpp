@@ -73,7 +73,7 @@ void MnNode::dump_source_lines() const {
   if (*a == '\n' || *a == '\r') a++;
   if (*b == '\n' || *b == '\r') b--;
 
-  TinyLog::get().print_buffer(0x008080FF, a, int(b-a));
+  TinyLog::get().print_buffer(0x008080FF, a, int(b-a+1));
 
   LOG("\n");
 

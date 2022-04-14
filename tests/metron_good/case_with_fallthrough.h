@@ -16,6 +16,7 @@ public:
         break;
       case 3: {
         result = 20;
+        break;
       }
       default:
         result = 30;

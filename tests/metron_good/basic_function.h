@@ -11,7 +11,7 @@ public:
 
 private:
 
-  logic<8> some_func() {
+  logic<8> some_func() const {
     return 3;
   }
 

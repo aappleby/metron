@@ -478,12 +478,11 @@ CHECK_RETURN Err MtModule::collect_methods() {
     m->is_tick = func_name.starts_with("tick");
     m->is_tock = func_name.starts_with("tock");
 
-    m->is_task = !m->has_return;
-    m->is_func = m->has_return;
+    // Anything that's not an init/tick/tock is either a task (non-const) or a function (const).
 
-    if (m->is_init || m->is_tick || m->is_tock) {
-      m->is_task = false;
-      m->is_func = false;
+    if (!m->is_init && !m->is_tick && !m->is_tock) {
+      m->is_task = !m->is_const;
+      m->is_func = m->is_const;
     }
 
     for (int i = 0; i < func_args.named_child_count(); i++) {
@@ -498,11 +497,6 @@ CHECK_RETURN Err MtModule::collect_methods() {
 
     if (m->is_tick && m->has_return) {
       err << ERR("Tick method %s has a return value", m->name().c_str());
-      break;
-    }
-
-    if (m->is_public && !m->is_const && !(m->is_tick || m->is_tock || m->is_init)) {
-      err << ERR("Public non-init/tick/tock method %s is not const", m->name().c_str());
       break;
     }
 

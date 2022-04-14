@@ -384,8 +384,6 @@ CHECK_RETURN Err MtTracer::trace_method_call(MnNode n) {
   //----------------------------------------
 
   bool requires_input_binding  = dst_method->is_public && dst_method->params.size();
-  bool requires_output_binding = dst_method->is_public && dst_method->has_return;
-
 
   // We must be either in a tick or a tock, or Metron is broken.
   assert(in_tick() ^ in_tock());
@@ -430,6 +428,7 @@ CHECK_RETURN Err MtTracer::trace_method_call(MnNode n) {
     for (const auto& param : dst_method->params) {
       std::string port_name = method_port_base + "." + param;
       err << trace_write(port_name);
+      err << trace_read(port_name);
     }
   }
 
@@ -438,12 +437,6 @@ CHECK_RETURN Err MtTracer::trace_method_call(MnNode n) {
   _method_stack.push_back(dst_method);
   err << trace_dispatch(dst_method->node.get_field(field_body));
   _method_stack.pop_back();
-
-  // Trace output port bindings as if they are fields being read from.
-
-  if (requires_output_binding) {
-    err << trace_read(method_port_base);
-  }
 
   //----------------------------------------
   // Done.
@@ -487,6 +480,8 @@ CHECK_RETURN Err MtTracer::trace_submod_call(MnNode n) {
 
   //----------------------------------------
 
+  bool requires_input_binding  = dst_method->is_public && dst_method->params.size();
+
   // The target must be a public tick, tock, or function.
   if (dst_method->is_private) {
     err << ERR("Can't call private method %s on a submodule\n", submod_method_name.c_str());
@@ -498,7 +493,7 @@ CHECK_RETURN Err MtTracer::trace_submod_call(MnNode n) {
   }
 
   // Public methods with params require input port bindings to call. If we're in a tick(), we can't do that.
-  if (in_tick() && dst_method->params.size()) {
+  if (in_tick() && requires_input_binding) {
     err << ERR("Can't call %s from a tick() as it requires a port binding, and port bindings can only be in tock()s.\n", dst_method->name());
   }
 
@@ -517,7 +512,7 @@ CHECK_RETURN Err MtTracer::trace_submod_call(MnNode n) {
 
   // If we're calling a method that has params, trace the params as if they were input ports.
 
-  if (dst_method->params.size()) {
+  if (requires_input_binding) {
     for (const auto& param : dst_method->params) {
       std::string port_name = method_port_base + "." + param;
       // We trace them as both write and read as the current method is writing them and the submod, presumably, is reading them.
@@ -535,16 +530,6 @@ CHECK_RETURN Err MtTracer::trace_submod_call(MnNode n) {
   _method_stack.pop_back();
   _mod_stack.pop_back();
   _field_stack.pop_back();
-
-  // If we're calling a method that requires port bindings and it has a return value, trace the return value as if it was an output port.
-
-  if ((dst_method->is_tick || dst_method->is_tock) && dst_method->has_return) {
-    if (n.get_field(field_arguments).named_child_count() > 0) {
-      // The submod wrote it, the current method is reading it.
-      err << trace_write(method_port_base);
-      err << trace_read(method_port_base);
-    }
-  }
 
   //----------------------------------------
   // Done.

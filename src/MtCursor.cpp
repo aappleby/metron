@@ -785,10 +785,6 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
         auto submod_meth = submod_mod->get_method(meth_id.text());
         assert(submod_meth);
 
-        if (!submod_meth->is_public) {
-          err << ERR("Submod method %s.%s is not public", inst_id.text().c_str(), meth_id.text().c_str());
-        }
-
         for (int i = 0; i < submod_meth->params.size(); i++) {
           auto& param = submod_meth->params[i];
           err << emit_print("%s_%s_%s = ",
@@ -810,16 +806,7 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
     }
     else if (func_node.sym == sym_identifier && func_node.text().starts_with("tick")) {
       auto method = current_mod->get_method(func_node.text().c_str());
-      if (!method) {
-        err << ERR("Can't find method name %s", func_node.text().c_str());
-      }
-      if (method->is_public) {
-        err << ERR("Method %s is not private", func_node.text().c_str());
-      }
-
-      //err << emit_printf("%s", method->name().c_str());
-      //err << emit_newline();
-      //err << emit_indent();
+      assert(method);
 
       for (int i = 0; i < method->params.size(); i++) {
         auto& param = method->params[i];
@@ -1005,11 +992,7 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
         break;
 
       case sym_return_statement:
-        if (i != body_count - 1) {
-          err << emit_return(MnReturnStatement(c));
-        } else {
-          err << ERR("Return statement not at end of function body\n");
-        }
+        err << emit_return(MnReturnStatement(c));
         break;
 
       default:
@@ -1530,9 +1513,7 @@ CHECK_RETURN Err MtCursor::emit_enum(MnFieldDecl n) {
   Err err;
 
   auto node_type = n.get_field(field_type);
-  if (node_type.sym != sym_enum_specifier) {
-    err << ERR("Field type is not an enum specifier");
-  }
+  assert(node_type.sym == sym_enum_specifier);
 
   // TreeSitter is broken for "enum foo : logic<8>::BASE {}".
   // Work around it by manually extracting the required field
@@ -1578,17 +1559,6 @@ CHECK_RETURN Err MtCursor::emit_field_decl(MnFieldDecl n) {
     return emit_enum(n);
   }
 
-
-  /*
-  // Handle "enum class", which is broken a bit in TreeSitterCpp
-  if (n.type().child_count() >= 3 && n.type().child(0).text() == "enum" &&
-      n.type().child(1).text() == "class" &&
-      n.type().child(2).sym == alias_sym_type_identifier) {
-    err << emit_field_as_enum_class(n);
-    return err;
-  }
-  */
-
   std::string type_name = n.type5();
 
   if (current_mod == nullptr) {
@@ -1597,37 +1567,11 @@ CHECK_RETURN Err MtCursor::emit_field_decl(MnFieldDecl n) {
   } else if (lib->get_module(type_name)) {
     err << emit_field_as_submod(n);
   } else if (current_mod->get_input_field(n.name().text())) {
-    if (!in_ports) {
-      //err << comment_out(n);
-      err << skip_over(n);
-    } else {
-      err << emit_children(n);
-    }
+    err << skip_over(n);
   } else if (current_mod->get_output_signal(n.name().text())) {
-    if (!in_ports) {
-      //err << comment_out(n);
-      err << skip_over(n);
-    } else {
-      err << emit_children(n);
-    }
+    err << skip_over(n);
   } else if (current_mod->get_output_register(n.name().text())) {
-    if (!in_ports) {
-      //err << comment_out(n);
-      err << skip_over(n);
-    } else {
-      err << emit_children(n);
-    }
-    /*
-  } else if (current_mod->get_output_return(n.name().text())) {
-    // I don't think we need this?
-    if (!in_ports) {
-      // skip_to_next_sibling(n);
-      // skip_over(n);
-      err << comment_out(n);
-    } else {
-      err << emit_children(n);
-    }
-  */
+    err << skip_over(n);
   } else if (n.is_static() && n.is_const()) {
     err << emit_children(n);
   } else if (current_mod->get_enum(type_name)) {
@@ -1723,37 +1667,40 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
     MtCursor sub_cursor = *this;
     sub_cursor.cursor = current_mod->mod_param_list.start();
     for (const auto& c : (MnNode&)current_mod->mod_param_list) {
+      bool handled = false;
       switch (c.sym) {
         case anon_sym_LT:
           err << sub_cursor.emit_replacement(c, "#(");
           err << sub_cursor.emit_ws();
+          handled = true;
           break;
         case anon_sym_GT:
           err << sub_cursor.emit_replacement(c, ")");
           err << sub_cursor.skip_ws();
+          handled = true;
           break;
 
         case sym_parameter_declaration:
           err << sub_cursor.emit_print("parameter ");
           err << sub_cursor.emit_dispatch(c);
           err << sub_cursor.emit_ws();
+          handled = true;
           break;
 
         case sym_optional_parameter_declaration:
           err << sub_cursor.emit_print("parameter ");
           err << sub_cursor.emit_dispatch(c);
           err << sub_cursor.emit_ws();
+          handled = true;
           break;
 
         case anon_sym_COMMA:
           err << sub_cursor.emit_text(c);
           err << sub_cursor.emit_ws();
-          break;
-
-        default:
-          assert(false);
+          handled = true;
           break;
       }
+      assert(handled);
     }
     err << emit_newline();
   }
@@ -2188,9 +2135,6 @@ CHECK_RETURN Err MtCursor::emit_number_literal(MnNumberLiteral n, int size_cast)
 //------------------------------------------------------------------------------
 // Change "return x" to "(funcname) = x" to match old Verilog return style.
 
-// FIXME FIXME FIXME WE NEED TO CHECK THAT THE RETURN DOESN'T EARLY OUT TO
-// MATCH VERILOG SEMANTICS
-
 CHECK_RETURN Err MtCursor::emit_return(MnReturnStatement n) {
   Err err;
   assert(cursor == n.start());
@@ -2198,30 +2142,12 @@ CHECK_RETURN Err MtCursor::emit_return(MnReturnStatement n) {
   auto node_lit = n.child(0);
   auto node_expr = n.child(1);
 
-  /*
-  if (current_method->is_tock) {
-    printf("RETURNS IN TOCKS ARE BROKEN DO NOT USE");
-    exit(-1);
-  }
-
-  if (current_method->is_tick) {
-    printf("RETURNS IN TICKS ARE BROKEN DO NOT USE");
-    exit(-1);
-  }
-  */
-
   cursor = node_expr.start();
   err << emit_print("%s = ", current_method->name().c_str());
   err << emit_dispatch(node_expr);
   err << prune_trailing_ws();
   err << emit_print(";");
 
-  // FIXME We can only emit a 'return' if we're in a task or function.
-  /*
-  emit_newline();
-  emit_indent();
-  emit("return;");
-  */
   cursor = n.end();
   return err;
 }
@@ -2303,19 +2229,6 @@ CHECK_RETURN Err MtCursor::emit_template_decl(MnTemplateDecl n) {
   assert(!class_specifier.is_null());
   std::string class_name = class_specifier.get_field(field_name).text();
 
-  /*
-  if (!in_module_or_package) {
-    assert(!current_mod);
-    for (auto mod : source_file->modules) {
-      if (mod->mod_name == struct_name) {
-        current_mod = mod;
-        break;
-      }
-    }
-    assert(current_mod);
-  }
-  */
-
   auto old_mod = current_mod;
   current_mod = lib->get_module(class_name);
 
@@ -2374,17 +2287,14 @@ CHECK_RETURN Err MtCursor::emit_case_statement(MnCaseStatement n) {
     if (c.sym == sym_break_statement) {
       // break_statement
       // got_break = true;
-      //err << comment_out(c);
       err << skip_over(c);
     } else if (c.sym == anon_sym_case) {
-      //err << comment_out(c);
       err << skip_over(c);
       err << skip_ws();
     } else {
       if (c.sym == anon_sym_COLON) {
         // If there's nothing after the colon, emit a comma.
         if (i == child_count - 1) {
-          // empty_case = true;
           err << emit_replacement(c, ",");
         } else {
           err << emit_text(c);

@@ -704,6 +704,19 @@ CHECK_RETURN Err MtTracer::trace_switch(MnNode n) {
   auto body = n.get_field(field_body);
   for (const auto& c : body) {
     if (c.sym == sym_case_statement) {
+
+      if (c.named_child_count() == 1) {
+        // case statement without body
+        continue;
+      }
+
+      /*
+      if (!ends_with_break(c)) {
+        debugbreak();
+      }
+      */
+
+
       if (first_branch) {
         err << trace_dispatch(c);
         first_branch = false;
@@ -957,6 +970,32 @@ bool MtTracer::in_tock() const {
     if (method->is_tick) return false;
   }
   return false;
+}
+
+//------------------------------------------------------------------------------
+
+bool MtTracer::ends_with_break(MnNode n) {
+  n.dump_tree();
+
+  switch(n.sym) {
+    case sym_case_statement:
+      return ends_with_break(n.named_child(n.named_child_count() - 1));
+    case sym_return_statement:
+      return false;
+    case sym_break_statement:
+      return true;
+    case sym_compound_statement:
+      return ends_with_break(n.named_child(n.named_child_count() - 1));
+    case sym_if_statement: {
+      auto node_then = n.get_field(field_consequence);
+      auto node_else = n.get_field(field_alternative);
+      if (node_else.is_null()) return false;
+      return ends_with_break(node_then) && ends_with_break(node_else);
+    }
+    default:
+      debugbreak();
+      return false;
+  }
 }
 
 //------------------------------------------------------------------------------

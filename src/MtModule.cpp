@@ -696,7 +696,6 @@ CHECK_RETURN Err MtModule::load_pass2() {
 CHECK_RETURN Err MtModule::collect_input_arguments() {
   Err err;
 
-
   assert(input_arguments.empty());
 
   for (auto m : all_methods) {

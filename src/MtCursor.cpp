@@ -604,8 +604,9 @@ CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
     if (method && method->is_public) {
       // Public functions turn into always_comb, so we don't call it we just
       // read the output port.
-      // FIXME could we just emit the function as a function and then emit an
+      // Could we just emit the function as a function and then emit an
       // always_comb that does the binding?
+      // No, because the public output port and the function name would collide.
       err << emit_replacement(n, "%s", func.text().c_str());
     }
     else {

@@ -75,7 +75,8 @@ CHECK_RETURN Err MtCursor::emit_indent() {
 
 CHECK_RETURN Err MtCursor::emit_char(char c, uint32_t color) {
   Err err;
-  if (c == '\r') err << ERR("We should not be emitting a \\r");
+  // We ditch all '\r'.
+  if (c == '\r') return err;
 
   if (c < 0 || !isspace(c)) {
     line_dirty = true;
@@ -598,8 +599,19 @@ CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
     err << emit_dispatch(func);
     cursor = n.end();
   } else {
-    // All other function/task calls go through normally.
-    err << emit_children(n);
+
+    auto method = current_mod->get_method(func.text());
+    if (method && method->is_public) {
+      // Public functions turn into always_comb, so we don't call it we just
+      // read the output port.
+      // FIXME could we just emit the function as a function and then emit an
+      // always_comb that does the binding?
+      err << emit_replacement(n, "%s", func.text().c_str());
+    }
+    else {
+      // All other function/task calls go through normally.
+      err << emit_children(n);
+    }
   }
 
   node_stack.pop_back();

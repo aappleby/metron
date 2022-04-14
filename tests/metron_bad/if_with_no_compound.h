@@ -16,6 +16,8 @@ public:
   void tick() {
     if (1)
       submod.tick();
+    else
+      submod.tick();
   }
 
   Submod submod;

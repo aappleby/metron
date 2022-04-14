@@ -127,9 +127,7 @@ CHECK_RETURN Err merge_series(MtStateMap& ma, MtStateMap& mb, MtStateMap& out) {
   Err err;
   std::set<std::string> keys;
 
-  if (ma.hit_return) {
-    err << ERR("MtTracer::merge_series - branch A returned before branch B started");
-  }
+  assert(!ma.hit_return);
 
   for (const auto& a : ma.s) keys.insert(a.first);
   for (const auto& b : mb.s) keys.insert(b.first);
@@ -388,15 +386,25 @@ CHECK_RETURN Err MtTracer::trace_method_call(MnNode n) {
   // We must be either in a tick or a tock, or Metron is broken.
   assert(in_tick() ^ in_tock());
 
-  // Public tasks should not exist. They can't be called from outside the module,
-  // and from inside the module they should be private tasks. FIXME check this elsewhere
-  if (dst_method->is_public && dst_method->is_task) {
-    err << ERR("Public tasks should not exist\n");
-  }
-
-  // Public methods can only be called from outside the module.
+  // Public methods have extra rules.
   if (dst_method->is_public) {
-    err << ERR("Public method %s can only be called from outside the module.\n", dst_method->name().c_str());
+
+    // Public tasks should not exist. They can't be called from outside the module,
+    // and from inside the module they should be private tasks. FIXME check this elsewhere
+    if (dst_method->is_task) {
+      err << ERR("Public task %s should not exist\n", dst_method->name().c_str());
+    }
+
+    // Public functions can only be called if the have no params, as if we bind the ports
+    // then the function can't be called from outside (and should then be private).
+    if (dst_method->is_func && dst_method->params.size()) {
+      err << ERR("Public tick/tock %s can only be called from outside the module.\n", dst_method->name().c_str());
+    }
+
+    // Public ticks and tocks can only be called from outside the module.
+    if (dst_method->is_tick || dst_method->is_tock) {
+      err << ERR("Public tick/tock %s can only be called from outside the module.\n", dst_method->name().c_str());
+    }
   }
 
   // Functions can only call other functions.
@@ -406,7 +414,7 @@ CHECK_RETURN Err MtTracer::trace_method_call(MnNode n) {
 
   // Public methods with params require input port bindings to call. If we're in a tick(), we can't do that.
   if (in_tick() && dst_method->params.size()) {
-    err << ERR("Can't call %s from a tick() as it requires a port binding, and port bindings can only be in tock()s.\n", dst_method->name());
+    err << ERR("Can't call %s from a tick() as it requires a port binding, and port bindings can only be in tock()s.\n", dst_method->name().c_str());
   }
 
   // Tock methods write signals and can only do so from inside another tock(). If we're in a tick, that's bad.

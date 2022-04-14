@@ -63,7 +63,7 @@ struct MtCursor {
   CHECK_RETURN Err emit_decl(MnDecl n);
   CHECK_RETURN Err emit_enum_list(MnEnumeratorList n);
   CHECK_RETURN Err emit_enum_specifier(MnEnumSpecifier n);
-  CHECK_RETURN Err emit_expression(MnExprStatement n);
+  CHECK_RETURN Err emit_statement(MnExprStatement n);
   CHECK_RETURN Err emit_field_decl(MnFieldDecl decl);
   CHECK_RETURN Err emit_field_expr(MnFieldExpr n);
   CHECK_RETURN Err emit_field_id(MnFieldIdentifier n);

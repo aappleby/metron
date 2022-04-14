@@ -19,7 +19,7 @@ module Module
 
   always_comb begin /*tock*/
     if (1) begin
-      /*submod.tick()*/;
+      /*submod.tick();*/
     end
   end
 

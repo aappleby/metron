@@ -457,7 +457,7 @@ CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnCallExpr call, MnNode bx_n
 
 //------------------------------------------------------------------------------
 // Replace function names with macro names where needed, comment out explicit
-// init/final/tick/tock calls.
+// init/tick/tock calls.
 
 CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
   Err err;
@@ -535,8 +535,6 @@ CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
   } else if (func_name == "sign_extend") {
     err << emit_replacement(func, "$signed");
     err << emit_arg_list(args);
-  } else if (func_name.starts_with("final")) {
-    err << comment_out(n);
   } else if (func_name.starts_with("tick")) {
 
     // Local call to tick() we already bound args, comment out the call.
@@ -605,26 +603,12 @@ CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
     err << emit_dispatch(func);
     cursor = n.end();
   } else {
-
-    auto method = current_mod->get_method(func.text());
-    if (method && method->is_public) {
-      // Public functions turn into always_comb, so we don't call it we just
-      // read the output port.
-      // Could we just emit the function as a function and then emit an
-      // always_comb that does the binding?
-      // No, because the public output port and the function name would collide.
-      err << emit_replacement(n, "%s", func.text().c_str());
-    }
-    else {
-      // All other function/task calls go through normally.
-      err << emit_children(n);
-    }
+    // All other function/task calls go through normally.
+    err << emit_children(n);
   }
 
   node_stack.pop_back();
-
   assert(cursor == n.end());
-
   return err;
 }
 
@@ -1871,39 +1855,19 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
 }
 
 //------------------------------------------------------------------------------
+// If n.child(0) is a call expression, this node is a block-level call to a submodule - since there's nothing on the LHS to bind the output to, we just comment out the whole call.
 
-CHECK_RETURN Err MtCursor::emit_expression(MnExprStatement n) {
+CHECK_RETURN Err MtCursor::emit_statement(MnExprStatement n) {
   Err err;
 
-  // FIXME having this handling of sym_call_expression here is confusing and bad
-
   if (n.child(0).sym == sym_call_expression) {
-
-    auto call_node = n.child(0);
-    auto func_node = call_node.get_field(field_function);
-    if (func_node.sym == sym_field_expression) {
-      // Submod call
-
-      auto inst_id = func_node.get_field(field_argument);
-      auto meth_id = func_node.get_field(field_field);
-      auto submod = current_mod->get_submod(inst_id.text());
-      assert(submod);
-      auto submod_mod = lib->get_module(submod->type_name());
-      auto submod_meth = submod_mod->get_method(meth_id.text());
-
-      // This node is a block-level call to a submodule - since there's nothing
-      // on the LHS to bind the output to, we just comment out the whole call.
-      err << comment_out(call_node);
-
-      // There should only be a semicolon after the call...
-      for (int i = 1; i < n.child_count(); i++) {
-        err << emit_dispatch(n.child(i));
-      }
+    if (n.child(0).get_field(field_function).sym == sym_field_expression) {
+      err << comment_out(n);
       return err;
     }
   }
 
-  // Other calls get translated.
+  // Other calls get translated normally.
   err << emit_children(n);
 
   return err;
@@ -2817,7 +2781,7 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
       err << emit_children(n);
       break;
     case sym_expression_statement:
-      err << emit_expression(MnExprStatement(n));
+      err << emit_statement(MnExprStatement(n));
       break;
     case sym_if_statement:
       err << emit_if_statement(MnIfStatement(n));

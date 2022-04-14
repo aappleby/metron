@@ -36,7 +36,7 @@ module example_text_memory_bus
     logic[31:0] fetched;
 
     text_memory_address = address[rv_config::TEXT_BITS - 2+1:2];
-    /*text_memory.tock_q()*/;
+    /*text_memory.tock_q();*/
     fetched = text_memory_q;
     read_data =
       (address >= rv_config::TEXT_BEGIN) && (rv_config::TEXT_END >= address)

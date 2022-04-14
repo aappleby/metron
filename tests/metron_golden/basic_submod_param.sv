@@ -23,7 +23,7 @@ module Module
 /*public:*/
 
   always_comb begin /*tock*/
-    /*submod.tick()*/;
+    /*submod.tick();*/
   end
 
   Submod #(99) submod(

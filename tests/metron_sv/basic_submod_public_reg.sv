@@ -26,7 +26,7 @@ module Module
   endfunction
 
   always_comb begin /*tock*/
-    /*submod.tick()*/;
+    /*submod.tick();*/
   end
 
   Submod submod(

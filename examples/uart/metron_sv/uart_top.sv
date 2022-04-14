@@ -38,15 +38,15 @@ module uart_top
 
     rx_tock_i_rstn = tock_i_rstn;
     rx_tock_i_serial = tx_tock_serial;
-    /*rx.tock(i_rstn, tx.tock_serial())*/;
+    /*rx.tock(i_rstn, tx.tock_serial());*/
     hello_tock_i_rstn = tock_i_rstn;
     hello_tock_i_cts = tx_tock_cts;
     hello_tock_i_idle = tx_tock_idle;
-    /*hello.tock(i_rstn, tx.tock_cts(), tx.tock_idle())*/;
+    /*hello.tock(i_rstn, tx.tock_cts(), tx.tock_idle());*/
     tx_tock_i_rstn = tock_i_rstn;
     tx_tock_i_data = hello_data;
     tx_tock_i_req = hello_req;
-    /*tx.tock(i_rstn, hello_data, hello_req)*/;
+    /*tx.tock(i_rstn, hello_data, hello_req);*/
   end
 
   //----------------------------------------

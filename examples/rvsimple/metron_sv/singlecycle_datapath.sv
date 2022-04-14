@@ -66,7 +66,7 @@ module singlecycle_datapath
 
   always_comb begin /*tock_instruction_decoder*/
     idec_inst = inst;
-    /*idec.tock()*/;
+    /*idec.tock();*/
 
     inst_opcode = idec_inst_opcode;
     inst_funct3 = idec_inst_funct3;
@@ -80,7 +80,7 @@ module singlecycle_datapath
 
   always_comb begin /*tock_immediate_generator*/
     igen_inst = inst;
-    /*igen.tock()*/;
+    /*igen.tock();*/
   end
 
   //----------------------------------------
@@ -89,7 +89,7 @@ module singlecycle_datapath
     regs_rd_address  = idec_inst_rd;
     regs_rs1_address = idec_inst_rs1;
     regs_rs2_address = idec_inst_rs2;
-    /*regs.tock1()*/;
+    /*regs.tock1();*/
     rs1_data = regs_rs1_data;
     rs2_data = regs_rs2_data;
   end
@@ -98,34 +98,34 @@ module singlecycle_datapath
     mux_operand_a_sel = alu_operand_a_select;
     mux_operand_a_in0 = regs_rs1_data;
     mux_operand_a_in1 = program_counter_value;
-    /*mux_operand_a.tock()*/;
+    /*mux_operand_a.tock();*/
   end
 
   always_comb begin /*tock_mux_operand_b*/
     mux_operand_b_sel = alu_operand_b_select;
     mux_operand_b_in0 = regs_rs2_data;
     mux_operand_b_in1 = igen_immediate;
-    /*mux_operand_b.tock()*/;
+    /*mux_operand_b.tock();*/
   end
 
   always_comb begin /*tock_alu*/
     alu_core_alu_function = alu_function;
     alu_core_operand_a = mux_operand_a_out;
     alu_core_operand_b = mux_operand_b_out;
-    /*alu_core.tock()*/;
+    /*alu_core.tock();*/
     alu_result_equal_zero = alu_core_result_equal_zero;
   end
 
   always_comb begin /*tock_adder_pc_plus_4*/
     adder_pc_plus_4_operand_a = 32'h00000004;
     adder_pc_plus_4_operand_b = program_counter_value;
-    /*adder_pc_plus_4.tock()*/;
+    /*adder_pc_plus_4.tock();*/
   end
 
   always_comb begin /*tock_adder_pc_plus_immediate*/
     adder_pc_plus_immediate_operand_a = program_counter_value;
     adder_pc_plus_immediate_operand_b = igen_immediate;
-    /*adder_pc_plus_immediate.tock()*/;
+    /*adder_pc_plus_immediate.tock();*/
   end
 
   always_comb begin /*tock_data_mem_write_data*/
@@ -139,14 +139,14 @@ module singlecycle_datapath
     mux_next_pc_select_in1 = adder_pc_plus_immediate_result;
     mux_next_pc_select_in2 = {alu_core.result[31:1], 1'b0};
     mux_next_pc_select_in3 = 32'b0;
-    /*mux_next_pc_select.tock()*/;
+    /*mux_next_pc_select.tock();*/
   end
 
   always_comb begin /*tock_program_counter*/
     program_counter_reset = reset;
     program_counter_write_enable = pc_write_enable;
     program_counter_next = mux_next_pc_select_out;
-    /*program_counter.tick()*/;
+    /*program_counter.tick();*/
   end
 
   always_comb begin /*tock_mux_reg_writeback*/
@@ -159,13 +159,13 @@ module singlecycle_datapath
     mux_reg_writeback_in5 = 32'b0;
     mux_reg_writeback_in6 = 32'b0;
     mux_reg_writeback_in7 = 32'b0;
-    /*mux_reg_writeback.tock()*/;
+    /*mux_reg_writeback.tock();*/
   end
 
   always_comb begin /*tock_reg_writeback*/
     regs_write_enable = regfile_write_enable;
     regs_rd_data = mux_reg_writeback_out;
-    /*regs.tick()*/;
+    /*regs.tick();*/
   end
 
   //----------------------------------------

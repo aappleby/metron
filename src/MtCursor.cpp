@@ -545,7 +545,12 @@ CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
   } else if (func_name.starts_with("tock")) {
 
     // Local call to private tock() - bind args.
-    err << comment_out(n);
+    err << emit_replacement(n, "%s", func_name.c_str());
+    //err << comment_out(n);
+    //auto method = current_mod->get_method(func_name);
+
+
+
 
   } else if (func_name == "bx") {
     // Bit extract.
@@ -860,7 +865,7 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
   //----------
   // Local function input port decls go _before_ the function definition.
 
-  if (!current_method->is_public) {
+  if (!current_method->is_public && (current_method->is_tick || current_method->is_tock)) {
 
     for (auto n : current_method->param_nodes) {
 
@@ -886,6 +891,29 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
       err << emit_indent();
 
     }
+
+    if (current_method->has_return) {
+      n.dump_tree();
+
+      auto return_type = n.get_field(field_type);
+
+      MtCursor subcursor(lib, current_source, current_mod, str_out);
+      subcursor.echo = echo;
+      subcursor.in_ports = true;
+
+      subcursor.cursor = return_type.start();
+      err << subcursor.emit_dispatch(return_type);
+      err << subcursor.emit_ws();
+
+      err << emit_print("%s", current_method->name().c_str());
+
+      err << prune_trailing_ws();
+      err << emit_print(";");
+      err << emit_newline();
+      err << emit_indent();
+
+    }
+
   }
 
   //----------
@@ -911,20 +939,12 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
     err << prune_trailing_ws();
     err << emit_print(";");
   } else if (current_method->is_func) {
-    if (in_public) {
-      err << skip_over(return_type);
-      err << skip_ws();
-      err << emit_replacement(func_decl, "always_comb");
-      err << emit_ws();
-
-    } else {
-      err << emit_print("function ");
-      err << emit_dispatch(return_type);
-      err << emit_ws();
-      err << emit_dispatch(func_decl);
-      err << prune_trailing_ws();
-      err << emit_print(";");
-    }
+    err << emit_print("function ");
+    err << emit_dispatch(return_type);
+    err << emit_ws();
+    err << emit_dispatch(func_decl);
+    err << prune_trailing_ws();
+    err << emit_print(";");
   } else {
     debugbreak();
   }
@@ -934,17 +954,13 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
   if (current_method->is_init)
     err << emit_print("begin /*%s*/", current_method->name().c_str());
   else if (current_method->is_tick) {
-    err << emit_print("begin : %s", current_method->name().c_str());
+    err << emit_print("begin /*%s*/", current_method->name().c_str());
   } else if (current_method->is_tock)
     err << emit_print("begin /*%s*/", current_method->name().c_str());
   else if (current_method->is_task)
     err << emit_print("");
   else if (current_method->is_func) {
-    if (in_public) {
-      err << emit_print("begin");
-    } else {
-      err << emit_print("");
-    }
+    err << emit_print("");
   } else
     debugbreak();
 
@@ -1025,11 +1041,7 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
     err << emit_print("endtask");
   }
   else if (current_method->is_func) {
-    if (current_method->is_public) {
-      err << emit_print("end");
-    } else {
-      err << emit_print("endfunction");
-    }
+    err << emit_print("endfunction");
   } else
     debugbreak();
 
@@ -2770,7 +2782,6 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
       break;
 
     case sym_access_specifier:
-      in_public = n.child(0).text() == "public";
       err << comment_out(n);
       break;
 

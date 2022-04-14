@@ -53,29 +53,29 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
     __Vdlyvset__toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__mem__v0 = 0U;
     __Vdlyvset__toplevel__DOT__core__DOT__datapath__DOT__regs__DOT___register__v0 = 0U;
     if (vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory_wren) {
-        vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__DOT__unnamedblk1__DOT__mask = 0U;
+        vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__unnamedblk1__DOT__mask = 0U;
         if ((1U & (IData)(vlSelf->toplevel__DOT__core__DOT__dmem_bus_byte_enable))) {
-            vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__DOT__unnamedblk1__DOT__mask 
-                = (0xffU | vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__DOT__unnamedblk1__DOT__mask);
+            vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__unnamedblk1__DOT__mask 
+                = (0xffU | vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__unnamedblk1__DOT__mask);
         }
         if ((2U & (IData)(vlSelf->toplevel__DOT__core__DOT__dmem_bus_byte_enable))) {
-            vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__DOT__unnamedblk1__DOT__mask 
-                = (0xff00U | vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__DOT__unnamedblk1__DOT__mask);
+            vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__unnamedblk1__DOT__mask 
+                = (0xff00U | vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__unnamedblk1__DOT__mask);
         }
         if ((4U & (IData)(vlSelf->toplevel__DOT__core__DOT__dmem_bus_byte_enable))) {
-            vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__DOT__unnamedblk1__DOT__mask 
-                = (0xff0000U | vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__DOT__unnamedblk1__DOT__mask);
+            vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__unnamedblk1__DOT__mask 
+                = (0xff0000U | vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__unnamedblk1__DOT__mask);
         }
         if ((8U & (IData)(vlSelf->toplevel__DOT__core__DOT__dmem_bus_byte_enable))) {
-            vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__DOT__unnamedblk1__DOT__mask 
-                = (0xff000000U | vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__DOT__unnamedblk1__DOT__mask);
+            vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__unnamedblk1__DOT__mask 
+                = (0xff000000U | vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__unnamedblk1__DOT__mask);
         }
         __Vdlyvval__toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__mem__v0 
             = ((vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__mem
                 [(0x7fffU & (vlSelf->toplevel__DOT__core__DOT__datapath__DOT__alu_core_result 
-                             >> 2U))] & (~ vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__DOT__unnamedblk1__DOT__mask)) 
+                             >> 2U))] & (~ vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__unnamedblk1__DOT__mask)) 
                | (vlSelf->toplevel__DOT__core__DOT__dmem_bus_write_data 
-                  & vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__DOT__unnamedblk1__DOT__mask));
+                  & vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__unnamedblk1__DOT__mask));
         __Vdlyvset__toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__mem__v0 = 1U;
         __Vdlyvdim0__toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__mem__v0 
             = (0x7fffU & (vlSelf->toplevel__DOT__core__DOT__datapath__DOT__alu_core_result 

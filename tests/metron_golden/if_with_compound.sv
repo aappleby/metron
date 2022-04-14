@@ -6,7 +6,7 @@ module Submod
 );
 /*public:*/
 
-  always_ff @(posedge clock) begin : tick
+  always_ff @(posedge clock) begin /*tick*/
   end
 endmodule
 

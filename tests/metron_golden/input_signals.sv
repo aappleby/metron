@@ -20,7 +20,7 @@ module Submod
     tock = o_signal + 7;
   end
 
-  always_ff @(posedge clock) begin : tick
+  always_ff @(posedge clock) begin /*tick*/
     o_reg <= o_reg + o_signal;
   end
 endmodule
@@ -41,7 +41,7 @@ module Module
     my_sig = submod_return + 3;
   end
 
-  always_ff @(posedge clock) begin : tick
+  always_ff @(posedge clock) begin /*tick*/
     my_reg <= my_sig - 2;
   end
 

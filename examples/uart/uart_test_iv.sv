@@ -63,7 +63,7 @@ module uart_test;
     rst_n = 1;
 
     #200;
-    wait (top.tx.o_idle);
+    wait (top.tx.tock_idle);
     #5
 
     $write("\n");

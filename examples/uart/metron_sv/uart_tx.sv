@@ -9,21 +9,21 @@ module uart_tx
   input logic tock_i_rstn,
   input logic[7:0] tock_i_data,
   input logic tock_i_req,
-  output logic o_serial,
-  output logic o_cts,
-  output logic o_idle
+  output logic tock_serial,
+  output logic tock_cts,
+  output logic tock_idle
 );
  /*public:*/
   //----------------------------------------
 
-  always_comb begin o_serial = buffer & 1; end
+  always_comb begin /*tock_serial*/ tock_serial = buffer & 1; end
 
-  always_comb begin
-    o_cts = ((cursor == extra_stop_bits) && (cycle == 0)) ||
+  always_comb begin /*tock_cts*/
+    tock_cts = ((cursor == extra_stop_bits) && (cycle == 0)) ||
            (cursor < extra_stop_bits);
   end
 
-  always_comb begin o_idle = (cursor == 0) && (cycle == 0); end
+  always_comb begin /*tock_idle*/ tock_idle = (cursor == 0) && (cycle == 0); end
 
   always_comb begin /*tock*/
     tick_i_rstn = tock_i_rstn;
@@ -38,7 +38,7 @@ module uart_tx
   logic tick_i_rstn;
   logic[7:0] tick_i_data;
   logic tick_i_req;
-  always_ff @(posedge clock) begin : tick
+  always_ff @(posedge clock) begin /*tick*/
     if (!tick_i_rstn) begin
       cycle <= 0;
       cursor <= 0;

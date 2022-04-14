@@ -511,21 +511,6 @@ CHECK_RETURN Err MtModule::collect_methods() {
       break;
     }
 
-    if (m->is_init && m->is_const) {
-      err << ERR("Init method %s is const", m->name().c_str());
-      break;
-    }
-
-    if (m->is_tick && m->is_const) {
-      err << ERR("Tick method %s is const", m->name().c_str());
-      break;
-    }
-
-    if (m->is_tock && m->is_const) {
-      err << ERR("Tock method %s is const\n", m->name().c_str());
-      break;
-    }
-
     if (m->is_init) {
       init_methods.push_back(m);
     } else if (m->is_tick) {
@@ -700,6 +685,7 @@ CHECK_RETURN Err MtModule::collect_input_arguments() {
 
   for (auto m : all_methods) {
     if (!m->is_public) continue;
+    if (!m->is_tick && !m->is_tock) continue;
 
     auto params =
         m->node.get_field(field_declarator).get_field(field_parameters);
@@ -772,7 +758,7 @@ CHECK_RETURN Err MtModule::categorize_fields() {
   }
 
   for (auto m : all_methods) {
-    if (m->is_public && m->has_return) {
+    if (m->is_public && m->is_tock && m->has_return) {
       output_returns.push_back(m);
     }
   }

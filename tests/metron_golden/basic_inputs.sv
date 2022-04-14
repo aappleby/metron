@@ -10,7 +10,7 @@ module Module
 );
 /*public:*/
 
-  always_ff @(posedge clock) begin : tick
+  always_ff @(posedge clock) begin /*tick*/
     my_reg <= my_reg + tick_my_input;
   end
 

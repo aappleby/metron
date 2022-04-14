@@ -9,7 +9,7 @@ module Submod
 );
 /*public:*/
 
-  always_ff @(posedge clock) begin : tick
+  always_ff @(posedge clock) begin /*tick*/
     sub_reg <= sub_reg + 1;
   end
 

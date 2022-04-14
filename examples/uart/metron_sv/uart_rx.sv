@@ -8,9 +8,9 @@ module uart_rx
   input logic clock,
   input logic tock_i_rstn,
   input logic tock_i_serial,
-  output logic o_valid,
-  output logic[7:0] o_buffer,
-  output logic[31:0] o_sum
+  output logic  tock_valid,
+  output logic[7:0]  tock_buffer,
+  output logic[31:0] tock_sum
 );
  /*public:*/
   //----------------------------------------
@@ -20,9 +20,9 @@ module uart_rx
   // even if you set it via "func_name = value;" first.
 
 
-  always_comb begin o_valid = cursor == 1; end
-  always_comb begin o_buffer = buffer; end
-  always_comb begin o_sum = sum; end
+  always_comb begin /*tock_valid*/ tock_valid = cursor == 1; end
+  always_comb begin /*tock_buffer*/ tock_buffer = buffer; end
+  always_comb begin /*tock_sum*/ tock_sum = sum; end
 
   always_comb begin /*tock*/ tick_i_rstn = tock_i_rstn;
 tick_i_serial = tock_i_serial;
@@ -32,7 +32,7 @@ tick_i_serial = tock_i_serial;
  /*private:*/
   logic tick_i_rstn;
   logic tick_i_serial;
-  always_ff @(posedge clock) begin : tick
+  always_ff @(posedge clock) begin /*tick*/
     if (!tick_i_rstn) begin
       cycle <= 0;
       cursor <= 0;

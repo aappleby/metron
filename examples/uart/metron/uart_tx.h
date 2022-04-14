@@ -8,14 +8,14 @@ class uart_tx {
  public:
   //----------------------------------------
 
-  logic<1> o_serial() const { return buffer & 1; }
+  logic<1> tock_serial() { return buffer & 1; }
 
-  logic<1> o_cts() const {
+  logic<1> tock_cts() {
     return ((cursor == extra_stop_bits) && (cycle == 0)) ||
            (cursor < extra_stop_bits);
   }
 
-  logic<1> o_idle() const { return (cursor == 0) && (cycle == 0); }
+  logic<1> tock_idle() { return (cursor == 0) && (cycle == 0); }
 
   void tock(logic<1> i_rstn, logic<8> i_data, logic<1> i_req) {
     tick(i_rstn, i_data, i_req);

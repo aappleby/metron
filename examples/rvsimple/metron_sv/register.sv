@@ -23,7 +23,7 @@ module single_register
 
   initial begin /*single_register*/ value = INITIAL; end
 
-  always_ff @(posedge clock) begin : tick
+  always_ff @(posedge clock) begin /*tick*/
     if (reset)
       value <= INITIAL;
     else if (write_enable)

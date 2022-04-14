@@ -15,7 +15,7 @@ module Module
     my_sig = my_reg;
   end
 
-  always_ff @(posedge clock) begin : tick
+  always_ff @(posedge clock) begin /*tick*/
     my_reg <= 1;
   end
 

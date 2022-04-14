@@ -9,7 +9,7 @@ module Submod
 );
 /*public:*/
 
-  always_ff @(posedge clock) begin : tick
+  always_ff @(posedge clock) begin /*tick*/
     sub_reg <= sub_reg + 1;
   end
 
@@ -17,14 +17,13 @@ endmodule
 
 module Module
 (
-  input logic clock,
-  output logic[7:0] get_submod_reg
+  input logic clock
 );
 /*public:*/
 
-  always_comb begin
+  function logic[7:0] get_submod_reg();
     get_submod_reg = submod_sub_reg;
-  end
+  endfunction
 
   always_comb begin /*tock*/
     /*submod.tick()*/;

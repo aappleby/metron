@@ -5,21 +5,17 @@
 
 module Submod
 (
-  input logic clock,
-  input logic[7:0] thing1_dedup,
-  input logic[7:0] thing2_dedup,
-  output logic[7:0] thing1,
-  output logic[7:0] thing2
+  input logic clock
 );
 /*public:*/
 
-  always_comb begin
+  function logic[7:0] thing1(logic[7:0] thing1_dedup);
     thing1 = thing1_dedup + 1;
-  end
+  endfunction
 
-  always_comb begin
+  function logic[7:0] thing2(logic[7:0] thing2_dedup);
     thing2 = thing2_dedup + 2;
-  end
+  endfunction
 endmodule
 
 module Module
@@ -43,17 +39,9 @@ module Module
 
   Submod submod(
     // Inputs
-    .clock(clock),
-    .thing1_dedup(submod_thing1_dedup),
-    .thing2_dedup(submod_thing2_dedup),
+    .clock(clock)
     // Outputs
-    .thing1(submod_thing1),
-    .thing2(submod_thing2)
   );
-  logic[7:0] submod_thing1_dedup;
-  logic[7:0] submod_thing2_dedup;
-  logic[7:0] submod_thing1;
-  logic[7:0] submod_thing2;
 
 
 endmodule

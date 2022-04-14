@@ -11,11 +11,11 @@ Vuart_top::Vuart_top(VerilatedContext* _vcontextp__, const char* _vcname__)
     : vlSymsp{new Vuart_top__Syms(_vcontextp__, _vcname__, this)}
     , clock{vlSymsp->TOP.clock}
     , tock_i_rstn{vlSymsp->TOP.tock_i_rstn}
-    , o_serial{vlSymsp->TOP.o_serial}
-    , o_data{vlSymsp->TOP.o_data}
-    , o_valid{vlSymsp->TOP.o_valid}
-    , o_done{vlSymsp->TOP.o_done}
-    , o_sum{vlSymsp->TOP.o_sum}
+    , tock_serial{vlSymsp->TOP.tock_serial}
+    , tock_data{vlSymsp->TOP.tock_data}
+    , tock_valid{vlSymsp->TOP.tock_valid}
+    , tock_done{vlSymsp->TOP.tock_done}
+    , tock_sum{vlSymsp->TOP.tock_sum}
     , rootp{&(vlSymsp->TOP)}
 {
 }

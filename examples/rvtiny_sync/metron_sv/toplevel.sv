@@ -50,7 +50,7 @@ module toplevel
   localparam int OP_AUIPC = 8'h17;
 
   logic tick_reset;
-  always_ff @(posedge clock) begin : tick
+  always_ff @(posedge clock) begin /*tick*/
     if (tick_reset) begin
       pc <= 0;
       phase <= 0;

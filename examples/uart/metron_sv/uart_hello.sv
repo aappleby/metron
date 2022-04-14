@@ -9,9 +9,9 @@ module uart_hello
   input logic tock_i_rstn,
   input logic tock_i_cts,
   input logic tock_i_idle,
-  output logic[7:0] o_data,
-  output logic o_req,
-  output logic o_done
+  output logic[7:0] tock_data,
+  output logic tock_req,
+  output logic tock_done
 );
  /*public:*/
   initial begin /*uart_hello*/
@@ -20,9 +20,9 @@ module uart_hello
 
   //----------------------------------------
 
-  always_comb begin o_data = data; end
-  always_comb begin o_req = state == SEND; end
-  always_comb begin o_done = state == DONE; end
+  always_comb begin /*tock_data*/ tock_data = data; end
+  always_comb begin /*tock_req*/ tock_req = state == SEND; end
+  always_comb begin /*tock_done*/ tock_done = state == DONE; end
 
   always_comb begin /*tock*/
     tick_i_rstn = tock_i_rstn;
@@ -37,7 +37,7 @@ module uart_hello
   logic tick_i_rstn;
   logic tick_i_cts;
   logic tick_i_idle;
-  always_ff @(posedge clock) begin : tick
+  always_ff @(posedge clock) begin /*tick*/
     if (!tick_i_rstn) begin
       state <= WAIT;
       cursor <= 0;

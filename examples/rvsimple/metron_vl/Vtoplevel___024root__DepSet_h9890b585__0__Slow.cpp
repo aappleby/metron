@@ -625,5 +625,5 @@ VL_ATTR_COLD void Vtoplevel___024root___ctor_var_reset(Vtoplevel___024root* vlSe
     for (int __Vi0=0; __Vi0<32768; ++__Vi0) {
         vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__mem[__Vi0] = VL_RAND_RESET_I(32);
     }
-    vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__tick__DOT__unnamedblk1__DOT__mask = VL_RAND_RESET_I(32);
+    vlSelf->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__unnamedblk1__DOT__mask = VL_RAND_RESET_I(32);
     }

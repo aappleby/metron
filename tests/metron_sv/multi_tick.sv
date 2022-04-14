@@ -20,11 +20,11 @@ module Module
 
 /*private:*/
 
-  always_ff @(posedge clock) begin : tick1
+  always_ff @(posedge clock) begin /*tick1*/
     my_reg1 <= 0;
   end
 
-  always_ff @(posedge clock) begin : tick2
+  always_ff @(posedge clock) begin /*tick2*/
     my_reg2 <= 1;
   end
 

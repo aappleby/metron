@@ -12,9 +12,9 @@ class uart_hello {
 
   //----------------------------------------
 
-  logic<8> o_data() const { return data; }
-  logic<1> o_req()  const { return state == SEND; }
-  logic<1> o_done() const { return state == DONE; }
+  logic<8> tock_data() const { return data; }
+  logic<1> tock_req()  const { return state == SEND; }
+  logic<1> tock_done() const { return state == DONE; }
 
   void tock(logic<1> i_rstn, logic<1> i_cts, logic<1> i_idle) {
     tick(i_rstn, i_cts, i_idle);

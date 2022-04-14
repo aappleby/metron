@@ -4,14 +4,13 @@
 
 module Module
 (
-  input logic clock,
-  output int foo
+  input logic clock
 );
 /*public:*/
 
-  always_comb begin
+  function int foo();
     foo = 2;
-  end
+  endfunction
 
   always_comb begin /*tock*/
     /*tick()*/;
@@ -21,7 +20,7 @@ module Module
 
   logic[2:0] my_reg;
 
-  always_ff @(posedge clock) begin : tick
+  always_ff @(posedge clock) begin /*tick*/
     my_reg <= foo + 1;
   end
 

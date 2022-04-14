@@ -27,7 +27,7 @@ module Module
     tock = result;
   end
 
-  always_ff @(posedge clock) begin : tick
+  always_ff @(posedge clock) begin /*tick*/
     my_reg <= my_reg + 1;
   end
 

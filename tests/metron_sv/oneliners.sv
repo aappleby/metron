@@ -12,7 +12,7 @@ module Module
   always_comb begin /*tock*/ logic[7:0] a;
 
 a = 1; a = a + 7; tock = a; end
-  always_ff @(posedge clock) begin : tick if (my_reg & 1) my_reg <= my_reg - 7; end
+  always_ff @(posedge clock) begin /*tick*/ if (my_reg & 1) my_reg <= my_reg - 7; end
 
 /*private:*/
   logic[7:0] my_reg;

@@ -26,11 +26,11 @@ class Vuart_top VL_NOT_FINAL {
     // propagate new values into/out from the Verilated model.
     VL_IN8(&clock,0,0);
     VL_IN8(&tock_i_rstn,0,0);
-    VL_OUT8(&o_serial,0,0);
-    VL_OUT8(&o_data,7,0);
-    VL_OUT8(&o_valid,0,0);
-    VL_OUT8(&o_done,0,0);
-    VL_OUT(&o_sum,31,0);
+    VL_OUT8(&tock_serial,0,0);
+    VL_OUT8(&tock_data,7,0);
+    VL_OUT8(&tock_valid,0,0);
+    VL_OUT8(&tock_done,0,0);
+    VL_OUT(&tock_sum,31,0);
 
     // CELLS
     // Public to allow access to /* verilator public */ items.

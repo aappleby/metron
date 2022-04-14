@@ -32,7 +32,7 @@ module example_data_memory
   end
 
  /*private:*/
-  always_ff @(posedge clock) begin : tick
+  always_ff @(posedge clock) begin /*tick*/
     if (wren) begin
       logic[31:0] mask;
 

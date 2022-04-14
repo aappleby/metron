@@ -5,16 +5,15 @@
 module Module
 (
   input logic clock,
-  output logic[6:0] my_reg,
-  output logic[6:0] get_reg
+  output logic[6:0] my_reg
 );
 /*public:*/
 
-  always_comb begin
+  function logic[6:0] get_reg();
     get_reg = my_reg;
-  end
+  endfunction
 
-  always_ff @(posedge clock) begin : tick
+  always_ff @(posedge clock) begin /*tick*/
     my_reg <= my_reg + 1;
   end
 

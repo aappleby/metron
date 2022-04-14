@@ -9,7 +9,7 @@ module Module
 );
 /*public:*/
 
-  always_ff @(posedge clock) begin : tick
+  always_ff @(posedge clock) begin /*tick*/
     case(tick_selector)
       0: my_reg <= 17;
       1: my_reg <= 22;

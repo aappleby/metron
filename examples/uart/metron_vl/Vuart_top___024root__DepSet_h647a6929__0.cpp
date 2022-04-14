@@ -28,7 +28,7 @@ VL_INLINE_OPT void Vuart_top___024root___sequent__TOP__0(Vuart_top___024root* vl
                 (3U & ((IData)(vlSelf->uart_top__DOT__rx__DOT__cycle) 
                        - (IData)(1U)));
         } else if ((0U != (IData)(vlSelf->uart_top__DOT__rx__DOT__cursor))) {
-            vlSelf->uart_top__DOT__rx__DOT__tick__DOT__unnamedblk1__DOT__temp 
+            vlSelf->uart_top__DOT__rx__DOT__unnamedblk1__DOT__temp 
                 = (0xffU & ((0x80U & ((IData)(vlSelf->uart_top__DOT__tx__DOT__buffer) 
                                       << 7U)) | ((IData)(vlSelf->uart_top__DOT__rx__DOT__buffer) 
                                                  >> 1U)));
@@ -36,14 +36,14 @@ VL_INLINE_OPT void Vuart_top___024root___sequent__TOP__0(Vuart_top___024root* vl
                         - (IData)(1U)))) {
                 vlSelf->uart_top__DOT__rx__DOT__sum 
                     = (vlSelf->uart_top__DOT__rx__DOT__sum 
-                       + (IData)(vlSelf->uart_top__DOT__rx__DOT__tick__DOT__unnamedblk1__DOT__temp));
+                       + (IData)(vlSelf->uart_top__DOT__rx__DOT__unnamedblk1__DOT__temp));
             }
             vlSelf->uart_top__DOT__rx__DOT__cycle = 2U;
             vlSelf->uart_top__DOT__rx__DOT__cursor 
                 = (0xfU & ((IData)(vlSelf->uart_top__DOT__rx__DOT__cursor) 
                            - (IData)(1U)));
             vlSelf->uart_top__DOT__rx__DOT__buffer 
-                = vlSelf->uart_top__DOT__rx__DOT__tick__DOT__unnamedblk1__DOT__temp;
+                = vlSelf->uart_top__DOT__rx__DOT__unnamedblk1__DOT__temp;
         } else if ((1U & (~ (IData)(vlSelf->uart_top__DOT__tx__DOT__buffer)))) {
             vlSelf->uart_top__DOT__rx__DOT__cycle = 2U;
             vlSelf->uart_top__DOT__rx__DOT__cursor = 9U;
@@ -51,7 +51,7 @@ VL_INLINE_OPT void Vuart_top___024root___sequent__TOP__0(Vuart_top___024root* vl
         vlSelf->uart_top__DOT__hello__DOT__data = vlSelf->uart_top__DOT__hello__DOT__memory
             [vlSelf->uart_top__DOT__hello__DOT__cursor];
         if (((0U == (IData)(vlSelf->uart_top__DOT__hello__DOT__state)) 
-             & (IData)(vlSelf->uart_top__DOT__tx_o_idle))) {
+             & (IData)(vlSelf->uart_top__DOT__tx_tock_idle))) {
             __Vdly__uart_top__DOT__hello__DOT__state = 1U;
         } else if (((1U == (IData)(vlSelf->uart_top__DOT__hello__DOT__state)) 
                     & (((7U == (IData)(vlSelf->uart_top__DOT__tx__DOT__cursor)) 
@@ -66,14 +66,14 @@ VL_INLINE_OPT void Vuart_top___024root___sequent__TOP__0(Vuart_top___024root* vl
         } else if ((2U == (IData)(vlSelf->uart_top__DOT__hello__DOT__state))) {
             vlSelf->uart_top__DOT__hello__DOT__cursor = 0U;
         }
-        vlSelf->uart_top__DOT__tx__DOT__tick__DOT__unnamedblk1__DOT__cycle_max = 2U;
-        vlSelf->uart_top__DOT__tx__DOT__tick__DOT__unnamedblk1__DOT__cursor_max = 0x10U;
+        vlSelf->uart_top__DOT__tx__DOT__unnamedblk1__DOT__cycle_max = 2U;
+        vlSelf->uart_top__DOT__tx__DOT__unnamedblk1__DOT__cursor_max = 0x10U;
         if ((((7U >= (IData)(vlSelf->uart_top__DOT__tx__DOT__cursor)) 
               & (0U == (IData)(vlSelf->uart_top__DOT__tx__DOT__cycle))) 
              & (IData)(vlSelf->uart_top__DOT__tx_tock_i_req))) {
-            __Vdly__uart_top__DOT__tx__DOT__cycle = vlSelf->uart_top__DOT__tx__DOT__tick__DOT__unnamedblk1__DOT__cycle_max;
+            __Vdly__uart_top__DOT__tx__DOT__cycle = vlSelf->uart_top__DOT__tx__DOT__unnamedblk1__DOT__cycle_max;
             __Vdly__uart_top__DOT__tx__DOT__cursor 
-                = vlSelf->uart_top__DOT__tx__DOT__tick__DOT__unnamedblk1__DOT__cursor_max;
+                = vlSelf->uart_top__DOT__tx__DOT__unnamedblk1__DOT__cursor_max;
             __Vdly__uart_top__DOT__tx__DOT__buffer 
                 = (0x1ffU & ((IData)(vlSelf->uart_top__DOT__tx_tock_i_data) 
                              << 1U));
@@ -92,7 +92,7 @@ VL_INLINE_OPT void Vuart_top___024root___sequent__TOP__0(Vuart_top___024root* vl
             __Vdly__uart_top__DOT__tx__DOT__buffer 
                 = (0x1ffU & (0x100U | ((IData)(vlSelf->uart_top__DOT__tx__DOT__buffer) 
                                        >> 1U)));
-            __Vdly__uart_top__DOT__tx__DOT__cycle = vlSelf->uart_top__DOT__tx__DOT__tick__DOT__unnamedblk1__DOT__cycle_max;
+            __Vdly__uart_top__DOT__tx__DOT__cycle = vlSelf->uart_top__DOT__tx__DOT__unnamedblk1__DOT__cycle_max;
         }
     } else {
         vlSelf->uart_top__DOT__rx__DOT__cycle = 0U;
@@ -109,19 +109,19 @@ VL_INLINE_OPT void Vuart_top___024root___sequent__TOP__0(Vuart_top___024root* vl
     vlSelf->uart_top__DOT__tx__DOT__buffer = __Vdly__uart_top__DOT__tx__DOT__buffer;
     vlSelf->uart_top__DOT__tx__DOT__cycle = __Vdly__uart_top__DOT__tx__DOT__cycle;
     vlSelf->uart_top__DOT__tx__DOT__cursor = __Vdly__uart_top__DOT__tx__DOT__cursor;
-    vlSelf->o_sum = vlSelf->uart_top__DOT__rx__DOT__sum;
-    vlSelf->o_valid = (1U == (IData)(vlSelf->uart_top__DOT__rx__DOT__cursor));
-    vlSelf->o_data = vlSelf->uart_top__DOT__rx__DOT__buffer;
+    vlSelf->tock_sum = vlSelf->uart_top__DOT__rx__DOT__sum;
+    vlSelf->tock_valid = (1U == (IData)(vlSelf->uart_top__DOT__rx__DOT__cursor));
+    vlSelf->tock_data = vlSelf->uart_top__DOT__rx__DOT__buffer;
     uart_top__DOT__unnamedblk1__DOT__hello_data = vlSelf->uart_top__DOT__hello__DOT__data;
     vlSelf->uart_top__DOT__tx_tock_i_data = uart_top__DOT__unnamedblk1__DOT__hello_data;
     uart_top__DOT__unnamedblk1__DOT__hello_req = (1U 
                                                   == (IData)(vlSelf->uart_top__DOT__hello__DOT__state));
     vlSelf->uart_top__DOT__tx_tock_i_req = uart_top__DOT__unnamedblk1__DOT__hello_req;
-    vlSelf->o_serial = (1U & (IData)(vlSelf->uart_top__DOT__tx__DOT__buffer));
-    vlSelf->uart_top__DOT__tx_o_idle = ((0U == (IData)(vlSelf->uart_top__DOT__tx__DOT__cursor)) 
-                                        & (0U == (IData)(vlSelf->uart_top__DOT__tx__DOT__cycle)));
-    vlSelf->o_done = ((2U == (IData)(vlSelf->uart_top__DOT__hello__DOT__state)) 
-                      & (IData)(vlSelf->uart_top__DOT__tx_o_idle));
+    vlSelf->tock_serial = (1U & (IData)(vlSelf->uart_top__DOT__tx__DOT__buffer));
+    vlSelf->uart_top__DOT__tx_tock_idle = ((0U == (IData)(vlSelf->uart_top__DOT__tx__DOT__cursor)) 
+                                           & (0U == (IData)(vlSelf->uart_top__DOT__tx__DOT__cycle)));
+    vlSelf->tock_done = ((2U == (IData)(vlSelf->uart_top__DOT__hello__DOT__state)) 
+                         & (IData)(vlSelf->uart_top__DOT__tx_tock_idle));
 }
 
 void Vuart_top___024root___eval(Vuart_top___024root* vlSelf) {

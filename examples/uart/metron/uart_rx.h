@@ -13,9 +13,9 @@ class uart_rx {
   // even if you set it via "func_name = value;" first.
 
 
-  logic<1> o_valid() const { return cursor == 1; }
-  logic<8> o_buffer() const { return buffer; }
-  logic<32> o_sum() const { return sum; }
+  logic<1>  tock_valid() { return cursor == 1; }
+  logic<8>  tock_buffer() { return buffer; }
+  logic<32> tock_sum() { return sum; }
 
   void tock(logic<1> i_rstn, logic<1> i_serial) { tick(i_rstn, i_serial); }
 

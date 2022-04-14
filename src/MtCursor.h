@@ -138,8 +138,6 @@ struct MtCursor {
 
   bool echo = false;
 
-  bool in_public = false;
-
   bool trim_namespaces = true;
   bool in_ports = false;
 

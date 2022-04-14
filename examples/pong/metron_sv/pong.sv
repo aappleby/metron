@@ -29,9 +29,7 @@ module Pong
 	output logic vga_G,
 	output logic vga_B,
 	input logic tick_in_quad_a,
-	input logic tick_in_quad_b,
-	output logic[9:0] pix_x,
-	output logic[9:0] pix_y
+	input logic tick_in_quad_b
 );
 /*public:*/
 
@@ -57,8 +55,8 @@ module Pong
 
 	//----------------------------------------
 
-	always_comb begin pix_x = px; end
-	always_comb begin pix_y = py; end
+	function logic[9:0] pix_x(); pix_x = px; endfunction
+	function logic[9:0] pix_y(); pix_y = py; endfunction
 
 	//----------------------------------------
 
@@ -79,7 +77,7 @@ module Pong
 
 	//----------------------------------------
 
-	always_ff @(posedge clock) begin : tick
+	always_ff @(posedge clock) begin /*tick*/
 		logic[9:0] new_px;
 		logic[9:0] new_py;
 		logic quad_dir;

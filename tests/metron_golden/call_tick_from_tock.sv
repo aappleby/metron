@@ -18,7 +18,7 @@ module Module
 /*private:*/
 
   logic[7:0] tick_val;
-  always_ff @(posedge clock) begin : tick
+  always_ff @(posedge clock) begin /*tick*/
     my_reg <= my_reg + tick_val;
   end
 

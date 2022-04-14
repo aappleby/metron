@@ -27,20 +27,20 @@ TestResults test_lockstep(int argc, char** argv) {
   
   int cycle;
   for (cycle = 0; cycle < 20000; cycle++) {
-    bool old_valid = vtop.o_valid;
+    bool old_valid = vtop.tock_valid;
     vtop.clock = 1;
     vtop.eval();
     vtop.clock = 0;
     vtop.eval();
 
-    if (!old_valid && vtop.o_valid) LOG_B("%c", (uint8_t)vtop.o_data);
-    if (vtop.o_done) break;
+    if (!old_valid && vtop.tock_valid) LOG_B("%c", (uint8_t)vtop.tock_data);
+    if (vtop.tock_done) break;
   }
 
   LOG_B("\n");
   LOG_B("========================================\n");
   LOG_B("%d\n", cycle);
-  EXPECT_EQ(vtop.o_sum, 0x0000b764, "Verilator uart checksum fail");
+  EXPECT_EQ(vtop.tock_sum, 0x0000b764, "Verilator uart checksum fail");
 
   TEST_DONE();
 }

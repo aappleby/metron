@@ -6,22 +6,19 @@
 module Module
 (
   input logic clock,
-  output logic my_reg,
-  input logic[7:0] func2_arg,
-  output logic[7:0] func1,
-  output logic[7:0] func2
+  output logic my_reg
 );
 /*public:*/
 
-  always_comb begin
+  function logic[7:0] func1();
     func1 = 23;
-  end
+  endfunction
 
-  always_comb begin
+  function logic[7:0] func2(logic[7:0] func2_arg);
     func2 = 17 + func2_arg;
-  end
+  endfunction
 
-  always_ff @(posedge clock) begin : tick
+  always_ff @(posedge clock) begin /*tick*/
     my_reg <= 1;
   end
 

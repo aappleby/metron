@@ -389,12 +389,6 @@ CHECK_RETURN Err MtTracer::trace_method_call(MnNode n) {
   // We must be either in a tick or a tock, or Metron is broken.
   assert(in_tick() ^ in_tock());
 
-  // Public tasks should not exist. They can't be called from outside the module,
-  // and from inside the module they should be private tasks. FIXME check this elsewhere
-  if (dst_method->is_public && dst_method->is_task) {
-    err << ERR("Public task %s should not exist\n", dst_method->name().c_str());
-  }
-
   // Methods that require input port bindings cannot be called from inside the module.
   if (requires_input_binding) {
     err << ERR("Method %s requires input port bindings and can only be called from outside the module.\n", dst_method->name().c_str());
@@ -480,27 +474,25 @@ CHECK_RETURN Err MtTracer::trace_submod_call(MnNode n) {
   }
 
   //----------------------------------------
+  // The target must be a public tick or tock.
 
-  bool requires_input_binding  = dst_method->is_public && dst_method->params.size();
-
-  // The target must be a public tick, tock, or function.
-  if (dst_method->is_private) {
-    err << ERR("Can't call private method %s on a submodule\n", submod_method_name.c_str());
+  if (dst_method->is_private || (!dst_method->is_tick && !dst_method->is_tock)) {
+    err << ERR("Method %s is not a public tick or tock, it can't be called from outside the module.\n", submod_method_name.c_str());
+    n.dump_source_lines();
   }
 
-  // Public tasks are forbidden.
-  if (dst_method->is_task) {
-    err << ERR("Can't call public task %s, it should not exist.\n", submod_method_name.c_str());
-  }
-
-  // Public methods with params require input port bindings to call. If we're in a tick(), we can't do that.
-  if (in_tick() && requires_input_binding) {
+  // Ticks/tocks with params require input port bindings to call. If we're in a tick(), we can't do that.
+  
+  if (in_tick() && dst_method->params.size()) {
     err << ERR("Can't call %s from a tick() as it requires a port binding, and port bindings can only be in tock()s.\n", dst_method->name());
+    n.dump_source_lines();
   }
 
-  // Tock methods write signals and can only do so from inside another tock(). If we're in a tick, that's bad.
-  if (in_tick() && dst_method->is_tock) {
-    err << ERR("Can't call %s from tick method %s\n", dst_method->name().c_str(), src_method->name().c_str());
+  // Non-const tock methods write signals and can only do so from inside another tock(). If we're in a tick, that's bad.
+  
+  if (in_tick() && dst_method->is_tock && !dst_method->is_const) {
+    err << ERR("Can't call non-const %s from tick method %s\n", dst_method->name().c_str(), src_method->name().c_str());
+    n.dump_source_lines();
   }
 
   //----------------------------------------
@@ -512,14 +504,12 @@ CHECK_RETURN Err MtTracer::trace_submod_call(MnNode n) {
   }
 
   // If we're calling a method that has params, trace the params as if they were input ports.
+  // We trace them as both write and read as the current method is writing them and the submod, presumably, is reading them.
 
-  if (requires_input_binding) {
-    for (const auto& param : dst_method->params) {
-      std::string port_name = method_port_base + "." + param;
-      // We trace them as both write and read as the current method is writing them and the submod, presumably, is reading them.
-      err << trace_write(port_name);
-      err << trace_read(port_name);
-    }
+  for (const auto& param : dst_method->params) {
+    std::string port_name = method_port_base + "." + param;
+    err << trace_write(port_name);
+    err << trace_read(port_name);
   }
 
   // Now trace the method.
@@ -534,11 +524,6 @@ CHECK_RETURN Err MtTracer::trace_submod_call(MnNode n) {
 
   //----------------------------------------
   // Done.
-
-  if (err.has_err()) {
-    LOG_R("MtTracer::trace_submod_call failed @\n");
-    n.dump_source_lines();
-  }
 
   return err;
 }

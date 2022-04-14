@@ -660,8 +660,7 @@ CHECK_RETURN Err MtTracer::trace_if(MnNode n) {
 
   if (err.has_err()) {
     err << ERR("MtTracer::trace_if - error\n");
-    // FIXME - How can I add the node dump to the error log?
-    //n.dump_source_lines();
+    n.dump_source_lines();
   }
 
   return err;
@@ -709,7 +708,7 @@ CHECK_RETURN Err MtTracer::trace_switch(MnNode n) {
 
   if (err.has_err()) {
     err << ERR("MtTracer::trace_switch failed @\n");
-    //n.dump_source_lines();
+    n.dump_source_lines();
   }
 
   return err;
@@ -805,19 +804,7 @@ CHECK_RETURN Err MtTracer::trace_read(MnNode const& n) {
     field_name = _field_stack[i]->name() + "." + field_name;
   }
 
-  err << trace_read(field_name);
-
-  if (err.has_err()) {
-    LOG_R("========== call stack ==========\n");
-    for (auto it = _method_stack.rbegin(); it != _method_stack.rend(); ++it) {
-      LOG_R("%s.%s\n", (*it)->mod->name().c_str(), (*it)->name().c_str());
-    }
-    LOG_R("========== source ==========\n");
-    n.dump_source_lines();
-    LOG_R("============================\n");
-  }
-
-  return err;
+  return err << trace_read(field_name);
 }
 
 //------------------------------------------------------------------------------
@@ -832,70 +819,23 @@ CHECK_RETURN Err MtTracer::trace_write(MnNode const& n) {
     field_name = _field_stack[i]->name() + "." + field_name;
   }
 
-  err << trace_write(field_name);
-
-  if (err.has_err()) {
-    LOG_R("========== call stack ==========\n");
-    for (auto it = _method_stack.rbegin(); it != _method_stack.rend(); ++it) {
-      LOG_R("%s.%s\n", (*it)->mod->name().c_str(), (*it)->name().c_str());
-    }
-    LOG_R("========== source ==========\n");
-    n.dump_source_lines();
-    LOG_R("============================\n");
-  }
-
-  return err;
-}
-
-//------------------------------------------------------------------------------
-// FIXME I guess we handled this above?
-
-CHECK_RETURN Err MtTracer::trace_end_fn() {
-  Err err;
-
-  assert(in_tick() || in_tock());
-
-#if 0
-  for (int i = (int)_field_stack.size() - 1; i >= 0; i--) {
-    field_name = _field_stack[i]->name() + "." + field_name;
-  }
-
-  auto old_state = state_top()[field_name];
-  auto new_state = merge_delta(old_state, DELTA_EF);
-
-  if (new_state == FIELD_INVALID) {
-    LOG_R("Field %s was %s, now %s!\n", field_name.c_str(), to_string(old_state), to_string(new_state));
-    LOG_R("========== call stack ==========\n");
-    for (auto it = _method_stack.rbegin(); it != _method_stack.rend(); ++it) {
-      LOG_R("%s.%s\n", (*it)->mod->name().c_str(), (*it)->name().c_str());
-    }
-    LOG_R("========== source ==========\n");
-    n.dump_source_lines();
-    LOG_R("============================\n");
-  }
-
-  state_top()[field_name] = new_state;
-#endif
-
-  return err;
+  return err << trace_write(field_name);
 }
 
 //------------------------------------------------------------------------------
 
+// KCOV_OFF
 void MtTracer::dump_trace(MtStateMap& m) {
   for (const auto& pair : m.s) {
     LOG_Y("%s = %s\n", pair.first.c_str(), to_string(pair.second));
   }
 }
+// KCOV_ON
 
 //------------------------------------------------------------------------------
 
+// KCOV_OFF
 void MtTracer::dump_stack() {
-
-  //std::vector<MtField*>   _field_stack;
-  //std::vector<MtModule*>  _mod_stack;
-  //std::vector<MtMethod*>  _method_stack;
-
   LOG_B("Field Stack:\n");
   for (int i = (int)_field_stack.size() - 1; i >= 0; i--) {
     auto f = _field_stack[i];
@@ -916,14 +856,8 @@ void MtTracer::dump_stack() {
     LOG_G("%s\n", m->name().c_str());
   }
   LOG_B("\n");
-
-
-  /*
-  for (const auto& pair : m) {
-    LOG_Y("%s = %s\n", pair.first.c_str(), to_string(pair.second));
-  }
-  */
 }
+// KCOV_ON
 
 //------------------------------------------------------------------------------
 
@@ -965,10 +899,15 @@ bool MtTracer::ends_with_break(MnNode n) {
         return false;
 
     case sym_case_statement:
-        return ends_with_break(n.named_child(n.named_child_count() - 1));
-
     case sym_compound_statement:
+    {
+      for (int i = 0; i < n.named_child_count() - 2; i++) {
+        if (ends_with_break(n.named_child(i))) {
+          return false;
+        }
+      }
       return ends_with_break(n.named_child(n.named_child_count() - 1));
+    }
 
     case sym_if_statement: {
       auto node_then = n.get_field(field_consequence);

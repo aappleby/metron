@@ -81,7 +81,6 @@ class MtTracer {
 
   CHECK_RETURN Err trace_read(MnNode const& n);
   CHECK_RETURN Err trace_write(MnNode const& n);
-  CHECK_RETURN Err trace_end_fn();
 
   bool ends_with_break(MnNode n);
 

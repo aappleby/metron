@@ -1,4 +1,4 @@
-﻿`include "metron_tools.sv"
+`include "metron_tools.sv"
 
 // UTF-8 text files with a byte order mark should be supported.
 

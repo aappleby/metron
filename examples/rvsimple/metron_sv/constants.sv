@@ -1,4 +1,4 @@
-﻿// RISC-V SiMPLE SV -- constants
+// RISC-V SiMPLE SV -- constants
 // BSD 3-Clause License
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław

@@ -100,7 +100,7 @@ CHECK_RETURN Err merge_parallel(MtStateMap & ma, MtStateMap & mb, MtStateMap & o
   std::set<std::string> keys;
 
   if (ma.hit_return != mb.hit_return) {
-    return ERR("MtTracer::merge_parallel - one branch returned, one branch didn't");
+    err << ERR("MtTracer::merge_parallel - one branch returned, one branch didn't");
   }
 
   for (const auto& a : ma.s) keys.insert(a.first);
@@ -112,7 +112,7 @@ CHECK_RETURN Err merge_parallel(MtStateMap & ma, MtStateMap & mb, MtStateMap & o
     auto sb = mb.s.contains(key) ? mb.s[key] : FIELD________;
     auto sm = merge_parallel(sa, sb);
     if (sm == FIELD_INVALID) {
-      return ERR("%s: %s || %s = %s\n", key.c_str(), to_string(sa), to_string(sb),
+      err << ERR("%s: %s || %s = %s\n", key.c_str(), to_string(sa), to_string(sb),
             to_string(sm));
     }
     temp.s[key] = sm;
@@ -128,7 +128,7 @@ CHECK_RETURN Err merge_series(MtStateMap& ma, MtStateMap& mb, MtStateMap& out) {
   std::set<std::string> keys;
 
   if (ma.hit_return) {
-    return ERR("MtTracer::merge_series - branch A returned before branch B started");
+    err << ERR("MtTracer::merge_series - branch A returned before branch B started");
   }
 
   for (const auto& a : ma.s) keys.insert(a.first);
@@ -140,7 +140,7 @@ CHECK_RETURN Err merge_series(MtStateMap& ma, MtStateMap& mb, MtStateMap& out) {
     auto sb = mb.s.contains(key) ? mb.s[key] : FIELD________;
     auto sm = merge_series(sa, sb);
     if (sm == FIELD_INVALID) {
-      return ERR("%s: %s -> %s = %s\n", key.c_str(), to_string(sa), to_string(sb),
+      err << ERR("%s: %s -> %s = %s\n", key.c_str(), to_string(sa), to_string(sb),
             to_string(sm));
     }
     temp.s[key] = sm;
@@ -160,7 +160,7 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n) {
   if (!n.is_named()) return err;
 
   if (state_top().hit_return) {
-    return ERR("Return in the middle of a function");
+    err << ERR("Return in the middle of a function");
   }
 
   switch (n.sym) {
@@ -391,27 +391,27 @@ CHECK_RETURN Err MtTracer::trace_method_call(MnNode n) {
   // Public tasks should not exist. They can't be called from outside the module,
   // and from inside the module they should be private tasks. FIXME check this elsewhere
   if (dst_method->is_public && dst_method->is_task) {
-    return ERR("Public tasks should not exist\n");
+    err << ERR("Public tasks should not exist\n");
   }
 
   // Public methods can only be called from outside the module.
   if (dst_method->is_public) {
-    return ERR("Public method %s can only be called from outside the module.\n", dst_method->name().c_str());
+    err << ERR("Public method %s can only be called from outside the module.\n", dst_method->name().c_str());
   }
 
   // Functions can only call other functions.
   if (src_method->is_func && !dst_method->is_func) {
-    return ERR("Can't call non-function %s from function %s.\n", dst_method->name().c_str(), src_method->name().c_str());
+    err << ERR("Can't call non-function %s from function %s.\n", dst_method->name().c_str(), src_method->name().c_str());
   }
 
   // Public methods with params require input port bindings to call. If we're in a tick(), we can't do that.
   if (in_tick() && dst_method->params.size()) {
-    return ERR("Can't call %s from a tick() as it requires a port binding, and port bindings can only be in tock()s.\n", dst_method->name());
+    err << ERR("Can't call %s from a tick() as it requires a port binding, and port bindings can only be in tock()s.\n", dst_method->name());
   }
 
   // Tock methods write signals and can only do so from inside another tock(). If we're in a tick, that's bad.
   if (in_tick() && dst_method->is_tock) {
-    return ERR("Can't call %s from tick method %s\n", dst_method->name().c_str(), src_method->name().c_str());
+    err << ERR("Can't call %s from tick method %s\n", dst_method->name().c_str(), src_method->name().c_str());
   }
 
   //----------------------------------------
@@ -468,43 +468,43 @@ CHECK_RETURN Err MtTracer::trace_submod_call(MnNode n) {
 
   auto submod_field = mod()->get_submod(submod_field_name);
   if (!submod_field) {
-    return ERR("Could not find submodule %s\n", submod_field_name.c_str());
+    err << ERR("Could not find submodule %s\n", submod_field_name.c_str());
   }
 
   auto submod_type = submod_field->type_name();
   auto submod_mod = mod()->source_file->lib->get_module(submod_type);
 
   if (!submod_mod) {
-    return ERR("Could not find module %s for submod %s\n", submod_type.c_str(), submod_field_name.c_str());
+    err << ERR("Could not find module %s for submod %s\n", submod_type.c_str(), submod_field_name.c_str());
   }
 
   auto src_method = method();
   auto dst_method = submod_mod->get_method(submod_method_name);
 
   if (!dst_method) {
-    return ERR("Submodule %s has no method %s\n", submod_field_name.c_str(), submod_method_name.c_str());
+    err << ERR("Submodule %s has no method %s\n", submod_field_name.c_str(), submod_method_name.c_str());
   }
 
   //----------------------------------------
 
   // The target must be a public tick, tock, or function.
   if (dst_method->is_private) {
-    return ERR("Can't call private method %s on a submodule\n", submod_method_name.c_str());
+    err << ERR("Can't call private method %s on a submodule\n", submod_method_name.c_str());
   }
 
   // Public tasks are forbidden.
   if (dst_method->is_task) {
-    return ERR("Can't call public task %s, it should not exist.\n", submod_method_name.c_str());
+    err << ERR("Can't call public task %s, it should not exist.\n", submod_method_name.c_str());
   }
 
   // Public methods with params require input port bindings to call. If we're in a tick(), we can't do that.
   if (in_tick() && dst_method->params.size()) {
-    return ERR("Can't call %s from a tick() as it requires a port binding, and port bindings can only be in tock()s.\n", dst_method->name());
+    err << ERR("Can't call %s from a tick() as it requires a port binding, and port bindings can only be in tock()s.\n", dst_method->name());
   }
 
   // Tock methods write signals and can only do so from inside another tock(). If we're in a tick, that's bad.
   if (in_tick() && dst_method->is_tock) {
-    return ERR("Can't call %s from tick method %s\n", dst_method->name().c_str(), src_method->name().c_str());
+    err << ERR("Can't call %s from tick method %s\n", dst_method->name().c_str(), src_method->name().c_str());
   }
 
   //----------------------------------------

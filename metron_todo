@@ -1,6 +1,7 @@
 packed structs are going to behave differently if bitsliced, not sure how to
 deal with that... but if you can't express it in c do we care?
 
+
 treat all call args/return values as fields that have to be traced
   ok now we need test cases
 
@@ -15,6 +16,9 @@ Unions?
 
 
 do a preproc if else test
+
+
+maybe get rid of "return ERR" so we hit more of the weird code paths?
 
 
 

@@ -1,4 +1,4 @@
-﻿// RISC-V SiMPLE SV -- common configuration for testbench
+// RISC-V SiMPLE SV -- common configuration for testbench
 // BSD 3-Clause License
 // (c) 2017-2021, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław

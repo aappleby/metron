@@ -1,4 +1,4 @@
-﻿#include "MtCursor.h"
+#include "MtCursor.h"
 
 #include <stdarg.h>
 
@@ -74,9 +74,9 @@ CHECK_RETURN Err MtCursor::emit_indent() {
 }
 
 CHECK_RETURN Err MtCursor::emit_char(char c, uint32_t color) {
-  if (c == '\r') return Err();
-
   Err err;
+  if (c == '\r') err << ERR("We should not be emitting a \\r");
+
   if (c < 0 || !isspace(c)) {
     line_dirty = true;
   }
@@ -773,7 +773,7 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
         assert(submod_meth);
 
         if (!submod_meth->is_public) {
-          return ERR("Submod method %s.%s is not public", inst_id.text().c_str(), meth_id.text().c_str());
+          err << ERR("Submod method %s.%s is not public", inst_id.text().c_str(), meth_id.text().c_str());
         }
 
         for (int i = 0; i < submod_meth->params.size(); i++) {
@@ -798,10 +798,10 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
     else if (func_node.sym == sym_identifier && func_node.text().starts_with("tick")) {
       auto method = current_mod->get_method(func_node.text().c_str());
       if (!method) {
-        return ERR("Can't find method name %s", func_node.text().c_str());
+        err << ERR("Can't find method name %s", func_node.text().c_str());
       }
       if (method->is_public) {
-        return ERR("Method %s is not private", func_node.text().c_str());
+        err << ERR("Method %s is not private", func_node.text().c_str());
       }
 
       //err << emit_printf("%s", method->name().c_str());
@@ -1473,7 +1473,7 @@ CHECK_RETURN Err MtCursor::emit_broken_enum(MnFieldDecl n, MnNode node_bitfield)
 
   int enum_width = atoi(node_type2.start());
 
-  if (!enum_width) return ERR("Enum is 0 bits wide?");
+  if (!enum_width) err << ERR("Enum is 0 bits wide?");
 
   auto node_vals = node_bitfield.child(1).get_field(field_value);
 
@@ -1514,10 +1514,11 @@ CHECK_RETURN Err MtCursor::emit_broken_enum(MnFieldDecl n, MnNode node_bitfield)
 */
 
 CHECK_RETURN Err MtCursor::emit_enum(MnFieldDecl n) {
+  Err err;
 
   auto node_type = n.get_field(field_type);
   if (node_type.sym != sym_enum_specifier) {
-    return ERR("Field type is not an enum specifier");
+    err << ERR("Field type is not an enum specifier");
   }
 
   // TreeSitter is broken for "enum foo : logic<8>::BASE {}".
@@ -1529,14 +1530,16 @@ CHECK_RETURN Err MtCursor::emit_enum(MnFieldDecl n) {
   });
 
   if (node_bitfield) {
-    return emit_broken_enum(n, node_bitfield);
+    err << emit_broken_enum(n, node_bitfield);
   }
   else if (node_type.get_field(field_name)) {
-    return emit_simple_enum(n);
+    err << emit_simple_enum(n);
   }
   else {
-    return emit_anonymous_enum(n);
+    err << emit_anonymous_enum(n);
   }
+
+  return err;
 }
 
 
@@ -2553,13 +2556,13 @@ CHECK_RETURN Err MtCursor::emit_if_statement(MnIfStatement n) {
   if (!node_then.is_null() && node_then.sym != sym_compound_statement) {
 
     if (branch_contains_submod_call(node_then)) {
-      return ERR("If statements that contain submod calls must use {}.");
+      err << ERR("If statements that contain submod calls must use {}.");
     }
   }
 
   if (!node_else.is_null() && node_else.sym != sym_compound_statement) {
     if (branch_contains_submod_call(node_else)) {
-      return ERR("Else statements that contain submod calls must use {}.");
+      err << ERR("Else statements that contain submod calls must use {}.");
     }
   }
 
@@ -3059,19 +3062,20 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
 }
 
 CHECK_RETURN Err MtCursor::check_done(MnNode n) {
+  Err err;
   if (cursor < n.end()) {
-    return ERR("Cursor was left inside the current node\n");
+    err << ERR("Cursor was left inside the current node\n");
   }
 
   if (cursor > n.end()) {
     for (auto c = n.end(); c < cursor; c++) {
       if (!isspace(*c)) {
-        return ERR("Cursor ended up protruding into the next node\n");
+        err << ERR("Cursor ended up protruding into the next node\n");
       }
     }
   }
 
-  return Err();
+  return err;
 }
 
 //------------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-﻿#include "MtNode.h"
+#include "MtNode.h"
 
 #include "Log.h"
 #include "MtModLibrary.h"

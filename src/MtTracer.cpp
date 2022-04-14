@@ -250,6 +250,7 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n) {
 
     default:
       err << ERR("Don't know what to do with %s\n", n.ts_node_type());
+      n.dump_tree();
       break;
   }
 

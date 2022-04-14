@@ -52,21 +52,18 @@ public:
   Err(const ErrType& et) : err(int(et.sev)) {}
 
   Err& operator<<(const Err& e) {
-    /*
-    if (e) {
-    debugbreak();
+    if (e.err & int(SEV_TYPE::ERR)) {
+      err = err;
     }
-    */
     err |= e.err;
     return *this;
   }
 
   Err& operator<<(const ErrType& e) {
-    /*
-    if (e) {
-    debugbreak();
+    if (int(e.sev) & int(SEV_TYPE::ERR)) {
+      err = err;
     }
-    */
+
     err |= int(e.sev);
     return *this;
   }

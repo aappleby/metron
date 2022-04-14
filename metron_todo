@@ -1,5 +1,9 @@
 PREPROC
 
+void func() {
+  static const inst local_constant = N;
+}
+
 packed structs are going to behave differently if bitsliced, not sure how to
 deal with that... but if you can't express it in c do we care?
 

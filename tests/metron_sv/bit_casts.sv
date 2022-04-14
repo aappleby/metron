@@ -8,8 +8,6 @@ module Module
 );
 /*public:*/
 
-  localparam int some_size = 7;
-
   always_comb begin /*tock_bN*/
     logic[63:0] src;
     logic[63:0] dst64;
@@ -346,6 +344,25 @@ module Module
     b8 = a[some_size2+7:8];
     b9 = a[some_size2+8:9];
   end
+
+
+  always_comb begin /*tock2*/
+    logic[31:0] a;
+    logic b;
+    logic[6:0] c;
+    logic e;
+    logic[6:0] f;
+
+    a = 32'hDEADBEEF;
+
+    b = a[3]; //static bit extract with literal offset, width 1
+    c = a[9:3]; //static bit extract with literal offset, width N
+
+    e = a[some_size1]; //static bit extract with variable offset, width 1
+    f = a[6 + some_size2 : some_size2]; //static bit extract with variable offset, width N
+  end
+
+
 
 endmodule
 

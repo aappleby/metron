@@ -539,18 +539,19 @@ CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
     err << comment_out(n);
   } else if (func_name.starts_with("tick")) {
 
-    // Local call to tick() - bind args.
+    // Local call to tick() we already bound args, comment out the call.
     err << comment_out(n);
 
   } else if (func_name.starts_with("tock")) {
 
-    // Local call to private tock() - bind args.
-    err << emit_replacement(n, "%s", func_name.c_str());
-    //err << comment_out(n);
-    //auto method = current_mod->get_method(func_name);
-
-
-
+    // Local call to private tock() - bind output if needed.
+    auto method = current_mod->get_method(func_name);
+    if (method->has_return) {
+      err << emit_replacement(n, "%s", func_name.c_str());
+    }
+    else {
+      err << comment_out(n);
+    }
 
   } else if (func_name == "bx") {
     // Bit extract.

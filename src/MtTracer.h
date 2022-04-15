@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 #include <string>
+#include <assert.h>
 
 #include "Err.h"
 #include "MtNode.h"
@@ -32,6 +33,12 @@ enum FieldState {
   FIELD_MAX,
 };
 
+enum FieldFlags {
+  FIELD_READ  = 1,
+  FIELD_WRITE = 2,
+  FIELD_LOCK  = 4,
+};
+
 // KCOV_OFF
 inline const char* to_string(FieldState s) {
   switch (s) {
@@ -53,12 +60,48 @@ inline const char* to_string(FieldState s) {
 struct MtStateMap {
 
   void clear() {
-    s.clear();
-    hit_return = false;
+    state.clear();
   }
 
-  std::map<std::string, FieldState> s;
-  bool hit_return = false; // This doesn't feel right...
+  void set_state(const std::string& key, FieldState val) {
+    auto find1 = key.find("<top>");
+    auto find2 = key.find("<top>", 5);
+    assert(find1 == 0);
+    assert(find2 == std::string::npos);
+
+    state[key] = val;
+  }
+
+  FieldState get_state(const std::string& key) {
+    auto find1 = key.find("<top>");
+    auto find2 = key.find("<top>", 5);
+    assert(find1 == 0);
+    assert(find2 == std::string::npos);
+
+    return state[key];
+  }
+
+  bool contains(const std::string& key) const {
+    auto find1 = key.find("<top>");
+    auto find2 = key.find("<top>", 5);
+    assert(find1 == 0);
+    assert(find2 == std::string::npos);
+
+    return state.contains(key);
+  }
+
+  std::map<std::string, FieldState>& get_map() {
+    return state;
+  }
+
+  const std::map<std::string, FieldState>& get_map() const {
+    return state;
+  }
+
+private:
+
+  std::map<std::string, uint32_t> flags;
+  std::map<std::string, FieldState> state;
 };
 
 
@@ -97,19 +140,31 @@ class MtTracer {
   static void dump_trace(MtStateMap& m);
   void dump_stack();
 
-
   MtModule* mod() { return _mod_stack.back(); }
   MtMethod* method() { return _method_stack.back(); }
-  MtStateMap& state_top() { return *_state_stack.back(); }
 
-  int  depth()   const { return (int)_method_stack.size(); }
   bool in_tick() const;
   bool in_tock() const;
 
-  std::vector<MtField*>   _field_stack;
-  std::vector<MtModule*>  _mod_stack;
-  std::vector<MtMethod*>  _method_stack;
-  std::vector<MtStateMap*> _state_stack;
+  MtMethod* root;
+  MtStateMap* root_state;
+  MtStateMap* state_top;
+
+  std::vector<std::string> _path_stack;
+  std::vector<MtModule*>   _mod_stack;
+  std::vector<MtMethod*>   _method_stack;
+
+  void push_state(MtStateMap* state) {
+    __state_stack.push_back(state);
+    state_top = __state_stack.back();
+  }
+
+  void pop_state() {
+    __state_stack.pop_back();
+    state_top = __state_stack.back();
+  }
+
+  std::vector<MtStateMap*> __state_stack;
 };
 
 //------------------------------------------------------------------------------

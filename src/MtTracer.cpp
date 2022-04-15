@@ -99,26 +99,22 @@ CHECK_RETURN Err merge_parallel(MtStateMap & ma, MtStateMap & mb, MtStateMap & o
   Err err;
   std::set<std::string> keys;
 
-  if (ma.hit_return != mb.hit_return) {
-    err << ERR("MtTracer::merge_parallel - one branch returned, one branch didn't");
-  }
-
-  for (const auto& a : ma.s) keys.insert(a.first);
-  for (const auto& b : mb.s) keys.insert(b.first);
+  for (const auto& a : ma.get_map()) keys.insert(a.first);
+  for (const auto& b : mb.get_map()) keys.insert(b.first);
 
   MtStateMap temp;
   for (const auto& key : keys) {
-    auto sa = ma.s.contains(key) ? ma.s[key] : FIELD________;
-    auto sb = mb.s.contains(key) ? mb.s[key] : FIELD________;
+    auto sa = ma.contains(key) ? ma.get_state(key) : FIELD________;
+    auto sb = mb.contains(key) ? mb.get_state(key) : FIELD________;
     auto sm = merge_parallel(sa, sb);
     if (sm == FIELD_INVALID) {
       err << ERR("%s: %s || %s = %s\n", key.c_str(), to_string(sa), to_string(sb),
             to_string(sm));
     }
-    temp.s[key] = sm;
+    temp.set_state(key, sm);
   }
 
-  out.s.swap(temp.s);
+  out.get_map().swap(temp.get_map());
 
   return err;
 }
@@ -127,25 +123,22 @@ CHECK_RETURN Err merge_series(MtStateMap& ma, MtStateMap& mb, MtStateMap& out) {
   Err err;
   std::set<std::string> keys;
 
-  assert(!ma.hit_return);
-
-  for (const auto& a : ma.s) keys.insert(a.first);
-  for (const auto& b : mb.s) keys.insert(b.first);
+  for (const auto& a : ma.get_map()) keys.insert(a.first);
+  for (const auto& b : mb.get_map()) keys.insert(b.first);
 
   MtStateMap temp;
   for (const auto& key : keys) {
-    auto sa = ma.s.contains(key) ? ma.s[key] : FIELD________;
-    auto sb = mb.s.contains(key) ? mb.s[key] : FIELD________;
+    auto sa = ma.contains(key) ? ma.get_state(key) : FIELD________;
+    auto sb = mb.contains(key) ? mb.get_state(key) : FIELD________;
     auto sm = merge_series(sa, sb);
     if (sm == FIELD_INVALID) {
       err << ERR("%s: %s -> %s = %s\n", key.c_str(), to_string(sa), to_string(sb),
             to_string(sm));
     }
-    temp.s[key] = sm;
+    temp.set_state(key, sm);
   }
 
-  out.s.swap(temp.s);
-  out.hit_return = mb.hit_return;
+  out.get_map().swap(temp.get_map());
 
   return err;
 }
@@ -153,19 +146,27 @@ CHECK_RETURN Err merge_series(MtStateMap& ma, MtStateMap& mb, MtStateMap& out) {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer::trace_method(MtMethod* method) {
-  return trace_dispatch(method->node.get_field(field_body));
+  Err err;
+
+  root = method;
+  root_state = &method->method_state;
+
+  err << trace_dispatch(method->node.get_field(field_body));
+
+  LOG_B("----------\n");
+  LOG_B("Method %s result:\n", method->name().c_str());
+  dump_stack();
+  dump_trace(*state_top);
+  LOG_B("----------\n");
+
+  return err;
 }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n) {
   Err err;
-
   if (!n.is_named()) return err;
-
-  if (state_top().hit_return) {
-    err << ERR("Return in the middle of a function");
-  }
 
   switch (n.sym) {
     case sym_assignment_expression:
@@ -230,21 +231,49 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n) {
       break;
 
     case sym_return_statement:
-      // This trace path has hit a return, 
       err << trace_children(n);
-      state_top().hit_return = true;
       break;
 
     case sym_argument_list:
+      err << trace_children(n);
+      break;
+
     case sym_parenthesized_expression:
+      err << trace_children(n);
+      break;
+
     case sym_binary_expression:
+      err << trace_children(n);
+      break;
+
     case sym_compound_statement:
+      err << trace_children(n);
+      break;
+
     case sym_case_statement:
+      err << trace_children(n);
+      break;
+
     case sym_expression_statement:
+      err << trace_children(n);
+      break;
+
     case sym_condition_clause:
+      err << trace_children(n);
+      break;
+
     case sym_unary_expression:
+      err << trace_children(n);
+      break;
+
     case sym_qualified_identifier:
+      err << trace_children(n);
+      break;
+
     case alias_sym_namespace_identifier:
+      err << trace_children(n);
+      break;
+
     case sym_for_statement:
       err << trace_children(n);
       break;
@@ -314,7 +343,7 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
 
   // New state map goes on the stack.
   MtStateMap state_call;
-  _state_stack.push_back(&state_call);
+  push_state(&state_call);
 
   auto node_func = n.get_field(field_function);
   if (node_func.sym == sym_field_expression) {
@@ -327,8 +356,7 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
     err << ERR("MtModule::build_call_tree - don't know what to do with %s\n",
           n.ts_node_type());
   }
-
-  _state_stack.pop_back();
+  pop_state();
 
   if (err.has_err()) {
     //LOG_R("MtTracer::trace_call failed\n");
@@ -337,8 +365,7 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
 
   // Call traced, close the state map and merge.
 
-  state_call.hit_return = false;
-  for (auto& pair : state_call.s) {
+  for (auto& pair : state_call.get_map()) {
     auto old_state = pair.second;
     auto new_state = merge_delta(old_state, DELTA_EF);
 
@@ -351,14 +378,14 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
     pair.second = new_state;
   }
 
-  err << merge_series(state_top(), state_call, state_top());
+  err << merge_series(*state_top, state_call, *state_top);
   if (err.has_err()) {
     LOG_R(
         "MtTracer::trace_call failed - caller state cannot be concatenated "
         "with callee state\n");
     n.dump_source_lines();
     LOG_R("Caller state -\n");
-    dump_trace(state_top());
+    dump_trace(*state_top);
     LOG_R("Callee state - \n");
     dump_trace(state_call);
     dump_stack();
@@ -430,16 +457,11 @@ CHECK_RETURN Err MtTracer::trace_method_call(MnNode n) {
   //----------------------------------------
   // OK, the call should be valid. If the method requires port bindings, build the port names from the current field stack plus the method name.
 
-  std::string method_port_base = dst_method->name();
-  for (int i = (int)_field_stack.size() - 1; i >= 0; i--) {
-    method_port_base = _field_stack[i]->name() + "." + method_port_base;
-  }
-
   // Trace input port bindings as if they are fields being written to.
 
   if (requires_input_binding) {
     for (const auto& param : dst_method->params) {
-      std::string port_name = method_port_base + "." + param;
+      std::string port_name = dst_method->name() + "." + param;
       err << trace_write(port_name);
       err << trace_read(port_name);
     }
@@ -447,9 +469,13 @@ CHECK_RETURN Err MtTracer::trace_method_call(MnNode n) {
 
   // Now trace the method.
 
+  _path_stack.push_back(_path_stack.back());
+  _mod_stack.push_back(_mod_stack.back());
   _method_stack.push_back(dst_method);
   err << trace_dispatch(dst_method->node.get_field(field_body));
   _method_stack.pop_back();
+  _mod_stack.pop_back();
+  _path_stack.pop_back();
 
   //----------------------------------------
   // Done.
@@ -516,29 +542,27 @@ CHECK_RETURN Err MtTracer::trace_submod_call(MnNode n) {
   //----------------------------------------
   // OK, the call should be valid. If the method requires port bindings, build the port names from the current field stack plus the method name.
 
-  std::string method_port_base = submod_field_name + "." + dst_method->name();
-  for (int i = (int)_field_stack.size() - 1; i >= 0; i--) {
-    method_port_base = _field_stack[i]->name() + "." + method_port_base;
-  }
-
   // If we're calling a method that has params, trace the params as if they were input ports.
   // We trace them as both write and read as the current method is writing them and the submod, presumably, is reading them.
 
+  _path_stack.push_back(_path_stack.back() + "." + submod_field_name);
+  _mod_stack.push_back(submod_mod);
+  _method_stack.push_back(dst_method);
+
   for (const auto& param : dst_method->params) {
-    std::string port_name = method_port_base + "." + param;
+    std::string port_name = dst_method->name() + "." + param;
     err << trace_write(port_name);
     err << trace_read(port_name);
   }
 
   // Now trace the method.
 
-  _field_stack.push_back(submod_field);
-  _mod_stack.push_back(submod_mod);
-  _method_stack.push_back(dst_method);
   err << trace_dispatch(dst_method->node.get_field(field_body));
+
+
   _method_stack.pop_back();
   _mod_stack.pop_back();
-  _field_stack.pop_back();
+  _path_stack.pop_back();
 
   //----------------------------------------
   // Done.
@@ -586,13 +610,9 @@ CHECK_RETURN Err MtTracer::trace_template_call(MnNode n) {
 
 CHECK_RETURN Err MtTracer::trace_field(MnNode n) {
   Err err;
-  std::string field_name = n.text();
+  
+  err << trace_read(n.text());
 
-  for (int i = (int)_field_stack.size() - 1; i >= 0; i--) {
-    field_name = _field_stack[i]->name() + "." + field_name;
-  }
-
-  err << trace_read(field_name);
   return err;
 }
 
@@ -625,22 +645,19 @@ CHECK_RETURN Err MtTracer::trace_if(MnNode n) {
 
   err << trace_dispatch(node_cond);
 
-  // FIXME - Does preloading branch_a/b with the current state change anything?
-  // I don't think so.
-
-  MtStateMap branch_a;
-  MtStateMap branch_b;
+  MtStateMap branch_a = *state_top;
+  MtStateMap branch_b = *state_top;
 
   if (!node_branch_a.is_null()) {
-    _state_stack.push_back(&branch_a);
+    push_state(&branch_a);
     err << trace_dispatch(node_branch_a);
-    _state_stack.pop_back();
+    pop_state();
   }
 
   if (!node_branch_b.is_null()) {
-    _state_stack.push_back(&branch_b);
+    push_state(&branch_b);
     err << trace_dispatch(node_branch_b);
-    _state_stack.pop_back();
+    pop_state();
   }
 
   // FIXME - Does series-parallel behave differently than parallel-series?
@@ -658,9 +675,7 @@ CHECK_RETURN Err MtTracer::trace_if(MnNode n) {
   //   sig = 2;
   // }
 
-  err << merge_series(state_top(), branch_a, branch_a);
-  err << merge_series(state_top(), branch_b, branch_b);
-  err << merge_parallel(branch_a, branch_b, state_top());
+  err << merge_parallel(branch_a, branch_b, *state_top);
 
   if (err.has_err()) {
     err << ERR("MtTracer::trace_if - error\n");
@@ -677,7 +692,7 @@ CHECK_RETURN Err MtTracer::trace_switch(MnNode n) {
 
   err << trace_dispatch(n.get_field(field_condition));
 
-  MtStateMap old_state = state_top();
+  MtStateMap old_state = *state_top;
 
   bool first_branch = true;
 
@@ -701,11 +716,11 @@ CHECK_RETURN Err MtTracer::trace_switch(MnNode n) {
       } else {
         MtStateMap state_case = old_state;
 
-        _state_stack.push_back(&state_case);
+        push_state(&state_case);
         err << trace_dispatch(c);
-        _state_stack.pop_back();
+        pop_state();
 
-        err << merge_parallel(state_top(), state_case, state_top());
+        err << merge_parallel(*state_top, state_case, *state_top);
       }
     }
   }
@@ -737,23 +752,23 @@ CHECK_RETURN Err MtTracer::trace_ternary(MnNode n) {
   MtStateMap branch_b;
 
   if (!node_branch_a.is_null()) {
-    _state_stack.push_back(&branch_a);
+    push_state(&branch_a);
     err << trace_dispatch(node_branch_a);
-    _state_stack.pop_back();
+    pop_state();
   }
 
   if (!node_branch_b.is_null()) {
-    _state_stack.push_back(&branch_b);
+    push_state(&branch_b);
     err << trace_dispatch(node_branch_a);
-    _state_stack.pop_back();
+    pop_state();
   }
 
   // FIXME - Does series-parallel behave differently than parallel-series?
   // I don't think so.
 
-  err << merge_series(state_top(), branch_a, branch_a);
-  err << merge_series(state_top(), branch_b, branch_b);
-  err << merge_parallel(branch_a, branch_b, state_top());
+  err << merge_series(*state_top, branch_a, branch_a);
+  err << merge_series(*state_top, branch_b, branch_b);
+  err << merge_parallel(branch_a, branch_b, *state_top);
 
   return err;
 }
@@ -763,7 +778,9 @@ CHECK_RETURN Err MtTracer::trace_ternary(MnNode n) {
 CHECK_RETURN Err MtTracer::trace_read(const std::string& field_name) {
   Err err;
 
-  auto old_state = state_top().s[field_name];
+  auto field_path = _path_stack.back() + "." + field_name;
+
+  auto old_state = state_top->get_state(field_path);
   auto new_state = merge_delta(old_state, DELTA_RD);
 
   if (new_state == FIELD_INVALID) {
@@ -771,7 +788,7 @@ CHECK_RETURN Err MtTracer::trace_read(const std::string& field_name) {
           to_string(old_state), to_string(new_state));
   }
 
-  state_top().s[field_name] = new_state;
+  state_top->set_state(field_path, new_state);
   return err;
 }
 
@@ -784,15 +801,25 @@ CHECK_RETURN Err MtTracer::trace_write(const std::string& field_name) {
   // signal write
   //assert(in_tick() || in_tock());
 
-  auto old_state = state_top().s[field_name];
+  if (field_name == "immediate") {
+    int x = 1;
+    x++;
+  }
+
+  auto field_path = _path_stack.back() + "." + field_name;
+
+  auto old_state = state_top->get_state(field_path);
   auto new_state = merge_delta(old_state, in_tick() ? DELTA_WR : DELTA_WS);
 
   if (new_state == FIELD_INVALID) {
+    dump_stack();
+    dump_trace(*state_top);
+
     err << ERR("Field %s was %s, now %s!\n", field_name.c_str(),
           to_string(old_state), to_string(new_state));
   }
 
-  state_top().s[field_name] = new_state;
+  state_top->set_state(field_path, new_state);
 
   return err;
 }
@@ -802,13 +829,9 @@ CHECK_RETURN Err MtTracer::trace_write(const std::string& field_name) {
 CHECK_RETURN Err MtTracer::trace_read(MnNode const& n) {
   Err err;
 
-  std::string field_name = n.text();
+  err << trace_read(n.text());
 
-  for (int i = (int)_field_stack.size() - 1; i >= 0; i--) {
-    field_name = _field_stack[i]->name() + "." + field_name;
-  }
-
-  return err << trace_read(field_name);
+  return err;
 }
 
 //------------------------------------------------------------------------------
@@ -816,50 +839,55 @@ CHECK_RETURN Err MtTracer::trace_read(MnNode const& n) {
 CHECK_RETURN Err MtTracer::trace_write(MnNode const& n) {
   Err err;
 
-  assert(in_tick() || in_tock());
-  std::string field_name = n.text();
+  err << trace_write(n.text());
 
-  for (int i = (int)_field_stack.size() - 1; i >= 0; i--) {
-    field_name = _field_stack[i]->name() + "." + field_name;
-  }
-
-  return err << trace_write(field_name);
+  return err;
 }
 
 //------------------------------------------------------------------------------
 
 // KCOV_OFF
 void MtTracer::dump_trace(MtStateMap& m) {
-  for (const auto& pair : m.s) {
+  LOG_Y("Trace:\n");
+  for (const auto& pair : m.get_map()) {
     LOG_Y("%s = %s\n", pair.first.c_str(), to_string(pair.second));
   }
 }
-// KCOV_ON
 
-//------------------------------------------------------------------------------
+//----------
 
-// KCOV_OFF
 void MtTracer::dump_stack() {
+  int depth = (int)_path_stack.size();
+
+  assert(_mod_stack.size() == depth);
+  assert(_method_stack.size() == depth);
+
+  for (int i = depth - 1; i >= 0; i--) {
+    LOG_G("%s %s.%s()\n",
+      _mod_stack[i]->name().c_str(),
+      _path_stack[i].c_str(),
+      _method_stack[i]->name().c_str());
+  }
+
+  /*
   LOG_B("Field Stack:\n");
-  for (int i = (int)_field_stack.size() - 1; i >= 0; i--) {
-    auto f = _field_stack[i];
-    LOG_G("%s\n", f->name().c_str());
+  for (int i = (int)_path_stack.size() - 1; i >= 0; i--) {
+    LOG_G("%s\n", _path_stack[i].c_str());
   }
   LOG_B("\n");
 
   LOG_B("Mod Stack:\n");
   for (int i = (int)_mod_stack.size() - 1; i >= 0; i--) {
-    auto m = _mod_stack[i];
-    LOG_G("%s\n", m->name().c_str());
+    LOG_G("%s\n", _mod_stack[i]->name().c_str());
   }
   LOG_B("\n");
 
   LOG_B("Method Stack:\n");
   for (int i = (int)_method_stack.size() - 1; i >= 0; i--) {
-    auto m = _method_stack[i];
-    LOG_G("%s\n", m->name().c_str());
+    LOG_G("%s\n", _method_stack[i]->name().c_str());
   }
   LOG_B("\n");
+  */
 }
 // KCOV_ON
 

@@ -252,7 +252,7 @@ void MtModule::dump_banner() const {
     LOG_G("  %s = %s\n", kv.first.c_str(), kv.second.c_str());
 
   LOG_B("State map:\n");
-  for (auto &kv : mod_states.s)
+  for (auto &kv : mod_states.get_map())
     LOG_G("  %s = %s\n", kv.first.c_str(), to_string(kv.second));
 
   LOG_B("\n");
@@ -539,15 +539,29 @@ CHECK_RETURN Err MtModule::trace() {
       continue;
     }
 
+    LOG_G("Tracing %s.%s\n", name().c_str(), m->name().c_str());
+    LOG_INDENT_SCOPE();
+
     MtTracer tracer;
+    tracer._path_stack.push_back("<top>");
     tracer._mod_stack.push_back(this);
     tracer._method_stack.push_back(m);
-    tracer._state_stack.push_back(&m->method_state);
+    tracer.push_state(&m->method_state);
+
+    if (m->is_tick) {
+    }
+    else if (m->is_tock) {
+    }
+    else if (m->is_task) {
+    }
+    else if (m->is_func) {
+    }
+
     err << tracer.trace_method(m);
 
     // Lock all states touched by the method.
 
-    for (auto& pair : m->method_state.s) {
+    for (auto& pair : m->method_state.get_map()) {
       auto old_state = pair.second;
       auto new_state = merge_delta(old_state, DELTA_EF);
 
@@ -567,9 +581,6 @@ CHECK_RETURN Err MtModule::trace() {
       continue;
     }
 
-    mod_states.hit_return = false;
-    m->method_state.hit_return = false;
-
     err << merge_series(mod_states, m->method_state, mod_states);
     if (err.has_err()) {
       LOG_R("MtModule::trace - Cannot merge state_mod with m->method_state\n");
@@ -588,7 +599,7 @@ CHECK_RETURN Err MtModule::trace() {
 
   // Check that all entries in the state map ended up in a valid state.
 
-  for (auto& pair : mod_states.s) {
+  for (auto& pair : mod_states.get_map()) {
 
     switch(pair.second) {
 
@@ -622,9 +633,13 @@ CHECK_RETURN Err MtModule::trace() {
 
   // Assign the final merged states back from the map to the fields.
 
-  for (auto& pair : mod_states.s) {
+  for (auto& pair : mod_states.get_map()) {
 
-    auto field = get_field(pair.first);
+    auto path = pair.first;
+    assert(path.starts_with("<top>."));
+    path.erase(path.begin(), path.begin() + 6);
+
+    auto field = get_field(path);
     if (field) {
       field->state = pair.second;
 
@@ -646,7 +661,7 @@ CHECK_RETURN Err MtModule::trace() {
   for (auto f : all_fields) {
     if (f->is_submod()) continue;
     if (f->is_param()) continue;
-    if (!mod_states.s.contains(f->name())) {
+    if (!mod_states.contains("<top>." + f->name())) {
       err << ERR("No method in the public interface of %s touched field %s!\n", name().c_str(), f->name().c_str());
     }
   }

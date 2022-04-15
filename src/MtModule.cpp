@@ -532,26 +532,22 @@ CHECK_RETURN Err MtModule::trace() {
   LOG_G("Tracing %s\n", name().c_str());
   LOG_INDENT_SCOPE();
 
+  // Trace all methods, except for inits.
+
   for (auto m : all_methods) {
-
-    // Trace only public tick/tock methods.
-
     if (!(m->is_public && (m->is_tick || m->is_tock))) {
       continue;
     }
 
-    // Trace the method.
-
     MtTracer tracer;
-    MtStateMap state_method;
     tracer._mod_stack.push_back(this);
     tracer._method_stack.push_back(m);
-    tracer._state_stack.push_back(&state_method);
-    err << tracer.trace_dispatch(m->node.get_field(field_body));
+    tracer._state_stack.push_back(&m->method_state);
+    err << tracer.trace_method(m);
 
     // Lock all states touched by the method.
 
-    for (auto& pair : state_method.s) {
+    for (auto& pair : m->method_state.s) {
       auto old_state = pair.second;
       auto new_state = merge_delta(old_state, DELTA_EF);
 
@@ -561,15 +557,22 @@ CHECK_RETURN Err MtModule::trace() {
 
       pair.second = new_state;
     }
+  }
 
-    // Merge this method's state with the module-wide state.
+  // Merge the traces for all public tick/tock methods in lexical order.
+  // FIXME - sort methods, then merge
+
+  for (auto m : all_methods) {
+    if (!(m->is_public && (m->is_tick || m->is_tock))) {
+      continue;
+    }
 
     mod_states.hit_return = false;
-    state_method.hit_return = false;
+    m->method_state.hit_return = false;
 
-    err << merge_series(mod_states, state_method, mod_states);
+    err << merge_series(mod_states, m->method_state, mod_states);
     if (err.has_err()) {
-      LOG_R("MtModule::trace - Cannot merge state_mod->state_method\n");
+      LOG_R("MtModule::trace - Cannot merge state_mod with m->method_state\n");
 
       LOG_R("state_mod:\n");
       LOG_INDENT();
@@ -578,7 +581,7 @@ CHECK_RETURN Err MtModule::trace() {
 
       LOG_R("state_method:\n");
       LOG_INDENT();
-      MtTracer::dump_trace(state_method);
+      MtTracer::dump_trace(m->method_state);
       LOG_DEDENT();
     }
   }
@@ -616,7 +619,6 @@ CHECK_RETURN Err MtModule::trace() {
       // KCOV_ON
     }
   }
-
 
   // Assign the final merged states back from the map to the fields.
 

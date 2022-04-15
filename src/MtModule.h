@@ -128,6 +128,8 @@ struct MtMethod {
 
   int get_rank() const { return 0; }
 
+  MtStateMap method_state;
+
  private:
   std::string _name;
 

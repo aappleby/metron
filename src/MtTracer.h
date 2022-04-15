@@ -51,6 +51,12 @@ inline const char* to_string(FieldState s) {
 // KCOV_ON
 
 struct MtStateMap {
+
+  void clear() {
+    s.clear();
+    hit_return = false;
+  }
+
   std::map<std::string, FieldState> s;
   bool hit_return = false; // This doesn't feel right...
 };
@@ -60,6 +66,10 @@ struct MtStateMap {
 
 class MtTracer {
  public:
+
+  // Top level
+  CHECK_RETURN Err trace_method(MtMethod* method);
+
   CHECK_RETURN Err trace_dispatch(MnNode n);
   CHECK_RETURN Err trace_children(MnNode n);
 

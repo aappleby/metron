@@ -152,6 +152,12 @@ CHECK_RETURN Err merge_series(MtStateMap& ma, MtStateMap& mb, MtStateMap& out) {
 
 //------------------------------------------------------------------------------
 
+CHECK_RETURN Err MtTracer::trace_method(MtMethod* method) {
+  return trace_dispatch(method->node.get_field(field_body));
+}
+
+//------------------------------------------------------------------------------
+
 CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n) {
   Err err;
 

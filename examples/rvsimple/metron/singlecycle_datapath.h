@@ -43,29 +43,6 @@ public:
   logic<2>  next_pc_select;
   logic<5>  alu_function;
 
-#if 0
-  // register file inputs and outputs
-  logic [31:0]  rd_data;
-  logic [31:0]  rs1_data;
-  logic [31:0]  rs2_data;
-  logic  [4:0]  inst_rd;
-  logic  [4:0]  inst_rs1;
-  logic  [4:0]  inst_rs2;
-
-  // program counter signals
-  logic [31:0] pc_plus_4;
-  logic [31:0] pc_plus_immediate;
-  logic [31:0] next_pc;
-
-  // ALU signals
-  logic [31:0] alu_operand_a;
-  logic [31:0] alu_operand_b;
-  logic [31:0] alu_result;
-
-  // immediate
-  logic [31:0] immediate;
-#endif
-
 private:
   logic<32> rs1_data;
   logic<32> rs2_data;

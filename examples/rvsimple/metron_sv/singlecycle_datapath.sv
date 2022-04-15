@@ -46,7 +46,6 @@ module singlecycle_datapath
 
   // control signals
 
-
 /*private:*/
   logic[31:0] rs1_data;
   logic[31:0] rs2_data;

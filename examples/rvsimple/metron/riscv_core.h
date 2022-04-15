@@ -15,16 +15,16 @@
 
 class riscv_core {
 public:
-  /*I*/ logic<1>  reset;
-  /*O*/ logic<32> bus_address;
-  /*I*/ logic<32> bus_read_data;
-  /*O*/ logic<32> bus_write_data;
-  /*O*/ logic<4>  bus_byte_enable;
-  /*O*/ logic<1>  bus_read_enable;
-  /*O*/ logic<1>  bus_write_enable;
+  logic<1>  reset;
+  logic<32> bus_address;
+  logic<32> bus_read_data;
+  logic<32> bus_write_data;
+  logic<4>  bus_byte_enable;
+  logic<1>  bus_read_enable;
+  logic<1>  bus_write_enable;
 
-  /*I*/ logic<32> inst;
-  /*O*/ logic<32> pc; 
+  logic<32> inst;
+  logic<32> pc; 
 
   void tock_pc() {
     datapath.tock_pc();
@@ -106,72 +106,3 @@ public:
 };
 
 #endif  // RVSIMPLE_RISCV_CORE_H
-
-
-
-#if 0
-
-riscv_core.clock            => singlecycle_datapath.clock, data_memory_interface.clock;
-riscv_core.reset            => singlecycle_datapath.reset;
-riscv_core.bus_address      <= data_memory_interface.bus_address;
-riscv_core.bus_read_data    => data_memory_interface.bus_read_data;
-riscv_core.bus_write_data   <= data_memory_interface.bus_write_data;
-riscv_core.bus_byte_enable  <= data_memory_interface.bus_byte_enable
-riscv_core.bus_read_enable  <= data_memory_interface.bus_read_enable;
-riscv_core.bus_write_enable <= data_memory_interface.bus_write_enable;
-riscv_core.inst             => singlecycle_datapath.inst;
-riscv_core.pc               <= singlecycle_datapath.pc;
-
-
-singlecycle_datapath.clock                 <= riscv_core.clock;
-singlecycle_datapath.reset                 <= riscv_core.reset;
-singlecycle_datapath.inst                  <= riscv_core.inst;
-singlecycle_datapath.data_mem_read_data    <= data_memory_interface.read_data;
-singlecycle_datapath.data_mem_address      => data_memory_interface.address;
-singlecycle_datapath.data_mem_write_data   => data_memory_interface.write_data;
-singlecycle_datapath.pc                    => riscv_core.pc;
-singlecycle_datapath.inst_opcode           => singlecycle_ctlpath.inst_opcode;
-singlecycle_datapath.inst_funct3           => singlecycle_ctlpath.inst_funct3, data_memory_interface.inst_funct3;
-singlecycle_datapath.inst_funct7           => singlecycle_ctlpath.inst_funct7;
-singlecycle_datapath.pc_write_enable       <= singlecycle_ctlpath.pc_write_enable;
-singlecycle_datapath.regfile_write_enable  <= singlecycle_ctlpath.regfile_write_enable;
-singlecycle_datapath.alu_operand_a_select  <= singlecycle_ctlpath.alu_operand_a_select;
-singlecycle_datapath.alu_operand_b_select  <= singlecycle_ctlpath.alu_operand_b_select;
-singlecycle_datapath.reg_writeback_select  <= singlecycle_ctlpath.reg_writeback_select;
-singlecycle_datapath.next_pc_select        <= singlecycle_ctlpath.next_pc_select;
-singlecycle_datapath.alu-result_equal_zero => singlecycle_ctlpath.alu_result_equal_zero;
-singlecycle_datapath.alu_function          <= singlecycle_ctlpath.alu_function;
-
-
-singlecycle_ctlpath.inst_opcode           <= singlecycle_datapath.inst_opcode;
-singlecycle_ctlpath.inst_funct3           <= singlecycle_datapath.inst_funct3;
-singlecycle_ctlpath.inst_funct7           <= singlecycle_datapath.inst_funct7;
-singlecycle_ctlpath.alu_result_equal_zero <= singlecycle_datapath.alu_result_equal_zero;
-singlecycle_ctlpath.pc_write_enable       => singlecycle_datapath.pc_write_enable;
-singlecycle_ctlpath.regfile_write_enable  => singlecycle_datapath.regfile_write_enable;
-singlecycle_ctlpath.alu_operand_a_select  => singlecycle_datapath.alu_operand_a_select;
-singlecycle_ctlpath.alu_operand_b_select  => singlecycle_datapath.alu_operand_b_select;
-singlecycle_ctlpath.data_mem_read_enable  => data_memory_interface.read_enable;
-singlecycle_ctlpath.data_mem_write_enable => data_memory_interface.write_enable;
-singlecycle_ctlpath.reg_writeback_select  => singlecycle_datapath.reg_writeback_select;
-singlecycle_ctlpath.alu_function          => singlecycle_datapath.alu_function;
-singlecycle_ctlpath.next_pc_select        => singlecycle_datapath.next_pc_select;
-
-
-data_memory_interface.clock               <= riscv_core.clock;
-data_memory_interface.read_enable         <= singlecycle_ctlpath.data_mem_read_enable;
-data_memory_interface.write_enable        <= singlecycle_ctlpath.data_mem_write_enable;
-data_memory_interface.data_format         <= singlecycle_datapath.inst_funct3;
-data_memory_interface.address             <= singlecycle_datapath.data_mem_address;
-data_memory_interface.write_data          <= singlecycle_datapath.data_mem_write_data;
-data_memory_interface.read_data           => singlecycle_datapath.read_data;
-data_memory_interface.bus_address         => riscv_core.bus_address;
-data_memory_interface.bus_read_data       <= riscv_core.bus_read_data;
-data_memory_interface.bus_write_data      => riscv_core.bus_write_data;
-data_memory_interface.bus_read_enable     => riscv_core.bus_read_enable;
-data_memory_interface.bus_write_enable    => riscv_core.bus_write_enable;
-data_memory_interface.bus_byte_enable     => riscv_core.bus_byte_enable;
-
-
-
-#endif

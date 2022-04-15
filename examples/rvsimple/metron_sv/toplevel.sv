@@ -122,4 +122,3 @@ endmodule;
 
 `endif  // RVSIMPLE_TOPLEVEL_H
 
-

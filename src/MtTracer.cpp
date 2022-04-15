@@ -104,8 +104,8 @@ CHECK_RETURN Err merge_parallel(MtStateMap & ma, MtStateMap & mb, MtStateMap & o
 
   MtStateMap temp;
   for (const auto& key : keys) {
-    auto sa = ma.contains(key) ? ma.get_state(key) : FIELD________;
-    auto sb = mb.contains(key) ? mb.get_state(key) : FIELD________;
+    auto sa = ma.get_state(key);
+    auto sb = mb.get_state(key);
     auto sm = merge_parallel(sa, sb);
     if (sm == FIELD_INVALID) {
       err << ERR("%s: %s || %s = %s\n", key.c_str(), to_string(sa), to_string(sb),
@@ -114,7 +114,49 @@ CHECK_RETURN Err merge_parallel(MtStateMap & ma, MtStateMap & mb, MtStateMap & o
     temp.set_state(key, sm);
   }
 
-  out.get_map().swap(temp.get_map());
+  for (const auto& key : keys) {
+    auto actions_a = ma.get_actions(key);
+    auto actions_b = mb.get_actions(key);
+
+   
+    if (actions_a > actions_b) {
+      actions_a.swap(actions_b);
+    }
+
+    std::string merged;
+
+    if (actions_a == actions_b) {
+      merged = actions_a;
+    }
+    else if (actions_a.starts_with(actions_b)) {
+      merged = actions_a;
+    }
+    else if (actions_b.starts_with(actions_a)) {
+      merged = actions_b;
+    }
+    else if (actions_a.ends_with(actions_b)) {
+      merged = actions_a;
+    }
+    else if (actions_b.ends_with(actions_a)) {
+      merged = actions_b;
+    }
+    else if (actions_a == "R" && actions_b == "W") {
+      merged = "M";
+    }
+    else if (actions_a == "M" && actions_b == "W") {
+      merged = "M";
+    }
+    else {
+      LOG_R("actions a      : %s\n", actions_a.c_str());
+      LOG_R("actions b      : %s\n", actions_b.c_str());
+      LOG_R("parallel merge : %s\n", merged.c_str());
+      debugbreak();
+    }
+
+    temp.set_actions(key, merged);
+  }
+
+  out.swap(temp);
 
   return err;
 }
@@ -128,8 +170,8 @@ CHECK_RETURN Err merge_series(MtStateMap& ma, MtStateMap& mb, MtStateMap& out) {
 
   MtStateMap temp;
   for (const auto& key : keys) {
-    auto sa = ma.contains(key) ? ma.get_state(key) : FIELD________;
-    auto sb = mb.contains(key) ? mb.get_state(key) : FIELD________;
+    auto sa = ma.get_state(key);
+    auto sb = mb.get_state(key);
     auto sm = merge_series(sa, sb);
     if (sm == FIELD_INVALID) {
       err << ERR("%s: %s -> %s = %s\n", key.c_str(), to_string(sa), to_string(sb),
@@ -138,7 +180,24 @@ CHECK_RETURN Err merge_series(MtStateMap& ma, MtStateMap& mb, MtStateMap& out) {
     temp.set_state(key, sm);
   }
 
-  out.get_map().swap(temp.get_map());
+  for (const auto& key : keys) {
+    auto actions_a = ma.get_actions(key);
+    auto actions_b = mb.get_actions(key);
+
+    std::string merged = actions_a;
+    for (auto c : actions_b) {
+      if (merged.empty() || (merged.back() != c)) merged.push_back(c);
+    }
+
+    //LOG_R("actions a    : %s\n", actions_a.c_str());
+    //LOG_R("actions b    : %s\n", actions_b.c_str());
+    //LOG_R("series merge : %s\n", merged.c_str());
+
+    //debugbreak();
+    temp.set_actions(key, merged);
+  }
+
+  out.swap(temp);
 
   return err;
 }
@@ -153,11 +212,13 @@ CHECK_RETURN Err MtTracer::trace_method(MtMethod* method) {
 
   err << trace_dispatch(method->node.get_field(field_body));
 
+  /*
   LOG_B("----------\n");
   LOG_B("Method %s result:\n", method->name().c_str());
   dump_stack();
   dump_trace(*state_top);
   LOG_B("----------\n");
+  */
 
   return err;
 }
@@ -639,6 +700,8 @@ CHECK_RETURN Err MtTracer::trace_id(MnNode n) {
 CHECK_RETURN Err MtTracer::trace_if(MnNode n) {
   Err err;
 
+  //n.dump_tree();
+
   auto node_cond = n.get_field(field_condition);
   auto node_branch_a = n.get_field(field_consequence);
   auto node_branch_b = n.get_field(field_alternative);
@@ -789,6 +852,8 @@ CHECK_RETURN Err MtTracer::trace_read(const std::string& field_name) {
   }
 
   state_top->set_state(field_path, new_state);
+  state_top->push_action(field_path, 'R');
+
   return err;
 }
 
@@ -820,6 +885,7 @@ CHECK_RETURN Err MtTracer::trace_write(const std::string& field_name) {
   }
 
   state_top->set_state(field_path, new_state);
+  state_top->push_action(field_path, 'W');
 
   return err;
 }
@@ -850,7 +916,8 @@ CHECK_RETURN Err MtTracer::trace_write(MnNode const& n) {
 void MtTracer::dump_trace(MtStateMap& m) {
   LOG_Y("Trace:\n");
   for (const auto& pair : m.get_map()) {
-    LOG_Y("%s = %s\n", pair.first.c_str(), to_string(pair.second));
+    //LOG_Y("%s = %s\n", pair.first.c_str(), to_string(pair.second));
+    LOG_Y("%s = %s\n", pair.first.c_str(), m.get_actions(pair.first).c_str());
   }
 }
 

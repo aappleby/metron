@@ -27,16 +27,7 @@ module riscv_core
   output logic[31:0] pc
 );
 /*public:*/
-  /*I*/
-  /*O*/
-  /*I*/
-  /*O*/
-  /*O*/
-  /*O*/
-  /*O*/
 
-  /*I*/
-  /*O*/
 
   always_comb begin /*tock_pc*/
     /*datapath.tock_pc();*/
@@ -217,6 +208,4 @@ module riscv_core
 endmodule;
 
 `endif  // RVSIMPLE_RISCV_CORE_H
-
-
 

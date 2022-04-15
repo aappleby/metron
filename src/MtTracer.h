@@ -37,7 +37,12 @@ enum FieldFlags {
   FIELD_READ  = 1,
   FIELD_WRITE = 2,
   FIELD_LOCK  = 4,
+  FIELD_ERR   = 8,
 };
+
+FieldState merge_delta(FieldState a, FieldDelta b);
+FieldState merge_parallel(FieldState a, FieldState b);
+FieldState merge_series(FieldState a, FieldState b);
 
 // KCOV_OFF
 inline const char* to_string(FieldState s) {
@@ -78,16 +83,36 @@ struct MtStateMap {
     assert(find1 == 0);
     assert(find2 == std::string::npos);
 
-    return state[key];
+    return state.contains(key) ? state[key] : FIELD________;
   }
 
-  bool contains(const std::string& key) const {
+  void push_action(const std::string& key, char action) {
     auto find1 = key.find("<top>");
     auto find2 = key.find("<top>", 5);
     assert(find1 == 0);
     assert(find2 == std::string::npos);
 
-    return state.contains(key);
+    auto& a = actions[key];
+
+    if (a.empty() || (a.back() != action)) a.push_back(action);
+  }
+
+  void set_actions(const std::string& key, const std::string& new_actions) {
+    auto find1 = key.find("<top>");
+    auto find2 = key.find("<top>", 5);
+    assert(find1 == 0);
+    assert(find2 == std::string::npos);
+
+    actions[key] = new_actions;
+  }
+
+  const std::string& get_actions(const std::string& key) {
+    auto find1 = key.find("<top>");
+    auto find2 = key.find("<top>", 5);
+    assert(find1 == 0);
+    assert(find2 == std::string::npos);
+
+    return actions[key];
   }
 
   std::map<std::string, FieldState>& get_map() {
@@ -98,9 +123,36 @@ struct MtStateMap {
     return state;
   }
 
+  void swap(MtStateMap& b) {
+    actions.swap(b.actions);
+    state.swap(b.state);
+  }
+
+  Err lock_state() {
+    Err err;
+
+    for (auto& pair : actions) {
+      pair.second.push_back('L');
+    }
+  
+  
+    for (auto& pair : state) {
+      auto old_state = pair.second;
+      auto new_state = merge_delta(old_state, DELTA_EF);
+
+      if (new_state == FIELD_INVALID) {
+        err << ERR("Field %s was %s, now %s!", pair.first.c_str(), to_string(old_state), to_string(new_state));
+      }
+
+      pair.second = new_state;
+    }
+
+    return err;
+  }
+
 private:
 
-  std::map<std::string, uint32_t> flags;
+  std::map<std::string, std::string> actions;
   std::map<std::string, FieldState> state;
 };
 

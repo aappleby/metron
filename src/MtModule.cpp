@@ -548,29 +548,12 @@ CHECK_RETURN Err MtModule::trace() {
     tracer._method_stack.push_back(m);
     tracer.push_state(&m->method_state);
 
-    if (m->is_tick) {
-    }
-    else if (m->is_tock) {
-    }
-    else if (m->is_task) {
-    }
-    else if (m->is_func) {
-    }
-
     err << tracer.trace_method(m);
 
     // Lock all states touched by the method.
+    m->method_state.lock_state();
 
-    for (auto& pair : m->method_state.get_map()) {
-      auto old_state = pair.second;
-      auto new_state = merge_delta(old_state, DELTA_EF);
-
-      if (new_state == FIELD_INVALID) {
-        err << ERR("Field %s was %s, now %s!", pair.first.c_str(), to_string(old_state), to_string(new_state));
-      }
-
-      pair.second = new_state;
-    }
+    tracer.dump_trace(*tracer.state_top);
   }
 
   // Merge the traces for all public tick/tock methods in lexical order.
@@ -661,7 +644,7 @@ CHECK_RETURN Err MtModule::trace() {
   for (auto f : all_fields) {
     if (f->is_submod()) continue;
     if (f->is_param()) continue;
-    if (!mod_states.contains("<top>." + f->name())) {
+    if (mod_states.get_state("<top>." + f->name()) == FIELD________) {
       err << ERR("No method in the public interface of %s touched field %s!\n", name().c_str(), f->name().c_str());
     }
   }

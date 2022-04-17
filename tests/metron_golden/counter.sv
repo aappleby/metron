@@ -12,7 +12,7 @@ module Module
   end
 
   always_comb begin /*done*/
-    done = counter >= 7;
+    done = counter >= 100;
   end
 
   always_comb begin /*result*/

@@ -1,5 +1,7 @@
 `include "metron_tools.sv"
 
+// Intentionally-failing test that should trigger the lockstep test timeout
+
 module Module
 (
   input logic clock,
@@ -12,7 +14,7 @@ module Module
   end
 
   always_comb begin /*done*/
-    done = counter >= 7;
+    done = counter >= 32'hFFFF0000;
   end
 
   always_comb begin /*result*/

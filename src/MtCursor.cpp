@@ -469,6 +469,8 @@ CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
 
   std::string func_name = func.name();
 
+  auto method = current_mod->get_method(func_name);
+
   //----------
   // Handle bN
 
@@ -539,7 +541,7 @@ CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
     // Local call to tick() we already bound args, comment out the call.
     err << comment_out(n);
 
-  } else if (func_name.starts_with("tock")) {
+  } else if (method && method->is_tock) {
 
     // Local call to private tock() - bind output if needed.
     auto method = current_mod->get_method(func_name);
@@ -811,8 +813,6 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
       }
 
 
-    }
-    else if (func_node.sym == sym_identifier && func_node.text().starts_with("tock")) {
     }
   }
 

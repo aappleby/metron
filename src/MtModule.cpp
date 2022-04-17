@@ -446,12 +446,9 @@ CHECK_RETURN Err MtModule::collect_fields_and_components() {
 bool MtModule::method_writes_a_field(MtMethod* method) {
   bool result = false;
 
-  //method->node.dump_tree();
-
   method->node.visit_tree([&](MnNode child) {
     if (child.sym == sym_assignment_expression) {
       auto lhs = child.get_field(field_left);
-      lhs.dump_tree();
       if (get_field(lhs.text())) {
         result = true;
       }

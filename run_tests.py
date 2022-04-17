@@ -40,6 +40,8 @@ def main():
     ############################################################
 
     errors = 0
+
+    """
     errors += test_convert_good()
     errors += test_convert_bad()
 
@@ -55,6 +57,9 @@ def main():
         #errors += test_icarus_parse()
 
         pass
+    """
+
+    errors += test_lockstep()
 
     ############################################################
 
@@ -392,6 +397,19 @@ def test_misc():
     if any(get_pool().map(run_bad_command, bad_commands)):
         errors += 1
     return errors
+
+################################################################################
+
+def test_lockstep():
+    print()
+    print("Testing lockstep simulations")
+
+    # bin/metron -r tests/metron_lockstep -o tests/metron_sv -c basic_lockstep.h
+    # verilator -Isrc -Itests/metron_lockstep --cc basic_lockstep.sv -Mdir examples/rvsimple/metron_vl
+
+    errors = 0
+    return errors;
+
 
 ################################################################################
 

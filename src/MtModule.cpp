@@ -325,8 +325,10 @@ CHECK_RETURN Err MtModule::load_pass1() {
   Err err;
 
   err << collect_modparams();
-  err << collect_methods();
+
+  // Have to collect fields before we collect methods so we can resolve reads/writes
   err << collect_fields_and_components();
+  err << collect_methods();
 
   if (err.has_err()) {
     err << ERR("Module %s failed in load_pass1()\n", name().c_str());
@@ -437,6 +439,33 @@ CHECK_RETURN Err MtModule::collect_fields_and_components() {
   }
 
   return err;
+}
+
+//------------------------------------------------------------------------------
+
+bool MtModule::method_writes_a_field(MtMethod* method) {
+  bool result = false;
+
+  //method->node.dump_tree();
+
+  method->node.visit_tree([&](MnNode child) {
+    if (child.sym == sym_assignment_expression) {
+      auto lhs = child.get_field(field_left);
+      lhs.dump_tree();
+      if (get_field(lhs.text())) {
+        result = true;
+      }
+    }
+    else if (child.sym == sym_call_expression) {
+      auto func = child.get_field(field_function);
+      auto callee = get_method(func.text());
+      if (callee) {
+        result |= method_writes_a_field(callee);
+      }
+    }
+  });
+
+  return result;
 }
 
 //------------------------------------------------------------------------------
@@ -622,8 +651,14 @@ CHECK_RETURN Err MtModule::collect_methods() {
     assert(!m->is_tock);
     assert(!m->is_tick);
 
-    m->is_task = !m->is_const;
-    m->is_func = m->is_const;
+    if (method_writes_a_field(m)) {
+      m->is_task = true;
+      m->is_func = false;
+    }
+    else {
+      m->is_task = false;
+      m->is_func = true;
+    }
 
     if (m->is_task) {
       if (m->is_const) {

@@ -190,6 +190,8 @@ struct MtModule {
 
   // CHECK_RETURN Err collect_registers();
 
+  bool method_writes_a_field(MtMethod* method);
+
   CHECK_RETURN Err build_port_map();
 
   CHECK_RETURN Err trace();

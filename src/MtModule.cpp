@@ -626,7 +626,6 @@ CHECK_RETURN Err MtModule::collect_methods() {
         if (func.sym == sym_identifier) {
           auto method = get_method(func.text());
           if (method && method->is_private && !method->is_const) {
-            // Local function call to an init
             ticks.push_back(method);
           }
         }
@@ -658,9 +657,6 @@ CHECK_RETURN Err MtModule::collect_methods() {
     }
 
     if (m->is_task) {
-      if (m->is_const) {
-        err << ERR("CONST TASK FUNCTION BAD!\n");
-      }
       task_methods.push_back(m);
     } else {
       assert(m->is_func);

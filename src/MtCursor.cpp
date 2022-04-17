@@ -915,6 +915,9 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
   } else if (current_method->is_task) {
     err << skip_over(return_type);
     err << skip_ws();
+
+    // FIXME do we want all tasks to be automatic? That would be closer to C semantics...
+    //err << emit_print("task automatic ");
     err << emit_print("task ");
     err << emit_dispatch(func_decl);
     err << prune_trailing_ws();

@@ -490,10 +490,8 @@ CHECK_RETURN Err MtModule::collect_methods() {
     method_set.insert(m);
   }
 
-  // Categorize all methods
-
+  //----------
   // Pull out all the constructorss
-
 
   std::vector<MtMethod*> constructors;
 
@@ -503,6 +501,7 @@ CHECK_RETURN Err MtModule::collect_methods() {
     }
   }
 
+  //----------
   // Everything called by a constructor is an init.
 
   std::vector<MtMethod*> inits;
@@ -570,36 +569,43 @@ CHECK_RETURN Err MtModule::collect_methods() {
   }
 
   //----------
+  // Every non-const method called by a tock is a tick.
+
+  std::vector<MtMethod*> ticks;
+  for (auto tock : tocks) {
+    tock->node.visit_tree([&](MnNode child) {
+      if (child.sym == sym_call_expression) {
+        auto func = child.get_field(field_function);
+        if (func.sym == sym_identifier) {
+          auto method = get_method(func.text());
+          if (method && !method->is_const) {
+            // Local function call to an init
+            ticks.push_back(method);
+          }
+        }
+      }
+      });
+  }
+
+  for (auto m : ticks) {
+    m->is_tick = true;
+    tick_methods.push_back(m);
+    method_set.erase(m);
+  }
+
+  //----------
+  // Whatever's left is either a task or function.
 
   for (auto m : method_set) {
     assert(m->is_private);
+    assert(!m->is_init);
+    assert(!m->is_tock);
+    assert(!m->is_tick);
 
-    // Type can be null for constructor/destructor
-    auto func_type = m->node.get_field(field_type);  
-    auto func_decl = m->node.get_field(field_declarator);
-    auto func_name = func_decl.get_field(field_declarator).name4();
+    m->is_task = !m->is_const;
+    m->is_func = m->is_const;
 
-    m->is_tick = func_name.starts_with("tick");
-
-    // Anything that's not a tick/tock is either a task (non-const) or a function (const).
-
-    if (!m->is_tick && !m->is_tock) {
-      m->is_task = !m->is_const;
-      m->is_func = m->is_const;
-    }
-
-    if (m->is_tick && m->has_return) {
-      err << ERR("Tick method %s has a return value\n", m->name().c_str());
-    }
-
-    if (m->is_tick && m->is_public) {
-      err << ERR("Tick %s must be private\n", m->name().c_str());
-    }
-
-    if (m->is_tick) {
-      tick_methods.push_back(m);
-    } else if (m->is_tock) {
-    } else if (m->is_task) {
+    if (m->is_task) {
       if (m->is_const) {
         err << ERR("CONST TASK FUNCTION BAD!\n");
       }

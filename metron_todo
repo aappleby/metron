@@ -55,7 +55,6 @@ Coverage
     Slice width 1
     bx<>
     debugbreaks
-    func_name.starts_with(final)
     Local call to private tock
     emit_input_port_bindings
       Component method is not public

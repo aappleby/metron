@@ -127,6 +127,7 @@ struct MtMethod {
   std::vector<MnNode> param_nodes;
   // MtDelta delta = nullptr;
 
+  bool is_constructor = false;
   bool is_init = false;
   bool is_tick = false;
   bool is_tock = false;

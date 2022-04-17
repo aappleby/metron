@@ -449,6 +449,8 @@ CHECK_RETURN Err MtModule::collect_methods() {
 
   // Create method objects for all function defition nodes
 
+  std::set<MtMethod*> method_set;
+
   for (const auto& n : mod_body) {
     if (n.sym == sym_access_specifier) {
       in_public = n.child(0).text() == "public";
@@ -485,31 +487,95 @@ CHECK_RETURN Err MtModule::collect_methods() {
     }
 
     all_methods.push_back(m);
+    method_set.insert(m);
   }
 
   // Categorize all methods
 
+  // Pull out all the constructorss
+
+
+  std::vector<MtMethod*> constructors;
+
+  for (auto m : all_methods) {
+    if (m->node.get_field(field_type).is_null()) {
+      constructors.push_back(m);
+    }
+  }
+
+  /*
   // Pull out all the init()s
 
   for (auto m : all_methods) {
-
-    // Type can be null for constructor/destructor
-    auto func_type = m->node.get_field(field_type);  
     auto func_decl = m->node.get_field(field_declarator);
     auto func_name = func_decl.get_field(field_declarator).name4();
 
-    if (func_name.starts_with("init") || func_type.is_null()) {
-      m->is_init = true;
-      if (m->is_init && !m->is_public) {
+    if (func_name.starts_with("init")) {
+      //m->is_init = true;
+      if (!m->is_public) {
         err << ERR("Init method %s is not public\n", m->name().c_str());
       }
 
-      if (m->is_init && m->params.size()) {
+      if (m->params.size()) {
         err << ERR("Init method %s may not have params\n", m->name().c_str());
       }
       init_methods.push_back(m);
     }
   }
+  */
+
+  // Everything called by a constructor is an init.
+
+  std::vector<MtMethod*> inits;
+  for (auto constructor : constructors) {
+    constructor->node.visit_tree([&](MnNode child) {
+      if (child.sym == sym_call_expression) {
+        auto func = child.get_field(field_function);
+        if (func.sym == sym_identifier) {
+          auto method = get_method(func.text());
+          if (method) {
+            // Local function call to an init
+            inits.push_back(method);
+          }
+        }
+      }
+    });
+  }
+
+
+  //----------
+  // Save the constructors and inits and remove them from the method set.
+
+  for (auto m : constructors) {
+    if (!m->is_public) {
+      err << ERR("Constructor %s::%s is not public\n", name().c_str(), m->name().c_str());
+    }
+
+    if (m->params.size()) {
+      err << ERR("Constructor %s::%s is not allowed to have params\n", name().c_str(), m->name().c_str());
+    }
+
+    m->is_constructor = true;
+    m->is_init = true;
+    init_methods.push_back(m);
+    method_set.erase(m);
+  }
+
+  for (auto m : inits) {
+    if (m->is_public && !m->is_constructor) {
+      err << ERR("Init method %s::%s is not private\n", name().c_str(), m->name().c_str());
+    }
+
+    if (m->params.size()) {
+      err << ERR("Init method %s::%s is not allowed to have params\n", name().c_str(), m->name().c_str());
+    }
+
+    m->is_init = true;
+    init_methods.push_back(m);
+    method_set.erase(m);
+  }
+
+  //----------
 
   for (auto m : all_methods) {
     if (m->is_init) continue;

@@ -503,27 +503,6 @@ CHECK_RETURN Err MtModule::collect_methods() {
     }
   }
 
-  /*
-  // Pull out all the init()s
-
-  for (auto m : all_methods) {
-    auto func_decl = m->node.get_field(field_declarator);
-    auto func_name = func_decl.get_field(field_declarator).name4();
-
-    if (func_name.starts_with("init")) {
-      //m->is_init = true;
-      if (!m->is_public) {
-        err << ERR("Init method %s is not public\n", m->name().c_str());
-      }
-
-      if (m->params.size()) {
-        err << ERR("Init method %s may not have params\n", m->name().c_str());
-      }
-      init_methods.push_back(m);
-    }
-  }
-  */
-
   // Everything called by a constructor is an init.
 
   std::vector<MtMethod*> inits;
@@ -541,7 +520,6 @@ CHECK_RETURN Err MtModule::collect_methods() {
       }
     });
   }
-
 
   //----------
   // Save the constructors and inits and remove them from the method set.
@@ -576,9 +554,25 @@ CHECK_RETURN Err MtModule::collect_methods() {
   }
 
   //----------
+  // Pull out all remaining public methods and put them in the tock set.
 
-  for (auto m : all_methods) {
-    if (m->is_init) continue;
+  std::vector<MtMethod*> tocks;
+
+  for (auto m : method_set) {
+    if (!m->is_public) continue;
+    tocks.push_back(m);
+  }
+
+  for (auto m : tocks) {
+    m->is_tock = true;
+    tock_methods.push_back(m);
+    method_set.erase(m);
+  }
+
+  //----------
+
+  for (auto m : method_set) {
+    assert(m->is_private);
 
     // Type can be null for constructor/destructor
     auto func_type = m->node.get_field(field_type);  
@@ -586,7 +580,6 @@ CHECK_RETURN Err MtModule::collect_methods() {
     auto func_name = func_decl.get_field(field_declarator).name4();
 
     m->is_tick = func_name.starts_with("tick");
-    m->is_tock = m->is_public;
 
     // Anything that's not a tick/tock is either a task (non-const) or a function (const).
 
@@ -606,7 +599,6 @@ CHECK_RETURN Err MtModule::collect_methods() {
     if (m->is_tick) {
       tick_methods.push_back(m);
     } else if (m->is_tock) {
-      tock_methods.push_back(m);
     } else if (m->is_task) {
       if (m->is_const) {
         err << ERR("CONST TASK FUNCTION BAD!\n");

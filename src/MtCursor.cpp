@@ -536,7 +536,7 @@ CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
   } else if (func_name == "sign_extend") {
     err << emit_replacement(func, "$signed");
     err << emit_arg_list(args);
-  } else if (func_name.starts_with("tick")) {
+  } else if (method && method->is_tick) {
 
     // Local call to tick() we already bound args, comment out the call.
     err << comment_out(n);
@@ -793,26 +793,25 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
         }
       }
     }
-    else if (func_node.sym == sym_identifier && func_node.text().starts_with("tick")) {
+    else if (func_node.sym == sym_identifier) {
       auto method = current_mod->get_method(func_node.text().c_str());
-      assert(method);
 
-      for (int i = 0; i < method->params.size(); i++) {
-        auto& param = method->params[i];
-        err << emit_print("%s_%s = ", func_node.text().c_str(), param.c_str());
+      if (method && method->is_tick) {
+        for (int i = 0; i < method->params.size(); i++) {
+          auto& param = method->params[i];
+          err << emit_print("%s_%s = ", func_node.text().c_str(), param.c_str());
 
-        auto arg_node = args_node.named_child(i);
-        cursor = arg_node.start();
-        err << emit_dispatch(arg_node);
-        cursor = arg_node.end();
+          auto arg_node = args_node.named_child(i);
+          cursor = arg_node.start();
+          err << emit_dispatch(arg_node);
+          cursor = arg_node.end();
 
-        err << prune_trailing_ws();
-        err << emit_print(";");
-        err << emit_newline();
-        err << emit_indent();
+          err << prune_trailing_ws();
+          err << emit_print(";");
+          err << emit_newline();
+          err << emit_indent();
+        }
       }
-
-
     }
   }
 

@@ -116,6 +116,15 @@ def print_g(*args):
 def print_b(*args):
     print_c(0x8080FF, *args)
 
+def prep_cmd(cmd):
+    cmd = cmd.strip()
+    if "--coverage" in sys.argv:
+        cmd = kcov_prefix() + " " + cmd
+    args = [arg for arg in cmd.split(" ") if len(arg)]
+    cmd_string = ' '.join(args)
+    print(f"  {cmd_string}")
+    return args
+
 ################################################################################
 # Check that the given file is a syntactically valid C++ header.
 
@@ -132,10 +141,8 @@ def check_good(filename):
     basename = path.basename(filename)
     svname = path.splitext(basename)[0] + ".sv"
 
-    cmd = f"{kcov_prefix()} bin/metron {metron_default_args()} -r tests/metron_good -o tests/metron_sv -c {basename}".strip()
-    print(f"  {cmd}")
-
-    cmd_result = subprocess.run(cmd.split(" "), stdout=subprocess.PIPE, encoding="charmap")
+    cmd = prep_cmd(f"bin/metron {metron_default_args()} -r tests/metron_good -o tests/metron_sv -c {basename}")
+    cmd_result = subprocess.run(cmd, stdout=subprocess.PIPE, encoding="charmap")
 
     if cmd_result.returncode:
         print_r(f"Test file {filename} - expected pass, got {cmd_result.returncode}")
@@ -151,8 +158,6 @@ def check_bad(filename):
     errors = 0
     basename = path.basename(filename)
     svname = path.splitext(basename)[0] + ".sv"
-    cmd = f"{kcov_prefix()} bin/metron {metron_default_args()} -r tests/metron_bad -o tests/metron_sv -c {basename}".strip()
-    print(f"  {cmd}")
 
     lines = open(filename).readlines()
     expected_errors = [line[4:].strip() for line in lines if line.startswith("//X")]
@@ -160,7 +165,8 @@ def check_bad(filename):
         print(f"Test {filename} contained no expected errors. Dumping output.")
         #return 1
 
-    cmd_result = subprocess.run(cmd.split(" "), stdout=subprocess.PIPE, encoding="charmap")
+    cmd = prep_cmd(f"bin/metron {metron_default_args()} -r tests/metron_bad -o tests/metron_sv -c {basename}")
+    cmd_result = subprocess.run(cmd, stdout=subprocess.PIPE, encoding="charmap")
 
     if cmd_result.returncode == 0:
         print(f"Test file {filename} - expected fail, got {cmd_result.returncode}")
@@ -233,13 +239,12 @@ def check_golden(filename):
 
 def run_simple_test(commandline):
     errors = 0
-    cmd = commandline
     # The Icarus output isn't actually a binary, kcov can't run it.
-    if (commandline != "bin/examples/uart_iv"):
-        cmd = kcov_prefix() + " " + cmd
-    print(f"  {cmd}")
-    stuff = subprocess.run(cmd.split(
-        " "), stdout=subprocess.PIPE, encoding="charmap").stdout
+    if (commandline == "bin/examples/uart_iv"):
+        cmd = [commandline]
+    else:
+        cmd = prep_cmd(commandline)
+    stuff = subprocess.run(cmd, stdout=subprocess.PIPE, encoding="charmap").stdout
     if not "All tests pass" in stuff:
         print_r(stuff)
         errors += 1
@@ -250,11 +255,8 @@ def run_simple_test(commandline):
 
 def run_good_command(commandline):
     errors = 0
-    cmd = kcov_prefix() + " " + commandline
-    print(f"  {cmd}")
-
-    #result = os.system(cmd)
-    result = subprocess.run(cmd.strip().split(" "), stdout=subprocess.PIPE, encoding="charmap").returncode
+    cmd = prep_cmd(commandline)
+    result = subprocess.run(cmd, stdout=subprocess.PIPE, encoding="charmap").returncode
 
     if result != 0:
         print(f"Command \"{cmd}\" should have passed, but it failed.")
@@ -263,11 +265,8 @@ def run_good_command(commandline):
 
 def run_bad_command(commandline):
     errors = 0
-    cmd = kcov_prefix() + " " + commandline
-    print(f"  {cmd}")
-
-    #result = os.system(cmd)
-    result = subprocess.run(cmd.strip().split(" "), stdout=subprocess.PIPE, encoding="charmap").returncode
+    cmd = prep_cmd(commandline)
+    result = subprocess.run(cmd, stdout=subprocess.PIPE, encoding="charmap").returncode
 
     if result == 0:
         print(f"Command \"{cmd}\" should have failed, but it passed.")
@@ -377,6 +376,7 @@ def test_misc():
         f"bin/metron {metron_default_args()} -r examples/rvsimple/metron toplevel.h",
         f"bin/metron {metron_default_args()} -r examples/rvtiny/metron toplevel.h",
         f"bin/metron {metron_default_args()} -r examples/rvtiny_sync/metron toplevel.h",
+        f"bin/metron {metron_default_args()} -r examples/pong/metron pong.h",
     ]
 
     bad_commands = [

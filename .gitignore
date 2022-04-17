@@ -1,6 +1,7 @@
 bin
 out
 obj
+gen
 coverage
 .ninja_deps
 .ninja_log

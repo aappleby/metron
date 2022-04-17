@@ -402,18 +402,27 @@ def test_misc():
 def check_lockstep(filename):
     test_name = filename.rstrip(".h")
     bad_test  = "_bad" in filename
+
+    # Test source is the same for all lockstep tests, we just change the
+    # included files.
+    test_src  = f"tests/test_lockstep.cpp"
+
     mt_root   = f"tests/metron_lockstep"
-    sv_root   = f"tests/metron_sv"
-    vl_root   = f"tests/metron_vl"
+    sv_root   = f"gen/{mt_root}/metron_sv"
+    vl_root   = f"gen/{mt_root}/metron_vl"
+
+    # Our lockstep test top modules are all named "Module". Verilator will
+    # name the top module after the <test_name>.sv filename.
     mt_top    = f"Module"
     vl_top    = f"V{test_name}"
-    mt_header = f"metron_lockstep/{test_name}.h"
-    vl_header = f"metron_vl/V{test_name}.h"
-    vl_obj    = f"tests/metron_vl/V{test_name}__ALL.o"
-    includes  = f"-Isrc -Itests -Itests/metron_sv -I/usr/local/share/verilator/include"
-    test_src  = f"tests/test_lockstep.cpp"
-    test_obj  = f"obj/tests/metron_lockstep/{test_name}.o"
-    test_bin  = f"bin/tests/metron_lockstep/{test_name}"
+
+    mt_header = f"{mt_root}/{test_name}.h"
+    vl_header = f"{vl_root}/V{test_name}.h"
+    vl_obj    = f"{vl_root}/V{test_name}__ALL.o"
+    test_obj  = f"obj/{mt_root}/{test_name}.o"
+    test_bin  = f"bin/{mt_root}/{test_name}"
+
+    includes  = f"-I. -Isrc -I{sv_root} -I/usr/local/share/verilator/include"
 
     print(f"  Building {test_name}")
     os.system(f"bin/metron -q -r {mt_root} -o {sv_root} -c {test_name}.h")
@@ -442,6 +451,7 @@ def test_lockstep():
         "timeout_bad.h",  # expected to fail
     ]
 
+    os.system(f"mkdir -p gen/tests/metron_lockstep")
     os.system(f"mkdir -p obj/tests/metron_lockstep")
     os.system(f"mkdir -p bin/tests/metron_lockstep")
 

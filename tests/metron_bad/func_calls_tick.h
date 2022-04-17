@@ -9,11 +9,11 @@ public:
     func();
   }
 
+private:
+
   void func() const {
     tick();
   }
-
-private:
 
   void tick() const {
   }

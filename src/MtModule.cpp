@@ -455,13 +455,10 @@ CHECK_RETURN Err MtModule::collect_methods() {
 
     MtMethod *m = MtMethod::construct(n, this, source_file->lib);
 
-    auto func_type =
-        n.get_field(field_type);  // Can be null for constructor/destructor
+    // Type can be null for constructor/destructor
+    auto func_type = n.get_field(field_type);  
     auto func_decl = n.get_field(field_declarator);
-    auto func_body = n.get_field(field_body);
-
     auto func_name = func_decl.get_field(field_declarator).name4();
-    auto func_args = func_decl.get_field(field_parameters);
 
     m->is_public = in_public;
     m->is_private = !in_public;
@@ -479,7 +476,7 @@ CHECK_RETURN Err MtModule::collect_methods() {
 
     m->is_init = func_name.starts_with("init") || func_type.is_null();
     m->is_tick = func_name.starts_with("tick");
-    m->is_tock = func_name.starts_with("tock");
+    m->is_tock = m->is_public && !m->is_init;
 
     // Anything that's not an init/tick/tock is either a task (non-const) or a function (const).
 
@@ -488,6 +485,7 @@ CHECK_RETURN Err MtModule::collect_methods() {
       m->is_func = m->is_const;
     }
 
+    auto func_args = func_decl.get_field(field_parameters);
     for (int i = 0; i < func_args.named_child_count(); i++) {
       auto param = func_args.named_child(i);
       assert(param.sym == sym_parameter_declaration);
@@ -510,6 +508,11 @@ CHECK_RETURN Err MtModule::collect_methods() {
 
     if (m->is_init && !m->is_public) {
       err << ERR("Init method %s is not public\n", m->name().c_str());
+      break;
+    }
+
+    if (m->is_init && func_args.named_child_count()) {
+      err << ERR("Init method %s may not have params\n", m->name().c_str());
       break;
     }
 

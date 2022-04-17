@@ -23,7 +23,7 @@ TestResults test_lockstep() {
     vtop.clock = 1;
     vtop.eval();
 
-    //printf("0x%08x 0x%08x\n", (uint32_t)mtop.result(), (uint32_t)vtop.result);
+    printf("0x%08x 0x%08x\n", (uint32_t)mtop.result(), (uint32_t)vtop.result);
 
     EXPECT_EQ(mtop.result(), vtop.result, "Results should match");
     EXPECT_EQ(mtop.done(),   vtop.done,   "Done flag should match");

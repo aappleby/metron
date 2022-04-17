@@ -412,8 +412,8 @@ def check_lockstep(filename):
     vl_obj    = f"tests/metron_vl/V{test_name}__ALL.o"
     includes  = f"-Isrc -Itests -Itests/metron_sv -I/usr/local/share/verilator/include"
     test_src  = f"tests/test_lockstep.cpp"
-    test_obj  = f"obj/{test_name}.o"
-    test_bin  = f"bin/{test_name}"
+    test_obj  = f"obj/tests/metron_lockstep/{test_name}.o"
+    test_bin  = f"bin/tests/metron_lockstep/{test_name}"
 
     print(f"  Building {test_name}")
     os.system(f"bin/metron -q -r {mt_root} -o {sv_root} -c {test_name}.h")
@@ -437,9 +437,13 @@ def test_lockstep():
     tests = [
         "counter.h",
         "lfsr.h",
+        "funcs_and_tasks.h",
         "lockstep_bad.h", # expected to fail
         "timeout_bad.h",  # expected to fail
     ]
+
+    os.system(f"mkdir -p obj/tests/metron_lockstep")
+    os.system(f"mkdir -p bin/tests/metron_lockstep")
 
     errors = 0
     if any(get_pool().map(check_lockstep, tests)):

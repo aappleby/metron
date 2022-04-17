@@ -5,10 +5,18 @@
 module Module
 (
   input logic clock,
-  input logic[1:0] tick_selector
+  input logic[1:0] tock_selector
 );
 /*public:*/
 
+  always_comb begin /*tock*/
+    tick_selector = tock_selector;
+    /*tick(selector)*/;
+  end
+
+/*private:*/
+
+  logic[1:0] tick_selector;
   always_ff @(posedge clock) begin /*tick*/
     case(tick_selector)
       0: my_reg <= 17;
@@ -21,7 +29,6 @@ module Module
     endcase
   end
 
-/*private:*/
   logic[7:0] my_reg;
 endmodule
 

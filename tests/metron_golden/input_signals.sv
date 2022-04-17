@@ -17,8 +17,11 @@ module Submod
 
   always_comb begin /*tock*/
     o_signal = i_signal + tock_i_param;
+    /*tick()*/;
     tock = o_signal + 7;
   end
+
+/*private:*/
 
   always_ff @(posedge clock) begin /*tick*/
     o_reg <= o_reg + o_signal;
@@ -39,14 +42,16 @@ module Module
     submod_tock_i_param = 13;
     submod_return = submod_tock;
     my_sig = submod_return + 3;
+    /*tick()*/;
   end
+
+
+/*private:*/
 
   always_ff @(posedge clock) begin /*tick*/
     my_reg <= my_sig - 2;
   end
 
-
-/*private:*/
   logic[7:0] my_sig;
 
   Submod submod(

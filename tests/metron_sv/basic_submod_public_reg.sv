@@ -4,7 +4,8 @@
 
 module Submod
 (
-  input logic clock
+  input logic clock,
+  output logic[7:0] sub_reg
 );
 /*public:*/
 
@@ -12,13 +13,13 @@ module Submod
     /*tick()*/;
   end
 
+
 /*private:*/
 
   always_ff @(posedge clock) begin /*tick*/
     sub_reg <= sub_reg + 1;
   end
 
-  logic[7:0] sub_reg;
 endmodule
 
 module Module
@@ -37,9 +38,11 @@ module Module
 
   Submod submod(
     // Inputs
-    .clock(clock)
+    .clock(clock),
     // Outputs
+    .sub_reg(submod_sub_reg)
   );
+  logic[7:0] submod_sub_reg;
 
 endmodule
 

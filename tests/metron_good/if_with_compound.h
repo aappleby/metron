@@ -1,3 +1,5 @@
+#include "metron_tools.h"
+
 // If statements whose sub-blocks contain submodule calls _must_ use {}.
 
 class Submod {

@@ -9,6 +9,13 @@ module Submod
 );
 /*public:*/
 
+  always_comb begin /*tock*/
+    /*tick()*/;
+  end
+
+
+/*private:*/
+
   always_ff @(posedge clock) begin /*tick*/
     sub_reg <= sub_reg + 1;
   end
@@ -26,7 +33,7 @@ module Module
   endfunction
 
   always_comb begin /*tock*/
-    /*submod.tick();*/
+    /*submod.tock();*/
   end
 
   Submod submod(

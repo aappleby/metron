@@ -5,19 +5,22 @@
 
 module Module
 (
-  input logic clock,
-  output logic my_sig,
-  output logic my_reg
+  input logic clock
 );
 /*public:*/
 
   always_comb begin /*tock*/
     my_sig = my_reg;
+    /*tick()*/;
   end
+
+/*private:*/
 
   always_ff @(posedge clock) begin /*tick*/
     my_reg <= 1;
   end
 
+  logic my_sig;
+  logic my_reg;
 endmodule
 

@@ -8,11 +8,15 @@ module Module
 );
 /*public:*/
 
-  always_ff @(posedge clock) begin /*tick*/
-    my_reg <= my_reg + some_func();
+  always_comb begin /*tock*/
+    /*tick()*/;
   end
 
 /*private:*/
+
+  always_ff @(posedge clock) begin /*tick*/
+    my_reg <= my_reg + some_func();
+  end
 
   function logic[7:0] some_func();
     some_func = 3;

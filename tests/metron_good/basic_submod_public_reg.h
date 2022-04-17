@@ -9,13 +9,14 @@ public:
     tick();
   }
 
+  logic<8> sub_reg;
+
 private:
 
   void tick() {
     sub_reg = sub_reg + 1;
   }
 
-  logic<8> sub_reg;
 };
 
 class Module {

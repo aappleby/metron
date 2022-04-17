@@ -43,9 +43,8 @@ def main():
     errors += test_convert_good()
     errors += test_convert_bad()
 
-    """
     if not basic:
-        errors += test_complilation()
+        errors += test_compilation()
         errors += test_verilator_parse()
         errors += test_goldens()
         errors += test_examples()
@@ -54,7 +53,8 @@ def main():
         # Icarus generates a bunch of possibly-spurious warnings and can't handle
         # utf-8 with a BOM
         #errors += test_icarus_parse()
-    """
+
+        pass
 
     ############################################################
 
@@ -131,12 +131,15 @@ def check_good(filename):
     basename = path.basename(filename)
     svname = path.splitext(basename)[0] + ".sv"
 
-    cmd = f"{kcov_prefix()} bin/metron {metron_default_args()} -r tests/metron_good -o tests/metron_sv -c {basename} >> /dev/null"
+    cmd = f"{kcov_prefix()} bin/metron {metron_default_args()} -r tests/metron_good -o tests/metron_sv -c {basename}".strip()
     print(f"  {cmd}")
-    result = os.system(cmd)
-    if result:
-        print_r(f"Test file {filename} - expected pass, got {result}")
-        result = os.system(f"bin/metron {filename}")
+
+    cmd_result = subprocess.run(cmd.split(" "), stdout=subprocess.PIPE, encoding="charmap")
+
+    if cmd_result.returncode:
+        print_r(f"Test file {filename} - expected pass, got {cmd_result.returncode}")
+        print(cmd_result.stdout)
+        #result = os.system(f"bin/metron {filename}")
         errors += 1
     return errors
 
@@ -249,7 +252,9 @@ def run_good_command(commandline):
     cmd = kcov_prefix() + commandline
     print(f"  {cmd}")
 
-    result = os.system(cmd)
+    #result = os.system(cmd)
+    result = subprocess.run(cmd.strip().split(" "), stdout=subprocess.PIPE, encoding="charmap").returncode
+
     if result != 0:
         print(f"Command \"{cmd}\" should have passed, but it failed.")
         errors += 1
@@ -260,7 +265,9 @@ def run_bad_command(commandline):
     cmd = kcov_prefix() + commandline
     print(f"  {cmd}")
 
-    result = os.system(cmd)
+    #result = os.system(cmd)
+    result = subprocess.run(cmd.strip().split(" "), stdout=subprocess.PIPE, encoding="charmap").returncode
+
     if result == 0:
         print(f"Command \"{cmd}\" should have failed, but it passed.")
         errors += 1
@@ -365,16 +372,16 @@ def test_misc():
     print_b("Running misc commands")
 
     good_commands = [
-        f"bin/metron {metron_default_args()} -r examples/uart/metron uart_top.h > /dev/null",
-        f"bin/metron {metron_default_args()} -r examples/rvsimple/metron toplevel.h > /dev/null",
-        f"bin/metron {metron_default_args()} -r examples/rvtiny/metron toplevel.h > /dev/null",
-        f"bin/metron {metron_default_args()} -r examples/rvtiny_sync/metron toplevel.h > /dev/null",
+        f"bin/metron {metron_default_args()} -r examples/uart/metron uart_top.h",
+        f"bin/metron {metron_default_args()} -r examples/rvsimple/metron toplevel.h",
+        f"bin/metron {metron_default_args()} -r examples/rvtiny/metron toplevel.h",
+        f"bin/metron {metron_default_args()} -r examples/rvtiny_sync/metron toplevel.h",
     ]
 
     bad_commands = [
-        f"bin/metron {metron_default_args()} skjdlsfjkhdfsjhdf.h > /dev/null",
-        f"bin/metron {metron_default_args()} -c skjdlsfjkhdfsjhdf.h > /dev/null",
-        f"bin/metron {metron_default_args()} -o sdkjfshkdjfshyry skjdlsfjkhdfsjhdf.h > /dev/null",
+        f"bin/metron {metron_default_args()} skjdlsfjkhdfsjhdf.h",
+        f"bin/metron {metron_default_args()} -c skjdlsfjkhdfsjhdf.h",
+        f"bin/metron {metron_default_args()} -o sdkjfshkdjfshyry skjdlsfjkhdfsjhdf.h",
     ]
 
     errors = 0

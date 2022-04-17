@@ -19,7 +19,7 @@ public:
         result = 30;
         break;
     }
-    tick()
+    tick();
     return result;
   }
 

@@ -1,3 +1,5 @@
+`include "metron_tools.sv"
+
 // If statements whose sub-blocks contain submodule calls _must_ use {}.
 
 module Submod

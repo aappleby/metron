@@ -1,1 +1,1 @@
-Example adapted from https://www.fpga4fun.com/PongGame.html
+Verilated version of https://www.fpga4fun.com/PongGame.html

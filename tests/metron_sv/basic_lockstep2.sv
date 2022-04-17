@@ -16,7 +16,10 @@ module Module
   end
 
   always_comb begin /*result*/
-    result = counter;
+    logic[31:0] c;
+
+    c = counter;
+    result = c;
   end
 
   always_comb begin /*tock*/

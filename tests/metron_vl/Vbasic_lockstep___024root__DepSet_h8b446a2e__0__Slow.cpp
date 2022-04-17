@@ -19,7 +19,7 @@ VL_ATTR_COLD void Vbasic_lockstep___024root___settle__TOP__0(Vbasic_lockstep___0
     Vbasic_lockstep__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     VL_DEBUG_IF(VL_DBG_MSGF("+    Vbasic_lockstep___024root___settle__TOP__0\n"); );
     // Body
-    vlSelf->done = (7U == vlSelf->Module__DOT__counter);
+    vlSelf->done = (7U <= vlSelf->Module__DOT__counter);
     vlSelf->result = vlSelf->Module__DOT__counter;
 }
 

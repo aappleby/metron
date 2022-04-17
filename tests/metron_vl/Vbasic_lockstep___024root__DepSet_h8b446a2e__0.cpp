@@ -12,7 +12,7 @@ VL_INLINE_OPT void Vbasic_lockstep___024root___sequent__TOP__0(Vbasic_lockstep__
     VL_DEBUG_IF(VL_DBG_MSGF("+    Vbasic_lockstep___024root___sequent__TOP__0\n"); );
     // Body
     vlSelf->Module__DOT__counter = ((IData)(1U) + vlSelf->Module__DOT__counter);
-    vlSelf->done = (7U == vlSelf->Module__DOT__counter);
+    vlSelf->done = (7U <= vlSelf->Module__DOT__counter);
     vlSelf->result = vlSelf->Module__DOT__counter;
 }
 

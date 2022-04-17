@@ -400,26 +400,52 @@ def test_misc():
 
 ################################################################################
 
+def check_lockstep(filename):
+    test_name = filename.rstrip(".h")
+    bad_test  = "_bad" in filename
+    mt_root   = f"tests/metron_lockstep"
+    sv_root   = f"tests/metron_sv"
+    vl_root   = f"tests/metron_vl"
+    mt_top    = f"Module"
+    vl_top    = f"V{test_name}"
+    mt_header = f"metron_lockstep/{test_name}.h"
+    vl_header = f"metron_vl/V{test_name}.h"
+    vl_obj    = f"tests/metron_vl/V{test_name}__ALL.o"
+    includes  = f"-Isrc -Itests -Itests/metron_sv -I/usr/local/share/verilator/include"
+    test_src  = f"tests/test_lockstep.cpp"
+    test_obj  = f"obj/{test_name}.o"
+    test_bin  = f"bin/{test_name}"
+
+    print(f"Building {test_name}")
+    os.system(f"bin/metron -q -r {mt_root} -o {sv_root} -c {test_name}.h")
+    os.system(f"verilator {includes} --cc {test_name}.sv -Mdir {vl_root}")
+    os.system(f"make --quiet -C {vl_root} -f V{test_name}.mk > /dev/null")
+    os.system(f"g++ -std=gnu++2a -DMT_TOP={mt_top} -DVL_TOP={vl_top} -DMT_HEADER={mt_header} -DVL_HEADER={vl_header} {includes} -c {test_src} -o {test_obj}")
+    os.system(f"g++ {test_obj} {vl_obj} obj/verilated.o -o {test_bin}")
+
+    print(f"Running {test_name}")
+    errors = os.system(f"{test_bin} > /dev/null")
+
+    if bad_test:
+        return errors == 0
+    else:
+        return errors
+
 def test_lockstep():
     print()
     print_b("Testing lockstep simulations")
 
-    print("  Convert")
-    os.system("bin/metron -q -r tests/metron_lockstep -o tests/metron_sv -c basic_lockstep.h")
-    print("  Verilate")
-    os.system("verilator -Isrc -Itests/metron_sv --cc basic_lockstep.sv -Mdir tests/metron_vl")
-    os.system("make --quiet -C tests/metron_vl -f Vbasic_lockstep.mk")
-    print("  Compile")
-    os.system("g++ -std=gnu++2a -Isrc -I/usr/local/share/verilator/include -c tests/test_lockstep.cpp -o obj/test_lockstep.o")
-    os.system("g++ -std=gnu++2a -c /usr/share/verilator/include/verilated.cpp -o obj/verilated.o")
-    print("  Link")
-    os.system("g++ obj/verilated.o obj/test_lockstep.o tests/metron_vl/Vbasic_lockstep__ALL.o -o bin/test_lockstep")
-    print("  Run")
-    os.system("bin/test_lockstep")
+    tests = [
+        "basic_lockstep1.h",
+        "basic_lockstep2.h",
+        "basic_lockstep3.h",
+        "basic_lockstep_bad.h"
+    ]
 
     errors = 0
-    return errors;
-
+    if any(get_pool().map(check_lockstep, tests)):
+        errors += 1
+    return errors
 
 ################################################################################
 

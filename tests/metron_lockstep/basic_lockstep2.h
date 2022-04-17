@@ -7,11 +7,12 @@ public:
   }
 
   logic<1> done() {
-    return counter == 7;
+    return counter >= 7;
   }
 
   logic<32> result() {
-    return counter;
+    logic<32> c = counter;
+    return c;
   }
 
   void tock() {

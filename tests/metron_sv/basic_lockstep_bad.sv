@@ -1,5 +1,8 @@
 `include "metron_tools.sv"
 
+// Force a mismatch between the Metron and Verilator sims so we can ensure that
+// we catch them.
+
 module Module
 (
   input logic clock,
@@ -16,7 +19,13 @@ module Module
   end
 
   always_comb begin /*result*/
-    result = counter;
+    logic[31:0] c;
+
+    c = counter;
+
+    c = c + 1;
+
+    result = c;
   end
 
   always_comb begin /*tock*/

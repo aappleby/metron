@@ -13,7 +13,7 @@ public:
 class Module {
 public:
 
-  logic<8> test_bindings() const {
+  logic<8> tock_bindings() const {
     logic<8> result;
     // Submod bindings should _not_ end up here.
 

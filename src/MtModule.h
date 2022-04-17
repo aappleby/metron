@@ -182,7 +182,7 @@ struct MtModule {
   // void dump_deltas() const;
 
   CHECK_RETURN Err collect_modparams();
-  CHECK_RETURN Err collect_field_and_components();
+  CHECK_RETURN Err collect_fields_and_components();
   CHECK_RETURN Err collect_methods();
   CHECK_RETURN Err categorize_fields();
 

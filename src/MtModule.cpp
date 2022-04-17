@@ -324,7 +324,7 @@ CHECK_RETURN Err MtModule::load_pass1() {
 
   err << collect_modparams();
   err << collect_methods();
-  err << collect_field_and_components();
+  err << collect_fields_and_components();
 
   if (err.has_err()) {
     err << ERR("Module %s failed in load_pass1()\n", name().c_str());
@@ -399,7 +399,7 @@ CHECK_RETURN Err MtModule::collect_modparams() {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtModule::collect_field_and_components() {
+CHECK_RETURN Err MtModule::collect_fields_and_components() {
   Err err;
 
   assert(all_fields.empty());
@@ -613,9 +613,9 @@ CHECK_RETURN Err MtModule::load_pass2() {
   assert (!mod_class.is_null());
 
   err << categorize_fields();
-
   err << build_port_map();
   err << sanity_check();
+
   return err;
 }
 

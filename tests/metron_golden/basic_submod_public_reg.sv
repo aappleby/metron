@@ -24,13 +24,14 @@ endmodule
 
 module Module
 (
-  input logic clock
+  input logic clock,
+  output logic[7:0] tock_get_submod_reg
 );
 /*public:*/
 
-  function logic[7:0] get_submod_reg();
-    get_submod_reg = submod_sub_reg;
-  endfunction
+  always_comb begin /*tock_get_submod_reg*/
+    tock_get_submod_reg = submod_sub_reg;
+  end
 
   always_comb begin /*tock*/
     /*submod.tock();*/

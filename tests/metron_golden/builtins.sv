@@ -6,6 +6,7 @@ module Module
 (
   input logic clock
 );
+/*public:*/
 
   always_comb begin /*tock*/
     logic[7:0] src;
@@ -15,15 +16,12 @@ module Module
     logic[7:0] c;
     logic[7:0] d;
 
-
     src = 100;
-
     a = $signed(src);
     b = $unsigned(src);
     e = $signed(2'(src));
     c = $clog2(100);
     d = 2**(4);
-
   end
 
 endmodule

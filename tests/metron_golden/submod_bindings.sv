@@ -21,11 +21,12 @@ endmodule
 
 module Module
 (
-  input logic clock
+  input logic clock,
+  output logic[7:0] tock_bindings
 );
 /*public:*/
 
-  function logic[7:0] test_bindings();
+  always_comb begin /*tock_bindings*/
     logic[7:0] result;
 
     // Submod bindings should _not_ end up here.
@@ -48,8 +49,8 @@ module Module
       end
     end
 
-    test_bindings = result;
-  endfunction
+    tock_bindings = result;
+  end
 
   Submod submod(
     // Inputs

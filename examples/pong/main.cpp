@@ -54,8 +54,8 @@ int main(int argc, char* args[]) {
     for (int i = 0; i < 1000000; i++) {
       pong.tock_video();
       pong.tock_game(0,0);
-      auto pix_x = pong.tock_pix_x();
-      auto pix_y = pong.tock_pix_y();
+      auto pix_x = pong.pix_x();
+      auto pix_y = pong.pix_y();
 
       if (pix_x < 640 && pix_y < 480) {
         uint8_t r = pong.vga_R * 255;

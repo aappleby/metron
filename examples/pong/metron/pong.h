@@ -50,8 +50,8 @@ public:
 
 	//----------------------------------------
 
-	logic<10> tock_pix_x() const { return px; }
-	logic<10> tock_pix_y() const { return py; }
+	logic<10> pix_x() const { return px; }
+	logic<10> pix_y() const { return py; }
 
 	//----------------------------------------
 
@@ -79,7 +79,6 @@ public:
 	//----------------------------------------
 
 private:
-
 
 	void tick(logic<1> in_quad_a, logic<1> in_quad_b) {
 		logic<10> new_px = px + 1;
@@ -121,10 +120,10 @@ private:
 		logic<1> new_ball_dy = ball_dy;
 
 		if (in_border() | in_paddle()) {
-			if((px == ball_x - 7) & (py == ball_y + 0)) new_ball_dx = 1;
-			if((px == ball_x + 7) & (py == ball_y + 0)) new_ball_dx = 0;
-			if((px == ball_x + 0) & (py == ball_y - 7)) new_ball_dy = 1;
-			if((px == ball_x + 0) & (py == ball_y + 7)) new_ball_dy = 0;
+			if((px == ball_x - 7) && (py == ball_y + 0)) new_ball_dx = 1;
+			if((px == ball_x + 7) && (py == ball_y + 0)) new_ball_dx = 0;
+			if((px == ball_x + 0) && (py == ball_y - 7)) new_ball_dy = 1;
+			if((px == ball_x + 0) && (py == ball_y + 7)) new_ball_dy = 0;
 		}
 
 		if (new_px == 0 && new_py == 0) {

@@ -30,8 +30,8 @@ module Pong
 	output logic vga_B,
 	input logic tock_game_in_quad_a,
 	input logic tock_game_in_quad_b,
-	output logic[9:0] tock_pix_x,
-	output logic[9:0] tock_pix_y
+	output logic[9:0] pix_x,
+	output logic[9:0] pix_y
 );
 /*public:*/
 
@@ -57,8 +57,8 @@ module Pong
 
 	//----------------------------------------
 
-	always_comb begin /*tock_pix_x*/ tock_pix_x = px; end
-	always_comb begin /*tock_pix_y*/ tock_pix_y = py; end
+	always_comb begin /*pix_x*/ pix_x = px; end
+	always_comb begin /*pix_y*/ pix_y = py; end
 
 	//----------------------------------------
 
@@ -88,7 +88,6 @@ module Pong
 	//----------------------------------------
 
 /*private:*/
-
 
 	logic tick_in_quad_a;
 	logic tick_in_quad_b;
@@ -143,10 +142,10 @@ module Pong
 		new_ball_dy = ball_dy;
 
 		if (in_border() | in_paddle()) begin
-			if((px == ball_x - 7) & (py == ball_y + 0)) new_ball_dx = 1;
-			if((px == ball_x + 7) & (py == ball_y + 0)) new_ball_dx = 0;
-			if((px == ball_x + 0) & (py == ball_y - 7)) new_ball_dy = 1;
-			if((px == ball_x + 0) & (py == ball_y + 7)) new_ball_dy = 0;
+			if((px == ball_x - 7) && (py == ball_y + 0)) new_ball_dx = 1;
+			if((px == ball_x + 7) && (py == ball_y + 0)) new_ball_dx = 0;
+			if((px == ball_x + 0) && (py == ball_y - 7)) new_ball_dy = 1;
+			if((px == ball_x + 0) && (py == ball_y + 7)) new_ball_dy = 0;
 		end
 
 		if (new_px == 0 && new_py == 0) begin

@@ -38,7 +38,6 @@ int main(int argc, char* args[]) {
   //----------
 
   Pong pong;
-  pong.init();
 
   while (!quit) {
     SDL_Event event;

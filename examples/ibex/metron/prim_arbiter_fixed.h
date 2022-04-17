@@ -34,7 +34,7 @@ struct prim_arbiter_fixed {
   logic<DW>   data_o;
 
 
-  void init() {
+  prim_arbiter_fixed() {
   }
 
   void tick(bool rst_n, logic<N> req_i, logic<DW> data_i[N], logic<1> ready_i) {

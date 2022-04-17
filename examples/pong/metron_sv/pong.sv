@@ -38,7 +38,7 @@ module Pong
 
 	//----------------------------------------
 
-	initial begin /*init*/
+	initial begin /*Pong*/
 		px = 0;
 		py = 0;
 

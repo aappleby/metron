@@ -5,7 +5,7 @@
 class Module {
 public:
 
-  void init() {
+  Module() {
     write("Hello World?\n");
   }
 

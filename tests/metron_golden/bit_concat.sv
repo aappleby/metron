@@ -8,7 +8,7 @@ module Module
 );
 /*public:*/
 
-  initial begin /*init*/
+  initial begin /*Module*/
     $write("Hello World?\n");
   end
 

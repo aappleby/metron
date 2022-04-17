@@ -489,6 +489,8 @@ CHECK_RETURN Err MtModule::collect_methods() {
 
   // Categorize all methods
 
+  // Pull out all the init()s
+
   for (auto m : all_methods) {
 
     // Type can be null for constructor/destructor
@@ -496,13 +498,33 @@ CHECK_RETURN Err MtModule::collect_methods() {
     auto func_decl = m->node.get_field(field_declarator);
     auto func_name = func_decl.get_field(field_declarator).name4();
 
-    m->is_init = func_name.starts_with("init") || func_type.is_null();
+    if (func_name.starts_with("init") || func_type.is_null()) {
+      m->is_init = true;
+      if (m->is_init && !m->is_public) {
+        err << ERR("Init method %s is not public\n", m->name().c_str());
+      }
+
+      if (m->is_init && m->params.size()) {
+        err << ERR("Init method %s may not have params\n", m->name().c_str());
+      }
+      init_methods.push_back(m);
+    }
+  }
+
+  for (auto m : all_methods) {
+    if (m->is_init) continue;
+
+    // Type can be null for constructor/destructor
+    auto func_type = m->node.get_field(field_type);  
+    auto func_decl = m->node.get_field(field_declarator);
+    auto func_name = func_decl.get_field(field_declarator).name4();
+
     m->is_tick = func_name.starts_with("tick");
-    m->is_tock = m->is_public && !m->is_init;
+    m->is_tock = m->is_public;
 
-    // Anything that's not an init/tick/tock is either a task (non-const) or a function (const).
+    // Anything that's not a tick/tock is either a task (non-const) or a function (const).
 
-    if (!m->is_init && !m->is_tick && !m->is_tock) {
+    if (!m->is_tick && !m->is_tock) {
       m->is_task = !m->is_const;
       m->is_func = m->is_const;
     }
@@ -515,17 +537,7 @@ CHECK_RETURN Err MtModule::collect_methods() {
       err << ERR("Tick %s must be private\n", m->name().c_str());
     }
 
-    if (m->is_init && !m->is_public) {
-      err << ERR("Init method %s is not public\n", m->name().c_str());
-    }
-
-    if (m->is_init && m->params.size()) {
-      err << ERR("Init method %s may not have params\n", m->name().c_str());
-    }
-
-    if (m->is_init) {
-      init_methods.push_back(m);
-    } else if (m->is_tick) {
+    if (m->is_tick) {
       tick_methods.push_back(m);
     } else if (m->is_tock) {
       tock_methods.push_back(m);

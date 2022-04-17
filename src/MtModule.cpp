@@ -10,6 +10,8 @@
 #include "metron_tools.h"
 #include "submodules/tree-sitter/lib/include/tree_sitter/api.h"
 
+#include <deque>
+
 #pragma warning(disable : 4996)  // unsafe fopen()
 
 extern "C" {
@@ -493,11 +495,12 @@ CHECK_RETURN Err MtModule::collect_methods() {
   //----------
   // Pull out all the constructorss
 
-  std::vector<MtMethod*> constructors;
+  std::deque<MtMethod*> init_queue;
 
   for (auto m : all_methods) {
     if (m->node.get_field(field_type).is_null()) {
-      constructors.push_back(m);
+      m->is_constructor = true;
+      init_queue.push_back(m);
     }
   }
 
@@ -505,15 +508,26 @@ CHECK_RETURN Err MtModule::collect_methods() {
   // Everything called by a constructor is an init.
 
   std::vector<MtMethod*> inits;
-  for (auto constructor : constructors) {
-    constructor->node.visit_tree([&](MnNode child) {
+  while (!init_queue.empty()) {
+    auto method = init_queue.front();
+    init_queue.pop_front();
+
+    if (method->is_init) {
+      err << ERR("Method %s is in an init loop\n", method->name().c_str());
+      continue;
+    }
+    method->is_init = true;
+
+    inits.push_back(method);
+
+    method->node.visit_tree([&](MnNode child) {
       if (child.sym == sym_call_expression) {
         auto func = child.get_field(field_function);
         if (func.sym == sym_identifier) {
           auto method = get_method(func.text());
-          if (method) {
+          if (method && !method->is_init) {
             // Local function call to an init
-            inits.push_back(method);
+            init_queue.push_back(method);
           }
         }
       }
@@ -523,31 +537,19 @@ CHECK_RETURN Err MtModule::collect_methods() {
   //----------
   // Save the constructors and inits and remove them from the method set.
 
-  for (auto m : constructors) {
-    if (!m->is_public) {
+  for (auto m : inits) {
+    if (m->is_constructor && !m->is_public) {
       err << ERR("Constructor %s::%s is not public\n", name().c_str(), m->name().c_str());
+    }
+
+    if (!m->is_constructor && m->is_public) {
+      err << ERR("Init method %s::%s is not private\n", name().c_str(), m->name().c_str());
     }
 
     if (m->params.size()) {
       err << ERR("Constructor %s::%s is not allowed to have params\n", name().c_str(), m->name().c_str());
     }
 
-    m->is_constructor = true;
-    m->is_init = true;
-    init_methods.push_back(m);
-    method_set.erase(m);
-  }
-
-  for (auto m : inits) {
-    if (m->is_public && !m->is_constructor) {
-      err << ERR("Init method %s::%s is not private\n", name().c_str(), m->name().c_str());
-    }
-
-    if (m->params.size()) {
-      err << ERR("Init method %s::%s is not allowed to have params\n", name().c_str(), m->name().c_str());
-    }
-
-    m->is_init = true;
     init_methods.push_back(m);
     method_set.erase(m);
   }

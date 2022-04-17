@@ -238,7 +238,7 @@ def run_simple_test(commandline):
         cmd = kcov_prefix() + cmd
     print(f"  {cmd}")
     stuff = subprocess.run(cmd.split(
-        " "), stdout=subprocess.PIPE).stdout.decode('utf-8')
+        " "), stdout=subprocess.PIPE, encoding="charmap").stdout
     if not "All tests pass" in stuff:
         print_r(stuff)
         errors += 1

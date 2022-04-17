@@ -461,6 +461,8 @@ CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnCallExpr call, MnNode bx_n
 CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
   Err err;
 
+  n.dump_tree();
+
   MnFunc func = n.func();
   MnArgList args = n.args();
 
@@ -536,6 +538,8 @@ CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
   } else if (func_name == "sign_extend") {
     err << emit_replacement(func, "$signed");
     err << emit_arg_list(args);
+  } else if (method && method->is_init) {
+    err << comment_out(n);
   } else if (method && method->is_tick) {
 
     // Local call to tick() we already bound args, comment out the call.

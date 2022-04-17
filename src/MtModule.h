@@ -140,7 +140,8 @@ struct MtMethod {
   bool has_return = false;
   bool is_triggered = false; // true if this is a tick and a tock has called it during a trace
 
-  std::vector<MtMethod*> callers;
+  std::set<MtMethod*> callers;
+  std::set<MtMethod*> callees;
 
   int get_rank() const { return 0; }
 

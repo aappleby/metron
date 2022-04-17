@@ -173,24 +173,6 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
   }
 
   //----------------------------------------
-  
-  for (auto mod : modules) {
-    for (auto m : mod->all_methods) {
-      if (m->is_init) continue;
-      if (m->is_public && !m->is_tock) {
-        err << ERR("Public method %s::%s is not a tock", mod->name().c_str(), m->name().c_str());
-      }
-      if (!m->is_public && m->is_tock) {
-        err << ERR("Tock method %s::%s is not public", mod->name().c_str(), m->name().c_str());
-      }
-
-      if (m->is_tick && m->is_public) {
-        err << ERR("Tick method %s::%s is public", mod->name().c_str(), m->name().c_str());
-      }
-    }
-  }
-
-  //----------------------------------------
 
   sources_processed = true;
 

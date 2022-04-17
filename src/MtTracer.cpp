@@ -271,6 +271,7 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
   // Trace the args first.
   err << trace_dispatch(n.get_field(field_arguments));
 
+  auto src_method = method();
   MtMethod* dst_method = nullptr;
 
   auto node_func = n.get_field(field_function);
@@ -290,6 +291,7 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
     auto component = mod()->get_component(component_name);
     if (!component) {
       err << ERR("Could not find component %s\n", component_name.c_str());
+      return err;
     }
 
     auto component_type = component->type_name();
@@ -299,11 +301,15 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
       err << ERR("Could not find module %s for component %s\n", component_type.c_str(), component_name.c_str());
     }
 
-    //auto src_method = method();
     dst_method = dst_module->get_method(component_method_name);
 
     if (!dst_method) {
       err << ERR("Component %s has no method %s\n", component_name.c_str(), component_method_name.c_str());
+      return err;
+    }
+
+    if (!dst_method->is_tock) {
+      err << ERR("Method %s is calling a non-tock method %s.%s on a component.\n", src_method->name().c_str(), component_name.c_str(), component_method_name.c_str());
     }
 
     // New state map goes on the stack.
@@ -336,6 +342,10 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
       node_func.text().c_str());
       */
       return err;
+    }
+
+    if (in_tick() && dst_method->is_public) {
+      err << ERR("Can't call public method %s from private %s\n", dst_method->name().c_str(), src_method->name().c_str());
     }
 
 

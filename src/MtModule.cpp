@@ -449,6 +449,7 @@ CHECK_RETURN Err MtModule::collect_methods() {
   bool in_public = false;
   auto mod_body = mod_class.get_field(field_body).check_null();
 
+  //----------
   // Create method objects for all function defition nodes
 
   std::set<MtMethod*> method_set;
@@ -490,6 +491,24 @@ CHECK_RETURN Err MtModule::collect_methods() {
 
     all_methods.push_back(m);
     method_set.insert(m);
+  }
+
+  //----------
+  // Populate the call graph
+
+  for (auto m : all_methods) {
+    m->node.visit_tree([&](MnNode child) {
+      if (child.sym == sym_call_expression) {
+        auto func = child.get_field(field_function);
+        if (func.sym == sym_identifier) {
+          auto method = get_method(func.text());
+          if (method) {
+            method->callers.insert(m);
+            m->callees.insert(m);
+          }
+        }
+      }
+    });
   }
 
   //----------
@@ -555,12 +574,12 @@ CHECK_RETURN Err MtModule::collect_methods() {
   }
 
   //----------
-  // Pull out all remaining public methods and put them in the tock set.
+  // Public methods without callers go in the tock set.
 
   std::vector<MtMethod*> tocks;
 
   for (auto m : method_set) {
-    if (!m->is_public) continue;
+    if (!m->is_public || m->callers.size()) continue;
     tocks.push_back(m);
   }
 
@@ -571,7 +590,7 @@ CHECK_RETURN Err MtModule::collect_methods() {
   }
 
   //----------
-  // Every non-const method called by a tock is a tick.
+  // Every private, non-const method called by a tock is a tick.
 
   std::vector<MtMethod*> ticks;
   for (auto tock : tocks) {
@@ -580,7 +599,7 @@ CHECK_RETURN Err MtModule::collect_methods() {
         auto func = child.get_field(field_function);
         if (func.sym == sym_identifier) {
           auto method = get_method(func.text());
-          if (method && !method->is_const) {
+          if (method && method->is_private && !method->is_const) {
             // Local function call to an init
             ticks.push_back(method);
           }
@@ -599,7 +618,6 @@ CHECK_RETURN Err MtModule::collect_methods() {
   // Whatever's left is either a task or function.
 
   for (auto m : method_set) {
-    assert(m->is_private);
     assert(!m->is_init);
     assert(!m->is_tock);
     assert(!m->is_tick);

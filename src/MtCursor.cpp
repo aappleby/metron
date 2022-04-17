@@ -461,8 +461,6 @@ CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnCallExpr call, MnNode bx_n
 CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
   Err err;
 
-  n.dump_tree();
-
   MnFunc func = n.func();
   MnArgList args = n.args();
 
@@ -878,8 +876,6 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
     }
 
     if (current_method->has_return) {
-      n.dump_tree();
-
       auto return_type = n.get_field(field_type);
 
       MtCursor subcursor(lib, current_source, current_mod, str_out);

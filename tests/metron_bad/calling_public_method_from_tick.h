@@ -1,8 +1,8 @@
 #include "metron_tools.h"
 
-// Calling a tock() from a tick() is not allowed.
+// Calling public methods from a tick() is not allowed.
 
-//X Can't call tock2 from tick method tick
+//X Can't call public method set_sig from private tick
 
 class Module {
 public:
@@ -11,7 +11,7 @@ public:
     tick();
   }
 
-  void tock2() {
+  void set_sig() {
     sig = 1;
   }
 
@@ -19,7 +19,7 @@ private:
 
   void tick() {
     reg = 0;
-    tock2();
+    set_sig();
   }
 
   logic<1> reg;

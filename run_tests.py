@@ -402,10 +402,20 @@ def test_misc():
 
 def test_lockstep():
     print()
-    print("Testing lockstep simulations")
+    print_b("Testing lockstep simulations")
 
-    # bin/metron -r tests/metron_lockstep -o tests/metron_sv -c basic_lockstep.h
-    # verilator -Isrc -Itests/metron_lockstep --cc basic_lockstep.sv -Mdir examples/rvsimple/metron_vl
+    print("  Convert")
+    os.system("bin/metron -q -r tests/metron_lockstep -o tests/metron_sv -c basic_lockstep.h")
+    print("  Verilate")
+    os.system("verilator -Isrc -Itests/metron_sv --cc basic_lockstep.sv -Mdir tests/metron_vl")
+    os.system("make --quiet -C tests/metron_vl -f Vbasic_lockstep.mk")
+    print("  Compile")
+    os.system("g++ -std=gnu++2a -Isrc -I/usr/local/share/verilator/include -c tests/test_lockstep.cpp -o obj/test_lockstep.o")
+    os.system("g++ -std=gnu++2a -c /usr/share/verilator/include/verilated.cpp -o obj/verilated.o")
+    print("  Link")
+    os.system("g++ obj/verilated.o obj/test_lockstep.o tests/metron_vl/Vbasic_lockstep__ALL.o -o bin/test_lockstep")
+    print("  Run")
+    os.system("bin/test_lockstep")
 
     errors = 0
     return errors;

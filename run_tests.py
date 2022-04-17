@@ -41,7 +41,6 @@ def main():
 
     errors = 0
 
-    """
     errors += test_convert_good()
     errors += test_convert_bad()
 
@@ -52,14 +51,14 @@ def main():
         errors += test_examples()
         errors += test_misc();
 
+        # Lockstep tests are slow because compiler...
+        errors += test_lockstep()
+
         # Icarus generates a bunch of possibly-spurious warnings and can't handle
         # utf-8 with a BOM
         #errors += test_icarus_parse()
 
         pass
-    """
-
-    errors += test_lockstep()
 
     ############################################################
 
@@ -416,14 +415,14 @@ def check_lockstep(filename):
     test_obj  = f"obj/{test_name}.o"
     test_bin  = f"bin/{test_name}"
 
-    print(f"Building {test_name}")
+    print(f"  Building {test_name}")
     os.system(f"bin/metron -q -r {mt_root} -o {sv_root} -c {test_name}.h")
     os.system(f"verilator {includes} --cc {test_name}.sv -Mdir {vl_root}")
     os.system(f"make --quiet -C {vl_root} -f V{test_name}.mk > /dev/null")
     os.system(f"g++ -std=gnu++2a -DMT_TOP={mt_top} -DVL_TOP={vl_top} -DMT_HEADER={mt_header} -DVL_HEADER={vl_header} {includes} -c {test_src} -o {test_obj}")
     os.system(f"g++ {test_obj} {vl_obj} obj/verilated.o -o {test_bin}")
 
-    print(f"Running {test_name}")
+    print(f"  Running {test_name}")
     errors = os.system(f"{test_bin} > /dev/null")
 
     if bad_test:
@@ -439,7 +438,7 @@ def test_lockstep():
         "basic_lockstep1.h",
         "basic_lockstep2.h",
         "basic_lockstep3.h",
-        "basic_lockstep_bad.h"
+        "basic_lockstep_bad.h" # expected to fail
     ]
 
     errors = 0

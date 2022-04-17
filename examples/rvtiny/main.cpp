@@ -1,8 +1,8 @@
 #include <stdio.h>
 
 #include "Platform.h"
-#include "metron/toplevel.h"
-#include "tests/Tests.h"
+#include "toplevel.h"
+#include "Tests.h"
 
 #include "submodules/cli11/include/CLI/App.hpp"
 #include "submodules/cli11/include/CLI/Formatter.hpp"

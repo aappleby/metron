@@ -13,6 +13,13 @@ ninja = ninja_syntax.Writer(outfile)
 #opt_mode = "-O3"
 opt_mode = ""
 
+base_includes = [
+   ".",
+    "src",
+    "tests",
+    "/usr/local/share/verilator/include",
+]
+
 # ------------------------------------------------------------------------------
 
 def main():
@@ -292,20 +299,13 @@ def build_metron_test():
       "tests/test_logic.cpp",
       "tests/test_utils.cpp",
     ],
-    includes=[
-      ".",
-      "src",
-      "tests"
-    ],
+    includes= base_includes,
     deps=["bin/libmetron.a"],
     local_libs="bin/libmetron.a",
   )
 
 # ------------------------------------------------------------------------------
 # Simple Uart testbench
-
-# FIXME move rules out of this block
-
 
 def build_uart():
     cpp_binary(
@@ -320,23 +320,18 @@ def build_uart():
                               "examples/uart/metron_sv")
 
     uart_vhdr, uart_vobj = verilate_dir(
-        src_dir="examples/uart/metron_sv",
-        src_files=uart_srcs,
-        src_top="uart_top",
-        dst_dir="examples/uart/metron_vl",
+        src_dir   = "examples/uart/metron_sv",
+        src_files = uart_srcs,
+        src_top   = "uart_top",
+        dst_dir   = "gen/examples/uart/metron_vl",
     )
 
     cpp_binary(
-        bin_name="bin/examples/uart_vl",
-        src_files=["examples/uart/main_vl.cpp"],
-        includes=[
-            "src",
-            "tests",
-            "obj/examples/uart",
-            "/usr/local/share/verilator/include"
-        ],
-        src_objs=["obj/verilated.o", uart_vobj],
-        deps=[uart_vhdr]
+        bin_name  = "bin/examples/uart_vl",
+        src_files = ["examples/uart/main_vl.cpp"],
+        includes  = base_includes + ["gen/examples/uart"],
+        src_objs  = ["obj/verilated.o", uart_vobj],
+        deps      = [uart_vhdr]
     )
 
     divider("Icarus Verilog uart testbench")
@@ -383,12 +378,12 @@ def build_rvtests():
     dst_text = [swap_ext(f, ".text.vh") for f in src_files]
     dst_data = [swap_ext(f, ".data.vh") for f in src_files]
 
-    ninja.build(rule="make",
-                inputs="tests/rv_tests/makefile",
-                implicit=src_files,
-                outputs=dst_text + dst_data,
-                dst_dir="tests/rv_tests",
-                makefile="makefile")
+    ninja.build(rule     = "make",
+                inputs   = "tests/rv_tests/makefile",
+                implicit = src_files,
+                outputs  = dst_text + dst_data,
+                dst_dir  = "tests/rv_tests",
+                makefile = "makefile")
 
 # ------------------------------------------------------------------------------
 # RVSimple
@@ -397,15 +392,12 @@ def build_rvtests():
 def build_rvsimple():
     mt_root = "examples/rvsimple/metron"
     sv_root = "examples/rvsimple/metron_sv"
-    vl_root = "examples/rvsimple/metron_vl"
+    vl_root = "gen/examples/rvsimple/metron_vl"
 
     cpp_binary(
         bin_name="bin/examples/rvsimple",
         src_files=["examples/rvsimple/main.cpp"],
-        includes=[
-            ".",
-            "src"
-        ],
+        includes = base_includes,
         opt=opt_mode,
     )
 
@@ -421,13 +413,7 @@ def build_rvsimple():
     cpp_binary(
         bin_name="bin/examples/rvsimple_vl",
         src_files=["examples/rvsimple/main_vl.cpp"],
-        includes=[
-            ".",
-            "src",
-            "tests",
-            "obj/examples/rvsimple",
-            "/usr/local/share/verilator/include"
-        ],
+        includes= base_includes + [vl_root],
         src_objs=["obj/verilated.o", rvsimple_metron_vobj],
         deps=[rvsimple_metron_vhdr]
     )
@@ -442,13 +428,7 @@ def build_rvsimple():
     cpp_binary(
         bin_name="bin/examples/rvsimple_ref",
         src_files=["examples/rvsimple/main_ref_vl.cpp"],
-        includes=[
-            ".",
-            "src",
-            "tests",
-            "obj/examples/rvsimple",
-            "/usr/local/share/verilator/include"
-        ],
+        includes = base_includes + ["obj/examples/rvsimple"],
         src_objs=["obj/verilated.o", rvsimple_reference_vobj],
         deps=[rvsimple_reference_vhdr]
     )
@@ -460,38 +440,30 @@ def build_rvsimple():
 def build_rvtiny():
     mt_root = "examples/rvtiny/metron"
     sv_root = "examples/rvtiny/metron_sv"
-    vl_root = "examples/rvtiny/metron_vl"
+    vl_root = "gen/examples/rvtiny/metron_vl"
 
     cpp_binary(
-        bin_name="bin/examples/rvtiny",
-        src_files=["examples/rvtiny/main.cpp"],
-        includes=[
-            ".",
-            "src"
-        ],
-        opt=opt_mode,
+        bin_name  = "bin/examples/rvtiny",
+        src_files = ["examples/rvtiny/main.cpp"],
+        includes  = base_includes + [mt_root],
+        opt       = opt_mode,
     )
 
-    rvtiny_metron_srcs = metronize_dir(mt_root, "toplevel.h", sv_root)
+    rvtiny_sv_srcs = metronize_dir(mt_root, "toplevel.h", sv_root)
 
-    rvtiny_metron_vhdr, rvtiny_metron_vobj = verilate_dir(
-        src_dir=sv_root,
-        src_files=rvtiny_metron_srcs,
-        src_top="toplevel",
-        dst_dir=vl_root
+    rvtiny_vl_vhdr, rvtiny_vl_vobj = verilate_dir(
+        src_dir   = sv_root,
+        src_files = rvtiny_sv_srcs,
+        src_top   = "toplevel",
+        dst_dir   = vl_root
     )
 
     cpp_binary(
-        bin_name="bin/examples/rvtiny_vl",
-        src_files=["examples/rvtiny/main_vl.cpp"],
-        includes=[
-            ".",
-            "src",
-            "obj/examples/rvtiny",
-            "/usr/local/share/verilator/include"
-        ],
-        src_objs=["obj/verilated.o", rvtiny_metron_vobj],
-        deps=[rvtiny_metron_vhdr]
+        bin_name  = "bin/examples/rvtiny_vl",
+        src_files = ["examples/rvtiny/main_vl.cpp"],
+        includes  = base_includes + [vl_root],
+        src_objs  = ["obj/verilated.o", rvtiny_vl_vobj],
+        deps      = [rvtiny_vl_vhdr]
     )
 
 
@@ -506,10 +478,7 @@ def build_rvtiny_sync():
     cpp_binary(
         bin_name="bin/examples/rvtiny_sync",
         src_files=["examples/rvtiny_sync/main.cpp"],
-        includes=[
-            ".",
-            "src"
-        ],
+        includes=base_includes,
         opt=opt_mode,
     )
 
@@ -525,11 +494,7 @@ def build_rvtiny_sync():
     cpp_binary(
         bin_name="bin/examples/rvtiny_sync_vl",
         src_files=["examples/rvtiny_sync/main_vl.cpp"],
-        includes=[
-            ".",
-            "src",
-            "/usr/local/share/verilator/include"
-        ],
+        includes=base_includes,
         src_objs=["obj/verilated.o", verilated_o],
         deps=[verilated_h]
     )
@@ -541,10 +506,7 @@ def build_ibex():
     cpp_binary(
         bin_name="bin/examples/ibex",
         src_files=["examples/ibex/main.cpp"],
-        includes=[
-            ".",
-            "src"
-        ],
+        includes=base_includes,
         opt=opt_mode,
     )
 
@@ -559,10 +521,7 @@ def build_pong():
     cpp_binary(
         bin_name="bin/examples/pong",
         src_files=["examples/pong/main.cpp"],
-        includes=[
-            ".",
-            "src"
-        ],
+        includes=base_includes,
         global_libs="-lSDL2",
         opt=opt_mode,
     )

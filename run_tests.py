@@ -419,7 +419,7 @@ def check_lockstep(filename):
     os.system(f"bin/metron -q -r {mt_root} -o {sv_root} -c {test_name}.h")
     os.system(f"verilator {includes} --cc {test_name}.sv -Mdir {vl_root}")
     os.system(f"make --quiet -C {vl_root} -f V{test_name}.mk > /dev/null")
-    os.system(f"g++ -std=gnu++2a -DMT_TOP={mt_top} -DVL_TOP={vl_top} -DMT_HEADER={mt_header} -DVL_HEADER={vl_header} {includes} -c {test_src} -o {test_obj}")
+    os.system(f"g++ -O3 -std=gnu++2a -DMT_TOP={mt_top} -DVL_TOP={vl_top} -DMT_HEADER={mt_header} -DVL_HEADER={vl_header} {includes} -c {test_src} -o {test_obj}")
     os.system(f"g++ {test_obj} {vl_obj} obj/verilated.o -o {test_bin}")
 
     print(f"  Running {test_name}")
@@ -435,10 +435,10 @@ def test_lockstep():
     print_b("Testing lockstep simulations")
 
     tests = [
-        "basic_lockstep1.h",
-        "basic_lockstep2.h",
-        "basic_lockstep3.h",
-        "basic_lockstep_bad.h" # expected to fail
+        "counter.h",
+        "lfsr.h",
+        "lockstep_bad.h", # expected to fail
+        "timeout_bad.h",  # expected to fail
     ]
 
     errors = 0

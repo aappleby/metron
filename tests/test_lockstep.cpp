@@ -13,7 +13,9 @@ TestResults test_lockstep() {
   MT_TOP mtop;
   VL_TOP vtop;
 
-  for (int i = 0; i < 10; i++) {
+  // Our tiny tests should simulate at a few tens of mhz at least, so a timeout
+  // of 1 million cycles won't take too long.
+  for (int i = 0; i < 1000000; i++) {
     mtop.tock();
 
     vtop.clock = 0;
@@ -21,11 +23,15 @@ TestResults test_lockstep() {
     vtop.clock = 1;
     vtop.eval();
 
+    //printf("0x%08x 0x%08x\n", (uint32_t)mtop.result(), (uint32_t)vtop.result);
+
     EXPECT_EQ(mtop.result(), vtop.result, "Results should match");
     EXPECT_EQ(mtop.done(),   vtop.done,   "Done flag should match");
 
     if (mtop.done()) break;
   }
+
+  EXPECT_EQ(true, mtop.done(), "Test timed out");
 
   TEST_DONE();
 }

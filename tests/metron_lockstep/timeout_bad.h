@@ -1,5 +1,7 @@
 #include "metron_tools.h"
 
+// Intentionally-failing test that should trigger the lockstep test timeout
+
 class Module {
 public:
   Module() {
@@ -7,7 +9,7 @@ public:
   }
 
   logic<1> done() {
-    return counter >= 7;
+    return counter >= 0xFFFF0000;
   }
 
   logic<32> result() {

@@ -96,7 +96,7 @@ def metron_bad():
 
 def kcov_prefix():
     if "--coverage" in sys.argv:
-        return "kcov --exclude-region=KCOV_OFF:KCOV_ON --include-pattern=Metron --exclude-pattern=submodules --exclude-line=debugbreak coverage "
+        return "kcov --exclude-region=KCOV_OFF:KCOV_ON --include-pattern=Metron --exclude-pattern=submodules --exclude-line=debugbreak coverage"
     else:
         return ""
 
@@ -236,7 +236,7 @@ def run_simple_test(commandline):
     cmd = commandline
     # The Icarus output isn't actually a binary, kcov can't run it.
     if (commandline != "bin/examples/uart_iv"):
-        cmd = kcov_prefix() + cmd
+        cmd = kcov_prefix() + " " + cmd
     print(f"  {cmd}")
     stuff = subprocess.run(cmd.split(
         " "), stdout=subprocess.PIPE, encoding="charmap").stdout
@@ -250,7 +250,7 @@ def run_simple_test(commandline):
 
 def run_good_command(commandline):
     errors = 0
-    cmd = kcov_prefix() + commandline
+    cmd = kcov_prefix() + " " + commandline
     print(f"  {cmd}")
 
     #result = os.system(cmd)
@@ -263,7 +263,7 @@ def run_good_command(commandline):
 
 def run_bad_command(commandline):
     errors = 0
-    cmd = kcov_prefix() + commandline
+    cmd = kcov_prefix() + " " + commandline
     print(f"  {cmd}")
 
     #result = os.system(cmd)

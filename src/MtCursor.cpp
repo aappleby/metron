@@ -667,9 +667,7 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnCompoundStatement n) {
 
   for (const auto& c : (MnNode&)n) {
     if (c.sym == sym_declaration) {
-      bool is_localparam = c.sym == sym_declaration && c.child_count() >= 4 &&
-                           c.child(0).text() == "static" &&
-                           c.child(1).text() == "const";
+      bool is_localparam = c.sym == sym_declaration && c.is_const();
 
       if (is_localparam) {
       } else {
@@ -695,9 +693,7 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnCompoundStatement n) {
   MtCursor old_cursor = *this;
   for (const auto& c : (MnNode&)n) {
     if (c.sym == sym_declaration) {
-      bool is_localparam = c.sym == sym_declaration && c.child_count() >= 4 &&
-                           c.child(0).text() == "static" &&
-                           c.child(1).text() == "const";
+      bool is_localparam = c.sym == sym_declaration && c.is_const();
 
       if (is_localparam) {
       } else {
@@ -974,12 +970,20 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
 
       case sym_declaration: {
         MnDecl d(c);
-        if (d.is_init_decl()) {
-          err << emit_init_declarator_as_assign(c);
-        } else {
-          err << skip_over(c);
-          //err << comment_out(c);
+
+        if (d.is_const()) {
+          err << emit_print("localparam ");
+          err << emit_children(d);
         }
+        else {
+          if (d.is_init_decl()) {
+            err << emit_init_declarator_as_assign(c);
+          } else {
+            err << skip_over(c);
+            //err << comment_out(c);
+          }
+        }
+
         break;
       }
 
@@ -1546,6 +1550,14 @@ CHECK_RETURN Err MtCursor::emit_enum(MnFieldDecl n) {
 CHECK_RETURN Err MtCursor::emit_field_decl(MnFieldDecl n) {
   Err err;
 
+  //n.dump_tree();
+
+  if (n.is_const()) {
+    err << emit_print("localparam ");
+    err << emit_children(n);
+    return err;
+  }
+
   assert(cursor == n.start());
 
   auto node_type = n.get_field(field_type);
@@ -1568,7 +1580,7 @@ CHECK_RETURN Err MtCursor::emit_field_decl(MnFieldDecl n) {
     err << skip_over(n);
   } else if (current_mod->get_output_register(n.name().text())) {
     err << skip_over(n);
-  } else if (n.is_static() && n.is_const()) {
+  } else if (n.is_const()) {
     err << emit_children(n);
   } else if (current_mod->get_enum(type_name)) {
     err << emit_children(n);
@@ -2391,6 +2403,7 @@ CHECK_RETURN Err MtCursor::emit_condition(MnCondExpr n) {
 
 CHECK_RETURN Err MtCursor::emit_storage_spec(MnStorageSpec n) {
   Err err;
+  /*
   assert(cursor == n.start());
   if (n.match("static")) {
     err << emit_replacement(n, "localparam");
@@ -2399,6 +2412,11 @@ CHECK_RETURN Err MtCursor::emit_storage_spec(MnStorageSpec n) {
     err << skip_over(n);
   }
   assert(cursor == n.end());
+  */
+
+  err << skip_over(n);
+  err << skip_ws();
+
   return err;
 }
 
@@ -2537,7 +2555,7 @@ CHECK_RETURN Err MtCursor::emit_decl(MnDecl n) {
   assert(cursor == n.start());
 
   // Check for "static const char"
-  if (n.is_static() && n.is_const()) {
+  if (n.is_const()) {
     auto node_type = n.get_field(field_type);
     if (node_type.text() == "char") {
       err << emit_print("localparam string ");

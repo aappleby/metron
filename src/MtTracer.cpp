@@ -149,6 +149,8 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n) {
     case sym_break_statement:
     case sym_comment:
     case alias_sym_type_identifier:
+    case sym_storage_class_specifier:
+    case sym_type_qualifier:
       // do-nothing nodes
       break;
 

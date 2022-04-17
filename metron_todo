@@ -1,17 +1,16 @@
+the error checking should really be independent passes between stages
+
 may need a "hoist members" step for some SV tools
 
 PREPROC
 
 void func() {
-  static const inst local_constant = N;
+  static const int local_constant = N;
 }
 
 packed structs are going to behave differently if bitsliced, not sure how to
 deal with that... but if you can't express it in c do we care?
 
-
-treat all call args/return values as fields that have to be traced
-  ok now we need test cases
 
 A bunch of the subcursor stuff could be replaced with splice
   probably all of it if you add a component context param to splice

@@ -446,6 +446,9 @@ CHECK_RETURN Err MtModule::collect_methods() {
 
   bool in_public = false;
   auto mod_body = mod_class.get_field(field_body).check_null();
+
+  // Create method objects for all function defition nodes
+
   for (const auto& n : mod_body) {
     if (n.sym == sym_access_specifier) {
       in_public = n.child(0).text() == "public";
@@ -462,7 +465,6 @@ CHECK_RETURN Err MtModule::collect_methods() {
 
     m->is_public = in_public;
     m->is_private = !in_public;
-
     m->is_const = false;
     for (const auto& n : func_decl) {
       if (n.sym == sym_type_qualifier && n.text() == "const") {
@@ -473,6 +475,26 @@ CHECK_RETURN Err MtModule::collect_methods() {
 
     m->has_return = func_type && func_type.text() != "void";
 
+    auto func_args = func_decl.get_field(field_parameters);
+    for (int i = 0; i < func_args.named_child_count(); i++) {
+      auto param = func_args.named_child(i);
+      assert(param.sym == sym_parameter_declaration);
+      auto param_name = param.get_field(field_declarator).text();
+      m->params.push_back(param_name);
+      m->param_nodes.push_back(param);
+    }
+
+    all_methods.push_back(m);
+  }
+
+  // Categorize all methods
+
+  for (auto m : all_methods) {
+
+    // Type can be null for constructor/destructor
+    auto func_type = m->node.get_field(field_type);  
+    auto func_decl = m->node.get_field(field_declarator);
+    auto func_name = func_decl.get_field(field_declarator).name4();
 
     m->is_init = func_name.starts_with("init") || func_type.is_null();
     m->is_tick = func_name.starts_with("tick");
@@ -485,35 +507,20 @@ CHECK_RETURN Err MtModule::collect_methods() {
       m->is_func = m->is_const;
     }
 
-    auto func_args = func_decl.get_field(field_parameters);
-    for (int i = 0; i < func_args.named_child_count(); i++) {
-      auto param = func_args.named_child(i);
-      assert(param.sym == sym_parameter_declaration);
-      auto param_name = param.get_field(field_declarator).text();
-      m->params.push_back(param_name);
-      m->param_nodes.push_back(param);
-    }
-
-    all_methods.push_back(m);
-
     if (m->is_tick && m->has_return) {
       err << ERR("Tick method %s has a return value\n", m->name().c_str());
-      break;
     }
 
     if (m->is_tick && m->is_public) {
       err << ERR("Tick %s must be private\n", m->name().c_str());
-      break;
     }
 
     if (m->is_init && !m->is_public) {
       err << ERR("Init method %s is not public\n", m->name().c_str());
-      break;
     }
 
-    if (m->is_init && func_args.named_child_count()) {
+    if (m->is_init && m->params.size()) {
       err << ERR("Init method %s may not have params\n", m->name().c_str());
-      break;
     }
 
     if (m->is_init) {

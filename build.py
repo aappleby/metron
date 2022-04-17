@@ -6,10 +6,17 @@ import sys
 import os
 from os import path
 
+
+obj_dir = "obj"
+outfile = open("build.ninja", "w+")
+ninja = ninja_syntax.Writer(outfile)
+#opt_mode = "-O3"
+opt_mode = ""
+
 # ------------------------------------------------------------------------------
 
-
 def main():
+    global outfile
     print("Regenerating build.ninja...")
     build_verilator()
     build_treesitter()
@@ -24,15 +31,14 @@ def main():
     #build_ibex()
     build_pong()
     print("Done!")
+    outfile.close()
+    outfile = None
+
+    #this hangs...
+    #return os.system("ninja")
+    return 0
 
 # ------------------------------------------------------------------------------
-
-
-obj_dir = "obj"
-outfile = open("build.ninja", "w+")
-ninja = ninja_syntax.Writer(outfile)
-#opt_mode = "-O3"
-opt_mode = ""
 
 
 def swap_ext(name, new_ext):
@@ -603,4 +609,4 @@ def build_pong():
 """
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

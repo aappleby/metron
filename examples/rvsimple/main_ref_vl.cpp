@@ -1,8 +1,8 @@
 #include <stdio.h>
 
 #include "Platform.h"
-#include "reference_vl/Vtoplevel.h"
-#include "tests/Tests.h"
+#include "Vtoplevel.h"
+#include "Tests.h"
 
 #include "submodules/cli11/include/CLI/App.hpp"
 #include "submodules/cli11/include/CLI/Formatter.hpp"

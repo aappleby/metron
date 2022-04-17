@@ -397,10 +397,10 @@ build bin/examples/rvsimple_vl: link obj/verilated.o $
 
 
 ################################################################################
-# Verilate toplevel@examples/rvsimple/reference_sv -> examples/rvsimple/reference_vl
+# Verilate toplevel@examples/rvsimple/reference_sv -> gen/examples/rvsimple/reference_vl
 
-build examples/rvsimple/reference_vl/Vtoplevel.mk $
-    examples/rvsimple/reference_vl/Vtoplevel.h: verilator $
+build gen/examples/rvsimple/reference_vl/Vtoplevel.mk $
+    gen/examples/rvsimple/reference_vl/Vtoplevel.h: verilator $
     examples/rvsimple/reference_sv/adder.sv $
     examples/rvsimple/reference_sv/alu.sv $
     examples/rvsimple/reference_sv/alu_control.sv $
@@ -428,10 +428,10 @@ build examples/rvsimple/reference_vl/Vtoplevel.mk $
     examples/rvsimple/reference_sv/toplevel.sv
   includes = -Isrc -Iexamples/rvsimple/reference_sv
   src_top = toplevel
-  dst_dir = examples/rvsimple/reference_vl
-build examples/rvsimple/reference_vl/Vtoplevel__ALL.o: make $
-    examples/rvsimple/reference_vl/Vtoplevel.mk
-  dst_dir = examples/rvsimple/reference_vl
+  dst_dir = gen/examples/rvsimple/reference_vl
+build gen/examples/rvsimple/reference_vl/Vtoplevel__ALL.o: make $
+    gen/examples/rvsimple/reference_vl/Vtoplevel.mk
+  dst_dir = gen/examples/rvsimple/reference_vl
   makefile = Vtoplevel.mk
 
 
@@ -440,14 +440,14 @@ build examples/rvsimple/reference_vl/Vtoplevel__ALL.o: make $
 
 build obj/examples/rvsimple/main_ref_vl.o: compile_cpp $
     examples/rvsimple/main_ref_vl.cpp | $
-    examples/rvsimple/reference_vl/Vtoplevel.h
+    gen/examples/rvsimple/reference_vl/Vtoplevel.h
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include $
-      -Iobj/examples/rvsimple
+      -Igen/examples/rvsimple/reference_vl
 build bin/examples/rvsimple_ref: link obj/verilated.o $
-    examples/rvsimple/reference_vl/Vtoplevel__ALL.o $
+    gen/examples/rvsimple/reference_vl/Vtoplevel__ALL.o $
     obj/examples/rvsimple/main_ref_vl.o
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include $
-      -Iobj/examples/rvsimple
+      -Igen/examples/rvsimple/reference_vl
 
 
 ################################################################################
@@ -527,17 +527,17 @@ build examples/rvtiny_sync/metron_sv/toplevel.sv: metron $
 
 
 ################################################################################
-# Verilate toplevel@examples/rvtiny_sync/metron_sv -> examples/rvtiny_sync/metron_vl
+# Verilate toplevel@examples/rvtiny_sync/metron_sv -> gen/examples/rvtiny_sync/metron_vl
 
-build examples/rvtiny_sync/metron_vl/Vtoplevel.mk $
-    examples/rvtiny_sync/metron_vl/Vtoplevel.h: verilator $
+build gen/examples/rvtiny_sync/metron_vl/Vtoplevel.mk $
+    gen/examples/rvtiny_sync/metron_vl/Vtoplevel.h: verilator $
     examples/rvtiny_sync/metron_sv/toplevel.sv
   includes = -Isrc -Iexamples/rvtiny_sync/metron_sv
   src_top = toplevel
-  dst_dir = examples/rvtiny_sync/metron_vl
-build examples/rvtiny_sync/metron_vl/Vtoplevel__ALL.o: make $
-    examples/rvtiny_sync/metron_vl/Vtoplevel.mk
-  dst_dir = examples/rvtiny_sync/metron_vl
+  dst_dir = gen/examples/rvtiny_sync/metron_vl
+build gen/examples/rvtiny_sync/metron_vl/Vtoplevel__ALL.o: make $
+    gen/examples/rvtiny_sync/metron_vl/Vtoplevel.mk
+  dst_dir = gen/examples/rvtiny_sync/metron_vl
   makefile = Vtoplevel.mk
 
 
@@ -546,12 +546,14 @@ build examples/rvtiny_sync/metron_vl/Vtoplevel__ALL.o: make $
 
 build obj/examples/rvtiny_sync/main_vl.o: compile_cpp $
     examples/rvtiny_sync/main_vl.cpp | $
-    examples/rvtiny_sync/metron_vl/Vtoplevel.h
-  includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include
+    gen/examples/rvtiny_sync/metron_vl/Vtoplevel.h
+  includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include $
+      -Igen/examples/rvtiny_sync/metron_vl
 build bin/examples/rvtiny_sync_vl: link obj/verilated.o $
-    examples/rvtiny_sync/metron_vl/Vtoplevel__ALL.o $
+    gen/examples/rvtiny_sync/metron_vl/Vtoplevel__ALL.o $
     obj/examples/rvtiny_sync/main_vl.o
-  includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include
+  includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include $
+      -Igen/examples/rvtiny_sync/metron_vl
 
 
 ################################################################################

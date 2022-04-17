@@ -95,8 +95,6 @@ ninja.rule("nextpnr-ice40", command="nextpnr-ice40 -q --${chip} --package ${pack
 ninja.rule("icepack",       command="icepack ${in} ${out}")
 
 
-# command = "g++ -g $opt -Wl,--whole-archive ${in} -Wl,--no-whole-archive ${link_libs} -o ${out}"
-
 def metronize_dir(src_dir, src_top, dst_dir):
     """
     Convert all .h files in the source directory into .sv files in the destination directory.
@@ -177,6 +175,7 @@ def cpp_binary(bin_name, src_files, src_objs=None, deps=None, **kwargs):
                 inputs=src_objs,
                 variables=kwargs)
 
+
 def cpp_library(lib_name, src_files, src_objs=None, deps=None, **kwargs):
     """
     Compiles a C++ binary from the given source files.
@@ -202,8 +201,6 @@ def cpp_library(lib_name, src_files, src_objs=None, deps=None, **kwargs):
                 rule="static_lib",
                 inputs=src_objs,
                 variables=kwargs)
-
-
 
 
 def iverilog_binary(bin_name, src_top, src_files, includes):
@@ -395,42 +392,45 @@ def build_rvsimple():
     vl_root = "gen/examples/rvsimple/metron_vl"
 
     cpp_binary(
-        bin_name="bin/examples/rvsimple",
-        src_files=["examples/rvsimple/main.cpp"],
-        includes = base_includes,
-        opt=opt_mode,
+        bin_name  = "bin/examples/rvsimple",
+        src_files = ["examples/rvsimple/main.cpp"],
+        includes  = base_includes,
+        opt       = opt_mode,
     )
 
-    rvsimple_metron_srcs = metronize_dir(mt_root, "toplevel.h", sv_root)
+    sv_srcs = metronize_dir(mt_root, "toplevel.h", sv_root)
 
-    rvsimple_metron_vhdr, rvsimple_metron_vobj = verilate_dir(
-        src_dir=sv_root,
-        src_files=rvsimple_metron_srcs,
-        src_top="toplevel",
-        dst_dir=vl_root,
-    )
-
-    cpp_binary(
-        bin_name="bin/examples/rvsimple_vl",
-        src_files=["examples/rvsimple/main_vl.cpp"],
-        includes= base_includes + [vl_root],
-        src_objs=["obj/verilated.o", rvsimple_metron_vobj],
-        deps=[rvsimple_metron_vhdr]
-    )
-
-    rvsimple_reference_vhdr, rvsimple_reference_vobj = verilate_dir(
-        src_dir="examples/rvsimple/reference_sv",
-        src_files=glob.glob("examples/rvsimple/reference_sv/*.sv"),
-        src_top="toplevel",
-        dst_dir="examples/rvsimple/reference_vl"
+    vl_vhdr, vl_vobj = verilate_dir(
+        src_dir   = sv_root,
+        src_files = sv_srcs,
+        src_top   = "toplevel",
+        dst_dir   = vl_root,
     )
 
     cpp_binary(
-        bin_name="bin/examples/rvsimple_ref",
-        src_files=["examples/rvsimple/main_ref_vl.cpp"],
-        includes = base_includes + ["obj/examples/rvsimple"],
-        src_objs=["obj/verilated.o", rvsimple_reference_vobj],
-        deps=[rvsimple_reference_vhdr]
+        bin_name  = "bin/examples/rvsimple_vl",
+        src_files = ["examples/rvsimple/main_vl.cpp"],
+        includes  =  base_includes + [vl_root],
+        src_objs  = ["obj/verilated.o", vl_vobj],
+        deps      = [vl_vhdr]
+    )
+
+    ref_sv_root = "examples/rvsimple/reference_sv"
+    ref_vl_root = "gen/examples/rvsimple/reference_vl"
+
+    ref_vhdr, ref_vobj = verilate_dir(
+        src_dir   = ref_sv_root,
+        src_files = glob.glob(f"{ref_sv_root}/*.sv"),
+        src_top   = "toplevel",
+        dst_dir   = ref_vl_root
+    )
+
+    cpp_binary(
+        bin_name  = "bin/examples/rvsimple_ref",
+        src_files = ["examples/rvsimple/main_ref_vl.cpp"],
+        includes  = base_includes + [ref_vl_root],
+        src_objs  = ["obj/verilated.o", ref_vobj],
+        deps      = [ref_vhdr]
     )
 
 
@@ -473,30 +473,30 @@ def build_rvtiny():
 def build_rvtiny_sync():
     mt_root = "examples/rvtiny_sync/metron"
     sv_root = "examples/rvtiny_sync/metron_sv"
-    vl_root = "examples/rvtiny_sync/metron_vl"
+    vl_root = "gen/examples/rvtiny_sync/metron_vl"
 
     cpp_binary(
-        bin_name="bin/examples/rvtiny_sync",
-        src_files=["examples/rvtiny_sync/main.cpp"],
-        includes=base_includes,
-        opt=opt_mode,
+        bin_name  = "bin/examples/rvtiny_sync",
+        src_files = ["examples/rvtiny_sync/main.cpp"],
+        includes  = base_includes,
+        opt       = opt_mode,
     )
 
     metronized_src = metronize_dir(mt_root, "toplevel.h", sv_root)
 
     verilated_h, verilated_o = verilate_dir(
-        src_dir=sv_root,
-        src_files=metronized_src,
-        src_top="toplevel",
-        dst_dir=vl_root
+        src_dir   = sv_root,
+        src_files = metronized_src,
+        src_top   = "toplevel",
+        dst_dir   = vl_root
     )
 
     cpp_binary(
-        bin_name="bin/examples/rvtiny_sync_vl",
-        src_files=["examples/rvtiny_sync/main_vl.cpp"],
-        includes=base_includes,
-        src_objs=["obj/verilated.o", verilated_o],
-        deps=[verilated_h]
+        bin_name  = "bin/examples/rvtiny_sync_vl",
+        src_files = ["examples/rvtiny_sync/main_vl.cpp"],
+        includes  = base_includes + [vl_root],
+        src_objs  = ["obj/verilated.o", verilated_o],
+        deps      = [verilated_h]
     )
 
 # ------------------------------------------------------------------------------
@@ -516,14 +516,14 @@ def build_ibex():
 def build_pong():
     mt_root = "examples/pong/metron"
     sv_root = "examples/pong/metron_sv"
-    vl_root = "examples/pong/metron_vl"
+    vl_root = "gen/examples/pong/metron_vl"
 
     cpp_binary(
-        bin_name="bin/examples/pong",
-        src_files=["examples/pong/main.cpp"],
-        includes=base_includes,
-        global_libs="-lSDL2",
-        opt=opt_mode,
+        bin_name    = "bin/examples/pong",
+        src_files   = ["examples/pong/main.cpp"],
+        includes    = base_includes,
+        global_libs = "-lSDL2",
+        opt         = opt_mode,
     )
 
     metronized_src = metronize_dir(mt_root, "pong.h", sv_root)

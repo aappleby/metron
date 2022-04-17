@@ -9,6 +9,13 @@ public:
     return my_reg;
   }
 
+  void tock() {
+    tick();
+  }
+
+
+private:
+
   void tick() {
     my_reg = my_reg + 1;
   }

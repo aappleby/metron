@@ -2,6 +2,8 @@
 
 // Tock functions can't have more than a single return at the end.
 
+//X Found non-terminal return in method tock
+
 class Module {
 public:
 

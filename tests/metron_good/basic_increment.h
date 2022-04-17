@@ -6,6 +6,12 @@
 class Module {
 public:
 
+  void tock() {
+    tick();
+  }
+
+private:
+
   void tick() {
     my_reg1++;
     ++my_reg2;
@@ -13,7 +19,6 @@ public:
     --my_reg4;
   }
 
-private:
   int my_reg1;
   int my_reg2;
   int my_reg3;

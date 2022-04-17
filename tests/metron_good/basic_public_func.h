@@ -14,6 +14,12 @@ public:
     return 17 + arg;
   }
 
+  void tock() {
+    tick();
+  }
+
+private:
+
   void tick() {
     my_reg = 1;
   }

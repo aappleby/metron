@@ -5,6 +5,12 @@
 class Module {
 public:
 
+  void tock() {
+    tick();
+  }
+
+private:
+
   static const int my_val = 7;
 
   void tick() {

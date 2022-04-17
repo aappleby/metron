@@ -3,6 +3,8 @@
 // If for some reason you put a return in the middle of a block, we should catch
 // it.
 
+//X Found non-terminal return in method tock
+
 class Module {
 public:
 

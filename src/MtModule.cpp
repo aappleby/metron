@@ -16,12 +16,9 @@ extern "C" {
 extern const TSLanguage *tree_sitter_cpp();
 }
 
-FieldState merge_delta(FieldState a, FieldDelta b);
-CHECK_RETURN Err merge_series(MtStateMap & ma, MtStateMap & mb, MtStateMap & out);
-
 //------------------------------------------------------------------------------
 
-bool MtField::is_submod() const {
+bool MtField::is_component() const {
   return (node.source->lib->get_module(type_name()));
 }
 
@@ -124,7 +121,7 @@ MtField *MtModule::get_output_signal(const std::string &name) {
 }
 
 MtField *MtModule::get_output_register(const std::string &name) {
-  for (auto n : output_registers)
+  for (auto n : public_registers)
     if (n->name() == name) return n;
   return nullptr;
 }
@@ -135,8 +132,8 @@ MtMethod *MtModule::get_output_return(const std::string &name) {
   return nullptr;
 }
 
-MtField *MtModule::get_submod(const std::string &name) {
-  for (auto n : all_submods) {
+MtField *MtModule::get_component(const std::string &name) {
+  for (auto n : all_components) {
     if (n->name() == name) return n;
   }
   return nullptr;
@@ -209,7 +206,7 @@ void MtModule::dump_banner() const {
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
   
   LOG_B("Output Registers:\n");
-  for (auto n : output_registers)
+  for (auto n : public_registers)
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
 
   LOG_B("Output Returns:\n");
@@ -222,10 +219,10 @@ void MtModule::dump_banner() const {
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
   */
   
-  LOG_B("Submods:\n");
-  for (auto submod : all_submods) {
-    auto submod_mod = source_file->lib->get_module(submod->type_name());
-    LOG_G("  %s:%s\n", submod->name().c_str(), submod_mod->mod_name.c_str());
+  LOG_B("Components:\n");
+  for (auto component : all_components) {
+    auto component_mod = source_file->lib->get_module(component->type_name());
+    LOG_G("  %s:%s\n", component->name().c_str(), component_mod->mod_name.c_str());
   }
 
   //----------
@@ -251,9 +248,11 @@ void MtModule::dump_banner() const {
   for (auto &kv : port_map)
     LOG_G("  %s = %s\n", kv.first.c_str(), kv.second.c_str());
 
+  /*
   LOG_B("State map:\n");
   for (auto &kv : mod_states.get_map())
     LOG_G("  %s = %s\n", kv.first.c_str(), to_string(kv.second));
+  */
 
   LOG_B("\n");
 }
@@ -325,7 +324,11 @@ CHECK_RETURN Err MtModule::load_pass1() {
 
   err << collect_modparams();
   err << collect_methods();
-  err << collect_field_and_submods();
+  err << collect_field_and_components();
+
+  if (err.has_err()) {
+    err << ERR("Module %s failed in load_pass1()\n", name().c_str());
+  }
 
 #if 0
   // enums = new std::vector<MtEnum>();
@@ -359,10 +362,10 @@ CHECK_RETURN Err MtModule::load_pass1() {
 
       auto type_name = n.node_to_type();
       if (source_file->lib->has_mod(type_name)) {
-        MtSubmod submod(n);
-        submod.mod = source_file->lib->get_mod(type_name);
-        submod.name = n.get_field(field_declarator).text();
-        submods.push_back(submod);
+        MtSu bmod su bmod(n);
+        sub mod.mod = source_file->lib->get_mod(type_name);
+        sub mod.name = n.get_field(field_declarator).text();
+        sub mods.push_back(sub mod);
       }
     }
     */
@@ -396,11 +399,11 @@ CHECK_RETURN Err MtModule::collect_modparams() {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtModule::collect_field_and_submods() {
+CHECK_RETURN Err MtModule::collect_field_and_components() {
   Err err;
 
   assert(all_fields.empty());
-  assert(all_submods.empty());
+  assert(all_components.empty());
   assert(localparams.empty());
 
   auto mod_body = mod_class.get_field(field_body).check_null();
@@ -423,8 +426,8 @@ CHECK_RETURN Err MtModule::collect_field_and_submods() {
     if (n.get_field(field_type).sym == sym_enum_specifier) {
       all_enums.push_back(new_field);
     }
-    else if (new_field->is_submod()) {
-      all_submods.push_back(new_field);
+    else if (new_field->is_component()) {
+      all_components.push_back(new_field);
     }
     else {
       all_fields.push_back(new_field);
@@ -496,12 +499,17 @@ CHECK_RETURN Err MtModule::collect_methods() {
     all_methods.push_back(m);
 
     if (m->is_tick && m->has_return) {
-      err << ERR("Tick method %s has a return value", m->name().c_str());
+      err << ERR("Tick method %s has a return value\n", m->name().c_str());
+      break;
+    }
+
+    if (m->is_tick && m->is_public) {
+      err << ERR("Tick %s must be private\n", m->name().c_str());
       break;
     }
 
     if (m->is_init && !m->is_public) {
-      err << ERR("Init method %s is not public", m->name().c_str());
+      err << ERR("Init method %s is not public\n", m->name().c_str());
       break;
     }
 
@@ -529,13 +537,14 @@ CHECK_RETURN Err MtModule::collect_methods() {
 
 CHECK_RETURN Err MtModule::trace() {
   Err err;
-  LOG_G("Tracing %s\n", name().c_str());
-  LOG_INDENT_SCOPE();
+  LOG_G("Tracing all public tocks in %s\n", name().c_str());
 
-  // Trace all methods, except for inits.
+  mod_state.clear();
 
   for (auto m : all_methods) {
-    if (!(m->is_public && (m->is_tick || m->is_tock))) {
+    LOG_INDENT_SCOPE();
+
+    if (!(m->is_public && m->is_tock)) {
       continue;
     }
 
@@ -546,77 +555,29 @@ CHECK_RETURN Err MtModule::trace() {
     tracer._path_stack.push_back("<top>");
     tracer._mod_stack.push_back(this);
     tracer._method_stack.push_back(m);
-    tracer.push_state(&m->method_state);
+    tracer.push_state(&mod_state);
 
     err << tracer.trace_method(m);
 
-    // Lock all states touched by the method.
-    m->method_state.lock_state();
-
-    tracer.dump_trace(*tracer.state_top);
+    LOG_G("Trace done\n");
   }
 
-  // Merge the traces for all public tick/tock methods in lexical order.
-  // FIXME - sort methods, then merge
-
-  for (auto m : all_methods) {
-    if (!(m->is_public && (m->is_tick || m->is_tock))) {
-      continue;
-    }
-
-    err << merge_series(mod_states, m->method_state, mod_states);
-    if (err.has_err()) {
-      LOG_R("MtModule::trace - Cannot merge state_mod with m->method_state\n");
-
-      LOG_R("state_mod:\n");
-      LOG_INDENT();
-      MtTracer::dump_trace(mod_states);
-      LOG_DEDENT();
-
-      LOG_R("state_method:\n");
-      LOG_INDENT();
-      MtTracer::dump_trace(m->method_state);
-      LOG_DEDENT();
-    }
+  if (err.has_err()) {
+    err << ERR("Method trace failed.");
+    return err;
   }
 
   // Check that all entries in the state map ended up in a valid state.
 
-  for (auto& pair : mod_states.get_map()) {
+  //MtTracer::dump_trace(mod_state);
 
-    switch(pair.second) {
+  for (auto& pair : mod_state) {
 
-      // These states are OK.
-    case FIELD_RD_____:
-    case FIELD____WR_L:
-    case FIELD_RD_WR_L:
-    case FIELD____WS_L:
-      break;
-
-      // These states are bad, but we would error out of tracing before we got here, so they can't currently be hit.
-      // KCOV_OFF
-    case FIELD________:
-      err << ERR("Field %s was never read or written!\n", pair.first.c_str());
-      break;
-    case FIELD____WR__:
-      err << ERR("Register %s was written but never read or locked - internal error?\n", pair.first.c_str());
-      break;
-    case FIELD_RD_WR__:
-      err << ERR("Register %s was written but never locked - internal error?\n", pair.first.c_str());
-      break;
-    case FIELD____WS__:
-      err << WARN("Signal %s was written but never read - is it an output?\n", pair.first.c_str());
-      break;
-    default:
-      err << ERR("Field %s has an invalid state %d\n", pair.first.c_str(), pair.second);
-      break;
-      // KCOV_ON
+    if (pair.second == FIELD_INVALID) {
+      err << ERR("Field %s has invalid state\n", pair.first.c_str(), to_string(pair.second));
     }
-  }
 
-  // Assign the final merged states back from the map to the fields.
-
-  for (auto& pair : mod_states.get_map()) {
+    // Assign the final merged states back from the map to the fields.
 
     auto path = pair.first;
     assert(path.starts_with("<top>."));
@@ -625,29 +586,20 @@ CHECK_RETURN Err MtModule::trace() {
     auto field = get_field(path);
     if (field) {
       field->state = pair.second;
-
-      if (!field->is_public()) {
-        if (pair.second == FIELD____WR_L) {
-          err << WARN("Private register %s was written and locked but never read - is it redundant?\n", pair.first.c_str());
-        }
-
-        if (pair.second == FIELD_RD_____) {
-          err << WARN("Private field %s was read but never written - should it be const?\n", pair.first.c_str());
-        }
-      }
     }
   }
-
 
   // Check that all fields got a state assigned to them.
 
+  /*
   for (auto f : all_fields) {
-    if (f->is_submod()) continue;
-    if (f->is_param()) continue;
-    if (mod_states.get_state("<top>." + f->name()) == FIELD________) {
+    if (f->is_component() || f->is_param()) continue;
+
+    if (mod_states.get_actions("<top>." + f->name()) == FIELD_NONE) {
       err << ERR("No method in the public interface of %s touched field %s!\n", name().c_str(), f->name().c_str());
     }
   }
+  */
 
   return err;
 }
@@ -660,7 +612,6 @@ CHECK_RETURN Err MtModule::load_pass2() {
   Err err;
   assert (!mod_class.is_null());
 
-  err << collect_input_arguments();
   err << categorize_fields();
 
   err << build_port_map();
@@ -672,40 +623,10 @@ CHECK_RETURN Err MtModule::load_pass2() {
 // Collect all inputs to all tock and getter methods and merge them into a list
 // of input ports.
 
-CHECK_RETURN Err MtModule::collect_input_arguments() {
-  Err err;
-
-  assert(input_arguments.empty());
-
-  for (auto m : all_methods) {
-    if (!m->is_public) continue;
-    if (!m->is_tick && !m->is_tock) continue;
-
-    auto params =
-        m->node.get_field(field_declarator).get_field(field_parameters);
-
-    for (const auto& param : params) {
-      if (param.sym != sym_parameter_declaration) continue;
-      MtParam* new_input = MtParam::construct(m->name(), param);
-      input_arguments.push_back(new_input);
-    }
-  }
-
-  return err;
-}
-
-//------------------------------------------------------------------------------
-
 CHECK_RETURN Err MtModule::categorize_fields() {
   Err err;
 
-  assert(localparams.empty());
-  assert(input_signals.empty());
-  assert(output_signals.empty());
-  assert(output_registers.empty());
-  assert(output_returns.empty());
-
-  std::set<std::string> dedup;
+  LOG_G("Categorizing %s\n", name().c_str());
 
   for (auto f : all_fields) {
 
@@ -713,46 +634,46 @@ CHECK_RETURN Err MtModule::categorize_fields() {
       localparams.push_back(MtParam::construct("<localparam>", f->node));
     }
     else if (f->is_public()) {
-      if (f->is_input_signal()) {
-        input_signals.push_back(f);
+      switch(f->state) {
+      case FIELD_NONE     : assert(false); break;
+      case FIELD_INPUT    : input_signals.push_back(f); break;
+      case FIELD_OUTPUT   : output_signals.push_back(f); break;
+      case FIELD_SIGNAL   : output_signals.push_back(f); break;
+      case FIELD_REGISTER : public_registers.push_back(f); break;
+      case FIELD_INVALID  : assert(false); break;
+      default: assert(false);
       }
-      else if (f->is_output_signal()) {
-        output_signals.push_back(f);
-      }
-      else if (f->is_output_register()) {
-        output_registers.push_back(f);
-      }
-      // KCOV_OFF
-      else {
-        debugbreak();
-      }
-      // KCOV_ON
     }
     else {
-      if (f->state == FIELD____WS_L) {
-        private_signals.push_back(f);
+      switch(f->state) {
+      case FIELD_NONE     : {
+        err << ERR("Field %s was not touched during trace\n", f->name().c_str());
+        break;
       }
-      else if (f->state == FIELD_RD_____) {
-        // Probably a read-only memory loaded in init().
-        private_registers.push_back(f);
+      case FIELD_INPUT    : private_registers.push_back(f); break; // read-only thing like mem initialized in init()
+      case FIELD_OUTPUT   : private_signals.push_back(f); break;
+      case FIELD_SIGNAL   : private_signals.push_back(f); break;
+      case FIELD_REGISTER : private_registers.push_back(f); break;
+      case FIELD_INVALID  : assert(false); break;
+      default: assert(false);
       }
-      else if (f->state == FIELD____WR_L) {
-        // Write-only field. Not a bug, tracer will warn about it.
-        private_registers.push_back(f);
-      }
-      else if (f->state == FIELD_RD_WR_L) {
-        private_registers.push_back(f);
-      }
-      // KCOV_OFF
-      else {
-        debugbreak();
-      }
-      // KCOV_ON
     }
   }
 
   for (auto m : all_methods) {
-    if (m->is_public && m->is_tock && m->has_return) {
+    if (!m->is_public) continue;
+    if (!m->is_tock) continue;
+
+    auto params =
+      m->node.get_field(field_declarator).get_field(field_parameters);
+
+    for (const auto& param : params) {
+      if (param.sym != sym_parameter_declaration) continue;
+      MtParam* new_input = MtParam::construct(m->name(), param);
+      input_arguments.push_back(new_input);
+    }
+
+    if (m->is_tock && m->has_return) {
       output_returns.push_back(m);
     }
   }
@@ -770,7 +691,7 @@ CHECK_RETURN Err MtModule::build_port_map() {
   Err err;
 
   //----------------------------------------
-  // Assignments to submod fields bind ports.
+  // Assignments to component fields bind ports.
 
   mod_class.visit_tree([&](MnNode child) {
     if (child.sym != sym_assignment_expression) return;
@@ -779,8 +700,8 @@ CHECK_RETURN Err MtModule::build_port_map() {
     auto node_rhs = child.get_field(field_right);
 
     if (node_lhs.sym == sym_field_expression) {
-      auto submod_name = node_lhs.get_field(field_argument).text();
-      if (get_submod(submod_name)) {
+      auto component_name = node_lhs.get_field(field_argument).text();
+      if (get_component(component_name)) {
         port_map[node_lhs.text()] = node_rhs.text();
       }
     }
@@ -798,7 +719,7 @@ CHECK_RETURN Err MtModule::build_port_map() {
     auto node_args = node_call.get_field(field_arguments);
 
     MtField *call_member = nullptr;
-    MtModule *call_submod = nullptr;
+    MtModule *call_component = nullptr;
     MtMethod *call_method = nullptr;
 
     if (node_func.sym == sym_field_expression) {
@@ -815,12 +736,12 @@ CHECK_RETURN Err MtModule::build_port_map() {
 
       if (node_method.text() == "as_signed") {
       } else {
-        call_member = get_submod(node_this.text());
+        call_member = get_component(node_this.text());
         if (call_member) {
-          call_submod = source_file->lib->get_module(call_member->type_name());
-          call_method = call_submod->get_method(node_method.text());
+          call_component = source_file->lib->get_module(call_member->type_name());
+          call_method = call_component->get_method(node_method.text());
         } else {
-          err << ERR("Submodule %s not found!\n", node_this.text().c_str());
+          err << ERR("Component %s not found!\n", node_this.text().c_str());
           return;
         }
       }
@@ -850,24 +771,24 @@ CHECK_RETURN Err MtModule::build_port_map() {
   //----------------------------------------
   // Port mapping walk done.
 
-  // Verify that all input ports of all submods are bound.
+  // Verify that all input ports of all components are bound.
 
-  for (const auto& submod : all_submods) {
-    auto submod_mod = source_file->lib->get_module(submod->type_name());
+  for (const auto& component : all_components) {
+    auto component_mod = source_file->lib->get_module(component->type_name());
 
-    for (int i = 0; i < submod_mod->input_signals.size(); i++) {
-      auto key = submod->name() + "." + submod_mod->input_signals[i]->name();
+    for (int i = 0; i < component_mod->input_signals.size(); i++) {
+      auto key = component->name() + "." + component_mod->input_signals[i]->name();
 
       if (!port_map.contains(key)) {
-        err << ERR("No input bound to submod port %s\n", key.c_str());
+        err << ERR("No input bound to component port %s\n", key.c_str());
       }
     }
 
-    for (int i = 0; i < submod_mod->input_arguments.size(); i++) {
-      auto key = submod->name() + "." + submod_mod->input_arguments[i]->name();
+    for (int i = 0; i < component_mod->input_arguments.size(); i++) {
+      auto key = component->name() + "." + component_mod->input_arguments[i]->name();
 
       if (!port_map.contains(key)) {
-        err << ERR("No input bound to submod port %s\n", key.c_str());
+        err << ERR("No input bound to component port %s\n", key.c_str());
       }
     }
   }
@@ -880,7 +801,7 @@ CHECK_RETURN Err MtModule::build_port_map() {
 CHECK_RETURN Err MtModule::sanity_check() {
   Err err;
 
-  // Inputs, outputs, registers, and submods must not overlap.
+  // Inputs, outputs, registers, and components must not overlap.
 
   std::set<std::string> field_names;
 
@@ -910,7 +831,7 @@ CHECK_RETURN Err MtModule::sanity_check() {
     }
   }
 
-  for (auto n : output_registers) {
+  for (auto n : public_registers) {
     if (field_names.contains(n->name())) {
       err << ERR("Duplicate output name %s\n", n->name().c_str());
     } else {
@@ -929,9 +850,9 @@ CHECK_RETURN Err MtModule::sanity_check() {
   }
   */
 
-  for (auto n : all_submods) {
+  for (auto n : all_components) {
     if (field_names.contains(n->name())) {
-      err << ERR("Duplicate submod name %s\n", n->name().c_str());
+      err << ERR("Duplicate component name %s\n", n->name().c_str());
     } else {
       field_names.insert(n->name());
     }

@@ -5,11 +5,15 @@
 class Module {
 public:
 
-  void tick() {
-    some_task();
+  void tock() {
+    tick();
   }
 
 private:
+
+  void tick() {
+    some_task();
+  }
 
   void some_task() {
     my_reg = my_reg + 3;

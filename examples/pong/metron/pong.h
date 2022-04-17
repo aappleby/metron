@@ -50,12 +50,12 @@ public:
 
 	//----------------------------------------
 
-	logic<10> pix_x() const { return px; }
-	logic<10> pix_y() const { return py; }
+	logic<10> tock_pix_x() const { return px; }
+	logic<10> tock_pix_y() const { return py; }
 
 	//----------------------------------------
 
-	void tock() {
+	void tock_video() {
 		vga_hsync = !((px >= 656) && (py <= 751));
 		vga_vsync = !((py >= 490) && (py <= 491));
 
@@ -71,6 +71,15 @@ public:
 	}
 
 	//----------------------------------------
+
+	void tock_game(logic<1> in_quad_a, logic<1> in_quad_b) {
+		tick(in_quad_a, in_quad_b);
+	}
+
+	//----------------------------------------
+
+private:
+
 
 	void tick(logic<1> in_quad_a, logic<1> in_quad_b) {
 		logic<10> new_px = px + 1;
@@ -143,8 +152,6 @@ public:
 	}
 
 	//----------------------------------------
-
-private:
 
 	logic<1> in_border() const {
 		return (px <= 7) || (px >= 633) || (py <= 7) || (py >= 473);

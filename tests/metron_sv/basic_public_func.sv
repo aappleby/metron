@@ -5,8 +5,7 @@
 
 module Module
 (
-  input logic clock,
-  output logic my_reg
+  input logic clock
 );
 /*public:*/
 
@@ -18,9 +17,16 @@ module Module
     func2 = 17 + func2_arg;
   endfunction
 
+  always_comb begin /*tock*/
+    /*tick()*/;
+  end
+
+/*private:*/
+
   always_ff @(posedge clock) begin /*tick*/
     my_reg <= 1;
   end
 
+  logic my_reg;
 endmodule
 

@@ -34,6 +34,12 @@ class regfile {
   // Register x0 is always 0
   regfile() { _register[0] = b32(0b0); }
 
+  void tock() {
+    tick();
+  }
+
+private:
+
   // Write port for rd
   void tick() {
     if (write_enable)

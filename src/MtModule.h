@@ -19,20 +19,31 @@ struct MtField {
     return new MtField(n, is_public);
   }
 
+  bool is_register() const {
+    return state == FIELD_REGISTER;
+  }
+
   bool is_input_signal() const {
-    return is_public() && (state == FIELD_RD_____);
+    return is_public() && state == FIELD_INPUT;
   }
 
   bool is_output_signal() const {
-    return is_public() && (state == FIELD____WS_L);
+    return is_public() && (state == FIELD_OUTPUT || state == FIELD_SIGNAL);
   }
 
   bool is_output_register() const {
-    return is_public() &&
-           ((state == FIELD____WR_L) || (state == FIELD_RD_WR_L));
+    return is_public() && is_register();
   }
 
-  bool is_submod() const;
+  /*
+  bool is_signal() const { debugbreak(); return false; }
+  bool is_register() const { debugbreak(); return false; }
+  bool is_input_signal() const { debugbreak(); return false; }
+  bool is_output_signal() const { debugbreak(); return false; }
+  bool is_output_register() const { debugbreak(); return false; }
+  */
+
+  bool is_component() const;
   bool is_param() const { return node.is_static() && node.is_const(); }
   bool is_public() const { return _public; }
 
@@ -42,7 +53,10 @@ struct MtField {
   MnNode get_type_node() const { return node.get_field(field_type); }
   MnNode get_decl_node() const { return node.get_field(field_declarator); }
 
-  FieldState state = FIELD_INVALID;
+  bool written_in_tick = false;
+  bool written_in_tock = false;
+
+  FieldState state = FIELD_NONE;
   MnNode node;
   std::string _name;
   bool _public = false;
@@ -123,12 +137,13 @@ struct MtMethod {
   bool is_private = false;
   bool is_const = false;
   bool has_return = false;
+  bool is_triggered = false; // true if this is a tick and a tock has called it during a trace
 
   std::vector<MtMethod*> callers;
 
   int get_rank() const { return 0; }
 
-  MtStateMap method_state;
+  StateMap method_state;
 
  private:
   std::string _name;
@@ -156,7 +171,7 @@ struct MtModule {
   MtField* get_output_signal(const std::string& name);
   MtField* get_output_register(const std::string& name);
   MtMethod* get_output_return(const std::string& name);
-  MtField* get_submod(const std::string& name);
+  MtField* get_component(const std::string& name);
   MtMethod* get_method(const std::string& name);
 
   CHECK_RETURN Err load_pass1();
@@ -167,10 +182,8 @@ struct MtModule {
   // void dump_deltas() const;
 
   CHECK_RETURN Err collect_modparams();
-  CHECK_RETURN Err collect_field_and_submods();
+  CHECK_RETURN Err collect_field_and_components();
   CHECK_RETURN Err collect_methods();
-  CHECK_RETURN Err collect_input_arguments();
-
   CHECK_RETURN Err categorize_fields();
 
   // CHECK_RETURN Err collect_registers();
@@ -201,7 +214,7 @@ struct MtModule {
 
   // Field state produced by evaluating all public methods in the module in
   // lexical order.
-  MtStateMap mod_states;
+  StateMap mod_state;
 
   std::vector<MtModule*> parents;
 
@@ -215,7 +228,7 @@ struct MtModule {
   std::vector<MtField*>  all_fields;
   std::vector<MtField*>  all_enums;
   std::vector<MtMethod*> all_methods;
-  std::vector<MtField*>  all_submods;
+  std::vector<MtField*>  all_components;
 
   //----------
   // Populated by load_pass2 using the results from trace().
@@ -228,7 +241,7 @@ struct MtModule {
 
   std::vector<MtField*> input_signals;
   std::vector<MtField*> output_signals;
-  std::vector<MtField*> output_registers;
+  std::vector<MtField*> public_registers;
 
   std::vector<MtParam*> input_arguments;
   std::vector<MtMethod*> output_returns;

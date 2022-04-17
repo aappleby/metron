@@ -12,7 +12,6 @@ module toplevel
   output logic[3:0]  bus_byte_enable,
   output logic  bus_read_enable,
   output logic  bus_write_enable,
-  output logic[31:0] inst,
   output logic[31:0] pc,
   input logic tock_reset
 );
@@ -58,7 +57,6 @@ module toplevel
       bus_byte_enable <= 0;
       bus_read_enable <= 0;
       bus_write_enable <= 0;
-      inst <= 0;
       pc <= 0;
     end else begin
       logic[31:0] inst;

@@ -32,7 +32,6 @@ class Vtoplevel VL_NOT_FINAL {
     VL_OUT(&bus_read_data,31,0);
     VL_OUT(&bus_address,31,0);
     VL_OUT(&bus_write_data,31,0);
-    VL_OUT(&inst,31,0);
     VL_OUT(&pc,31,0);
 
     // CELLS

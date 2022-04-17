@@ -145,7 +145,7 @@ module singlecycle_datapath
     program_counter_reset = reset;
     program_counter_write_enable = pc_write_enable;
     program_counter_next = mux_next_pc_select_out;
-    /*program_counter.tick();*/
+    /*program_counter.tock();*/
   end
 
   always_comb begin /*tock_mux_reg_writeback*/
@@ -164,7 +164,7 @@ module singlecycle_datapath
   always_comb begin /*tock_reg_writeback*/
     regs_write_enable = regfile_write_enable;
     regs_rd_data = mux_reg_writeback_out;
-    /*regs.tick();*/
+    /*regs.tock();*/
   end
 
   //----------------------------------------

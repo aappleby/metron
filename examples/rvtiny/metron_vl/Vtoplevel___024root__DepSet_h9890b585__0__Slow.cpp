@@ -77,7 +77,6 @@ VL_ATTR_COLD void Vtoplevel___024root___ctor_var_reset(Vtoplevel___024root* vlSe
     vlSelf->bus_byte_enable = VL_RAND_RESET_I(4);
     vlSelf->bus_read_enable = VL_RAND_RESET_I(1);
     vlSelf->bus_write_enable = VL_RAND_RESET_I(1);
-    vlSelf->inst = VL_RAND_RESET_I(32);
     vlSelf->pc = VL_RAND_RESET_I(32);
     vlSelf->tock_reset = VL_RAND_RESET_I(1);
     for (int __Vi0=0; __Vi0<32768; ++__Vi0) {

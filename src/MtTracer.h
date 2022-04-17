@@ -12,150 +12,84 @@ struct MtField;
 
 //------------------------------------------------------------------------------
 
-enum FieldDelta {
-  DELTA_RD = 0,
-  DELTA_WR,
-  DELTA_WS,
-  DELTA_EF,
-  DELTA_MAX,
-};
+#if 0
+
+NONE     + read  -> INPUT
+INPUT    + read  -> INPUT
+OUTPUT   + read  -> SIGNAL
+SIGNAL   + read  -> SIGNAL
+REGISTER + read  -> X
+
+
+NONE     + tock write -> OUTPUT
+INPUT    + tock write -> X
+OUTPUT   + tock write -> OUTPUT
+SIGNAL   + tock write -> X
+REGISTER + tock write -> X
+
+NONE     + tick write -> REGISTER
+INPUT    + tick write -> REGISTER
+OUTPUT   + tick write -> X
+SIGNAL   + tick write -> X
+REGISTER + tick write -> REGISTER
+
+// wait no, INPUT || OUTPUT is bad in tock, ok in tick
+// but it can't happen in tick, because the write would've made a REGISTER
+// and not an OUTPUT
+
+in tick
+  NONE     || INPUT    = INPUT
+  NONE     || REGISTER = REGISTER
+  INPUT    || REGISTER = REGISTER
+
+  NONE     || OUTPUT   = X
+  NONE     || SIGNAL   = X
+  INPUT    || OUTPUT   = X
+  INPUT    || SIGNAL   = X
+  OUTPUT   || SIGNAL   = X
+  OUTPUT   || REGISTER = X
+  SIGNAL   || REGISTER = X
+
+in tock
+
+  NONE     || INPUT    = INPUT
+  OUTPUT   || SIGNAL   = SIGNAL
+
+  NONE     || OUTPUT   = X
+  NONE     || SIGNAL   = X
+  INPUT    || OUTPUT   = X
+  INPUT    || SIGNAL   = X
+
+  NONE     || REGISTER = X
+  INPUT    || REGISTER = X
+  OUTPUT   || REGISTER = X
+  SIGNAL   || REGISTER = X
+
+#endif
+
+//------------------------------------------------------------------------------
 
 enum FieldState {
-  FIELD________ = 0,
-  FIELD____WR__,
-  FIELD____WR_L,
-  FIELD_RD_____,
-  FIELD_RD_WR__,
-  FIELD_RD_WR_L,
-  FIELD____WS__,
-  FIELD____WS_L,
-  FIELD_INVALID,
-  FIELD_MAX,
+  FIELD_NONE     = 0,
+  FIELD_INPUT    = 1,
+  FIELD_OUTPUT   = 2,
+  FIELD_SIGNAL   = 3,
+  FIELD_REGISTER = 4,
+  FIELD_INVALID  = 5,
 };
 
-enum FieldFlags {
-  FIELD_READ  = 1,
-  FIELD_WRITE = 2,
-  FIELD_LOCK  = 4,
-  FIELD_ERR   = 8,
-};
-
-FieldState merge_delta(FieldState a, FieldDelta b);
-FieldState merge_parallel(FieldState a, FieldState b);
-FieldState merge_series(FieldState a, FieldState b);
-
-// KCOV_OFF
-inline const char* to_string(FieldState s) {
-  switch (s) {
-  case FIELD________:  return "FIELD________";
-  case FIELD____WR__:  return "FIELD____WR__";
-  case FIELD____WR_L:  return "FIELD____WR_L";
-  case FIELD_RD_____:  return "FIELD_RD_____";
-  case FIELD_RD_WR__:  return "FIELD_RD_WR__";
-  case FIELD_RD_WR_L:  return "FIELD_RD_WR_L";
-  case FIELD____WS__:  return "FIELD____WS__";
-  case FIELD____WS_L:  return "FIELD____WS_L";
-  case FIELD_INVALID:  return "FIELD_INVALID";
-  case FIELD_MAX:      return "FIELD_MAX";
-  default:             return "?????";
+inline const char* to_string(FieldState f) {
+  switch(f) {
+  case FIELD_NONE     : return "FIELD_NONE";
+  case FIELD_INPUT    : return "FIELD_INPUT";
+  case FIELD_OUTPUT   : return "FIELD_OUTPUT";
+  case FIELD_SIGNAL   : return "FIELD_SIGNAL";
+  case FIELD_REGISTER : return "FIELD_REGISTER";
+  default             : return "FIELD_INVALID";
   }
 }
-// KCOV_ON
 
-struct MtStateMap {
-
-  void clear() {
-    state.clear();
-  }
-
-  void set_state(const std::string& key, FieldState val) {
-    auto find1 = key.find("<top>");
-    auto find2 = key.find("<top>", 5);
-    assert(find1 == 0);
-    assert(find2 == std::string::npos);
-
-    state[key] = val;
-  }
-
-  FieldState get_state(const std::string& key) {
-    auto find1 = key.find("<top>");
-    auto find2 = key.find("<top>", 5);
-    assert(find1 == 0);
-    assert(find2 == std::string::npos);
-
-    return state.contains(key) ? state[key] : FIELD________;
-  }
-
-  void push_action(const std::string& key, char action) {
-    auto find1 = key.find("<top>");
-    auto find2 = key.find("<top>", 5);
-    assert(find1 == 0);
-    assert(find2 == std::string::npos);
-
-    auto& a = actions[key];
-
-    if (a.empty() || (a.back() != action)) a.push_back(action);
-  }
-
-  void set_actions(const std::string& key, const std::string& new_actions) {
-    auto find1 = key.find("<top>");
-    auto find2 = key.find("<top>", 5);
-    assert(find1 == 0);
-    assert(find2 == std::string::npos);
-
-    actions[key] = new_actions;
-  }
-
-  const std::string& get_actions(const std::string& key) {
-    auto find1 = key.find("<top>");
-    auto find2 = key.find("<top>", 5);
-    assert(find1 == 0);
-    assert(find2 == std::string::npos);
-
-    return actions[key];
-  }
-
-  std::map<std::string, FieldState>& get_map() {
-    return state;
-  }
-
-  const std::map<std::string, FieldState>& get_map() const {
-    return state;
-  }
-
-  void swap(MtStateMap& b) {
-    actions.swap(b.actions);
-    state.swap(b.state);
-  }
-
-  Err lock_state() {
-    Err err;
-
-    for (auto& pair : actions) {
-      pair.second.push_back('L');
-    }
-  
-  
-    for (auto& pair : state) {
-      auto old_state = pair.second;
-      auto new_state = merge_delta(old_state, DELTA_EF);
-
-      if (new_state == FIELD_INVALID) {
-        err << ERR("Field %s was %s, now %s!", pair.first.c_str(), to_string(old_state), to_string(new_state));
-      }
-
-      pair.second = new_state;
-    }
-
-    return err;
-  }
-
-private:
-
-  std::map<std::string, std::string> actions;
-  std::map<std::string, FieldState> state;
-};
-
+typedef std::map<std::string, FieldState> StateMap;
 
 //------------------------------------------------------------------------------
 
@@ -173,23 +107,25 @@ class MtTracer {
   CHECK_RETURN Err trace_call(MnNode n);
   CHECK_RETURN Err trace_field(MnNode n);
   CHECK_RETURN Err trace_id(MnNode n);
-  CHECK_RETURN Err trace_if(MnNode n);
+  CHECK_RETURN Err trace_branch(MnNode n);
   CHECK_RETURN Err trace_switch(MnNode n);
   CHECK_RETURN Err trace_ternary(MnNode n);
 
-  CHECK_RETURN Err trace_submod_call(MnNode n);
-  CHECK_RETURN Err trace_method_call(MnNode n);
-  CHECK_RETURN Err trace_template_call(MnNode n);
+  CHECK_RETURN Err trace_component_call(const std::string& component_name, MtModule* dst_module, MtMethod* dst_method);
+  CHECK_RETURN Err trace_method_call(MtMethod* method);
+  //CHECK_RETURN Err trace_template_call(MnNode n);
 
   CHECK_RETURN Err trace_read(const std::string& field_name);
   CHECK_RETURN Err trace_write(const std::string& field_name);
 
-  CHECK_RETURN Err trace_read(MnNode const& n);
-  CHECK_RETURN Err trace_write(MnNode const& n);
+  CHECK_RETURN Err merge_branch(StateMap & ma, StateMap & mb, StateMap & out);
 
   bool ends_with_break(MnNode n);
 
-  static void dump_trace(MtStateMap& m);
+  bool has_return(MnNode n);
+  bool has_non_terminal_return(MnNode n);
+
+  static void dump_trace(StateMap& m);
   void dump_stack();
 
   MtModule* mod() { return _mod_stack.back(); }
@@ -199,14 +135,14 @@ class MtTracer {
   bool in_tock() const;
 
   MtMethod* root;
-  MtStateMap* root_state;
-  MtStateMap* state_top;
+  StateMap* root_state;
+  StateMap* state_top;
 
   std::vector<std::string> _path_stack;
   std::vector<MtModule*>   _mod_stack;
   std::vector<MtMethod*>   _method_stack;
 
-  void push_state(MtStateMap* state) {
+  void push_state(StateMap* state) {
     __state_stack.push_back(state);
     state_top = __state_stack.back();
   }
@@ -216,7 +152,7 @@ class MtTracer {
     state_top = __state_stack.back();
   }
 
-  std::vector<MtStateMap*> __state_stack;
+  std::vector<StateMap*> __state_stack;
 };
 
 //------------------------------------------------------------------------------

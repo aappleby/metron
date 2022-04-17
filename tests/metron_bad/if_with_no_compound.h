@@ -2,10 +2,12 @@
 
 // If statements whose sub-blocks contain submodule calls _must_ use {}.
 
+//X If statements that contain component calls must use {}
+
 class Submod {
 public:
 
-  void tick() {
+  void tock() {
   }
 };
 
@@ -13,11 +15,11 @@ public:
 class Module {
 public:
 
-  void tick() {
+  void tock() {
     if (1)
-      submod.tick();
+      submod.tock();
     else
-      submod.tick();
+      submod.tock();
   }
 
   Submod submod;

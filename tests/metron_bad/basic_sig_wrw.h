@@ -2,6 +2,8 @@
 
 // Signals that are written after they're read should fail.
 
+//X Writing field sig changed state from FIELD_SIGNAL to FIELD_INVALID
+
 class Module {
 public:
 

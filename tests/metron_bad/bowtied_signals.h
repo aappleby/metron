@@ -3,6 +3,8 @@
 // Tock methods might be valid individually, but not when combined into one
 // module/
 
+//X Writing field sig2 changed state from FIELD_INPUT to FIELD_INVALID
+
 class Module {
 public:
 

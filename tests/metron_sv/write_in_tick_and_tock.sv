@@ -1,6 +1,6 @@
 `include "metron_tools.sv"
 
-// Private non-const methods should turn into SV tasks.
+// Fields can be written in tick() or tock() but not both.
 
 module Module
 (
@@ -9,19 +9,15 @@ module Module
 /*public:*/
 
   always_comb begin /*tock*/
-    /*tick()*/;
+    field = 0;
   end
 
 /*private:*/
 
   always_ff @(posedge clock) begin /*tick*/
-    some_task();
+    field = 1;
   end
 
-  task some_task();
-    my_reg = my_reg + 3;
-  endtask
-
-  logic[7:0] my_reg;
+  logic field;
 endmodule
 

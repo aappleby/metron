@@ -6,6 +6,12 @@ template<int SOME_CONSTANT = 6>
 class Submod {
 public:
 
+  void tock() {
+    tick();
+  }
+
+private:
+
   void tick() {
     sub_reg = sub_reg + SOME_CONSTANT;
   }
@@ -17,7 +23,7 @@ class Module {
 public:
 
   void tock() {
-    submod.tick();
+    submod.tock();
   }
 
   Submod<99> submod;

@@ -14,10 +14,10 @@ treat all call args/return values as fields that have to be traced
   ok now we need test cases
 
 A bunch of the subcursor stuff could be replaced with splice
-  probably all of it if you add a submod context param to splice
+  probably all of it if you add a component context param to splice
 
 If we don't emit anything for a tick() or tock(), we should not emit the tock itself
-  soooooo... if all the body elements are submod calls without args?
+  soooooo... if all the body elements are component calls without args?
   not worth
 
 Unions?
@@ -58,13 +58,13 @@ Coverage
     func_name.starts_with(final)
     Local call to private tock
     emit_input_port_bindings
-      Submod method is not public
+      Component method is not public
       Can't find method name
       Method is not private
     Return statement not at end of function body? Remove this
     emit_field_as_enum_class
     emit_port_decls
-      all_submods.empty()
+      all_components.empty()
     emit_field_decl
       emit_field_as_enum_class
       in_ports?
@@ -75,7 +75,7 @@ Coverage
     emit_number_literal
       spacers
     emit_if_statement
-      "Else statements that contain submod calls...
+      "Else statements that contain component calls...
     emit_enum_specifier
     emit_using_decl?
     emit_decl static const
@@ -100,7 +100,7 @@ tests to increase coverage
   decl without initialization value
   static const
   emit_field_as_enum_class
-  emit_output_ports when current_mod->submods.empty()
+  emit_output_ports when current_mod->components.empty()
   non-optional template parameter
   compound statement with a declaration
   emit_template_param_list?
@@ -122,7 +122,7 @@ tests to increase coverage
   MtModule::init - template without params? template without class?
   source file without class
   regs and sigs that end in a bad state?
-  duplicate input ports, output ports (somehow?), regs?, submods?
+  duplicate input ports, output ports (somehow?), regs?, components?
   unused Mn - MnIdentifer, MnFieldDeclList, MnTemplateFunc
   modules using primitive C++ types and stdints
   Delete source file objects on shutdown
@@ -148,8 +148,8 @@ preserving port order test
 
 ----------
 
-assert that submodules are only bound once?
+assert that components are only bound once?
   no, they can be bound multiple times, won't break anything
-submod calls can only be at toplevel?
+component calls can only be at toplevel?
   no, but they have to be in a compound statement so we have a place to put bindings
 

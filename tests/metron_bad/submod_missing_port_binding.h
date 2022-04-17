@@ -1,16 +1,17 @@
 #include "metron_tools.h"
 
 // All submod input ports have to be bound.
-// FIXME - Maybe only tick/tock ports have to be bound?
+
+//X No input bound to component port submod.b
 
 class Submod {
 public:
 
-  logic<1> foo(logic<1> a) const {
+  logic<1> tock_foo(logic<1> a) const {
     return !a;
   }
 
-  logic<1> bar(logic<1> b) const {
+  logic<1> tock_bar(logic<1> b) const {
     return !b;
   }
 };
@@ -18,10 +19,11 @@ public:
 class Module {
 public:
 
-  void tick() {
-    submod.foo(1);
+  void tock() {
+    submod.tock_foo(1);
   }
 
 private:
+
   Submod submod;
 };

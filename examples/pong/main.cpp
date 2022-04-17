@@ -53,14 +53,16 @@ int main(int argc, char* args[]) {
     Uint32 *buffer = (Uint32*) surface->pixels;
 
     for (int i = 0; i < 1000000; i++) {
-      pong.tock();
-      pong.tick(0,0);
+      pong.tock_video();
+      pong.tock_game(0,0);
+      auto pix_x = pong.tock_pix_x();
+      auto pix_y = pong.tock_pix_y();
 
-      if (pong.pix_x() < 640 && pong.pix_y() < 480) {
+      if (pix_x < 640 && pix_y < 480) {
         uint8_t r = pong.vga_R * 255;
         uint8_t g = pong.vga_G * 255;
         uint8_t b = pong.vga_B * 255;
-        buffer[pong.pix_x() + pong.pix_y() * SCREEN_WIDTH] = (r << 16) | (g << 8) | (b << 0);
+        buffer[pix_x + pix_y * SCREEN_WIDTH] = (r << 16) | (g << 8) | (b << 0);
       }
     }
 

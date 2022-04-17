@@ -1,17 +1,21 @@
 `include "metron_tools.sv"
 
+// All submod input ports have to be bound.
+// FIXME - Maybe only tick/tock ports have to be bound?
+
 module Submod
 (
   input logic clock
 );
 /*public:*/
 
-  always_ff @(posedge clock) begin /*tick*/
-    my_reg = my_reg + 1;
-  end
+  function logic foo(logic foo_a);
+    foo = !foo_a;
+  endfunction
 
-/*private:*/
-  logic[7:0] my_reg;
+  function logic bar(logic bar_b);
+    bar = !bar_b;
+  endfunction
 endmodule
 
 module Module
@@ -21,7 +25,8 @@ module Module
 /*public:*/
 
   always_ff @(posedge clock) begin /*tick*/
-    /*submod.tick();*/
+    submod_foo_a = 1;
+    /*submod.foo(1);*/
   end
 
 /*private:*/

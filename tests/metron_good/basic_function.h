@@ -5,11 +5,15 @@
 class Module {
 public:
 
-  void tick() {
-    my_reg = my_reg + some_func();
+  void tock() {
+    tick();
   }
 
 private:
+
+  void tick() {
+    my_reg = my_reg + some_func();
+  }
 
   logic<8> some_func() const {
     return 3;

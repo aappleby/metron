@@ -9,6 +9,12 @@ module Module
 );
 /*public:*/
 
+  always_comb begin /*tock*/
+    /*tick()*/;
+  end
+
+/*private:*/
+
   always_ff @(posedge clock) begin /*tick*/
     my_reg1 = my_reg1 + 1;
     my_reg2 = my_reg2 + 1;
@@ -16,7 +22,6 @@ module Module
     my_reg4 = my_reg4 - 1;
   end
 
-/*private:*/
   int my_reg1;
   int my_reg2;
   int my_reg3;

@@ -24,14 +24,16 @@ module Module
       default:
         result = 30;
     endcase
+
+    /*tick()*/;
     tock = result;
   end
+
+/*private:*/
 
   always_ff @(posedge clock) begin /*tick*/
     my_reg <= my_reg + 1;
   end
-
-/*private:*/
 
   logic[7:0] my_reg;
 endmodule

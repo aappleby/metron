@@ -20,6 +20,12 @@ class single_register {
 
   single_register() { value = INITIAL; }
 
+  void tock() {
+    tick();
+  }
+
+private:
+
   void tick() {
     if (reset)
       value = INITIAL;

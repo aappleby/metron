@@ -22,14 +22,16 @@ public:
         result = 30;
         break;
     }
+
+    tick();
     return result;
   }
+
+private:
 
   void tick() {
     my_reg = my_reg + 1;
   }
-
-private:
 
   logic<8> my_reg;
 };

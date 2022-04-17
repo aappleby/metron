@@ -5,6 +5,12 @@
 class Submod {
 public:
 
+  void tock() {
+    tick();
+  }
+
+private:
+
   void tick() {
     sub_reg = sub_reg + 1;
   }
@@ -16,7 +22,7 @@ class Module {
 public:
 
   void tock() {
-    submod.tick();
+    submod.tock();
   }
 
   Submod submod;

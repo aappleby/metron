@@ -8,7 +8,10 @@ public:
 
   void tock() {
     my_sig = my_reg;
+    tick();
   }
+
+private:
 
   void tick() {
     my_reg = 1;

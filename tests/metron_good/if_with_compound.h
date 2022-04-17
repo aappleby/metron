@@ -2,9 +2,15 @@
 
 class Submod {
 public:
-
-  void tick() {
+  void tock(logic<8> arg) {
+    tick(arg);
   }
+private:
+  void tick(logic<8> arg) {
+    my_reg = my_reg + arg;
+  }
+
+  logic<8> my_reg;
 };
 
 
@@ -13,7 +19,10 @@ public:
 
   void tock() {
     if (1) {
-      submod.tick();
+      submod.tock(72);
+    }
+    else {
+      submod.tock(36);
     }
   }
 

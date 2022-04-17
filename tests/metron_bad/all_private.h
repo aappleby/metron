@@ -3,6 +3,9 @@
 // Only public methods are traced. If everything's private, we should trigger
 // a missed field error.
 
+//X Field sig was not touched during trace
+//X Field reg was not touched during trace
+
 class Module {
 public:
 
@@ -18,3 +21,4 @@ private:
   logic<1> sig;
   logic<1> reg;
 };
+

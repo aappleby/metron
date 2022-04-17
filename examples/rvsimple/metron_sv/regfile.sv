@@ -37,6 +37,12 @@ module regfile
   // Register x0 is always 0
   initial begin /*regfile*/ _register[0] = 32'b0; end
 
+  always_comb begin /*tock*/
+    /*tick()*/;
+  end
+
+/*private:*/
+
   // Write port for rd
   always_ff @(posedge clock) begin /*tick*/
     if (write_enable)

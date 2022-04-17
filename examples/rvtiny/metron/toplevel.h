@@ -25,7 +25,6 @@ class toplevel {
   logic<4>  bus_byte_enable;
   logic<1>  bus_read_enable;
   logic<1>  bus_write_enable;
-  logic<32> inst;
   logic<32> pc;
 
   //----------------------------------------
@@ -51,7 +50,6 @@ class toplevel {
       bus_byte_enable = 0;
       bus_read_enable = 0;
       bus_write_enable = 0;
-      inst = 0;
       pc = 0;
     } else {
       logic<32> inst = text_mem[b14(pc, 2)];

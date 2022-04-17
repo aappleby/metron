@@ -45,10 +45,9 @@ VL_INLINE_OPT void Vtoplevel___024root___sequent__TOP__0(Vtoplevel___024root* vl
     __Vdlyvset__toplevel__DOT__regs__v5 = 0U;
     __Vdlyvset__toplevel__DOT__regs__v6 = 0U;
     if (vlSelf->tock_reset) {
-        vlSelf->inst = 0U;
-        vlSelf->bus_byte_enable = 0U;
-        vlSelf->bus_read_enable = 0U;
         vlSelf->bus_read_data = 0U;
+        vlSelf->bus_read_enable = 0U;
+        vlSelf->bus_byte_enable = 0U;
         __Vdly__pc = 0U;
         __Vdlyvset__toplevel__DOT__regs__v0 = 1U;
         vlSelf->bus_address = 0U;

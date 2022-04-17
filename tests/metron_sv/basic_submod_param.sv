@@ -5,15 +5,21 @@
 module Submod
 #(parameter int SOME_CONSTANT = 6)
 (
-  input logic clock,
-  output logic[7:0] sub_reg
+  input logic clock
 );
 /*public:*/
+
+  always_comb begin /*tock*/
+    /*tick()*/;
+  end
+
+/*private:*/
 
   always_ff @(posedge clock) begin /*tick*/
     sub_reg <= sub_reg + SOME_CONSTANT;
   end
 
+  logic[7:0] sub_reg;
 endmodule
 
 module Module
@@ -23,16 +29,14 @@ module Module
 /*public:*/
 
   always_comb begin /*tock*/
-    /*submod.tick();*/
+    /*submod.tock();*/
   end
 
   Submod #(99) submod(
     // Inputs
-    .clock(clock),
+    .clock(clock)
     // Outputs
-    .sub_reg(submod_sub_reg)
   );
-  logic[7:0] submod_sub_reg;
 
 endmodule
 

@@ -5,6 +5,12 @@
 class Module {
 public:
 
+  void tock() {
+    tick();
+  }
+
+private:
+
   void tick() {
     my_reg = 1;
   }

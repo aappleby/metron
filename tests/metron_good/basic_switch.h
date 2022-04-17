@@ -5,6 +5,12 @@
 class Module {
 public:
 
+  void tock(logic<2> selector) {
+    tick(selector);
+  }
+
+private:
+
   void tick(logic<2> selector) {
     switch(selector) {
       case 0: my_reg = 17; break;
@@ -17,6 +23,5 @@ public:
     }
   }
 
-private:
   logic<8> my_reg;
 };

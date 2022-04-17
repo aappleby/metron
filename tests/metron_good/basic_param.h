@@ -6,6 +6,12 @@ template<int SOME_CONSTANT = 7>
 class Module {
 public:
 
+  void tock() {
+    tick();
+  }
+
+private:
+
   void tick() {
     my_reg = SOME_CONSTANT;
   }

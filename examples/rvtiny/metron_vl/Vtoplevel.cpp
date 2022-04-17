@@ -17,7 +17,6 @@ Vtoplevel::Vtoplevel(VerilatedContext* _vcontextp__, const char* _vcname__)
     , bus_read_data{vlSymsp->TOP.bus_read_data}
     , bus_address{vlSymsp->TOP.bus_address}
     , bus_write_data{vlSymsp->TOP.bus_write_data}
-    , inst{vlSymsp->TOP.inst}
     , pc{vlSymsp->TOP.pc}
     , rootp{&(vlSymsp->TOP)}
 {

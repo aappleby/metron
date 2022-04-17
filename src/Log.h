@@ -116,6 +116,8 @@ struct LogIndenter {
   ~LogIndenter() { TinyLog::get().dedent(); }
 };
 
-#define LOG_INDENT_SCOPE() LogIndenter indenter##__LINE__;
+#define LINE_CAT1(X,Y) LINE_CAT2(X,Y)
+#define LINE_CAT2(X,Y) X##Y
+#define LOG_INDENT_SCOPE() LogIndenter LINE_CAT1(indenter, __LINE__)
 
 //-----------------------------------------------------------------------------

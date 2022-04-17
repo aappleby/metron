@@ -29,7 +29,6 @@ VL_MODULE(Vtoplevel___024root) {
     VL_OUT(bus_read_data,31,0);
     VL_OUT(bus_address,31,0);
     VL_OUT(bus_write_data,31,0);
-    VL_OUT(inst,31,0);
     VL_OUT(pc,31,0);
     IData/*31:0*/ toplevel__DOT__unnamedblk2__DOT__inst;
     IData/*31:0*/ toplevel__DOT__unnamedblk2__DOT__unnamedblk3__DOT__op_a;

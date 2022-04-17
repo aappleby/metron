@@ -320,8 +320,7 @@ CHECK_RETURN Err MtCursor::emit_assignment(MnAssignmentExpr n) {
   if (current_method && current_method->is_tick) {
     auto lhs_field = current_mod->get_field(lhs.name4());
     if (lhs_field) {
-      bool lhs_is_reg1 = (lhs_field->state == FIELD_RD_WR_L) || (lhs_field->state == FIELD____WR_L);
-      if (lhs_is_reg1) {
+      if (lhs_field->is_register()) {
         err << emit_print("<");
       }
     }
@@ -599,7 +598,7 @@ CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
     err << emit_print("}}");
     cursor = n.end();
   } else if (func.sym == sym_field_expression) {
-    // Submod output getter call - just translate the field expression
+    // Component method call - just translate the field expression, not the args.
     err << emit_dispatch(func);
     cursor = n.end();
   } else {
@@ -765,21 +764,19 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
         auto inst_id = func_node.get_field(field_argument);
         auto meth_id = func_node.get_field(field_field);
 
-        auto submod = current_mod->get_submod(inst_id.text());
-        assert(submod);
+        auto component = current_mod->get_component(inst_id.text());
+        assert(component);
 
-        auto submod_mod = lib->get_module(submod->type_name());
-        // auto submod_mod = submod->mod;
-        // assert(submod_mod);
+        auto component_mod = lib->get_module(component->type_name());
 
-        auto submod_meth = submod_mod->get_method(meth_id.text());
-        assert(submod_meth);
+        auto component_method = component_mod->get_method(meth_id.text());
+        assert(component_method);
 
-        for (int i = 0; i < submod_meth->params.size(); i++) {
-          auto& param = submod_meth->params[i];
+        for (int i = 0; i < component_method->params.size(); i++) {
+          auto& param = component_method->params[i];
           err << emit_print("%s_%s_%s = ",
             inst_id.text().c_str(),
-            submod_meth->name().c_str(),
+            component_method->name().c_str(),
             param.c_str());
 
           auto arg_node = args_node.named_child(i);
@@ -1045,10 +1042,10 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
+CHECK_RETURN Err MtCursor::emit_field_as_component(MnFieldDecl n) {
   Err err;
   std::string type_name = n.type5();
-  auto submod_mod = lib->get_module(type_name);
+  auto component_mod = lib->get_module(type_name);
 
   auto node_type = n.child(0);  // type
   auto node_decl = n.child(1);  // decl
@@ -1063,7 +1060,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
   if (args) {
     int arg_count = args.named_child_count();
     for (int i = 0; i < arg_count; i++) {
-      auto key = submod_mod->modparams[i]->name();
+      auto key = component_mod->modparams[i]->name();
       auto val = args.named_child(i).text();
       replacements[key] = val;
     }
@@ -1088,11 +1085,11 @@ CHECK_RETURN Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
   err << emit_print(".clock(clock)");
 
   int port_count = int(
-    submod_mod->input_signals.size() +
-    submod_mod->input_arguments.size() +
-    submod_mod->output_signals.size() + 
-    submod_mod->output_registers.size() + 
-    submod_mod->output_returns.size()
+    component_mod->input_signals.size() +
+    component_mod->input_arguments.size() +
+    component_mod->output_signals.size() + 
+    component_mod->public_registers.size() + 
+    component_mod->output_returns.size()
    );
 
   if (port_count) {
@@ -1101,7 +1098,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
 
   int port_index = 0;
 
-  for (auto n : submod_mod->input_signals) {
+  for (auto n : component_mod->input_signals) {
     auto key = inst_name + "." + n->name();
 
     err << emit_newline();
@@ -1113,7 +1110,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
     }
   }
 
-  for (auto n : submod_mod->input_arguments) {
+  for (auto n : component_mod->input_arguments) {
     auto key = inst_name + "." + n->name();
 
     err << emit_newline();
@@ -1134,7 +1131,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
   err << emit_indent();
   err << emit_print("// Outputs");
 
-  for (auto n : submod_mod->output_signals) {
+  for (auto n : component_mod->output_signals) {
     err << emit_newline();
     err << emit_indent();
     err << emit_print(".%s(%s_%s)", n->name().c_str(), inst_name.c_str(), n->name().c_str());
@@ -1144,7 +1141,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
     }
   }
 
-  for (auto n : submod_mod->output_registers) {
+  for (auto n : component_mod->public_registers) {
     err << emit_newline();
     err << emit_indent();
     err << emit_print(".%s(%s_%s)", n->name().c_str(), inst_name.c_str(), n->name().c_str());
@@ -1154,7 +1151,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
     }
   }
 
-  for (auto n : submod_mod->output_returns) {
+  for (auto n : component_mod->output_returns) {
     err << emit_newline();
     err << emit_indent();
     err << emit_print(".%s(%s_%s)", n->name().c_str(), inst_name.c_str(), n->name().c_str());
@@ -1183,42 +1180,42 @@ CHECK_RETURN Err MtCursor::emit_field_as_submod(MnFieldDecl n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl submod) {
+CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl component_decl) {
   Err err;
 
-  if (current_mod->all_submods.empty()) {
+  if (current_mod->all_components.empty()) {
     return err;
   }
 
   assert(at_newline);
 
-  auto submod_type = submod.child(0);  // type
-  auto submod_decl = submod.child(1);  // decl
-  auto submod_semi = submod.child(2);  // semi
+  auto component_type = component_decl.child(0);  // type
+  auto component_name = component_decl.child(1);  // decl
+  auto component_semi = component_decl.child(2);  // semi
 
-  std::string type_name = submod_type.type5();
-  auto submod_mod = lib->get_module(type_name);
+  std::string type_name = component_type.type5();
+  auto component_mod = lib->get_module(type_name);
 
   // Swap template arguments with the values from the template
   // instantiation.
   std::map<std::string, std::string> replacements;
 
-  auto args = submod_type.get_field(field_arguments);
+  auto args = component_type.get_field(field_arguments);
   if (args) {
     int arg_count = args.named_child_count();
     for (int i = 0; i < arg_count; i++) {
-      auto key = submod_mod->modparams[i]->name();
+      auto key = component_mod->modparams[i]->name();
       auto val = args.named_child(i).text();
       replacements[key] = val;
     }
   }
 
-  for (auto n : submod_mod->input_signals) {
+  for (auto n : component_mod->input_signals) {
     // field_declaration
     auto output_type = n->get_type_node();
     auto output_decl = n->get_decl_node();
 
-    MtCursor subcursor(lib, submod_mod->source_file, submod_mod, str_out);
+    MtCursor subcursor(lib, component_mod->source_file, component_mod, str_out);
     subcursor.echo = echo;
     subcursor.in_ports = true;
     subcursor.id_replacements = replacements;
@@ -1227,19 +1224,19 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl submod) {
     err << emit_indent();
     err << subcursor.emit_dispatch(output_type);
     err << subcursor.emit_ws();
-    err << emit_print("%s_", submod_decl.text().c_str());
+    err << emit_print("%s_", component_name.text().c_str());
     err << subcursor.emit_dispatch(output_decl);
     err << prune_trailing_ws();
     err << emit_print(";");
     err << emit_newline();
   }
 
-  for (auto n : submod_mod->input_arguments) {
+  for (auto n : component_mod->input_arguments) {
     // field_declaration
     auto output_type = n->get_type_node();
     auto output_decl = n->get_decl_node();
 
-    MtCursor subcursor(lib, submod_mod->source_file, submod_mod, str_out);
+    MtCursor subcursor(lib, component_mod->source_file, component_mod, str_out);
     subcursor.echo = echo;
     subcursor.in_ports = true;
     subcursor.id_replacements = replacements;
@@ -1248,19 +1245,19 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl submod) {
     err << emit_indent();
     err << subcursor.emit_dispatch(output_type);
     err << subcursor.emit_ws();
-    err << emit_print("%s_%s_", submod_decl.text().c_str(), n->func_name.c_str());
+    err << emit_print("%s_%s_", component_name.text().c_str(), n->func_name.c_str());
     err << subcursor.emit_dispatch(output_decl);
     err << prune_trailing_ws();
     err << emit_print(";");
     err << emit_newline();
   }
 
-  for (auto n : submod_mod->output_signals) {
+  for (auto n : component_mod->output_signals) {
     // field_declaration
     auto output_type = n->get_type_node();
     auto output_decl = n->get_decl_node();
 
-    MtCursor subcursor(lib, submod_mod->source_file, submod_mod, str_out);
+    MtCursor subcursor(lib, component_mod->source_file, component_mod, str_out);
     subcursor.echo = echo;
     subcursor.in_ports = true;
     subcursor.id_replacements = replacements;
@@ -1269,19 +1266,19 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl submod) {
     err << emit_indent();
     err << subcursor.emit_dispatch(output_type);
     err << subcursor.emit_ws();
-    err << emit_print("%s_", submod_decl.text().c_str());
+    err << emit_print("%s_", component_name.text().c_str());
     err << subcursor.emit_dispatch(output_decl);
     err << prune_trailing_ws();
     err << emit_print(";");
     err << emit_newline();
   }
 
-  for (auto n : submod_mod->output_registers) {
+  for (auto n : component_mod->public_registers) {
     // field_declaration
     auto output_type = n->get_type_node();
     auto output_decl = n->get_decl_node();
 
-    MtCursor subcursor(lib, submod_mod->source_file, submod_mod, str_out);
+    MtCursor subcursor(lib, component_mod->source_file, component_mod, str_out);
     subcursor.echo = echo;
     subcursor.in_ports = true;
     subcursor.id_replacements = replacements;
@@ -1290,19 +1287,19 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl submod) {
     err << emit_indent();
     err << subcursor.emit_dispatch(output_type);
     err << subcursor.emit_ws();
-    err << emit_print("%s_", submod_decl.text().c_str());
+    err << emit_print("%s_", component_name.text().c_str());
     err << subcursor.emit_dispatch(output_decl);
     err << prune_trailing_ws();
     err << emit_print(";");
     err << emit_newline();
   }
 
-  for (auto m : submod_mod->output_returns) {
+  for (auto m : component_mod->output_returns) {
     auto getter_type = m->node.get_field(field_type);
     auto getter_decl = m->node.get_field(field_declarator);
     auto getter_name = getter_decl.get_field(field_declarator);
 
-    MtCursor sub_cursor(lib, submod_mod->source_file, submod_mod, str_out);
+    MtCursor sub_cursor(lib, component_mod->source_file, component_mod, str_out);
     sub_cursor.echo = echo;
     sub_cursor.in_ports = true;
     sub_cursor.id_replacements = replacements;
@@ -1313,7 +1310,7 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl submod) {
     err << sub_cursor.skip_ws();
     err << sub_cursor.emit_dispatch(getter_type);
     err << sub_cursor.emit_ws();
-    err << emit_print("%s_", submod_decl.text().c_str());
+    err << emit_print("%s_", component_name.text().c_str());
     err << sub_cursor.emit_dispatch(getter_name);
     err << prune_trailing_ws();
     err << emit_print(";");
@@ -1535,7 +1532,7 @@ CHECK_RETURN Err MtCursor::emit_enum(MnFieldDecl n) {
 
 
 //------------------------------------------------------------------------------
-// Emit field declarations. For submodules, also emit glue declarations and
+// Emit field declarations. For components, also emit glue declarations and
 // append the glue parameter list to the field.
 
 // field_declaration = { type:type_identifier, declarator:field_identifier+ }
@@ -1562,7 +1559,7 @@ CHECK_RETURN Err MtCursor::emit_field_decl(MnFieldDecl n) {
     // Struct outside of class
     err << emit_children(n);
   } else if (lib->get_module(type_name)) {
-    err << emit_field_as_submod(n);
+    err << emit_field_as_component(n);
   } else if (current_mod->get_input_field(n.name().text())) {
     err << skip_over(n);
   } else if (current_mod->get_output_signal(n.name().text())) {
@@ -1718,7 +1715,7 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
       current_mod->input_signals.size() +
       current_mod->input_arguments.size() +
       current_mod->output_signals.size() +
-      current_mod->output_registers.size() +
+      current_mod->public_registers.size() +
       current_mod->output_returns.size()
     );
 
@@ -1736,14 +1733,21 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
     // the ports stay in the same order.
 
     for (auto f : current_mod->all_fields) {
-      if (!f->is_input_signal() && !f->is_output_signal() && !f->is_output_register()) continue;
+      if (!f->is_public()) continue;
+      if (f->is_param()) continue;
 
       err << emit_indent();
 
       if (f->is_input_signal()) {
         err << emit_print("input ");
-      } else {
+      } else if (f->is_output_signal()) {
         err << emit_print("output ");
+      }
+      else if (f->is_output_register()) {
+        err << emit_print("output ");
+      }
+      else {
+        debugbreak();
       }
 
       auto node_type = f->get_type_node();  // type
@@ -1855,7 +1859,7 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
 }
 
 //------------------------------------------------------------------------------
-// If n.child(0) is a call expression, this node is a block-level call to a submodule - since there's nothing on the LHS to bind the output to, we just comment out the whole call.
+// If n.child(0) is a call expression, this node is a block-level call to a component - since there's nothing on the LHS to bind the output to, we just comment out the whole call.
 
 CHECK_RETURN Err MtCursor::emit_statement(MnExprStatement n) {
   Err err;
@@ -2227,9 +2231,9 @@ CHECK_RETURN Err MtCursor::emit_field_expr(MnFieldExpr n) {
   Err err;
   assert(cursor == n.start());
 
-  auto node_submod = n.get_field(field_argument);
+  auto component_name = n.get_field(field_argument).text();
 
-  if (current_mod && current_mod->get_submod(node_submod.text())) {
+  if (current_mod && current_mod->get_component(component_name)) {
     auto field = n.text();
       for (auto& c : field) {
         if (c == '.') c = '_';
@@ -2237,6 +2241,7 @@ CHECK_RETURN Err MtCursor::emit_field_expr(MnFieldExpr n) {
     err << emit_replacement(n, field.c_str());
   }
   else {
+    // Local struct reference
     err << emit_text(n);
   }
 
@@ -2429,7 +2434,7 @@ CHECK_RETURN Err MtCursor::emit_qualified_id(MnQualifiedId n) {
 
 //------------------------------------------------------------------------------
 
-bool MtCursor::branch_contains_submod_call(MnNode n) {
+bool MtCursor::branch_contains_component_call(MnNode n) {
   if (n.sym == sym_call_expression) {
     if (n.get_field(field_function).sym == sym_field_expression) {
       return true;
@@ -2437,15 +2442,15 @@ bool MtCursor::branch_contains_submod_call(MnNode n) {
   }
 
   for (const auto& c : n) {
-    if (branch_contains_submod_call(c)) return true;
+    if (branch_contains_component_call(c)) return true;
   }
 
   return false;
 }
 
 //------------------------------------------------------------------------------
-// If statements _must_ use {}, otherwise we have no place to insert submodule
-// bindings if the branch contains a submod call.
+// If statements _must_ use {}, otherwise we have no place to insert component
+// bindings if the branch contains a component method call.
 
 CHECK_RETURN Err MtCursor::emit_if_statement(MnIfStatement n) {
   Err err;
@@ -2455,14 +2460,14 @@ CHECK_RETURN Err MtCursor::emit_if_statement(MnIfStatement n) {
 
   if (!node_then.is_null() && node_then.sym != sym_compound_statement) {
 
-    if (branch_contains_submod_call(node_then)) {
-      err << ERR("If statements that contain submod calls must use {}.");
+    if (branch_contains_component_call(node_then)) {
+      err << ERR("If statements that contain component calls must use {}.");
     }
   }
 
   if (!node_else.is_null() && node_else.sym != sym_compound_statement) {
-    if (branch_contains_submod_call(node_else)) {
-      err << ERR("Else statements that contain submod calls must use {}.");
+    if (branch_contains_component_call(node_else)) {
+      err << ERR("Else statements that contain component calls must use {}.");
     }
   }
 

@@ -802,6 +802,18 @@ CHECK_RETURN Err MtTracer::trace_write(const std::string& field_name) {
     }
   }
 
+  /*
+  switch(old_state) {
+  case FIELD_NONE     : new_state = FIELD_OUTPUT;   break;
+  case FIELD_INPUT    : new_state = FIELD_REGISTER; break;
+  case FIELD_OUTPUT   : new_state = FIELD_OUTPUT;   break;
+  case FIELD_SIGNAL   : new_state = FIELD_INVALID;  break;
+  case FIELD_REGISTER : new_state = FIELD_REGISTER; break;
+  case FIELD_INVALID  : new_state = FIELD_INVALID;  break;
+  default: assert(false);
+  }
+  */
+
   if (new_state == FIELD_INVALID) {
     err << ERR("Writing field %s changed state from %s to %s\n", field_name.c_str(), to_string(old_state), to_string(new_state));
   }

@@ -329,6 +329,7 @@ CHECK_RETURN Err MtModule::load_pass1() {
   // Have to collect fields before we collect methods so we can resolve reads/writes
   err << collect_fields_and_components();
   err << collect_methods();
+  err << categorize_methods();
 
   if (err.has_err()) {
     err << ERR("Module %s failed in load_pass1()\n", name().c_str());
@@ -478,8 +479,6 @@ CHECK_RETURN Err MtModule::collect_methods() {
   //----------
   // Create method objects for all function defition nodes
 
-  std::set<MtMethod*> method_set;
-
   for (const auto& n : mod_body) {
     if (n.sym == sym_access_specifier) {
       in_public = n.child(0).text() == "public";
@@ -516,6 +515,10 @@ CHECK_RETURN Err MtModule::collect_methods() {
     }
 
     all_methods.push_back(m);
+  }
+
+  std::set<MtMethod*> method_set;
+  for (auto m : all_methods) {
     method_set.insert(m);
   }
 
@@ -666,6 +669,15 @@ CHECK_RETURN Err MtModule::collect_methods() {
 
   return err;
 }
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtModule::categorize_methods() {
+  Err err;
+
+  return err;
+}
+
 
 //------------------------------------------------------------------------------
 

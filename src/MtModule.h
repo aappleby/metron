@@ -186,6 +186,8 @@ struct MtModule {
   CHECK_RETURN Err collect_modparams();
   CHECK_RETURN Err collect_fields_and_components();
   CHECK_RETURN Err collect_methods();
+
+  CHECK_RETURN Err categorize_methods();
   CHECK_RETURN Err categorize_fields();
 
   // CHECK_RETURN Err collect_registers();

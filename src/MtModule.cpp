@@ -615,6 +615,25 @@ CHECK_RETURN Err MtModule::categorize_methods() {
 
 //------------------------------------------------------------------------------
 
+std::vector<std::string> split_field_path(const std::string& path) {
+  std::vector<std::string> result;
+  std::string temp = "";
+  for (auto i = 0; i < path.size(); i++) {
+    if (path[i] == '.') {
+      result.push_back(temp);
+      temp.clear();
+    }
+    else {
+      temp.push_back(path[i]);
+    }
+  }
+
+  if (temp.size()) result.push_back(temp);
+
+  return result;
+}
+
+
 CHECK_RETURN Err MtModule::trace() {
   Err err;
   LOG_G("Tracing all public tocks in %s\n", name().c_str());
@@ -658,12 +677,23 @@ CHECK_RETURN Err MtModule::trace() {
 
   for (auto& pair : mod_state) {
     auto path = pair.first;
-    assert(path.starts_with("<top>."));
-    path.erase(path.begin(), path.begin() + 6);
-    auto field = get_field(path);
-    if (field) {
-      field->state = pair.second;
+    auto split = split_field_path(path);
+
+    assert(split[0] == "<top>");
+    split.erase(split.begin());
+
+    auto tail_field = split.back();
+    split.pop_back();
+
+    MtModule* mod_cursor = this;
+    for (int i = 0; i < split.size(); i++) {
+      auto component = mod_cursor->get_component(split[i]);
+      mod_cursor = mod_cursor->source_file->lib->get_module(component->type_name());
     }
+
+    MtField* field = mod_cursor->get_field(tail_field);
+    assert(field);
+    field->state = pair.second;
   }
 
   return err;

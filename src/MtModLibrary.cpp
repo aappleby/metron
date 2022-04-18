@@ -159,18 +159,65 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
     err << mod->collect_methods();
   }
 
+  //----------------------------------------
+  // Hook up child->parent module pointers
+
+  for (auto m : modules) {
+    for (auto s : m->all_components) {
+      get_module(s->type_name())->parents.push_back(m);
+    }
+  }
+
+  //----------------------------------------
+  // Trace top modules
+
+  for (auto m : modules) {
+    if (m->parents.empty()) {
+      err << m->trace();
+    }
+  }
+
+  //----------------------------------------
+  // Trace done, all our fields should have a state assigned. Categorize the methods.
+
   /*
   for (auto mod : modules) {
     err << mod->categorize_methods();
   }
   */
 
-  //----------------------------------------
-  // Generate call tree / temporal check for toplevel modules
+  for (auto mod : modules) {
+    for (auto method : mod->all_methods) {
+      bool wrote_signal = false;
+      bool wrote_output = false;
+      bool wrote_register = false;
 
-  for (auto m : modules) {
-    err << m->trace();
+      for (auto ref : method->fields_written) {
+        auto f = ref.subfield ? ref.subfield : ref.field;
+        switch(f->state) {
+        case FIELD_NONE     : break;
+        case FIELD_INPUT    : break;
+        case FIELD_OUTPUT   : wrote_output = true; break;
+        case FIELD_SIGNAL   : wrote_signal = true; break;
+        case FIELD_REGISTER : wrote_register = true; break;
+        case FIELD_INVALID  : break;
+        }
+      }
+
+      if (wrote_signal) {
+        LOG_G("Method %s.%s wrote a signal\n", mod->name().c_str(), method->name().c_str());
+      }
+      if (wrote_output) {
+        LOG_G("Method %s.%s wrote an output\n", mod->name().c_str(), method->name().c_str());
+      }
+      if (wrote_register) {
+        LOG_G("Method %s.%s wrote a register\n", mod->name().c_str(), method->name().c_str());
+      }
+    }
   }
+
+  //----------------------------------------
+  // Dump stuff
 
   for (auto mod : modules) {
     LOG_B("Dumping %s trace\n", mod->name().c_str());
@@ -215,15 +262,6 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
   for (auto mod : modules) {
     err << mod->categorize_fields();
     err << mod->build_port_map();
-  }
-
-  //----------------------------------------
-  // Hook up child->parent module pointers
-
-  for (auto m : modules) {
-    for (auto s : m->all_components) {
-      get_module(s->type_name())->parents.push_back(m);
-    }
   }
 
   //----------------------------------------

@@ -127,3 +127,28 @@ In the hardware viewpoint, we have a bundle of 32 wires (because 32-bit integer)
 The thing that's going to hurt your brain at first (and the thing that's going to make hardware devs furrow their eyebrows) is that all three of these viewpoints are functionally equivalent.
 
 Not that C++ and Verilog are equivalent in the general case - you can easily define code that makes sense in one language but not the other. Recursive calls in C have no equivalent in Verilog, and combinational logic feedback loops have no real equivalent in C. The point of Metron is to restrict your C++ code to a subset that _does_ make sense in both languages.
+
+
+
+Let's look at another simple module, this time with some state: a basic counter.
+
+class Counter {
+public:
+
+  int get_counter() {
+    return counter;
+  }
+
+  void increment_counter() {
+    counter = counter + 1;
+  }
+
+private:
+
+  int counter;
+
+};
+
+
+All top-level methods in the module (those not called by other methods) become "tick" and "tock" functions.
+

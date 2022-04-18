@@ -69,6 +69,19 @@ struct MtField {
   }
 };
 
+struct FieldRef {
+  MtField* field;
+  MtField* subfield;
+
+  bool operator < (const FieldRef& b) const {
+    if (field < b.field) return true;
+    if (field > b.field) return false;
+    if (subfield < b.subfield) return true;
+    if (subfield > b.subfield) return false;
+    return false;
+  }
+};
+
 //------------------------------------------------------------------------------
 
 struct MtEnum {
@@ -143,8 +156,8 @@ struct MtMethod {
   std::set<MtMethod*> callers;
   std::set<MtMethod*> callees;
 
-  std::set<MtField*> fields_read;
-  std::set<MtField*> fields_written;
+  std::set<FieldRef> fields_read;
+  std::set<FieldRef> fields_written;
 
   int get_rank() const { return 0; }
 

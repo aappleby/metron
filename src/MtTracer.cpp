@@ -91,14 +91,17 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n) {
     case sym_call_expression:
       err << trace_call(n);
       break;
-    case sym_field_expression:
-      err << trace_read(n.text());
+    case sym_field_expression: {
+      auto component_node = n.get_field(field_argument);
+      auto component = mod()->get_component(component_node.text());
+      auto component_mod = mod()->source_file->lib->get_module(component->type_name());
+      auto component_field = component_mod->get_field(n.get_field(field_field).text());
+
+      err << trace_read(component, component_field);
       break;
+    }
     case sym_identifier: {
-      auto field = mod()->get_field(n.text());
-      if (field && !field->is_param()) {
-        err << trace_read(field);
-      }
+      err << trace_read(mod()->get_field(n.text()));
       break;
     }
     case sym_if_statement:
@@ -244,29 +247,37 @@ CHECK_RETURN Err MtTracer::trace_assign(MnNode n) {
   if (node_lhs.sym == sym_subscript_expression) {
     node_name = node_lhs.get_field(field_argument);
   }
-
   auto field = mod()->get_field(node_name.text());
+
+
+
 
   if (node_lhs.sym == sym_identifier) {
     if (field) {
-      err << trace_write(node_name.text());
+      err << trace_write(field);
     }
   } else if (node_lhs.sym == sym_subscript_expression) {
     if (field) {
-      err << trace_write(node_name.text());
+      err << trace_write(field);
     }
   }
   else if (node_lhs.sym == sym_field_expression) {
-    err << trace_write(node_lhs.text());
+
+    auto component_node = node_lhs.get_field(field_argument);
+    auto component = mod()->get_component(component_node.text());
+    auto component_mod = mod()->source_file->lib->get_module(component->type_name());
+    auto component_field = component_mod->get_field(node_lhs.get_field(field_field).text());
+
+    err << trace_write(component, component_field);
   }
   else {
     debugbreak();
   }
 
+  
+  
   return err;
 }
-
-//------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
 
@@ -427,7 +438,7 @@ CHECK_RETURN Err MtTracer::trace_method_call(MtMethod* dst_method) {
 
   //----------------------------------------
 
-  bool requires_input_binding  = (dst_method->is_tick || dst_method->is_tock) && dst_method->params.size();
+  //bool requires_input_binding  = (dst_method->is_tick || dst_method->is_tock) && dst_method->params.size();
 
   // We must be either in a tick or a tock, or Metron is broken.
   assert(in_tick() ^ in_tock());
@@ -440,6 +451,7 @@ CHECK_RETURN Err MtTracer::trace_method_call(MtMethod* dst_method) {
   }
   */
 
+  /*
   // Tasks can only call tasks and functions.
   if (src_method->is_task && !(dst_method->is_func || dst_method->is_task)) {
     err << ERR("Can't call non-function/task %s from task %s.\n", dst_method->name().c_str(), src_method->name().c_str());
@@ -459,12 +471,14 @@ CHECK_RETURN Err MtTracer::trace_method_call(MtMethod* dst_method) {
   if (in_tick() && dst_method->is_tock) {
     err << ERR("Can't call %s from tick method %s\n", dst_method->name().c_str(), src_method->name().c_str());
   }
+  */
 
   //----------------------------------------
   // OK, the call should be valid. If the method requires port bindings, build the port names from the current field stack plus the method name.
 
   // Trace input port bindings as if they are fields being written to.
 
+  /*
   if (requires_input_binding) {
     for (const auto& param : dst_method->params) {
       std::string port_name = dst_method->name() + "." + param;
@@ -472,6 +486,7 @@ CHECK_RETURN Err MtTracer::trace_method_call(MtMethod* dst_method) {
       err << trace_read(port_name);
     }
   }
+  */
 
   // if we want sequential actions, we _do_ want to trace into the tick.
   // if we want parallel actions, we do _not_ want to trace into the tick.
@@ -522,6 +537,7 @@ CHECK_RETURN Err MtTracer::trace_component_call(const std::string& component_nam
   //----------------------------------------
   // The target must be a public tick or tock.
 
+  /*
   if (dst_method->is_private || !dst_method->is_tock) {
     err << ERR("Method %s is not a public tock, it can't be called from outside the module.\n", dst_method->name().c_str());
   }
@@ -537,15 +553,18 @@ CHECK_RETURN Err MtTracer::trace_component_call(const std::string& component_nam
   if (in_tick() && dst_method->is_tock && !dst_method->is_const) {
     err << ERR("Can't call non-const %s from tick method %s\n", dst_method->name().c_str(), src_method->name().c_str());
   }
+  */
 
   //----------------------------------------
   // OK, the call should be valid. If the method requires port bindings, build the port names from the current field stack plus the method name.
 
+  /*
   for (const auto& param : dst_method->params) {
     std::string port_name = component_name + "." + dst_method->name() + "." + param;
     err << trace_write(port_name);
     err << trace_read(port_name);
   }
+  */
 
   // If we're calling a method that has params, trace the params as if they were input ports.
   // We trace them as both write and read as the current method is writing them and the component, presumably, is reading them.
@@ -695,20 +714,15 @@ CHECK_RETURN Err MtTracer::trace_switch(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer::trace_read(MtField* field) {
-  return trace_read(field->name());
-}
+CHECK_RETURN Err MtTracer::trace_read(MtField* field, MtField* component_field) {
+  assert(field);
 
-/*
-NONE     + read  -> INPUT
-INPUT    + read  -> INPUT
-OUTPUT   + read  -> SIGNAL
-SIGNAL   + read  -> SIGNAL
-REGISTER + read  -> X
-*/
-
-CHECK_RETURN Err MtTracer::trace_read(const std::string& field_name) {
   Err err;
+
+  method()->fields_read.insert({field, component_field});
+
+  std::string field_name = field->name();
+  if (component_field) field_name = field_name + "." + component_field->name();
 
   auto field_path = _path_stack.back() + "." + field_name;
   auto& old_state = (*state_top)[field_path];
@@ -734,59 +748,18 @@ CHECK_RETURN Err MtTracer::trace_read(const std::string& field_name) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer::trace_write(MtField* field) {
-  return trace_write(field->name());
-}
-
-/*
-NONE     + tock write -> OUTPUT
-INPUT    + tock write -> X
-OUTPUT   + tock write -> OUTPUT
-SIGNAL   + tock write -> X
-REGISTER + tock write -> X
-
-NONE     + tick write -> REGISTER
-INPUT    + tick write -> REGISTER
-OUTPUT   + tick write -> X
-SIGNAL   + tick write -> X
-REGISTER + tick write -> REGISTER
-*/
-
-CHECK_RETURN Err MtTracer::trace_write(const std::string& field_name) {
+CHECK_RETURN Err MtTracer::trace_write(MtField* field, MtField* component_field) {
   Err err;
 
-  if (field_name == "mask") {
-    debugbreak();
-  }
+  method()->fields_written.insert({field, component_field});
+
+  std::string field_name = field->name();
+  if (component_field) field_name = field_name + "." + component_field->name();
 
   auto field_path = _path_stack.back() + "." + field_name;
   auto& old_state = (*state_top)[field_path];
   FieldState new_state;
 
-  if (in_tick()) {
-    switch(old_state) {
-    case FIELD_NONE     : new_state = FIELD_REGISTER; break;
-    case FIELD_INPUT    : new_state = FIELD_REGISTER; break;
-    case FIELD_OUTPUT   : new_state = FIELD_INVALID;  break;
-    case FIELD_SIGNAL   : new_state = FIELD_INVALID;  break;
-    case FIELD_REGISTER : new_state = FIELD_REGISTER; break;
-    case FIELD_INVALID  : new_state = FIELD_INVALID;  break;
-    default: assert(false);
-    }
-  }
-  else {
-    switch(old_state) {
-    case FIELD_NONE     : new_state = FIELD_OUTPUT;   break;
-    case FIELD_INPUT    : new_state = FIELD_INVALID;  break;
-    case FIELD_OUTPUT   : new_state = FIELD_OUTPUT;   break;
-    case FIELD_SIGNAL   : new_state = FIELD_INVALID;  break;
-    case FIELD_REGISTER : new_state = FIELD_INVALID;  break;
-    case FIELD_INVALID  : new_state = FIELD_INVALID;  break;
-    default: assert(false);
-    }
-  }
-
-  /*
   switch(old_state) {
   case FIELD_NONE     : new_state = FIELD_OUTPUT;   break;
   case FIELD_INPUT    : new_state = FIELD_REGISTER; break;
@@ -796,7 +769,6 @@ CHECK_RETURN Err MtTracer::trace_write(const std::string& field_name) {
   case FIELD_INVALID  : new_state = FIELD_INVALID;  break;
   default: assert(false);
   }
-  */
 
   if (new_state == FIELD_INVALID) {
     err << ERR("Writing field %s changed state from %s to %s\n", field_name.c_str(), to_string(old_state), to_string(new_state));
@@ -907,7 +879,6 @@ bool MtTracer::has_return(MnNode n) {
 //------------------------------------------------------------------------------
 
 bool MtTracer::has_non_terminal_return(MnNode n) {
-  //n.dump_tree();
 
   // A node with no returns has no non-terminal returns.
   if (!has_return(n)) {

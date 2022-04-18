@@ -159,9 +159,11 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
     err << mod->collect_methods();
   }
 
+  /*
   for (auto mod : modules) {
     err << mod->categorize_methods();
   }
+  */
 
   //----------------------------------------
   // Generate call tree / temporal check for toplevel modules
@@ -169,6 +171,42 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
   for (auto m : modules) {
     err << m->trace();
   }
+
+  for (auto mod : modules) {
+    LOG_B("Dumping %s trace\n", mod->name().c_str());
+    LOG_INDENT_SCOPE();
+    MtTracer::dump_trace(mod->mod_state);
+  }
+
+  for (auto mod : modules) {
+    LOG_B("Dumping %s field refs\n", mod->name().c_str());
+    LOG_INDENT_SCOPE();
+    for (auto method : mod->all_methods) {
+      LOG_B("Field read refs for %s\n", method->name().c_str());
+      for (const auto& ref : method->fields_read) {
+        LOG_INDENT_SCOPE();
+        if (ref.subfield) {
+          LOG_G("%s.%s %s\n", ref.field->name().c_str(), ref.subfield->name().c_str(), to_string(ref.subfield->state));
+        }
+        else {
+          LOG_G("%s %s\n", ref.field->name().c_str(), to_string(ref.field->state));
+        }
+      }
+
+      LOG_B("Field write refs for %s\n", method->name().c_str());
+      for (const auto& ref : method->fields_written) {
+        LOG_INDENT_SCOPE();
+        if (ref.subfield) {
+          LOG_R("%s.%s %s\n", ref.field->name().c_str(), ref.subfield->name().c_str(), to_string(ref.subfield->state));
+        }
+        else {
+          LOG_R("%s %s\n", ref.field->name().c_str(), to_string(ref.field->state));
+        }
+      }
+    }
+  }
+
+  exit(0);
 
   //----------------------------------------
   // All modules have populated their fields, match up tick/tock calls with their

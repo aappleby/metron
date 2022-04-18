@@ -624,7 +624,7 @@ CHECK_RETURN Err MtModule::trace() {
   for (auto m : all_methods) {
     LOG_INDENT_SCOPE();
 
-    if (!(m->is_public && m->is_tock)) {
+    if (!(m->is_public && m->callers.empty())) {
       continue;
     }
 

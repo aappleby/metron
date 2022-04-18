@@ -105,11 +105,8 @@ class MtTracer {
   CHECK_RETURN Err trace_assign(MnNode n);
 
   CHECK_RETURN Err trace_call(MnNode n);
-  CHECK_RETURN Err trace_field(MnNode n);
-  CHECK_RETURN Err trace_id(MnNode n);
   CHECK_RETURN Err trace_branch(MnNode n);
   CHECK_RETURN Err trace_switch(MnNode n);
-  CHECK_RETURN Err trace_ternary(MnNode n);
 
   CHECK_RETURN Err trace_component_call(const std::string& component_name, MtModule* dst_module, MtMethod* dst_method);
   CHECK_RETURN Err trace_method_call(MtMethod* method);

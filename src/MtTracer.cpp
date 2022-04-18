@@ -92,11 +92,15 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n) {
       err << trace_call(n);
       break;
     case sym_field_expression:
-      err << trace_field(n);
+      err << trace_read(n.text());
       break;
-    case sym_identifier:
-      err << trace_id(n);
+    case sym_identifier: {
+      auto field = mod()->get_field(n.text());
+      if (field && !field->is_param()) {
+        err << trace_read(field);
+      }
       break;
+    }
     case sym_if_statement:
       err << trace_branch(n);
       break;
@@ -604,34 +608,6 @@ CHECK_RETURN Err MtTracer::trace_template_call(MnNode n) {
   return err;
 }
 #endif
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtTracer::trace_field(MnNode n) {
-  Err err;
-  
-  err << trace_read(n.text());
-
-  return err;
-}
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtTracer::trace_id(MnNode n) {
-  Err err;
-
-  auto field = mod()->get_field(n.text());
-
-  if (field && !field->is_param()) {
-    err << trace_read(n.text());
-    // debugbreak();
-  } else {
-    // Either a param or a local variable, ignore.
-    // debugbreak();
-  }
-
-  return err;
-}
 
 //------------------------------------------------------------------------------
 

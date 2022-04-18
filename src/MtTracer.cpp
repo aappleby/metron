@@ -131,8 +131,8 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n) {
           if (in_tock()) {
             field->written_in_tock = true;
           }
-          err << trace_read(field->name());
-          err << trace_write(field->name());
+          err << trace_read(field);
+          err << trace_write(field);
         } else {
           // local variable increment
         }
@@ -719,6 +719,10 @@ CHECK_RETURN Err MtTracer::trace_switch(MnNode n) {
 
 //------------------------------------------------------------------------------
 
+CHECK_RETURN Err MtTracer::trace_read(MtField* field) {
+  return trace_read(field->name());
+}
+
 /*
 NONE     + read  -> INPUT
 INPUT    + read  -> INPUT
@@ -753,6 +757,10 @@ CHECK_RETURN Err MtTracer::trace_read(const std::string& field_name) {
 }
 
 //------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtTracer::trace_write(MtField* field) {
+  return trace_write(field->name());
+}
 
 /*
 NONE     + tock write -> OUTPUT

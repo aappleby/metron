@@ -115,6 +115,9 @@ class MtTracer {
   CHECK_RETURN Err trace_method_call(MtMethod* method);
   //CHECK_RETURN Err trace_template_call(MnNode n);
 
+  CHECK_RETURN Err trace_read(MtField* field);
+  CHECK_RETURN Err trace_write(MtField* field);
+
   CHECK_RETURN Err trace_read(const std::string& field_name);
   CHECK_RETURN Err trace_write(const std::string& field_name);
 

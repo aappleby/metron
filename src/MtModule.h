@@ -143,6 +143,9 @@ struct MtMethod {
   std::set<MtMethod*> callers;
   std::set<MtMethod*> callees;
 
+  std::set<MtField*> fields_read;
+  std::set<MtField*> fields_written;
+
   int get_rank() const { return 0; }
 
   StateMap method_state;

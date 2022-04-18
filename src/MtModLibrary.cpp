@@ -11,6 +11,32 @@
 
 //------------------------------------------------------------------------------
 
+MtModule* MtModLibrary::get_module(const std::string& name) {
+  assert(sources_loaded);
+  for (auto mod : modules) {
+    if (mod->mod_name == name) return mod;
+  }
+  return nullptr;
+}
+
+MtSourceFile* MtModLibrary::get_source(const std::string& name) {
+  for (auto s : source_files) {
+    if (s->filename == name) return s;
+  }
+  return nullptr;
+}
+
+//------------------------------------------------------------------------------
+
+void MtModLibrary::teardown() {
+  modules.clear();
+  for (auto s : source_files) {
+    delete s;
+  }
+}
+
+//------------------------------------------------------------------------------
+
 void MtModLibrary::add_search_path(const std::string& path) {
   assert(!sources_loaded);
   search_paths.push_back(path);
@@ -124,16 +150,17 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
   }
 
   //----------------------------------------
+  // All modules are now in the library, we can resolve references to other
+  // modules when we're collecting fields.
 
   for (auto mod : modules) {
-    err << mod->load_pass1();
+    err << mod->collect_modparams();
+    err << mod->collect_fields_and_components();
+    err << mod->collect_methods();
   }
-  if (err.has_err()) {
-    LOG_R("Load pass 1 failed\n");
-    return err;
-  }
-  else {
-    LOG_G("Load pass 1 ok\n");
+
+  for (auto mod : modules) {
+    err << mod->categorize_methods();
   }
 
   //----------------------------------------
@@ -142,25 +169,14 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
   for (auto m : modules) {
     err << m->trace();
   }
-  if (err.has_err()) {
-    LOG_R("Temporal trace failed\n");
-    return err;
-  }
-  else {
-    LOG_G("Temporal trace pass\n");
-  }
 
   //----------------------------------------
+  // All modules have populated their fields, match up tick/tock calls with their
+  // corresponding methods.
 
   for (auto mod : modules) {
-    err << mod->load_pass2();
-  }
-  if (err.has_err()) {
-    LOG_R("Load pass 2 failed\n");
-    return err;
-  }
-  else {
-    LOG_G("Load pass 2 ok\n");
+    err << mod->categorize_fields();
+    err << mod->build_port_map();
   }
 
   //----------------------------------------
@@ -179,30 +195,3 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
   return err;
 }
 
-//------------------------------------------------------------------------------
-
-MtModule* MtModLibrary::get_module(const std::string& name) {
-  assert(sources_loaded);
-  for (auto mod : modules) {
-    if (mod->mod_name == name) return mod;
-  }
-  return nullptr;
-}
-
-MtSourceFile* MtModLibrary::get_source(const std::string& name) {
-  for (auto s : source_files) {
-    if (s->filename == name) return s;
-  }
-  return nullptr;
-}
-
-//------------------------------------------------------------------------------
-
-void MtModLibrary::teardown() {
-  modules.clear();
-  for (auto s : source_files) {
-    delete s;
-  }
-}
-
-//------------------------------------------------------------------------------

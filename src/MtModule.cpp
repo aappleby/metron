@@ -318,69 +318,6 @@ void MtModule::dump_deltas() const {
 #endif
 
 //------------------------------------------------------------------------------
-// All modules are now in the library, we can resolve references to other
-// modules when we're collecting fields.
-
-CHECK_RETURN Err MtModule::load_pass1() {
-  Err err;
-
-  err << collect_modparams();
-
-  // Have to collect fields before we collect methods so we can resolve reads/writes
-  err << collect_fields_and_components();
-  err << collect_methods();
-  err << categorize_methods();
-
-  if (err.has_err()) {
-    err << ERR("Module %s failed in load_pass1()\n", name().c_str());
-  }
-
-#if 0
-  // enums = new std::vector<MtEnum>();
-
-  auto mod_body = mod_class.get_field(field_body).check_null();
-  for (const auto& n : mod_body) {
-    if (n.sym != sym_field_declaration) continue;
-
-    // MtField f(n);
-
-    // enum class
-    if (n.get_field(::field_type).sym == sym_enum_specifier) {
-      auto new_enum = new MtEnum(n);
-      enums.push_back(new_enum);
-      continue;
-    }
-
-    // Everything not an enum shoul have 1 or more declarator fields that
-    // contain the field name(s).
-
-    // int field_count = 0;
-
-    /*
-    for (auto c : n) {
-      if (c.field != field_declarator) continue;
-      field_count++;
-      auto name =
-          c.sym == sym_array_declarator ? c.get_field(field_declarator) : c;
-
-      MtField f(n);
-
-      auto type_name = n.node_to_type();
-      if (source_file->lib->has_mod(type_name)) {
-        MtSu bmod su bmod(n);
-        sub mod.mod = source_file->lib->get_mod(type_name);
-        sub mod.name = n.get_field(field_declarator).text();
-        sub mods.push_back(sub mod);
-      }
-    }
-    */
-  }
-#endif
-
-  return err;
-}
-
-//------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtModule::collect_modparams() {
   Err err;
@@ -426,8 +363,6 @@ CHECK_RETURN Err MtModule::collect_fields_and_components() {
 
     auto new_field = MtField::construct(n, in_public);
 
-
-    // FIXME why are we excluding enums here? because they're not a "field"?
     if (n.get_field(field_type).sym == sym_enum_specifier) {
       all_enums.push_back(new_field);
     }
@@ -440,30 +375,6 @@ CHECK_RETURN Err MtModule::collect_fields_and_components() {
   }
 
   return err;
-}
-
-//------------------------------------------------------------------------------
-
-bool MtModule::method_writes_a_field(MtMethod* method) {
-  bool result = false;
-
-  method->node.visit_tree([&](MnNode child) {
-    if (child.sym == sym_assignment_expression) {
-      auto lhs = child.get_field(field_left);
-      if (get_field(lhs.text())) {
-        result = true;
-      }
-    }
-    else if (child.sym == sym_call_expression) {
-      auto func = child.get_field(field_function);
-      auto callee = get_method(func.text());
-      if (callee) {
-        result |= method_writes_a_field(callee);
-      }
-    }
-  });
-
-  return result;
 }
 
 //------------------------------------------------------------------------------
@@ -517,11 +428,6 @@ CHECK_RETURN Err MtModule::collect_methods() {
     all_methods.push_back(m);
   }
 
-  std::set<MtMethod*> method_set;
-  for (auto m : all_methods) {
-    method_set.insert(m);
-  }
-
   //----------
   // Populate the call graph
 
@@ -537,8 +443,40 @@ CHECK_RETURN Err MtModule::collect_methods() {
           }
         }
       }
-    });
+      });
   }
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+bool MtModule::method_writes_a_field(MtMethod* method) {
+  bool result = false;
+
+  method->node.visit_tree([&](MnNode child) {
+    if (child.sym == sym_assignment_expression) {
+      auto lhs = child.get_field(field_left);
+      if (get_field(lhs.text())) {
+        result = true;
+      }
+    }
+    else if (child.sym == sym_call_expression) {
+      auto func = child.get_field(field_function);
+      auto callee = get_method(func.text());
+      if (callee) {
+        result |= method_writes_a_field(callee);
+      }
+    }
+  });
+
+  return result;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtModule::categorize_methods() {
+  Err err;
 
   //----------
   // Pull out all the constructorss
@@ -579,11 +517,16 @@ CHECK_RETURN Err MtModule::collect_methods() {
           }
         }
       }
-    });
+      });
   }
 
   //----------
   // Save the constructors and inits and remove them from the method set.
+
+  std::set<MtMethod*> method_set;
+  for (auto m : all_methods) {
+    method_set.insert(m);
+  }
 
   for (auto m : inits) {
     if (m->is_constructor && !m->is_public) {
@@ -672,15 +615,6 @@ CHECK_RETURN Err MtModule::collect_methods() {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtModule::categorize_methods() {
-  Err err;
-
-  return err;
-}
-
-
-//------------------------------------------------------------------------------
-
 CHECK_RETURN Err MtModule::trace() {
   Err err;
   LOG_G("Tracing all public tocks in %s\n", name().c_str());
@@ -704,8 +638,6 @@ CHECK_RETURN Err MtModule::trace() {
     tracer.push_state(&mod_state);
 
     err << tracer.trace_method(m);
-
-    LOG_G("Trace done\n");
   }
 
   if (err.has_err()) {
@@ -715,52 +647,24 @@ CHECK_RETURN Err MtModule::trace() {
 
   // Check that all entries in the state map ended up in a valid state.
 
-  //MtTracer::dump_trace(mod_state);
-
   for (auto& pair : mod_state) {
-
     if (pair.second == FIELD_INVALID) {
       err << ERR("Field %s has invalid state\n", pair.first.c_str(), to_string(pair.second));
     }
+  }
 
-    // Assign the final merged states back from the map to the fields.
 
+  // Assign the final merged states back from the map to the fields.
+
+  for (auto& pair : mod_state) {
     auto path = pair.first;
     assert(path.starts_with("<top>."));
     path.erase(path.begin(), path.begin() + 6);
-
     auto field = get_field(path);
     if (field) {
       field->state = pair.second;
     }
   }
-
-  // Check that all fields got a state assigned to them.
-
-  /*
-  for (auto f : all_fields) {
-    if (f->is_component() || f->is_param()) continue;
-
-    if (mod_states.get_actions("<top>." + f->name()) == FIELD_NONE) {
-      err << ERR("No method in the public interface of %s touched field %s!\n", name().c_str(), f->name().c_str());
-    }
-  }
-  */
-
-  return err;
-}
-
-//------------------------------------------------------------------------------
-// All modules have populated their fields, match up tick/tock calls with their
-// corresponding methods.
-
-CHECK_RETURN Err MtModule::load_pass2() {
-  Err err;
-  assert (!mod_class.is_null());
-
-  err << categorize_fields();
-  err << build_port_map();
-  err << sanity_check();
 
   return err;
 }
@@ -943,85 +847,3 @@ CHECK_RETURN Err MtModule::build_port_map() {
 }
 
 //------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtModule::sanity_check() {
-  Err err;
-
-  // Inputs, outputs, registers, and components must not overlap.
-
-  std::set<std::string> field_names;
-
-  for (auto n : input_signals) {
-    if (field_names.contains(n->name())) {
-      err << ERR("Duplicate input name %s\n", n->name().c_str());
-    } else {
-      field_names.insert(n->name());
-    }
-  }
-
-  /*
-  for (auto n : input_arguments) {
-    if (field_names.contains(n->name())) {
-      err << ERR("Duplicate input name %s\n", n->name().c_str());
-    } else {
-      field_names.insert(n->name());
-    }
-  }
-  */
-
-  for (auto n : output_signals) {
-    if (field_names.contains(n->name())) {
-      err << ERR("Duplicate output name %s\n", n->name().c_str());
-    } else {
-      field_names.insert(n->name());
-    }
-  }
-
-  for (auto n : public_registers) {
-    if (field_names.contains(n->name())) {
-      err << ERR("Duplicate output name %s\n", n->name().c_str());
-    } else {
-      field_names.insert(n->name());
-    }
-  }
-
-  /*
-  for (auto n : registers) {
-    if (field_names.contains(n->name())) {
-      LOG_R("Duplicate register name %s\n", n->name().c_str());
-      error = true;
-    } else {
-      field_names.insert(n->name());
-    }
-  }
-  */
-
-  for (auto n : all_components) {
-    if (field_names.contains(n->name())) {
-      err << ERR("Duplicate component name %s\n", n->name().c_str());
-    } else {
-      field_names.insert(n->name());
-    }
-  }
-
-  return err;
-}
-
-//------------------------------------------------------------------------------
-#if 0
-void MtModule::check_dirty_ticks() {
-  for (auto tick : tick_methods) {
-    tick->update_delta();
-    dirty_check_fail |= tick->delta->error;
-  }
-}
-
-//------------------------------------------------------------------------------
-
-void MtModule::check_dirty_tocks() {
-  for (auto tock : tock_methods) {
-    tock->update_delta();
-    dirty_check_fail |= tock->delta->error;
-  }
-}
-#endif

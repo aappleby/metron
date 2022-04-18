@@ -176,9 +176,6 @@ struct MtModule {
   MtField* get_component(const std::string& name);
   MtMethod* get_method(const std::string& name);
 
-  CHECK_RETURN Err load_pass1();
-  CHECK_RETURN Err load_pass2();
-
   void dump_method_list(const std::vector<MtMethod*>& methods) const;
   void dump_banner() const;
   // void dump_deltas() const;
@@ -197,8 +194,6 @@ struct MtModule {
   CHECK_RETURN Err build_port_map();
 
   CHECK_RETURN Err trace();
-
-  CHECK_RETURN Err sanity_check();
 
 #if 0
   void check_dirty_ticks();

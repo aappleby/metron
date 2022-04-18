@@ -204,15 +204,38 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
         }
       }
 
-      if (wrote_signal) {
-        LOG_G("Method %s.%s wrote a signal\n", mod->name().c_str(), method->name().c_str());
+      if      (!wrote_register && !wrote_signal && !wrote_output) {
+        //LOG_G("Method %s.%s wrote ", mod->name().c_str(), method->name().c_str());
+        //LOG_G("nothing\n");
       }
-      if (wrote_output) {
-        LOG_G("Method %s.%s wrote an output\n", mod->name().c_str(), method->name().c_str());
+      else if (!wrote_register && !wrote_signal &&  wrote_output) {
+        LOG_G("Method %s.%s wrote ", mod->name().c_str(), method->name().c_str());
+        LOG_G("only an output\n");
       }
-      if (wrote_register) {
-        LOG_G("Method %s.%s wrote a register\n", mod->name().c_str(), method->name().c_str());
+      else if (!wrote_register &&  wrote_signal && !wrote_output) {
+        LOG_G("Method %s.%s wrote ", mod->name().c_str(), method->name().c_str());
+        LOG_G("only a signal\n");
       }
+      else if (!wrote_register &&  wrote_signal &&  wrote_output) {
+        LOG_G("Method %s.%s wrote ", mod->name().c_str(), method->name().c_str());
+        LOG_G("signals and outputs\n");
+      }
+      else if ( wrote_register && !wrote_signal && !wrote_output) {
+        LOG_G("Method %s.%s wrote ", mod->name().c_str(), method->name().c_str());
+        LOG_G("only registers\n");
+      }
+      else if ( wrote_register && !wrote_signal &&  wrote_output) {
+        LOG_G("Method %s.%s wrote ", mod->name().c_str(), method->name().c_str());
+        LOG_G("a register and an output\n");
+      }
+      else if ( wrote_register &&  wrote_signal && !wrote_output) {
+        LOG_G("Method %s.%s wrote ", mod->name().c_str(), method->name().c_str());
+        LOG_R("a register and a signal\n");
+      }
+      else if ( wrote_register &&  wrote_signal &&  wrote_output) {
+        LOG_R("a register and a signal\n");
+      }
+
     }
   }
 
@@ -220,6 +243,7 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
   // Dump stuff
 
   for (auto mod : modules) {
+    if (!mod->parents.empty()) continue;
     LOG_B("Dumping %s trace\n", mod->name().c_str());
     LOG_INDENT_SCOPE();
     MtTracer::dump_trace(mod->mod_state);
@@ -229,7 +253,7 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
     LOG_B("Dumping %s field refs\n", mod->name().c_str());
     LOG_INDENT_SCOPE();
     for (auto method : mod->all_methods) {
-      LOG_B("Field read refs for %s\n", method->name().c_str());
+      if (method->fields_read.size()) LOG_B("Field read refs for %s\n", method->name().c_str());
       for (const auto& ref : method->fields_read) {
         LOG_INDENT_SCOPE();
         if (ref.subfield) {
@@ -240,7 +264,7 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
         }
       }
 
-      LOG_B("Field write refs for %s\n", method->name().c_str());
+      if (method->fields_written.size()) LOG_B("Field write refs for %s\n", method->name().c_str());
       for (const auto& ref : method->fields_written) {
         LOG_INDENT_SCOPE();
         if (ref.subfield) {

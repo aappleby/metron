@@ -6,6 +6,26 @@
 #include "MtSourceFile.h"
 #include "metron_tools.h"
 
+/*
+digraph G {
+
+none -> input     [label="read"];
+none -> output    [label="write"];
+
+input -> input    [label="read"];
+input -> register [label="write"];
+
+output -> signal  [label="read"];
+output -> output  [label="write"];
+
+signal -> signal   [label="read"];
+signal -> invalid  [label="write"];
+
+register -> invalid [label="read"];
+register -> register [label="write"];
+}
+*/
+
 //-----------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer::merge_branch(StateMap & ma, StateMap & mb, StateMap & out) {
@@ -38,25 +58,80 @@ CHECK_RETURN Err MtTracer::merge_branch(StateMap & ma, StateMap & mb, StateMap &
     else if (a == FIELD_INVALID || b == FIELD_INVALID) {
       pair.second = FIELD_INVALID;
     }
-    else if (in_tick()) {
-      if (a == FIELD_NONE   && b == FIELD_INPUT)    pair.second = FIELD_INPUT;
-      if (a == FIELD_NONE   && b == FIELD_REGISTER) pair.second = FIELD_REGISTER;
-      if (a == FIELD_INPUT  && b == FIELD_REGISTER) pair.second = FIELD_REGISTER;
-      if (a == FIELD_OUTPUT && b == FIELD_SIGNAL)   pair.second = FIELD_SIGNAL;
-    }
     else {
-      if (a == FIELD_NONE   && b == FIELD_INPUT)   pair.second = FIELD_INPUT;
-      if (a == FIELD_OUTPUT && b == FIELD_SIGNAL)  pair.second = FIELD_SIGNAL;
+      if (a == FIELD_NONE     && b == FIELD_INPUT)    pair.second = FIELD_INPUT;    // promote
+      if (a == FIELD_OUTPUT   && b == FIELD_SIGNAL)   pair.second = FIELD_SIGNAL;   // promote
+
+      if (a == FIELD_NONE     && b == FIELD_OUTPUT)   pair.second = FIELD_REGISTER; // half-write, infer reg
+      if (a == FIELD_INPUT    && b == FIELD_OUTPUT)   pair.second = FIELD_REGISTER; // half-write, infer reg
+      if (a == FIELD_NONE     && b == FIELD_REGISTER) pair.second = FIELD_REGISTER; // promote
+      if (a == FIELD_INPUT    && b == FIELD_REGISTER) pair.second = FIELD_REGISTER; // promote
+      if (a == FIELD_OUTPUT   && b == FIELD_REGISTER) pair.second = FIELD_REGISTER; // promote
+
+      if (a == FIELD_NONE     && b == FIELD_SIGNAL)   pair.second = FIELD_INVALID; // half-write, bad signal
+      if (a == FIELD_INPUT    && b == FIELD_SIGNAL)   pair.second = FIELD_INVALID; // order conflict
+
+      if (a == FIELD_SIGNAL   && b == FIELD_REGISTER) pair.second = FIELD_INVALID; // order conflict
+
+      /*
+      switch(a) {
+      case FIELD_NONE: {
+        switch(b) {
+        case FIELD_INPUT:     pair.second = FIELD_INPUT;    break; // promote
+        case FIELD_OUTPUT:    pair.second = FIELD_REGISTER; break; // half-write, infer reg
+        case FIELD_SIGNAL:    pair.second = FIELD_INVALID;  break; // half-write, bad signal
+        case FIELD_REGISTER:  pair.second = FIELD_REGISTER; break; // promote
+        }
+        break;
+      }
+      case FIELD_INPUT: {
+        switch(b) {
+        case FIELD_NONE:      pair.second = FIELD_INPUT;    break; // promote
+        case FIELD_OUTPUT:    pair.second = FIELD_REGISTER; break; // half-write, infer reg
+        case FIELD_SIGNAL:    pair.second = FIELD_INVALID;  break; // order conflict
+        case FIELD_REGISTER:  pair.second = FIELD_REGISTER; break; // promote
+        }
+        break;
+      }
+      case FIELD_OUTPUT: {
+        switch(b) {
+        case FIELD_NONE:      pair.second = FIELD_REGISTER; break; // half-write, infer reg
+        case FIELD_INPUT:     pair.second = FIELD_REGISTER; break; // half-write, infer reg
+        case FIELD_SIGNAL:    pair.second = FIELD_SIGNAL;   break; // promote
+        case FIELD_REGISTER:  pair.second = FIELD_REGISTER; break; // promote
+        }
+        break;
+      }
+      case FIELD_SIGNAL: {
+        switch(b) {
+        case FIELD_NONE:      pair.second = FIELD_INVALID;  break; // half-write, bad signal
+        case FIELD_INPUT:     pair.second = FIELD_INVALID;  break; // order conflict
+        case FIELD_OUTPUT:    pair.second = FIELD_SIGNAL;   break; // promote
+        case FIELD_REGISTER:  pair.second = FIELD_INVALID;  break; // order conflict
+        }
+        break;
+      }
+      case FIELD_REGISTER: {
+        switch(b) {
+        case FIELD_NONE:      pair.second = FIELD_REGISTER; break; // promote
+        case FIELD_INPUT:     pair.second = FIELD_REGISTER; break; // promote
+        case FIELD_OUTPUT:    pair.second = FIELD_REGISTER; break; // promote
+        case FIELD_SIGNAL:    pair.second = FIELD_INVALID;  break; // order conflict
+        }
+        break;
+      }
+      }
+      */
     }
   }
 
-  out.swap(temp);
-
-  for (auto& pair : out) {
+  for (auto& pair : temp) {
     if (pair.second == FIELD_INVALID) {
       debugbreak();
     }
   }
+
+  out.swap(temp);
 
   return err;
 }
@@ -101,7 +176,14 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n) {
       break;
     }
     case sym_identifier: {
-      err << trace_read(mod()->get_field(n.text()));
+      auto id = n.text();
+      auto field = mod()->get_field(id);
+      if (field) {
+        err << trace_read(field);
+      }
+      else {
+        //err << WARN("FIXME trace parameter read %s\n", id.c_str());
+      }
       break;
     }
     case sym_if_statement:
@@ -325,9 +407,11 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
       return err;
     }
 
+    /*
     if (!dst_method->is_tock) {
       err << ERR("Method %s is calling a non-tock method %s.%s on a component.\n", src_method->name().c_str(), component_name.c_str(), component_method_name.c_str());
     }
+    */
 
     // New state map goes on the stack.
     //MtStateMap state_call;
@@ -361,9 +445,11 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
       return err;
     }
 
+    /*
     if (in_tick() && dst_method->is_public) {
       err << ERR("Can't call public method %s from private %s\n", dst_method->name().c_str(), src_method->name().c_str());
     }
+    */
 
 
     err << trace_method_call(dst_method);
@@ -400,8 +486,6 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
 
 
   if (err.has_err()) {
-    n.dump_source_lines();
-    debugbreak();
     return err;
   }
 
@@ -441,7 +525,7 @@ CHECK_RETURN Err MtTracer::trace_method_call(MtMethod* dst_method) {
   //bool requires_input_binding  = (dst_method->is_tick || dst_method->is_tock) && dst_method->params.size();
 
   // We must be either in a tick or a tock, or Metron is broken.
-  assert(in_tick() ^ in_tock());
+  //assert(in_tick() ^ in_tock());
 
   /*
   // Methods that require input port bindings cannot be called from inside the module.
@@ -715,9 +799,11 @@ CHECK_RETURN Err MtTracer::trace_switch(MnNode n) {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer::trace_read(MtField* field, MtField* component_field) {
+  Err err;
+
   assert(field);
 
-  Err err;
+  if (field->is_param()) return err;
 
   method()->fields_read.insert({field, component_field});
 

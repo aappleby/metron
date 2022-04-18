@@ -3,24 +3,20 @@
 
 //==============================================================================
 
+// yosys doesn't appear to handle return values from functions at all
+// v*rilator doesn't allow "return;" if the function has a return value
+// even if you set it via "func_name = value;" first.
+
 template <int cycles_per_bit = 4>
 class uart_rx {
  public:
-  //----------------------------------------
-
-  // yosys doesn't appear to handle return values from functions at all
-  // v*rilator doesn't allow "return;" if the function has a return value
-  // even if you set it via "func_name = value;" first.
-
-
-  logic<1>  tock_valid() { return cursor == 1; }
-  logic<8>  tock_buffer() { return buffer; }
-  logic<32> tock_sum() { return sum; }
-
-  void tock(logic<1> i_rstn, logic<1> i_serial) { tick(i_rstn, i_serial); }
 
   //----------------------------------------
- private:
+
+  logic<1>  valid() { return cursor == 1; }
+  logic<8>  buffer() { return buffer; }
+  logic<32> sum() { return sum; }
+
   void tick(logic<1> i_rstn, logic<1> i_serial) {
     if (!i_rstn) {
       cycle = 0;
@@ -42,6 +38,8 @@ class uart_rx {
       }
     }
   }
+
+  //----------------------------------------
 
   static const int cycle_bits = clog2(cycles_per_bit);
   static const int cycle_max = cycles_per_bit - 1;

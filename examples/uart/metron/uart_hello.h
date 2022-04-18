@@ -12,17 +12,10 @@ class uart_hello {
 
   //----------------------------------------
 
-  logic<8> tock_data() const { return data; }
-  logic<1> tock_req()  const { return state == SEND; }
-  logic<1> tock_done() const { return state == DONE; }
+  logic<8> data() const { return data; }
+  logic<1> req()  const { return state == SEND; }
+  logic<1> done() const { return state == DONE; }
 
-  void tock(logic<1> i_rstn, logic<1> i_cts, logic<1> i_idle) {
-    tick(i_rstn, i_cts, i_idle);
-  }
-
-  //----------------------------------------
-
- private:
   void tick(logic<1> i_rstn, logic<1> i_cts, logic<1> i_idle) {
     if (!i_rstn) {
       state = WAIT;
@@ -43,6 +36,8 @@ class uart_hello {
       }
     }
   }
+
+  //----------------------------------------
 
   static const int message_len = 512;
   static const int cursor_bits = clog2(message_len);

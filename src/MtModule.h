@@ -124,6 +124,48 @@ struct MtParam {
 };
 
 //------------------------------------------------------------------------------
+// MtMethodPort represents an implicit port that holds parameters or return
+// values used by a method. Only tick & tock methods in a module have ports.
+
+struct MtMethodPort {
+  MtMethod* method;
+  std::string name;
+
+  bool is_input() const {
+    return !is_return;
+  }
+
+  bool is_output() const {
+    return is_return;
+  }
+
+  bool is_return = false;
+};
+
+//------------------------------------------------------------------------------
+
+enum MethodType {
+  METHOD_NONE,
+  METHOD_TICK,
+  METHOD_TOCK,
+  METHOD_TICK_TASK,
+  METHOD_TOCK_TASK,
+  METHOD_TICK_FUNC,
+  METHOD_TOCK_FUNC,
+};
+
+inline const char* to_string(MethodType t) {
+  switch(t) {
+  case METHOD_NONE:       return "METHOD_NONE";
+  case METHOD_TICK:       return "METHOD_TICK";
+  case METHOD_TOCK:       return "METHOD_TOCK";
+  case METHOD_TICK_TASK:  return "METHOD_TICK_TASK";
+  case METHOD_TOCK_TASK:  return "METHOD_TOCK_TASK";
+  case METHOD_TICK_FUNC:  return "METHOD_TICK_FUNC";
+  case METHOD_TOCK_FUNC:  return "METHOD_TOCK_FUNC";
+  default: assert(false); return "???";
+  }
+}
 
 struct MtMethod {
   static MtMethod* construct(MnNode n, MtModule* _mod, MtModLibrary* _lib) {
@@ -136,9 +178,10 @@ struct MtMethod {
   MtModule* mod = nullptr;
   MtModLibrary* lib = nullptr;
 
+  MethodType type = METHOD_NONE;
+
   std::vector<std::string> params;
   std::vector<MnNode> param_nodes;
-  // MtDelta delta = nullptr;
 
   bool is_constructor = false;
   bool is_init = false;
@@ -153,11 +196,14 @@ struct MtMethod {
   bool has_return = false;
   bool is_triggered = false; // true if this is a tick and a tock has called it during a trace
 
-  std::set<MtMethod*> callers;
-  std::set<MtMethod*> callees;
+  std::set<MtMethod*> callers; // collect_methods
+  std::set<MtMethod*> callees; // collect_methods
 
   std::set<FieldRef> fields_read;
   std::set<FieldRef> fields_written;
+
+  std::vector<MtMethodPort*> input_ports;
+  std::vector<MtMethodPort*> output_ports;
 
   int get_rank() const { return 0; }
 
@@ -246,6 +292,8 @@ struct MtModule {
   std::vector<MtField*>  all_enums;
   std::vector<MtMethod*> all_methods;
   std::vector<MtField*>  all_components;
+
+  MtMethod* constructor = nullptr;
 
   //----------
   // Populated by load_pass2 using the results from trace().

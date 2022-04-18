@@ -414,8 +414,6 @@ CHECK_RETURN Err MtModule::collect_methods() {
       }
     }
 
-    m->has_return = func_type && func_type.text() != "void";
-
     auto func_args = func_decl.get_field(field_parameters);
     for (int i = 0; i < func_args.named_child_count(); i++) {
       auto param = func_args.named_child(i);
@@ -425,11 +423,26 @@ CHECK_RETURN Err MtModule::collect_methods() {
       m->param_nodes.push_back(param);
     }
 
+    if (func_type.is_null()) {
+      if (constructor) {
+        err << ERR("Found duplicate constructor\n");
+      }
+      else {
+        constructor = m;
+        if (m->params.size()) {
+          err << ERR("Constructor has params\n");
+        }
+      }
+    }
+    else {
+      m->has_return = func_type.text() != "void";
+    }
+
     all_methods.push_back(m);
   }
 
   //----------
-  // Populate the call graph
+  // Populate the call graph.
 
   for (auto m : all_methods) {
     m->node.visit_tree([&](MnNode child) {
@@ -443,8 +456,19 @@ CHECK_RETURN Err MtModule::collect_methods() {
           }
         }
       }
-      });
+    });
   }
+
+  //----------
+  // Mark everything called from a constructor as an init method.
+
+  std::function<void(MtMethod*)> mark_init = [&](MtMethod* method) {
+    if (method && !method->is_init) {
+      method->is_init = true;
+      for (auto m : method->callees) mark_init(m);
+    }
+  };
+  mark_init(constructor);
 
   return err;
 }
@@ -493,6 +517,7 @@ CHECK_RETURN Err MtModule::categorize_methods() {
   //----------
   // Everything called by a constructor is an init.
 
+  /*
   std::vector<MtMethod*> inits;
   while (!init_queue.empty()) {
     auto method = init_queue.front();
@@ -519,15 +544,12 @@ CHECK_RETURN Err MtModule::categorize_methods() {
       }
       });
   }
+  */
 
   //----------
   // Save the constructors and inits and remove them from the method set.
 
-  std::set<MtMethod*> method_set;
-  for (auto m : all_methods) {
-    method_set.insert(m);
-  }
-
+  /*
   for (auto m : inits) {
     if (m->is_constructor && !m->is_public) {
       err << ERR("Constructor %s::%s is not public\n", name().c_str(), m->name().c_str());
@@ -544,9 +566,15 @@ CHECK_RETURN Err MtModule::categorize_methods() {
     init_methods.push_back(m);
     method_set.erase(m);
   }
+  */
 
   //----------
   // Public methods without callers go in the tock set.
+
+  std::set<MtMethod*> method_set;
+  for (auto m : all_methods) {
+    if (!m->is_init) method_set.insert(m);
+  }
 
   std::vector<MtMethod*> tocks;
 
@@ -643,9 +671,8 @@ CHECK_RETURN Err MtModule::trace() {
   for (auto m : all_methods) {
     LOG_INDENT_SCOPE();
 
-    if (!(m->is_public && m->callers.empty())) {
-      continue;
-    }
+    if (m->is_init) continue;
+    if (m->callers.size()) continue;
 
     LOG_G("Tracing %s.%s\n", name().c_str(), m->name().c_str());
     LOG_INDENT_SCOPE();

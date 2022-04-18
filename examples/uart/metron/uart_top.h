@@ -15,24 +15,23 @@ class uart_top {
 
   //----------------------------------------
 
-  logic<1>  tock_serial() { return tx.tock_serial(); }
-  logic<8>  tock_data()   { return rx.tock_buffer(); }
-  logic<1>  tock_valid()  { return rx.tock_valid(); }
-  logic<1>  tock_done()   { return hello.tock_done() && tx.tock_idle(); }
-  logic<32> tock_sum()    { return rx.tock_sum(); }
+  logic<1>  serial() { return tx.serial(); }
+  logic<8>  data()   { return rx.buffer(); }
+  logic<1>  valid()  { return rx.valid(); }
+  logic<1>  done()   { return hello.done() && tx.idle(); }
+  logic<32> sum()    { return rx.sum(); }
 
   void tock(logic<1> i_rstn) {
-    logic<8> hello_data = hello.tock_data();
-    logic<1> hello_req = hello.tock_req();
+    logic<8> hello_data = hello.data();
+    logic<1> hello_req = hello.req();
 
-    rx.tock(i_rstn, tx.tock_serial());
-    hello.tock(i_rstn, tx.tock_cts(), tx.tock_idle());
-    tx.tock(i_rstn, hello_data, hello_req);
+    rx.tick(i_rstn, tx.serial());
+    hello.tick(i_rstn, tx.cts(), tx.idle());
+    tx.tick(i_rstn, hello_data, hello_req);
   }
 
   //----------------------------------------
 
- private:
   uart_hello<repeat_msg> hello;
   uart_tx<cycles_per_bit> tx;
   uart_rx<cycles_per_bit> rx;

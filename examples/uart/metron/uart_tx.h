@@ -6,24 +6,25 @@
 template <int cycles_per_bit = 4>
 class uart_tx {
  public:
+
+  uart_tx() {
+    cycle = 0;
+    cursor = 0;
+    buffer = 0;
+  }
+
   //----------------------------------------
 
-  logic<1> tock_serial() { return buffer & 1; }
+  logic<1> serial() { return buffer & 1; }
 
-  logic<1> tock_cts() {
+  logic<1> cts() {
     return ((cursor == extra_stop_bits) && (cycle == 0)) ||
            (cursor < extra_stop_bits);
   }
 
-  logic<1> tock_idle() { return (cursor == 0) && (cycle == 0); }
+  logic<1> idle() { return (cursor == 0) && (cycle == 0); }
 
-  void tock(logic<1> i_rstn, logic<8> i_data, logic<1> i_req) {
-    tick(i_rstn, i_data, i_req);
-  }
 
-  //----------------------------------------
-
- private:
   void tick(logic<1> i_rstn, logic<8> i_data, logic<1> i_req) {
     if (!i_rstn) {
       cycle = 0;
@@ -52,6 +53,8 @@ class uart_tx {
       }
     }
   }
+
+  //----------------------------------------
 
   // 1 start bit, 8 data bits, 1 stop bit, 7 additional stop bits to guarantee
   // that recevier can resync between messages

@@ -9,19 +9,31 @@ MtModule* MtTracer::mod_top() { return _method_stack.back()->mod; }
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n) {
+CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n, bool is_write) {
   Err err;
 
   switch (n.sym) {
-    case sym_field_expression:
+
+    case sym_field_expression: {
+      auto node_arg   = n.get_field(field_argument);
+
+      if (mod_top()->get_component(node_arg.text())) {
+        err << trace(n.text(), is_write);
+      }
+      else if (mod_top()->get_field(node_arg.text())) {
+        err << trace(n.text(), is_write);
+      }
+      break;
+    }
+
     case sym_identifier:
-    case sym_subscript_expression:
-      err << trace(n, false);
+      if (mod_top()->get_field(n.text())) {
+        err << trace(n.text(), is_write);
+      }
       break;
 
-    case sym_assignment_expression:
-      err << trace_dispatch(n.get_field(field_right));
-      err << trace(n.get_field(field_left), true);
+    case sym_subscript_expression:
+      err << trace_dispatch(n.get_field(field_argument), is_write);
       break;
 
     case sym_call_expression:
@@ -39,10 +51,15 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n) {
 
     case sym_update_expression: {
       // this is "i++" or similar, which is a read and a write.
-      err << trace(n.get_field(field_argument), false);
-      err << trace(n.get_field(field_argument), true);
+      err << trace_dispatch(n.get_field(field_argument), false);
+      err << trace_dispatch(n.get_field(field_argument), true);
       break;
     }
+
+    case sym_assignment_expression:
+      err << trace_dispatch(n.get_field(field_right), false);
+      err << trace_dispatch(n.get_field(field_left), true);
+      break;
 
     default:
       for (const auto& c : n) err << trace_dispatch(c);
@@ -182,45 +199,6 @@ CHECK_RETURN Err MtTracer::trace_switch(MnNode n) {
         err << merge_branch(*state_top(), state_case, *state_top());
       }
     }
-  }
-
-  return err;
-}
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtTracer::trace(MnNode n, bool is_write) {
-  Err err;
-
-  if (n.sym == sym_identifier) {
-    if (mod_top()->get_field(n.text())) {
-      err << trace(n.text(), is_write);
-    }
-  }
-
-  //----------
-
-  else if (n.sym == sym_subscript_expression) {
-    err << trace(n.get_field(field_argument), is_write);
-  }
-
-  //----------
-
-  else if (n.sym == sym_field_expression) {
-    auto node_arg   = n.get_field(field_argument);
-
-    if (mod_top()->get_component(node_arg.text())) {
-      err << trace(n.text(), is_write);
-    }
-    else if (mod_top()->get_field(node_arg.text())) {
-      err << trace(n.text(), is_write);
-    }
-  }
-
-  //----------
-
-  else {
-    debugbreak();
   }
 
   return err;

@@ -203,7 +203,12 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
       err << m->trace();
       LOG_Y("Trace:\n");
       for (const auto& pair : m->mod_state) {
-        LOG_Y("%s = %s\n", pair.first.c_str(), to_string(pair.second));
+        if (pair.second == FIELD_INVALID) {
+          LOG_R("%s = %s\n", pair.first.c_str(), to_string(pair.second));
+        }
+        else {
+          LOG("%s = %s\n", pair.first.c_str(), to_string(pair.second));
+        }
       }
     }
   }

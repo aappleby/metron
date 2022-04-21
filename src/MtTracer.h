@@ -42,13 +42,12 @@ class MtTracer {
 
   MtTracer(MtModLibrary* lib) : lib(lib) {}
 
-  CHECK_RETURN Err trace_dispatch(MnNode n);
+  CHECK_RETURN Err trace_dispatch(MnNode n, bool is_write = false);
   CHECK_RETURN Err trace_call(MnNode n);
   CHECK_RETURN Err trace_branch(MnNode n);
   CHECK_RETURN Err trace_switch(MnNode n);
 
 
-  CHECK_RETURN Err trace(MnNode node, bool is_write);
   CHECK_RETURN Err trace(const std::string& field_name, bool is_write);
 
   CHECK_RETURN Err merge_branch(StateMap & ma, StateMap & mb, StateMap & out);

@@ -43,38 +43,34 @@ class MtTracer {
   MtTracer(MtModLibrary* lib) : lib(lib) {}
 
   CHECK_RETURN Err trace_dispatch(MnNode n);
-  CHECK_RETURN Err trace_assign(MnNode n);
   CHECK_RETURN Err trace_call(MnNode n);
   CHECK_RETURN Err trace_branch(MnNode n);
   CHECK_RETURN Err trace_switch(MnNode n);
 
-  CHECK_RETURN Err trace_read(MtField* field, MtField* component_field = nullptr);
-  CHECK_RETURN Err trace_write(MtField* field, MtField* component_field = nullptr);
+
+  CHECK_RETURN Err trace(MnNode node, bool is_write);
+  CHECK_RETURN Err trace(const std::string& field_name, bool is_write);
 
   CHECK_RETURN Err merge_branch(StateMap & ma, StateMap & mb, StateMap & out);
 
-  MtModule* mod() { return _mod_stack.back(); }
-  MtMethod* method() { return _method_stack.back(); }
-
-  MtModLibrary* lib;
-
-  StateMap* state_top;
-  std::vector<std::string> _path_stack;
-  std::vector<MtField*>    _component_stack;
-  std::vector<MtModule*>   _mod_stack;
-  std::vector<MtMethod*>   _method_stack;
+  MtModule* mod_top();
+  StateMap* state_top()  { return _state_stack.back(); }
 
   void push_state(StateMap* state) {
-    __state_stack.push_back(state);
-    state_top = __state_stack.back();
+    _state_stack.push_back(state);
   }
 
   void pop_state() {
-    __state_stack.pop_back();
-    state_top = __state_stack.back();
+    _state_stack.pop_back();
   }
 
-  std::vector<StateMap*> __state_stack;
+  //----------------------------------------
+
+  MtModLibrary* lib;
+
+  std::vector<MtField*>  _component_stack;
+  std::vector<MtMethod*> _method_stack;
+  std::vector<StateMap*> _state_stack;
 };
 
 //------------------------------------------------------------------------------

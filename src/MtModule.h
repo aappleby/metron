@@ -65,16 +65,6 @@ private:
 
 //------------------------------------------------------------------------------
 
-struct FieldRef {
-
-  FieldRef(MtField* field, MtField* subfield) : field1(field), subfield(subfield) {}
-
-  MtField* field1;
-  MtField* subfield;
-};
-
-//------------------------------------------------------------------------------
-
 struct MethodRef {
   MtModule* mod;
   MtMethod* method;
@@ -205,17 +195,17 @@ struct MtMethod {
   std::vector<MethodRef> callers; // collect_methods
   std::vector<MethodRef> callees; // collect_methods
 
-  std::vector<FieldRef> fields_read;
-  std::vector<FieldRef> fields_written;
+  std::vector<MtField*> fields_read;
+  std::vector<MtField*> fields_written;
 
   std::vector<MtMethodPort*> input_ports;
   std::vector<MtMethodPort*> output_ports;
 
   StateMap method_state;
   MnNode node;
+  MtModule* mod = nullptr;
 
 private:
-  MtModule* mod = nullptr;
   MtModLibrary* lib = nullptr;
 
   std::string _name;

@@ -634,8 +634,7 @@ CHECK_RETURN Err MtModule::trace() {
     LOG_INDENT_SCOPE();
 
     MtTracer tracer(source_file->lib);
-    tracer._path_stack.push_back("<top>");
-    tracer._mod_stack.push_back(this);
+    tracer._component_stack.push_back(nullptr);
     tracer._method_stack.push_back(m);
     tracer.push_state(&mod_state);
 

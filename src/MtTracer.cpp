@@ -3,45 +3,30 @@
 #include "Log.h"
 #include "MtModLibrary.h"
 #include "MtModule.h"
-#include "MtSourceFile.h"
 #include "metron_tools.h"
+
+MtModule* MtTracer::mod_top() { return _method_stack.back()->mod; }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n) {
   Err err;
-  if (!n.is_named()) return err;
 
   switch (n.sym) {
-    case sym_assignment_expression:
-      err << trace_assign(n);
+    case sym_field_expression:
+    case sym_identifier:
+    case sym_subscript_expression:
+      err << trace(n, false);
       break;
+
+    case sym_assignment_expression:
+      err << trace_dispatch(n.get_field(field_right));
+      err << trace(n.get_field(field_left), true);
+      break;
+
     case sym_call_expression:
       err << trace_call(n);
       break;
-
-    case sym_field_expression: {
-      auto base_node = n.get_field(field_argument);
-      auto component = mod()->get_component(base_node.text());
-      auto field = mod()->get_field(base_node.text());
-
-      if (component) {
-        auto component_mod = mod()->source_file->lib->get_module(component->type_name());
-        auto component_field = component_mod->get_field(n.get_field(field_field).text());
-        err << trace_read(component, component_field);
-      }
-      else if (field) {
-        // struct
-        err << trace_read(field);
-      }
-
-      break;
-    }
-    case sym_identifier: {
-      auto field = mod()->get_field(n.text());
-      err << trace_read(field);
-      break;
-    }
 
     case sym_conditional_expression:
     case sym_if_statement:
@@ -54,70 +39,14 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n) {
 
     case sym_update_expression: {
       // this is "i++" or similar, which is a read and a write.
-      auto arg = n.get_field(field_argument);
-      if (arg.sym == sym_identifier) {
-        auto field = mod()->get_field(arg.text());
-        err << trace_read(field);
-        err << trace_write(nullptr, field);
-      } else {
-        err << ERR("Not sure how to increment a %s\n", n.ts_node_type());
-      }
+      err << trace(n.get_field(field_argument), false);
+      err << trace(n.get_field(field_argument), true);
       break;
     }
 
     default:
-      for (const auto& c : n) {
-        err << trace_dispatch(c);
-      }
+      for (const auto& c : n) err << trace_dispatch(c);
       break;
-  }
-
-  return err;
-}
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtTracer::trace_assign(MnNode n) {
-  Err err;
-
-  auto node_lhs = n.get_field(field_left);
-  auto node_rhs = n.get_field(field_right);
-
-  err << trace_dispatch(node_rhs);
-
-  //----------
-
-  if (node_lhs.sym == sym_identifier) {
-    auto node_name = node_lhs;
-    auto field = mod()->get_field(node_name.text());
-    err << trace_write(nullptr, field);
-  }
-  
-  //----------
-
-  else if (node_lhs.sym == sym_subscript_expression) {
-    auto node_name = node_lhs.get_field(field_argument);
-    auto field = mod()->get_field(node_name.text());
-    err << trace_write(nullptr, field);
-  }
-
-  //----------
-
-  else if (node_lhs.sym == sym_field_expression) {
-    auto node_name = node_lhs.get_field(field_argument);
-    auto component = mod()->get_component(node_name.text());
-
-    if (component) {
-      auto component_mod = mod()->source_file->lib->get_module(component->type_name());
-      auto component_field = component_mod->get_field(node_lhs.get_field(field_field).text());
-      err << trace_write(component, component_field);
-    }
-  }
-
-  //----------
-
-  else {
-    debugbreak();
   }
 
   return err;
@@ -138,22 +67,17 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
   //----------
 
   if (node_func.sym == sym_field_expression) {
+    auto node_arg   = node_func.get_field(field_argument);
+    auto node_field = node_func.get_field(field_field);
 
-    auto component_name  = node_func.get_field(field_argument).text();
-    auto component_method_name = node_func.get_field(field_field).text();
-    auto component = mod()->get_component(component_name);
-    auto component_type = component->type_name();
-    auto dst_module = mod()->source_file->lib->get_module(component_type);
-    auto dst_method = dst_module->get_method(component_method_name);
+    auto component = mod_top()->get_component(node_arg.text());
+    auto dst_module = lib->get_module(component->type_name());
+    auto dst_method = dst_module->get_method(node_field.text());
 
     _component_stack.push_back(component);
-    _path_stack.push_back(_path_stack.back() + "." + component_name);
-    _mod_stack.push_back(dst_module);
     _method_stack.push_back(dst_method);
-    err << trace_dispatch(dst_method->node.get_field(field_body));
+    err << trace_dispatch(dst_method->node);
     _method_stack.pop_back();
-    _mod_stack.pop_back();
-    _path_stack.pop_back();
     _component_stack.pop_back();
   }
 
@@ -161,18 +85,12 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
 
   else if (node_func.sym == sym_identifier) {
 
-    auto dst_method = mod()->get_method(node_func.text());
+    auto dst_method = mod_top()->get_method(node_func.text());
 
     if (dst_method) {
-      _component_stack.push_back(_component_stack.back());
-      _path_stack.push_back(_path_stack.back());
-      _mod_stack.push_back(_mod_stack.back());
       _method_stack.push_back(dst_method);
-      err << trace_dispatch(dst_method->node.get_field(field_body));
+      err << trace_dispatch(dst_method->node);
       _method_stack.pop_back();
-      _mod_stack.pop_back();
-      _path_stack.pop_back();
-      _component_stack.pop_back();
     }
   }
   
@@ -211,8 +129,8 @@ CHECK_RETURN Err MtTracer::trace_branch(MnNode n) {
 
   err << trace_dispatch(node_cond);
 
-  StateMap branch_a = *state_top;
-  StateMap branch_b = *state_top;
+  StateMap branch_a = *state_top();
+  StateMap branch_b = *state_top();
 
   if (!node_branch_a.is_null()) {
     push_state(&branch_a);
@@ -226,7 +144,7 @@ CHECK_RETURN Err MtTracer::trace_branch(MnNode n) {
     pop_state();
   }
 
-  err << merge_branch(branch_a, branch_b, *state_top);
+  err << merge_branch(branch_a, branch_b, *state_top());
 
   return err;
 }
@@ -238,7 +156,7 @@ CHECK_RETURN Err MtTracer::trace_switch(MnNode n) {
 
   err << trace_dispatch(n.get_field(field_condition));
 
-  StateMap old_state = *state_top;
+  StateMap old_state = *state_top();
 
   bool first_branch = true;
 
@@ -261,7 +179,7 @@ CHECK_RETURN Err MtTracer::trace_switch(MnNode n) {
         err << trace_dispatch(c);
         pop_state();
 
-        err << merge_branch(*state_top, state_case, *state_top);
+        err << merge_branch(*state_top(), state_case, *state_top());
       }
     }
   }
@@ -271,67 +189,80 @@ CHECK_RETURN Err MtTracer::trace_switch(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer::trace_read(MtField* field, MtField* component_field) {
+CHECK_RETURN Err MtTracer::trace(MnNode n, bool is_write) {
   Err err;
-  if (!field) return err;
 
-  if (field->is_param()) return err;
-
-  method()->fields_read.push_back({field, component_field});
-
-  std::string field_name = field->name();
-  if (component_field) field_name = field_name + "." + component_field->name();
-
-  auto field_path = _path_stack.back() + "." + field_name;
-  auto& old_state = (*state_top)[field_path];
-  FieldState new_state;
-
-  switch(old_state) {
-  case FIELD_NONE     : new_state = FIELD_INPUT;    break;
-  case FIELD_INPUT    : new_state = FIELD_INPUT;    break;
-  case FIELD_OUTPUT   : new_state = FIELD_SIGNAL;   break;
-  case FIELD_SIGNAL   : new_state = FIELD_SIGNAL;   break;
-  case FIELD_REGISTER : new_state = FIELD_INVALID;  break;
-  case FIELD_INVALID  : new_state = FIELD_INVALID;  break;
-  default: assert(false);
+  if (n.sym == sym_identifier) {
+    if (mod_top()->get_field(n.text())) {
+      err << trace(n.text(), is_write);
+    }
   }
 
-  if (new_state == FIELD_INVALID) {
-    err << ERR("Reading field %s changed state from %s to %s\n", field_name.c_str(), to_string(old_state), to_string(new_state));
+  //----------
+
+  else if (n.sym == sym_subscript_expression) {
+    err << trace(n.get_field(field_argument), is_write);
   }
 
-  old_state = new_state;
+  //----------
+
+  else if (n.sym == sym_field_expression) {
+    auto node_arg   = n.get_field(field_argument);
+
+    if (mod_top()->get_component(node_arg.text())) {
+      err << trace(n.text(), is_write);
+    }
+    else if (mod_top()->get_field(node_arg.text())) {
+      err << trace(n.text(), is_write);
+    }
+  }
+
+  //----------
+
+  else {
+    debugbreak();
+  }
+
   return err;
 }
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer::trace_write(MtField* component, MtField* field) {
+CHECK_RETURN Err MtTracer::trace(const std::string& field_name, bool is_write) {
   Err err;
-  if (!field) return err;
-  if (field->is_param()) return err;
 
-  method()->fields_written.push_back({component, field});
-
-  std::string field_name = field->name();
-  if (component) field_name = component->name() + "." + field_name;
-
-  auto field_path = _path_stack.back() + "." + field_name;
-  auto& old_state = (*state_top)[field_path];
-  FieldState new_state;
-
-  switch(old_state) {
-  case FIELD_NONE     : new_state = FIELD_OUTPUT;   break;
-  case FIELD_INPUT    : new_state = FIELD_REGISTER; break;
-  case FIELD_OUTPUT   : new_state = FIELD_OUTPUT;   break;
-  case FIELD_SIGNAL   : new_state = FIELD_INVALID;  break;
-  case FIELD_REGISTER : new_state = FIELD_REGISTER; break;
-  case FIELD_INVALID  : new_state = FIELD_INVALID;  break;
-  default: assert(false);
+  std::string field_path = "";
+  for (int i = 0; i < _component_stack.size(); i++) {
+    if (field_path.size()) field_path.push_back('.');
+    field_path = field_path + (_component_stack[i] ? _component_stack[i]->name() : "<top>");
   }
 
-  if (new_state == FIELD_INVALID) {
-    err << ERR("Writing field %s changed state from %s to %s\n", field_name.c_str(), to_string(old_state), to_string(new_state));
+  field_path = field_path + "." + field_name;
+
+  auto& old_state = (*state_top())[field_path];
+  FieldState new_state;
+
+  if (is_write) {
+    switch(old_state) {
+    case FIELD_NONE     : new_state = FIELD_OUTPUT;   break;
+    case FIELD_INPUT    : new_state = FIELD_REGISTER; break;
+    case FIELD_OUTPUT   : new_state = FIELD_OUTPUT;   break;
+    case FIELD_SIGNAL   : new_state = FIELD_INVALID;  break;
+    case FIELD_REGISTER : new_state = FIELD_REGISTER; break;
+    case FIELD_INVALID  : new_state = FIELD_INVALID;  break;
+    default: assert(false);
+    }
+  }
+  else {
+    switch(old_state) {
+    case FIELD_NONE     : new_state = FIELD_INPUT;    break;
+    case FIELD_INPUT    : new_state = FIELD_INPUT;    break;
+    case FIELD_OUTPUT   : new_state = FIELD_SIGNAL;   break;
+    case FIELD_SIGNAL   : new_state = FIELD_SIGNAL;   break;
+    case FIELD_REGISTER : new_state = FIELD_INVALID;  break;
+    case FIELD_INVALID  : new_state = FIELD_INVALID;  break;
+    default: assert(false);
+    }
   }
 
   old_state = new_state;

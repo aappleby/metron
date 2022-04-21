@@ -273,8 +273,7 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
     if (m->is_func) return 0;
 
     bool wrote_register = false;
-    for (auto ref : m->fields_written) {
-      auto f = ref.subfield ? ref.subfield : ref.field1;
+    for (auto f : m->fields_written) {
       if (f->state == FIELD_REGISTER) wrote_register = true;
     }
 
@@ -323,8 +322,7 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
     if (m->is_func) return 0;
 
     bool wrote_signal = false;
-    for (auto ref : m->fields_written) {
-      auto f = ref.subfield ? ref.subfield : ref.field1;
+    for (auto f : m->fields_written) {
       wrote_signal  |= f->state == FIELD_SIGNAL;
     }
 
@@ -351,8 +349,7 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
     if (m->in_tick) return 0;
 
     bool wrote_output = false;
-    for (auto ref : m->fields_written) {
-      auto f = ref.subfield ? ref.subfield : ref.field1;
+    for (auto f : m->fields_written) {
       wrote_output  |= f->state == FIELD_OUTPUT;
     }
 

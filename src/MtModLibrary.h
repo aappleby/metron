@@ -1,12 +1,16 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <functional>
 
 #include "Err.h"
 #include "Platform.h"
 
+struct MtMethod;
 struct MtModule;
 struct MtSourceFile;
+
+typedef std::function<int(MtMethod*)> propagate_visitor;
 
 //------------------------------------------------------------------------------
 
@@ -22,6 +26,10 @@ struct MtModLibrary {
 
   MtModule* get_module(const std::string& module_name);
   MtSourceFile* get_source(const std::string& filename);
+
+  CHECK_RETURN Err propagate(propagate_visitor v);
+
+  void dump_call_graph();
 
   void teardown();
 

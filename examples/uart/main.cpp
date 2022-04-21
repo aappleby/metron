@@ -11,15 +11,15 @@ int main(int argc, char** arv) {
   top.tock(0);
 
   for (int cycle = 0; cycle < 20000; cycle++) {
-    bool old_valid = top.tock_valid();
+    bool old_valid = top.valid();
     top.tock(1);
-    if (!old_valid && top.tock_valid()) printf("%c", (uint8_t)top.tock_data());
+    if (!old_valid && top.valid()) printf("%c", (uint8_t)top.data());
     
-    if (top.tock_done()) {
+    if (top.done()) {
       printf("\n");
       printf("================================================================================\n");
       printf("%d\n", cycle);
-      if (top.tock_sum() == 0x0000b764) {
+      if (top.sum() == 0x0000b764) {
         printf("All tests pass.\n");
         return 0;
       }

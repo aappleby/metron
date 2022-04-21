@@ -11,8 +11,6 @@ public:
     set_signal(get_number());
   }
 
-private:
-
   logic<8> get_number() const {
     return 7;
   }

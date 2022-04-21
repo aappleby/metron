@@ -15,8 +15,8 @@ typedef std::vector<uint8_t> blob;
 //------------------------------------------------------------------------------
 
 struct MtField {
-  static MtField* construct(const MnNode& n, bool is_public) {
-    return new MtField(n, is_public);
+  static MtField* construct(MtModule* mod, const MnNode& n, bool is_public) {
+    return new MtField(mod, n, is_public);
   }
 
   bool is_register() const {
@@ -24,62 +24,57 @@ struct MtField {
   }
 
   bool is_input_signal() const {
-    return is_public() && state == FIELD_INPUT;
+    return state == FIELD_INPUT;
   }
 
   bool is_output_signal() const {
-    return is_public() && (state == FIELD_OUTPUT || state == FIELD_SIGNAL);
+    return state == FIELD_OUTPUT || state == FIELD_SIGNAL;
   }
 
   bool is_output_register() const {
     return is_public() && is_register();
   }
 
-  /*
-  bool is_signal() const { debugbreak(); return false; }
-  bool is_register() const { debugbreak(); return false; }
-  bool is_input_signal() const { debugbreak(); return false; }
-  bool is_output_signal() const { debugbreak(); return false; }
-  bool is_output_register() const { debugbreak(); return false; }
-  */
-
   bool is_component() const;
   bool is_param() const { return node.is_static() && node.is_const(); }
   bool is_public() const { return _public; }
 
-  std::string name() { return node.name4(); }
-  std::string type_name() const { return node.type5(); }
+  const char* cname() const { return _name.c_str(); }
+  std::string name() { return _name; }
+  std::string type_name() const { return _type; }
 
   MnNode get_type_node() const { return node.get_field(field_type); }
   MnNode get_decl_node() const { return node.get_field(field_declarator); }
 
-  bool written_in_tick = false;
-  bool written_in_tock = false;
-
   FieldState state = FIELD_NONE;
   MnNode node;
+
+private:
+  MtModule* _mod;
   std::string _name;
+  std::string _type;
   bool _public = false;
 
- private:
-  MtField(const MnNode& n, bool is_public) : _public(is_public), node(n) {
+  MtField(MtModule* mod, const MnNode& n, bool is_public) : _mod(mod), _public(is_public), node(n) {
     assert(node.sym == sym_field_declaration ||
            node.sym == sym_parameter_declaration);
     _name = node.name4();
+    _type = node.type5();
   }
 };
+
+//------------------------------------------------------------------------------
 
 struct FieldRef {
   MtField* field;
   MtField* subfield;
+};
 
-  bool operator < (const FieldRef& b) const {
-    if (field < b.field) return true;
-    if (field > b.field) return false;
-    if (subfield < b.subfield) return true;
-    if (subfield > b.subfield) return false;
-    return false;
-  }
+//------------------------------------------------------------------------------
+
+struct MethodRef {
+  MtModule* mod;
+  MtMethod* method;
 };
 
 //------------------------------------------------------------------------------
@@ -109,8 +104,9 @@ struct MtParam {
     return new MtParam(func_name, n);
   }
 
-  std::string name() { return node.name4(); }
-  std::string type_name() const { return node.type5(); }
+  const std::string& name()      const { return _name; }
+  const char*        cname()     const { return _name.c_str(); }
+  const std::string& type_name() const { return _type; }
 
   MnNode get_type_node() const { return node.get_field(field_type); }
   MnNode get_decl_node() const { return node.get_field(field_declarator); }
@@ -119,8 +115,13 @@ struct MtParam {
   MnNode node;
 
  private:
+  std::string _name;
+  std::string _type;
   MtParam(const std::string& func_name, const MnNode& n)
-      : func_name(func_name), node(n) {}
+      : func_name(func_name), node(n) {
+    _name = node.name4();
+    _type = node.type5();
+  }
 };
 
 //------------------------------------------------------------------------------
@@ -144,72 +145,76 @@ struct MtMethodPort {
 
 //------------------------------------------------------------------------------
 
-enum MethodType {
-  METHOD_NONE,
-  METHOD_TICK,
-  METHOD_TOCK,
-  METHOD_TICK_TASK,
-  METHOD_TOCK_TASK,
-  METHOD_TICK_FUNC,
-  METHOD_TOCK_FUNC,
-};
-
-inline const char* to_string(MethodType t) {
-  switch(t) {
-  case METHOD_NONE:       return "METHOD_NONE";
-  case METHOD_TICK:       return "METHOD_TICK";
-  case METHOD_TOCK:       return "METHOD_TOCK";
-  case METHOD_TICK_TASK:  return "METHOD_TICK_TASK";
-  case METHOD_TOCK_TASK:  return "METHOD_TOCK_TASK";
-  case METHOD_TICK_FUNC:  return "METHOD_TICK_FUNC";
-  case METHOD_TOCK_FUNC:  return "METHOD_TOCK_FUNC";
-  default: assert(false); return "???";
-  }
-}
-
 struct MtMethod {
   static MtMethod* construct(MnNode n, MtModule* _mod, MtModLibrary* _lib) {
     return new MtMethod(n, _mod, _lib);
   }
 
-  std::string name() const { return node.name4(); }
+  const char* cname() const { return _name.c_str(); }
+  std::string name() const { return _name; }
 
-  MnNode node;
-  MtModule* mod = nullptr;
-  MtModLibrary* lib = nullptr;
+  int categorize();
 
-  MethodType type = METHOD_NONE;
+  bool categorized() const {
+    return in_init || in_tick || in_tock || is_func;
+  }
+
+  bool is_valid() const {
+    // A method must be only 1 of init/tick/tock/func
+    return (int(in_init) + int(in_tick) + int(in_tock) + int(is_func)) == 1;
+  }
+
+  bool is_root()   const { return callers.empty(); }
+
+  bool is_leaf()   const {
+    for (auto& ref : callees) {
+      if (!ref.method->is_func) return false;
+    }
+    return true;
+  }
+
+  bool is_branch() const {
+    for (auto& ref : callees) {
+      if (!ref.method->is_func) return true;
+    }
+    return false;
+  }
+
+  bool is_writer() const { return !fields_written.empty(); }
+
+  //----------------------------------------
+
+  bool in_init = false;
+  bool in_tick = false;
+  bool in_tock = false;
+  bool is_func = false;
 
   std::vector<std::string> params;
   std::vector<MnNode> param_nodes;
 
   bool is_constructor = false;
-  bool is_init = false;
   bool is_tick = false;
   bool is_tock = false;
   bool is_task = false;
-  bool is_func = false;
-  bool is_root = false;
   bool is_public = false;
-  bool is_private = false;
-  bool is_const = false;
   bool has_return = false;
-  bool is_triggered = false; // true if this is a tick and a tock has called it during a trace
 
-  std::set<MtMethod*> callers; // collect_methods
-  std::set<MtMethod*> callees; // collect_methods
+  std::vector<MethodRef> callers; // collect_methods
+  std::vector<MethodRef> callees; // collect_methods
 
-  std::set<FieldRef> fields_read;
-  std::set<FieldRef> fields_written;
+  std::vector<FieldRef> fields_read;
+  std::vector<FieldRef> fields_written;
 
   std::vector<MtMethodPort*> input_ports;
   std::vector<MtMethodPort*> output_ports;
 
-  int get_rank() const { return 0; }
-
   StateMap method_state;
+  MnNode node;
 
- private:
+private:
+  MtModule* mod = nullptr;
+  MtModLibrary* lib = nullptr;
+
   std::string _name;
 
   MtMethod(MnNode n, MtModule* _mod, MtModLibrary* _lib)
@@ -228,52 +233,37 @@ struct MtModule {
   CHECK_RETURN Err init(MtSourceFile* source_file, MnTemplateDecl node);
   CHECK_RETURN Err init(MtSourceFile* source_file, MnClassSpecifier node);
 
-  MtField* get_enum(const std::string& name);
-  MtField* get_field(const std::string& name);
-  MtField* get_input_field(const std::string& name);
-  MtParam* get_input_param(const std::string& name);
-  MtField* get_output_signal(const std::string& name);
-  MtField* get_output_register(const std::string& name);
+  MtField*  get_enum(const std::string& name);
+  MtField*  get_field(const std::string& name);
+  MtField*  get_input_field(const std::string& name);
+  MtParam*  get_input_param(const std::string& name);
+  MtField*  get_output_signal(const std::string& name);
+  MtField*  get_output_register(const std::string& name);
   MtMethod* get_output_return(const std::string& name);
-  MtField* get_component(const std::string& name);
+  MtField*  get_component(const std::string& name);
   MtMethod* get_method(const std::string& name);
 
   void dump_method_list(const std::vector<MtMethod*>& methods) const;
   void dump_banner() const;
-  // void dump_deltas() const;
+
+  CHECK_RETURN Err build_call_graph();
 
   CHECK_RETURN Err collect_modparams();
   CHECK_RETURN Err collect_fields_and_components();
   CHECK_RETURN Err collect_methods();
 
-  CHECK_RETURN Err categorize_methods();
-  CHECK_RETURN Err categorize_fields();
-
-  // CHECK_RETURN Err collect_registers();
-
-  bool method_writes_a_field(MtMethod* method);
-
-  CHECK_RETURN Err build_port_map();
+  CHECK_RETURN Err sort_fields();
 
   CHECK_RETURN Err trace();
 
-#if 0
-  void check_dirty_ticks();
-  void check_dirty_tocks();
-#endif
-
+  const char* cname() const { return mod_name.c_str(); }
   std::string name() const { return mod_name; }
 
-  //----------
+  //--------------------
 
   std::string mod_name;
   MtSourceFile* source_file = nullptr;
-
-  bool load_error = false;
-  bool dirty_check_done = false;
-  bool dirty_check_fail = false;
-
-  int mark = 0;
+  MtModLibrary* lib = nullptr;
 
   // Field state produced by evaluating all public methods in the module in
   // lexical order.
@@ -322,7 +312,8 @@ struct MtModule {
   std::vector<MtMethod*> task_methods;
   std::vector<MtMethod*> func_methods;
 
-  std::map<std::string, std::string> port_map;
+  //CHECK_RETURN Err build_port_map();
+  //std::map<std::string, std::string> port_map;
 };
 
 //------------------------------------------------------------------------------

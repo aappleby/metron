@@ -33,6 +33,7 @@ CHECK_RETURN Err MtModule::init(MtSourceFile *_source_file, MnTemplateDecl _node
   Err err;
 
   source_file = _source_file;
+  lib = source_file->lib;
   mod_template = _node;
 
   for (int i = 0; i < mod_template.child_count(); i++) {
@@ -246,9 +247,11 @@ void MtModule::dump_banner() const {
 
   //----------
 
+  /*
   LOG_B("Port map:\n");
   for (auto &kv : port_map)
     LOG_G("  %s = %s\n", kv.first.c_str(), kv.second.c_str());
+  */
 
   /*
   LOG_B("State map:\n");
@@ -361,7 +364,7 @@ CHECK_RETURN Err MtModule::collect_fields_and_components() {
       continue;
     }
 
-    auto new_field = MtField::construct(n, in_public);
+    auto new_field = MtField::construct(this, n, in_public);
 
     if (n.get_field(field_type).sym == sym_enum_specifier) {
       all_enums.push_back(new_field);
@@ -405,14 +408,6 @@ CHECK_RETURN Err MtModule::collect_methods() {
     auto func_name = func_decl.get_field(field_declarator).name4();
 
     m->is_public = in_public;
-    m->is_private = !in_public;
-    m->is_const = false;
-    for (const auto& n : func_decl) {
-      if (n.sym == sym_type_qualifier && n.text() == "const") {
-        m->is_const = true;
-        break;
-      }
-    }
 
     auto func_args = func_decl.get_field(field_parameters);
     for (int i = 0; i < func_args.named_child_count(); i++) {
@@ -441,202 +436,162 @@ CHECK_RETURN Err MtModule::collect_methods() {
     all_methods.push_back(m);
   }
 
-  //----------
-  // Populate the call graph.
+  return err;
+}
 
-  for (auto m : all_methods) {
-    m->node.visit_tree([&](MnNode child) {
+//------------------------------------------------------------------------------
+
+int MtMethod::categorize() {
+  int changes = 0;
+
+  if (in_init) return 0;
+
+
+  // Methods that only call ticks and are only called by tocks could be either a tick or a tock.
+  // Assume they are tocks.
+  if (fields_written.empty() && !categorized() && !callers.empty() && !callees.empty()) {
+    bool only_called_by_tocks = !callers.empty();
+    bool only_calls_ticks_or_funcs = !callees.empty();
+    for (auto ref : callers) {
+      if (!ref.method->in_tock) only_called_by_tocks = false;
+    }
+    for (auto ref : callees) {
+      if (!ref.method->in_tick && !ref.method->is_func) only_calls_ticks_or_funcs = false;
+    }
+    if (only_called_by_tocks && only_calls_ticks_or_funcs && !in_tock) {
+      in_tock = true;
+      changes++;
+    }
+  }
+
+  /*
+  if (fields_written.empty() && !in_tock) {
+    LOG_B("%-20s is tock because it doesn't call or write anything.\n", cname());
+    in_tock = true;
+    changes++;
+  }
+  */
+
+  /*
+  // Methods that call a tock are tocks.
+  for (auto& ref : callees) {
+    if (ref.method->in_tock && !in_tock) {
+      LOG_B("%-20s is tock because it calls tock %s.\n", cname(), ref.method->cname());
+      in_tock = true;
+      changes++;
+    }
+  }
+  */
+
+  /*
+  // Methods that call a tick that has parameters are tocks.
+  for (auto& ref : callees) {
+    if (ref.method->in_tick && ref.method->params.size() && !in_tock) {
+      LOG_B("%-20s is tock because it calls tick with params %s.\n", cname(), ref.method->cname());
+      in_tock = true;
+      changes++;
+    }
+  }
+  */
+
+  /*
+  // Methods called by a tick are ticks.
+  for (auto& ref : callers) {
+    if (ref.method->in_tick && !in_tick) {
+      LOG_B("%-20s is tick because it calls tick %s.\n", cname(), ref.method->cname());
+      in_tick = true;
+      changes++;
+    }
+  }
+  */
+
+  /*
+  // Methods that write a signal are tocks.
+  for (auto ref : fields_written) {
+    auto f = ref.subfield ? ref.subfield : ref.field;
+    if (f->state == FIELD_SIGNAL && !in_tock) {
+      LOG_B("%-20s is tock because it writes signal %s.\n", cname(), f->cname());
+      in_tock = true;
+      changes++;
+    }
+  }
+
+  // Methods that write a register are ticks.
+  for (auto ref : fields_written) {
+    auto f = ref.subfield ? ref.subfield : ref.field;
+    if (f->state == FIELD_REGISTER && !in_tick) {
+      in_tick = true;
+      changes++;
+    }
+  }
+  */
+
+  /*
+  // Methods that only write outputs are tocks.
+  {
+    bool only_writes_outputs = !fields_written.empty();
+    for (auto ref : fields_written) {
+      if (ref.subfield) {
+        if (ref.subfield->state != FIELD_OUTPUT) only_writes_outputs = false;
+      }
+      else if (ref.field) {
+        if (ref.field->state != FIELD_OUTPUT) only_writes_outputs = false;
+      }
+    }
+    if (only_writes_outputs && !in_tock) {
+      in_tock = true;
+      changes++;
+    }
+  }
+  */
+
+
+
+  return changes;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtModule::build_call_graph() {
+  Err err;
+
+  for (auto src_method : all_methods) {
+    auto src_mod = this;
+
+    src_method->node.visit_tree([&](MnNode child) {
       if (child.sym == sym_call_expression) {
+
         auto func = child.get_field(field_function);
         if (func.sym == sym_identifier) {
-          auto method = get_method(func.text());
-          if (method) {
-            method->callers.insert(m);
-            m->callees.insert(m);
+          auto dst_mod = this;
+          auto dst_method = get_method(func.text());
+          if (dst_method) {
+            dst_method->callers.push_back({src_mod, src_method});
+            src_method->callees.push_back({dst_mod, dst_method});
+          }
+        }
+
+        if (func.sym == sym_field_expression) {
+          auto component_name = func.get_field(field_argument).text();
+          auto component_method_name = func.get_field(field_field).text();
+
+          auto component = get_component(component_name);
+          if (component) {
+            auto dst_mod = source_file->lib->get_module(component->type_name());
+            if (dst_mod) {
+              auto dst_method = dst_mod->get_method(component_method_name);
+              if (dst_method) {
+                dst_method->callers.push_back({src_mod, src_method});
+                src_method->callees.push_back({dst_mod, dst_method});
+              }
+            }
           }
         }
       }
     });
   }
 
-  //----------
-  // Mark everything called from a constructor as an init method.
-
-  std::function<void(MtMethod*)> mark_init = [&](MtMethod* method) {
-    if (method && !method->is_init) {
-      method->is_init = true;
-      for (auto m : method->callees) mark_init(m);
-    }
-  };
-  mark_init(constructor);
-
-  return err;
-}
-
-//------------------------------------------------------------------------------
-
-bool MtModule::method_writes_a_field(MtMethod* method) {
-  bool result = false;
-
-  method->node.visit_tree([&](MnNode child) {
-    if (child.sym == sym_assignment_expression) {
-      auto lhs = child.get_field(field_left);
-      if (get_field(lhs.text())) {
-        result = true;
-      }
-    }
-    else if (child.sym == sym_call_expression) {
-      auto func = child.get_field(field_function);
-      auto callee = get_method(func.text());
-      if (callee) {
-        result |= method_writes_a_field(callee);
-      }
-    }
-  });
-
-  return result;
-}
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtModule::categorize_methods() {
-  Err err;
-
-  //----------
-  // Pull out all the constructorss
-
-  std::deque<MtMethod*> init_queue;
-
-  for (auto m : all_methods) {
-    if (m->node.get_field(field_type).is_null()) {
-      m->is_constructor = true;
-      init_queue.push_back(m);
-    }
-  }
-
-  //----------
-  // Everything called by a constructor is an init.
-
-  /*
-  std::vector<MtMethod*> inits;
-  while (!init_queue.empty()) {
-    auto method = init_queue.front();
-    init_queue.pop_front();
-
-    if (method->is_init) {
-      err << ERR("Method %s is in an init loop\n", method->name().c_str());
-      continue;
-    }
-    method->is_init = true;
-
-    inits.push_back(method);
-
-    method->node.visit_tree([&](MnNode child) {
-      if (child.sym == sym_call_expression) {
-        auto func = child.get_field(field_function);
-        if (func.sym == sym_identifier) {
-          auto method = get_method(func.text());
-          if (method && !method->is_init) {
-            // Local function call to an init
-            init_queue.push_back(method);
-          }
-        }
-      }
-      });
-  }
-  */
-
-  //----------
-  // Save the constructors and inits and remove them from the method set.
-
-  /*
-  for (auto m : inits) {
-    if (m->is_constructor && !m->is_public) {
-      err << ERR("Constructor %s::%s is not public\n", name().c_str(), m->name().c_str());
-    }
-
-    if (!m->is_constructor && m->is_public) {
-      err << ERR("Init method %s::%s is not private\n", name().c_str(), m->name().c_str());
-    }
-
-    if (m->params.size()) {
-      err << ERR("Constructor %s::%s is not allowed to have params\n", name().c_str(), m->name().c_str());
-    }
-
-    init_methods.push_back(m);
-    method_set.erase(m);
-  }
-  */
-
-  //----------
-  // Public methods without callers go in the tock set.
-
-  std::set<MtMethod*> method_set;
-  for (auto m : all_methods) {
-    if (!m->is_init) method_set.insert(m);
-  }
-
-  std::vector<MtMethod*> tocks;
-
-  for (auto m : method_set) {
-    if (!m->is_public || m->callers.size()) continue;
-    tocks.push_back(m);
-  }
-
-  for (auto m : tocks) {
-    m->is_tock = true;
-    tock_methods.push_back(m);
-    method_set.erase(m);
-  }
-
-  //----------
-  // Every private, non-const method called by a tock is a tick.
-
-  std::vector<MtMethod*> ticks;
-  for (auto tock : tocks) {
-    tock->node.visit_tree([&](MnNode child) {
-      if (child.sym == sym_call_expression) {
-        auto func = child.get_field(field_function);
-        if (func.sym == sym_identifier) {
-          auto method = get_method(func.text());
-          if (method && method->is_private && !method->is_const) {
-            ticks.push_back(method);
-          }
-        }
-      }
-      });
-  }
-
-  for (auto m : ticks) {
-    m->is_tick = true;
-    tick_methods.push_back(m);
-    method_set.erase(m);
-  }
-
-  //----------
-  // Whatever's left is either a task or function.
-
-  for (auto m : method_set) {
-    assert(!m->is_init);
-    assert(!m->is_tock);
-    assert(!m->is_tick);
-
-    if (method_writes_a_field(m)) {
-      m->is_task = true;
-      m->is_func = false;
-    }
-    else {
-      m->is_task = false;
-      m->is_func = true;
-    }
-
-    if (m->is_task) {
-      task_methods.push_back(m);
-    } else {
-      assert(m->is_func);
-      func_methods.push_back(m);
-    }
-  }
+  if (constructor) constructor->in_init = true;
 
   return err;
 }
@@ -661,29 +616,30 @@ std::vector<std::string> split_field_path(const std::string& path) {
   return result;
 }
 
+//------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtModule::trace() {
   Err err;
-  LOG_G("Tracing all public tocks in %s\n", name().c_str());
+  LOG_G("Tracing all public tocks in %s\n", cname());
 
   mod_state.clear();
 
   for (auto m : all_methods) {
     LOG_INDENT_SCOPE();
 
-    if (m->is_init) continue;
+    if (m == constructor) continue;
     if (m->callers.size()) continue;
 
-    LOG_G("Tracing %s.%s\n", name().c_str(), m->name().c_str());
+    LOG_G("Tracing %s.%s\n", cname(), m->cname());
     LOG_INDENT_SCOPE();
 
-    MtTracer tracer;
+    MtTracer tracer(source_file->lib);
     tracer._path_stack.push_back("<top>");
     tracer._mod_stack.push_back(this);
     tracer._method_stack.push_back(m);
     tracer.push_state(&mod_state);
 
-    err << tracer.trace_method(m);
+    err << tracer.trace_dispatch(m->node);
   }
 
   if (err.has_err()) {
@@ -730,7 +686,7 @@ CHECK_RETURN Err MtModule::trace() {
 // Collect all inputs to all tock and getter methods and merge them into a list
 // of input ports.
 
-CHECK_RETURN Err MtModule::categorize_fields() {
+CHECK_RETURN Err MtModule::sort_fields() {
   Err err;
 
   LOG_G("Categorizing %s\n", name().c_str());
@@ -792,6 +748,7 @@ CHECK_RETURN Err MtModule::categorize_fields() {
 // Go through all calls in the tree and build a {call_param -> arg} map.
 // FIXME we aren't actually using this now?
 
+#if 0
 CHECK_RETURN Err MtModule::build_port_map() {
   assert(port_map.empty());
 
@@ -902,5 +859,6 @@ CHECK_RETURN Err MtModule::build_port_map() {
     
   return err;
 }
+#endif
 
 //------------------------------------------------------------------------------

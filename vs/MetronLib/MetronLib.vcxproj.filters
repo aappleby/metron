@@ -25,6 +25,7 @@
     <ClInclude Include="..\..\src\Err.h">
       <Filter>utils</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\MtChecker.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\MtCursor.cpp" />
@@ -54,6 +55,7 @@
     <ClCompile Include="..\..\src\Err.cpp">
       <Filter>utils</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\MtChecker.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\README.md" />

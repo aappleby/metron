@@ -9,7 +9,7 @@
 
 struct TinyLog {
   uint32_t _color = 0; // 0 = default color
-  bool _muted = false;
+  int _muted = 0;
   int _indentation = 0;
   bool _start_line = true;
 
@@ -20,8 +20,8 @@ struct TinyLog {
 
   void indent() { _indentation += 2; }
   void dedent() { _indentation -= 2; }
-  void mute()   { _muted = true; }
-  void unmute() { _muted = false; }
+  void mute()   { _muted++; }
+  void unmute() { _muted--; }
 
   void set_color(uint32_t color) {
     if (color != _color) {

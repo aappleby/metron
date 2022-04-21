@@ -89,6 +89,7 @@
     <ClInclude Include="..\..\src\Err.h" />
     <ClInclude Include="..\..\src\Log.h" />
     <ClInclude Include="..\..\src\metron_tools.h" />
+    <ClInclude Include="..\..\src\MtChecker.h" />
     <ClInclude Include="..\..\src\MtCursor.h" />
     <ClInclude Include="..\..\src\MtModLibrary.h" />
     <ClInclude Include="..\..\src\MtModule.h" />
@@ -103,6 +104,7 @@
     <ClCompile Include="..\..\src\Err.cpp" />
     <ClCompile Include="..\..\src\Log.cpp" />
     <ClCompile Include="..\..\src\metron_tools.cpp" />
+    <ClCompile Include="..\..\src\MtChecker.cpp" />
     <ClCompile Include="..\..\src\MtCursor.cpp" />
     <ClCompile Include="..\..\src\MtModLibrary.cpp" />
     <ClCompile Include="..\..\src\MtModule.cpp" />

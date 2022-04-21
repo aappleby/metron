@@ -13,28 +13,28 @@ class uart_rx {
 
   //----------------------------------------
 
-  logic<1>  valid() { return cursor == 1; }
-  logic<8>  buffer() { return buffer; }
-  logic<32> sum() { return sum; }
+  logic<1>  valid() { return _cursor == 1; }
+  logic<8>  buffer() { return _buffer; }
+  logic<32> sum() { return _sum; }
 
   void tick(logic<1> i_rstn, logic<1> i_serial) {
     if (!i_rstn) {
-      cycle = 0;
-      cursor = 0;
-      buffer = 0;
-      sum = 0;
+      _cycle = 0;
+      _cursor = 0;
+      _buffer = 0;
+      _sum = 0;
     } else {
-      if (cycle != 0) {
-        cycle = cycle - 1;
-      } else if (cursor != 0) {
-        logic<8> temp = (i_serial << 7) | (buffer >> 1);
-        if (cursor - 1 == 1) sum = sum + temp;
-        cycle = cycle_max;
-        cursor = cursor - 1;
-        buffer = temp;
+      if (_cycle != 0) {
+        _cycle = _cycle - 1;
+      } else if (_cursor != 0) {
+        logic<8> temp = (i_serial << 7) | (_buffer >> 1);
+        if (_cursor - 1 == 1) _sum = _sum + temp;
+        _cycle = cycle_max;
+        _cursor = _cursor - 1;
+        _buffer = temp;
       } else if (i_serial == 0) {
-        cycle = cycle_max;
-        cursor = cursor_max;
+        _cycle = cycle_max;
+        _cursor = cursor_max;
       }
     }
   }
@@ -46,10 +46,10 @@ class uart_rx {
   static const int cursor_max = 9;
   static const int cursor_bits = clog2(cursor_max);
 
-  logic<cycle_bits> cycle;
-  logic<cursor_bits> cursor;
-  logic<8> buffer;
-  logic<32> sum;
+  logic<cycle_bits> _cycle;
+  logic<cursor_bits> _cursor;
+  logic<8> _buffer;
+  logic<32> _sum;
 };
 
 //==============================================================================

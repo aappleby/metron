@@ -11,6 +11,14 @@ class uart_top {
  public:
   uart_top() {
     write("uart_top.init()\n");
+    do_stuff();
+  }
+
+  void do_stuff() {
+    do_more_stuff();
+  }
+
+  void do_more_stuff() {
   }
 
   //----------------------------------------

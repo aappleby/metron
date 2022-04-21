@@ -94,9 +94,11 @@ Err translate_simple(std::string src, std::string& out) {
 
   auto source_file = library.source_files[0];
 
+  /*
   for (auto mod : source_file->modules) {
     if (mod->dirty_check_fail) err << ERR("DCF");
   }
+  */
 
   MtCursor cursor(&library, source_file, nullptr, &out);
   err << cursor.emit_everything();

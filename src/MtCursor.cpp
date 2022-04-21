@@ -536,7 +536,7 @@ CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
   } else if (func_name == "sign_extend") {
     err << emit_replacement(func, "$signed");
     err << emit_arg_list(args);
-  } else if (method && method->is_init) {
+  } else if (method && method->in_init) {
     err << comment_out(n);
   } else if (method && method->is_tick) {
 
@@ -896,7 +896,7 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
   //----------
   // Emit a block declaration for the type of function we're in.
 
-  if (current_method->is_init) {
+  if (current_method->in_init) {
     if (!return_type.is_null()) err << skip_over(return_type);
     err << skip_ws();
     err << emit_replacement(func_decl, "initial");
@@ -931,7 +931,7 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
 
   err << emit_ws();
 
-  if (current_method->is_init)
+  if (current_method->in_init)
     err << emit_print("begin /*%s*/", current_method->name().c_str());
   else if (current_method->is_tick) {
     err << emit_print("begin /*%s*/", current_method->name().c_str());
@@ -1011,7 +1011,7 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
 
   //----------
 
-  if (current_method->is_init) {
+  if (current_method->in_init) {
     err << emit_print("end");
   }
   else if (current_method->is_tick) {
@@ -1109,7 +1109,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_component(MnFieldDecl n) {
 
     err << emit_newline();
     err << emit_indent();
-    err << emit_print(".%s(%s_%s)", n->name().c_str(), inst_name.c_str(), n->name().c_str());
+    err << emit_print(".%s(%s_%s)", n->cname(), inst_name.c_str(), n->cname());
 
     if (port_index++ < port_count - 1) {
       err << emit_print(", ");
@@ -1122,11 +1122,11 @@ CHECK_RETURN Err MtCursor::emit_field_as_component(MnFieldDecl n) {
     err << emit_newline();
     err << emit_indent();
     err << emit_print(".%s_%s(%s_%s_%s)",
-      n->func_name.c_str(),
-      n->name().c_str(),
+      n->cname(),
+      n->cname(),
       inst_name.c_str(),
-      n->func_name.c_str(),
-      n->name().c_str());
+      n->cname(),
+      n->cname());
 
     if (port_index++ < port_count - 1) {
       err << emit_print(", ");
@@ -1140,7 +1140,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_component(MnFieldDecl n) {
   for (auto n : component_mod->output_signals) {
     err << emit_newline();
     err << emit_indent();
-    err << emit_print(".%s(%s_%s)", n->name().c_str(), inst_name.c_str(), n->name().c_str());
+    err << emit_print(".%s(%s_%s)", n->cname(), inst_name.c_str(), n->cname());
 
     if (port_index++ < port_count - 1) {
       err << emit_print(", ");
@@ -1150,7 +1150,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_component(MnFieldDecl n) {
   for (auto n : component_mod->public_registers) {
     err << emit_newline();
     err << emit_indent();
-    err << emit_print(".%s(%s_%s)", n->name().c_str(), inst_name.c_str(), n->name().c_str());
+    err << emit_print(".%s(%s_%s)", n->cname(), inst_name.c_str(), n->cname());
 
     if (port_index++ < port_count - 1) {
       err << emit_print(", ");
@@ -1160,7 +1160,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_component(MnFieldDecl n) {
   for (auto n : component_mod->output_returns) {
     err << emit_newline();
     err << emit_indent();
-    err << emit_print(".%s(%s_%s)", n->name().c_str(), inst_name.c_str(), n->name().c_str());
+    err << emit_print(".%s(%s_%s)", n->name().c_str(), inst_name.c_str(), n->cname());
 
     if (port_index++ < port_count - 1) {
       err << emit_print(", ");
@@ -1195,18 +1195,21 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl component_decl) {
 
   assert(at_newline);
 
-  auto component_type = component_decl.child(0);  // type
-  auto component_name = component_decl.child(1);  // decl
-  auto component_semi = component_decl.child(2);  // semi
+  auto component_type_node = component_decl.child(0);  // type
+  auto component_name_node = component_decl.child(1);  // decl
+  auto component_semi_node = component_decl.child(2);  // semi
 
-  std::string type_name = component_type.type5();
+  auto component_name = component_name_node.text();
+  auto component_cname = component_name.c_str();
+
+  std::string type_name = component_type_node.type5();
   auto component_mod = lib->get_module(type_name);
 
   // Swap template arguments with the values from the template
   // instantiation.
   std::map<std::string, std::string> replacements;
 
-  auto args = component_type.get_field(field_arguments);
+  auto args = component_type_node.get_field(field_arguments);
   if (args) {
     int arg_count = args.named_child_count();
     for (int i = 0; i < arg_count; i++) {
@@ -1230,7 +1233,7 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl component_decl) {
     err << emit_indent();
     err << subcursor.emit_dispatch(output_type);
     err << subcursor.emit_ws();
-    err << emit_print("%s_", component_name.text().c_str());
+    err << emit_print("%s_", component_cname);
     err << subcursor.emit_dispatch(output_decl);
     err << prune_trailing_ws();
     err << emit_print(";");
@@ -1251,7 +1254,7 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl component_decl) {
     err << emit_indent();
     err << subcursor.emit_dispatch(output_type);
     err << subcursor.emit_ws();
-    err << emit_print("%s_%s_", component_name.text().c_str(), n->func_name.c_str());
+    err << emit_print("%s_%s_", component_cname, n->func_name.c_str());
     err << subcursor.emit_dispatch(output_decl);
     err << prune_trailing_ws();
     err << emit_print(";");
@@ -1272,7 +1275,7 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl component_decl) {
     err << emit_indent();
     err << subcursor.emit_dispatch(output_type);
     err << subcursor.emit_ws();
-    err << emit_print("%s_", component_name.text().c_str());
+    err << emit_print("%s_", component_cname);
     err << subcursor.emit_dispatch(output_decl);
     err << prune_trailing_ws();
     err << emit_print(";");
@@ -1293,7 +1296,7 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl component_decl) {
     err << emit_indent();
     err << subcursor.emit_dispatch(output_type);
     err << subcursor.emit_ws();
-    err << emit_print("%s_", component_name.text().c_str());
+    err << emit_print("%s_", component_cname);
     err << subcursor.emit_dispatch(output_decl);
     err << prune_trailing_ws();
     err << emit_print(";");
@@ -1316,7 +1319,7 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl component_decl) {
     err << sub_cursor.skip_ws();
     err << sub_cursor.emit_dispatch(getter_type);
     err << sub_cursor.emit_ws();
-    err << emit_print("%s_", component_name.text().c_str());
+    err << emit_print("%s_", component_cname);
     err << sub_cursor.emit_dispatch(getter_name);
     err << prune_trailing_ws();
     err << emit_print(";");

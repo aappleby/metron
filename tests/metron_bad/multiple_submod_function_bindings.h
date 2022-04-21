@@ -3,7 +3,7 @@
 // A submod function can only produce one value per tock(). Trying to use it
 // twice should be an error.
 
-//X Writing field submod.tock_add_one.a changed state from FIELD_SIGNAL to FIELD_INVALID
+//X Duplicate bindings for Submod.tock_add_one
 
 class Submod {
 public:

@@ -1,9 +1,6 @@
 #include "metron_tools.h"
 
-// Tock methods might be valid individually, but not when combined into one
-// module/
-
-//X Writing field sig2 changed state from FIELD_INPUT to FIELD_INVALID
+//X Writing field sig1 changed state from FIELD_SIGNAL to FIELD_INVALID
 
 class Module {
 public:
@@ -14,6 +11,10 @@ public:
 
   void tock2() {
     sig2 = sig1;
+  }
+
+  void tock3() {
+    sig1 = 0;
   }
 
 private:

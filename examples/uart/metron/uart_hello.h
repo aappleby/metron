@@ -7,32 +7,32 @@ template<int repeat_msg = 0>
 class uart_hello {
  public:
   uart_hello() {
-    readmemh("examples/uart/message.hex", memory, 0, 511);
+    readmemh("examples/uart/message.hex", _memory, 0, 511);
   }
 
   //----------------------------------------
 
-  logic<8> data() const { return data; }
-  logic<1> req()  const { return state == SEND; }
-  logic<1> done() const { return state == DONE; }
+  logic<8> data() const { return _data; }
+  logic<1> req()  const { return _state == SEND; }
+  logic<1> done() const { return _state == DONE; }
 
   void tick(logic<1> i_rstn, logic<1> i_cts, logic<1> i_idle) {
     if (!i_rstn) {
-      state = WAIT;
-      cursor = 0;
+      _state = WAIT;
+      _cursor = 0;
     } else {
-      data = memory[cursor];
-      if (state == WAIT && i_idle) {
-        state = SEND;
-      } else if (state == SEND && i_cts) {
-        if (cursor == b9(message_len - 1)) {
-          state = DONE;
+      _data = _memory[_cursor];
+      if (_state == WAIT && i_idle) {
+        _state = SEND;
+      } else if (_state == SEND && i_cts) {
+        if (_cursor == b9(message_len - 1)) {
+          _state = DONE;
         } else {
-          cursor = cursor + 1;
+          _cursor = _cursor + 1;
         }
-      } else if (state == DONE) {
-        if (repeat_msg) state = WAIT;
-        cursor = 0;
+      } else if (_state == DONE) {
+        if (repeat_msg) _state = WAIT;
+        _cursor = 0;
       }
     }
   }
@@ -48,10 +48,10 @@ class uart_hello {
 
   //enum class state : logic<2>::BASE{WAIT, SEND, DONE};
 
-  logic<2> state;
-  logic<cursor_bits> cursor;
-  logic<8> memory[512];
-  logic<8> data;
+  logic<2> _state;
+  logic<cursor_bits> _cursor;
+  logic<8> _memory[512];
+  logic<8> _data;
 };
 
 //==============================================================================

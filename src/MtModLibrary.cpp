@@ -135,6 +135,27 @@ CHECK_RETURN Err MtModLibrary::load_blob(const std::string& filename, const std:
 
 //------------------------------------------------------------------------------
 
+CHECK_RETURN Err MtModLibrary::propagate(propagate_visitor v) {
+  Err err;
+
+  int passes = 0;
+  int changes;
+  do {
+    passes++;
+    changes = 0;
+    for (auto mod : modules) {
+      for (auto m : mod->all_methods) {
+        changes += v(m);
+      }
+    }
+  } while(changes);
+
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
 CHECK_RETURN Err MtModLibrary::process_sources() {
   Err err;
 
@@ -168,8 +189,14 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
     }
   }
 
+  for (auto mod : modules) {
+    err << mod->build_call_graph();
+  }
+
   //----------------------------------------
   // Trace top modules
+
+  //TinyLog::get().unmute();
 
   for (auto m : modules) {
     if (m->parents.empty()) {
@@ -177,115 +204,357 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
     }
   }
 
+  for (auto m : modules) {
+    LOG_Y("Trace:\n");
+    for (const auto& pair : m->mod_state) {
+      LOG_Y("%s = %s\n", pair.first.c_str(), to_string(pair.second));
+    }
+  }
+
   //----------------------------------------
   // Trace done, all our fields should have a state assigned. Categorize the methods.
 
-  /*
-  for (auto mod : modules) {
-    err << mod->categorize_methods();
-  }
-  */
+  //----------------------------------------
+  // Mark all methods called by the constructor as inits
 
-  for (auto mod : modules) {
-    for (auto method : mod->all_methods) {
-      bool wrote_signal = false;
-      bool wrote_output = false;
-      bool wrote_register = false;
-
-      for (auto ref : method->fields_written) {
-        auto f = ref.subfield ? ref.subfield : ref.field;
-        switch(f->state) {
-        case FIELD_NONE     : break;
-        case FIELD_INPUT    : break;
-        case FIELD_OUTPUT   : wrote_output = true; break;
-        case FIELD_SIGNAL   : wrote_signal = true; break;
-        case FIELD_REGISTER : wrote_register = true; break;
-        case FIELD_INVALID  : break;
+  err << propagate([&](MtMethod* m) {
+    if (m->in_init) return 0;
+    
+    for (auto& ref : m->callers) {
+      if (ref.method->in_init) {
+        if (m->in_init) {
+          return 0;
+        }
+        else {
+          LOG_B("%-20s is init because it's called by the constructor.\n", m->cname());
+          m->in_init = 1;
+          return 1;
         }
       }
+    }
 
-      if      (!wrote_register && !wrote_signal && !wrote_output) {
-        //LOG_G("Method %s.%s wrote ", mod->name().c_str(), method->name().c_str());
-        //LOG_G("nothing\n");
-      }
-      else if (!wrote_register && !wrote_signal &&  wrote_output) {
-        LOG_G("Method %s.%s wrote ", mod->name().c_str(), method->name().c_str());
-        LOG_G("only an output\n");
-      }
-      else if (!wrote_register &&  wrote_signal && !wrote_output) {
-        LOG_G("Method %s.%s wrote ", mod->name().c_str(), method->name().c_str());
-        LOG_G("only a signal\n");
-      }
-      else if (!wrote_register &&  wrote_signal &&  wrote_output) {
-        LOG_G("Method %s.%s wrote ", mod->name().c_str(), method->name().c_str());
-        LOG_G("signals and outputs\n");
-      }
-      else if ( wrote_register && !wrote_signal && !wrote_output) {
-        LOG_G("Method %s.%s wrote ", mod->name().c_str(), method->name().c_str());
-        LOG_G("only registers\n");
-      }
-      else if ( wrote_register && !wrote_signal &&  wrote_output) {
-        LOG_G("Method %s.%s wrote ", mod->name().c_str(), method->name().c_str());
-        LOG_G("a register and an output\n");
-      }
-      else if ( wrote_register &&  wrote_signal && !wrote_output) {
-        LOG_G("Method %s.%s wrote ", mod->name().c_str(), method->name().c_str());
-        LOG_R("a register and a signal\n");
-      }
-      else if ( wrote_register &&  wrote_signal &&  wrote_output) {
-        LOG_R("a register and a signal\n");
+    return 0;
+  });
+
+
+  //----------------------------------------
+  // Methods that only call funcs and don't write anything are funcs.
+
+  err << propagate([&](MtMethod* m) {
+    if (m->in_init) return 0;
+
+    if (!m->is_writer()) {
+
+      bool only_calls_funcs = true;
+      for (auto ref : m->callees) {
+        only_calls_funcs &= ref.method->is_func;
       }
 
+      if (only_calls_funcs) {
+
+        if (m->is_func) {
+          return 0;
+        }
+        else {
+          LOG_B("%-20s is func because it doesn't write anything and only calls other funcs.\n", m->cname());
+          m->is_func = true;
+          return 1;
+        }
+      }
+    }
+
+    return 0;
+  });
+
+  //----------------------------------------
+  // Methods that write registers _must_ be ticks.
+
+  err << propagate([&](MtMethod* m) {
+    if (m->in_init) return 0;
+    if (m->is_func) return 0;
+
+    bool wrote_register = false;
+    for (auto ref : m->fields_written) {
+      auto f = ref.subfield ? ref.subfield : ref.field;
+      if (f->state == FIELD_REGISTER) wrote_register = true;
+    }
+
+    if (wrote_register) {
+      if (m->in_tick) {
+        return 0;
+      }
+      else {
+        LOG_B("%-20s is tick because it writes registers.\n", m->cname());
+        m->in_tick = true;
+        return 1;
+      }
+    }
+
+    return 0;
+    });
+
+  //----------------------------------------
+  // Methods that are downstream from ticks _must_ be ticks.
+
+  err << propagate([&](MtMethod* m) {
+    if (m->in_init) return 0;
+    if (m->is_func) return 0;
+
+    for (auto& ref : m->callers) {
+      if (ref.method->in_tick) {
+        if (m->in_tick) {
+          return 0;
+        }
+        else {
+          LOG_B("%-20s is tick because it is called by a tick.\n", m->cname());
+          m->in_tick = true;
+          return 1;
+        }
+      }
+    }
+
+    return 0;
+    });
+
+  //----------------------------------------
+  // Methods that write signals _must_ be tocks.
+
+  err << propagate([&](MtMethod* m) {
+    if (m->in_init) return 0;
+    if (m->is_func) return 0;
+
+    bool wrote_signal = false;
+    for (auto ref : m->fields_written) {
+      auto f = ref.subfield ? ref.subfield : ref.field;
+      wrote_signal  |= f->state == FIELD_SIGNAL;
+    }
+
+    if (wrote_signal) {
+      if (m->in_tock) {
+        return 0;
+      }
+      else {
+        LOG_B("%-20s is tock because it writes signals.\n", m->cname());
+        m->in_tock = true;
+        return 1;
+      }
+    }
+
+    return 0;
+  });
+
+  //----------------------------------------
+  // Methods that write outputs are tocks unless they're already ticks.
+
+  err << propagate([&](MtMethod* m) {
+    if (m->in_init) return 0;
+    if (m->is_func) return 0;
+    if (m->in_tick) return 0;
+
+    bool wrote_output = false;
+    for (auto ref : m->fields_written) {
+      auto f = ref.subfield ? ref.subfield : ref.field;
+      wrote_output  |= f->state == FIELD_OUTPUT;
+    }
+
+    if (wrote_output) {
+      if (m->in_tock) {
+        return 0;
+      }
+      else {
+        LOG_B("%-20s is tock because it writes outputs and isn't already a tick.\n", m->cname());
+        m->in_tock = true;
+        return 1;
+      }
+    }
+
+    return 0;
+    });
+
+
+  //----------------------------------------
+  // Methods that are upstream from tocks _must_ be tocks.
+
+  err << propagate([&](MtMethod* m) {
+    if (m->in_init) return 0;
+    if (m->is_func) return 0;
+
+    for (auto& ref : m->callees) {
+      if (ref.method->in_tock) {
+        if (m->in_tock) {
+          return 0;
+        }
+        else {
+          LOG_B("%-20s is tock because it calls a tock.\n", m->cname());
+          m->in_tock = true;
+          return 1;
+        }
+      }
+    }
+
+    return 0;
+    });
+
+  //----------------------------------------
+  // Methods that are downstream from tocks are tocks unless they're already ticks.
+
+  err << propagate([&](MtMethod* m) {
+    if (m->in_init) return 0;
+    if (m->is_func) return 0;
+    if (m->in_tick) return 0;
+
+    for (auto& ref : m->callers) {
+      if (ref.method->in_tock) {
+        if (m->in_tock) {
+          return 0;
+        }
+        else {
+          LOG_B("%-20s is tock because it its called by a tock and isn't already a tick.\n", m->cname());
+          m->in_tock = true;
+          return 1;
+        }
+      }
+    }
+
+    return 0;
+    });
+
+
+  //----------------------------------------
+  // If there are unmarked methods left, they must be upstream from a tick.
+  // Mark them as a tick so we can reduce the total number of always_* blocks
+  // needed after conversion.
+
+  err << propagate([&](MtMethod* m) {
+    if (m->is_valid()) return 0;
+
+    for (auto& ref : m->callees) {
+      if (ref.method->in_tick) {
+        if (m->in_tick) {
+          return 0;
+        }
+        else {
+          LOG_B("%-20s is tick because it hasn't been categorized yet and is upstream from a tick.\n", m->cname());
+          m->in_tick = true;
+          return 1;
+        }
+      }
+    }
+
+    return 0;
+  });
+
+
+  //----------------------------------------
+
+  int uncategorized = 0;
+  int invalid = 0;
+  for (auto mod : modules) {
+    for (auto m : mod->all_methods) {
+      if (!m->categorized()) {
+        m->categorize();
+        uncategorized++;
+      }
+      if (!m->is_valid()) {
+        invalid++;
+      }
+    }
+  }
+
+  LOG_G("Methods uncategorized %d\n", uncategorized);
+  LOG_G("Methods invalid %d\n", invalid);
+
+  //----------------------------------------
+  // Everything's categorized now. Next step - check for duplicate method bindings.
+
+  // This isnt' right, it needs to be "max 1 binding per branch"...
+
+#if 0
+
+  for (auto src_mod : modules) {
+    for (auto src_method : src_mod->all_methods) {
+      for (auto& ref : src_method->callees) {
+        auto dst_mod = ref.mod;
+        auto dst_method = ref.method;
+
+        if (src_mod != dst_mod) {
+          // Cross-module calls always require binding.
+          dst_method->binding_count++;
+        }
+        else if (src_method->in_tock && dst_method->in_tick) {
+          // Cross-domain calls always require binding.
+          dst_method->binding_count++;
+        }
+      }
+    }
+  }
+
+  for (auto src_mod : modules) {
+    for (auto src_method : src_mod->all_methods) {
+      if (src_method->binding_count > 1) {
+        err << ERR("Duplicate bindings for %s.%s\n", src_mod->cname(), src_method->cname());
+      }
+    }
+  }
+
+#endif
+
+  //----------------------------------------
+  // Check for cross-module calls in ticks.
+
+  for (auto src_mod : modules) {
+    for (auto src_method : src_mod->all_methods) {
+      for (auto& ref : src_method->callees) {
+        auto dst_mod = ref.mod;
+        auto dst_method = ref.method;
+
+        if (src_mod != dst_mod) {
+          if (src_method->in_tick) {
+            err << ERR("Calling from tick %s.%s to %s.%s crosses a module boundary, but ticks can't create bindings\n",
+              src_mod->cname(), src_method->cname(), dst_mod->cname(), dst_method->cname());
+          }
+        }
+      }
     }
   }
 
   //----------------------------------------
-  // Dump stuff
+  // Check for ticks with return values.
 
   for (auto mod : modules) {
-    if (!mod->parents.empty()) continue;
-    LOG_B("Dumping %s trace\n", mod->name().c_str());
-    LOG_INDENT_SCOPE();
-    MtTracer::dump_trace(mod->mod_state);
-  }
-
-  for (auto mod : modules) {
-    LOG_B("Dumping %s field refs\n", mod->name().c_str());
-    LOG_INDENT_SCOPE();
-    for (auto method : mod->all_methods) {
-      if (method->fields_read.size()) LOG_B("Field read refs for %s\n", method->name().c_str());
-      for (const auto& ref : method->fields_read) {
-        LOG_INDENT_SCOPE();
-        if (ref.subfield) {
-          LOG_G("%s.%s %s\n", ref.field->name().c_str(), ref.subfield->name().c_str(), to_string(ref.subfield->state));
-        }
-        else {
-          LOG_G("%s %s\n", ref.field->name().c_str(), to_string(ref.field->state));
-        }
-      }
-
-      if (method->fields_written.size()) LOG_B("Field write refs for %s\n", method->name().c_str());
-      for (const auto& ref : method->fields_written) {
-        LOG_INDENT_SCOPE();
-        if (ref.subfield) {
-          LOG_R("%s.%s %s\n", ref.field->name().c_str(), ref.subfield->name().c_str(), to_string(ref.subfield->state));
-        }
-        else {
-          LOG_R("%s %s\n", ref.field->name().c_str(), to_string(ref.field->state));
-        }
+    for (auto m : mod->all_methods) {
+      if (m->in_tick && m->has_return) {
+        err << ERR("Tick method %s.%s is not allowed to have a return value.\n", mod->cname(), m->cname());
       }
     }
   }
 
-  exit(0);
+  //----------------------------------------
+  // Check for constructors with params
+
+  for (auto mod : modules) {
+    if (mod->constructor && mod->constructor->params.size()) {
+      err << ERR("Constructor for %s is not allowed to have params\n", mod->cname());
+    }
+  }
+
+  //----------------------------------------
+
+  dump_call_graph();
+
+  if (err.has_err()) {
+    exit(1);
+  }
+
+  exit((uncategorized > 0) || (invalid > 0));
 
   //----------------------------------------
   // All modules have populated their fields, match up tick/tock calls with their
   // corresponding methods.
 
   for (auto mod : modules) {
-    err << mod->categorize_fields();
-    err << mod->build_port_map();
+    err << mod->sort_fields();
+    //err << mod->build_port_map();
   }
 
   //----------------------------------------
@@ -294,4 +563,97 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
 
   return err;
 }
+
+//------------------------------------------------------------------------------
+
+void MtModLibrary::dump_call_graph() {
+  LOG_G("Call graph:\n");
+
+  std::function<void(MtModule*, MtMethod*)> dump_call_tree = [&](MtModule* mod, MtMethod* method) {
+    uint32_t color = 0x808080;
+
+    if (method->in_init) color = 0x8080FF;
+    if (method->in_tick) color = 0x80FF80;
+    if (method->in_tock) color = 0xFF8080;
+    if (method->is_func) color = 0xFFFFFF;
+
+    if (!method->is_valid()) color = 0x808080;
+
+    LOG_C(color, " %s.%s()\n", mod->cname(), method->cname());
+
+
+    LOG_INDENT_SCOPE();
+    for (auto c : method->callees) {
+      dump_call_tree(c.mod, c.method);
+    }
+  };
+
+  for (auto mod : modules) {
+    if (mod->parents.size()) continue;
+    for (auto method : mod->all_methods) {
+      if (method->callers.empty()) {
+        LOG_INDENT_SCOPE();
+        dump_call_tree(mod, method);
+      }
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+
+
+
+
+#if 0
+//----------------------------------------
+// Dump stuff
+
+if (parents.empty()) {
+  LOG_B("Dumping %s trace\n", cname());
+  LOG_INDENT_SCOPE();
+  MtTracer::dump_trace(mod_state);
+}
+
+LOG_B("Dumping %s\n", cname());
+LOG_INDENT_SCOPE();
+for (auto method : all_methods) {
+  if (method->in_init) continue;
+  LOG_B("Dumping %s.%s\n", cname(), method->cname());
+  LOG_INDENT_SCOPE();
+
+  if (method->callers.empty()) {
+    LOG_G("Root!\n");
+  }
+
+  if (method->callees.empty()) {
+    LOG_G("Leaf!\n");
+  }
+
+  for (auto ref : method->callees) {
+    LOG_G("Calls %s.%s\n", ref.mod->cname(), ref.method->cname());
+  }
+  for (auto ref : method->callers) {
+    LOG_Y("Called by %s.%s\n", ref.mod->cname(), ref.method->cname());
+  }
+
+  for (const auto& ref : method->fields_read) {
+    if (ref.subfield) {
+      LOG_G("Reads %s.%s\n", ref.field->cname(), ref.subfield->cname());
+    }
+    else {
+      LOG_G("Reads %s\n", ref.field->cname());
+    }
+  }
+
+  for (const auto& ref : method->fields_written) {
+    if (ref.subfield) {
+      LOG_R("Writes %s.%s\n", ref.field->cname(), ref.subfield->cname());
+    }
+    else {
+      LOG_R("Writes %s\n", ref.field->cname());
+    }
+  }
+}
+
+#endif
 

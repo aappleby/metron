@@ -95,6 +95,7 @@ int main(int argc, char** argv) {
   // -v -r examples/rvsimple/metron toplevel.h
 
   if (quiet) TinyLog::get().mute();
+  //TinyLog::get().mute();
 
   //----------
   // Startup info

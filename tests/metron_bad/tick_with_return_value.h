@@ -1,7 +1,7 @@
 #include "metron_tools.h"
 
 // Tick methods are not allowed to have a return value.
-//X Tick method tick has a return value
+//X Tick method Module.tick is not allowed to have a return value.
 
 class Module {
 public:

@@ -41,7 +41,7 @@ def main():
 
     errors = 0
 
-    errors += test_convert_good()
+    #errors += test_convert_good()
     errors += test_convert_bad()
 
     if not basic:
@@ -64,6 +64,8 @@ def main():
 
     print()
     if errors > 0:
+        print_r(f"Total failures : {errors}");
+        print()
         print_r(" #######  #####  ## ##      ")
         print_r(" ##      ##   ## ## ##      ")
         print_r(" #####   ####### ## ##      ")
@@ -148,6 +150,8 @@ def check_good(filename):
     cmd = prep_cmd(f"bin/metron {metron_default_args()} -r tests/metron_good -o tests/metron_sv -c {basename}")
     cmd_result = subprocess.run(cmd, stdout=subprocess.PIPE, encoding="charmap")
 
+    print(cmd_result.stdout)
+
     if cmd_result.returncode:
         print_r(f"Test file {filename} - expected pass, got {cmd_result.returncode}")
         print(cmd_result.stdout)
@@ -180,9 +184,16 @@ def check_bad(filename):
         print(f"Test file {filename} - expected fail, but it threw an exception")
         errors += 1
     elif len(expected_errors) == 0:
-        print(f"Test {filename} contained no expected errors. Dumping output.")
-        print(cmd_result.stdout)
+        print(f"Test {filename} contained no expected errors.")
         pass
+    else:
+        for err in expected_errors:
+            if not err in cmd_result.stdout:
+                print(f"Test {filename} did not produce expected error \"{err}\".")
+                errors += 1
+
+    if errors:
+        print(cmd_result.stdout)
     return errors
 
 ################################################################################
@@ -197,8 +208,9 @@ def check_icarus(filename):
     result = os.system(cmd)
     if result:
         print(f"Icarus syntax check on {filename} failed")
-        errors += 1
-    return errors
+        return 1
+    else:
+        return 0
 
 ###############################################################################
 # Run Verilator on the translated source file.
@@ -213,8 +225,9 @@ def check_verilator(filename):
     result = os.system(cmd)
     if result:
         print(f"Verilator syntax check on {filename} failed")
-        errors += 1
-    return errors
+        return 1
+    else:
+        return 0
 
 ###############################################################################
 # Check the translated source against the golden, if present.
@@ -242,7 +255,6 @@ def check_golden(filename):
 # Run a command that passes if the output contains "All tests pass"
 
 def run_simple_test(commandline):
-    errors = 0
     # The Icarus output isn't actually a binary, kcov can't run it.
     if (commandline == "bin/examples/uart_iv"):
         cmd = [commandline]
@@ -251,91 +263,86 @@ def run_simple_test(commandline):
     stuff = subprocess.run(cmd, stdout=subprocess.PIPE, encoding="charmap").stdout
     if not "All tests pass" in stuff:
         print_r(stuff)
-        errors += 1
-    return errors
+        return 1
+    else:
+        return 0
 
 ###############################################################################
 # Run an arbitrary command as a test
 
 def run_good_command(commandline):
-    errors = 0
     cmd = prep_cmd(commandline)
     result = subprocess.run(cmd, stdout=subprocess.PIPE, encoding="charmap").returncode
 
     if result != 0:
         print(f"Command \"{cmd}\" should have passed, but it failed.")
-        errors += 1
-    return errors
+        return 1
+    else:
+        return 0
 
 def run_bad_command(commandline):
-    errors = 0
     cmd = prep_cmd(commandline)
     result = subprocess.run(cmd, stdout=subprocess.PIPE, encoding="charmap").returncode
 
     if result == 0:
         print(f"Command \"{cmd}\" should have failed, but it passed.")
-        errors += 1
-    return errors
+        return 1
+    else:
+        return 0
 
 ################################################################################
 
 def test_compilation():
-    errors = 0
     print()
     print_b("Checking that all headers in tests/metron_good and test/metron_bad compile")
-    if any(get_pool().map(check_compile, metron_good() + metron_bad())):
+    result = sum(get_pool().map(check_compile, metron_good() + metron_bad()))
+    if result != 0:
         print_r(f"Headers in metron_good/metron_bad failed GCC syntax check")
-        errors += 1
-    return errors
+    return result
 
 ################################################################################
 
 def test_convert_good():
-    errors = 0
     print()
     print_b("Checking that all examples in metron_good convert to SV cleanly")
-    if any(get_pool().map(check_good, metron_good())):
+    result = sum(get_pool().map(check_good, metron_good()))
+    if result != 0:
         print_r(f"Headers in metron_good failed Metron conversion")
-        errors += 1
-    return errors
+    return result
 
 ################################################################################
 
 def test_convert_bad():
-    errors = 0
     print()
     print_b("Checking that all examples in metron_bad fail conversion")
-    if any(get_pool().map(check_bad, metron_bad())):
+    errors = sum(get_pool().map(check_bad, metron_bad()))
+    if errors != 0:
         print_r(f"Headers in metron_bad passed Metron conversion")
-        errors += 1
     return errors
 
 ################################################################################
 
 def test_verilator_parse():
-    errors = 0
     print()
     print_b("Checking that all converted files can be parsed by Verilator")
-    if any(get_pool().map(check_verilator, metron_good())):
+    errors = sum(get_pool().map(check_verilator, metron_good()))
+    if errors != 0:
         print_r(f"Headers in metron_good failed Metron conversion")
-        errors += 1
     return errors
 
 ################################################################################
 
 def test_goldens():
-    errors = 0
     print()
     print_b("Checking that all converted files match their golden version, if present")
-    if any(get_pool().map(check_golden, metron_good())):
+    errors = sum(get_pool().map(check_golden, metron_good()))
+    if errors != 0:
         print_r(f"Some headers failed golden check")
-        errors += 1
     return errors
 
 ################################################################################
 
 def test_examples():
-    errors = 0
     print()
     print_b("Running standalone tests")
 
@@ -353,20 +360,19 @@ def test_examples():
         "bin/examples/rvtiny_sync_vl",
     ]
 
-    if any(get_pool().map(run_simple_test, simple_tests)):
+    errors = sum(get_pool().map(run_simple_test, simple_tests))
+    if errors:
         print_r(f"Standalone tests failed")
-        errors += 1
     return errors
 
 ################################################################################
 
 def test_icarus_parse():
-    errors = 0
     print()
     print_b("Checking that all converted files can be parsed by Icarus")
-    if any(get_pool().map(check_icarus, metron_good())):
+    errors = sum(get_pool().map(check_icarus, metron_good()))
+    if errors != 0:
         print_r(f"Headers in metron_good failed Metron conversion")
-        errors += 1
     return errors
 
 ################################################################################
@@ -390,11 +396,8 @@ def test_misc():
     ]
 
     errors = 0
-    if any(get_pool().map(run_good_command, good_commands)):
-        errors += 1
-
-    if any(get_pool().map(run_bad_command, bad_commands)):
-        errors += 1
+    errors = errors + sum(get_pool().map(run_good_command, good_commands))
+    errors = errors + sum(get_pool().map(run_bad_command, bad_commands))
     return errors
 
 ################################################################################

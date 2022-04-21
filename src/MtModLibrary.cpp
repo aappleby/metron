@@ -201,15 +201,14 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
   for (auto m : modules) {
     if (m->parents.empty()) {
       err << m->trace();
+      LOG_Y("Trace:\n");
+      for (const auto& pair : m->mod_state) {
+        LOG_Y("%s = %s\n", pair.first.c_str(), to_string(pair.second));
+      }
     }
   }
 
-  for (auto m : modules) {
-    LOG_Y("Trace:\n");
-    for (const auto& pair : m->mod_state) {
-      LOG_Y("%s = %s\n", pair.first.c_str(), to_string(pair.second));
-    }
-  }
+  exit(0);
 
   //----------------------------------------
   // Trace done, all our fields should have a state assigned. Categorize the methods.
@@ -275,7 +274,7 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
 
     bool wrote_register = false;
     for (auto ref : m->fields_written) {
-      auto f = ref.subfield ? ref.subfield : ref.field;
+      auto f = ref.subfield ? ref.subfield : ref.field1;
       if (f->state == FIELD_REGISTER) wrote_register = true;
     }
 
@@ -325,7 +324,7 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
 
     bool wrote_signal = false;
     for (auto ref : m->fields_written) {
-      auto f = ref.subfield ? ref.subfield : ref.field;
+      auto f = ref.subfield ? ref.subfield : ref.field1;
       wrote_signal  |= f->state == FIELD_SIGNAL;
     }
 
@@ -353,7 +352,7 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
 
     bool wrote_output = false;
     for (auto ref : m->fields_written) {
-      auto f = ref.subfield ? ref.subfield : ref.field;
+      auto f = ref.subfield ? ref.subfield : ref.field1;
       wrote_output  |= f->state == FIELD_OUTPUT;
     }
 
@@ -424,6 +423,7 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
   // If there are unmarked methods left, they must be upstream from a tick.
   // Mark them as a tick so we can reduce the total number of always_* blocks
   // needed after conversion.
+  // *** can't turn them into ticks if they have return vals
 
   err << propagate([&](MtMethod* m) {
     if (m->is_valid()) return 0;

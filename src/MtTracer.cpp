@@ -6,26 +6,6 @@
 #include "MtSourceFile.h"
 #include "metron_tools.h"
 
-/*
-digraph G {
-
-none -> input     [label="read"];
-none -> output    [label="write"];
-
-input -> input    [label="read"];
-input -> register [label="write"];
-
-output -> signal  [label="read"];
-output -> output  [label="write"];
-
-signal -> signal   [label="read"];
-signal -> invalid  [label="write"];
-
-register -> invalid [label="read"];
-register -> register [label="write"];
-}
-*/
-
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n) {
@@ -78,7 +58,7 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n) {
       if (arg.sym == sym_identifier) {
         auto field = mod()->get_field(arg.text());
         err << trace_read(field);
-        err << trace_write(field);
+        err << trace_write(nullptr, field);
       } else {
         err << ERR("Not sure how to increment a %s\n", n.ts_node_type());
       }
@@ -105,32 +85,37 @@ CHECK_RETURN Err MtTracer::trace_assign(MnNode n) {
 
   err << trace_dispatch(node_rhs);
 
-  auto node_name = node_lhs;
-  if (node_lhs.sym == sym_subscript_expression) {
-    node_name = node_lhs.get_field(field_argument);
-  }
-  auto field = mod()->get_field(node_name.text());
+  //----------
 
   if (node_lhs.sym == sym_identifier) {
-    err << trace_write(field);
-  } else if (node_lhs.sym == sym_subscript_expression) {
-    err << trace_write(field);
+    auto node_name = node_lhs;
+    auto field = mod()->get_field(node_name.text());
+    err << trace_write(nullptr, field);
   }
-  else if (node_lhs.sym == sym_field_expression) {
+  
+  //----------
 
-    auto base_node = node_lhs.get_field(field_argument);
-    auto component = mod()->get_component(base_node.text());
-    auto field = mod()->get_field(base_node.text());
+  else if (node_lhs.sym == sym_subscript_expression) {
+    auto node_name = node_lhs.get_field(field_argument);
+    auto field = mod()->get_field(node_name.text());
+    err << trace_write(nullptr, field);
+  }
+
+  //----------
+
+  else if (node_lhs.sym == sym_field_expression) {
+    auto node_name = node_lhs.get_field(field_argument);
+    auto component = mod()->get_component(node_name.text());
 
     if (component) {
       auto component_mod = mod()->source_file->lib->get_module(component->type_name());
       auto component_field = component_mod->get_field(node_lhs.get_field(field_field).text());
       err << trace_write(component, component_field);
     }
-    else if (field) {
-      err << trace_write(field);
-    }
   }
+
+  //----------
+
   else {
     debugbreak();
   }
@@ -161,6 +146,7 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
     auto dst_module = mod()->source_file->lib->get_module(component_type);
     auto dst_method = dst_module->get_method(component_method_name);
 
+    _component_stack.push_back(component);
     _path_stack.push_back(_path_stack.back() + "." + component_name);
     _mod_stack.push_back(dst_module);
     _method_stack.push_back(dst_method);
@@ -168,6 +154,7 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
     _method_stack.pop_back();
     _mod_stack.pop_back();
     _path_stack.pop_back();
+    _component_stack.pop_back();
   }
 
   //----------
@@ -177,6 +164,7 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
     auto dst_method = mod()->get_method(node_func.text());
 
     if (dst_method) {
+      _component_stack.push_back(_component_stack.back());
       _path_stack.push_back(_path_stack.back());
       _mod_stack.push_back(_mod_stack.back());
       _method_stack.push_back(dst_method);
@@ -184,6 +172,7 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
       _method_stack.pop_back();
       _mod_stack.pop_back();
       _path_stack.pop_back();
+      _component_stack.pop_back();
     }
   }
   
@@ -211,11 +200,12 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
+// good
 
 CHECK_RETURN Err MtTracer::trace_branch(MnNode n) {
   Err err;
 
-  auto node_cond = n.get_field(field_condition);
+  auto node_cond     = n.get_field(field_condition);
   auto node_branch_a = n.get_field(field_consequence);
   auto node_branch_b = n.get_field(field_alternative);
 
@@ -316,16 +306,15 @@ CHECK_RETURN Err MtTracer::trace_read(MtField* field, MtField* component_field) 
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer::trace_write(MtField* field, MtField* component_field) {
+CHECK_RETURN Err MtTracer::trace_write(MtField* component, MtField* field) {
   Err err;
   if (!field) return err;
-
   if (field->is_param()) return err;
 
-  method()->fields_written.push_back({field, component_field});
+  method()->fields_written.push_back({component, field});
 
   std::string field_name = field->name();
-  if (component_field) field_name = field_name + "." + component_field->name();
+  if (component) field_name = component->name() + "." + field_name;
 
   auto field_path = _path_stack.back() + "." + field_name;
   auto& old_state = (*state_top)[field_path];

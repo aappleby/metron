@@ -66,7 +66,10 @@ private:
 //------------------------------------------------------------------------------
 
 struct FieldRef {
-  MtField* field;
+
+  FieldRef(MtField* field, MtField* subfield) : field1(field), subfield(subfield) {}
+
+  MtField* field1;
   MtField* subfield;
 };
 

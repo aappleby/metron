@@ -60,7 +60,7 @@ class MtTracer {
 
   StateMap* state_top;
   std::vector<std::string> _path_stack;
-  std::vector<MtField*>    _field_stack;
+  std::vector<MtField*>    _component_stack;
   std::vector<MtModule*>   _mod_stack;
   std::vector<MtMethod*>   _method_stack;
 

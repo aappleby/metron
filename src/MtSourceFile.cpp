@@ -11,9 +11,6 @@ extern const TSLanguage* tree_sitter_cpp();
 
 //------------------------------------------------------------------------------
 
-MtSourceFile::MtSourceFile() {
-}
-
 CHECK_RETURN Err MtSourceFile::init(const std::string& _filename, const std::string& _full_path, const std::string& _src_blob) {
   Err err;
 
@@ -68,14 +65,14 @@ CHECK_RETURN Err MtSourceFile::collect_modules(MnNode toplevel) {
     switch (c.sym) {
       case sym_template_declaration: {
         MnNode mod_root(c.node, c.sym, 0, this);
-        MtModule* mod = new MtModule();
+        MtModule* mod = new MtModule(lib);
         err << mod->init(this, MnTemplateDecl(mod_root));
         modules.push_back(mod);
         break;
       }
       case sym_class_specifier: {
         MnNode mod_root(c.node, c.sym, 0, this);
-        MtModule* mod = new MtModule();
+        MtModule* mod = new MtModule(lib);
         err << mod->init(this, MnClassSpecifier(mod_root));
         modules.push_back(mod);
         break;

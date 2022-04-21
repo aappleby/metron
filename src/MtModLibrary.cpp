@@ -52,7 +52,7 @@ void MtModLibrary::add_source(MtSourceFile* source_file) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtModLibrary::load_source(const char* filename, MtSourceFile*& out_source) {
+CHECK_RETURN Err MtModLibrary::load_source(const char* filename, MtSourceFile*& out_source, bool verbose) {
   Err err;
 
   if (get_source(filename)) {
@@ -67,7 +67,7 @@ CHECK_RETURN Err MtModLibrary::load_source(const char* filename, MtSourceFile*& 
     auto stat_result = stat(full_path.c_str(), &s);
     if (stat_result == 0) {
       found = true;
-      LOG_B("Loading %s from %s\n", filename, full_path.c_str());
+      if (verbose) LOG_B("Loading %s from %s\n", filename, full_path.c_str());
       LOG_INDENT_SCOPE();
 
       std::string src_blob;
@@ -83,7 +83,7 @@ CHECK_RETURN Err MtModLibrary::load_source(const char* filename, MtSourceFile*& 
         use_utf8_bom = true;
         src_blob.erase(src_blob.begin(), src_blob.begin() + 3);
       }
-      err << load_blob(filename, full_path, src_blob, use_utf8_bom);
+      err << load_blob(filename, full_path, src_blob, use_utf8_bom, verbose);
       break;
     }
   }
@@ -97,11 +97,11 @@ CHECK_RETURN Err MtModLibrary::load_source(const char* filename, MtSourceFile*& 
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtModLibrary::load_blob(const std::string& filename, const std::string& full_path, const std::string& src_blob, bool use_utf8_bom) {
+CHECK_RETURN Err MtModLibrary::load_blob(const std::string& filename, const std::string& full_path, const std::string& src_blob, bool use_utf8_bom, bool verbose) {
   Err err;
 
   assert(!sources_loaded);
-  auto source_file = new MtSourceFile();
+  auto source_file = new MtSourceFile(this);
   err << source_file->init(filename, full_path, src_blob);
   source_file->use_utf8_bom = use_utf8_bom;
   add_source(source_file);
@@ -124,7 +124,7 @@ CHECK_RETURN Err MtModLibrary::load_blob(const std::string& filename, const std:
 
     if (!get_source(file)) {
       MtSourceFile* source = nullptr;
-      err << load_source(file.c_str(), source);
+      err << load_source(file.c_str(), source, verbose);
     }
 
     source_file->includes.push_back(get_source(file));
@@ -176,7 +176,7 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
 
   for (auto mod : modules) {
     err << mod->collect_modparams();
-    err << mod->collect_fields_and_components();
+    err << mod->collect_fields();
     err << mod->collect_methods();
   }
 
@@ -184,8 +184,12 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
   // Hook up child->parent module pointers
 
   for (auto m : modules) {
-    for (auto s : m->all_components) {
-      get_module(s->type_name())->parents.push_back(m);
+    for (auto s : m->all_fields) {
+      if (s->is_component()) {
+        auto component = get_module(s->type_name());
+        component->parents.push_back(m);
+        m->children.push_back(component);
+      }
     }
   }
 
@@ -213,8 +217,7 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
     }
   }
 
-  exit(0);
-
+#if 0
   //----------------------------------------
   // Trace done, all our fields should have a state assigned. Categorize the methods.
 
@@ -224,8 +227,8 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
   err << propagate([&](MtMethod* m) {
     if (m->in_init) return 0;
     
-    for (auto& ref : m->callers) {
-      if (ref.method->in_init) {
+    for (auto caller : m->callers) {
+      if (caller->in_init) {
         if (m->in_init) {
           return 0;
         }
@@ -250,8 +253,8 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
     if (!m->is_writer()) {
 
       bool only_calls_funcs = true;
-      for (auto ref : m->callees) {
-        only_calls_funcs &= ref.method->is_func;
+      for (auto callee : m->callees) {
+        only_calls_funcs &= callee->is_func;
       }
 
       if (only_calls_funcs) {
@@ -303,8 +306,8 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
     if (m->in_init) return 0;
     if (m->is_func) return 0;
 
-    for (auto& ref : m->callers) {
-      if (ref.method->in_tick) {
+    for (auto caller : m->callers) {
+      if (caller->in_tick) {
         if (m->in_tick) {
           return 0;
         }
@@ -380,8 +383,8 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
     if (m->in_init) return 0;
     if (m->is_func) return 0;
 
-    for (auto& ref : m->callees) {
-      if (ref.method->in_tock) {
+    for (auto& callee : m->callees) {
+      if (callee->in_tock) {
         if (m->in_tock) {
           return 0;
         }
@@ -404,8 +407,8 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
     if (m->is_func) return 0;
     if (m->in_tick) return 0;
 
-    for (auto& ref : m->callers) {
-      if (ref.method->in_tock) {
+    for (auto caller : m->callers) {
+      if (caller->in_tock) {
         if (m->in_tock) {
           return 0;
         }
@@ -430,8 +433,8 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
   err << propagate([&](MtMethod* m) {
     if (m->is_valid()) return 0;
 
-    for (auto& ref : m->callees) {
-      if (ref.method->in_tick) {
+    for (auto& callee : m->callees) {
+      if (callee->in_tick) {
         if (m->in_tick) {
           return 0;
         }
@@ -506,9 +509,9 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
 
   for (auto src_mod : modules) {
     for (auto src_method : src_mod->all_methods) {
-      for (auto& ref : src_method->callees) {
-        auto dst_mod = ref.mod;
-        auto dst_method = ref.method;
+      for (auto callee : src_method->callees) {
+        auto dst_mod = callee->mod;
+        auto dst_method = callee;
 
         if (src_mod != dst_mod) {
           if (src_method->in_tick) {
@@ -563,6 +566,8 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
 
   sources_processed = true;
 
+#endif
+
   return err;
 }
 
@@ -577,7 +582,7 @@ void MtModLibrary::dump_call_graph() {
     if (method->in_init) color = 0x8080FF;
     if (method->in_tick) color = 0x80FF80;
     if (method->in_tock) color = 0xFF8080;
-    if (method->is_func) color = 0xFFFFFF;
+    if (method->in_func) color = 0xFFFFFF;
 
     if (!method->is_valid()) color = 0x808080;
 
@@ -585,8 +590,8 @@ void MtModLibrary::dump_call_graph() {
 
 
     LOG_INDENT_SCOPE();
-    for (auto c : method->callees) {
-      dump_call_tree(c.mod, c.method);
+    for (auto callee : method->callees) {
+      dump_call_tree(callee->_mod, callee);
     }
   };
 

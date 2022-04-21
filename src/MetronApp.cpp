@@ -5,7 +5,7 @@
 
 #include "Log.h"
 #include "metron_tools.h"
-#include "MtCursor.h"
+//#include "MtCursor.h"
 #include "MtModLibrary.h"
 #include "MtModule.h"
 #include "MtSourceFile.h"
@@ -70,14 +70,14 @@ int main(int argc, char** argv) {
   bool echo = false;
   bool dump = false;
   bool convert = false;
-  bool stats = false;
+  bool verbose = false;
   std::string src_root;
   std::string out_root;
   std::vector<std::string> source_names;
 
   // clang-format off
   app.add_flag  ("-q,--quiet",    quiet,        "Quiet mode");
-  app.add_flag  ("-v,--verbose",  stats,        "Print detailed stats about the source modules.");
+  app.add_flag  ("-v,--verbose",  verbose,      "Print detailed stats about the source modules.");
   app.add_flag  ("-c,--convert",  convert,      "Convert sources to SystemVerilog. If not specified, will only check inputs for convertibility.");
   app.add_flag  ("-e,--echo",     echo,         "Echo the converted source back to the terminal, with color-coding.");
   app.add_flag  ("--dump",        dump,         "Dump the syntax tree of the source file(s) to the console.");
@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
   LOG_B("Quiet   %d\n", quiet);
   LOG_B("Echo    %d\n", echo);
   LOG_B("Convert %d\n", convert);
-  LOG_B("Stats   %d\n", stats);
+  LOG_B("Verbose %d\n", verbose);
   LOG_B("Source root '%s'\n", src_root.empty() ? "<empty>" : src_root.c_str());
   LOG_B("Output root '%s'\n", out_root.empty() ? "<empty>" : out_root.c_str());
 
@@ -129,22 +129,34 @@ int main(int argc, char** argv) {
   LOG_B("Loading source files\n");
   for (auto& name : source_names) {
     MtSourceFile* source;
-    err << library.load_source(name.c_str(), source);
+    err << library.load_source(name.c_str(), source, verbose);
   }
   if (err.has_err()) {
     LOG_R("Exiting due to error\n");
     return -1;
   }
 
-  LOG_B("\n");
-
   LOG_B("Processing source files\n");
   err << library.process_sources();
+  LOG("\n");
 
+  LOG_G("<top> ");
+  for (auto mod : library.modules) {
+    if (mod->parents.empty()) mod->dump_mod_tree();
+  }
+  LOG("\n");
+
+  for (auto mod : library.modules) {
+    mod->dump();
+  }
+  LOG("\n");
+
+
+#if 0
   //----------
   // Print module stats
 
-  if (stats) {
+  if (verbose) {
     for (auto& mod : library.modules) {
       mod->dump_banner();
     }
@@ -161,9 +173,9 @@ int main(int argc, char** argv) {
         if (rank) LOG_Y("|--");
       }
       LOG_Y("%s\n", m->name().c_str());
-      auto component_count = m->all_components.size();
+      auto component_count = m->components.size();
       for (auto i = 0; i < component_count; i++) {
-        auto component = m->all_components[i];
+        auto component = m->components[i];
         step(library.get_module(component->type_name()), rank + 1, i == component_count - 1);
       }
     };
@@ -256,6 +268,9 @@ int main(int argc, char** argv) {
   LOG_G("Done!\n");
 
   library.teardown();
+#endif
+
+  LOG_B("Done!\n");
 
   return 0;
 }

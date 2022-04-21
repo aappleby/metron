@@ -46,13 +46,10 @@ class MtTracer {
   CHECK_RETURN Err trace_call(MnNode n);
   CHECK_RETURN Err trace_branch(MnNode n);
   CHECK_RETURN Err trace_switch(MnNode n);
-
-
   CHECK_RETURN Err trace(const std::string& field_name, bool is_write);
-
   CHECK_RETURN Err merge_branch(StateMap & ma, StateMap & mb, StateMap & out);
 
-  MtModule* mod_top();
+  MtModule* mod_top()    { return _mod_stack.back(); }
   StateMap* state_top()  { return _state_stack.back(); }
 
   void push_state(StateMap* state) {
@@ -68,7 +65,7 @@ class MtTracer {
   MtModLibrary* lib;
 
   std::vector<MtField*>  _component_stack;
-  std::vector<MtMethod*> _method_stack;
+  std::vector<MtModule*> _mod_stack;
   std::vector<StateMap*> _state_stack;
 };
 

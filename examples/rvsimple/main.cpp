@@ -44,11 +44,11 @@ TestResults test_instruction(const char* test_name, const int reps, const int ma
 
   for (int rep = 0; rep < reps; rep++) {
     top.reset = 1;
-    top.tock();
+    top.tock(0);
     total_tocks++;
     top.reset = 0;
     for (elapsed_cycles = 0; elapsed_cycles < max_cycles; elapsed_cycles++) {
-      top.tock();
+      top.tock(0);
       total_tocks++;
       if (top.bus_address == 0xfffffff0 && top.bus_write_enable) {
         test_result = top.bus_write_data;

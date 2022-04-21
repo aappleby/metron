@@ -1,7 +1,7 @@
 #include "MtModule.h"
 
 #include "Log.h"
-#include "MtCursor.h"
+//#include "MtCursor.h"
 #include "MtModLibrary.h"
 #include "MtNode.h"
 #include "MtSourceFile.h"
@@ -21,13 +21,10 @@ extern const TSLanguage *tree_sitter_cpp();
 //------------------------------------------------------------------------------
 
 bool MtField::is_component() const {
-  return (node.source->lib->get_module(type_name()));
+  return (node.source->lib->get_module(_type));
 }
 
 //------------------------------------------------------------------------------
-
-MtModule::MtModule() {
-}
 
 CHECK_RETURN Err MtModule::init(MtSourceFile *_source_file, MnTemplateDecl _node) {
   Err err;
@@ -91,16 +88,17 @@ MtMethod *MtModule::get_method(const std::string &name) {
   return nullptr;
 }
 
-MtField* MtModule::get_enum(const std::string &name) {
-  for (auto n : all_enums) {
-    if (n->name() == name) return n;
+MtField *MtModule::get_field(const std::string &name) {
+  for (auto f : all_fields) {
+    if (f->name() == name) return f;
   }
   return nullptr;
 }
 
-MtField *MtModule::get_field(const std::string &name) {
-  for (auto f : all_fields) {
-    if (f->name() == name) return f;
+#if 0
+MtField* MtModule::get_enum(const std::string &name) {
+  for (auto n : all_enums) {
+    if (n->name() == name) return n;
   }
   return nullptr;
 }
@@ -136,11 +134,12 @@ MtMethod *MtModule::get_output_return(const std::string &name) {
 }
 
 MtField *MtModule::get_component(const std::string &name) {
-  for (auto n : all_components) {
+  for (auto n : components) {
     if (n->name() == name) return n;
   }
   return nullptr;
 }
+#endif
 
 //------------------------------------------------------------------------------
 
@@ -149,12 +148,12 @@ void MtModule::dump_method_list(const std::vector<MtMethod *> &methods) const {
     LOG_INDENT_SCOPE();
     LOG_R("%s(", n->name().c_str());
 
-    if (n->params.size()) {
-      int param_count = int(n->params.size());
+    if (n->param_nodes.size()) {
+      int param_count = int(n->param_nodes.size());
       int param_index = 0;
 
-      for (auto &param : n->params) {
-        LOG_R("%s", param.c_str());
+      for (auto &param : n->param_nodes) {
+        LOG_R("%s", param.text().c_str());
         if (param_index++ != param_count - 1) LOG_R(", ");
       }
     }
@@ -179,7 +178,7 @@ void MtModule::dump_banner() const {
   //----------
 
   LOG_B("Modparams:\n");
-  for (auto param : modparams) LOG_G("  %s\n", param->name().c_str());
+  for (auto param : all_modparams) LOG_G("  %s\n", param->name().c_str());
   
   LOG_B("Localparams:\n");
   for (auto param : localparams) LOG_G("  %s\n", param->name().c_str());
@@ -214,7 +213,7 @@ void MtModule::dump_banner() const {
 
   LOG_B("Output Returns:\n");
   for (auto n : output_returns)
-    LOG_G("  %s:%s\n", n->name().c_str(), n->node.get_field(field_type).text().c_str());
+    LOG_G("  %s:%s\n", n->name().c_str(), n->_node.get_field(field_type).text().c_str());
   
   /*
   LOG_B("Regs:\n");
@@ -223,7 +222,7 @@ void MtModule::dump_banner() const {
   */
   
   LOG_B("Components:\n");
-  for (auto component : all_components) {
+  for (auto component : components) {
     auto component_mod = source_file->lib->get_module(component->type_name());
     LOG_G("  %s:%s\n", component->name().c_str(), component_mod->mod_name.c_str());
   }
@@ -332,7 +331,7 @@ CHECK_RETURN Err MtModule::collect_modparams() {
       auto child = params.named_child(i);
       if (child.sym == sym_parameter_declaration ||
           child.sym == sym_optional_parameter_declaration) {
-        modparams.push_back(MtParam::construct("<template>", child));
+        all_modparams.push_back(MtParam::construct("<template>", child));
       } else {
         err << ERR("Unknown template parameter type %s", child.ts_node_type());
       }
@@ -344,11 +343,11 @@ CHECK_RETURN Err MtModule::collect_modparams() {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtModule::collect_fields_and_components() {
+CHECK_RETURN Err MtModule::collect_fields() {
   Err err;
 
   assert(all_fields.empty());
-  assert(all_components.empty());
+  assert(components.empty());
   assert(localparams.empty());
 
   auto mod_body = mod_class.get_field(field_body).check_null();
@@ -360,19 +359,8 @@ CHECK_RETURN Err MtModule::collect_fields_and_components() {
       in_public = n.child(0).text() == "public";
     }
 
-    if (n.sym != sym_field_declaration) {
-      continue;
-    }
-
-    auto new_field = MtField::construct(this, n, in_public);
-
-    if (n.get_field(field_type).sym == sym_enum_specifier) {
-      all_enums.push_back(new_field);
-    }
-    else if (new_field->is_component()) {
-      all_components.push_back(new_field);
-    }
-    else {
+    if (n.sym == sym_field_declaration) {
+      auto new_field = MtField::construct(this, n, in_public);
       all_fields.push_back(new_field);
     }
   }
@@ -398,48 +386,34 @@ CHECK_RETURN Err MtModule::collect_methods() {
       in_public = n.child(0).text() == "public";
     }
 
-    if (n.sym != sym_function_definition) continue;
+    if (n.sym == sym_function_definition) {
 
-    MtMethod *m = MtMethod::construct(n, this, source_file->lib);
+      auto func_decl = n.get_field(field_declarator);
+      auto func_name = func_decl.get_field(field_declarator).name4();
+      auto func_args = func_decl.get_field(field_parameters);
 
-    // Type can be null for constructor/destructor
-    auto func_type = n.get_field(field_type);  
-    auto func_decl = n.get_field(field_declarator);
-    auto func_name = func_decl.get_field(field_declarator).name4();
+      MtMethod *method = MtMethod::construct(n, this, source_file->lib);
 
-    m->is_public = in_public;
+      method->is_public = in_public;
 
-    auto func_args = func_decl.get_field(field_parameters);
-    for (int i = 0; i < func_args.named_child_count(); i++) {
-      auto param = func_args.named_child(i);
-      assert(param.sym == sym_parameter_declaration);
-      auto param_name = param.get_field(field_declarator).text();
-      m->params.push_back(param_name);
-      m->param_nodes.push_back(param);
-    }
-
-    if (func_type.is_null()) {
-      if (constructor) {
-        err << ERR("Found duplicate constructor\n");
+      for (int i = 0; i < func_args.named_child_count(); i++) {
+        auto param = func_args.named_child(i);
+        assert(param.sym == sym_parameter_declaration);
+        //auto param_name = param.get_field(field_declarator).text();
+        //method->params.push_back(param_name);
+        method->param_nodes.push_back(param);
       }
-      else {
-        constructor = m;
-        if (m->params.size()) {
-          err << ERR("Constructor has params\n");
-        }
-      }
-    }
-    else {
-      m->has_return = func_type.text() != "void";
-    }
 
-    all_methods.push_back(m);
+      all_methods.push_back(method);
+    }
   }
 
   return err;
 }
 
 //------------------------------------------------------------------------------
+
+#if 0
 
 int MtMethod::categorize() {
   int changes = 0;
@@ -452,11 +426,11 @@ int MtMethod::categorize() {
   if (fields_written.empty() && !categorized() && !callers.empty() && !callees.empty()) {
     bool only_called_by_tocks = !callers.empty();
     bool only_calls_ticks_or_funcs = !callees.empty();
-    for (auto ref : callers) {
-      if (!ref.method->in_tock) only_called_by_tocks = false;
+    for (auto caller : callers) {
+      if (!caller->in_tock) only_called_by_tocks = false;
     }
-    for (auto ref : callees) {
-      if (!ref.method->in_tick && !ref.method->is_func) only_calls_ticks_or_funcs = false;
+    for (auto callee : callees) {
+      if (!callee->in_tick && !callee->in_func) only_calls_ticks_or_funcs = false;
     }
     if (only_called_by_tocks && only_calls_ticks_or_funcs && !in_tock) {
       in_tock = true;
@@ -550,6 +524,8 @@ int MtMethod::categorize() {
   return changes;
 }
 
+#endif
+
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtModule::build_call_graph() {
@@ -558,7 +534,7 @@ CHECK_RETURN Err MtModule::build_call_graph() {
   for (auto src_method : all_methods) {
     auto src_mod = this;
 
-    src_method->node.visit_tree([&](MnNode child) {
+    src_method->_node.visit_tree([&](MnNode child) {
       if (child.sym == sym_call_expression) {
 
         auto func = child.get_field(field_function);
@@ -566,8 +542,8 @@ CHECK_RETURN Err MtModule::build_call_graph() {
           auto dst_mod = this;
           auto dst_method = get_method(func.text());
           if (dst_method) {
-            dst_method->callers.push_back({src_mod, src_method});
-            src_method->callees.push_back({dst_mod, dst_method});
+            dst_method->callers.push_back(src_method);
+            src_method->callees.push_back(dst_method);
           }
         }
 
@@ -575,14 +551,14 @@ CHECK_RETURN Err MtModule::build_call_graph() {
           auto component_name = func.get_field(field_argument).text();
           auto component_method_name = func.get_field(field_field).text();
 
-          auto component = get_component(component_name);
+          auto component = get_field(component_name);
           if (component) {
             auto dst_mod = source_file->lib->get_module(component->type_name());
             if (dst_mod) {
               auto dst_method = dst_mod->get_method(component_method_name);
               if (dst_method) {
-                dst_method->callers.push_back({src_mod, src_method});
-                src_method->callees.push_back({dst_mod, dst_method});
+                dst_method->callers.push_back(src_method);
+                src_method->callees.push_back(dst_method);
               }
             }
           }
@@ -635,10 +611,10 @@ CHECK_RETURN Err MtModule::trace() {
 
     MtTracer tracer(source_file->lib);
     tracer._component_stack.push_back(nullptr);
-    tracer._method_stack.push_back(m);
+    tracer._mod_stack.push_back(this);
     tracer.push_state(&mod_state);
 
-    err << tracer.trace_dispatch(m->node);
+    err << tracer.trace_dispatch(m->_node);
   }
 
   if (err.has_err()) {
@@ -669,7 +645,7 @@ CHECK_RETURN Err MtModule::trace() {
 
     MtModule* mod_cursor = this;
     for (int i = 0; i < split.size(); i++) {
-      auto component = mod_cursor->get_component(split[i]);
+      auto component = mod_cursor->get_field(split[i]);
       mod_cursor = mod_cursor->source_file->lib->get_module(component->type_name());
     }
 
@@ -688,6 +664,7 @@ CHECK_RETURN Err MtModule::trace() {
 CHECK_RETURN Err MtModule::sort_fields() {
   Err err;
 
+#if 0
   LOG_G("Categorizing %s\n", name().c_str());
 
   for (auto f : all_fields) {
@@ -735,10 +712,11 @@ CHECK_RETURN Err MtModule::sort_fields() {
       input_arguments.push_back(new_input);
     }
 
-    if (m->is_tock && m->has_return) {
+    if (m->is_tock && m->has_return()) {
       output_returns.push_back(m);
     }
   }
+#endif
 
   return err;
 }

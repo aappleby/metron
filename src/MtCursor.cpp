@@ -547,7 +547,7 @@ CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
 
     // Local call to private tock() - bind output if needed.
     auto method = current_mod->get_method(func_name);
-    if (method->has_return) {
+    if (method->has_return()) {
       err << emit_replacement(n, "%s", func_name.c_str());
     }
     else {
@@ -871,7 +871,7 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
 
     }
 
-    if (current_method->has_return) {
+    if (current_method->has_return()) {
       auto return_type = n.get_field(field_type);
 
       MtCursor subcursor(lib, current_source, current_mod, str_out);
@@ -918,7 +918,7 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
     err << emit_dispatch(func_decl);
     err << prune_trailing_ws();
     err << emit_print(";");
-  } else if (current_method->is_func) {
+  } else if (current_method->in_func) {
     err << emit_print("function ");
     err << emit_dispatch(return_type);
     err << emit_ws();
@@ -939,7 +939,7 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
     err << emit_print("begin /*%s*/", current_method->name().c_str());
   else if (current_method->is_task)
     err << emit_print("");
-  else if (current_method->is_func) {
+  else if (current_method->in_func) {
     err << emit_print("");
   } else
     debugbreak();
@@ -1028,7 +1028,7 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
   else if (current_method->is_task) {
     err << emit_print("endtask");
   }
-  else if (current_method->is_func) {
+  else if (current_method->in_func) {
     err << emit_print("endfunction");
   } else
     debugbreak();
@@ -1189,7 +1189,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_component(MnFieldDecl n) {
 CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl component_decl) {
   Err err;
 
-  if (current_mod->all_components.empty()) {
+  if (current_mod->components.empty()) {
     return err;
   }
 
@@ -1304,8 +1304,8 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl component_decl) {
   }
 
   for (auto m : component_mod->output_returns) {
-    auto getter_type = m->node.get_field(field_type);
-    auto getter_decl = m->node.get_field(field_declarator);
+    auto getter_type = m->_node.get_field(field_type);
+    auto getter_decl = m->_node.get_field(field_declarator);
     auto getter_name = getter_decl.get_field(field_declarator);
 
     MtCursor sub_cursor(lib, component_mod->source_file, component_mod, str_out);
@@ -1808,8 +1808,8 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
 
       MtCursor sub_cursor = *this;
 
-      auto getter_type = m->node.get_field(field_type);
-      auto getter_decl = m->node.get_field(field_declarator);
+      auto getter_type = m->_node.get_field(field_type);
+      auto getter_decl = m->_node.get_field(field_declarator);
       auto getter_name = getter_decl.get_field(field_declarator);
 
       sub_cursor.cursor = getter_type.start();

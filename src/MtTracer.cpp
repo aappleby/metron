@@ -5,8 +5,6 @@
 #include "MtModule.h"
 #include "metron_tools.h"
 
-MtModule* MtTracer::mod_top() { return _method_stack.back()->mod; }
-
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n, bool is_write) {
@@ -14,23 +12,19 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n, bool is_write) {
 
   switch (n.sym) {
 
-    case sym_field_expression: {
-      auto node_arg   = n.get_field(field_argument);
-
-      if (mod_top()->get_component(node_arg.text())) {
-        err << trace(n.text(), is_write);
-      }
-      else if (mod_top()->get_field(node_arg.text())) {
-        err << trace(n.text(), is_write);
-      }
-      break;
-    }
-
     case sym_identifier:
       if (mod_top()->get_field(n.text())) {
         err << trace(n.text(), is_write);
       }
       break;
+
+    case sym_field_expression: {
+      auto node_arg = n.get_field(field_argument);
+      if (mod_top()->get_field(node_arg.text())) {
+        err << trace(n.text(), is_write);
+      }
+      break;
+    }
 
     case sym_subscript_expression:
       err << trace_dispatch(n.get_field(field_argument), is_write);
@@ -71,7 +65,6 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n, bool is_write) {
 
 //------------------------------------------------------------------------------
 
-
 CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
   Err err;
 
@@ -87,27 +80,23 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
     auto node_arg   = node_func.get_field(field_argument);
     auto node_field = node_func.get_field(field_field);
 
-    auto component = mod_top()->get_component(node_arg.text());
+    auto component = mod_top()->get_field(node_arg.text());
     auto dst_module = lib->get_module(component->type_name());
     auto dst_method = dst_module->get_method(node_field.text());
 
     _component_stack.push_back(component);
-    _method_stack.push_back(dst_method);
-    err << trace_dispatch(dst_method->node);
-    _method_stack.pop_back();
+    _mod_stack.push_back(dst_module);
+    err << trace_dispatch(dst_method->_node);
+    _mod_stack.pop_back();
     _component_stack.pop_back();
   }
 
   //----------
 
   else if (node_func.sym == sym_identifier) {
-
     auto dst_method = mod_top()->get_method(node_func.text());
-
     if (dst_method) {
-      _method_stack.push_back(dst_method);
-      err << trace_dispatch(dst_method->node);
-      _method_stack.pop_back();
+      err << trace_dispatch(dst_method->_node);
     }
   }
   
@@ -128,7 +117,7 @@ CHECK_RETURN Err MtTracer::trace_call(MnNode n) {
   //----------
 
   else {
-    err << ERR("MtModule::build_call_tree - don't know what to do with %s\n", n.ts_node_type());
+    err << ERR("MtModule::build_call_tree - don't know what to do with %s\n", node_func.ts_node_type());
   }
 
   return err;
@@ -292,6 +281,5 @@ CHECK_RETURN Err MtTracer::merge_branch(StateMap & ma, StateMap & mb, StateMap &
 
   return err;
 }
-
 
 //------------------------------------------------------------------------------

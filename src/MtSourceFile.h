@@ -15,7 +15,7 @@ typedef std::vector<uint8_t> blob;
 //------------------------------------------------------------------------------
 
 struct MtSourceFile {
-  MtSourceFile();
+  MtSourceFile(MtModLibrary* lib) : lib(lib) {}
   CHECK_RETURN Err init(const std::string& _filename, const std::string& _full_path, const std::string& _src_blob);
   ~MtSourceFile();
 

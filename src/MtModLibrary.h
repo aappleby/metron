@@ -18,9 +18,9 @@ struct MtModLibrary {
   void add_search_path(const std::string& path);
   void add_source(MtSourceFile* source_file);
   
-  CHECK_RETURN Err load_source(const char* name, MtSourceFile*& out_source);
+  CHECK_RETURN Err load_source(const char* name, MtSourceFile*& out_source, bool verbose);
   CHECK_RETURN Err load_blob(const std::string& filename, const std::string& full_path,
-                 const std::string& src_blob, bool use_utf8_bom = false);
+                 const std::string& src_blob, bool use_utf8_bom, bool verbose);
 
   CHECK_RETURN Err process_sources();
 

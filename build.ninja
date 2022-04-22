@@ -71,10 +71,6 @@ build obj/submodules/tree-sitter-cpp/src/scanner.o: compile_c $
 ################################################################################
 # Create static library bin/libmetron.a
 
-build obj/src/MtChecker.o: compile_cpp src/MtChecker.cpp
-  includes = -I. -Isubmodules/tree-sitter/lib/include
-build obj/src/MtCursor.o: compile_cpp src/MtCursor.cpp
-  includes = -I. -Isubmodules/tree-sitter/lib/include
 build obj/src/MtModLibrary.o: compile_cpp src/MtModLibrary.cpp
   includes = -I. -Isubmodules/tree-sitter/lib/include
 build obj/src/MtModule.o: compile_cpp src/MtModule.cpp
@@ -89,10 +85,9 @@ build obj/src/Platform.o: compile_cpp src/Platform.cpp
   includes = -I. -Isubmodules/tree-sitter/lib/include
 build bin/libmetron.a: static_lib obj/submodules/tree-sitter/lib/src/lib.o $
     obj/submodules/tree-sitter-cpp/src/parser.o $
-    obj/submodules/tree-sitter-cpp/src/scanner.o obj/src/MtChecker.o $
-    obj/src/MtCursor.o obj/src/MtModLibrary.o obj/src/MtModule.o $
-    obj/src/MtNode.o obj/src/MtSourceFile.o obj/src/MtTracer.o $
-    obj/src/Platform.o
+    obj/submodules/tree-sitter-cpp/src/scanner.o obj/src/MtModLibrary.o $
+    obj/src/MtModule.o obj/src/MtNode.o obj/src/MtSourceFile.o $
+    obj/src/MtTracer.o obj/src/Platform.o
   includes = -I. -Isubmodules/tree-sitter/lib/include
 
 

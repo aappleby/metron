@@ -13,6 +13,11 @@ struct MtModule;
 struct MtSourceFile;
 struct MtMethod;
 
+struct SourceRange {
+  const char* start;
+  const char* end;
+};
+
 //------------------------------------------------------------------------------
 
 struct MnNode {
@@ -21,6 +26,7 @@ struct MnNode {
 
   //----------
 
+  SourceRange get_source() const;
   void dump_source_lines() const;
   void dump_tree(int index = 0, int depth = 0, int maxdepth = 255) const;
   

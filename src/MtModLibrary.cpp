@@ -3,15 +3,15 @@
 #include <sys/stat.h>
 
 #include "Log.h"
-#include "metron_tools.h"
 #include "MtModule.h"
 #include "MtSourceFile.h"
+#include "metron_tools.h"
 
 #pragma warning(disable : 4996)
 
 //------------------------------------------------------------------------------
 
-MtModule* MtModLibrary::get_module(const std::string& name) {
+MtModule *MtModLibrary::get_module(const std::string &name) {
   assert(sources_loaded);
   for (auto mod : modules) {
     if (mod->mod_name == name) return mod;
@@ -19,7 +19,7 @@ MtModule* MtModLibrary::get_module(const std::string& name) {
   return nullptr;
 }
 
-MtSourceFile* MtModLibrary::get_source(const std::string& name) {
+MtSourceFile *MtModLibrary::get_source(const std::string &name) {
   for (auto s : source_files) {
     if (s->filename == name) return s;
   }
@@ -37,14 +37,14 @@ void MtModLibrary::teardown() {
 
 //------------------------------------------------------------------------------
 
-void MtModLibrary::add_search_path(const std::string& path) {
+void MtModLibrary::add_search_path(const std::string &path) {
   assert(!sources_loaded);
   search_paths.push_back(path);
 }
 
 //------------------------------------------------------------------------------
 
-void MtModLibrary::add_source(MtSourceFile* source_file) {
+void MtModLibrary::add_source(MtSourceFile *source_file) {
   assert(!sources_loaded);
   source_file->lib = this;
   source_files.push_back(source_file);
@@ -52,7 +52,9 @@ void MtModLibrary::add_source(MtSourceFile* source_file) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtModLibrary::load_source(const char* filename, MtSourceFile*& out_source, bool verbose) {
+CHECK_RETURN Err MtModLibrary::load_source(const char *filename,
+                                           MtSourceFile *&out_source,
+                                           bool verbose) {
   Err err;
 
   if (get_source(filename)) {
@@ -61,7 +63,7 @@ CHECK_RETURN Err MtModLibrary::load_source(const char* filename, MtSourceFile*& 
 
   assert(!sources_loaded);
   bool found = false;
-  for (auto& path : search_paths) {
+  for (auto &path : search_paths) {
     auto full_path = path.size() ? path + "/" + filename : filename;
     struct stat s;
     auto stat_result = stat(full_path.c_str(), &s);
@@ -74,7 +76,7 @@ CHECK_RETURN Err MtModLibrary::load_source(const char* filename, MtSourceFile*& 
       src_blob.resize(s.st_size);
 
       auto f = fopen(full_path.c_str(), "rb");
-      fread(src_blob.data(), 1, src_blob.size(), f);
+      fread((void *)src_blob.data(), 1, src_blob.size(), f);
       fclose(f);
 
       bool use_utf8_bom = false;
@@ -97,7 +99,10 @@ CHECK_RETURN Err MtModLibrary::load_source(const char* filename, MtSourceFile*& 
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtModLibrary::load_blob(const std::string& filename, const std::string& full_path, const std::string& src_blob, bool use_utf8_bom, bool verbose) {
+CHECK_RETURN Err MtModLibrary::load_blob(const std::string &filename,
+                                         const std::string &full_path,
+                                         const std::string &src_blob,
+                                         bool use_utf8_bom, bool verbose) {
   Err err;
 
   assert(!sources_loaded);
@@ -119,11 +124,11 @@ CHECK_RETURN Err MtModLibrary::load_blob(const std::string& filename, const std:
     includes.push_back(filename);
   });
 
-  for (const auto& file : includes) {
+  for (const auto &file : includes) {
     if (file == "metron_tools.h") continue;
 
     if (!get_source(file)) {
-      MtSourceFile* source = nullptr;
+      MtSourceFile *source = nullptr;
       err << load_source(file.c_str(), source, verbose);
     }
 
@@ -148,8 +153,7 @@ CHECK_RETURN Err MtModLibrary::propagate(propagate_visitor v) {
         changes += v(m);
       }
     }
-  } while(changes);
-
+  } while (changes);
 
   return err;
 }
@@ -163,7 +167,7 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
   assert(!sources_processed);
 
   sources_loaded = true;
-  
+
   for (auto s : source_files) {
     for (auto m : s->modules) {
       modules.push_back(m);
@@ -200,22 +204,40 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
   //----------------------------------------
   // Trace top modules
 
-  //TinyLog::get().unmute();
+  // TinyLog::get().unmute();
 
+  MtModule *top = nullptr;
   for (auto m : modules) {
     if (m->parents.empty()) {
-      err << m->trace();
-      LOG_Y("Trace:\n");
-      for (const auto& pair : m->mod_state) {
-        if (pair.second == FIELD_INVALID) {
-          LOG_R("%s = %s\n", pair.first.c_str(), to_string(pair.second));
-        }
-        else {
-          LOG("%s = %s\n", pair.first.c_str(), to_string(pair.second));
-        }
-      }
+      top = m;
+      break;
     }
   }
+
+  err << top->trace();
+  LOG_Y("Trace:\n");
+  for (const auto &pair : top->mod_state) {
+    if (pair.second == FIELD_INVALID) {
+      LOG_R("%s = %s\n", pair.first.c_str(), to_string(pair.second));
+    } else {
+      LOG("%s = %s\n", pair.first.c_str(), to_string(pair.second));
+    }
+  }
+
+  //----------------------------------------
+  // Build instance tree
+
+  MtInstance *top_inst = new MtInstance();
+  top_inst->parent = nullptr;
+  top_inst->name = "<top>";
+  top_inst->field = nullptr;
+  top_inst->mod = top;
+
+  for (auto f : top->all_fields) {
+    top_inst->children.push_back(f->instantiate(top_inst));
+  }
+
+  top_inst->dump();
 
 #if 0
   //----------------------------------------
@@ -576,24 +598,24 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
 void MtModLibrary::dump_call_graph() {
   LOG_G("Call graph:\n");
 
-  std::function<void(MtModule*, MtMethod*)> dump_call_tree = [&](MtModule* mod, MtMethod* method) {
-    uint32_t color = 0x808080;
+  std::function<void(MtModule *, MtMethod *)> dump_call_tree =
+      [&](MtModule *mod, MtMethod *method) {
+        uint32_t color = 0x808080;
 
-    if (method->in_init) color = 0x8080FF;
-    if (method->in_tick) color = 0x80FF80;
-    if (method->in_tock) color = 0xFF8080;
-    if (method->in_func) color = 0xFFFFFF;
+        if (method->in_init) color = 0x8080FF;
+        if (method->in_tick) color = 0x80FF80;
+        if (method->in_tock) color = 0xFF8080;
+        if (method->in_func) color = 0xFFFFFF;
 
-    if (!method->is_valid()) color = 0x808080;
+        if (!method->is_valid()) color = 0x808080;
 
-    LOG_C(color, " %s.%s()\n", mod->cname(), method->cname());
+        LOG_C(color, " %s.%s()\n", mod->cname(), method->cname());
 
-
-    LOG_INDENT_SCOPE();
-    for (auto callee : method->callees) {
-      dump_call_tree(callee->_mod, callee);
-    }
-  };
+        LOG_INDENT_SCOPE();
+        for (auto callee : method->callees) {
+          dump_call_tree(callee->_mod, callee);
+        }
+      };
 
   for (auto mod : modules) {
     if (mod->parents.size()) continue;
@@ -607,9 +629,6 @@ void MtModLibrary::dump_call_graph() {
 }
 
 //------------------------------------------------------------------------------
-
-
-
 
 #if 0
 //----------------------------------------
@@ -663,4 +682,3 @@ for (auto method : all_methods) {
 }
 
 #endif
-

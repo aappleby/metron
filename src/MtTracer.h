@@ -37,6 +37,14 @@ typedef std::map<std::string, FieldState> StateMap;
 
 //------------------------------------------------------------------------------
 
+struct TraceLog {
+  std::string field_name;
+  bool is_write;
+  SourceRange source;
+};
+
+//------------------------------------------------------------------------------
+
 class MtTracer {
  public:
 
@@ -46,7 +54,7 @@ class MtTracer {
   CHECK_RETURN Err trace_call(MnNode n);
   CHECK_RETURN Err trace_branch(MnNode n);
   CHECK_RETURN Err trace_switch(MnNode n);
-  CHECK_RETURN Err trace(const std::string& field_name, bool is_write);
+  CHECK_RETURN Err trace(const std::string& field_name, bool is_write, SourceRange source);
   CHECK_RETURN Err merge_branch(StateMap & ma, StateMap & mb, StateMap & out);
 
   MtModule* mod_top()    { return _mod_stack.back(); }
@@ -67,6 +75,7 @@ class MtTracer {
   std::vector<MtField*>  _component_stack;
   std::vector<MtModule*> _mod_stack;
   std::vector<StateMap*> _state_stack;
+  std::vector<TraceLog>  _trace_log;
 };
 
 //------------------------------------------------------------------------------

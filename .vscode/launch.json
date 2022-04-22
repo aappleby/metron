@@ -1,0 +1,20 @@
+{
+  "configurations": [
+    {
+      "name": "Metron",
+      /*
+      "preLaunchTask": {
+        "task": "build_metron",
+      },
+      */
+      "type": "lldb",
+      "request": "launch",
+      "program": "bin/metron",
+      "cwd": "${workspaceFolder}",
+      "args": [
+        "-e",
+        "scratch.h"
+      ],
+    }
+  ]
+}

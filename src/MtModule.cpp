@@ -2,6 +2,8 @@
 
 #include "Log.h"
 //#include "MtCursor.h"
+#include <deque>
+
 #include "MtModLibrary.h"
 #include "MtNode.h"
 #include "MtSourceFile.h"
@@ -10,12 +12,60 @@
 #include "metron_tools.h"
 #include "submodules/tree-sitter/lib/include/tree_sitter/api.h"
 
-#include <deque>
-
 #pragma warning(disable : 4996)  // unsafe fopen()
 
 extern "C" {
 extern const TSLanguage *tree_sitter_cpp();
+}
+
+MtField::MtField(MtModule *_parent_mod, const MnNode &n, bool is_public)
+    : _parent_mod(_parent_mod), _public(is_public), node(n) {
+  assert(node.sym == sym_field_declaration);
+  _name = node.name4();
+  _type = node.type5();
+  _type_mod = _parent_mod->lib->get_module(_type);
+}
+
+//------------------------------------------------------------------------------
+
+void MtInstance::dump() const {
+  LOG_G("%s", get_path().c_str());
+
+  if (field) {
+    if (field->_type_mod) {
+      LOG_G(" : %s", field->_type_mod->cname());
+    } else {
+      LOG_G(" : %s", field->_type.c_str());
+    }
+  }
+
+  LOG_G("\n");
+
+  // LOG_INDENT_SCOPE();
+  for (auto inst : children) {
+    inst->dump();
+  }
+}
+
+//------------------------------------------------------------------------------
+
+MtInstance *MtField::instantiate(MtInstance *parent) {
+  MtInstance *result = new MtInstance();
+  result->parent = parent;
+  result->name = _name;
+  result->field = this;
+  result->mod = _parent_mod->lib->get_module(_type);
+
+  if (result->mod) {
+    for (auto f : result->mod->all_fields) {
+      result->children.push_back(f->instantiate(result));
+    }
+  }
+  return result;
+}
+
+static MtField *construct(MtModule *mod, const MnNode &n, bool is_public) {
+  return new MtField(mod, n, is_public);
 }
 
 //------------------------------------------------------------------------------
@@ -26,7 +76,8 @@ bool MtField::is_component() const {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtModule::init(MtSourceFile *_source_file, MnTemplateDecl _node) {
+CHECK_RETURN Err MtModule::init(MtSourceFile *_source_file,
+                                MnTemplateDecl _node) {
   Err err;
 
   source_file = _source_file;
@@ -51,18 +102,17 @@ CHECK_RETURN Err MtModule::init(MtSourceFile *_source_file, MnTemplateDecl _node
 
   if (mod_class) {
     mod_name = mod_class.get_field(field_name).text();
-  }
-  else {
+  } else {
     err << ERR("No class node found under template");
   }
-
 
   return err;
 }
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtModule::init(MtSourceFile *_source_file, MnClassSpecifier _node) {
+CHECK_RETURN Err MtModule::init(MtSourceFile *_source_file,
+                                MnClassSpecifier _node) {
   Err err;
 
   source_file = _source_file;
@@ -72,8 +122,7 @@ CHECK_RETURN Err MtModule::init(MtSourceFile *_source_file, MnClassSpecifier _no
 
   if (mod_class) {
     mod_name = mod_class.get_field(field_name).text();
-  }
-  else {
+  } else {
     err << ERR("mod_class is null");
   }
 
@@ -179,68 +228,67 @@ void MtModule::dump_banner() const {
 
   LOG_B("Modparams:\n");
   for (auto param : all_modparams) LOG_G("  %s\n", param->name().c_str());
-  
+
   LOG_B("Localparams:\n");
   for (auto param : localparams) LOG_G("  %s\n", param->name().c_str());
-  
+
   LOG_B("Enums:\n");
   for (auto n : all_enums) LOG_G("  %s\n", n->name().c_str());
-  
+
   LOG_B("All Fields:\n");
   for (auto n : all_fields) {
-    LOG_G("  %s:%s %s\n",
-      n->name().c_str(),
-      n->type_name().c_str(),
-      to_string(n->state)
-    );
+    LOG_G("  %s:%s %s\n", n->name().c_str(), n->type_name().c_str(),
+          to_string(n->state));
   }
-  
+
   LOG_B("Input Fields:\n");
   for (auto n : input_signals)
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
-  
+
   LOG_B("Input Params:\n");
   for (auto n : input_arguments)
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
-  
+
   LOG_B("Output Signals:\n");
   for (auto n : output_signals)
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
-  
+
   LOG_B("Output Registers:\n");
   for (auto n : public_registers)
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
 
   LOG_B("Output Returns:\n");
   for (auto n : output_returns)
-    LOG_G("  %s:%s\n", n->name().c_str(), n->_node.get_field(field_type).text().c_str());
-  
+    LOG_G("  %s:%s\n", n->name().c_str(),
+          n->_node.get_field(field_type).text().c_str());
+
   /*
   LOG_B("Regs:\n");
   for (auto n : registers)
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
   */
-  
+
   LOG_B("Components:\n");
   for (auto component : components) {
     auto component_mod = source_file->lib->get_module(component->type_name());
-    LOG_G("  %s:%s\n", component->name().c_str(), component_mod->mod_name.c_str());
+    LOG_G("  %s:%s\n", component->name().c_str(),
+          component_mod->mod_name.c_str());
   }
 
   //----------
 
   LOG_B("Init methods:\n");
   dump_method_list(init_methods);
-  
+
   LOG_B("Tick methods:\n");
   dump_method_list(tick_methods);
-  
+
   LOG_B("Tock methods:\n");
   dump_method_list(tock_methods);
-  
+
   LOG_B("Tasks:\n");
   dump_method_list(task_methods);
-  
+
   LOG_B("Functions:\n");
   dump_method_list(func_methods);
 
@@ -353,8 +401,7 @@ CHECK_RETURN Err MtModule::collect_fields() {
   auto mod_body = mod_class.get_field(field_body).check_null();
   bool in_public = false;
 
-
-  for (const auto& n : mod_body) {
+  for (const auto &n : mod_body) {
     if (n.sym == sym_access_specifier) {
       in_public = n.child(0).text() == "public";
     }
@@ -381,13 +428,12 @@ CHECK_RETURN Err MtModule::collect_methods() {
   //----------
   // Create method objects for all function defition nodes
 
-  for (const auto& n : mod_body) {
+  for (const auto &n : mod_body) {
     if (n.sym == sym_access_specifier) {
       in_public = n.child(0).text() == "public";
     }
 
     if (n.sym == sym_function_definition) {
-
       auto func_decl = n.get_field(field_declarator);
       auto func_name = func_decl.get_field(field_declarator).name4();
       auto func_args = func_decl.get_field(field_parameters);
@@ -399,8 +445,8 @@ CHECK_RETURN Err MtModule::collect_methods() {
       for (int i = 0; i < func_args.named_child_count(); i++) {
         auto param = func_args.named_child(i);
         assert(param.sym == sym_parameter_declaration);
-        //auto param_name = param.get_field(field_declarator).text();
-        //method->params.push_back(param_name);
+        // auto param_name = param.get_field(field_declarator).text();
+        // method->params.push_back(param_name);
         method->param_nodes.push_back(param);
       }
 
@@ -536,7 +582,6 @@ CHECK_RETURN Err MtModule::build_call_graph() {
 
     src_method->_node.visit_tree([&](MnNode child) {
       if (child.sym == sym_call_expression) {
-
         auto func = child.get_field(field_function);
         if (func.sym == sym_identifier) {
           auto dst_mod = this;
@@ -574,15 +619,14 @@ CHECK_RETURN Err MtModule::build_call_graph() {
 
 //------------------------------------------------------------------------------
 
-std::vector<std::string> split_field_path(const std::string& path) {
+std::vector<std::string> split_field_path(const std::string &path) {
   std::vector<std::string> result;
   std::string temp = "";
   for (auto i = 0; i < path.size(); i++) {
     if (path[i] == '.') {
       result.push_back(temp);
       temp.clear();
-    }
-    else {
+    } else {
       temp.push_back(path[i]);
     }
   }
@@ -624,16 +668,16 @@ CHECK_RETURN Err MtModule::trace() {
 
   // Check that all entries in the state map ended up in a valid state.
 
-  for (auto& pair : mod_state) {
+  for (auto &pair : mod_state) {
     if (pair.second == FIELD_INVALID) {
-      err << ERR("Field %s has invalid state\n", pair.first.c_str(), to_string(pair.second));
+      err << ERR("Field %s has invalid state\n", pair.first.c_str(),
+                 to_string(pair.second));
     }
   }
 
-
   // Assign the final merged states back from the map to the fields.
 
-  for (auto& pair : mod_state) {
+  for (auto &pair : mod_state) {
     auto path = pair.first;
     auto split = split_field_path(path);
 
@@ -643,13 +687,14 @@ CHECK_RETURN Err MtModule::trace() {
     auto tail_field = split.back();
     split.pop_back();
 
-    MtModule* mod_cursor = this;
+    MtModule *mod_cursor = this;
     for (int i = 0; i < split.size(); i++) {
       auto component = mod_cursor->get_field(split[i]);
-      mod_cursor = mod_cursor->source_file->lib->get_module(component->type_name());
+      mod_cursor =
+          mod_cursor->source_file->lib->get_module(component->type_name());
     }
 
-    MtField* field = mod_cursor->get_field(tail_field);
+    MtField *field = mod_cursor->get_field(tail_field);
     assert(field);
     field->state = pair.second;
   }

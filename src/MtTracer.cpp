@@ -14,14 +14,15 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MnNode n, bool is_write) {
 
     case sym_identifier:
       if (mod_top()->get_field(n.text())) {
-        err << trace(n.text(), is_write);
+        err << trace(n.text(), is_write, n.get_source());
       }
       break;
 
     case sym_field_expression: {
       auto node_arg = n.get_field(field_argument);
-      if (mod_top()->get_field(node_arg.text())) {
-        err << trace(n.text(), is_write);
+      auto field = mod_top()->get_field(node_arg.text());
+      if (field) {
+        err << trace(n.text(), is_write, n.get_source());
       }
       break;
     }
@@ -195,8 +196,22 @@ CHECK_RETURN Err MtTracer::trace_switch(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer::trace(const std::string& field_name, bool is_write) {
+CHECK_RETURN Err MtTracer::trace(const std::string& field_name, bool is_write, SourceRange source) {
   Err err;
+
+  /*
+  if (is_write) {
+    LOG_Y("WRITE %s \"", field_name.c_str());
+  }
+  else {
+    LOG_Y("READ  %s \"", field_name.c_str());
+  }
+  TinyLog::get().print_buffer(0x00808080, source.start, int(source.end-source.start+1));
+  LOG_Y("\"\n");
+  */
+
+  _trace_log.push_back({field_name, is_write, source});
+
 
   std::string field_path = "";
   for (int i = 0; i < _component_stack.size(); i++) {

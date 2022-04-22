@@ -11,9 +11,9 @@
 #include "MtSourceFile.h"
 #include "Platform.h"
 
-#include "submodules/cli11/include/CLI/App.hpp"
-#include "submodules/cli11/include/CLI/Formatter.hpp"
-#include "submodules/cli11/include/CLI/Config.hpp"
+#include "submodules/CLI11/include/CLI/App.hpp"
+#include "submodules/CLI11/include/CLI/Formatter.hpp"
+#include "submodules/CLI11/include/CLI/Config.hpp"
 
 //#include "../scratch.h"
 

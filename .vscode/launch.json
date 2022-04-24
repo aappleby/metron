@@ -2,19 +2,22 @@
   "configurations": [
     {
       "name": "Metron",
-      /*
-      "preLaunchTask": {
-        "task": "build_metron",
-      },
-      */
-      "type": "lldb",
+      "preLaunchTask": "build_metron",
+      "type": "cppdbg",
       "request": "launch",
-      "program": "bin/metron",
+      "program": "${workspaceFolder}/bin/metron",
       "cwd": "${workspaceFolder}",
       "args": [
         "-e",
         "scratch.h"
       ],
+      "setupCommands": [
+        { // Display content in STL containers pretty
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
     }
   ]
 }

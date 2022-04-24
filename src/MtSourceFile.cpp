@@ -11,9 +11,13 @@ extern const TSLanguage* tree_sitter_cpp();
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtSourceFile::init(const std::string& _filename, const std::string& _full_path, const std::string& _src_blob) {
+CHECK_RETURN Err MtSourceFile::init(MtModLibrary* _lib,
+                                    const std::string& _filename,
+                                    const std::string& _full_path,
+                                    const std::string& _src_blob) {
   Err err;
 
+  lib = _lib;
   filename = _filename;
   full_path = _full_path;
   src_blob = _src_blob;
@@ -94,6 +98,16 @@ MtModule* MtSourceFile::get_module(const std::string& name) {
     if (m->name() == name) return m;
   }
   return nullptr;
+}
+
+//------------------------------------------------------------------------------
+
+void MtSourceFile::dump() {
+  LOG_G("Source file %s @ %s\n", filename.c_str(), full_path.c_str());
+  LOG_INDENT_SCOPE();
+  for (auto m : modules) {
+    m->dump();
+  }
 }
 
 //------------------------------------------------------------------------------

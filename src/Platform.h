@@ -1,5 +1,4 @@
 #pragma once
-#include <time.h>
 #include <stdint.h>
 
 //------------------------------------------------------------------------------
@@ -8,6 +7,8 @@ int plat_mkdir(const char* path, int mode);
 void debugbreak();
 void print_escaped(char s);
 void print_escaped(const char* source, int a, int b);
+uint64_t timestamp();
+void print_stacktrace();
 
 //------------------------------------------------------------------------------
 
@@ -30,14 +31,3 @@ void print_escaped(const char* source, int a, int b);
 #endif
 
 //------------------------------------------------------------------------------
-
-inline uint64_t timestamp() {
-  timespec ts;
-  (void)timespec_get(&ts, TIME_UTC);
-  uint64_t now = ts.tv_sec * 1000000000ull + ts.tv_nsec;
-  return now;
-}
-
-void print_trace();
-
-//-----------------------------------------------------------------------------

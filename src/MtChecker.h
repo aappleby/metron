@@ -1,12 +1,14 @@
 #pragma once
+#include <assert.h>
+
 #include <map>
 #include <string>
-#include <assert.h>
 
 #include "Err.h"
 #include "MtNode.h"
 #include "MtTracer.h"
 
+#if 0
 struct MtModule;
 struct MtMethod;
 struct MtField;
@@ -72,3 +74,4 @@ class MtChecker {
 };
 
 //------------------------------------------------------------------------------
+#endif

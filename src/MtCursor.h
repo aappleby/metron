@@ -6,6 +6,8 @@
 #include "MtNode.h"
 #include "Platform.h"
 
+#if 0
+
 struct MtModule;
 struct MtField;
 struct MtSourceFile;
@@ -145,3 +147,5 @@ struct MtCursor {
 };
 
 //------------------------------------------------------------------------------
+
+#endif

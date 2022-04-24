@@ -14,13 +14,14 @@ ninja = ninja_syntax.Writer(outfile)
 opt_mode = ""
 
 base_includes = [
-   ".",
+    ".",
     "src",
     "tests",
     "/usr/local/share/verilator/include",
 ]
 
 # ------------------------------------------------------------------------------
+
 
 def main():
     global outfile
@@ -35,14 +36,14 @@ def main():
     build_rvsimple()
     build_rvtiny()
     build_rvtiny_sync()
-    #build_ibex()
+    # build_ibex()
     build_pong()
     print("Done!")
     outfile.close()
     outfile = None
 
-    #this hangs...
-    #return os.system("ninja")
+    # this hangs...
+    # return os.system("ninja")
     return 0
 
 # ------------------------------------------------------------------------------
@@ -77,21 +78,31 @@ ninja.build("build.ninja", "autoupdate", "build.py")
 
 divider("Rules")
 
-ninja.rule("compile_cpp",   command="g++ -rdynamic -g ${opt} -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}", deps="gcc", depfile="${out}.d")
-ninja.rule("compile_c",     command="gcc -rdynamic -g ${opt} ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}", deps="gcc", depfile="${out}.d")
+ninja.rule("compile_cpp",
+           command="g++ -rdynamic -g ${opt} -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}", deps="gcc", depfile="${out}.d")
+ninja.rule("compile_c",
+           command="gcc -rdynamic -g ${opt} ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}", deps="gcc", depfile="${out}.d")
 ninja.rule("static_lib",    command="ar rcs ${out} ${in} > /dev/null")
-ninja.rule("link",          command="g++ -rdynamic -g $opt ${in} -Wl,--whole-archive ${local_libs} -Wl,--no-whole-archive ${global_libs} -o ${out}")
+ninja.rule("link",
+           command="g++ -rdynamic -g $opt ${in} -Wl,--whole-archive ${local_libs} -Wl,--no-whole-archive ${global_libs} -o ${out}")
 
 # yes, we run metron with quiet and verbose both on for test coverage
-ninja.rule("metron",        command="bin/metron -q -v -r ${src_dir} -o ${dst_dir} -c ${src_top}")
+ninja.rule("metron",
+           command="bin/metron -q -v -r ${src_dir} -o ${dst_dir} -c ${src_top}")
 
-ninja.rule("verilator",     command="verilator ${includes} --cc ${src_top} -Mdir ${dst_dir}")
-ninja.rule("make",          command="make --quiet -C ${dst_dir} -f ${makefile} > /dev/null")
-ninja.rule("run_test",      command="${in} | grep \"All tests pass.\" && touch ${out}")
+ninja.rule("verilator",
+           command="verilator ${includes} --cc ${src_top} -Mdir ${dst_dir}")
+ninja.rule("make",
+           command="make --quiet -C ${dst_dir} -f ${makefile} > /dev/null")
+ninja.rule("run_test",
+           command="${in} | grep \"All tests pass.\" && touch ${out}")
 ninja.rule("console",       command="${in}", pool="console")
-ninja.rule("iverilog",      command="iverilog -g2012 ${defines} ${includes} ${in} -o ${out}")
-ninja.rule("yosys",         command="yosys -q -p 'read_verilog ${includes} -sv ${in}; dump; synth_ice40 -json ${out};'")
-ninja.rule("nextpnr-ice40", command="nextpnr-ice40 -q --${chip} --package ${package} --json ${in} --asc ${out} --pcf ${pcf}")
+ninja.rule("iverilog",
+           command="iverilog -g2012 ${defines} ${includes} ${in} -o ${out}")
+ninja.rule("yosys",
+           command="yosys -q -p 'read_verilog ${includes} -sv ${in}; dump; synth_ice40 -json ${out};'")
+ninja.rule("nextpnr-ice40",
+           command="nextpnr-ice40 -q --${chip} --package ${package} --json ${in} --asc ${out} --pcf ${pcf}")
 ninja.rule("icepack",       command="icepack ${in} ${out}")
 
 
@@ -249,13 +260,20 @@ def build_treesitter():
 # ------------------------------------------------------------------------------
 # Build Metron itself
 
+
 def build_metron_lib():
-  cpp_library(
+    cpp_library(
         lib_name="bin/libmetron.a",
         src_files=[
-            #"src/MtChecker.cpp",
-            #"src/MtCursor.cpp",
+            # "src/MtChecker.cpp",
+            # "src/MtCursor.cpp",
+
+            "src/Err.cpp",
+            "src/MtContext.cpp",
+            "src/MtField.cpp",
+            "src/MtMethod.cpp",
             "src/MtModLibrary.cpp",
+            "src/MtModParam.cpp",
             "src/MtModule.cpp",
             "src/MtNode.cpp",
             "src/MtSourceFile.cpp",
@@ -267,9 +285,10 @@ def build_metron_lib():
             "submodules/tree-sitter/lib/include"
         ],
         src_objs=treesitter_objs,
-  )
+    )
 
 # ------------------------------------------------------------------------------
+
 
 def build_metron_app():
     cpp_binary(
@@ -289,21 +308,23 @@ def build_metron_app():
 # ------------------------------------------------------------------------------
 # Low-level tests
 
+
 def build_metron_test():
-  cpp_binary(
-    bin_name = "bin/metron_test",
-    src_files = [
-      "tests/test_main.cpp",
-      "tests/test_logic.cpp",
-      "tests/test_utils.cpp",
-    ],
-    includes= base_includes,
-    deps=["bin/libmetron.a"],
-    local_libs="bin/libmetron.a",
-  )
+    cpp_binary(
+        bin_name="bin/metron_test",
+        src_files=[
+            "tests/test_main.cpp",
+            "tests/test_logic.cpp",
+            "tests/test_utils.cpp",
+        ],
+        includes=base_includes,
+        deps=["bin/libmetron.a"],
+        local_libs="bin/libmetron.a",
+    )
 
 # ------------------------------------------------------------------------------
 # Simple Uart testbench
+
 
 def build_uart():
     cpp_binary(
@@ -318,18 +339,18 @@ def build_uart():
                               "examples/uart/metron_sv")
 
     uart_vhdr, uart_vobj = verilate_dir(
-        src_dir   = "examples/uart/metron_sv",
-        src_files = uart_srcs,
-        src_top   = "uart_top",
-        dst_dir   = "gen/examples/uart/metron_vl",
+        src_dir="examples/uart/metron_sv",
+        src_files=uart_srcs,
+        src_top="uart_top",
+        dst_dir="gen/examples/uart/metron_vl",
     )
 
     cpp_binary(
-        bin_name  = "bin/examples/uart_vl",
-        src_files = ["examples/uart/main_vl.cpp"],
-        includes  = base_includes + ["gen/examples/uart"],
-        src_objs  = ["obj/verilated.o", uart_vobj],
-        deps      = [uart_vhdr]
+        bin_name="bin/examples/uart_vl",
+        src_files=["examples/uart/main_vl.cpp"],
+        includes=base_includes + ["gen/examples/uart"],
+        src_objs=["obj/verilated.o", uart_vobj],
+        deps=[uart_vhdr]
     )
 
     divider("Icarus Verilog uart testbench")
@@ -376,12 +397,12 @@ def build_rvtests():
     dst_text = [swap_ext(f, ".text.vh") for f in src_files]
     dst_data = [swap_ext(f, ".data.vh") for f in src_files]
 
-    ninja.build(rule     = "make",
-                inputs   = "tests/rv_tests/makefile",
-                implicit = src_files,
-                outputs  = dst_text + dst_data,
-                dst_dir  = "tests/rv_tests",
-                makefile = "makefile")
+    ninja.build(rule="make",
+                inputs="tests/rv_tests/makefile",
+                implicit=src_files,
+                outputs=dst_text + dst_data,
+                dst_dir="tests/rv_tests",
+                makefile="makefile")
 
 # ------------------------------------------------------------------------------
 # RVSimple
@@ -393,45 +414,45 @@ def build_rvsimple():
     vl_root = "gen/examples/rvsimple/metron_vl"
 
     cpp_binary(
-        bin_name  = "bin/examples/rvsimple",
-        src_files = ["examples/rvsimple/main.cpp"],
-        includes  = base_includes,
-        opt       = opt_mode,
+        bin_name="bin/examples/rvsimple",
+        src_files=["examples/rvsimple/main.cpp"],
+        includes=base_includes,
+        opt=opt_mode,
     )
 
     sv_srcs = metronize_dir(mt_root, "toplevel.h", sv_root)
 
     vl_vhdr, vl_vobj = verilate_dir(
-        src_dir   = sv_root,
-        src_files = sv_srcs,
-        src_top   = "toplevel",
-        dst_dir   = vl_root,
+        src_dir=sv_root,
+        src_files=sv_srcs,
+        src_top="toplevel",
+        dst_dir=vl_root,
     )
 
     cpp_binary(
-        bin_name  = "bin/examples/rvsimple_vl",
-        src_files = ["examples/rvsimple/main_vl.cpp"],
-        includes  =  base_includes + [vl_root],
-        src_objs  = ["obj/verilated.o", vl_vobj],
-        deps      = [vl_vhdr]
+        bin_name="bin/examples/rvsimple_vl",
+        src_files=["examples/rvsimple/main_vl.cpp"],
+        includes=base_includes + [vl_root],
+        src_objs=["obj/verilated.o", vl_vobj],
+        deps=[vl_vhdr]
     )
 
     ref_sv_root = "examples/rvsimple/reference_sv"
     ref_vl_root = "gen/examples/rvsimple/reference_vl"
 
     ref_vhdr, ref_vobj = verilate_dir(
-        src_dir   = ref_sv_root,
-        src_files = glob.glob(f"{ref_sv_root}/*.sv"),
-        src_top   = "toplevel",
-        dst_dir   = ref_vl_root
+        src_dir=ref_sv_root,
+        src_files=glob.glob(f"{ref_sv_root}/*.sv"),
+        src_top="toplevel",
+        dst_dir=ref_vl_root
     )
 
     cpp_binary(
-        bin_name  = "bin/examples/rvsimple_ref",
-        src_files = ["examples/rvsimple/main_ref_vl.cpp"],
-        includes  = base_includes + [ref_vl_root],
-        src_objs  = ["obj/verilated.o", ref_vobj],
-        deps      = [ref_vhdr]
+        bin_name="bin/examples/rvsimple_ref",
+        src_files=["examples/rvsimple/main_ref_vl.cpp"],
+        includes=base_includes + [ref_vl_root],
+        src_objs=["obj/verilated.o", ref_vobj],
+        deps=[ref_vhdr]
     )
 
 
@@ -444,27 +465,27 @@ def build_rvtiny():
     vl_root = "gen/examples/rvtiny/metron_vl"
 
     cpp_binary(
-        bin_name  = "bin/examples/rvtiny",
-        src_files = ["examples/rvtiny/main.cpp"],
-        includes  = base_includes + [mt_root],
-        opt       = opt_mode,
+        bin_name="bin/examples/rvtiny",
+        src_files=["examples/rvtiny/main.cpp"],
+        includes=base_includes + [mt_root],
+        opt=opt_mode,
     )
 
     rvtiny_sv_srcs = metronize_dir(mt_root, "toplevel.h", sv_root)
 
     rvtiny_vl_vhdr, rvtiny_vl_vobj = verilate_dir(
-        src_dir   = sv_root,
-        src_files = rvtiny_sv_srcs,
-        src_top   = "toplevel",
-        dst_dir   = vl_root
+        src_dir=sv_root,
+        src_files=rvtiny_sv_srcs,
+        src_top="toplevel",
+        dst_dir=vl_root
     )
 
     cpp_binary(
-        bin_name  = "bin/examples/rvtiny_vl",
-        src_files = ["examples/rvtiny/main_vl.cpp"],
-        includes  = base_includes + [vl_root],
-        src_objs  = ["obj/verilated.o", rvtiny_vl_vobj],
-        deps      = [rvtiny_vl_vhdr]
+        bin_name="bin/examples/rvtiny_vl",
+        src_files=["examples/rvtiny/main_vl.cpp"],
+        includes=base_includes + [vl_root],
+        src_objs=["obj/verilated.o", rvtiny_vl_vobj],
+        deps=[rvtiny_vl_vhdr]
     )
 
 
@@ -477,31 +498,32 @@ def build_rvtiny_sync():
     vl_root = "gen/examples/rvtiny_sync/metron_vl"
 
     cpp_binary(
-        bin_name  = "bin/examples/rvtiny_sync",
-        src_files = ["examples/rvtiny_sync/main.cpp"],
-        includes  = base_includes,
-        opt       = opt_mode,
+        bin_name="bin/examples/rvtiny_sync",
+        src_files=["examples/rvtiny_sync/main.cpp"],
+        includes=base_includes,
+        opt=opt_mode,
     )
 
     metronized_src = metronize_dir(mt_root, "toplevel.h", sv_root)
 
     verilated_h, verilated_o = verilate_dir(
-        src_dir   = sv_root,
-        src_files = metronized_src,
-        src_top   = "toplevel",
-        dst_dir   = vl_root
+        src_dir=sv_root,
+        src_files=metronized_src,
+        src_top="toplevel",
+        dst_dir=vl_root
     )
 
     cpp_binary(
-        bin_name  = "bin/examples/rvtiny_sync_vl",
-        src_files = ["examples/rvtiny_sync/main_vl.cpp"],
-        includes  = base_includes + [vl_root],
-        src_objs  = ["obj/verilated.o", verilated_o],
-        deps      = [verilated_h]
+        bin_name="bin/examples/rvtiny_sync_vl",
+        src_files=["examples/rvtiny_sync/main_vl.cpp"],
+        includes=base_includes + [vl_root],
+        src_objs=["obj/verilated.o", verilated_o],
+        deps=[verilated_h]
     )
 
 # ------------------------------------------------------------------------------
 # Ibex
+
 
 def build_ibex():
     cpp_binary(
@@ -514,17 +536,18 @@ def build_ibex():
 # ------------------------------------------------------------------------------
 # Pong
 
+
 def build_pong():
     mt_root = "examples/pong/metron"
     sv_root = "examples/pong/metron_sv"
     vl_root = "gen/examples/pong/metron_vl"
 
     cpp_binary(
-        bin_name    = "bin/examples/pong",
-        src_files   = ["examples/pong/main.cpp"],
-        includes    = base_includes,
-        global_libs = "-lSDL2",
-        opt         = opt_mode,
+        bin_name="bin/examples/pong",
+        src_files=["examples/pong/main.cpp"],
+        includes=base_includes,
+        global_libs="-lSDL2",
+        opt=opt_mode,
     )
 
     metronized_src = metronize_dir(mt_root, "pong.h", sv_root)

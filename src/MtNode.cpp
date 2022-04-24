@@ -5,7 +5,6 @@
 #include "MtModule.h"
 #include "MtNode.h"
 #include "MtSourceFile.h"
-//#include "Platform.h"
 #include "metron_tools.h"
 
 const MnNode MnNode::null;
@@ -32,11 +31,17 @@ bool operator==(const TSTreeCursor& a, const TSTreeCursor& b) {
   return true;
 }
 
-//bool MnConstIterator::operator<(const MnConstIterator& b) const { return cursor < b.cursor; }
-bool MnConstIterator::operator!=(const MnConstIterator& b) const { return !(cursor == b.cursor); }
+// bool MnConstIterator::operator<(const MnConstIterator& b) const { return
+// cursor < b.cursor; }
+bool MnConstIterator::operator!=(const MnConstIterator& b) const {
+  return !(cursor == b.cursor);
+}
 
-//bool MnIterator::operator<(const MnIterator& b) const { return cursor < b.cursor; }
-bool MnIterator::operator!=(const MnIterator& b) const { return !(cursor == b.cursor); }
+// bool MnIterator::operator<(const MnIterator& b) const { return cursor <
+// b.cursor; }
+bool MnIterator::operator!=(const MnIterator& b) const {
+  return !(cursor == b.cursor);
+}
 
 //------------------------------------------------------------------------------
 
@@ -64,7 +69,7 @@ SourceRange MnNode::get_source() const {
   auto b = end();
 
   while (a > source_start && *a != '\n' && *a != '\r') a--;
-  while (b < source_end   && *b != '\n' && *b != '\r') b++;
+  while (b < source_end && *b != '\n' && *b != '\r') b++;
   if (*a == '\n' || *a == '\r') a++;
   if (*b == '\n' || *b == '\r') b--;
 
@@ -73,13 +78,12 @@ SourceRange MnNode::get_source() const {
 
 //------------------------------------------------------------------------------
 
-
 void MnNode::dump_source_lines() const {
-
   TSPoint p = ts_node_start_point(node);
 
   LOG_C(0xFFFFFF, "==========\n");
-  LOG_C(0xFFFFFF, "%s(%d,%d):\n", source->full_path.c_str(), p.row + 1, p.column + 1);
+  LOG_C(0xFFFFFF, "%s(%d,%d):\n", source->full_path.c_str(), p.row + 1,
+        p.column + 1);
   auto source_start = source->source;
   auto source_end = source->source_end;
 
@@ -87,11 +91,11 @@ void MnNode::dump_source_lines() const {
   auto b = end();
 
   while (a > source_start && *a != '\n' && *a != '\r') a--;
-  while (b < source_end   && *b != '\n' && *b != '\r') b++;
+  while (b < source_end && *b != '\n' && *b != '\r') b++;
   if (*a == '\n' || *a == '\r') a++;
   if (*b == '\n' || *b == '\r') b--;
 
-  TinyLog::get().print_buffer(0x008080FF, a, int(b-a+1));
+  TinyLog::get().print_buffer(0x008080FF, a, int(b - a + 1));
 
   LOG("\n");
 
@@ -136,7 +140,6 @@ MnNode MnNode::named_child(int index) const {
 //----------
 
 MnNode MnNode::first_named_child() const { return named_child(0); }
-
 
 bool MnNode::is_static() const {
   for (const auto& c : *this) {
@@ -269,8 +272,7 @@ std::string MnNode::type5() const {
       auto name = get_field(field_name);
       if (name) {
         return name.type5();
-      }
-      else {
+      } else {
         return "<anon enum>";
       }
     }
@@ -299,18 +301,28 @@ void MnNode::visit_tree(NodeVisitor cv) {
 //------------------------------------------------------------------------------
 // Node debugging
 
-
 std::string escape(const char* source, int a, int b) {
   std::string result;
   result.push_back('"');
   for (; a < b; a++) {
-    switch(source[a]) {
-    case '\n': result.append("\\n"); break;
-    case '\r': result.append("\\r"); break;
-    case '\t': result.append("\\t"); break;
-    case '"':  result.append("\\\""); break;
-    case '\\': result.append("\\\\"); break;
-    default:   result.push_back(source[a]);
+    switch (source[a]) {
+      case '\n':
+        result.append("\\n");
+        break;
+      case '\r':
+        result.append("\\r");
+        break;
+      case '\t':
+        result.append("\\t");
+        break;
+      case '"':
+        result.append("\\\"");
+        break;
+      case '\\':
+        result.append("\\\\");
+        break;
+      default:
+        result.push_back(source[a]);
     }
   }
   result.push_back('"');
@@ -318,7 +330,6 @@ std::string escape(const char* source, int a, int b) {
 }
 
 struct NodeDumper {
-
   //----------------------------------------
 
   void dump_tree(const MnNode& n, int index, int depth, int maxdepth) {
@@ -329,15 +340,16 @@ struct NodeDumper {
 
   //----------------------------------------
 
-  void dump_tree_recurse(const MnNode& n, int index, int depth, int maxdepth, bool is_last) {
-
+  void dump_tree_recurse(const MnNode& n, int index, int depth, int maxdepth,
+                         bool is_last) {
     dump_node(n, index, depth, is_last);
 
     color_stack.push_back(node_to_color(n));
 
     if (!n.is_null() && depth < maxdepth) {
       for (int i = 0; i < n.child_count(); i++) {
-        dump_tree_recurse(n.child(i), i, depth + 1, maxdepth, i == n.child_count() - 1);
+        dump_tree_recurse(n.child(i), i, depth + 1, maxdepth,
+                          i == n.child_count() - 1);
       }
     }
 
@@ -352,10 +364,14 @@ struct NodeDumper {
       bool stack_top = i == color_stack.size() - 1;
       uint32_t color = color_stack[i];
 
-      if      (color == -1) LOG_C(0x000000, "   ");
-      else if (!stack_top)  LOG_C(color, "\261  ");
-      else if (is_last)     LOG_C(color, "\261\315\315");
-      else                  LOG_C(color, "\261\315\315");
+      if (color == -1)
+        LOG_C(0x000000, "   ");
+      else if (!stack_top)
+        LOG_C(color, "\261  ");
+      else if (is_last)
+        LOG_C(color, "\261\315\315");
+      else
+        LOG_C(color, "\261\315\315");
     }
 
     {
@@ -363,22 +379,23 @@ struct NodeDumper {
 
       if (n.child_count()) {
         LOG_C(color, "\333 ");
-      }
-      else {
+      } else {
         LOG_C(color, "\376 ");
       }
-      
+
       if (n.field) {
-        LOG_C(color, "%s: ", ts_language_field_name_for_id(n.source->lang, n.field));
+        LOG_C(color,
+              "%s: ", ts_language_field_name_for_id(n.source->lang, n.field));
       }
-      
+
       LOG_C(color, "%s = ", n.is_named() ? n.ts_node_type() : "lit");
-      
+
       if (!n.child_count()) {
-        std::string escaped = escape(n.source->source, n.start_byte(), n.end_byte());
+        std::string escaped =
+            escape(n.source->source, n.start_byte(), n.end_byte());
         LOG_C(color, escaped.c_str());
       }
-      
+
       LOG_C(color, "\n");
     }
 
@@ -398,7 +415,7 @@ struct NodeDumper {
 
     // Top-level translation unit = white
     if (n.sym == sym_translation_unit) color = 0xFFFFFF;
-    
+
     // Template decls = yellow
     if (n.sym == sym_template_declaration) color = 0x00FFFF;
     if (n.sym == sym_template_parameter_list) color = 0x00FFFF;
@@ -419,11 +436,11 @@ struct NodeDumper {
 
     // Compound statements = blue
     if (n.sym == sym_compound_statement) color = 0xFF8888;
-    
+
     // Identifiers lighter grey
-    //if (n.sym == alias_sym_type_identifier) color = 0xEEEEEE;
-    //if (n.sym == sym_identifier) color = 0xEEEEEE;
-    //if (n.sym == alias_sym_field_identifier) color = 0xEEEEEE;
+    // if (n.sym == alias_sym_type_identifier) color = 0xEEEEEE;
+    // if (n.sym == sym_identifier) color = 0xEEEEEE;
+    // if (n.sym == alias_sym_field_identifier) color = 0xEEEEEE;
 
     // Calls are transitions between modules, magenta
     if (n.sym == sym_call_expression) color = 0xFF00FF;

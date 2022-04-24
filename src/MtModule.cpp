@@ -1,10 +1,12 @@
 #include "MtModule.h"
 
-#include "Log.h"
-//#include "MtCursor.h"
 #include <deque>
 
+#include "Log.h"
+#include "MtField.h"
+#include "MtMethod.h"
 #include "MtModLibrary.h"
+#include "MtModParam.h"
 #include "MtNode.h"
 #include "MtSourceFile.h"
 #include "MtTracer.h"
@@ -18,60 +20,8 @@ extern "C" {
 extern const TSLanguage *tree_sitter_cpp();
 }
 
-MtField::MtField(MtModule *_parent_mod, const MnNode &n, bool is_public)
-    : _parent_mod(_parent_mod), _public(is_public), node(n) {
-  assert(node.sym == sym_field_declaration);
-  _name = node.name4();
-  _type = node.type5();
-  _type_mod = _parent_mod->lib->get_module(_type);
-}
-
-//------------------------------------------------------------------------------
-
-void MtInstance::dump() const {
-  LOG_G("%s", get_path().c_str());
-
-  if (field) {
-    if (field->_type_mod) {
-      LOG_G(" : %s", field->_type_mod->cname());
-    } else {
-      LOG_G(" : %s", field->_type.c_str());
-    }
-  }
-
-  LOG_G("\n");
-
-  // LOG_INDENT_SCOPE();
-  for (auto inst : children) {
-    inst->dump();
-  }
-}
-
-//------------------------------------------------------------------------------
-
-MtInstance *MtField::instantiate(MtInstance *parent) {
-  MtInstance *result = new MtInstance();
-  result->parent = parent;
-  result->name = _name;
-  result->field = this;
-  result->mod = _parent_mod->lib->get_module(_type);
-
-  if (result->mod) {
-    for (auto f : result->mod->all_fields) {
-      result->children.push_back(f->instantiate(result));
-    }
-  }
-  return result;
-}
-
 static MtField *construct(MtModule *mod, const MnNode &n, bool is_public) {
   return new MtField(mod, n, is_public);
-}
-
-//------------------------------------------------------------------------------
-
-bool MtField::is_component() const {
-  return (node.source->lib->get_module(_type));
 }
 
 //------------------------------------------------------------------------------
@@ -158,7 +108,7 @@ MtField *MtModule::get_input_field(const std::string &name) {
   return nullptr;
 }
 
-MtParam *MtModule::get_input_param(const std::string &name) {
+MtFuncParam *MtModule::get_input_param(const std::string &name) {
   for (auto p : input_arguments)
     if (p->name() == name) return p;
   return nullptr;
@@ -221,11 +171,12 @@ void MtModule::dump_banner() const {
   }
 
   LOG_Y("// Module %s", mod_name.c_str());
-  if (parents.empty()) LOG_Y(" ########## TOP ##########");
+  // if (parents.empty()) LOG_Y(" ########## TOP ##########");
   LOG_Y("\n");
 
   //----------
 
+#if 0
   LOG_B("Modparams:\n");
   for (auto param : all_modparams) LOG_G("  %s\n", param->name().c_str());
 
@@ -305,7 +256,7 @@ void MtModule::dump_banner() const {
   for (auto &kv : mod_states.get_map())
     LOG_G("  %s = %s\n", kv.first.c_str(), to_string(kv.second));
   */
-
+#endif
   LOG_B("\n");
 }
 
@@ -369,34 +320,22 @@ void MtModule::dump_deltas() const {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtModule::collect_modparams() {
-  Err err;
-
-  if (mod_template) {
-    auto params = mod_template.get_field(field_parameters);
-
-    for (int i = 0; i < params.named_child_count(); i++) {
-      auto child = params.named_child(i);
-      if (child.sym == sym_parameter_declaration ||
-          child.sym == sym_optional_parameter_declaration) {
-        all_modparams.push_back(MtParam::construct("<template>", child));
-      } else {
-        err << ERR("Unknown template parameter type %s", child.ts_node_type());
-      }
-    }
-  }
-
-  return err;
-}
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtModule::collect_fields() {
+CHECK_RETURN Err MtModule::collect_parts() {
   Err err;
 
   assert(all_fields.empty());
-  assert(components.empty());
-  assert(localparams.empty());
+  assert(all_methods.empty());
+
+  if (mod_template) {
+    auto mod_params = mod_template.get_field(field_parameters);
+
+    for (auto child : mod_params) {
+      if (child.sym == sym_parameter_declaration ||
+          child.sym == sym_optional_parameter_declaration) {
+        all_modparams.push_back(new MtModParam(this, child));
+      }
+    }
+  }
 
   auto mod_body = mod_class.get_field(field_body).check_null();
   bool in_public = false;
@@ -407,50 +346,11 @@ CHECK_RETURN Err MtModule::collect_fields() {
     }
 
     if (n.sym == sym_field_declaration) {
-      auto new_field = MtField::construct(this, n, in_public);
-      all_fields.push_back(new_field);
-    }
-  }
-
-  return err;
-}
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtModule::collect_methods() {
-  Err err;
-
-  assert(all_methods.empty());
-
-  bool in_public = false;
-  auto mod_body = mod_class.get_field(field_body).check_null();
-
-  //----------
-  // Create method objects for all function defition nodes
-
-  for (const auto &n : mod_body) {
-    if (n.sym == sym_access_specifier) {
-      in_public = n.child(0).text() == "public";
+      all_fields.push_back(new MtField(this, n, in_public));
     }
 
     if (n.sym == sym_function_definition) {
-      auto func_decl = n.get_field(field_declarator);
-      auto func_name = func_decl.get_field(field_declarator).name4();
-      auto func_args = func_decl.get_field(field_parameters);
-
-      MtMethod *method = MtMethod::construct(n, this, source_file->lib);
-
-      method->is_public = in_public;
-
-      for (int i = 0; i < func_args.named_child_count(); i++) {
-        auto param = func_args.named_child(i);
-        assert(param.sym == sym_parameter_declaration);
-        // auto param_name = param.get_field(field_declarator).text();
-        // method->params.push_back(param_name);
-        method->param_nodes.push_back(param);
-      }
-
-      all_methods.push_back(method);
+      all_methods.push_back(new MtMethod(this, n, in_public));
     }
   }
 
@@ -574,6 +474,7 @@ int MtMethod::categorize() {
 
 //------------------------------------------------------------------------------
 
+/*
 CHECK_RETURN Err MtModule::build_call_graph() {
   Err err;
 
@@ -616,9 +517,11 @@ CHECK_RETURN Err MtModule::build_call_graph() {
 
   return err;
 }
+*/
 
 //------------------------------------------------------------------------------
 
+#if 0
 std::vector<std::string> split_field_path(const std::string &path) {
   std::vector<std::string> result;
   std::string temp = "";
@@ -635,69 +538,12 @@ std::vector<std::string> split_field_path(const std::string &path) {
 
   return result;
 }
+#endif
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtModule::trace() {
   Err err;
-  LOG_G("Tracing all public tocks in %s\n", cname());
-
-  mod_state.clear();
-
-  for (auto m : all_methods) {
-    LOG_INDENT_SCOPE();
-
-    if (m == constructor) continue;
-    if (m->callers.size()) continue;
-
-    LOG_G("Tracing %s.%s\n", cname(), m->cname());
-    LOG_INDENT_SCOPE();
-
-    MtTracer tracer(source_file->lib);
-    tracer._component_stack.push_back(nullptr);
-    tracer._mod_stack.push_back(this);
-    tracer.push_state(&mod_state);
-
-    err << tracer.trace_dispatch(m->_node);
-  }
-
-  if (err.has_err()) {
-    err << ERR("Method trace failed.");
-    return err;
-  }
-
-  // Check that all entries in the state map ended up in a valid state.
-
-  for (auto &pair : mod_state) {
-    if (pair.second == FIELD_INVALID) {
-      err << ERR("Field %s has invalid state\n", pair.first.c_str(),
-                 to_string(pair.second));
-    }
-  }
-
-  // Assign the final merged states back from the map to the fields.
-
-  for (auto &pair : mod_state) {
-    auto path = pair.first;
-    auto split = split_field_path(path);
-
-    assert(split[0] == "<top>");
-    split.erase(split.begin());
-
-    auto tail_field = split.back();
-    split.pop_back();
-
-    MtModule *mod_cursor = this;
-    for (int i = 0; i < split.size(); i++) {
-      auto component = mod_cursor->get_field(split[i]);
-      mod_cursor =
-          mod_cursor->source_file->lib->get_module(component->type_name());
-    }
-
-    MtField *field = mod_cursor->get_field(tail_field);
-    assert(field);
-    field->state = pair.second;
-  }
 
   return err;
 }
@@ -706,20 +552,20 @@ CHECK_RETURN Err MtModule::trace() {
 // Collect all inputs to all tock and getter methods and merge them into a list
 // of input ports.
 
+#if 0
 CHECK_RETURN Err MtModule::sort_fields() {
   Err err;
 
-#if 0
   LOG_G("Categorizing %s\n", name().c_str());
 
   for (auto f : all_fields) {
 
     if (f->is_param()) {
-      localparams.push_back(MtParam::construct("<localparam>", f->node));
+      localparams.push_back(MtFuncParam::construct("<localparam>", f->node));
     }
     else if (f->is_public()) {
       switch(f->state) {
-      case FIELD_NONE     : assert(false); break;
+      case FIELD_UNKNOWN     : assert(false); break;
       case FIELD_INPUT    : input_signals.push_back(f); break;
       case FIELD_OUTPUT   : output_signals.push_back(f); break;
       case FIELD_SIGNAL   : output_signals.push_back(f); break;
@@ -730,7 +576,7 @@ CHECK_RETURN Err MtModule::sort_fields() {
     }
     else {
       switch(f->state) {
-      case FIELD_NONE     : {
+      case FIELD_UNKNOWN     : {
         err << ERR("Field %s was not touched during trace\n", f->name().c_str());
         break;
       }
@@ -753,7 +599,7 @@ CHECK_RETURN Err MtModule::sort_fields() {
 
     for (const auto& param : params) {
       if (param.sym != sym_parameter_declaration) continue;
-      MtParam* new_input = MtParam::construct(m->name(), param);
+      MtFuncParam* new_input = MtFuncParam::construct(m->name(), param);
       input_arguments.push_back(new_input);
     }
 
@@ -761,10 +607,10 @@ CHECK_RETURN Err MtModule::sort_fields() {
       output_returns.push_back(m);
     }
   }
-#endif
 
   return err;
 }
+#endif
 
 //------------------------------------------------------------------------------
 // Go through all calls in the tree and build a {call_param -> arg} map.
@@ -882,5 +728,59 @@ CHECK_RETURN Err MtModule::build_port_map() {
   return err;
 }
 #endif
+
+//------------------------------------------------------------------------------
+
+void MtModule::dump() {
+  LOG_G("Module %s, %d instances\n", cname(), instance_count);
+  LOG_INDENT();
+
+  LOG_G("all_modparams:\n");
+  LOG_INDENT();
+  for (auto m : all_modparams) m->dump();
+  LOG_DEDENT();
+
+  LOG_G("all_enums:\n");
+  LOG_INDENT();
+  for (auto f : all_enums) f->dump();
+  LOG_DEDENT();
+
+  LOG_G("all_methods:\n");
+  LOG_INDENT();
+  for (auto m : all_methods) m->dump();
+  LOG_DEDENT();
+
+  LOG_G("all_fields:\n");
+  LOG_INDENT();
+  for (auto f : all_fields) f->dump();
+  LOG_DEDENT();
+
+#if 0
+  // LOG_G("constructor %p\n", constructor);
+
+  LOG_G("inputs            %d\n", inputs.size());
+  LOG_G("outputs           %d\n", outputs.size());
+  LOG_G("signals           %d\n", signals.size());
+  LOG_G("registers         %d\n", registers.size());
+  LOG_G("components        %d\n", components.size());
+  LOG_G("localparams       %d\n", localparams.size());
+  LOG_G("input_signals     %d\n", input_signals.size());
+  LOG_G("output_signals    %d\n", output_signals.size());
+  LOG_G("public_registers  %d\n", public_registers.size());
+  LOG_G("input_arguments   %d\n", input_arguments.size());
+  LOG_G("output_returns    %d\n", output_returns.size());
+  LOG_G("private_signals   %d\n", private_signals.size());
+  LOG_G("private_registers %d\n", private_registers.size());
+
+  LOG_G("init_methods      %d\n", init_methods.size());
+  LOG_G("tick_methods      %d\n", tick_methods.size());
+  LOG_G("tock_methods      %d\n", tock_methods.size());
+  LOG_G("task_methods      %d\n", task_methods.size());
+  LOG_G("func_methods      %d\n", func_methods.size());
+#endif
+
+  LOG_DEDENT();
+  LOG("\n");
+}
 
 //------------------------------------------------------------------------------

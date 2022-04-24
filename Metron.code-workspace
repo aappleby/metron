@@ -1,0 +1,23 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			"submodules": true,
+			"vs": true,
+			"bin": true,
+			"obj": true,
+			"__pycache__": true,
+			".ninja_deps": true,
+			".ninja_log": true,
+			"SDL2.dll": true,
+			"ninja.exe": true,
+			"ninja": true,
+			".gitignore": true,
+			".gitmodules": true,
+		},
+	}
+}

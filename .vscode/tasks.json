@@ -2,13 +2,13 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "type": "process",
+      "type": "shell",
       "label": "build_metron",
       "command": "ninja",
       "args": [
         "bin/metron"
       ],
-      "problemMatcher": [],
+      "problemMatcher": "$gcc",
       "group": {
         "kind": "build",
         "isDefault": true

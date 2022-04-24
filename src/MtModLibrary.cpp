@@ -3,16 +3,19 @@
 #include <sys/stat.h>
 
 #include "Log.h"
+#include "MtMethod.h"
 #include "MtModule.h"
 #include "MtSourceFile.h"
+#include "MtTracer.h"
 #include "metron_tools.h"
 
 #pragma warning(disable : 4996)
 
+std::vector<std::string> split_field_path(const std::string &path);
+
 //------------------------------------------------------------------------------
 
 MtModule *MtModLibrary::get_module(const std::string &name) {
-  assert(sources_loaded);
   for (auto mod : modules) {
     if (mod->mod_name == name) return mod;
   }
@@ -38,14 +41,12 @@ void MtModLibrary::teardown() {
 //------------------------------------------------------------------------------
 
 void MtModLibrary::add_search_path(const std::string &path) {
-  assert(!sources_loaded);
   search_paths.push_back(path);
 }
 
 //------------------------------------------------------------------------------
 
 void MtModLibrary::add_source(MtSourceFile *source_file) {
-  assert(!sources_loaded);
   source_file->lib = this;
   source_files.push_back(source_file);
 }
@@ -61,7 +62,6 @@ CHECK_RETURN Err MtModLibrary::load_source(const char *filename,
     return WARN("Duplicate filename %s\n", filename);
   }
 
-  assert(!sources_loaded);
   bool found = false;
   for (auto &path : search_paths) {
     auto full_path = path.size() ? path + "/" + filename : filename;
@@ -105,9 +105,8 @@ CHECK_RETURN Err MtModLibrary::load_blob(const std::string &filename,
                                          bool use_utf8_bom, bool verbose) {
   Err err;
 
-  assert(!sources_loaded);
-  auto source_file = new MtSourceFile(this);
-  err << source_file->init(filename, full_path, src_blob);
+  auto source_file = new MtSourceFile();
+  err << source_file->init(this, filename, full_path, src_blob);
   source_file->use_utf8_bom = use_utf8_bom;
   add_source(source_file);
 
@@ -140,6 +139,16 @@ CHECK_RETURN Err MtModLibrary::load_blob(const std::string &filename,
 
 //------------------------------------------------------------------------------
 
+void MtModLibrary::dump() {
+  LOG_G("Mod library:\n");
+  LOG_INDENT_SCOPE();
+  for (auto s : source_files) {
+    s->dump();
+  }
+}
+
+//------------------------------------------------------------------------------
+
 CHECK_RETURN Err MtModLibrary::propagate(propagate_visitor v) {
   Err err;
 
@@ -162,82 +171,6 @@ CHECK_RETURN Err MtModLibrary::propagate(propagate_visitor v) {
 
 CHECK_RETURN Err MtModLibrary::process_sources() {
   Err err;
-
-  assert(!sources_loaded);
-  assert(!sources_processed);
-
-  sources_loaded = true;
-
-  for (auto s : source_files) {
-    for (auto m : s->modules) {
-      modules.push_back(m);
-    }
-  }
-
-  //----------------------------------------
-  // All modules are now in the library, we can resolve references to other
-  // modules when we're collecting fields.
-
-  for (auto mod : modules) {
-    err << mod->collect_modparams();
-    err << mod->collect_fields();
-    err << mod->collect_methods();
-  }
-
-  //----------------------------------------
-  // Hook up child->parent module pointers
-
-  for (auto m : modules) {
-    for (auto s : m->all_fields) {
-      if (s->is_component()) {
-        auto component = get_module(s->type_name());
-        component->parents.push_back(m);
-        m->children.push_back(component);
-      }
-    }
-  }
-
-  for (auto mod : modules) {
-    err << mod->build_call_graph();
-  }
-
-  //----------------------------------------
-  // Trace top modules
-
-  // TinyLog::get().unmute();
-
-  MtModule *top = nullptr;
-  for (auto m : modules) {
-    if (m->parents.empty()) {
-      top = m;
-      break;
-    }
-  }
-
-  err << top->trace();
-  LOG_Y("Trace:\n");
-  for (const auto &pair : top->mod_state) {
-    if (pair.second == FIELD_INVALID) {
-      LOG_R("%s = %s\n", pair.first.c_str(), to_string(pair.second));
-    } else {
-      LOG("%s = %s\n", pair.first.c_str(), to_string(pair.second));
-    }
-  }
-
-  //----------------------------------------
-  // Build instance tree
-
-  MtInstance *top_inst = new MtInstance();
-  top_inst->parent = nullptr;
-  top_inst->name = "<top>";
-  top_inst->field = nullptr;
-  top_inst->mod = top;
-
-  for (auto f : top->all_fields) {
-    top_inst->children.push_back(f->instantiate(top_inst));
-  }
-
-  top_inst->dump();
 
 #if 0
   //----------------------------------------
@@ -617,6 +550,7 @@ void MtModLibrary::dump_call_graph() {
         }
       };
 
+  /*
   for (auto mod : modules) {
     if (mod->parents.size()) continue;
     for (auto method : mod->all_methods) {
@@ -626,6 +560,7 @@ void MtModLibrary::dump_call_graph() {
       }
     }
   }
+  */
 }
 
 //------------------------------------------------------------------------------

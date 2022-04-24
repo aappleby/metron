@@ -1,3 +1,5 @@
+https://github.com/hughperkins/VeriGPU
+
 the error checking should really be independent passes between stages
 
 may need a "hoist members" step for some SV tools

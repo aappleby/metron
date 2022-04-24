@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "MtUtils.h"
 #include "Platform.h"
 #include "TreeSymbols.h"
 #include "submodules/tree-sitter/lib/include/tree_sitter/api.h"
@@ -12,11 +13,6 @@
 struct MtModule;
 struct MtSourceFile;
 struct MtMethod;
-
-struct SourceRange {
-  const char* start;
-  const char* end;
-};
 
 //------------------------------------------------------------------------------
 
@@ -29,7 +25,7 @@ struct MnNode {
   SourceRange get_source() const;
   void dump_source_lines() const;
   void dump_tree(int index = 0, int depth = 0, int maxdepth = 255) const;
-  
+
   operator bool() const { return !ts_node_is_null(node); }
 
   MnNode& check_null() {
@@ -122,7 +118,7 @@ struct MnConstIterator {
     return *this;
   }
 
-  //bool operator<(const MnConstIterator& b) const;
+  // bool operator<(const MnConstIterator& b) const;
   bool operator!=(const MnConstIterator& b) const;
 
   const MnNode operator*() const {
@@ -168,7 +164,7 @@ struct MnIterator {
     return *this;
   }
 
-  //bool operator<(const MnIterator& b) const;
+  // bool operator<(const MnIterator& b) const;
   bool operator!=(const MnIterator& b) const;
 
   MnNode operator*() const {

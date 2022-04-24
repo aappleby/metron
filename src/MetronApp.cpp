@@ -1,19 +1,18 @@
 #include <stdarg.h>
+#include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <stdio.h>
 
 #include "Log.h"
-#include "metron_tools.h"
-//#include "MtCursor.h"
 #include "MtModLibrary.h"
 #include "MtModule.h"
 #include "MtSourceFile.h"
+#include "MtTracer.h"
 #include "Platform.h"
-
+#include "metron_tools.h"
 #include "submodules/CLI11/include/CLI/App.hpp"
-#include "submodules/CLI11/include/CLI/Formatter.hpp"
 #include "submodules/CLI11/include/CLI/Config.hpp"
+#include "submodules/CLI11/include/CLI/Formatter.hpp"
 
 //#include "../scratch.h"
 
@@ -54,15 +53,14 @@ void mkdir_all(const std::vector<std::string>& full_path) {
 
 int main(int argc, char** argv) {
   const char* banner =
-    "                                                        \n" \
-    " ###    ### ####### ######## ######   ######  ###    ## \n" \
-    " ####  #### ##         ##    ##   ## ##    ## ####   ## \n" \
-    " ## #### ## #####      ##    ######  ##    ## ## ##  ## \n" \
-    " ##  ##  ## ##         ##    ##   ## ##    ## ##  ## ## \n" \
-    " ##      ## #######    ##    ##   ##  ######  ##   #### \n" \
-    "                                                        \n" \
-    "            a C++ to SystemVerilog transpiler           \n";
-
+      "                                                        \n"
+      " ###    ### ####### ######## ######   ######  ###    ## \n"
+      " ####  #### ##         ##    ##   ## ##    ## ####   ## \n"
+      " ## #### ## #####      ##    ######  ##    ## ## ##  ## \n"
+      " ##  ##  ## ##         ##    ##   ## ##    ## ##  ## ## \n"
+      " ##      ## #######    ##    ##   ##  ######  ##   #### \n"
+      "                                                        \n"
+      "            a C++ to SystemVerilog transpiler           \n";
 
   CLI::App app{banner};
 
@@ -85,17 +83,17 @@ int main(int argc, char** argv) {
   app.add_option("-o,--out_root", out_root,     "Root directory used for output files. If not specified, will use source root.");
   app.add_option("headers",       source_names, "List of .h files to convert from C++ to SystemVerilog");
   // clang-format on
-  
+
   CLI11_PARSE(app, argc, argv);
 
-  //quiet = false;
+  // quiet = false;
 
   // -r examples/uart/metron uart_top.h
   // -r examples/rvtiny/metron toplevel.h
   // -v -r examples/rvsimple/metron toplevel.h
 
   if (quiet) TinyLog::get().mute();
-  //TinyLog::get().mute();
+  // TinyLog::get().mute();
 
   //----------
   // Startup info
@@ -123,41 +121,178 @@ int main(int argc, char** argv) {
     src_root = ".";
   }
 
-  MtModLibrary library;
-  library.add_search_path(src_root);
+  MtModLibrary lib;
+  lib.add_search_path(src_root);
 
   LOG_B("Loading source files\n");
   for (auto& name : source_names) {
     MtSourceFile* source;
-    err << library.load_source(name.c_str(), source, verbose);
+    err << lib.load_source(name.c_str(), source, verbose);
   }
   if (err.has_err()) {
     LOG_R("Exiting due to error\n");
     return -1;
   }
 
+  //----------------------------------------
+
   LOG_B("Processing source files\n");
-  err << library.process_sources();
+
+  for (auto s : lib.source_files) {
+    for (auto m : s->modules) {
+      lib.modules.push_back(m);
+    }
+  }
+
+  //----------------------------------------
+  // All modules are now in the library, we can resolve references to other
+  // modules when we're collecting fields.
+
+  for (auto mod : lib.modules) {
+    err << mod->collect_parts();
+  }
+
+  //----------------------------------------
+  // Count module instances so we can find top modules.
+
+  for (auto mod : lib.modules) {
+  }
+
+  lib.dump();
+  exit(0);
+
+  //----------------------------------------
+  // Hook up child->parent module pointers
+
+  /*
+  for (auto m : lib.modules) {
+    for (auto s : m->all_fields) {
+      if (s->is_component()) {
+        auto component = lib.get_module(s->type_name());
+        component->parents.push_back(m);
+        m->children.push_back(component);
+      }
+    }
+  }
+  */
+
+  /*
+  for (auto mod : lib.modules) {
+    err << mod->build_call_graph();
+  }
+
+  //----------------------------------------
+  // Find top module.
+
+  MtModule* top = nullptr;
+  for (auto m : lib.modules) {
+    if (m->parents.empty()) {
+      top = m;
+      break;
+    }
+  }
+
+  //----------------------------------------
+  // Instantiate top module.
+
+  MtContext* top_inst = new MtContext();
+  top_inst->parent = nullptr;
+  top_inst->name = "<top>";
+  top_inst->field = nullptr;
+  top_inst->mod = top;
+
+  for (auto f : top->all_fields) {
+    top_inst->children.push_back(f->instantiate(top_inst));
+  }
+  */
+
+  //----------------------------------------
+  // Trace
+
+  /*
+  for (auto m : top->all_methods) {
+    LOG_INDENT_SCOPE();
+
+    if (m == top->constructor) continue;
+    if (m->callers.size()) continue;
+
+    LOG_G("Tracing %s.%s\n", top->cname(), m->cname());
+    LOG_INDENT_SCOPE();
+
+    MtTracer tracer(&lib);
+    err << tracer.trace_dispatch(top_inst, m->_node);
+  }
+
+  // Check that all entries in the state map ended up in a valid state.
+
+  for (auto& pair : top->mod_state) {
+    if (pair.second == FIELD_INVALID) {
+      err << ERR("Field %s has invalid state\n", pair.first.c_str(),
+                 to_string(pair.second));
+    }
+  }
+  */
+
+  // Assign the final merged states back from the map to the fields.
+
+  /*
+  for (auto &pair : top->mod_state) {
+    auto path = pair.first;
+    auto split = split_field_path(path);
+
+    assert(split[0] == "<top>");
+    split.erase(split.begin());
+
+    auto tail_field = split.back();
+    split.pop_back();
+
+    MtModule *mod_cursor = top;
+    for (int i = 0; i < split.size(); i++) {
+      auto component = mod_cursor->get_field(split[i]);
+      mod_cursor =
+          mod_cursor->source_file->lib->get_module(component->type_name());
+    }
+
+    MtField *field = mod_cursor->get_field(tail_field);
+    assert(field);
+    field->state = pair.second;
+  }
+  */
+
+  /*
+  LOG_Y("Trace:\n");
+  for (const auto& pair : top->mod_state) {
+    if (pair.second == FIELD_INVALID) {
+      LOG_R("%s = %s\n", pair.first.c_str(), to_string(pair.second));
+    } else {
+      LOG("%s = %s\n", pair.first.c_str(), to_string(pair.second));
+    }
+  }
+
+  top_inst->dump();
+
+  // err << lib.process_sources();
+
   LOG("\n");
 
   LOG_G("<top> ");
-  for (auto mod : library.modules) {
+  for (auto mod : lib.modules) {
     if (mod->parents.empty()) mod->dump_mod_tree();
   }
   LOG("\n");
 
-  for (auto mod : library.modules) {
+  for (auto mod : lib.modules) {
     mod->dump();
   }
   LOG("\n");
-
+  */
 
 #if 0
   //----------
   // Print module stats
 
   if (verbose) {
-    for (auto& mod : library.modules) {
+    for (auto& mod : lib.modules) {
       mod->dump_banner();
     }
     LOG_G("\n");
@@ -176,11 +311,11 @@ int main(int argc, char** argv) {
       auto component_count = m->components.size();
       for (auto i = 0; i < component_count; i++) {
         auto component = m->components[i];
-        step(library.get_module(component->type_name()), rank + 1, i == component_count - 1);
+        step(lib.get_module(component->type_name()), rank + 1, i == component_count - 1);
       }
     };
 
-    for (auto m : library.modules) {
+    for (auto m : lib.modules) {
       if (m->parents.empty()) step(m, 0, false);
     }
     LOG_G("\n");
@@ -190,7 +325,7 @@ int main(int argc, char** argv) {
   // Dump syntax trees if requested
 
   if (dump) {
-    for (auto& source_file : library.source_files) {
+    for (auto& source_file : lib.source_files) {
       source_file->root_node.dump_tree();
     }
   }
@@ -210,7 +345,7 @@ int main(int argc, char** argv) {
     out_root = src_root;
   }
 
-  for (auto& source_file : library.source_files)
+  for (auto& source_file : lib.source_files)
   {
     Err err;
 
@@ -225,7 +360,7 @@ int main(int argc, char** argv) {
     }
 
     std::string out_string;
-    MtCursor cursor(&library, source_file, nullptr, &out_string);
+    MtCursor cursor(&lib, source_file, nullptr, &out_string);
     cursor.echo = echo && !quiet;
 
     if (echo) {
@@ -267,7 +402,7 @@ int main(int argc, char** argv) {
 
   LOG_G("Done!\n");
 
-  library.teardown();
+  lib.teardown();
 #endif
 
   LOG_B("Done!\n");

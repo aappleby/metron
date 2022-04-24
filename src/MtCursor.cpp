@@ -9,6 +9,8 @@
 #include "Platform.h"
 #include "metron_tools.h"
 
+#if 0
+
 void print_escaped(char s);
 
 //------------------------------------------------------------------------------
@@ -3031,3 +3033,4 @@ CHECK_RETURN Err MtCursor::emit_children(MnNode n) {
 
 //------------------------------------------------------------------------------
 
+#endif

@@ -1,7 +1,7 @@
 #pragma once
+#include <functional>
 #include <string>
 #include <vector>
-#include <functional>
 
 #include "Err.h"
 #include "Platform.h"
@@ -17,10 +17,13 @@ typedef std::function<int(MtMethod*)> propagate_visitor;
 struct MtModLibrary {
   void add_search_path(const std::string& path);
   void add_source(MtSourceFile* source_file);
-  
-  CHECK_RETURN Err load_source(const char* name, MtSourceFile*& out_source, bool verbose);
-  CHECK_RETURN Err load_blob(const std::string& filename, const std::string& full_path,
-                 const std::string& src_blob, bool use_utf8_bom, bool verbose);
+
+  CHECK_RETURN Err load_source(const char* name, MtSourceFile*& out_source,
+                               bool verbose);
+  CHECK_RETURN Err load_blob(const std::string& filename,
+                             const std::string& full_path,
+                             const std::string& src_blob, bool use_utf8_bom,
+                             bool verbose);
 
   CHECK_RETURN Err process_sources();
 
@@ -28,6 +31,8 @@ struct MtModLibrary {
   MtSourceFile* get_source(const std::string& filename);
 
   CHECK_RETURN Err propagate(propagate_visitor v);
+
+  void dump();
 
   void dump_call_graph();
 
@@ -38,9 +43,6 @@ struct MtModLibrary {
   std::vector<std::string> search_paths;
   std::vector<MtSourceFile*> source_files;
   std::vector<MtModule*> modules;
-
-  bool sources_loaded = false;
-  bool sources_processed = false;
 };
 
 //------------------------------------------------------------------------------

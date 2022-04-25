@@ -201,17 +201,11 @@ int main(int argc, char** argv) {
   //----------------------------------------
   // Trace
 
-  // top_mod->root_node.dump_tree();
-
-  // MtTracer tracer(&lib);
-  // err << tracer.trace_dispatch(top_ctx, top_mod->root_node);
-
   for (auto method : top_mod->all_methods) {
     if (method->is_constructor()) continue;
     if (method->callers.size()) continue;
 
     LOG_G("Tracing %s.%s\n", top_mod->cname(), method->cname());
-    LOG_INDENT_SCOPE();
 
     MtTracer tracer(&lib);
 
@@ -240,42 +234,7 @@ int main(int argc, char** argv) {
 
   // Check that all entries in the state map ended up in a valid state.
 
-  // Assign the final merged states back from the map to the fields.
-
   /*
-  for (auto &pair : top->mod_state) {
-    auto path = pair.first;
-    auto split = split_field_path(path);
-
-    assert(split[0] == "<top>");
-    split.erase(split.begin());
-
-    auto tail_field = split.back();
-    split.pop_back();
-
-    MtModule *mod_cursor = top;
-    for (int i = 0; i < split.size(); i++) {
-      auto component = mod_cursor->get_field(split[i]);
-      mod_cursor =
-          mod_cursor->source_file->lib->get_module(component->type_name());
-    }
-
-    MtField *field = mod_cursor->get_field(tail_field);
-    assert(field);
-    field->state = pair.second;
-  }
-  */
-
-  /*
-  LOG_Y("Trace:\n");
-  for (const auto& pair : top->mod_state) {
-    if (pair.second == CTX_INVALID) {
-      LOG_R("%s = %s\n", pair.first.c_str(), to_string(pair.second));
-    } else {
-      LOG("%s = %s\n", pair.first.c_str(), to_string(pair.second));
-    }
-  }
-
   top_inst->dump();
 
   // err << lib.process_sources();

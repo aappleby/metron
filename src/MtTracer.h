@@ -28,11 +28,11 @@ class MtTracer {
   CHECK_RETURN Err trace_dispatch(MtContext* inst, MnNode n,
                                   ContextAction action = CTX_READ);
 
-  CHECK_RETURN Err trace_method(MtContext ctx, MnNode n);
   CHECK_RETURN Err trace_call(MtContext* inst, MnNode n);
   CHECK_RETURN Err trace_branch(MtContext* inst, MnNode n);
   CHECK_RETURN Err trace_switch(MtContext* inst, MnNode n);
 
+  CHECK_RETURN Err trace_method_ctx(MtContext* method_ctx, MnNode node_call);
   CHECK_RETURN Err log_action(MtContext* inst, ContextAction action,
                               SourceRange source);
   CHECK_RETURN Err merge_branch(MtContext* ma, MtContext* mb, MtContext* out);

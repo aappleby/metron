@@ -36,6 +36,8 @@ struct MtModule {
   CHECK_RETURN Err trace();
   CHECK_RETURN Err build_call_graph();
 
+  CHECK_RETURN Err categorize_fields();
+
   //--------------------
 
   MtModLibrary* lib = nullptr;
@@ -66,19 +68,23 @@ struct MtModule {
 
   //----------
 
-  // FIXME not actually doing anything with this yet?
-  std::vector<MtFuncParam*> localparams;
+#endif
 
+  // Categorized fields
+
+  // FIXME not actually doing anything with this yet?
+  // std::vector<MtFuncParam*> localparams;
   std::vector<MtField*> input_signals;
   std::vector<MtField*> output_signals;
-  std::vector<MtField*> public_registers;
+  std::vector<MtField*> output_registers;
 
-  std::vector<MtFuncParam*> input_arguments;
-  std::vector<MtMethod*> output_returns;
+  // std::vector<MtFuncParam*> input_method_args;
+  // std::vector<MtMethod*> output_method_returns;
 
   std::vector<MtField*> private_signals;
   std::vector<MtField*> private_registers;
 
+#if 0
   //----------
 
   std::vector<MtMethod*> init_methods;

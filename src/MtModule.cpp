@@ -111,7 +111,7 @@ MtField *MtModule::get_input_field(const std::string &name) {
 }
 
 MtFuncParam *MtModule::get_input_param(const std::string &name) {
-  for (auto p : input_arguments)
+  for (auto p : input_method_args)
     if (p->name() == name) return p;
   return nullptr;
 }
@@ -123,13 +123,13 @@ MtField *MtModule::get_output_signal(const std::string &name) {
 }
 
 MtField *MtModule::get_output_register(const std::string &name) {
-  for (auto n : public_registers)
+  for (auto n : output_registers)
     if (n->name() == name) return n;
   return nullptr;
 }
 
 MtMethod *MtModule::get_output_return(const std::string &name) {
-  for (auto n : output_returns)
+  for (auto n : output_method_returns)
     if (n->name() == name) return n;
   return nullptr;
 }
@@ -193,28 +193,35 @@ void MtModule::dump_banner() const {
     LOG_G("  %s:%s %s\n", n->name().c_str(), n->type_name().c_str(),
           to_string(n->state));
   }
+#endif
 
   LOG_B("Input Fields:\n");
   for (auto n : input_signals)
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
 
+  /*
   LOG_B("Input Params:\n");
-  for (auto n : input_arguments)
+  for (auto n : input_method_args)
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
+  */
 
   LOG_B("Output Signals:\n");
   for (auto n : output_signals)
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
 
   LOG_B("Output Registers:\n");
-  for (auto n : public_registers)
+  for (auto n : output_registers) {
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
+  }
 
+  /*
   LOG_B("Output Returns:\n");
-  for (auto n : output_returns)
+  for (auto n : output_method_returns)
     LOG_G("  %s:%s\n", n->name().c_str(),
           n->_node.get_field(field_type).text().c_str());
+  */
 
+#if 0
   /*
   LOG_B("Regs:\n");
   for (auto n : registers)
@@ -550,65 +557,89 @@ CHECK_RETURN Err MtModule::trace() {
 // Collect all inputs to all tock and getter methods and merge them into a list
 // of input ports.
 
-#if 0
-CHECK_RETURN Err MtModule::sort_fields() {
+CHECK_RETURN Err MtModule::categorize_fields() {
   Err err;
 
   LOG_G("Categorizing %s\n", name().c_str());
 
   for (auto f : all_fields) {
+    if (f->is_component()) {
+      continue;
+    }
 
     if (f->is_param()) {
-      localparams.push_back(MtFuncParam::construct("<localparam>", f->node));
+      // localparams.push_back(MtFuncParam::construct("<localparam>", f->node));
+      continue;
     }
-    else if (f->is_public()) {
-      switch(f->state) {
-      case FIELD_UNKNOWN     : assert(false); break;
-      case CTX_INPUT    : input_signals.push_back(f); break;
-      case CTX_OUTPUT   : output_signals.push_back(f); break;
-      case CTX_SIGNAL   : output_signals.push_back(f); break;
-      case CTX_REGISTER : public_registers.push_back(f); break;
-      case CTX_INVALID  : assert(false); break;
-      default: assert(false);
+
+    if (f->is_public()) {
+      switch (f->state) {
+        case CTX_NONE:
+          break;
+        case CTX_INPUT:
+          input_signals.push_back(f);
+          break;
+        case CTX_OUTPUT:
+          output_signals.push_back(f);
+          break;
+        case CTX_SIGNAL:
+          output_signals.push_back(f);
+          break;
+        case CTX_REGISTER:
+          output_registers.push_back(f);
+          break;
+        default:
+          err << ERR("Don't know how to categorize %s = %s\n", f->cname(),
+                     to_string(f->state));
+          assert(false);
+          break;
       }
-    }
-    else {
-      switch(f->state) {
-      case FIELD_UNKNOWN     : {
-        err << ERR("Field %s was not touched during trace\n", f->name().c_str());
-        break;
-      }
-      case CTX_INPUT    : private_registers.push_back(f); break; // read-only thing like mem initialized in init()
-      case CTX_OUTPUT   : private_signals.push_back(f); break;
-      case CTX_SIGNAL   : private_signals.push_back(f); break;
-      case CTX_REGISTER : private_registers.push_back(f); break;
-      case CTX_INVALID  : assert(false); break;
-      default: assert(false);
+    } else {
+      switch (f->state) {
+        case CTX_INPUT:
+          // read-only thing like mem initialized in init()
+          private_registers.push_back(f);
+          break;
+        case CTX_OUTPUT:
+          private_signals.push_back(f);
+          break;
+        case CTX_SIGNAL:
+          private_signals.push_back(f);
+          break;
+        case CTX_REGISTER:
+          private_registers.push_back(f);
+          break;
+        default:
+          err << ERR("Don't know how to categorize %s = %s\n", f->cname(),
+                     to_string(f->state));
+          assert(false);
+          break;
       }
     }
   }
 
+  /*
   for (auto m : all_methods) {
     if (!m->is_public) continue;
     if (!m->is_tock) continue;
 
     auto params =
-      m->node.get_field(field_declarator).get_field(field_parameters);
+        m->node.get_field(field_declarator).get_field(field_parameters);
 
-    for (const auto& param : params) {
+    for (const auto &param : params) {
       if (param.sym != sym_parameter_declaration) continue;
-      MtFuncParam* new_input = MtFuncParam::construct(m->name(), param);
-      input_arguments.push_back(new_input);
+      MtFuncParam *new_input = MtFuncParam::construct(m->name(), param);
+      input_method_args.push_back(new_input);
     }
 
     if (m->is_tock && m->has_return()) {
-      output_returns.push_back(m);
+      output_method_returns.push_back(m);
     }
   }
+  */
 
   return err;
 }
-#endif
 
 //------------------------------------------------------------------------------
 // Go through all calls in the tree and build a {call_param -> arg} map.
@@ -714,15 +745,15 @@ CHECK_RETURN Err MtModule::build_port_map() {
       }
     }
 
-    for (int i = 0; i < component_mod->input_arguments.size(); i++) {
-      auto key = component->name() + "." + component_mod->input_arguments[i]->name();
+    for (int i = 0; i < component_mod->input_method_args.size(); i++) {
+      auto key = component->name() + "." + component_mod->input_method_args[i]->name();
 
       if (!port_map.contains(key)) {
         err << ERR("No input bound to component port %s\n", key.c_str());
       }
     }
   }
-    
+
   return err;
 }
 #endif
@@ -760,19 +791,22 @@ void MtModule::dump() {
 #if 0
   // LOG_G("constructor %p\n", constructor);
 
-  LOG_G("inputs            %d\n", inputs.size());
-  LOG_G("outputs           %d\n", outputs.size());
-  LOG_G("signals           %d\n", signals.size());
-  LOG_G("registers         %d\n", registers.size());
-  LOG_G("components        %d\n", components.size());
-  LOG_G("localparams       %d\n", localparams.size());
-  LOG_G("input_signals     %d\n", input_signals.size());
-  LOG_G("output_signals    %d\n", output_signals.size());
-  LOG_G("public_registers  %d\n", public_registers.size());
-  LOG_G("input_arguments   %d\n", input_arguments.size());
-  LOG_G("output_returns    %d\n", output_returns.size());
-  LOG_G("private_signals   %d\n", private_signals.size());
-  LOG_G("private_registers %d\n", private_registers.size());
+  LOG_G("inputs                %d\n", inputs.size());
+  LOG_G("outputs               %d\n", outputs.size());
+  LOG_G("signals               %d\n", signals.size());
+  LOG_G("registers             %d\n", registers.size());
+  LOG_G("components            %d\n", components.size());
+  LOG_G("localparams           %d\n", localparams.size());
+
+  LOG_G("input_signals         %d\n", input_signals.size());
+  LOG_G("output_signals        %d\n", output_signals.size());
+  LOG_G("output_registers      %d\n", output_registers.size());
+
+  LOG_G("input_method_args     %d\n", input_method_args.size());
+  LOG_G("output_method_returns %d\n", output_method_returns.size());
+
+  LOG_G("private_signals       %d\n", private_signals.size());
+  LOG_G("private_registers     %d\n", private_registers.size());
 
   LOG_G("init_methods      %d\n", init_methods.size());
   LOG_G("tick_methods      %d\n", tick_methods.size());

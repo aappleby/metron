@@ -21,15 +21,20 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MtContext* ctx, MnNode n,
   switch (n.sym) {
     case sym_identifier:
     case alias_sym_field_identifier: {
+      assert(ctx->method);
+
       auto field_ctx = ctx->resolve(n.text());
-      err << log_action(field_ctx, action, n.get_source());
+      err << log_action(ctx, field_ctx, action, n.get_source());
       break;
     }
 
     case sym_field_expression: {
+      assert(false);
+      /*
       auto node_arg = n.get_field(field_argument);
       auto field_ctx = ctx->resolve(node_arg.text());
       err << trace_dispatch(field_ctx, n.get_field(field_field), action);
+      */
       break;
     }
 
@@ -68,10 +73,11 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MtContext* ctx, MnNode n,
     }
 
     case sym_return_statement: {
+      assert(ctx->method);
       for (const auto& c : n) err << trace_dispatch(ctx, c);
 
       auto return_ctx = ctx->resolve("<return>");
-      err << log_action(return_ctx, CTX_WRITE, n.get_source());
+      err << log_action(ctx, return_ctx, CTX_WRITE, n.get_source());
       break;
     }
 
@@ -179,7 +185,8 @@ CHECK_RETURN Err MtTracer::trace_method_ctx(MtContext* method_ctx,
 
   for (auto child_ctx : method_ctx->children) {
     if (child_ctx->type == CTX_PARAM) {
-      err << log_action(child_ctx, CTX_WRITE, node_call.get_source());
+      err << log_action(method_ctx, child_ctx, CTX_WRITE,
+                        node_call.get_source());
     }
   }
 
@@ -187,7 +194,8 @@ CHECK_RETURN Err MtTracer::trace_method_ctx(MtContext* method_ctx,
 
   for (auto child_ctx : method_ctx->children) {
     if (child_ctx->type == CTX_RETURN) {
-      err << log_action(child_ctx, CTX_READ, node_call.get_source());
+      err << log_action(method_ctx, child_ctx, CTX_READ,
+                        node_call.get_source());
     }
   }
 
@@ -261,19 +269,21 @@ CHECK_RETURN Err MtTracer::trace_switch(MtContext* ctx, MnNode n) {
 
 //-----------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer::log_action(MtContext* ctx, ContextAction action,
+CHECK_RETURN Err MtTracer::log_action(MtContext* method_ctx, MtContext* dst_ctx,
+                                      ContextAction action,
                                       SourceRange source) {
   Err err;
 
-  if (ctx) {
-    ctx->state = merge_action(ctx->state, action);
+  if (dst_ctx) {
+    trace_log.push_back({method_ctx, dst_ctx, action, source});
+    auto old_state = dst_ctx->state;
+    auto new_state = merge_action(old_state, action);
+    dst_ctx->state = new_state;
 
-    auto ctx_path = ctx->parent->name + "." + ctx->name;
-
-    LOG_G("%-10s %-10s %-20s @ ", to_string(action), to_string(ctx->type),
-          ctx_path.c_str());
-    TinyLog::get().print_buffer(0, source.start, source.end - source.start);
-    LOG("\n");
+    if (dst_ctx->field && action == CTX_WRITE) {
+      assert(method_ctx);
+      dst_ctx->field->written_by = method_ctx->method;
+    }
   }
 
   return err;
@@ -295,6 +305,23 @@ CHECK_RETURN Err MtTracer::merge_branch(MtContext* ma, MtContext* mb,
   }
 
   return err;
+}
+
+//------------------------------------------------------------------------------
+
+void MtTracer::dump_log(MtField* filter_field) {
+  for (const auto& l : trace_log) {
+    if (filter_field) {
+      if (l.dst_ctx->field != filter_field) continue;
+    }
+
+    auto ctx_path = l.dst_ctx->parent->name + "." + l.dst_ctx->name;
+    LOG_G("%-10s %-10s %-20s @ ", to_string(l.action),
+          to_string(l.dst_ctx->type), ctx_path.c_str());
+    TinyLog::get().print_buffer(0, l.range.start,
+                                l.range.end - l.range.start + 1);
+    LOG("\n");
+  }
 }
 
 //------------------------------------------------------------------------------

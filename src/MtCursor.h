@@ -6,8 +6,6 @@
 #include "MtNode.h"
 #include "Platform.h"
 
-#if 0
-
 struct MtModule;
 struct MtField;
 struct MtSourceFile;
@@ -16,12 +14,8 @@ struct MtModLibrary;
 //------------------------------------------------------------------------------
 
 struct MtCursor {
-  MtCursor(
-    MtModLibrary* lib,
-    MtSourceFile* source,
-    MtModule* mod,
-    std::string* out
-  );
+  MtCursor(MtModLibrary* lib, MtSourceFile* source, MtModule* mod,
+           std::string* out);
 
   // Indentation
 
@@ -94,11 +88,10 @@ struct MtCursor {
 
   // Special-purpose emit()s
   CHECK_RETURN Err emit_enum(MnFieldDecl n);
-  
+
   CHECK_RETURN Err emit_broken_enum(MnFieldDecl n, MnNode node_bitfield);
   CHECK_RETURN Err emit_simple_enum(MnFieldDecl n);
   CHECK_RETURN Err emit_anonymous_enum(MnFieldDecl n);
-
 
   CHECK_RETURN Err emit_preproc(MnNode n);
   CHECK_RETURN Err emit_func_decl(MnFuncDeclarator n);
@@ -120,11 +113,10 @@ struct MtCursor {
 
   MtModLibrary* lib = nullptr;
   MtSourceFile* current_source = nullptr;
-  MtModule*     current_mod = nullptr;
-  MtMethod*     current_method = nullptr;
+  MtModule* current_mod = nullptr;
+  MtMethod* current_method = nullptr;
 
   const char* cursor = nullptr;
-
 
   std::vector<std::string> indent_stack;
   bool at_newline = true;
@@ -147,5 +139,3 @@ struct MtCursor {
 };
 
 //------------------------------------------------------------------------------
-
-#endif

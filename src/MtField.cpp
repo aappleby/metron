@@ -1,6 +1,7 @@
 #include "MtField.h"
 
 #include "Log.h"
+#include "MtMethod.h"
 #include "MtModLibrary.h"
 #include "MtModule.h"
 #include "MtNode.h"
@@ -65,6 +66,10 @@ void MtField::dump() {
     }
 
     LOG(" = %s", to_string(state));
+
+    if (written_by) {
+      LOG(" (Written by %s)", written_by->cname());
+    }
   }
 
   LOG("\n");

@@ -152,13 +152,15 @@ void MtContext::dump() const {
   switch (type) {
     case CTX_FIELD:
       if (field->_type_mod) {
-        LOG_Y("Submod %s = %s\n", field->_type_mod->cname(), to_string(state));
+        // LOG_Y("Submod %s = %s\n", field->_type_mod->cname(),
+        // to_string(state));
+        LOG_Y("Submod %s\n", field->_type_mod->cname());
       } else {
         LOG_G("%s = %s\n", field->_type.c_str(), to_string(state));
       }
       return;
     case CTX_METHOD:
-      LOG_R("Method = %s\n", to_string(state));
+      LOG_R("Method\n");
       return;
     case CTX_PARAM:
       LOG_B("Param = %s\n", to_string(state));
@@ -167,7 +169,7 @@ void MtContext::dump() const {
       LOG_G("Return = %s\n", to_string(state));
       return;
     case CTX_MODULE:
-      LOG_G("Module = %s\n", to_string(state));
+      LOG_G("Module\n");
       return;
   }
 }

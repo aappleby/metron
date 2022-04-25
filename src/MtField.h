@@ -16,6 +16,8 @@ struct MtField {
   const std::string& name() const;
   const std::string& type_name() const;
 
+  bool is_register() const { return state == CTX_REGISTER; }
+
   void dump();
 
   //----------
@@ -28,6 +30,8 @@ struct MtField {
   std::string _name;
   std::string _type;
   bool _public = false;
+
+  MtMethod* written_by = nullptr;
 };
 
 //------------------------------------------------------------------------------

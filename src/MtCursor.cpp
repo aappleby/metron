@@ -9,13 +9,12 @@
 #include "Platform.h"
 #include "metron_tools.h"
 
-#if 0
-
 void print_escaped(char s);
 
 //------------------------------------------------------------------------------
 
-MtCursor::MtCursor(MtModLibrary* lib, MtSourceFile* source, MtModule* mod, std::string* out)
+MtCursor::MtCursor(MtModLibrary* lib, MtSourceFile* source, MtModule* mod,
+                   std::string* out)
     : lib(lib), current_source(source), current_mod(mod), str_out(out) {
   indent_stack.push_back("");
   cursor = current_source->source;
@@ -63,9 +62,7 @@ void MtCursor::pop_indent(MnNode class_body) { indent_stack.pop_back(); }
 //------------------------------------------------------------------------------
 // Generic emit() methods
 
-CHECK_RETURN Err MtCursor::emit_newline() {
-  return emit_char('\n');
-}
+CHECK_RETURN Err MtCursor::emit_newline() { return emit_char('\n'); }
 
 CHECK_RETURN Err MtCursor::emit_indent() {
   Err err;
@@ -85,9 +82,8 @@ CHECK_RETURN Err MtCursor::emit_char(char c, uint32_t color) {
   }
 
   if (c == '\n') {
-
     // Strip trailing whitespace
-    while(str_out->size() && str_out->back() == ' ') {
+    while (str_out->size() && str_out->back() == ' ') {
       str_out->pop_back();
     }
 
@@ -96,18 +92,16 @@ CHECK_RETURN Err MtCursor::emit_char(char c, uint32_t color) {
       if (echo) {
         LOG_C(0xFF8080, " (Line elided)");
       }
-      while(str_out->size() && str_out->back() != '\n') {
+      while (str_out->size() && str_out->back() != '\n') {
         str_out->pop_back();
       }
-    }
-    else {
+    } else {
       str_out->push_back(c);
     }
 
     line_dirty = false;
     line_elided = false;
-  }
-  else {
+  } else {
     str_out->push_back(c);
   }
 
@@ -306,6 +300,7 @@ CHECK_RETURN Err MtCursor::emit_preproc_include(MnPreprocInclude n) {
   return err;
 }
 
+#if 0
 //------------------------------------------------------------------------------
 // Change '=' to '<=' if lhs is a field and we're inside a sequential block.
 
@@ -1094,10 +1089,10 @@ CHECK_RETURN Err MtCursor::emit_field_as_component(MnFieldDecl n) {
 
   int port_count = int(
     component_mod->input_signals.size() +
-    component_mod->input_arguments.size() +
-    component_mod->output_signals.size() + 
-    component_mod->public_registers.size() + 
-    component_mod->output_returns.size()
+    component_mod->input_method_args.size() +
+    component_mod->output_signals.size() +
+    component_mod->output_registers.size() +
+    component_mod->output_method_returns.size()
    );
 
   if (port_count) {
@@ -1118,7 +1113,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_component(MnFieldDecl n) {
     }
   }
 
-  for (auto n : component_mod->input_arguments) {
+  for (auto n : component_mod->input_method_args) {
     auto key = inst_name + "." + n->name();
 
     err << emit_newline();
@@ -1149,7 +1144,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_component(MnFieldDecl n) {
     }
   }
 
-  for (auto n : component_mod->public_registers) {
+  for (auto n : component_mod->output_registers) {
     err << emit_newline();
     err << emit_indent();
     err << emit_print(".%s(%s_%s)", n->cname(), inst_name.c_str(), n->cname());
@@ -1159,7 +1154,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_component(MnFieldDecl n) {
     }
   }
 
-  for (auto n : component_mod->output_returns) {
+  for (auto n : component_mod->output_method_returns) {
     err << emit_newline();
     err << emit_indent();
     err << emit_print(".%s(%s_%s)", n->name().c_str(), inst_name.c_str(), n->cname());
@@ -1242,7 +1237,7 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl component_decl) {
     err << emit_newline();
   }
 
-  for (auto n : component_mod->input_arguments) {
+  for (auto n : component_mod->input_method_args) {
     // field_declaration
     auto output_type = n->get_type_node();
     auto output_decl = n->get_decl_node();
@@ -1284,7 +1279,7 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl component_decl) {
     err << emit_newline();
   }
 
-  for (auto n : component_mod->public_registers) {
+  for (auto n : component_mod->output_registers) {
     // field_declaration
     auto output_type = n->get_type_node();
     auto output_decl = n->get_decl_node();
@@ -1305,7 +1300,7 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl component_decl) {
     err << emit_newline();
   }
 
-  for (auto m : component_mod->output_returns) {
+  for (auto m : component_mod->output_method_returns) {
     auto getter_type = m->_node.get_field(field_type);
     auto getter_decl = m->_node.get_field(field_declarator);
     auto getter_name = getter_decl.get_field(field_declarator);
@@ -1631,7 +1626,7 @@ CHECK_RETURN Err MtCursor::emit_struct(MnNode n) {
     err << emit_dispatch(n.child(0)); // lit = "struct"
     err << emit_ws();
     err << emit_print("packed ");
-    err << emit_dispatch(node_body); // body: field_declaration_list  
+    err << emit_dispatch(node_body); // body: field_declaration_list
   }
 
 
@@ -1732,10 +1727,10 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
 
     int port_count = int(
       current_mod->input_signals.size() +
-      current_mod->input_arguments.size() +
       current_mod->output_signals.size() +
-      current_mod->public_registers.size() +
-      current_mod->output_returns.size()
+      current_mod->output_registers.size() +
+      current_mod->input_method_args.size() +
+      current_mod->output_method_returns.size()
     );
 
     int port_index = 0;
@@ -1784,7 +1779,7 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
       err << emit_newline();
     }
 
-    for (auto input : current_mod->input_arguments) {
+    for (auto input : current_mod->input_method_args) {
       err << emit_indent();
       err << emit_print("input ");
 
@@ -1804,7 +1799,7 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
       err << emit_newline();
     }
 
-    for (auto m : current_mod->output_returns) {
+    for (auto m : current_mod->output_method_returns) {
       err << emit_indent();
       err << emit_print("output ");
 
@@ -2755,9 +2750,12 @@ CHECK_RETURN Err MtCursor::emit_preproc(MnNode n) {
 //------------------------------------------------------------------------------
 // Call the correct emit() method based on the node type.
 
+#endif
+
 CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
   Err err;
 
+#if 0
   assert(cursor == n.start());
 
   switch (n.sym) {
@@ -2785,12 +2783,12 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
       auto op = n.get_field(field_operator);
 
       if (n.get_field(field_operator).text() == "++") {
-        err << emit_splice(id) << emit_print(" = ") << emit_splice(id) << emit_print(" + 1");
-      }
-      else if (n.get_field(field_operator).text() == "--") {
-        err << emit_splice(id) << emit_print(" = ") << emit_splice(id) << emit_print(" - 1");
-      }
-      else {
+        err << emit_splice(id) << emit_print(" = ") << emit_splice(id)
+            << emit_print(" + 1");
+      } else if (n.get_field(field_operator).text() == "--") {
+        err << emit_splice(id) << emit_print(" = ") << emit_splice(id)
+            << emit_print(" - 1");
+      } else {
         debugbreak();
       }
 
@@ -2801,11 +2799,6 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
     case sym_initializer_list:
       err << emit_children(n);
       break;
-
-
-
-
-
 
     case sym_for_statement:
       err << emit_children(n);
@@ -2831,12 +2824,6 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
     case sym_switch_statement:
       err << emit_switch(MnSwitchStatement(n));
       break;
-
-
-
-
-
-
 
     case sym_parenthesized_expression:
     case sym_parameter_declaration:
@@ -2894,8 +2881,6 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
     case sym_class_specifier:
       err << emit_class(MnClassSpecifier(n));
       break;
-
-
 
     case sym_number_literal:
       err << emit_number_literal(MnNumberLiteral(n));
@@ -3008,10 +2993,12 @@ CHECK_RETURN Err MtCursor::check_done(MnNode n) {
       }
     }
   }
+#endif
 
   return err;
 }
 
+#if 0
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_children(MnNode n) {

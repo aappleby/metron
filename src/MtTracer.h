@@ -10,13 +10,15 @@
 
 struct MtModLibrary;
 struct MtContext;
+struct MtField;
 
 //------------------------------------------------------------------------------
 
 struct TraceLog {
-  std::string field_name;
-  bool is_write;
-  SourceRange source;
+  MtContext* method_ctx;
+  MtContext* dst_ctx;
+  ContextAction action;
+  SourceRange range;
 };
 
 //------------------------------------------------------------------------------
@@ -33,11 +35,15 @@ class MtTracer {
   CHECK_RETURN Err trace_switch(MtContext* inst, MnNode n);
 
   CHECK_RETURN Err trace_method_ctx(MtContext* method_ctx, MnNode node_call);
-  CHECK_RETURN Err log_action(MtContext* inst, ContextAction action,
-                              SourceRange source);
+  CHECK_RETURN Err log_action(MtContext* method_ctx, MtContext* dst_ctx,
+                              ContextAction action, SourceRange source);
   CHECK_RETURN Err merge_branch(MtContext* ma, MtContext* mb, MtContext* out);
 
+  void dump_log(MtField* filter_field = nullptr);
+
   MtModLibrary* lib;
+
+  std::vector<TraceLog> trace_log;
 };
 
 //------------------------------------------------------------------------------

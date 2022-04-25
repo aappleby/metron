@@ -201,88 +201,65 @@ int main(int argc, char** argv) {
   //----------------------------------------
   // Trace
 
+  MtTracer tracer(&lib);
+
   for (auto method : top_mod->all_methods) {
     if (method->is_constructor()) continue;
     if (method->callers.size()) continue;
 
     LOG_G("Tracing %s.%s\n", top_mod->cname(), method->cname());
-
-    MtTracer tracer(&lib);
-
     auto method_ctx = top_ctx->resolve(method->name());
-
     err << tracer.trace_dispatch(method_ctx, method->_node);
   }
+  LOG("\n");
+
+  //----------------------------------------
+  // Check for and report bad fields.
 
   top_ctx->assign_state_to_field();
 
-  LOG_G("\n");
+  std::vector<MtField*> bad_fields;
+  for (auto mod : lib.modules) {
+    for (auto field : mod->all_fields) {
+      if (field->state == CTX_INVALID) {
+        err << ERR("Field %s is in an invalid state\n", field->cname());
+        bad_fields.push_back(field);
+      }
+    }
+  }
+
+  for (auto bad_field : bad_fields) {
+    LOG_R("Bad field \"%s.%s\" log:\n", bad_field->_parent_mod->cname(),
+          bad_field->cname());
+    tracer.dump_log(bad_field);
+    LOG_G("\n");
+  }
 
   //----------------------------------------
-
-  LOG_G("Lib dump:\n");
-  lib.dump();
-  LOG_G("\n");
-
-  LOG_G("Context dump:\n");
-  top_ctx->dump_tree();
-  LOG_G("\n");
-
-  // lib.source_files[0]->root_node.dump_tree();
-
-  exit(0);
-
-  // Check that all entries in the state map ended up in a valid state.
-
-  /*
-  top_inst->dump();
-
-  // err << lib.process_sources();
-
-  LOG("\n");
-
-  LOG_G("<top> ");
-  for (auto mod : lib.modules) {
-    if (mod->parents.empty()) mod->dump_mod_tree();
-  }
-  LOG("\n");
-
-  for (auto mod : lib.modules) {
-    mod->dump();
-  }
-  LOG("\n");
-  */
-
-#if 0
-  //----------
   // Print module stats
 
   if (verbose) {
-    for (auto& mod : lib.modules) {
-      mod->dump_banner();
-    }
-    LOG_G("\n");
-
     LOG_Y("Module tree:\n");
     std::function<void(MtModule*, int, bool)> step;
     step = [&](MtModule* m, int rank, bool last) -> void {
       for (int i = 0; i < rank - 1; i++) LOG_Y("|  ");
       if (last) {
         if (rank) LOG_Y("\\--");
-      }
-      else {
+      } else {
         if (rank) LOG_Y("|--");
       }
       LOG_Y("%s\n", m->name().c_str());
-      auto component_count = m->components.size();
-      for (auto i = 0; i < component_count; i++) {
-        auto component = m->components[i];
-        step(lib.get_module(component->type_name()), rank + 1, i == component_count - 1);
+      auto field_count = m->all_fields.size();
+      for (auto i = 0; i < field_count; i++) {
+        auto field = m->all_fields[i];
+        if (!field->is_component()) continue;
+        step(lib.get_module(field->type_name()), rank + 1,
+             i == field_count - 1);
       }
     };
 
     for (auto m : lib.modules) {
-      if (m->parents.empty()) step(m, 0, false);
+      if (m->refcount == 0) step(m, 0, false);
     }
     LOG_G("\n");
   }
@@ -297,6 +274,11 @@ int main(int argc, char** argv) {
   }
 
   //----------
+  // Categorize fields
+
+  for (auto m : lib.modules) {
+    err << m->categorize_fields();
+  }
 
   if (err.has_err()) {
     LOG_R("Exiting due to error\n");
@@ -311,10 +293,7 @@ int main(int argc, char** argv) {
     out_root = src_root;
   }
 
-  for (auto& source_file : lib.source_files)
-  {
-    Err err;
-
+  for (auto& source_file : lib.source_files) {
     // Translate the source.
     auto out_name = source_file->filename;
     assert(out_name.ends_with(".h"));
@@ -322,9 +301,11 @@ int main(int argc, char** argv) {
     auto out_path = out_root + "/" + out_name + ".sv";
 
     if (out_root.size()) {
-      LOG_G("Converting %s -> %s\n", source_file->full_path.c_str(), out_path.c_str());
+      LOG_G("Converting %s -> %s\n", source_file->full_path.c_str(),
+            out_path.c_str());
     }
 
+#if 0
     std::string out_string;
     MtCursor cursor(&lib, source_file, nullptr, &out_string);
     cursor.echo = echo && !quiet;
@@ -364,14 +345,19 @@ int main(int argc, char** argv) {
         fclose(out_file);
       }
     }
+#endif
   }
 
-  LOG_G("Done!\n");
+  LOG_G("Lib dump:\n");
+  lib.dump();
+  LOG_G("\n");
 
-  lib.teardown();
-#endif
+  LOG_G("Context dump:\n");
+  top_ctx->dump_tree();
+  LOG_G("\n");
 
   LOG_B("Done!\n");
+  lib.teardown();
 
   return 0;
 }

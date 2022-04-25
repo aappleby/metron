@@ -23,6 +23,12 @@ struct MtContext {
   void dump() const;
   void dump_tree() const;
 
+  MtMethod* current_method() {
+    if (method) return method;
+    if (parent) return parent->current_method();
+    return nullptr;
+  }
+
   ContextType type;
   MtContext* parent;
   std::string name;

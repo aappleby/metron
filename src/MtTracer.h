@@ -21,19 +21,19 @@ struct TraceLog {
 
 //------------------------------------------------------------------------------
 
-enum FieldAction { FIELD_READ, FIELD_WRITE };
-
 class MtTracer {
  public:
   MtTracer(MtModLibrary* lib) : lib(lib) {}
 
   CHECK_RETURN Err trace_dispatch(MtContext* inst, MnNode n,
-                                  FieldAction action = FIELD_READ);
+                                  ContextAction action = CTX_READ);
+
+  CHECK_RETURN Err trace_method(MtContext ctx, MnNode n);
   CHECK_RETURN Err trace_call(MtContext* inst, MnNode n);
   CHECK_RETURN Err trace_branch(MtContext* inst, MnNode n);
   CHECK_RETURN Err trace_switch(MtContext* inst, MnNode n);
 
-  CHECK_RETURN Err log_action(MtContext* inst, FieldAction action,
+  CHECK_RETURN Err log_action(MtContext* inst, ContextAction action,
                               SourceRange source);
   CHECK_RETURN Err merge_branch(MtContext* ma, MtContext* mb, MtContext* out);
 

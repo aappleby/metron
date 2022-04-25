@@ -19,5 +19,8 @@
 			".gitignore": true,
 			".gitmodules": true,
 		},
+		"files.associations": {
+			"*.tcc": "cpp"
+		},
 	}
 }

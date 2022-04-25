@@ -6,19 +6,29 @@
 #include "MtModLibrary.h"
 #include "MtModule.h"
 #include "MtNode.h"
+#include "MtUtils.h"
 #include "metron_tools.h"
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer::trace_dispatch(MtContext* inst, MnNode n,
-                                          FieldAction action) {
+CHECK_RETURN Err MtTracer::trace_dispatch(MtContext* ctx, MnNode n,
+                                          ContextAction action) {
   Err err;
 
-  if (!inst) return err;
+  if (!ctx) return err;
+  if (!n.is_named()) return err;
+
+  assert(ctx->method);
+
+  /*
+  LOG("trace %s %s %s %s\n", to_string(ctx->type), ctx->name.c_str(),
+      n.ts_node_type(), to_string(action));
+  LOG_INDENT_SCOPE();
+  */
 
   switch (n.sym) {
     case sym_identifier: {
-      auto inst1 = inst->get_child(n.text());
+      auto inst1 = ctx->resolve(n.text());
       if (inst1) err << log_action(inst1, action, n.get_source());
       break;
     }
@@ -27,47 +37,96 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MtContext* inst, MnNode n,
       auto node_arg = n.get_field(field_argument);
       auto node_field = n.get_field(field_field);
 
-      auto inst1 = inst->get_child(node_arg.text());
-      if (inst1) {
-        auto inst2 = inst1->get_child(node_field.text());
-        if (inst2) {
-          err << log_action(inst2, action, n.get_source());
+      auto child_ctx = ctx->resolve(node_arg.text());
+      if (child_ctx) {
+        auto field_ctx = child_ctx->resolve(node_field.text());
+        if (field_ctx) {
+          err << log_action(field_ctx, action, n.get_source());
         }
       }
       break;
     }
 
     case sym_subscript_expression:
-      err << trace_dispatch(inst, n.get_field(field_argument), action);
+      err << trace_dispatch(ctx, n.get_field(field_argument), action);
       break;
 
     case sym_call_expression:
-      err << trace_call(inst, n);
+      err << trace_call(ctx, n);
       break;
 
     case sym_conditional_expression:
     case sym_if_statement:
-      err << trace_branch(inst, n);
+      err << trace_branch(ctx, n);
       break;
 
     case sym_switch_statement:
-      err << trace_switch(inst, n);
+      err << trace_switch(ctx, n);
       break;
 
     case sym_update_expression: {
       // this is "i++" or similar, which is a read and a write.
-      err << trace_dispatch(inst, n.get_field(field_argument), FIELD_READ);
-      err << trace_dispatch(inst, n.get_field(field_argument), FIELD_WRITE);
+      err << trace_dispatch(ctx, n.get_field(field_argument), CTX_READ);
+      err << trace_dispatch(ctx, n.get_field(field_argument), CTX_WRITE);
       break;
     }
 
     case sym_assignment_expression:
-      err << trace_dispatch(inst, n.get_field(field_right), FIELD_READ);
-      err << trace_dispatch(inst, n.get_field(field_left), FIELD_WRITE);
+      err << trace_dispatch(ctx, n.get_field(field_right), CTX_READ);
+      err << trace_dispatch(ctx, n.get_field(field_left), CTX_WRITE);
+      break;
+
+    case sym_function_definition: {
+      // n.dump_tree();
+
+      /*
+      auto func_name =
+          n.get_field(field_declarator).get_field(field_declarator).text();
+      auto func_ctx = ctx->resolve(func_name);
+      */
+
+      /*
+      if (func_ctx->method->callers.size()) {
+        printf("%s some callers\n", func_ctx->method->cname());
+      } else {
+        printf("%s no callers\n", func_ctx->method->cname());
+      }
+      */
+      // printf("%p\n", func_ctx);
+
+      // auto dst_method =
+      // n.dump_tree();
+
+      for (const auto& c : n) err << trace_dispatch(ctx, c);
+      break;
+    }
+
+    case sym_return_statement:
+    case sym_field_declaration:
+    case sym_field_declaration_list:
+    case alias_sym_type_identifier:
+    case sym_class_specifier:
+    case sym_binary_expression:
+    case sym_parameter_declaration:
+    case sym_argument_list:
+    case sym_expression_statement:
+    case sym_compound_statement:
+    case alias_sym_field_identifier:
+    case sym_parameter_list:
+    case sym_function_declarator:
+      for (const auto& c : n) err << trace_dispatch(ctx, c);
+      break;
+
+    case sym_comment:
+    case sym_access_specifier:
+    case sym_number_literal:
+    case sym_primitive_type:
       break;
 
     default:
-      for (const auto& c : n) err << trace_dispatch(inst, c);
+      printf("Don't know what to do with this:\n");
+      n.dump_tree();
+      exit(0);
       break;
   }
 
@@ -76,30 +135,70 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MtContext* inst, MnNode n,
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer::trace_call(MtContext* inst, MnNode n) {
+CHECK_RETURN Err MtTracer::trace_method(MtContext ctx, MnNode n) {
   Err err;
-  if (!inst) return err;
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtTracer::trace_call(MtContext* ctx, MnNode n) {
+  Err err;
+  if (!ctx) return err;
+
+  LOG_G("Trace Call %s\n", n.text().c_str());
 
   auto node_func = n.get_field(field_function);
   auto node_args = n.get_field(field_arguments);
 
   // Trace the args first.
-  err << trace_dispatch(inst, node_args);
+  err << trace_dispatch(ctx, node_args);
 
   //----------
 
   if (node_func.sym == sym_field_expression) {
-    err << trace_call(
-        inst->get_child(node_func.get_field(field_argument).text()),
-        node_func.get_field(field_field));
+    auto child_ctx = ctx->resolve(node_func.get_field(field_argument).text());
+    auto child_func = node_func.get_field(field_field);
+
+    auto dst_method = child_ctx->mod->get_method(child_func.text());
+    if (dst_method) {
+      auto method_ctx = child_ctx->get_child(dst_method->name());
+      assert(method_ctx);
+      if (dst_method->has_params) {
+        err << log_action(method_ctx, CTX_WRITE, n.get_source());
+      }
+      if (dst_method->has_return) {
+        err << log_action(method_ctx, CTX_READ, n.get_source());
+      }
+
+      // err << trace_dispatch(child_ctx, dst_method->_node);
+      err << trace_dispatch(method_ctx, dst_method->_node);
+    }
+  }
+
+  //----------
+
+  else if (node_func.sym == alias_sym_field_identifier) {
+    auto dst_method = ctx->mod->get_method(node_func.text());
+    if (dst_method) {
+      auto method_ctx = ctx->get_child(dst_method->name());
+      assert(method_ctx);
+      if (dst_method->has_params) {
+        err << log_action(method_ctx, CTX_WRITE, n.get_source());
+      }
+      if (dst_method->has_return) {
+        err << log_action(method_ctx, CTX_READ, n.get_source());
+      }
+      err << trace_dispatch(ctx, dst_method->_node);
+    }
   }
 
   //----------
 
   else if (node_func.sym == sym_identifier) {
-    auto dst_method = inst->mod->get_method(node_func.text());
+    auto dst_method = ctx->mod->get_method(node_func.text());
     if (dst_method) {
-      err << trace_dispatch(inst, dst_method->_node);
+      err << trace_dispatch(ctx, dst_method->_node);
     }
   }
 
@@ -120,8 +219,13 @@ CHECK_RETURN Err MtTracer::trace_call(MtContext* inst, MnNode n) {
   //----------
 
   else {
-    err << ERR("MtModule::build_call_tree - don't know what to do with %s\n",
-               node_func.ts_node_type());
+    if (node_func.is_null()) {
+      err << ERR("MtTracer::trace_call - node_func is null\n");
+
+    } else {
+      err << ERR("MtModule::build_call_tree - don't know what to do with %s\n",
+                 node_func.ts_node_type());
+    }
   }
 
   return err;
@@ -130,39 +234,42 @@ CHECK_RETURN Err MtTracer::trace_call(MtContext* inst, MnNode n) {
 //------------------------------------------------------------------------------
 // good
 
-CHECK_RETURN Err MtTracer::trace_branch(MtContext* inst, MnNode n) {
+CHECK_RETURN Err MtTracer::trace_branch(MtContext* ctx, MnNode n) {
   Err err;
 
   auto node_cond = n.get_field(field_condition);
   auto node_branch_a = n.get_field(field_consequence);
   auto node_branch_b = n.get_field(field_alternative);
 
-  err << trace_dispatch(inst, node_cond);
+  err << trace_dispatch(ctx, node_cond);
 
-  MtContext branch_a = *inst;
-  MtContext branch_b = *inst;
+  MtContext* branch_a = ctx->clone();
+  MtContext* branch_b = ctx->clone();
 
   if (!node_branch_a.is_null()) {
-    err << trace_dispatch(&branch_a, node_branch_a);
+    err << trace_dispatch(branch_a, node_branch_a);
   }
 
   if (!node_branch_b.is_null()) {
-    err << trace_dispatch(&branch_b, node_branch_b);
+    err << trace_dispatch(branch_b, node_branch_b);
   }
 
-  err << merge_branch(&branch_a, &branch_b, inst);
+  err << merge_branch(branch_a, branch_b, ctx);
+
+  delete branch_a;
+  delete branch_b;
 
   return err;
 }
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer::trace_switch(MtContext* inst, MnNode n) {
+CHECK_RETURN Err MtTracer::trace_switch(MtContext* ctx, MnNode n) {
   Err err;
 
-  err << trace_dispatch(inst, n.get_field(field_condition));
+  err << trace_dispatch(ctx, n.get_field(field_condition));
 
-  MtContext old_inst = *inst;
+  MtContext* old_ctx = ctx->clone();
 
   bool first_branch = true;
 
@@ -173,74 +280,29 @@ CHECK_RETURN Err MtTracer::trace_switch(MtContext* inst, MnNode n) {
       if (c.named_child_count() == 1) continue;
 
       if (first_branch) {
-        err << trace_dispatch(inst, c);
+        err << trace_dispatch(ctx, c);
         first_branch = false;
       } else {
-        MtContext inst_case = old_inst;
-        err << trace_dispatch(&inst_case, c);
-        err << merge_branch(inst, &inst_case, inst);
+        MtContext* inst_case = old_ctx->clone();
+        err << trace_dispatch(inst_case, c);
+        err << merge_branch(ctx, inst_case, ctx);
+        delete inst_case;
       }
     }
   }
 
+  delete old_ctx;
+
   return err;
 }
 
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer::log_action(MtContext* inst, FieldAction action,
+CHECK_RETURN Err MtTracer::log_action(MtContext* ctx, ContextAction action,
                                       SourceRange source) {
   Err err;
 
-  if (action == FIELD_WRITE) {
-    switch (inst->state) {
-      case FIELD_UNKNOWN:
-        inst->state = FIELD_OUTPUT;
-        break;
-      case FIELD_INPUT:
-        inst->state = FIELD_REGISTER;
-        break;
-      case FIELD_OUTPUT:
-        inst->state = FIELD_OUTPUT;
-        break;
-      case FIELD_SIGNAL:
-        inst->state = FIELD_INVALID;
-        break;
-      case FIELD_REGISTER:
-        inst->state = FIELD_REGISTER;
-        break;
-      case FIELD_INVALID:
-        inst->state = FIELD_INVALID;
-        break;
-      default:
-        assert(false);
-    }
-  } else if (action == FIELD_READ) {
-    switch (inst->state) {
-      case FIELD_UNKNOWN:
-        inst->state = FIELD_INPUT;
-        break;
-      case FIELD_INPUT:
-        inst->state = FIELD_INPUT;
-        break;
-      case FIELD_OUTPUT:
-        inst->state = FIELD_SIGNAL;
-        break;
-      case FIELD_SIGNAL:
-        inst->state = FIELD_SIGNAL;
-        break;
-      case FIELD_REGISTER:
-        inst->state = FIELD_INVALID;
-        break;
-      case FIELD_INVALID:
-        inst->state = FIELD_INVALID;
-        break;
-      default:
-        assert(false);
-    }
-  } else {
-    err << ERR("Unknown field action %d\n", action);
-  }
+  ctx->state = merge_action(ctx->state, action);
 
   return err;
 }
@@ -254,35 +316,7 @@ CHECK_RETURN Err MtTracer::merge_branch(MtContext* ma, MtContext* mb,
   assert(ma->children.size() == out->children.size());
   assert(mb->children.size() == out->children.size());
 
-  if (ma->state == mb->state) {
-    out->state = ma->state;
-  } else if (ma->state == FIELD_INVALID || mb->state == FIELD_INVALID) {
-    out->state = FIELD_INVALID;
-  } else {
-    if (ma->state == FIELD_UNKNOWN && mb->state == FIELD_INPUT)
-      out->state = FIELD_INPUT;  // promote
-    if (ma->state == FIELD_OUTPUT && mb->state == FIELD_SIGNAL)
-      out->state = FIELD_SIGNAL;  // promote
-
-    if (ma->state == FIELD_UNKNOWN && mb->state == FIELD_OUTPUT)
-      out->state = FIELD_REGISTER;  // half-write, infer reg
-    if (ma->state == FIELD_INPUT && mb->state == FIELD_OUTPUT)
-      out->state = FIELD_REGISTER;  // half-write, infer reg
-    if (ma->state == FIELD_UNKNOWN && mb->state == FIELD_REGISTER)
-      out->state = FIELD_REGISTER;  // promote
-    if (ma->state == FIELD_INPUT && mb->state == FIELD_REGISTER)
-      out->state = FIELD_REGISTER;  // promote
-    if (ma->state == FIELD_OUTPUT && mb->state == FIELD_REGISTER)
-      out->state = FIELD_REGISTER;  // promote
-
-    if (ma->state == FIELD_UNKNOWN && mb->state == FIELD_SIGNAL)
-      out->state = FIELD_INVALID;  // half-write, bad signal
-    if (ma->state == FIELD_INPUT && mb->state == FIELD_SIGNAL)
-      out->state = FIELD_INVALID;  // order conflict
-
-    if (ma->state == FIELD_SIGNAL && mb->state == FIELD_REGISTER)
-      out->state = FIELD_INVALID;  // order conflict
-  }
+  out->state = ::merge_branch(ma->state, mb->state);
 
   for (int i = 0; i < ma->children.size(); i++) {
     err << merge_branch(ma->children[i], mb->children[i], out->children[i]);

@@ -33,6 +33,7 @@ CHECK_RETURN Err MtModule::init(MtSourceFile *_source_file,
   source_file = _source_file;
   lib = source_file->lib;
   mod_template = _node;
+  root_node = _node;
 
   for (int i = 0; i < mod_template.child_count(); i++) {
     auto child = mod_template.child(i);
@@ -69,6 +70,7 @@ CHECK_RETURN Err MtModule::init(MtSourceFile *_source_file,
   mod_template = MnNode::null;
   mod_param_list = MnNode::null;
   mod_class = _node;
+  root_node = _node;
 
   if (mod_class) {
     mod_name = mod_class.get_field(field_name).text();
@@ -429,7 +431,7 @@ int MtMethod::categorize() {
   // Methods that write a signal are tocks.
   for (auto ref : fields_written) {
     auto f = ref.subfield ? ref.subfield : ref.field;
-    if (f->state == FIELD_SIGNAL && !in_tock) {
+    if (f->state == CTX_SIGNAL && !in_tock) {
       LOG_B("%-20s is tock because it writes signal %s.\n", cname(), f->cname());
       in_tock = true;
       changes++;
@@ -439,7 +441,7 @@ int MtMethod::categorize() {
   // Methods that write a register are ticks.
   for (auto ref : fields_written) {
     auto f = ref.subfield ? ref.subfield : ref.field;
-    if (f->state == FIELD_REGISTER && !in_tick) {
+    if (f->state == CTX_REGISTER && !in_tick) {
       in_tick = true;
       changes++;
     }
@@ -452,10 +454,10 @@ int MtMethod::categorize() {
     bool only_writes_outputs = !fields_written.empty();
     for (auto ref : fields_written) {
       if (ref.subfield) {
-        if (ref.subfield->state != FIELD_OUTPUT) only_writes_outputs = false;
+        if (ref.subfield->state != CTX_OUTPUT) only_writes_outputs = false;
       }
       else if (ref.field) {
-        if (ref.field->state != FIELD_OUTPUT) only_writes_outputs = false;
+        if (ref.field->state != CTX_OUTPUT) only_writes_outputs = false;
       }
     }
     if (only_writes_outputs && !in_tock) {
@@ -474,7 +476,6 @@ int MtMethod::categorize() {
 
 //------------------------------------------------------------------------------
 
-/*
 CHECK_RETURN Err MtModule::build_call_graph() {
   Err err;
 
@@ -488,8 +489,8 @@ CHECK_RETURN Err MtModule::build_call_graph() {
           auto dst_mod = this;
           auto dst_method = get_method(func.text());
           if (dst_method) {
-            dst_method->callers.push_back(src_method);
-            src_method->callees.push_back(dst_method);
+            dst_method->callers.insert(src_method);
+            src_method->callees.insert(dst_method);
           }
         }
 
@@ -503,8 +504,8 @@ CHECK_RETURN Err MtModule::build_call_graph() {
             if (dst_mod) {
               auto dst_method = dst_mod->get_method(component_method_name);
               if (dst_method) {
-                dst_method->callers.push_back(src_method);
-                src_method->callees.push_back(dst_method);
+                dst_method->callers.insert(src_method);
+                src_method->callees.insert(dst_method);
               }
             }
           }
@@ -513,11 +514,8 @@ CHECK_RETURN Err MtModule::build_call_graph() {
     });
   }
 
-  if (constructor) constructor->in_init = true;
-
   return err;
 }
-*/
 
 //------------------------------------------------------------------------------
 
@@ -566,11 +564,11 @@ CHECK_RETURN Err MtModule::sort_fields() {
     else if (f->is_public()) {
       switch(f->state) {
       case FIELD_UNKNOWN     : assert(false); break;
-      case FIELD_INPUT    : input_signals.push_back(f); break;
-      case FIELD_OUTPUT   : output_signals.push_back(f); break;
-      case FIELD_SIGNAL   : output_signals.push_back(f); break;
-      case FIELD_REGISTER : public_registers.push_back(f); break;
-      case FIELD_INVALID  : assert(false); break;
+      case CTX_INPUT    : input_signals.push_back(f); break;
+      case CTX_OUTPUT   : output_signals.push_back(f); break;
+      case CTX_SIGNAL   : output_signals.push_back(f); break;
+      case CTX_REGISTER : public_registers.push_back(f); break;
+      case CTX_INVALID  : assert(false); break;
       default: assert(false);
       }
     }
@@ -580,11 +578,11 @@ CHECK_RETURN Err MtModule::sort_fields() {
         err << ERR("Field %s was not touched during trace\n", f->name().c_str());
         break;
       }
-      case FIELD_INPUT    : private_registers.push_back(f); break; // read-only thing like mem initialized in init()
-      case FIELD_OUTPUT   : private_signals.push_back(f); break;
-      case FIELD_SIGNAL   : private_signals.push_back(f); break;
-      case FIELD_REGISTER : private_registers.push_back(f); break;
-      case FIELD_INVALID  : assert(false); break;
+      case CTX_INPUT    : private_registers.push_back(f); break; // read-only thing like mem initialized in init()
+      case CTX_OUTPUT   : private_signals.push_back(f); break;
+      case CTX_SIGNAL   : private_signals.push_back(f); break;
+      case CTX_REGISTER : private_registers.push_back(f); break;
+      case CTX_INVALID  : assert(false); break;
       default: assert(false);
       }
     }
@@ -732,28 +730,32 @@ CHECK_RETURN Err MtModule::build_port_map() {
 //------------------------------------------------------------------------------
 
 void MtModule::dump() {
-  LOG_G("Module %s, %d instances\n", cname(), instance_count);
+  LOG_G("Module %s, %d instances\n", cname(), refcount);
   LOG_INDENT();
 
-  LOG_G("all_modparams:\n");
-  LOG_INDENT();
-  for (auto m : all_modparams) m->dump();
-  LOG_DEDENT();
+  if (all_modparams.size()) {
+    LOG_G("all_modparams:\n");
+    LOG_INDENT_SCOPE();
+    for (auto m : all_modparams) m->dump();
+  }
 
-  LOG_G("all_enums:\n");
-  LOG_INDENT();
-  for (auto f : all_enums) f->dump();
-  LOG_DEDENT();
+  if (all_enums.size()) {
+    LOG_G("all_enums:\n");
+    LOG_INDENT_SCOPE();
+    for (auto f : all_enums) f->dump();
+  }
 
-  LOG_G("all_methods:\n");
-  LOG_INDENT();
-  for (auto m : all_methods) m->dump();
-  LOG_DEDENT();
+  if (all_methods.size()) {
+    LOG_G("all_methods:\n");
+    LOG_INDENT_SCOPE();
+    for (auto m : all_methods) m->dump();
+  }
 
-  LOG_G("all_fields:\n");
-  LOG_INDENT();
-  for (auto f : all_fields) f->dump();
-  LOG_DEDENT();
+  if (all_fields.size()) {
+    LOG_G("all_fields:\n");
+    LOG_INDENT_SCOPE();
+    for (auto f : all_fields) f->dump();
+  }
 
 #if 0
   // LOG_G("constructor %p\n", constructor);

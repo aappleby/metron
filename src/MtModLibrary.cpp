@@ -237,7 +237,7 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
 
     bool wrote_register = false;
     for (auto f : m->fields_written) {
-      if (f->state == FIELD_REGISTER) wrote_register = true;
+      if (f->state == CTX_REGISTER) wrote_register = true;
     }
 
     if (wrote_register) {
@@ -286,7 +286,7 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
 
     bool wrote_signal = false;
     for (auto f : m->fields_written) {
-      wrote_signal  |= f->state == FIELD_SIGNAL;
+      wrote_signal  |= f->state == CTX_SIGNAL;
     }
 
     if (wrote_signal) {
@@ -313,7 +313,7 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
 
     bool wrote_output = false;
     for (auto f : m->fields_written) {
-      wrote_output  |= f->state == FIELD_OUTPUT;
+      wrote_output  |= f->state == CTX_OUTPUT;
     }
 
     if (wrote_output) {

@@ -2,17 +2,13 @@
 
 // Registers that are read after they're written should fail.
 
-//X Reading field reg changed state from FIELD_REGISTER to FIELD_INVALID
+// X Reading field reg changed state from CTX_REGISTER to CTX_INVALID
 
 class Module {
-public:
+ public:
+  void tock() { tick(); }
 
-  void tock() {
-    tick();
-  }
-
-private:
-
+ private:
   void tick() {
     logic<1> x = reg;
     reg = 1;

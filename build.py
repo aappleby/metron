@@ -278,6 +278,7 @@ def build_metron_lib():
             "src/MtNode.cpp",
             "src/MtSourceFile.cpp",
             "src/MtTracer.cpp",
+            "src/MtUtils.cpp",
             "src/Platform.cpp",
         ],
         includes=[

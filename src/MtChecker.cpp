@@ -36,8 +36,8 @@ CHECK_RETURN Err MtChecker::merge_branch(StateMap& ma, StateMap& mb,
 
   StateMap temp;
 
-  for (const auto& a : ma) temp[a.first] = FIELD_INVALID;
-  for (const auto& b : mb) temp[b.first] = FIELD_INVALID;
+  for (const auto& a : ma) temp[a.first] = CTX_INVALID;
+  for (const auto& b : mb) temp[b.first] = CTX_INVALID;
 
   for (auto& pair : temp) {
     auto a = ma[pair.first];
@@ -56,37 +56,37 @@ CHECK_RETURN Err MtChecker::merge_branch(StateMap& ma, StateMap& mb,
 
     if (a == b) {
       pair.second = a;
-    } else if (a == FIELD_INVALID || b == FIELD_INVALID) {
-      pair.second = FIELD_INVALID;
+    } else if (a == CTX_INVALID || b == CTX_INVALID) {
+      pair.second = CTX_INVALID;
     } else {
-      if (a == FIELD_UNKNOWN && b == FIELD_INPUT)
-        pair.second = FIELD_INPUT;  // promote
-      if (a == FIELD_OUTPUT && b == FIELD_SIGNAL)
-        pair.second = FIELD_SIGNAL;  // promote
+      if (a == FIELD_UNKNOWN && b == CTX_INPUT)
+        pair.second = CTX_INPUT;  // promote
+      if (a == CTX_OUTPUT && b == CTX_SIGNAL)
+        pair.second = CTX_SIGNAL;  // promote
 
-      if (a == FIELD_UNKNOWN && b == FIELD_OUTPUT)
-        pair.second = FIELD_REGISTER;  // half-write, infer reg
-      if (a == FIELD_INPUT && b == FIELD_OUTPUT)
-        pair.second = FIELD_REGISTER;  // half-write, infer reg
-      if (a == FIELD_UNKNOWN && b == FIELD_REGISTER)
-        pair.second = FIELD_REGISTER;  // promote
-      if (a == FIELD_INPUT && b == FIELD_REGISTER)
-        pair.second = FIELD_REGISTER;  // promote
-      if (a == FIELD_OUTPUT && b == FIELD_REGISTER)
-        pair.second = FIELD_REGISTER;  // promote
+      if (a == FIELD_UNKNOWN && b == CTX_OUTPUT)
+        pair.second = CTX_REGISTER;  // half-write, infer reg
+      if (a == CTX_INPUT && b == CTX_OUTPUT)
+        pair.second = CTX_REGISTER;  // half-write, infer reg
+      if (a == FIELD_UNKNOWN && b == CTX_REGISTER)
+        pair.second = CTX_REGISTER;  // promote
+      if (a == CTX_INPUT && b == CTX_REGISTER)
+        pair.second = CTX_REGISTER;  // promote
+      if (a == CTX_OUTPUT && b == CTX_REGISTER)
+        pair.second = CTX_REGISTER;  // promote
 
-      if (a == FIELD_UNKNOWN && b == FIELD_SIGNAL)
-        pair.second = FIELD_INVALID;  // half-write, bad signal
-      if (a == FIELD_INPUT && b == FIELD_SIGNAL)
-        pair.second = FIELD_INVALID;  // order conflict
+      if (a == FIELD_UNKNOWN && b == CTX_SIGNAL)
+        pair.second = CTX_INVALID;  // half-write, bad signal
+      if (a == CTX_INPUT && b == CTX_SIGNAL)
+        pair.second = CTX_INVALID;  // order conflict
 
-      if (a == FIELD_SIGNAL && b == FIELD_REGISTER)
-        pair.second = FIELD_INVALID;  // order conflict
+      if (a == CTX_SIGNAL && b == CTX_REGISTER)
+        pair.second = CTX_INVALID;  // order conflict
     }
   }
 
   for (auto& pair : temp) {
-    if (pair.second == FIELD_INVALID) {
+    if (pair.second == CTX_INVALID) {
       debugbreak();
     }
   }
@@ -429,7 +429,7 @@ CHECK_RETURN Err MtChecker::trace_call(MnNode n) {
     auto old_state = pair.second;
     auto new_state = merge_delta(old_state, DELTA_EF);
 
-    if (new_state == FIELD_INVALID) {
+    if (new_state == CTX_INVALID) {
       err << ERR("Field %s was %s, now %s!\n", pair.first.c_str(),
             to_string(old_state), to_string(new_state));
       break;
@@ -765,19 +765,19 @@ CHECK_RETURN Err MtChecker::trace_read(MtField* field,
 
   auto field_path = _path_stack.back() + "." + field_name;
   auto& old_state = (*state_top)[field_path];
-  FieldState new_state;
+  ContextState new_state;
 
   switch(old_state) {
-  case FIELD_UNKNOWN     : new_state = FIELD_INPUT;    break;
-  case FIELD_INPUT    : new_state = FIELD_INPUT;    break;
-  case FIELD_OUTPUT   : new_state = FIELD_SIGNAL;   break;
-  case FIELD_SIGNAL   : new_state = FIELD_SIGNAL;   break;
-  case FIELD_REGISTER : new_state = FIELD_INVALID;  break;
-  case FIELD_INVALID  : new_state = FIELD_INVALID;  break;
+  case FIELD_UNKNOWN     : new_state = CTX_INPUT;    break;
+  case CTX_INPUT    : new_state = CTX_INPUT;    break;
+  case CTX_OUTPUT   : new_state = CTX_SIGNAL;   break;
+  case CTX_SIGNAL   : new_state = CTX_SIGNAL;   break;
+  case CTX_REGISTER : new_state = CTX_INVALID;  break;
+  case CTX_INVALID  : new_state = CTX_INVALID;  break;
   default: assert(false);
   }
 
-  if (new_state == FIELD_INVALID) {
+  if (new_state == CTX_INVALID) {
     err << ERR("Reading field %s changed state from %s to %s\n",
   field_name.c_str(), to_string(old_state), to_string(new_state));
   }
@@ -801,19 +801,19 @@ CHECK_RETURN Err MtChecker::trace_write(MtField* field,
 
   auto field_path = _path_stack.back() + "." + field_name;
   auto& old_state = (*state_top)[field_path];
-  FieldState new_state;
+  ContextState new_state;
 
   switch(old_state) {
-  case FIELD_UNKNOWN     : new_state = FIELD_OUTPUT;   break;
-  case FIELD_INPUT    : new_state = FIELD_REGISTER; break;
-  case FIELD_OUTPUT   : new_state = FIELD_OUTPUT;   break;
-  case FIELD_SIGNAL   : new_state = FIELD_INVALID;  break;
-  case FIELD_REGISTER : new_state = FIELD_REGISTER; break;
-  case FIELD_INVALID  : new_state = FIELD_INVALID;  break;
+  case FIELD_UNKNOWN     : new_state = CTX_OUTPUT;   break;
+  case CTX_INPUT    : new_state = CTX_REGISTER; break;
+  case CTX_OUTPUT   : new_state = CTX_OUTPUT;   break;
+  case CTX_SIGNAL   : new_state = CTX_INVALID;  break;
+  case CTX_REGISTER : new_state = CTX_REGISTER; break;
+  case CTX_INVALID  : new_state = CTX_INVALID;  break;
   default: assert(false);
   }
 
-  if (new_state == FIELD_INVALID) {
+  if (new_state == CTX_INVALID) {
     err << ERR("Writing field %s changed state from %s to %s\n",
   field_name.c_str(), to_string(old_state), to_string(new_state));
   }

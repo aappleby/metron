@@ -4,6 +4,9 @@
 #include <sys/types.h>
 
 #include "Log.h"
+#include "MtContext.h"
+#include "MtField.h"
+#include "MtMethod.h"
 #include "MtModLibrary.h"
 #include "MtModule.h"
 #include "MtSourceFile.h"
@@ -153,41 +156,30 @@ int main(int argc, char** argv) {
   }
 
   //----------------------------------------
+  // Build call graph
+
+  for (auto m : lib.modules) {
+    err << m->build_call_graph();
+  }
+
+  //----------------------------------------
   // Count module instances so we can find top modules.
 
   for (auto mod : lib.modules) {
-  }
-
-  lib.dump();
-  exit(0);
-
-  //----------------------------------------
-  // Hook up child->parent module pointers
-
-  /*
-  for (auto m : lib.modules) {
-    for (auto s : m->all_fields) {
-      if (s->is_component()) {
-        auto component = lib.get_module(s->type_name());
-        component->parents.push_back(m);
-        m->children.push_back(component);
+    for (auto field : mod->all_fields) {
+      if (field->is_component()) {
+        field->_type_mod->refcount++;
       }
     }
-  }
-  */
-
-  /*
-  for (auto mod : lib.modules) {
-    err << mod->build_call_graph();
   }
 
   //----------------------------------------
   // Find top module.
 
-  MtModule* top = nullptr;
+  MtModule* top_mod = nullptr;
   for (auto m : lib.modules) {
-    if (m->parents.empty()) {
-      top = m;
+    if (m->refcount == 0) {
+      top_mod = m;
       break;
     }
   }
@@ -195,43 +187,58 @@ int main(int argc, char** argv) {
   //----------------------------------------
   // Instantiate top module.
 
-  MtContext* top_inst = new MtContext();
-  top_inst->parent = nullptr;
-  top_inst->name = "<top>";
-  top_inst->field = nullptr;
-  top_inst->mod = top;
+  MtContext* top_ctx = new MtContext();
+  top_ctx->type = CTX_MODULE;
+  top_ctx->parent = nullptr;
+  top_ctx->name = "<top>";
+  top_ctx->field = nullptr;
+  top_ctx->method = nullptr;
+  top_ctx->mod = top_mod;
+  top_ctx->state = CTX_PENDING;
 
-  for (auto f : top->all_fields) {
-    top_inst->children.push_back(f->instantiate(top_inst));
-  }
-  */
+  MtContext::instantiate(top_mod, top_ctx);
 
   //----------------------------------------
   // Trace
 
-  /*
-  for (auto m : top->all_methods) {
-    LOG_INDENT_SCOPE();
+  // top_mod->root_node.dump_tree();
 
-    if (m == top->constructor) continue;
-    if (m->callers.size()) continue;
+  // MtTracer tracer(&lib);
+  // err << tracer.trace_dispatch(top_ctx, top_mod->root_node);
 
-    LOG_G("Tracing %s.%s\n", top->cname(), m->cname());
+  for (auto method : top_mod->all_methods) {
+    if (method->is_constructor()) continue;
+    if (method->callers.size()) continue;
+
+    LOG_G("Tracing %s.%s\n", top_mod->cname(), method->cname());
     LOG_INDENT_SCOPE();
 
     MtTracer tracer(&lib);
-    err << tracer.trace_dispatch(top_inst, m->_node);
+
+    auto method_ctx = top_ctx->resolve(method->name());
+
+    err << tracer.trace_dispatch(method_ctx, method->_node);
   }
+
+  top_ctx->assign_state_to_field();
+
+  LOG_G("\n");
+
+  //----------------------------------------
+
+  LOG_G("Lib dump:\n");
+  lib.dump();
+  LOG_G("\n");
+
+  LOG_G("Context dump:\n");
+  top_ctx->dump_tree();
+  LOG_G("\n");
+
+  // lib.source_files[0]->root_node.dump_tree();
+
+  exit(0);
 
   // Check that all entries in the state map ended up in a valid state.
-
-  for (auto& pair : top->mod_state) {
-    if (pair.second == FIELD_INVALID) {
-      err << ERR("Field %s has invalid state\n", pair.first.c_str(),
-                 to_string(pair.second));
-    }
-  }
-  */
 
   // Assign the final merged states back from the map to the fields.
 
@@ -262,7 +269,7 @@ int main(int argc, char** argv) {
   /*
   LOG_Y("Trace:\n");
   for (const auto& pair : top->mod_state) {
-    if (pair.second == FIELD_INVALID) {
+    if (pair.second == CTX_INVALID) {
       LOG_R("%s = %s\n", pair.first.c_str(), to_string(pair.second));
     } else {
       LOG("%s = %s\n", pair.first.c_str(), to_string(pair.second));

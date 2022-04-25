@@ -34,17 +34,19 @@ struct MtModule {
 
   CHECK_RETURN Err collect_parts();
   CHECK_RETURN Err trace();
+  CHECK_RETURN Err build_call_graph();
 
   //--------------------
 
   MtModLibrary* lib = nullptr;
   MtSourceFile* source_file = nullptr;
   std::string mod_name;
+  MnNode root_node;
   MnClassSpecifier mod_class;
   MnTemplateDecl mod_template;
   MnTemplateParamList mod_param_list;
   // MtMethod* constructor = nullptr;
-  int instance_count = 0;
+  int refcount = 0;
 
   //----------
 

@@ -4,6 +4,7 @@
 
 #include "Log.h"
 #include "MtField.h"
+#include "MtFuncParam.h"
 #include "MtMethod.h"
 #include "MtModLibrary.h"
 #include "MtModParam.h"
@@ -96,6 +97,14 @@ MtField *MtModule::get_field(const std::string &name) {
   return nullptr;
 }
 
+MtField *MtModule::get_component(const std::string &name) {
+  for (auto f : all_fields) {
+    if (!f->is_component()) continue;
+    if (f->name() == name) return f;
+  }
+  return nullptr;
+}
+
 #if 0
 MtField* MtModule::get_enum(const std::string &name) {
   for (auto n : all_enums) {
@@ -111,7 +120,7 @@ MtField *MtModule::get_input_field(const std::string &name) {
 }
 
 MtFuncParam *MtModule::get_input_param(const std::string &name) {
-  for (auto p : input_method_args)
+  for (auto p : input_method_params)
     if (p->name() == name) return p;
   return nullptr;
 }
@@ -141,6 +150,27 @@ MtField *MtModule::get_component(const std::string &name) {
   return nullptr;
 }
 #endif
+
+MtField *MtModule::get_input_signal(const std::string &name) {
+  for (auto f : input_signals) {
+    if (f->name() == name) return f;
+  }
+  return nullptr;
+}
+
+MtField *MtModule::get_output_signal(const std::string &name) {
+  for (auto f : output_signals) {
+    if (f->name() == name) return f;
+  }
+  return nullptr;
+}
+
+MtField *MtModule::get_output_register(const std::string &name) {
+  for (auto f : output_registers) {
+    if (f->name() == name) return f;
+  }
+  return nullptr;
+}
 
 //------------------------------------------------------------------------------
 
@@ -201,7 +231,7 @@ void MtModule::dump_banner() const {
 
   /*
   LOG_B("Input Params:\n");
-  for (auto n : input_method_args)
+  for (auto n : input_method_params)
     LOG_G("  %s:%s\n", n->name().c_str(), n->type_name().c_str());
   */
 
@@ -526,37 +556,6 @@ CHECK_RETURN Err MtModule::build_call_graph() {
 
 //------------------------------------------------------------------------------
 
-#if 0
-std::vector<std::string> split_field_path(const std::string &path) {
-  std::vector<std::string> result;
-  std::string temp = "";
-  for (auto i = 0; i < path.size(); i++) {
-    if (path[i] == '.') {
-      result.push_back(temp);
-      temp.clear();
-    } else {
-      temp.push_back(path[i]);
-    }
-  }
-
-  if (temp.size()) result.push_back(temp);
-
-  return result;
-}
-#endif
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtModule::trace() {
-  Err err;
-
-  return err;
-}
-
-//------------------------------------------------------------------------------
-// Collect all inputs to all tock and getter methods and merge them into a list
-// of input ports.
-
 CHECK_RETURN Err MtModule::categorize_fields() {
   Err err;
 
@@ -572,71 +571,40 @@ CHECK_RETURN Err MtModule::categorize_fields() {
       continue;
     }
 
-    if (f->is_public()) {
-      switch (f->state) {
-        case CTX_NONE:
-          break;
-        case CTX_INPUT:
-          input_signals.push_back(f);
-          break;
-        case CTX_OUTPUT:
-          output_signals.push_back(f);
-          break;
-        case CTX_SIGNAL:
-          output_signals.push_back(f);
-          break;
-        case CTX_REGISTER:
-          output_registers.push_back(f);
-          break;
-        default:
-          err << ERR("Don't know how to categorize %s = %s\n", f->cname(),
-                     to_string(f->state));
-          assert(false);
-          break;
-      }
-    } else {
-      switch (f->state) {
-        case CTX_INPUT:
-          // read-only thing like mem initialized in init()
-          private_registers.push_back(f);
-          break;
-        case CTX_OUTPUT:
-          private_signals.push_back(f);
-          break;
-        case CTX_SIGNAL:
-          private_signals.push_back(f);
-          break;
-        case CTX_REGISTER:
-          private_registers.push_back(f);
-          break;
-        default:
-          err << ERR("Don't know how to categorize %s = %s\n", f->cname(),
-                     to_string(f->state));
-          assert(false);
-          break;
-      }
+    if (f->is_component())
+      components.push_back(f);
+    else if (f->is_input_sig())
+      input_signals.push_back(f);
+    else if (f->is_output_sig())
+      output_signals.push_back(f);
+    else if (f->is_output_reg())
+      output_registers.push_back(f);
+    else if (f->is_private_reg())
+      private_registers.push_back(f);
+    else if (f->is_private_sig())
+      private_signals.push_back(f);
+    else {
+      err << ERR("Don't know how to categorize %s = %s\n", f->cname(),
+                 to_string(f->state));
     }
   }
 
-  /*
   for (auto m : all_methods) {
-    if (!m->is_public) continue;
-    if (!m->is_tock) continue;
+    if (!m->is_public()) continue;
 
     auto params =
-        m->node.get_field(field_declarator).get_field(field_parameters);
+        m->_node.get_field(field_declarator).get_field(field_parameters);
 
     for (const auto &param : params) {
       if (param.sym != sym_parameter_declaration) continue;
-      MtFuncParam *new_input = MtFuncParam::construct(m->name(), param);
-      input_method_args.push_back(new_input);
+      MtFuncParam *new_input = new MtFuncParam(m->name(), param);
+      input_method_params.push_back(new_input);
     }
 
-    if (m->is_tock && m->has_return()) {
+    if (m->has_return()) {
       output_method_returns.push_back(m);
     }
   }
-  */
 
   return err;
 }
@@ -745,8 +713,8 @@ CHECK_RETURN Err MtModule::build_port_map() {
       }
     }
 
-    for (int i = 0; i < component_mod->input_method_args.size(); i++) {
-      auto key = component->name() + "." + component_mod->input_method_args[i]->name();
+    for (int i = 0; i < component_mod->input_method_params.size(); i++) {
+      auto key = component->name() + "." + component_mod->input_method_params[i]->name();
 
       if (!port_map.contains(key)) {
         err << ERR("No input bound to component port %s\n", key.c_str());
@@ -796,18 +764,20 @@ void MtModule::dump() {
   LOG_G("signals               %d\n", signals.size());
   LOG_G("registers             %d\n", registers.size());
   LOG_G("components            %d\n", components.size());
-  LOG_G("localparams           %d\n", localparams.size());
+#endif
 
+  LOG_G("localparams           %d\n", localparams.size());
   LOG_G("input_signals         %d\n", input_signals.size());
   LOG_G("output_signals        %d\n", output_signals.size());
   LOG_G("output_registers      %d\n", output_registers.size());
 
-  LOG_G("input_method_args     %d\n", input_method_args.size());
+  LOG_G("input_method_params   %d\n", input_method_params.size());
   LOG_G("output_method_returns %d\n", output_method_returns.size());
 
   LOG_G("private_signals       %d\n", private_signals.size());
   LOG_G("private_registers     %d\n", private_registers.size());
 
+#if 0
   LOG_G("init_methods      %d\n", init_methods.size());
   LOG_G("tick_methods      %d\n", tick_methods.size());
   LOG_G("tock_methods      %d\n", tock_methods.size());

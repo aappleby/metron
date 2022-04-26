@@ -70,7 +70,7 @@ void MtContext::instantiate(MtModule *mod, MtContext *parent) {
 
     parent->children.push_back(method_ctx);
 
-    if (m->has_params) {
+    if (m->has_params()) {
       auto params =
           m->_node.get_field(field_declarator).get_field(field_parameters);
       for (const auto &param : params) {
@@ -88,7 +88,7 @@ void MtContext::instantiate(MtModule *mod, MtContext *parent) {
       }
     }
 
-    if (m->has_return) {
+    if (m->has_return()) {
       MtContext *return_ctx = new MtContext();
       return_ctx->type = CTX_RETURN;
       return_ctx->parent = method_ctx;

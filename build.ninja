@@ -79,6 +79,8 @@ build obj/src/MtCursor.o: compile_cpp src/MtCursor.cpp
   includes = -I. -Isubmodules/tree-sitter/lib/include
 build obj/src/MtField.o: compile_cpp src/MtField.cpp
   includes = -I. -Isubmodules/tree-sitter/lib/include
+build obj/src/MtFuncParam.o: compile_cpp src/MtFuncParam.cpp
+  includes = -I. -Isubmodules/tree-sitter/lib/include
 build obj/src/MtMethod.o: compile_cpp src/MtMethod.cpp
   includes = -I. -Isubmodules/tree-sitter/lib/include
 build obj/src/MtModLibrary.o: compile_cpp src/MtModLibrary.cpp
@@ -101,9 +103,10 @@ build bin/libmetron.a: static_lib obj/submodules/tree-sitter/lib/src/lib.o $
     obj/submodules/tree-sitter-cpp/src/parser.o $
     obj/submodules/tree-sitter-cpp/src/scanner.o obj/src/Err.o $
     obj/src/MtContext.o obj/src/MtCursor.o obj/src/MtField.o $
-    obj/src/MtMethod.o obj/src/MtModLibrary.o obj/src/MtModParam.o $
-    obj/src/MtModule.o obj/src/MtNode.o obj/src/MtSourceFile.o $
-    obj/src/MtTracer.o obj/src/MtUtils.o obj/src/Platform.o
+    obj/src/MtFuncParam.o obj/src/MtMethod.o obj/src/MtModLibrary.o $
+    obj/src/MtModParam.o obj/src/MtModule.o obj/src/MtNode.o $
+    obj/src/MtSourceFile.o obj/src/MtTracer.o obj/src/MtUtils.o $
+    obj/src/Platform.o
   includes = -I. -Isubmodules/tree-sitter/lib/include
 
 

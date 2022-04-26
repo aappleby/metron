@@ -282,6 +282,7 @@ CHECK_RETURN Err MtTracer::log_action(MtContext* method_ctx, MtContext* dst_ctx,
 
     if (dst_ctx->field && action == CTX_WRITE) {
       assert(method_ctx);
+      method_ctx->method->writes.insert(dst_ctx->field);
       dst_ctx->field->written_by = method_ctx->method;
     }
   }

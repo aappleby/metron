@@ -5,6 +5,7 @@
 
 #include "Log.h"
 #include "MtContext.h"
+#include "MtCursor.h"
 #include "MtField.h"
 #include "MtMethod.h"
 #include "MtModLibrary.h"
@@ -276,14 +277,59 @@ int main(int argc, char** argv) {
   //----------
   // Categorize fields
 
+  LOG("Categorizing fields\n");
   for (auto m : lib.modules) {
+    LOG_INDENT_SCOPE();
     err << m->categorize_fields();
   }
+  LOG("\n");
 
   if (err.has_err()) {
     LOG_R("Exiting due to error\n");
     return -1;
   }
+
+  //----------
+  // Categorize methods
+
+  LOG("Categorizing methods\n");
+  {
+    LOG_INDENT_SCOPE();
+    err << lib.categorize_methods();
+  }
+
+  int uncategorized = 0;
+  int invalid = 0;
+  for (auto mod : lib.modules) {
+    for (auto m : mod->all_methods) {
+      if (!m->categorized()) {
+        uncategorized++;
+      }
+      if (!m->is_valid()) {
+        invalid++;
+      }
+    }
+  }
+
+  LOG_G("Methods uncategorized %d\n", uncategorized);
+  LOG_G("Methods invalid %d\n", invalid);
+
+  if (uncategorized || invalid) {
+    err << ERR("Could not categorize all methods\n");
+    exit(-1);
+  }
+
+  LOG("\n");
+
+  /*
+  LOG_G("Lib dump:\n");
+  lib.dump();
+  LOG_G("\n");
+
+  LOG_G("Context dump:\n");
+  top_ctx->dump_tree();
+  LOG_G("\n");
+  */
 
   //----------
   // Emit all modules.
@@ -294,6 +340,8 @@ int main(int argc, char** argv) {
   }
 
   for (auto& source_file : lib.source_files) {
+    LOG_G("Translating %s\n", source_file->full_path.c_str());
+
     // Translate the source.
     auto out_name = source_file->filename;
     assert(out_name.ends_with(".h"));
@@ -305,16 +353,16 @@ int main(int argc, char** argv) {
             out_path.c_str());
     }
 
-#if 0
     std::string out_string;
     MtCursor cursor(&lib, source_file, nullptr, &out_string);
     cursor.echo = echo && !quiet;
 
     if (echo) {
-      LOG_G("--------------------------------------------------------------------------------\n\n");
+      LOG_G("----------------------------------------\n\n");
     }
 
     err << cursor.emit_everything();
+#if 0
     if (err.has_err()) {
       LOG_R("Error during code generation\n");
       exit(-1);
@@ -347,14 +395,6 @@ int main(int argc, char** argv) {
     }
 #endif
   }
-
-  LOG_G("Lib dump:\n");
-  lib.dump();
-  LOG_G("\n");
-
-  LOG_G("Context dump:\n");
-  top_ctx->dump_tree();
-  LOG_G("\n");
 
   LOG_B("Done!\n");
   lib.teardown();

@@ -2,7 +2,11 @@
 
 #include <stdarg.h>
 
+#include "MtField.h"
+#include "MtFuncParam.h"
+#include "MtMethod.h"
 #include "MtModLibrary.h"
+#include "MtModParam.h"
 #include "MtModule.h"
 #include "MtNode.h"
 #include "MtSourceFile.h"
@@ -300,7 +304,6 @@ CHECK_RETURN Err MtCursor::emit_preproc_include(MnPreprocInclude n) {
   return err;
 }
 
-#if 0
 //------------------------------------------------------------------------------
 // Change '=' to '<=' if lhs is a field and we're inside a sequential block.
 
@@ -314,7 +317,7 @@ CHECK_RETURN Err MtCursor::emit_assignment(MnAssignmentExpr n) {
 
   err << emit_dispatch(lhs) << emit_ws();
 
-  if (current_method && current_method->is_tick) {
+  if (current_method && current_method->in_tick) {
     auto lhs_field = current_mod->get_field(lhs.name4());
     if (lhs_field) {
       if (lhs_field->is_register()) {
@@ -335,7 +338,8 @@ CHECK_RETURN Err MtCursor::emit_assignment(MnAssignmentExpr n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnCallExpr call, int bx_width) {
+CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnCallExpr call,
+                                                   int bx_width) {
   Err err;
   assert(cursor == call.start());
 
@@ -360,14 +364,16 @@ CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnCallExpr call, int bx_width
       } else {
         // Size-casting expression
         cursor = arg0.start();
-        err << emit_print("%d'(", bx_width) << emit_dispatch(arg0) << emit_print(")");
+        err << emit_print("%d'(", bx_width) << emit_dispatch(arg0)
+            << emit_print(")");
         cursor = call.end();
       }
 
     } else {
       // Size-casting expression
       cursor = arg0.start();
-      err << emit_print("%d'(", bx_width) << emit_dispatch(arg0) << emit_print(")");
+      err << emit_print("%d'(", bx_width) << emit_dispatch(arg0)
+          << emit_print(")");
       cursor = call.end();
     }
   } else if (arg_count == 2) {
@@ -377,21 +383,21 @@ CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnCallExpr call, int bx_width
       // Slice at offset
       if (bx_width == 1) {
         err << emit_replacement(call, "%s[%s]", arg0.text().c_str(),
-                         arg1.text().c_str());
+                                arg1.text().c_str());
       } else {
         int offset = atoi(arg1.start());
         err << emit_replacement(call, "%s[%d:%d]", arg0.text().c_str(),
-                         bx_width - 1 + offset, offset);
+                                bx_width - 1 + offset, offset);
       }
     } else {
       if (bx_width == 1) {
         err << emit_replacement(call, "%s[%s]", arg0.text().c_str(),
-                         arg1.text().c_str());
+                                arg1.text().c_str());
         ;
       } else {
         err << emit_replacement(call, "%s[%d + %s : %s]", arg0.text().c_str(),
-                         bx_width - 1, arg1.text().c_str(),
-                         arg1.text().c_str());
+                                bx_width - 1, arg1.text().c_str(),
+                                arg1.text().c_str());
       }
     }
 
@@ -404,7 +410,8 @@ CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnCallExpr call, int bx_width
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnCallExpr call, MnNode bx_node) {
+CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnCallExpr call,
+                                                    MnNode bx_node) {
   Err err;
 
   assert(cursor == call.start());
@@ -509,7 +516,6 @@ CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
     cursor = n.end();
 
   } else if (func_name == "signed") {
-
     err << emit_replacement(func, "$signed");
     err << emit_arg_list(args);
   } else if (func_name == "unsigned") {
@@ -535,19 +541,16 @@ CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
     err << emit_arg_list(args);
   } else if (method && method->in_init) {
     err << comment_out(n);
-  } else if (method && method->is_tick) {
-
+  } else if (method && method->in_tick) {
     // Local call to tick() we already bound args, comment out the call.
     err << comment_out(n);
 
-  } else if (method && method->is_tock) {
-
+  } else if (method && method->in_tock) {
     // Local call to private tock() - bind output if needed.
     auto method = current_mod->get_method(func_name);
     if (method->has_return()) {
       err << emit_replacement(n, "%s", func_name.c_str());
-    }
-    else {
+    } else {
       err << comment_out(n);
     }
 
@@ -555,8 +558,7 @@ CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
     // Bit extract.
     auto template_arg = func.as_templ().args().named_child(0);
     err << emit_dynamic_bit_extract(n, template_arg);
-  }
-  else if (func_name == "cat") {
+  } else if (func_name == "cat") {
     // Remove "cat" and replace parens with brackets
     err << skip_over(func);
     auto child_count = args.child_count();
@@ -599,7 +601,8 @@ CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
     err << emit_print("}}");
     cursor = n.end();
   } else if (func.sym == sym_field_expression) {
-    // Component method call - just translate the field expression, not the args.
+    // Component method call - just translate the field expression, not the
+    // args.
     err << emit_dispatch(func);
     cursor = n.end();
   } else {
@@ -621,7 +624,8 @@ CHECK_RETURN Err MtCursor::emit_init_declarator_as_decl(MnDecl n) {
 
   err << emit_dispatch(n.get_field(field_type));
   err << emit_ws();
-  err << emit_dispatch(n.get_field(field_declarator).get_field(field_declarator));
+  err << emit_dispatch(
+      n.get_field(field_declarator).get_field(field_declarator));
   err << prune_trailing_ws();
   err << emit_print(";");
 
@@ -639,7 +643,7 @@ CHECK_RETURN Err MtCursor::emit_init_declarator_as_assign(MnDecl n) {
 
   // We don't need to emit anything for decls without initialization values.
   if (!n.is_init_decl()) {
-    //err << comment_out(n);
+    // err << comment_out(n);
     err << skip_over(n);
     return err;
   }
@@ -751,12 +755,10 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
   // OK, now we can emit bindings for the call we're at.
 
   if (n.sym == sym_call_expression) {
-
     auto func_node = n.get_field(field_function);
     auto args_node = n.get_field(field_arguments);
 
     if (func_node.sym == sym_field_expression) {
-
       if (args_node.named_child_count() != 0) {
         auto inst_id = func_node.get_field(field_argument);
         auto meth_id = func_node.get_field(field_field);
@@ -769,12 +771,13 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
         auto component_method = component_mod->get_method(meth_id.text());
         assert(component_method);
 
-        for (int i = 0; i < component_method->params.size(); i++) {
-          auto& param = component_method->params[i];
-          err << emit_print("%s_%s_%s = ",
-            inst_id.text().c_str(),
-            component_method->name().c_str(),
-            param.c_str());
+        for (int i = 0; i < component_method->param_nodes.size(); i++) {
+          auto& param = component_method->param_nodes[i];
+
+          err << emit_print("%s_%s_%s = ", inst_id.text().c_str(),
+                            component_method->name().c_str(),
+                            // FIXME this is probably wrong
+                            param.text().c_str());
 
           auto arg_node = args_node.named_child(i);
           cursor = arg_node.start();
@@ -787,14 +790,14 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
           err << emit_indent();
         }
       }
-    }
-    else if (func_node.sym == sym_identifier) {
+    } else if (func_node.sym == sym_identifier) {
       auto method = current_mod->get_method(func_node.text().c_str());
 
-      if (method && method->is_tick) {
-        for (int i = 0; i < method->params.size(); i++) {
-          auto& param = method->params[i];
-          err << emit_print("%s_%s = ", func_node.text().c_str(), param.c_str());
+      if (method && method->in_tick) {
+        for (int i = 0; i < method->param_nodes.size(); i++) {
+          auto& param = method->param_nodes[i];
+          err << emit_print("%s_%s = ", func_node.text().c_str(),
+                            param.text().c_str());
 
           auto arg_node = args_node.named_child(i);
           cursor = arg_node.start();
@@ -834,17 +837,16 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
 
   auto old_replacements = id_replacements;
 
-  for (auto p : current_method->params) {
-    id_replacements[p] = current_method->name() + "_" + p;
+  for (auto p : current_method->param_nodes) {
+    id_replacements[p.text()] = current_method->name() + "_" + p.text();
   }
 
   //----------
   // Local function input port decls go _before_ the function definition.
 
-  if (!current_method->is_public && (current_method->is_tick || current_method->is_tock)) {
-
+  if (!current_method->is_public() &&
+      (current_method->in_tick || current_method->in_tock)) {
     for (auto n : current_method->param_nodes) {
-
       auto param_type = n.get_field(field_type);
       auto param_name = n.get_field(field_declarator);
 
@@ -865,7 +867,6 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
       err << emit_print(";");
       err << emit_newline();
       err << emit_indent();
-
     }
 
     if (current_method->has_return()) {
@@ -885,9 +886,7 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
       err << emit_print(";");
       err << emit_newline();
       err << emit_indent();
-
     }
-
   }
 
   //----------
@@ -897,25 +896,27 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
     if (!return_type.is_null()) err << skip_over(return_type);
     err << skip_ws();
     err << emit_replacement(func_decl, "initial");
-  } else if (current_method->is_tick) {
+  } else if (current_method->in_tick) {
     err << skip_over(return_type);
     err << skip_ws();
     err << emit_replacement(func_decl, "always_ff @(posedge clock)");
-  } else if (current_method->is_tock) {
+  } else if (current_method->in_tock) {
     err << skip_over(return_type);
     err << skip_ws();
     err << emit_replacement(func_decl, "always_comb");
-  } else if (current_method->is_task) {
-    err << skip_over(return_type);
-    err << skip_ws();
+  } /* else if (current_method->in_task) {
+     err << skip_over(return_type);
+     err << skip_ws();
 
-    // FIXME do we want all tasks to be automatic? That would be closer to C semantics...
-    //err << emit_print("task automatic ");
-    err << emit_print("task ");
-    err << emit_dispatch(func_decl);
-    err << prune_trailing_ws();
-    err << emit_print(";");
-  } else if (current_method->in_func) {
+     // FIXME do we want all tasks to be automatic? That would be closer to C
+     // semantics...
+     // err << emit_print("task automatic ");
+     err << emit_print("task ");
+     err << emit_dispatch(func_decl);
+     err << prune_trailing_ws();
+     err << emit_print(";");
+   }*/
+  else if (current_method->in_func) {
     err << emit_print("function ");
     err << emit_dispatch(return_type);
     err << emit_ws();
@@ -930,12 +931,10 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
 
   if (current_method->in_init)
     err << emit_print("begin /*%s*/", current_method->name().c_str());
-  else if (current_method->is_tick) {
+  else if (current_method->in_tick) {
     err << emit_print("begin /*%s*/", current_method->name().c_str());
-  } else if (current_method->is_tock)
+  } else if (current_method->in_tock)
     err << emit_print("begin /*%s*/", current_method->name().c_str());
-  else if (current_method->is_task)
-    err << emit_print("");
   else if (current_method->in_func) {
     err << emit_print("");
   } else
@@ -971,13 +970,12 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
         if (d.is_const()) {
           err << emit_print("localparam ");
           err << emit_children(d);
-        }
-        else {
+        } else {
           if (d.is_init_decl()) {
             err << emit_init_declarator_as_assign(c);
           } else {
             err << skip_over(c);
-            //err << comment_out(c);
+            // err << comment_out(c);
           }
         }
 
@@ -1010,22 +1008,18 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
 
   if (current_method->in_init) {
     err << emit_print("end");
-  }
-  else if (current_method->is_tick) {
+  } else if (current_method->in_tick) {
     err << emit_print("end");
     /*
     err << emit_printf("endtask");
     err << emit_newline();
     err << emit_indent();
-    err << emit_printf("always_ff @(posedge clock) %s();", current_method->name().c_str());
+    err << emit_printf("always_ff @(posedge clock) %s();",
+    current_method->name().c_str());
     */
-  } else if (current_method->is_tock) {
+  } else if (current_method->in_tock) {
     err << emit_print("end");
-  }
-  else if (current_method->is_task) {
-    err << emit_print("endtask");
-  }
-  else if (current_method->in_func) {
+  } else if (current_method->in_func) {
     err << emit_print("endfunction");
   } else
     debugbreak();
@@ -1063,7 +1057,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_component(MnFieldDecl n) {
   if (args) {
     int arg_count = args.named_child_count();
     for (int i = 0; i < arg_count; i++) {
-      auto key = component_mod->modparams[i]->name();
+      auto key = component_mod->all_modparams[i]->name();
       auto val = args.named_child(i).text();
       replacements[key] = val;
     }
@@ -1087,13 +1081,11 @@ CHECK_RETURN Err MtCursor::emit_field_as_component(MnFieldDecl n) {
   err << emit_indent();
   err << emit_print(".clock(clock)");
 
-  int port_count = int(
-    component_mod->input_signals.size() +
-    component_mod->input_method_args.size() +
-    component_mod->output_signals.size() +
-    component_mod->output_registers.size() +
-    component_mod->output_method_returns.size()
-   );
+  int port_count = int(component_mod->input_signals.size() +
+                       component_mod->input_method_params.size() +
+                       component_mod->output_signals.size() +
+                       component_mod->output_registers.size() +
+                       component_mod->output_method_returns.size());
 
   if (port_count) {
     err << emit_print(",");
@@ -1113,17 +1105,13 @@ CHECK_RETURN Err MtCursor::emit_field_as_component(MnFieldDecl n) {
     }
   }
 
-  for (auto n : component_mod->input_method_args) {
+  for (auto n : component_mod->input_method_params) {
     auto key = inst_name + "." + n->name();
 
     err << emit_newline();
     err << emit_indent();
-    err << emit_print(".%s_%s(%s_%s_%s)",
-      n->cname(),
-      n->cname(),
-      inst_name.c_str(),
-      n->cname(),
-      n->cname());
+    err << emit_print(".%s_%s(%s_%s_%s)", n->cname(), n->cname(),
+                      inst_name.c_str(), n->cname(), n->cname());
 
     if (port_index++ < port_count - 1) {
       err << emit_print(", ");
@@ -1157,7 +1145,8 @@ CHECK_RETURN Err MtCursor::emit_field_as_component(MnFieldDecl n) {
   for (auto n : component_mod->output_method_returns) {
     err << emit_newline();
     err << emit_indent();
-    err << emit_print(".%s(%s_%s)", n->name().c_str(), inst_name.c_str(), n->cname());
+    err << emit_print(".%s(%s_%s)", n->name().c_str(), inst_name.c_str(),
+                      n->cname());
 
     if (port_index++ < port_count - 1) {
       err << emit_print(", ");
@@ -1210,7 +1199,7 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl component_decl) {
   if (args) {
     int arg_count = args.named_child_count();
     for (int i = 0; i < arg_count; i++) {
-      auto key = component_mod->modparams[i]->name();
+      auto key = component_mod->all_modparams[i]->name();
       auto val = args.named_child(i).text();
       replacements[key] = val;
     }
@@ -1237,7 +1226,7 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl component_decl) {
     err << emit_newline();
   }
 
-  for (auto n : component_mod->input_method_args) {
+  for (auto n : component_mod->input_method_params) {
     // field_declaration
     auto output_type = n->get_type_node();
     auto output_decl = n->get_decl_node();
@@ -1305,7 +1294,8 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl component_decl) {
     auto getter_decl = m->_node.get_field(field_declarator);
     auto getter_name = getter_decl.get_field(field_declarator);
 
-    MtCursor sub_cursor(lib, component_mod->source_file, component_mod, str_out);
+    MtCursor sub_cursor(lib, component_mod->source_file, component_mod,
+                        str_out);
     sub_cursor.echo = echo;
     sub_cursor.in_ports = true;
     sub_cursor.id_replacements = replacements;
@@ -1352,7 +1342,6 @@ enum { FOO, BAR, BAZ } blom;
 ========== tree dump end
 */
 
-
 CHECK_RETURN Err MtCursor::emit_anonymous_enum(MnFieldDecl n) {
   Err err;
 
@@ -1360,7 +1349,6 @@ CHECK_RETURN Err MtCursor::emit_anonymous_enum(MnFieldDecl n) {
 
   return err;
 }
-
 
 //------------------------------------------------------------------------------
 // enum e { FOO, BAR }; => typedef enum { FOO, BAR } e;
@@ -1385,7 +1373,6 @@ enum blom { FOO, BAR, BAZ };
 ========== tree dump end
 */
 
-
 CHECK_RETURN Err MtCursor::emit_simple_enum(MnFieldDecl n) {
   Err err;
 
@@ -1398,7 +1385,6 @@ CHECK_RETURN Err MtCursor::emit_simple_enum(MnFieldDecl n) {
   n.visit_tree([&](MnNode c) {
     if (c.sym == sym_primitive_type) node_prim_type = c;
   });
-
 
   err << emit_print("typedef enum ");
   if (node_prim_type) {
@@ -1457,7 +1443,8 @@ CHECK_RETURN Err MtCursor::emit_simple_enum(MnFieldDecl n) {
 ========== tree dump end
 */
 
-CHECK_RETURN Err MtCursor::emit_broken_enum(MnFieldDecl n, MnNode node_bitfield) {
+CHECK_RETURN Err MtCursor::emit_broken_enum(MnFieldDecl n,
+                                            MnNode node_bitfield) {
   Err err;
 
   auto node_type = n.get_field(field_type);
@@ -1465,7 +1452,9 @@ CHECK_RETURN Err MtCursor::emit_broken_enum(MnFieldDecl n, MnNode node_bitfield)
 
   auto node_type2 = node_bitfield.child(1).get_field(field_type);
 
-  node_type2 = node_type2.get_field(field_scope).get_field(field_arguments).named_child(0);
+  node_type2 = node_type2.get_field(field_scope)
+                   .get_field(field_arguments)
+                   .named_child(0);
 
   int enum_width = atoi(node_type2.start());
 
@@ -1525,17 +1514,14 @@ CHECK_RETURN Err MtCursor::emit_enum(MnFieldDecl n) {
 
   if (node_bitfield) {
     err << emit_broken_enum(n, node_bitfield);
-  }
-  else if (node_type.get_field(field_name)) {
+  } else if (node_type.get_field(field_name)) {
     err << emit_simple_enum(n);
-  }
-  else {
+  } else {
     err << emit_anonymous_enum(n);
   }
 
   return err;
 }
-
 
 //------------------------------------------------------------------------------
 // Emit field declarations. For components, also emit glue declarations and
@@ -1546,11 +1532,10 @@ CHECK_RETURN Err MtCursor::emit_enum(MnFieldDecl n) {
 // field_declaration = { type:enum_specifier,  bitfield_clause (TREESITTER BUG)
 // }
 
-
 CHECK_RETURN Err MtCursor::emit_field_decl(MnFieldDecl n) {
   Err err;
 
-  //n.dump_tree();
+  // n.dump_tree();
 
   if (n.is_const()) {
     err << emit_print("localparam ");
@@ -1574,7 +1559,7 @@ CHECK_RETURN Err MtCursor::emit_field_decl(MnFieldDecl n) {
     err << emit_children(n);
   } else if (lib->get_module(type_name)) {
     err << emit_field_as_component(n);
-  } else if (current_mod->get_input_field(n.name().text())) {
+  } else if (current_mod->get_input_signal(n.name().text())) {
     err << skip_over(n);
   } else if (current_mod->get_output_signal(n.name().text())) {
     err << skip_over(n);
@@ -1582,9 +1567,10 @@ CHECK_RETURN Err MtCursor::emit_field_decl(MnFieldDecl n) {
     err << skip_over(n);
   } else if (n.is_const()) {
     err << emit_children(n);
-  } else if (current_mod->get_enum(type_name)) {
+  } /*else if (current_mod->get_enum(type_name)) {
     err << emit_children(n);
-  } else if (type_name == "logic") {
+  }*/
+  else if (type_name == "logic") {
     err << emit_children(n);
   } else if (type_name == "int") {
     err << emit_children(n);
@@ -1610,25 +1596,23 @@ CHECK_RETURN Err MtCursor::emit_struct(MnNode n) {
     // struct Foo {};
 
     err << emit_print("typedef ");
-    err << emit_dispatch(n.child(0)); // lit = "struct"
+    err << emit_dispatch(n.child(0));  // lit = "struct"
     err << emit_ws();
     err << emit_print("packed ");
     cursor = node_body.start();
-    err << emit_dispatch(node_body); // body: field_declaration_list
+    err << emit_dispatch(node_body);  // body: field_declaration_list
     err << emit_print(" ");
     err << emit_splice(node_name);
     err << emit_print(";");
     cursor = n.end();
-  }
-  else {
+  } else {
     // typedef struct {} Foo;
 
-    err << emit_dispatch(n.child(0)); // lit = "struct"
+    err << emit_dispatch(n.child(0));  // lit = "struct"
     err << emit_ws();
     err << emit_print("packed ");
-    err << emit_dispatch(node_body); // body: field_declaration_list
+    err << emit_dispatch(node_body);  // body: field_declaration_list
   }
-
 
   return err;
 }
@@ -1725,13 +1709,11 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
     in_ports = true;
     trim_namespaces = false;
 
-    int port_count = int(
-      current_mod->input_signals.size() +
-      current_mod->output_signals.size() +
-      current_mod->output_registers.size() +
-      current_mod->input_method_args.size() +
-      current_mod->output_method_returns.size()
-    );
+    int port_count = int(current_mod->input_signals.size() +
+                         current_mod->output_signals.size() +
+                         current_mod->output_registers.size() +
+                         current_mod->input_method_params.size() +
+                         current_mod->output_method_returns.size());
 
     int port_index = 0;
 
@@ -1742,30 +1724,31 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
     }
     err << emit_newline();
 
-    // We emit input signals, output signals, and output registers together so that
-    // if the source was ported over to Metron from Verilog and has explicit ports,
-    // the ports stay in the same order.
+    // We emit input signals, output signals, and output registers together so
+    // that if the source was ported over to Metron from Verilog and has
+    // explicit ports, the ports stay in the same order.
 
     for (auto f : current_mod->all_fields) {
       if (!f->is_public()) continue;
       if (f->is_param()) continue;
 
+      if (!(f->is_input_sig() || f->is_output_sig() || f->is_output_reg()))
+        continue;
+
       err << emit_indent();
 
-      if (f->is_input_signal()) {
+      if (f->is_input_sig()) {
         err << emit_print("input ");
-      } else if (f->is_output_signal()) {
+      } else if (f->is_output_sig()) {
         err << emit_print("output ");
-      }
-      else if (f->is_output_register()) {
+      } else if (f->is_output_reg()) {
         err << emit_print("output ");
-      }
-      else {
+      } else {
         debugbreak();
       }
 
-      auto node_type = f->get_type_node();  // type
-      auto node_decl = f->get_decl_node();  // decl
+      auto node_type = f->node.get_field(field_type);
+      auto node_decl = f->node.get_field(field_declarator);
 
       MtCursor sub_cursor = *this;
       sub_cursor.cursor = node_type.start();
@@ -1779,12 +1762,12 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
       err << emit_newline();
     }
 
-    for (auto input : current_mod->input_method_args) {
+    for (auto input : current_mod->input_method_params) {
       err << emit_indent();
       err << emit_print("input ");
 
-      auto node_type = input->get_type_node();  // type
-      auto node_decl = input->get_decl_node();  // decl
+      auto node_type = input->node.get_field(field_type);
+      auto node_decl = input->node.get_field(field_declarator);
 
       MtCursor sub_cursor = *this;
       sub_cursor.cursor = node_type.start();
@@ -1873,7 +1856,9 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
 }
 
 //------------------------------------------------------------------------------
-// If n.child(0) is a call expression, this node is a block-level call to a component - since there's nothing on the LHS to bind the output to, we just comment out the whole call.
+// If n.child(0) is a call expression, this node is a block-level call to a
+// component - since there's nothing on the LHS to bind the output to, we just
+// comment out the whole call.
 
 CHECK_RETURN Err MtCursor::emit_statement(MnExprStatement n) {
   Err err;
@@ -2083,7 +2068,8 @@ CHECK_RETURN Err MtCursor::emit_translation_unit(MnTranslationUnit n) {
 // Replace "0b" prefixes with "'b"
 // Add an explicit size prefix if needed.
 
-CHECK_RETURN Err MtCursor::emit_number_literal(MnNumberLiteral n, int size_cast) {
+CHECK_RETURN Err MtCursor::emit_number_literal(MnNumberLiteral n,
+                                               int size_cast) {
   Err err;
   assert(cursor == n.start());
 
@@ -2173,8 +2159,7 @@ CHECK_RETURN Err MtCursor::emit_identifier(MnIdentifier n) {
     if (preproc_vars.contains(name)) {
       err << emit_print("`");
       err << emit_text(n);
-    }
-    else {
+    } else {
       err << emit_text(n);
     }
   }
@@ -2249,12 +2234,11 @@ CHECK_RETURN Err MtCursor::emit_field_expr(MnFieldExpr n) {
 
   if (current_mod && current_mod->get_component(component_name)) {
     auto field = n.text();
-      for (auto& c : field) {
-        if (c == '.') c = '_';
-      }
+    for (auto& c : field) {
+      if (c == '.') c = '_';
+    }
     err << emit_replacement(n, field.c_str());
-  }
-  else {
+  } else {
     // Local struct reference
     err << emit_text(n);
   }
@@ -2381,7 +2365,7 @@ CHECK_RETURN Err MtCursor::emit_comment(MnComment n) {
 CHECK_RETURN Err MtCursor::emit_break(MnBreakStatement n) {
   Err err;
   assert(cursor == n.start());
-  //err << comment_out(n);
+  // err << comment_out(n);
   err << skip_over(n);
   assert(cursor == n.end());
   return err;
@@ -2430,9 +2414,7 @@ CHECK_RETURN Err MtCursor::emit_qualified_id(MnQualifiedId n) {
 
   if (n.text() == "std::string") {
     err << emit_replacement(n, "string");
-  }
-  else {
-
+  } else {
     auto scope_text = n.get_field(field_scope).text();
 
     // If the scope is an enum name, only emit the name field.
@@ -2479,7 +2461,6 @@ CHECK_RETURN Err MtCursor::emit_if_statement(MnIfStatement n) {
   auto node_else = n.get_field(field_alternative);
 
   if (!node_then.is_null() && node_then.sym != sym_compound_statement) {
-
     if (branch_contains_component_call(node_then)) {
       err << ERR("If statements that contain component calls must use {}.");
     }
@@ -2505,10 +2486,10 @@ CHECK_RETURN Err MtCursor::emit_enum_specifier(MnEnumSpecifier n) {
 
   err << emit_children(n);
 
-  //assert(cursor == n.start());
-  // err << emit_sym_field_declaration_as_enum_class(MtFieldDecl(n));
-  // for (auto c : n) err << emit_dispatch(c);
-  //debugbreak();
+  // assert(cursor == n.start());
+  //  err << emit_sym_field_declaration_as_enum_class(MtFieldDecl(n));
+  //  for (auto c : n) err << emit_dispatch(c);
+  // debugbreak();
   return err;
 }
 
@@ -2664,7 +2645,7 @@ CHECK_RETURN Err MtCursor::emit_param_list(MnParameterList n) {
   assert(cursor == n.start());
   Err err;
   err << emit_children(n);
-  //err << emit_ws_to_newline();
+  // err << emit_ws_to_newline();
   return err;
 }
 
@@ -2682,7 +2663,6 @@ CHECK_RETURN Err MtCursor::emit_preproc(MnNode n) {
   Err err;
   switch (n.sym) {
     case sym_preproc_def: {
-
       auto lit = n.child(0);
       auto name = n.get_field(field_name);
       auto value = n.get_field(field_value);
@@ -2718,16 +2698,16 @@ CHECK_RETURN Err MtCursor::emit_preproc(MnNode n) {
       break;
 
     case sym_preproc_arg: {
-
-      // If we see any other #defined constants inside a #defined value, prefix them
-      // with '`'
+      // If we see any other #defined constants inside a #defined value, prefix
+      // them with '`'
       std::string arg = n.text();
       std::string new_arg;
 
       for (int i = 0; i < arg.size(); i++) {
         for (const auto& def_pair : preproc_vars) {
           if (def_pair.first == arg) continue;
-          if (strncmp(&arg[i], def_pair.first.c_str(), def_pair.first.size()) == 0) {
+          if (strncmp(&arg[i], def_pair.first.c_str(), def_pair.first.size()) ==
+              0) {
             new_arg.push_back('`');
             break;
           }
@@ -2750,12 +2730,9 @@ CHECK_RETURN Err MtCursor::emit_preproc(MnNode n) {
 //------------------------------------------------------------------------------
 // Call the correct emit() method based on the node type.
 
-#endif
-
 CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
   Err err;
 
-#if 0
   assert(cursor == n.start());
 
   switch (n.sym) {
@@ -2993,12 +2970,10 @@ CHECK_RETURN Err MtCursor::check_done(MnNode n) {
       }
     }
   }
-#endif
 
   return err;
 }
 
-#if 0
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_children(MnNode n) {
@@ -3019,5 +2994,3 @@ CHECK_RETURN Err MtCursor::emit_children(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
-
-#endif

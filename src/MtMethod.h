@@ -8,6 +8,7 @@
 
 struct MtModule;
 struct MtModLibrary;
+struct MtField;
 
 //------------------------------------------------------------------------------
 
@@ -23,9 +24,13 @@ struct MtMethod {
   bool is_root() const;
   bool is_leaf() const;
   bool is_branch() const;
+  bool is_public() const { return _public; }
 
   void dump();
   void dump_call_graph();
+
+  bool has_params() const { return !param_nodes.empty(); }
+  bool has_return() const { return !_type.is_null() && _type.text() != "void"; }
 
   //----------------------------------------
 
@@ -35,8 +40,6 @@ struct MtMethod {
   MtModLibrary* _lib = nullptr;
   std::string _name;
   MnNode _type;
-  bool has_params;
-  bool has_return;
   ContextState state = CTX_PENDING;
 
   //----------
@@ -49,6 +52,8 @@ struct MtMethod {
   std::vector<MnNode> param_nodes;
   std::set<MtMethod*> callers;
   std::set<MtMethod*> callees;
+
+  std::set<MtField*> writes;
 };
 
 //------------------------------------------------------------------------------

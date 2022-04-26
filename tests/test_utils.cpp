@@ -5,7 +5,6 @@
 #include "MtModule.h"
 #include "MtSourceFile.h"
 
-
 bool comp_iws(const char* a, const char* b) {
   if (!a) return false;
   if (!b) return false;
@@ -76,12 +75,12 @@ void parse_simple(std::string src, MtModLibrary& library) {
     mod->check_dirty_ticks();
     mod->check_dirty_tocks();
   }
-  */
 
   Err err;
 
   err << library.load_blob("test.h", "test.h", src, /*use_utf8_bom*/ false, /*verbose*/ false);
   err << library.process_sources();
+  * /
 }
 
 //------------------------------------------------------------------------------
@@ -136,7 +135,7 @@ public:
   }
 
 private:
-  
+
   logic<8> my_reg;
 
   void tick(logic<8> in) {

@@ -15,13 +15,10 @@ MtMethod::MtMethod(MtModule* mod, MnNode n, bool is_public) {
 
   auto params = n.get_field(field_declarator).get_field(field_parameters);
   for (const auto& param : params) {
-    if (param.sym != sym_parameter_declaration) {
-      has_params = true;
-      break;
+    if (param.sym == sym_parameter_declaration) {
+      param_nodes.push_back(param);
     }
   }
-
-  has_return = _type.text() != "void";
 }
 
 //------------------------------------------------------------------------------
@@ -63,7 +60,8 @@ void MtMethod::dump() {
   if (is_constructor()) {
     LOG_B("Constructor %s\n", cname());
   } else {
-    LOG_B("Method %s\n", cname());
+    LOG_B("Method %s - init %d tick %d tock %d func %d\n", cname(), in_init,
+          in_tick, in_tock, in_func);
   }
 
   for (auto p : param_nodes) {

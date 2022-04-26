@@ -270,6 +270,7 @@ def build_metron_lib():
             "src/MtContext.cpp",
             "src/MtCursor.cpp",
             "src/MtField.cpp",
+            "src/MtFuncParam.cpp",
             "src/MtMethod.cpp",
             "src/MtModLibrary.cpp",
             "src/MtModParam.cpp",

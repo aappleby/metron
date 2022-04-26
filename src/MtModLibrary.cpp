@@ -3,6 +3,7 @@
 #include <sys/stat.h>
 
 #include "Log.h"
+#include "MtField.h"
 #include "MtMethod.h"
 #include "MtModule.h"
 #include "MtSourceFile.h"
@@ -169,27 +170,33 @@ CHECK_RETURN Err MtModLibrary::propagate(propagate_visitor v) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtModLibrary::process_sources() {
+CHECK_RETURN Err MtModLibrary::categorize_methods() {
   Err err;
 
-#if 0
   //----------------------------------------
-  // Trace done, all our fields should have a state assigned. Categorize the methods.
+  // Trace done, all our fields should have a state assigned. Categorize the
+  // methods.
 
   //----------------------------------------
   // Mark all methods called by the constructor as inits
 
-  err << propagate([&](MtMethod* m) {
+  err << propagate([&](MtMethod *m) {
     if (m->in_init) return 0;
-    
+
+    if (m->is_constructor()) {
+      LOG_B("%-20s is init because it's the constructor.\n", m->cname());
+      m->in_init = true;
+      return 1;
+    }
+
     for (auto caller : m->callers) {
       if (caller->in_init) {
         if (m->in_init) {
           return 0;
-        }
-        else {
-          LOG_B("%-20s is init because it's called by the constructor.\n", m->cname());
-          m->in_init = 1;
+        } else {
+          LOG_B("%-20s is init because it's called by the constructor.\n",
+                m->cname());
+          m->in_init = true;
           return 1;
         }
       }
@@ -198,28 +205,27 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
     return 0;
   });
 
-
   //----------------------------------------
   // Methods that only call funcs and don't write anything are funcs.
 
-  err << propagate([&](MtMethod* m) {
+  err << propagate([&](MtMethod *m) {
     if (m->in_init) return 0;
 
-    if (!m->is_writer()) {
-
+    if (m->writes.empty()) {
       bool only_calls_funcs = true;
       for (auto callee : m->callees) {
-        only_calls_funcs &= callee->is_func;
+        only_calls_funcs &= callee->in_func;
       }
 
       if (only_calls_funcs) {
-
-        if (m->is_func) {
+        if (m->in_func) {
           return 0;
-        }
-        else {
-          LOG_B("%-20s is func because it doesn't write anything and only calls other funcs.\n", m->cname());
-          m->is_func = true;
+        } else {
+          LOG_B(
+              "%-20s is func because it doesn't write anything and only calls "
+              "other funcs.\n",
+              m->cname());
+          m->in_func = true;
           return 1;
         }
       }
@@ -231,20 +237,19 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
   //----------------------------------------
   // Methods that write registers _must_ be ticks.
 
-  err << propagate([&](MtMethod* m) {
+  err << propagate([&](MtMethod *m) {
     if (m->in_init) return 0;
-    if (m->is_func) return 0;
+    if (m->in_func) return 0;
 
     bool wrote_register = false;
-    for (auto f : m->fields_written) {
+    for (auto f : m->writes) {
       if (f->state == CTX_REGISTER) wrote_register = true;
     }
 
     if (wrote_register) {
       if (m->in_tick) {
         return 0;
-      }
-      else {
+      } else {
         LOG_B("%-20s is tick because it writes registers.\n", m->cname());
         m->in_tick = true;
         return 1;
@@ -252,21 +257,20 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
     }
 
     return 0;
-    });
+  });
 
   //----------------------------------------
   // Methods that are downstream from ticks _must_ be ticks.
 
-  err << propagate([&](MtMethod* m) {
+  err << propagate([&](MtMethod *m) {
     if (m->in_init) return 0;
-    if (m->is_func) return 0;
+    if (m->in_func) return 0;
 
     for (auto caller : m->callers) {
       if (caller->in_tick) {
         if (m->in_tick) {
           return 0;
-        }
-        else {
+        } else {
           LOG_B("%-20s is tick because it is called by a tick.\n", m->cname());
           m->in_tick = true;
           return 1;
@@ -275,25 +279,24 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
     }
 
     return 0;
-    });
+  });
 
   //----------------------------------------
   // Methods that write signals _must_ be tocks.
 
-  err << propagate([&](MtMethod* m) {
+  err << propagate([&](MtMethod *m) {
     if (m->in_init) return 0;
-    if (m->is_func) return 0;
+    if (m->in_func) return 0;
 
     bool wrote_signal = false;
-    for (auto f : m->fields_written) {
-      wrote_signal  |= f->state == CTX_SIGNAL;
+    for (auto f : m->writes) {
+      wrote_signal |= f->state == CTX_SIGNAL;
     }
 
     if (wrote_signal) {
       if (m->in_tock) {
         return 0;
-      }
-      else {
+      } else {
         LOG_B("%-20s is tock because it writes signals.\n", m->cname());
         m->in_tock = true;
         return 1;
@@ -306,44 +309,44 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
   //----------------------------------------
   // Methods that write outputs are tocks unless they're already ticks.
 
-  err << propagate([&](MtMethod* m) {
+  err << propagate([&](MtMethod *m) {
     if (m->in_init) return 0;
-    if (m->is_func) return 0;
+    if (m->in_func) return 0;
     if (m->in_tick) return 0;
 
     bool wrote_output = false;
-    for (auto f : m->fields_written) {
-      wrote_output  |= f->state == CTX_OUTPUT;
+    for (auto f : m->writes) {
+      wrote_output |= f->state == CTX_OUTPUT;
     }
 
     if (wrote_output) {
       if (m->in_tock) {
         return 0;
-      }
-      else {
-        LOG_B("%-20s is tock because it writes outputs and isn't already a tick.\n", m->cname());
+      } else {
+        LOG_B(
+            "%-20s is tock because it writes outputs and isn't already a "
+            "tick.\n",
+            m->cname());
         m->in_tock = true;
         return 1;
       }
     }
 
     return 0;
-    });
-
+  });
 
   //----------------------------------------
   // Methods that are upstream from tocks _must_ be tocks.
 
-  err << propagate([&](MtMethod* m) {
+  err << propagate([&](MtMethod *m) {
     if (m->in_init) return 0;
-    if (m->is_func) return 0;
+    if (m->in_func) return 0;
 
-    for (auto& callee : m->callees) {
+    for (auto &callee : m->callees) {
       if (callee->in_tock) {
         if (m->in_tock) {
           return 0;
-        }
-        else {
+        } else {
           LOG_B("%-20s is tock because it calls a tock.\n", m->cname());
           m->in_tock = true;
           return 1;
@@ -352,23 +355,26 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
     }
 
     return 0;
-    });
+  });
 
   //----------------------------------------
-  // Methods that are downstream from tocks are tocks unless they're already ticks.
+  // Methods that are downstream from tocks are tocks unless they're already
+  // ticks.
 
-  err << propagate([&](MtMethod* m) {
+  err << propagate([&](MtMethod *m) {
     if (m->in_init) return 0;
-    if (m->is_func) return 0;
+    if (m->in_func) return 0;
     if (m->in_tick) return 0;
 
     for (auto caller : m->callers) {
       if (caller->in_tock) {
         if (m->in_tock) {
           return 0;
-        }
-        else {
-          LOG_B("%-20s is tock because it its called by a tock and isn't already a tick.\n", m->cname());
+        } else {
+          LOG_B(
+              "%-20s is tock because it its called by a tock and isn't already "
+              "a tick.\n",
+              m->cname());
           m->in_tock = true;
           return 1;
         }
@@ -376,8 +382,7 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
     }
 
     return 0;
-    });
-
+  });
 
   //----------------------------------------
   // If there are unmarked methods left, they must be upstream from a tick.
@@ -385,16 +390,18 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
   // needed after conversion.
   // *** can't turn them into ticks if they have return vals
 
-  err << propagate([&](MtMethod* m) {
+  err << propagate([&](MtMethod *m) {
     if (m->is_valid()) return 0;
 
-    for (auto& callee : m->callees) {
+    for (auto &callee : m->callees) {
       if (callee->in_tick) {
         if (m->in_tick) {
           return 0;
-        }
-        else {
-          LOG_B("%-20s is tick because it hasn't been categorized yet and is upstream from a tick.\n", m->cname());
+        } else {
+          LOG_B(
+              "%-20s is tick because it hasn't been categorized yet and is "
+              "upstream from a tick.\n",
+              m->cname());
           m->in_tick = true;
           return 1;
         }
@@ -404,26 +411,7 @@ CHECK_RETURN Err MtModLibrary::process_sources() {
     return 0;
   });
 
-
-  //----------------------------------------
-
-  int uncategorized = 0;
-  int invalid = 0;
-  for (auto mod : modules) {
-    for (auto m : mod->all_methods) {
-      if (!m->categorized()) {
-        m->categorize();
-        uncategorized++;
-      }
-      if (!m->is_valid()) {
-        invalid++;
-      }
-    }
-  }
-
-  LOG_G("Methods uncategorized %d\n", uncategorized);
-  LOG_G("Methods invalid %d\n", invalid);
-
+#if 0
   //----------------------------------------
   // Everything's categorized now. Next step - check for duplicate method bindings.
 

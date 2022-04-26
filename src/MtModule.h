@@ -11,6 +11,7 @@ struct MtModLibrary;
 struct MtSourceFile;
 struct MtField;
 struct MtModParam;
+struct MtFuncParam;
 
 typedef std::vector<uint8_t> blob;
 
@@ -27,6 +28,11 @@ struct MtModule {
 
   MtMethod* get_method(const std::string& name);
   MtField* get_field(const std::string& name);
+  MtField* get_component(const std::string& name);
+
+  MtField* get_input_signal(const std::string& name);
+  MtField* get_output_signal(const std::string& name);
+  MtField* get_output_register(const std::string& name);
 
   void dump();
   void dump_method_list(const std::vector<MtMethod*>& methods) const;
@@ -47,7 +53,7 @@ struct MtModule {
   MnClassSpecifier mod_class;
   MnTemplateDecl mod_template;
   MnTemplateParamList mod_param_list;
-  // MtMethod* constructor = nullptr;
+  MtMethod* constructor = nullptr;
   int refcount = 0;
 
   //----------
@@ -64,7 +70,6 @@ struct MtModule {
   std::vector<MtField*> outputs;
   std::vector<MtField*> signals;
   std::vector<MtField*> registers;
-  std::vector<MtField*> components;
 
   //----------
 
@@ -73,14 +78,15 @@ struct MtModule {
   // Categorized fields
 
   // FIXME not actually doing anything with this yet?
-  // std::vector<MtFuncParam*> localparams;
+  std::vector<MtFuncParam*> localparams;
   std::vector<MtField*> input_signals;
   std::vector<MtField*> output_signals;
   std::vector<MtField*> output_registers;
 
-  // std::vector<MtFuncParam*> input_method_args;
-  // std::vector<MtMethod*> output_method_returns;
+  std::vector<MtFuncParam*> input_method_params;
+  std::vector<MtMethod*> output_method_returns;
 
+  std::vector<MtField*> components;
   std::vector<MtField*> private_signals;
   std::vector<MtField*> private_registers;
 

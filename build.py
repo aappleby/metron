@@ -183,7 +183,7 @@ def cpp_binary(bin_name, src_files, src_objs=None, deps=None, **kwargs):
         src_objs.append(obj_name)
     ninja.build(outputs=bin_name,
                 rule="link",
-                inputs=src_objs,
+                inputs=src_objs + deps,
                 variables=kwargs)
 
 
@@ -303,7 +303,6 @@ def build_metron_app():
             "submodules/tree-sitter/lib/include"
         ],
         deps=["bin/libmetron.a"],
-        local_libs="bin/libmetron.a",
     )
 
 # ------------------------------------------------------------------------------
@@ -320,7 +319,6 @@ def build_metron_test():
         ],
         includes=base_includes,
         deps=["bin/libmetron.a"],
-        local_libs="bin/libmetron.a",
     )
 
 # ------------------------------------------------------------------------------
@@ -469,6 +467,7 @@ def build_rvtiny():
         bin_name="bin/examples/rvtiny",
         src_files=["examples/rvtiny/main.cpp"],
         includes=base_includes + [mt_root],
+        deps=["bin/libmetron.a"],
         opt=opt_mode,
     )
 
@@ -502,6 +501,7 @@ def build_rvtiny_sync():
         bin_name="bin/examples/rvtiny_sync",
         src_files=["examples/rvtiny_sync/main.cpp"],
         includes=base_includes,
+        deps=["bin/libmetron.a"],
         opt=opt_mode,
     )
 
@@ -549,6 +549,7 @@ def build_pong():
         includes=base_includes,
         global_libs="-lSDL2",
         opt=opt_mode,
+        deps=["bin/libmetron.a"],
     )
 
     metronized_src = metronize_dir(mt_root, "pong.h", sv_root)

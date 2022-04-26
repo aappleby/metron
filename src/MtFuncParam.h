@@ -16,8 +16,8 @@ struct MtFuncParam {
   MnNode get_decl_node() const;
   void dump();
 
-  std::string func_name;
   MnNode node;
+  std::string func_name;
   std::string _name;
   std::string _type;
 };

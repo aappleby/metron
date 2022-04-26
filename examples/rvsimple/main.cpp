@@ -2,28 +2,27 @@
 
 #include "Platform.h"
 #include "metron/toplevel.h"
+#include "submodules/CLI11/include/CLI/App.hpp"
+#include "submodules/CLI11/include/CLI/Config.hpp"
+#include "submodules/CLI11/include/CLI/Formatter.hpp"
 #include "tests/Tests.h"
-
-#include "submodules/cli11/include/CLI/App.hpp"
-#include "submodules/cli11/include/CLI/Formatter.hpp"
-#include "submodules/cli11/include/CLI/Config.hpp"
 
 //------------------------------------------------------------------------------
 
 const char* instructions[38] = {
-  "add", "addi", "and", "andi", "auipc", "beq",  "bge", "bgeu",
-  "blt", "bltu", "bne", "jal",  "jalr",  "lb",   "lbu", "lh",
-  "lhu", "lui",  "lw",  "or",   "ori",   "sb",   "sh",  "simple",
-  "sll", "slli", "slt", "slti", "sltiu", "sltu", "sra", "srai",
-  "srl", "srli", "sub", "sw",   "xor",   "xori"
-};
+    "add", "addi", "and", "andi", "auipc", "beq",  "bge", "bgeu",
+    "blt", "bltu", "bne", "jal",  "jalr",  "lb",   "lbu", "lh",
+    "lhu", "lui",  "lw",  "or",   "ori",   "sb",   "sh",  "simple",
+    "sll", "slli", "slt", "slti", "sltiu", "sltu", "sra", "srai",
+    "srl", "srli", "sub", "sw",   "xor",   "xori"};
 
 //------------------------------------------------------------------------------
 
 uint64_t total_tocks = 0;
 uint64_t total_time = 0;
 
-TestResults test_instruction(const char* test_name, const int reps, const int max_cycles) {
+TestResults test_instruction(const char* test_name, const int reps,
+                             const int max_cycles) {
   TEST_INIT("Testing op %6s, %d reps", test_name, reps);
 
   char buf1[256];
@@ -76,7 +75,8 @@ int main(int argc, const char** argv) {
   int max_cycles = 1000;
 
   app.add_option("-r,--reps", reps, "How many times to repeat the test");
-  app.add_option("-m,--max_cycles", max_cycles, "Maximum # cycles to simulate before timeout");
+  app.add_option("-m,--max_cycles", max_cycles,
+                 "Maximum # cycles to simulate before timeout");
   CLI11_PARSE(app, argc, argv);
 
   LOG_B("Starting %s @ %d reps...\n", argv[0], reps);

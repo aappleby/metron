@@ -233,8 +233,14 @@ std::string MnNode::name4() const {
     case sym_parameter_declaration:
     case sym_optional_parameter_declaration:
     case sym_function_definition:
-    case sym_function_declarator:
-      return get_field(field_declarator).name4();
+    case sym_function_declarator: {
+      auto declarator = get_field(field_declarator);
+      if (declarator.is_null()) {
+        dump_tree();
+        debugbreak();
+      }
+      return declarator.name4();
+    }
 
     case sym_enum_specifier: {
       auto name = get_field(field_name);
@@ -359,6 +365,11 @@ struct NodeDumper {
   //----------------------------------------
 
   void dump_node(const MnNode& n, int index, int depth, bool is_last) {
+    if (n.is_null()) {
+      LOG_R("<NULL>??? %d %d %d\n", index, depth, is_last);
+      return;
+    }
+
     LOG(" ");
     for (int i = 0; i < color_stack.size(); i++) {
       bool stack_top = i == color_stack.size() - 1;

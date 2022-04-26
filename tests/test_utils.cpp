@@ -78,9 +78,9 @@ void parse_simple(std::string src, MtModLibrary& library) {
 
   Err err;
 
-  err << library.load_blob("test.h", "test.h", src, /*use_utf8_bom*/ false, /*verbose*/ false);
-  err << library.process_sources();
-  * /
+  err << library.load_blob("test.h", "test.h", src, / *use_utf8_bom* / false, /
+*verbose* / false); err << library.process_sources();
+  */
 }
 
 //------------------------------------------------------------------------------

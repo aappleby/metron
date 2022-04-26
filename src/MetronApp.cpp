@@ -188,14 +188,7 @@ int main(int argc, char** argv) {
   //----------------------------------------
   // Instantiate top module.
 
-  MtContext* top_ctx = new MtContext();
-  top_ctx->type = CTX_MODULE;
-  top_ctx->parent = nullptr;
-  top_ctx->name = "<top>";
-  top_ctx->field = nullptr;
-  top_ctx->method = nullptr;
-  top_ctx->mod = top_mod;
-  top_ctx->state = CTX_PENDING;
+  MtContext* top_ctx = new MtContext(top_mod);
 
   MtContext::instantiate(top_mod, top_ctx);
 
@@ -362,17 +355,16 @@ int main(int argc, char** argv) {
     }
 
     err << cursor.emit_everything();
-#if 0
     if (err.has_err()) {
       LOG_R("Error during code generation\n");
       exit(-1);
     }
 
     if (echo) {
-      LOG_G("\n--------------------------------------------------------------------------------\n");
+      LOG_G("\n----------------------------------------\n");
       LOG_G("Final converted source:\n\n");
       LOG_W("%s", out_string.c_str());
-      LOG_G("\n--------------------------------------------------------------------------------\n");
+      LOG_G("\n----------------------------------------\n");
     }
 
     // Save translated source to output directory, if there is one.
@@ -393,7 +385,6 @@ int main(int argc, char** argv) {
         fclose(out_file);
       }
     }
-#endif
   }
 
   LOG_B("Done!\n");

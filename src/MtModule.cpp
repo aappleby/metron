@@ -562,10 +562,6 @@ CHECK_RETURN Err MtModule::categorize_fields() {
   LOG_G("Categorizing %s\n", name().c_str());
 
   for (auto f : all_fields) {
-    if (f->is_component()) {
-      continue;
-    }
-
     if (f->is_param()) {
       // localparams.push_back(MtFuncParam::construct("<localparam>", f->node));
       continue;

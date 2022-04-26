@@ -5,7 +5,13 @@
 //------------------------------------------------------------------------------
 
 struct MtContext {
-  MtContext() {}
+  MtContext(MtModule* top_mod);
+  MtContext(MtContext* parent, MtMethod* _method);
+  MtContext(MtContext* parent, MtField* _field);
+
+  static MtContext* param(MtContext* parent, const std::string& name);
+  static MtContext* construct_return(MtContext* parent);
+
   ~MtContext() {
     for (auto c : children) delete c;
     children.clear();
@@ -29,17 +35,19 @@ struct MtContext {
     return nullptr;
   }
 
-  ContextType type;
   MtContext* parent;
   std::string name;
+  ContextType type;
+  ContextState state;
+
   MtField* field;
   MtMethod* method;
   MtModule* mod;
-  ContextState state;
 
   std::vector<MtContext*> children;
 
  private:
+  MtContext() {}
   MtContext(const MtContext& copy) = delete;
 };
 

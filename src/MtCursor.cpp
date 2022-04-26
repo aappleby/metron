@@ -776,8 +776,7 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
 
           err << emit_print("%s_%s_%s = ", inst_id.text().c_str(),
                             component_method->name().c_str(),
-                            // FIXME this is probably wrong
-                            param.text().c_str());
+                            param.get_field(field_declarator).text().c_str());
 
           auto arg_node = args_node.named_child(i);
           cursor = arg_node.start();
@@ -1026,6 +1025,24 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
 
   assert(cursor == n.end());
 
+  if (current_method->in_func && current_method->is_public()) {
+    err << emit_newline();
+    err << emit_indent();
+    err << emit_print("always_comb %s_ret = %s(", current_method->cname(),
+                      current_method->cname());
+
+    int param_count = current_method->param_nodes.size();
+    for (int i = 0; i < param_count; i++) {
+      auto param = current_method->param_nodes[i];
+      err << emit_print("%s_%s", current_method->cname(),
+                        param.get_field(field_declarator).text().c_str());
+      if (i < param_count - 1) {
+        err << emit_print(", ");
+      }
+    }
+    err << emit_print(");");
+  }
+
   //----------
 
   current_method = nullptr;
@@ -1108,10 +1125,12 @@ CHECK_RETURN Err MtCursor::emit_field_as_component(MnFieldDecl n) {
   for (auto n : component_mod->input_method_params) {
     auto key = inst_name + "." + n->name();
 
+    n->dump();
+
     err << emit_newline();
     err << emit_indent();
-    err << emit_print(".%s_%s(%s_%s_%s)", n->cname(), n->cname(),
-                      inst_name.c_str(), n->cname(), n->cname());
+    err << emit_print(".%s_%s(%s_%s_%s)", n->func_name.c_str(), n->cname(),
+                      inst_name.c_str(), n->func_name.c_str(), n->cname());
 
     if (port_index++ < port_count - 1) {
       err << emit_print(", ");
@@ -1145,8 +1164,8 @@ CHECK_RETURN Err MtCursor::emit_field_as_component(MnFieldDecl n) {
   for (auto n : component_mod->output_method_returns) {
     err << emit_newline();
     err << emit_indent();
-    err << emit_print(".%s(%s_%s)", n->name().c_str(), inst_name.c_str(),
-                      n->cname());
+    err << emit_print(".%s_ret(%s_%s_ret)", n->name().c_str(),
+                      inst_name.c_str(), n->cname());
 
     if (port_index++ < port_count - 1) {
       err << emit_print(", ");
@@ -1309,7 +1328,7 @@ CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl component_decl) {
     err << emit_print("%s_", component_cname);
     err << sub_cursor.emit_dispatch(getter_name);
     err << prune_trailing_ws();
-    err << emit_print(";");
+    err << emit_print("_ret;");
     err << emit_newline();
   }
 
@@ -1797,6 +1816,7 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
       err << sub_cursor.emit_ws();
       sub_cursor.cursor = getter_name.start();
       err << sub_cursor.emit_dispatch(getter_name);
+      err << emit_print("_ret");
 
       if (port_index++ < port_count - 1) {
         err << emit_print(",");
@@ -2023,10 +2043,12 @@ CHECK_RETURN Err MtCursor::emit_enum_list(MnEnumeratorList n) {
 
 CHECK_RETURN Err MtCursor::emit_everything() {
   Err err;
+
   cursor = current_source->source;
   err << emit_ws();
   err << emit_dispatch(current_source->root_node);
   err << emit_print("\n");
+
   return err;
 }
 
@@ -2124,7 +2146,13 @@ CHECK_RETURN Err MtCursor::emit_return(MnReturnStatement n) {
   auto node_expr = n.child(1);
 
   cursor = node_expr.start();
-  err << emit_print("%s = ", current_method->name().c_str());
+
+  if (current_method->in_tock) {
+    err << emit_print("%s_ret = ", current_method->name().c_str());
+  } else {
+    err << emit_print("%s = ", current_method->name().c_str());
+  }
+
   err << emit_dispatch(node_expr);
   err << prune_trailing_ws();
   err << emit_print(";");
@@ -2231,13 +2259,21 @@ CHECK_RETURN Err MtCursor::emit_field_expr(MnFieldExpr n) {
   assert(cursor == n.start());
 
   auto component_name = n.get_field(field_argument).text();
+  auto component_field = n.get_field(field_field).text();
 
-  if (current_mod && current_mod->get_component(component_name)) {
+  auto component = current_mod->get_component(component_name);
+
+  if (component) {
     auto field = n.text();
     for (auto& c : field) {
       if (c == '.') c = '_';
     }
     err << emit_replacement(n, field.c_str());
+
+    if (component->_type_mod->get_method(component_field)) {
+      err << emit_print("_ret");
+    }
+
   } else {
     // Local struct reference
     err << emit_text(n);
@@ -2946,7 +2982,8 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
       else if (passthru_syms.contains(n.sym)) {
         err << emit_text(n);
       } else {
-        printf("Don't know what to do with %d %s\n", n.sym, n.ts_node_type());
+        err << ERR("Don't know what to do with %d %s\n", n.sym,
+                   n.ts_node_type());
         debugbreak();
       }
       break;

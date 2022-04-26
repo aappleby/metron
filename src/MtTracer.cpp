@@ -29,16 +29,24 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MtContext* ctx, MnNode n,
     }
 
     case sym_field_expression: {
-      assert(false);
       /*
-      auto node_arg = n.get_field(field_argument);
-      auto field_ctx = ctx->resolve(node_arg.text());
-      err << trace_dispatch(field_ctx, n.get_field(field_field), action);
+      n.dump_source_lines();
+      n.dump_tree();
+      assert(false);
       */
+      auto node_arg = n.get_field(field_argument);
+      auto node_field = n.get_field(field_field);
+
+      auto component_ctx = ctx->resolve(node_arg.text());
+      auto field_ctx = component_ctx->resolve(node_field.text());
+
+      err << log_action(ctx, field_ctx, action, n.get_source());
+      // err << trace_dispatch(field_ctx, node_field, action);
       break;
     }
 
     case sym_subscript_expression:
+      err << trace_dispatch(ctx, n.get_field(field_index), CTX_READ);
       err << trace_dispatch(ctx, n.get_field(field_argument), action);
       break;
 
@@ -94,17 +102,25 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MtContext* ctx, MnNode n,
     case sym_compound_statement:
     case sym_parameter_list:
     case sym_function_declarator:
-      for (const auto& c : n) err << trace_dispatch(ctx, c);
-      break;
-
+    case sym_unary_expression:
+    case sym_parenthesized_expression:
+    case sym_condition_clause:
+    case sym_template_type:
     case sym_comment:
     case sym_access_specifier:
     case sym_number_literal:
+    case sym_template_argument_list:
     case sym_primitive_type:
+    case sym_qualified_identifier:
+    case alias_sym_namespace_identifier:
+    case sym_using_declaration:
+    case sym_case_statement:
+    case sym_break_statement:
+      for (const auto& c : n) err << trace_dispatch(ctx, c);
       break;
 
     default:
-      printf("Don't know what to do with this:\n");
+      err << ERR("Don't know what to do with %s\n", n.ts_node_type());
       n.dump_tree();
       exit(0);
       break;

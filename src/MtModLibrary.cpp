@@ -206,7 +206,8 @@ CHECK_RETURN Err MtModLibrary::categorize_methods() {
   });
 
   //----------------------------------------
-  // Methods that only call funcs and don't write anything are funcs.
+  // Methods that only call funcs in the same module and don't write anything
+  // are funcs.
 
   err << propagate([&](MtMethod *m) {
     if (m->in_init) return 0;
@@ -214,6 +215,10 @@ CHECK_RETURN Err MtModLibrary::categorize_methods() {
     if (m->writes.empty()) {
       bool only_calls_funcs = true;
       for (auto callee : m->callees) {
+        if (callee->_mod != m->_mod) {
+          only_calls_funcs = false;
+        }
+
         only_calls_funcs &= callee->in_func;
       }
 
@@ -222,10 +227,41 @@ CHECK_RETURN Err MtModLibrary::categorize_methods() {
           return 0;
         } else {
           LOG_B(
-              "%-20s is func because it doesn't write anything and only calls "
+              "%s.%s is func because it doesn't write anything and only calls "
               "other funcs.\n",
-              m->cname());
+              m->_mod->cname(), m->cname());
           m->in_func = true;
+          return 1;
+        }
+      }
+    }
+
+    return 0;
+  });
+
+  //----------------------------------------
+  // Methods that don't write anything and call funcs in other modules are
+  // tocks.
+
+  err << propagate([&](MtMethod *m) {
+    if (m->in_init) return 0;
+    if (m->in_func) return 0;
+
+    if (m->writes.empty()) {
+      bool only_calls_funcs = true;
+      for (auto callee : m->callees) {
+        only_calls_funcs &= callee->in_func;
+      }
+
+      if (only_calls_funcs) {
+        if (m->in_tock) {
+          return 0;
+        } else {
+          LOG_B(
+              "%s.%s is tock because it doesn't write anything and calls funcs "
+              "in other modules.\n",
+              m->_mod->cname(), m->cname());
+          m->in_tock = true;
           return 1;
         }
       }

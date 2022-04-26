@@ -6,15 +6,89 @@
 
 //------------------------------------------------------------------------------
 
+MtContext::MtContext(MtModule *_top_mod) {
+  assert(_top_mod);
+
+  parent = nullptr;
+  name = "<top>";
+  type = CTX_MODULE;
+  state = CTX_NONE;
+
+  field = nullptr;
+  method = nullptr;
+  mod = _top_mod;
+}
+
+MtContext::MtContext(MtContext *_parent, MtMethod *_method) {
+  assert(_parent);
+  assert(_method);
+
+  parent = _parent;
+  name = _method->name();
+  type = CTX_METHOD;
+  state = CTX_NONE;
+
+  field = nullptr;
+  method = _method;
+  mod = nullptr;
+}
+
+MtContext::MtContext(MtContext *_parent, MtField *_field) {
+  assert(_parent);
+  assert(_field);
+
+  parent = _parent;
+  name = _field->_name;
+  type = CTX_FIELD;
+  state = CTX_NONE;
+
+  field = _field;
+  method = nullptr;
+  mod = _field->_type_mod;
+}
+
+MtContext *MtContext::param(MtContext *_parent, const std::string &_name) {
+  assert(_parent);
+  assert(_name.size());
+
+  MtContext *param_ctx = new MtContext();
+  param_ctx->parent = _parent;
+  param_ctx->name = _name;
+  param_ctx->type = CTX_PARAM;
+  param_ctx->state = CTX_NONE;
+
+  param_ctx->field = nullptr;
+  param_ctx->method = nullptr;
+  param_ctx->mod = nullptr;
+
+  return param_ctx;
+}
+
+MtContext *MtContext::construct_return(MtContext *_parent) {
+  MtContext *return_ctx = new MtContext();
+  return_ctx->parent = _parent;
+  return_ctx->name = "<return>";
+  return_ctx->type = CTX_RETURN;
+  return_ctx->state = CTX_NONE;
+
+  return_ctx->field = nullptr;
+  return_ctx->method = nullptr;
+  return_ctx->mod = nullptr;
+  return return_ctx;
+}
+
+//------------------------------------------------------------------------------
+
 MtContext *MtContext::clone() {
   MtContext *result = new MtContext();
-  result->type = type;
   result->parent = parent;
   result->name = name;
+  result->type = type;
+  result->state = state;
+
   result->field = field;
   result->method = method;
   result->mod = mod;
-  result->state = state;
 
   for (auto c : children) {
     result->children.push_back(c->clone());
@@ -43,14 +117,7 @@ MtContext *MtContext::get_child(const std::string &name) const {
 
 void MtContext::instantiate(MtModule *mod, MtContext *parent) {
   for (auto f : mod->all_fields) {
-    MtContext *result = new MtContext();
-    result->type = CTX_FIELD;
-    result->parent = parent;
-    result->name = f->_name;
-    result->field = f;
-    result->mod = f->_type_mod;
-
-    // printf("instantiate %s\n", f->cname());
+    MtContext *result = new MtContext(parent, f);
 
     if (result->mod) {
       instantiate(result->mod, result);
@@ -60,13 +127,7 @@ void MtContext::instantiate(MtModule *mod, MtContext *parent) {
   }
 
   for (auto m : mod->all_methods) {
-    MtContext *method_ctx = new MtContext();
-    method_ctx->type = CTX_METHOD;
-    method_ctx->parent = parent;
-    method_ctx->name = m->name();
-    method_ctx->field = nullptr;
-    method_ctx->method = m;
-    method_ctx->mod = nullptr;
+    MtContext *method_ctx = new MtContext(parent, m);
 
     parent->children.push_back(method_ctx);
 
@@ -75,28 +136,15 @@ void MtContext::instantiate(MtModule *mod, MtContext *parent) {
           m->_node.get_field(field_declarator).get_field(field_parameters);
       for (const auto &param : params) {
         if (param.sym == sym_parameter_declaration) {
-          MtContext *param_ctx = new MtContext();
-          param_ctx->type = CTX_PARAM;
-          param_ctx->parent = method_ctx;
-          param_ctx->name = param.get_field(field_declarator).text();
-          param_ctx->field = nullptr;
-          param_ctx->method = nullptr;
-          param_ctx->mod = nullptr;
-
+          MtContext *param_ctx = MtContext::param(
+              method_ctx, param.get_field(field_declarator).text());
           method_ctx->children.push_back(param_ctx);
         }
       }
     }
 
     if (m->has_return()) {
-      MtContext *return_ctx = new MtContext();
-      return_ctx->type = CTX_RETURN;
-      return_ctx->parent = method_ctx;
-      return_ctx->name = "<return>";
-      return_ctx->field = nullptr;
-      return_ctx->method = nullptr;
-      return_ctx->mod = nullptr;
-
+      MtContext *return_ctx = MtContext::construct_return(method_ctx);
       method_ctx->children.push_back(return_ctx);
     }
   }

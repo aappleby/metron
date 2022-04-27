@@ -21,6 +21,7 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MtContext* ctx, MnNode n,
   switch (n.sym) {
     case sym_identifier:
     case alias_sym_field_identifier: {
+      n.dump_tree();
       assert(ctx->method);
 
       auto field_ctx = ctx->resolve(n.text());
@@ -228,10 +229,17 @@ CHECK_RETURN Err MtTracer::trace_branch(MtContext* ctx, MnNode n) {
   auto node_branch_a = n.get_field(field_consequence);
   auto node_branch_b = n.get_field(field_alternative);
 
+  node_cond.dump_tree();
+  node_branch_a.dump_tree();
+  node_branch_b.dump_tree();
+
   err << trace_dispatch(ctx, node_cond);
 
   MtContext* branch_a = ctx->clone();
   MtContext* branch_b = ctx->clone();
+
+  branch_a->dump_tree();
+  branch_b->dump_tree();
 
   if (!node_branch_a.is_null()) {
     err << trace_dispatch(branch_a, node_branch_a);
@@ -293,7 +301,15 @@ CHECK_RETURN Err MtTracer::log_action(MtContext* method_ctx, MtContext* dst_ctx,
   if (dst_ctx) {
     trace_log.push_back({method_ctx, dst_ctx, action, source});
     auto old_state = dst_ctx->state;
+
+    if (dst_ctx->field) printf("%s ", dst_ctx->field->cname());
     auto new_state = merge_action(old_state, action);
+
+    if (new_state == CTX_INVALID) {
+      int x = 0;
+      x++;
+    }
+
     dst_ctx->state = new_state;
 
     if (dst_ctx->field && action == CTX_WRITE) {

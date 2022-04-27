@@ -417,6 +417,7 @@ def build_rvsimple():
         src_files=["examples/rvsimple/main.cpp"],
         includes=base_includes,
         opt=opt_mode,
+        deps=["bin/libmetron.a"],
     )
 
     sv_srcs = metronize_dir(mt_root, "toplevel.h", sv_root)

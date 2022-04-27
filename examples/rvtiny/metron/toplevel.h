@@ -22,9 +22,9 @@ class toplevel {
   logic<32> bus_read_data;
   logic<32> bus_address;
   logic<32> bus_write_data;
-  logic<4>  bus_byte_enable;
-  logic<1>  bus_read_enable;
-  logic<1>  bus_write_enable;
+  logic<4> bus_byte_enable;
+  logic<1> bus_read_enable;
+  logic<1> bus_write_enable;
   logic<32> pc;
 
   //----------------------------------------
@@ -50,7 +50,6 @@ class toplevel {
       bus_byte_enable = 0;
       bus_read_enable = 0;
       bus_write_enable = 0;
-      pc = 0;
     } else {
       logic<32> inst = text_mem[b14(pc, 2)];
 
@@ -71,7 +70,9 @@ class toplevel {
 
       if (op == OP_ALU || op == OP_ALUI) {
         logic<32> op_a = regs[r1];
-        logic<32> op_b = op == OP_ALUI ? cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20)) : regs[r2];
+        logic<32> op_b =
+            op == OP_ALUI ? cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20))
+                          : regs[r2];
         logic<32> alu_result;
 
         // clang-format off
@@ -166,7 +167,8 @@ class toplevel {
         // clang-format on
 
         if (take_branch) {
-          logic<32> imm = cat(dup<20>(inst[31]), inst[7], b6(inst, 25), b4(inst, 8), b1(0));
+          logic<32> imm =
+              cat(dup<20>(inst[31]), inst[7], b6(inst, 25), b4(inst, 8), b1(0));
           pc = pc + imm;
         } else {
           pc = pc + 4;
@@ -176,7 +178,8 @@ class toplevel {
       //----------
 
       else if (op == OP_JAL) {
-        logic<32> imm = cat(dup<12>(inst[31]), b8(inst, 12), inst[20], b6(inst, 25), b4(inst, 21), b1(0));
+        logic<32> imm = cat(dup<12>(inst[31]), b8(inst, 12), inst[20],
+                            b6(inst, 25), b4(inst, 21), b1(0));
         if (rd) regs[rd] = pc + 4;
         pc = pc + imm;
       }
@@ -184,7 +187,8 @@ class toplevel {
       //----------
 
       else if (op == OP_JALR) {
-        logic<32> rr1 = regs[r1]; // Lol, Metron actually found a bug - gotta read r1 before writing
+        logic<32> rr1 = regs[r1];  // Lol, Metron actually found a bug - gotta
+                                   // read r1 before writing
         logic<32> imm = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20));
         if (rd) regs[rd] = pc + 4;
         pc = rr1 + imm;

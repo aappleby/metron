@@ -10,12 +10,13 @@
       "args": [
         "-e",
         //"-r",
-        //"examples/rvsimple/metron",
+        //"examples/rvtiny/metron",
         //"toplevel.h",
         "scratch.h"
       ],
       // bin/metron -q -v -r examples/pong/metron -o examples/pong/metron_sv -c pong.h
       // bin/metron -q -v -r examples/rvsimple/metron -o examples/rvsimple/metron_sv -c toplevel.h
+      // bin/metron -q -v -r examples/rvtiny/metron -o examples/rvtiny/metron_sv -c toplevel.h
       "setupCommands": [
         { // Display content in STL containers pretty
           "description": "Enable pretty-printing for gdb",

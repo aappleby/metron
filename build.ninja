@@ -278,10 +278,11 @@ build obj/examples/uart/uart_test_ice40.bin: icepack $
 ################################################################################
 # Compile bin/examples/rvsimple
 
-build obj/examples/rvsimple/main.o: compile_cpp examples/rvsimple/main.cpp
+build obj/examples/rvsimple/main.o: compile_cpp examples/rvsimple/main.cpp $
+    | bin/libmetron.a
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include
   opt = 
-build bin/examples/rvsimple: link obj/examples/rvsimple/main.o
+build bin/examples/rvsimple: link obj/examples/rvsimple/main.o bin/libmetron.a
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include
   opt = 
 

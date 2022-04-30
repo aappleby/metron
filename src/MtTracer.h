@@ -40,7 +40,6 @@ class MtTracer {
 
   MtModLibrary* lib;
   MtContext* ctx_root;
-  uint64_t branch_code = 1;
 };
 
 //------------------------------------------------------------------------------

@@ -25,7 +25,7 @@ struct TraceLog {
 
 class MtTracer {
  public:
-  MtTracer(MtModLibrary* lib) : lib(lib) {}
+  MtTracer(MtModLibrary* lib, MtContext* root) : lib(lib), ctx_root(root) {}
 
   CHECK_RETURN Err trace_dispatch(MtContext* inst, MnNode n,
                                   ContextAction action = CTX_READ);
@@ -37,13 +37,10 @@ class MtTracer {
   CHECK_RETURN Err trace_method_ctx(MtContext* method_ctx, MnNode node_call);
   CHECK_RETURN Err log_action(MtContext* method_ctx, MtContext* dst_ctx,
                               ContextAction action, SourceRange source);
-  CHECK_RETURN Err merge_branch(MtContext* ma, MtContext* mb, MtContext* out);
-
-  void dump_log(MtField* filter_field = nullptr);
 
   MtModLibrary* lib;
-
-  std::vector<TraceLog> trace_log;
+  MtContext* ctx_root;
+  uint64_t branch_code = 1;
 };
 
 //------------------------------------------------------------------------------

@@ -4,6 +4,12 @@
 #include "MtMethod.h"
 #include "MtModule.h"
 
+void log_branch_code(uint64_t c) {
+  for (int i = 7; i >= 0; i--) {
+    LOG("%c", (c & (1 << i)) ? '1' : '0');
+  }
+}
+
 //------------------------------------------------------------------------------
 
 MtContext::MtContext(MtModule *_top_mod) {
@@ -12,11 +18,13 @@ MtContext::MtContext(MtModule *_top_mod) {
   parent = nullptr;
   name = "<top>";
   type = CTX_MODULE;
-  state = CTX_NONE;
 
   field = nullptr;
   method = nullptr;
   mod = _top_mod;
+
+  log_top = {0, CTX_NONE};
+  log_next = {0, CTX_NONE};
 }
 
 MtContext::MtContext(MtContext *_parent, MtMethod *_method) {
@@ -26,11 +34,13 @@ MtContext::MtContext(MtContext *_parent, MtMethod *_method) {
   parent = _parent;
   name = _method->name();
   type = CTX_METHOD;
-  state = CTX_NONE;
 
   field = nullptr;
   method = _method;
   mod = nullptr;
+
+  log_top = {0, CTX_NONE};
+  log_next = {0, CTX_NONE};
 }
 
 MtContext::MtContext(MtContext *_parent, MtField *_field) {
@@ -39,12 +49,19 @@ MtContext::MtContext(MtContext *_parent, MtField *_field) {
 
   parent = _parent;
   name = _field->_name;
-  type = CTX_FIELD;
-  state = CTX_NONE;
+
+  if (_field->is_component()) {
+    type = CTX_COMPONENT;
+  } else {
+    type = CTX_FIELD;
+  }
 
   field = _field;
   method = nullptr;
   mod = _field->_type_mod;
+
+  log_top = {0, CTX_NONE};
+  log_next = {0, CTX_NONE};
 }
 
 MtContext *MtContext::param(MtContext *_parent, const std::string &_name) {
@@ -55,25 +72,32 @@ MtContext *MtContext::param(MtContext *_parent, const std::string &_name) {
   param_ctx->parent = _parent;
   param_ctx->name = _name;
   param_ctx->type = CTX_PARAM;
-  param_ctx->state = CTX_NONE;
 
   param_ctx->field = nullptr;
   param_ctx->method = nullptr;
   param_ctx->mod = nullptr;
 
+  param_ctx->log_top = {0, CTX_NONE};
+  param_ctx->log_next = {0, CTX_NONE};
+
   return param_ctx;
 }
 
 MtContext *MtContext::construct_return(MtContext *_parent) {
+  assert(_parent);
+
   MtContext *return_ctx = new MtContext();
   return_ctx->parent = _parent;
   return_ctx->name = "<return>";
   return_ctx->type = CTX_RETURN;
-  return_ctx->state = CTX_NONE;
 
   return_ctx->field = nullptr;
   return_ctx->method = nullptr;
   return_ctx->mod = nullptr;
+
+  return_ctx->log_top = {0, CTX_NONE};
+  return_ctx->log_next = {0, CTX_NONE};
+
   return return_ctx;
 }
 
@@ -84,7 +108,7 @@ MtContext *MtContext::clone() {
   result->parent = parent;
   result->name = name;
   result->type = type;
-  result->state = state;
+  // result->state = state;
 
   result->field = field;
   result->method = method;
@@ -93,6 +117,8 @@ MtContext *MtContext::clone() {
   for (auto c : children) {
     result->children.push_back(c->clone());
   }
+
+  result->action_log = action_log;
 
   return result;
 }
@@ -154,11 +180,7 @@ void MtContext::instantiate(MtModule *mod, MtContext *parent) {
 
 void MtContext::assign_state_to_field() {
   if (field) {
-    if (field->state == CTX_PENDING) {
-      field->state = state;
-    } else {
-      field->state = merge_branch(field->state, state);
-    }
+    field->state = log_top.state;
   }
 
   for (auto c : children) c->assign_state_to_field();
@@ -195,31 +217,39 @@ MtContext *MtContext::resolve(const std::string &_name) {
 //------------------------------------------------------------------------------
 
 void MtContext::dump() const {
-  LOG_G("%s : ", name.c_str());
+  if (type == CTX_METHOD) {
+    LOG_Y("%s", name.c_str());
+  } else if (type == CTX_COMPONENT) {
+    LOG_G("%s", name.c_str());
+    // LOG_G(" : %s", to_string(type));
+  } else if (type == CTX_FIELD) {
+    LOG("%s", name.c_str());
 
-  switch (type) {
-    case CTX_FIELD:
-      if (field->_type_mod) {
-        // LOG_Y("Submod %s = %s\n", field->_type_mod->cname(),
-        // to_string(state));
-        LOG_Y("Submod %s\n", field->_type_mod->cname());
-      } else {
-        LOG_G("%s = %s\n", field->_type.c_str(), to_string(state));
-      }
-      return;
-    case CTX_METHOD:
-      LOG_R("Method\n");
-      return;
-    case CTX_PARAM:
-      LOG_B("Param = %s\n", to_string(state));
-      return;
-    case CTX_RETURN:
-      LOG_G("Return = %s\n", to_string(state));
-      return;
-    case CTX_MODULE:
-      LOG_G("Module\n");
-      return;
+    LOG(" = ");
+    if (log_top.state == CTX_SIGNAL || log_top.state == CTX_OUTPUT) {
+      LOG_B("%s", to_string(log_top.state));
+    } else if (log_top.state == CTX_NONE) {
+      LOG_Y("%s", to_string(log_top.state));
+    } else if (log_top.state == CTX_INVALID) {
+      LOG_R("%s", to_string(log_top.state));
+    } else {
+      LOG_G("%s", to_string(log_top.state));
+    }
+  } else if (type == CTX_PARAM) {
+    LOG_W("%s", name.c_str());
+
+    LOG(" = ");
+    if (log_top.state == CTX_SIGNAL || log_top.state == CTX_OUTPUT) {
+      LOG_B("%s", to_string(log_top.state));
+    } else if (log_top.state == CTX_NONE) {
+      LOG_Y("%s", to_string(log_top.state));
+    } else if (log_top.state == CTX_INVALID) {
+      LOG_R("%s", to_string(log_top.state));
+    } else {
+      LOG_G("%s", to_string(log_top.state));
+    }
   }
+  LOG("\n");
 }
 
 void MtContext::dump_tree() const {

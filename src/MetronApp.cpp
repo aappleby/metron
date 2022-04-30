@@ -195,7 +195,7 @@ int main(int argc, char** argv) {
   //----------------------------------------
   // Trace
 
-  MtTracer tracer(&lib);
+  MtTracer tracer(&lib, top_ctx);
 
   for (auto method : top_mod->all_methods) {
     if (method->is_constructor()) continue;
@@ -206,6 +206,11 @@ int main(int argc, char** argv) {
     err << tracer.trace_dispatch(method_ctx, method->_node);
   }
   LOG("\n");
+
+  top_ctx->dump_tree();
+  err << top_ctx->check_done();
+
+  if (err.has_err()) exit(-1);
 
   //----------------------------------------
   // Check for and report bad fields.
@@ -225,7 +230,6 @@ int main(int argc, char** argv) {
   for (auto bad_field : bad_fields) {
     LOG_R("Bad field \"%s.%s\" log:\n", bad_field->_parent_mod->cname(),
           bad_field->cname());
-    tracer.dump_log(bad_field);
     LOG_G("\n");
   }
 

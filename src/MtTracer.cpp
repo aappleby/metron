@@ -21,7 +21,6 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MtContext* ctx, MnNode n,
   switch (n.sym) {
     case sym_identifier:
     case alias_sym_field_identifier: {
-      n.dump_tree();
       assert(ctx->method);
 
       auto field_ctx = ctx->resolve(n.text());
@@ -229,30 +228,25 @@ CHECK_RETURN Err MtTracer::trace_branch(MtContext* ctx, MnNode n) {
   auto node_branch_a = n.get_field(field_consequence);
   auto node_branch_b = n.get_field(field_alternative);
 
-  node_cond.dump_tree();
-  node_branch_a.dump_tree();
-  node_branch_b.dump_tree();
-
   err << trace_dispatch(ctx, node_cond);
 
-  MtContext* branch_a = ctx->clone();
-  MtContext* branch_b = ctx->clone();
+  branch_code <<= 1;
 
-  branch_a->dump_tree();
-  branch_b->dump_tree();
-
+  ctx_root->start_branch_a(branch_code);
   if (!node_branch_a.is_null()) {
-    err << trace_dispatch(branch_a, node_branch_a);
+    err << trace_dispatch(ctx, node_branch_a);
   }
+  ctx_root->end_branch_a(branch_code);
 
+  branch_code |= 1;
+
+  ctx_root->start_branch_b(branch_code);
   if (!node_branch_b.is_null()) {
-    err << trace_dispatch(branch_b, node_branch_b);
+    err << trace_dispatch(ctx, node_branch_b);
   }
+  ctx_root->end_branch_b(branch_code);
 
-  err << merge_branch(branch_a, branch_b, ctx);
-
-  delete branch_a;
-  delete branch_b;
+  branch_code >>= 1;
 
   return err;
 }
@@ -264,29 +258,52 @@ CHECK_RETURN Err MtTracer::trace_switch(MtContext* ctx, MnNode n) {
 
   err << trace_dispatch(ctx, n.get_field(field_condition));
 
-  MtContext* old_ctx = ctx->clone();
-
-  bool first_branch = true;
-
   auto body = n.get_field(field_body);
+
+  int open_branches = 0;
   for (const auto& c : body) {
     if (c.sym == sym_case_statement) {
-      // case statement without body
-      if (c.named_child_count() == 1) continue;
+      if (c.named_child_count() == 1) {
+        // case statement without body
+        continue;
+      }
 
-      if (first_branch) {
+      if (c.child(0).text() == "default") {
         err << trace_dispatch(ctx, c);
-        first_branch = false;
+
+        // LOG_DEDENT();
+        // LOG_G("end_branch_b\n");
+        ctx_root->end_branch_b(branch_code);
+        branch_code >>= 1;
+        open_branches--;
+
       } else {
-        MtContext* inst_case = old_ctx->clone();
-        err << trace_dispatch(inst_case, c);
-        err << merge_branch(ctx, inst_case, ctx);
-        delete inst_case;
+        branch_code <<= 1;
+
+        // LOG_G("start_branch_a\n");
+        // LOG_INDENT();
+        ctx_root->start_branch_a(branch_code);
+        err << trace_dispatch(ctx, c);
+        // LOG_DEDENT();
+        // LOG_G("end_branch_a\n");
+        ctx_root->end_branch_a(branch_code);
+
+        branch_code |= 1;
+        // LOG_G("start_branch_b\n");
+        // LOG_INDENT();
+        ctx_root->start_branch_b(branch_code);
+        open_branches++;
       }
     }
   }
 
-  delete old_ctx;
+  for (int i = 0; i < open_branches; i++) {
+    // LOG_DEDENT();
+    // LOG_G("end_branch_b\n");
+    ctx_root->end_branch_b(branch_code);
+    branch_code >>= 1;
+    assert(branch_code);
+  }
 
   return err;
 }
@@ -299,62 +316,14 @@ CHECK_RETURN Err MtTracer::log_action(MtContext* method_ctx, MtContext* dst_ctx,
   Err err;
 
   if (dst_ctx) {
-    trace_log.push_back({method_ctx, dst_ctx, action, source});
-    auto old_state = dst_ctx->state;
-
-    if (dst_ctx->field) printf("%s ", dst_ctx->field->cname());
+    auto old_state = dst_ctx->log_top.state;
     auto new_state = merge_action(old_state, action);
 
-    if (new_state == CTX_INVALID) {
-      int x = 0;
-      x++;
-    }
-
-    dst_ctx->state = new_state;
-
-    if (dst_ctx->field && action == CTX_WRITE) {
-      assert(method_ctx);
-      method_ctx->method->writes.insert(dst_ctx->field);
-      dst_ctx->field->written_by = method_ctx->method;
-    }
+    dst_ctx->log_top.branch_code = branch_code;
+    dst_ctx->log_top.state = new_state;
   }
 
   return err;
-}
-
-//-----------------------------------------------------------------------------
-
-CHECK_RETURN Err MtTracer::merge_branch(MtContext* ma, MtContext* mb,
-                                        MtContext* out) {
-  Err err;
-
-  assert(ma->children.size() == out->children.size());
-  assert(mb->children.size() == out->children.size());
-
-  out->state = ::merge_branch(ma->state, mb->state);
-
-  for (int i = 0; i < ma->children.size(); i++) {
-    err << merge_branch(ma->children[i], mb->children[i], out->children[i]);
-  }
-
-  return err;
-}
-
-//------------------------------------------------------------------------------
-
-void MtTracer::dump_log(MtField* filter_field) {
-  for (const auto& l : trace_log) {
-    if (filter_field) {
-      if (l.dst_ctx->field != filter_field) continue;
-    }
-
-    auto ctx_path = l.dst_ctx->parent->name + "." + l.dst_ctx->name;
-    LOG_G("%-10s %-10s %-20s @ ", to_string(l.action),
-          to_string(l.dst_ctx->type), ctx_path.c_str());
-    TinyLog::get().print_buffer(0, l.range.start,
-                                l.range.end - l.range.start + 1);
-    LOG("\n");
-  }
 }
 
 //------------------------------------------------------------------------------

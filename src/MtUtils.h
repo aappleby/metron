@@ -10,21 +10,23 @@ struct SourceRange {
 //------------------------------------------------------------------------------
 
 enum ContextType {
+  CTX_MODULE,
+  CTX_COMPONENT,
   CTX_FIELD,
   CTX_METHOD,
   CTX_PARAM,
   CTX_RETURN,
-  CTX_MODULE,
 };
 
 enum ContextState {
   CTX_NONE = 0,
-  CTX_INPUT = 1,
-  CTX_OUTPUT = 2,
-  CTX_SIGNAL = 3,
-  CTX_REGISTER = 4,
-  CTX_INVALID = 5,
-  CTX_PENDING = 6,
+  CTX_INPUT,
+  CTX_OUTPUT,
+  CTX_MAYBE,
+  CTX_SIGNAL,
+  CTX_REGISTER,
+  CTX_INVALID,
+  CTX_PENDING,  // hasn't been set yet
 };
 
 enum ContextAction {
@@ -45,6 +47,10 @@ inline const char* to_string(ContextAction f) {
 
 inline const char* to_string(ContextType c) {
   switch (c) {
+    case CTX_MODULE:
+      return "CTX_MODULE";
+    case CTX_COMPONENT:
+      return "CTX_COMPONENT";
     case CTX_FIELD:
       return "CTX_FIELD";
     case CTX_METHOD:
@@ -53,8 +59,6 @@ inline const char* to_string(ContextType c) {
       return "CTX_PARAM";
     case CTX_RETURN:
       return "CTX_RETURN";
-    case CTX_MODULE:
-      return "CTX_MODULE";
     default:
       return "???";
   }
@@ -68,6 +72,8 @@ inline const char* to_string(ContextState f) {
       return "CTX_INPUT";
     case CTX_OUTPUT:
       return "CTX_OUTPUT";
+    case CTX_MAYBE:
+      return "CTX_MAYBE";
     case CTX_SIGNAL:
       return "CTX_SIGNAL";
     case CTX_REGISTER:

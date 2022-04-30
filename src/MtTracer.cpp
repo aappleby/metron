@@ -230,23 +230,17 @@ CHECK_RETURN Err MtTracer::trace_branch(MtContext* ctx, MnNode n) {
 
   err << trace_dispatch(ctx, node_cond);
 
-  branch_code <<= 1;
-
-  ctx_root->start_branch_a(branch_code);
+  ctx_root->start_branch_a();
   if (!node_branch_a.is_null()) {
     err << trace_dispatch(ctx, node_branch_a);
   }
-  ctx_root->end_branch_a(branch_code);
+  ctx_root->end_branch_a();
 
-  branch_code |= 1;
-
-  ctx_root->start_branch_b(branch_code);
+  ctx_root->start_branch_b();
   if (!node_branch_b.is_null()) {
     err << trace_dispatch(ctx, node_branch_b);
   }
-  ctx_root->end_branch_b(branch_code);
-
-  branch_code >>= 1;
+  ctx_root->end_branch_b();
 
   return err;
 }
@@ -260,50 +254,38 @@ CHECK_RETURN Err MtTracer::trace_switch(MtContext* ctx, MnNode n) {
 
   auto body = n.get_field(field_body);
 
-  int open_branches = 0;
+  bool has_default = false;
   for (const auto& c : body) {
     if (c.sym == sym_case_statement) {
       if (c.named_child_count() == 1) {
-        // case statement without body
         continue;
       }
-
       if (c.child(0).text() == "default") {
-        err << trace_dispatch(ctx, c);
-
-        // LOG_DEDENT();
-        // LOG_G("end_branch_b\n");
-        ctx_root->end_branch_b(branch_code);
-        branch_code >>= 1;
-        open_branches--;
-
-      } else {
-        branch_code <<= 1;
-
-        // LOG_G("start_branch_a\n");
-        // LOG_INDENT();
-        ctx_root->start_branch_a(branch_code);
-        err << trace_dispatch(ctx, c);
-        // LOG_DEDENT();
-        // LOG_G("end_branch_a\n");
-        ctx_root->end_branch_a(branch_code);
-
-        branch_code |= 1;
-        // LOG_G("start_branch_b\n");
-        // LOG_INDENT();
-        ctx_root->start_branch_b(branch_code);
-        open_branches++;
+        has_default = true;
       }
     }
   }
 
-  for (int i = 0; i < open_branches; i++) {
-    // LOG_DEDENT();
-    // LOG_G("end_branch_b\n");
-    ctx_root->end_branch_b(branch_code);
-    branch_code >>= 1;
-    assert(branch_code);
+  ctx_root->start_switch();
+
+  for (const auto& c : body) {
+    if (c.sym == sym_case_statement) {
+      if (c.named_child_count() == 1) {
+        continue;  // case statement without body
+      }
+
+      ctx_root->start_case();
+      err << trace_dispatch(ctx, c);
+      ctx_root->end_case();
+    }
   }
+
+  if (!has_default) {
+    ctx_root->start_case();
+    ctx_root->end_case();
+  }
+
+  ctx_root->end_switch();
 
   return err;
 }
@@ -318,8 +300,6 @@ CHECK_RETURN Err MtTracer::log_action(MtContext* method_ctx, MtContext* dst_ctx,
   if (dst_ctx) {
     auto old_state = dst_ctx->log_top.state;
     auto new_state = merge_action(old_state, action);
-
-    dst_ctx->log_top.branch_code = branch_code;
     dst_ctx->log_top.state = new_state;
   }
 

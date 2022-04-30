@@ -4,12 +4,9 @@
 #include "MtField.h"
 #include "MtUtils.h"
 
-void log_branch_code(uint64_t c);
-
 //------------------------------------------------------------------------------
 
 struct LogEntry {
-  uint64_t branch_code;
   ContextState state;
 };
 
@@ -46,30 +43,52 @@ struct MtContext {
     return nullptr;
   }
 
-  void start_branch_a(uint64_t branch_code) {
+  void start_branch_a() {
     action_log.push_back(log_next);
-    log_top.branch_code = branch_code;
     log_next = log_top;
 
-    for (auto c : children) c->start_branch_a(branch_code);
+    for (auto c : children) c->start_branch_a();
   }
 
-  void end_branch_a(uint64_t branch_code) {
-    for (auto c : children) c->end_branch_a(branch_code);
+  void end_branch_a() {
+    for (auto c : children) c->end_branch_a();
   }
 
-  void start_branch_b(uint64_t branch_code) {
+  void start_branch_b() {
     std::swap(log_top, log_next);
-    log_top.branch_code = branch_code;
-    for (auto c : children) c->start_branch_b(branch_code);
+    for (auto c : children) c->start_branch_b();
   }
 
-  void end_branch_b(uint64_t branch_code) {
+  void end_branch_b() {
     log_top.state = merge_branch(log_top.state, log_next.state);
-    log_top.branch_code = log_top.branch_code >> 1;
     log_next = action_log.back();
     action_log.pop_back();
-    for (auto c : children) c->end_branch_b(branch_code);
+    for (auto c : children) c->end_branch_b();
+  }
+
+  void start_switch() {
+    action_log.push_back(log_next);
+    action_log.push_back(log_top);
+    log_next.state = CTX_PENDING;
+    for (auto c : children) c->start_switch();
+  }
+
+  void start_case() {
+    log_top = action_log.back();
+    for (auto c : children) c->start_case();
+  }
+
+  void end_case() {
+    log_next.state = merge_branch(log_top.state, log_next.state);
+    for (auto c : children) c->end_case();
+  }
+
+  void end_switch() {
+    log_top = log_next;
+    action_log.pop_back();
+    log_next = action_log.back();
+    action_log.pop_back();
+    for (auto c : children) c->end_switch();
   }
 
   CHECK_RETURN Err check_done() {

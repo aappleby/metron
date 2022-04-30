@@ -41,7 +41,11 @@ ContextState merge_action(ContextState state, ContextAction action) {
 //-----------------------------------------------------------------------------
 
 ContextState merge_branch(ContextState ma, ContextState mb) {
-  if (ma == mb) {
+  if (ma == CTX_PENDING) {
+    return mb;
+  } else if (mb == CTX_PENDING) {
+    return ma;
+  } else if (ma == mb) {
     return ma;
   } else if (ma == CTX_INVALID || mb == CTX_INVALID) {
     return CTX_INVALID;

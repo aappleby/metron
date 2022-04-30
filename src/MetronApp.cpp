@@ -318,16 +318,6 @@ int main(int argc, char** argv) {
 
   LOG("\n");
 
-  /*
-  LOG_G("Lib dump:\n");
-  lib.dump();
-  LOG_G("\n");
-
-  LOG_G("Context dump:\n");
-  top_ctx->dump_tree();
-  LOG_G("\n");
-  */
-
   //----------
   // Emit all modules.
 

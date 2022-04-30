@@ -4,12 +4,6 @@
 #include "MtMethod.h"
 #include "MtModule.h"
 
-void log_branch_code(uint64_t c) {
-  for (int i = 7; i >= 0; i--) {
-    LOG("%c", (c & (1 << i)) ? '1' : '0');
-  }
-}
-
 //------------------------------------------------------------------------------
 
 MtContext::MtContext(MtModule *_top_mod) {
@@ -23,8 +17,8 @@ MtContext::MtContext(MtModule *_top_mod) {
   method = nullptr;
   mod = _top_mod;
 
-  log_top = {0, CTX_NONE};
-  log_next = {0, CTX_NONE};
+  log_top = {CTX_NONE};
+  log_next = {CTX_NONE};
 }
 
 MtContext::MtContext(MtContext *_parent, MtMethod *_method) {
@@ -39,8 +33,8 @@ MtContext::MtContext(MtContext *_parent, MtMethod *_method) {
   method = _method;
   mod = nullptr;
 
-  log_top = {0, CTX_NONE};
-  log_next = {0, CTX_NONE};
+  log_top = {CTX_NONE};
+  log_next = {CTX_NONE};
 }
 
 MtContext::MtContext(MtContext *_parent, MtField *_field) {
@@ -60,8 +54,8 @@ MtContext::MtContext(MtContext *_parent, MtField *_field) {
   method = nullptr;
   mod = _field->_type_mod;
 
-  log_top = {0, CTX_NONE};
-  log_next = {0, CTX_NONE};
+  log_top = {CTX_NONE};
+  log_next = {CTX_NONE};
 }
 
 MtContext *MtContext::param(MtContext *_parent, const std::string &_name) {
@@ -77,8 +71,8 @@ MtContext *MtContext::param(MtContext *_parent, const std::string &_name) {
   param_ctx->method = nullptr;
   param_ctx->mod = nullptr;
 
-  param_ctx->log_top = {0, CTX_NONE};
-  param_ctx->log_next = {0, CTX_NONE};
+  param_ctx->log_top = {CTX_NONE};
+  param_ctx->log_next = {CTX_NONE};
 
   return param_ctx;
 }
@@ -95,8 +89,8 @@ MtContext *MtContext::construct_return(MtContext *_parent) {
   return_ctx->method = nullptr;
   return_ctx->mod = nullptr;
 
-  return_ctx->log_top = {0, CTX_NONE};
-  return_ctx->log_next = {0, CTX_NONE};
+  return_ctx->log_top = {CTX_NONE};
+  return_ctx->log_next = {CTX_NONE};
 
   return return_ctx;
 }
@@ -200,12 +194,6 @@ MtContext *MtContext::resolve(const std::string &_name) {
       return c;
     }
   }
-
-  /*
-  if (parent->type == CTX_MODULE) {
-    return parent->resolve(_name);
-  }
-  */
 
   if (type == CTX_METHOD) {
     return parent->resolve(_name);

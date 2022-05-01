@@ -42,8 +42,8 @@ def main():
 
     errors = 0
 
-    #errors += test_convert_good()
-    errors += test_convert_bad()
+    errors += test_convert_good()
+    #errors += test_convert_bad()
 
     if not basic:
         errors += test_compilation()
@@ -164,8 +164,6 @@ def check_good(filename):
         f"bin/metron {metron_default_args()} -r tests/metron_good -o tests/metron_sv -c {basename}")
     cmd_result = subprocess.run(
         cmd, stdout=subprocess.PIPE, encoding="charmap")
-
-    print(cmd_result.stdout)
 
     if cmd_result.returncode:
         print_r(

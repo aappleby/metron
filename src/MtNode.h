@@ -27,7 +27,7 @@ struct MnNode {
   void dump_tree(int index = 0, int depth = 0, int maxdepth = 255) const;
 
   void error() const {
-    dump_tree();
+    dump_tree(0, 0, 255);
     debugbreak();
   }
 

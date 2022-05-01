@@ -16,8 +16,8 @@
       "args": [
         "-e",
         "-r",
-        "tests/metron_bad",
-        "mid_block_break.h",
+        "tests/metron_good",
+        "local_localparam.h",
       ],
       /*
       "args": [

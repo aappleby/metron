@@ -203,11 +203,11 @@ int main(int argc, char** argv) {
 
     LOG_G("Tracing %s.%s\n", top_mod->cname(), method->cname());
     auto method_ctx = top_ctx->resolve(method->name());
-    err << tracer.trace_dispatch(method_ctx, method->_node);
+    err << tracer.trace_sym_function_definition(method_ctx, method->_node);
   }
   LOG("\n");
 
-  top_ctx->dump_tree();
+  top_ctx->dump_ctx_tree();
   top_ctx->assign_state_to_field();
 
   //----------
@@ -315,7 +315,7 @@ int main(int argc, char** argv) {
 
   if (dump) {
     for (auto& source_file : lib.source_files) {
-      source_file->root_node.dump_tree();
+      source_file->root_node.dump_tree(0, 0, 255);
     }
   }
 

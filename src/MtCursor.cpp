@@ -1344,8 +1344,6 @@ enum { FOO, BAR, BAZ } blom;
 CHECK_RETURN Err MtCursor::emit_anonymous_enum(MnFieldDecl n) {
   Err err;
 
-  n.dump_tree();
-
   auto node_type = n.child(0);
   auto node_decl = n.child(1);
   auto node_semi = n.child(2);
@@ -1731,8 +1729,6 @@ CHECK_RETURN Err MtCursor::emit_sym_field_decl(MnFieldDecl n) {
   Err err;
 
   if (n.is_const()) {
-    n.dump_tree();
-
     auto node_static = n.child(0);
     auto node_const = n.child(1);
     auto node_type = n.child(2);
@@ -3030,48 +3026,51 @@ CHECK_RETURN Err MtCursor::emit_sym_declaration(MnDecl n) {
   assert(n.sym == sym_declaration);
   assert(cursor == n.start());
 
-  // Check for "static const char"
-  if (n.is_const()) {
-    auto node_type = n.get_field(field_type);
-    if (node_type.text() == "char") {
-      err << emit_print("localparam string ");
-      auto init_decl = n.get_field(field_declarator);
-      auto pointer_decl = init_decl.get_field(field_declarator);
-      auto name = pointer_decl.get_field(field_declarator);
-      cursor = name.start();
-      err << emit_text(name);
-      err << emit_print(" = ");
+  bool is_static = false;
+  bool is_const = false;
 
-      auto val = init_decl.get_field(field_value);
-      cursor = val.start();
-      err << emit_text(val);
-      err << prune_trailing_ws();
-      err << emit_print(";");
-      cursor = n.end();
-      return err;
-    }
+  MnNode node_type;
+  MnNode node_decl;
+  MnNode node_semi;
+
+  for (auto child : (MnNode)n) {
+    if (child.sym == sym_storage_class_specifier && child.text() == "static")
+      is_static = true;
+    if (child.sym == sym_type_qualifier && child.text() == "const")
+      is_const = true;
+
+    if (child.field == field_type) node_type = child;
+    if (child.field == field_declarator) node_decl = child;
+    if (child.sym == anon_sym_SEMI) node_semi = child;
   }
 
-  if (n.child_count() >= 5 && n.child(0).text() == "static" &&
-      n.child(1).text() == "const") {
-    err << emit_print("parameter ");
-    cursor = n.child(2).start();
-    err << emit_type(n.child(2));
-    err << emit_ws();
-    err << emit_declarator(n.child(3));
-    err << emit_ws();
-    err << emit_expression(n.child(4));
+  // Check for "static const char"
+  if (is_const && node_type.text() == "char") {
+    err << emit_print("localparam string ");
+    auto init_decl = n.get_field(field_declarator);
+    auto pointer_decl = init_decl.get_field(field_declarator);
+    auto name = pointer_decl.get_field(field_declarator);
+    cursor = name.start();
+    err << emit_text(name);
+    err << emit_print(" = ");
 
+    auto val = init_decl.get_field(field_value);
+    cursor = val.start();
+    err << emit_text(val);
+    err << prune_trailing_ws();
+    err << emit_print(";");
     cursor = n.end();
     return err;
   }
 
-  // Regular boring local variable declaration
+  if (is_const) {
+    err << emit_print("parameter ");
+  }
 
-  assert(n.child_count() == 3);
-  err << emit_type(n.child(0)) << emit_ws();
-  err << emit_declarator(n.child(1)) << emit_ws();
-  err << emit_text(n.child(2));
+  cursor = node_type.start();
+  err << emit_type(node_type) << emit_ws();
+  err << emit_declarator(node_decl) << emit_ws();
+  err << emit_expression(node_semi);
 
   assert(cursor == n.end());
   return err;

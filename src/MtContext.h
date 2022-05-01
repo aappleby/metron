@@ -35,7 +35,7 @@ struct MtContext {
 
   MtContext* resolve(const std::string& name);
   void dump() const;
-  void dump_tree() const;
+  void dump_ctx_tree() const;
 
   MtMethod* current_method() {
     if (method) return method;

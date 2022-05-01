@@ -236,8 +236,7 @@ std::string MnNode::name4() const {
     case sym_function_declarator: {
       auto declarator = get_field(field_declarator);
       if (declarator.is_null()) {
-        dump_tree();
-        debugbreak();
+        error();
       }
       return declarator.name4();
     }

@@ -253,11 +253,11 @@ void MtContext::dump() const {
   LOG("\n");
 }
 
-void MtContext::dump_tree() const {
+void MtContext::dump_ctx_tree() const {
   dump();
   for (auto inst : children) {
     LOG_INDENT_SCOPE();
-    inst->dump_tree();
+    inst->dump_ctx_tree();
   }
 }
 

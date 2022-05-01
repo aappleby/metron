@@ -91,26 +91,7 @@ struct MtContext {
     for (auto c : children) c->end_switch();
   }
 
-  CHECK_RETURN Err check_done() {
-    Err err;
-    if (action_log.size()) {
-      err << ERR("Had leftover contexts in action_log\n");
-    }
-
-    if (log_next.state != CTX_NONE) {
-      err << ERR("Had leftover context in log_next\n");
-    }
-
-    if (type != CTX_RETURN) {
-      if (log_top.state == CTX_INVALID || log_top.state == CTX_PENDING) {
-        err << ERR("Had invalid context in log_top\n");
-      }
-    }
-
-    for (auto c : children) err << c->check_done();
-    return err;
-  }
-
+  CHECK_RETURN Err check_done();
   //----------
 
   MtContext* parent;

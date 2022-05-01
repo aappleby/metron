@@ -13,6 +13,12 @@
         "scratch.h"
       ],
       */
+      "args": [
+        "-e",
+        "-r",
+        "tests/metron_good",
+        "enum_simple.h",
+      ],
       /*
       "args": [
         "-e",
@@ -21,12 +27,14 @@
         "toplevel.h",
       ],
       */
+      /*
       "args": [
         "-e",
         "-r",
         "examples/rvsimple/metron",
         "toplevel.h",
       ],
+      */
       /*
       "args": [
         "-e",

@@ -5,15 +5,16 @@
 module Module
 (
   input logic clock,
-  output logic[6:0] tock_get_reg
+  output logic[6:0] tock_get_reg_ret
 );
 /*public:*/
 
-  always_comb begin /*tock_get_reg*/
+  function logic[6:0] tock_get_reg();
     tock_get_reg = my_reg;
-  end
+  endfuction
+  always_comb tock_get_reg_ret = tock_get_reg();
 
-  always_comb begin /*tock*/
+  always_ff @(posedge clock) begin /*tock*/
     /*tick()*/;
   end
 

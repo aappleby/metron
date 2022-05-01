@@ -208,14 +208,62 @@ int main(int argc, char** argv) {
   LOG("\n");
 
   top_ctx->dump_tree();
-  err << top_ctx->check_done();
+  top_ctx->assign_state_to_field();
 
+  //----------
+  // Categorize fields
+
+  LOG("Categorizing fields\n");
+  for (auto m : lib.modules) {
+    LOG_INDENT_SCOPE();
+    err << m->categorize_fields();
+  }
+  LOG("\n");
+
+  if (err.has_err()) {
+    LOG_R("Exiting due to error\n");
+    return -1;
+  }
+
+  //----------
+  // Categorize methods
+
+  LOG("Categorizing methods\n");
+  {
+    LOG_INDENT_SCOPE();
+    err << lib.categorize_methods();
+  }
+
+  int uncategorized = 0;
+  int invalid = 0;
+  for (auto mod : lib.modules) {
+    for (auto m : mod->all_methods) {
+      if (!m->categorized()) {
+        uncategorized++;
+      }
+      if (!m->is_valid()) {
+        invalid++;
+      }
+    }
+  }
+
+  LOG_G("Methods uncategorized %d\n", uncategorized);
+  LOG_G("Methods invalid %d\n", invalid);
+
+  if (uncategorized || invalid) {
+    err << ERR("Could not categorize all methods\n");
+    exit(-1);
+  }
+
+  err << top_ctx->check_done();
   if (err.has_err()) exit(-1);
+
+  LOG("\n");
+
+  for (auto m : lib.modules) m->dump();
 
   //----------------------------------------
   // Check for and report bad fields.
-
-  top_ctx->assign_state_to_field();
 
   std::vector<MtField*> bad_fields;
   for (auto mod : lib.modules) {
@@ -270,55 +318,6 @@ int main(int argc, char** argv) {
       source_file->root_node.dump_tree();
     }
   }
-
-  //----------
-  // Categorize fields
-
-  LOG("Categorizing fields\n");
-  for (auto m : lib.modules) {
-    LOG_INDENT_SCOPE();
-    err << m->categorize_fields();
-  }
-  LOG("\n");
-
-  if (err.has_err()) {
-    LOG_R("Exiting due to error\n");
-    return -1;
-  }
-
-  //----------
-  // Categorize methods
-
-  LOG("Categorizing methods\n");
-  {
-    LOG_INDENT_SCOPE();
-    err << lib.categorize_methods();
-  }
-
-  int uncategorized = 0;
-  int invalid = 0;
-  for (auto mod : lib.modules) {
-    for (auto m : mod->all_methods) {
-      if (!m->categorized()) {
-        uncategorized++;
-      }
-      if (!m->is_valid()) {
-        invalid++;
-      }
-    }
-  }
-
-  LOG_G("Methods uncategorized %d\n", uncategorized);
-  LOG_G("Methods invalid %d\n", invalid);
-
-  if (uncategorized || invalid) {
-    err << ERR("Could not categorize all methods\n");
-    exit(-1);
-  }
-
-  LOG("\n");
-
-  for (auto m : lib.modules) m->dump();
 
   //----------
   // Emit all modules.

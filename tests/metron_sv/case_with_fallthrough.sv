@@ -6,22 +6,23 @@
 module Module
 (
   input logic clock,
-  output logic[7:0] tock
+  output logic[7:0] tock_ret
 );
 /*public:*/
 
-  always_comb begin /*tock*/
+  always_ff @(posedge clock) begin /*tock*/
     logic[7:0] result;
 
-    case(my_reg)
-      0, // can we stick comments in here?
-      1,
-      2:
+    logic[7:0] result;
+    switch(my_reg)
+       0, // can we stick comments in here?
+       1,
+       2,
         result = 10;
-      3: begin
+       3, begin
         result = 20;
       end
-      default:
+      default,
         result = 30;
     endcase
 

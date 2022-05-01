@@ -31,19 +31,17 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MtContext* ctx, MnNode n,
     }
 
     case sym_field_expression: {
-      /*
-      n.dump_source_lines();
-      n.dump_tree();
-      assert(false);
-      */
       auto node_arg = n.get_field(field_argument);
       auto node_field = n.get_field(field_field);
 
       auto component_ctx = ctx->resolve(node_arg.text());
-      auto field_ctx = component_ctx->resolve(node_field.text());
-
-      err << log_action(ctx, field_ctx, action, n.get_source());
-      // err << trace_dispatch(field_ctx, node_field, action);
+      if (component_ctx) {
+        auto field_ctx = component_ctx->resolve(node_field.text());
+        err << log_action(ctx, field_ctx, action, n.get_source());
+        break;
+      } else {
+        // Local struct field reference, don't need to trace it.
+      }
       break;
     }
 

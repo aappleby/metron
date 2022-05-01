@@ -12,30 +12,30 @@ module Module
     $write("Hello World?\n");
   end
 
-  always_comb begin /*tock1*/
+  function void tock1();
     logic a;
     logic[1:0] b;
     logic[2:0] c;
     logic[5:0] d;
 
-    a = 1;
-    b = 2;
-    c = 3;
+    logic a = 1;
+    logic[1:0] b = 2;
+    logic[2:0] c = 3;
 
-    d = {a, b, c};
-  end
+    logic[5:0] d = {a, b, c};
+  endfuction
 
-  always_comb begin /*tock2*/
+  function void tock2();
     logic[7:0] a;
     logic[7:0] b;
     logic[7:0] c;
     logic[5:0] d;
 
-    a = 1;
-    b = 2;
-    c = 3;
+    logic[7:0] a = 1;
+    logic[7:0] b = 2;
+    logic[7:0] c = 3;
 
-    d = {1'(a), 2'(b), 3'(c)};
-  end
+    logic[5:0] d = {1'(a), 2'(b), 3'(c)};
+  endfuction
 endmodule
 

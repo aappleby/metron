@@ -34,7 +34,6 @@ struct MtCursor {
   CHECK_RETURN Err emit_text(MnNode n);
   CHECK_RETURN Err emit_print(const char* fmt, ...);
   CHECK_RETURN Err emit_replacement(MnNode n, const char* fmt, ...);
-  CHECK_RETURN Err emit_splice(MnNode n);
   CHECK_RETURN Err skip_over(MnNode n);
   CHECK_RETURN Err skip_ws();
   CHECK_RETURN Err prune_trailing_ws();
@@ -68,31 +67,31 @@ struct MtCursor {
   CHECK_RETURN Err emit_input_port_bindings(MnNode n);
 
   // Per-symbol emit()s.
-  CHECK_RETURN Err emit_sym_compound_statement(MnNode n,
-                                               const std::string& delim_begin,
-                                               const std::string& delim_end);
-  CHECK_RETURN Err emit_sym_field_declaration_list(MnNode n);
-  CHECK_RETURN Err emit_sym_update_expression(MnNode n);
+  // clang-format off
   CHECK_RETURN Err emit_sym_argument_list(MnArgList n);
   CHECK_RETURN Err emit_sym_assignment_expression(MnAssignmentExpr n);
   CHECK_RETURN Err emit_sym_break_statement(MnBreakStatement n);
   CHECK_RETURN Err emit_sym_call_expression(MnCallExpr n);
   CHECK_RETURN Err emit_sym_case_statement(MnCaseStatement n);
+  CHECK_RETURN Err emit_sym_class_specifier(MnClassSpecifier n);
   CHECK_RETURN Err emit_sym_comment(MnComment n);
+  CHECK_RETURN Err emit_sym_compound_statement(MnNode n, const std::string& delim_begin, const std::string& delim_end);
   CHECK_RETURN Err emit_sym_condition_clause(MnNode n);
   CHECK_RETURN Err emit_sym_conditional_expression(MnCondExpr n);
   CHECK_RETURN Err emit_sym_declaration(MnDecl n);
-  CHECK_RETURN Err emit_sym_enumerator_list(MnEnumeratorList n);
   CHECK_RETURN Err emit_sym_enum_specifier(MnEnumSpecifier n);
+  CHECK_RETURN Err emit_sym_enumerator_list(MnEnumeratorList n);
   CHECK_RETURN Err emit_sym_expression_statement(MnExprStatement n);
   CHECK_RETURN Err emit_sym_field_decl(MnFieldDecl decl);
+  CHECK_RETURN Err emit_sym_field_declaration_list(MnNode n);
   CHECK_RETURN Err emit_sym_field_expression(MnFieldExpr n);
   CHECK_RETURN Err emit_sym_field_identifier(MnFieldIdentifier n);
+  CHECK_RETURN Err emit_sym_function_definition(MnFuncDefinition n);
   CHECK_RETURN Err emit_sym_identifier(MnIdentifier n);
   CHECK_RETURN Err emit_sym_if_statement(MnIfStatement n);
+  CHECK_RETURN Err emit_sym_initializer_list(MnNode n);
   CHECK_RETURN Err emit_sym_namespace_definition(MnNamespaceDef n);
-  CHECK_RETURN Err emit_sym_number_literal(MnNumberLiteral n,
-                                           int size_cast = 0);
+  CHECK_RETURN Err emit_sym_number_literal(MnNumberLiteral n, int size_cast = 0);
   CHECK_RETURN Err emit_sym_parameter_list(MnParameterList n);
   CHECK_RETURN Err emit_sym_preproc_include(MnPreprocInclude n);
   CHECK_RETURN Err emit_sym_primitive_type(MnDataType n);
@@ -100,17 +99,17 @@ struct MtCursor {
   CHECK_RETURN Err emit_sym_return(MnReturnStatement n);
   CHECK_RETURN Err emit_sym_sized_type_specifier(MnSizedTypeSpec n);
   CHECK_RETURN Err emit_sym_storage_class_specifier(MnStorageSpec n);
-  CHECK_RETURN Err emit_sym_class_specifier(MnClassSpecifier n);
-  CHECK_RETURN Err emit_sym_switch(MnNode n);
+  CHECK_RETURN Err emit_sym_struct_specifier(MnNode n);
   CHECK_RETURN Err emit_sym_switch_statement(MnSwitchStatement n);
+  CHECK_RETURN Err emit_sym_switch(MnNode n);
   CHECK_RETURN Err emit_sym_template_argument_list(MnTemplateArgList n);
   CHECK_RETURN Err emit_sym_template_declaration(MnTemplateDecl n);
   CHECK_RETURN Err emit_sym_template_type(MnTemplateType n);
+  CHECK_RETURN Err emit_sym_type_definition(MnNode node);
   CHECK_RETURN Err emit_sym_type_identifier(MnTypeIdentifier n);
+  CHECK_RETURN Err emit_sym_update_expression(MnNode n);
   CHECK_RETURN Err emit_sym_using_declaration(MnUsingDecl n);
-  CHECK_RETURN Err emit_sym_struct_specifier(MnNode n);
-  CHECK_RETURN Err emit_sym_function_declarator(MnFuncDeclarator n);
-  CHECK_RETURN Err emit_sym_function_definition(MnFuncDefinition n);
+  // clang-format on
 
   bool branch_contains_component_call(MnNode n);
 
@@ -124,6 +123,18 @@ struct MtCursor {
   MtMethod* current_method = nullptr;
 
   const char* cursor = nullptr;
+  std::stack<const char*> cursor_stack;
+
+  void push_cursor(const MnNode& node) {
+    cursor_stack.push(cursor);
+    cursor = node.start();
+  }
+
+  void pop_cursor(const MnNode& node) {
+    assert(cursor == node.end());
+    cursor = cursor_stack.top();
+    cursor_stack.pop();
+  }
 
   std::vector<std::string> indent_stack;
   bool at_newline = true;

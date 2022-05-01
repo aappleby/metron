@@ -26,6 +26,11 @@ struct MnNode {
   void dump_source_lines() const;
   void dump_tree(int index = 0, int depth = 0, int maxdepth = 255) const;
 
+  void error() const {
+    dump_tree();
+    debugbreak();
+  }
+
   operator bool() const { return !ts_node_is_null(node); }
 
   MnNode& check_null() {

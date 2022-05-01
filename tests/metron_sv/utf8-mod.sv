@@ -17,7 +17,7 @@ Runes:
 module Module
 (
   input logic clock,
-  output logic[7:0] tock
+  output logic[7:0] tock_ret
 );
 /*public:*/
 
@@ -25,9 +25,10 @@ module Module
     my_reg = 7;
   end
 
-  always_comb begin /*tock*/
+  function logic[7:0] tock();
     tock = my_reg;
-  end
+  endfuction
+  always_comb tock_ret = tock();
 
 /*private:*/
 

@@ -14,7 +14,7 @@ module Module
 
     my_sig = 0;
     my_sig = 1;
-    temp = my_sig;
+    logic temp = my_sig;
   end
 
 endmodule

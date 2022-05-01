@@ -28,7 +28,7 @@ module Module
     logic[19:0] foo;
 
     /*submodule.tock();*/
-    foo = submodule_my_width + submodule_my_height;
+    logic[19:0] foo = submodule_my_width + submodule_my_height;
   end
 
   Submod #(10,11) submodule(

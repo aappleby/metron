@@ -9,7 +9,7 @@ module Module
   input logic[2:0] input_val,
   output logic[2:0] output_val,
   input logic[2:0] tock_input_val,
-  output logic[2:0] tock
+  output logic[2:0] tock_ret
 );
 /*public:*/
 
@@ -18,8 +18,9 @@ module Module
     output_val = input_val + 7;
   end
 
-  always_comb begin /*tock*/
-    tock = tock_input_val + 8;
-  end
+  function logic[2:0] tock(logic[2:0] input_val);
+    tock = input_val + 8;
+  endfuction
+  always_comb tock_ret = tock(tock_input_val);
 endmodule
 

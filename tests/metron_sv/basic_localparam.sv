@@ -16,8 +16,8 @@ module Module
 
   localparam int my_val = 7;
 
-  always_ff @(posedge clock) begin /*tick*/
-    my_reg <= my_val;
+  always_comb begin /*tick*/
+    my_reg = my_val;
   end
 
   logic[6:0] my_reg;

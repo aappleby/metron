@@ -5,14 +5,14 @@
 module Module
 (
   input logic clock,
-  output logic[7:0] tock
+  output logic[7:0] tock_ret
 );
 /*public:*/
 
-  always_comb begin /*tock*/
+  always_ff @(posedge clock) begin /*tock*/
     logic[7:0] result;
 
-    result = my_reg1 + my_reg2;
+    logic[7:0] result = my_reg1 + my_reg2;
     /*tick1()*/;
     /*tick2()*/;
     tock = result;

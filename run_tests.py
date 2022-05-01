@@ -94,7 +94,8 @@ def get_pool():
 
 
 def metron_default_args():
-    return "-v -e"
+    # return "-v -e"
+    return "-q"
 
 
 def metron_good():

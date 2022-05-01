@@ -4,23 +4,25 @@
 
 package MyPackage;
   parameter int foo = 3;
-endpackage;
+endpackage
 
 module Module
 (
   input logic clock,
-  output logic[7:0] tock1,
-  output logic[7:0] tock2
+  output logic[7:0] tock1_ret,
+  output logic[7:0] tock2_ret
 );
 /*public:*/
 
-  always_comb begin /*tock1*/
+  function logic[7:0] tock1();
     tock1 = MyPackage::foo;
-  end
+  endfuction
+  always_comb tock1_ret = tock1();
 
-  always_comb begin /*tock2*/
+  function logic[7:0] tock2();
     import MyPackage::*;
     tock2 = foo;
-  end
+  endfuction
+  always_comb tock2_ret = tock2();
 endmodule
 

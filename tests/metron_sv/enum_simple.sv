@@ -27,7 +27,7 @@ module Module
   typedef enum { A2 = 2'b01, B2 = 8'h02, C2 = 3 } simple_enum2;
 
   enum { A3, B3, C3 } anon_enum_field1;
-  enum { A4 = 2'b01, B4 = 8'h02, C4 = 3 } anon_enum_field2;
+  enum { A4 = 0b01, B4 = 0x02, C4 = 3 } anon_enum_field2;
 
   typedef enum { A5, B5, C5 } enum_class1;
   typedef enum { A6 = 2'b01, B6 = 8'h02, C6 = 3 } enum_class2;
@@ -35,7 +35,7 @@ module Module
   typedef enum int { A7 = 2'b01, B7 = 8'h02, C7 = 3 } typed_enum;
   typedef enum logic[7:0] { A8 = 2'b01, B8 = 8'h02, C8 = 3 } sized_enum;
 
-  always_comb begin /*tock*/
+  function void tock();
     simple_enum1 e1;
     simple_enum2 e2;
     enum_class1 ec1;
@@ -43,14 +43,14 @@ module Module
     typed_enum te1;
     sized_enum se1;
 
-    e1 = A1;
-    e2 = B2;
+    simple_enum1 e1 = A1;
+    simple_enum2 e2 = B2;
     anon_enum_field1 = C3;
     anon_enum_field2 = A4;
-    ec1 = B5;
-    ec2 = C6;
-    te1 = A7;
-    se1 = B8;
-  end
+    enum_class1 ec1 = enum_class1::B5;
+    enum_class2 ec2 = enum_class2::C6;
+    typed_enum te1 = typed_enum::A7;
+    sized_enum se1 = sized_enum::B8;
+  endfuction
 endmodule
 

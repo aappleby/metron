@@ -262,3 +262,30 @@ void MtContext::dump_tree() const {
 }
 
 //------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtContext::check_done() {
+  Err err;
+  if (action_log.size()) {
+    err << ERR("Had leftover contexts in action_log\n");
+  }
+
+  if (log_next.state != CTX_NONE) {
+    err << ERR("Had leftover context in log_next\n");
+  }
+
+  // FIXME - Funcs are allowed to have "invalid" fields for now, since they
+  // behave more like C funcs. This should probably be fleshed out more in
+  // the tracer.
+  if (parent && parent->method && !parent->method->in_func) {
+    if (log_top.state == CTX_INVALID) {
+      err << ERR("Had invalid context in log_top\n");
+    }
+  }
+
+  if (log_top.state == CTX_PENDING) {
+    err << ERR("Had invalid context in log_top\n");
+  }
+
+  for (auto c : children) err << c->check_done();
+  return err;
+}

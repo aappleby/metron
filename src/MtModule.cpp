@@ -385,7 +385,12 @@ CHECK_RETURN Err MtModule::collect_parts() {
     }
 
     if (n.sym == sym_field_declaration) {
-      all_fields.push_back(new MtField(this, n, in_public));
+      auto node_type = n.get_field(field_type);
+      if (node_type.sym == sym_enum_specifier) {
+        all_enums.push_back(new MtField(this, n, in_public));
+      } else {
+        all_fields.push_back(new MtField(this, n, in_public));
+      }
     }
 
     if (n.sym == sym_function_definition) {
@@ -581,9 +586,11 @@ CHECK_RETURN Err MtModule::categorize_fields() {
       private_signals.push_back(f);
     else if (!f->is_public() && f->is_input()) {
       private_registers.push_back(f);
+    } else if (f->is_enum()) {
     } else {
       err << ERR("Don't know how to categorize %s = %s\n", f->cname(),
                  to_string(f->state));
+      f->node.error();
     }
   }
 

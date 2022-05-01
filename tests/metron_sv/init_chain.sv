@@ -11,7 +11,7 @@ module Module
     /*init1()*/;
   end
 
-  always_comb begin /*tock*/
+  always_ff @(posedge clock) begin /*tock*/
     /*tick()*/;
   end
 

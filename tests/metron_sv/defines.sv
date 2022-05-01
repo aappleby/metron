@@ -5,18 +5,19 @@
 
 `define MY_CONSTANT1 10
 `define MY_CONSTANT2 20
-`define MY_OTHER_CONSTANT (`MY_CONSTANT1 + `MY_CONSTANT2 + 7)
+`define MY_OTHER_CONSTANT (MY_CONSTANT1 + MY_CONSTANT2 + 7)
 
 module Module
 (
   input logic clock,
-  output logic[7:0] tock
+  output logic[7:0] tock_ret
 );
 /*public:*/
 
-  always_comb begin /*tock*/
+  function logic[7:0] tock();
     tock = `MY_OTHER_CONSTANT;
-  end
+  endfuction
+  always_comb tock_ret = tock();
 
 endmodule
 

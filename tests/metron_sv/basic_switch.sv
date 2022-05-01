@@ -9,7 +9,7 @@ module Module
 );
 /*public:*/
 
-  always_comb begin /*tock*/
+  always_ff @(posedge clock) begin /*tock*/
     tick_selector = tock_selector;
     /*tick(selector)*/;
   end
@@ -18,14 +18,14 @@ module Module
 
   logic[1:0] tick_selector;
   always_ff @(posedge clock) begin /*tick*/
-    case(tick_selector)
-      0: my_reg <= 17;
-      1: my_reg <= 22;
-      2: my_reg <= 30;
-      3, // fallthrough
-      4,
-      5,
-      6: my_reg <= 72;
+    switch(selector)
+       0, my_reg <= 17;
+       1, my_reg <= 22;
+       2, my_reg <= 30;
+       3, // fallthrough
+       4,
+       5,
+       6, my_reg <= 72;
     endcase
   end
 

@@ -5,20 +5,18 @@
 module Module
 (
   input logic clock,
-  output logic[7:0] tock2
+  output logic[7:0] my_reg,
+  output logic[7:0] tock_ret
 );
 /*public:*/
 
-  always_comb begin /*tock1*/ /*tick()*/; end
-  always_comb begin /*tock2*/ logic[7:0] a;
+  function logic[7:0] tock();  logic[7:0] a;
 
-a = 1; a = a + 7; tock2 = a; end
-
-/*private:*/
+logic[7:0] a = 1; a = a + 7; tock = a; endfuction
+  always_comb tock_ret = tock();
 
   always_ff @(posedge clock) begin /*tick*/ if (my_reg & 1) my_reg <= my_reg - 7; end
 
-  logic[7:0] my_reg;
 
 endmodule
 

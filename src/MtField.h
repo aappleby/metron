@@ -31,6 +31,8 @@ struct MtField {
   MnNode get_type_node() const { return node.get_field(field_type); }
   MnNode get_decl_node() const { return node.get_field(field_declarator); }
 
+  bool is_enum() { return node.sym == sym_enum_specifier; }
+
   void dump() const;
 
   //----------

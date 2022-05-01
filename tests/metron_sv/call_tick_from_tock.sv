@@ -10,7 +10,7 @@ module Module
 );
 /*public:*/
 
-  always_comb begin /*tock*/
+  always_ff @(posedge clock) begin /*tock*/
     tick_val = tock_val;
     /*tick(val)*/;
   end
@@ -19,7 +19,7 @@ module Module
 
   logic[7:0] tick_val;
   always_ff @(posedge clock) begin /*tick*/
-    my_reg <= my_reg + tick_val;
+    my_reg <= my_reg + val;
   end
 
   logic[7:0] my_reg;

@@ -569,15 +569,15 @@ CHECK_RETURN Err MtModule::categorize_fields() {
 
     if (f->is_component())
       components.push_back(f);
-    else if (f->is_input_sig())
+    else if (f->is_public_input())
       input_signals.push_back(f);
-    else if (f->is_output_sig())
+    else if (f->is_public_signal())
       output_signals.push_back(f);
-    else if (f->is_output_reg())
+    else if (f->is_public_register())
       output_registers.push_back(f);
-    else if (f->is_private_reg())
+    else if (f->is_private_register())
       private_registers.push_back(f);
-    else if (f->is_private_sig())
+    else if (f->is_private_signal())
       private_signals.push_back(f);
     else {
       err << ERR("Don't know how to categorize %s = %s\n", f->cname(),

@@ -8,32 +8,30 @@
 struct MtField {
   MtField(MtModule* _parent_mod, const MnNode& n, bool is_public);
 
-  bool is_component() const;
-  bool is_param() const;
-  bool is_public() const;
-
-  bool is_input_sig() const { return _public && (state == CTX_INPUT); }
-  bool is_output_sig() const {
-    return _public && (state == CTX_OUTPUT || state == CTX_SIGNAL);
-  }
-  bool is_output_reg() const { return _public && (state == CTX_REGISTER); }
-  bool is_private_sig() const {
-    return !_public && (state == CTX_OUTPUT || state == CTX_SIGNAL);
-  }
-  bool is_private_reg() const {
-    return !_public && (state == CTX_INPUT || state == CTX_REGISTER);
-  }
-
   const char* cname() const;
   const std::string& name() const;
   const std::string& type_name() const;
 
+  bool is_component() const;
+  bool is_param() const;
+  bool is_public() const;
+
+  bool is_input() const { return state == CTX_INPUT; }
+  bool is_register() const {
+    return state == CTX_REGISTER || state == CTX_MAYBE;
+  }
+  bool is_signal() const { return state == CTX_OUTPUT || state == CTX_SIGNAL; }
+
+  bool is_public_input() const { return _public && is_input(); }
+  bool is_public_signal() const { return _public && is_signal(); }
+  bool is_public_register() const { return _public && is_register(); }
+  bool is_private_signal() const { return !_public && is_signal(); }
+  bool is_private_register() const { return !_public && is_register(); }
+
   MnNode get_type_node() const { return node.get_field(field_type); }
   MnNode get_decl_node() const { return node.get_field(field_declarator); }
 
-  bool is_register() const { return state == CTX_REGISTER; }
-
-  void dump();
+  void dump() const;
 
   //----------
 

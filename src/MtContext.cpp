@@ -236,6 +236,19 @@ void MtContext::dump() const {
     } else {
       LOG_G("%s", to_string(log_top.state));
     }
+  } else if (type == CTX_RETURN) {
+    LOG_W("%s", name.c_str());
+
+    LOG(" = ");
+    if (log_top.state == CTX_SIGNAL || log_top.state == CTX_OUTPUT) {
+      LOG_B("%s", to_string(log_top.state));
+    } else if (log_top.state == CTX_NONE) {
+      LOG_Y("%s", to_string(log_top.state));
+    } else if (log_top.state == CTX_INVALID) {
+      LOG_R("%s", to_string(log_top.state));
+    } else {
+      LOG_G("%s", to_string(log_top.state));
+    }
   }
   LOG("\n");
 }

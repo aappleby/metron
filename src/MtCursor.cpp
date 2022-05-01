@@ -465,6 +465,8 @@ CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnCallExpr call,
 CHECK_RETURN Err MtCursor::emit_call(MnCallExpr n) {
   Err err;
 
+  n.dump_tree();
+
   MnFunc func = n.func();
   MnArgList args = n.args();
 
@@ -755,6 +757,12 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
   // OK, now we can emit bindings for the call we're at.
 
   if (n.sym == sym_call_expression) {
+    auto old_replacements = id_replacements;
+    for (auto p : current_method->param_nodes) {
+      auto param_name = p.get_field(field_declarator).text();
+      id_replacements[param_name] = current_method->name() + "_" + param_name;
+    }
+
     auto func_node = n.get_field(field_function);
     auto args_node = n.get_field(field_arguments);
 
@@ -795,8 +803,12 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
       if (method && method->in_tick) {
         for (int i = 0; i < method->param_nodes.size(); i++) {
           auto& param = method->param_nodes[i];
+          auto param_name = param.get_field(field_declarator).text();
+
           err << emit_print("%s_%s = ", func_node.text().c_str(),
-                            param.text().c_str());
+                            param_name.c_str());
+
+          args_node.dump_tree();
 
           auto arg_node = args_node.named_child(i);
           cursor = arg_node.start();
@@ -810,6 +822,8 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
         }
       }
     }
+
+    id_replacements = old_replacements;
   }
 
   cursor = old_cursor;
@@ -1028,19 +1042,22 @@ CHECK_RETURN Err MtCursor::emit_func_def(MnFuncDefinition n) {
   if (current_method->in_func && current_method->is_public()) {
     err << emit_newline();
     err << emit_indent();
-    err << emit_print("always_comb %s_ret = %s(", current_method->cname(),
-                      current_method->cname());
 
-    int param_count = current_method->param_nodes.size();
-    for (int i = 0; i < param_count; i++) {
-      auto param = current_method->param_nodes[i];
-      err << emit_print("%s_%s", current_method->cname(),
-                        param.get_field(field_declarator).text().c_str());
-      if (i < param_count - 1) {
-        err << emit_print(", ");
+    if (current_method->has_return()) {
+      err << emit_print("always_comb %s_ret = %s(", current_method->cname(),
+                        current_method->cname());
+
+      int param_count = current_method->param_nodes.size();
+      for (int i = 0; i < param_count; i++) {
+        auto param = current_method->param_nodes[i];
+        err << emit_print("%s_%s", current_method->cname(),
+                          param.get_field(field_declarator).text().c_str());
+        if (i < param_count - 1) {
+          err << emit_print(", ");
+        }
       }
+      err << emit_print(");");
     }
-    err << emit_print(");");
   }
 
   //----------
@@ -1751,16 +1768,17 @@ CHECK_RETURN Err MtCursor::emit_class(MnClassSpecifier n) {
       if (!f->is_public()) continue;
       if (f->is_param()) continue;
 
-      if (!(f->is_input_sig() || f->is_output_sig() || f->is_output_reg()))
+      if (!(f->is_public_input() || f->is_public_signal() ||
+            f->is_public_register()))
         continue;
 
       err << emit_indent();
 
-      if (f->is_input_sig()) {
+      if (f->is_public_input()) {
         err << emit_print("input ");
-      } else if (f->is_output_sig()) {
+      } else if (f->is_public_signal()) {
         err << emit_print("output ");
-      } else if (f->is_output_reg()) {
+      } else if (f->is_public_register()) {
         err << emit_print("output ");
       } else {
         debugbreak();
@@ -2762,6 +2780,11 @@ CHECK_RETURN Err MtCursor::emit_preproc(MnNode n) {
   }
   return err;
 }
+
+//------------------------------------------------------------------------------
+// Emit one block-level statement
+
+// CHECK_RETURN
 
 //------------------------------------------------------------------------------
 // Call the correct emit() method based on the node type.

@@ -7,12 +7,10 @@
       "request": "launch",
       "program": "${workspaceFolder}/bin/metron",
       "cwd": "${workspaceFolder}",
-      /*
       "args": [
         "-e",
         "scratch.h"
       ],
-      */
       /*
       "args": [
         "-e",
@@ -21,12 +19,22 @@
         "toplevel.h",
       ],
       */
+      /*
       "args": [
         "-e",
         "-r",
         "examples/rvsimple/metron",
         "toplevel.h",
       ],
+      */
+      /*
+      "args": [
+        "-e",
+        "-r",
+        "examples/pong/metron",
+        "pong.h",
+      ],
+      */
       // bin/metron -q -v -r examples/pong/metron -o examples/pong/metron_sv -c pong.h
       // bin/metron -q -v -r examples/rvsimple/metron -o examples/rvsimple/metron_sv -c toplevel.h
       // bin/metron -q -v -r examples/rvtiny/metron -o examples/rvtiny/metron_sv -c toplevel.h

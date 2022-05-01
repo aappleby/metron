@@ -318,6 +318,8 @@ int main(int argc, char** argv) {
 
   LOG("\n");
 
+  for (auto m : lib.modules) m->dump();
+
   //----------
   // Emit all modules.
 
@@ -357,7 +359,8 @@ int main(int argc, char** argv) {
     if (echo) {
       LOG_G("\n----------------------------------------\n");
       LOG_G("Final converted source:\n\n");
-      LOG_W("%s", out_string.c_str());
+      // LOG_W("%s", out_string.c_str());
+      printf("%s", out_string.c_str());
       LOG_G("\n----------------------------------------\n");
     }
 

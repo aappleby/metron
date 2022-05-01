@@ -101,8 +101,10 @@ struct MtContext {
       err << ERR("Had leftover context in log_next\n");
     }
 
-    if (log_top.state == CTX_INVALID || log_top.state == CTX_PENDING) {
-      err << ERR("Had invalid context in log_top\n");
+    if (type != CTX_RETURN) {
+      if (log_top.state == CTX_INVALID || log_top.state == CTX_PENDING) {
+        err << ERR("Had invalid context in log_top\n");
+      }
     }
 
     for (auto c : children) err << c->check_done();

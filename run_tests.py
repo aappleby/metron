@@ -9,6 +9,7 @@ from os import path
 
 ################################################################################
 
+
 def main():
     print()
     print_b(" ###    ### ####### ######## ######   ######  ###    ## ")
@@ -41,15 +42,15 @@ def main():
 
     errors = 0
 
-    #errors += test_convert_good()
-    errors += test_convert_bad()
+    errors += test_convert_good()
+    #errors += test_convert_bad()
 
     if not basic:
         errors += test_compilation()
         errors += test_verilator_parse()
         errors += test_goldens()
         errors += test_examples()
-        errors += test_misc();
+        errors += test_misc()
 
         # Lockstep tests are slow because compiler...
         errors += test_lockstep()
@@ -64,7 +65,7 @@ def main():
 
     print()
     if errors > 0:
-        print_r(f"Total failures : {errors}");
+        print_r(f"Total failures : {errors}")
         print()
         print_r(" #######  #####  ## ##      ")
         print_r(" ##      ##   ## ## ##      ")
@@ -91,20 +92,25 @@ def get_pool():
         max_threads = 1
     return multiprocessing.Pool(max_threads)
 
+
 def metron_default_args():
     return "-v -e"
+
 
 def metron_good():
     return glob.glob("tests/metron_good/*.h")
 
+
 def metron_bad():
     return glob.glob("tests/metron_bad/*.h")
+
 
 def kcov_prefix():
     if "--coverage" in sys.argv:
         return "kcov --exclude-region=KCOV_OFF:KCOV_ON --include-pattern=Metron --exclude-pattern=submodules --exclude-line=debugbreak coverage"
     else:
         return ""
+
 
 def print_c(color, *args):
     sys.stdout.write(
@@ -113,14 +119,18 @@ def print_c(color, *args):
     sys.stdout.write("\u001b[0m")
     sys.stdout.flush()
 
+
 def print_r(*args):
     print_c(0xFF8080, *args)
+
 
 def print_g(*args):
     print_c(0x80FF80, *args)
 
+
 def print_b(*args):
     print_c(0x8080FF, *args)
+
 
 def prep_cmd(cmd):
     cmd = cmd.strip()
@@ -134,6 +144,7 @@ def prep_cmd(cmd):
 ################################################################################
 # Check that the given file is a syntactically valid C++ header.
 
+
 def check_compile(file):
     cmd = f"  g++ -Isrc --std=gnu++2a -fsyntax-only -c {file}"
     print(cmd)
@@ -142,18 +153,22 @@ def check_compile(file):
 ################################################################################
 # Check that Metron can translate the source file to SystemVerilog
 
+
 def check_good(filename):
     errors = 0
     basename = path.basename(filename)
     svname = path.splitext(basename)[0] + ".sv"
 
-    cmd = prep_cmd(f"bin/metron {metron_default_args()} -r tests/metron_good -o tests/metron_sv -c {basename}")
-    cmd_result = subprocess.run(cmd, stdout=subprocess.PIPE, encoding="charmap")
+    cmd = prep_cmd(
+        f"bin/metron {metron_default_args()} -r tests/metron_good -o tests/metron_sv -c {basename}")
+    cmd_result = subprocess.run(
+        cmd, stdout=subprocess.PIPE, encoding="charmap")
 
     print(cmd_result.stdout)
 
     if cmd_result.returncode:
-        print_r(f"Test file {filename} - expected pass, got {cmd_result.returncode}")
+        print_r(
+            f"Test file {filename} - expected pass, got {cmd_result.returncode}")
         print(cmd_result.stdout)
         #result = os.system(f"bin/metron {filename}")
         errors += 1
@@ -162,26 +177,32 @@ def check_good(filename):
 ###############################################################################
 # Check that the given source does _not_ translate cleanly
 
+
 def check_bad(filename):
     errors = 0
     basename = path.basename(filename)
     svname = path.splitext(basename)[0] + ".sv"
 
     lines = open(filename).readlines()
-    expected_errors = [line[4:].strip() for line in lines if line.startswith("//X")]
+    expected_errors = [line[4:].strip()
+                       for line in lines if line.startswith("//X")]
     if len(expected_errors) == 0:
         print(f"Test {filename} contained no expected errors. Dumping output.")
-        #return 1
+        # return 1
 
-    cmd = prep_cmd(f"bin/metron {metron_default_args()} -r tests/metron_bad -o tests/metron_sv -c {basename}")
-    cmd_result = subprocess.run(cmd, stdout=subprocess.PIPE, encoding="charmap")
+    cmd = prep_cmd(
+        f"bin/metron {metron_default_args()} -r tests/metron_bad -o tests/metron_sv -c {basename}")
+    cmd_result = subprocess.run(
+        cmd, stdout=subprocess.PIPE, encoding="charmap")
 
     if cmd_result.returncode == 0:
-        print(f"Test file {filename} - expected fail, got {cmd_result.returncode}")
+        print(
+            f"Test file {filename} - expected fail, got {cmd_result.returncode}")
         errors += 1
         pass
     elif cmd_result.returncode == 34048:
-        print(f"Test file {filename} - expected fail, but it threw an exception")
+        print(
+            f"Test file {filename} - expected fail, but it threw an exception")
         errors += 1
     elif len(expected_errors) == 0:
         print(f"Test {filename} contained no expected errors.")
@@ -189,7 +210,8 @@ def check_bad(filename):
     else:
         for err in expected_errors:
             if not err in cmd_result.stdout:
-                print(f"Test {filename} did not produce expected error \"{err}\".")
+                print(
+                    f"Test {filename} did not produce expected error \"{err}\".")
                 errors += 1
 
     if errors:
@@ -198,6 +220,7 @@ def check_bad(filename):
 
 ################################################################################
 # Run Icarus on the translated source file.
+
 
 def check_icarus(filename):
     errors = 0
@@ -214,6 +237,7 @@ def check_icarus(filename):
 
 ###############################################################################
 # Run Verilator on the translated source file.
+
 
 def check_verilator(filename):
     errors = 0
@@ -232,6 +256,7 @@ def check_verilator(filename):
 ###############################################################################
 # Check the translated source against the golden, if present.
 
+
 def check_golden(filename):
     errors = 0
     basename = path.basename(filename)
@@ -243,10 +268,10 @@ def check_golden(filename):
         test_src = open(test_filename, "r").read()
         golden_src = open(golden_filename, "r").read()
         if (test_src != golden_src):
-          print_r(f"  Mismatch,  {test_filename} != {golden_filename}")
-          errors += 1
+            print_r(f"  Mismatch,  {test_filename} != {golden_filename}")
+            errors += 1
         else:
-          print(f"  {test_filename} == {golden_filename}")
+            print(f"  {test_filename} == {golden_filename}")
     except:
         print_b(f"  No golden for {golden_filename}")
     return errors
@@ -254,13 +279,15 @@ def check_golden(filename):
 ###############################################################################
 # Run a command that passes if the output contains "All tests pass"
 
+
 def run_simple_test(commandline):
     # The Icarus output isn't actually a binary, kcov can't run it.
     if (commandline == "bin/examples/uart_iv"):
         cmd = [commandline]
     else:
         cmd = prep_cmd(commandline)
-    stuff = subprocess.run(cmd, stdout=subprocess.PIPE, encoding="charmap").stdout
+    stuff = subprocess.run(cmd, stdout=subprocess.PIPE,
+                           encoding="charmap").stdout
     if not "All tests pass" in stuff:
         print_r(stuff)
         return 1
@@ -270,9 +297,11 @@ def run_simple_test(commandline):
 ###############################################################################
 # Run an arbitrary command as a test
 
+
 def run_good_command(commandline):
     cmd = prep_cmd(commandline)
-    result = subprocess.run(cmd, stdout=subprocess.PIPE, encoding="charmap").returncode
+    result = subprocess.run(cmd, stdout=subprocess.PIPE,
+                            encoding="charmap").returncode
 
     if result != 0:
         print(f"Command \"{cmd}\" should have passed, but it failed.")
@@ -280,9 +309,11 @@ def run_good_command(commandline):
     else:
         return 0
 
+
 def run_bad_command(commandline):
     cmd = prep_cmd(commandline)
-    result = subprocess.run(cmd, stdout=subprocess.PIPE, encoding="charmap").returncode
+    result = subprocess.run(cmd, stdout=subprocess.PIPE,
+                            encoding="charmap").returncode
 
     if result == 0:
         print(f"Command \"{cmd}\" should have failed, but it passed.")
@@ -291,6 +322,7 @@ def run_bad_command(commandline):
         return 0
 
 ################################################################################
+
 
 def test_compilation():
     print()
@@ -302,6 +334,7 @@ def test_compilation():
 
 ################################################################################
 
+
 def test_convert_good():
     print()
     print_b("Checking that all examples in metron_good convert to SV cleanly")
@@ -311,6 +344,7 @@ def test_convert_good():
     return result
 
 ################################################################################
+
 
 def test_convert_bad():
     print()
@@ -322,6 +356,7 @@ def test_convert_bad():
 
 ################################################################################
 
+
 def test_verilator_parse():
     print()
     print_b("Checking that all converted files can be parsed by Verilator")
@@ -332,6 +367,7 @@ def test_verilator_parse():
 
 ################################################################################
 
+
 def test_goldens():
     print()
     print_b("Checking that all converted files match their golden version, if present")
@@ -341,6 +377,7 @@ def test_goldens():
     return errors
 
 ################################################################################
+
 
 def test_examples():
     print()
@@ -367,6 +404,7 @@ def test_examples():
 
 ################################################################################
 
+
 def test_icarus_parse():
     print()
     print_b("Checking that all converted files can be parsed by Icarus")
@@ -376,6 +414,7 @@ def test_icarus_parse():
     return errors
 
 ################################################################################
+
 
 def test_misc():
     print()
@@ -402,36 +441,38 @@ def test_misc():
 
 ################################################################################
 
+
 def check_lockstep(filename):
     test_name = filename.rstrip(".h")
-    bad_test  = "_bad" in filename
+    bad_test = "_bad" in filename
 
     # Test source is the same for all lockstep tests, we just change the
     # included files.
-    test_src  = f"tests/test_lockstep.cpp"
+    test_src = f"tests/test_lockstep.cpp"
 
-    mt_root   = f"tests/metron_lockstep"
-    sv_root   = f"gen/{mt_root}/metron_sv"
-    vl_root   = f"gen/{mt_root}/metron_vl"
+    mt_root = f"tests/metron_lockstep"
+    sv_root = f"gen/{mt_root}/metron_sv"
+    vl_root = f"gen/{mt_root}/metron_vl"
 
     # Our lockstep test top modules are all named "Module". Verilator will
     # name the top module after the <test_name>.sv filename.
-    mt_top    = f"Module"
-    vl_top    = f"V{test_name}"
+    mt_top = f"Module"
+    vl_top = f"V{test_name}"
 
     mt_header = f"{mt_root}/{test_name}.h"
     vl_header = f"{vl_root}/V{test_name}.h"
-    vl_obj    = f"{vl_root}/V{test_name}__ALL.o"
-    test_obj  = f"obj/{mt_root}/{test_name}.o"
-    test_bin  = f"bin/{mt_root}/{test_name}"
+    vl_obj = f"{vl_root}/V{test_name}__ALL.o"
+    test_obj = f"obj/{mt_root}/{test_name}.o"
+    test_bin = f"bin/{mt_root}/{test_name}"
 
-    includes  = f"-I. -Isrc -I{sv_root} -I/usr/local/share/verilator/include"
+    includes = f"-I. -Isrc -I{sv_root} -I/usr/local/share/verilator/include"
 
     print(f"  Building {test_name}")
     os.system(f"bin/metron -q -r {mt_root} -o {sv_root} -c {test_name}.h")
     os.system(f"verilator {includes} --cc {test_name}.sv -Mdir {vl_root}")
     os.system(f"make --quiet -C {vl_root} -f V{test_name}.mk > /dev/null")
-    os.system(f"g++ -O3 -std=gnu++2a -DMT_TOP={mt_top} -DVL_TOP={vl_top} -DMT_HEADER={mt_header} -DVL_HEADER={vl_header} {includes} -c {test_src} -o {test_obj}")
+    os.system(
+        f"g++ -O3 -std=gnu++2a -DMT_TOP={mt_top} -DVL_TOP={vl_top} -DMT_HEADER={mt_header} -DVL_HEADER={vl_header} {includes} -c {test_src} -o {test_obj}")
     os.system(f"g++ {test_obj} {vl_obj} obj/verilated.o -o {test_bin}")
 
     print(f"  Running {test_name}")
@@ -442,6 +483,7 @@ def check_lockstep(filename):
     else:
         return errors
 
+
 def test_lockstep():
     print()
     print_b("Testing lockstep simulations")
@@ -450,7 +492,7 @@ def test_lockstep():
         "counter.h",
         "lfsr.h",
         "funcs_and_tasks.h",
-        "lockstep_bad.h", # expected to fail
+        "lockstep_bad.h",  # expected to fail
         "timeout_bad.h",  # expected to fail
     ]
 
@@ -464,6 +506,7 @@ def test_lockstep():
     return errors
 
 ################################################################################
+
 
 if __name__ == "__main__":
     sys.exit(main())

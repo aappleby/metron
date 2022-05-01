@@ -36,29 +36,30 @@ const std::string &MtField::type_name() const { return _type; }
 
 //------------------------------------------------------------------------------
 
-void MtField::dump() {
+void MtField::dump() const {
   LOG_INDENT_SCOPE();
   if (_type_mod) {
-    LOG_C(0xFF80CC, "Component %s : %s", cname(), _type.c_str());
+    LOG_C(0xFF80CC, "Component '%s' : %s", cname(), _type.c_str());
   } else {
     switch (state) {
       case CTX_NONE:
-        LOG_C(0x808080, "Unknown field %s : %s", cname(), _type.c_str());
+        LOG_C(0x808080, "Unknown field '%s' : %s", cname(), _type.c_str());
         break;
       case CTX_INPUT:
-        LOG_C(0xFFFFFF, "-> Input %s : %s", cname(), _type.c_str());
+        LOG_C(0xFFFFFF, "-> Input '%s' : %s", cname(), _type.c_str());
         break;
       case CTX_OUTPUT:
-        LOG_C(0xAAAAFF, "<- Output %s : %s", cname(), _type.c_str());
+        LOG_C(0xAAAAFF, "<- Output '%s' : %s", cname(), _type.c_str());
         break;
       case CTX_SIGNAL:
-        LOG_C(0xAACCFF, "-- Signal %s : %s", cname(), _type.c_str());
+        LOG_C(0xAACCFF, "-- Signal '%s' : %s", cname(), _type.c_str());
         break;
       case CTX_REGISTER:
-        LOG_C(0xAAFFAA, ">| Register %s : %s", cname(), _type.c_str());
+      case CTX_MAYBE:
+        LOG_C(0xAAFFAA, ">| Register '%s' : %s", cname(), _type.c_str());
         break;
       case CTX_INVALID:
-        LOG_C(0x8080FF, "Invalid field %s : %s", cname(), _type.c_str());
+        LOG_C(0x8080FF, "Invalid field '%s' : %s", cname(), _type.c_str());
         break;
     }
 

@@ -279,7 +279,8 @@ CHECK_RETURN Err MtModLibrary::categorize_methods() {
 
     bool wrote_register = false;
     for (auto f : m->writes) {
-      if (f->state == CTX_REGISTER) wrote_register = true;
+      if (f->state == CTX_REGISTER || f->state == CTX_MAYBE)
+        wrote_register = true;
     }
 
     if (wrote_register) {

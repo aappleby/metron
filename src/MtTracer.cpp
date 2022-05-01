@@ -24,7 +24,9 @@ CHECK_RETURN Err MtTracer::trace_dispatch(MtContext* ctx, MnNode n,
       assert(ctx->method);
 
       auto field_ctx = ctx->resolve(n.text());
-      err << log_action(ctx, field_ctx, action, n.get_source());
+      if (field_ctx) {
+        err << log_action(ctx, field_ctx, action, n.get_source());
+      }
       break;
     }
 
@@ -296,12 +298,18 @@ CHECK_RETURN Err MtTracer::log_action(MtContext* method_ctx, MtContext* dst_ctx,
                                       ContextAction action,
                                       SourceRange source) {
   Err err;
+  assert(method_ctx);
+  assert(dst_ctx);
 
-  if (dst_ctx) {
-    auto old_state = dst_ctx->log_top.state;
-    auto new_state = merge_action(old_state, action);
-    dst_ctx->log_top.state = new_state;
+  if (action == CTX_WRITE) {
+    if (dst_ctx->field) {
+      method_ctx->method->writes.insert(dst_ctx->field);
+    }
   }
+
+  auto old_state = dst_ctx->log_top.state;
+  auto new_state = merge_action(old_state, action);
+  dst_ctx->log_top.state = new_state;
 
   return err;
 }

@@ -42,8 +42,8 @@ def main():
 
     errors = 0
 
-    errors += test_convert_good()
-    #errors += test_convert_bad()
+    #errors += test_convert_good()
+    errors += test_convert_bad()
 
     if not basic:
         errors += test_compilation()
@@ -94,8 +94,8 @@ def get_pool():
 
 
 def metron_default_args():
-    # return "-v -e"
-    return "-q"
+    return "-v -e"
+    # return "-q"
 
 
 def metron_good():

@@ -16,8 +16,8 @@
       "args": [
         "-e",
         "-r",
-        "tests/metron_good",
-        "enum_simple.h",
+        "tests/metron_bad",
+        "mid_block_break.h",
       ],
       /*
       "args": [

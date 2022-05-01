@@ -177,6 +177,21 @@ CHECK_RETURN Err MtModLibrary::categorize_methods() {
   // Trace done, all our fields should have a state assigned. Categorize the
   // methods.
 
+  for (auto mod : modules) {
+    for (auto m : mod->all_methods) {
+      if (m->is_constructor()) {
+        if (mod->constructor) {
+          err << ERR("Module %s has multiple constructors\n", mod->cname());
+        } else if (m->has_params()) {
+          err << ERR("Constructor for %s is not allowed to have params\n",
+                     mod->cname());
+        } else {
+          mod->constructor = m;
+        }
+      }
+    }
+  }
+
   //----------------------------------------
   // Mark all methods called by the constructor as inits
 
@@ -513,16 +528,6 @@ CHECK_RETURN Err MtModLibrary::categorize_methods() {
       }
     }
   }
-
-  //----------------------------------------
-  // Check for constructors with params
-
-  for (auto mod : modules) {
-    if (mod->constructor && mod->constructor->params.size()) {
-      err << ERR("Constructor for %s is not allowed to have params\n", mod->cname());
-    }
-  }
-
   //----------------------------------------
 
   dump_call_graph();

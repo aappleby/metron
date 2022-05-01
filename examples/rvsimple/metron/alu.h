@@ -3,9 +3,7 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#ifndef RVSIMPLE_ALU_H
-#define RVSIMPLE_ALU_H
-
+#pragma once
 #include "config.h"
 #include "constants.h"
 #include "metron_tools.h"
@@ -41,5 +39,3 @@ class alu {
     result_equal_zero = (result == b32(0));
   }
 };
-
-#endif  // RVSIMPLE_ALU_H

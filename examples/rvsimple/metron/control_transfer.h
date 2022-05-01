@@ -3,18 +3,16 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#ifndef RVSIMPLE_CONTROL_TRANSFER_H
-#define RVSIMPLE_CONTROL_TRANSFER_H
-
+#pragma once
 #include "config.h"
 #include "constants.h"
 #include "metron_tools.h"
 
 class control_transfer {
  public:
-   logic<1> result_equal_zero;
-   logic<3> inst_funct3;
-   logic<1> take_branch;
+  logic<1> result_equal_zero;
+  logic<3> inst_funct3;
+  logic<1> take_branch;
 
   void tock_take_branch() {
     using namespace rv_constants;
@@ -31,5 +29,3 @@ class control_transfer {
     // clang-format on
   }
 };
-
-#endif  // RVSIMPLE_CONTROL_TRANSFER_H

@@ -3,9 +3,7 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#ifndef RVSIMPLE_MULTIPLEXER2_H
-#define RVSIMPLE_MULTIPLEXER2_H
-
+#pragma once
 #include "config.h"
 #include "constants.h"
 #include "metron_tools.h"
@@ -20,11 +18,15 @@ class multiplexer2 {
 
   void tock() {
     switch (sel) {
-      case 0:  out = in0; break;
-      case 1:  out = in1; break;
-      default: out = bx<WIDTH>(DONTCARE); break;
+      case 0:
+        out = in0;
+        break;
+      case 1:
+        out = in1;
+        break;
+      default:
+        out = bx<WIDTH>(DONTCARE);
+        break;
     }
   }
 };
-
-#endif  // RVSIMPLE_MULTIPLEXER2_H

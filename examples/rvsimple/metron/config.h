@@ -3,9 +3,6 @@
 // (c) 2017-2021, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#ifndef RVSIMPLE_CONFIG_H
-#define RVSIMPLE_CONFIG_H
-
 #pragma once
 #include "metron_tools.h"
 
@@ -37,5 +34,3 @@ static const char* TEXT_HEX = "add.text.vh";
 static const char* DATA_HEX = "add.data.vh";
 
 };  // namespace rv_config
-
-#endif  // RVSIMPLE_CONFIG_H

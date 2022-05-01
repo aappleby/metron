@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 //------------------------------------------------------------------------------
 
 struct SourceRange {
@@ -92,5 +94,7 @@ inline const char* to_string(ContextState f) {
 
 ContextState merge_action(ContextState state, ContextAction action);
 ContextState merge_branch(ContextState ma, ContextState mb);
+
+std::string str_printf(const char* fmt, ...);
 
 //------------------------------------------------------------------------------

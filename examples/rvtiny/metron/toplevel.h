@@ -1,6 +1,4 @@
-#ifndef RVSIMPLE_TOPLEVEL_H
-#define RVSIMPLE_TOPLEVEL_H
-
+#pragma once
 #include "metron_tools.h"
 
 class toplevel {
@@ -216,5 +214,3 @@ class toplevel {
   logic<32> data_mem[32 * 1024];
   logic<32> regs[32];
 };
-
-#endif  // RVSIMPLE_TOPLEVEL_H

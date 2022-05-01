@@ -96,7 +96,7 @@ void print_stacktrace(void) {
 
 void debugbreak() {
   print_stacktrace();
-  raise(SIGTRAP);
+  exit(-1);
 }
 
 #endif

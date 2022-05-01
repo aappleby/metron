@@ -3,9 +3,7 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#ifndef RVSIMPLE_SINGLECYCLE_DATAPATH_H
-#define RVSIMPLE_SINGLECYCLE_DATAPATH_H
-
+#pragma once
 #include "adder.h"
 #include "alu.h"
 #include "config.h"
@@ -20,43 +18,40 @@
 #include "register.h"
 
 class singlecycle_datapath {
-public:
-
-  logic<1>  reset;
+ public:
+  logic<1> reset;
   logic<32> data_mem_read_data;
   logic<32> data_mem_address;
   logic<32> data_mem_write_data;
 
   logic<32> inst;
   logic<32> pc;
-  logic<7>  inst_opcode;
-  logic<3>  inst_funct3;
-  logic<7>  inst_funct7;
-  logic<1>  alu_result_equal_zero;
+  logic<7> inst_opcode;
+  logic<3> inst_funct3;
+  logic<7> inst_funct7;
+  logic<1> alu_result_equal_zero;
 
   // control signals
-  logic<1>  pc_write_enable;
-  logic<1>  regfile_write_enable;
-  logic<1>  alu_operand_a_select;
-  logic<1>  alu_operand_b_select;
-  logic<3>  reg_writeback_select;
-  logic<2>  next_pc_select;
-  logic<5>  alu_function;
+  logic<1> pc_write_enable;
+  logic<1> regfile_write_enable;
+  logic<1> alu_operand_a_select;
+  logic<1> alu_operand_b_select;
+  logic<3> reg_writeback_select;
+  logic<2> next_pc_select;
+  logic<5> alu_function;
 
-private:
+ private:
   logic<32> rs1_data;
   logic<32> rs2_data;
 
   logic<5> inst_rd;
   logic<5> inst_rs1;
   logic<5> inst_rs2;
-public:
 
+ public:
   //----------------------------------------
 
-  void tock_pc() {
-    pc = program_counter.value;
-  }
+  void tock_pc() { pc = program_counter.value; }
 
   //----------------------------------------
 
@@ -67,9 +62,9 @@ public:
     inst_opcode = idec.inst_opcode;
     inst_funct3 = idec.inst_funct3;
     inst_funct7 = idec.inst_funct7;
-    inst_rd     = idec.inst_rd;
-    inst_rs1    = idec.inst_rs1;
-    inst_rs2    = idec.inst_rs2;
+    inst_rd = idec.inst_rd;
+    inst_rs1 = idec.inst_rs1;
+    inst_rs2 = idec.inst_rs2;
   }
 
   //----------------------------------------
@@ -82,7 +77,7 @@ public:
   //----------------------------------------
 
   void tock_reg_read() {
-    regs.rd_address  = idec.inst_rd;
+    regs.rd_address = idec.inst_rd;
     regs.rs1_address = idec.inst_rs1;
     regs.rs2_address = idec.inst_rs2;
     regs.tock1();
@@ -125,7 +120,7 @@ public:
   }
 
   void tock_data_mem_write_data() {
-    data_mem_address    = alu_core.result;
+    data_mem_address = alu_core.result;
     data_mem_write_data = regs.rs2_data;
   }
 
@@ -179,5 +174,3 @@ public:
   instruction_decoder idec;
   immediate_generator igen;
 };
-
-#endif  // RVSIMPLE_SINGLECYCLE_DATAPATH_H

@@ -1,6 +1,7 @@
 #include "MtUtils.h"
 
 #include <assert.h>
+#include <stdarg.h>
 #include <stdio.h>
 
 //------------------------------------------------------------------------------
@@ -66,6 +67,24 @@ ContextState merge_branch(ContextState ma, ContextState mb) {
   }
 
   return CTX_INVALID;
+}
+
+//------------------------------------------------------------------------------
+
+std::string str_printf(const char* fmt, ...) {
+  va_list args;
+
+  va_start(args, fmt);
+  int size = vsnprintf(nullptr, 0, fmt, args);
+  va_end(args);
+
+  std::string result;
+  result.resize(size + 1);
+  va_start(args, fmt);
+  vsnprintf(result.data(), size_t(size + 1), fmt, args);
+  va_end(args);
+  assert(result.back() == 0);
+  return result;
 }
 
 //------------------------------------------------------------------------------

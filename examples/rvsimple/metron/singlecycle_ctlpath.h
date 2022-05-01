@@ -3,9 +3,7 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#ifndef RVSIMPLE_SINGLECYCLE_CTLPATH_H
-#define RVSIMPLE_SINGLECYCLE_CTLPATH_H
-
+#pragma once
 #include "alu_control.h"
 #include "config.h"
 #include "constants.h"
@@ -37,7 +35,7 @@ class singlecycle_ctlpath {
     alu_ctrl.inst_funct3 = inst_funct3;
     alu_ctrl.inst_funct7 = inst_funct7;
     alu_ctrl.tock_alu_function();
-    alu_function         = alu_ctrl.alu_function;
+    alu_function = alu_ctrl.alu_function;
   }
 
   void tock_alu_operand_select() {
@@ -50,7 +48,7 @@ class singlecycle_ctlpath {
   void tock_data_mem_enable() {
     control.tock_data_mem_read_enable();
     control.tock_data_mem_write_enable();
-    data_mem_read_enable  = control.data_mem_read_enable;
+    data_mem_read_enable = control.data_mem_read_enable;
     data_mem_write_enable = control.data_mem_write_enable;
   }
 
@@ -85,5 +83,3 @@ class singlecycle_ctlpath {
   control_transfer transfer;
   alu_control alu_ctrl;
 };
-
-#endif  // RVSIMPLE_SINGLECYCLE_CTLPATH_H

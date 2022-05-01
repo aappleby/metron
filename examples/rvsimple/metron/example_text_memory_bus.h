@@ -3,9 +3,7 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#ifndef RVSIMPLE_EXAMPLE_TEXT_MEMORY_BUS_H
-#define RVSIMPLE_EXAMPLE_TEXT_MEMORY_BUS_H
-
+#pragma once
 #include "config.h"
 #include "constants.h"
 #include "example_text_memory.h"
@@ -25,10 +23,8 @@ class example_text_memory_bus {
     text_memory.tock_q();
     logic<32> fetched = text_memory.q;
     read_data =
-      (address >= rv_config::TEXT_BEGIN) && (rv_config::TEXT_END >= address)
-      ? fetched
-      : b32(DONTCARE);
+        (address >= rv_config::TEXT_BEGIN) && (rv_config::TEXT_END >= address)
+            ? fetched
+            : b32(DONTCARE);
   }
 };
-
-#endif  // RVSIMPLE_EXAMPLE_TEXT_MEMORY_BUS_H

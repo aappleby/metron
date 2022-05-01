@@ -1,15 +1,14 @@
-#ifndef METRON_TOOLS_H
-#define METRON_TOOLS_H
-
-#include <stdio.h>
-#include <stdarg.h>
+#pragma once
 #include <memory.h>
+#include <stdarg.h>
+#include <stdio.h>
+
 #include <string>
 #include <vector>
 
 #ifdef _MSC_VER
-#pragma warning(disable : 4996)  // unsafe fopen
-#pragma warning(disable : 26451) // Very picky arithmetic overflow warning
+#pragma warning(disable : 4996)   // unsafe fopen
+#pragma warning(disable : 26451)  // Very picky arithmetic overflow warning
 #endif
 
 //------------------------------------------------------------------------------
@@ -557,9 +556,9 @@ inline int display(const char* fmt, ...) {
   int len = vsnprintf(buffer, 256, fmt, args);
   va_end(args);
   fwrite(buffer, 1, len, stdout);
-  //TinyLog::get().printf(0x88CCFF, "MT> ");
-  //TinyLog::get().print_buffer(0x88CCFF, buffer, len);
-  //TinyLog::get().printf(0x88CCFF, "\n");
+  // TinyLog::get().printf(0x88CCFF, "MT> ");
+  // TinyLog::get().print_buffer(0x88CCFF, buffer, len);
+  // TinyLog::get().printf(0x88CCFF, "\n");
   return len;
 }
 
@@ -570,8 +569,8 @@ inline int write(const char* fmt, ...) {
   int len = vsnprintf(buffer, 256, fmt, args);
   va_end(args);
   fwrite(buffer, 1, len, stdout);
-  //TinyLog::get().printf(0x88CCFF, "MT> ");
-  //TinyLog::get().print_buffer(0x88CCFF, buffer, len);
+  // TinyLog::get().printf(0x88CCFF, "MT> ");
+  // TinyLog::get().print_buffer(0x88CCFF, buffer, len);
   return len;
 }
 
@@ -665,8 +664,8 @@ inline void parse_hex(const char* src_filename, void* dst_data, int dst_size) {
       // KCOV_OFF
       printf("Error loading %s: Invalid vmem character 0x%02x (%c)\n",
              src_filename, sc[0], sc[0]);
-      //LOG_R("Error loading %s: Invalid vmem character 0x%02x (%c)\n",
-      //       src_filename, sc[0], sc[0]);
+      // LOG_R("Error loading %s: Invalid vmem character 0x%02x (%c)\n",
+      //        src_filename, sc[0], sc[0]);
       return;
       // KCOV_ON
     }
@@ -710,10 +709,6 @@ void print_hex(const char* buf_name, void* src_data, int src_size) {
 
 //------------------------------------------------------------------------------
 
-
 //#define IV_TEST(A, B)
 
-
 //------------------------------------------------------------------------------
-
-#endif  // METRON_TOOLS_H

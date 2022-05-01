@@ -3,28 +3,26 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#ifndef RVSIMPLE_ALU_CONTROL_H
-#define RVSIMPLE_ALU_CONTROL_H
-
+#pragma once
 #include "config.h"
 #include "constants.h"
 #include "metron_tools.h"
 
 class alu_control {
  public:
-   logic<2> alu_op_type;
-   logic<3> inst_funct3;
-   logic<7> inst_funct7;
-   logic<5> alu_function;
+  logic<2> alu_op_type;
+  logic<3> inst_funct3;
+  logic<7> inst_funct7;
+  logic<5> alu_function;
 
-private:
+ private:
   logic<5> default_funct;
   logic<5> secondary_funct;
   logic<5> op_funct;
   logic<5> op_imm_funct;
   logic<5> branch_funct;
-public:
 
+ public:
   // clang-format off
   void tock_alu_function() {
     using namespace rv_constants;
@@ -77,5 +75,3 @@ public:
   }
   // clang-format on
 };
-
-#endif  // RVSIMPLE_ALU_CONTROL_H

@@ -579,7 +579,9 @@ CHECK_RETURN Err MtModule::categorize_fields() {
       private_registers.push_back(f);
     else if (f->is_private_signal())
       private_signals.push_back(f);
-    else {
+    else if (!f->is_public() && f->is_input()) {
+      private_registers.push_back(f);
+    } else {
       err << ERR("Don't know how to categorize %s = %s\n", f->cname(),
                  to_string(f->state));
     }

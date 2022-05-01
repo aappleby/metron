@@ -3,9 +3,7 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#ifndef RVSIMPLE_EXAMPLE_TEXT_MEMORY_H
-#define RVSIMPLE_EXAMPLE_TEXT_MEMORY_H
-
+#pragma once
 #include "config.h"
 #include "constants.h"
 #include "metron_tools.h"
@@ -25,5 +23,3 @@ class example_text_memory {
  private:
   logic<32> mem[pow2(rv_config::TEXT_BITS - 2)];
 };
-
-#endif  // RVSIMPLE_EXAMPLE_TEXT_MEMORY_H

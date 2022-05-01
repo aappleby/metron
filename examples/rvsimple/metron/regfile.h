@@ -3,9 +3,7 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#ifndef RVSIMPLE_REGFILE_H
-#define RVSIMPLE_REGFILE_H
-
+#pragma once
 #include "config.h"
 #include "constants.h"
 #include "metron_tools.h"
@@ -43,5 +41,3 @@ class regfile {
       if (rd_address != b5(0b0)) _register[rd_address] = rd_data;
   }
 };
-
-#endif  // RVSIMPLE_REGFILE_H

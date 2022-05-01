@@ -3,9 +3,7 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#ifndef RVSIMPLE_EXAMPLE_DATA_MEMORY_BUS_H
-#define RVSIMPLE_EXAMPLE_DATA_MEMORY_BUS_H
-
+#pragma once
 #include "config.h"
 #include "constants.h"
 #include "example_data_memory.h"
@@ -25,7 +23,8 @@ class example_data_memory_bus {
 
  public:
   void tock() {
-    logic<1> is_data_memory = address >= rv_config::DATA_BEGIN && rv_config::DATA_END >= address;
+    logic<1> is_data_memory =
+        address >= rv_config::DATA_BEGIN && rv_config::DATA_END >= address;
 
     data_memory.address = bx<rv_config::DATA_BITS - 2>(address, 2);
     data_memory.byteena = byte_enable;
@@ -37,5 +36,3 @@ class example_data_memory_bus {
     read_data = read_enable && is_data_memory ? fetched : b32(DONTCARE);
   }
 };
-
-#endif  // RVSIMPLE_EXAMPLE_DATA_MEMORY_BUS_H

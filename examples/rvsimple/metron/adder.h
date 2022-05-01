@@ -3,8 +3,7 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#ifndef RVSIMPLE_ADDER_H
-#define RVSIMPLE_ADDER_H
+#pragma once
 
 #include "config.h"
 #include "constants.h"
@@ -19,5 +18,3 @@ class adder {
 
   void tock() { result = operand_a + operand_b; }
 };
-
-#endif  // RVSIMPLE_ADDER_H

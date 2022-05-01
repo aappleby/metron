@@ -3,9 +3,7 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#ifndef RVSIMPLE_REGISTER_H
-#define RVSIMPLE_REGISTER_H
-
+#pragma once
 #include "config.h"
 #include "constants.h"
 #include "metron_tools.h"
@@ -20,12 +18,9 @@ class single_register {
 
   single_register() { value = INITIAL; }
 
-  void tock() {
-    tick();
-  }
+  void tock() { tick(); }
 
-private:
-
+ private:
   void tick() {
     if (reset)
       value = INITIAL;
@@ -33,5 +28,3 @@ private:
       value = next;
   }
 };
-
-#endif  // RVSIMPLE_REGISTER_H

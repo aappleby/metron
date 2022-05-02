@@ -202,8 +202,7 @@ int main(int argc, char** argv) {
     if (method->callers.size()) continue;
 
     LOG_G("Tracing %s.%s\n", top_mod->cname(), method->cname());
-    auto method_ctx = top_ctx->resolve(method->name());
-    err << tracer.trace_sym_function_definition(method_ctx, method->_node);
+    err << tracer.trace_method(top_ctx, method);
   }
   LOG("\n");
 

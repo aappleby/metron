@@ -265,8 +265,8 @@ def build_metron_lib():
     cpp_library(
         lib_name="bin/libmetron.a",
         src_files=[
-            # "src/MtChecker.cpp",
             "src/Err.cpp",
+            "src/MtChecker.cpp",
             "src/MtContext.cpp",
             "src/MtCursor.cpp",
             "src/MtField.cpp",

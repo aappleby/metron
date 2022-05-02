@@ -8,7 +8,6 @@
 #include "MtNode.h"
 #include "MtTracer.h"
 
-#if 0
 struct MtModule;
 struct MtMethod;
 struct MtField;
@@ -17,7 +16,7 @@ struct MtField;
 
 class MtChecker {
  public:
-
+#if 0
   // Top level
   CHECK_RETURN Err trace_method(MtMethod* method);
 
@@ -38,40 +37,11 @@ class MtChecker {
   CHECK_RETURN Err trace_write(MtField* field, MtField* component_field = nullptr);
 
   CHECK_RETURN Err merge_branch(StateMap & ma, StateMap & mb, StateMap & out);
+#endif
 
-  bool ends_with_break(MnNode n);
-
-  bool has_return(MnNode n);
-  bool has_non_terminal_return(MnNode n);
-
-  static void dump_trace(StateMap& m);
-  void dump_stack();
-
-  MtModule* mod() { return _mod_stack.back(); }
-  MtMethod* method() { return _method_stack.back(); }
-
-  bool in_tick() const;
-  bool in_tock() const;
-
-  MtMethod* root;
-  StateMap* state_top;
-
-  std::vector<std::string> _path_stack;
-  std::vector<MtModule*>   _mod_stack;
-  std::vector<MtMethod*>   _method_stack;
-
-  void push_state(StateMap* state) {
-    __state_stack.push_back(state);
-    state_top = __state_stack.back();
-  }
-
-  void pop_state() {
-    __state_stack.pop_back();
-    state_top = __state_stack.back();
-  }
-
-  std::vector<StateMap*> __state_stack;
+  static bool ends_with_break(MnNode n);
+  static bool has_return(MnNode n);
+  static bool has_non_terminal_return(MnNode n);
 };
 
 //------------------------------------------------------------------------------
-#endif

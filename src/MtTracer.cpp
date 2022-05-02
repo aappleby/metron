@@ -1,6 +1,7 @@
 #include "MtTracer.h"
 
 #include "Log.h"
+#include "MtChecker.h"
 #include "MtContext.h"
 #include "MtMethod.h"
 #include "MtModLibrary.h"
@@ -9,7 +10,23 @@
 #include "MtUtils.h"
 #include "metron_tools.h"
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtTracer::trace_method(MtContext* mod_ctx, MtMethod* method) {
+  Err err;
+  auto method_ctx = mod_ctx->resolve(method->name());
+
+  auto node_body = method->_node.get_field(field_body);
+  if (MtChecker::has_non_terminal_return(node_body)) {
+    err << ERR("Method %s has non-terminal return\n", method->cname());
+  }
+
+  err << trace_sym_function_definition(method_ctx, method->_node);
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer::log_action(MtContext* method_ctx, MtContext* dst_ctx,
                                       ContextAction action,
@@ -211,13 +228,13 @@ CHECK_RETURN Err MtTracer::trace_call(MtContext* src_ctx, MtContext* dst_ctx,
   bool cross_mod_call = src_ctx->method->_mod != dst_ctx->method->_mod;
 
   if (cross_mod_call) {
-    log_action(src_ctx, dst_ctx, CTX_WRITE, node_call.get_source());
+    err << log_action(src_ctx, dst_ctx, CTX_WRITE, node_call.get_source());
   }
 
   err << trace_sym_function_definition(dst_ctx, dst_ctx->method->_node);
 
   if (cross_mod_call) {
-    log_action(src_ctx, dst_ctx, CTX_READ, node_call.get_source());
+    err << log_action(src_ctx, dst_ctx, CTX_READ, node_call.get_source());
   }
 
   return err;
@@ -306,6 +323,11 @@ CHECK_RETURN Err MtTracer::trace_sym_case_statement(MtContext* ctx,
     if (hit_colon) {
       err << trace_statement(ctx, child);
     }
+  }
+
+  if (!MtChecker::ends_with_break(node)) {
+    err << ERR("Case statement in %s does not end with break\n",
+               ctx->method->cname());
   }
 
   return err;

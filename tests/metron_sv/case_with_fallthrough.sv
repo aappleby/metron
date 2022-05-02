@@ -10,7 +10,7 @@ module Module
 );
 /*public:*/
 
-  always_ff @(posedge clock) begin /*tock*/
+  always_comb begin /*tock*/
     logic[7:0] result;
 
     logic[7:0] result;
@@ -27,7 +27,7 @@ module Module
     endcase
 
     /*tick()*/;
-    tock = result;
+    tock_ret = result;
   end
 
 /*private:*/

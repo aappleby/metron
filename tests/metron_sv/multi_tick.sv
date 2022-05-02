@@ -9,13 +9,13 @@ module Module
 );
 /*public:*/
 
-  always_ff @(posedge clock) begin /*tock*/
+  always_comb begin /*tock*/
     logic[7:0] result;
 
     logic[7:0] result = my_reg1 + my_reg2;
     /*tick1()*/;
     /*tick2()*/;
-    tock = result;
+    tock_ret = result;
   end
 
 /*private:*/

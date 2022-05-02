@@ -1,15 +1,14 @@
 #include "metron_tools.h"
 
 // The tracer should catch it if we forget a break.
-//X  Case statement doesn't end with break.
+// X Case statement in tock does not end with break
 
 class Module {
-public:
-
+ public:
   logic<8> tock() {
     logic<8> result;
-    switch(my_reg) {
-      case 0: // can we stick comments in here?
+    switch (my_reg) {
+      case 0:  // can we stick comments in here?
       case 1:
       case 2:
         result = 10;
@@ -27,11 +26,8 @@ public:
     return result;
   }
 
-private:
-
-  void tick() {
-    my_reg = my_reg + 1;
-  }
+ private:
+  void tick() { my_reg = my_reg + 1; }
 
   logic<8> my_reg;
 };

@@ -21,6 +21,8 @@ class MtTracer {
   CHECK_RETURN Err log_action(MtContext* method_ctx, MtContext* dst_ctx,
                               ContextAction action, SourceRange source);
 
+  CHECK_RETURN Err trace_method(MtContext* mod_ctx, MtMethod* method);
+
   // clang-format off
   CHECK_RETURN Err trace_identifier(MtContext* ctx, MnNode node, ContextAction action);
   CHECK_RETURN Err trace_expression(MtContext* ctx, MnNode node, ContextAction action);

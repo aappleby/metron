@@ -3,11 +3,10 @@
 // If for some reason you put a return in the middle of a block, we should catch
 // it.
 
-//X Found non-terminal return in method tock
+// X Method tock has non-terminal return
 
 class Module {
-public:
-
+ public:
   logic<8> tock() {
     logic<8> a = 10;
     logic<8> b = 2;
@@ -17,5 +16,4 @@ public:
     return c;
     c = b + b;
   }
-
 };

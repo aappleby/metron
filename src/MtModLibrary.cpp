@@ -438,12 +438,12 @@ CHECK_RETURN Err MtModLibrary::categorize_methods() {
 
   //----------------------------------------
   // If there are unmarked methods left, they must be upstream from a tick.
-  // Mark them as a tick so we can reduce the total number of always_* blocks
-  // needed after conversion.
-  // *** can't turn them into ticks if they have return vals
+  // If they don't have return values, we can mark them as a tick so we can
+  // reduce the total number of always_* blocks needed after conversion.
 
   err << propagate([&](MtMethod *m) {
     if (m->is_valid()) return 0;
+    if (m->has_return()) return 0;
 
     for (auto &callee : m->callees) {
       if (callee->in_tick) {
@@ -451,8 +451,8 @@ CHECK_RETURN Err MtModLibrary::categorize_methods() {
           return 0;
         } else {
           LOG_B(
-              "%-20s is tick because it hasn't been categorized yet and is "
-              "upstream from a tick.\n",
+              "%-20s is tick because it hasn't been categorized yet, it has no "
+              "return value, and it's upstream from a tick.\n",
               m->cname());
           m->in_tick = true;
           return 1;
@@ -460,6 +460,22 @@ CHECK_RETURN Err MtModLibrary::categorize_methods() {
       }
     }
 
+    return 0;
+  });
+
+  //----------------------------------------
+  // If there are _still_ unmarked methods, they are tocks upstream from ticks
+  // that have return values.
+
+  err << propagate([&](MtMethod *m) {
+    if (m->is_valid()) return 0;
+
+    if (m->in_tock) {
+      return 0;
+    } else {
+      m->in_tock = true;
+      return 1;
+    }
     return 0;
   });
 
@@ -517,19 +533,21 @@ CHECK_RETURN Err MtModLibrary::categorize_methods() {
       }
     }
   }
-
+#endif
   //----------------------------------------
   // Check for ticks with return values.
 
   for (auto mod : modules) {
     for (auto m : mod->all_methods) {
-      if (m->in_tick && m->has_return) {
-        err << ERR("Tick method %s.%s is not allowed to have a return value.\n", mod->cname(), m->cname());
+      if (m->in_tick && m->has_return()) {
+        err << ERR("Tick method %s.%s is not allowed to have a return value.\n",
+                   mod->cname(), m->cname());
       }
     }
   }
   //----------------------------------------
 
+#if 0
   dump_call_graph();
 
   if (err.has_err()) {

@@ -27,15 +27,16 @@ class MtTracer {
  public:
   MtTracer(MtModLibrary* lib, MtContext* root) : lib(lib), ctx_root(root) {}
 
-  CHECK_RETURN Err trace_call(MtContext* method_ctx, MnNode node_call);
   CHECK_RETURN Err log_action(MtContext* method_ctx, MtContext* dst_ctx,
                               ContextAction action, SourceRange source);
 
   // clang-format off
   CHECK_RETURN Err trace_identifier(MtContext* ctx, MnNode node, ContextAction action);
   CHECK_RETURN Err trace_expression(MtContext* ctx, MnNode node, ContextAction action);
-  CHECK_RETURN Err trace_statement(MtContext* ctx, MnNode node, ContextAction action);
+  CHECK_RETURN Err trace_statement(MtContext* ctx, MnNode node);
   CHECK_RETURN Err trace_declarator(MtContext* ctx, MnNode node);
+  CHECK_RETURN Err trace_branch(MtContext* inst, MnNode n);
+  CHECK_RETURN Err trace_call(MtContext* method_ctx, MnNode node_call);
 
   CHECK_RETURN Err trace_sym_argument_list(MtContext* ctx, MnNode node);
   CHECK_RETURN Err trace_sym_binary_expression(MtContext* ctx, MnNode node);
@@ -47,7 +48,6 @@ class MtTracer {
   CHECK_RETURN Err trace_sym_declaration(MtContext* ctx, MnNode node);
   CHECK_RETURN Err trace_sym_field_expression(MtContext* ctx, MnNode node, ContextAction action);
   CHECK_RETURN Err trace_sym_function_definition(MtContext* ctx, MnNode node);
-  CHECK_RETURN Err trace_sym_if_statement(MtContext* inst, MnNode n);
   CHECK_RETURN Err trace_sym_init_declarator(MtContext* ctx, MnNode node);
   CHECK_RETURN Err trace_sym_return_statement(MtContext* ctx, MnNode node);
   CHECK_RETURN Err trace_sym_switch_statement(MtContext* inst, MnNode n);

@@ -9,33 +9,6 @@
 #include "MtUtils.h"
 #include "metron_tools.h"
 
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtTracer::trace_call(MtContext* method_ctx, MnNode node_call) {
-  Err err;
-
-  if (!method_ctx) return err;
-  assert(method_ctx->type == CTX_METHOD);
-
-  for (auto child_ctx : method_ctx->children) {
-    if (child_ctx->type == CTX_PARAM) {
-      err << log_action(method_ctx, child_ctx, CTX_WRITE,
-                        node_call.get_source());
-    }
-  }
-
-  err << trace_sym_function_definition(method_ctx, method_ctx->method->_node);
-
-  for (auto child_ctx : method_ctx->children) {
-    if (child_ctx->type == CTX_RETURN) {
-      err << log_action(method_ctx, child_ctx, CTX_READ,
-                        node_call.get_source());
-    }
-  }
-
-  return err;
-}
-
 //-----------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer::log_action(MtContext* method_ctx, MtContext* dst_ctx,
@@ -98,11 +71,12 @@ CHECK_RETURN Err MtTracer::trace_expression(MtContext* ctx, MnNode node,
     case sym_qualified_identifier:
       err << trace_identifier(ctx, node, action);
       break;
-
-    case sym_field_expression: {
+    case sym_conditional_expression:
+      err << trace_branch(ctx, node);
+      break;
+    case sym_field_expression:
       err << trace_sym_field_expression(ctx, node, action);
       break;
-    }
     case sym_subscript_expression:
       err << trace_expression(ctx, node.get_field(field_index), CTX_READ);
       err << trace_expression(ctx, node.get_field(field_argument), action);
@@ -134,8 +108,7 @@ CHECK_RETURN Err MtTracer::trace_expression(MtContext* ctx, MnNode node,
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer::trace_statement(MtContext* ctx, MnNode node,
-                                           ContextAction action) {
+CHECK_RETURN Err MtTracer::trace_statement(MtContext* ctx, MnNode node) {
   Err err;
 
   switch (node.sym) {
@@ -148,14 +121,11 @@ CHECK_RETURN Err MtTracer::trace_statement(MtContext* ctx, MnNode node,
     case sym_break_statement:
       err << trace_sym_break_statement(ctx, node);
       break;
-    case sym_conditional_expression:
-      err << trace_sym_if_statement(ctx, node);
-      break;
     case sym_if_statement:
-      err << trace_sym_if_statement(ctx, node);
+      err << trace_branch(ctx, node);
       break;
     case sym_expression_statement:
-      err << trace_expression(ctx, node.child(0), action);
+      err << trace_expression(ctx, node.child(0), CTX_READ);
       break;
     case sym_switch_statement:
       err << trace_sym_switch_statement(ctx, node);
@@ -199,6 +169,61 @@ CHECK_RETURN Err MtTracer::trace_declarator(MtContext* ctx, MnNode node) {
 
 //------------------------------------------------------------------------------
 
+CHECK_RETURN Err MtTracer::trace_branch(MtContext* ctx, MnNode node) {
+  Err err;
+  assert(node.sym == sym_if_statement ||
+         node.sym == sym_conditional_expression);
+
+  auto node_cond = node.get_field(field_condition);
+  auto node_branch_a = node.get_field(field_consequence);
+  auto node_branch_b = node.get_field(field_alternative);
+
+  err << trace_sym_condition_clause(ctx, node_cond);
+
+  ctx_root->start_branch_a();
+  if (!node_branch_a.is_null()) {
+    err << trace_statement(ctx, node_branch_a);
+  }
+  ctx_root->end_branch_a();
+
+  ctx_root->start_branch_b();
+  if (!node_branch_b.is_null()) {
+    err << trace_statement(ctx, node_branch_b);
+  }
+  ctx_root->end_branch_b();
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtTracer::trace_call(MtContext* method_ctx, MnNode node_call) {
+  Err err;
+
+  if (!method_ctx) return err;
+  assert(method_ctx->type == CTX_METHOD);
+
+  for (auto child_ctx : method_ctx->children) {
+    if (child_ctx->type == CTX_PARAM) {
+      err << log_action(method_ctx, child_ctx, CTX_WRITE,
+                        node_call.get_source());
+    }
+  }
+
+  err << trace_sym_function_definition(method_ctx, method_ctx->method->_node);
+
+  for (auto child_ctx : method_ctx->children) {
+    if (child_ctx->type == CTX_RETURN) {
+      err << log_action(method_ctx, child_ctx, CTX_READ,
+                        node_call.get_source());
+    }
+  }
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
 CHECK_RETURN Err MtTracer::trace_sym_break_statement(MtContext* ctx,
                                                      MnNode node) {
   Err err;
@@ -231,7 +256,7 @@ CHECK_RETURN Err MtTracer::trace_sym_compound_statement(MtContext* ctx,
       case sym_switch_statement:
       case sym_break_statement:
       case sym_if_statement:
-        err << trace_statement(ctx, child, CTX_READ);
+        err << trace_statement(ctx, child);
         break;
 
       case sym_compound_statement:
@@ -278,7 +303,7 @@ CHECK_RETURN Err MtTracer::trace_sym_case_statement(MtContext* ctx,
       continue;
     }
     if (hit_colon) {
-      err << trace_statement(ctx, child, CTX_READ);
+      err << trace_statement(ctx, child);
     }
   }
 
@@ -347,35 +372,6 @@ CHECK_RETURN Err MtTracer::trace_sym_call_expression(MtContext* ctx,
       node.error();
       break;
   }
-
-  return err;
-}
-
-//------------------------------------------------------------------------------
-// good
-
-CHECK_RETURN Err MtTracer::trace_sym_if_statement(MtContext* ctx, MnNode node) {
-  Err err;
-  assert(node.sym == sym_if_statement ||
-         node.sym == sym_conditional_expression);
-
-  auto node_cond = node.get_field(field_condition);
-  auto node_branch_a = node.get_field(field_consequence);
-  auto node_branch_b = node.get_field(field_alternative);
-
-  err << trace_sym_condition_clause(ctx, node_cond);
-
-  ctx_root->start_branch_a();
-  if (!node_branch_a.is_null()) {
-    err << trace_statement(ctx, node_branch_a, CTX_READ);
-  }
-  ctx_root->end_branch_a();
-
-  ctx_root->start_branch_b();
-  if (!node_branch_b.is_null()) {
-    err << trace_statement(ctx, node_branch_b, CTX_READ);
-  }
-  ctx_root->end_branch_b();
 
   return err;
 }

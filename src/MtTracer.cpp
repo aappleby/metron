@@ -60,94 +60,13 @@ CHECK_RETURN Err MtTracer::log_action(MtContext* method_ctx, MtContext* dst_ctx,
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer::trace_dispatch(MtContext* ctx, MnNode node,
-                                          ContextAction action) {
-  Err err;
-
-  if (!ctx) return err;
-  if (!node.is_named()) return err;
-
-  // clang-format off
-  switch (node.sym) {
-    case sym_identifier:
-    case alias_sym_field_identifier:
-      err << trace_identifier(ctx, node, action);
-      break;
-
-    case sym_field_expression:
-    case sym_subscript_expression:
-    case sym_call_expression:
-    case sym_assignment_expression:
-    case sym_update_expression:
-      err << trace_expression(ctx, node, action);
-      break;
-
-    case sym_return_statement:
-    case sym_conditional_expression:
-    case sym_if_statement:
-    case sym_expression_statement:
-      err << trace_statement(ctx, node, action);
-      break;
-
-    case sym_init_declarator:
-    case sym_declaration:
-    case sym_field_declaration:
-    case sym_field_declaration_list:
-    case alias_sym_type_identifier:
-    case sym_class_specifier:
-    case sym_binary_expression:
-    case sym_parameter_declaration:
-    case sym_argument_list:
-    case sym_parameter_list:
-    case sym_function_declarator:
-    case sym_unary_expression:
-    case sym_parenthesized_expression:
-    case sym_condition_clause:
-    case sym_template_type:
-    case sym_comment:
-    case sym_access_specifier:
-    case sym_number_literal:
-    case sym_template_argument_list:
-    case sym_primitive_type:
-      for (const auto& child : node) err << trace_dispatch(ctx, child, action);
-      break;
-
-    case sym_qualified_identifier:
-    case alias_sym_namespace_identifier:
-      err << trace_identifier(ctx, node, action);
-      break;
-
-    case sym_using_declaration:
-      for (const auto& child : node) err << trace_dispatch(ctx, child, action);
-      break;
-
-    case sym_switch_statement:
-    case sym_compound_statement:
-    case sym_case_statement:
-    case sym_break_statement:
-      err << trace_statement(ctx, node, action); break;
-
-    default:
-      err << ERR("%s : No handler for %s\n", __func__, node.ts_node_type());
-      node.error();
-      break;
-  }
-  // clang-format on
-
-  return err;
-}
-
-//------------------------------------------------------------------------------
-
 CHECK_RETURN Err MtTracer::trace_identifier(MtContext* ctx, MnNode node,
                                             ContextAction action) {
   Err err;
   switch (node.sym) {
     case sym_qualified_identifier:
-      for (const auto& child : node) err << trace_dispatch(ctx, child, action);
-      break;
     case alias_sym_namespace_identifier:
-      for (const auto& child : node) err << trace_dispatch(ctx, child, action);
+      // pretty sure these can't do anything
       break;
     case sym_identifier:
     case alias_sym_field_identifier: {
@@ -185,20 +104,20 @@ CHECK_RETURN Err MtTracer::trace_expression(MtContext* ctx, MnNode node,
       break;
     }
     case sym_subscript_expression:
-      err << trace_dispatch(ctx, node.get_field(field_index), CTX_READ);
-      err << trace_dispatch(ctx, node.get_field(field_argument), action);
+      err << trace_expression(ctx, node.get_field(field_index), CTX_READ);
+      err << trace_expression(ctx, node.get_field(field_argument), action);
       break;
     case sym_call_expression:
       err << trace_sym_call_expression(ctx, node);
       break;
     case sym_update_expression:
       // this is "i++" or similar, which is a read and a write.
-      err << trace_dispatch(ctx, node.get_field(field_argument), CTX_READ);
-      err << trace_dispatch(ctx, node.get_field(field_argument), CTX_WRITE);
+      err << trace_expression(ctx, node.get_field(field_argument), CTX_READ);
+      err << trace_expression(ctx, node.get_field(field_argument), CTX_WRITE);
       break;
     case sym_assignment_expression:
-      err << trace_dispatch(ctx, node.get_field(field_right), CTX_READ);
-      err << trace_dispatch(ctx, node.get_field(field_left), CTX_WRITE);
+      err << trace_expression(ctx, node.get_field(field_right), CTX_READ);
+      err << trace_expression(ctx, node.get_field(field_left), CTX_WRITE);
       break;
     case sym_binary_expression:
       err << trace_sym_binary_expression(ctx, node);
@@ -236,9 +155,7 @@ CHECK_RETURN Err MtTracer::trace_statement(MtContext* ctx, MnNode node,
       err << trace_sym_if_statement(ctx, node);
       break;
     case sym_expression_statement:
-      for (const auto& child : node) {
-        err << trace_dispatch(ctx, child, action);
-      }
+      err << trace_expression(ctx, node.child(0), action);
       break;
     case sym_switch_statement:
       err << trace_sym_switch_statement(ctx, node);
@@ -287,9 +204,6 @@ CHECK_RETURN Err MtTracer::trace_sym_break_statement(MtContext* ctx,
   Err err;
   assert(node.sym == sym_break_statement);
 
-  for (const auto& child : node) {
-    err << trace_dispatch(ctx, child);
-  }
   return err;
 }
 
@@ -355,9 +269,19 @@ CHECK_RETURN Err MtTracer::trace_sym_case_statement(MtContext* ctx,
   Err err;
   assert(node.sym == sym_case_statement);
 
-  for (const auto& child : node) {
-    err << trace_dispatch(ctx, child);
+  // Everything after the colon should be statements.
+
+  bool hit_colon = false;
+  for (auto child : node) {
+    if (child.sym == anon_sym_COLON) {
+      hit_colon = true;
+      continue;
+    }
+    if (hit_colon) {
+      err << trace_statement(ctx, child, CTX_READ);
+    }
   }
+
   return err;
 }
 
@@ -388,7 +312,7 @@ CHECK_RETURN Err MtTracer::trace_sym_call_expression(MtContext* ctx,
   auto node_args = node.get_field(field_arguments);
 
   // Trace the args first.
-  err << trace_dispatch(ctx, node_args);
+  err << trace_sym_argument_list(ctx, node_args);
 
   // Now trace the actual call.
   switch (node_func.sym) {
@@ -439,17 +363,17 @@ CHECK_RETURN Err MtTracer::trace_sym_if_statement(MtContext* ctx, MnNode node) {
   auto node_branch_a = node.get_field(field_consequence);
   auto node_branch_b = node.get_field(field_alternative);
 
-  err << trace_dispatch(ctx, node_cond);
+  err << trace_sym_condition_clause(ctx, node_cond);
 
   ctx_root->start_branch_a();
   if (!node_branch_a.is_null()) {
-    err << trace_dispatch(ctx, node_branch_a);
+    err << trace_statement(ctx, node_branch_a, CTX_READ);
   }
   ctx_root->end_branch_a();
 
   ctx_root->start_branch_b();
   if (!node_branch_b.is_null()) {
-    err << trace_dispatch(ctx, node_branch_b);
+    err << trace_statement(ctx, node_branch_b, CTX_READ);
   }
   ctx_root->end_branch_b();
 
@@ -463,7 +387,7 @@ CHECK_RETURN Err MtTracer::trace_sym_switch_statement(MtContext* ctx,
   Err err;
   assert(node.sym == sym_switch_statement);
 
-  err << trace_dispatch(ctx, node.get_field(field_condition));
+  err << trace_sym_condition_clause(ctx, node.get_field(field_condition));
 
   auto body = node.get_field(field_body);
 
@@ -615,6 +539,42 @@ CHECK_RETURN Err MtTracer::trace_sym_binary_expression(MtContext* ctx,
 
   err << trace_expression(ctx, node_lhs, CTX_READ);
   err << trace_expression(ctx, node_rhs, CTX_READ);
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtTracer::trace_sym_argument_list(MtContext* ctx,
+                                                   MnNode node) {
+  Err err;
+  assert(node.sym == sym_argument_list);
+
+  for (const auto& child : node) {
+    switch (child.sym) {
+      case anon_sym_LPAREN:
+      case anon_sym_RPAREN:
+      case anon_sym_COMMA:
+        break;
+
+      default:
+        err << trace_expression(ctx, child, CTX_READ);
+        break;
+    }
+  }
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtTracer::trace_sym_condition_clause(MtContext* ctx,
+                                                      MnNode node) {
+  Err err;
+  assert(node.sym == sym_condition_clause);
+
+  auto node_value = node.child(1);
+  err << trace_expression(ctx, node_value, CTX_READ);
 
   return err;
 }

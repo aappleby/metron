@@ -49,6 +49,8 @@ struct MtMethod {
   bool in_tock = false;
   bool in_func = false;
 
+  bool called_across_domains = false;
+
   std::vector<MnNode> param_nodes;
   std::set<MtMethod*> callers;
   std::set<MtMethod*> callees;

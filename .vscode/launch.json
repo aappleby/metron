@@ -15,8 +15,8 @@
       "args": [
         "-e",
         "-r",
-        "tests/metron_good",
-        "local_localparam.h",
+        "tests/metron_bad",
+        "multiple_submod_function_bindings.h",
       ],
       */
       /*

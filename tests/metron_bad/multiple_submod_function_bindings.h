@@ -3,27 +3,21 @@
 // A submod function can only produce one value per tock(). Trying to use it
 // twice should be an error.
 
-//X Duplicate bindings for Submod.tock_add_one
+// X Method tock_add_one is called across modules and has multiple bindings.
 
 class Submod {
-public:
-
-  logic<8> tock_add_one(logic<8> a) const {
-    return a + 1;
-  }
+ public:
+  logic<8> tock_add_one(logic<8> a) const { return a + 1; }
 };
 
-
 class Module {
-public:
-
+ public:
   void tock() {
-    b = submod.tock_add_one(1);
-    c = submod.tock_add_one(2);
+    b = submod.tock_add_one(b);
+    c = submod.tock_add_one(c);
   }
 
-private:
-
+ private:
   logic<8> b;
   logic<8> c;
   Submod submod;

@@ -206,10 +206,21 @@ MtContext *MtContext::resolve(const std::string &_name) {
 
 void MtContext::dump() const {
   if (type == CTX_METHOD) {
-    LOG_Y("%s", name.c_str());
+    LOG_B("%s", name.c_str());
+
+    LOG(" = ");
+    if (log_top.state == CTX_SIGNAL || log_top.state == CTX_OUTPUT) {
+      LOG_B("%s", to_string(log_top.state));
+    } else if (log_top.state == CTX_NONE) {
+      LOG_Y("%s", to_string(log_top.state));
+    } else if (log_top.state == CTX_INVALID) {
+      LOG_R("%s", to_string(log_top.state));
+    } else {
+      LOG_G("%s", to_string(log_top.state));
+    }
+
   } else if (type == CTX_COMPONENT) {
     LOG_G("%s", name.c_str());
-    // LOG_G(" : %s", to_string(type));
   } else if (type == CTX_FIELD) {
     LOG("%s", name.c_str());
 
@@ -273,17 +284,12 @@ CHECK_RETURN Err MtContext::check_done() {
     err << ERR("Had leftover context in log_next\n");
   }
 
-  // FIXME - Funcs are allowed to have "invalid" fields for now, since they
-  // behave more like C funcs. This should probably be fleshed out more in
-  // the tracer.
-  if (parent && parent->method && !parent->method->in_func) {
-    if (log_top.state == CTX_INVALID) {
-      err << ERR("Had invalid context in log_top\n");
-    }
+  if (log_top.state == CTX_INVALID) {
+    err << ERR("Context %s had invalid state after trace\n", name.c_str());
   }
 
   if (log_top.state == CTX_PENDING) {
-    err << ERR("Had invalid context in log_top\n");
+    err << ERR("Context %s had pending state after trace\n", name.c_str());
   }
 
   for (auto c : children) err << c->check_done();

@@ -197,26 +197,27 @@ CHECK_RETURN Err MtTracer::trace_branch(MtContext* ctx, MnNode node) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer::trace_call(MtContext* method_ctx, MnNode node_call) {
+CHECK_RETURN Err MtTracer::trace_call(MtContext* src_ctx, MtContext* dst_ctx,
+                                      MnNode node_call) {
   Err err;
 
-  if (!method_ctx) return err;
-  assert(method_ctx->type == CTX_METHOD);
+  if (!dst_ctx) return err;
+  assert(src_ctx->type == CTX_METHOD);
+  assert(dst_ctx->type == CTX_METHOD);
 
-  for (auto child_ctx : method_ctx->children) {
-    if (child_ctx->type == CTX_PARAM) {
-      err << log_action(method_ctx, child_ctx, CTX_WRITE,
-                        node_call.get_source());
-    }
+  // If the source and dest functions are not in the same module, we have to
+  // bind function arguments and returns to ports to "call" it.
+
+  bool cross_mod_call = src_ctx->method->_mod != dst_ctx->method->_mod;
+
+  if (cross_mod_call) {
+    log_action(src_ctx, dst_ctx, CTX_WRITE, node_call.get_source());
   }
 
-  err << trace_sym_function_definition(method_ctx, method_ctx->method->_node);
+  err << trace_sym_function_definition(dst_ctx, dst_ctx->method->_node);
 
-  for (auto child_ctx : method_ctx->children) {
-    if (child_ctx->type == CTX_RETURN) {
-      err << log_action(method_ctx, child_ctx, CTX_READ,
-                        node_call.get_source());
-    }
+  if (cross_mod_call) {
+    log_action(src_ctx, dst_ctx, CTX_READ, node_call.get_source());
   }
 
   return err;
@@ -333,6 +334,8 @@ CHECK_RETURN Err MtTracer::trace_sym_call_expression(MtContext* ctx,
   Err err;
   assert(node.sym == sym_call_expression);
 
+  assert(ctx->method);
+
   auto node_func = node.get_field(field_function);
   auto node_args = node.get_field(field_arguments);
 
@@ -347,11 +350,11 @@ CHECK_RETURN Err MtTracer::trace_sym_call_expression(MtContext* ctx,
       assert(child_ctx);
 
       auto child_func = node_func.get_field(field_field).text();
-      err << trace_call(child_ctx->resolve(child_func), node);
+      err << trace_call(ctx, child_ctx->resolve(child_func), node);
       break;
     }
     case sym_identifier:
-      err << trace_call(ctx->resolve(node_func.text()), node);
+      err << trace_call(ctx, ctx->resolve(node_func.text()), node);
       break;
 
     case sym_template_function: {

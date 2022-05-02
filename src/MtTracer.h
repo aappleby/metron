@@ -14,15 +14,6 @@ struct MtField;
 
 //------------------------------------------------------------------------------
 
-struct TraceLog {
-  MtContext* method_ctx;
-  MtContext* dst_ctx;
-  ContextAction action;
-  SourceRange range;
-};
-
-//------------------------------------------------------------------------------
-
 class MtTracer {
  public:
   MtTracer(MtModLibrary* lib, MtContext* root) : lib(lib), ctx_root(root) {}
@@ -36,7 +27,7 @@ class MtTracer {
   CHECK_RETURN Err trace_statement(MtContext* ctx, MnNode node);
   CHECK_RETURN Err trace_declarator(MtContext* ctx, MnNode node);
   CHECK_RETURN Err trace_branch(MtContext* inst, MnNode n);
-  CHECK_RETURN Err trace_call(MtContext* method_ctx, MnNode node_call);
+  CHECK_RETURN Err trace_call(MtContext* src_ctx, MtContext* dst_ctx, MnNode node_call);
 
   CHECK_RETURN Err trace_sym_argument_list(MtContext* ctx, MnNode node);
   CHECK_RETURN Err trace_sym_binary_expression(MtContext* ctx, MnNode node);

@@ -276,7 +276,7 @@ CHECK_RETURN Err MtCursor::emit_print(const char* fmt, ...) {
 //----------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_replacement(MnNode n, const char* fmt, ...) {
-  Err err;
+  Err err = emit_ws();
   assert(cursor == n.start());
 
   cursor = n.end();
@@ -303,7 +303,7 @@ CHECK_RETURN Err MtCursor::emit_replacement(MnNode n, const char* fmt, ...) {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_sym_initializer_list(MnNode node) {
-  Err err;
+  Err err = emit_ws();
   assert(cursor == node.start());
   assert(node.sym == sym_initializer_list);
 
@@ -332,9 +332,9 @@ CHECK_RETURN Err MtCursor::emit_sym_initializer_list(MnNode node) {
 // Replace "#include" with "`include" and ".h" with ".sv"
 
 CHECK_RETURN Err MtCursor::emit_sym_preproc_include(MnPreprocInclude n) {
-  Err err;
-
+  Err err = emit_ws();
   assert(cursor == n.start());
+  assert(n.sym == sym_preproc_include);
 
   err << emit_replacement(n.child(0), "`include") << emit_ws();
 
@@ -352,7 +352,7 @@ CHECK_RETURN Err MtCursor::emit_sym_preproc_include(MnPreprocInclude n) {
 // Change '=' to '<=' if lhs is a field and we're inside a sequential block.
 
 CHECK_RETURN Err MtCursor::emit_sym_assignment_expression(MnNode node) {
-  Err err;
+  Err err = emit_ws();
   assert(cursor == node.start());
   assert(node.sym == sym_assignment_expression);
 
@@ -378,7 +378,7 @@ CHECK_RETURN Err MtCursor::emit_sym_assignment_expression(MnNode node) {
 
 CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnCallExpr call,
                                                    int bx_width) {
-  Err err;
+  Err err = emit_ws();
   assert(cursor == call.start());
 
   int arg_count = call.args().named_child_count();
@@ -450,8 +450,7 @@ CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnCallExpr call,
 
 CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnCallExpr call,
                                                     MnNode bx_node) {
-  Err err;
-
+  Err err = emit_ws();
   assert(cursor == call.start());
 
   int arg_count = call.args().named_child_count();
@@ -501,7 +500,8 @@ CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnCallExpr call,
 // init/tick/tock calls.
 
 CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnCallExpr n) {
-  Err err;
+  Err err = emit_ws();
+  assert(cursor == n.start());
 
   MnFunc func = n.func();
   MnArgList args = n.args();
@@ -664,7 +664,7 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnCallExpr n) {
 // Replace "logic blah = x;" with "logic blah;"
 
 CHECK_RETURN Err MtCursor::emit_init_declarator_as_decl(MnDecl n) {
-  Err err;
+  Err err = emit_ws();
   assert(cursor == n.start());
 
   err << emit_type(n.get_field(field_type));
@@ -682,8 +682,7 @@ CHECK_RETURN Err MtCursor::emit_init_declarator_as_decl(MnDecl n) {
 // Replace "logic blah = x;" with "blah = x;"
 
 CHECK_RETURN Err MtCursor::emit_init_declarator_as_assign(MnDecl n) {
-  Err err;
-
+  Err err = emit_ws();
   assert(cursor == n.start());
 
   // We don't need to emit anything for decls without initialization values.
@@ -864,8 +863,7 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
 // func_def = { field_type, field_declarator, field_body }
 
 CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnFuncDefinition n) {
-  Err err;
-
+  Err err = emit_ws();
   assert(cursor == n.start());
 
   auto return_type = n.get_field(field_type);

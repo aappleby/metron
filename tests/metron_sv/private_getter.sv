@@ -1,11 +1,11 @@
-`include "metron_tools.sv"
+`include"metron_tools.sv"
 
 // Private getter methods are OK
 
 module Module
 (
   input logic clock,
-  output logic[7:0] tock_ret
+  output logic[7:0]tock_ret
 );
 /*public:*/
 

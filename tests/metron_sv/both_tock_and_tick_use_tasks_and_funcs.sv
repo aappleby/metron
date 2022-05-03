@@ -1,4 +1,4 @@
-`include "metron_tools.sv"
+`include"metron_tools.sv"
 
 // All the combos of tasks/funcs should work from ticks and tocks.
 
@@ -8,7 +8,7 @@ module Module
   output logic[7:0] my_sig,
   input logic[7:0] public_task_x,
   input logic[7:0] public_func_x,
-  output logic[7:0] public_func_ret
+  output logic[7:0]public_func_ret
 );
 /*public:*/
 
@@ -30,8 +30,8 @@ module Module
 /*private:*/
 
   always_comb begin /*tick*/
-    private_task_x = private_func;
-    /*private_task(private_func(33))*/;
+private_task_x = private_func;
+        /*private_task(private_func(33))*/;
   end
 
   logic[7:0] private_task_x;

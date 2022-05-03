@@ -1,4 +1,4 @@
-`include "metron_tools.sv"
+`include"metron_tools.sv"
 
 // UTF-8 text files with a byte order mark should be supported.
 
@@ -17,7 +17,7 @@ Runes:
 module Module
 (
   input logic clock,
-  output logic[7:0] tock_ret
+  output logic[7:0]tock_ret
 );
 /*public:*/
 

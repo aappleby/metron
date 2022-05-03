@@ -1,12 +1,12 @@
-`include "metron_tools.sv"
+`include"metron_tools.sv"
 
 // DONTCARE gets translated to 1'bx
 
 module Module
 (
   input logic clock,
-  output logic[7:0] tock2_ret,
-  output logic[7:0] tock3_ret
+  output logic[7:0]tock2_ret,
+  output logic[7:0]tock3_ret
 );
 /*public:*/
 

@@ -1,14 +1,14 @@
-`include "metron_tools.sv"
+`include"metron_tools.sv"
 
 // Structs exist in both C++ and Verilog
 
-typedef struct packed
+typedef structpacked
   logic[7:0] a;
   int b;
   logic[1:0] c;
 endmodule MyStruct1;
 
-typedef struct packed
+typedef structpacked
   logic[7:0] a;
   int b;
   logic[1:0] c;
@@ -17,7 +17,7 @@ endmodule MyStruct2;;
 module Module
 (
   input logic clock,
-  output logic[7:0] tock_ret
+  output logic[7:0]tock_ret
 );
 /*public:*/
   function logic[7:0] tock();

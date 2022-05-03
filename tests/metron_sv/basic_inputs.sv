@@ -1,4 +1,4 @@
-`include "metron_tools.sv"
+`include"metron_tools.sv"
 
 // Tick inputs should become input ports.
 
@@ -10,8 +10,8 @@ module Module
 /*public:*/
 
   always_ff @(posedge clock) begin /*tock*/
-    tick_my_input = tock_my_input;
-    /*tick(my_input)*/;
+tick_my_input = tock_my_input;
+        /*tick(my_input)*/;
   end
 
 /*private:*/

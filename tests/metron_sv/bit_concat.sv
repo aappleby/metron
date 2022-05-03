@@ -1,4 +1,4 @@
-`include "metron_tools.sv"
+`include"metron_tools.sv"
 
 // Concatenating logics should produce logics with correct <N>
 

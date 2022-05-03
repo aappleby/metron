@@ -1,4 +1,4 @@
-`include "metron_tools.sv"
+`include"metron_tools.sv"
 
 // Submodule bindings should be placed immediately before the statement
 // containing the call
@@ -10,8 +10,8 @@ module Submod
   input logic[7:0] tock_sum_a_a2,
   input logic[7:0] tock_sum_b_b1,
   input logic[7:0] tock_sum_b_b2,
-  output logic[7:0] tock_sum_a_ret,
-  output logic[7:0] tock_sum_b_ret
+  output logic[7:0]tock_sum_a_ret,
+  output logic[7:0]tock_sum_b_ret
 );
 /*public:*/
 
@@ -24,7 +24,7 @@ endmodule;
 module Module
 (
   input logic clock,
-  output logic[7:0] tock_bindings_ret
+  output logic[7:0]tock_bindings_ret
 );
 /*public:*/
 
@@ -32,22 +32,24 @@ module Module
     logic[7:0] result;
 
     logic[7:0] result;
-    // Submod bindings should _not_ end up here.
+    // Submod bindings should _not_ end up here.submod_tock_sum_a_a1 = 1;
+    submod_tock_sum_a_a2 = 2;
+
 
     begin
-      // Only sum_a's bindings should be here.
-      submod_tock_sum_a_a1 = 1;
+      // Only sum_a's bindings should be here.submod_tock_sum_a_a1 = 1;
       submod_tock_sum_a_a2 = 2;
+
       if (submod_tock_sum_a_ret) begin
-        // Only sum_b's bindings should be here.
-        submod_tock_sum_b_b1 = 3;
+        // Only sum_b's bindings should be here.submod_tock_sum_b_b1 = 3;
         submod_tock_sum_b_b2 = 4;
+
         result = submod_tock_sum_b_ret;
       end
       else begin
-        // Only sum_b's bindings should be here.
-        submod_tock_sum_b_b1 = 5;
+        // Only sum_b's bindings should be here.submod_tock_sum_b_b1 = 5;
         submod_tock_sum_b_b2 = 6;
+
         result = submod_tock_sum_b_ret;
       end
     end

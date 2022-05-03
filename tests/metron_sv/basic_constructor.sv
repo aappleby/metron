@@ -1,11 +1,11 @@
-`include "metron_tools.sv"
+`include"metron_tools.sv"
 
 // Modules can use constructors to initialize state
 
 module Module
 (
   input logic clock,
-  output logic[7:0] tock_ret
+  output logic[7:0]tock_ret
 );
 /*public:*/
 

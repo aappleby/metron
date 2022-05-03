@@ -1,4 +1,4 @@
-`include "metron_tools.sv"
+`include"metron_tools.sv"
 
 // Nesting submod calls should put all the nested input bindings above the call.
 
@@ -6,7 +6,7 @@ module Submod1
 (
   input logic clock,
   input logic[7:0] tock_add_one_a,
-  output logic[7:0] tock_add_one_ret
+  output logic[7:0]tock_add_one_ret
 );
 /*public:*/
   function logic[7:0] tock_add_one(logic[7:0] a);
@@ -19,7 +19,7 @@ module Submod2
 (
   input logic clock,
   input logic[7:0] tock_add_two_a,
-  output logic[7:0] tock_add_two_ret
+  output logic[7:0]tock_add_two_ret
 );
 /*public:*/
   function logic[7:0] tock_add_two(logic[7:0] a);
@@ -32,16 +32,16 @@ module Module
 (
   input logic clock,
   input logic[7:0] tock_old_counter,
-  output logic[7:0] tock_ret
+  output logic[7:0]tock_ret
 );
 /*public:*/
 
   always_comb begin /*tock*/
     logic[7:0] new_counter;
 
-    // Two bindings should end up here.
-    submod2_tock_add_two_a = tock_old_counter;
+    // Two bindings should end up here.submod2_tock_add_two_a = tock_old_counter;
     submod1_tock_add_one_a = submod2_tock_add_two_ret;
+
     logic[7:0] new_counter = submod1_tock_add_one_ret;
     tock_ret = new_counter;
   end

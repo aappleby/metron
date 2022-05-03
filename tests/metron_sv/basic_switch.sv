@@ -1,4 +1,4 @@
-`include "metron_tools.sv"
+`include"metron_tools.sv"
 
 // Simple switch statements are OK.
 
@@ -10,8 +10,8 @@ module Module
 /*public:*/
 
   always_ff @(posedge clock) begin /*tock*/
-    tick_selector = tock_selector;
-    /*tick(selector)*/;
+tick_selector = tock_selector;
+        /*tick(selector)*/;
   end
 
 /*private:*/

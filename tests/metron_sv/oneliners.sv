@@ -1,4 +1,4 @@
-`include "metron_tools.sv"
+`include"metron_tools.sv"
 
 // Cramming various statements into one line should not break anything.
 
@@ -6,7 +6,7 @@ module Module
 (
   input logic clock,
   output logic[7:0] my_reg,
-  output logic[7:0] tock_ret
+  output logic[7:0]tock_ret
 );
 /*public:*/
 

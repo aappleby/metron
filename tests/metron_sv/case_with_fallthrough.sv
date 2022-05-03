@@ -1,4 +1,4 @@
-`include "metron_tools.sv"
+`include"metron_tools.sv"
 
 // Case statements are allowed to have fallthrough, though the SV syntax is
 // a bit different.
@@ -6,7 +6,7 @@
 module Module
 (
   input logic clock,
-  output logic[7:0] tock_ret
+  output logic[7:0]tock_ret
 );
 /*public:*/
 

@@ -1,4 +1,4 @@
-`include "metron_tools.sv"
+`include"metron_tools.sv"
 
 // Calling tick() from tock() in the same module should work and should
 // generate bindings for the tick() call.
@@ -11,8 +11,8 @@ module Module
 /*public:*/
 
   always_ff @(posedge clock) begin /*tock*/
-    tick_val = tock_val;
-    /*tick(val)*/;
+tick_val = tock_val;
+        /*tick(val)*/;
   end
 
 /*private:*/

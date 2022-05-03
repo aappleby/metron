@@ -1,4 +1,4 @@
-`include "metron_tools.sv"
+`include"metron_tools.sv"
 
 // Namespaces turn into packages.
 
@@ -9,8 +9,8 @@ endpackage
 module Module
 (
   input logic clock,
-  output logic[7:0] tock1_ret,
-  output logic[7:0] tock2_ret
+  output logic[7:0]tock1_ret,
+  output logic[7:0]tock2_ret
 );
 /*public:*/
 

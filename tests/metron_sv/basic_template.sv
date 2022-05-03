@@ -1,9 +1,9 @@
-`include "metron_tools.sv"
+`include"metron_tools.sv"
 
 // Templates can be used for module parameters
 
 module Submod
-#(parameter int WIDTH, parameter int HEIGHT = 2)
+#(parameter int WIDTH,parameter  int HEIGHT = 2)
 (
   input logic clock,
   output logic[WIDTH-1:0] my_width,

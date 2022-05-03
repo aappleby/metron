@@ -1,4 +1,4 @@
-`include "metron_tools.sv"
+`include"metron_tools.sv"
 
 // If statements whose sub-blocks contain submodule calls _must_ use {}.
 
@@ -9,8 +9,8 @@ module Submod
 );
 /*public:*/
   always_ff @(posedge clock) begin /*tock*/
-    tick_arg = tock_arg;
-    /*tick(arg)*/;
+tick_arg = tock_arg;
+        /*tick(arg)*/;
   end
 /*private:*/
   logic[7:0] tick_arg;
@@ -30,12 +30,12 @@ module Module
 
   always_ff @(posedge clock) begin /*tock*/
     if (1) begin
-      submod_tock_arg = 72;
-      /*submod.tock(72)*/;
+submod_tock_arg = 72;
+            /*submod.tock(72)*/;
     end
     else begin
-      submod_tock_arg = 36;
-      /*submod.tock(36)*/;
+submod_tock_arg = 36;
+            /*submod.tock(36)*/;
     end
   end
 

@@ -1,11 +1,11 @@
-`include "metron_tools.sv"
+`include"metron_tools.sv"
 
 // Getter methods should turn into outputs.
 
 module Module
 (
   input logic clock,
-  output logic[6:0] tock_get_reg_ret
+  output logic[6:0]tock_get_reg_ret
 );
 /*public:*/
 

@@ -1,4 +1,4 @@
-`include "metron_tools.sv"
+`include"metron_tools.sv"
 
 // We can instantiated templated classes as submodules.
 
@@ -25,7 +25,7 @@ endmodule;
 module Module
 (
   input logic clock,
-  output logic[7:0] tock_get_submod_reg_ret
+  output logic[7:0]tock_get_submod_reg_ret
 );
 /*public:*/
 

@@ -1026,7 +1026,7 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnFuncDefinition n) {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_field_as_component(MnFieldDecl n) {
-  Err err;
+  Err err = emit_ws();
   std::string type_name = n.type5();
   auto component_mod = lib->get_module(type_name);
 
@@ -1331,7 +1331,7 @@ enum { FOO, BAR, BAZ } blom;
 */
 
 CHECK_RETURN Err MtCursor::emit_anonymous_enum(MnFieldDecl n) {
-  Err err;
+  Err err = emit_ws();
   assert(cursor == n.start());
 
   int child_count = n.child_count();
@@ -1379,8 +1379,7 @@ enum blom { FOO, BAR, BAZ };
 */
 
 CHECK_RETURN Err MtCursor::emit_simple_enum(MnFieldDecl n) {
-  Err err;
-
+  Err err = emit_ws();
   assert(cursor == n.start());
 
   int child_count = n.child_count();
@@ -1479,8 +1478,7 @@ CHECK_RETURN Err MtCursor::emit_simple_enum(MnFieldDecl n) {
 
 CHECK_RETURN Err MtCursor::emit_broken_enum(MnFieldDecl n,
                                             MnNode node_bitfield) {
-  Err err;
-
+  Err err = emit_ws();
   auto node_type = n.get_field(field_type);
   auto node_name = node_type.get_field(field_name);
 
@@ -1539,8 +1537,8 @@ CHECK_RETURN Err MtCursor::emit_broken_enum(MnFieldDecl n,
 */
 
 CHECK_RETURN Err MtCursor::emit_enum(MnFieldDecl n) {
-  Err err;
-
+  Err err = emit_ws();
+  assert(cursor == n.start());
   auto node_type = n.get_field(field_type);
   assert(node_type.sym == sym_enum_specifier);
 
@@ -1566,7 +1564,7 @@ CHECK_RETURN Err MtCursor::emit_enum(MnFieldDecl n) {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_sym_type_definition(MnNode node) {
-  Err err;
+  Err err = emit_ws();
   assert(cursor == node.start());
   assert(node.sym == sym_type_definition);
 
@@ -1594,7 +1592,7 @@ CHECK_RETURN Err MtCursor::emit_sym_type_definition(MnNode node) {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_type(MnNode node) {
-  Err err;
+  Err err = emit_ws();
   assert(cursor == node.start());
 
   switch (node.sym) {
@@ -1644,7 +1642,7 @@ CHECK_RETURN Err MtCursor::emit_type(MnNode node) {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_identifier(MnNode node) {
-  Err err;
+  Err err = emit_ws();
   assert(cursor == node.start());
 
   switch (node.sym) {
@@ -1676,7 +1674,7 @@ CHECK_RETURN Err MtCursor::emit_identifier(MnNode node) {
 // FIXME break these out
 
 CHECK_RETURN Err MtCursor::emit_declarator(MnNode node) {
-  Err err;
+  Err err = emit_ws();
   assert(cursor == node.start());
 
   switch (node.sym) {
@@ -1720,7 +1718,7 @@ CHECK_RETURN Err MtCursor::emit_declarator(MnNode node) {
 // FIXME break these out
 
 CHECK_RETURN Err MtCursor::emit_declaration(MnNode node) {
-  Err err;
+  Err err = emit_ws();
   assert(cursor == node.start());
 
   switch (node.sym) {
@@ -1752,8 +1750,10 @@ CHECK_RETURN Err MtCursor::emit_declaration(MnNode node) {
 // field_declaration = { type:enum_specifier,  bitfield_clause (TREESITTER BUG)
 // }
 
-CHECK_RETURN Err MtCursor::emit_sym_field_decl(MnFieldDecl n) {
-  Err err;
+CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnFieldDecl n) {
+  Err err = emit_ws();
+  assert(cursor == n.start());
+  assert(n.sym == sym_field_declaration);
 
   if (n.is_const()) {
     auto node_static = n.child(0);
@@ -1837,7 +1837,9 @@ CHECK_RETURN Err MtCursor::emit_sym_field_decl(MnFieldDecl n) {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_sym_struct_specifier(MnNode n) {
-  Err err;
+  Err err = emit_ws();
+  assert(cursor == n.start());
+  assert(n.sym == sym_struct_specifier);
 
   // FIXME - Do we _have_ to mark it as packed?
 
@@ -1876,9 +1878,9 @@ CHECK_RETURN Err MtCursor::emit_sym_struct_specifier(MnNode n) {
 // ouptut ports to module param list.
 
 CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnClassSpecifier n) {
-  Err err;
-
+  Err err = emit_ws();
   assert(cursor == n.start());
+  assert(n.sym == sym_class_specifier);
 
   auto class_lit = n.child(0);
   auto class_name = n.get_field(field_name);
@@ -2072,7 +2074,7 @@ CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnClassSpecifier n) {
 // Replace the closing brace with "endmodule"
 
 CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n) {
-  Err err;
+  Err err = emit_ws();
   assert(cursor == n.start());
   assert(n.sym == sym_field_declaration_list);
 
@@ -2091,7 +2093,7 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n) {
         err << comment_out(child);
         break;
       case sym_field_declaration:
-        err << emit_sym_field_decl(child);
+        err << emit_sym_field_declaration(child);
         break;
       case sym_function_definition:
         err << emit_sym_function_definition(child);
@@ -2113,9 +2115,9 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n) {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_sym_expression_statement(MnExprStatement node) {
-  Err err;
-  assert(node.sym == sym_expression_statement);
+  Err err = emit_ws();
   assert(cursor == node.start());
+  assert(node.sym == sym_expression_statement);
 
   auto child_count = node.child_count();
   for (int i = 0; i < child_count; i++) {
@@ -2148,7 +2150,7 @@ CHECK_RETURN Err MtCursor::emit_sym_expression_statement(MnExprStatement node) {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_template_argument(MnNode node) {
-  Err err;
+  Err err = emit_ws();
   assert(cursor == node.start());
 
   switch (node.sym) {
@@ -2171,9 +2173,9 @@ CHECK_RETURN Err MtCursor::emit_template_argument(MnNode node) {
 // Change logic<N> to logic[N-1:0]
 
 CHECK_RETURN Err MtCursor::emit_sym_template_type(MnTemplateType n) {
-  Err err;
-  assert(n.sym == sym_template_type);
+  Err err = emit_ws();
   assert(cursor == n.start());
+  assert(n.sym == sym_template_type);
 
   err << emit_sym_type_identifier(n.name());
   err << emit_ws();
@@ -2212,9 +2214,9 @@ CHECK_RETURN Err MtCursor::emit_sym_template_type(MnTemplateType n) {
 
 CHECK_RETURN Err
 MtCursor::emit_sym_template_argument_list(MnTemplateArgList n) {
-  Err err;
-  assert(n.sym == sym_template_argument_list);
+  Err err = emit_ws();
   assert(cursor == n.start());
+  assert(n.sym == sym_template_argument_list);
 
   auto child_count = n.child_count();
   for (int i = 0; i < child_count; i++) {
@@ -2243,9 +2245,9 @@ MtCursor::emit_sym_template_argument_list(MnTemplateArgList n) {
 // Enum lists do _not_ turn braces into begin/end.
 
 CHECK_RETURN Err MtCursor::emit_sym_enumerator_list(MnEnumeratorList node) {
-  Err err;
-  assert(node.sym == sym_enumerator_list);
+  Err err = emit_ws();
   assert(cursor == node.start());
+  assert(node.sym == sym_enumerator_list);
 
   auto child_count = node.child_count();
   for (int i = 0; i < child_count; i++) {
@@ -2287,9 +2289,9 @@ CHECK_RETURN Err MtCursor::emit_everything() {
 // Discard any trailing semicolons in the translation unit.
 
 CHECK_RETURN Err MtCursor::emit_sym_translation_unit(MnTranslationUnit n) {
-  Err err;
-  assert(n.sym == sym_translation_unit);
+  Err err = emit_ws();
   assert(cursor == n.start());
+  assert(n.sym == sym_translation_unit);
 
   auto child_count = n.child_count();
   for (int i = 0; i < child_count; i++) {
@@ -2341,9 +2343,9 @@ CHECK_RETURN Err MtCursor::emit_sym_translation_unit(MnTranslationUnit n) {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_sym_namespace_definition(MnNamespaceDef n) {
-  Err err;
-  assert(n.sym == sym_namespace_definition);
+  Err err = emit_ws();
   assert(cursor == n.start());
+  assert(n.sym == sym_namespace_definition);
 
   auto node_name = n.get_field(field_name);
   auto node_body = n.get_field(field_body);
@@ -2392,9 +2394,9 @@ CHECK_RETURN Err MtCursor::emit_sym_namespace_definition(MnNamespaceDef n) {
 
 CHECK_RETURN Err MtCursor::emit_sym_number_literal(MnNumberLiteral n,
                                                    int size_cast) {
-  Err err;
-  assert(n.sym == sym_number_literal);
+  Err err = emit_ws();
   assert(cursor == n.start());
+  assert(n.sym == sym_number_literal);
 
   assert(!override_size || !size_cast);
   if (override_size) size_cast = override_size;
@@ -2440,7 +2442,7 @@ CHECK_RETURN Err MtCursor::emit_sym_number_literal(MnNumberLiteral n,
 // Change "return x" to "(funcname) = x" to match old Verilog return style.
 
 CHECK_RETURN Err MtCursor::emit_sym_return(MnReturnStatement n) {
-  Err err;
+  Err err = emit_ws();
   assert(cursor == n.start());
   assert(n.sym == sym_return_statement);
 
@@ -2467,10 +2469,12 @@ CHECK_RETURN Err MtCursor::emit_sym_return(MnReturnStatement n) {
 // FIXME translate types here
 
 CHECK_RETURN Err MtCursor::emit_sym_primitive_type(MnDataType n) {
-  Err err;
-  assert(n.sym == sym_primitive_type);
+  Err err = emit_ws();
   assert(cursor == n.start());
+  assert(n.sym == sym_primitive_type);
+
   err << emit_text(n);
+
   assert(cursor == n.end());
   return err;
 }
@@ -2479,9 +2483,9 @@ CHECK_RETURN Err MtCursor::emit_sym_primitive_type(MnDataType n) {
 // FIXME translate types here
 
 CHECK_RETURN Err MtCursor::emit_sym_identifier(MnIdentifier n) {
-  Err err;
-  assert(n.sym == sym_identifier);
+  Err err = emit_ws();
   assert(cursor == n.start());
+  assert(n.sym == sym_identifier);
 
   auto name = n.name4();
   auto it = id_replacements.find(name);
@@ -2500,9 +2504,9 @@ CHECK_RETURN Err MtCursor::emit_sym_identifier(MnIdentifier n) {
 }
 
 CHECK_RETURN Err MtCursor::emit_sym_type_identifier(MnTypeIdentifier n) {
-  Err err;
-  assert(n.sym == alias_sym_type_identifier);
+  Err err = emit_ws();
   assert(cursor == n.start());
+  assert(n.sym == alias_sym_type_identifier);
 
   auto name = n.name4();
   auto it = id_replacements.find(name);
@@ -2519,8 +2523,8 @@ CHECK_RETURN Err MtCursor::emit_sym_type_identifier(MnTypeIdentifier n) {
 
 CHECK_RETURN Err MtCursor::emit_sym_template_declaration(MnTemplateDecl n) {
   Err err = emit_ws();
-  assert(n.sym == sym_template_declaration);
   assert(cursor == n.start());
+  assert(n.sym == sym_template_declaration);
 
   MnClassSpecifier class_specifier;
   MnTemplateParamList param_list;
@@ -2557,8 +2561,8 @@ CHECK_RETURN Err MtCursor::emit_sym_template_declaration(MnTemplateDecl n) {
 
 CHECK_RETURN Err MtCursor::emit_sym_field_expression(MnFieldExpr n) {
   Err err = emit_ws();
-  assert(n.sym == sym_field_expression);
   assert(cursor == n.start());
+  assert(n.sym == sym_field_expression);
 
   auto component_name = n.get_field(field_argument).text();
   auto component_field = n.get_field(field_field).text();
@@ -2589,8 +2593,8 @@ CHECK_RETURN Err MtCursor::emit_sym_field_expression(MnFieldExpr n) {
 
 CHECK_RETURN Err MtCursor::emit_sym_case_statement(MnCaseStatement n) {
   Err err = emit_ws();
-  assert(n.sym == sym_case_statement);
   assert(cursor == n.start());
+  assert(n.sym == sym_case_statement);
 
   bool anything_after_colon = false;
   int colon_hit = false;

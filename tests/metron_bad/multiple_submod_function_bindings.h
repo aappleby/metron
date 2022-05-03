@@ -3,7 +3,7 @@
 // A submod function can only produce one value per tock(). Trying to use it
 // twice should be an error.
 
-// X Method tock_add_one is called across modules and has multiple bindings.
+// X Context tock_add_one had invalid state after trace
 
 class Submod {
  public:

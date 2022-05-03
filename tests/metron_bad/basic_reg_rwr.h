@@ -2,7 +2,7 @@
 
 // Registers that are read after they're written should fail.
 
-// X Reading field reg changed state from CTX_REGISTER to CTX_INVALID
+// X Don't know how to categorize reg = CTX_INVALID
 
 class Module {
  public:

@@ -2,19 +2,15 @@
 
 // If statements whose sub-blocks contain submodule calls _must_ use {}.
 
-//X If statements that contain component calls must use {}
+// X If statements that contain component calls must use {}
 
 class Submod {
-public:
-
-  void tock() {
-  }
+ public:
+  void tock() {}
 };
 
-
 class Module {
-public:
-
+ public:
   void tock() {
     if (1)
       submod.tock();

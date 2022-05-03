@@ -1,6 +1,6 @@
 #include "metron_tools.h"
 
-// X Writing field sig1 changed state from CTX_SIGNAL to CTX_INVALID
+// X Don't know how to categorize sig1 = CTX_INVALID
 
 class Module {
  public:

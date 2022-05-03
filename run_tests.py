@@ -184,7 +184,7 @@ def check_bad(filename):
 
     lines = open(filename).readlines()
     expected_errors = [line[4:].strip()
-                       for line in lines if line.startswith("//X")]
+                       for line in lines if line.startswith("// X ")]
     if len(expected_errors) == 0:
         print(f"Test {filename} contained no expected errors. Dumping output.")
         # return 1

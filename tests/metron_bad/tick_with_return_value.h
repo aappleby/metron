@@ -1,18 +1,15 @@
 #include "metron_tools.h"
 
 // Tick methods are not allowed to have a return value.
-//X Tick method Module.tick is not allowed to have a return value.
+// X Tick method Module.tick is not allowed to have a return value.
 
 class Module {
-public:
-  
+ public:
   logic<2> tick() {
     my_reg = my_reg + 1;
     return 8;
   }
 
-private:
-
+ private:
   logic<2> my_reg;
-
 };

@@ -2,7 +2,7 @@
 
 // Signals that are written after they're read should fail.
 
-// X Writing field sig changed state from CTX_SIGNAL to CTX_INVALID
+// X Don't know how to categorize sig = CTX_INVALID
 
 class Module {
  public:

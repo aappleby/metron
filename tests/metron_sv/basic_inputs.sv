@@ -18,7 +18,7 @@ module Module
 
   logic[6:0] tick_my_input;
   always_ff @(posedge clock) begin /*tick*/
-    my_reg <= my_reg + my_input;
+    my_reg = my_reg + my_input;
   end
 
   logic[6:0] my_reg;

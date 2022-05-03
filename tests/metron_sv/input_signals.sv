@@ -24,7 +24,7 @@ module Submod
 /*private:*/
 
   always_ff @(posedge clock) begin /*tick*/
-    o_reg <= o_reg + o_signal;
+    o_reg = o_reg + o_signal;
   end
 endmodule
 

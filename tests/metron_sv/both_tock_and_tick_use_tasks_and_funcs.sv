@@ -36,7 +36,7 @@ module Module
 
   logic[7:0] private_task_x;
   always_ff @(posedge clock) begin /*private_task*/
-    my_reg <= my_reg + private_func;
+    my_reg = my_reg + private_func;
   end
 
   function logic[7:0] private_func(logic[7:0] y);

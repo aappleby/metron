@@ -381,6 +381,7 @@ bool MtChecker::ends_with_break(MnNode n) {
       if (node_else.is_null()) return false;
       return ends_with_break(node_then) && ends_with_break(node_else);
     }
+
     default:
       return false;
   }

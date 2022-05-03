@@ -44,6 +44,7 @@ struct MtCursor {
   CHECK_RETURN Err emit_expression(MnNode n);
   CHECK_RETURN Err emit_identifier(MnNode n);
   CHECK_RETURN Err emit_child_expressions(MnNode n);
+  CHECK_RETURN Err emit_default(MnNode n);
 
   CHECK_RETURN Err emit_preproc(MnNode n);
   CHECK_RETURN Err emit_type(MnNode n);
@@ -69,7 +70,7 @@ struct MtCursor {
   // Per-symbol emit()s.
   // clang-format off
   CHECK_RETURN Err emit_sym_argument_list(MnArgList n);
-  CHECK_RETURN Err emit_sym_assignment_expression(MnAssignmentExpr n);
+  CHECK_RETURN Err emit_sym_assignment_expression(MnNode n);
   CHECK_RETURN Err emit_sym_break_statement(MnBreakStatement n);
   CHECK_RETURN Err emit_sym_call_expression(MnCallExpr n);
   CHECK_RETURN Err emit_sym_case_statement(MnCaseStatement n);

@@ -14,17 +14,17 @@ module Module
     logic[7:0] result;
 
     logic[7:0] result;
-    switch(my_reg)
+    switch(my_reg) begin
        0, // can we stick comments in here?
        1,
-       2,
+       2:
         result = 10;
-       3, begin
+       3: begin
         result = 20;
       end
-      default,
+      default:
         result = 30;
-    endcase
+    end
 
     /*tick()*/;
     tock_ret = result;
@@ -33,7 +33,7 @@ module Module
 /*private:*/
 
   always_ff @(posedge clock) begin /*tick*/
-    my_reg <= my_reg + 1;
+    my_reg = my_reg + 1;
   end
 
   logic[7:0] my_reg;

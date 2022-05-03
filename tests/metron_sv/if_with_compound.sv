@@ -15,7 +15,7 @@ module Submod
 /*private:*/
   logic[7:0] tick_arg;
   always_ff @(posedge clock) begin /*tick*/
-    my_reg <= my_reg + arg;
+    my_reg = my_reg + arg;
   end
 
   logic[7:0] my_reg;
@@ -31,11 +31,11 @@ module Module
   always_ff @(posedge clock) begin /*tock*/
     if (1) begin
       submod_tock_arg = 72;
-      /*submod.tock(72);*/
+      /*submod.tock(72)*/;
     end
     else begin
       submod_tock_arg = 36;
-      /*submod.tock(36);*/
+      /*submod.tock(36)*/;
     end
   end
 

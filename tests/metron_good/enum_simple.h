@@ -18,8 +18,7 @@
 // enum struct {} ? same as enum class
 
 class Module {
-public:
-
+ public:
   enum simple_enum1 { A1, B1, C1 };
   enum simple_enum2 { A2 = 0b01, B2 = 0x02, C2 = 3 };
 
@@ -29,8 +28,10 @@ public:
   enum class enum_class1 { A5, B5, C5 };
   enum class enum_class2 { A6 = 0b01, B6 = 0x02, C6 = 3 };
 
-  enum class typed_enum : int { A7 = 0b01, B7 = 0x02, C7 = 3 };
-  enum class sized_enum : logic<8>::BASE { A8 = 0b01, B8 = 0x02, C8 = 3 };
+  // This is currently broken in TreeSitter
+  // enum class typed_enum : int { A7 = 0b01, B7 = 0x02, C7 = 3 };
+
+  enum class sized_enum : logic<8>::BASE{A8 = 0b01, B8 = 0x02, C8 = 3};
 
   void tock() {
     simple_enum1 e1 = A1;
@@ -39,7 +40,7 @@ public:
     anon_enum_field2 = A4;
     enum_class1 ec1 = enum_class1::B5;
     enum_class2 ec2 = enum_class2::C6;
-    typed_enum te1 = typed_enum::A7;
+    // typed_enum te1 = typed_enum::A7;
     sized_enum se1 = sized_enum::B8;
   }
 };

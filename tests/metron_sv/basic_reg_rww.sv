@@ -18,8 +18,8 @@ module Module
     logic temp;
 
     logic temp = my_reg;
-    my_reg <= 0;
-    my_reg <= 1;
+    my_reg = 0;
+    my_reg = 1;
   end
 
   logic my_reg;

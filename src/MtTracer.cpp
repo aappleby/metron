@@ -142,6 +142,7 @@ CHECK_RETURN Err MtTracer::trace_statement(MtContext* ctx, MnNode node) {
 
   switch (node.sym) {
     case sym_number_literal:
+    case sym_comment:
       break;
 
     case sym_compound_statement:
@@ -655,7 +656,7 @@ CHECK_RETURN Err MtTracer::trace_sym_condition_clause(MtContext* ctx,
   Err err;
   assert(node.sym == sym_condition_clause);
 
-  auto node_value = node.child(1);
+  auto node_value = node.get_field(field_value);
   err << trace_expression(ctx, node_value, CTX_READ);
 
   return err;

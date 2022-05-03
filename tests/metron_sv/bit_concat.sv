@@ -9,7 +9,7 @@ module Module
 /*public:*/
 
   initial begin /*Module*/
-    $write("Hello World?\n");
+    /*write("Hello World?\n")*/;
   end
 
   function void tock1();

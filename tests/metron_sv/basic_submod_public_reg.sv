@@ -17,7 +17,7 @@ module Submod
 /*private:*/
 
   always_ff @(posedge clock) begin /*tick*/
-    sub_reg <= sub_reg + 1;
+    sub_reg = sub_reg + 1;
   end
 
 endmodule
@@ -35,7 +35,7 @@ module Module
   always_comb tock_get_submod_reg_ret = tock_get_submod_reg();
 
   always_ff @(posedge clock) begin /*tock*/
-    /*submod.tock();*/
+    /*submod.tock()*/;
   end
 
   Submod submod(

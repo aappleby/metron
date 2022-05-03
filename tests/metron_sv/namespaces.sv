@@ -24,5 +24,5 @@ module Module
     tock2 = foo;
   endfuction
   always_comb tock2_ret = tock2();
-endmodule
+endmodule;
 

@@ -22,5 +22,5 @@ module Module
     tock = input_val + 8;
   endfuction
   always_comb tock_ret = tock(tock_input_val);
-endmodule
+endmodule;
 

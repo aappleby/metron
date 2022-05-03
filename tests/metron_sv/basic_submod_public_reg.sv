@@ -20,7 +20,7 @@ module Submod
     sub_reg = sub_reg + 1;
   end
 
-endmodule
+endmodule;
 
 module Module
 (
@@ -46,5 +46,5 @@ module Module
   );
   logic[7:0] submod_sub_reg;
 
-endmodule
+endmodule;
 

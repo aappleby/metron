@@ -52,5 +52,5 @@ module Module
     // typed_enum te1 = typed_enum::A7;
     sized_enum se1 = sized_enum::B8;
   endfuction
-endmodule
+endmodule;
 

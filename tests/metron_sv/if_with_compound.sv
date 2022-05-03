@@ -19,7 +19,7 @@ module Submod
   end
 
   logic[7:0] my_reg;
-endmodule
+endmodule;
 
 
 module Module
@@ -47,5 +47,5 @@ module Module
   );
   logic[7:0] submod_tock_arg;
 
-endmodule
+endmodule;
 

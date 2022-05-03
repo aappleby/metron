@@ -17,5 +17,5 @@ module Module
     logic temp = my_sig;
   end
 
-endmodule
+endmodule;
 

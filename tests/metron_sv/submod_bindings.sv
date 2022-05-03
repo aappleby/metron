@@ -19,7 +19,7 @@ module Submod
   always_comb tock_sum_a_ret = tock_sum_a(tock_sum_a_a1, tock_sum_a_a2);
   function logic[7:0] tock_sum_b(logic[7:0] b1, logic[7:0] b2);  tock_sum_b = b1 + b2; endfuction
   always_comb tock_sum_b_ret = tock_sum_b(tock_sum_b_b1, tock_sum_b_b2);
-endmodule
+endmodule;
 
 module Module
 (
@@ -73,5 +73,5 @@ module Module
   logic[7:0] submod_tock_sum_a_ret;
   logic[7:0] submod_tock_sum_b_ret;
 
-endmodule
+endmodule;
 

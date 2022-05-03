@@ -38,5 +38,5 @@ module Module
     // Outputs
   );
 
-endmodule
+endmodule;
 

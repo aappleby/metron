@@ -20,5 +20,5 @@ module Module
     my_getter = 12;
   endfuction
 
-endmodule
+endmodule;
 

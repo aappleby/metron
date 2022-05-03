@@ -364,5 +364,5 @@ module Module
 
 
 
-endmodule
+endmodule;
 

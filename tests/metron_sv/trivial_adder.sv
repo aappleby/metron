@@ -16,5 +16,5 @@ module Adder
   endfuction
   always_comb add_ret = add(add_a, add_b);
 
-endmodule
+endmodule;
 

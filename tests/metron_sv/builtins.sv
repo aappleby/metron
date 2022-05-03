@@ -24,5 +24,5 @@ module Module
     logic[7:0] d = 2**(4);
   endfuction
 
-endmodule
+endmodule;
 

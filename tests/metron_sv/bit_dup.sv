@@ -56,5 +56,5 @@ module Module
     logic[7:0]  a8 = 8'b00000001;
     logic[31:0] b8 = {4 {a8}};
   endfuction
-endmodule
+endmodule;
 

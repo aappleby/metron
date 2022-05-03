@@ -49,5 +49,5 @@ module Module
     logic[31:0] h = 8'b0_0_0_0_0_0_0_0;
   endfuction
 
-endmodule
+endmodule;
 

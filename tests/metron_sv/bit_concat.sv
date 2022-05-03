@@ -37,5 +37,5 @@ module Module
 
     logic[5:0] d = {1'(a), 2'(b), 3'(c)};
   endfuction
-endmodule
+endmodule;
 

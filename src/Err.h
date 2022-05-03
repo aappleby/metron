@@ -30,6 +30,8 @@ class Err {
   bool has_warn() const;
   bool has_err() const;
 
+  operator bool() const { return has_err(); }
+
  private:
   int err;
 };

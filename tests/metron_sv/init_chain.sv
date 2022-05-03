@@ -55,5 +55,5 @@ module Module
     reg5 = 5;
   end
 
-endmodule
+endmodule;
 

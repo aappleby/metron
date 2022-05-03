@@ -23,5 +23,5 @@ module Module
     tock3 = 8'(1'bx);
   endfuction
   always_comb tock3_ret = tock3();
-endmodule
+endmodule;
 

@@ -18,5 +18,5 @@ logic[7:0] a = 1; a = a + 7; tock = a; endfuction
   always_ff @(posedge clock) begin /*tick*/ if (my_reg & 1) my_reg = my_reg - 7; end
 
 
-endmodule
+endmodule;
 

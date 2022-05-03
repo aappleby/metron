@@ -13,5 +13,5 @@ module Module
     tock = 123;
   endfuction
   always_comb tock_ret = tock();
-endmodule
+endmodule;
 

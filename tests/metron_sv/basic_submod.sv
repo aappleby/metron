@@ -19,7 +19,7 @@ module Submod
   end
 
   logic[7:0] sub_reg;
-endmodule
+endmodule;
 
 module Module
 (
@@ -37,5 +37,5 @@ module Module
     // Outputs
   );
 
-endmodule
+endmodule;
 

@@ -26,7 +26,7 @@ module Submod
   always_ff @(posedge clock) begin /*tick*/
     o_reg = o_reg + o_signal;
   end
-endmodule
+endmodule;
 
 module Module
 (
@@ -70,5 +70,5 @@ module Module
   logic[7:0] submod_o_reg;
   logic[7:0] submod_tock_ret;
 
-endmodule
+endmodule;
 

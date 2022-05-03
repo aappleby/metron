@@ -12,7 +12,7 @@ typedef struct packed
   logic[7:0] a;
   int b;
   logic[1:0] c;
-endmodule MyStruct2;
+endmodule MyStruct2;;
 
 module Module
 (
@@ -37,5 +37,5 @@ module Module
     tock = 17;
   endfuction
   always_comb tock_ret = tock();
-endmodule
+endmodule;
 

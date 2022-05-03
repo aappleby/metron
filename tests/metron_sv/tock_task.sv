@@ -25,5 +25,5 @@ module Module
     my_signal = number;
   end
 
-endmodule
+endmodule;
 

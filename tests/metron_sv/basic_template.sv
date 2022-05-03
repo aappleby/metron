@@ -41,5 +41,5 @@ module Module
   logic[10-1:0] submodule_my_width;
   logic[11-1:0] submodule_my_height;
 
-endmodule
+endmodule;
 

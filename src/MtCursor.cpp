@@ -304,13 +304,13 @@ CHECK_RETURN Err MtCursor::emit_replacement(MnNode n, const char* fmt, ...) {
 
 CHECK_RETURN Err MtCursor::emit_sym_initializer_list(MnNode node) {
   Err err;
-  assert(node.sym == sym_initializer_list);
   assert(cursor == node.start());
+  assert(node.sym == sym_initializer_list);
 
   auto child_count = node.child_count();
   for (int i = 0; i < child_count; i++) {
     auto child = node.child(i);
-
+    err << emit_ws();
     switch (child.sym) {
       case sym_identifier:
         err << emit_identifier(child);
@@ -322,8 +322,6 @@ CHECK_RETURN Err MtCursor::emit_sym_initializer_list(MnNode node) {
         err << emit_default(child);
         break;
     }
-    if (err.has_err()) return err;
-    if (i != child_count - 1) err << emit_ws();
   }
 
   assert(cursor == node.end());
@@ -356,10 +354,11 @@ CHECK_RETURN Err MtCursor::emit_sym_preproc_include(MnPreprocInclude n) {
 CHECK_RETURN Err MtCursor::emit_sym_assignment_expression(MnNode node) {
   Err err;
   assert(cursor == node.start());
+  assert(node.sym == sym_assignment_expression);
 
   for (int i = 0; i < node.child_count(); i++) {
     auto child = node.child(i);
-
+    err << emit_ws();
     switch (child.field) {
       case field_left:
       case field_right:
@@ -369,8 +368,6 @@ CHECK_RETURN Err MtCursor::emit_sym_assignment_expression(MnNode node) {
         err << emit_default(child);
         break;
     }
-
-    if (i != node.child_count() - 1) err << emit_ws();
   }
 
   assert(cursor == node.end());
@@ -1341,6 +1338,7 @@ CHECK_RETURN Err MtCursor::emit_anonymous_enum(MnFieldDecl n) {
 
   int child_count = n.child_count();
   for (int i = 0; i < child_count; i++) {
+    err << emit_ws();
     auto child = n.child(i);
     switch (child.field) {
       case field_type:
@@ -1353,8 +1351,6 @@ CHECK_RETURN Err MtCursor::emit_anonymous_enum(MnFieldDecl n) {
         err << emit_default(child);
         break;
     }
-    if (err.has_err()) return err;
-    if (i != child_count - 1) err << emit_ws();
   }
 
   assert(cursor == n.end());
@@ -1392,6 +1388,7 @@ CHECK_RETURN Err MtCursor::emit_simple_enum(MnFieldDecl n) {
   int child_count = n.child_count();
   for (int i = 0; i < child_count; i++) {
     auto child = n.child(i);
+    err << emit_ws();
     switch (child.field) {
       case field_type:
         err << emit_type(child);
@@ -1403,8 +1400,6 @@ CHECK_RETURN Err MtCursor::emit_simple_enum(MnFieldDecl n) {
         err << emit_default(child);
         break;
     }
-    if (err.has_err()) return err;
-    if (i != child_count - 1) err << emit_ws();
   }
 
   assert(cursor == n.end());
@@ -1580,6 +1575,7 @@ CHECK_RETURN Err MtCursor::emit_sym_type_definition(MnNode node) {
   int child_count = node.child_count();
   for (int i = 0; i < child_count; i++) {
     auto child = node.child(i);
+    err << emit_ws();
     switch (child.field) {
       case field_type:
         err << emit_type(child);
@@ -1591,8 +1587,6 @@ CHECK_RETURN Err MtCursor::emit_sym_type_definition(MnNode node) {
         err << emit_default(child);
         break;
     }
-    if (err.has_err()) return err;
-    if (i != child_count - 1) err << emit_ws();
   }
 
   assert(cursor == node.end());
@@ -2089,6 +2083,7 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n) {
   auto child_count = n.child_count();
   for (int i = 0; i < child_count; i++) {
     auto child = n.child(i);
+    err << emit_ws();
     switch (child.sym) {
       case anon_sym_LBRACE:
         err << skip_over(child);
@@ -2110,8 +2105,6 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n) {
         err << emit_default(child);
         break;
     }
-    if (err.has_err()) return err;
-    if (i != child_count - 1) err << emit_ws();
   }
 
   pop_indent(n);
@@ -2129,6 +2122,7 @@ CHECK_RETURN Err MtCursor::emit_sym_expression_statement(MnExprStatement node) {
   auto child_count = node.child_count();
   for (int i = 0; i < child_count; i++) {
     auto child = node.child(i);
+    err << emit_ws();
     switch (child.sym) {
       case anon_sym_SEMI:
         err << emit_text(child);
@@ -2147,8 +2141,6 @@ CHECK_RETURN Err MtCursor::emit_sym_expression_statement(MnExprStatement node) {
         }
         break;
     }
-    if (err.has_err()) return err;
-    if (i != child_count - 1) err << emit_ws();
   }
 
   assert(cursor == node.end());
@@ -2234,6 +2226,7 @@ MtCursor::emit_sym_template_argument_list(MnTemplateArgList n) {
   auto child_count = n.child_count();
   for (int i = 0; i < child_count; i++) {
     auto c = n.child(i);
+    err << emit_ws();
     switch (c.sym) {
       case anon_sym_LT:
         err << emit_replacement(c, " #(");
@@ -2247,9 +2240,6 @@ MtCursor::emit_sym_template_argument_list(MnTemplateArgList n) {
       default:
         err << emit_template_argument(c);
         break;
-    }
-    if (i != child_count - 1) {
-      err << emit_ws();
     }
   }
   if (cursor != n.end()) err << ERR("Cursor not at end");
@@ -2267,6 +2257,7 @@ CHECK_RETURN Err MtCursor::emit_sym_enumerator_list(MnEnumeratorList node) {
   auto child_count = node.child_count();
   for (int i = 0; i < child_count; i++) {
     auto child = node.child(i);
+    err << emit_ws();
     switch (child.sym) {
       case anon_sym_LBRACE:
       case anon_sym_RBRACE:
@@ -2280,9 +2271,6 @@ CHECK_RETURN Err MtCursor::emit_sym_enumerator_list(MnEnumeratorList node) {
         err << ERR("FIXME finish emit_sym_enumerator_list\n");
         child.error();
         break;
-    }
-    if (i != child_count - 1) {
-      err << emit_ws();
     }
   }
   assert(cursor == node.end());
@@ -2313,6 +2301,7 @@ CHECK_RETURN Err MtCursor::emit_sym_translation_unit(MnTranslationUnit n) {
   auto child_count = n.child_count();
   for (int i = 0; i < child_count; i++) {
     auto c = n.child(i);
+    err << emit_ws();
     switch (c.sym) {
       case sym_preproc_def:
       case sym_preproc_if:
@@ -2356,10 +2345,6 @@ CHECK_RETURN Err MtCursor::emit_sym_translation_unit(MnTranslationUnit n) {
         n.error();
         break;
     }
-    if (err.has_err()) return err;
-    if (i != child_count - 1) {
-      err << emit_ws();
-    }
   }
 
   if (cursor < current_source->source_end) {
@@ -2385,6 +2370,7 @@ CHECK_RETURN Err MtCursor::emit_sym_namespace_definition(MnNamespaceDef n) {
   auto child_count = node_body.child_count();
   for (int i = 0; i < child_count; i++) {
     auto c = node_body.child(i);
+    err << emit_ws();
     switch (c.sym) {
       case anon_sym_LBRACE:
         err << emit_replacement(c, "");
@@ -2413,10 +2399,6 @@ CHECK_RETURN Err MtCursor::emit_sym_namespace_definition(MnNamespaceDef n) {
                    c.ts_node_type());
         c.error();
         break;
-    }
-    if (err.has_err()) return err;
-    if (i != child_count - 1) {
-      err << emit_ws();
     }
   }
 
@@ -2838,38 +2820,50 @@ CHECK_RETURN Err MtCursor::emit_statement(MnNode n) {
   Err err;
   assert(cursor == n.start());
 
+  n.dump_tree();
+
   switch (n.sym) {
     case sym_declaration:
       err << emit_sym_declaration(n);
+      assert(cursor == n.end());
       break;
 
     case sym_if_statement:
       err << emit_sym_if_statement(n);
+      assert(cursor == n.end());
       break;
     case sym_compound_statement:
       err << emit_sym_compound_statement(n, "begin", "end");
+      assert(cursor == n.end());
       break;
     case sym_expression_statement:
       err << emit_sym_expression_statement(n);
+      assert(cursor == n.end());
       break;
     case sym_return_statement:
       err << emit_sym_return(n);
+      assert(cursor == n.end());
       break;
     case sym_switch_statement:
       err << emit_sym_switch_statement(n);
+      assert(cursor == n.end());
       break;
     case sym_using_declaration:
       err << emit_sym_using_declaration(n);
+      assert(cursor == n.end());
       break;
     case sym_case_statement:
       err << emit_sym_case_statement(n);
+      assert(cursor == n.end());
       break;
     case sym_break_statement:
       err << emit_sym_break_statement(n);
+      assert(cursor == n.end());
       break;
 
     default:
       err << emit_default(n);
+      assert(cursor == n.end());
       break;
   }
 
@@ -3001,7 +2995,6 @@ CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnIfStatement node) {
         break;
     }
 
-    if (err.has_err()) return err;
     if (i != child_count - 1) err << emit_ws();
   }
 
@@ -3031,7 +3024,6 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnEnumSpecifier node) {
         err << emit_default(child);
         break;
     }
-    if (err.has_err()) return err;
     if (i != child_count - 1) err << emit_ws();
   }
 

@@ -29,6 +29,8 @@ struct MtCursor {
   // Generic emit()s.
   CHECK_RETURN Err emit_char(char c, uint32_t color = 0);
   CHECK_RETURN Err emit_ws();
+  CHECK_RETURN Err emit_ws_to(const MnNode& n);
+  CHECK_RETURN Err emit_ws_to(TSSymbol sym, const MnNode& n);
   CHECK_RETURN Err emit_ws_to_newline();
   CHECK_RETURN Err emit_span(const char* a, const char* b);
   CHECK_RETURN Err emit_text(MnNode n);
@@ -38,6 +40,7 @@ struct MtCursor {
   CHECK_RETURN Err skip_ws();
   CHECK_RETURN Err prune_trailing_ws();
   CHECK_RETURN Err comment_out(MnNode n);
+  CHECK_RETURN Err check_end(const MnNode& n);
 
   // Generic emit()s.
   CHECK_RETURN Err emit_statement(MnNode n);

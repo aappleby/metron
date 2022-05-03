@@ -89,7 +89,7 @@ CHECK_RETURN Err MtTracer::trace_expression(MtContext* ctx, MnNode node,
       err << trace_identifier(ctx, node, action);
       break;
     case sym_conditional_expression:
-      err << trace_branch(ctx, node);
+      err << trace_sym_conditional_expression(ctx, node);
       break;
     case sym_field_expression:
       err << trace_sym_field_expression(ctx, node, action);
@@ -110,8 +110,20 @@ CHECK_RETURN Err MtTracer::trace_expression(MtContext* ctx, MnNode node,
       err << trace_expression(ctx, node.get_field(field_right), CTX_READ);
       err << trace_expression(ctx, node.get_field(field_left), CTX_WRITE);
       break;
+    case sym_parenthesized_expression:
+      err << trace_expression(ctx, node.child(1), action);
+      break;
+
+    case sym_unary_expression:
+      err << trace_expression(ctx, node.get_field(field_argument), CTX_READ);
+      break;
+
     case sym_binary_expression:
       err << trace_sym_binary_expression(ctx, node);
+      break;
+
+    case sym_condition_clause:
+      err << trace_expression(ctx, node.child(1), action);
       break;
 
     default:
@@ -129,6 +141,9 @@ CHECK_RETURN Err MtTracer::trace_statement(MtContext* ctx, MnNode node) {
   Err err;
 
   switch (node.sym) {
+    case sym_number_literal:
+      break;
+
     case sym_compound_statement:
       err << trace_sym_compound_statement(ctx, node);
       break;
@@ -139,7 +154,7 @@ CHECK_RETURN Err MtTracer::trace_statement(MtContext* ctx, MnNode node) {
       err << trace_sym_break_statement(ctx, node);
       break;
     case sym_if_statement:
-      err << trace_branch(ctx, node);
+      err << trace_sym_if_statement(ctx, node);
       break;
     case sym_expression_statement:
       err << trace_expression(ctx, node.child(0), CTX_READ);
@@ -186,16 +201,15 @@ CHECK_RETURN Err MtTracer::trace_declarator(MtContext* ctx, MnNode node) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer::trace_branch(MtContext* ctx, MnNode node) {
+CHECK_RETURN Err MtTracer::trace_sym_if_statement(MtContext* ctx, MnNode node) {
   Err err;
-  assert(node.sym == sym_if_statement ||
-         node.sym == sym_conditional_expression);
+  assert(node.sym == sym_if_statement);
 
   auto node_cond = node.get_field(field_condition);
   auto node_branch_a = node.get_field(field_consequence);
   auto node_branch_b = node.get_field(field_alternative);
 
-  err << trace_sym_condition_clause(ctx, node_cond);
+  err << trace_expression(ctx, node_cond, CTX_READ);
 
   ctx_root->start_branch_a();
   if (!node_branch_a.is_null()) {
@@ -206,6 +220,34 @@ CHECK_RETURN Err MtTracer::trace_branch(MtContext* ctx, MnNode node) {
   ctx_root->start_branch_b();
   if (!node_branch_b.is_null()) {
     err << trace_statement(ctx, node_branch_b);
+  }
+  ctx_root->end_branch_b();
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtTracer::trace_sym_conditional_expression(MtContext* ctx,
+                                                            MnNode node) {
+  Err err;
+  assert(node.sym == sym_conditional_expression);
+
+  auto node_cond = node.get_field(field_condition);
+  auto node_branch_a = node.get_field(field_consequence);
+  auto node_branch_b = node.get_field(field_alternative);
+
+  err << trace_expression(ctx, node_cond, CTX_READ);
+
+  ctx_root->start_branch_a();
+  if (!node_branch_a.is_null()) {
+    err << trace_expression(ctx, node_branch_a, CTX_READ);
+  }
+  ctx_root->end_branch_a();
+
+  ctx_root->start_branch_b();
+  if (!node_branch_b.is_null()) {
+    err << trace_expression(ctx, node_branch_b, CTX_READ);
   }
   ctx_root->end_branch_b();
 
@@ -588,6 +630,25 @@ CHECK_RETURN Err MtTracer::trace_sym_argument_list(MtContext* ctx,
 }
 
 //------------------------------------------------------------------------------
+
+// TREESITTER BUG - it isn't parsing "new_pad_x = pad_x + quad_dir ? 1 : 0;"
+// correctly
+
+/*
+[000.009] ========== tree dump begin
+[000.009]  � conditional_expression =
+[000.009]  ���� condition: assignment_expression =
+[000.009]  �  ���� left: identifier = "new_pad_x"
+[000.009]  �  ���� operator: lit = "="
+[000.009]  �  ���� right: binary_expression =
+[000.009]  �     ���� left: identifier = "pad_x"
+[000.009]  �     ���� operator: lit = "+"
+[000.009]  �     ���� right: identifier = "quad_dir"
+[000.009]  ���� lit = "?"
+[000.009]  ���� consequence: number_literal = "1"
+[000.009]  ���� lit = ":"
+[000.009]  ���� alternative: number_literal = "0"
+*/
 
 CHECK_RETURN Err MtTracer::trace_sym_condition_clause(MtContext* ctx,
                                                       MnNode node) {

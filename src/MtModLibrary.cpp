@@ -479,61 +479,6 @@ CHECK_RETURN Err MtModLibrary::categorize_methods() {
     return 0;
   });
 
-#if 0
-  //----------------------------------------
-  // Everything's categorized now. Next step - check for duplicate method bindings.
-
-  // This isnt' right, it needs to be "max 1 binding per branch"...
-
-#if 0
-
-  for (auto src_mod : modules) {
-    for (auto src_method : src_mod->all_methods) {
-      for (auto& ref : src_method->callees) {
-        auto dst_mod = ref.mod;
-        auto dst_method = ref.method;
-
-        if (src_mod != dst_mod) {
-          // Cross-module calls always require binding.
-          dst_method->binding_count++;
-        }
-        else if (src_method->in_tock && dst_method->in_tick) {
-          // Cross-domain calls always require binding.
-          dst_method->binding_count++;
-        }
-      }
-    }
-  }
-
-  for (auto src_mod : modules) {
-    for (auto src_method : src_mod->all_methods) {
-      if (src_method->binding_count > 1) {
-        err << ERR("Duplicate bindings for %s.%s\n", src_mod->cname(), src_method->cname());
-      }
-    }
-  }
-
-#endif
-
-  //----------------------------------------
-  // Check for cross-module calls in ticks.
-
-  for (auto src_mod : modules) {
-    for (auto src_method : src_mod->all_methods) {
-      for (auto callee : src_method->callees) {
-        auto dst_mod = callee->mod;
-        auto dst_method = callee;
-
-        if (src_mod != dst_mod) {
-          if (src_method->in_tick) {
-            err << ERR("Calling from tick %s.%s to %s.%s crosses a module boundary, but ticks can't create bindings\n",
-              src_mod->cname(), src_method->cname(), dst_mod->cname(), dst_method->cname());
-          }
-        }
-      }
-    }
-  }
-#endif
   //----------------------------------------
   // Check for ticks with return values.
 
@@ -545,31 +490,9 @@ CHECK_RETURN Err MtModLibrary::categorize_methods() {
       }
     }
   }
-  //----------------------------------------
-
-#if 0
-  dump_call_graph();
-
-  if (err.has_err()) {
-    exit(1);
-  }
-
-  exit((uncategorized > 0) || (invalid > 0));
 
   //----------------------------------------
-  // All modules have populated their fields, match up tick/tock calls with their
-  // corresponding methods.
-
-  for (auto mod : modules) {
-    err << mod->sort_fields();
-    //err << mod->build_port_map();
-  }
-
-  //----------------------------------------
-
-  sources_processed = true;
-
-#endif
+  // Done!
 
   return err;
 }

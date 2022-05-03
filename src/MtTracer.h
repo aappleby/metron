@@ -28,7 +28,7 @@ class MtTracer {
   CHECK_RETURN Err trace_expression(MtContext* ctx, MnNode node, ContextAction action);
   CHECK_RETURN Err trace_statement(MtContext* ctx, MnNode node);
   CHECK_RETURN Err trace_declarator(MtContext* ctx, MnNode node);
-  CHECK_RETURN Err trace_branch(MtContext* inst, MnNode n);
+  CHECK_RETURN Err trace_sym_if_statement(MtContext* inst, MnNode n);
   CHECK_RETURN Err trace_call(MtContext* src_ctx, MtContext* dst_ctx, MnNode node_call);
 
   CHECK_RETURN Err trace_sym_argument_list(MtContext* ctx, MnNode node);
@@ -38,6 +38,7 @@ class MtTracer {
   CHECK_RETURN Err trace_sym_case_statement(MtContext* ctx, MnNode node);
   CHECK_RETURN Err trace_sym_compound_statement(MtContext* ctx, MnNode node);
   CHECK_RETURN Err trace_sym_condition_clause(MtContext* ctx, MnNode node);
+  CHECK_RETURN Err trace_sym_conditional_expression(MtContext* ctx, MnNode node);
   CHECK_RETURN Err trace_sym_declaration(MtContext* ctx, MnNode node);
   CHECK_RETURN Err trace_sym_field_expression(MtContext* ctx, MnNode node, ContextAction action);
   CHECK_RETURN Err trace_sym_function_definition(MtContext* ctx, MnNode node);

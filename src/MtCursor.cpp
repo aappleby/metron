@@ -2942,11 +2942,52 @@ CHECK_RETURN Err MtCursor::emit_sym_condition_clause(MnNode n) {
 // If statements _must_ use {}, otherwise we have no place to insert component
 // bindings if the branch contains a component method call.
 
-CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnIfStatement n) {
+CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnIfStatement node) {
   Err err;
-  assert(n.sym == sym_if_statement);
-  assert(cursor == n.start());
+  assert(node.sym == sym_if_statement);
+  assert(cursor == node.start());
 
+  // node.dump_tree();
+  // exit(0);
+
+  // There could be comments between the sections of the if/elses, so we just
+  // walk over everything.
+
+  auto child_count = node.child_count();
+  for (int i = 0; i < child_count; i++) {
+    auto child = node.child(i);
+
+    switch (child.sym) {
+      case anon_sym_if:
+      case anon_sym_else:
+        err << emit_text(child);
+        break;
+      case sym_comment:
+        err << emit_sym_comment(child);
+        break;
+      case sym_condition_clause:
+        err << emit_sym_condition_clause(child);
+        break;
+      case sym_compound_statement:
+        err << emit_statement(child);
+        break;
+      case sym_expression_statement:
+        if (branch_contains_component_call(child)) {
+          err << ERR("If branches that contain component calls must use {}.");
+        }
+        err << emit_statement(child);
+        break;
+      default:
+        err << ERR("%s : No handler for %s\n", __func__, child.ts_node_type());
+        child.error();
+        break;
+    }
+
+    if (err.has_err()) return err;
+    if (i != child_count - 1) err << emit_ws();
+  }
+
+#if 0
   auto node_lit_if = n.child(0);
   auto node_cond = n.get_field(field_condition);
   auto node_then = n.get_field(field_consequence);
@@ -2971,9 +3012,6 @@ CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnIfStatement n) {
   }
 
   if (!node_else.is_null()) {
-    auto node_lit_else = n.child(3);
-    assert(node_lit_else.text() == "else");
-
     err << emit_ws();
     err << emit_text(node_lit_else);
     err << emit_ws();
@@ -2987,7 +3025,9 @@ CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnIfStatement n) {
       err << emit_statement(node_else);
     }
   }
-  assert(cursor == n.end());
+#endif
+
+  assert(cursor == node.end());
   return err;
 }
 

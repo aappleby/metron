@@ -40,7 +40,6 @@ struct MtCursor {
   CHECK_RETURN Err skip_ws();
   CHECK_RETURN Err prune_trailing_ws();
   CHECK_RETURN Err comment_out(MnNode n);
-  CHECK_RETURN Err check_end(const MnNode& n);
 
   // Generic emit()s.
   CHECK_RETURN Err emit_statement(MnNode n);

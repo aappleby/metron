@@ -2378,16 +2378,11 @@ CHECK_RETURN Err MtCursor::emit_sym_namespace_definition(MnNamespaceDef n) {
       case anon_sym_RBRACE:
         err << emit_replacement(c, "");
         break;
-      case sym_comment:
-        err << emit_sym_comment(c);
-        break;
-
       case sym_struct_specifier:
       case sym_class_specifier:
       case sym_template_declaration:
         err << emit_type(c);
         break;
-
       case sym_namespace_definition:
         err << emit_sym_namespace_definition(c);
         break;
@@ -2395,9 +2390,7 @@ CHECK_RETURN Err MtCursor::emit_sym_namespace_definition(MnNamespaceDef n) {
         err << emit_sym_declaration(c);
         break;
       default:
-        err << ERR("emit_namespace_def - No handler for %s\n",
-                   c.ts_node_type());
-        c.error();
+        err << emit_default(c);
         break;
     }
   }
@@ -2539,8 +2532,6 @@ CHECK_RETURN Err MtCursor::emit_sym_type_identifier(MnTypeIdentifier n) {
 }
 
 //------------------------------------------------------------------------------
-// For some reason the class's trailing semicolon ends up with the template
-// field_decl, so we prune it here.
 
 CHECK_RETURN Err MtCursor::emit_sym_template_declaration(MnTemplateDecl n) {
   Err err;
@@ -2682,6 +2673,7 @@ CHECK_RETURN Err MtCursor::emit_sym_switch_statement(MnSwitchStatement node) {
   auto child_count = node.child_count();
   for (int i = 0; i < child_count; i++) {
     auto child = node.child(i);
+    err << emit_ws();
     switch (child.field) {
       case field_condition:
         err << emit_sym_condition_clause(child);
@@ -2693,7 +2685,6 @@ CHECK_RETURN Err MtCursor::emit_sym_switch_statement(MnSwitchStatement node) {
         err << emit_default(child);
         break;
     }
-    if (i != child_count - 1) err << emit_ws();
   }
 
   assert(cursor == node.end());
@@ -2820,50 +2811,36 @@ CHECK_RETURN Err MtCursor::emit_statement(MnNode n) {
   Err err;
   assert(cursor == n.start());
 
-  n.dump_tree();
-
   switch (n.sym) {
     case sym_declaration:
       err << emit_sym_declaration(n);
-      assert(cursor == n.end());
       break;
-
     case sym_if_statement:
       err << emit_sym_if_statement(n);
-      assert(cursor == n.end());
       break;
     case sym_compound_statement:
       err << emit_sym_compound_statement(n, "begin", "end");
-      assert(cursor == n.end());
       break;
     case sym_expression_statement:
       err << emit_sym_expression_statement(n);
-      assert(cursor == n.end());
       break;
     case sym_return_statement:
       err << emit_sym_return(n);
-      assert(cursor == n.end());
       break;
     case sym_switch_statement:
       err << emit_sym_switch_statement(n);
-      assert(cursor == n.end());
       break;
     case sym_using_declaration:
       err << emit_sym_using_declaration(n);
-      assert(cursor == n.end());
       break;
     case sym_case_statement:
       err << emit_sym_case_statement(n);
-      assert(cursor == n.end());
       break;
     case sym_break_statement:
       err << emit_sym_break_statement(n);
-      assert(cursor == n.end());
       break;
-
     default:
       err << emit_default(n);
-      assert(cursor == n.end());
       break;
   }
 
@@ -2876,12 +2853,6 @@ CHECK_RETURN Err MtCursor::emit_statement(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_expression(MnNode n) {
   Err err;
   assert(cursor == n.start());
-
-  if (!n.is_named()) {
-    err << emit_text(n);
-    assert(cursor == n.end());
-    return err;
-  }
 
   switch (n.sym) {
     case sym_identifier:
@@ -2935,7 +2906,7 @@ CHECK_RETURN Err MtCursor::emit_sym_condition_clause(MnNode node) {
   auto child_count = node.child_count();
   for (int i = 0; i < child_count; i++) {
     auto child = node.child(i);
-
+    err << emit_ws();
     switch (child.field) {
       case field_value:
         err << emit_expression(child);
@@ -2944,9 +2915,6 @@ CHECK_RETURN Err MtCursor::emit_sym_condition_clause(MnNode node) {
         err << emit_default(child);
         break;
     }
-
-    if (err.has_err()) return err;
-    if (i != child_count - 1) err << emit_ws();
   }
 
   assert(cursor == node.end());
@@ -2986,8 +2954,10 @@ CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnIfStatement node) {
       case sym_expression_statement:
         if (branch_contains_component_call(child)) {
           err << ERR("If branches that contain component calls must use {}.");
+          err << skip_over(child);
+        } else {
+          err << emit_statement(child);
         }
-        err << emit_statement(child);
         break;
       default:
         err << ERR("%s : No handler for %s\n", __func__, child.ts_node_type());
@@ -3273,7 +3243,7 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
   auto body_count = node.child_count();
   for (int i = 0; i < body_count; i++) {
     auto child = node.child(i);
-
+    err << emit_ws();
     err << emit_input_port_bindings(child);
 
     switch (child.sym) {
@@ -3282,10 +3252,6 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
         err << emit_ws_to_newline();
         err << emit_hoisted_decls(node);
         err << emit_ws();
-        break;
-
-      case sym_comment:
-        err << emit_sym_comment(child);
         break;
 
       case sym_declaration:
@@ -3311,12 +3277,9 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
         break;
 
       default:
-        err << ERR("emit_block: No handler for %s\n", child.ts_node_type());
-        debugbreak();
+        err << emit_default(child);
         break;
     }
-    if (err.has_err()) return err;
-    if (i != body_count - 1) err << emit_ws();
   }
 
   pop_indent(node);

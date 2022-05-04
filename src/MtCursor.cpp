@@ -2573,17 +2573,6 @@ CHECK_RETURN Err MtCursor::emit_sym_conditional_expression(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_sym_storage_class_specifier(MnNode n) {
   Err err = emit_ws_to(sym_storage_class_specifier, n);
 
-  /*
-  assert(cursor == n.start());
-  if (n.match("static")) {
-    err << emit_replacement(n, "localparam");
-  } else {
-    //err << comment_out(n);
-    err << skip_over(n);
-  }
-  assert(cursor == n.end());
-  */
-
   err << skip_over(n);
   err << skip_ws();
 
@@ -2722,14 +2711,10 @@ CHECK_RETURN Err MtCursor::emit_sym_condition_clause(MnNode node) {
   Err err = emit_ws_to(sym_condition_clause, node);
 
   for (auto child : node) {
-    switch (child.field) {
-      case field_value:
-        err << emit_expression(child);
-        break;
-      default:
-        err << emit_default(child);
-        break;
-    }
+    if (child.field == field_value)
+      err << emit_expression(child);
+    else
+      err << emit_default(child);
   }
 
   return err << check_done(node);
@@ -2775,17 +2760,12 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode node) {
   Err err = emit_ws_to(sym_enum_specifier, node);
 
   for (auto child : node) {
-    switch (child.field) {
-      case field_name:
-        err << emit_declarator(child);
-        break;
-      case field_body:
-        err << emit_sym_enumerator_list(child);
-        break;
-      default:
-        err << emit_default(child);
-        break;
-    }
+    if (child.field == field_name)
+      err << emit_declarator(child);
+    else if (child.field == field_body)
+      err << emit_sym_enumerator_list(child);
+    else
+      err << emit_default(child);
   }
 
   return err << check_done(node);
@@ -2888,13 +2868,12 @@ CHECK_RETURN Err MtCursor::emit_sym_argument_list(MnNode node) {
   Err err = emit_ws_to(sym_argument_list, node);
 
   for (auto child : node) {
-    if (child.is_identifier()) {
+    if (child.is_identifier())
       err << emit_identifier(child);
-    } else if (child.is_expression()) {
+    else if (child.is_expression())
       err << emit_expression(child);
-    } else {
+    else
       err << emit_default(child);
-    }
   }
 
   return err << check_done(node);
@@ -2906,14 +2885,10 @@ CHECK_RETURN Err MtCursor::emit_sym_parameter_list(MnNode node) {
   Err err = emit_ws_to(sym_parameter_list, node);
 
   for (auto child : node) {
-    switch (child.sym) {
-      case sym_parameter_declaration:
-        err << emit_declaration(child);
-        break;
-      default:
-        err << emit_default(child);
-        break;
-    }
+    if (child.sym == sym_parameter_declaration)
+      err << emit_declaration(child);
+    else
+      err << emit_default(child);
   }
 
   return err << check_done(node);
@@ -3004,6 +2979,9 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
   push_indent(node);
 
   for (auto child : node) {
+    // We may need to insert input port bindings before any statement that
+    // includes a call expression. We search the tree for calls and emit those
+    // bindings here.
     err << emit_input_port_bindings(child);
 
     switch (child.sym) {

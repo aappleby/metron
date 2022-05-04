@@ -8,9 +8,13 @@
       "request": "launch",
       "program": "${workspaceFolder}/bin/metron",
       "cwd": "${workspaceFolder}",
-      //"args": ["-e","scratch.h"],
+      "args": [
+        "-e",
+        "scratch.h"
+      ],
       // bin/metron -q -v -r examples/uart/metron -o examples/uart/metron_sv -c uart_top.h
       // verilator -Isrc -Iexamples/uart/metron_sv --cc uart_top -Mdir gen/examples/uart/metron_vl
+      /*
       "args": [
         "-v",
         "-r",
@@ -20,6 +24,7 @@
         "-c",
         "uart_top.h",
       ],
+      */
       /*
       "args": [
         "-e",

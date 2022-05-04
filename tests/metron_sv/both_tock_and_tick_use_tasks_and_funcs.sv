@@ -1,4 +1,4 @@
-`include"metron_tools.sv"
+`include  "metron_tools.sv"
 
 // All the combos of tasks/funcs should work from ticks and tocks.
 
@@ -45,4 +45,5 @@ private_task_x = private_func;
 
   logic[7:0] my_reg;
 endmodule;
+
 

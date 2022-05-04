@@ -1,4 +1,4 @@
-`include"metron_tools.sv"
+`include  "metron_tools.sv"
 
 // Submodule bindings should be placed immediately before the statement
 // containing the call
@@ -76,4 +76,5 @@ module Module
   logic[7:0] submod_tock_sum_b_ret;
 
 endmodule;
+
 

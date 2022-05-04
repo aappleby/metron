@@ -1,4 +1,4 @@
-`include"metron_tools.sv"
+`include  "metron_tools.sv"
 
 // Templates can be used for module parameters
 
@@ -42,4 +42,5 @@ module Module
   logic[11-1:0] submodule_my_height;
 
 endmodule;
+
 

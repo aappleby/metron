@@ -564,19 +564,7 @@ struct MnEnumSpecifier : public MnNode {
 
 struct MnType : public MnNode {
   MnType() {}
-  MnType(const MnNode& n) : MnNode(n) {
-    assert(is_id() || is_templ() || is_enum() || is_prim());
-  }
-
-  bool is_id() { return sym == alias_sym_type_identifier; }
-  bool is_templ() { return sym == sym_template_type; }
-  bool is_enum() { return sym == sym_enum_specifier; }
-  bool is_prim() { return sym == sym_primitive_type; }
-
-  MnIdentifier as_id() { return MnIdentifier(*this); }
-  MnTemplateType as_templ() { return MnTemplateType(*this); }
-  MnEnumSpecifier as_enum() { return MnEnumSpecifier(*this); }
-  MnDataType as_prim() { return MnDataType(*this); }
+  MnType(const MnNode& n) : MnNode(n) {}
 };
 
 //------------------------------------------------------------------------------
@@ -584,36 +572,6 @@ struct MnType : public MnNode {
 struct MnFieldDecl : public MnNode {
   MnFieldDecl(){};
   MnFieldDecl(const MnNode& n) : MnNode(n) { check_sym(sym_field_declaration); }
-
-  bool is_primitive() {
-    // Primitive types are primitive types.
-    if (type().sym == sym_primitive_type) return true;
-
-    // Logic arrays are primitive types.
-    if (type().sym == sym_template_type) {
-      auto templ_name = type().get_field(field_name);
-      if (templ_name.match("logic")) return true;
-    }
-
-    // Bits are primitive types.
-    if (type().match("bit")) return true;
-
-    return false;
-  }
-
-  bool is_enum() const { return type().sym == sym_enum_specifier; }
-
-  bool is_param() const { return is_static() && is_const(); }
-
-  MnType type() const { return MnType(get_field(field_type)); }
-  MnFieldName name() {
-    auto decl = get_field(field_declarator);
-    if (decl.sym == sym_array_declarator) {
-      decl = decl.get_field(field_declarator);
-    }
-    return MnFieldName(decl);
-  }
-  MnCallExpr value() { return MnCallExpr(get_field(field_default_value)); }
 };
 
 //------------------------------------------------------------------------------

@@ -8,13 +8,13 @@
       "request": "launch",
       "program": "${workspaceFolder}/bin/metron",
       "cwd": "${workspaceFolder}",
+      //"args": ["-e","-r","examples/uart/metron","uart_top.h",],
       "args": [
         "-e",
         "-r",
-        "examples/uart/metron",
-        "uart_top.h",
+        "tests/metron_good",
+        "defines.h"
       ],
-      //"args": [ "-e", "scratch.h" ],
       //"args": [ "-e", "-r", "tests/metron_bad", "multiple_submod_function_bindings.h", ],
       //"args": [ "-e", "-r", "examples/rvtiny/metron", "toplevel.h", ],
       //"args": [ "-e", "-r", "examples/rvsimple/metron", "toplevel.h", ],

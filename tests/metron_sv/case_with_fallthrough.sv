@@ -1,4 +1,4 @@
-`include"metron_tools.sv"
+`include  "metron_tools.sv"
 
 // Case statements are allowed to have fallthrough, though the SV syntax is
 // a bit different.
@@ -38,4 +38,5 @@ module Module
 
   logic[7:0] my_reg;
 endmodule;
+
 

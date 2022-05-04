@@ -148,7 +148,12 @@ CHECK_RETURN Err MtCursor::emit_ws() {
 }
 
 CHECK_RETURN Err MtCursor::emit_ws_to(const MnNode& n) {
-  Err err = emit_ws();
+  Err err;
+  while (cursor < current_source->source_end && isspace(*cursor) &&
+         cursor < n.start()) {
+    err << emit_char(*cursor++);
+  }
+
   if (cursor != n.start()) {
     err << ERR("emit_ws_to - did not hit node %s\n", n.text().c_str());
   }
@@ -256,6 +261,7 @@ CHECK_RETURN Err MtCursor::emit_span(const char* a, const char* b) {
 
 CHECK_RETURN Err MtCursor::emit_text(MnNode n) {
   Err err = emit_ws_to(n);
+  assert(cursor == n.start());
 
   err << emit_span(n.start(), n.end());
   cursor = n.end();
@@ -341,14 +347,27 @@ CHECK_RETURN Err MtCursor::emit_sym_initializer_list(MnNode node) {
 CHECK_RETURN Err MtCursor::emit_sym_preproc_include(MnPreprocInclude n) {
   Err err = emit_ws_to(sym_preproc_include, n);
 
-  err << emit_replacement(n.child(0), "`include");
-
-  auto path = n.path_node().text();
+  auto path = n.get_field(field_path).text();
   assert(path.ends_with(".h\""));
   path.resize(path.size() - 3);
   path = path + ".sv\"";
+
+  for (auto child : n) {
+    if (child.sym == aux_sym_preproc_include_token1) {
+      err << emit_replacement(child, "`include ");
+    } else if (child.field == field_path) {
+      err << emit_replacement(child, path.c_str());
+    } else {
+      err << emit_default(child);
+    }
+  }
+  /*
+  n.dump_tree();
+
+  err << emit_replacement(n.child(0), "`include ");
   err << emit_print(path.c_str());
   cursor = n.end();
+  */
 
   return err << check_done(n);
 }
@@ -1747,11 +1766,11 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnFieldDecl n) {
     err << emit_text(node_semi);
   } else if (lib->get_module(type_name)) {
     err << emit_field_as_component(n);
-  } else if (current_mod->get_input_signal(n.name().text())) {
+  } else if (current_mod->get_input_signal(n.name4())) {
     err << skip_over(n);
-  } else if (current_mod->get_output_signal(n.name().text())) {
+  } else if (current_mod->get_output_signal(n.name4())) {
     err << skip_over(n);
-  } else if (current_mod->get_output_register(n.name().text())) {
+  } else if (current_mod->get_output_register(n.name4())) {
     err << skip_over(n);
   } else if (n.is_const()) {
     err << emit_child_expressions(n);
@@ -2236,6 +2255,8 @@ CHECK_RETURN Err MtCursor::emit_sym_translation_unit(MnTranslationUnit n) {
   if (cursor < current_source->source_end) {
     err << emit_span(cursor, current_source->source_end);
   }
+
+  err << emit_ws();
 
   return err << check_done(n);
 }
@@ -2997,6 +3018,8 @@ CHECK_RETURN Err MtCursor::emit_preproc(MnNode n) {
       n.error();
       break;
   }
+
+  err << emit_ws();
 
   return err << check_done(n);
 }

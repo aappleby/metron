@@ -1,4 +1,4 @@
-`include"metron_tools.sv"
+`include  "metron_tools.sv"
 
 // Calling tick() from tock() in the same module should work and should
 // generate bindings for the tick() call.
@@ -25,4 +25,5 @@ tick_val = tock_val;
   logic[7:0] my_reg;
 
 endmodule;
+
 

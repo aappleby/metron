@@ -160,29 +160,12 @@ bool MnNode::is_const() const {
 
 const char* MnNode::start() const {
   assert(!is_null());
-
-  auto old_a = &source->source[start_byte()];
-  auto old_b = &source->source[end_byte()];
-
-  auto a = old_a;
-  auto b = old_b;
-
-  if (sym == sym_preproc_arg) {
-    // TreeSitter bug - #defines include the whitespace before the value, trim
-    // it.
-    while (isspace(*a)) a++;
-  } else {
-    assert(!isspace(a[0]));
-  }
-
-  return a;
+  return &source->source[start_byte()];
 }
 
 const char* MnNode::end() const {
   assert(!is_null());
-  auto b = &source->source[end_byte()];
-  while (isspace(b[-1])) b--;
-  return b;
+  return &source->source[end_byte()];
 }
 
 std::string MnNode::text() const { return std::string(start(), end()); }

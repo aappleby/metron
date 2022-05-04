@@ -1,4 +1,4 @@
-`include"metron_tools.sv"
+`include  "metron_tools.sv"
 
 // Port and function arg names can collide, the latter is disambiguated by its
 // function name.
@@ -23,4 +23,5 @@ module Module
   endfuction
   always_comb tock_ret = tock(tock_input_val);
 endmodule;
+
 

@@ -1,4 +1,4 @@
-`include"metron_tools.sv"
+`include  "metron_tools.sv"
 
 // Simple switch statements are OK.
 
@@ -31,4 +31,5 @@ tick_selector = tock_selector;
 
   logic[7:0] my_reg;
 endmodule;
+
 

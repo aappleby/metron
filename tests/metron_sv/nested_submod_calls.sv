@@ -1,4 +1,4 @@
-`include"metron_tools.sv"
+`include  "metron_tools.sv"
 
 // Nesting submod calls should put all the nested input bindings above the call.
 
@@ -69,4 +69,5 @@ module Module
   logic[7:0] submod2_tock_add_two_ret;
 
 endmodule;
+
 

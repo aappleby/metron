@@ -1,4 +1,4 @@
-`include"metron_tools.sv"
+`include  "metron_tools.sv"
 
 // Cramming various statements into one line should not break anything.
 
@@ -19,4 +19,5 @@ logic[7:0] a = 1; a = a + 7; tock = a; endfuction
 
 
 endmodule;
+
 

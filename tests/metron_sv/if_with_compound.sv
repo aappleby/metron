@@ -1,4 +1,4 @@
-`include"metron_tools.sv"
+`include  "metron_tools.sv"
 
 // If statements whose sub-blocks contain submodule calls _must_ use {}.
 
@@ -48,4 +48,5 @@ submod_tock_arg = 36;
   logic[7:0] submod_tock_arg;
 
 endmodule;
+
 

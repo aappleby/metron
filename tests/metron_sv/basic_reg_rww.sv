@@ -1,4 +1,4 @@
-`include"metron_tools.sv"
+`include  "metron_tools.sv"
 
 // Writing a register multiple times in the same function is OK.
 
@@ -24,4 +24,5 @@ module Module
 
   logic my_reg;
 endmodule;
+
 

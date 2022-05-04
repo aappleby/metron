@@ -1,4 +1,4 @@
-`include"metron_tools.sv"
+`include  "metron_tools.sv"
 
 // Concatenating logics should produce logics with correct <N>
 
@@ -38,4 +38,5 @@ module Module
     logic[5:0] d = {1'(a), 2'(b), 3'(c)};
   endfuction
 endmodule;
+
 

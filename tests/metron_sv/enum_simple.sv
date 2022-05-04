@@ -1,4 +1,4 @@
-`include"metron_tools.sv"
+`include  "metron_tools.sv"
 
 // Most kinds of C++ enum declarations should work.
 
@@ -53,4 +53,5 @@ module Module
     sized_enum se1 = sized_enum::B8;
   endfuction
 endmodule;
+
 

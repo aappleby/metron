@@ -1,4 +1,4 @@
-`include"metron_tools.sv"
+`include  "metron_tools.sv"
 
 // Getter methods should turn into outputs.
 
@@ -27,4 +27,5 @@ module Module
 
   logic[6:0] my_reg;
 endmodule;
+
 

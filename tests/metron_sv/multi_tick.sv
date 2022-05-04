@@ -1,4 +1,4 @@
-`include"metron_tools.sv"
+`include  "metron_tools.sv"
 
 // Multiple tick methods are OK as long as they're all called by tock()
 
@@ -31,4 +31,5 @@ module Module
   logic[7:0] my_reg1;
   logic[7:0] my_reg2;
 endmodule;
+
 

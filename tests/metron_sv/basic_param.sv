@@ -1,4 +1,4 @@
-`include"metron_tools.sv"
+`include  "metron_tools.sv"
 
 // Template parameters become SV module parameters.
 
@@ -21,4 +21,5 @@ module Module
 
   logic[6:0] my_reg;
 endmodule
+
 

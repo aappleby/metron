@@ -38,7 +38,7 @@ CHECK_RETURN Err MtSourceFile::init(MtModLibrary* _lib,
 
   TSNode ts_root = ts_tree_root_node(tree);
   auto root_sym = ts_node_symbol(ts_root);
-  root_node = MnTranslationUnit(MnNode(ts_root, root_sym, 0, this));
+  root_node = MnNode(MnNode(ts_root, root_sym, 0, this));
 
   assert(modules.empty());
   err << collect_modules(root_node);
@@ -67,14 +67,8 @@ CHECK_RETURN Err MtSourceFile::collect_modules(MnNode toplevel) {
 
   for (const auto& c : toplevel) {
     switch (c.sym) {
+      case sym_class_specifier:
       case sym_template_declaration: {
-        MnNode mod_root(c.node, c.sym, 0, this);
-        MtModule* mod = new MtModule(lib);
-        err << mod->init(this, MnTemplateDecl(mod_root));
-        modules.push_back(mod);
-        break;
-      }
-      case sym_class_specifier: {
         MnNode mod_root(c.node, c.sym, 0, this);
         MtModule* mod = new MtModule(lib);
         err << mod->init(this, MnNode(mod_root));

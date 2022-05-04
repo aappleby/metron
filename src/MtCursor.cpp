@@ -344,7 +344,7 @@ CHECK_RETURN Err MtCursor::emit_sym_initializer_list(MnNode node) {
 //------------------------------------------------------------------------------
 // Replace "#include" with "`include" and ".h" with ".sv"
 
-CHECK_RETURN Err MtCursor::emit_sym_preproc_include(MnPreprocInclude n) {
+CHECK_RETURN Err MtCursor::emit_sym_preproc_include(MnNode n) {
   Err err = emit_ws_to(sym_preproc_include, n);
 
   auto path = n.get_field(field_path).text();
@@ -408,7 +408,7 @@ CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnNode call, int bx_width) {
       // Explicitly sized literal - 8'd10
 
       cursor = arg0.start();
-      err << emit_sym_number_literal(MnNumberLiteral(arg0), bx_width);
+      err << emit_sym_number_literal(MnNode(arg0), bx_width);
       cursor = call.end();
     } else if (arg0.sym == sym_identifier ||
                arg0.sym == sym_subscript_expression) {
@@ -669,7 +669,7 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
 //------------------------------------------------------------------------------
 // Replace "logic blah = x;" with "logic blah;"
 
-CHECK_RETURN Err MtCursor::emit_init_declarator_as_decl(MnDecl n) {
+CHECK_RETURN Err MtCursor::emit_init_declarator_as_decl(MnNode n) {
   Err err = emit_ws_to(n);
 
   err << emit_type(n.get_field(field_type));
@@ -685,7 +685,7 @@ CHECK_RETURN Err MtCursor::emit_init_declarator_as_decl(MnDecl n) {
 //------------------------------------------------------------------------------
 // Replace "logic blah = x;" with "blah = x;"
 
-CHECK_RETURN Err MtCursor::emit_init_declarator_as_assign(MnDecl n) {
+CHECK_RETURN Err MtCursor::emit_init_declarator_as_assign(MnNode n) {
   Err err = emit_ws_to(n);
 
   auto decl = n.get_field(field_declarator);
@@ -745,7 +745,7 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
       } else {
         cursor = c.start();
 
-        auto d = MnDecl(c);
+        auto d = MnNode(c);
 
         auto decl = d.get_field(field_declarator);
 
@@ -1023,7 +1023,7 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_field_as_component(MnFieldDecl n) {
+CHECK_RETURN Err MtCursor::emit_field_as_component(MnNode n) {
   Err err = emit_ws_to(n);
 
   std::string type_name = n.type5();
@@ -1152,7 +1152,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_component(MnFieldDecl n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_port_decls(MnFieldDecl component_decl) {
+CHECK_RETURN Err MtCursor::emit_port_decls(MnNode component_decl) {
   Err err;
 
   if (current_mod->components.empty()) {
@@ -1322,7 +1322,7 @@ enum { FOO, BAR, BAZ } blom;
 ========== tree dump end
 */
 
-CHECK_RETURN Err MtCursor::emit_anonymous_enum(MnFieldDecl n) {
+CHECK_RETURN Err MtCursor::emit_anonymous_enum(MnNode n) {
   Err err = emit_ws_to(n);
 
   for (auto child : n) {
@@ -1365,7 +1365,7 @@ enum blom { FOO, BAR, BAZ };
 ========== tree dump end
 */
 
-CHECK_RETURN Err MtCursor::emit_simple_enum(MnFieldDecl n) {
+CHECK_RETURN Err MtCursor::emit_simple_enum(MnNode n) {
   Err err = emit_ws_to(n);
 
   for (auto child : n) {
@@ -1458,8 +1458,7 @@ CHECK_RETURN Err MtCursor::emit_simple_enum(MnFieldDecl n) {
 ========== tree dump end
 */
 
-CHECK_RETURN Err MtCursor::emit_broken_enum(MnFieldDecl n,
-                                            MnNode node_bitfield) {
+CHECK_RETURN Err MtCursor::emit_broken_enum(MnNode n, MnNode node_bitfield) {
   Err err = emit_ws_to(n);
   auto node_type = n.get_field(field_type);
   auto node_name = node_type.get_field(field_name);
@@ -1518,7 +1517,7 @@ CHECK_RETURN Err MtCursor::emit_broken_enum(MnFieldDecl n,
 
 */
 
-CHECK_RETURN Err MtCursor::emit_enum(MnFieldDecl n) {
+CHECK_RETURN Err MtCursor::emit_enum(MnNode n) {
   Err err = emit_ws_to(n);
   auto node_type = n.get_field(field_type);
   assert(node_type.sym == sym_enum_specifier);
@@ -1718,7 +1717,7 @@ CHECK_RETURN Err MtCursor::emit_declaration(MnNode node) {
 // field_declaration = { type:enum_specifier,  bitfield_clause (TREESITTER BUG)
 // }
 
-CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnFieldDecl n) {
+CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
   Err err = emit_ws_to(n);
   assert(n.sym == sym_field_declaration);
 
@@ -2173,7 +2172,7 @@ CHECK_RETURN Err MtCursor::emit_sym_template_argument_list(MnNode n) {
 //------------------------------------------------------------------------------
 // Enum lists do _not_ turn braces into begin/end.
 
-CHECK_RETURN Err MtCursor::emit_sym_enumerator_list(MnEnumeratorList node) {
+CHECK_RETURN Err MtCursor::emit_sym_enumerator_list(MnNode node) {
   Err err = emit_ws_to(sym_enumerator_list, node);
 
   for (auto child : node) {
@@ -2211,7 +2210,7 @@ CHECK_RETURN Err MtCursor::emit_everything() {
 //------------------------------------------------------------------------------
 // Discard any trailing semicolons in the translation unit.
 
-CHECK_RETURN Err MtCursor::emit_sym_translation_unit(MnTranslationUnit n) {
+CHECK_RETURN Err MtCursor::emit_sym_translation_unit(MnNode n) {
   Err err = emit_ws_to(sym_translation_unit, n);
 
   for (auto c : n) {
@@ -2308,8 +2307,7 @@ CHECK_RETURN Err MtCursor::emit_sym_namespace_definition(MnNamespaceDef n) {
 // Replace "0b" prefixes with "'b"
 // Add an explicit size prefix if needed.
 
-CHECK_RETURN Err MtCursor::emit_sym_number_literal(MnNumberLiteral n,
-                                                   int size_cast) {
+CHECK_RETURN Err MtCursor::emit_sym_number_literal(MnNode n, int size_cast) {
   Err err = emit_ws_to(sym_number_literal, n);
 
   assert(!override_size || !size_cast);
@@ -2355,7 +2353,7 @@ CHECK_RETURN Err MtCursor::emit_sym_number_literal(MnNumberLiteral n,
 //------------------------------------------------------------------------------
 // Change "return x" to "(funcname) = x" to match old Verilog return style.
 
-CHECK_RETURN Err MtCursor::emit_sym_return(MnReturnStatement n) {
+CHECK_RETURN Err MtCursor::emit_sym_return(MnNode n) {
   Err err = emit_ws_to(sym_return_statement, n);
 
   auto node_lit = n.child(0);
@@ -2427,15 +2425,15 @@ CHECK_RETURN Err MtCursor::emit_sym_type_identifier(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_sym_template_declaration(MnTemplateDecl n) {
+CHECK_RETURN Err MtCursor::emit_sym_template_declaration(MnNode n) {
   Err err = emit_ws_to(sym_template_declaration, n);
 
   MnNode class_specifier;
-  MnTemplateParamList param_list;
+  MnNode param_list;
 
   for (auto child : (MnNode)n) {
     if (child.sym == sym_template_parameter_list) {
-      param_list = MnTemplateParamList(child);
+      param_list = MnNode(child);
     }
 
     if (child.sym == sym_class_specifier) {
@@ -2491,7 +2489,7 @@ CHECK_RETURN Err MtCursor::emit_sym_field_expression(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_sym_case_statement(MnCaseStatement n) {
+CHECK_RETURN Err MtCursor::emit_sym_case_statement(MnNode n) {
   Err err = emit_ws_to(sym_case_statement, n);
 
   bool anything_after_colon = false;
@@ -2541,7 +2539,7 @@ CHECK_RETURN Err MtCursor::emit_sym_case_statement(MnCaseStatement n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_sym_switch_statement(MnSwitchStatement node) {
+CHECK_RETURN Err MtCursor::emit_sym_switch_statement(MnNode node) {
   Err err = emit_ws_to(sym_switch_statement, node);
 
   for (auto child : node) {
@@ -2564,7 +2562,7 @@ CHECK_RETURN Err MtCursor::emit_sym_switch_statement(MnSwitchStatement node) {
 //------------------------------------------------------------------------------
 // Unwrap magic /*#foo#*/ comments to pass arbitrary text to Verilog.
 
-CHECK_RETURN Err MtCursor::emit_sym_comment(MnComment n) {
+CHECK_RETURN Err MtCursor::emit_sym_comment(MnNode n) {
   Err err = emit_ws_to(sym_comment, n);
 
   auto body = n.text();
@@ -2582,7 +2580,7 @@ CHECK_RETURN Err MtCursor::emit_sym_comment(MnComment n) {
 //------------------------------------------------------------------------------
 // Verilog doesn't use "break"
 
-CHECK_RETURN Err MtCursor::emit_sym_break_statement(MnBreakStatement n) {
+CHECK_RETURN Err MtCursor::emit_sym_break_statement(MnNode n) {
   Err err = emit_ws_to(sym_break_statement, n);
 
   err << skip_over(n);
@@ -2805,7 +2803,7 @@ CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnIfStatement node) {
 //------------------------------------------------------------------------------
 // Enums are broken.
 
-CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnEnumSpecifier node) {
+CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode node) {
   Err err = emit_ws_to(sym_enum_specifier, node);
 
   for (auto child : node) {
@@ -2827,7 +2825,7 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnEnumSpecifier node) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_sym_using_declaration(MnUsingDecl n) {
+CHECK_RETURN Err MtCursor::emit_sym_using_declaration(MnNode n) {
   Err err = emit_ws_to(sym_using_declaration, n);
 
   // FIXME child index
@@ -2841,7 +2839,7 @@ CHECK_RETURN Err MtCursor::emit_sym_using_declaration(MnUsingDecl n) {
 // FIXME - When do we hit this? It doesn't look finished.
 // It's for namespace decls
 
-CHECK_RETURN Err MtCursor::emit_sym_declaration(MnDecl n) {
+CHECK_RETURN Err MtCursor::emit_sym_declaration(MnNode n) {
   Err err = emit_ws_to(sym_declaration, n);
 
   bool is_static = false;
@@ -3010,7 +3008,7 @@ CHECK_RETURN Err MtCursor::emit_preproc(MnNode n) {
       break;
     }
     case sym_preproc_include: {
-      err << emit_sym_preproc_include(MnPreprocInclude(n));
+      err << emit_sym_preproc_include(MnNode(n));
       break;
     }
     default:

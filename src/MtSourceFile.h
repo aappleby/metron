@@ -7,7 +7,7 @@
 #include "Platform.h"
 #include "submodules/tree-sitter/lib/include/tree_sitter/api.h"
 
-struct MnTranslationUnit;
+struct MnNode;
 struct MtModule;
 struct MtModLibrary;
 typedef std::vector<uint8_t> blob;
@@ -32,7 +32,7 @@ struct MtSourceFile {
   std::string src_blob;
   bool use_utf8_bom = false;
 
-  MnTranslationUnit root_node;
+  MnNode root_node;
 
   const char* source = nullptr;
   const char* source_end = nullptr;

@@ -27,35 +27,51 @@ static MtField *construct(MtModule *mod, const MnNode &n, bool is_public) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtModule::init(MtSourceFile *_source_file,
-                                MnTemplateDecl _node) {
+CHECK_RETURN Err MtModule::init(MtSourceFile *_source_file, MnNode _node) {
   Err err;
 
-  source_file = _source_file;
-  lib = source_file->lib;
-  mod_template = _node;
-  root_node = _node;
+  if (_node.sym == sym_template_declaration) {
+    source_file = _source_file;
+    lib = source_file->lib;
+    mod_template = _node;
+    root_node = _node;
 
-  for (int i = 0; i < mod_template.child_count(); i++) {
-    auto child = mod_template.child(i);
+    for (int i = 0; i < mod_template.child_count(); i++) {
+      auto child = mod_template.child(i);
 
-    if (child.sym == sym_template_parameter_list) {
-      mod_param_list = MnTemplateParamList(child);
+      if (child.sym == sym_template_parameter_list) {
+        mod_param_list = MnNode(child);
+      }
+
+      if (child.sym == sym_class_specifier) {
+        mod_class = MnNode(child);
+      }
     }
 
-    if (child.sym == sym_class_specifier) {
-      mod_class = MnNode(child);
+    if (mod_param_list.is_null()) {
+      err << ERR("No template parameter list found under template");
     }
-  }
 
-  if (mod_param_list.is_null()) {
-    err << ERR("No template parameter list found under template");
-  }
+    if (mod_class) {
+      mod_name = mod_class.get_field(field_name).text();
+    } else {
+      err << ERR("No class node found under template");
+    }
+  } else if (_node.sym == sym_class_specifier) {
+    source_file = _source_file;
+    mod_template = MnNode::null;
+    mod_param_list = MnNode::null;
+    mod_class = _node;
+    root_node = _node;
 
-  if (mod_class) {
-    mod_name = mod_class.get_field(field_name).text();
+    if (mod_class) {
+      mod_name = mod_class.get_field(field_name).text();
+    } else {
+      err << ERR("mod_class is null");
+    }
   } else {
-    err << ERR("No class node found under template");
+    err << ERR("MtModule::init() - Not sure what to do with %s\n",
+               _node.ts_node_type());
   }
 
   return err;
@@ -63,23 +79,14 @@ CHECK_RETURN Err MtModule::init(MtSourceFile *_source_file,
 
 //------------------------------------------------------------------------------
 
+/*
 CHECK_RETURN Err MtModule::init(MtSourceFile *_source_file, MnNode _node) {
   Err err;
 
-  source_file = _source_file;
-  mod_template = MnNode::null;
-  mod_param_list = MnNode::null;
-  mod_class = _node;
-  root_node = _node;
-
-  if (mod_class) {
-    mod_name = mod_class.get_field(field_name).text();
-  } else {
-    err << ERR("mod_class is null");
-  }
 
   return err;
 }
+*/
 
 //------------------------------------------------------------------------------
 

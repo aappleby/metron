@@ -15,7 +15,7 @@ tick_arg = tock_arg;
 /*private:*/
   logic[7:0] tick_arg;
   always_ff @(posedge clock) begin /*tick*/
-    my_reg <= my_reg + arg;
+    my_reg <= my_reg + tick_arg;
   end
 
   logic[7:0] my_reg;

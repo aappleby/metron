@@ -2325,22 +2325,21 @@ CHECK_RETURN Err MtCursor::emit_sym_number_literal(MnNode n, int size_cast) {
 CHECK_RETURN Err MtCursor::emit_sym_return(MnNode n) {
   Err err = emit_ws_to(sym_return_statement, n);
 
-  auto node_lit = n.child(0);
-  auto node_expr = n.child(1);
-
-  cursor = node_expr.start();
-
-  if (current_method->in_tock) {
-    err << emit_print("%s_ret = ", current_method->name().c_str());
-  } else {
-    err << emit_print("%s = ", current_method->name().c_str());
+  for (auto c : n) {
+    if (c.sym == anon_sym_return) {
+      if (current_method->in_tock) {
+        err << emit_replacement(c, "%s_ret =", current_method->name().c_str());
+      } else {
+        err << emit_replacement(c, "%s =", current_method->name().c_str());
+      }
+    } else if (c.is_expression()) {
+      err << emit_expression(c);
+    } else if (c.is_identifier()) {
+      err << emit_identifier(c);
+    } else {
+      err << emit_default(c);
+    }
   }
-
-  err << emit_expression(node_expr);
-  err << prune_trailing_ws();
-  err << emit_print(";");
-
-  cursor = n.end();
 
   return err << check_done(n);
 }
@@ -2357,7 +2356,6 @@ CHECK_RETURN Err MtCursor::emit_sym_primitive_type(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
-// FIXME translate types here
 
 CHECK_RETURN Err MtCursor::emit_sym_identifier(MnNode n) {
   Err err = emit_ws_to(sym_identifier, n);
@@ -2366,17 +2364,21 @@ CHECK_RETURN Err MtCursor::emit_sym_identifier(MnNode n) {
   auto it = id_replacements.find(name);
   if (it != id_replacements.end()) {
     err << emit_replacement(n, it->second.c_str());
+  } else if (preproc_vars.contains(name)) {
+    err << emit_print("`");
+    err << emit_text(n);
+  } else if (current_method && current_method->in_tick &&
+             current_method->has_param(name)) {
+    err << emit_replacement(n, "%s_%s", current_method->cname(),
+                            n.text().c_str());
   } else {
-    if (preproc_vars.contains(name)) {
-      err << emit_print("`");
-      err << emit_text(n);
-    } else {
-      err << emit_text(n);
-    }
+    err << emit_text(n);
   }
 
   return err << check_done(n);
 }
+
+//------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_sym_type_identifier(MnNode n) {
   Err err = emit_ws_to(alias_sym_type_identifier, n);
@@ -2512,17 +2514,12 @@ CHECK_RETURN Err MtCursor::emit_sym_switch_statement(MnNode node) {
   Err err = emit_ws_to(sym_switch_statement, node);
 
   for (auto child : node) {
-    switch (child.field) {
-      case field_condition:
-        err << emit_sym_condition_clause(child);
-        break;
-      case field_body:
-        err << emit_statement(child);
-        break;
-      default:
-        err << emit_default(child);
-        break;
-    }
+    if (child.field == field_condition)
+      err << emit_sym_condition_clause(child);
+    else if (child.field == field_body)
+      err << emit_statement(child);
+    else
+      err << emit_default(child);
   }
 
   return err << check_done(node);
@@ -2563,7 +2560,9 @@ CHECK_RETURN Err MtCursor::emit_sym_break_statement(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_sym_conditional_expression(MnNode n) {
   Err err = emit_ws_to(sym_conditional_expression, n);
 
-  err << emit_child_expressions(n);
+  for (auto child : n) {
+    err << emit_expression(child);
+  }
 
   return err << check_done(n);
 }

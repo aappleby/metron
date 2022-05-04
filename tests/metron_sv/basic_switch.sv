@@ -18,7 +18,7 @@ tick_selector = tock_selector;
 
   logic[1:0] tick_selector;
   always_ff @(posedge clock) begin /*tick*/
-    switch(selector) begin
+    switch(tick_selector) begin
        0: my_reg <= 17;
        1: my_reg <= 22;
        2: my_reg <= 30;

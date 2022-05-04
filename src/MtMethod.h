@@ -32,6 +32,13 @@ struct MtMethod {
   bool has_params() const { return !param_nodes.empty(); }
   bool has_return() const { return !_type.is_null() && _type.text() != "void"; }
 
+  bool has_param(const std::string& name) {
+    for (const auto& p : param_nodes) {
+      if (p.name4() == name) return true;
+    }
+    return false;
+  }
+
   //----------------------------------------
 
   MtModule* _mod = nullptr;

@@ -13,24 +13,6 @@
 #include "MtSourceFile.h"
 #include "Platform.h"
 
-void print_escaped(char s);
-
-/*
-CHECK_RETURN Err MtCursor::emit_sym_example(MnNode node) {
-  Err err = emit_ws_to(emit_sym_example, node);
-
-  for (auto child : node) {
-    switch (child.field) {
-      default:
-        err << emit_default(child);
-        break;
-    }
-  }
-
-  return err << check_end(node);
-}
-*/
-
 //------------------------------------------------------------------------------
 
 MtCursor::MtCursor(MtModLibrary* lib, MtSourceFile* source, MtModule* mod,
@@ -147,6 +129,8 @@ CHECK_RETURN Err MtCursor::emit_ws() {
   return err;
 }
 
+//----------------------------------------
+
 CHECK_RETURN Err MtCursor::emit_ws_to(const MnNode& n) {
   Err err;
   while (cursor < current_source->source_end && isspace(*cursor) &&
@@ -160,6 +144,8 @@ CHECK_RETURN Err MtCursor::emit_ws_to(const MnNode& n) {
   return err;
 }
 
+//----------------------------------------
+
 CHECK_RETURN Err MtCursor::emit_ws_to(TSSymbol sym, const MnNode& n) {
   Err err = emit_ws();
   if (n.sym != sym) {
@@ -171,6 +157,8 @@ CHECK_RETURN Err MtCursor::emit_ws_to(TSSymbol sym, const MnNode& n) {
   }
   return err;
 }
+
+//----------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_ws_to_newline() {
   Err err;
@@ -371,17 +359,20 @@ CHECK_RETURN Err MtCursor::emit_sym_preproc_include(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_sym_assignment_expression(MnNode node) {
   Err err = emit_ws_to(sym_assignment_expression, node);
 
+  bool left_is_field = false;
+
   for (auto child : node) {
     switch (child.field) {
       case field_left:
         err << emit_expression(child);
+        left_is_field = current_mod->get_field(child.text()) != nullptr;
         break;
       case field_operator:
         if (child.text() != "=") {
           err << ERR("emit_sym_assignment_expression() - Node is not '='\n");
           child.error();
         }
-        if (current_method && current_method->in_tick) {
+        if (current_method && current_method->in_tick && left_is_field) {
           err << emit_replacement(child, "<=");
         } else {
           err << emit_text(child);

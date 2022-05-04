@@ -44,7 +44,7 @@ CHECK_RETURN Err MtModule::init(MtSourceFile *_source_file,
     }
 
     if (child.sym == sym_class_specifier) {
-      mod_class = MnClassSpecifier(child);
+      mod_class = MnNode(child);
     }
   }
 
@@ -63,8 +63,7 @@ CHECK_RETURN Err MtModule::init(MtSourceFile *_source_file,
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtModule::init(MtSourceFile *_source_file,
-                                MnClassSpecifier _node) {
+CHECK_RETURN Err MtModule::init(MtSourceFile *_source_file, MnNode _node) {
   Err err;
 
   source_file = _source_file;

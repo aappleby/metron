@@ -77,7 +77,7 @@ CHECK_RETURN Err MtSourceFile::collect_modules(MnNode toplevel) {
       case sym_class_specifier: {
         MnNode mod_root(c.node, c.sym, 0, this);
         MtModule* mod = new MtModule(lib);
-        err << mod->init(this, MnClassSpecifier(mod_root));
+        err << mod->init(this, MnNode(mod_root));
         modules.push_back(mod);
         break;
       }

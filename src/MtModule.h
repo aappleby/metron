@@ -24,7 +24,7 @@ struct MtModule {
   std::string name() const { return mod_name; }
 
   CHECK_RETURN Err init(MtSourceFile* source_file, MnTemplateDecl node);
-  CHECK_RETURN Err init(MtSourceFile* source_file, MnClassSpecifier node);
+  CHECK_RETURN Err init(MtSourceFile* source_file, MnNode node);
 
   MtMethod* get_method(const std::string& name);
   MtField* get_field(const std::string& name);
@@ -50,7 +50,7 @@ struct MtModule {
   MtSourceFile* source_file = nullptr;
   std::string mod_name;
   MnNode root_node;
-  MnClassSpecifier mod_class;
+  MnNode mod_class;
   MnTemplateDecl mod_template;
   MnTemplateParamList mod_param_list;
   MtMethod* constructor = nullptr;

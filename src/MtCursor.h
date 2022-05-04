@@ -60,9 +60,9 @@ struct MtCursor {
   CHECK_RETURN Err emit_broken_enum(MnFieldDecl n, MnNode node_bitfield);
   CHECK_RETURN Err emit_simple_enum(MnFieldDecl n);
   CHECK_RETURN Err emit_anonymous_enum(MnFieldDecl n);
-  CHECK_RETURN Err emit_static_bit_extract(MnCallExpr n, int bx_width);
-  CHECK_RETURN Err emit_dynamic_bit_extract(MnCallExpr n, MnNode bx_node);
-  CHECK_RETURN Err emit_hoisted_decls(MnCompoundStatement n);
+  CHECK_RETURN Err emit_static_bit_extract(MnNode n, int bx_width);
+  CHECK_RETURN Err emit_dynamic_bit_extract(MnNode n, MnNode bx_node);
+  CHECK_RETURN Err emit_hoisted_decls(MnNode n);
   CHECK_RETURN Err emit_init_declarator_as_decl(MnDecl n);
   CHECK_RETURN Err emit_init_declarator_as_assign(MnDecl n);
   CHECK_RETURN Err emit_port_decls(MnFieldDecl n);
@@ -71,12 +71,12 @@ struct MtCursor {
 
   // Per-symbol emit()s.
   // clang-format off
-  CHECK_RETURN Err emit_sym_argument_list(MnArgList n);
+  CHECK_RETURN Err emit_sym_argument_list(MnNode n);
   CHECK_RETURN Err emit_sym_assignment_expression(MnNode n);
   CHECK_RETURN Err emit_sym_break_statement(MnBreakStatement n);
-  CHECK_RETURN Err emit_sym_call_expression(MnCallExpr n);
+  CHECK_RETURN Err emit_sym_call_expression(MnNode n);
   CHECK_RETURN Err emit_sym_case_statement(MnCaseStatement n);
-  CHECK_RETURN Err emit_sym_class_specifier(MnClassSpecifier n);
+  CHECK_RETURN Err emit_sym_class_specifier(MnNode n);
   CHECK_RETURN Err emit_sym_comment(MnComment n);
   CHECK_RETURN Err emit_sym_compound_statement(MnNode n, const std::string& delim_begin, const std::string& delim_end);
   CHECK_RETURN Err emit_sym_condition_clause(MnNode n);
@@ -84,20 +84,20 @@ struct MtCursor {
   CHECK_RETURN Err emit_sym_declaration(MnDecl n);
   CHECK_RETURN Err emit_sym_enum_specifier(MnEnumSpecifier n);
   CHECK_RETURN Err emit_sym_enumerator_list(MnEnumeratorList n);
-  CHECK_RETURN Err emit_sym_expression_statement(MnExprStatement n);
+  CHECK_RETURN Err emit_sym_expression_statement(MnNode n);
   CHECK_RETURN Err emit_sym_field_declaration(MnFieldDecl decl);
   CHECK_RETURN Err emit_sym_field_declaration_list(MnNode n);
-  CHECK_RETURN Err emit_sym_field_expression(MnFieldExpr n);
-  CHECK_RETURN Err emit_sym_field_identifier(MnFieldIdentifier n);
-  CHECK_RETURN Err emit_sym_function_definition(MnFuncDefinition n);
-  CHECK_RETURN Err emit_sym_identifier(MnIdentifier n);
+  CHECK_RETURN Err emit_sym_field_expression(MnNode n);
+  CHECK_RETURN Err emit_sym_field_identifier(MnNode n);
+  CHECK_RETURN Err emit_sym_function_definition(MnNode n);
+  CHECK_RETURN Err emit_sym_identifier(MnNode n);
   CHECK_RETURN Err emit_sym_if_statement(MnIfStatement n);
   CHECK_RETURN Err emit_sym_initializer_list(MnNode n);
   CHECK_RETURN Err emit_sym_namespace_definition(MnNamespaceDef n);
   CHECK_RETURN Err emit_sym_number_literal(MnNumberLiteral n, int size_cast = 0);
-  CHECK_RETURN Err emit_sym_parameter_list(MnParameterList n);
+  CHECK_RETURN Err emit_sym_parameter_list(MnNode n);
   CHECK_RETURN Err emit_sym_preproc_include(MnPreprocInclude n);
-  CHECK_RETURN Err emit_sym_primitive_type(MnDataType n);
+  CHECK_RETURN Err emit_sym_primitive_type(MnNode n);
   CHECK_RETURN Err emit_sym_qualified_identifier(MnQualifiedId n);
   CHECK_RETURN Err emit_sym_return(MnReturnStatement n);
   CHECK_RETURN Err emit_sym_sized_type_specifier(MnSizedTypeSpec n);
@@ -105,11 +105,11 @@ struct MtCursor {
   CHECK_RETURN Err emit_sym_struct_specifier(MnNode n);
   CHECK_RETURN Err emit_sym_switch_statement(MnSwitchStatement n);
   CHECK_RETURN Err emit_sym_switch(MnNode n);
-  CHECK_RETURN Err emit_sym_template_argument_list(MnTemplateArgList n);
+  CHECK_RETURN Err emit_sym_template_argument_list(MnNode n);
   CHECK_RETURN Err emit_sym_template_declaration(MnTemplateDecl n);
-  CHECK_RETURN Err emit_sym_template_type(MnTemplateType n);
+  CHECK_RETURN Err emit_sym_template_type(MnNode n);
   CHECK_RETURN Err emit_sym_type_definition(MnNode node);
-  CHECK_RETURN Err emit_sym_type_identifier(MnTypeIdentifier n);
+  CHECK_RETURN Err emit_sym_type_identifier(MnNode n);
   CHECK_RETURN Err emit_sym_update_expression(MnNode n);
   CHECK_RETURN Err emit_sym_using_declaration(MnUsingDecl n);
   // clang-format on

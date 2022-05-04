@@ -395,8 +395,7 @@ CHECK_RETURN Err MtCursor::emit_sym_assignment_expression(MnNode node) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnCallExpr call,
-                                                   int bx_width) {
+CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnNode call, int bx_width) {
   Err err = emit_ws_to(call);
 
   int arg_count = call.get_field(field_arguments).named_child_count();
@@ -466,7 +465,7 @@ CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnCallExpr call,
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnCallExpr call,
+CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnNode call,
                                                     MnNode bx_node) {
   Err err = emit_ws_to(call);
 
@@ -516,11 +515,11 @@ CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnCallExpr call,
 // Replace function names with macro names where needed, comment out explicit
 // init/tick/tock calls.
 
-CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnCallExpr n) {
+CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
   Err err = emit_ws_to(sym_call_expression, n);
 
-  MnFunc func = n.get_field(field_function);
-  MnArgList args = n.get_field(field_arguments);
+  MnNode func = n.get_field(field_function);
+  MnNode args = n.get_field(field_arguments);
 
   // If we're calling a member function, look at the name of the member
   // function and not the whole foo.bar().
@@ -708,7 +707,7 @@ CHECK_RETURN Err MtCursor::emit_init_declarator_as_assign(MnDecl n) {
 //------------------------------------------------------------------------------
 // Emit local variable declarations at the top of the block scope.
 
-CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnCompoundStatement n) {
+CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
   Err err;
   bool any_to_hoist = false;
 
@@ -865,11 +864,11 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
 
 // func_def = { field_type, field_declarator, field_body }
 
-CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnFuncDefinition n) {
+CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
   Err err = emit_ws_to(sym_function_definition, n);
 
   auto return_type = n.get_field(field_type);
-  auto func_decl = n.decl();
+  auto func_decl = n.get_field(field_declarator);
 
   current_method = current_mod->get_method(n.name4());
   assert(current_method);
@@ -985,7 +984,7 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnFuncDefinition n) {
     debugbreak();
   }
 
-  auto func_body = n.body();
+  auto func_body = n.get_field(field_body);
   err << emit_sym_compound_statement(func_body, delim_begin, delim_end);
 
   //----------
@@ -1843,7 +1842,7 @@ CHECK_RETURN Err MtCursor::emit_sym_struct_specifier(MnNode n) {
 // Change class/struct to module, add default clk/rst inputs, add input and
 // ouptut ports to module param list.
 
-CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnClassSpecifier n) {
+CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnNode n) {
   Err err = emit_ws_to(sym_class_specifier, n);
 
   auto class_lit = n.child(0);
@@ -2061,7 +2060,7 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_sym_expression_statement(MnExprStatement node) {
+CHECK_RETURN Err MtCursor::emit_sym_expression_statement(MnNode node) {
   Err err = emit_ws_to(sym_expression_statement, node);
 
   for (auto child : node) {
@@ -2112,7 +2111,7 @@ CHECK_RETURN Err MtCursor::emit_template_argument(MnNode node) {
 //------------------------------------------------------------------------------
 // Change logic<N> to logic[N-1:0]
 
-CHECK_RETURN Err MtCursor::emit_sym_template_type(MnTemplateType n) {
+CHECK_RETURN Err MtCursor::emit_sym_template_type(MnNode n) {
   Err err = emit_ws_to(sym_template_type, n);
 
   err << emit_sym_type_identifier(n.get_field(field_name));
@@ -2148,8 +2147,7 @@ CHECK_RETURN Err MtCursor::emit_sym_template_type(MnTemplateType n) {
 //------------------------------------------------------------------------------
 // Change <param, param> to #(param, param)
 
-CHECK_RETURN Err
-MtCursor::emit_sym_template_argument_list(MnTemplateArgList n) {
+CHECK_RETURN Err MtCursor::emit_sym_template_argument_list(MnNode n) {
   Err err = emit_ws_to(sym_template_argument_list, n);
 
   for (auto c : n) {
@@ -2383,7 +2381,7 @@ CHECK_RETURN Err MtCursor::emit_sym_return(MnReturnStatement n) {
 //------------------------------------------------------------------------------
 // FIXME translate types here
 
-CHECK_RETURN Err MtCursor::emit_sym_primitive_type(MnDataType n) {
+CHECK_RETURN Err MtCursor::emit_sym_primitive_type(MnNode n) {
   Err err = emit_ws_to(sym_primitive_type, n);
 
   err << emit_text(n);
@@ -2394,7 +2392,7 @@ CHECK_RETURN Err MtCursor::emit_sym_primitive_type(MnDataType n) {
 //------------------------------------------------------------------------------
 // FIXME translate types here
 
-CHECK_RETURN Err MtCursor::emit_sym_identifier(MnIdentifier n) {
+CHECK_RETURN Err MtCursor::emit_sym_identifier(MnNode n) {
   Err err = emit_ws_to(sym_identifier, n);
 
   auto name = n.name4();
@@ -2413,7 +2411,7 @@ CHECK_RETURN Err MtCursor::emit_sym_identifier(MnIdentifier n) {
   return err << check_done(n);
 }
 
-CHECK_RETURN Err MtCursor::emit_sym_type_identifier(MnTypeIdentifier n) {
+CHECK_RETURN Err MtCursor::emit_sym_type_identifier(MnNode n) {
   Err err = emit_ws_to(alias_sym_type_identifier, n);
 
   auto name = n.name4();
@@ -2432,7 +2430,7 @@ CHECK_RETURN Err MtCursor::emit_sym_type_identifier(MnTypeIdentifier n) {
 CHECK_RETURN Err MtCursor::emit_sym_template_declaration(MnTemplateDecl n) {
   Err err = emit_ws_to(sym_template_declaration, n);
 
-  MnClassSpecifier class_specifier;
+  MnNode class_specifier;
   MnTemplateParamList param_list;
 
   for (auto child : (MnNode)n) {
@@ -2441,7 +2439,7 @@ CHECK_RETURN Err MtCursor::emit_sym_template_declaration(MnTemplateDecl n) {
     }
 
     if (child.sym == sym_class_specifier) {
-      class_specifier = MnClassSpecifier(child);
+      class_specifier = MnNode(child);
     }
   }
 
@@ -2464,7 +2462,7 @@ CHECK_RETURN Err MtCursor::emit_sym_template_declaration(MnTemplateDecl n) {
 // Replace foo.bar.baz with foo_bar_baz, so that a field expression instead
 // refers to a glue expression.
 
-CHECK_RETURN Err MtCursor::emit_sym_field_expression(MnFieldExpr n) {
+CHECK_RETURN Err MtCursor::emit_sym_field_expression(MnNode n) {
   Err err = emit_ws_to(sym_field_expression, n);
 
   auto component_name = n.get_field(field_argument).text();
@@ -2915,7 +2913,7 @@ CHECK_RETURN Err MtCursor::emit_sym_sized_type_specifier(MnSizedTypeSpec n) {
 //------------------------------------------------------------------------------
 // Arg lists are the same in C and Verilog.
 
-CHECK_RETURN Err MtCursor::emit_sym_argument_list(MnArgList node) {
+CHECK_RETURN Err MtCursor::emit_sym_argument_list(MnNode node) {
   Err err = emit_ws_to(sym_argument_list, node);
 
   for (auto child : node) {
@@ -2933,7 +2931,7 @@ CHECK_RETURN Err MtCursor::emit_sym_argument_list(MnArgList node) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_sym_parameter_list(MnParameterList node) {
+CHECK_RETURN Err MtCursor::emit_sym_parameter_list(MnNode node) {
   Err err = emit_ws_to(sym_parameter_list, node);
 
   for (auto child : node) {
@@ -2952,7 +2950,7 @@ CHECK_RETURN Err MtCursor::emit_sym_parameter_list(MnParameterList node) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_sym_field_identifier(MnFieldIdentifier n) {
+CHECK_RETURN Err MtCursor::emit_sym_field_identifier(MnNode n) {
   Err err = emit_ws_to(alias_sym_field_identifier, n);
 
   err << emit_text(n);

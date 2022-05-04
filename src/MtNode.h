@@ -3,16 +3,13 @@
 
 #include <functional>
 #include <string>
-#include <vector>
 
 #include "MtUtils.h"
 #include "Platform.h"
 #include "TreeSymbols.h"
 #include "submodules/tree-sitter/lib/include/tree_sitter/api.h"
 
-struct MtModule;
 struct MtSourceFile;
-struct MtMethod;
 
 //------------------------------------------------------------------------------
 
@@ -133,13 +130,6 @@ struct MnNode {
 
   void visit_tree(NodeVisitor cv);
 
-  void check_sym(TSSymbol sym) {
-    if (!is_null() && this->sym != sym) {
-      debugbreak();
-    }
-    assert(is_null() || this->sym == sym);
-  }
-
   //----------
 
   TSNode node;
@@ -196,54 +186,6 @@ struct MnConstIterator {
   MtSourceFile* source;
 };
 
-//------------------------------------------------------------------------------
-
-struct MnIterator {
-  MnIterator(MnNode parent) {
-    if (ts_node_is_null(parent.node)) {
-      cursor = {0};
-    } else {
-      cursor = ts_tree_cursor_new(parent.node);
-
-      if (!ts_tree_cursor_goto_first_child(&cursor)) {
-        ts_tree_cursor_delete(&cursor);
-        cursor = {0};
-      }
-    }
-    this->source = parent.source;
-  }
-
-  ~MnIterator() {
-    if (cursor.tree) {
-      ts_tree_cursor_delete(&cursor);
-    }
-  }
-
-  MnIterator& operator++() {
-    if (!ts_tree_cursor_goto_next_sibling(&cursor)) {
-      ts_tree_cursor_delete(&cursor);
-      cursor = {0};
-    }
-    return *this;
-  }
-
-  // bool operator<(const MnIterator& b) const;
-  bool operator!=(const MnIterator& b) const;
-
-  MnNode operator*() const {
-    auto child = ts_tree_cursor_current_node(&cursor);
-    auto sym = ts_node_symbol(child);
-    auto field = ts_tree_cursor_current_field_id(&cursor);
-
-    return {child, sym, field, source};
-  }
-
-  TSTreeCursor cursor;
-  MtSourceFile* source;
-};
-
-//------------------------------------------------------------------------------
-
 inline MnConstIterator begin(const MnNode& parent) {
   return MnConstIterator(parent);
 }
@@ -251,41 +193,5 @@ inline MnConstIterator begin(const MnNode& parent) {
 inline MnConstIterator end(const MnNode& parent) {
   return MnConstIterator(MnNode::null);
 }
-
-inline MnIterator begin(MnNode& parent) { return MnIterator(parent); }
-
-inline MnIterator end(MnNode& parent) { return MnIterator(MnNode::null); }
-
-//------------------------------------------------------------------------------
-
-struct MnCondExpr : public MnNode {
-  MnCondExpr(){};
-  MnCondExpr(const MnNode& n) : MnNode(n) {}
-};
-
-struct MnStorageSpec : public MnNode {
-  MnStorageSpec(){};
-  MnStorageSpec(const MnNode& n) : MnNode(n) {}
-};
-
-struct MnQualifiedId : public MnNode {
-  MnQualifiedId(){};
-  MnQualifiedId(const MnNode& n) : MnNode(n) {}
-};
-
-struct MnIfStatement : public MnNode {
-  MnIfStatement(){};
-  MnIfStatement(const MnNode& n) : MnNode(n) {}
-};
-
-struct MnSizedTypeSpec : public MnNode {
-  MnSizedTypeSpec(){};
-  MnSizedTypeSpec(const MnNode& n) : MnNode(n) {}
-};
-
-struct MnNamespaceDef : public MnNode {
-  MnNamespaceDef(){};
-  MnNamespaceDef(const MnNode& n) : MnNode(n) {}
-};
 
 //------------------------------------------------------------------------------

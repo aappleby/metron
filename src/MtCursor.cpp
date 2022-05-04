@@ -2261,7 +2261,7 @@ CHECK_RETURN Err MtCursor::emit_sym_translation_unit(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_sym_namespace_definition(MnNamespaceDef n) {
+CHECK_RETURN Err MtCursor::emit_sym_namespace_definition(MnNode n) {
   Err err = emit_ws_to(sym_namespace_definition, n);
 
   auto node_name = n.get_field(field_name);
@@ -2591,7 +2591,7 @@ CHECK_RETURN Err MtCursor::emit_sym_break_statement(MnNode n) {
 //------------------------------------------------------------------------------
 // TreeSitter nodes slightly broken for "a = b ? c : d;"...
 
-CHECK_RETURN Err MtCursor::emit_sym_conditional_expression(MnCondExpr n) {
+CHECK_RETURN Err MtCursor::emit_sym_conditional_expression(MnNode n) {
   Err err = emit_ws_to(sym_conditional_expression, n);
 
   err << emit_child_expressions(n);
@@ -2602,7 +2602,7 @@ CHECK_RETURN Err MtCursor::emit_sym_conditional_expression(MnCondExpr n) {
 //------------------------------------------------------------------------------
 // Static variables become localparams at module level.
 
-CHECK_RETURN Err MtCursor::emit_sym_storage_class_specifier(MnStorageSpec n) {
+CHECK_RETURN Err MtCursor::emit_sym_storage_class_specifier(MnNode n) {
   Err err = emit_ws_to(sym_storage_class_specifier, n);
 
   /*
@@ -2626,7 +2626,7 @@ CHECK_RETURN Err MtCursor::emit_sym_storage_class_specifier(MnStorageSpec n) {
 // Change "std::string" to "string".
 // Change "enum::val" to "val" (SV doesn't support scoped enum values)
 
-CHECK_RETURN Err MtCursor::emit_sym_qualified_identifier(MnQualifiedId node) {
+CHECK_RETURN Err MtCursor::emit_sym_qualified_identifier(MnNode node) {
   Err err = emit_ws_to(sym_qualified_identifier, node);
 
   if (node.text() == "std::string") {
@@ -2771,7 +2771,7 @@ CHECK_RETURN Err MtCursor::emit_sym_condition_clause(MnNode node) {
 // If statements _must_ use {}, otherwise we have no place to insert component
 // bindings if the branch contains a component method call.
 
-CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnIfStatement node) {
+CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnNode node) {
   Err err = emit_ws_to(sym_if_statement, node);
 
   for (auto child : node) {
@@ -2894,7 +2894,7 @@ CHECK_RETURN Err MtCursor::emit_sym_declaration(MnNode n) {
 //------------------------------------------------------------------------------
 // "unsigned int" -> "int unsigned"
 
-CHECK_RETURN Err MtCursor::emit_sym_sized_type_specifier(MnSizedTypeSpec n) {
+CHECK_RETURN Err MtCursor::emit_sym_sized_type_specifier(MnNode n) {
   Err err = emit_ws_to(sym_sized_type_specifier, n);
 
   auto node_lit = n.child(0);

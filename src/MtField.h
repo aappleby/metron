@@ -3,6 +3,9 @@
 #include "MtNode.h"
 #include "MtUtils.h"
 
+struct MtModule;
+struct MtMethod;
+
 //------------------------------------------------------------------------------
 
 struct MtField {

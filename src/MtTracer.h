@@ -1,16 +1,12 @@
 #pragma once
-#include <assert.h>
-
-#include <string>
 
 #include "Err.h"
 #include "MtNode.h"
-#include "MtUtils.h"
-#include "Platform.h"
 
 struct MtModLibrary;
 struct MtContext;
 struct MtField;
+struct MtMethod;
 
 //------------------------------------------------------------------------------
 

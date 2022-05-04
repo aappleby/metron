@@ -6,6 +6,7 @@
 #include "MtNode.h"
 #include "Platform.h"
 
+struct MtMethod;
 struct MtModule;
 struct MtField;
 struct MtSourceFile;
@@ -80,7 +81,7 @@ struct MtCursor {
   CHECK_RETURN Err emit_sym_comment(MnNode n);
   CHECK_RETURN Err emit_sym_compound_statement(MnNode n, const std::string& delim_begin, const std::string& delim_end);
   CHECK_RETURN Err emit_sym_condition_clause(MnNode n);
-  CHECK_RETURN Err emit_sym_conditional_expression(MnCondExpr n);
+  CHECK_RETURN Err emit_sym_conditional_expression(MnNode n);
   CHECK_RETURN Err emit_sym_declaration(MnNode n);
   CHECK_RETURN Err emit_sym_enum_specifier(MnNode n);
   CHECK_RETURN Err emit_sym_enumerator_list(MnNode n);
@@ -91,17 +92,17 @@ struct MtCursor {
   CHECK_RETURN Err emit_sym_field_identifier(MnNode n);
   CHECK_RETURN Err emit_sym_function_definition(MnNode n);
   CHECK_RETURN Err emit_sym_identifier(MnNode n);
-  CHECK_RETURN Err emit_sym_if_statement(MnIfStatement n);
+  CHECK_RETURN Err emit_sym_if_statement(MnNode n);
   CHECK_RETURN Err emit_sym_initializer_list(MnNode n);
-  CHECK_RETURN Err emit_sym_namespace_definition(MnNamespaceDef n);
+  CHECK_RETURN Err emit_sym_namespace_definition(MnNode n);
   CHECK_RETURN Err emit_sym_number_literal(MnNode n, int size_cast = 0);
   CHECK_RETURN Err emit_sym_parameter_list(MnNode n);
   CHECK_RETURN Err emit_sym_preproc_include(MnNode n);
   CHECK_RETURN Err emit_sym_primitive_type(MnNode n);
-  CHECK_RETURN Err emit_sym_qualified_identifier(MnQualifiedId n);
+  CHECK_RETURN Err emit_sym_qualified_identifier(MnNode n);
   CHECK_RETURN Err emit_sym_return(MnNode n);
-  CHECK_RETURN Err emit_sym_sized_type_specifier(MnSizedTypeSpec n);
-  CHECK_RETURN Err emit_sym_storage_class_specifier(MnStorageSpec n);
+  CHECK_RETURN Err emit_sym_sized_type_specifier(MnNode n);
+  CHECK_RETURN Err emit_sym_storage_class_specifier(MnNode n);
   CHECK_RETURN Err emit_sym_struct_specifier(MnNode n);
   CHECK_RETURN Err emit_sym_switch_statement(MnNode n);
   CHECK_RETURN Err emit_sym_switch(MnNode n);

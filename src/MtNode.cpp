@@ -9,20 +9,6 @@
 
 const MnNode MnNode::null;
 
-/*
-bool operator<(const TSTreeCursor& a, const TSTreeCursor& b) {
-  if (a.context[0] < b.context[0]) return true;
-  if (a.context[0] > b.context[0]) return false;
-  if (a.context[1] < b.context[1]) return true;
-  if (a.context[1] > b.context[1]) return false;
-  if (a.tree < b.tree) return true;
-  if (a.tree > b.tree) return false;
-  if (a.id < b.id) return true;
-  if (a.id > b.id) return false;
-  return false;
-}
-*/
-
 bool operator==(const TSTreeCursor& a, const TSTreeCursor& b) {
   if (a.context[0] != b.context[0]) return false;
   if (a.context[1] != b.context[1]) return false;
@@ -31,15 +17,7 @@ bool operator==(const TSTreeCursor& a, const TSTreeCursor& b) {
   return true;
 }
 
-// bool MnConstIterator::operator<(const MnConstIterator& b) const { return
-// cursor < b.cursor; }
 bool MnConstIterator::operator!=(const MnConstIterator& b) const {
-  return !(cursor == b.cursor);
-}
-
-// bool MnIterator::operator<(const MnIterator& b) const { return cursor <
-// b.cursor; }
-bool MnIterator::operator!=(const MnIterator& b) const {
   return !(cursor == b.cursor);
 }
 

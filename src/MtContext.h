@@ -4,6 +4,9 @@
 #include "MtField.h"
 #include "MtUtils.h"
 
+struct MtModule;
+struct MtMethod;
+
 //------------------------------------------------------------------------------
 
 struct LogEntry {

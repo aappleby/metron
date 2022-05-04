@@ -539,24 +539,13 @@ struct MnTemplateType : public MnNode {
 struct MnDecl : public MnNode {
   MnDecl(){};
   MnDecl(const MnNode& n) : MnNode(n) { check_sym(sym_declaration); }
-
-  bool is_init_decl() {
-    assert(!is_null());
-    return get_field(field_declarator).sym == sym_init_declarator;
-  }
-
-  MnTemplateType _type() { return MnTemplateType(get_field(field_type)); }
-  MnIdentifier _decl() { return MnIdentifier(get_field(field_declarator)); }
-  MnInitDecl _init_decl() { return MnInitDecl(get_field(field_declarator)); }
 };
 
 //------------------------------------------------------------------------------
 
 struct MnEnumSpecifier : public MnNode {
   MnEnumSpecifier(){};
-  MnEnumSpecifier(const MnNode& n) : MnNode(n) {
-    check_sym(sym_enum_specifier);
-  }
+  MnEnumSpecifier(const MnNode& n) : MnNode(n) {}
 };
 
 //------------------------------------------------------------------------------

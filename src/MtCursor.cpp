@@ -689,19 +689,18 @@ CHECK_RETURN Err MtCursor::emit_init_declarator_as_decl(MnDecl n) {
 CHECK_RETURN Err MtCursor::emit_init_declarator_as_assign(MnDecl n) {
   Err err = emit_ws_to(n);
 
-  // We don't need to emit anything for decls without initialization values.
-  if (!n.is_init_decl()) {
-    // err << comment_out(n);
-    err << skip_over(n);
-    return err;
-  }
+  auto decl = n.get_field(field_declarator);
 
-  assert(n.is_init_decl());
-  cursor = n._init_decl().start();
-  err << emit_declarator(n._init_decl());
-  err << prune_trailing_ws();
-  err << emit_print(";");
-  cursor = n.end();
+  // We don't need to emit anything for decls without initialization values.
+  if (decl.sym != sym_init_declarator) {
+    err << skip_over(n);
+  } else {
+    cursor = decl.start();
+    err << emit_declarator(decl);
+    err << prune_trailing_ws();
+    err << emit_print(";");
+    cursor = n.end();
+  }
 
   return err << check_done(n);
 }
@@ -749,7 +748,9 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnCompoundStatement n) {
 
         auto d = MnDecl(c);
 
-        if (d.is_init_decl()) {
+        auto decl = d.get_field(field_declarator);
+
+        if (decl.sym == sym_init_declarator) {
           err << emit_indent();
           err << emit_init_declarator_as_decl(d);
           err << emit_newline();

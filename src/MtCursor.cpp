@@ -1,7 +1,8 @@
 #include "MtCursor.h"
 
-#include <stdarg.h>
+#include <memory.h>
 
+#include "Log.h"
 #include "MtField.h"
 #include "MtFuncParam.h"
 #include "MtMethod.h"
@@ -11,7 +12,6 @@
 #include "MtNode.h"
 #include "MtSourceFile.h"
 #include "Platform.h"
-#include "metron_tools.h"
 
 void print_escaped(char s);
 
@@ -354,20 +354,13 @@ CHECK_RETURN Err MtCursor::emit_sym_preproc_include(MnNode n) {
 
   for (auto child : n) {
     if (child.sym == aux_sym_preproc_include_token1) {
-      err << emit_replacement(child, "`include ");
+      err << emit_replacement(child, "`include");
     } else if (child.field == field_path) {
       err << emit_replacement(child, path.c_str());
     } else {
       err << emit_default(child);
     }
   }
-  /*
-  n.dump_tree();
-
-  err << emit_replacement(n.child(0), "`include ");
-  err << emit_print(path.c_str());
-  cursor = n.end();
-  */
 
   return err << check_done(n);
 }
@@ -381,6 +374,19 @@ CHECK_RETURN Err MtCursor::emit_sym_assignment_expression(MnNode node) {
   for (auto child : node) {
     switch (child.field) {
       case field_left:
+        err << emit_expression(child);
+        break;
+      case field_operator:
+        if (child.text() != "=") {
+          err << ERR("emit_sym_assignment_expression() - Node is not '='\n");
+          child.error();
+        }
+        if (current_method && current_method->in_tick) {
+          err << emit_replacement(child, "<=");
+        } else {
+          err << emit_text(child);
+        }
+        break;
       case field_right:
         err << emit_expression(child);
         break;
@@ -650,12 +656,19 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
     err << emit_expression(func);
     cursor = n.end();
   } else if (method && method->in_func) {
-    // Local call to private func() - bind output if needed.
-    auto method = current_mod->get_method(func_name);
-    if (method->has_return()) {
-      err << emit_replacement(n, "%s", func_name.c_str());
-    } else {
-      err << comment_out(n);
+    // Local call to local function
+    for (auto c : n) {
+      switch (c.field) {
+        case field_function:
+          err << emit_identifier(c);
+          break;
+        case field_arguments:
+          err << emit_sym_argument_list(c);
+          break;
+        default:
+          err << emit_default(c);
+          break;
+      }
     }
   } else {
     // All other function/task calls go through normally.
@@ -979,7 +992,7 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
     delim_begin = str_printf("begin /*%s*/", current_method->name().c_str());
   else if (current_method->in_func) {
     delim_begin = "";
-    delim_end = "endfuction";
+    delim_end = "endfunction";
   } else {
     debugbreak();
   }
@@ -1328,7 +1341,9 @@ CHECK_RETURN Err MtCursor::emit_anonymous_enum(MnNode n) {
   for (auto child : n) {
     switch (child.field) {
       case field_type:
+        override_size = 32;
         err << emit_type(child);
+        override_size = 0;
         break;
       case field_declarator:
         err << emit_declarator(child);
@@ -1345,75 +1360,44 @@ CHECK_RETURN Err MtCursor::emit_anonymous_enum(MnNode n) {
 //------------------------------------------------------------------------------
 // enum e { FOO, BAR }; => typedef enum { FOO, BAR } e;
 
-/*
-enum blom { FOO, BAR, BAZ };
-
-========== tree dump begin
-█ field_declaration =
-▒══█ type: enum_specifier =
-▒  ▒══■ lit = "enum"
-▒  ▒══■ name: type_identifier = "blom"
-▒══█ default_value: initializer_list =
-▒  ▒══■ lit = "{"
-▒  ▒══■ identifier = "FOO"
-▒  ▒══■ lit = ","
-▒  ▒══■ identifier = "BAR"
-▒  ▒══■ lit = ","
-▒  ▒══■ identifier = "BAZ"
-▒  ▒══■ lit = "}"
-▒══■ lit = ";"
-========== tree dump end
-*/
-
 CHECK_RETURN Err MtCursor::emit_simple_enum(MnNode n) {
   Err err = emit_ws_to(n);
 
+  MnNode node_lit;
+  MnNode node_name;
+
   for (auto child : n) {
-    switch (child.field) {
-      case field_type:
-        err << emit_type(child);
-        break;
-      case field_default_value:
-        err << emit_sym_initializer_list(child);
-        break;
-      default:
-        err << emit_default(child);
-        break;
+    if (child.field == field_type) {
+      node_name = child.get_field(field_name);
+      err << emit_replacement(child, "typedef enum");
+    } else if (child.field == field_default_value) {
+      override_size = 32;
+      err << emit_sym_initializer_list(child);
+      override_size = 0;
+    } else if (child.sym == anon_sym_SEMI) {
+      err << emit_print(" %s", node_name.text().c_str());
+      err << emit_text(child);
+    } else if (child.sym == 65535) {
+      // Declaring an enum class with a type is currently broken in TreeSitter.
+      // This broken node contains the type info, pull it out manually.
+      for (auto gchild : child) {
+        if (gchild.sym == anon_sym_COLON) {
+          err << skip_ws();
+          err << skip_over(gchild);
+        } else if (gchild.sym == sym_primitive_type) {
+          err << emit_type(gchild);
+        } else {
+          err << emit_default(gchild);
+        }
+      }
+      // err << skip_over(child);
+      cursor = child.end();
+    } else {
+      err << emit_default(child);
     }
   }
 
   return err << check_done(n);
-
-  /*
-  auto node_type = n.get_field(field_type);
-  auto node_name = node_type.get_field(field_name);
-  auto node_vals = n.get_field(field_default_value);
-
-  MnNode node_prim_type;
-
-  n.visit_tree([&](MnNode c) {
-    if (c.sym == sym_primitive_type) node_prim_type = c;
-  });
-
-  err << emit_print("typedef enum ");
-  if (node_prim_type) {
-    push_cursor(node_prim_type);
-    err << emit_type(node_prim_type);
-    pop_cursor(node_prim_type);
-    err << emit_print(" ");
-  }
-
-  push_cursor(node_vals);
-  err << emit_sym_initializer_list(node_vals);
-  pop_cursor(node_vals);
-  err << emit_print(" ");
-
-  push_cursor(node_name);
-  err << emit_identifier(node_name);
-  pop_cursor(node_name);
-  err << emit_print(";");
-  cursor = n.end();
-  */
 }
 
 //------------------------------------------------------------------------------
@@ -1437,50 +1421,48 @@ CHECK_RETURN Err MtCursor::emit_simple_enum(MnNode n) {
 ▒     ▒  ▒     ▒══■ lit = ">"
 ▒     ▒  ▒══■ lit = "::"
 ▒     ▒  ▒══■ name: type_identifier = "BASE"
-▒     ▒══█ value: initializer_list =
-▒        ▒══■ lit = "{"
-▒        ▒══█ assignment_expression =
-▒        ▒  ▒══■ left: identifier = "A8"
-▒        ▒  ▒══■ operator: lit = "="
-▒        ▒  ▒══■ right: number_literal = "0b01"
-▒        ▒══■ lit = ","
-▒        ▒══█ assignment_expression =
-▒        ▒  ▒══■ left: identifier = "B8"
-▒        ▒  ▒══■ operator: lit = "="
-▒        ▒  ▒══■ right: number_literal = "0x02"
-▒        ▒══■ lit = ","
-▒        ▒══█ assignment_expression =
-▒        ▒  ▒══■ left: identifier = "C8"
-▒        ▒  ▒══■ operator: lit = "="
-▒        ▒  ▒══■ right: number_literal = "3"
-▒        ▒══■ lit = "}"
+▒     ▒══█ value: initializer_list...
 ▒══■ lit = ";"
 ========== tree dump end
 */
 
-CHECK_RETURN Err MtCursor::emit_broken_enum(MnNode n, MnNode node_bitfield) {
-  Err err = emit_ws_to(n);
+CHECK_RETURN Err MtCursor::emit_broken_enum(MnNode n) {
+  Err err = emit_ws_to(sym_field_declaration, n);
+
   auto node_type = n.get_field(field_type);
+
+  MnNode node_bitfield;
+  for (auto c : n)
+    if (c.sym == sym_bitfield_clause) node_bitfield = c;
+
+  MnNode node_compound;
+  for (auto c : node_bitfield)
+    if (c.sym == sym_compound_literal_expression) node_compound = c;
+
+  auto node_type_args = node_compound.get_field(field_type)
+                            .get_field(field_scope)
+                            .get_field(field_arguments);
+
+  int enum_width = 0;
+  for (auto c : node_type_args) {
+    if (c.sym == sym_number_literal) {
+      enum_width = atoi(c.start());
+    }
+  }
+
   auto node_name = node_type.get_field(field_name);
-
-  auto node_type2 = node_bitfield.child(1).get_field(field_type);
-
-  node_type2 = node_type2.get_field(field_scope)
-                   .get_field(field_arguments)
-                   .named_child(0);
-
-  int enum_width = atoi(node_type2.start());
+  auto node_vals = node_compound.get_field(field_value);
 
   if (!enum_width) err << ERR("Enum is 0 bits wide?");
 
-  auto node_vals = node_bitfield.child(1).get_field(field_value);
-
   err << emit_print("typedef enum logic[%d:0] ", enum_width - 1);
 
+  override_size = enum_width;
   push_cursor(node_vals);
   err << emit_sym_initializer_list(node_vals);
   pop_cursor(node_vals);
   err << emit_print(" ");
+  override_size = 0;
 
   push_cursor(node_name);
   err << emit_identifier(node_name);
@@ -1488,34 +1470,10 @@ CHECK_RETURN Err MtCursor::emit_broken_enum(MnNode n, MnNode node_bitfield) {
   err << emit_print(";");
 
   cursor = n.end();
-
   return err << check_done(n);
 }
 
 //------------------------------------------------------------------------------
-
-/*
-
-========== tree dump begin
-█ field_declaration =
-▒══█ type: enum_specifier =
-▒  ▒══■ lit = "enum"
-▒  ▒══█ body: enumerator_list =
-▒     ▒══■ lit = "{"
-▒     ▒══█ enumerator =
-▒     ▒  ▒══■ name: identifier = "A3"
-▒     ▒══■ lit = ","
-▒     ▒══█ enumerator =
-▒     ▒  ▒══■ name: identifier = "B3"
-▒     ▒══■ lit = ","
-▒     ▒══█ enumerator =
-▒     ▒  ▒══■ name: identifier = "C3"
-▒     ▒══■ lit = "}"
-▒══■ declarator: field_identifier = "anon_enum_field1"
-▒══■ lit = ";"
-========== tree dump end
-
-*/
 
 CHECK_RETURN Err MtCursor::emit_enum(MnNode n) {
   Err err = emit_ws_to(n);
@@ -1525,13 +1483,12 @@ CHECK_RETURN Err MtCursor::emit_enum(MnNode n) {
   // TreeSitter is broken for "enum foo : logic<8>::BASE {}".
   // Work around it by manually extracting the required field
   MnNode node_bitfield;
-
-  n.visit_tree([&](MnNode c) {
+  for (auto c : n) {
     if (c.sym == sym_bitfield_clause) node_bitfield = c;
-  });
+  };
 
   if (node_bitfield) {
-    err << emit_broken_enum(n, node_bitfield);
+    err << emit_broken_enum(n);
   } else if (node_type.get_field(field_name)) {
     err << emit_simple_enum(n);
   } else {
@@ -1721,6 +1678,10 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
   Err err = emit_ws_to(n);
   assert(n.sym == sym_field_declaration);
 
+  if (n.get_field(field_type).sym == sym_enum_specifier) {
+    return emit_enum(n);
+  }
+
   if (n.is_const()) {
     auto node_static = n.child(0);
     auto node_const = n.child(1);
@@ -1746,10 +1707,6 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
 
   auto node_type = n.get_field(field_type);
   assert(node_type);
-
-  if (node_type.sym == sym_enum_specifier) {
-    return emit_enum(n);
-  }
 
   std::string type_name = n.type5();
 
@@ -1990,10 +1947,13 @@ CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnNode n) {
       auto getter_decl = m->_node.get_field(field_declarator);
       auto getter_name = getter_decl.get_field(field_declarator);
 
-      sub_cursor.cursor = getter_type.start();
+      sub_cursor.push_cursor(getter_type);
       err << sub_cursor.emit_type(getter_type);
-      sub_cursor.cursor = getter_name.start();
+      sub_cursor.pop_cursor(getter_type);
+      err << emit_print(" ");
+      sub_cursor.push_cursor(getter_name);
       err << sub_cursor.emit_declarator(getter_name);
+      sub_cursor.pop_cursor(getter_name);
       err << emit_print("_ret");
 
       if (port_index++ < port_count - 1) {
@@ -2172,24 +2132,30 @@ CHECK_RETURN Err MtCursor::emit_sym_template_argument_list(MnNode n) {
 //------------------------------------------------------------------------------
 // Enum lists do _not_ turn braces into begin/end.
 
+CHECK_RETURN Err MtCursor::emit_sym_enumerator(MnNode node) {
+  Err err = emit_ws_to(sym_enumerator, node);
+
+  for (auto child : node) {
+    if (child.field == field_name) {
+      err << emit_identifier(child);
+    } else if (child.field == field_value) {
+      err << emit_expression(child);
+    } else {
+      err << emit_default(child);
+    }
+  }
+
+  return err << check_done(node);
+}
+
 CHECK_RETURN Err MtCursor::emit_sym_enumerator_list(MnNode node) {
   Err err = emit_ws_to(sym_enumerator_list, node);
 
   for (auto child : node) {
-    switch (child.sym) {
-      case anon_sym_LBRACE:
-      case anon_sym_RBRACE:
-      case anon_sym_COMMA:
-        err << emit_text(child);
-        break;
-      case sym_enumerator:
-        err << emit_text(child);
-        break;
-      default:
-        err << ERR("FIXME finish emit_sym_enumerator_list\n");
-        child.error();
-        break;
-    }
+    if (child.sym == sym_enumerator)
+      err << emit_sym_enumerator(child);
+    else
+      err << emit_default(child);
   }
 
   return err << check_done(node);
@@ -2202,7 +2168,6 @@ CHECK_RETURN Err MtCursor::emit_everything() {
 
   cursor = current_source->source;
   err << emit_sym_translation_unit(current_source->root_node);
-  err << emit_print("\n");
 
   return err;
 }
@@ -2241,6 +2206,10 @@ CHECK_RETURN Err MtCursor::emit_sym_translation_unit(MnNode n) {
           err << ERR(
               "Found unexpected expression statement in translation unit\n");
         }
+        err << skip_over(c);
+        break;
+
+      case anon_sym_SEMI:
         err << skip_over(c);
         break;
 
@@ -2836,8 +2805,6 @@ CHECK_RETURN Err MtCursor::emit_sym_using_declaration(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
-// FIXME - When do we hit this? It doesn't look finished.
-// It's for namespace decls
 
 CHECK_RETURN Err MtCursor::emit_sym_declaration(MnNode n) {
   Err err = emit_ws_to(sym_declaration, n);
@@ -2846,8 +2813,6 @@ CHECK_RETURN Err MtCursor::emit_sym_declaration(MnNode n) {
   bool is_const = false;
 
   MnNode node_type;
-  MnNode node_decl;
-  MnNode node_semi;
 
   for (auto child : (MnNode)n) {
     if (child.sym == sym_storage_class_specifier && child.text() == "static")
@@ -2856,8 +2821,6 @@ CHECK_RETURN Err MtCursor::emit_sym_declaration(MnNode n) {
       is_const = true;
 
     if (child.field == field_type) node_type = child;
-    if (child.field == field_declarator) node_decl = child;
-    if (child.sym == anon_sym_SEMI) node_semi = child;
   }
 
   // Check for "static const char"
@@ -2883,10 +2846,21 @@ CHECK_RETURN Err MtCursor::emit_sym_declaration(MnNode n) {
     err << emit_print("parameter ");
   }
 
-  cursor = node_type.start();
-  err << emit_type(node_type);
-  err << emit_declarator(node_decl);
-  err << emit_expression(node_semi);
+  // Declarations inside scopes get their type removed, as the type+name decl
+  // has been hoisted to the top of the scope.
+
+  for (auto child : n) {
+    if (child.sym == sym_storage_class_specifier)
+      err << skip_over(child) << skip_ws();
+    else if (child.sym == sym_type_qualifier)
+      err << skip_over(child) << skip_ws();
+    else if (child.field == field_type)
+      err << skip_over(child) << skip_ws();
+    else if (child.field == field_declarator)
+      err << emit_declarator(child);
+    else
+      err << emit_default(child);
+  }
 
   return err << check_done(n);
 }

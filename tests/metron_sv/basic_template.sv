@@ -1,4 +1,4 @@
-`include  "metron_tools.sv"
+`include "metron_tools.sv"
 
 // Templates can be used for module parameters
 
@@ -28,7 +28,7 @@ module Module
     logic[19:0] foo;
 
     /*submodule.tock()*/;
-    logic[19:0] foo = submodule_my_width + submodule_my_height;
+    foo = submodule_my_width + submodule_my_height;
   end
 
   Submod #(10,11) submodule(
@@ -41,6 +41,5 @@ module Module
   logic[10-1:0] submodule_my_width;
   logic[11-1:0] submodule_my_height;
 
-endmodule;
-
+endmodule
 

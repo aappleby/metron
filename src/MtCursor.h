@@ -4,7 +4,6 @@
 
 #include "Err.h"
 #include "MtNode.h"
-#include "Platform.h"
 
 struct MtMethod;
 struct MtModule;
@@ -58,7 +57,7 @@ struct MtCursor {
   CHECK_RETURN Err emit_enum(MnNode n);
 
   // Special-purpose emit()s
-  CHECK_RETURN Err emit_broken_enum(MnNode n, MnNode node_bitfield);
+  CHECK_RETURN Err emit_broken_enum(MnNode n);
   CHECK_RETURN Err emit_simple_enum(MnNode n);
   CHECK_RETURN Err emit_anonymous_enum(MnNode n);
   CHECK_RETURN Err emit_static_bit_extract(MnNode n, int bx_width);
@@ -84,6 +83,7 @@ struct MtCursor {
   CHECK_RETURN Err emit_sym_conditional_expression(MnNode n);
   CHECK_RETURN Err emit_sym_declaration(MnNode n);
   CHECK_RETURN Err emit_sym_enum_specifier(MnNode n);
+  CHECK_RETURN Err emit_sym_enumerator(MnNode n);
   CHECK_RETURN Err emit_sym_enumerator_list(MnNode n);
   CHECK_RETURN Err emit_sym_expression_statement(MnNode n);
   CHECK_RETURN Err emit_sym_field_declaration(MnNode decl);

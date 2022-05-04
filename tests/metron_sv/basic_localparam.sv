@@ -1,4 +1,4 @@
-`include  "metron_tools.sv"
+`include "metron_tools.sv"
 
 // Static const members become SV localparams
 
@@ -21,6 +21,5 @@ module Module
   end
 
   logic[6:0] my_reg;
-endmodule;
-
+endmodule
 

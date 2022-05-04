@@ -1,4 +1,4 @@
-`include  "metron_tools.sv"
+`include "metron_tools.sv"
 
 // Modules can contain other modules.
 
@@ -15,11 +15,11 @@ module Submod
 /*private:*/
 
   always_ff @(posedge clock) begin /*tick*/
-    sub_reg = sub_reg + 1;
+    sub_reg <= sub_reg + 1;
   end
 
   logic[7:0] sub_reg;
-endmodule;
+endmodule
 
 module Module
 (
@@ -37,6 +37,5 @@ module Module
     // Outputs
   );
 
-endmodule;
-
+endmodule
 

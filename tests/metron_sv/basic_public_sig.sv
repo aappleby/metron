@@ -1,4 +1,4 @@
-`include  "metron_tools.sv"
+`include "metron_tools.sv"
 
 // Public signal member variables get moved to the output port list.
 
@@ -13,6 +13,5 @@ module Module
     my_sig = 1;
   end
 
-endmodule;
-
+endmodule
 

@@ -1,4 +1,4 @@
-`include  "metron_tools.sv"
+`include "metron_tools.sv"
 
 // Case statements are allowed to have fallthrough, though the SV syntax is
 // a bit different.
@@ -6,14 +6,14 @@
 module Module
 (
   input logic clock,
-  output logic[7:0]tock_ret
+  output logic[7:0] tock_ret
 );
 /*public:*/
 
   always_comb begin /*tock*/
-    logic[7:0] result;
+    result;
 
-    logic[7:0] result;
+    result;
     switch(my_reg) begin
        0, // can we stick comments in here?
        1,
@@ -33,10 +33,9 @@ module Module
 /*private:*/
 
   always_ff @(posedge clock) begin /*tick*/
-    my_reg = my_reg + 1;
+    my_reg <= my_reg + 1;
   end
 
   logic[7:0] my_reg;
-endmodule;
-
+endmodule
 

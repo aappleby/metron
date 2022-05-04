@@ -1,11 +1,7 @@
 #include "MtNode.h"
 
 #include "Log.h"
-#include "MtModLibrary.h"
-#include "MtModule.h"
-#include "MtNode.h"
 #include "MtSourceFile.h"
-#include "metron_tools.h"
 
 const MnNode MnNode::null;
 

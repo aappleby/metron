@@ -1,4 +1,4 @@
-`include  "metron_tools.sv"
+`include "metron_tools.sv"
 
 // Writing a register multiple times in the same function is OK.
 
@@ -17,12 +17,11 @@ module Module
   always_ff @(posedge clock) begin /*tick*/
     logic temp;
 
-    logic temp = my_reg;
-    my_reg = 0;
-    my_reg = 1;
+    temp = my_reg;
+    my_reg <= 0;
+    my_reg <= 1;
   end
 
   logic my_reg;
-endmodule;
-
+endmodule
 

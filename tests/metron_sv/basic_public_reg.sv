@@ -1,4 +1,4 @@
-`include  "metron_tools.sv"
+`include "metron_tools.sv"
 
 // Public register member variables get moved to the output port list.
 
@@ -19,6 +19,5 @@ module Module
   end
 
   logic my_reg;
-endmodule;
-
+endmodule
 

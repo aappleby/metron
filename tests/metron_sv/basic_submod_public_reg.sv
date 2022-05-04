@@ -1,4 +1,4 @@
-`include  "metron_tools.sv"
+`include "metron_tools.sv"
 
 // We can instantiated templated classes as submodules.
 
@@ -17,21 +17,21 @@ module Submod
 /*private:*/
 
   always_ff @(posedge clock) begin /*tick*/
-    sub_reg = sub_reg + 1;
+    sub_reg <= sub_reg + 1;
   end
 
-endmodule;
+endmodule
 
 module Module
 (
   input logic clock,
-  output logic[7:0]tock_get_submod_reg_ret
+  output logic[7:0] tock_get_submod_reg_ret
 );
 /*public:*/
 
   function logic[7:0] tock_get_submod_reg();
     tock_get_submod_reg = submod_sub_reg;
-  endfuction
+  endfunction
   always_comb tock_get_submod_reg_ret = tock_get_submod_reg();
 
   always_ff @(posedge clock) begin /*tock*/
@@ -46,6 +46,5 @@ module Module
   );
   logic[7:0] submod_sub_reg;
 
-endmodule;
-
+endmodule
 

@@ -1,11 +1,11 @@
-`include  "metron_tools.sv"
+`include "metron_tools.sv"
 
 // Modules can use constructors to initialize state
 
 module Module
 (
   input logic clock,
-  output logic[7:0]tock_ret
+  output logic[7:0] tock_ret
 );
 /*public:*/
 
@@ -15,13 +15,13 @@ module Module
 
   function logic[7:0] tock();
     tock = my_reg;
-  endfuction
+  endfunction
   always_comb tock_ret = tock();
 
 /*private:*/
 
   logic[7:0] my_reg;
-endmodule;
+endmodule
 
 
 `ifdef IVERILOG
@@ -34,6 +34,5 @@ module Test;
   end
 endmodule
 `endif
-
 
 

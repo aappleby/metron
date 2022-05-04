@@ -1,4 +1,4 @@
-`include  "metron_tools.sv"
+`include "metron_tools.sv"
 
 // Declaration order _matters_ - a tock() that reads a reg before the tick()
 // that writes it is OK.
@@ -17,11 +17,10 @@ module Module
 /*private:*/
 
   always_ff @(posedge clock) begin /*tick*/
-    my_reg = 1;
+    my_reg <= 1;
   end
 
   logic my_sig;
   logic my_reg;
-endmodule;
-
+endmodule
 

@@ -1,4 +1,4 @@
-`include  "metron_tools.sv"
+`include "metron_tools.sv"
 
 // Public fields that are read by the module but never written become input
 // ports.
@@ -10,7 +10,7 @@ module Submod
   output logic[7:0] o_signal,
   output logic[7:0] o_reg,
   input logic[7:0] tock_i_param,
-  output logic[7:0]tock_ret
+  output logic[7:0] tock_ret
 );
 /*public:*/
 
@@ -24,9 +24,9 @@ module Submod
 /*private:*/
 
   always_ff @(posedge clock) begin /*tick*/
-    o_reg = o_reg + o_signal;
+    o_reg <= o_reg + o_signal;
   end
-endmodule;
+endmodule
 
 module Module
 (
@@ -40,7 +40,7 @@ module Module
 
     submod_i_signal = 12;submod_tock_i_param = 13;
 
-    logic[7:0] submod_return = submod_tock_ret;
+    submod_return = submod_tock_ret;
     my_sig = submod_return + 3;
     /*tick()*/;
   end
@@ -70,6 +70,5 @@ module Module
   logic[7:0] submod_o_reg;
   logic[7:0] submod_tock_ret;
 
-endmodule;
-
+endmodule
 

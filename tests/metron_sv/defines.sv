@@ -1,4 +1,4 @@
-`include  "metron_tools.sv"
+`include "metron_tools.sv"
 
 // Basic #defines should work as long as their contents are simultaneously
 // valid C++ and SV
@@ -10,15 +10,14 @@
 module Module
 (
   input logic clock,
-  output logic[7:0]tock_ret
+  output logic[7:0] tock_ret
 );
 /*public:*/
 
   function logic[7:0] tock();
     tock = `MY_OTHER_CONSTANT;
-  endfuction
+  endfunction
   always_comb tock_ret = tock();
 
-endmodule;
-
+endmodule
 

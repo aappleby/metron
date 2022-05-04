@@ -1,18 +1,18 @@
-`include  "metron_tools.sv"
+`include "metron_tools.sv"
 
 // Multiple tick methods are OK as long as they're all called by tock()
 
 module Module
 (
   input logic clock,
-  output logic[7:0]tock_ret
+  output logic[7:0] tock_ret
 );
 /*public:*/
 
   always_comb begin /*tock*/
     logic[7:0] result;
 
-    logic[7:0] result = my_reg1 + my_reg2;
+    result = my_reg1 + my_reg2;
     /*tick1()*/;
     /*tick2()*/;
     tock_ret = result;
@@ -21,15 +21,14 @@ module Module
 /*private:*/
 
   always_ff @(posedge clock) begin /*tick1*/
-    my_reg1 = 0;
+    my_reg1 <= 0;
   end
 
   always_ff @(posedge clock) begin /*tick2*/
-    my_reg2 = 1;
+    my_reg2 <= 1;
   end
 
   logic[7:0] my_reg1;
   logic[7:0] my_reg2;
-endmodule;
-
+endmodule
 

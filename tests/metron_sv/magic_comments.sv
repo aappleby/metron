@@ -1,4 +1,4 @@
-`include  "metron_tools.sv"
+`include "metron_tools.sv"
 
 // Comments surrounded by / * # <something # * / get unwrapped and dropped
 // directly in the output file.
@@ -10,7 +10,7 @@ module Module
 /*public:*/
 
   function void tock();
-  endfuction
+  endfunction
 
 
   always @(posedge clock) begin
@@ -18,6 +18,5 @@ module Module
   end
 
 
-endmodule;
-
+endmodule
 

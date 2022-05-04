@@ -1,8 +1,3 @@
-#include <stdarg.h>
-#include <stdio.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-
 #include "Log.h"
 #include "MtContext.h"
 #include "MtCursor.h"
@@ -12,8 +7,6 @@
 #include "MtModule.h"
 #include "MtSourceFile.h"
 #include "MtTracer.h"
-#include "Platform.h"
-#include "metron_tools.h"
 #include "submodules/CLI11/include/CLI/App.hpp"
 #include "submodules/CLI11/include/CLI/Config.hpp"
 #include "submodules/CLI11/include/CLI/Formatter.hpp"

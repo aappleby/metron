@@ -22,6 +22,64 @@ struct MnNode {
 
   //----------
 
+  bool is_identifier() const {
+    switch (sym) {
+      case alias_sym_field_identifier:
+      case alias_sym_namespace_identifier:
+      case alias_sym_statement_identifier:
+      case alias_sym_type_identifier:
+      case sym_dependent_field_identifier:
+      case sym_dependent_identifier:
+      case sym_dependent_type_identifier:
+      case sym_identifier:
+      case sym_qualified_field_identifier:
+      case sym_qualified_identifier:
+      case sym_qualified_operator_cast_identifier:
+      case sym_qualified_type_identifier:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  bool is_expression() const {
+    switch (sym) {
+      case sym_conditional_expression:
+      case sym_assignment_expression:
+      case sym_unary_expression:
+      case sym_binary_expression:
+      case sym_update_expression:
+      case sym_subscript_expression:
+      case sym_call_expression:
+      case sym_field_expression:
+      case sym_compound_literal_expression:
+      case sym_parenthesized_expression:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  bool is_statement() const {
+    switch (sym) {
+      case sym_break_statement:
+      case sym_case_statement:
+      case sym_compound_statement:
+      case sym_continue_statement:
+      case sym_do_statement:
+      case sym_expression_statement:
+      case sym_for_statement:
+      case sym_goto_statement:
+      case sym_if_statement:
+      case sym_return_statement:
+      case sym_switch_statement:
+      case sym_while_statement:
+        return true;
+      default:
+        return false;
+    }
+  }
+
   SourceRange get_source() const;
   void dump_source_lines() const;
   void dump_tree(int index = 0, int depth = 0, int maxdepth = 255) const;

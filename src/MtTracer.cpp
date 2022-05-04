@@ -68,8 +68,7 @@ CHECK_RETURN Err MtTracer::trace_identifier(MtContext* ctx, MnNode node,
       break;
     }
     default:
-      err << ERR("%s : No handler for %s\n", __func__, node.ts_node_type());
-      node.error();
+      err << trace_default(ctx, node, action);
       break;
   }
   return err;
@@ -82,8 +81,6 @@ CHECK_RETURN Err MtTracer::trace_expression(MtContext* ctx, MnNode node,
   Err err;
 
   switch (node.sym) {
-    case sym_number_literal:
-      break;
     case sym_identifier:
     case sym_qualified_identifier:
       err << trace_identifier(ctx, node, action);
@@ -122,13 +119,14 @@ CHECK_RETURN Err MtTracer::trace_expression(MtContext* ctx, MnNode node,
       err << trace_sym_binary_expression(ctx, node);
       break;
 
-    case sym_condition_clause:
-      err << trace_expression(ctx, node.child(1), action);
-      break;
+      /*
+      case sym_condition_clause:
+        err << trace_expression(ctx, node.child(1), action);
+        break;
+      */
 
     default:
-      err << ERR("%s : No handler for %s\n", __func__, node.ts_node_type());
-      node.error();
+      err << trace_default(ctx, node, action);
       break;
   }
 
@@ -141,10 +139,6 @@ CHECK_RETURN Err MtTracer::trace_statement(MtContext* ctx, MnNode node) {
   Err err;
 
   switch (node.sym) {
-    case sym_number_literal:
-    case sym_comment:
-      break;
-
     case sym_compound_statement:
       err << trace_sym_compound_statement(ctx, node);
       break;
@@ -163,14 +157,12 @@ CHECK_RETURN Err MtTracer::trace_statement(MtContext* ctx, MnNode node) {
     case sym_switch_statement:
       err << trace_sym_switch_statement(ctx, node);
       break;
-    case sym_return_statement: {
+    case sym_return_statement:
       err << trace_sym_return_statement(ctx, node);
       break;
-    }
 
     default:
-      err << ERR("%s : No handler for %s\n", __func__, node.ts_node_type());
-      node.error();
+      err << trace_default(ctx, node);
       break;
   }
 
@@ -186,14 +178,11 @@ CHECK_RETURN Err MtTracer::trace_declarator(MtContext* ctx, MnNode node) {
     case sym_identifier:
       err << trace_identifier(ctx, node, CTX_READ);
       break;
-
     case sym_init_declarator:
       err << trace_sym_init_declarator(ctx, node);
       break;
-
     default:
-      err << ERR("%s : No handler for %s\n", __func__, node.ts_node_type());
-      node.error();
+      err << trace_default(ctx, node);
       break;
   }
 
@@ -210,7 +199,7 @@ CHECK_RETURN Err MtTracer::trace_sym_if_statement(MtContext* ctx, MnNode node) {
   auto node_branch_a = node.get_field(field_consequence);
   auto node_branch_b = node.get_field(field_alternative);
 
-  err << trace_expression(ctx, node_cond, CTX_READ);
+  err << trace_sym_condition_clause(ctx, node_cond);
 
   ctx_root->start_branch_a();
   if (!node_branch_a.is_null()) {
@@ -228,6 +217,25 @@ CHECK_RETURN Err MtTracer::trace_sym_if_statement(MtContext* ctx, MnNode node) {
 }
 
 //------------------------------------------------------------------------------
+
+// TREESITTER BUG - it isn't parsing "new_pad_x = pad_x + quad_dir ? 1 : 0;"
+// correctly
+
+/*
+[000.009] ========== tree dump begin
+[000.009]  � conditional_expression =
+[000.009]  ���� condition: assignment_expression =
+[000.009]  �  ���� left: identifier = "new_pad_x"
+[000.009]  �  ���� operator: lit = "="
+[000.009]  �  ���� right: binary_expression =
+[000.009]  �     ���� left: identifier = "pad_x"
+[000.009]  �     ���� operator: lit = "+"
+[000.009]  �     ���� right: identifier = "quad_dir"
+[000.009]  ���� lit = "?"
+[000.009]  ���� consequence: number_literal = "1"
+[000.009]  ���� lit = ":"
+[000.009]  ���� alternative: number_literal = "0"
+*/
 
 CHECK_RETURN Err MtTracer::trace_sym_conditional_expression(MtContext* ctx,
                                                             MnNode node) {
@@ -265,18 +273,19 @@ CHECK_RETURN Err MtTracer::trace_call(MtContext* src_ctx, MtContext* dst_ctx,
   assert(src_ctx->type == CTX_METHOD);
   assert(dst_ctx->type == CTX_METHOD);
 
-  // If the source and dest functions are not in the same module, we have to
-  // bind function arguments and returns to ports to "call" it.
+  // If the source and dest functions are not in the same module and the source
+  // module has to pass params to the dest module, we have to bind the params
+  // to ports to "call" it.
 
   bool cross_mod_call = src_ctx->method->_mod != dst_ctx->method->_mod;
 
-  if (cross_mod_call) {
+  if (cross_mod_call && dst_ctx->method->has_params()) {
     err << log_action(src_ctx, dst_ctx, CTX_WRITE, node_call.get_source());
   }
 
   err << trace_sym_function_definition(dst_ctx, dst_ctx->method->_node);
 
-  if (cross_mod_call) {
+  if (cross_mod_call && dst_ctx->method->has_params()) {
     err << log_action(src_ctx, dst_ctx, CTX_READ, node_call.get_source());
   }
 
@@ -301,33 +310,12 @@ CHECK_RETURN Err MtTracer::trace_sym_compound_statement(MtContext* ctx,
   assert(node.sym == sym_compound_statement);
 
   for (const auto& child : node) {
-    switch (child.sym) {
-      case anon_sym_LBRACE:
-      case anon_sym_RBRACE:
-      case sym_comment:
-      case sym_using_declaration:
-        break;
-
-      case sym_declaration:
-        err << trace_sym_declaration(ctx, child);
-        break;
-
-      case sym_return_statement:
-      case sym_expression_statement:
-      case sym_switch_statement:
-      case sym_break_statement:
-      case sym_if_statement:
-        err << trace_statement(ctx, child);
-        break;
-
-      case sym_compound_statement:
-        err << trace_sym_compound_statement(ctx, child);
-        break;
-
-      default:
-        err << ERR("%s : No handler for %s\n", __func__, child.ts_node_type());
-        child.error();
-        break;
+    if (child.sym == sym_declaration) {
+      err << trace_sym_declaration(ctx, child);
+    } else if (child.is_statement()) {
+      err << trace_statement(ctx, child);
+    } else {
+      err << trace_default(ctx, child);
     }
   }
 
@@ -506,8 +494,7 @@ CHECK_RETURN Err MtTracer::trace_sym_template_type(MtContext* ctx,
         err << trace_sym_type_identifier(ctx, child);
         break;
       default:
-        err << ERR("%s : No handler for %s\n", __func__, child.ts_node_type());
-        child.error();
+        err << trace_default(ctx, node);
         break;
     }
   }
@@ -524,8 +511,7 @@ CHECK_RETURN Err MtTracer::trace_sym_type_identifier(MtContext* ctx,
   for (const auto& child : node) {
     switch (child.sym) {
       default:
-        err << ERR("%s : No handler for %s\n", __func__, child.ts_node_type());
-        child.error();
+        err << trace_default(ctx, node);
         break;
     }
   }
@@ -541,18 +527,12 @@ CHECK_RETURN Err MtTracer::trace_sym_template_argument_list(MtContext* ctx,
 
   for (const auto& child : node) {
     switch (child.sym) {
-      case anon_sym_LT:
-      case anon_sym_GT:
-      case sym_number_literal:
-      case sym_type_descriptor:
-        break;
-
       default:
-        err << ERR("%s : No handler for %s\n", __func__, child.ts_node_type());
-        node.error();
+        err << trace_default(ctx, node);
         break;
     }
   }
+
   return err;
 }
 
@@ -563,11 +543,7 @@ CHECK_RETURN Err MtTracer::trace_sym_init_declarator(MtContext* ctx,
   Err err;
   assert(node.sym == sym_init_declarator);
 
-  auto node_decl = node.child(0);
-  auto node_eq = node.child(1);
-  auto node_value = node.child(2);
-
-  err << trace_expression(ctx, node_value, CTX_READ);
+  err << trace_expression(ctx, node.get_field(field_value), CTX_READ);
 
   return err;
 }
@@ -615,15 +591,12 @@ CHECK_RETURN Err MtTracer::trace_sym_argument_list(MtContext* ctx,
   assert(node.sym == sym_argument_list);
 
   for (const auto& child : node) {
-    switch (child.sym) {
-      case anon_sym_LPAREN:
-      case anon_sym_RPAREN:
-      case anon_sym_COMMA:
-        break;
-
-      default:
-        err << trace_expression(ctx, child, CTX_READ);
-        break;
+    if (child.is_identifier()) {
+      err << trace_identifier(ctx, child, CTX_READ);
+    } else if (child.is_expression()) {
+      err << trace_expression(ctx, child, CTX_READ);
+    } else {
+      err << trace_default(ctx, child);
     }
   }
 
@@ -631,25 +604,6 @@ CHECK_RETURN Err MtTracer::trace_sym_argument_list(MtContext* ctx,
 }
 
 //------------------------------------------------------------------------------
-
-// TREESITTER BUG - it isn't parsing "new_pad_x = pad_x + quad_dir ? 1 : 0;"
-// correctly
-
-/*
-[000.009] ========== tree dump begin
-[000.009]  � conditional_expression =
-[000.009]  ���� condition: assignment_expression =
-[000.009]  �  ���� left: identifier = "new_pad_x"
-[000.009]  �  ���� operator: lit = "="
-[000.009]  �  ���� right: binary_expression =
-[000.009]  �     ���� left: identifier = "pad_x"
-[000.009]  �     ���� operator: lit = "+"
-[000.009]  �     ���� right: identifier = "quad_dir"
-[000.009]  ���� lit = "?"
-[000.009]  ���� consequence: number_literal = "1"
-[000.009]  ���� lit = ":"
-[000.009]  ���� alternative: number_literal = "0"
-*/
 
 CHECK_RETURN Err MtTracer::trace_sym_condition_clause(MtContext* ctx,
                                                       MnNode node) {
@@ -685,3 +639,23 @@ CHECK_RETURN Err MtTracer::trace_sym_field_expression(MtContext* ctx,
 }
 
 //------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtTracer::trace_default(MtContext* mod_ctx, MnNode node,
+                                         ContextAction action) {
+  Err err;
+
+  if (!node.is_named()) return err;
+
+  switch (node.sym) {
+    case sym_comment:
+    case sym_using_declaration:
+    case sym_number_literal:
+      break;
+    default:
+      err << ERR("%s : No handler for %s\n", __func__, node.ts_node_type());
+      node.error();
+      break;
+  }
+
+  return err;
+}

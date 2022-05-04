@@ -6,7 +6,6 @@
 template <int cycles_per_bit = 4>
 class uart_tx {
  public:
-
   uart_tx() {
     cycle = 0;
     cursor = 0;
@@ -23,7 +22,6 @@ class uart_tx {
   }
 
   logic<1> idle() { return (cursor == 0) && (cycle == 0); }
-
 
   void tick(logic<1> i_rstn, logic<8> i_data, logic<1> i_req) {
     if (!i_rstn) {
@@ -55,7 +53,7 @@ class uart_tx {
   }
 
   //----------------------------------------
-
+ private:
   // 1 start bit, 8 data bits, 1 stop bit, 7 additional stop bits to guarantee
   // that recevier can resync between messages
   static const int extra_stop_bits = 7;

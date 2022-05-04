@@ -2057,6 +2057,7 @@ CHECK_RETURN Err MtCursor::emit_sym_expression_statement(MnExprStatement node) {
         break;
       case sym_assignment_expression:
       case sym_update_expression:
+      case sym_conditional_expression:
         err << emit_expression(child);
         break;
       default:
@@ -2760,6 +2761,7 @@ CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnIfStatement node) {
       case sym_condition_clause:
         err << emit_sym_condition_clause(child);
         break;
+      case sym_if_statement:
       case sym_compound_statement:
         err << emit_statement(child);
         break;
@@ -2895,15 +2897,12 @@ CHECK_RETURN Err MtCursor::emit_sym_argument_list(MnArgList node) {
   Err err = emit_ws_to(sym_argument_list, node);
 
   for (auto child : node) {
-    switch (child.sym) {
-      case sym_identifier:
-      case sym_call_expression:
-      case sym_update_expression:
-        err << emit_expression(child);
-        break;
-      default:
-        err << emit_default(child);
-        break;
+    if (child.is_identifier()) {
+      err << emit_identifier(child);
+    } else if (child.is_expression()) {
+      err << emit_expression(child);
+    } else {
+      err << emit_default(child);
     }
   }
 

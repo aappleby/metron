@@ -23,6 +23,9 @@ class MtTracer {
 
   CHECK_RETURN Err trace_method(MtContext* mod_ctx, MtMethod* method);
 
+  CHECK_RETURN Err trace_default(MtContext* mod_ctx, MnNode node,
+                                 ContextAction action = CTX_READ);
+
   // clang-format off
   CHECK_RETURN Err trace_identifier(MtContext* ctx, MnNode node, ContextAction action);
   CHECK_RETURN Err trace_expression(MtContext* ctx, MnNode node, ContextAction action);

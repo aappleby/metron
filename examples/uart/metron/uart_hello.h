@@ -3,17 +3,13 @@
 
 //==============================================================================
 
-template<int repeat_msg = 0>
+template <int repeat_msg = 0>
 class uart_hello {
  public:
-  uart_hello() {
-    readmemh("examples/uart/message.hex", _memory, 0, 511);
-  }
-
-  //----------------------------------------
+  uart_hello() { readmemh("examples/uart/message.hex", _memory, 0, 511); }
 
   logic<8> data() const { return _data; }
-  logic<1> req()  const { return _state == SEND; }
+  logic<1> req() const { return _state == SEND; }
   logic<1> done() const { return _state == DONE; }
 
   void tick(logic<1> i_rstn, logic<1> i_cts, logic<1> i_idle) {
@@ -37,6 +33,7 @@ class uart_hello {
     }
   }
 
+ private:
   //----------------------------------------
 
   static const int message_len = 512;
@@ -45,8 +42,6 @@ class uart_hello {
   static const int WAIT = 0;
   static const int SEND = 1;
   static const int DONE = 2;
-
-  //enum class state : logic<2>::BASE{WAIT, SEND, DONE};
 
   logic<2> _state;
   logic<cursor_bits> _cursor;

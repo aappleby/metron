@@ -449,246 +449,132 @@ struct MnTemplateFunc : public MnNode {
 
 struct MnFunc : public MnNode {
   MnFunc() {}
-  MnFunc(const MnNode& n) : MnNode(n) {
-    if (is_null() || is_id() || is_templ() || is_field() || is_prim()) {
-    } else {
-      debugbreak();
-    }
-  }
-
-  std::string name() {
-    if (sym == sym_field_expression) {
-      return as_field().name4();
-    } else {
-      return name4();
-    }
-  }
-
-  bool is_id() { return sym == sym_identifier; }
-  bool is_templ() { return sym == sym_template_function; }
-  bool is_field() { return sym == sym_field_expression; }
-  bool is_prim() { return sym == sym_primitive_type; }
-
-  MnIdentifier as_id() { return MnIdentifier(*this); }
-  MnTemplateFunc as_templ() { return MnTemplateFunc(*this); }
-  MnFieldExpr as_field() { return MnFieldExpr(*this); }
+  MnFunc(const MnNode& n) : MnNode(n) {}
 };
-
-//------------------------------------------------------------------------------
 
 struct MnCallExpr : public MnNode {
   MnCallExpr(){};
-  MnCallExpr(const MnNode& n) : MnNode(n) { check_sym(sym_call_expression); }
-
-  // identifier or field expression or template function?
-  MnFunc func() { return MnFunc(get_field(field_function)); }
-  MnArgList args() { return MnArgList(get_field(field_arguments)); }
+  MnCallExpr(const MnNode& n) : MnNode(n) {}
 };
-
-//------------------------------------------------------------------------------
 
 struct MnInitDecl : public MnNode {
   MnInitDecl(){};
-  MnInitDecl(const MnNode& n) : MnNode(n) { check_sym(sym_init_declarator); }
-  MnIdentifier decl() { return MnIdentifier(get_field(field_declarator)); }
+  MnInitDecl(const MnNode& n) : MnNode(n) {}
 };
-
-//------------------------------------------------------------------------------
 
 struct MnTemplateType : public MnNode {
   MnTemplateType(){};
-  MnTemplateType(const MnNode& n) : MnNode(n) { check_sym(sym_template_type); }
-
-  MnTypeIdentifier name() { return MnTypeIdentifier(get_field(field_name)); }
-  MnTemplateArgList args() {
-    return MnTemplateArgList(get_field(field_arguments));
-  }
+  MnTemplateType(const MnNode& n) : MnNode(n) {}
 };
-
-//------------------------------------------------------------------------------
-
-/*
-========== tree dump begin
-[00:000:187] declaration =
-[00:032:321] |  type: template_type =
-[00:022:395] |  |  name: type_identifier = "logic"
-[01:003:324] |  |  arguments: template_argument_list =
-[00:000:036] |  |  |  lit = "<"
-[01:000:112] |  |  |  number_literal = "5"
-[02:000:033] |  |  |  lit = ">"
-[01:009:001] |  declarator: identifier = "default_funct"
-[02:000:039] |  lit = ";"
-========== tree dump end
-
-========== tree dump begin
-[00:000:187] declaration =
-[00:032:321] |  type: template_type =
-[00:022:395] |  |  name: type_identifier = "logic"
-[01:003:324] |  |  arguments: template_argument_list =
-[00:000:036] |  |  |  lit = "<"
-[01:000:112] |  |  |  number_literal = "5"
-[02:000:033] |  |  |  lit = ">"
-[01:009:224] |  declarator: init_declarator =
-[00:009:001] |  |  declarator: identifier = "default_funct"
-[01:000:063] |  |  lit = "="
-[02:034:112] |  |  value: number_literal = "22"
-[02:000:039] |  lit = ";"
-========== tree dump end
-*/
 
 struct MnDecl : public MnNode {
   MnDecl(){};
-  MnDecl(const MnNode& n) : MnNode(n) { check_sym(sym_declaration); }
+  MnDecl(const MnNode& n) : MnNode(n) {}
 };
-
-//------------------------------------------------------------------------------
 
 struct MnEnumSpecifier : public MnNode {
   MnEnumSpecifier(){};
   MnEnumSpecifier(const MnNode& n) : MnNode(n) {}
 };
 
-//------------------------------------------------------------------------------
-// MtIdentifier || MtTemplateType || MtEnumSpecifier || MtPrimitiveType
-
 struct MnType : public MnNode {
   MnType() {}
   MnType(const MnNode& n) : MnNode(n) {}
 };
 
-//------------------------------------------------------------------------------
-
 struct MnFieldDecl : public MnNode {
   MnFieldDecl(){};
-  MnFieldDecl(const MnNode& n) : MnNode(n) { check_sym(sym_field_declaration); }
+  MnFieldDecl(const MnNode& n) : MnNode(n) {}
 };
-
-//------------------------------------------------------------------------------
 
 struct MnPreprocInclude : public MnNode {
   MnPreprocInclude(){};
-  MnPreprocInclude(const MnNode& n) : MnNode(n) {
-    check_sym(sym_preproc_include);
-  }
-
-  MnNode path_node() { return get_field(field_path); }
-
-  std::string path() { return get_field(field_path).text(); }
+  MnPreprocInclude(const MnNode& n) : MnNode(n) {}
 };
-
-//------------------------------------------------------------------------------
 
 struct MnNumberLiteral : public MnNode {
   MnNumberLiteral(){};
-  MnNumberLiteral(const MnNode& n) : MnNode(n) {
-    check_sym(sym_number_literal);
-  }
+  MnNumberLiteral(const MnNode& n) : MnNode(n) {}
 };
 
 struct MnReturnStatement : public MnNode {
   MnReturnStatement(){};
-  MnReturnStatement(const MnNode& n) : MnNode(n) {
-    check_sym(sym_return_statement);
-  }
+  MnReturnStatement(const MnNode& n) : MnNode(n) {}
 };
 
 struct MnTemplateDecl : public MnNode {
   MnTemplateDecl(){};
-  MnTemplateDecl(const MnNode& n) : MnNode(n) {
-    check_sym(sym_template_declaration);
-  }
+  MnTemplateDecl(const MnNode& n) : MnNode(n) {}
 };
 
 struct MnTranslationUnit : public MnNode {
   MnTranslationUnit(){};
-  MnTranslationUnit(const MnNode& n) : MnNode(n) {
-    check_sym(sym_translation_unit);
-  }
+  MnTranslationUnit(const MnNode& n) : MnNode(n) {}
 };
 
 struct MnTemplateParamList : public MnNode {
   MnTemplateParamList(){};
-  MnTemplateParamList(const MnNode& n) : MnNode(n) {
-    check_sym(sym_template_parameter_list);
-  }
+  MnTemplateParamList(const MnNode& n) : MnNode(n) {}
 };
 
 struct MnEnumeratorList : public MnNode {
   MnEnumeratorList(){};
-  MnEnumeratorList(const MnNode& n) : MnNode(n) {
-    check_sym(sym_enumerator_list);
-  }
+  MnEnumeratorList(const MnNode& n) : MnNode(n) {}
 };
 
 struct MnComment : public MnNode {
   MnComment(){};
-  MnComment(const MnNode& n) : MnNode(n) { check_sym(sym_comment); }
+  MnComment(const MnNode& n) : MnNode(n) {}
 };
 
 struct MnCaseStatement : public MnNode {
   MnCaseStatement(){};
-  MnCaseStatement(const MnNode& n) : MnNode(n) {
-    check_sym(sym_case_statement);
-  }
+  MnCaseStatement(const MnNode& n) : MnNode(n) {}
 };
 
 struct MnSwitchStatement : public MnNode {
   MnSwitchStatement(){};
-  MnSwitchStatement(const MnNode& n) : MnNode(n) {
-    check_sym(sym_switch_statement);
-  }
+  MnSwitchStatement(const MnNode& n) : MnNode(n) {}
 };
 
 struct MnUsingDecl : public MnNode {
   MnUsingDecl(){};
-  MnUsingDecl(const MnNode& n) : MnNode(n) { check_sym(sym_using_declaration); }
+  MnUsingDecl(const MnNode& n) : MnNode(n) {}
 };
 
 struct MnBreakStatement : public MnNode {
   MnBreakStatement(){};
-  MnBreakStatement(const MnNode& n) : MnNode(n) {
-    check_sym(sym_break_statement);
-  }
+  MnBreakStatement(const MnNode& n) : MnNode(n) {}
 };
 
 struct MnCondExpr : public MnNode {
   MnCondExpr(){};
-  MnCondExpr(const MnNode& n) : MnNode(n) {
-    check_sym(sym_conditional_expression);
-  }
+  MnCondExpr(const MnNode& n) : MnNode(n) {}
 };
 
 struct MnStorageSpec : public MnNode {
   MnStorageSpec(){};
-  MnStorageSpec(const MnNode& n) : MnNode(n) {
-    check_sym(sym_storage_class_specifier);
-  }
+  MnStorageSpec(const MnNode& n) : MnNode(n) {}
 };
 
 struct MnQualifiedId : public MnNode {
   MnQualifiedId(){};
-  MnQualifiedId(const MnNode& n) : MnNode(n) {
-    check_sym(sym_qualified_identifier);
-  }
+  MnQualifiedId(const MnNode& n) : MnNode(n) {}
 };
 
 struct MnIfStatement : public MnNode {
   MnIfStatement(){};
-  MnIfStatement(const MnNode& n) : MnNode(n) { check_sym(sym_if_statement); }
+  MnIfStatement(const MnNode& n) : MnNode(n) {}
 };
 
 struct MnSizedTypeSpec : public MnNode {
   MnSizedTypeSpec(){};
-  MnSizedTypeSpec(const MnNode& n) : MnNode(n) {
-    check_sym(sym_sized_type_specifier);
-  }
+  MnSizedTypeSpec(const MnNode& n) : MnNode(n) {}
 };
 
 struct MnNamespaceDef : public MnNode {
   MnNamespaceDef(){};
-  MnNamespaceDef(const MnNode& n) : MnNode(n) {
-    check_sym(sym_namespace_definition);
-  }
+  MnNamespaceDef(const MnNode& n) : MnNode(n) {}
 };
 
 //------------------------------------------------------------------------------

@@ -399,10 +399,10 @@ CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnCallExpr call,
                                                    int bx_width) {
   Err err = emit_ws_to(call);
 
-  int arg_count = call.args().named_child_count();
+  int arg_count = call.get_field(field_arguments).named_child_count();
 
-  auto arg0 = call.args().named_child(0);
-  auto arg1 = call.args().named_child(1);
+  auto arg0 = call.get_field(field_arguments).named_child(0);
+  auto arg1 = call.get_field(field_arguments).named_child(1);
 
   if (arg_count == 1) {
     if (arg0.sym == sym_number_literal) {
@@ -470,10 +470,10 @@ CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnCallExpr call,
                                                     MnNode bx_node) {
   Err err = emit_ws_to(call);
 
-  int arg_count = call.args().named_child_count();
+  int arg_count = call.get_field(field_arguments).named_child_count();
 
-  auto arg0 = call.args().named_child(0);
-  auto arg1 = call.args().named_child(1);
+  auto arg0 = call.get_field(field_arguments).named_child(0);
+  auto arg1 = call.get_field(field_arguments).named_child(1);
 
   if (arg_count == 1) {
     // Non-literal size-casting expression - bits'(expression)
@@ -519,13 +519,13 @@ CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnCallExpr call,
 CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnCallExpr n) {
   Err err = emit_ws_to(sym_call_expression, n);
 
-  MnFunc func = n.func();
-  MnArgList args = n.args();
+  MnFunc func = n.get_field(field_function);
+  MnArgList args = n.get_field(field_arguments);
 
   // If we're calling a member function, look at the name of the member
   // function and not the whole foo.bar().
 
-  std::string func_name = func.name();
+  std::string func_name = func.name4();
 
   auto method = current_mod->get_method(func_name);
 
@@ -609,7 +609,7 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnCallExpr n) {
 
   } else if (func_name == "bx") {
     // Bit extract.
-    auto template_arg = func.as_templ().args().named_child(0);
+    auto template_arg = func.get_field(field_arguments).named_child(0);
     err << emit_dynamic_bit_extract(n, template_arg);
   } else if (func_name == "cat") {
     // Remove "cat" and replace parens with brackets
@@ -634,7 +634,7 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnCallExpr n) {
 
     err << skip_over(func);
 
-    auto template_arg = func.as_templ().args().named_child(0);
+    auto template_arg = func.get_field(field_arguments).named_child(0);
     int dup_count = atoi(template_arg.start());
     err << emit_print("{%d ", dup_count);
     err << emit_print("{");
@@ -2115,10 +2115,10 @@ CHECK_RETURN Err MtCursor::emit_template_argument(MnNode node) {
 CHECK_RETURN Err MtCursor::emit_sym_template_type(MnTemplateType n) {
   Err err = emit_ws_to(sym_template_type, n);
 
-  err << emit_sym_type_identifier(n.name());
-  auto args = n.args();
+  err << emit_sym_type_identifier(n.get_field(field_name));
+  auto args = n.get_field(field_arguments);
 
-  bool is_logic = n.name().match("logic");
+  bool is_logic = n.get_field(field_name).match("logic");
   if (is_logic) {
     auto logic_size = args.first_named_child();
     switch (logic_size.sym) {

@@ -8,13 +8,13 @@ module Module
 );
 /*public:*/
 
-  always_ff @(posedge clock) begin /*tock*/
+  always_comb begin /*tock*/
     /*tick()*/;
   end
 
 /*private:*/
 
-  always_ff @(posedge clock) begin /*tick*/
+  always_comb begin /*tick*/
     /*some_task()*/;
   end
 

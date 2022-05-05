@@ -8,7 +8,7 @@ module Submod
   input logic[7:0] tock_arg
 );
 /*public:*/
-  always_ff @(posedge clock) begin /*tock*/
+  always_comb begin /*tock*/
 tick_arg = tock_arg;
         /*tick(arg)*/;
   end
@@ -28,7 +28,7 @@ module Module
 );
 /*public:*/
 
-  always_ff @(posedge clock) begin /*tock*/
+  always_comb begin /*tock*/
     if (1) begin
 submod_tock_arg = 72;
             /*submod.tock(72)*/;

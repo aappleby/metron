@@ -2,19 +2,20 @@
 
 // Tick inputs should become input ports.
 
+// clang-format off
 module Module
 (
   input logic clock,
   input logic[6:0] tock_my_input
 );
-/*public:*/
+ /*public:*/
 
   always_comb begin /*tock*/
     tick_my_input = tock_my_input;
     /*tick(my_input)*/;
   end
 
-/*private:*/
+ /*private:*/
 
   logic[6:0] tick_my_input;
   always_ff @(posedge clock) begin /*tick*/
@@ -23,4 +24,5 @@ module Module
 
   logic[6:0] my_reg;
 endmodule
+// clang-format on
 

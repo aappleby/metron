@@ -15,8 +15,8 @@ module Module
 
 /*private:*/
 
-  always_ff @(posedge clock) begin /*tick*/
-    my_reg <= SOME_CONSTANT;
+  always_comb begin /*tick*/
+    my_reg = SOME_CONSTANT;
   end
 
   logic[6:0] my_reg;

@@ -28,7 +28,7 @@ module Module
 /*public:*/
 
   always_comb begin /*tock*/
-    /*submod.tock();*/
+    /*submod.tock()*/;
   end
 
   Submod submod(

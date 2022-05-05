@@ -436,6 +436,7 @@ CHECK_RETURN Err MtModLibrary::categorize_methods() {
     return 0;
   });
 
+#if 0
   //----------------------------------------
   // If there are unmarked methods left, they must be upstream from a tick.
   // If they don't have return values, we can mark them as a tick so we can
@@ -466,6 +467,21 @@ CHECK_RETURN Err MtModLibrary::categorize_methods() {
   //----------------------------------------
   // If there are _still_ unmarked methods, they are tocks upstream from ticks
   // that have return values.
+
+  err << propagate([&](MtMethod *m) {
+    if (m->is_valid()) return 0;
+
+    if (m->in_tock) {
+      return 0;
+    } else {
+      m->in_tock = true;
+      return 1;
+    }
+    return 0;
+  });
+#endif
+
+  // Just mark everything left as tock.
 
   err << propagate([&](MtMethod *m) {
     if (m->is_valid()) return 0;

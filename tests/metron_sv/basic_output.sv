@@ -14,7 +14,7 @@ module Module
   endfunction
   always_comb tock_get_reg_ret = tock_get_reg();
 
-  always_ff @(posedge clock) begin /*tock*/
+  always_comb begin /*tock*/
     /*tick()*/;
   end
 

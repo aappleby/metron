@@ -10,7 +10,7 @@ module Module
 );
 /*public:*/
 
-  always_ff @(posedge clock) begin /*tock*/
+  always_comb begin /*tock*/
 tick_val = tock_val;
         /*tick(val)*/;
   end

@@ -650,6 +650,7 @@ CHECK_RETURN Err MtTracer::trace_default(MtContext* mod_ctx, MnNode node,
     case sym_comment:
     case sym_using_declaration:
     case sym_number_literal:
+    case sym_string_literal:
       break;
     default:
       err << ERR("%s : No handler for %s\n", __func__, node.ts_node_type());

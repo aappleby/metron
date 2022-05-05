@@ -11,8 +11,8 @@ module Module
 /*public:*/
 
   always_comb begin /*tock*/
-tick_val = tock_val;
-        /*tick(val)*/;
+    tick_val = tock_val;
+    /*tick(val)*/;
   end
 
 /*private:*/

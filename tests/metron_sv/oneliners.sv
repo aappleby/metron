@@ -11,7 +11,6 @@ module Module
 /*public:*/
 
   function logic[7:0] tock();  logic[7:0] a;
-
 a = 1; a = a + 7; tock = a; endfunction
   always_comb tock_ret = tock();
 

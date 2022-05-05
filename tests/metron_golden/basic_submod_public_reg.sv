@@ -34,7 +34,7 @@ module Module
   end
 
   always_comb begin /*tock*/
-    /*submod.tock();*/
+    /*submod.tock()*/;
   end
 
   Submod submod(

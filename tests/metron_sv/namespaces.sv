@@ -3,7 +3,7 @@
 // Namespaces turn into packages.
 
 package MyPackage;
-  parameter foo = 3;
+  parameter int foo = 3;
 endpackage
 
 module Module

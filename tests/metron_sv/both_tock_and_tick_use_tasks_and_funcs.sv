@@ -14,12 +14,13 @@ module Module
 
 
   always_comb begin /*tock*/
+    public_task_x = public_func(17);
     /*public_task(public_func(17))*/;
     /*tick()*/;
   end
 
   always_comb begin /*public_task*/
-    my_sig = x + 7;
+    my_sig = public_task_x + 7;
   end
 
   function logic[7:0] public_func(logic[7:0] x);
@@ -30,8 +31,8 @@ module Module
 /*private:*/
 
   always_comb begin /*tick*/
-private_task_x = private_func(33);
-        /*private_task(private_func(33))*/;
+    private_task_x = private_func(33);
+    /*private_task(private_func(33))*/;
   end
 
   logic[7:0] private_task_x;

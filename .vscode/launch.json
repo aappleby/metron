@@ -8,12 +8,12 @@
       "request": "launch",
       "program": "${workspaceFolder}/bin/metron",
       "cwd": "${workspaceFolder}",
-      /*
       "args": [
         "-e",
+        "-c",
+        "--dump",
         "scratch.h"
       ],
-      */
       // bin/metron -q -v -r examples/uart/metron -o examples/uart/metron_sv -c uart_top.h
       // verilator -Isrc -Iexamples/uart/metron_sv --cc uart_top -Mdir gen/examples/uart/metron_vl
       /*
@@ -28,6 +28,7 @@
       ],
       */
       // bin/metron -v -e -r tests/metron_good -o tests/metron_sv -c bit_concat.h
+      /*
       "args": [
         "-v",
         "-e",
@@ -38,6 +39,7 @@
         "-c",
         "basic_switch.h"
       ],
+      */
       //"args": [ "-e", "-r", "tests/metron_bad", "multiple_submod_function_bindings.h", ],
       //"args": [ "-e", "-r", "examples/rvtiny/metron", "toplevel.h", ],
       //"args": [ "-e", "-r", "examples/rvsimple/metron", "toplevel.h", ],

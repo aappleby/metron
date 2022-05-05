@@ -9,8 +9,8 @@ module Submod
 );
 /*public:*/
   always_comb begin /*tock*/
-tick_arg = tock_arg;
-        /*tick(arg)*/;
+    tick_arg = tock_arg;
+    /*tick(arg)*/;
   end
 /*private:*/
   logic[7:0] tick_arg;

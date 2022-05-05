@@ -44,7 +44,6 @@ module Module
     enum_class2 ec2;
     typed_enum te1;
     sized_enum se1;
-
     e1 = A1;
     e2 = B2;
     anon_enum_field1 = C3;

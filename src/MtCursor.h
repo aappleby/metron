@@ -50,7 +50,7 @@ struct MtCursor {
 
   CHECK_RETURN Err emit_preproc(MnNode n);
   CHECK_RETURN Err emit_type(MnNode n);
-  CHECK_RETURN Err emit_declarator(MnNode n);
+  CHECK_RETURN Err emit_declarator(MnNode n, bool elide_value = false);
   CHECK_RETURN Err emit_declaration(MnNode n);
   CHECK_RETURN Err emit_template_argument(MnNode n);
   CHECK_RETURN Err emit_sym_translation_unit(MnNode n);
@@ -81,7 +81,7 @@ struct MtCursor {
   CHECK_RETURN Err emit_sym_compound_statement(MnNode n, const std::string& delim_begin, const std::string& delim_end);
   CHECK_RETURN Err emit_sym_condition_clause(MnNode n);
   CHECK_RETURN Err emit_sym_conditional_expression(MnNode n);
-  CHECK_RETURN Err emit_sym_declaration(MnNode n);
+  CHECK_RETURN Err emit_sym_declaration(MnNode n, bool elide_type, bool elide_value);
   CHECK_RETURN Err emit_sym_enum_specifier(MnNode n);
   CHECK_RETURN Err emit_sym_enumerator(MnNode n);
   CHECK_RETURN Err emit_sym_enumerator_list(MnNode n);
@@ -93,6 +93,7 @@ struct MtCursor {
   CHECK_RETURN Err emit_sym_function_definition(MnNode n);
   CHECK_RETURN Err emit_sym_identifier(MnNode n);
   CHECK_RETURN Err emit_sym_if_statement(MnNode n);
+  CHECK_RETURN Err emit_sym_init_declarator(MnNode n, bool elide_value);
   CHECK_RETURN Err emit_sym_initializer_list(MnNode n);
   CHECK_RETURN Err emit_sym_namespace_definition(MnNode n);
   CHECK_RETURN Err emit_sym_number_literal(MnNode n, int size_cast = 0);

@@ -17,7 +17,6 @@ module Module
     logic[1:0] b;
     logic[2:0] c;
     logic[5:0] d;
-
     a = 1;
     b = 2;
     c = 3;
@@ -30,7 +29,6 @@ module Module
     logic[7:0] b;
     logic[7:0] c;
     logic[5:0] d;
-
     a = 1;
     b = 2;
     c = 3;

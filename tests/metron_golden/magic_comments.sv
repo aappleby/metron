@@ -9,8 +9,8 @@ module Module
 );
 /*public:*/
 
-  always_comb begin /*tock*/
-  end
+  function void tock();
+  endfunction
 
 
   always @(posedge clock) begin

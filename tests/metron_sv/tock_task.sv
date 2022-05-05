@@ -13,6 +13,7 @@ module Module
 
 
   always_comb begin /*tock*/
+    set_signal_number = get_number();
     /*set_signal(get_number())*/;
   end
 
@@ -22,7 +23,7 @@ module Module
   always_comb get_number_ret = get_number();
 
   always_comb begin /*set_signal*/
-    my_signal = number;
+    my_signal = set_signal_number;
   end
 
 endmodule

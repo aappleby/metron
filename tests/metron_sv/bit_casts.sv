@@ -74,7 +74,6 @@ module Module
     logic[2:0] dst3;
     logic[1:0] dst2;
     logic dst1;
-
     src = 64'h1234567812345678;
     dst64 = 64'(src);
     dst63 = 63'(src);
@@ -213,7 +212,6 @@ module Module
     logic[2:0] dst3;
     logic[1:0] dst2;
     logic dst1;
-
     src = 64'h1234567812345678;
     dst63 = (63)'(src);
     dst62 = (62)'(src);
@@ -298,7 +296,6 @@ module Module
     logic[7:0] dst7;
     logic[7:0] dst8;
     logic[7:0] dst9;
-
     src = 64'h1234567812345678;
 
     dst0 = src[7:0];
@@ -329,7 +326,6 @@ module Module
     logic[some_size2-1:0] b7;
     logic[some_size2-1:0] b8;
     logic[some_size2-1:0] b9;
-
     a = 10;
     b = (some_size2)'(a);
 
@@ -352,7 +348,6 @@ module Module
     logic[6:0] c;
     logic e;
     logic[6:0] f;
-
     a = 32'hDEADBEEF;
 
     b = a[3]; //static bit extract with literal offset, width 1

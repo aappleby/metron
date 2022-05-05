@@ -195,7 +195,7 @@ CHECK_RETURN Err MtCursor::skip_over(MnNode n) {
 CHECK_RETURN Err MtCursor::skip_ws() {
   Err err;
 
-  while (*cursor && isspace(*cursor)) {
+  while (*cursor && isspace(*cursor) && (*cursor != '\n')) {
     if (echo) {
       LOG_C(0x8080FF, "_");
     }
@@ -745,30 +745,22 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
       bool is_localparam = c.sym == sym_declaration && c.is_const();
 
       if (is_localparam) {
+        // fixme?
+        n.dump_tree();
+        exit(-1);
       } else {
         cursor = c.start();
-
-        auto d = MnNode(c);
-
-        auto decl = d.get_field(field_declarator);
-
-        if (decl.sym == sym_init_declarator) {
-          err << emit_indent();
-          err << emit_init_declarator_as_decl(d);
-          err << emit_newline();
-        } else {
-          err << emit_indent();
-          err << emit_sym_declaration(d);
-          err << emit_newline();
-        }
+        err << emit_indent();
+        err << emit_sym_declaration(c, false, true);
+        err << emit_newline();
       }
     }
   }
   *this = old_cursor;
 
-  err << emit_newline();
+  //err << emit_newline();
 
-  assert(at_newline);
+  //assert(at_newline);
   return err;
 }
 
@@ -833,11 +825,12 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
     } else if (func_node.sym == sym_identifier) {
       auto method = current_mod->get_method(func_node.text().c_str());
 
-      if (method && method->in_tick) {
+      if (method && !method->in_func) {
         for (int i = 0; i < method->param_nodes.size(); i++) {
           auto& param = method->param_nodes[i];
           auto param_name = param.get_field(field_declarator).text();
 
+          err << emit_indent();
           err << emit_print("%s_%s = ", func_node.text().c_str(),
                             param_name.c_str());
 
@@ -849,7 +842,6 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
           err << prune_trailing_ws();
           err << emit_print(";");
           err << emit_newline();
-          err << emit_indent();
         }
       }
     }
@@ -1466,6 +1458,7 @@ CHECK_RETURN Err MtCursor::emit_type(MnNode node) {
   switch (node.sym) {
     case sym_qualified_identifier:
       // does this belong here?
+      // yes, for std::string and namespaced types
       err << emit_sym_qualified_identifier(node);
       break;
     case sym_type_descriptor:
@@ -1536,9 +1529,39 @@ CHECK_RETURN Err MtCursor::emit_identifier(MnNode node) {
 }
 
 //------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_sym_init_declarator(MnNode node, bool elide_value) {
+  Err err = emit_ws_to(node);
+
+  for (auto child : node) {
+    if (child.field == field_declarator) {
+      err << emit_identifier(child);
+      if (elide_value) {
+        cursor = node.end();
+        break;
+      }
+    }
+    else if (child.field == field_value) {
+      if (elide_value) {
+        err << skip_over(child);
+        err << skip_ws();
+      }
+      else {
+        err << emit_expression(child);
+      }
+    }
+    else {
+      err << emit_default(child);
+    }
+  }
+
+  return err << check_done(node);
+}
+
+//------------------------------------------------------------------------------
 // FIXME break these out
 
-CHECK_RETURN Err MtCursor::emit_declarator(MnNode node) {
+CHECK_RETURN Err MtCursor::emit_declarator(MnNode node, bool elide_value) {
   Err err = emit_ws_to(node);
 
   switch (node.sym) {
@@ -1550,9 +1573,7 @@ CHECK_RETURN Err MtCursor::emit_declarator(MnNode node) {
       err << emit_identifier(node);
       break;
     case sym_init_declarator:
-      err << emit_identifier(node.child(0));
-      err << emit_text(node.child(1));
-      err << emit_expression(node.child(2));
+      err << emit_sym_init_declarator(node, elide_value);
       break;
     case sym_array_declarator:
       err << emit_identifier(node.child(0));
@@ -2188,7 +2209,8 @@ CHECK_RETURN Err MtCursor::emit_sym_namespace_definition(MnNode n) {
         err << emit_sym_namespace_definition(c);
         break;
       case sym_declaration:
-        err << emit_sym_declaration(c);
+        // not sure what happens if we see an "int x = 1" in a namespace...
+        err << emit_sym_declaration(c, false, false);
         break;
       default:
         err << emit_default(c);
@@ -2299,7 +2321,7 @@ CHECK_RETURN Err MtCursor::emit_sym_identifier(MnNode n) {
   } else if (preproc_vars.contains(name)) {
     err << emit_print("`");
     err << emit_text(n);
-  } else if (current_method && current_method->in_tick &&
+  } else if (current_method && (current_method->in_tick || current_method->in_tock) &&
              current_method->has_param(name)) {
     err << emit_replacement(n, "%s_%s", current_method->cname(),
                             n.text().c_str());
@@ -2526,6 +2548,41 @@ CHECK_RETURN Err MtCursor::emit_sym_qualified_identifier(MnNode node) {
 
   // FIXME loop style
 
+  bool elide_scope = false;
+  //MnNode node_scope;
+
+  for (auto child : node) {
+    if (child.field == field_scope) {
+      if (child.text() == "std") elide_scope = true;
+    }
+  }
+
+  for (auto child : node) {
+    if (child.field == field_scope) {
+      if (elide_scope) {
+        err << skip_over(child);
+        err << skip_ws();
+      }
+      else {
+        err << emit_identifier(child);
+      }
+    }
+    else if (child.field == field_name) {
+      err << emit_identifier(child);
+    }
+    else if (!child.is_named() && child.text() == "::" && elide_scope) {
+      err << skip_over(child);
+      err << skip_ws();
+    }
+    else {
+      err << emit_default(child);
+    }
+  }
+
+  //err << emit_text(node);
+
+  /*
+
   if (node.text() == "std::string") {
     err << emit_replacement(node, "string");
     return err;
@@ -2538,6 +2595,7 @@ CHECK_RETURN Err MtCursor::emit_sym_qualified_identifier(MnNode node) {
   err << emit_identifier(node_scope);
   err << emit_text(node_colon);
   err << emit_identifier(node_name);
+  */
 
   return err << check_done(node);
 }
@@ -2565,7 +2623,8 @@ CHECK_RETURN Err MtCursor::emit_statement(MnNode n) {
 
   switch (n.sym) {
     case sym_declaration:
-      err << emit_sym_declaration(n);
+      // type should be hoisted.
+      err << emit_sym_declaration(n, true, false);
       break;
     case sym_if_statement:
       err << emit_sym_if_statement(n);
@@ -2725,7 +2784,7 @@ CHECK_RETURN Err MtCursor::emit_sym_using_declaration(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_sym_declaration(MnNode n) {
+CHECK_RETURN Err MtCursor::emit_sym_declaration(MnNode n, bool elide_type, bool elide_value) {
   Err err = emit_ws_to(sym_declaration, n);
 
   bool is_static = false;
@@ -2768,17 +2827,39 @@ CHECK_RETURN Err MtCursor::emit_sym_declaration(MnNode n) {
   // Declarations inside scopes get their type removed, as the type+name decl
   // has been hoisted to the top of the scope.
 
+  bool elide_decl = false;
   for (auto child : n) {
-    if (child.sym == sym_storage_class_specifier)
-      err << skip_over(child) << skip_ws();
-    else if (child.sym == sym_type_qualifier)
-      err << skip_over(child) << skip_ws();
-    else if (child.field == field_type)
-      err << skip_over(child) << skip_ws();
-    else if (child.field == field_declarator)
-      err << emit_declarator(child);
-    else
-      err << emit_default(child);
+    if (child.field == field_declarator && child.is_identifier() && elide_type) {
+      elide_decl = true;
+    }
+  }
+
+  if (elide_decl) {
+    err << skip_over(n);
+    err << skip_ws();
+  }
+  else {
+    for (auto child : n) {
+      if (child.sym == sym_storage_class_specifier)
+        err << skip_over(child) << skip_ws();
+      else if (child.sym == sym_type_qualifier) {
+        err << skip_over(child) << skip_ws();
+      }
+      else if (child.field == field_type) {
+        if (elide_type) {
+          err << skip_over(child) << skip_ws();
+        }
+        else {
+          err << emit_type(child);
+        }
+      }
+      else if (child.field == field_declarator) {
+        err << emit_declarator(child, elide_value);
+      }
+      else {
+        err << emit_default(child);
+      }
+    }
   }
 
   return err << check_done(n);
@@ -2918,7 +2999,6 @@ CHECK_RETURN Err MtCursor::emit_preproc(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
     MnNode node, const std::string& delim_begin, const std::string& delim_end) {
   Err err = emit_ws_to(sym_compound_statement, node);
-  push_indent(node);
 
   for (auto child : node) {
     // We may need to insert input port bindings before any statement that
@@ -2928,13 +3008,15 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
 
     switch (child.sym) {
       case anon_sym_LBRACE:
+        push_indent(node);
         err << emit_replacement(child, "%s", delim_begin.c_str());
         err << emit_ws_to_newline();
         err << emit_hoisted_decls(node);
         break;
 
       case sym_declaration:
-        err << emit_sym_declaration(child);
+        // type should be hoisted
+        err << emit_sym_declaration(child, true, false);
         break;
 
       case sym_using_declaration:
@@ -2952,6 +3034,7 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
         break;
 
       case anon_sym_RBRACE:
+        pop_indent(node);
         err << emit_replacement(child, "%s", delim_end.c_str());
         break;
 
@@ -2961,7 +3044,6 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
     }
   }
 
-  pop_indent(node);
   return err << check_done(node);
 }
 

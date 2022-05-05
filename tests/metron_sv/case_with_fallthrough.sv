@@ -11,20 +11,18 @@ module Module
 /*public:*/
 
   always_comb begin /*tock*/
-    result;
-
-    result;
-    switch(my_reg) begin
-       0, // can we stick comments in here?
-       1,
-       2:
+    logic[7:0] result;
+    case(my_reg)
+      0, // can we stick comments in here?
+      1,
+      2:
         result = 10;
-       3: begin
+      3: begin
         result = 20;
       end
       default:
         result = 30;
-    end
+    endcase
 
     /*tick()*/;
     tock_ret = result;

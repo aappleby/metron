@@ -29,9 +29,7 @@ module Module
 /*public:*/
 
   always_comb begin /*tock_bindings*/
-    result;
-
-    result;
+    logic[7:0] result;
     // Submod bindings should _not_ end up here.submod_tock_sum_a_a1 = 1;
     submod_tock_sum_a_a2 = 2;
 

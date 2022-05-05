@@ -38,7 +38,6 @@ module Module
 
   always_comb begin /*tock*/
     logic[7:0] new_counter;
-
     // Two bindings should end up here.submod2_tock_add_two_a = tock_old_counter;
     submod1_tock_add_one_a = submod2_tock_add_two_ret;
 

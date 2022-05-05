@@ -27,7 +27,7 @@ module Module
   always_comb begin /*tock*/
     logic[19:0] foo;
 
-    /*submodule.tock();*/
+    /*submodule.tock()*/;
     foo = submodule_my_width + submodule_my_height;
   end
 

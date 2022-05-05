@@ -16,8 +16,14 @@ private:
   }
 
   void some_task() {
-    my_reg = my_reg + 3;
+    my_reg = my_reg + my_reg2 + 3;
+    some_task2();
+  }
+
+  void some_task2() {
+    my_reg2 = my_reg2 + 3;
   }
 
   logic<8> my_reg;
+  logic<8> my_reg2;
 };

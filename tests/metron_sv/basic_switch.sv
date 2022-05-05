@@ -10,8 +10,8 @@ module Module
 /*public:*/
 
   always_comb begin /*tock*/
-tick_selector = tock_selector;
-        /*tick(selector)*/;
+    tick_selector = tock_selector;
+    /*tick(selector)*/;
   end
 
 /*private:*/

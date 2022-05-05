@@ -18,7 +18,6 @@ module Module
     logic[31:0] f;
     logic[31:0] g;
     logic[31:0] h;
-
     a = 1'b0;
     b = 2'b00;
     c = 3'b000;
@@ -38,7 +37,6 @@ module Module
     logic[31:0] f;
     logic[31:0] g;
     logic[31:0] h;
-
     a = 1'b0;
     b = 2'b0_0;
     c = 3'b0_00;

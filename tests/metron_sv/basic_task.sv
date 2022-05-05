@@ -19,9 +19,15 @@ module Module
   end
 
   always_ff @(posedge clock) begin /*some_task*/
-    my_reg <= my_reg + 3;
+    my_reg <= my_reg + my_reg2 + 3;
+    /*some_task2()*/;
+  end
+
+  always_ff @(posedge clock) begin /*some_task2*/
+    my_reg2 <= my_reg2 + 3;
   end
 
   logic[7:0] my_reg;
+  logic[7:0] my_reg2;
 endmodule
 

@@ -16,7 +16,7 @@ module Submod
 
 
   always_comb begin /*tock*/
-    o_signal = i_signal + i_param;
+    o_signal = i_signal + tock_i_param;
     /*tick()*/;
     tock_ret = o_signal + 7;
   end
@@ -37,7 +37,6 @@ module Module
 
   always_comb begin /*tock*/
     logic[7:0] submod_return;
-
     submod_i_signal = 12;submod_tock_i_param = 13;
 
     submod_return = submod_tock_ret;

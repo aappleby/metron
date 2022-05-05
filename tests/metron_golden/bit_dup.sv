@@ -6,15 +6,15 @@ module Module
 );
 /*public:*/
 
-  always_comb begin /*tock_dup1*/
+  function void tock_dup1();
     logic a1;
     logic b1;
 
     a1 = 1'b1;
     b1 = {1 {a1}};
-  end
+  endfunction
 
-  always_comb begin /*tock_dup4*/
+  function void tock_dup4();
     logic  a1;
     logic[3:0]  b1;
     logic[1:0]  a2;
@@ -55,6 +55,6 @@ module Module
 
     a8 = 8'b00000001;
     b8 = {4 {a8}};
-  end
+  endfunction
 endmodule
 

@@ -21,15 +21,12 @@ module Module
 );
 /*public:*/
   function logic[7:0] tock();
-    my_struct1;
-    my_struct2;
-
-    my_struct1;
+    MyStruct1 my_struct1;
+    MyStruct2 my_struct2;
     my_struct1.a = 8'd1234;
     my_struct1.b = 12;
     my_struct1.c = 2'b01;
 
-    my_struct2;
     my_struct2.a = 8'd1234;
     my_struct2.b = 12;
     my_struct2.c = 2'b01;

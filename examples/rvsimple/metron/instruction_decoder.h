@@ -3,7 +3,9 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#pragma once
+#ifndef INSTRUCTION_DECODER_H
+#define INSTRUCTION_DECODER_H
+
 #include "config.h"
 #include "constants.h"
 #include "metron_tools.h"
@@ -27,3 +29,5 @@ class instruction_decoder {
     inst_rs2 = b5(inst, 20);
   }
 };
+
+#endif // INSTRUCTION_DECODER_H

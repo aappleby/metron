@@ -3,7 +3,9 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#pragma once
+#ifndef MULTIPLEXER8_H
+#define MULTIPLEXER8_H
+
 #include "config.h"
 #include "constants.h"
 #include "metron_tools.h"
@@ -38,3 +40,5 @@ class multiplexer8 {
     // clang-format on
   }
 };
+
+#endif // MULTIPLEXER8_H

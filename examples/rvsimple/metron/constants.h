@@ -3,7 +3,9 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#pragma once
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
+
 #include "metron_tools.h"
 
 namespace rv_constants {
@@ -156,3 +158,5 @@ static const int MC_CTL_ALU_B_IMM = 0b01;
 static const int MC_CTL_ALU_B_4 = 0b10;
 
 };  // namespace rv_constants
+
+#endif // CONSTANTS_H

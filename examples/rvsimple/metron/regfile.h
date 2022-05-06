@@ -3,7 +3,9 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#pragma once
+#ifndef REGFILE_H
+#define REGFILE_H
+
 #include "config.h"
 #include "constants.h"
 #include "metron_tools.h"
@@ -41,3 +43,5 @@ class regfile {
       if (rd_address != b5(0b0)) _register[rd_address] = rd_data;
   }
 };
+
+#endif // REGFILE_H

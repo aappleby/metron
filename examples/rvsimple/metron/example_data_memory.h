@@ -3,7 +3,9 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#pragma once
+#ifndef EXAMPLE_DATA_MEMORY_H
+#define EXAMPLE_DATA_MEMORY_H
+
 #include "config.h"
 #include "constants.h"
 #include "metron_tools.h"
@@ -47,3 +49,5 @@ class example_data_memory {
     readmemh(s, mem);
   }
 };
+
+#endif // EXAMPLE_DATA_MEMORY_H

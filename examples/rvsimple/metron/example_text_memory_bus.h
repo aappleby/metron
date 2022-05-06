@@ -3,7 +3,9 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#pragma once
+#ifndef EXAMPLE_TEXT_MEMORY_BUS_H
+#define EXAMPLE_TEXT_MEMORY_BUS_H
+
 #include "config.h"
 #include "constants.h"
 #include "example_text_memory.h"
@@ -28,3 +30,5 @@ class example_text_memory_bus {
             : b32(DONTCARE);
   }
 };
+
+#endif // EXAMPLE_TEXT_MEMORY_BUS_H

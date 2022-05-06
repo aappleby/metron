@@ -3,7 +3,8 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#pragma once
+#ifndef ADDER_H
+#define ADDER_H
 
 #include "config.h"
 #include "constants.h"
@@ -18,3 +19,5 @@ class adder {
 
   void tock() { result = operand_a + operand_b; }
 };
+
+#endif // ADDER_H

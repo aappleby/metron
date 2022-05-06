@@ -158,7 +158,7 @@ def verilate_dir(src_dir, src_files, src_top, dst_dir):
     return (verilated_hdr, verilated_obj)
 
 
-def cpp_binary(bin_name, src_files, src_objs=None, deps=None, **kwargs):
+def cpp_binary(bin_name, src_files, src_objs=None, deps=None, link_deps=None, **kwargs):
     """
     Compiles a C++ binary from the given source files.
     """
@@ -166,6 +166,8 @@ def cpp_binary(bin_name, src_files, src_objs=None, deps=None, **kwargs):
         src_objs = []
     if deps is None:
         deps = []
+    if link_deps is None:
+        link_deps = []
 
     divider(f"Compile {bin_name}")
 
@@ -183,7 +185,7 @@ def cpp_binary(bin_name, src_files, src_objs=None, deps=None, **kwargs):
         src_objs.append(obj_name)
     ninja.build(outputs=bin_name,
                 rule="link",
-                inputs=src_objs + deps,
+                inputs=src_objs + link_deps,
                 variables=kwargs)
 
 
@@ -302,7 +304,7 @@ def build_metron_app():
             "bin",
             "submodules/tree-sitter/lib/include"
         ],
-        deps=["bin/libmetron.a"],
+        link_deps=["bin/libmetron.a"],
     )
 
 # ------------------------------------------------------------------------------
@@ -318,7 +320,7 @@ def build_metron_test():
             "tests/test_utils.cpp",
         ],
         includes=base_includes,
-        deps=["bin/libmetron.a"],
+        link_deps=["bin/libmetron.a"],
     )
 
 # ------------------------------------------------------------------------------
@@ -417,7 +419,7 @@ def build_rvsimple():
         src_files=["examples/rvsimple/main.cpp"],
         includes=base_includes,
         opt=opt_mode,
-        deps=["bin/libmetron.a"],
+        link_deps=["bin/libmetron.a"],
     )
 
     sv_srcs = metronize_dir(mt_root, "toplevel.h", sv_root)
@@ -434,7 +436,8 @@ def build_rvsimple():
         src_files=["examples/rvsimple/main_vl.cpp"],
         includes=base_includes + [vl_root],
         src_objs=["obj/verilated.o", vl_vobj],
-        deps=[vl_vhdr]
+        deps=[vl_vhdr],
+        link_deps=["bin/libmetron.a"],
     )
 
     ref_sv_root = "examples/rvsimple/reference_sv"
@@ -452,7 +455,8 @@ def build_rvsimple():
         src_files=["examples/rvsimple/main_ref_vl.cpp"],
         includes=base_includes + [ref_vl_root],
         src_objs=["obj/verilated.o", ref_vobj],
-        deps=[ref_vhdr]
+        deps=[ref_vhdr],
+        link_deps=["bin/libmetron.a"],
     )
 
 
@@ -468,7 +472,7 @@ def build_rvtiny():
         bin_name="bin/examples/rvtiny",
         src_files=["examples/rvtiny/main.cpp"],
         includes=base_includes + [mt_root],
-        deps=["bin/libmetron.a"],
+        link_deps=["bin/libmetron.a"],
         opt=opt_mode,
     )
 
@@ -486,7 +490,8 @@ def build_rvtiny():
         src_files=["examples/rvtiny/main_vl.cpp"],
         includes=base_includes + [vl_root],
         src_objs=["obj/verilated.o", rvtiny_vl_vobj],
-        deps=[rvtiny_vl_vhdr]
+        deps=[rvtiny_vl_vhdr],
+        link_deps=["bin/libmetron.a"],
     )
 
 
@@ -502,7 +507,7 @@ def build_rvtiny_sync():
         bin_name="bin/examples/rvtiny_sync",
         src_files=["examples/rvtiny_sync/main.cpp"],
         includes=base_includes,
-        deps=["bin/libmetron.a"],
+        link_deps=["bin/libmetron.a"],
         opt=opt_mode,
     )
 
@@ -520,7 +525,8 @@ def build_rvtiny_sync():
         src_files=["examples/rvtiny_sync/main_vl.cpp"],
         includes=base_includes + [vl_root],
         src_objs=["obj/verilated.o", verilated_o],
-        deps=[verilated_h]
+        deps=[verilated_h],
+        link_deps=["bin/libmetron.a"],
     )
 
 # ------------------------------------------------------------------------------
@@ -550,7 +556,7 @@ def build_pong():
         includes=base_includes,
         global_libs="-lSDL2",
         opt=opt_mode,
-        deps=["bin/libmetron.a"],
+        link_deps=["bin/libmetron.a"],
     )
 
     metronized_src = metronize_dir(mt_root, "pong.h", sv_root)

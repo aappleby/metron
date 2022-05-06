@@ -3,7 +3,9 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#pragma once
+#ifndef SINGLECYCLE_CTLPATH_H
+#define SINGLECYCLE_CTLPATH_H
+
 #include "alu_control.h"
 #include "config.h"
 #include "constants.h"
@@ -83,3 +85,5 @@ class singlecycle_ctlpath {
   control_transfer transfer;
   alu_control alu_ctrl;
 };
+
+#endif // SINGLECYCLE_CTLPATH_H

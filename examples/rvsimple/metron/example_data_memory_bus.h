@@ -3,7 +3,9 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#pragma once
+#ifndef EXAMPLE_DATA_MEMORY_BUS
+#define EXAMPLE_DATA_MEMORY_BUS
+
 #include "config.h"
 #include "constants.h"
 #include "example_data_memory.h"
@@ -36,3 +38,5 @@ class example_data_memory_bus {
     read_data = read_enable && is_data_memory ? fetched : b32(DONTCARE);
   }
 };
+
+#endif // EXAMPLE_DATA_MEMORY_BUS

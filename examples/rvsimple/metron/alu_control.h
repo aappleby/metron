@@ -3,7 +3,9 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#pragma once
+#ifndef ALU_CONTROL_H
+#define ALU_CONTROL_H
+
 #include "config.h"
 #include "constants.h"
 #include "metron_tools.h"
@@ -75,3 +77,5 @@ class alu_control {
   }
   // clang-format on
 };
+
+#endif // ALU_CONTROL_H

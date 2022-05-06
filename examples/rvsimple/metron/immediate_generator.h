@@ -3,7 +3,9 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#pragma once
+#ifndef IMMEDIATE_GENERATOR_H
+#define IMMEDIATE_GENERATOR_H
+
 #include "config.h"
 #include "constants.h"
 #include "metron_tools.h"
@@ -48,3 +50,5 @@ class immediate_generator {
     // clang-format on
   }
 };
+
+#endif // IMMEDIATE_GENERATOR_H

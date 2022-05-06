@@ -3,7 +3,9 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#pragma once
+#ifndef DATA_MEMORY_INTERFACE_H
+#define DATA_MEMORY_INTERFACE_H
+
 #include "config.h"
 #include "constants.h"
 #include "metron_tools.h"
@@ -63,3 +65,5 @@ class data_memory_interface {
     read_data = sign_fix;
   }
 };
+
+#endif // DATA_MEMORY_INTERFACE_H

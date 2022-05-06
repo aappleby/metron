@@ -115,7 +115,7 @@ build bin/libmetron.a: static_lib obj/submodules/tree-sitter/lib/src/lib.o $
 ################################################################################
 # Compile bin/metron
 
-build obj/src/MetronApp.o: compile_cpp src/MetronApp.cpp | bin/libmetron.a
+build obj/src/MetronApp.o: compile_cpp src/MetronApp.cpp
   includes = -I. -Ibin -Isubmodules/tree-sitter/lib/include
 build bin/metron: link obj/src/MetronApp.o bin/libmetron.a
   includes = -I. -Ibin -Isubmodules/tree-sitter/lib/include
@@ -124,13 +124,11 @@ build bin/metron: link obj/src/MetronApp.o bin/libmetron.a
 ################################################################################
 # Compile bin/metron_test
 
-build obj/tests/test_main.o: compile_cpp tests/test_main.cpp | bin/libmetron.a
+build obj/tests/test_main.o: compile_cpp tests/test_main.cpp
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include
-build obj/tests/test_logic.o: compile_cpp tests/test_logic.cpp | $
-    bin/libmetron.a
+build obj/tests/test_logic.o: compile_cpp tests/test_logic.cpp
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include
-build obj/tests/test_utils.o: compile_cpp tests/test_utils.cpp | $
-    bin/libmetron.a
+build obj/tests/test_utils.o: compile_cpp tests/test_utils.cpp
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include
 build bin/metron_test: link obj/tests/test_main.o obj/tests/test_logic.o $
     obj/tests/test_utils.o bin/libmetron.a
@@ -242,8 +240,7 @@ build obj/examples/uart/main_vl.o: compile_cpp examples/uart/main_vl.cpp | $
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include $
       -Igen/examples/uart
 build bin/examples/uart_vl: link obj/verilated.o $
-    gen/examples/uart/metron_vl/Vuart_top__ALL.o $
-    obj/examples/uart/main_vl.o gen/examples/uart/metron_vl/Vuart_top.h
+    gen/examples/uart/metron_vl/Vuart_top__ALL.o obj/examples/uart/main_vl.o
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include $
       -Igen/examples/uart
 
@@ -280,8 +277,7 @@ build obj/examples/uart/uart_test_ice40.bin: icepack $
 ################################################################################
 # Compile bin/examples/rvsimple
 
-build obj/examples/rvsimple/main.o: compile_cpp examples/rvsimple/main.cpp $
-    | bin/libmetron.a
+build obj/examples/rvsimple/main.o: compile_cpp examples/rvsimple/main.cpp
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include
   opt = 
 build bin/examples/rvsimple: link obj/examples/rvsimple/main.o bin/libmetron.a
@@ -409,8 +405,7 @@ build obj/examples/rvsimple/main_vl.o: compile_cpp $
       -Igen/examples/rvsimple/metron_vl
 build bin/examples/rvsimple_vl: link obj/verilated.o $
     gen/examples/rvsimple/metron_vl/Vtoplevel__ALL.o $
-    obj/examples/rvsimple/main_vl.o $
-    gen/examples/rvsimple/metron_vl/Vtoplevel.h
+    obj/examples/rvsimple/main_vl.o bin/libmetron.a
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include $
       -Igen/examples/rvsimple/metron_vl
 
@@ -464,8 +459,7 @@ build obj/examples/rvsimple/main_ref_vl.o: compile_cpp $
       -Igen/examples/rvsimple/reference_vl
 build bin/examples/rvsimple_ref: link obj/verilated.o $
     gen/examples/rvsimple/reference_vl/Vtoplevel__ALL.o $
-    obj/examples/rvsimple/main_ref_vl.o $
-    gen/examples/rvsimple/reference_vl/Vtoplevel.h
+    obj/examples/rvsimple/main_ref_vl.o bin/libmetron.a
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include $
       -Igen/examples/rvsimple/reference_vl
 
@@ -473,8 +467,7 @@ build bin/examples/rvsimple_ref: link obj/verilated.o $
 ################################################################################
 # Compile bin/examples/rvtiny
 
-build obj/examples/rvtiny/main.o: compile_cpp examples/rvtiny/main.cpp | $
-    bin/libmetron.a
+build obj/examples/rvtiny/main.o: compile_cpp examples/rvtiny/main.cpp
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include $
       -Iexamples/rvtiny/metron
   opt = 
@@ -519,7 +512,7 @@ build obj/examples/rvtiny/main_vl.o: compile_cpp $
       -Igen/examples/rvtiny/metron_vl
 build bin/examples/rvtiny_vl: link obj/verilated.o $
     gen/examples/rvtiny/metron_vl/Vtoplevel__ALL.o $
-    obj/examples/rvtiny/main_vl.o gen/examples/rvtiny/metron_vl/Vtoplevel.h
+    obj/examples/rvtiny/main_vl.o bin/libmetron.a
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include $
       -Igen/examples/rvtiny/metron_vl
 
@@ -528,7 +521,7 @@ build bin/examples/rvtiny_vl: link obj/verilated.o $
 # Compile bin/examples/rvtiny_sync
 
 build obj/examples/rvtiny_sync/main.o: compile_cpp $
-    examples/rvtiny_sync/main.cpp | bin/libmetron.a
+    examples/rvtiny_sync/main.cpp
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include
   opt = 
 build bin/examples/rvtiny_sync: link obj/examples/rvtiny_sync/main.o $
@@ -573,8 +566,7 @@ build obj/examples/rvtiny_sync/main_vl.o: compile_cpp $
       -Igen/examples/rvtiny_sync/metron_vl
 build bin/examples/rvtiny_sync_vl: link obj/verilated.o $
     gen/examples/rvtiny_sync/metron_vl/Vtoplevel__ALL.o $
-    obj/examples/rvtiny_sync/main_vl.o $
-    gen/examples/rvtiny_sync/metron_vl/Vtoplevel.h
+    obj/examples/rvtiny_sync/main_vl.o bin/libmetron.a
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include $
       -Igen/examples/rvtiny_sync/metron_vl
 
@@ -582,8 +574,7 @@ build bin/examples/rvtiny_sync_vl: link obj/verilated.o $
 ################################################################################
 # Compile bin/examples/pong
 
-build obj/examples/pong/main.o: compile_cpp examples/pong/main.cpp | $
-    bin/libmetron.a
+build obj/examples/pong/main.o: compile_cpp examples/pong/main.cpp
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include
   global_libs = -lSDL2
   opt = 

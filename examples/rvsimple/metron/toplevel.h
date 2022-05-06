@@ -3,7 +3,8 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#pragma once
+#ifndef TOPLEVEL_H
+#define TOPLEVEL_H
 
 #include "config.h"
 #include "constants.h"
@@ -67,3 +68,5 @@ class toplevel {
   example_text_memory_bus text_memory_bus;
   example_data_memory_bus data_memory_bus;
 };
+
+#endif // TOPLEVEL_H

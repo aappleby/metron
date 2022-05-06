@@ -3,7 +3,9 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#pragma once
+#ifndef CONTROL_TRANSFER_H
+#define CONTROL_TRANSFER_H
+
 #include "config.h"
 #include "constants.h"
 #include "metron_tools.h"
@@ -29,3 +31,5 @@ class control_transfer {
     // clang-format on
   }
 };
+
+#endif // CONTROL_TRANSFER_H

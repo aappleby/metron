@@ -3,7 +3,9 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#pragma once
+#ifndef SINGLECYCLE_DATAPATH_H
+#define SINGLECYCLE_DATAPATH_H
+
 #include "adder.h"
 #include "alu.h"
 #include "config.h"
@@ -174,3 +176,5 @@ class singlecycle_datapath {
   instruction_decoder idec;
   immediate_generator igen;
 };
+
+#endif // SINGLECYCLE_DATAPATH_H

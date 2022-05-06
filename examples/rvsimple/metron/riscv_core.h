@@ -3,7 +3,9 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#pragma once
+#ifndef RISCV_CORE_H
+#define RISCV_CORE_H
+
 #include "config.h"
 #include "constants.h"
 #include "data_memory_interface.h"
@@ -102,3 +104,5 @@ class riscv_core {
   singlecycle_ctlpath ctlpath;
   data_memory_interface dmem;
 };
+
+#endif // RISCV_CORE_H

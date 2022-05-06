@@ -3,7 +3,9 @@
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
 //                Marek Materzok, University of Wrocław
 
-#pragma once
+#ifndef MULTIPLEXER4_H
+#define MULTIPLEXER4_H
+
 #include "config.h"
 #include "constants.h"
 #include "metron_tools.h"
@@ -38,3 +40,5 @@ class multiplexer4 {
     }
   }
 };
+
+#endif // MULTIPLEXER4_H

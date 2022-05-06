@@ -23,4 +23,3 @@ module Module
   logic my_sig;
   logic my_reg;
 endmodule
-

@@ -18,4 +18,3 @@ a = 1; a = a + 7; tock = a; endfunction
 
 
 endmodule
-

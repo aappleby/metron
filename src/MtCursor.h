@@ -47,7 +47,8 @@ struct MtCursor {
   CHECK_RETURN Err emit_identifier(MnNode n);
   CHECK_RETURN Err emit_child_expressions(MnNode n);
   CHECK_RETURN Err emit_default(MnNode n);
-
+  CHECK_RETURN Err emit_toplevel_block(MnNode n);
+  CHECK_RETURN Err emit_toplevel_node(MnNode n);
   CHECK_RETURN Err emit_preproc(MnNode n);
   CHECK_RETURN Err emit_type(MnNode n);
   CHECK_RETURN Err emit_declarator(MnNode n, bool elide_value = false);
@@ -98,6 +99,9 @@ struct MtCursor {
   CHECK_RETURN Err emit_sym_namespace_definition(MnNode n);
   CHECK_RETURN Err emit_sym_number_literal(MnNode n, int size_cast = 0);
   CHECK_RETURN Err emit_sym_parameter_list(MnNode n);
+  CHECK_RETURN Err emit_sym_preproc_arg(MnNode n);
+  CHECK_RETURN Err emit_sym_preproc_def(MnNode n);
+  CHECK_RETURN Err emit_sym_preproc_ifdef(MnNode n);
   CHECK_RETURN Err emit_sym_preproc_include(MnNode n);
   CHECK_RETURN Err emit_sym_primitive_type(MnNode n);
   CHECK_RETURN Err emit_sym_qualified_identifier(MnNode n);

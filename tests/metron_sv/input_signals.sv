@@ -70,4 +70,3 @@ module Module
   logic[7:0] submod_tock_ret;
 
 endmodule
-

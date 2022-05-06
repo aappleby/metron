@@ -1,4 +1,6 @@
-#pragma once
+#ifndef UART_TX_H
+#define UART_TX_H
+
 #include "metron_tools.h"
 
 // clang-format off
@@ -72,3 +74,5 @@ class uart_tx {
 
 //==============================================================================
 // clang-format on
+
+#endif // UART_TX_H

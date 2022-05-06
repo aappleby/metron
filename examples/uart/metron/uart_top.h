@@ -1,4 +1,6 @@
-#pragma once
+#ifndef UART_TOP_H
+#define UART_TOP_H
+
 #include "metron_tools.h"
 #include "uart_hello.h"
 #include "uart_rx.h"
@@ -32,3 +34,5 @@ class uart_top {
 };
 
 //==============================================================================
+
+#endif // UART_TOP_H

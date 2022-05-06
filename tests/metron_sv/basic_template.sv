@@ -41,4 +41,3 @@ module Module
   logic[11-1:0] submodule_my_height;
 
 endmodule
-

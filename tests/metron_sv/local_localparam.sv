@@ -15,4 +15,3 @@ module Module
   always_comb tock_ret = tock();
 
 endmodule
-

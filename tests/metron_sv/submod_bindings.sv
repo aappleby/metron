@@ -74,4 +74,3 @@ module Module
   logic[7:0] submod_tock_sum_b_ret;
 
 endmodule
-

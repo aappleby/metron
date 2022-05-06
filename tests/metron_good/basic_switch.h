@@ -13,8 +13,10 @@ private:
 
   void tick(logic<2> selector) {
     switch(selector) {
-      case 0: my_reg = 17; break;
-      case 1: my_reg = 22; break;
+      case 0: // comment
+        my_reg = 17; break;
+      case 1:  // comment
+        my_reg = 22; break;
       case 2: my_reg = 30; break;
       case 3: // fallthrough
       case 4:

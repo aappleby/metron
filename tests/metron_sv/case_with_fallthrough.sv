@@ -36,4 +36,3 @@ module Module
 
   logic[7:0] my_reg;
 endmodule
-

@@ -27,4 +27,3 @@ module Module
   end
 
 endmodule
-

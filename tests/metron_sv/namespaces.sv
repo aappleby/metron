@@ -25,4 +25,3 @@ module Module
   endfunction
   always_comb tock2_ret = tock2();
 endmodule
-

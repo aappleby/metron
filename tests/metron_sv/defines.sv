@@ -5,7 +5,7 @@
 
 `define MY_CONSTANT1 10
 `define MY_CONSTANT2 20
-`define MY_OTHER_CONSTANT (MY_CONSTANT1 + MY_CONSTANT2 + 7)
+`define MY_OTHER_CONSTANT (`MY_CONSTANT1 + `MY_CONSTANT2 + 7)
 
 module Module
 (
@@ -20,4 +20,3 @@ module Module
   always_comb tock_ret = tock();
 
 endmodule
-

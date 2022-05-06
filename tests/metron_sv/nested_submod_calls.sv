@@ -68,4 +68,3 @@ module Module
   logic[7:0] submod2_tock_add_two_ret;
 
 endmodule
-

@@ -2128,59 +2128,90 @@ CHECK_RETURN Err MtCursor::emit_everything() {
 }
 
 //------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_toplevel_node(MnNode node) {
+  Err err = emit_ws_to(node);
+
+  switch (node.sym) {
+    case sym_identifier:
+      err << emit_identifier(node);
+      break;
+
+    case sym_preproc_def:
+    case sym_preproc_if:
+    case sym_preproc_ifdef:
+    case sym_preproc_else:
+    case sym_preproc_call:
+    case sym_preproc_arg:
+    case sym_preproc_include:
+      err << emit_preproc(node);
+      break;
+
+    case sym_class_specifier:
+    case sym_struct_specifier:
+    case sym_type_definition:
+    case sym_template_declaration:
+      err << emit_type(node);
+      break;
+
+    case sym_namespace_definition:
+      err << emit_sym_namespace_definition(node);
+      break;
+
+    case sym_expression_statement:
+      if (node.text() != ";") {
+        err << ERR(
+            "Found unexpected expression statement in translation unit\n");
+      }
+      err << skip_over(node);
+      break;
+
+    case sym_declaration:
+      err << emit_sym_declaration(node, false, false);
+      break;
+
+    case anon_sym_SEMI:
+      err << skip_over(node);
+      break;
+
+    default:
+      err << emit_default(node);
+      break;
+  }
+
+  return err << check_done(node);
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_toplevel_block(MnNode n) {
+  Err err = emit_ws_to(n);
+
+  for (auto c : n) {
+    err << emit_toplevel_node(c);
+    err << check_done(c);
+  }
+
+  // Toplevel blocks can have trailing whitespace that isn't contained by child
+  // nodes.
+  err << emit_ws();
+
+  return err << check_done(n);
+}
+
+//------------------------------------------------------------------------------
 // Discard any trailing semicolons in the translation unit.
 
 CHECK_RETURN Err MtCursor::emit_sym_translation_unit(MnNode n) {
   Err err = emit_ws_to(sym_translation_unit, n);
 
-  for (auto c : n) {
-    switch (c.sym) {
-      case sym_preproc_def:
-      case sym_preproc_if:
-      case sym_preproc_ifdef:
-      case sym_preproc_else:
-      case sym_preproc_call:
-      case sym_preproc_arg:
-      case sym_preproc_include:
-        err << emit_preproc(c);
-        break;
-
-      case sym_class_specifier:
-      case sym_struct_specifier:
-      case sym_type_definition:
-      case sym_template_declaration:
-        err << emit_type(c);
-        break;
-
-      case sym_namespace_definition:
-        err << emit_sym_namespace_definition(c);
-        break;
-
-      case sym_expression_statement:
-        if (c.text() != ";") {
-          err << ERR(
-              "Found unexpected expression statement in translation unit\n");
-        }
-        err << skip_over(c);
-        break;
-
-      case anon_sym_SEMI:
-        err << skip_over(c);
-        break;
-
-      default:
-        err << emit_default(c);
-        break;
-    }
-  }
+  err << emit_toplevel_block(n);
 
   if (cursor < current_source->source_end) {
     err << emit_span(cursor, current_source->source_end);
   }
 
-  err << emit_ws();
-
-  return err << check_done(n);
+  return err << emit_ws();
 }
 
 //------------------------------------------------------------------------------
@@ -2425,8 +2456,10 @@ CHECK_RETURN Err MtCursor::emit_sym_case_statement(MnNode n) {
       colon_hit = true;
     } else {
       if (colon_hit) {
-        if (child.sym != sym_comment) anything_after_colon = true;
-        break;
+        if (child.sym != sym_comment) {
+          anything_after_colon = true;
+          break;
+        }
       }
     }
   }
@@ -2873,13 +2906,26 @@ CHECK_RETURN Err MtCursor::emit_sym_sized_type_specifier(MnNode n) {
 
   // FIXME loop style
 
-  auto node_lit = n.child(0);
-  auto node_type = n.child(1);
+  for (auto c : n) {
+    if (c.field == field_type) {
+      push_cursor(c);
+      err << emit_type(c);
+      err << emit_ws();
+      cursor = c.end();
+      pop_cursor(c);
+      break;
+    }
+  }
 
-  err << emit_text(node_lit);
-  err << emit_type(node_type);
-
-  cursor = n.end();
+  for (auto c : n) {
+    if (c.field == field_type) {
+      err << skip_over(c);
+      err << skip_ws();
+    }
+    else {
+      err << emit_default(c);
+    }
+  }
 
   return err << check_done(n);
 }
@@ -2928,66 +2974,99 @@ CHECK_RETURN Err MtCursor::emit_sym_field_identifier(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
+// preproc_arg has leading whitespace for some reason
+
+CHECK_RETURN Err MtCursor::emit_sym_preproc_arg(MnNode n) {
+  Err err;
+  //err << emit_text(n);
+
+  // If we see any other #defined constants inside a #defined value,
+  // prefix them with '`'
+  std::string arg = n.text();
+  std::string new_arg;
+
+  for (int i = 0; i < arg.size(); i++) {
+    for (const auto& def_pair : preproc_vars) {
+      if (def_pair.first == arg) continue;
+      if (strncmp(&arg[i], def_pair.first.c_str(), def_pair.first.size()) ==
+          0) {
+        new_arg.push_back('`');
+        break;
+      }
+    }
+    new_arg.push_back(arg[i]);
+  }
+
+  err << emit_replacement(n, new_arg.c_str());
+
+  return err << check_done(n);
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_sym_preproc_ifdef(MnNode n) {
+  Err err = emit_ws_to(sym_preproc_ifdef, n);
+
+  for (auto child : n) {
+    err << emit_toplevel_node(child);
+  }
+
+  return err << check_done(n);
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_sym_preproc_def(MnNode n) {
+  Err err = emit_ws_to(sym_preproc_def, n);
+
+  MnNode node_name;
+
+  for (auto child : n) {
+    if (child.field == field_name) {
+      err << emit_identifier(child);
+      node_name = child;
+    }
+    else if (child.field == field_value) {
+      preproc_vars[node_name.text()] = child;
+      err << emit_sym_preproc_arg(child);
+    }
+    else {
+      err << emit_default(child);
+    }
+  }
+
+  return err << check_done(n);
+}
+
+//------------------------------------------------------------------------------
 // FIXME need to do smarter stuff here...
 
 CHECK_RETURN Err MtCursor::emit_preproc(MnNode n) {
   Err err = emit_ws_to(n);
 
   switch (n.sym) {
-    case sym_preproc_def: {
-      auto node_lit = n.child(0);
-      auto node_name = n.get_field(field_name);
-      auto node_value = n.get_field(field_value);
-
-      err << emit_replacement(node_lit, "`define");
-      err << emit_text(node_name);
-      if (!node_value.is_null()) {
-        err << emit_text(node_value);
-      }
-
-      preproc_vars[node_name.text()] = node_value;
+    case sym_preproc_def:
+      err << emit_sym_preproc_def(n);
       break;
-    }
-
     case sym_preproc_if:
       err << skip_over(n);
       break;
-
     case sym_preproc_call:
       err << skip_over(n);
       break;
-
-    case sym_preproc_arg: {
-      // If we see any other #defined constants inside a #defined value,
-      // prefix them with '`'
-      std::string arg = n.text();
-      std::string new_arg;
-
-      for (int i = 0; i < arg.size(); i++) {
-        for (const auto& def_pair : preproc_vars) {
-          if (def_pair.first == arg) continue;
-          if (strncmp(&arg[i], def_pair.first.c_str(), def_pair.first.size()) ==
-              0) {
-            new_arg.push_back('`');
-            break;
-          }
-        }
-        new_arg.push_back(arg[i]);
-      }
-
-      err << emit_replacement(n, new_arg.c_str());
+    case sym_preproc_arg:
+      err << emit_sym_preproc_arg(n);
       break;
-    }
-    case sym_preproc_include: {
-      err << emit_sym_preproc_include(MnNode(n));
+    case sym_preproc_include:
+      err << emit_sym_preproc_include(n);
       break;
-    }
+    case sym_preproc_ifdef:
+      err << emit_sym_preproc_ifdef(n);
+      break;
     default:
       n.error();
       break;
   }
-
-  err << emit_ws();
 
   return err << check_done(n);
 }
@@ -3118,8 +3197,24 @@ CHECK_RETURN Err MtCursor::emit_child_expressions(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_default(MnNode node) {
   Err err = emit_ws_to(node);
 
+  static std::map<std::string,std::string> literal_map = {
+    {"#ifdef",  "`ifdef"},
+    {"#ifndef", "`ifndef"},
+    {"#else",   "`else"},
+    {"#elif",   "`elif"},
+    {"#endif",  "`endif"},
+    {"#define", "`define"},
+    {"#undef",  "`undef"},
+  };
+
   if (!node.is_named()) {
-    err << emit_text(node);
+    auto it = literal_map.find(node.text());
+    if (it != literal_map.end()) {
+      err << emit_replacement(node, (*it).second.c_str());
+    }
+    else {
+      err << emit_text(node);
+    }
     return err;
   }
 

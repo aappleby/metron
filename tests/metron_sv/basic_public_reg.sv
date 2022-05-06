@@ -20,4 +20,3 @@ module Module
 
   logic my_reg;
 endmodule
-

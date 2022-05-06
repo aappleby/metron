@@ -7,4 +7,3 @@ module Module
 input logic clock
 );
 endmodule
-

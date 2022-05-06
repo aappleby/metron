@@ -55,4 +55,3 @@ module Module
     b8 = {4 {a8}};
   endfunction
 endmodule
-

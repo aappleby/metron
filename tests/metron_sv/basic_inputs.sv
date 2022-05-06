@@ -25,4 +25,3 @@ module Module
   logic[6:0] my_reg;
 endmodule
 // clang-format on
-

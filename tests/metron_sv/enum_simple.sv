@@ -57,4 +57,3 @@ module Module
   always_comb tock1_ret = tock1();
 endmodule
 // clang-format on
-

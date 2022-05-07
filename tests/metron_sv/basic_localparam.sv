@@ -8,17 +8,27 @@ module Module
 );
 /*public:*/
 
-  always_comb begin /*tock*/
+  function void tock();
     /*tick()*/;
-  end
+  endfunction
 
 /*private:*/
 
   localparam int my_val = 7;
 
-  always_ff @(posedge clock) begin /*tick*/
+  function void tick();
     my_reg <= my_reg + my_val;
-  end
+  endfunction
 
   logic[6:0] my_reg;
+
+  always_comb begin
+    tock();
+  end
+
+
+  always_ff @(posedge clock) begin
+    tick();
+  end
+
 endmodule

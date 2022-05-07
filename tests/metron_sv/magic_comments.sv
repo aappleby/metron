@@ -18,4 +18,13 @@ module Module
   end
 
 
+  always_comb begin
+    tock();
+  end
+
+
+  always_ff @(posedge clock) begin
+  end
+
+
 endmodule

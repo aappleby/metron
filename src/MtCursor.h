@@ -75,7 +75,10 @@ struct MtCursor {
   CHECK_RETURN Err emit_port_list(MnNode class_body);
   CHECK_RETURN Err emit_trigger_call(MtMethod* m);
   CHECK_RETURN Err emit_trigger_calls();
+  CHECK_RETURN Err emit_param_as_field(MtMethod* method, MnNode n);
   CHECK_RETURN Err emit_modparam_list();
+  CHECK_RETURN Err emit_call_binding(MnNode n);
+  CHECK_RETURN Err emit_simple_call(MnNode n);
 
   // Per-symbol emit()s.
   // clang-format off

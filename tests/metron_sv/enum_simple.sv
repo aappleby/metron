@@ -54,6 +54,14 @@ module Module
     se1 = B8;
     tock1 = 1;
   endfunction
-  always_comb tock1_ret = tock1();
+
+  always_comb begin
+    tock1_ret = tock1();
+  end
+
+
+  always_ff @(posedge clock) begin
+  end
+
 endmodule
 // clang-format on

@@ -9,21 +9,31 @@ module Module
 );
 /*public:*/
 
-  always_comb begin /*tock*/
+  function void tock();
     /*tick()*/;
-  end
+  endfunction
 
 /*private:*/
 
-  always_ff @(posedge clock) begin /*tick*/
+  function void tick();
     my_reg1 = my_reg1 + 1;
     my_reg2 = my_reg2 + 1;
     my_reg3 = my_reg3 - 1;
     my_reg4 = my_reg4 - 1;
-  end
+  endfunction
 
   int my_reg1;
   int my_reg2;
   int my_reg3;
   int my_reg4;
+
+  always_comb begin
+    tock();
+  end
+
+
+  always_ff @(posedge clock) begin
+    tick();
+  end
+
 endmodule

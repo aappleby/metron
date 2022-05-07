@@ -14,12 +14,21 @@ module Module
 /*public:*/
 
 
-  always_comb begin /*tock1*/
+  function void tock1();
     output_val = input_val + 7;
-  end
+  endfunction
 
   function logic[2:0] tock(logic[2:0] input_val);
     tock = input_val + 8;
   endfunction
-  always_comb tock_ret = tock(tock_input_val);
+
+  always_comb begin
+    tock1();
+    tock_ret = tock(tock_input_val);
+  end
+
+
+  always_ff @(posedge clock) begin
+  end
+
 endmodule

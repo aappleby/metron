@@ -8,8 +8,8 @@ module Module
 );
 /*public:*/
 
-  initial begin /*Module*/
-    /*write("Hello World?\n")*/;
+  initial begin
+    $write("Hello World?\n");
   end
 
   function void tock1();
@@ -35,4 +35,14 @@ module Module
 
     d = {1'(a), 2'(b), 3'(c)};
   endfunction
+
+  always_comb begin
+    tock1();
+    tock2();
+  end
+
+
+  always_ff @(posedge clock) begin
+  end
+
 endmodule

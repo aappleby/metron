@@ -23,4 +23,13 @@ module Module
     d = 2**(4);
   endfunction
 
+  always_comb begin
+    tock();
+  end
+
+
+  always_ff @(posedge clock) begin
+  end
+
+
 endmodule

@@ -8,17 +8,27 @@ module Submod
   input logic[7:0] tock_arg
 );
 /*public:*/
-  always_comb begin /*tock*/
-    tick_arg = tock_arg;
+  function void tock(logic[7:0] arg);
+    tick_arg = arg;
     /*tick(arg)*/;
-  end
+  endfunction
 /*private:*/
-  logic[7:0] tick_arg;
-  always_ff @(posedge clock) begin /*tick*/
-    my_reg <= my_reg + tick_arg;
-  end
+  function void tick(logic[7:0] arg);
+    my_reg <= my_reg + arg;
+  endfunction
 
   logic[7:0] my_reg;
+
+  always_comb begin
+    tock(tock_arg);
+  end
+
+  logic[7:0] tick_arg;
+
+  always_ff @(posedge clock) begin
+    tick(tick_arg);
+  end
+
 endmodule
 
 
@@ -28,16 +38,16 @@ module Module
 );
 /*public:*/
 
-  always_comb begin /*tock*/
+  function void tock();
     if (1) begin
 submod_tock_arg = 72;
-            /*submod.tock(72)*/;
+            submod_tock;
     end
     else begin
 submod_tock_arg = 36;
-            /*submod.tock(36)*/;
+            submod_tock;
     end
-  end
+  endfunction
 
   Submod submod(
     // Inputs
@@ -46,5 +56,14 @@ submod_tock_arg = 36;
     // Outputs
   );
   logic[7:0] submod_tock_arg;
+
+
+  always_comb begin
+    tock();
+  end
+
+
+  always_ff @(posedge clock) begin
+  end
 
 endmodule

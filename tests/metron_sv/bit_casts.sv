@@ -4,7 +4,9 @@
 
 module Module
 (
-  input logic clock
+  input logic clock,
+  input int some_size1,
+  input int some_size2
 );
 /*public:*/
 
@@ -356,6 +358,19 @@ module Module
     e = a[some_size1]; //static bit extract with variable offset, width 1
     f = a[6 + some_size2 : some_size2]; //static bit extract with variable offset, width N
   endfunction
+
+  always_comb begin
+    tock_bN();
+    tock_bx_const();
+    tock_bN_offset();
+    tock_bx_param();
+    tock2();
+  end
+
+
+  always_ff @(posedge clock) begin
+  end
+
 
 
 

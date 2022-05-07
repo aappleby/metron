@@ -39,22 +39,6 @@ bool MtMethod::is_valid() const {
   return (int(in_init) + int(in_tick) + int(in_tock) + int(in_func)) == 1;
 }
 
-bool MtMethod::is_root() const { return internal_callers.empty(); }
-
-bool MtMethod::is_leaf() const {
-  for (auto& m : internal_callees) {
-    if (!m->in_func) return false;
-  }
-  return true;
-}
-
-bool MtMethod::is_branch() const {
-  for (auto& m : internal_callees) {
-    if (!m->in_func) return true;
-  }
-  return false;
-}
-
 //------------------------------------------------------------------------------
 
 void MtMethod::dump() {
@@ -77,7 +61,7 @@ void MtMethod::dump() {
 
   for (auto c : internal_callers) {
     LOG_INDENT_SCOPE();
-    LOG_Y("Called by this->%s\n", c->cname());
+    LOG_Y("Called by tick %s\n", c->cname());
   }
 
   for (auto c : external_callees) {

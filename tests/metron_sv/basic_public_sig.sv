@@ -9,8 +9,17 @@ module Module
 );
 /*public:*/
 
-  always_comb begin /*tock*/
+  function void tock();
     my_sig = 1;
+  endfunction
+
+
+  always_comb begin
+    tock();
+  end
+
+
+  always_ff @(posedge clock) begin
   end
 
 endmodule

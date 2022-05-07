@@ -17,6 +17,14 @@ module Module
   function logic[7:0] tock();
     tock = `MY_OTHER_CONSTANT;
   endfunction
-  always_comb tock_ret = tock();
+
+  always_comb begin
+    tock_ret = tock();
+  end
+
+
+  always_ff @(posedge clock) begin
+  end
+
 
 endmodule

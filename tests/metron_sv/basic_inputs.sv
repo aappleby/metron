@@ -10,18 +10,28 @@ module Module
 );
  /*public:*/
 
-  always_comb begin /*tock*/
-    tick_my_input = tock_my_input;
+  function void tock(logic[6:0] my_input);
+    tick_my_input = my_input;
     /*tick(my_input)*/;
-  end
+  endfunction
 
  /*private:*/
 
-  logic[6:0] tick_my_input;
-  always_ff @(posedge clock) begin /*tick*/
-    my_reg <= my_reg + tick_my_input;
-  end
+  function void tick(logic[6:0] my_input);
+    my_reg <= my_reg + my_input;
+  endfunction
 
   logic[6:0] my_reg;
+
+  always_comb begin
+    tock(tock_my_input);
+  end
+
+  logic[6:0] tick_my_input;
+
+  always_ff @(posedge clock) begin
+    tick(tick_my_input);
+  end
+
 endmodule
 // clang-format on

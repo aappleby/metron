@@ -5,43 +5,45 @@
 module Module
 (
   input logic clock,
-  output logic[7:0] my_sig,
-  input logic[7:0] public_func_x,
-  output logic[7:0] public_func_ret
+  output logic[7:0] my_sig
 );
 /*public:*/
 
 
-  always_comb begin /*tock*/
-    public_task_x = public_func(17);
+  function void tock();
     /*public_task(public_func(17))*/;
     /*tick()*/;
-  end
+  endfunction
 
-  always_comb begin /*public_task*/
-    my_sig = public_task_x + 7;
-  end
+  function void public_task(logic[7:0] x);
+    my_sig = x + 7;
+  endfunction
 
   function logic[7:0] public_func(logic[7:0] x);
     public_func = my_reg + private_func(5);
   endfunction
-  always_comb public_func_ret = public_func(public_func_x);
 
 /*private:*/
 
-  always_comb begin /*tick*/
-    private_task_x = private_func(33);
+  function void tick();
     /*private_task(private_func(33))*/;
-  end
+  endfunction
 
-  logic[7:0] private_task_x;
-  always_ff @(posedge clock) begin /*private_task*/
+  function void private_task(logic[7:0] x);
     my_reg <= my_reg + private_func(16);
-  end
+  endfunction
 
   function logic[7:0] private_func(logic[7:0] y);
     private_func = my_reg + y;
   endfunction
 
   logic[7:0] my_reg;
+
+  always_comb begin
+    tock();
+  end
+
+  always_ff @(posedge clock) begin
+  end
+
 endmodule

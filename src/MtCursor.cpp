@@ -509,6 +509,23 @@ CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnNode call,
 }
 
 //------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_simple_call(MnNode n) {
+  Err err;
+
+  for (auto c : n) {
+    if (c.field == field_function)
+      err << emit_identifier(c);
+    else if (c.field == field_arguments)
+      err << emit_sym_argument_list(c);
+    else
+      err << emit_default(c);
+  }
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
 // Replace function names with macro names where needed, comment out explicit
 // init/tick/tock calls.
 
@@ -517,9 +534,6 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
 
   MnNode func = n.get_field(field_function);
   MnNode args = n.get_field(field_arguments);
-
-  // If we're calling a member function, look at the name of the member
-  // function and not the whole foo.bar().
 
   std::string func_name = func.name4();
 
@@ -641,13 +655,26 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
 
 
   else {
-    for (auto c : n) {
-      if (c.field == field_function)
-        err << emit_identifier(c);
-      else if (c.field == field_arguments)
-        err << emit_sym_argument_list(c);
-      else
-        err << emit_default(c);
+    auto func_node = n.get_field(field_function);
+    auto func_name = func_node.name4();
+
+    auto dst_method = current_mod->get_method(func_name);
+
+    if (!dst_method) {
+      err << ERR("Can't find method %s?\n", func_name.c_str());
+      n.error();
+    }
+
+    if (current_method->in_tock && dst_method->in_tock) {
+      err << emit_simple_call(n);
+    }
+
+    if (current_method->in_tick && dst_method->in_tick) {
+      err << emit_simple_call(n);
+    }
+
+    if (current_method->in_tock && dst_method->in_tick) {
+      err << comment_out(n);
     }
   }
 
@@ -815,41 +842,66 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
   auto func_node = n.get_field(field_function);
   auto args_node = n.get_field(field_arguments);
 
-  if (n.sym == sym_call_expression && func_node.sym == sym_field_expression) {
+  if (n.sym == sym_call_expression) {
     auto old_replacements = id_replacements;
-    for (auto p : current_method->param_nodes) {
-      auto param_name = p.get_field(field_declarator).text();
-      id_replacements[param_name] = current_method->name() + "_" + param_name;
+    if (func_node.sym == sym_field_expression) {
+      for (auto p : current_method->param_nodes) {
+        auto param_name = p.get_field(field_declarator).text();
+        id_replacements[param_name] = current_method->name() + "_" + param_name;
+      }
+
+      if (args_node.named_child_count() != 0) {
+        auto inst_id = func_node.get_field(field_argument);
+        auto meth_id = func_node.get_field(field_field);
+
+        auto component = current_mod->get_component(inst_id.text());
+        assert(component);
+
+        auto component_mod = lib->get_module(component->type_name());
+
+        auto component_method = component_mod->get_method(meth_id.text());
+        assert(component_method);
+
+        for (int i = 0; i < component_method->param_nodes.size(); i++) {
+          auto& param = component_method->param_nodes[i];
+
+          err << emit_print("%s_%s_%s = ", inst_id.text().c_str(),
+                            component_method->name().c_str(),
+                            param.get_field(field_declarator).text().c_str());
+
+          auto arg_node = args_node.named_child(i);
+          cursor = arg_node.start();
+          err << emit_expression(arg_node);
+          cursor = arg_node.end();
+
+          err << prune_trailing_ws();
+          err << emit_print(";");
+          err << emit_newline();
+          err << emit_indent();
+        }
+      }
     }
+    else if (func_node.sym == sym_identifier) {
+      auto method = current_mod->get_method(func_node.text().c_str());
 
-    if (args_node.named_child_count() != 0) {
-      auto inst_id = func_node.get_field(field_argument);
-      auto meth_id = func_node.get_field(field_field);
+      if (method && current_method->in_tock && method->in_tick) {
+        for (int i = 0; i < method->param_nodes.size(); i++) {
+          auto& param = method->param_nodes[i];
+          auto param_name = param.get_field(field_declarator).text();
 
-      auto component = current_mod->get_component(inst_id.text());
-      assert(component);
+          err << emit_indent();
+          err << emit_print("%s_%s = ", func_node.text().c_str(),
+                            param_name.c_str());
 
-      auto component_mod = lib->get_module(component->type_name());
+          auto arg_node = args_node.named_child(i);
+          cursor = arg_node.start();
+          err << emit_expression(arg_node);
+          cursor = arg_node.end();
 
-      auto component_method = component_mod->get_method(meth_id.text());
-      assert(component_method);
-
-      for (int i = 0; i < component_method->param_nodes.size(); i++) {
-        auto& param = component_method->param_nodes[i];
-
-        err << emit_print("%s_%s_%s = ", inst_id.text().c_str(),
-                          component_method->name().c_str(),
-                          param.get_field(field_declarator).text().c_str());
-
-        auto arg_node = args_node.named_child(i);
-        cursor = arg_node.start();
-        err << emit_expression(arg_node);
-        cursor = arg_node.end();
-
-        err << prune_trailing_ws();
-        err << emit_print(";");
-        err << emit_newline();
-        err << emit_indent();
+          err << prune_trailing_ws();
+          err << emit_print(";");
+          err << emit_newline();
+        }
       }
     }
 
@@ -962,29 +1014,6 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
   //----------
 
   assert(cursor == n.end());
-
-  // Emit return value binding
-  if (current_method->in_func && current_method->is_public() &&
-      current_method->has_return()) {
-    err << emit_newline();
-    err << emit_indent();
-
-    err << emit_print("always_comb %s_ret = %s(", current_method->cname(),
-                      current_method->cname());
-
-    int param_count = current_method->param_nodes.size();
-    for (int i = 0; i < param_count; i++) {
-      auto param = current_method->param_nodes[i];
-      err << emit_print("%s_%s", current_method->cname(),
-                        param.get_field(field_declarator).text().c_str());
-      if (i < param_count - 1) {
-        err << emit_print(", ");
-      }
-    }
-    err << emit_print(");");
-  }
-
-  //----------
 
   current_method = nullptr;
 
@@ -1789,6 +1818,7 @@ CHECK_RETURN Err MtCursor::emit_field_port(MtField* f) {
   Err err;
 
   if (!f->is_public()) return err;
+  if (f->is_component()) return err;
 
   err << emit_indent();
 
@@ -1947,6 +1977,33 @@ CHECK_RETURN Err MtCursor::emit_trigger_call(MtMethod* m) {
     }
   }
   err << emit_print(");");
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_param_as_field(MtMethod* method, MnNode n) {
+  Err err;
+
+  auto param_type = n.get_field(field_type);
+  auto param_name = n.get_field(field_declarator);
+
+  MtCursor subcursor(lib, current_source, current_mod, str_out);
+  subcursor.echo = echo;
+
+  err << emit_indent();
+  subcursor.cursor = param_type.start();
+  err << subcursor.emit_type(param_type);
+  err << subcursor.emit_ws();
+
+  err << emit_print("%s_", method->name().c_str());
+
+  subcursor.cursor = param_name.start();
+  err << subcursor.emit_identifier(param_name);
+
+  err << prune_trailing_ws();
+  err << emit_print(";");
   err << emit_newline();
 
   return err;
@@ -1957,52 +2014,49 @@ CHECK_RETURN Err MtCursor::emit_trigger_call(MtMethod* m) {
 CHECK_RETURN Err MtCursor::emit_trigger_calls() {
   Err err;
 
+  // Emit an always_comb containing calls to all our top-level tocks and funcs.
   err << emit_indent();
   err << emit_print("always_comb begin");
   err << emit_newline();
 
   for (auto m : current_mod->all_methods) {
-    if (m->in_tock && m->internal_callers.empty()) {
-
+    if ((m->in_tock || m->in_func)  && m->internal_callers.empty()) {
       err << emit_indent();
       err << emit_print("  ");
-
       err << emit_trigger_call(m);
-
+      err << emit_newline();
     }
   }
 
   err << emit_indent();
   err << emit_print("end");
   err << emit_newline();
+  err << emit_newline();
+
+  // Emit binding variables for tock->tick calls.
+  for (auto dst_method : current_mod->all_methods) {
+    if (dst_method->in_tick && dst_method->tock_callers.size()) {
+
+      for (auto n : dst_method->param_nodes) {
+        err << emit_param_as_field(dst_method, n);
+      }
+    }
+  }
 
   err << emit_newline();
+
+
+  // Emit an always_ff containing calls to all our top-level ticks.
 
   err << emit_indent();
   err << emit_print("always_ff @(posedge clock) begin");
   err << emit_newline();
 
   for (auto m : current_mod->all_methods) {
-    if (m->in_tick && m->internal_callers.empty()) {
+    if (m->in_tick && m->tick_callers.empty()) {
       err << emit_indent();
-      err << emit_print("  %s(", m->cname());
-
-      /*
-      for (auto p : m->param_nodes) {
-        err << emit_print("%s\n", p.text().c_str());
-      }
-      */
-
-      int param_count = m->param_nodes.size();
-      for (int i = 0; i < param_count; i++) {
-        auto param = m->param_nodes[i];
-        err << emit_print("%s_%s", m->cname(),
-                          param.get_field(field_declarator).text().c_str());
-        if (i < param_count - 1) {
-          err << emit_print(", ");
-        }
-      }
-      err << emit_print(");");
+      err << emit_print("  ");
+      err << emit_trigger_call(m);
       err << emit_newline();
     }
   }
@@ -2062,12 +2116,6 @@ CHECK_RETURN Err MtCursor::emit_sym_expression_statement(MnNode node) {
   for (auto child : node) {
     switch (child.sym) {
       case sym_call_expression:
-        // If this is a call expression, this node is a block-level call to a
-        // component - since there's nothing on the LHS to bind the output to,
-        // we just comment out the whole call.
-        // FIXME uhh that's probably not right... tasks?
-        err << comment_out(child);
-        break;
       case sym_assignment_expression:
       case sym_update_expression:
       case sym_conditional_expression:
@@ -3127,8 +3175,8 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
 
   for (auto child : node) {
     // We may need to insert input port bindings before any statement that
-    // includes a call expression. We search the tree for calls and emit those
-    // bindings here.
+    // could include a call expression. We search the tree for calls and emit
+    // those bindings here.
     err << emit_input_port_bindings(child);
 
     switch (child.sym) {

@@ -12,6 +12,14 @@ module Module
     parameter thing2 = 2;
     tock = thing1 + thing2;
   endfunction
-  always_comb tock_ret = tock();
+
+  always_comb begin
+    tock_ret = tock();
+  end
+
+
+  always_ff @(posedge clock) begin
+  end
+
 
 endmodule

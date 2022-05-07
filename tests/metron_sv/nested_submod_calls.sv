@@ -12,7 +12,15 @@ module Submod1
   function logic[7:0] tock_add_one(logic[7:0] a);
     tock_add_one = a + 1;
   endfunction
-  always_comb tock_add_one_ret = tock_add_one(tock_add_one_a);
+
+  always_comb begin
+    tock_add_one_ret = tock_add_one(tock_add_one_a);
+  end
+
+
+  always_ff @(posedge clock) begin
+  end
+
 endmodule
 
 module Submod2
@@ -25,7 +33,15 @@ module Submod2
   function logic[7:0] tock_add_two(logic[7:0] a);
     tock_add_two = a + 1;
   endfunction
-  always_comb tock_add_two_ret = tock_add_two(tock_add_two_a);
+
+  always_comb begin
+    tock_add_two_ret = tock_add_two(tock_add_two_a);
+  end
+
+
+  always_ff @(posedge clock) begin
+  end
+
 endmodule
 
 module Module
@@ -36,14 +52,14 @@ module Module
 );
 /*public:*/
 
-  always_comb begin /*tock*/
+  function logic[7:0] tock(logic[7:0] old_counter);
     logic[7:0] new_counter;
     // Two bindings should end up here.submod2_tock_add_two_a = tock_old_counter;
-    submod1_tock_add_one_a = submod2_tock_add_two_ret;
+    submod1_tock_add_one_a = submod2_tock_add_two;
 
-    new_counter = submod1_tock_add_one_ret;
-    tock_ret = new_counter;
-  end
+    new_counter = submod1_tock_add_one;
+    tock = new_counter;
+  endfunction
 
 /*private:*/
 
@@ -66,5 +82,14 @@ module Module
   );
   logic[7:0] submod2_tock_add_two_a;
   logic[7:0] submod2_tock_add_two_ret;
+
+
+  always_comb begin
+    tock_ret = tock(tock_old_counter);
+  end
+
+
+  always_ff @(posedge clock) begin
+  end
 
 endmodule

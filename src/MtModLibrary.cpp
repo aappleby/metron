@@ -484,6 +484,18 @@ CHECK_RETURN Err MtModLibrary::categorize_methods() {
     return 0;
   });
 
+  //----------------------------------------
+  // Methods categorized, we can split up internal_callers
+
+  for (auto mod : modules) {
+    for (auto m : mod->all_methods) {
+      for (auto c : m->internal_callers) {
+        if (c->in_tick) m->tick_callers.insert(c);
+        if (c->in_tock) m->tock_callers.insert(c);
+        if (c->in_func) m->func_callers.insert(c);
+      }
+    }
+  }
 
   //----------------------------------------
   // Methods categorized, now we can categorize the inputs of the methods.

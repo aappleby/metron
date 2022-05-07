@@ -38,7 +38,10 @@ const std::string &MtField::type_name() const { return _type; }
 
 void MtField::dump() const {
   LOG_INDENT_SCOPE();
-  if (_type_mod) {
+  if (_is_enum) {
+    LOG_C(0xFF80CC, "Enum '%s'", cname());
+  }
+  else if (_type_mod) {
     LOG_C(0xFF80CC, "Component '%s' : %s", cname(), _type.c_str());
   } else {
     switch (state) {

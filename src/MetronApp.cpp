@@ -150,7 +150,7 @@ int main(int argc, char** argv) {
   }
 
   //----------------------------------------
-  // Build call graph
+  // Build call graphs
 
   for (auto m : lib.modules) {
     err << m->build_call_graph();
@@ -192,7 +192,7 @@ int main(int argc, char** argv) {
 
   for (auto method : top_mod->all_methods) {
     if (method->is_constructor()) continue;
-    if (method->callers.size()) continue;
+    if (method->internal_callers.size()) continue;
 
     LOG_G("Tracing %s.%s\n", top_mod->cname(), method->cname());
     err << tracer.trace_method(top_ctx, method);

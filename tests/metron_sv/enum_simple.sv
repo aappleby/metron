@@ -48,10 +48,10 @@ module Module
     e2 = B2;
     anon_enum_field1 = C3;
     anon_enum_field2 = A4;
-    ec1 = enum_class1::B5;
-    ec2 = enum_class2::C6;
-    te1 = typed_enum::A7;
-    se1 = sized_enum::B8;
+    ec1 = B5;
+    ec2 = C6;
+    te1 = A7;
+    se1 = B8;
     tock1 = 1;
   endfunction
   always_comb tock1_ret = tock1();

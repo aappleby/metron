@@ -111,6 +111,13 @@ MtField *MtModule::get_component(const std::string &name) {
   return nullptr;
 }
 
+MtField *MtModule::get_enum(const std::string &name) {
+  for (auto f : all_enums) {
+    if (f->name() == name) return f;
+  }
+  return nullptr;
+}
+
 #if 0
 MtField* MtModule::get_enum(const std::string &name) {
   for (auto n : all_enums) {
@@ -393,7 +400,9 @@ CHECK_RETURN Err MtModule::collect_parts() {
     if (n.sym == sym_field_declaration) {
       auto node_type = n.get_field(field_type);
       if (node_type.sym == sym_enum_specifier) {
-        all_enums.push_back(new MtField(this, n, in_public));
+        auto e = new MtField(this, n, in_public);
+        e->_is_enum = true;
+        all_enums.push_back(e);
       } else {
         all_fields.push_back(new MtField(this, n, in_public));
       }
@@ -537,8 +546,8 @@ CHECK_RETURN Err MtModule::build_call_graph() {
           auto dst_mod = this;
           auto dst_method = get_method(func.text());
           if (dst_method) {
-            dst_method->callers.insert(src_method);
-            src_method->callees.insert(dst_method);
+            dst_method->internal_callers.insert(src_method);
+            src_method->internal_callees.insert(dst_method);
           }
         }
 
@@ -552,8 +561,8 @@ CHECK_RETURN Err MtModule::build_call_graph() {
             if (dst_mod) {
               auto dst_method = dst_mod->get_method(component_method_name);
               if (dst_method) {
-                dst_method->callers.insert(src_method);
-                src_method->callees.insert(dst_method);
+                dst_method->external_callers.insert(src_method);
+                src_method->external_callees.insert(dst_method);
               }
             }
           }
@@ -597,23 +606,6 @@ CHECK_RETURN Err MtModule::categorize_fields() {
       err << ERR("Don't know how to categorize %s = %s\n", f->cname(),
                  to_string(f->state));
       f->node.error();
-    }
-  }
-
-  for (auto m : all_methods) {
-    if (!m->is_public()) continue;
-
-    auto params =
-        m->_node.get_field(field_declarator).get_field(field_parameters);
-
-    for (const auto &param : params) {
-      if (param.sym != sym_parameter_declaration) continue;
-      MtFuncParam *new_input = new MtFuncParam(m->name(), param);
-      input_method_params.push_back(new_input);
-    }
-
-    if (m->has_return()) {
-      output_method_returns.push_back(m);
     }
   }
 
@@ -743,25 +735,25 @@ void MtModule::dump() {
   LOG_G("Module %s, %d instances\n", cname(), refcount);
   LOG_INDENT();
 
-  if (all_modparams.size()) {
+  {
     LOG_G("all_modparams:\n");
     LOG_INDENT_SCOPE();
     for (auto m : all_modparams) m->dump();
   }
 
-  if (all_enums.size()) {
+  {
     LOG_G("all_enums:\n");
     LOG_INDENT_SCOPE();
     for (auto f : all_enums) f->dump();
   }
 
-  if (all_methods.size()) {
+  {
     LOG_G("all_methods:\n");
     LOG_INDENT_SCOPE();
     for (auto m : all_methods) m->dump();
   }
 
-  if (all_fields.size()) {
+  {
     LOG_G("all_fields:\n");
     LOG_INDENT_SCOPE();
     for (auto f : all_fields) f->dump();

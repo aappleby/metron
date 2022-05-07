@@ -38,17 +38,17 @@ bool MtMethod::is_valid() const {
   return (int(in_init) + int(in_tick) + int(in_tock) + int(in_func)) == 1;
 }
 
-bool MtMethod::is_root() const { return callers.empty(); }
+bool MtMethod::is_root() const { return internal_callers.empty(); }
 
 bool MtMethod::is_leaf() const {
-  for (auto& m : callees) {
+  for (auto& m : internal_callees) {
     if (!m->in_func) return false;
   }
   return true;
 }
 
 bool MtMethod::is_branch() const {
-  for (auto& m : callees) {
+  for (auto& m : internal_callees) {
     if (!m->in_func) return true;
   }
   return false;
@@ -69,11 +69,21 @@ void MtMethod::dump() {
     LOG_R("Param %s\n", p.text().c_str());
   }
 
-  for (auto c : callees) {
+  for (auto c : internal_callees) {
+    LOG_INDENT_SCOPE();
+    LOG_G("Calls this->%s\n", c->cname());
+  }
+
+  for (auto c : internal_callers) {
+    LOG_INDENT_SCOPE();
+    LOG_Y("Called by this->%s\n", c->cname());
+  }
+
+  for (auto c : external_callees) {
     LOG_INDENT_SCOPE();
     LOG_G("Calls %s.%s\n", c->_mod->cname(), c->cname());
   }
-  for (auto c : callers) {
+  for (auto c : external_callers) {
     LOG_INDENT_SCOPE();
     LOG_Y("Called by %s.%s\n", c->_mod->cname(), c->cname());
   }

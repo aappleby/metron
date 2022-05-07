@@ -870,13 +870,16 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
 
   auto old_replacements = id_replacements;
 
+  /*
   for (auto p : current_method->param_nodes) {
     id_replacements[p.text()] = current_method->name() + "_" + p.text();
   }
+  */
 
   //----------
   // Local function input port decls go _before_ the function definition.
 
+#if 0
   if (!current_method->is_public() &&
       (current_method->in_tick || current_method->in_tock)) {
     for (auto n : current_method->param_nodes) {
@@ -922,6 +925,7 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
       err << emit_indent();
     }
   }
+  #endif
 
   //----------
   // Emit a block declaration for the type of function we're in.
@@ -930,57 +934,25 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
     if (!return_type.is_null()) err << skip_over(return_type);
     err << skip_ws();
     err << emit_replacement(func_decl, "initial");
-  } else if (current_method->in_tick) {
-    err << skip_over(return_type);
-    err << skip_ws();
-    err << emit_replacement(func_decl, "always_ff @(posedge clock)");
-  } else if (current_method->in_tock) {
-    err << skip_over(return_type);
-    err << skip_ws();
-    err << emit_replacement(func_decl, "always_comb");
-  } /* else if (current_method->in_task) {
-     err << skip_over(return_type);
-     err << skip_ws();
-
-     // FIXME do we want all tasks to be automatic? That would be closer to C
-     // semantics...
-     // err << emit_print("task automatic ");
-     err << emit_print("task ");
-     err << emit_dispatch(func_decl);
-     err << prune_trailing_ws();
-     err << emit_print(";");
-   }*/
-  else if (current_method->in_func) {
+  } else {
     err << emit_print("function ");
     err << emit_type(return_type);
     err << emit_declarator(func_decl);
     err << prune_trailing_ws();
     err << emit_print(";");
-  } else {
-    debugbreak();
   }
 
   //----------
   // Emit the function body.
 
-  std::string delim_begin = "begin";
-  std::string delim_end = "end";
-
-  if (current_method->in_init)
-    delim_begin = str_printf("begin /*%s*/", current_method->name().c_str());
-  else if (current_method->in_tick) {
-    delim_begin = str_printf("begin /*%s*/", current_method->name().c_str());
-  } else if (current_method->in_tock)
-    delim_begin = str_printf("begin /*%s*/", current_method->name().c_str());
-  else if (current_method->in_func) {
-    delim_begin = "";
-    delim_end = "endfunction";
-  } else {
-    debugbreak();
-  }
-
   auto func_body = n.get_field(field_body);
-  err << emit_sym_compound_statement(func_body, delim_begin, delim_end);
+
+  if (current_method->in_init) {
+    err << emit_sym_compound_statement(func_body, "begin", "end");
+  }
+  else {
+    err << emit_sym_compound_statement(func_body, "", "endfunction");
+  }
 
   //----------
 
@@ -1965,6 +1937,67 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n) {
         err << emit_sym_function_definition(child);
         break;
       case anon_sym_RBRACE:
+        err << emit_ws_to_newline();
+        err << emit_newline();
+
+        err << emit_indent();
+        err << emit_print("always_comb begin");
+        err << emit_newline();
+
+        for (auto m : current_mod->all_methods) {
+          if (m->in_tock) {
+            err << emit_indent();
+            err << emit_print("  %s();", m->cname());
+            err << emit_newline();
+
+            /*
+            for (auto p : m->param_nodes) {
+              err << emit_print("%s\n", p.text().c_str());
+            }
+            */
+          }
+        }
+
+        err << emit_indent();
+        err << emit_print("end");
+        err << emit_newline();
+
+        err << emit_newline();
+
+        err << emit_indent();
+        err << emit_print("always_ff begin");
+        err << emit_newline();
+
+        for (auto m : current_mod->all_methods) {
+          if (m->in_tick) {
+            err << emit_indent();
+            err << emit_print("  %s(", m->cname());
+
+            /*
+            for (auto p : m->param_nodes) {
+              err << emit_print("%s\n", p.text().c_str());
+            }
+            */
+
+            int param_count = m->param_nodes.size();
+            for (int i = 0; i < param_count; i++) {
+              auto param = m->param_nodes[i];
+              err << emit_print("%s_%s", m->cname(),
+                                param.get_field(field_declarator).text().c_str());
+              if (i < param_count - 1) {
+                err << emit_print(", ");
+              }
+            }
+            err << emit_print(");");
+            err << emit_newline();
+          }
+        }
+        err << emit_indent();
+        err << emit_print("end");
+        err << emit_newline();
+
+        err << emit_newline();
+
         err << emit_replacement(child, "endmodule");
         break;
       default:
@@ -2312,11 +2345,7 @@ CHECK_RETURN Err MtCursor::emit_sym_return(MnNode n) {
 
   for (auto c : n) {
     if (c.sym == anon_sym_return) {
-      if (current_method->in_tock) {
-        err << emit_replacement(c, "%s_ret =", current_method->name().c_str());
-      } else {
-        err << emit_replacement(c, "%s =", current_method->name().c_str());
-      }
+      err << emit_replacement(c, "%s =", current_method->name().c_str());
     } else if (c.is_expression()) {
       err << emit_expression(c);
     } else if (c.is_identifier()) {
@@ -2352,10 +2381,6 @@ CHECK_RETURN Err MtCursor::emit_sym_identifier(MnNode n) {
   } else if (preproc_vars.contains(name)) {
     err << emit_print("`");
     err << emit_text(n);
-  } else if (current_method && (current_method->in_tick || current_method->in_tock) &&
-             current_method->has_param(name)) {
-    err << emit_replacement(n, "%s_%s", current_method->cname(),
-                            n.text().c_str());
   } else {
     err << emit_text(n);
   }
@@ -2431,9 +2456,11 @@ CHECK_RETURN Err MtCursor::emit_sym_field_expression(MnNode n) {
     }
     err << emit_replacement(n, field.c_str());
 
+    /*
     if (component->_type_mod->get_method(component_field)) {
       err << emit_print("_ret");
     }
+    */
 
   } else {
     // Local struct reference
@@ -2587,6 +2614,7 @@ CHECK_RETURN Err MtCursor::emit_sym_qualified_identifier(MnNode node) {
   for (auto child : node) {
     if (child.field == field_scope) {
       if (child.text() == "std") elide_scope = true;
+      if (current_mod->get_enum(child.text())) elide_scope = true;
     }
   }
 

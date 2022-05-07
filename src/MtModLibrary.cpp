@@ -4,6 +4,7 @@
 
 #include "Log.h"
 #include "MtField.h"
+#include "MtFuncParam.h"
 #include "MtMethod.h"
 #include "MtModule.h"
 #include "MtSourceFile.h"
@@ -204,7 +205,7 @@ CHECK_RETURN Err MtModLibrary::categorize_methods() {
       return 1;
     }
 
-    for (auto caller : m->callers) {
+    for (auto caller : m->internal_callers) {
       if (caller->in_init) {
         if (m->in_init) {
           return 0;
@@ -227,13 +228,9 @@ CHECK_RETURN Err MtModLibrary::categorize_methods() {
   err << propagate([&](MtMethod *m) {
     if (m->in_init) return 0;
 
-    if (m->writes.empty()) {
+    if (m->writes.empty() && m->external_callees.empty()) {
       bool only_calls_funcs = true;
-      for (auto callee : m->callees) {
-        if (callee->_mod != m->_mod) {
-          only_calls_funcs = false;
-        }
-
+      for (auto callee : m->internal_callees) {
         only_calls_funcs &= callee->in_func;
       }
 
@@ -255,30 +252,22 @@ CHECK_RETURN Err MtModLibrary::categorize_methods() {
   });
 
   //----------------------------------------
-  // Methods that don't write anything and call funcs in other modules are
-  // tocks.
+  // Methods that call funcs in other modules _must_ be tocks.
 
   err << propagate([&](MtMethod *m) {
     if (m->in_init) return 0;
     if (m->in_func) return 0;
 
-    if (m->writes.empty()) {
-      bool only_calls_funcs = true;
-      for (auto callee : m->callees) {
-        only_calls_funcs &= callee->in_func;
-      }
-
-      if (only_calls_funcs) {
-        if (m->in_tock) {
-          return 0;
-        } else {
-          LOG_B(
-              "%s.%s is tock because it doesn't write anything and calls funcs "
-              "in other modules.\n",
-              m->_mod->cname(), m->cname());
-          m->in_tock = true;
-          return 1;
-        }
+    if (m->external_callees.size()) {
+      if (m->in_tock) {
+        return 0;
+      } else {
+        LOG_B(
+            "%s.%s is tock because it doesn't write anything and calls funcs "
+            "in other modules.\n",
+            m->_mod->cname(), m->cname());
+        m->in_tock = true;
+        return 1;
       }
     }
 
@@ -318,7 +307,7 @@ CHECK_RETURN Err MtModLibrary::categorize_methods() {
     if (m->in_init) return 0;
     if (m->in_func) return 0;
 
-    for (auto caller : m->callers) {
+    for (auto caller : m->internal_callers) {
       if (caller->in_tick) {
         if (m->in_tick) {
           return 0;
@@ -394,7 +383,7 @@ CHECK_RETURN Err MtModLibrary::categorize_methods() {
     if (m->in_init) return 0;
     if (m->in_func) return 0;
 
-    for (auto &callee : m->callees) {
+    for (auto &callee : m->internal_callees) {
       if (callee->in_tock) {
         if (m->in_tock) {
           return 0;
@@ -418,7 +407,7 @@ CHECK_RETURN Err MtModLibrary::categorize_methods() {
     if (m->in_func) return 0;
     if (m->in_tick) return 0;
 
-    for (auto caller : m->callers) {
+    for (auto caller : m->internal_callers) {
       if (caller->in_tock) {
         if (m->in_tock) {
           return 0;
@@ -495,6 +484,32 @@ CHECK_RETURN Err MtModLibrary::categorize_methods() {
     return 0;
   });
 
+
+  //----------------------------------------
+  // Methods categorized, now we can categorize the inputs of the methods.
+
+  for (auto mod : modules) {
+    for (auto m : mod->all_methods) {
+      if (!m->is_public()) continue;
+
+      if (m->in_func || ((m->in_tick || m->in_tock) && m->internal_callers.empty())) {
+        auto params =
+            m->_node.get_field(field_declarator).get_field(field_parameters);
+        for (const auto &param : params) {
+          if (param.sym != sym_parameter_declaration) continue;
+          MtFuncParam *new_input = new MtFuncParam(m->name(), param);
+          mod->input_method_params.push_back(new_input);
+        }
+      }
+
+      if (m->has_return()) {
+        mod->output_method_returns.push_back(m);
+      }
+    }
+  }
+
+
+
   //----------------------------------------
   // Check for ticks with return values.
 
@@ -532,7 +547,7 @@ void MtModLibrary::dump_call_graph() {
         LOG_C(color, " %s.%s()\n", mod->cname(), method->cname());
 
         LOG_INDENT_SCOPE();
-        for (auto callee : method->callees) {
+        for (auto callee : method->internal_callees) {
           dump_call_tree(callee->_mod, callee);
         }
       };

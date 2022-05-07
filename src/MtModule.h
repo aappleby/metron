@@ -29,6 +29,7 @@ struct MtModule {
   MtMethod* get_method(const std::string& name);
   MtField* get_field(const std::string& name);
   MtField* get_component(const std::string& name);
+  MtField* get_enum(const std::string& name);
 
   MtField* get_input_signal(const std::string& name);
   MtField* get_output_signal(const std::string& name);

@@ -55,12 +55,14 @@ struct MtMethod {
   bool in_tick = false;
   bool in_tock = false;
   bool in_func = false;
-
-  bool called_across_domains = false;
+  bool is_toplevel = false;
 
   std::vector<MnNode> param_nodes;
-  std::set<MtMethod*> callers;
-  std::set<MtMethod*> callees;
+  std::set<MtMethod*> internal_callers;
+  std::set<MtMethod*> internal_callees;
+
+  std::set<MtMethod*> external_callers;
+  std::set<MtMethod*> external_callees;
 
   std::set<MtField*> writes;
 };

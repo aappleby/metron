@@ -48,6 +48,7 @@ struct MtField {
   std::string _name;
   std::string _type;
   bool _public = false;
+  bool _is_enum = false;
 
   MtMethod* written_by = nullptr;
 };

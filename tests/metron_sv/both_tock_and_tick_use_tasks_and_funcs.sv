@@ -6,7 +6,6 @@ module Module
 (
   input logic clock,
   output logic[7:0] my_sig,
-  input logic[7:0] public_task_x,
   input logic[7:0] public_func_x,
   output logic[7:0] public_func_ret
 );

@@ -23,10 +23,6 @@ module Submod
     tock_sum_b_ret = tock_sum_b(tock_sum_b_b1, tock_sum_b_b2);
   end
 
-
-  always_ff @(posedge clock) begin
-  end
-
 endmodule
 
 module Module
@@ -84,10 +80,6 @@ module Module
 
   always_comb begin
     tock_bindings_ret = tock_bindings();
-  end
-
-
-  always_ff @(posedge clock) begin
   end
 
 endmodule

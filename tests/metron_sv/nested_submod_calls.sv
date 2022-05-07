@@ -17,10 +17,6 @@ module Submod1
     tock_add_one_ret = tock_add_one(tock_add_one_a);
   end
 
-
-  always_ff @(posedge clock) begin
-  end
-
 endmodule
 
 module Submod2
@@ -36,10 +32,6 @@ module Submod2
 
   always_comb begin
     tock_add_two_ret = tock_add_two(tock_add_two_a);
-  end
-
-
-  always_ff @(posedge clock) begin
   end
 
 endmodule
@@ -86,10 +78,6 @@ module Module
 
   always_comb begin
     tock_ret = tock(tock_old_counter);
-  end
-
-
-  always_ff @(posedge clock) begin
   end
 
 endmodule

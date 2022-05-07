@@ -41,8 +41,4 @@ module Module
     tock2();
   end
 
-
-  always_ff @(posedge clock) begin
-  end
-
 endmodule

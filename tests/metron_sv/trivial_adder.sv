@@ -20,8 +20,4 @@ module Adder
   end
 
 
-  always_ff @(posedge clock) begin
-  end
-
-
 endmodule

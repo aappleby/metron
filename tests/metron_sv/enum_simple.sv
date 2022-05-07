@@ -59,9 +59,5 @@ module Module
     tock1_ret = tock1();
   end
 
-
-  always_ff @(posedge clock) begin
-  end
-
 endmodule
 // clang-format on

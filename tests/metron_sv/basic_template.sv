@@ -21,10 +21,6 @@ module Submod
     tock();
   end
 
-
-  always_ff @(posedge clock) begin
-  end
-
 endmodule
 
 module Module
@@ -52,10 +48,6 @@ module Module
 
   always_comb begin
     tock();
-  end
-
-
-  always_ff @(posedge clock) begin
   end
 
 endmodule

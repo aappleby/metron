@@ -28,8 +28,4 @@ module Module
     tock2_ret = tock2();
   end
 
-
-  always_ff @(posedge clock) begin
-  end
-
 endmodule

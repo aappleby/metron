@@ -665,16 +665,11 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
       n.error();
     }
 
-    if (current_method->in_tock && dst_method->in_tock) {
-      err << emit_simple_call(n);
-    }
-
-    if (current_method->in_tick && dst_method->in_tick) {
-      err << emit_simple_call(n);
-    }
-
     if (current_method->in_tock && dst_method->in_tick) {
       err << comment_out(n);
+    }
+    else {
+      err << emit_simple_call(n);
     }
   }
 
@@ -1730,9 +1725,9 @@ CHECK_RETURN Err MtCursor::emit_sym_struct_specifier(MnNode n) {
 
     err << emit_print("typedef ");
     err << emit_text(n.child(0));
-    err << emit_print("packed ");
+    err << emit_print(" packed ");
     cursor = node_body.start();
-    err << emit_sym_field_declaration_list(node_body);
+    err << emit_sym_field_declaration_list(node_body, true);
     err << emit_print(" ");
 
     push_cursor(node_name);
@@ -1745,8 +1740,8 @@ CHECK_RETURN Err MtCursor::emit_sym_struct_specifier(MnNode n) {
     // typedef struct {} Foo;
 
     err << emit_text(n.child(0));
-    err << emit_print("packed ");
-    err << emit_sym_field_declaration_list(node_body);
+    err << emit_print(" packed ");
+    err << emit_sym_field_declaration_list(node_body, true);
   }
 
   return err << check_done(n);
@@ -1948,7 +1943,7 @@ CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnNode n) {
 
   err << emit_modparam_list();
   err << emit_port_list(class_body);
-  err << emit_sym_field_declaration_list(class_body);
+  err << emit_sym_field_declaration_list(class_body, false);
 
   cursor = n.end();
   current_mod = old_mod;
@@ -2014,57 +2009,89 @@ CHECK_RETURN Err MtCursor::emit_param_as_field(MtMethod* method, MnNode n) {
 CHECK_RETURN Err MtCursor::emit_trigger_calls() {
   Err err;
 
-  // Emit an always_comb containing calls to all our top-level tocks and funcs.
-  err << emit_indent();
-  err << emit_print("always_comb begin");
-  err << emit_newline();
+  if (!current_mod) return err;
 
+  // Emit an always_comb containing calls to all our top-level tocks and funcs.
+
+  bool any_tock_triggers = false;
   for (auto m : current_mod->all_methods) {
     if ((m->in_tock || m->in_func)  && m->internal_callers.empty()) {
-      err << emit_indent();
-      err << emit_print("  ");
-      err << emit_trigger_call(m);
-      err << emit_newline();
+      any_tock_triggers = true;
+      break;
     }
   }
 
-  err << emit_indent();
-  err << emit_print("end");
-  err << emit_newline();
-  err << emit_newline();
+  if (any_tock_triggers) {
+    err << emit_indent();
+    err << emit_print("always_comb begin");
+    err << emit_newline();
 
-  // Emit binding variables for tock->tick calls.
-  for (auto dst_method : current_mod->all_methods) {
-    if (dst_method->in_tick && dst_method->tock_callers.size()) {
-
-      for (auto n : dst_method->param_nodes) {
-        err << emit_param_as_field(dst_method, n);
+    for (auto m : current_mod->all_methods) {
+      if ((m->in_tock || m->in_func)  && m->internal_callers.empty()) {
+        err << emit_indent();
+        err << emit_print("  ");
+        err << emit_trigger_call(m);
+        err << emit_newline();
       }
     }
+
+    err << emit_indent();
+    err << emit_print("end");
+    err << emit_newline();
+    err << emit_newline();
   }
 
-  err << emit_newline();
+  // Emit binding variables for tock->tick calls.
+
+  bool any_tock_tick_bindings = false;
+  for (auto dst_method : current_mod->all_methods) {
+    if (dst_method->in_tick && dst_method->tock_callers.size()) {
+      any_tock_tick_bindings = true;
+      break;
+    }
+  }
+
+  if (any_tock_tick_bindings) {
+    for (auto dst_method : current_mod->all_methods) {
+      if (dst_method->in_tick && dst_method->tock_callers.size()) {
+
+        for (auto n : dst_method->param_nodes) {
+          err << emit_param_as_field(dst_method, n);
+        }
+      }
+    }
+    err << emit_newline();
+  }
 
 
   // Emit an always_ff containing calls to all our top-level ticks.
 
-  err << emit_indent();
-  err << emit_print("always_ff @(posedge clock) begin");
-  err << emit_newline();
-
+  bool any_tick_triggers = false;
   for (auto m : current_mod->all_methods) {
     if (m->in_tick && m->tick_callers.empty()) {
-      err << emit_indent();
-      err << emit_print("  ");
-      err << emit_trigger_call(m);
-      err << emit_newline();
+      any_tick_triggers = true;
+      break;
     }
   }
-  err << emit_indent();
-  err << emit_print("end");
-  err << emit_newline();
 
-  err << emit_newline();
+  if (any_tick_triggers) {
+    err << emit_indent();
+    err << emit_print("always_ff @(posedge clock) begin");
+    err << emit_newline();
+
+    for (auto m : current_mod->all_methods) {
+      if (m->in_tick && m->tick_callers.empty()) {
+        err << emit_indent();
+        err << emit_print("  ");
+        err << emit_trigger_call(m);
+        err << emit_newline();
+      }
+    }
+    err << emit_indent();
+    err << emit_print("end");
+    err << emit_newline();
+    err << emit_newline();
+  }
 
   return err;
 }
@@ -2074,14 +2101,19 @@ CHECK_RETURN Err MtCursor::emit_trigger_calls() {
 // Discard the opening brace
 // Replace the closing brace with "endmodule"
 
-CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n) {
+CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n, bool is_struct) {
   Err err = emit_ws_to(sym_field_declaration_list, n);
   push_indent(n);
 
   for (auto child : n) {
     switch (child.sym) {
       case anon_sym_LBRACE:
-        err << skip_over(child);
+        if (!is_struct) {
+          err << skip_over(child);
+        }
+        else {
+          err << emit_default(child);
+        }
         break;
       case sym_access_specifier:
         err << comment_out(child);
@@ -2093,10 +2125,15 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n) {
         err << emit_sym_function_definition(child);
         break;
       case anon_sym_RBRACE:
-        err << emit_ws_to_newline();
-        err << emit_newline();
-        err << emit_trigger_calls();
-        err << emit_replacement(child, "endmodule");
+        if (is_struct) {
+          err << emit_default(child);
+        }
+        else {
+          err << emit_ws_to_newline();
+          err << emit_newline();
+          err << emit_trigger_calls();
+          err << emit_replacement(child, "endmodule");
+        }
         break;
       default:
         err << emit_default(child);

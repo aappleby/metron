@@ -60,8 +60,4 @@ module Module
     tock_dup4();
   end
 
-
-  always_ff @(posedge clock) begin
-  end
-
 endmodule

@@ -2,17 +2,17 @@
 
 // Structs exist in both C++ and Verilog
 
-typedef structpacked
+typedef struct packed  {
   logic[7:0] a;
   int b;
   logic[1:0] c;
-endmodule MyStruct1;
+} MyStruct1;
 
-typedef structpacked
+typedef struct packed {
   logic[7:0] a;
   int b;
   logic[1:0] c;
-endmodule MyStruct2;
+} MyStruct2;
 
 module Module
 (
@@ -33,5 +33,9 @@ module Module
 
     tock = 17;
   endfunction
-  always_comb tock_ret = tock();
+
+  always_comb begin
+    tock_ret = tock();
+  end
+
 endmodule

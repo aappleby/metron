@@ -62,8 +62,4 @@ submod_tock_arg = 36;
     tock();
   end
 
-
-  always_ff @(posedge clock) begin
-  end
-
 endmodule

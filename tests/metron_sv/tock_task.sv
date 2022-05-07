@@ -11,7 +11,7 @@ module Module
 
 
   function void tock();
-    /*set_signal(get_number())*/;
+    set_signal(get_number());
   endfunction
 
   function logic[7:0] get_number();
@@ -24,9 +24,6 @@ module Module
 
   always_comb begin
     tock();
-  end
-
-  always_ff @(posedge clock) begin
   end
 
 

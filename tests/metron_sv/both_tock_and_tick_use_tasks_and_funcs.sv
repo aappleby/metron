@@ -11,8 +11,8 @@ module Module
 
 
   function void tock();
-    /*public_task(public_func(17))*/;
-    /*tick()*/;
+    public_task(public_func(17));
+    tick();
   endfunction
 
   function void public_task(logic[7:0] x);
@@ -26,6 +26,7 @@ module Module
 /*private:*/
 
   function void tick();
+    private_task_x = private_func(33);
     /*private_task(private_func(33))*/;
   endfunction
 
@@ -43,7 +44,10 @@ module Module
     tock();
   end
 
+  logic[7:0] private_task_x;
+
   always_ff @(posedge clock) begin
+    private_task(private_task_x);
   end
 
 endmodule

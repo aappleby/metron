@@ -23,8 +23,4 @@ module Module
   end
 
 
-  always_ff @(posedge clock) begin
-  end
-
-
 endmodule

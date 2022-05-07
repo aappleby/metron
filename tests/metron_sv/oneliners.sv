@@ -20,7 +20,6 @@ a = 1; a = a + 7; tock = a; endfunction
     tock_ret = tock();
   end
 
-
   always_ff @(posedge clock) begin
     tick();
   end

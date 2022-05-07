@@ -28,7 +28,9 @@ module Module
     tock();
   end
 
+
   always_ff @(posedge clock) begin
+    tick();
   end
 
 endmodule

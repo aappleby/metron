@@ -99,7 +99,7 @@ struct MtCursor {
   CHECK_RETURN Err emit_sym_enumerator_list(MnNode n);
   CHECK_RETURN Err emit_sym_expression_statement(MnNode n);
   CHECK_RETURN Err emit_sym_field_declaration(MnNode decl);
-  CHECK_RETURN Err emit_sym_field_declaration_list(MnNode n);
+  CHECK_RETURN Err emit_sym_field_declaration_list(MnNode n, bool is_struct);
   CHECK_RETURN Err emit_sym_field_expression(MnNode n);
   CHECK_RETURN Err emit_sym_field_identifier(MnNode n);
   CHECK_RETURN Err emit_sym_function_definition(MnNode n);

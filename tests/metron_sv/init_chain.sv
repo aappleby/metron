@@ -8,7 +8,7 @@ module Module
 );
 /*public:*/
   initial begin
-    /*init1()*/;
+    init1();
   end
 
   function void tock();
@@ -33,22 +33,22 @@ module Module
 
   initial begin
     reg1 = 1;
-    /*init2()*/;
+    init2();
   end
 
   initial begin
     reg2 = 2;
-    /*init3()*/;
+    init3();
   end
 
   initial begin
     reg3 = 3;
-    /*init4()*/;
+    init4();
   end
 
   initial begin
     reg4 = 4;
-    /*init5()*/;
+    init5();
   end
 
   initial begin
@@ -59,7 +59,9 @@ module Module
     tock();
   end
 
+
   always_ff @(posedge clock) begin
+    tick();
   end
 
 

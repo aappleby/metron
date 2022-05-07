@@ -9,7 +9,6 @@ module Module
   function void tock_dup1();
     logic a1;
     logic b1;
-
     a1 = 1'b1;
     b1 = {1 {a1}};
   endfunction
@@ -31,7 +30,6 @@ module Module
     logic[27:0] b7;
     logic[7:0]  a8;
     logic[31:0] b8;
-
     a1 = 1'b1;
     b1 = {4 {a1}};
 
@@ -56,5 +54,11 @@ module Module
     a8 = 8'b00000001;
     b8 = {4 {a8}};
   endfunction
-endmodule
 
+  //----------------------------------------
+  always_comb begin
+    tock_dup1();
+    tock_dup4();
+  end
+
+endmodule

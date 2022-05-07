@@ -34,6 +34,7 @@ module Module
     tock = 17;
   endfunction
 
+  //----------------------------------------
   always_comb begin
     tock_ret = tock();
   end

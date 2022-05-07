@@ -10,19 +10,29 @@ module Module
 );
 /*public:*/
 
-  always_comb begin /*tock*/
-    tick_val = tock_val;
+  function void tock(logic[7:0] val);
+    tick_val = val;
     /*tick(val)*/;
-  end
+  endfunction
 
 /*private:*/
 
-  logic[7:0] tick_val;
-  always_ff @(posedge clock) begin /*tick*/
-    my_reg <= my_reg + tick_val;
-  end
+  function void tick(logic[7:0] val);
+    my_reg <= my_reg + val;
+  endfunction
 
   logic[7:0] my_reg;
 
-endmodule
+  //----------------------------------------
+  always_comb begin
+    tock(tock_val);
+  end
 
+  logic[7:0] tick_val;
+
+  always_ff @(posedge clock) begin
+    tick(tick_val);
+  end
+
+
+endmodule

@@ -10,19 +10,25 @@ module Module
 /*public:*/
 
   function void tock();
-    tick();
+    /*tick()*/;
   endfunction
 
 /*private:*/
 
   function void tick();
-    my_reg = SOME_CONSTANT;
+    my_reg <= my_reg + SOME_CONSTANT;
   endfunction
 
   logic[6:0] my_reg;
 
+  //----------------------------------------
   always_comb begin
     tock();
+  end
+
+
+  always_ff @(posedge clock) begin
+    tick();
   end
 
 endmodule

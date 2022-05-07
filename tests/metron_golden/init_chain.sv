@@ -7,8 +7,8 @@ module Module
   input logic clock
 );
 /*public:*/
-  initial begin /*Module*/
-    /*init1()*/;
+  initial begin
+    init1();
   end
 
   always_comb begin /*tock*/

@@ -31,30 +31,31 @@ module Module
   logic[7:0] reg4;
   logic[7:0] reg5;
 
-  initial begin
+  function void init1();
     reg1 = 1;
     init2();
-  end
+  endfunction
 
-  initial begin
+  function void init2();
     reg2 = 2;
     init3();
-  end
+  endfunction
 
-  initial begin
+  function void init3();
     reg3 = 3;
     init4();
-  end
+  endfunction
 
-  initial begin
+  function void init4();
     reg4 = 4;
     init5();
-  end
+  endfunction
 
-  initial begin
+  function void init5();
     reg5 = 5;
-  end
+  endfunction
 
+  //----------------------------------------
   always_comb begin
     tock();
   end

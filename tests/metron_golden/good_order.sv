@@ -9,18 +9,28 @@ module Module
 );
 /*public:*/
 
-  always_comb begin /*tock*/
+  function void tock();
     my_sig = my_reg;
     /*tick()*/;
-  end
+  endfunction
 
 /*private:*/
 
-  always_ff @(posedge clock) begin /*tick*/
+  function void tick();
     my_reg <= 1;
-  end
+  endfunction
 
   logic my_sig;
   logic my_reg;
-endmodule
 
+  //----------------------------------------
+  always_comb begin
+    tock();
+  end
+
+
+  always_ff @(posedge clock) begin
+    tick();
+  end
+
+endmodule

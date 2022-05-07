@@ -6,13 +6,12 @@
 module Module
 (
   input logic clock,
-  output logic[7:0] tock
+  output logic[7:0] tock_ret
 );
 /*public:*/
 
-  always_comb begin /*tock*/
+  function logic[7:0] tock();
     logic[7:0] result;
-
     case(my_reg)
       0, // can we stick comments in here?
       1,
@@ -27,14 +26,24 @@ module Module
 
     /*tick()*/;
     tock = result;
-  end
+  endfunction
 
 /*private:*/
 
-  always_ff @(posedge clock) begin /*tick*/
+  function void tick();
     my_reg <= my_reg + 1;
-  end
+  endfunction
 
   logic[7:0] my_reg;
-endmodule
 
+  //----------------------------------------
+  always_comb begin
+    tock_ret = tock();
+  end
+
+
+  always_ff @(posedge clock) begin
+    tick();
+  end
+
+endmodule

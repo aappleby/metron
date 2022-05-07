@@ -10,33 +10,45 @@ module Module
 /*public:*/
 
 
-  always_comb begin /*tock*/
+  function void tock();
     public_task(public_func(17));
     /*tick()*/;
-  end
+  endfunction
 
-  task public_task(logic[7:0] public_task_x);
-    my_sig = public_task_x + 7;
-  endtask
+  function void public_task(logic[7:0] x);
+    my_sig = x + 7;
+  endfunction
 
-  function logic[7:0] public_func(logic[7:0] public_func_x);
-    public_func = my_reg + private_func(5);
+  function logic[7:0] public_func(logic[7:0] x);
+    public_func = my_reg1 + private_func(5);
   endfunction
 
 /*private:*/
 
-  always_ff @(posedge clock) begin /*tick*/
+  function void tick();
     private_task(private_func(33));
-  end
-
-  task private_task(logic[7:0] private_task_x);
-    my_reg = my_reg + private_func(16);
-  endtask
-
-  function logic[7:0] private_func(logic[7:0] private_func_y);
-    private_func = my_reg + private_func_y;
+    my_reg2 <= my_reg2 + 1;
   endfunction
 
-  logic[7:0] my_reg;
-endmodule
+  function void private_task(logic[7:0] x);
+    my_reg1 <= my_reg1 + private_func(16);
+  endfunction
 
+  function logic[7:0] private_func(logic[7:0] y);
+    private_func = my_reg1 + y;
+  endfunction
+
+  logic[7:0] my_reg1;
+  logic[7:0] my_reg2;
+
+  //----------------------------------------
+  always_comb begin
+    tock();
+  end
+
+
+  always_ff @(posedge clock) begin
+    tick();
+  end
+
+endmodule

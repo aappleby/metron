@@ -21,6 +21,7 @@ module Submod
 
   logic[7:0] sub_reg;
 
+  //----------------------------------------
   always_comb begin
     tock();
   end
@@ -39,16 +40,15 @@ module Module
 /*public:*/
 
   function void tock();
-    submod_tock;
+    /*submod.tock*/;
   endfunction
 
   Submod #(99) submod(
-    // Inputs
     .clock(clock)
-    // Outputs
   );
 
 
+  //----------------------------------------
   always_comb begin
     tock();
   end

@@ -22,6 +22,7 @@ module Module
     tock3 = 8'(1'bx);
   endfunction
 
+  //----------------------------------------
   always_comb begin
     tock2_ret = tock2();
     tock3_ret = tock3();

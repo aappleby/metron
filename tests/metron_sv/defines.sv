@@ -18,6 +18,7 @@ module Module
     tock = `MY_OTHER_CONSTANT;
   endfunction
 
+  //----------------------------------------
   always_comb begin
     tock_ret = tock();
   end

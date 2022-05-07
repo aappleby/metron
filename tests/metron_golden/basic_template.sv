@@ -11,9 +11,15 @@ module Submod
 );
 /*public:*/
 
-  always_comb begin /*tock*/
+  function void tock();
     my_width = (WIDTH)'(100);
     my_height = (HEIGHT)'(200);
+  endfunction
+
+
+  //----------------------------------------
+  always_comb begin
+    tock();
   end
 
 endmodule
@@ -24,22 +30,24 @@ module Module
 );
 /*public:*/
 
-  always_comb begin /*tock*/
+  function void tock();
     logic[19:0] foo;
-
-    /*submodule.tock()*/;
+    /*submodule.tock*/;
     foo = submodule_my_width + submodule_my_height;
-  end
+  endfunction
 
   Submod #(10,11) submodule(
-    // Inputs
     .clock(clock),
-    // Outputs
     .my_width(submodule_my_width),
     .my_height(submodule_my_height)
   );
   logic[10-1:0] submodule_my_width;
   logic[11-1:0] submodule_my_height;
 
-endmodule
 
+  //----------------------------------------
+  always_comb begin
+    tock();
+  end
+
+endmodule

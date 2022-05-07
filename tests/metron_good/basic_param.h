@@ -13,7 +13,7 @@ public:
 private:
 
   void tick() {
-    my_reg = SOME_CONSTANT;
+    my_reg = my_reg + SOME_CONSTANT;
   }
 
   logic<7> my_reg;

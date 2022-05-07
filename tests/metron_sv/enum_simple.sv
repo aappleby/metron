@@ -55,6 +55,7 @@ module Module
     tock1 = 1;
   endfunction
 
+  //----------------------------------------
   always_comb begin
     tock1_ret = tock1();
   end

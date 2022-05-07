@@ -9,26 +9,38 @@ module Module
 );
 /*public:*/
 
-  always_comb begin /*tock*/
-    tick_selector = tock_selector;
+  function void tock(logic[1:0] selector);
+    tick_selector = selector;
     /*tick(selector)*/;
-  end
+  endfunction
 
 /*private:*/
 
-  logic[1:0] tick_selector;
-  always_ff @(posedge clock) begin /*tick*/
-    case(tick_selector)
-      0: my_reg <= 17;
-      1: my_reg <= 22;
+  function void tick(logic[1:0] selector);
+    case(selector)
+      0: // comment
+        my_reg <= 17;
+      1:  // comment
+        my_reg <= 22;
       2: my_reg <= 30;
       3, // fallthrough
       4,
       5,
       6: my_reg <= 72;
     endcase
-  end
+  endfunction
 
   logic[7:0] my_reg;
-endmodule
 
+  //----------------------------------------
+  always_comb begin
+    tock(tock_selector);
+  end
+
+  logic[1:0] tick_selector;
+
+  always_ff @(posedge clock) begin
+    tick(tick_selector);
+  end
+
+endmodule

@@ -23,6 +23,7 @@ module Module
     tock2 = foo;
   endfunction
 
+  //----------------------------------------
   always_comb begin
     tock1_ret = tock1();
     tock2_ret = tock2();

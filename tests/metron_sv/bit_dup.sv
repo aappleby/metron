@@ -55,6 +55,7 @@ module Module
     b8 = {4 {a8}};
   endfunction
 
+  //----------------------------------------
   always_comb begin
     tock_dup1();
     tock_dup4();

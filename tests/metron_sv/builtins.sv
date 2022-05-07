@@ -23,6 +23,7 @@ module Module
     d = 2**(4);
   endfunction
 
+  //----------------------------------------
   always_comb begin
     tock();
   end

@@ -4,9 +4,7 @@
 
 module Module
 (
-  input logic clock,
-  input int some_size1,
-  input int some_size2
+  input logic clock
 );
 /*public:*/
 
@@ -359,6 +357,7 @@ module Module
     f = a[6 + some_size2 : some_size2]; //static bit extract with variable offset, width N
   endfunction
 
+  //----------------------------------------
   always_comb begin
     tock_bN();
     tock_bx_const();

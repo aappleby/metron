@@ -22,6 +22,7 @@ module Module
     my_signal = number;
   endfunction
 
+  //----------------------------------------
   always_comb begin
     tock();
   end

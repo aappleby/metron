@@ -15,6 +15,7 @@ module Adder
     add = a + b;
   endfunction
 
+  //----------------------------------------
   always_comb begin
     add_ret = add(add_a, add_b);
   end

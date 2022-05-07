@@ -22,6 +22,7 @@ module Module
     tock = input_val + 8;
   endfunction
 
+  //----------------------------------------
   always_comb begin
     tock1();
     tock_ret = tock(tock_input_val);

@@ -47,6 +47,7 @@ module Module
     h = 8'b0_0_0_0_0_0_0_0;
   endfunction
 
+  //----------------------------------------
   always_comb begin
     tock1();
     tock2();

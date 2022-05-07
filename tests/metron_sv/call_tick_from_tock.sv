@@ -23,6 +23,7 @@ module Module
 
   logic[7:0] my_reg;
 
+  //----------------------------------------
   always_comb begin
     tock(tock_val);
   end

@@ -19,6 +19,7 @@ module Module
     my_getter = 12;
   endfunction
 
+  //----------------------------------------
   always_comb begin
     tock_ret = tock();
   end

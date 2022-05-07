@@ -24,6 +24,7 @@ struct MtCursor {
   void push_indent(MnNode n);
   void pop_indent(MnNode n);
   CHECK_RETURN Err emit_newline();
+  CHECK_RETURN Err emit_backspace();
   CHECK_RETURN Err emit_indent();
 
   // Generic emit()s.
@@ -65,14 +66,15 @@ struct MtCursor {
   CHECK_RETURN Err emit_hoisted_decls(MnNode n);
   CHECK_RETURN Err emit_init_declarator_as_decl(MnNode n);
   CHECK_RETURN Err emit_init_declarator_as_assign(MnNode n);
-  CHECK_RETURN Err emit_port_decls(MnNode n);
+  CHECK_RETURN Err emit_submod_binding_fields(MnNode n);
   CHECK_RETURN Err emit_field_as_component(MnNode field_decl);
+  CHECK_RETURN Err emit_component_port_list(MnNode n);
   CHECK_RETURN Err emit_input_port_bindings(MnNode n);
   CHECK_RETURN Err emit_method_ports(MtMethod* m);
   CHECK_RETURN Err emit_field_port(MtField* f);
   CHECK_RETURN Err emit_param_port(MtMethod* m, MnNode node_type, MnNode node_name);
   CHECK_RETURN Err emit_return_port(MtMethod* m, MnNode node_type, MnNode node_name);
-  CHECK_RETURN Err emit_port_list(MnNode class_body);
+  CHECK_RETURN Err emit_module_port_list(MnNode class_body);
   CHECK_RETURN Err emit_trigger_call(MtMethod* m);
   CHECK_RETURN Err emit_trigger_calls();
   CHECK_RETURN Err emit_param_as_field(MtMethod* method, MnNode n);

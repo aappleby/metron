@@ -4,24 +4,27 @@
 
 module Module
 (
-  input logic clock
+  input logic clock,
+  output logic my_reg
 );
 /*public:*/
-
   function void tock();
-    tick();
+    /*tick()*/;
   endfunction
 
 /*private:*/
-
   function void tick();
-    my_reg = 1;
+    my_reg <= my_reg + 1;
   endfunction
 
-  logic my_reg;
-
+  //----------------------------------------
   always_comb begin
     tock();
+  end
+
+
+  always_ff @(posedge clock) begin
+    tick();
   end
 
 endmodule

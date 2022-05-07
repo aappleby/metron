@@ -18,6 +18,7 @@ module Module
   end
 
 
+  //----------------------------------------
   always_comb begin
     tock();
   end

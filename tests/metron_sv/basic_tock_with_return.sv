@@ -13,6 +13,7 @@ module Module
     tock = 123;
   endfunction
 
+  //----------------------------------------
   always_comb begin
     tock_ret = tock();
   end

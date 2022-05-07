@@ -17,6 +17,7 @@ module Submod
   endfunction
 
 
+  //----------------------------------------
   always_comb begin
     tock();
   end
@@ -31,14 +32,12 @@ module Module
 
   function void tock();
     logic[19:0] foo;
-    submodule_tock;
+    /*submodule.tock*/;
     foo = submodule_my_width + submodule_my_height;
   endfunction
 
   Submod #(10,11) submodule(
-    // Inputs
     .clock(clock),
-    // Outputs
     .my_width(submodule_my_width),
     .my_height(submodule_my_height)
   );
@@ -46,6 +45,7 @@ module Module
   logic[11-1:0] submodule_my_height;
 
 
+  //----------------------------------------
   always_comb begin
     tock();
   end

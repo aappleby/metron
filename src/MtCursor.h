@@ -54,7 +54,6 @@ struct MtCursor {
   CHECK_RETURN Err emit_declarator(MnNode n, bool elide_value = false);
   CHECK_RETURN Err emit_declaration(MnNode n);
   CHECK_RETURN Err emit_template_argument(MnNode n);
-  CHECK_RETURN Err emit_sym_translation_unit(MnNode n);
   CHECK_RETURN Err emit_enum(MnNode n);
 
   // Special-purpose emit()s
@@ -69,9 +68,17 @@ struct MtCursor {
   CHECK_RETURN Err emit_port_decls(MnNode n);
   CHECK_RETURN Err emit_field_as_component(MnNode field_decl);
   CHECK_RETURN Err emit_input_port_bindings(MnNode n);
+  CHECK_RETURN Err emit_method_ports(MtMethod* m);
+  CHECK_RETURN Err emit_field_port(MtField* f);
+  CHECK_RETURN Err emit_param_port(MtMethod* m, MnNode node_type, MnNode node_name);
+  CHECK_RETURN Err emit_return_port(MtMethod* m, MnNode node_type, MnNode node_name);
+  CHECK_RETURN Err emit_port_list(MnNode class_body);
+  CHECK_RETURN Err emit_trigger_call(MtMethod* m);
+  CHECK_RETURN Err emit_modparam_list();
 
   // Per-symbol emit()s.
   // clang-format off
+  CHECK_RETURN Err emit_sym_translation_unit(MnNode n);
   CHECK_RETURN Err emit_sym_argument_list(MnNode n);
   CHECK_RETURN Err emit_sym_assignment_expression(MnNode n);
   CHECK_RETURN Err emit_sym_break_statement(MnNode n);
@@ -156,9 +163,6 @@ struct MtCursor {
   std::map<std::string, MnNode> preproc_vars;
 
   bool echo = false;
-
-  bool trim_namespaces = true;
-  bool in_ports = false;
 
   int override_size = 0;
 };

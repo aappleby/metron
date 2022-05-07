@@ -15,7 +15,8 @@ MtMethod::MtMethod(MtModule* mod, MnNode n, bool is_public) {
 
   auto params = n.get_field(field_declarator).get_field(field_parameters);
   for (const auto& param : params) {
-    if (param.sym == sym_parameter_declaration) {
+    if (param.sym == sym_parameter_declaration ||
+        param.sym == sym_optional_parameter_declaration) {
       param_nodes.push_back(param);
     }
   }

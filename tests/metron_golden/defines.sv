@@ -9,7 +9,6 @@
 
 module Module
 (
-  input logic clock,
   output logic[7:0] tock_ret
 );
 /*public:*/
@@ -19,9 +18,8 @@ module Module
   endfunction
 
   //----------------------------------------
-  always_comb begin
-    tock_ret = tock();
-  end
+
+  always_comb tock_ret = tock();
 
 
 endmodule

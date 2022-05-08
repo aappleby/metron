@@ -5,29 +5,35 @@
 module Module
 (
   input logic clock,
-  output logic[7:0] tock
+  output logic[7:0] tock_ret
 );
 /*public:*/
 
-  always_comb begin /*tock*/
+  function logic[7:0] tock();
     logic[7:0] result;
     result = my_reg1 + my_reg2;
     /*tick1()*/;
     /*tick2()*/;
     tock = result;
-  end
+  endfunction
 
 /*private:*/
 
-  always_ff @(posedge clock) begin /*tick1*/
+  function void tick1();
     my_reg1 <= 0;
-  end
+  endfunction
 
-  always_ff @(posedge clock) begin /*tick2*/
+  function void tick2();
     my_reg2 <= 1;
-  end
+  endfunction
 
   logic[7:0] my_reg1;
   logic[7:0] my_reg2;
-endmodule
 
+  //----------------------------------------
+
+  always_comb tock_ret = tock();
+  always_ff @(posedge clock) tick1();
+  always_ff @(posedge clock) tick2();
+
+endmodule

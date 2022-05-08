@@ -76,7 +76,7 @@ struct MtCursor {
   CHECK_RETURN Err emit_return_port(MtMethod* m, MnNode node_type, MnNode node_name);
   CHECK_RETURN Err emit_module_port_list(MnNode class_body);
   CHECK_RETURN Err emit_trigger_call(MtMethod* m);
-  CHECK_RETURN Err emit_trigger_calls();
+  //CHECK_RETURN Err emit_trigger_calls();
   CHECK_RETURN Err emit_param_as_field(MtMethod* method, MnNode n);
   CHECK_RETURN Err emit_modparam_list();
   CHECK_RETURN Err emit_call_binding(MnNode n);
@@ -169,6 +169,7 @@ struct MtCursor {
   std::map<std::string, MnNode> preproc_vars;
 
   bool echo = false;
+  bool trailing_comma = false;
 
   int override_size = 0;
 };

@@ -8,7 +8,6 @@ endpackage
 
 module Module
 (
-  input logic clock,
   output logic[7:0] tock1_ret,
   output logic[7:0] tock2_ret
 );
@@ -17,16 +16,11 @@ module Module
   function logic[7:0] tock1();
     tock1 = MyPackage::foo;
   endfunction
+  always_comb tock1_ret = tock1();
 
   function logic[7:0] tock2();
     import MyPackage::*;
     tock2 = foo;
   endfunction
-
-  //----------------------------------------
-  always_comb begin
-    tock1_ret = tock1();
-    tock2_ret = tock2();
-  end
-
+  always_comb tock2_ret = tock2();
 endmodule

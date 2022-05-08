@@ -2,7 +2,6 @@
 
 module Module
 (
-  input logic clock
 );
 /*public:*/
 
@@ -12,6 +11,7 @@ module Module
     a1 = 1'b1;
     b1 = {1 {a1}};
   endfunction
+  always_comb tock_dup1();
 
   function void tock_dup4();
     logic  a1;
@@ -54,11 +54,5 @@ module Module
     a8 = 8'b00000001;
     b8 = {4 {a8}};
   endfunction
-
-  //----------------------------------------
-  always_comb begin
-    tock_dup1();
-    tock_dup4();
-  end
-
+  always_comb tock_dup4();
 endmodule

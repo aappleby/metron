@@ -21,14 +21,9 @@ module Submod
   endfunction
 
   //----------------------------------------
-  always_comb begin
-    tock();
-  end
 
-
-  always_ff @(posedge clock) begin
-    tick();
-  end
+  always_comb tock();
+  always_ff @(posedge clock) tick();
 
 
 endmodule
@@ -54,11 +49,10 @@ module Module
   );
   logic[7:0] submod_sub_reg;
 
-
   //----------------------------------------
-  always_comb begin
-    tock_get_submod_reg_ret = tock_get_submod_reg();
-    tock();
-  end
+
+  always_comb tock_get_submod_reg_ret = tock_get_submod_reg();
+  always_comb tock();
+
 
 endmodule

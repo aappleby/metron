@@ -14,25 +14,16 @@ module Module
     tick_val = val;
     /*tick(val)*/;
   endfunction
+  always_comb tock(tock_val);
 
 /*private:*/
 
   function void tick(logic[7:0] val);
     my_reg <= my_reg + val;
   endfunction
+  logic[7:0] tick_val;
+  always_ff @(posedge clock) tick(tick_val);
 
   logic[7:0] my_reg;
-
-  //----------------------------------------
-  always_comb begin
-    tock(tock_val);
-  end
-
-  logic[7:0] tick_val;
-
-  always_ff @(posedge clock) begin
-    tick(tick_val);
-  end
-
 
 endmodule

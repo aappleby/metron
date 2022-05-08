@@ -5,23 +5,20 @@
 
 module Module
 (
-  input logic clock
+  input logic clock,
+  output int my_reg
 );
 /*public:*/
 
-  function void tock();
+  function void tick();
+    my_reg <= my_reg + 1;
   endfunction
+  always_ff @(posedge clock) tick();
 
 
   always @(posedge clock) begin
     $display("Hello World!\n");
   end
-
-  //----------------------------------------
-  always_comb begin
-    tock();
-  end
-
 
 
 endmodule

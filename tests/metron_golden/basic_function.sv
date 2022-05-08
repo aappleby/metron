@@ -24,14 +24,7 @@ module Module
 
   logic[7:0] my_reg;
 
-  //----------------------------------------
-  always_comb begin
-    tock();
-  end
-
-
-  always_ff @(posedge clock) begin
-    tick();
-  end
+  always_comb tock();
+  always_ff @(posedge clock) tick();
 
 endmodule

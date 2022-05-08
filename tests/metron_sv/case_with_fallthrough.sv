@@ -27,23 +27,14 @@ module Module
     /*tick()*/;
     tock = result;
   endfunction
+  always_comb tock_ret = tock();
 
 /*private:*/
 
   function void tick();
     my_reg <= my_reg + 1;
   endfunction
+  always_ff @(posedge clock) tick();
 
   logic[7:0] my_reg;
-
-  //----------------------------------------
-  always_comb begin
-    tock_ret = tock();
-  end
-
-
-  always_ff @(posedge clock) begin
-    tick();
-  end
-
 endmodule

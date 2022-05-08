@@ -4,7 +4,6 @@
 
 module Module
 (
-  input logic clock,
   output logic my_sig
 );
 /*public:*/
@@ -18,8 +17,7 @@ module Module
 
 
   //----------------------------------------
-  always_comb begin
-    tock();
-  end
+
+  always_comb tock();
 
 endmodule

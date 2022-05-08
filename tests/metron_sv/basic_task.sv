@@ -11,6 +11,7 @@ module Module
   function void tock();
     tick();
   endfunction
+  always_comb tock();
 
 /*private:*/
 
@@ -22,6 +23,7 @@ module Module
     my_reg <= my_reg + my_reg2 + 3;
     some_task2();
   endfunction
+  always_ff @(posedge clock) some_task();
 
   function void some_task2();
     my_reg2 <= my_reg2 + 3;
@@ -29,15 +31,4 @@ module Module
 
   logic[7:0] my_reg;
   logic[7:0] my_reg2;
-
-  //----------------------------------------
-  always_comb begin
-    tock();
-  end
-
-
-  always_ff @(posedge clock) begin
-    some_task();
-  end
-
 endmodule

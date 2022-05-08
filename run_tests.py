@@ -44,10 +44,10 @@ def main():
 
     errors += test_convert_good()
     errors += test_convert_bad()
+    errors += test_compilation()
+    errors += test_verilator_parse()
 
     if not basic:
-        errors += test_compilation()
-        errors += test_verilator_parse()
         errors += test_goldens()
         errors += test_examples()
         errors += test_misc()

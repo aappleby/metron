@@ -16,29 +16,20 @@ module Module
     /*tick2()*/;
     tock = result;
   endfunction
+  always_comb tock_ret = tock();
 
 /*private:*/
 
   function void tick1();
     my_reg1 <= 0;
   endfunction
+  always_ff @(posedge clock) tick1();
 
   function void tick2();
     my_reg2 <= 1;
   endfunction
+  always_ff @(posedge clock) tick2();
 
   logic[7:0] my_reg1;
   logic[7:0] my_reg2;
-
-  //----------------------------------------
-  always_comb begin
-    tock_ret = tock();
-  end
-
-
-  always_ff @(posedge clock) begin
-    tick1();
-    tick2();
-  end
-
 endmodule

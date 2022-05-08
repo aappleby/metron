@@ -6,7 +6,8 @@
 class Module {
 public:
 
-  void tock() {
+  void tick() {
+    my_reg = my_reg + 1;
   }
 
 /*#
@@ -15,4 +16,5 @@ public:
   end
 #*/
 
+  int my_reg;
 };

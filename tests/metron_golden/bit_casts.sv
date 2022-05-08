@@ -4,7 +4,6 @@
 
 module Module
 (
-  input logic clock
 );
 /*public:*/
 
@@ -358,13 +357,12 @@ module Module
   endfunction
 
   //----------------------------------------
-  always_comb begin
-    tock_bN();
-    tock_bx_const();
-    tock_bN_offset();
-    tock_bx_param();
-    tock2();
-  end
+
+  always_comb tock_bN();
+  always_comb tock_bx_const();
+  always_comb tock_bN_offset();
+  always_comb tock_bx_param();
+  always_comb tock2();
 
 
 

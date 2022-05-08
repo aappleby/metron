@@ -187,6 +187,33 @@ MtField *MtModule::get_output_register(const std::string &name) {
 
 //------------------------------------------------------------------------------
 
+bool MtModule::needs_tick() const {
+  for (auto m : all_methods) {
+    if (m->in_tick) return true;
+  }
+
+  for (auto f : all_fields) {
+    if (f->_type_mod && f->_type_mod->needs_tick()) return true;
+  }
+
+  return false;
+}
+
+bool MtModule::needs_tock() const {
+  for (auto m : all_methods) {
+    if (m->in_tock) return true;
+    if (m->in_func && m->internal_callers.empty() && m->is_public()) return true;
+  }
+
+  for (auto f : all_fields) {
+    if (f->_type_mod && f->_type_mod->needs_tock()) return true;
+  }
+
+  return false;
+}
+
+//------------------------------------------------------------------------------
+
 void MtModule::dump_method_list(const std::vector<MtMethod *> &methods) const {
   for (auto n : methods) {
     LOG_INDENT_SCOPE();

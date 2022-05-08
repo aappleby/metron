@@ -14,6 +14,7 @@ module Module
     public_task(public_func(17));
     /*tick()*/;
   endfunction
+  always_comb tock();
 
   function void public_task(logic[7:0] x);
     my_sig = x + 7;
@@ -29,6 +30,7 @@ module Module
     private_task(private_func(33));
     my_reg2 <= my_reg2 + 1;
   endfunction
+  always_ff @(posedge clock) tick();
 
   function void private_task(logic[7:0] x);
     my_reg1 <= my_reg1 + private_func(16);
@@ -40,15 +42,4 @@ module Module
 
   logic[7:0] my_reg1;
   logic[7:0] my_reg2;
-
-  //----------------------------------------
-  always_comb begin
-    tock();
-  end
-
-
-  always_ff @(posedge clock) begin
-    tick();
-  end
-
 endmodule

@@ -4,7 +4,6 @@
 
 module Module
 (
-  input logic clock
 );
 /*public:*/
 
@@ -23,6 +22,7 @@ module Module
 
     d = {a, b, c};
   endfunction
+  always_comb tock1();
 
   function void tock2();
     logic[7:0] a;
@@ -35,11 +35,5 @@ module Module
 
     d = {1'(a), 2'(b), 3'(c)};
   endfunction
-
-  //----------------------------------------
-  always_comb begin
-    tock1();
-    tock2();
-  end
-
+  always_comb tock2();
 endmodule

@@ -9,7 +9,6 @@
 
 module Module
 (
-  input logic clock,
   output logic[7:0] tock_ret
 );
 /*public:*/
@@ -17,11 +16,6 @@ module Module
   function logic[7:0] tock();
     tock = `MY_OTHER_CONSTANT;
   endfunction
-
-  //----------------------------------------
-  always_comb begin
-    tock_ret = tock();
-  end
-
+  always_comb tock_ret = tock();
 
 endmodule

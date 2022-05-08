@@ -20,7 +20,6 @@
 // clang-format off
 module Module
 (
-  input logic clock,
   output int tock1_ret
 );
 /*public:*/
@@ -56,9 +55,8 @@ module Module
   endfunction
 
   //----------------------------------------
-  always_comb begin
-    tock1_ret = tock1();
-  end
+
+  always_comb tock1_ret = tock1();
 
 endmodule
 // clang-format on

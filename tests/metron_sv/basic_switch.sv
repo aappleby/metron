@@ -13,6 +13,7 @@ module Module
     tick_selector = selector;
     /*tick(selector)*/;
   endfunction
+  always_comb tock(tock_selector);
 
 /*private:*/
 
@@ -29,18 +30,8 @@ module Module
       6: my_reg <= 72;
     endcase
   endfunction
+  logic[1:0] tick_selector;
+  always_ff @(posedge clock) tick(tick_selector);
 
   logic[7:0] my_reg;
-
-  //----------------------------------------
-  always_comb begin
-    tock(tock_selector);
-  end
-
-  logic[1:0] tick_selector;
-
-  always_ff @(posedge clock) begin
-    tick(tick_selector);
-  end
-
 endmodule

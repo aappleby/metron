@@ -5,7 +5,6 @@
 
 module Module
 (
-  input logic clock
 );
 /*public:*/
 
@@ -48,10 +47,9 @@ module Module
   endfunction
 
   //----------------------------------------
-  always_comb begin
-    tock1();
-    tock2();
-  end
+
+  always_comb tock1();
+  always_comb tock2();
 
 
 endmodule

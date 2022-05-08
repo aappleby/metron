@@ -11,20 +11,11 @@ module Module
   function void tock();
     /*tick()*/;
   endfunction
+  always_comb tock();
 
 /*private:*/
   function void tick();
     my_reg <= my_reg + 1;
   endfunction
-
-  //----------------------------------------
-  always_comb begin
-    tock();
-  end
-
-
-  always_ff @(posedge clock) begin
-    tick();
-  end
-
+  always_ff @(posedge clock) tick();
 endmodule

@@ -45,6 +45,9 @@ struct MtModule {
 
   CHECK_RETURN Err categorize_fields();
 
+  bool needs_tick() const;
+  bool needs_tock() const;
+
   //--------------------
 
   MtModLibrary* lib = nullptr;
@@ -90,16 +93,6 @@ struct MtModule {
   std::vector<MtField*> components;
   std::vector<MtField*> private_signals;
   std::vector<MtField*> private_registers;
-
-#if 0
-  //----------
-
-  std::vector<MtMethod*> init_methods;
-  std::vector<MtMethod*> tick_methods;
-  std::vector<MtMethod*> tock_methods;
-  std::vector<MtMethod*> task_methods;
-  std::vector<MtMethod*> func_methods;
-#endif
 };
 
 //------------------------------------------------------------------------------

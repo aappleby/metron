@@ -12,10 +12,12 @@ module Module
   function logic[6:0] tock_get_reg();
     tock_get_reg = my_reg;
   endfunction
+  always_comb tock_get_reg_ret = tock_get_reg();
 
   function void tock();
     /*tick()*/;
   endfunction
+  always_comb tock();
 
 
 /*private:*/
@@ -23,18 +25,7 @@ module Module
   function void tick();
     my_reg <= my_reg + 1;
   endfunction
+  always_ff @(posedge clock) tick();
 
   logic[6:0] my_reg;
-
-  //----------------------------------------
-  always_comb begin
-    tock_get_reg_ret = tock_get_reg();
-    tock();
-  end
-
-
-  always_ff @(posedge clock) begin
-    tick();
-  end
-
 endmodule

@@ -12,6 +12,7 @@ module Module
   function void tock();
     /*tick()*/;
   endfunction
+  always_comb tock();
 
 /*private:*/
 
@@ -21,20 +22,10 @@ module Module
     my_reg3 = my_reg3 - 1;
     my_reg4 = my_reg4 - 1;
   endfunction
+  always_ff @(posedge clock) tick();
 
   int my_reg1;
   int my_reg2;
   int my_reg3;
   int my_reg4;
-
-  //----------------------------------------
-  always_comb begin
-    tock();
-  end
-
-
-  always_ff @(posedge clock) begin
-    tick();
-  end
-
 endmodule

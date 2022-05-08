@@ -5,7 +5,6 @@
 
 module Module
 (
-  input logic clock
 );
 /*public:*/
 
@@ -17,6 +16,10 @@ module Module
     $display("Hello World!\n");
   end
 
+  //----------------------------------------
+
+  always_comb tock();
+
+
 
 endmodule
-

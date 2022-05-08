@@ -4,7 +4,6 @@
 
 module Module
 (
-  input logic clock
 );
 /*public:*/
 
@@ -146,6 +145,7 @@ module Module
     dst2 = 2'(src);
     dst1 = 1'(src);
   endfunction
+  always_comb tock_bN();
 
   function void tock_bx_const();
     logic[63:0] src;
@@ -283,6 +283,7 @@ module Module
     dst2 = (2)'(src);
     dst1 = (1)'(src);
   endfunction
+  always_comb tock_bx_const();
 
   function void tock_bN_offset();
     logic[63:0] src;
@@ -309,6 +310,7 @@ module Module
     dst8 = src[15:8];
     dst9 = src[16:9];
   endfunction
+  always_comb tock_bN_offset();
 
   localparam int some_size1 = 64;
   localparam int some_size2 = 8;
@@ -340,6 +342,7 @@ module Module
     b8 = a[some_size2+7:8];
     b9 = a[some_size2+8:9];
   endfunction
+  always_comb tock_bx_param();
 
 
   function void tock2();
@@ -356,16 +359,7 @@ module Module
     e = a[some_size1]; //static bit extract with variable offset, width 1
     f = a[6 + some_size2 : some_size2]; //static bit extract with variable offset, width N
   endfunction
-
-  //----------------------------------------
-  always_comb begin
-    tock_bN();
-    tock_bx_const();
-    tock_bN_offset();
-    tock_bx_param();
-    tock2();
-  end
-
+  always_comb tock2();
 
 
 

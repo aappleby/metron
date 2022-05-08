@@ -38,7 +38,7 @@ public:
 private:
 
   void tick() {
-    my_reg = my_sig - 2;
+    my_reg = my_reg + my_sig - 2;
   }
 
   logic<8> my_sig;

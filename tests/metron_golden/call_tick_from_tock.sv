@@ -24,15 +24,10 @@ module Module
   logic[7:0] my_reg;
 
   //----------------------------------------
-  always_comb begin
-    tock(tock_val);
-  end
 
+  always_comb tock(tock_val);
   logic[7:0] tick_val;
-
-  always_ff @(posedge clock) begin
-    tick(tick_val);
-  end
+  always_ff @(posedge clock) tick(tick_val);
 
 
 endmodule

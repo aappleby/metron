@@ -12,24 +12,15 @@ module Submod
     tick_arg = arg;
     /*tick(arg)*/;
   endfunction
+  always_comb tock(tock_arg);
 /*private:*/
   function void tick(logic[7:0] arg);
     my_reg <= my_reg + arg;
   endfunction
+  logic[7:0] tick_arg;
+  always_ff @(posedge clock) tick(tick_arg);
 
   logic[7:0] my_reg;
-
-  //----------------------------------------
-  always_comb begin
-    tock(tock_arg);
-  end
-
-  logic[7:0] tick_arg;
-
-  always_ff @(posedge clock) begin
-    tick(tick_arg);
-  end
-
 endmodule
 
 
@@ -49,17 +40,12 @@ module Module
       /*submod.tock*/;
     end
   endfunction
+  always_comb tock();
 
   Submod submod(
     .clock(clock),
     .tock_arg(submod_tock_arg)
   );
   logic[7:0] submod_tock_arg;
-
-  //----------------------------------------
-  always_comb begin
-    tock();
-  end
-
 
 endmodule

@@ -12,25 +12,16 @@ module Submod
   function void tock();
     /*tick()*/;
   endfunction
+  always_comb tock();
 
 /*private:*/
 
   function void tick();
     sub_reg <= sub_reg + SOME_CONSTANT;
   endfunction
+  always_ff @(posedge clock) tick();
 
   logic[7:0] sub_reg;
-
-  //----------------------------------------
-  always_comb begin
-    tock();
-  end
-
-
-  always_ff @(posedge clock) begin
-    tick();
-  end
-
 endmodule
 
 module Module
@@ -42,15 +33,10 @@ module Module
   function void tock();
     /*submod.tock*/;
   endfunction
+  always_comb tock();
 
   Submod #(99) submod(
     .clock(clock)
   );
-
-  //----------------------------------------
-  always_comb begin
-    tock();
-  end
-
 
 endmodule

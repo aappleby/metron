@@ -16,7 +16,6 @@ typedef struct packed {
 
 module Module
 (
-  input logic clock,
   output logic[7:0] tock_ret
 );
 /*public:*/
@@ -33,10 +32,5 @@ module Module
 
     tock = 17;
   endfunction
-
-  //----------------------------------------
-  always_comb begin
-    tock_ret = tock();
-  end
-
+  always_comb tock_ret = tock();
 endmodule

@@ -2,16 +2,19 @@
 
 module Module
 (
-  input logic clock,
-  output logic[7:0] tock
+  output logic[7:0] tock_ret
 );
 /*public:*/
 
-  always_comb begin /*tock*/
-    localparam int thing1 = 1;
-    localparam int thing2 = 2;
+  function logic[7:0] tock();
+    parameter thing1 = 1;
+    parameter thing2 = 2;
     tock = thing1 + thing2;
-  end
+  endfunction
+
+  //----------------------------------------
+
+  always_comb tock_ret = tock();
+
 
 endmodule
-

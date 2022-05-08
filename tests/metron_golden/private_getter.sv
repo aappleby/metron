@@ -4,14 +4,13 @@
 
 module Module
 (
-  input logic clock,
-  output logic[7:0] tock
+  output logic[7:0] tock_ret
 );
 /*public:*/
 
-  always_comb begin /*tock*/
+  function logic[7:0] tock();
     tock = my_getter();
-  end
+  endfunction
 
 /*private:*/
 
@@ -19,5 +18,9 @@ module Module
     my_getter = 12;
   endfunction
 
-endmodule
+  //----------------------------------------
 
+  always_comb tock_ret = tock();
+
+
+endmodule

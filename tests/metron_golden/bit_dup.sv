@@ -2,7 +2,6 @@
 
 module Module
 (
-  input logic clock
 );
 /*public:*/
 
@@ -56,9 +55,8 @@ module Module
   endfunction
 
   //----------------------------------------
-  always_comb begin
-    tock_dup1();
-    tock_dup4();
-  end
+
+  always_comb tock_dup1();
+  always_comb tock_dup4();
 
 endmodule

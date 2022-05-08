@@ -24,15 +24,10 @@ module Module
   logic[6:0] my_reg;
 
   //----------------------------------------
-  always_comb begin
-    tock(tock_my_input);
-  end
 
+  always_comb tock(tock_my_input);
   logic[6:0] tick_my_input;
-
-  always_ff @(posedge clock) begin
-    tick(tick_my_input);
-  end
+  always_ff @(posedge clock) tick(tick_my_input);
 
 endmodule
 // clang-format on

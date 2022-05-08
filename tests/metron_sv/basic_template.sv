@@ -5,7 +5,6 @@
 module Submod
 #(parameter int WIDTH,parameter  int HEIGHT = 2)
 (
-  input logic clock,
   output logic[WIDTH-1:0] my_width,
   output logic[HEIGHT-1:0] my_height
 );
@@ -15,18 +14,12 @@ module Submod
     my_width = (WIDTH)'(100);
     my_height = (HEIGHT)'(200);
   endfunction
-
-
-  //----------------------------------------
-  always_comb begin
-    tock();
-  end
+  always_comb tock();
 
 endmodule
 
 module Module
 (
-  input logic clock
 );
 /*public:*/
 
@@ -35,19 +28,13 @@ module Module
     /*submodule.tock*/;
     foo = submodule_my_width + submodule_my_height;
   endfunction
+  always_comb tock();
 
   Submod #(10,11) submodule(
-    .clock(clock),
     .my_width(submodule_my_width),
     .my_height(submodule_my_height)
   );
   logic[10-1:0] submodule_my_width;
   logic[11-1:0] submodule_my_height;
-
-  //----------------------------------------
-  always_comb begin
-    tock();
-  end
-
 
 endmodule

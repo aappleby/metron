@@ -28,13 +28,8 @@ module Module
   int my_reg4;
 
   //----------------------------------------
-  always_comb begin
-    tock();
-  end
 
-
-  always_ff @(posedge clock) begin
-    tick();
-  end
+  always_comb tock();
+  always_ff @(posedge clock) tick();
 
 endmodule

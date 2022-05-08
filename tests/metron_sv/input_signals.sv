@@ -20,23 +20,14 @@ module Submod
     /*tick()*/;
     tock = o_signal + 7;
   endfunction
+  always_comb tock_ret = tock(tock_i_param);
 
 /*private:*/
 
   function void tick();
     o_reg <= o_reg + o_signal;
   endfunction
-
-  //----------------------------------------
-  always_comb begin
-    tock_ret = tock(tock_i_param);
-  end
-
-
-  always_ff @(posedge clock) begin
-    tick();
-  end
-
+  always_ff @(posedge clock) tick();
 endmodule
 
 module Module
@@ -52,15 +43,17 @@ module Module
     submod_tock_i_param = 13;
     submod_return = submod_tock_ret;
     my_sig = submod_return + 3;
-    tick();
+    /*tick()*/;
   endfunction
+  always_comb tock();
 
 
 /*private:*/
 
   function void tick();
-    my_reg = my_sig - 2;
+    my_reg <= my_reg + my_sig - 2;
   endfunction
+  always_ff @(posedge clock) tick();
 
   logic[7:0] my_sig;
 
@@ -77,11 +70,5 @@ module Module
   logic[7:0] submod_o_signal;
   logic[7:0] submod_o_reg;
   logic[7:0] submod_tock_ret;
-
-  //----------------------------------------
-  always_comb begin
-    tock();
-  end
-
 
 endmodule

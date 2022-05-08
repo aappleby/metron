@@ -981,6 +981,28 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
 
   assert(cursor == n.end());
 
+  err << emit_ws_to_newline();
+
+  if ((current_method->in_tock || current_method->in_func) && current_method->internal_callers.empty() && current_method->is_public()) {
+    err << emit_indent();
+    err << emit_print("always_comb ");
+    err << emit_trigger_call(current_method);
+    err << emit_newline();
+  }
+
+  if (current_method->in_tick && current_method->tock_callers.size()) {
+    for (auto n : current_method->param_nodes) {
+      err << emit_param_as_field(current_method, n);
+    }
+  }
+
+  if (current_method->in_tick && current_method->tick_callers.empty()) {
+    err << emit_indent();
+    err << emit_print("always_ff @(posedge clock) ");
+    err << emit_trigger_call(current_method);
+    err << emit_newline();
+  }
+
   current_method = nullptr;
 
   id_replacements.swap(old_replacements);
@@ -1008,15 +1030,19 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
 
   indent_stack.push_back(indent_stack.back() + "  ");
 
-  err << emit_indent();
-  err << emit_print(".clock(clock),");
-  err << emit_newline();
+  if (component_mod->needs_tick()) {
+    err << emit_indent();
+    err << emit_print(".clock(clock),");
+    err << emit_newline();
+    trailing_comma = true;
+  }
 
   for (auto f : component_mod->all_fields) {
     if (f->is_public()) {
       err << emit_indent();
       err << emit_print(".%s(%s_%s),", f->cname(), inst_name.c_str(), f->cname());
       err << emit_newline();
+      trailing_comma = true;
     }
   }
 
@@ -1033,6 +1059,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
         err << emit_print(".%s_%s(%s_%s_%s),", m->cname(), node_decl.text().c_str(),
                           inst_name.c_str(), m->cname(), node_decl.text().c_str());
         err << emit_newline();
+        trailing_comma = true;
       }
 
       if (m->has_return()) {
@@ -1044,14 +1071,18 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
         err << emit_print(".%s_ret(%s_%s_ret),", m->cname(),
                           inst_name.c_str(), m->cname());
         err << emit_newline();
+        trailing_comma = true;
       }
     }
   }
 
   // Remove trailing comma from port list
-  err << emit_backspace();
-  err << emit_backspace();
-  err << emit_newline();
+  if (trailing_comma) {
+    err << emit_backspace();
+    err << emit_backspace();
+    err << emit_newline();
+    trailing_comma = false;
+  }
 
   indent_stack.pop_back();
 
@@ -1715,6 +1746,8 @@ CHECK_RETURN Err MtCursor::emit_param_port(MtMethod* m, MnNode node_type, MnNode
   err << emit_print(",");
   err << emit_newline();
 
+  trailing_comma = true;
+
   return err;
 }
 
@@ -1732,6 +1765,8 @@ CHECK_RETURN Err MtCursor::emit_return_port(MtMethod* m, MnNode node_type, MnNod
   err << sub_cursor.emit_print("%s_ret", m->cname());
   err << emit_print(",");
   err << emit_newline();
+
+  trailing_comma = true;
 
   return err;
 }
@@ -1790,6 +1825,8 @@ CHECK_RETURN Err MtCursor::emit_field_port(MtField* f) {
   err << emit_print(",");
   err << emit_newline();
 
+  trailing_comma = true;
+
   return err;
 }
 
@@ -1846,9 +1883,12 @@ CHECK_RETURN Err MtCursor::emit_module_port_list(MnNode class_body) {
   // port list.
   push_indent(class_body);
 
-  err << emit_indent();
-  err << emit_print("input logic clock,");
-  err << emit_newline();
+  if (current_mod->needs_tick()) {
+    err << emit_indent();
+    err << emit_print("input logic clock,");
+    err << emit_newline();
+    trailing_comma = true;
+  }
 
   for (auto f : current_mod->all_fields) {
     if (f->is_param()) continue;
@@ -1861,9 +1901,12 @@ CHECK_RETURN Err MtCursor::emit_module_port_list(MnNode class_body) {
     }
   }
   // Remove trailing comma from port list
-  err << emit_backspace();
-  err << emit_backspace();
-  err << emit_newline();
+  if (trailing_comma) {
+    err << emit_backspace();
+    err << emit_backspace();
+    err << emit_newline();
+    trailing_comma = false;
+  }
 
   pop_indent(class_body);
   err << emit_indent();
@@ -1959,6 +2002,7 @@ CHECK_RETURN Err MtCursor::emit_param_as_field(MtMethod* method, MnNode n) {
 
 //------------------------------------------------------------------------------
 
+#if 0
 CHECK_RETURN Err MtCursor::emit_trigger_calls() {
   Err err;
 
@@ -1968,7 +2012,7 @@ CHECK_RETURN Err MtCursor::emit_trigger_calls() {
 
   bool any_tock_triggers = false;
   for (auto m : current_mod->all_methods) {
-    if ((m->in_tock || m->in_func)  && m->internal_callers.empty()) {
+    if ((m->in_tock || m->in_func) && m->internal_callers.empty() && m->is_public()) {
       any_tock_triggers = true;
       break;
     }
@@ -1990,31 +2034,19 @@ CHECK_RETURN Err MtCursor::emit_trigger_calls() {
     }
   }
 
-  if (any_tock_triggers) {
+  if (any_tock_triggers || any_tock_tick_bindings || any_tick_triggers) {
     err << emit_newline();
-    err << emit_indent();
-    err << emit_print("//----------------------------------------");
-    err << emit_newline();
-    err << emit_indent();
-    err << emit_print("always_comb begin");
-    err << emit_newline();
+  }
 
+  if (any_tock_triggers) {
     for (auto m : current_mod->all_methods) {
-      if ((m->in_tock || m->in_func)  && m->internal_callers.empty()) {
+      if ((m->in_tock || m->in_func) && m->internal_callers.empty() && m->is_public()) {
         err << emit_indent();
-        err << emit_print("  ");
+        err << emit_print("always_comb ");
         err << emit_trigger_call(m);
         err << emit_newline();
       }
     }
-
-    err << emit_indent();
-    err << emit_print("end");
-    err << emit_newline();
-  }
-
-  if (any_tock_triggers && any_tock_tick_bindings) {
-    err << emit_newline();
   }
 
   // Emit binding variables for tock->tick calls.
@@ -2030,28 +2062,17 @@ CHECK_RETURN Err MtCursor::emit_trigger_calls() {
     }
   }
 
-  if (any_tock_tick_bindings && any_tick_triggers) {
-    err << emit_newline();
-  }
-
   // Emit an always_ff containing calls to all our top-level ticks.
 
   if (any_tick_triggers) {
-    err << emit_indent();
-    err << emit_print("always_ff @(posedge clock) begin");
-    err << emit_newline();
-
     for (auto m : current_mod->all_methods) {
       if (m->in_tick && m->tick_callers.empty()) {
         err << emit_indent();
-        err << emit_print("  ");
+        err << emit_print("always_ff @(posedge clock) ");
         err << emit_trigger_call(m);
         err << emit_newline();
       }
     }
-    err << emit_indent();
-    err << emit_print("end");
-    err << emit_newline();
   }
 
   if (any_tock_triggers || any_tock_tick_bindings || any_tick_triggers) {
@@ -2060,6 +2081,7 @@ CHECK_RETURN Err MtCursor::emit_trigger_calls() {
 
   return err;
 }
+#endif
 
 //------------------------------------------------------------------------------
 // Emit the module body, with a few modifications.
@@ -2096,7 +2118,7 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n, bool is_str
         }
         else {
           //err << emit_newline();
-          err << emit_trigger_calls();
+          //err << emit_trigger_calls();
           err << emit_replacement(child, "endmodule");
         }
         break;
@@ -3199,9 +3221,12 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
         err << emit_sym_using_declaration(child);
         break;
 
+      case sym_compound_statement:
+        err << emit_statement(child);
+        break;
+
       case sym_break_statement:
       case sym_if_statement:
-      case sym_compound_statement:
       case sym_expression_statement:
       case sym_return_statement:
       case sym_switch_statement:

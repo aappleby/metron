@@ -1987,6 +1987,7 @@ CHECK_RETURN Err MtCursor::emit_trigger_calls() {
   }
 
   if (any_tock_triggers) {
+    err << emit_newline();
     err << emit_indent();
     err << emit_print("//----------------------------------------");
     err << emit_newline();

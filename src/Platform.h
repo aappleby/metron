@@ -3,7 +3,7 @@
 
 //------------------------------------------------------------------------------
 
-int plat_mkdir(const char* path, int mode);
+int plat_mkdir(const char* path);
 void debugbreak();
 void print_escaped(char s);
 void print_escaped(const char* source, int a, int b);

@@ -8,16 +8,12 @@ module Module
 );
 /*public:*/
 
-  function void tock();
+  task automatic tock();
     logic temp;
     my_sig = 0;
     my_sig = 1;
     temp = my_sig;
-  endfunction
-
-
-  //----------------------------------------
-
+  endtask
   always_comb tock();
 
 endmodule

@@ -8,23 +8,19 @@ module Module
 );
 /*public:*/
 
-  function void tock();
+  task automatic tock();
     /*tick()*/;
-  endfunction
+  endtask
+  always_comb tock();
 
 /*private:*/
 
   localparam int my_val = 7;
 
-  function void tick();
+  task automatic tick();
     my_reg <= my_reg + my_val;
-  endfunction
-
-  logic[6:0] my_reg;
-
-  //----------------------------------------
-
-  always_comb tock();
+  endtask
   always_ff @(posedge clock) tick();
 
+  logic[6:0] my_reg;
 endmodule

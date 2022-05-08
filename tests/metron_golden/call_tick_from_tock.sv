@@ -10,24 +10,20 @@ module Module
 );
 /*public:*/
 
-  function void tock(logic[7:0] val);
+  task automatic tock(logic[7:0] val);
     tick_val = val;
     /*tick(val)*/;
-  endfunction
+  endtask
+  always_comb tock(tock_val);
 
 /*private:*/
 
-  function void tick(logic[7:0] val);
+  task automatic tick(logic[7:0] val);
     my_reg <= my_reg + val;
-  endfunction
-
-  logic[7:0] my_reg;
-
-  //----------------------------------------
-
-  always_comb tock(tock_val);
+  endtask
   logic[7:0] tick_val;
   always_ff @(posedge clock) tick(tick_val);
 
+  logic[7:0] my_reg;
 
 endmodule

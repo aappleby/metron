@@ -13,10 +13,6 @@ module Adder
   function logic[7:0] add(logic[7:0] a, logic[7:0] b);
     add = a + b;
   endfunction
-
-  //----------------------------------------
-
   always_comb add_ret = add(add_a, add_b);
-
 
 endmodule

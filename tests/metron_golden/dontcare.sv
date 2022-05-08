@@ -16,14 +16,10 @@ module Module
   function logic[7:0] tock2();
     tock2 = 8'bx;
   endfunction
+  always_comb tock2_ret = tock2();
 
   function logic[7:0] tock3();
     tock3 = 8'(1'bx);
   endfunction
-
-  //----------------------------------------
-
-  always_comb tock2_ret = tock2();
   always_comb tock3_ret = tock3();
-
 endmodule

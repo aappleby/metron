@@ -15,13 +15,11 @@ module Module
   function logic[7:0] tock();
     tock = my_reg;
   endfunction
+  always_comb tock_ret = tock();
 
 /*private:*/
 
   logic[7:0] my_reg;
-
-  always_comb tock_ret = tock();
-
 endmodule
 
 

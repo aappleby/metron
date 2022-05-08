@@ -76,7 +76,7 @@ void print_escaped(char s) {
 
 #ifdef __GNUC__
 
-int plat_mkdir(const char* path, int mode) { return mkdir(path, mode); }
+int plat_mkdir(const char* path) { return mkdir(path, S_IREAD | S_IWRITE | S_IEXEC); }
 
 void dprintf(const char* format, ...) {
   // static char buffer[256];
@@ -110,7 +110,7 @@ void debugbreak() {
 #include <direct.h>
 
 void debugbreak() { __debugbreak(); }
-int plat_mkdir(const char* path, int mode) { return _mkdir(path); }
+int plat_mkdir(const char* path) { return _mkdir(path); }
 void print_stacktrace() {}
 
 #endif

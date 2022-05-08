@@ -11,9 +11,5 @@ module Module
   function logic[7:0] tock();
     tock = 123;
   endfunction
-
-  //----------------------------------------
-
   always_comb tock_ret = tock();
-
 endmodule

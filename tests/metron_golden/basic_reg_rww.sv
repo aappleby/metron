@@ -8,24 +8,20 @@ module Module
 );
 /*public:*/
 
-  function void tock();
+  task automatic tock();
     /*tick()*/;
-  endfunction
+  endtask
+  always_comb tock();
 
 /*private:*/
 
-  function void tick();
+  task automatic tick();
     logic temp;
     temp = my_reg;
     my_reg <= 0;
     my_reg <= 1;
-  endfunction
-
-  logic my_reg;
-
-  //----------------------------------------
-
-  always_comb tock();
+  endtask
   always_ff @(posedge clock) tick();
 
+  logic my_reg;
 endmodule

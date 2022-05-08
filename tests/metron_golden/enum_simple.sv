@@ -22,7 +22,7 @@ module Module
 (
   output int tock1_ret
 );
-/*public:*/
+ /*public:*/
   typedef enum { A1, B1, C1 } simple_enum1;
   typedef enum { A2 = 32'b01, B2 = 32'h02, C2 = 32'd3 } simple_enum2;
 
@@ -53,10 +53,6 @@ module Module
     se1 = B8;
     tock1 = 1;
   endfunction
-
-  //----------------------------------------
-
   always_comb tock1_ret = tock1();
-
 endmodule
 // clang-format on

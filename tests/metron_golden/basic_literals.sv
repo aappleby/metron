@@ -8,7 +8,7 @@ module Module
 );
 /*public:*/
 
-  function void tock1();
+  task automatic tock1();
     logic[31:0] a;
     logic[31:0] b;
     logic[31:0] c;
@@ -25,9 +25,10 @@ module Module
     f = 6'b000000;
     g = 7'b0000000;
     h = 8'b00000000;
-  endfunction
+  endtask
+  always_comb tock1();
 
-  function void tock2();
+  task automatic tock2();
     logic[31:0] a;
     logic[31:0] b;
     logic[31:0] c;
@@ -44,12 +45,7 @@ module Module
     f = 6'b0_000_00;
     g = 7'b000_0000;
     h = 8'b0_0_0_0_0_0_0_0;
-  endfunction
-
-  //----------------------------------------
-
-  always_comb tock1();
+  endtask
   always_comb tock2();
-
 
 endmodule

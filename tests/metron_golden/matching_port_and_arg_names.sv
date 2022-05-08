@@ -13,17 +13,13 @@ module Module
 /*public:*/
 
 
-  function void tock1();
+  task automatic tock1();
     output_val = input_val + 7;
-  endfunction
+  endtask
+  always_comb tock1();
 
   function logic[2:0] tock(logic[2:0] input_val);
     tock = input_val + 8;
   endfunction
-
-  //----------------------------------------
-
-  always_comb tock1();
   always_comb tock_ret = tock(tock_input_val);
-
 endmodule

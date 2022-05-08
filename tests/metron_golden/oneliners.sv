@@ -12,13 +12,9 @@ module Module
 
   function logic[7:0] tock();  logic[7:0] a;
 a = 1; a = a + 7; tock = a; endfunction
-
-  function void tick();  if (my_reg & 1) my_reg <= my_reg - 7; endfunction
-
-
-  //----------------------------------------
-
   always_comb tock_ret = tock();
+
+  task automatic tick();  if (my_reg & 1) my_reg <= my_reg - 7; endtask
   always_ff @(posedge clock) tick();
 
 

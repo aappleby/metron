@@ -8,23 +8,19 @@ module Submod
 );
 /*public:*/
 
-  function void tock();
+  task automatic tock();
     /*tick()*/;
-  endfunction
+  endtask
+  always_comb tock();
 
 /*private:*/
 
-  function void tick();
+  task automatic tick();
     sub_reg <= sub_reg + 1;
-  endfunction
-
-  logic[7:0] sub_reg;
-
-  //----------------------------------------
-
-  always_comb tock();
+  endtask
   always_ff @(posedge clock) tick();
 
+  logic[7:0] sub_reg;
 endmodule
 
 module Module
@@ -33,17 +29,13 @@ module Module
 );
 /*public:*/
 
-  function void tock();
+  task automatic tock();
     /*submod.tock*/;
-  endfunction
+  endtask
+  always_comb tock();
 
   Submod submod(
     .clock(clock)
   );
-
-  //----------------------------------------
-
-  always_comb tock();
-
 
 endmodule

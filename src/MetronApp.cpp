@@ -42,7 +42,8 @@ void mkdir_all(const std::vector<std::string>& full_path) {
   for (size_t i = 0; i < full_path.size() - 1; i++) {
     if (temp.size()) temp += "/";
     temp += full_path[i];
-    plat_mkdir(temp.c_str(), 0x777);
+    //printf("making dir %s\n", temp.c_str());
+    plat_mkdir(temp.c_str());
   }
 }
 
@@ -340,6 +341,7 @@ int main(int argc, char** argv) {
     }
 
     // Save translated source to output directory, if there is one.
+    LOG_G("Saving %s\n", out_path.c_str());
     if (convert && out_root.size()) {
       mkdir_all(split_path(out_path));
 

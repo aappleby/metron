@@ -27,18 +27,14 @@ module Module
     /*tick()*/;
     tock = result;
   endfunction
+  always_comb tock_ret = tock();
 
 /*private:*/
 
-  function void tick();
+  task automatic tick();
     my_reg <= my_reg + 1;
-  endfunction
-
-  logic[7:0] my_reg;
-
-  //----------------------------------------
-
-  always_comb tock_ret = tock();
+  endtask
   always_ff @(posedge clock) tick();
 
+  logic[7:0] my_reg;
 endmodule

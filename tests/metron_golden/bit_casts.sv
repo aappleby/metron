@@ -7,7 +7,7 @@ module Module
 );
 /*public:*/
 
-  function void tock_bN();
+  task automatic tock_bN();
     logic[63:0] src;
     logic[63:0] dst64;
     logic[62:0] dst63;
@@ -144,9 +144,10 @@ module Module
     dst3 = 3'(src);
     dst2 = 2'(src);
     dst1 = 1'(src);
-  endfunction
+  endtask
+  always_comb tock_bN();
 
-  function void tock_bx_const();
+  task automatic tock_bx_const();
     logic[63:0] src;
     logic[62:0] dst63;
     logic[61:0] dst62;
@@ -281,9 +282,10 @@ module Module
     dst3 = (3)'(src);
     dst2 = (2)'(src);
     dst1 = (1)'(src);
-  endfunction
+  endtask
+  always_comb tock_bx_const();
 
-  function void tock_bN_offset();
+  task automatic tock_bN_offset();
     logic[63:0] src;
     logic[7:0] dst0;
     logic[7:0] dst1;
@@ -307,12 +309,13 @@ module Module
     dst7 = src[14:7];
     dst8 = src[15:8];
     dst9 = src[16:9];
-  endfunction
+  endtask
+  always_comb tock_bN_offset();
 
   localparam int some_size1 = 64;
   localparam int some_size2 = 8;
 
-  function void tock_bx_param();
+  task automatic tock_bx_param();
     logic[some_size1-1:0] a;
     logic[some_size2-1:0] b;
     logic[some_size2-1:0] b0;
@@ -338,10 +341,11 @@ module Module
     b7 = a[some_size2+6:7];
     b8 = a[some_size2+7:8];
     b9 = a[some_size2+8:9];
-  endfunction
+  endtask
+  always_comb tock_bx_param();
 
 
-  function void tock2();
+  task automatic tock2();
     logic[31:0] a;
     logic b;
     logic[6:0] c;
@@ -354,16 +358,8 @@ module Module
 
     e = a[some_size1]; //static bit extract with variable offset, width 1
     f = a[6 + some_size2 : some_size2]; //static bit extract with variable offset, width N
-  endfunction
-
-  //----------------------------------------
-
-  always_comb tock_bN();
-  always_comb tock_bx_const();
-  always_comb tock_bN_offset();
-  always_comb tock_bx_param();
+  endtask
   always_comb tock2();
-
 
 
 

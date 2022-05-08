@@ -42,18 +42,18 @@ def main():
 
     errors = 0
 
-    #errors += test_convert_good()
-    #errors += test_convert_bad()
-    #errors += test_compilation()
-    #errors += test_verilator_parse()
-    errors += test_examples()
+    errors += test_convert_good()
+    errors += test_convert_bad()
+    errors += test_compilation()
+    errors += test_verilator_parse()
 
     if not basic:
-        errors += test_goldens()
+        errors += test_examples()
         errors += test_misc()
+        errors += test_goldens()
+        errors += test_lockstep()
 
         # Lockstep tests are slow because compiler...
-        errors += test_lockstep()
 
         # Icarus generates a bunch of possibly-spurious warnings and can't handle
         # utf-8 with a BOM
@@ -139,7 +139,7 @@ def prep_cmd(cmd):
         cmd = kcov_prefix() + " " + cmd
     args = [arg for arg in cmd.split(" ") if len(arg)]
     cmd_string = ' '.join(args)
-    print(f"  {cmd_string}")
+    #print(f"  {cmd_string}")
     return args
 
 ################################################################################
@@ -299,6 +299,7 @@ def run_simple_test(commandline):
 
 
 def run_good_command(commandline):
+    print(f"good command {commandline}");
     cmd = prep_cmd(commandline)
     result = subprocess.run(cmd, stdout=subprocess.PIPE,
                             encoding="charmap").returncode
@@ -311,6 +312,7 @@ def run_good_command(commandline):
 
 
 def run_bad_command(commandline):
+    print(f"bad command {commandline}");
     cmd = prep_cmd(commandline)
     result = subprocess.run(cmd, stdout=subprocess.PIPE,
                             encoding="charmap").returncode
@@ -468,7 +470,10 @@ def check_lockstep(filename):
     includes = f"-I. -Isrc -I{sv_root} -I/usr/local/share/verilator/include"
 
     print(f"  Building {test_name}")
-    os.system(f"bin/metron -q -r {mt_root} -o {sv_root} -c {test_name}.h")
+
+    metronate_cmd = f"bin/metron -q -r {mt_root} -o {sv_root} -c {test_name}.h"
+    print(metronate_cmd)
+    os.system(metronate_cmd)
     os.system(f"verilator {includes} --cc {test_name}.sv -Mdir {vl_root}")
     os.system(f"make --quiet -C {vl_root} -f V{test_name}.mk > /dev/null")
     os.system(

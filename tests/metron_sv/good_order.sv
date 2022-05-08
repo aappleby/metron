@@ -22,7 +22,6 @@ module Module
 
   logic my_sig;
   logic my_reg;
-
   //----------------------------------------
   always_comb begin
     tock();
@@ -32,5 +31,4 @@ module Module
   always_ff @(posedge clock) begin
     tick();
   end
-
 endmodule

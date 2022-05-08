@@ -168,39 +168,26 @@ int main(int argc, char** argv) {
   }
 
   //----------------------------------------
-  // Find top module.
-
-  MtModule* top_mod = nullptr;
-  for (auto m : lib.modules) {
-    if (m->refcount == 0) {
-      top_mod = m;
-      break;
-    }
-  }
-
-  //----------------------------------------
-  // Instantiate top module.
-
-  MtContext* top_ctx = new MtContext(top_mod);
-
-  MtContext::instantiate(top_mod, top_ctx);
-
-  //----------------------------------------
   // Trace
 
-  MtTracer tracer(&lib, top_ctx);
-
-  for (auto method : top_mod->all_methods) {
-    if (method->is_constructor()) continue;
-    if (method->internal_callers.size()) continue;
-
-    LOG_G("Tracing %s.%s\n", top_mod->cname(), method->cname());
-    err << tracer.trace_method(top_ctx, method);
+  for (auto mod : lib.modules) {
+    LOG_G("Tracing %s\n", mod->cname());
+    LOG_INDENT();
+    MtContext* ctx = new MtContext(mod);
+    MtContext::instantiate(mod, ctx);
+    MtTracer tracer(&lib, ctx);
+    for (auto method : mod->all_methods) {
+      if (method->is_constructor()) continue;
+      if (method->internal_callers.size()) continue;
+      LOG_G("Tracing %s.%s\n", mod->cname(), method->cname());
+      err << tracer.trace_method(ctx, method);
+    }
+    ctx->dump_ctx_tree();
+    ctx->assign_state_to_field(mod);
+    err << ctx->check_done();
+    if (err.has_err()) exit(-1);
+    LOG_DEDENT();
   }
-  LOG("\n");
-
-  top_ctx->dump_ctx_tree();
-  top_ctx->assign_state_to_field();
 
   //----------
   // Categorize fields
@@ -246,9 +233,6 @@ int main(int argc, char** argv) {
     err << ERR("Could not categorize all methods\n");
     exit(-1);
   }
-
-  err << top_ctx->check_done();
-  if (err.has_err()) exit(-1);
 
   LOG("\n");
 

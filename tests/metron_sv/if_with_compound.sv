@@ -18,7 +18,6 @@ module Submod
   endfunction
 
   logic[7:0] my_reg;
-
   //----------------------------------------
   always_comb begin
     tock(tock_arg);
@@ -29,7 +28,6 @@ module Submod
   always_ff @(posedge clock) begin
     tick(tick_arg);
   end
-
 endmodule
 
 
@@ -56,10 +54,8 @@ module Module
   );
   logic[7:0] submod_tock_arg;
 
-
   //----------------------------------------
   always_comb begin
     tock();
   end
-
 endmodule

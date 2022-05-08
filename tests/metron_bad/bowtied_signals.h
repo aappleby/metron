@@ -1,6 +1,6 @@
 #include "metron_tools.h"
 
-// X Don't know how to categorize sig1 = CTX_INVALID
+// X Context sig1 had invalid state after trace
 
 class Module {
  public:

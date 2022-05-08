@@ -34,7 +34,7 @@ struct MtContext {
 
   static void instantiate(MtModule* mod, MtContext* inst);
 
-  void assign_state_to_field();
+  void assign_state_to_field(MtModule* mod);
 
   MtContext* resolve(const std::string& name);
   void dump() const;

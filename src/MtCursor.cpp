@@ -1970,6 +1970,22 @@ CHECK_RETURN Err MtCursor::emit_trigger_calls() {
     }
   }
 
+  bool any_tock_tick_bindings = false;
+  for (auto dst_method : current_mod->all_methods) {
+    if (dst_method->in_tick && dst_method->tock_callers.size()) {
+      any_tock_tick_bindings = true;
+      break;
+    }
+  }
+
+  bool any_tick_triggers = false;
+  for (auto m : current_mod->all_methods) {
+    if (m->in_tick && m->tick_callers.empty()) {
+      any_tick_triggers = true;
+      break;
+    }
+  }
+
   if (any_tock_triggers) {
     err << emit_indent();
     err << emit_print("//----------------------------------------");
@@ -1990,18 +2006,13 @@ CHECK_RETURN Err MtCursor::emit_trigger_calls() {
     err << emit_indent();
     err << emit_print("end");
     err << emit_newline();
+  }
+
+  if (any_tock_triggers && any_tock_tick_bindings) {
     err << emit_newline();
   }
 
   // Emit binding variables for tock->tick calls.
-
-  bool any_tock_tick_bindings = false;
-  for (auto dst_method : current_mod->all_methods) {
-    if (dst_method->in_tick && dst_method->tock_callers.size()) {
-      any_tock_tick_bindings = true;
-      break;
-    }
-  }
 
   if (any_tock_tick_bindings) {
     for (auto dst_method : current_mod->all_methods) {
@@ -2012,19 +2023,13 @@ CHECK_RETURN Err MtCursor::emit_trigger_calls() {
         }
       }
     }
+  }
+
+  if (any_tock_tick_bindings && any_tick_triggers) {
     err << emit_newline();
   }
 
-
   // Emit an always_ff containing calls to all our top-level ticks.
-
-  bool any_tick_triggers = false;
-  for (auto m : current_mod->all_methods) {
-    if (m->in_tick && m->tick_callers.empty()) {
-      any_tick_triggers = true;
-      break;
-    }
-  }
 
   if (any_tick_triggers) {
     err << emit_indent();
@@ -2041,7 +2046,6 @@ CHECK_RETURN Err MtCursor::emit_trigger_calls() {
     }
     err << emit_indent();
     err << emit_print("end");
-    err << emit_newline();
     err << emit_newline();
   }
 
@@ -2077,12 +2081,12 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n, bool is_str
         err << emit_sym_function_definition(child);
         break;
       case anon_sym_RBRACE:
+        err << emit_ws_to_newline();
         if (is_struct) {
           err << emit_default(child);
         }
         else {
-          err << emit_ws_to_newline();
-          err << emit_newline();
+          //err << emit_newline();
           err << emit_trigger_calls();
           err << emit_replacement(child, "endmodule");
         }

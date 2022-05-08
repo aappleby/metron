@@ -17,11 +17,9 @@ module Module
     $display("Hello World!\n");
   end
 
-
   //----------------------------------------
   always_comb begin
     tock();
   end
-
 
 endmodule

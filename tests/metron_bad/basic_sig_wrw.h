@@ -2,7 +2,7 @@
 
 // Signals that are written after they're read should fail.
 
-// X Don't know how to categorize sig = CTX_INVALID
+// X Context sig had invalid state after trace
 
 class Module {
  public:

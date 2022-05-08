@@ -2,7 +2,7 @@
 
 // Registers that are read after they're written should fail.
 
-// X Don't know how to categorize reg = CTX_INVALID
+// X Context reg had invalid state after trace
 
 class Module {
  public:

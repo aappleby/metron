@@ -6,7 +6,7 @@
 module Submod
 (
   input logic clock,
-  output logic[7:0] i_signal,
+  input logic[7:0] i_signal,
   output logic[7:0] o_signal,
   output logic[7:0] o_reg,
   input logic[7:0] tock_i_param,
@@ -26,7 +26,6 @@ module Submod
   function void tick();
     o_reg <= o_reg + o_signal;
   endfunction
-
   //----------------------------------------
   always_comb begin
     tock_ret = tock(tock_i_param);
@@ -36,7 +35,6 @@ module Submod
   always_ff @(posedge clock) begin
     tick();
   end
-
 endmodule
 
 module Module
@@ -72,16 +70,14 @@ module Module
     .tock_i_param(submod_tock_i_param),
     .tock_ret(submod_tock_ret)
   );
-  logic[7:0] submod_tock_i_param;
   logic[7:0] submod_i_signal;
+  logic[7:0] submod_tock_i_param;
   logic[7:0] submod_o_signal;
   logic[7:0] submod_o_reg;
   logic[7:0] submod_tock_ret;
-
 
   //----------------------------------------
   always_comb begin
     tock();
   end
-
 endmodule

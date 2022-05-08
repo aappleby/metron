@@ -12,12 +12,10 @@ module Submod1
   function logic[7:0] tock_add_one(logic[7:0] a);
     tock_add_one = a + 1;
   endfunction
-
   //----------------------------------------
   always_comb begin
     tock_add_one_ret = tock_add_one(tock_add_one_a);
   end
-
 endmodule
 
 module Submod2
@@ -30,12 +28,10 @@ module Submod2
   function logic[7:0] tock_add_two(logic[7:0] a);
     tock_add_two = a + 1;
   endfunction
-
   //----------------------------------------
   always_comb begin
     tock_add_two_ret = tock_add_two(tock_add_two_a);
   end
-
 endmodule
 
 module Module
@@ -73,10 +69,8 @@ module Module
   logic[7:0] submod2_tock_add_two_a;
   logic[7:0] submod2_tock_add_two_ret;
 
-
   //----------------------------------------
   always_comb begin
     tock_ret = tock(tock_old_counter);
   end
-
 endmodule

@@ -11,19 +11,19 @@ module Module
     init1();
   end
 
-  always_comb begin /*tock*/
+  function void tock();
     /*tick()*/;
-  end
+  endfunction
 
 /*private:*/
 
-  always_ff @(posedge clock) begin /*tick*/
+  function void tick();
     reg1 <= reg1 + 1;
     reg2 <= reg2 + 1;
     reg3 <= reg3 + 1;
     reg4 <= reg4 + 1;
     reg5 <= reg5 + 1;
-  end
+  endfunction
 
   logic[7:0] reg1;
   logic[7:0] reg2;
@@ -31,29 +31,39 @@ module Module
   logic[7:0] reg4;
   logic[7:0] reg5;
 
-  initial begin /*init1*/
+  function void init1();
     reg1 = 1;
-    /*init2()*/;
-  end
+    init2();
+  endfunction
 
-  initial begin /*init2*/
+  function void init2();
     reg2 = 2;
-    /*init3()*/;
-  end
+    init3();
+  endfunction
 
-  initial begin /*init3*/
+  function void init3();
     reg3 = 3;
-    /*init4()*/;
-  end
+    init4();
+  endfunction
 
-  initial begin /*init4*/
+  function void init4();
     reg4 = 4;
-    /*init5()*/;
+    init5();
+  endfunction
+
+  function void init5();
+    reg5 = 5;
+  endfunction
+
+  //----------------------------------------
+  always_comb begin
+    tock();
   end
 
-  initial begin /*init5*/
-    reg5 = 5;
+
+  always_ff @(posedge clock) begin
+    tick();
   end
+
 
 endmodule
-

@@ -35,11 +35,9 @@ module Module
 
     d = {1'(a), 2'(b), 3'(c)};
   endfunction
-
   //----------------------------------------
   always_comb begin
     tock1();
     tock2();
   end
-
 endmodule

@@ -356,7 +356,6 @@ module Module
     e = a[some_size1]; //static bit extract with variable offset, width 1
     f = a[6 + some_size2 : some_size2]; //static bit extract with variable offset, width N
   endfunction
-
   //----------------------------------------
   always_comb begin
     tock_bN();
@@ -365,7 +364,6 @@ module Module
     tock_bx_param();
     tock2();
   end
-
 
 
 

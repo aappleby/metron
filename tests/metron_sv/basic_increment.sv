@@ -26,7 +26,6 @@ module Module
   int my_reg2;
   int my_reg3;
   int my_reg4;
-
   //----------------------------------------
   always_comb begin
     tock();
@@ -36,5 +35,4 @@ module Module
   always_ff @(posedge clock) begin
     tick();
   end
-
 endmodule

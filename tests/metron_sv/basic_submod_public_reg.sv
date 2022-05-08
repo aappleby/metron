@@ -19,7 +19,6 @@ module Submod
   function void tick();
     sub_reg <= sub_reg + 1;
   endfunction
-
   //----------------------------------------
   always_comb begin
     tock();
@@ -29,7 +28,6 @@ module Submod
   always_ff @(posedge clock) begin
     tick();
   end
-
 
 endmodule
 
@@ -54,11 +52,9 @@ module Module
   );
   logic[7:0] submod_sub_reg;
 
-
   //----------------------------------------
   always_comb begin
     tock_get_submod_reg_ret = tock_get_submod_reg();
     tock();
   end
-
 endmodule

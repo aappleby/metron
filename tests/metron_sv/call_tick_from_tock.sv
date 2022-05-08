@@ -22,7 +22,6 @@ module Module
   endfunction
 
   logic[7:0] my_reg;
-
   //----------------------------------------
   always_comb begin
     tock(tock_val);
@@ -33,6 +32,5 @@ module Module
   always_ff @(posedge clock) begin
     tick(tick_val);
   end
-
 
 endmodule

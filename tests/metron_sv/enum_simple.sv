@@ -54,11 +54,9 @@ module Module
     se1 = B8;
     tock1 = 1;
   endfunction
-
   //----------------------------------------
   always_comb begin
     tock1_ret = tock1();
   end
-
 endmodule
 // clang-format on

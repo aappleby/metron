@@ -172,12 +172,12 @@ void MtContext::instantiate(MtModule *mod, MtContext *parent) {
 
 //------------------------------------------------------------------------------
 
-void MtContext::assign_state_to_field() {
-  if (field) {
+void MtContext::assign_state_to_field(MtModule* mod) {
+  if (field && field->_parent_mod == mod) {
     field->state = log_top.state;
   }
 
-  for (auto c : children) c->assign_state_to_field();
+  for (auto c : children) c->assign_state_to_field(mod);
 }
 
 //------------------------------------------------------------------------------
@@ -218,9 +218,10 @@ void MtContext::dump() const {
     } else {
       LOG_G("%s", to_string(log_top.state));
     }
-
+    LOG("\n");
   } else if (type == CTX_COMPONENT) {
     LOG_G("%s", name.c_str());
+    LOG("\n");
   } else if (type == CTX_FIELD) {
     LOG("%s", name.c_str());
 
@@ -234,6 +235,7 @@ void MtContext::dump() const {
     } else {
       LOG_G("%s", to_string(log_top.state));
     }
+    LOG("\n");
   } else if (type == CTX_PARAM) {
     LOG_W("%s", name.c_str());
 
@@ -247,6 +249,7 @@ void MtContext::dump() const {
     } else {
       LOG_G("%s", to_string(log_top.state));
     }
+    LOG("\n");
   } else if (type == CTX_RETURN) {
     LOG_W("%s", name.c_str());
 
@@ -260,8 +263,11 @@ void MtContext::dump() const {
     } else {
       LOG_G("%s", to_string(log_top.state));
     }
+    LOG("\n");
   }
-  LOG("\n");
+  else if (type == CTX_MODULE) {
+    LOG("Module %s\n", mod->cname());
+  }
 }
 
 void MtContext::dump_ctx_tree() const {

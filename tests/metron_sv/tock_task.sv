@@ -21,11 +21,9 @@ module Module
   function void set_signal(logic[7:0] number);
     my_signal = number;
   endfunction
-
   //----------------------------------------
   always_comb begin
     tock();
   end
-
 
 endmodule

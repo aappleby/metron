@@ -15,15 +15,12 @@ a = 1; a = a + 7; tock = a; endfunction
 
   function void tick();  if (my_reg & 1) my_reg <= my_reg - 7; endfunction
 
-
   //----------------------------------------
   always_comb begin
     tock_ret = tock();
   end
-
   always_ff @(posedge clock) begin
     tick();
   end
-
 
 endmodule

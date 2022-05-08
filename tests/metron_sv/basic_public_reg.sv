@@ -16,7 +16,6 @@ module Module
   function void tick();
     my_reg <= my_reg + 1;
   endfunction
-
   //----------------------------------------
   always_comb begin
     tock();
@@ -26,5 +25,4 @@ module Module
   always_ff @(posedge clock) begin
     tick();
   end
-
 endmodule

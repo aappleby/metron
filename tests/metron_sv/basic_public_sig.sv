@@ -13,10 +13,8 @@ module Module
     my_sig = 1;
   endfunction
 
-
   //----------------------------------------
   always_comb begin
     tock();
   end
-
 endmodule

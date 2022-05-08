@@ -8,18 +8,18 @@ module Module
 );
 /*public:*/
 
-  function void tock();
+  task  tock();
     /*tick()*/;
-  endfunction
+  endtask
   always_comb tock();
 
 /*private:*/
 
   localparam int my_val = 7;
 
-  function void tick();
+  task  tick();
     my_reg <= my_reg + my_val;
-  endfunction
+  endtask
   always_ff @(posedge clock) tick();
 
   logic[6:0] my_reg;

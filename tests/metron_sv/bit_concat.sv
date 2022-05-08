@@ -11,7 +11,7 @@ module Module
     $write("Hello World?\n");
   end
 
-  function void tock1();
+  task  tock1();
     logic a;
     logic[1:0] b;
     logic[2:0] c;
@@ -21,10 +21,10 @@ module Module
     c = 3;
 
     d = {a, b, c};
-  endfunction
+  endtask
   always_comb tock1();
 
-  function void tock2();
+  task  tock2();
     logic[7:0] a;
     logic[7:0] b;
     logic[7:0] c;
@@ -34,6 +34,6 @@ module Module
     c = 3;
 
     d = {1'(a), 2'(b), 3'(c)};
-  endfunction
+  endtask
   always_comb tock2();
 endmodule

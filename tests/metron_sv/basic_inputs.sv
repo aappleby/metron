@@ -10,17 +10,17 @@ module Module
 );
  /*public:*/
 
-  function void tock(logic[6:0] my_input);
+  task  tock(logic[6:0] my_input);
     tick_my_input = my_input;
     /*tick(my_input)*/;
-  endfunction
+  endtask
   always_comb tock(tock_my_input);
 
  /*private:*/
 
-  function void tick(logic[6:0] my_input);
+  task  tick(logic[6:0] my_input);
     my_reg <= my_reg + my_input;
-  endfunction
+  endtask
   logic[6:0] tick_my_input;
   always_ff @(posedge clock) tick(tick_my_input);
 

@@ -8,26 +8,26 @@ module Module
 );
 /*public:*/
 
-  function void tock();
+  task  tock();
     tick();
-  endfunction
+  endtask
   always_comb tock();
 
 /*private:*/
 
-  function void tick();
+  task  tick();
     /*some_task()*/;
-  endfunction
+  endtask
 
-  function void some_task();
+  task  some_task();
     my_reg <= my_reg + my_reg2 + 3;
     some_task2();
-  endfunction
+  endtask
   always_ff @(posedge clock) some_task();
 
-  function void some_task2();
+  task  some_task2();
     my_reg2 <= my_reg2 + 3;
-  endfunction
+  endtask
 
   logic[7:0] my_reg;
   logic[7:0] my_reg2;

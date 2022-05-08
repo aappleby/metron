@@ -9,19 +9,19 @@ module Module
 );
 /*public:*/
 
-  function void tock();
+  task  tock();
     /*tick()*/;
-  endfunction
+  endtask
   always_comb tock();
 
 /*private:*/
 
-  function void tick();
+  task  tick();
     my_reg1 = my_reg1 + 1;
     my_reg2 = my_reg2 + 1;
     my_reg3 = my_reg3 - 1;
     my_reg4 = my_reg4 - 1;
-  endfunction
+  endtask
   always_ff @(posedge clock) tick();
 
   int my_reg1;

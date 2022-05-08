@@ -10,9 +10,9 @@ module Module
 );
 /*public:*/
 
-  function void tick();
+  task  tick();
     my_reg <= my_reg + 1;
-  endfunction
+  endtask
   always_ff @(posedge clock) tick();
 
 

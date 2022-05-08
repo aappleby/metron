@@ -24,9 +24,9 @@ module Submod
 
 /*private:*/
 
-  function void tick();
+  task  tick();
     o_reg <= o_reg + o_signal;
-  endfunction
+  endtask
   always_ff @(posedge clock) tick();
 endmodule
 
@@ -37,22 +37,22 @@ module Module
 );
 /*public:*/
 
-  function void tock();
+  task  tock();
     logic[7:0] submod_return;
     submod_i_signal = 12;
     submod_tock_i_param = 13;
     submod_return = submod_tock_ret;
     my_sig = submod_return + 3;
     /*tick()*/;
-  endfunction
+  endtask
   always_comb tock();
 
 
 /*private:*/
 
-  function void tick();
+  task  tick();
     my_reg <= my_reg + my_sig - 2;
-  endfunction
+  endtask
   always_ff @(posedge clock) tick();
 
   logic[7:0] my_sig;

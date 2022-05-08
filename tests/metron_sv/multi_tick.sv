@@ -20,14 +20,14 @@ module Module
 
 /*private:*/
 
-  function void tick1();
+  task  tick1();
     my_reg1 <= 0;
-  endfunction
+  endtask
   always_ff @(posedge clock) tick1();
 
-  function void tick2();
+  task  tick2();
     my_reg2 <= 1;
-  endfunction
+  endtask
   always_ff @(posedge clock) tick2();
 
   logic[7:0] my_reg1;

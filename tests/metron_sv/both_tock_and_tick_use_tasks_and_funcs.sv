@@ -10,15 +10,15 @@ module Module
 /*public:*/
 
 
-  function void tock();
+  task  tock();
     public_task(public_func(17));
     /*tick()*/;
-  endfunction
+  endtask
   always_comb tock();
 
-  function void public_task(logic[7:0] x);
+  task  public_task(logic[7:0] x);
     my_sig = x + 7;
-  endfunction
+  endtask
 
   function logic[7:0] public_func(logic[7:0] x);
     public_func = my_reg1 + private_func(5);
@@ -26,15 +26,15 @@ module Module
 
 /*private:*/
 
-  function void tick();
+  task  tick();
     private_task(private_func(33));
     my_reg2 <= my_reg2 + 1;
-  endfunction
+  endtask
   always_ff @(posedge clock) tick();
 
-  function void private_task(logic[7:0] x);
+  task  private_task(logic[7:0] x);
     my_reg1 <= my_reg1 + private_func(16);
-  endfunction
+  endtask
 
   function logic[7:0] private_func(logic[7:0] y);
     private_func = my_reg1 + y;

@@ -14,7 +14,7 @@ module Module
 a = 1; a = a + 7; tock = a; endfunction
   always_comb tock_ret = tock();
 
-  function void tick();  if (my_reg & 1) my_reg <= my_reg - 7; endfunction
+  task  tick();  if (my_reg & 1) my_reg <= my_reg - 7; endtask
   always_ff @(posedge clock) tick();
 
 

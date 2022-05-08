@@ -9,17 +9,17 @@ module Module
 );
 /*public:*/
 
-  function void tock();
+  task  tock();
     my_sig = my_reg;
     /*tick()*/;
-  endfunction
+  endtask
   always_comb tock();
 
 /*private:*/
 
-  function void tick();
+  task  tick();
     my_reg <= 1;
-  endfunction
+  endtask
   always_ff @(posedge clock) tick();
 
   logic my_sig;

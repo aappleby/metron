@@ -31,9 +31,9 @@ module Module
 
 /*private:*/
 
-  function void tick();
+  task  tick();
     my_reg <= my_reg + 1;
-  endfunction
+  endtask
   always_ff @(posedge clock) tick();
 
   logic[7:0] my_reg;

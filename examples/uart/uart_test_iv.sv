@@ -30,12 +30,12 @@ module uart_test;
   uart_top #(.cycles_per_bit(3)) top
   (
     clk,
-    rst_n,
     out_serial,
     out_data,
     out_valid,
     out_done,
-    out_sum
+    out_sum,
+    rst_n
   );
 
   always begin

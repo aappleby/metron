@@ -66,7 +66,16 @@ module uart_ice40(
   logic o_done;
   logic[31:0] o_sum;
 
-  uart_top #(.cycles_per_bit(cycles_per_bit), .repeat_msg(1)) dut(pll_clk, rst_n, o_serial, o_data, o_valid, o_done, o_sum);
+  uart_top #(.cycles_per_bit(cycles_per_bit), .repeat_msg(1)) dut
+  (
+    pll_clk,
+    o_serial,
+    o_data,
+    o_valid,
+    o_done,
+    o_sum,
+    rst_n
+  );
 
   always_comb begin
     SER_TX = o_serial;

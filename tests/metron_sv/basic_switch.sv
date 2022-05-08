@@ -9,15 +9,15 @@ module Module
 );
 /*public:*/
 
-  function void tock(logic[1:0] selector);
+  task  tock(logic[1:0] selector);
     tick_selector = selector;
     /*tick(selector)*/;
-  endfunction
+  endtask
   always_comb tock(tock_selector);
 
 /*private:*/
 
-  function void tick(logic[1:0] selector);
+  task  tick(logic[1:0] selector);
     case(selector)
       0: // comment
         my_reg <= 17;
@@ -29,7 +29,7 @@ module Module
       5,
       6: my_reg <= 72;
     endcase
-  endfunction
+  endtask
   logic[1:0] tick_selector;
   always_ff @(posedge clock) tick(tick_selector);
 

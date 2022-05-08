@@ -968,13 +968,26 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
     auto func_body = n.get_field(field_body);
     err << emit_sym_compound_statement(func_body, "begin", "end");
   } else {
-    err << emit_print("function ");
-    err << emit_type(return_type);
-    err << emit_declarator(func_decl);
-    err << prune_trailing_ws();
-    err << emit_print(";");
-    auto func_body = n.get_field(field_body);
-    err << emit_sym_compound_statement(func_body, "", "endfunction");
+    if (current_method->has_return()) {
+      err << emit_print("function ");
+      err << emit_type(return_type);
+      err << emit_declarator(func_decl);
+      err << prune_trailing_ws();
+      err << emit_print(";");
+      auto func_body = n.get_field(field_body);
+      err << emit_sym_compound_statement(func_body, "", "endfunction");
+    }
+    else {
+      err << emit_print("task automatic ");
+      err << skip_over(return_type);
+      err << skip_ws();
+      err << emit_declarator(func_decl);
+      err << prune_trailing_ws();
+      err << emit_print(";");
+      auto func_body = n.get_field(field_body);
+      err << emit_sym_compound_statement(func_body, "", "endtask");
+    }
+
   }
 
   //----------

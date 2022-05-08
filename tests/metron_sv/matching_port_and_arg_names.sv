@@ -13,9 +13,9 @@ module Module
 /*public:*/
 
 
-  function void tock1();
+  task  tock1();
     output_val = input_val + 7;
-  endfunction
+  endtask
   always_comb tock1();
 
   function logic[2:0] tock(logic[2:0] input_val);

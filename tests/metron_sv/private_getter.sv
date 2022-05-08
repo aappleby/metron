@@ -18,9 +18,11 @@ module Module
   function logic[7:0] my_getter();
     my_getter = 12;
   endfunction
+
   //----------------------------------------
   always_comb begin
     tock_ret = tock();
   end
+
 
 endmodule

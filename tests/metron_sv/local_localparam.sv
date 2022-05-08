@@ -12,9 +12,11 @@ module Module
     parameter thing2 = 2;
     tock = thing1 + thing2;
   endfunction
+
   //----------------------------------------
   always_comb begin
     tock_ret = tock();
   end
+
 
 endmodule

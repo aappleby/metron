@@ -20,10 +20,12 @@ module Module
 /*private:*/
 
   logic[7:0] my_reg;
+
   //----------------------------------------
   always_comb begin
     tock_ret = tock();
   end
+
 endmodule
 
 

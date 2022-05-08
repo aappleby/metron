@@ -54,6 +54,7 @@ module Module
   function void init5();
     reg5 = 5;
   endfunction
+
   //----------------------------------------
   always_comb begin
     tock();
@@ -63,5 +64,6 @@ module Module
   always_ff @(posedge clock) begin
     tick();
   end
+
 
 endmodule

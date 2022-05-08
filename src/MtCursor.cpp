@@ -171,6 +171,8 @@ CHECK_RETURN Err MtCursor::emit_ws_to(TSSymbol sym, const MnNode& n) {
 
 CHECK_RETURN Err MtCursor::emit_ws_to_newline() {
   Err err;
+  if (at_newline) return err;
+
   while (cursor < current_source->source_end && isspace(*cursor)) {
     auto c = *cursor++;
     err << emit_char(c);
@@ -796,6 +798,8 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
+  //assert(at_newline);
+
   Err err;
   auto old_cursor = cursor;
 
@@ -2050,6 +2054,10 @@ CHECK_RETURN Err MtCursor::emit_trigger_calls() {
     err << emit_newline();
   }
 
+  if (any_tock_triggers || any_tock_tick_bindings || any_tick_triggers) {
+    err << emit_newline();
+  }
+
   return err;
 }
 
@@ -3168,10 +3176,6 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
   Err err = emit_ws_to(sym_compound_statement, node);
 
   for (auto child : node) {
-    // We may need to insert input port bindings before any statement that
-    // could include a call expression. We search the tree for calls and emit
-    // those bindings here.
-    err << emit_input_port_bindings(child);
 
     switch (child.sym) {
       case anon_sym_LBRACE:
@@ -3182,6 +3186,11 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
         break;
 
       case sym_declaration:
+        // We may need to insert input port bindings before any statement that
+        // could include a call expression. We search the tree for calls and emit
+        // those bindings here.
+        err << emit_ws_to_newline();
+        err << emit_input_port_bindings(child);
         // type should be hoisted
         err << emit_sym_declaration(child, true, false);
         break;
@@ -3197,6 +3206,11 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
       case sym_return_statement:
       case sym_switch_statement:
       case sym_case_statement:
+        // We may need to insert input port bindings before any statement that
+        // could include a call expression. We search the tree for calls and emit
+        // those bindings here.
+        if (!at_newline) err << emit_ws_to_newline();
+        err << emit_input_port_bindings(child);
         err << emit_statement(child);
         break;
 

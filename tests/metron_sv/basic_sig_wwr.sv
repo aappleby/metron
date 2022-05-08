@@ -16,8 +16,10 @@ module Module
     temp = my_sig;
   endfunction
 
+
   //----------------------------------------
   always_comb begin
     tock();
   end
+
 endmodule

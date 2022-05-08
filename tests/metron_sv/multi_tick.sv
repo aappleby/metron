@@ -29,6 +29,7 @@ module Module
 
   logic[7:0] my_reg1;
   logic[7:0] my_reg2;
+
   //----------------------------------------
   always_comb begin
     tock_ret = tock();
@@ -39,4 +40,5 @@ module Module
     tick1();
     tick2();
   end
+
 endmodule

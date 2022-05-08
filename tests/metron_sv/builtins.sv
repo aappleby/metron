@@ -22,9 +22,11 @@ module Module
     c = $clog2(100);
     d = 2**(4);
   endfunction
+
   //----------------------------------------
   always_comb begin
     tock();
   end
+
 
 endmodule

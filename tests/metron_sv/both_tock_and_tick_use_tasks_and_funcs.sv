@@ -40,6 +40,7 @@ module Module
 
   logic[7:0] my_reg1;
   logic[7:0] my_reg2;
+
   //----------------------------------------
   always_comb begin
     tock();
@@ -49,4 +50,5 @@ module Module
   always_ff @(posedge clock) begin
     tick();
   end
+
 endmodule

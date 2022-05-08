@@ -16,10 +16,12 @@ module Submod
     my_height = (HEIGHT)'(200);
   endfunction
 
+
   //----------------------------------------
   always_comb begin
     tock();
   end
+
 endmodule
 
 module Module
@@ -46,4 +48,6 @@ module Module
   always_comb begin
     tock();
   end
+
+
 endmodule

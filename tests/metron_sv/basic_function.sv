@@ -8,14 +8,14 @@ module Module
 );
 /*public:*/
 
-  task  tock();
+  task automatic tock();
     /*tick()*/;
   endtask
   always_comb tock();
 
 /*private:*/
 
-  task  tick();
+  task automatic tick();
     my_reg <= my_reg + some_func();
   endtask
   always_ff @(posedge clock) tick();

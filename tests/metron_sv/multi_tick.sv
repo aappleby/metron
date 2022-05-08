@@ -20,12 +20,12 @@ module Module
 
 /*private:*/
 
-  task  tick1();
+  task automatic tick1();
     my_reg1 <= 0;
   endtask
   always_ff @(posedge clock) tick1();
 
-  task  tick2();
+  task automatic tick2();
     my_reg2 <= 1;
   endtask
   always_ff @(posedge clock) tick2();

@@ -9,7 +9,7 @@ module Module
 );
 /*public:*/
 
-  task  tock();
+  task automatic tock();
     my_sig = my_reg;
     /*tick()*/;
   endtask
@@ -17,7 +17,7 @@ module Module
 
 /*private:*/
 
-  task  tick();
+  task automatic tick();
     my_reg <= 1;
   endtask
   always_ff @(posedge clock) tick();

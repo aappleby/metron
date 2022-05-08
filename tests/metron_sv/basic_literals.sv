@@ -8,7 +8,7 @@ module Module
 );
 /*public:*/
 
-  task  tock1();
+  task automatic tock1();
     logic[31:0] a;
     logic[31:0] b;
     logic[31:0] c;
@@ -28,7 +28,7 @@ module Module
   endtask
   always_comb tock1();
 
-  task  tock2();
+  task automatic tock2();
     logic[31:0] a;
     logic[31:0] b;
     logic[31:0] c;

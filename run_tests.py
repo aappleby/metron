@@ -42,14 +42,14 @@ def main():
 
     errors = 0
 
-    errors += test_convert_good()
-    errors += test_convert_bad()
-    errors += test_compilation()
-    errors += test_verilator_parse()
+    #errors += test_convert_good()
+    #errors += test_convert_bad()
+    #errors += test_compilation()
+    #errors += test_verilator_parse()
+    errors += test_examples()
 
     if not basic:
         errors += test_goldens()
-        errors += test_examples()
         errors += test_misc()
 
         # Lockstep tests are slow because compiler...
@@ -280,6 +280,7 @@ def check_golden(filename):
 
 
 def run_simple_test(commandline):
+    print(commandline)
     # The Icarus output isn't actually a binary, kcov can't run it.
     if (commandline == "bin/examples/uart_iv"):
         cmd = [commandline]

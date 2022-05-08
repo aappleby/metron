@@ -5,7 +5,7 @@ module Module
 );
 /*public:*/
 
-  task  tock_dup1();
+  task automatic tock_dup1();
     logic a1;
     logic b1;
     a1 = 1'b1;
@@ -13,7 +13,7 @@ module Module
   endtask
   always_comb tock_dup1();
 
-  task  tock_dup4();
+  task automatic tock_dup4();
     logic  a1;
     logic[3:0]  b1;
     logic[1:0]  a2;

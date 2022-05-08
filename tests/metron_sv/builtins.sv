@@ -7,7 +7,7 @@ module Module
 );
 /*public:*/
 
-  task  tock();
+  task automatic tock();
     logic[7:0] src;
     logic[7:0] a;
     logic[7:0] b;

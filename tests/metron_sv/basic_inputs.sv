@@ -10,7 +10,7 @@ module Module
 );
  /*public:*/
 
-  task  tock(logic[6:0] my_input);
+  task automatic tock(logic[6:0] my_input);
     tick_my_input = my_input;
     /*tick(my_input)*/;
   endtask
@@ -18,7 +18,7 @@ module Module
 
  /*private:*/
 
-  task  tick(logic[6:0] my_input);
+  task automatic tick(logic[6:0] my_input);
     my_reg <= my_reg + my_input;
   endtask
   logic[6:0] tick_my_input;

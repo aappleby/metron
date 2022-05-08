@@ -8,7 +8,7 @@ module Module
 );
 /*public:*/
 
-  task  tock();
+  task automatic tock();
     /*tick()*/;
   endtask
   always_comb tock();
@@ -17,7 +17,7 @@ module Module
 
   localparam int my_val = 7;
 
-  task  tick();
+  task automatic tick();
     my_reg <= my_reg + my_val;
   endtask
   always_ff @(posedge clock) tick();

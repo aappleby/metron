@@ -9,7 +9,7 @@ module Submod
 );
 /*public:*/
 
-  task  tock();
+  task automatic tock();
     /*tick()*/;
   endtask
   always_comb tock();
@@ -17,7 +17,7 @@ module Submod
 
 /*private:*/
 
-  task  tick();
+  task automatic tick();
     sub_reg <= sub_reg + 1;
   endtask
   always_ff @(posedge clock) tick();
@@ -36,7 +36,7 @@ module Module
   endfunction
   always_comb tock_get_submod_reg_ret = tock_get_submod_reg();
 
-  task  tock();
+  task automatic tock();
     /*submod.tock*/;
   endtask
   always_comb tock();

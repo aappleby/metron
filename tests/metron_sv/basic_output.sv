@@ -14,7 +14,7 @@ module Module
   endfunction
   always_comb tock_get_reg_ret = tock_get_reg();
 
-  task  tock();
+  task automatic tock();
     /*tick()*/;
   endtask
   always_comb tock();
@@ -22,7 +22,7 @@ module Module
 
 /*private:*/
 
-  task  tick();
+  task automatic tick();
     my_reg <= my_reg + 1;
   endtask
   always_ff @(posedge clock) tick();

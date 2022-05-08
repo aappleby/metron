@@ -8,7 +8,7 @@ module Module
 );
 /*public:*/
 
-  task  tock();
+  task automatic tock();
     logic temp;
     my_sig = 0;
     my_sig = 1;

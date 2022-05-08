@@ -13,7 +13,7 @@ module Module
 /*public:*/
 
 
-  task  tock1();
+  task automatic tock1();
     output_val = input_val + 7;
   endtask
   always_comb tock1();

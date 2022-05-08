@@ -31,7 +31,7 @@ module Module
 
 /*private:*/
 
-  task  tick();
+  task automatic tick();
     my_reg <= my_reg + 1;
   endtask
   always_ff @(posedge clock) tick();

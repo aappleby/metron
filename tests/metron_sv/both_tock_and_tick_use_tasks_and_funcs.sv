@@ -10,13 +10,13 @@ module Module
 /*public:*/
 
 
-  task  tock();
+  task automatic tock();
     public_task(public_func(17));
     /*tick()*/;
   endtask
   always_comb tock();
 
-  task  public_task(logic[7:0] x);
+  task automatic public_task(logic[7:0] x);
     my_sig = x + 7;
   endtask
 
@@ -26,13 +26,13 @@ module Module
 
 /*private:*/
 
-  task  tick();
+  task automatic tick();
     private_task(private_func(33));
     my_reg2 <= my_reg2 + 1;
   endtask
   always_ff @(posedge clock) tick();
 
-  task  private_task(logic[7:0] x);
+  task automatic private_task(logic[7:0] x);
     my_reg1 <= my_reg1 + private_func(16);
   endtask
 

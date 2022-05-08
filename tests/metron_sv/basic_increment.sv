@@ -9,14 +9,14 @@ module Module
 );
 /*public:*/
 
-  task  tock();
+  task automatic tock();
     /*tick()*/;
   endtask
   always_comb tock();
 
 /*private:*/
 
-  task  tick();
+  task automatic tick();
     my_reg1 = my_reg1 + 1;
     my_reg2 = my_reg2 + 1;
     my_reg3 = my_reg3 - 1;

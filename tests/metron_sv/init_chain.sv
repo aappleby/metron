@@ -11,14 +11,14 @@ module Module
     init1();
   end
 
-  task  tock();
+  task automatic tock();
     /*tick()*/;
   endtask
   always_comb tock();
 
 /*private:*/
 
-  task  tick();
+  task automatic tick();
     reg1 <= reg1 + 1;
     reg2 <= reg2 + 1;
     reg3 <= reg3 + 1;
@@ -33,27 +33,27 @@ module Module
   logic[7:0] reg4;
   logic[7:0] reg5;
 
-  task  init1();
+  task automatic init1();
     reg1 = 1;
     init2();
   endtask
 
-  task  init2();
+  task automatic init2();
     reg2 = 2;
     init3();
   endtask
 
-  task  init3();
+  task automatic init3();
     reg3 = 3;
     init4();
   endtask
 
-  task  init4();
+  task automatic init4();
     reg4 = 4;
     init5();
   endtask
 
-  task  init5();
+  task automatic init5();
     reg5 = 5;
   endtask
 

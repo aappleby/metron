@@ -10,7 +10,7 @@ module Submod
 );
 /*public:*/
 
-  task  tock();
+  task automatic tock();
     my_width = (WIDTH)'(100);
     my_height = (HEIGHT)'(200);
   endtask
@@ -23,7 +23,7 @@ module Module
 );
 /*public:*/
 
-  task  tock();
+  task automatic tock();
     logic[19:0] foo;
     /*submodule.tock*/;
     foo = submodule_my_width + submodule_my_height;

@@ -7,7 +7,7 @@ module Module
 );
 /*public:*/
 
-  task  tock_bN();
+  task automatic tock_bN();
     logic[63:0] src;
     logic[63:0] dst64;
     logic[62:0] dst63;
@@ -147,7 +147,7 @@ module Module
   endtask
   always_comb tock_bN();
 
-  task  tock_bx_const();
+  task automatic tock_bx_const();
     logic[63:0] src;
     logic[62:0] dst63;
     logic[61:0] dst62;
@@ -285,7 +285,7 @@ module Module
   endtask
   always_comb tock_bx_const();
 
-  task  tock_bN_offset();
+  task automatic tock_bN_offset();
     logic[63:0] src;
     logic[7:0] dst0;
     logic[7:0] dst1;
@@ -315,7 +315,7 @@ module Module
   localparam int some_size1 = 64;
   localparam int some_size2 = 8;
 
-  task  tock_bx_param();
+  task automatic tock_bx_param();
     logic[some_size1-1:0] a;
     logic[some_size2-1:0] b;
     logic[some_size2-1:0] b0;
@@ -345,7 +345,7 @@ module Module
   always_comb tock_bx_param();
 
 
-  task  tock2();
+  task automatic tock2();
     logic[31:0] a;
     logic b;
     logic[6:0] c;

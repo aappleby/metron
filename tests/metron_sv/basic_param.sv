@@ -9,14 +9,14 @@ module Module
 );
 /*public:*/
 
-  task  tock();
+  task automatic tock();
     /*tick()*/;
   endtask
   always_comb tock();
 
 /*private:*/
 
-  task  tick();
+  task automatic tick();
     my_reg <= my_reg + SOME_CONSTANT;
   endtask
   always_ff @(posedge clock) tick();

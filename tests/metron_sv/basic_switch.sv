@@ -9,7 +9,7 @@ module Module
 );
 /*public:*/
 
-  task  tock(logic[1:0] selector);
+  task automatic tock(logic[1:0] selector);
     tick_selector = selector;
     /*tick(selector)*/;
   endtask
@@ -17,7 +17,7 @@ module Module
 
 /*private:*/
 
-  task  tick(logic[1:0] selector);
+  task automatic tick(logic[1:0] selector);
     case(selector)
       0: // comment
         my_reg <= 17;

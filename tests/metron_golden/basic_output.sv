@@ -14,9 +14,8 @@ module Module
   endfunction
   always_comb tock_get_reg_ret = tock_get_reg();
 
-  task automatic tock();
-    /*tick()*/;
-  endtask
+  function tock();
+  endfunction
   always_comb tock();
 
 

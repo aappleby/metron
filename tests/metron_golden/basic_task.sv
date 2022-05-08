@@ -8,16 +8,15 @@ module Module
 );
 /*public:*/
 
-  task automatic tock();
+  function tock();
     tick();
-  endtask
+  endfunction
   always_comb tock();
 
 /*private:*/
 
-  task automatic tick();
-    /*some_task()*/;
-  endtask
+  function tick();
+  endfunction
 
   task automatic some_task();
     my_reg <= my_reg + my_reg2 + 3;

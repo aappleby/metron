@@ -26,7 +26,7 @@ module toplevel
   end
 
   function tock(logic reset);  tick_reset = reset;
-/*tick(reset)*/; endfunction
+ endfunction
   always_comb tock(tock_reset);
 
 

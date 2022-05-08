@@ -9,10 +9,9 @@ module Module
 );
 /*public:*/
 
-  task automatic tock(logic[1:0] selector);
+  function tock(logic[1:0] selector);
     tick_selector = selector;
-    /*tick(selector)*/;
-  endtask
+  endfunction
   always_comb tock(tock_selector);
 
 /*private:*/

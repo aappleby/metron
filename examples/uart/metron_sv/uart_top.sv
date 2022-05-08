@@ -37,18 +37,15 @@ module uart_top
     logic hello_req;
     hello_data = hello_data_ret;
     hello_req = hello_req_ret;
-    rx_tick_i_rstn = tock_i_rstn;
+    rx_tick_i_rstn = i_rstn;
     rx_tick_i_serial = tx_serial_ret;
 
-    /*rx.tick*/;
-    hello_tick_i_rstn = tock_i_rstn;
+    hello_tick_i_rstn = i_rstn;
     hello_tick_i_cts = tx_cts_ret;
     hello_tick_i_idle = tx_idle_ret;
-    /*hello.tick*/;
-    tx_tick_i_rstn = tock_i_rstn;
+    tx_tick_i_rstn = i_rstn;
     tx_tick_i_data = hello_data;
     tx_tick_i_req = hello_req;
-    /*tx.tick*/;
     tock = 0;
   endfunction
   always_comb tock_ret = tock(tock_i_rstn);

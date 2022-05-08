@@ -10,10 +10,10 @@ module Submod
 );
 /*public:*/
 
-  task automatic tock();
+  function tock();
     my_width = (WIDTH)'(100);
     my_height = (HEIGHT)'(200);
-  endtask
+  endfunction
   always_comb tock();
 
 endmodule
@@ -23,11 +23,10 @@ module Module
 );
 /*public:*/
 
-  task automatic tock();
+  function tock();
     logic[19:0] foo;
-    /*submodule.tock*/;
     foo = submodule_my_width + submodule_my_height;
-  endtask
+  endfunction
   always_comb tock();
 
   Submod #(10,11) submodule(

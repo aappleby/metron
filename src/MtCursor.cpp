@@ -533,6 +533,43 @@ CHECK_RETURN Err MtCursor::emit_simple_call(MnNode n) {
   return err;
 }
 
+
+//------------------------------------------------------------------------------
+
+
+CHECK_RETURN bool MtCursor::can_omit_call(MnNode n) {
+  MnNode func = n.get_field(field_function);
+  MnNode args = n.get_field(field_arguments);
+
+  std::string func_name = func.name4();
+
+  auto method = current_mod->get_method(func_name);
+
+  if (func.sym == sym_field_expression) {
+    auto node_component = func.get_field(field_argument);
+    auto node_method = func.get_field(field_field);
+
+    auto dst_component = current_mod->get_field(node_component.text());
+    auto dst_method = dst_component->_type_mod->get_method(node_method.text());
+    assert(dst_method);
+
+    if (!dst_method->has_return()) {
+      return true;
+    }
+  }
+  else {
+    auto dst_method = current_mod->get_method(func.name4());
+    if (current_method->in_tock && dst_method && dst_method->in_tick) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
+
+
 //------------------------------------------------------------------------------
 // Replace function names with macro names where needed, comment out explicit
 // init/tick/tock calls.
@@ -818,13 +855,7 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
   auto args_node = n.get_field(field_arguments);
 
   if (n.sym == sym_call_expression) {
-    auto old_replacements = id_replacements;
     if (func_node.sym == sym_field_expression) {
-      for (auto p : current_method->param_nodes) {
-        auto param_name = p.get_field(field_declarator).text();
-        id_replacements[param_name] = current_method->name() + "_" + param_name;
-      }
-
       if (args_node.named_child_count() != 0) {
         auto inst_id = func_node.get_field(field_argument);
         auto meth_id = func_node.get_field(field_field);
@@ -879,8 +910,6 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
         }
       }
     }
-
-    id_replacements = old_replacements;
   }
 
   cursor = old_cursor;
@@ -902,63 +931,6 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
   current_method = current_mod->get_method(n.name4());
   assert(current_method);
 
-  auto old_replacements = id_replacements;
-
-  /*
-  for (auto p : current_method->param_nodes) {
-    id_replacements[p.text()] = current_method->name() + "_" + p.text();
-  }
-  */
-
-  //----------
-  // Local function input port decls go _before_ the function definition.
-
-#if 0
-  if (!current_method->is_public() &&
-      (current_method->in_tick || current_method->in_tock)) {
-    for (auto n : current_method->param_nodes) {
-      auto param_type = n.get_field(field_type);
-      auto param_name = n.get_field(field_declarator);
-
-      MtCursor subcursor(lib, current_source, current_mod, str_out);
-      subcursor.echo = echo;
-
-      subcursor.cursor = param_type.start();
-      err << subcursor.emit_type(param_type);
-      err << subcursor.emit_ws();
-
-      err << emit_print("%s_", current_method->name().c_str());
-
-      subcursor.cursor = param_name.start();
-      // err << subcursor.emit_declaration(param_name);
-      err << subcursor.emit_identifier(param_name);
-
-      err << prune_trailing_ws();
-      err << emit_print(";");
-      err << emit_newline();
-      err << emit_indent();
-    }
-
-    if (current_method->has_return()) {
-      auto return_type = n.get_field(field_type);
-
-      MtCursor subcursor(lib, current_source, current_mod, str_out);
-      subcursor.echo = echo;
-
-      subcursor.cursor = return_type.start();
-      err << subcursor.emit_type(return_type);
-      err << subcursor.emit_ws();
-
-      err << emit_print("%s", current_method->name().c_str());
-
-      err << prune_trailing_ws();
-      err << emit_print(";");
-      err << emit_newline();
-      err << emit_indent();
-    }
-  }
-  #endif
-
   //----------
   // Emit a block declaration for the type of function we're in.
 
@@ -968,7 +940,7 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
     auto func_body = n.get_field(field_body);
     err << emit_sym_compound_statement(func_body, "begin", "end");
   } else {
-    if (current_method->in_tick && !current_method->has_return()) {
+    if (current_method->in_tick) {
       err << emit_print("task automatic ");
       err << skip_over(return_type);
       err << skip_ws();
@@ -993,9 +965,10 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
     }
   }
 
-  //----------
-
   assert(cursor == n.end());
+
+  //----------
+  // Emit trigger statements
 
   err << emit_ws_to_newline();
 
@@ -1019,10 +992,9 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
     err << emit_newline();
   }
 
+  //----------
+
   current_method = nullptr;
-
-  id_replacements.swap(old_replacements);
-
   return err << check_done(n);
 }
 
@@ -2152,6 +2124,15 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n, bool is_str
 
 CHECK_RETURN Err MtCursor::emit_sym_expression_statement(MnNode node) {
   Err err = emit_ws_to(sym_expression_statement, node);
+
+  if (node.child(0).sym == sym_call_expression) {
+    if (can_omit_call(node.child(0))) {
+      err << skip_over(node);
+      return err;
+    }
+  }
+
+  node.dump_tree();
 
   for (auto child : node) {
     switch (child.sym) {

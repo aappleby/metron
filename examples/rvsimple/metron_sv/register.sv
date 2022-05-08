@@ -23,7 +23,7 @@ module single_register
 
   initial begin value = INITIAL; end
 
-  function tock();  /*tick()*/; endfunction
+  function tock();   endfunction
   always_comb tock();
 
  /*private:*/

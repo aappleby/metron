@@ -38,7 +38,7 @@ module regfile
   // Register x0 is always 0
   initial begin _register[0] = 32'b0; end
 
-  function tock();  /*tick()*/; endfunction
+  function tock();   endfunction
   always_comb tock();
 
  /*private:*/

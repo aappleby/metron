@@ -7,7 +7,7 @@ module Module
 );
 /*public:*/
 
-  task automatic tock();
+  function tock();
     logic[7:0] src;
     logic[7:0] a;
     logic[7:0] b;
@@ -20,7 +20,7 @@ module Module
     e = $signed(2'(src));
     c = $clog2(100);
     d = 2**(4);
-  endtask
+  endfunction
   always_comb tock();
 
 endmodule

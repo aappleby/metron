@@ -42,16 +42,17 @@ def main():
 
     errors = 0
 
-    #errors += test_convert_good()
-    #errors += test_convert_bad()
-    #errors += test_compilation()
-    #errors += test_verilator_parse()
+    errors += test_convert_good()
+    errors += test_convert_bad()
+    errors += test_compilation()
+    errors += test_verilator_parse()
+    errors += test_icarus_parse()
 
     if not basic:
         errors += test_examples()
-        #errors += test_misc()
-        #errors += test_goldens()
-        #errors += test_lockstep()
+        errors += test_misc()
+        errors += test_goldens()
+        errors += test_lockstep()
 
         # Lockstep tests are slow because compiler...
 
@@ -222,6 +223,10 @@ def check_bad(filename):
 
 
 def check_icarus(filename):
+    # Icarus doesn't really support module parameters it seems...
+    if "basic_template" in filename:
+        return 0
+
     errors = 0
     basename = path.basename(filename)
     svname = path.splitext(basename)[0] + ".sv"

@@ -8,10 +8,9 @@ module Submod
   input logic[7:0] tock_arg
 );
 /*public:*/
-  task automatic tock(logic[7:0] arg);
+  function tock(logic[7:0] arg);
     tick_arg = arg;
-    /*tick(arg)*/;
-  endtask
+  endfunction
   always_comb tock(tock_arg);
 /*private:*/
   task automatic tick(logic[7:0] arg);
@@ -30,16 +29,14 @@ module Module
 );
 /*public:*/
 
-  task automatic tock();
+  function tock();
     if (1) begin
       submod_tock_arg = 72;
-      /*submod.tock*/;
     end
     else begin
       submod_tock_arg = 36;
-      /*submod.tock*/;
     end
-  endtask
+  endfunction
   always_comb tock();
 
   Submod submod(

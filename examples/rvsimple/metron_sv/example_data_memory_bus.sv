@@ -50,7 +50,6 @@ module example_data_memory_bus
     data_memory_byteena = byte_enable;
     data_memory_data = write_data;
     data_memory_wren = write_enable & is_data_memory;
-    /*data_memory.tock*/;
 
     fetched = data_memory_q;
     read_data = read_enable && is_data_memory ? fetched : 32'bx;

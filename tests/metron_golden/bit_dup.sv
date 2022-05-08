@@ -5,15 +5,15 @@ module Module
 );
 /*public:*/
 
-  task automatic tock_dup1();
+  function tock_dup1();
     logic a1;
     logic b1;
     a1 = 1'b1;
     b1 = {1 {a1}};
-  endtask
+  endfunction
   always_comb tock_dup1();
 
-  task automatic tock_dup4();
+  function tock_dup4();
     logic  a1;
     logic[3:0]  b1;
     logic[1:0]  a2;
@@ -53,6 +53,6 @@ module Module
 
     a8 = 8'b00000001;
     b8 = {4 {a8}};
-  endtask
+  endfunction
   always_comb tock_dup4();
 endmodule

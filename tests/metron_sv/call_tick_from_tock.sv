@@ -10,10 +10,9 @@ module Module
 );
 /*public:*/
 
-  task automatic tock(logic[7:0] val);
+  function tock(logic[7:0] val);
     tick_val = val;
-    /*tick(val)*/;
-  endtask
+  endfunction
   always_comb tock(tock_val);
 
 /*private:*/

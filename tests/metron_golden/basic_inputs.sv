@@ -10,10 +10,9 @@ module Module
 );
  /*public:*/
 
-  task automatic tock(logic[6:0] my_input);
+  function tock(logic[6:0] my_input);
     tick_my_input = my_input;
-    /*tick(my_input)*/;
-  endtask
+  endfunction
   always_comb tock(tock_my_input);
 
  /*private:*/

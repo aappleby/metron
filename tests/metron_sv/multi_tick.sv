@@ -12,8 +12,6 @@ module Module
   function logic[7:0] tock();
     logic[7:0] result;
     result = my_reg1 + my_reg2;
-    /*tick1()*/;
-    /*tick2()*/;
     tock = result;
   endfunction
   always_comb tock_ret = tock();

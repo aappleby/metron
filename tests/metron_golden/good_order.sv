@@ -9,10 +9,9 @@ module Module
 );
 /*public:*/
 
-  task automatic tock();
+  function tock();
     my_sig = my_reg;
-    /*tick()*/;
-  endtask
+  endfunction
   always_comb tock();
 
 /*private:*/

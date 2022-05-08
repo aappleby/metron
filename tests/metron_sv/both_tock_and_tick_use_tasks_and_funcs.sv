@@ -10,15 +10,14 @@ module Module
 /*public:*/
 
 
-  task automatic tock();
+  function tock();
     public_task(public_func(17));
-    /*tick()*/;
-  endtask
+  endfunction
   always_comb tock();
 
-  task automatic public_task(logic[7:0] x);
+  function public_task(logic[7:0] x);
     my_sig = x + 7;
-  endtask
+  endfunction
 
   function logic[7:0] public_func(logic[7:0] x);
     public_func = my_reg1 + private_func(5);

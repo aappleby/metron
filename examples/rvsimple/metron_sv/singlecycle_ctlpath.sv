@@ -34,45 +34,36 @@ module singlecycle_ctlpath
 
   function tock_alu_function();
     control_inst_opcode = inst_opcode;
-    /*control.tock_alu_op_type*/;
     alu_ctrl_alu_op_type = control_alu_op_type;
     alu_ctrl_inst_funct3 = inst_funct3;
     alu_ctrl_inst_funct7 = inst_funct7;
-    /*alu_ctrl.tock_alu_function*/;
     alu_function = alu_ctrl_alu_function;
   endfunction
   always_comb tock_alu_function();
 
   function tock_alu_operand_select();
-    /*control.tock_alu_operand_a_select*/;
-    /*control.tock_alu_operand_b_select*/;
     alu_operand_a_select = control_alu_operand_a_select;
     alu_operand_b_select = control_alu_operand_b_select;
   endfunction
   always_comb tock_alu_operand_select();
 
   function tock_data_mem_enable();
-    /*control.tock_data_mem_read_enable*/;
-    /*control.tock_data_mem_write_enable*/;
     data_mem_read_enable = control_data_mem_read_enable;
     data_mem_write_enable = control_data_mem_write_enable;
   endfunction
   always_comb tock_data_mem_enable();
 
   function tock_pc_write_enable();
-    /*control.tock_pc_write_enable*/;
     pc_write_enable = control_pc_write_enable;
   endfunction
   always_comb tock_pc_write_enable();
 
   function tock_regfile_write_enable();
-    /*control.tock_regfile_write_enable*/;
     regfile_write_enable = control_regfile_write_enable;
   endfunction
   always_comb tock_regfile_write_enable();
 
   function tock_reg_writeback_select();
-    /*control.tock_reg_writeback_select*/;
     reg_writeback_select = control_reg_writeback_select;
   endfunction
   always_comb tock_reg_writeback_select();
@@ -80,9 +71,7 @@ module singlecycle_ctlpath
   function tock_next_pc_select();
     transfer_result_equal_zero = alu_result_equal_zero;
     transfer_inst_funct3 = inst_funct3;
-    /*transfer.tock_take_branch*/;
     control_take_branch = transfer_take_branch;
-    /*control.tock_next_pc_select*/;
     next_pc_select = control_next_pc_select;
   endfunction
   always_comb tock_next_pc_select();

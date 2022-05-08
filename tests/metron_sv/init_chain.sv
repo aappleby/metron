@@ -11,9 +11,8 @@ module Module
     init1();
   end
 
-  task automatic tock();
-    /*tick()*/;
-  endtask
+  function tock();
+  endfunction
   always_comb tock();
 
 /*private:*/
@@ -33,28 +32,28 @@ module Module
   logic[7:0] reg4;
   logic[7:0] reg5;
 
-  task automatic init1();
+  function init1();
     reg1 = 1;
     init2();
-  endtask
+  endfunction
 
-  task automatic init2();
+  function init2();
     reg2 = 2;
     init3();
-  endtask
+  endfunction
 
-  task automatic init3();
+  function init3();
     reg3 = 3;
     init4();
-  endtask
+  endfunction
 
-  task automatic init4();
+  function init4();
     reg4 = 4;
     init5();
-  endtask
+  endfunction
 
-  task automatic init5();
+  function init5();
     reg5 = 5;
-  endtask
+  endfunction
 
 endmodule

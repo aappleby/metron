@@ -35,23 +35,18 @@ module toplevel
 
   function tock(int bogus_param);
     core_reset = reset;
-    /*core.tock_pc*/;
 
     text_memory_bus_address = core_pc;
-    /*text_memory_bus.tock_read_data*/;
 
     core_inst = text_memory_bus_read_data;
-    /*core.tock_execute*/;
 
     data_memory_bus_address = core_bus_address;
     data_memory_bus_read_enable = core_bus_read_enable;
     data_memory_bus_write_enable = core_bus_write_enable;
     data_memory_bus_byte_enable = core_bus_byte_enable;
     data_memory_bus_write_data = core_bus_write_data;
-    /*data_memory_bus.tock*/;
 
     core_bus_read_data = data_memory_bus_read_data;
-    /*core.tock_writeback*/;
 
     //----------
 

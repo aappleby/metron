@@ -28,7 +28,6 @@ module example_data_memory
  /*public:*/
   function tock();
     q = mem[address];
-    /*tick()*/;
   endfunction
   always_comb tock();
 

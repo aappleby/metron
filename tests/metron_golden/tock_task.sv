@@ -9,17 +9,17 @@ module Module
 /*public:*/
 
 
-  task automatic tock();
+  function tock();
     set_signal(get_number());
-  endtask
+  endfunction
   always_comb tock();
 
   function logic[7:0] get_number();
     get_number = 7;
   endfunction
 
-  task automatic set_signal(logic[7:0] number);
+  function set_signal(logic[7:0] number);
     my_signal = number;
-  endtask
+  endfunction
 
 endmodule

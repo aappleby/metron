@@ -8,9 +8,8 @@ module Submod
 );
 /*public:*/
 
-  task automatic tock();
-    /*tick()*/;
-  endtask
+  function tock();
+  endfunction
   always_comb tock();
 
 /*private:*/
@@ -29,9 +28,8 @@ module Module
 );
 /*public:*/
 
-  task automatic tock();
-    /*submod.tock*/;
-  endtask
+  function tock();
+  endfunction
   always_comb tock();
 
   Submod submod(

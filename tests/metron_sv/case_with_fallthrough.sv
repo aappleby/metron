@@ -24,7 +24,6 @@ module Module
         result = 30;
     endcase
 
-    /*tick()*/;
     tock = result;
   endfunction
   always_comb tock_ret = tock();

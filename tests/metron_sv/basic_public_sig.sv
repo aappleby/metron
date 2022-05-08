@@ -8,9 +8,9 @@ module Module
 );
 /*public:*/
 
-  task automatic tock();
+  function tock();
     my_sig = 1;
-  endtask
+  endfunction
   always_comb tock();
 
 endmodule

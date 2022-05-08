@@ -52,6 +52,7 @@ SourceRange MnNode::get_source() const {
 
 //------------------------------------------------------------------------------
 
+// KCOV_OFF
 void MnNode::dump_source_lines() const {
   TSPoint p = ts_node_start_point(node);
 
@@ -75,6 +76,7 @@ void MnNode::dump_source_lines() const {
 
   LOG_C(0xFFFFFF, "==========\n");
 }
+// KCOV_ON
 
 //------------------------------------------------------------------------------
 

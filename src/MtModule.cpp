@@ -214,6 +214,7 @@ bool MtModule::needs_tock() const {
 
 //------------------------------------------------------------------------------
 
+// KCOV_OFF
 void MtModule::dump_method_list(const std::vector<MtMethod *> &methods) const {
   for (auto n : methods) {
     LOG_INDENT_SCOPE();
@@ -231,9 +232,11 @@ void MtModule::dump_method_list(const std::vector<MtMethod *> &methods) const {
     LOG_R(")\n");
   }
 }
+// KCOV_ON
 
 //------------------------------------------------------------------------------
 
+// KCOV_OFF
 void MtModule::dump_banner() const {
   LOG_Y("//----------------------------------------\n");
   if (mod_class.is_null()) {
@@ -338,9 +341,11 @@ void MtModule::dump_banner() const {
 #endif
   LOG_B("\n");
 }
+// KCOV_ON
 
 //------------------------------------------------------------------------------
 
+// KCOV_OFF
 #if 0
 void MtModule::dump_deltas() const {
   if (mod_struct.is_null()) return;
@@ -396,6 +401,7 @@ void MtModule::dump_deltas() const {
   LOG_G("\n");
 }
 #endif
+// KCOV_ON
 
 //------------------------------------------------------------------------------
 

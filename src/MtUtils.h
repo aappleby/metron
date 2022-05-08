@@ -37,6 +37,7 @@ enum ContextAction {
   CTX_WRITE = 1,
 };
 
+// KCOV_OFF
 inline const char* to_string(ContextAction f) {
   switch (f) {
     case CTX_READ:
@@ -91,6 +92,7 @@ inline const char* to_string(ContextState f) {
       return "CTX_INVALID";
   }
 }
+// KCOV_ON
 
 ContextState merge_action(ContextState state, ContextAction action);
 ContextState merge_branch(ContextState ma, ContextState mb);

@@ -97,6 +97,7 @@ MtModule* MtSourceFile::get_module(const std::string& name) {
 
 //------------------------------------------------------------------------------
 
+// KCOV_OFF
 void MtSourceFile::dump() {
   LOG_G("Source file %s @ %s\n", filename.c_str(), full_path.c_str());
   LOG_INDENT_SCOPE();
@@ -104,5 +105,6 @@ void MtSourceFile::dump() {
     m->dump();
   }
 }
+// KCOV_ON
 
 //------------------------------------------------------------------------------

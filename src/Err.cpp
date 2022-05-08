@@ -5,6 +5,8 @@
 
 #include "Log.h"
 
+// KCOV_OFF
+
 //------------------------------------------------------------------------------
 
 ErrType::ErrType(SEV_TYPE v, const char* file, int line, const char* func,
@@ -60,3 +62,5 @@ bool Err::has_warn() const { return err & 2; }
 bool Err::has_err() const { return err & 4; }
 
 //------------------------------------------------------------------------------
+
+// KCOV_ON

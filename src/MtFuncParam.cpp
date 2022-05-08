@@ -22,9 +22,11 @@ MnNode MtFuncParam::get_decl_node() const {
   return node.get_field(field_declarator);
 }
 
+// KCOV_OFF
 void MtFuncParam::dump() {
   LOG_INDENT_SCOPE();
   LOG_Y("Modparam %s : %s\n", _name.c_str(), _type.c_str());
 }
+// KCOV_ON
 
 //------------------------------------------------------------------------------

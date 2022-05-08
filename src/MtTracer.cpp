@@ -424,9 +424,11 @@ CHECK_RETURN Err MtTracer::trace_sym_call_expression(MtContext* ctx,
     }
 
     default:
+      // KCOV_OFF
       err << ERR("%s : No handler for %s\n", __func__, node.ts_node_type());
       node.error();
       break;
+      // KCOV_ON
   }
 
   return err;
@@ -653,9 +655,11 @@ CHECK_RETURN Err MtTracer::trace_default(MtContext* mod_ctx, MnNode node,
     case sym_string_literal:
       break;
     default:
+      // KCOV_OFF
       err << ERR("%s : No handler for %s\n", __func__, node.ts_node_type());
       node.error();
       break;
+      // KCOV_ON
   }
 
   return err;

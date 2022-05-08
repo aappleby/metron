@@ -542,6 +542,7 @@ CHECK_RETURN Err MtModLibrary::categorize_methods() {
 
 //------------------------------------------------------------------------------
 
+// KCOV_OFF
 void MtModLibrary::dump_call_graph() {
   LOG_G("Call graph:\n");
 
@@ -576,6 +577,7 @@ void MtModLibrary::dump_call_graph() {
   }
   */
 }
+// KCOV_ON
 
 //------------------------------------------------------------------------------
 

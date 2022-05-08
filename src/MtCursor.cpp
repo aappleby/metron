@@ -3353,9 +3353,11 @@ CHECK_RETURN Err MtCursor::emit_default(MnNode node) {
       err << emit_sym_number_literal(node);
       break;
     default:
+      // KCOV_OFF
       err << ERR("%s : No handler for %s\n", __func__, node.ts_node_type());
       node.error();
       break;
+      // KCOV_ON
   }
 
   return err << check_done(node);

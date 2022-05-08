@@ -71,6 +71,7 @@ ContextState merge_branch(ContextState ma, ContextState mb) {
 
 //------------------------------------------------------------------------------
 
+// KCOV_OFF
 std::string str_printf(const char* fmt, ...) {
   va_list args;
 
@@ -86,5 +87,6 @@ std::string str_printf(const char* fmt, ...) {
   assert(result.back() == 0);
   return result;
 }
+// KCOV_ON
 
 //------------------------------------------------------------------------------

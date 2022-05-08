@@ -17,7 +17,8 @@ module uart_top
   output logic valid_ret,
   output logic done_ret,
   output logic[31:0] sum_ret,
-  input logic tock_i_rstn
+  input logic tock_i_rstn,
+  output logic tock_ret
 );
  /*public:*/
   function logic serial();  serial = tx_serial_ret; endfunction
@@ -31,7 +32,7 @@ module uart_top
   function logic[31:0] sum();  sum = rx_sum_ret; endfunction
   always_comb sum_ret = sum();
 
-  task automatic tock(logic i_rstn);
+  function logic tock(logic i_rstn);
     logic[7:0] hello_data;
     logic hello_req;
     hello_data = hello_data_ret;
@@ -48,8 +49,9 @@ module uart_top
     tx_tick_i_data = hello_data;
     tx_tick_i_req = hello_req;
     /*tx.tick*/;
-  endtask
-  always_comb tock(tock_i_rstn);
+    tock = 0;
+  endfunction
+  always_comb tock_ret = tock(tock_i_rstn);
 
   //----------------------------------------
  /*private:*/

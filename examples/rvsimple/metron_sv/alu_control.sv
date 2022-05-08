@@ -28,7 +28,7 @@ module alu_control
 
  /*public:*/
   // clang-format off
-  task automatic tock_alu_function();
+  function tock_alu_function();
     import rv_constants::*;
 
     case (inst_funct3)
@@ -76,7 +76,7 @@ module alu_control
       CTL_ALU_BRANCH: alu_function = branch_funct;
       default:             alu_function = 5'bx;
     endcase
-  endtask
+  endfunction
   always_comb tock_alu_function();
   // clang-format on
 endmodule

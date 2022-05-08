@@ -17,13 +17,14 @@ class uart_top {
   logic<1> done() { return hello.done() && tx.idle(); }
   logic<32> sum() { return rx.sum(); }
 
-  void tock(logic<1> i_rstn) {
+  logic<1> tock(logic<1> i_rstn) {
     logic<8> hello_data = hello.data();
     logic<1> hello_req = hello.req();
 
     rx.tick(i_rstn, tx.serial());
     hello.tick(i_rstn, tx.cts(), tx.idle());
     tx.tick(i_rstn, hello_data, hello_req);
+    return 0;
   }
 
   //----------------------------------------

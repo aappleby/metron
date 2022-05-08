@@ -42,16 +42,16 @@ def main():
 
     errors = 0
 
-    errors += test_convert_good()
-    errors += test_convert_bad()
-    errors += test_compilation()
-    errors += test_verilator_parse()
+    #errors += test_convert_good()
+    #errors += test_convert_bad()
+    #errors += test_compilation()
+    #errors += test_verilator_parse()
 
     if not basic:
         errors += test_examples()
-        errors += test_misc()
-        errors += test_goldens()
-        errors += test_lockstep()
+        #errors += test_misc()
+        #errors += test_goldens()
+        #errors += test_lockstep()
 
         # Lockstep tests are slow because compiler...
 

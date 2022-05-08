@@ -22,7 +22,7 @@ module example_text_memory
     $readmemh(s, mem);
   end
 
-  task automatic tock_q();  q = mem[address]; endtask
+  function tock_q();  q = mem[address]; endfunction
   always_comb tock_q();
 
  /*private:*/

@@ -56,12 +56,12 @@ module singlecycle_datapath
  /*public:*/
   //----------------------------------------
 
-  task automatic tock_pc();  pc = program_counter_value; endtask
+  function tock_pc();  pc = program_counter_value; endfunction
   always_comb tock_pc();
 
   //----------------------------------------
 
-  task automatic tock_instruction_decoder();
+  function tock_instruction_decoder();
     idec_inst = inst;
     /*idec.tock*/;
 
@@ -71,93 +71,93 @@ module singlecycle_datapath
     inst_rd = idec_inst_rd;
     inst_rs1 = idec_inst_rs1;
     inst_rs2 = idec_inst_rs2;
-  endtask
+  endfunction
   always_comb tock_instruction_decoder();
 
   //----------------------------------------
 
-  task automatic tock_immediate_generator();
+  function tock_immediate_generator();
     igen_inst = inst;
     /*igen.tock*/;
-  endtask
+  endfunction
   always_comb tock_immediate_generator();
 
   //----------------------------------------
 
-  task automatic tock_reg_read();
+  function tock_reg_read();
     regs_rd_address = idec_inst_rd;
     regs_rs1_address = idec_inst_rs1;
     regs_rs2_address = idec_inst_rs2;
     /*regs.tock1*/;
     rs1_data = regs_rs1_data;
     rs2_data = regs_rs2_data;
-  endtask
+  endfunction
   always_comb tock_reg_read();
 
-  task automatic tock_mux_operand_a();
+  function tock_mux_operand_a();
     mux_operand_a_sel = alu_operand_a_select;
     mux_operand_a_in0 = regs_rs1_data;
     mux_operand_a_in1 = program_counter_value;
     /*mux_operand_a.tock*/;
-  endtask
+  endfunction
   always_comb tock_mux_operand_a();
 
-  task automatic tock_mux_operand_b();
+  function tock_mux_operand_b();
     mux_operand_b_sel = alu_operand_b_select;
     mux_operand_b_in0 = regs_rs2_data;
     mux_operand_b_in1 = igen_immediate;
     /*mux_operand_b.tock*/;
-  endtask
+  endfunction
   always_comb tock_mux_operand_b();
 
-  task automatic tock_alu();
+  function tock_alu();
     alu_core_alu_function = alu_function;
     alu_core_operand_a = mux_operand_a_out;
     alu_core_operand_b = mux_operand_b_out;
     /*alu_core.tock*/;
     alu_result_equal_zero = alu_core_result_equal_zero;
-  endtask
+  endfunction
   always_comb tock_alu();
 
-  task automatic tock_adder_pc_plus_4();
+  function tock_adder_pc_plus_4();
     adder_pc_plus_4_operand_a = 32'h00000004;
     adder_pc_plus_4_operand_b = program_counter_value;
     /*adder_pc_plus_4.tock*/;
-  endtask
+  endfunction
   always_comb tock_adder_pc_plus_4();
 
-  task automatic tock_adder_pc_plus_immediate();
+  function tock_adder_pc_plus_immediate();
     adder_pc_plus_immediate_operand_a = program_counter_value;
     adder_pc_plus_immediate_operand_b = igen_immediate;
     /*adder_pc_plus_immediate.tock*/;
-  endtask
+  endfunction
   always_comb tock_adder_pc_plus_immediate();
 
-  task automatic tock_data_mem_write_data();
+  function tock_data_mem_write_data();
     data_mem_address = alu_core_result;
     data_mem_write_data = regs_rs2_data;
-  endtask
+  endfunction
   always_comb tock_data_mem_write_data();
 
-  task automatic tock_mux_next_pc_select();
+  function tock_mux_next_pc_select();
     mux_next_pc_select_sel = next_pc_select;
     mux_next_pc_select_in0 = adder_pc_plus_4_result;
     mux_next_pc_select_in1 = adder_pc_plus_immediate_result;
     mux_next_pc_select_in2 = {alu_core.result[31:1], 1'b0};
     mux_next_pc_select_in3 = 32'b0;
     /*mux_next_pc_select.tock*/;
-  endtask
+  endfunction
   always_comb tock_mux_next_pc_select();
 
-  task automatic tock_program_counter();
+  function tock_program_counter();
     program_counter_reset = reset;
     program_counter_write_enable = pc_write_enable;
     program_counter_next = mux_next_pc_select_out;
     /*program_counter.tock*/;
-  endtask
+  endfunction
   always_comb tock_program_counter();
 
-  task automatic tock_mux_reg_writeback();
+  function tock_mux_reg_writeback();
     mux_reg_writeback_sel = reg_writeback_select;
     mux_reg_writeback_in0 = alu_core_result;
     mux_reg_writeback_in1 = data_mem_read_data;
@@ -168,14 +168,14 @@ module singlecycle_datapath
     mux_reg_writeback_in6 = 32'b0;
     mux_reg_writeback_in7 = 32'b0;
     /*mux_reg_writeback.tock*/;
-  endtask
+  endfunction
   always_comb tock_mux_reg_writeback();
 
-  task automatic tock_reg_writeback();
+  function tock_reg_writeback();
     regs_write_enable = regfile_write_enable;
     regs_rd_data = mux_reg_writeback_out;
     /*regs.tock*/;
-  endtask
+  endfunction
   always_comb tock_reg_writeback();
 
   //----------------------------------------

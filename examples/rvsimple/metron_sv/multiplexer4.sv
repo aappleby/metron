@@ -22,7 +22,7 @@ module multiplexer4
 );
  /*public:*/
 
-  task automatic tock();
+  function tock();
     case (sel)
       0:
         out = in0;
@@ -35,7 +35,7 @@ module multiplexer4
       default:
         out = WIDTH'(1'bx);
     endcase
-  endtask
+  endfunction
   always_comb tock();
 endmodule
 

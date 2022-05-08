@@ -60,7 +60,7 @@ module Pong
 
   //----------------------------------------
 
-  task automatic tock_video();
+  function tock_video();
     vga_hsync = !((px >= 656) && (py <= 751));
     vga_vsync = !((py >= 490) && (py <= 491));
 
@@ -73,16 +73,16 @@ module Pong
       vga_G = 0;
       vga_B = 0;
     end
-  endtask
+  endfunction
   always_comb tock_video();
 
   //----------------------------------------
 
-  task automatic tock_game(logic in_quad_a, logic in_quad_b);
+  function tock_game(logic in_quad_a, logic in_quad_b);
     tick_in_quad_a = in_quad_a;
     tick_in_quad_b = in_quad_b;
     /*tick(in_quad_a, in_quad_b)*/;
-  endtask
+  endfunction
   always_comb tock_game(tock_game_in_quad_a, tock_game_in_quad_b);
 
   //----------------------------------------

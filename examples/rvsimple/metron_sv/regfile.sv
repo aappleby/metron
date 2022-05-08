@@ -29,16 +29,16 @@ module regfile
 
  /*public:*/
   // Read ports for rs1 and rs1
-  task automatic tock1();
+  function tock1();
     rs1_data = _register[rs1_address];
     rs2_data = _register[rs2_address];
-  endtask
+  endfunction
   always_comb tock1();
 
   // Register x0 is always 0
   initial begin _register[0] = 32'b0; end
 
-  task automatic tock();  /*tick()*/; endtask
+  function tock();  /*tick()*/; endfunction
   always_comb tock();
 
  /*private:*/

@@ -23,7 +23,7 @@ module single_register
 
   initial begin value = INITIAL; end
 
-  task automatic tock();  /*tick()*/; endtask
+  function tock();  /*tick()*/; endfunction
   always_comb tock();
 
  /*private:*/

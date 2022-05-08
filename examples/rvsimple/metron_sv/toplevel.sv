@@ -33,7 +33,7 @@ module toplevel
 
   //----------------------------------------
 
-  task automatic tock(int bogus_param);
+  function tock(int bogus_param);
     core_reset = reset;
     /*core.tock_pc*/;
 
@@ -63,7 +63,7 @@ module toplevel
     bus_write_enable = core_bus_write_enable;
     inst = text_memory_bus_read_data;
     pc = core_pc;
-  endtask
+  endfunction
   always_comb tock(tock_bogus_param);
 
   //----------------------------------------

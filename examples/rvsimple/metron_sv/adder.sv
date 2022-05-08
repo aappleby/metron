@@ -19,7 +19,7 @@ module adder
 );
  /*public:*/
 
-  task automatic tock();  result = operand_a + operand_b; endtask
+  function tock();  result = operand_a + operand_b; endfunction
   always_comb tock();
 endmodule
 

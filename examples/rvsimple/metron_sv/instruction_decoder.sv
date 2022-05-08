@@ -22,14 +22,14 @@ module instruction_decoder
 );
  /*public:*/
 
-  task automatic tock();
+  function tock();
     inst_opcode = inst[6:0];
     inst_funct3 = inst[14:12];
     inst_funct7 = inst[31:25];
     inst_rd = inst[11:7];
     inst_rs1 = inst[19:15];
     inst_rs2 = inst[24:20];
-  endtask
+  endfunction
   always_comb tock();
 endmodule
 

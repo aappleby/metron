@@ -1,3 +1,10 @@
+ALL TOCKS MUST HAVE A RETURN VALUE SO THAT THEY GO THROUGH ICARUS AND YOSYS CORRECTLY
+  if they have no return then they're considered a task and both icarus and yosys don't like always_combs calling tasks
+
+
+
+
+
 https://github.com/hughperkins/VeriGPU
 
 the error checking should really be independent passes between stages

@@ -26,7 +26,7 @@ module singlecycle_control
 );
  /*public:*/
 
-  task automatic tock_next_pc_select();
+  function tock_next_pc_select();
     import rv_constants::*;
     // clang-format off
     case (inst_opcode)
@@ -36,13 +36,13 @@ module singlecycle_control
       default:            next_pc_select = CTL_PC_PC4;
     endcase
     // clang-format on
-  endtask
+  endfunction
   always_comb tock_next_pc_select();
 
-  task automatic tock_pc_write_enable();  pc_write_enable = 1'b1; endtask
+  function tock_pc_write_enable();  pc_write_enable = 1'b1; endfunction
   always_comb tock_pc_write_enable();
 
-  task automatic tock_regfile_write_enable();
+  function tock_regfile_write_enable();
     import rv_constants::*;
     // clang-format off
     case (inst_opcode)
@@ -59,10 +59,10 @@ module singlecycle_control
       default:              regfile_write_enable = 1'bx;
     endcase
     // clang-format on
-  endtask
+  endfunction
   always_comb tock_regfile_write_enable();
 
-  task automatic tock_alu_operand_a_select();
+  function tock_alu_operand_a_select();
     import rv_constants::*;
 
     // clang-format off
@@ -81,10 +81,10 @@ module singlecycle_control
       default:              alu_operand_a_select = 1'bx;
     endcase
     // clang-format on
-  endtask
+  endfunction
   always_comb tock_alu_operand_a_select();
 
-  task automatic tock_alu_operand_b_select();
+  function tock_alu_operand_b_select();
     import rv_constants::*;
 
     // clang-format off
@@ -103,10 +103,10 @@ module singlecycle_control
       default:              alu_operand_b_select = 1'bx;
     endcase
     // clang-format on
-  endtask
+  endfunction
   always_comb tock_alu_operand_b_select();
 
-  task automatic tock_alu_op_type();
+  function tock_alu_op_type();
     import rv_constants::*;
 
     // clang-format off
@@ -124,22 +124,22 @@ module singlecycle_control
       default:              alu_op_type = 2'bx;
     endcase
     // clang-format on
-  endtask
+  endfunction
   always_comb tock_alu_op_type();
 
-  task automatic tock_data_mem_read_enable();
+  function tock_data_mem_read_enable();
     import rv_constants::*;
     data_mem_read_enable = inst_opcode == OPCODE_LOAD;
-  endtask
+  endfunction
   always_comb tock_data_mem_read_enable();
 
-  task automatic tock_data_mem_write_enable();
+  function tock_data_mem_write_enable();
     import rv_constants::*;
     data_mem_write_enable = inst_opcode == OPCODE_STORE;
-  endtask
+  endfunction
   always_comb tock_data_mem_write_enable();
 
-  task automatic tock_reg_writeback_select();
+  function tock_reg_writeback_select();
     import rv_constants::*;
 
     // clang-format off
@@ -154,7 +154,7 @@ module singlecycle_control
       default:              reg_writeback_select = 3'bx;
     endcase
     // clang-format on
-  endtask
+  endfunction
   always_comb tock_reg_writeback_select();
 endmodule
 

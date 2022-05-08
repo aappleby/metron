@@ -46,9 +46,9 @@ def main():
     errors += test_convert_bad()
     errors += test_compilation()
     errors += test_verilator_parse()
-    errors += test_icarus_parse()
 
     if not basic:
+        errors += test_icarus_parse()
         errors += test_examples()
         errors += test_misc()
         errors += test_goldens()
@@ -161,10 +161,12 @@ def check_good(filename):
     basename = path.basename(filename)
     svname = path.splitext(basename)[0] + ".sv"
 
-    cmd = prep_cmd(
-        f"bin/metron {metron_default_args()} -r tests/metron_good -o tests/metron_sv -c {basename}")
+    cmd = f"bin/metron {metron_default_args()} -r tests/metron_good -o tests/metron_sv -c {basename}"
+
+    print(f"  {cmd}");
+
     cmd_result = subprocess.run(
-        cmd, stdout=subprocess.PIPE, encoding="charmap")
+        prep_cmd(cmd), stdout=subprocess.PIPE, encoding="charmap")
 
     if cmd_result.returncode:
         print_r(
@@ -190,10 +192,11 @@ def check_bad(filename):
         print(f"Test {filename} contained no expected errors. Dumping output.")
         # return 1
 
-    cmd = prep_cmd(
-        f"bin/metron {metron_default_args()} -r tests/metron_bad -o tests/metron_sv -c {basename}")
+    cmd = f"bin/metron {metron_default_args()} -r tests/metron_bad -o tests/metron_sv -c {basename}"
+    print(f"  {cmd}")
+
     cmd_result = subprocess.run(
-        cmd, stdout=subprocess.PIPE, encoding="charmap")
+        prep_cmd(cmd), stdout=subprocess.PIPE, encoding="charmap")
 
     if cmd_result.returncode == 0:
         print(
@@ -232,9 +235,19 @@ def check_icarus(filename):
     svname = path.splitext(basename)[0] + ".sv"
 
     cmd = f"iverilog -g2012 -Wall -Isrc -o bin/{svname}.o tests/metron_sv/{svname}"
-    result = os.system(cmd)
-    if result:
+
+    print(f"  {cmd}")
+    #result = os.system(cmd)
+
+    #cmd = "iverilog"
+
+    cmd_result = subprocess.run(
+        prep_cmd(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="charmap")
+
+    if cmd_result.returncode:
         print(f"Icarus syntax check on {filename} failed")
+        print(cmd_result.stdout)
+        print(cmd_result.stderr)
         return 1
     else:
         return 0
@@ -285,7 +298,7 @@ def check_golden(filename):
 
 
 def run_simple_test(commandline):
-    print(commandline)
+    print(f"  {commandline}")
     # The Icarus output isn't actually a binary, kcov can't run it.
     if (commandline == "bin/examples/uart_iv"):
         cmd = [commandline]
@@ -304,7 +317,7 @@ def run_simple_test(commandline):
 
 
 def run_good_command(commandline):
-    print(f"good command {commandline}");
+    print(f"  {commandline}");
     cmd = prep_cmd(commandline)
     result = subprocess.run(cmd, stdout=subprocess.PIPE,
                             encoding="charmap").returncode
@@ -317,7 +330,7 @@ def run_good_command(commandline):
 
 
 def run_bad_command(commandline):
-    print(f"bad command {commandline}");
+    print(f"  {commandline}");
     cmd = prep_cmd(commandline)
     result = subprocess.run(cmd, stdout=subprocess.PIPE,
                             encoding="charmap").returncode
@@ -474,10 +487,8 @@ def check_lockstep(filename):
 
     includes = f"-I. -Isrc -I{sv_root} -I/usr/local/share/verilator/include"
 
-    print(f"  Building {test_name}")
-
     metronate_cmd = f"bin/metron -q -r {mt_root} -o {sv_root} -c {test_name}.h"
-    print(metronate_cmd)
+    print(f"  {metronate_cmd}")
     os.system(metronate_cmd)
     os.system(f"verilator {includes} --cc {test_name}.sv -Mdir {vl_root}")
     os.system(f"make --quiet -C {vl_root} -f V{test_name}.mk > /dev/null")
@@ -485,8 +496,10 @@ def check_lockstep(filename):
         f"g++ -O3 -std=gnu++2a -DMT_TOP={mt_top} -DVL_TOP={vl_top} -DMT_HEADER={mt_header} -DVL_HEADER={vl_header} {includes} -c {test_src} -o {test_obj}")
     os.system(f"g++ {test_obj} {vl_obj} obj/verilated.o -o {test_bin}")
 
-    print(f"  Running {test_name}")
-    errors = os.system(f"{test_bin} > /dev/null")
+    cmd = f"{test_bin} > /dev/null"
+    print(f"  {cmd}");
+
+    errors = os.system(cmd)
 
     if bad_test:
         return errors == 0

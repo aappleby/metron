@@ -1,0 +1,40 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  width: 100vw;
+}
+
+body {
+  margin: 1%;
+  padding: 0;
+  height: 98%;
+  width: 98%;
+
+  font-size: 12px;
+  font-family: 'Roboto Mono', monospace;
+  color: #CCC;
+  background-color: #222;
+}
+
+pre {
+  font-size: 12px;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.container {
+  display: grid;
+  height: 90vh;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-column-gap: 1%;
+}
+
+.item {
+  background-color: #333;
+  border: solid black 2px;
+  padding: 3px;
+}

@@ -46,6 +46,95 @@ rule nextpnr-ice40
       --asc ${out} --pcf ${pcf}
 rule icepack
   command = icepack ${in} ${out}
+wasi_sysroot_url = $
+    https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-14/wasi-sysroot-14.0.tar.gz
+wasi_sysroot_tar = wasi-sysroot-14.0.tar.gz
+rule command
+  command = ${command}
+build wasi-sysroot: command
+  command = wget -q $wasi_sysroot_url && tar -xf $wasi_sysroot_tar && rm $
+      $wasi_sysroot_tar
+rule compile_c_wasi
+  command = clang -g --target=wasm32-unknown-wasi --sysroot wasi-sysroot $
+      ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}
+  depfile = ${out}.d
+  deps = gcc
+rule compile_cpp_wasi
+  command = clang++ -g -fno-exceptions --target=wasm32-unknown-wasi $
+      --sysroot wasi-sysroot -std=gnu++2a ${includes} -MMD -MF ${out}.d -c $
+      ${in} -o ${out}
+  depfile = ${out}.d
+  deps = gcc
+rule link_wasi
+  command = wasm-ld -m wasm32 -Lwasi-sysroot/lib/wasm32-wasi $
+      --import-memory --no-entry -lc -lc++ -lc++abi $
+      wasm/libclang_rt.builtins-wasm32.a ${in} -o ${out}
+
+
+################################################################################
+# TreeSitter libraries wasi
+
+build wasm/obj/submodules/tree-sitter/lib/src/lib.o: compile_c_wasi $
+    submodules/tree-sitter/lib/src/lib.c
+  includes = -Isubmodules/tree-sitter/lib/include $
+      -Isubmodules/tree-sitter/lib/src
+build wasm/obj/submodules/tree-sitter-cpp/src/parser.o: compile_c_wasi $
+    submodules/tree-sitter-cpp/src/parser.c
+  includes = -Isubmodules/tree-sitter/lib/include $
+      -Isubmodules/tree-sitter/lib/src
+build wasm/obj/submodules/tree-sitter-cpp/src/scanner.o: compile_c_wasi $
+    submodules/tree-sitter-cpp/src/scanner.cc
+  includes = -Isubmodules/tree-sitter/lib/include $
+      -Isubmodules/tree-sitter/lib/src
+
+
+################################################################################
+# Compile wasm/bin/test.wasm
+
+build wasm/obj/wasm/metron_wasi.o: compile_cpp_wasi wasm/metron_wasi.cpp
+  includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
+build wasm/obj/src/Platform.o: compile_cpp_wasi src/Platform.cpp
+  includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
+build wasm/obj/src/Err.o: compile_cpp_wasi src/Err.cpp
+  includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
+build wasm/obj/src/MtChecker.o: compile_cpp_wasi src/MtChecker.cpp
+  includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
+build wasm/obj/src/MtContext.o: compile_cpp_wasi src/MtContext.cpp
+  includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
+build wasm/obj/src/MtCursor.o: compile_cpp_wasi src/MtCursor.cpp
+  includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
+build wasm/obj/src/MtField.o: compile_cpp_wasi src/MtField.cpp
+  includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
+build wasm/obj/src/MtFuncParam.o: compile_cpp_wasi src/MtFuncParam.cpp
+  includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
+build wasm/obj/src/MtMethod.o: compile_cpp_wasi src/MtMethod.cpp
+  includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
+build wasm/obj/src/MtModLibrary.o: compile_cpp_wasi src/MtModLibrary.cpp
+  includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
+build wasm/obj/src/MtModParam.o: compile_cpp_wasi src/MtModParam.cpp
+  includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
+build wasm/obj/src/MtModule.o: compile_cpp_wasi src/MtModule.cpp
+  includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
+build wasm/obj/src/MtNode.o: compile_cpp_wasi src/MtNode.cpp
+  includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
+build wasm/obj/src/MtSourceFile.o: compile_cpp_wasi src/MtSourceFile.cpp
+  includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
+build wasm/obj/src/MtTracer.o: compile_cpp_wasi src/MtTracer.cpp
+  includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
+build wasm/obj/src/MtUtils.o: compile_cpp_wasi src/MtUtils.cpp
+  includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
+build wasm/bin/test.wasm: link_wasi $
+    wasm/obj/submodules/tree-sitter/lib/src/lib.o $
+    wasm/obj/submodules/tree-sitter-cpp/src/parser.o $
+    wasm/obj/submodules/tree-sitter-cpp/src/scanner.o $
+    wasm/obj/wasm/metron_wasi.o wasm/obj/src/Platform.o wasm/obj/src/Err.o $
+    wasm/obj/src/MtChecker.o wasm/obj/src/MtContext.o $
+    wasm/obj/src/MtCursor.o wasm/obj/src/MtField.o $
+    wasm/obj/src/MtFuncParam.o wasm/obj/src/MtMethod.o $
+    wasm/obj/src/MtModLibrary.o wasm/obj/src/MtModParam.o $
+    wasm/obj/src/MtModule.o wasm/obj/src/MtNode.o $
+    wasm/obj/src/MtSourceFile.o wasm/obj/src/MtTracer.o wasm/obj/src/MtUtils.o
+  includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
 
 
 ################################################################################

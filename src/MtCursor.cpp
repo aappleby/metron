@@ -188,13 +188,15 @@ CHECK_RETURN Err MtCursor::emit_ws_to_newline() {
 CHECK_RETURN Err MtCursor::skip_over(MnNode n) {
   Err err = emit_ws_to(n);
   if (n.is_null()) {
-    err << ERR("Skipping over null node");
+    err << ERR("Skipping over null node\n");
   } else {
     if (echo) {
       LOG_C(0x8080FF, "%s", n.text().c_str());
     }
 
-    assert(cursor == n.start());
+    if (cursor != n.start()) {
+      err << ERR("Skipping over node, but we're not at its start point\n");
+    }
     cursor = n.end();
     line_elided = true;
   }
@@ -2132,8 +2134,6 @@ CHECK_RETURN Err MtCursor::emit_sym_expression_statement(MnNode node) {
     }
   }
 
-  node.dump_tree();
-
   for (auto child : node) {
     switch (child.sym) {
       case sym_call_expression:
@@ -2633,8 +2633,6 @@ CHECK_RETURN Err MtCursor::emit_sym_case_statement(MnNode n) {
 
 CHECK_RETURN Err MtCursor::emit_sym_switch_statement(MnNode node) {
   Err err = emit_ws_to(sym_switch_statement, node);
-
-  node.dump_tree();
 
   for (auto child : node) {
     if (child.sym == anon_sym_switch) {

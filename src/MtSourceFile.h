@@ -17,7 +17,7 @@ typedef std::vector<uint8_t> blob;
 struct MtSourceFile {
   CHECK_RETURN Err init(MtModLibrary* _lib, const std::string& _filename,
                         const std::string& _full_path,
-                        const std::string& _src_blob);
+                        void* _src_blob, int _src_len);
   ~MtSourceFile();
 
   CHECK_RETURN Err collect_modules(MnNode toplevel);

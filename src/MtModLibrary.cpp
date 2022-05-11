@@ -87,7 +87,7 @@ CHECK_RETURN Err MtModLibrary::load_source(const char *filename,
         use_utf8_bom = true;
         src_blob.erase(src_blob.begin(), src_blob.begin() + 3);
       }
-      err << load_blob(filename, full_path, src_blob, use_utf8_bom, verbose);
+      err << load_blob(filename, full_path, src_blob.data(), src_blob.size(), use_utf8_bom, verbose);
       break;
     }
   }
@@ -103,12 +103,13 @@ CHECK_RETURN Err MtModLibrary::load_source(const char *filename,
 
 CHECK_RETURN Err MtModLibrary::load_blob(const std::string &filename,
                                          const std::string &full_path,
-                                         const std::string &src_blob,
+                                         void* src_blob,
+                                         int src_len,
                                          bool use_utf8_bom, bool verbose) {
   Err err;
 
   auto source_file = new MtSourceFile();
-  err << source_file->init(this, filename, full_path, src_blob);
+  err << source_file->init(this, filename, full_path, src_blob, src_len);
   source_file->use_utf8_bom = use_utf8_bom;
   add_source(source_file);
 

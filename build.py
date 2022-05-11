@@ -48,7 +48,6 @@ def main():
 
 # ------------------------------------------------------------------------------
 
-
 def swap_ext(name, new_ext):
     return path.splitext(name)[0] + new_ext
 
@@ -71,40 +70,58 @@ ninja.rule(name="autoupdate",
            command="python3 $in",
            generator=1)
 
-ninja.build("build.ninja", "autoupdate", "build.py")
-
+ninja.build(outputs="build.ninja",
+            rule="autoupdate",
+            inputs="build.py")
 
 # ------------------------------------------------------------------------------
 
 divider("Rules")
 
-ninja.rule("compile_cpp",
-           command="g++ -rdynamic -g ${opt} -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}", deps="gcc", depfile="${out}.d")
-ninja.rule("compile_c",
-           command="gcc -rdynamic -g ${opt} ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}", deps="gcc", depfile="${out}.d")
-ninja.rule("static_lib",    command="ar rcs ${out} ${in} > /dev/null")
-ninja.rule("link",
+ninja.rule(name="compile_cpp",
+           command="g++ -rdynamic -g ${opt} -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
+           deps="gcc",
+           depfile="${out}.d")
+
+ninja.rule(name="compile_c",
+           command="gcc -rdynamic -g ${opt} ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
+           deps="gcc",
+           depfile="${out}.d")
+
+ninja.rule(name="static_lib",    command="ar rcs ${out} ${in} > /dev/null")
+
+ninja.rule(name="link",
            command="g++ -rdynamic -g $opt ${in} -Wl,--whole-archive ${local_libs} -Wl,--no-whole-archive ${global_libs} -o ${out}")
 
-# yes, we run metron with quiet and verbose both on for test coverage
-ninja.rule("metron",
+ninja.rule(name="metron", # yes, we run metron with quiet and verbose both on for test coverage
            command="bin/metron -q -v -r ${src_dir} -o ${dst_dir} -c ${src_top}")
 
-ninja.rule("verilator",
+ninja.rule(name="verilator",
            command="verilator ${includes} --cc ${src_top} -Mdir ${dst_dir}")
-ninja.rule("make",
-           command="make --quiet -C ${dst_dir} -f ${makefile} > /dev/null")
-ninja.rule("run_test",
-           command="${in} | grep \"All tests pass.\" && touch ${out}")
-ninja.rule("console",       command="${in}", pool="console")
-ninja.rule("iverilog",
-           command="iverilog -g2012 ${defines} ${includes} ${in} -o ${out}")
-ninja.rule("yosys",
-           command="yosys -q -p 'read_verilog ${includes} -sv ${in}; dump; synth_ice40 -json ${out};'")
-ninja.rule("nextpnr-ice40",
-           command="nextpnr-ice40 -q --${chip} --package ${package} --json ${in} --asc ${out} --pcf ${pcf}")
-ninja.rule("icepack",       command="icepack ${in} ${out}")
 
+ninja.rule(name="make",
+           command="make --quiet -C ${dst_dir} -f ${makefile} > /dev/null")
+
+ninja.rule(name="run_test",
+           command="${in} | grep \"All tests pass.\" && touch ${out}")
+
+ninja.rule(name="console",
+           command="${in}",
+           pool="console")
+
+ninja.rule(name="iverilog",
+           command="iverilog -g2012 ${defines} ${includes} ${in} -o ${out}")
+
+ninja.rule(name="yosys",
+           command="yosys -q -p 'read_verilog ${includes} -sv ${in}; dump; synth_ice40 -json ${out};'")
+
+ninja.rule(name="nextpnr-ice40",
+           command="nextpnr-ice40 -q --${chip} --package ${package} --json ${in} --asc ${out} --pcf ${pcf}")
+
+ninja.rule(name="icepack",
+           command="icepack ${in} ${out}")
+
+# ------------------------------------------------------------------------------
 
 def metronize_dir(src_dir, src_top, dst_dir):
     """
@@ -306,6 +323,128 @@ def build_metron_app():
         ],
         link_deps=["bin/libmetron.a"],
     )
+
+# ------------------------------------------------------------------------------
+# Fetch and unpack the wasi-sysroot library
+
+ninja.variable(key="wasi_sysroot_url",
+               value="https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-14/wasi-sysroot-14.0.tar.gz")
+
+ninja.variable(key="wasi_sysroot_tar",
+               value="wasi-sysroot-14.0.tar.gz")
+
+ninja.rule(name="command",
+           command="${command}")
+
+ninja.build(outputs="wasi-sysroot",
+            rule="command",
+            inputs=[],
+            command="wget -q $wasi_sysroot_url && tar -xf $wasi_sysroot_tar && rm $wasi_sysroot_tar")
+
+# ------------------------------------------------------------------------------
+# Compile Metron into a WASM library that depends on WASI.
+
+#clang --target=wasm32-unknown-wasi --sysroot ~/wasi/share/wasi-sysroot/ -o test.o -c test.c
+#wasm-ld -m wasm32 -Lwasi-sysroot/lib/wasm32-wasi --import-memory --no-entry test.o -lc libclang_rt.builtins-wasm32.a -o test.wasm
+
+ninja.rule(name="compile_c_wasi",
+           command="clang -g --target=wasm32-unknown-wasi --sysroot wasi-sysroot ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
+           deps="gcc",
+           depfile="${out}.d")
+
+ninja.rule(name="compile_cpp_wasi",
+           command="clang++ -g -fno-exceptions --target=wasm32-unknown-wasi --sysroot wasi-sysroot -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
+           deps="gcc",
+           depfile="${out}.d")
+
+ninja.rule(name="link_wasi",
+           command="wasm-ld -m wasm32 -Lwasi-sysroot/lib/wasm32-wasi --import-memory --no-entry -lc -lc++ -lc++abi wasm/libclang_rt.builtins-wasm32.a ${in} -o ${out}")
+
+def cpp_binary_wasi(bin_name, src_files, src_objs=None, deps=None, link_deps=None, **kwargs):
+    """
+    Compiles a C++ binary from the given source files.
+    """
+    if src_objs is None:
+        src_objs = []
+    if deps is None:
+        deps = []
+    if link_deps is None:
+        link_deps = []
+
+    divider(f"Compile {bin_name}")
+
+    # Tack -I onto the includes
+    if kwargs["includes"] is not None:
+        kwargs["includes"] = ["-I" + path for path in kwargs["includes"]]
+
+    for n in src_files:
+        obj_name = path.join("wasm/obj", swap_ext(n, ".o"))
+        ninja.build(outputs=obj_name,
+                    rule="compile_cpp_wasi",
+                    inputs=n,
+                    implicit=deps,
+                    variables=kwargs)
+        src_objs.append(obj_name)
+    ninja.build(outputs=bin_name,
+                rule="link_wasi",
+                inputs=src_objs + link_deps,
+                variables=kwargs)
+
+
+treesitter_objs_wasi = [];
+
+def build_treesitter_wasi():
+    divider("TreeSitter libraries wasi")
+
+    treesitter_srcs = [
+        "submodules/tree-sitter/lib/src/lib.c",
+        "submodules/tree-sitter-cpp/src/parser.c",
+        "submodules/tree-sitter-cpp/src/scanner.cc",
+    ]
+
+    for n in treesitter_srcs:
+        o = path.join("wasm/obj", swap_ext(n, ".o"))
+        ninja.build(
+            o,
+            "compile_c_wasi",
+            n,
+            includes=[
+                "-Isubmodules/tree-sitter/lib/include",
+                "-Isubmodules/tree-sitter/lib/src",
+            ]
+        )
+        treesitter_objs_wasi.append(o)
+
+build_treesitter_wasi()
+
+
+
+cpp_binary_wasi(bin_name="wasm/bin/test.wasm",
+                src_files=[
+                    "wasm/metron_wasi.cpp",
+                    "src/Platform.cpp",
+                    "src/Err.cpp",
+                    "src/MtChecker.cpp",
+                    "src/MtContext.cpp",
+                    "src/MtCursor.cpp",
+                    "src/MtField.cpp",
+                    "src/MtFuncParam.cpp",
+                    "src/MtMethod.cpp",
+                    "src/MtModLibrary.cpp",
+                    "src/MtModParam.cpp",
+                    "src/MtModule.cpp",
+                    "src/MtNode.cpp",
+                    "src/MtSourceFile.cpp",
+                    "src/MtTracer.cpp",
+                    "src/MtUtils.cpp",
+                ],
+                includes=[
+                    ".",
+                    "src",
+                    "submodules/tree-sitter/lib/include"
+                ],
+                src_objs=treesitter_objs_wasi,
+                )
 
 # ------------------------------------------------------------------------------
 # Low-level tests

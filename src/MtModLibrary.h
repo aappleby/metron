@@ -22,7 +22,7 @@ struct MtModLibrary {
                                bool verbose);
   CHECK_RETURN Err load_blob(const std::string& filename,
                              const std::string& full_path,
-                             const std::string& src_blob, bool use_utf8_bom,
+                             void* src_blob, int src_len, bool use_utf8_bom,
                              bool verbose);
 
   CHECK_RETURN Err categorize_methods();

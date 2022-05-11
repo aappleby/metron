@@ -23,7 +23,15 @@ struct TinyLog {
   void mute()   { _muted++; }
   void unmute() { _muted--; }
 
+  void reset() {
+    _color = 0;
+    _muted = 0;
+    _indentation = 0;
+    _start_line = true;
+  }
+
   void set_color(uint32_t color) {
+    /*
     if (color != _color) {
       if (color) {
         printf("\u001b[38;2;%d;%d;%dm", (color >> 0) & 0xFF,
@@ -36,7 +44,9 @@ struct TinyLog {
       }
       _color = color;
     }
+    */
   }
+
 
   double timestamp() {
     timespec ts;
@@ -53,17 +63,17 @@ struct TinyLog {
     if (_start_line) {
       _start_line = false;
       print(0, "[%07.3f] ", timestamp());
-      for (int j = 0; j < _indentation; j++) putchar(' ');
+      for (int j = 0; j < _indentation; j++) /*putchar(' ');*/ printf(" ");
     }
 
     if (c == '\n') {
       set_color(0);
-      putchar(c);
+      printf("%c", c); //putchar(c);
       _start_line = true;
     }
     else {
       set_color(color);
-      putchar(c);
+      printf("%c", c); //putchar(c);
     }
   }
 
@@ -71,7 +81,7 @@ struct TinyLog {
     for (int i = 0; i < len; i++) {
       print_char(buffer[i], color);
     }
-    fflush(stdout);
+    //fflush(stdout);
   }
 
   void vprint(uint32_t color, const char* format, va_list args) {

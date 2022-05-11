@@ -16,11 +16,11 @@
 #include <vector>
 
 #ifdef __GNUC__
-#include <execinfo.h>
+//#include <execinfo.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include <csignal>
+//#include <csignal>
 #endif
 
 #include "TreeSymbols.h"
@@ -31,6 +31,10 @@
 uint64_t timestamp() {
   timespec ts;
   (void)timespec_get(&ts, TIME_UTC);
+
+  //printf("%08x\n", ts.tv_sec);
+  //printf("%08x\n", ts.tv_nsec);
+
   uint64_t now = ts.tv_sec * 1000000000ull + ts.tv_nsec;
   return now;
 }
@@ -87,11 +91,13 @@ void dprintf(const char* format, ...) {
 }
 
 void print_stacktrace(void) {
+  /*
   void* array[1024];
   size_t size = backtrace(array, 1024);
   char** strings = backtrace_symbols(array, size);
   for (int i = 0; i < size; i++) printf("%s\n", strings[i]);
   free(strings);
+  */
 }
 
 void debugbreak() {

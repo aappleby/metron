@@ -20,6 +20,8 @@ ContextState merge_action(ContextState state, ContextAction action) {
       case CTX_SIGNAL:   result = CTX_SIGNAL;  break;
       case CTX_REGISTER: result = CTX_INVALID; break;
       case CTX_INVALID:  result = CTX_INVALID; break;
+      case CTX_PENDING:  result = CTX_INVALID; break;
+      case CTX_NIL:      result = CTX_INVALID; break;
     }
   }
 
@@ -32,6 +34,8 @@ ContextState merge_action(ContextState state, ContextAction action) {
       case CTX_SIGNAL:   result = CTX_INVALID;  break;
       case CTX_REGISTER: result = CTX_REGISTER; break;
       case CTX_INVALID:  result = CTX_INVALID;  break;
+      case CTX_PENDING:  result = CTX_INVALID; break;
+      case CTX_NIL:      result = CTX_INVALID; break;
     }
   }
   // clang-format on

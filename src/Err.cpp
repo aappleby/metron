@@ -42,7 +42,7 @@ Err::Err(const ErrType& et) : err(int(et.sev)) {}
 
 Err& Err::operator<<(const Err& e) {
   if (e.err & int(SEV_TYPE::ERR)) {
-    err = err;
+    //err = err;
   }
   err |= e.err;
   return *this;
@@ -50,7 +50,7 @@ Err& Err::operator<<(const Err& e) {
 
 Err& Err::operator<<(const ErrType& e) {
   if (int(e.sev) & int(SEV_TYPE::ERR)) {
-    err = err;
+    //err = err;
   }
 
   err |= int(e.sev);

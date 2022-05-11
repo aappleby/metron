@@ -83,7 +83,7 @@ struct MnNode {
 
   void error() const {
     dump_tree(0, 0, 255);
-    debugbreak();
+    //debugbreak();
   }
 
   operator bool() const { return !ts_node_is_null(node); }

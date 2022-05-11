@@ -64,6 +64,12 @@ void MtField::dump() const {
       case CTX_INVALID:
         LOG_C(0x8080FF, "Invalid field '%s' : %s", cname(), _type.c_str());
         break;
+      case CTX_PENDING:
+        LOG_C(0x8080FF, "Pending field '%s' : %s", cname(), _type.c_str());
+        break;
+      case CTX_NIL:
+        LOG_C(0x8080FF, "Nil field '%s' : %s", cname(), _type.c_str());
+        break;
     }
 
     LOG(" = %s", to_string(state));

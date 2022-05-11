@@ -1,5 +1,5 @@
 #include "MtSourceFile.h"
-
+#include <memory.h>
 #include "Log.h"
 #include "MtModLibrary.h"
 #include "MtModule.h"
@@ -15,13 +15,15 @@ extern const TSLanguage* tree_sitter_cpp();
 CHECK_RETURN Err MtSourceFile::init(MtModLibrary* _lib,
                                     const std::string& _filename,
                                     const std::string& _full_path,
-                                    const std::string& _src_blob) {
+                                    void* _src_blob,
+                                    int _src_len) {
   Err err;
 
   lib = _lib;
   filename = _filename;
   full_path = _full_path;
-  src_blob = _src_blob;
+  src_blob.resize(_src_len);
+  memcpy(src_blob.data(), _src_blob, _src_len);
   assert(src_blob.back() != 0);
 
   auto blob_size = src_blob.size();

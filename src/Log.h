@@ -12,6 +12,7 @@ struct TinyLog {
   int _muted = 0;
   int _indentation = 0;
   bool _start_line = true;
+  uint64_t _time_origin = 0;
 
   static TinyLog& get() {
     static TinyLog log;
@@ -28,6 +29,7 @@ struct TinyLog {
     _muted = 0;
     _indentation = 0;
     _start_line = true;
+    _time_origin = 0;
   }
 
   void set_color(uint32_t color) {
@@ -50,9 +52,8 @@ struct TinyLog {
     timespec ts;
     (void)timespec_get(&ts, TIME_UTC);
     uint64_t now = ts.tv_sec * 1000000000ull + ts.tv_nsec;
-    static uint64_t time_origin = 0;
-    if (!time_origin) time_origin = now;
-    return double(now - time_origin) / 1.0e9;
+    if (!_time_origin) _time_origin = now;
+    return double(now - _time_origin) / 1.0e9;
   }
 
   void print_char(int c, uint32_t color) {

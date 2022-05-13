@@ -359,7 +359,7 @@ ninja.rule(name="compile_cpp_ems",
            depfile="${out}.d")
 
 ninja.rule(name="link_ems",
-           command="emcc ${in} -sNO_DISABLE_EXCEPTION_CATCHING -sTOTAL_STACK=32MB -sINITIAL_MEMORY=64MB --preload-file scratch.h --preload-file examples -o ${out}")
+           command="emcc ${in} -sEXPORTED_RUNTIME_METHODS=callMain -sNO_DISABLE_EXCEPTION_CATCHING -sTOTAL_STACK=32MB -sINITIAL_MEMORY=64MB --preload-file scratch.h --preload-file examples -o ${out}")
 
 
 treesitter_objs_wasi = [];

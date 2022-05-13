@@ -1,57 +1,70 @@
+var term = new Terminal({
+  //rows:60,
+  //cols:140,
+  fontSize: 14,
+  //fontFamily: "Roboto Mono", // xterm.js 3 acts weird if it has to load a font
+  convertEol: true,
+  theme: {
+    background: '#333'
+  },
+  scrollback: 9999,
+});
 
-function encode(s, len, mem, offset) {
-  let buf = new Uint8Array(mem.buffer);
-  for (let i = 0; i < len; i++) {
-    buf[offset++] = s.charCodeAt(i);
-  }
-  buf[offset] = 0;
+const fitAddon = new FitAddon();
+term.loadAddon(fitAddon);
+term.open(document.getElementById('log'));
+fitAddon.fit();
+
+window.addEventListener('resize', () => fitAddon.fit());
+
+var Module = {};
+Module.preRun = [];
+Module.postRun = [];
+
+var element = document.getElementById('output');
+if (element) element.value = ''; // clear browser cache
+
+Module.print = function (text) {
+  term.write(text + "\n");
+};
+
+Module.setStatus = function (text) {
+  term.write(`Emscripten status : ${text}\n`);
 }
 
-function decode(mem, offset, len) {
-  let buf = new Uint8Array(mem.buffer);
-  let s = "";
-  for (let i = 0; i < len; i++) {
-    s += String.fromCharCode(buf[offset++]);
-  }
-  return s;
+Module.totalDependencies = 0;
+
+Module.onRuntimeInitialized = function () {
+  console.log("init!\n");
 }
 
-let memory;
-let bundle;
-
-async function main() {
-  memory = new WebAssembly.Memory({initial:1000, maximum:1000});
-  WasiStub.memory = memory;
-  const wasi_env = {
-    env: { memory },
-    wasi_snapshot_preview1: WasiStub,
+window.onerror = function () {
+  Module.setStatus('Exception thrown, see JavaScript console');
+  Module.setStatus = function (text) {
+    if (text) console.error('[post-exception status] ' + text);
   };
+  term.write('Exception thrown, see JavaScript console');
+};
 
-  bundle = await WebAssembly.instantiateStreaming(fetch("./bin/test.wasm"), wasi_env);
-  document.getElementById("convert").onclick = () => convert();
+Module.arguments = ["-v", "-e", "-c", "-r", "examples/uart/metron", "uart_top.h"];
+
+Module.locateFile = function (path, prefix) {
+  return "bin/" + path;
 }
 
-function convert() {
-  let log = document.getElementById("log");
-  log.innerText = "";
-
-  console.log("convert");
-  let src = document.getElementById("src");
-  let dst = document.getElementById("dst");
-  const ptr = bundle.instance.exports.malloc(1024);
-  console.log(src.innerText);
-  encode(src.innerText, src.innerText.length, memory, ptr);
-  bundle.instance.exports.metron_test(ptr, src.innerText.length);
-  bundle.instance.exports.free(ptr);
+function main() {
+  console.log("main()");
 }
 
+document.body.onload = () => main();
 
+Module.noInitialRun = true;
 
-//convert();
-//
-/*
-document.getElementById("src").addEventListener("input", function() {
-  convert();
-}, false);
-convert();
-*/
+document.getElementById("convert").onclick = () => {
+  term.clear();
+  document.getElementById("src").innerText = new TextDecoder().decode(FS.readFile("scratch.h"));
+  //Module.callMain(["-v", "-e", "-c", "-r", "examples/uart/metron", "uart_top.h"]);
+  Module.callMain(["-v", "-e", "-c", "scratch.h"]);
+  document.getElementById("dst").innerText = new TextDecoder().decode(FS.readFile("scratch.sv"));
+
+};

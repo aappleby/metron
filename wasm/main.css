@@ -15,25 +15,34 @@ body {
   height: 98%;
   width: 98%;
 
-  font-size: 12px;
+  font-size: 13px;
   font-family: 'Roboto Mono', monospace;
   color: #CCC;
   background-color: #222;
 }
 
-pre {
-  font-size: 12px;
-  font-family: 'Roboto Mono', monospace;
-}
-
 .container {
   display: grid;
   height: 90vh;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 2fr 3fr 2fr;
   grid-column-gap: 1%;
 }
 
-.item {
+#src {
+  font-family: 'Roboto Mono', monospace;
+  background-color: #333;
+  border: solid black 2px;
+  padding: 3px;
+}
+
+#log {
+  background-color: #333;
+  border: solid black 2px;
+  padding: 3px;
+}
+
+#dst {
+  font-family: 'Roboto Mono', monospace;
   background-color: #333;
   border: solid black 2px;
   padding: 3px;

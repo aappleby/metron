@@ -27,7 +27,11 @@
 			"initializer_list": "cpp",
 			"regex": "cpp",
 			"utility": "cpp",
-			"functional": "cpp"
+			"functional": "cpp",
+			"memory": "cpp",
+			"random": "cpp",
+			"memory_resource": "cpp",
+			"optional": "cpp"
 		},
 	}
 }

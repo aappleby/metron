@@ -20,14 +20,10 @@ struct MtContext {
   MtContext(MtModule* top_mod);
   MtContext(MtContext* parent, MtMethod* _method);
   MtContext(MtContext* parent, MtField* _field);
+  ~MtContext();
 
   static MtContext* param(MtContext* parent, const std::string& name);
   static MtContext* construct_return(MtContext* parent);
-
-  ~MtContext() {
-    for (auto c : children) delete c;
-    children.clear();
-  }
 
   MtContext* clone();
   std::string get_path() const;

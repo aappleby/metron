@@ -14,6 +14,7 @@ struct MtField;
 
 struct MtMethod {
   MtMethod(MtModule* mod, MnNode n, bool is_public);
+  ~MtMethod();
 
   const char* cname() const;
   std::string name() const;

@@ -1,40 +1,89 @@
-<!DOCTYPE html>
-<html>
-
-<script src="wasi_stub.js"></script>
-<script src="main.js"></script>
-<script type="module">
-  window.onload = () => main();
-</script>
+<!doctype html>
+<html lang="en-us">
 
 <head>
-  <link rel="stylesheet" href="main.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap" rel="stylesheet">
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Emscripten-Generated Code</title>
+  <link rel="stylesheet" href="xterm/xterm.css" />
+  <script src="xterm/xterm.js"></script>
+  <style>
+    .emscripten {
+      height: 90vh;
+      padding-right: 0;
+      margin-left: auto;
+      margin-right: auto;
+      display: block;
+    }
+
+    textarea.emscripten {
+      font-family: monospace;
+      width: 80%;
+    }
+
+    div.emscripten {
+      text-align: center;
+    }
+
+    div.emscripten_border {
+      border: 1px solid black;
+    }
+  </style>
 </head>
 
 <body>
-  <button id="convert" type="button">Convert</button>
-  <pre id="intro" contenteditable="true">Instructions go here<p></pre>
+  <div id="terminal"></div>
+  <div id="output"></div>
+  <script type='text/javascript'>
+    var term = new Terminal({
+      rows:60,
+      cols:140,
+      fontFamily: 'Roboto Mono',
+      fontSize: 12,
+      convertEol: true,
+      theme: {
+        background: '#333'
+      }
+    });
+    term.open(document.getElementById('terminal'));
 
-  <div class="container">
-    <div class="item">
-      <pre id="src" contenteditable="true">
-class Module {
-  int get_signal() { return 2; }
-};
-      </pre>
-    </div>
-    <div class="item">
-      <pre id="log" contenteditable="true">log</pre>
+    var Module = {};
+    Module.preRun = [];
+    Module.postRun = [];
 
-    </div>
-    <div class="item">
-      <pre id="dst" contenteditable="true">output</pre>
-    </div>
-  </div>
+    var element = document.getElementById('output');
+    if (element) element.value = ''; // clear browser cache
 
+    Module.print = function (text) {
+      term.write(text + "\n");
+    };
+
+    Module.setStatus = function (text) {
+      term.write(`Emscripten status : ${text}\n`);
+    }
+
+    Module.totalDependencies = 0;
+
+    Module.onRuntimeInitialized = function () {
+      console.log("init!\n");
+    }
+
+    window.onerror = function () {
+      Module.setStatus('Exception thrown, see JavaScript console');
+      Module.setStatus = function (text) {
+        if (text) console.error('[post-exception status] ' + text);
+      };
+      term.write('Exception thrown, see JavaScript console');
+    };
+
+    Module.arguments = ["-v", "-e", "-c", "-r", "examples/uart/metron", "uart_top.h"];
+
+    Module.locateFile = function (path, prefix) {
+      return "bin/" + path;
+    }
+
+  </script>
+  <script async="" type="text/javascript" src="bin/metron.js"></script>
 </body>
 
 </html>

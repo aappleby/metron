@@ -30,17 +30,20 @@ CHECK_RETURN Err MtSourceFile::init(MtModLibrary* _lib,
   source = (const char*)src_blob.data();
   source_end = source + blob_size;
 
+
   // Parse the source file.
 
   parser = ts_parser_new();
   lang = tree_sitter_cpp();
   ts_parser_set_language(parser, lang);
+
   tree = ts_parser_parse_string(parser, NULL, source, (uint32_t)blob_size);
 
   // Pull out all modules from the top level of the source.
 
   TSNode ts_root = ts_tree_root_node(tree);
   auto root_sym = ts_node_symbol(ts_root);
+
   root_node = MnNode(MnNode(ts_root, root_sym, 0, this));
 
   assert(modules.empty());

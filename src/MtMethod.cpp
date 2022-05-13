@@ -24,6 +24,11 @@ MtMethod::MtMethod(MtModule* mod, MnNode n, bool is_public) {
 
 //------------------------------------------------------------------------------
 
+MtMethod::~MtMethod() {
+}
+
+//------------------------------------------------------------------------------
+
 const char* MtMethod::cname() const { return _name.c_str(); }
 
 std::string MtMethod::name() const { return _name; }

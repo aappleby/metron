@@ -2,6 +2,17 @@
 #include <string.h>
 #include <stdlib.h>
 
+extern "C" {
+  int blah() {
+    return 8;
+  }
+}
+
+int main(int argc, char** argv) {
+  printf("Hello Emscripten World!\n");
+}
+
+#if 0
 #include "Log.h"
 #include "MtCursor.h"
 #include "MtSourceFile.h"
@@ -244,3 +255,4 @@ __attribute__((export_name("metron_test"))) void metron_test(void* src_blob, int
   metron_test2(src_blob, src_len);
   //metron_test2(src_blob, src_len);
 }
+#endif

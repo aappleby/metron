@@ -11,6 +11,9 @@
 #include "submodules/CLI11/include/CLI/Config.hpp"
 #include "submodules/CLI11/include/CLI/Formatter.hpp"
 
+#include <dirent.h>
+#include <stdio.h>
+
 //#include "../scratch.h"
 
 #pragma warning(disable : 4996)
@@ -50,6 +53,21 @@ void mkdir_all(const std::vector<std::string>& full_path) {
 //------------------------------------------------------------------------------
 
 int main(int argc, char** argv) {
+  /*
+  {
+    DIR *d;
+    struct dirent *dir;
+    d = opendir(".");
+    if (d) {
+      while ((dir = readdir(d)) != NULL) {
+        printf("%s\n", dir->d_name);
+      }
+      closedir(d);
+    }
+    exit(0);
+  }
+  */
+
   const char* banner =
       "                                                        \n"
       " ###    ### ####### ######## ######   ######  ###    ## \n"
@@ -109,6 +127,7 @@ int main(int argc, char** argv) {
   }
   LOG_B("\n");
 
+
   //----------
   // Load all source files.
 
@@ -127,6 +146,7 @@ int main(int argc, char** argv) {
     MtSourceFile* source;
     err << lib.load_source(name.c_str(), source, verbose);
   }
+
   if (err.has_err()) {
     LOG_R("Exiting due to error\n");
     return -1;
@@ -187,6 +207,7 @@ int main(int argc, char** argv) {
     ctx->assign_state_to_field(mod);
     err << ctx->check_done();
     if (err.has_err()) exit(-1);
+    delete ctx;
     LOG_DEDENT();
   }
 

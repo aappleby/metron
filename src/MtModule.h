@@ -20,6 +20,7 @@ typedef std::vector<uint8_t> blob;
 
 struct MtModule {
   MtModule(MtModLibrary* lib) : lib(lib) {}
+  ~MtModule();
 
   const char* cname() const { return mod_name.c_str(); }
   std::string name() const { return mod_name; }
@@ -67,6 +68,7 @@ struct MtModule {
   std::vector<MtField*> all_fields;
   std::vector<MtField*> all_enums;
   std::vector<MtMethod*> all_methods;
+  std::vector<MtFuncParam*> input_method_params;
 
   //----------
 
@@ -88,7 +90,6 @@ struct MtModule {
   std::vector<MtField*> output_signals;
   std::vector<MtField*> output_registers;
 
-  std::vector<MtFuncParam*> input_method_params;
   std::vector<MtMethod*> output_method_returns;
 
   std::vector<MtField*> components;

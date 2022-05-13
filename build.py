@@ -79,19 +79,19 @@ ninja.build(outputs="build.ninja",
 divider("Rules")
 
 ninja.rule(name="compile_cpp",
-           command="g++ -rdynamic -g ${opt} -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
+           command="g++ -fsanitize=address -rdynamic -g ${opt} -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
            deps="gcc",
            depfile="${out}.d")
 
 ninja.rule(name="compile_c",
-           command="gcc -rdynamic -g ${opt} ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
+           command="gcc -fsanitize=address -rdynamic -g ${opt} ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
            deps="gcc",
            depfile="${out}.d")
 
 ninja.rule(name="static_lib",    command="ar rcs ${out} ${in} > /dev/null")
 
 ninja.rule(name="link",
-           command="g++ -rdynamic -g $opt ${in} -Wl,--whole-archive ${local_libs} -Wl,--no-whole-archive ${global_libs} -o ${out}")
+           command="g++ -fsanitize=address -rdynamic -g $opt ${in} -Wl,--whole-archive ${local_libs} -Wl,--no-whole-archive ${global_libs} -o ${out}")
 
 ninja.rule(name="metron", # yes, we run metron with quiet and verbose both on for test coverage
            command="bin/metron -q -v -r ${src_dir} -o ${dst_dir} -c ${src_top}")
@@ -327,6 +327,7 @@ def build_metron_app():
 # ------------------------------------------------------------------------------
 # Fetch and unpack the wasi-sysroot library
 
+"""
 ninja.variable(key="wasi_sysroot_url",
                value="https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-14/wasi-sysroot-14.0.tar.gz")
 
@@ -340,13 +341,117 @@ ninja.build(outputs="wasi-sysroot",
             rule="command",
             inputs=[],
             command="wget -q $wasi_sysroot_url && tar -xf $wasi_sysroot_tar && rm $wasi_sysroot_tar")
+"""
+
+# ------------------------------------------------------------------------------
+# Emscriptenization
+
+# Not including a -O2 or -Os causes Emscripten's memory use to blow up :/
+
+ninja.rule(name="compile_c_ems",
+           command="emcc -sNO_DISABLE_EXCEPTION_CATCHING -O2 ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
+           deps="gcc",
+           depfile="${out}.d")
+
+ninja.rule(name="compile_cpp_ems",
+           command="emcc -sNO_DISABLE_EXCEPTION_CATCHING -O2 -std=c++2b ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
+           deps="gcc",
+           depfile="${out}.d")
+
+ninja.rule(name="link_ems",
+           command="emcc ${in} -sNO_DISABLE_EXCEPTION_CATCHING -sTOTAL_STACK=32MB -sINITIAL_MEMORY=64MB --preload-file scratch.h --preload-file examples -o ${out}")
+
+
+treesitter_objs_wasi = [];
+
+def build_treesitter_ems():
+    divider("TreeSitter libraries emscripten")
+
+    treesitter_srcs = [
+        "submodules/tree-sitter/lib/src/lib.c",
+        "submodules/tree-sitter-cpp/src/parser.c",
+        "submodules/tree-sitter-cpp/src/scanner.cc",
+    ]
+
+    for n in treesitter_srcs:
+        o = path.join("wasm/obj", swap_ext(n, ".o"))
+        ninja.build(
+            o,
+            "compile_c_ems",
+            n,
+            includes=[
+                "-Isubmodules/tree-sitter/lib/include",
+                "-Isubmodules/tree-sitter/lib/src",
+            ]
+        )
+        treesitter_objs_wasi.append(o)
+
+build_treesitter_ems()
+
+def cpp_binary2(bin_name, rule_compile, rule_link, src_files, src_objs, obj_dir, deps=None, link_deps=None, **kwargs):
+    if src_objs is None:
+        src_objs = []
+    if deps is None:
+        deps = []
+    if link_deps is None:
+        link_deps = []
+
+    divider(f"Compile {bin_name} using {rule_compile} and {rule_link}")
+
+    # Tack -I onto the includes
+    if kwargs["includes"] is not None:
+        kwargs["includes"] = ["-I" + path for path in kwargs["includes"]]
+
+    for n in src_files:
+        obj_name = path.join(obj_dir, swap_ext(n, ".o"))
+        ninja.build(outputs=obj_name,
+                    rule=rule_compile,
+                    inputs=n,
+                    implicit=deps,
+                    variables=kwargs)
+        src_objs.append(obj_name)
+    ninja.build(outputs=bin_name,
+                rule=rule_link,
+                inputs=src_objs + link_deps,
+                variables=kwargs)
+
+cpp_binary2(
+    bin_name="wasm/bin/metron.html",
+    rule_compile="compile_cpp_ems",
+    rule_link="link_ems",
+    src_files=[
+        "src/MetronApp.cpp",
+        "src/Platform.cpp",
+        "src/Err.cpp",
+        "src/MtChecker.cpp",
+        "src/MtContext.cpp",
+        "src/MtCursor.cpp",
+        "src/MtField.cpp",
+        "src/MtFuncParam.cpp",
+        "src/MtMethod.cpp",
+        "src/MtModLibrary.cpp",
+        "src/MtModParam.cpp",
+        "src/MtModule.cpp",
+        "src/MtNode.cpp",
+        "src/MtSourceFile.cpp",
+        "src/MtTracer.cpp",
+        "src/MtUtils.cpp",
+    ],
+    src_objs=treesitter_objs_wasi,
+    obj_dir = "wasm/obj",
+    includes=[
+        ".",
+        "src",
+        "submodules/tree-sitter/lib/include"
+    ],
+)
 
 # ------------------------------------------------------------------------------
 # Compile Metron into a WASM library that depends on WASI.
 
 #clang --target=wasm32-unknown-wasi --sysroot ~/wasi/share/wasi-sysroot/ -o test.o -c test.c
 #wasm-ld -m wasm32 -Lwasi-sysroot/lib/wasm32-wasi --import-memory --no-entry test.o -lc libclang_rt.builtins-wasm32.a -o test.wasm
-
+"""
 ninja.rule(name="compile_c_wasi",
            command="clang -g --target=wasm32-unknown-wasi --sysroot wasi-sysroot ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
            deps="gcc",
@@ -361,9 +466,6 @@ ninja.rule(name="link_wasi",
            command="wasm-ld -m wasm32 -Lwasi-sysroot/lib/wasm32-wasi --import-memory --no-entry -lc -lc++ -lc++abi wasm/libclang_rt.builtins-wasm32.a ${in} -o ${out}")
 
 def cpp_binary_wasi(bin_name, src_files, src_objs=None, deps=None, link_deps=None, **kwargs):
-    """
-    Compiles a C++ binary from the given source files.
-    """
     if src_objs is None:
         src_objs = []
     if deps is None:
@@ -445,6 +547,7 @@ cpp_binary_wasi(bin_name="wasm/bin/test.wasm",
                 ],
                 src_objs=treesitter_objs_wasi,
                 )
+"""
 
 # ------------------------------------------------------------------------------
 # Low-level tests

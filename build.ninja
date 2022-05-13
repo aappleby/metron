@@ -11,20 +11,21 @@ build build.ninja: autoupdate build.py
 # Rules
 
 rule compile_cpp
-  command = g++ -rdynamic -g ${opt} -std=gnu++2a ${includes} -MMD -MF $
-      ${out}.d -c ${in} -o ${out}
+  command = g++ -fsanitize=address -rdynamic -g ${opt} -std=gnu++2a $
+      ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}
   depfile = ${out}.d
   deps = gcc
 rule compile_c
-  command = gcc -rdynamic -g ${opt} ${includes} -MMD -MF ${out}.d -c ${in} $
-      -o ${out}
+  command = gcc -fsanitize=address -rdynamic -g ${opt} ${includes} -MMD -MF $
+      ${out}.d -c ${in} -o ${out}
   depfile = ${out}.d
   deps = gcc
 rule static_lib
   command = ar rcs ${out} ${in} > /dev/null
 rule link
-  command = g++ -rdynamic -g $opt ${in} -Wl,--whole-archive ${local_libs} $
-      -Wl,--no-whole-archive ${global_libs} -o ${out}
+  command = g++ -fsanitize=address -rdynamic -g $opt ${in} $
+      -Wl,--whole-archive ${local_libs} -Wl,--no-whole-archive $
+      ${global_libs} -o ${out}
 rule metron
   command = bin/metron -q -v -r ${src_dir} -o ${dst_dir} -c ${src_top}
 rule verilator
@@ -46,88 +47,79 @@ rule nextpnr-ice40
       --asc ${out} --pcf ${pcf}
 rule icepack
   command = icepack ${in} ${out}
-wasi_sysroot_url = $
-    https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-14/wasi-sysroot-14.0.tar.gz
-wasi_sysroot_tar = wasi-sysroot-14.0.tar.gz
-rule command
-  command = ${command}
-build wasi-sysroot: command
-  command = wget -q $wasi_sysroot_url && tar -xf $wasi_sysroot_tar && rm $
-      $wasi_sysroot_tar
-rule compile_c_wasi
-  command = clang -g --target=wasm32-unknown-wasi --sysroot wasi-sysroot $
-      ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}
+rule compile_c_ems
+  command = emcc -sNO_DISABLE_EXCEPTION_CATCHING -O2 ${includes} -MMD -MF $
+      ${out}.d -c ${in} -o ${out}
   depfile = ${out}.d
   deps = gcc
-rule compile_cpp_wasi
-  command = clang++ -g -fno-exceptions --target=wasm32-unknown-wasi $
-      --sysroot wasi-sysroot -std=gnu++2a ${includes} -MMD -MF ${out}.d -c $
-      ${in} -o ${out}
+rule compile_cpp_ems
+  command = emcc -sNO_DISABLE_EXCEPTION_CATCHING -O2 -std=c++2b ${includes} $
+      -MMD -MF ${out}.d -c ${in} -o ${out}
   depfile = ${out}.d
   deps = gcc
-rule link_wasi
-  command = wasm-ld -m wasm32 -Lwasi-sysroot/lib/wasm32-wasi $
-      --import-memory --no-entry -lc -lc++ -lc++abi $
-      wasm/libclang_rt.builtins-wasm32.a ${in} -o ${out}
+rule link_ems
+  command = emcc ${in} -sNO_DISABLE_EXCEPTION_CATCHING -sTOTAL_STACK=32MB $
+      -sINITIAL_MEMORY=64MB --preload-file scratch.h --preload-file $
+      examples -o ${out}
 
 
 ################################################################################
-# TreeSitter libraries wasi
+# TreeSitter libraries emscripten
 
-build wasm/obj/submodules/tree-sitter/lib/src/lib.o: compile_c_wasi $
+build wasm/obj/submodules/tree-sitter/lib/src/lib.o: compile_c_ems $
     submodules/tree-sitter/lib/src/lib.c
   includes = -Isubmodules/tree-sitter/lib/include $
       -Isubmodules/tree-sitter/lib/src
-build wasm/obj/submodules/tree-sitter-cpp/src/parser.o: compile_c_wasi $
+build wasm/obj/submodules/tree-sitter-cpp/src/parser.o: compile_c_ems $
     submodules/tree-sitter-cpp/src/parser.c
   includes = -Isubmodules/tree-sitter/lib/include $
       -Isubmodules/tree-sitter/lib/src
-build wasm/obj/submodules/tree-sitter-cpp/src/scanner.o: compile_c_wasi $
+build wasm/obj/submodules/tree-sitter-cpp/src/scanner.o: compile_c_ems $
     submodules/tree-sitter-cpp/src/scanner.cc
   includes = -Isubmodules/tree-sitter/lib/include $
       -Isubmodules/tree-sitter/lib/src
 
 
 ################################################################################
-# Compile wasm/bin/test.wasm
+# Compile wasm/bin/metron.html using compile_cpp_ems and link_ems
 
-build wasm/obj/wasm/metron_wasi.o: compile_cpp_wasi wasm/metron_wasi.cpp
+build wasm/obj/src/MetronApp.o: compile_cpp_ems src/MetronApp.cpp
   includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
-build wasm/obj/src/Platform.o: compile_cpp_wasi src/Platform.cpp
+build wasm/obj/src/Platform.o: compile_cpp_ems src/Platform.cpp
   includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
-build wasm/obj/src/Err.o: compile_cpp_wasi src/Err.cpp
+build wasm/obj/src/Err.o: compile_cpp_ems src/Err.cpp
   includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
-build wasm/obj/src/MtChecker.o: compile_cpp_wasi src/MtChecker.cpp
+build wasm/obj/src/MtChecker.o: compile_cpp_ems src/MtChecker.cpp
   includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
-build wasm/obj/src/MtContext.o: compile_cpp_wasi src/MtContext.cpp
+build wasm/obj/src/MtContext.o: compile_cpp_ems src/MtContext.cpp
   includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
-build wasm/obj/src/MtCursor.o: compile_cpp_wasi src/MtCursor.cpp
+build wasm/obj/src/MtCursor.o: compile_cpp_ems src/MtCursor.cpp
   includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
-build wasm/obj/src/MtField.o: compile_cpp_wasi src/MtField.cpp
+build wasm/obj/src/MtField.o: compile_cpp_ems src/MtField.cpp
   includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
-build wasm/obj/src/MtFuncParam.o: compile_cpp_wasi src/MtFuncParam.cpp
+build wasm/obj/src/MtFuncParam.o: compile_cpp_ems src/MtFuncParam.cpp
   includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
-build wasm/obj/src/MtMethod.o: compile_cpp_wasi src/MtMethod.cpp
+build wasm/obj/src/MtMethod.o: compile_cpp_ems src/MtMethod.cpp
   includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
-build wasm/obj/src/MtModLibrary.o: compile_cpp_wasi src/MtModLibrary.cpp
+build wasm/obj/src/MtModLibrary.o: compile_cpp_ems src/MtModLibrary.cpp
   includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
-build wasm/obj/src/MtModParam.o: compile_cpp_wasi src/MtModParam.cpp
+build wasm/obj/src/MtModParam.o: compile_cpp_ems src/MtModParam.cpp
   includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
-build wasm/obj/src/MtModule.o: compile_cpp_wasi src/MtModule.cpp
+build wasm/obj/src/MtModule.o: compile_cpp_ems src/MtModule.cpp
   includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
-build wasm/obj/src/MtNode.o: compile_cpp_wasi src/MtNode.cpp
+build wasm/obj/src/MtNode.o: compile_cpp_ems src/MtNode.cpp
   includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
-build wasm/obj/src/MtSourceFile.o: compile_cpp_wasi src/MtSourceFile.cpp
+build wasm/obj/src/MtSourceFile.o: compile_cpp_ems src/MtSourceFile.cpp
   includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
-build wasm/obj/src/MtTracer.o: compile_cpp_wasi src/MtTracer.cpp
+build wasm/obj/src/MtTracer.o: compile_cpp_ems src/MtTracer.cpp
   includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
-build wasm/obj/src/MtUtils.o: compile_cpp_wasi src/MtUtils.cpp
+build wasm/obj/src/MtUtils.o: compile_cpp_ems src/MtUtils.cpp
   includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
-build wasm/bin/test.wasm: link_wasi $
+build wasm/bin/metron.html: link_ems $
     wasm/obj/submodules/tree-sitter/lib/src/lib.o $
     wasm/obj/submodules/tree-sitter-cpp/src/parser.o $
     wasm/obj/submodules/tree-sitter-cpp/src/scanner.o $
-    wasm/obj/wasm/metron_wasi.o wasm/obj/src/Platform.o wasm/obj/src/Err.o $
+    wasm/obj/src/MetronApp.o wasm/obj/src/Platform.o wasm/obj/src/Err.o $
     wasm/obj/src/MtChecker.o wasm/obj/src/MtContext.o $
     wasm/obj/src/MtCursor.o wasm/obj/src/MtField.o $
     wasm/obj/src/MtFuncParam.o wasm/obj/src/MtMethod.o $

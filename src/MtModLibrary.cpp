@@ -35,9 +35,7 @@ MtSourceFile *MtModLibrary::get_source(const std::string &name) {
 
 void MtModLibrary::teardown() {
   modules.clear();
-  for (auto s : source_files) {
-    delete s;
-  }
+  for (auto s : source_files) delete s;
 }
 
 //------------------------------------------------------------------------------
@@ -88,6 +86,7 @@ CHECK_RETURN Err MtModLibrary::load_source(const char *filename,
         src_blob.erase(src_blob.begin(), src_blob.begin() + 3);
       }
       err << load_blob(filename, full_path, src_blob.data(), src_blob.size(), use_utf8_bom, verbose);
+
       break;
     }
   }

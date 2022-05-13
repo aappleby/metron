@@ -27,6 +27,16 @@ static MtField *construct(MtModule *mod, const MnNode &n, bool is_public) {
 
 //------------------------------------------------------------------------------
 
+MtModule::~MtModule() {
+  for (auto p : all_modparams) delete p;
+  for (auto f : all_fields) delete f;
+  for (auto e : all_enums) delete e;
+  for (auto m : all_methods) delete m;
+  for (auto i : input_method_params) delete i;
+}
+
+//------------------------------------------------------------------------------
+
 CHECK_RETURN Err MtModule::init(MtSourceFile *_source_file, MnNode _node) {
   Err err;
 

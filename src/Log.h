@@ -31,7 +31,6 @@ struct TinyLog {
   }
 
   void set_color(uint32_t color) {
-    /*
     if (color != _color) {
       if (color) {
         printf("\u001b[38;2;%d;%d;%dm", (color >> 0) & 0xFF,
@@ -44,7 +43,6 @@ struct TinyLog {
       }
       _color = color;
     }
-    */
   }
 
 

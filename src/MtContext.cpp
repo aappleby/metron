@@ -58,6 +58,15 @@ MtContext::MtContext(MtContext *_parent, MtField *_field) {
   log_next = {CTX_NONE};
 }
 
+//------------------------------------------------------------------------------
+
+MtContext::~MtContext() {
+  for (auto c : children) delete c;
+  children.clear();
+}
+
+//------------------------------------------------------------------------------
+
 MtContext *MtContext::param(MtContext *_parent, const std::string &_name) {
   assert(_parent);
   assert(_name.size());

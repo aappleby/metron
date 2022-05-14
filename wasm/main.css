@@ -29,7 +29,7 @@ div {
 
 pre {
   margin: 0px;
-  padding: 2px;
+  padding: 0px;
   overflow: auto;
   white-space: pre-wrap;
 }

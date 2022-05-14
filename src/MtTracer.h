@@ -12,7 +12,7 @@ struct MtMethod;
 
 class MtTracer {
  public:
-  MtTracer(MtModLibrary* lib, MtContext* root) : lib(lib), ctx_root(root) {}
+  MtTracer(MtModLibrary* lib, MtContext* root, bool verbose) : lib(lib), ctx_root(root), verbose(verbose) {}
 
   CHECK_RETURN Err log_action(MtContext* method_ctx, MtContext* dst_ctx,
                               ContextAction action, SourceRange source);
@@ -51,6 +51,7 @@ class MtTracer {
 
   MtModLibrary* lib;
   MtContext* ctx_root;
+  bool verbose;
 };
 
 //------------------------------------------------------------------------------

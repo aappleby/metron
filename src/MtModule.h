@@ -45,7 +45,7 @@ struct MtModule {
   CHECK_RETURN Err trace();
   CHECK_RETURN Err build_call_graph();
 
-  CHECK_RETURN Err categorize_fields();
+  CHECK_RETURN Err categorize_fields(bool verbose);
 
   bool needs_tick() const;
   bool needs_tock() const;

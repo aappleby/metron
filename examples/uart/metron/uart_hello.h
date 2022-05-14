@@ -7,7 +7,7 @@
 
 template <int repeat_msg = 0>
 class uart_hello {
- public:
+public:
   uart_hello() { readmemh("examples/uart/message.hex", _memory, 0, 511); }
 
   logic<8> data() const { return _data; }
@@ -35,7 +35,7 @@ class uart_hello {
     }
   }
 
- private:
+private:
   //----------------------------------------
 
   static const int message_len = 512;

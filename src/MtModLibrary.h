@@ -25,7 +25,7 @@ struct MtModLibrary {
                              void* src_blob, int src_len, bool use_utf8_bom,
                              bool verbose);
 
-  CHECK_RETURN Err categorize_methods();
+  CHECK_RETURN Err categorize_methods(bool verbose);
 
   MtModule* get_module(const std::string& module_name);
   MtSourceFile* get_source(const std::string& filename);

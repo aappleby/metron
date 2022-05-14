@@ -16,7 +16,7 @@ module uart_hello
   input logic tick_i_cts,
   input logic tick_i_idle
 );
- /*public:*/
+/*public:*/
   initial begin $readmemh("examples/uart/message.hex", _memory, 0, 511); end
 
   function logic[7:0] data();  data = _data; endfunction
@@ -48,7 +48,7 @@ module uart_hello
   endtask
   always_ff @(posedge clock) tick(tick_i_rstn, tick_i_cts, tick_i_idle);
 
- /*private:*/
+/*private:*/
   //----------------------------------------
 
   localparam int message_len = 512;

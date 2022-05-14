@@ -55,21 +55,6 @@ void mkdir_all(const std::vector<std::string>& full_path) {
 int main(int argc, char** argv) {
   TinyLog::get().reset();
 
-  /*
-  {
-    DIR *d;
-    struct dirent *dir;
-    d = opendir(".");
-    if (d) {
-      while ((dir = readdir(d)) != NULL) {
-        printf("%s\n", dir->d_name);
-      }
-      closedir(d);
-    }
-    exit(0);
-  }
-  */
-
   const char* banner =
       "                                                        \n"
       " ###    ### ####### ######## ######   ######  ###    ## \n"
@@ -85,7 +70,7 @@ int main(int argc, char** argv) {
   bool quiet = false;
   bool echo = false;
   bool dump = false;
-  bool convert = false;
+  bool save = false;
   bool verbose = false;
   std::string src_root;
   std::string out_root;
@@ -94,7 +79,7 @@ int main(int argc, char** argv) {
   // clang-format off
   app.add_flag  ("-q,--quiet",    quiet,        "Quiet mode");
   app.add_flag  ("-v,--verbose",  verbose,      "Print detailed stats about the source modules.");
-  app.add_flag  ("-c,--convert",  convert,      "Convert sources to SystemVerilog. If not specified, will only check inputs for convertibility.");
+  app.add_flag  ("-s,--save",     save,         "Save converted source. If not specified, will only check inputs for convertibility.");
   app.add_flag  ("-e,--echo",     echo,         "Echo the converted source back to the terminal, with color-coding.");
   app.add_flag  ("--dump",        dump,         "Dump the syntax tree of the source file(s) to the console.");
   app.add_option("-r,--src_root", src_root,     "Root directory of the source to convert");
@@ -104,14 +89,7 @@ int main(int argc, char** argv) {
 
   CLI11_PARSE(app, argc, argv);
 
-  // quiet = false;
-
-  // -r examples/uart/metron uart_top.h
-  // -r examples/rvtiny/metron toplevel.h
-  // -v -r examples/rvsimple/metron toplevel.h
-
   if (quiet) TinyLog::get().mute();
-  // TinyLog::get().mute();
 
   //----------
   // Startup info
@@ -119,7 +97,7 @@ int main(int argc, char** argv) {
   LOG_B("Metron v0.0.1\n");
   LOG_B("Quiet   %d\n", quiet);
   LOG_B("Echo    %d\n", echo);
-  LOG_B("Convert %d\n", convert);
+  LOG_B("Save    %d\n", save);
   LOG_B("Verbose %d\n", verbose);
   LOG_B("Source root '%s'\n", src_root.empty() ? "<empty>" : src_root.c_str());
   LOG_B("Output root '%s'\n", out_root.empty() ? "<empty>" : out_root.c_str());
@@ -128,7 +106,6 @@ int main(int argc, char** argv) {
     LOG_B("Header %s\n", name.c_str());
   }
   LOG_B("\n");
-
 
   //----------
   // Load all source files.
@@ -152,6 +129,12 @@ int main(int argc, char** argv) {
   if (err.has_err()) {
     LOG_R("Exiting due to error\n");
     return -1;
+  }
+
+  if (dump) {
+    for (auto& source_file : lib.source_files) {
+      source_file->root_node.dump_tree(0, 0, 255);
+    }
   }
 
   //----------------------------------------
@@ -194,47 +177,55 @@ int main(int argc, char** argv) {
   // Trace
 
   for (auto mod : lib.modules) {
-    LOG_G("Tracing %s\n", mod->cname());
-    LOG_INDENT();
+    if (verbose) {
+      LOG_G("Tracing %s\n", mod->cname());
+      LOG_INDENT();
+    }
     MtContext* ctx = new MtContext(mod);
     MtContext::instantiate(mod, ctx);
-    MtTracer tracer(&lib, ctx);
+    MtTracer tracer(&lib, ctx, verbose);
     for (auto method : mod->all_methods) {
       if (method->is_constructor()) continue;
       if (method->internal_callers.size()) continue;
-      LOG_G("Tracing %s.%s\n", mod->cname(), method->cname());
+      if (verbose) {
+        LOG_G("Tracing %s.%s\n", mod->cname(), method->cname());
+      }
       err << tracer.trace_method(ctx, method);
     }
-    ctx->dump_ctx_tree();
+    if (verbose) {
+      ctx->dump_ctx_tree();
+    }
     ctx->assign_state_to_field(mod);
     err << ctx->check_done();
     if (err.has_err()) exit(-1);
     delete ctx;
-    LOG_DEDENT();
+    if (verbose) {
+      LOG_DEDENT();
+    }
   }
 
   //----------
   // Categorize fields
 
-  LOG("Categorizing fields\n");
+  LOG_B("Categorizing fields\n");
   for (auto m : lib.modules) {
     LOG_INDENT_SCOPE();
-    err << m->categorize_fields();
+    err << m->categorize_fields(verbose);
   }
-  LOG("\n");
 
   if (err.has_err()) {
     LOG_R("Exiting due to error\n");
     return -1;
   }
+  LOG("\n");
 
   //----------
   // Categorize methods
 
-  LOG("Categorizing methods\n");
+  LOG_B("Categorizing methods\n");
   {
     LOG_INDENT_SCOPE();
-    err << lib.categorize_methods();
+    err << lib.categorize_methods(verbose);
   }
 
   int uncategorized = 0;
@@ -250,17 +241,19 @@ int main(int argc, char** argv) {
     }
   }
 
-  LOG_G("Methods uncategorized %d\n", uncategorized);
-  LOG_G("Methods invalid %d\n", invalid);
+  if (verbose) {
+    LOG_G("Methods uncategorized %d\n", uncategorized);
+    LOG_G("Methods invalid %d\n", invalid);
+  }
 
   if (uncategorized || invalid) {
     err << ERR("Could not categorize all methods\n");
     exit(-1);
   }
 
-  LOG("\n");
-
-  for (auto m : lib.modules) m->dump();
+  if (verbose) {
+    for (auto m : lib.modules) m->dump();
+  }
 
   //----------------------------------------
   // Check for and report bad fields.
@@ -282,90 +275,67 @@ int main(int argc, char** argv) {
   }
 
   //----------------------------------------
-  // Print module stats
+  // Print module tree
 
-  if (verbose) {
-    LOG_Y("Module tree:\n");
-    std::function<void(MtModule*, int, bool)> step;
-    step = [&](MtModule* m, int rank, bool last) -> void {
-      for (int i = 0; i < rank - 1; i++) LOG_Y("|  ");
-      if (last) {
-        if (rank) LOG_Y("\\--");
-      } else {
-        if (rank) LOG_Y("|--");
-      }
-      LOG_Y("%s\n", m->name().c_str());
-      auto field_count = m->all_fields.size();
-      for (auto i = 0; i < field_count; i++) {
-        auto field = m->all_fields[i];
-        if (!field->is_component()) continue;
-        step(lib.get_module(field->type_name()), rank + 1,
-             i == field_count - 1);
-      }
-    };
-
-    for (auto m : lib.modules) {
-      if (m->refcount == 0) step(m, 0, false);
+  LOG_G("\n");
+  LOG_G("Module tree:\n");
+  LOG_INDENT();
+  std::function<void(MtModule*, int, bool)> step;
+  step = [&](MtModule* m, int rank, bool last) -> void {
+    for (int i = 0; i < rank - 1; i++) LOG_Y("|  ");
+    if (last) {
+      if (rank) LOG_Y("\\--");
+    } else {
+      if (rank) LOG_Y("|--");
     }
-    LOG_G("\n");
-  }
-
-  //----------
-  // Dump syntax trees if requested
-
-  if (dump) {
-    for (auto& source_file : lib.source_files) {
-      source_file->root_node.dump_tree(0, 0, 255);
+    LOG_Y("%s\n", m->name().c_str());
+    auto field_count = m->all_fields.size();
+    for (auto i = 0; i < field_count; i++) {
+      auto field = m->all_fields[i];
+      if (!field->is_component()) continue;
+      step(lib.get_module(field->type_name()), rank + 1,
+            i == field_count - 1);
     }
+  };
+
+  for (auto m : lib.modules) {
+    if (m->refcount == 0) step(m, 0, false);
   }
+  LOG_DEDENT();
+  LOG_G("\n");
 
   //----------
   // Emit all modules.
 
-  if (convert && out_root.empty()) {
-    LOG_R("No output root directory specified, using source root.\n");
-    out_root = src_root;
-  }
-
   for (auto& source_file : lib.source_files) {
-    LOG_G("Translating %s\n", source_file->full_path.c_str());
-
-    // Translate the source.
-    auto out_name = source_file->filename;
-    assert(out_name.ends_with(".h"));
-    out_name.resize(out_name.size() - 2);
-    auto out_path = out_root + "/" + out_name + ".sv";
-
-    if (out_root.size()) {
-      LOG_G("Converting %s -> %s\n", source_file->full_path.c_str(),
-            out_path.c_str());
-    }
+    LOG_G("Converting %s to SystemVerilog\n", source_file->full_path.c_str());
 
     std::string out_string;
     MtCursor cursor(&lib, source_file, nullptr, &out_string);
     cursor.echo = echo && !quiet;
 
-    if (echo) {
-      LOG_G("----------------------------------------\n\n");
-    }
-
+    if (echo) LOG_G("----------------------------------------\n\n");
     err << cursor.emit_everything();
+    if (echo) LOG_G("----------------------------------------\n\n");
+
     if (err.has_err()) {
       LOG_R("Error during code generation\n");
       exit(-1);
     }
 
-    if (echo) {
-      LOG_G("\n----------------------------------------\n");
-      LOG_G("Final converted source:\n\n");
-      // LOG_W("%s", out_string.c_str());
-      printf("%s", out_string.c_str());
-      LOG_G("\n----------------------------------------\n");
-    }
+    if (save) {
+      // Save translated source to output directory, if there is one.
+      if (out_root.empty()) {
+        LOG_Y("No output root directory specified, using source root.\n");
+        out_root = src_root;
+      }
 
-    // Save translated source to output directory, if there is one.
-    LOG_G("Saving %s\n", out_path.c_str());
-    if (convert && out_root.size()) {
+      auto out_name = source_file->filename;
+      assert(out_name.ends_with(".h"));
+      out_name.resize(out_name.size() - 2);
+      auto out_path = out_root + "/" + out_name + ".sv";
+
+      LOG_G("Saving %s\n", out_path.c_str());
       mkdir_all(split_path(out_path));
 
       FILE* out_file = fopen(out_path.c_str(), "wb");

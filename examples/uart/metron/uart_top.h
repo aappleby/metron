@@ -10,7 +10,7 @@
 
 template <int cycles_per_bit = 3, int repeat_msg = 0>
 class uart_top {
- public:
+public:
   logic<1> serial() { return tx.serial(); }
   logic<8> data() { return rx.buffer(); }
   logic<1> valid() { return rx.valid(); }
@@ -28,7 +28,7 @@ class uart_top {
   }
 
   //----------------------------------------
- private:
+private:
   uart_hello<repeat_msg> hello;
   uart_tx<cycles_per_bit> tx;
   uart_rx<cycles_per_bit> rx;

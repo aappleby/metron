@@ -3,7 +3,6 @@
 
 `include "metron_tools.sv"
 
-// clang-format off
 //==============================================================================
 
 module uart_tx
@@ -17,7 +16,7 @@ module uart_tx
   input logic[7:0] tick_i_data,
   input logic tick_i_req
 );
- /*public:*/
+/*public:*/
   initial begin
     cycle = 0;
     cursor = 0;
@@ -75,7 +74,7 @@ module uart_tx
   always_ff @(posedge clock) tick(tick_i_rstn, tick_i_data, tick_i_req);
 
   //----------------------------------------
- /*private:*/
+/*private:*/
   // 1 start bit, 8 data bits, 1 stop bit, 7 additional stop bits to guarantee
   // that recevier can resync between messages
   localparam int extra_stop_bits = 7;
@@ -88,6 +87,5 @@ module uart_tx
 endmodule
 
 //==============================================================================
-// clang-format on
 
 `endif // UART_TX_H

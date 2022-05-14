@@ -94,7 +94,7 @@ ninja.rule(name="link",
            command="g++ -fsanitize=address -rdynamic -g $opt ${in} -Wl,--whole-archive ${local_libs} -Wl,--no-whole-archive ${global_libs} -o ${out}")
 
 ninja.rule(name="metron", # yes, we run metron with quiet and verbose both on for test coverage
-           command="bin/metron -q -v -r ${src_dir} -o ${dst_dir} -c ${src_top}")
+           command="bin/metron -q -v -r ${src_dir} -o ${dst_dir} -s ${src_top}")
 
 ninja.rule(name="verilator",
            command="verilator ${includes} --cc ${src_top} -Mdir ${dst_dir}")
@@ -359,7 +359,7 @@ ninja.rule(name="compile_cpp_ems",
            depfile="${out}.d")
 
 ninja.rule(name="link_ems",
-           command="emcc ${in} -sEXPORTED_RUNTIME_METHODS=callMain -sNO_DISABLE_EXCEPTION_CATCHING -sTOTAL_STACK=32MB -sINITIAL_MEMORY=64MB --preload-file scratch.h --preload-file examples -o ${out}")
+           command="emcc ${in} -sEXPORTED_RUNTIME_METHODS=callMain -sNO_DISABLE_EXCEPTION_CATCHING -sTOTAL_STACK=32MB -sINITIAL_MEMORY=64MB --preload-file examples -o ${out}")
 
 
 treesitter_objs_wasi = [];

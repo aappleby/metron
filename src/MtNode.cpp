@@ -337,20 +337,25 @@ struct NodeDumper {
       if (color == -1)
         LOG_C(0x000000, "   ");
       else if (!stack_top)
-        LOG_C(color, "\261  ");
+        //LOG_C(color, "\261  ");
+        LOG_C(color, "|  ");
       else if (is_last)
-        LOG_C(color, "\261\315\315");
+        //LOG_C(color, "\261\315\315");
+        LOG_C(color, "|--");
       else
-        LOG_C(color, "\261\315\315");
+        //LOG_C(color, "\261\315\315");
+        LOG_C(color, "|--");
     }
 
     {
       auto color = node_to_color(n);
 
       if (n.child_count()) {
-        LOG_C(color, "\333 ");
+        //LOG_C(color, "\333 ");
+        LOG_C(color, "+ ");
       } else {
-        LOG_C(color, "\376 ");
+        //LOG_C(color, "\376 ");
+        LOG_C(color, "# ");
       }
 
       if (n.field) {

@@ -12,26 +12,36 @@
   <link rel="stylesheet" href="xterm/xterm.css" />
   <script src="xterm/xterm.js"></script>
   <script src="xterm/FitAddon.js"></script>
-
-  <style>
-  </style>
 </head>
 
-<body>
-  <div id="title">Metron C++ to Verilog Converter Demo</div>
-  <div id="intro">Instructions go here</div>
-  <select name="Source" id="selector">
-    <option value="volvo">Volvo</option>
-    <option value="saab">Saab</option>
-    <option value="mercedes">Mercedes</option>
-    <option value="audi">Audi</option>
-  </select>
-  <button id="convert" type="button">Convert</button>
-
-  <div class="container">
-    <div id="src" contenteditable="true">src</div>
-    <div class="item" id="log"></div>
-    <div id="dst" contenteditable="true">output</div>
+<body class="flex_y">
+  <div class="flex_x">
+    <div id="title" class="border" style="padding: 10px;">Metron C++ to Verilog Converter Demo</div>
+    <div id="intro" class="border" style="padding: 10px;">Instructions go here</div>
+  </div>
+  <div id="panels" class="flex_x flex_1">
+    <div id="col_src" class="flex_y flex_3">
+      <select id="src_selector" class="border ">
+        <option>examples/scratch.h</option>
+      </select>
+      <div id="src_controls" class="border flex_x">
+        <div class="flex_1"><input type="checkbox" id="opt_help">Help</div>
+        <div class="flex_1"><input type="checkbox" id="opt_echo">Echo</div>
+        <div class="flex_1"><input type="checkbox" id="opt_dump">Dump</div>
+        <div class="flex_1"><input type="checkbox" id="opt_quiet">Quiet</div>
+        <div class="flex_1"><input type="checkbox" id="opt_verbose">Verbose</div>
+        <div class="flex_1"><input type="checkbox" id="opt_save">Save</div>
+      </div>
+      <pre id="src_text" class="border flex_1" contenteditable="true">src</pre>
+    </div>
+    <div id="col_dst" class="flex_y flex_3">
+      <div id="dst_title" class="border">dest filename</div>
+      <pre id="dst_text" class="flex_1 border">output</pre>
+    </div>
+    <div id="col_log" class="flex_y flex_4">
+      <div id="log_cmdline" class="border">Metron Commandline</div>
+      <pre id="log_text" class="flex_1 border"></pre>
+    </div>
   </div>
 
   <script type="text/javascript" src="main.js"></script>

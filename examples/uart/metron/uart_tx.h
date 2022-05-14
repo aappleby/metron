@@ -3,12 +3,11 @@
 
 #include "metron_tools.h"
 
-// clang-format off
 //==============================================================================
 
 template <int cycles_per_bit = 4>
 class uart_tx {
- public:
+public:
   uart_tx() {
     cycle = 0;
     cursor = 0;
@@ -60,7 +59,7 @@ class uart_tx {
   }
 
   //----------------------------------------
- private:
+private:
   // 1 start bit, 8 data bits, 1 stop bit, 7 additional stop bits to guarantee
   // that recevier can resync between messages
   static const int extra_stop_bits = 7;
@@ -73,6 +72,5 @@ class uart_tx {
 };
 
 //==============================================================================
-// clang-format on
 
 #endif // UART_TX_H

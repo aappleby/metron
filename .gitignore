@@ -14,5 +14,4 @@ vivado*.jou
 *__ALL.a
 *__ALL.o
 *__ALL.d
-scratch.h
 metron_vl

@@ -5,10 +5,6 @@
 
 //==============================================================================
 
-// yosys doesn't appear to handle return values from functions at all
-// v*rilator doesn't allow "return;" if the function has a return value
-// even if you set it via "func_name = value;" first.
-
 module uart_rx
 #(parameter int cycles_per_bit = 4)
 (
@@ -19,7 +15,7 @@ module uart_rx
   input logic tick_i_rstn,
   input logic tick_i_serial
 );
- /*public:*/
+/*public:*/
   function logic valid();  valid = _cursor == 1; endfunction
   always_comb valid_ret = valid();
   function logic[7:0] buffer();  buffer = _buffer; endfunction

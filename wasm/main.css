@@ -1,49 +1,56 @@
 * {
-  box-sizing: border-box;
+  font-family: "Consolas";
+  font-size: 14px;
+  color: #CCC;
 }
 
 html {
-  margin: 0;
-  padding: 0;
-  height: 100vh;
-  width: 100vw;
-}
-
-body {
-  margin: 1%;
-  padding: 0;
-  height: 98%;
-  width: 98%;
-
-  font-size: 13px;
-  font-family: 'Roboto Mono', monospace;
-  color: #CCC;
   background-color: #222;
 }
 
-.container {
-  display: grid;
-  height: 90vh;
-  grid-template-columns: 2fr 3fr 2fr;
-  grid-column-gap: 1%;
+body {
+  position:absolute;
+  top:0px;
+  right:0px;
+  bottom:0px;
+  left:0px;
+
+  background-color: #222;
 }
 
-#src {
-  font-family: 'Roboto Mono', monospace;
-  background-color: #333;
-  border: solid black 2px;
-  padding: 3px;
+div {
+  margin: 0px;
 }
 
-#log {
-  background-color: #333;
-  border: solid black 2px;
-  padding: 3px;
+.border {
+  border: solid #222 1px;
+  padding: 4px;
 }
 
-#dst {
-  font-family: 'Roboto Mono', monospace;
-  background-color: #333;
-  border: solid black 2px;
-  padding: 3px;
+pre {
+  margin: 0px;
+  padding: 2px;
+  overflow: auto;
+  white-space: pre-wrap;
 }
+
+select {
+  background-color: #333;
+}
+
+/*
+#log_text {
+  background-color: #111;
+}
+*/
+
+.flex_x { display: flex; flex-direction: row;    gap: 4px; }
+.flex_y { display: flex; flex-direction: column; gap: 0px; }
+
+.flex_0 { flex-basis: auto; flex-grow: 0; background-color: #333; }
+.flex_1 { flex-basis: 0;    flex-grow: 1; background-color: #333; }
+.flex_2 { flex-basis: 0;    flex-grow: 2; background-color: #333; }
+.flex_3 { flex-basis: 0;    flex-grow: 3; background-color: #333; }
+.flex_4 { flex-basis: 0;    flex-grow: 4; background-color: #333; }
+
+#panels { background-color: #222; }

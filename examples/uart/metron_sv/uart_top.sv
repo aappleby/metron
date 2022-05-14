@@ -20,7 +20,7 @@ module uart_top
   input logic tock_i_rstn,
   output logic tock_ret
 );
- /*public:*/
+/*public:*/
   function logic serial();  serial = tx_serial_ret; endfunction
   always_comb serial_ret = serial();
   function logic[7:0] data();  data = rx_buffer_ret; endfunction
@@ -51,7 +51,7 @@ module uart_top
   always_comb tock_ret = tock(tock_i_rstn);
 
   //----------------------------------------
- /*private:*/
+/*private:*/
   uart_hello #(repeat_msg) hello(
     .clock(clock),
     .data_ret(hello_data_ret),

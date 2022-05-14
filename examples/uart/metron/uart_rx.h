@@ -5,13 +5,9 @@
 
 //==============================================================================
 
-// yosys doesn't appear to handle return values from functions at all
-// v*rilator doesn't allow "return;" if the function has a return value
-// even if you set it via "func_name = value;" first.
-
 template <int cycles_per_bit = 4>
 class uart_rx {
- public:
+public:
   logic<1> valid() { return _cursor == 1; }
   logic<8> buffer() { return _buffer; }
   logic<32> sum() { return _sum; }

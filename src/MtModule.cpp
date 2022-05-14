@@ -619,10 +619,12 @@ CHECK_RETURN Err MtModule::build_call_graph() {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtModule::categorize_fields() {
+CHECK_RETURN Err MtModule::categorize_fields(bool verbose) {
   Err err;
 
-  LOG_G("Categorizing %s\n", name().c_str());
+  if (verbose) {
+    LOG_G("Categorizing %s\n", name().c_str());
+  }
 
   for (auto f : all_fields) {
     if (f->is_param()) {

@@ -161,7 +161,7 @@ def check_good(filename):
     basename = path.basename(filename)
     svname = path.splitext(basename)[0] + ".sv"
 
-    cmd = f"bin/metron {metron_default_args()} -r tests/metron_good -o tests/metron_sv -c {basename}"
+    cmd = f"bin/metron {metron_default_args()} -r tests/metron_good -o tests/metron_sv -s {basename}"
 
     print(f"  {cmd}");
 
@@ -450,7 +450,7 @@ def test_misc():
 
     bad_commands = [
         f"bin/metron {metron_default_args()} skjdlsfjkhdfsjhdf.h",
-        f"bin/metron {metron_default_args()} -c skjdlsfjkhdfsjhdf.h",
+        f"bin/metron {metron_default_args()} -s skjdlsfjkhdfsjhdf.h",
         f"bin/metron {metron_default_args()} -o sdkjfshkdjfshyry skjdlsfjkhdfsjhdf.h",
     ]
 
@@ -487,7 +487,7 @@ def check_lockstep(filename):
 
     includes = f"-I. -Isrc -I{sv_root} -I/usr/local/share/verilator/include"
 
-    metronate_cmd = f"bin/metron -q -r {mt_root} -o {sv_root} -c {test_name}.h"
+    metronate_cmd = f"bin/metron -q -r {mt_root} -o {sv_root} -s {test_name}.h"
     print(f"  {metronate_cmd}")
     os.system(metronate_cmd)
     os.system(f"verilator {includes} --cc {test_name}.sv -Mdir {vl_root}")

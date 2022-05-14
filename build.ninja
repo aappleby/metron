@@ -81,7 +81,7 @@ build wasm/obj/submodules/tree-sitter-cpp/src/scanner.o: compile_c_ems $
 
 
 ################################################################################
-# Compile wasm/bin/metron.html using compile_cpp_ems and link_ems
+# Compile wasm/app/metron.js using compile_cpp_ems and link_ems
 
 build wasm/obj/src/MetronApp.o: compile_cpp_ems src/MetronApp.cpp
   includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
@@ -115,7 +115,7 @@ build wasm/obj/src/MtTracer.o: compile_cpp_ems src/MtTracer.cpp
   includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
 build wasm/obj/src/MtUtils.o: compile_cpp_ems src/MtUtils.cpp
   includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
-build wasm/bin/metron.html: link_ems $
+build wasm/app/metron.js: link_ems $
     wasm/obj/submodules/tree-sitter/lib/src/lib.o $
     wasm/obj/submodules/tree-sitter-cpp/src/parser.o $
     wasm/obj/submodules/tree-sitter-cpp/src/scanner.o $

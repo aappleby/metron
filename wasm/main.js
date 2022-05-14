@@ -48,7 +48,7 @@ Module.print = function (text) {
 };
 
 Module.locateFile = function (path, prefix) {
-  return "bin/" + path;
+  return "app/" + path;
 }
 
 function dump_fs(path) {

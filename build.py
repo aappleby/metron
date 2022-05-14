@@ -416,7 +416,7 @@ def cpp_binary2(bin_name, rule_compile, rule_link, src_files, src_objs, obj_dir,
                 variables=kwargs)
 
 cpp_binary2(
-    bin_name="wasm/bin/metron.html",
+    bin_name="wasm/app/metron.js",
     rule_compile="compile_cpp_ems",
     rule_link="link_ems",
     src_files=[

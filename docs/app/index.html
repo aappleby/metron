@@ -10,26 +10,20 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/vs2015.min.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@4.18.0/css/xterm.css" />
 
-  <script src="https://cdn.jsdelivr.net/npm/xterm@4.18.0/lib/xterm.js"></script>
-
-  <!--
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js"></script>
-  -->
   <script src="highlight.min.js"></script>
   <script src="verilog.min.js"></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/xterm@4.18.0/lib/xterm.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.5.0/lib/xterm-addon-fit.min.js"></script>
-
-  <!--
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.6.0/highlightjs-line-numbers.js"></script>
-  -->
 
   <title>Metron C++ to Verilog Demo</title>
 </head>
 
 <body class="flex_y">
   <div class="topbar flex_x">
-    <div id="title" class="center_y">Metron C++ to Verilog Transpiler</div>
+    <div class="center_y">
+      <img src="favicon.ico" width="32" height="32" style="padding:5px; background-color:#888; margin:12px;">
+      <div id="title">Metron C++ to Verilog Transpiler</div>
+    </div>
     <div id="intro" class="center_y">
       Left editor is live, center is converted code, right is app output.<br>
       All Metron tests & examples are available for conversion. Changes persist in the filesystem until reload.
@@ -38,7 +32,7 @@
       <a class="github_link" href="https://github.com/aappleby/Metron">Source on Github</a>
     </div>
   </div>
-  <div id="panels" class="flex_x flex_1">
+  <div id="panels" class="flex_x flex_1" style="background-color:#444;">
     <div id="col_src" class="flex_y flex_3">
       <div class="border center_y dark2 bar">
         <select class="dark2" id="src_selector">
@@ -53,7 +47,7 @@
       </div>
       <div id="dst_text" class="editor flex_1 border language-verilog dark0"></div>
     </div>
-    <div id="col_log" class="flex_y flex_4">
+    <div id="col_log" class="flex_y flex_3">
       <div class="border center_y dark2 bar">
         <div class="bar_text" id="log_cmdline">metron -s -r ./examples scratch.h</div>
       </div>

@@ -10,7 +10,7 @@ body {
   right:0px;
   bottom:0px;
   left:0px;
-  background-color: #252525;
+  background-color: #444;
 }
 
 .bar {
@@ -45,8 +45,13 @@ body {
 
 #title {
   font-size: 20px;
-  padding: 15px;
-  color: #CBD;
+  color: #CBF;
+  margin:8px;
+}
+
+#intro {
+  margin:5px;
+  margin-left:15px;
 }
 
 .github_link {

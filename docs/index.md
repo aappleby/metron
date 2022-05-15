@@ -1,21 +1,51 @@
-placeholder docs
+# Metron, a tool for writing synthesizable Verilog in C++
 
-test code blocks
+## [TL;DR - Demo!](app/index.html)
+
+[Temporal Logic](TemporalLogic.md)
+
+[Tutorial](Tutorial.md)
+
+[User Guide](UserGuide.md)
+
 
 ```
-class Module {
+#include "metron_tools.h"
+
+class Counter {
 public:
 
-  Module() {
-    my_reg = 7;
+  void tick(logic<1> reset) {
+    if (reset) {
+      counter = 0;
+    } else {
+      counter = counter + 1;
+    }
   }
 
-  logic<8> tock() {
-    return my_reg;
-  }
-
-private:
-
-  logic<8> my_reg;
+  logic<8> counter;
 };
+```
+
+```
+`include "metron_tools.sv"
+
+module Counter
+(
+  input logic clock,
+  output logic[7:0] counter,
+  input logic tick_reset
+);
+/*public:*/
+
+  task automatic tick(logic reset);
+    if (reset) begin
+      counter <= 0;
+    end else begin
+      counter <= counter + 1;
+    end
+  endtask
+  always_ff @(posedge clock) tick(tick_reset);
+
+endmodule
 ```

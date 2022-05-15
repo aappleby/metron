@@ -1,0 +1,5625 @@
+#include "metron_tools.h"
+
+// Number literals
+// don't forget the ' spacers
+
+class Submod {
+public:
+  int tock(int x) {
+    return x + 3;
+  }
+};
+
+class Module {
+public:
+
+  int tock(int x) {
+    tick(x);
+    return submod.tock(x) + 3;
+  }
+
+  void tick(int x) {
+    my_reg = my_reg + x;
+  }
+
+  Submod submod;
+
+  int my_reg;
+};
+A trivial single-file, single-function, single-cycle RISC-V core.
+
+Probably won't synthesize since the ram is asynchronous, but runs at 300+ mhz
+in simulation.
+#pragma once
+#include "metron_tools.h"
+
+class toplevel {
+ public:
+  toplevel() {
+    pc = 0;
+    regs[0] = b32(0);
+
+    std::string s;
+    value_plusargs("text_file=%s", s);
+    readmemh(s, text_mem);
+
+    value_plusargs("data_file=%s", s);
+    readmemh(s, data_mem);
+  }
+
+  void tock(logic<1> reset) { tick(reset); }
+
+  logic<32> bus_read_data;
+  logic<32> bus_address;
+  logic<32> bus_write_data;
+  logic<4> bus_byte_enable;
+  logic<1> bus_read_enable;
+  logic<1> bus_write_enable;
+  logic<32> pc;
+
+  //----------------------------------------
+
+ private:
+  static const int OP_ALU = 0x33;
+  static const int OP_ALUI = 0x13;
+  static const int OP_LOAD = 0x03;
+  static const int OP_STORE = 0x23;
+  static const int OP_BRANCH = 0x63;
+  static const int OP_JAL = 0x6F;
+  static const int OP_JALR = 0x67;
+  static const int OP_LUI = 0x37;
+  static const int OP_AUIPC = 0x17;
+
+  void tick(logic<1> reset) {
+    if (reset) {
+      pc = 0;
+      regs[0] = b32(0);
+      bus_read_data = 0;
+      bus_address = 0;
+      bus_write_data = 0;
+      bus_byte_enable = 0;
+      bus_read_enable = 0;
+      bus_write_enable = 0;
+    } else {
+      logic<32> inst = text_mem[b14(pc, 2)];
+
+      logic<7> op = b7(inst, 0);
+      logic<5> rd = b5(inst, 7);
+      logic<3> f3 = b3(inst, 12);
+      logic<5> r1 = b5(inst, 15);
+      logic<5> r2 = b5(inst, 20);
+      logic<7> f7 = b7(inst, 25);
+
+      bus_address = 0;
+      bus_write_enable = 0;
+      bus_write_data = 0;
+
+      //----------
+      // Metron simulates this a few percent faster if we don't have ALU and
+      // ALUI in the same branch, but then we duplicate the big ALU switch...
+
+      if (op == OP_ALU || op == OP_ALUI) {
+        logic<32> op_a = regs[r1];
+        logic<32> op_b =
+            op == OP_ALUI ? cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20))
+                          : regs[r2];
+        logic<32> alu_result;
+
+        // clang-format off
+        switch (f3) {
+          case 0: alu_result = (op == OP_ALU) && f7[5] ? op_a - op_b : op_a + op_b; break;
+          case 1: alu_result = op_a << b5(op_b); break;
+          case 2: alu_result = signed(op_a) < signed(op_b); break;
+          case 3: alu_result = op_a < op_b; break;
+          case 4: alu_result = op_a ^ op_b; break;
+          case 5: {
+            // FIXME BUG Verilator isn't handling this ternary expression
+            // correctly.
+            // alu_result = f7[5] ? sra(op_a, b5(op_b)) : b32(op_a >> b5(op_b));
+            // break;
+            if (f7[5]) {
+              alu_result = sra(op_a, b5(op_b));
+            } else {
+              alu_result = op_a >> b5(op_b);
+            }
+            break;
+          }
+          case 6: alu_result = op_a | op_b; break;
+          case 7: alu_result = op_a & op_b; break;
+        }
+        // clang-format on
+
+        if (rd) regs[rd] = alu_result;
+        pc = pc + 4;
+      }
+
+      //----------
+
+      else if (op == OP_LOAD) {
+        logic<32> imm = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20));
+        logic<32> addr = regs[r1] + imm;
+        logic<32> data = data_mem[b15(addr, 2)] >> (8 * b2(addr));
+
+        // clang-format off
+        switch (f3) {
+          case 0: data = sign_extend<32>(b8(data)); break;
+          case 1: data = sign_extend<32>(b16(data)); break;
+          case 4: data = b8(data); break;
+          case 5: data = b16(data); break;
+        }
+        // clang-format on
+
+        if (rd) regs[rd] = data;
+        pc = pc + 4;
+      }
+
+      //----------
+
+      else if (op == OP_STORE) {
+        logic<32> imm = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 7));
+        logic<32> addr = regs[r1] + imm;
+        logic<32> data = regs[r2] << (8 * b2(addr));
+
+        logic<32> mask = 0;
+        if (f3 == 0) mask = 0x000000FF << (8 * b2(addr));
+        if (f3 == 1) mask = 0x0000FFFF << (8 * b2(addr));
+        if (f3 == 2) mask = 0xFFFFFFFF;
+
+        logic<15> phys_addr = b15(addr, 2);
+        data_mem[phys_addr] = (data_mem[phys_addr] & ~mask) | (data & mask);
+
+        pc = pc + 4;
+
+        bus_address = addr;
+        bus_write_enable = 1;
+        bus_write_data = regs[r2];
+      }
+
+      //----------
+
+      else if (op == OP_BRANCH) {
+        logic<32> op_a = regs[r1];
+        logic<32> op_b = regs[r2];
+
+        // clang-format off
+        logic<1> take_branch;
+        switch (f3) {
+          case 0: take_branch = op_a == op_b; break;
+          case 1: take_branch = op_a != op_b; break;
+          case 4: take_branch = signed(op_a) < signed(op_b); break;
+          case 5: take_branch = signed(op_a) >= signed(op_b); break;
+          case 6: take_branch = op_a < op_b; break;
+          case 7: take_branch = op_a >= op_b; break;
+          // KCOV_OFF
+          default: take_branch = b1(DONTCARE); break;
+          // KCOV_ON
+        }
+        // clang-format on
+
+        if (take_branch) {
+          logic<32> imm =
+              cat(dup<20>(inst[31]), inst[7], b6(inst, 25), b4(inst, 8), b1(0));
+          pc = pc + imm;
+        } else {
+          pc = pc + 4;
+        }
+      }
+
+      //----------
+
+      else if (op == OP_JAL) {
+        logic<32> imm = cat(dup<12>(inst[31]), b8(inst, 12), inst[20],
+                            b6(inst, 25), b4(inst, 21), b1(0));
+        if (rd) regs[rd] = pc + 4;
+        pc = pc + imm;
+      }
+
+      //----------
+
+      else if (op == OP_JALR) {
+        logic<32> rr1 = regs[r1];  // Lol, Metron actually found a bug - gotta
+                                   // read r1 before writing
+        logic<32> imm = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20));
+        if (rd) regs[rd] = pc + 4;
+        pc = rr1 + imm;
+      }
+
+      //----------
+
+      else if (op == OP_LUI) {
+        logic<32> imm = cat(inst[31], b11(inst, 20), b8(inst, 12), b12(0));
+        if (rd) regs[rd] = imm;
+        pc = pc + 4;
+      }
+
+      //----------
+
+      else if (op == OP_AUIPC) {
+        logic<32> imm = cat(inst[31], b11(inst, 20), b8(inst, 12), b12(0));
+        if (rd) regs[rd] = pc + imm;
+        pc = pc + 4;
+      }
+    }
+  }
+
+  logic<32> text_mem[32 * 1024];
+  logic<32> data_mem[32 * 1024];
+  logic<32> regs[32];
+};
+A port of riscv-simple-sv (https://github.com/tilk/riscv-simple-sv) to Metron.
+// RISC-V SiMPLE SV -- generic register
+// BSD 3-Clause License
+// (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
+//                Marek Materzok, University of Wrocław
+
+#ifndef REGISTER_H
+#define REGISTER_H
+
+#include "config.h"
+#include "constants.h"
+#include "metron_tools.h"
+
+template <int WIDTH = 32, int INITIAL = 0>
+class single_register {
+ public:
+  logic<1> reset;
+  logic<1> write_enable;
+  logic<WIDTH> next;
+  logic<WIDTH> value;
+
+  single_register() { value = INITIAL; }
+
+  void tock() { tick(); }
+
+ private:
+  void tick() {
+    if (reset)
+      value = INITIAL;
+    else if (write_enable)
+      value = next;
+  }
+};
+
+#endif // REGISTER_H
+// RISC-V SiMPLE SV -- data memory bus
+// BSD 3-Clause License
+// (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
+//                Marek Materzok, University of Wrocław
+
+#ifndef EXAMPLE_DATA_MEMORY_BUS
+#define EXAMPLE_DATA_MEMORY_BUS
+
+#include "config.h"
+#include "constants.h"
+#include "example_data_memory.h"
+#include "metron_tools.h"
+
+class example_data_memory_bus {
+ public:
+  logic<32> address;
+  logic<32> read_data;
+  logic<32> write_data;
+  logic<4> byte_enable;
+  logic<1> read_enable;
+  logic<1> write_enable;
+
+ private:
+  example_data_memory data_memory;
+
+ public:
+  void tock() {
+    logic<1> is_data_memory =
+        address >= rv_config::DATA_BEGIN && rv_config::DATA_END >= address;
+
+    data_memory.address = bx<rv_config::DATA_BITS - 2>(address, 2);
+    data_memory.byteena = byte_enable;
+    data_memory.data = write_data;
+    data_memory.wren = write_enable & is_data_memory;
+    data_memory.tock();
+
+    logic<32> fetched = data_memory.q;
+    read_data = read_enable && is_data_memory ? fetched : b32(DONTCARE);
+  }
+};
+
+#endif // EXAMPLE_DATA_MEMORY_BUS
+// RISC-V SiMPLE SV -- common configuration for testbench
+// BSD 3-Clause License
+// (c) 2017-2021, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
+//                Marek Materzok, University of Wrocław
+
+#ifndef CONFIG_H
+#define CONFIG_H
+
+#include "metron_tools.h"
+
+namespace rv_config {
+
+// Select ISA extensions
+// `define M_MODULE    // multiplication and division
+
+//////////////////////////////////////////
+//              Memory config           //
+//////////////////////////////////////////
+
+// Program counter initial value
+static const unsigned int INITIAL_PC = 0x00400000;
+
+// Instruction memory
+static const unsigned int TEXT_BEGIN = INITIAL_PC;
+static const unsigned int TEXT_BITS = 16;
+static const unsigned int TEXT_WIDTH = (1 << TEXT_BITS);
+static const unsigned int TEXT_END = (TEXT_BEGIN + TEXT_WIDTH - 1);
+
+// Data memory
+static const unsigned int DATA_BEGIN = 0x80000000;
+static const unsigned int DATA_BITS = 17;
+static const unsigned int DATA_WIDTH = (1 << DATA_BITS);
+static const unsigned int DATA_END = (DATA_BEGIN + DATA_WIDTH - 1);
+
+static const char* TEXT_HEX = "add.text.vh";
+static const char* DATA_HEX = "add.data.vh";
+
+};  // namespace rv_config
+
+#endif // CONFIG_H
+// RISC-V SiMPLE SV -- instruction decoder
+// BSD 3-Clause License
+// (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
+//                Marek Materzok, University of Wrocław
+
+#ifndef INSTRUCTION_DECODER_H
+#define INSTRUCTION_DECODER_H
+
+#include "config.h"
+#include "constants.h"
+#include "metron_tools.h"
+
+class instruction_decoder {
+ public:
+  logic<32> inst;
+  logic<7> inst_opcode;
+  logic<3> inst_funct3;
+  logic<7> inst_funct7;
+  logic<5> inst_rd;
+  logic<5> inst_rs1;
+  logic<5> inst_rs2;
+
+  void tock() {
+    inst_opcode = b7(inst, 0);
+    inst_funct3 = b3(inst, 12);
+    inst_funct7 = b7(inst, 25);
+    inst_rd = b5(inst, 7);
+    inst_rs1 = b5(inst, 15);
+    inst_rs2 = b5(inst, 20);
+  }
+};
+
+#endif // INSTRUCTION_DECODER_H
+// RISC-V SiMPLE SV -- control path
+// BSD 3-Clause License
+// (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
+//                Marek Materzok, University of Wrocław
+
+#ifndef SINGLECYCLE_CTLPATH_H
+#define SINGLECYCLE_CTLPATH_H
+
+#include "alu_control.h"
+#include "config.h"
+#include "constants.h"
+#include "control_transfer.h"
+#include "metron_tools.h"
+#include "singlecycle_control.h"
+
+class singlecycle_ctlpath {
+ public:
+  logic<7> inst_opcode;
+  logic<3> inst_funct3;
+  logic<7> inst_funct7;
+  logic<1> alu_result_equal_zero;
+
+  logic<1> pc_write_enable;
+  logic<1> regfile_write_enable;
+  logic<1> alu_operand_a_select;
+  logic<1> alu_operand_b_select;
+  logic<1> data_mem_read_enable;
+  logic<1> data_mem_write_enable;
+  logic<3> reg_writeback_select;
+  logic<5> alu_function;
+  logic<2> next_pc_select;
+
+  void tock_alu_function() {
+    control.inst_opcode = inst_opcode;
+    control.tock_alu_op_type();
+    alu_ctrl.alu_op_type = control.alu_op_type;
+    alu_ctrl.inst_funct3 = inst_funct3;
+    alu_ctrl.inst_funct7 = inst_funct7;
+    alu_ctrl.tock_alu_function();
+    alu_function = alu_ctrl.alu_function;
+  }
+
+  void tock_alu_operand_select() {
+    control.tock_alu_operand_a_select();
+    control.tock_alu_operand_b_select();
+    alu_operand_a_select = control.alu_operand_a_select;
+    alu_operand_b_select = control.alu_operand_b_select;
+  }
+
+  void tock_data_mem_enable() {
+    control.tock_data_mem_read_enable();
+    control.tock_data_mem_write_enable();
+    data_mem_read_enable = control.data_mem_read_enable;
+    data_mem_write_enable = control.data_mem_write_enable;
+  }
+
+  void tock_pc_write_enable() {
+    control.tock_pc_write_enable();
+    pc_write_enable = control.pc_write_enable;
+  }
+
+  void tock_regfile_write_enable() {
+    control.tock_regfile_write_enable();
+    regfile_write_enable = control.regfile_write_enable;
+  }
+
+  void tock_reg_writeback_select() {
+    control.tock_reg_writeback_select();
+    reg_writeback_select = control.reg_writeback_select;
+  }
+
+  void tock_next_pc_select() {
+    transfer.result_equal_zero = alu_result_equal_zero;
+    transfer.inst_funct3 = inst_funct3;
+    transfer.tock_take_branch();
+    control.take_branch = transfer.take_branch;
+    control.tock_next_pc_select();
+    next_pc_select = control.next_pc_select;
+  }
+
+  //----------------------------------------
+
+ private:
+  singlecycle_control control;
+  control_transfer transfer;
+  alu_control alu_ctrl;
+};
+
+#endif // SINGLECYCLE_CTLPATH_H
+// RISC-V SiMPLE SV -- Toplevel
+// BSD 3-Clause License
+// (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
+//                Marek Materzok, University of Wrocław
+
+#ifndef TOPLEVEL_H
+#define TOPLEVEL_H
+
+#include "config.h"
+#include "constants.h"
+#include "example_data_memory_bus.h"
+#include "example_text_memory_bus.h"
+#include "metron_tools.h"
+#include "riscv_core.h"
+
+template <int foobar = 2>
+class toplevel {
+ public:
+  logic<1> reset;
+  logic<32> bus_read_data;
+  logic<32> bus_address;
+  logic<32> bus_write_data;
+  logic<4> bus_byte_enable;
+  logic<1> bus_read_enable;
+  logic<1> bus_write_enable;
+
+  logic<32> inst;
+  logic<32> pc;
+
+  //----------------------------------------
+
+  void tock(int bogus_param) {
+    core.reset = reset;
+    core.tock_pc();
+
+    text_memory_bus.address = core.pc;
+    text_memory_bus.tock_read_data();
+
+    core.inst = text_memory_bus.read_data;
+    core.tock_execute();
+
+    data_memory_bus.address = core.bus_address;
+    data_memory_bus.read_enable = core.bus_read_enable;
+    data_memory_bus.write_enable = core.bus_write_enable;
+    data_memory_bus.byte_enable = core.bus_byte_enable;
+    data_memory_bus.write_data = core.bus_write_data;
+    data_memory_bus.tock();
+
+    core.bus_read_data = data_memory_bus.read_data;
+    core.tock_writeback();
+
+    //----------
+
+    bus_read_data = data_memory_bus.read_data;
+    bus_address = core.bus_address;
+    bus_write_data = core.bus_write_data;
+    bus_byte_enable = core.bus_byte_enable;
+    bus_read_enable = core.bus_read_enable;
+    bus_write_enable = core.bus_write_enable;
+    inst = text_memory_bus.read_data;
+    pc = core.pc;
+  }
+
+  //----------------------------------------
+
+ private:
+  riscv_core core;
+  example_text_memory_bus text_memory_bus;
+  example_data_memory_bus data_memory_bus;
+};
+
+#endif // TOPLEVEL_H
+// RISC-V SiMPLE SV -- text memory model
+// BSD 3-Clause License
+// (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
+//                Marek Materzok, University of Wrocław
+
+#ifndef EXAMPLE_TEXT_MEMORY_H
+#define EXAMPLE_TEXT_MEMORY_H
+
+#include "config.h"
+#include "constants.h"
+#include "metron_tools.h"
+
+class example_text_memory {
+ public:
+  example_text_memory() {
+    std::string s;
+    value_plusargs("text_file=%s", s);
+    readmemh(s, mem);
+  }
+
+  logic<rv_config::TEXT_BITS - 2> address;
+  logic<32> q;
+  void tock_q() { q = mem[address]; }
+
+ private:
+  logic<32> mem[pow2(rv_config::TEXT_BITS - 2)];
+};
+
+#endif // EXAMPLE_TEXT_MEMORY_H
+// RISC-V SiMPLE SV -- single-cycle data path
+// BSD 3-Clause License
+// (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
+//                Marek Materzok, University of Wrocław
+
+#ifndef SINGLECYCLE_DATAPATH_H
+#define SINGLECYCLE_DATAPATH_H
+
+#include "adder.h"
+#include "alu.h"
+#include "config.h"
+#include "constants.h"
+#include "immediate_generator.h"
+#include "instruction_decoder.h"
+#include "metron_tools.h"
+#include "multiplexer2.h"
+#include "multiplexer4.h"
+#include "multiplexer8.h"
+#include "regfile.h"
+#include "register.h"
+
+class singlecycle_datapath {
+ public:
+  logic<1> reset;
+  logic<32> data_mem_read_data;
+  logic<32> data_mem_address;
+  logic<32> data_mem_write_data;
+
+  logic<32> inst;
+  logic<32> pc;
+  logic<7> inst_opcode;
+  logic<3> inst_funct3;
+  logic<7> inst_funct7;
+  logic<1> alu_result_equal_zero;
+
+  // control signals
+  logic<1> pc_write_enable;
+  logic<1> regfile_write_enable;
+  logic<1> alu_operand_a_select;
+  logic<1> alu_operand_b_select;
+  logic<3> reg_writeback_select;
+  logic<2> next_pc_select;
+  logic<5> alu_function;
+
+ private:
+  logic<32> rs1_data;
+  logic<32> rs2_data;
+
+  logic<5> inst_rd;
+  logic<5> inst_rs1;
+  logic<5> inst_rs2;
+
+ public:
+  //----------------------------------------
+
+  void tock_pc() { pc = program_counter.value; }
+
+  //----------------------------------------
+
+  void tock_instruction_decoder() {
+    idec.inst = inst;
+    idec.tock();
+
+    inst_opcode = idec.inst_opcode;
+    inst_funct3 = idec.inst_funct3;
+    inst_funct7 = idec.inst_funct7;
+    inst_rd = idec.inst_rd;
+    inst_rs1 = idec.inst_rs1;
+    inst_rs2 = idec.inst_rs2;
+  }
+
+  //----------------------------------------
+
+  void tock_immediate_generator() {
+    igen.inst = inst;
+    igen.tock();
+  }
+
+  //----------------------------------------
+
+  void tock_reg_read() {
+    regs.rd_address = idec.inst_rd;
+    regs.rs1_address = idec.inst_rs1;
+    regs.rs2_address = idec.inst_rs2;
+    regs.tock1();
+    rs1_data = regs.rs1_data;
+    rs2_data = regs.rs2_data;
+  }
+
+  void tock_mux_operand_a() {
+    mux_operand_a.sel = alu_operand_a_select;
+    mux_operand_a.in0 = regs.rs1_data;
+    mux_operand_a.in1 = program_counter.value;
+    mux_operand_a.tock();
+  }
+
+  void tock_mux_operand_b() {
+    mux_operand_b.sel = alu_operand_b_select;
+    mux_operand_b.in0 = regs.rs2_data;
+    mux_operand_b.in1 = igen.immediate;
+    mux_operand_b.tock();
+  }
+
+  void tock_alu() {
+    alu_core.alu_function = alu_function;
+    alu_core.operand_a = mux_operand_a.out;
+    alu_core.operand_b = mux_operand_b.out;
+    alu_core.tock();
+    alu_result_equal_zero = alu_core.result_equal_zero;
+  }
+
+  void tock_adder_pc_plus_4() {
+    adder_pc_plus_4.operand_a = b32(0x00000004);
+    adder_pc_plus_4.operand_b = program_counter.value;
+    adder_pc_plus_4.tock();
+  }
+
+  void tock_adder_pc_plus_immediate() {
+    adder_pc_plus_immediate.operand_a = program_counter.value;
+    adder_pc_plus_immediate.operand_b = igen.immediate;
+    adder_pc_plus_immediate.tock();
+  }
+
+  void tock_data_mem_write_data() {
+    data_mem_address = alu_core.result;
+    data_mem_write_data = regs.rs2_data;
+  }
+
+  void tock_mux_next_pc_select() {
+    mux_next_pc_select.sel = next_pc_select;
+    mux_next_pc_select.in0 = adder_pc_plus_4.result;
+    mux_next_pc_select.in1 = adder_pc_plus_immediate.result;
+    mux_next_pc_select.in2 = cat(b31(alu_core.result, 1), b1(0b0));
+    mux_next_pc_select.in3 = b32(0b0);
+    mux_next_pc_select.tock();
+  }
+
+  void tock_program_counter() {
+    program_counter.reset = reset;
+    program_counter.write_enable = pc_write_enable;
+    program_counter.next = mux_next_pc_select.out;
+    program_counter.tock();
+  }
+
+  void tock_mux_reg_writeback() {
+    mux_reg_writeback.sel = reg_writeback_select;
+    mux_reg_writeback.in0 = alu_core.result;
+    mux_reg_writeback.in1 = data_mem_read_data;
+    mux_reg_writeback.in2 = adder_pc_plus_4.result;
+    mux_reg_writeback.in3 = igen.immediate;
+    mux_reg_writeback.in4 = b32(0b0);
+    mux_reg_writeback.in5 = b32(0b0);
+    mux_reg_writeback.in6 = b32(0b0);
+    mux_reg_writeback.in7 = b32(0b0);
+    mux_reg_writeback.tock();
+  }
+
+  void tock_reg_writeback() {
+    regs.write_enable = regfile_write_enable;
+    regs.rd_data = mux_reg_writeback.out;
+    regs.tock();
+  }
+
+  //----------------------------------------
+
+ private:
+  adder<32> adder_pc_plus_4;
+  adder<32> adder_pc_plus_immediate;
+  alu alu_core;
+  multiplexer4<32> mux_next_pc_select;
+  multiplexer2<32> mux_operand_a;
+  multiplexer2<32> mux_operand_b;
+  multiplexer8<32> mux_reg_writeback;
+  single_register<32, rv_config::INITIAL_PC> program_counter;
+  regfile regs;
+  instruction_decoder idec;
+  immediate_generator igen;
+};
+
+#endif // SINGLECYCLE_DATAPATH_H
+// RISC-V SiMPLE SV -- control transfer unit
+// BSD 3-Clause License
+// (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
+//                Marek Materzok, University of Wrocław
+
+#ifndef CONTROL_TRANSFER_H
+#define CONTROL_TRANSFER_H
+
+#include "config.h"
+#include "constants.h"
+#include "metron_tools.h"
+
+class control_transfer {
+ public:
+  logic<1> result_equal_zero;
+  logic<3> inst_funct3;
+  logic<1> take_branch;
+
+  void tock_take_branch() {
+    using namespace rv_constants;
+    // clang-format off
+    switch (inst_funct3) {
+      case FUNCT3_BRANCH_EQ:  take_branch = !result_equal_zero; break;
+      case FUNCT3_BRANCH_NE:  take_branch = result_equal_zero; break;
+      case FUNCT3_BRANCH_LT:  take_branch = !result_equal_zero; break;
+      case FUNCT3_BRANCH_GE:  take_branch = result_equal_zero; break;
+      case FUNCT3_BRANCH_LTU: take_branch = !result_equal_zero; break;
+      case FUNCT3_BRANCH_GEU: take_branch = result_equal_zero; break;
+      default:                take_branch = b1(DONTCARE); break;
+    }
+    // clang-format on
+  }
+};
+
+#endif // CONTROL_TRANSFER_H
+// RISC-V SiMPLE SV -- register file
+// BSD 3-Clause License
+// (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
+//                Marek Materzok, University of Wrocław
+
+#ifndef REGFILE_H
+#define REGFILE_H
+
+#include "config.h"
+#include "constants.h"
+#include "metron_tools.h"
+
+class regfile {
+ public:
+  logic<1> write_enable;
+  logic<5> rd_address;
+  logic<5> rs1_address;
+  logic<5> rs2_address;
+  logic<32> rd_data;
+  logic<32> rs1_data;
+  logic<32> rs2_data;
+
+ private:
+  // 32 registers of 32-bit width
+  logic<32> _register[32];
+
+ public:
+  // Read ports for rs1 and rs1
+  void tock1() {
+    rs1_data = _register[rs1_address];
+    rs2_data = _register[rs2_address];
+  }
+
+  // Register x0 is always 0
+  regfile() { _register[0] = b32(0b0); }
+
+  void tock() { tick(); }
+
+ private:
+  // Write port for rd
+  void tick() {
+    if (write_enable)
+      if (rd_address != b5(0b0)) _register[rd_address] = rd_data;
+  }
+};
+
+#endif // REGFILE_H
+// RISC-V SiMPLE SV -- data memory model
+// BSD 3-Clause License
+// (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
+//                Marek Materzok, University of Wrocław
+
+#ifndef EXAMPLE_DATA_MEMORY_H
+#define EXAMPLE_DATA_MEMORY_H
+
+#include "config.h"
+#include "constants.h"
+#include "metron_tools.h"
+
+class example_data_memory {
+ public:
+  logic<rv_config::DATA_BITS - 2> address;
+  logic<32> q;
+  logic<1> wren;
+  logic<4> byteena;
+  logic<32> data;
+
+ private:
+  /*#(* nomem2reg *)#*/
+  logic<32> mem[pow2(rv_config::DATA_BITS - 2)];
+
+ public:
+  void tock() {
+    q = mem[address];
+    tick();
+  }
+
+ private:
+  void tick() {
+    if (wren) {
+      // doing this slightly differently from rvsimple so we don't have to do
+      // sub-array writes to mem.
+      logic<32> mask = 0;
+      if (byteena[0]) mask = mask | 0x000000FF;
+      if (byteena[1]) mask = mask | 0x0000FF00;
+      if (byteena[2]) mask = mask | 0x00FF0000;
+      if (byteena[3]) mask = mask | 0xFF000000;
+      mem[address] = (mem[address] & ~mask) | (data & mask);
+    }
+  }
+
+ public:
+  example_data_memory() {
+    std::string s;
+    value_plusargs("data_file=%s", s);
+    readmemh(s, mem);
+  }
+};
+
+#endif // EXAMPLE_DATA_MEMORY_H
+// RISC-V SiMPLE SV -- data memory interface
+// BSD 3-Clause License
+// (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
+//                Marek Materzok, University of Wrocław
+
+#ifndef DATA_MEMORY_INTERFACE_H
+#define DATA_MEMORY_INTERFACE_H
+
+#include "config.h"
+#include "constants.h"
+#include "metron_tools.h"
+
+class data_memory_interface {
+ public:
+  logic<1> read_enable;
+  logic<1> write_enable;
+  logic<3> data_format;
+  logic<32> address;
+  logic<32> write_data;
+  logic<32> read_data;
+
+  logic<32> bus_address;
+  logic<32> bus_read_data;
+  logic<32> bus_write_data;
+  logic<4> bus_byte_enable;
+  logic<1> bus_read_enable;
+  logic<1> bus_write_enable;
+
+ private:
+  logic<32> position_fix;
+  logic<32> sign_fix;
+
+ public:
+  void tock_bus() {
+    bus_address = address;
+    bus_write_enable = write_enable;
+    bus_read_enable = read_enable;
+    bus_write_data = write_data << (8 * b2(address));
+
+    // calculate byte enable
+    // clang-format off
+    switch (b2(data_format)) {
+      case 0b00: bus_byte_enable = b4(0b0001) << b2(address); break;
+      case 0b01: bus_byte_enable = b4(0b0011) << b2(address); break;
+      case 0b10: bus_byte_enable = b4(0b1111) << b2(address); break;
+      default:   bus_byte_enable = b4(0b0000); break;
+    }
+    // clang-format on
+  }
+
+  // correct for unaligned accesses
+  void tock_read_data() {
+    position_fix = b32(bus_read_data >> (8 * b2(address)));
+
+    // sign-extend if necessary
+    // clang-format off
+    switch (b2(data_format)) {
+      case 0b00: sign_fix = cat(dup<24>(b1(~data_format[2] & position_fix[7])), b8(position_fix)); break;
+      case 0b01: sign_fix = cat(dup<16>(b1(~data_format[2] & position_fix[15])), b16(position_fix)); break;
+      case 0b10: sign_fix = b32(position_fix); break;
+      default:   sign_fix = b32(DONTCARE); break;
+    }
+    // clang-format on
+
+    read_data = sign_fix;
+  }
+};
+
+#endif // DATA_MEMORY_INTERFACE_H
+// RISC-V SiMPLE SV -- adder module
+// BSD 3-Clause License
+// (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
+//                Marek Materzok, University of Wrocław
+
+#ifndef ADDER_H
+#define ADDER_H
+
+#include "config.h"
+#include "constants.h"
+#include "metron_tools.h"
+
+template <int WIDTH = 32>
+class adder {
+ public:
+  logic<WIDTH> operand_a;
+  logic<WIDTH> operand_b;
+  logic<WIDTH> result;
+
+  void tock() { result = operand_a + operand_b; }
+};
+
+#endif // ADDER_H
+// RISC-V SiMPLE SV -- Single-cycle RISC-V core
+// BSD 3-Clause License
+// (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
+//                Marek Materzok, University of Wrocław
+
+#ifndef RISCV_CORE_H
+#define RISCV_CORE_H
+
+#include "config.h"
+#include "constants.h"
+#include "data_memory_interface.h"
+#include "metron_tools.h"
+#include "singlecycle_ctlpath.h"
+#include "singlecycle_datapath.h"
+
+class riscv_core {
+ public:
+  logic<1> reset;
+  logic<32> bus_address;
+  logic<32> bus_read_data;
+  logic<32> bus_write_data;
+  logic<4> bus_byte_enable;
+  logic<1> bus_read_enable;
+  logic<1> bus_write_enable;
+
+  logic<32> inst;
+  logic<32> pc;
+
+  void tock_pc() {
+    datapath.tock_pc();
+    pc = datapath.pc;
+  }
+
+  void tock_execute() {
+    datapath.inst = inst;
+    datapath.tock_instruction_decoder();
+    datapath.tock_immediate_generator();
+
+    ctlpath.inst_opcode = datapath.inst_opcode;
+    ctlpath.inst_funct3 = datapath.inst_funct3;
+    ctlpath.inst_funct7 = datapath.inst_funct7;
+
+    ctlpath.tock_alu_function();
+    ctlpath.tock_alu_operand_select();
+
+    datapath.alu_function = ctlpath.alu_function;
+    datapath.alu_operand_a_select = ctlpath.alu_operand_a_select;
+    datapath.alu_operand_b_select = ctlpath.alu_operand_b_select;
+
+    datapath.tock_reg_read();
+    datapath.tock_mux_operand_a();
+    datapath.tock_mux_operand_b();
+    datapath.tock_alu();
+
+    ctlpath.tock_data_mem_enable();
+    datapath.tock_data_mem_write_data();
+    dmem.read_enable = ctlpath.data_mem_read_enable;
+    dmem.write_enable = ctlpath.data_mem_write_enable;
+    dmem.data_format = datapath.inst_funct3;
+    dmem.address = datapath.data_mem_address;
+    dmem.write_data = datapath.data_mem_write_data;
+    dmem.tock_bus();
+
+    ctlpath.alu_result_equal_zero = datapath.alu_result_equal_zero;
+    ctlpath.tock_pc_write_enable();
+    ctlpath.tock_regfile_write_enable();
+    ctlpath.tock_reg_writeback_select();
+    ctlpath.tock_next_pc_select();
+
+    //----------
+
+    bus_address = dmem.bus_address;
+    bus_write_data = dmem.bus_write_data;
+    bus_byte_enable = dmem.bus_byte_enable;
+    bus_read_enable = dmem.bus_read_enable;
+    bus_write_enable = dmem.bus_write_enable;
+  }
+
+  void tock_writeback() {
+    dmem.bus_read_data = bus_read_data;
+    dmem.tock_read_data();
+
+    datapath.next_pc_select = ctlpath.next_pc_select;
+    datapath.tock_adder_pc_plus_4();
+    datapath.tock_adder_pc_plus_immediate();
+    datapath.tock_mux_next_pc_select();
+
+    datapath.reset = reset;
+    datapath.pc_write_enable = ctlpath.pc_write_enable;
+    datapath.tock_program_counter();
+
+    datapath.reg_writeback_select = ctlpath.reg_writeback_select;
+    datapath.data_mem_read_data = dmem.read_data;
+    datapath.tock_mux_reg_writeback();
+
+    datapath.regfile_write_enable = ctlpath.regfile_write_enable;
+    datapath.tock_reg_writeback();
+  }
+
+  //----------------------------------------
+
+ private:
+  singlecycle_datapath datapath;
+  singlecycle_ctlpath ctlpath;
+  data_memory_interface dmem;
+};
+
+#endif // RISCV_CORE_H
+// RISC-V SiMPLE SV -- single-cycle controller
+// BSD 3-Clause License
+// (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
+//                Marek Materzok, University of Wrocław
+
+#ifndef SINGLECYCLE_CONTROL_H
+#define SINGLECYCLE_CONTROL_H
+
+#include "config.h"
+#include "constants.h"
+#include "metron_tools.h"
+
+class singlecycle_control {
+ public:
+  logic<7> inst_opcode;
+  logic<1> take_branch;
+  logic<1> pc_write_enable;
+  logic<1> regfile_write_enable;
+  logic<1> alu_operand_a_select;
+  logic<1> alu_operand_b_select;
+  logic<2> alu_op_type;
+  logic<1> data_mem_read_enable;
+  logic<1> data_mem_write_enable;
+  logic<3> reg_writeback_select;
+  logic<2> next_pc_select;
+
+  void tock_next_pc_select() {
+    using namespace rv_constants;
+    // clang-format off
+    switch (inst_opcode) {
+      case OPCODE_BRANCH: next_pc_select = take_branch ? CTL_PC_PC_IMM : CTL_PC_PC4; break;
+      case OPCODE_JALR:   next_pc_select = CTL_PC_RS1_IMM; break;
+      case OPCODE_JAL:    next_pc_select = CTL_PC_PC_IMM; break;
+      default:            next_pc_select = CTL_PC_PC4; break;
+    }
+    // clang-format on
+  }
+
+  void tock_pc_write_enable() { pc_write_enable = 0b1; }
+
+  void tock_regfile_write_enable() {
+    using namespace rv_constants;
+    // clang-format off
+    switch (inst_opcode) {
+      case OPCODE_MISC_MEM: regfile_write_enable = 0; break;
+      case OPCODE_STORE:    regfile_write_enable = 0; break;
+      case OPCODE_BRANCH:   regfile_write_enable = 0; break;
+      case OPCODE_LOAD:     regfile_write_enable = 1; break;
+      case OPCODE_OP_IMM:   regfile_write_enable = 1; break;
+      case OPCODE_AUIPC:    regfile_write_enable = 1; break;
+      case OPCODE_OP:       regfile_write_enable = 1; break;
+      case OPCODE_LUI:      regfile_write_enable = 1; break;
+      case OPCODE_JALR:     regfile_write_enable = 1; break;
+      case OPCODE_JAL:      regfile_write_enable = 1; break;
+      default:              regfile_write_enable = b1(DONTCARE); break;
+    }
+    // clang-format on
+  }
+
+  void tock_alu_operand_a_select() {
+    using namespace rv_constants;
+
+    // clang-format off
+    switch (inst_opcode) {
+      case OPCODE_AUIPC:    alu_operand_a_select = CTL_ALU_A_PC; break;
+      case OPCODE_JAL:      alu_operand_a_select = CTL_ALU_A_PC; break;
+
+      case OPCODE_OP:       alu_operand_a_select = CTL_ALU_A_RS1; break;
+      case OPCODE_LUI:      alu_operand_a_select = CTL_ALU_A_RS1; break;
+      case OPCODE_BRANCH:   alu_operand_a_select = CTL_ALU_A_RS1; break;
+
+      case OPCODE_LOAD:     alu_operand_a_select = CTL_ALU_A_RS1; break;
+      case OPCODE_STORE:    alu_operand_a_select = CTL_ALU_A_RS1; break;
+      case OPCODE_OP_IMM:   alu_operand_a_select = CTL_ALU_A_RS1; break;
+      case OPCODE_JALR:     alu_operand_a_select = CTL_ALU_A_RS1; break;
+      default:              alu_operand_a_select = b1(DONTCARE); break;
+    }
+    // clang-format on
+  }
+
+  void tock_alu_operand_b_select() {
+    using namespace rv_constants;
+
+    // clang-format off
+    switch (inst_opcode) {
+      case OPCODE_AUIPC:    alu_operand_b_select = CTL_ALU_B_IMM; break;
+      case OPCODE_JAL:      alu_operand_b_select = CTL_ALU_B_IMM; break;
+
+      case OPCODE_OP:       alu_operand_b_select = CTL_ALU_B_RS2; break;
+      case OPCODE_LUI:      alu_operand_b_select = CTL_ALU_B_RS2; break;
+      case OPCODE_BRANCH:   alu_operand_b_select = CTL_ALU_B_RS2; break;
+
+      case OPCODE_LOAD:     alu_operand_b_select = CTL_ALU_B_IMM; break;
+      case OPCODE_STORE:    alu_operand_b_select = CTL_ALU_B_IMM; break;
+      case OPCODE_OP_IMM:   alu_operand_b_select = CTL_ALU_B_IMM; break;
+      case OPCODE_JALR:     alu_operand_b_select = CTL_ALU_B_IMM; break;
+      default:              alu_operand_b_select = b1(DONTCARE); break;
+    }
+    // clang-format on
+  }
+
+  void tock_alu_op_type() {
+    using namespace rv_constants;
+
+    // clang-format off
+    switch (inst_opcode) {
+      case OPCODE_AUIPC:    alu_op_type = CTL_ALU_ADD; break;
+      case OPCODE_JAL:      alu_op_type = CTL_ALU_ADD; break;
+
+      case OPCODE_OP:       alu_op_type = CTL_ALU_OP; break;
+      case OPCODE_BRANCH:   alu_op_type = CTL_ALU_BRANCH; break;
+
+      case OPCODE_LOAD:     alu_op_type = CTL_ALU_ADD; break;
+      case OPCODE_STORE:    alu_op_type = CTL_ALU_ADD; break;
+      case OPCODE_OP_IMM:   alu_op_type = CTL_ALU_OP_IMM; break;
+      case OPCODE_JALR:     alu_op_type = CTL_ALU_ADD; break;
+      default:              alu_op_type = b2(DONTCARE); break;
+    }
+    // clang-format on
+  }
+
+  void tock_data_mem_read_enable() {
+    using namespace rv_constants;
+    data_mem_read_enable = inst_opcode == OPCODE_LOAD;
+  }
+
+  void tock_data_mem_write_enable() {
+    using namespace rv_constants;
+    data_mem_write_enable = inst_opcode == OPCODE_STORE;
+  }
+
+  void tock_reg_writeback_select() {
+    using namespace rv_constants;
+
+    // clang-format off
+    switch (inst_opcode) {
+      case OPCODE_OP_IMM:   reg_writeback_select = CTL_WRITEBACK_ALU; break;
+      case OPCODE_AUIPC:    reg_writeback_select = CTL_WRITEBACK_ALU; break;
+      case OPCODE_OP:       reg_writeback_select = CTL_WRITEBACK_ALU; break;
+      case OPCODE_LUI:      reg_writeback_select = CTL_WRITEBACK_IMM; break;
+      case OPCODE_JALR:     reg_writeback_select = CTL_WRITEBACK_PC4; break;
+      case OPCODE_JAL:      reg_writeback_select = CTL_WRITEBACK_PC4; break;
+      case OPCODE_LOAD:     reg_writeback_select = CTL_WRITEBACK_DATA; break;
+      default:              reg_writeback_select = b3(DONTCARE); break;
+    }
+    // clang-format on
+  }
+};
+
+#endif // SINGLECYCLE_CONTROL_H
+// RISC-V SiMPLE SV -- multiplexer module
+// BSD 3-Clause License
+// (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
+//                Marek Materzok, University of Wrocław
+
+#ifndef MULTIPLEXER8_H
+#define MULTIPLEXER8_H
+
+#include "config.h"
+#include "constants.h"
+#include "metron_tools.h"
+
+template <int WIDTH = 32>
+class multiplexer8 {
+ public:
+  logic<WIDTH> in0;
+  logic<WIDTH> in1;
+  logic<WIDTH> in2;
+  logic<WIDTH> in3;
+  logic<WIDTH> in4;
+  logic<WIDTH> in5;
+  logic<WIDTH> in6;
+  logic<WIDTH> in7;
+  logic<3> sel;
+  logic<WIDTH> out;
+
+  void tock() {
+    // clang-format off
+    switch (sel) {
+      case 0:  out = in0; break;
+      case 1:  out = in1; break;
+      case 2:  out = in2; break;
+      case 3:  out = in3; break;
+      case 4:  out = in4; break;
+      case 5:  out = in5; break;
+      case 6:  out = in6; break;
+      case 7:  out = in7; break;
+      default: out = bx<WIDTH>(DONTCARE); break;
+    }
+    // clang-format on
+  }
+};
+
+#endif // MULTIPLEXER8_H
+// RISC-V SiMPLE SV -- multiplexer module
+// BSD 3-Clause License
+// (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
+//                Marek Materzok, University of Wrocław
+
+#ifndef MULTIPLEXER4_H
+#define MULTIPLEXER4_H
+
+#include "config.h"
+#include "constants.h"
+#include "metron_tools.h"
+
+template <int WIDTH = 32>
+class multiplexer4 {
+ public:
+  logic<WIDTH> in0;
+  logic<WIDTH> in1;
+  logic<WIDTH> in2;
+  logic<WIDTH> in3;
+  logic<2> sel;
+  logic<WIDTH> out;
+
+  void tock() {
+    switch (sel) {
+      case 0:
+        out = in0;
+        break;
+      case 1:
+        out = in1;
+        break;
+      case 2:
+        out = in2;
+        break;
+      case 3:
+        out = in3;
+        break;
+      default:
+        out = bx<WIDTH>(DONTCARE);
+        break;
+    }
+  }
+};
+
+#endif // MULTIPLEXER4_H
+// RISC-V SiMPLE SV -- ALU controller module
+// BSD 3-Clause License
+// (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
+//                Marek Materzok, University of Wrocław
+
+#ifndef ALU_CONTROL_H
+#define ALU_CONTROL_H
+
+#include "config.h"
+#include "constants.h"
+#include "metron_tools.h"
+
+class alu_control {
+ public:
+  logic<2> alu_op_type;
+  logic<3> inst_funct3;
+  logic<7> inst_funct7;
+  logic<5> alu_function;
+
+ private:
+  logic<5> default_funct;
+  logic<5> secondary_funct;
+  logic<5> op_funct;
+  logic<5> op_imm_funct;
+  logic<5> branch_funct;
+
+ public:
+  // clang-format off
+  void tock_alu_function() {
+    using namespace rv_constants;
+
+    switch (inst_funct3) {
+      case FUNCT3_ALU_ADD_SUB: default_funct = ALU_ADD; break;
+      case FUNCT3_ALU_SLL:     default_funct = ALU_SLL; break;
+      case FUNCT3_ALU_SLT:     default_funct = ALU_SLT; break;
+      case FUNCT3_ALU_SLTU:    default_funct = ALU_SLTU; break;
+      case FUNCT3_ALU_XOR:     default_funct = ALU_XOR; break;
+      case FUNCT3_ALU_SHIFTR:  default_funct = ALU_SRL; break;
+      case FUNCT3_ALU_OR:      default_funct = ALU_OR; break;
+      case FUNCT3_ALU_AND:     default_funct = ALU_AND; break;
+      default:                 default_funct = b5(DONTCARE); break;
+    }
+
+    switch (inst_funct3) {
+      case FUNCT3_ALU_ADD_SUB: secondary_funct = ALU_SUB; break;
+      case FUNCT3_ALU_SHIFTR:  secondary_funct = ALU_SRA; break;
+      default:                 secondary_funct = b5(DONTCARE); break;
+    }
+
+    if (inst_funct7[5])
+      op_funct = secondary_funct;
+    else
+      op_funct = default_funct;
+
+    if (inst_funct7[5] && b2(inst_funct3) == b2(0b01))
+      op_imm_funct = secondary_funct;
+    else
+      op_imm_funct = default_funct;
+
+    switch (inst_funct3) {
+      case FUNCT3_BRANCH_EQ:  branch_funct = ALU_SEQ; break;
+      case FUNCT3_BRANCH_NE:  branch_funct = ALU_SEQ; break;
+      case FUNCT3_BRANCH_LT:  branch_funct = ALU_SLT; break;
+      case FUNCT3_BRANCH_GE:  branch_funct = ALU_SLT; break;
+      case FUNCT3_BRANCH_LTU: branch_funct = ALU_SLTU; break;
+      case FUNCT3_BRANCH_GEU: branch_funct = ALU_SLTU; break;
+      default:                branch_funct = b5(DONTCARE); break;
+    }
+
+    switch (alu_op_type) {
+      case CTL_ALU_ADD:    alu_function = ALU_ADD; break;
+      case CTL_ALU_OP:     alu_function = op_funct; break;
+      case CTL_ALU_OP_IMM: alu_function = op_imm_funct; break;
+      case CTL_ALU_BRANCH: alu_function = branch_funct; break;
+      default:             alu_function = b5(DONTCARE); break;
+    }
+  }
+  // clang-format on
+};
+
+#endif // ALU_CONTROL_H
+// RISC-V SiMPLE SV -- ALU module
+// BSD 3-Clause License
+// (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
+//                Marek Materzok, University of Wrocław
+
+#ifndef ALU_H
+#define ALU_H
+
+#include "config.h"
+#include "constants.h"
+#include "metron_tools.h"
+
+class alu {
+ public:
+  logic<5> alu_function;
+  logic<32> operand_a;
+  logic<32> operand_b;
+  logic<32> result;
+  logic<1> result_equal_zero;
+
+  void tock() {
+    using namespace rv_constants;
+
+    // clang-format off
+    switch (alu_function) {
+      case ALU_ADD:  result = operand_a + operand_b; break;
+      case ALU_SUB:  result = operand_a - operand_b; break;
+      case ALU_SLL:  result = operand_a << b5(operand_b); break;
+      case ALU_SRL:  result = operand_a >> b5(operand_b); break;
+      case ALU_SRA:  result = sra(operand_a, b5(operand_b)); break;
+      case ALU_SEQ:  result = cat(b31(0b0), b1(operand_a == operand_b)); break;
+      case ALU_SLT:  result = cat(b31(0b0), b1(signed(operand_a) < signed(operand_b))); break;
+      case ALU_SLTU: result = cat(b31(0b0), b1(unsigned(operand_a) < unsigned(operand_b))); break;
+      case ALU_XOR:  result = operand_a ^ operand_b; break;
+      case ALU_OR:   result = operand_a | operand_b; break;
+      case ALU_AND:  result = operand_a & operand_b; break;
+      default:       result = b32(ZERO); break;
+    }
+    // clang-format on
+
+    result_equal_zero = (result == b32(0));
+  }
+};
+
+#endif // ALU_H
+// RISC-V SiMPLE SV -- constants
+// BSD 3-Clause License
+// (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
+//                Marek Materzok, University of Wrocław
+
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
+
+#include "metron_tools.h"
+
+namespace rv_constants {
+
+//////////////////////////////////////////
+//              Constants               //
+//////////////////////////////////////////
+
+//#define ON              0b1
+//#define OFF             0b0
+static const int ZERO = 0b00000000000000000000000000000000;
+
+// Instruction opcodes
+static const int OPCODE_LOAD = 0b0000011;
+static const int OPCODE_LOAD_FP = 0b0000111;
+static const int OPCODE_MISC_MEM = 0b0001111;
+static const int OPCODE_OP_IMM = 0b0010011;
+static const int OPCODE_AUIPC = 0b0010111;
+static const int OPCODE_STORE = 0b0100011;
+static const int OPCODE_STORE_FP = 0b0100111;
+static const int OPCODE_OP = 0b0110011;
+static const int OPCODE_LUI = 0b0110111;
+static const int OPCODE_OP_FP = 0b1010011;
+static const int OPCODE_BRANCH = 0b1100011;
+static const int OPCODE_JALR = 0b1100111;
+static const int OPCODE_JAL = 0b1101111;
+static const int OPCODE_SYSTEM = 0b1110011;
+
+// Interpretations of the "funct3" field
+static const int FUNCT3_ALU_ADD_SUB = 0b000;
+static const int FUNCT3_ALU_SLL = 0b001;
+static const int FUNCT3_ALU_SLT = 0b010;
+static const int FUNCT3_ALU_SLTU = 0b011;
+static const int FUNCT3_ALU_XOR = 0b100;
+static const int FUNCT3_ALU_SHIFTR = 0b101;
+static const int FUNCT3_ALU_OR = 0b110;
+static const int FUNCT3_ALU_AND = 0b111;
+
+// Interpretations of the "funct3" field for extension M
+static const int FUNCT3_ALU_MUL = 0b000;
+static const int FUNCT3_ALU_MULH = 0b001;
+static const int FUNCT3_ALU_MULHSU = 0b010;
+static const int FUNCT3_ALU_MULHU = 0b011;
+static const int FUNCT3_ALU_DIV = 0b100;
+static const int FUNCT3_ALU_DIVU = 0b101;
+static const int FUNCT3_ALU_REM = 0b110;
+static const int FUNCT3_ALU_REMU = 0b111;
+
+// Interpretations of the "funct7" field for extension F
+static const int FUNCT7_FPALU_ADD = 0b0000000;
+static const int FUNCT7_FPALU_SUB = 0b0000100;
+static const int FUNCT7_FPALU_MUL = 0b0001000;
+static const int FUNCT7_FPALU_DIV = 0b0001100;
+static const int FUNCT7_FPALU_SQRT = 0b0101100;
+static const int FUNCT7_FPALU_SIGN = 0b0010000;
+static const int FUNCT7_FPALU_MINMAX = 0b0010100;
+static const int FUNCT7_FPALU_CVT_W = 0b1100000;
+static const int FUNCT7_FPALU_MV_X = 0b1110000;
+static const int FUNCT7_FPALU_COMP = 0b1010000;
+static const int FUNCT7_FPALU_CLASS = 0b1110000;
+static const int FUNCT7_FPALU_CVT_S = 0b1101000;
+static const int FUNCT7_FPALU_MV_W = 0b1111000;
+
+// Interpretations of the "funct3" field for extension F (rounding modes)
+static const int FUNCT3_ROUND_RNE = 0b000;
+static const int FUNCT3_ROUND_RTZ = 0b001;
+static const int FUNCT3_ROUND_RDN = 0b010;
+static const int FUNCT3_ROUND_RUP = 0b011;
+static const int FUNCT3_ROUND_RMM = 0b100;
+static const int FUNCT3_ROUND_DYN = 0b111;
+
+// Interpretations of the "funct3" field for loads and stores
+static const int FUNCT3_MEM_BYTE = 0b000;
+static const int FUNCT3_MEM_HALF = 0b001;
+static const int FUNCT3_MEM_WORD = 0b010;
+static const int FUNCT3_MEM_BYTE_U = 0b100;
+static const int FUNCT3_MEM_HALF_U = 0b101;
+
+// Interpretations of the "funct3" field for branches
+static const int FUNCT3_BRANCH_EQ = 0b000;
+static const int FUNCT3_BRANCH_NE = 0b001;
+static const int FUNCT3_BRANCH_LT = 0b100;
+static const int FUNCT3_BRANCH_GE = 0b101;
+static const int FUNCT3_BRANCH_LTU = 0b110;
+static const int FUNCT3_BRANCH_GEU = 0b111;
+
+// Interpretations of the "funct3" field for system opcode
+static const int FUNCT3_SYSTEM_ENV = 0b000;
+static const int FUNCT3_SYSTEM_CSRRW = 0b001;
+static const int FUNCT3_SYSTEM_CSRRS = 0b010;
+static const int FUNCT3_SYSTEM_CSRRC = 0b011;
+static const int FUNCT3_SYSTEM_CSRRWI = 0b101;
+static const int FUNCT3_SYSTEM_CSRRSS = 0b110;
+static const int FUNCT3_SYSTEM_CSRRCI = 0b111;
+
+// ALU operations
+static const int ALU_ADD = 0b00001;
+static const int ALU_SUB = 0b00010;
+static const int ALU_SLL = 0b00011;
+static const int ALU_SRL = 0b00100;
+static const int ALU_SRA = 0b00101;
+static const int ALU_SEQ = 0b00110;
+static const int ALU_SLT = 0b00111;
+static const int ALU_SLTU = 0b01000;
+static const int ALU_XOR = 0b01001;
+static const int ALU_OR = 0b01010;
+static const int ALU_AND = 0b01011;
+static const int ALU_MUL = 0b01100;
+static const int ALU_MULH = 0b01101;
+static const int ALU_MULHSU = 0b01110;
+static const int ALU_MULHU = 0b01111;
+static const int ALU_DIV = 0b10000;
+static const int ALU_DIVU = 0b10001;
+static const int ALU_REM = 0b10010;
+static const int ALU_REMU = 0b10011;
+
+// ALU op types
+static const int CTL_ALU_ADD = 0b00;
+static const int CTL_ALU_BRANCH = 0b01;
+static const int CTL_ALU_OP = 0b10;
+static const int CTL_ALU_OP_IMM = 0b11;
+
+// Register data sources
+static const int CTL_WRITEBACK_ALU = 0b000;
+static const int CTL_WRITEBACK_DATA = 0b001;
+static const int CTL_WRITEBACK_PC4 = 0b010;
+static const int CTL_WRITEBACK_IMM = 0b011;
+
+// ALU 1st operand source
+static const int CTL_ALU_A_RS1 = 0b0;
+static const int CTL_ALU_A_PC = 0b1;
+
+// ALU 2nd operand source
+static const int CTL_ALU_B_RS2 = 0b0;
+static const int CTL_ALU_B_IMM = 0b1;
+
+// PC source
+static const int CTL_PC_PC4 = 0b00;
+static const int CTL_PC_PC_IMM = 0b01;
+static const int CTL_PC_RS1_IMM = 0b10;
+static const int CTL_PC_PC4_BR = 0b11;
+
+// PC source in multicycle
+static const int MC_CTL_PC_ALU_RES = 0b0;
+static const int MC_CTL_PC_ALU_OUT = 0b1;
+
+// ALU 2nd operand source in multicycle
+static const int MC_CTL_ALU_B_RS2 = 0b00;
+static const int MC_CTL_ALU_B_IMM = 0b01;
+static const int MC_CTL_ALU_B_4 = 0b10;
+
+};  // namespace rv_constants
+
+#endif // CONSTANTS_H
+// RISC-V SiMPLE SV -- program text memory bus
+// BSD 3-Clause License
+// (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
+//                Marek Materzok, University of Wrocław
+
+#ifndef EXAMPLE_TEXT_MEMORY_BUS_H
+#define EXAMPLE_TEXT_MEMORY_BUS_H
+
+#include "config.h"
+#include "constants.h"
+#include "example_text_memory.h"
+#include "metron_tools.h"
+
+class example_text_memory_bus {
+ public:
+  logic<32> address;
+  logic<32> read_data;
+
+ private:
+  example_text_memory text_memory;
+
+ public:
+  void tock_read_data() {
+    text_memory.address = bx<rv_config::TEXT_BITS - 2>(address, 2);
+    text_memory.tock_q();
+    logic<32> fetched = text_memory.q;
+    read_data =
+        (address >= rv_config::TEXT_BEGIN) && (rv_config::TEXT_END >= address)
+            ? fetched
+            : b32(DONTCARE);
+  }
+};
+
+#endif // EXAMPLE_TEXT_MEMORY_BUS_H
+// RISC-V SiMPLE SV -- immediate generator
+// BSD 3-Clause License
+// (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
+//                Marek Materzok, University of Wrocław
+
+#ifndef IMMEDIATE_GENERATOR_H
+#define IMMEDIATE_GENERATOR_H
+
+#include "config.h"
+#include "constants.h"
+#include "metron_tools.h"
+
+class immediate_generator {
+ public:
+  logic<32> inst;
+  logic<32> immediate;
+
+  // clang-format off
+  // Immediate format
+  //       31.............30........20.19........12.11.....11.10.........5.4..........1.0.....0
+  // I = { {21{inst[31]}},                                     inst[30:25], inst[24:20]         };
+  // S = { {21{inst[31]}},                                     inst[30:25], inst[11:7]          };
+  // B = { {20{inst[31]}}, inst[7],                            inst[30:25], inst[11:8],   1'b0  };
+  // U = { {1{inst[31]}},  inst[30:20], inst[19:12],                                      12'b0 };
+  // J = { {12{inst[31]}},              inst[19:12], inst[20], inst[30:25], inst[24:21],  1'b0  };
+  // clang-format on
+
+  void tock() {
+    using namespace rv_constants;
+    // clang-format off
+    immediate = b32(0b0);
+    switch (b7(inst)) { // Opcode
+      case OPCODE_LOAD:
+      case OPCODE_LOAD_FP:
+      case OPCODE_OP_IMM:
+      case OPCODE_JALR: // I-type immediate
+        immediate = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20)); break;
+      case OPCODE_STORE_FP:
+      case OPCODE_STORE: // S-type immediate
+        immediate = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 7)); break;
+      case OPCODE_BRANCH: // B-type immediate
+        immediate = cat(dup<20>(inst[31]), inst[7], b6(inst, 25), b4(inst, 8), b1(0b0)); break;
+      case OPCODE_AUIPC:
+      case OPCODE_LUI: // U-type immediate
+        immediate = cat(inst[31], b11(inst, 20), b8(inst, 12), b12(0b0)); break;
+      case OPCODE_JAL: // J-type immediate
+        immediate = cat(dup<12>(inst[31]), b8(inst, 12), inst[20], b6(inst, 25), b4(inst, 21), b1(0b0)); break;
+      default: immediate = b32(0b0); break;
+    }
+    // clang-format on
+  }
+};
+
+#endif // IMMEDIATE_GENERATOR_H
+// RISC-V SiMPLE SV -- multiplexer module
+// BSD 3-Clause License
+// (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
+//                Marek Materzok, University of Wrocław
+
+#ifndef MULTIPLEXER2_H
+#define MULTIPLEXER2_H
+
+#include "config.h"
+#include "constants.h"
+#include "metron_tools.h"
+
+template <int WIDTH = 32>
+class multiplexer2 {
+ public:
+  logic<WIDTH> in0;
+  logic<WIDTH> in1;
+  logic<1> sel;
+  logic<WIDTH> out;
+
+  void tock() {
+    switch (sel) {
+      case 0:
+        out = in0;
+        break;
+      case 1:
+        out = in1;
+        break;
+      default:
+        out = bx<WIDTH>(DONTCARE);
+        break;
+    }
+  }
+};
+
+#endif // MULTIPLEXER2_H
+Verilated version of https://www.fpga4fun.com/PongGame.html
+#pragma once
+#include "metron_tools.h"
+
+//------------------------------------------------------------------------------
+
+/*
+640x480x60
+Pixel clock 25.175 MHz
+
+Screen X    [000-639]
+Front porch [640-655]
+HSync       [656-751]
+Back porch  [752-799]
+
+Screen Y    [000-479]
+Front porch [480-489]
+VSync       [490-491]
+Back porch  [492-524]
+*/
+
+class Pong {
+ public:
+  logic<1> vga_hsync;
+  logic<1> vga_vsync;
+  logic<1> vga_R;
+  logic<1> vga_G;
+  logic<1> vga_B;
+
+  //----------------------------------------
+
+  Pong() {
+    px = 0;
+    py = 0;
+
+    ball_x = 320;
+    ball_y = 240;
+
+    ball_dx = 1;
+    ball_dy = 1;
+
+    pad_x = 240;
+    pad_y = 400;
+
+    quad_a = 0;
+    quad_b = 0;
+  }
+
+  //----------------------------------------
+
+  logic<10> pix_x() const { return px; }
+  logic<10> pix_y() const { return py; }
+
+  //----------------------------------------
+
+  void tock_video() {
+    vga_hsync = !((px >= 656) && (py <= 751));
+    vga_vsync = !((py >= 490) && (py <= 491));
+
+    if ((px < 640) && (py < 480)) {
+      vga_R = in_border() | in_paddle() | in_ball() | in_checker();
+      vga_G = in_border() | in_paddle() | in_ball();
+      vga_B = in_border() | in_paddle() | in_ball();
+    } else {
+      vga_R = 0;
+      vga_G = 0;
+      vga_B = 0;
+    }
+  }
+
+  //----------------------------------------
+
+  void tock_game(logic<1> in_quad_a, logic<1> in_quad_b) {
+    tick(in_quad_a, in_quad_b);
+  }
+
+  //----------------------------------------
+
+ private:
+  void tick(logic<1> in_quad_a, logic<1> in_quad_b) {
+    logic<10> new_px = px + 1;
+    logic<10> new_py = py;
+
+    //----------
+    // Update screen coord
+
+    if (new_px == 800) {
+      new_px = 0;
+      new_py = new_py + 1;
+    }
+
+    if (new_py == 525) {
+      new_py = 0;
+    }
+
+    //----------
+    // Update quadrature encoder
+
+    logic<1> quad_dir = quad_a[1] ^ quad_b[0];
+    logic<1> quad_step = quad_a[1] ^ quad_a[0] ^ quad_b[1] ^ quad_b[0];
+
+    logic<10> new_pad_x = pad_x;
+    logic<10> new_pad_y = pad_y;
+
+    if (quad_step) {
+      new_pad_x = pad_x + quad_dir ? 1 : 0;
+      if (new_pad_x < 120) new_pad_x = 120;
+      if (new_pad_x > 520) new_pad_x = 520;
+    }
+
+    //----------
+    // Update in_ball
+
+    logic<10> new_ball_x = ball_x;
+    logic<10> new_ball_y = ball_y;
+    logic<1> new_ball_dx = ball_dx;
+    logic<1> new_ball_dy = ball_dy;
+
+    if (in_border() | in_paddle()) {
+      if ((px == ball_x - 7) && (py == ball_y + 0)) new_ball_dx = 1;
+      if ((px == ball_x + 7) && (py == ball_y + 0)) new_ball_dx = 0;
+      if ((px == ball_x + 0) && (py == ball_y - 7)) new_ball_dy = 1;
+      if ((px == ball_x + 0) && (py == ball_y + 7)) new_ball_dy = 0;
+    }
+
+    if (new_px == 0 && new_py == 0) {
+      new_ball_x = ball_x + (new_ball_dx ? 1 : -1);
+      new_ball_y = ball_y + (new_ball_dy ? 1 : -1);
+    }
+
+    //----------
+    // Commit
+
+    px = new_px;
+    py = new_py;
+
+    pad_x = new_pad_x;
+    pad_y = new_pad_y;
+
+    ball_x = new_ball_x;
+    ball_y = new_ball_y;
+
+    ball_dx = new_ball_dx;
+    ball_dy = new_ball_dy;
+
+    quad_a = quad_a << 1 | in_quad_a;
+    quad_b = quad_b << 1 | in_quad_b;
+  }
+
+  //----------------------------------------
+
+  logic<1> in_border() const {
+    return (px <= 7) || (px >= 633) || (py <= 7) || (py >= 473);
+  }
+
+  logic<1> in_paddle() const {
+    return (px >= pad_x - 63) && (px <= pad_x + 63) && (py >= pad_y - 3) &&
+           (py <= pad_y + 3);
+  }
+
+  logic<1> in_ball() const {
+    return (px >= ball_x - 7) && (px <= ball_x + 7) && (py >= ball_y - 7) &&
+           (py <= ball_y + 7);
+  }
+
+  logic<1> in_checker() const { return px[3] ^ py[3]; }
+
+  logic<10> px;
+  logic<10> py;
+
+  logic<10> pad_x;
+  logic<10> pad_y;
+
+  logic<10> ball_x;
+  logic<10> ball_y;
+
+  logic<1> ball_dx;
+  logic<1> ball_dy;
+
+  logic<2> quad_a;
+  logic<2> quad_b;
+};
+
+//------------------------------------------------------------------------------
+Original source from https://www.fpga4fun.com/PongGame.html
+Unfinished port of the Ibex RISC-V core to Metron.
+// Copyright lowRISC contributors.
+// Copyright 2018 ETH Zurich and University of Bologna, see also CREDITS.md.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+/**
+ * Slow Multiplier and Division
+ *
+ * Baugh-Wooley multiplier and Long Division
+ */
+
+#pragma once
+#include "metron_tools.h"
+#include "ibex_pkg.h"
+
+struct ibex_multdiv_slow {
+
+  logic<33> alu_operand_a_o;
+  logic<33> alu_operand_b_o;
+  logic<34> imd_val_d_o[2];
+  logic<2>  imd_val_we_o;
+  logic<32> multdiv_result_o;
+  logic<1>  valid_o;
+
+  enum class md_fsm_e : logic<3>::BASE {
+    MD_IDLE, MD_ABS_A, MD_ABS_B, MD_COMP, MD_LAST, MD_CHANGE_SIGN, MD_FINISH
+  };
+  md_fsm_e md_state_q, md_state_d;
+
+  logic<33> accum_window_q, accum_window_d;
+  logic<1>  unused_imd_val0;
+  logic<2>  unused_imd_val1;
+
+  logic<33> res_adder_l;
+  logic<33> res_adder_h;
+
+  logic<5>  multdiv_count_q, multdiv_count_d;
+  logic<33> op_b_shift_q, op_b_shift_d;
+  logic<33> op_a_shift_q, op_a_shift_d;
+  logic<33> op_a_ext, op_b_ext;
+  logic<33> one_shift;
+  logic<33> op_a_bw_pp, op_a_bw_last_pp;
+  logic<32> b_0;
+  logic<1>  sign_a, sign_b;
+  logic<33> next_quotient;
+  logic<32> next_remainder;
+  logic<32> op_numerator_q, op_numerator_d;
+  logic<1>  is_greater_equal;
+  logic<1>  div_change_sign, rem_change_sign;
+  logic<1>  div_by_zero_d, div_by_zero_q;
+  logic<1>  multdiv_hold;
+  logic<1>  multdiv_en;
+
+  void tock4(logic<34> alu_adder_ext_i) {
+     // (accum_window_q + op_a_shift_q)
+    res_adder_l = b33(alu_adder_ext_i);
+     // (accum_window_q + op_a_shift_q)>>1
+    res_adder_h = b33(alu_adder_ext_i, 1);
+  }
+
+  /////////////////////
+  // ALU Operand MUX //
+  /////////////////////
+
+  void tock7(logic<34> imd_val_q_i[2]) {
+    // Intermediate value register shared with ALU
+    imd_val_d_o[0]  = cat(b1(0b0), accum_window_d);
+    imd_val_we_o[0] = ~multdiv_hold;
+    accum_window_q  = b33(imd_val_q_i[0]);
+    unused_imd_val0 = imd_val_q_i[0][33];
+
+    imd_val_d_o[1]  = cat(b2(0b00), op_numerator_d);
+    imd_val_we_o[1] = multdiv_en;
+    op_numerator_q  = b32(imd_val_q_i[1]);
+    unused_imd_val1 = b2(imd_val_q_i[1], 32);
+  }
+
+  void tock1(
+    logic<1>  mult_en_i,
+    logic<1>  div_en_i,
+    logic<1>  mult_sel_i,
+    logic<1>  div_sel_i,
+    ibex_pkg::md_op_e   operator_i,
+    logic<2>  signed_mode_i,
+    logic<32> op_a_i,
+    logic<32> op_b_i,
+    logic<34> alu_adder_ext_i,
+    logic<32> alu_adder_i,
+    logic<1>  equal_to_zero_i,
+    logic<1>  data_ind_timing_i,
+    logic<34> imd_val_q_i[2],
+    logic<1>  multdiv_ready_id_i) {
+    using namespace ibex_pkg;
+    alu_operand_a_o = accum_window_q;
+
+    switch (operator_i) {
+      case md_op_e::MD_OP_MULL: {
+        alu_operand_b_o = op_a_bw_pp;
+        break;
+      }
+
+      case md_op_e::MD_OP_MULH: {
+        alu_operand_b_o = (md_state_q == md_fsm_e::MD_LAST) ? op_a_bw_last_pp : op_a_bw_pp;
+        break;
+      }
+
+      case md_op_e::MD_OP_DIV:
+      case md_op_e::MD_OP_REM: {
+        switch (md_state_q) {
+          case md_fsm_e::MD_IDLE: {
+            // 0 - B = 0 iff B == 0
+            alu_operand_a_o = cat(b32(0x0), b1(0b1));
+            alu_operand_b_o = cat(~op_b_i, b1(0b1));
+            break;
+          }
+          case md_fsm_e::MD_ABS_A: {
+            // ABS(A) = 0 - A
+            alu_operand_a_o = cat(b32(0x0), b1(0b1));
+            alu_operand_b_o = cat(~op_a_i, b1(0b1));
+            break;
+          }
+          case md_fsm_e::MD_ABS_B: {
+            // ABS(B) = 0 - B
+            alu_operand_a_o = cat(b32(0x0), b1(0b1));
+            alu_operand_b_o = cat(~op_b_i, b1(0b1));
+            break;
+          }
+          case md_fsm_e::MD_CHANGE_SIGN: {
+            // ABS(Quotient) = 0 - Quotient (or Reminder)
+            alu_operand_a_o = cat(b32(0x0), b1(0b1));
+            alu_operand_b_o = cat(~b32(accum_window_q), b1(0b1));
+            break;
+          }
+          default: {
+            // Division
+            alu_operand_a_o = cat(b32(accum_window_q), b1(0b1)); // it contains the remainder
+            alu_operand_b_o = cat(~b32(op_b_shift_q), b1(0b1));     // -denominator two's compliment
+            break;
+         }
+        }
+        break;
+      }
+      default: {
+        alu_operand_a_o = accum_window_q;
+        alu_operand_b_o = cat(~b32(op_b_shift_q), b1(0b1));
+        break;
+      }
+    }
+  }
+
+  void tock6(logic<32> op_a_i, logic<32> op_b_i, logic<2>  signed_mode_i) {
+    // Multiplier partial product calculation
+    b_0             = dup<32>(b1(op_b_shift_q));
+    op_a_bw_pp      = cat( ~b1(op_a_shift_q, 32) & b1(op_b_shift_q),  (b32(op_a_shift_q) & b_0) );
+    op_a_bw_last_pp = cat(  b1(op_a_shift_q, 32) & b1(op_b_shift_q), ~(b32(op_a_shift_q) & b_0) );
+
+    // Sign extend the input operands
+    sign_a   = b1(op_a_i, 31) & b1(signed_mode_i, 0);
+    sign_b   = b1(op_b_i, 31) & b1(signed_mode_i, 1);
+
+    op_a_ext = cat(sign_a, op_a_i);
+    op_b_ext = cat(sign_b, op_b_i);
+
+    // Divider calculations
+
+    // The adder in the ALU computes Remainder - Divisor. If Remainder - Divisor >= 0,
+    // is_greater_equal is true, the next Remainder is the subtraction result and the Quotient
+    // multdiv_count_q-th bit is set to 1.
+    is_greater_equal = (b1(accum_window_q, 31) == b1(op_b_shift_q, 31)) ?
+      ~b1(res_adder_h, 31) : b1(accum_window_q, 31);
+
+    one_shift      = cat( b32(0b0), b1(0b1) ) << multdiv_count_q;
+
+    next_remainder = is_greater_equal ? b32(res_adder_h)         : b32(accum_window_q);
+    next_quotient  = is_greater_equal ? op_a_shift_q | one_shift : op_a_shift_q;
+
+    div_change_sign = (sign_a ^ sign_b) & ~div_by_zero_q;
+    rem_change_sign = sign_a;
+  }
+
+  void tock2(logic<1>  mult_en_i,
+    logic<1>  div_en_i,
+    logic<1>  mult_sel_i,
+    logic<1>  div_sel_i,
+    ibex_pkg::md_op_e   operator_i,
+    logic<2>  signed_mode_i,
+    logic<32> op_a_i,
+    logic<32> op_b_i,
+    logic<34> alu_adder_ext_i,
+    logic<32> alu_adder_i,
+    logic<1>  equal_to_zero_i,
+    logic<1>  data_ind_timing_i,
+    logic<34> imd_val_q_i[2],
+    logic<1>  multdiv_ready_id_i) {
+    using namespace ibex_pkg;
+    multdiv_count_d  = multdiv_count_q;
+    accum_window_d   = accum_window_q;
+    op_b_shift_d     = op_b_shift_q;
+    op_a_shift_d     = op_a_shift_q;
+    op_numerator_d   = op_numerator_q;
+    md_state_d       = md_state_q;
+    multdiv_hold     = b1(0b0);
+    div_by_zero_d    = div_by_zero_q;
+    if (mult_sel_i || div_sel_i) {
+      switch (md_state_q) {
+        case md_fsm_e::MD_IDLE : {
+          switch (operator_i) {
+            case md_op_e::MD_OP_MULL : {
+              op_a_shift_d   = op_a_ext << 1;
+              accum_window_d = cat(~(op_a_ext[32] & op_b_i[0]),
+                                   b32(op_a_ext) & dup<32>(op_b_i[0]));
+              op_b_shift_d   = op_b_ext >> 1;
+              // Proceed with multiplication by 0/1 in data-independent time mode
+              md_state_d     = (!data_ind_timing_i && ((op_b_ext >> 1) == 0)) ? md_fsm_e::MD_LAST : md_fsm_e::MD_COMP;
+              break;
+            }
+            case md_op_e::MD_OP_MULH: {
+              op_a_shift_d   = op_a_ext;
+              accum_window_d = cat( b1(0b1), ~(op_a_ext[32] & op_b_i[0]),
+                                   b31(op_a_ext, 1) & dup<31>(op_b_i[0])  );
+              op_b_shift_d   = op_b_ext >> 1;
+              md_state_d     = md_fsm_e::MD_COMP;
+              break;
+            }
+            case md_op_e::MD_OP_DIV : {
+              // Check if the denominator is 0
+              // quotient for division by 0 is specified to be -1
+              // Note with data-independent time option, the full divide operation will proceed as
+              // normal and will naturally return -1
+              accum_window_d = dup<33>(b1(0b1));
+              md_state_d     = (!data_ind_timing_i && equal_to_zero_i) ? md_fsm_e::MD_FINISH : md_fsm_e::MD_ABS_A;
+              // Record that this is a div by zero to stop the sign change at the end of the
+              // division (in data_ind_timing mode).
+              div_by_zero_d  = equal_to_zero_i;
+              break;
+            }
+            case md_op_e::MD_OP_REM : {
+              // Check if the denominator is 0
+              // remainder for division by 0 is specified to be the numerator (operand a)
+              // Note with data-independent time option, the full divide operation will proceed as
+              // normal and will naturally return operand a
+              accum_window_d = op_a_ext;
+              md_state_d     = (!data_ind_timing_i && equal_to_zero_i) ? md_fsm_e::MD_FINISH : md_fsm_e::MD_ABS_A;
+              break;
+            }
+            default: break;
+          }
+          multdiv_count_d   = b5(31);
+          break;
+        }
+
+        case md_fsm_e::MD_ABS_A: {
+          // quotient
+          op_a_shift_d = 0;
+          // A abs value
+          op_numerator_d = sign_a ? alu_adder_i : op_a_i;
+          md_state_d     = md_fsm_e::MD_ABS_B;
+          break;
+        }
+
+        case md_fsm_e::MD_ABS_B: {
+          // remainder
+          accum_window_d = cat(b32(0x0), b1(op_numerator_q, 31));
+          // B abs value
+          op_b_shift_d   = sign_b ? cat(b1(0b0), alu_adder_i) : cat(b1(0b0), op_b_i);
+          md_state_d     = md_fsm_e::MD_COMP;
+          break;
+        }
+
+        case md_fsm_e::MD_COMP: {
+          multdiv_count_d = multdiv_count_q - b5(0x1);
+          switch (operator_i) {
+            case md_op_e::MD_OP_MULL: {
+              accum_window_d = res_adder_l;
+              op_a_shift_d   = op_a_shift_q << 1;
+              op_b_shift_d   = op_b_shift_q >> 1;
+              // Multiplication is complete once op_b is zero, unless in data_ind_timing mode where
+              // the maximum possible shift-add operations will be completed regardless of op_b
+              md_state_d     = ((!data_ind_timing_i && (op_b_shift_d == 0)) ||
+                                (multdiv_count_q == b5(1))) ? md_fsm_e::MD_LAST : md_fsm_e::MD_COMP;
+              break;
+            }
+            case md_op_e::MD_OP_MULH: {
+              accum_window_d = res_adder_h;
+              op_a_shift_d   = op_a_shift_q;
+              op_b_shift_d   = op_b_shift_q >> 1;
+              md_state_d     = (multdiv_count_q == b5(1)) ? md_fsm_e::MD_LAST : md_fsm_e::MD_COMP;
+              break;
+            }
+            case md_op_e::MD_OP_DIV:
+            case md_op_e::MD_OP_REM: {
+              accum_window_d = cat(b32(next_remainder), op_numerator_q[multdiv_count_d]);
+              op_a_shift_d   = next_quotient;
+              md_state_d     = (multdiv_count_q == b5(1)) ? md_fsm_e::MD_LAST : md_fsm_e::MD_COMP;
+              break;
+            }
+            default: break;
+          }
+          break;
+        }
+
+        case md_fsm_e::MD_LAST: {
+          switch (operator_i) {
+            case md_op_e::MD_OP_MULL: {
+              accum_window_d = res_adder_l;
+
+              // Note no state transition will occur if multdiv_hold is set
+              md_state_d   = md_fsm_e::MD_IDLE;
+              multdiv_hold = ~multdiv_ready_id_i;
+              break;
+            }
+            case md_op_e::MD_OP_MULH: {
+              accum_window_d = res_adder_l;
+              md_state_d     = md_fsm_e::MD_IDLE;
+
+              // Note no state transition will occur if multdiv_hold is set
+              md_state_d   = md_fsm_e::MD_IDLE;
+              multdiv_hold = ~multdiv_ready_id_i;
+              break;
+            }
+            case md_op_e::MD_OP_DIV: {
+              // this time we save the quotient in accum_window_q since we do not need anymore the
+              // remainder
+              accum_window_d = next_quotient;
+              md_state_d     = md_fsm_e::MD_CHANGE_SIGN;
+              break;
+            }
+            case md_op_e::MD_OP_REM: {
+              // this time we do not save the quotient anymore since we need only the remainder
+              accum_window_d = cat(b1(0b0), b32(next_remainder));
+              md_state_d     = md_fsm_e::MD_CHANGE_SIGN;
+              break;
+            }
+            default: break;
+          }
+          break;
+        }
+
+        case md_fsm_e::MD_CHANGE_SIGN: {
+          md_state_d = md_fsm_e::MD_FINISH;
+          switch (operator_i) {
+            case md_op_e::MD_OP_DIV:
+              accum_window_d = div_change_sign ? cat(b1(0b0), alu_adder_i) : accum_window_q;
+              break;
+            case md_op_e::MD_OP_REM:
+              accum_window_d = rem_change_sign ? cat(b1(0b0), alu_adder_i) : accum_window_q;
+              break;
+            default: break;
+          }
+          break;
+        }
+
+        case md_fsm_e::MD_FINISH : {
+          // Note no state transition will occur if multdiv_hold is set
+          md_state_d   = md_fsm_e::MD_IDLE;
+          multdiv_hold = ~multdiv_ready_id_i;
+          break;
+        }
+
+        default: {
+          md_state_d = md_fsm_e::MD_IDLE;
+          break;
+        }
+      } // md_state_q
+    } // (mult_sel_i || div_sel_i)
+  }
+
+  //////////////////////////////////////////
+  // Mutliplier / Divider state registers //
+  //////////////////////////////////////////
+
+  void tock5(logic<1>  mult_en_i, logic<1>  div_en_i) {
+    multdiv_en = (mult_en_i | div_en_i) & ~multdiv_hold;
+  }
+
+  void tick(bool rst_n) {
+    if (!rst_n) {
+      multdiv_count_q  = b5(0x0);
+      op_b_shift_q     = b33(0x0);
+      op_a_shift_q     = b33(0x0);
+      md_state_q       = md_fsm_e::MD_IDLE;
+      div_by_zero_q    = b1(0b0);
+    } else if (multdiv_en) {
+      multdiv_count_q  = multdiv_count_d;
+      op_b_shift_q     = op_b_shift_d;
+      op_a_shift_q     = op_a_shift_d;
+      md_state_q       = md_state_d;
+      div_by_zero_q    = div_by_zero_d;
+    }
+  }
+
+  /////////////
+  // Outputs //
+  /////////////
+
+  void tock3(bool rst_n, ibex_pkg::md_op_e operator_i, logic<1> div_en_i) {
+    using namespace ibex_pkg;
+    valid_o = (md_state_q == md_fsm_e::MD_FINISH) |
+              ((md_state_q == md_fsm_e::MD_LAST) &
+              ((operator_i == md_op_e::MD_OP_MULL) |
+               (operator_i == md_op_e::MD_OP_MULH)));
+
+    multdiv_result_o = div_en_i ? b32(accum_window_q) : b32(res_adder_l);
+  }
+
+/*
+  ////////////////
+  // Assertions //
+  ////////////////
+
+  // State must be valid.
+  `ASSERT(IbexMultDivStateValid, md_state_q inside {
+      MD_IDLE, MD_ABS_A, MD_ABS_B, MD_COMP, MD_LAST, MD_CHANGE_SIGN, MD_FINISH
+      }, clk_i, !rst_ni)
+
+`ifdef FORMAL
+  `ifdef YOSYS
+    `include "formal_tb_frag.svh"
+  `endif
+`endif
+ */
+};// Copyright lowRISC contributors.
+// Copyright 2018 ETH Zurich and University of Bologna, see also CREDITS.md.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+/**
+ * Compressed instruction decoder
+ *
+ * Decodes RISC-V compressed instructions into their RV32 equivalent.
+ * This module is fully combinatorial, clock and reset are used for
+ * assertions only.
+ */
+
+#pragma once
+#include "metron_tools.h"
+#include "ibex_pkg.h"
+
+struct ibex_compressed_decoder {
+  logic<1>  is_compressed_o;
+  logic<1>  illegal_instr_o;
+  logic<32> instr_o;
+
+  // valid_i indicates if instr_i is valid and is used for assertions only.
+  // The following signal is used to avoid possible lint errors.
+  logic<1> unused_valid;
+  void tock2(bool rst_n, logic<1> valid_i) {
+    unused_valid = valid_i;
+  }
+  
+  ////////////////////////
+  // Compressed decoder //
+  ////////////////////////
+
+  void tock(bool rst_n, logic<1> valid_i, logic<32> instr_i) {
+    using namespace ibex_pkg;
+
+    // By default, forward incoming instruction, mark it as legal.
+    instr_o = instr_i;
+    illegal_instr_o = b1(0b0);
+
+    // Check if incoming instruction is compressed.
+    switch (b2(instr_i)) {
+      // C0
+      case 0b00: {
+        switch (b3(instr_i, 13)) {
+          case 0b000: {
+            // c.addi4spn -> addi rd', x2, imm
+            instr_o = cat(b2(0b0), b4(instr_i, 7), b2(instr_i, 11), instr_i[5],
+                       instr_i[6], b2(0b00), b5(0x02), b3(0b000), b2(0b01), b3(instr_i, 2), b7(opcode_e::OPCODE_OP_IMM));
+            if (b8(instr_i, 5) == b8(0b0))  illegal_instr_o = b1(0b1);
+            break;
+          }
+
+          case 0b010: {
+            // c.lw -> lw rd', imm(rs1')
+            instr_o = cat(b5(0b0), instr_i[5], b3(instr_i, 10), instr_i[6],
+                       b2(0b00), b2(0b01), b3(instr_i, 7), b3(0b010), b2(0b01), b3(instr_i, 2), b7(opcode_e::OPCODE_LOAD));
+            break;
+          }
+
+          case 0b110: {
+            // c.sw -> sw rs2', imm(rs1')
+            instr_o = cat(b5(0b0), instr_i[5], instr_i[12], b2(0b01), b3(instr_i, 2),
+                       b2(0b01), b3(instr_i, 7), b3(0b010), b2(instr_i, 10), instr_i[6],
+                       b2(0b00), b7(opcode_e::OPCODE_STORE));
+            break;
+          }
+          
+          case 0b001:
+          case 0b011:
+          case 0b100:
+          case 0b101:
+          case 0b111: {
+            illegal_instr_o = b1(0b1);
+          }
+
+          default: {
+            illegal_instr_o = b1(0b1);
+          }
+        }
+        break;
+      }
+
+      // C1
+      //
+      // Register address checks for RV32E are performed in the regular instruction decoder.
+      // If this check fails, an illegal instruction exception is triggered and the controller
+      // writes the actual faulting instruction to mtval.
+      case 0b01: {
+        switch (b3(instr_i, 13)) {
+          case 0b000: {
+            // c.addi -> addi rd, rd, nzimm
+            // c.nop
+            instr_o = cat(dup<6>(instr_i[12]), instr_i[12], b5(instr_i, 2),
+                       b5(instr_i, 7), b3(0b0), b5(instr_i, 7), b7(opcode_e::OPCODE_OP_IMM));
+            break;
+          }
+
+          case 0b001: case 0b101: {
+            // 001: c.jal -> jal x1, imm
+            // 101: c.j   -> jal x0, imm
+            instr_o = cat(instr_i[12], instr_i[8], b2(instr_i, 9), instr_i[6],
+                          instr_i[7], instr_i[2], instr_i[11], b3(instr_i, 3),
+                          dup<9>(instr_i[12]), b4(0b0), ~instr_i[15], b7(opcode_e::OPCODE_JAL));
+            break;
+          }
+
+          case 0b010: {
+            // c.li -> addi rd, x0, nzimm
+            // (c.li hints are translated into an addi hint)
+            instr_o = cat(dup<6>(instr_i[12]), instr_i[12], b5(instr_i, 2), b5(0b0),
+                       b3(0b0), b5(instr_i, 7), b7(opcode_e::OPCODE_OP_IMM));
+            break;
+          }
+
+          case 0b011: {
+            // c.lui -> lui rd, imm
+            // (c.lui hints are translated into a lui hint)
+            instr_o = cat(dup<15>(instr_i[12]), b5(instr_i, 2), b5(instr_i, 7), b7(opcode_e::OPCODE_LUI));
+
+            if (b5(instr_i, 7) == b5(0x02)) {
+              // c.addi16sp -> addi x2, x2, nzimm
+              instr_o = cat(dup<3>(instr_i[12]), b2(instr_i, 3), instr_i[5], instr_i[2],
+                         instr_i[6], b4(0b0), b5(0x02), b3(0b000), b5(0x02), b7(opcode_e::OPCODE_OP_IMM));
+            }
+
+            if (cat(instr_i[12], b5(instr_i, 2)) == b6(0b0)) illegal_instr_o = b1(0b1);
+            break;
+          }
+
+          case 0b100: {
+            switch (b2(instr_i, 10)) {
+              case 0b00:
+              case 0b01: {
+                // 00: c.srli -> srli rd, rd, shamt
+                // 01: c.srai -> srai rd, rd, shamt
+                // (c.srli/c.srai hints are translated into a srli/srai hint)
+                instr_o = cat(b1(0b0), instr_i[10], b5(0b0), b5(instr_i, 2), b2(0b01), b3(instr_i, 7),
+                           b3(0b101), b2(0b01), b3(instr_i, 7), b7(opcode_e::OPCODE_OP_IMM));
+                if (instr_i[12] == 0b1)  illegal_instr_o = b1(0b1);
+                break;
+              }
+
+              case 0b10: {
+                // c.andi -> andi rd, rd, imm
+                instr_o = cat(dup<6>(instr_i[12]), instr_i[12], b5(instr_i, 2), b2(0b01), b3(instr_i, 7),
+                           b3(0b111), b2(0b01), b3(instr_i, 7), b7(opcode_e::OPCODE_OP_IMM));
+                break;
+              }
+
+              case 0b11: {
+                switch (cat(instr_i[12], b2(instr_i, 5))) {
+                  case 0b000: {
+                    // c.sub -> sub rd', rd', rs2'
+                    instr_o = cat(b2(0b01), b5(0b0), b2(0b01), b3(instr_i, 2), b2(0b01), b3(instr_i, 7),
+                               b3(0b000), b2(0b01), b3(instr_i, 7), b7(opcode_e::OPCODE_OP));
+                    break;
+                  }
+
+                  case 0b001: {
+                    // c.xor -> xor rd', rd', rs2'
+                    instr_o = cat(b7(0b0), b2(0b01), b3(instr_i, 2), b2(0b01), b3(instr_i, 7), b3(0b100),
+                               b2(0b01), b3(instr_i, 7), b7(opcode_e::OPCODE_OP));
+                    break;
+                  }
+
+                  case 0b010: {
+                    // c.or  -> or  rd', rd', rs2'
+                    instr_o = cat(b7(0b0), b2(0b01), b3(instr_i, 2), b2(0b01), b3(instr_i, 7), b3(0b110),
+                               b2(0b01), b3(instr_i, 7), b7(opcode_e::OPCODE_OP));
+                    break;
+                  }
+
+                  case 0b011: {
+                    // c.and -> and rd', rd', rs2'
+                    instr_o = cat(b7(0b0), b2(0b01), b3(instr_i, 2), b2(0b01), b3(instr_i, 7), b3(0b111),
+                               b2(0b01), b3(instr_i, 7), b7(opcode_e::OPCODE_OP));
+                    break;
+                  }
+
+                  case 0b100:
+                  case 0b101:
+                  case 0b110:
+                  case 0b111: {
+                    // 100: c.subw
+                    // 101: c.addw
+                    illegal_instr_o = b1(0b1);
+                    break;
+                  }
+
+                  default: {
+                    illegal_instr_o = b1(0b1);
+                    break;
+                  }
+                }
+                break;
+              }
+
+              default: {
+                illegal_instr_o = b1(0b1);
+                break;
+              }
+            }
+            break;
+          }
+
+          case 0b110: case 0b111: {
+            // 0: c.beqz -> beq rs1', x0, imm
+            // 1: c.bnez -> bne rs1', x0, imm
+            instr_o = cat(dup<4>(instr_i[12]), b2(instr_i, 5), instr_i[2], b5(0b0), b2(0b01),
+                       b3(instr_i, 7), b2(0b00), instr_i[13], b2(instr_i, 10), b2(instr_i, 3),
+                       instr_i[12], b7(opcode_e::OPCODE_BRANCH));
+            break;
+          }
+
+          default: {
+            illegal_instr_o = b1(0b1);
+            break;
+          }
+        }
+        break;
+      }
+
+      // C2
+      //
+      // Register address checks for RV32E are performed in the regular instruction decoder.
+      // If this check fails, an illegal instruction exception is triggered and the controller
+      // writes the actual faulting instruction to mtval.
+      case 0b10: {
+        switch (b3(instr_i, 13)) {
+          case 0b000: {
+            // c.slli -> slli rd, rd, shamt
+            // (c.ssli hints are translated into a slli hint)
+            instr_o = cat(b7(0b0), b5(instr_i, 2), b5(instr_i, 7), b3(0b001), b5(instr_i, 7), b7(opcode_e::OPCODE_OP_IMM));
+            if (instr_i[12] == 0b1)  illegal_instr_o = b1(0b1); // reserved for custom extensions
+            break;
+          }
+
+          case 0b010: {
+            // c.lwsp -> lw rd, imm(x2)
+            instr_o = cat(b4(0b0), b2(instr_i, 2), instr_i[12], b3(instr_i, 4), b2(0b00), b5(0x02),
+                       b3(0b010), b5(instr_i, 7), b7(opcode_e::OPCODE_LOAD));
+            if (b5(instr_i, 7) == b5(0b0))  illegal_instr_o = b1(0b1);
+            break;
+          }
+
+          case 0b100: {
+            if (instr_i[12] == 0b0) {
+              if (b5(instr_i, 2) != b5(0b0)) {
+                // c.mv -> add rd/rs1, x0, rs2
+                // (c.mv hints are translated into an add hint)
+                instr_o = cat(b7(0b0), b5(instr_i, 2), b5(0b0), b3(0b0), b5(instr_i, 7), b7(opcode_e::OPCODE_OP));
+              } else {
+                // c.jr -> jalr x0, rd/rs1, 0
+                instr_o = cat(b12(0b0), b5(instr_i, 7), b3(0b0), b5(0b0), b7(opcode_e::OPCODE_JALR));
+                if (b5(instr_i, 7) == b5(0b0)) illegal_instr_o = b1(0b1);
+              }
+            } else {
+              if (b5(instr_i, 2) != b5(0b0)) {
+                // c.add -> add rd, rd, rs2
+                // (c.add hints are translated into an add hint)
+                instr_o = cat(b7(0b0), b5(instr_i, 2), b5(instr_i, 7), b3(0b0), b5(instr_i, 7), b7(opcode_e::OPCODE_OP));
+              } else {
+                if (b5(instr_i, 7) == b5(0b0)) {
+                  // c.ebreak -> ebreak
+                  instr_o = b32(0x00'10'00'73);
+                } else {
+                  // c.jalr -> jalr x1, rs1, 0
+                  instr_o = cat(b12(0b0), b5(instr_i, 7), b3(0b000), b5(0b00001), b7(opcode_e::OPCODE_JALR));
+                }
+              }
+            }
+            break;
+          }
+
+          case 0b110: {
+            // c.swsp -> sw rs2, imm(x2)
+            instr_o = cat(b4(0b0), b2(instr_i, 7), instr_i[12], b5(instr_i, 2), b5(0x02), b3(0b010),
+                       b3(instr_i, 9), b2(0b00), b7(opcode_e::OPCODE_STORE));
+            break;
+          }
+
+          case 0b001:
+          case 0b011:
+          case 0b101:
+          case 0b111: {
+            illegal_instr_o = b1(0b1);
+            break;
+          }
+
+          default: {
+            illegal_instr_o = b1(0b1);
+            break;
+          }
+        }
+        break;
+      }
+
+      // Incoming instruction is not compressed.
+      case 0b11:; break;
+
+      default: {
+        illegal_instr_o = b1(0b1);
+      }
+    }
+  }
+
+  void tock3(logic<32> instr_i) {
+    is_compressed_o = (b2(instr_i) != 0b11);
+  }
+  /*#
+  ////////////////
+  // Assertions //
+  ////////////////
+
+  // The valid_i signal used to gate below assertions must be known.
+  `ASSERT_KNOWN(IbexInstrValidKnown, valid_i)
+
+  // Selectors must be known/valid.
+  `ASSERT(IbexInstrLSBsKnown, valid_i |->
+      !$isunknown(instr_i[1:0]))
+  `ASSERT(IbexC0Known1, (valid_i && (instr_i[1:0] == 2'b00)) |->
+      !$isunknown(instr_i[15:13]))
+  `ASSERT(IbexC1Known1, (valid_i && (instr_i[1:0] == 2'b01)) |->
+      !$isunknown(instr_i[15:13]))
+  `ASSERT(IbexC1Known2, (valid_i && (instr_i[1:0] == 2'b01) && (instr_i[15:13] == 3'b100)) |->
+      !$isunknown(instr_i[11:10]))
+  `ASSERT(IbexC1Known3, (valid_i &&
+      (instr_i[1:0] == 2'b01) && (instr_i[15:13] == 3'b100) && (instr_i[11:10] == 2'b11)) |->
+      !$isunknown({instr_i[12], instr_i[6:5]}))
+  `ASSERT(IbexC2Known1, (valid_i && (instr_i[1:0] == 2'b10)) |->
+      !$isunknown(instr_i[15:13]))
+   #*/
+};
+// Copyright lowRISC contributors.
+// Copyright 2018 ETH Zurich and University of Bologna, see also CREDITS.md.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+#pragma once
+#include "metron_tools.h"
+#include "ibex_pkg.h"
+
+/**
+ * Arithmetic logic unit
+ */
+template<ibex_pkg::rv32b_e RV32B> // scope getting cut off enum
+class ibex_alu {
+public:
+
+private:
+  logic<32> operand_a_rev;
+  logic<33> operand_b_neg;
+public:
+
+  void tock_rev(logic<32> operand_a_i) {
+    for (int k = 0; k < 32; k++) {
+      operand_a_rev[k] = operand_a_i[31-k];
+    }
+  }
+
+  ///////////
+  // Adder //
+  ///////////
+
+private:
+  logic<1>  adder_op_a_shift1;
+  logic<1>  adder_op_a_shift2;
+  logic<1>  adder_op_a_shift3;
+  logic<1>  adder_op_b_negate;
+  //logic<33> adder_in_a, adder_in_b;
+  //logic<32> adder_result;
+public:
+
+  void tock1(ibex_pkg::alu_op_e operator_i) {
+    using namespace ibex_pkg;
+
+    adder_op_a_shift1 = 0;
+    adder_op_a_shift2 = 0;
+    adder_op_a_shift3 = 0;
+    adder_op_b_negate = 0;
+
+    /*#unique#*/ switch(operator_i) {
+      // Adder OPs
+      case alu_op_e::ALU_SUB:
+        adder_op_b_negate = 1;
+        break;
+
+      // Comparator OPs
+      case alu_op_e::ALU_EQ:
+      case alu_op_e::ALU_NE:
+      case alu_op_e::ALU_GE:
+      case alu_op_e::ALU_GEU:
+      case alu_op_e::ALU_LT:
+      case alu_op_e::ALU_LTU:
+      case alu_op_e::ALU_SLT:
+      case alu_op_e::ALU_SLTU:
+        adder_op_b_negate = 1;
+        break;
+
+      default:
+        break;
+    }
+  }
+
+
+  void tick() {
+    operand_b_neg = 0;
+  }
+
+
+};
+// Copyright lowRISC contributors.
+// Copyright 2017 ETH Zurich and University of Bologna, see also CREDITS.md.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+#pragma once
+#include "metron_tools.h"
+
+/**
+ * Package with constants used by Ibex
+ */
+namespace ibex_pkg {
+
+  ////////////////
+  // IO Structs //
+  ////////////////
+
+  struct crash_dump_t {
+    logic<32> current_pc;
+    logic<32> next_pc;
+    logic<32> last_data_addr;
+    logic<32> exception_addr;
+  };
+
+  struct core2rf_t {
+    logic<1> dummy_instr_id;
+    logic<5> raddr_a;
+    logic<5> waddr_a;
+    logic<1> we_a;
+    logic<5> raddr_b;
+  };
+
+  /////////////////////
+  // Parameter Enums //
+  /////////////////////
+
+  enum class regfile_e : int {
+    RegFileFF    = 0,
+    RegFileFPGA  = 1,
+    RegFileLatch = 2
+  };
+
+  enum class rv32m_e : int {
+    RV32MNone        = 0,
+    RV32MSlow        = 1,
+    RV32MFast        = 2,
+    RV32MSingleCycle = 3
+  };
+
+  enum class rv32b_e : int {
+    RV32BNone       = 0,
+    RV32BBalanced   = 1,
+    RV32BOTEarlGrey = 2,
+    RV32BFull       = 3
+  };
+
+  /////////////
+  // Opcodes //
+  /////////////
+
+  enum class opcode_e : logic<7>::BASE {
+    OPCODE_LOAD     = 0x03,
+    OPCODE_MISC_MEM = 0x0f,
+    OPCODE_OP_IMM   = 0x13,
+    OPCODE_AUIPC    = 0x17,
+    OPCODE_STORE    = 0x23,
+    OPCODE_OP       = 0x33,
+    OPCODE_LUI      = 0x37,
+    OPCODE_BRANCH   = 0x63,
+    OPCODE_JALR     = 0x67,
+    OPCODE_JAL      = 0x6f,
+    OPCODE_SYSTEM   = 0x73
+  };
+
+
+  ////////////////////
+  // ALU operations //
+  ////////////////////
+
+  enum class alu_op_e : logic<7>::BASE {
+    // Arithmetics
+    ALU_ADD,
+    ALU_SUB,
+
+    // Logics
+    ALU_XOR,
+    ALU_OR,
+    ALU_AND,
+    // RV32B
+    ALU_XNOR,
+    ALU_ORN,
+    ALU_ANDN,
+
+    // Shifts
+    ALU_SRA,
+    ALU_SRL,
+    ALU_SLL,
+    // RV32B
+    ALU_SRO,
+    ALU_SLO,
+    ALU_ROR,
+    ALU_ROL,
+    ALU_GREV,
+    ALU_GORC,
+    ALU_SHFL,
+    ALU_UNSHFL,
+    ALU_XPERM_N,
+    ALU_XPERM_B,
+    ALU_XPERM_H,
+
+    // Address Calculations
+    // RV32B
+    ALU_SH1ADD,
+    ALU_SH2ADD,
+    ALU_SH3ADD,
+
+    // Comparisons
+    ALU_LT,
+    ALU_LTU,
+    ALU_GE,
+    ALU_GEU,
+    ALU_EQ,
+    ALU_NE,
+    // RV32B
+    ALU_MIN,
+    ALU_MINU,
+    ALU_MAX,
+    ALU_MAXU,
+
+    // Pack
+    // RV32B
+    ALU_PACK,
+    ALU_PACKU,
+    ALU_PACKH,
+
+    // Sign-Extend
+    // RV32B
+    ALU_SEXTB,
+    ALU_SEXTH,
+
+    // Bitcounting
+    // RV32B
+    ALU_CLZ,
+    ALU_CTZ,
+    ALU_CPOP,
+
+    // Set lower than
+    ALU_SLT,
+    ALU_SLTU,
+
+    // Ternary Bitmanip Operations
+    // RV32B
+    ALU_CMOV,
+    ALU_CMIX,
+    ALU_FSL,
+    ALU_FSR,
+
+    // Single-Bit Operations
+    // RV32B
+    ALU_BSET,
+    ALU_BCLR,
+    ALU_BINV,
+    ALU_BEXT,
+
+    // Bit Compress / Decompress
+    // RV32B
+    ALU_BCOMPRESS,
+    ALU_BDECOMPRESS,
+
+    // Bit Field Place
+    // RV32B
+    ALU_BFP,
+
+    // Carry-less Multiply
+    // RV32B
+    ALU_CLMUL,
+    ALU_CLMULR,
+    ALU_CLMULH,
+
+    // Cyclic Redundancy Check
+    ALU_CRC32_B,
+    ALU_CRC32C_B,
+    ALU_CRC32_H,
+    ALU_CRC32C_H,
+    ALU_CRC32_W,
+    ALU_CRC32C_W
+  };
+
+  enum class md_op_e : logic<2>::BASE {
+    // Multiplier/divider
+    MD_OP_MULL,
+    MD_OP_MULH,
+    MD_OP_DIV,
+    MD_OP_REM
+  };
+
+
+  //////////////////////////////////
+  // Control and status registers //
+  //////////////////////////////////
+
+  // CSR operations
+  enum class csr_op_e : logic<2>::BASE {
+    CSR_OP_READ,
+    CSR_OP_WRITE,
+    CSR_OP_SET,
+    CSR_OP_CLEAR
+  };
+
+  // Privileged mode
+  enum class priv_lvl_e : logic<2>::BASE {
+    PRIV_LVL_M = 0b11,
+    PRIV_LVL_H = 0b10,
+    PRIV_LVL_S = 0b01,
+    PRIV_LVL_U = 0b00
+  };
+
+  // Constants for the dcsr.xdebugver fields
+  enum class x_debug_ver_e : logic<4>::BASE {
+    XDEBUGVER_NO     = 0, // no external debug support
+    XDEBUGVER_STD    = 4, // external debug according to RISC-V debug spec
+    XDEBUGVER_NONSTD = 15 // debug not conforming to RISC-V debug spec
+  };
+
+  //////////////
+  // WB stage //
+  //////////////
+
+  // Type of instruction present in writeback stage
+  enum class wb_instr_type_e : logic<2>::BASE {
+    WB_INSTR_LOAD,  // Instruction is awaiting load data
+    WB_INSTR_STORE, // Instruction is awaiting store response
+    WB_INSTR_OTHER  // Instruction doesn't fit into above categories
+  };
+
+  //////////////
+  // ID stage //
+  //////////////
+
+  // Operand a selection
+  enum class op_a_sel_e : logic<2>::BASE {
+    OP_A_REG_A,
+    OP_A_FWD,
+    OP_A_CURRPC,
+    OP_A_IMM
+  };
+
+  // Immediate a selection
+  enum class imm_a_sel_e : logic<1>::BASE {
+    IMM_A_Z,
+    IMM_A_ZERO
+  };
+
+  // Operand b selection
+  enum class op_b_sel_e : logic<1>::BASE  {
+    OP_B_REG_B,
+    OP_B_IMM
+  };
+
+  // Immediate b selection
+  enum class imm_b_sel_e : logic<3>::BASE {
+    IMM_B_I,
+    IMM_B_S,
+    IMM_B_B,
+    IMM_B_U,
+    IMM_B_J,
+    IMM_B_INCR_PC,
+    IMM_B_INCR_ADDR
+  };
+
+  // Regfile write data selection
+  enum class rf_wd_sel_e : logic<1>::BASE  {
+    RF_WD_EX,
+    RF_WD_CSR
+  };
+
+  //////////////
+  // IF stage //
+  //////////////
+
+  // PC mux selection
+  enum class pc_sel_e : logic<3>::BASE {
+    PC_BOOT,
+    PC_JUMP,
+    PC_EXC,
+    PC_ERET,
+    PC_DRET,
+    PC_BP
+  };
+
+  // Exception PC mux selection
+  enum class exc_pc_sel_e : logic<2>::BASE {
+    EXC_PC_EXC,
+    EXC_PC_IRQ,
+    EXC_PC_DBD,
+    EXC_PC_DBG_EXC // Exception while in debug mode
+  };
+
+  // Interrupt requests
+  struct irqs_t {
+    logic<1>  irq_software;
+    logic<1>  irq_timer;
+    logic<1>  irq_external;
+    logic<15> irq_fast; // 15 fast interrupts,
+                          // one interrupt is reserved for NMI (not visible through mip/mie)
+  };
+
+  // Exception cause
+  enum class exc_cause_e : logic<6>::BASE {
+    EXC_CAUSE_IRQ_SOFTWARE_M     = 0b100011,
+    EXC_CAUSE_IRQ_TIMER_M        = 0b100111,
+    EXC_CAUSE_IRQ_EXTERNAL_M     = 0b101011,
+    // EXC_CAUSE_IRQ_FAST_0      = 0b110000,
+    // EXC_CAUSE_IRQ_FAST_14     = 0b111110,
+    EXC_CAUSE_IRQ_NM             = 0b111111, // == EXC_CAUSE_IRQ_FAST_15
+    EXC_CAUSE_INSN_ADDR_MISA     = 0b000000,
+    EXC_CAUSE_INSTR_ACCESS_FAULT = 0b000001,
+    EXC_CAUSE_ILLEGAL_INSN       = 0b000010,
+    EXC_CAUSE_BREAKPOINT         = 0b000011,
+    EXC_CAUSE_LOAD_ACCESS_FAULT  = 0b000101,
+    EXC_CAUSE_STORE_ACCESS_FAULT = 0b000111,
+    EXC_CAUSE_ECALL_UMODE        = 0b001000,
+    EXC_CAUSE_ECALL_MMODE        = 0b001011
+  };
+
+  // Debug cause
+  enum class dbg_cause_e : logic<3>::BASE {
+    DBG_CAUSE_NONE    = 0x0,
+    DBG_CAUSE_EBREAK  = 0x1,
+    DBG_CAUSE_TRIGGER = 0x2,
+    DBG_CAUSE_HALTREQ = 0x3,
+    DBG_CAUSE_STEP    = 0x4
+  };
+
+  // ICache constants
+  static const unsigned int ADDR_W           = 32; 
+  static const unsigned int BUS_SIZE         = 32;
+  static const unsigned int BUS_BYTES        = BUS_SIZE/8;
+  static const unsigned int BUS_W            = clog2(BUS_BYTES);
+  static const unsigned int IC_SIZE_BYTES    = 4096;
+  static const unsigned int IC_NUM_WAYS      = 2;
+  static const unsigned int IC_LINE_SIZE     = 64;
+  static const unsigned int IC_LINE_BYTES    = IC_LINE_SIZE/8;
+  static const unsigned int IC_LINE_W        = clog2(IC_LINE_BYTES);
+  static const unsigned int IC_NUM_LINES     = IC_SIZE_BYTES / IC_NUM_WAYS / IC_LINE_BYTES;
+  static const unsigned int IC_LINE_BEATS    = IC_LINE_BYTES / BUS_BYTES;
+  static const unsigned int IC_LINE_BEATS_W  = clog2(IC_LINE_BEATS);
+  static const unsigned int IC_INDEX_W       = clog2(IC_NUM_LINES);
+  static const unsigned int IC_INDEX_HI      = IC_INDEX_W + IC_LINE_W - 1;
+  static const unsigned int IC_TAG_SIZE      = ADDR_W - IC_INDEX_W - IC_LINE_W + 1; // 1 valid bit
+  static const unsigned int IC_OUTPUT_BEATS  = (BUS_BYTES / 2); // number of halfwords
+  // ICache Scrambling Parameters
+  static const unsigned int SCRAMBLE_KEY_W   = 128;
+  static const unsigned int SCRAMBLE_NONCE_W = 64;
+
+  // PMP constants
+  static const unsigned int PMP_MAX_REGIONS      = 16;
+  static const unsigned int PMP_CFG_W            = 8;
+
+  // PMP acces type
+  static const unsigned int PMP_I  = 0;
+  static const unsigned int PMP_I2 = 1;
+  static const unsigned int PMP_D  = 2;
+
+  enum class pmp_req_e : logic<2>::BASE {
+    PMP_ACC_EXEC    = 0b00,
+    PMP_ACC_WRITE   = 0b01,
+    PMP_ACC_READ    = 0b10
+  };
+
+  // PMP cfg structures
+  enum class pmp_cfg_mode_e : logic<2>::BASE {
+    PMP_MODE_OFF   = 0b00,
+    PMP_MODE_TOR   = 0b01,
+    PMP_MODE_NA4   = 0b10,
+    PMP_MODE_NAPOT = 0b11
+  };
+
+  struct pmp_cfg_t {
+    logic<1>       lock;
+    pmp_cfg_mode_e mode;
+    logic<1>       exec;
+    logic<1>       write;
+    logic<1>       read;
+  };
+
+  // Machine Security Configuration (ePMP)
+  struct pmp_mseccfg_t {
+    logic<1> rlb;  // Rule Locking Bypass
+    logic<1> mmwp; // Machine Mode Whitelist Policy
+    logic<1> mml;  // Machine Mode Lockdown
+  };
+
+  // CSRs
+  enum class csr_num_e : logic<12>::BASE {
+    // Machine information
+    CSR_MVENDORID = 0xF11,
+    CSR_MARCHID   = 0xF12,
+    CSR_MIMPID    = 0xF13,
+    CSR_MHARTID   = 0xF14,
+
+    // Machine trap setup
+    CSR_MSTATUS   = 0x300,
+    CSR_MISA      = 0x301,
+    CSR_MIE       = 0x304,
+    CSR_MTVEC     = 0x305,
+    CSR_MCOUNTEREN= 0x306,
+
+    // Machine trap handling
+    CSR_MSCRATCH  = 0x340,
+    CSR_MEPC      = 0x341,
+    CSR_MCAUSE    = 0x342,
+    CSR_MTVAL     = 0x343,
+    CSR_MIP       = 0x344,
+
+    // Physical memory protection
+    CSR_PMPCFG0   = 0x3A0,
+    CSR_PMPCFG1   = 0x3A1,
+    CSR_PMPCFG2   = 0x3A2,
+    CSR_PMPCFG3   = 0x3A3,
+    CSR_PMPADDR0  = 0x3B0,
+    CSR_PMPADDR1  = 0x3B1,
+    CSR_PMPADDR2  = 0x3B2,
+    CSR_PMPADDR3  = 0x3B3,
+    CSR_PMPADDR4  = 0x3B4,
+    CSR_PMPADDR5  = 0x3B5,
+    CSR_PMPADDR6  = 0x3B6,
+    CSR_PMPADDR7  = 0x3B7,
+    CSR_PMPADDR8  = 0x3B8,
+    CSR_PMPADDR9  = 0x3B9,
+    CSR_PMPADDR10 = 0x3BA,
+    CSR_PMPADDR11 = 0x3BB,
+    CSR_PMPADDR12 = 0x3BC,
+    CSR_PMPADDR13 = 0x3BD,
+    CSR_PMPADDR14 = 0x3BE,
+    CSR_PMPADDR15 = 0x3BF,
+
+    // ePMP control
+    CSR_MSECCFG   = 0x747,
+    CSR_MSECCFGH  = 0x757,
+
+    // Debug trigger
+    CSR_TSELECT   = 0x7A0,
+    CSR_TDATA1    = 0x7A1,
+    CSR_TDATA2    = 0x7A2,
+    CSR_TDATA3    = 0x7A3,
+    CSR_MCONTEXT  = 0x7A8,
+    CSR_SCONTEXT  = 0x7AA,
+
+    // Debug/trace
+    CSR_DCSR      = 0x7b0,
+    CSR_DPC       = 0x7b1,
+
+    // Debug
+    CSR_DSCRATCH0 = 0x7b2, // optional
+    CSR_DSCRATCH1 = 0x7b3, // optional
+
+    // Machine Counter/Timers
+    CSR_MCOUNTINHIBIT  = 0x320,
+    CSR_MHPMEVENT3     = 0x323,
+    CSR_MHPMEVENT4     = 0x324,
+    CSR_MHPMEVENT5     = 0x325,
+    CSR_MHPMEVENT6     = 0x326,
+    CSR_MHPMEVENT7     = 0x327,
+    CSR_MHPMEVENT8     = 0x328,
+    CSR_MHPMEVENT9     = 0x329,
+    CSR_MHPMEVENT10    = 0x32A,
+    CSR_MHPMEVENT11    = 0x32B,
+    CSR_MHPMEVENT12    = 0x32C,
+    CSR_MHPMEVENT13    = 0x32D,
+    CSR_MHPMEVENT14    = 0x32E,
+    CSR_MHPMEVENT15    = 0x32F,
+    CSR_MHPMEVENT16    = 0x330,
+    CSR_MHPMEVENT17    = 0x331,
+    CSR_MHPMEVENT18    = 0x332,
+    CSR_MHPMEVENT19    = 0x333,
+    CSR_MHPMEVENT20    = 0x334,
+    CSR_MHPMEVENT21    = 0x335,
+    CSR_MHPMEVENT22    = 0x336,
+    CSR_MHPMEVENT23    = 0x337,
+    CSR_MHPMEVENT24    = 0x338,
+    CSR_MHPMEVENT25    = 0x339,
+    CSR_MHPMEVENT26    = 0x33A,
+    CSR_MHPMEVENT27    = 0x33B,
+    CSR_MHPMEVENT28    = 0x33C,
+    CSR_MHPMEVENT29    = 0x33D,
+    CSR_MHPMEVENT30    = 0x33E,
+    CSR_MHPMEVENT31    = 0x33F,
+    CSR_MCYCLE         = 0xB00,
+    CSR_MINSTRET       = 0xB02,
+    CSR_MHPMCOUNTER3   = 0xB03,
+    CSR_MHPMCOUNTER4   = 0xB04,
+    CSR_MHPMCOUNTER5   = 0xB05,
+    CSR_MHPMCOUNTER6   = 0xB06,
+    CSR_MHPMCOUNTER7   = 0xB07,
+    CSR_MHPMCOUNTER8   = 0xB08,
+    CSR_MHPMCOUNTER9   = 0xB09,
+    CSR_MHPMCOUNTER10  = 0xB0A,
+    CSR_MHPMCOUNTER11  = 0xB0B,
+    CSR_MHPMCOUNTER12  = 0xB0C,
+    CSR_MHPMCOUNTER13  = 0xB0D,
+    CSR_MHPMCOUNTER14  = 0xB0E,
+    CSR_MHPMCOUNTER15  = 0xB0F,
+    CSR_MHPMCOUNTER16  = 0xB10,
+    CSR_MHPMCOUNTER17  = 0xB11,
+    CSR_MHPMCOUNTER18  = 0xB12,
+    CSR_MHPMCOUNTER19  = 0xB13,
+    CSR_MHPMCOUNTER20  = 0xB14,
+    CSR_MHPMCOUNTER21  = 0xB15,
+    CSR_MHPMCOUNTER22  = 0xB16,
+    CSR_MHPMCOUNTER23  = 0xB17,
+    CSR_MHPMCOUNTER24  = 0xB18,
+    CSR_MHPMCOUNTER25  = 0xB19,
+    CSR_MHPMCOUNTER26  = 0xB1A,
+    CSR_MHPMCOUNTER27  = 0xB1B,
+    CSR_MHPMCOUNTER28  = 0xB1C,
+    CSR_MHPMCOUNTER29  = 0xB1D,
+    CSR_MHPMCOUNTER30  = 0xB1E,
+    CSR_MHPMCOUNTER31  = 0xB1F,
+    CSR_MCYCLEH        = 0xB80,
+    CSR_MINSTRETH      = 0xB82,
+    CSR_MHPMCOUNTER3H  = 0xB83,
+    CSR_MHPMCOUNTER4H  = 0xB84,
+    CSR_MHPMCOUNTER5H  = 0xB85,
+    CSR_MHPMCOUNTER6H  = 0xB86,
+    CSR_MHPMCOUNTER7H  = 0xB87,
+    CSR_MHPMCOUNTER8H  = 0xB88,
+    CSR_MHPMCOUNTER9H  = 0xB89,
+    CSR_MHPMCOUNTER10H = 0xB8A,
+    CSR_MHPMCOUNTER11H = 0xB8B,
+    CSR_MHPMCOUNTER12H = 0xB8C,
+    CSR_MHPMCOUNTER13H = 0xB8D,
+    CSR_MHPMCOUNTER14H = 0xB8E,
+    CSR_MHPMCOUNTER15H = 0xB8F,
+    CSR_MHPMCOUNTER16H = 0xB90,
+    CSR_MHPMCOUNTER17H = 0xB91,
+    CSR_MHPMCOUNTER18H = 0xB92,
+    CSR_MHPMCOUNTER19H = 0xB93,
+    CSR_MHPMCOUNTER20H = 0xB94,
+    CSR_MHPMCOUNTER21H = 0xB95,
+    CSR_MHPMCOUNTER22H = 0xB96,
+    CSR_MHPMCOUNTER23H = 0xB97,
+    CSR_MHPMCOUNTER24H = 0xB98,
+    CSR_MHPMCOUNTER25H = 0xB99,
+    CSR_MHPMCOUNTER26H = 0xB9A,
+    CSR_MHPMCOUNTER27H = 0xB9B,
+    CSR_MHPMCOUNTER28H = 0xB9C,
+    CSR_MHPMCOUNTER29H = 0xB9D,
+    CSR_MHPMCOUNTER30H = 0xB9E,
+    CSR_MHPMCOUNTER31H = 0xB9F,
+    CSR_CPUCTRL        = 0x7C0,
+    CSR_SECURESEED     = 0x7C1
+  };
+
+  // CSR pmp-related offsets
+  static const logic<12> CSR_OFF_PMP_CFG  = 0x3A0; // pmp_cfg  @ 12'h3a0 - 12'h3a3
+  static const logic<12> CSR_OFF_PMP_ADDR = 0x3B0; // pmp_addr @ 12'h3b0 - 12'h3bf
+
+  // CSR status bits
+  static const unsigned int CSR_MSTATUS_MIE_BIT      = 3;
+  static const unsigned int CSR_MSTATUS_MPIE_BIT     = 7;
+  static const unsigned int CSR_MSTATUS_MPP_BIT_LOW  = 11;
+  static const unsigned int CSR_MSTATUS_MPP_BIT_HIGH = 12;
+  static const unsigned int CSR_MSTATUS_MPRV_BIT     = 17;
+  static const unsigned int CSR_MSTATUS_TW_BIT       = 21;
+
+  // CSR machine ISA
+  static const logic<2> CSR_MISA_MXL = b2(1); // M-XLEN: XLEN in M-Mode for RV32
+
+  // CSR interrupt pending/enable bits
+  static const unsigned int CSR_MSIX_BIT      = 3;
+  static const unsigned int CSR_MTIX_BIT      = 7;
+  static const unsigned int CSR_MEIX_BIT      = 11;
+  static const unsigned int CSR_MFIX_BIT_LOW  = 16;
+  static const unsigned int CSR_MFIX_BIT_HIGH = 30;
+
+  // CSR Machine Security Configuration bits
+  static const unsigned int CSR_MSECCFG_MML_BIT  = 0;
+  static const unsigned int CSR_MSECCFG_MMWP_BIT = 1;
+  static const unsigned int CSR_MSECCFG_RLB_BIT  = 2;
+
+  // Vendor ID
+  // No JEDEC ID has been allocated to lowRISC so the value is 0 to indicate the field is not
+  // implemented
+  static const logic<32> CSR_MVENDORID_VALUE  = b32(0b0);
+
+  // Architecture ID
+  // Top bit is unset to indicate an open source project. The lower bits are an ID allocated by the
+  // RISC-V Foundation. Note this is allocated specifically to Ibex, should significant changes be
+  // made a different architecture ID should be supplied.
+  static const logic<32> CSR_MARCHID_VALUE = b32(22);
+
+  // Implementation ID
+  // 0 indicates this field is not implemeted. Ibex implementors may wish to indicate an RTL/netlist
+  // version here using their own unique encoding (e.g. 32 bits of the git hash of the implemented
+  // commit).
+  static const logic<32> CSR_MIMPID_VALUE = b32(0b0);
+
+  // These LFSR parameters have been generated with
+  // $ opentitan/util/design/gen-lfsr-seed.py --width 32 --seed 2480124384 --prefix ""
+  static const int LfsrWidth = 32;
+  typedef logic<LfsrWidth> lfsr_seed_t;
+  typedef logic<LfsrWidth> lfsr_perm_t[clog2(LfsrWidth)]; 
+  static const lfsr_seed_t RndCnstLfsrSeedDefault = b32(0xac533bf4);
+  static const lfsr_perm_t RndCnstLfsrPermDefault = { b32(0x78a8daed), b32(0xc04fa438), b32(0x2e958152), b32(0x467fd1b1), b32(0x1e35ecba) };
+
+  // we don't support 128-bit logic<>s in Metron yet
+  //parameter logic [SCRAMBLE_KEY_W-1:0]   RndCnstIbexKeyDefault = 128'h14e8cecae3040d5e12286bb3cc113298;
+  //parameter logic [SCRAMBLE_NONCE_W-1:0] RndCnstIbexNonceDefault = 64'hf79780bc735f3843;
+}// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// N:1 fixed priority arbiter module (index 0 has highest prio)
+//
+// Verilog parameter
+//   N:           Number of request ports
+//   DW:          Data width
+//   DataPort:    Set to 1 to enable the data port. Otherwise that port will be ignored.
+//
+// See also: prim_arbiter_ppc, prim_arbiter_tree
+
+#pragma once
+#include "metron_tools.h"
+
+template<
+  int N = 8,
+  int DW = 32,
+
+  // Configurations
+  // EnDataPort: {0, 1}, if 0, input data will be ignored
+  int EnDataPort = 1,
+
+  // Derived parameters
+  int IdxW = clog2(N)
+>
+struct prim_arbiter_fixed {
+
+  logic<N>    gnt_o;
+  logic<IdxW> idx_o;
+
+  logic<1>    valid_o;
+  logic<DW>   data_o;
+
+
+  prim_arbiter_fixed() {
+  }
+
+  void tick(bool rst_n, logic<N> req_i, logic<DW> data_i[N], logic<1> ready_i) {
+  }
+
+  // align to powers of 2 for simplicity
+  // a full binary tree with N levels has 2**N + 2**N-1 nodes
+  logic<pow2(IdxW + 1) - 1> req_tree;
+  logic<pow2(IdxW + 1) - 1> gnt_tree;
+  logic<pow2(IdxW + 1) - 1> idx_tree[IdxW];
+  logic<pow2(IdxW + 1) - 1> data_tree[DW];
+
+  void tock(bool rst_n, logic<N> req_i, logic<DW> data_i[N], logic<1> ready_i) {
+    /*
+    for (int level = 0; level < IdxW + 1; level++) {
+      //
+      // level+1   C0   C1   <- "Base1" points to the first node on "level+1",
+      //            \  /         these nodes are the children of the nodes one level below
+      // level       Pa      <- "Base0", points to the first node on "level",
+      //                         these nodes are the parents of the nodes one level above
+      //
+      // hence we have the following indices for the Pa, C0, C1 nodes:
+      // Pa = 2**level     - 1 + offset       = Base0 + offset
+      // C0 = 2**(level+1) - 1 + 2*offset     = Base1 + 2*offset
+      // C1 = 2**(level+1) - 1 + 2*offset + 1 = Base1 + 2*offset + 1
+      //
+
+      static const int Base0 = pow2(level) - 1;
+      static const int Base1 = pow2(level + 1) - 1;
+
+      for (int offset = 0; offset < pow2(level); offset++) {
+      }
+    }
+
+    // the results can be found at the tree root
+    if (EnDataPort) {
+      data_o = data_tree[0];
+    } else {
+      logic<DW> unused_data;
+      unused_data = data_tree[0];
+      data_o = 1;
+    }
+
+    idx_o       = idx_tree[0];
+    valid_o     = req_tree[0];
+
+    // this propagates a grant back to the input
+    gnt_tree[0] = valid_o & ready_i;
+    */
+  }
+
+};
+Same as rvtiny, but synchronous. Not finished yet.
+#pragma once
+#include "metron_tools.h"
+
+class toplevel {
+ public:
+  toplevel() {
+    pc = 0;
+    phase = 0;
+    inst = 0;
+    regs[0] = b32(0);
+
+    std::string s;
+    value_plusargs("text_file=%s", s);
+    readmemh(s, text_mem);
+
+    value_plusargs("data_file=%s", s);
+    readmemh(s, data_mem);
+  }
+
+  void tock(logic<1> reset) { tick(reset); }
+
+  logic<32> o_bus_read_data;
+  logic<32> o_bus_address;
+  logic<32> o_bus_write_data;
+  logic<4> o_bus_byte_enable;
+  logic<1> o_bus_read_enable;
+  logic<1> o_bus_write_enable;
+  logic<32> o_inst;
+  logic<32> o_pc;
+
+  //----------------------------------------
+
+ private:
+  static const int OP_ALU = 0x33;
+  static const int OP_ALUI = 0x13;
+  static const int OP_LOAD = 0x03;
+  static const int OP_STORE = 0x23;
+  static const int OP_BRANCH = 0x63;
+  static const int OP_JAL = 0x6F;
+  static const int OP_JALR = 0x67;
+  static const int OP_LUI = 0x37;
+  static const int OP_AUIPC = 0x17;
+
+  void tick(logic<1> reset) {
+    if (reset) {
+      pc = 0;
+      phase = 0;
+      inst = 0;
+      regs[0] = b32(0);
+      o_bus_read_data = 0;
+      o_bus_address = 0;
+      o_bus_write_data = 0;
+      o_bus_byte_enable = 0;
+      o_bus_read_enable = 0;
+      o_bus_write_enable = 0;
+      o_inst = 0;
+      o_pc = 0;
+    } else {
+      if (phase == 0) {
+        phase = 1;
+        inst = text_mem[b14(pc, 2)];
+      } else if (phase == 1) {
+        phase = 0;
+
+        logic<7> op = b7(inst, 0);
+        logic<5> rd = b5(inst, 7);
+        logic<3> f3 = b3(inst, 12);
+        logic<5> r1 = b5(inst, 15);
+        logic<5> r2 = b5(inst, 20);
+        logic<7> f7 = b7(inst, 25);
+
+        o_bus_address = 0;
+        o_bus_write_enable = 0;
+        o_bus_write_data = 0;
+
+        //----------
+        // Metron simulates this a few percent faster if we don't have ALU and
+        // ALUI in the same branch, but then we duplicate the big ALU switch...
+
+        if (op == OP_ALU || op == OP_ALUI) {
+          logic<32> op_a = regs[r1];
+          logic<32> op_b =
+              op == OP_ALUI ? cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20))
+                            : regs[r2];
+          logic<32> alu_result;
+
+          switch (f3) {
+            case 0:
+              alu_result = (op == OP_ALU) && f7[5] ? op_a - op_b : op_a + op_b;
+              break;
+            case 1:
+              alu_result = op_a << b5(op_b);
+              break;
+            case 2:
+              alu_result = signed(op_a) < signed(op_b);
+              break;
+            case 3:
+              alu_result = op_a < op_b;
+              break;
+            case 4:
+              alu_result = op_a ^ op_b;
+              break;
+            case 5: {
+              // FIXME BUG Verilator isn't handling this ternary expression
+              // correctly.
+              // alu_result = f7[5] ? sra(op_a, b5(op_b)) : b32(op_a >>
+              // b5(op_b)); break;
+              if (f7[5]) {
+                alu_result = sra(op_a, b5(op_b));
+              } else {
+                alu_result = op_a >> b5(op_b);
+              }
+              break;
+            }
+            case 6:
+              alu_result = op_a | op_b;
+              break;
+            case 7:
+              alu_result = op_a & op_b;
+              break;
+          }
+
+          if (rd) regs[rd] = alu_result;
+          pc = pc + 4;
+        }
+
+        //----------
+
+        else if (op == OP_LOAD) {
+          logic<32> imm = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20));
+          logic<32> addr = regs[r1] + imm;
+          logic<32> rdata = data_mem[b15(addr, 2)] >> (8 * b2(addr));
+
+          switch (f3) {
+            case 0:
+              rdata = sign_extend<32>(b8(rdata));
+              break;
+            case 1:
+              rdata = sign_extend<32>(b16(rdata));
+              break;
+            case 4:
+              rdata = b8(rdata);
+              break;
+            case 5:
+              rdata = b16(rdata);
+              break;
+          }
+
+          if (rd) regs[rd] = rdata;
+          pc = pc + 4;
+        }
+
+        //----------
+
+        else if (op == OP_STORE) {
+          logic<32> imm = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 7));
+          logic<32> addr = regs[r1] + imm;
+          logic<32> wdata = regs[r2] << (8 * b2(addr));
+
+          logic<32> mask = 0;
+          if (f3 == 0) mask = 0x000000FF << (8 * b2(addr));
+          if (f3 == 1) mask = 0x0000FFFF << (8 * b2(addr));
+          if (f3 == 2) mask = 0xFFFFFFFF;
+
+          logic<15> phys_addr = b15(addr, 2);
+          data_mem[phys_addr] = (data_mem[phys_addr] & ~mask) | (wdata & mask);
+
+          pc = pc + 4;
+
+          o_bus_address = addr;
+          o_bus_write_enable = 1;
+          o_bus_write_data = regs[r2];
+        }
+
+        //----------
+
+        else if (op == OP_BRANCH) {
+          logic<32> op_a = regs[r1];
+          logic<32> op_b = regs[r2];
+
+          logic<1> take_branch;
+          switch (f3) {
+            case 0:
+              take_branch = op_a == op_b;
+              break;
+            case 1:
+              take_branch = op_a != op_b;
+              break;
+            case 4:
+              take_branch = signed(op_a) < signed(op_b);
+              break;
+            case 5:
+              take_branch = signed(op_a) >= signed(op_b);
+              break;
+            case 6:
+              take_branch = op_a < op_b;
+              break;
+            case 7:
+              take_branch = op_a >= op_b;
+              break;
+            default:
+              take_branch = b1(DONTCARE);
+              break;
+          }
+
+          if (take_branch) {
+            logic<32> imm = cat(dup<20>(inst[31]), inst[7], b6(inst, 25),
+                                b4(inst, 8), b1(0));
+            pc = pc + imm;
+          } else {
+            pc = pc + 4;
+          }
+        }
+
+        //----------
+
+        else if (op == OP_JAL) {
+          logic<32> imm = cat(dup<12>(inst[31]), b8(inst, 12), inst[20],
+                              b6(inst, 25), b4(inst, 21), b1(0));
+          if (rd) regs[rd] = pc + 4;
+          pc = pc + imm;
+        }
+
+        //----------
+
+        else if (op == OP_JALR) {
+          logic<32> rr1 = regs[r1];  // Lol, Metron actually found a bug - gotta
+                                     // read r1 before writing
+          logic<32> imm = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20));
+          if (rd) regs[rd] = pc + 4;
+          pc = rr1 + imm;
+        }
+
+        //----------
+
+        else if (op == OP_LUI) {
+          logic<32> imm = cat(inst[31], b11(inst, 20), b8(inst, 12), b12(0));
+          if (rd) regs[rd] = imm;
+          pc = pc + 4;
+        }
+
+        //----------
+
+        else if (op == OP_AUIPC) {
+          logic<32> imm = cat(inst[31], b11(inst, 20), b8(inst, 12), b12(0));
+          if (rd) regs[rd] = pc + imm;
+          pc = pc + 4;
+        }
+      }
+    }
+  }
+
+  logic<32> pc;
+  logic<2> phase;
+  logic<32> inst;
+  logic<32> text_mem[32 * 1024];
+  logic<32> data_mem[32 * 1024];
+  logic<32> regs[32];
+};
+A simple UART-based testbench for Metron that exercises translation to
+SystemVerilog, simulation via Icarus, translation back to C via Verilator,
+synthesis via Yosys, place+route via NextPNR, and uploading to a Lattice ICE40
+fpga via Icestorm.
+#ifndef UART_RX_H
+#define UART_RX_H
+
+#include "metron_tools.h"
+
+//==============================================================================
+
+template <int cycles_per_bit = 4>
+class uart_rx {
+public:
+  logic<1> valid() { return _cursor == 1; }
+  logic<8> buffer() { return _buffer; }
+  logic<32> sum() { return _sum; }
+
+  void tick(logic<1> i_rstn, logic<1> i_serial) {
+    if (!i_rstn) {
+      _cycle = 0;
+      _cursor = 0;
+      _buffer = 0;
+      _sum = 0;
+    } else {
+      if (_cycle != 0) {
+        _cycle = _cycle - 1;
+      } else if (_cursor != 0) {
+        logic<8> temp = (i_serial << 7) | (_buffer >> 1);
+        if (_cursor - 1 == 1) _sum = _sum + temp;
+        _cycle = cycle_max;
+        _cursor = _cursor - 1;
+        _buffer = temp;
+      } else if (i_serial == 0) {
+        _cycle = cycle_max;
+        _cursor = cursor_max;
+      }
+    }
+  }
+
+  //----------------------------------------
+ private:
+  static const int cycle_bits = clog2(cycles_per_bit);
+  static const int cycle_max = cycles_per_bit - 1;
+  static const int cursor_max = 9;
+  static const int cursor_bits = clog2(cursor_max);
+
+  logic<cycle_bits> _cycle;
+  logic<cursor_bits> _cursor;
+  logic<8> _buffer;
+  logic<32> _sum;
+};
+
+//==============================================================================
+
+#endif // UART_RX_H
+#ifndef UART_HELLO_H
+#define UART_HELLO_H
+
+#include "metron_tools.h"
+
+//==============================================================================
+
+template <int repeat_msg = 0>
+class uart_hello {
+public:
+  uart_hello() { readmemh("examples/uart/message.hex", _memory, 0, 511); }
+
+  logic<8> data() const { return _data; }
+  logic<1> req() const { return _state == SEND; }
+  logic<1> done() const { return _state == DONE; }
+
+  void tick(logic<1> i_rstn, logic<1> i_cts, logic<1> i_idle) {
+    if (!i_rstn) {
+      _state = WAIT;
+      _cursor = 0;
+    } else {
+      _data = _memory[_cursor];
+      if (_state == WAIT && i_idle) {
+        _state = SEND;
+      } else if (_state == SEND && i_cts) {
+        if (_cursor == b9(message_len - 1)) {
+          _state = DONE;
+        } else {
+          _cursor = _cursor + 1;
+        }
+      } else if (_state == DONE) {
+        if (repeat_msg) _state = WAIT;
+        _cursor = 0;
+      }
+    }
+  }
+
+private:
+  //----------------------------------------
+
+  static const int message_len = 512;
+  static const int cursor_bits = clog2(message_len);
+
+  static const int WAIT = 0;
+  static const int SEND = 1;
+  static const int DONE = 2;
+
+  logic<2> _state;
+  logic<cursor_bits> _cursor;
+  logic<8> _memory[512];
+  logic<8> _data;
+};
+
+//==============================================================================
+
+#endif // UART_HELLO_H
+#ifndef UART_TOP_H
+#define UART_TOP_H
+
+#include "metron_tools.h"
+#include "uart_hello.h"
+#include "uart_rx.h"
+#include "uart_tx.h"
+
+//==============================================================================
+
+template <int cycles_per_bit = 3, int repeat_msg = 0>
+class uart_top {
+public:
+  logic<1> serial() { return tx.serial(); }
+  logic<8> data() { return rx.buffer(); }
+  logic<1> valid() { return rx.valid(); }
+  logic<1> done() { return hello.done() && tx.idle(); }
+  logic<32> sum() { return rx.sum(); }
+
+  logic<1> tock(logic<1> i_rstn) {
+    logic<8> hello_data = hello.data();
+    logic<1> hello_req = hello.req();
+
+    rx.tick(i_rstn, tx.serial());
+    hello.tick(i_rstn, tx.cts(), tx.idle());
+    tx.tick(i_rstn, hello_data, hello_req);
+    return 0;
+  }
+
+  //----------------------------------------
+private:
+  uart_hello<repeat_msg> hello;
+  uart_tx<cycles_per_bit> tx;
+  uart_rx<cycles_per_bit> rx;
+};
+
+//==============================================================================
+
+#endif // UART_TOP_H
+#ifndef UART_TX_H
+#define UART_TX_H
+
+#include "metron_tools.h"
+
+//==============================================================================
+
+template <int cycles_per_bit = 4>
+class uart_tx {
+public:
+  uart_tx() {
+    cycle = 0;
+    cursor = 0;
+    buffer = 0;
+  }
+
+  //----------------------------------------
+
+  logic<1> serial() {
+    return buffer & 1;
+  }
+
+  logic<1> cts() {
+    return ((cursor == extra_stop_bits) && (cycle == 0)) ||
+           (cursor < extra_stop_bits);
+  }
+
+  logic<1> idle() {
+    return (cursor == 0) && (cycle == 0);
+  }
+
+  void tick(logic<1> i_rstn, logic<8> i_data, logic<1> i_req) {
+    if (!i_rstn) {
+      cycle = 0;
+      cursor = 0;
+      buffer = 0x1FF;
+    } else {
+      logic<cycle_bits> cycle_max = bx<cycle_bits>(cycles_per_bit - 1);
+      logic<cursor_bits> cursor_max = bx<cursor_bits>(10 + extra_stop_bits - 1);
+
+      if (/*cursor <= extra_stop_bits*/ extra_stop_bits >= cursor &&
+          cycle == 0 && i_req) {
+        // Transmit start
+        cycle = cycle_max;
+        cursor = cursor_max;
+        buffer = i_data << 1;
+      } else if (cycle != 0) {
+        // Bit delay
+        cycle = cycle - 1;
+        cursor = cursor;
+        buffer = buffer;
+      } else if (cursor != 0) {
+        // Bit delay done, switch to next bit.
+        cycle = cycle_max;
+        cursor = cursor - 1;
+        buffer = (buffer >> 1) | 0x100;
+      }
+    }
+  }
+
+  //----------------------------------------
+private:
+  // 1 start bit, 8 data bits, 1 stop bit, 7 additional stop bits to guarantee
+  // that recevier can resync between messages
+  static const int extra_stop_bits = 7;
+  static const int cycle_bits = clog2(cycles_per_bit);
+  static const int cursor_bits = clog2(10 + extra_stop_bits);
+
+  logic<cycle_bits> cycle;
+  logic<cursor_bits> cursor;
+  logic<9> buffer;
+};
+
+//==============================================================================
+
+#endif // UART_TX_H
+// Preprocessor macros generally won't work, but include guards should be OK.
+
+#ifndef INCLUDE_GUARDS_H
+#define INCLUDE_GUARDS_H
+
+class Module {
+public:
+  int blah() {
+    return 7;
+  }
+};
+
+#endif
+#include "metron_tools.h"
+
+// Cramming various statements into one line should not break anything.
+
+class Module {
+public:
+
+  logic<8> tock() { logic<8> a = 1; a = a + 7; return a; }
+
+  void tick() { if (my_reg & 1) my_reg = my_reg - 7; }
+
+  logic<8> my_reg;
+
+};
+#include "metron_tools.h"
+
+// Most kinds of C++ enum declarations should work.
+
+// bad
+// enum { FOO, BAR, BAZ };
+// typedef enum logic[1:0] { FOO=70, BAR=71, BAZ=72 } blem;
+// typedef enum { FOO, BAR=0, BAZ=1 } blem;
+
+// good
+// OK enum { FOO, BAR, BAZ } blem;
+// enum { FOO=0, BAR=1, BAZ=2 } blem;
+// typedef enum { FOO, BAR, BAZ } blem;
+// typedef enum { FOO=0, BAR=1, BAZ=2 } blem;
+// typedef enum logic[1:0] { FOO, BAR, BAZ } blem;
+// typedef enum logic[1:0] { FOO=0, BAR=1, BAZ=2 } blem;
+
+// enum struct {} ? same as enum class
+
+// clang-format off
+class Module {
+ public:
+  enum simple_enum1 { A1, B1, C1 };
+  enum simple_enum2 { A2 = 0b01, B2 = 0x02, C2 = 3 };
+
+  enum { A3, B3, C3 } anon_enum_field1;
+  enum { A4 = 0b01, B4 = 0x02, C4 = 3 } anon_enum_field2;
+
+  enum class enum_class1 { A5, B5, C5 };
+  enum class enum_class2 { A6 = 0b01, B6 = 0x02, C6 = 3 };
+
+  // This is currently broken in TreeSitter
+  enum class typed_enum : int { A7 = 0b01, B7 = 0x02, C7 = 3 };
+  enum class sized_enum : logic<8>::BASE { A8 = 0b01, B8 = 0x02, C8 = 3 };
+
+  int tock1() {
+    simple_enum1 e1 = A1;
+    simple_enum2 e2 = B2;
+    anon_enum_field1 = C3;
+    anon_enum_field2 = A4;
+    enum_class1 ec1 = enum_class1::B5;
+    enum_class2 ec2 = enum_class2::C6;
+    typed_enum te1 = typed_enum::A7;
+    sized_enum se1 = sized_enum::B8;
+    return 1;
+  }
+};
+// clang-format on
+#include "metron_tools.h"
+
+// Trivial adder just for example.
+
+class Adder {
+public:
+
+  logic<8> add(logic<8> a, logic<8> b) {
+    return a + b;
+  }
+
+};
+#include "metron_tools.h"
+
+// Increment/decrement should be translated into equivalent Verilog, but they
+// do _not_ return the old/new value.
+
+class Module {
+public:
+
+  void tock() {
+    tick();
+  }
+
+private:
+
+  void tick() {
+    my_reg1++;
+    ++my_reg2;
+    my_reg3--;
+    --my_reg4;
+  }
+
+  int my_reg1;
+  int my_reg2;
+  int my_reg3;
+  int my_reg4;
+};
+#include "metron_tools.h"
+
+// All the combos of tasks/funcs should work from ticks and tocks.
+
+class Module {
+public:
+
+  logic<8> my_sig;
+
+  void tock() {
+    public_task(public_func(17));
+    tick();
+  }
+
+  void public_task(logic<8> x) {
+    my_sig = x + 7;
+  }
+
+  logic<8> public_func(logic<8> x) {
+    return my_reg1 + private_func(5);
+  }
+
+private:
+
+  void tick() {
+    private_task(private_func(33));
+    my_reg2 = my_reg2 + 1;
+  }
+
+  void private_task(logic<8> x) {
+    my_reg1 = my_reg1 + private_func(16);
+  }
+
+  logic<8> private_func(logic<8> y) {
+    return my_reg1 + y;
+  }
+
+  logic<8> my_reg1;
+  logic<8> my_reg2;
+};
+#include "metron_tools.h"
+
+// Comments surrounded by / * # <something # * / get unwrapped and dropped
+// directly in the output file.
+
+class Module {
+public:
+
+  void tick() {
+    my_reg = my_reg + 1;
+  }
+
+/*#
+  always @(posedge clock) begin
+    $display("Hello World!\n");
+  end
+#*/
+
+  int my_reg;
+};
+#include "metron_tools.h"
+
+// Basic #defines should work as long as their contents are simultaneously
+// valid C++ and SV
+
+#define MY_CONSTANT1 10
+#define MY_CONSTANT2 20
+#define MY_OTHER_CONSTANT (MY_CONSTANT1 + MY_CONSTANT2 + 7)
+
+class Module {
+public:
+
+  logic<8> tock() {
+    return MY_OTHER_CONSTANT;
+  }
+
+};
+#include "metron_tools.h"
+
+// Concatenating logics should produce logics with correct <N>
+
+class Module {
+public:
+
+  Module() {
+    write("Hello World?\n");
+  }
+
+  void tock1() {
+    logic<1> a = 1;
+    logic<2> b = 2;
+    logic<3> c = 3;
+
+    logic<6> d = cat(a, b, c);
+  }
+
+  void tock2() {
+    logic<8> a = 1;
+    logic<8> b = 2;
+    logic<8> c = 3;
+
+    logic<6> d = cat(b1(a), b2(b), b3(c));
+  }
+};
+#include "metron_tools.h"
+
+// Public signal member variables get moved to the output port list.
+
+class Module {
+public:
+
+  void tock() {
+    my_sig = 1;
+  }
+
+  logic<1> my_sig;
+};
+All the header files in this directory _should_ be convertible to SystemVerilog.
+#include "metron_tools.h"
+
+// Declaration order _matters_ - a tock() that reads a reg before the tick()
+// that writes it is OK.
+
+class Module {
+public:
+
+  void tock() {
+    my_sig = my_reg;
+    tick();
+  }
+
+private:
+
+  void tick() {
+    my_reg = 1;
+  }
+
+  logic<1> my_sig;
+  logic<1> my_reg;
+};
+#include "metron_tools.h"
+
+// Templates can be used for module parameters
+
+template<int WIDTH, int HEIGHT = 2>
+class Submod {
+public:
+
+  void tock() {
+    my_width = bx<WIDTH>(100);
+    my_height = bx<HEIGHT>(200);
+  }
+
+  logic<WIDTH> my_width;
+  logic<HEIGHT> my_height;
+};
+
+class Module {
+public:
+
+  void tock() {
+    submodule.tock();
+    logic<20> foo = submodule.my_width + submodule.my_height;
+  }
+
+  Submod<10,11> submodule;
+};
+#include "metron_tools.h"
+
+// Logics can be casted to various sizes via bN() or bx<N>()
+
+class Module {
+public:
+
+  void tock_bN() {
+    logic<64> src = 0x1234567812345678;
+    logic<64> dst64 = b64(src);
+    logic<63> dst63 = b63(src);
+    logic<62> dst62 = b62(src);
+    logic<61> dst61 = b61(src);
+    logic<60> dst60 = b60(src);
+
+    logic<59> dst59 = b59(src);
+    logic<58> dst58 = b58(src);
+    logic<57> dst57 = b57(src);
+    logic<56> dst56 = b56(src);
+    logic<55> dst55 = b55(src);
+    logic<54> dst54 = b54(src);
+    logic<53> dst53 = b53(src);
+    logic<52> dst52 = b52(src);
+    logic<51> dst51 = b51(src);
+    logic<50> dst50 = b50(src);
+
+    logic<49> dst49 = b49(src);
+    logic<48> dst48 = b48(src);
+    logic<47> dst47 = b47(src);
+    logic<46> dst46 = b46(src);
+    logic<45> dst45 = b45(src);
+    logic<44> dst44 = b44(src);
+    logic<43> dst43 = b43(src);
+    logic<42> dst42 = b42(src);
+    logic<41> dst41 = b41(src);
+    logic<40> dst40 = b40(src);
+
+    logic<39> dst39 = b39(src);
+    logic<38> dst38 = b38(src);
+    logic<37> dst37 = b37(src);
+    logic<36> dst36 = b36(src);
+    logic<35> dst35 = b35(src);
+    logic<34> dst34 = b34(src);
+    logic<33> dst33 = b33(src);
+    logic<32> dst32 = b32(src);
+    logic<31> dst31 = b31(src);
+    logic<30> dst30 = b30(src);
+
+    logic<29> dst29 = b29(src);
+    logic<28> dst28 = b28(src);
+    logic<27> dst27 = b27(src);
+    logic<26> dst26 = b26(src);
+    logic<25> dst25 = b25(src);
+    logic<24> dst24 = b24(src);
+    logic<23> dst23 = b23(src);
+    logic<22> dst22 = b22(src);
+    logic<21> dst21 = b21(src);
+    logic<20> dst20 = b20(src);
+
+    logic<19> dst19 = b19(src);
+    logic<18> dst18 = b18(src);
+    logic<17> dst17 = b17(src);
+    logic<16> dst16 = b16(src);
+    logic<15> dst15 = b15(src);
+    logic<14> dst14 = b14(src);
+    logic<13> dst13 = b13(src);
+    logic<12> dst12 = b12(src);
+    logic<11> dst11 = b11(src);
+    logic<10> dst10 = b10(src);
+
+    logic<9> dst9 = b9(src);
+    logic<8> dst8 = b8(src);
+    logic<7> dst7 = b7(src);
+    logic<6> dst6 = b6(src);
+    logic<5> dst5 = b5(src);
+    logic<4> dst4 = b4(src);
+    logic<3> dst3 = b3(src);
+    logic<2> dst2 = b2(src);
+    logic<1> dst1 = b1(src);
+  }
+
+  void tock_bx_const() {
+    logic<64> src = 0x1234567812345678;
+    logic<63> dst63 = bx<63>(src);
+    logic<62> dst62 = bx<62>(src);
+    logic<61> dst61 = bx<61>(src);
+    logic<60> dst60 = bx<60>(src);
+
+    logic<59> dst59 = bx<59>(src);
+    logic<58> dst58 = bx<58>(src);
+    logic<57> dst57 = bx<57>(src);
+    logic<56> dst56 = bx<56>(src);
+    logic<55> dst55 = bx<55>(src);
+    logic<54> dst54 = bx<54>(src);
+    logic<53> dst53 = bx<53>(src);
+    logic<52> dst52 = bx<52>(src);
+    logic<51> dst51 = bx<51>(src);
+    logic<50> dst50 = bx<50>(src);
+
+    logic<49> dst49 = bx<49>(src);
+    logic<48> dst48 = bx<48>(src);
+    logic<47> dst47 = bx<47>(src);
+    logic<46> dst46 = bx<46>(src);
+    logic<45> dst45 = bx<45>(src);
+    logic<44> dst44 = bx<44>(src);
+    logic<43> dst43 = bx<43>(src);
+    logic<42> dst42 = bx<42>(src);
+    logic<41> dst41 = bx<41>(src);
+    logic<40> dst40 = bx<40>(src);
+
+    logic<39> dst39 = bx<39>(src);
+    logic<38> dst38 = bx<38>(src);
+    logic<37> dst37 = bx<37>(src);
+    logic<36> dst36 = bx<36>(src);
+    logic<35> dst35 = bx<35>(src);
+    logic<34> dst34 = bx<34>(src);
+    logic<33> dst33 = bx<33>(src);
+    logic<32> dst32 = bx<32>(src);
+    logic<31> dst31 = bx<31>(src);
+    logic<30> dst30 = bx<30>(src);
+
+    logic<29> dst29 = bx<29>(src);
+    logic<28> dst28 = bx<28>(src);
+    logic<27> dst27 = bx<27>(src);
+    logic<26> dst26 = bx<26>(src);
+    logic<25> dst25 = bx<25>(src);
+    logic<24> dst24 = bx<24>(src);
+    logic<23> dst23 = bx<23>(src);
+    logic<22> dst22 = bx<22>(src);
+    logic<21> dst21 = bx<21>(src);
+    logic<20> dst20 = bx<20>(src);
+
+    logic<19> dst19 = bx<19>(src);
+    logic<18> dst18 = bx<18>(src);
+    logic<17> dst17 = bx<17>(src);
+    logic<16> dst16 = bx<16>(src);
+    logic<15> dst15 = bx<15>(src);
+    logic<14> dst14 = bx<14>(src);
+    logic<13> dst13 = bx<13>(src);
+    logic<12> dst12 = bx<12>(src);
+    logic<11> dst11 = bx<11>(src);
+    logic<10> dst10 = bx<10>(src);
+
+    logic<9> dst9 = bx<9>(src);
+    logic<8> dst8 = bx<8>(src);
+    logic<7> dst7 = bx<7>(src);
+    logic<6> dst6 = bx<6>(src);
+    logic<5> dst5 = bx<5>(src);
+    logic<4> dst4 = bx<4>(src);
+    logic<3> dst3 = bx<3>(src);
+    logic<2> dst2 = bx<2>(src);
+    logic<1> dst1 = bx<1>(src);
+  }
+
+  void tock_bN_offset() {
+    logic<64> src = 0x1234567812345678;
+
+    logic<8> dst0 = b8(src, 0);
+    logic<8> dst1 = b8(src, 1);
+    logic<8> dst2 = b8(src, 2);
+    logic<8> dst3 = b8(src, 3);
+    logic<8> dst4 = b8(src, 4);
+    logic<8> dst5 = b8(src, 5);
+    logic<8> dst6 = b8(src, 6);
+    logic<8> dst7 = b8(src, 7);
+    logic<8> dst8 = b8(src, 8);
+    logic<8> dst9 = b8(src, 9);
+  }
+
+  static const int some_size1 = 64;
+  static const int some_size2 = 8;
+
+  void tock_bx_param() {
+    logic<some_size1> a = 10;
+    logic<some_size2> b = bx<some_size2>(a);
+
+    logic<some_size2> b0 = bx<some_size2>(a, 0);
+    logic<some_size2> b1 = bx<some_size2>(a, 1);
+    logic<some_size2> b2 = bx<some_size2>(a, 2);
+    logic<some_size2> b3 = bx<some_size2>(a, 3);
+    logic<some_size2> b4 = bx<some_size2>(a, 4);
+    logic<some_size2> b5 = bx<some_size2>(a, 5);
+    logic<some_size2> b6 = bx<some_size2>(a, 6);
+    logic<some_size2> b7 = bx<some_size2>(a, 7);
+    logic<some_size2> b8 = bx<some_size2>(a, 8);
+    logic<some_size2> b9 = bx<some_size2>(a, 9);
+  }
+
+
+  void tock2() {
+    logic<32> a = 0xDEADBEEF;
+
+    logic<1> b = b1(a, 3); //static bit extract with literal offset, width 1
+    logic<7> c = b7(a, 3); //static bit extract with literal offset, width N
+
+    logic<1> e = b1(a, some_size1); //static bit extract with variable offset, width 1
+    logic<7> f = b7(a, some_size2); //static bit extract with variable offset, width N
+  }
+
+
+
+};
+#include "metron_tools.h"
+
+// Calling tick() from tock() in the same module should work and should
+// generate bindings for the tick() call.
+
+class Module {
+public:
+
+  void tock(logic<8> val) {
+    tick(val);
+  }
+
+private:
+
+  void tick(logic<8> val) {
+    my_reg = my_reg + val;
+  }
+
+  logic<8> my_reg;
+
+};
+#include "metron_tools.h"
+
+// UTF-8 text files with a byte order mark should be supported.
+
+// From https://www.w3.org/2001/06/utf-8-test/UTF-8-demo.html:
+
+/*
+Runes:
+
+  ᚻᛖ ᚳᚹᚫᚦ ᚦᚫᛏ ᚻᛖ ᛒᚢᛞᛖ ᚩᚾ ᚦᚫᛗ ᛚᚪᚾᛞᛖ ᚾᚩᚱᚦᚹᛖᚪᚱᛞᚢᛗ ᚹᛁᚦ ᚦᚪ ᚹᛖᛥᚫ
+
+  (Old English, which transcribed into Latin reads 'He cwaeth that he
+  bude thaem lande northweardum with tha Westsae.' and means 'He said
+  that he lived in the northern land near the Western Sea.')
+*/
+
+class Module {
+public:
+
+  Module() {
+    my_reg = 7;
+  }
+
+  logic<8> tock() {
+    return my_reg;
+  }
+
+private:
+
+  logic<8> my_reg;
+};
+#include "metron_tools.h"
+
+// We can instantiated templated classes as submodules.
+
+template<int SOME_CONSTANT = 6>
+class Submod {
+public:
+
+  void tock() {
+    tick();
+  }
+
+private:
+
+  void tick() {
+    sub_reg = sub_reg + SOME_CONSTANT;
+  }
+
+  logic<8> sub_reg;
+};
+
+class Module {
+public:
+
+  void tock() {
+    submod.tock();
+  }
+
+  Submod<99> submod;
+};
+#include "metron_tools.h"
+
+// Tocks should be able to call private tasks and functions
+
+class Module {
+public:
+
+  logic<8> my_signal;
+
+  void tock() {
+    set_signal(get_number());
+  }
+
+  logic<8> get_number() const {
+    return 7;
+  }
+
+  void set_signal(logic<8> number) {
+    my_signal = number;
+  }
+
+};
+#include "metron_tools.h"
+
+// Writing a register multiple times in the same function is OK.
+
+class Module {
+public:
+
+  void tock() {
+    my_sig = 0;
+    my_sig = 1;
+    logic<1> temp = my_sig;
+  }
+
+  logic<1> my_sig;
+};
+#include "metron_tools.h"
+
+// Modules can contain other modules.
+
+class Submod {
+public:
+
+  void tock() {
+    tick();
+  }
+
+private:
+
+  void tick() {
+    sub_reg = sub_reg + 1;
+  }
+
+  logic<8> sub_reg;
+};
+
+class Module {
+public:
+
+  void tock() {
+    submod.tock();
+  }
+
+  Submod submod;
+};
+#include "metron_tools.h"
+
+// DONTCARE gets translated to 1'bx
+
+class Module {
+public:
+
+  //logic<8> tock1() {
+  //  return DONTCARE;
+  //}
+
+  logic<8> tock2() {
+    return b8(DONTCARE);
+  }
+
+  logic<8> tock3() {
+    return bx<8>(DONTCARE);
+  }
+};
+#include "metron_tools.h"
+
+// Template parameters become SV module parameters.
+
+template<int SOME_CONSTANT = 7>
+class Module {
+public:
+
+  void tock() {
+    tick();
+  }
+
+private:
+
+  void tick() {
+    my_reg = my_reg + SOME_CONSTANT;
+  }
+
+  logic<7> my_reg;
+};
+#include "metron_tools.h"
+
+// Getter methods should turn into outputs.
+
+class Module {
+public:
+
+  logic<7> tock_get_reg() const {
+    return my_reg;
+  }
+
+  void tock() {
+    tick();
+  }
+
+
+private:
+
+  void tick() {
+    my_reg = my_reg + 1;
+  }
+
+  logic<7> my_reg;
+};
+#include "metron_tools.h"
+
+// Submodule bindings should be placed immediately before the statement
+// containing the call
+
+class Submod {
+public:
+
+  logic<8> tock_sum_a(logic<8> a1, logic<8> a2) const { return a1 + a2; }
+  logic<8> tock_sum_b(logic<8> b1, logic<8> b2) const { return b1 + b2; }
+};
+
+class Module {
+public:
+
+  logic<8> tock_bindings() const {
+    logic<8> result;
+    // Submod bindings should _not_ end up here.
+
+    {
+      // Only sum_a's bindings should be here.
+      if (submod.tock_sum_a(1, 2)) {
+        // Only sum_b's bindings should be here.
+        result = submod.tock_sum_b(3,4);
+      }
+      else {
+        // Only sum_b's bindings should be here.
+        result = submod.tock_sum_b(5,6);
+      }
+    }
+
+    return result;
+  }
+
+  Submod submod;
+};
+#include "metron_tools.h"
+
+// Private const methods should turn into SV functions.
+
+class Module {
+public:
+
+  void tock() {
+    tick();
+  }
+
+private:
+
+  void tick() {
+    my_reg = my_reg + some_func();
+  }
+
+  logic<8> some_func() const {
+    return 3;
+  }
+
+  logic<8> my_reg;
+};
+#include "metron_tools.h"
+
+// Make sure our built-in functions translate.
+
+class Module {
+public:
+
+  void tock() {
+    logic<8> src = 100;
+    logic<8> a = signed(src);
+    logic<8> b = unsigned(src);
+    logic<8> e = sign_extend<8>(b2(src));
+    logic<8> c = clog2(100);
+    logic<8> d = pow2(4);
+  }
+
+};
+#include "metron_tools.h"
+
+// Static const members become SV localparams
+
+class Module {
+public:
+
+  void tock() {
+    tick();
+  }
+
+private:
+
+  static const int my_val = 7;
+
+  void tick() {
+    my_reg = my_reg + my_val;
+  }
+
+  logic<7> my_reg;
+};
+#include "metron_tools.h"
+
+// Modules can use constructors to initialize state
+
+class Module {
+public:
+
+  Module() {
+    my_reg = 7;
+  }
+
+  logic<8> tock() {
+    return my_reg;
+  }
+
+private:
+
+  logic<8> my_reg;
+};
+
+/*#
+`ifdef IVERILOG
+module Test;
+  logic clock;
+  logic[7:0] tock;
+  Module mod(.clock(clock), .tock(tock));
+  initial begin
+    if (tock != 7) $display("FAIL");
+  end
+endmodule
+`endif
+#*/
+#include "metron_tools.h"
+
+// Public register member variables get moved to the output port list.
+
+class Module {
+public:
+  void tock() {
+    tick();
+  }
+  logic<1> my_reg;
+
+private:
+  void tick() {
+    my_reg = my_reg + 1;
+  }
+};
+#include "metron_tools.h"
+
+// Number literals
+// don't forget the ' spacers
+
+class Module {
+public:
+
+  void tock1() {
+    logic<32> a = 0b0;
+    logic<32> b = 0b00;
+    logic<32> c = 0b000;
+    logic<32> d = 0b0000;
+    logic<32> e = 0b00000;
+    logic<32> f = 0b000000;
+    logic<32> g = 0b0000000;
+    logic<32> h = 0b00000000;
+  }
+
+  void tock2() {
+    logic<32> a = 0b0;
+    logic<32> b = 0b0'0;
+    logic<32> c = 0b0'00;
+    logic<32> d = 0b00'00;
+    logic<32> e = 0b00'000;
+    logic<32> f = 0b0'000'00;
+    logic<32> g = 0b000'0000;
+    logic<32> h = 0b0'0'0'0'0'0'0'0;
+  }
+
+};
+#include "metron_tools.h"
+
+// Simple switch statements are OK.
+
+class Module {
+public:
+
+  void tock(logic<2> selector) {
+    tick(selector);
+  }
+
+private:
+
+  void tick(logic<2> selector) {
+    switch(selector) {
+      case 0: // comment
+        my_reg = 17; break;
+      case 1:  // comment
+        my_reg = 22; break;
+      case 2: my_reg = 30; break;
+      case 3: // fallthrough
+      case 4:
+      case 5:
+      case 6: my_reg = 72; break;
+    }
+  }
+
+  logic<8> my_reg;
+};
+#include "metron_tools.h"
+
+class Module {
+public:
+
+  void tock_dup1() {
+    logic<1> a1 = 0b1;
+    logic<1> b1 = dup<1>(a1);
+  }
+
+  void tock_dup4() {
+    logic<1>  a1 = 0b1;
+    logic<4>  b1 = dup<4>(a1);
+
+    logic<2>  a2 = 0b01;
+    logic<8>  b2 = dup<4>(a2);
+
+    logic<3>  a3 = 0b001;
+    logic<12> b3 = dup<4>(a3);
+
+    logic<4>  a4 = 0b0001;
+    logic<16> b4 = dup<4>(a4);
+
+    logic<5>  a5 = 0b00001;
+    logic<20> b5 = dup<4>(a5);
+
+    logic<6>  a6 = 0b000001;
+    logic<24> b6 = dup<4>(a6);
+
+    logic<7>  a7 = 0b0000001;
+    logic<28> b7 = dup<4>(a7);
+
+    logic<8>  a8 = 0b00000001;
+    logic<32> b8 = dup<4>(a8);
+  }
+};
+#include "metron_tools.h"
+
+// UTF-8 text files with a byte order mark should be supported.
+
+// From https://www.w3.org/2001/06/utf-8-test/UTF-8-demo.html:
+
+/*
+Runes:
+
+  ᚻᛖ ᚳᚹᚫᚦ ᚦᚫᛏ ᚻᛖ ᛒᚢᛞᛖ ᚩᚾ ᚦᚫᛗ ᛚᚪᚾᛞᛖ ᚾᚩᚱᚦᚹᛖᚪᚱᛞᚢᛗ ᚹᛁᚦ ᚦᚪ ᚹᛖᛥᚫ
+
+  (Old English, which transcribed into Latin reads 'He cwaeth that he
+  bude thaem lande northweardum with tha Westsae.' and means 'He said
+  that he lived in the northern land near the Western Sea.')
+*/
+
+class Module {
+public:
+
+  Module() {
+    my_reg = 7;
+  }
+
+  logic<8> tock() {
+    return my_reg;
+  }
+
+private:
+
+  logic<8> my_reg;
+};
+#include "metron_tools.h"
+
+class Module {
+public:
+
+  logic<8> tock() {
+    static const int thing1 = 1;
+    const int thing2 = 2;
+    return thing1 + thing2;
+  }
+
+};
+#include "metron_tools.h"
+
+// Empty module should pass.
+
+class Module {
+};
+#include "metron_tools.h"
+
+// Multiple tick methods are OK as long as they're all called by tock()
+
+class Module {
+public:
+
+  logic<8> tock() {
+    logic<8> result = my_reg1 + my_reg2;
+    tick1();
+    tick2();
+    return result;
+  }
+
+private:
+
+  void tick1() {
+    my_reg1 = 0;
+  }
+
+  void tick2() {
+    my_reg2 = 1;
+  }
+
+  logic<8> my_reg1;
+  logic<8> my_reg2;
+};
+#include "metron_tools.h"
+
+// Writing a register multiple times in the same function is OK.
+
+class Module {
+public:
+
+  void tock() {
+    tick();
+  }
+
+private:
+
+  void tick() {
+    logic<1> temp = my_reg;
+    my_reg = 0;
+    my_reg = 1;
+  }
+
+  logic<1> my_reg;
+};
+#include "metron_tools.h"
+
+// Namespaces turn into packages.
+
+namespace MyPackage {
+  static const int foo = 3;
+};
+
+class Module {
+public:
+
+  logic<8> tock1() {
+    return MyPackage::foo;
+  }
+
+  logic<8> tock2() {
+    using namespace MyPackage;
+    return foo;
+  }
+};
+#include "metron_tools.h"
+
+// Structs exist in both C++ and Verilog
+
+typedef struct {
+  logic<8> a;
+  int b;
+  logic<2> c;
+} MyStruct1;
+
+struct MyStruct2 {
+  logic<8> a;
+  int b;
+  logic<2> c;
+};
+
+class Module {
+public:
+  logic<8> tock() {
+    MyStruct1 my_struct1;
+    my_struct1.a = b8(1234);
+    my_struct1.b = 12;
+    my_struct1.c = 0b01;
+
+    MyStruct2 my_struct2;
+    my_struct2.a = b8(1234);
+    my_struct2.b = 12;
+    my_struct2.c = 0b01;
+
+    return 17;
+  }
+};
+#include "metron_tools.h"
+
+// Private non-const methods should turn into SV tasks.
+
+class Module {
+public:
+
+  void tock() {
+    tick();
+  }
+
+private:
+
+  void tick() {
+    some_task();
+  }
+
+  void some_task() {
+    my_reg = my_reg + my_reg2 + 3;
+    some_task2();
+  }
+
+  void some_task2() {
+    my_reg2 = my_reg2 + 3;
+  }
+
+  logic<8> my_reg;
+  logic<8> my_reg2;
+};
+#include "metron_tools.h"
+
+// Port and function arg names can collide, the latter is disambiguated by its
+// function name.
+
+class Module {
+public:
+
+  logic<3> input_val;
+  logic<3> output_val;
+
+  void tock1() {
+    output_val = input_val + 7;
+  }
+
+  logic<3> tock(logic<3> input_val) {
+    return input_val + 8;
+  }
+};
+#include "metron_tools.h"
+
+// Private getter methods are OK
+
+class Module {
+public:
+
+  logic<8> tock() {
+    return my_getter();
+  }
+
+private:
+
+  logic<8> my_getter() const {
+    return 12;
+  }
+
+};
+#include "metron_tools.h"
+
+// I don't know why you would want to do this, but it should work.
+
+class Module {
+public:
+  Module() {
+    init1();
+  }
+
+  void tock() {
+    tick();
+  }
+
+private:
+
+  void tick() {
+    reg1 = reg1 + 1;
+    reg2 = reg2 + 1;
+    reg3 = reg3 + 1;
+    reg4 = reg4 + 1;
+    reg5 = reg5 + 1;
+  }
+
+  logic<8> reg1;
+  logic<8> reg2;
+  logic<8> reg3;
+  logic<8> reg4;
+  logic<8> reg5;
+
+  void init1() {
+    reg1 = 1;
+    init2();
+  }
+
+  void init2() {
+    reg2 = 2;
+    init3();
+  }
+
+  void init3() {
+    reg3 = 3;
+    init4();
+  }
+
+  void init4() {
+    reg4 = 4;
+    init5();
+  }
+
+  void init5() {
+    reg5 = 5;
+  }
+
+};
+#include "metron_tools.h"
+
+// We can instantiated templated classes as submodules.
+
+class Submod {
+public:
+
+  void tock() {
+    tick();
+  }
+
+  logic<8> sub_reg;
+
+private:
+
+  void tick() {
+    sub_reg = sub_reg + 1;
+  }
+
+};
+
+class Module {
+public:
+
+  logic<8> tock_get_submod_reg() const {
+    return submod.sub_reg;
+  }
+
+  void tock() {
+    submod.tock();
+  }
+
+  Submod submod;
+};
+#include "metron_tools.h"
+
+// If statements whose sub-blocks contain submodule calls _must_ use {}.
+
+class Submod {
+public:
+  void tock(logic<8> arg) {
+    tick(arg);
+  }
+private:
+  void tick(logic<8> arg) {
+    my_reg = my_reg + arg;
+  }
+
+  logic<8> my_reg;
+};
+
+
+class Module {
+public:
+
+  void tock() {
+    if (1) {
+      submod.tock(72);
+    }
+    else {
+      submod.tock(36);
+    }
+  }
+
+  Submod submod;
+};
+#include "metron_tools.h"
+
+// Case statements are allowed to have fallthrough, though the SV syntax is
+// a bit different.
+
+class Module {
+public:
+
+  logic<8> tock() {
+    logic<8> result;
+    switch(my_reg) {
+      case 0: // can we stick comments in here?
+      case 1:
+      case 2:
+        result = 10;
+        break;
+      case 3: {
+        result = 20;
+        break;
+      }
+      default:
+        result = 30;
+        break;
+    }
+
+    tick();
+    return result;
+  }
+
+private:
+
+  void tick() {
+    my_reg = my_reg + 1;
+  }
+
+  logic<8> my_reg;
+};
+#include "metron_tools.h"
+
+// Public fields that are read by the module but never written become input
+// ports.
+
+class Submod {
+public:
+
+  logic<8> i_signal;
+  logic<8> o_signal;
+  logic<8> o_reg;
+
+  logic<8> tock(logic<8> i_param) {
+    o_signal = i_signal + i_param;
+    tick();
+    return o_signal + 7;
+  }
+
+private:
+
+  void tick() {
+    o_reg = o_reg + o_signal;
+  }
+};
+
+class Module {
+public:
+
+  void tock() {
+    submod.i_signal = 12;
+    logic<8> submod_return = submod.tock(13);
+    my_sig = submod_return + 3;
+    tick();
+  }
+
+  logic<8> my_reg;
+
+private:
+
+  void tick() {
+    my_reg = my_reg + my_sig - 2;
+  }
+
+  logic<8> my_sig;
+
+  Submod submod;
+};
+#include "metron_tools.h"
+
+// Nesting submod calls should put all the nested input bindings above the call.
+
+class Submod1 {
+public:
+  logic<8> tock_add_one(logic<8> a) const {
+    return a + 1;
+  }
+};
+
+class Submod2 {
+public:
+  logic<8> tock_add_two(logic<8> a) const {
+    return a + 1;
+  }
+};
+
+class Module {
+public:
+
+  logic<8> tock(logic<8> old_counter) {
+    // Two bindings should end up here.
+    logic<8> new_counter = submod1.tock_add_one(submod2.tock_add_two(old_counter));
+    return new_counter;
+  }
+
+private:
+
+  Submod1 submod1;
+  Submod2 submod2;
+};
+#include "metron_tools.h"
+
+// Tock methods can return values.
+
+class Module {
+public:
+
+  logic<8> tock() {
+    return 123;
+  }
+};
+#include "metron_tools.h"
+
+// Tick inputs should become input ports.
+
+// clang-format off
+class Module {
+ public:
+
+  void tock(logic<7> my_input) {
+    tick(my_input);
+  }
+
+ private:
+
+  void tick(logic<7> my_input) {
+    my_reg = my_reg + my_input;
+  }
+
+  logic<7> my_reg;
+};
+// clang-format on
+#include "metron_tools.h"
+
+// X Constructor for Module is not allowed to have params
+
+class Module {
+ public:
+  Module(int x) {}
+};
+#include "metron_tools.h"
+
+// If statements whose sub-blocks contain submodule calls _must_ use {}.
+
+// X If statements that contain component calls must use {}
+
+class Submod {
+ public:
+  void tock() {}
+};
+
+class Module {
+ public:
+  void tock() {
+    if (1)
+      submod.tock();
+    else
+      submod.tock();
+  }
+
+  Submod submod;
+};
+#include "metron_tools.h"
+
+// The tracer should catch it if we add a redundant break and it's in a block.
+
+// X Case statement in tock does not end with break
+
+class Module {
+ public:
+  logic<8> tock() {
+    logic<8> result;
+    switch (my_reg) {
+      case 0: {
+        result = 10;
+        break;
+        result = 10;
+        break;
+      }
+      default:
+        result = 30;
+        break;
+    }
+
+    tick();
+    return result;
+  }
+
+ private:
+  void tick() { my_reg = my_reg + 1; }
+
+  logic<8> my_reg;
+};
+#include "metron_tools.h"
+
+// Signals that are written after they're read should fail.
+
+// X Context sig had invalid state after trace
+
+class Module {
+ public:
+  void tock() {
+    sig = 1;
+    logic<1> x = sig;
+    sig = 0;
+  }
+
+  logic<1> sig;
+};
+All the header files in this directory should _not_ be convertible to
+SystemVerilog. They should fail for one or more reasons, and the reason texts
+are stored in the header file tagged with "//X".
+#include "metron_tools.h"
+
+// If for some reason you put a return in the middle of a block, we should catch
+// it.
+
+// X Method tock has non-terminal return
+
+class Module {
+ public:
+  logic<8> tock() {
+    logic<8> a = 10;
+    logic<8> b = 2;
+    logic<8> c;
+
+    c = a + b;
+    return c;
+    c = b + b;
+  }
+};
+#include "metron_tools.h"
+
+// The tracer should catch it if we add a redundant break.
+
+// X Case statement in tock does not end with break
+
+class Module {
+ public:
+  logic<8> tock() {
+    logic<8> result;
+    switch (my_reg) {
+      case 0:
+        result = 10;
+        break;
+        result = 10;
+        break;
+      default:
+        result = 30;
+        break;
+    }
+    tick();
+    return result;
+  }
+
+ private:
+  void tick() { my_reg = my_reg + 1; }
+
+  logic<8> my_reg;
+};
+#include "metron_tools.h"
+
+// Tick methods are not allowed to have a return value.
+// X Tick method Module.tick is not allowed to have a return value.
+
+class Module {
+ public:
+  logic<2> tick() {
+    my_reg = my_reg + 1;
+    return 8;
+  }
+
+ private:
+  logic<2> my_reg;
+};
+#include "metron_tools.h"
+
+// The tracer should catch it if we forget a break.
+// X Case statement in tock does not end with break
+
+class Module {
+ public:
+  logic<8> tock() {
+    logic<8> result;
+    switch (my_reg) {
+      case 0:  // can we stick comments in here?
+      case 1:
+      case 2:
+        result = 10;
+        break;
+      case 3: {
+        result = 20;
+        /*break;*/
+      }
+      default:
+        result = 30;
+        break;
+    }
+
+    tick();
+    return result;
+  }
+
+ private:
+  void tick() { my_reg = my_reg + 1; }
+
+  logic<8> my_reg;
+};
+#include "metron_tools.h"
+
+// Tock functions can't have more than a single return at the end.
+
+// X Method tock has non-terminal return
+
+class Module {
+ public:
+  logic<8> tock(logic<8> data) {
+    if (data > 10) {
+      return 12;
+    }
+    return 11;
+  }
+};
+#include "metron_tools.h"
+
+// X Context sig1 had invalid state after trace
+
+class Module {
+ public:
+  void tock1() { sig1 = sig2; }
+
+  void tock2() { sig2 = sig1; }
+
+  void tock3() { sig1 = 0; }
+
+ private:
+  logic<8> sig1;
+  logic<8> sig2;
+};
+#include "metron_tools.h"
+
+// Registers that are read after they're written should fail.
+
+// X Context reg had invalid state after trace
+
+class Module {
+ public:
+  void tock() { tick(); }
+
+ private:
+  void tick() {
+    logic<1> x = reg;
+    reg = 1;
+    logic<1> y = reg;
+  }
+
+  logic<1> reg;
+};
+#include "metron_tools.h"
+
+// A submod function can only produce one value per tock(). Trying to use it
+// twice should be an error.
+
+// X Context tock_add_one had invalid state after trace
+
+class Submod {
+ public:
+  logic<8> tock_add_one(logic<8> a) const { return a + 1; }
+};
+
+class Module {
+ public:
+  void tock() {
+    b = submod.tock_add_one(b);
+    c = submod.tock_add_one(c);
+  }
+
+ private:
+  logic<8> b;
+  logic<8> c;
+  Submod submod;
+};

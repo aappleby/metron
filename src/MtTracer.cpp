@@ -387,7 +387,7 @@ CHECK_RETURN Err MtTracer::trace_sym_call_expression(MtContext* ctx,
   Err err;
   assert(node.sym == sym_call_expression);
 
-  assert(ctx->method);
+  if (!ctx->method) return err << ERR("Context does not contain a method\n");
 
   auto node_func = node.get_field(field_function);
   auto node_args = node.get_field(field_arguments);
@@ -400,7 +400,7 @@ CHECK_RETURN Err MtTracer::trace_sym_call_expression(MtContext* ctx,
     case sym_field_expression: {
       auto child_name = node_func.get_field(field_argument).text();
       auto child_ctx = ctx->resolve(child_name);
-      assert(child_ctx);
+      if (!child_ctx) return err << ERR("Child context missing\n");
 
       auto child_func = node_func.get_field(field_field).text();
       err << trace_call(ctx, child_ctx->resolve(child_func), node);
@@ -418,7 +418,8 @@ CHECK_RETURN Err MtTracer::trace_sym_call_expression(MtContext* ctx,
       if (node_name == "bx" || node_name == "dup" ||
           node_name == "sign_extend") {
       } else {
-        debugbreak();
+        err << ERR("trace_sym_call_expression - Unhandled template func %s\n", node.text().c_str());
+        return err;
       }
       break;
     }

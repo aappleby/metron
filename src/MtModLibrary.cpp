@@ -58,6 +58,10 @@ CHECK_RETURN Err MtModLibrary::load_source(const char *filename,
                                            bool verbose) {
   Err err;
 
+  if (!std::string(filename).ends_with(".h")) {
+    return err << ERR("Source file %s does not end with .h\n", filename);
+  }
+
   if (get_source(filename)) {
     return WARN("Duplicate filename %s\n", filename);
   }

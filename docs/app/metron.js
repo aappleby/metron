@@ -1,4 +1,12 @@
 
+var Module = (() => {
+  var _scriptDir = import.meta.url;
+  
+  return (
+function(Module) {
+  Module = Module || {};
+
+
 
 // The Module object: Our interface to the outside world. We import
 // and export values on it. There are various ways Module can be used:
@@ -17,220 +25,34 @@ var Module = typeof Module != 'undefined' ? Module : {};
 
 // See https://caniuse.com/mdn-javascript_builtins_object_assign
 
+// Set up the promise that indicates the Module is initialized
+var readyPromiseResolve, readyPromiseReject;
+Module['ready'] = new Promise(function(resolve, reject) {
+  readyPromiseResolve = resolve;
+  readyPromiseReject = reject;
+});
+
+      if (!Object.getOwnPropertyDescriptor(Module['ready'], '_main')) {
+        Object.defineProperty(Module['ready'], '_main', { configurable: true, get: function() { abort('You are getting _main on the Promise object, instead of the instance. Use .then() to get called back with the instance, see the MODULARIZE docs in src/settings.js') } });
+        Object.defineProperty(Module['ready'], '_main', { configurable: true, set: function() { abort('You are setting _main on the Promise object, instead of the instance. Use .then() to get called back with the instance, see the MODULARIZE docs in src/settings.js') } });
+      }
+    
+
+      if (!Object.getOwnPropertyDescriptor(Module['ready'], '___stdio_exit')) {
+        Object.defineProperty(Module['ready'], '___stdio_exit', { configurable: true, get: function() { abort('You are getting ___stdio_exit on the Promise object, instead of the instance. Use .then() to get called back with the instance, see the MODULARIZE docs in src/settings.js') } });
+        Object.defineProperty(Module['ready'], '___stdio_exit', { configurable: true, set: function() { abort('You are setting ___stdio_exit on the Promise object, instead of the instance. Use .then() to get called back with the instance, see the MODULARIZE docs in src/settings.js') } });
+      }
+    
+
+      if (!Object.getOwnPropertyDescriptor(Module['ready'], 'onRuntimeInitialized')) {
+        Object.defineProperty(Module['ready'], 'onRuntimeInitialized', { configurable: true, get: function() { abort('You are getting onRuntimeInitialized on the Promise object, instead of the instance. Use .then() to get called back with the instance, see the MODULARIZE docs in src/settings.js') } });
+        Object.defineProperty(Module['ready'], 'onRuntimeInitialized', { configurable: true, set: function() { abort('You are setting onRuntimeInitialized on the Promise object, instead of the instance. Use .then() to get called back with the instance, see the MODULARIZE docs in src/settings.js') } });
+      }
+    
+
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-
-  if (!Module.expectedDataFileDownloads) {
-    Module.expectedDataFileDownloads = 0;
-  }
-
-  Module.expectedDataFileDownloads++;
-  (function() {
-    // When running as a pthread, FS operations are proxied to the main thread, so we don't need to
-    // fetch the .data bundle on the worker
-    if (Module['ENVIRONMENT_IS_PTHREAD']) return;
-    var loadPackage = function(metadata) {
-
-      var PACKAGE_PATH = '';
-      if (typeof window === 'object') {
-        PACKAGE_PATH = window['encodeURIComponent'](window.location.pathname.toString().substring(0, window.location.pathname.toString().lastIndexOf('/')) + '/');
-      } else if (typeof process === 'undefined' && typeof location !== 'undefined') {
-        // web worker
-        PACKAGE_PATH = encodeURIComponent(location.pathname.toString().substring(0, location.pathname.toString().lastIndexOf('/')) + '/');
-      }
-      var PACKAGE_NAME = 'wasm/app/metron.data';
-      var REMOTE_PACKAGE_BASE = 'metron.data';
-      if (typeof Module['locateFilePackage'] === 'function' && !Module['locateFile']) {
-        Module['locateFile'] = Module['locateFilePackage'];
-        err('warning: you defined Module.locateFilePackage, that has been renamed to Module.locateFile (using your locateFilePackage for now)');
-      }
-      var REMOTE_PACKAGE_NAME = Module['locateFile'] ? Module['locateFile'](REMOTE_PACKAGE_BASE, '') : REMOTE_PACKAGE_BASE;
-
-      var REMOTE_PACKAGE_SIZE = metadata['remote_package_size'];
-      var PACKAGE_UUID = metadata['package_uuid'];
-
-      function fetchRemotePackage(packageName, packageSize, callback, errback) {
-        if (typeof process === 'object' && typeof process.versions === 'object' && typeof process.versions.node === 'string') {
-          require('fs').readFile(packageName, function(err, contents) {
-            if (err) {
-              errback(err);
-            } else {
-              callback(contents.buffer);
-            }
-          });
-          return;
-        }
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', packageName, true);
-        xhr.responseType = 'arraybuffer';
-        xhr.onprogress = function(event) {
-          var url = packageName;
-          var size = packageSize;
-          if (event.total) size = event.total;
-          if (event.loaded) {
-            if (!xhr.addedTotal) {
-              xhr.addedTotal = true;
-              if (!Module.dataFileDownloads) Module.dataFileDownloads = {};
-              Module.dataFileDownloads[url] = {
-                loaded: event.loaded,
-                total: size
-              };
-            } else {
-              Module.dataFileDownloads[url].loaded = event.loaded;
-            }
-            var total = 0;
-            var loaded = 0;
-            var num = 0;
-            for (var download in Module.dataFileDownloads) {
-            var data = Module.dataFileDownloads[download];
-              total += data.total;
-              loaded += data.loaded;
-              num++;
-            }
-            total = Math.ceil(total * Module.expectedDataFileDownloads/num);
-            if (Module['setStatus']) Module['setStatus']('Downloading data... (' + loaded + '/' + total + ')');
-          } else if (!Module.dataFileDownloads) {
-            if (Module['setStatus']) Module['setStatus']('Downloading data...');
-          }
-        };
-        xhr.onerror = function(event) {
-          throw new Error("NetworkError for: " + packageName);
-        }
-        xhr.onload = function(event) {
-          if (xhr.status == 200 || xhr.status == 304 || xhr.status == 206 || (xhr.status == 0 && xhr.response)) { // file URLs can return 0
-            var packageData = xhr.response;
-            callback(packageData);
-          } else {
-            throw new Error(xhr.statusText + " : " + xhr.responseURL);
-          }
-        };
-        xhr.send(null);
-      };
-
-      function handleError(error) {
-        console.error('package error:', error);
-      };
-
-      var fetchedCallback = null;
-      var fetched = Module['getPreloadedPackage'] ? Module['getPreloadedPackage'](REMOTE_PACKAGE_NAME, REMOTE_PACKAGE_SIZE) : null;
-
-      if (!fetched) fetchRemotePackage(REMOTE_PACKAGE_NAME, REMOTE_PACKAGE_SIZE, function(data) {
-        if (fetchedCallback) {
-          fetchedCallback(data);
-          fetchedCallback = null;
-        } else {
-          fetched = data;
-        }
-      }, handleError);
-
-    function runWithFS() {
-
-      function assert(check, msg) {
-        if (!check) throw msg + new Error().stack;
-      }
-Module['FS_createPath']("/", "examples", true, true);
-Module['FS_createPath']("/examples", "rvtiny", true, true);
-Module['FS_createPath']("/examples/rvtiny", "metron", true, true);
-Module['FS_createPath']("/examples/rvtiny", "metron_sv", true, true);
-Module['FS_createPath']("/examples", "rvsimple", true, true);
-Module['FS_createPath']("/examples/rvsimple", "metron", true, true);
-Module['FS_createPath']("/examples/rvsimple", "metron_sv", true, true);
-Module['FS_createPath']("/examples/rvsimple", "reference_sv", true, true);
-Module['FS_createPath']("/examples", "pong", true, true);
-Module['FS_createPath']("/examples/pong", "metron", true, true);
-Module['FS_createPath']("/examples/pong", "reference", true, true);
-Module['FS_createPath']("/examples/pong", "metron_sv", true, true);
-Module['FS_createPath']("/examples", "ibex", true, true);
-Module['FS_createPath']("/examples/ibex", "metron_ref", true, true);
-Module['FS_createPath']("/examples/ibex", "metron", true, true);
-Module['FS_createPath']("/examples", "rvtiny_sync", true, true);
-Module['FS_createPath']("/examples/rvtiny_sync", "metron", true, true);
-Module['FS_createPath']("/examples/rvtiny_sync", "metron_sv", true, true);
-Module['FS_createPath']("/examples", "uart", true, true);
-Module['FS_createPath']("/examples/uart", "metron", true, true);
-Module['FS_createPath']("/examples/uart", "metron_sv", true, true);
-
-      /** @constructor */
-      function DataRequest(start, end, audio) {
-        this.start = start;
-        this.end = end;
-        this.audio = audio;
-      }
-      DataRequest.prototype = {
-        requests: {},
-        open: function(mode, name) {
-          this.name = name;
-          this.requests[name] = this;
-          Module['addRunDependency']('fp ' + this.name);
-        },
-        send: function() {},
-        onload: function() {
-          var byteArray = this.byteArray.subarray(this.start, this.end);
-          this.finish(byteArray);
-        },
-        finish: function(byteArray) {
-          var that = this;
-          // canOwn this data in the filesystem, it is a slide into the heap that will never change
-          Module['FS_createDataFile'](this.name, null, byteArray, true, true, true);
-          Module['removeRunDependency']('fp ' + that.name);
-          this.requests[this.name] = null;
-        }
-      };
-
-      var files = metadata['files'];
-      for (var i = 0; i < files.length; ++i) {
-        new DataRequest(files[i]['start'], files[i]['end'], files[i]['audio'] || 0).open('GET', files[i]['filename']);
-      }
-
-      function processPackageData(arrayBuffer) {
-        assert(arrayBuffer, 'Loading data file failed.');
-        assert(arrayBuffer instanceof ArrayBuffer, 'bad input to processPackageData');
-        var byteArray = new Uint8Array(arrayBuffer);
-        var curr;
-        // Reuse the bytearray from the XHR as the source for file reads.
-          DataRequest.prototype.byteArray = byteArray;
-          var files = metadata['files'];
-          for (var i = 0; i < files.length; ++i) {
-            DataRequest.prototype.requests[files[i].filename].onload();
-          }          Module['removeRunDependency']('datafile_wasm/app/metron.data');
-
-      };
-      Module['addRunDependency']('datafile_wasm/app/metron.data');
-
-      if (!Module.preloadResults) Module.preloadResults = {};
-
-      Module.preloadResults[PACKAGE_NAME] = {fromCache: false};
-      if (fetched) {
-        processPackageData(fetched);
-        fetched = null;
-      } else {
-        fetchedCallback = processPackageData;
-      }
-
-    }
-    if (Module['calledRun']) {
-      runWithFS();
-    } else {
-      if (!Module['preRun']) Module['preRun'] = [];
-      Module["preRun"].push(runWithFS); // FS is not initialized yet, wait for it
-    }
-
-    }
-    loadPackage({"files": [{"filename": "/examples/scratch.h", "start": 0, "end": 353}, {"filename": "/examples/rvtiny/main_vl.cpp", "start": 353, "end": 3264}, {"filename": "/examples/rvtiny/README.md", "start": 3264, "end": 3428}, {"filename": "/examples/rvtiny/main.cpp", "start": 3428, "end": 6165}, {"filename": "/examples/rvtiny/metron/toplevel.h", "start": 6165, "end": 12255}, {"filename": "/examples/rvtiny/metron_sv/toplevel.sv", "start": 12255, "end": 18758}, {"filename": "/examples/rvsimple/main_vl.cpp", "start": 18758, "end": 21660}, {"filename": "/examples/rvsimple/README.md", "start": 21660, "end": 21739}, {"filename": "/examples/rvsimple/main_ref_vl.cpp", "start": 21739, "end": 24641}, {"filename": "/examples/rvsimple/main.cpp", "start": 24641, "end": 27428}, {"filename": "/examples/rvsimple/metron/register.h", "start": 27428, "end": 28113}, {"filename": "/examples/rvsimple/metron/example_data_memory_bus.h", "start": 28113, "end": 29220}, {"filename": "/examples/rvsimple/metron/config.h", "start": 29220, "end": 30435}, {"filename": "/examples/rvsimple/metron/instruction_decoder.h", "start": 30435, "end": 31199}, {"filename": "/examples/rvsimple/metron/singlecycle_ctlpath.h", "start": 31199, "end": 33692}, {"filename": "/examples/rvsimple/metron/toplevel.h", "start": 33692, "end": 35540}, {"filename": "/examples/rvsimple/metron/example_text_memory.h", "start": 35540, "end": 36216}, {"filename": "/examples/rvsimple/metron/singlecycle_datapath.h", "start": 36216, "end": 40943}, {"filename": "/examples/rvsimple/metron/control_transfer.h", "start": 40943, "end": 42057}, {"filename": "/examples/rvsimple/metron/regfile.h", "start": 42057, "end": 43028}, {"filename": "/examples/rvsimple/metron/example_data_memory.h", "start": 43028, "end": 44262}, {"filename": "/examples/rvsimple/metron/data_memory_interface.h", "start": 44262, "end": 46200}, {"filename": "/examples/rvsimple/metron/adder.h", "start": 46200, "end": 46700}, {"filename": "/examples/rvsimple/metron/riscv_core.h", "start": 46700, "end": 49743}, {"filename": "/examples/rvsimple/metron/singlecycle_control.h", "start": 49743, "end": 55337}, {"filename": "/examples/rvsimple/metron/multiplexer8.h", "start": 55337, "end": 56347}, {"filename": "/examples/rvsimple/metron/multiplexer4.h", "start": 56347, "end": 57174}, {"filename": "/examples/rvsimple/metron/alu_control.h", "start": 57174, "end": 59795}, {"filename": "/examples/rvsimple/metron/alu.h", "start": 59795, "end": 61256}, {"filename": "/examples/rvsimple/metron/constants.h", "start": 61256, "end": 66975}, {"filename": "/examples/rvsimple/metron/example_text_memory_bus.h", "start": 66975, "end": 67848}, {"filename": "/examples/rvsimple/metron/immediate_generator.h", "start": 67848, "end": 69966}, {"filename": "/examples/rvsimple/metron/multiplexer2.h", "start": 69966, "end": 70657}, {"filename": "/examples/rvsimple/metron_sv/toplevel.sv", "start": 70657, "end": 73865}, {"filename": "/examples/rvsimple/metron_sv/alu.sv", "start": 73865, "end": 75266}, {"filename": "/examples/rvsimple/metron_sv/riscv_core.sv", "start": 75266, "end": 81128}, {"filename": "/examples/rvsimple/metron_sv/multiplexer2.sv", "start": 81128, "end": 81847}, {"filename": "/examples/rvsimple/metron_sv/adder.sv", "start": 81847, "end": 82433}, {"filename": "/examples/rvsimple/metron_sv/regfile.sv", "start": 82433, "end": 83624}, {"filename": "/examples/rvsimple/metron_sv/data_memory_interface.sv", "start": 83624, "end": 85651}, {"filename": "/examples/rvsimple/metron_sv/singlecycle_ctlpath.sv", "start": 85651, "end": 89700}, {"filename": "/examples/rvsimple/metron_sv/example_text_memory.sv", "start": 89700, "end": 90444}, {"filename": "/examples/rvsimple/metron_sv/alu_control.sv", "start": 90444, "end": 92880}, {"filename": "/examples/rvsimple/metron_sv/singlecycle_control.sv", "start": 92880, "end": 98370}, {"filename": "/examples/rvsimple/metron_sv/multiplexer4.sv", "start": 98370, "end": 99210}, {"filename": "/examples/rvsimple/metron_sv/constants.sv", "start": 99210, "end": 104720}, {"filename": "/examples/rvsimple/metron_sv/control_transfer.sv", "start": 104720, "end": 105822}, {"filename": "/examples/rvsimple/metron_sv/example_data_memory.sv", "start": 105822, "end": 107235}, {"filename": "/examples/rvsimple/metron_sv/immediate_generator.sv", "start": 107235, "end": 109277}, {"filename": "/examples/rvsimple/metron_sv/config.sv", "start": 109277, "end": 110473}, {"filename": "/examples/rvsimple/metron_sv/register.sv", "start": 110473, "end": 111318}, {"filename": "/examples/rvsimple/metron_sv/singlecycle_datapath.sv", "start": 111318, "end": 120545}, {"filename": "/examples/rvsimple/metron_sv/example_text_memory_bus.sv", "start": 120545, "end": 121635}, {"filename": "/examples/rvsimple/metron_sv/multiplexer8.sv", "start": 121635, "end": 122690}, {"filename": "/examples/rvsimple/metron_sv/example_data_memory_bus.sv", "start": 122690, "end": 124270}, {"filename": "/examples/rvsimple/metron_sv/instruction_decoder.sv", "start": 124270, "end": 125141}, {"filename": "/examples/rvsimple/reference_sv/toplevel.sv", "start": 125141, "end": 126772}, {"filename": "/examples/rvsimple/reference_sv/alu.sv", "start": 126772, "end": 129893}, {"filename": "/examples/rvsimple/reference_sv/riscv_core.sv", "start": 129893, "end": 133267}, {"filename": "/examples/rvsimple/reference_sv/multiplexer2.sv", "start": 133267, "end": 133855}, {"filename": "/examples/rvsimple/reference_sv/multiplexer.sv", "start": 133855, "end": 134633}, {"filename": "/examples/rvsimple/reference_sv/adder.sv", "start": 134633, "end": 135082}, {"filename": "/examples/rvsimple/reference_sv/regfile.sv", "start": 135082, "end": 135991}, {"filename": "/examples/rvsimple/reference_sv/data_memory_interface.sv", "start": 135991, "end": 137902}, {"filename": "/examples/rvsimple/reference_sv/singlecycle_ctlpath.sv", "start": 137902, "end": 139692}, {"filename": "/examples/rvsimple/reference_sv/example_text_memory.sv", "start": 139692, "end": 140218}, {"filename": "/examples/rvsimple/reference_sv/alu_control.sv", "start": 140218, "end": 143671}, {"filename": "/examples/rvsimple/reference_sv/singlecycle_control.sv", "start": 143671, "end": 148403}, {"filename": "/examples/rvsimple/reference_sv/example_memory_bus.sv", "start": 148403, "end": 149711}, {"filename": "/examples/rvsimple/reference_sv/multiplexer4.sv", "start": 149711, "end": 150365}, {"filename": "/examples/rvsimple/reference_sv/constants.sv", "start": 150365, "end": 155102}, {"filename": "/examples/rvsimple/reference_sv/control_transfer.sv", "start": 155102, "end": 155987}, {"filename": "/examples/rvsimple/reference_sv/example_data_memory.sv", "start": 155987, "end": 156902}, {"filename": "/examples/rvsimple/reference_sv/immediate_generator.sv", "start": 156902, "end": 158842}, {"filename": "/examples/rvsimple/reference_sv/config.sv", "start": 158842, "end": 160249}, {"filename": "/examples/rvsimple/reference_sv/register.sv", "start": 160249, "end": 160882}, {"filename": "/examples/rvsimple/reference_sv/singlecycle_datapath.sv", "start": 160882, "end": 165111}, {"filename": "/examples/rvsimple/reference_sv/example_text_memory_bus.sv", "start": 165111, "end": 165796}, {"filename": "/examples/rvsimple/reference_sv/multiplexer8.sv", "start": 165796, "end": 166582}, {"filename": "/examples/rvsimple/reference_sv/example_data_memory_bus.sv", "start": 166582, "end": 167596}, {"filename": "/examples/rvsimple/reference_sv/instruction_decoder.sv", "start": 167596, "end": 168309}, {"filename": "/examples/pong/main_vl.cpp", "start": 168309, "end": 168460}, {"filename": "/examples/pong/README.md", "start": 168460, "end": 168520}, {"filename": "/examples/pong/main.cpp", "start": 168520, "end": 170375}, {"filename": "/examples/pong/metron/pong.h", "start": 170375, "end": 174239}, {"filename": "/examples/pong/reference/pong.sv", "start": 174239, "end": 177853}, {"filename": "/examples/pong/reference/README.md", "start": 177853, "end": 177913}, {"filename": "/examples/pong/reference/hvsync_generator.sv", "start": 177913, "end": 178852}, {"filename": "/examples/pong/metron_sv/pong.sv", "start": 178852, "end": 183528}, {"filename": "/examples/ibex/README.md", "start": 183528, "end": 183579}, {"filename": "/examples/ibex/main.cpp", "start": 183579, "end": 183720}, {"filename": "/examples/ibex/metron_ref/ibex_alu.sv", "start": 183720, "end": 236038}, {"filename": "/examples/ibex/metron_ref/ibex_compressed_decoder.sv", "start": 236038, "end": 246880}, {"filename": "/examples/ibex/metron_ref/ibex_pkg.sv", "start": 246880, "end": 263119}, {"filename": "/examples/ibex/metron_ref/prim_arbiter_fixed.sv", "start": 263119, "end": 269230}, {"filename": "/examples/ibex/metron_ref/ibex_multdiv_slow.sv", "start": 269230, "end": 282340}, {"filename": "/examples/ibex/metron/ibex_multdiv_slow.h", "start": 282340, "end": 296750}, {"filename": "/examples/ibex/metron/ibex_compressed_decoder.h", "start": 296750, "end": 308848}, {"filename": "/examples/ibex/metron/ibex_alu.h", "start": 308848, "end": 310433}, {"filename": "/examples/ibex/metron/ibex_pkg.h", "start": 310433, "end": 326457}, {"filename": "/examples/ibex/metron/prim_arbiter_fixed.h", "start": 326457, "end": 328958}, {"filename": "/examples/rvtiny_sync/main_vl.cpp", "start": 328958, "end": 331874}, {"filename": "/examples/rvtiny_sync/README.md", "start": 331874, "end": 331926}, {"filename": "/examples/rvtiny_sync/main.cpp", "start": 331926, "end": 334682}, {"filename": "/examples/rvtiny_sync/metron/toplevel.h", "start": 334682, "end": 341637}, {"filename": "/examples/rvtiny_sync/metron_sv/toplevel.sv", "start": 341637, "end": 348821}, {"filename": "/examples/uart/main_vl.cpp", "start": 348821, "end": 350315}, {"filename": "/examples/uart/README.md", "start": 350315, "end": 350559}, {"filename": "/examples/uart/uart_test_iv.sv", "start": 350559, "end": 352036}, {"filename": "/examples/uart/message.hex", "start": 352036, "end": 353754}, {"filename": "/examples/uart/ice40-hx8k-b-evn.pcf", "start": 353754, "end": 355195}, {"filename": "/examples/uart/main.cpp", "start": 355195, "end": 355959}, {"filename": "/examples/uart/message.txt", "start": 355959, "end": 356471}, {"filename": "/examples/uart/SB_PLL40_CORE.v", "start": 356471, "end": 357269}, {"filename": "/examples/uart/uart_test_ice40.sv", "start": 357269, "end": 359299}, {"filename": "/examples/uart/metron/uart_rx.h", "start": 359299, "end": 360617}, {"filename": "/examples/uart/metron/uart_hello.h", "start": 360617, "end": 362000}, {"filename": "/examples/uart/metron/uart_top.h", "start": 362000, "end": 363026}, {"filename": "/examples/uart/metron/uart_tx.h", "start": 363026, "end": 364945}, {"filename": "/examples/uart/metron_sv/uart_hello.sv", "start": 364945, "end": 366792}, {"filename": "/examples/uart/metron_sv/uart_rx.sv", "start": 366792, "end": 368594}, {"filename": "/examples/uart/metron_sv/uart_tx.sv", "start": 368594, "end": 371044}, {"filename": "/examples/uart/metron_sv/uart_top.sv", "start": 371044, "end": 373865}], "remote_package_size": 373865, "package_uuid": "9402ca7e-7418-4865-b5c5-c477d7eeb9e5"});
-
-  })();
-
-
-    // All the pre-js content up to here must remain later on, we need to run
-    // it.
-    if (Module['ENVIRONMENT_IS_PTHREAD']) Module['preRun'] = [];
-    var necessaryPreJSTasks = Module['preRun'].slice();
-  
-    if (!Module['preRun']) throw 'Module.preRun should exist because file support used it; did a pre-js delete it?';
-    necessaryPreJSTasks.forEach(function(task) {
-      if (Module['preRun'].indexOf(task) < 0) throw 'All preRun tasks that exist before user pre-js code should remain after; did you replace Module or modify Module.preRun?';
-    });
-  
+// {{PRE_JSES}}
 
 // Sometimes an existing Module object exists with properties
 // meant to overwrite the default module functionality. Here
@@ -347,9 +169,7 @@ readAsync = (filename, onload, onerror) => {
 
   arguments_ = process['argv'].slice(2);
 
-  if (typeof module != 'undefined') {
-    module['exports'] = Module;
-  }
+  // MODULARIZE will export the module in the proper place outside, we don't need to export here
 
   process['on']('uncaughtException', function(ex) {
     // suppress ExitStatus exceptions from showing an error
@@ -431,6 +251,11 @@ if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
     scriptDirectory = self.location.href;
   } else if (typeof document != 'undefined' && document.currentScript) { // web
     scriptDirectory = document.currentScript.src;
+  }
+  // When MODULARIZE, this JS may be executed later, after document.currentScript
+  // is gone, so we saved it, and we use it here instead of any other info.
+  if (_scriptDir) {
+    scriptDirectory = _scriptDir;
   }
   // blob urls look like blob:http://site.com/etc/etc and we cannot infer anything from them.
   // otherwise, slice off the final part of the url to find the script directory.
@@ -1681,6 +1506,7 @@ function abort(what) {
   /** @suppress {checkTypes} */
   var e = new WebAssembly.RuntimeError(what);
 
+  readyPromiseReject(e);
   // Throw the error whether or not MODULARIZE is set because abort is used
   // in code paths apart from instantiation where an exception is expected
   // to be thrown when abort is called.
@@ -1728,10 +1554,15 @@ function createExportWrapper(name, fixedasm) {
 }
 
 var wasmBinaryFile;
+if (Module['locateFile']) {
   wasmBinaryFile = 'metron.wasm';
   if (!isDataURI(wasmBinaryFile)) {
     wasmBinaryFile = locateFile(wasmBinaryFile);
   }
+} else {
+  // Use bundler-friendly `new URL(..., import.meta.url)` pattern; works in browsers too.
+  wasmBinaryFile = new URL('metron.wasm', import.meta.url).toString();
+}
 
 function getBinary(file) {
   try {
@@ -1893,7 +1724,8 @@ function createWasm() {
     }
   }
 
-  instantiateAsync();
+  // If instantiation fails, reject the module ready promise.
+  instantiateAsync().catch(readyPromiseReject);
   return {}; // no exports yet; we'll fill them in later
 }
 
@@ -6244,7 +6076,7 @@ unexportedRuntimeFunction('formatException', false);
 unexportedRuntimeFunction('Browser', false);
 unexportedRuntimeFunction('setMainLoop', false);
 unexportedRuntimeFunction('wget', false);
-unexportedRuntimeFunction('FS', false);
+Module["FS"] = FS;
 unexportedRuntimeFunction('MEMFS', false);
 unexportedRuntimeFunction('TTY', false);
 unexportedRuntimeFunction('PIPEFS', false);
@@ -6373,6 +6205,7 @@ function run(args) {
 
     preMain();
 
+    readyPromiseResolve(Module);
     if (Module['onRuntimeInitialized']) Module['onRuntimeInitialized']();
 
     if (shouldRunNow) callMain(args);
@@ -6444,6 +6277,7 @@ function exit(status, implicit) {
   // if exit() was called explicitly, warn the user if the runtime isn't actually being shut down
   if (keepRuntimeAlive() && !implicit) {
     var msg = 'program exited (with status: ' + status + '), but EXIT_RUNTIME is not set, so halting execution but not exiting the runtime or preventing further async execution (build with EXIT_RUNTIME=1, if you want a true shutdown)';
+    readyPromiseReject(msg);
     err(msg);
   }
 
@@ -6477,3 +6311,10 @@ run();
 
 
 
+
+
+  return Module.ready
+}
+);
+})();
+export default Module;

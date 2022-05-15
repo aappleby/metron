@@ -234,11 +234,13 @@ CHECK_RETURN Err MtCursor::prune_trailing_ws() {
 
 CHECK_RETURN Err MtCursor::comment_out(MnNode n) {
   Err err = emit_ws_to(n);
-  assert(cursor == n.start());
+
+  if (cursor != n.start()) err << ERR("comment_out did not start with cursor at node start\n");
   err << emit_print("/*");
   err << emit_text(n);
   err << emit_print("*/");
-  assert(cursor == n.end());
+  if (cursor != n.end()) err << ERR("comment_out did not leave cursor at node end\n");
+
   return err;
 }
 
@@ -246,9 +248,9 @@ CHECK_RETURN Err MtCursor::comment_out(MnNode n) {
 
 CHECK_RETURN Err MtCursor::emit_span(const char* a, const char* b) {
   Err err;
-  assert(a != b);
-  assert(cursor >= current_source->source);
-  assert(cursor <= current_source->source_end);
+
+  if (a == b) return err << ERR("Empty span\n");
+
   for (auto c = a; c < b; c++) {
     err << emit_char(*c);
   }
@@ -259,7 +261,10 @@ CHECK_RETURN Err MtCursor::emit_span(const char* a, const char* b) {
 
 CHECK_RETURN Err MtCursor::emit_text(MnNode n) {
   Err err = emit_ws_to(n);
-  assert(cursor == n.start());
+
+  if (cursor != n.start()) {
+    return err << ERR("MtCursor::emit_text - cursor not at start of node\n");
+  }
 
   err << emit_span(n.start(), n.end());
   cursor = n.end();
@@ -346,7 +351,8 @@ CHECK_RETURN Err MtCursor::emit_sym_preproc_include(MnNode n) {
   Err err = emit_ws_to(sym_preproc_include, n);
 
   auto path = n.get_field(field_path).text();
-  assert(path.ends_with(".h\""));
+  if (!path.ends_with(".h\"")) return err << ERR("Include did not end with .h\n");
+
   path.resize(path.size() - 3);
   path = path + ".sv\"";
 
@@ -464,7 +470,7 @@ CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnNode call, int bx_width) {
     }
 
   } else {
-    debugbreak();
+    err << ERR("emit_static_bit_extract got > 1 args\n");
   }
 
   return err << check_done(call);
@@ -506,13 +512,15 @@ CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnNode call,
     cursor = arg0.start();
     err << emit_expression(arg0);
 
-    if (arg1.sym != sym_number_literal) debugbreak();
+    if (arg1.sym != sym_number_literal) {
+      err << ERR("emit_dynamic_bit_extract saw a non-literal?\n");
+    }
     int offset = atoi(arg1.start());
 
     err << emit_print("[%s+%d:%d]", bx_node.text().c_str(), offset - 1, offset);
     cursor = call.end();
   } else {
-    debugbreak();
+    err << ERR("emit_dynamic_bit_extract saw too many args?\n");
   }
 
   return err << check_done(call);
@@ -553,9 +561,8 @@ CHECK_RETURN bool MtCursor::can_omit_call(MnNode n) {
 
     auto dst_component = current_mod->get_field(node_component.text());
     auto dst_method = dst_component->_type_mod->get_method(node_method.text());
-    assert(dst_method);
 
-    if (!dst_method->has_return()) {
+    if (dst_method && !dst_method->has_return()) {
       return true;
     }
   }
@@ -610,7 +617,7 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
 
   if (func_name == "coerce") {
     // Convert to cast? We probably shouldn't be calling coerce() directly.
-    debugbreak();
+    err << ERR("Shouldn't be calling coerce() directly?\n");
 
   } else if (func_name == "sra") {
     auto lhs = args.named_child(0);
@@ -675,7 +682,7 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
   else if (func_name == "dup") {
     // Convert "dup<15>(x)" to "{15 {x}}"
 
-    assert(args.named_child_count() == 1);
+    if (args.named_child_count() != 1) return err << ERR("dup() had too many children\n");
 
     err << skip_over(func);
 
@@ -699,10 +706,11 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
 
     auto dst_component = current_mod->get_field(node_component.text());
     auto dst_mod = lib->get_module(dst_component->type_name());
-    assert(dst_mod);
+    if (!dst_mod) return err << ERR("dst_mod null\n");
     auto node_func = n.get_field(field_function).get_field(field_field);
     auto dst_method = dst_mod->get_method(node_func.text());
-    assert(dst_method);
+
+    if (!dst_method) return err << ERR("dst_method null\n");
 
     if (dst_method->has_return()) {
       err << emit_print("%s_%s_ret", node_component.text().c_str(), dst_method->cname());
@@ -800,15 +808,6 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
     return err;
   }
 
-  /*
-  if (!at_newline) {
-    LOG_R("We're in some weird one-liner with a local variable?");
-    debugbreak();
-    emit_newline();
-    emit_indent();
-  }
-  */
-
   MtCursor old_cursor = *this;
   for (const auto& c : (MnNode&)n) {
     if (c.sym == sym_declaration) {
@@ -817,7 +816,7 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
       if (is_localparam) {
         // fixme?
         n.dump_tree();
-        exit(-1);
+        err << ERR("FIXME - emit_hoisted_decls emitting a localparam?\n");
       } else {
         cursor = c.start();
         err << emit_indent();
@@ -828,17 +827,12 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
   }
   *this = old_cursor;
 
-  //err << emit_newline();
-
-  //assert(at_newline);
   return err;
 }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
-  //assert(at_newline);
-
   Err err;
   auto old_cursor = cursor;
 
@@ -868,7 +862,7 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
         auto component_mod = lib->get_module(component->type_name());
 
         auto component_method = component_mod->get_method(meth_id.text());
-        assert(component_method);
+        if (!component_method) return err << ERR("Component method missing\n");
 
         for (int i = 0; i < component_method->param_nodes.size(); i++) {
           auto& param = component_method->param_nodes[i];
@@ -1675,7 +1669,7 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
     err << emit_declarator(node_decl);
     err << emit_text(node_semi);
   } else {
-    debugbreak();
+    err << ERR("emit_sym_field_declaration can't handle %s\n", n.text().c_str());
   }
 
   return err << check_done(n);
@@ -1801,8 +1795,10 @@ CHECK_RETURN Err MtCursor::emit_field_port(MtField* f) {
   } else if (f->is_public_register()) {
     err << emit_print("output ");
   } else {
-    debugbreak();
+    err << ERR("Unknown field port type for %s\n", f->cname());
   }
+
+  if (err.has_err()) return err;
 
   auto node_type = f->node.get_field(field_type);
   auto node_decl = f->node.get_field(field_declarator);
@@ -2883,7 +2879,7 @@ CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnNode node) {
         break;
       case sym_expression_statement:
         if (branch_contains_component_call(child)) {
-          err << ERR("If branches that contain component calls must use {}.");
+          return err << ERR("If branches that contain component calls must use {}.\n");
           err << skip_over(child);
         } else {
           err << emit_statement(child);
@@ -3275,7 +3271,7 @@ CHECK_RETURN Err MtCursor::emit_sym_update_expression(MnNode n) {
     pop_cursor(id);
     err << emit_print(" - 1");
   } else {
-    debugbreak();
+    err << ERR("Unknown update expression %s\n", n.text().c_str());
   }
 
   cursor = n.end();

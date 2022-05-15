@@ -218,7 +218,8 @@ std::string MnNode::name4() const {
       return text();
 
     default:
-      debugbreak();
+      Err err;
+      err << ERR("Unknown node type %s for name4()\n", ts_node_type());
       return "";
   }
 }
@@ -246,7 +247,8 @@ std::string MnNode::type5() const {
     case sym_optional_parameter_declaration:
       return get_field(field_type).type5();
     default:
-      debugbreak();
+      Err err;
+      err << ERR("Unknown node type %s for type5()\n", ts_node_type());
       return "";
   }
 }
@@ -257,7 +259,8 @@ void MnNode::visit_tree(NodeVisitor cv) {
   cv(*this);
   for (auto c : *this) {
     if (c.is_null()) {
-      debugbreak();
+      Err err;
+      err << ERR("Null node hit in visit_tree() for %s\n", text().c_str());
     }
     c.visit_tree(cv);
   }

@@ -4,6 +4,7 @@
 #include <functional>
 #include <string>
 
+#include "Err.h"
 #include "MtUtils.h"
 #include "Platform.h"
 #include "TreeSymbols.h"
@@ -82,16 +83,12 @@ struct MnNode {
   void dump_tree(int index = 0, int depth = 0, int maxdepth = 255) const;
 
   void error() const {
+    Err err;
+    err << ERR("Dumping tree for %s\n", ts_node_type());
     dump_tree(0, 0, 255);
-    //debugbreak();
   }
 
   operator bool() const { return !ts_node_is_null(node); }
-
-  MnNode& check_null() {
-    if (is_null()) debugbreak();
-    return *this;
-  }
 
   const char* ts_node_type() const { return ::ts_node_type(node); }
   uint32_t start_byte() const { return ts_node_start_byte(node); }

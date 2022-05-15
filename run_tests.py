@@ -192,7 +192,7 @@ def check_bad(filename):
         print(f"Test {filename} contained no expected errors. Dumping output.")
         # return 1
 
-    cmd = f"bin/metron {metron_default_args()} -r tests/metron_bad -o tests/metron_sv -c {basename}"
+    cmd = f"bin/metron {metron_default_args()} -r tests/metron_bad -o tests/metron_sv -s {basename}"
     print(f"  {cmd}")
 
     cmd_result = subprocess.run(

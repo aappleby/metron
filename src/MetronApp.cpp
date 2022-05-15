@@ -128,6 +128,7 @@ int main(int argc, char** argv) {
 
   if (err.has_err()) {
     LOG_R("Exiting due to error\n");
+    lib.teardown();
     return -1;
   }
 
@@ -197,7 +198,11 @@ int main(int argc, char** argv) {
     }
     ctx->assign_state_to_field(mod);
     err << ctx->check_done();
-    if (err.has_err()) exit(-1);
+    if (err.has_err()) {
+      LOG_R("Error during trace\n");
+      lib.teardown();
+      return -1;
+    }
     delete ctx;
     if (verbose) {
       LOG_DEDENT();
@@ -215,9 +220,9 @@ int main(int argc, char** argv) {
 
   if (err.has_err()) {
     LOG_R("Exiting due to error\n");
+    lib.teardown();
     return -1;
   }
-  LOG("\n");
 
   //----------
   // Categorize methods
@@ -248,7 +253,8 @@ int main(int argc, char** argv) {
 
   if (uncategorized || invalid) {
     err << ERR("Could not categorize all methods\n");
-    exit(-1);
+    lib.teardown();
+    return -1;
   }
 
   if (verbose) {
@@ -320,7 +326,8 @@ int main(int argc, char** argv) {
 
     if (err.has_err()) {
       LOG_R("Error during code generation\n");
-      exit(-1);
+      lib.teardown();
+      return -1;
     }
 
     if (save) {
@@ -331,7 +338,6 @@ int main(int argc, char** argv) {
       }
 
       auto out_name = source_file->filename;
-      assert(out_name.ends_with(".h"));
       out_name.resize(out_name.size() - 2);
       auto out_path = out_root + "/" + out_name + ".sv";
 

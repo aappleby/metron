@@ -95,7 +95,7 @@ CHECK_RETURN Err MtChecker::trace_call(MnNode n) {
     auto node_name = n.get_field(field_function).get_field(field_name).text();
     if (node_name == "bx" || node_name == "dup" || node_name == "sign_extend") {
     } else {
-      debugbreak();
+      err << ERR("checker got bad template func?\n");
     }
     return err;
 
@@ -318,7 +318,7 @@ CHECK_RETURN Err MtChecker::trace_template_call(MnNode n) {
 
   if (node_name == "bx" || node_name == "dup" || node_name == "sign_extend") {
   } else {
-    debugbreak();
+    err << ERR("trace_template_call - unhandled name\n");
   }
 
 #if 0
@@ -326,8 +326,7 @@ CHECK_RETURN Err MtChecker::trace_template_call(MnNode n) {
     mod()->get_method(node_func.get_field(field_name).text());
 
   if (sibling_method) {
-    // Should probably not see any of these yet?
-    debugbreak();
+    err << ERR("Should probably not see any of these yet?\n");
     for (int i = 0; i < depth; i++) printf(" ");
     printf("TCALL! %s.%s -> %s\n", mod()->name().c_str(),
       method()->name().c_str(), node_func.text().c_str());

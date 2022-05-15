@@ -65,7 +65,7 @@ CHECK_RETURN Err MtModule::init(MtSourceFile *_source_file, MnNode _node) {
     if (mod_class) {
       mod_name = mod_class.get_field(field_name).text();
     } else {
-      err << ERR("No class node found under template");
+      err << ERR("No class node found under template\n");
     }
   } else if (_node.sym == sym_class_specifier) {
     source_file = _source_file;
@@ -418,8 +418,8 @@ void MtModule::dump_deltas() const {
 CHECK_RETURN Err MtModule::collect_parts() {
   Err err;
 
-  assert(all_fields.empty());
-  assert(all_methods.empty());
+  if (!all_fields.empty()) return err << ERR("all_fields dirty\n");
+  if (!all_methods.empty()) return err << ERR("all_methods dirty\n");
 
   if (mod_template) {
     auto mod_params = mod_template.get_field(field_parameters);
@@ -432,7 +432,13 @@ CHECK_RETURN Err MtModule::collect_parts() {
     }
   }
 
-  auto mod_body = mod_class.get_field(field_body).check_null();
+  auto mod_body = mod_class.get_field(field_body);
+
+  if (mod_body.is_null()) {
+    err << ERR("Class body node is null\n");
+    return err;
+  }
+
   bool in_public = false;
 
   for (const auto &n : mod_body) {

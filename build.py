@@ -79,19 +79,19 @@ ninja.build(outputs="build.ninja",
 divider("Rules")
 
 ninja.rule(name="compile_cpp",
-           command="g++ -fsanitize=address -rdynamic -g ${opt} -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
+           command="g++ -rdynamic -g ${opt} -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
            deps="gcc",
            depfile="${out}.d")
 
 ninja.rule(name="compile_c",
-           command="gcc -fsanitize=address -rdynamic -g ${opt} ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
+           command="gcc -rdynamic -g ${opt} ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
            deps="gcc",
            depfile="${out}.d")
 
 ninja.rule(name="static_lib",    command="ar rcs ${out} ${in} > /dev/null")
 
 ninja.rule(name="link",
-           command="g++ -fsanitize=address -rdynamic -g $opt ${in} -Wl,--whole-archive ${local_libs} -Wl,--no-whole-archive ${global_libs} -o ${out}")
+           command="g++ -rdynamic -g $opt ${in} -Wl,--whole-archive ${local_libs} -Wl,--no-whole-archive ${global_libs} -o ${out}")
 
 ninja.rule(name="metron", # yes, we run metron with quiet and verbose both on for test coverage
            command="bin/metron -q -v -r ${src_dir} -o ${dst_dir} -s ${src_top}")
@@ -120,6 +120,9 @@ ninja.rule(name="nextpnr-ice40",
 
 ninja.rule(name="icepack",
            command="icepack ${in} ${out}")
+
+ninja.rule(name="command",
+           command="${command}")
 
 # ------------------------------------------------------------------------------
 
@@ -334,9 +337,6 @@ ninja.variable(key="wasi_sysroot_url",
 ninja.variable(key="wasi_sysroot_tar",
                value="wasi-sysroot-14.0.tar.gz")
 
-ninja.rule(name="command",
-           command="${command}")
-
 ninja.build(outputs="wasi-sysroot",
             rule="command",
             inputs=[],
@@ -359,8 +359,23 @@ ninja.rule(name="compile_cpp_ems",
            depfile="${out}.d")
 
 ninja.rule(name="link_ems",
-           command="emcc ${in} -sEXPORTED_RUNTIME_METHODS=callMain -sNO_DISABLE_EXCEPTION_CATCHING -sTOTAL_STACK=32MB -sINITIAL_MEMORY=64MB --preload-file examples -o ${out}")
+           command="emcc ${in} -sEXPORT_ES6 -sEXPORTED_RUNTIME_METHODS=['FS','callMain'] -sNO_DISABLE_EXCEPTION_CATCHING -sTOTAL_STACK=32MB -sINITIAL_MEMORY=64MB -sFORCE_FILESYSTEM -o ${out}")
 
+#python3 $EMSDK/upstream/emscripten/tools/file_packager.py wasm/examples.data --lz4 --no-node --js-output=wasm/examples.js --preload examples tests/metron_good tests/metron_bad --exclude *.cpp *.sv *.MD *.hex *.pcf *.v *.txt
+
+ninja.variable(key="packager",
+               value="$EMSDK/upstream/emscripten/tools/file_packager.py")
+
+all_test_headers = glob.glob("tests/**/*.h", recursive=True)
+all_example_headers = glob.glob("examples/**/*.h", recursive=True)
+
+ninja.build(outputs = [
+                "docs/app/examples.data",
+                "docs/app/examples.js",
+            ],
+            rule="command",
+            inputs=all_test_headers + all_example_headers,
+            command="python3 $$EMSDK/upstream/emscripten/tools/file_packager.py docs/app/examples.data --no-node --js-output=docs/app/examples.js --preload examples tests/metron_good tests/metron_bad --exclude *.cpp *.sv *.MD *.hex *.pcf *.v *.txt");
 
 treesitter_objs_wasi = [];
 
@@ -416,7 +431,7 @@ def cpp_binary2(bin_name, rule_compile, rule_link, src_files, src_objs, obj_dir,
                 variables=kwargs)
 
 cpp_binary2(
-    bin_name="wasm/app/metron.js",
+    bin_name="docs/app/metron.js",
     rule_compile="compile_cpp_ems",
     rule_link="link_ems",
     src_files=[
@@ -447,111 +462,7 @@ cpp_binary2(
 )
 
 # ------------------------------------------------------------------------------
-# Compile Metron into a WASM library that depends on WASI.
-
-#clang --target=wasm32-unknown-wasi --sysroot ~/wasi/share/wasi-sysroot/ -o test.o -c test.c
-#wasm-ld -m wasm32 -Lwasi-sysroot/lib/wasm32-wasi --import-memory --no-entry test.o -lc libclang_rt.builtins-wasm32.a -o test.wasm
-"""
-ninja.rule(name="compile_c_wasi",
-           command="clang -g --target=wasm32-unknown-wasi --sysroot wasi-sysroot ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
-           deps="gcc",
-           depfile="${out}.d")
-
-ninja.rule(name="compile_cpp_wasi",
-           command="clang++ -g -fno-exceptions --target=wasm32-unknown-wasi --sysroot wasi-sysroot -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
-           deps="gcc",
-           depfile="${out}.d")
-
-ninja.rule(name="link_wasi",
-           command="wasm-ld -m wasm32 -Lwasi-sysroot/lib/wasm32-wasi --import-memory --no-entry -lc -lc++ -lc++abi wasm/libclang_rt.builtins-wasm32.a ${in} -o ${out}")
-
-def cpp_binary_wasi(bin_name, src_files, src_objs=None, deps=None, link_deps=None, **kwargs):
-    if src_objs is None:
-        src_objs = []
-    if deps is None:
-        deps = []
-    if link_deps is None:
-        link_deps = []
-
-    divider(f"Compile {bin_name}")
-
-    # Tack -I onto the includes
-    if kwargs["includes"] is not None:
-        kwargs["includes"] = ["-I" + path for path in kwargs["includes"]]
-
-    for n in src_files:
-        obj_name = path.join("wasm/obj", swap_ext(n, ".o"))
-        ninja.build(outputs=obj_name,
-                    rule="compile_cpp_wasi",
-                    inputs=n,
-                    implicit=deps,
-                    variables=kwargs)
-        src_objs.append(obj_name)
-    ninja.build(outputs=bin_name,
-                rule="link_wasi",
-                inputs=src_objs + link_deps,
-                variables=kwargs)
-
-
-treesitter_objs_wasi = [];
-
-def build_treesitter_wasi():
-    divider("TreeSitter libraries wasi")
-
-    treesitter_srcs = [
-        "submodules/tree-sitter/lib/src/lib.c",
-        "submodules/tree-sitter-cpp/src/parser.c",
-        "submodules/tree-sitter-cpp/src/scanner.cc",
-    ]
-
-    for n in treesitter_srcs:
-        o = path.join("wasm/obj", swap_ext(n, ".o"))
-        ninja.build(
-            o,
-            "compile_c_wasi",
-            n,
-            includes=[
-                "-Isubmodules/tree-sitter/lib/include",
-                "-Isubmodules/tree-sitter/lib/src",
-            ]
-        )
-        treesitter_objs_wasi.append(o)
-
-build_treesitter_wasi()
-
-
-
-cpp_binary_wasi(bin_name="wasm/bin/test.wasm",
-                src_files=[
-                    "wasm/metron_wasi.cpp",
-                    "src/Platform.cpp",
-                    "src/Err.cpp",
-                    "src/MtChecker.cpp",
-                    "src/MtContext.cpp",
-                    "src/MtCursor.cpp",
-                    "src/MtField.cpp",
-                    "src/MtFuncParam.cpp",
-                    "src/MtMethod.cpp",
-                    "src/MtModLibrary.cpp",
-                    "src/MtModParam.cpp",
-                    "src/MtModule.cpp",
-                    "src/MtNode.cpp",
-                    "src/MtSourceFile.cpp",
-                    "src/MtTracer.cpp",
-                    "src/MtUtils.cpp",
-                ],
-                includes=[
-                    ".",
-                    "src",
-                    "submodules/tree-sitter/lib/include"
-                ],
-                src_objs=treesitter_objs_wasi,
-                )
-"""
-
-# ------------------------------------------------------------------------------
 # Low-level tests
-
 
 def build_metron_test():
     cpp_binary(

@@ -1,11 +1,7 @@
 * {
-  font-family: "Consolas";
+  font-family: "Roboto Mono";
   font-size: 14px;
   color: #CCC;
-}
-
-html {
-  background-color: #222;
 }
 
 body {
@@ -14,17 +10,25 @@ body {
   right:0px;
   bottom:0px;
   left:0px;
-
-  background-color: #222;
+  background-color: #252525;
 }
 
-div {
-  margin: 0px;
+.bar {
+  height:40px;
+  margin:0px;
+  padding:0px;
+}
+
+.bar_text {
+  margin-left:8px;
+}
+
+.ticky {
+  padding: 3px;
 }
 
 .border {
-  border: solid #222 1px;
-  padding: 4px;
+  border: solid #1C1C1C 1px;
 }
 
 .editor {
@@ -57,13 +61,21 @@ div {
   font-size: 13px;
 }
 
+#src_selector {
+  margin-left: 5px;
+}
+
+.dark0 { background-color: #1E1E1E; }
+.dark1 { background-color: #222222; }
+.dark2 { background-color: #333333; }
+
 .flex_x { display: flex; flex-direction: row;    gap: 4px; }
 .flex_y { display: flex; flex-direction: column; gap: 0px; }
 
-.flex_0 { flex-basis: auto; flex-grow: 0; background-color: #333; }
-.flex_1 { flex-basis: 0;    flex-grow: 1; background-color: #333; }
-.flex_2 { flex-basis: 0;    flex-grow: 2; background-color: #333; }
-.flex_3 { flex-basis: 0;    flex-grow: 3; background-color: #333; }
-.flex_4 { flex-basis: 0;    flex-grow: 4; background-color: #333; }
+.flex_0 { flex-basis: auto; flex-grow: 0; }
+.flex_1 { flex-basis: 0;    flex-grow: 1; }
+.flex_2 { flex-basis: 0;    flex-grow: 2; }
+.flex_3 { flex-basis: 0;    flex-grow: 3; }
+.flex_4 { flex-basis: 0;    flex-grow: 4; }
 
 #panels { background-color: #222; }

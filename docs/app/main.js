@@ -55,11 +55,10 @@ const dst_jar = CodeJar(dst_text, highlight, {tab:"  "});
 
 var term = new Terminal({
   fontSize: 14,
-  //fontFamily: "Roboto Mono", // xterm.js 3 acts weird if it has to load a font
-  fontFamily: "Consolas",
+  fontFamily: "Roboto Mono",
   convertEol: true,
   theme: {
-    background: '#222'
+    background: '#1E1E1E'
   },
   scrollback: 9999,
 });

@@ -29,8 +29,8 @@
 
 <body class="flex_y">
   <div class="topbar flex_x">
-    <div id="title" class="center_y border">Metron C++ to Verilog Transpiler</div>
-    <div id="intro" class="center_y border">
+    <div id="title" class="center_y">Metron C++ to Verilog Transpiler</div>
+    <div id="intro" class="center_y">
       Left editor is live, center is converted code, right is app output.<br>
       All Metron tests & examples are available for conversion. Changes persist in the filesystem until reload.
     </div>
@@ -40,43 +40,37 @@
   </div>
   <div id="panels" class="flex_x flex_1">
     <div id="col_src" class="flex_y flex_3">
-      <select id="src_selector" class="flex_0 border">
-        <option>./examples/scratch.h</option>
-      </select>
-      <div id="src_text" class="editor flex_1 border language-cpp">src</div>
+      <div class="border center_y dark2 bar">
+        <select class="dark2" id="src_selector">
+          <option>./examples/scratch.h</option>
+        </select>
+      </div>
+      <div id="src_text" class="editor flex_1 border language-cpp dark0"></div>
     </div>
     <div id="col_dst" class="flex_y flex_3">
-      <div id="dst_title" class="border">./examples/scratch.sv</div>
-      <div id="dst_text" class="editor flex_1 border language-verilog">output</div>
+      <div class="border center_y dark2 bar">
+        <div class="bar_text" id="dst_title">./examples/scratch.sv</div>
+      </div>
+      <div id="dst_text" class="editor flex_1 border language-verilog dark0"></div>
     </div>
     <div id="col_log" class="flex_y flex_4">
-      <div id="log_cmdline" class="border">metron -s -r ./examples scratch.h</div>
-      <div id="src_controls" class="border flex_x">
-        <div class="flex_1"><input type="checkbox" id="opt_help">Help</div>
-        <div class="flex_1"><input type="checkbox" id="opt_echo">Echo</div>
-        <div class="flex_1"><input type="checkbox" id="opt_dump">Dump</div>
-        <div class="flex_1"><input type="checkbox" id="opt_quiet">Quiet</div>
-        <div class="flex_1"><input type="checkbox" id="opt_verbose">Verbose</div>
-        <div class="flex_1"><input type="checkbox" id="opt_save">Save</div>
+      <div class="border center_y dark2 bar">
+        <div class="bar_text" id="log_cmdline">metron -s -r ./examples scratch.h</div>
       </div>
-      <div id="log_text" class="flex_1 border"></div>
+      <div id="src_controls" class="border dark2 flex_x">
+        <div class="flex_1 ticky"><input type="checkbox" id="opt_help">Help</div>
+        <div class="flex_1 ticky"><input type="checkbox" id="opt_echo">Echo</div>
+        <div class="flex_1 ticky"><input type="checkbox" id="opt_dump">Dump</div>
+        <div class="flex_1 ticky"><input type="checkbox" id="opt_quiet">Quiet</div>
+        <div class="flex_1 ticky"><input type="checkbox" id="opt_verbose">Verbose</div>
+        <div class="flex_1 ticky"><input type="checkbox" id="opt_save">Save</div>
+      </div>
+      <div id="log_text" class="flex_1 border dark0"></div>
     </div>
   </div>
 
-  <!--
-  <script type="text/javascript">
-    window.Module = {
-      locateFile: function (path, prefix) {
-        return "app/" + path;
-      },
-    };
-  </script>
-  -->
   <script type="text/javascript" src="examples.js"></script>
   <script type="module" src="main.js"></script>
-  <!--
-  <script type="text/javascript" src="app/metron.js"></script>
-  -->
 </body>
 
 </html>

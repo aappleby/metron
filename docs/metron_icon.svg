@@ -2,14 +2,14 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="32"
-   height="32"
-   viewBox="0 0 8.4666666 8.466667"
+   width="40"
+   height="40"
+   viewBox="0 0 10.583333 10.583334"
    version="1.1"
    id="svg5"
    inkscape:export-filename="C:\Users\aappl\Desktop\metron1.png"
-   inkscape:export-xdpi="96"
-   inkscape:export-ydpi="96"
+   inkscape:export-xdpi="614.3999"
+   inkscape:export-ydpi="614.3999"
    inkscape:version="1.1 (c68e22c387, 2021-05-23)"
    sodipodi:docname="metron_icon.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
@@ -27,21 +27,25 @@
      inkscape:document-units="mm"
      showgrid="true"
      units="px"
-     inkscape:zoom="22.627417"
-     inkscape:cx="21.743534"
-     inkscape:cy="19.423339"
+     inkscape:zoom="11.313709"
+     inkscape:cx="56.038212"
+     inkscape:cy="28.240077"
      inkscape:window-width="1802"
      inkscape:window-height="1457"
      inkscape:window-x="976"
      inkscape:window-y="407"
      inkscape:window-maximized="0"
-     inkscape:current-layer="layer7">
+     inkscape:current-layer="layer7"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0">
     <inkscape:grid
        type="xygrid"
        id="grid824"
        empspacing="8"
-       originx="0"
-       originy="0"
+       originx="1.0583339"
+       originy="1.0583341"
        spacingx="0.13229167"
        spacingy="0.13229167" />
   </sodipodi:namedview>
@@ -51,14 +55,15 @@
      inkscape:groupmode="layer"
      id="layer7"
      inkscape:label="bg"
-     style="display:inline">
+     style="display:inline"
+     transform="translate(1.0583339,1.0583339)">
     <rect
        style="font-variation-settings:normal;opacity:1;fill:#808080;fill-opacity:1;stroke:#000000;stroke-width:0;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000;stop-opacity:1"
        id="rect5449"
-       width="8.4666662"
-       height="8.4666662"
-       x="0"
-       y="0"
+       width="10.583334"
+       height="10.583334"
+       x="-1.0583334"
+       y="-1.0583334"
        inkscape:export-filename="U:\home\aappleby\Metron\docs\app\favicon.ico"
        inkscape:export-xdpi="96"
        inkscape:export-ydpi="96" />
@@ -67,7 +72,8 @@
      inkscape:groupmode="layer"
      id="layer8"
      inkscape:label="fill"
-     style="display:inline">
+     style="display:inline"
+     transform="translate(1.0583339,1.0583339)">
     <path
        style="font-variation-settings:normal;opacity:1;fill:#1f21e0;fill-opacity:1;stroke:#000000;stroke-width:0.0625;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000;stop-opacity:1"
        d="M 3.015625,16 V 3.015625 h 1.6145614 1.6145614 l 0.4245013,0.2228878 c 2.5591628,1.3437099 5.1420989,2.9947963 7.2128149,4.6106375 l 0.538314,0.4200625 -0.853754,0.8497685 c -1.328211,1.3220107 -2.201634,2.3256307 -3.227963,3.7091437 -2.4634975,3.320847 -4.1064891,7.005574 -4.6818695,10.5 -0.1063608,0.645955 -0.1830316,1.463699 -0.162936,1.737819 0.027627,0.376856 0.2228577,0.671025 0.5618765,0.846624 0.1385802,0.07178 0.2028374,0.08466 0.428643,0.08593 0.257375,0.0015 0.2801806,-0.0046 0.734281,-0.196117 0.7397437,-0.311923 2.2497153,-0.821913 2.6631506,-0.899474 l 0.1025684,-0.01924 v 2.050353 2.050353 H 6.5 3.015625 Z"
@@ -88,12 +94,14 @@
      inkscape:label="xor1"
      inkscape:groupmode="layer"
      id="layer1"
-     style="display:inline" />
+     style="display:inline"
+     transform="translate(1.0583339,1.0583339)" />
   <g
      inkscape:groupmode="layer"
      id="layer6"
      inkscape:label="xor2"
-     style="display:inline">
+     style="display:inline"
+     transform="translate(1.0583339,1.0583339)">
     <path
        style="fill:none;stroke:#000000;stroke-width:0.529167;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="m 1.7197917,6.6145835 c 0,0 2.5135416,-1.190625 5.0270835,0"
@@ -139,7 +147,8 @@
      inkscape:groupmode="layer"
      id="layer5"
      inkscape:label="frame"
-     style="display:inline">
+     style="display:inline"
+     transform="translate(1.0583339,1.0583339)">
     <path
        style="fill:none;stroke:#000000;stroke-width:0.529167;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="M 2.9104167,7.9375002 H 0.52916668"

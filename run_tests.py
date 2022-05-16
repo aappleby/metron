@@ -42,6 +42,7 @@ def main():
 
     errors = 0
 
+    """
     print("verilator");
     os.system("verilator -Isrc --lint-only tests/feature_test.sv")
 
@@ -52,13 +53,13 @@ def main():
     os.system("yosys -q -p 'read_verilog -Isrc -sv tests/feature_test.sv;'");
 
     print("done");
-
     """
+
     errors += test_convert_good()
     errors += test_convert_bad()
     errors += test_compilation()
     errors += test_verilator_parse()
-    errors += test_yosys_parse()
+    #errors += test_yosys_parse()
 
     if not basic:
         errors += test_icarus_parse()
@@ -74,7 +75,6 @@ def main():
         #errors += test_icarus_parse()
 
         pass
-    """
 
     ############################################################
 

@@ -935,30 +935,30 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
     err << emit_replacement(func_decl, "initial");
     auto func_body = n.get_field(field_body);
     err << emit_sym_compound_statement(func_body, "begin", "end");
-  } else {
-    if (current_method->in_tick) {
-      err << emit_print("task automatic ");
+  }
+  else if (current_method->in_tick) {
+    err << emit_print("task automatic ");
+    err << skip_over(return_type);
+    err << skip_ws();
+    err << emit_declarator(func_decl);
+    err << prune_trailing_ws();
+    err << emit_print(";");
+    auto func_body = n.get_field(field_body);
+    err << emit_sym_compound_statement(func_body, "", "endtask");
+  }
+  else {
+    err << emit_print("function ");
+    if (current_method->has_return()) {
+      err << emit_type(return_type);
+    } else {
       err << skip_over(return_type);
       err << skip_ws();
-      err << emit_declarator(func_decl);
-      err << prune_trailing_ws();
-      err << emit_print(";");
-      auto func_body = n.get_field(field_body);
-      err << emit_sym_compound_statement(func_body, "", "endtask");
-    } else {
-      err << emit_print("function ");
-      if (current_method->has_return()) {
-        err << emit_type(return_type);
-      } else {
-        err << skip_over(return_type);
-        err << skip_ws();
-      }
-      err << emit_declarator(func_decl);
-      err << prune_trailing_ws();
-      err << emit_print(";");
-      auto func_body = n.get_field(field_body);
-      err << emit_sym_compound_statement(func_body, "", "endfunction");
     }
+    err << emit_declarator(func_decl);
+    err << prune_trailing_ws();
+    err << emit_print(";");
+    auto func_body = n.get_field(field_body);
+    err << emit_sym_compound_statement(func_body, "", "endfunction");
   }
 
   assert(cursor == n.end());
@@ -968,7 +968,14 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
 
   err << emit_ws_to_newline();
 
-  if ((current_method->in_tock || current_method->in_func) && current_method->internal_callers.empty() && current_method->is_public()) {
+  if (current_method->in_tock && current_method->internal_callers.empty() && current_method->is_public()) {
+    err << emit_indent();
+    err << emit_print("always_comb ");
+    err << emit_trigger_call(current_method);
+    err << emit_newline();
+  }
+
+  if (current_method->in_func && current_method->internal_callers.empty() && current_method->is_public()) {
     err << emit_indent();
     err << emit_print("always_comb ");
     err << emit_trigger_call(current_method);

@@ -141,7 +141,7 @@ module ThingV (output logic wire_out);
 endmodule
 ```
 
-(If you know Verilog, I apologize for this example)
+(If you know Verilog, I apologize for the pain this example is causing you)
 
 However, again, the two implementations do not match up. The C++ version is well-defined, if a bit pointless. The Verilog version won't even compile. In Verilog-land, the "always_comb" statement causes "set_wire_2" and "set_wire_3" to happen _continuously_ and _simultaneously_. What should the value of wire_out be if it is simultaneously set to 2 and 3? There's no good answer, so the Verilog compiler reports an error.
 

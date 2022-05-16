@@ -101,17 +101,17 @@ class ThingC {
 public:
   int wire_out;
 
-  void set_wire_to_2() {
+  int set_wire_to_2() {
     wire_out = 2;
   }
 
-  void set_wire_to_3() {
+  int set_wire_to_3() {
     wire_out = 3;
   }
 }
 ```
 
-which could be represented in Verilog as
+A trivial line-by-line translation to Verilog might look like this:
 
 ```
 module ThingV (output logic wire_out);
@@ -133,21 +133,26 @@ However, again, the two implementations do not match up. The C++ version is well
 
 We've barely started and we already seem to be at an impasse. We've identified two examples in which syntactically-matching C++ and Verilog do not produce identical results, so in order to translate from C++ to Verilog it would seem we need to do something more sophisticated than a "trivial" translation. However, we can work around this by instead limiting the subset of what we'll accept as our C++ input.
 
-If you look back at the examples, you'll note that I've named variables written in "always_ff" as "reg_*" and variables written in "always_comb" as "wire_*". This is because in hardware-land, we have two fundamentally different types of "variables" to deal with. Registers are able to store state and will hold their values across clock cycles if not changed. Wires are wires, tiny strips of metal that only hold a value as long as they're being 'driven' by the output of a logic gate or register.
+If you look back at the examples, you'll note that I've named variables written in "always_ff" as "reg_*" and variables written in "always_comb" as "wire_*". This is because in hardware-land, we have two* fundamentally different types of "variables" to deal with. Registers are able to store state and will hold their values across clock cycles if not changed. Wires are wires, tiny strips of metal that only hold a value as long as they're being 'driven' by the output of a logic gate or register.
+
+\* 'Latches' are a third type, but they're hardly used in practice for complicated reasons
 
 If we knew in advance which of our C++ member variables were going to turn into registers and which were going to turn into wires, we'd have an easier time of things. We could try and enforce these two rules -
 
-1. Registers can't be read after they're written (
+1. Registers can't be read after they're written (example #1).
+2. Wires must always be written and can only carry a single value per simulation step (example #2).
+
+We could enforce a naming convention that all registers start with "reg_" and all wires start with "wire_" (which is similar to how Metron originally worked), but then we're not really processing "plain, unannotated C++" anymore.
+
+Another option would be to make some custom C++ types that track reads and writes internally and trigger an assertion if the rules are broken. GateBoy does this in debug builds, but it's not a perfect solution. It adds a lot of overhead to the program and even with 100% test coverage it's still possible that there could still be _some_ path through the codebase that would break the rules.
 
 
-Let's pretend that we know in advance which C++ member variables will become "wires" (assigned in always_comb after conversion) and which will become "registers" (
 
-There are a couple strategies we could use to enforce these rules -
+# Tracing Code
 
-* Make some custom C++ types that trigger an assertion if the rules are broken. GateBoy does this in debug builds, but it's not a perfect solution. Even with 100% test coverage, there could still be _some_ path through the codebase that would break the rules.
-* Analyze the codebase at compile time and try to prove that no matter what paths are taken, the rules are never broken. This is what Metron does.
+The solution that Metron settled on involves a couple of passes. In the first pass, we bootstrap our understanding of the codebase by "tracing" it, which involves walking through each line of code and looking for all reads and writes to a member variable. Luckily we don't care about the _values_ stored in variables, only the ordering of the reads and writes.
 
-Luckily for Metron we don't care about the _values_ stored in variables, only whether they're read or written and in what order. Let's start by looking at a trivial function with no branches:
+Let's start by looking at a trivial function with no branches:
 
 ```
 class Thing {
@@ -179,7 +184,7 @@ WR + R + WR
 R + W == RW
 W + R == WR
 
-// RWR and WRW are invalid symbols for reasons related to the rules above, explained shortly
+// RWR and WRW are invalid symbols for reasons related to the rules above, explained later
 RW + R == X
 WR + W == X
 ```
@@ -209,9 +214,14 @@ The variable ```x``` has symbol ```R``` in the ```if``` branch and ```W``` in th
 R | R == R
 W | W == W
 
-// Branch order is irrelevant, branches are commutative
-R | W == W | R == R|W
+// Branch order is irrelevant,
+R | W == W | R
+
+// Branches are commutative
 (N|R) | (W|RW) == N|R|W|RW
+
+// Concatenation is distributive
+N|R + W = NW|RW
 
 // Invalid symbols override everything
 * | X == X
@@ -219,140 +229,128 @@ R | W == W | R == R|W
 
 Ignoring the ```X``` symbol for a moment, we have 5 'serial' symbols ```N, R, W, RW, WR``` and we can concatenate any subset of them together to produce a 'parallel' symbol, so there are 2^5-1 = 31 possible parallel symbols (we can safely ignore the empty set).
 
+For reference, here's the full table of symbols, their concatenation rules, and the resulting symbol after simplification:
+
 ```
-N |   |   |    |    + R = NR               = R
-N |   |   |    |    + W = NW               = W
-  | R |   |    |    + R = RR               = R
-  | R |   |    |    + W = RW               = RW
-N | R |   |    |    + R = NR|RR            = R
-N | R |   |    |    + W = NW|RW            = W|RW
-  |   | W |    |    + R = WR               = WR
-  |   | W |    |    + W = WW               = W
-N |   | W |    |    + R = NR|WR            = R|WR
-N |   | W |    |    + W = NW|WW            = W
-  | R | W |    |    + R = RR|WR            = R|WR
-  | R | W |    |    + W = RW|WW            = W|RW
-N | R | W |    |    + R = NR|RR|WR         = R|WR
-N | R | W |    |    + W = NW|RW|WW         = W|RW
-  |   |   | RW |    + R = RWR              = X
-  |   |   | RW |    + W = RWW              = RW
-N |   |   | RW |    + R = NR|RWR           = X
-N |   |   | RW |    + W = NW|RWW           = W|RW
-  | R |   | RW |    + R = RR|RWR           = X
-  | R |   | RW |    + W = RW|RWW           = RW
-N | R |   | RW |    + R = R|RR|RWR         = X
-N | R |   | RW |    + W = NW|RW|RWW        = W|RW
-  |   | W | RW |    + R = WR|RWR           = X
-  |   | W | RW |    + W = WW|RWW           = W|RW
-N |   | W | RW |    + R = NR|WR|RWR        = X
-N |   | W | RW |    + W = NW|WW|RWW        = W|RW
-  | R | W | RW |    + R = RR|WR|RWR        = X
-  | R | W | RW |    + W = RW|WW|RWW        = W|RW
-N | R | W | RW |    + R = NR|RR|WR|RWR     = X
-N | R | W | RW |    + W = NW|RW|WW|RWW     = W|RW
-  |   |   |    | WR + R = WRR              = WR
-  |   |   |    | WR + W = WRW              = X
-N |   |   |    | WR + R = NR|WRR           = R|WR
-N |   |   |    | WR + W = NW|WRW           = X
-  | R |   |    | WR + R = RR|WRR           = R|WR
-  | R |   |    | WR + W = RW|WRW           = X
-N | R |   |    | WR + R = R|RR|WRR         = R|WR
-N | R |   |    | WR + W = W|RW|WRW         = X
-  |   | W |    | WR + R = WR|WRR           = WR
-  |   | W |    | WR + W = WW|WRW           = X
-N |   | W |    | WR + R = R|WR|WRR         = R|WR
-N |   | W |    | WR + W = W|WW|WRW         = X
-  | R | W |    | WR + R = RR|WR|WRR        = R|WR
-  | R | W |    | WR + W = RW|WW|WRW        = X
-N | R | W |    | WR + R = NR|RR|WR|WRR     = R|WR
-N | R | W |    | WR + W = NW|RW|WW|WRW     = X
-  |   |   | RW | WR + R = RWR|WRR          = X
-  |   |   | RW | WR + W = RWW|WRW          = X
-N |   |   | RW | WR + R = NR|RWR|WRR       = X
-N |   |   | RW | WR + W = W|RWW|WRW        = X
-  | R |   | RW | WR + R = RR|RWR|WRR       = X
-  | R |   | RW | WR + W = RW|RWW|WRW       = X
-N | R |   | RW | WR + R = NR|RR|RWR|WRR    = X
-N | R |   | RW | WR + W = NW|RW|RWW|WRW    = X
-  |   | W | RW | WR + R = WR|RWR|WRR       = X
-  |   | W | RW | WR + W = WW|RWW|WRW       = X
-N |   | W | RW | WR + R = NR|WR|RWR|WRR    = X
-N |   | W | RW | WR + W = NW|WW|RWW|WRW    = X
-  | R | W | RW | WR + R = RR|WR|RWR|WRR    = X
-  | R | W | RW | WR + W = RW|WW|RWW|WRW    = X
-N | R | W | RW | WR + R = NR|RR|WR|RWR|WRR = X
-N | R | W | RW | WR + W = NW|RW|WW|RWW|WRW = X
+(N |   |   |    |   ) + R = NR               = R
+(N |   |   |    |   ) + W = NW               = W
+(  | R |   |    |   ) + R = RR               = R
+(  | R |   |    |   ) + W = RW               = RW
+(N | R |   |    |   ) + R = NR|RR            = R
+(N | R |   |    |   ) + W = NW|RW            = W|RW
+(  |   | W |    |   ) + R = WR               = WR
+(  |   | W |    |   ) + W = WW               = W
+(N |   | W |    |   ) + R = NR|WR            = R|WR
+(N |   | W |    |   ) + W = NW|WW            = W
+(  | R | W |    |   ) + R = RR|WR            = R|WR
+(  | R | W |    |   ) + W = RW|WW            = W|RW
+(N | R | W |    |   ) + R = NR|RR|WR         = R|WR
+(N | R | W |    |   ) + W = NW|RW|WW         = W|RW
+(  |   |   | RW |   ) + R = RWR              = X
+(  |   |   | RW |   ) + W = RWW              = RW
+(N |   |   | RW |   ) + R = NR|RWR           = X
+(N |   |   | RW |   ) + W = NW|RWW           = W|RW
+(  | R |   | RW |   ) + R = RR|RWR           = X
+(  | R |   | RW |   ) + W = RW|RWW           = RW
+(N | R |   | RW |   ) + R = R|RR|RWR         = X
+(N | R |   | RW |   ) + W = NW|RW|RWW        = W|RW
+(  |   | W | RW |   ) + R = WR|RWR           = X
+(  |   | W | RW |   ) + W = WW|RWW           = W|RW
+(N |   | W | RW |   ) + R = NR|WR|RWR        = X
+(N |   | W | RW |   ) + W = NW|WW|RWW        = W|RW
+(  | R | W | RW |   ) + R = RR|WR|RWR        = X
+(  | R | W | RW |   ) + W = RW|WW|RWW        = W|RW
+(N | R | W | RW |   ) + R = NR|RR|WR|RWR     = X
+(N | R | W | RW |   ) + W = NW|RW|WW|RWW     = W|RW
+(  |   |   |    | WR) + R = WRR              = WR
+(  |   |   |    | WR) + W = WRW              = X
+(N |   |   |    | WR) + R = NR|WRR           = R|WR
+(N |   |   |    | WR) + W = NW|WRW           = X
+(  | R |   |    | WR) + R = RR|WRR           = R|WR
+(  | R |   |    | WR) + W = RW|WRW           = X
+(N | R |   |    | WR) + R = R|RR|WRR         = R|WR
+(N | R |   |    | WR) + W = W|RW|WRW         = X
+(  |   | W |    | WR) + R = WR|WRR           = WR
+(  |   | W |    | WR) + W = WW|WRW           = X
+(N |   | W |    | WR) + R = R|WR|WRR         = R|WR
+(N |   | W |    | WR) + W = W|WW|WRW         = X
+(  | R | W |    | WR) + R = RR|WR|WRR        = R|WR
+(  | R | W |    | WR) + W = RW|WW|WRW        = X
+(N | R | W |    | WR) + R = NR|RR|WR|WRR     = R|WR
+(N | R | W |    | WR) + W = NW|RW|WW|WRW     = X
+(  |   |   | RW | WR) + R = RWR|WRR          = X
+(  |   |   | RW | WR) + W = RWW|WRW          = X
+(N |   |   | RW | WR) + R = NR|RWR|WRR       = X
+(N |   |   | RW | WR) + W = W|RWW|WRW        = X
+(  | R |   | RW | WR) + R = RR|RWR|WRR       = X
+(  | R |   | RW | WR) + W = RW|RWW|WRW       = X
+(N | R |   | RW | WR) + R = NR|RR|RWR|WRR    = X
+(N | R |   | RW | WR) + W = NW|RW|RWW|WRW    = X
+(  |   | W | RW | WR) + R = WR|RWR|WRR       = X
+(  |   | W | RW | WR) + W = WW|RWW|WRW       = X
+(N |   | W | RW | WR) + R = NR|WR|RWR|WRR    = X
+(N |   | W | RW | WR) + W = NW|WW|RWW|WRW    = X
+(  | R | W | RW | WR) + R = RR|WR|RWR|WRR    = X
+(  | R | W | RW | WR) + W = RW|WW|RWW|WRW    = X
+(N | R | W | RW | WR) + R = NR|RR|WR|RWR|WRR = X
+(N | R | W | RW | WR) + W = NW|RW|WW|RWW|WRW = X
 ```
 
 With that table written out, we have enough information to fully trace a program. For each member variable we start with the N symbol and trace through each line of code. If we see a read or a write, we look up the current symbol in the table above and transition to the new symbol. If we see a branch, we trace through both sides of the branch independently and then parallel-merge the symbols together afterwards (just concatenate the N|R|W with the R|WR or whatever and then remove duplicates).
 
 This works, but it's kinda clunky and it doesn't really give us insight into what the symbols _mean_. We can simplify things a bit further by taking advantage of redundancies in the table and by removing symbols that are impossible because they would always break the RWR rules - for example, ```RW|WR``` can be disallowed as it contains both a read-after-write and a write-after-read which means it can't be categorized as either a "register" or "wire" in Verilog-land. ```R|WR``` is out for similar reasons - ```WR``` implies "wire", but ```R``` implies "register" and it can't be both.
 
-After removing all impossible symbols from the table, we get this -
+After removing all impossible symbols from the table, we can group the remaining symbols together by how their concatenation rules behave:
 
 ```
 // NONE
-N |   |   |    |    + R = NR               = R      = INPUT
-N |   |   |    |    + W = NW               = W      = OUTPUT
+(N |   |   |    |    ) + R = NR               = R      = INPUT
+(N |   |   |    |    ) + W = NW               = W      = OUTPUT
 
 // INPUT
-  | R |   |    |    + R = RR               = R      = INPUT
-N | R |   |    |    + R = NR|RR            = R      = INPUT
-  | R |   |    |    + W = RW               = RW     = REGISTER
-N | R |   |    |    + W = NW|RW            = W|RW   = REGISTER
+(  | R |   |    |    ) + R = RR               = R      = INPUT
+(N | R |   |    |    ) + R = NR|RR            = R      = INPUT
+(  | R |   |    |    ) + W = RW               = RW     = REGISTER
+(N | R |   |    |    ) + W = NW|RW            = W|RW   = REGISTER
 
 // OUTPUT
-  |   | W |    |    + W = WW               = W      = OUTPUT
-  |   | W |    |    + R = WR               = WR     = SIGNAL
+(  |   | W |    |    ) + W = WW               = W      = OUTPUT
+(  |   | W |    |    ) + R = WR               = WR     = SIGNAL
 
 // SIGNAL
-  |   |   |    | WR + R = WRR              = WR     = SIGNAL
-  |   | W |    | WR + R = WR|WRR           = WR     = SIGNAL
-  |   |   |    | WR + W = WRW              = X      = INVALID
-  |   | W |    | WR + W = WW|WRW           = X      = INVALID
+(  |   |   |    | WR ) + R = WRR              = WR     = SIGNAL
+(  |   | W |    | WR ) + R = WR|WRR           = WR     = SIGNAL
+(  |   |   |    | WR ) + W = WRW              = X      = INVALID
+(  |   | W |    | WR ) + W = WW|WRW           = X      = INVALID
 
 // REGISTER
-  | R | W |    |    + W = RW|WW            = W|RW   = REGISTER
-N | R | W |    |    + W = NW|RW|WW         = W|RW   = REGISTER
-  |   |   | RW |    + W = RWW              = RW     = REGISTER
-N |   |   | RW |    + W = NW|RWW           = W|RW   = REGISTER
-  | R |   | RW |    + W = RW|RWW           = RW     = REGISTER
-N | R |   | RW |    + W = NW|RW|RWW        = W|RW   = REGISTER
-  |   | W | RW |    + W = WW|RWW           = W|RW   = REGISTER
-N |   | W | RW |    + W = NW|WW|RWW        = W|RW   = REGISTER
-  | R | W | RW |    + W = RW|WW|RWW        = W|RW   = REGISTER
-N | R | W | RW |    + W = NW|RW|WW|RWW     = W|RW   = REGISTER
-  | R | W |    |    + R = RR|WR            = R|WR   = INVALID
-N | R | W |    |    + R = NR|RR|WR         = R|WR   = INVALID
-  |   |   | RW |    + R = RWR              = X      = INVALID
-N |   |   | RW |    + R = NR|RWR           = X      = INVALID
-  | R |   | RW |    + R = RR|RWR           = X      = INVALID
-N | R |   | RW |    + R = R|RR|RWR         = X      = INVALID
-  |   | W | RW |    + R = WR|RWR           = X      = INVALID
-N |   | W | RW |    + R = NR|WR|RWR        = X      = INVALID
-  | R | W | RW |    + R = RR|WR|RWR        = X      = INVALID
-N | R | W | RW |    + R = NR|RR|WR|RWR     = X      = INVALID
+(  | R | W |    |    ) + R = RR|WR            = R|WR   = INVALID
+(N | R | W |    |    ) + R = NR|RR|WR         = R|WR   = INVALID
+(  |   |   | RW |    ) + R = RWR              = X      = INVALID
+(N |   |   | RW |    ) + R = NR|RWR           = X      = INVALID
+(  | R |   | RW |    ) + R = RR|RWR           = X      = INVALID
+(N | R |   | RW |    ) + R = R|RR|RWR         = X      = INVALID
+(  |   | W | RW |    ) + R = WR|RWR           = X      = INVALID
+(N |   | W | RW |    ) + R = NR|WR|RWR        = X      = INVALID
+(  | R | W | RW |    ) + R = RR|WR|RWR        = X      = INVALID
+(N | R | W | RW |    ) + R = NR|RR|WR|RWR     = X      = INVALID
+(  | R | W |    |    ) + W = RW|WW            = W|RW   = REGISTER
+(N | R | W |    |    ) + W = NW|RW|WW         = W|RW   = REGISTER
+(  |   |   | RW |    ) + W = RWW              = RW     = REGISTER
+(N |   |   | RW |    ) + W = NW|RWW           = W|RW   = REGISTER
+(  | R |   | RW |    ) + W = RW|RWW           = RW     = REGISTER
+(N | R |   | RW |    ) + W = NW|RW|RWW        = W|RW   = REGISTER
+(  |   | W | RW |    ) + W = WW|RWW           = W|RW   = REGISTER
+(N |   | W | RW |    ) + W = NW|WW|RWW        = W|RW   = REGISTER
+(  | R | W | RW |    ) + W = RW|WW|RWW        = W|RW   = REGISTER
+(N | R | W | RW |    ) + W = NW|RW|WW|RWW     = W|RW   = REGISTER
 
 // MAYBE
-N |   | W |    |    + R = NR|WR            = R|WR   = INVALID
-N |   | W |    |    + W = NW|WW            = W      = OUTPUT
-
-// INVALID
-N |   |   |    | WR + R = NR|WRR           = R|WR   = INVALID
-N |   |   |    | WR + W = NW|WRW           = X      = INVALID
-  | R |   |    | WR + R = RR|WRR           = R|WR   = INVALID
-  | R |   |    | WR + W = RW|WRW           = X      = INVALID
-N | R |   |    | WR + R = R|RR|WRR         = R|WR   = INVALID
-N | R |   |    | WR + W = W|RW|WRW         = X      = INVALID
-N |   | W |    | WR + R = R|WR|WRR         = R|WR   = INVALID
-N |   | W |    | WR + W = W|WW|WRW         = X      = INVALID
-  | R | W |    | WR + R = RR|WR|WRR        = R|WR   = INVALID
-  | R | W |    | WR + W = RW|WW|WRW        = X      = INVALID
-N | R | W |    | WR + R = NR|RR|WR|WRR     = R|WR   = INVALID
-N | R | W |    | WR + W = NW|RW|WW|WRW     = X      = INVALID
+(N |   | W |    |    ) + R = NR|WR            = R|WR   = INVALID
+(N |   | W |    |    ) + W = NW|WW            = W      = OUTPUT
 ```
 
-Note that for each group, all symbols in that group followed by a read go to the same group, ditto for writes.
+Note that for each group, all symbols in that group followed by a read go to the same group, ditto for writes. As it turns out we can ditch the whole symbol thing entirely and just use the group namess to drive a sort of state machine:
 
 ```
 | series   | read    | write    |
@@ -374,135 +372,15 @@ Note that for each group, all symbols in that group followed by a read go to the
 | REGISTER | REGISTER | REGISTER | REGISTER | REGISTER | INVALID | REGISTER |
 ```
 
+We trace variables through the code, following the 'series' table to change their state when they encounter a read or write. When two code branches merge, we use the 'parallel' table to figure out what their combined state is.
 
+We can also assign more meaning to the group names now:
 
+* **"None"** just means we haven't read or written that variable yet. If we end tracing with a variable in "None" state, it is dead code and can be removed.
+* **"Input"** is a read-only variable. It could always be read by the code (symbol R), or only read on some paths (N|R). Either way, it's represented in Verilog by a wire.
+* **"Output"** is a write-only variable that is always written by the code and is represented in Verilog by a wire.
+* **"Signal"** corresponds to "wire" in Verilog. Signals must always be written first, and may or may not be read (W|WR = W + N|R).
+* **"Register"** corresponds to "reg" in Verilog. All symbols in this group contain both a path where they are read first and a path where they are written (not necessarily the same path).
+* **"Maybe"** is a slightly strange group, but it emerges naturally from the rules. It corresponds to symbol N|W, meaning it's a variable that has been written in some but not all paths and never read. If a variable has "Maybe" state in the middle of a trace but is then written it becomes an output wire, but if it reaches the end of a trace it becomes an output **register** (since it wasn't always written, it has to hold onto the value from the previous cycle).
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- A lot of those can be converted into ```X``` because of the implications of the read-write rules above
-
-(Yes, I'm aware the logic is getting a bit circular here since we haven't talked about how to classify variables into registers and wires yet, bear with me)
-
-After eliminating invalid symbols, we are left with the following set of 12 valid symbols:
-
-```N, R, W, RW, WR, N|R, N|W, N|RW, R|W, R|RW, W|RW, W|WR```
-
-We need one additional simplification rule before we can handle all possible code paths:
-
-```
-A|B + C == AC|BC
-```
-
-and now we can write out our full state transition tables for serial and parallel code:
-
-| + | R | W |
-|---|---|---|
-|N|R|W|
-|R|R|RW|
-|W|WR|W|
-|RW|X|RW|
-|WR|WR|X|
-|N\|R|R|W\|RW|
-|N\|W|X|W|
-|N\|RW|X|W\|RW|
-|R\|W|X|W\|RW|
-|R\|RW|X|RW|
-|W\|RW|X|W\|RW|
-|W\|WR|WR|X|
-
-| \| | N | R | W | RW | WR |
-|----|---|---|---|----|----|
-|  N | N | N\|R | N\|W | N\|RW | X |
-|  R | N\|R | R | R\|W | R\|RW | X |
-|  W | N\|W | R\|W | W | W\|RW | W\|WR
-| RW | N\|RW | R\|RW | W\|RW | RW | X |
-| WR | X | X | W\|WR | X | WR |
-
-This isn't bad, but there's some redundancy here - we can further simplify things by putting symbols into groups:
-
-```
-NONE     := { N }
-INPUT    := { R, N|R }
-OUTPUT   := { W }
-SIGNAL   := { WR, W|WR }
-REGISTER := { RW, N|RW,
-MAYBE    := { N|W }
-```
-
-RW       + w = RW
-N|RW     + w = W|RW
-R|W      + w = W|RW
-R|RW     + w = RW
-W|RW     + w = W|RW
-N|R|W    + w = W|RW
-N|R|RW   + w = W|RW
-N|W|RW   + w = W|RW
-R|W|RW   + w = W|RW
-N|R|W|RW + w = W|RW
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-To ensure that our converted C++ works correctly, we need to enforce some rules for our signals and states - I like to call these the "Read-Write Rules", or RWR for short.
-
-<b>
-
-1. All member variables can be classified into "state" variables or "signal" variables.
-
-3. Signal variables cannot be written after they're read*. Doing so can cause the "multiple simultaneous assignment" error in Verilog.
-
-2. State variables cannot be read after they're written. Doing so can cause the "C++ reads new state, Verilog reads old state" mismatch.
-
-</b>
-
-\* 'read' in this sense also includes "made visible to external components via an 'output logic' port".
+With those tables, plus a lot of parsing and bookkeeping, we can definitively categorize every member variable in a C++ program and determine if it will work as Verilog. I'm glossing over a bunch of details (there are lots more rules, mostly imposed by Verilog syntax) but that's the core of it.

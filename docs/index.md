@@ -15,6 +15,8 @@
 class Counter {
 public:
 
+  logic<8> counter;
+
   void tick(logic<1> reset) {
     if (reset) {
       counter = 0;
@@ -22,8 +24,6 @@ public:
       counter = counter + 1;
     }
   }
-
-  logic<8> counter;
 };
 ```
 

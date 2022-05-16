@@ -1,3 +1,13 @@
+# Temporal Logic, Code Tracing, and Weird State Machines
+
+## Disclaimer
+
+I am not a computer scientist, I cannot tell you why a monad is a 'monoid in the category of endofunctors', I am literally making all of this up as I go along.
+
+That said, it seems to work pretty well.
+
+---
+
 Suppose we have a plain, unannotated C++ program and we want to determine if a trivial translation of that program into Verilog will work correctly. We can assume that our source file is valid C++ - syntax-checking is out of scope for now. If some operation has similar syntax but different semantics in the two languages, our program will likely break.
 
 For example, we can take this class
@@ -135,12 +145,12 @@ We've barely started and we already seem to be at an impasse. We've identified t
 
 If you look back at the examples, you'll note that I've named variables written in "always_ff" as "reg_*" and variables written in "always_comb" as "wire_*". This is because in hardware-land, we have two* fundamentally different types of "variables" to deal with. Registers are able to store state and will hold their values across clock cycles if not changed. Wires are wires, tiny strips of metal that only hold a value as long as they're being 'driven' by the output of a logic gate or register.
 
-\* 'Latches' are a third type, but they're hardly used in practice for complicated reasons
+\* 'Latches' are a third type, but they're hardly used in practice for complicated reasons.
 
 If we knew in advance which of our C++ member variables were going to turn into registers and which were going to turn into wires, we'd have an easier time of things. We could try and enforce these two rules -
 
 1. Registers can't be read after they're written (example #1).
-2. Wires must always be written and can only carry a single value per simulation step (example #2).
+2. Wires must always be written and can carry only a single value per simulation step (example #2).
 
 We could enforce a naming convention that all registers start with "reg_" and all wires start with "wire_" (which is similar to how Metron originally worked), but then we're not really processing "plain, unannotated C++" anymore.
 
@@ -184,9 +194,12 @@ WR + R + WR
 R + W == RW
 W + R == WR
 
-// RWR and WRW are invalid symbols for reasons related to the rules above, explained later
+// RWR and WRW are invalid symbols for reasons related to rules #1 and #2 above
 RW + R == X
 WR + W == X
+
+// Invalid plus anything equals invalid
+X + * = X
 ```
 
 So for branchless code, our possible symbols are ```N```, ```R```, ```W```, ```RW```, ```WR```, and ```X```. Next let's consider what happens when we see branching code:

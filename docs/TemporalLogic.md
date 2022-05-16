@@ -317,7 +317,7 @@ For reference, here's the full table of possible symbols, their concatenation ru
 (N | R | W | RW | WR) + W = NW|RW|WW|RWW|WRW = X
 ```
 
-With that table written out, we have enough information to fully trace a program. For each member variable we start with the N symbol and trace through each line of code. If we see a read or a write, we look up the current symbol in the table above and transition to the new symbol. If we see a branch, we trace through both sides of the branch independently and then parallel-merge the symbols together afterwards (just concatenate the N|R|W with the R|WR or whatever and then remove duplicates).
+With that table written out, we have enough information to fully trace a program. For each member variable we start with the N symbol and trace through each line of code. If we see a read or a write, we look up the current symbol in the table above and transition to the new symbol. If we see a branch, we trace through both sides of the branch independently and then parallel-merge the symbols together afterwards (just concatenate the ```N|R|W``` with the ```R|WR``` or whatever and then remove duplicates).
 
 This works, but it's kinda clunky and it doesn't really give us insight into what the symbols _mean_. We can simplify things a bit further by taking advantage of redundancies in the table and by removing symbols that are impossible because they would always break the rules - for example, ```RW|WR``` can be disallowed as it contains both a read-after-write and a write-after-read which means it can't be categorized as either a "register" or "wire" in Verilog-land. ```R|WR``` is out for similar reasons - ```WR``` implies "wire", but ```R``` implies "register" and it can't be both.
 

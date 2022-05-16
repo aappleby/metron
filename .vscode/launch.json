@@ -8,7 +8,7 @@
       "request": "launch",
       "program": "${workspaceFolder}/bin/metron",
       "cwd": "${workspaceFolder}",
-      "args": [ "-v", "-e", "--dump", "-s", "scratch.h" ],
+      "args": [ "-v", "-e", "--dump", "-r", "examples", "-s", "scratch.h" ],
       //"args": [ "-v", "-e", "-r", "examples/uart/metron", "-o", "examples/uart/metron_sv", "uart_top.h"],
       //"args": [ "-v", "-e", "-r", "tests/metron_good", "-o", "tests/metron_sv", "basic_switch.h"],
       //"args": [ "-v", "-e", "-r", "tests/metron_bad", "multiple_submod_function_bindings.h", ],

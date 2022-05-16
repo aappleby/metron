@@ -400,7 +400,7 @@ We can also assign more meaning to the group names now:
 * **"None"** just means we haven't read or written that variable yet. If we end tracing with a variable in "None" state, it is dead code and can be removed.
 * **"Input"** is a read-only variable. It could always be read by the code (symbol ```R```), or only read on some paths (```N|R```). Either way, it's represented in Verilog by a wire.
 * **"Output"** is a variable that is always written by the code and never read. It's represented in Verilog by a wire.
-* **"Signal"** also correspond to "wire" in Verilog. Signals must always be written first, and may or may not be read (````W|WR = W + N|R```).
+* **"Signal"** also correspond to "wire" in Verilog. Signals must always be written first, and may or may not be read (```W|WR = W + N|R```).
 * **"Register"** corresponds to "reg" in Verilog. All symbols in this group contain both a path where they are read first and a path where they are written (not necessarily the same path).
 * **"Maybe"** is a slightly strange group, but it emerges naturally from the rules. It corresponds to symbol ```N|W```, meaning it's a variable that has been written in some but not all paths and never read. If a variable has "Maybe" state in the middle of a trace but is then written it becomes an output wire, but if it reaches the end of a trace it becomes an output **register** (since it wasn't always written, it has to hold onto the value from the previous cycle).
 

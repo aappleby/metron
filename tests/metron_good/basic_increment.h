@@ -6,8 +6,9 @@
 class Module {
 public:
 
-  void tock() {
+  int tock() {
     tick();
+    return 0;
   }
 
 private:

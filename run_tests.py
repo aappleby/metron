@@ -42,10 +42,23 @@ def main():
 
     errors = 0
 
+    print("verilator");
+    os.system("verilator -Isrc --lint-only tests/feature_test.sv")
+
+    print("iverilog");
+    os.system("iverilog -g2012 -Wall -Isrc -o bin/feature_test.o tests/feature_test.sv");
+
+    print("yosys");
+    os.system("yosys -q -p 'read_verilog -Isrc -sv tests/feature_test.sv;'");
+
+    print("done");
+
+    """
     errors += test_convert_good()
     errors += test_convert_bad()
     errors += test_compilation()
     errors += test_verilator_parse()
+    errors += test_yosys_parse()
 
     if not basic:
         errors += test_icarus_parse()
@@ -61,6 +74,7 @@ def main():
         #errors += test_icarus_parse()
 
         pass
+    """
 
     ############################################################
 
@@ -271,6 +285,31 @@ def check_verilator(filename):
         return 0
 
 ###############################################################################
+# Run Yosys on the translated source file.
+
+
+"""
+ninja.rule(name="yosys",
+           command="yosys -q -p 'read_verilog ${includes} -sv ${in}; dump; synth_ice40 -json ${out};'")
+"""
+
+
+def check_yosys(filename):
+    errors = 0
+    basename = path.basename(filename)
+    svname = path.splitext(basename)[0] + ".sv"
+
+    cmd = f"yosys -q -p 'read_verilog -Isrc -sv tests/metron_sv/{svname};'"
+
+    print(f"  {cmd}")
+    result = os.system(cmd)
+    if result:
+        print(f"Verilator syntax check on {filename} failed")
+        return 1
+    else:
+        return 0
+
+###############################################################################
 # Check the translated source against the golden, if present.
 
 
@@ -387,6 +426,15 @@ def test_verilator_parse():
 
 ################################################################################
 
+def test_yosys_parse():
+    print()
+    print_b("Checking that all converted files can be parsed by Yosys")
+    errors = sum(get_pool().map(check_yosys, metron_good()))
+    if errors != 0:
+        print_r(f"Headers in metron_good failed Metron conversion")
+    return errors
+
+################################################################################
 
 def test_goldens():
     print()

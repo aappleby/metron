@@ -2,9 +2,11 @@
 
 ## Disclaimer
 
-I am not a computer scientist, I cannot tell you why a monad is a 'monoid in the category of endofunctors', I am literally making all of this up as I go along.
+I am not a computer scientist, I cannot tell you why a monad is a 'monoid in the category of endofunctors', I know basically nothing about type theory. There are probably research papers out there that I've missed entirely which describe the same things as this article but with much prettier symbols and TeX formatting.
 
-That said, it seems to work pretty well.
+I am literally making all of this up as I go along.
+
+That's OK, it still seems to work pretty well.
 
 ---
 
@@ -104,7 +106,9 @@ For this reason, virtually all Verilog style guides forbid using blocking assign
 
 -----
 
-Let's look at another example:
+## Let's look at another example:
+
+Here's a trivial C program that can set a "wire" to one of two values:
 
 ```
 class ThingC {
@@ -137,15 +141,17 @@ module ThingV (output logic wire_out);
 endmodule
 ```
 
-However, again, the two implementations do not match up. The C++ version is well-defined, if a bit pointless. The Verilog version won't even compile. In Verilog-land, "set_wire_2" and "set_wire_3" happen _continuously_ and _simultaneously_. What should the value of wire_out be if it is simultaneously set to 2 and 3? There's no good answer, so the Verilog compiler reports an error.
+(If you know Verilog, I apologize for this example)
+
+However, again, the two implementations do not match up. The C++ version is well-defined, if a bit pointless. The Verilog version won't even compile. In Verilog-land, the "always_comb" statement causes "set_wire_2" and "set_wire_3" to happen _continuously_ and _simultaneously_. What should the value of wire_out be if it is simultaneously set to 2 and 3? There's no good answer, so the Verilog compiler reports an error.
 
 -----
 
 We've barely started and we already seem to be at an impasse. We've identified two examples in which syntactically-matching C++ and Verilog do not produce identical results, so in order to translate from C++ to Verilog it would seem we need to do something more sophisticated than a "trivial" translation. However, we can work around this by instead limiting the subset of what we'll accept as our C++ input.
 
-If you look back at the examples, you'll note that I've named variables written in "always_ff" as "reg_*" and variables written in "always_comb" as "wire_*". This is because in hardware-land, we have two* fundamentally different types of "variables" to deal with. Registers are able to store state and will hold their values across clock cycles if not changed. Wires are wires, tiny strips of metal that only hold a value as long as they're being 'driven' by the output of a logic gate or register.
+If you look back at the examples, you'll note that I've named variables written in "always_ff" as "reg_\*" and variables written in "always_comb" as "wire_\*". This is because in hardware-land, we have two* fundamentally different types of "variables" to deal with. Registers are able to store state and will hold their values across clock cycles if not changed. Wires are wires, tiny strips of metal that only hold a value as long as they're being 'driven' by the output of a logic gate or register.
 
-\* 'Latches' are a third type, but they're hardly used in practice for complicated reasons.
+\* Technically latches are a third type, but they're hardly used in practice for complicated reasons.
 
 If we knew in advance which of our C++ member variables were going to turn into registers and which were going to turn into wires, we'd have an easier time of things. We could try and enforce these two rules -
 
@@ -160,7 +166,7 @@ Another option would be to make some custom C++ types that track reads and write
 
 # Tracing Code
 
-The solution that Metron settled on involves a couple of passes. In the first pass, we bootstrap our understanding of the codebase by "tracing" it, which involves walking through each line of code and looking for all reads and writes to a member variable. Luckily we don't care about the _values_ stored in variables, only the ordering of the reads and writes.
+The solution that Metron settled on involves a couple of passes through the codebase. In the first pass, we bootstrap our understanding of the codebase by "tracing" it, which involves walking through each line of code and looking for all reads and writes to member variables. Luckily we don't care about the _values_ stored in them, only the ordering of the reads and writes.
 
 Let's start by looking at a trivial function with no branches:
 
@@ -177,7 +183,9 @@ public:
 };
 ```
 
-We'll start by assigning the variable ```x``` a symbolic value of ```N```, for "Nothing has happened to this variable yet". When we encounter ```int y = x + 3```, we see a read of ```X``` so we'll concatenate a ```R``` onto our symbol, giving ```NR```. Next we see a write in ```x = 7```, so we concatenate a ```W``` giving ```NRW```. If we go through all possible symbol combinations, we get the following symbol transition table after some simplifications:
+We'll start by assigning the variable ```x``` a symbolic value of ```N```, for "Nothing has happened to this variable yet". When we encounter ```int y = x + 3```, we see a read of ```X``` so we'll concatenate a ```R``` onto our symbol, giving ```NR```. Next we see a write in ```x = 7```, so we concatenate a ```W``` giving ```NRW```.
+
+As we accumulate Rs and Ws onto our symbolic value, we can apply these simplification rules:
 
 ```
 // The N symbol is irrelevant once we see a read or write
@@ -202,7 +210,7 @@ WR + W == X
 X + * = X
 ```
 
-So for branchless code, our possible symbols are ```N```, ```R```, ```W```, ```RW```, ```WR```, and ```X```. Next let's consider what happens when we see branching code:
+So for branchless code, our possible symbolic values are ```N```, ```R```, ```W```, ```RW```, ```WR```, and ```X```. Next let's consider what happens when we see branching code:
 
 ```
 class Thing {

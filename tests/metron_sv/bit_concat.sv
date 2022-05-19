@@ -4,6 +4,8 @@
 
 module Module
 (
+  output logic[5:0] sig1,
+  output logic[5:0] sig2
 );
 /*public:*/
 
@@ -11,29 +13,26 @@ module Module
     $write("Hello World?\n");
   end
 
-  function tock1();
+
+  always_comb begin : tock1
     logic a;
     logic[1:0] b;
     logic[2:0] c;
-    logic[5:0] d;
     a = 1;
     b = 2;
     c = 3;
 
-    d = {a, b, c};
-  endfunction
-  always_comb tock1();
+    sig1 = {a, b, c};
+  end
 
-  function tock2();
+  always_comb begin : tock2
     logic[7:0] a;
     logic[7:0] b;
     logic[7:0] c;
-    logic[5:0] d;
     a = 1;
     b = 2;
     c = 3;
 
-    d = {1'(a), 2'(b), 3'(c)};
-  endfunction
-  always_comb tock2();
+    sig2 = {1'(a), 2'(b), 3'(c)};
+  end
 endmodule

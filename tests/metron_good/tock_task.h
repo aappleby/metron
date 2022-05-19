@@ -7,16 +7,17 @@ public:
 
   logic<8> my_signal;
 
-  void tock() {
-    set_signal(get_number());
+  int tock() {
+    return set_signal(get_number());
   }
 
   logic<8> get_number() const {
     return 7;
   }
 
-  void set_signal(logic<8> number) {
+  int set_signal(logic<8> number) {
     my_signal = number;
+    return my_signal;
   }
 
 };

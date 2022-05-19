@@ -8,9 +8,8 @@ module Module
   output logic my_reg
 );
 /*public:*/
-  function tock();
-  endfunction
-  always_comb tock();
+  always_comb begin : tock
+  end
 
 /*private:*/
   task automatic tick();

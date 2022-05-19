@@ -67,10 +67,16 @@ ContextState merge_branch(ContextState ma, ContextState mb) {
     // clang-format on
 
     assert(table[ma][mb] == table[mb][ma]);
-    return table[ma][mb];
-  }
 
-  return CTX_INVALID;
+    auto result = table[ma][mb];
+
+    if (result  == CTX_INVALID) {
+      int x = 1;
+      x++;
+    }
+
+    return result;
+  }
 }
 
 //------------------------------------------------------------------------------

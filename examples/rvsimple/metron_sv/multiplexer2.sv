@@ -20,7 +20,7 @@ module multiplexer2
 );
  /*public:*/
 
-  function tock();
+  always_comb begin : tock
     case (sel)
       0:
         out = in0;
@@ -29,8 +29,7 @@ module multiplexer2
       default:
         out = WIDTH'(1'bx);
     endcase
-  endfunction
-  always_comb tock();
+  end
 endmodule
 
 `endif // MULTIPLEXER2_H

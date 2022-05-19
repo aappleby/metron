@@ -40,7 +40,7 @@ module example_data_memory_bus
 
 
  /*public:*/
-  function tock();
+  always_comb begin : tock
     logic is_data_memory;
     logic[31:0] fetched;
     is_data_memory =
@@ -53,8 +53,7 @@ module example_data_memory_bus
 
     fetched = data_memory_q;
     read_data = read_enable && is_data_memory ? fetched : 32'bx;
-  endfunction
-  always_comb tock();
+  end
 endmodule
 
 `endif // EXAMPLE_DATA_MEMORY_BUS

@@ -10,10 +10,9 @@ module Module
 );
  /*public:*/
 
-  function tock(logic[6:0] my_input);
-    tick_my_input = my_input;
-  endfunction
-  always_comb tock(tock_my_input);
+  always_comb begin : tock
+    tick_my_input = tock_my_input;
+  end
 
  /*private:*/
 

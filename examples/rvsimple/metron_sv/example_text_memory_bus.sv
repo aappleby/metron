@@ -28,7 +28,7 @@ module example_text_memory_bus
 
 
  /*public:*/
-  function tock_read_data();
+  always_comb begin : tock_read_data
     logic[31:0] fetched;
     text_memory_address = address[rv_config::TEXT_BITS - 2+1:2];
     fetched = text_memory_q;
@@ -36,8 +36,7 @@ module example_text_memory_bus
         (address >= rv_config::TEXT_BEGIN) && (rv_config::TEXT_END >= address)
             ? fetched
             : 32'bx;
-  endfunction
-  always_comb tock_read_data();
+  end
 endmodule
 
 `endif // EXAMPLE_TEXT_MEMORY_BUS_H

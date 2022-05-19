@@ -6,22 +6,50 @@
 #include "MtModule.h"
 #include "MtNode.h"
 #include "MtSourceFile.h"
+#include "MtStruct.h"
 
 //------------------------------------------------------------------------------
 
-MtField::MtField(MtModule *_parent_mod, const MnNode &n, bool is_public)
-    : _parent_mod(_parent_mod), _public(is_public), node(n) {
-  assert(node.sym == sym_field_declaration);
-  _name = node.name4();
-  _type = node.type5();
-  _type_mod = _parent_mod->lib->get_module(_type);
+MtField::MtField(MtModule *_parent_mod, const MnNode &n, bool is_public) {
+  assert(n.sym == sym_field_declaration);
+
+  this->_node = n;
+  this->_name = _node.name4();
+  this->_type = _node.type5();
+  this->_public = is_public;
+  this->_is_enum = false;
+
+  this->_parent_mod = _parent_mod;
+  this->_type_mod = _parent_mod->lib->get_module(_type);
+
+  this->_parent_struct = nullptr;
+  this->_type_struct = nullptr;
+}
+
+//------------------------------------------------------------------------------
+
+MtField::MtField(MtStruct *_parent_struct, const MnNode &n) {
+  assert(n.sym == sym_field_declaration);
+
+  this->_node = n;
+  this->_name = _node.name4();
+  this->_type = _node.type5();
+  this->_is_enum = false;
+
+  this->_parent_mod = nullptr;
+  this->_type_mod = nullptr;
+
+  this->_parent_struct = _parent_struct;
+  this->_type_struct = _parent_struct->lib->get_struct(this->_type);
 }
 
 //------------------------------------------------------------------------------
 
 bool MtField::is_component() const { return _type_mod != nullptr; }
 
-bool MtField::is_param() const { return node.is_static() && node.is_const(); }
+bool MtField::is_struct() const { return _type_struct != nullptr; }
+
+bool MtField::is_param() const { return _node.is_static() && _node.is_const(); }
 
 bool MtField::is_public() const { return _public; }
 
@@ -31,20 +59,16 @@ const std::string &MtField::name() const { return _name; }
 
 const std::string &MtField::type_name() const { return _type; }
 
-// MnNode get_type_node() const { return node.get_field(field_type); }
-// MnNode get_decl_node() const { return node.get_field(field_declarator); }
-
 //------------------------------------------------------------------------------
 
 void MtField::dump() const {
   LOG_INDENT_SCOPE();
   if (_is_enum) {
     LOG_C(0xFF80CC, "Enum '%s'", cname());
-  }
-  else if (_type_mod) {
+  } else if (_type_mod) {
     LOG_C(0xFF80CC, "Component '%s' : %s", cname(), _type.c_str());
   } else {
-    switch (state) {
+    switch (_state) {
       case CTX_NONE:
         LOG_C(0x808080, "Unknown field '%s' : %s", cname(), _type.c_str());
         break;
@@ -72,11 +96,7 @@ void MtField::dump() const {
         break;
     }
 
-    LOG(" = %s", to_string(state));
-
-    if (written_by) {
-      LOG(" (Written by %s)", written_by->cname());
-    }
+    LOG(" = %s", to_string(_state));
   }
 
   LOG("\n");

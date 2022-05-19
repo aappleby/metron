@@ -6,7 +6,7 @@
 module Submod
 (
   input logic clock,
-  input logic[7:0] i_signal,
+  output logic[7:0] i_signal,
   output logic[7:0] o_signal,
   output logic[7:0] o_reg,
   input logic[7:0] tock_i_param,
@@ -15,11 +15,10 @@ module Submod
 /*public:*/
 
 
-  function logic[7:0] tock(logic[7:0] i_param);
-    o_signal = i_signal + i_param;
-    tock = o_signal + 7;
-  endfunction
-  always_comb tock_ret = tock(tock_i_param);
+  always_comb begin : tock
+    o_signal = i_signal + tock_i_param;
+    tock_ret = o_signal + 7;
+  end
 
 /*private:*/
 
@@ -36,14 +35,13 @@ module Module
 );
 /*public:*/
 
-  function tock();
+  always_comb begin : tock
     logic[7:0] submod_return;
     submod_i_signal = 12;
     submod_tock_i_param = 13;
     submod_return = submod_tock_ret;
     my_sig = submod_return + 3;
-  endfunction
-  always_comb tock();
+  end
 
 
 /*private:*/
@@ -63,8 +61,8 @@ module Module
     .tock_i_param(submod_tock_i_param),
     .tock_ret(submod_tock_ret)
   );
-  logic[7:0] submod_i_signal;
   logic[7:0] submod_tock_i_param;
+  logic[7:0] submod_i_signal;
   logic[7:0] submod_o_signal;
   logic[7:0] submod_o_reg;
   logic[7:0] submod_tock_ret;

@@ -3,6 +3,7 @@
 #include "Log.h"
 #include "MtModLibrary.h"
 #include "MtModule.h"
+#include "MtStruct.h"
 
 #pragma warning(disable : 4996)
 
@@ -68,16 +69,29 @@ MtSourceFile::~MtSourceFile() {
 
 //------------------------------------------------------------------------------
 
+//------------------------------------------------------------------------------
+
 CHECK_RETURN Err MtSourceFile::collect_modules(MnNode toplevel) {
   Err err;
 
   for (const auto& c : toplevel) {
     switch (c.sym) {
+      case sym_struct_specifier: {
+        MtStruct* new_struct = new MtStruct(c, this);
+        for (auto f : c.get_field(field_body)) {
+          if (f.sym == sym_field_declaration) {
+            MtField* new_field = new MtField(new_struct, f);
+            new_struct->fields.push_back(new_field);
+          }
+        }
+        structs.push_back(new_struct);
+        break;
+      }
       case sym_class_specifier:
       case sym_template_declaration: {
-        MnNode mod_root(c.node, c.sym, 0, this);
+        //MnNode mod_root(c.node, c.sym, 0, this);
         MtModule* mod = new MtModule(lib);
-        err << mod->init(this, MnNode(mod_root));
+        err << mod->init(this, c);
         modules.push_back(mod);
         break;
       }

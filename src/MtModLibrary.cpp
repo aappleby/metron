@@ -7,8 +7,10 @@
 #include "MtFuncParam.h"
 #include "MtMethod.h"
 #include "MtModule.h"
+#include "MtContext.h"
 #include "MtSourceFile.h"
 #include "MtTracer.h"
+#include "MtStruct.h"
 #include "metron_tools.h"
 
 #pragma warning(disable : 4996)
@@ -175,6 +177,29 @@ CHECK_RETURN Err MtModLibrary::propagate(propagate_visitor v) {
 
 //------------------------------------------------------------------------------
 
+MtStruct* MtModLibrary::get_struct(const std::string& name) const {
+  for (auto s : structs) {
+    if (s->name == name) return s;
+  }
+  return nullptr;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtModLibrary::collect_structs() {
+  Err err;
+
+  for (auto source : source_files) {
+    for (auto s : source->structs) {
+      structs.push_back(s);
+    }
+  }
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
 CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
   Err err;
 
@@ -229,6 +254,8 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
   // Methods that only call funcs in the same module and don't write anything
   // are funcs.
 
+  LOG_G("");
+
   err << propagate([&](MtMethod *m) {
     if (m->in_init) return 0;
 
@@ -258,6 +285,8 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
   //----------------------------------------
   // Methods that call funcs in other modules _must_ be tocks.
 
+  LOG_G("");
+
   err << propagate([&](MtMethod *m) {
     if (m->in_init) return 0;
     if (m->in_func) return 0;
@@ -281,13 +310,15 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
   //----------------------------------------
   // Methods that write registers _must_ be ticks.
 
+  LOG_G("");
+
   err << propagate([&](MtMethod *m) {
     if (m->in_init) return 0;
     if (m->in_func) return 0;
 
     bool wrote_register = false;
     for (auto f : m->writes) {
-      if (f->state == CTX_REGISTER || f->state == CTX_MAYBE)
+      if (f->state() == CTX_REGISTER || f->state() == CTX_MAYBE)
         wrote_register = true;
     }
 
@@ -306,6 +337,8 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
 
   //----------------------------------------
   // Methods that are downstream from ticks _must_ be ticks.
+
+  LOG_G("");
 
   err << propagate([&](MtMethod *m) {
     if (m->in_init) return 0;
@@ -335,7 +368,7 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
 
     bool wrote_signal = false;
     for (auto f : m->writes) {
-      wrote_signal |= f->state == CTX_SIGNAL;
+      wrote_signal |= f->state() == CTX_SIGNAL;
     }
 
     if (wrote_signal) {
@@ -361,7 +394,7 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
 
     bool wrote_output = false;
     for (auto f : m->writes) {
-      wrote_output |= f->state == CTX_OUTPUT;
+      wrote_output |= f->state() == CTX_OUTPUT;
     }
 
     if (wrote_output) {

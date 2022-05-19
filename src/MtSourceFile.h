@@ -9,6 +9,7 @@
 
 struct MnNode;
 struct MtModule;
+struct MtStruct;
 struct MtModLibrary;
 typedef std::vector<uint8_t> blob;
 
@@ -41,7 +42,9 @@ struct MtSourceFile {
   TSTree* tree = nullptr;
 
   std::vector<MtModule*> modules;
+  std::vector<MtStruct*> structs;
   std::vector<MtSourceFile*> includes;
+
 };
 
 //------------------------------------------------------------------------------

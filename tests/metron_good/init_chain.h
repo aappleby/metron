@@ -8,8 +8,9 @@ public:
     init1();
   }
 
-  void tock() {
+  int tock() {
     tick();
+    return 0;
   }
 
 private:

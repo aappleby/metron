@@ -36,8 +36,8 @@ CHECK_RETURN Err MtTracer::log_action(MtContext* method_ctx, MtContext* dst_ctx,
   assert(dst_ctx);
 
   if (action == CTX_WRITE) {
-    if (dst_ctx->field) {
-      method_ctx->method->writes.insert(dst_ctx->field);
+    if (dst_ctx->type != CTX_RETURN) {
+      method_ctx->method->writes.insert(dst_ctx);
     }
   }
 

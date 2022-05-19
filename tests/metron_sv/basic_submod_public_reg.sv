@@ -9,9 +9,8 @@ module Submod
 );
 /*public:*/
 
-  function tock();
-  endfunction
-  always_comb tock();
+  always_comb begin : tock
+  end
 
 
 /*private:*/
@@ -35,9 +34,8 @@ module Module
   endfunction
   always_comb tock_get_submod_reg_ret = tock_get_submod_reg();
 
-  function tock();
-  endfunction
-  always_comb tock();
+  always_comb begin : tock
+  end
 
   Submod submod(
     .clock(clock),

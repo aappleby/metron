@@ -29,9 +29,10 @@ struct MtContext {
   std::string get_path() const;
   MtContext* get_child(const std::string& name) const;
 
-  static void instantiate(MtModule* mod, MtContext* inst);
+  void instantiate();
 
-  void assign_state_to_field(MtModule* mod);
+  void assign_struct_states();
+  void assign_state_to_field();
 
   MtContext* resolve(const std::string& name);
   void dump() const;
@@ -91,16 +92,21 @@ struct MtContext {
     for (auto c : children) c->end_switch();
   }
 
+  ContextState state() const {
+    return log_top.state;
+  }
+
   CHECK_RETURN Err check_done();
   //----------
 
-  MtContext* parent;
+  MtContext* parent = nullptr;
   std::string name;
   ContextType type;
 
-  MtField* field;
-  MtMethod* method;
-  MtModule* mod;
+  MtField* field = nullptr;
+  MtMethod* method = nullptr;
+  MtModule* mod = nullptr;
+  MtStruct* struct_being_weird = nullptr;
 
   LogEntry log_top;
   LogEntry log_next;

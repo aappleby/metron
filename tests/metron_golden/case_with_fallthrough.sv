@@ -10,7 +10,7 @@ module Module
 );
 /*public:*/
 
-  function logic[7:0] tock();
+  always_comb begin : tock
     logic[7:0] result;
     case(my_reg)
       0, // can we stick comments in here?
@@ -24,9 +24,8 @@ module Module
         result = 30;
     endcase
 
-    tock = result;
-  endfunction
-  always_comb tock_ret = tock();
+    tock_ret = result;
+  end
 
 /*private:*/
 

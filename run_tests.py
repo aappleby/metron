@@ -53,19 +53,21 @@ def main():
     os.system("yosys -q -p 'read_verilog -Isrc -sv tests/feature_test.sv;'");
 
     print("done");
+    sys.exit(0);
     """
 
     errors += test_convert_good()
     errors += test_convert_bad()
-    errors += test_compilation()
+
     errors += test_verilator_parse()
-    #errors += test_yosys_parse()
+    errors += test_yosys_parse()
+    errors += test_icarus_parse()
 
     if not basic:
-        errors += test_icarus_parse()
+        errors += test_compilation()
         errors += test_examples()
         errors += test_misc()
-        errors += test_goldens()
+        #errors += test_goldens()
         errors += test_lockstep()
 
         # Lockstep tests are slow because compiler...
@@ -115,6 +117,7 @@ def metron_default_args():
 
 def metron_good():
     return glob.glob("tests/metron_good/*.h")
+    #return glob.glob("tests/metron_good/all_func_types.h")
 
 
 def metron_bad():
@@ -304,7 +307,7 @@ def check_yosys(filename):
     print(f"  {cmd}")
     result = os.system(cmd)
     if result:
-        print(f"Verilator syntax check on {filename} failed")
+        print(f"  Yosys syntax check on {filename} failed")
         return 1
     else:
         return 0

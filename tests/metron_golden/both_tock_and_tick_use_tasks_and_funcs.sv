@@ -10,10 +10,9 @@ module Module
 /*public:*/
 
 
-  function tock();
+  always_comb begin : tock
     public_task(public_func(17));
-  endfunction
-  always_comb tock();
+  end
 
   function public_task(logic[7:0] x);
     my_sig = x + 7;
@@ -34,6 +33,7 @@ module Module
   task automatic private_task(logic[7:0] x);
     my_reg1 <= my_reg1 + private_func(16);
   endtask
+  logic[7:0] private_task_x;
 
   function logic[7:0] private_func(logic[7:0] y);
     private_func = my_reg1 + y;

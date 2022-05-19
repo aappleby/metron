@@ -85,6 +85,15 @@ struct MtCursor {
   CHECK_RETURN Err emit_call_binding(MnNode n);
   CHECK_RETURN Err emit_simple_call(MnNode n);
 
+  CHECK_RETURN Err emit_func_as_init(MnNode n);
+  CHECK_RETURN Err emit_func_as_func(MnNode n);
+  CHECK_RETURN Err emit_func_as_task(MnNode n);
+  CHECK_RETURN Err emit_func_as_always_comb(MnNode n);
+  CHECK_RETURN Err emit_func_as_always_ff(MnNode n);
+
+  CHECK_RETURN Err emit_trigger_comb(MnNode n);
+  CHECK_RETURN Err emit_trigger_ff(MnNode n);
+
   // Per-symbol emit()s.
   // clang-format off
   CHECK_RETURN Err emit_sym_translation_unit(MnNode n);

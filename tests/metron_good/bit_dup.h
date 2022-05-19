@@ -3,12 +3,13 @@
 class Module {
 public:
 
-  void tock_dup1() {
+  int tock_dup1() {
     logic<1> a1 = 0b1;
     logic<1> b1 = dup<1>(a1);
+    return 0;
   }
 
-  void tock_dup4() {
+  int tock_dup4() {
     logic<1>  a1 = 0b1;
     logic<4>  b1 = dup<4>(a1);
 
@@ -32,5 +33,6 @@ public:
 
     logic<8>  a8 = 0b00000001;
     logic<32> b8 = dup<4>(a8);
+    return 0;
   }
 };

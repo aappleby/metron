@@ -26,7 +26,7 @@ module multiplexer8
 );
  /*public:*/
 
-  function tock();
+  always_comb begin : tock
     // clang-format off
     case (sel)
       0:  out = in0;
@@ -40,8 +40,7 @@ module multiplexer8
       default: out = WIDTH'(1'bx);
     endcase
     // clang-format on
-  endfunction
-  always_comb tock();
+  end
 endmodule
 
 `endif // MULTIPLEXER8_H

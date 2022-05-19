@@ -5,7 +5,7 @@
 class Module {
 public:
 
-  void tock_bN() {
+  int tock_bN() {
     logic<64> src = 0x1234567812345678;
     logic<64> dst64 = b64(src);
     logic<63> dst63 = b63(src);
@@ -77,9 +77,10 @@ public:
     logic<3> dst3 = b3(src);
     logic<2> dst2 = b2(src);
     logic<1> dst1 = b1(src);
+    return 0;
   }
 
-  void tock_bx_const() {
+  int tock_bx_const() {
     logic<64> src = 0x1234567812345678;
     logic<63> dst63 = bx<63>(src);
     logic<62> dst62 = bx<62>(src);
@@ -150,9 +151,10 @@ public:
     logic<3> dst3 = bx<3>(src);
     logic<2> dst2 = bx<2>(src);
     logic<1> dst1 = bx<1>(src);
+    return 0;
   }
 
-  void tock_bN_offset() {
+  int tock_bN_offset() {
     logic<64> src = 0x1234567812345678;
 
     logic<8> dst0 = b8(src, 0);
@@ -165,12 +167,13 @@ public:
     logic<8> dst7 = b8(src, 7);
     logic<8> dst8 = b8(src, 8);
     logic<8> dst9 = b8(src, 9);
+    return 0;
   }
 
   static const int some_size1 = 64;
   static const int some_size2 = 8;
 
-  void tock_bx_param() {
+  int tock_bx_param() {
     logic<some_size1> a = 10;
     logic<some_size2> b = bx<some_size2>(a);
 
@@ -184,10 +187,12 @@ public:
     logic<some_size2> b7 = bx<some_size2>(a, 7);
     logic<some_size2> b8 = bx<some_size2>(a, 8);
     logic<some_size2> b9 = bx<some_size2>(a, 9);
+
+    return 0;
   }
 
 
-  void tock2() {
+  int tock2() {
     logic<32> a = 0xDEADBEEF;
 
     logic<1> b = b1(a, 3); //static bit extract with literal offset, width 1
@@ -195,6 +200,8 @@ public:
 
     logic<1> e = b1(a, some_size1); //static bit extract with variable offset, width 1
     logic<7> f = b7(a, some_size2); //static bit extract with variable offset, width N
+
+    return 0;
   }
 
 

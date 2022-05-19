@@ -13,6 +13,7 @@ struct MtSourceFile;
 struct MtField;
 struct MtModParam;
 struct MtFuncParam;
+struct MtContext;
 
 typedef std::vector<uint8_t> blob;
 
@@ -61,6 +62,7 @@ struct MtModule {
   MnNode mod_param_list;
   MtMethod* constructor = nullptr;
   int refcount = 0;
+  MtContext* ctx = nullptr;
 
   //----------
 

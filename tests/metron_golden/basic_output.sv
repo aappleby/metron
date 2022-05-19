@@ -14,9 +14,8 @@ module Module
   endfunction
   always_comb tock_get_reg_ret = tock_get_reg();
 
-  function tock();
-  endfunction
-  always_comb tock();
+  always_comb begin : tock
+  end
 
 
 /*private:*/

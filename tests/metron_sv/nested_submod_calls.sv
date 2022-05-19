@@ -33,15 +33,14 @@ module Module
 );
 /*public:*/
 
-  function logic[7:0] tock(logic[7:0] old_counter);
+  always_comb begin : tock
     logic[7:0] new_counter;
     // Two bindings should end up here.
-    submod2_tock_add_two_a = old_counter;
+    submod2_tock_add_two_a = tock_old_counter;
     submod1_tock_add_one_a = submod2_tock_add_two_ret;
     new_counter = submod1_tock_add_one_ret;
-    tock = new_counter;
-  endfunction
-  always_comb tock_ret = tock(tock_old_counter);
+    tock_ret = new_counter;
+  end
 
 /*private:*/
 

@@ -4,16 +4,17 @@
 
 module Module
 (
-  input logic clock
+  input logic clock,
+  output int tock_ret
 );
 /*public:*/
   initial begin
     init1();
   end
 
-  function tock();
-  endfunction
-  always_comb tock();
+  always_comb begin : tock
+    tock_ret = 0;
+  end
 
 /*private:*/
 
@@ -32,28 +33,28 @@ module Module
   logic[7:0] reg4;
   logic[7:0] reg5;
 
-  function init1();
+  task automatic init1();
     reg1 = 1;
     init2();
-  endfunction
+  endtask
 
-  function init2();
+  task automatic init2();
     reg2 = 2;
     init3();
-  endfunction
+  endtask
 
-  function init3();
+  task automatic init3();
     reg3 = 3;
     init4();
-  endfunction
+  endtask
 
-  function init4();
+  task automatic init4();
     reg4 = 4;
     init5();
-  endfunction
+  endtask
 
-  function init5();
+  task automatic init5();
     reg5 = 5;
-  endfunction
+  endtask
 
 endmodule

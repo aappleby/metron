@@ -56,12 +56,11 @@ module singlecycle_datapath
  /*public:*/
   //----------------------------------------
 
-  function tock_pc();  pc = program_counter_value; endfunction
-  always_comb tock_pc();
+  always_comb begin : tock_pc pc = program_counter_value; end
 
   //----------------------------------------
 
-  function tock_instruction_decoder();
+  always_comb begin : tock_instruction_decoder
     idec_inst = inst;
 
     inst_opcode = idec_inst_opcode;
@@ -70,84 +69,73 @@ module singlecycle_datapath
     inst_rd = idec_inst_rd;
     inst_rs1 = idec_inst_rs1;
     inst_rs2 = idec_inst_rs2;
-  endfunction
-  always_comb tock_instruction_decoder();
+  end
 
   //----------------------------------------
 
-  function tock_immediate_generator();
+  always_comb begin : tock_immediate_generator
     igen_inst = inst;
-  endfunction
-  always_comb tock_immediate_generator();
+  end
 
   //----------------------------------------
 
-  function tock_reg_read();
+  always_comb begin : tock_reg_read
     regs_rd_address = idec_inst_rd;
     regs_rs1_address = idec_inst_rs1;
     regs_rs2_address = idec_inst_rs2;
     rs1_data = regs_rs1_data;
     rs2_data = regs_rs2_data;
-  endfunction
-  always_comb tock_reg_read();
+  end
 
-  function tock_mux_operand_a();
+  always_comb begin : tock_mux_operand_a
     mux_operand_a_sel = alu_operand_a_select;
     mux_operand_a_in0 = regs_rs1_data;
     mux_operand_a_in1 = program_counter_value;
-  endfunction
-  always_comb tock_mux_operand_a();
+  end
 
-  function tock_mux_operand_b();
+  always_comb begin : tock_mux_operand_b
     mux_operand_b_sel = alu_operand_b_select;
     mux_operand_b_in0 = regs_rs2_data;
     mux_operand_b_in1 = igen_immediate;
-  endfunction
-  always_comb tock_mux_operand_b();
+  end
 
-  function tock_alu();
+  always_comb begin : tock_alu
     alu_core_alu_function = alu_function;
     alu_core_operand_a = mux_operand_a_out;
     alu_core_operand_b = mux_operand_b_out;
     alu_result_equal_zero = alu_core_result_equal_zero;
-  endfunction
-  always_comb tock_alu();
+  end
 
-  function tock_adder_pc_plus_4();
+  always_comb begin : tock_adder_pc_plus_4
     adder_pc_plus_4_operand_a = 32'h00000004;
     adder_pc_plus_4_operand_b = program_counter_value;
-  endfunction
-  always_comb tock_adder_pc_plus_4();
+  end
 
-  function tock_adder_pc_plus_immediate();
+  always_comb begin : tock_adder_pc_plus_immediate
     adder_pc_plus_immediate_operand_a = program_counter_value;
     adder_pc_plus_immediate_operand_b = igen_immediate;
-  endfunction
-  always_comb tock_adder_pc_plus_immediate();
+  end
 
-  function tock_data_mem_write_data();
+  always_comb begin : tock_data_mem_write_data
     data_mem_address = alu_core_result;
     data_mem_write_data = regs_rs2_data;
-  endfunction
-  always_comb tock_data_mem_write_data();
+  end
 
-  function tock_mux_next_pc_select();
+  always_comb begin : tock_mux_next_pc_select
     mux_next_pc_select_sel = next_pc_select;
     mux_next_pc_select_in0 = adder_pc_plus_4_result;
     mux_next_pc_select_in1 = adder_pc_plus_immediate_result;
     mux_next_pc_select_in2 = {alu_core.result[31:1], 1'b0};
     mux_next_pc_select_in3 = 32'b0;
-  endfunction
-  always_comb tock_mux_next_pc_select();
+  end
 
-  function tock_program_counter();
+  always_comb begin : tock_program_counter
     program_counter_reset = reset;
     program_counter_write_enable = pc_write_enable;
     program_counter_next = mux_next_pc_select_out;
-  endfunction
-  always_comb tock_program_counter();
+  end
 
-  function tock_mux_reg_writeback();
+  always_comb begin : tock_mux_reg_writeback
     mux_reg_writeback_sel = reg_writeback_select;
     mux_reg_writeback_in0 = alu_core_result;
     mux_reg_writeback_in1 = data_mem_read_data;
@@ -157,14 +145,12 @@ module singlecycle_datapath
     mux_reg_writeback_in5 = 32'b0;
     mux_reg_writeback_in6 = 32'b0;
     mux_reg_writeback_in7 = 32'b0;
-  endfunction
-  always_comb tock_mux_reg_writeback();
+  end
 
-  function tock_reg_writeback();
+  always_comb begin : tock_reg_writeback
     regs_write_enable = regfile_write_enable;
     regs_rd_data = mux_reg_writeback_out;
-  endfunction
-  always_comb tock_reg_writeback();
+  end
 
   //----------------------------------------
 

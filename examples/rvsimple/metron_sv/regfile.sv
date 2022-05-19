@@ -29,17 +29,15 @@ module regfile
 
  /*public:*/
   // Read ports for rs1 and rs1
-  function tock1();
+  always_comb begin : tock1
     rs1_data = _register[rs1_address];
     rs2_data = _register[rs2_address];
-  endfunction
-  always_comb tock1();
+  end
 
   // Register x0 is always 0
   initial begin _register[0] = 32'b0; end
 
-  function tock();   endfunction
-  always_comb tock();
+  always_comb begin : tock  end
 
  /*private:*/
   // Write port for rd

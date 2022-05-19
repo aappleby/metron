@@ -33,7 +33,7 @@ module toplevel
 
   //----------------------------------------
 
-  function tock(int bogus_param);
+  always_comb begin : tock
     core_reset = reset;
 
     text_memory_bus_address = core_pc;
@@ -58,8 +58,7 @@ module toplevel
     bus_write_enable = core_bus_write_enable;
     inst = text_memory_bus_read_data;
     pc = core_pc;
-  endfunction
-  always_comb tock(tock_bogus_param);
+  end
 
   //----------------------------------------
 

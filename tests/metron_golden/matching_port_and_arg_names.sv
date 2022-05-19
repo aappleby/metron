@@ -13,10 +13,9 @@ module Module
 /*public:*/
 
 
-  function tock1();
+  always_comb begin : tock1
     output_val = input_val + 7;
-  endfunction
-  always_comb tock1();
+  end
 
   function logic[2:0] tock(logic[2:0] input_val);
     tock = input_val + 8;

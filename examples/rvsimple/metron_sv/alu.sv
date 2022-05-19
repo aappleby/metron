@@ -20,7 +20,7 @@ module alu
 );
  /*public:*/
 
-  function tock();
+  always_comb begin : tock
     import rv_constants::*;
 
     // clang-format off
@@ -41,8 +41,7 @@ module alu
     // clang-format on
 
     result_equal_zero = (result == 32'd0);
-  endfunction
-  always_comb tock();
+  end
 endmodule
 
 `endif // ALU_H

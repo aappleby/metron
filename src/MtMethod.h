@@ -9,6 +9,7 @@
 struct MtModule;
 struct MtModLibrary;
 struct MtField;
+struct MtContext;
 
 //------------------------------------------------------------------------------
 
@@ -33,6 +34,42 @@ struct MtMethod {
   bool has_param(const std::string& name) {
     for (const auto& p : param_nodes) {
       if (p.name4() == name) return true;
+    }
+    return false;
+  }
+
+  bool called() const {
+    return !internal_callers.empty();
+  }
+
+  bool called_in_init() const {
+    for (auto m : internal_callers) {
+      if (m->in_init) return true;
+      if (m->called_in_init()) return true;
+    }
+    return false;
+  }
+
+  bool called_in_tick() const {
+    for (auto m : internal_callers) {
+      if (m->in_tick) return true;
+      if (m->called_in_tick()) return true;
+    }
+    return false;
+  }
+
+  bool called_in_tock() const {
+    for (auto m : internal_callers) {
+      if (m->in_tock) return true;
+      if (m->called_in_tock()) return true;
+    }
+    return false;
+  }
+
+  bool called_in_func() const {
+    for (auto m : internal_callers) {
+      if (m->in_tock) return true;
+      if (m->called_in_tock()) return true;
     }
     return false;
   }
@@ -68,7 +105,7 @@ struct MtMethod {
   std::set<MtMethod*> tock_callers;
   std::set<MtMethod*> func_callers;
 
-  std::set<MtField*> writes;
+  std::set<MtContext*> writes;
 };
 
 //------------------------------------------------------------------------------

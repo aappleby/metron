@@ -19,8 +19,7 @@ module adder
 );
  /*public:*/
 
-  function tock();  result = operand_a + operand_b; endfunction
-  always_comb tock();
+  always_comb begin : tock result = operand_a + operand_b; end
 endmodule
 
 `endif // ADDER_H

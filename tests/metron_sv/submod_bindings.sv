@@ -26,7 +26,7 @@ module Module
 );
 /*public:*/
 
-  function logic[7:0] tock_bindings();
+  always_comb begin : tock_bindings
     logic[7:0] result;
     // Submod bindings should _not_ end up here.
 
@@ -48,9 +48,8 @@ module Module
       end
     end
 
-    tock_bindings = result;
-  endfunction
-  always_comb tock_bindings_ret = tock_bindings();
+    tock_bindings_ret = result;
+  end
 
   Submod submod(
     .tock_sum_a_a1(submod_tock_sum_a_a1),

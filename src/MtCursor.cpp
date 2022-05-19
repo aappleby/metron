@@ -913,6 +913,139 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_func_as_init(MnNode n) {
+  Err err;
+
+  auto func_decl = n.get_field(field_declarator);
+  auto func_body = n.get_field(field_body);
+
+  err << emit_replacement(func_decl, "initial");
+  err << emit_sym_compound_statement(func_body, "begin", "end");
+  assert(cursor == n.end());
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_func_as_func(MnNode n) {
+  Err err;
+
+  auto func_ret = n.get_field(field_type);
+  auto func_decl = n.get_field(field_declarator);
+  auto func_body = n.get_field(field_body);
+
+  err << emit_print("function ");
+  if (current_method->has_return()) {
+    err << emit_type(func_ret);
+  } else {
+    err << skip_over(func_ret);
+    err << skip_ws();
+  }
+  err << emit_declarator(func_decl);
+  err << prune_trailing_ws();
+  err << emit_print(";");
+  err << emit_sym_compound_statement(func_body, "", "endfunction");
+
+  assert(cursor == n.end());
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_func_as_task(MnNode n) {
+  Err err;
+
+  auto func_ret = n.get_field(field_type);
+  auto func_decl = n.get_field(field_declarator);
+  auto func_body = n.get_field(field_body);
+
+  err << emit_print("task automatic ");
+  err << skip_over(func_ret);
+  err << skip_ws();
+  err << emit_declarator(func_decl);
+  err << prune_trailing_ws();
+  err << emit_print(";");
+  err << emit_sym_compound_statement(func_body, "", "endtask");
+
+  assert(cursor == n.end());
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_func_as_always_comb(MnNode n) {
+  Err err;
+
+  auto old_replacements = id_replacements;
+
+  auto func_ret = n.get_field(field_type);
+  auto func_decl = n.get_field(field_declarator);
+  auto func_body = n.get_field(field_body);
+  auto func_params = func_decl.get_field(field_parameters);
+
+  for (auto c : func_params) {
+    if (!c.is_named()) continue;
+    id_replacements[c.name4()] = func_decl.name4() + "_" + c.name4();
+  }
+
+  err << emit_print("always_comb begin : %s", func_decl.name4().c_str());
+  err << skip_over(func_ret);
+  err << skip_ws();
+  err << skip_over(func_decl);
+  err << skip_ws();
+  err << emit_sym_compound_statement(func_body, "", "end");
+
+  id_replacements = old_replacements;
+
+  assert(cursor == n.end());
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_func_as_always_ff(MnNode n) {
+  Err err;
+
+  auto func_ret = n.get_field(field_type);
+  auto func_decl = n.get_field(field_declarator);
+  auto func_body = n.get_field(field_body);
+
+  err << emit_print("always_ff @(posedge clock) : %s", func_decl.name4().c_str());
+  err << skip_over(func_ret);
+  err << skip_ws();
+  err << skip_over(func_decl);
+  err << skip_ws();
+  err << emit_sym_compound_statement(func_body, "begin", "end");
+
+  assert(cursor == n.end());
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_trigger_comb(MnNode n) {
+  Err err;
+  err << emit_indent();
+  err << emit_print("always_comb ");
+  err << emit_trigger_call(current_method);
+  err << emit_newline();
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_trigger_ff(MnNode n) {
+  Err err;
+  err << emit_indent();
+  err << emit_print("always_ff @(posedge clock) ");
+  err << emit_trigger_call(current_method);
+  err << emit_newline();
+  return err;
+}
+
+//------------------------------------------------------------------------------
 // Change "init/tick/tock" to "initial begin / always_comb / always_ff", change
 // void methods to tasks, and change const methods to funcs.
 
@@ -931,97 +1064,63 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
   // Emit a block declaration for the type of function we're in.
 
   if (current_method->is_constructor()) {
-
-    err << emit_replacement(func_decl, "initial");
-    auto func_body = n.get_field(field_body);
-    err << emit_sym_compound_statement(func_body, "begin", "end");
-    assert(cursor == n.end());
+    err << emit_func_as_init(n);
     err << emit_ws_to_newline();
   }
   else if (current_method->in_init) {
-    err << emit_print("function ");
-    if (current_method->has_return()) {
-      err << emit_type(return_type);
-    } else {
-      err << skip_over(return_type);
-      err << skip_ws();
-    }
-    err << emit_declarator(func_decl);
-    err << prune_trailing_ws();
-    err << emit_print(";");
-    auto func_body = n.get_field(field_body);
-    err << emit_sym_compound_statement(func_body, "", "endfunction");
-    assert(cursor == n.end());
+    err << emit_func_as_task(n);
     err << emit_ws_to_newline();
   }
   else if (current_method->in_tick) {
-    err << emit_print("task automatic ");
-    err << skip_over(return_type);
-    err << skip_ws();
-    err << emit_declarator(func_decl);
-    err << prune_trailing_ws();
-    err << emit_print(";");
-    auto func_body = n.get_field(field_body);
-    err << emit_sym_compound_statement(func_body, "", "endtask");
-    assert(cursor == n.end());
-    err << emit_ws_to_newline();
-    if (current_method->tock_callers.size()) {
+    if (current_method->called()) {
+      err << emit_func_as_task(n);
+      err << emit_ws_to_newline();
+    }
+    else {
+      if (current_method->has_params()) {
+        err << emit_func_as_task(n);
+        err << emit_ws_to_newline();
+      }
+      else {
+        err << emit_func_as_task(n);
+        err << emit_ws_to_newline();
+      }
+    }
+
+    if (current_method->called_in_tock()) {
       for (auto n : current_method->param_nodes) {
         err << emit_param_as_field(current_method, n);
       }
     }
 
-    if (current_method->tick_callers.empty()) {
-      err << emit_indent();
-      err << emit_print("always_ff @(posedge clock) ");
-      err << emit_trigger_call(current_method);
-      err << emit_newline();
+    if (!current_method->called_in_tick()) {
+      err << emit_trigger_ff(n);
     }
+
   }
   else if (current_method->in_tock) {
-    err << emit_print("function ");
-    if (current_method->has_return()) {
-      err << emit_type(return_type);
-    } else {
-      err << skip_over(return_type);
-      err << skip_ws();
+    if (current_method->called()) {
+      if (current_method->has_return()) {
+        err << emit_func_as_func(n);
+        err << emit_ws_to_newline();
+      }
+      else {
+        // This is the problematic one for Yosys.
+        // We can't emit as task, we're in tock and that would break sensitivity
+        err << emit_func_as_func(n);
+        err << emit_ws_to_newline();
+      }
     }
-    err << emit_declarator(func_decl);
-    err << prune_trailing_ws();
-    err << emit_print(";");
-    auto func_body = n.get_field(field_body);
-    err << emit_sym_compound_statement(func_body, "", "endfunction");
-    assert(cursor == n.end());
-    err << emit_ws_to_newline();
-
-    if (current_method->internal_callers.empty() && current_method->is_public()) {
-      err << emit_indent();
-      err << emit_print("always_comb ");
-      err << emit_trigger_call(current_method);
-      err << emit_newline();
+    else {
+      err << emit_func_as_always_comb(n);
     }
   }
   else if (current_method->in_func) {
-    err << emit_print("function ");
-    if (current_method->has_return()) {
-      err << emit_type(return_type);
-    } else {
-      err << skip_over(return_type);
-      err << skip_ws();
-    }
-    err << emit_declarator(func_decl);
-    err << prune_trailing_ws();
-    err << emit_print(";");
-    auto func_body = n.get_field(field_body);
-    err << emit_sym_compound_statement(func_body, "", "endfunction");
-    assert(cursor == n.end());
+    err << emit_func_as_func(n);
     err << emit_ws_to_newline();
 
-    if (current_method->internal_callers.empty() && current_method->is_public()) {
-      err << emit_indent();
-      err << emit_print("always_comb ");
-      err << emit_trigger_call(current_method);
-      err << emit_newline();
+    if (!current_method->called()) {
+      err << emit_trigger_comb(n);
     }
   }
   else {
@@ -1840,8 +1939,8 @@ CHECK_RETURN Err MtCursor::emit_field_port(MtField* f) {
 
   if (err.has_err()) return err;
 
-  auto node_type = f->node.get_field(field_type);
-  auto node_decl = f->node.get_field(field_declarator);
+  auto node_type = f->_node.get_field(field_type);
+  auto node_decl = f->_node.get_field(field_declarator);
 
   MtCursor sub_cursor = *this;
   sub_cursor.cursor = node_type.start();
@@ -2494,7 +2593,14 @@ CHECK_RETURN Err MtCursor::emit_sym_return(MnNode n) {
 
   for (auto c : n) {
     if (c.sym == anon_sym_return) {
-      err << emit_replacement(c, "%s =", current_method->name().c_str());
+
+      if (current_method->in_tock && current_method->internal_callers.empty()) {
+        err << emit_replacement(c, "%s_ret =", current_method->name().c_str());
+      }
+      else {
+        err << emit_replacement(c, "%s =", current_method->name().c_str());
+      }
+
     } else if (c.is_expression()) {
       err << emit_expression(c);
     } else if (c.is_identifier()) {
@@ -2856,8 +2962,14 @@ CHECK_RETURN Err MtCursor::emit_expression(MnNode n) {
       break;
 
     case sym_subscript_expression:
+      err << emit_child_expressions(n);
+      break;
     case sym_binary_expression:
+      err << emit_child_expressions(n);
+      break;
     case sym_parenthesized_expression:
+      err << emit_child_expressions(n);
+      break;
     case sym_unary_expression:
       err << emit_child_expressions(n);
       break;

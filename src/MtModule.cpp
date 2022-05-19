@@ -6,12 +6,14 @@
 #include "MtField.h"
 #include "MtFuncParam.h"
 #include "MtMethod.h"
+#include "MtContext.h"
 #include "MtModLibrary.h"
 #include "MtModParam.h"
 #include "MtNode.h"
 #include "MtSourceFile.h"
 #include "MtTracer.h"
 #include "Platform.h"
+#include "MtStruct.h"
 #include "metron_tools.h"
 #include "submodules/tree-sitter/lib/include/tree_sitter/api.h"
 
@@ -19,10 +21,6 @@
 
 extern "C" {
 extern const TSLanguage *tree_sitter_cpp();
-}
-
-static MtField *construct(MtModule *mod, const MnNode &n, bool is_public) {
-  return new MtField(mod, n, is_public);
 }
 
 //------------------------------------------------------------------------------
@@ -33,6 +31,8 @@ MtModule::~MtModule() {
   for (auto e : all_enums) delete e;
   for (auto m : all_methods) delete m;
   for (auto i : input_method_params) delete i;
+
+  delete ctx;
 }
 
 //------------------------------------------------------------------------------
@@ -453,7 +453,9 @@ CHECK_RETURN Err MtModule::collect_parts() {
         e->_is_enum = true;
         all_enums.push_back(e);
       } else {
-        all_fields.push_back(new MtField(this, n, in_public));
+        auto new_field = new MtField(this, n, in_public);
+        new_field->_type_struct = lib->get_struct(node_type.text());
+        all_fields.push_back(new_field);
       }
     }
 
@@ -655,8 +657,8 @@ CHECK_RETURN Err MtModule::categorize_fields(bool verbose) {
     } else if (f->is_enum()) {
     } else {
       err << ERR("Don't know how to categorize %s = %s\n", f->cname(),
-                 to_string(f->state));
-      f->node.error();
+                 to_string(f->_state));
+      f->_node.error();
     }
   }
 

@@ -31,7 +31,13 @@
 			"memory": "cpp",
 			"random": "cpp",
 			"memory_resource": "cpp",
-			"optional": "cpp"
+			"optional": "cpp",
+			"fstream": "cpp",
+			"istream": "cpp",
+			"ostream": "cpp",
+			"sstream": "cpp",
+			"streambuf": "cpp",
+			"unordered_map": "cpp"
 		},
 	}
 }

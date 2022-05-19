@@ -8,9 +8,8 @@ module Module
 );
 /*public:*/
 
-  function tock();
+  always_comb begin : tock
     my_sig = 1;
-  endfunction
-  always_comb tock();
+  end
 
 endmodule

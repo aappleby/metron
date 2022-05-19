@@ -17,7 +17,7 @@ module Module
 
 
   always @(posedge clock) begin
-    $display("Hello World!\n");
+    //$display("Hello World!\n");
   end
 
 

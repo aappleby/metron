@@ -3,6 +3,7 @@
 #include "MtCursor.h"
 #include "MtField.h"
 #include "MtMethod.h"
+#include "MtStruct.h"
 #include "MtModLibrary.h"
 #include "MtModule.h"
 #include "MtSourceFile.h"
@@ -148,6 +149,8 @@ int main(int argc, char** argv) {
     }
   }
 
+  err << lib.collect_structs();
+
   //----------------------------------------
   // All modules are now in the library, we can resolve references to other
   // modules when we're collecting fields.
@@ -182,32 +185,47 @@ int main(int argc, char** argv) {
       LOG_G("Tracing %s\n", mod->cname());
       LOG_INDENT();
     }
-    MtContext* ctx = new MtContext(mod);
-    MtContext::instantiate(mod, ctx);
-    MtTracer tracer(&lib, ctx, verbose);
+    mod->ctx = new MtContext(mod);
+    mod->ctx->instantiate();
+    MtTracer tracer(&lib, mod->ctx, verbose);
     for (auto method : mod->all_methods) {
       if (method->is_constructor()) continue;
       if (method->internal_callers.size()) continue;
       if (verbose) {
         LOG_G("Tracing %s.%s\n", mod->cname(), method->cname());
       }
-      err << tracer.trace_method(ctx, method);
+      err << tracer.trace_method(mod->ctx, method);
     }
+    mod->ctx->assign_struct_states();
     if (verbose) {
-      ctx->dump_ctx_tree();
+      mod->ctx->dump_ctx_tree();
     }
-    ctx->assign_state_to_field(mod);
-    err << ctx->check_done();
+    mod->ctx->assign_state_to_field();
+
+    err << mod->ctx->check_done();
     if (err.has_err()) {
       LOG_R("Error during trace\n");
       lib.teardown();
       return -1;
     }
-    delete ctx;
     if (verbose) {
       LOG_DEDENT();
     }
   }
+
+  /*
+  for (auto s : lib.structs) {
+    LOG_G("struct %s\n", s->name.c_str());
+
+    LOG_INDENT();
+    for (auto f : s->fields) {
+      LOG_G("field %s %s\n", f->name().c_str(), to_string(f->_state));
+    }
+    LOG_DEDENT();
+  }
+  */
+
+  //exit(0);
 
   //----------
   // Categorize fields
@@ -267,7 +285,7 @@ int main(int argc, char** argv) {
   std::vector<MtField*> bad_fields;
   for (auto mod : lib.modules) {
     for (auto field : mod->all_fields) {
-      if (field->state == CTX_INVALID) {
+      if (field->_state == CTX_INVALID) {
         err << ERR("Field %s is in an invalid state\n", field->cname());
         bad_fields.push_back(field);
       }

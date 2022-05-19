@@ -18,7 +18,7 @@ module control_transfer
 );
  /*public:*/
 
-  function tock_take_branch();
+  always_comb begin : tock_take_branch
     import rv_constants::*;
     // clang-format off
     case (inst_funct3)
@@ -31,8 +31,7 @@ module control_transfer
       default:                take_branch = 1'bx;
     endcase
     // clang-format on
-  endfunction
-  always_comb tock_take_branch();
+  end
 endmodule
 
 `endif // CONTROL_TRANSFER_H

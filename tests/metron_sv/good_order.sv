@@ -9,10 +9,9 @@ module Module
 );
 /*public:*/
 
-  function tock();
+  always_comb begin : tock
     my_sig = my_reg;
-  endfunction
-  always_comb tock();
+  end
 
 /*private:*/
 

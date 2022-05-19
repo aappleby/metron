@@ -26,10 +26,9 @@ module example_data_memory
   logic[31:0] mem[2**(rv_config::DATA_BITS - 2)];
 
  /*public:*/
-  function tock();
+  always_comb begin : tock
     q = mem[address];
-  endfunction
-  always_comb tock();
+  end
 
  /*private:*/
   task automatic tick();

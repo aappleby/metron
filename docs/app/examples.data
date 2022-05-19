@@ -1,58 +1,186 @@
+#pragma once
 #include "metron_tools.h"
 
-// I don't know why you would want to do this, but it should work.
+//------------------------------------------------------------------------------
 
-class Module {
-public:
-  Module() {
-    init1();
+/*
+640x480x60
+Pixel clock 25.175 MHz
+
+Screen X    [000-639]
+Front porch [640-655]
+HSync       [656-751]
+Back porch  [752-799]
+
+Screen Y    [000-479]
+Front porch [480-489]
+VSync       [490-491]
+Back porch  [492-524]
+*/
+
+class Pong {
+ public:
+  logic<1> vga_hsync;
+  logic<1> vga_vsync;
+  logic<1> vga_R;
+  logic<1> vga_G;
+  logic<1> vga_B;
+
+  //----------------------------------------
+
+  Pong() {
+    px = 0;
+    py = 0;
+
+    ball_x = 320;
+    ball_y = 240;
+
+    ball_dx = 1;
+    ball_dy = 1;
+
+    pad_x = 240;
+    pad_y = 400;
+
+    quad_a = 0;
+    quad_b = 0;
   }
 
-  void tock() {
-    tick();
+  //----------------------------------------
+
+  logic<10> pix_x() const { return px; }
+  logic<10> pix_y() const { return py; }
+
+  //----------------------------------------
+
+  void tock_video() {
+    vga_hsync = !((px >= 656) && (py <= 751));
+    vga_vsync = !((py >= 490) && (py <= 491));
+
+    if ((px < 640) && (py < 480)) {
+      vga_R = in_border() | in_paddle() | in_ball() | in_checker();
+      vga_G = in_border() | in_paddle() | in_ball();
+      vga_B = in_border() | in_paddle() | in_ball();
+    } else {
+      vga_R = 0;
+      vga_G = 0;
+      vga_B = 0;
+    }
   }
 
-private:
+  //----------------------------------------
 
-  void tick() {
-    reg1 = reg1 + 1;
-    reg2 = reg2 + 1;
-    reg3 = reg3 + 1;
-    reg4 = reg4 + 1;
-    reg5 = reg5 + 1;
+  void tock_game(logic<1> in_quad_a, logic<1> in_quad_b) {
+    tick(in_quad_a, in_quad_b);
   }
 
-  logic<8> reg1;
-  logic<8> reg2;
-  logic<8> reg3;
-  logic<8> reg4;
-  logic<8> reg5;
+  //----------------------------------------
 
-  void init1() {
-    reg1 = 1;
-    init2();
+ private:
+  void tick(logic<1> in_quad_a, logic<1> in_quad_b) {
+    logic<10> new_px = px + 1;
+    logic<10> new_py = py;
+
+    //----------
+    // Update screen coord
+
+    if (new_px == 800) {
+      new_px = 0;
+      new_py = new_py + 1;
+    }
+
+    if (new_py == 525) {
+      new_py = 0;
+    }
+
+    //----------
+    // Update quadrature encoder
+
+    logic<1> quad_dir = quad_a[1] ^ quad_b[0];
+    logic<1> quad_step = quad_a[1] ^ quad_a[0] ^ quad_b[1] ^ quad_b[0];
+
+    logic<10> new_pad_x = pad_x;
+    logic<10> new_pad_y = pad_y;
+
+    if (quad_step) {
+      new_pad_x = pad_x + quad_dir ? 1 : 0;
+      if (new_pad_x < 120) new_pad_x = 120;
+      if (new_pad_x > 520) new_pad_x = 520;
+    }
+
+    //----------
+    // Update in_ball
+
+    logic<10> new_ball_x = ball_x;
+    logic<10> new_ball_y = ball_y;
+    logic<1> new_ball_dx = ball_dx;
+    logic<1> new_ball_dy = ball_dy;
+
+    if (in_border() | in_paddle()) {
+      if ((px == ball_x - 7) && (py == ball_y + 0)) new_ball_dx = 1;
+      if ((px == ball_x + 7) && (py == ball_y + 0)) new_ball_dx = 0;
+      if ((px == ball_x + 0) && (py == ball_y - 7)) new_ball_dy = 1;
+      if ((px == ball_x + 0) && (py == ball_y + 7)) new_ball_dy = 0;
+    }
+
+    if (new_px == 0 && new_py == 0) {
+      new_ball_x = ball_x + (new_ball_dx ? 1 : -1);
+      new_ball_y = ball_y + (new_ball_dy ? 1 : -1);
+    }
+
+    //----------
+    // Commit
+
+    px = new_px;
+    py = new_py;
+
+    pad_x = new_pad_x;
+    pad_y = new_pad_y;
+
+    ball_x = new_ball_x;
+    ball_y = new_ball_y;
+
+    ball_dx = new_ball_dx;
+    ball_dy = new_ball_dy;
+
+    quad_a = quad_a << 1 | in_quad_a;
+    quad_b = quad_b << 1 | in_quad_b;
   }
 
-  void init2() {
-    reg2 = 2;
-    init3();
+  //----------------------------------------
+
+  logic<1> in_border() const {
+    return (px <= 7) || (px >= 633) || (py <= 7) || (py >= 473);
   }
 
-  void init3() {
-    reg3 = 3;
-    init4();
+  logic<1> in_paddle() const {
+    return (px >= pad_x - 63) && (px <= pad_x + 63) && (py >= pad_y - 3) &&
+           (py <= pad_y + 3);
   }
 
-  void init4() {
-    reg4 = 4;
-    init5();
+  logic<1> in_ball() const {
+    return (px >= ball_x - 7) && (px <= ball_x + 7) && (py >= ball_y - 7) &&
+           (py <= ball_y + 7);
   }
 
-  void init5() {
-    reg5 = 5;
-  }
+  logic<1> in_checker() const { return px[3] ^ py[3]; }
 
+  logic<10> px;
+  logic<10> py;
+
+  logic<10> pad_x;
+  logic<10> pad_y;
+
+  logic<10> ball_x;
+  logic<10> ball_y;
+
+  logic<1> ball_dx;
+  logic<1> ball_dy;
+
+  logic<2> quad_a;
+  logic<2> quad_b;
 };
+
+//------------------------------------------------------------------------------
 A trivial single-file, single-function, single-cycle RISC-V core.
 
 Probably won't synthesize since the ram is asynchronous, but runs at 300+ mhz
@@ -4149,7 +4277,7 @@ public:
 
 /*#
   always @(posedge clock) begin
-    $display("Hello World!\n");
+    //$display("Hello World!\n");
   end
 #*/
 
@@ -4183,12 +4311,15 @@ public:
     write("Hello World?\n");
   }
 
+  logic<6> sig1;
+  logic<6> sig2;
+
   void tock1() {
     logic<1> a = 1;
     logic<2> b = 2;
     logic<3> c = 3;
 
-    logic<6> d = cat(a, b, c);
+    sig1 = cat(a, b, c);
   }
 
   void tock2() {
@@ -4196,7 +4327,7 @@ public:
     logic<8> b = 2;
     logic<8> c = 3;
 
-    logic<6> d = cat(b1(a), b2(b), b3(c));
+    sig2 = cat(b1(a), b2(b), b3(c));
   }
 };
 #include "metron_tools.h"
@@ -4255,9 +4386,9 @@ public:
 class Module {
 public:
 
-  void tock() {
+  logic<20> tock() {
     submodule.tock();
-    logic<20> foo = submodule.my_width + submodule.my_height;
+    return submodule.my_width + submodule.my_height;
   }
 
   Submod<10,11> submodule;
@@ -4269,7 +4400,7 @@ public:
 class Module {
 public:
 
-  void tock_bN() {
+  int tock_bN() {
     logic<64> src = 0x1234567812345678;
     logic<64> dst64 = b64(src);
     logic<63> dst63 = b63(src);
@@ -4341,9 +4472,10 @@ public:
     logic<3> dst3 = b3(src);
     logic<2> dst2 = b2(src);
     logic<1> dst1 = b1(src);
+    return 0;
   }
 
-  void tock_bx_const() {
+  int tock_bx_const() {
     logic<64> src = 0x1234567812345678;
     logic<63> dst63 = bx<63>(src);
     logic<62> dst62 = bx<62>(src);
@@ -4414,9 +4546,10 @@ public:
     logic<3> dst3 = bx<3>(src);
     logic<2> dst2 = bx<2>(src);
     logic<1> dst1 = bx<1>(src);
+    return 0;
   }
 
-  void tock_bN_offset() {
+  int tock_bN_offset() {
     logic<64> src = 0x1234567812345678;
 
     logic<8> dst0 = b8(src, 0);
@@ -4429,12 +4562,13 @@ public:
     logic<8> dst7 = b8(src, 7);
     logic<8> dst8 = b8(src, 8);
     logic<8> dst9 = b8(src, 9);
+    return 0;
   }
 
   static const int some_size1 = 64;
   static const int some_size2 = 8;
 
-  void tock_bx_param() {
+  int tock_bx_param() {
     logic<some_size1> a = 10;
     logic<some_size2> b = bx<some_size2>(a);
 
@@ -4448,10 +4582,12 @@ public:
     logic<some_size2> b7 = bx<some_size2>(a, 7);
     logic<some_size2> b8 = bx<some_size2>(a, 8);
     logic<some_size2> b9 = bx<some_size2>(a, 9);
+
+    return 0;
   }
 
 
-  void tock2() {
+  int tock2() {
     logic<32> a = 0xDEADBEEF;
 
     logic<1> b = b1(a, 3); //static bit extract with literal offset, width 1
@@ -4459,6 +4595,8 @@ public:
 
     logic<1> e = b1(a, some_size1); //static bit extract with variable offset, width 1
     logic<7> f = b7(a, some_size2); //static bit extract with variable offset, width N
+
+    return 0;
   }
 
 
@@ -4555,16 +4693,17 @@ public:
 
   logic<8> my_signal;
 
-  void tock() {
-    set_signal(get_number());
+  int tock() {
+    return set_signal(get_number());
   }
 
   logic<8> get_number() const {
     return 7;
   }
 
-  void set_signal(logic<8> number) {
+  int set_signal(logic<8> number) {
     my_signal = number;
+    return my_signal;
   }
 
 };
@@ -4582,6 +4721,64 @@ public:
   }
 
   logic<1> my_sig;
+};
+#include "metron_tools.h"
+
+class Module {
+public:
+
+  int my_sig1;
+  int my_sig2;
+  int my_sig3;
+  int my_sig4;
+  int my_reg1;
+  int my_reg2;
+
+  /*
+  void func_no_params_no_return() {
+  }
+  */
+
+  int func_no_params_return() {
+    return 1;
+  }
+
+  /*
+  void func_params_no_return(int x) {
+  }
+  */
+
+  int func_params_return(int x) {
+    return x + 1;
+  }
+
+  void tock_no_params_no_return() {
+    my_sig1 = 12;
+    int x = my_sig1;
+  }
+
+  int tock_no_params_return() {
+    my_sig2 = 12;
+    return my_sig2;
+  }
+
+  void tock_params_no_return(int x) {
+    my_sig3 = 12 + x;
+    int y = my_sig3;
+  }
+
+  int tock_params_return(int x) {
+    my_sig4 = 12 + x;
+    return my_sig4;
+  }
+
+  void tick_no_params() {
+    my_reg1 = my_reg1 + 1;
+  }
+
+  void tick_params(int x) {
+    my_reg2 = my_reg2 + x;
+  }
 };
 #include "metron_tools.h"
 
@@ -4741,6 +4938,8 @@ private:
 class Module {
 public:
 
+  int sig;
+
   void tock() {
     logic<8> src = 100;
     logic<8> a = signed(src);
@@ -4748,6 +4947,7 @@ public:
     logic<8> e = sign_extend<8>(b2(src));
     logic<8> c = clog2(100);
     logic<8> d = pow2(4);
+    sig = 1;
   }
 
 };
@@ -4828,7 +5028,7 @@ private:
 class Module {
 public:
 
-  void tock1() {
+  int tock1() {
     logic<32> a = 0b0;
     logic<32> b = 0b00;
     logic<32> c = 0b000;
@@ -4837,9 +5037,10 @@ public:
     logic<32> f = 0b000000;
     logic<32> g = 0b0000000;
     logic<32> h = 0b00000000;
+    return 0;
   }
 
-  void tock2() {
+  int tock2() {
     logic<32> a = 0b0;
     logic<32> b = 0b0'0;
     logic<32> c = 0b0'00;
@@ -4848,6 +5049,7 @@ public:
     logic<32> f = 0b0'000'00;
     logic<32> g = 0b000'0000;
     logic<32> h = 0b0'0'0'0'0'0'0'0;
+    return 0;
   }
 
 };
@@ -4885,12 +5087,13 @@ private:
 class Module {
 public:
 
-  void tock_dup1() {
+  int tock_dup1() {
     logic<1> a1 = 0b1;
     logic<1> b1 = dup<1>(a1);
+    return 0;
   }
 
-  void tock_dup4() {
+  int tock_dup4() {
     logic<1>  a1 = 0b1;
     logic<4>  b1 = dup<4>(a1);
 
@@ -4914,6 +5117,7 @@ public:
 
     logic<8>  a8 = 0b00000001;
     logic<32> b8 = dup<4>(a8);
+    return 0;
   }
 };
 #include "metron_tools.h"
@@ -5037,31 +5241,17 @@ public:
 
 // Structs exist in both C++ and Verilog
 
-typedef struct {
+struct MyStruct1 {
   logic<8> a;
-  int b;
-  logic<2> c;
-} MyStruct1;
-
-struct MyStruct2 {
-  logic<8> a;
-  int b;
-  logic<2> c;
 };
 
 class Module {
 public:
+
+  MyStruct1 my_struct1;
+
   logic<8> tock() {
-    MyStruct1 my_struct1;
-    my_struct1.a = b8(1234);
-    my_struct1.b = 12;
-    my_struct1.c = 0b01;
-
-    MyStruct2 my_struct2;
-    my_struct2.a = b8(1234);
-    my_struct2.b = 12;
-    my_struct2.c = 0b01;
-
+    my_struct1.a = 1;
     return 17;
   }
 };
@@ -5072,17 +5262,14 @@ public:
 class Module {
 public:
 
-  void tock() {
+  int tock() {
     tick();
+    return 0;
   }
 
 private:
 
   void tick() {
-    some_task();
-  }
-
-  void some_task() {
     my_reg = my_reg + my_reg2 + 3;
     some_task2();
   }
@@ -5141,8 +5328,9 @@ public:
     init1();
   }
 
-  void tock() {
+  int tock() {
     tick();
+    return 0;
   }
 
 private:

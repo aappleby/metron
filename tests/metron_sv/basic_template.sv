@@ -10,24 +10,22 @@ module Submod
 );
 /*public:*/
 
-  function tock();
+  always_comb begin : tock
     my_width = (WIDTH)'(100);
     my_height = (HEIGHT)'(200);
-  endfunction
-  always_comb tock();
+  end
 
 endmodule
 
 module Module
 (
+  output logic[19:0] tock_ret
 );
 /*public:*/
 
-  function tock();
-    logic[19:0] foo;
-    foo = submodule_my_width + submodule_my_height;
-  endfunction
-  always_comb tock();
+  always_comb begin : tock
+    tock_ret = submodule_my_width + submodule_my_height;
+  end
 
   Submod #(10,11) submodule(
     .my_width(submodule_my_width),

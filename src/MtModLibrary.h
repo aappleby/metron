@@ -9,6 +9,7 @@
 struct MtMethod;
 struct MtModule;
 struct MtSourceFile;
+struct MtStruct;
 
 typedef std::function<int(MtMethod*)> propagate_visitor;
 
@@ -25,12 +26,16 @@ struct MtModLibrary {
                              void* src_blob, int src_len, bool use_utf8_bom,
                              bool verbose);
 
+  MtStruct* get_struct(const std::string& name) const;
+
+  CHECK_RETURN Err collect_structs();
   CHECK_RETURN Err categorize_methods(bool verbose);
 
   MtModule* get_module(const std::string& module_name);
   MtSourceFile* get_source(const std::string& filename);
 
   CHECK_RETURN Err propagate(propagate_visitor v);
+
 
   void dump();
 
@@ -43,6 +48,8 @@ struct MtModLibrary {
   std::vector<std::string> search_paths;
   std::vector<MtSourceFile*> source_files;
   std::vector<MtModule*> modules;
+
+  std::vector<MtStruct*> structs;
 };
 
 //------------------------------------------------------------------------------

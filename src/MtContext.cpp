@@ -3,6 +3,7 @@
 #include "Log.h"
 #include "MtMethod.h"
 #include "MtModule.h"
+#include "MtStruct.h"
 
 //------------------------------------------------------------------------------
 
@@ -16,6 +17,7 @@ MtContext::MtContext(MtModule *_top_mod) {
   field = nullptr;
   method = nullptr;
   mod = _top_mod;
+  struct_being_weird = nullptr;
 
   log_top = {CTX_NONE};
   log_next = {CTX_NONE};
@@ -32,6 +34,7 @@ MtContext::MtContext(MtContext *_parent, MtMethod *_method) {
   field = nullptr;
   method = _method;
   mod = nullptr;
+  struct_being_weird = nullptr;
 
   log_top = {CTX_NONE};
   log_next = {CTX_NONE};
@@ -46,13 +49,16 @@ MtContext::MtContext(MtContext *_parent, MtField *_field) {
 
   if (_field->is_component()) {
     type = CTX_COMPONENT;
+    mod = _field->_type_mod;
+  } else if (_field->is_struct()) {
+    type = CTX_FIELD;
+    struct_being_weird = _field->_type_struct;
   } else {
     type = CTX_FIELD;
   }
 
   field = _field;
   method = nullptr;
-  mod = _field->_type_mod;
 
   log_top = {CTX_NONE};
   log_next = {CTX_NONE};
@@ -144,18 +150,65 @@ MtContext *MtContext::get_child(const std::string &name) const {
 
 //------------------------------------------------------------------------------
 
-void MtContext::instantiate(MtModule *mod, MtContext *parent) {
-  for (auto f : mod->all_fields) {
+void MtContext::instantiate() {
+  if (mod) {
+    for (auto f : mod->all_fields) {
+      MtContext *result = new MtContext(this, f);
+      children.push_back(result);
+    }
+
+    for (auto m : mod->all_methods) {
+      MtContext *method_ctx = new MtContext(this, m);
+      children.push_back(method_ctx);
+    }
+  }
+
+  if (method) {
+    if (method->has_params()) {
+      auto params = method->_node.get_field(field_declarator).get_field(field_parameters);
+      for (const auto &param : params) {
+        if (param.sym == sym_parameter_declaration) {
+          MtContext *param_ctx = MtContext::param(this, param.get_field(field_declarator).text());
+          children.push_back(param_ctx);
+        }
+      }
+    }
+
+    if (method->has_return()) {
+      MtContext *return_ctx = MtContext::construct_return(this);
+      children.push_back(return_ctx);
+    }
+  }
+
+  if (struct_being_weird) {
+    for (auto f : struct_being_weird->fields) {
+      MtContext *result = new MtContext(this, f);
+      children.push_back(result);
+    }
+  }
+
+  for (auto c : children) {
+    c->instantiate();
+  }
+}
+
+/*
+void MtContext::instantiate(MtModule *_mod, MtContext *parent) {
+  for (auto f : _mod->all_fields) {
     MtContext *result = new MtContext(parent, f);
 
     if (result->mod) {
       instantiate(result->mod, result);
     }
 
+    if (result->_struct) {
+      instantiate(result->_struct, result);
+    }
+
     parent->children.push_back(result);
   }
 
-  for (auto m : mod->all_methods) {
+  for (auto m : _mod->all_methods) {
     MtContext *method_ctx = new MtContext(parent, m);
 
     parent->children.push_back(method_ctx);
@@ -178,15 +231,45 @@ void MtContext::instantiate(MtModule *mod, MtContext *parent) {
     }
   }
 }
+*/
 
 //------------------------------------------------------------------------------
 
-void MtContext::assign_state_to_field(MtModule* mod) {
-  if (field && field->_parent_mod == mod) {
-    field->state = log_top.state;
+/*
+void MtContext::instantiate(MtStruct *_struct, MtContext *parent) {
+  for (auto f : _struct->fields) {
+    MtContext *result = new MtContext(parent, f);
+
+    if (result->_type_struct) {
+      instantiate(result->mod, result);
+    }
+
+    parent->children.push_back(result);
+  }
+}
+*/
+
+//------------------------------------------------------------------------------
+
+void MtContext::assign_struct_states() {
+  if (struct_being_weird) {
+    log_top.state = children[0]->log_top.state;
+    for (auto c : children) {
+      auto result = merge_branch(log_top.state, c->log_top.state);
+      log_top.state = result;
+    }
   }
 
-  for (auto c : children) c->assign_state_to_field(mod);
+  for (auto c : children) c->assign_struct_states();
+}
+
+//------------------------------------------------------------------------------
+
+void MtContext::assign_state_to_field() {
+  if (field) {
+    field->_state = log_top.state;
+  }
+  for (auto c : children) c->assign_state_to_field();
 }
 
 //------------------------------------------------------------------------------
@@ -213,70 +296,34 @@ MtContext *MtContext::resolve(const std::string &_name) {
 
 //------------------------------------------------------------------------------
 
+void log_state(ContextState s) {
+  if (s == CTX_SIGNAL || s == CTX_OUTPUT) {
+    LOG_B("%s", to_string(s));
+  } else if (s == CTX_NONE) {
+    LOG_Y("%s", to_string(s));
+  } else if (s == CTX_INVALID) {
+    LOG_R("%s", to_string(s));
+  } else {
+    LOG_G("%s", to_string(s));
+  }
+}
+
 void MtContext::dump() const {
   if (type == CTX_METHOD) {
-    LOG_B("%s", name.c_str());
-
-    LOG(" = ");
-    if (log_top.state == CTX_SIGNAL || log_top.state == CTX_OUTPUT) {
-      LOG_B("%s", to_string(log_top.state));
-    } else if (log_top.state == CTX_NONE) {
-      LOG_Y("%s", to_string(log_top.state));
-    } else if (log_top.state == CTX_INVALID) {
-      LOG_R("%s", to_string(log_top.state));
-    } else {
-      LOG_G("%s", to_string(log_top.state));
-    }
-    LOG("\n");
+    LOG("{Method} %s = ", name.c_str());
   } else if (type == CTX_COMPONENT) {
-    LOG_G("%s", name.c_str());
-    LOG("\n");
+    LOG("{Component} %s = ", name.c_str());
   } else if (type == CTX_FIELD) {
-    LOG("%s", name.c_str());
-
-    LOG(" = ");
-    if (log_top.state == CTX_SIGNAL || log_top.state == CTX_OUTPUT) {
-      LOG_B("%s", to_string(log_top.state));
-    } else if (log_top.state == CTX_NONE) {
-      LOG_Y("%s", to_string(log_top.state));
-    } else if (log_top.state == CTX_INVALID) {
-      LOG_R("%s", to_string(log_top.state));
-    } else {
-      LOG_G("%s", to_string(log_top.state));
-    }
-    LOG("\n");
+    LOG("{Field} %s = ", name.c_str());
   } else if (type == CTX_PARAM) {
-    LOG_W("%s", name.c_str());
-
-    LOG(" = ");
-    if (log_top.state == CTX_SIGNAL || log_top.state == CTX_OUTPUT) {
-      LOG_B("%s", to_string(log_top.state));
-    } else if (log_top.state == CTX_NONE) {
-      LOG_Y("%s", to_string(log_top.state));
-    } else if (log_top.state == CTX_INVALID) {
-      LOG_R("%s", to_string(log_top.state));
-    } else {
-      LOG_G("%s", to_string(log_top.state));
-    }
-    LOG("\n");
+    LOG("{Param} %s = ", name.c_str());
   } else if (type == CTX_RETURN) {
-    LOG_W("%s", name.c_str());
-
-    LOG(" = ");
-    if (log_top.state == CTX_SIGNAL || log_top.state == CTX_OUTPUT) {
-      LOG_B("%s", to_string(log_top.state));
-    } else if (log_top.state == CTX_NONE) {
-      LOG_Y("%s", to_string(log_top.state));
-    } else if (log_top.state == CTX_INVALID) {
-      LOG_R("%s", to_string(log_top.state));
-    } else {
-      LOG_G("%s", to_string(log_top.state));
-    }
-    LOG("\n");
+    LOG("{Return} %s = ", name.c_str());
+  } else if (type == CTX_MODULE) {
+    LOG("{Module} %s = ", name.c_str());
   }
-  else if (type == CTX_MODULE) {
-    LOG("Module %s\n", mod->cname());
-  }
+  log_state(state());
+  LOG("\n");
 }
 
 void MtContext::dump_ctx_tree() const {

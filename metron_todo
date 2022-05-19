@@ -1,5 +1,6 @@
-ALL TOCKS MUST HAVE A RETURN VALUE SO THAT THEY GO THROUGH ICARUS AND YOSYS CORRECTLY
-  if they have no return then they're considered a task and both icarus and yosys don't like always_combs calling tasks
+tock calls tick in another module
+
+enforce that all funcs must have a return value
 
 
 
@@ -52,4 +53,3 @@ assert that components are only bound once?
   no, they can be bound multiple times, won't break anything
 component calls can only be at toplevel?
   no, but they have to be in a compound statement so we have a place to put bindings
-

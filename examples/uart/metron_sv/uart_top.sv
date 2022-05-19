@@ -21,34 +21,28 @@ module uart_top
   output logic tock_ret
 );
 /*public:*/
-  function logic serial();  serial = tx_serial_ret; endfunction
-  always_comb serial_ret = serial();
-  function logic[7:0] data();  data = rx_buffer_ret; endfunction
-  always_comb data_ret = data();
-  function logic valid();  valid = rx_valid_ret; endfunction
-  always_comb valid_ret = valid();
-  function logic done();  done = hello_done_ret && tx_idle_ret; endfunction
-  always_comb done_ret = done();
-  function logic[31:0] sum();  sum = rx_sum_ret; endfunction
-  always_comb sum_ret = sum();
+  always_comb begin : serial serial_ret = tx_serial_ret; end
+  always_comb begin : data data_ret = rx_buffer_ret; end
+  always_comb begin : valid valid_ret = rx_valid_ret; end
+  always_comb begin : done done_ret = hello_done_ret && tx_idle_ret; end
+  always_comb begin : sum sum_ret = rx_sum_ret; end
 
-  function logic tock(logic i_rstn);
+  always_comb begin : tock
     logic[7:0] hello_data;
     logic hello_req;
     hello_data = hello_data_ret;
     hello_req = hello_req_ret;
-    rx_tick_i_rstn = i_rstn;
+    rx_tick_i_rstn = tock_i_rstn;
     rx_tick_i_serial = tx_serial_ret;
 
-    hello_tick_i_rstn = i_rstn;
+    hello_tick_i_rstn = tock_i_rstn;
     hello_tick_i_cts = tx_cts_ret;
     hello_tick_i_idle = tx_idle_ret;
-    tx_tick_i_rstn = i_rstn;
+    tx_tick_i_rstn = tock_i_rstn;
     tx_tick_i_data = hello_data;
     tx_tick_i_req = hello_req;
-    tock = 0;
-  endfunction
-  always_comb tock_ret = tock(tock_i_rstn);
+    tock_ret = 0;
+  end
 
   //----------------------------------------
 /*private:*/

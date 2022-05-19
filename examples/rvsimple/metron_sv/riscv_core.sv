@@ -29,12 +29,11 @@ module riscv_core
  /*public:*/
 
 
-  function tock_pc();
+  always_comb begin : tock_pc
     pc = datapath_pc;
-  endfunction
-  always_comb tock_pc();
+  end
 
-  function tock_execute();
+  always_comb begin : tock_execute
     datapath_inst = inst;
 
     ctlpath_inst_opcode = datapath_inst_opcode;
@@ -62,10 +61,9 @@ module riscv_core
     bus_byte_enable = dmem_bus_byte_enable;
     bus_read_enable = dmem_bus_read_enable;
     bus_write_enable = dmem_bus_write_enable;
-  endfunction
-  always_comb tock_execute();
+  end
 
-  function tock_writeback();
+  always_comb begin : tock_writeback
     dmem_bus_read_data = bus_read_data;
 
     datapath_next_pc_select = ctlpath_next_pc_select;
@@ -77,8 +75,7 @@ module riscv_core
     datapath_data_mem_read_data = dmem_read_data;
 
     datapath_regfile_write_enable = ctlpath_regfile_write_enable;
-  endfunction
-  always_comb tock_writeback();
+  end
 
   //----------------------------------------
 

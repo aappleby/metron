@@ -9,10 +9,9 @@ module Module
 );
 /*public:*/
 
-  function tock(logic[1:0] selector);
-    tick_selector = selector;
-  endfunction
-  always_comb tock(tock_selector);
+  always_comb begin : tock
+    tick_selector = tock_selector;
+  end
 
 /*private:*/
 

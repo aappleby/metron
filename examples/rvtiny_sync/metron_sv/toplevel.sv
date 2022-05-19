@@ -28,9 +28,8 @@ module toplevel
     $readmemh(s, data_mem);
   end
 
-  function tock(logic reset);  tick_reset = reset;
- endfunction
-  always_comb tock(tock_reset);
+  always_comb begin : tock tick_reset = tock_reset;
+ end
 
 
   //----------------------------------------

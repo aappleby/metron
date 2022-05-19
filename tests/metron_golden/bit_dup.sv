@@ -2,18 +2,21 @@
 
 module Module
 (
+  output int tock_dup1_ret,
+  output int tock_dup4_ret
 );
 /*public:*/
 
-  function tock_dup1();
+  function int tock_dup1();
     logic a1;
     logic b1;
     a1 = 1'b1;
     b1 = {1 {a1}};
+    tock_dup1 = 0;
   endfunction
-  always_comb tock_dup1();
+  always_comb tock_dup1_ret = tock_dup1();
 
-  function tock_dup4();
+  function int tock_dup4();
     logic  a1;
     logic[3:0]  b1;
     logic[1:0]  a2;
@@ -53,6 +56,7 @@ module Module
 
     a8 = 8'b00000001;
     b8 = {4 {a8}};
+    tock_dup4 = 0;
   endfunction
-  always_comb tock_dup4();
+  always_comb tock_dup4_ret = tock_dup4();
 endmodule

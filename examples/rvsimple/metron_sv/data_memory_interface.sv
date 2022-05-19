@@ -33,7 +33,7 @@ module data_memory_interface
   logic[31:0] sign_fix;
 
  /*public:*/
-  function tock_bus();
+  always_comb begin : tock_bus
     bus_address = address;
     bus_write_enable = write_enable;
     bus_read_enable = read_enable;
@@ -48,11 +48,10 @@ module data_memory_interface
       default:   bus_byte_enable = 4'b0000;
     endcase
     // clang-format on
-  endfunction
-  always_comb tock_bus();
+  end
 
   // correct for unaligned accesses
-  function tock_read_data();
+  always_comb begin : tock_read_data
     position_fix = 32'(bus_read_data >> (8 * 2'(address)));
 
     // sign-extend if necessary
@@ -66,8 +65,7 @@ module data_memory_interface
     // clang-format on
 
     read_data = sign_fix;
-  endfunction
-  always_comb tock_read_data();
+  end
 endmodule
 
 `endif // DATA_MEMORY_INTERFACE_H

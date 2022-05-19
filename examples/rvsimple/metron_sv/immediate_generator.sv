@@ -27,7 +27,7 @@ module immediate_generator
   // J = { {12{inst[31]}},              inst[19:12], inst[20], inst[30:25], inst[24:21],  1'b0  };
   // clang-format on
 
-  function tock();
+  always_comb begin : tock
     import rv_constants::*;
     // clang-format off
     immediate = 32'b0;
@@ -50,8 +50,7 @@ module immediate_generator
       default: immediate = 32'b0;
     endcase
     // clang-format on
-  endfunction
-  always_comb tock();
+  end
 endmodule
 
 `endif // IMMEDIATE_GENERATOR_H

@@ -1,3 +1,12 @@
+
+
+task automatic private_task(logic[7:0] x);
+    my_reg1 <= my_reg1 + private_func(x);
+  endtask
+logic[7:0] private_task_x;
+^^^^ that is unused
+
+
 nested structs
 
 tock calls tick in another module

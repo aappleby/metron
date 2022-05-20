@@ -41,7 +41,6 @@ module Module
   task automatic private_task(logic[7:0] x);
     my_reg1 <= my_reg1 + private_func(x);
   endtask
-  logic[7:0] private_task_x;
 
   function logic[7:0] private_func(logic[7:0] y);
     private_func = my_reg1 + y;

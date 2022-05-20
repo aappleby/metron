@@ -8,35 +8,17 @@
 class Module {
 public:
 
-  logic<8> my_sig;
-
-  void tock(int z) {
-    logic<8> dummy = public_task(public_func(z));
-    tick(z);
+  void tock() {
+    tick(1);
   }
-
-  logic<8> public_task(logic<8> x) {
-    my_sig = x + 7;
-    return 0;
-  }
-
-  logic<8> public_func(logic<8> x) {
-    return my_reg1 + private_func(x);
-  }
-
-private:
 
   void tick(int w) {
-    private_task(private_func(w));
-    my_reg2 = my_reg2 + 1;
+    my_reg2 = my_reg2 + w;
+    private_task(w);
   }
 
   void private_task(logic<8> x) {
-    my_reg1 = my_reg1 + private_func(x);
-  }
-
-  logic<8> private_func(logic<8> y) {
-    return my_reg1 + y;
+    my_reg1 = my_reg1 + x;
   }
 
   logic<8> my_reg1;

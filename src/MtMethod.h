@@ -66,6 +66,13 @@ struct MtMethod {
     return false;
   }
 
+  bool called_by_tock() const {
+    for (auto m : internal_callers) {
+      if (m->in_tock) return true;
+    }
+    return false;
+  }
+
   bool called_in_func() const {
     for (auto m : internal_callers) {
       if (m->in_tock) return true;

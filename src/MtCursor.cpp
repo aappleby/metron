@@ -1087,7 +1087,7 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
       }
     }
 
-    if (current_method->called_in_tock()) {
+    if (current_method->called_by_tock()) {
       for (auto n : current_method->param_nodes) {
         err << emit_param_as_field(current_method, n);
       }
@@ -1119,7 +1119,7 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
     err << emit_func_as_func(n);
     err << emit_ws_to_newline();
 
-    if (!current_method->called()) {
+    if (current_method->is_public() && !current_method->called()) {
       err << emit_trigger_comb(n);
     }
   }

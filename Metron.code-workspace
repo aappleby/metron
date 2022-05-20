@@ -37,7 +37,26 @@
 			"ostream": "cpp",
 			"sstream": "cpp",
 			"streambuf": "cpp",
-			"unordered_map": "cpp"
+			"unordered_map": "cpp",
+			"atomic": "cpp",
+			"bit": "cpp",
+			"chrono": "cpp",
+			"cmath": "cpp",
+			"string": "cpp",
+			"exception": "cpp",
+			"algorithm": "cpp",
+			"type_traits": "cpp",
+			"iosfwd": "cpp",
+			"limits": "cpp",
+			"mutex": "cpp",
+			"new": "cpp",
+			"numeric": "cpp",
+			"ratio": "cpp",
+			"shared_mutex": "cpp",
+			"system_error": "cpp",
+			"thread": "cpp",
+			"tuple": "cpp",
+			"typeinfo": "cpp"
 		},
 	}
 }

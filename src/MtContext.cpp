@@ -10,14 +10,18 @@
 MtContext::MtContext(MtModule *_top_mod) {
   assert(_top_mod);
 
-  parent = nullptr;
   name = "<top>";
-  type = CTX_MODULE;
+  context_type = CTX_MODULE;
+  parent = nullptr;
 
   field = nullptr;
   method = nullptr;
-  mod = _top_mod;
-  struct_being_weird = nullptr;
+
+  parent_mod = _top_mod;
+  parent_struct = nullptr;
+
+  type_mod = _top_mod;
+  type_struct = nullptr;
 
   log_top = {CTX_NONE};
   log_next = {CTX_NONE};
@@ -27,14 +31,18 @@ MtContext::MtContext(MtContext *_parent, MtMethod *_method) {
   assert(_parent);
   assert(_method);
 
-  parent = _parent;
   name = _method->name();
-  type = CTX_METHOD;
+  context_type = CTX_METHOD;
+  parent = _parent;
 
   field = nullptr;
   method = _method;
-  mod = nullptr;
-  struct_being_weird = nullptr;
+
+  parent_mod = _method->_mod;
+  parent_struct = nullptr;
+
+  type_mod = nullptr;
+  type_struct = nullptr;
 
   log_top = {CTX_NONE};
   log_next = {CTX_NONE};
@@ -44,21 +52,26 @@ MtContext::MtContext(MtContext *_parent, MtField *_field) {
   assert(_parent);
   assert(_field);
 
-  parent = _parent;
   name = _field->_name;
 
   if (_field->is_component()) {
-    type = CTX_COMPONENT;
-    mod = _field->_type_mod;
+    context_type = CTX_COMPONENT;
   } else if (_field->is_struct()) {
-    type = CTX_FIELD;
-    struct_being_weird = _field->_type_struct;
+    context_type = CTX_FIELD;
   } else {
-    type = CTX_FIELD;
+    context_type = CTX_FIELD;
   }
+
+  parent = _parent;
 
   field = _field;
   method = nullptr;
+
+  parent_mod = _field->_parent_mod;
+  parent_struct = _field->_parent_struct;
+
+  type_mod = _field->_type_mod;
+  type_struct = _field->_type_struct;
 
   log_top = {CTX_NONE};
   log_next = {CTX_NONE};
@@ -78,13 +91,19 @@ MtContext *MtContext::param(MtContext *_parent, const std::string &_name) {
   assert(_name.size());
 
   MtContext *param_ctx = new MtContext();
-  param_ctx->parent = _parent;
+
   param_ctx->name = _name;
-  param_ctx->type = CTX_PARAM;
+  param_ctx->context_type = CTX_PARAM;
+  param_ctx->parent = _parent;
 
   param_ctx->field = nullptr;
   param_ctx->method = nullptr;
-  param_ctx->mod = nullptr;
+
+  param_ctx->parent_mod = nullptr;
+  param_ctx->parent_struct = nullptr;
+
+  param_ctx->type_mod = nullptr;
+  param_ctx->type_struct = nullptr;
 
   param_ctx->log_top = {CTX_NONE};
   param_ctx->log_next = {CTX_NONE};
@@ -96,13 +115,19 @@ MtContext *MtContext::construct_return(MtContext *_parent) {
   assert(_parent);
 
   MtContext *return_ctx = new MtContext();
-  return_ctx->parent = _parent;
+
   return_ctx->name = "<return>";
-  return_ctx->type = CTX_RETURN;
+  return_ctx->context_type = CTX_RETURN;
+  return_ctx->parent = _parent;
 
   return_ctx->field = nullptr;
   return_ctx->method = nullptr;
-  return_ctx->mod = nullptr;
+
+  return_ctx->parent_mod = nullptr;
+  return_ctx->parent_struct = nullptr;
+
+  return_ctx->type_mod = nullptr;
+  return_ctx->type_struct = nullptr;
 
   return_ctx->log_top = {CTX_NONE};
   return_ctx->log_next = {CTX_NONE};
@@ -112,16 +137,22 @@ MtContext *MtContext::construct_return(MtContext *_parent) {
 
 //------------------------------------------------------------------------------
 
+/*
 MtContext *MtContext::clone() {
   MtContext *result = new MtContext();
-  result->parent = parent;
+
   result->name = name;
-  result->type = type;
-  // result->state = state;
+  result->context_type = context_type;
+  result->parent = parent;
 
   result->field = field;
   result->method = method;
-  result->mod = mod;
+
+  result->parent_mod = parent_mod;
+  result->parent_struct = parent_struct;
+
+  result->type_mod = type_mod;
+  result->type_struct = type_struct;
 
   for (auto c : children) {
     result->children.push_back(c->clone());
@@ -131,6 +162,7 @@ MtContext *MtContext::clone() {
 
   return result;
 }
+*/
 
 //------------------------------------------------------------------------------
 
@@ -151,13 +183,13 @@ MtContext *MtContext::get_child(const std::string &name) const {
 //------------------------------------------------------------------------------
 
 void MtContext::instantiate() {
-  if (mod) {
-    for (auto f : mod->all_fields) {
+  if (type_mod) {
+    for (auto f : type_mod->all_fields) {
       MtContext *result = new MtContext(this, f);
       children.push_back(result);
     }
 
-    for (auto m : mod->all_methods) {
+    for (auto m : type_mod->all_methods) {
       MtContext *method_ctx = new MtContext(this, m);
       children.push_back(method_ctx);
     }
@@ -180,8 +212,8 @@ void MtContext::instantiate() {
     }
   }
 
-  if (struct_being_weird) {
-    for (auto f : struct_being_weird->fields) {
+  if (type_struct) {
+    for (auto f : type_struct->fields) {
       MtContext *result = new MtContext(this, f);
       children.push_back(result);
     }
@@ -252,9 +284,10 @@ void MtContext::instantiate(MtStruct *_struct, MtContext *parent) {
 //------------------------------------------------------------------------------
 
 void MtContext::assign_struct_states() {
-  if (struct_being_weird) {
+  if (type_struct) {
     log_top.state = children[0]->log_top.state;
     for (auto c : children) {
+      c->assign_struct_states();
       auto result = merge_branch(log_top.state, c->log_top.state);
       log_top.state = result;
     }
@@ -265,11 +298,16 @@ void MtContext::assign_struct_states() {
 
 //------------------------------------------------------------------------------
 
-void MtContext::assign_state_to_field() {
+void MtContext::assign_state_to_field(MtModule* current_module) {
+  if (parent_mod != current_module) {
+    return;
+  }
   if (field) {
     field->_state = log_top.state;
   }
-  for (auto c : children) c->assign_state_to_field();
+  for (auto c : children) {
+    c->assign_state_to_field(current_module);
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -287,7 +325,7 @@ MtContext *MtContext::resolve(const std::string &_name) {
     }
   }
 
-  if (type == CTX_METHOD) {
+  if (context_type == CTX_METHOD) {
     return parent->resolve(_name);
   }
 
@@ -309,17 +347,17 @@ void log_state(ContextState s) {
 }
 
 void MtContext::dump() const {
-  if (type == CTX_METHOD) {
+  if (context_type == CTX_METHOD) {
     LOG("{Method} %s = ", name.c_str());
-  } else if (type == CTX_COMPONENT) {
+  } else if (context_type == CTX_COMPONENT) {
     LOG("{Component} %s = ", name.c_str());
-  } else if (type == CTX_FIELD) {
+  } else if (context_type == CTX_FIELD) {
     LOG("{Field} %s = ", name.c_str());
-  } else if (type == CTX_PARAM) {
+  } else if (context_type == CTX_PARAM) {
     LOG("{Param} %s = ", name.c_str());
-  } else if (type == CTX_RETURN) {
+  } else if (context_type == CTX_RETURN) {
     LOG("{Return} %s = ", name.c_str());
-  } else if (type == CTX_MODULE) {
+  } else if (context_type == CTX_MODULE) {
     LOG("{Module} %s = ", name.c_str());
   }
   log_state(state());

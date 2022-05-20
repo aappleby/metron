@@ -67,14 +67,10 @@ def main():
         errors += test_compilation()
         errors += test_examples()
         errors += test_misc()
-        #errors += test_goldens()
-        errors += test_lockstep()
+        errors += test_goldens()
 
         # Lockstep tests are slow because compiler...
-
-        # Icarus generates a bunch of possibly-spurious warnings and can't handle
-        # utf-8 with a BOM
-        #errors += test_icarus_parse()
+        errors += test_lockstep()
 
         pass
 

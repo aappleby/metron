@@ -36,7 +36,7 @@ CHECK_RETURN Err MtTracer::log_action(MtContext* method_ctx, MtContext* dst_ctx,
   assert(dst_ctx);
 
   if (action == CTX_WRITE) {
-    if (dst_ctx->type != CTX_RETURN) {
+    if (dst_ctx->context_type != CTX_RETURN) {
       method_ctx->method->writes.insert(dst_ctx);
     }
   }
@@ -270,8 +270,8 @@ CHECK_RETURN Err MtTracer::trace_call(MtContext* src_ctx, MtContext* dst_ctx,
   Err err;
 
   if (!dst_ctx) return err;
-  assert(src_ctx->type == CTX_METHOD);
-  assert(dst_ctx->type == CTX_METHOD);
+  assert(src_ctx->context_type == CTX_METHOD);
+  assert(dst_ctx->context_type == CTX_METHOD);
 
   // If the source and dest functions are not in the same module and the source
   // module has to pass params to the dest module, we have to bind the params

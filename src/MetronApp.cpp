@@ -200,7 +200,7 @@ int main(int argc, char** argv) {
     if (verbose) {
       mod->ctx->dump_ctx_tree();
     }
-    mod->ctx->assign_state_to_field();
+    mod->ctx->assign_state_to_field(mod);
 
     err << mod->ctx->check_done();
     if (err.has_err()) {
@@ -212,20 +212,6 @@ int main(int argc, char** argv) {
       LOG_DEDENT();
     }
   }
-
-  /*
-  for (auto s : lib.structs) {
-    LOG_G("struct %s\n", s->name.c_str());
-
-    LOG_INDENT();
-    for (auto f : s->fields) {
-      LOG_G("field %s %s\n", f->name().c_str(), to_string(f->_state));
-    }
-    LOG_DEDENT();
-  }
-  */
-
-  //exit(0);
 
   //----------
   // Categorize fields

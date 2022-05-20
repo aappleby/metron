@@ -25,14 +25,14 @@ struct MtContext {
   static MtContext* param(MtContext* parent, const std::string& name);
   static MtContext* construct_return(MtContext* parent);
 
-  MtContext* clone();
+  //MtContext* clone();
   std::string get_path() const;
   MtContext* get_child(const std::string& name) const;
 
   void instantiate();
 
   void assign_struct_states();
-  void assign_state_to_field();
+  void assign_state_to_field(MtModule* current_module);
 
   MtContext* resolve(const std::string& name);
   void dump() const;
@@ -99,14 +99,18 @@ struct MtContext {
   CHECK_RETURN Err check_done();
   //----------
 
-  MtContext* parent = nullptr;
   std::string name;
-  ContextType type;
+  ContextType context_type;
+  MtContext* parent = nullptr;
 
   MtField* field = nullptr;
   MtMethod* method = nullptr;
-  MtModule* mod = nullptr;
-  MtStruct* struct_being_weird = nullptr;
+
+  MtModule* parent_mod = nullptr;
+  MtStruct* parent_struct = nullptr;
+
+  MtModule* type_mod = nullptr;
+  MtStruct* type_struct = nullptr;
 
   LogEntry log_top;
   LogEntry log_next;

@@ -1,7 +1,10 @@
+nested structs
+
 tock calls tick in another module
 
 enforce that all funcs must have a return value
 
+verify that port directions match up on all submods
 
 
 

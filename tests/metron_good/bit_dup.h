@@ -3,13 +3,13 @@
 class Module {
 public:
 
-  int tock_dup1() {
+  int test_dup1() {
     logic<1> a1 = 0b1;
     logic<1> b1 = dup<1>(a1);
     return 0;
   }
 
-  int tock_dup4() {
+  int test_dup4() {
     logic<1>  a1 = 0b1;
     logic<4>  b1 = dup<4>(a1);
 

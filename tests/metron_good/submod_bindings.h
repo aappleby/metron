@@ -6,8 +6,8 @@
 class Submod {
 public:
 
-  logic<8> tock_sum_a(logic<8> a1, logic<8> a2) const { return a1 + a2; }
-  logic<8> tock_sum_b(logic<8> b1, logic<8> b2) const { return b1 + b2; }
+  logic<8> sum_a(logic<8> a1, logic<8> a2) const { return a1 + a2; }
+  logic<8> sum_b(logic<8> b1, logic<8> b2) const { return b1 + b2; }
 };
 
 class Module {
@@ -19,13 +19,13 @@ public:
 
     {
       // Only sum_a's bindings should be here.
-      if (submod.tock_sum_a(1, 2)) {
+      if (submod.sum_a(1, 2)) {
         // Only sum_b's bindings should be here.
-        result = submod.tock_sum_b(3,4);
+        result = submod.sum_b(3,4);
       }
       else {
         // Only sum_b's bindings should be here.
-        result = submod.tock_sum_b(5,6);
+        result = submod.sum_b(5,6);
       }
     }
 

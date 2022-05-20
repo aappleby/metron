@@ -22,7 +22,7 @@ private:
 class Module {
 public:
 
-  logic<8> tock_get_submod_reg() const {
+  logic<8> get_submod_reg() const {
     return submod.sub_reg;
   }
 

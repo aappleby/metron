@@ -5,20 +5,19 @@
 
 module Module
 (
-  input logic[2:0] input_val,
-  output logic[2:0] output_val,
-  input logic[2:0] tock_input_val,
-  output logic[2:0] tock_ret
+  input int input_val,
+  output int output1,
+  output int output2,
+  input int tock2_input_val
 );
 /*public:*/
 
 
   always_comb begin : tock1
-    output_val = input_val + 7;
+    output1 = input_val + 7;
   end
 
-  function logic[2:0] tock(logic[2:0] input_val);
-    tock = input_val + 8;
-  endfunction
-  always_comb tock_ret = tock(tock_input_val);
+  always_comb begin : tock2
+    output2 = tock2_input_val + 8;
+  end
 endmodule

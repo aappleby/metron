@@ -4,22 +4,25 @@
 
 module Module
 (
-  output logic[7:0] tock2_ret,
-  output logic[7:0] tock3_ret
+  output logic[7:0] test2_ret,
+  output logic[7:0] test3_ret
 );
 /*public:*/
 
-  //logic<8> tock1() {
-  //  return DONTCARE;
-  //}
+  // FIXME why is this broken?
+  /*
+  logic<8> test1() {
+    return DONTCARE;
+  }
+  */
 
-  function logic[7:0] tock2();
-    tock2 = 8'bx;
+  function logic[7:0] test2();
+    test2 = 8'bx;
   endfunction
-  always_comb tock2_ret = tock2();
+  always_comb test2_ret = test2();
 
-  function logic[7:0] tock3();
-    tock3 = 8'(1'bx);
+  function logic[7:0] test3();
+    test3 = 8'(1'bx);
   endfunction
-  always_comb tock3_ret = tock3();
+  always_comb test3_ret = test3();
 endmodule

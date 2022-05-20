@@ -5,7 +5,7 @@
 class Module {
 public:
 
-  int tock_bN() {
+  int test_bN() {
     logic<64> src = 0x1234567812345678;
     logic<64> dst64 = b64(src);
     logic<63> dst63 = b63(src);
@@ -80,7 +80,7 @@ public:
     return 0;
   }
 
-  int tock_bx_const() {
+  int test_bx_const() {
     logic<64> src = 0x1234567812345678;
     logic<63> dst63 = bx<63>(src);
     logic<62> dst62 = bx<62>(src);
@@ -154,7 +154,7 @@ public:
     return 0;
   }
 
-  int tock_bN_offset() {
+  int test_bN_offset() {
     logic<64> src = 0x1234567812345678;
 
     logic<8> dst0 = b8(src, 0);
@@ -173,7 +173,7 @@ public:
   static const int some_size1 = 64;
   static const int some_size2 = 8;
 
-  int tock_bx_param() {
+  int test_bx_param() {
     logic<some_size1> a = 10;
     logic<some_size2> b = bx<some_size2>(a);
 
@@ -192,7 +192,7 @@ public:
   }
 
 
-  int tock2() {
+  int test2() {
     logic<32> a = 0xDEADBEEF;
 
     logic<1> b = b1(a, 3); //static bit extract with literal offset, width 1

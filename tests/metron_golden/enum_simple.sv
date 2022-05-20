@@ -20,7 +20,7 @@
 // clang-format off
 module Module
 (
-  output int tock1_ret
+  output int test1_ret
 );
  /*public:*/
   typedef enum { A1, B1, C1 } simple_enum1;
@@ -36,7 +36,7 @@ module Module
   typedef enum int { A7 = 32'b01, B7 = 32'h02, C7 = 32'd3 } typed_enum;
   typedef enum logic[7:0] { A8 = 8'b01, B8 = 8'h02, C8 = 8'd3 } sized_enum;
 
-  function int tock1();
+  function int test1();
     simple_enum1 e1;
     simple_enum2 e2;
     enum_class1 ec1;
@@ -51,8 +51,8 @@ module Module
     ec2 = C6;
     te1 = A7;
     se1 = B8;
-    tock1 = 1;
+    test1 = 1;
   endfunction
-  always_comb tock1_ret = tock1();
+  always_comb test1_ret = test1();
 endmodule
 // clang-format on

@@ -1,6 +1,7 @@
 #include "metron_tools.h"
 
 // Namespaces turn into packages.
+// "using" doesn't work in methods right now :/
 
 namespace MyPackage {
   static const int foo = 3;
@@ -9,12 +10,15 @@ namespace MyPackage {
 class Module {
 public:
 
-  logic<8> tock1() {
-    return MyPackage::foo;
+  int my_sig;
+  int my_reg;
+
+  int tock() {
+    my_sig = MyPackage::foo + 1;
+    return my_sig;
   }
 
-  logic<8> tock2() {
-    using namespace MyPackage;
-    return foo;
+  void tick() {
+    my_reg = my_reg + MyPackage::foo;
   }
 };

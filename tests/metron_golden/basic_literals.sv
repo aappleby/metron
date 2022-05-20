@@ -5,12 +5,12 @@
 
 module Module
 (
-  output int tock1_ret,
-  output int tock2_ret
+  output int test1_ret,
+  output int test2_ret
 );
 /*public:*/
 
-  function int tock1();
+  function int test1();
     logic[31:0] a;
     logic[31:0] b;
     logic[31:0] c;
@@ -27,11 +27,11 @@ module Module
     f = 6'b000000;
     g = 7'b0000000;
     h = 8'b00000000;
-    tock1 = 0;
+    test1 = 0;
   endfunction
-  always_comb tock1_ret = tock1();
+  always_comb test1_ret = test1();
 
-  function int tock2();
+  function int test2();
     logic[31:0] a;
     logic[31:0] b;
     logic[31:0] c;
@@ -48,8 +48,8 @@ module Module
     f = 6'b0_000_00;
     g = 7'b000_0000;
     h = 8'b0_0_0_0_0_0_0_0;
-    tock2 = 0;
+    test2 = 0;
   endfunction
-  always_comb tock2_ret = tock2();
+  always_comb test2_ret = test2();
 
 endmodule

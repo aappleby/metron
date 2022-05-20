@@ -6,7 +6,7 @@
 class Module {
 public:
 
-  int tock1() {
+  int test1() {
     logic<32> a = 0b0;
     logic<32> b = 0b00;
     logic<32> c = 0b000;
@@ -18,7 +18,7 @@ public:
     return 0;
   }
 
-  int tock2() {
+  int test2() {
     logic<32> a = 0b0;
     logic<32> b = 0b0'0;
     logic<32> c = 0b0'00;

@@ -5,13 +5,16 @@
 class Module {
 public:
 
-  logic<8> tock() {
-    return my_getter();
+  int my_sig;
+
+  int tock() {
+    my_sig = my_getter();
+    return my_sig;
   }
 
 private:
 
-  logic<8> my_getter() const {
+  int my_getter() const {
     return 12;
   }
 

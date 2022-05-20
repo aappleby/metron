@@ -16,7 +16,7 @@ Runes:
 
 module Module
 (
-  output logic[7:0] tock_ret
+  output logic[7:0] get_reg_ret
 );
 /*public:*/
 
@@ -24,10 +24,10 @@ module Module
     my_reg = 7;
   end
 
-  function logic[7:0] tock();
-    tock = my_reg;
+  function logic[7:0] get_reg();
+    get_reg = my_reg;
   endfunction
-  always_comb tock_ret = tock();
+  always_comb get_reg_ret = get_reg();
 
 /*private:*/
 

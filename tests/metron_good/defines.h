@@ -10,7 +10,7 @@
 class Module {
 public:
 
-  logic<8> tock() {
+  logic<8> test() {
     return MY_OTHER_CONSTANT;
   }
 

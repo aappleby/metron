@@ -1,6 +1,7 @@
 `include "metron_tools.sv"
 
 // Namespaces turn into packages.
+// "using" doesn't work in methods right now :/
 
 package MyPackage;
   parameter int foo = 3;
@@ -8,19 +9,21 @@ endpackage
 
 module Module
 (
-  output logic[7:0] tock1_ret,
-  output logic[7:0] tock2_ret
+  input logic clock,
+  output int my_sig,
+  output int my_reg,
+  output int tock_ret
 );
 /*public:*/
 
-  function logic[7:0] tock1();
-    tock1 = MyPackage::foo;
-  endfunction
-  always_comb tock1_ret = tock1();
 
-  function logic[7:0] tock2();
-    import MyPackage::*;
-    tock2 = foo;
-  endfunction
-  always_comb tock2_ret = tock2();
+  always_comb begin : tock
+    my_sig = MyPackage::foo + 1;
+    tock_ret = my_sig;
+  end
+
+  task automatic tick();
+    my_reg <= my_reg + MyPackage::foo;
+  endtask
+  always_ff @(posedge clock) tick();
 endmodule

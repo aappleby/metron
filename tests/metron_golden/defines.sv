@@ -9,13 +9,13 @@
 
 module Module
 (
-  output logic[7:0] tock_ret
+  output logic[7:0] test_ret
 );
 /*public:*/
 
-  function logic[7:0] tock();
-    tock = `MY_OTHER_CONSTANT;
+  function logic[7:0] test();
+    test = `MY_OTHER_CONSTANT;
   endfunction
-  always_comb tock_ret = tock();
+  always_comb test_ret = test();
 
 endmodule

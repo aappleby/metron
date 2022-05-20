@@ -5,7 +5,10 @@
 class Module {
 public:
 
-  logic<8> tock() {
-    return 123;
+  int my_sig;
+
+  int tock() {
+    my_sig = 7;
+    return my_sig;
   }
 };

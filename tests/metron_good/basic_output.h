@@ -5,7 +5,7 @@
 class Module {
 public:
 
-  logic<7> tock_get_reg() const {
+  logic<7> get_reg() const {
     return my_reg;
   }
 

@@ -6,16 +6,23 @@
 
 class Submod {
  public:
-  void tock() {}
+  int my_sig;
+  void tock() {
+    my_sig = 1;
+  }
 };
 
 class Module {
  public:
+
+  int my_sig;
+
   void tock() {
     if (1)
       submod.tock();
     else
       submod.tock();
+    my_sig = submod.my_sig;
   }
 
   Submod submod;

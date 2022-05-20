@@ -5,15 +5,18 @@
 class Module {
 public:
 
-  //logic<8> tock1() {
-  //  return DONTCARE;
-  //}
+  // FIXME why is this broken?
+  /*
+  logic<8> test1() {
+    return DONTCARE;
+  }
+  */
 
-  logic<8> tock2() {
+  logic<8> test2() {
     return b8(DONTCARE);
   }
 
-  logic<8> tock3() {
+  logic<8> test3() {
     return bx<8>(DONTCARE);
   }
 };

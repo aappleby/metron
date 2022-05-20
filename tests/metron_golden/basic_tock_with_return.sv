@@ -4,12 +4,14 @@
 
 module Module
 (
-  output logic[7:0] tock_ret
+  output int my_sig,
+  output int tock_ret
 );
 /*public:*/
 
-  function logic[7:0] tock();
-    tock = 123;
-  endfunction
-  always_comb tock_ret = tock();
+
+  always_comb begin : tock
+    my_sig = 7;
+    tock_ret = my_sig;
+  end
 endmodule

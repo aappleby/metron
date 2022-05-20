@@ -21,7 +21,7 @@ public:
     my_reg = 7;
   }
 
-  logic<8> tock() {
+  logic<8> get_reg() {
     return my_reg;
   }
 

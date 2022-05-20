@@ -33,7 +33,7 @@ class Module {
   enum class typed_enum : int { A7 = 0b01, B7 = 0x02, C7 = 3 };
   enum class sized_enum : logic<8>::BASE { A8 = 0b01, B8 = 0x02, C8 = 3 };
 
-  int tock1() {
+  int test1() {
     simple_enum1 e1 = A1;
     simple_enum2 e2 = B2;
     anon_enum_field1 = C3;

@@ -6,14 +6,15 @@
 class Module {
 public:
 
-  logic<3> input_val;
-  logic<3> output_val;
+  int input_val;
+  int output1;
+  int output2;
 
   void tock1() {
-    output_val = input_val + 7;
+    output1 = input_val + 7;
   }
 
-  logic<3> tock(logic<3> input_val) {
-    return input_val + 8;
+  void tock2(int input_val) {
+    output2 = input_val + 8;
   }
 };

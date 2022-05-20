@@ -284,6 +284,23 @@ int main(int argc, char** argv) {
     LOG_G("\n");
   }
 
+  for (auto mod : lib.modules) {
+    for (auto method : mod->all_methods) {
+      if (method->name().starts_with("tick") && !method->in_tick) {
+        err << ERR("Method %s labeled 'tick' but is not a tick.\n", method->cname());
+      }
+      if (method->name().starts_with("tock") && !method->in_tock) {
+        err << ERR("Method %s labeled 'tock' but is not a tock.\n", method->cname());
+      }
+    }
+  }
+
+  if (err.has_err()) {
+    LOG_R("Exiting due to error\n");
+    lib.teardown();
+    return -1;
+  }
+
   //----------------------------------------
   // Print module tree
 

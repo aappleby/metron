@@ -723,7 +723,7 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
   else {
     // Internal method call.
 
-    if (method->in_tock) {
+    if (method->needs_binding) {
       err << emit_replacement(n, "%s_ret", method->cname());
     }
     else {
@@ -2601,15 +2601,6 @@ CHECK_RETURN Err MtCursor::emit_sym_return(MnNode n) {
       else {
         err << emit_replacement(c, "%s =", current_method->name().c_str());
       }
-      /*
-      if (current_method->in_tock && current_method->internal_callers.empty()) {
-        err << emit_replacement(c, "%s_ret =", current_method->name().c_str());
-      }
-      else {
-        err << emit_replacement(c, "%s =", current_method->name().c_str());
-      }
-      */
-
     } else if (c.is_expression()) {
       err << emit_expression(c);
     } else if (c.is_identifier()) {

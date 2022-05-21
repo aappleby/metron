@@ -1072,6 +1072,9 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
   if (current_method->in_tock && !current_method->called_in_module()) {
     err << emit_func_as_always_comb(n);
   }
+  else if (current_method->in_tick && !current_method->called_in_module()) {
+    err << emit_func_as_task(n);
+  }
   else if (current_method->is_constructor()) {
     err << emit_func_as_init(n);
   }

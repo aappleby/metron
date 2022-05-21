@@ -1063,6 +1063,8 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
   //----------
   // Emit a block declaration for the type of function we're in.
 
+  bool needs_trigger = false;
+
   if (current_method->is_constructor()) {
     err << emit_func_as_init(n);
     err << emit_ws_to_newline();
@@ -1082,7 +1084,7 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
     }
 
     if (!current_method->called_in_tick()) {
-      err << emit_trigger_ff(n);
+      needs_trigger = true;
     }
 
   }
@@ -1108,11 +1110,16 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
     err << emit_ws_to_newline();
 
     if (current_method->is_public() && !current_method->called()) {
-      err << emit_trigger_comb(n);
+      needs_trigger = true;
     }
   }
   else {
     err << ERR("wat\n");
+  }
+
+  if (needs_trigger) {
+    if (current_method->in_tick) err << emit_trigger_ff(n);
+    if (current_method->in_func) err << emit_trigger_comb(n);
   }
 
   //----------

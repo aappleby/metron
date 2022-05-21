@@ -1072,20 +1072,8 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
     err << emit_ws_to_newline();
   }
   else if (current_method->in_tick) {
-    if (current_method->called()) {
-      err << emit_func_as_task(n);
-      err << emit_ws_to_newline();
-    }
-    else {
-      if (current_method->has_params()) {
-        err << emit_func_as_task(n);
-        err << emit_ws_to_newline();
-      }
-      else {
-        err << emit_func_as_task(n);
-        err << emit_ws_to_newline();
-      }
-    }
+    err << emit_func_as_task(n);
+    err << emit_ws_to_newline();
 
     if (current_method->called_by_tock()) {
       for (auto n : current_method->param_nodes) {

@@ -897,11 +897,7 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
     else if (func_node.sym == sym_identifier) {
       auto method = current_mod->get_method(func_node.text().c_str());
 
-      bool needs_binding = false;
-      if (method && method->in_tock) needs_binding = true;
-      if (method && current_method->in_tock && method->in_tick) needs_binding = true;
-
-      if (needs_binding) {
+      if (method && method->needs_binding) {
         for (int i = 0; i < method->param_nodes.size(); i++) {
           auto& param = method->param_nodes[i];
           auto param_name = param.get_field(field_declarator).text();
@@ -1113,11 +1109,6 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
 
   if (current_method->needs_binding) {
     err << emit_method_bindings(current_method);
-    /*
-    for (auto n : current_method->param_nodes) {
-      err << emit_param_as_field(current_method, n);
-    }
-    */
   }
 
   if (current_method->needs_trigger) {

@@ -388,6 +388,7 @@ CHECK_RETURN Err MtCursor::emit_sym_assignment_expression(MnNode node) {
           err << ERR("emit_sym_assignment_expression() - Node is not '='\n");
           child.error();
         }
+        // There may not be a method if we're in an enum initializer list.
         if (current_method && current_method->in_tick && left_is_field) {
           err << emit_replacement(child, "<=");
         } else {
@@ -546,7 +547,6 @@ CHECK_RETURN Err MtCursor::emit_simple_call(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-
 CHECK_RETURN bool MtCursor::can_omit_call(MnNode n) {
   MnNode func = n.get_field(field_function);
   MnNode args = n.get_field(field_arguments);
@@ -575,9 +575,6 @@ CHECK_RETURN bool MtCursor::can_omit_call(MnNode n) {
 
   return false;
 }
-
-
-
 
 //------------------------------------------------------------------------------
 // Replace function names with macro names where needed, comment out explicit
@@ -727,22 +724,7 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
       err << emit_replacement(n, "%s_ret", method->cname());
     }
     else {
-      auto func_node = n.get_field(field_function);
-      auto func_name = func_node.name4();
-
-      auto dst_method = current_mod->get_method(func_name);
-
-      if (!dst_method) {
-        err << ERR("Can't find method %s?\n", func_name.c_str());
-        n.error();
-      }
-
-      if (dst_method->needs_binding) {
-        err << comment_out(n);
-      }
-      else {
-        err << emit_simple_call(n);
-      }
+      err << emit_simple_call(n);
     }
   }
 

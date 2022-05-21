@@ -9,6 +9,7 @@ module Submod
 );
 /*public:*/
   always_comb begin : tock
+    tick_arg = tock_arg;
   end
 /*private:*/
   always_ff @(posedge clock) begin : tick

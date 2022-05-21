@@ -15,7 +15,9 @@ class toplevel {
     readmemh(s, data_mem);
   }
 
-  void tock(logic<1> reset) { tick(reset); }
+  void tock(logic<1> reset) {
+    tick(reset);
+  }
 
   logic<32> bus_read_data;
   logic<32> bus_address;

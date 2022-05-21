@@ -1,29 +1,16 @@
 #include "metron_tools.h"
 
-// All the combos of tasks/funcs should work from ticks and tocks.
-
-// Yosys bug - fails to parse if we pass constants between the functions
-// https://github.com/YosysHQ/yosys/issues/3327
-
 class Module {
 public:
-
-  logic<8> my_sig;
-
-  void tock(int z) {
-    logic<8> dummy = public_task(public_func(z));
+  void only_calls_private_tick() {
+    private_tick(17);
   }
 
-  logic<8> public_task(logic<8> x) {
-    my_sig = x + 7;
-    return 0;
+private:
+  int my_reg4;
+  void private_tick(int x) {
+    my_reg4 = my_reg4 + x;
   }
-
-  logic<8> public_func(logic<8> x) {
-    return my_reg1 + 1;
-  }
-
-  logic<8> my_reg1;
 };
 A trivial single-file, single-function, single-cycle RISC-V core.
 
@@ -46,7 +33,9 @@ class toplevel {
     readmemh(s, data_mem);
   }
 
-  void tock(logic<1> reset) { tick(reset); }
+  void tock(logic<1> reset) {
+    tick(reset);
+  }
 
   logic<32> bus_read_data;
   logic<32> bus_address;
@@ -4623,10 +4612,12 @@ public:
     my_sig5 = 12 + my_func5(x);
   }
 
-  int my_func5(int x) { return x + 1; }
+private:
+  int my_func5(int x) {
+    return x + 1;
+  }
+public:
 
-
-  /*
   int my_sig6a;
   int tock_calls_tock(int x) {
     my_sig6a = 12;
@@ -4634,24 +4625,48 @@ public:
     return 0;
   }
 
+private:
   int my_sig6b;
   void tock_called_by_tock(int x) {
     my_sig6b = x;
   }
-  */
+public:
 
   //----------
 
   int my_reg1;
-  int my_reg2;
-
   void tick_no_params() {
     my_reg1 = my_reg1 + 1;
+    tick_called_by_tick(func_called_by_tick(1));
   }
 
+  int my_reg2;
   void tick_params(int x) {
     my_reg2 = my_reg2 + x;
   }
+
+  int my_reg3;
+  void tick_called_by_tick(int x) {
+    my_reg3 = my_reg3 + x;
+  }
+
+private:
+  int func_called_by_tick(int x) {
+    return x + 7;
+  }
+public:
+
+  void only_calls_private_tick() {
+    private_tick(17);
+  }
+
+private:
+  int my_reg4;
+  void private_tick(int x) {
+    my_reg4 = my_reg4 + x;
+  }
+
+
 };
 #include "metron_tools.h"
 

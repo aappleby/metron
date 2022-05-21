@@ -9,7 +9,6 @@ module Module
   output int my_sig4,
   output int my_sig5,
   output int my_sig6a,
-  output int my_sig6b,
   output int my_reg1,
   output int my_reg2,
   output int my_reg3,
@@ -74,9 +73,11 @@ module Module
     my_sig5 = 12 + my_func5(tock_calls_funcs_x);
   end
 
+/*private:*/
   function int my_func5(int x);
     my_func5 = x + 1;
   endfunction
+/*public:*/
 
   always_comb begin : tock_calls_tock
     my_sig6a = 12;
@@ -84,10 +85,13 @@ module Module
     tock_calls_tock_ret = 0;
   end
 
+/*private:*/
+  int my_sig6b;
   always_comb begin : tock_called_by_tock
     my_sig6b = tock_called_by_tock_x;
   end
   int tock_called_by_tock_x;
+/*public:*/
 
   //----------
 
@@ -104,7 +108,22 @@ module Module
     my_reg3 <= my_reg3 + x;
   endtask
 
+/*private:*/
   function int func_called_by_tick(int x);
     func_called_by_tick = x + 7;
   endfunction
+/*public:*/
+
+  always_comb begin : only_calls_private_tick
+    private_tick_x = 17;
+  end
+
+/*private:*/
+  int my_reg4;
+  always_ff @(posedge clock) begin : private_tick
+    my_reg4 <= my_reg4 + private_tick_x;
+  end
+  int private_tick_x;
+
+
 endmodule

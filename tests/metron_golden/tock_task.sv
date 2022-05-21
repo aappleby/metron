@@ -11,16 +11,19 @@ module Module
 
 
   always_comb begin : tock
-    tock_ret = set_signal(get_number());
+    set_signal_number = get_number();
+    tock_ret = set_signal_ret;
   end
 
   function logic[7:0] get_number();
     get_number = 7;
   endfunction
 
-  function int set_signal(logic[7:0] number);
-    my_signal = number;
-    set_signal = my_signal;
-  endfunction
+  always_comb begin : set_signal
+    my_signal = set_signal_number;
+    set_signal_ret = my_signal;
+  end
+  logic[7:0] set_signal_number;
+  int set_signal_ret;
 
 endmodule

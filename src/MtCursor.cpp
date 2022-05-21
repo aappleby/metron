@@ -571,6 +571,10 @@ CHECK_RETURN bool MtCursor::can_omit_call(MnNode n) {
     if (current_method->in_tock && dst_method && dst_method->in_tick) {
       return true;
     }
+
+    if (dst_method && dst_method->in_tock) {
+      return true;
+    }
   }
 
   return false;
@@ -723,21 +727,26 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
   else {
     // Internal method call.
 
-    auto func_node = n.get_field(field_function);
-    auto func_name = func_node.name4();
-
-    auto dst_method = current_mod->get_method(func_name);
-
-    if (!dst_method) {
-      err << ERR("Can't find method %s?\n", func_name.c_str());
-      n.error();
-    }
-
-    if (current_method->in_tock && dst_method->in_tick) {
-      err << comment_out(n);
+    if (method->in_tock) {
+      err << emit_replacement(n, "%s_ret", method->cname());
     }
     else {
-      err << emit_simple_call(n);
+      auto func_node = n.get_field(field_function);
+      auto func_name = func_node.name4();
+
+      auto dst_method = current_mod->get_method(func_name);
+
+      if (!dst_method) {
+        err << ERR("Can't find method %s?\n", func_name.c_str());
+        n.error();
+      }
+
+      if (current_method->in_tock && dst_method->in_tick) {
+        err << comment_out(n);
+      }
+      else {
+        err << emit_simple_call(n);
+      }
     }
   }
 
@@ -833,8 +842,10 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
+
   Err err;
   auto old_cursor = cursor;
+
 
   // Emit bindings for child nodes first, but do _not_ recurse into compound
   // blocks.
@@ -851,6 +862,8 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
   auto args_node = n.get_field(field_arguments);
 
   if (n.sym == sym_call_expression) {
+    n.dump_tree();
+
     if (func_node.sym == sym_field_expression) {
       if (args_node.named_child_count() != 0) {
         auto inst_id = func_node.get_field(field_argument);
@@ -886,7 +899,7 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
     else if (func_node.sym == sym_identifier) {
       auto method = current_mod->get_method(func_node.text().c_str());
 
-      if (method && current_method->in_tock && method->in_tick) {
+      if (method && method->in_tock) {
         for (int i = 0; i < method->param_nodes.size(); i++) {
           auto& param = method->param_nodes[i];
           auto param_name = param.get_field(field_declarator).text();
@@ -1074,14 +1087,16 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
   //----------
   // Emit a block declaration for the type of function we're in.
 
-  if (current_method->in_tock && !current_method->called_in_tock()) {
-    current_method->emit_as_always_comb = true;
+  current_method->emit_as_always_comb = current_method->in_tock && !current_method->called_in_tock();
+  current_method->emit_as_always_ff = current_method->in_tick && !current_method->called_in_tick();
+
+  current_method->emit_as_init = current_method->is_constructor();
+
+  if (current_method->emit_as_always_comb) {
   }
-  else if (current_method->in_tick && !current_method->called_in_tick()) {
-    current_method->emit_as_always_ff = true;
+  else if (current_method->emit_as_always_ff) {
   }
-  else if (current_method->is_constructor()) {
-    current_method->emit_as_init = true;
+  else if (current_method->emit_as_init) {
   }
   else if (current_method->in_init) {
     current_method->emit_as_task = true;
@@ -1090,7 +1105,8 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
     current_method->emit_as_task = true;
   }
   else if (current_method->in_tock) {
-    current_method->emit_as_func = true;
+    //current_method->emit_as_func = true;
+    current_method->emit_as_always_comb = true;
   }
   else if (current_method->in_func) {
     current_method->emit_as_func = true;
@@ -1099,9 +1115,19 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
     err << ERR("wat\n");
   }
 
+
+
+
+
+
   if (current_method->in_tick && current_method->called_by_tock()) {
     current_method->needs_binding = true;
   }
+
+  if (current_method->in_tock && current_method->called_by_tock()) {
+    current_method->needs_binding = true;
+  }
+
 
   if (current_method->in_func && current_method->is_public() && !current_method->called_in_module()) {
     current_method->needs_trigger = true;
@@ -1130,9 +1156,12 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
   err << emit_ws_to_newline();
 
   if (current_method->needs_binding) {
+    err << emit_method_bindings(current_method);
+    /*
     for (auto n : current_method->param_nodes) {
       err << emit_param_as_field(current_method, n);
     }
+    */
   }
 
   if (current_method->needs_trigger) {
@@ -1887,6 +1916,26 @@ CHECK_RETURN Err MtCursor::emit_param_port(MtMethod* m, MnNode node_type, MnNode
   return err;
 }
 
+//----------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_param_binding(MtMethod* m, MnNode node_type, MnNode node_name) {
+  Err err;
+
+  MtCursor sub_cursor = *this;
+  sub_cursor.cursor = node_type.start();
+  err << emit_indent();
+  err << sub_cursor.emit_type(node_type);
+  err << sub_cursor.emit_ws();
+  err << sub_cursor.emit_print("%s_", m->cname());
+  err << sub_cursor.emit_identifier(node_name);
+  err << emit_print(";");
+  err << emit_newline();
+
+  trailing_comma = true;
+
+  return err;
+}
+
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_return_port(MtMethod* m, MnNode node_type, MnNode node_name) {
@@ -1900,6 +1949,25 @@ CHECK_RETURN Err MtCursor::emit_return_port(MtMethod* m, MnNode node_type, MnNod
   err << sub_cursor.emit_ws();
   err << sub_cursor.emit_print("%s_ret", m->cname());
   err << emit_print(",");
+  err << emit_newline();
+
+  trailing_comma = true;
+
+  return err;
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_return_binding(MtMethod* m, MnNode node_type, MnNode node_name) {
+  Err err;
+
+  MtCursor sub_cursor = *this;
+  sub_cursor.cursor = node_type.start();
+  err << emit_indent();
+  err << sub_cursor.emit_type(node_type);
+  err << sub_cursor.emit_ws();
+  err << sub_cursor.emit_print("%s_ret", m->cname());
+  err << emit_print(";");
   err << emit_newline();
 
   trailing_comma = true;
@@ -1925,6 +1993,29 @@ CHECK_RETURN Err MtCursor::emit_method_ports(MtMethod* m) {
     auto node_decl = m->_node.get_field(field_declarator);
     auto node_name = node_decl.get_field(field_declarator);
     err << emit_return_port(m, node_type, node_name);
+  }
+
+  return err;
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_method_bindings(MtMethod* m) {
+  Err err;
+
+  int param_count = m->param_nodes.size();
+  for (int i = 0; i < param_count; i++) {
+    auto param = m->param_nodes[i];
+    auto node_type = param.get_field(field_type);
+    auto node_decl = param.get_field(field_declarator);
+    err << emit_param_binding(m, node_type, node_decl);
+  }
+
+  if (m->has_return()) {
+    auto node_type = m->_node.get_field(field_type);
+    auto node_decl = m->_node.get_field(field_declarator);
+    auto node_name = node_decl.get_field(field_declarator);
+    err << emit_return_binding(m, node_type, node_name);
   }
 
   return err;
@@ -2273,6 +2364,8 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n, bool is_str
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_sym_expression_statement(MnNode node) {
+  node.dump_tree();
+
   Err err = emit_ws_to(sym_expression_statement, node);
 
   if (node.child(0).sym == sym_call_expression) {
@@ -2607,12 +2700,20 @@ CHECK_RETURN Err MtCursor::emit_sym_return(MnNode n) {
   for (auto c : n) {
     if (c.sym == anon_sym_return) {
 
+      if (current_method->in_tock) {
+        err << emit_replacement(c, "%s_ret =", current_method->name().c_str());
+      }
+      else {
+        err << emit_replacement(c, "%s =", current_method->name().c_str());
+      }
+      /*
       if (current_method->in_tock && current_method->internal_callers.empty()) {
         err << emit_replacement(c, "%s_ret =", current_method->name().c_str());
       }
       else {
         err << emit_replacement(c, "%s =", current_method->name().c_str());
       }
+      */
 
     } else if (c.is_expression()) {
       err << emit_expression(c);

@@ -16,14 +16,16 @@ module Module
 
   always_comb begin : tock
     logic[7:0] dummy;
-    dummy = public_task(public_func(tock_z));
-    tick_w = tock_z;
+    public_task_x = public_func(tock_z);
+    dummy = public_task_ret;
   end
 
-  function logic[7:0] public_task(logic[7:0] x);
-    my_sig = x + 7;
-    public_task = 0;
-  endfunction
+  always_comb begin : public_task
+    my_sig = public_task_x + 7;
+    public_task_ret = 0;
+  end
+  logic[7:0] public_task_x;
+  logic[7:0] public_task_ret;
 
   function logic[7:0] public_func(logic[7:0] x);
     public_func = my_reg1 + private_func(x);

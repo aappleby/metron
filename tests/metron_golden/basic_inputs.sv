@@ -11,7 +11,6 @@ module Module
  /*public:*/
 
   always_comb begin : tock
-    tick_my_input = tock_my_input;
   end
 
  /*private:*/

@@ -73,6 +73,7 @@ struct TinyLog {
     else {
       set_color(color);
       printf("%c", c); //putchar(c);
+      fflush(stdout);
     }
   }
 

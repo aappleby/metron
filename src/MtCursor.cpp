@@ -1064,6 +1064,7 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
   // Emit a block declaration for the type of function we're in.
 
   bool needs_trigger = false;
+  bool needs_binding = false;
 
   if (current_method->is_constructor()) {
     err << emit_func_as_init(n);
@@ -1078,9 +1079,7 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
     err << emit_ws_to_newline();
 
     if (current_method->called_by_tock()) {
-      for (auto n : current_method->param_nodes) {
-        err << emit_param_as_field(current_method, n);
-      }
+      needs_binding = true;
     }
 
     if (!current_method->called_in_tick()) {
@@ -1116,6 +1115,13 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
   else {
     err << ERR("wat\n");
   }
+
+  if (needs_binding) {
+    for (auto n : current_method->param_nodes) {
+      err << emit_param_as_field(current_method, n);
+    }
+  }
+
 
   if (needs_trigger) {
     if (current_method->in_tick) err << emit_trigger_ff(n);

@@ -9,9 +9,13 @@ module uart_hello
 #(parameter int repeat_msg = 0)
 (
   input logic clock,
+  // data()
   output logic[7:0] data_ret,
+  // req()
   output logic req_ret,
+  // done()
   output logic done_ret,
+  // tick()
   input logic tick_i_rstn,
   input logic tick_i_cts,
   input logic tick_i_idle

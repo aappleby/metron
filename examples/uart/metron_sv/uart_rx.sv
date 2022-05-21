@@ -9,9 +9,13 @@ module uart_rx
 #(parameter int cycles_per_bit = 4)
 (
   input logic clock,
+  // valid()
   output logic valid_ret,
+  // buffer()
   output logic[7:0] buffer_ret,
+  // sum()
   output logic[31:0] sum_ret,
+  // tick()
   input logic tick_i_rstn,
   input logic tick_i_serial
 );

@@ -5,6 +5,7 @@
 module Module
 (
   output int my_sig,
+  // tock()
   output int tock_ret
 );
 /*public:*/

@@ -4,6 +4,7 @@
 
 module Module
 (
+  // get_reg()
   output logic[7:0] get_reg_ret
 );
 /*public:*/

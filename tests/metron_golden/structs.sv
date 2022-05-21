@@ -9,6 +9,7 @@ typedef struct packed {
 module Module
 (
   output MyStruct1 my_struct1,
+  // tock()
   output logic[7:0] tock_ret
 );
 /*public:*/

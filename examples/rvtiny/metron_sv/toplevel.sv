@@ -10,6 +10,7 @@ module toplevel
   output logic bus_read_enable,
   output logic bus_write_enable,
   output logic[31:0] pc,
+  // tock()
   input logic tock_reset
 );
  /*public:*/

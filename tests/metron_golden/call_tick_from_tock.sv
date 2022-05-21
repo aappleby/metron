@@ -6,6 +6,7 @@
 module Module
 (
   input logic clock,
+  // tock()
   input logic[7:0] tock_val
 );
 /*public:*/

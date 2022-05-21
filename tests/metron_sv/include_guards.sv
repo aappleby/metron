@@ -5,6 +5,7 @@
 
 module Module
 (
+  // blah()
   output int blah_ret
 );
 /*public:*/

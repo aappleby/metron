@@ -5,6 +5,7 @@
 module Module
 (
   output logic[7:0] my_signal,
+  // tock()
   output int tock_ret
 );
 /*public:*/

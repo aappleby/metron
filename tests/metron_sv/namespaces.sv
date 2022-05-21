@@ -12,6 +12,7 @@ module Module
   input logic clock,
   output int my_sig,
   output int my_reg,
+  // tock()
   output int tock_ret
 );
 /*public:*/

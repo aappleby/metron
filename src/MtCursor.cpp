@@ -1984,6 +1984,12 @@ CHECK_RETURN Err MtCursor::emit_return_binding(MtMethod* m, MnNode node_type, Mn
 CHECK_RETURN Err MtCursor::emit_method_ports(MtMethod* m) {
   Err err;
 
+  if (m->param_nodes.size() || m->has_return()) {
+    err << emit_indent();
+    err << emit_print("// %s()", m->cname());
+    err << emit_newline();
+  }
+
   int param_count = m->param_nodes.size();
   for (int i = 0; i < param_count; i++) {
     auto param = m->param_nodes[i];

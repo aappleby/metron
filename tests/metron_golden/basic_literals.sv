@@ -5,7 +5,9 @@
 
 module Module
 (
+  // test1()
   output int test1_ret,
+  // test2()
   output int test2_ret
 );
 /*public:*/

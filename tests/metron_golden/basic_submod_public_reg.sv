@@ -24,6 +24,7 @@ endmodule
 module Module
 (
   input logic clock,
+  // get_submod_reg()
   output logic[7:0] get_submod_reg_ret
 );
 /*public:*/

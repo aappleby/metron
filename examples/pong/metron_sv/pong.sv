@@ -25,8 +25,11 @@ module Pong
   output logic vga_R,
   output logic vga_G,
   output logic vga_B,
+  // pix_x()
   output logic[9:0] pix_x_ret,
+  // pix_y()
   output logic[9:0] pix_y_ret,
+  // tock_game()
   input logic tock_game_in_quad_a,
   input logic tock_game_in_quad_b
 );

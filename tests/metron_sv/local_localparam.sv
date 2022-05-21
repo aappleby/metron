@@ -2,6 +2,7 @@
 
 module Module
 (
+  // func()
   output logic[7:0] func_ret
 );
 /*public:*/

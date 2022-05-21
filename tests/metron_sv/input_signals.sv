@@ -9,6 +9,7 @@ module Submod
   input logic[7:0] i_signal,
   output logic[7:0] o_signal,
   output logic[7:0] o_reg,
+  // tock()
   input logic[7:0] tock_i_param,
   output logic[7:0] tock_ret
 );

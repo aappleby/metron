@@ -4,7 +4,9 @@
 
 module Module
 (
+  // test2()
   output logic[7:0] test2_ret,
+  // test3()
   output logic[7:0] test3_ret
 );
 /*public:*/

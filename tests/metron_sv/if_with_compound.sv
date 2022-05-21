@@ -5,6 +5,7 @@
 module Submod
 (
   input logic clock,
+  // tock()
   input logic[7:0] tock_arg
 );
 /*public:*/

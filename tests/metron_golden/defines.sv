@@ -9,6 +9,7 @@
 
 module Module
 (
+  // test()
   output logic[7:0] test_ret
 );
 /*public:*/

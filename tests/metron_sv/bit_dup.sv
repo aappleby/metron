@@ -2,7 +2,9 @@
 
 module Module
 (
+  // test_dup1()
   output int test_dup1_ret,
+  // test_dup4()
   output int test_dup4_ret
 );
 /*public:*/

@@ -5,6 +5,7 @@
 module Module
 (
   input logic clock,
+  // get_reg()
   output logic[6:0] get_reg_ret
 );
 /*public:*/

@@ -8,6 +8,7 @@ module Module
   input int input_val,
   output int output1,
   output int output2,
+  // tock2()
   input int tock2_input_val
 );
 /*public:*/

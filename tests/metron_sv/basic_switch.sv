@@ -5,6 +5,7 @@
 module Module
 (
   input logic clock,
+  // tock()
   input logic[1:0] tock_selector
 );
 /*public:*/

@@ -19,6 +19,7 @@ endmodule
 
 module Module
 (
+  // tock()
   output logic[19:0] tock_ret
 );
 /*public:*/

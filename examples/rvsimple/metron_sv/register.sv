@@ -26,13 +26,12 @@ module single_register
   always_comb begin : tock  end
 
  /*private:*/
-  task automatic tick();
+  always_ff @(posedge clock) begin : tick
     if (reset)
       value <= INITIAL;
     else if (write_enable)
       value <= next;
-  endtask
-  always_ff @(posedge clock) tick();
+  end
 endmodule
 
 `endif // REGISTER_H

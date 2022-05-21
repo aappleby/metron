@@ -41,11 +41,10 @@ module regfile
 
  /*private:*/
   // Write port for rd
-  task automatic tick();
+  always_ff @(posedge clock) begin : tick
     if (write_enable)
       if (rd_address != 5'b0) _register[rd_address] = rd_data;
-  endtask
-  always_ff @(posedge clock) tick();
+  end
 endmodule
 
 `endif // REGFILE_H

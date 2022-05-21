@@ -15,10 +15,9 @@ module Module
 
   localparam int my_val = 7;
 
-  task automatic tick();
+  always_ff @(posedge clock) begin : tick
     my_reg <= my_reg + my_val;
-  endtask
-  always_ff @(posedge clock) tick();
+  end
 
   logic[6:0] my_reg;
 endmodule

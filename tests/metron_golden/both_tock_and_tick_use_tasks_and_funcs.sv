@@ -31,12 +31,11 @@ module Module
 
 /*private:*/
 
-  task automatic tick(int w);
-    private_task(private_func(w));
+  always_ff @(posedge clock) begin : tick
+    private_task(private_func(tick_w));
     my_reg2 <= my_reg2 + 1;
-  endtask
+  end
   int tick_w;
-  always_ff @(posedge clock) tick(tick_w);
 
   task automatic private_task(logic[7:0] x);
     my_reg1 <= my_reg1 + private_func(x);

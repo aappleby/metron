@@ -41,8 +41,8 @@ module uart_tx
   endfunction
   always_comb idle_ret = idle();
 
-  task automatic tick(logic i_rstn, logic[7:0] i_data, logic i_req);
-    if (!i_rstn) begin
+  always_ff @(posedge clock) begin : tick
+    if (!tick_i_rstn) begin
       cycle <= 0;
       cursor <= 0;
       buffer <= 12'h1FF;
@@ -53,11 +53,11 @@ module uart_tx
       cursor_max = (cursor_bits)'(10 + extra_stop_bits - 1);
 
       if (/*cursor <= extra_stop_bits*/ extra_stop_bits >= cursor &&
-          cycle == 0 && i_req) begin
+          cycle == 0 && tick_i_req) begin
         // Transmit start
         cycle <= cycle_max;
         cursor <= cursor_max;
-        buffer <= i_data << 1;
+        buffer <= tick_i_data << 1;
       end else if (cycle != 0) begin
         // Bit delay
         cycle <= cycle - 1;
@@ -70,8 +70,7 @@ module uart_tx
         buffer <= (buffer >> 1) | 12'h100;
       end
     end
-  endtask
-  always_ff @(posedge clock) tick(tick_i_rstn, tick_i_data, tick_i_req);
+  end
 
   //----------------------------------------
 /*private:*/

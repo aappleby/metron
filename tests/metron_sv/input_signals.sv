@@ -22,10 +22,9 @@ module Submod
 
 /*private:*/
 
-  task automatic tick();
+  always_ff @(posedge clock) begin : tick
     o_reg <= o_reg + o_signal;
-  endtask
-  always_ff @(posedge clock) tick();
+  end
 endmodule
 
 module Module
@@ -46,10 +45,9 @@ module Module
 
 /*private:*/
 
-  task automatic tick();
+  always_ff @(posedge clock) begin : tick
     my_reg <= my_reg + my_sig - 2;
-  endtask
-  always_ff @(posedge clock) tick();
+  end
 
   logic[7:0] my_sig;
 

@@ -63,13 +63,11 @@ module Module
     tock_params_return_ret = my_sig4;
   end
 
-  task automatic tick_no_params();
+  always_ff @(posedge clock) begin : tick_no_params
     my_reg1 <= my_reg1 + 1;
-  endtask
-  always_ff @(posedge clock) tick_no_params();
+  end
 
-  task automatic tick_params(int x);
-    my_reg2 <= my_reg2 + x;
-  endtask
-  always_ff @(posedge clock) tick_params(tick_params_x);
+  always_ff @(posedge clock) begin : tick_params
+    my_reg2 <= my_reg2 + tick_params_x;
+  end
 endmodule

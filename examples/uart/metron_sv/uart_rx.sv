@@ -23,8 +23,8 @@ module uart_rx
   function logic[31:0] sum();  sum = _sum; endfunction
   always_comb sum_ret = sum();
 
-  task automatic tick(logic i_rstn, logic i_serial);
-    if (!i_rstn) begin
+  always_ff @(posedge clock) begin : tick
+    if (!tick_i_rstn) begin
       _cycle <= 0;
       _cursor <= 0;
       _buffer <= 0;
@@ -34,18 +34,17 @@ module uart_rx
         _cycle <= _cycle - 1;
       end else if (_cursor != 0) begin
         logic[7:0] temp;
-        temp = (i_serial << 7) | (_buffer >> 1);
+        temp = (tick_i_serial << 7) | (_buffer >> 1);
         if (_cursor - 1 == 1) _sum <= _sum + temp;
         _cycle <= cycle_max;
         _cursor <= _cursor - 1;
         _buffer <= temp;
-      end else if (i_serial == 0) begin
+      end else if (tick_i_serial == 0) begin
         _cycle <= cycle_max;
         _cursor <= cursor_max;
       end
     end
-  endtask
-  always_ff @(posedge clock) tick(tick_i_rstn, tick_i_serial);
+  end
 
   //----------------------------------------
  /*private:*/

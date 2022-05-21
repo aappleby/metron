@@ -42,8 +42,8 @@ module toplevel
   localparam int OP_LUI = 8'h37;
   localparam int OP_AUIPC = 8'h17;
 
-  task automatic tick(logic reset);
-    if (reset) begin
+  always_ff @(posedge clock) begin : tick
+    if (tick_reset) begin
       pc <= 0;
       regs[0] = 32'd0;
       bus_read_data <= 0;
@@ -236,9 +236,8 @@ module toplevel
         pc <= pc + 4;
       end
     end
-  endtask
+  end
   logic tick_reset;
-  always_ff @(posedge clock) tick(tick_reset);
 
   logic[31:0] text_mem[32 * 1024];
   logic[31:0] data_mem[32 * 1024];

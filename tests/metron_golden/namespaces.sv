@@ -22,8 +22,7 @@ module Module
     tock_ret = my_sig;
   end
 
-  task automatic tick();
+  always_ff @(posedge clock) begin : tick
     my_reg <= my_reg + MyPackage::foo;
-  endtask
-  always_ff @(posedge clock) tick();
+  end
 endmodule

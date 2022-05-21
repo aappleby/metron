@@ -15,10 +15,9 @@ module Module
 
 /*private:*/
 
-  task automatic tick();
+  always_ff @(posedge clock) begin : tick
     my_reg <= 1;
-  endtask
-  always_ff @(posedge clock) tick();
+  end
 
   logic my_sig;
   logic my_reg;

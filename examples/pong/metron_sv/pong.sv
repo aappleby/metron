@@ -85,7 +85,7 @@ module Pong
   //----------------------------------------
 
  /*private:*/
-  task automatic tick(logic in_quad_a, logic in_quad_b);
+  always_ff @(posedge clock) begin : tick
     logic[9:0] new_px;
     logic[9:0] new_py;
     logic quad_dir;
@@ -161,12 +161,11 @@ module Pong
     ball_dx <= new_ball_dx;
     ball_dy <= new_ball_dy;
 
-    quad_a <= quad_a << 1 | in_quad_a;
-    quad_b <= quad_b << 1 | in_quad_b;
-  endtask
+    quad_a <= quad_a << 1 | tick_in_quad_a;
+    quad_b <= quad_b << 1 | tick_in_quad_b;
+  end
   logic tick_in_quad_a;
   logic tick_in_quad_b;
-  always_ff @(posedge clock) tick(tick_in_quad_a, tick_in_quad_b);
 
   //----------------------------------------
 

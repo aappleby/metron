@@ -31,7 +31,7 @@ module example_data_memory
   end
 
  /*private:*/
-  task automatic tick();
+  always_ff @(posedge clock) begin : tick
     if (wren) begin
       logic[31:0] mask;
       // doing this slightly differently from rvsimple so we don't have to do
@@ -43,8 +43,7 @@ module example_data_memory
       if (byteena[3]) mask = mask | 32'hFF000000;
       mem[address] = (mem[address] & ~mask) | (data & mask);
     end
-  endtask
-  always_ff @(posedge clock) tick();
+  end
 
  /*public:*/
   initial begin

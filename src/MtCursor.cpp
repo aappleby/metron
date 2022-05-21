@@ -978,13 +978,12 @@ CHECK_RETURN Err MtCursor::emit_func_as_task(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_func_as_always_comb(MnNode n) {
   Err err;
 
-  auto old_replacements = id_replacements;
-
   auto func_ret = n.get_field(field_type);
   auto func_decl = n.get_field(field_declarator);
   auto func_body = n.get_field(field_body);
   auto func_params = func_decl.get_field(field_parameters);
 
+  auto old_replacements = id_replacements;
   for (auto c : func_params) {
     if (!c.is_named()) continue;
     id_replacements[c.name4()] = func_decl.name4() + "_" + c.name4();
@@ -1011,13 +1010,22 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_ff(MnNode n) {
   auto func_ret = n.get_field(field_type);
   auto func_decl = n.get_field(field_declarator);
   auto func_body = n.get_field(field_body);
+  auto func_params = func_decl.get_field(field_parameters);
 
-  err << emit_print("always_ff @(posedge clock) : %s", func_decl.name4().c_str());
+  auto old_replacements = id_replacements;
+  for (auto c : func_params) {
+    if (!c.is_named()) continue;
+    id_replacements[c.name4()] = func_decl.name4() + "_" + c.name4();
+  }
+
+  err << emit_print("always_ff @(posedge clock) begin : %s", func_decl.name4().c_str());
   err << skip_over(func_ret);
   err << skip_ws();
   err << skip_over(func_decl);
   err << skip_ws();
-  err << emit_sym_compound_statement(func_body, "begin", "end");
+  err << emit_sym_compound_statement(func_body, "", "end");
+
+  id_replacements = old_replacements;
 
   assert(cursor == n.end());
   return err;
@@ -1066,26 +1074,30 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
   //----------
   // Emit a block declaration for the type of function we're in.
 
+  bool emit_as_always_comb = false;
+  bool emit_as_always_ff = false;
   bool needs_trigger = false;
   bool needs_binding = false;
 
-  if (current_method->in_tock && !current_method->called_in_module()) {
-    err << emit_func_as_always_comb(n);
+  if (current_method->in_tock && !current_method->called_in_tock()) {
+    emit_as_always_comb = true;
   }
-  else if (current_method->in_tick && !current_method->called_in_module()) {
-    err << emit_func_as_task(n);
+  else if (current_method->in_tick && !current_method->called_in_tick()) {
+    emit_as_always_ff = true;
   }
   else if (current_method->is_constructor()) {
     err << emit_func_as_init(n);
   }
   else if (current_method->in_init) {
     err << emit_func_as_task(n);
+    //err << emit_func_as_func(n);
   }
   else if (current_method->in_tick) {
     err << emit_func_as_task(n);
   }
   else if (current_method->in_tock) {
     err << emit_func_as_func(n);
+    //err << emit_func_as_always_comb(n);
   }
   else if (current_method->in_func) {
     err << emit_func_as_func(n);
@@ -1094,12 +1106,17 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
     err << ERR("wat\n");
   }
 
-  if (current_method->in_tick && current_method->called_by_tock()) {
-    needs_binding = true;
+  if (emit_as_always_comb) {
+    err << emit_func_as_always_comb(n);
   }
 
-  if (current_method->in_tick && !current_method->called_in_tick()) {
-    needs_trigger = true;
+  if (emit_as_always_ff) {
+    err << emit_func_as_always_ff(n);
+  }
+
+
+  if (current_method->in_tick && current_method->called_by_tock()) {
+    needs_binding = true;
   }
 
   if (current_method->in_func && current_method->is_public() && !current_method->called_in_module()) {

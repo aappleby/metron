@@ -15,11 +15,10 @@ module Module
 
 /*private:*/
 
-  task automatic tick();
+  always_ff @(posedge clock) begin : tick
     my_reg <= my_reg + my_reg2 + 3;
     some_task2();
-  endtask
-  always_ff @(posedge clock) tick();
+  end
 
   task automatic some_task2();
     my_reg2 <= my_reg2 + 3;

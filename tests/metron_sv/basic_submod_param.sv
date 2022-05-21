@@ -14,10 +14,9 @@ module Submod
 
 /*private:*/
 
-  task automatic tick();
+  always_ff @(posedge clock) begin : tick
     sub_reg <= sub_reg + SOME_CONSTANT;
-  endtask
-  always_ff @(posedge clock) tick();
+  end
 
   logic[7:0] sub_reg;
 endmodule

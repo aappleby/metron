@@ -17,15 +17,13 @@ module Module
 
 /*private:*/
 
-  task automatic tick1();
+  always_ff @(posedge clock) begin : tick1
     my_reg1 <= 0;
-  endtask
-  always_ff @(posedge clock) tick1();
+  end
 
-  task automatic tick2();
+  always_ff @(posedge clock) begin : tick2
     my_reg2 <= 1;
-  endtask
-  always_ff @(posedge clock) tick2();
+  end
 
   logic[7:0] my_reg1;
   logic[7:0] my_reg2;

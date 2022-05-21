@@ -14,8 +14,7 @@ module Module
 a = 1; a = a + 7; test = a; endfunction
   always_comb test_ret = test();
 
-  task automatic tick();  if (my_reg & 1) my_reg <= my_reg - 7; endtask
-  always_ff @(posedge clock) tick();
+  always_ff @(posedge clock) begin : tick if (my_reg & 1) my_reg <= my_reg - 7; end
 
 
 endmodule

@@ -26,15 +26,15 @@ module uart_hello
   function logic done();  done = _state == DONE; endfunction
   always_comb done_ret = done();
 
-  task automatic tick(logic i_rstn, logic i_cts, logic i_idle);
-    if (!i_rstn) begin
+  always_ff @(posedge clock) begin : tick
+    if (!tick_i_rstn) begin
       _state <= WAIT;
       _cursor <= 0;
     end else begin
       _data <= _memory[_cursor];
-      if (_state == WAIT && i_idle) begin
+      if (_state == WAIT && tick_i_idle) begin
         _state <= SEND;
-      end else if (_state == SEND && i_cts) begin
+      end else if (_state == SEND && tick_i_cts) begin
         if (_cursor == 9'(message_len - 1)) begin
           _state <= DONE;
         end else begin
@@ -45,8 +45,7 @@ module uart_hello
         _cursor <= 0;
       end
     end
-  endtask
-  always_ff @(posedge clock) tick(tick_i_rstn, tick_i_cts, tick_i_idle);
+  end
 
 /*private:*/
   //----------------------------------------

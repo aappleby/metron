@@ -15,8 +15,8 @@ module Module
 
 /*private:*/
 
-  task automatic tick(logic[1:0] selector);
-    case(selector)
+  always_ff @(posedge clock) begin : tick
+    case(tick_selector)
       0: // comment
         my_reg <= 17;
       1:  // comment
@@ -27,9 +27,8 @@ module Module
       5,
       6: my_reg <= 72;
     endcase
-  endtask
+  end
   logic[1:0] tick_selector;
-  always_ff @(posedge clock) tick(tick_selector);
 
   logic[7:0] my_reg;
 endmodule

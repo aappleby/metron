@@ -1,19 +1,10 @@
-#include "metron_tools.h"
+// Prefixing a method with "tick_" should force it to be a tick if it would
+// otherwise be ambiguous
 
-class Module {
+class Adder {
 public:
-  void only_calls_private_tick() {
-    private_tick(17);
-  }
 
-  // FIXME
-  //logic<1> serial() /*foo*/ const /*bar*/ {
-  //  return 1;
-  //}
-
-private:
-  int my_reg4;
-  void private_tick(int x) {
-    my_reg4 = my_reg4 + x;
+  int tick_add(int a, int b) {
+    return a + b;
   }
 };

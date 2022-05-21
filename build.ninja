@@ -70,7 +70,6 @@ build docs/app/examples.data docs/app/examples.js: command tests/Tests.h $
     tests/metron_bad/if_with_no_compound.h $
     tests/metron_bad/mid_block_break.h tests/metron_bad/basic_sig_wrw.h $
     tests/metron_bad/mid_block_return.h tests/metron_bad/too_many_breaks.h $
-    tests/metron_bad/tick_with_return_value.h $
     tests/metron_bad/case_without_break.h $
     tests/metron_bad/multiple_tock_returns.h $
     tests/metron_bad/bowtied_signals.h tests/metron_bad/basic_reg_rwr.h $
@@ -85,14 +84,17 @@ build docs/app/examples.data docs/app/examples.js: command tests/Tests.h $
     tests/metron_good/both_tock_and_tick_use_tasks_and_funcs.h $
     tests/metron_good/magic_comments.h tests/metron_good/defines.h $
     tests/metron_good/bit_concat.h tests/metron_good/basic_public_sig.h $
-    tests/metron_good/good_order.h tests/metron_good/basic_template.h $
-    tests/metron_good/bit_casts.h tests/metron_good/call_tick_from_tock.h $
+    tests/metron_good/force_tick.h tests/metron_good/good_order.h $
+    tests/metron_good/basic_template.h tests/metron_good/bit_casts.h $
+    tests/metron_good/tick_with_return_value.h $
+    tests/metron_good/call_tick_from_tock.h $
     tests/metron_good/utf8-mod.bom.h tests/metron_good/basic_submod_param.h $
     tests/metron_good/tock_task.h tests/metron_good/basic_sig_wwr.h $
-    tests/metron_good/basic_submod.h tests/metron_good/dontcare.h $
-    tests/metron_good/basic_param.h tests/metron_good/basic_output.h $
-    tests/metron_good/submod_bindings.h tests/metron_good/basic_function.h $
-    tests/metron_good/builtins.h tests/metron_good/basic_localparam.h $
+    tests/metron_good/all_func_types.h tests/metron_good/basic_submod.h $
+    tests/metron_good/dontcare.h tests/metron_good/basic_param.h $
+    tests/metron_good/basic_output.h tests/metron_good/submod_bindings.h $
+    tests/metron_good/basic_function.h tests/metron_good/builtins.h $
+    tests/metron_good/basic_localparam.h $
     tests/metron_good/basic_constructor.h $
     tests/metron_good/basic_public_reg.h tests/metron_good/basic_literals.h $
     tests/metron_good/basic_switch.h tests/metron_good/bit_dup.h $

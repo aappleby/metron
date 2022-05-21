@@ -2728,8 +2728,14 @@ CHECK_RETURN Err MtCursor::emit_sym_return(MnNode n) {
   for (auto c : n) {
     if (c.sym == anon_sym_return) {
 
-      if (current_method->in_tock || (current_method->in_func && current_method->is_public() && !current_method->called_in_module())) {
+      if (current_method->in_tock) {
         err << emit_replacement(c, "%s_ret =", current_method->name().c_str());
+      }
+      else if (current_method->in_func && current_method->is_public() && !current_method->called_in_module()) {
+        err << emit_replacement(c, "%s_ret =", current_method->name().c_str());
+      }
+      else if (current_method->in_tick) {
+        err << emit_replacement(c, "%s_ret <=", current_method->name().c_str());
       }
       else {
         err << emit_replacement(c, "%s =", current_method->name().c_str());

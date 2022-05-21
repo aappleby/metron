@@ -106,6 +106,7 @@ struct MtMethod {
   bool emit_as_func = false;
   bool needs_trigger = false;
   bool needs_binding = false;
+  bool needs_ports = false;
 
   std::vector<MnNode> param_nodes;
 

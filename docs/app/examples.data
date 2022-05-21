@@ -1,12 +1,17 @@
-// Prefixing a method with "tick_" should force it to be a tick if it would
-// otherwise be ambiguous
+#include "metron_tools.h"
 
-class Adder {
-public:
+// Tick methods are not allowed to have a return value.
+// X Tick method Module.tick is not allowed to have a return value.
 
-  int tick_add(int a, int b) {
-    return a + b;
+class Module {
+ public:
+  logic<2> tick() {
+    my_reg = my_reg + 1;
+    return 8;
   }
+
+ private:
+  logic<2> my_reg;
 };
 A trivial single-file, single-function, single-cycle RISC-V core.
 
@@ -4473,6 +4478,21 @@ public:
 };
 #include "metron_tools.h"
 
+// Tick methods are not allowed to have a return value.
+// X Tick method Module.tick is not allowed to have a return value.
+
+class Module {
+ public:
+  logic<2> tick() {
+    my_reg = my_reg + 1;
+    return 8;
+  }
+
+ private:
+  logic<2> my_reg;
+};
+#include "metron_tools.h"
+
 // Calling tick() from tock() in the same module should work and should
 // generate bindings for the tick() call.
 
@@ -5656,21 +5676,6 @@ class Module {
   void tick() { my_reg = my_reg + 1; }
 
   logic<8> my_reg;
-};
-#include "metron_tools.h"
-
-// Tick methods are not allowed to have a return value.
-// X Tick method Module.tick is not allowed to have a return value.
-
-class Module {
- public:
-  logic<2> tick() {
-    my_reg = my_reg + 1;
-    return 8;
-  }
-
- private:
-  logic<2> my_reg;
 };
 #include "metron_tools.h"
 

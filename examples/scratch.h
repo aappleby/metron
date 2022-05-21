@@ -1,10 +1,15 @@
-// Prefixing a method with "tick_" should force it to be a tick if it would
-// otherwise be ambiguous
+#include "metron_tools.h"
 
-class Adder {
-public:
+// Tick methods are not allowed to have a return value.
+// X Tick method Module.tick is not allowed to have a return value.
 
-  int tick_add(int a, int b) {
-    return a + b;
+class Module {
+ public:
+  logic<2> tick() {
+    my_reg = my_reg + 1;
+    return 8;
   }
+
+ private:
+  logic<2> my_reg;
 };

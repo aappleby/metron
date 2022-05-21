@@ -512,6 +512,12 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
 
   for (auto mod : modules) {
     for (auto m : mod->all_methods) {
+
+      if (m->_name == "tick") {
+        int x = 0;
+        x++;
+      }
+
       m->emit_as_always_comb = m->in_tock && !m->called_in_tock();
       m->emit_as_always_ff = m->in_tick && !m->called_in_tick();
 
@@ -540,12 +546,26 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
         err << ERR("wat\n");
       }
 
-      if (m->in_tick && m->called_by_tock()) {
-        m->needs_binding = true;
+      if (m->in_func && m->is_public() && !m->called_in_module()) {
+        m->needs_ports = true;
       }
 
-      if (m->in_tock && m->called_by_tock()) {
-        m->needs_binding = true;
+      if (m->in_tick) {
+        if (!m->called_in_module()) {
+          m->needs_ports = true;
+        }
+        else if (m->called_by_tock()) {
+          m->needs_binding = true;
+        }
+      }
+
+      if (m->in_tock) {
+        if (m->called_in_module()) {
+          m->needs_binding = true;
+        }
+        else {
+          m->needs_ports = true;
+        }
       }
 
 

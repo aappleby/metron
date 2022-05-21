@@ -2590,12 +2590,15 @@ CHECK_RETURN Err MtCursor::emit_sym_return(MnNode n) {
     if (c.sym == anon_sym_return) {
 
       if (current_method->in_tock) {
+        assert(current_method->needs_binding || current_method->needs_ports);
         err << emit_replacement(c, "%s_ret =", current_method->name().c_str());
       }
       else if (current_method->in_func && current_method->is_public() && !current_method->called_in_module()) {
+        assert(current_method->needs_binding || current_method->needs_ports);
         err << emit_replacement(c, "%s_ret =", current_method->name().c_str());
       }
       else if (current_method->in_tick) {
+        assert(current_method->needs_binding || current_method->needs_ports);
         err << emit_replacement(c, "%s_ret <=", current_method->name().c_str());
       }
       else {

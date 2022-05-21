@@ -12,6 +12,7 @@ module Module
   output int my_sig6b,
   output int my_reg1,
   output int my_reg2,
+  output int my_reg3,
   output int func_no_params_return_ret,
   input int func_params_return_x,
   output int func_params_return_ret,
@@ -73,7 +74,9 @@ module Module
     my_sig5 = 12 + my_func5(tock_calls_funcs_x);
   end
 
-  function int my_func5(int x);  my_func5 = x + 1; endfunction
+  function int my_func5(int x);
+    my_func5 = x + 1;
+  endfunction
 
   always_comb begin : tock_calls_tock
     my_sig6a = 12;
@@ -88,12 +91,20 @@ module Module
 
   //----------
 
-
   always_ff @(posedge clock) begin : tick_no_params
     my_reg1 <= my_reg1 + 1;
+    tick_called_by_tick(func_called_by_tick(1));
   end
 
   always_ff @(posedge clock) begin : tick_params
     my_reg2 <= my_reg2 + tick_params_x;
   end
+
+  task automatic tick_called_by_tick(int x);
+    my_reg3 <= my_reg3 + x;
+  endtask
+
+  function int func_called_by_tick(int x);
+    func_called_by_tick = x + 7;
+  endfunction
 endmodule

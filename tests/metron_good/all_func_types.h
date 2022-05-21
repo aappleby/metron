@@ -51,7 +51,9 @@ public:
     my_sig5 = 12 + my_func5(x);
   }
 
-  int my_func5(int x) { return x + 1; }
+  int my_func5(int x) {
+    return x + 1;
+  }
 
   int my_sig6a;
   int tock_calls_tock(int x) {
@@ -68,13 +70,22 @@ public:
   //----------
 
   int my_reg1;
-  int my_reg2;
-
   void tick_no_params() {
     my_reg1 = my_reg1 + 1;
+    tick_called_by_tick(func_called_by_tick(1));
   }
 
+  int my_reg2;
   void tick_params(int x) {
     my_reg2 = my_reg2 + x;
+  }
+
+  int my_reg3;
+  void tick_called_by_tick(int x) {
+    my_reg3 = my_reg3 + x;
+  }
+
+  int func_called_by_tick(int x) {
+    return x + 7;
   }
 };

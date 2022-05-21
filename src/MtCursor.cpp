@@ -1076,6 +1076,8 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
 
   bool emit_as_always_comb = false;
   bool emit_as_always_ff = false;
+  bool emit_as_task = false;
+  bool emit_as_func = false;
   bool needs_trigger = false;
   bool needs_binding = false;
 
@@ -1089,18 +1091,16 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
     err << emit_func_as_init(n);
   }
   else if (current_method->in_init) {
-    err << emit_func_as_task(n);
-    //err << emit_func_as_func(n);
+    emit_as_task = true;
   }
   else if (current_method->in_tick) {
-    err << emit_func_as_task(n);
+    emit_as_task = true;
   }
   else if (current_method->in_tock) {
-    err << emit_func_as_func(n);
-    //err << emit_func_as_always_comb(n);
+    emit_as_func = true;
   }
   else if (current_method->in_func) {
-    err << emit_func_as_func(n);
+    emit_as_func = true;
   }
   else {
     err << ERR("wat\n");
@@ -1112,6 +1112,14 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
 
   if (emit_as_always_ff) {
     err << emit_func_as_always_ff(n);
+  }
+
+  if (emit_as_task) {
+    err << emit_func_as_task(n);
+  }
+
+  if (emit_as_func) {
+    err << emit_func_as_func(n);
   }
 
 

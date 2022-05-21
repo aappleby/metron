@@ -737,7 +737,7 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
         n.error();
       }
 
-      if (current_method->in_tock && dst_method->in_tick) {
+      if (dst_method->needs_binding) {
         err << comment_out(n);
       }
       else {

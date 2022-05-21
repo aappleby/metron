@@ -32,10 +32,9 @@ module Module
 );
 /*public:*/
 
-  function logic[7:0] get_submod_reg();
-    get_submod_reg = submod_sub_reg;
-  endfunction
-  always_comb get_submod_reg_ret = get_submod_reg();
+  always_comb begin : get_submod_reg
+    get_submod_reg_ret = submod_sub_reg;
+  end
 
   always_comb begin : tock
   end

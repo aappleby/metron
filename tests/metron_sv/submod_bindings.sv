@@ -16,10 +16,8 @@ module Submod
 );
 /*public:*/
 
-  function logic[7:0] sum_a(logic[7:0] a1, logic[7:0] a2);  sum_a = a1 + a2; endfunction
-  always_comb sum_a_ret = sum_a(sum_a_a1, sum_a_a2);
-  function logic[7:0] sum_b(logic[7:0] b1, logic[7:0] b2);  sum_b = b1 + b2; endfunction
-  always_comb sum_b_ret = sum_b(sum_b_b1, sum_b_b2);
+  always_comb begin : sum_a sum_a_ret = sum_a_a1 + sum_a_a2; end
+  always_comb begin : sum_b sum_b_ret = sum_b_b1 + sum_b_b2; end
 endmodule
 
 module Module

@@ -24,12 +24,17 @@ module uart_hello
 /*public:*/
   initial begin $readmemh("examples/uart/message.hex", _memory, 0, 511); end
 
-  function logic[7:0] data();  data = _data; endfunction
-  always_comb data_ret = data();
-  function logic req();  req = _state == SEND; endfunction
-  always_comb req_ret = req();
-  function logic done();  done = _state == DONE; endfunction
-  always_comb done_ret = done();
+  always_comb begin : data
+    data_ret = _data;
+  end
+
+  always_comb begin : req
+    req_ret = _state == SEND;
+  end
+
+  always_comb begin : done
+    done_ret = _state == DONE;
+  end
 
   always_ff @(posedge clock) begin : tick
     if (!tick_i_rstn) begin

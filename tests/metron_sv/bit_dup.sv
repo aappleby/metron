@@ -9,16 +9,15 @@ module Module
 );
 /*public:*/
 
-  function int test_dup1();
+  always_comb begin : test_dup1
     logic a1;
     logic b1;
     a1 = 1'b1;
     b1 = {1 {a1}};
-    test_dup1 = 0;
-  endfunction
-  always_comb test_dup1_ret = test_dup1();
+    test_dup1_ret = 0;
+  end
 
-  function int test_dup4();
+  always_comb begin : test_dup4
     logic  a1;
     logic[3:0]  b1;
     logic[1:0]  a2;
@@ -58,7 +57,6 @@ module Module
 
     a8 = 8'b00000001;
     b8 = {4 {a8}};
-    test_dup4 = 0;
-  endfunction
-  always_comb test_dup4_ret = test_dup4();
+    test_dup4_ret = 0;
+  end
 endmodule

@@ -58,10 +58,8 @@ module Pong
 
   //----------------------------------------
 
-  function logic[9:0] pix_x();  pix_x = px; endfunction
-  always_comb pix_x_ret = pix_x();
-  function logic[9:0] pix_y();  pix_y = py; endfunction
-  always_comb pix_y_ret = pix_y();
+  always_comb begin : pix_x pix_x_ret = px; end
+  always_comb begin : pix_y pix_y_ret = py; end
 
   //----------------------------------------
 

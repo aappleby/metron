@@ -30,21 +30,18 @@ module uart_tx
 
   //----------------------------------------
 
-  function logic serial();
-    serial = buffer & 1;
-  endfunction
-  always_comb serial_ret = serial();
+  always_comb begin : serial
+    serial_ret = buffer & 1;
+  end
 
-  function logic cts();
-    cts = ((cursor == extra_stop_bits) && (cycle == 0)) ||
+  always_comb begin : cts
+    cts_ret = ((cursor == extra_stop_bits) && (cycle == 0)) ||
            (cursor < extra_stop_bits);
-  endfunction
-  always_comb cts_ret = cts();
+  end
 
-  function logic idle();
-    idle = (cursor == 0) && (cycle == 0);
-  endfunction
-  always_comb idle_ret = idle();
+  always_comb begin : idle
+    idle_ret = (cursor == 0) && (cycle == 0);
+  end
 
   always_ff @(posedge clock) begin : tick
     if (!tick_i_rstn) begin

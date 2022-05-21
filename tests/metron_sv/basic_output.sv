@@ -11,10 +11,9 @@ module Module
 );
 /*public:*/
 
-  function logic[6:0] get_reg();
-    get_reg = my_reg;
-  endfunction
-  always_comb get_reg_ret = get_reg();
+  always_comb begin : get_reg
+    get_reg_ret = my_reg;
+  end
 
   always_comb begin : tock
   end

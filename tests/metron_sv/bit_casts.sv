@@ -17,7 +17,7 @@ module Module
 );
 /*public:*/
 
-  function int test_bN();
+  always_comb begin : test_bN
     logic[63:0] src;
     logic[63:0] dst64;
     logic[62:0] dst63;
@@ -154,11 +154,10 @@ module Module
     dst3 = 3'(src);
     dst2 = 2'(src);
     dst1 = 1'(src);
-    test_bN = 0;
-  endfunction
-  always_comb test_bN_ret = test_bN();
+    test_bN_ret = 0;
+  end
 
-  function int test_bx_const();
+  always_comb begin : test_bx_const
     logic[63:0] src;
     logic[62:0] dst63;
     logic[61:0] dst62;
@@ -293,11 +292,10 @@ module Module
     dst3 = (3)'(src);
     dst2 = (2)'(src);
     dst1 = (1)'(src);
-    test_bx_const = 0;
-  endfunction
-  always_comb test_bx_const_ret = test_bx_const();
+    test_bx_const_ret = 0;
+  end
 
-  function int test_bN_offset();
+  always_comb begin : test_bN_offset
     logic[63:0] src;
     logic[7:0] dst0;
     logic[7:0] dst1;
@@ -321,14 +319,13 @@ module Module
     dst7 = src[14:7];
     dst8 = src[15:8];
     dst9 = src[16:9];
-    test_bN_offset = 0;
-  endfunction
-  always_comb test_bN_offset_ret = test_bN_offset();
+    test_bN_offset_ret = 0;
+  end
 
   localparam int some_size1 = 64;
   localparam int some_size2 = 8;
 
-  function int test_bx_param();
+  always_comb begin : test_bx_param
     logic[some_size1-1:0] a;
     logic[some_size2-1:0] b;
     logic[some_size2-1:0] b0;
@@ -355,12 +352,11 @@ module Module
     b8 = a[some_size2+7:8];
     b9 = a[some_size2+8:9];
 
-    test_bx_param = 0;
-  endfunction
-  always_comb test_bx_param_ret = test_bx_param();
+    test_bx_param_ret = 0;
+  end
 
 
-  function int test2();
+  always_comb begin : test2
     logic[31:0] a;
     logic b;
     logic[6:0] c;
@@ -374,9 +370,8 @@ module Module
     e = a[some_size1]; //static bit extract with variable offset, width 1
     f = a[6 + some_size2 : some_size2]; //static bit extract with variable offset, width N
 
-    test2 = 0;
-  endfunction
-  always_comb test2_ret = test2();
+    test2_ret = 0;
+  end
 
 
 

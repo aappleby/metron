@@ -21,12 +21,9 @@ module uart_rx
   input logic tick_i_serial
 );
 /*public:*/
-  function logic valid();  valid = _cursor == 1; endfunction
-  always_comb valid_ret = valid();
-  function logic[7:0] buffer();  buffer = _buffer; endfunction
-  always_comb buffer_ret = buffer();
-  function logic[31:0] sum();  sum = _sum; endfunction
-  always_comb sum_ret = sum();
+  always_comb begin : valid valid_ret = _cursor == 1; end
+  always_comb begin : buffer buffer_ret = _buffer; end
+  always_comb begin : sum sum_ret = _sum; end
 
   always_ff @(posedge clock) begin : tick
     if (!tick_i_rstn) begin

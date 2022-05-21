@@ -12,7 +12,7 @@ module Module
 );
 /*public:*/
 
-  function int test1();
+  always_comb begin : test1
     logic[31:0] a;
     logic[31:0] b;
     logic[31:0] c;
@@ -29,11 +29,10 @@ module Module
     f = 6'b000000;
     g = 7'b0000000;
     h = 8'b00000000;
-    test1 = 0;
-  endfunction
-  always_comb test1_ret = test1();
+    test1_ret = 0;
+  end
 
-  function int test2();
+  always_comb begin : test2
     logic[31:0] a;
     logic[31:0] b;
     logic[31:0] c;
@@ -50,8 +49,7 @@ module Module
     f = 6'b0_000_00;
     g = 7'b000_0000;
     h = 8'b0_0_0_0_0_0_0_0;
-    test2 = 0;
-  endfunction
-  always_comb test2_ret = test2();
+    test2_ret = 0;
+  end
 
 endmodule

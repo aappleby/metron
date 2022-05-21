@@ -9,10 +9,9 @@ module Submod1
   output logic[7:0] add_one_ret
 );
 /*public:*/
-  function logic[7:0] add_one(logic[7:0] a);
-    add_one = a + 1;
-  endfunction
-  always_comb add_one_ret = add_one(add_one_a);
+  always_comb begin : add_one
+    add_one_ret = add_one_a + 1;
+  end
 endmodule
 
 module Submod2
@@ -22,10 +21,9 @@ module Submod2
   output logic[7:0] add_two_ret
 );
 /*public:*/
-  function logic[7:0] add_two(logic[7:0] a);
-    add_two = a + 1;
-  endfunction
-  always_comb add_two_ret = add_two(add_two_a);
+  always_comb begin : add_two
+    add_two_ret = add_two_a + 1;
+  end
 endmodule
 
 module Module

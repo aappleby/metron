@@ -48,15 +48,13 @@ module Module
   }
   */
 
-  function int func_no_params_return();
-    func_no_params_return = 1;
-  endfunction
-  always_comb func_no_params_return_ret = func_no_params_return();
+  always_comb begin : func_no_params_return
+    func_no_params_return_ret = 1;
+  end
 
-  function int func_params_return(int x);
-    func_params_return = x + 1;
-  endfunction
-  always_comb func_params_return_ret = func_params_return(func_params_return_x);
+  always_comb begin : func_params_return
+    func_params_return_ret = func_params_return_x + 1;
+  end
 
   always_comb begin : tock_no_params_no_return
     int x;

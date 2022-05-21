@@ -13,10 +13,9 @@ module Module
     my_reg = 7;
   end
 
-  function logic[7:0] get_reg();
-    get_reg = my_reg;
-  endfunction
-  always_comb get_reg_ret = get_reg();
+  always_comb begin : get_reg
+    get_reg_ret = my_reg;
+  end
 
 /*private:*/
 

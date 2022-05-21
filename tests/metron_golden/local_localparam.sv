@@ -7,11 +7,10 @@ module Module
 );
 /*public:*/
 
-  function logic[7:0] func();
+  always_comb begin : func
     parameter thing1 = 1;
     parameter thing2 = 2;
-    func = thing1 + thing2;
-  endfunction
-  always_comb func_ret = func();
+    func_ret = thing1 + thing2;
+  end
 
 endmodule

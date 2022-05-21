@@ -38,7 +38,7 @@ struct MtMethod {
     return false;
   }
 
-  bool called() const {
+  bool called_in_module() const {
     return !internal_callers.empty();
   }
 

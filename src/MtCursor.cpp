@@ -1051,6 +1051,9 @@ CHECK_RETURN Err MtCursor::emit_trigger_ff(MnNode n) {
 
 // func_def = { field_type, field_declarator, field_body }
 
+// Tock func with no return is the problematic one for Yosys.
+// We can't emit as task, we're in tock and that would break sensitivity
+
 CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
   Err err = emit_ws_to(sym_function_definition, n);
 
@@ -1066,7 +1069,10 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
   bool needs_trigger = false;
   bool needs_binding = false;
 
-  if (current_method->is_constructor()) {
+  if (current_method->in_tock && !current_method->called_in_module()) {
+    err << emit_func_as_always_comb(n);
+  }
+  else if (current_method->is_constructor()) {
     err << emit_func_as_init(n);
   }
   else if (current_method->in_init) {
@@ -1074,43 +1080,30 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
   }
   else if (current_method->in_tick) {
     err << emit_func_as_task(n);
-
-    if (current_method->called_by_tock()) {
-      needs_binding = true;
-    }
-
-    if (!current_method->called_in_tick()) {
-      needs_trigger = true;
-    }
-
   }
   else if (current_method->in_tock) {
-    if (current_method->called()) {
-      if (current_method->has_return()) {
-        err << emit_func_as_func(n);
-      }
-      else {
-        // This is the problematic one for Yosys.
-        // We can't emit as task, we're in tock and that would break sensitivity
-        err << emit_func_as_func(n);
-      }
-    }
-    else {
-      err << emit_func_as_always_comb(n);
-    }
+    err << emit_func_as_func(n);
   }
   else if (current_method->in_func) {
     err << emit_func_as_func(n);
-
-    if (current_method->is_public() && !current_method->called()) {
-      needs_trigger = true;
-    }
   }
   else {
     err << ERR("wat\n");
   }
 
-    err << emit_ws_to_newline();
+  if (current_method->in_tick && current_method->called_by_tock()) {
+    needs_binding = true;
+  }
+
+  if (current_method->in_tick && !current_method->called_in_tick()) {
+    needs_trigger = true;
+  }
+
+  if (current_method->in_func && current_method->is_public() && !current_method->called_in_module()) {
+    needs_trigger = true;
+  }
+
+  err << emit_ws_to_newline();
 
   if (needs_binding) {
     for (auto n : current_method->param_nodes) {

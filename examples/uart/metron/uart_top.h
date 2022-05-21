@@ -11,11 +11,25 @@
 template <int cycles_per_bit = 3, int repeat_msg = 0>
 class uart_top {
 public:
-  logic<1> serial() { return tx.serial(); }
-  logic<8> data() { return rx.buffer(); }
-  logic<1> valid() { return rx.valid(); }
-  logic<1> done() { return hello.done() && tx.idle(); }
-  logic<32> sum() { return rx.sum(); }
+  logic<1> serial() {
+    return tx.serial();
+  }
+
+  logic<8> data() {
+    return rx.buffer();
+  }
+
+  logic<1> valid() {
+    return rx.valid();
+  }
+
+  logic<1> done() {
+    return hello.done() && tx.idle();
+  }
+
+  logic<32> sum() {
+    return rx.sum();
+  }
 
   logic<1> tock(logic<1> i_rstn) {
     logic<8> hello_data = hello.data();

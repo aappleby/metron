@@ -8,7 +8,9 @@
 template <int repeat_msg = 0>
 class uart_hello {
 public:
-  uart_hello() { readmemh("examples/uart/message.hex", _memory, 0, 511); }
+  uart_hello() {
+    readmemh("examples/uart/message.hex", _memory, 0, 511);
+  }
 
   logic<8> data() const {
     return _data;
@@ -44,8 +46,6 @@ public:
   }
 
 private:
-  //----------------------------------------
-
   static const int message_len = 512;
   static const int cursor_bits = clog2(message_len);
 

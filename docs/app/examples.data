@@ -6,6 +6,11 @@ public:
     private_tick(17);
   }
 
+  // FIXME
+  //logic<1> serial() /*foo*/ const /*bar*/ {
+  //  return 1;
+  //}
+
 private:
   int my_reg4;
   void private_tick(int x) {
@@ -3730,9 +3735,17 @@ fpga via Icestorm.
 template <int cycles_per_bit = 4>
 class uart_rx {
 public:
-  logic<1> valid() { return _cursor == 1; }
-  logic<8> buffer() { return _buffer; }
-  logic<32> sum() { return _sum; }
+  logic<1> valid() {
+    return _cursor == 1;
+  }
+
+  logic<8> buffer() {
+    return _buffer;
+  }
+
+  logic<32> sum() {
+    return _sum;
+  }
 
   void tick(logic<1> i_rstn, logic<1> i_serial) {
     if (!i_rstn) {
@@ -3756,7 +3769,6 @@ public:
     }
   }
 
-  //----------------------------------------
  private:
   static const int cycle_bits = clog2(cycles_per_bit);
   static const int cycle_max = cycles_per_bit - 1;
@@ -3782,7 +3794,9 @@ public:
 template <int repeat_msg = 0>
 class uart_hello {
 public:
-  uart_hello() { readmemh("examples/uart/message.hex", _memory, 0, 511); }
+  uart_hello() {
+    readmemh("examples/uart/message.hex", _memory, 0, 511);
+  }
 
   logic<8> data() const {
     return _data;
@@ -3818,8 +3832,6 @@ public:
   }
 
 private:
-  //----------------------------------------
-
   static const int message_len = 512;
   static const int cursor_bits = clog2(message_len);
 
@@ -3849,11 +3861,25 @@ private:
 template <int cycles_per_bit = 3, int repeat_msg = 0>
 class uart_top {
 public:
-  logic<1> serial() { return tx.serial(); }
-  logic<8> data() { return rx.buffer(); }
-  logic<1> valid() { return rx.valid(); }
-  logic<1> done() { return hello.done() && tx.idle(); }
-  logic<32> sum() { return rx.sum(); }
+  logic<1> serial() {
+    return tx.serial();
+  }
+
+  logic<8> data() {
+    return rx.buffer();
+  }
+
+  logic<1> valid() {
+    return rx.valid();
+  }
+
+  logic<1> done() {
+    return hello.done() && tx.idle();
+  }
+
+  logic<32> sum() {
+    return rx.sum();
+  }
 
   logic<1> tock(logic<1> i_rstn) {
     logic<8> hello_data = hello.data();
@@ -3891,18 +3917,16 @@ public:
     buffer = 0;
   }
 
-  //----------------------------------------
-
-  logic<1> serial() {
+  logic<1> serial() const {
     return buffer & 1;
   }
 
-  logic<1> cts() {
+  logic<1> cts() const {
     return ((cursor == extra_stop_bits) && (cycle == 0)) ||
            (cursor < extra_stop_bits);
   }
 
-  logic<1> idle() {
+  logic<1> idle() const {
     return (cursor == 0) && (cycle == 0);
   }
 
@@ -3935,7 +3959,6 @@ public:
     }
   }
 
-  //----------------------------------------
 private:
   // 1 start bit, 8 data bits, 1 stop bit, 7 additional stop bits to guarantee
   // that recevier can resync between messages

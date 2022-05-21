@@ -21,9 +21,17 @@ module uart_rx
   input logic tick_i_serial
 );
 /*public:*/
-  always_comb begin : valid valid_ret = _cursor == 1; end
-  always_comb begin : buffer buffer_ret = _buffer; end
-  always_comb begin : sum sum_ret = _sum; end
+  always_comb begin : valid
+    valid_ret = _cursor == 1;
+  end
+
+  always_comb begin : buffer
+    buffer_ret = _buffer;
+  end
+
+  always_comb begin : sum
+    sum_ret = _sum;
+  end
 
   always_ff @(posedge clock) begin : tick
     if (!tick_i_rstn) begin
@@ -48,7 +56,6 @@ module uart_rx
     end
   end
 
-  //----------------------------------------
  /*private:*/
   localparam int cycle_bits = $clog2(cycles_per_bit);
   localparam int cycle_max = cycles_per_bit - 1;

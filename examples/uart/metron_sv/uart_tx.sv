@@ -28,8 +28,6 @@ module uart_tx
     buffer = 0;
   end
 
-  //----------------------------------------
-
   always_comb begin : serial
     serial_ret = buffer & 1;
   end
@@ -74,7 +72,6 @@ module uart_tx
     end
   end
 
-  //----------------------------------------
 /*private:*/
   // 1 start bit, 8 data bits, 1 stop bit, 7 additional stop bits to guarantee
   // that recevier can resync between messages

@@ -28,11 +28,25 @@ module uart_top
   output logic tock_ret
 );
 /*public:*/
-  always_comb begin : serial serial_ret = tx_serial_ret; end
-  always_comb begin : data data_ret = rx_buffer_ret; end
-  always_comb begin : valid valid_ret = rx_valid_ret; end
-  always_comb begin : done done_ret = hello_done_ret && tx_idle_ret; end
-  always_comb begin : sum sum_ret = rx_sum_ret; end
+  always_comb begin : serial
+    serial_ret = tx_serial_ret;
+  end
+
+  always_comb begin : data
+    data_ret = rx_buffer_ret;
+  end
+
+  always_comb begin : valid
+    valid_ret = rx_valid_ret;
+  end
+
+  always_comb begin : done
+    done_ret = hello_done_ret && tx_idle_ret;
+  end
+
+  always_comb begin : sum
+    sum_ret = rx_sum_ret;
+  end
 
   always_comb begin : tock
     logic[7:0] hello_data;

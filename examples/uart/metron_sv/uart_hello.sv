@@ -22,7 +22,9 @@ module uart_hello
   input logic tick_i_idle
 );
 /*public:*/
-  initial begin $readmemh("examples/uart/message.hex", _memory, 0, 511); end
+  initial begin
+    $readmemh("examples/uart/message.hex", _memory, 0, 511);
+  end
 
   always_comb begin : data
     data_ret = _data;
@@ -58,8 +60,6 @@ module uart_hello
   end
 
 /*private:*/
-  //----------------------------------------
-
   localparam int message_len = 512;
   localparam int cursor_bits = $clog2(message_len);
 

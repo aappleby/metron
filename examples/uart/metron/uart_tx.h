@@ -14,18 +14,16 @@ public:
     buffer = 0;
   }
 
-  //----------------------------------------
-
-  logic<1> serial() {
+  logic<1> serial() const {
     return buffer & 1;
   }
 
-  logic<1> cts() {
+  logic<1> cts() const {
     return ((cursor == extra_stop_bits) && (cycle == 0)) ||
            (cursor < extra_stop_bits);
   }
 
-  logic<1> idle() {
+  logic<1> idle() const {
     return (cursor == 0) && (cycle == 0);
   }
 
@@ -58,7 +56,6 @@ public:
     }
   }
 
-  //----------------------------------------
 private:
   // 1 start bit, 8 data bits, 1 stop bit, 7 additional stop bits to guarantee
   // that recevier can resync between messages

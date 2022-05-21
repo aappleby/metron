@@ -6,6 +6,11 @@ public:
     private_tick(17);
   }
 
+  // FIXME
+  //logic<1> serial() /*foo*/ const /*bar*/ {
+  //  return 1;
+  //}
+
 private:
   int my_reg4;
   void private_tick(int x) {

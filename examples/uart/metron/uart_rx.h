@@ -8,9 +8,17 @@
 template <int cycles_per_bit = 4>
 class uart_rx {
 public:
-  logic<1> valid() { return _cursor == 1; }
-  logic<8> buffer() { return _buffer; }
-  logic<32> sum() { return _sum; }
+  logic<1> valid() {
+    return _cursor == 1;
+  }
+
+  logic<8> buffer() {
+    return _buffer;
+  }
+
+  logic<32> sum() {
+    return _sum;
+  }
 
   void tick(logic<1> i_rstn, logic<1> i_serial) {
     if (!i_rstn) {
@@ -34,7 +42,6 @@ public:
     }
   }
 
-  //----------------------------------------
  private:
   static const int cycle_bits = clog2(cycles_per_bit);
   static const int cycle_max = cycles_per_bit - 1;

@@ -862,8 +862,6 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
   auto args_node = n.get_field(field_arguments);
 
   if (n.sym == sym_call_expression) {
-    n.dump_tree();
-
     if (func_node.sym == sym_field_expression) {
       if (args_node.named_child_count() != 0) {
         auto inst_id = func_node.get_field(field_argument);
@@ -2396,8 +2394,6 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n, bool is_str
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_sym_expression_statement(MnNode node) {
-  node.dump_tree();
-
   Err err = emit_ws_to(sym_expression_statement, node);
 
   if (node.child(0).sym == sym_call_expression) {

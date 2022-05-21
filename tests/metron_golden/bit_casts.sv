@@ -4,15 +4,15 @@
 
 module Module
 (
-  // test_bN()
+  // test_bN() bindings
   output int test_bN_ret,
-  // test_bx_const()
+  // test_bx_const() bindings
   output int test_bx_const_ret,
-  // test_bN_offset()
+  // test_bN_offset() bindings
   output int test_bN_offset_ret,
-  // test_bx_param()
+  // test_bx_param() bindings
   output int test_bx_param_ret,
-  // test2()
+  // test2() bindings
   output int test2_ret
 );
 /*public:*/

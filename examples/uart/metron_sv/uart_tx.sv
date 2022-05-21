@@ -8,14 +8,15 @@
 module uart_tx
 #(parameter int cycles_per_bit = 4)
 (
+  // global clock
   input logic clock,
-  // serial()
+  // serial() bindings
   output logic serial_ret,
-  // cts()
+  // cts() bindings
   output logic cts_ret,
-  // idle()
+  // idle() bindings
   output logic idle_ret,
-  // tick()
+  // tick() bindings
   input logic tick_i_rstn,
   input logic[7:0] tick_i_data,
   input logic tick_i_req

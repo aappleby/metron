@@ -12,8 +12,10 @@
 
 module singlecycle_control
 (
+  // input signals
   input logic[6:0] inst_opcode,
   input logic take_branch,
+  // output signals
   output logic pc_write_enable,
   output logic regfile_write_enable,
   output logic alu_operand_a_select,

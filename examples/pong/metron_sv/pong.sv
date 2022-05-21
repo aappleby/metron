@@ -19,17 +19,19 @@ Back porch  [492-524]
 
 module Pong
 (
+  // global clock
   input logic clock,
+  // output signals
   output logic vga_hsync,
   output logic vga_vsync,
   output logic vga_R,
   output logic vga_G,
   output logic vga_B,
-  // pix_x()
+  // pix_x() bindings
   output logic[9:0] pix_x_ret,
-  // pix_y()
+  // pix_y() bindings
   output logic[9:0] pix_y_ret,
-  // tock_game()
+  // tock_game() bindings
   input logic tock_game_in_quad_a,
   input logic tock_game_in_quad_b
 );

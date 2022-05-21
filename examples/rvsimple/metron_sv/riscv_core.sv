@@ -15,15 +15,18 @@
 
 module riscv_core
 (
+  // global clock
   input logic clock,
+  // input signals
   input logic reset,
-  output logic[31:0] bus_address,
   input logic[31:0] bus_read_data,
+  input logic[31:0] inst,
+  // output signals
+  output logic[31:0] bus_address,
   output logic[31:0] bus_write_data,
   output logic[3:0] bus_byte_enable,
   output logic bus_read_enable,
   output logic bus_write_enable,
-  input logic[31:0] inst,
   output logic[31:0] pc
 );
  /*public:*/

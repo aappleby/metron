@@ -5,11 +5,11 @@
 
 module Submod
 (
-  // sum_a()
+  // sum_a() bindings
   input logic[7:0] sum_a_a1,
   input logic[7:0] sum_a_a2,
   output logic[7:0] sum_a_ret,
-  // sum_b()
+  // sum_b() bindings
   input logic[7:0] sum_b_b1,
   input logic[7:0] sum_b_b2,
   output logic[7:0] sum_b_ret
@@ -24,7 +24,7 @@ endmodule
 
 module Module
 (
-  // tock_bindings()
+  // tock_bindings() bindings
   output logic[7:0] tock_bindings_ret
 );
 /*public:*/

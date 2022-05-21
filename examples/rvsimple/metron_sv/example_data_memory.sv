@@ -12,12 +12,15 @@
 
 module example_data_memory
 (
+  // global clock
   input logic clock,
+  // input signals
   input logic[rv_config::DATA_BITS - 2-1:0] address,
-  output logic[31:0] q,
   input logic wren,
   input logic[3:0] byteena,
-  input logic[31:0] data
+  input logic[31:0] data,
+  // output signals
+  output logic[31:0] q
 );
  /*public:*/
 

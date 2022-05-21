@@ -13,6 +13,7 @@
 module multiplexer8
 #(parameter int WIDTH = 32)
 (
+  // input signals
   input logic[WIDTH-1:0] in0,
   input logic[WIDTH-1:0] in1,
   input logic[WIDTH-1:0] in2,
@@ -22,6 +23,7 @@ module multiplexer8
   input logic[WIDTH-1:0] in6,
   input logic[WIDTH-1:0] in7,
   input logic[2:0] sel,
+  // output signals
   output logic[WIDTH-1:0] out
 );
  /*public:*/

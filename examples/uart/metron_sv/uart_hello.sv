@@ -8,14 +8,15 @@
 module uart_hello
 #(parameter int repeat_msg = 0)
 (
+  // global clock
   input logic clock,
-  // data()
+  // data() bindings
   output logic[7:0] data_ret,
-  // req()
+  // req() bindings
   output logic req_ret,
-  // done()
+  // done() bindings
   output logic done_ret,
-  // tick()
+  // tick() bindings
   input logic tick_i_rstn,
   input logic tick_i_cts,
   input logic tick_i_idle

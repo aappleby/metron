@@ -12,14 +12,16 @@
 
 module data_memory_interface
 (
+  // input signals
   input logic read_enable,
   input logic write_enable,
   input logic[2:0] data_format,
   input logic[31:0] address,
   input logic[31:0] write_data,
+  input logic[31:0] bus_read_data,
+  // output signals
   output logic[31:0] read_data,
   output logic[31:0] bus_address,
-  input logic[31:0] bus_read_data,
   output logic[31:0] bus_write_data,
   output logic[3:0] bus_byte_enable,
   output logic bus_read_enable,

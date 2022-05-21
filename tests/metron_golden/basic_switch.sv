@@ -4,8 +4,9 @@
 
 module Module
 (
+  // global clock
   input logic clock,
-  // tock()
+  // tock() bindings
   input logic[1:0] tock_selector
 );
 /*public:*/

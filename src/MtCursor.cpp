@@ -1986,7 +1986,7 @@ CHECK_RETURN Err MtCursor::emit_method_ports(MtMethod* m) {
 
   if (m->param_nodes.size() || m->has_return()) {
     err << emit_indent();
-    err << emit_print("// %s()", m->cname());
+    err << emit_print("// %s() bindings", m->cname());
     err << emit_newline();
   }
 
@@ -2124,14 +2124,39 @@ CHECK_RETURN Err MtCursor::emit_module_port_list(MnNode class_body) {
 
   if (current_mod->needs_tick()) {
     err << emit_indent();
+    err << emit_print("// global clock");
+    err << emit_newline();
+    err << emit_indent();
     err << emit_print("input logic clock,");
     err << emit_newline();
     trailing_comma = true;
   }
 
-  for (auto f : current_mod->all_fields) {
-    if (f->is_param()) continue;
-    err << emit_field_port(f);
+  if (current_mod->input_signals.size()) {
+    err << emit_indent();
+    err << emit_print("// input signals");
+    err << emit_newline();
+    for (auto f : current_mod->input_signals) {
+      err << emit_field_port(f);
+    }
+  }
+
+  if (current_mod->output_signals.size()) {
+    err << emit_indent();
+    err << emit_print("// output signals");
+    err << emit_newline();
+    for (auto f : current_mod->output_signals) {
+      err << emit_field_port(f);
+    }
+  }
+
+  if (current_mod->output_registers.size()) {
+    err << emit_indent();
+    err << emit_print("// output registers");
+    err << emit_newline();
+    for (auto f : current_mod->output_registers) {
+      err << emit_field_port(f);
+    }
   }
 
   for (auto m : current_mod->all_methods) {

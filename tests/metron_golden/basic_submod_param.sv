@@ -5,6 +5,7 @@
 module Submod
 #(parameter int SOME_CONSTANT = 6)
 (
+  // global clock
   input logic clock
 );
 /*public:*/
@@ -23,6 +24,7 @@ endmodule
 
 module Module
 (
+  // global clock
   input logic clock
 );
 /*public:*/

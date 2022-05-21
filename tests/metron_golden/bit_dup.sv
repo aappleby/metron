@@ -2,9 +2,9 @@
 
 module Module
 (
-  // test_dup1()
+  // test_dup1() bindings
   output int test_dup1_ret,
-  // test_dup4()
+  // test_dup4() bindings
   output int test_dup4_ret
 );
 /*public:*/

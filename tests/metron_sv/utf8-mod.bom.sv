@@ -16,7 +16,7 @@ Runes:
 
 module Module
 (
-  // get_reg()
+  // get_reg() bindings
   output logic[7:0] get_reg_ret
 );
 /*public:*/

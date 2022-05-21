@@ -4,6 +4,7 @@
 
 module Module
 (
+  // output signals
   output int sig
 );
 /*public:*/

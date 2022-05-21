@@ -89,6 +89,7 @@ struct MtModule {
   // FIXME not actually doing anything with this yet?
   std::vector<MtFuncParam*> localparams;
   std::vector<MtField*> input_signals;
+
   std::vector<MtField*> output_signals;
   std::vector<MtField*> output_registers;
 

@@ -13,8 +13,10 @@
 module adder
 #(parameter int WIDTH = 32)
 (
+  // input signals
   input logic[WIDTH-1:0] operand_a,
   input logic[WIDTH-1:0] operand_b,
+  // output signals
   output logic[WIDTH-1:0] result
 );
  /*public:*/

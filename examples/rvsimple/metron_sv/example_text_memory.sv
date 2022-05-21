@@ -12,7 +12,9 @@
 
 module example_text_memory
 (
+  // input signals
   input logic[rv_config::TEXT_BITS - 2-1:0] address,
+  // output signals
   output logic[31:0] q
 );
  /*public:*/

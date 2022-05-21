@@ -13,13 +13,16 @@
 
 module example_data_memory_bus
 (
+  // global clock
   input logic clock,
+  // input signals
   input logic[31:0] address,
-  output logic[31:0] read_data,
   input logic[31:0] write_data,
   input logic[3:0] byte_enable,
   input logic read_enable,
-  input logic write_enable
+  input logic write_enable,
+  // output signals
+  output logic[31:0] read_data
 );
  /*public:*/
 

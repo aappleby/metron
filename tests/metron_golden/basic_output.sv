@@ -4,8 +4,9 @@
 
 module Module
 (
+  // global clock
   input logic clock,
-  // get_reg()
+  // get_reg() bindings
   output logic[6:0] get_reg_ret
 );
 /*public:*/

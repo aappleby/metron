@@ -4,8 +4,9 @@
 
 module Module
 (
+  // output signals
   output int my_sig,
-  // tock()
+  // tock() bindings
   output int tock_ret
 );
 /*public:*/

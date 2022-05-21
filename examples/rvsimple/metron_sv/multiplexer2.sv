@@ -13,9 +13,11 @@
 module multiplexer2
 #(parameter int WIDTH = 32)
 (
+  // input signals
   input logic[WIDTH-1:0] in0,
   input logic[WIDTH-1:0] in1,
   input logic sel,
+  // output signals
   output logic[WIDTH-1:0] out
 );
  /*public:*/

@@ -4,7 +4,9 @@
 
 module Submod
 (
+  // global clock
   input logic clock,
+  // output registers
   output logic[7:0] sub_reg
 );
 /*public:*/
@@ -23,8 +25,9 @@ endmodule
 
 module Module
 (
+  // global clock
   input logic clock,
-  // get_submod_reg()
+  // get_submod_reg() bindings
   output logic[7:0] get_submod_reg_ret
 );
 /*public:*/

@@ -15,10 +15,12 @@
 
 module singlecycle_ctlpath
 (
+  // input signals
   input logic[6:0] inst_opcode,
   input logic[2:0] inst_funct3,
   input logic[6:0] inst_funct7,
   input logic alu_result_equal_zero,
+  // output signals
   output logic pc_write_enable,
   output logic regfile_write_enable,
   output logic alu_operand_a_select,

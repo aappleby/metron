@@ -5,8 +5,9 @@
 
 module Module
 (
+  // global clock
   input logic clock,
-  // tock()
+  // tock() bindings
   output logic[7:0] tock_ret
 );
 /*public:*/

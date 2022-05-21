@@ -13,10 +13,13 @@
 module single_register
 #(parameter int WIDTH = 32,parameter  int INITIAL = 0)
 (
+  // global clock
   input logic clock,
+  // input signals
   input logic reset,
   input logic write_enable,
   input logic[WIDTH-1:0] next,
+  // output registers
   output logic[WIDTH-1:0] value
 );
  /*public:*/

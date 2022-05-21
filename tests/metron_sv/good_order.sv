@@ -5,6 +5,7 @@
 
 module Module
 (
+  // global clock
   input logic clock
 );
 /*public:*/

@@ -4,9 +4,9 @@
 
 module Module
 (
-  // test2()
+  // test2() bindings
   output logic[7:0] test2_ret,
-  // test3()
+  // test3() bindings
   output logic[7:0] test3_ret
 );
 /*public:*/

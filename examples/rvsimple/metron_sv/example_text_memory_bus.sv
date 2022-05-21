@@ -13,7 +13,9 @@
 
 module example_text_memory_bus
 (
+  // input signals
   input logic[31:0] address,
+  // output signals
   output logic[31:0] read_data
 );
  /*public:*/

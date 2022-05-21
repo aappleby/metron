@@ -8,14 +8,15 @@
 module uart_rx
 #(parameter int cycles_per_bit = 4)
 (
+  // global clock
   input logic clock,
-  // valid()
+  // valid() bindings
   output logic valid_ret,
-  // buffer()
+  // buffer() bindings
   output logic[7:0] buffer_ret,
-  // sum()
+  // sum() bindings
   output logic[31:0] sum_ret,
-  // tick()
+  // tick() bindings
   input logic tick_i_rstn,
   input logic tick_i_serial
 );

@@ -5,9 +5,9 @@
 
 module Module
 (
-  // test1()
+  // test1() bindings
   output int test1_ret,
-  // test2()
+  // test2() bindings
   output int test2_ret
 );
 /*public:*/

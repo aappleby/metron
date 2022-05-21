@@ -12,8 +12,10 @@
 
 module control_transfer
 (
+  // input signals
   input logic result_equal_zero,
   input logic[2:0] inst_funct3,
+  // output signals
   output logic take_branch
 );
  /*public:*/

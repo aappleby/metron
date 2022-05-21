@@ -5,8 +5,9 @@
 // clang-format off
 module Module
 (
+  // global clock
   input logic clock,
-  // tock()
+  // tock() bindings
   input logic[6:0] tock_my_input
 );
  /*public:*/

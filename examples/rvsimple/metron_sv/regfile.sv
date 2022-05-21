@@ -12,12 +12,15 @@
 
 module regfile
 (
+  // global clock
   input logic clock,
+  // input signals
   input logic write_enable,
   input logic[4:0] rd_address,
   input logic[4:0] rs1_address,
   input logic[4:0] rs2_address,
   input logic[31:0] rd_data,
+  // output signals
   output logic[31:0] rs1_data,
   output logic[31:0] rs2_data
 );

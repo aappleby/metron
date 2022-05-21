@@ -5,6 +5,7 @@
 module Module
 #(parameter int SOME_CONSTANT = 7)
 (
+  // global clock
   input logic clock
 );
 /*public:*/

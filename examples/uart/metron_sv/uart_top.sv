@@ -11,18 +11,19 @@
 module uart_top
 #(parameter int cycles_per_bit = 3,parameter  int repeat_msg = 0)
 (
+  // global clock
   input logic clock,
-  // serial()
+  // serial() bindings
   output logic serial_ret,
-  // data()
+  // data() bindings
   output logic[7:0] data_ret,
-  // valid()
+  // valid() bindings
   output logic valid_ret,
-  // done()
+  // done() bindings
   output logic done_ret,
-  // sum()
+  // sum() bindings
   output logic[31:0] sum_ret,
-  // tock()
+  // tock() bindings
   input logic tock_i_rstn,
   output logic tock_ret
 );

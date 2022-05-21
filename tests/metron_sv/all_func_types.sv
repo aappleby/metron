@@ -2,34 +2,37 @@
 
 module Module
 (
+  // global clock
   input logic clock,
+  // output signals
   output int my_sig1,
   output int my_sig2,
   output int my_sig3,
   output int my_sig4,
   output int my_sig5,
   output int my_sig6a,
+  // output registers
   output int my_reg1,
   output int my_reg2,
   output int my_reg3,
-  // func_no_params_return()
+  // func_no_params_return() bindings
   output int func_no_params_return_ret,
-  // func_params_return()
+  // func_params_return() bindings
   input int func_params_return_x,
   output int func_params_return_ret,
-  // tock_no_params_return()
+  // tock_no_params_return() bindings
   output int tock_no_params_return_ret,
-  // tock_params_no_return()
+  // tock_params_no_return() bindings
   input int tock_params_no_return_x,
-  // tock_params_return()
+  // tock_params_return() bindings
   input int tock_params_return_x,
   output int tock_params_return_ret,
-  // tock_calls_funcs()
+  // tock_calls_funcs() bindings
   input int tock_calls_funcs_x,
-  // tock_calls_tock()
+  // tock_calls_tock() bindings
   input int tock_calls_tock_x,
   output int tock_calls_tock_ret,
-  // tick_params()
+  // tick_params() bindings
   input int tick_params_x
 );
 /*public:*/

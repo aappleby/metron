@@ -4,7 +4,7 @@
 
 module Submod1
 (
-  // add_one()
+  // add_one() bindings
   input logic[7:0] add_one_a,
   output logic[7:0] add_one_ret
 );
@@ -17,7 +17,7 @@ endmodule
 
 module Submod2
 (
-  // add_two()
+  // add_two() bindings
   input logic[7:0] add_two_a,
   output logic[7:0] add_two_ret
 );
@@ -30,7 +30,7 @@ endmodule
 
 module Module
 (
-  // tock()
+  // tock() bindings
   input logic[7:0] tock_old_counter,
   output logic[7:0] tock_ret
 );

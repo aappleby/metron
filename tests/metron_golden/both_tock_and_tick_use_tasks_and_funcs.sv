@@ -7,9 +7,11 @@
 
 module Module
 (
+  // global clock
   input logic clock,
+  // output signals
   output logic[7:0] my_sig,
-  // tock()
+  // tock() bindings
   input int tock_z
 );
 /*public:*/

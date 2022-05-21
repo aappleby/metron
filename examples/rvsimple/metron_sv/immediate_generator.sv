@@ -12,7 +12,9 @@
 
 module immediate_generator
 (
+  // input signals
   input logic[31:0] inst,
+  // output signals
   output logic[31:0] immediate
 );
  /*public:*/

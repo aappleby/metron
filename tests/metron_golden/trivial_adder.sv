@@ -4,7 +4,7 @@
 
 module Adder
 (
-  // add()
+  // add() bindings
   input logic[7:0] add_a,
   input logic[7:0] add_b,
   output logic[7:0] add_ret

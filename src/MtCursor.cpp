@@ -1068,15 +1068,12 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
 
   if (current_method->is_constructor()) {
     err << emit_func_as_init(n);
-    err << emit_ws_to_newline();
   }
   else if (current_method->in_init) {
     err << emit_func_as_task(n);
-    err << emit_ws_to_newline();
   }
   else if (current_method->in_tick) {
     err << emit_func_as_task(n);
-    err << emit_ws_to_newline();
 
     if (current_method->called_by_tock()) {
       needs_binding = true;
@@ -1091,13 +1088,11 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
     if (current_method->called()) {
       if (current_method->has_return()) {
         err << emit_func_as_func(n);
-        err << emit_ws_to_newline();
       }
       else {
         // This is the problematic one for Yosys.
         // We can't emit as task, we're in tock and that would break sensitivity
         err << emit_func_as_func(n);
-        err << emit_ws_to_newline();
       }
     }
     else {
@@ -1106,7 +1101,6 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
   }
   else if (current_method->in_func) {
     err << emit_func_as_func(n);
-    err << emit_ws_to_newline();
 
     if (current_method->is_public() && !current_method->called()) {
       needs_trigger = true;
@@ -1115,6 +1109,8 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
   else {
     err << ERR("wat\n");
   }
+
+    err << emit_ws_to_newline();
 
   if (needs_binding) {
     for (auto n : current_method->param_nodes) {

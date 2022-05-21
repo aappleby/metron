@@ -2,9 +2,9 @@
 
 module Module
 (
-  // test_dup1() bindings
+  // test_dup1() ports
   output int test_dup1_ret,
-  // test_dup4() bindings
+  // test_dup4() ports
   output int test_dup4_ret
 );
 /*public:*/

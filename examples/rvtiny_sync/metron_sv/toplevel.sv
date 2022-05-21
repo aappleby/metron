@@ -13,7 +13,7 @@ module toplevel
   output logic o_bus_write_enable,
   output logic[31:0] o_inst,
   output logic[31:0] o_pc,
-  // tock() bindings
+  // tock() ports
   input logic tock_reset
 );
  /*public:*/

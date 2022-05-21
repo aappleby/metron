@@ -10,7 +10,7 @@ module Module
 (
   // output signals
   output MyStruct1 my_struct1,
-  // tock() bindings
+  // tock() ports
   output logic[7:0] tock_ret
 );
 /*public:*/

@@ -2,7 +2,7 @@
 
 module Module
 (
-  // func() bindings
+  // func() ports
   output logic[7:0] func_ret
 );
 /*public:*/

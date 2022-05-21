@@ -13,17 +13,17 @@ module uart_top
 (
   // global clock
   input logic clock,
-  // serial() bindings
+  // serial() ports
   output logic serial_ret,
-  // data() bindings
+  // data() ports
   output logic[7:0] data_ret,
-  // valid() bindings
+  // valid() ports
   output logic valid_ret,
-  // done() bindings
+  // done() ports
   output logic done_ret,
-  // sum() bindings
+  // sum() ports
   output logic[31:0] sum_ret,
-  // tock() bindings
+  // tock() ports
   input logic tock_i_rstn,
   output logic tock_ret
 );

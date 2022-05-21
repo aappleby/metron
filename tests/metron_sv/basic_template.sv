@@ -20,7 +20,7 @@ endmodule
 
 module Module
 (
-  // tock() bindings
+  // tock() ports
   output logic[19:0] tock_ret
 );
 /*public:*/

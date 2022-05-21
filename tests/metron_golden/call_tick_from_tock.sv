@@ -7,7 +7,7 @@ module Module
 (
   // global clock
   input logic clock,
-  // tock() bindings
+  // tock() ports
   input logic[7:0] tock_val
 );
 /*public:*/

@@ -9,7 +9,7 @@
 
 module Module
 (
-  // test() bindings
+  // test() ports
   output logic[7:0] test_ret
 );
 /*public:*/

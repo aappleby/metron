@@ -10,13 +10,13 @@ module uart_hello
 (
   // global clock
   input logic clock,
-  // data() bindings
+  // data() ports
   output logic[7:0] data_ret,
-  // req() bindings
+  // req() ports
   output logic req_ret,
-  // done() bindings
+  // done() ports
   output logic done_ret,
-  // tick() bindings
+  // tick() ports
   input logic tick_i_rstn,
   input logic tick_i_cts,
   input logic tick_i_idle

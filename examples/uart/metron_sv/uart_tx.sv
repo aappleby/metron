@@ -10,13 +10,13 @@ module uart_tx
 (
   // global clock
   input logic clock,
-  // serial() bindings
+  // serial() ports
   output logic serial_ret,
-  // cts() bindings
+  // cts() ports
   output logic cts_ret,
-  // idle() bindings
+  // idle() ports
   output logic idle_ret,
-  // tick() bindings
+  // tick() ports
   input logic tick_i_rstn,
   input logic[7:0] tick_i_data,
   input logic tick_i_req

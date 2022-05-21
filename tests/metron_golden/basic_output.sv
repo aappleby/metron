@@ -6,7 +6,7 @@ module Module
 (
   // global clock
   input logic clock,
-  // get_reg() bindings
+  // get_reg() ports
   output logic[6:0] get_reg_ret
 );
 /*public:*/

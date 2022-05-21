@@ -1986,7 +1986,7 @@ CHECK_RETURN Err MtCursor::emit_method_ports(MtMethod* m) {
 
   if (m->param_nodes.size() || m->has_return()) {
     err << emit_indent();
-    err << emit_print("// %s() bindings", m->cname());
+    err << emit_print("// %s() ports", m->cname());
     err << emit_newline();
   }
 

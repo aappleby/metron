@@ -13,7 +13,7 @@ module Submod
   output logic[7:0] o_signal,
   // output registers
   output logic[7:0] o_reg,
-  // tock() bindings
+  // tock() ports
   input logic[7:0] tock_i_param,
   output logic[7:0] tock_ret
 );

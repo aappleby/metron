@@ -27,7 +27,7 @@ module Module
 (
   // global clock
   input logic clock,
-  // get_submod_reg() bindings
+  // get_submod_reg() ports
   output logic[7:0] get_submod_reg_ret
 );
 /*public:*/

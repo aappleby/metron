@@ -5,7 +5,7 @@
 
 module Module
 (
-  // blah() bindings
+  // blah() ports
   output int blah_ret
 );
 /*public:*/

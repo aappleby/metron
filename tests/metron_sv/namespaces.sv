@@ -15,7 +15,7 @@ module Module
   output int my_sig,
   // output registers
   output int my_reg,
-  // tock() bindings
+  // tock() ports
   output int tock_ret
 );
 /*public:*/

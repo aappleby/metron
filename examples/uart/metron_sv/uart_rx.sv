@@ -10,13 +10,13 @@ module uart_rx
 (
   // global clock
   input logic clock,
-  // valid() bindings
+  // valid() ports
   output logic valid_ret,
-  // buffer() bindings
+  // buffer() ports
   output logic[7:0] buffer_ret,
-  // sum() bindings
+  // sum() ports
   output logic[31:0] sum_ret,
-  // tick() bindings
+  // tick() ports
   input logic tick_i_rstn,
   input logic tick_i_serial
 );

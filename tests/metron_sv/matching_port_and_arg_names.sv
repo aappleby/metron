@@ -10,7 +10,7 @@ module Module
   // output signals
   output int output1,
   output int output2,
-  // tock2() bindings
+  // tock2() ports
   input int tock2_input_val
 );
 /*public:*/

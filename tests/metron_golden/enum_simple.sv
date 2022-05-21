@@ -20,7 +20,7 @@
 // clang-format off
 module Module
 (
-  // test1() bindings
+  // test1() ports
   output int test1_ret
 );
  /*public:*/

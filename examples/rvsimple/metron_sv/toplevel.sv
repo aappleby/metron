@@ -29,7 +29,7 @@ module toplevel
   output logic bus_write_enable,
   output logic[31:0] inst,
   output logic[31:0] pc,
-  // tock() bindings
+  // tock() ports
   input int tock_bogus_param
 );
  /*public:*/

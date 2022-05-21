@@ -8,7 +8,7 @@ module Module
   input logic clock,
   // output registers
   output logic[7:0] my_reg,
-  // test() bindings
+  // test() ports
   output logic[7:0] test_ret
 );
 /*public:*/

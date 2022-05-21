@@ -11,7 +11,7 @@ module Module
   input logic clock,
   // output signals
   output logic[7:0] my_sig,
-  // tock() bindings
+  // tock() ports
   input int tock_z
 );
 /*public:*/

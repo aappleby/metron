@@ -4,9 +4,9 @@
 
 module Module
 (
-  // test2() bindings
+  // test2() ports
   output logic[7:0] test2_ret,
-  // test3() bindings
+  // test3() ports
   output logic[7:0] test3_ret
 );
 /*public:*/

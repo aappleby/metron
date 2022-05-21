@@ -99,6 +99,14 @@ struct MtMethod {
   bool in_func = false;
   bool is_toplevel = false;
 
+  bool emit_as_always_comb = false;
+  bool emit_as_always_ff = false;
+  bool emit_as_init = false;
+  bool emit_as_task = false;
+  bool emit_as_func = false;
+  bool needs_trigger = false;
+  bool needs_binding = false;
+
   std::vector<MnNode> param_nodes;
 
   std::set<MtMethod*> internal_callers;

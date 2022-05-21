@@ -1074,73 +1074,68 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
   //----------
   // Emit a block declaration for the type of function we're in.
 
-  bool emit_as_always_comb = false;
-  bool emit_as_always_ff = false;
-  bool emit_as_task = false;
-  bool emit_as_func = false;
-  bool needs_trigger = false;
-  bool needs_binding = false;
-
   if (current_method->in_tock && !current_method->called_in_tock()) {
-    emit_as_always_comb = true;
+    current_method->emit_as_always_comb = true;
   }
   else if (current_method->in_tick && !current_method->called_in_tick()) {
-    emit_as_always_ff = true;
+    current_method->emit_as_always_ff = true;
   }
   else if (current_method->is_constructor()) {
-    err << emit_func_as_init(n);
+    current_method->emit_as_init = true;
   }
   else if (current_method->in_init) {
-    emit_as_task = true;
+    current_method->emit_as_task = true;
   }
   else if (current_method->in_tick) {
-    emit_as_task = true;
+    current_method->emit_as_task = true;
   }
   else if (current_method->in_tock) {
-    emit_as_func = true;
+    current_method->emit_as_func = true;
   }
   else if (current_method->in_func) {
-    emit_as_func = true;
+    current_method->emit_as_func = true;
   }
   else {
     err << ERR("wat\n");
   }
 
-  if (emit_as_always_comb) {
-    err << emit_func_as_always_comb(n);
-  }
-
-  if (emit_as_always_ff) {
-    err << emit_func_as_always_ff(n);
-  }
-
-  if (emit_as_task) {
-    err << emit_func_as_task(n);
-  }
-
-  if (emit_as_func) {
-    err << emit_func_as_func(n);
-  }
-
-
   if (current_method->in_tick && current_method->called_by_tock()) {
-    needs_binding = true;
+    current_method->needs_binding = true;
   }
 
   if (current_method->in_func && current_method->is_public() && !current_method->called_in_module()) {
-    needs_trigger = true;
+    current_method->needs_trigger = true;
+  }
+
+  if (current_method->emit_as_always_comb) {
+    err << emit_func_as_always_comb(n);
+  }
+
+  if (current_method->emit_as_always_ff) {
+    err << emit_func_as_always_ff(n);
+  }
+
+  if (current_method->emit_as_init) {
+    err << emit_func_as_init(n);
+  }
+
+  if (current_method->emit_as_task) {
+    err << emit_func_as_task(n);
+  }
+
+  if (current_method->emit_as_func) {
+    err << emit_func_as_func(n);
   }
 
   err << emit_ws_to_newline();
 
-  if (needs_binding) {
+  if (current_method->needs_binding) {
     for (auto n : current_method->param_nodes) {
       err << emit_param_as_field(current_method, n);
     }
   }
 
-
-  if (needs_trigger) {
+  if (current_method->needs_trigger) {
     if (current_method->in_tick) err << emit_trigger_ff(n);
     if (current_method->in_func) err << emit_trigger_comb(n);
   }

@@ -508,6 +508,58 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
   });
 
   //----------------------------------------
+  // Methods categorized, we can assign emit types
+
+  for (auto mod : modules) {
+    for (auto m : mod->all_methods) {
+      m->emit_as_always_comb = m->in_tock && !m->called_in_tock();
+      m->emit_as_always_ff = m->in_tick && !m->called_in_tick();
+
+      m->emit_as_init = m->is_constructor();
+
+      if (m->emit_as_always_comb) {
+      }
+      else if (m->emit_as_always_ff) {
+      }
+      else if (m->emit_as_init) {
+      }
+      else if (m->in_init) {
+        m->emit_as_task = true;
+      }
+      else if (m->in_tick) {
+        m->emit_as_task = true;
+      }
+      else if (m->in_tock) {
+        //current_method->emit_as_func = true;
+        m->emit_as_always_comb = true;
+      }
+      else if (m->in_func) {
+        m->emit_as_func = true;
+      }
+      else {
+        err << ERR("wat\n");
+      }
+
+      if (m->in_tick && m->called_by_tock()) {
+        m->needs_binding = true;
+      }
+
+      if (m->in_tock && m->called_by_tock()) {
+        m->needs_binding = true;
+      }
+
+
+      if (m->in_func && m->is_public() && !m->called_in_module()) {
+        m->emit_as_func = false;
+        m->emit_as_always_comb = true;
+        //current_method->needs_trigger = true;
+      }
+
+
+    }
+  }
+
+  //----------------------------------------
   // Methods categorized, we can split up internal_callers
 
   for (auto mod : modules) {

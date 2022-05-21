@@ -1089,49 +1089,6 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
   //----------
   // Emit a block declaration for the type of function we're in.
 
-  current_method->emit_as_always_comb = current_method->in_tock && !current_method->called_in_tock();
-  current_method->emit_as_always_ff = current_method->in_tick && !current_method->called_in_tick();
-
-  current_method->emit_as_init = current_method->is_constructor();
-
-  if (current_method->emit_as_always_comb) {
-  }
-  else if (current_method->emit_as_always_ff) {
-  }
-  else if (current_method->emit_as_init) {
-  }
-  else if (current_method->in_init) {
-    current_method->emit_as_task = true;
-  }
-  else if (current_method->in_tick) {
-    current_method->emit_as_task = true;
-  }
-  else if (current_method->in_tock) {
-    //current_method->emit_as_func = true;
-    current_method->emit_as_always_comb = true;
-  }
-  else if (current_method->in_func) {
-    current_method->emit_as_func = true;
-  }
-  else {
-    err << ERR("wat\n");
-  }
-
-  if (current_method->in_tick && current_method->called_by_tock()) {
-    current_method->needs_binding = true;
-  }
-
-  if (current_method->in_tock && current_method->called_by_tock()) {
-    current_method->needs_binding = true;
-  }
-
-
-  if (current_method->in_func && current_method->is_public() && !current_method->called_in_module()) {
-    current_method->emit_as_func = false;
-    current_method->emit_as_always_comb = true;
-    //current_method->needs_trigger = true;
-  }
-
   if (current_method->emit_as_always_comb) {
     err << emit_func_as_always_comb(n);
   }

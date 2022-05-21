@@ -8,6 +8,8 @@ module Module
   output int my_sig3,
   output int my_sig4,
   output int my_sig5,
+  output int my_sig6a,
+  output int my_sig6b,
   output int my_reg1,
   output int my_reg2,
   output int func_no_params_return_ret,
@@ -18,6 +20,8 @@ module Module
   input int tock_params_return_x,
   output int tock_params_return_ret,
   input int tock_calls_funcs_x,
+  input int tock_calls_tock_x,
+  output int tock_calls_tock_ret,
   input int tick_params_x
 );
 /*public:*/
@@ -71,20 +75,16 @@ module Module
 
   function int my_func5(int x);  my_func5 = x + 1; endfunction
 
-
-  /*
-  int my_sig6a;
-  int tock_calls_tock(int x) {
+  always_comb begin : tock_calls_tock
     my_sig6a = 12;
-    tock_called_by_tock(my_sig6a);
-    return 0;
-  }
+    tock_called_by_tock_x = my_sig6a;
+    tock_calls_tock_ret = 0;
+  end
 
-  int my_sig6b;
-  void tock_called_by_tock(int x) {
-    my_sig6b = x;
-  }
-  */
+  always_comb begin : tock_called_by_tock
+    my_sig6b = tock_called_by_tock_x;
+  end
+  int tock_called_by_tock_x;
 
   //----------
 

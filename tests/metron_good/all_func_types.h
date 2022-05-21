@@ -53,8 +53,6 @@ public:
 
   int my_func5(int x) { return x + 1; }
 
-
-  /*
   int my_sig6a;
   int tock_calls_tock(int x) {
     my_sig6a = 12;
@@ -66,7 +64,6 @@ public:
   void tock_called_by_tock(int x) {
     my_sig6b = x;
   }
-  */
 
   //----------
 

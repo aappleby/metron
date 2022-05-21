@@ -568,11 +568,7 @@ CHECK_RETURN bool MtCursor::can_omit_call(MnNode n) {
   }
   else {
     auto dst_method = current_mod->get_method(func.name4());
-    if (current_method->in_tock && dst_method && dst_method->in_tick) {
-      return true;
-    }
-
-    if (dst_method && dst_method->in_tock) {
+    if (dst_method && dst_method->needs_binding) {
       return true;
     }
   }

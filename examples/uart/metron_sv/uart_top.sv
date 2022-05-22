@@ -70,9 +70,13 @@ module uart_top
   uart_hello #(repeat_msg) hello(
     // global clock
     .clock(clock),
+    // data() ports
     .data_ret(hello_data_ret),
+    // req() ports
     .req_ret(hello_req_ret),
+    // done() ports
     .done_ret(hello_done_ret),
+    // tick() ports
     .tick_i_rstn(hello_tick_i_rstn),
     .tick_i_cts(hello_tick_i_cts),
     .tick_i_idle(hello_tick_i_idle)
@@ -87,9 +91,13 @@ module uart_top
   uart_tx #(cycles_per_bit) tx(
     // global clock
     .clock(clock),
+    // serial() ports
     .serial_ret(tx_serial_ret),
+    // cts() ports
     .cts_ret(tx_cts_ret),
+    // idle() ports
     .idle_ret(tx_idle_ret),
+    // tick() ports
     .tick_i_rstn(tx_tick_i_rstn),
     .tick_i_data(tx_tick_i_data),
     .tick_i_req(tx_tick_i_req)
@@ -104,9 +112,13 @@ module uart_top
   uart_rx #(cycles_per_bit) rx(
     // global clock
     .clock(clock),
+    // valid() ports
     .valid_ret(rx_valid_ret),
+    // buffer() ports
     .buffer_ret(rx_buffer_ret),
+    // sum() ports
     .sum_ret(rx_sum_ret),
+    // tick() ports
     .tick_i_rstn(rx_tick_i_rstn),
     .tick_i_serial(rx_tick_i_serial)
   );

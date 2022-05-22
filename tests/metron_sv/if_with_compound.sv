@@ -42,6 +42,7 @@ module Module
   Submod submod(
     // global clock
     .clock(clock),
+    // tock() ports
     .tock_arg(submod_tock_arg)
   );
   logic[7:0] submod_tock_arg;

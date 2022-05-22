@@ -53,9 +53,11 @@ module Module
   end
 
   Submod submod(
+    // sum_a() ports
     .sum_a_a1(submod_sum_a_a1),
     .sum_a_a2(submod_sum_a_a2),
     .sum_a_ret(submod_sum_a_ret),
+    // sum_b() ports
     .sum_b_b1(submod_sum_b_b1),
     .sum_b_b2(submod_sum_b_b2),
     .sum_b_ret(submod_sum_b_ret)

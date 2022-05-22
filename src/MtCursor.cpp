@@ -1178,8 +1178,14 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
 
   for (auto m : component_mod->all_methods) {
     if (m->is_public() && m->internal_callers.empty()) {
-      int param_count = m->param_nodes.size();
 
+      if (m->param_nodes.size() || m->has_return()) {
+        err << emit_indent();
+        err << emit_print("// %s() ports", m->cname());
+        err << emit_newline();
+      }
+
+      int param_count = m->param_nodes.size();
       for (int i = 0; i < param_count; i++) {
         auto param = m->param_nodes[i];
         auto node_type = param.get_field(field_type);

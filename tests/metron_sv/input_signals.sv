@@ -67,6 +67,7 @@ module Module
     .o_signal(submod_o_signal),
     // output registers
     .o_reg(submod_o_reg),
+    // tock() ports
     .tock_i_param(submod_tock_i_param),
     .tock_ret(submod_tock_ret)
   );

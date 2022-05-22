@@ -454,7 +454,6 @@ CHECK_RETURN Err MtModule::collect_parts() {
         all_enums.push_back(e);
       } else {
         auto new_field = new MtField(this, n, in_public);
-        new_field->_type_struct = lib->get_struct(node_type.text());
         all_fields.push_back(new_field);
       }
     }

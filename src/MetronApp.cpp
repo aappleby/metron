@@ -160,6 +160,22 @@ int main(int argc, char** argv) {
   }
 
   //----------------------------------------
+  // Give all fields pointers to their type struct or mod
+
+  for (auto m : lib.modules) {
+    for (auto f : m->all_fields) {
+      f->_type_mod = lib.get_module(f->type_name());
+      f->_type_struct = lib.get_struct(f->type_name());
+    }
+  }
+
+  for (auto s : lib.structs) {
+    for (auto f : s->fields) {
+      f->_type_struct = lib.get_struct(f->type_name());
+    }
+  }
+
+  //----------------------------------------
   // Build call graphs
 
   for (auto m : lib.modules) {
@@ -187,6 +203,7 @@ int main(int argc, char** argv) {
     }
     mod->ctx = new MtContext(mod);
     mod->ctx->instantiate();
+
     MtTracer tracer(&lib, mod->ctx, verbose);
     for (auto method : mod->all_methods) {
       if (method->is_constructor()) continue;

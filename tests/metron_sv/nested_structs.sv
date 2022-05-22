@@ -1,5 +1,8 @@
 `include "metron_tools.sv"
 
+// Yosys doesn't seem to support passing structs as args or returning them from
+// functions. :/
+
 typedef struct packed {
   logic[7:0] a;
   logic[7:0] b;
@@ -14,7 +17,7 @@ typedef struct packed {
 
 module Module
 (
-  // output registers
+  // output signals
   output OuterStruct s
 );
 /*public:*/

@@ -1,5 +1,8 @@
 #include "metron_tools.h"
 
+// Yosys doesn't seem to support passing structs as args or returning them from
+// functions. :/
+
 struct InnerStruct {
   logic<8> a;
   logic<8> b;

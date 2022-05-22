@@ -15,7 +15,8 @@ struct OuterStruct {
 class Module {
 public:
 
-  /*
+  OuterStruct s;
+
   void func1() {
     s.x.a = 1;
     s.x.b = 2;
@@ -33,16 +34,4 @@ public:
     s.z.b = 8;
     s.z.c = 9;
   }
-  */
-
-  InnerStruct floop() {
-    InnerStruct q;
-    q.a = 1;
-    q.b = 2;
-    q.c = 3;
-    return q;
-  }
-
-
-  //OuterStruct s;
 };

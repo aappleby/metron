@@ -121,8 +121,6 @@ MtField *MtModule::get_field(MnNode node) {
     return nullptr;
   }
   else if (node.sym == sym_field_expression) {
-    node.dump_tree();
-
     auto lhs = node.get_field(field_argument);
     auto rhs = node.get_field(field_field);
 

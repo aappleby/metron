@@ -15,7 +15,8 @@ struct OuterStruct {
 class Module {
 public:
 
-  /*
+  OuterStruct s;
+
   void func1() {
     s.x.a = 1;
     s.x.b = 2;
@@ -33,18 +34,6 @@ public:
     s.z.b = 8;
     s.z.c = 9;
   }
-  */
-
-  InnerStruct floop() {
-    InnerStruct q;
-    q.a = 1;
-    q.b = 2;
-    q.c = 3;
-    return q;
-  }
-
-
-  //OuterStruct s;
 };
 A trivial single-file, single-function, single-cycle RISC-V core.
 
@@ -5286,6 +5275,9 @@ private:
   logic<8> my_reg2;
 };
 #include "metron_tools.h"
+
+// Yosys doesn't seem to support passing structs as args or returning them from
+// functions. :/
 
 struct InnerStruct {
   logic<8> a;

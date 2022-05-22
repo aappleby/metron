@@ -284,10 +284,13 @@ void MtContext::instantiate(MtStruct *_struct, MtContext *parent) {
 //------------------------------------------------------------------------------
 
 void MtContext::assign_struct_states() {
+  for (auto c : children) {
+    c->assign_struct_states();
+  }
+
   if (type_struct) {
     log_top.state = children[0]->log_top.state;
     for (auto c : children) {
-      c->assign_struct_states();
       auto result = merge_branch(log_top.state, c->log_top.state);
       log_top.state = result;
     }

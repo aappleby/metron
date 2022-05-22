@@ -859,10 +859,8 @@ CHECK_RETURN Err MtCursor::emit_component_call_arg_binding(MnNode inst, MtMethod
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_call_arg_bindings(MnNode n) {
-
   Err err;
   auto old_cursor = cursor;
-
 
   // Emit bindings for child nodes first, but do _not_ recurse into compound
   // blocks.
@@ -877,9 +875,9 @@ CHECK_RETURN Err MtCursor::emit_call_arg_bindings(MnNode n) {
 
   if (n.sym == sym_call_expression) {
     auto func_node = n.get_field(field_function);
+    auto args_node = n.get_field(field_arguments);
 
     if (func_node.sym == sym_field_expression) {
-      auto args_node = n.get_field(field_arguments);
       if (args_node.named_child_count() != 0) {
         auto inst_id = func_node.get_field(field_argument);
         auto meth_id = func_node.get_field(field_field);
@@ -887,29 +885,28 @@ CHECK_RETURN Err MtCursor::emit_call_arg_bindings(MnNode n) {
         auto component = current_mod->get_component(inst_id.text());
         assert(component);
 
-        auto component_mod = lib->get_module(component->type_name());
-
-        auto component_method = component_mod->get_method(meth_id.text());
+        auto component_method = component->_type_mod->get_method(meth_id.text());
         if (!component_method) return err << ERR("Component method missing\n");
 
         for (int i = 0; i < component_method->param_nodes.size(); i++) {
-          auto& param = component_method->param_nodes[i];
-          auto arg_node = args_node.named_child(i);
-
-          err << emit_component_call_arg_binding(inst_id, component_method, param, arg_node);
+          err << emit_component_call_arg_binding(
+            inst_id,
+            component_method,
+            component_method->param_nodes[i],
+            args_node.named_child(i)
+          );
         }
       }
     }
     else if (func_node.sym == sym_identifier) {
-      auto args_node = n.get_field(field_arguments);
       auto method = current_mod->get_method(func_node.text().c_str());
-
       if (method && method->needs_binding) {
         for (int i = 0; i < method->param_nodes.size(); i++) {
-          auto& param = method->param_nodes[i];
-          auto arg_node = args_node.named_child(i);
-
-          err << emit_local_call_arg_binding(method, param, arg_node);
+          err << emit_local_call_arg_binding(
+            method,
+            method->param_nodes[i],
+            args_node.named_child(i)
+          );
         }
       }
     }
@@ -944,12 +941,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_func(MnNode n) {
   auto func_body = n.get_field(field_body);
 
   err << emit_print("function ");
-  if (current_method->has_return()) {
-    err << emit_type(func_ret);
-  } else {
-    err << skip_over(func_ret);
-    err << skip_ws();
-  }
+  err << emit_type(func_ret);
   err << emit_declarator(func_decl);
   err << prune_trailing_ws();
   err << emit_print(";");

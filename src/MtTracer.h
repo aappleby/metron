@@ -40,6 +40,7 @@ class MtTracer {
   CHECK_RETURN Err trace_sym_conditional_expression(MtContext* ctx, MnNode node);
   CHECK_RETURN Err trace_sym_declaration(MtContext* ctx, MnNode node);
   CHECK_RETURN Err trace_sym_field_expression(MtContext* ctx, MnNode node, ContextAction action);
+  CHECK_RETURN Err trace_sym_for_statement(MtContext* ctx, MnNode node);
   CHECK_RETURN Err trace_sym_function_definition(MtContext* ctx, MnNode node);
   CHECK_RETURN Err trace_sym_init_declarator(MtContext* ctx, MnNode node);
   CHECK_RETURN Err trace_sym_return_statement(MtContext* ctx, MnNode node);

@@ -160,6 +160,9 @@ CHECK_RETURN Err MtTracer::trace_statement(MtContext* ctx, MnNode node) {
     case sym_return_statement:
       err << trace_sym_return_statement(ctx, node);
       break;
+    case sym_for_statement:
+      err << trace_sym_for_statement(ctx, node);
+      break;
 
     default:
       err << trace_default(ctx, node);
@@ -184,6 +187,34 @@ CHECK_RETURN Err MtTracer::trace_declarator(MtContext* ctx, MnNode node) {
     default:
       err << trace_default(ctx, node);
       break;
+  }
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtTracer::trace_sym_for_statement(MtContext* ctx, MnNode node) {
+  Err err;
+
+  for (auto c : node) {
+    if (c.field == field_initializer) {
+      if (c.sym == sym_declaration) {
+        err << trace_sym_declaration(ctx, c);
+      }
+      else {
+        err << trace_expression(ctx, c, CTX_READ);
+      }
+    }
+    else if (c.is_expression()) {
+      err << trace_expression(ctx, c, CTX_READ);
+    }
+    else if (c.is_statement()) {
+      err << trace_statement(ctx, c);
+    }
+    else {
+      err << trace_default(ctx, c);
+    }
   }
 
   return err;

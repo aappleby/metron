@@ -789,6 +789,14 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
         break;
       }
     }
+
+    if (c.sym == sym_for_statement) {
+      auto init = c.get_field(field_initializer);
+      if (init.sym == sym_declaration) {
+        any_to_hoist = true;
+      }
+    }
+
   }
 
   if (!any_to_hoist) {
@@ -808,6 +816,16 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
         cursor = c.start();
         err << emit_indent();
         err << emit_sym_declaration(c, false, true);
+        err << emit_newline();
+      }
+    }
+
+    if (c.sym == sym_for_statement) {
+      auto init = c.get_field(field_initializer);
+      if (init.sym == sym_declaration) {
+        cursor = init.start();
+        err << emit_indent();
+        err << emit_sym_declaration(init, false, true);
         err << emit_newline();
       }
     }
@@ -1725,6 +1743,8 @@ CHECK_RETURN Err MtCursor::emit_declarator(MnNode node, bool elide_value) {
 
 CHECK_RETURN Err MtCursor::emit_declaration(MnNode node) {
   Err err = emit_ws_to(node);
+
+  node.dump_tree();
 
   switch (node.sym) {
     case sym_optional_parameter_declaration:
@@ -3362,6 +3382,29 @@ CHECK_RETURN Err MtCursor::emit_preproc(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_sym_for_statement(MnNode node) {
+  Err err = emit_ws_to(sym_for_statement, node);
+
+  for (auto child : node) {
+    if (child.sym == sym_declaration) {
+      err << emit_sym_declaration(child, true, false);
+    }
+    else if (child.is_expression()) {
+      err << emit_expression(child);
+    }
+    else if (child.is_statement()) {
+      err << emit_statement(child);
+    }
+    else {
+      err << emit_default(child);
+    }
+   }
+
+  return err << check_done(node);
+}
+
+//------------------------------------------------------------------------------
 // Emit the block with the correct type of "begin/end" pair, hoisting locals
 // to the top of the body scope.
 
@@ -3395,6 +3438,10 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
 
       case sym_compound_statement:
         err << emit_statement(child);
+        break;
+
+      case sym_for_statement:
+        err << emit_sym_for_statement(child);
         break;
 
       case sym_break_statement:

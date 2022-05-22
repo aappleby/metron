@@ -1803,30 +1803,26 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
   auto field = current_mod->get_field(n.name4());
   assert(field);
 
-  std::string type_name = n.type5();
-
-  // Component
-  if (lib->get_module(type_name)) {
+  if (field->is_component()) {
+    // Component
     err << emit_field_as_component(n);
     return err << check_done(n);
   }
-
-  // Ports don't go in the class body.
-
-  if (field->is_port()) {
+  else if (field->is_port()) {
+    // Ports don't go in the class body.
     err << skip_over(n);
     return err << check_done(n);
   }
-
-  // If we get here, we're emitting a local primitive type field.
-  auto node_type = n.get_field(field_type);
-  auto node_decl = n.get_field(field_declarator);
-  auto node_semi = n.child(2);
-
-  err << emit_type(node_type);
-  err << emit_declarator(node_decl);
-  err << emit_text(node_semi);
-  return err << check_done(n);
+  else {
+    for (auto c : n) {
+      switch(c.field) {
+        case field_type:       err << emit_type(c); break;
+        case field_declarator: err << emit_declarator(c); break;
+        default:               err << emit_default(c); break;
+      }
+    }
+    return err << check_done(n);
+  }
 }
 
 //------------------------------------------------------------------------------

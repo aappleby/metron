@@ -819,7 +819,7 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_local_arg_binding(MtMethod* method, MnNode param, MnNode val) {
+CHECK_RETURN Err MtCursor::emit_local_call_arg_binding(MtMethod* method, MnNode param, MnNode val) {
   Err err;
 
   auto param_name = param.get_field(field_declarator).text();
@@ -838,9 +838,27 @@ CHECK_RETURN Err MtCursor::emit_local_arg_binding(MtMethod* method, MnNode param
   return err;
 }
 
+CHECK_RETURN Err MtCursor::emit_component_call_arg_binding(MnNode inst, MtMethod* method, MnNode param, MnNode val) {
+  Err err;
+
+  err << emit_indent();
+  err << emit_print("%s_%s_%s = ", inst.text().c_str(),
+                    method->name().c_str(),
+                    param.get_field(field_declarator).text().c_str());
+
+  cursor = val.start();
+  err << emit_expression(val);
+  cursor = val.end();
+
+  err << prune_trailing_ws();
+  err << emit_print(";");
+  err << emit_newline();
+
+  return err;
+}
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_arg_bindings(MnNode n) {
+CHECK_RETURN Err MtCursor::emit_call_arg_bindings(MnNode n) {
 
   Err err;
   auto old_cursor = cursor;
@@ -851,12 +869,11 @@ CHECK_RETURN Err MtCursor::emit_arg_bindings(MnNode n) {
 
   for (auto c : n) {
     if (c.sym != sym_compound_statement) {
-      err << emit_arg_bindings(c);
+      err << emit_call_arg_bindings(c);
     }
   }
 
   // OK, now we can emit bindings for the call we're at.
-
 
   if (n.sym == sym_call_expression) {
     auto func_node = n.get_field(field_function);
@@ -877,20 +894,9 @@ CHECK_RETURN Err MtCursor::emit_arg_bindings(MnNode n) {
 
         for (int i = 0; i < component_method->param_nodes.size(); i++) {
           auto& param = component_method->param_nodes[i];
-
-          err << emit_indent();
-          err << emit_print("%s_%s_%s = ", inst_id.text().c_str(),
-                            component_method->name().c_str(),
-                            param.get_field(field_declarator).text().c_str());
-
           auto arg_node = args_node.named_child(i);
-          cursor = arg_node.start();
-          err << emit_expression(arg_node);
-          cursor = arg_node.end();
 
-          err << prune_trailing_ws();
-          err << emit_print(";");
-          err << emit_newline();
+          err << emit_component_call_arg_binding(inst_id, component_method, param, arg_node);
         }
       }
     }
@@ -903,24 +909,7 @@ CHECK_RETURN Err MtCursor::emit_arg_bindings(MnNode n) {
           auto& param = method->param_nodes[i];
           auto arg_node = args_node.named_child(i);
 
-          err << emit_local_arg_binding(method, param, arg_node);
-          /*
-
-
-          auto param_name = param.get_field(field_declarator).text();
-
-          err << emit_indent();
-          err << emit_print("%s_%s = ", func_node.text().c_str(),
-                            param_name.c_str());
-
-          cursor = arg_node.start();
-          err << emit_expression(arg_node);
-          cursor = arg_node.end();
-
-          err << prune_trailing_ws();
-          err << emit_print(";");
-          err << emit_newline();
-          */
+          err << emit_local_call_arg_binding(method, param, arg_node);
         }
       }
     }
@@ -3369,7 +3358,7 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
         // could include a call expression. We search the tree for calls and emit
         // those bindings here.
         err << emit_ws_to_newline();
-        err << emit_arg_bindings(child);
+        err << emit_call_arg_bindings(child);
         // type should be hoisted
         err << emit_sym_declaration(child, true, false);
         break;
@@ -3392,7 +3381,7 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
         // could include a call expression. We search the tree for calls and emit
         // those bindings here.
         if (!at_newline) err << emit_ws_to_newline();
-        err << emit_arg_bindings(child);
+        err << emit_call_arg_bindings(child);
         err << emit_statement(child);
         break;
 

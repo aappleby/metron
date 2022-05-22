@@ -1,7 +1,9 @@
+#include "metron_tools.h"
+
 struct InnerStruct {
-  int a;
-  int b;
-  int c;
+  logic<8> a;
+  logic<8> b;
+  logic<8> c;
 };
 
 struct OuterStruct {
@@ -13,6 +15,7 @@ struct OuterStruct {
 class Module {
 public:
 
+  /*
   void func1() {
     s.x.a = 1;
     s.x.b = 2;
@@ -26,11 +29,20 @@ public:
   }
 
   void func3() {
-    s.z.a = s.z.a + 7;
-    s.z.b = s.z.b + 8;
-    s.z.c = s.z.c + 9;
+    s.z.a = 7;
+    s.z.b = 8;
+    s.z.c = 9;
+  }
+  */
+
+  InnerStruct floop() {
+    InnerStruct q;
+    q.a = 1;
+    q.b = 2;
+    q.c = 3;
+    return q;
   }
 
 
-  OuterStruct s;
+  //OuterStruct s;
 };

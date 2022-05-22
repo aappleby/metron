@@ -381,13 +381,9 @@ CHECK_RETURN Err MtCursor::emit_sym_assignment_expression(MnNode node) {
     switch (child.field) {
       case field_left:
         err << emit_expression(child);
-        left_is_field = current_mod->get_field(child.text()) != nullptr;
+        left_is_field = current_mod->get_field(child) != nullptr;
         break;
       case field_operator:
-        if (child.text() != "=") {
-          err << ERR("emit_sym_assignment_expression() - Node is not '='\n");
-          child.error();
-        }
         // There may not be a method if we're in an enum initializer list.
         if (current_method && current_method->in_tick && left_is_field) {
           err << emit_replacement(child, "<=");

@@ -33,6 +33,7 @@ module Module
   end
 
   Submod #(99) submod(
+    // global clock
     .clock(clock)
   );
 

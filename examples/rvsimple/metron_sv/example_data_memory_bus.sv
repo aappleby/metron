@@ -25,9 +25,16 @@ module example_data_memory_bus
   output logic[31:0] read_data
 );
  /*public:*/
+       // in
+     // out
+    // in
+    // in
+    // in
+   // in
 
  /*private:*/
   example_data_memory data_memory(
+    // global clock
     .clock(clock),
     .address(data_memory_address),
     .q(data_memory_q),

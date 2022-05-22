@@ -84,6 +84,7 @@ module riscv_core
 
  /*private:*/
   singlecycle_datapath datapath(
+    // global clock
     .clock(clock),
     .reset(datapath_reset),
     .data_mem_read_data(datapath_data_mem_read_data),

@@ -250,6 +250,7 @@ module singlecycle_datapath
   logic[32-1:0] mux_reg_writeback_out;
 
   single_register #(32, rv_config::INITIAL_PC) program_counter(
+    // global clock
     .clock(clock),
     .reset(program_counter_reset),
     .write_enable(program_counter_write_enable),
@@ -262,6 +263,7 @@ module singlecycle_datapath
   logic[32-1:0] program_counter_value;
 
   regfile regs(
+    // global clock
     .clock(clock),
     .write_enable(regs_write_enable),
     .rd_address(regs_rd_address),

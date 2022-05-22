@@ -68,6 +68,7 @@ module toplevel
 
  /*private:*/
   riscv_core core(
+    // global clock
     .clock(clock),
     .reset(core_reset),
     .bus_address(core_bus_address),
@@ -97,6 +98,7 @@ module toplevel
   logic[31:0] text_memory_bus_read_data;
 
   example_data_memory_bus data_memory_bus(
+    // global clock
     .clock(clock),
     .address(data_memory_bus_address),
     .read_data(data_memory_bus_read_data),

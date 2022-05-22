@@ -59,6 +59,7 @@ module Module
   logic[7:0] my_sig;
 
   Submod submod(
+    // global clock
     .clock(clock),
     .i_signal(submod_i_signal),
     .o_signal(submod_o_signal),

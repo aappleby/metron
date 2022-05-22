@@ -40,6 +40,7 @@ module Module
   end
 
   Submod submod(
+    // global clock
     .clock(clock),
     .sub_reg(submod_sub_reg)
   );

@@ -68,6 +68,7 @@ module uart_top
   //----------------------------------------
 /*private:*/
   uart_hello #(repeat_msg) hello(
+    // global clock
     .clock(clock),
     .data_ret(hello_data_ret),
     .req_ret(hello_req_ret),
@@ -84,6 +85,7 @@ module uart_top
   logic hello_done_ret;
 
   uart_tx #(cycles_per_bit) tx(
+    // global clock
     .clock(clock),
     .serial_ret(tx_serial_ret),
     .cts_ret(tx_cts_ret),
@@ -100,6 +102,7 @@ module uart_top
   logic tx_idle_ret;
 
   uart_rx #(cycles_per_bit) rx(
+    // global clock
     .clock(clock),
     .valid_ret(rx_valid_ret),
     .buffer_ret(rx_buffer_ret),

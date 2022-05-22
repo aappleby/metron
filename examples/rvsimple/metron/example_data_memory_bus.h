@@ -13,12 +13,12 @@
 
 class example_data_memory_bus {
  public:
-  logic<32> address;
-  logic<32> read_data;
-  logic<32> write_data;
-  logic<4> byte_enable;
-  logic<1> read_enable;
-  logic<1> write_enable;
+  logic<32> address;     // in
+  logic<32> read_data;   // out
+  logic<32> write_data;  // in
+  logic<4> byte_enable;  // in
+  logic<1> read_enable;  // in
+  logic<1> write_enable; // in
 
  private:
   example_data_memory data_memory;

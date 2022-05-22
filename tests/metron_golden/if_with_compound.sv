@@ -40,6 +40,7 @@ module Module
   end
 
   Submod submod(
+    // global clock
     .clock(clock),
     .tock_arg(submod_tock_arg)
   );

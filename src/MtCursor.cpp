@@ -1744,8 +1744,6 @@ CHECK_RETURN Err MtCursor::emit_declarator(MnNode node, bool elide_value) {
 CHECK_RETURN Err MtCursor::emit_declaration(MnNode node) {
   Err err = emit_ws_to(node);
 
-  node.dump_tree();
-
   switch (node.sym) {
     case sym_optional_parameter_declaration:
       err << emit_type(node.child(0));

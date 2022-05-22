@@ -7,6 +7,7 @@
 
 struct MtModule;
 struct MtMethod;
+struct MnNode;
 
 //------------------------------------------------------------------------------
 
@@ -35,6 +36,8 @@ struct MtContext {
   void assign_state_to_field(MtModule* current_module);
 
   MtContext* resolve(const std::string& name);
+  MtContext* resolve(MnNode node);
+
   void dump() const;
   void dump_ctx_tree() const;
 

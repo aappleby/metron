@@ -332,6 +332,27 @@ MtContext *MtContext::resolve(const std::string &_name) {
   return result;
 }
 
+MtContext *MtContext::resolve(MnNode node) {
+
+  if (node.sym == sym_identifier || node.sym == alias_sym_field_identifier) {
+    return resolve(node.text());
+  }
+  else if (node.sym == sym_field_expression) {
+    auto lhs = node.get_field(field_argument);
+    auto lhs_context = resolve(lhs);
+    if (lhs_context) {
+      auto rhs = node.get_field(field_field);
+      return lhs_context->resolve(rhs);
+    }
+    else {
+      return nullptr;
+    }
+  }
+  else {
+    return nullptr;
+  }
+}
+
 //------------------------------------------------------------------------------
 
 void log_state(ContextState s) {

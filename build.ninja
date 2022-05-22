@@ -82,10 +82,11 @@ build docs/app/examples.data docs/app/examples.js: command tests/Tests.h $
     tests/metron_good/enum_simple.h tests/metron_good/trivial_adder.h $
     tests/metron_good/basic_increment.h $
     tests/metron_good/both_tock_and_tick_use_tasks_and_funcs.h $
-    tests/metron_good/magic_comments.h tests/metron_good/defines.h $
-    tests/metron_good/bit_concat.h tests/metron_good/basic_public_sig.h $
-    tests/metron_good/force_tick.h tests/metron_good/good_order.h $
-    tests/metron_good/basic_template.h tests/metron_good/bit_casts.h $
+    tests/metron_good/magic_comments.h tests/metron_good/for_loops.h $
+    tests/metron_good/defines.h tests/metron_good/bit_concat.h $
+    tests/metron_good/basic_public_sig.h tests/metron_good/force_tick.h $
+    tests/metron_good/good_order.h tests/metron_good/basic_template.h $
+    tests/metron_good/bit_casts.h $
     tests/metron_good/tick_with_return_value.h $
     tests/metron_good/call_tick_from_tock.h $
     tests/metron_good/utf8-mod.bom.h tests/metron_good/basic_submod_param.h $
@@ -102,6 +103,7 @@ build docs/app/examples.data docs/app/examples.js: command tests/Tests.h $
     tests/metron_good/minimal.h tests/metron_good/multi_tick.h $
     tests/metron_good/basic_reg_rww.h tests/metron_good/namespaces.h $
     tests/metron_good/structs.h tests/metron_good/basic_task.h $
+    tests/metron_good/nested_structs.h $
     tests/metron_good/matching_port_and_arg_names.h $
     tests/metron_good/private_getter.h tests/metron_good/init_chain.h $
     tests/metron_good/basic_submod_public_reg.h $
@@ -258,6 +260,8 @@ build obj/src/MtNode.o: compile_cpp src/MtNode.cpp
   includes = -I. -Isubmodules/tree-sitter/lib/include
 build obj/src/MtSourceFile.o: compile_cpp src/MtSourceFile.cpp
   includes = -I. -Isubmodules/tree-sitter/lib/include
+build obj/src/MtStruct.o: compile_cpp src/MtStruct.cpp
+  includes = -I. -Isubmodules/tree-sitter/lib/include
 build obj/src/MtTracer.o: compile_cpp src/MtTracer.cpp
   includes = -I. -Isubmodules/tree-sitter/lib/include
 build obj/src/MtUtils.o: compile_cpp src/MtUtils.cpp
@@ -270,8 +274,8 @@ build bin/libmetron.a: static_lib obj/submodules/tree-sitter/lib/src/lib.o $
     obj/src/MtChecker.o obj/src/MtContext.o obj/src/MtCursor.o $
     obj/src/MtField.o obj/src/MtFuncParam.o obj/src/MtMethod.o $
     obj/src/MtModLibrary.o obj/src/MtModParam.o obj/src/MtModule.o $
-    obj/src/MtNode.o obj/src/MtSourceFile.o obj/src/MtTracer.o $
-    obj/src/MtUtils.o obj/src/Platform.o
+    obj/src/MtNode.o obj/src/MtSourceFile.o obj/src/MtStruct.o $
+    obj/src/MtTracer.o obj/src/MtUtils.o obj/src/Platform.o
   includes = -I. -Isubmodules/tree-sitter/lib/include
 
 

@@ -31,6 +31,7 @@ struct MtModule {
 
   MtMethod* get_method(const std::string& name);
   MtField* get_field(const std::string& name);
+  MtField* get_field(MnNode node);
   MtField* get_component(const std::string& name);
   MtField* get_enum(const std::string& name);
 

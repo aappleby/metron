@@ -61,6 +61,20 @@ const std::string &MtField::type_name() const { return _type; }
 
 //------------------------------------------------------------------------------
 
+MtField* MtField::get_field(MnNode node) {
+  if (_type_struct) {
+    return _type_struct->get_field(node);
+  }
+  else if (_type_mod) {
+    return _type_mod->get_field(node);
+  }
+  else {
+    return nullptr;
+  }
+}
+
+//------------------------------------------------------------------------------
+
 void MtField::dump() const {
   LOG_INDENT_SCOPE();
   if (_is_enum) {

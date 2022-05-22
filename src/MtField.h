@@ -42,6 +42,8 @@ struct MtField {
 
   bool is_enum() { return _node.sym == sym_enum_specifier; }
 
+  MtField* get_field(MnNode node);
+
   void dump() const;
 
   //----------

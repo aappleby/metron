@@ -14,6 +14,8 @@ struct MtStruct {
     source_file = _source_file;
   }
 
+  MtField* get_field(MnNode node);
+
   std::string name;
   MnNode node;
   std::vector<MtField*> fields;

@@ -299,6 +299,7 @@ def build_metron_lib():
             "src/MtModule.cpp",
             "src/MtNode.cpp",
             "src/MtSourceFile.cpp",
+            "src/MtStruct.cpp",
             "src/MtTracer.cpp",
             "src/MtUtils.cpp",
             "src/Platform.cpp",

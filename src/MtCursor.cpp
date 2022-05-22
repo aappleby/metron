@@ -819,7 +819,28 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
+CHECK_RETURN Err MtCursor::emit_local_arg_binding(MtMethod* method, MnNode param, MnNode val) {
+  Err err;
+
+  auto param_name = param.get_field(field_declarator).text();
+
+  err << emit_indent();
+  err << emit_print("%s_%s = ", method->cname(), param_name.c_str());
+
+  cursor = val.start();
+  err << emit_expression(val);
+  cursor = val.end();
+
+  err << prune_trailing_ws();
+  err << emit_print(";");
+  err << emit_newline();
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_arg_bindings(MnNode n) {
 
   Err err;
   auto old_cursor = cursor;
@@ -830,17 +851,18 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
 
   for (auto c : n) {
     if (c.sym != sym_compound_statement) {
-      err << emit_input_port_bindings(c);
+      err << emit_arg_bindings(c);
     }
   }
 
   // OK, now we can emit bindings for the call we're at.
 
-  auto func_node = n.get_field(field_function);
-  auto args_node = n.get_field(field_arguments);
 
   if (n.sym == sym_call_expression) {
+    auto func_node = n.get_field(field_function);
+
     if (func_node.sym == sym_field_expression) {
+      auto args_node = n.get_field(field_arguments);
       if (args_node.named_child_count() != 0) {
         auto inst_id = func_node.get_field(field_argument);
         auto meth_id = func_node.get_field(field_field);
@@ -873,18 +895,24 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
       }
     }
     else if (func_node.sym == sym_identifier) {
+      auto args_node = n.get_field(field_arguments);
       auto method = current_mod->get_method(func_node.text().c_str());
 
       if (method && method->needs_binding) {
         for (int i = 0; i < method->param_nodes.size(); i++) {
           auto& param = method->param_nodes[i];
+          auto arg_node = args_node.named_child(i);
+
+          err << emit_local_arg_binding(method, param, arg_node);
+          /*
+
+
           auto param_name = param.get_field(field_declarator).text();
 
           err << emit_indent();
           err << emit_print("%s_%s = ", func_node.text().c_str(),
                             param_name.c_str());
 
-          auto arg_node = args_node.named_child(i);
           cursor = arg_node.start();
           err << emit_expression(arg_node);
           cursor = arg_node.end();
@@ -892,6 +920,7 @@ CHECK_RETURN Err MtCursor::emit_input_port_bindings(MnNode n) {
           err << prune_trailing_ws();
           err << emit_print(";");
           err << emit_newline();
+          */
         }
       }
     }
@@ -3340,7 +3369,7 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
         // could include a call expression. We search the tree for calls and emit
         // those bindings here.
         err << emit_ws_to_newline();
-        err << emit_input_port_bindings(child);
+        err << emit_arg_bindings(child);
         // type should be hoisted
         err << emit_sym_declaration(child, true, false);
         break;
@@ -3363,7 +3392,7 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
         // could include a call expression. We search the tree for calls and emit
         // those bindings here.
         if (!at_newline) err << emit_ws_to_newline();
-        err << emit_input_port_bindings(child);
+        err << emit_arg_bindings(child);
         err << emit_statement(child);
         break;
 

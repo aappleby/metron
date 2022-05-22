@@ -195,6 +195,8 @@ build wasm/obj/src/MtNode.o: compile_cpp_ems src/MtNode.cpp
   includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
 build wasm/obj/src/MtSourceFile.o: compile_cpp_ems src/MtSourceFile.cpp
   includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
+build wasm/obj/src/MtStruct.o: compile_cpp_ems src/MtStruct.cpp
+  includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
 build wasm/obj/src/MtTracer.o: compile_cpp_ems src/MtTracer.cpp
   includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
 build wasm/obj/src/MtUtils.o: compile_cpp_ems src/MtUtils.cpp
@@ -209,7 +211,8 @@ build docs/app/metron.js: link_ems $
     wasm/obj/src/MtFuncParam.o wasm/obj/src/MtMethod.o $
     wasm/obj/src/MtModLibrary.o wasm/obj/src/MtModParam.o $
     wasm/obj/src/MtModule.o wasm/obj/src/MtNode.o $
-    wasm/obj/src/MtSourceFile.o wasm/obj/src/MtTracer.o wasm/obj/src/MtUtils.o
+    wasm/obj/src/MtSourceFile.o wasm/obj/src/MtStruct.o $
+    wasm/obj/src/MtTracer.o wasm/obj/src/MtUtils.o
   includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
 
 

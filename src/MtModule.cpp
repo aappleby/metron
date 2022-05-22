@@ -621,7 +621,7 @@ CHECK_RETURN Err MtModule::build_call_graph() {
         }
 
         if (func.sym == sym_field_expression) {
-          auto component_name = func.get_field(field_argument).text();
+          auto component_name = func.get_field(field_argument);
           auto component_method_name = func.get_field(field_field).text();
 
           auto component = get_field(component_name);

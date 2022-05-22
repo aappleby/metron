@@ -1,0 +1,14 @@
+class Tutorial1 {
+public:
+
+  int get_thing() {
+    return 1;
+  }
+};
+class Tutorial2 {
+public:
+
+  int get_thing() {
+    return 1;
+  }
+};

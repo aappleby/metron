@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en-us">
+
+<head>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <link rel="stylesheet" href="tutorial.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/vs2015.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@4.18.0/css/xterm.css" />
+
+  <script src="../app/highlight.min.js"></script>
+  <script src="../app/verilog.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xterm@4.18.0/lib/xterm.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.5.0/lib/xterm-addon-fit.min.js"></script>
+
+  <title>Metron C++ to Verilog Demo</title>
+</head>
+
+<body class="">
+  <div class="topbar flex_x">
+    <div id="intro" class="center_y flex_1">
+    </div>
+    <div class="center_y flex_2">
+      <img src="../app/favicon.ico" width="48" height="48" style="padding:0px; background-color:#888; margin:8px;">
+      <div id="title">Metron C++ to Verilog Transpiler Tutorial!</div>
+    </div>
+    <div id="link" class="center_y flex_1">
+      <a class="github_link" href="https://github.com/aappleby/Metron">Source on Github</a>
+    </div>
+  </div>
+  <div id="panels" class="flex_x" style="background-color:#444;">
+    <div id="col_left" class="flex_1"></div>
+    <div id="col_dst" class="flex_5" style="background-color: #222; padding: 10px;">
+      <div>
+        <div class="border center_y dark2 bar" style="margin:10px;">
+          <div class="bar_text" id="dst_title">Tutorial 1</div>
+        </div>
+      </div>
+      tutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah
+      blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
+      blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
+      ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
+      lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
+      tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah
+      blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
+      blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
+      ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
+      lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
+      tutorial lorem ipsum blah blah
+      <div class="sbs flex_x" style="margin:10px">
+        <div id="sbs_left" class="flex_1">
+          <div class="border center_y dark2 bar">
+            <div class="bar_text" id="tut1_h_title">./docs/tutorial/tutorial1.h</div>
+          </div>
+          <div id="tut1_c" class="flex_1 editor border language-cpp dark0">
+            C source here
+          </div>
+        </div>
+        <div id="sbs_right" class="flex_1">
+          <div class="border center_y dark2 bar">
+            <div class="bar_text" id="dst_title">./docs/tutorial/tutorial1.sv</div>
+          </div>
+          <div id="tut1_v" class="flex_1 editor border language-verilog dark0">
+            Verilog source here
+          </div>
+        </div>
+      </div>
+      tutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah
+      blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
+      blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
+      ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
+      lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
+      tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah
+      blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
+      blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
+      ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
+      lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
+      tutorial lorem ipsum blah blah
+      <div class="sbs flex_x" style="margin:10px">
+        <div id="sbs_left" class="flex_1">
+          <div class="border center_y dark2 bar">
+            <div class="bar_text" id="dst_title">./examples/scratch.sv</div>
+          </div>
+          <div id="src_text" class="flex_1 editor border language-cpp dark0">
+            C source here
+          </div>
+        </div>
+        <div id="sbs_right" class="flex_1">
+          <div class="border center_y dark2 bar">
+            <div class="bar_text" id="dst_title">./examples/scratch.sv</div>
+          </div>
+          <div id="dst_text" class="flex_1 editor border language-verilog dark0">
+            Verilog source here
+          </div>
+        </div>
+      </div>
+      blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
+      blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
+      ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
+      lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
+      tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah
+      blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
+      blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
+      ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
+      lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
+      tutorial lorem ipsum blah blah
+    </div>
+    <div id="col_right" class="flex_1"></div>
+  </div>
+
+  <script type="text/javascript" src="tutorial_data.js"></script>
+  <script type="module" src="tutorial.js"></script>
+</body>
+
+</html>

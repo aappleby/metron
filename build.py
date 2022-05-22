@@ -378,6 +378,15 @@ ninja.build(outputs = [
             inputs=all_test_headers + all_example_headers,
             command="python3 $$EMSDK/upstream/emscripten/tools/file_packager.py docs/app/examples.data --no-node --js-output=docs/app/examples.js --preload examples tests/metron_good tests/metron_bad --exclude *.cpp *.sv *.MD *.hex *.pcf *.v *.txt");
 
+
+ninja.build(outputs = [
+                "docs/app/tutorial_src.data",
+                "docs/app/tutorial_src.js",
+            ],
+            rule="command",
+            inputs=glob.glob("docs/tutorial/*.h"),
+            command="python3 $$EMSDK/upstream/emscripten/tools/file_packager.py docs/tutorial/tutorial_src.data --no-node --js-output=docs/tutorial/tutorial_src.js --preload examples/tutorial");
+
 treesitter_objs_wasi = [];
 
 def build_treesitter_ems():

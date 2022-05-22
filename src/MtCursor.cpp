@@ -1077,19 +1077,19 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
     err << emit_func_as_always_comb(n);
   }
 
-  if (current_method->emit_as_always_ff) {
+  else if (current_method->emit_as_always_ff) {
     err << emit_func_as_always_ff(n);
   }
 
-  if (current_method->emit_as_init) {
+  else if (current_method->emit_as_init) {
     err << emit_func_as_init(n);
   }
 
-  if (current_method->emit_as_task) {
+  else if (current_method->emit_as_task) {
     err << emit_func_as_task(n);
   }
 
-  if (current_method->emit_as_func) {
+  else if (current_method->emit_as_func) {
     err << emit_func_as_func(n);
   }
 

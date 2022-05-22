@@ -640,22 +640,30 @@ CHECK_RETURN Err MtModule::categorize_fields(bool verbose) {
       continue;
     }
 
-    if (f->is_component())
+    if (f->is_component()) {
       components.push_back(f);
-    else if (f->is_public_input())
+    }
+    else if (f->is_public_input()) {
       input_signals.push_back(f);
-    else if (f->is_public_signal())
+    }
+    else if (f->is_public_signal()) {
       output_signals.push_back(f);
-    else if (f->is_public_register())
+    }
+    else if (f->is_public_register()) {
       output_registers.push_back(f);
-    else if (f->is_private_register())
+    }
+    else if (f->is_private_register()) {
       private_registers.push_back(f);
-    else if (f->is_private_signal())
+    }
+    else if (f->is_private_signal()) {
       private_signals.push_back(f);
+    }
     else if (!f->is_public() && f->is_input()) {
       private_registers.push_back(f);
-    } else if (f->is_enum()) {
-    } else {
+    }
+    else if (f->is_enum()) {
+    }
+    else {
       err << ERR("Don't know how to categorize %s = %s\n", f->cname(),
                  to_string(f->_state));
       f->_node.error();

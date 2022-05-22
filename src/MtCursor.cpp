@@ -1032,7 +1032,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_ff(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_trigger_comb(MnNode n) {
+CHECK_RETURN Err MtCursor::emit_func_trigger_comb(MnNode n) {
   Err err;
   err << emit_indent();
   err << emit_print("always_comb ");
@@ -1043,7 +1043,7 @@ CHECK_RETURN Err MtCursor::emit_trigger_comb(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_trigger_ff(MnNode n) {
+CHECK_RETURN Err MtCursor::emit_func_trigger_ff(MnNode n) {
   Err err;
   err << emit_indent();
   err << emit_print("always_ff @(posedge clock) ");
@@ -1096,12 +1096,13 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
   err << emit_ws_to_newline();
 
   if (current_method->needs_binding) {
-    err << emit_method_bindings(current_method);
+    err << emit_func_binding_vars(current_method);
   }
 
+  // not currently using this
   if (current_method->needs_trigger) {
-    if (current_method->in_tick) err << emit_trigger_ff(n);
-    if (current_method->in_func) err << emit_trigger_comb(n);
+    if (current_method->in_tick) err << emit_func_trigger_ff(n);
+    if (current_method->in_func) err << emit_func_trigger_comb(n);
   }
 
   //----------
@@ -1268,6 +1269,12 @@ CHECK_RETURN Err MtCursor::emit_field_as_component(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
+// Emits the fields that come after a submod declaration
+
+// module my_mod(
+//   .foo(my_mod_foo)
+// );
+// logic my_mod_foo; <-- this part
 
 CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
   Err err;
@@ -1554,12 +1561,11 @@ CHECK_RETURN Err MtCursor::emit_sym_type_definition(MnNode node) {
   Err err = emit_ws_to(sym_type_definition, node);
 
   for (auto child : node) {
-    if (child.field == field_type)
-      err << emit_type(child);
-    else if (child.field == field_declarator)
-      err << emit_declarator(child);
-    else
-      err << emit_default(child);
+    switch(child.field) {
+      case field_type:       err << emit_type(child); break;
+      case field_declarator: err << emit_declarator(child); break;
+      default:               err << emit_default(child); break;
+    }
   }
 
   return err << check_done(node);
@@ -1752,10 +1758,19 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
   Err err = emit_ws_to(n);
   assert(n.sym == sym_field_declaration);
 
-  if (n.get_field(field_type).sym == sym_enum_specifier) {
-    return emit_enum(n);
+  // Struct outside of class
+  if (current_mod == nullptr) {
+    auto node_type = n.get_field(field_type);
+    auto node_decl = n.get_field(field_declarator);
+    auto node_semi = n.child(2);
+
+    err << emit_type(node_type);
+    err << emit_declarator(node_decl);
+    err << emit_text(node_semi);
+    return err << check_done(n);
   }
 
+  // Const local variable
   if (n.is_const()) {
     auto node_static = n.child(0);
     auto node_const = n.child(1);
@@ -1777,53 +1792,40 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
     return err;
   }
 
-  assert(cursor == n.start());
+  // Enum
+  if (n.get_field(field_type).sym == sym_enum_specifier) {
+    return emit_enum(n);
+  }
 
-  auto node_type = n.get_field(field_type);
-  assert(node_type);
+  //----------
+  // Actual fields
+
+  auto field = current_mod->get_field(n.name4());
+  assert(field);
 
   std::string type_name = n.type5();
 
-  if (current_mod == nullptr) {
-    // Struct outside of class
-
-    auto node_type = n.get_field(field_type);
-    auto node_decl = n.get_field(field_declarator);
-    auto node_semi = n.child(2);
-
-    err << emit_type(node_type);
-    err << emit_declarator(node_decl);
-    err << emit_text(node_semi);
-  } else if (lib->get_module(type_name)) {
+  // Component
+  if (lib->get_module(type_name)) {
     err << emit_field_as_component(n);
-  } else if (current_mod->get_input_signal(n.name4())) {
-    err << skip_over(n);
-  } else if (current_mod->get_output_signal(n.name4())) {
-    err << skip_over(n);
-  } else if (current_mod->get_output_register(n.name4())) {
-    err << skip_over(n);
-  } else if (n.is_const()) {
-    err << emit_child_expressions(n);
-  } else if (type_name == "logic") {
-    auto node_type = n.get_field(field_type);
-    auto node_decl = n.get_field(field_declarator);
-    auto node_semi = n.child(2);
-
-    err << emit_type(node_type);
-    err << emit_declarator(node_decl);
-    err << emit_text(node_semi);
-  } else if (type_name == "int") {
-    auto node_type = n.get_field(field_type);
-    auto node_decl = n.get_field(field_declarator);
-    auto node_semi = n.child(2);
-
-    err << emit_type(node_type);
-    err << emit_declarator(node_decl);
-    err << emit_text(node_semi);
-  } else {
-    err << ERR("emit_sym_field_declaration can't handle %s\n", n.text().c_str());
+    return err << check_done(n);
   }
 
+  // Ports don't go in the class body.
+
+  if (field->is_port()) {
+    err << skip_over(n);
+    return err << check_done(n);
+  }
+
+  // If we get here, we're emitting a local primitive type field.
+  auto node_type = n.get_field(field_type);
+  auto node_decl = n.get_field(field_declarator);
+  auto node_semi = n.child(2);
+
+  err << emit_type(node_type);
+  err << emit_declarator(node_decl);
+  err << emit_text(node_semi);
   return err << check_done(n);
 }
 
@@ -1977,7 +1979,7 @@ CHECK_RETURN Err MtCursor::emit_method_ports(MtMethod* m) {
 
 //----------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_method_bindings(MtMethod* m) {
+CHECK_RETURN Err MtCursor::emit_func_binding_vars(MtMethod* m) {
   Err err;
 
   int param_count = m->param_nodes.size();
@@ -2078,7 +2080,7 @@ CHECK_RETURN Err MtCursor::emit_modparam_list() {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_module_port_list(MnNode class_body) {
+CHECK_RETURN Err MtCursor::emit_module_ports(MnNode class_body) {
   Err err;
 
   err << emit_indent();
@@ -2169,7 +2171,7 @@ CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnNode n) {
   err << emit_newline();
 
   err << emit_modparam_list();
-  err << emit_module_port_list(class_body);
+  err << emit_module_ports(class_body);
   err << emit_sym_field_declaration_list(class_body, false);
 
   cursor = n.end();

@@ -21,6 +21,9 @@ struct MtField {
   bool is_struct() const;
   bool is_param() const;
   bool is_public() const;
+  bool is_port() const {
+    return is_public();
+  }
 
   bool is_input() const { return _state == CTX_INPUT; }
   bool is_register() const {

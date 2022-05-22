@@ -86,23 +86,25 @@ module riscv_core
   singlecycle_datapath datapath(
     // global clock
     .clock(clock),
+    // input signals
     .reset(datapath_reset),
     .data_mem_read_data(datapath_data_mem_read_data),
-    .data_mem_address(datapath_data_mem_address),
-    .data_mem_write_data(datapath_data_mem_write_data),
     .inst(datapath_inst),
-    .pc(datapath_pc),
-    .inst_opcode(datapath_inst_opcode),
-    .inst_funct3(datapath_inst_funct3),
-    .inst_funct7(datapath_inst_funct7),
-    .alu_result_equal_zero(datapath_alu_result_equal_zero),
     .pc_write_enable(datapath_pc_write_enable),
     .regfile_write_enable(datapath_regfile_write_enable),
     .alu_operand_a_select(datapath_alu_operand_a_select),
     .alu_operand_b_select(datapath_alu_operand_b_select),
     .reg_writeback_select(datapath_reg_writeback_select),
     .next_pc_select(datapath_next_pc_select),
-    .alu_function(datapath_alu_function)
+    .alu_function(datapath_alu_function),
+    // output signals
+    .data_mem_address(datapath_data_mem_address),
+    .data_mem_write_data(datapath_data_mem_write_data),
+    .pc(datapath_pc),
+    .inst_opcode(datapath_inst_opcode),
+    .inst_funct3(datapath_inst_funct3),
+    .inst_funct7(datapath_inst_funct7),
+    .alu_result_equal_zero(datapath_alu_result_equal_zero)
   );
   logic datapath_reset;
   logic[31:0] datapath_data_mem_read_data;
@@ -123,10 +125,12 @@ module riscv_core
   logic datapath_alu_result_equal_zero;
 
   singlecycle_ctlpath ctlpath(
+    // input signals
     .inst_opcode(ctlpath_inst_opcode),
     .inst_funct3(ctlpath_inst_funct3),
     .inst_funct7(ctlpath_inst_funct7),
     .alu_result_equal_zero(ctlpath_alu_result_equal_zero),
+    // output signals
     .pc_write_enable(ctlpath_pc_write_enable),
     .regfile_write_enable(ctlpath_regfile_write_enable),
     .alu_operand_a_select(ctlpath_alu_operand_a_select),
@@ -152,14 +156,16 @@ module riscv_core
   logic[1:0] ctlpath_next_pc_select;
 
   data_memory_interface dmem(
+    // input signals
     .read_enable(dmem_read_enable),
     .write_enable(dmem_write_enable),
     .data_format(dmem_data_format),
     .address(dmem_address),
     .write_data(dmem_write_data),
+    .bus_read_data(dmem_bus_read_data),
+    // output signals
     .read_data(dmem_read_data),
     .bus_address(dmem_bus_address),
-    .bus_read_data(dmem_bus_read_data),
     .bus_write_data(dmem_bus_write_data),
     .bus_byte_enable(dmem_bus_byte_enable),
     .bus_read_enable(dmem_bus_read_enable),

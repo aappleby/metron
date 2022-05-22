@@ -42,6 +42,7 @@ module Module
   Submod submod(
     // global clock
     .clock(clock),
+    // output registers
     .sub_reg(submod_sub_reg)
   );
   logic[7:0] submod_sub_reg;

@@ -1130,7 +1130,15 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
 
   indent_stack.push_back(indent_stack.back() + "  ");
 
-  /*
+  if (component_mod->needs_tick()) {
+    err << emit_indent();
+    err << emit_print("// global clock");
+    err << emit_newline();
+    err << emit_indent();
+    err << emit_print(".clock(clock),");
+    err << emit_newline();
+    trailing_comma = true;
+  }
 
   if (component_mod->input_signals.size()) {
     err << emit_indent();
@@ -1144,11 +1152,11 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
     }
   }
 
-  if (current_mod->output_signals.size()) {
+  if (component_mod->output_signals.size()) {
     err << emit_indent();
     err << emit_print("// output signals");
     err << emit_newline();
-    for (auto f : current_mod->output_signals) {
+    for (auto f : component_mod->output_signals) {
       err << emit_indent();
       err << emit_print(".%s(%s_%s),", f->cname(), inst_name.c_str(), f->cname());
       err << emit_newline();
@@ -1156,32 +1164,11 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
     }
   }
 
-  if (current_mod->output_registers.size()) {
+  if (component_mod->output_registers.size()) {
     err << emit_indent();
     err << emit_print("// output registers");
     err << emit_newline();
-    for (auto f : current_mod->output_registers) {
-      err << emit_indent();
-      err << emit_print(".%s(%s_%s),", f->cname(), inst_name.c_str(), f->cname());
-      err << emit_newline();
-      trailing_comma = true;
-    }
-  }
-
-  */
-
-  if (component_mod->needs_tick()) {
-    err << emit_indent();
-    err << emit_print("// global clock");
-    err << emit_newline();
-    err << emit_indent();
-    err << emit_print(".clock(clock),");
-    err << emit_newline();
-    trailing_comma = true;
-  }
-
-  for (auto f : component_mod->all_fields) {
-    if (f->is_public()) {
+    for (auto f : component_mod->output_registers) {
       err << emit_indent();
       err << emit_print(".%s(%s_%s),", f->cname(), inst_name.c_str(), f->cname());
       err << emit_newline();

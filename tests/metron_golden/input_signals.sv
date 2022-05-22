@@ -61,8 +61,11 @@ module Module
   Submod submod(
     // global clock
     .clock(clock),
+    // input signals
     .i_signal(submod_i_signal),
+    // output signals
     .o_signal(submod_o_signal),
+    // output registers
     .o_reg(submod_o_reg),
     .tock_i_param(submod_tock_i_param),
     .tock_ret(submod_tock_ret)

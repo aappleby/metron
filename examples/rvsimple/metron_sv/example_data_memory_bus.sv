@@ -36,11 +36,13 @@ module example_data_memory_bus
   example_data_memory data_memory(
     // global clock
     .clock(clock),
+    // input signals
     .address(data_memory_address),
-    .q(data_memory_q),
     .wren(data_memory_wren),
     .byteena(data_memory_byteena),
-    .data(data_memory_data)
+    .data(data_memory_data),
+    // output signals
+    .q(data_memory_q)
   );
   logic[rv_config::DATA_BITS - 2-1:0] data_memory_address;
   logic data_memory_wren;

@@ -70,14 +70,16 @@ module toplevel
   riscv_core core(
     // global clock
     .clock(clock),
+    // input signals
     .reset(core_reset),
-    .bus_address(core_bus_address),
     .bus_read_data(core_bus_read_data),
+    .inst(core_inst),
+    // output signals
+    .bus_address(core_bus_address),
     .bus_write_data(core_bus_write_data),
     .bus_byte_enable(core_bus_byte_enable),
     .bus_read_enable(core_bus_read_enable),
     .bus_write_enable(core_bus_write_enable),
-    .inst(core_inst),
     .pc(core_pc)
   );
   logic core_reset;
@@ -91,7 +93,9 @@ module toplevel
   logic[31:0] core_pc;
 
   example_text_memory_bus text_memory_bus(
+    // input signals
     .address(text_memory_bus_address),
+    // output signals
     .read_data(text_memory_bus_read_data)
   );
   logic[31:0] text_memory_bus_address;
@@ -100,12 +104,14 @@ module toplevel
   example_data_memory_bus data_memory_bus(
     // global clock
     .clock(clock),
+    // input signals
     .address(data_memory_bus_address),
-    .read_data(data_memory_bus_read_data),
     .write_data(data_memory_bus_write_data),
     .byte_enable(data_memory_bus_byte_enable),
     .read_enable(data_memory_bus_read_enable),
-    .write_enable(data_memory_bus_write_enable)
+    .write_enable(data_memory_bus_write_enable),
+    // output signals
+    .read_data(data_memory_bus_read_data)
   );
   logic[31:0] data_memory_bus_address;
   logic[31:0] data_memory_bus_write_data;

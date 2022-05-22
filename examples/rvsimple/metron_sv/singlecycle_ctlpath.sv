@@ -75,8 +75,10 @@ module singlecycle_ctlpath
 
  /*private:*/
   singlecycle_control control(
+    // input signals
     .inst_opcode(control_inst_opcode),
     .take_branch(control_take_branch),
+    // output signals
     .pc_write_enable(control_pc_write_enable),
     .regfile_write_enable(control_regfile_write_enable),
     .alu_operand_a_select(control_alu_operand_a_select),
@@ -100,8 +102,10 @@ module singlecycle_ctlpath
   logic[1:0] control_next_pc_select;
 
   control_transfer transfer(
+    // input signals
     .result_equal_zero(transfer_result_equal_zero),
     .inst_funct3(transfer_inst_funct3),
+    // output signals
     .take_branch(transfer_take_branch)
   );
   logic transfer_result_equal_zero;
@@ -109,9 +113,11 @@ module singlecycle_ctlpath
   logic transfer_take_branch;
 
   alu_control alu_ctrl(
+    // input signals
     .alu_op_type(alu_ctrl_alu_op_type),
     .inst_funct3(alu_ctrl_inst_funct3),
     .inst_funct7(alu_ctrl_inst_funct7),
+    // output signals
     .alu_function(alu_ctrl_alu_function)
   );
   logic[1:0] alu_ctrl_alu_op_type;

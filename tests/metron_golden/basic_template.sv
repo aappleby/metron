@@ -30,6 +30,7 @@ module Module
   end
 
   Submod #(10,11) submodule(
+    // output signals
     .my_width(submodule_my_width),
     .my_height(submodule_my_height)
   );

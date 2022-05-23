@@ -1,7 +1,8 @@
-class Tutorial1 {
+class Counter {
 public:
+  int count;
 
-  int get_thing() {
-    return 1;
+  void update() {
+    count++;
   }
 };

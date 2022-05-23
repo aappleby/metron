@@ -169,6 +169,6 @@ Module['FS_createPath']("/examples", "tutorial", true, true);
     }
 
     }
-    loadPackage({"files": [{"filename": "/examples/tutorial/tutorial1.h", "start": 0, "end": 68}, {"filename": "/examples/tutorial/tutorial2.h", "start": 68, "end": 136}], "remote_package_size": 136, "package_uuid": "ae302687-0a4d-467b-999e-06f9e4013554"});
+    loadPackage({"files": [{"filename": "/examples/tutorial/tutorial5.h", "start": 0, "end": 41}, {"filename": "/examples/tutorial/vga.h", "start": 41, "end": 1188}, {"filename": "/examples/tutorial/tutorial1.h", "start": 1188, "end": 1264}, {"filename": "/examples/tutorial/tutorial3.h", "start": 1264, "end": 1305}, {"filename": "/examples/tutorial/tutorial4.h", "start": 1305, "end": 1346}, {"filename": "/examples/tutorial/tutorial2.h", "start": 1346, "end": 1414}], "remote_package_size": 1414, "package_uuid": "c40f1e5c-1a59-4cf4-8d37-b92e6d90123f"});
 
   })();

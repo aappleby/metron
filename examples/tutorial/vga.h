@@ -1,8 +1,3 @@
-// Tutorial 5
-
-class Module {
-public:
-};
 #include "metron_tools.h"
 
 /*
@@ -71,29 +66,4 @@ class VGAOut {
     py = new_py;
   }
 
-};
-class Counter {
-public:
-  int count;
-
-  void update() {
-    count++;
-  }
-};
-// Tutorial 3
-
-class Module {
-public:
-};
-// Tutorial 4
-
-class Module {
-public:
-};
-class Tutorial2 {
-public:
-
-  int get_thing() {
-    return 1;
-  }
 };

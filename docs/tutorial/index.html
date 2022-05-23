@@ -2,6 +2,9 @@
 <html lang="en-us">
 
 <head>
+  <script type="text/javascript">
+    console.log("load starting @ " + performance.now());
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
@@ -16,274 +19,173 @@
   <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.5.0/lib/xterm-addon-fit.min.js"></script>
 
   <title>Metron C++ to Verilog Demo</title>
+
 </head>
 
-<body class="">
-  <div class="topbar flex_x" style="justify-content:space-between;">
-
-    <div id="intro" class="center_y" style="flex-basis:250px;">
+<body>
+  <div class="topbar">
+    <div class="topbar_spacer"> </div>
+    <div class="topbar_title">
+      <img src="../favicon.ico" width="48" height="48" style="margin:8px;">
+      Metron C++ to Verilog Transpiler Tutorial!
     </div>
-
-    <div class="center_y" style="flex-basis:auto;">
-      <img src="../favicon.ico" width="48" height="48" style="padding:0px; background-color:#888; margin:8px;">
-      <div id="title">Metron C++ to Verilog Transpiler Tutorial!</div>
-    </div>
-
-    <div id="link" class="center_y" style="flex-basis:250px;">
-      <a class="github_link" href="https://github.com/aappleby/Metron">Source on Github</a>
-    </div>
-
+    <a class="topbar_spacer" href="https://github.com/aappleby/Metron">Source on Github</a>
   </div>
-  <div id="panels" class="flex_x" style="background-color:#444;">
-    <div id="col_left" class="flex_1"></div>
-    <div id="col_mid" class="flex_5" style="background-color: #222; padding: 10px;">
 
 
 
+  <div class="contents">
+    <div class="divider">Tutorial 1 - Let's start with addition.</div>
+    <p>
+      Metron is a tool for converting a very limited subset of C++ into a very limited subset of Verilog. Even though
+      it's limited, the amount of C++ that Metron can convert is still enough to be useful. This tutorial is targeted at
+      programmers with a basic understanding of C++ classes who may or may not have tried their hand at Verilog
+      before. Some of the hardware-side explanations may require a bit deeper understanding of how circuts work, but in
+      general you should be able to follow along.<br>
+    </p>
 
-      <div>
-        <div class="border center_y dark2 bar" style="margin:10px;">
-          <div class="bar_text">Tutorial 1 - Let's start with addition.</div>
+    <p>
+      All of the code editors below are live - edit the C++ code on the left and you should see your converted code on
+      the right. If your code isn't convertible to Verilog, you'll see some (still pretty cryptic) error messages
+      instead. Switching between files and creating new files can be done by changing the filename above the source
+      window. Files will persist in the virtual filesystem until this page is reloaded.
+    </p>
+
+    <p>
+      The first useful circuit most Verilog tutorials present is a simple counter, so let's take a look at
+      Metron's version:<br>
+    </p>
+    <div class="live_code" id="./examples/tutorial/tutorial1.h">
+      <div class="source_panel" id="c_panel">
+        <div class="header_bar">
+          <div class="filename" contenteditable="true"></div>
         </div>
+        <div class="jar language-cpp"></div>
       </div>
-      <p>
-        The first "useful" circuit people usually see when starting to learn Verilog is a counter. Here's Metron's
-        version of a counter:
-      </p>
-
-      <pre>
-class Module {
-public:
-  int count;
-  void update() {
-    count++;
-  }
-};
-</pre>
-      <p>
-        Tutorial tutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
-        ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
-        lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
-        tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah
-        blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
-        blah blahtutorial
-        tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah
-        blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
-        blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
-        ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
-        lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
-        tutorial lorem ipsum blah blah
-      </p>
-      <p>
-        The code editor below is live - edit the C++ code on the left and you should see your converted code on the
-        right. If your code isn't convertible to Verilog, you'll see some (still pretty cryptic) error messages instead.
-      </p>
-      <div id="tut1" class="tut sbs flex_x" style="margin:10px">
-        <div id="sbs_left" class="src flex_1">
-          <div id="tut1_c_bar" class="bar border center_y dark2 bar">
-            <div id="tut1_c_bar_text" class="bar_text">./docs/tutorial/tutorial1.h</div>
-          </div>
-          <div id="tut1_c" class="jar flex_1 editor border language-cpp dark0">
-            C source here
-          </div>
+      <div class="source_panel" id="v_panel">
+        <div class="header_bar">
+          <div class="filename"></div>
         </div>
-        <div id="sbs_right" class="dst flex_1">
-          <div id="tut1_v_bar" class="bar border center_y dark2 bar">
-            <div id="tut1_v_bar_text" class="bar_text">./docs/tutorial/tutorial1.sv</div>
-          </div>
-          <div id="tut1_v" class="jar flex_1 editor border language-verilog dark0">
-            Verilog source here
-          </div>
-        </div>
+        <div class="jar language-verilog"></div>
       </div>
-      <div style="height:50px"></div>
-
-
-
-
-
-      <div>
-        <div class="border center_y dark2 bar" style="margin:10px;">
-          <div class="bar_text">Tutorial 2</div>
-        </div>
-      </div>
-      <p>
-        tutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah
-        blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
-        blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
-        ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
-        lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
-        tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah
-        blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
-        blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
-        ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
-        lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
-        tutorial lorem ipsum blah blah
-      </p>
-      <div class="sbs flex_x" style="margin:10px">
-        <div id="sbs_left" class="flex_1">
-          <div class="border center_y dark2 bar">
-            <div class="bar_text" id="dst_title">./examples/scratch.sv</div>
-          </div>
-          <div id="src_text" class="flex_1 editor border language-cpp dark0">
-            C source here
-          </div>
-        </div>
-        <div id="sbs_right" class="flex_1">
-          <div class="border center_y dark2 bar">
-            <div class="bar_text" id="dst_title">./examples/scratch.sv</div>
-          </div>
-          <div id="dst_text" class="flex_1 editor border language-verilog dark0">
-            Verilog source here
-          </div>
-        </div>
-      </div>
-      <div style="height:50px"></div>
-
-
-
-
-      <div>
-        <div class="border center_y dark2 bar" style="margin:10px;">
-          <div class="bar_text">Tutorial 3</div>
-        </div>
-      </div>
-      <p>
-        blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
-        blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
-        ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
-        lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
-        tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah
-        blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
-        blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
-        ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
-        lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
-        tutorial lorem ipsum blah blah
-      <div class="sbs flex_x" style="margin:10px">
-        <div id="sbs_left" class="flex_1">
-          <div class="border center_y dark2 bar">
-            <div class="bar_text" id="dst_title">./examples/scratch.sv</div>
-          </div>
-          <div id="src_text" class="flex_1 editor border language-cpp dark0">
-            C source here
-          </div>
-        </div>
-        <div id="sbs_right" class="flex_1">
-          <div class="border center_y dark2 bar">
-            <div class="bar_text" id="dst_title">./examples/scratch.sv</div>
-          </div>
-          <div id="dst_text" class="flex_1 editor border language-verilog dark0">
-            Verilog source here
-          </div>
-        </div>
-      </div>
-      <div style="height:50px"></div>
-
-
-
-
-
-      <div>
-        <div class="border center_y dark2 bar" style="margin:10px;">
-          <div class="bar_text">Tutorial 4</div>
-        </div>
-      </div>
-      <p>
-        blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
-        blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
-        ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
-        lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
-        tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah
-        blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
-        blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
-        ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
-        lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
-        tutorial lorem ipsum blah blah
-      <div class="sbs flex_x" style="margin:10px">
-        <div id="sbs_left" class="flex_1">
-          <div class="border center_y dark2 bar">
-            <div class="bar_text" id="dst_title">./examples/scratch.sv</div>
-          </div>
-          <div id="src_text" class="flex_1 editor border language-cpp dark0">
-            C source here
-          </div>
-        </div>
-        <div id="sbs_right" class="flex_1">
-          <div class="border center_y dark2 bar">
-            <div class="bar_text" id="dst_title">./examples/scratch.sv</div>
-          </div>
-          <div id="dst_text" class="flex_1 editor border language-verilog dark0">
-            Verilog source here
-          </div>
-        </div>
-      </div>
-      <div style="height:50px"></div>
-
-
-
-
-
-
-      <div>
-        <div class="border center_y dark2 bar" style="margin:10px;">
-          <div class="bar_text">Tutorial 5</div>
-        </div>
-      </div>
-      <p>
-        blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
-        blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
-        ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
-        lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
-        tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah
-        blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
-        blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
-        ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
-        lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
-        tutorial lorem ipsum blah blah
-      <div class="sbs flex_x" style="margin:10px">
-        <div id="sbs_left" class="flex_1">
-          <div class="border center_y dark2 bar">
-            <div class="bar_text" id="dst_title">./examples/scratch.sv</div>
-          </div>
-          <div id="src_text" class="flex_1 editor border language-cpp dark0">
-            C source here
-          </div>
-        </div>
-        <div id="sbs_right" class="flex_1">
-          <div class="border center_y dark2 bar">
-            <div class="bar_text" id="dst_title">./examples/scratch.sv</div>
-          </div>
-          <div id="dst_text" class="flex_1 editor border language-verilog dark0">
-            Verilog source here
-          </div>
-        </div>
-      </div>
-      <div style="height:50px"></div>
-
-
-
-
-
-
-
-      <div>
-        <div class="border center_y dark2 bar" style="margin:10px;">
-          <div class="bar_text">Conclusion</div>
-        </div>
-      </div>
-      <p>
-        blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
-        blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
-        ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
-        lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
-        tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah
-        blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
-        blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
-        ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
-        lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
-        tutorial lorem ipsum blah blah
     </div>
-    <div id="col_right" class="flex_1"></div>
+    <p>
+      Yeah, that's it. That's the whole thing. Metron doesn't require any additional headers or libraries or code
+      annotations,
+      so a plain C++ class works just fine. If we compare the two versions, the main differences are:
+    </p>
+
+    <h1>The "class" keyword turned into "module" and the curly braces are now "begin"/"end(module)"</h1>
+    <p>
+      Verilog doesn't use curly braces much. These are purely textual changes and don't affect the meaning of the
+      program.
+    </p>
+    <h1>The module has a "port list" containing a clock and the "count" member, now with an "output" label</h1>
+    <p>
+      Unlike C, connectivity between modules and the outside world is much more limited. Everything is private by
+      default unless exposed through a "port", which you can think of as something like a reference in C++. We'll see
+      more of these later.
+    </p>
+    <h1>The "update" function is now in a block starting with "always_ff @(posedge clock)"</h1>
+    <p>
+      The statement "always_ff @(posedge clock)" means something like "every time the clock ticks, do this". And that
+      brings up an important point - When we translate Metron programs into Verilog and upload them to a FPGA, they're
+      not "running" in the same sense that the C code runs after we compile it: FPGAs don't evaluate each blocks of code
+      in order, they don't call functions, they're literally bundles of wires running between logic gates and everything
+      is happening simultaneously.
+    </p>
+    <h1>"count++" became "count &lt;= count + 1" - what's with the "&lt;="?</h1>
+    <p>
+      Along the same lines,
+    </p>
+
+    <p>
+      In light of that, one benefit that Metron provides is the ability to write code that can be run both
+      procedurally (as C) or in "parallel" (as logic) and have some assurance* that both interpretations of the code
+      are semantically equivalent, output-wise. If Metron can't (informally) prove that your code executes the same in
+      C and Verilog, it will refuse to translate it.
+      <br>
+      <span style="font-size:10px;">* There is an informal discussion of Metron's tracing logic available in the
+        documentation.</span>
+    </p>
+    <p>
+      The rules defining what sort of code is and is not allowed will seem weird and arbitrary at first if you're
+      a C programmer, but there's not a lot we can do to avoid it - even something as simple as dereferencing
+      a pointer has no equivalent meaning in hardware, which means that whole swathes of language features and
+      algorithms are immediately thrown out the window. Instead, writing in Metron require adopting a different mindset
+      - you're not writing a program, you're building a machine. The machine takes one step forward at each clock cycle,
+      computing its new state from its old state using the code that you've provided. That state can be almost
+      arbitrarily complex, but it's fundamentally static - the classes and structs that you instantiate at compile time
+      are all you've got.
+    </p>
+
+    <p>
+      While this may sound restrictive, we can still do some very cool things. Let's take a look at an example much
+      more interesting than a counter: generating a VGA video signal.
+    </p>
+
+    <div class="live_code" id="./examples/tutorial/vga.h">
+      <div class="source_panel" id="c_panel">
+        <div class="header_bar">
+          <div class="filename" contenteditable="true"></div>
+        </div>
+        <div class="jar language-cpp"></div>
+      </div>
+      <div class="source_panel" id="v_panel">
+        <div class="header_bar">
+          <div class="filename"></div>
+        </div>
+        <div class="jar language-verilog"></div>
+      </div>
+    </div>
+
+    <p>
+      Lots of new stuff here!
+    </p>
+    <ul>
+      <li>We're #including "metron_tools.h", which contains a definition of <code>logic&lt;x&gt;</code> - a class
+        template that works like an unsigned integer with any number of bits (up to 64).
+      </li>
+      <li>Our port list now contains output "signals" and output "registers", which we'll explain shortly.</li>
+      <li>"update_video()" is now in an always_comb block instead of an always_ff block like the earlier example</li>
+      <li>Our local variables have been split into separate declaration and initialization lines like old-style C</li>
+      <li>"return x" has changed to "function_name = x"</li>
+    </ul>
+    <p>
+      Despite the differences, a lot of it matches up pretty directly and the resulting Verilog code shouldn't look
+      _too_ alien. If we wanted to run the above code inside a host C++ program, it would look something like this:
+    </p>
+    <pre class="code_block">
+#include &lt;stdio.h&gt;
+#include "examples/tutorial/vga.h"
+
+int main(int argc, char** argv) {
+  VGAOut vga;
+
+  for (int cycle = 0; cycle &lt; 1000; cycle++) {
+    vga.update_counters();
+    vga.update_video();
+    if (vga.hsync && vga.vsync) {
+      printf("At pixel (%d,%d) and color is (%d,%d,%d)\n",
+             vga.px, vga.py, vga.R, vga.G, vga.B);
+    }
+  }
+
+  return 0;
+}
+</pre>
+
+    <p>
+      Not particularly useful, but it does work. With a bit more effort we could hook it up to SDL and draw the
+      simulated VGA output on screen - and there's an example of that already in the examples folder if you'd like to
+      take a look.
+    </p>
+    <p>
+      We can also take the output of Metron, compile and upload it to a FPGA (again outside the scope of this
+      tutorial), and wire it up to a real monitor - it will display a red checkerboard with a white border, same as
+      the simulation.
+    </p>
+    <div style="height:50px"></div>
   </div>
 
   <script type="text/javascript" src="tutorial_src.js"></script>

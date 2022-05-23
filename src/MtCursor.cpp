@@ -3474,11 +3474,18 @@ CHECK_RETURN Err MtCursor::emit_sym_update_expression(MnNode n) {
   auto id = n.get_field(field_argument);
   auto op = n.get_field(field_operator);
 
+  auto left_is_field = current_mod->get_field(id) != nullptr;
+
   if (n.get_field(field_operator).text() == "++") {
     push_cursor(id);
     err << emit_identifier(id);
     pop_cursor(id);
-    err << emit_print(" = ");
+    if (current_method && current_method->in_tick && left_is_field) {
+      err << emit_print(" <= ");
+    }
+    else{
+      err << emit_print(" = ");
+    }
     push_cursor(id);
     err << emit_identifier(id);
     pop_cursor(id);
@@ -3487,7 +3494,12 @@ CHECK_RETURN Err MtCursor::emit_sym_update_expression(MnNode n) {
     push_cursor(id);
     err << emit_identifier(id);
     pop_cursor(id);
-    err << emit_print(" = ");
+    if (current_method && current_method->in_tick && left_is_field) {
+      err << emit_print(" <= ");
+    }
+    else{
+      err << emit_print(" = ");
+    }
     push_cursor(id);
     err << emit_identifier(id);
     pop_cursor(id);

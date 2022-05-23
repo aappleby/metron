@@ -5,91 +5,68 @@
 }
 
 body {
-  position:absolute;
-  top:0px;
-  right:0px;
-  bottom:0px;
-  left:0px;
   background-color: #444;
+  margin-left:100px;
+  margin-right:100px;
 }
 
-.bar {
-  height:40px;
-  margin:0px;
-  padding:0px;
+p {
+  text-indent: 30px;
 }
 
-.bar_text {
-  margin-left:8px;
+.topbar {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  justify-content:space-between;
 }
 
-.ticky {
-  padding: 3px;
-}
-
-.border {
-  border: solid #1C1C1C 1px;
-}
-
-.editor {
-  margin: 0px;
-  padding: 0px;
-  overflow: auto;
-  white-space: pre-wrap;
-}
-
-.center_y {
+.topbar_title {
   display:flex;
   align-items: center;
-}
-
-#title {
+  flex-basis:auto;
   font-size: 20px;
   color: #CBF;
   margin:8px;
 }
 
-#intro {
-  margin:5px;
-  margin-left:15px;
-}
-
-.github_link {
-  font-size: 18px;
-  margin-left:30px;
-  margin-right:30px;
-}
-
-#intro {
+.topbar_spacer {
   display:flex;
   align-items: center;
-  font-size: 13px;
+  flex-basis:250px;
 }
 
-#src_selector {
-  margin-left: 5px;
+.contents {
+  padding: 12px;
+  padding-left: 40px;
+  padding-right: 40px;
+  background-color: #222;
 }
 
-p {
-  text-indent: 30px;
-  margin: 20px;
+.divider {
+  margin:10px;
+  padding:10px;
+  background-color: #333333;
+  border: solid #1C1C1C 1px;
 }
 
-.dark0 { background-color: #1E1E1E; }
-.dark1 { background-color: #222222; }
-.dark2 { background-color: #333333; }
+.live_code {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+}
 
-.flex_x { display: flex; flex-direction: row;    gap: 4px; }
-.flex_y { display: flex; flex-direction: column; gap: 0px; }
+.source_panel {
+  flex-basis: 0;
+  flex-grow: 1;
+}
 
-.flex_0 { flex-basis: auto; flex-grow: 0; }
-.flex_1 { flex-basis: 0;    flex-grow: 1; }
-.flex_2 { flex-basis: 0;    flex-grow: 2; }
-.flex_3 { flex-basis: 0;    flex-grow: 3; }
-.flex_4 { flex-basis: 0;    flex-grow: 4; }
-.flex_5 { flex-basis: 0;    flex-grow: 5; }
+.header_bar {
+  border: solid #1C1C1C 1px;
+  background-color: #333333;
+  padding: 8px;
+}
 
-.flex_1a { flex-grow: 1; }
-.flex_2a { flex-grow: 1; }
-
-#panels { background-color: #222; }
+.filename {
+  font-weight: 600;
+}

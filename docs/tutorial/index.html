@@ -19,16 +19,20 @@
 </head>
 
 <body class="">
-  <div class="topbar flex_x">
-    <div id="intro" class="center_y flex_1">
+  <div class="topbar flex_x" style="justify-content:space-between;">
+
+    <div id="intro" class="center_y" style="flex-basis:250px;">
     </div>
-    <div class="center_y flex_2">
-      <img src="../app/favicon.ico" width="48" height="48" style="padding:0px; background-color:#888; margin:8px;">
+
+    <div class="center_y" style="flex-basis:auto;">
+      <img src="../favicon.ico" width="48" height="48" style="padding:0px; background-color:#888; margin:8px;">
       <div id="title">Metron C++ to Verilog Transpiler Tutorial!</div>
     </div>
-    <div id="link" class="center_y flex_1">
+
+    <div id="link" class="center_y" style="flex-basis:250px;">
       <a class="github_link" href="https://github.com/aappleby/Metron">Source on Github</a>
     </div>
+
   </div>
   <div id="panels" class="flex_x" style="background-color:#444;">
     <div id="col_left" class="flex_1"></div>
@@ -51,16 +55,16 @@
       tutorial lorem ipsum blah blah
       <div class="sbs flex_x" style="margin:10px">
         <div id="sbs_left" class="flex_1">
-          <div class="border center_y dark2 bar">
-            <div class="bar_text" id="tut1_h_title">./docs/tutorial/tutorial1.h</div>
+          <div id="tut1_c_bar" class="border center_y dark2 bar">
+            <div id="tut1_c_bar_text" class="bar_text">./docs/tutorial/tutorial1.h</div>
           </div>
           <div id="tut1_c" class="flex_1 editor border language-cpp dark0">
             C source here
           </div>
         </div>
         <div id="sbs_right" class="flex_1">
-          <div class="border center_y dark2 bar">
-            <div class="bar_text" id="dst_title">./docs/tutorial/tutorial1.sv</div>
+          <div id="tut1_v_bar" class="border center_y dark2 bar">
+            <div id="tut1_v_bar_text" class="bar_text">./docs/tutorial/tutorial1.sv</div>
           </div>
           <div id="tut1_v" class="flex_1 editor border language-verilog dark0">
             Verilog source here
@@ -110,7 +114,7 @@
     <div id="col_right" class="flex_1"></div>
   </div>
 
-  <script type="text/javascript" src="tutorial_data.js"></script>
+  <script type="text/javascript" src="tutorial_src.js"></script>
   <script type="module" src="tutorial.js"></script>
 </body>
 

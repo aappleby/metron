@@ -84,4 +84,7 @@ body {
 .flex_4 { flex-basis: 0;    flex-grow: 4; }
 .flex_5 { flex-basis: 0;    flex-grow: 5; }
 
+.flex_1a { flex-grow: 1; }
+.flex_2a { flex-grow: 1; }
+
 #panels { background-color: #222; }

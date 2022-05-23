@@ -56,35 +56,37 @@ struct TinyLog {
     return double(now - _time_origin) / 1.0e9;
   }
 
-  void print_char(int c, uint32_t color) {
+  void print_char(FILE* file, int c, uint32_t color) {
     if (_muted) return;
 
     if (_start_line) {
       _start_line = false;
-      print(0, "[%07.3f] ", timestamp());
+      print(file, 0, "[%07.3f] ", timestamp());
       for (int j = 0; j < _indentation; j++) /*putchar(' ');*/ printf(" ");
     }
 
     if (c == '\n') {
       set_color(0);
-      printf("%c", c); //putchar(c);
+      //printf("%c", c); //putchar(c);
+      fputc(c, file);
       _start_line = true;
     }
     else {
       set_color(color);
-      printf("%c", c); //putchar(c);
-      fflush(stdout);
+      //printf("%c", c); //putchar(c);
+      fputc(c, file);
+      fflush(file);
     }
   }
 
-  void print_buffer(uint32_t color, const char* buffer, int len) {
+  void print_buffer(FILE* file, uint32_t color, const char* buffer, int len) {
     for (int i = 0; i < len; i++) {
-      print_char(buffer[i], color);
+      print_char(file, buffer[i], color);
     }
     //fflush(stdout);
   }
 
-  void vprint(uint32_t color, const char* format, va_list args) {
+  void vprint(FILE* file, uint32_t color, const char* format, va_list args) {
     va_list args2;
     va_copy(args2, args);
     int size = vsnprintf(nullptr, 0, format, args2);
@@ -92,34 +94,34 @@ struct TinyLog {
 
     auto buffer = new char[size + 1];
     vsnprintf(buffer, size_t(size) + 1, format, args);
-    print_buffer(color, buffer, size);
+    print_buffer(file, color, buffer, size);
     delete[] buffer;
   }
 
-  void print(uint32_t color, const char* format, ...) {
+  void print(FILE* file, uint32_t color, const char* format, ...) {
     va_list args;
     va_start(args, format);
-    vprint(color, format, args);
+    vprint(file, color, format, args);
     va_end(args);
   }
 };
 
-#define LOG(...)      TinyLog::get().print(0x00000000, __VA_ARGS__)
-#define LOG_C(c, ...) TinyLog::get().print(c, __VA_ARGS__)
-#define LOG_R(...)    TinyLog::get().print(0x008080FF, __VA_ARGS__)
-#define LOG_G(...)    TinyLog::get().print(0x0080FF80, __VA_ARGS__)
-#define LOG_B(...)    TinyLog::get().print(0x00FFA0A0, __VA_ARGS__)
-#define LOG_Y(...)    TinyLog::get().print(0x0080FFFF, __VA_ARGS__)
-#define LOG_W(...)    TinyLog::get().print(0x00FFFFFF, __VA_ARGS__)
+#define LOG(...)      TinyLog::get().print(stdout, 0x00000000, __VA_ARGS__)
+#define LOG_C(c, ...) TinyLog::get().print(stdout, c, __VA_ARGS__)
+#define LOG_R(...)    TinyLog::get().print(stdout, 0x008080FF, __VA_ARGS__)
+#define LOG_G(...)    TinyLog::get().print(stdout, 0x0080FF80, __VA_ARGS__)
+#define LOG_B(...)    TinyLog::get().print(stdout, 0x00FFA0A0, __VA_ARGS__)
+#define LOG_Y(...)    TinyLog::get().print(stdout, 0x0080FFFF, __VA_ARGS__)
+#define LOG_W(...)    TinyLog::get().print(stdout, 0x00FFFFFF, __VA_ARGS__)
 #define LOG_INDENT()  TinyLog::get().indent()
 #define LOG_DEDENT()  TinyLog::get().dedent()
 
-#define LOG_CV(color, format, args) TinyLog::get().vprint(color, format, args)
-#define LOG_RV(format, args)        TinyLog::get().vprint(0x008080FF, format, args)
-#define LOG_GV(format, args)        TinyLog::get().vprint(0x0080FF80, format, args)
-#define LOG_BV(format, args)        TinyLog::get().vprint(0x00FFA0A0, format, args)
-#define LOG_YV(format, args)        TinyLog::get().vprint(0x0080FFFF, format, args)
-#define LOG_WV(format, args)        TinyLog::get().vprint(0x00FFFFFF, format, args)
+#define LOG_CV(color, format, args) TinyLog::get().vprint(stdout, color, format, args)
+#define LOG_RV(format, args)        TinyLog::get().vprint(stdout, 0x008080FF, format, args)
+#define LOG_GV(format, args)        TinyLog::get().vprint(stdout, 0x0080FF80, format, args)
+#define LOG_BV(format, args)        TinyLog::get().vprint(stdout, 0x00FFA0A0, format, args)
+#define LOG_YV(format, args)        TinyLog::get().vprint(stdout, 0x0080FFFF, format, args)
+#define LOG_WV(format, args)        TinyLog::get().vprint(stdout, 0x00FFFFFF, format, args)
 
 struct LogIndenter {
   LogIndenter() { TinyLog::get().indent(); }

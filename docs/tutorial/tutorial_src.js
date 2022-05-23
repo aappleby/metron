@@ -169,6 +169,6 @@ Module['FS_createPath']("/examples", "tutorial", true, true);
     }
 
     }
-    loadPackage({"files": [{"filename": "/examples/tutorial/tutorial1.h", "start": 0, "end": 68}, {"filename": "/examples/tutorial/tutorial2.h", "start": 68, "end": 136}], "remote_package_size": 136, "package_uuid": "ca04f48c-7006-48e2-bf46-8e0ac063ed26"});
+    loadPackage({"files": [{"filename": "/examples/tutorial/tutorial1.h", "start": 0, "end": 68}, {"filename": "/examples/tutorial/tutorial2.h", "start": 68, "end": 136}], "remote_package_size": 136, "package_uuid": "ae302687-0a4d-467b-999e-06f9e4013554"});
 
   })();

@@ -2,16 +2,95 @@ import { CodeJar } from "https://cdn.jsdelivr.net/npm/codejar@3.6.0/codejar.min.
 
 import Module from "../app/metron.js"
 
-var tut1_c = document.getElementById("tut1_c");
-var tut1_v = document.getElementById("tut1_v");
-
 let metron_mod = null;
+let stdout = "";
+let stderr = "";
+
+//------------------------------------------------------------------------------
+
+const highlight = editor => {
+  editor.textContent = editor.textContent
+  hljs.highlightElement(editor)
+}
+
+class SourcePane {
+  constructor(pane_div, filename) {
+    this.div = pane_div;
+    this.filename = filename;
+    this.div_bar = pane_div.querySelector(".bar");
+    this.div_bar_text = this.div_bar.querySelector(".bar_text");
+    this.div_jar = pane_div.querySelector(".jar");
+    this.code_jar = new CodeJar(this.div_jar, highlight, {tab:"  "});
+  }
+
+  set_filename(new_name) {
+    this.filename = new_name;
+    this.div_bar_text.innerText = new_name;
+  }
+};
+
+class Tutorial {
+  constructor(name, div, src_filename, dst_filename) {
+    this.name = name;
+    this.div = div;
+    this.src_filename = src_filename;
+    this.dst_filename = dst_filename;
+    this.src_pane = new SourcePane(div.querySelector(".src"), src_filename);
+    this.dst_pane = new SourcePane(div.querySelector(".dst"), dst_filename);
+    this.compile_timeout = null;
+
+    this.src_jar = this.src_pane.code_jar;
+    this.dst_jar = this.dst_pane.code_jar;
+
+    let src_contents = null;
+    let dst_contents = null;
+
+    try {
+      src_contents = new TextDecoder().decode(metron_mod.FS.readFile(src_filename));
+    } catch {}
+
+    try {
+      dst_contents = new TextDecoder().decode(metron_mod.FS.readFile(dst_filename));
+    } catch {}
+
+    this.src_pane.code_jar.updateCode(src_contents);
+    this.dst_pane.code_jar.updateCode(dst_contents);
+
+
+    this.src_pane.code_jar.onUpdate(() => this.queue_conversion());
+
+    convert(this);
+  }
+
+  get source() {
+    return this.src_pane.code_jar.toString();
+  }
+
+  set verilog(src) {
+    this.dst_pane.code_jar.updateCode(src);
+  }
+
+  queue_conversion() {
+    this.dst_pane.div_bar.style.backgroundColor = "#333";
+    clearTimeout(this.compile_timeout);
+    this.compile_timeout = setTimeout(() => {
+      convert(this);
+    }, 200);
+  }
+
+  on_convert_ok() {
+    this.verilog = new TextDecoder().decode(metron_mod.FS.readFile(this.dst_filename));
+    this.dst_pane.div_bar.style.backgroundColor = "#353";
+  }
+
+  on_convert_err() {
+    this.verilog = stderr;
+    this.dst_pane.div_bar.style.backgroundColor = "#533";
+  }
+}
 
 //------------------------------------------------------------------------------
 // Set up Emscripten module to run main() when it's ready.
-
-let stdout = "";
-let stderr = "";
 
 var mod_options = window.Module;
 mod_options.noInitialRun = true;
@@ -26,49 +105,6 @@ mod_options.onRuntimeInitialized = function() {
 }
 
 Module(mod_options).then(main);
-
-//------------------------------------------------------------------------------
-// Set up CodeJar
-
-const highlight = editor => {
-  editor.textContent = editor.textContent
-  hljs.highlightElement(editor)
-}
-
-const tut1_c_jar = CodeJar(tut1_c, highlight, {tab:"  "});
-const tut1_v_jar = CodeJar(tut1_v, highlight, {tab:"  "});
-
-/*
-let compile_timeout = null;
-tut1_c_jar.onUpdate(() => {
-  clearTimeout(compile_timeout);
-  compile_timeout = setTimeout(() => {
-    console.log("source updated"), 300)
-  });
-});
-
-var tut1_c_src = String.raw`// Trivial adder example
-class Adder {
-public:
-  int add(int a, int b) {
-    return a + b;
-  }
-};`
-tut1_c_jar.updateCode(tut1_c_src);
-
-var tut1_v_src = String.raw`// Trivial adder example
-module Adder
-(
-  input int a,
-  input int b,
-  output int add
-);
-  always_comb begin
-    add = a + b;
-  end
-endmodule`
-tut1_v_jar.updateCode(tut1_v_src);
-*/
 
 //------------------------------------------------------------------------------
 
@@ -93,115 +129,57 @@ function dump_fs(FS, path, src_paths) {
 
 //------------------------------------------------------------------------------
 
-function convert(mod) {
-  var selector_name = "./examples/tutorial/tutorial1.h";
-
+function convert(tutorial) {
   // Write the potentially modified source back to the filesystem
-  let blob = new TextEncoder().encode(tut1_c_jar.toString());
-  mod.FS.writeFile(selector_name, blob);
-
-  // Abort conversion if file doesn't end with ".h"
-  if (!selector_name.endsWith(".h")) return;
+  let blob = new TextEncoder().encode(tutorial.source);
+  metron_mod.FS.writeFile(tutorial.src_filename, blob);
 
   // Change dst pane title & delete any existing output file
-  var file_out = selector_name.substr(0, selector_name.lastIndexOf('.')) + ".sv";
-  document.getElementById("tut1_v_bar_text").innerText = file_out;
   try {
-    mod.FS.unlink(file_out);
+    metron_mod.FS.unlink(tutorial.dst_filename);
   }
   catch {
   }
 
   // Run Metron
-  var path = selector_name.split("/");
+  var path = tutorial.src_filename.split("/");
   var root = path.slice(0, path.length - 1).join("/");
   var file = path[path.length - 1];
-
-  var args = [];
-  //args.push("-q");
-  args.push("-s");
-  args.push("-r");
-  args.push(root);
-  args.push(file);
-
-  //term.clear();
-  //log_cmdline.innerText = "metron " + args.join(" ");
-  console.log("metron " + args.join(" "));
 
   stdout = "";
   stderr = "";
 
-  let ret = mod.callMain(args);
+  let ret = metron_mod.callMain(["-s", "-r", root, file]);
 
   // Read the output file back to the dst pane, or clear if no file.
   if (ret == 0) {
-    //tut1_v_jar.updateCode(stdout);
-    tut1_v_jar.updateCode(new TextDecoder().decode(mod.FS.readFile(file_out)));
-    document.getElementById("tut1_v_bar").style.backgroundColor = "#353";
+    tutorial.on_convert_ok();
   }
   else {
-    tut1_v_jar.updateCode(stderr);
-    document.getElementById("tut1_v_bar").style.backgroundColor = "#533";
+    tutorial.on_convert_err();
   }
 
 }
 
 //------------------------------------------------------------------------------
 
-let compile_timeout = null;
-let tut1_c_filename = "./examples/tutorial/tutorial1.h";
-let tut1_v_filename = "./examples/tutorial/tutorial1.sv";
-
+let tutorials = [];
 
 function main(mod) {
   console.log("main(mod)");
   metron_mod = mod;
 
-  // Load all the filenames in our filesystem.
-  let src_paths = [];
-  dump_fs(mod.FS, ".", src_paths);
-  src_paths.sort();
+  let tut_index = 1
 
-  console.log(src_paths);
+  let tut_div = document.getElementById(`tut${tut_index}`);
 
-  let tut1_c_bar_text = document.getElementById("tut1_c_bar_text");
-  let tut1_c_bar = document.getElementById("tut1_c_bar");
-
-  tut1_c_bar_text.innerText = tut1_c_filename;
-  tut1_c_jar.updateCode(new TextDecoder().decode(mod.FS.readFile(tut1_c_filename)));
-
-  convert(mod);
-
-  tut1_c_jar.onUpdate(() => {
-    tut1_c_bar.style.backgroundColor = "#335";
-    clearTimeout(compile_timeout);
-    compile_timeout = setTimeout(() => convert(mod), 200);
-  });
-
-  /*
-  var args = [];
-  if (1) args.push("-e");
-  if (1) args.push("--dump");
-  if (0) args.push("-q");
-  if (1) args.push("-v");
-  if (0) args.push("-s");
-  args.push("-r");
-  args.push("examples/tutorial");
-  args.push("tutorial1.h");
-
-  tut1_v.innerText = "";
-
-  let ret = mod.callMain(args);
-  console.log("ret was " + ret);
-
-  if (ret == 0) {
-    tut1_v_jar.updateCode(stdout);
-    document.getElementById("tut1_v_bar").style.backgroundColor = "#353";
+  if (tut_div) {
+    let tut1_obj = new Tutorial(
+      `Tutorial ${tut_index}`,
+      tut_div,
+      `./examples/tutorial/tutorial${tut_index}.h`,
+      `./examples/tutorial/tutorial${tut_index}.sv`
+    );
+    tutorials.push(tut1_obj);
   }
-  else {
-    tut1_v_jar.updateCode(stderr);
-    document.getElementById("tut1_v_bar").style.backgroundColor = "#533";
-  }
-  */
-
 }

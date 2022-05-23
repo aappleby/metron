@@ -36,52 +36,90 @@
   </div>
   <div id="panels" class="flex_x" style="background-color:#444;">
     <div id="col_left" class="flex_1"></div>
-    <div id="col_dst" class="flex_5" style="background-color: #222; padding: 10px;">
+    <div id="col_mid" class="flex_5" style="background-color: #222; padding: 10px;">
+
+
+
+
       <div>
         <div class="border center_y dark2 bar" style="margin:10px;">
-          <div class="bar_text" id="dst_title">Tutorial 1</div>
+          <div class="bar_text">Tutorial 1 - Let's start with addition.</div>
         </div>
       </div>
-      tutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah
-      blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
-      blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
-      ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
-      lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
-      tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah
-      blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
-      blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
-      ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
-      lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
-      tutorial lorem ipsum blah blah
-      <div class="sbs flex_x" style="margin:10px">
-        <div id="sbs_left" class="flex_1">
-          <div id="tut1_c_bar" class="border center_y dark2 bar">
+      <p>
+        The first "useful" circuit people usually see when starting to learn Verilog is a counter. Here's Metron's
+        version of a counter:
+      </p>
+
+      <pre>
+class Module {
+public:
+  int count;
+  void update() {
+    count++;
+  }
+};
+</pre>
+      <p>
+        Tutorial tutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
+        ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
+        lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
+        tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah
+        blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
+        blah blahtutorial
+        tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah
+        blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
+        blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
+        ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
+        lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
+        tutorial lorem ipsum blah blah
+      </p>
+      <p>
+        The code editor below is live - edit the C++ code on the left and you should see your converted code on the
+        right. If your code isn't convertible to Verilog, you'll see some (still pretty cryptic) error messages instead.
+      </p>
+      <div id="tut1" class="tut sbs flex_x" style="margin:10px">
+        <div id="sbs_left" class="src flex_1">
+          <div id="tut1_c_bar" class="bar border center_y dark2 bar">
             <div id="tut1_c_bar_text" class="bar_text">./docs/tutorial/tutorial1.h</div>
           </div>
-          <div id="tut1_c" class="flex_1 editor border language-cpp dark0">
+          <div id="tut1_c" class="jar flex_1 editor border language-cpp dark0">
             C source here
           </div>
         </div>
-        <div id="sbs_right" class="flex_1">
-          <div id="tut1_v_bar" class="border center_y dark2 bar">
+        <div id="sbs_right" class="dst flex_1">
+          <div id="tut1_v_bar" class="bar border center_y dark2 bar">
             <div id="tut1_v_bar_text" class="bar_text">./docs/tutorial/tutorial1.sv</div>
           </div>
-          <div id="tut1_v" class="flex_1 editor border language-verilog dark0">
+          <div id="tut1_v" class="jar flex_1 editor border language-verilog dark0">
             Verilog source here
           </div>
         </div>
       </div>
-      tutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah
-      blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
-      blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
-      ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
-      lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
-      tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah
-      blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
-      blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
-      ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
-      lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
-      tutorial lorem ipsum blah blah
+      <div style="height:50px"></div>
+
+
+
+
+
+      <div>
+        <div class="border center_y dark2 bar" style="margin:10px;">
+          <div class="bar_text">Tutorial 2</div>
+        </div>
+      </div>
+      <p>
+        tutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah
+        blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
+        blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
+        ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
+        lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
+        tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah
+        blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
+        blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
+        ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
+        lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
+        tutorial lorem ipsum blah blah
+      </p>
       <div class="sbs flex_x" style="margin:10px">
         <div id="sbs_left" class="flex_1">
           <div class="border center_y dark2 bar">
@@ -100,16 +138,150 @@
           </div>
         </div>
       </div>
-      blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
-      blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
-      ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
-      lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
-      tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah
-      blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
-      blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
-      ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
-      lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
-      tutorial lorem ipsum blah blah
+      <div style="height:50px"></div>
+
+
+
+
+      <div>
+        <div class="border center_y dark2 bar" style="margin:10px;">
+          <div class="bar_text">Tutorial 3</div>
+        </div>
+      </div>
+      <p>
+        blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
+        blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
+        ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
+        lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
+        tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah
+        blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
+        blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
+        ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
+        lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
+        tutorial lorem ipsum blah blah
+      <div class="sbs flex_x" style="margin:10px">
+        <div id="sbs_left" class="flex_1">
+          <div class="border center_y dark2 bar">
+            <div class="bar_text" id="dst_title">./examples/scratch.sv</div>
+          </div>
+          <div id="src_text" class="flex_1 editor border language-cpp dark0">
+            C source here
+          </div>
+        </div>
+        <div id="sbs_right" class="flex_1">
+          <div class="border center_y dark2 bar">
+            <div class="bar_text" id="dst_title">./examples/scratch.sv</div>
+          </div>
+          <div id="dst_text" class="flex_1 editor border language-verilog dark0">
+            Verilog source here
+          </div>
+        </div>
+      </div>
+      <div style="height:50px"></div>
+
+
+
+
+
+      <div>
+        <div class="border center_y dark2 bar" style="margin:10px;">
+          <div class="bar_text">Tutorial 4</div>
+        </div>
+      </div>
+      <p>
+        blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
+        blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
+        ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
+        lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
+        tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah
+        blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
+        blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
+        ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
+        lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
+        tutorial lorem ipsum blah blah
+      <div class="sbs flex_x" style="margin:10px">
+        <div id="sbs_left" class="flex_1">
+          <div class="border center_y dark2 bar">
+            <div class="bar_text" id="dst_title">./examples/scratch.sv</div>
+          </div>
+          <div id="src_text" class="flex_1 editor border language-cpp dark0">
+            C source here
+          </div>
+        </div>
+        <div id="sbs_right" class="flex_1">
+          <div class="border center_y dark2 bar">
+            <div class="bar_text" id="dst_title">./examples/scratch.sv</div>
+          </div>
+          <div id="dst_text" class="flex_1 editor border language-verilog dark0">
+            Verilog source here
+          </div>
+        </div>
+      </div>
+      <div style="height:50px"></div>
+
+
+
+
+
+
+      <div>
+        <div class="border center_y dark2 bar" style="margin:10px;">
+          <div class="bar_text">Tutorial 5</div>
+        </div>
+      </div>
+      <p>
+        blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
+        blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
+        ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
+        lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
+        tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah
+        blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
+        blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
+        ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
+        lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
+        tutorial lorem ipsum blah blah
+      <div class="sbs flex_x" style="margin:10px">
+        <div id="sbs_left" class="flex_1">
+          <div class="border center_y dark2 bar">
+            <div class="bar_text" id="dst_title">./examples/scratch.sv</div>
+          </div>
+          <div id="src_text" class="flex_1 editor border language-cpp dark0">
+            C source here
+          </div>
+        </div>
+        <div id="sbs_right" class="flex_1">
+          <div class="border center_y dark2 bar">
+            <div class="bar_text" id="dst_title">./examples/scratch.sv</div>
+          </div>
+          <div id="dst_text" class="flex_1 editor border language-verilog dark0">
+            Verilog source here
+          </div>
+        </div>
+      </div>
+      <div style="height:50px"></div>
+
+
+
+
+
+
+
+      <div>
+        <div class="border center_y dark2 bar" style="margin:10px;">
+          <div class="bar_text">Conclusion</div>
+        </div>
+      </div>
+      <p>
+        blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
+        blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
+        ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
+        lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
+        tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah
+        blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum
+        blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem
+        ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial
+        lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial tutorial lorem ipsum blah blahtutorial
+        tutorial lorem ipsum blah blah
     </div>
     <div id="col_right" class="flex_1"></div>
   </div>

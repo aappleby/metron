@@ -466,10 +466,10 @@ build obj/examples/uart/uart_test_ice40.bin: icepack $
 
 build obj/examples/rvsimple/main.o: compile_cpp examples/rvsimple/main.cpp
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include
-  opt = 
+  opt = -O3
 build bin/examples/rvsimple: link obj/examples/rvsimple/main.o bin/libmetron.a
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include
-  opt = 
+  opt = -O3
 
 
 ################################################################################
@@ -657,11 +657,11 @@ build bin/examples/rvsimple_ref: link obj/verilated.o $
 build obj/examples/rvtiny/main.o: compile_cpp examples/rvtiny/main.cpp
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include $
       -Iexamples/rvtiny/metron
-  opt = 
+  opt = -O3
 build bin/examples/rvtiny: link obj/examples/rvtiny/main.o bin/libmetron.a
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include $
       -Iexamples/rvtiny/metron
-  opt = 
+  opt = -O3
 
 
 ################################################################################
@@ -710,11 +710,11 @@ build bin/examples/rvtiny_vl: link obj/verilated.o $
 build obj/examples/rvtiny_sync/main.o: compile_cpp $
     examples/rvtiny_sync/main.cpp
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include
-  opt = 
+  opt = -O3
 build bin/examples/rvtiny_sync: link obj/examples/rvtiny_sync/main.o $
     bin/libmetron.a
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include
-  opt = 
+  opt = -O3
 
 
 ################################################################################
@@ -764,11 +764,11 @@ build bin/examples/rvtiny_sync_vl: link obj/verilated.o $
 build obj/examples/pong/main.o: compile_cpp examples/pong/main.cpp
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include
   global_libs = -lSDL2
-  opt = 
+  opt = -O3
 build bin/examples/pong: link obj/examples/pong/main.o bin/libmetron.a
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include
   global_libs = -lSDL2
-  opt = 
+  opt = -O3
 
 
 ################################################################################

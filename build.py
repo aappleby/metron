@@ -10,8 +10,8 @@ from os import path
 obj_dir = "obj"
 outfile = open("build.ninja", "w+")
 ninja = ninja_syntax.Writer(outfile)
-#opt_mode = "-O3"
-opt_mode = ""
+opt_mode = "-O3"
+#opt_mode = ""
 
 base_includes = [
     ".",

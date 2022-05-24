@@ -51,7 +51,7 @@ int main(int argc, char* args[]) {
     SDL_LockSurface(surface);
     Uint32 *buffer = (Uint32*) surface->pixels;
 
-    for (int i = 0; i < 1000000; i++) {
+    for (int i = 0; i < 800 * 525; i++) {
       pong.tock_video();
       pong.tock_game(0,0);
       auto pix_x = pong.pix_x();
@@ -66,7 +66,9 @@ int main(int argc, char* args[]) {
     }
 
     auto time_b = timestamp();
-    printf("%2.2f\n", float(time_b - time_a) / 1000000.0);
+    static double time_avg = 0;
+    time_avg = (time_avg * 0.99) + double(time_b - time_a) * 0.01;
+    printf("%f\n", float(time_avg) / 1000000.0);
 
     SDL_UnlockSurface(surface);
     SDL_UpdateWindowSurface(window);

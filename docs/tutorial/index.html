@@ -166,8 +166,9 @@ int main(int argc, char** argv) {
       Non-blocking assignments work together with "always_ff" blocks - a clock edge triggers a bunch of always_ff blocks
       to be evaluated, the code non-blockingly (yes, my terminology is awkward) assigns things, and then at some
       unspecified* point in the future after all triggered blocks have been evaluated the assignments take effect.
-      Because non-blocking assignments behave differently from regular assignments in C, Metron will generate an error
-      if you read from a variable after it's assigned if that assignment would be non-blocking in Verilog.
+      Because non-blocking assignments behave differently from regular assignments in C, <b>Metron will generate an
+        error
+        if you read from a variable after it's assigned if that assignment would be non-blocking in Verilog.</b>
     </p>
     <p style="font-size:10px;">
       * It's not actually unspecified, it's defined in the Verilog language spec - but for the purposes of this tutorial
@@ -331,8 +332,9 @@ int main(int argc, char** argv) {
       There's an equivalent "tock" prefix to enforce "must be in always_comb", but both prefixes are completely
       optional. They come in particularly useful when porting existing Verilog code to Metron - you may want to do
       this if you're trying to interface Metron code with an existing codebase. Translate "always_comb" blocks into
-      functions that start with "tock" and "always_ff" blocks into functions that start with "tick" and Metron will
-      usually tell you if you've got something wrong.
+      functions that start with "tock", "always_ff" blocks into functions that start with "tick", and stuff any loose
+      "assign wire = value" statements into new always_comb blocks - Metron will usually tell you if you get something
+      wrong (and it's almost always related to declaration order, see the section below).
     </p>
     <p>
       Internally, Metron categorizes all member functions into "tick-type" and "tock-type" groups much like it does with
@@ -343,13 +345,13 @@ int main(int argc, char** argv) {
       <li>Tick methods write registers</li>
       <li>Tick methods can only call pure functions and other tick methods in the same module</li>
       <li>Tick methods <b>cannot</b> call methods in other modules</li>
-      <li>Tick methods are translated into "always_ff" blocks in Verilog</li>
+      <li>Tick methods are translated into "always_ff" blocks in Verilog if they're not called elsewhere.</li>
     </ul>
     <ul>
       <li>Tock methods write signals</li>
       <li>Tock methods can call any method in the same module*</li>
       <li>Tock methods <b>can</b> call methods in other modules</li>
-      <li>Tock methods are translated into "always_comb" blocks in Verilog</li>
+      <li>Tock methods are translated into "always_comb" blocks in Verilog if they're not called elsewhere.</li>
     </ul>
     <p style="font-size:10px;">* unless it's a tick with a return value, because the return value doesnt 'exist' until
       after the clock ticks.</p>
@@ -560,6 +562,9 @@ endmodule
 
     <div class="divider">Memories and arrays</div>
 
+    <p>
+      Will be written shortly. Checksum a block of ROM example.
+    </p>
 
 
 
@@ -634,9 +639,9 @@ endmodule
       We've gone over some basic examples of how code works in Metron, but adders and counters aren't very compelling
       examples and the rules about what Metron will translate are quite restrictive. If you're a C programmer, you may
       be wondering how to get any actual work done given these constraints. The rules may seem weird and arbitrary, but
-      there's not a lot we can do to avoid it - even something as simple as dereferencing a pointer has no equivalent
-      meaning in hardware, which means that whole swathes of language features and algorithms are immediately thrown out
-      the window.
+      there's not a lot we can do to avoid it - even something as simple as dereferencing a pointer has no directly
+      equivalent meaning in hardware, which means that whole swathes of language features and algorithms are immediately
+      thrown out the window.
     </p>
     <p>
       Instead, writing in Metron requires adopting a different mindset- you're not writing a program, you're building a
@@ -728,6 +733,12 @@ endmodule
       milliseconds is a simulation rate of ~640 megahertz. On a 4 gigahertz processor, that's only a bit over 6 cycles
       per simulation step - the lfsr24 module is admittedly doing very little (just shifts and xors), but beating 6
       cycles by any significant factor would probably require assembly language.
+    </p>
+    <p>
+      As a slightly larger benchmark, the "pong" example (basically the VGA output example above plus a "ball" and a
+      "paddle") simulates 420000 cycles (1 full VGA frame) in 1.56 milliseconds, or a bit over 10x faster than realtime.
+      The simulation rate is (420000/0.00156) = ~268 mhz or ~15 cycles per simulation step, and that includes the
+      framebuffer update plus whatever overhead comes from running the app in a WSLg virtual machine.
     </p>
     <p>
       Metron should make it possible to write small, simple hardware peripherals that simulate in realtime (or faster)

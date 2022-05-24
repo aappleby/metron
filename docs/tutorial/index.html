@@ -32,9 +32,10 @@
     <div class="divider">Metron lets you write synthesizable Verilog in plain C++</div>
     <p>
       Metron is a tool for converting a very limited subset of C++ into a very limited subset of Verilog. Even though
-      it's limited, the C++ that Metron can convert is still enough to be useful. The resulting Verilog can be simulated
-      in Icarus or Verilator, converted to RTL netlists by Yosys, packed into FPGA bitstreams by NextPNR, and uploaded
-      to a development board using IceProg - all open-source tools.
+      it's limited, the C++ that Metron can convert is still enough to be useful. The C++ source code can be easily run
+      inside a trivial simulation framework. The same code converted to Verilog can be simulated in Icarus or Verilator,
+      converted to RTL netlists by Yosys, packed into FPGA bitstreams by NextPNR, and uploaded to a development board
+      using IceProg - all open-source tools.
     </p>
     <p>
       If you're completely unfamiliar with Verilog I'd recommend reading through a "Hello Verilog World" tutorial
@@ -42,20 +43,21 @@
       circuits. Verilog looks superficially similar to C, but the semantics of how it "executes" a circuit is _very_
       different. Compiled Verilog programs describe networks of logic gates and wires, not sequences of instructions.
       Translating between the two languages is thus fraught with peril, and Metron is a noble attempt to bridge
-      between the two by enforcing a set of rules on the C side that help ensure the translation is possible.
+      between the two by enforcing a set of rules on the C side to help ensure that the translation is possible.
     </p>
     <p>
       Writing logic in Metron is generally much more user-friendly than writing Verilog directly. Metron source code
-      is plain, unannotated C++ with zero dependencies and can be compiled, run, and debugged in just about any
-      environment. The Metron tool itself can be used as just a code-linter to determine if your C code does anything
-      that doesn't have an equivalent in Verilog, or it can generate an entire project's worth of Verilog files in one
-      step. If you need to do low-level bit twiddling to interface with hardware, Metron provides a "metron_tools.h"
-      header file that defines a fairly fully-featured "logic&lt;N&gt;" template class that simulates arbitrary
-      bit-width integers in C++ with almost no overhead.
+      is plain, unannotated C++ with zero dependencies and can be compiled, run, and debugged in any C++ environment.
+      The Metron tool itself can be used as just a code-linter to determine if your C code does anything that doesn't
+      have an equivalent in Verilog, or it can generate an entire project's worth of Verilog files in one step. If you
+      need to do low-level bit twiddling to interface with hardware, Metron provides a "metron_tools.h" header file that
+      defines a fairly fully-featured "logic&lt;N&gt;" template class that simulates arbitrary bit-width integers in C++
+      with almost no overhead.
     </p>
     <p>
       Simulation performance varies a lot depending on the codebase, but in general Metron designs simulate from 2x to
-      5x faster than the same design written in Verilog and translated back to C by Verilator. Yes, you can translate
+      5x faster than the same design written in Verilog and translated back to C by Verilator. For interpreted
+      simulators like Icarus, the difference is more like hundreds or thousands of times faster. Yes, you can translate
       from C to Verilog with Metron and then translate it back to C with Verilator and both versions should produce
       bit-identical results. This is useful for debugging Metron itself.
     </p>
@@ -209,7 +211,7 @@ int main(int argc, char** argv) {
       generate Verilog that can handle almost anything C can throw at it. This includes things like unrolling loops,
       pipelining function calls, and automatically generating state machines (or even entire virtual CPUs) to ensure
       that most existing C functions and algorithms can be translated to Verilog without rewriting the source. Those
-      tools do work very well - the keyword to search for is "High-Level Synthesis" (a.k.a. HLS), if you'd like to learn
+      tools do work very well - the keyword to search for is "High-Level Synthesis" (a.k.a. HLS) if you'd like to learn
       more. However, the translated code often borders on unreadable to a C programmer.
     </p>
     <p>
@@ -281,6 +283,9 @@ int main(int argc, char** argv) {
       <li>Registers must be written using "&lt;=" in Verilog</li>
       <li>Registers only change their value when the clock ticks*</li>
     </ul>
+    <p style="font-size:10px">
+      * This implies "synchronous" and not "asynchronous" resets in Verilog, which generally won't affect us too much.
+    </p>
     <ul>
       <li>Signals do not store state, they only move values around</li>
       <li>Signals must be written first and cannot be written after they're read.</li>
@@ -288,9 +293,6 @@ int main(int argc, char** argv) {
       <li>Signals must be written using "=" in Verilog</li>
       <li>Signals change their values immediately after being assigned</li>
     </ul>
-    <p style="font-size:10px">
-      * This implies "synchronous" and not "asynchronous" resets in Verilog, which generally won't affect us too much.
-    </p>
     <p>
       If Metron can't infer the translation type of a member variable or if it sees a variable that breaks both the
       "read-before-write" and "read-after-write" rules, it will refuse to translate the code. This is a fundamental part
@@ -398,7 +400,7 @@ int main(int argc, char** argv) {
       that doesn't require special annotations is just the declaration order. So in Module2 Metron sees "a" being
       written first and makes it a signal, whereas in Module3 Metron sees "a" being read first and makes it a register.
       Module4 works around this by adding temporary variables, which makes Metron see that both "a" and "b" are read
-      before being written
+      before being written.
     </p>
     <p>
       If we were writing straight Verilog this issue would be irrelevant, as we can choose whether to use "&lt;=" or "="
@@ -425,9 +427,10 @@ endmodule
     <p>
       Because "&lt;=" assignments are "delayed", this has the same effect as Module4 above. We can't generate that code
       from C though, as we don't have two different assignment operators available there for disambiguation - instead we
-      have to infer which Verilog assignment operator to use based on context. Metron could in theory support "reg_" and
-      "sig_" prefixes on variables like it supports "tick_" and "tock_" on methods, but in practice I found the
-      resulting code style annoying and didn't finish implementing it. Maybe it'll go on the feature request list.
+      have to infer which Verilog assignment operator to use based on context and our context is intimately tied to
+      declaration order. Metron could in theory support "reg_" and "sig_" prefixes on variables like it supports "tick_"
+      and "tock_" on methods, but in practice I found the resulting code style annoying and didn't finish implementing
+      it. Maybe it'll go on the feature request list.
     </p>
     <p>
       Because Metron uses declaration order to determine how to trace your module's methods, it is <b>highly
@@ -463,12 +466,13 @@ endmodule
         Verilog "tasks" do not have return values, but their arguments can be marked as "input" or "output"*
       </li>
       <li>
-        Tasks <b>break always_comb blocks</b> because always_comb blocks do not detect the changes they make, so
-        they're not used in tock methods. This is
-        annoying and I'm not sure why it's part of the spec.</li>
+        Tasks <b>break always_comb blocks</b> because always_comb blocks are not guaranteed to be "sensitive to" the
+        changes they make, so they're not used in tock methods. This is annoying and I'm not sure why it's part of the
+        spec.
+      </li>
       <li>
         Tasks are allowed to muck around with the simulation by controlling the flow of time, which is out of scope
-        for Metron
+        for Metron and isn't used here.
       </li>
     </ul>
     <p style="font-size:10px;">

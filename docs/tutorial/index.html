@@ -5,20 +5,14 @@
   <script type="text/javascript">
     console.log("load starting @ " + performance.now());
   </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-
   <link rel="stylesheet" href="tutorial.css" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/vs2015.min.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@4.18.0/css/xterm.css" />
+  <link rel="stylesheet" href="../assets/vs2015.min.css" />
 
-  <script src="../app/highlight.min.js"></script>
-  <script src="../app/verilog.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xterm@4.18.0/lib/xterm.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.5.0/lib/xterm-addon-fit.min.js"></script>
+  <script src="../assets/highlight.min.js"></script>
+  <script src="../assets/verilog.min.js"></script>
 
   <title>Metron C++ to Verilog Demo</title>
+  <link rel="icon" type="image/x-icon" href="../assets/favicon.ico">
 
 </head>
 
@@ -26,7 +20,7 @@
   <div class="topbar">
     <div class="topbar_spacer"> </div>
     <div class="topbar_title">
-      <img src="../favicon.ico" width="48" height="48" style="margin:8px;">
+      <img src="../assets/metron_icon.svg" width="48" height="48" style="margin:8px;">
       Metron C++ to Verilog Transpiler Tutorial!
     </div>
     <a class="topbar_spacer" href="https://github.com/aappleby/Metron">Source on Github</a>
@@ -43,7 +37,15 @@
       to a development board using IceProg - all open-source tools.
     </p>
     <p>
-      Writing circuits in Metron is generally much more user-friendly than writing Verilog directly. Metron source code
+      If you're completely unfamiliar with Verilog I'd recommend reading through a "Hello Verilog World" tutorial
+      elsewhere before going through this one, but the TL;DR of Verilog is that it's a language for "writing" logic
+      circuits. Verilog looks superficially similar to C, but the semantics of how it "executes" a circuit is _very_
+      different. Compiled Verilog programs describe networks of logic gates and wires, not sequences of instructions.
+      Translating between the two languages is thus fraught with peril, and Metron is a noble attempt to bridge
+      between the two by enforcing a set of rules on the C side that help ensure the translation is possible.
+    </p>
+    <p>
+      Writing logic in Metron is generally much more user-friendly than writing Verilog directly. Metron source code
       is plain, unannotated C++ with zero dependencies and can be compiled, run, and debugged in just about any
       environment. The Metron tool itself can be used as just a code-linter to determine if your C code does anything
       that doesn't have an equivalent in Verilog, or it can generate an entire project's worth of Verilog files in one
@@ -75,6 +77,11 @@
       there's no support in this tutorial for doing syntax checking on the C source before we try to convert it. Watch
       out for typos, and if all else fails just refresh the page and start over.
     </p>
+    <p>
+      (One side note for the Verilog experts reading this - I'm aware that I'm playing fast and loose with my
+      terminology here and not distinguishing between the language features of Verilog vs. SystemVerilog. It's a
+      tutorial, the deeper discussions will go on some other page.)
+    </p>
 
     <div class="divider">Let's begin by counting.</div>
     <p>
@@ -86,19 +93,36 @@
         <div class="header_bar">
           <div class="filename" contenteditable="true"></div>
         </div>
-        <div class="jar language-cpp"></div>
+        <div class="code_jar language-cpp"></div>
       </div>
       <div class="source_panel" id="v_panel">
         <div class="header_bar">
           <div class="filename"></div>
         </div>
-        <div class="jar language-verilog"></div>
+        <div class="code_jar language-verilog"></div>
       </div>
     </div>
     <p>
       Yeah, that's it. That's the whole thing. Metron doesn't require any additional headers or libraries or code
-      annotations,
-      so a plain C++ class works just fine. If we compare the two versions, the differences are:
+      annotations, so a plain C++ class header file works just fine. Metron applications are just collections of header
+      files that you can use in a host C++ application like this:
+    </p>
+    <div class="code_box">
+    <pre class="code_jar">#include &lt;stdio.h&gt;
+#include "examples/tutorial/counter.h"
+
+int main(int argc, char** argv) {
+  Counter counter;
+  for (int cycle = 0; cycle &lt; 1000; cycle++) {
+    counter.update();
+    printf("Counter value %d\n", counter.count);
+  }
+  return 0;
+}
+</pre>
+</div>
+    <p>
+      If we compare the C++ version of our counter with the Verilog version, the differences are:
     </p>
 
     <h1>The "class" keyword turned into "module" and the curly braces are now "begin"/"end(module)"</h1>
@@ -159,13 +183,13 @@
         <div class="header_bar">
           <div class="filename" contenteditable="true"></div>
         </div>
-        <div class="jar language-cpp"></div>
+        <div class="code_jar language-cpp"></div>
       </div>
       <div class="source_panel" id="v_panel">
         <div class="header_bar">
           <div class="filename"></div>
         </div>
-        <div class="jar language-verilog"></div>
+        <div class="code_jar language-verilog"></div>
       </div>
     </div>
 
@@ -213,13 +237,13 @@
         <div class="header_bar">
           <div class="filename" contenteditable="true"></div>
         </div>
-        <div class="jar language-cpp"></div>
+        <div class="code_jar language-cpp"></div>
       </div>
       <div class="source_panel" id="v_panel">
         <div class="header_bar">
           <div class="filename"></div>
         </div>
-        <div class="jar language-verilog"></div>
+        <div class="code_jar language-verilog"></div>
       </div>
     </div>
     <p>
@@ -287,13 +311,13 @@
         <div class="header_bar">
           <div class="filename" contenteditable="true"></div>
         </div>
-        <div class="jar language-cpp"></div>
+        <div class="code_jar language-cpp"></div>
       </div>
       <div class="source_panel" id="v_panel">
         <div class="header_bar">
           <div class="filename"></div>
         </div>
-        <div class="jar language-verilog"></div>
+        <div class="code_jar language-verilog"></div>
       </div>
     </div>
 
@@ -346,13 +370,13 @@
         <div class="header_bar">
           <div class="filename" contenteditable="true"></div>
         </div>
-        <div class="jar language-cpp"></div>
+        <div class="code_jar language-cpp"></div>
       </div>
       <div class="source_panel" id="v_panel">
         <div class="header_bar">
           <div class="filename"></div>
         </div>
-        <div class="jar language-verilog"></div>
+        <div class="code_jar language-verilog"></div>
       </div>
     </div>
 
@@ -377,7 +401,8 @@
       If we were writing straight Verilog this issue would be irrelevant, as we can choose whether to use "&lt;=" or "="
       assignments as needed.
     </p>
-    <pre class="code_block">
+    <div class="code_box">
+    <pre class="code_jar">
 module Module4 (
   // global clock
   input logic clock,
@@ -393,6 +418,7 @@ module Module4 (
   end
 endmodule
 </pre>
+</div>
     <p>
       Because "&lt;=" assignments are "delayed", this has the same effect as Module4 above. We can't generate that code
       from C though, as we don't have two different assignment operators available there for disambiguation - instead we
@@ -407,40 +433,58 @@ endmodule
       declaration.
     </p>
 
+
+
+
+
+
+
+
+
     <div class="divider">Private Vs. Public, Functions Vs. Tasks</div>
 
     <p>
       While the examples we've looked at so far only use "always_comb" and "always_ff" on the Verilog side, Verilog does
-      support functions in two different flavors:
+      support functions in two different flavors, which Metron will use in different cases:
     </p>
 
     <ul>
-      <li> "Functions" must have return values*.</li>
+      <li> Verilog "functions" must have return values*.</li>
       <li> Pure functions can be called from any method.</li>
       <li> Functions that write signals or registers can only be called from a corresponding tock or tick method.</li>
     </ul>
     <p style="font-size:10px;">* not true according to the spec, but void functions are poorly supported by some tools
     </p>
     <ul>
-      <li> "Tasks" do not have return values, but their arguments can be marked as "input" or "output"</li>
-      <li> Tasks <b>break always_comb blocks</b> because always_comb blocks do not detect the changes they make. This is
+      <li>
+        Verilog "tasks" do not have return values, but their arguments can be marked as "input" or "output"*
+      </li>
+      <li>
+        Tasks <b>break always_comb blocks</b> because always_comb blocks do not detect the changes they make, so
+        they're not used in tock methods. This is
         annoying and I'm not sure why it's part of the spec.</li>
-      <li> Tasks are allowed to muck around with the simulation by controlling the flow of time, which is out of scope
-        for Metron</li>
+      <li>
+        Tasks are allowed to muck around with the simulation by controlling the flow of time, which is out of scope
+        for Metron
+      </li>
     </ul>
+    <p style="font-size:10px;">
+      * Metron could probably support pass-by-reference in tasks using output params, but it's
+      not quite there yet.
+    </p>
 
-    <div class="live_code" id="./examples/tutorial/pure_functions.h">
+    <div class="live_code" id="./examples/tutorial/functions_and_tasks.h">
       <div class="source_panel" id="c_panel">
         <div class="header_bar">
           <div class="filename" contenteditable="true"></div>
         </div>
-        <div class="jar language-cpp"></div>
+        <div class="code_jar language-cpp"></div>
       </div>
       <div class="source_panel" id="v_panel">
         <div class="header_bar">
           <div class="filename"></div>
         </div>
-        <div class="jar language-verilog"></div>
+        <div class="code_jar language-verilog"></div>
       </div>
     </div>
 
@@ -448,6 +492,19 @@ endmodule
       Metron will usually translate methods into functions or tasks where applicable, though there are a few
       corner-cases to work around bugs in some existing tools.
     </p>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     <div class="divider">Bit Twiddling Logic</div>
@@ -486,13 +543,13 @@ endmodule
         <div class="header_bar">
           <div class="filename" contenteditable="true"></div>
         </div>
-        <div class="jar language-cpp"></div>
+        <div class="code_jar language-cpp"></div>
       </div>
       <div class="source_panel" id="v_panel">
         <div class="header_bar">
           <div class="filename"></div>
         </div>
-        <div class="jar language-verilog"></div>
+        <div class="code_jar language-verilog"></div>
       </div>
     </div>
 
@@ -517,13 +574,13 @@ endmodule
         <div class="header_bar">
           <div class="filename" contenteditable="true"></div>
         </div>
-        <div class="jar language-cpp"></div>
+        <div class="code_jar language-cpp"></div>
       </div>
       <div class="source_panel" id="v_panel">
         <div class="header_bar">
           <div class="filename"></div>
         </div>
-        <div class="jar language-verilog"></div>
+        <div class="code_jar language-verilog"></div>
       </div>
     </div>
 
@@ -565,13 +622,13 @@ endmodule
         <div class="header_bar">
           <div class="filename" contenteditable="true"></div>
         </div>
-        <div class="jar language-cpp"></div>
+        <div class="code_jar language-cpp"></div>
       </div>
       <div class="source_panel" id="v_panel">
         <div class="header_bar">
           <div class="filename"></div>
         </div>
-        <div class="jar language-verilog"></div>
+        <div class="code_jar language-verilog"></div>
       </div>
     </div>
 
@@ -591,7 +648,8 @@ endmodule
       Despite the differences, a lot of it matches up pretty directly and the resulting Verilog code shouldn't look
       _too_ alien. If we wanted to run the above code inside a host C++ program, it would look something like this:
     </p>
-    <pre class="code_block">
+    <div class="code_box">
+    <pre class="code_jar">
 #include &lt;stdio.h&gt;
 #include "examples/tutorial/vga.h"
 
@@ -610,6 +668,7 @@ int main(int argc, char** argv) {
   return 0;
 }
 </pre>
+</div>
 
     <p>
       Not particularly useful, but it does work. With a bit more effort we could hook it up to SDL and draw the

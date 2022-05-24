@@ -371,17 +371,17 @@ all_test_headers = glob.glob("tests/**/*.h", recursive=True)
 all_example_headers = glob.glob("examples/**/*.h", recursive=True)
 
 ninja.build(outputs = [
-                "docs/app/examples.data",
-                "docs/app/examples.js",
+                "docs/demo/examples.data",
+                "docs/demo/examples.js",
             ],
             rule="command",
             inputs=all_test_headers + all_example_headers,
-            command="python3 $$EMSDK/upstream/emscripten/tools/file_packager.py docs/app/examples.data --no-node --js-output=docs/app/examples.js --preload examples tests/metron_good tests/metron_bad --exclude *.cpp *.sv *.MD *.hex *.pcf *.v *.txt");
+            command="python3 $$EMSDK/upstream/emscripten/tools/file_packager.py docs/demo/examples.data --no-node --js-output=docs/demo/examples.js --preload examples tests/metron_good tests/metron_bad --exclude *.cpp *.sv *.MD *.hex *.pcf *.v *.txt");
 
 
 ninja.build(outputs = [
-                "docs/app/tutorial_src.data",
-                "docs/app/tutorial_src.js",
+                "docs/tutorial/tutorial_src.data",
+                "docs/tutorial/tutorial_src.js",
             ],
             rule="command",
             inputs=glob.glob("docs/tutorial/*.h"),

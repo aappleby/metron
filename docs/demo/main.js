@@ -1,6 +1,6 @@
-import { CodeJar } from "https://cdn.jsdelivr.net/npm/codejar@3.6.0/codejar.min.js";
+  import { CodeJar } from "../assets/codejar.min.js";
 
-import Module from "./metron.js"
+import Module from "../app/metron.js"
 
 var src_selector = document.getElementById("src_selector");
 var src_controls = document.getElementById("src_controls");

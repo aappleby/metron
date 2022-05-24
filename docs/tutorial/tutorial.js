@@ -1,6 +1,6 @@
 console.log("tutorial.js module load @ " + performance.now());
 
-import { CodeJar } from "https://cdn.jsdelivr.net/npm/codejar@3.6.0/codejar.min.js";
+import { CodeJar } from "../assets/codejar.min.js";
 
 import Module from "../app/metron.js"
 
@@ -26,7 +26,7 @@ class SourcePane {
   constructor(pane_div) {
     this.pane_div = pane_div;
     this.header_bar = pane_div.querySelector(".header_bar");
-    this.code_jar = new CodeJar(pane_div.querySelector(".jar"), highlight, {tab:"  "});
+    this.code_jar = new CodeJar(pane_div.querySelector(".code_jar"), highlight, {tab:"  "});
   }
 };
 
@@ -167,7 +167,7 @@ function dump_fs(FS, path, src_paths) {
 //------------------------------------------------------------------------------
 
 let tutorials = [];
-let code_blocks = [];
+let code_jars = [];
 
 function main(mod) {
   console.log("main(mod) @ " + performance.now());
@@ -187,11 +187,11 @@ function main(mod) {
     tutorials.push(tut_obj);
   }
 
-  let code_divs = document.querySelectorAll(".code_block");
+  let code_divs = document.querySelectorAll(".code_jar");
   for (let i = 0; i < code_divs.length; i++) {
     let code_div = code_divs[i];
     let code_jar = new CodeJar(code_div, highlight, {tab:"  "});
-    code_blocks.push(code_jar);
+    code_jars.push(code_jar);
   }
 }
 

@@ -64,7 +64,7 @@ ul {
   margin:40px;
   padding:10px;
   background-color: #3B3344;
-  border: solid #1C1C1C 1px;
+  border: solid #1A1A1A 1px;
   text-align:center;
   font-size:20px;
 }
@@ -90,9 +90,12 @@ ul {
   font-weight: 600;
 }
 
-.code_block {
-  margin-left: 40px;
-  margin-right: 40px;
-  display: inline-block;
+.code_box {
+  display:inline-block;
+  margin-left:120px;
+}
 
+.code_jar {
+  border: solid #1A1A1A 1px;
+  margin: 0px;
 }

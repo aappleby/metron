@@ -384,7 +384,7 @@ ninja.build(outputs = [
                 "docs/tutorial/tutorial_src.js",
             ],
             rule="command",
-            inputs=glob.glob("docs/tutorial/*.h"),
+            inputs=glob.glob("examples/tutorial/*.h"),
             command="python3 $$EMSDK/upstream/emscripten/tools/file_packager.py docs/tutorial/tutorial_src.data --no-node --js-output=docs/tutorial/tutorial_src.js --preload examples/tutorial");
 
 treesitter_objs_wasi = [];

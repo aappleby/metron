@@ -11,25 +11,25 @@ Pixel clock 25.175 MHz
 
 Screen X    [000-639]
 Front porch [640-655]
-HSync       [656-751]
+HSync-      [656-751]
 Back porch  [752-799]
 
 Screen Y    [000-479]
 Front porch [480-489]
-VSync       [490-491]
+VSync-      [490-491]
 Back porch  [492-524]
 */
 
 class VGAOut {
  public:
-  logic<10> px;
-  logic<10> py;
-
   logic<1> vga_hsync;
   logic<1> vga_vsync;
   logic<1> vga_R;
   logic<1> vga_G;
   logic<1> vga_B;
+
+  logic<10> px;
+  logic<10> py;
 
   logic<1> in_border() const {
     return (px <= 7) || (px >= 633) || (py <= 7) || (py >= 473);
@@ -40,7 +40,7 @@ class VGAOut {
   }
 
   void update_video() {
-    vga_hsync = !((px >= 656) && (py <= 751));
+    vga_hsync = !((px >= 656) && (px <= 751));
     vga_vsync = !((py >= 490) && (py <= 491));
 
     if ((px < 640) && (py < 480)) {
@@ -166,20 +166,29 @@ public:
     // call update() on the counter before we send its value to the adder.
     // my_counter.update();
 
-    int result = my_adder.add(my_counter.count, 7);
+    // Each branch of our if() can call my_adder.add, but we can only have one
+    // call to it total per code path.
+    int result;
+    if (1) {
+      result = my_adder.add(my_counter.count, 7);
+    }
+    else {
+      result = my_adder.add(23, my_counter.count);
+    }
 
-    // Our adder's "add" function can only be used _once_. Calling it a second
-    // time is an error - uncomment this line to see the error.
+    // If we try to call it a second time, Metron will generate an error.
     // int result2 = my_adder.add(3, 4);
 
     // The counter's update() method is a tick, but the method we're currently
-    // in is a tock. This cross-module, cross-tick/tock is OK as long as the
-    // target tick method does not have a return value.
+    // in is a tock. This cross-module, cross-tick/tock call is OK as long as
+    // the target tick method does not have a return value.
     my_counter.update();
     return result;
   }
 
 private:
+  // Metron will generate and bind variables to our submodules during
+  // conversion so that we can "call" methods in them.
   Adder my_adder;
   Counter my_counter;
 };

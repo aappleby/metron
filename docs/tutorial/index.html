@@ -47,7 +47,7 @@
       is plain, unannotated C++ with zero dependencies and can be compiled, run, and debugged in just about any
       environment. The Metron tool itself can be used as just a code-linter to determine if your C code does anything
       that doesn't have an equivalent in Verilog, or it can generate an entire project's worth of Verilog files in one
-      pass. If you need to do low-level bit twiddling to interface with hardware, Metron provides a "metron_tools.h"
+      step. If you need to do low-level bit twiddling to interface with hardware, Metron provides a "metron_tools.h"
       header file that defines a fairly fully-featured "logic&lt;N&gt;" template class that simulates arbitrary
       bit-width integers in C++ with almost no overhead.
     </p>
@@ -456,8 +456,9 @@ endmodule
       One thing that Verilog developers do vastly more often than C developers is bit-twiddling - extracting, copying,
       concatenating, inverting, and generally mucking around with individual bits inside a variable. There are some
       Verilog features to support this that just have no equivalent expression in C (the "?" symbol in case statements
-      for example), but most of it can at least be emulated using some C++ template tricks. Note that you'll need to
-      include "metron_tools.h" to use these helper methods.
+      for example), but most of it can at least be emulated using some C++ template tricks. Metron has special support
+      for translating operations on logic types to Verilog where "logic" is a built-in type with its own concatenation
+      and duplication operators. Note that you'll need to include "metron_tools.h" to use these helper methods.
     </p>
     <p>
       The logic&lt;N&gt; template type defined in metron_tools.h behaves like an unsigned integer with an arbitrary
@@ -473,6 +474,11 @@ endmodule
       currently isn't - there is some functionality for it in metron_tools.h, but it breaks tracing because we don't
       trace reads and writes on a per-bit level yet. Prefer reading and writing entire fields at a time, and use
       dup/cat/extract as needed to build up your new values.
+    </p>
+    <p>
+      The logic&lt;N&gt; template along with the bN(), cat(), and dup() methods have been benchmarked in Visual Studio,
+      Clang, and GCC and generally have little (VS) to no (GCC/Clang) performance impact over doing the same operations
+      manually with bitshifts and bitwise ops.
     </p>
 
     <div class="live_code" id="./examples/tutorial/bit_twiddling.h">

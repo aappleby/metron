@@ -3849,6 +3849,84 @@ class VGAOut {
   }
 
 };
+// If we try to update mutually-dependent fields in one function, we'll hit an
+// error. Uncomment to see the error.
+
+/*
+class Module1 {
+public:
+  int a;
+  int b;
+
+  void update() {
+    a = b + 1;
+    b = a + 1;
+  }
+};
+*/
+
+// This module declares "update_a" first.
+class Module2 {
+public:
+  int a;
+  int b;
+
+  void update_a() {
+    a = b + 1;
+  }
+
+  void update_b() {
+    b = a + 1;
+  }
+};
+
+// This module declares "update_b" first.
+class Module3 {
+public:
+  int a;
+  int b;
+
+  void update_b() {
+    b = a + 1;
+  }
+
+  void update_a() {
+    a = b + 1;
+  }
+};
+
+// This module uses temporaries to update both A and B in a single function
+class Module4 {
+public:
+  int a;
+  int b;
+
+  void update() {
+    int old_a = a;
+    int old_b = b;
+    a = old_b + 1;
+    b = old_a + 1;
+  }
+};
+// We can force Metron to emit "result" as a register by reading from it before
+// we write to it.
+class Adder1 {
+public:
+  int result;
+  void add(int a, int b) {
+    int dummy = result;
+    result = a + b;
+  }
+};
+
+// Or we can prefix the function name with "tick", which does basically the
+// same thing.
+class Adder2 {
+public:
+  int tick_add(int a, int b) {
+    return a + b;
+  }
+};
 // Tutorial 3
 
 class Module {
@@ -3871,6 +3949,9 @@ public:
     // time is an error - uncomment this line to see the error.
     // int result2 = my_adder.add(3, 4);
 
+    // The counter's update() method is a tick, but the method we're currently
+    // in is a tock. This cross-module, cross-tick/tock is OK as long as the
+    // target tick method does not have a return value.
     my_counter.update();
     return result;
   }
@@ -3910,6 +3991,37 @@ public:
     return 1;
   }
 };
+#include "metron_tools.h"
+
+class Module {
+  // Private only so we don't spam our port list for this example
+private:
+
+  // Logic types can be indexed like arrays that return individual bits.
+  logic<1> extract_bit_four(logic<16> a) {
+    return a[4];
+  }
+
+  // bN(x, offset) is shorthand for bx<N>(x, offset) which extracts a slice
+  // of the bits in a field. Slices that overflow the source will be padded
+  // with 0.
+  logic<3> extract_three_bits_starting_at_bit_four(logic<16> a) {
+    return b3(a, 4);
+  }
+
+  // Logic types can be concatenated together, and the result's bit width will
+  // be the sum of the bit widths of the arguments.
+  logic<3> concatenate(logic<1> a, logic<1> b, logic<1> c) {
+    return cat(a, b, c);
+  }
+
+  // Logic types can be duplicated, which is equivalent to cat(x, x, x...). The
+  // result's bit width will be the product of the argument width and the dup
+  // count.
+  logic<9> duplicate_three_times(logic<3> a) {
+    return dup<3>(a);
+  }
+};
 // A very basic counter in plain C++, converted to Verilog using Metron.
 
 class Counter {
@@ -3917,6 +4029,32 @@ public:
   int count;
   void update() {
     count++;
+  }
+};
+class Module {
+public:
+  int get_signal1(int x) {
+    return reg1 + my_pure_func(x);
+  }
+
+  void update_reg() {
+    reg1 = my_pure_func(reg1);
+  }
+
+private:
+  int reg1;
+
+  // This pure function is called elsewhere in the module, so it would not be
+  // added to the port list even if it were public.
+  int my_pure_func(int x) const {
+    return x + 17;
+  }
+
+  // This pure function would appear in the port list if it were public.
+  // Uncomment the line below to see the difference.
+//public:
+  int my_pure_func2(int x) const {
+    return x + 17;
   }
 };
 class NonBlockingAssignment {

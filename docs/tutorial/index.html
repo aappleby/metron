@@ -64,9 +64,10 @@
     </p>
     <p>
       All of the code editors below are live - edit the C++ code on the left and you should see your converted code on
-      the right. If your code isn't convertible to Verilog, you'll see some (still pretty cryptic) error messages
-      instead. Switching between files and creating new files can be done by changing the filename above the source
-      window. Files will persist in the virtual filesystem until this page is reloaded.
+      the right. If your code isn't convertible to Verilog, the title bar on the right will turn red and you'll see some
+      (still pretty cryptic) error messages instead. Switching between files and creating new files can be done by
+      changing the filename above the source window. Files will persist in the virtual filesystem until this page is
+      reloaded.
     </p>
     <p>
       One note when editing the live code - Metron is based on TreeSitter, which is _very_ lenient about the code it
@@ -112,7 +113,7 @@
     </p>
     <h1>The module has a "port list" containing a clock and the "count" member, now with an "output" label</h1>
     <p>
-      Unlike C, connectivity between modules and the outside world is much more limited. Everything is private by
+      Unlike C, connectivity between modules and the outside world is much more limited. Everything is private-ish by
       default unless exposed through a "port", which you can think of as something like a reference in C++. Since our
       "count" variable is public, Metron has moved it to the port list so that it can be seen outside the module. This
       module also needs a clock for the "always_ff" block below, so Metron has added a default clock signal to the port
@@ -120,12 +121,13 @@
     </p>
     <h1>The "update" function is now in a block starting with "always_ff @(posedge clock)"</h1>
     <p>
-      The statement "always_ff @(posedge clock)" means something like "every time the clock ticks, do this", which
-      brings up an important point - When we translate Metron programs into Verilog and upload them to a FPGA, they're
-      not "running" in the same sense that the C code runs after we compile it: circuits don't evaluate blocks of code
-      in order, they don't call functions, they're literally bundles of wires running between logic gates and everything
-      is happening simultaneously. Instead of function calls, Verilog code is "triggered" to run when certain things
-      happen - when a clock signal changes from 0 to 1, when an input wire changes value, etecetera.
+      The statement "always_ff @(posedge clock)" means something like "every time the clock signal transitions from 0 to
+      1 (a 'positive edge'), do this", which brings up an important point - When we translate Metron programs into
+      Verilog and upload them to a FPGA, they're not "running" in the same sense that C code runs after we compile
+      it: circuits don't evaluate blocks of code in order, they don't call functions, they're literally bundles of wires
+      running between logic gates and everything is happening simultaneously. Instead of function calls, Verilog code is
+      "triggered" to run when certain things happen - when a clock signal changes from 0 to 1, when an input wire
+      changes value, etecetera.
     </p>
     <h1>The "count++" statement became "count &lt;= count + 1" - what does "&lt;=" mean?</h1>
     <p>
@@ -394,12 +396,15 @@ endmodule
     <p>
       Because "&lt;=" assignments are "delayed", this has the same effect as Module4 above. We can't generate that code
       from C though, as we don't have two different assignment operators available there for disambiguation - instead we
-      have to infer which Verilog assignment operator to use based on context.
+      have to infer which Verilog assignment operator to use based on context. Metron could in theory support "reg_" and
+      "sig_" prefixes on variables like it supports "tick_" and "tock_" on methods, but in practice I found the
+      resulting code style annoying and didn't finish implementing it. Maybe it'll go on the feature request list.
     </p>
     <p>
-      Metron could in theory support "reg_" and "sig_" prefixes on variables like it supports "tick_" and "tock_" on
-      methods, but in practice I found the resulting code style annoying and didn't finish implementing it. Maybe it'll
-      go on the feature request list.
+      Because Metron uses declaration order to determine how to trace your module's methods, it is <b>highly
+        recommended</b> that you place all your public tock-type methods together at the top of the class declaration,
+      followed by all your public tick-type methods. Private methods can go in any order at the bottom of the class
+      declaration.
     </p>
 
     <div class="divider">Private Vs. Public, Functions Vs. Tasks</div>
@@ -410,13 +415,14 @@ endmodule
     </p>
 
     <ul>
-      <li> Verilog "functions" must have return values*.</li>
-      <li> Pure functions can becalled from any method.</li>
+      <li> "Functions" must have return values*.</li>
+      <li> Pure functions can be called from any method.</li>
       <li> Functions that write signals or registers can only be called from a corresponding tock or tick method.</li>
     </ul>
-    <p style="font-size:10px;">not true according to the spec, but void functions are poorly supported by some tools</p>
+    <p style="font-size:10px;">* not true according to the spec, but void functions are poorly supported by some tools
+    </p>
     <ul>
-      <li> Verilog "tasks" do not have return values, but their arguments can be marked as "input" or "output"</li>
+      <li> "Tasks" do not have return values, but their arguments can be marked as "input" or "output"</li>
       <li> Tasks <b>break always_comb blocks</b> because always_comb blocks do not detect the changes they make. This is
         annoying and I'm not sure why it's part of the spec.</li>
       <li> Tasks are allowed to muck around with the simulation by controlling the flow of time, which is out of scope
@@ -439,12 +445,50 @@ endmodule
     </div>
 
     <p>
-      Metron will usually emit functions or tasks where applicable, though there are a few corner-cases to work around
-      bugs in some existing tools.
+      Metron will usually translate methods into functions or tasks where applicable, though there are a few
+      corner-cases to work around bugs in some existing tools.
     </p>
 
 
     <div class="divider">Bit Twiddling Logic</div>
+
+    <p>
+      One thing that Verilog developers do vastly more often than C developers is bit-twiddling - extracting, copying,
+      concatenating, inverting, and generally mucking around with individual bits inside a variable. There are some
+      Verilog features to support this that just have no equivalent expression in C (the "?" symbol in case statements
+      for example), but most of it can at least be emulated using some C++ template tricks. Note that you'll need to
+      include "metron_tools.h" to use these helper methods.
+    </p>
+    <p>
+      The logic&lt;N&gt; template type defined in metron_tools.h behaves like an unsigned integer with an arbitrary
+      number of
+      bits up to 64. Type-checking conversions between logics of different width is lenient due to the Verilog spec,
+      which generally says you can assign anything to anything and you'll get either a truncated value or 0s. The
+      template bit-width is used in dup() and cat() to ensure that concatenating a logic&lt;2&gt; and a logic&lt;3&gt;
+      produces a logic&lt;5&gt; and that dupicating a logic&lt;4&gt; 7 times produces a logic&lt;28&gt;, that sort of
+      thing.
+    </p>
+    <p>
+      Note that while extracting slices of bits using "bN(x, offset)" is supported, assigning to slices of bits
+      currently isn't - there is some functionality for it in metron_tools.h, but it breaks tracing because we don't
+      trace reads and writes on a per-bit level yet. Prefer reading and writing entire fields at a time, and use
+      dup/cat/extract as needed to build up your new values.
+    </p>
+
+    <div class="live_code" id="./examples/tutorial/bit_twiddling.h">
+      <div class="source_panel" id="c_panel">
+        <div class="header_bar">
+          <div class="filename" contenteditable="true"></div>
+        </div>
+        <div class="jar language-cpp"></div>
+      </div>
+      <div class="source_panel" id="v_panel">
+        <div class="header_bar">
+          <div class="filename"></div>
+        </div>
+        <div class="jar language-verilog"></div>
+      </div>
+    </div>
 
 
 

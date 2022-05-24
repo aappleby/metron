@@ -10,8 +10,7 @@
 `include "constants.sv"
 `include "metron_tools.sv"
 
-module regfile
-(
+module regfile (
   // global clock
   input logic clock,
   // input signals

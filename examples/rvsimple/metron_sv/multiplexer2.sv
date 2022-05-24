@@ -10,8 +10,7 @@
 `include "constants.sv"
 `include "metron_tools.sv"
 
-module multiplexer2
-#(parameter int WIDTH = 32)
+module multiplexer2 #(parameter int WIDTH = 32)
 (
   // input signals
   input logic[WIDTH-1:0] in0,

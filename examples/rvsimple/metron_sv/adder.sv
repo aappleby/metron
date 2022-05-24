@@ -10,8 +10,7 @@
 `include "constants.sv"
 `include "metron_tools.sv"
 
-module adder
-#(parameter int WIDTH = 32)
+module adder #(parameter int WIDTH = 32)
 (
   // input signals
   input logic[WIDTH-1:0] operand_a,

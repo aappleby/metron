@@ -2178,7 +2178,8 @@ CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnNode n) {
   err << emit_indent();
   err << emit_replacement(class_lit, "module");
   err << emit_type(class_name);
-  err << emit_newline();
+  err << emit_print(" ");
+  //err << emit_newline();
 
   err << emit_modparam_list();
   err << emit_module_ports(class_body);

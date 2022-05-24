@@ -10,8 +10,7 @@
 `include "constants.sv"
 `include "metron_tools.sv"
 
-module instruction_decoder
-(
+module instruction_decoder (
   // input signals
   input logic[31:0] inst,
   // output signals

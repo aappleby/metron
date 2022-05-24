@@ -10,8 +10,7 @@
 `include "constants.sv"
 `include "metron_tools.sv"
 
-module single_register
-#(parameter int WIDTH = 32,parameter  int INITIAL = 0)
+module single_register #(parameter int WIDTH = 32,parameter  int INITIAL = 0)
 (
   // global clock
   input logic clock,

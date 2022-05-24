@@ -3775,9 +3775,12 @@ class toplevel {
   logic<32> data_mem[32 * 1024];
   logic<32> regs[32];
 };
-#include "metron_tools.h"
+// Tutorial 5
 
-//------------------------------------------------------------------------------
+class Module {
+public:
+};
+#include "metron_tools.h"
 
 /*
 640x480x60
@@ -3846,25 +3849,54 @@ class VGAOut {
   }
 
 };
-
-//------------------------------------------------------------------------------
-// Tutorial 5
-
-class Module {
-public:
-};
-class Counter {
-public:
-  int count;
-
-  void update() {
-    count++;
-  }
-};
 // Tutorial 3
 
 class Module {
 public:
+};
+#include "adder.h"
+#include "counter.h"
+
+class ModuleWithSubmodules {
+public:
+  int update() {
+    // The field "my_counter.count" is a register, which means we can only read
+    // it _before_ it is written. Uncomment this line to see the error if we
+    // call update() on the counter before we send its value to the adder.
+    // my_counter.update();
+
+    int result = my_adder.add(my_counter.count, 7);
+
+    // Our adder's "add" function can only be used _once_. Calling it a second
+    // time is an error - uncomment this line to see the error.
+    // int result2 = my_adder.add(3, 4);
+
+    my_counter.update();
+    return result;
+  }
+
+private:
+  Adder my_adder;
+  Counter my_counter;
+};
+class Adder {
+public:
+  int add(int a, int b) {
+    return a + b;
+  }
+};
+
+//----------
+
+class Adder2 {
+public:
+  int a;
+  int b;
+  int sum;
+
+  void add() {
+    sum = a + b;
+  }
 };
 // Tutorial 4
 
@@ -3877,6 +3909,30 @@ public:
   int get_thing() {
     return 1;
   }
+};
+// A very basic counter in plain C++, converted to Verilog using Metron.
+
+class Counter {
+public:
+  int count;
+  void update() {
+    count++;
+  }
+};
+class NonBlockingAssignment {
+public:
+  int count;
+  int update_bad() {
+    count = count + 1;
+    return count;
+  }
+  /*
+  int update_good() {
+    int new_count = count + 1;
+    count = new_count;
+    return new_count;
+  }
+  */
 };
 A simple UART-based testbench for Metron that exercises translation to
 SystemVerilog, simulation via Icarus, translation back to C via Verilator,

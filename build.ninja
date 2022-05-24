@@ -138,8 +138,11 @@ build docs/app/examples.data docs/app/examples.js: command tests/Tests.h $
     examples/ibex/metron/ibex_compressed_decoder.h $
     examples/ibex/metron/ibex_alu.h examples/ibex/metron/ibex_pkg.h $
     examples/ibex/metron/prim_arbiter_fixed.h $
-    examples/rvtiny_sync/metron/toplevel.h examples/tutorial/tutorial1.h $
-    examples/tutorial/tutorial2.h examples/uart/metron/uart_rx.h $
+    examples/rvtiny_sync/metron/toplevel.h examples/tutorial/tutorial5.h $
+    examples/tutorial/vga.h examples/tutorial/tutorial3.h $
+    examples/tutorial/submodules.h examples/tutorial/adder.h $
+    examples/tutorial/tutorial4.h examples/tutorial/tutorial2.h $
+    examples/tutorial/counter.h examples/uart/metron/uart_rx.h $
     examples/uart/metron/uart_hello.h examples/uart/metron/uart_top.h $
     examples/uart/metron/uart_tx.h
   command = python3 $$EMSDK/upstream/emscripten/tools/file_packager.py $

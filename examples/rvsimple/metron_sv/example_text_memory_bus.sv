@@ -11,8 +11,7 @@
 `include "example_text_memory.sv"
 `include "metron_tools.sv"
 
-module example_text_memory_bus
-(
+module example_text_memory_bus (
   // input signals
   input logic[31:0] address,
   // output signals

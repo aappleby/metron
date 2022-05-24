@@ -5,8 +5,7 @@
 
 //==============================================================================
 
-module uart_hello
-#(parameter int repeat_msg = 0)
+module uart_hello #(parameter int repeat_msg = 0)
 (
   // global clock
   input logic clock,

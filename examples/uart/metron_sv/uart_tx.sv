@@ -5,8 +5,7 @@
 
 //==============================================================================
 
-module uart_tx
-#(parameter int cycles_per_bit = 4)
+module uart_tx #(parameter int cycles_per_bit = 4)
 (
   // global clock
   input logic clock,

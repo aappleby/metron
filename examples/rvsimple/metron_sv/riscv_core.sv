@@ -13,8 +13,7 @@
 `include "singlecycle_ctlpath.sv"
 `include "singlecycle_datapath.sv"
 
-module riscv_core
-(
+module riscv_core (
   // global clock
   input logic clock,
   // input signals

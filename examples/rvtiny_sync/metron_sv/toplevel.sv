@@ -1,7 +1,6 @@
 `include "metron_tools.sv"
 
-module toplevel
-(
+module toplevel (
   // global clock
   input logic clock,
   // output registers

@@ -11,8 +11,7 @@
 `include "example_data_memory.sv"
 `include "metron_tools.sv"
 
-module example_data_memory_bus
-(
+module example_data_memory_bus (
   // global clock
   input logic clock,
   // input signals

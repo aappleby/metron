@@ -10,8 +10,7 @@
 `include "constants.sv"
 `include "metron_tools.sv"
 
-module example_text_memory
-(
+module example_text_memory (
   // input signals
   input logic[rv_config::TEXT_BITS - 2-1:0] address,
   // output signals

@@ -10,8 +10,7 @@
 `include "constants.sv"
 `include "metron_tools.sv"
 
-module example_data_memory
-(
+module example_data_memory (
   // global clock
   input logic clock,
   // input signals

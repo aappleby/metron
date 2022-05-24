@@ -72,18 +72,132 @@ class VGAOut {
   }
 
 };
-class Counter {
+// If we try to update mutually-dependent fields in one function, we'll hit an
+// error. Uncomment to see the error.
+
+/*
+class Module1 {
 public:
-  int count;
+  int a;
+  int b;
 
   void update() {
-    count++;
+    a = b + 1;
+    b = a + 1;
+  }
+};
+*/
+
+// This module declares "update_a" first.
+class Module2 {
+public:
+  int a;
+  int b;
+
+  void update_a() {
+    a = b + 1;
+  }
+
+  void update_b() {
+    b = a + 1;
+  }
+};
+
+// This module declares "update_b" first.
+class Module3 {
+public:
+  int a;
+  int b;
+
+  void update_b() {
+    b = a + 1;
+  }
+
+  void update_a() {
+    a = b + 1;
+  }
+};
+
+// This module uses temporaries to update both A and B in a single function
+class Module4 {
+public:
+  int a;
+  int b;
+
+  void update() {
+    int old_a = a;
+    int old_b = b;
+    a = old_b + 1;
+    b = old_a + 1;
+  }
+};
+// We can force Metron to emit "result" as a register by reading from it before
+// we write to it.
+class Adder1 {
+public:
+  int result;
+  void add(int a, int b) {
+    int dummy = result;
+    result = a + b;
+  }
+};
+
+// Or we can prefix the function name with "tick", which does basically the
+// same thing.
+class Adder2 {
+public:
+  int tick_add(int a, int b) {
+    return a + b;
   }
 };
 // Tutorial 3
 
 class Module {
 public:
+};
+#include "adder.h"
+#include "counter.h"
+
+class ModuleWithSubmodules {
+public:
+  int update() {
+    // The field "my_counter.count" is a register, which means we can only read
+    // it _before_ it is written. Uncomment this line to see the error if we
+    // call update() on the counter before we send its value to the adder.
+    // my_counter.update();
+
+    int result = my_adder.add(my_counter.count, 7);
+
+    // Our adder's "add" function can only be used _once_. Calling it a second
+    // time is an error - uncomment this line to see the error.
+    // int result2 = my_adder.add(3, 4);
+
+    my_counter.update();
+    return result;
+  }
+
+private:
+  Adder my_adder;
+  Counter my_counter;
+};
+class Adder {
+public:
+  int add(int a, int b) {
+    return a + b;
+  }
+};
+
+//----------
+
+class Adder2 {
+public:
+  int a;
+  int b;
+  int sum;
+
+  void add() {
+    sum = a + b;
+  }
 };
 // Tutorial 4
 
@@ -96,4 +210,47 @@ public:
   int get_thing() {
     return 1;
   }
+};
+// A very basic counter in plain C++, converted to Verilog using Metron.
+
+class Counter {
+public:
+  int count;
+  void update() {
+    count++;
+  }
+};
+class Module {
+public:
+
+  int get_signal1(int x) {
+    return reg1 + my_pure_func(x);
+  }
+
+  void update_reg() {
+    reg1 = my_pure_func(reg1);
+  }
+
+private:
+  int reg1;
+
+  int my_pure_func(int x) const {
+    return x + 17;
+  }
+
+};
+class NonBlockingAssignment {
+public:
+  int count;
+  int update_bad() {
+    count = count + 1;
+    return count;
+  }
+  /*
+  int update_good() {
+    int new_count = count + 1;
+    count = new_count;
+    return new_count;
+  }
+  */
 };

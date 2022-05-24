@@ -1,7 +1,17 @@
 * {
-  font-family: "Roboto Mono";
+  font-family: monospace;
   font-size: 14px;
   color: #CCC;
+}
+
+b {
+  color: #EBB;
+}
+
+h1 {
+  color: #CCE;
+  margin-left:5%;
+  margin-right:5%;
 }
 
 body {
@@ -12,6 +22,13 @@ body {
 
 p {
   text-indent: 30px;
+  margin-left:5%;
+  margin-right:5%;
+}
+
+ul {
+  margin-left:5%;
+  margin-right:5%;
 }
 
 .topbar {
@@ -44,10 +61,12 @@ p {
 }
 
 .divider {
-  margin:10px;
+  margin:40px;
   padding:10px;
-  background-color: #333333;
+  background-color: #3B3344;
   border: solid #1C1C1C 1px;
+  text-align:center;
+  font-size:20px;
 }
 
 .live_code {
@@ -69,4 +88,11 @@ p {
 
 .filename {
   font-weight: 600;
+}
+
+.code_block {
+  margin-left: 40px;
+  margin-right: 40px;
+  display: inline-block;
+
 }

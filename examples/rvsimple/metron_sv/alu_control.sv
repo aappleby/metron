@@ -10,8 +10,7 @@
 `include "constants.sv"
 `include "metron_tools.sv"
 
-module alu_control
-(
+module alu_control (
   // input signals
   input logic[1:0] alu_op_type,
   input logic[2:0] inst_funct3,

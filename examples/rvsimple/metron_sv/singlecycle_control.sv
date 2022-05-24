@@ -10,8 +10,7 @@
 `include "constants.sv"
 `include "metron_tools.sv"
 
-module singlecycle_control
-(
+module singlecycle_control (
   // input signals
   input logic[6:0] inst_opcode,
   input logic take_branch,

@@ -8,8 +8,7 @@
 
 //==============================================================================
 
-module uart_top
-#(parameter int cycles_per_bit = 3,parameter  int repeat_msg = 0)
+module uart_top #(parameter int cycles_per_bit = 3,parameter  int repeat_msg = 0)
 (
   // global clock
   input logic clock,

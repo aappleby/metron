@@ -13,8 +13,7 @@
 `include "metron_tools.sv"
 `include "riscv_core.sv"
 
-module toplevel
-#(parameter int foobar = 2)
+module toplevel #(parameter int foobar = 2)
 (
   // global clock
   input logic clock,

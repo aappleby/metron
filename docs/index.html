@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en-us">
+
+<head>
+  <script src="assets/drawdown.js"></script>
+  <link rel="stylesheet" href="top.css" />
+
+  <title>Metron C++ to Verilog Transpiler</title>
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+
+</head>
+
+<body>
+  <div class="markdown"></div>
+  <pre class="plain" style="display:none;">
+# Metron, a tool for writing synthesizable Verilog in C++
+
+## [Demo!](demo/index.html)
+
+## [Temporal Logic](TemporalLogic.html)
+
+## [Tutorial](tutorial/index.html)
+
+
+```
+// A very basic counter in plain C++, converted to Verilog using Metron.
+
+class Counter {
+public:
+  int count;
+  void update() {
+    count++;
+  }
+};
+```
+
+```
+// A very basic counter in plain C++, converted to Verilog using Metron.
+
+module Counter (
+  // global clock
+  input logic clock,
+  // output registers
+  output int count
+);
+/*public:*/
+  always_ff @(posedge clock) begin : update
+    count <= count + 1;
+  end
+endmodule
+```
+</pre>
+
+  <script>
+    let ein = document.querySelector(".plain")
+    let eout = document.querySelector(".markdown")
+    eout.innerHTML = markdown(ein.innerText)
+  </script>
+</body>

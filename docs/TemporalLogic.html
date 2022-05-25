@@ -1,4 +1,21 @@
+<!doctype html>
+<html lang="en-us">
+
+<head>
+  <script src="assets/drawdown.js"></script>
+  <link rel="stylesheet" href="top.css" />
+
+  <title>Metron C++ to Verilog Transpiler</title>
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+
+</head>
+
+<body>
+  <div class="markdown"></div>
+  <pre class="plain" style="display:none;">
 # Temporal Logic, Code Tracing, and Weird State Machines
+
+Metron is a tool that can translate a limited subset of C++ into a limited subset of Verilog. Metron's code tracing tries to summarize how the code reads and writes each field over all possible paths through the code without actually iterating over all possible paths through the code. To do this it uses some basic symbolic logic, which is described in this document.
 
 ## Disclaimer
 
@@ -64,14 +81,14 @@ However, the two versions will _not_ produce the same results.
 | cycle 2 |3|4|2|2|
 | cycle 3 |5|6|3|3|
 
-The difference is in the ```<=``` operator, which Verilog calls the 'non-blocking assignment' operator. In C, assignments take effect immediately. In Verilog, assignments can take effect immediately ('blocking' assignment), or they can be deferred until the end of the current simulation step ('non-blocking' assignment).
+The difference is in the <= operator, which Verilog calls the 'non-blocking assignment' operator. In C, assignments take effect immediately. In Verilog, assignments can take effect immediately ('blocking' assignment), or they can be deferred until the end of the current simulation step ('non-blocking' assignment).
 
-Reading from a variable in Verilog that has been non-blockingly assigned will return the **old** value, whereas a read in C++ will always return the **new** value. If we look at variable ```b``` in our example, we can see that ```b = a + 1``` reads from ```a``` after it has been assigned - in C++ this returns the **new** value of ```a```, in Verilog this returns the **old** value of ```a```.
+Reading from a variable in Verilog that has been non-blockingly assigned will return the **old** value, whereas a read in C++ will always return the **new** value. If we look at variable b in our example, we can see that b = a + 1 reads from a after it has been assigned - in C++ this returns the **new** value of a, in Verilog this returns the **old** value of a.
 
 -----
 ## But wait, can't you just...
 
-If you already know some Verilog, you're probably thinking "But wait, you don't _have_ to use ```<=```, you can use regular ```=``` instead" - and you're right, sort of. The problem with using ```=``` shows up if we split our always_ff block like so:
+If you already know some Verilog, you're probably thinking "But wait, you don't _have_ to use <=, you can use regular = instead" - and you're right, sort of. The problem with using = shows up if we split our always_ff block like so:
 
 ```
 module ThingV (input logic clock, input logic reset);
@@ -100,7 +117,7 @@ endmodule
 
 This will compile, but the output is **undefined**. Verilog guarantees that both always_ff blocks will be evaluated when the clock goes high, but it does **not** define what order they are evaluated in.
 
-By changing ```<=``` to ```=```, we have created an ordering dependency between "update_a" and "update_b". If update_a is evaluated first, we get "a = 1, b = 2" after the first clock cycle. If update_b is evaluated first, we get "a = 2, b = 1".
+By changing <= to =, we have created an ordering dependency between "update_a" and "update_b". If update_a is evaluated first, we get "a = 1, b = 2" after the first clock cycle. If update_b is evaluated first, we get "a = 2, b = 1".
 
 For this reason, virtually all Verilog style guides forbid using blocking assignments inside "always_ff" or "always @(posedge)" blocks.
 
@@ -183,7 +200,7 @@ public:
 };
 ```
 
-We'll start by assigning the variable ```x``` a symbolic value of ```N```, for "Nothing has happened to this variable yet". When we encounter ```int y = x + 3```, we see a read of ```X``` so we'll concatenate a ```R``` onto our symbol, giving ```NR```. Next we see a write in ```x = 7```, so we concatenate a ```W``` giving ```NRW```.
+We'll start by assigning the variable x a symbolic value of N, for "Nothing has happened to this variable yet". When we encounter "int y = x + 3", we see a read of X, so we'll concatenate a R onto our symbol, giving NR. Next we see a write in "x = 7", so we concatenate a W giving NRW.
 
 As we accumulate Rs and Ws onto our symbolic value, we can apply these simplification rules:
 
@@ -210,7 +227,7 @@ WR + W == X
 X + * = X
 ```
 
-So for branchless code, our possible symbolic values are ```N```, ```R```, ```W```, ```RW```, ```WR```, and ```X```. Next let's consider what happens when we see branching code:
+So for branchless code, our possible symbolic values are N, R, W, RW, WR, and X. Next let's consider what happens when we see branching code:
 
 ```
 class Thing {
@@ -228,9 +245,8 @@ public:
 };
 ```
 
-The variable ```x``` has symbol ```R``` in the ```if``` branch and ```W``` in the ```else``` branch, so its symbol at the end of the function is... well, we'll just create a new symbol ```R|W```, where ```|``` means something like "in parallel with". Like the branchless case, we can simplify a lot of the symbol combinations -
+The variable x has symbol R in the if branch and W in the else branch, so its symbol at the end of the function is... well, we'll just create a new symbol R|W, where | means something like "in parallel with". Like the branchless case, we can simplify a lot of the symbol combinations -
 
-```
 // We don't need to keep track of multiple branches that do the same thing
 R | R == R
 W | W == W
@@ -246,9 +262,8 @@ N|R + W = NW|RW
 
 // Invalid symbols override everything
 * | X == X
-```
 
-Ignoring the ```X``` symbol for a moment, we have 5 'serial' symbols ```N, R, W, RW, WR``` and we can group any subset of them together with ```|``` to produce a 'parallel' symbol, so there are 2^5-1 = 31 possible parallel symbols (we can safely ignore the empty set).
+Ignoring the X symbol for a moment, we have 5 'serial' symbols N, R, W, RW, WR and we can group any subset of them together with | to produce a 'parallel' symbol, so there are 2^5-1 = 31 possible parallel symbols (we can safely ignore the empty set).
 
 For reference, here's the full table of possible symbols, their concatenation rules, and the resulting symbol after simplification:
 
@@ -317,9 +332,9 @@ For reference, here's the full table of possible symbols, their concatenation ru
 (N | R | W | RW | WR) + W = NW|RW|WW|RWW|WRW = X
 ```
 
-With that table written out, we have enough information to fully trace a program. For each member variable we start with the N symbol and trace through each line of code. If we see a read or a write, we look up the current symbol in the table above and transition to the new symbol. If we see a branch, we trace through both sides of the branch independently and then parallel-merge the symbols together afterwards (just concatenate the ```N|R|W``` with the ```R|WR``` or whatever and then remove duplicates).
+With that table written out, we have enough information to fully trace a program. For each member variable we start with the N symbol and trace through each line of code. If we see a read or a write, we look up the current symbol in the table above and transition to the new symbol. If we see a branch, we trace through both sides of the branch independently and then parallel-merge the symbols together afterwards (just concatenate the N|R|W with the R|WR or whatever and then remove duplicates).
 
-This works, but it's kinda clunky and it doesn't really give us insight into what the symbols _mean_. We can simplify things a bit further by taking advantage of redundancies in the table and by removing symbols that are impossible because they would always break the rules - for example, ```RW|WR``` can be disallowed as it contains both a read-after-write and a write-after-read which means it can't be categorized as either a "register" or "wire" in Verilog-land. ```R|WR``` is out for similar reasons - ```WR``` implies "wire", but ```R``` implies "register" and it can't be both.
+This works, but it's kinda clunky and it doesn't really give us insight into what the symbols _mean_. We can simplify things a bit further by taking advantage of redundancies in the table and by removing symbols that are impossible because they would always break the rules - for example, RW|WR can be disallowed as it contains both a read-after-write and a write-after-read which means it can't be categorized as either a "register" or "wire" in Verilog-land. R|WR is out for similar reasons - WR implies "wire", but R implies "register" and it can't be both.
 
 After removing all impossible symbols from the table, we can group the remaining symbols together by how their concatenation rules behave:
 
@@ -373,7 +388,6 @@ After removing all impossible symbols from the table, we can group the remaining
 
 Note that for each group, all symbols in that group followed by a read will end up in the same group together, ditto for writes. If we don't need to know a variable's exact symbol and can get by with just the group, then we can ditch the whole symbol thing entirely and just use the group names to drive a sort of state machine:
 
-```
 | series   | read    | write    |
 |----------|---------|----------|
 | NONE     | INPUT   | OUTPUT   |
@@ -383,6 +397,8 @@ Note that for each group, all symbols in that group followed by a read will end 
 | SIGNAL   | SIGNAL  | INVALID  |
 | REGISTER | INVALID | REGISTER |
 
+
+
 | parallel | NONE     | INPUT    | OUTPUT   | MAYBE    | SIGNAL  | REGISTER |
 |----------|----------|----------|----------|----------|---------|----------|
 | NONE     | NONE     | INPUT    | MAYBE    | MAYBE    | INVALID | REGISTER |
@@ -391,17 +407,24 @@ Note that for each group, all symbols in that group followed by a read will end 
 | MAYBE    | MAYBE    | REGISTER | MAYBE    | MAYBE    | INVALID | REGISTER |
 | SIGNAL   | INVALID  | INVALID  | SIGNAL   | INVALID  | SIGNAL  | INVALID  |
 | REGISTER | REGISTER | REGISTER | REGISTER | REGISTER | INVALID | REGISTER |
-```
 
 We trace variables through the code, following the 'series' table to change their state when they encounter a read or write. When two code branches merge, we use the 'parallel' table to figure out what their combined state is. If we hit an "INVALID", the program breaks our translation rules.
 
 We can also assign more meaning to the group names now:
 
 * **"None"** just means we haven't read or written that variable yet. If we end tracing with a variable in "None" state, it is dead code and can be removed.
-* **"Input"** is a read-only variable. It could always be read by the code (symbol ```R```), or only read on some paths (```N|R```). Either way, it's represented in Verilog by a wire.
+* **"Input"** is a read-only variable. It could always be read by the code (symbol R), or only read on some paths (N|R). Either way, it's represented in Verilog by a wire.
 * **"Output"** is a variable that is always written by the code and never read. It's represented in Verilog by a wire.
-* **"Signal"** also correspond to "wire" in Verilog. Signals must always be written first, and may or may not be read (```W|WR = W + N|R```).
+* **"Signal"** also correspond to "wire" in Verilog. Signals must always be written first, and may or may not be read (W|WR = W + N|R).
 * **"Register"** corresponds to "reg" in Verilog. All symbols in this group contain both a path where they are read first and a path where they are written (not necessarily the same path).
-* **"Maybe"** is a slightly strange group, but it emerges naturally from the rules. It corresponds to symbol ```N|W```, meaning it's a variable that has been written in some but not all paths and never read. If a variable has "Maybe" state in the middle of a trace but is then written it becomes an output wire, but if it reaches the end of a trace it becomes an output **register** (since it wasn't always written, it has to hold onto the value from the previous cycle).
+* **"Maybe"** is a slightly strange group, but it emerges naturally from the rules. It corresponds to symbol N|W, meaning it's a variable that has been written in some but not all paths and never read. If a variable has "Maybe" state in the middle of a trace but is then written it becomes an output wire, but if it reaches the end of a trace it becomes an output **register** (since it wasn't always written, it has to hold onto the value from the previous cycle).
 
 With those tables, plus a lot of parsing and bookkeeping, we can definitively categorize every member variable in a C++ program and determine if it will work as Verilog. I'm glossing over a bunch of details (there are lots more rules, mostly imposed by Verilog syntax) but that's the core of it.
+</pre>
+
+  <script>
+    let ein = document.querySelector(".plain")
+    let eout = document.querySelector(".markdown")
+    eout.innerHTML = markdown(ein.innerText)
+  </script>
+</body>

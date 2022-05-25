@@ -13,9 +13,14 @@
   - No, it's strictly a low-level tool. You're still dealing with registers and wires, you're just doing it in C.
 - Can I use {C++ feature} in Metron?
   - If it's anything fancier than "a C++ class with integer template parameters", probably not. Even pointers aren't allowed. Struct support is flaky in some tools. Keep your expectations very low.
-- I'm already using Verilator to convert my Verilog to C, why would I want to use Metron?
-  - Metron can help you prototype new RTL faster than writing it in Verilog, it doesn't require a conversion step to integrate with an existing Verilator C++ testbench, and it usually simulates 2x - 5x faster.
-- How fast do Metron models simulate?
+- I'm already using Verilator to convert my Verilog to C for testing, why would I want to use Metron?
+  - Metron can help you prototype new RTL faster than writing it in Verilog.
+  - Metron doesn't require a conversion step to integrate with an existing Verilator C++ testbench.
+  - Metron modules usually simulate 2x - 5x faster than Verilated modules.
+- Wait, what? How fast do Metron models simulate?
+  - A trivial LFSR module simulates at 600+ Mhz on my 5900x
+  - A 640x480 "Pong" VGA video generator runs at 260+ Mhz, over 10x realtime.
+  - Simple RISC-V RV32I cores simulate at **insert number here**, though with the caveat that they're single-cycle cores and probably wouldn't synthesize.
 
 ## Building the Metron binary from source:
 ```

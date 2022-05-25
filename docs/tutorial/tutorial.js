@@ -98,7 +98,7 @@ class Tutorial {
     stdout = "";
     stderr = "";
 
-    let args = ["-s", "-r", root, file];
+    let args = ["-m", "-s", "-r", root, file];
     let ret = metron_mod.callMain(args);
     let cmdline = "metron " + args.join(" ");
     console.log(cmdline);
@@ -116,7 +116,7 @@ class Tutorial {
       }
     }
     else {
-      this.dst_pane.code_jar.updateCode(stderr);
+      this.dst_pane.code_jar.updateCode(stdout);
       this.dst_pane.header_bar.style.backgroundColor = "#533";
     }
   }

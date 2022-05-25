@@ -56,10 +56,8 @@ def main():
     sys.exit(0);
     """
 
-    #errors += test_convert_good()
+    errors += test_convert_good()
     errors += test_convert_bad()
-
-    """
     errors += test_verilator_parse()
     errors += test_yosys_parse()
     errors += test_icarus_parse()
@@ -74,7 +72,6 @@ def main():
         errors += test_lockstep()
 
         pass
-    """
 
     ############################################################
 
@@ -227,7 +224,7 @@ def check_bad(filename):
         pass
     else:
         for err in expected_errors:
-            if not err in cmd_result.stderr:
+            if not err in cmd_result.stdout:
                 print(
                     f"Test {filename} did not produce expected error \"{err}\".")
                 errors += 1

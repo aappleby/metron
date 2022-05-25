@@ -69,6 +69,7 @@ int main(int argc, char** argv) {
   CLI::App app{banner};
 
   bool quiet = false;
+  bool monochrome = false;
   bool echo = false;
   bool dump = false;
   bool save = false;
@@ -78,28 +79,31 @@ int main(int argc, char** argv) {
   std::vector<std::string> source_names;
 
   // clang-format off
-  app.add_flag  ("-q,--quiet",    quiet,        "Quiet mode");
-  app.add_flag  ("-v,--verbose",  verbose,      "Print detailed stats about the source modules.");
-  app.add_flag  ("-s,--save",     save,         "Save converted source. If not specified, will only check inputs for convertibility.");
-  app.add_flag  ("-e,--echo",     echo,         "Echo the converted source back to the terminal, with color-coding.");
-  app.add_flag  ("--dump",        dump,         "Dump the syntax tree of the source file(s) to the console.");
-  app.add_option("-r,--src_root", src_root,     "Root directory of the source to convert");
-  app.add_option("-o,--out_root", out_root,     "Root directory used for output files. If not specified, will use source root.");
-  app.add_option("headers",       source_names, "List of .h files to convert from C++ to SystemVerilog");
+  app.add_flag  ("-q,--quiet",      quiet,        "Quiet mode");
+  app.add_flag  ("-m,--monochrome", monochrome,   "Monochrome mode, no color-coding");
+  app.add_flag  ("-v,--verbose",    verbose,      "Print detailed stats about the source modules.");
+  app.add_flag  ("-s,--save",       save,         "Save converted source. If not specified, will only check inputs for convertibility.");
+  app.add_flag  ("-e,--echo",       echo,         "Echo the converted source back to the terminal, with color-coding.");
+  app.add_flag  ("--dump",          dump,         "Dump the syntax tree of the source file(s) to the console.");
+  app.add_option("-r,--src_root",   src_root,     "Root directory of the source to convert");
+  app.add_option("-o,--out_root",   out_root,     "Root directory used for output files. If not specified, will use source root.");
+  app.add_option("headers",         source_names, "List of .h files to convert from C++ to SystemVerilog");
   // clang-format on
 
   CLI11_PARSE(app, argc, argv);
 
   if (quiet) TinyLog::get().mute();
+  if (monochrome) TinyLog::get().mono();
 
   //----------
   // Startup info
 
   LOG_B("Metron v0.0.1\n");
-  LOG_B("Quiet   %d\n", quiet);
-  LOG_B("Echo    %d\n", echo);
-  LOG_B("Save    %d\n", save);
-  LOG_B("Verbose %d\n", verbose);
+  LOG_B("Quiet      %d\n", quiet);
+  LOG_B("Monochrome %d\n", monochrome);
+  LOG_B("Echo       %d\n", echo);
+  LOG_B("Save       %d\n", save);
+  LOG_B("Verbose    %d\n", verbose);
   LOG_B("Source root '%s'\n", src_root.empty() ? "<empty>" : src_root.c_str());
   LOG_B("Output root '%s'\n", out_root.empty() ? "<empty>" : out_root.c_str());
 

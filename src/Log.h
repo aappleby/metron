@@ -10,6 +10,7 @@
 struct TinyLog {
   uint32_t _color = 0; // 0 = default color
   int _muted = 0;
+  bool _mono = false;
   int _indentation = 0;
   bool _start_line = true;
   uint64_t _time_origin = 0;
@@ -24,6 +25,9 @@ struct TinyLog {
   void mute()   { _muted++; }
   void unmute() { _muted--; }
 
+  void mono()   { _mono = true; }
+  void color()  { _mono = false; }
+
   void reset() {
     _color = 0;
     _muted = 0;
@@ -33,6 +37,7 @@ struct TinyLog {
   }
 
   void set_color(uint32_t color) {
+    if (_mono) return;
     if (color != _color) {
       if (color) {
         printf("\u001b[38;2;%d;%d;%dm", (color >> 0) & 0xFF,

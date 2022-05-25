@@ -1,6 +1,6 @@
 # Metron, a tool for writing synthesizable Verilog in C++
 
-## [Demo!](https://aappleby.github.io/Metron/demo/)
+## [TL;DR: Demo!](https://aappleby.github.io/Metron/demo/)
 ## [Tutorial](https://aappleby.github.io/Metron/tutorial/)
 ## [Temporal Logic](https://aappleby.github.io/Metron/TemporalLogic.html)
 

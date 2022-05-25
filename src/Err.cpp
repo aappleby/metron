@@ -30,14 +30,6 @@ ErrType::ErrType(SEV_TYPE v, const char* file, int line, const char* func,
     TinyLog::get().print(stderr, 0x008080FF, "  ");
     TinyLog::get().vprint(stderr, 0x008080FF, format, args);
     TinyLog::get().print(stderr, 0x008080FF, "\n");
-    fflush(stderr);
-    /*
-    fprintf(stderr, "Error @ %s : %d : %s\n", file, line, func);
-    fprintf(stderr, "  ");
-    vfprintf(stderr, format, args);
-    fprintf(stderr, "\n");
-    fflush(stderr);
-    */
   }
 
   va_end(args);

@@ -75,7 +75,6 @@ struct TinyLog {
       set_color(color);
       //printf("%c", c); //putchar(c);
       fputc(c, file);
-      fflush(file);
     }
   }
 
@@ -83,7 +82,6 @@ struct TinyLog {
     for (int i = 0; i < len; i++) {
       print_char(file, buffer[i], color);
     }
-    //fflush(stdout);
   }
 
   void vprint(FILE* file, uint32_t color, const char* format, va_list args) {

@@ -2,7 +2,7 @@
 
 // If statements whose sub-blocks contain submodule calls _must_ use {}.
 
-// X If statements that contain component calls must use {}
+// X If branches that contain component calls must use {}.
 
 class Submod {
  public:

@@ -130,8 +130,6 @@ int main(int argc, char** argv) {
   if (err.has_err()) {
     LOG_R("Exiting due to error\n");
     lib.teardown();
-    fflush(stdout);
-    fflush(stderr);
     return -1;
   }
 
@@ -225,8 +223,6 @@ int main(int argc, char** argv) {
     if (err.has_err()) {
       LOG_R("Error during trace\n");
       lib.teardown();
-      fflush(stdout);
-      fflush(stderr);
       return -1;
     }
     if (verbose) {
@@ -246,8 +242,6 @@ int main(int argc, char** argv) {
   if (err.has_err()) {
     LOG_R("Exiting due to error\n");
     lib.teardown();
-    fflush(stdout);
-    fflush(stderr);
     return -1;
   }
 
@@ -321,8 +315,6 @@ int main(int argc, char** argv) {
   if (err.has_err()) {
     LOG_R("Exiting due to error\n");
     lib.teardown();
-    fflush(stdout);
-    fflush(stderr);
     return -1;
   }
 
@@ -373,8 +365,6 @@ int main(int argc, char** argv) {
     if (err.has_err()) {
       LOG_R("Error during code generation\n");
       lib.teardown();
-      fflush(stdout);
-      fflush(stderr);
       return -1;
     }
 

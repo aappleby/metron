@@ -251,7 +251,7 @@ def build_verilator():
     divider("Verilator libraries")
 
     ninja.build(rule="compile_cpp",
-                inputs="/usr/share/verilator/include/verilated.cpp",
+                inputs="/usr/local/share/verilator/include/verilated.cpp",
                 outputs="obj/verilated.o")
 
 # ------------------------------------------------------------------------------

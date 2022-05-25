@@ -1,12 +1,16 @@
 #include "metron_tools.h"
 
+//------------------------------------------------------------------------------
+
 class Blockram {
 public:
   Blockram() {
     readmemh("blockram.hex", memory, 0, 255);
   }
 
-  logic<8> data_out;
+  logic<8> get_data() const {
+    return data_out;
+  }
 
   void tick(logic<8> address, logic<1> write, logic<8> data_in) {
     if (write) {
@@ -20,212 +24,54 @@ public:
 
 private:
   logic<8> memory[256];
-}
-#include <stdio.h>
-
-#include "Platform.h"
-#include "Tests.h"
-#include "Vtoplevel.h"
-#include "submodules/CLI11/include/CLI/App.hpp"
-#include "submodules/CLI11/include/CLI/Config.hpp"
-#include "submodules/CLI11/include/CLI/Formatter.hpp"
+  logic<8> data_out;
+};
 
 //------------------------------------------------------------------------------
 
-const char* instructions[38] = {
-    "add", "addi", "and", "andi", "auipc", "beq",  "bge", "bgeu",
-    "blt", "bltu", "bne", "jal",  "jalr",  "lb",   "lbu", "lh",
-    "lhu", "lui",  "lw",  "or",   "ori",   "sb",   "sh",  "simple",
-    "sll", "slli", "slt", "slti", "sltiu", "sltu", "sra", "srai",
-    "srl", "srli", "sub", "sw",   "xor",   "xori"};
+class Checksum {
+public:
 
-//------------------------------------------------------------------------------
+  int get_checksum() const {
+    return sum;
+  }
 
-uint64_t total_tocks = 0;
-uint64_t total_time = 0;
+  int get_done() const {
+    return cursor == 256;
+  }
 
-TestResults test_instruction(const char* test_name, const int reps,
-                             const int max_cycles) {
-  TEST_INIT("Testing op %6s, %d reps", test_name, reps);
+  void tock(int reset) {
+    logic<8> data = ram.get_data();
 
-  char buf1[256];
-  char buf2[256];
-  sprintf(buf1, "+text_file=tests/rv_tests/%s.text.vh", test_name);
-  sprintf(buf2, "+data_file=tests/rv_tests/%s.data.vh", test_name);
-  const char* argv2[2] = {buf1, buf2};
+    ram.tick(cursor, 0, 0);
+    tick(reset, data);
+  }
 
-  Verilated::commandArgs(2, argv2);
+private:
 
-  int elapsed_cycles = 0;
-  int test_result = -1;
-  auto time_a = timestamp();
-
-  //----------
-
-  Vtoplevel top;
-
-  for (int rep = 0; rep < reps; rep++) {
-    top.tock_reset = 1;
-    top.clock = 0;
-    top.eval();
-    top.clock = 1;
-    top.eval();
-    total_tocks++;
-    top.tock_reset = 0;
-
-    for (elapsed_cycles = 0; elapsed_cycles < max_cycles; elapsed_cycles++) {
-      top.clock = 0;
-      top.eval();
-      top.clock = 1;
-      top.eval();
-      total_tocks++;
-
-      if (top.bus_address == 0xfffffff0 && top.bus_write_enable) {
-        test_result = top.bus_write_data;
-        break;
+  void tick(int reset, logic<8> data) {
+    if (reset) {
+      cursor = 0;
+      sum = 0;
+    }
+    else {
+      if (cursor < 256) {
+        cursor = cursor + 1;
+        sum = sum + data;
       }
     }
   }
 
-  //----------
-
-  auto time_b = timestamp();
-  total_time += time_b - time_a;
-
-  if (elapsed_cycles == max_cycles) TEST_FAIL("TIMEOUT\n");
-  if (test_result == 0) TEST_FAIL("FAIL %d @ %d\n", test_result, time);
-  TEST_PASS();
-}
+  int cursor;
+  int sum;
+  Blockram ram;
+};
 
 //------------------------------------------------------------------------------
-
-int main(int argc, const char** argv) {
-  CLI::App app{"Simple test and benchmark for rvsimple"};
-
-  int reps = 1;
-  int max_cycles = 1000;
-
-  app.add_option("-r,--reps", reps, "How many times to repeat the test");
-  app.add_option("-m,--max_cycles", max_cycles,
-                 "Maximum # cycles to simulate before timeout");
-  CLI11_PARSE(app, argc, argv);
-
-  LOG_B("Starting %s @ %d reps...\n", argv[0], reps);
-
-  total_tocks = 0;
-  total_time = 0;
-
-  LOG_B("Testing...\n");
-  TestResults results("main");
-  for (int i = 0; i < 38; i++) {
-    results << test_instruction(instructions[i], reps, max_cycles);
-  }
-
-  double rate = double(total_tocks) / double(total_time);
-  LOG_B("Sim rate %f mhz\n", rate * 1000.0);
-
-  return results.show_banner();
-}
 A trivial single-file, single-function, single-cycle RISC-V core.
 
 Probably won't synthesize since the ram is asynchronous, but runs at 300+ mhz
 in simulation.
-#include <stdio.h>
-
-#include "Platform.h"
-#include "Tests.h"
-#include "submodules/CLI11/include/CLI/App.hpp"
-#include "submodules/CLI11/include/CLI/Config.hpp"
-#include "submodules/CLI11/include/CLI/Formatter.hpp"
-#include "toplevel.h"
-
-//------------------------------------------------------------------------------
-
-const char* instructions[38] = {
-    "add", "addi", "and", "andi", "auipc", "beq",  "bge", "bgeu",
-    "blt", "bltu", "bne", "jal",  "jalr",  "lb",   "lbu", "lh",
-    "lhu", "lui",  "lw",  "or",   "ori",   "sb",   "sh",  "simple",
-    "sll", "slli", "slt", "slti", "sltiu", "sltu", "sra", "srai",
-    "srl", "srli", "sub", "sw",   "xor",   "xori"};
-
-//------------------------------------------------------------------------------
-
-uint64_t total_tocks = 0;
-uint64_t total_time = 0;
-
-TestResults test_instruction(const char* test_name, const int reps,
-                             const int max_cycles) {
-  TEST_INIT("Testing op %6s, %d reps", test_name, reps);
-
-  char buf1[256];
-  char buf2[256];
-  sprintf(buf1, "+text_file=tests/rv_tests/%s.text.vh", test_name);
-  sprintf(buf2, "+data_file=tests/rv_tests/%s.data.vh", test_name);
-  const char* argv2[2] = {buf1, buf2};
-
-  metron_init(2, argv2);
-
-  int elapsed_cycles = 0;
-  int test_result = -1;
-  auto time_a = timestamp();
-
-  //----------
-
-  toplevel top;
-
-  for (int rep = 0; rep < reps; rep++) {
-    top.tock(1);
-    total_tocks++;
-    for (elapsed_cycles = 0; elapsed_cycles < max_cycles; elapsed_cycles++) {
-      top.tock(0);
-      total_tocks++;
-
-      if (top.bus_address == 0xfffffff0 && top.bus_write_enable) {
-        test_result = top.bus_write_data;
-        break;
-      }
-    }
-  }
-
-  //----------
-
-  auto time_b = timestamp();
-  total_time += time_b - time_a;
-
-  if (elapsed_cycles == max_cycles) TEST_FAIL("TIMEOUT\n");
-  if (test_result == 0) TEST_FAIL("FAIL %d @ %d\n", test_result, time);
-  TEST_PASS();
-}
-
-//------------------------------------------------------------------------------
-
-int main(int argc, const char** argv) {
-  CLI::App app{"Simple test and benchmark for rvsimple"};
-
-  int reps = 1;
-  int max_cycles = 1000;
-
-  app.add_option("-r,--reps", reps, "How many times to repeat the test");
-  app.add_option("-m,--max_cycles", max_cycles,
-                 "Maximum # cycles to simulate before timeout");
-  CLI11_PARSE(app, argc, argv);
-
-  LOG_B("Starting %s @ %d reps...\n", argv[0], reps);
-
-  total_tocks = 0;
-  total_time = 0;
-
-  LOG_B("Testing...\n");
-  TestResults results("main");
-  for (int i = 0; i < 38; i++) {
-    results << test_instruction(instructions[i], reps, max_cycles);
-  }
-
-  double rate = double(total_tocks) / double(total_time);
-  LOG_B("Sim rate %f mhz\n", rate * 1000.0);
-
-  return results.show_banner();
-}
 #pragma once
 #include "metron_tools.h"
 
@@ -444,312 +290,7 @@ class toplevel {
   logic<32> data_mem[32 * 1024];
   logic<32> regs[32];
 };
-#include <stdio.h>
-
-#include "Platform.h"
-#include "Tests.h"
-#include "Vtoplevel.h"
-#include "submodules/CLI11/include/CLI/App.hpp"
-#include "submodules/CLI11/include/CLI/Config.hpp"
-#include "submodules/CLI11/include/CLI/Formatter.hpp"
-
-//------------------------------------------------------------------------------
-
-const char* instructions[38] = {
-    "add", "addi", "and", "andi", "auipc", "beq",  "bge", "bgeu",
-    "blt", "bltu", "bne", "jal",  "jalr",  "lb",   "lbu", "lh",
-    "lhu", "lui",  "lw",  "or",   "ori",   "sb",   "sh",  "simple",
-    "sll", "slli", "slt", "slti", "sltiu", "sltu", "sra", "srai",
-    "srl", "srli", "sub", "sw",   "xor",   "xori"};
-
-//------------------------------------------------------------------------------
-
-uint64_t total_tocks = 0;
-uint64_t total_time = 0;
-
-TestResults test_instruction(const char* test_name, const int reps,
-                             const int max_cycles) {
-  TEST_INIT("Testing op %6s, %d reps", test_name, reps);
-
-  char buf1[256];
-  char buf2[256];
-  sprintf(buf1, "+text_file=tests/rv_tests/%s.text.vh", test_name);
-  sprintf(buf2, "+data_file=tests/rv_tests/%s.data.vh", test_name);
-  const char* argv2[2] = {buf1, buf2};
-
-  Verilated::commandArgs(2, argv2);
-
-  int elapsed_cycles = 0;
-  int test_result = -1;
-  auto time_a = timestamp();
-
-  //----------
-
-  Vtoplevel top;
-
-  for (int rep = 0; rep < reps; rep++) {
-    top.reset = 1;
-    top.clock = 0;
-    top.eval();
-    top.clock = 1;
-    top.eval();
-    total_tocks++;
-    for (elapsed_cycles = 0; elapsed_cycles < max_cycles; elapsed_cycles++) {
-      top.reset = 0;
-      top.clock = 0;
-      top.eval();
-      top.clock = 1;
-      top.eval();
-      total_tocks++;
-
-      if (top.bus_address == 0xfffffff0 && top.bus_write_enable) {
-        test_result = top.bus_write_data;
-        break;
-      }
-    }
-  }
-
-  //----------
-
-  auto time_b = timestamp();
-  total_time += time_b - time_a;
-
-  if (elapsed_cycles == max_cycles) TEST_FAIL("TIMEOUT\n");
-  if (test_result == 0) TEST_FAIL("FAIL %d @ %d\n", test_result, time);
-  TEST_PASS();
-}
-
-//------------------------------------------------------------------------------
-
-int main(int argc, const char** argv) {
-  CLI::App app{"Simple test and benchmark for rvsimple"};
-
-  int reps = 1;
-  int max_cycles = 1000;
-
-  app.add_option("-r,--reps", reps, "How many times to repeat the test");
-  app.add_option("-m,--max_cycles", max_cycles,
-                 "Maximum # cycles to simulate before timeout");
-  CLI11_PARSE(app, argc, argv);
-
-  LOG_B("Starting %s @ %d reps...\n", argv[0], reps);
-
-  total_tocks = 0;
-  total_time = 0;
-
-  LOG_B("Testing...\n");
-  TestResults results("main");
-  for (int i = 0; i < 38; i++) {
-    results << test_instruction(instructions[i], reps, max_cycles);
-  }
-
-  double rate = double(total_tocks) / double(total_time);
-  LOG_B("Sim rate %f mhz\n", rate * 1000.0);
-
-  return results.show_banner();
-}
 A port of riscv-simple-sv (https://github.com/tilk/riscv-simple-sv) to Metron.
-#include <stdio.h>
-
-#include "Platform.h"
-#include "Tests.h"
-#include "Vtoplevel.h"
-#include "submodules/CLI11/include/CLI/App.hpp"
-#include "submodules/CLI11/include/CLI/Config.hpp"
-#include "submodules/CLI11/include/CLI/Formatter.hpp"
-
-//------------------------------------------------------------------------------
-
-const char* instructions[38] = {
-    "add", "addi", "and", "andi", "auipc", "beq",  "bge", "bgeu",
-    "blt", "bltu", "bne", "jal",  "jalr",  "lb",   "lbu", "lh",
-    "lhu", "lui",  "lw",  "or",   "ori",   "sb",   "sh",  "simple",
-    "sll", "slli", "slt", "slti", "sltiu", "sltu", "sra", "srai",
-    "srl", "srli", "sub", "sw",   "xor",   "xori"};
-
-//------------------------------------------------------------------------------
-
-uint64_t total_tocks = 0;
-uint64_t total_time = 0;
-
-TestResults test_instruction(const char* test_name, const int reps,
-                             const int max_cycles) {
-  TEST_INIT("Testing op %6s, %d reps", test_name, reps);
-
-  char buf1[256];
-  char buf2[256];
-  sprintf(buf1, "+text_file=tests/rv_tests/%s.text.vh", test_name);
-  sprintf(buf2, "+data_file=tests/rv_tests/%s.data.vh", test_name);
-  const char* argv2[2] = {buf1, buf2};
-
-  Verilated::commandArgs(2, argv2);
-
-  int elapsed_cycles = 0;
-  int test_result = -1;
-  auto time_a = timestamp();
-
-  //----------
-
-  Vtoplevel top;
-
-  for (int rep = 0; rep < reps; rep++) {
-    top.reset = 1;
-    top.clock = 0;
-    top.eval();
-    top.clock = 1;
-    top.eval();
-    total_tocks++;
-    for (elapsed_cycles = 0; elapsed_cycles < max_cycles; elapsed_cycles++) {
-      top.reset = 0;
-      top.clock = 0;
-      top.eval();
-      top.clock = 1;
-      top.eval();
-      total_tocks++;
-
-      if (top.bus_address == 0xfffffff0 && top.bus_write_enable) {
-        test_result = top.bus_write_data;
-        break;
-      }
-    }
-  }
-
-  //----------
-
-  auto time_b = timestamp();
-  total_time += time_b - time_a;
-
-  if (elapsed_cycles == max_cycles) TEST_FAIL("TIMEOUT\n");
-  if (test_result == 0) TEST_FAIL("FAIL %d @ %d\n", test_result, time);
-  TEST_PASS();
-}
-
-//------------------------------------------------------------------------------
-
-int main(int argc, const char** argv) {
-  CLI::App app{"Simple test and benchmark for rvsimple"};
-
-  int reps = 1;
-  int max_cycles = 1000;
-
-  app.add_option("-r,--reps", reps, "How many times to repeat the test");
-  app.add_option("-m,--max_cycles", max_cycles,
-                 "Maximum # cycles to simulate before timeout");
-  CLI11_PARSE(app, argc, argv);
-
-  LOG_B("Starting %s @ %d reps...\n", argv[0], reps);
-
-  total_tocks = 0;
-  total_time = 0;
-
-  LOG_B("Testing...\n");
-  TestResults results("main");
-  for (int i = 0; i < 38; i++) {
-    results << test_instruction(instructions[i], reps, max_cycles);
-  }
-
-  double rate = double(total_tocks) / double(total_time);
-  LOG_B("Sim rate %f mhz\n", rate * 1000.0);
-
-  return results.show_banner();
-}
-#include <stdio.h>
-
-#include "Platform.h"
-#include "metron/toplevel.h"
-#include "submodules/CLI11/include/CLI/App.hpp"
-#include "submodules/CLI11/include/CLI/Config.hpp"
-#include "submodules/CLI11/include/CLI/Formatter.hpp"
-#include "tests/Tests.h"
-
-//------------------------------------------------------------------------------
-
-const char* instructions[38] = {
-    "add", "addi", "and", "andi", "auipc", "beq",  "bge", "bgeu",
-    "blt", "bltu", "bne", "jal",  "jalr",  "lb",   "lbu", "lh",
-    "lhu", "lui",  "lw",  "or",   "ori",   "sb",   "sh",  "simple",
-    "sll", "slli", "slt", "slti", "sltiu", "sltu", "sra", "srai",
-    "srl", "srli", "sub", "sw",   "xor",   "xori"};
-
-//------------------------------------------------------------------------------
-
-uint64_t total_tocks = 0;
-uint64_t total_time = 0;
-
-TestResults test_instruction(const char* test_name, const int reps,
-                             const int max_cycles) {
-  TEST_INIT("Testing op %6s, %d reps", test_name, reps);
-
-  char buf1[256];
-  char buf2[256];
-  sprintf(buf1, "+text_file=tests/rv_tests/%s.text.vh", test_name);
-  sprintf(buf2, "+data_file=tests/rv_tests/%s.data.vh", test_name);
-  const char* argv2[2] = {buf1, buf2};
-
-  metron_init(2, argv2);
-
-  int elapsed_cycles = 0;
-  int test_result = -1;
-  auto time_a = timestamp();
-
-  //----------
-
-  toplevel top;
-
-  for (int rep = 0; rep < reps; rep++) {
-    top.reset = 1;
-    top.tock(0);
-    total_tocks++;
-    top.reset = 0;
-    for (elapsed_cycles = 0; elapsed_cycles < max_cycles; elapsed_cycles++) {
-      top.tock(0);
-      total_tocks++;
-      if (top.bus_address == 0xfffffff0 && top.bus_write_enable) {
-        test_result = top.bus_write_data;
-        break;
-      }
-    }
-  }
-
-  //----------
-
-  auto time_b = timestamp();
-  total_time += time_b - time_a;
-
-  if (elapsed_cycles == max_cycles) TEST_FAIL("TIMEOUT\n");
-  if (test_result == 0) TEST_FAIL("FAIL %d @ %d\n", test_result, time);
-  TEST_PASS();
-}
-
-//------------------------------------------------------------------------------
-
-int main(int argc, const char** argv) {
-  CLI::App app{"Simple test and benchmark for rvsimple"};
-
-  int reps = 1;
-  int max_cycles = 1000;
-
-  app.add_option("-r,--reps", reps, "How many times to repeat the test");
-  app.add_option("-m,--max_cycles", max_cycles,
-                 "Maximum # cycles to simulate before timeout");
-  CLI11_PARSE(app, argc, argv);
-
-  LOG_B("Starting %s @ %d reps...\n", argv[0], reps);
-
-  total_tocks = 0;
-  total_time = 0;
-
-  LOG_B("Testing...\n");
-  TestResults results("main");
-  for (int i = 0; i < 38; i++) {
-    results << test_instruction(instructions[i], reps, max_cycles);
-  }
-
-  double rate = double(total_tocks) / double(total_time);
-  LOG_B("Sim rate %f mhz\n", rate * 1000.0);
-
-  return results.show_banner();
-}
 // RISC-V SiMPLE SV -- generic register
 // BSD 3-Clause License
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
@@ -2254,97 +1795,7 @@ class multiplexer2 {
 };
 
 #endif // MULTIPLEXER2_H
-#include "metron/pong.h"
-#include "metron/hvsync_generator.h"
-
-#include <stdio.h>
-
-int main(int argc, char** argv) {
-  printf("Hello Pong World\n");
-}
 Verilated version of https://www.fpga4fun.com/PongGame.html
-#include <stdio.h>
-
-#define SDL_MAIN_HANDLED
-
-#ifdef _MSC_VER
-#include "SDL/include/SDL.h"
-#else
-#include <SDL2/SDL.h>
-#endif
-
-#include "Platform.h"
-#include "metron/pong.h"
-
-#define SCREEN_WIDTH 640
-#define SCREEN_HEIGHT 480
-
-int main(int argc, char* args[]) {
-  printf("Hello SDL-under-WSL World!\n");
-  SDL_Window* window = NULL;
-  if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-    printf("could not initialize sdl2: %s\n", SDL_GetError());
-    return 1;
-  }
-  window = SDL_CreateWindow(
-          "hello_sdl2",
-          SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-          SCREEN_WIDTH, SCREEN_HEIGHT,
-          SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI
-          );
-  if (window == NULL) {
-    printf("could not create window: %s\n", SDL_GetError());
-    return 1;
-  }
-
-  bool quit = false;
-  const uint8_t* keyboard_state = SDL_GetKeyboardState(nullptr);
-
-  //----------
-
-  Pong pong;
-
-  while (!quit) {
-    SDL_Event event;
-    while (SDL_PollEvent(&event)) {
-      if (event.type == SDL_QUIT) quit = true;
-    }
-
-    auto time_a = timestamp();
-
-    SDL_Surface* surface = SDL_GetWindowSurface(window);
-    SDL_LockSurface(surface);
-    Uint32 *buffer = (Uint32*) surface->pixels;
-
-    for (int i = 0; i < 800 * 525; i++) {
-      pong.tock_video();
-      pong.tock_game(0,0);
-      auto pix_x = pong.pix_x();
-      auto pix_y = pong.pix_y();
-
-      if (pix_x < 640 && pix_y < 480) {
-        uint8_t r = pong.vga_R * 255;
-        uint8_t g = pong.vga_G * 255;
-        uint8_t b = pong.vga_B * 255;
-        buffer[pix_x + pix_y * SCREEN_WIDTH] = (r << 16) | (g << 8) | (b << 0);
-      }
-    }
-
-    auto time_b = timestamp();
-    static double time_avg = 0;
-    time_avg = (time_avg * 0.99) + double(time_b - time_a) * 0.01;
-    printf("%f\n", float(time_avg) / 1000000.0);
-
-    SDL_UnlockSurface(surface);
-    SDL_UpdateWindowSurface(window);
-  }
-
-  //----------
-
-  SDL_DestroyWindow(window);
-  SDL_Quit();
-  return 0;
-}
 #pragma once
 #include "metron_tools.h"
 
@@ -2530,14 +1981,6 @@ class Pong {
 //------------------------------------------------------------------------------
 Original source from https://www.fpga4fun.com/PongGame.html
 Unfinished port of the Ibex RISC-V core to Metron.
-#include <stdio.h>
-
-#include "metron/ibex_alu.h"
-
-int main(int argc, char** argv) {
-  printf("Hello World, it's me - Ibex\n");
-  return 0;
-}
 // Copyright lowRISC contributors.
 // Copyright 2018 ETH Zurich and University of Bologna, see also CREDITS.md.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -4069,207 +3512,7 @@ struct prim_arbiter_fixed {
   }
 
 };
-#include <stdio.h>
-
-#include "Platform.h"
-#include "Tests.h"
-#include "Vtoplevel.h"
-#include "submodules/CLI11/include/CLI/App.hpp"
-#include "submodules/CLI11/include/CLI/Config.hpp"
-#include "submodules/CLI11/include/CLI/Formatter.hpp"
-
-//------------------------------------------------------------------------------
-
-const char* instructions[38] = {
-    "add", "addi", "and", "andi", "auipc", "beq",  "bge", "bgeu",
-    "blt", "bltu", "bne", "jal",  "jalr",  "lb",   "lbu", "lh",
-    "lhu", "lui",  "lw",  "or",   "ori",   "sb",   "sh",  "simple",
-    "sll", "slli", "slt", "slti", "sltiu", "sltu", "sra", "srai",
-    "srl", "srli", "sub", "sw",   "xor",   "xori"};
-
-//------------------------------------------------------------------------------
-
-uint64_t total_tocks = 0;
-uint64_t total_time = 0;
-
-TestResults test_instruction(const char* test_name, const int reps,
-                             const int max_cycles) {
-  TEST_INIT("Testing op %6s, %d reps", test_name, reps);
-
-  char buf1[256];
-  char buf2[256];
-  sprintf(buf1, "+text_file=tests/rv_tests/%s.text.vh", test_name);
-  sprintf(buf2, "+data_file=tests/rv_tests/%s.data.vh", test_name);
-  const char* argv2[2] = {buf1, buf2};
-
-  Verilated::commandArgs(2, argv2);
-
-  int elapsed_cycles = 0;
-  int test_result = -1;
-  auto time_a = timestamp();
-
-  //----------
-
-  Vtoplevel top;
-
-  for (int rep = 0; rep < reps; rep++) {
-    top.tock_reset = 1;
-    top.clock = 0;
-    top.eval();
-    top.clock = 1;
-    top.eval();
-    top.tock_reset = 0;
-    total_tocks++;
-    for (elapsed_cycles = 0; elapsed_cycles < max_cycles; elapsed_cycles++) {
-      top.clock = 0;
-      top.eval();
-      top.clock = 1;
-      top.eval();
-      total_tocks++;
-
-      if (top.o_bus_address == 0xfffffff0 && top.o_bus_write_enable) {
-        test_result = top.o_bus_write_data;
-        break;
-      }
-    }
-  }
-
-  //----------
-
-  auto time_b = timestamp();
-  total_time += time_b - time_a;
-
-  if (elapsed_cycles == max_cycles) TEST_FAIL("TIMEOUT\n");
-  if (test_result == 0) TEST_FAIL("FAIL %d @ %d\n", test_result, time);
-  TEST_PASS();
-}
-
-//------------------------------------------------------------------------------
-
-int main(int argc, const char** argv) {
-  CLI::App app{"Simple test and benchmark for rvsimple"};
-
-  int reps = 1;
-  int max_cycles = 1000;
-
-  app.add_option("-r,--reps", reps, "How many times to repeat the test");
-  app.add_option("-m,--max_cycles", max_cycles,
-                 "Maximum # cycles to simulate before timeout");
-  CLI11_PARSE(app, argc, argv);
-
-  LOG_B("Starting %s @ %d reps...\n", argv[0], reps);
-
-  total_tocks = 0;
-  total_time = 0;
-
-  LOG_B("Testing...\n");
-  TestResults results("main");
-  for (int i = 0; i < 38; i++) {
-    results << test_instruction(instructions[i], reps, max_cycles);
-  }
-
-  double rate = double(total_tocks) / double(total_time);
-  LOG_B("Sim rate %f mhz\n", rate * 1000.0);
-
-  return results.show_banner();
-}
 Same as rvtiny, but synchronous. Not finished yet.
-#include <stdio.h>
-
-#include "Platform.h"
-#include "metron/toplevel.h"
-#include "submodules/CLI11/include/CLI/App.hpp"
-#include "submodules/CLI11/include/CLI/Config.hpp"
-#include "submodules/CLI11/include/CLI/Formatter.hpp"
-#include "tests/Tests.h"
-
-//------------------------------------------------------------------------------
-
-const char* instructions[38] = {
-    "add", "addi", "and", "andi", "auipc", "beq",  "bge", "bgeu",
-    "blt", "bltu", "bne", "jal",  "jalr",  "lb",   "lbu", "lh",
-    "lhu", "lui",  "lw",  "or",   "ori",   "sb",   "sh",  "simple",
-    "sll", "slli", "slt", "slti", "sltiu", "sltu", "sra", "srai",
-    "srl", "srli", "sub", "sw",   "xor",   "xori"};
-
-//------------------------------------------------------------------------------
-
-uint64_t total_tocks = 0;
-uint64_t total_time = 0;
-
-TestResults test_instruction(const char* test_name, const int reps,
-                             const int max_cycles) {
-  TEST_INIT("Testing op %6s, %d reps", test_name, reps);
-
-  char buf1[256];
-  char buf2[256];
-  sprintf(buf1, "+text_file=tests/rv_tests/%s.text.vh", test_name);
-  sprintf(buf2, "+data_file=tests/rv_tests/%s.data.vh", test_name);
-  const char* argv2[2] = {buf1, buf2};
-
-  metron_init(2, argv2);
-
-  int elapsed_cycles = 0;
-  int test_result = -1;
-  auto time_a = timestamp();
-
-  //----------
-
-  toplevel top;
-
-  for (int rep = 0; rep < reps; rep++) {
-    top.tock(1);
-    total_tocks++;
-    for (elapsed_cycles = 0; elapsed_cycles < max_cycles; elapsed_cycles++) {
-      top.tock(0);
-      total_tocks++;
-
-      if (top.o_bus_address == 0xfffffff0 && top.o_bus_write_enable) {
-        test_result = top.o_bus_write_data;
-        break;
-      }
-    }
-  }
-
-  //----------
-
-  auto time_b = timestamp();
-  total_time += time_b - time_a;
-
-  if (elapsed_cycles == max_cycles) TEST_FAIL("TIMEOUT\n");
-  if (test_result == 0) TEST_FAIL("FAIL %d @ %d\n", test_result, time);
-  TEST_PASS();
-}
-
-//------------------------------------------------------------------------------
-
-int main(int argc, const char** argv) {
-  CLI::App app{"Simple test and benchmark for rvsimple"};
-
-  int reps = 1;
-  int max_cycles = 1000;
-
-  app.add_option("-r,--reps", reps, "How many times to repeat the test");
-  app.add_option("-m,--max_cycles", max_cycles,
-                 "Maximum # cycles to simulate before timeout");
-  CLI11_PARSE(app, argc, argv);
-
-  LOG_B("Starting %s @ %d reps...\n", argv[0], reps);
-
-  total_tocks = 0;
-  total_time = 0;
-
-  LOG_B("Testing...\n");
-  TestResults results("main");
-  for (int i = 0; i < 38; i++) {
-    results << test_instruction(instructions[i], reps, max_cycles);
-  }
-
-  double rate = double(total_tocks) / double(total_time);
-  LOG_B("Sim rate %f mhz\n", rate * 1000.0);
-
-  return results.show_banner();
-}
 #pragma once
 #include "metron_tools.h"
 
@@ -4686,6 +3929,33 @@ public:
 class Module {
 public:
 };
+#include "blockram.h"
+
+class Checksum {
+public:
+
+  int state;
+  int cursor;
+  int sum;
+
+  void tick(int reset) {
+    ram.tick(state, 0, 0);
+
+    if (reset) {
+      state = 0;
+      cursor = 0;
+      sum = 0;
+    }
+    else {
+      state = state + 1;
+      cursor = cursor + 1;
+      sum = sum + 10;
+    }
+  }
+
+private:
+  Blockram ram;
+};
 #include "adder.h"
 #include "counter.h"
 
@@ -4901,101 +4171,10 @@ public:
   }
   */
 };
-#include <assert.h>
-#include <stdint.h>
-#include <stdio.h>
-
-#include "Tests.h"
-#include "metron_vl/Vuart_top.h"
-
-//------------------------------------------------------------------------------
-
-TestResults test_lockstep(int argc, char** argv) {
-  TEST_INIT("Metron+Verilator lockstep simulation:");
-
-  // Synchronous reset cycle.
-  Vuart_top vtop;
-  vtop.tock_i_rstn = 0;
-  vtop.clock = 0;
-  vtop.eval();
-  vtop.clock = 1;
-  vtop.eval();
-
-  // Reset done, clock starts low.
-  vtop.clock = 0;
-  vtop.tock_i_rstn = 1;
-  vtop.eval();
-
-  LOG_B("========================================\n");
-
-  int cycle;
-  for (cycle = 0; cycle < 20000; cycle++) {
-    bool old_valid = vtop.valid_ret;
-    vtop.clock = 1;
-    vtop.eval();
-    vtop.clock = 0;
-    vtop.eval();
-
-    if (!old_valid && vtop.valid_ret) LOG_B("%c", (uint8_t)vtop.data_ret);
-    if (vtop.done_ret) break;
-  }
-
-  LOG_B("\n");
-  LOG_B("========================================\n");
-  LOG_B("%d\n", cycle);
-  EXPECT_EQ(vtop.sum_ret, 0x0000b764, "Verilator uart checksum fail");
-
-  TEST_DONE();
-}
-
-//------------------------------------------------------------------------------
-
-int main(int argc, char** argv) {
-  printf("Running Verilated Metron uart test\n");
-  TestResults results("main");
-  results << test_lockstep(argc, argv);
-  if (results.test_fail) {
-    printf("Some tests fail.\n");
-  } else {
-    printf("All tests pass.\n");
-  }
-  return 0;
-}
-
-//------------------------------------------------------------------------------
 A simple UART-based testbench for Metron that exercises translation to
 SystemVerilog, simulation via Icarus, translation back to C via Verilator,
 synthesis via Yosys, place+route via NextPNR, and uploading to a Lattice ICE40
 fpga via Icestorm.
-#include <stdio.h>
-
-#include "metron/uart_top.h"
-
-int main(int argc, char** arv) {
-  printf("Metron simulation:\n");
-  printf("================================================================================\n");
-
-  const int cycles_per_bit = 3;
-  uart_top<cycles_per_bit> top;
-  top.tock(0);
-
-  for (int cycle = 0; cycle < 20000; cycle++) {
-    bool old_valid = top.valid();
-    top.tock(1);
-    if (!old_valid && top.valid()) printf("%c", (uint8_t)top.data());
-    
-    if (top.done()) {
-      printf("\n");
-      printf("================================================================================\n");
-      printf("%d\n", cycle);
-      if (top.sum() == 0x0000b764) {
-        printf("All tests pass.\n");
-        return 0;
-      }
-    }
-  }
-  return -1;
-}
 #ifndef UART_RX_H
 #define UART_RX_H
 

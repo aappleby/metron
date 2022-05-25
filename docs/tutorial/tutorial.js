@@ -98,7 +98,7 @@ class Tutorial {
     stdout = "";
     stderr = "";
 
-    let args = ["-m", "-s", "-r", root, file];
+    let args = ["-v", "-m", "-s", "-r", root, file];
     let ret = metron_mod.callMain(args);
     let cmdline = "metron " + args.join(" ");
     console.log(cmdline);

@@ -229,7 +229,7 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
     if (m->in_init) return 0;
 
     if (m->is_constructor()) {
-      if (verbose) LOG_B("%-20s is init because it's the constructor.\n", m->cname());
+      if (verbose) LOG_B("%s.%s is init because it's the constructor.\n", m->_mod->cname(), m->cname());
       m->in_init = true;
       return 1;
     }
@@ -239,8 +239,8 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
         if (m->in_init) {
           return 0;
         } else {
-          if (verbose) LOG_B("%-20s is init because it's called by the constructor.\n",
-                m->cname());
+          if (verbose) LOG_B("%s.%s is init because it's called by the constructor.\n",
+                m->_mod->cname(), m->cname());
           m->in_init = true;
           return 1;
         }
@@ -295,10 +295,7 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
       if (m->in_tock) {
         return 0;
       } else {
-        if (verbose) LOG_B(
-            "%s.%s is tock because it doesn't write anything and calls funcs "
-            "in other modules.\n",
-            m->_mod->cname(), m->cname());
+        if (verbose) LOG_B("%s.%s is tock because it calls methods in other modules.\n", m->_mod->cname(), m->cname());
         m->in_tock = true;
         return 1;
       }
@@ -326,7 +323,7 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
       if (m->in_tick) {
         return 0;
       } else {
-        if (verbose) LOG_B("%-20s is tick because it writes registers.\n", m->cname());
+        if (verbose) LOG_B("%s.%s is tick because it writes registers.\n", m->_mod->cname(), m->cname());
         m->in_tick = true;
         return 1;
       }
@@ -349,7 +346,7 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
         if (m->in_tick) {
           return 0;
         } else {
-          if (verbose) LOG_B("%-20s is tick because it is called by a tick.\n", m->cname());
+          if (verbose) LOG_B("%s.%s is tick because it is called by a tick.\n", m->_mod->cname(), m->cname());
           m->in_tick = true;
           return 1;
         }
@@ -375,7 +372,7 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
       if (m->in_tock) {
         return 0;
       } else {
-        if (verbose) LOG_B("%-20s is tock because it writes signals.\n", m->cname());
+        if (verbose) LOG_B("%s.%s is tock because it writes signals.\n", m->_mod->cname(), m->cname());
         m->in_tock = true;
         return 1;
       }
@@ -396,7 +393,7 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
         if (m->in_tock) {
           return 0;
         } else {
-          if (verbose) LOG_B("%-20s is tock because it calls a tock.\n", m->cname());
+          if (verbose) LOG_B("%s.%s is tock because it calls a tock.\n", m->_mod->cname(), m->cname());
           m->in_tock = true;
           return 1;
         }

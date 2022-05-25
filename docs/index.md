@@ -1,10 +1,10 @@
 # Metron, a tool for writing synthesizable Verilog in C++
 
-## [TL;DR - Demo!](app/index.html)
+## [TL;DR - Demo!](demo/index.html)
 
 [Temporal Logic](TemporalLogic.md)
 
-[Tutorial](Tutorial.md)
+[Tutorial](tutorial/index.html)
 
 [User Guide](UserGuide.md)
 

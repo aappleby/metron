@@ -71,7 +71,7 @@ TestResults test_instruction(const char* test_name, const int reps,
 int main(int argc, const char** argv) {
   CLI::App app{"Simple test and benchmark for rvsimple"};
 
-  int reps = 1;
+  int reps = 10000;
   int max_cycles = 1000;
 
   app.add_option("-r,--reps", reps, "How many times to repeat the test");

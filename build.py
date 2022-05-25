@@ -10,8 +10,6 @@ from os import path
 obj_dir = "obj"
 outfile = open("build.ninja", "w+")
 ninja = ninja_syntax.Writer(outfile)
-opt_mode = "-O3"
-#opt_mode = ""
 
 base_includes = [
     ".",
@@ -79,19 +77,19 @@ ninja.build(outputs="build.ninja",
 divider("Rules")
 
 ninja.rule(name="compile_cpp",
-           command="g++ -rdynamic -g ${opt} -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
+           command="g++ -rdynamic -g -O3 -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
            deps="gcc",
            depfile="${out}.d")
 
 ninja.rule(name="compile_c",
-           command="gcc -rdynamic -g ${opt} ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
+           command="gcc -rdynamic -g -O3 ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
            deps="gcc",
            depfile="${out}.d")
 
 ninja.rule(name="static_lib",    command="ar rcs ${out} ${in} > /dev/null")
 
 ninja.rule(name="link",
-           command="g++ -rdynamic -g $opt ${in} -Wl,--whole-archive ${local_libs} -Wl,--no-whole-archive ${global_libs} -o ${out}")
+           command="g++ -rdynamic -g -O3 ${in} -Wl,--whole-archive ${local_libs} -Wl,--no-whole-archive ${global_libs} -o ${out}")
 
 ninja.rule(name="metron", # yes, we run metron with quiet and verbose both on for test coverage
            command="bin/metron -q -v -r ${src_dir} -o ${dst_dir} -s ${src_top}")
@@ -582,7 +580,6 @@ def build_rvsimple():
         bin_name="bin/examples/rvsimple",
         src_files=["examples/rvsimple/main.cpp"],
         includes=base_includes,
-        opt=opt_mode,
         link_deps=["bin/libmetron.a"],
     )
 
@@ -637,7 +634,6 @@ def build_rvtiny():
         src_files=["examples/rvtiny/main.cpp"],
         includes=base_includes + [mt_root],
         link_deps=["bin/libmetron.a"],
-        opt=opt_mode,
     )
 
     rvtiny_sv_srcs = metronize_dir(mt_root, "toplevel.h", sv_root)
@@ -672,7 +668,6 @@ def build_rvtiny_sync():
         src_files=["examples/rvtiny_sync/main.cpp"],
         includes=base_includes,
         link_deps=["bin/libmetron.a"],
-        opt=opt_mode,
     )
 
     metronized_src = metronize_dir(mt_root, "toplevel.h", sv_root)
@@ -702,7 +697,6 @@ def build_ibex():
         bin_name="bin/examples/ibex",
         src_files=["examples/ibex/main.cpp"],
         includes=base_includes,
-        opt=opt_mode,
     )
 
 # ------------------------------------------------------------------------------
@@ -719,7 +713,6 @@ def build_pong():
         src_files=["examples/pong/main.cpp"],
         includes=base_includes,
         global_libs="-lSDL2",
-        opt=opt_mode,
         link_deps=["bin/libmetron.a"],
     )
 

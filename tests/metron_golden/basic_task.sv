@@ -2,8 +2,7 @@
 
 // Private non-const methods should turn into SV tasks.
 
-module Module
-(
+module Module (
   // global clock
   input logic clock,
   // tock() ports

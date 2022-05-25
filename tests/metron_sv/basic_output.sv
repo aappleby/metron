@@ -2,8 +2,7 @@
 
 // Getter methods should turn into outputs.
 
-module Module
-(
+module Module (
   // global clock
   input logic clock,
   // get_reg() ports

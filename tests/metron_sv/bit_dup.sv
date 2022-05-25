@@ -1,7 +1,6 @@
 `include "metron_tools.sv"
 
-module Module
-(
+module Module (
   // test_dup1() ports
   output int test_dup1_ret,
   // test_dup4() ports

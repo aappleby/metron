@@ -2,8 +2,7 @@
 
 // Private const methods should turn into SV functions.
 
-module Module
-(
+module Module (
   // global clock
   input logic clock
 );

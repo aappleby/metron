@@ -2,8 +2,7 @@
 
 // DONTCARE gets translated to 1'bx
 
-module Module
-(
+module Module (
   // test2() ports
   output logic[7:0] test2_ret,
   // test3() ports

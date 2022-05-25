@@ -2,8 +2,7 @@
 
 // Writing a register multiple times in the same function is OK.
 
-module Module
-(
+module Module (
   // output signals
   output logic my_sig
 );

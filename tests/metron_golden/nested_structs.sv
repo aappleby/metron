@@ -15,8 +15,7 @@ typedef struct packed {
   InnerStruct z;
 } OuterStruct;
 
-module Module
-(
+module Module (
   // output signals
   output OuterStruct s
 );

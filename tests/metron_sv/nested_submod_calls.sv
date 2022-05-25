@@ -2,8 +2,7 @@
 
 // Nesting submod calls should put all the nested input bindings above the call.
 
-module Submod1
-(
+module Submod1 (
   // add_one() ports
   input logic[7:0] add_one_a,
   output logic[7:0] add_one_ret
@@ -14,8 +13,7 @@ module Submod1
   end
 endmodule
 
-module Submod2
-(
+module Submod2 (
   // add_two() ports
   input logic[7:0] add_two_a,
   output logic[7:0] add_two_ret
@@ -26,8 +24,7 @@ module Submod2
   end
 endmodule
 
-module Module
-(
+module Module (
   // tock() ports
   input logic[7:0] tock_old_counter,
   output logic[7:0] tock_ret

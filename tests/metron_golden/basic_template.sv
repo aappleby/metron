@@ -2,8 +2,7 @@
 
 // Templates can be used for module parameters
 
-module Submod
-#(parameter int WIDTH,parameter  int HEIGHT = 2)
+module Submod #(parameter int WIDTH,parameter  int HEIGHT = 2)
 (
   // output signals
   output logic[WIDTH-1:0] my_width,
@@ -18,8 +17,7 @@ module Submod
 
 endmodule
 
-module Module
-(
+module Module (
   // tock() ports
   output logic[19:0] tock_ret
 );

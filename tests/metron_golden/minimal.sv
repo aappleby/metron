@@ -2,7 +2,6 @@
 
 // Empty module should pass.
 
-module Module
-(
+module Module (
 );
 endmodule

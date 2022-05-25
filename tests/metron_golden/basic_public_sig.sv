@@ -2,8 +2,7 @@
 
 // Public signal member variables get moved to the output port list.
 
-module Module
-(
+module Module (
   // output signals
   output logic my_sig
 );

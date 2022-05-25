@@ -2,8 +2,7 @@
 
 // Trivial adder just for example.
 
-module Adder
-(
+module Adder (
   // add() ports
   input logic[7:0] add_a,
   input logic[7:0] add_b,

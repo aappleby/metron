@@ -3,8 +3,7 @@
 // Tick methods are not allowed to have a return value.
 // X Tick method Module.tick is not allowed to have a return value.
 
-module Module
-(
+module Module (
   // global clock
   input logic clock,
   // tick() ports

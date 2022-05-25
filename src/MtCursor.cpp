@@ -806,7 +806,6 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
 
       if (is_localparam) {
         // fixme?
-        n.dump_tree();
         err << ERR("FIXME - emit_hoisted_decls emitting a localparam?\n");
       } else {
         cursor = c.start();

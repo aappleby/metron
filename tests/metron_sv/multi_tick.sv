@@ -2,8 +2,7 @@
 
 // Multiple tick methods are OK as long as they're all called by tock()
 
-module Module
-(
+module Module (
   // global clock
   input logic clock,
   // tock() ports

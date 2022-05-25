@@ -2,8 +2,7 @@
 
 // Template parameters become SV module parameters.
 
-module Module
-#(parameter int SOME_CONSTANT = 7)
+module Module #(parameter int SOME_CONSTANT = 7)
 (
   // global clock
   input logic clock

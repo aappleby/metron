@@ -1,8 +1,7 @@
 // Prefixing a method with "tick_" should force it to be a tick if it would
 // otherwise be ambiguous
 
-module Adder
-(
+module Adder (
   // global clock
   input logic clock,
   // tick_add() ports

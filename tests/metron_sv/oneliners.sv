@@ -2,8 +2,7 @@
 
 // Cramming various statements into one line should not break anything.
 
-module Module
-(
+module Module (
   // global clock
   input logic clock,
   // output registers

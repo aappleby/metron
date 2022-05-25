@@ -3,8 +3,7 @@
 // Increment/decrement should be translated into equivalent Verilog, but they
 // do _not_ return the old/new value.
 
-module Module
-(
+module Module (
   // global clock
   input logic clock
 );
@@ -16,10 +15,10 @@ module Module
 /*private:*/
 
   always_ff @(posedge clock) begin : tick
-    my_reg1 = my_reg1 + 1;
-    my_reg2 = my_reg2 + 1;
-    my_reg3 = my_reg3 - 1;
-    my_reg4 = my_reg4 - 1;
+    my_reg1 <= my_reg1 + 1;
+    my_reg2 <= my_reg2 + 1;
+    my_reg3 <= my_reg3 - 1;
+    my_reg4 <= my_reg4 - 1;
   end
 
   int my_reg1;

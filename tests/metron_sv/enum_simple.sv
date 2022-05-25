@@ -18,8 +18,7 @@
 // enum struct {} ? same as enum class
 
 // clang-format off
-module Module
-(
+module Module (
   // test1() ports
   output int test1_ret
 );

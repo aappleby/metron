@@ -5,8 +5,7 @@
 // Yosys bug - fails to parse if we pass constants between the functions
 // https://github.com/YosysHQ/yosys/issues/3327
 
-module Module
-(
+module Module (
   // global clock
   input logic clock,
   // output signals

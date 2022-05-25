@@ -45,7 +45,7 @@ module regfile (
   // Write port for rd
   always_ff @(posedge clock) begin : tick
     if (write_enable)
-      if (rd_address != 5'b0) _register[rd_address] = rd_data;
+      if (rd_address != 5'b0) _register[rd_address] <= rd_data;
   end
 endmodule
 

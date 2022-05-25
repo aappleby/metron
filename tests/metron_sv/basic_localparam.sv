@@ -2,8 +2,7 @@
 
 // Static const members become SV localparams
 
-module Module
-(
+module Module (
   // global clock
   input logic clock
 );

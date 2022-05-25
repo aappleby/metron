@@ -1,7 +1,6 @@
 `include "metron_tools.sv"
 
-module Module
-(
+module Module (
   // global clock
   input logic clock,
   // output signals

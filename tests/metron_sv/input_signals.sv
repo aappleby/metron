@@ -3,8 +3,7 @@
 // Public fields that are read by the module but never written become input
 // ports.
 
-module Submod
-(
+module Submod (
   // global clock
   input logic clock,
   // input signals
@@ -32,8 +31,7 @@ module Submod
   end
 endmodule
 
-module Module
-(
+module Module (
   // global clock
   input logic clock,
   // output registers

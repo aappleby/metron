@@ -114,6 +114,10 @@ MtField *MtModule::get_field(const std::string &name) {
 }
 
 MtField *MtModule::get_field(MnNode node) {
+  if (node.sym == sym_subscript_expression) {
+    return get_field(node.get_field(field_argument));
+  }
+
   if (node.sym == sym_identifier || node.sym == alias_sym_field_identifier) {
     for (auto f : all_fields) {
       if (f->name() == node.text()) return f;

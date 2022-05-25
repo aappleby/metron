@@ -1,4 +1,4 @@
-# ![Metron Logo](docs/assets/metron_icon.svg) Metron, a tool for writing synthesizable Verilog in C++
+# ![Metron Logo](docs/assets/metron_icon.svg =64x64) Metron, a tool for writing synthesizable Verilog in C++
 
 ## [TL;DR: Demo!](https://aappleby.github.io/Metron/demo/)
 ## [Tutorial](https://aappleby.github.io/Metron/tutorial/)

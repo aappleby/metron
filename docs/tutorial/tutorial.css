@@ -16,8 +16,11 @@ h1 {
 
 body {
   background-color: #444;
+  margin: 0px;
+  /*
   margin-left:100px;
   margin-right:100px;
+  */
 }
 
 p {
@@ -58,6 +61,8 @@ ul {
   padding-left: 40px;
   padding-right: 40px;
   background-color: #222;
+  max-width: 1500px;
+  margin:auto;
 }
 
 .divider {

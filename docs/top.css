@@ -3,7 +3,7 @@
 }
 
 body {
-  background-color: #222;
+  background-color: #444;
   margin-left:100px;
   margin-right:100px;
   color: #CCC;
@@ -14,7 +14,7 @@ a {
 }
 
 pre {
-  background-color: #333;
+  background-color: #222;
   padding: 6px;
 }
 
@@ -29,6 +29,18 @@ th, td {
 
 h1, h2, h3, h4 {
   color: #CCE;
+}
+
+
+.markdown {
+  background-color:#282828;
+  padding: 16px;
+  max-width: 900px;
+  margin:auto;
+}
+
+.plain {
+  display:none;
 }
 
 /*

@@ -12,7 +12,7 @@
 
 <body>
   <div class="markdown"></div>
-  <pre class="plain" style="display:none;">
+  <pre class="plain">
 # Temporal Logic, Code Tracing, and Weird State Machines
 
 Metron is a tool that can translate a limited subset of C++ into a limited subset of Verilog. Metron's code tracing tries to summarize how the code reads and writes each field over all possible paths through the code without actually iterating over all possible paths through the code. To do this it uses some basic symbolic logic, which is described in this document.
@@ -119,7 +119,7 @@ This will compile, but the output is **undefined**. Verilog guarantees that both
 
 By changing <= to =, we have created an ordering dependency between "update_a" and "update_b". If update_a is evaluated first, we get "a = 1, b = 2" after the first clock cycle. If update_b is evaluated first, we get "a = 2, b = 1".
 
-For this reason, virtually all Verilog style guides forbid using blocking assignments inside "always_ff" or "always @(posedge)" blocks.
+For this reason, virtually all Verilog style guides forbid using blocking assignments inside "always @(posedge)" blocks.
 
 -----
 
@@ -164,7 +164,7 @@ However, again, the two implementations do not match up. The C++ version is well
 
 -----
 
-We've barely started and we already seem to be at an impasse. We've identified two examples in which syntactically-similar C++ and Verilog do not produce identical results, so in order to translate from C++ to Verilog it would seem we need to do something more sophisticated than a "trivial" translation. However, we can work around this by instead enforcing some rules that limit the subset C++ we accept for translation.
+We've barely started and we already seem to be at an impasse. We've identified two examples in which syntactically-similar C++ and Verilog do not produce identical results, so in order to translate from C++ to Verilog it would seem we need to do something more sophisticated than a "trivial" translation. However, we can work around this by instead enforcing some rules that limit the subset of C++ we accept for translation.
 
 If you look back at the examples, you'll note that I've named variables written in "always_ff" as "reg_\*" and variables written in "always_comb" as "wire_\*". This is because in hardware-land, we have two* fundamentally different types of "variables" to deal with. Registers are able to store state and will hold their values across clock cycles if not changed. Wires are wires, tiny strips of metal that only hold a value as long as they're being 'driven' by the output of a logic gate or register.
 
@@ -247,6 +247,7 @@ public:
 
 The variable x has symbol R in the if branch and W in the else branch, so its symbol at the end of the function is... well, we'll just create a new symbol R|W, where | means something like "in parallel with". Like the branchless case, we can simplify a lot of the symbol combinations -
 
+```
 // We don't need to keep track of multiple branches that do the same thing
 R | R == R
 W | W == W
@@ -261,7 +262,8 @@ R | W == W | R
 N|R + W = NW|RW
 
 // Invalid symbols override everything
-* | X == X
+X|* == X
+```
 
 Ignoring the X symbol for a moment, we have 5 'serial' symbols N, R, W, RW, WR and we can group any subset of them together with | to produce a 'parallel' symbol, so there are 2^5-1 = 31 possible parallel symbols (we can safely ignore the empty set).
 
@@ -334,7 +336,7 @@ For reference, here's the full table of possible symbols, their concatenation ru
 
 With that table written out, we have enough information to fully trace a program. For each member variable we start with the N symbol and trace through each line of code. If we see a read or a write, we look up the current symbol in the table above and transition to the new symbol. If we see a branch, we trace through both sides of the branch independently and then parallel-merge the symbols together afterwards (just concatenate the N|R|W with the R|WR or whatever and then remove duplicates).
 
-This works, but it's kinda clunky and it doesn't really give us insight into what the symbols _mean_. We can simplify things a bit further by taking advantage of redundancies in the table and by removing symbols that are impossible because they would always break the rules - for example, RW|WR can be disallowed as it contains both a read-after-write and a write-after-read which means it can't be categorized as either a "register" or "wire" in Verilog-land. R|WR is out for similar reasons - WR implies "wire", but R implies "register" and it can't be both.
+This works, but it's kinda clunky and it doesn't really give us insight into what the symbols _mean_. We can simplify things a bit further by taking advantage of redundancies in the table and by removing symbols that are impossible because they would always break the rules - for example, RW|WR can be disallowed as it contains both a read-after-write and a write-after-read which means it can't be categorized as either a "register" or "wire" in Verilog-land. R|WR is out for similar reasons - WR implies "wire", but R-first implies "register" and it can't be both.
 
 After removing all impossible symbols from the table, we can group the remaining symbols together by how their concatenation rules behave:
 
@@ -360,8 +362,8 @@ After removing all impossible symbols from the table, we can group the remaining
 (  |   | W |    | WR ) + W = WW|WRW           = X      = INVALID
 
 // REGISTER
-(  | R | W |    |    ) + R = RR|WR            = R|WR   = INVALID
-(N | R | W |    |    ) + R = NR|RR|WR         = R|WR   = INVALID
+(  | R | W |    |    ) + R = RR|WR            = X      = INVALID
+(N | R | W |    |    ) + R = NR|RR|WR         = X      = INVALID
 (  |   |   | RW |    ) + R = RWR              = X      = INVALID
 (N |   |   | RW |    ) + R = NR|RWR           = X      = INVALID
 (  | R |   | RW |    ) + R = RR|RWR           = X      = INVALID
@@ -382,7 +384,7 @@ After removing all impossible symbols from the table, we can group the remaining
 (N | R | W | RW |    ) + W = NW|RW|WW|RWW     = W|RW   = REGISTER
 
 // MAYBE
-(N |   | W |    |    ) + R = NR|WR            = R|WR   = INVALID
+(N |   | W |    |    ) + R = NR|WR            = X      = INVALID
 (N |   | W |    |    ) + W = NW|WW            = W      = OUTPUT
 ```
 

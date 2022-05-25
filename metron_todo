@@ -1,3 +1,5 @@
+make tutoral max-width: 1500px and make contents center
+
 += doesn't translate right, it's going to <=
 
 throw error if a non-const member is read-only but not marked const

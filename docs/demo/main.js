@@ -49,7 +49,7 @@ const dst_jar = CodeJar(dst_text, highlight, {tab:"  "});
 
 var term = new Terminal({
   fontSize: 14,
-  fontFamily: "Roboto Mono",
+  fontFamily: "monospace",
   convertEol: true,
   theme: {
     background: '#1E1E1E'

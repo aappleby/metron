@@ -920,11 +920,11 @@ endmodule
       As a slightly larger benchmark, the "pong" example (basically the VGA output example above plus a "ball" and a
       "paddle") simulates 420000 cycles (1 full VGA frame) in 1.56 milliseconds, or a bit over 10x faster than realtime.
       The simulation rate is (420000/0.00156) = ~268 mhz or ~15 cycles per simulation step, and that includes the
-      framebuffer update plus whatever overhead comes from running the app in a WSLg virtual machine. The UART testbench
-      runs at around 400 Mhz when continuously sending itself a 512-byte message in loopback mode. These are pretty
-      interesting numbers, and they suggest that entire (small) systems with CPU + RAM + peripherals can be simulated in
-      realtime while maintaining simulation accuracy versus a Verilog+FPGA target. Translating GateBoy/LogicBoy to
-      Metron is up next.
+      framebuffer update and support code in SDL, plus whatever overhead comes from running the app in a virtual
+      machine. The UART testbench runs at around 400 Mhz when continuously sending itself a 512-byte message in loopback
+      mode. These are pretty interesting numbers, and they suggest that entire (small) systems with CPU + RAM +
+      peripherals can be simulated in realtime while maintaining simulation accuracy versus a Verilog+FPGA target.
+      Translating GateBoy/LogicBoy to Metron is up next.
     </p>
     <p>
       Metron should make it possible to write small, simple hardware peripherals that simulate in realtime (or faster)

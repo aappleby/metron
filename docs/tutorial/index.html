@@ -749,14 +749,6 @@ endmodule
       same as the simulation.
     </p>
     <p>
-      In the example folder you'll find a couple RISC-V CPUs that pass the RV32I test suite, a simple serial UART that's
-      used as part of the Metron testbench, the Pong example mentioned above, all the tutorial sources that appear here,
-      and a couple unfinished conversions. The tests folder contains a pretty good suite of Metron unit tests that both
-      verify that Metron can convert the source files and a handful of additional tests that run Metron code in lockstep
-      with C-to-Verilog-to-C-via-Verilator translated code to verify that Metron produces results bit-identical to the
-      Verilator simulation. There is also a full C-to-FPGA build pipeline set up for the UART example.
-    </p>
-    <p>
       I'm fairly confident at this point that Metron is a useful tool for "real" hardware development, but only time
       will tell for sure.
     </p>
@@ -768,7 +760,9 @@ endmodule
     <p>
       Last up, let's take a closer look at that UART example from Metron's testbench. This example produces identical
       output in C, Verilator, Icarus, and when uploaded to a FPGA using Yosys+NextPNR+IceProg, so it's fairly well
-      tested. We'll briefly walk through each module to point out how things are connected.
+      tested. It also consists of multiple modules tied together through ports to demonstrate how to build more complex
+      systems in a slightly more realistic fashion. We'll briefly walk through each module to point out how things are
+      connected.
     </p>
     <p>
       The whole example consists of a UART client that transmits a buffer over the uart (uart_hello), the UART
@@ -881,10 +875,26 @@ endmodule
       I'm also familiar enough with how Verilog and other HDLs are used in the industry that I expect a small bit of
       controversy over Metron's existence. The idea that a "procedural-ish" language like C++ can be translated into a
       "hardware-ish" language like Verilog without going to heroic lengths to annotate and instrument and unwind and
-      unroll and state-machine-ify the codebase is... pretty unusual, near as I can tell. Most of the popular
+      unroll and functional-state-machine-ify the codebase is... pretty unusual, near as I can tell. Most of the popular
       cross-language tools either require you to write weirdly verbose C++ (SystemC), hide a lot of the generated
       complexity from you (Vivado HLS), or wrap hardware concepts in a much-higher-level functional language that not
-      everyone is familiar with (Chisel, Spinal, Bluespec).
+      everyone is familiar with (Chisel, Spinal, Bluespec). There are also research papers about other C-to-Verilog
+      conversion tools that do some exceedingly complex translation steps including emitting entire virtual CPUs
+      specialized to run the translated source code (!!!). If I wasn't Metron's author, I would be understandably
+      skeptical. I would suspect that either Metron would be too limited to do anything useful with, or that it would
+      miss some obvious corner cases and generate incorrect code when trying to implement more complex projects. I think
+      I've covered the former adequately, and while I have a good couple thousand lines of work towards the latter
+      there's still a lot of testing to be done.
+    </p>
+    <p>
+      Because it's a bit unconventional, I've tried to provide a good set of tests and examples to demonstrate that
+      Metron works for RTL development in practice. In the example folder you'll find a couple RISC-V CPUs that pass the
+      RV32I test suite, a simple serial UART that's used as part of the Metron testbench, the Pong example mentioned
+      above, all the tutorial sources that appear here, and a couple unfinished conversions. The tests folder contains a
+      pretty good suite of Metron unit tests that both verify that Metron can convert the source files and a handful of
+      additional tests that run Metron code in lockstep with C-to-Verilog-to-C-via-Verilator translated code to verify
+      that Metron produces results bit-identical to the Verilator simulation. There is also a full C-to-FPGA build
+      pipeline set up for the UART example.
     </p>
     <p>
       One aspect I only briefly touched on in this tutorial is performance. You could argue that Metron is cheating
@@ -910,12 +920,16 @@ endmodule
       As a slightly larger benchmark, the "pong" example (basically the VGA output example above plus a "ball" and a
       "paddle") simulates 420000 cycles (1 full VGA frame) in 1.56 milliseconds, or a bit over 10x faster than realtime.
       The simulation rate is (420000/0.00156) = ~268 mhz or ~15 cycles per simulation step, and that includes the
-      framebuffer update plus whatever overhead comes from running the app in a WSLg virtual machine.
+      framebuffer update plus whatever overhead comes from running the app in a WSLg virtual machine. The UART testbench
+      runs at around 400 Mhz when continuously sending itself a 512-byte message in loopback mode. These are pretty
+      interesting numbers, and they suggest that entire (small) systems with CPU + RAM + peripherals can be simulated in
+      realtime while maintaining simulation accuracy versus a Verilog+FPGA target. Translating GateBoy/LogicBoy to
+      Metron is up next.
     </p>
     <p>
       Metron should make it possible to write small, simple hardware peripherals that simulate in realtime (or faster)
-      on a PC, work flawlessly when compiled for a FPGA, and that are easily understandable and debuggable by most C++
-      programmers without special tools or training. I look forward to seeing what people do with it.
+      on a PC, work flawlessly when compiled for a FPGA, and that are understandable and debuggable by most C++
+      programmers without special tools. I look forward to seeing what people do with it.
     </p>
     <p>
       -Austin Appleby

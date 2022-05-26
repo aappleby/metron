@@ -38,7 +38,7 @@ First public release!
   - Metron modules usually simulate 2x - 5x faster than Verilated modules.
 - Wait, what? How fast do Metron models simulate?
   - A trivial LFSR module simulates at 600+ Mhz on my 5900x
-  - A 640x480 "Pong" VGA video generator runs at 260+ Mhz, over 10x realtime.
+  - A 640x480 "Pong" VGA video generator runs at 260+ Mhz with simulated video out via SDL2, or over 10x realtime.
   - A simple RISC-V RV32I core simulates at 360 mhz, though with the caveat that it's a single-cycle core and probably wouldn't synthesize.
   - The UART example in the test bench runs a loopback transmission + checksum at ~400 mhz.
 

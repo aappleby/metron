@@ -4,7 +4,7 @@ Metron is a tool for translating a _very_ _limited_ subset of C++ into a _very_ 
 
 Metron accepts plain, unannotated C++ header files as inputs and produces synthesizable SystemVerilog files that are compatible with Icarus, Verilator, Yosys, and most commercial tools.
 
-Metron is _not_ a "High-Level Synthesis" tool. Metron does some basic analysis to determine if your code is semantically compatible with Verilog and then produces a line-by-line translation with only the minimal set of changes needed to make the code behave like Verilog.
+Metron is _not_ a "High-Level Synthesis" tool. Metron does some basic analysis to determine if your code is semantically compatible with Verilog and then produces a line-by-line translation with only the minimal set of changes needed to make the code compatible with Verilog tooling.
 
 Because it targets hardware implementation, Metron can't handle a lot of C++ language features - no pointers, no virtual functions, no pass-by-reference, limited data structures - but it's still sufficient to build CPUs and peripherals that will run on a FPGA.
 

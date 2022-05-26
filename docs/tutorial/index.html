@@ -173,11 +173,12 @@ int main(int argc, char** argv) {
         if you read from a variable after it's assigned if that assignment would be non-blocking in Verilog.</b>
     </p>
     <p style="font-size:10px;">
-      * It's not actually unspecified, it's defined in the Verilog language spec - but for the purposes of this tutorial
-      delayed assignments happen in *handwaving* THE FUTURE.
+      * (It's not actually unspecified, it's defined in the Verilog language spec - but for the purposes of this
+      tutorial
+      delayed assignments happen in *handwaving* THE FUTURE.)
     </p>
     <p>
-      Try switching the code below from the "bad" implementation to the "good" implementation.
+      Try commenting out the "int dummy = count;" line below to fix the error.
     </p>
     <br>
     <br>
@@ -197,22 +198,19 @@ int main(int argc, char** argv) {
       </div>
     </div>
 
-    <p>
-      In the "bad" version we read from "count", add one to it, write it back to "count", then read it again to return
-      it. In the "good" version, we introduce a local variable to hold the new counter value so that we don't read it
-      after it's been assigned. Since we don't read "count" after it's written, we don't generate an error.
-    </p>
-    <h1>Well that's kinda silly, surely if you're analyzing the code you could insert some temporary variables while
-      you're translating it so this doesn't happen.</h1>
+    <h1>
+      Well that seems kinda silly. Surely if you're analyzing the code you could insert some temporary variables while
+      you're translating it so we don't have to worry about this read-after write rule?
+    </h1>
     <p>
       You're not wrong, Metron could definitely do that - but it doesn't for a good reason. One of Metron's goals is
       to produce translated Verilog that matches the original C++ as closely as possible. There are other
-      {language}-to-Verilog translators out there that do much, much more advanced analysis of the C code in order to
-      generate Verilog that can handle almost anything C can throw at it. This includes things like unrolling loops,
-      pipelining function calls, and automatically generating state machines (or even entire virtual CPUs) to ensure
-      that most existing C functions and algorithms can be translated to Verilog without rewriting the source. Those
-      tools do work very well - the keyword to search for is "High-Level Synthesis" (a.k.a. HLS) if you'd like to learn
-      more. However, the translated code often borders on unreadable to a C programmer.
+      {language}-to-Verilog translators out there that do much, much more advanced analysis of their input source code
+      in order to generate Verilog that can handle almost anything C can throw at it. This includes things like
+      unrolling loops, pipelining function calls, and automatically generating state machines (or even entire virtual
+      CPUs) to ensure that most existing C functions and algorithms can be translated to Verilog without rewriting the
+      source. Those tools do work very well - the keyword to search for is "High-Level Synthesis" (a.k.a. HLS) if you'd
+      like to learn more. However, the translated code often borders on unreadable to a C programmer.
     </p>
     <p>
       <b>
@@ -278,10 +276,12 @@ int main(int argc, char** argv) {
       <li>Registers cannot be read after they are written (non-blocking assignment rule)</li>
       <li>Registers can only be written in always_ff blocks</li>
       <li>Registers must be written using "&lt;=" in Verilog</li>
-      <li>Registers only change their value when the clock ticks*</li>
+      <li>Registers only change their value when the clock ticks* (semantically speaking, they're still regular
+        variables
+        in C)</li>
     </ul>
     <p style="font-size:10px">
-      * This implies "synchronous" and not "asynchronous" resets in Verilog, which generally won't affect us too much.
+      * (This implies "synchronous" and not "asynchronous" resets in Verilog, which generally won't affect us too much.)
     </p>
     <ul>
       <li>Signals do not store state, they only move values around</li>
@@ -769,12 +769,6 @@ endmodule
       transmitter, the UART receiver, and a "top" module to tie things together. The top module is responsible for
       sending signals back to the testbench and routing data between modules. You can see how verbose the port
       connections get, and this isn't even a large set of modules.
-    </p>
-    <p>
-      Note that the tick() calls in uart_top::tock() are in the opposite order than you might expect - because of the
-      read-before-write register rule, we have to call our modules in bottom-up order. This ends up being slightly
-      confusing but inevitable and tends to cause most of the issues (along with declaration order bugs) when porting
-      code from Verilog to Metron.
     </p>
     <div class="live_code" id="./examples/uart/metron/uart_top.h">
       <div class="source_panel" id="c_panel">

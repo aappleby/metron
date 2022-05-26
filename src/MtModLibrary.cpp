@@ -82,7 +82,7 @@ CHECK_RETURN Err MtModLibrary::load_source(const char *filename,
       src_blob.resize(s.st_size);
 
       auto f = fopen(full_path.c_str(), "rb");
-      fread((void *)src_blob.data(), 1, src_blob.size(), f);
+      size_t result = fread((void *)src_blob.data(), 1, src_blob.size(), f);
       fclose(f);
 
       bool use_utf8_bom = false;
@@ -617,7 +617,6 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
   //----------------------------------------
   // Check for ticks with return values.
 
-  /*
   for (auto mod : modules) {
     for (auto m : mod->all_methods) {
       if (m->in_tick && m->has_return()) {
@@ -626,7 +625,6 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
       }
     }
   }
-  */
 
   //----------------------------------------
   // Done!

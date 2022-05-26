@@ -383,7 +383,7 @@ ninja.build(outputs = [
             ],
             rule="command",
             inputs=glob.glob("examples/tutorial/*.h"),
-            command="python3 $$EMSDK/upstream/emscripten/tools/file_packager.py docs/tutorial/tutorial_src.data --no-node --js-output=docs/tutorial/tutorial_src.js --preload examples/tutorial");
+            command="python3 $$EMSDK/upstream/emscripten/tools/file_packager.py docs/tutorial/tutorial_src.data --no-node --js-output=docs/tutorial/tutorial_src.js --preload examples/tutorial examples/uart/metron");
 
 treesitter_objs_wasi = [];
 
@@ -492,10 +492,13 @@ def build_metron_test():
 def build_uart():
     cpp_binary(
         bin_name="bin/examples/uart",
-        src_files=["examples/uart/main.cpp"],
+        src_files=[
+            "examples/uart/main.cpp",
+        ],
         includes=["src"],
         # FIXME Why the F does the build break if I don't pass an empty array here?
         src_objs=[],
+        link_deps=["bin/libmetron.a"],
     )
 
     uart_srcs = metronize_dir("examples/uart/metron", "uart_top.h",

@@ -1,15 +1,8 @@
-make tutoral max-width: 1500px and make contents center
+NO RETURN IN TICK
 
-+= doesn't translate right, it's going to <=
+"+=" doesn't translate right, it's going to <=
 
 throw error if a non-const member is read-only but not marked const
-
-task automatic private_task(logic[7:0] x);
-    my_reg1 <= my_reg1 + private_func(x);
-  endtask
-logic[7:0] private_task_x;
-^^^^ that is unused
-
 
 nested structs
 
@@ -17,18 +10,11 @@ tock calls tick in another module
 
 enforce that all funcs must have a return value
 
-verify that port directions match up on all submods
-
-
-
-
 https://github.com/hughperkins/VeriGPU
 
 the error checking should really be independent passes between stages
 
 may need a "hoist members" step for some SV tools
-
-PREPROC
 
 void func() {
   static const int local_constant = N;
@@ -36,17 +22,6 @@ void func() {
 
 packed structs are going to behave differently if bitsliced, not sure how to
 deal with that... but if you can't express it in c do we care?
-
-
-A bunch of the subcursor stuff could be replaced with splice
-  probably all of it if you add a component context param to splice
-
-If we don't emit anything for a tick() or tock(), we should not emit the tock itself
-  soooooo... if all the body elements are component calls without args?
-  not worth
-
-Unions?
-
 
 do a preproc if else test
 

@@ -1,20 +1,34 @@
 # <img src="docs/assets/metron_icon.svg" width="64" height="64"> Metron C++ to Verilog Translator
 
-Metron is a tool for translating a _very_limited_ subset of C++ into a _very_limited_ subset of SystemVerilog.
+Metron is a tool for translating a _very_ _limited_ subset of C++ into a _very_ _limited_ subset of SystemVerilog.
 
-Metron accepts plain, unannotated C++ header files as inputs and produces SystemVerilog files that are compatible with Icarus, Verilator, Yosys, and most commercial tools.
+Metron accepts plain, unannotated C++ header files as inputs and produces synthesizable SystemVerilog files that are compatible with Icarus, Verilator, Yosys, and most commercial tools.
 
-Metron does some basic code analysis to determine if your C++ code is semantically compatible with Verilog.
+Metron is _not_ a "High-Level Synthesis" tool. Metron does some basic analysis to determine if your code is semantically compatible with Verilog and then produces a line-by-line translation with only the minimal set of changes needed to make the code behave like Verilog.
 
-Metron is _not_ a "High-Level Synthesis" tool, its translations are mostly line-for-line with only the minimal set of changes needed to make the code look like Verilog.
-
-Metron can't handle most C++ language features and libraries - no pointers, no virtual functions, no pass-by-reference, limited data structures - but it's still sufficient to build CPUs and peripherals that will run on a FPGA.
-
-## FAQ
+Because it targets hardware implementation, Metron can't handle a lot of C++ language features - no pointers, no virtual functions, no pass-by-reference, limited data structures - but it's still sufficient to build CPUs and peripherals that will run on a FPGA.
 
 ## [TL;DR: Demo](https://aappleby.github.io/Metron/demo/)
 ## [Tutorial](https://aappleby.github.io/Metron/tutorial/)
 ## [Temporal Logic](https://aappleby.github.io/Metron/TemporalLogic.html)
+
+## Metron v0.0.1 Release Notes
+
+First public release!
+
+- Stuff that works
+  - Testbench has tests for Verilator, Icarus, and Yosys parsing Metron output.
+  - Testbench has pretty good coverage of Metron via kcov.
+  - Testbench has test suites for two RISC-V RV32I cores.
+  - Testbench has some lock-step tests that check that Metron and Verilator outputs are bit-identical.
+  - Tutorial and demo work and have nice responsive live code windows.
+- Stuff that doesn't work, but should eventually
+  - Struct support. It was kinda working in some tools and not in others and I need to revisit it.
+  - Visual Studio support has bit-rotted somewhat.
+- Stuff that I'll be doing next
+  - Better error reporting. The error _checking_ is good, but the information printed out is pretty useless unless you're in a debugger. I should at least be printing filename + source line for all errors.
+  - More complicated examples ported from Verilog to Metron. I have a full-featured UART from OpenCores and the Ibex RISC-V CPU that I've started looking at but they're not functional yet.
+  - More chunks of GateBoy/LogicBoy made compatible with Metron.
 
 ## FAQ
 
@@ -26,6 +40,7 @@ Metron can't handle most C++ language features and libraries - no pointers, no v
   - A trivial LFSR module simulates at 600+ Mhz on my 5900x
   - A 640x480 "Pong" VGA video generator runs at 260+ Mhz, over 10x realtime.
   - A simple RISC-V RV32I core simulates at 360 mhz, though with the caveat that it's a single-cycle core and probably wouldn't synthesize.
+  - The UART example in the test bench runs a loopback transmission + checksum at ~400 mhz.
 
 ## Building the Metron binary from source:
 ```
@@ -92,33 +107,9 @@ ninja
 ./run_tests.py
 ```
 
-
-## Example counter:
+## Running test coverage:
 ```
-// A very basic counter in plain C++, converted to Verilog using Metron.
-
-class Counter {
-public:
-  int count;
-  void update() {
-    count++;
-  }
-};
-```
-
-## Example counter converted by Metron:
-```
-// A very basic counter in plain C++, converted to Verilog using Metron.
-
-module Counter (
-  // global clock
-  input logic clock,
-  // output registers
-  output int count
-);
-/*public:*/
-  always_ff @(posedge clock) begin : update
-    count <= count + 1;
-  end
-endmodule
+./build.py
+ninja
+./run_tests.py --coverage
 ```

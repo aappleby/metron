@@ -70,6 +70,7 @@ build docs/demo/examples.data docs/demo/examples.js: command tests/Tests.h $
     tests/metron_bad/if_with_no_compound.h $
     tests/metron_bad/mid_block_break.h tests/metron_bad/basic_sig_wrw.h $
     tests/metron_bad/mid_block_return.h tests/metron_bad/too_many_breaks.h $
+    tests/metron_bad/tick_with_return_value.h $
     tests/metron_bad/case_without_break.h $
     tests/metron_bad/multiple_tock_returns.h $
     tests/metron_bad/bowtied_signals.h tests/metron_bad/basic_reg_rwr.h $
@@ -84,10 +85,8 @@ build docs/demo/examples.data docs/demo/examples.js: command tests/Tests.h $
     tests/metron_good/both_tock_and_tick_use_tasks_and_funcs.h $
     tests/metron_good/magic_comments.h tests/metron_good/for_loops.h $
     tests/metron_good/defines.h tests/metron_good/bit_concat.h $
-    tests/metron_good/basic_public_sig.h tests/metron_good/force_tick.h $
-    tests/metron_good/good_order.h tests/metron_good/basic_template.h $
-    tests/metron_good/bit_casts.h $
-    tests/metron_good/tick_with_return_value.h $
+    tests/metron_good/basic_public_sig.h tests/metron_good/good_order.h $
+    tests/metron_good/basic_template.h tests/metron_good/bit_casts.h $
     tests/metron_good/call_tick_from_tock.h $
     tests/metron_good/utf8-mod.bom.h tests/metron_good/basic_submod_param.h $
     tests/metron_good/tock_task.h tests/metron_good/basic_sig_wwr.h $
@@ -143,9 +142,9 @@ build docs/demo/examples.data docs/demo/examples.js: command tests/Tests.h $
     examples/tutorial/clocked_adder.h examples/tutorial/tutorial3.h $
     examples/tutorial/checksum.h examples/tutorial/submodules.h $
     examples/tutorial/functions_and_tasks.h examples/tutorial/adder.h $
-    examples/tutorial/tutorial4.h examples/tutorial/blockram.h $
-    examples/tutorial/tutorial2.h examples/tutorial/bit_twiddling.h $
-    examples/tutorial/counter.h examples/tutorial/nonblocking.h $
+    examples/tutorial/tutorial4.h examples/tutorial/tutorial2.h $
+    examples/tutorial/bit_twiddling.h examples/tutorial/counter.h $
+    examples/tutorial/nonblocking.h examples/tutorial/templates.h $
     examples/uart/metron/uart_rx.h examples/uart/metron/uart_hello.h $
     examples/uart/metron/uart_top.h examples/uart/metron/uart_tx.h
   command = python3 $$EMSDK/upstream/emscripten/tools/file_packager.py $
@@ -158,12 +157,13 @@ build docs/tutorial/tutorial_src.data docs/tutorial/tutorial_src.js: $
     examples/tutorial/tutorial3.h examples/tutorial/checksum.h $
     examples/tutorial/submodules.h examples/tutorial/functions_and_tasks.h $
     examples/tutorial/adder.h examples/tutorial/tutorial4.h $
-    examples/tutorial/blockram.h examples/tutorial/tutorial2.h $
-    examples/tutorial/bit_twiddling.h examples/tutorial/counter.h $
-    examples/tutorial/nonblocking.h
+    examples/tutorial/tutorial2.h examples/tutorial/bit_twiddling.h $
+    examples/tutorial/counter.h examples/tutorial/nonblocking.h $
+    examples/tutorial/templates.h
   command = python3 $$EMSDK/upstream/emscripten/tools/file_packager.py $
       docs/tutorial/tutorial_src.data --no-node $
-      --js-output=docs/tutorial/tutorial_src.js --preload examples/tutorial
+      --js-output=docs/tutorial/tutorial_src.js --preload examples/tutorial $
+      examples/uart/metron
 
 
 ################################################################################
@@ -385,7 +385,7 @@ build tests/rv_tests/addi.text.vh tests/rv_tests/ori.text.vh $
 
 build obj/examples/uart/main.o: compile_cpp examples/uart/main.cpp
   includes = -Isrc
-build bin/examples/uart: link obj/examples/uart/main.o
+build bin/examples/uart: link obj/examples/uart/main.o bin/libmetron.a
   includes = -Isrc
 
 

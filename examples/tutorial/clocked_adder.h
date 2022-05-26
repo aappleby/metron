@@ -1,19 +1,29 @@
-// We can force Metron to emit "result" as a register by reading from it before
-// we write to it.
+// By default, "sum" is an output signal assigned in always_comb.
 class Adder1 {
 public:
-  int result;
+  int sum;
   void add(int a, int b) {
-    int dummy = result;
-    result = a + b;
+    sum = a + b;
+  }
+};
+
+// We can force Metron to emit "sum" as a register by reading from it before
+// we write to it.
+class Adder2 {
+public:
+  int sum;
+  void add(int a, int b) {
+    int dummy = sum;
+    sum = a + b;
   }
 };
 
 // Or we can prefix the function name with "tick", which does basically the
 // same thing.
-class Adder2 {
+class Adder3 {
 public:
-  int tick_add(int a, int b) {
-    return a + b;
+  int sum;
+  void tick_add(int a, int b) {
+    sum = a + b;
   }
 };

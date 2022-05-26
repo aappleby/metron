@@ -229,13 +229,10 @@ int main(int argc, char** argv) {
 
 
     <div class="divider">Signals Vs. Registers</div>
-
     <p>
       Let's look at another basic Verilog example for comparison, a 32-bit adder - this time with both a "C-style"
       implementation and a "Verilog-style" implementation:
     </p>
-
-
     <div class="live_code" id="./examples/tutorial/adder.h">
       <div class="source_panel" id="c_panel">
         <div class="header_bar">
@@ -300,9 +297,27 @@ int main(int argc, char** argv) {
       the logic it uses to do this is correct, but I only have a very informal proof at this point - caveat emptor.
     </p>
 
-    <div class="divider">Ticks Vs. Tocks</div>
 
-    <h1>What if we want our adder to only change its output when the clock ticks, instead of changing continuously?</h1>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class="divider">Ticks Vs. Tocks</div>
+    <h1>What if we want an adder that only changes its output when the clock ticks, instead of changing continuously?
+    </h1>
     <p>
       It's totally reasonable to want to delay the output of a computation until the next clock cycle - the module that
       sent A and B in to be added may not be able to process the result until the next clock cycle, or we may have
@@ -326,9 +341,11 @@ int main(int argc, char** argv) {
     </div>
 
     <p>
-      Again, both of these adders do the same thing. The first inserts a "dummy" read so that "result" is always
+      Again, both of the "clocked" adders do the same thing. The first inserts a dummy read so that "sum" is always
       read-before-write (and thus _must_ be a register), the second uses the magic prefix "tick" to flag the method as
-      "must be in (or called by) an always_ff block".
+      "must be in (or called by) an always_ff block". One caveat though - "tick" methods can't return values, as doing
+      so would create a mismatch between the C++ behavior (the return value would be immediately visible to the caller)
+      and the Verilog behavior (the value visible in the port would be delayed until the clock edge).
     </p>
     <p>
       There's an equivalent "tock" prefix to enforce "must be in always_comb", but both prefixes are completely
@@ -344,22 +361,34 @@ int main(int argc, char** argv) {
       functions).
     </p>
     <ul>
-      <li>Tick methods write registers</li>
-      <li>Tick methods can only call pure functions and other tick methods in the same module</li>
-      <li>Tick methods <b>cannot</b> call methods in other modules</li>
+      <li>Tick methods can only write registers</li>
+      <li>Tick methods cannot return values.</li>
+      <li>Tick methods can only call pure functions and other tick methods in the same module.</li>
+      <li>Tick methods cannot call methods in other modules</li>
       <li>Tick methods are translated into "always_ff" blocks in Verilog if they're not called elsewhere.</li>
     </ul>
     <ul>
-      <li>Tock methods write signals</li>
+      <li>Tock methods can only write signals</li>
+      <li>Tock methods can return values.</li>
       <li>Tock methods can call any method in the same module*</li>
-      <li>Tock methods <b>can</b> call methods in other modules</li>
+      <li>Tock methods can call methods in other modules</li>
       <li>Tock methods are translated into "always_comb" blocks in Verilog if they're not called elsewhere.</li>
     </ul>
-    <p style="font-size:10px;">* unless it's a tick with a return value, because the return value doesnt 'exist' until
-      after the clock ticks.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     <div class="divider">Declaration Order Matters</div>
-
     <p>
       Metron traces through your code to verify that the rules regarding register read-before-writes and signal
       write-before-reads are followed. To do so, it needs to know what the "entry points" are to your module and in
@@ -397,14 +426,15 @@ int main(int argc, char** argv) {
     <p>
       In Module2 and Module3 we've split update() up into two pieces - the only difference is the declaration order of
       "update_a" and "update_b". Metron must choose _some_ order in which to trace the entry points, and the only order
-      that doesn't require special annotations is just the declaration order. So in Module2 Metron sees "a" being
+      that doesn't require special annotations is the declaration order. So in Module2 Metron sees "a" being
       written first and makes it a signal, whereas in Module3 Metron sees "a" being read first and makes it a register.
       Module4 works around this by adding temporary variables, which makes Metron see that both "a" and "b" are read
       before being written.
     </p>
     <p>
-      If we were writing straight Verilog this issue would be irrelevant, as we can choose whether to use "&lt;=" or "="
-      assignments as needed.
+      If we were writing this directly in Verilog this issue would be irrelevant, as we can choose whether to use
+      "&lt;=" or "=" assignments as needed - because "&lt;=" assignments are "delayed", this has the same effect as
+      Module4 above.
     </p>
     <div class="code_box">
       <pre class="code_jar">
@@ -425,12 +455,11 @@ endmodule
 </pre>
     </div>
     <p>
-      Because "&lt;=" assignments are "delayed", this has the same effect as Module4 above. We can't generate that code
-      from C though, as we don't have two different assignment operators available there for disambiguation - instead we
-      have to infer which Verilog assignment operator to use based on context and our context is intimately tied to
-      declaration order. Metron could in theory support "reg_" and "sig_" prefixes on variables like it supports "tick_"
-      and "tock_" on methods, but in practice I found the resulting code style annoying and didn't finish implementing
-      it. Maybe it'll go on the feature request list.
+      Unfortunately in C we only have the one assignment operator, so there's no way for us to know that the programmer
+      meant "non-blocking" assignment. Instead we have to infer which Verilog assignment operator to use based on
+      context, and our context is intimately tied to declaration order. Metron could in theory support "reg_" and "sig_"
+      prefixes on variables like it supports "tick_" and "tock_" on methods, but in practice I found the resulting code
+      style annoying and didn't finish implementing it. Maybe it'll go on the feature request list.
     </p>
     <p>
       Because Metron uses declaration order to determine how to trace your module's methods, it is <b>highly
@@ -459,7 +488,7 @@ endmodule
       <li> Pure functions can be called from any method.</li>
       <li> Functions that write signals or registers can only be called from a corresponding tock or tick method.</li>
     </ul>
-    <p style="font-size:10px;">* not true according to the spec, but void functions are poorly supported by some tools
+    <p style="font-size:10px;">* (not true according to the spec, but void functions are poorly supported by some tools)
     </p>
     <ul>
       <li>
@@ -472,12 +501,11 @@ endmodule
       </li>
       <li>
         Tasks are allowed to muck around with the simulation by controlling the flow of time, which is out of scope
-        for Metron and isn't used here.
+        for Metron.
       </li>
     </ul>
     <p style="font-size:10px;">
-      * Metron could probably support pass-by-reference in tasks using output params, but it's
-      not quite there yet.
+      * (Metron could probably support pass-by-reference in tasks using output params, but it's not quite there yet.)
     </p>
 
     <div class="live_code" id="./examples/tutorial/functions_and_tasks.h">
@@ -619,18 +647,18 @@ endmodule
 
     <div class="divider">Templates and Parameters</div>
 
-
-
-
-
-
-
-    <div class="divider">Memories and arrays</div>
-
     <p>
-      Will be written shortly. Checksum a block of ROM example.
+      Verilog contains the special keywords "genvar" and "generate" which allow for compile-time evaulation and
+      conditional code generation that's somewhere between C preprocesor macros and C++ constexprs. I haven't actually
+      used that feature much, so I haven't yet figured out how to make use of it in Metron. However, Metron does support
+      some basic module parameterization via C++ templates. Only integer templates are supported, but default arguments
+      should work. Metron will also translate const variables into Verilog's "parameter" or "localparam" equivalent and
+      allows for declaring namespaces full of constants (very useful), though the tool support for the "using" keyword
+      is inconsistent so you have to always prefix the constant with the namespace. I should probably add typedef
+      support...
     </p>
-    <div class="live_code" id="./examples/tutorial/blockram.h">
+
+    <div class="live_code" id="./examples/tutorial/templates.h">
       <div class="source_panel" id="c_panel">
         <div class="header_bar">
           <div class="filename" contenteditable="true"></div>
@@ -644,8 +672,16 @@ endmodule
         <div class="code_jar language-verilog"></div>
       </div>
     </div>
+
+
+
+
+
+
+    <div class="divider">Memories and arrays</div>
+
     <p>
-      Here's a blank thing.
+      Will be written shortly. Checksum a block of ROM example.
     </p>
     <div class="live_code" id="./examples/tutorial/checksum.h">
       <div class="source_panel" id="c_panel">
@@ -661,13 +697,6 @@ endmodule
         <div class="code_jar language-verilog"></div>
       </div>
     </div>
-
-
-
-    <div class="divider">UART example?</div>
-
-
-
 
 
 
@@ -720,17 +749,122 @@ endmodule
       same as the simulation.
     </p>
     <p>
-      In the example folder you'll find a couple RISC-V CPUs that pass the RV32I test suite, a simple serial UART, the
-      Pong example mentioned above, all the tutorial sources that appear here, and a couple unfinished conversions. The
-      tests folder contains a pretty good suite of Metron unit tests that both verify that Metron can convert the source
-      files and a handful of additional tests that run Metron code in lockstep with C-to-Verilog-to-C-via-Verilator
-      translated code to verify that Metron produces results bit-identical to the Verilator simulation. There is also a
-      full C-to-FPGA build pipeline set up for the UART example.
+      In the example folder you'll find a couple RISC-V CPUs that pass the RV32I test suite, a simple serial UART that's
+      used as part of the Metron testbench, the Pong example mentioned above, all the tutorial sources that appear here,
+      and a couple unfinished conversions. The tests folder contains a pretty good suite of Metron unit tests that both
+      verify that Metron can convert the source files and a handful of additional tests that run Metron code in lockstep
+      with C-to-Verilog-to-C-via-Verilator translated code to verify that Metron produces results bit-identical to the
+      Verilator simulation. There is also a full C-to-FPGA build pipeline set up for the UART example.
     </p>
     <p>
       I'm fairly confident at this point that Metron is a useful tool for "real" hardware development, but only time
       will tell for sure.
     </p>
+
+
+
+    <div class="divider">Tying it all together with a UART example</div>
+
+    <p>
+      Last up, let's take a closer look at that UART example from Metron's testbench. This example produces identical
+      output in C, Verilator, Icarus, and when uploaded to a FPGA using Yosys+NextPNR+IceProg, so it's fairly well
+      tested. We'll briefly walk through each module to point out how things are connected.
+    </p>
+    <p>
+      The whole example consists of a UART client that transmits a buffer over the uart (uart_hello), the UART
+      transmitter, the UART receiver, and a "top" module to tie things together. The top module is responsible for
+      sending signals back to the testbench and routing data between modules. You can see how verbose the port
+      connections get, and this isn't even a large set of modules.
+    </p>
+    <p>
+      Note that the tick() calls in uart_top::tock() are in the opposite order than you might expect - because of the
+      read-before-write register rule, we have to call our modules in bottom-up order. This ends up being slightly
+      confusing but inevitable and tends to cause most of the issues (along with declaration order bugs) when porting
+      code from Verilog to Metron.
+    </p>
+    <div class="live_code" id="./examples/uart/metron/uart_top.h">
+      <div class="source_panel" id="c_panel">
+        <div class="header_bar">
+          <div class="filename" contenteditable="true"></div>
+        </div>
+        <div class="code_jar language-cpp"></div>
+      </div>
+      <div class="source_panel" id="v_panel">
+        <div class="header_bar">
+          <div class="filename"></div>
+        </div>
+        <div class="code_jar language-verilog"></div>
+      </div>
+    </div>
+    <p>
+      Next up, the UART client. It receives "clear to send" and "idle" signals from the transmitter and sends "request"
+      and "data" signals back to it. It also sends a "done" signal to uart_top to stop the simulation once the buffer's
+      been transmitted. Note that its constructor is allowed to read the contents of its memory array from a file - this
+      is built into Verilog and exposed via a helper function in metron_tools.h for the C side.
+    </p>
+    <div class="live_code" id="./examples/uart/metron/uart_hello.h">
+      <div class="source_panel" id="c_panel">
+        <div class="header_bar">
+          <div class="filename" contenteditable="true"></div>
+        </div>
+        <div class="code_jar language-cpp"></div>
+      </div>
+      <div class="source_panel" id="v_panel">
+        <div class="header_bar">
+          <div class="filename"></div>
+        </div>
+        <div class="code_jar language-verilog"></div>
+      </div>
+    </div>
+    <p>
+      Now for the UART transmitter, which is basically a shift register with a bit of extra timing code. I've tested
+      this with CYCLES_PER_BIT=1 and it worked both in simulation and in an iCE40 FPGA (with the clock divided way
+      down), though I had to add "extra_stop_bits" to ensure that it would be able to re-sync with my USB-to-serial
+      dongle.
+    </p>
+
+    <div class="live_code" id="./examples/uart/metron/uart_tx.h">
+      <div class="source_panel" id="c_panel">
+        <div class="header_bar">
+          <div class="filename" contenteditable="true"></div>
+        </div>
+        <div class="code_jar language-cpp"></div>
+      </div>
+      <div class="source_panel" id="v_panel">
+        <div class="header_bar">
+          <div class="filename"></div>
+        </div>
+        <div class="code_jar language-verilog"></div>
+      </div>
+    </div>
+    <p>
+      And last the UART receiver, which has an additional checksum output for testing.
+    </p>
+
+    <div class="live_code" id="./examples/uart/metron/uart_rx.h">
+      <div class="source_panel" id="c_panel">
+        <div class="header_bar">
+          <div class="filename" contenteditable="true"></div>
+        </div>
+        <div class="code_jar language-cpp"></div>
+      </div>
+      <div class="source_panel" id="v_panel">
+        <div class="header_bar">
+          <div class="filename"></div>
+        </div>
+        <div class="code_jar language-verilog"></div>
+      </div>
+    </div>
+    <p>
+      Together with a small C++ testbench and a set of commands to do the FPGA synthesis, the UART example makes for a
+      nice round-trip proof of concept that Metron can produce correct, synthesizable code that works on all the
+      platforms it supports. It's been my regular sanity-check while writing Metron - it's big enough to do a useful
+      thing and small enough to test quickly, so most of my "How do I do X in language Y?" questions were worked out
+      here first.
+    </p>
+
+
+
 
 
 

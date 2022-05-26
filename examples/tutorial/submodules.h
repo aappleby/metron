@@ -23,8 +23,7 @@ public:
     // int result2 = my_adder.add(3, 4);
 
     // The counter's update() method is a tick, but the method we're currently
-    // in is a tock. This cross-module, cross-tick/tock call is OK as long as
-    // the target tick method does not have a return value.
+    // in is a tock. This cross-module, cross-tick/tock call is OK.
     my_counter.update();
     return result;
   }

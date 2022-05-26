@@ -102,6 +102,8 @@
       }
 Module['FS_createPath']("/", "examples", true, true);
 Module['FS_createPath']("/examples", "tutorial", true, true);
+Module['FS_createPath']("/examples", "uart", true, true);
+Module['FS_createPath']("/examples/uart", "metron", true, true);
 
       /** @constructor */
       function DataRequest(start, end, audio) {
@@ -169,6 +171,6 @@ Module['FS_createPath']("/examples", "tutorial", true, true);
     }
 
     }
-    loadPackage({"files": [{"filename": "/examples/tutorial/tutorial5.h", "start": 0, "end": 41}, {"filename": "/examples/tutorial/vga.h", "start": 41, "end": 1188}, {"filename": "/examples/tutorial/declaration_order.h", "start": 1188, "end": 1967}, {"filename": "/examples/tutorial/clocked_adder.h", "start": 1967, "end": 2352}, {"filename": "/examples/tutorial/tutorial3.h", "start": 2352, "end": 2393}, {"filename": "/examples/tutorial/checksum.h", "start": 2393, "end": 2731}, {"filename": "/examples/tutorial/submodules.h", "start": 2731, "end": 3918}, {"filename": "/examples/tutorial/functions_and_tasks.h", "start": 3918, "end": 5336}, {"filename": "/examples/tutorial/adder.h", "start": 5336, "end": 5516}, {"filename": "/examples/tutorial/tutorial4.h", "start": 5516, "end": 5557}, {"filename": "/examples/tutorial/blockram.h", "start": 5557, "end": 5936}, {"filename": "/examples/tutorial/tutorial2.h", "start": 5936, "end": 6004}, {"filename": "/examples/tutorial/bit_twiddling.h", "start": 6004, "end": 6985}, {"filename": "/examples/tutorial/counter.h", "start": 6985, "end": 7134}, {"filename": "/examples/tutorial/nonblocking.h", "start": 7134, "end": 7366}], "remote_package_size": 7366, "package_uuid": "a7ea968a-6cfc-4de1-8fd0-3b6644156c9f"});
+    loadPackage({"files": [{"filename": "/examples/tutorial/tutorial5.h", "start": 0, "end": 41}, {"filename": "/examples/tutorial/vga.h", "start": 41, "end": 1188}, {"filename": "/examples/tutorial/declaration_order.h", "start": 1188, "end": 1967}, {"filename": "/examples/tutorial/clocked_adder.h", "start": 1967, "end": 2503}, {"filename": "/examples/tutorial/tutorial3.h", "start": 2503, "end": 2544}, {"filename": "/examples/tutorial/checksum.h", "start": 2544, "end": 3737}, {"filename": "/examples/tutorial/submodules.h", "start": 3737, "end": 4854}, {"filename": "/examples/tutorial/functions_and_tasks.h", "start": 4854, "end": 6272}, {"filename": "/examples/tutorial/adder.h", "start": 6272, "end": 6452}, {"filename": "/examples/tutorial/tutorial4.h", "start": 6452, "end": 6493}, {"filename": "/examples/tutorial/tutorial2.h", "start": 6493, "end": 6561}, {"filename": "/examples/tutorial/bit_twiddling.h", "start": 6561, "end": 7542}, {"filename": "/examples/tutorial/counter.h", "start": 7542, "end": 7691}, {"filename": "/examples/tutorial/nonblocking.h", "start": 7691, "end": 7923}, {"filename": "/examples/tutorial/templates.h", "start": 7923, "end": 8394}, {"filename": "/examples/uart/metron/uart_rx.h", "start": 8394, "end": 9687}, {"filename": "/examples/uart/metron/uart_hello.h", "start": 9687, "end": 11050}, {"filename": "/examples/uart/metron/uart_top.h", "start": 11050, "end": 12110}, {"filename": "/examples/uart/metron/uart_tx.h", "start": 12110, "end": 13956}], "remote_package_size": 13956, "package_uuid": "32d820b4-e950-4ffa-b009-9d1aedfc46be"});
 
   })();

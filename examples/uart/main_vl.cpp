@@ -2,8 +2,39 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "Platform.h"
 #include "Tests.h"
 #include "metron_vl/Vuart_top.h"
+
+//------------------------------------------------------------------------------
+// Note that you have to build the Verilator version with "repeat_msg = 1" on
+// the Verilator command line for this benchmark to match the C version.
+
+void benchmark() {
+  const int cycles_per_bit = 3;
+  const int repeat_msg = 1;
+  const int cycle_max = 100000000;
+
+  Vuart_top vtop;
+  vtop.tock_i_rstn = 0;
+  vtop.clock = 0;
+  vtop.eval();
+  vtop.clock = 1;
+  vtop.eval();
+
+  auto time_a = timestamp();
+  for (int cycle = 0; cycle < cycle_max; cycle++) {
+    vtop.clock = 1;
+    vtop.eval();
+    vtop.clock = 0;
+    vtop.eval();
+  }
+  auto time_b = timestamp();
+
+  double delta_sec = (double(time_b) - double(time_a)) / 1000000000.0;
+  double rate = double(cycle_max) / delta_sec;
+  printf("Simulation rate %f Mhz\n", rate / 1000000.0);
+ }
 
 //------------------------------------------------------------------------------
 
@@ -26,7 +57,7 @@ TestResults test_lockstep(int argc, char** argv) {
   LOG_B("========================================\n");
 
   int cycle;
-  for (cycle = 0; cycle < 20000; cycle++) {
+  for (cycle = 0; cycle < 50000; cycle++) {
     bool old_valid = vtop.valid_ret;
     vtop.clock = 1;
     vtop.eval();
@@ -34,7 +65,10 @@ TestResults test_lockstep(int argc, char** argv) {
     vtop.eval();
 
     if (!old_valid && vtop.valid_ret) LOG_B("%c", (uint8_t)vtop.data_ret);
-    if (vtop.done_ret) break;
+    if (vtop.done_ret) {
+      printf("vtop done!\n");
+      break;
+    }
   }
 
   LOG_B("\n");
@@ -49,6 +83,7 @@ TestResults test_lockstep(int argc, char** argv) {
 
 int main(int argc, char** argv) {
   printf("Running Verilated Metron uart test\n");
+
   TestResults results("main");
   results << test_lockstep(argc, argv);
   if (results.test_fail) {
@@ -56,6 +91,9 @@ int main(int argc, char** argv) {
   } else {
     printf("All tests pass.\n");
   }
+
+  benchmark();
+
   return 0;
 }
 

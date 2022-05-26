@@ -34,8 +34,8 @@
       Metron is a tool for converting a very limited subset of C++ into a very limited subset of Verilog. Even though
       it's limited, the C++ that Metron can convert is still enough to be useful. The C++ source code can be easily run
       inside a trivial simulation framework. The same code converted to Verilog can be simulated in Icarus or Verilator,
-      converted to RTL netlists by Yosys, packed into FPGA bitstreams by NextPNR, and uploaded to a development board
-      using IceProg - all open-source tools.
+      converted to RTL (Register-Transfer Level, a generic term for circuit "assembly language") netlists by Yosys,
+      packed into FPGA bitstreams by NextPNR, and uploaded to a development board using IceProg - all open-source tools.
     </p>
     <p>
       If you're completely unfamiliar with Verilog I'd recommend reading through a "Hello Verilog World" tutorial
@@ -681,7 +681,40 @@ endmodule
     <div class="divider">Memories and arrays</div>
 
     <p>
-      Will be written shortly. Checksum a block of ROM example.
+      Virtual CPUs aren't very useful if they have no RAM. Declaring memories in Verilog is a bit tricky, as each FPGA
+      vendor has slightly different support for blocks of RAM in terms of port width, number of read/write ports,
+      registered vs. unregistered outputs, etcetera. If our Metron/Verilog code has the same behavior as our target FPGA
+      RAM blocks, the RTL compiler will fit our memories into those blocks. If not, the RTL compiler will either spread
+      our memories across thousands of individual storage bits in the FPGA fabric or just give up entirely. Luckily it's
+      not too difficult to encourage the compiler to infer block RAMs, we just need to ensure that the inputs and
+      outputs are clocked.
+    </p>
+    <p>
+      The module below should turn into a FPGA block RAM after translation + compilation + synthesis - it declares 256
+      bytes of 8-bit storage with one read/write port. Metron's tracer is currently too lenient with tracing reads and
+      writes to arrays; it doesn't pay attention to the array index so you can (inadvertently) create memories with more
+      read ports than your FPGA can support.
+    </p>
+    <p>
+      Memories can be initialized via "readmemh" - this will load the memory contents from disk at runtime in C and at
+      compile time in Verilog.
+    </p>
+    <div class="live_code" id="./examples/tutorial/blockram.h">
+      <div class="source_panel" id="c_panel">
+        <div class="header_bar">
+          <div class="filename" contenteditable="true"></div>
+        </div>
+        <div class="code_jar language-cpp"></div>
+      </div>
+      <div class="source_panel" id="v_panel">
+        <div class="header_bar">
+          <div class="filename"></div>
+        </div>
+        <div class="code_jar language-verilog"></div>
+      </div>
+    </div>
+    <p>
+      And here's a small client that checksums the above RAM block.
     </p>
     <div class="live_code" id="./examples/tutorial/checksum.h">
       <div class="source_panel" id="c_panel">
@@ -719,8 +752,8 @@ endmodule
     <p>
       Once you have a mental image of what your machine does and the steps needed to do it, you can start sketching out
       the modules you'll need to accomplish the task. Let's take a look at an example much more interesting than a
-      counter: generating a VGA video signal. I've intentionally avoided putting comments in the code here to give you a
-      chance to puzzle it out yourself.
+      counter, but not that much more complex: generating a VGA video signal. I've intentionally avoided putting
+      comments in the code here to give you a chance to puzzle it out yourself.
     </p>
 
     <div class="live_code" id="./examples/tutorial/vga.h">
@@ -758,16 +791,17 @@ endmodule
     <div class="divider">Tying it all together with a UART example</div>
 
     <p>
-      Last up, let's take a closer look at that UART example from Metron's testbench. This example produces identical
-      output in C, Verilator, Icarus, and when uploaded to a FPGA using Yosys+NextPNR+IceProg, so it's fairly well
-      tested. It also consists of multiple modules tied together through ports to demonstrate how to build more complex
-      systems in a slightly more realistic fashion. We'll briefly walk through each module to point out how things are
-      connected.
+      Last up, let's take a closer look at that UART (serial port) example from Metron's testbench. This example
+      produces identical output in C, Verilator, Icarus, and when uploaded to a FPGA using Yosys+NextPNR+IceProg, so
+      it's fairly well tested. It uses template parameters to control transmission speed and whether the
+      message is repeated. It also consists of multiple modules tied together through ports to demonstrate how to
+      build more complex systems in a slightly more realistic fashion. We'll briefly walk through each module to point
+      out how things are connected.
     </p>
     <p>
       The whole example consists of a UART client that transmits a buffer over the uart (uart_hello), the UART
       transmitter, the UART receiver, and a "top" module to tie things together. The top module is responsible for
-      sending signals back to the testbench and routing data between modules. You can see how verbose the port
+      sending signals back to the testbench and routing signals between modules. You can see how verbose the port
       connections get, and this isn't even a large set of modules.
     </p>
     <div class="live_code" id="./examples/uart/metron/uart_top.h">
@@ -785,10 +819,9 @@ endmodule
       </div>
     </div>
     <p>
-      Next up, the UART client. It receives "clear to send" and "idle" signals from the transmitter and sends "request"
+      Next, the UART client. It receives "clear to send" and "idle" signals from the transmitter and sends "request"
       and "data" signals back to it. It also sends a "done" signal to uart_top to stop the simulation once the buffer's
-      been transmitted. Note that its constructor is allowed to read the contents of its memory array from a file - this
-      is built into Verilog and exposed via a helper function in metron_tools.h for the C side.
+      been transmitted.
     </p>
     <div class="live_code" id="./examples/uart/metron/uart_hello.h">
       <div class="source_panel" id="c_panel">
@@ -883,9 +916,9 @@ endmodule
     <p>
       Because it's a bit unconventional, I've tried to provide a good set of tests and examples to demonstrate that
       Metron works for RTL development in practice. In the example folder you'll find a couple RISC-V CPUs that pass the
-      RV32I test suite, a simple serial UART that's used as part of the Metron testbench, the Pong example mentioned
-      above, all the tutorial sources that appear here, and a couple unfinished conversions. The tests folder contains a
-      pretty good suite of Metron unit tests that both verify that Metron can convert the source files and a handful of
+      RV32I test suite, the simple serial UART shown above, the Pong example mentioned in the section about VGA output,
+      all the tutorial sources that appear here, and a couple unfinished conversions. The tests folder contains a pretty
+      good suite of Metron unit tests that both verify that Metron can convert the source files and a handful of
       additional tests that run Metron code in lockstep with C-to-Verilog-to-C-via-Verilator translated code to verify
       that Metron produces results bit-identical to the Verilator simulation. There is also a full C-to-FPGA build
       pipeline set up for the UART example.

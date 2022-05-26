@@ -40,7 +40,7 @@ First public release!
   - A trivial LFSR module simulates at 600+ Mhz on my 5900x
   - A 640x480 "Pong" VGA video generator runs at 260+ Mhz with simulated video out via SDL2, or over 10x realtime.
   - A simple RISC-V RV32I core simulates at 360 mhz, though with the caveat that it's a single-cycle core and probably wouldn't synthesize.
-  - The UART example in the test bench runs a loopback transmission + checksum at ~400 mhz.
+  - The UART example in the test bench runs a loopback transmission + checksum at ~400 mhz (the Verilated version is ~130 mhz).
 
 ## Building the Metron binary from source:
 ```

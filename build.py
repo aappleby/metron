@@ -516,7 +516,8 @@ def build_uart():
         src_files=["examples/uart/main_vl.cpp"],
         includes=base_includes + ["gen/examples/uart"],
         src_objs=["obj/verilated.o", uart_vobj],
-        deps=[uart_vhdr]
+        deps=[uart_vhdr],
+        link_deps=["bin/libmetron.a"],
     )
 
     divider("Icarus Verilog uart testbench")

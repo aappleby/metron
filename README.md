@@ -41,6 +41,11 @@ First public release!
   - A 640x480 "Pong" VGA video generator runs at 260+ Mhz with simulated video out via SDL2, or over 10x realtime.
   - A simple RISC-V RV32I core simulates at 360 mhz, though with the caveat that it's a single-cycle core and probably wouldn't synthesize.
   - The UART example in the test bench runs a loopback transmission + checksum at ~400 mhz (the Verilated version is ~130 mhz).
+- Have you heard of TLA+?
+  - Yes, and I'm aware that I'm also using the phrase "temporal logic", which might confuse some readers. I couldn't think of a better term for the "How Metron Works" page though, alas. Apolgies in advance to Leslie Lamport.
+  - It would be interesting to see how Metron programs could use (or be translated into?) TLA+ proofs, but it's out of scope for now.
+- Why C++ instead of {language}?
+  - When I started the project I wasn't sure if I'd end up needing to do a bunch of brute-force "trace every possible path" stuff, and C++ is my most fluent language so I stuck with it. Now that Metron's working.... yeah, it would probably be simpler if written in Python, and Rust would probably make a better source language for conversion. Might be a future project.
 
 ## Building the Metron binary from source:
 ```

@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
       " ##  ##  ## ##         ##    ##   ## ##    ## ##  ## ## \n"
       " ##      ## #######    ##    ##   ##  ######  ##   #### \n"
       "                                                        \n"
-      "            a C++ to SystemVerilog transpiler           \n";
+      "            a C++ to SystemVerilog Translator           \n";
 
   CLI::App app{banner};
 

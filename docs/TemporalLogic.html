@@ -200,7 +200,7 @@ public:
 };
 ```
 
-We'll start by assigning the variable x a symbolic value of N, for "Nothing has happened to this variable yet". When we encounter "int y = x + 3", we see a read of X, so we'll concatenate a R onto our symbol, giving NR. Next we see a write in "x = 7", so we concatenate a W giving NRW.
+We'll start by assigning the variable 'x' a symbolic value of N, for "Nothing has happened to this variable yet". When we encounter "int y = x + 3", we see a read of 'x', so we'll concatenate a R onto our symbol, giving NR. Next we see a write in "x = 7", so we concatenate a W giving NRW.
 
 As we accumulate Rs and Ws onto our symbolic value, we can apply these simplification rules:
 
@@ -245,7 +245,7 @@ public:
 };
 ```
 
-The variable x has symbol R in the if branch and W in the else branch, so its symbol at the end of the function is... well, we'll just create a new symbol R|W, where | means something like "in parallel with". Like the branchless case, we can simplify a lot of the symbol combinations -
+The variable 'x' has symbol R in the if branch and W in the else branch, so its symbol at the end of the function is... well, we'll just create a new symbol R|W, where | means something like "in parallel with". Like the branchless case, we can simplify a lot of the symbol combinations -
 
 ```
 // We don't need to keep track of multiple branches that do the same thing

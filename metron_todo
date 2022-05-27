@@ -1,14 +1,8 @@
-NO RETURN IN TICK
-
 "+=" doesn't translate right, it's going to <=
 
 throw error if a non-const member is read-only but not marked const
 
 nested structs
-
-tock calls tick in another module
-
-enforce that all funcs must have a return value
 
 https://github.com/hughperkins/VeriGPU
 
@@ -25,22 +19,4 @@ deal with that... but if you can't express it in c do we care?
 
 do a preproc if else test
 
-Make lockstep test framework for all the metron_good tests
-  Make all of them have a toplevel "logic<32> tock();"
-  Run for N cycles and check that return values from both
-  versions match, but don't care about the actual value.
-
-
-
-
-
-
-
-
-
 ----------
-
-assert that components are only bound once?
-  no, they can be bound multiple times, won't break anything
-component calls can only be at toplevel?
-  no, but they have to be in a compound statement so we have a place to put bindings

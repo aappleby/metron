@@ -108,8 +108,7 @@ CHECK_RETURN Err MtTracer::trace_expression(MtContext* ctx, MnNode node,
       err << trace_expression(ctx, node.get_field(field_argument), CTX_WRITE);
       break;
     case sym_assignment_expression:
-      err << trace_expression(ctx, node.get_field(field_right), CTX_READ);
-      err << trace_expression(ctx, node.get_field(field_left), CTX_WRITE);
+      err << trace_sym_assignment_expression(ctx, node);
       break;
     case sym_parenthesized_expression:
       err << trace_expression(ctx, node.child(1), action);
@@ -193,6 +192,26 @@ CHECK_RETURN Err MtTracer::trace_declarator(MtContext* ctx, MnNode node) {
     default:
       err << trace_default(ctx, node);
       break;
+  }
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtTracer::trace_sym_assignment_expression(MtContext* ctx, MnNode node) {
+  Err err;
+
+  auto op = node.get_field(field_operator).text();
+
+  if (op == "=") {
+    err << trace_expression(ctx, node.get_field(field_right), CTX_READ);
+    err << trace_expression(ctx, node.get_field(field_left), CTX_WRITE);
+  }
+  else {
+    err << trace_expression(ctx, node.get_field(field_right), CTX_READ);
+    err << trace_expression(ctx, node.get_field(field_left), CTX_READ);
+    err << trace_expression(ctx, node.get_field(field_left), CTX_WRITE);
   }
 
   return err;

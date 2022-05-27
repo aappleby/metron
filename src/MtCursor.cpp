@@ -375,28 +375,35 @@ CHECK_RETURN Err MtCursor::emit_sym_preproc_include(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_sym_assignment_expression(MnNode node) {
   Err err = emit_ws_to(sym_assignment_expression, node);
 
-  bool left_is_field = false;
+  auto lhs = node.get_field(field_left);
+  auto op  = node.get_field(field_operator).text();
+  auto rhs = node.get_field(field_right);
+  bool left_is_field = current_mod->get_field(lhs) != nullptr;
+
+  bool is_compound = op != "=";
+
 
   for (auto child : node) {
     switch (child.field) {
-      case field_left:
-        err << emit_expression(child);
-        left_is_field = current_mod->get_field(child) != nullptr;
-        break;
+      case field_left: err << emit_expression(child); break;
       case field_operator:
         // There may not be a method if we're in an enum initializer list.
         if (current_method && current_method->in_tick && left_is_field) {
           err << emit_replacement(child, "<=");
         } else {
-          err << emit_text(child);
+          err << emit_replacement(child, "=");
         }
+        if (is_compound) {
+          push_cursor(lhs);
+          err << emit_print(" ");
+          err << emit_expression(lhs);
+          err << emit_print(" %c", op[0]);
+          pop_cursor(lhs);
+        }
+
         break;
-      case field_right:
-        err << emit_expression(child);
-        break;
-      default:
-        err << emit_default(child);
-        break;
+      case field_right: err << emit_expression(child); break;
+      default: err << emit_default(child); break;
     }
   }
 

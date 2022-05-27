@@ -31,6 +31,7 @@ class MtTracer {
   CHECK_RETURN Err trace_call(MtContext* src_ctx, MtContext* dst_ctx, MnNode node_call);
 
   CHECK_RETURN Err trace_sym_argument_list(MtContext* ctx, MnNode node);
+  CHECK_RETURN Err trace_sym_assignment_expression(MtContext* ctx, MnNode node);
   CHECK_RETURN Err trace_sym_binary_expression(MtContext* ctx, MnNode node);
   CHECK_RETURN Err trace_sym_break_statement(MtContext* ctx, MnNode node);
   CHECK_RETURN Err trace_sym_call_expression(MtContext* inst, MnNode n);

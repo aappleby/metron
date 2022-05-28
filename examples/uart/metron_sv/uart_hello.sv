@@ -9,51 +9,77 @@ module uart_hello #(parameter int repeat_msg = 0)
 (
   // global clock
   input logic clock,
-  // data() ports
-  output logic[7:0] data_ret,
-  // req() ports
-  output logic req_ret,
-  // done() ports
-  output logic done_ret,
+  // get_data() ports
+  output logic[7:0] get_data_ret,
+  // get_request() ports
+  output logic get_request_ret,
+  // get_done() ports
+  output logic get_done_ret,
   // tick() ports
-  input logic tick_i_rstn,
-  input logic tick_i_cts,
-  input logic tick_i_idle
+  input logic tick_reset,
+  input logic tick_clear_to_send,
+  input logic tick_idle
 );
 /*public:*/
   initial begin
-    $readmemh("examples/uart/message.hex", _memory, 0, 511);
+    $readmemh("examples/uart/message.hex", memory, 0, 511);
   end
 
-  always_comb begin : data
-    data_ret = _data;
+  // The byte of data we want transmitted
+  always_comb begin : get_data
+    get_data_ret = data;
   end
 
-  always_comb begin : req
-    req_ret = _state == SEND;
+  // True if we want to transmit a byte
+  always_comb begin : get_request
+    get_request_ret = state == SEND;
   end
 
-  always_comb begin : done
-    done_ret = _state == DONE;
+  // True if we've transmitted the whole message.
+  always_comb begin : get_done
+    get_done_ret = state == DONE;
   end
 
-  always_ff @(posedge clock) begin : tick
-    if (!tick_i_rstn) begin
-      _state <= WAIT;
-      _cursor <= 0;
-    end else begin
-      _data <= _memory[_cursor];
-      if (_state == WAIT && tick_i_idle) begin
-        _state <= SEND;
-      end else if (_state == SEND && tick_i_cts) begin
-        if (_cursor == 9'(message_len - 1)) begin
-          _state <= DONE;
-        end else begin
-          _cursor <= _cursor + 1;
+  always_ff @(posedge clock) begin : tick            // True if the transmitter is idle
+
+    // In reset we're always in WAIT state with the message cursor set to
+    // the start of the message buffer.
+    if (tick_reset) begin
+      state <= WAIT;
+      cursor <= 0;
+    end
+
+    else begin
+      // Always grab the next character to send from memory.
+      data <= memory[cursor];
+
+      // If we're waiting for the transmitter to be free and it's told us that
+      // it's idle, go to SEND state.
+      if (state == WAIT && tick_idle) begin
+        state <= SEND;
+      end
+
+      // If we're currently sending a message and the transmitter is ready to
+      // accept another byte,
+      else if (state == SEND && tick_clear_to_send) begin
+        // either go to DONE state if we're about to send the last character of
+        // the message
+        if (cursor == 9'(message_len - 1)) begin
+          state <= DONE;
         end
-      end else if (_state == DONE) begin
-        if (repeat_msg) _state <= WAIT;
-        _cursor <= 0;
+
+        // or just advance the message cursor.
+        else begin
+          cursor <= cursor + 1;
+        end
+      end
+
+      // If we've finished transmitting, reset the message cursor and either go
+      // back to WAIT state if we want to re-transmit or just stay in DONE
+      // otherwise.
+      else if (state == DONE) begin
+        cursor <= 0;
+        if (repeat_msg) state <= WAIT;
       end
     end
   end
@@ -62,14 +88,14 @@ module uart_hello #(parameter int repeat_msg = 0)
   localparam int message_len = 512;
   localparam int cursor_bits = $clog2(message_len);
 
-  localparam int WAIT = 0;
-  localparam int SEND = 1;
-  localparam int DONE = 2;
+  localparam int WAIT = 0; // Waiting for the transmitter to be free
+  localparam int SEND = 1; // Sending the message buffer
+  localparam int DONE = 2; // Message buffer sent
+  logic[1:0] state;            // One of the above states
 
-  logic[1:0] _state;
-  logic[cursor_bits-1:0] _cursor;
-  logic[7:0] _memory[512];
-  logic[7:0] _data;
+  logic[7:0] memory[512];      // The buffer preloaded with our message
+  logic[cursor_bits-1:0] cursor; // Index into the message buffer of the _next_ character to transmit
+  logic[7:0] data;             // The character we're about to transmit
 endmodule
 
 //==============================================================================

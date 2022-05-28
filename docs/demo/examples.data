@@ -4232,50 +4232,84 @@ fpga via Icestorm.
 template <int cycles_per_bit = 4>
 class uart_rx {
 public:
-  logic<1> valid() {
-    return _cursor == 1;
+
+  // Our output is valid once we're only waiting on the stop bit.
+  logic<1> get_valid() const {
+    return bit_count == 1;
   }
 
-  logic<8> buffer() {
-    return _buffer;
+  logic<8> get_data_out() const {
+    return data_out;
   }
 
-  logic<32> sum() {
-    return _sum;
+  logic<32> get_checksum() const {
+    return checksum;
   }
 
-  void tick(logic<1> i_rstn, logic<1> i_serial) {
-    if (!i_rstn) {
-      _cycle = 0;
-      _cursor = 0;
-      _buffer = 0;
-      _sum = 0;
-    } else {
-      if (_cycle != 0) {
-        _cycle = _cycle - 1;
-      } else if (_cursor != 0) {
-        logic<8> temp = (i_serial << 7) | (_buffer >> 1);
-        if (_cursor - 1 == 1) _sum = _sum + temp;
-        _cycle = cycle_max;
-        _cursor = _cursor - 1;
-        _buffer = temp;
-      } else if (i_serial == 0) {
-        _cycle = cycle_max;
-        _cursor = cursor_max;
+  void tick(
+    logic<1> reset,  // Top-level reset signal
+    logic<1> serial) // Serial input from the transmitter
+  {
+    if (reset) {
+      bit_delay = 0;
+      bit_count = 0;
+      data_out = 0;
+      checksum = 0;
+    }
+    else {
+
+      // If we're waiting for the next bit to arrive, keep waiting until our
+      // bit delay counter runs out.
+      if (bit_delay != 0) {
+        bit_delay = bit_delay - 1;
+      }
+
+      // We're done waiting for a bit. If we have bits left to receive, shift
+      // them into the top of the output register.
+      else if (bit_count != 0) {
+        logic<8> new_output = (serial << 7) | (data_out >> 1);
+        logic<bit_count_width> new_bit_count = bit_count - 1;
+
+        // If that was the last bit, add the finished byte to our checksum.
+        // Note we check for == 1 and not == 0, as the last bit is a "stop" bit.
+        if (new_bit_count == 1) {
+          checksum = checksum + new_output;
+        }
+
+        // Move to the next bit and reset our delay counter.
+        bit_delay = bit_delay_max;
+        bit_count = new_bit_count;
+        data_out = new_output;
+      }
+
+      // We're not waiting for a bit and we finished receiving the previous
+      // byte. Wait for the serial line to go low, which signals the start of
+      // the next byte.
+      else if (serial == 0) {
+        bit_delay = bit_delay_max;
+        bit_count = bit_count_max;
       }
     }
   }
 
  private:
-  static const int cycle_bits = clog2(cycles_per_bit);
-  static const int cycle_max = cycles_per_bit - 1;
-  static const int cursor_max = 9;
-  static const int cursor_bits = clog2(cursor_max);
+  // We wait for cycles_per_bit cycles
+  static const int bit_delay_width = clog2(cycles_per_bit);
+  static const int bit_delay_max = cycles_per_bit - 1;
+  logic<bit_delay_width> bit_delay;
 
-  logic<cycle_bits> _cycle;
-  logic<cursor_bits> _cursor;
-  logic<8> _buffer;
-  logic<32> _sum;
+  // Our serial data format is 8n1, which is short for "one start bit, 8 data
+  // bits, no parity bit, one stop bit". If bit_count == 1, we're only waiting
+  // on the stop bit.
+  static const int bit_count_max = 9;
+  static const int bit_count_width = clog2(bit_count_max);
+  logic<bit_count_width> bit_count;
+
+  // The received byte
+  logic<8> data_out;
+
+  // The checksum of all bytes received so far.
+  logic<32> checksum;
 };
 
 //==============================================================================
@@ -4292,38 +4326,67 @@ template <int repeat_msg = 0>
 class uart_hello {
 public:
   uart_hello() {
-    readmemh("examples/uart/message.hex", _memory, 0, 511);
+    readmemh("examples/uart/message.hex", memory, 0, 511);
   }
 
-  logic<8> data() const {
-    return _data;
+  // The byte of data we want transmitted
+  logic<8> get_data() const {
+    return data;
   }
 
-  logic<1> req() const {
-    return _state == SEND;
+  // True if we want to transmit a byte
+  logic<1> get_request() const {
+    return state == SEND;
   }
 
-  logic<1> done() const {
-    return _state == DONE;
+  // True if we've transmitted the whole message.
+  logic<1> get_done() const {
+    return state == DONE;
   }
 
-  void tick(logic<1> i_rstn, logic<1> i_cts, logic<1> i_idle) {
-    if (!i_rstn) {
-      _state = WAIT;
-      _cursor = 0;
-    } else {
-      _data = _memory[_cursor];
-      if (_state == WAIT && i_idle) {
-        _state = SEND;
-      } else if (_state == SEND && i_cts) {
-        if (_cursor == b9(message_len - 1)) {
-          _state = DONE;
-        } else {
-          _cursor = _cursor + 1;
+  void tick(
+    logic<1> reset,          // Top-level reset signal.
+    logic<1> clear_to_send,  // True if the transmitter can accept an input byte
+    logic<1> idle)           // True if the transmitter is idle
+  {
+    // In reset we're always in WAIT state with the message cursor set to
+    // the start of the message buffer.
+    if (reset) {
+      state = WAIT;
+      cursor = 0;
+    }
+
+    else {
+      // Always grab the next character to send from memory.
+      data = memory[cursor];
+
+      // If we're waiting for the transmitter to be free and it's told us that
+      // it's idle, go to SEND state.
+      if (state == WAIT && idle) {
+        state = SEND;
+      }
+
+      // If we're currently sending a message and the transmitter is ready to
+      // accept another byte,
+      else if (state == SEND && clear_to_send) {
+        // either go to DONE state if we're about to send the last character of
+        // the message
+        if (cursor == b9(message_len - 1)) {
+          state = DONE;
         }
-      } else if (_state == DONE) {
-        if (repeat_msg) _state = WAIT;
-        _cursor = 0;
+
+        // or just advance the message cursor.
+        else {
+          cursor = cursor + 1;
+        }
+      }
+
+      // If we've finished transmitting, reset the message cursor and either go
+      // back to WAIT state if we want to re-transmit or just stay in DONE
+      // otherwise.
+      else if (state == DONE) {
+        cursor = 0;
+        if (repeat_msg) state = WAIT;
       }
     }
   }
@@ -4332,14 +4395,14 @@ private:
   static const int message_len = 512;
   static const int cursor_bits = clog2(message_len);
 
-  static const int WAIT = 0;
-  static const int SEND = 1;
-  static const int DONE = 2;
+  static const int WAIT = 0; // Waiting for the transmitter to be free
+  static const int SEND = 1; // Sending the message buffer
+  static const int DONE = 2; // Message buffer sent
+  logic<2> state;            // One of the above states
 
-  logic<2> _state;
-  logic<cursor_bits> _cursor;
-  logic<8> _memory[512];
-  logic<8> _data;
+  logic<8> memory[512];      // The buffer preloaded with our message
+  logic<cursor_bits> cursor; // Index into the message buffer of the _next_ character to transmit
+  logic<8> data;             // The character we're about to transmit
 };
 
 //==============================================================================
@@ -4358,41 +4421,53 @@ private:
 template <int cycles_per_bit = 3, int repeat_msg = 0>
 class uart_top {
 public:
-  logic<1> serial() {
-    return tx.serial();
+
+  // The actual bit of data currently on the transmitter's output
+  logic<1> get_serial() const {
+    return tx.get_serial();
   }
 
-  logic<8> data() {
-    return rx.buffer();
+  // Returns true if the receiver has a byte in its buffer
+  logic<1> get_valid() const {
+    return rx.get_valid();
   }
 
-  logic<1> valid() {
-    return rx.valid();
+  // The next byte of data from the receiver
+  logic<8> get_data_out() const {
+    return rx.get_data_out();
   }
 
-  logic<1> done() {
-    return hello.done() && tx.idle();
+  // True if the client has sent its message and the transmitter has finished
+  // transmitting it.
+  logic<1> get_done() const {
+    return hello.get_done() && tx.get_idle();
   }
 
-  logic<32> sum() {
-    return rx.sum();
+  // Checksum of all the bytes received
+  logic<32> get_checksum() const {
+    return rx.get_checksum();
   }
 
-  logic<1> tock(logic<1> i_rstn) {
-    logic<8> hello_data = hello.data();
-    logic<1> hello_req = hello.req();
+  void tock(logic<1> reset) {
+    // Grab signals from our submodules before we tick them.
+    logic<8> data = hello.get_data();
+    logic<1> request = hello.get_request();
 
-    rx.tick(i_rstn, tx.serial());
-    hello.tick(i_rstn, tx.cts(), tx.idle());
-    tx.tick(i_rstn, hello_data, hello_req);
-    return 0;
+    logic<1> serial = tx.get_serial();
+    logic<1> clear_to_send = tx.get_clear_to_send();
+    logic<1> idle = tx.get_idle();
+
+    // Tick all submodules.
+    hello.tick(reset, clear_to_send, idle);
+    tx.tick(reset, data, request);
+    rx.tick(reset, serial);
   }
 
   //----------------------------------------
 private:
-  uart_hello<repeat_msg> hello;
-  uart_tx<cycles_per_bit> tx;
-  uart_rx<cycles_per_bit> rx;
+  uart_hello<repeat_msg>  hello; // Our UART client that transmits our "hello world" test message
+  uart_tx<cycles_per_bit> tx;    // The UART transmitter
+  uart_rx<cycles_per_bit> rx;    // The UART receiver
 };
 
 //==============================================================================
@@ -4409,63 +4484,68 @@ template <int cycles_per_bit = 4>
 class uart_tx {
 public:
   uart_tx() {
-    cycle = 0;
-    cursor = 0;
-    buffer = 0;
+    bit_delay = 0;
+    bit_count = 0;
+    output_buffer = 0;
   }
 
-  logic<1> serial() const {
-    return buffer & 1;
+  logic<1> get_serial() const {
+    return output_buffer & 1;
   }
 
-  logic<1> cts() const {
-    return ((cursor == extra_stop_bits) && (cycle == 0)) ||
-           (cursor < extra_stop_bits);
+  logic<1> get_clear_to_send() const {
+    return ((bit_count == extra_stop_bits) && (bit_delay == 0)) ||
+           (bit_count < extra_stop_bits);
   }
 
-  logic<1> idle() const {
-    return (cursor == 0) && (cycle == 0);
+  logic<1> get_idle() const {
+    return (bit_count == 0) && (bit_delay == 0);
   }
 
-  void tick(logic<1> i_rstn, logic<8> i_data, logic<1> i_req) {
-    if (!i_rstn) {
-      cycle = 0;
-      cursor = 0;
-      buffer = 0x1FF;
-    } else {
-      logic<cycle_bits> cycle_max = bx<cycle_bits>(cycles_per_bit - 1);
-      logic<cursor_bits> cursor_max = bx<cursor_bits>(10 + extra_stop_bits - 1);
+  void tick(logic<1> reset, logic<8> send_data, logic<1> send_request) {
+    if (reset) {
+      bit_delay = 0;
+      bit_count = 0;
+      output_buffer = 0x1FF;
+    }
 
-      if (/*cursor <= extra_stop_bits*/ extra_stop_bits >= cursor &&
-          cycle == 0 && i_req) {
+    else {
+      // Bit delay
+      if (bit_delay != 0) {
+        bit_delay = bit_delay - 1;
+      }
+
+      else if (bit_count <= extra_stop_bits && send_request) {
         // Transmit start
-        cycle = cycle_max;
-        cursor = cursor_max;
-        buffer = i_data << 1;
-      } else if (cycle != 0) {
-        // Bit delay
-        cycle = cycle - 1;
-        cursor = cursor;
-        buffer = buffer;
-      } else if (cursor != 0) {
+        bit_delay = bit_delay_max;
+        bit_count = bit_count_max;
+        output_buffer = send_data << 1;
+      }
+
+      else if (bit_count != 0) {
         // Bit delay done, switch to next bit.
-        cycle = cycle_max;
-        cursor = cursor - 1;
-        buffer = (buffer >> 1) | 0x100;
+        bit_delay = bit_delay_max;
+        bit_count = bit_count - 1;
+        output_buffer = (output_buffer >> 1) | 0x100;
       }
     }
   }
 
 private:
-  // 1 start bit, 8 data bits, 1 stop bit, 7 additional stop bits to guarantee
-  // that recevier can resync between messages
+  // 1 start bit, 8 data bits, 1 stop bit, 7 additional stop bits between
+  // messages to guarantee that the receiver can resynchronize with our start
+  // bit.
   static const int extra_stop_bits = 7;
-  static const int cycle_bits = clog2(cycles_per_bit);
-  static const int cursor_bits = clog2(10 + extra_stop_bits);
 
-  logic<cycle_bits> cycle;
-  logic<cursor_bits> cursor;
-  logic<9> buffer;
+  static const int bit_delay_width = clog2(cycles_per_bit);
+  static const int bit_delay_max   = cycles_per_bit - 1;
+  logic<bit_delay_width> bit_delay;
+
+  static const int bit_count_width = clog2(10 + extra_stop_bits);
+  static const int bit_count_max   = 10 + extra_stop_bits - 1;
+  logic<bit_count_width> bit_count;
+
+  logic<9> output_buffer;
 };
 
 //==============================================================================

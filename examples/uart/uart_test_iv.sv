@@ -10,14 +10,14 @@
 module uart_test;
 
   // 12 mhz clock
-  logic clk;
-  logic clken;
-  logic rst_n;
+  logic clock;
+  logic clock_enable;
+  logic reset;
   logic[63:0] timestamp = 0;
 
-  always #5 clk = ~clk & clken;
+  always #5 clock = ~clock & clock_enable;
 
-  always @(posedge clk) begin
+  always @(posedge clock) begin
     timestamp <= timestamp + 1;
   end
 
@@ -26,18 +26,16 @@ module uart_test;
   logic out_valid;
   logic out_done;
   logic[31:0] out_sum;
-  logic out_tock;
 
   uart_top #(.cycles_per_bit(3)) top
   (
-    clk,
-    out_serial,
-    out_data,
-    out_valid,
-    out_done,
-    out_sum,
-    rst_n,
-    out_tock
+    .clock(clock),
+    .get_serial_ret(out_serial),
+    .get_valid_ret(out_valid),
+    .get_data_out_ret(out_data),
+    .get_done_ret(out_done),
+    .get_checksum_ret(out_sum),
+    .tock_reset(reset)
   );
 
   always begin
@@ -53,19 +51,19 @@ module uart_test;
     //$dumpfile("uart_test_iv.vcd");
     //$dumpvars(0, uart_test);
 
-    clken = 0;
-    clk = 0;
-    rst_n = 1;
+    clock_enable = 0;
+    clock = 0;
+    reset = 0;
     #5;
-    rst_n = 0;
+    reset = 1;
     #5;
-    clken = 1;
-    clk = 1;
+    clock_enable = 1;
+    clock = 1;
     #5;
-    rst_n = 1;
+    reset = 0;
 
     #200;
-    wait (top.tx.idle_ret);
+    wait (top.tx.get_idle_ret);
     #5
 
     $write("\n");

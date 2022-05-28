@@ -13,13 +13,18 @@
 void benchmark() {
   const int cycles_per_bit = 3;
   const int repeat_msg = 1;
-  const int cycle_max = 100000000;
+  const int cycle_max = 10000000;
 
   Vuart_top vtop;
-  vtop.tock_i_rstn = 0;
+  vtop.tock_reset = 1;
   vtop.clock = 0;
   vtop.eval();
   vtop.clock = 1;
+  vtop.eval();
+
+  // Reset done, clock starts low.
+  vtop.clock = 0;
+  vtop.tock_reset = 0;
   vtop.eval();
 
   auto time_a = timestamp();
@@ -43,7 +48,7 @@ TestResults test_lockstep(int argc, char** argv) {
 
   // Synchronous reset cycle.
   Vuart_top vtop;
-  vtop.tock_i_rstn = 0;
+  vtop.tock_reset = 1;
   vtop.clock = 0;
   vtop.eval();
   vtop.clock = 1;
@@ -51,21 +56,21 @@ TestResults test_lockstep(int argc, char** argv) {
 
   // Reset done, clock starts low.
   vtop.clock = 0;
-  vtop.tock_i_rstn = 1;
+  vtop.tock_reset = 0;
   vtop.eval();
 
   LOG_B("========================================\n");
 
   int cycle;
   for (cycle = 0; cycle < 50000; cycle++) {
-    bool old_valid = vtop.valid_ret;
+    bool old_valid = vtop.get_valid_ret;
     vtop.clock = 1;
     vtop.eval();
     vtop.clock = 0;
     vtop.eval();
 
-    if (!old_valid && vtop.valid_ret) LOG_B("%c", (uint8_t)vtop.data_ret);
-    if (vtop.done_ret) {
+    if (!old_valid && vtop.get_valid_ret) LOG_B("%c", (uint8_t)vtop.get_data_out_ret);
+    if (vtop.get_done_ret) {
       printf("vtop done!\n");
       break;
     }
@@ -74,7 +79,7 @@ TestResults test_lockstep(int argc, char** argv) {
   LOG_B("\n");
   LOG_B("========================================\n");
   LOG_B("%d\n", cycle);
-  EXPECT_EQ(vtop.sum_ret, 0x0000b764, "Verilator uart checksum fail");
+  EXPECT_EQ(vtop.get_checksum_ret, 0x0000b764, "Verilator uart checksum fail");
 
   TEST_DONE();
 }

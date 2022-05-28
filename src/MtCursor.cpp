@@ -1026,23 +1026,24 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_comb(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_func_as_always_ff(MnNode n) {
   Err err;
 
-  auto func_ret = n.get_field(field_type);
   auto func_decl = n.get_field(field_declarator);
-  auto func_body = n.get_field(field_body);
   auto func_params = func_decl.get_field(field_parameters);
 
   auto old_replacements = id_replacements;
   for (auto c : func_params) {
-    if (!c.is_named()) continue;
-    id_replacements[c.name4()] = func_decl.name4() + "_" + c.name4();
+    if (c.sym == sym_parameter_declaration) {
+      id_replacements[c.name4()] = func_decl.name4() + "_" + c.name4();
+    }
   }
 
-  err << emit_print("always_ff @(posedge clock) begin : %s", func_decl.name4().c_str());
-  err << skip_over(func_ret);
-  err << skip_ws();
-  err << skip_over(func_decl);
-  err << skip_ws();
-  err << emit_sym_compound_statement(func_body, "", "end");
+  for (auto c : n) {
+    switch(c.field) {
+    case field_type:       err << emit_replacement(c, "always_ff @(posedge clock) begin : %s", func_decl.name4().c_str()); break;
+    case field_declarator: err << skip_over(c); break;
+    case field_body:       err << emit_sym_compound_statement(c, "", "end"); break;
+    default:               err << emit_default(c); break;
+    }
+  }
 
   id_replacements = old_replacements;
 

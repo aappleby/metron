@@ -9,62 +9,95 @@ module uart_rx #(parameter int cycles_per_bit = 4)
 (
   // global clock
   input logic clock,
-  // valid() ports
-  output logic valid_ret,
-  // buffer() ports
-  output logic[7:0] buffer_ret,
-  // sum() ports
-  output logic[31:0] sum_ret,
+  // get_valid() ports
+  output logic get_valid_ret,
+  // get_data_out() ports
+  output logic[7:0] get_data_out_ret,
+  // get_checksum() ports
+  output logic[31:0] get_checksum_ret,
   // tick() ports
-  input logic tick_i_rstn,
-  input logic tick_i_serial
+  input logic tick_reset,
+  input logic tick_serial
 );
 /*public:*/
-  always_comb begin : valid
-    valid_ret = _cursor == 1;
+
+  // Our output is valid once we're only waiting on the stop bit.
+  always_comb begin : get_valid
+    get_valid_ret = bit_count == 1;
   end
 
-  always_comb begin : buffer
-    buffer_ret = _buffer;
+  always_comb begin : get_data_out
+    get_data_out_ret = data_out;
   end
 
-  always_comb begin : sum
-    sum_ret = _sum;
+  always_comb begin : get_checksum
+    get_checksum_ret = checksum;
   end
 
-  always_ff @(posedge clock) begin : tick
-    if (!tick_i_rstn) begin
-      _cycle <= 0;
-      _cursor <= 0;
-      _buffer <= 0;
-      _sum <= 0;
-    end else begin
-      if (_cycle != 0) begin
-        _cycle <= _cycle - 1;
-      end else if (_cursor != 0) begin
-        logic[7:0] temp;
-        temp = (tick_i_serial << 7) | (_buffer >> 1);
-        if (_cursor - 1 == 1) _sum <= _sum + temp;
-        _cycle <= cycle_max;
-        _cursor <= _cursor - 1;
-        _buffer <= temp;
-      end else if (tick_i_serial == 0) begin
-        _cycle <= cycle_max;
-        _cursor <= cursor_max;
+  always_ff @(posedge clock) begin : tick  // Serial input from the transmitter
+
+    if (tick_reset) begin
+      bit_delay <= 0;
+      bit_count <= 0;
+      data_out <= 0;
+      checksum <= 0;
+    end
+    else begin
+
+      // If we're waiting for the next bit to arrive, keep waiting until our
+      // bit delay counter runs out.
+      if (bit_delay != 0) begin
+        bit_delay <= bit_delay - 1;
+      end
+
+      // We're done waiting for a bit. If we have bits left to receive, shift
+      // them into the top of the output register.
+      else if (bit_count != 0) begin
+        logic[7:0] new_output;
+        logic[bit_count_width-1:0] new_bit_count;
+        new_output = (tick_serial << 7) | (data_out >> 1);
+        new_bit_count = bit_count - 1;
+
+        // If that was the last bit, add the finished byte to our checksum.
+        // Note we check for == 1 and not == 0, as the last bit is a "stop" bit.
+        if (new_bit_count == 1) begin
+          checksum <= checksum + new_output;
+        end
+
+        // Move to the next bit and reset our delay counter.
+        bit_delay <= bit_delay_max;
+        bit_count <= new_bit_count;
+        data_out <= new_output;
+      end
+
+      // We're not waiting for a bit and we finished receiving the previous
+      // byte. Wait for the serial line to go low, which signals the start of
+      // the next byte.
+      else if (tick_serial == 0) begin
+        bit_delay <= bit_delay_max;
+        bit_count <= bit_count_max;
       end
     end
   end
 
  /*private:*/
-  localparam int cycle_bits = $clog2(cycles_per_bit);
-  localparam int cycle_max = cycles_per_bit - 1;
-  localparam int cursor_max = 9;
-  localparam int cursor_bits = $clog2(cursor_max);
+  // We wait for cycles_per_bit cycles
+  localparam int bit_delay_width = $clog2(cycles_per_bit);
+  localparam int bit_delay_max = cycles_per_bit - 1;
+  logic[bit_delay_width-1:0] bit_delay;
 
-  logic[cycle_bits-1:0] _cycle;
-  logic[cursor_bits-1:0] _cursor;
-  logic[7:0] _buffer;
-  logic[31:0] _sum;
+  // Our serial data format is 8n1, which is short for "one start bit, 8 data
+  // bits, no parity bit, one stop bit". If bit_count == 1, we're only waiting
+  // on the stop bit.
+  localparam int bit_count_max = 9;
+  localparam int bit_count_width = $clog2(bit_count_max);
+  logic[bit_count_width-1:0] bit_count;
+
+  // The received byte
+  logic[7:0] data_out;
+
+  // The checksum of all bytes received so far.
+  logic[31:0] checksum;
 endmodule
 
 //==============================================================================

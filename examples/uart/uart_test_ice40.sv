@@ -26,8 +26,8 @@ module uart_ice40(
   output logic LOGIC7
 );
 
-  logic pll_clk;
-  logic rst_n;
+  logic pll_clock;
+  logic pll_lock;
 
   /**
    * PLL configuration
@@ -47,34 +47,36 @@ module uart_ice40(
                   .DIVQ(3'b101),          // DIVQ =  5
                   .FILTER_RANGE(3'b001)   // FILTER_RANGE = 1
           ) uut (
-                  .LOCK(rst_n),
+                  .LOCK(pll_lock),
                   .RESETB(1'b1),
                   .BYPASS(1'b0),
                   .REFERENCECLK(CLK),
-                  .PLLOUTCORE(pll_clk)
+                  .PLLOUTCORE(pll_clock)
                   );
 
 
-  localparam pll_clk_rate   = 24000000;
-  localparam ser_clk_rate   =     1200;
-  localparam cycles_per_bit = pll_clk_rate / ser_clk_rate;
+  localparam pll_clock_rate = 24000000;
+  localparam ser_clock_rate = 1200;
+  localparam cycles_per_bit = pll_clock_rate / ser_clock_rate;
 
-  //logic ser_tx;
   logic o_serial;
-  logic[7:0] o_data;
   logic o_valid;
+  logic[7:0] o_data;
   logic o_done;
   logic[31:0] o_sum;
+  logic reset;
+
+  assign reset = !pll_lock;
 
   uart_top #(.cycles_per_bit(cycles_per_bit), .repeat_msg(1)) dut
   (
-    pll_clk,
-    o_serial,
-    o_data,
-    o_valid,
-    o_done,
-    o_sum,
-    rst_n
+    .clock(pll_clock),
+    .get_serial_ret(o_serial),
+    .get_valid_ret(o_valid),
+    .get_data_out_ret(o_data),
+    .get_done_ret(o_done),
+    .get_checksum_ret(o_sum),
+    .tock_reset(reset)
   );
 
   always_comb begin

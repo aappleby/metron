@@ -12,121 +12,135 @@ module uart_top #(parameter int cycles_per_bit = 3,parameter  int repeat_msg = 0
 (
   // global clock
   input logic clock,
-  // serial() ports
-  output logic serial_ret,
-  // data() ports
-  output logic[7:0] data_ret,
-  // valid() ports
-  output logic valid_ret,
-  // done() ports
-  output logic done_ret,
-  // sum() ports
-  output logic[31:0] sum_ret,
+  // get_serial() ports
+  output logic get_serial_ret,
+  // get_valid() ports
+  output logic get_valid_ret,
+  // get_data_out() ports
+  output logic[7:0] get_data_out_ret,
+  // get_done() ports
+  output logic get_done_ret,
+  // get_checksum() ports
+  output logic[31:0] get_checksum_ret,
   // tock() ports
-  input logic tock_i_rstn,
-  output logic tock_ret
+  input logic tock_reset
 );
 /*public:*/
-  always_comb begin : serial
-    serial_ret = tx_serial_ret;
+
+  // The actual bit of data currently on the transmitter's output
+  always_comb begin : get_serial
+    get_serial_ret = tx_get_serial_ret;
   end
 
-  always_comb begin : data
-    data_ret = rx_buffer_ret;
+  // Returns true if the receiver has a byte in its buffer
+  always_comb begin : get_valid
+    get_valid_ret = rx_get_valid_ret;
   end
 
-  always_comb begin : valid
-    valid_ret = rx_valid_ret;
+  // The next byte of data from the receiver
+  always_comb begin : get_data_out
+    get_data_out_ret = rx_get_data_out_ret;
   end
 
-  always_comb begin : done
-    done_ret = hello_done_ret && tx_idle_ret;
+  // True if the client has sent its message and the transmitter has finished
+  // transmitting it.
+  always_comb begin : get_done
+    get_done_ret = hello_get_done_ret && tx_get_idle_ret;
   end
 
-  always_comb begin : sum
-    sum_ret = rx_sum_ret;
+  // Checksum of all the bytes received
+  always_comb begin : get_checksum
+    get_checksum_ret = rx_get_checksum_ret;
   end
 
   always_comb begin : tock
-    logic[7:0] hello_data;
-    logic hello_req;
-    hello_data = hello_data_ret;
-    hello_req = hello_req_ret;
-    rx_tick_i_rstn = tock_i_rstn;
-    rx_tick_i_serial = tx_serial_ret;
+    logic[7:0] data;
+    logic request;
+    logic serial;
+    logic clear_to_send;
+    logic idle;
+    // Grab signals from our submodules before we tick them.
+    data = hello_get_data_ret;
+    request = hello_get_request_ret;
 
-    hello_tick_i_rstn = tock_i_rstn;
-    hello_tick_i_cts = tx_cts_ret;
-    hello_tick_i_idle = tx_idle_ret;
-    tx_tick_i_rstn = tock_i_rstn;
-    tx_tick_i_data = hello_data;
-    tx_tick_i_req = hello_req;
-    tock_ret = 0;
+    serial = tx_get_serial_ret;
+    clear_to_send = tx_get_clear_to_send_ret;
+    idle = tx_get_idle_ret;
+
+    // Tick all submodules.
+    hello_tick_reset = tock_reset;
+    hello_tick_clear_to_send = clear_to_send;
+    hello_tick_idle = idle;
+    tx_tick_reset = tock_reset;
+    tx_tick_send_data = data;
+    tx_tick_send_request = request;
+    rx_tick_reset = tock_reset;
+    rx_tick_serial = serial;
   end
 
   //----------------------------------------
 /*private:*/
-  uart_hello #(repeat_msg) hello(
+  uart_hello #(repeat_msg)  hello(
     // global clock
     .clock(clock),
-    // data() ports
-    .data_ret(hello_data_ret),
-    // req() ports
-    .req_ret(hello_req_ret),
-    // done() ports
-    .done_ret(hello_done_ret),
+    // get_data() ports
+    .get_data_ret(hello_get_data_ret),
+    // get_request() ports
+    .get_request_ret(hello_get_request_ret),
+    // get_done() ports
+    .get_done_ret(hello_get_done_ret),
     // tick() ports
-    .tick_i_rstn(hello_tick_i_rstn),
-    .tick_i_cts(hello_tick_i_cts),
-    .tick_i_idle(hello_tick_i_idle)
+    .tick_reset(hello_tick_reset),
+    .tick_clear_to_send(hello_tick_clear_to_send),
+    .tick_idle(hello_tick_idle)
   );
-  logic hello_tick_i_rstn;
-  logic hello_tick_i_cts;
-  logic hello_tick_i_idle;
-  logic[7:0] hello_data_ret;
-  logic hello_req_ret;
-  logic hello_done_ret;
-
+  logic hello_tick_reset;
+  logic hello_tick_clear_to_send;
+  logic hello_tick_idle;
+  logic[7:0] hello_get_data_ret;
+  logic hello_get_request_ret;
+  logic hello_get_done_ret;
+ // Our UART client that transmits our "hello world" test message
   uart_tx #(cycles_per_bit) tx(
     // global clock
     .clock(clock),
-    // serial() ports
-    .serial_ret(tx_serial_ret),
-    // cts() ports
-    .cts_ret(tx_cts_ret),
-    // idle() ports
-    .idle_ret(tx_idle_ret),
+    // get_serial() ports
+    .get_serial_ret(tx_get_serial_ret),
+    // get_clear_to_send() ports
+    .get_clear_to_send_ret(tx_get_clear_to_send_ret),
+    // get_idle() ports
+    .get_idle_ret(tx_get_idle_ret),
     // tick() ports
-    .tick_i_rstn(tx_tick_i_rstn),
-    .tick_i_data(tx_tick_i_data),
-    .tick_i_req(tx_tick_i_req)
+    .tick_reset(tx_tick_reset),
+    .tick_send_data(tx_tick_send_data),
+    .tick_send_request(tx_tick_send_request)
   );
-  logic tx_tick_i_rstn;
-  logic[7:0] tx_tick_i_data;
-  logic tx_tick_i_req;
-  logic tx_serial_ret;
-  logic tx_cts_ret;
-  logic tx_idle_ret;
-
+  logic tx_tick_reset;
+  logic[7:0] tx_tick_send_data;
+  logic tx_tick_send_request;
+  logic tx_get_serial_ret;
+  logic tx_get_clear_to_send_ret;
+  logic tx_get_idle_ret;
+    // The UART transmitter
   uart_rx #(cycles_per_bit) rx(
     // global clock
     .clock(clock),
-    // valid() ports
-    .valid_ret(rx_valid_ret),
-    // buffer() ports
-    .buffer_ret(rx_buffer_ret),
-    // sum() ports
-    .sum_ret(rx_sum_ret),
+    // get_valid() ports
+    .get_valid_ret(rx_get_valid_ret),
+    // get_data_out() ports
+    .get_data_out_ret(rx_get_data_out_ret),
+    // get_checksum() ports
+    .get_checksum_ret(rx_get_checksum_ret),
     // tick() ports
-    .tick_i_rstn(rx_tick_i_rstn),
-    .tick_i_serial(rx_tick_i_serial)
+    .tick_reset(rx_tick_reset),
+    .tick_serial(rx_tick_serial)
   );
-  logic rx_tick_i_rstn;
-  logic rx_tick_i_serial;
-  logic rx_valid_ret;
-  logic[7:0] rx_buffer_ret;
-  logic[31:0] rx_sum_ret;
-
+  logic rx_tick_reset;
+  logic rx_tick_serial;
+  logic rx_get_valid_ret;
+  logic[7:0] rx_get_data_out_ret;
+  logic[31:0] rx_get_checksum_ret;
+    // The UART receiver
 endmodule
 
 //==============================================================================

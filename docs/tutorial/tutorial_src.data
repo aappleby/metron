@@ -591,7 +591,7 @@ public:
       else if (state == SEND && clear_to_send) {
         // either go to DONE state if we're about to send the last character of
         // the message
-        if (cursor == b9(message_len - 1)) {
+        if (cursor == message_len - 1) {
           state = DONE;
         }
 

@@ -3327,6 +3327,51 @@ CHECK_RETURN Err MtCursor::emit_sym_preproc_ifdef(MnNode n) {
 
 //------------------------------------------------------------------------------
 
+// This doesn't really work right, TreeSitter interprets "logic<8>" in "#define FOO logic<8>" as a template function call
+#if 0
+
+  {
+    MtSourceFile dummy_source;
+    dummy_source.lib = current_source->lib;
+    dummy_source.source = arg.data();
+    dummy_source.source_end = arg.data() + arg.size();
+    dummy_source.lang = tree_sitter_cpp();
+    dummy_source.parser = ts_parser_new();
+    ts_parser_set_language(dummy_source.parser, dummy_source.lang);
+    dummy_source.tree = ts_parser_parse_string(dummy_source.parser, NULL, arg.data(), (uint32_t)arg.size());
+
+    TSNode ts_root = ts_tree_root_node(dummy_source.tree);
+    auto root_sym = ts_node_symbol(ts_root);
+    dummy_source.root_node = MnNode(ts_root, root_sym, 0, &dummy_source);
+
+    if (dummy_source.root_node.sym == sym_translation_unit) {
+      dummy_source.root_node = dummy_source.root_node.child(0);
+    }
+
+    // TreeSitter tacks an ERROR node on if we parse just a bare integer constant
+    if (dummy_source.root_node.sym == 0xFFFF) {
+      dummy_source.root_node = dummy_source.root_node.child(0);
+    }
+
+    //dummy_source.root_node.dump_tree();
+
+    MtCursor preproc_cursor(current_source->lib, &dummy_source, nullptr, str_out);
+    preproc_cursor.preproc_vars = preproc_vars;
+
+    //dummy_source.root_node.dump_tree();
+    if (dummy_source.root_node.is_expression()) {
+      err << preproc_cursor.emit_expression(dummy_source.root_node);
+    }
+    else if (dummy_source.root_node.is_statement()) {
+      err << preproc_cursor.emit_statement(dummy_source.root_node);
+    }
+    else {
+      err << preproc_cursor.emit_default(dummy_source.root_node);
+    }
+  }
+  cursor = n.end();
+#endif
+
 CHECK_RETURN Err MtCursor::emit_sym_preproc_def(MnNode n) {
   Err err = emit_ws_to(sym_preproc_def, n);
 

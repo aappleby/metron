@@ -12,9 +12,9 @@ public:
     readmemh("examples/uart/message.hex", memory, 0, 511);
   }
 
-  // The byte of data we want transmitted
+  // The byte of data we want transmitted is always the one at the cursor.
   logic<8> get_data() const {
-    return data;
+    return memory[cursor];
   }
 
   // True if we want to transmit a byte
@@ -40,8 +40,6 @@ public:
     }
 
     else {
-      // Always grab the next character to send from memory.
-      data = memory[cursor];
 
       // If we're waiting for the transmitter to be free and it's told us that
       // it's idle, go to SEND state.
@@ -54,7 +52,7 @@ public:
       else if (state == SEND && clear_to_send) {
         // either go to DONE state if we're about to send the last character of
         // the message
-        if (cursor == b9(message_len - 1)) {
+        if (cursor == message_len - 1) {
           state = DONE;
         }
 
@@ -85,7 +83,6 @@ private:
 
   logic<8> memory[512];      // The buffer preloaded with our message
   logic<cursor_bits> cursor; // Index into the message buffer of the _next_ character to transmit
-  logic<8> data;             // The character we're about to transmit
 };
 
 //==============================================================================

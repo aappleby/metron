@@ -21,15 +21,17 @@ module uart_rx #(parameter int cycles_per_bit = 4)
 );
 /*public:*/
 
-  // Our output is valid once we're only waiting on the stop bit.
+  // Our output is valid once we've received 8 bits.
   always_comb begin : get_valid
-    get_valid_ret = bit_count == 1;
+    get_valid_ret = bit_count == 8;
   end
 
+  // The most recent data byte received.
   always_comb begin : get_data_out
     get_data_out_ret = data_out;
   end
 
+  // The checksum of all bytes received so far.
   always_comb begin : get_checksum
     get_checksum_ret = checksum;
   end
@@ -37,8 +39,8 @@ module uart_rx #(parameter int cycles_per_bit = 4)
   always_ff @(posedge clock) begin : tick  // Serial input from the transmitter
 
     if (tick_reset) begin
-      bit_delay <= 0;
-      bit_count <= 0;
+      bit_delay <= bit_delay_max;
+      bit_count <= bit_count_max;
       data_out <= 0;
       checksum <= 0;
     end
@@ -46,27 +48,24 @@ module uart_rx #(parameter int cycles_per_bit = 4)
 
       // If we're waiting for the next bit to arrive, keep waiting until our
       // bit delay counter runs out.
-      if (bit_delay != 0) begin
-        bit_delay <= bit_delay - 1;
+      if (bit_delay < bit_delay_max) begin
+        bit_delay <= bit_delay + 1;
       end
 
       // We're done waiting for a bit. If we have bits left to receive, shift
       // them into the top of the output register.
-      else if (bit_count != 0) begin
+      else if (bit_count < bit_count_max) begin
         logic[7:0] new_output;
-        logic[bit_count_width-1:0] new_bit_count;
         new_output = (tick_serial << 7) | (data_out >> 1);
-        new_bit_count = bit_count - 1;
 
-        // If that was the last bit, add the finished byte to our checksum.
-        // Note we check for == 1 and not == 0, as the last bit is a "stop" bit.
-        if (new_bit_count == 1) begin
+        // If that was the last data bit, add the finished byte to our checksum.
+        if (bit_count == 7) begin
           checksum <= checksum + new_output;
         end
 
         // Move to the next bit and reset our delay counter.
-        bit_delay <= bit_delay_max;
-        bit_count <= new_bit_count;
+        bit_delay <= 0;
+        bit_count <= bit_count + 1;
         data_out <= new_output;
       end
 
@@ -74,8 +73,8 @@ module uart_rx #(parameter int cycles_per_bit = 4)
       // byte. Wait for the serial line to go low, which signals the start of
       // the next byte.
       else if (tick_serial == 0) begin
-        bit_delay <= bit_delay_max;
-        bit_count <= bit_count_max;
+        bit_delay <= 0;
+        bit_count <= 0;
       end
     end
   end

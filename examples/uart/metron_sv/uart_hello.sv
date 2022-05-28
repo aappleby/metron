@@ -25,9 +25,9 @@ module uart_hello #(parameter int repeat_msg = 0)
     $readmemh("examples/uart/message.hex", memory, 0, 511);
   end
 
-  // The byte of data we want transmitted
+  // The byte of data we want transmitted is always the one at the cursor.
   always_comb begin : get_data
-    get_data_ret = data;
+    get_data_ret = memory[cursor];
   end
 
   // True if we want to transmit a byte
@@ -50,8 +50,6 @@ module uart_hello #(parameter int repeat_msg = 0)
     end
 
     else begin
-      // Always grab the next character to send from memory.
-      data <= memory[cursor];
 
       // If we're waiting for the transmitter to be free and it's told us that
       // it's idle, go to SEND state.
@@ -64,7 +62,7 @@ module uart_hello #(parameter int repeat_msg = 0)
       else if (state == SEND && tick_clear_to_send) begin
         // either go to DONE state if we're about to send the last character of
         // the message
-        if (cursor == 9'(message_len - 1)) begin
+        if (cursor == message_len - 1) begin
           state <= DONE;
         end
 
@@ -95,7 +93,6 @@ module uart_hello #(parameter int repeat_msg = 0)
 
   logic[7:0] memory[512];      // The buffer preloaded with our message
   logic[cursor_bits-1:0] cursor; // Index into the message buffer of the _next_ character to transmit
-  logic[7:0] data;             // The character we're about to transmit
 endmodule
 
 //==============================================================================

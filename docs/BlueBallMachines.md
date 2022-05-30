@@ -8,7 +8,7 @@ If you haven't already seen the "Blue Ball Machine" gif, stare at it now until y
 
 ----------
 
-I've been programming professionally for about 25 years now, a mix of system optimization, graphics engine programming, and most recently (as of ~5 years ago) software and firmware to support hardware research projects. In my free time I mess with game console emulators, low-level hardware stuff, and blinky lights.
+I've been programming professionally for about 25 years now; my jobs have been a mix of system optimization, graphics engine programming, and most recently (as of ~5 years ago) software and firmware to support hardware research projects. In my free time I mess with game console emulators, low-level hardware stuff, and blinky lights.
 
 In both my day job and in my personal projects, I tend to run into tasks like these:
 

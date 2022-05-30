@@ -40,26 +40,31 @@ And so that became Metron v0.0.1, published at https://github.com/aappleby/Metro
 When hardware engineers ask software engineers questions, it goes like this:
 
 ```
-HWE: "Hey, can you send me the blueprints to the house? I need to get some dimensions nailed down."
+HWE: "Hey, can you send me the blueprints to the house? I need to get some
+      dimensions nailed down."
 
 SWE: "Sure thing!"
 
-HWE: "...This is a novella about house-building. I just need to know where the fireplace is."
+HWE: "...This is a novella about house-building. I just need to know where the
+      fireplace is."
 
-SWE: "Oh, right - if you turn to page 27 there's a list of all the fireplaces we can install, and then on page 332 you can
-see how the installation location is selected based on the user's stored preferences."
+SWE: "Oh, right - if you turn to page 27 there's a list of all the fireplaces we
+      can install, and then on page 332 you can see how the installation
+      location is selected based on the user's stored preferences."
 ```
 
 When software engineers ask hardware engineers a question, it goes like this:
 
 ```
-SWE: "If you've got a minute, can you help me out with something? I'm working on the Zamboni driver and I need to know what the input format is."
+SWE: "If you've got a minute, can you help me out with something? I'm working on
+      the Zamboni driver and I need to know what the input format is."
 
 HWE: "Oh, no problem - it's right here:" *blue_ball_machine.gif*
 
 SWE: "Is that... what am I even looking at?"
 
-HWE: "It's the Zamboni, right there in the top left. Just under the packet shuffler."
+HWE: "It's the Zamboni, right there in the top left. Just under the packet
+      shuffler."
 ```
 
 That's an exaggeration, but you get the point. Software engineers perceive hardware designs as something in between brutalist art and Rube Goldberg machines - slabs of code strewn with disconnected variable names and interspersed with tiny cryptic machines that somehow collectively manage to do something useful. Hardware engineers perceive software designs like bookshelves full of instruction manuals, always describing the "how" but never the "what". The software is amorphous, transient, an incantation that whispers life into the machine when it's not causing the testbench to lock up for no apparent reason.

@@ -1,4 +1,4 @@
-Blue Ball Machines
+# Blue Ball Machines
 
 If you haven't already seen this gif, stare at it now until you get tired of it then continue on with this essay:
 
@@ -35,7 +35,7 @@ And so that became Metron v0.0.1, published at https://github.com/aappleby/Metro
 
 ----------
 
-**...so what does all of that have to do with the blue ball machines?**
+# ...so what does all of that have to do with the blue ball machines?
 
 When hardware engineers ask software engineers questions, it goes like this:
 

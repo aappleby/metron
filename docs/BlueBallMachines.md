@@ -43,7 +43,7 @@ When hardware engineers ask software engineers questions, it goes like this:
 HWE: "Hey, can you send me the blueprints to the house? I need to get some
       dimensions nailed down."
 
-SWE: "Sure thing!"
+SWE: "Sure thing!" *sends link to repo*
 
 HWE: "...This is a novella about house-building. I just need to know where the
       fireplace is."

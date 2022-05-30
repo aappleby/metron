@@ -69,7 +69,7 @@ HWE: "It's the Zamboni, right there in the top left. Just under the packet
       shuffler."
 ```
 
-That's an exaggeration, but you get the point. Software engineers perceive hardware designs as something in between brutalist art and Rube Goldberg machines - slabs of code strewn with disconnected variable names and interspersed with tiny cryptic machines that somehow collectively manage to do something useful. Hardware engineers perceive software designs like bookshelves full of instruction manuals, always describing the "how" but never the "what". The software is amorphous, transient, an incantation that whispers life into the machine when it's not causing the testbench to lock up for no apparent reason.
+That's an exaggeration, but you get the point. Software engineers perceive hardware designs as something in between Brutalist art and Rube Goldberg machines - slabs of code strewn with disconnected variable names and interspersed with tiny cryptic machines that somehow collectively manage to do something useful. Hardware engineers perceive software designs like bookshelves full of instruction manuals, always describing the "how" but never the "what". The software is amorphous, transient, an incantation that whispers life into the machine when it's not causing the testbench to lock up for no apparent reason.
 
 I think both viewpoints are valid, and that both disciplines could learn a lot from each other. Software needs a stronger concept of the "what", the model of the program as an assemblage of concrete objects that can be seen and discussed independently of the source code. Hardware needs a stronger concept of the "how", the processes and sequences that tie all the machines together into something that accomplishes work.
 

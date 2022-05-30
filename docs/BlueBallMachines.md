@@ -1,10 +1,10 @@
-# Blue Ball Machines
+# Blue Ball Machines: Translating between the software and hardware universes.
 
-If you haven't already seen this gif, stare at it now until you get tired of it then continue on with this essay:
+If you haven't already seen the "Blue Ball Machine" gif, stare at it now until you get tired of it then continue on with the essay:
 
-(It's animated, you may need to click on it or open it in a new tab if you're viewing this in the dark Github theme)
+(It's animated, you may need to click on it or open it in a new tab to see the details if you're viewing this in the dark Github theme)
 
-![Blue Ball Machine](https://i.imgur.com/fAm4uSt.gif)
+![Blue Ball Machine](assets/ball_machine.gif)
 
 ----------
 
@@ -39,27 +39,29 @@ And so that became Metron v0.0.1, published at https://github.com/aappleby/Metro
 
 # ...so what does all of that have to do with the blue ball machines?
 
-When hardware engineers ask software engineers questions, it goes like this:
+Go back the ball machine gif and watch it a bit more. Try and follow a single blue ball through the system as far as you can. Now pick a single widget in the machine and try to keep track of where the balls enter and exit it, and in what order. No single viewpoint on its own completely describes the machine - there's just too much _stuff_ happening all at once, and trying to describe the system solely in terms of balls moving or machines machining doesn't capture it fully.
+
+This sort of disconnect shows up when you have mixed hardware/software teams trying to build new systems together. When the hardware engineers ask the software engineers questions, the discussion tends to go something like this:
 
 ```
-HWE: "Hey, can you send me the blueprints to the house? I need to get some
-      dimensions nailed down."
+HWE: "Hey, can you send me the source code to the ball incinerator? I need to
+      get some dimensions nailed down."
 
-SWE: "Sure thing!" *sends link to repo*
+SWE: "Sure thing!" *sends link to code repo*
 
-HWE: "...This is a novella about house-building. I just need to know where the
-      fireplace is."
+HWE: "...This is a novella about ball-machine-building. I just need to know
+      where the flamethrower goes."
 
-SWE: "Oh, right - if you turn to page 27 there's a list of all the fireplaces we
-      can install, and then on page 332 you can see how the installation
+SWE: "Oh, right - if you turn to page 27 there's a list of all the flame sources
+      we can install, and then on page 332 you can see how the installation
       location is selected based on the user's stored preferences."
 ```
 
-When software engineers ask hardware engineers a question, it goes like this:
+And then later when the software engineers ask the hardware engineers questions, it goes like this:
 
 ```
 SWE: "If you've got a minute, can you help me out with something? I'm working on
-      the Zamboni driver and I need to know what the input format is."
+      the Zamboni driver and I need to know the format of the input balls."
 
 HWE: "Oh, no problem - it's right here:" *blue_ball_machine.gif*
 
@@ -69,7 +71,7 @@ HWE: "It's the Zamboni, right there in the top left. Just under the packet
       shuffler."
 ```
 
-That's an exaggeration, but you get the point. Software engineers perceive hardware designs as something in between Brutalist art and Rube Goldberg machines - slabs of code strewn with disconnected variable names and interspersed with cryptic blocks of logic that somehow collectively manage to do something useful. Hardware engineers perceive software designs like bookshelves full of instruction manuals, always describing the "how" but never the "what". The software is amorphous, transient, an incantation that whispers life into the machine when it's not causing the testbench to lock up for no apparent reason.
+That's an exaggeration, but you get the point. Software engineers perceive hardware designs as something in between abstract art and Rube Goldberg machines - slabs of code strewn with disconnected variable names and interspersed with cryptic blocks of logic that somehow collectively manage to do something useful. Hardware engineers perceive software designs like bookshelves full of instruction manuals, always describing the "how" but never the "what". The software is amorphous, transient, a code ghost that whispers life into the machine when it's not causing the testbench to lock up for no apparent reason.
 
 I think both viewpoints are valid, and that both disciplines could learn a lot from each other. Software needs a stronger concept of the "what", the model of the program as an assemblage of concrete objects that can be seen and discussed independently of the source code. Hardware needs a stronger concept of the "how", the processes and sequences that tie all the machines together into something that accomplishes work.
 

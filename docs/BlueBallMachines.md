@@ -2,7 +2,7 @@
 
 If you haven't already seen this gif, stare at it now until you get tired of it then continue on with this essay:
 
-(You may need to open it in a new tab if you're viewing this in the dark Github theme)
+(It's animated, you may need to click on it or open it in a new tab if you're viewing this in the dark Github theme)
 
 ![Blue Ball Machine](https://i.imgur.com/fAm4uSt.gif)
 

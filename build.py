@@ -36,6 +36,7 @@ def main():
     build_rvtiny_sync()
     # build_ibex()
     build_pong()
+    build_j1()
     print("Done!")
     outfile.close()
     outfile = None
@@ -486,8 +487,21 @@ def build_metron_test():
     )
 
 # ------------------------------------------------------------------------------
-# Simple Uart testbench
 
+def build_j1():
+    cpp_binary(
+        bin_name="bin/examples/j1",
+        src_files=[
+            "examples/j1/main.cpp",
+        ],
+        includes=["src"],
+        src_objs=[],
+        link_deps=["bin/libmetron.a"],
+    )
+    j1_srcs = metronize_dir("examples/j1/metron", "j1.h", "examples/j1/metron_sv")
+
+# ------------------------------------------------------------------------------
+# Simple Uart testbench
 
 def build_uart():
     cpp_binary(

@@ -8,7 +8,9 @@ Metron is _not_ a "High-Level Synthesis" tool. Metron does some basic analysis t
 
 Because it targets hardware implementation, Metron can't handle a lot of C++ language features - no pointers, no virtual functions, no pass-by-reference, limited data structures - but it's still sufficient to build CPUs and peripherals that will run on a FPGA.
 
-## [TL;DR: Demo](https://aappleby.github.io/Metron/demo/)
+# TL;DR:
+## [Short essay about hardware vs. software programming](docs/BlueBallMachines.md)
+## [Demo](https://aappleby.github.io/Metron/demo/)
 ## [Tutorial](https://aappleby.github.io/Metron/tutorial/)
 ## [How Metron Works](https://aappleby.github.io/Metron/TemporalLogic.html)
 

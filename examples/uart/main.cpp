@@ -6,7 +6,7 @@
 void benchmark() {
   const int cycles_per_bit = 3;
   const int repeat_msg = 1;
-  const int cycle_max = 10000000;
+  const int cycle_max = 1000000000;
 
   uart_top<cycles_per_bit, repeat_msg> top;
   top.tock(1);

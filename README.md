@@ -12,7 +12,7 @@ Because it targets hardware implementation, Metron can't handle a lot of C++ lan
 ## [Short essay about hardware vs. software programming](docs/BlueBallMachines.md)
 ## [Demo](https://aappleby.github.io/Metron/demo/)
 ## [Tutorial](https://aappleby.github.io/Metron/tutorial/)
-## [How Metron Works](https://aappleby.github.io/Metron/TemporalLogic.html)
+## [How Metron Works - Tracing & Symbolic Logic](https://aappleby.github.io/Metron/TemporalLogic.html)
 
 ## Metron v0.0.1 Release Notes
 

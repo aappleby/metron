@@ -46,8 +46,8 @@ int main(int argc, char** arv) {
     }
   }
 
-  benchmark();
-  benchmark();
+  //benchmark();
+  //benchmark();
 
   return -1;
 }

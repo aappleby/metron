@@ -147,7 +147,8 @@ build docs/demo/examples.data docs/demo/examples.js: command $
     examples/tutorial/tutorial3.h examples/tutorial/declaration_order.h $
     examples/tutorial/clocked_adder.h examples/tutorial/adder.h $
     examples/tutorial/counter.h examples/rvtiny_sync/metron/toplevel.h $
-    examples/j1/metron/j1.h
+    examples/gb_spu/metron/gb_spu.h examples/j1/metron/j1.h $
+    examples/j1/metron/dpram.h
   command = python3 $$EMSDK/upstream/emscripten/tools/file_packager.py $
       docs/demo/examples.data --no-node --js-output=docs/demo/examples.js $
       --preload examples tests/metron_good tests/metron_bad --exclude *.cpp $
@@ -773,22 +774,3 @@ build examples/pong/metron_sv/pong.sv: metron examples/pong/metron/pong.h | $
   src_dir = examples/pong/metron
   dst_dir = examples/pong/metron_sv
   src_top = pong.h
-
-
-################################################################################
-# Compile bin/examples/j1
-
-build obj/examples/j1/main.o: compile_cpp examples/j1/main.cpp
-  includes = -Isrc
-build bin/examples/j1: link obj/examples/j1/main.o bin/libmetron.a
-  includes = -Isrc
-
-
-################################################################################
-# Metronize examples/j1/metron -> examples/j1/metron_sv
-
-build examples/j1/metron_sv/j1.sv: metron examples/j1/metron/j1.h | $
-    bin/metron examples/j1/metron/j1.h
-  src_dir = examples/j1/metron
-  dst_dir = examples/j1/metron_sv
-  src_top = j1.h

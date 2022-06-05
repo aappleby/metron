@@ -97,7 +97,7 @@ int main(int argc, char** argv) {
     printf("All tests pass.\n");
   }
 
-  benchmark();
+  //benchmark();
 
   return 0;
 }

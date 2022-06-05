@@ -36,7 +36,7 @@ def main():
     build_rvtiny_sync()
     # build_ibex()
     build_pong()
-    build_j1()
+    #build_j1()
     print("Done!")
     outfile.close()
     outfile = None

@@ -37,6 +37,7 @@ def main():
     # build_ibex()
     build_pong()
     #build_j1()
+    build_gb_spu()
     print("Done!")
     outfile.close()
     outfile = None
@@ -499,6 +500,25 @@ def build_j1():
         link_deps=["bin/libmetron.a"],
     )
     j1_srcs = metronize_dir("examples/j1/metron", "j1.h", "examples/j1/metron_sv")
+
+# ------------------------------------------------------------------------------
+
+def build_gb_spu():
+    cpp_binary(
+        bin_name="bin/examples/gb_spu",
+        src_files=[
+            "examples/gb_spu/gb_spu_main.cpp",
+            "examples/gb_spu/Sch_ApuControl.cpp",
+            "examples/gb_spu/Sch_Channel1.cpp",
+            "examples/gb_spu/Sch_Channel2.cpp",
+            "examples/gb_spu/Sch_Channel3.cpp",
+            "examples/gb_spu/Sch_Channel4.cpp",
+        ],
+        includes=["src"],
+        src_objs=[],
+        link_deps=["bin/libmetron.a"],
+    )
+    gb_spu_srcs = metronize_dir("examples/gb_spu/metron", "gb_spu.h", "examples/gb_spu/metron_sv")
 
 # ------------------------------------------------------------------------------
 # Simple Uart testbench

@@ -147,6 +147,9 @@ build docs/demo/examples.data docs/demo/examples.js: command $
     examples/tutorial/tutorial3.h examples/tutorial/declaration_order.h $
     examples/tutorial/clocked_adder.h examples/tutorial/adder.h $
     examples/tutorial/counter.h examples/rvtiny_sync/metron/toplevel.h $
+    examples/gb_spu/regs.h examples/gb_spu/Sch_Channel4.h $
+    examples/gb_spu/Sch_Channel3.h examples/gb_spu/Sch_Channel1.h $
+    examples/gb_spu/Sch_Channel2.h examples/gb_spu/Sch_ApuControl.h $
     examples/gb_spu/metron/gb_spu.h examples/j1/metron/j1.h $
     examples/j1/metron/dpram.h
   command = python3 $$EMSDK/upstream/emscripten/tools/file_packager.py $
@@ -774,3 +777,42 @@ build examples/pong/metron_sv/pong.sv: metron examples/pong/metron/pong.h | $
   src_dir = examples/pong/metron
   dst_dir = examples/pong/metron_sv
   src_top = pong.h
+
+
+################################################################################
+# Compile bin/examples/gb_spu
+
+build obj/examples/gb_spu/gb_spu_main.o: compile_cpp $
+    examples/gb_spu/gb_spu_main.cpp
+  includes = -Isrc
+build obj/examples/gb_spu/Sch_ApuControl.o: compile_cpp $
+    examples/gb_spu/Sch_ApuControl.cpp
+  includes = -Isrc
+build obj/examples/gb_spu/Sch_Channel1.o: compile_cpp $
+    examples/gb_spu/Sch_Channel1.cpp
+  includes = -Isrc
+build obj/examples/gb_spu/Sch_Channel2.o: compile_cpp $
+    examples/gb_spu/Sch_Channel2.cpp
+  includes = -Isrc
+build obj/examples/gb_spu/Sch_Channel3.o: compile_cpp $
+    examples/gb_spu/Sch_Channel3.cpp
+  includes = -Isrc
+build obj/examples/gb_spu/Sch_Channel4.o: compile_cpp $
+    examples/gb_spu/Sch_Channel4.cpp
+  includes = -Isrc
+build bin/examples/gb_spu: link obj/examples/gb_spu/gb_spu_main.o $
+    obj/examples/gb_spu/Sch_ApuControl.o obj/examples/gb_spu/Sch_Channel1.o $
+    obj/examples/gb_spu/Sch_Channel2.o obj/examples/gb_spu/Sch_Channel3.o $
+    obj/examples/gb_spu/Sch_Channel4.o bin/libmetron.a
+  includes = -Isrc
+
+
+################################################################################
+# Metronize examples/gb_spu/metron -> examples/gb_spu/metron_sv
+
+build examples/gb_spu/metron_sv/gb_spu.sv: metron $
+    examples/gb_spu/metron/gb_spu.h | bin/metron $
+    examples/gb_spu/metron/gb_spu.h
+  src_dir = examples/gb_spu/metron
+  dst_dir = examples/gb_spu/metron_sv
+  src_top = gb_spu.h

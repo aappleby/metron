@@ -4567,554 +4567,2186 @@ class toplevel {
   logic<32> data_mem[32 * 1024];
   logic<32> regs[32];
 };
+#pragma once
+#include <stdint.h>
+#include <stdio.h>
+typedef bool wire;
+
+inline wire bit0(uint32_t w) { return wire(w & 1); }
+inline wire bit(uint32_t w, int i) { return wire((w >> i) & 1); }
+
+const bool config_use_flags = true;
+const bool config_check_flags = true;
+const bool config_dcheck = true;
+
+struct triwire { wire state; };
+
+//-----------------------------------------------------------------------------
+// These _must_ be defined for all builds.
+
+const wire BIT_DATA   = 0b00000001;
+const wire TRI_DRIVEN = 0b00001000;
+const wire BIT_CLOCK  = 0b00000010;
+
+// These are only used for error checking and can be disabled in fast builds.
+const wire BIT_PULLED = config_use_flags ? 0b00000100 : 0b00000000;
+const wire BIT_DRIVEN = config_use_flags ? 0b00001000 : 0b00000000;
+const wire BIT_OLD    = config_use_flags ? 0b00010000 : 0b00000000;
+const wire BIT_NEW    = config_use_flags ? 0b00100000 : 0b00000000;
+const wire TRI_NEW    = config_use_flags ? 0b00100000 : 0b00000000;
+
+//------------------------------------------------------------------------------
+
+#ifdef __GNUC__
+#include <csignal>
+#define debugbreak() raise(SIGTRAP);
+#endif
+
+#ifdef _MSC_VER
+#define debugbreak() __debugbreak();
+#endif
+
+// Checks that always happen in every build.
+#define CHECK_P(A)  if (!(A)) { printf("ASSERT_P fail @ %s:%d : %s\n", __FILE__, __LINE__, #A); debugbreak(); }
+#define CHECK_N(A)  if ((A))  { printf("ASSERT_N fail @ %s:%d : %s\n", __FILE__, __LINE__, #A); debugbreak(); }
+
+// Checks that only happen if "config_dcheck" is on.
+#define DCHECK_P(A)   if (config_dcheck) {if (!(A)) { printf("CHECK_P fail @ %s:%d : %s\n", __FILE__, __LINE__, #A);  debugbreak(); }}
+#define DCHECK_N(A)   if (config_dcheck) {if ((A))  { printf("CHECK_N fail @ %s:%d : %s\n", __FILE__, __LINE__, #A);  debugbreak(); }}
+
+//-----------------------------------------------------------------------------
+
+struct Adder {
+  wire sum;
+  wire carry;
+};
+
+inline Adder add3(wire a, wire b, wire c) {
+  uint8_t s = bit0(a) + bit0(b) + bit0(c);
+  return { bit(s, 0), bit(s, 1) };
+}
+
+//-----------------------------------------------------------------------------
+
+struct BitBase {
+  BitBase() : state(0) {}
+  //BitBase(uint8_t _state) : state(_state) {}
+
+  wire qp_old() const { check_old(); return state; }
+  wire qn_old() const { check_old(); return ~state; }
+
+  wire qp_mid() const { return state; }
+  wire qn_mid() const { return ~state; }
+
+  wire qp_any() const { return state; }
+  wire qn_any() const { return ~state; }
+
+  wire qp_new() const { check_new(); return state; }
+  wire qn_new() const { check_new(); return ~state; }
+
+  //----------
+  // stuff in this section for logic mode only
+
+  //operator bool() const { return get_data(); }
+  //BitBase operator~() const { BitBase b; b.state = ~state; return b; }
+  //BitBase operator^(const BitBase& b) const { return BitBase(state ^ b.state); }
+
+  void rst() { state &= ~1; }
+  void set() { state |= 1; }
+
+  wire get_data() const { return bit0(state); }
+  void set_data(wire d) { state = (state & ~1) | bit0(d); }
+
+  wire get_clk() const { return bit(state, 1); }
+  void set_clk(wire c) { state = (state & ~2) | (bit0(c) << 1); }
+
+  void dff_pp(wire CLKp, wire Dp) {
+    wire clk_old = state & BIT_CLOCK;
+    wire clk_new = (CLKp << 1) & BIT_CLOCK;
+    wire d1 = (~clk_old & clk_new) ? Dp : state;
+    state = uint8_t(bit0(d1) | clk_new | BIT_NEW | BIT_DRIVEN);
+  }
+
+  //----------
+
+  void check_old() const {
+    if (config_check_flags) {
+      CHECK_P(bool(state & BIT_DRIVEN) != bool(state & BIT_PULLED));
+      CHECK_P((state & (BIT_OLD | BIT_NEW)) == BIT_OLD);
+    }
+  }
+
+  void check_new() const {
+    if (config_check_flags) {
+      CHECK_P(bool(state & BIT_DRIVEN) != bool(state & BIT_PULLED));
+      CHECK_P((state & (BIT_OLD | BIT_NEW)) == BIT_NEW);
+    }
+  }
+
+  void check_invalid() const {
+    if (config_check_flags) {
+      CHECK_N(state & (BIT_OLD | BIT_NEW));
+    }
+  }
+
+  uint8_t state;
+
+  // need default = for bit_purge
+  //BitBase& operator=(const BitBase&) = delete;
+};
+
+static_assert(sizeof(BitBase) == 1, "Bad BitBase size");
+
+
+inline wire bit(const BitBase& b) { return b.get_data(); }
+
+//-----------------------------------------------------------------------------
+
+struct Gate : public BitBase {
+  wire out_any() const { return state; }
+  wire out_old() const { check_old(); return state; }
+  wire out_mid() const { return state; }
+  wire out_new() const { check_new(); return state; }
+
+  void hold() {
+    state = uint8_t(BIT_NEW | BIT_DRIVEN | bit0(state));
+  }
+
+  void operator<<= (wire D) {
+    //check_unset(); // we use this in feeback loops, need better check...
+    state = uint8_t(BIT_NEW | BIT_DRIVEN | bit0(D));
+  }
+};
+
+//-----------------------------------------------------------------------------
+
+struct SigIn : public BitBase {
+  wire out_any() const { return state; }
+  wire out_old() const { check_old(); return state; }
+  wire out_new() const { check_new(); return state; }
+
+  void sig_in(wire D) {
+    check_invalid();
+    state = uint8_t(BIT_NEW | BIT_DRIVEN | bit0(D));
+  }
+};
+
+//-----------------------------------------------------------------------------
+
+struct SigOut : public BitBase {
+  wire out_old() const { check_old(); return state; }
+  wire out_new() const { check_new(); return state; }
+
+  void sig_out(wire D) {
+    check_invalid();
+    state = uint8_t(BIT_NEW | BIT_DRIVEN | bit0(D));
+  }
+};
+
+//-----------------------------------------------------------------------------
+// Generic DFF
+
+struct DFF : public BitBase {
+  void dff_r(wire CLKp, wire RSTn, wire Dp) {
+    check_invalid();
+
+    wire clk_old = state & BIT_CLOCK;
+    wire clk_new = (CLKp << 1) & BIT_CLOCK;
+
+    wire d1 = (~clk_old & clk_new) ? Dp : state;
+
+    state = uint8_t(bit0(d1 & RSTn) | clk_new | BIT_NEW | BIT_DRIVEN);
+  }
+};
+
+//-----------------------------------------------------------------------------
+// 8-rung register with no reset, inverting input, and dual outputs. Used by
+// sprite store, bg pix a, spr pix a/b, dma hi, bus mux sprite temp
+
+// DFF8_01 |o------O | << CLKn
+// DFF8_02 |====O====| << Dn
+// DFF8_03 |  -----  |
+// DFF8_04 |O-------o| << CLKp
+// DFF8_05 |  -----  |
+// DFF8_06 |==     ==|
+// DFF8_07 |xxx-O-xxx| >> Qn
+// DFF8_08 |xxx-O-xxx| >> Q  or this rung can be empty
+
+struct DFF8n : public BitBase {
+  void dff8n(wire CLKn, wire Dn) {
+    check_invalid();
+
+    wire clk_old = state & BIT_CLOCK;
+    wire clk_new = (~CLKn << 1) & BIT_CLOCK;
+
+    wire d1 = (~clk_old & clk_new) ? ~Dn : state;
+
+    state = uint8_t(bit0(d1) | clk_new | BIT_NEW | BIT_DRIVEN);
+  }
+};
+
+//-----------------------------------------------------------------------------
+// same w/ swapped clock inputs, not 100% positive this is correct but BGP has
+// to latch on the rising edge of the clock or m3_bgp_change is way off.
+
+// DFF8_01 |o------O | << CLKp
+// DFF8_02 |====O====| << Dn
+// DFF8_03 |  -----  |
+// DFF8_04 |O-------o| << CLKn
+// DFF8_05 |  -----  |
+// DFF8_06 |==     ==|
+// DFF8_07 |xxx-O-xxx| >> Qn
+// DFF8_08 |xxx-O-xxx| >> Q  or this rung can be empty
+
+struct DFF8p : public BitBase {
+  void dff8p(wire CLKp, wire Dn) {
+    check_invalid();
+
+    wire clk_old = state & BIT_CLOCK;
+    wire clk_new = (CLKp << 1) & BIT_CLOCK;
+
+    wire d1 = (~clk_old & clk_new) ? ~Dn : state;
+
+    state = uint8_t(bit0(d1) | clk_new | BIT_NEW | BIT_DRIVEN);
+  }
+};
+
+//-----------------------------------------------------------------------------
+// 9-rung register with async _set_?, inverting input, and dual outputs. Looks like
+// Reg8 with a hat and a belt. Used by clock phase (CHECK), LYC, BGP, OBP0,
+// OBP1, stat int enable, sprite store, SCY, SCX, LCDC, WX, WY.
+
+// DFF9_01 | O===--o |
+// DFF9_02 |==--O====| << CLKp
+// DFF9_03 | ------- | << D
+// DFF9_04 |o-------O| << CLKn
+// DFF9_05 |  -----  |
+// DFF9_06 |--xxOxx--| << RSTn
+// DFF9_07 |o-------o|
+// DFF9_08 |xxx-O-xxx| >> Qn
+// DFF9_09 |xxx-O-xxx| >> Q
+
+struct DFF9 : public BitBase {
+  void dff9(wire CLKp, wire SETn, wire Dn) {
+    check_invalid();
+
+    wire clk_old = state & BIT_CLOCK;
+    wire clk_new = (CLKp << 1) & BIT_CLOCK;
+
+    wire d1 = (~clk_old & clk_new) ? ~Dn : state;
+
+    state = uint8_t(bit0(d1 | (~SETn)) | clk_new | BIT_NEW | BIT_DRIVEN);
+  }
+};
+
+//-----------------------------------------------------------------------------
+// Reg11 is used by the background pixel temp state
+// Not sure why it's special.
+
+// DFF11_01 nc
+// DFF11_02 << RSTp? // FIXME trace this
+// DFF11_03 << D
+// DFF11_04 nc
+// DFF11_05 << CLKp
+// DFF11_06 nc
+// DFF11_07 nc
+// DFF11_08 << CLKn
+// DFF11_09 << RSTn
+// DFF11_10 nc
+// DFF11_11 >> Qp?
+
+struct DFF11 : public BitBase {
+  void dff11(wire CLKp, wire RSTn, wire Dp) {
+    check_invalid();
+    wire clk_old = state & BIT_CLOCK;
+    wire clk_new = (CLKp << 1) & BIT_CLOCK;
+
+    wire d1 = (~clk_old & clk_new) ? Dp : state;
+
+    state = uint8_t(bit0(d1 & RSTn) | clk_new | BIT_NEW | BIT_DRIVEN);
+  }
+};
+
+//-----------------------------------------------------------------------------
+
+// DFF13_01 nc
+// DFF13_02 << RSTn
+// DFF13_03 << D
+// DFF13_04 nc
+// DFF13_05 << CLKp
+// DFF13_06 nc
+// DFF13_07 nc
+// DFF13_08 << CLKn
+// DFF13_09 << RSTn
+// DFF13_10 nc
+// DFF13_11 nc
+// DFF13_12 >> Qn
+// DFF13_13 >> Q
+
+struct DFF13 : public BitBase {
+  void dff13(wire CLKp, wire RSTn, wire Dp) {
+    check_invalid();
+    wire clk_old = state & BIT_CLOCK;
+    wire clk_new = (CLKp << 1) & BIT_CLOCK;
+
+    wire d1 = (~clk_old & clk_new) ? Dp : state;
+
+    state = uint8_t(bit0(d1 & RSTn) | clk_new | BIT_NEW | BIT_DRIVEN);
+  }
+};
+
+//-----------------------------------------------------------------------------
+// DFF17_01 SC
+// DFF17_02 << CLKp
+// DFF17_03 SC
+// DFF17_04 --
+// DFF17_05 --
+// DFF17_06 << RSTn  // must be RSTn, see WUVU/VENA/WOSU
+// DFF17_07 << D
+// DFF17_08 --
+// DFF17_09 SC
+// DFF17_10 --
+// DFF17_11 --
+// DFF17_12 SC
+// DFF17_13 << RSTn
+// DFF17_14 --
+// DFF17_15 --
+// DFF17_16 >> QN   _MUST_ be QN - see TERO
+// DFF17_17 >> Q    _MUST_ be Q  - see TERO
+
+struct DFF17 : public BitBase {
+  void dff(wire CLKp, wire Dp) {
+    check_invalid();
+    wire clk_old = state & BIT_CLOCK;
+    wire clk_new = (CLKp << 1) & BIT_CLOCK;
+
+    wire d1 = (~clk_old & clk_new) ? Dp : state;
+
+    state = uint8_t(bit0(d1) | clk_new | BIT_NEW | BIT_DRIVEN);
+  }
+
+
+  void dff17(wire CLKp, wire RSTn, wire Dp) {
+    check_invalid();
+    dff17_any(CLKp, RSTn, Dp);
+  }
+
+  void dff17_any(wire CLKp, wire RSTn, wire Dp) {
+    wire clk_old = state & BIT_CLOCK;
+    wire clk_new = (CLKp << 1) & BIT_CLOCK;
+
+    wire d1 = (~clk_old & clk_new) ? Dp : state;
+
+    state = uint8_t(bit0(d1 & RSTn) | clk_new | BIT_NEW | BIT_DRIVEN);
+  }
+};
+
+//-----------------------------------------------------------------------------
+// 20-rung counter ff with async load. Only used by TIMA and a few audio regs.
+
+// DFF20_01 >> Q
+// DFF20_02 nc
+// DFF20_03 << D
+// DFF20_04 << LOADp
+// DFF20_05 nc
+// DFF20_06 sc
+// DFF20_07 nc
+// DFF20_08 nc
+// DFF20_09 nc
+// DFF20_10 nc
+// DFF20_11 sc
+// DFF20_12 nc
+// DFF20_13 nc
+// DFF20_14 << LOADp
+// DFF20_15 nc
+// DFF20_16 << D
+// DFF20_17 >> Qn
+// DFF20_18 sc
+// DFF20_19 sc
+// DFF20_20 << CLKn
+
+struct DFF20 : public BitBase {
+  void dff20_any(wire CLKn, wire LOADp, wire newD) {
+    wire clk_old = bit0(state >> 1);
+    wire clk_new = bit0(~CLKn);
+
+    state = bit0(state);
+
+    if (!bit0(clk_old) && bit0(clk_new)) {
+      state = !state;
+    }
+
+    state |= (clk_new << 1);
+    state |= BIT_NEW;
+    state |= BIT_DRIVEN;
+
+    if (bit0(LOADp)) {
+      state &= ~1;
+      state |= bit0(newD);
+    }
+  }
+
+  void dff20(wire CLKn, wire LOADp, wire newD) {
+    check_invalid();
+    dff20_any(CLKn, LOADp, newD);
+  }
+};
+
+//-----------------------------------------------------------------------------
+// DFF with async set/reset. Used by pixel pipes, serial data register.
+
+// SETn/RSTn are correct and not swapped, see serial + ALUR_RSTn
+
+// DFF22_01 sc
+// DFF22_02 nc
+// DFF22_03 nc
+// DFF22_04 nc
+// DFF22_05 sc
+// DFF22_06 sc
+// DFF22_07 << D
+// DFF22_08 nc
+// DFF22_09 sc
+// DFF22_10 nc
+// DFF22_11 sc
+// DFF22_12 nc
+// DFF22_13 nc
+// DFF22_14 << SETn _MUST_ be SETn, see serial
+// DFF22_15 >> Qn
+// DFF22_16 >> Q
+// DFF22_17 << RSTn _MUST_ be RSTn, see serial
+// DFF22_18 nc
+// DFF22_19 sc
+// DFF22_20 sc
+// DFF22_21 sc
+// DFF22_22 << CLKp
+
+struct DFF22 : public BitBase {
+  void dff22_any(wire CLKp, wire SETn, wire RSTn, wire Dp) {
+    wire clk_old = state & BIT_CLOCK;
+    wire clk_new = (CLKp << 1) & BIT_CLOCK;
+
+    wire d1 = (~clk_old & clk_new) ? Dp : state;
+
+    state = uint8_t(bit0((d1 | (~SETn)) & RSTn) | clk_new | BIT_NEW | BIT_DRIVEN);
+  }
+
+  void dff22(wire CLKp, wire SETn, wire RSTn, wire Dp) {
+    check_invalid();
+    dff22_any(CLKp, SETn, RSTn, Dp);
+  }
+
+  void dff22_sync(wire CLKp, wire Dp) {
+    check_invalid();
+    wire clk_old = state & BIT_CLOCK;
+    wire clk_new = (CLKp << 1) & BIT_CLOCK;
+    wire d1 = (~clk_old & clk_new) ? Dp : state;
+    state = uint8_t(bit0(d1) | clk_new | BIT_DRIVEN);
+  }
+
+  void dff22_async(wire SETn, wire RSTn) {
+    check_invalid();
+    wire clk_new = state & BIT_CLOCK;
+    state = uint8_t(bit0((state | (~SETn)) & RSTn) | clk_new | BIT_NEW | BIT_DRIVEN);
+  }
+};
+
+//-----------------------------------------------------------------------------
+// Bus with pull-up
+
+// TYGO_01 << BUS_CPU_D2p
+// TYGO_02 nc
+// TYGO_03 nc
+// TYGO_04 nc
+// TYGO_05 << RAHU_04
+// TYGO_06 << BUS_CPU_D2p
+// TYGO_07 nc
+// TYGO_08 nc
+// TYGO_09 >> BUS_VRAM_D2p
+// TYGO_10 nc
+
+// tri6_nn : top rung tadpole _not_ facing second rung dot.
+// tri6_pn : top rung tadpole facing second rung dot.
+
+// TRI6NN_01 :
+// TRI6NN_02 : NC
+// TRI6NN_03 : NC
+// TRI6NN_04 :
+// TRI6NN_05 : NC
+// TRI6NN_06 :
+
+inline triwire tri_pp(wire OEp, wire Dp) {
+  return { wire(bit0(OEp) ? TRI_NEW | TRI_DRIVEN | bit0(Dp) : TRI_NEW) };
+}
+
+inline triwire tri6_nn(wire OEn, wire Dn) {
+  return { wire(bit0(OEn) ? TRI_NEW : TRI_NEW | TRI_DRIVEN | bit0(~Dn)) };
+}
+
+inline triwire tri6_pn(wire OEp, wire Dn) {
+  return { wire(bit0(OEp) ? TRI_NEW | TRI_DRIVEN | bit0(~Dn) : TRI_NEW) };
+}
+
+inline triwire tri10_np(wire OEn, wire Dp) {
+  return { wire(bit0(OEn) ? TRI_NEW : TRI_NEW | TRI_DRIVEN | bit0(Dp)) };
+}
+
+struct Bus : public BitBase {
+  wire out_old() const { check_old(); return state; }
+  wire out_any() const { return state; }
+  wire out_mid() const { return state; }
+  wire out_new() const { check_new(); return state; }
+
+  void tri_bus(triwire t) {
+    check_new();
+
+    // if both the new and old state are both driven, that's a bus collision.
+    DCHECK_N((t.state & TRI_DRIVEN) && (state & BIT_DRIVEN));
+
+    if (t.state & TRI_DRIVEN) state = t.state;
+  }
+};
+
+//-----------------------------------------------------------------------------
+// Pin structs store the bit as it apperas INSIDE the chip. Bits are inverted
+// when traveling across the chip boundary.
+
+struct PinBase : public BitBase {
+  PinBase(uint8_t _state) {
+    state = _state;
+  }
+
+  wire qp_int_old() const { return qp_old(); }
+  wire qp_int_any() const { return qp_any(); }
+  wire qp_int_new() const { return qp_new(); }
+
+  wire qp_ext_old() const { return qn_old(); }
+  wire qp_ext_new() const { return qn_new(); }
+  wire qn_ext_new() const { return qp_new(); }
+};
+
+struct PinIO : public PinBase {
+  PinIO() : PinBase(0) {}
+  void pin_io(wire int_PUn, wire int_HI, wire int_LO, wire ext_OEp, wire ext_Dp) {
+    check_invalid();
+    pin_io_any(int_PUn, int_HI, int_LO, ext_OEp, ext_Dp);
+  }
+
+  void pin_io_any(wire int_PUn, wire int_HI, wire int_LO, wire ext_OEp, wire ext_Dp) {
+    (void)int_PUn;
+
+    if (bit0(int_HI) == bit0(int_LO)) {
+      state = uint8_t(BIT_NEW | BIT_DRIVEN | bit0(int_LO));
+    }
+    else {
+      if (bit0(int_LO)) {
+        // shootthrough, this is bad
+        DCHECK_P(false);
+      }
+      else {
+        // hi-z, can be driven externally
+        DCHECK_N(bit0(int_PUn)); // must not be floating
+
+        // this is the _internal_ bit, so if this is pulled high externally it should read 0 internally.
+        // i think...
+        state = BIT_NEW | BIT_PULLED | 0;
+
+        //state = BIT_NEW | BIT_PULLED | 1;
+      }
+    }
+
+    if (bit0(ext_OEp)) {
+      DCHECK_N(state & BIT_DRIVEN);
+      // External bit is inverted when crossing the pin
+      state = uint8_t(BIT_NEW | BIT_DRIVEN | bit0(~ext_Dp));
+    }
+
+    DCHECK_P(bool(state & BIT_DRIVEN) != bool(state & BIT_PULLED));
+    DCHECK_P(bool(state & BIT_NEW));
+  }
+};
+
+//-----------------------------------------------------------------------------
+
+struct PinIn : public PinBase {
+  PinIn() : PinBase(0) {};
+  PinIn(uint8_t _state) : PinBase(_state) {}
+
+  void pin_in(wire ext_Dp) {
+    check_invalid();
+    state = ((~ext_Dp) & BIT_DATA) | BIT_DRIVEN | BIT_NEW;
+  }
+};
+
+//-----------------------------------------------------------------------------
+
+struct PinOut : public PinBase {
+  PinOut() : PinBase(0) {}
+  void pin_out(wire int_HI, wire int_LO) {
+    check_invalid();
+
+    if (!bit0(int_HI) && !bit0(int_LO)) {
+      // internal bit 0, external bit 1
+      state = BIT_NEW | BIT_DRIVEN | 0;
+    }
+    else if (bit0(int_HI) && bit0(int_LO)) {
+      // internal bit 1, external bit 0
+      state = BIT_NEW | BIT_DRIVEN | 1;
+    }
+    else if (bit0(int_HI) && !bit0(int_LO)) {
+      state = BIT_NEW;
+    }
+    else if (!bit0(int_HI) && bit0(int_LO)) {
+      // shootthrough, this is bad
+      debugbreak();
+    }
+  }
+};
+
+//-----------------------------------------------------------------------------
+
+struct PinClock {
+  wire clkgood_old() const { return CLKGOOD.qp_int_old(); }
+  wire clk_old()     const { return CLK.qp_int_old(); }
+
+  wire clkgood_new() const { return CLKGOOD.qp_int_new(); }
+  wire clk_new()     const { return CLK.qp_int_new(); }
+
+  void pin_clk(wire clk, wire clkgood) {
+    CLK.pin_in(clk);
+    CLKGOOD.pin_in(clkgood);
+  }
+
+  PinIn CLK;
+  PinIn CLKGOOD;
+};
+
+//-----------------------------------------------------------------------------
+// 6-rung cell, "arms" on ground side
+
+// NORLATCH_01 << SET
+// NORLATCH_02 nc
+// NORLATCH_03 >> QN
+// NORLATCH_04 >> Q
+// NORLATCH_05 nc
+// NORLATCH_06 << RST
+
+struct NorLatch : public BitBase {
+  void rst() {
+    state = BIT_DRIVEN | BIT_NEW | 0;
+  }
+
+  void nor_latch(wire SETp, wire RSTp) {
+    check_invalid();
+    state |= SETp;
+    state &= ~RSTp;
+
+    state = (state & BIT_DATA) | BIT_DRIVEN | BIT_NEW;
+  }
+};
+
+//-----------------------------------------------------------------------------
+// 6-rung cell, "arms" on VCC side. Only TAKA/LONY seem to use this cell
+
+// NANDLATCH_01 << SETn
+// NANDLATCH_02 nc
+// NANDLATCH_03 >> Q
+// NANDLATCH_04 >> QN
+// NANDLATCH_05 nc
+// NANDLATCH_06 << RSTn
+
+struct NandLatch : public BitBase {
+  void nand_latch(wire SETn, wire RSTn) {
+    check_invalid();
+    state |= ~SETn;
+    state &= RSTn;
+
+    state = (state & BIT_DATA) | BIT_DRIVEN | BIT_NEW;
+  }
+};
+
+//-----------------------------------------------------------------------------
+// Yellow 10-rung cells on die. Transparent latch, probably.
+
+// TPLATCH_01 << HOLDn
+// TPLATCH_02 nc
+// TPLATCH_03 << D
+// TPLATCH_04 nc
+// TPLATCH_05 nc
+// TPLATCH_06 nc
+// TPLATCH_07 nc
+// TPLATCH_08 >> Q
+// TPLATCH_09 nc
+// TPLATCH_10 >> Qn
+
+// Output 08 must _not_ be inverting, see pin EXT_A14p
+// Output 10 _must_ be inverting...?
+
+// FIXME - why do we have latchN and latchP?
+
+struct TpLatch : public BitBase {
+  void tp_latchn(wire HOLDn, wire Dp) {
+    check_invalid();
+    wire SETp = HOLDn & Dp;
+    wire RSTp = HOLDn & ~Dp;
+
+    state |= SETp;
+    state &= ~RSTp;
+
+    state = (state & BIT_DATA) | BIT_DRIVEN | BIT_NEW;
+  }
+
+  void tp_latchp(wire HOLDp, wire Dp) {
+    check_invalid();
+    wire SETp = (~HOLDp) & Dp;
+    wire RSTp = (~HOLDp) & ~Dp;
+
+    state |= SETp;
+    state &= ~RSTp;
+
+    state = (state & BIT_DATA) | BIT_DRIVEN | BIT_NEW;
+  }
+};
+
+//-----------------------------------------------------------------------------
+/// plait_noparse
+
+#ifndef SCH_CHANNEL4_H
+#define SCH_CHANNEL4_H
+
+#include "metron_tools.h"
+#include "regs.h"
+
+//-----------------------------------------------------------------------------
+
+// Noise
+// Length counter
+// Env vol / dir / period
+// Clock shift
+// LFSR mode
+// LFSR divisor
+// START
+// STOP
+
+struct Channel4 {
+
+  void tick(logic<16> addr);
+
+  //----------
+  // Clock/reset
+
+  //----------
+  // FF20 NR41 ch4 length
+
+  // void dff20(wire CLKn, wire LOADp, wire newD)
+  /*_p19.DANO*/ DFF20 DANO_NR41_LEN0; 
+  /*_p19.FAVY*/ DFF20 FAVY_NR41_LEN1;
+  /*_p19.DENA*/ DFF20 DENA_NR41_LEN2;
+  /*_p19.CEDO*/ DFF20 CEDO_NR41_LEN3;
+  /*_p19.FYLO*/ DFF20 FYLO_NR41_LEN4;
+  /*_p19.EDOP*/ DFF20 EDOP_NR41_LEN5;
+
+  //----------
+  // FF21 NR42 ch4 envelope
+
+  /*_p19.DYKE*/ logic<1> DYKE_FF21_WRn;
+  /*_p19.FUPA*/ logic<1> FUPA_FF21_WRo;
+
+  /*_p19.EMOK*/ logic<1> EMOK_NR42_ENV_TIMER0;
+  /*_p19.ETYJ*/ logic<1> ETYJ_NR42_ENV_TIMER1;
+  /*_p19.EZYK*/ logic<1> EZYK_NR42_ENV_TIMER2;
+  /*_p19.GEKY*/ logic<1> GEKY_NR42_ENV_DIR;
+  /*_p19.GARU*/ logic<1> GARU_NR42_ENV_VOL0;
+  /*_p19.GOKY*/ logic<1> GOKY_NR42_ENV_VOL1;
+  /*_p19.GOZO*/ logic<1> GOZO_NR42_ENV_VOL2;
+  /*_p19.GEDU*/ logic<1> GEDU_NR42_ENV_VOL3;
+
+  //----------
+  // FF22 NR43 ch4 freq
+
+  /*_p19.HOVA*/ logic<1> HOVA_FF22_WRo;
+  /*_p19.HOSO*/ logic<1> HOSO_FF22_WRp;
+  /*_p19.EFUG*/ logic<1> EFUG_FF22_WRq;
+
+  /*_p19.JARE*/ logic<1> JARE_NR43_DIV0;
+  /*_p19.JERO*/ logic<1> JERO_NR43_DIV1;
+  /*_p19.JAKY*/ logic<1> JAKY_NR43_DIV2;
+  /*_p19.JAMY*/ logic<1> JAMY_NR43_MODE;
+  /*_p19.FETA*/ logic<1> FETA_NR43_FREQ0;
+  /*_p19.FYTO*/ logic<1> FYTO_NR43_FREQ1;
+  /*_p19.GOGO*/ logic<1> GOGO_NR43_FREQ2;
+  /*_p19.GAFO*/ logic<1> GAFO_NR43_FREQ3;
+
+  //---------
+  // FF23
+
+  /*_p19.DULU*/ logic<1> DULU_FF23_WRn;
+  /*_p19.FOXE*/ logic<1> FOXE_FF23_WRo;
+
+  /*_p19.CUNY*/ DFF9 CUNY_NR44_STOP;
+  /*_p19.HOGA*/ logic<1> HOGA_NR44_START;
+
+  //----------
+  // Control
+
+  /*_p20.GYSU*/ logic<1> GYSU_CH4_START;
+  /*_p20.GENA*/ NorLatch GENA_CH4_ACTIVE;
+
+
+  /*_p20.GONE*/ logic<1> GONE_RESTART1;
+  /*_p20.GORA*/ logic<1> GORA_RESTART2;
+  /*_p20.GATY*/ logic<1> GATY_RESTART3;
+
+  /*_p20.KANU*/ logic<1> KANU_DIV_CLKa;
+
+  /*_p20.JYCO*/ logic<1> JYCO_DIV0;
+  /*_p20.JYRE*/ logic<1> JYRE_DIV1;
+  /*_p20.JYFU*/ logic<1> JYFU_DIV2;
+  /*_p20.HYNO*/ logic<1> HYNO_DIV_MAX;
+
+  //----------
+  // Length
+
+  /*_p19.FUGO*/ DFF17 FUGO_LEN_STOP;
+
+  //----------
+  // Frequency timer
+
+  /*_p20.GYBA*/ logic<1> GYBA_FREQ_GATE_CLK;
+  /*_p20.GARY*/ logic<1> GARY_FREQ_GATEn;
+  /*_p20.CARY*/ logic<1> CARY_FREQ_CLK;
+  /*_p20.CEXO*/ logic<1> CEXO_FREQ_00;
+  /*_p20.DEKO*/ logic<1> DEKO_FREQ_01;
+  /*_p20.EZEF*/ logic<1> EZEF_FREQ_02;
+  /*_p20.EPOR*/ logic<1> EPOR_FREQ_03;
+  /*_p20.DURE*/ logic<1> DURE_FREQ_04;
+  /*_p20.DALE*/ logic<1> DALE_FREQ_05;
+  /*_p20.DOKE*/ logic<1> DOKE_FREQ_06;
+  /*_p20.DEMO*/ logic<1> DEMO_FREQ_07;
+  /*_p20.DOSE*/ logic<1> DOSE_FREQ_08;
+  /*_p20.DETE*/ logic<1> DETE_FREQ_09;
+  /*_p20.ERUT*/ logic<1> ERUT_FREQ_10;
+  /*_p20.DOTA*/ logic<1> DOTA_FREQ_11;
+  /*_p20.DERE*/ logic<1> DERE_FREQ_12;
+  /*_p20.ESEP*/ logic<1> ESEP_FREQ_13;
+
+  //----------
+  // LFSR
+
+  /*_p20.FEME*/ logic<1> FEME_LFSR_CLKa;
+  /*_p20.GYVE*/ logic<1> GYVE_LFSR_CLKb;
+  /*_p20.KOPA*/ logic<1> KOPA_LFSR_CLKc;
+  /*_p20.JYJA*/ logic<1> JYJA_LFSR_CLKn;
+  /*_p20.GUFA*/ logic<1> GUFA_LFSR_CLKo;
+  /*_p20.KARA*/ logic<1> KARA_LFSR_CLKp;
+
+
+  /*_p20.JOTO*/ logic<1> JOTO_LFSR_00;
+  /*_p20.KOMU*/ logic<1> KOMU_LFSR_01;
+  /*_p20.KETU*/ logic<1> KETU_LFSR_02;
+  /*_p20.KUTA*/ logic<1> KUTA_LFSR_03;
+  /*_p20.KUZY*/ logic<1> KUZY_LFSR_04;
+  /*_p20.KYWY*/ logic<1> KYWY_LFSR_05;
+  /*_p20.JAJU*/ logic<1> JAJU_LFSR_06;
+  /*_p20.HAPE*/ logic<1> HAPE_LFSR_07;
+  /*_p20.JUXE*/ logic<1> JUXE_LFSR_08;
+  /*_p20.JEPE*/ logic<1> JEPE_LFSR_09;
+  /*_p20.JAVO*/ logic<1> JAVO_LFSR_10;
+  /*_p20.HEPA*/ logic<1> HEPA_LFSR_11;
+  /*_p20.HORY*/ logic<1> HORY_LFSR_12;
+  /*_p20.HENO*/ logic<1> HENO_LFSR_13;
+  /*_p20.HYRO*/ logic<1> HYRO_LFSR_14;
+  /*_p20.HEZU*/ logic<1> HEZU_LFSR_15;
+
+  //----------
+  // Env
+
+  /*_p20.ALOP*/ logic<1> ALOP_CLK_128n;
+  /*_p20.ABEL*/ logic<1> ABEL_ENV_TIMER_CLKa;
+  /*_p20.BUXO*/ logic<1> BUXO_ENV_TIMER_CLKb;
+  /*_p20.CUNA*/ logic<1> CUNA_ENV_TIMER0;
+  /*_p20.COFE*/ logic<1> COFE_ENV_TIMER1;
+  /*_p20.DOGO*/ logic<1> DOGO_ENV_TIMER2;
+
+  /*_p20.FOSY*/ logic<1> FOSY_ENV_PULSE;
+  /*_p20.FYNO*/ logic<1> FYNO_ENV_STOP;
+
+  /*_p20.FOLE*/ logic<1> FOLE_VOL_CLK0;
+  /*_p20.ETEF*/ logic<1> ETEF_VOL_CLK1;
+  /*_p20.EDYF*/ logic<1> EDYF_VOL_CLK2;
+  /*_p20.ELAF*/ logic<1> ELAF_VOL_CLK3;
+
+  /*_p20.FEKO*/ logic<1> FEKO_VOL0;
+  /*_p20.FATY*/ logic<1> FATY_VOL1;
+  /*_p20.FERU*/ logic<1> FERU_VOL2;
+  /*_p20.FYRO*/ logic<1> FYRO_VOL3;
+
+  //----------
+  // Output
+
+  /*_p20.GEVY*/ logic<1> GEVY_CH4_AMP_ENn;
+  /*_p20.AKOF*/ logic<1> AKOF_CH4_DAC0;
+  /*_p20.BYZY*/ logic<1> BYZY_CH4_DAC1;
+  /*_p20.APYR*/ logic<1> APYR_CH4_DAC2;
+  /*_p20.BOZA*/ logic<1> BOZA_CH4_DAC3;
+
+  //----------
+  // Debug
+
+  /*_p20.DYRY*/ logic<1> DYRY_DBG;
+  /*_p20.COMO*/ logic<1> COMO_DBG;
+  /*_p20.BAGU*/ logic<1> BAGU_DBG;
+  /*_p20.BEFA*/ logic<1> BEFA_DBG;
+};
+
+//-----------------------------------------------------------------------------
+
+#endif // SCH_CHANNEL4_H
+/// plait_noparse
+
+#pragma once
+
+#include "regs.h"
+//-----------------------------------------------------------------------------
+
+struct Channel3 {
+
+  // resets
+
+  /*_p16.KUHA*/ bool APU_RESETq;
+
+  //----------
+  // FF1A NR30
+
+  /*_p16.GUXE*/ bool GUXE_CH3_AMP_ENn;
+
+  //----------
+  // FF1B NR31
+
+  //----------
+  // FF1C NR32
+
+  /*_p16.HODY*/ bool NR32_VOL0;
+  /*_p16.HUKY*/ bool NR32_VOL1;
+
+  //----------
+  // FF1D NR33
+
+  /*_p16.KYHO*/ bool FF1D_WRa;
+  /*_p16.KULY*/ bool FF1D_WRb;
+
+  /*_p16.KOGA*/ bool NR33_FREQ0;
+  /*_p16.JOVY*/ bool NR33_FREQ1;
+  /*_p16.JAXA*/ bool NR33_FREQ2;
+  /*_p16.JEFE*/ bool NR33_FREQ3;
+  /*_p16.JYPO*/ bool NR33_FREQ4;
+  /*_p16.JOVE*/ bool NR33_FREQ5;
+  /*_p16.KANA*/ bool NR33_FREQ6;
+  /*_p16.KOGU*/ bool NR33_FREQ7;
+
+  //----------
+  // FF1E NR34
+
+  /*_p16.JEMO*/ bool NR34_FREQ8;
+  /*_p16.JETY*/ bool NR34_FREQ9;
+  /*_p16.JACY*/ bool NR34_FREQ10;
+  /*_p16.HOTO*/ bool NR34_STOP;
+
+  //----------
+
+
+  /*_p16.GUCY*/ bool FF1A_WRn;
+
+
+
+
+  /*_p16.FABO*/ bool CLK_xxCDxxGH;
+  /*_p16.GAVU*/ bool NR34_START;
+
+  /*_p16.GARA*/ bool GARA;
+  /*_p16.GYTA*/ bool GYTA;
+  /*_p16.GYRA*/ bool GYRA;
+
+  /*_p16.FOBA*/ bool CH3_RESTART_SYNC;
+
+
+
+
+
+  /*_p16.HACA*/ bool HACA;
+  /*_p16.EPYX*/ bool FF1E_WRp;
+  /*_p16.FOVO*/ bool FF1E_WRo;
+  /*_p16.JUZO*/ bool FF1E_WR;
+
+
+
+  /*_p16.GUZU*/ bool FF1C_WRn;
+  /*_p16.HUCO*/ bool HUCO;
+  /*_p16.HAMU*/ bool HAMU;
+
+
+
+
+
+  /*_p17.ARUC*/ bool ARUC_CLK;
+  /*_p17.COZY*/ bool COZY_CLK;
+
+  /*_p17.BUSA*/ bool BUSA;
+  /*_p17.BANO*/ bool BANO;
+  /*_p17.AZUS*/ bool SAMPLE_CLKn;
+  /*_p17.AZET*/ bool AZET;
+
+
+  /*_p17.BEKA*/ bool SAMPLE_CLKa;
+  /*_p17.COJU*/ bool SAMPLE_CLKb;
+  /*_p17.BAJA*/ bool SAMPLE_CLKc;
+  /*_p17.BUFE*/ bool SAMPLE_CLKd;
+
+  /*_p17.DUGU*/ bool WAVE_D0;
+  /*_p17.DESY*/ bool WAVE_D1;
+  /*_p17.BATY*/ bool WAVE_D2;
+  /*_p17.BADE*/ bool WAVE_D3;
+  /*_p17.BUNE*/ bool WAVE_D4;
+  /*_p17.BAVA*/ bool WAVE_D5;
+  /*_p17.DESA*/ bool WAVE_D6;
+  /*_p17.BEZU*/ bool WAVE_D7;
+
+
+  /*_p17.CYFO*/ bool SAMPLE_0;
+  /*_p17.CESY*/ bool SAMPLE_1;
+  /*_p17.BUDY*/ bool SAMPLE_2;
+  /*_p17.BEGU*/ bool SAMPLE_3;
+  /*_p17.CUVO*/ bool SAMPLE_4;
+  /*_p17.CEVO*/ bool SAMPLE_5;
+  /*_p17.BORA*/ bool SAMPLE_6;
+  /*_p17.BEPA*/ bool SAMPLE_7;
+
+  /*_p18.ERED*/ bool CH3_ACTIVEn;
+
+
+
+
+
+  /*_p18.DERO*/ bool WAVE_CLK;
+
+
+  /*_p18.EFAR*/ bool WAVE_IDX0;
+  /*_p18.ERUS*/ bool WAVE_IDX1;
+  /*_p18.EFUZ*/ bool WAVE_IDX2;
+  /*_p18.EXEL*/ bool WAVE_IDX3;
+  /*_p18.EFAL*/ bool WAVE_IDX4;
+
+  /*_p18.FETY*/ bool WAVE_LOOP;
+
+
+  /*_p18.JYFO*/ bool JYFO_CLK;
+  /*_p18.HUNO*/ bool WAVE_CLKo;
+
+
+  /*_p18.JUTY*/ bool FREQ_CLKa;
+
+
+  /*_p18.KYRU*/ bool FREQ_CLKb;
+  /*_p18.KESE*/ bool FREQ_CLKc;
+
+  /*_p18.KUTU*/ bool FREQ_00;
+  /*_p18.KUPE*/ bool FREQ_01;
+  /*_p18.KUNU*/ bool FREQ_02;
+  /*_p18.KEMU*/ bool FREQ_03;
+  /*_p18.KYGU*/ bool FREQ_04;
+  /*_p18.KEPA*/ bool FREQ_05;
+  /*_p18.KAFO*/ bool FREQ_06;
+  /*_p18.KENO*/ bool FREQ_07;
+  /*_p18.KEJU*/ bool FREQ_08;
+  /*_p18.KEZA*/ bool FREQ_09;
+  /*_p18.JAPU*/ bool FREQ_10;
+
+
+
+  /*_p18.GEDO*/ bool GEDO;
+  /*_p18.FYGO*/ bool FYGO;
+  /*_p18.FOZU*/ bool FOZU;
+  /*_p18.EZAS*/ bool EZAS;
+  /*_p18.DORU*/ bool DORU;
+  /*_p18.DAVO*/ DFF17 DAVO_CH3_ACTIVEn; // polarity?
+
+  /*_p18.GENU*/ bool GENU_CLK;
+  /*_p18.FALU*/ bool FALU_CLK;
+  /*_p18.GEVO*/ bool CH3_LEN0;
+  /*_p18.FORY*/ bool CH3_LEN1;
+  /*_p18.GATU*/ bool CH3_LEN2;
+  /*_p18.GAPO*/ bool CH3_LEN3;
+  /*_p18.GEMO*/ bool CH3_LEN4;
+  /*_p18.FORO*/ bool CH3_LEN5;
+  /*_p18.FAVE*/ bool CH3_LEN6;
+  /*_p18.FYRU*/ bool CH3_LEN7;
+  /*_p18.FEXU*/ bool LEN_DONE;
+
+  //----------
+  // wave ram bus
+
+  bool WAVE_RAM_CTRL1;
+  bool WAVE_RAM_CTRL3;
+  bool WAVE_WRn;
+
+  /*_p18.BOLE*/ bool WAVE_A0;
+  /*_p18.AGYL*/ bool WAVE_A1;
+  /*_p18.AFUM*/ bool WAVE_A2;
+  /*_p18.AXOL*/ bool WAVE_A3;
+
+  /*_p18.BARY*/ bool WAVE_DAC0;
+  /*_p18.BYKA*/ bool WAVE_DAC1;
+  /*_p18.BOPA*/ bool WAVE_DAC2;
+  /*_p18.BELY*/ bool WAVE_DAC3;
+};
+
+//-----------------------------------------------------------------------------
+/// plait_noparse
+
+#include "gates.h"
+#include "regs.h"
 #include "metron_tools.h"
 
-typedef uint16_t sample_t;
+#pragma once
 
+//-----------------------------------------------------------------------------
+
+struct Channel1 {
+
+  //----------
+  // FF10
+
+  /*_p11.BANY*/ DFF9 BANY_NR10_SHIFT0;
+  /*_p11.ARAX*/ DFF9 ARAX_NR10_SHIFT1;
+  /*_p11.ANAZ*/ DFF9 ANAZ_NR10_SHIFT2;
+  /*_p11.AVAF*/ DFF9 AVAF_NR10_SWEEP_DIR;
+  /*_p11.ADEK*/ DFF9 ADEK_NR10_DELAY0;
+  /*_p11.BANA*/ DFF9 BANA_NR10_DELAY1;
+  /*_p11.BOTU*/ DFF9 BOTU_NR10_DELAY2;
+
+  //----------
+  // FF11
+
+  /*_p11.CENA*/ DFF9 CENA_NR11_DUTY_0;
+  /*_p11.DYCA*/ DFF9 DYCA_NR11_DUTY_1;
+
+  //----------
+  // FF12
+
+  /*_p11.JUSA*/ DFF9 JUSA_NR12_DELAY0;
+  /*_p11.JUZY*/ DFF9 JUZY_NR12_DELAY1;
+  /*_p11.JOMA*/ DFF9 JOMA_NR12_DELAY2;
+  /*_p11.JAFY*/ DFF9 JAFY_NR12_ENV_DIR;
+  /*_p11.JATY*/ DFF9 JATY_NR12_VOL0;
+  /*_p11.JAXO*/ DFF9 JAXO_NR12_VOL1;
+  /*_p11.JENA*/ DFF9 JENA_NR12_VOL2;
+  /*_p11.JOPU*/ DFF9 JOPU_NR12_VOL3;
+
+  //----------
+  // FF13 NR13 - ch1 freq
+
+  /*_p11.GAXE*/ DFF20 GAXE_FREQ_CNT_00;
+  /*_p11.HYFE*/ DFF20 HYFE_FREQ_CNT_01;
+  /*_p11.JYTY*/ DFF20 JYTY_FREQ_CNT_02;
+  /*_p11.KYNA*/ DFF20 KYNA_FREQ_CNT_03;
+  /*_p11.JEMA*/ DFF20 JEMA_FREQ_CNT_04;
+  /*_p11.HYKE*/ DFF20 HYKE_FREQ_CNT_05;
+  /*_p11.FEVA*/ DFF20 FEVA_FREQ_CNT_06;
+  /*_p11.EKOV*/ DFF20 EKOV_FREQ_CNT_07;
+  /*_p11.EMUS*/ DFF20 EMUS_FREQ_CNT_08;
+  /*_p11.EVAK*/ DFF20 EVAK_FREQ_CNT_09;
+  /*_p11.COPU*/ DFF20 COPU_FREQ_CNT_10;
+
+  //----------
+  // FF14
+
+  /*_p11.BOKO*/ DFF9 BOKO_NR14_STOP;
+
+  /*_p12.HORA*/ DFF11 HORA_SUM_B00;
+  /*_p12.HOPA*/ DFF11 HOPA_SUM_B01;
+  /*_p12.HELE*/ DFF11 HELE_SUM_B02;
+  /*_p12.JAPE*/ DFF11 JAPE_SUM_B03;
+  /*_p12.JETE*/ DFF11 JETE_SUM_B04;
+  /*_p12.GELE*/ DFF11 GELE_SUM_B05;
+  /*_p12.EPYR*/ DFF11 EPYR_SUM_B06;
+  /*_p12.EDOK*/ DFF11 EDOK_SUM_B07;
+  /*_p12.DEFA*/ DFF11 DEFA_SUM_B08;
+  /*_p12.ETER*/ DFF11 ETER_SUM_B09;
+  /*_p12.DEVA*/ DFF11 DEVA_SUM_B10;
+
+  /*_p12.GALO*/ DFF11 GALO_SUM_A00;
+  /*_p12.JODE*/ DFF11 JODE_SUM_A01;
+  /*_p12.KARE*/ DFF11 KARE_SUM_A02;
+  /*_p12.JYME*/ DFF11 JYME_SUM_A03;
+  /*_p12.GYME*/ DFF11 GYME_SUM_A04;
+  /*_p12.FAXO*/ DFF11 FAXO_SUM_A05;
+  /*_p12.EXAP*/ DFF11 EXAP_SUM_A06;
+  /*_p12.DELE*/ DFF11 DELE_SUM_A07;
+  /*_p12.DEXE*/ DFF11 DEXE_SUM_A08;
+  /*_p12.DOFY*/ DFF11 DOFY_SUM_A09;
+  /*_p12.DOLY*/ DFF11 DOLY_SUM_A10;
+
+  /*_p12.HYKA*/ DFF22 HYKA_SUMMER00;
+  /*_p12.JYKA*/ DFF22 JYKA_SUMMER01;
+  /*_p12.HAVO*/ DFF22 HAVO_SUMMER02;
+  /*_p12.EDUL*/ DFF22 EDUL_SUMMER03;
+  /*_p12.FELY*/ DFF22 FELY_SUMMER04;
+  /*_p12.HOLU*/ DFF22 HOLU_SUMMER05;
+  /*_p12.HYXU*/ DFF22 HYXU_SUMMER06;
+  /*_p12.HOPO*/ DFF22 HOPO_SUMMER07;
+  /*_p12.DYGY*/ DFF22 DYGY_SUMMER08;
+  /*_p12.EVAB*/ DFF22 EVAB_SUMMER09;
+  /*_p12.AXAN*/ DFF22 AXAN_SUMMER10;
+
+  /*_p12.FABU*/ DFF22 FABU_SHIFTER_00;
+  /*_p12.JEFA*/ DFF22 JEFA_SHIFTER_01;
+  /*_p12.GOGA*/ DFF22 GOGA_SHIFTER_02;
+  /*_p12.JOLU*/ DFF22 JOLU_SHIFTER_03;
+  /*_p12.JOTA*/ DFF22 JOTA_SHIFTER_04;
+  /*_p12.FUDE*/ DFF22 FUDE_SHIFTER_05;
+  /*_p12.FEDO*/ DFF22 FEDO_SHIFTER_06;
+  /*_p12.EXAC*/ DFF22 EXAC_SHIFTER_07;
+  /*_p12.ELUX*/ DFF22 ELUX_SHIFTER_08;
+  /*_p12.AGEZ*/ DFF22 AGEZ_SHIFTER_09;
+  /*_p12.BEKU*/ DFF22 BEKU_SHIFTER_10;
+
+  /*_p09.CALO*/ DFF17 CALO_RESTART_CLK;
+
+  /*_p13.FEKU*/ DFF17 FEKU_RESTART0;
+  /*_p13.FARE*/ DFF17 FARE_RESTART1;
+  /*_p13.FYTE*/ DFF17 FYTE_RESTART2;
+
+
+  //----------
+
+  /*_p13.GEXU*/ NandLatch GEXU_FREQ_GATE; // def latch, looks like arms are on vcc
+
+  /*_p13.BYTE*/ DFF17 BYTE_SHIFT_DONE_SYNC; // not positive this is DFF17, the annotation is off
+
+  /*_p13.BACY*/ DFF20 BACY_NR11_LEN0;
+  /*_p13.CAVY*/ DFF20 CAVY_NR11_LEN1;
+  /*_p13.BOVY*/ DFF20 BOVY_NR11_LEN2;
+  /*_p13.CUNO*/ DFF20 CUNO_NR11_LEN3;
+  /*_p13.CURA*/ DFF20 CURA_NR11_LEN4;
+  /*_p13.ERAM*/ DFF20 ERAM_NR11_LEN5;
+
+  /*_p13.CERO*/ DFF17 CERO_CH1_LEN_DONE;
+
+  /*_p13.CUPO*/ DFF20 CUPO_SWEEP_DELAY0;
+  /*_p13.CYPU*/ DFF20 CYPU_SWEEP_DELAY1;
+  /*_p13.CAXY*/ DFF20 CAXY_SWEEP_DELAY2;
+  /*_p13.BEXA*/ DFF17 BEXA_SWEEP_TRIGGER;
+  /*_p13.COMY*/ DFF17 COMY_PHASE_CLKnb;
+
+  /*_p13.ESUT*/ DFF17 ESUT_PHASE_xBxDxFxH;
+  /*_p13.EROS*/ DFF13 EROS_PHASE_xxCDxxGH;
+  /*_p13.DAPE*/ DFF13 DAPE_PHASE_xxxxEFGH;
+
+  // Sweep shift counter
+  /*_p13.COPA*/ DFF20 COPA_SHIFTER_CNT0;
+  /*_p13.CAJA*/ DFF20 CAJA_SHIFTER_CNT1;
+  /*_p13.BYRA*/ DFF20 BYRA_SHIFTER_CNT2;
+
+  //----------
+
+#if 0
+  /*_p13.HESU*/ logic<1> HESU_ENV_DELTA0;  // and/or? xor? what is this? not an adder...
+  /*_p13.HETO*/ logic<1> HETO_ENV_DELTA1;  // and/or? xor? what is this?
+  /*_p13.HYTO*/ logic<1> HYTO_ENV_DELTA2;  // and/or? xor? what is this?
+  /*_p13.JUFY*/ logic<1> JUFY_ENV_DELTA3;  // and/or? xor? what is this?
+#endif
+
+  /*_p13.HEVO*/ DFF20 HEVO_ENV0;
+  /*_p13.HOKO*/ DFF20 HOKO_ENV1;
+  /*_p13.HEMY*/ DFF20 HEMY_ENV2;
+  /*_p13.HAFO*/ DFF20 HAFO_ENV3;
+  
+  /*_p13.KOZY*/ DFF17 KOZY_ENV_CLK;
+  /*_p13.KYNO*/ DFF17 KYNO_ENV_STOP;
+
+  /*_p13.JOVA*/ DFF20 JOVA_ENV_DELAY0;
+  /*_p13.KENU*/ DFF20 KENU_ENV_DELAY1;
+  /*_p13.KERA*/ DFF20 KERA_ENV_DELAY2;
+
+  /*_p13.DUWO*/ DFF17 DUWO_RAW_BIT_SYNC;
+  /*_p13.EZEC*/ DFF17 EZEC_START;
+  /*_p13.DUPE*/ DFF9  DUPE_NR14_START;
+  /*_p13.KALY*/ DFF17 KALY_CLK_64;
+  /*_p09.BAZA*/ DFF17 BAZA_DBG_SWEEP_CLK;
+
+  /*_p13.CYTO*/ NorLatch CYTO_CH1_ACTIVE;
+};
+
+//-----------------------------------------------------------------------------
+#pragma once
+#include "regs.h"
+
+//-----------------------------------------------------------------------------
+
+inline wire not1(wire a) { return ~a; }
+
+inline wire and2(wire a, wire b) { return a & b; }
+inline wire and3(wire a, wire b, wire c) { return  (a & b & c); }
+
+inline wire and4(wire a, wire b, wire c, wire d) { return  (a & b & c & d); }
+inline wire and5(wire a, wire b, wire c, wire d, wire e) { return  (a & b & c & d & e); }
+inline wire and6(wire a, wire b, wire c, wire d, wire e, wire f) { return  (a & b & c & d & e & f); }
+inline wire and7(wire a, wire b, wire c, wire d, wire e, wire f, wire g) { return  (a & b & c & d & e & f & g); }
+
+inline wire or2(wire a, wire b) { return a | b; }
+inline wire or3(wire a, wire b, wire c) { return  (a | b | c); }
+inline wire or4(wire a, wire b, wire c, wire d) { return  (a | b | c | d); }
+inline wire or5(wire a, wire b, wire c, wire d, wire e) { return  (a | b | c | d | e); }
+inline wire or6(wire a, wire b, wire c, wire d, wire e, wire f) { return a | b | c | d | e | f; }
+
+inline wire xor2(wire a, wire b) { return a ^ b; }
+
+inline wire xnor2(wire a, wire b) { return ~(a ^ b); }
+
+inline wire nor2(wire a, wire b) { return ~(a | b); }
+inline wire nor3(wire a, wire b, wire c) { return ~(a | b | c); }
+inline wire nor4(wire a, wire b, wire c, wire d) { return ~(a | b | c | d); }
+inline wire nor5(wire a, wire b, wire c, wire d, wire e) { return ~(a | b | c | d | e); }
+inline wire nor6(wire a, wire b, wire c, wire d, wire e, wire f) { return ~(a | b | c | d | e | f); }
+inline wire nor8(wire a, wire b, wire c, wire d, wire e, wire f, wire g, wire h) { return ~(a | b | c | d | e | f | g | h); }
+
+inline wire nand2(wire a, wire b) { return ~(a & b); }
+inline wire nand3(wire a, wire b, wire c) { return ~(a & b & c); }
+inline wire nand4(wire a, wire b, wire c, wire d) { return ~(a & b & c & d); }
+inline wire nand5(wire a, wire b, wire c, wire d, wire e) { return ~(a & b & c & d & e); }
+inline wire nand6(wire a, wire b, wire c, wire d, wire e, wire f) { return ~(a & b & c & d & e & f); }
+inline wire nand7(wire a, wire b, wire c, wire d, wire e, wire f, wire g) { return ~(a & b & c & d & e & f & g); }
+
+inline wire and_or3(wire a, wire b, wire c) { return (a & b) | c; }
+inline wire or_and3(wire a, wire b, wire c) { return (a | b) & c; }
+
+inline wire not_or_and3(wire a, wire b, wire c) { return ~or_and3(a, b, c); }
+
+//-----------------------------------------------------------------------------
+
+// Six-rung mux cells are _non_inverting_. m = 1 selects input A
+inline wire mux2p(wire m, wire a, wire b) {
+  return bit0(m) ? a : b;
+}
+
+// Five-rung mux cells are _inverting_. m = 1 selects input A
+inline wire mux2n(wire m, wire a, wire b) {
+  return ~(bit0(m) ? a : b);
+}
+
+inline wire amux2(wire a0, wire b0, wire a1, wire b1) {
+  return (b0 & a0) | (b1 & a1);
+}
+
+inline wire amux3(wire a0, wire b0, wire a1, wire b1, wire a2, wire b2) {
+  return (b0 & a0) | (b1 & a1) | (b2 & a2);
+}
+
+inline wire amux4(wire a0, wire b0, wire a1, wire b1, wire a2, wire b2, wire a3, wire b3) {
+  return (b0 & a0) | (b1 & a1) | (b2 & a2) | (b3 & a3);
+}
+
+inline wire amux6(wire a0, wire b0, wire a1, wire b1, wire a2, wire b2, wire a3, wire b3, wire a4, wire b4, wire a5, wire b5) {
+  return (b0 & a0) | (b1 & a1) | (b2 & a2) | (b3 & a3) | (b4 & a4) | (b5 & a5);
+}
+
+//-----------------------------------------------------------------------------
+/// plait_noparse
+
+#include "regs.h"
+
+#pragma once
+
+//-----------------------------------------------------------------------------
+
+struct Gameboy;
+
+struct Channel2 {
+
+  /*_p14.HUDE*/ union { bool HUDE; bool APU_RESETn1; };
+
+  //----------
+  // FF16 NR21
+
+  /*_p14.AGYN*/ bool FF16_WR;
+  /*_p14.ASYP*/ bool ASYP;
+  /*_p14.BENY*/ bool BENY;
+
+  /*_p14.BACU*/ bool BACU;
+  /*_p14.BUDU*/ bool BUDU;
+  /*_p14.BERA*/ bool NR21_DUTY0;
+  /*_p14.BAMY*/ bool NR21_DUTY1;
+
+  /*_p14.BYGO*/ bool BYGO;
+  /*_p14.CORO*/ bool CORO;
+
+  //----------
+  // FF17 NR22
+
+  /*_p14.HYFU*/ bool NR22_ENV_TIMER0;
+  /*_p14.HAVA*/ bool NR22_ENV_TIMER1;
+  /*_p14.HORE*/ bool NR22_ENV_TIMER2;
+  /*_p14.FORE*/ bool FF17_D3;
+  /*_p14.GATA*/ bool FF17_D4;
+  /*_p14.GUFE*/ bool FF17_D5;
+  /*_p14.GURA*/ bool FF17_D6;
+  /*_p14.GAGE*/ bool FF17_D7;
+
+  //----------
+  // FF18 NR23
+
+  /*_p14.DOSA*/ bool NR23_WR1;
+  /*_p14.EXUC*/ bool NR23_WR2;
+  /*_p14.ESUR*/ bool NR23_WRn1;
+  /*_p14.FYXO*/ bool NR23_WRn2;
+
+  /*_p14.FOFE*/ bool NR23_FREQ0;
+  /*_p14.FOVA*/ bool NR23_FREQ1;
+  /*_p14.FEDY*/ bool NR23_FREQ2;
+  /*_p14.FOME*/ bool NR23_FREQ3;
+  /*_p14.FORA*/ bool NR23_FREQ4;
+  /*_p14.GODA*/ bool NR23_FREQ5;
+  /*_p14.GUMY*/ bool NR23_FREQ6;
+  /*_p14.GUPU*/ bool NR23_FREQ7;
+
+  /*_p14.DONE*/ bool CH2_FREQ_00;
+  /*_p14.DYNU*/ bool CH2_FREQ_01;
+  /*_p14.EZOF*/ bool CH2_FREQ_02;
+  /*_p14.CYVO*/ bool CH2_FREQ_03;
+  /*_p14.EDEP*/ bool CH2_FREQ_03b;
+  /*_p14.FUXO*/ bool CH2_FREQ_04;
+  /*_p14.GANO*/ bool CH2_FREQ_05;
+  /*_p14.GOCA*/ bool CH2_FREQ_06;
+  /*_p14.GANE*/ bool CH2_FREQ_07;
+  /*_p14.GALA*/ bool CH2_FREQ_07b;
+  /*_p14.HEVY*/ bool CH2_FREQ_08;
+  /*_p14.HEPU*/ bool CH2_FREQ_09;
+  /*_p14.HERO*/ bool CH2_FREQ_10;
+
+  //----------
+  // FF19 NR24
+
+  /*_p14.JEFU*/ bool NR24_FREQ8;
+  /*_p14.JANY*/ bool NR24_FREQ9;
+  /*_p14.JUPY*/ bool NR24_FREQ10;
+  /*_p14.EMER*/ bool NR24_STOP;
+  /*_p14.ETAP*/ bool NR24_START;
+
+  //----------
+
+
+
+
+  /*_p14.CECY*/ bool CECY;
+  /*_p14.DETA*/ bool DETA;
+  /*_p14.ENUF*/ bool ENUF;
+  /*_p14.EVYF*/ bool EVYF;
+  /*_p14.FAPE*/ bool FAPE;
+  /*_p14.FAZO*/ bool FAZO;
+  /*_p14.FERY*/ bool FERY;
+  /*_p14.FOGE*/ bool FOGE;
+  /*_p14.FUTY*/ bool FUTY;
+  /*_p14.FYRY*/ bool FYRY;
+  /*_p14.GADO*/ bool GADO;
+  /*_p14.GERE*/ bool GERE;
+  /*_p14.GEXA*/ bool GEXA;
+  /*_p14.GOJY*/ bool GOJY;
+  /*_p14.GOTE*/ bool GOTE;
+  /*_p14.GURE*/ bool GURE;
+  /*_p14.GURU*/ bool GURU;
+  /*_p14.GUZA*/ bool GUZA;
+  /*_p14.HUMA*/ bool HUMA;
+  /*_p14.HYPO*/ bool HYPO;
+  /*_p14.JEDE*/ bool JEDE;
+  /*_p14.JENU*/ bool JENU;
+  /*_p14.JYBU*/ bool JYBU;
+  /*_p14.KYPU*/ bool KYPU;
+  /*_p14.KYSA*/ bool KYSA;
+
+  /*_p15.FUTE*/ bool FUTE_CH2_AMP_ENn;
+
+  /*_p15.AGET*/ bool AGET;
+  /*_p15.AKYD*/ bool AKYD_05;
+  /*_p15.AMOV*/ bool AMOV;
+  /*_p15.ANAN*/ bool ANAN;
+  /*_p15.ANYV*/ bool ANYV;
+  /*_p15.ARES*/ bool ARES;
+  /*_p15.ASOG*/ bool ASOG;
+  /*_p15.ATEP*/ bool ATEP;
+  /*_p15.AZEG*/ bool AZEG;
+  /*_p15.BODO*/ bool BODO;
+  /*_p15.BONU*/ bool BONU;
+  /*_p15.BUFO*/ bool BUFO;
+  /*_p15.BUKO*/ bool BUKO;
+  /*_p15.BUTA*/ bool BUTA;
+  /*_p15.BUVA*/ bool BUVA_04;
+  /*_p15.BUWE*/ bool BUWE;
+  /*_p15.BYHO*/ bool BYHO;
+  /*_p15.BYMO*/ bool BYMO;
+  /*_p15.CAGY*/ bool CAGY_01;
+  /*_p15.CAMA*/ bool CAMA;
+  /*_p15.CAME*/ bool CAME_03;
+  /*_p15.CANO*/ bool CANO_00;
+  /*_p15.CAZA*/ bool CAZA;
+  /*_p15.CELO*/ bool CELO;
+  /*_p15.CEMO*/ bool CEMO;
+  /*_p15.CERA*/ bool CERA_01;
+  /*_p15.CEXE*/ bool CEXE;
+  /*_p15.COGU*/ bool COGU;
+  /*_p15.CONU*/ bool CONU_02;
+  /*_p15.CULE*/ bool CULE;
+  /*_p15.CYRE*/ bool CYRE;
+  /*_p15.CYSE*/ bool CYSE;
+  /*_p15.CYWU*/ bool CYWU;
+  /*_p15.DALA*/ bool DALA;
+  /*_p15.DANE*/ NorLatch DANE_CH2_ACTIVE; // nor latch
+  /*_p15.DARE*/ bool DARE;
+  /*_p15.DAVU*/ bool DAVU;
+  /*_p15.DEME*/ bool DEME;
+  /*_p15.DERA*/ bool DERA;
+  /*_p15.DOCA*/ bool DOCA;
+  /*_p15.DOJU*/ bool DOJU;
+  /*_p15.DOME*/ bool DOME;
+  /*_p15.DOMO*/ bool DOMO;
+  /*_p15.DOPE*/ bool DOPE;
+  /*_p15.DORA*/ bool DORA;
+  /*_p15.DORY*/ bool DORY;
+  /*_p15.DOVE*/ bool DOVE;
+  /*_p15.DOXA*/ bool DOXA;
+  /*_p15.DUGE*/ bool DUGE;
+  /*_p15.DUJU*/ bool DUJU;
+  /*_p15.DYMU*/ bool DYMU;
+  /*_p15.DYRO*/ bool DYRO;
+  /*_p15.DYTA*/ bool DYTA;
+  /*_p15.DYVE*/ bool DYVE_02;
+  /*_p15.EGOG*/ bool EGOG;
+  /*_p15.ELOX*/ bool ELOX;
+  /*_p15.EMYR*/ bool EMYR;
+  /*_p15.ERAT*/ bool ERAT;
+  /*_p15.EROG*/ bool EROG;
+  /*_p15.ERYC*/ bool ERYC_00;
+  /*_p15.ESYK*/ bool ESYK;
+  /*_p15.ETUK*/ bool ETUK;
+  /*_p15.ETUP*/ bool ETUP;
+  /*_p15.EXES*/ bool EXES;
+  /*_p15.FARU*/ bool FARU;
+  /*_p15.FENA*/ bool FENA;
+  /*_p15.FENO*/ bool FENO;
+  /*_p15.FETE*/ bool FETE;
+  /*_p15.FOMY*/ bool FOMY;
+  /*_p15.FOPY*/ bool FOPY;
+  /*_p15.FUJY*/ bool FUJY;
+  /*_p15.FYRE*/ bool FYRE;
+  /*_p15.GADE*/ bool GADE;
+  /*_p15.GAFA*/ bool GAFA;
+  /*_p15.GALU*/ bool GALU;
+  /*_p15.GUFY*/ bool GUFY;
+  /*_p15.GYKO*/ bool GYKO;
+  /*_p15.GYPA*/ bool GYPA;
+  /*_p15.GYRE*/ bool GYRE;
+  /*_p15.HAFE*/ bool HAFE;
+  /*_p15.HEPO*/ bool HEPO;
+  /*_p15.HOFO*/ bool HOFO;
+  /*_p15.HOLY*/ bool HOLY;
+  /*_p15.HOTA*/ bool HOTA;
+  /*_p15.HYLE*/ bool HYLE;
+  /*_p15.HYLY*/ bool HYLY;
+  /*_p15.HYPA*/ bool HYPA;
+  /*_p15.JAKE*/ bool JAKE;
+  /*_p15.JEME*/ bool JEME;
+  /*_p15.JEVY*/ bool JEVY;
+  /*_p15.JONA*/ bool JONA;
+  /*_p15.JOPA*/ bool JOPA;
+  /*_p15.JORE*/ bool JORE;
+  /*_p15.JUPU*/ bool JUPU;
+  /*_p15.JYNA*/ bool JYNA;
+  /*_p15.KATY*/ bool KATY;
+  /*_p15.KENE*/ bool KENE;
+  /*_p15.KYLO*/ bool KYLO;
+  /*_p15.KYVO*/ bool KYVO;
+};
+
+//-----------------------------------------------------------------------------
+/// plait_noparse
+
+#pragma once
+
+#include "gates.h"
+#include "regs.h"
+
+#include "Sch_Channel1.h"
+#include "Sch_Channel2.h"
+#include "Sch_Channel3.h"
+#include "Sch_Channel4.h"
+
+//-----------------------------------------------------------------------------
+
+struct ApuControl {
+
+  void tick();
+
+  Channel1 ch1;
+  Channel2 ch2;
+  Channel3 ch3;
+  Channel4 ch4;
+
+  //----------
+  // clocks for the apu
+
+  // DFF17_01 SC
+  // DFF17_02 << CLKp
+  // DFF17_03 SC
+  // DFF17_04 --
+  // DFF17_05 --
+  // DFF17_06 << RSTn  // must be RSTn, see WUVU/VENA/WOSU
+  // DFF17_07 << D
+  // DFF17_08 --
+  // DFF17_09 SC
+  // DFF17_10 --
+  // DFF17_11 --
+  // DFF17_12 SC
+  // DFF17_13 << RSTn
+  // DFF17_14 --
+  // DFF17_15 --
+  // DFF17_16 >> QN   _MUST_ be QN - see TERO
+  // DFF17_17 >> Q    _MUST_ be Q  - see TERO
+
+  /*_p01.CERY*/ DFF17 CERY_2M;
+  /*_p01.ATYK*/ DFF17 ATYK_2M;
+  /*_p01.AVOK*/ DFF17 AVOK_1M;
+  /*_p09.AJER*/ DFF17 AJER_2M;
+  /*_p01.JESO*/ DFF17 JESO_CLK_512K;
+
+  /*_p01.BARA*/ DFF17 BARA_CLK_512;
+  /*_p01.CARU*/ DFF17 CARU_CLK_256;
+  /*_p01.BYLU*/ DFF17 BYLU_CLK_128;
+
+  //----------
+  // FF24 NR50
+  
+  /*_p09.APEG*/ DFF9 APEG_NR50_VOL_L0;
+  /*_p09.BYGA*/ DFF9 BYGA_NR50_VOL_L1;
+  /*_p09.AGER*/ DFF9 AGER_NR50_VOL_L2;
+  /*_p09.APOS*/ DFF9 APOS_NR50_VIN_TO_L;
+  /*_p09.BYRE*/ DFF9 BYRE_NR50_VOL_R0;
+  /*_p09.BUMO*/ DFF9 BUMO_NR50_VOL_R1;
+  /*_p09.COZU*/ DFF9 COZU_NR50_VOL_R2;
+  /*_p09.BEDU*/ DFF9 BEDU_NR50_VIN_TO_R;
+
+  //----------
+  // FF25 NR51
+
+  /*_p09.ANEV*/ DFF9 ANEV_NR51_D0; // these are mixer control bits
+  /*_p09.BOGU*/ DFF9 BOGU_NR51_D1;
+  /*_p09.BAFO*/ DFF9 BAFO_NR51_D2;
+  /*_p09.ATUF*/ DFF9 ATUF_NR51_D3;
+  /*_p09.BUME*/ DFF9 BUME_NR51_D4;
+  /*_p09.BOFA*/ DFF9 BOFA_NR51_D5;
+  /*_p09.BEFO*/ DFF9 BEFO_NR51_D6;
+  /*_p09.BEPU*/ DFF9 BEPU_NR51_D7;
+
+  //----------
+  // FF26 NR52
+
+  // DBG_APUn polarity?
+  /*_p09.FERO*/ DFF9  FERO_NR52_DBG_APUn;     // secret debug bit
+  /*_p09.BOWY*/ DFF17 BOWY_NR52_DBG_SWEEP;    // secret debug bit
+  /*_p09.HADA*/ DFF17 HADA_NR52_ALL_SOUND_ON; //FF26_7
+};
+
+//-----------------------------------------------------------------------------
+#include "metron_tools.h"
+
+typedef logic<16> sample_t;
+
+/*
+
+#pragma warning(push)
+#pragma warning(disable:4201)
+
+#pragma pack(push, 1)
 struct Req {
-  uint16_t addr;
-  uint8_t data_lo;
-  uint8_t data_lo;
-  uint8_t read;
-  uint8_t write;
+  uint16_t addr = 0;
+  union {
+    struct {
+      uint8_t data_lo;
+      uint8_t data_hi;
+    };
+    uint16_t data = 0;
+  };
+  uint8_t  read = 0;
+  uint8_t  write = 0;
+  uint16_t pad1 = 0;
+
+  operator bool() const {
+    return read || write;
+  }
+};
+#pragma pack(pop)
+
+static_assert(sizeof(Req) == 8, "Req size != 8");
+
+struct Ack {
+  uint16_t addr = 0;
+  union {
+    struct {
+      uint8_t data_lo;
+      uint8_t data_hi;
+    };
+    uint16_t data = 0;
+  };
+  uint8_t  read = 0;
+  uint8_t  pad1 = 0;
+  uint16_t pad2 = 0;
+};
+
+static_assert(sizeof(Ack) == 8, "Ack size != 8");
+
+#pragma warning(pop)
+ 
+struct Req {
+  logic<16> addr;
+  logic<8> data_lo;
+  logic<8> data_hi;
+  logic<8> read;
+  logic<8> write;
 };
 
 struct Ack {
-  uint16_t addr;
-  //bool read;
-  //bool write;
-  uint8_t read;
-  uint8_t write;
+  logic<16> addr;
+  //logic<1> read;
+  //logic<1> write;
+  logic<8> read;
+  logic<8> write;
 
-  uint8_t data_lo;
-  uint8_t data_hi;
+  logic<8> data_lo;
+  logic<8> data_hi;
 };
+*/
 
 //-----------------------------------------------------------------------------
 
 class MetroBoySPU {
 public:
 
-  sample_t out_r = 0;
-  sample_t out_l = 0;
+  logic<16> out_r;
+  logic<16> out_l;
 
+  logic<8> ack_data;
+  logic<1> ack_valid;
 
-  void reset_to_cart();
+  void tock_ack(logic<16> addr) {
+    ack_data = 0;
+    ack_valid = 0;
 
-  void tick(int phase_total, const Req& req, Ack& ibus_ack) const;
+    if (addr >= 0xFF30 && addr <= 0xFF3F) {
+      // wavetable
+      ack_data = s3_wave[addr & 0xF];
+    }
+    else if (addr >= 0xFF10 && addr <= 0xFF26) {
+      switch (addr) {
+        case 0xFF10: ack_data = nr10 | 0x80; break;
+        case 0xFF11: ack_data = nr11 | 0x3F; break;
+        case 0xFF12: ack_data = nr12 | 0x00; break;
+        case 0xFF13: ack_data = nr13 | 0xFF; break;
+        case 0xFF14: ack_data = nr14 | 0xBF; break;
 
-  void bus_read(const Req& req, Ack& ack) const;
-  void bus_write(const Req& ibus_req);
+        case 0xFF15: ack_data = nr20 | 0xFF; break;
+        case 0xFF16: ack_data = nr21 | 0x3F; break;
+        case 0xFF17: ack_data = nr22 | 0x00; break;
+        case 0xFF18: ack_data = nr23 | 0xFF; break;
+        case 0xFF19: ack_data = nr24 | 0xBF; break;
 
-  sample_t get_l() const { return out_l; }
-  sample_t get_r() const { return out_r; }
+        case 0xFF1A: ack_data = nr30 | 0x7F; break;
+        case 0xFF1B: ack_data = nr31 | 0xFF; break;
+        case 0xFF1C: ack_data = nr32 | 0x9F; break;
+        case 0xFF1D: ack_data = nr33 | 0xFF; break;
+        case 0xFF1E: ack_data = nr34 | 0xBF; break;
 
-  //void dump(Dumper& d) const;
+        case 0xFF1F: ack_data = nr40 | 0xFF; break;
+        case 0xFF20: ack_data = nr41 | 0xFF; break;
+        case 0xFF21: ack_data = nr42 | 0x00; break;
+        case 0xFF22: ack_data = nr43 | 0x00; break;
+        case 0xFF23: ack_data = nr44 | 0xBF; break;
 
-  //----------
+        case 0xFF24: ack_data = nr50 | 0x00; break;
+        case 0xFF25: ack_data = nr51 | 0x00; break;
 
-  uint8_t nr10 = 0;
-  uint8_t nr11 = 0;
-  uint8_t nr12 = 0;
-  uint8_t nr13 = 0;
+        case 0xFF26: {
+          logic<8> bus_out_ = (nr52 & 0x80) | 0x70;
+          if (s1_enable) bus_out_ = bus_out_ | b8(0b00000001);
+          if (s2_enable) bus_out_ = bus_out_ | b8(0b00000010);
+          if (s3_enable) bus_out_ = bus_out_ | b8(0b00000100);
+          if (s4_enable) bus_out_ = bus_out_ | b8(0b00001000);
+          ack_data = bus_out_;
+          break;
+        }
+      }
+    }
 
-  uint8_t nr14 = 0;
-  uint8_t nr20 = 0;
-  uint8_t nr21 = 0;
-  uint8_t nr22 = 0;
-
-  uint8_t nr23 = 0;
-  uint8_t nr24 = 0;
-  uint8_t nr30 = 0;
-  uint8_t nr31 = 0;
-
-  uint8_t nr32 = 0;
-  uint8_t nr33 = 0;
-  uint8_t nr34 = 0;
-  uint8_t nr40 = 0;
-
-  uint8_t nr41 = 0;
-  uint8_t nr42 = 0;
-  uint8_t nr43 = 0;
-  uint8_t nr44 = 0;
-
-  uint8_t nr50 = 0;
-  uint8_t nr51 = 0;
-  uint8_t nr52 = 0;
-
-  uint8_t  s3_wave[16] = {0}; // FF30
-  uint16_t s4_lfsr = 0;
-
-  uint16_t spu_clock = 0;
-
-  bool s1_enable = 0;
-  bool s2_enable = 0;
-  bool s3_enable = 0;
-  bool s4_enable = 0;
-
-  uint8_t s1_sweep_clock = 0;
-  uint16_t s1_sweep_freq = 0;
-
-  uint8_t s1_duration = 0;
-  uint8_t s2_duration = 0;
-  uint16_t s3_duration = 0;
-
-  uint8_t s4_duration = 0;
-  uint8_t s1_env_clock = 0;
-  uint8_t s2_env_clock = 0;
-  uint8_t s4_env_clock = 0;
-
-  uint8_t s1_env_volume = 0;
-  uint8_t s2_env_volume = 0;
-  uint8_t s4_env_volume = 0;
-
-  uint16_t s1_phase_clock = 0;
-  uint16_t s2_phase_clock = 0;
-  uint16_t s3_phase_clock = 0;
-  uint16_t s4_phase_clock = 0;
-
-  uint8_t s1_phase = 0;
-  uint8_t s2_phase = 0;
-  uint8_t s3_phase = 0;
-
-  uint8_t s1_out = 0;
-  uint8_t s2_out = 0;
-  uint8_t s3_out = 0;
-  uint8_t s4_out = 0;
-
-  void reset_to_cart() {
-    *this = {0};
-
-    nr10 = 0x80;
-    nr11 = 0xBF;
-    nr12 = 0xF3;
-    nr13 = 0xFF;
-    nr14 = 0xBF;
-    nr21 = 0x3F;
-    nr22 = 0x00;
-    nr23 = 0xFF;
-    nr24 = 0xBF;
-    nr30 = 0x7F;
-    nr31 = 0xFF;
-    nr32 = 0x9F;
-    nr33 = 0xFF;
-    nr34 = 0xBF;
-    nr40 = 0x80;
-    nr41 = 0xFF;
-    nr42 = 0x00;
-    nr43 = 0x00;
-    nr44 = 0xBF;
-    nr50 = 0x77;
-    nr51 = 0xF3;
-    nr52 = 0xF1;
-
-    s4_lfsr = 0x7FFF;
-
-    s1_enable = true;
   }
 
-  //-----------------------------------------------------------------------------
+public:
 
-  void tock(int phase_total, const Req& req, Ack& ack) {
-    if (req.read) bus_read(req, ack);
-    if (req.write) bus_write(req);
+  void tock_out() {
+    out_l = 0;
+    out_r = 0;
 
-    bool sound_on = (nr52 & 0x80);
-    uint16_t spu_clock_ = (spu_clock + 1) & 0x3FFF;
-    uint16_t clock_flip = (~spu_clock) & spu_clock_;
+    //----------
+    // mixer & master volume
 
-    if (!sound_on) {
+    logic<16> out_r_ = 0;
+    logic<16> out_l_ = 0;
+
+    if (nr51 & 0b00000001) out_r_ = out_r_ + s1_out;
+    if (nr51 & 0b00000010) out_r_ = out_r_ + s2_out;
+    if (nr51 & 0b00000100) out_r_ = out_r_ + s3_out;
+    if (nr51 & 0b00001000) out_r_ = out_r_ + s4_out;
+    if (nr51 & 0b00010000) out_l_ = out_l_ + s1_out;
+    if (nr51 & 0b00100000) out_l_ = out_l_ + s2_out;
+    if (nr51 & 0b01000000) out_l_ = out_l_ + s3_out;
+    if (nr51 & 0b10000000) out_l_ = out_l_ + s4_out;
+
+    logic<4> volume_r = ((nr50 & 0b00000111) >> 0) + 1;
+    logic<4> volume_l = ((nr50 & 0b01110000) >> 4) + 1;
+
+    out_r = out_r_ * volume_r;
+    out_l = out_l_ * volume_l;
+  }
+
+  void tick(logic<1> reset, logic<16> addr, logic<8> data, logic<1> we) {
+    if (reset) {
+      nr10 = 0x80;
+      nr11 = 0xBF;
+      nr12 = 0xF3;
+      nr13 = 0xFF;
+      nr14 = 0xBF;
+
+      nr20 = 0x00;
+      nr21 = 0x3F;
+      nr22 = 0x00;
+      nr23 = 0xFF;
+      nr24 = 0xBF;
+
+      nr30 = 0x7F;
+      nr31 = 0xFF;
+      nr32 = 0x9F;
+      nr33 = 0xFF;
+      nr34 = 0xBF;
+
+      nr40 = 0x80;
+      nr41 = 0xFF;
+      nr42 = 0x00;
+      nr43 = 0x00;
+      nr44 = 0xBF;
+
+      nr50 = 0x77;
+      nr51 = 0xF3;
+      nr52 = 0xF1;
+
+      for (int i = 0; i < 16; i++) {
+        s3_wave[i] = 0;
+      }
+
+      s4_lfsr = 0x7FFF;
+
+      spu_clock = 0;
+
+      s1_enable = 1;
+      s2_enable = 0;
+      s3_enable = 0;
+      s4_enable = 0;
+
+      s1_sweep_clock = 0;
+      s1_sweep_freq = 0;
+
+
+      s1_duration = 0;
+      s2_duration = 0;
+      s3_duration = 0;
+
+      s4_duration = 0;
+      s1_env_clock = 0;
+      s2_env_clock = 0;
+      s4_env_clock = 0;
+
+      s1_env_volume = 0;
+      s2_env_volume = 0;
+      s4_env_volume = 0;
+
+      s1_phase_clock = 0;
+      s2_phase_clock = 0;
+      s3_phase_clock = 0;
+      s4_phase_clock = 0;
+
+      s1_phase = 0;
+      s2_phase = 0;
+      s3_phase = 0;
+
+      s1_out = 0;
+      s2_out = 0;
+      s3_out = 0;
+      s4_out = 0;
+    }
+    else {
+      logic<1> sound_on = (nr52 & 0x80);
+      logic<16> spu_clock_ = (spu_clock + 1) & 0x3FFF;
+      logic<16> clock_flip = (~spu_clock) & spu_clock_;
+
+      logic<1> sweep_tick =  (spu_clock_ & 0b01111111111111) == 0b01000000000000;
+      logic<1> length_tick = (spu_clock_ & 0b00111111111111) == 0b00000000000000;
+      logic<1> env_tick =    (spu_clock_ & 0b11111111111111) == 0b11100000000000;
+
+      //----------
+      // output
+
       s1_out = 0;
       s2_out = 0;
       s3_out = 0;
       s4_out = 0;
 
-      out_r = 0;
-      out_l = 0;
-      return;
-    }
-
-    //----------
-    // sweep
-
-    bool sweep_tick =  (spu_clock_ & 0b01111111111111) == 0b01000000000000;
-    bool length_tick = (spu_clock_ & 0b00111111111111) == 0b00000000000000;
-    bool env_tick =    (spu_clock_ & 0b11111111111111) == 0b11100000000000;
-
-    if (sweep_tick) {
-      uint8_t s1_sweep_period = (nr10 & 0b01110000) >> 4;
-      uint8_t s1_sweep_shift = (nr10 & 0b00000111) >> 0;
-      bool s1_sweep_dir = (nr10 & 0b00001000) >> 3;
-      /* verilator lint_on WIDTH */
-
-      if (s1_sweep_period && s1_sweep_shift) {
-        if (s1_sweep_clock) {
-          s1_sweep_clock = s1_sweep_clock - 1;
-        }
-        else {
-          uint16_t delta = s1_sweep_freq >> s1_sweep_shift;
-          uint16_t new_freq = s1_sweep_freq + (s1_sweep_dir ? -delta : +delta);
-          s1_sweep_clock = s1_sweep_period;
-          if (new_freq > 2047) {
-            s1_enable = false;
-          }
-          else {
-            s1_sweep_freq = new_freq;
-          }
-        }
-      }
-    }
-
-    //----------
-    // length
-
-    if (length_tick) {
-      bool s1_length_enable = (nr14 & 0b01000000) >> 6;
-      bool s2_length_enable = (nr24 & 0b01000000) >> 6;
-      bool s3_length_enable = (nr34 & 0b01000000) >> 6;
-      bool s4_length_enable = (nr44 & 0b01000000) >> 6;
-      uint8_t s1_duration_ = s1_duration;
-      uint8_t s2_duration_ = s2_duration;
-      uint16_t s3_duration_ = s3_duration;
-      uint8_t s4_duration_ = s4_duration;
-
-      if (s1_length_enable && s1_duration_) s1_duration_ = s1_duration_ - 1;
-      if (s2_length_enable && s2_duration_) s2_duration_ = s2_duration_ - 1;
-      if (s3_length_enable && s3_duration_) s3_duration_ = s3_duration_ - 1;
-      if (s4_length_enable && s4_duration_) s4_duration_ = s4_duration_ - 1;
-
-      if (s1_length_enable && s1_duration_ == 0) s1_enable = false;
-      if (s2_length_enable && s2_duration_ == 0) s2_enable = false;
-      if (s3_length_enable && s3_duration_ == 0) s3_enable = false;
-      if (s4_length_enable && s4_duration_ == 0) s4_enable = false;
-
-      s1_duration = s1_duration_;
-      s2_duration = s2_duration_;
-      s3_duration = s3_duration_;
-      s4_duration = s4_duration_;
-    }
-
-    //----------
-    // env
-
-    if (env_tick) {
-      const bool s1_env_dir = (nr12 & 0b00001000) >> 3;
-      const bool s2_env_dir = (nr22 & 0b00001000) >> 3;
-      const bool s4_env_dir = (nr42 & 0b00001000) >> 3;
-
-      const uint8_t s1_env_period = (nr12 & 0b00000111) >> 0;
-      const uint8_t s2_env_period = (nr22 & 0b00000111) >> 0;
-      const uint8_t s4_env_period = (nr42 & 0b00000111) >> 0;
-
-      if (s1_env_period) {
-        if (s1_env_clock) {
-          s1_env_clock = s1_env_clock - 1;
-        }
-        else {
-          s1_env_clock = s1_env_period;
-          if (s1_env_volume < 15) s1_env_volume = s1_env_volume + 1;
-        }
+      if (s1_enable) {
+        logic<8> s1_volume = (nr12 & 0x08) ? b8(s1_env_volume) : b8(15 ^ s1_env_volume);
+        logic<8> s1_duty = (nr11 & 0b11000000) >> 6;
+        s1_duty = s1_duty ? s1_duty * 2 : 1;
+        logic<8> s1_sample = (s1_phase < s1_duty) ? b8(s1_volume) : b8(0);
+        s1_out = s1_sample;
       }
 
-      if (s2_env_period) {
-        if (s2_env_clock) {
-          s2_env_clock = s2_env_clock - 1;
-        }
-        else {
-          s2_env_clock = s2_env_period;
-          if (s2_env_volume < 15) s2_env_volume = s2_env_volume + 1;
-        }
+      if (s2_enable) {
+        logic<8> s2_volume = (nr22 & 0x08) ? b8(s2_env_volume) : b8(15 ^ s2_env_volume);
+        logic<8> s2_duty = (nr21 & 0b11000000) >> 6;
+        s2_duty = s2_duty ? s2_duty * 2 : 1;
+        logic<8> s2_sample = (s2_phase < s2_duty) ? b8(s2_volume) : b8(0);
+        s2_out = s2_sample;
       }
 
-      if (s4_env_period) {
-        if (s4_env_clock) {
-          s4_env_clock = s4_env_clock - 1;
+      logic<1> s3_power = (nr30 & 0b10000000);
+      if (s3_enable && s3_power) {
+        logic<8> s3_volume_shift = 0;
+        switch ((nr32 & 0b01100000) >> 5) {
+          case 0: s3_volume_shift = 4; break;
+          case 1: s3_volume_shift = 0; break;
+          case 2: s3_volume_shift = 1; break;
+          case 3: s3_volume_shift = 2; break;
         }
-        else {
-          s4_env_clock = s4_env_period;
-          if (s4_env_volume < 15) s4_env_volume = s4_env_volume + 1;
-        }
+        logic<8> s3_sample = s3_wave[s3_phase >> 1];
+        s3_sample = (s3_phase & 1) ? b8(s3_sample & 0xF) : b8(s3_sample >> 4);
+        s3_sample = s3_sample >> s3_volume_shift;
+        s3_out = s3_sample;
       }
-    }
 
-    //----------
-    // phase
+      if (s4_enable) {
+        logic<8> s4_volume = (nr42 & 0x08) ? b8(s4_env_volume) : b8(15 ^ s4_env_volume);
+        logic<8> s4_sample = (s4_lfsr & 1) ? b8(s4_volume) : b8(0);
+        s4_out = s4_sample;
+      }
 
-    if (!s1_phase_clock) {
-      const uint8_t s1_sweep_period = (nr10 & 0b01110000) >> 4;
-      const uint16_t s1_freq = ((nr14 << 8) | nr13) & 0x07FF;
+      //----------
+      // s1 clock
 
-      s1_phase_clock = 2047 ^ (s1_sweep_period ? s1_sweep_freq : s1_freq);
-      s1_phase = (s1_phase + 1) & 7;
-    }
-    else {
-      s1_phase_clock = s1_phase_clock - 1;
-    }
+      if (!s1_phase_clock) {
+        logic<8> s1_sweep_period = (nr10 & 0b01110000) >> 4;
+        logic<16> s1_freq = ((nr14 << 8) | nr13) & 0x07FF;
 
-    if (!s2_phase_clock) {
-      const uint16_t s2_freq = ((nr24 << 8) | nr23) & 0x07FF;
-
-      s2_phase_clock = 2047 ^ s2_freq;
-      s2_phase = (s2_phase + 1) & 7;
-    }
-    else {
-      s2_phase_clock = s2_phase_clock - 1;
-    }
-
-    // we run this twice because this is ticking at 1 mhz
-    if (!s3_phase_clock) {
-      const uint16_t s3_freq = ((nr34 << 8) | nr33) & 0x07FF;
-
-      s3_phase_clock = 2047 ^ s3_freq;
-      s3_phase = (s3_phase + 1) & 31;
-    }
-    else {
-      s3_phase_clock--;
-    }
-
-    if (!s3_phase_clock) {
-      const uint16_t s3_freq = ((nr34 << 8) | nr33) & 0x07FF;
-
-      s3_phase_clock = 2047 ^ s3_freq;
-      s3_phase = (s3_phase + 1) & 31;
-    }
-    else {
-      s3_phase_clock--;
-    }
-
-    if (!s4_phase_clock) {
-      const bool s4_lfsr_mode = (nr43 & 0b00001000) >> 3;
-      const uint8_t s4_phase_period = (nr43 & 0b00000111) ? (nr43 & 0b00000111) * 2 : 1;
-
-      s4_phase_clock = s4_phase_period;
-      bool lfsr_bit = (s4_lfsr ^ (s4_lfsr >> 1)) & 1;
-      s4_phase_clock = s4_phase_period;
-      if (s4_lfsr_mode) {
-        s4_lfsr = ((s4_lfsr >> 1) & 0b0111111111011111) | (lfsr_bit << 5);
+        s1_phase_clock = 2047 ^ (s1_sweep_period ? s1_sweep_freq : s1_freq);
+        s1_phase = (s1_phase + 1) & 7;
       }
       else {
-        s4_lfsr = ((s4_lfsr >> 1) & 0b0011111111111111) | (lfsr_bit << 14);
+        s1_phase_clock = s1_phase_clock - 1;
       }
-    }
-    else {
-      const uint8_t s4_clock_shift = (nr43 & 0b11110000) >> 4;
-      s4_phase_clock -= (clock_flip >> s4_clock_shift) & 1;
-    }
 
-    //----------
-    // output
+      //----------
+      // s2 clock
 
-    s1_out = 0;
-    s2_out = 0;
-    s3_out = 0;
-    s4_out = 0;
+      if (!s2_phase_clock) {
+        logic<16> s2_freq = ((nr24 << 8) | nr23) & 0x07FF;
 
-    if (s1_enable) {
-      uint8_t s1_volume = (nr12 & 0x08) ? s1_env_volume : 15 ^ s1_env_volume;
-      uint8_t s1_duty = (nr11 & 0b11000000) >> 6;
-      s1_duty = s1_duty ? s1_duty * 2 : 1;
-      uint8_t s1_sample = (s1_phase < s1_duty) ? s1_volume : 0;
-      s1_out = s1_sample;
-    }
-
-    if (s2_enable) {
-      uint8_t s2_volume = (nr22 & 0x08) ? s2_env_volume : 15 ^ s2_env_volume;
-      uint8_t s2_duty = (nr21 & 0b11000000) >> 6;
-      s2_duty = s2_duty ? s2_duty * 2 : 1;
-      uint8_t s2_sample = (s2_phase < s2_duty) ? s2_volume : 0;
-      s2_out = s2_sample;
-    }
-
-    const bool s3_power = (nr30 & 0b10000000);
-    if (s3_enable && s3_power) {
-      uint8_t s3_volume_shift = 0;
-      switch ((nr32 & 0b01100000) >> 5) {
-      case 0: s3_volume_shift = 4; break;
-      case 1: s3_volume_shift = 0; break;
-      case 2: s3_volume_shift = 1; break;
-      case 3: s3_volume_shift = 2; break;
+        s2_phase_clock = 2047 ^ s2_freq;
+        s2_phase = (s2_phase + 1) & 7;
       }
-      uint8_t s3_sample = s3_wave[s3_phase >> 1];
-      s3_sample = (s3_phase & 1) ? (s3_sample & 0xF) : (s3_sample >> 4);
-      s3_sample >>= s3_volume_shift;
-      s3_out = s3_sample;
-    }
-
-    if (s4_enable) {
-      uint8_t s4_volume = (nr42 & 0x08) ? s4_env_volume : 15 ^ s4_env_volume;
-      uint8_t s4_sample = (s4_lfsr & 1) ? s4_volume : 0;
-      s4_out = s4_sample;
-    }
-
-    //----------
-    // mixer & master volume
-
-    out_r = 0;
-    out_l = 0;
-
-    if (nr51 & 0b00000001) out_r += s1_out;
-    if (nr51 & 0b00000010) out_r += s2_out;
-    if (nr51 & 0b00000100) out_r += s3_out;
-    if (nr51 & 0b00001000) out_r += s4_out;
-    if (nr51 & 0b00010000) out_l += s1_out;
-    if (nr51 & 0b00100000) out_l += s2_out;
-    if (nr51 & 0b01000000) out_l += s3_out;
-    if (nr51 & 0b10000000) out_l += s4_out;
-
-    const uint8_t volume_r = ((nr50 & 0b00000111) >> 0) + 1;
-    const uint8_t volume_l = ((nr50 & 0b01110000) >> 4) + 1;
-
-    spu_clock = spu_clock_;
-  }
-
-  //-----------------------------------------------------------------------------
-
-  void bus_read(const Req& req, Ack& ack) const {
-    if (req.addr < 0xFF10) return;
-    if (req.addr > 0xFF26 && req.addr < 0xFF30) return;
-    if (req.addr > 0xFF3F) return;
-
-    ack.addr = req.addr;
-    ack.data_lo = 0;
-    ack.read++;
-
-    //----------
-    // wavetable
-
-    if (req.addr >= 0xFF30 && req.addr <= 0xFF3F) {
-      ack.data_lo = s3_wave[req.addr & 0xF];
-      return;
-    }
-
-    switch (req.addr) {
-    case 0xFF10: ack.data_lo = nr10 | 0x80; break;
-    case 0xFF11: ack.data_lo = nr11 | 0x3F; break;
-    case 0xFF12: ack.data_lo = nr12 | 0x00; break;
-    case 0xFF13: ack.data_lo = nr13 | 0xFF; break;
-    case 0xFF14: ack.data_lo = nr14 | 0xBF; break;
-
-    case 0xFF15: ack.data_lo = nr20 | 0xFF; break;
-    case 0xFF16: ack.data_lo = nr21 | 0x3F; break;
-    case 0xFF17: ack.data_lo = nr22 | 0x00; break;
-    case 0xFF18: ack.data_lo = nr23 | 0xFF; break;
-    case 0xFF19: ack.data_lo = nr24 | 0xBF; break;
-
-    case 0xFF1A: ack.data_lo = nr30 | 0x7F; break;
-    case 0xFF1B: ack.data_lo = nr31 | 0xFF; break;
-    case 0xFF1C: ack.data_lo = nr32 | 0x9F; break;
-    case 0xFF1D: ack.data_lo = nr33 | 0xFF; break;
-    case 0xFF1E: ack.data_lo = nr34 | 0xBF; break;
-
-    case 0xFF1F: ack.data_lo = nr40 | 0xFF; break;
-    case 0xFF20: ack.data_lo = nr41 | 0xFF; break;
-    case 0xFF21: ack.data_lo = nr42 | 0x00; break;
-    case 0xFF22: ack.data_lo = nr43 | 0x00; break;
-    case 0xFF23: ack.data_lo = nr44 | 0xBF; break;
-
-    case 0xFF24: ack.data_lo = nr50 | 0x00; break;
-    case 0xFF25: ack.data_lo = nr51 | 0x00; break;
-
-    case 0xFF26: {
-      uint8_t bus_out_ = (nr52 & 0x80) | 0x70;
-      if (s1_enable) bus_out_ |= 0b00000001;
-      if (s2_enable) bus_out_ |= 0b00000010;
-      if (s3_enable) bus_out_ |= 0b00000100;
-      if (s4_enable) bus_out_ |= 0b00001000;
-      ack.data_lo = bus_out_;
-      break;
-    }
-    }
-  }
-
-  //-----------------------------------------------------------------------------
-
-  void bus_write(const Req& req) {
-    bool sound_on = (nr52 & 0x80);
-
-    if (!sound_on) {
-      if (req.addr == 0xFF26) {
-        nr52 = (uint8_t)req.data_lo | 0b01110000;
-        if (nr52 & 0x80) reset_to_cart();
+      else {
+        s2_phase_clock = s2_phase_clock - 1;
       }
-      return;
-    }
 
-    //----------
-    // wavetable
+      //----------
+      // s3 clock - we run this twice because this is ticking at 1 mhz
 
-    if (req.addr >= 0xFF30 && req.addr <= 0xFF3F) {
-      s3_wave[req.addr & 0xF] = (uint8_t)req.data_lo;
-      return;
-    }
+      logic<16> s3_phase_clock_ = s3_phase_clock;
+      logic<8> s3_phase_ = s3_phase;
 
-    //----------
-    // glitches n stuff
+      if (!s3_phase_clock_) {
+        logic<16> s3_freq = ((nr34 << 8) | nr33) & 0x07FF;
 
-    if (req.addr == 0xFF12) {
-      if ((nr12 & 0x08) && s1_enable) s1_env_volume = (s1_env_volume + 1) & 15;
-      if ((req.data_lo & 0xF8) == 0) s1_enable = false;
-    }
+        s3_phase_clock_ = 2047 ^ s3_freq;
+        s3_phase_ = (s3_phase_ + 1) & 31;
+      }
+      else {
+        s3_phase_clock_ = s3_phase_clock_ - 1;
+      }
 
-    if (req.addr == 0xFF17) {
-      if ((nr22 & 0x08) && s2_enable) s2_env_volume = (s2_env_volume + 1) & 15;
-      if ((req.data_lo & 0xF8) == 0) s2_enable = false;
-    }
+      if (!s3_phase_clock_) {
+        logic<16> s3_freq = ((nr34 << 8) | nr33) & 0x07FF;
 
-    if (req.addr == 0xFF21) {
-      if ((nr42 & 0x08) && s4_enable) s4_env_volume = (s4_env_volume + 1) & 15;
-      if ((req.data_lo & 0xF8) == 0) s4_enable = false;
-    }
+        s3_phase_clock_ = 2047 ^ s3_freq;
+        s3_phase_ = (s3_phase_ + 1) & 31;
+      }
+      else {
+        s3_phase_clock_ = s3_phase_clock_ - 1;
+      }
 
-    //----------
-    // registers
+      s3_phase_clock = s3_phase_clock_;
+      s3_phase = s3_phase_;
 
-    switch (req.addr) {
-      case 0xFF10: nr10 = (uint8_t)req.data_lo | 0b10000000; break;
-      case 0xFF11: nr11 = (uint8_t)req.data_lo | 0b00000000; break;
-      case 0xFF12: nr12 = (uint8_t)req.data_lo | 0b00000000; break;
-      case 0xFF13: nr13 = (uint8_t)req.data_lo | 0b00000000; break;
-      case 0xFF14: nr14 = (uint8_t)req.data_lo | 0b00111000; break;
-      case 0xFF16: nr21 = (uint8_t)req.data_lo | 0b00000000; break;
-      case 0xFF17: nr22 = (uint8_t)req.data_lo | 0b00000000; break;
-      case 0xFF18: nr23 = (uint8_t)req.data_lo | 0b00000000; break;
-      case 0xFF19: nr24 = (uint8_t)req.data_lo | 0b00111000; break;
-      case 0xFF1A: nr30 = (uint8_t)req.data_lo | 0b01111111; break;
-      case 0xFF1B: nr31 = (uint8_t)req.data_lo | 0b00000000; break;
-      case 0xFF1C: nr32 = (uint8_t)req.data_lo | 0b10011111; break;
-      case 0xFF1D: nr33 = (uint8_t)req.data_lo | 0b00000000; break;
-      case 0xFF1E: nr34 = (uint8_t)req.data_lo | 0b00111000; break;
-      case 0xFF20: nr41 = (uint8_t)req.data_lo | 0b11000000; break;
-      case 0xFF21: nr42 = (uint8_t)req.data_lo | 0b00000000; break;
-      case 0xFF22: nr43 = (uint8_t)req.data_lo | 0b00000000; break;
-      case 0xFF23: nr44 = (uint8_t)req.data_lo | 0b00111111; break;
-      case 0xFF24: nr50 = (uint8_t)req.data_lo | 0b00000000; break;
-      case 0xFF25: nr51 = (uint8_t)req.data_lo | 0b00000000; break;
-      case 0xFF26: nr52 = (uint8_t)req.data_lo | 0b01110000; break;
-      default: return;
-    }
+      //----------
+      // s4 clock
 
-    //----------
-    // triggers
+      if (!s4_phase_clock) {
+        logic<1> s4_lfsr_mode = (nr43 & 0b00001000) >> 3;
+        logic<8> s4_phase_period = (nr43 & 0b00000111) ? (nr43 & 0b00000111) * 2 : 1;
 
-    {
-      bool s1_trigger_ = req.addr == 0xFF14 && (req.data_lo & 0x80);
-      bool s2_trigger_ = req.addr == 0xFF19 && (req.data_lo & 0x80);
-      bool s3_trigger_ = req.addr == 0xFF1E && (req.data_lo & 0x80);
-      bool s4_trigger_ = req.addr == 0xFF23 && (req.data_lo & 0x80);
+        s4_phase_clock = s4_phase_period;
+        logic<1> lfsr_bit = (s4_lfsr ^ (s4_lfsr >> 1)) & 1;
+        s4_phase_clock = s4_phase_period;
+        if (s4_lfsr_mode) {
+          s4_lfsr = ((s4_lfsr >> 1) & 0b0111111111011111) | (lfsr_bit << 5);
+        }
+        else {
+          s4_lfsr = ((s4_lfsr >> 1) & 0b0011111111111111) | (lfsr_bit << 14);
+        }
+      }
+      else {
+        logic<8> s4_clock_shift = (nr43 & 0b11110000) >> 4;
+        s4_phase_clock = s4_phase_clock - ((clock_flip >> s4_clock_shift) & 1);
+      }
+
+      //----------
+      // sweep
+
+      if (sweep_tick) {
+        logic<8> s1_sweep_period = (nr10 & 0b01110000) >> 4;
+        logic<8> s1_sweep_shift = (nr10 & 0b00000111) >> 0;
+        logic<1> s1_sweep_dir = (nr10 & 0b00001000) >> 3;
+
+        if (s1_sweep_period && s1_sweep_shift) {
+          if (s1_sweep_clock) {
+            s1_sweep_clock = s1_sweep_clock - 1;
+          }
+          else {
+            logic<16> delta = s1_sweep_freq >> s1_sweep_shift;
+            logic<16> new_freq = s1_sweep_freq + (s1_sweep_dir ? -delta : +delta);
+            s1_sweep_clock = s1_sweep_period;
+            if (new_freq > 2047) {
+              s1_enable = 0;
+            }
+            else {
+              s1_sweep_freq = new_freq;
+            }
+          }
+        }
+      }
+
+      //----------
+      // length
+
+      if (length_tick) {
+        logic<1> s1_length_enable = (nr14 & 0b01000000) >> 6;
+        logic<1> s2_length_enable = (nr24 & 0b01000000) >> 6;
+        logic<1> s3_length_enable = (nr34 & 0b01000000) >> 6;
+        logic<1> s4_length_enable = (nr44 & 0b01000000) >> 6;
+        logic<8> s1_duration_ = s1_duration;
+        logic<8> s2_duration_ = s2_duration;
+        logic<16> s3_duration_ = s3_duration;
+        logic<8> s4_duration_ = s4_duration;
+
+        if (s1_length_enable && s1_duration_) s1_duration_ = s1_duration_ - 1;
+        if (s2_length_enable && s2_duration_) s2_duration_ = s2_duration_ - 1;
+        if (s3_length_enable && s3_duration_) s3_duration_ = s3_duration_ - 1;
+        if (s4_length_enable && s4_duration_) s4_duration_ = s4_duration_ - 1;
+
+        if (s1_length_enable && s1_duration_ == 0) s1_enable = 0;
+        if (s2_length_enable && s2_duration_ == 0) s2_enable = 0;
+        if (s3_length_enable && s3_duration_ == 0) s3_enable = 0;
+        if (s4_length_enable && s4_duration_ == 0) s4_enable = 0;
+
+        s1_duration = s1_duration_;
+        s2_duration = s2_duration_;
+        s3_duration = s3_duration_;
+        s4_duration = s4_duration_;
+      }
+
+      //----------
+      // env
+
+      if (env_tick) {
+        logic<1> s1_env_dir = (nr12 & 0b00001000) >> 3;
+        logic<1> s2_env_dir = (nr22 & 0b00001000) >> 3;
+        logic<1> s4_env_dir = (nr42 & 0b00001000) >> 3;
+
+        logic<8> s1_env_period = (nr12 & 0b00000111) >> 0;
+        logic<8> s2_env_period = (nr22 & 0b00000111) >> 0;
+        logic<8> s4_env_period = (nr42 & 0b00000111) >> 0;
+
+        if (s1_env_period) {
+          if (s1_env_clock) {
+            s1_env_clock = s1_env_clock - 1;
+          }
+          else {
+            s1_env_clock = s1_env_period;
+            if (s1_env_volume < 15) s1_env_volume = s1_env_volume + 1;
+          }
+        }
+
+        if (s2_env_period) {
+          if (s2_env_clock) {
+            s2_env_clock = s2_env_clock - 1;
+          }
+          else {
+            s2_env_clock = s2_env_period;
+            if (s2_env_volume < 15) s2_env_volume = s2_env_volume + 1;
+          }
+        }
+
+        if (s4_env_period) {
+          if (s4_env_clock) {
+            s4_env_clock = s4_env_clock - 1;
+          }
+          else {
+            s4_env_clock = s4_env_period;
+            if (s4_env_volume < 15) s4_env_volume = s4_env_volume + 1;
+          }
+        }
+      }
+
+      spu_clock = spu_clock_;
+
+      //----------
+      // Wavetable writes
+
+      if (we && addr >= 0xFF30 && addr <= 0xFF3F) {
+        s3_wave[addr & 0xF] = data;
+      }
+
+      //----------
+      // Triggers
+
+      logic<1> s1_trigger_ = we && addr == 0xFF14 && (data & 0x80);
+      logic<1> s2_trigger_ = we && addr == 0xFF19 && (data & 0x80);
+      logic<1> s3_trigger_ = we && addr == 0xFF1E && (data & 0x80);
+      logic<1> s4_trigger_ = we && addr == 0xFF23 && (data & 0x80);
 
       if (s1_trigger_) {
-        uint8_t s1_sweep_period = (nr10 & 0b01110000) >> 4;
-        uint8_t s1_length = 64 - (nr11 & 0b00111111);
-        uint8_t s1_start_volume = (nr12 & 0b11110000) >> 4;
-        uint8_t s1_env_period = (nr12 & 0b00000111) >> 0;
-        uint16_t s1_freq = ((nr14 << 8) | nr13) & 0x07FF;
+        logic<8> s1_sweep_period = (nr10 & 0b01110000) >> 4;
+        logic<8> s1_length = 64 - (nr11 & 0b00111111);
+        logic<8> s1_start_volume = (nr12 & 0b11110000) >> 4;
+        logic<8> s1_env_period = (nr12 & 0b00000111) >> 0;
+        logic<16> s1_freq = ((nr14 << 8) | nr13) & 0x07FF;
 
         s1_enable = (nr12 & 0xF8) != 0;
         s1_duration = s1_length;
         s1_sweep_clock = s1_sweep_period;
         s1_sweep_freq = s1_freq;
 
-        s1_env_volume = (nr12 & 0x08) ? s1_start_volume : 15 ^ s1_start_volume;
+        s1_env_volume = (nr12 & 0x08) ? b8(s1_start_volume) : b8(15 ^ s1_start_volume);
         s1_env_clock = s1_env_period;
 
         s1_phase_clock = 2047 ^ s1_freq;
@@ -5122,15 +6754,15 @@ public:
       }
 
       if (s2_trigger_) {
-        uint8_t s2_length = 64 - (nr21 & 0b00111111);
-        uint8_t s2_start_volume = (nr22 & 0b11110000) >> 4;
-        uint8_t s2_env_period = (nr22 & 0b00000111) >> 0;
-        uint16_t s2_freq = ((nr24 << 8) | nr23) & 0x07FF;
+        logic<8> s2_length = 64 - (nr21 & 0b00111111);
+        logic<8> s2_start_volume = (nr22 & 0b11110000) >> 4;
+        logic<8> s2_env_period = (nr22 & 0b00000111) >> 0;
+        logic<16> s2_freq = ((nr24 << 8) | nr23) & 0x07FF;
 
         s2_enable = (nr22 & 0xF8) != 0;
         s2_duration = s2_length;
 
-        s2_env_volume = (nr22 & 0x08) ? s2_start_volume : 15 ^ s2_start_volume;
+        s2_env_volume = (nr22 & 0x08) ? b8(s2_start_volume) : b8(15 ^ s2_start_volume);
         s2_env_clock = s2_env_period;
 
         s2_phase_clock = 2047 ^ s2_freq;
@@ -5138,8 +6770,8 @@ public:
       }
 
       if (s3_trigger_) {
-        uint16_t s3_length = 256 - nr31;
-        uint16_t s3_freq = ((nr34 << 8) | nr33) & 0x07FF;
+        logic<16> s3_length = 256 - nr31;
+        logic<16> s3_freq = ((nr34 << 8) | nr33) & 0x07FF;
 
         s3_enable = (nr32 != 0);
         s3_duration = s3_length;
@@ -5148,25 +6780,153 @@ public:
       }
 
       if (s4_trigger_) {
-        uint8_t s4_length = 64 - (nr41 & 0b00111111);
-        uint8_t s4_start_volume = (nr42 & 0b11110000) >> 4;
-        uint8_t s4_env_period = (nr42 & 0b00000111) >> 0;
-        uint8_t s4_phase_period = (nr43 & 0b00000111) ? (nr43 & 0b00000111) * 2 : 1;
+        logic<8> s4_length = 64 - (nr41 & 0b00111111);
+        logic<8> s4_start_volume = (nr42 & 0b11110000) >> 4;
+        logic<8> s4_env_period = (nr42 & 0b00000111) >> 0;
+        logic<8> s4_phase_period = (nr43 & 0b00000111) ? (nr43 & 0b00000111) * 2 : 1;
 
         s4_enable = (nr42 & 0xF8) != 0;
         s4_duration = s4_length;
 
-        s4_env_volume = (nr42 & 0x08) ? s4_start_volume : 15 ^ s4_start_volume;
+        s4_env_volume = (nr42 & 0x08) ? b8(s4_start_volume) : b8(15 ^ s4_start_volume);
         s4_env_clock = s4_env_period;
 
         s4_phase_clock = s4_phase_period;
         s4_lfsr = 0x7FFF;
       }
+
+      //----------
+      // Register writes
+
+      if (we && addr >= 0xFF10 && addr <= 0xFF26) {
+        switch (addr) {
+          case 0xFF10: nr10 = data | 0b10000000; break;
+          case 0xFF11: nr11 = data | 0b00000000; break;
+          case 0xFF12: nr12 = data | 0b00000000; break;
+          case 0xFF13: nr13 = data | 0b00000000; break;
+          case 0xFF14: nr14 = data | 0b00111000; break;
+          case 0xFF16: nr21 = data | 0b00000000; break;
+          case 0xFF17: nr22 = data | 0b00000000; break;
+          case 0xFF18: nr23 = data | 0b00000000; break;
+          case 0xFF19: nr24 = data | 0b00111000; break;
+          case 0xFF1A: nr30 = data | 0b01111111; break;
+          case 0xFF1B: nr31 = data | 0b00000000; break;
+          case 0xFF1C: nr32 = data | 0b10011111; break;
+          case 0xFF1D: nr33 = data | 0b00000000; break;
+          case 0xFF1E: nr34 = data | 0b00111000; break;
+          case 0xFF20: nr41 = data | 0b11000000; break;
+          case 0xFF21: nr42 = data | 0b00000000; break;
+          case 0xFF22: nr43 = data | 0b00000000; break;
+          case 0xFF23: nr44 = data | 0b00111111; break;
+          case 0xFF24: nr50 = data | 0b00000000; break;
+          case 0xFF25: nr51 = data | 0b00000000; break;
+          case 0xFF26: nr52 = data | 0b01110000; break;
+        }
+      }
+
+
     }
   }
+
+  //-----------------------------------------------------------------------------
+
+private:
+
+  logic<8> nr10;
+  logic<8> nr11;
+  logic<8> nr12;
+  logic<8> nr13;
+
+  logic<8> nr14;
+  logic<8> nr20;
+  logic<8> nr21;
+  logic<8> nr22;
+
+  logic<8> nr23;
+  logic<8> nr24;
+  logic<8> nr30;
+  logic<8> nr31;
+
+  logic<8> nr32;
+  logic<8> nr33;
+  logic<8> nr34;
+  logic<8> nr40;
+
+  logic<8> nr41;
+  logic<8> nr42;
+  logic<8> nr43;
+  logic<8> nr44;
+
+  logic<8> nr50;
+  logic<8> nr51;
+  logic<8> nr52;
+
+  logic<8> s3_wave[16];
+
+  logic<16> s4_lfsr;
+
+  logic<16> spu_clock;
+
+  logic<1> s1_enable;
+  logic<1> s2_enable;
+  logic<1> s3_enable;
+  logic<1> s4_enable;
+
+  logic<8> s1_sweep_clock;
+  logic<16> s1_sweep_freq;
+
+  logic<8> s1_duration;
+  logic<8> s2_duration;
+  logic<16> s3_duration;
+
+  logic<8> s4_duration;
+  logic<8> s1_env_clock;
+  logic<8> s2_env_clock;
+  logic<8> s4_env_clock;
+
+  logic<8> s1_env_volume;
+  logic<8> s2_env_volume;
+  logic<8> s4_env_volume;
+
+  logic<16> s1_phase_clock;
+  logic<16> s2_phase_clock;
+  logic<16> s3_phase_clock;
+  logic<16> s4_phase_clock;
+
+  logic<8> s1_phase;
+  logic<8> s2_phase;
+  logic<8> s3_phase;
+
+  logic<8> s1_out;
+  logic<8> s2_out;
+  logic<8> s3_out;
+  logic<8> s4_out;
 };
 
-#if 0
+/*
+
+  void tick(int phase_total, const Req& req, Ack& ack) {
+
+  }
+
+  //----------
+  // glitches n stuff
+
+  if (we && addr == 0xFF12) {
+    if ((nr12 & 0x08) && s1_enable) s1_env_volume = (s1_env_volume + 1) & 15;
+    if ((data & 0xF8) == 0) s1_enable = 0;
+  }
+
+  if (we && addr == 0xFF17) {
+    if ((nr22 & 0x08) && s2_enable) s2_env_volume = (s2_env_volume + 1) & 15;
+    if ((data & 0xF8) == 0) s2_enable = 0;
+  }
+
+  if (we && addr == 0xFF21) {
+    if ((nr42 & 0x08) && s4_enable) s4_env_volume = (s4_env_volume + 1) & 15;
+    if ((data & 0xF8) == 0) s4_enable = 0;
+  }
+
 //-----------------------------------------------------------------------------
 
 void MetroBoySPU::dump(Dumper& d) const {
@@ -5198,13 +6958,13 @@ void MetroBoySPU::dump(Dumper& d) const {
 
   const char* bar = "===============";
 
-  uint8_t s1_volume = (nr12 & 0x08) ? s1_env_volume : 15 ^ s1_env_volume;
+  logic<8> s1_volume = (nr12 & 0x08) ? s1_env_volume : 15 ^ s1_env_volume;
   d("s1 vol %s\n", bar + (15 - s1_volume));
 
-  uint8_t s2_volume = (nr22 & 0x08) ? s2_env_volume : 15 ^ s2_env_volume;
+  logic<8> s2_volume = (nr22 & 0x08) ? s2_env_volume : 15 ^ s2_env_volume;
   d("s2 vol %s\n", bar + (15 - s2_volume));
 
-  uint8_t s3_volume = 0;
+  logic<8> s3_volume = 0;
   switch ((nr32 & 0b01100000) >> 5) {
   case 0: s3_volume = 0; break;
   case 1: s3_volume = 15; break;
@@ -5213,26 +6973,26 @@ void MetroBoySPU::dump(Dumper& d) const {
   }
   d("s3 vol %s\n", bar + (15 - s3_volume));
 
-  uint8_t s4_volume = (nr42 & 0x08) ? s4_env_volume : 15 ^ s4_env_volume;
+  logic<8> s4_volume = (nr42 & 0x08) ? s4_env_volume : 15 ^ s4_env_volume;
   d("s4 vol %s\n", bar + (15 - s4_volume));
 
-  /*
-  char buf[33];
-  for (int i = 0; i < 16; i++) {
-    uint8_t a = (s3_wave[i] & 0x0F) >> 0;
-    uint8_t b = (s3_wave[i] & 0xF0) >> 4;
+  if (0) {
+    char buf[33];
+    for (int i = 0; i < 16; i++) {
+      logic<8> a = (s3_wave[i] & 0x0F) >> 0;
+      logic<8> b = (s3_wave[i] & 0xF0) >> 4;
 
-    buf[2 * i + 0] = 'A' + a;
-    buf[2 * i + 1] = 'A' + b;
+      buf[2 * i + 0] = 'A' + a;
+      buf[2 * i + 1] = 'A' + b;
+    }
+
+    buf[32] = 0;
+    d("[%s]\n", buf);
   }
-
-  buf[32] = 0;
-  d("[%s]\n", buf);
-  */
 }
 
 //-----------------------------------------------------------------------------
-#endif
+*/
 #include "metron_tools.h"
 #include "dpram.h"
 

@@ -32,7 +32,7 @@ void ApuControl::tick() {
   /*_BUS_CPU_D06p*/ Bus BUS_CPU_D06p;
   /*_BUS_CPU_D07p*/ Bus BUS_CPU_D07p;
 
-  wire ADDR_FFXX = 0;
+  wire SYKE_ADDR_FFXX = 0;
   wire UNOR_MODE_DBG2 = 0;
   wire ALUR_SYS_RSTn = true;
   wire TEDO_CPU_RDp = false;
@@ -115,7 +115,7 @@ void ApuControl::tick() {
   //---------
   // decodin'
 
-  /*_p07.BAKO*/ wire BAKO_ADDR_FFXXn = not1(ADDR_FFXX);
+  /*_p07.BAKO*/ wire BAKO_ADDR_FFXXn = not1(SYKE_ADDR_FFXX);
 
   /*_p10.ATUP*/ wire ATUP_A04n = not1(BUS_CPU_A04p.out_new());
   /*_p10.BOXY*/ wire BOXY_A05n = not1(BUS_CPU_A05p.out_new());
@@ -257,7 +257,10 @@ void ApuControl::tick() {
   /*_p18.COKA*/ wire COKA_CH3_ACTIVEp = not1(ch3.DAVO_CH3_ACTIVEn.qn_new());
 
   /*_p13.CARA*/ wire CARA_CH1_ACTIVEn = not1(ch1.CYTO_CH1_ACTIVE.qp_new());
+  
   /*_p15.DEFU*/ wire DEFU_CH2_ACTIVEn = not1(ch2.DANE_CH2_ACTIVE.qp_new());
+  ///*_p15.DEFU*/ wire DEFU_CH2_ACTIVEn = not1(DANE.qp_new()); // no idea about dane polarity
+
   /*_p18.ERED*/ wire ERED_CH3_ACTIVEn = not1(COKA_CH3_ACTIVEp);
   /*_p20.JUWA*/ wire JUWA_CH4_ACTIVEn = not1(ch4.GENA_CH4_ACTIVE.qp_new());
 

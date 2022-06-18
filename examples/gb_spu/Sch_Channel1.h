@@ -170,8 +170,6 @@ struct Channel1 {
   /*_p13.DUPE*/ DFF9  DUPE_NR14_START;
   /*_p13.KALY*/ DFF17 KALY_CLK_64;
   /*_p09.BAZA*/ DFF17 BAZA_DBG_SWEEP_CLK;
-
-  /*_p13.CYTO*/ NorLatch CYTO_CH1_ACTIVE;
 };
 
 //-----------------------------------------------------------------------------

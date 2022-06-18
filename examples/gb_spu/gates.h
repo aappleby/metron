@@ -19,6 +19,13 @@ inline wire or4(wire a, wire b, wire c, wire d) { return  (a | b | c | d); }
 inline wire or5(wire a, wire b, wire c, wire d, wire e) { return  (a | b | c | d | e); }
 inline wire or6(wire a, wire b, wire c, wire d, wire e, wire f) { return a | b | c | d | e | f; }
 
+// XOR2_01 >> D
+// XOR2_02 << A
+// XOR2_03 << B
+// XOR3_04 --
+// XOR3_05 --
+// XOR3_06 --
+
 inline wire xor2(wire a, wire b) { return a ^ b; }
 
 inline wire xnor2(wire a, wire b) { return ~(a ^ b); }

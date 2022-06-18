@@ -654,12 +654,12 @@ struct PinClock {
 //-----------------------------------------------------------------------------
 // 6-rung cell, "arms" on ground side
 
-// NORLATCH_01 << SET
-// NORLATCH_02 nc
-// NORLATCH_03 >> QN
-// NORLATCH_04 >> Q
-// NORLATCH_05 nc
-// NORLATCH_06 << RST
+// NORLATCH_01 -|=== o ===|+ << SET
+// NORLATCH_02 -|--\      |+ nc
+// NORLATCH_03 -|=== o ===|+ >> QN
+// NORLATCH_04 -|=== o ===|+ >> Q
+// NORLATCH_05 -|--/      |+ nc
+// NORLATCH_06 -|=== o ===|+ << RST
 
 struct NorLatch : public BitBase {
   void rst() {
@@ -678,12 +678,12 @@ struct NorLatch : public BitBase {
 //-----------------------------------------------------------------------------
 // 6-rung cell, "arms" on VCC side. Only TAKA/LONY seem to use this cell
 
-// NANDLATCH_01 << SETn
-// NANDLATCH_02 nc
-// NANDLATCH_03 >> Q
-// NANDLATCH_04 >> QN
-// NANDLATCH_05 nc
-// NANDLATCH_06 << RSTn
+// NANDLATCH_01 -|=== o ===|+ << SETn
+// NANDLATCH_02 -|      /--|+ nc
+// NANDLATCH_03 -|=== o ===|+ >> Q
+// NANDLATCH_04 -|=== o ===|+ >> QN
+// NANDLATCH_05 -|      \--|+ nc
+// NANDLATCH_06 -|=== o ===|+ << RSTn
 
 struct NandLatch : public BitBase {
   void nand_latch(wire SETn, wire RSTn) {

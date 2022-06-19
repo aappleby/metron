@@ -427,33 +427,35 @@ void GBSound::tick() {
   //----------
   // FF19 NR24
 
-  /*_p10.DEJY*/ wire DEJY_ADDR_1001an = nand4(DUCE_ADDR_1xxx, ABUB_ADDR_x0xx, AFOB_ADDR_xx0x, DOSO_ADDR_xxx1);
-  /*_p10.DOZA*/ wire DOZA_ADDR_FF19  = nor2(BANU_ADDR_FF1Xn, DEJY_ADDR_1001an);
-
-  /*_pXX.JENU*/ wire JENU = and2(DOZA_ADDR_FF19, BOGY_CPU_WRp);
-  /*_pXX.KYSA*/ wire KYSA = not1(JENU);
-  /*_p14.KYPU*/ wire KYPU_APU_RSTn = not1(KEBA_APU_RSTp);
-  /*_pXX.JEFU*/ JEFU_NR24_FREQ_08  .dff9(KYSA, KYPU_APU_RSTn, BUS_CPU_D00p.out_old());
-  /*_pXX.JANY*/ JANY_NR24_FREQ_09  .dff9(KYSA, KYPU_APU_RSTn, BUS_CPU_D01p.out_old());
-  /*_pXX.JUPY*/ JUPY_NR24_FREQ_10 .dff9(KYSA, KYPU_APU_RSTn, BUS_CPU_D02p.out_old());
-
-  /*_pXX.EVYF*/ wire EVYF = nand2(ANUJ_CPU_WR_WEIRD, DOZA_ADDR_FF19);
-  /*_p14.FAZO*/ wire FAZO_APU_RSTn = not1(KEBA_APU_RSTp);
-  /*_pXX.EMER*/ EMER_NR24_STOP.dff9(EVYF, FAZO_APU_RSTn, BUS_CPU_D06p.out_old());
-
-  /*#pXX.GADO*/ wire GADO = not1(AGUZ_CPU_RDn);
-  /*#pXX.HUMA*/ wire HUMA = nand2(DOZA_ADDR_FF19, GADO); // why was this nor2? doublecheck
-  /*#pXX.GOJY*/ triwire GOJY_D6 = tri6_nn(HUMA, EMER_NR24_STOP.qp_new());
-  BUS_CPU_D06p.tri_bus(GOJY_D6);
-
-  /*#p??.DETA*/ wire DETA = nand2(BOGY_CPU_WRp, DOZA_ADDR_FF19);
-  /*#p15.DERA*/ wire DERA = nor2(KEBA_APU_RSTp, DOPE_START_SYNC.qp_new());
-  /*#p??.ETAP*/ ETAP_NR24_START.dff9(DETA, DERA, BUS_CPU_D07p.out_old());
-
-  /*_p15.CYWU*/ wire CYWU_APU_RSTn = not1(KEBA_APU_RSTp);
-  /*#p15.DOPE*/ DOPE_START_SYNC.dff17(DOVA_ABCDxxxx, CYWU_APU_RSTn, ETAP_NR24_START.qn_old());
 
   {
+    /*_p10.DEJY*/ wire DEJY_ADDR_1001an = nand4(DUCE_ADDR_1xxx, ABUB_ADDR_x0xx, AFOB_ADDR_xx0x, DOSO_ADDR_xxx1);
+    /*_p10.DOZA*/ wire DOZA_ADDR_FF19  = nor2(BANU_ADDR_FF1Xn, DEJY_ADDR_1001an);
+
+    /*_pXX.JENU*/ wire JENU_NR24_WRp = and2(DOZA_ADDR_FF19, BOGY_CPU_WRp);
+    /*_pXX.KYSA*/ wire KYSA_NR24_WRn = not1(JENU_NR24_WRp);
+    /*_p14.KYPU*/ wire KYPU_APU_RSTn = not1(KEBA_APU_RSTp);
+    /*_pXX.JEFU*/ JEFU_NR24_FREQ_08.dff9(KYSA_NR24_WRn, KYPU_APU_RSTn, BUS_CPU_D00p.out_old());
+    /*_pXX.JANY*/ JANY_NR24_FREQ_09.dff9(KYSA_NR24_WRn, KYPU_APU_RSTn, BUS_CPU_D01p.out_old());
+    /*_pXX.JUPY*/ JUPY_NR24_FREQ_10.dff9(KYSA_NR24_WRn, KYPU_APU_RSTn, BUS_CPU_D02p.out_old());
+
+    /*_pXX.EVYF*/ wire EVYF = nand2(ANUJ_CPU_WR_WEIRD, DOZA_ADDR_FF19);
+    /*_p14.FAZO*/ wire FAZO_APU_RSTn = not1(KEBA_APU_RSTp);
+    /*_pXX.EMER*/ EMER_NR24_LEN.dff9(EVYF, FAZO_APU_RSTn, BUS_CPU_D06p.out_old());
+
+    /*#pXX.GADO*/ wire GADO = not1(AGUZ_CPU_RDn);
+    /*#pXX.HUMA*/ wire HUMA = nand2(DOZA_ADDR_FF19, GADO); // why was this nor2? doublecheck
+    /*#pXX.GOJY*/ triwire GOJY_D6 = tri6_nn(HUMA, EMER_NR24_LEN.qp_new());
+    BUS_CPU_D06p.tri_bus(GOJY_D6);
+
+    // This resets ETAP 8 phases after it's set?
+    /*_p15.CYWU*/ wire CYWU_APU_RSTn = not1(KEBA_APU_RSTp);
+    /*#p15.DOPE*/ DOPE_CH2_TRIG.dff17(DOVA_ABCDxxxx, CYWU_APU_RSTn, ETAP_NR24_TRIG.qn_old());
+
+    /*#p??.DETA*/ wire DETA_NR24_WRn = nand2(BOGY_CPU_WRp, DOZA_ADDR_FF19);
+    /*#p15.DERA*/ wire DERA_RSTn = nor2(KEBA_APU_RSTp, DOPE_CH2_TRIG.qp_new());
+    /*#p??.ETAP*/ ETAP_NR24_TRIG.dff9(DETA_NR24_WRn, DERA_RSTn, BUS_CPU_D07p.out_old());
+
     /*#p14.GOTE*/ wire GOTE = not1(DOZA_ADDR_FF19);
     /*#p14.HYPO*/ wire HYPO = or2(GOTE, FAPE_DBG_CPU_RDp);
     /*#p14.HUNA*/ triwire HUNA_D0 = tri6_nn(HYPO, HEVY_CH2_FREQ_08.qn_new());
@@ -467,7 +469,7 @@ void GBSound::tick() {
 
   /*_p15.DOXA*/ wire DOXA = or2(KEBA_APU_RSTp, DORY.qp_new());
   /*_p15.CELO*/ wire CELO = not1(DOXA);
-  /*_p15.DALA*/ wire DALA = or2(CELO, DOPE_START_SYNC.qp_new());
+  /*_p15.DALA*/ wire DALA = or2(CELO, DOPE_CH2_TRIG.qp_new());
   /*_p15.ELOX*/ ELOX.dff17(CEMO_1MHZ.qp_new(), DOXA,          DALA);
   /*_p15.DORY*/ DORY.dff17(CEMO_1MHZ.qp_new(), CEXE_APU_RSTn, ELOX.qp_new());
   /*_p15.CAZA*/ CAZA.dff17(CEMO_1MHZ.qp_new(), CEXE_APU_RSTn, DORY.qp_old());
@@ -556,7 +558,7 @@ void GBSound::tick() {
   
 
 
-  /*_p15.DORA*/ wire DORA = and2(CYRE.qp_new(), EMER_NR24_STOP.qn_new());
+  /*_p15.DORA*/ wire DORA = and2(CYRE.qp_new(), EMER_NR24_LEN.qn_new());
   /*_p15.ESYK*/ wire ESYK = or3(KEBA_APU_RSTp, DORA, FUTE_CH2_AMP_ENn);
   /*_p15.DANE*/ DANE_CH2_ACTIVE.nor_latch(ELOX.qp_new(), ESYK);
 
@@ -567,7 +569,7 @@ void GBSound::tick() {
 
   {
     // NR21 write
-    /*_p15.DEME*/ wire DEME = nor3(CYRE.qp_new(), BUFY_CLK_256, EMER_NR24_STOP.qp_new()); // why was this or2?
+    /*_p15.DEME*/ wire DEME = nor3(CYRE.qp_new(), BUFY_CLK_256, EMER_NR24_LEN.qp_new()); // why was this or2?
     /*_p15.DYRO*/ wire DYRO_CH2_LEN_CLK = not1(DEME);
 
     /*_p10.DAZA*/ wire DAZA_ADDR_0110n = nand4(ACOL_ADDR_0xxx, DENO_ADDR_x1xx, DUPA_ADDR_xx1x, DYTE_ADDR_xxx0);

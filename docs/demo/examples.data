@@ -5422,33 +5422,45 @@ inline wire amux6(wire a0, wire b0, wire a1, wire b1, wire a2, wire b2, wire a3,
 #include "gates.h"
 #include "regs.h"
 
-struct Channel1 {
+struct SpuControl {
+  //----------
+  // clocks for the apu
+
+  /*_p01.CERY*/ DFF17 CERY_2M;
+  /*_p01.ATYK*/ DFF17 ATYK_2M;
+  /*_p01.AVOK*/ DFF17 AVOK_1M;
+  /*_p09.AJER*/ DFF17 AJER_2M;
+  /*_p01.JESO*/ DFF17 JESO_CLK_512K;
+
+  /*_p01.BARA*/ DFF17 BARA_CLK_512;
+  /*_p01.CARU*/ DFF17 CARU_CLK_256;
+  /*_p01.BYLU*/ DFF17 BYLU_CLK_128;
 };
 
-struct Channel2 {
+struct SpuChannel1 {
 };
 
-struct Channel3 {
+struct SpuChannel2 {
 };
 
-struct Channel4 {
+struct SpuChannel3 {
 };
 
-//-----------------------------------------------------------------------------
-
-struct ApuControl {
-
-  void tick();
-
-  Channel1 ch1;
-  Channel2 ch2;
-  Channel3 ch3;
-  Channel4 ch4;
+struct SpuChannel4 {
 };
 
 //-----------------------------------------------------------------------------
 
 struct GBSound {
+  SpuControl  spu;
+  SpuChannel1 ch1;
+  SpuChannel2 ch2;
+  SpuChannel3 ch3;
+  SpuChannel4 ch4;
+
+  /*#p15.CEMO*/ DFF17 CEMO_1MHZ;
+  /*_p15.ATEP*/ DFF17 ATEP_2MHZ;
+
   /*_BUS_CPU_A00p*/ Bus BUS_CPU_A00p;
   /*_BUS_CPU_A01p*/ Bus BUS_CPU_A01p;
   /*_BUS_CPU_A02p*/ Bus BUS_CPU_A02p;
@@ -5485,25 +5497,58 @@ struct GBSound {
   /*_BUS_WAVE_D07p*/ Bus BUS_WAVE_D07p;
 
   //----------
-  // clocks for the apu
-
-  /*_p01.CERY*/ DFF17 CERY_2M;
-  /*_p01.ATYK*/ DFF17 ATYK_2M;
-  /*_p01.AVOK*/ DFF17 AVOK_1M;
-  /*_p09.AJER*/ DFF17 AJER_2M;
-  /*_p01.JESO*/ DFF17 JESO_CLK_512K;
-
-  /*_p01.BARA*/ DFF17 BARA_CLK_512;
-  /*_p01.CARU*/ DFF17 CARU_CLK_256;
-  /*_p01.BYLU*/ DFF17 BYLU_CLK_128;
-
-  //----------
   // active flags
 
-  /*#p13.CYTO*/ NorLatch CYTO_CH1_ACTIVE;
+  /*#p13.CYTO*/ NorLatch CYTO_CH1_ACTIVEp;
   /*_p15.DANE*/ NorLatch DANE_CH2_ACTIVE;
-  /*_p18.DAVO*/ DFF17    DAVO_CH3_ACTIVE;
+  /*_p18.DAVO*/ DFF17    DAVO_CH3_ACTIVEp;
   /*_p20.GENA*/ NorLatch GENA_CH4_ACTIVE;
+
+  //----------
+
+  /*#p11.BANY*/ DFF9 BANY_NR10_SHIFT0;
+  /*#p11.ARAX*/ DFF9 ARAX_NR10_SHIFT1;
+  /*#p11.ANAZ*/ DFF9 ANAZ_NR10_SHIFT2;
+  /*#p11.AVAF*/ DFF9 AVAF_NR10_SWEEP_DIR;
+  /*#p11.ADEK*/ DFF9 ADEK_NR10_DELAY0;
+  /*#p11.BANA*/ DFF9 BANA_NR10_DELAY1;
+  /*#p11.BOTU*/ DFF9 BOTU_NR10_DELAY2;
+
+  //----------
+
+  /*_p11.CENA*/ DFF9  CENA_NR11_DUTY_0;
+  /*_p11.DYCA*/ DFF9  DYCA_NR11_DUTY_1;
+  /*_p13.BACY*/ DFF20 BACY_NR11_LEN0;
+  /*_p13.CAVY*/ DFF20 CAVY_NR11_LEN1;
+  /*_p13.BOVY*/ DFF20 BOVY_NR11_LEN2;
+  /*_p13.CUNO*/ DFF20 CUNO_NR11_LEN3;
+  /*_p13.CURA*/ DFF20 CURA_NR11_LEN4;
+  /*_p13.ERAM*/ DFF20 ERAM_NR11_LEN5;
+
+  //----------
+
+  /*_p11.JUSA*/ DFF9 JUSA_NR12_DELAY0;
+  /*_p11.JUZY*/ DFF9 JUZY_NR12_DELAY1;
+  /*_p11.JOMA*/ DFF9 JOMA_NR12_DELAY2;
+  /*_p11.JAFY*/ DFF9 JAFY_NR12_ENV_DIR;
+  /*_p11.JATY*/ DFF9 JATY_NR12_VOL0;
+  /*_p11.JAXO*/ DFF9 JAXO_NR12_VOL1;
+  /*_p11.JENA*/ DFF9 JENA_NR12_VOL2;
+  /*_p11.JOPU*/ DFF9 JOPU_NR12_VOL3;
+
+  /*_p11.BOKO*/ DFF9 BOKO_NR14_STOP;
+  /*#p13.DUPE*/ DFF9 DUPE_NR14_START;
+
+  //----------
+
+  /*_p15.ERYC*/ DFF20 ERYC_NR21_L0;
+  /*_p15.CERA*/ DFF20 CERA_NR21_L1;
+  /*_p15.CONU*/ DFF20 CONU_NR21_L2;
+  /*_p15.CAME*/ DFF20 CAME_NR21_L3;
+  /*_p15.BUVA*/ DFF20 BUVA_NR21_L4;
+  /*_p15.AKYD*/ DFF20 AKYD_NR21_L5;
+  /*_p14.BERA*/ DFF9  BERA_NR21_D6;
+  /*_p14.BAMY*/ DFF9  BAMY_NR21_D7;
 
   //----------
   // FF17 NR22 - channel 2 vol/env/period
@@ -5516,6 +5561,64 @@ struct GBSound {
   /*_p14.GUFE*/ DFF9 GUFE_NR22_D5;
   /*_p14.GURA*/ DFF9 GURA_NR22_D6;
   /*_p14.GAGE*/ DFF9 GAGE_NR22_D7;
+
+  //----------
+
+  DFF9 FOFE_NR23_FREQ0;
+  DFF9 FOVA_NR23_FREQ1;
+  DFF9 FEDY_NR23_FREQ2;
+  DFF9 FOME_NR23_FREQ3;
+  DFF9 FORA_NR23_FREQ4;
+  DFF9 GODA_NR23_FREQ5;
+  DFF9 GUMY_NR23_FREQ6;
+  DFF9 GUPU_NR23_FREQ7;
+
+  //----------
+
+  DFF9 JEFU_NR24_FREQ8;
+  DFF9 JANY_NR24_FREQ9;
+  DFF9 JUPY_NR24_FREQ10;
+
+  //----------
+
+  /*_p16.KOGA*/ DFF9 KOGA_NR33_FREQ00;
+  /*_p16.JOVY*/ DFF9 JOVY_NR33_FREQ01;
+  /*_p16.JAXA*/ DFF9 JAXA_NR33_FREQ02;
+  /*_p16.JEFE*/ DFF9 JEFE_NR33_FREQ03;
+  /*_p16.JYPO*/ DFF9 JYPO_NR33_FREQ04;
+  /*_p16.JOVE*/ DFF9 JOVE_NR33_FREQ05;
+  /*_p16.KANA*/ DFF9 KANA_NR33_FREQ06;
+  /*_p16.KOGU*/ DFF9 KOGU_NR33_FREQ07;
+
+  //----------
+
+  /*_p16.JEMO*/ DFF9 JEMO_NR34_FREQ08;
+  /*_p16.JETY*/ DFF9 JETY_NR34_FREQ09;
+  /*_p16.JACY*/ DFF9 JACY_NR34_FREQ10;
+  /*_p16.HOTO*/ DFF9 HOTO_NR34_STOP;
+  /*_p16.GAVU*/ DFF9 GAVU_NR34_START;
+
+  //----------
+
+  /*_p19.EMOK*/ DFF9 EMOK_NR42_ENV_TIMER0;
+  /*_p19.ETYJ*/ DFF9 ETYJ_NR42_ENV_TIMER1;
+  /*_p19.EZYK*/ DFF9 EZYK_NR42_ENV_TIMER2;
+  /*_p19.GEKY*/ DFF9 GEKY_NR42_ENV_DIR;
+  /*_p19.GARU*/ DFF9 GARU_NR42_ENV_VOL0;
+  /*_p19.GOKY*/ DFF9 GOKY_NR42_ENV_VOL1;
+  /*_p19.GOZO*/ DFF9 GOZO_NR42_ENV_VOL2;
+  /*_p19.GEDU*/ DFF9 GEDU_NR42_ENV_VOL3;
+
+  //----------
+
+  /*_p19.JARE*/ DFF9 JARE_NR43_DIV0;
+  /*_p19.JERO*/ DFF9 JERO_NR43_DIV1;
+  /*_p19.JAKY*/ DFF9 JAKY_NR43_DIV2;
+  /*_p19.JAMY*/ DFF9 JAMY_NR43_MODE;
+  /*_p19.FETA*/ DFF9 FETA_NR43_FREQ0;
+  /*_p19.FYTO*/ DFF9 FYTO_NR43_FREQ1;
+  /*_p19.GOGO*/ DFF9 GOGO_NR43_FREQ2;
+  /*_p19.GAFO*/ DFF9 GAFO_NR43_FREQ3;
 
   //----------
   // FF24 NR50
@@ -5549,9 +5652,6 @@ struct GBSound {
   /*_p09.BOWY*/ DFF17 BOWY_NR52_DBG_SWEEP;    // secret debug bit
   /*_p09.HADA*/ DFF17 HADA_NR52_ALL_SOUND_ON; //FF26_7
 
-  /*#p15.CEMO*/ DFF17 CEMO_1MHZ;
-  /*_p15.ATEP*/ DFF17 ATEP_2MHZ;
-
   //========================================
   //             CHANNEL 2
   //========================================
@@ -5559,18 +5659,6 @@ struct GBSound {
   DFF20 JONA;
   DFF20 JEVY;
   DFF17 JOPA;
-
-  DFF9 FOFE_NR23_FREQ0;
-  DFF9 FOVA_NR23_FREQ1;
-  DFF9 FEDY_NR23_FREQ2;
-  DFF9 FOME_NR23_FREQ3;
-  DFF9 FORA_NR23_FREQ4;
-  DFF9 GODA_NR23_FREQ5;
-  DFF9 GUMY_NR23_FREQ6;
-  DFF9 GUPU_NR23_FREQ7;
-
-  DFF9 BERA_NR21_DUTY0;
-  DFF9 BAMY_NR21_DUTY1;
 
   DFF20 DONE_CH2_FREQ_00;
   DFF20 DYNU_CH2_FREQ_01;
@@ -5584,18 +5672,7 @@ struct GBSound {
   DFF20 HEPU_CH2_FREQ_09;
   DFF20 HERO_CH2_FREQ_10;
 
-  DFF9 JEFU_NR24_FREQ8;
-  DFF9 JANY_NR24_FREQ9;
-  DFF9 JUPY_NR24_FREQ10;
-
-  DFF20 ERYC_00;
-  DFF20 CERA_01;
-  DFF20 CONU_02;
-  DFF20 CAME_03;
-  DFF20 BUVA_04;
-  DFF20 AKYD_05;
-
-  DFF17 DOME_WAVE;
+  DFF17 DOME_CH2_OUT;
 
   DFF17 ELOX;
   DFF17 CAZA;
@@ -5615,7 +5692,7 @@ struct GBSound {
   DFF17 HEPO;
   NorLatch JEME;
 
-  DFF17 JYNA;
+  DFF17 JYNA_CLK_64;
   /*_p15.CYRE*/ DFF17 CYRE;
 
   //========================================
@@ -5641,21 +5718,6 @@ struct GBSound {
 
   /*_p16.HUKY*/ DFF9 HUKY_NR32_VOL0;
   /*_p16.HODY*/ DFF9 HODY_NR32_VOL1;
-
-  /*_p16.KOGA*/ DFF9 KOGA_NR33_FREQ00;
-  /*_p16.JOVY*/ DFF9 JOVY_NR33_FREQ01;
-  /*_p16.JAXA*/ DFF9 JAXA_NR33_FREQ02;
-  /*_p16.JEFE*/ DFF9 JEFE_NR33_FREQ03;
-  /*_p16.JYPO*/ DFF9 JYPO_NR33_FREQ04;
-  /*_p16.JOVE*/ DFF9 JOVE_NR33_FREQ05;
-  /*_p16.KANA*/ DFF9 KANA_NR33_FREQ06;
-  /*_p16.KOGU*/ DFF9 KOGU_NR33_FREQ07;
-
-  /*_p16.JEMO*/ DFF9 JEMO_NR34_FREQ08;
-  /*_p16.JETY*/ DFF9 JETY_NR34_FREQ09;
-  /*_p16.JACY*/ DFF9 JACY_NR34_FREQ10;
-  /*_p16.HOTO*/ DFF9 HOTO_NR34_STOP;
-  /*_p16.GAVU*/ DFF9 GAVU_NR34_START;
 
   /*_p16.GARA*/ DFF17 GARA;
   /*_p16.GYTA*/ DFF17 GYTA;
@@ -5719,24 +5781,6 @@ struct GBSound {
   /*#p19.HOGA*/ DFF9 HOGA_NR44_START;
   /*#p20.GYSU*/ DFF17 GYSU;
 
-  /*_p19.EMOK*/ DFF9 EMOK_NR42_ENV_TIMER0;
-  /*_p19.ETYJ*/ DFF9 ETYJ_NR42_ENV_TIMER1;
-  /*_p19.EZYK*/ DFF9 EZYK_NR42_ENV_TIMER2;
-  /*_p19.GEKY*/ DFF9 GEKY_NR42_ENV_DIR;
-  /*_p19.GARU*/ DFF9 GARU_NR42_ENV_VOL0;
-  /*_p19.GOKY*/ DFF9 GOKY_NR42_ENV_VOL1;
-  /*_p19.GOZO*/ DFF9 GOZO_NR42_ENV_VOL2;
-  /*_p19.GEDU*/ DFF9 GEDU_NR42_ENV_VOL3;
-
-  /*_p19.JARE*/ DFF9 JARE_NR43_DIV0;
-  /*_p19.JERO*/ DFF9 JERO_NR43_DIV1;
-  /*_p19.JAKY*/ DFF9 JAKY_NR43_DIV2;
-  /*_p19.JAMY*/ DFF9 JAMY_NR43_MODE;
-  /*_p19.FETA*/ DFF9 FETA_NR43_FREQ0;
-  /*_p19.FYTO*/ DFF9 FYTO_NR43_FREQ1;
-  /*_p19.GOGO*/ DFF9 GOGO_NR43_FREQ2;
-  /*_p19.GAFO*/ DFF9 GAFO_NR43_FREQ3;
-
   /*#p20.HAZO*/ NorLatch HAZO;
   /*#p20.JERY*/ NandLatch JERY;
   /*#p20.JYCO*/ DFF20 JYCO;
@@ -5776,7 +5820,7 @@ struct GBSound {
   /*_p20.HYRO*/ DFF17 HYRO_LFSR_14;
   /*_p20.HEZU*/ DFF17 HEZU_LFSR_15;
 
-  /*#p20.ABEL*/ DFF17 ABEL_ENV_TIMER_CLKa;
+  /*#p20.ABEL*/ DFF17 ABEL_CLK_64;
   /*#p20.CUNA*/ DFF20 CUNA_ENV_TIMER0;
   /*#p20.COFE*/ DFF20 COFE_ENV_TIMER1;
   /*#p20.DOGO*/ DFF20 DOGO_ENV_TIMER2;
@@ -5795,14 +5839,6 @@ struct GBSound {
   //========================================
 
   /*#p13.EZEC*/ DFF17 EZEC_START;
-
-  /*#p11.BANY*/ DFF9 BANY_NR10_SHIFT0;
-  /*#p11.ARAX*/ DFF9 ARAX_NR10_SHIFT1;
-  /*#p11.ANAZ*/ DFF9 ANAZ_NR10_SHIFT2;
-  /*#p11.AVAF*/ DFF9 AVAF_NR10_SWEEP_DIR;
-  /*#p11.ADEK*/ DFF9 ADEK_NR10_DELAY0;
-  /*#p11.BANA*/ DFF9 BANA_NR10_DELAY1;
-  /*#p11.BOTU*/ DFF9 BOTU_NR10_DELAY2;
 
   /*_p12.HYKA*/ DFF22 HYKA_SUMMER00;
   /*_p12.JYKA*/ DFF22 JYKA_SUMMER01;
@@ -5824,26 +5860,7 @@ struct GBSound {
 
   /*_p13.BYTE*/ DFF17 BYTE_SHIFT_DONE_SYNC;
 
-  /*_p11.CENA*/ DFF9 CENA_NR11_DUTY_0;
-  /*_p11.DYCA*/ DFF9 DYCA_NR11_DUTY_1;
-  /*_p13.BACY*/ DFF20 BACY_NR11_LEN0;
-  /*_p13.CAVY*/ DFF20 CAVY_NR11_LEN1;
-  /*_p13.BOVY*/ DFF20 BOVY_NR11_LEN2;
-  /*_p13.CUNO*/ DFF20 CUNO_NR11_LEN3;
-  /*_p13.CURA*/ DFF20 CURA_NR11_LEN4;
-  /*_p13.ERAM*/ DFF20 ERAM_NR11_LEN5;
   /*_p13.CERO*/ DFF17 CERO_CH1_LEN_DONE;
-  /*_p11.BOKO*/ DFF9 BOKO_NR14_STOP;
-  /*#p13.DUPE*/ DFF9 DUPE_NR14_START;
-
-  /*_p11.JUSA*/ DFF9 JUSA_NR12_DELAY0;
-  /*_p11.JUZY*/ DFF9 JUZY_NR12_DELAY1;
-  /*_p11.JOMA*/ DFF9 JOMA_NR12_DELAY2;
-  /*_p11.JAFY*/ DFF9 JAFY_NR12_ENV_DIR;
-  /*_p11.JATY*/ DFF9 JATY_NR12_VOL0;
-  /*_p11.JAXO*/ DFF9 JAXO_NR12_VOL1;
-  /*_p11.JENA*/ DFF9 JENA_NR12_VOL2;
-  /*_p11.JOPU*/ DFF9 JOPU_NR12_VOL3;
 
   /*_p11.GAXE*/ DFF20 GAXE_FREQ_CNT_00;
   /*_p11.HYFE*/ DFF20 HYFE_FREQ_CNT_01;

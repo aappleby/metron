@@ -4616,6 +4616,27 @@ const wire TRI_NEW    = config_use_flags ? 0b00100000 : 0b00000000;
 
 //-----------------------------------------------------------------------------
 
+// ADDER_01
+// ADDER_02
+// ADDER_03 << CI
+// ADDER_04
+// ADDER_05
+// ADDER_06 >> SO
+// ADDER_07
+// ADDER_08
+// ADDER_09
+// ADDER_10 >> CO
+// ADDER_11
+// ADDER_12
+// ADDER_13
+// ADDER_14
+// ADDER_15
+// ADDER_16 << A
+// ADDER_17 << B
+// ADDER_18
+// ADDER_19
+// ADDER_20
+
 struct Adder {
   wire sum;
   wire carry;
@@ -4623,6 +4644,12 @@ struct Adder {
 
 inline Adder add3(wire a, wire b, wire c) {
   uint8_t s = bit0(a) + bit0(b) + bit0(c);
+  return { bit(s, 0), bit(s, 1) };
+}
+
+// this is in rung order
+inline Adder add3b(wire ci, wire a, wire b) {
+  uint8_t s = bit0(a) + bit0(b) + bit0(ci);
   return { bit(s, 0), bit(s, 1) };
 }
 
@@ -5708,6 +5735,13 @@ inline wire or3(wire a, wire b, wire c) { return  (a | b | c); }
 inline wire or4(wire a, wire b, wire c, wire d) { return  (a | b | c | d); }
 inline wire or5(wire a, wire b, wire c, wire d, wire e) { return  (a | b | c | d | e); }
 inline wire or6(wire a, wire b, wire c, wire d, wire e, wire f) { return a | b | c | d | e | f; }
+
+// XOR2_01 >> D
+// XOR2_02 << A
+// XOR2_03 << B
+// XOR3_04 --
+// XOR3_05 --
+// XOR3_06 --
 
 inline wire xor2(wire a, wire b) { return a ^ b; }
 

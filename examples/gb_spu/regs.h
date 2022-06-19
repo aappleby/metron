@@ -49,21 +49,21 @@ const wire TRI_NEW    = config_use_flags ? 0b00100000 : 0b00000000;
 
 // ADDER_01
 // ADDER_02
-// ADDER_03 << ?
+// ADDER_03 << CI
 // ADDER_04
 // ADDER_05
-// ADDER_06 >> HYKA D, JYKA D
+// ADDER_06 >> SO
 // ADDER_07
 // ADDER_08
 // ADDER_09
-// ADDER_10 >> carry? HALU 03
+// ADDER_10 >> CO
 // ADDER_11
 // ADDER_12
 // ADDER_13
 // ADDER_14
 // ADDER_15
-// ADDER_16 << dff11 GALO qp
-// ADDER_17 << dff11 hora qp
+// ADDER_16 << A
+// ADDER_17 << B
 // ADDER_18
 // ADDER_19
 // ADDER_20
@@ -75,6 +75,12 @@ struct Adder {
 
 inline Adder add3(wire a, wire b, wire c) {
   uint8_t s = bit0(a) + bit0(b) + bit0(c);
+  return { bit(s, 0), bit(s, 1) };
+}
+
+// this is in rung order
+inline Adder add3b(wire ci, wire a, wire b) {
+  uint8_t s = bit0(a) + bit0(b) + bit0(ci);
   return { bit(s, 0), bit(s, 1) };
 }
 

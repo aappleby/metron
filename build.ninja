@@ -147,11 +147,9 @@ build docs/demo/examples.data docs/demo/examples.js: command $
     examples/tutorial/tutorial3.h examples/tutorial/declaration_order.h $
     examples/tutorial/clocked_adder.h examples/tutorial/adder.h $
     examples/tutorial/counter.h examples/rvtiny_sync/metron/toplevel.h $
-    examples/gb_spu/regs.h examples/gb_spu/Sch_Channel4.h $
-    examples/gb_spu/Sch_Channel3.h examples/gb_spu/Sch_Channel1.h $
-    examples/gb_spu/Sch_Channel2.h examples/gb_spu/Sch_ApuControl.h $
-    examples/gb_spu/metron/gb_spu.h examples/j1/metron/j1.h $
-    examples/j1/metron/dpram.h
+    examples/gb_spu/regs.h examples/gb_spu/gates.h $
+    examples/gb_spu/Sch_ApuControl.h examples/gb_spu/metron/gb_spu.h $
+    examples/j1/metron/j1.h examples/j1/metron/dpram.h
   command = python3 $$EMSDK/upstream/emscripten/tools/file_packager.py $
       docs/demo/examples.data --no-node --js-output=docs/demo/examples.js $
       --preload examples tests/metron_good tests/metron_bad --exclude *.cpp $
@@ -788,22 +786,8 @@ build obj/examples/gb_spu/gb_spu_main.o: compile_cpp $
 build obj/examples/gb_spu/Sch_ApuControl.o: compile_cpp $
     examples/gb_spu/Sch_ApuControl.cpp
   includes = -Isrc
-build obj/examples/gb_spu/Sch_Channel1.o: compile_cpp $
-    examples/gb_spu/Sch_Channel1.cpp
-  includes = -Isrc
-build obj/examples/gb_spu/Sch_Channel2.o: compile_cpp $
-    examples/gb_spu/Sch_Channel2.cpp
-  includes = -Isrc
-build obj/examples/gb_spu/Sch_Channel3.o: compile_cpp $
-    examples/gb_spu/Sch_Channel3.cpp
-  includes = -Isrc
-build obj/examples/gb_spu/Sch_Channel4.o: compile_cpp $
-    examples/gb_spu/Sch_Channel4.cpp
-  includes = -Isrc
 build bin/examples/gb_spu: link obj/examples/gb_spu/gb_spu_main.o $
-    obj/examples/gb_spu/Sch_ApuControl.o obj/examples/gb_spu/Sch_Channel1.o $
-    obj/examples/gb_spu/Sch_Channel2.o obj/examples/gb_spu/Sch_Channel3.o $
-    obj/examples/gb_spu/Sch_Channel4.o bin/libmetron.a
+    obj/examples/gb_spu/Sch_ApuControl.o bin/libmetron.a
   includes = -Isrc
 
 

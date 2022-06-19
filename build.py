@@ -509,10 +509,6 @@ def build_gb_spu():
         src_files=[
             "examples/gb_spu/gb_spu_main.cpp",
             "examples/gb_spu/Sch_ApuControl.cpp",
-            "examples/gb_spu/Sch_Channel1.cpp",
-            "examples/gb_spu/Sch_Channel2.cpp",
-            "examples/gb_spu/Sch_Channel3.cpp",
-            "examples/gb_spu/Sch_Channel4.cpp",
         ],
         includes=["src"],
         src_objs=[],

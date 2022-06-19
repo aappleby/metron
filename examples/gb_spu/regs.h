@@ -47,6 +47,27 @@ const wire TRI_NEW    = config_use_flags ? 0b00100000 : 0b00000000;
 
 //-----------------------------------------------------------------------------
 
+// ADDER_01
+// ADDER_02
+// ADDER_03 << ?
+// ADDER_04
+// ADDER_05
+// ADDER_06 >> HYKA D, JYKA D
+// ADDER_07
+// ADDER_08
+// ADDER_09
+// ADDER_10 >> carry? HALU 03
+// ADDER_11
+// ADDER_12
+// ADDER_13
+// ADDER_14
+// ADDER_15
+// ADDER_16 << dff11 GALO qp
+// ADDER_17 << dff11 hora qp
+// ADDER_18
+// ADDER_19
+// ADDER_20
+
 struct Adder {
   wire sum;
   wire carry;

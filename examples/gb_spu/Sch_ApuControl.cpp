@@ -2135,40 +2135,36 @@ void GBSound::tick() {
   //----------
   // Envelope generator. I'm not entirely sure how this works...
 
-  /*#p13.KAZA*/ wire KAZA = nor2(FEKU_RESTART0.qp_new(), KOZY_ENV_CLK.qp_new());
-  /*#p13.KUXU*/ wire KUXU_ENV_DELAY_LOAD = not1(KAZA);
-
-  /*#p13.JONE*/ wire JONE_CLK_128 = not1(BYFE_CLK_128);
-  /*#p13.KADO*/ wire KADO_RSTn = not1(KEBA_APU_RSTp);
-  /*#p13.KALY*/ KALY_CLK_64.dff17(JONE_CLK_128, KADO_RSTn, KALY_CLK_64.qn_old());
-  /*#p13.KERE*/ wire KERE_CLK_64 = not1(KALY_CLK_64.qp_new());
-  /*#p13.JOLA*/ wire JOLA_CLK_64  = not1(KERE_CLK_64);
-
-  /*#p13.JOVA*/ JOVA_ENV_DELAY0.dff20(JOLA_CLK_64,              KUXU_ENV_DELAY_LOAD, JUSA_NR12_DELAY0.qp_old());
-  /*#p13.KENU*/ KENU_ENV_DELAY1.dff20(JOVA_ENV_DELAY0.qp_new(), KUXU_ENV_DELAY_LOAD, JUZY_NR12_DELAY1.qp_old());
-  /*#p13.KERA*/ KERA_ENV_DELAY2.dff20(KENU_ENV_DELAY1.qp_new(), KUXU_ENV_DELAY_LOAD, JOMA_NR12_DELAY2.qp_old());
-
-  /*#p13.KOTE*/ wire KOTE_ENV_TRIGGER = and3(KERA_ENV_DELAY2.qp_new(), KENU_ENV_DELAY1.qp_new(), JOVA_ENV_DELAY0.qp_new());
-
-  /*#p13.HUFU*/ wire HUFU = nand5(JAFY_NR12_ENV_DIR.qp_new(), HAFO_CH1_ENV0.qp_new(), HEMY_CH1_ENV1.qp_new(), HOKO_CH1_ENV2.qp_new(), HEVO_CH1_ENV3.qp_new());
-  /*#p13.HAKE*/ wire HAKE_ENV_TOP = not1(HUFU);
-  /*#p13.HANO*/ wire HANO_ENV_BOT = nor5(JAFY_NR12_ENV_DIR.qp_new(), HAFO_CH1_ENV0.qp_new(), HEMY_CH1_ENV1.qp_new(), HOKO_CH1_ENV2.qp_new(), HEVO_CH1_ENV3.qp_new());
-  /*#p13.JADE*/ wire JADE_ENV_MAX = or2(HANO_ENV_BOT, HAKE_ENV_TOP);
-
-  /*#p13.KOMA*/ wire KOMA_ENV_EN = nor3(JUSA_NR12_DELAY0.qn_new(), JUZY_NR12_DELAY1.qn_new(), JOMA_NR12_DELAY2.qn_new());
-
-  /*#p13.KURY*/ wire KURY = not1(KOZY_ENV_CLK.qp_new());
-  /*#p13.KUKU*/ wire KUKU = nor2(HORU_CLK_512, KURY);
-  /*#p13.KORO*/ wire KORO_ENV_CLK_RST = nor4(KUKU, KOMA_ENV_EN, FEKU_RESTART0.qp_new(), KEBA_APU_RSTp);
-
-
-
-
-
-
   {
+    /*#p13.JONE*/ wire JONE_CLK_128 = not1(BYFE_CLK_128);
+    /*#p13.KADO*/ wire KADO_RSTn = not1(KEBA_APU_RSTp);
+    /*#p13.KALY*/ KALY_CLK_64.dff17(JONE_CLK_128, KADO_RSTn, KALY_CLK_64.qn_old());
+    /*#p13.KERE*/ wire KERE_CLK_64 = not1(KALY_CLK_64.qp_new());
+    /*#p13.JOLA*/ wire JOLA_CLK_64  = not1(KERE_CLK_64);
+
+    /*#p13.KAZA*/ wire KAZA = nor2(FEKU_RESTART0.qp_new(), KOZY_ENV_CLK.qp_new());
+    /*#p13.KUXU*/ wire KUXU_ENV_DELAY_LOAD = not1(KAZA);
+
+    /*#p13.JOVA*/ JOVA_ENV_DELAY0.dff20(JOLA_CLK_64,              KUXU_ENV_DELAY_LOAD, JUSA_NR12_DELAY0.qp_old());
+    /*#p13.KENU*/ KENU_ENV_DELAY1.dff20(JOVA_ENV_DELAY0.qp_new(), KUXU_ENV_DELAY_LOAD, JUZY_NR12_DELAY1.qp_old());
+    /*#p13.KERA*/ KERA_ENV_DELAY2.dff20(KENU_ENV_DELAY1.qp_new(), KUXU_ENV_DELAY_LOAD, JOMA_NR12_DELAY2.qp_old());
+
+    /*#p13.KOMA*/ wire KOMA_ENV_EN = nor3(JUSA_NR12_DELAY0.qn_new(), JUZY_NR12_DELAY1.qn_new(), JOMA_NR12_DELAY2.qn_new());
+
+    /*#p13.KURY*/ wire KURY = not1(KOZY_ENV_CLK.qp_new());
+    /*#p13.KUKU*/ wire KUKU = nor2(HORU_CLK_512, KURY);
+
+    /*#p13.KORO*/ wire KORO_ENV_CLK_RST = nor4(KUKU, KOMA_ENV_EN, FEKU_RESTART0.qp_new(), KEBA_APU_RSTp);
+
+    /*#p13.KOTE*/ wire KOTE_ENV_TRIGGER = and3(KERA_ENV_DELAY2.qp_new(), KENU_ENV_DELAY1.qp_new(), JOVA_ENV_DELAY0.qp_new());
     /*#p13.KOZY*/ KOZY_ENV_CLK.dff17(HORU_CLK_512, KORO_ENV_CLK_RST, KOTE_ENV_TRIGGER);
     /*#p13.KORU*/ wire KORU = nor2(FEKU_RESTART0.qp_new(), KEBA_APU_RSTp);
+
+    /*#p13.HUFU*/ wire HUFU = nand5(JAFY_NR12_ENV_DIR.qp_new(), HAFO_CH1_ENV0.qp_new(), HEMY_CH1_ENV1.qp_new(), HOKO_CH1_ENV2.qp_new(), HEVO_CH1_ENV3.qp_new());
+    /*#p13.HAKE*/ wire HAKE_ENV_TOP = not1(HUFU);
+    /*#p13.HANO*/ wire HANO_ENV_BOT = nor5(JAFY_NR12_ENV_DIR.qp_new(), HAFO_CH1_ENV0.qp_new(), HEMY_CH1_ENV1.qp_new(), HOKO_CH1_ENV2.qp_new(), HEVO_CH1_ENV3.qp_new());
+    /*#p13.JADE*/ wire JADE_ENV_MAX = or2(HANO_ENV_BOT, HAKE_ENV_TOP);
+
     /*#p13.KYNO*/ KYNO_ENV_STOP.dff17(KOZY_ENV_CLK.qp_new(), KORU, JADE_ENV_MAX);
 
     /*#p13.KEKO*/ wire KEKO = or2(KEBA_APU_RSTp, FEKU_RESTART0.qp_new());

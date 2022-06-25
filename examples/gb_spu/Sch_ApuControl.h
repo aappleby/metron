@@ -5,6 +5,10 @@
 #include "gates.h"
 #include "regs.h"
 
+//==============================================================================
+//             CONTROL
+//==============================================================================
+
 struct SpuControl {
   //----------
   // clocks for the apu
@@ -19,6 +23,10 @@ struct SpuControl {
   /*_p01.CARU*/ DFF17 CARU_CLK_256;
   /*_p01.BYLU*/ DFF17 BYLU_CLK_128;
 };
+
+//==============================================================================
+//             CHANNEL 1
+//==============================================================================
 
 struct SpuChannel1 {
   /*#p11.BANY*/ DFF9 BANY_NR10_SWEEP_SHIFT0;
@@ -55,10 +63,6 @@ struct SpuChannel1 {
 
   /*_p11.BOKO*/ DFF9 BOKO_NR14_LEN_EN;
   /*#p13.DUPE*/ DFF9 DUPE_NR14_TRIG;
-
-  //========================================
-  //             CHANNEL 1
-  //========================================
 
   /*#p13.CYTO*/ NorLatch CYTO_CH1_ACTIVEp;
 
@@ -172,17 +176,102 @@ struct SpuChannel1 {
   /*#p13.KEZU*/ NorLatch KEZU;
 };
 
-//-----------------------------------------------------------------------------
+//==============================================================================
+//             CHANNEL 2
+//==============================================================================
 
 struct SpuChannel2 {
+  /*_p15.ERYC*/ DFF20 ERYC_NR21_L0;
+  /*_p15.CERA*/ DFF20 CERA_NR21_L1;
+  /*_p15.CONU*/ DFF20 CONU_NR21_L2;
+  /*_p15.CAME*/ DFF20 CAME_NR21_L3;
+  /*_p15.BUVA*/ DFF20 BUVA_NR21_L4;
+  /*_p15.AKYD*/ DFF20 AKYD_NR21_L5;
+  /*_p14.BERA*/ DFF9  BERA_NR21_D6;
+  /*_p14.BAMY*/ DFF9  BAMY_NR21_D7;
+
+  //----------
+  // FF17 NR22 - channel 2 vol/env/period
+
+  /*_p14.HYFU*/ DFF9 HYFU_NR22_P0;
+  /*_p14.HORE*/ DFF9 HORE_NR22_P1;
+  /*_p14.HAVA*/ DFF9 HAVA_NR22_P2;
+  /*_p14.FORE*/ DFF9 FORE_NR22_ADD;
+  /*_p14.GATA*/ DFF9 GATA_NR22_V0;
+  /*_p14.GUFE*/ DFF9 GUFE_NR22_V1;
+  /*_p14.GURA*/ DFF9 GURA_NR22_V2;
+  /*_p14.GAGE*/ DFF9 GAGE_NR22_V3;
+
+  //----------
+
+  DFF9 FOFE_NR23_FREQ_00;
+  DFF9 FOVA_NR23_FREQ_01;
+  DFF9 FEDY_NR23_FREQ_02;
+  DFF9 FOME_NR23_FREQ_03;
+  DFF9 FORA_NR23_FREQ_04;
+  DFF9 GODA_NR23_FREQ_05;
+  DFF9 GUMY_NR23_FREQ_06;
+  DFF9 GUPU_NR23_FREQ_07;
+
+  //----------
+
+  DFF9 JEFU_NR24_FREQ_08;
+  DFF9 JANY_NR24_FREQ_09;
+  DFF9 JUPY_NR24_FREQ_10;
+
+  /*_p15.DANE*/ NorLatch DANE_CH2_ACTIVE;
+
+  DFF20 JORE_CH2_ENV_DELAY;
+  DFF20 JONA_CH2_ENV_DELAY;
+  DFF20 JEVY_CH2_ENV_DELAY;
+  DFF17 JOPA_CH2_ENV_TICK;
+
+  DFF20 DONE_CH2_FREQ_00;
+  DFF20 DYNU_CH2_FREQ_01;
+  DFF20 EZOF_CH2_FREQ_02;
+  DFF20 CYVO_CH2_FREQ_03;
+  DFF20 FUXO_CH2_FREQ_04;
+  DFF20 GANO_CH2_FREQ_05;
+  DFF20 GOCA_CH2_FREQ_06;
+  DFF20 GANE_CH2_FREQ_07;
+  DFF20 HEVY_CH2_FREQ_08;
+  DFF20 HEPU_CH2_FREQ_09;
+  DFF20 HERO_CH2_FREQ_10;
+
+  DFF17 DOME_CH2_OUT;
+
+  DFF17 ELOX_CH2_TRIG;
+  DFF17 CAZA_CH2_TRIG;
+  DFF9 EMER_NR24_LEN;
+  DFF17 DOPE_CH2_TRIG;
+  DFF9 ETAP_NR24_TRIG;
+  DFF17 DORY_CH2_TRIG;
+  DFF17 GYKO_CLK;
+  /*#p15.CANO*/ DFF17 CANO_00;
+  /*#p15.CAGY*/ DFF13 CAGY_01;
+  /*#p15.DYVE*/ DFF13 DYVE_02;
+  NandLatch BUTA_FREQ_GATEp;
+  DFF20 FENA_CH2_VOL3;
+  DFF20 FOMY_CH2_VOL2;
+  DFF20 FETE_CH2_VOL1;
+  DFF20 FENO_CH2_VOL0;
+  DFF17 HEPO;
+  NorLatch JEME;
+
+  DFF17 JYNA_CLK_64;
+  /*_p15.CYRE*/ DFF17 CYRE;
 };
 
-//-----------------------------------------------------------------------------
+//==============================================================================
+//             CHANNEL 3
+//==============================================================================
 
 struct SpuChannel3 {
 };
 
-//-----------------------------------------------------------------------------
+//==============================================================================
+//             CHANNEL 4
+//==============================================================================
 
 struct SpuChannel4 {
 };
@@ -237,49 +326,8 @@ struct GBSound {
   //----------
   // active flags
 
-  /*_p15.DANE*/ NorLatch DANE_CH2_ACTIVE;
   /*_p18.DAVO*/ DFF17    DAVO_CH3_ACTIVEp;
   /*_p20.GENA*/ NorLatch GENA_CH4_ACTIVE;
-
-  //----------
-
-  /*_p15.ERYC*/ DFF20 ERYC_NR21_L0;
-  /*_p15.CERA*/ DFF20 CERA_NR21_L1;
-  /*_p15.CONU*/ DFF20 CONU_NR21_L2;
-  /*_p15.CAME*/ DFF20 CAME_NR21_L3;
-  /*_p15.BUVA*/ DFF20 BUVA_NR21_L4;
-  /*_p15.AKYD*/ DFF20 AKYD_NR21_L5;
-  /*_p14.BERA*/ DFF9  BERA_NR21_D6;
-  /*_p14.BAMY*/ DFF9  BAMY_NR21_D7;
-
-  //----------
-  // FF17 NR22 - channel 2 vol/env/period
-
-  /*_p14.HYFU*/ DFF9 HYFU_NR22_P0;
-  /*_p14.HORE*/ DFF9 HORE_NR22_P1;
-  /*_p14.HAVA*/ DFF9 HAVA_NR22_P2;
-  /*_p14.FORE*/ DFF9 FORE_NR22_ADD;
-  /*_p14.GATA*/ DFF9 GATA_NR22_V0;
-  /*_p14.GUFE*/ DFF9 GUFE_NR22_V1;
-  /*_p14.GURA*/ DFF9 GURA_NR22_V2;
-  /*_p14.GAGE*/ DFF9 GAGE_NR22_V3;
-
-  //----------
-
-  DFF9 FOFE_NR23_FREQ_00;
-  DFF9 FOVA_NR23_FREQ_01;
-  DFF9 FEDY_NR23_FREQ_02;
-  DFF9 FOME_NR23_FREQ_03;
-  DFF9 FORA_NR23_FREQ_04;
-  DFF9 GODA_NR23_FREQ_05;
-  DFF9 GUMY_NR23_FREQ_06;
-  DFF9 GUPU_NR23_FREQ_07;
-
-  //----------
-
-  DFF9 JEFU_NR24_FREQ_08;
-  DFF9 JANY_NR24_FREQ_09;
-  DFF9 JUPY_NR24_FREQ_10;
 
   //----------
 
@@ -353,49 +401,6 @@ struct GBSound {
   /*_p09.FERO*/ DFF9  FERO_NR52_DBG_APUn;     // secret debug bit
   /*_p09.BOWY*/ DFF17 BOWY_NR52_DBG_SWEEP;    // secret debug bit
   /*_p09.HADA*/ DFF17 HADA_NR52_ALL_SOUND_ON; //FF26_7
-
-  //========================================
-  //             CHANNEL 2
-  //========================================
-  DFF20 JORE_CH2_ENV_DELAY;
-  DFF20 JONA_CH2_ENV_DELAY;
-  DFF20 JEVY_CH2_ENV_DELAY;
-  DFF17 JOPA_CH2_ENV_TICK;
-
-  DFF20 DONE_CH2_FREQ_00;
-  DFF20 DYNU_CH2_FREQ_01;
-  DFF20 EZOF_CH2_FREQ_02;
-  DFF20 CYVO_CH2_FREQ_03;
-  DFF20 FUXO_CH2_FREQ_04;
-  DFF20 GANO_CH2_FREQ_05;
-  DFF20 GOCA_CH2_FREQ_06;
-  DFF20 GANE_CH2_FREQ_07;
-  DFF20 HEVY_CH2_FREQ_08;
-  DFF20 HEPU_CH2_FREQ_09;
-  DFF20 HERO_CH2_FREQ_10;
-
-  DFF17 DOME_CH2_OUT;
-
-  DFF17 ELOX_CH2_TRIG;
-  DFF17 CAZA_CH2_TRIG;
-  DFF9 EMER_NR24_LEN;
-  DFF17 DOPE_CH2_TRIG;
-  DFF9 ETAP_NR24_TRIG;
-  DFF17 DORY_CH2_TRIG;
-  DFF17 GYKO_CLK;
-  /*#p15.CANO*/ DFF17 CANO_00;
-  /*#p15.CAGY*/ DFF13 CAGY_01;
-  /*#p15.DYVE*/ DFF13 DYVE_02;
-  NandLatch BUTA_FREQ_GATEp;
-  DFF20 FENA_CH2_VOL3;
-  DFF20 FOMY_CH2_VOL2;
-  DFF20 FETE_CH2_VOL1;
-  DFF20 FENO_CH2_VOL0;
-  DFF17 HEPO;
-  NorLatch JEME;
-
-  DFF17 JYNA_CLK_64;
-  /*_p15.CYRE*/ DFF17 CYRE;
 
   //========================================
   //             CHANNEL 3

@@ -6,7 +6,7 @@
       "label": "build_metron",
       "command": "ninja",
       "args": [
-        "bin/metron"
+        //"bin/metron"
       ],
       "problemMatcher": "$gcc",
       "group": {

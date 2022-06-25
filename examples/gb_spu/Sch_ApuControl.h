@@ -10,6 +10,9 @@
 //==============================================================================
 
 struct SpuControl {
+  /*#p15.CEMO*/ DFF17 CEMO_1MHZ;
+  /*_p15.ATEP*/ DFF17 ATEP_2MHZ;
+
   //----------
   // clocks for the apu
 
@@ -22,7 +25,53 @@ struct SpuControl {
   /*_p01.BARA*/ DFF17 BARA_CLK_512;
   /*_p01.CARU*/ DFF17 CARU_CLK_256;
   /*_p01.BYLU*/ DFF17 BYLU_CLK_128;
+
+  //----------
+  // FF24 NR50
+  
+  /*_p09.APEG*/ DFF9 APEG_NR50_VOL_L0;
+  /*_p09.BYGA*/ DFF9 BYGA_NR50_VOL_L1;
+  /*_p09.AGER*/ DFF9 AGER_NR50_VOL_L2;
+  /*_p09.APOS*/ DFF9 APOS_NR50_VIN_TO_L;
+  /*_p09.BYRE*/ DFF9 BYRE_NR50_VOL_R0;
+  /*_p09.BUMO*/ DFF9 BUMO_NR50_VOL_R1;
+  /*_p09.COZU*/ DFF9 COZU_NR50_VOL_R2;
+  /*_p09.BEDU*/ DFF9 BEDU_NR50_VIN_TO_R;
+
+  //----------
+  // FF25 NR51
+
+  /*_p09.ANEV*/ DFF9 ANEV_NR51_D0; // these are mixer control bits
+  /*_p09.BOGU*/ DFF9 BOGU_NR51_D1;
+  /*_p09.BAFO*/ DFF9 BAFO_NR51_D2;
+  /*_p09.ATUF*/ DFF9 ATUF_NR51_D3;
+  /*_p09.BUME*/ DFF9 BUME_NR51_D4;
+  /*_p09.BOFA*/ DFF9 BOFA_NR51_D5;
+  /*_p09.BEFO*/ DFF9 BEFO_NR51_D6;
+  /*_p09.BEPU*/ DFF9 BEPU_NR51_D7;
+
+  //----------
+  // FF26 NR52
+
+  // DBG_APUn polarity?
+  /*_p09.FERO*/ DFF9  FERO_NR52_DBG_APUn;     // secret debug bit
+  /*_p09.BOWY*/ DFF17 BOWY_NR52_DBG_SWEEP;    // secret debug bit
+  /*_p09.HADA*/ DFF17 HADA_NR52_ALL_SOUND_ON; //FF26_7
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //==============================================================================
 //             CHANNEL 1
@@ -176,6 +225,32 @@ struct SpuChannel1 {
   /*#p13.KEZU*/ NorLatch KEZU;
 };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //==============================================================================
 //             CHANNEL 2
 //==============================================================================
@@ -261,6 +336,31 @@ struct SpuChannel2 {
   DFF17 JYNA_CLK_64;
   /*_p15.CYRE*/ DFF17 CYRE;
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //==============================================================================
 //             CHANNEL 3
@@ -349,70 +449,39 @@ struct SpuChannel3 {
   /*_p17.AZET*/ DFF17 AZET;
 };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //==============================================================================
 //             CHANNEL 4
 //==============================================================================
 
 struct SpuChannel4 {
-};
-
-//-----------------------------------------------------------------------------
-
-struct GBSound {
-  SpuControl  spu;
-  SpuChannel1 ch1;
-  SpuChannel2 ch2;
-  SpuChannel3 ch3;
-  SpuChannel4 ch4;
-
-  /*#p15.CEMO*/ DFF17 CEMO_1MHZ;
-  /*_p15.ATEP*/ DFF17 ATEP_2MHZ;
-
-  /*_BUS_CPU_A00p*/ Bus BUS_CPU_A00p;
-  /*_BUS_CPU_A01p*/ Bus BUS_CPU_A01p;
-  /*_BUS_CPU_A02p*/ Bus BUS_CPU_A02p;
-  /*_BUS_CPU_A03p*/ Bus BUS_CPU_A03p;
-  /*_BUS_CPU_A04p*/ Bus BUS_CPU_A04p;
-  /*_BUS_CPU_A05p*/ Bus BUS_CPU_A05p;
-  /*_BUS_CPU_A06p*/ Bus BUS_CPU_A06p;
-  /*_BUS_CPU_A07p*/ Bus BUS_CPU_A07p;
-  /*_BUS_CPU_A08p*/ Bus BUS_CPU_A08p;
-  /*_BUS_CPU_A09p*/ Bus BUS_CPU_A09p;
-  /*_BUS_CPU_A10p*/ Bus BUS_CPU_A10p;
-  /*_BUS_CPU_A11p*/ Bus BUS_CPU_A11p;
-  /*_BUS_CPU_A12p*/ Bus BUS_CPU_A12p;
-  /*_BUS_CPU_A13p*/ Bus BUS_CPU_A13p;
-  /*_BUS_CPU_A14p*/ Bus BUS_CPU_A14p;
-  /*_BUS_CPU_A15p*/ Bus BUS_CPU_A15p;
-
-  /*_BUS_CPU_D00p*/ Bus BUS_CPU_D00p;
-  /*_BUS_CPU_D01p*/ Bus BUS_CPU_D01p;
-  /*_BUS_CPU_D02p*/ Bus BUS_CPU_D02p;
-  /*_BUS_CPU_D03p*/ Bus BUS_CPU_D03p;
-  /*_BUS_CPU_D04p*/ Bus BUS_CPU_D04p;
-  /*_BUS_CPU_D05p*/ Bus BUS_CPU_D05p;
-  /*_BUS_CPU_D06p*/ Bus BUS_CPU_D06p;
-  /*_BUS_CPU_D07p*/ Bus BUS_CPU_D07p;
-
-  /*_BUS_WAVE_D00p*/ Bus BUS_WAVE_D00p;
-  /*_BUS_WAVE_D01p*/ Bus BUS_WAVE_D01p;
-  /*_BUS_WAVE_D02p*/ Bus BUS_WAVE_D02p;
-  /*_BUS_WAVE_D03p*/ Bus BUS_WAVE_D03p;
-  /*_BUS_WAVE_D04p*/ Bus BUS_WAVE_D04p;
-  /*_BUS_WAVE_D05p*/ Bus BUS_WAVE_D05p;
-  /*_BUS_WAVE_D06p*/ Bus BUS_WAVE_D06p;
-  /*_BUS_WAVE_D07p*/ Bus BUS_WAVE_D07p;
-
-  //----------
-  // active flags
-
-  /*_p20.GENA*/ NorLatch GENA_CH4_ACTIVE;
-
-  //----------
-
-
-  //----------
-
   /*_p19.EMOK*/ DFF9 EMOK_NR42_ENV_TIMER0;
   /*_p19.ETYJ*/ DFF9 ETYJ_NR42_ENV_TIMER1;
   /*_p19.EZYK*/ DFF9 EZYK_NR42_ENV_TIMER2;
@@ -433,38 +502,7 @@ struct GBSound {
   /*_p19.GOGO*/ DFF9 GOGO_NR43_FREQ2;
   /*_p19.GAFO*/ DFF9 GAFO_NR43_FREQ3;
 
-  //----------
-  // FF24 NR50
-  
-  /*_p09.APEG*/ DFF9 APEG_NR50_VOL_L0;
-  /*_p09.BYGA*/ DFF9 BYGA_NR50_VOL_L1;
-  /*_p09.AGER*/ DFF9 AGER_NR50_VOL_L2;
-  /*_p09.APOS*/ DFF9 APOS_NR50_VIN_TO_L;
-  /*_p09.BYRE*/ DFF9 BYRE_NR50_VOL_R0;
-  /*_p09.BUMO*/ DFF9 BUMO_NR50_VOL_R1;
-  /*_p09.COZU*/ DFF9 COZU_NR50_VOL_R2;
-  /*_p09.BEDU*/ DFF9 BEDU_NR50_VIN_TO_R;
-
-  //----------
-  // FF25 NR51
-
-  /*_p09.ANEV*/ DFF9 ANEV_NR51_D0; // these are mixer control bits
-  /*_p09.BOGU*/ DFF9 BOGU_NR51_D1;
-  /*_p09.BAFO*/ DFF9 BAFO_NR51_D2;
-  /*_p09.ATUF*/ DFF9 ATUF_NR51_D3;
-  /*_p09.BUME*/ DFF9 BUME_NR51_D4;
-  /*_p09.BOFA*/ DFF9 BOFA_NR51_D5;
-  /*_p09.BEFO*/ DFF9 BEFO_NR51_D6;
-  /*_p09.BEPU*/ DFF9 BEPU_NR51_D7;
-
-  //----------
-  // FF26 NR52
-
-  // DBG_APUn polarity?
-  /*_p09.FERO*/ DFF9  FERO_NR52_DBG_APUn;     // secret debug bit
-  /*_p09.BOWY*/ DFF17 BOWY_NR52_DBG_SWEEP;    // secret debug bit
-  /*_p09.HADA*/ DFF17 HADA_NR52_ALL_SOUND_ON; //FF26_7
-
+  /*_p20.GENA*/ NorLatch GENA_CH4_ACTIVE;
 
   //========================================
   //             CHANNEL 4
@@ -538,6 +576,79 @@ struct GBSound {
   /*#p20.FERU*/ DFF20 FERU_CH4_VOL2;
   /*#p20.FYRO*/ DFF20 FYRO_CH4_VOL3;
   /*#p20.EROX*/ NorLatch EROX_ENV_CLK2;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//==============================================================================
+//             TOP
+//==============================================================================
+
+struct GBSound {
+  SpuControl  spu;
+  SpuChannel1 ch1;
+  SpuChannel2 ch2;
+  SpuChannel3 ch3;
+  SpuChannel4 ch4;
+
+  /*_BUS_CPU_A00p*/ Bus BUS_CPU_A00p;
+  /*_BUS_CPU_A01p*/ Bus BUS_CPU_A01p;
+  /*_BUS_CPU_A02p*/ Bus BUS_CPU_A02p;
+  /*_BUS_CPU_A03p*/ Bus BUS_CPU_A03p;
+  /*_BUS_CPU_A04p*/ Bus BUS_CPU_A04p;
+  /*_BUS_CPU_A05p*/ Bus BUS_CPU_A05p;
+  /*_BUS_CPU_A06p*/ Bus BUS_CPU_A06p;
+  /*_BUS_CPU_A07p*/ Bus BUS_CPU_A07p;
+  /*_BUS_CPU_A08p*/ Bus BUS_CPU_A08p;
+  /*_BUS_CPU_A09p*/ Bus BUS_CPU_A09p;
+  /*_BUS_CPU_A10p*/ Bus BUS_CPU_A10p;
+  /*_BUS_CPU_A11p*/ Bus BUS_CPU_A11p;
+  /*_BUS_CPU_A12p*/ Bus BUS_CPU_A12p;
+  /*_BUS_CPU_A13p*/ Bus BUS_CPU_A13p;
+  /*_BUS_CPU_A14p*/ Bus BUS_CPU_A14p;
+  /*_BUS_CPU_A15p*/ Bus BUS_CPU_A15p;
+
+  /*_BUS_CPU_D00p*/ Bus BUS_CPU_D00p;
+  /*_BUS_CPU_D01p*/ Bus BUS_CPU_D01p;
+  /*_BUS_CPU_D02p*/ Bus BUS_CPU_D02p;
+  /*_BUS_CPU_D03p*/ Bus BUS_CPU_D03p;
+  /*_BUS_CPU_D04p*/ Bus BUS_CPU_D04p;
+  /*_BUS_CPU_D05p*/ Bus BUS_CPU_D05p;
+  /*_BUS_CPU_D06p*/ Bus BUS_CPU_D06p;
+  /*_BUS_CPU_D07p*/ Bus BUS_CPU_D07p;
+
+  /*_BUS_WAVE_D00p*/ Bus BUS_WAVE_D00p;
+  /*_BUS_WAVE_D01p*/ Bus BUS_WAVE_D01p;
+  /*_BUS_WAVE_D02p*/ Bus BUS_WAVE_D02p;
+  /*_BUS_WAVE_D03p*/ Bus BUS_WAVE_D03p;
+  /*_BUS_WAVE_D04p*/ Bus BUS_WAVE_D04p;
+  /*_BUS_WAVE_D05p*/ Bus BUS_WAVE_D05p;
+  /*_BUS_WAVE_D06p*/ Bus BUS_WAVE_D06p;
+  /*_BUS_WAVE_D07p*/ Bus BUS_WAVE_D07p;
 
   void tick();
 };

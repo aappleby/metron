@@ -4838,6 +4838,15 @@ struct SpuChannel3 {
 //==============================================================================
 
 struct SpuChannel4 {
+
+  /*#p20.GEVY*/ wire GEVY_CH4_AMP_ENn() const { 
+    return nor5(GEKY_NR42_ENV_DIR.qn_new(),
+                GARU_NR42_ENV0.qn_new(),
+                GOKY_NR42_ENV1.qn_new(),
+                GOZO_NR42_ENV2.qn_new(),
+                GEDU_NR42_ENV3.qn_new());
+  }
+
   /*_p19.EMOK*/ DFF9 EMOK_NR42_ENV_TIMER0;
   /*_p19.ETYJ*/ DFF9 ETYJ_NR42_ENV_TIMER1;
   /*_p19.EZYK*/ DFF9 EZYK_NR42_ENV_TIMER2;
@@ -5233,6 +5242,7 @@ struct GBSound {
     return BYFE_CLK_128n;
   }
 
+  /*#p13.JONE*/ wire JONE_CLK_128p() const { return not1(BYFE_CLK_128n()); }
 
 
 

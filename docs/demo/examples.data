@@ -4403,9 +4403,9 @@ struct SpuChannel1 {
   /*#p11.ARAX*/ DFF9 ARAX_NR10_SWEEP_SHIFT1;
   /*#p11.ANAZ*/ DFF9 ANAZ_NR10_SWEEP_SHIFT2;
   /*#p11.AVAF*/ DFF9 AVAF_NR10_SWEEP_NEGATE;
-  /*#p11.ADEK*/ DFF9 ADEK_NR10_SWEEP_PERIOD0;
-  /*#p11.BANA*/ DFF9 BANA_NR10_SWEEP_PERIOD1;
-  /*#p11.BOTU*/ DFF9 BOTU_NR10_SWEEP_PERIOD2;
+  /*#p11.ADEK*/ DFF9 ADEK_NR10_SWEEP_PERIOD0p;
+  /*#p11.BANA*/ DFF9 BANA_NR10_SWEEP_PERIOD1p;
+  /*#p11.BOTU*/ DFF9 BOTU_NR10_SWEEP_PERIOD2p;
 
   //----------
 
@@ -4420,9 +4420,9 @@ struct SpuChannel1 {
 
   //----------
 
-  /*_p11.JUSA*/ DFF9 JUSA_NR12_DELAY0;
-  /*_p11.JUZY*/ DFF9 JUZY_NR12_DELAY1;
-  /*_p11.JOMA*/ DFF9 JOMA_NR12_DELAY2;
+  /*_p11.JUSA*/ DFF9 JUSA_NR12_DELAY0n;
+  /*_p11.JUZY*/ DFF9 JUZY_NR12_DELAY1n;
+  /*_p11.JOMA*/ DFF9 JOMA_NR12_DELAY2n;
   /*_p11.JAFY*/ DFF9 JAFY_NR12_ENV_DIR;
   /*_p11.JATY*/ DFF9 JATY_NR12_VOL0;
   /*_p11.JAXO*/ DFF9 JAXO_NR12_VOL1;
@@ -4474,9 +4474,9 @@ struct SpuChannel1 {
 
   /*#p09.BAZA*/ DFF17 BAZA_DBG_SWEEP_CLK;
   /*_p13.BEXA*/ DFF17 BEXA_SWEEP_TRIGGERp;
-  /*_p13.CUPO*/ DFF20 CUPO_SWEEP_DELAY0;
-  /*_p13.CYPU*/ DFF20 CYPU_SWEEP_DELAY1;
-  /*_p13.CAXY*/ DFF20 CAXY_SWEEP_DELAY2;
+  /*_p13.CUPO*/ DFF20 CUPO_SWEEP_DELAY0p;
+  /*_p13.CYPU*/ DFF20 CYPU_SWEEP_DELAY1p;
+  /*_p13.CAXY*/ DFF20 CAXY_SWEEP_DELAY2p;
 
   /*_p12.FABU*/ DFF22 FABU_CH1_SHIFT00;
   /*_p12.JEFA*/ DFF22 JEFA_CH1_SHIFT01;
@@ -4521,29 +4521,29 @@ struct SpuChannel1 {
   /*#p13.BYRA*/ DFF20 BYRA_SHIFTCNT2;
 
   /*_p13.FYFO*/ NorLatch FYFO_CH1_TRIGn;
-  /*_p13.COMY*/ DFF17 COMY_PHASE_CLK;
+  /*_p13.COMY*/ DFF17 COMY_FREQ_RSTp;
   /*_p13.GEXU*/ NandLatch GEXU_FREQ_GATE;
 
   /*_p13.ESUT*/ DFF17 ESUT_PHASE_xBxDxFxH;
   /*_p13.EROS*/ DFF13 EROS_PHASE_xxCDxxGH;
   /*_p13.DAPE*/ DFF13 DAPE_PHASE_xxxxEFGH;
 
-  /*#p13.KOZY*/ DFF17 KOZY_ENV_CLK;
+  /*#p13.KOZY*/ DFF17 KOZY_ENV_CLKp;
   /*#p13.KYNO*/ DFF17 KYNO_ENV_STOP;
 
-  /*_p13.JOVA*/ DFF20 JOVA_ENV_DELAY0;
-  /*_p13.KENU*/ DFF20 KENU_ENV_DELAY1;
-  /*_p13.KERA*/ DFF20 KERA_ENV_DELAY2;  
+  /*_p13.JOVA*/ DFF20 JOVA_ENV_DELAY0p;
+  /*_p13.KENU*/ DFF20 KENU_ENV_DELAY1p;
+  /*_p13.KERA*/ DFF20 KERA_ENV_DELAY2p;  
 
-  /*_p13.HEVO*/ DFF20 HEVO_CH1_ENV3;
-  /*_p13.HOKO*/ DFF20 HOKO_CH1_ENV2;
-  /*_p13.HEMY*/ DFF20 HEMY_CH1_ENV1;
-  /*_p13.HAFO*/ DFF20 HAFO_CH1_ENV0;
+  /*_p13.HEVO*/ DFF20 HEVO_CH1_ENV3p;
+  /*_p13.HOKO*/ DFF20 HOKO_CH1_ENV2p;
+  /*_p13.HEMY*/ DFF20 HEMY_CH1_ENV1p;
+  /*_p13.HAFO*/ DFF20 HAFO_CH1_ENV0p;
 
-  /*_p13.KALY*/ DFF17 KALY_CLK_64;
+  /*_p13.KALY*/ DFF17 KALY_ENV_DELAY_CLK_64n;
 
-  /*_p13.DUWO*/ DFF17 DUWO_RAW_BIT_SYNC;
-  /*#p13.KEZU*/ NorLatch KEZU;
+  /*_p13.DUWO*/ DFF17 DUWO_RAW_BIT_SYNCp;
+  /*#p13.KEZU*/ NorLatch KEZU_ENV_ACTIVE;
 };
 
 
@@ -4589,9 +4589,9 @@ struct SpuChannel2 {
   //----------
   // FF17 NR22 - channel 2 vol/env/period
 
-  /*_p14.HYFU*/ DFF9 HYFU_NR22_P0;
-  /*_p14.HORE*/ DFF9 HORE_NR22_P1;
-  /*_p14.HAVA*/ DFF9 HAVA_NR22_P2;
+  /*_p14.HYFU*/ DFF9 HYFU_NR22_P0n;
+  /*_p14.HORE*/ DFF9 HORE_NR22_P1n;
+  /*_p14.HAVA*/ DFF9 HAVA_NR22_P2n;
   /*_p14.FORE*/ DFF9 FORE_NR22_ADD;
   /*_p14.GATA*/ DFF9 GATA_NR22_V0;
   /*_p14.GUFE*/ DFF9 GUFE_NR22_V1;
@@ -4615,11 +4615,11 @@ struct SpuChannel2 {
   DFF9 JANY_NR24_FREQ_09;
   DFF9 JUPY_NR24_FREQ_10;
 
-  /*_p15.DANE*/ NorLatch DANE_CH2_ACTIVE;
+  /*_p15.DANE*/ NorLatch DANE_CH2_ACTIVEp;
 
-  DFF20 JORE_CH2_ENV_DELAY;
-  DFF20 JONA_CH2_ENV_DELAY;
-  DFF20 JEVY_CH2_ENV_DELAY;
+  DFF20 JORE_CH2_ENV_DELAYp;
+  DFF20 JONA_CH2_ENV_DELAYp;
+  DFF20 JEVY_CH2_ENV_DELAYp;
   DFF17 JOPA_CH2_ENV_TICK;
 
   DFF20 DONE_CH2_FREQ_00;
@@ -4634,14 +4634,14 @@ struct SpuChannel2 {
   DFF20 HEPU_CH2_FREQ_09;
   DFF20 HERO_CH2_FREQ_10;
 
-  DFF17 DOME_CH2_OUT;
+  DFF17 DOME_CH2_OUTp;
 
-  DFF17 ELOX_CH2_TRIG;
-  DFF17 CAZA_CH2_TRIG;
-  DFF9 EMER_NR24_LEN;
+  DFF17 ELOX_CH2_TRIGp;
+  DFF17 CAZA_CH2_TRIGp;
+  DFF9 EMER_NR24_LENENp;
   DFF17 DOPE_CH2_TRIG;
   DFF9 ETAP_NR24_TRIG;
-  DFF17 DORY_CH2_TRIG;
+  DFF17 DORY_CH2_TRIGp;
   DFF17 GYKO_CLK;
   /*#p15.CANO*/ DFF17 CANO_00;
   /*#p15.CAGY*/ DFF13 CAGY_01;
@@ -4654,8 +4654,8 @@ struct SpuChannel2 {
   DFF17 HEPO;
   NorLatch JEME;
 
-  DFF17 JYNA_CLK_64;
-  /*_p15.CYRE*/ DFF17 CYRE;
+  DFF17 JYNA_CLK_64n;
+  /*_p15.CYRE*/ DFF17 CYRE_CH2_LEN_DONEp;
 };
 
 
@@ -4707,22 +4707,22 @@ struct SpuChannel3 {
 
   /*_p18.DAVO*/ DFF17    DAVO_CH3_ACTIVEp;
 
-  /*_p16.GOFY*/ NorLatch GOFY;
+  /*_p16.GOFY*/ NorLatch GOFY_CH3_ACTIVEn;
   NorLatch FOZU;
 
 
   /*_p16.GUXE*/ DFF9 GUXE_CH3_AMP_ENn;
 
-  /*_p18.GEVO*/ DFF20 GEVO_CH3_LEN0;
-  /*_p18.FORY*/ DFF20 FORY_CH3_LEN1;
-  /*_p18.GATU*/ DFF20 GATU_CH3_LEN2;
-  /*_p18.GAPO*/ DFF20 GAPO_CH3_LEN3;
-  /*_p18.GEMO*/ DFF20 GEMO_CH3_LEN4;
-  /*_p18.FORO*/ DFF20 FORO_CH3_LEN5;
-  /*_p18.FAVE*/ DFF20 FAVE_CH3_LEN6;
-  /*_p18.FYRU*/ DFF20 FYRU_CH3_LEN7;  
+  /*_p18.GEVO*/ DFF20 GEVO_CH3_LEN0p;
+  /*_p18.FORY*/ DFF20 FORY_CH3_LEN1p;
+  /*_p18.GATU*/ DFF20 GATU_CH3_LEN2p;
+  /*_p18.GAPO*/ DFF20 GAPO_CH3_LEN3p;
+  /*_p18.GEMO*/ DFF20 GEMO_CH3_LEN4p;
+  /*_p18.FORO*/ DFF20 FORO_CH3_LEN5p;
+  /*_p18.FAVE*/ DFF20 FAVE_CH3_LEN6p;
+  /*_p18.FYRU*/ DFF20 FYRU_CH3_LEN7p;  
 
-  /*_p18.FEXU*/ DFF17 FEXU_LEN_DONE;
+  /*_p18.FEXU*/ DFF17 FEXU_LEN_DONEp;
 
   /*_p16.HUKY*/ DFF9 HUKY_NR32_VOL0;
   /*_p16.HODY*/ DFF9 HODY_NR32_VOL1;
@@ -4760,14 +4760,14 @@ struct SpuChannel3 {
   /*_p17.BORA*/ DFF9 BORA_SAMPLE_6;
   /*_p17.BEPA*/ DFF9 BEPA_SAMPLE_7;
 
-  /*_p16.FOBA*/ DFF17 FOBA_CH3_TRIG;
+  /*_p16.FOBA*/ DFF17 FOBA_CH3_TRIGp;
   NandLatch GUGU_FREQ_CLK_STOP;
 
   // This is a pulse generator for wave ram control line 2/3
-  /*_p17.BUSA*/ DFF17 BUSA;
-  /*_p17.BANO*/ DFF17 BANO;
-  /*_p17.AZUS*/ DFF17 AZUS;
-  /*_p17.AZET*/ DFF17 AZET;
+  /*_p17.BUSA*/ DFF17 BUSA_WAVE_CLK_D1;
+  /*_p17.BANO*/ DFF17 BANO_WAVE_CLK_D2;
+  /*_p17.AZUS*/ DFF17 AZUS_WAVE_CLK_D3;
+  /*_p17.AZET*/ DFF17 AZET_WAVE_CLK_D4;
 };
 
 
@@ -4823,16 +4823,16 @@ struct SpuChannel4 {
   /*_p19.GOGO*/ DFF9 GOGO_NR43_FREQ2;
   /*_p19.GAFO*/ DFF9 GAFO_NR43_FREQ3;
 
-  /*_p20.GENA*/ NorLatch GENA_CH4_ACTIVE;
+  /*_p20.GENA*/ NorLatch GENA_CH4_ACTIVEp;
 
   //========================================
   //             CHANNEL 4
   //========================================
 
-  /*_p20.GONE*/ DFF17 GONE_CH4_TRIG;
-  /*_p20.GORA*/ DFF17 GORA_CH4_TRIG;
-  /*_p20.GATY*/ DFF17 GATY_CH4_TRIG;
-  /*_p19.FUGO*/ DFF17 FUGO_CH4_LEN_DONE;
+  /*_p20.GONE*/ DFF17 GONE_CH4_TRIGp;
+  /*_p20.GORA*/ DFF17 GORA_CH4_TRIGp;
+  /*_p20.GATY*/ DFF17 GATY_CH4_TRIGp;
+  /*_p19.FUGO*/ DFF17 FUGO_CH4_LEN_DONEp;
 
   /*#p19.DANO*/ DFF20 DANO_NR41_LEN0;
   /*#p19.FAVY*/ DFF20 FAVY_NR41_LEN1;
@@ -4841,16 +4841,16 @@ struct SpuChannel4 {
   /*#p19.FYLO*/ DFF20 FYLO_NR41_LEN4;
   /*_p19.EDOP*/ DFF20 EDOP_NR41_LEN5;
 
-  /*#p19.CUNY*/ DFF9 CUNY_NR44_LEN_EN;
+  /*#p19.CUNY*/ DFF9 CUNY_NR44_LEN_ENp;
   /*#p19.HOGA*/ DFF9 HOGA_NR44_TRIG;
   /*#p20.GYSU*/ DFF17 GYSU_CH4_TRIG;
 
-  /*#p20.HAZO*/ NorLatch HAZO;
+  /*#p20.HAZO*/ NorLatch HAZO_CH4_TRIGn;
   /*#p20.JERY*/ NandLatch JERY_DIV_GATE;
   /*#p20.JYCO*/ DFF20 JYCO_DIV0;
   /*#p20.JYRE*/ DFF20 JYRE_DIV1;
   /*#p20.JYFU*/ DFF20 JYFU_DIV2;
-  /*#p20.GARY*/ DFF17 GARY;
+  /*#p20.GARY*/ DFF17 GARY_FREQ_GATEp;
 
   /*_p20.CEXO*/ DFF17 CEXO_FREQ_00;
   /*_p20.DEKO*/ DFF17 DEKO_FREQ_01;
@@ -4885,18 +4885,18 @@ struct SpuChannel4 {
   /*_p20.HEZU*/ DFF17 HEZU_LFSR_15;
 
   /*#p20.ABEL*/ DFF17 ABEL_CLK_64;
-  /*#p20.CUNA*/ DFF20 CUNA_ENV_TIMER0;
-  /*#p20.COFE*/ DFF20 COFE_ENV_TIMER1;
-  /*#p20.DOGO*/ DFF20 DOGO_ENV_TIMER2;
+  /*#p20.CUNA*/ DFF20 CUNA_ENV_DELAY0n;
+  /*#p20.COFE*/ DFF20 COFE_ENV_DELAY1n;
+  /*#p20.DOGO*/ DFF20 DOGO_ENV_DELAY2n;
 
-  /*#p20.FOSY*/ DFF17 FOSY_ENV_PULSE;
-  /*#p20.FYNO*/ DFF17 FYNO_ENV_STOP;
+  /*#p20.FOSY*/ DFF17 FOSY_ENV_CLKp;
+  /*#p20.FYNO*/ DFF17 FYNO_ENV_MAXp;
 
   /*#p20.FEKO*/ DFF20 FEKO_CH4_VOL0;
   /*#p20.FATY*/ DFF20 FATY_CH4_VOL1;
   /*#p20.FERU*/ DFF20 FERU_CH4_VOL2;
   /*#p20.FYRO*/ DFF20 FYRO_CH4_VOL3;
-  /*#p20.EROX*/ NorLatch EROX_ENV_CLK2;
+  /*#p20.EROX*/ NorLatch EROX_ENV_RUNNINGn;
 };
 
 
@@ -4930,6 +4930,121 @@ struct SpuChannel4 {
 //==============================================================================
 
 struct GBSound {
+  wire SYKE_ADDR_FFXX = 0;
+  wire UNOR_MODE_DBG2 = 0;
+  wire ALUR_SYS_RSTn = true;
+  wire TEDO_CPU_RDp = false;
+  wire TAPU_CPU_WRp = false;
+  wire AZOF_xBxDxFxH = 0;
+  wire BUDE_xxxxEFGH = 0;
+  wire UMER_DIV10n_old = 0;
+  wire SIG_CPU_HOLD_MEM = 0;
+  wire SIG_IN_CPU_DBUS_FREE = 0;
+
+  void tick();
+  void tick_nr11(wire BUFY_CLK_256n);
+  void tick_nr12();
+  void tick_nr50();
+
+  //----------
+  // CPU read/write signals
+
+  /*_p09.AGUZ*/ wire AGUZ_CPU_RDn() const { return not1(TEDO_CPU_RDp); }
+  /*_p10.BAFU*/ wire BAFU_CPU_WRn() const { return not1(TAPU_CPU_WRp); }
+
+  /*_p09.GAXO*/ wire GAXO_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
+  /*_p10.BOGY*/ wire BOGY_CPU_WRp() const { return not1(BAFU_CPU_WRn()); }
+
+  //----------
+  // SPU clock tree
+
+  /*_p01.ATAG*/ wire ATAG_AxCxExGx() const { return not1(AZOF_xBxDxFxH); }
+  /*_p01.DOVA*/ wire DOVA_ABCDxxxx() const { return not1(BUDE_xxxxEFGH); } // this goes to all the trigger regs
+
+  /*_p01.AMUK*/ wire AMUK_xBxDxFxH() const { return not1(ATAG_AxCxExGx()); } // goes to clock generators and wave ram clock
+  /*_p01.CYBO*/ wire CYBO_AxCxExGx() const { return not1(AMUK_xBxDxFxH()); }
+  /*_p01.ARYF*/ wire ARYF_AxCxExGx() const { return not1(AMUK_xBxDxFxH()); }
+  /*_p01.APUV*/ wire APUV_AxCxExGx() const { return not1(AMUK_xBxDxFxH()); }
+  /*_p15.AZEG*/ wire AZEG()          const { return not1(AMUK_xBxDxFxH()); }
+
+  //----------
+  // SPU reset tree
+
+  /*_p09.HAPO*/ wire HAPO_SYS_RSTp() const { return not1(ALUR_SYS_RSTn); }
+  /*_p09.GUFO*/ wire GUFO_SYS_RSTn() const { return not1(HAPO_SYS_RSTp()); }
+
+  /*_p09.JYRO*/ wire JYRO_APU_RSTp() const { return  or2(HAPO_SYS_RSTp(), spu.HADA_NR52_ALL_SOUND_ON.qn_new()); }
+  /*_p09.KEPY*/ wire KEPY_APU_RSTn() const { return not1(JYRO_APU_RSTp()); }
+  /*_p09.KUBY*/ wire KUBY_APU_RSTn() const { return not1(JYRO_APU_RSTp()); }
+  /*_p09.KEBA*/ wire KEBA_APU_RSTp() const { return not1(KUBY_APU_RSTn()); }
+  /*_p01.BOPO*/ wire BOPO_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
+  /*_p01.BELA*/ wire BELA_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
+  /*_p09.ATYV*/ wire ATYV_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
+  /*_p09.KAME*/ wire KAME_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
+  /*_p01.ATUS*/ wire ATUS_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
+  /*_p14.JYBU*/ wire JYBU_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
+  /*_p15.CEXE*/ wire CEXE_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
+  /*_p15.BUWE*/ wire BUWE_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
+  /*#p09.AFAT*/ wire AFAT_APU_RSTn() const { return not1(KEBA_APU_RSTp()); } // ch2
+  /*#p11.CEPO*/ wire CEPO_APU_RSTn() const { return not1(KEBA_APU_RSTp()); } // ch1
+  /*#p09.AGUR*/ wire AGUR_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
+  /*#p11.CAMY*/ wire CAMY_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
+
+  //----------
+
+  /*_p10.DYTE*/ wire DYTE_A00n() const { return not1(BUS_CPU_A00p.out_new()); }
+  /*_p10.AFOB*/ wire AFOB_A01n() const { return not1(BUS_CPU_A01p.out_new()); }
+  /*_p10.ABUB*/ wire ABUB_A02n() const { return not1(BUS_CPU_A02p.out_new()); }
+  /*_p10.ACOL*/ wire ACOL_A03n() const { return not1(BUS_CPU_A03p.out_new()); }
+  /*#p10.ATUP*/ wire ATUP_A04n() const { return not1(BUS_CPU_A04p.out_new()); }
+  /*#p10.BOXY*/ wire BOXY_A05n() const { return not1(BUS_CPU_A05p.out_new()); }
+
+  /*_p10.DOSO*/ wire DOSO_A00p() const { return not1(DYTE_A00n()); }
+  /*_p10.DUPA*/ wire DUPA_A01p() const { return not1(AFOB_A01n()); }
+  /*_p10.DENO*/ wire DENO_A02p() const { return not1(ABUB_A02n()); }
+  /*_p10.DUCE*/ wire DUCE_A03p() const { return not1(ACOL_A03n()); }
+
+  /*_p10.ATEG*/ wire ATEG_ADDR_XX1Xn() const { return or4(BUS_CPU_A07p.out_new(), BUS_CPU_A06p.out_new(), BUS_CPU_A05p.out_new(), ATUP_A04n()); }
+  /*_p10.AWET*/ wire AWET_ADDR_XX2Xn() const { return or4(BUS_CPU_A07p.out_new(), BUS_CPU_A06p.out_new(), BOXY_A05n(), BUS_CPU_A04p.out_new()); }
+
+  /*_p10.BUNO*/ wire BUNO_ADDR_FF1Xp() const { return nor2(BAKO_ADDR_FFXXn(), ATEG_ADDR_XX1Xn()); }
+  /*_p10.BANU*/ wire BANU_ADDR_FF1Xn() const { return not1(BUNO_ADDR_FF1Xp()); }
+
+  /*_p07.BAKO*/ wire BAKO_ADDR_FFXXn() const { return not1(SYKE_ADDR_FFXX); }
+  /*_p10.BEZY*/ wire BEZY_ADDR_FF2Xn() const { return  or2(AWET_ADDR_XX2Xn(), BAKO_ADDR_FFXXn()); }
+  /*_p10.CONA*/ wire CONA_ADDR_FF2Xp() const { return not1(BEZY_ADDR_FF2Xn()); }
+
+  //----------
+
+  /*#p10.DUNO*/ wire DUNO_ADDR_0001n() const { return nand4(ACOL_A03n(), ABUB_A02n(), AFOB_A01n(), DOSO_A00p()); }
+  /*#p10.DAMY*/ wire DAMY_ADDR_0010n() const { return nand4(ACOL_A03n(), ABUB_A02n(), DUPA_A01p(), DYTE_A00n()); }
+  /*#p10.ETUF*/ wire ETUF_ADDR_0011n() const { return nand4(ACOL_A03n(), ABUB_A02n(), DUPA_A01p(), DOSO_A00p()); }
+  /*_p10.DATU*/ wire DATU_ADDR_0100n() const { return nand4(ACOL_A03n(), DENO_A02p(), AFOB_A01n(), DYTE_A00n()); }
+  /*#p10.ESOT*/ wire ESOT_ADDR_0100n() const { return nand4(ACOL_A03n(), DENO_A02p(), AFOB_A01n(), DYTE_A00n()); }
+  /*_p10.DURA*/ wire DURA_ADDR_0101n() const { return nand4(ACOL_A03n(), DENO_A02p(), AFOB_A01n(), DOSO_A00p()); }
+  /*_p10.EKAG*/ wire EKAG_ADDR_0110n() const { return nand4(ACOL_A03n(), DENO_A02p(), DUPA_A01p(), DYTE_A00n()); }
+
+  /*#p10.CAXE*/ wire CAXE_ADDR_FF11p() const { return nor2(BANU_ADDR_FF1Xn(), DUNO_ADDR_0001n()); }
+  /*#p10.EDAF*/ wire EDAF_ADDR_FF12p() const { return nor2(BANU_ADDR_FF1Xn(), DAMY_ADDR_0010n()); }
+  /*#p10.DECO*/ wire DECO_ADDR_FF13p() const { return nor2(BANU_ADDR_FF1Xn(), ETUF_ADDR_0011n()); }
+  /*#p10.DUJA*/ wire DUJA_ADDR_FF14p() const { return nor2(BANU_ADDR_FF1Xn(), ESOT_ADDR_0100n()); }
+  /*_p10.CAFY*/ wire CAFY_ADDR_FF24p() const { return nor2(BEZY_ADDR_FF2Xn(), DATU_ADDR_0100n()); }
+  /*_p10.CORA*/ wire CORA_ADDR_FF25p() const { return nor2(BEZY_ADDR_FF2Xn(), DURA_ADDR_0101n()); }
+
+  
+
+  /*#p11.HAXE*/ wire HAXE_ADDR_FF12n() const { return not1(EDAF_ADDR_FF12p()); }
+  /*#p11.GAGO*/ wire GAGO_ADDR_FF12n() const { return not1(EDAF_ADDR_FF12p()); }
+  /*#p11.CACA*/ wire CACA_ADDR_FF13n() const { return not1(DECO_ADDR_FF13p()); }
+  /*_p09.BYMA*/ wire BYMA_ADDR_FF24n() const { return not1(CAFY_ADDR_FF24p()); }
+  /*_p09.GEPA*/ wire GEPA_ADDR_FF25n() const { return not1(CORA_ADDR_FF25p()); }
+
+
+
+
+
+
+
   SpuControl  spu;
   SpuChannel1 ch1;
   SpuChannel2 ch2;
@@ -4970,8 +5085,6 @@ struct GBSound {
   /*_BUS_WAVE_D05p*/ Bus BUS_WAVE_D05p;
   /*_BUS_WAVE_D06p*/ Bus BUS_WAVE_D06p;
   /*_BUS_WAVE_D07p*/ Bus BUS_WAVE_D07p;
-
-  void tick();
 };
 #pragma once
 #include "regs.h"

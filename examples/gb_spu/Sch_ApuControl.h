@@ -78,6 +78,25 @@ struct SpuControl {
 //==============================================================================
 
 struct SpuChannel1 {
+
+  /*#p13.HOCA*/ wire HOCA_CH1_AMP_ENn() const {
+    return nor5(JAFY_NR12_ENV_DIR.qn_new(),
+                JATY_NR12_VOL0.qn_new(),
+                JAXO_NR12_VOL1.qn_new(),
+                JENA_NR12_VOL2.qn_new(),
+                JOPU_NR12_VOL3.qn_new());
+  }
+
+
+  /*#p13.BUGE*/ wire BUGE_SWEEP_ENn() const {
+    return nand3(ANAZ_NR10_SWEEP_SHIFT2.qp_new(),
+                 ARAX_NR10_SWEEP_SHIFT1.qp_new(),
+                 BANY_NR10_SWEEP_SHIFT0.qp_new());
+  }
+
+  /*#p13.ADAD*/ wire ADAD_SHIFT_DONE() const { return not1(BYTE_SHIFT_DONE.qn_new()); }
+
+
   /*#p11.BANY*/ DFF9 BANY_NR10_SWEEP_SHIFT0;
   /*#p11.ARAX*/ DFF9 ARAX_NR10_SWEEP_SHIFT1;
   /*#p11.ANAZ*/ DFF9 ANAZ_NR10_SWEEP_SHIFT2;
@@ -256,6 +275,19 @@ struct SpuChannel1 {
 //==============================================================================
 
 struct SpuChannel2 {
+
+  /*#p15.ETUK*/ wire ETUK_CLK() const { return not1(GYKO_CLK.qp_new()); }
+  /*#p15.DAVU*/ wire DAVU_CLK() const { return not1(ETUK_CLK()); }
+  /*#p15.CULE*/ wire CULE_CLK() const { return not1(DAVU_CLK()); }
+
+  /*#p15.FUTE*/ wire FUTE_CH2_AMP_ENn() const {
+    return nor5(FORE_NR22_ADD.qn_new(),
+                GATA_NR22_V0.qn_new(),
+                GUFE_NR22_V1.qn_new(),
+                GURA_NR22_V2.qn_new(),
+                GAGE_NR22_V3.qn_new());
+  }
+
   /*_p15.ERYC*/ DFF20 ERYC_NR21_L0;
   /*_p15.CERA*/ DFF20 CERA_NR21_L1;
   /*_p15.CONU*/ DFF20 CONU_NR21_L2;
@@ -318,8 +350,11 @@ struct SpuChannel2 {
   DFF17 ELOX_CH2_TRIGp;
   DFF17 CAZA_CH2_TRIGp;
   DFF9 EMER_NR24_LENENp;
-  DFF17 DOPE_CH2_TRIG;
-  DFF9 ETAP_NR24_TRIG;
+  DFF17 DOPE_CH2_TRIGp;
+
+  NorLatch DALA_CH2_TRIGp;
+
+  DFF9 ETAP_NR24_TRIGp;
   DFF17 DORY_CH2_TRIGp;
   DFF17 GYKO_CLK;
   /*#p15.CANO*/ DFF17 CANO_00;
@@ -624,6 +659,8 @@ struct GBSound {
   void tick_nr11();
   void tick_nr12();
   void tick_nr21();
+  void tick_nr22();
+  void tick_nr23();
   void tick_nr50();
   void tick_nr51();
   void tick_nr52();
@@ -635,9 +672,22 @@ struct GBSound {
   /*#p19.BYLO*/ wire BYLO_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
   /*_p09.GAXO*/ wire GAXO_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
   /*#p20.COSA*/ wire COSA_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
+  /*_p14.FOGE*/ wire FOGE_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
+  /*_p16.DOVO*/ wire DOVO_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
+  /*#p11.CEGE*/ wire CEGE_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
+  /*#pXX.GADO*/ wire GADO_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
 
   /*_p10.BAFU*/ wire BAFU_CPU_WRn() const { return not1(TAPU_CPU_WRp); }
   /*_p10.BOGY*/ wire BOGY_CPU_WRp() const { return not1(BAFU_CPU_WRn()); }
+
+  //----------
+  // Debug control signals
+
+  /*_p16.ANUJ*/ wire ANUJ_CPU_WR_WEIRD()  const { return and2(SIG_IN_CPU_DBUS_FREE, BOGY_CPU_WRp()); }
+  /*_p09.EDEK*/ wire EDEK_NR52_DBG_APUp() const { return not1(spu.FERO_NR52_DBG_APUn.qn_new()); }
+  /*_p14.FAPE*/ wire FAPE_CPU_RDp_DBGp()  const { return and2(FOGE_CPU_RDp(), EDEK_NR52_DBG_APUp()); }
+  /*_p16.EGAD*/ wire EGAD_CPU_RDn_DBGn()  const { return nand2(DOVO_CPU_RDp(), EDEK_NR52_DBG_APUp()); }
+  /*#p11.DAXA*/ wire DAXA_CPU_RDn_DBGn()  const { return nand2(CEGE_CPU_RDp(), EDEK_NR52_DBG_APUp()); }
 
   //----------
   // SPU clock tree
@@ -677,7 +727,8 @@ struct GBSound {
   /*#p11.CAMY*/ wire CAMY_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
   /*#p11.CEPO*/ wire CEPO_APU_RSTn() const { return not1(KEBA_APU_RSTp()); } // ch1
   /*#p19.CABE*/ wire CABE_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-
+  /*_p14.KYPU*/ wire KYPU_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
+  /*_p14.FAZO*/ wire FAZO_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
 
   //----------
 

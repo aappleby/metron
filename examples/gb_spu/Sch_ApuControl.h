@@ -100,7 +100,7 @@ struct SpuChannel1 {
   /*#p11.BANY*/ DFF9 BANY_NR10_SWEEP_SHIFT0;
   /*#p11.ARAX*/ DFF9 ARAX_NR10_SWEEP_SHIFT1;
   /*#p11.ANAZ*/ DFF9 ANAZ_NR10_SWEEP_SHIFT2;
-  /*#p11.AVAF*/ DFF9 AVAF_NR10_SWEEP_NEGATE;
+  /*#p11.AVAF*/ DFF9 AVAF_NR10_SWEEP_DIR_p;
   /*#p11.ADEK*/ DFF9 ADEK_NR10_SWEEP_PERIOD0p;
   /*#p11.BANA*/ DFF9 BANA_NR10_SWEEP_PERIOD1p;
   /*#p11.BOTU*/ DFF9 BOTU_NR10_SWEEP_PERIOD2p;
@@ -656,11 +656,29 @@ struct GBSound {
   wire SIG_IN_CPU_DBUS_FREE = 0;
 
   void tick();
+
+  void tick_nr10();
   void tick_nr11();
   void tick_nr12();
+  void tick_nr13();
+  void tick_nr14();
+
   void tick_nr21();
   void tick_nr22();
   void tick_nr23();
+  void tick_nr24();
+
+  void tick_nr30();
+  void tick_nr31();
+  void tick_nr32();
+  void tick_nr33();
+  void tick_nr34();
+
+  void tick_nr41();
+  void tick_nr42();
+  void tick_nr43();
+  void tick_nr44();
+
   void tick_nr50();
   void tick_nr51();
   void tick_nr52();
@@ -729,6 +747,7 @@ struct GBSound {
   /*#p19.CABE*/ wire CABE_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
   /*_p14.KYPU*/ wire KYPU_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
   /*_p14.FAZO*/ wire FAZO_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
+  /*_p16.GOVE*/ wire GOVE_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
 
   //----------
 
@@ -764,19 +783,25 @@ struct GBSound {
   /*_p10.DATU*/ wire DATU_ADDR_0100n() const { return nand4(ACOL_A03n(), DENO_A02p(), AFOB_A01n(), DYTE_A00n()); }
   /*#p10.ESOT*/ wire ESOT_ADDR_0100n() const { return nand4(ACOL_A03n(), DENO_A02p(), AFOB_A01n(), DYTE_A00n()); }
   /*_p10.DURA*/ wire DURA_ADDR_0101n() const { return nand4(ACOL_A03n(), DENO_A02p(), AFOB_A01n(), DOSO_A00p()); }
+  /*_p10.DAZA*/ wire DAZA_ADDR_0110n() const { return nand4(ACOL_A03n(), DENO_A02p(), DUPA_A01p(), DYTE_A00n()); }
   /*_p10.EKAG*/ wire EKAG_ADDR_0110n() const { return nand4(ACOL_A03n(), DENO_A02p(), DUPA_A01p(), DYTE_A00n()); }
   /*_p10.DUVU*/ wire DUVU_ADDR_0111n() const { return nand4(ACOL_A03n(), DENO_A02p(), DUPA_A01p(), DOSO_A00p()); }
   /*_p10.DAFY*/ wire DAFY_ADDR_1000n() const { return nand4(DUCE_A03p(), ABUB_A02n(), AFOB_A01n(), DYTE_A00n()); }
   /*_p10.DEJY*/ wire DEJY_ADDR_1001n() const { return nand4(DUCE_A03p(), ABUB_A02n(), AFOB_A01n(), DOSO_A00p()); }
+  /*_p10.EXAT*/ wire EXAT_ADDR_1010n() const { return nand4(DUCE_A03p(), ABUB_A02n(), DUPA_A01p(), DYTE_A00n()); }
 
   /*#p10.DYVA*/ wire DYVA_ADDR_FF10p() const { return nor2(BANU_ADDR_FF1Xn(), DUPO_ADDR_0000n()); }
   /*#p10.CAXE*/ wire CAXE_ADDR_FF11p() const { return nor2(BANU_ADDR_FF1Xn(), DUNO_ADDR_0001n()); }
   /*#p10.EDAF*/ wire EDAF_ADDR_FF12p() const { return nor2(BANU_ADDR_FF1Xn(), DAMY_ADDR_0010n()); }
   /*#p10.DECO*/ wire DECO_ADDR_FF13p() const { return nor2(BANU_ADDR_FF1Xn(), ETUF_ADDR_0011n()); }
   /*#p10.DUJA*/ wire DUJA_ADDR_FF14p() const { return nor2(BANU_ADDR_FF1Xn(), ESOT_ADDR_0100n()); }
+
+  /*_p10.COVY*/ wire COVY_ADDR_FF16p() const { return nor2(BANU_ADDR_FF1Xn(), DAZA_ADDR_0110n()); }
   /*_p10.DUTU*/ wire DUTU_ADDR_FF17p() const { return nor2(BANU_ADDR_FF1Xn(), DUVU_ADDR_0111n()); }
   /*_p10.DARA*/ wire DARA_ADDR_FF18p() const { return nor2(BANU_ADDR_FF1Xn(), DAFY_ADDR_1000n()); }
   /*_p10.DOZA*/ wire DOZA_ADDR_FF19p() const { return nor2(BANU_ADDR_FF1Xn(), DEJY_ADDR_1001n()); }
+  /*_p10.EMOR*/ wire EMOR_ADDR_FF1Ap() const { return nor2(BANU_ADDR_FF1Xn(), EXAT_ADDR_1010n()); }
+
   /*#p10.CUGE*/ wire CUGE_ADDR_FF23p() const { return nor2(DUFE_ADDR_0011n(), BEZY_ADDR_FF2Xn()); }
   /*_p10.CAFY*/ wire CAFY_ADDR_FF24p() const { return nor2(BEZY_ADDR_FF2Xn(), DATU_ADDR_0100n()); }
   /*_p10.CORA*/ wire CORA_ADDR_FF25p() const { return nor2(BEZY_ADDR_FF2Xn(), DURA_ADDR_0101n()); }
@@ -788,6 +813,7 @@ struct GBSound {
   /*#p11.CURE*/ wire CURE_ADDR_FF14n() const { return not1(DUJA_ADDR_FF14p()); }
   /*_p09.BYMA*/ wire BYMA_ADDR_FF24n() const { return not1(CAFY_ADDR_FF24p()); }
   /*_p09.GEPA*/ wire GEPA_ADDR_FF25n() const { return not1(CORA_ADDR_FF25p()); }
+
 
 
 

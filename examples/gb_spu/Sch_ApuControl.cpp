@@ -5,6 +5,11 @@
 
 //-----------------------------------------------------------------------------
 
+void GBSound::tick_nr10() {
+}
+
+//-----------------------------------------------------------------------------
+
 void GBSound::tick_nr11() {
 
   /*#p11.BUWA*/ wire BUWA_CPU_RDp = not1(AGUZ_CPU_RDn());
@@ -85,17 +90,55 @@ void GBSound::tick_nr12() {
 
 //-----------------------------------------------------------------------------
 
+void GBSound::tick_nr13() {
+}
+
+//-----------------------------------------------------------------------------
+
+void GBSound::tick_nr14() {
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//-----------------------------------------------------------------------------
+
 void GBSound::tick_nr21() {
   /*_p15.DEME*/ wire DEME = nor3(ch2.CYRE_CH2_LEN_DONEp.qp_new(), BUFY_CLK_256n(), ch2.EMER_NR24_LENENp.qp_new()); // why was this or2?
   /*_p15.DYRO*/ wire DYRO_CH2_LEN_CLK = not1(DEME);
 
-  /*_p10.DAZA*/ wire DAZA_ADDR_0110n = nand4(ACOL_A03n(), DENO_A02p(), DUPA_A01p(), DYTE_A00n());
-  /*_p10.COVY*/ wire COVY_ADDR_FF16p = nor2(BANU_ADDR_FF1Xn(), DAZA_ADDR_0110n);
-  /*_p14.AGYN*/ wire AGYN_FF16_WRn = nand2(BOGY_CPU_WRp(), COVY_ADDR_FF16p);
+  /*_p14.AGYN*/ wire AGYN_FF16_WRn = nand2(BOGY_CPU_WRp(), COVY_ADDR_FF16p());
   /*_p15.BYMO*/ wire BYMO_FF16_WRp = not1(AGYN_FF16_WRn);
   /*_p15.AGET*/ wire AGET_FF16_WRp = not1(AGYN_FF16_WRn);
   /*_p14.ASYP*/ wire ASYP_FF16_WRp = not1(AGYN_FF16_WRn);
-  /*_p14.BACU*/ wire BACU_FF16_WRp = and2(COVY_ADDR_FF16p, BOGY_CPU_WRp());
+  /*_p14.BACU*/ wire BACU_FF16_WRp = and2(COVY_ADDR_FF16p(), BOGY_CPU_WRp());
   /*_p14.BUDU*/ wire BUDU_FF16_WRn = not1(BACU_FF16_WRp);
 
   /*_p15.ERYC*/ ch2.ERYC_NR21_L0.dff20(DYRO_CH2_LEN_CLK,          BYMO_FF16_WRp, BUS_CPU_D00p.out_old());
@@ -115,7 +158,7 @@ void GBSound::tick_nr21() {
   /*_p15.CYRE*/ ch2.CYRE_CH2_LEN_DONEp.dff17(ch2.AKYD_NR21_L5.qn_new(), BENY_RSTn, ch2.CYRE_CH2_LEN_DONEp.qn_old());
 
   /*_p14.BYGO*/ wire BYGO_CPU_RDp = not1(AGUZ_CPU_RDn());
-  /*_p14.CORO*/ wire CORO_NR21_RDn = nand2(COVY_ADDR_FF16p, BYGO_CPU_RDp);
+  /*_p14.CORO*/ wire CORO_NR21_RDn = nand2(COVY_ADDR_FF16p(), BYGO_CPU_RDp);
 
   /*_p14.CECY*/ triwire CECY_D6 = tri6_nn(CORO_NR21_RDn, ch2.BERA_NR21_D6.qp_new()); // polarity?
   /*_p14.CEKA*/ triwire CEKA_D7 = tri6_nn(CORO_NR21_RDn, ch2.BAMY_NR21_D7.qp_new());
@@ -207,6 +250,99 @@ void GBSound::tick_nr23() {
   BUS_CPU_D06p.tri_bus(GADU_D6);
   BUS_CPU_D07p.tri_bus(GAZO_D7);
 }
+
+//-----------------------------------------------------------------------------
+
+void GBSound::tick_nr24() {
+}
+
+
+
+
+
+
+
+
+//-----------------------------------------------------------------------------
+
+void GBSound::tick_nr30() {
+}
+
+//-----------------------------------------------------------------------------
+
+void GBSound::tick_nr31() {
+}
+
+//-----------------------------------------------------------------------------
+
+void GBSound::tick_nr32() {
+}
+
+//-----------------------------------------------------------------------------
+
+void GBSound::tick_nr33() {
+}
+
+//-----------------------------------------------------------------------------
+
+void GBSound::tick_nr34() {
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//-----------------------------------------------------------------------------
+
+void GBSound::tick_nr41() {
+}
+
+//-----------------------------------------------------------------------------
+
+void GBSound::tick_nr42() {
+}
+
+//-----------------------------------------------------------------------------
+
+void GBSound::tick_nr43() {
+}
+
+//-----------------------------------------------------------------------------
+
+void GBSound::tick_nr44() {
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //-----------------------------------------------------------------------------
 
@@ -717,15 +853,11 @@ void GBSound::tick() {
   // FF1A NR30 - Channel 3 Sound on/off (R/W)
 
   {
-    /*_p10.EXAT*/ wire EXAT_ADDR_1010n = nand4(DUCE_A03p(), ABUB_A02n(), DUPA_A01p(), DYTE_A00n());
-    /*_p10.EMOR*/ wire EMOR_ADDR_FF1Ap = nor2(BANU_ADDR_FF1Xn(), EXAT_ADDR_1010n);
-
-    /*_p16.GOVE*/ wire GOVE_APU_RESETn = not1(KEBA_APU_RSTp());
-    /*_p16.GEJO*/ wire GEJO_FF1A_WRp = and2(BOGY_CPU_WRp(), EMOR_ADDR_FF1Ap);
+    /*_p16.GEJO*/ wire GEJO_FF1A_WRp = and2(BOGY_CPU_WRp(), EMOR_ADDR_FF1Ap());
     /*_p16.GUCY*/ wire GUCY_FF1A_WRn = not1(GEJO_FF1A_WRp);
-    /*_p16.GUXE*/ ch3.GUXE_CH3_AMP_ENn.dff9(GUCY_FF1A_WRn, GOVE_APU_RESETn, BUS_CPU_D00p.out_old());
+    /*_p16.GUXE*/ ch3.GUXE_CH3_AMP_ENn.dff9(GUCY_FF1A_WRn, GOVE_APU_RSTn(), BUS_CPU_D00p.out_old());
 
-    /*_p16.FASY*/ wire FASY_FF1A_RD = nand2(EMOR_ADDR_FF1Ap, GAXO_CPU_RDp());
+    /*_p16.FASY*/ wire FASY_FF1A_RD = nand2(EMOR_ADDR_FF1Ap(), GAXO_CPU_RDp());
     /*_p16.FEVO*/ wire FEVO_CH3_AMP_ENa  = not1(ch3.GUXE_CH3_AMP_ENn.qn_new());
 
   #if 0
@@ -1669,7 +1801,7 @@ void GBSound::tick() {
     /*#p11.BANY*/ ch1.BANY_NR10_SWEEP_SHIFT0  .dff9(CENU_NR10_WRn, AGUR_APU_RSTn(), BUS_CPU_D00p.qp_new());
     /*#p11.ARAX*/ ch1.ARAX_NR10_SWEEP_SHIFT1  .dff9(CENU_NR10_WRn, AGUR_APU_RSTn(), BUS_CPU_D01p.qp_new());
     /*#p11.ANAZ*/ ch1.ANAZ_NR10_SWEEP_SHIFT2  .dff9(CENU_NR10_WRn, AGUR_APU_RSTn(), BUS_CPU_D02p.qp_new());
-    /*#p11.AVAF*/ ch1.AVAF_NR10_SWEEP_NEGATE  .dff9(CENU_NR10_WRn, AGUR_APU_RSTn(), BUS_CPU_D03p.qp_new());
+    /*#p11.AVAF*/ ch1.AVAF_NR10_SWEEP_DIR_p   .dff9(CENU_NR10_WRn, AGUR_APU_RSTn(), BUS_CPU_D03p.qp_new());
     /*#p11.ADEK*/ ch1.ADEK_NR10_SWEEP_PERIOD0p.dff9(CENU_NR10_WRn, AGUR_APU_RSTn(), BUS_CPU_D04p.qp_new());
     /*#p11.BANA*/ ch1.BANA_NR10_SWEEP_PERIOD1p.dff9(CENU_NR10_WRn, AGUR_APU_RSTn(), BUS_CPU_D05p.qp_new());
     /*#p11.BOTU*/ ch1.BOTU_NR10_SWEEP_PERIOD2p.dff9(CENU_NR10_WRn, AGUR_APU_RSTn(), BUS_CPU_D06p.qp_new());
@@ -1681,21 +1813,15 @@ void GBSound::tick() {
     /*#p11.AMYD*/ triwire AMYD_NR10_SWEEP_SHIFT0  = tri6_nn(ASOP_NR10_RDn, ch1.BANY_NR10_SWEEP_SHIFT0.qp_new());
     /*#p11.ATAX*/ triwire ATAX_NR10_SWEEP_SHIFT1  = tri6_nn(ASOP_NR10_RDn, ch1.ARAX_NR10_SWEEP_SHIFT1.qp_new());
     /*#p11.AZYP*/ triwire AZYP_NR10_SWEEP_SHIFT2  = tri6_nn(ASOP_NR10_RDn, ch1.ANAZ_NR10_SWEEP_SHIFT2.qp_new());
-    /*#p11.AFOX*/ triwire AFOX_NR10_SWEEP_NEGATE  = tri6_nn(ASOP_NR10_RDn, ch1.AVAF_NR10_SWEEP_NEGATE.qp_new());
+    /*#p11.AFOX*/ triwire AFOX_NR10_SWEEP_NEGATE  = tri6_nn(ASOP_NR10_RDn, ch1.AVAF_NR10_SWEEP_DIR_p.qp_new());
     /*#p11.AVEK*/ triwire AVEK_NR10_SWEEP_PERIOD0 = tri6_nn(ASOP_NR10_RDn, ch1.ADEK_NR10_SWEEP_PERIOD0p.qp_new());
     /*#p11.AKUX*/ triwire AKUX_NR10_SWEEP_PERIOD1 = tri6_nn(ASOP_NR10_RDn, ch1.BANA_NR10_SWEEP_PERIOD1p.qp_new());
     /*#p11.AWOS*/ triwire AWOS_NR10_SWEEP_PERIOD2 = tri6_nn(ASOP_NR10_RDn, ch1.BOTU_NR10_SWEEP_PERIOD2p.qp_new());
   }
 
-  /*#p12.ARYL*/ wire ARYL_NR10_SWEEP_DIRn = not1(ch1.AVAF_NR10_SWEEP_NEGATE.qp_new());
+  /*#p12.ARYL*/ wire ARYL_NR10_SWEEP_DIRn = not1(ch1.AVAF_NR10_SWEEP_DIR_p.qp_new());
 
   tick_nr11();
-
-  //----------
-  // FF12 NR12
-
-  {
-  }
 
   //----------
   // Frequency can be read from FF13/FF14 in debug mode

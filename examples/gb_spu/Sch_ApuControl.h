@@ -659,18 +659,21 @@ struct GBSound {
   /*_p09.KEPY*/ wire KEPY_APU_RSTn() const { return not1(JYRO_APU_RSTp()); }
   /*_p09.KUBY*/ wire KUBY_APU_RSTn() const { return not1(JYRO_APU_RSTp()); }
   /*_p09.KEBA*/ wire KEBA_APU_RSTp() const { return not1(KUBY_APU_RSTn()); }
-  /*_p01.BOPO*/ wire BOPO_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
+
+  /*_p01.ATUS*/ wire ATUS_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
   /*_p01.BELA*/ wire BELA_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
+  /*_p01.BOPO*/ wire BOPO_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
   /*_p09.ATYV*/ wire ATYV_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
   /*_p09.KAME*/ wire KAME_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*_p01.ATUS*/ wire ATUS_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
+  /*_p14.HUDE*/ wire HUDE_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
   /*_p14.JYBU*/ wire JYBU_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*_p15.CEXE*/ wire CEXE_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
   /*_p15.BUWE*/ wire BUWE_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
+  /*_p15.CEXE*/ wire CEXE_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
+  /*_p15.CYWU*/ wire CYWU_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
   /*#p09.AFAT*/ wire AFAT_APU_RSTn() const { return not1(KEBA_APU_RSTp()); } // ch2
-  /*#p11.CEPO*/ wire CEPO_APU_RSTn() const { return not1(KEBA_APU_RSTp()); } // ch1
   /*#p09.AGUR*/ wire AGUR_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
   /*#p11.CAMY*/ wire CAMY_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
+  /*#p11.CEPO*/ wire CEPO_APU_RSTn() const { return not1(KEBA_APU_RSTp()); } // ch1
 
   //----------
 
@@ -705,15 +708,19 @@ struct GBSound {
   /*#p10.ESOT*/ wire ESOT_ADDR_0100n() const { return nand4(ACOL_A03n(), DENO_A02p(), AFOB_A01n(), DYTE_A00n()); }
   /*_p10.DURA*/ wire DURA_ADDR_0101n() const { return nand4(ACOL_A03n(), DENO_A02p(), AFOB_A01n(), DOSO_A00p()); }
   /*_p10.EKAG*/ wire EKAG_ADDR_0110n() const { return nand4(ACOL_A03n(), DENO_A02p(), DUPA_A01p(), DYTE_A00n()); }
+  /*_p10.DUVU*/ wire DUVU_ADDR_0111n() const { return nand4(ACOL_A03n(), DENO_A02p(), DUPA_A01p(), DOSO_A00p()); }
+  /*_p10.DAFY*/ wire DAFY_ADDR_1000n() const { return nand4(DUCE_A03p(), ABUB_A02n(), AFOB_A01n(), DYTE_A00n()); }
+  /*_p10.DEJY*/ wire DEJY_ADDR_1001n() const { return nand4(DUCE_A03p(), ABUB_A02n(), AFOB_A01n(), DOSO_A00p()); }
 
   /*#p10.CAXE*/ wire CAXE_ADDR_FF11p() const { return nor2(BANU_ADDR_FF1Xn(), DUNO_ADDR_0001n()); }
   /*#p10.EDAF*/ wire EDAF_ADDR_FF12p() const { return nor2(BANU_ADDR_FF1Xn(), DAMY_ADDR_0010n()); }
   /*#p10.DECO*/ wire DECO_ADDR_FF13p() const { return nor2(BANU_ADDR_FF1Xn(), ETUF_ADDR_0011n()); }
   /*#p10.DUJA*/ wire DUJA_ADDR_FF14p() const { return nor2(BANU_ADDR_FF1Xn(), ESOT_ADDR_0100n()); }
+  /*_p10.DUTU*/ wire DUTU_ADDR_FF17p() const { return nor2(BANU_ADDR_FF1Xn(), DUVU_ADDR_0111n()); }
+  /*_p10.DARA*/ wire DARA_ADDR_FF18p() const { return nor2(BANU_ADDR_FF1Xn(), DAFY_ADDR_1000n()); }
+  /*_p10.DOZA*/ wire DOZA_ADDR_FF19p() const { return nor2(BANU_ADDR_FF1Xn(), DEJY_ADDR_1001n()); }
   /*_p10.CAFY*/ wire CAFY_ADDR_FF24p() const { return nor2(BEZY_ADDR_FF2Xn(), DATU_ADDR_0100n()); }
   /*_p10.CORA*/ wire CORA_ADDR_FF25p() const { return nor2(BEZY_ADDR_FF2Xn(), DURA_ADDR_0101n()); }
-
-  
 
   /*#p11.HAXE*/ wire HAXE_ADDR_FF12n() const { return not1(EDAF_ADDR_FF12p()); }
   /*#p11.GAGO*/ wire GAGO_ADDR_FF12n() const { return not1(EDAF_ADDR_FF12p()); }
@@ -721,6 +728,13 @@ struct GBSound {
   /*#p11.CURE*/ wire CURE_ADDR_FF14n() const { return not1(DUJA_ADDR_FF14p()); }
   /*_p09.BYMA*/ wire BYMA_ADDR_FF24n() const { return not1(CAFY_ADDR_FF24p()); }
   /*_p09.GEPA*/ wire GEPA_ADDR_FF25n() const { return not1(CORA_ADDR_FF25p()); }
+
+
+
+
+
+
+
 
   /*#p01.HAMA*/ wire HAMA_CLK_512K() const { return not1(spu.JESO_CLK_512K.qp_new()); }
   /*_p01.BURE*/ wire BURE_CLK_512() const { return not1(spu.BARA_CLK_512.qp_new()); }

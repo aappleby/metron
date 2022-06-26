@@ -319,19 +319,15 @@ void GBSound::tick() {
   //----------
   // SPU clock dividers
 
-
   /*_p01.CERY*/ spu.CERY_2M.dff17(CYBO_AxCxExGx(),      BELA_APU_RSTn(), spu.CERY_2M.qn_old());
   /*_p01.ATYK*/ spu.ATYK_2M.dff17(ARYF_AxCxExGx(),      BOPO_APU_RSTn(), spu.ATYK_2M.qn_old());
   /*_p09.AJER*/ spu.AJER_2M.dff17(APUV_AxCxExGx(),      ATYV_APU_RSTn(), spu.AJER_2M.qn_old());
   /*_p01.AVOK*/ spu.AVOK_1M.dff17(spu.ATYK_2M.qn_new(), BOPO_APU_RSTn(), spu.AVOK_1M.qn_old());
 
-  /*#p01.BATA*/ wire BATA_CLK_2M = not1(spu.AJER_2M.qp_new());
-  /*#p09.CALO*/ ch1.CALO_CLK_1M.dff17(BATA_CLK_2M, AGUR_APU_RSTn(), ch1.CALO_CLK_1M.qn_new());
+  /*#p09.CALO*/ ch1.CALO_CLK_1M.dff17(BATA_CLK_2M(), AGUR_APU_RSTn(), ch1.CALO_CLK_1M.qn_new());
   /*#p09.DYFA*/ wire DYFA_CLK_1M = not1(ch1.CALO_CLK_1M.qn_new()); // ch1
 
-  /*_p01.BAVU*/ wire BAVU_1M = not1(spu.AVOK_1M.qp_new());
-
-  /*_p01.JESO*/ spu.JESO_CLK_512K.dff17(BAVU_1M, KAME_APU_RSTn(), spu.JESO_CLK_512K.qn_old());
+  /*_p01.JESO*/ spu.JESO_CLK_512K.dff17(BAVU_1M(), KAME_APU_RSTn(), spu.JESO_CLK_512K.qn_old());
 
   /*_p15.ATEP*/ spu.ATEP_2MHZ.dff17(AZEG(), BUWE_APU_RSTn(), spu.ATEP_2MHZ.qn_old());
   /*#p15.BUFO*/   wire BUFO = not1(spu.ATEP_2MHZ.qp_new());
@@ -1340,11 +1336,8 @@ void GBSound::tick() {
 
   {
     /*#p19.BARE*/ wire BARE_FF23_RDn = nand2(CUGE_ADDR_FF23p(), BYLO_CPU_RDp());
-
-    /*#p19.CABE*/ wire CABE_RSTn = not1(KEBA_APU_RSTp());
-
     /*#p19.DULU*/ wire DULU_FF23_WRn = nand2(ANUJ_CPU_WR_WEIRD, CUGE_ADDR_FF23p());
-    /*#p19.CUNY*/ ch4.CUNY_NR44_LEN_ENp.dff9(DULU_FF23_WRn, CABE_RSTn, BUS_CPU_D06p.qp_new());
+    /*#p19.CUNY*/ ch4.CUNY_NR44_LEN_ENp.dff9(DULU_FF23_WRn, CABE_APU_RSTn(), BUS_CPU_D06p.qp_new());
 
     /*#p19.FOXE*/ wire FOXE_FF23_WRn = nand2(BOGY_CPU_WRp(), CUGE_ADDR_FF23p());
     /*#p20.GUZY*/ wire GUZY_NR44_TRIG_RST = nor2(KEBA_APU_RSTp(), ch4.GYSU_CH4_TRIG.qp_new());
@@ -1355,8 +1348,7 @@ void GBSound::tick() {
     //----------
     // Debug
 
-    /*#p20.COSA*/ wire COSA_CPU_RDp = not1(AGUZ_CPU_RDn());
-    /*_p20.COMO*/ wire COMO_DBG = and2(DYRY_DBG, COSA_CPU_RDp);
+    /*_p20.COMO*/ wire COMO_DBG = and2(DYRY_DBG, COSA_CPU_RDp());
     /*_p20.BAGU*/ wire BAGU_DBG = nand2(CUGE_ADDR_FF23p(), COMO_DBG);
     ///*_p20.BEFA*/ wire BEFA_DBG = not1(CARY);
 
@@ -1415,7 +1407,7 @@ void GBSound::tick() {
   }
 
   {
-    /*#p20.GYBA*/ wire GYBA_1M = not1(BAVU_1M);
+    /*#p20.GYBA*/ wire GYBA_1M = not1(BAVU_1M());
     /*#p20.GUNY*/ wire GUNY_FREQ_GATE_RSTn = nor2(KEBA_APU_RSTp(), ch4.GONE_CH4_TRIGp.qp_new());
     /*#p20.HYNO*/ wire HYNO_DIV_MAX = or3(ch4.JYFU_DIV2.qp_new(), ch4.JYRE_DIV1.qp_new(), ch4.JYCO_DIV0.qp_new());
     /*#p20.GARY*/ ch4.GARY_FREQ_GATEp.dff17(GYBA_1M, GUNY_FREQ_GATE_RSTn, HYNO_DIV_MAX);
@@ -1423,7 +1415,7 @@ void GBSound::tick() {
 
   {
 
-    /*#p20.CARY*/ wire CARY_FREQ_CLK = and2(BAVU_1M, ch4.GARY_FREQ_GATEp.qp_new());
+    /*#p20.CARY*/ wire CARY_FREQ_CLK = and2(BAVU_1M(), ch4.GARY_FREQ_GATEp.qp_new());
     /*#p20.CEXO*/ ch4.CEXO_FREQ_00.dff17(CARY_FREQ_CLK,             DAPA_RSTn, ch4.CEXO_FREQ_00.qn_old());
     /*_p20.DEKO*/ ch4.DEKO_FREQ_01.dff17(ch4.CEXO_FREQ_00.qn_new(), DAPA_RSTn, ch4.DEKO_FREQ_01.qn_old());
     /*_p20.EZEF*/ ch4.EZEF_FREQ_02.dff17(ch4.DEKO_FREQ_01.qn_new(), DAPA_RSTn, ch4.EZEF_FREQ_02.qn_old());

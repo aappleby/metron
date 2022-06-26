@@ -634,6 +634,7 @@ struct GBSound {
   /*_p09.AGUZ*/ wire AGUZ_CPU_RDn() const { return not1(TEDO_CPU_RDp); }
   /*#p19.BYLO*/ wire BYLO_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
   /*_p09.GAXO*/ wire GAXO_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
+  /*#p20.COSA*/ wire COSA_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
 
   /*_p10.BAFU*/ wire BAFU_CPU_WRn() const { return not1(TAPU_CPU_WRp); }
   /*_p10.BOGY*/ wire BOGY_CPU_WRp() const { return not1(BAFU_CPU_WRn()); }
@@ -675,6 +676,8 @@ struct GBSound {
   /*#p09.AGUR*/ wire AGUR_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
   /*#p11.CAMY*/ wire CAMY_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
   /*#p11.CEPO*/ wire CEPO_APU_RSTn() const { return not1(KEBA_APU_RSTp()); } // ch1
+  /*#p19.CABE*/ wire CABE_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
+
 
   //----------
 
@@ -737,6 +740,8 @@ struct GBSound {
 
 
 
+  /*#p01.BATA*/ wire BATA_CLK_2M() const { return not1(spu.AJER_2M.qp_new()); }
+  /*_p01.BAVU*/ wire BAVU_1M() const { return not1(spu.AVOK_1M.qp_new()); }
 
 
 

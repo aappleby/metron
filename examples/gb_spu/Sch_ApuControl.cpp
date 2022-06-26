@@ -1339,17 +1339,14 @@ void GBSound::tick() {
   /*#p20.DYRY*/ wire DYRY_DBG = and2(ch4.CUNY_NR44_LEN_ENp.qn_new(), EDEK_NR52_DBG_APUn);
 
   {
-    /*#p19.BYLO*/ wire BYLO_CPU_RDp = not1(AGUZ_CPU_RDn());
-    /*#p10.DUFE*/ wire DUFE_ADDR_0011n = nand4(DOSO_A00p(), DUPA_A01p(), ABUB_A02n(), ACOL_A03n());
-    /*#p10.CUGE*/ wire CUGE_FF23p    = nor2(DUFE_ADDR_0011n, BEZY_ADDR_FF2Xn());
-    /*#p19.BARE*/ wire BARE_FF23_RDn = nand2(CUGE_FF23p, BYLO_CPU_RDp);
+    /*#p19.BARE*/ wire BARE_FF23_RDn = nand2(CUGE_ADDR_FF23p(), BYLO_CPU_RDp());
 
     /*#p19.CABE*/ wire CABE_RSTn = not1(KEBA_APU_RSTp());
 
-    /*#p19.DULU*/ wire DULU_FF23_WRn = nand2(ANUJ_CPU_WR_WEIRD, CUGE_FF23p);
+    /*#p19.DULU*/ wire DULU_FF23_WRn = nand2(ANUJ_CPU_WR_WEIRD, CUGE_ADDR_FF23p());
     /*#p19.CUNY*/ ch4.CUNY_NR44_LEN_ENp.dff9(DULU_FF23_WRn, CABE_RSTn, BUS_CPU_D06p.qp_new());
 
-    /*#p19.FOXE*/ wire FOXE_FF23_WRn = nand2(BOGY_CPU_WRp(), CUGE_FF23p);
+    /*#p19.FOXE*/ wire FOXE_FF23_WRn = nand2(BOGY_CPU_WRp(), CUGE_ADDR_FF23p());
     /*#p20.GUZY*/ wire GUZY_NR44_TRIG_RST = nor2(KEBA_APU_RSTp(), ch4.GYSU_CH4_TRIG.qp_new());
     /*#p19.HOGA*/ ch4.HOGA_NR44_TRIG.dff9(FOXE_FF23_WRn, GUZY_NR44_TRIG_RST, BUS_CPU_D07p.qp_old());
 
@@ -1360,7 +1357,7 @@ void GBSound::tick() {
 
     /*#p20.COSA*/ wire COSA_CPU_RDp = not1(AGUZ_CPU_RDn());
     /*_p20.COMO*/ wire COMO_DBG = and2(DYRY_DBG, COSA_CPU_RDp);
-    /*_p20.BAGU*/ wire BAGU_DBG = nand2(CUGE_FF23p, COMO_DBG);
+    /*_p20.BAGU*/ wire BAGU_DBG = nand2(CUGE_ADDR_FF23p(), COMO_DBG);
     ///*_p20.BEFA*/ wire BEFA_DBG = not1(CARY);
 
     /*_p20.ATEL*/ triwire ATEL = tri6_nn(BAGU_DBG, BEZY_ADDR_FF2Xn());
@@ -1679,11 +1676,7 @@ void GBSound::tick() {
   // FF10 NR10
 
   {
-    /*#p10.DUPO*/ wire DUPO_ADDR_0000n = nand4(ACOL_A03n(), ABUB_A02n(), AFOB_A01n(), DYTE_A00n());
-    /*#p10.DYVA*/ wire DYVA_ADDR_FF10p = nor2(BANU_ADDR_FF1Xn(), DUPO_ADDR_0000n);
-    /*#p11.BUZE*/ wire BUZE_ADDR_FF10n = not1(DYVA_ADDR_FF10p);
-
-    /*#p11.CENU*/ wire CENU_NR10_WRp = and2(BOGY_CPU_WRp(), DYVA_ADDR_FF10p);
+    /*#p11.CENU*/ wire CENU_NR10_WRp = and2(BOGY_CPU_WRp(), DYVA_ADDR_FF10p());
     /*#p11.CENU*/ wire CENU_NR10_WRn = not1(CENU_NR10_WRp);
 
     /*#p11.BANY*/ ch1.BANY_NR10_SWEEP_SHIFT0  .dff9(CENU_NR10_WRn, AGUR_APU_RSTn(), BUS_CPU_D00p.qp_new());
@@ -1694,7 +1687,7 @@ void GBSound::tick() {
     /*#p11.BANA*/ ch1.BANA_NR10_SWEEP_PERIOD1p.dff9(CENU_NR10_WRn, AGUR_APU_RSTn(), BUS_CPU_D05p.qp_new());
     /*#p11.BOTU*/ ch1.BOTU_NR10_SWEEP_PERIOD2p.dff9(CENU_NR10_WRn, AGUR_APU_RSTn(), BUS_CPU_D06p.qp_new());
 
-    /*#p11.ATYN*/ wire ATYN_NR10_RDp = nor2(AGUZ_CPU_RDn(), BUZE_ADDR_FF10n);
+    /*#p11.ATYN*/ wire ATYN_NR10_RDp = nor2(AGUZ_CPU_RDn(), BUZE_ADDR_FF10n());
     /*#p11.ASOP*/ wire ASOP_NR10_RDn = not1(ATYN_NR10_RDp);
 
     // Isn't the data polarity here backwards?

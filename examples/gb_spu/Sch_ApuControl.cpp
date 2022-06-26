@@ -922,7 +922,6 @@ void GBSound::tick() {
   /*_p01.AVOK*/ spu.AVOK_1M.dff17(spu.ATYK_2M.qn_new(), BOPO_APU_RSTn(), spu.AVOK_1M.qn_old());
 
   /*#p09.CALO*/ ch1.CALO_CLK_1M.dff17(BATA_CLK_2M(), AGUR_APU_RSTn(), ch1.CALO_CLK_1M.qn_new());
-  /*#p09.DYFA*/ wire DYFA_CLK_1M = not1(ch1.CALO_CLK_1M.qn_new()); // ch1
 
   /*_p01.JESO*/ spu.JESO_CLK_512K.dff17(BAVU_1M(), KAME_APU_RSTn(), spu.JESO_CLK_512K.qn_old());
 
@@ -1090,25 +1089,15 @@ void GBSound::tick() {
   //========================================
   //========================================
 
-
-  //----------
-  // Frequency counter
-
   {
     /*#p16.FURY*/ wire FURY_TRIG_RSTn = nor2(KEBA_APU_RSTp(), ch3.GYTA.qp_new());
     /*#p16.GULO*/ wire GULO_CH3_STOPp = not1(FURY_TRIG_RSTn);
     /*_p16.GOFY*/ ch3.GOFY_CH3_TRIGn.nor_latch(GULO_CH3_STOPp, ch3.FOBA_CH3_TRIGp.qp_new());
 
-    /*#p16.FABO*/ wire FABO_CLK_xxCDxxGH = not1(spu.CERY_2M.qp_new());
-    /*#p16.GARA*/ ch3.GARA.dff17(FABO_CLK_xxCDxxGH,    FURY_TRIG_RSTn, ch3.GOFY_CH3_TRIGn.qn_new());
-    /*#p16.GYTA*/ ch3.GYTA.dff17(FABO_CLK_xxCDxxGH,    GAZE_APU_RSTn(), ch3.GARA.qp_new());
+    /*#p16.GARA*/ ch3.GARA.dff17(FABO_CLK_xxCDxxGH(),    FURY_TRIG_RSTn, ch3.GOFY_CH3_TRIGn.qn_new());
+    /*#p16.GYTA*/ ch3.GYTA.dff17(FABO_CLK_xxCDxxGH(),    GAZE_APU_RSTn(), ch3.GARA.qp_new());
     /*#p16.GYRA*/ ch3.GYRA.dff17(spu.CERY_2M.qp_new(), GAZE_APU_RSTn(), ch3.GYTA.qp_new());
   }
-
-
-  /*#p18.HEMA*/ wire HEMA_WAVE_CLKp = not1(ch3.HUNO_WAVE_CLKn.qp_new());
-  /*#p18.GASE*/ wire GASE_WAVE_CLKn = not1(HEMA_WAVE_CLKp);
-  /*#p18.DERO*/ wire DERO_WAVE_CLKp = not1(GASE_WAVE_CLKn);
 
   {
     /*#p18.HYFO*/ wire HYFO_CLK = not1(ch3.JAPU_FREQ_10.qp_new());
@@ -1124,7 +1113,7 @@ void GBSound::tick() {
   }
 
   {
-    /*#p18.HERA*/ wire HERA_FREQ_RST  = nor2(GASE_WAVE_CLKn, ch3.GARA.qp_new());
+    /*#p18.HERA*/ wire HERA_FREQ_RST  = nor2(ch3.GASE_WAVE_CLKn(), ch3.GARA.qp_new());
 
     /*#p18.HEFO*/ wire HEFO_FREQ_CLKn = nor2(spu.CERY_2M.qp_new(), ch3.GUGU_FREQ_CLK_STOP.qp_new());
     /*_p18.JUTY*/ wire JUTY_FREQ_CLKa = not1(HEFO_FREQ_CLKn);
@@ -1151,13 +1140,13 @@ void GBSound::tick() {
   {
     /*#p18.ETAN*/ wire ETAN_WAVE_RST = or2(ch3.GARA.qp_new(), ch3.FETY_WAVE_LOOP.qp_new());
 
-    /*#p18.EFAR*/ ch3.EFAR_WAVE_IDX0.dff17(DERO_WAVE_CLKp,              ETAN_WAVE_RST, ch3.EFAR_WAVE_IDX0.qn_old());
+    /*#p18.EFAR*/ ch3.EFAR_WAVE_IDX0.dff17(ch3.DERO_WAVE_CLKp(),        ETAN_WAVE_RST, ch3.EFAR_WAVE_IDX0.qn_old());
     /*#p18.ERUS*/ ch3.ERUS_WAVE_IDX1.dff17(ch3.EFAR_WAVE_IDX0.qn_new(), ETAN_WAVE_RST, ch3.ERUS_WAVE_IDX1.qn_old());
     /*#p18.EFUZ*/ ch3.EFUZ_WAVE_IDX2.dff17(ch3.ERUS_WAVE_IDX1.qn_new(), ETAN_WAVE_RST, ch3.EFUZ_WAVE_IDX2.qn_old());
     /*#p18.EXEL*/ ch3.EXEL_WAVE_IDX3.dff17(ch3.EFUZ_WAVE_IDX2.qn_new(), ETAN_WAVE_RST, ch3.EXEL_WAVE_IDX3.qn_old());
     /*#p18.EFAL*/ ch3.EFAL_WAVE_IDX4.dff17(ch3.EXEL_WAVE_IDX3.qn_new(), ETAN_WAVE_RST, ch3.EFAL_WAVE_IDX4.qn_old());
    
-    /*#p18.FOTO*/ wire FOTO = and2(ch3.FETY_WAVE_LOOP.qp_new(), GASE_WAVE_CLKn);
+    /*#p18.FOTO*/ wire FOTO = and2(ch3.FETY_WAVE_LOOP.qp_new(), ch3.GASE_WAVE_CLKn());
     /*#p18.GYRY*/ wire GYRY_LOOP_RST = nor3(KEBA_APU_RSTp(), ch3.GARA.qp_new(), FOTO);
     /*#p18.FETY*/ ch3.FETY_WAVE_LOOP.dff17(ch3.EFAL_WAVE_IDX4.qn_new(), GYRY_LOOP_RST, ch3.FETY_WAVE_LOOP.qn_old());
   }
@@ -1188,7 +1177,7 @@ void GBSound::tick() {
     // Wave read pulse generator and read reg clock
     /*#p17.ARUC*/ wire ARUC_CLK = not1(AMUK_xBxDxFxH());
     /*#p17.COZY*/ wire COZY_CLK = not1(AMUK_xBxDxFxH());
-    /*#p17.BUSA*/ ch3.BUSA_WAVE_CLK_D1.dff17(AMUK_xBxDxFxH(), BAMA_APU_RSTn(), GASE_WAVE_CLKn);
+    /*#p17.BUSA*/ ch3.BUSA_WAVE_CLK_D1.dff17(AMUK_xBxDxFxH(), BAMA_APU_RSTn(), ch3.GASE_WAVE_CLKn());
     /*#p17.BANO*/ ch3.BANO_WAVE_CLK_D2.dff17(COZY_CLK,        BAMA_APU_RSTn(), ch3.BUSA_WAVE_CLK_D1.qp_old());
     /*#p17.AZUS*/ ch3.AZUS_WAVE_CLK_D3.dff17(AMUK_xBxDxFxH(), BAMA_APU_RSTn(), ch3.BANO_WAVE_CLK_D2.qp_old());
     /*_p17.AZET*/ ch3.AZET_WAVE_CLK_D4.dff17(ARUC_CLK,        BAMA_APU_RSTn(), ch3.AZUS_WAVE_CLK_D3.qp_old());
@@ -1196,10 +1185,7 @@ void GBSound::tick() {
     /*#p17.BOXO*/ wire BOXO_TRIG = nor2(ch3.AZUS_WAVE_CLK_D3.qp_new(), ch3.AZET_WAVE_CLK_D4.qp_new()); // pulse generator
     /*#p17.BORU*/ wire BORU_TRIG = not1(BOXO_TRIG);
 
-    wire BUKE_ABxxxxxH = 0;
-    /*#p17.ABUR*/ wire ABUR_xxCDEFGx = not1(BUKE_ABxxxxxH);
-    /*#p17.BORY*/ wire BORY_ABxxxxxH = not1(ABUR_xxCDEFGx);
-    /*#p17.BETA*/ wire BETA_WAVE_RAM_CS = or3(BYZA_WAVE_WRp, CAZU_CPU_WAVE_RDn, BORY_ABxxxxxH);
+    /*#p17.BETA*/ wire BETA_WAVE_RAM_CS = or3(BYZA_WAVE_WRp, CAZU_CPU_WAVE_RDn, BORY_ABxxxxxH());
     /*#p17.AZOR*/ wire AZOR_WAVE_RAM_CS = not1(BETA_WAVE_RAM_CS);
     /*#p17.BUKU*/ wire BUKU_WAVE_RAM_CS = not1(AZOR_WAVE_RAM_CS);
 
@@ -1548,86 +1534,6 @@ void GBSound::tick() {
     /*#p20.BOZA*/ wire BOZA_CH4_DAC3 = and2(ch4.FYRO_CH4_VOL3.qp_new(), DATO_CH4_RAW_BIT);
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   ///////////////////
   // CHANNEL 1
   ///////////////////
@@ -1812,13 +1718,8 @@ void GBSound::tick() {
     /*#p13.FEMU*/ ch1.FEMU_SHIFTINGn.nand_latch(EPUK_SETn, EVOL_RSTn);
   }
 
-  /*#p13.EGYP*/   wire EGYP_SHIFT_CLK = nor2(ch1.FEMU_SHIFTINGn.qn_new(), DYFA_CLK_1M);
-  /*#p13.CELE*/   wire CELE_SWEEP_ENp = not1(ch1.BUGE_SWEEP_ENn());
-  /*#p13.DODY*/   wire DODY_SHIFT_CLK = nor2(EGYP_SHIFT_CLK, CELE_SWEEP_ENp); // border color wrong on die
-  /*?p13.EGOR*/ wire EGOR_SHIFT_CLK = not1(DODY_SHIFT_CLK); // This looks like a nor3, but it almost definiteily is a not1.
-
   {
-    /*#p13.DAPU*/ wire DAPU_SHIFT_CLK = not1(EGOR_SHIFT_CLK);
+    /*#p13.DAPU*/ wire DAPU_SHIFT_CLK = not1(ch1.EGOR_SHIFT_CLK());
     /*#p13.DACU*/ wire DACU_SHIFTCNT_LOADn = nor2(ch1.FEKU_CH1_TRIGp.qp_new(), ch1.BEXA_SWEEP_TRIGGERp.qp_new());
     /*#p13.CYLU*/ wire CYLU_SHIFTCNT_LOADp = not1(DACU_SHIFTCNT_LOADn);
     /*#p13.COPA*/ ch1.COPA_SHIFTCNT0.dff20(DAPU_SHIFT_CLK,              CYLU_SHIFTCNT_LOADp, ch1.BANY_NR10_SWEEP_SHIFT0.qp_new());
@@ -1880,22 +1781,17 @@ void GBSound::tick() {
     /*_p12.AFUX*/ wire AFUX_SHIFTER_RSTn_09 = nor2(KEBA_APU_RSTp(), BUVO_CH1_FREQ09n);
     /*_p12.AVUF*/ wire AVUF_SHIFTER_RSTn_10 = nor2(KEBA_APU_RSTp(), AFYR_CH1_FREQ10n);
 
-    /*#p12.FAJA*/ wire FAJA_SHIFT_CLK = not1(EGOR_SHIFT_CLK);
-    /*#p12.EJYB*/ wire EJYB_SHIFT_CLK = not1(FAJA_SHIFT_CLK);
-    /*#p12.CYBE*/ wire CYBE_SHIFT_CLK = not1(EJYB_SHIFT_CLK);
-    /*#p12.BECY*/ wire BECY_SHIFT_CLK = not1(CYBE_SHIFT_CLK);
-
-    /*#p12.FABU*/ ch1.FABU_CH1_SHIFT00.dff22(EGOR_SHIFT_CLK, HOZU_SHIFTER_SETn_00, JADO_SHIFTER_RSTn_00, ch1.JEFA_CH1_SHIFT01.qp_old());
-    /*_p12.JEFA*/ ch1.JEFA_CH1_SHIFT01.dff22(EGOR_SHIFT_CLK, HOLA_SHIFTER_SETn_01, HOBU_SHIFTER_RSTn_01, ch1.GOGA_CH1_SHIFT02.qp_old());
-    /*_p12.GOGA*/ ch1.GOGA_CH1_SHIFT02.dff22(EGOR_SHIFT_CLK, HAWY_SHIFTER_SETn_02, HYVU_SHIFTER_RSTn_02, ch1.JOLU_CH1_SHIFT03.qp_old());
-    /*_p12.JOLU*/ ch1.JOLU_CH1_SHIFT03.dff22(EJYB_SHIFT_CLK, KYRY_SHIFTER_SETn_03, KETO_SHIFTER_RSTn_03, ch1.JOTA_CH1_SHIFT04.qp_old());
-    /*_p12.JOTA*/ ch1.JOTA_CH1_SHIFT04.dff22(EJYB_SHIFT_CLK, KOLA_SHIFTER_SETn_04, KYBO_SHIFTER_RSTn_04, ch1.FUDE_CH1_SHIFT05.qp_old());
-    /*_p12.FUDE*/ ch1.FUDE_CH1_SHIFT05.dff22(EJYB_SHIFT_CLK, GOVO_SHIFTER_SETn_05, EZUK_SHIFTER_RSTn_05, ch1.FEDO_CH1_SHIFT06.qp_old());
-    /*_p12.FEDO*/ ch1.FEDO_CH1_SHIFT06.dff22(EJYB_SHIFT_CLK, EKEM_SHIFTER_SETn_06, ENOK_SHIFTER_RSTn_06, ch1.EXAC_CH1_SHIFT07.qp_old());
-    /*_p12.EXAC*/ ch1.EXAC_CH1_SHIFT07.dff22(BECY_SHIFT_CLK, DACE_SHIFTER_SETn_07, BEWO_SHIFTER_RSTn_07, ch1.ELUX_CH1_SHIFT08.qp_old());
-    /*_p12.ELUX*/ ch1.ELUX_CH1_SHIFT08.dff22(BECY_SHIFT_CLK, BEGE_SHIFTER_SETn_08, AGOR_SHIFTER_RSTn_08, ch1.AGEZ_CH1_SHIFT09.qp_old());
-    /*_p12.AGEZ*/ ch1.AGEZ_CH1_SHIFT09.dff22(BECY_SHIFT_CLK, BESO_SHIFTER_SETn_09, AFUX_SHIFTER_RSTn_09, ch1.BEKU_CH1_SHIFT10.qp_old());
-    /*_p12.BEKU*/ ch1.BEKU_CH1_SHIFT10.dff22(BECY_SHIFT_CLK, BEJU_SHIFTER_SETn_10, AVUF_SHIFTER_RSTn_10, 0);
+    /*#p12.FABU*/ ch1.FABU_CH1_SHIFT00.dff22(ch1.EGOR_SHIFT_CLK(), HOZU_SHIFTER_SETn_00, JADO_SHIFTER_RSTn_00, ch1.JEFA_CH1_SHIFT01.qp_old());
+    /*_p12.JEFA*/ ch1.JEFA_CH1_SHIFT01.dff22(ch1.EGOR_SHIFT_CLK(), HOLA_SHIFTER_SETn_01, HOBU_SHIFTER_RSTn_01, ch1.GOGA_CH1_SHIFT02.qp_old());
+    /*_p12.GOGA*/ ch1.GOGA_CH1_SHIFT02.dff22(ch1.EGOR_SHIFT_CLK(), HAWY_SHIFTER_SETn_02, HYVU_SHIFTER_RSTn_02, ch1.JOLU_CH1_SHIFT03.qp_old());
+    /*_p12.JOLU*/ ch1.JOLU_CH1_SHIFT03.dff22(ch1.EJYB_SHIFT_CLK(), KYRY_SHIFTER_SETn_03, KETO_SHIFTER_RSTn_03, ch1.JOTA_CH1_SHIFT04.qp_old());
+    /*_p12.JOTA*/ ch1.JOTA_CH1_SHIFT04.dff22(ch1.EJYB_SHIFT_CLK(), KOLA_SHIFTER_SETn_04, KYBO_SHIFTER_RSTn_04, ch1.FUDE_CH1_SHIFT05.qp_old());
+    /*_p12.FUDE*/ ch1.FUDE_CH1_SHIFT05.dff22(ch1.EJYB_SHIFT_CLK(), GOVO_SHIFTER_SETn_05, EZUK_SHIFTER_RSTn_05, ch1.FEDO_CH1_SHIFT06.qp_old());
+    /*_p12.FEDO*/ ch1.FEDO_CH1_SHIFT06.dff22(ch1.EJYB_SHIFT_CLK(), EKEM_SHIFTER_SETn_06, ENOK_SHIFTER_RSTn_06, ch1.EXAC_CH1_SHIFT07.qp_old());
+    /*_p12.EXAC*/ ch1.EXAC_CH1_SHIFT07.dff22(ch1.BECY_SHIFT_CLK(), DACE_SHIFTER_SETn_07, BEWO_SHIFTER_RSTn_07, ch1.ELUX_CH1_SHIFT08.qp_old());
+    /*_p12.ELUX*/ ch1.ELUX_CH1_SHIFT08.dff22(ch1.BECY_SHIFT_CLK(), BEGE_SHIFTER_SETn_08, AGOR_SHIFTER_RSTn_08, ch1.AGEZ_CH1_SHIFT09.qp_old());
+    /*_p12.AGEZ*/ ch1.AGEZ_CH1_SHIFT09.dff22(ch1.BECY_SHIFT_CLK(), BESO_SHIFTER_SETn_09, AFUX_SHIFTER_RSTn_09, ch1.BEKU_CH1_SHIFT10.qp_old());
+    /*_p12.BEKU*/ ch1.BEKU_CH1_SHIFT10.dff22(ch1.BECY_SHIFT_CLK(), BEJU_SHIFTER_SETn_10, AVUF_SHIFTER_RSTn_10, 0);
   }
 
   //----------
@@ -1906,9 +1802,9 @@ void GBSound::tick() {
     /*#p13.EGET*/ wire EGET_TRIG_RSTn = nor2(KEBA_APU_RSTp(), ch1.FARE_CH1_TRIGp.qp_new());
     /*#p13.GEFE*/ wire GEFE_TRIG_RSTp = not1(EGET_TRIG_RSTn);
     /*#p13.FYFO*/ ch1.FYFO_CH1_TRIGn.nor_latch(GEFE_TRIG_RSTp, ch1.EZEC_CH1_TRIGn.qp_new());
-    /*#p13.FEKU*/ ch1.FEKU_CH1_TRIGp.dff17(DYFA_CLK_1M, EGET_TRIG_RSTn,  ch1.FYFO_CH1_TRIGn.qn_old()); // schematic wrong?
-    /*#p13.FARE*/ ch1.FARE_CH1_TRIGp.dff17(DYFA_CLK_1M, ERUM_APU_RSTn(), ch1.FEKU_CH1_TRIGp.qp_old());
-    /*#p13.FYTE*/ ch1.FYTE_CH1_TRIGp.dff17(DYFA_CLK_1M, ERUM_APU_RSTn(), ch1.FARE_CH1_TRIGp.qp_old());
+    /*#p13.FEKU*/ ch1.FEKU_CH1_TRIGp.dff17(ch1.DYFA_CLK_1M(), EGET_TRIG_RSTn,  ch1.FYFO_CH1_TRIGn.qn_old()); // schematic wrong?
+    /*#p13.FARE*/ ch1.FARE_CH1_TRIGp.dff17(ch1.DYFA_CLK_1M(), ERUM_APU_RSTn(), ch1.FEKU_CH1_TRIGp.qp_old());
+    /*#p13.FYTE*/ ch1.FYTE_CH1_TRIGp.dff17(ch1.DYFA_CLK_1M(), ERUM_APU_RSTn(), ch1.FARE_CH1_TRIGp.qp_old());
   }
 
   //----------
@@ -1923,7 +1819,7 @@ void GBSound::tick() {
 
     {
       /*#p13.CALA*/ wire CALA_FREQ_OVERFLOWp = not1(ch1.COPU_CH1_FREQ_CNT_10.qp_new());
-      /*#p13.DOKA*/ wire DOKA_COMY_RSTp = and2(ch1.COMY_FREQ_RSTp.qp_new(), DYFA_CLK_1M);
+      /*#p13.DOKA*/ wire DOKA_COMY_RSTp = and2(ch1.COMY_FREQ_RSTp.qp_new(), ch1.DYFA_CLK_1M());
       /*#p13.DYRU*/ wire DYRU_COMY_RSTn = nor3(KEBA_APU_RSTp(), ch1.FEKU_CH1_TRIGp.qp_new(), DOKA_COMY_RSTp);
       /*_p13.COMY*/ ch1.COMY_FREQ_RSTp.dff17(CALA_FREQ_OVERFLOWp, DYRU_COMY_RSTn, ch1.COMY_FREQ_RSTp.qn_old());
     }
@@ -1933,7 +1829,7 @@ void GBSound::tick() {
     /*#p11.EPYK*/ wire EPYK_FREQ_RSTn = nor2(COPE_FREQ_RSTp, ch1.FEKU_CH1_TRIGp.qp_new());
 
     {
-      /*#p11.FULO*/ wire FULO_FREQ_CLK = nor2(DYFA_CLK_1M, ch1.GEXU_FREQ_GATE.qp_new());
+      /*#p11.FULO*/ wire FULO_FREQ_CLK = nor2(ch1.DYFA_CLK_1M(), ch1.GEXU_FREQ_GATE.qp_new());
       /*#p11.GEKU*/ wire GEKU_FREQ_CLK = not1(FULO_FREQ_CLK);
       /*#p11.FUME*/ wire FUME_FREQ_RSTa = not1(EPYK_FREQ_RSTn);
       /*#p11.GAXE*/ ch1.GAXE_CH1_FREQ_CNT_00.dff20(GEKU_FREQ_CLK,                     FUME_FREQ_RSTa, ch1.HYKA_CH1_FREQ00.qp_new());
@@ -2062,24 +1958,6 @@ void GBSound::tick() {
       /*#p13.ACEG*/ wire ACEG_CH1_OUT3 = and2(ch1.HEVO_CH1_ENV3p.qp_new(), BOTO_BIT_OUTp);
     }
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  /*_p10.TACE*/ wire TACE_AMP_ENn = and4(ch1.HOCA_CH1_AMP_ENn(),
-                                         ch2.FUTE_CH2_AMP_ENn(),
-                                         ch3.GUXE_CH3_AMP_ENn.qp_new(),
-                                         ch4.GEVY_CH4_AMP_ENn());
 }
 
 //-----------------------------------------------------------------------------

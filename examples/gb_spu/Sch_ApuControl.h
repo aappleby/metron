@@ -94,7 +94,24 @@ struct SpuChannel1 {
                  BANY_NR10_SWEEP_SHIFT0.qp_new());
   }
 
+  /*?p13.EGOR*/ wire EGOR_SHIFT_CLK() const {
+    /*#p13.EGYP*/   wire EGYP_SHIFT_CLK = nor2(FEMU_SHIFTINGn.qn_new(), DYFA_CLK_1M());
+    /*#p13.CELE*/   wire CELE_SWEEP_ENp = not1(BUGE_SWEEP_ENn());
+    /*#p13.DODY*/   wire DODY_SHIFT_CLK = nor2(EGYP_SHIFT_CLK, CELE_SWEEP_ENp); // border color wrong on die
+    /*?p13.EGOR*/ wire EGOR_SHIFT_CLK = not1(DODY_SHIFT_CLK); // This looks like a nor3, but it almost definiteily is a not1.
+    return EGOR_SHIFT_CLK;
+  }
+
+  /*#p12.FAJA*/ wire FAJA_SHIFT_CLK() const { return not1(EGOR_SHIFT_CLK()); }
+  /*#p12.EJYB*/ wire EJYB_SHIFT_CLK() const { return not1(FAJA_SHIFT_CLK()); }
+  /*#p12.CYBE*/ wire CYBE_SHIFT_CLK() const { return not1(EJYB_SHIFT_CLK()); }
+  /*#p12.BECY*/ wire BECY_SHIFT_CLK() const { return not1(CYBE_SHIFT_CLK()); }
+
+
+
   /*#p13.ADAD*/ wire ADAD_SHIFT_DONE() const { return not1(BYTE_SHIFT_DONE.qn_new()); }
+
+  /*#p09.DYFA*/ wire DYFA_CLK_1M() const { return not1(CALO_CLK_1M.qn_new()); }
 
 
   /*#p11.BANY*/ DFF9 BANY_NR10_SWEEP_SHIFT0;
@@ -402,6 +419,11 @@ struct SpuChannel2 {
 //==============================================================================
 
 struct SpuChannel3 {
+
+  /*#p18.HEMA*/ wire HEMA_WAVE_CLKp() const { return not1(HUNO_WAVE_CLKn.qp_new()); }
+  /*#p18.GASE*/ wire GASE_WAVE_CLKn() const { return not1(HEMA_WAVE_CLKp()); }
+  /*#p18.DERO*/ wire DERO_WAVE_CLKp() const { return not1(GASE_WAVE_CLKn()); }
+
   /*_p16.KOGA*/ DFF9 KOGA_NR33_FREQ00;
   /*_p16.JOVY*/ DFF9 JOVY_NR33_FREQ01;
   /*_p16.JAXA*/ DFF9 JAXA_NR33_FREQ02;
@@ -663,6 +685,7 @@ struct GBSound {
   wire UMER_DIV10n_old = 0;
   wire SIG_CPU_HOLD_MEM = 0;
   wire SIG_IN_CPU_DBUS_FREE = 0;
+  wire BUKE_ABxxxxxH = 0;
 
   void tick();
 
@@ -889,7 +912,10 @@ struct GBSound {
 
   /*#p01.BATA*/ wire BATA_CLK_2M() const { return not1(spu.AJER_2M.qp_new()); }
   /*_p01.BAVU*/ wire BAVU_1M() const { return not1(spu.AVOK_1M.qp_new()); }
+  /*#p16.FABO*/ wire FABO_CLK_xxCDxxGH() const { return not1(spu.CERY_2M.qp_new()); }
 
+  /*#p17.ABUR*/ wire ABUR_xxCDEFGx() const { return not1(BUKE_ABxxxxxH); }
+  /*#p17.BORY*/ wire BORY_ABxxxxxH() const { return not1(ABUR_xxCDEFGx()); }
 
 
 
@@ -924,6 +950,12 @@ struct GBSound {
   /*#p13.JONE*/ wire JONE_CLK_128p() const { return not1(BYFE_CLK_128n()); }
 
 
+  /*_p10.TACE*/ wire TACE_AMP_ENn() const {
+    return and4(ch1.HOCA_CH1_AMP_ENn(),
+                ch2.FUTE_CH2_AMP_ENn(),
+                ch3.GUXE_CH3_AMP_ENn.qp_new(),
+                ch4.GEVY_CH4_AMP_ENn());
+  }
 
 
   SpuControl  spu;

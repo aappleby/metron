@@ -871,9 +871,7 @@ void GBSound::tick() {
   // FF1B - NR31 - Channel 3 Sound Length
 
   {
-    /*_p10.EMAX*/ wire EMAX_ADDR_1011n = nand4(DOSO_A00p(), DUPA_A01p(), ABUB_A02n(), DUCE_A03p());
-    /*_p10.DUSA*/ wire DUSA_ADDR_FF1Bp = nor2(BANU_ADDR_FF1Xn(), EMAX_ADDR_1011n);
-    /*_p16.DERY*/ wire DERY_FF1B_WRn = nand2(BOGY_CPU_WRp(), DUSA_ADDR_FF1Bp);
+    /*_p16.DERY*/ wire DERY_FF1B_WRn = nand2(BOGY_CPU_WRp(), DUSA_ADDR_FF1Bp());
 
     // fexu/hoto polarity seems wrong
     /*#p18.GEPY*/ wire GEPY_LEN_CLKp = nor3(ch3.FEXU_LEN_DONEp.qp_new(), BUFY_CLK_256n(), ch3.HOTO_NR34_LENEN.qp_new());
@@ -900,22 +898,20 @@ void GBSound::tick() {
   // FF1C NR32 - Channel 3 Select output level (R/W)
 
   {
-    /*_p10.GANY*/ wire GANY_ADDR_1100an = nand4(DUCE_A03p(), DENO_A02p(), AFOB_A01n(), DYTE_A00n());
-    /*_p10.GEFO*/ wire GEFO_ADDR_FF1C  = nor2(BANU_ADDR_FF1Xn(), GANY_ADDR_1100an);
 
     /*_p16.GURO*/ wire GURO_APU_RESETn = not1(KEBA_APU_RSTp());
 
-    /*_p16.HAGA*/ wire HAGA_FF1C_WR = and2(BOGY_CPU_WRp(), GEFO_ADDR_FF1C);
+    /*_p16.HAGA*/ wire HAGA_FF1C_WR = and2(BOGY_CPU_WRp(), GEFO_ADDR_FF1Cp());
 
     /*_p16.GUZU*/ wire GUZU_FF1C_WRn = not1(HAGA_FF1C_WR);
     /*_p16.HUKY*/ ch3.HUKY_NR32_VOL0.dff9(GUZU_FF1C_WRn, GURO_APU_RESETn, BUS_CPU_D00p.out_old());
     /*_p16.HODY*/ ch3.HODY_NR32_VOL1.dff9(GUZU_FF1C_WRn, GURO_APU_RESETn, BUS_CPU_D01p.out_old());
 
     /*_p16.JOTU*/ wire JOTU_CPU_RDb = not1(AGUZ_CPU_RDn());
-    /*_p16.HENU*/ wire HENU_FF1C_RD = nand2(GEFO_ADDR_FF1C, JOTU_CPU_RDb);
+    /*_p16.HENU*/ wire HENU_FF1C_RD = nand2(GEFO_ADDR_FF1Cp(), JOTU_CPU_RDb);
 
     /*_p18.JECO*/ wire JECO_DBG_CPU_RDb = not1(AGUZ_CPU_RDn());
-    /*_p18.HONY*/ wire HONY_DBG_FF1C_RD = and3(EDEK_NR52_DBG_APUp(), JECO_DBG_CPU_RDb, GEFO_ADDR_FF1C);
+    /*_p18.HONY*/ wire HONY_DBG_FF1C_RD = and3(EDEK_NR52_DBG_APUp(), JECO_DBG_CPU_RDb, GEFO_ADDR_FF1Cp());
     /*_p18.GENO*/ wire GENO_DBG_FF1C_RDn = not1(HONY_DBG_FF1C_RD);
 
   #if 0
@@ -935,12 +931,9 @@ void GBSound::tick() {
   // FF1D - NR33 - Channel 3 Frequency's lower data (W)
 
   {
-    /*_p10.EMOS*/ wire EMOS_ADDR_1101an = nand4(DOSO_A00p(), AFOB_A01n(), DENO_A02p(), DUCE_A03p());
-    /*_p10.FENY*/ wire FENY_ADDR_FF1D  = nor2(BANU_ADDR_FF1Xn(), EMOS_ADDR_1101an);
-    /*_p16.HOXA*/ wire HOXA_ADDR_FF1Dn = not1(FENY_ADDR_FF1D);
 
-    /*_p16.KOTA*/ wire KOTA_FF1D_WRn = nand2(FENY_ADDR_FF1D, BOGY_CPU_WRp());
-    /*_p16.JAFA*/ wire JAFA_FF1D_WRo = nand2(FENY_ADDR_FF1D, BOGY_CPU_WRp());
+    /*_p16.KOTA*/ wire KOTA_FF1D_WRn = nand2(FENY_ADDR_FF1Dp(), BOGY_CPU_WRp());
+    /*_p16.JAFA*/ wire JAFA_FF1D_WRo = nand2(FENY_ADDR_FF1Dp(), BOGY_CPU_WRp());
 
     /*_p16.KYHO*/ wire KYHO_FF1D_WRa = not1(KOTA_FF1D_WRn);
     /*_p16.KULY*/ wire KULY_FF1D_WRb = not1(JAFA_FF1D_WRo);
@@ -955,7 +948,7 @@ void GBSound::tick() {
     /*_p16.KANA*/ ch3.KANA_NR33_FREQ06.dff9(KYHO_FF1D_WRa, KUHA_APU_RESETq, BUS_CPU_D06p.out_old());
     /*_p16.KOGU*/ ch3.KOGU_NR33_FREQ07.dff9(KYHO_FF1D_WRa, KUHA_APU_RESETq, BUS_CPU_D07p.out_old());
 
-    /*_p16.GUTE*/ wire GUTE_DBG_FF1D_RDn = nor2(HOXA_ADDR_FF1Dn, EGAD_CPU_RDn_DBGn());
+    /*_p16.GUTE*/ wire GUTE_DBG_FF1D_RDn = nor2(HOXA_ADDR_FF1Dn(), EGAD_CPU_RDn_DBGn());
     /*_p16.HOVO*/ wire HOVO_DBG_FF1D_RD = not1(GUTE_DBG_FF1D_RDn);
 
   #if 0
@@ -975,27 +968,24 @@ void GBSound::tick() {
   //----------
   // FF1E - NR34 - Channel 3 Frequency's higher data (R/W)
 
-  /*_p10.EGEN*/ wire EGEN_ADDR_1110n = nand4(DUCE_A03p(), DENO_A02p(), DUPA_A01p(), DYTE_A00n());
-  /*_p10.DUGO*/ wire DUGO_ADDR_FF1Ep = nor2(BANU_ADDR_FF1Xn(), EGEN_ADDR_1110n);
-
   {
     /*#p16.GOMA*/ wire GOMA_APU_RESETn = not1(KEBA_APU_RSTp());
     /*#p16.FOBA*/ ch3.FOBA_CH3_TRIGp.dff17(DOVA_ABCDxxxx(), GOMA_APU_RESETn, ch3.GAVU_NR34_TRIG.qn_old());
 
-    /*_p16.EPYX*/ wire EPYX_FF1E_WRp = nor2(BOGY_CPU_WRp(), DUGO_ADDR_FF1Ep); // polarity?
+    /*_p16.EPYX*/ wire EPYX_FF1E_WRp = nor2(BOGY_CPU_WRp(), DUGO_ADDR_FF1Ep()); // polarity?
     /*_p16.FAKO*/ wire FAKO_RESTART_RST = nor2(KEBA_APU_RSTp(), ch3.FOBA_CH3_TRIGp.qp_new());
     /*_p16.GAVU*/ ch3.GAVU_NR34_TRIG.dff9   (EPYX_FF1E_WRp, FAKO_RESTART_RST, BUS_CPU_D07p.out_old());
   }
 
   {
 
-    /*_p16.HUDA*/ wire HUDA_FF1E_WRn = nand2(DUGO_ADDR_FF1Ep, BOGY_CPU_WRp());
+    /*_p16.HUDA*/ wire HUDA_FF1E_WRn = nand2(DUGO_ADDR_FF1Ep(), BOGY_CPU_WRp());
 
     /*_p16.KOPY*/ wire KOPY_APU_RESETn  = not1(KEBA_APU_RSTp());
     /*_p16.HEKY*/ wire HEKY_APU_RESETn  = not1(KEBA_APU_RSTp());
 
     /*_p16.JUZO*/ wire JUZO_FF1E_WR = not1(HUDA_FF1E_WRn);
-    /*_p16.FOVO*/ wire FOVO_FF1E_WRo = nand2(ANUJ_CPU_WR_WEIRD(), DUGO_ADDR_FF1Ep);
+    /*_p16.FOVO*/ wire FOVO_FF1E_WRo = nand2(ANUJ_CPU_WR_WEIRD(), DUGO_ADDR_FF1Ep());
 
     /*_p16.JEMO*/ ch3.JEMO_NR34_FREQ08.dff9 (JUZO_FF1E_WR,  KOPY_APU_RESETn,  BUS_CPU_D00p.out_old());
     /*_p16.JETY*/ ch3.JETY_NR34_FREQ09.dff9 (JUZO_FF1E_WR,  KOPY_APU_RESETn,  BUS_CPU_D01p.out_old());
@@ -1004,7 +994,7 @@ void GBSound::tick() {
 
 
 
-    /*_p16.GUNU*/ wire GUNU = not1(DUGO_ADDR_FF1Ep);
+    /*_p16.GUNU*/ wire GUNU = not1(DUGO_ADDR_FF1Ep());
     /*_p16.FUVA*/ wire FUVA_FF14_RDb = or2(GUNU, EGAD_CPU_RDn_DBGn());
 
   #if 0
@@ -1017,7 +1007,7 @@ void GBSound::tick() {
   #endif
 
     /*_p16.GORY*/ wire GORY = not1(AGUZ_CPU_RDn()); // polarity?
-    /*_p16.GAWA*/ wire GAWA_FF14_RDa = nand2(DUGO_ADDR_FF1Ep, GORY); // polarity?
+    /*_p16.GAWA*/ wire GAWA_FF14_RDa = nand2(DUGO_ADDR_FF1Ep(), GORY); // polarity?
 
   #if 0
     if (GAWA_FF14_RDa) set_data(
@@ -1352,9 +1342,7 @@ void GBSound::tick() {
   // FF20 NR41 - the length register is also the length timer
 
   {
-    /*#p10.DONA*/ wire DONA_ADDR_0000bn = nand4(DYTE_A00n(), AFOB_A01n(), ABUB_A02n(), ACOL_A03n());
-    /*#p10.DANU*/ wire DANU_FF20a    = nor2(DONA_ADDR_0000bn, BEZY_ADDR_FF2Xn());
-    /*#p19.CAZE*/ wire CAZE_FF20_WRn = nand2(BOGY_CPU_WRp(), DANU_FF20a);
+    /*#p19.CAZE*/ wire CAZE_FF20_WRn = nand2(BOGY_CPU_WRp(), DANU_ADDR_FF20p());
     /*#p19.FURU*/ wire FURU_FF20_WRa = not1(CAZE_FF20_WRn);
     /*#p19.DOTU*/ wire DOTU_FF20_WRb = not1(CAZE_FF20_WRn);
     /*#p19.EPEK*/ wire EPEK_FF20_WRc = not1(CAZE_FF20_WRn);
@@ -1380,12 +1368,10 @@ void GBSound::tick() {
   // FF21
   
   {
-    /*#p10.DEWA*/ wire DEWA_ADDR_0001bn = nand4(DOSO_A00p(), AFOB_A01n(), ABUB_A02n(), ACOL_A03n());
-    /*#p10.COVO*/ wire COVO_FF21p    = nor2(DEWA_ADDR_0001bn, BEZY_ADDR_FF2Xn());
-    /*#p19.BOFY*/ wire BOFY_FF21n    = not1(COVO_FF21p);
-    /*#p19.GONY*/ wire GONY_FF21n    = not1(COVO_FF21p);
-    /*#p19.DACO*/ wire DACO_FF21_WRp = and2(BOGY_CPU_WRp(), COVO_FF21p);
-    /*#p19.GOKO*/ wire GOKO_FF21_WRp = and2(COVO_FF21p, BOGY_CPU_WRp());
+    /*#p19.BOFY*/ wire BOFY_FF21n    = not1(COVO_ADDR_FF21p());
+    /*#p19.GONY*/ wire GONY_FF21n    = not1(COVO_ADDR_FF21p());
+    /*#p19.DACO*/ wire DACO_FF21_WRp = and2(BOGY_CPU_WRp(), COVO_ADDR_FF21p());
+    /*#p19.GOKO*/ wire GOKO_FF21_WRp = and2(COVO_ADDR_FF21p(), BOGY_CPU_WRp());
     /*#p19.BOXE*/ wire BOXE_FF21_RDn = or2(BOFY_FF21n, AGUZ_CPU_RDn());
     /*#p19.HASU*/ wire HASU_FF21_RDn = or2(GONY_FF21n, AGUZ_CPU_RDn());
 
@@ -1417,25 +1403,23 @@ void GBSound::tick() {
   // FF22
 
   {
-    /*#p10.DOFA*/ wire DOFA_ADDR_0010p = and4(ACOL_A03n(), ABUB_A02n(), DUPA_A01p(), DYTE_A00n());
-    /*#p10.EKEZ*/ wire EKEZ_FF22p = and2(CONA_ADDR_FF2Xp(), DOFA_ADDR_0010p);
-    /*#p19.KOKU*/ wire KOKU_FF22n = not1(EKEZ_FF22p);
-    /*#p19.GUGO*/ wire GUGO_FF22n = not1(EKEZ_FF22p);
+    /*#p19.KOKU*/ wire KOKU_FF22n = not1(EKEZ_ADDR_FF22p());
+    /*#p19.GUGO*/ wire GUGO_FF22n = not1(EKEZ_ADDR_FF22p());
 
-    /*#p19.HUMO*/ wire HUMO_FF22_WRp = and2(BOGY_CPU_WRp(), EKEZ_FF22p);
-    /*#p19.GETU*/ wire GETU_FF22_WRp = and2(BOGY_CPU_WRp(), EKEZ_FF22p);
+    /*#p19.HUMO*/ wire HUMO_FF22_WRp = and2(BOGY_CPU_WRp(), EKEZ_ADDR_FF22p());
+    /*#p19.GETU*/ wire GETU_FF22_WRp = and2(BOGY_CPU_WRp(), EKEZ_ADDR_FF22p());
 
     /*#p19.KEKA*/ wire KEKA_FF22_RDn = or2(KOKU_FF22n, AGUZ_CPU_RDn());
 
     /*#p19.KAGE*/ wire KAGE_CPU_RDp = not1(AGUZ_CPU_RDn());
-    /*#p19.JORA*/ wire JORA_FF22_RDn = nand2(KAGE_CPU_RDp, EKEZ_FF22p);
+    /*#p19.JORA*/ wire JORA_FF22_RDn = nand2(KAGE_CPU_RDp, EKEZ_ADDR_FF22p());
     /*#p19.HEZE*/ wire HEZE_FF22_RDn = or2(GUGO_FF22n, AGUZ_CPU_RDn());
 
     /*#p09.KAME*/ wire KAME_RSTn = not1(KEBA_APU_RSTp());
     /*#p19.HYNE*/ wire HYNE_RSTn = not1(KEBA_APU_RSTp());
 
     /*#p19.HOVA*/ wire HOVA_FF22_WRn = not1(HUMO_FF22_WRp);
-    /*#p19.HOSO*/ wire HOSO_FF22_WRn = nand2(EKEZ_FF22p, BOGY_CPU_WRp());
+    /*#p19.HOSO*/ wire HOSO_FF22_WRn = nand2(EKEZ_ADDR_FF22p(), BOGY_CPU_WRp());
     /*#p19.EFUG*/ wire EFUG_FF22_WRn = not1(GETU_FF22_WRp);
     /*#p19.JARE*/ ch4.JARE_NR43_DIV0  .dff9(HOVA_FF22_WRn, KAME_APU_RSTn(), BUS_CPU_D00p.qp_new());
     /*#p19.JERO*/ ch4.JERO_NR43_DIV1  .dff9(HOVA_FF22_WRn, KAME_APU_RSTn(), BUS_CPU_D01p.qp_new());

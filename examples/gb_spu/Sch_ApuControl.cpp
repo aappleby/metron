@@ -1394,76 +1394,33 @@ void GBSound::tick() {
 
   // FIXME did you just copy-paste this block and not finish it?
 
-  /*#p20.FEME*/ bool FEME_LFSR_CLKp;
-
   {
-    /*_p20.EMOF*/ wire EMOF_LFSR_CLK_MUX_7 = nor3(ch4.FETA_NR43_FREQ0.qn_new(), ch4.FYTO_NR43_FREQ1.qn_new(), ch4.GOGO_NR43_FREQ2.qn_new());
-    /*_p20.ELAR*/ wire ELAR_LFSR_CLK_MUX_6 = nor3(ch4.FETA_NR43_FREQ0.qn_new(), ch4.FYTO_NR43_FREQ1.qn_new(), ch4.GOGO_NR43_FREQ2.qp_new());
-    /*_p20.DUDU*/ wire DUDU_LFSR_CLK_MUX_5 = nor3(ch4.FETA_NR43_FREQ0.qn_new(), ch4.FYTO_NR43_FREQ1.qp_new(), ch4.GOGO_NR43_FREQ2.qn_new());
-    /*_p20.ETAT*/ wire ETAT_LFSR_CLK_MUX_4 = nor3(ch4.FETA_NR43_FREQ0.qn_new(), ch4.FYTO_NR43_FREQ1.qp_new(), ch4.GOGO_NR43_FREQ2.qp_new());
-    /*_p20.FURA*/ wire FURA_LFSR_CLK_MUX_3 = nor3(ch4.FETA_NR43_FREQ0.qp_new(), ch4.FYTO_NR43_FREQ1.qn_new(), ch4.GOGO_NR43_FREQ2.qn_new());
-    /*_p20.ETAR*/ wire ETAR_LFSR_CLK_MUX_2 = nor3(ch4.FETA_NR43_FREQ0.qp_new(), ch4.FYTO_NR43_FREQ1.qn_new(), ch4.GOGO_NR43_FREQ2.qp_new());
-    /*_p20.EVER*/ wire EVER_LFSR_CLK_MUX_1 = nor3(ch4.FETA_NR43_FREQ0.qp_new(), ch4.FYTO_NR43_FREQ1.qp_new(), ch4.GOGO_NR43_FREQ2.qn_new());
-    /*_p20.ETOV*/ wire ETOV_LFSR_CLK_MUX_0 = nor3(ch4.FETA_NR43_FREQ0.qp_new(), ch4.FYTO_NR43_FREQ1.qp_new(), ch4.GOGO_NR43_FREQ2.qp_new());
-
-    /*_p20.ETYR*/ wire ETYR_LFSR_CLK_MUX_A = amux6(ch4.ESEP_FREQ_13.qp_new(), DUDU_LFSR_CLK_MUX_5,
-                                                  ch4.DERE_FREQ_12.qp_new(), ETAT_LFSR_CLK_MUX_4,
-                                                  ch4.DOTA_FREQ_11.qp_new(), FURA_LFSR_CLK_MUX_3,
-                                                  ch4.ERUT_FREQ_10.qp_new(), ETAR_LFSR_CLK_MUX_2,
-                                                  ch4.DETE_FREQ_09.qp_new(), EVER_LFSR_CLK_MUX_1,
-                                                  ch4.DOSE_FREQ_08.qp_new(), ETOV_LFSR_CLK_MUX_0);
-
-    /*_p20.ELYX*/ wire ELYX_LFSR_CLK_MUX_B = amux4(ch4.DEMO_FREQ_07.qp_new(), EMOF_LFSR_CLK_MUX_7,
-                                                  ch4.DOKE_FREQ_06.qp_new(), ELAR_LFSR_CLK_MUX_6,
-                                                  ch4.DALE_FREQ_05.qp_new(), DUDU_LFSR_CLK_MUX_5,
-                                                  ch4.DURE_FREQ_04.qp_new(), ETAT_LFSR_CLK_MUX_4);
-
-    /*_p20.DARY*/ wire DARY_LFSR_CLK_MUX_C = amux4(ch4.EPOR_FREQ_03.qp_new(), FURA_LFSR_CLK_MUX_3,
-                                                  ch4.EZEF_FREQ_02.qp_new(), ETAR_LFSR_CLK_MUX_2,
-                                                  ch4.DEKO_FREQ_01.qp_new(), EVER_LFSR_CLK_MUX_1,
-                                                  ch4.CEXO_FREQ_00.qp_new(), ETOV_LFSR_CLK_MUX_0);
-
-    /*_p20.ERYF*/ wire ERYF_LFSR_CLK_MUX_D = or2(ELYX_LFSR_CLK_MUX_B, DARY_LFSR_CLK_MUX_C);
-
-
-    FEME_LFSR_CLKp = mux2p(ch4.GAFO_NR43_FREQ3.qn_new(), ETYR_LFSR_CLK_MUX_A, ERYF_LFSR_CLK_MUX_D);
-  }
-
-  {
-    /*#p20.JYJA*/ wire JYJA_LFSR_CLKn = not1(FEME_LFSR_CLKp);
-    /*#p20.GUFA*/ wire GUFA_LFSR_CLKn = not1(FEME_LFSR_CLKp);
-    /*#p20.GYVE*/ wire GYVE_LFSR_CLKp = not1(GUFA_LFSR_CLKn);
-    /*#p20.KARA*/ wire KARA_LFSR_CLKn = not1(GYVE_LFSR_CLKp);
-    /*#p20.KOPA*/ wire KOPA_LFSR_CLKp = not1(KARA_LFSR_CLKn);
-
     /*#p20.GEPO*/ wire GEPO_LFSR_RSTa = or2(ch4.GONE_CH4_TRIGp.qp_new(), KEBA_APU_RSTp());
     /*#p20.GOGE*/ wire GOGE_LFSR_RSTn = not1(GEPO_LFSR_RSTa);
 
     /*#p20.HURA*/ wire HURA_LFSR_IN = xor2(ch4.HEZU_LFSR_15.qp_old(), ch4.HYRO_LFSR_14.qp_old());
-    /*#p20.JOTO*/ ch4.JOTO_LFSR_00.dff17(JYJA_LFSR_CLKn, GOGE_LFSR_RSTn, HURA_LFSR_IN);
-    /*#p20.KOMU*/ ch4.KOMU_LFSR_01.dff17(KOPA_LFSR_CLKp, GOGE_LFSR_RSTn, ch4.JOTO_LFSR_00.qp_new());
-    /*#p20.KETU*/ ch4.KETU_LFSR_02.dff17(KOPA_LFSR_CLKp, GOGE_LFSR_RSTn, ch4.KOMU_LFSR_01.qp_new());
-    /*#p20.KUTA*/ ch4.KUTA_LFSR_03.dff17(KOPA_LFSR_CLKp, GOGE_LFSR_RSTn, ch4.KETU_LFSR_02.qp_new());
-    /*#p20.KUZY*/ ch4.KUZY_LFSR_04.dff17(KOPA_LFSR_CLKp, GOGE_LFSR_RSTn, ch4.KUTA_LFSR_03.qp_new());
-    /*#p20.KYWY*/ ch4.KYWY_LFSR_05.dff17(KOPA_LFSR_CLKp, GOGE_LFSR_RSTn, ch4.KUZY_LFSR_04.qp_new());
-    /*#p20.JAJU*/ ch4.JAJU_LFSR_06.dff17(GYVE_LFSR_CLKp, GOGE_LFSR_RSTn, ch4.KYWY_LFSR_05.qp_new());
-    /*#p20.HAPE*/ ch4.HAPE_LFSR_07.dff17(GYVE_LFSR_CLKp, GOGE_LFSR_RSTn, ch4.JAJU_LFSR_06.qp_new());
-    /*#p20.JUXE*/ ch4.JUXE_LFSR_08.dff17(GYVE_LFSR_CLKp, GOGE_LFSR_RSTn, ch4.HAPE_LFSR_07.qp_new());
+    /*#p20.JOTO*/ ch4.JOTO_LFSR_00.dff17(ch4.JYJA_LFSR_CLKn(), GOGE_LFSR_RSTn, HURA_LFSR_IN);
+    /*#p20.KOMU*/ ch4.KOMU_LFSR_01.dff17(ch4.KOPA_LFSR_CLKp(), GOGE_LFSR_RSTn, ch4.JOTO_LFSR_00.qp_new());
+    /*#p20.KETU*/ ch4.KETU_LFSR_02.dff17(ch4.KOPA_LFSR_CLKp(), GOGE_LFSR_RSTn, ch4.KOMU_LFSR_01.qp_new());
+    /*#p20.KUTA*/ ch4.KUTA_LFSR_03.dff17(ch4.KOPA_LFSR_CLKp(), GOGE_LFSR_RSTn, ch4.KETU_LFSR_02.qp_new());
+    /*#p20.KUZY*/ ch4.KUZY_LFSR_04.dff17(ch4.KOPA_LFSR_CLKp(), GOGE_LFSR_RSTn, ch4.KUTA_LFSR_03.qp_new());
+    /*#p20.KYWY*/ ch4.KYWY_LFSR_05.dff17(ch4.KOPA_LFSR_CLKp(), GOGE_LFSR_RSTn, ch4.KUZY_LFSR_04.qp_new());
+    /*#p20.JAJU*/ ch4.JAJU_LFSR_06.dff17(ch4.GYVE_LFSR_CLKp(), GOGE_LFSR_RSTn, ch4.KYWY_LFSR_05.qp_new());
+    /*#p20.HAPE*/ ch4.HAPE_LFSR_07.dff17(ch4.GYVE_LFSR_CLKp(), GOGE_LFSR_RSTn, ch4.JAJU_LFSR_06.qp_new());
+    /*#p20.JUXE*/ ch4.JUXE_LFSR_08.dff17(ch4.GYVE_LFSR_CLKp(), GOGE_LFSR_RSTn, ch4.HAPE_LFSR_07.qp_new());
 
     /*#p20.KAVU*/ wire KAVU_LFSR_FB = amux2(ch4.JOTO_LFSR_00.qp_old(), ch4.JAMY_NR43_MODE.qn_old(), ch4.JAMY_NR43_MODE.qp_old(), ch4.JUXE_LFSR_08.qp_old());
-    /*#p20.JEPE*/ ch4.JEPE_LFSR_09.dff17(GYVE_LFSR_CLKp, GOGE_LFSR_RSTn, KAVU_LFSR_FB);
-    /*#p20.JAVO*/ ch4.JAVO_LFSR_10.dff17(GYVE_LFSR_CLKp, GOGE_LFSR_RSTn, ch4.JEPE_LFSR_09.qp_new());
-    /*#p20.HEPA*/ ch4.HEPA_LFSR_11.dff17(FEME_LFSR_CLKp, GOGE_LFSR_RSTn, ch4.JAVO_LFSR_10.qp_new());
-    /*#p20.HORY*/ ch4.HORY_LFSR_12.dff17(FEME_LFSR_CLKp, GOGE_LFSR_RSTn, ch4.HEPA_LFSR_11.qp_new());
-    /*#p20.HENO*/ ch4.HENO_LFSR_13.dff17(FEME_LFSR_CLKp, GOGE_LFSR_RSTn, ch4.HORY_LFSR_12.qp_new());
-    /*#p20.HYRO*/ ch4.HYRO_LFSR_14.dff17(FEME_LFSR_CLKp, GOGE_LFSR_RSTn, ch4.HENO_LFSR_13.qp_new());
-    /*_p20.HEZU*/ ch4.HEZU_LFSR_15.dff17(FEME_LFSR_CLKp, GOGE_LFSR_RSTn, ch4.HYRO_LFSR_14.qp_new());
+    /*#p20.JEPE*/ ch4.JEPE_LFSR_09.dff17(ch4.GYVE_LFSR_CLKp(), GOGE_LFSR_RSTn, KAVU_LFSR_FB);
+    /*#p20.JAVO*/ ch4.JAVO_LFSR_10.dff17(ch4.GYVE_LFSR_CLKp(), GOGE_LFSR_RSTn, ch4.JEPE_LFSR_09.qp_new());
+    /*#p20.HEPA*/ ch4.HEPA_LFSR_11.dff17(ch4.FEME_LFSR_CLKp(), GOGE_LFSR_RSTn, ch4.JAVO_LFSR_10.qp_new());
+    /*#p20.HORY*/ ch4.HORY_LFSR_12.dff17(ch4.FEME_LFSR_CLKp(), GOGE_LFSR_RSTn, ch4.HEPA_LFSR_11.qp_new());
+    /*#p20.HENO*/ ch4.HENO_LFSR_13.dff17(ch4.FEME_LFSR_CLKp(), GOGE_LFSR_RSTn, ch4.HORY_LFSR_12.qp_new());
+    /*#p20.HYRO*/ ch4.HYRO_LFSR_14.dff17(ch4.FEME_LFSR_CLKp(), GOGE_LFSR_RSTn, ch4.HENO_LFSR_13.qp_new());
+    /*_p20.HEZU*/ ch4.HEZU_LFSR_15.dff17(ch4.FEME_LFSR_CLKp(), GOGE_LFSR_RSTn, ch4.HYRO_LFSR_14.qp_new());
   }
 
   //----------
   // Env
-
-  /*#p20.FOWA*/ wire FOWA_ENV_OFFp = nor3(ch4.EMOK_NR42_ENV_TIMER0.qn_new(), ch4.ETYJ_NR42_ENV_TIMER1.qn_new(), ch4.EZYK_NR42_ENV_TIMER2.qn_new());
 
   {
     /*#p20.ALOP*/ wire ALOP_CLK_128 = not1(BYFE_CLK_128n());
@@ -1483,7 +1440,7 @@ void GBSound::tick() {
     // Generates a 1 usec pulse when the env timer hits 111
     /*#p20.GEXE*/ wire GEXE_ENV_PULSEn  = not1(ch4.FOSY_ENV_CLKp.qp_new());
     /*#p20.HURY*/ wire HURY_ENV_PULSE_RSTp = nor2(HORU_CLK_512p(), GEXE_ENV_PULSEn);
-    /*#p20.GOPA*/ wire GOPA_ENV_PULSE_RSTn = nor4(HURY_ENV_PULSE_RSTp, FOWA_ENV_OFFp, ch4.GONE_CH4_TRIGp.qp_new(), KEBA_APU_RSTp());
+    /*#p20.GOPA*/ wire GOPA_ENV_PULSE_RSTn = nor4(HURY_ENV_PULSE_RSTp, ch4.FOWA_ENV_OFFp(), ch4.GONE_CH4_TRIGp.qp_new(), KEBA_APU_RSTp());
     /*#p20.EJEX*/ wire EJEX_ENV_TIMER_MAX = or3(ch4.DOGO_ENV_DELAY2n.qp_new(), ch4.COFE_ENV_DELAY1n.qp_new(), ch4.CUNA_ENV_DELAY0n.qp_new());
     /*#p20.FOSY*/ ch4.FOSY_ENV_CLKp.dff17(HORU_CLK_512p(), GOPA_ENV_PULSE_RSTn, EJEX_ENV_TIMER_MAX);
   }
@@ -1505,7 +1462,7 @@ void GBSound::tick() {
     /*#p20.ENUR*/ wire ENUR_ENV_STARTp = or2(KEBA_APU_RSTp(), ch4.GONE_CH4_TRIGp.qp_new());
     /*#p20.EROX*/ ch4.EROX_ENV_RUNNINGn.nor_latch(ch4.FYNO_ENV_MAXp.qp_new(), ENUR_ENV_STARTp);
 
-    /*#p20.FELO*/ wire FELO_ENV_CLK  = or3(ch4.FOSY_ENV_CLKp.qp_new(), FOWA_ENV_OFFp, ch4.EROX_ENV_RUNNINGn.qp_new());
+    /*#p20.FELO*/ wire FELO_ENV_CLK  = or3(ch4.FOSY_ENV_CLKp.qp_new(), ch4.FOWA_ENV_OFFp(), ch4.EROX_ENV_RUNNINGn.qp_new());
     /*#p20.FOLE*/ wire FOLE_VOL_CLK0n = amux2(ch4.GEKY_NR42_ENV_DIR.qn_new(), FELO_ENV_CLK,               FELO_ENV_CLK,               ch4.GEKY_NR42_ENV_DIR.qp_new());
     /*#p20.ETEF*/ wire ETEF_VOL_CLK1n = amux2(ch4.GEKY_NR42_ENV_DIR.qn_new(), ch4.FEKO_CH4_VOL0.qp_new(), ch4.FEKO_CH4_VOL0.qn_new(), ch4.GEKY_NR42_ENV_DIR.qp_new());
     /*#p20.EDYF*/ wire EDYF_VOL_CLK2n = amux2(ch4.GEKY_NR42_ENV_DIR.qn_new(), ch4.FATY_CH4_VOL1.qp_new(), ch4.FATY_CH4_VOL1.qn_new(), ch4.GEKY_NR42_ENV_DIR.qp_new());
@@ -1523,7 +1480,7 @@ void GBSound::tick() {
 
     /*#p20.DYRY*/ wire DYRY_DBG = and2(ch4.CUNY_NR44_LEN_ENp.qn_new(), EDEK_NR52_DBG_APUp());
     /*#p20.GAME*/ wire GAME_LFSR_OUT = and2(ch4.GENA_CH4_ACTIVEp.qp_new(), ch4.HEZU_LFSR_15.qp_new());
-    /*#p20.EZUL*/ wire EZUL_CH4_BIT_MUX = mux2p(DYRY_DBG, FEME_LFSR_CLKp, GAME_LFSR_OUT);
+    /*#p20.EZUL*/ wire EZUL_CH4_BIT_MUX = mux2p(DYRY_DBG, ch4.FEME_LFSR_CLKp(), GAME_LFSR_OUT);
     /*#p20.CEPY*/ wire CEPY_NR44_STOPn = not1(ch4.CUNY_NR44_LEN_ENp.qn_new());
     /*#p20.COTE*/ wire COTE_DBG_CH4_MUTE = and2(CEPY_NR44_STOPn, EDEK_NR52_DBG_APUp());
     /*#p20.DATO*/ wire DATO_CH4_RAW_BIT  = or2(EZUL_CH4_BIT_MUX, COTE_DBG_CH4_MUTE);
@@ -1538,8 +1495,6 @@ void GBSound::tick() {
   // CHANNEL 1
   ///////////////////
 
-
-  /*#p12.ARYL*/ wire ARYL_NR10_SWEEP_DIRn = not1(ch1.AVAF_NR10_SWEEP_DIR_p.qp_new());
 
   tick_nr11();
 
@@ -1597,17 +1552,17 @@ void GBSound::tick() {
     /*_p12.DOFY*/ ch1.DOFY_SUM_A09.dff11(ch1.ADAD_SHIFT_DONE(), KYNY_SUM_RSTn, ch1.EVAB_CH1_FREQ09.qp_old());
     /*_p12.DOLY*/ ch1.DOLY_SUM_A10.dff11(ch1.ADAD_SHIFT_DONE(), KYNY_SUM_RSTn, ch1.AXAN_CH1_FREQ10.qp_old());
 
-    /*_p12.GYLO*/ wire GYLO_SHIFTER_FLIP_00 = xor2(ARYL_NR10_SWEEP_DIRn, ch1.FABU_CH1_SHIFT00.qp_new());
-    /*_p12.GELA*/ wire GELA_SHIFTER_FLIP_01 = xor2(ARYL_NR10_SWEEP_DIRn, ch1.JEFA_CH1_SHIFT01.qp_new());
-    /*_p12.GOPO*/ wire GOPO_SHIFTER_FLIP_02 = xor2(ARYL_NR10_SWEEP_DIRn, ch1.GOGA_CH1_SHIFT02.qp_new());
-    /*_p12.HEFY*/ wire HEFY_SHIFTER_FLIP_03 = xor2(ARYL_NR10_SWEEP_DIRn, ch1.JOLU_CH1_SHIFT03.qp_new());
-    /*_p12.KEFE*/ wire KEFE_SHIFTER_FLIP_04 = xor2(ARYL_NR10_SWEEP_DIRn, ch1.JOTA_CH1_SHIFT04.qp_new());
-    /*_p12.GOLY*/ wire GOLY_SHIFTER_FLIP_05 = xor2(ARYL_NR10_SWEEP_DIRn, ch1.FUDE_CH1_SHIFT05.qp_new());
-    /*_p12.FURE*/ wire FURE_SHIFTER_FLIP_06 = xor2(ARYL_NR10_SWEEP_DIRn, ch1.FEDO_CH1_SHIFT06.qp_new());
-    /*_p12.DYME*/ wire DYME_SHIFTER_FLIP_07 = xor2(ARYL_NR10_SWEEP_DIRn, ch1.EXAC_CH1_SHIFT07.qp_new());
-    /*_p12.CALE*/ wire CALE_SHIFTER_FLIP_08 = xor2(ARYL_NR10_SWEEP_DIRn, ch1.ELUX_CH1_SHIFT08.qp_new());
-    /*_p12.DOZY*/ wire DOZY_SHIFTER_FLIP_09 = xor2(ARYL_NR10_SWEEP_DIRn, ch1.AGEZ_CH1_SHIFT09.qp_new());
-    /*_p12.CULU*/ wire CULU_SHIFTER_FLIP_10 = xor2(ARYL_NR10_SWEEP_DIRn, ch1.BEKU_CH1_SHIFT10.qp_new());
+    /*_p12.GYLO*/ wire GYLO_SHIFTER_FLIP_00 = xor2(ch1.ARYL_NR10_SWEEP_DIRn(), ch1.FABU_CH1_SHIFT00.qp_new());
+    /*_p12.GELA*/ wire GELA_SHIFTER_FLIP_01 = xor2(ch1.ARYL_NR10_SWEEP_DIRn(), ch1.JEFA_CH1_SHIFT01.qp_new());
+    /*_p12.GOPO*/ wire GOPO_SHIFTER_FLIP_02 = xor2(ch1.ARYL_NR10_SWEEP_DIRn(), ch1.GOGA_CH1_SHIFT02.qp_new());
+    /*_p12.HEFY*/ wire HEFY_SHIFTER_FLIP_03 = xor2(ch1.ARYL_NR10_SWEEP_DIRn(), ch1.JOLU_CH1_SHIFT03.qp_new());
+    /*_p12.KEFE*/ wire KEFE_SHIFTER_FLIP_04 = xor2(ch1.ARYL_NR10_SWEEP_DIRn(), ch1.JOTA_CH1_SHIFT04.qp_new());
+    /*_p12.GOLY*/ wire GOLY_SHIFTER_FLIP_05 = xor2(ch1.ARYL_NR10_SWEEP_DIRn(), ch1.FUDE_CH1_SHIFT05.qp_new());
+    /*_p12.FURE*/ wire FURE_SHIFTER_FLIP_06 = xor2(ch1.ARYL_NR10_SWEEP_DIRn(), ch1.FEDO_CH1_SHIFT06.qp_new());
+    /*_p12.DYME*/ wire DYME_SHIFTER_FLIP_07 = xor2(ch1.ARYL_NR10_SWEEP_DIRn(), ch1.EXAC_CH1_SHIFT07.qp_new());
+    /*_p12.CALE*/ wire CALE_SHIFTER_FLIP_08 = xor2(ch1.ARYL_NR10_SWEEP_DIRn(), ch1.ELUX_CH1_SHIFT08.qp_new());
+    /*_p12.DOZY*/ wire DOZY_SHIFTER_FLIP_09 = xor2(ch1.ARYL_NR10_SWEEP_DIRn(), ch1.AGEZ_CH1_SHIFT09.qp_new());
+    /*_p12.CULU*/ wire CULU_SHIFTER_FLIP_10 = xor2(ch1.ARYL_NR10_SWEEP_DIRn(), ch1.BEKU_CH1_SHIFT10.qp_new());
 
     /*_p12.HORA*/ ch1.HORA_SUM_B00.dff11(ch1.ADAD_SHIFT_DONE(), KYNY_SUM_RSTn, GYLO_SHIFTER_FLIP_00);
     /*_p12.HOPA*/ ch1.HOPA_SUM_B01.dff11(ch1.ADAD_SHIFT_DONE(), KYNY_SUM_RSTn, GELA_SHIFTER_FLIP_01);
@@ -1623,7 +1578,7 @@ void GBSound::tick() {
   
   }
 
-  /*#p12.GUXA*/ Adder GUXA_SUM00 = add3(ch1.GALO_SUM_A00.qp_new(), ch1.HORA_SUM_B00.qp_new(), ARYL_NR10_SWEEP_DIRn);
+  /*#p12.GUXA*/ Adder GUXA_SUM00 = add3(ch1.GALO_SUM_A00.qp_new(), ch1.HORA_SUM_B00.qp_new(), ch1.ARYL_NR10_SWEEP_DIRn());
   /*_p12.HALU*/ Adder HALU_SUM01 = add3(ch1.JODE_SUM_A01.qp_new(), ch1.HOPA_SUM_B01.qp_new(), GUXA_SUM00.carry);
   /*_p12.JULE*/ Adder JULE_SUM02 = add3(ch1.KARE_SUM_A02.qp_new(), ch1.HELE_SUM_B02.qp_new(), HALU_SUM01.carry);
   /*_p12.JORY*/ Adder JORY_SUM03 = add3(ch1.JYME_SUM_A03.qp_new(), ch1.JAPE_SUM_B03.qp_new(), JULE_SUM02.carry);
@@ -1635,8 +1590,8 @@ void GBSound::tick() {
   /*_p12.DULE*/ Adder DULE_SUM09 = add3(ch1.DOFY_SUM_A09.qp_new(), ch1.ETER_SUM_B09.qp_new(), DYXE_SUM08.carry);
   /*_p12.CORU*/ Adder CORU_SUM10 = add3(ch1.DOLY_SUM_A10.qp_new(), ch1.DEVA_SUM_B10.qp_new(), DULE_SUM09.carry);
 
-  /*#p12.BYLE*/ wire BYLE_FREQ_OVERFLOW = nor2(ARYL_NR10_SWEEP_DIRn, CORU_SUM10.carry);
-  /*#p12.ATYS*/ wire ATYS_FREQ_OVERFLOW = or2(BYLE_FREQ_OVERFLOW, ARYL_NR10_SWEEP_DIRn);
+  /*#p12.BYLE*/ wire BYLE_FREQ_OVERFLOW = nor2(ch1.ARYL_NR10_SWEEP_DIRn(), CORU_SUM10.carry);
+  /*#p12.ATYS*/ wire ATYS_FREQ_OVERFLOW = or2(BYLE_FREQ_OVERFLOW, ch1.ARYL_NR10_SWEEP_DIRn());
 
 
   {

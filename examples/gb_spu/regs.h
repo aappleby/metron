@@ -455,7 +455,7 @@ struct DFF20 : public BitBase {
 
 // SETn/RSTn are correct and not swapped, see serial + ALUR_RSTn
 
-// DFF22_01 sc
+// DFF22_01 sc other SETn?
 // DFF22_02 nc
 // DFF22_03 nc
 // DFF22_04 nc

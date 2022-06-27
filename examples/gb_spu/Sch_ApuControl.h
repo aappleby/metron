@@ -109,11 +109,20 @@ struct SpuChannel1 {
 
 
 
-  /*#p13.ADAD*/ wire ADAD_SHIFT_DONE() const { return not1(BYTE_SHIFT_DONE.qn_new()); }
-
   /*#p09.DYFA*/ wire DYFA_CLK_1M() const { return not1(CALO_CLK_1M.qn_new()); }
 
   /*#p12.ARYL*/ wire ARYL_NR10_SWEEP_DIRn() const { return not1(AVAF_NR10_SWEEP_DIR_p.qp_new()); }
+
+  // so this implies that NR12_DELAY* is DFFn?
+  /*#p13.KOMA*/ wire KOMA_ENV_OFFp() const { return nor3(JUSA_NR12_DELAY0n.qn_new(), JUZY_NR12_DELAY1n.qn_new(), JOMA_NR12_DELAY2n.qn_new()); }
+
+  /*#p13.CYTE*/ wire CYTE_SAMPLE_CLKn() const { return not1(COMY_SAMPLE_CLKp.qp_new()); }
+  /*#p13.COPE*/ wire COPE_SAMPLE_CLKp() const { return not1(CYTE_SAMPLE_CLKn()); }
+  /*#p13.DAJO*/ wire DAJO_SAMPLE_CLKn() const { return not1(COPE_SAMPLE_CLKp()); }
+  /*#p11.EPYK*/ wire EPYK_FREQ_LOADn()  const { return nor2(COPE_SAMPLE_CLKp(), FEKU_CH1_TRIGp.qp_new()); }
+  /*#p11.FUME*/ wire FUME_FREQ_LOADp()  const { return not1(EPYK_FREQ_LOADn()); }
+  /*#p11.DEGA*/ wire DEGA_FREQ_LOADp()  const { return not1(EPYK_FREQ_LOADn()); }
+  /*#p11.DAKO*/ wire DAKO_FREQ_LOADp()  const { return not1(EPYK_FREQ_LOADn()); }
 
 
 
@@ -239,7 +248,7 @@ struct SpuChannel1 {
   /*#p13.BYRA*/ DFF20 BYRA_SHIFTCNT2;
 
   /*_p13.FYFO*/ NorLatch FYFO_CH1_TRIGn;
-  /*_p13.COMY*/ DFF17 COMY_FREQ_RSTp;
+  /*_p13.COMY*/ DFF17 COMY_SAMPLE_CLKp;
   /*_p13.GEXU*/ NandLatch GEXU_FREQ_GATE;
 
   /*_p13.ESUT*/ DFF17 ESUT_PHASE_xBxDxFxH;
@@ -307,6 +316,9 @@ struct SpuChannel2 {
                 GURA_NR22_V2.qn_new(),
                 GAGE_NR22_V3.qn_new());
   }
+
+  /*#p15.JUPU*/ wire JUPU_ENV_OFFp() const { return nor3(HYFU_NR22_P0n.qn_new(), HORE_NR22_P1n.qn_new(), HAVA_NR22_P2n.qn_new()); }
+
 
   /*_p15.ERYC*/ DFF20 ERYC_NR21_L0;
   /*_p15.CERA*/ DFF20 CERA_NR21_L1;
@@ -426,6 +438,8 @@ struct SpuChannel3 {
   /*#p18.HEMA*/ wire HEMA_WAVE_CLKp() const { return not1(HUNO_WAVE_CLKn.qp_new()); }
   /*#p18.GASE*/ wire GASE_WAVE_CLKn() const { return not1(HEMA_WAVE_CLKp()); }
   /*#p18.DERO*/ wire DERO_WAVE_CLKp() const { return not1(GASE_WAVE_CLKn()); }
+
+
 
   /*_p16.KOGA*/ DFF9 KOGA_NR33_FREQ00;
   /*_p16.JOVY*/ DFF9 JOVY_NR33_FREQ01;
@@ -1006,6 +1020,12 @@ struct GBSound {
                 ch3.GUXE_CH3_AMP_ENn.qp_new(),
                 ch4.GEVY_CH4_AMP_ENn());
   }
+
+
+
+  /*#p17.BENA*/ wire BENA_CPU_WAVE_RDp() const { return  nand2(BOKE_CPU_RDp(), BARO_ADDR_FF3Xp()); }
+  /*#p17.CAZU*/ wire CAZU_CPU_WAVE_RDn() const { return  not1(BENA_CPU_WAVE_RDp()); }
+
 
 
   SpuControl  spu;

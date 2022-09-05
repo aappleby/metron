@@ -174,13 +174,14 @@ module MetroBoySPU2 (
       logic sweep_tick;
       logic length_tick;
       logic env_tick;
+      logic lfsr_clock_old;
+      logic lfsr_clock_new;
       spu_clock_new = spu_clock_old + 1;
       spu_tick = (~spu_clock_old) & (spu_clock_new);
 
       sweep_tick  = spu_tick[12];
       length_tick = spu_tick[11];
       env_tick    = spu_tick[13];
-      spu_clock_old <= spu_clock_new;
 
       if (tick_read) begin
         case (tick_addr)
@@ -274,8 +275,145 @@ module MetroBoySPU2 (
         end
       end
 
+      //----------
+      // s1 env
+
+      if (env_tick && s1_env_timer_init) begin
+        if (s1_env_timer) begin
+          s1_env_timer <= s1_env_timer - 1;
+        end
+        else begin
+          s1_env_timer <= s1_env_timer_init;
+          if (s1_env_add) begin if (s1_env_vol < 15) s1_env_vol <= s1_env_vol + 1; end
+          else            begin if (s1_env_vol >  0) s1_env_vol <= s1_env_vol - 1; end
+        end
+      end
+
+      //----------
+      // s2 clock
+
+      if (s2_freq_timer == 11'b11111111111) begin
+        s2_phase <= s2_phase + 1;
+        s2_freq_timer <= s2_freq_timer_init;
+      end
+      else begin
+        s2_freq_timer <= s2_freq_timer + 1;
+      end
+
+      //----------
+      // s2 length
+
+      if (length_tick && s2_running && s2_len_en) begin
+        if (s2_len_timer == 6'b111111) begin
+          s2_len_timer <= 0;
+          s2_running <= 0;
+        end
+        else begin
+          s2_len_timer <= s2_len_timer + 1;
+        end
+      end
+
+      //----------
+      // s2 env
+
+      if (env_tick && s2_env_timer_init) begin
+        if (s2_env_timer) begin
+          s2_env_timer <= s2_env_timer - 1;
+        end
+        else begin
+          s2_env_timer <= s2_env_timer_init;
+          if (s2_env_add) begin if (s2_env_vol < 15) s2_env_vol <= s2_env_vol + 1; end
+          else            begin if (s2_env_vol >  0) s2_env_vol <= s2_env_vol - 1; end
+        end
+      end
+
+      //----------
+      // s3 clock - we run this twice because s3's timer ticks at 2 mhz
+
+      begin
+        logic[4:0] next_phase;
+        logic[10:0] next_timer;
+        next_phase = s3_phase;
+        next_timer = s3_freq_timer;
+
+        if (next_timer == 12'h7FF) begin
+          next_phase = next_phase + 1;
+          next_timer = s3_freq_timer_init;
+        end
+        else begin
+          next_timer = next_timer + 1;
+        end
+
+        if (next_timer == 12'h7FF) begin
+          next_phase = next_phase + 1;
+          next_timer = s3_freq_timer_init;
+        end
+        else begin
+          next_timer = next_timer + 1;
+        end
+
+        s3_phase <= next_phase;
+        s3_freq_timer <= next_timer;
+      end
+
+      //----------
+      // s3 length
+
+      if (length_tick && s3_running && s3_len_en) begin
+        if (s3_len_timer == 8'hFF) begin
+          s3_len_timer <= 0;
+          s3_running <= 0;
+        end
+        else begin
+          s3_len_timer <= s3_len_timer + 1;
+        end
+      end
+
+      //----------
+      // s4 lfsr
+
+      lfsr_clock_old = 0;
+      lfsr_clock_new = 0;
+
+      case(s4_shift)
+        0 : begin lfsr_clock_old = spu_clock_old[1 ]; lfsr_clock_new = spu_clock_new[1 ];  end
+        1 : begin lfsr_clock_old = spu_clock_old[2 ]; lfsr_clock_new = spu_clock_new[2 ];  end
+        2 : begin lfsr_clock_old = spu_clock_old[3 ]; lfsr_clock_new = spu_clock_new[3 ];  end
+        3 : begin lfsr_clock_old = spu_clock_old[4 ]; lfsr_clock_new = spu_clock_new[4 ];  end
+        4 : begin lfsr_clock_old = spu_clock_old[5 ]; lfsr_clock_new = spu_clock_new[5 ];  end
+        5 : begin lfsr_clock_old = spu_clock_old[6 ]; lfsr_clock_new = spu_clock_new[6 ];  end
+        6 : begin lfsr_clock_old = spu_clock_old[7 ]; lfsr_clock_new = spu_clock_new[7 ];  end
+        7 : begin lfsr_clock_old = spu_clock_old[8 ]; lfsr_clock_new = spu_clock_new[8 ];  end
+        8 : begin lfsr_clock_old = spu_clock_old[9 ]; lfsr_clock_new = spu_clock_new[9 ];  end
+        9 : begin lfsr_clock_old = spu_clock_old[10]; lfsr_clock_new = spu_clock_new[10];  end
+        10: begin lfsr_clock_old = spu_clock_old[11]; lfsr_clock_new = spu_clock_new[11];  end
+        11: begin lfsr_clock_old = spu_clock_old[12]; lfsr_clock_new = spu_clock_new[12];  end
+        12: begin lfsr_clock_old = spu_clock_old[13]; lfsr_clock_new = spu_clock_new[13];  end
+        13: begin lfsr_clock_old = spu_clock_old[14]; lfsr_clock_new = spu_clock_new[14];  end
+        14: begin lfsr_clock_old = spu_clock_old[15]; lfsr_clock_new = spu_clock_new[15];  end
+        15: begin lfsr_clock_old = 0;                 lfsr_clock_new = 0;                  end
+      endcase
 
 
+      if ((lfsr_clock_old == 0) && (lfsr_clock_new == 1)) begin
+        if (s4_freq_timer) begin
+          s4_freq_timer <= s4_freq_timer - 1;
+        end
+        else begin
+          logic new_bit;
+          new_bit = s4_lfsr[15] ^ s4_lfsr[14] ^ 1;
+          s4_lfsr <= {
+            s4_lfsr[14:9],
+            s4_mode ? new_bit : s4_lfsr[8],
+            s4_lfsr[7:0],
+            new_bit};
+          s4_freq_timer <= s4_freq_timer_init;
+        end
+      end
+
+
+
+      spu_clock_old <= spu_clock_new;
     end
   end
 

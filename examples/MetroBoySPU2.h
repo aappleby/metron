@@ -157,7 +157,6 @@ public:
       logic<1> sweep_tick  = b1(spu_tick, 12);
       logic<1> length_tick = b1(spu_tick, 11);
       logic<1> env_tick    = b1(spu_tick, 13);
-      spu_clock_old = spu_clock_new;
 
       if (read) {
         switch (addr) {
@@ -233,7 +232,7 @@ public:
           s1_len_timer = s1_len_timer + 1;
         }
       }
-      
+
       //----------
       // s1 sweep
 
@@ -250,8 +249,142 @@ public:
         }
       }
 
+      //----------
+      // s1 env
+
+      if (env_tick && s1_env_timer_init) {
+        if (s1_env_timer) {
+          s1_env_timer = s1_env_timer - 1;
+        }
+        else {
+          s1_env_timer = s1_env_timer_init;
+          if (s1_env_add) { if (s1_env_vol < 15) s1_env_vol = s1_env_vol + 1; }
+          else            { if (s1_env_vol >  0) s1_env_vol = s1_env_vol - 1; }
+        }
+      }
+
+      //----------
+      // s2 clock
+
+      if (s2_freq_timer == 0b11111111111) {
+        s2_phase = s2_phase + 1;
+        s2_freq_timer = s2_freq_timer_init;
+      }
+      else {
+        s2_freq_timer = s2_freq_timer + 1;
+      }
+
+      //----------
+      // s2 length
+
+      if (length_tick && s2_running && s2_len_en) {
+        if (s2_len_timer == 0b111111) {
+          s2_len_timer = 0;
+          s2_running = 0;
+        }
+        else {
+          s2_len_timer = s2_len_timer + 1;
+        }
+      }
+
+      //----------
+      // s2 env
+
+      if (env_tick && s2_env_timer_init) {
+        if (s2_env_timer) {
+          s2_env_timer = s2_env_timer - 1;
+        }
+        else {
+          s2_env_timer = s2_env_timer_init;
+          if (s2_env_add) { if (s2_env_vol < 15) s2_env_vol = s2_env_vol + 1; }
+          else            { if (s2_env_vol >  0) s2_env_vol = s2_env_vol - 1; }
+        }
+      }
+
+      //----------
+      // s3 clock - we run this twice because s3's timer ticks at 2 mhz
+
+      {
+        logic<5> next_phase = s3_phase;
+        logic<11> next_timer = s3_freq_timer;
+
+        if (next_timer == 0x7FF) {
+          next_phase = next_phase + 1;
+          next_timer = s3_freq_timer_init;
+        }
+        else {
+          next_timer = next_timer + 1;
+        }
+
+        if (next_timer == 0x7FF) {
+          next_phase = next_phase + 1;
+          next_timer = s3_freq_timer_init;
+        }
+        else {
+          next_timer = next_timer + 1;
+        }
+
+        s3_phase = next_phase;
+        s3_freq_timer = next_timer;
+      }
+
+      //----------
+      // s3 length
+
+      if (length_tick && s3_running && s3_len_en) {
+        if (s3_len_timer == 0xFF) {
+          s3_len_timer = 0;
+          s3_running = 0;
+        }
+        else {
+          s3_len_timer = s3_len_timer + 1;
+        }
+      }
+
+      //----------
+      // s4 lfsr
+
+      logic<1> lfsr_clock_old = 0;
+      logic<1> lfsr_clock_new = 0;
+
+      switch(s4_shift) {
+        case 0 : { lfsr_clock_old = spu_clock_old[1 ]; lfsr_clock_new = spu_clock_new[1 ]; break; }
+        case 1 : { lfsr_clock_old = spu_clock_old[2 ]; lfsr_clock_new = spu_clock_new[2 ]; break; }
+        case 2 : { lfsr_clock_old = spu_clock_old[3 ]; lfsr_clock_new = spu_clock_new[3 ]; break; }
+        case 3 : { lfsr_clock_old = spu_clock_old[4 ]; lfsr_clock_new = spu_clock_new[4 ]; break; }
+        case 4 : { lfsr_clock_old = spu_clock_old[5 ]; lfsr_clock_new = spu_clock_new[5 ]; break; }
+        case 5 : { lfsr_clock_old = spu_clock_old[6 ]; lfsr_clock_new = spu_clock_new[6 ]; break; }
+        case 6 : { lfsr_clock_old = spu_clock_old[7 ]; lfsr_clock_new = spu_clock_new[7 ]; break; }
+        case 7 : { lfsr_clock_old = spu_clock_old[8 ]; lfsr_clock_new = spu_clock_new[8 ]; break; }
+        case 8 : { lfsr_clock_old = spu_clock_old[9 ]; lfsr_clock_new = spu_clock_new[9 ]; break; }
+        case 9 : { lfsr_clock_old = spu_clock_old[10]; lfsr_clock_new = spu_clock_new[10]; break; }
+        case 10: { lfsr_clock_old = spu_clock_old[11]; lfsr_clock_new = spu_clock_new[11]; break; }
+        case 11: { lfsr_clock_old = spu_clock_old[12]; lfsr_clock_new = spu_clock_new[12]; break; }
+        case 12: { lfsr_clock_old = spu_clock_old[13]; lfsr_clock_new = spu_clock_new[13]; break; }
+        case 13: { lfsr_clock_old = spu_clock_old[14]; lfsr_clock_new = spu_clock_new[14]; break; }
+        case 14: { lfsr_clock_old = spu_clock_old[15]; lfsr_clock_new = spu_clock_new[15]; break; }
+        case 15: { lfsr_clock_old = 0;                 lfsr_clock_new = 0;                 break; }
+      }
 
 
+      if ((lfsr_clock_old == 0) && (lfsr_clock_new == 1)) {
+        if (s4_freq_timer) {
+          s4_freq_timer = s4_freq_timer - 1;
+        }
+        else {
+          logic<1> new_bit = s4_lfsr[15] ^ s4_lfsr[14] ^ 1;
+          s4_lfsr = cat(
+            b6(s4_lfsr, 9),
+            s4_mode ? new_bit : s4_lfsr[8],
+            b8(s4_lfsr, 0),
+            new_bit);
+          s4_freq_timer = s4_freq_timer_init;
+        }
+      }
+
+
+
+      spu_clock_old = spu_clock_new;
     }
   }
 

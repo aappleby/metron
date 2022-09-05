@@ -99,6 +99,8 @@ struct MtModule {
   std::vector<MtField*> components;
   std::vector<MtField*> private_signals;
   std::vector<MtField*> private_registers;
+
+  std::vector<MtField*> dead_fields;
 };
 
 //------------------------------------------------------------------------------

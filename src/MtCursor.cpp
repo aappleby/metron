@@ -1834,6 +1834,10 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
     err << skip_over(n);
     return err << check_done(n);
   }
+  else if (field->is_dead()) {
+    err << comment_out(n);
+    return err << check_done(n);
+  }
   else {
     for (auto c : n) {
       switch(c.field) {

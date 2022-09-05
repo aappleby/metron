@@ -1,10 +1,80 @@
-class NonBlockingAssignment {
+class Adder {
 public:
-  int count;
-  void update() {
-    count = count + 1;
-    int dummy = count;
+  int add(int a, int b) {
+    return a + b;
   }
+};
+
+//----------
+
+class Adder2 {
+public:
+  int a;
+  int b;
+  int sum;
+
+  void add() {
+    sum = a + b;
+  }
+};
+#include "metron_tools.h"
+
+class Module {
+  // Private only so we don't spam our port list for this example
+private:
+
+  // Logic types can be indexed like arrays that return individual bits.
+  logic<1> extract_bit_four(logic<16> a) {
+    return a[4];
+  }
+
+  // bN(x, offset) is shorthand for bx<N>(x, offset) which extracts a slice
+  // of the bits in a field. Slices that overflow the source will be padded
+  // with 0.
+  logic<3> extract_three_bits_starting_at_bit_four(logic<16> a) {
+    return b3(a, 4);
+  }
+
+  // Logic types can be concatenated together, and the result's bit width will
+  // be the sum of the bit widths of the arguments.
+  logic<3> concatenate(logic<1> a, logic<1> b, logic<1> c) {
+    return cat(a, b, c);
+  }
+
+  // Logic types can be duplicated, which is equivalent to cat(x, x, x...). The
+  // result's bit width will be the product of the argument width and the dup
+  // count.
+  logic<9> duplicate_three_times(logic<3> a) {
+    return dup<3>(a);
+  }
+};
+#include "metron_tools.h"
+
+//------------------------------------------------------------------------------
+
+class Blockram {
+public:
+  Blockram() {
+    readmemh("blockram.hex", memory, 0, 255);
+  }
+
+  logic<8> get_data() const {
+    return data_out;
+  }
+
+  void tick(logic<8> address, logic<1> write, logic<8> data_in) {
+    if (write) {
+      memory[address] = data_in;
+      data_out = data_in;
+    }
+    else {
+      data_out = memory[address];
+    }
+  }
+
+private:
+  logic<8> memory[256];
+  logic<8> data_out;
 };
 #include "metron_tools.h"
 #include "blockram.h"
@@ -49,141 +119,102 @@ private:
 };
 
 //------------------------------------------------------------------------------
-#include "metron_tools.h"
-
-class Module {
-  // Private only so we don't spam our port list for this example
-private:
-
-  // Logic types can be indexed like arrays that return individual bits.
-  logic<1> extract_bit_four(logic<16> a) {
-    return a[4];
-  }
-
-  // bN(x, offset) is shorthand for bx<N>(x, offset) which extracts a slice
-  // of the bits in a field. Slices that overflow the source will be padded
-  // with 0.
-  logic<3> extract_three_bits_starting_at_bit_four(logic<16> a) {
-    return b3(a, 4);
-  }
-
-  // Logic types can be concatenated together, and the result's bit width will
-  // be the sum of the bit widths of the arguments.
-  logic<3> concatenate(logic<1> a, logic<1> b, logic<1> c) {
-    return cat(a, b, c);
-  }
-
-  // Logic types can be duplicated, which is equivalent to cat(x, x, x...). The
-  // result's bit width will be the product of the argument width and the dup
-  // count.
-  logic<9> duplicate_three_times(logic<3> a) {
-    return dup<3>(a);
-  }
-};
-// Tutorial 5
-
-class Module {
+// By default, "sum" is an output signal assigned in always_comb.
+class Adder1 {
 public:
-};
-class Tutorial2 {
-public:
-
-  int get_thing() {
-    return 1;
+  int sum;
+  void add(int a, int b) {
+    sum = a + b;
   }
 };
-#include "metron_tools.h"
+
+// We can force Metron to emit "sum" as a register by reading from it before
+// we write to it.
+class Adder2 {
+public:
+  int sum;
+  void add(int a, int b) {
+    int dummy = sum;
+    sum = a + b;
+  }
+};
+
+// Or we can prefix the function name with "tick", which does basically the
+// same thing.
+class Adder3 {
+public:
+  int sum;
+  void tick_add(int a, int b) {
+    sum = a + b;
+  }
+};
+// A very basic counter in plain C++, converted to Verilog using Metron.
+
+class Counter {
+public:
+  int count;
+  void update() {
+    count++;
+  }
+};
+// If we try to update mutually-dependent fields in one function, we'll hit an
+// error. Uncomment to see the error.
 
 /*
-640x480x60
-Pixel clock 25.175 MHz
+class Module1 {
+public:
+  int a;
+  int b;
 
-Screen X    [000-639]
-Front porch [640-655]
-HSync-      [656-751]
-Back porch  [752-799]
-
-Screen Y    [000-479]
-Front porch [480-489]
-VSync-      [490-491]
-Back porch  [492-524]
+  void update() {
+    a = b + 1;
+    b = a + 1;
+  }
+};
 */
 
-class VGAOut {
- public:
-  logic<1> vga_hsync;
-  logic<1> vga_vsync;
-  logic<1> vga_R;
-  logic<1> vga_G;
-  logic<1> vga_B;
-
-  logic<10> px;
-  logic<10> py;
-
-  logic<1> in_border() const {
-    return (px <= 7) || (px >= 633) || (py <= 7) || (py >= 473);
-  }
-
-  logic<1> in_checker() const {
-    return px[3] ^ py[3];
-  }
-
-  void update_video() {
-    vga_hsync = !((px >= 656) && (px <= 751));
-    vga_vsync = !((py >= 490) && (py <= 491));
-
-    if ((px < 640) && (py < 480)) {
-      vga_R = in_border() | in_checker();
-      vga_G = in_border();
-      vga_B = in_border();
-    } else {
-      vga_R = 0;
-      vga_G = 0;
-      vga_B = 0;
-    }
-  }
-
-  void update_counters() {
-    logic<10> new_px = px + 1;
-    logic<10> new_py = py;
-
-    if (new_px == 800) {
-      new_px = 0;
-      new_py = new_py + 1;
-    }
-
-    if (new_py == 525) {
-      new_py = 0;
-    }
-
-    px = new_px;
-    py = new_py;
-  }
-
-};
-#include "metron_tools.h"
-
-namespace MyPackage {
-  static const int ADDER_WIDTH = 17;
-  static const int INCREMENT_VAL = 3;
-};
-
-template<int width>
-class AdjustableAdder {
+// This module declares "update_a" first.
+class Module2 {
 public:
-  logic<width> add(logic<width> a, logic<width> b) {
-    return a + b;
+  int a;
+  int b;
+
+  void update_a() {
+    a = b + 1;
+  }
+
+  void update_b() {
+    b = a + 1;
   }
 };
 
-class Module {
-  public:
-  logic<MyPackage::ADDER_WIDTH> increment(logic<MyPackage::ADDER_WIDTH> x) {
-    return x + MyPackage::INCREMENT_VAL;
+// This module declares "update_b" first.
+class Module3 {
+public:
+  int a;
+  int b;
+
+  void update_b() {
+    b = a + 1;
   }
 
-private:
-  AdjustableAdder<MyPackage::ADDER_WIDTH> my_adder;
+  void update_a() {
+    a = b + 1;
+  }
+};
+
+// This module uses temporaries to update both A and B in a single function
+class Module4 {
+public:
+  int a;
+  int b;
+
+  void update() {
+    int old_a = a;
+    int old_b = b;
+    a = old_b + 1;
+    b = old_a + 1;
+  }
 };
 class ModuleWithPureFunction {
 public:
@@ -254,10 +285,13 @@ public:
     reg2 = reg2 + 1;
   }
 };
-// Tutorial 4
-
-class Module {
+class NonBlockingAssignment {
 public:
+  int count;
+  void update() {
+    count = count + 1;
+    int dummy = count;
+  }
 };
 #include "adder.h"
 #include "counter.h"
@@ -297,153 +331,367 @@ private:
 };
 #include "metron_tools.h"
 
-//------------------------------------------------------------------------------
+namespace MyPackage {
+  static const int ADDER_WIDTH = 17;
+  static const int INCREMENT_VAL = 3;
+};
 
-class Blockram {
+template<int width>
+class AdjustableAdder {
 public:
-  Blockram() {
-    readmemh("blockram.hex", memory, 0, 255);
+  logic<width> add(logic<width> a, logic<width> b) {
+    return a + b;
   }
+};
 
-  logic<8> get_data() const {
-    return data_out;
-  }
-
-  void tick(logic<8> address, logic<1> write, logic<8> data_in) {
-    if (write) {
-      memory[address] = data_in;
-      data_out = data_in;
-    }
-    else {
-      data_out = memory[address];
-    }
+class Module {
+  public:
+  logic<MyPackage::ADDER_WIDTH> increment(logic<MyPackage::ADDER_WIDTH> x) {
+    return x + MyPackage::INCREMENT_VAL;
   }
 
 private:
-  logic<8> memory[256];
-  logic<8> data_out;
+  AdjustableAdder<MyPackage::ADDER_WIDTH> my_adder;
+};
+class Tutorial2 {
+public:
+
+  int get_thing() {
+    return 1;
+  }
 };
 // Tutorial 3
 
 class Module {
 public:
 };
-// If we try to update mutually-dependent fields in one function, we'll hit an
-// error. Uncomment to see the error.
+// Tutorial 4
+
+class Module {
+public:
+};
+// Tutorial 5
+
+class Module {
+public:
+};
+#include "metron_tools.h"
 
 /*
-class Module1 {
-public:
-  int a;
-  int b;
+640x480x60
+Pixel clock 25.175 MHz
 
-  void update() {
-    a = b + 1;
-    b = a + 1;
-  }
-};
+Screen X    [000-639]
+Front porch [640-655]
+HSync-      [656-751]
+Back porch  [752-799]
+
+Screen Y    [000-479]
+Front porch [480-489]
+VSync-      [490-491]
+Back porch  [492-524]
 */
 
-// This module declares "update_a" first.
-class Module2 {
+class VGAOut {
+ public:
+  logic<1> vga_hsync;
+  logic<1> vga_vsync;
+  logic<1> vga_R;
+  logic<1> vga_G;
+  logic<1> vga_B;
+
+  logic<10> px;
+  logic<10> py;
+
+  logic<1> in_border() const {
+    return (px <= 7) || (px >= 633) || (py <= 7) || (py >= 473);
+  }
+
+  logic<1> in_checker() const {
+    return px[3] ^ py[3];
+  }
+
+  void update_video() {
+    vga_hsync = !((px >= 656) && (px <= 751));
+    vga_vsync = !((py >= 490) && (py <= 491));
+
+    if ((px < 640) && (py < 480)) {
+      vga_R = in_border() | in_checker();
+      vga_G = in_border();
+      vga_B = in_border();
+    } else {
+      vga_R = 0;
+      vga_G = 0;
+      vga_B = 0;
+    }
+  }
+
+  void update_counters() {
+    logic<10> new_px = px + 1;
+    logic<10> new_py = py;
+
+    if (new_px == 800) {
+      new_px = 0;
+      new_py = new_py + 1;
+    }
+
+    if (new_py == 525) {
+      new_py = 0;
+    }
+
+    px = new_px;
+    py = new_py;
+  }
+
+};
+#ifndef UART_HELLO_H
+#define UART_HELLO_H
+
+#include "metron_tools.h"
+
+//==============================================================================
+
+template <int repeat_msg = 0>
+class uart_hello {
 public:
-  int a;
-  int b;
-
-  void update_a() {
-    a = b + 1;
+  uart_hello() {
+    readmemh("examples/uart/message.hex", memory, 0, 511);
   }
 
-  void update_b() {
-    b = a + 1;
+  // The byte of data we want transmitted is always the one at the cursor.
+  logic<8> get_data() const {
+    return memory[cursor];
   }
+
+  // True if we want to transmit a byte
+  logic<1> get_request() const {
+    return state == SEND;
+  }
+
+  // True if we've transmitted the whole message.
+  logic<1> get_done() const {
+    return state == DONE;
+  }
+
+  void tick(
+    logic<1> reset,          // Top-level reset signal.
+    logic<1> clear_to_send,  // True if the transmitter can accept an input byte
+    logic<1> idle)           // True if the transmitter is idle
+  {
+    // In reset we're always in WAIT state with the message cursor set to
+    // the start of the message buffer.
+    if (reset) {
+      state = WAIT;
+      cursor = 0;
+    }
+
+    else {
+
+      // If we're waiting for the transmitter to be free and it's told us that
+      // it's idle, go to SEND state.
+      if (state == WAIT && idle) {
+        state = SEND;
+      }
+
+      // If we're currently sending a message and the transmitter is ready to
+      // accept another byte,
+      else if (state == SEND && clear_to_send) {
+        // either go to DONE state if we're about to send the last character of
+        // the message
+        if (cursor == message_len - 1) {
+          state = DONE;
+        }
+
+        // or just advance the message cursor.
+        else {
+          cursor = cursor + 1;
+        }
+      }
+
+      // If we've finished transmitting, reset the message cursor and either go
+      // back to WAIT state if we want to re-transmit or just stay in DONE
+      // otherwise.
+      else if (state == DONE) {
+        cursor = 0;
+        if (repeat_msg) state = WAIT;
+      }
+    }
+  }
+
+private:
+  static const int message_len = 512;
+  static const int cursor_bits = clog2(message_len);
+
+  static const int WAIT = 0; // Waiting for the transmitter to be free
+  static const int SEND = 1; // Sending the message buffer
+  static const int DONE = 2; // Message buffer sent
+  logic<2> state;            // One of the above states
+
+  logic<8> memory[512];      // The buffer preloaded with our message
+  logic<cursor_bits> cursor; // Index into the message buffer of the _next_ character to transmit
 };
 
-// This module declares "update_b" first.
-class Module3 {
+//==============================================================================
+
+#endif // UART_HELLO_H
+#ifndef UART_RX_H
+#define UART_RX_H
+
+#include "metron_tools.h"
+
+//==============================================================================
+
+template <int cycles_per_bit = 4>
+class uart_rx {
 public:
-  int a;
-  int b;
 
-  void update_b() {
-    b = a + 1;
+  // Our output is valid once we've received 8 bits.
+  logic<1> get_valid() const {
+    return bit_count == 8;
   }
 
-  void update_a() {
-    a = b + 1;
+  // The most recent data byte received.
+  logic<8> get_data_out() const {
+    return data_out;
   }
+
+  // The checksum of all bytes received so far.
+  logic<32> get_checksum() const {
+    return checksum;
+  }
+
+  void tick(
+    logic<1> reset,  // Top-level reset signal
+    logic<1> serial) // Serial input from the transmitter
+  {
+    if (reset) {
+      bit_delay = bit_delay_max;
+      bit_count = bit_count_max;
+      data_out = 0;
+      checksum = 0;
+    }
+    else {
+
+      // If we're waiting for the next bit to arrive, keep waiting until our
+      // bit delay counter runs out.
+      if (bit_delay < bit_delay_max) {
+        bit_delay = bit_delay + 1;
+      }
+
+      // We're done waiting for a bit. If we have bits left to receive, shift
+      // them into the top of the output register.
+      else if (bit_count < bit_count_max) {
+        logic<8> new_output = (serial << 7) | (data_out >> 1);
+
+        // If that was the last data bit, add the finished byte to our checksum.
+        if (bit_count == 7) {
+          checksum = checksum + new_output;
+        }
+
+        // Move to the next bit and reset our delay counter.
+        bit_delay = 0;
+        bit_count = bit_count + 1;
+        data_out = new_output;
+      }
+
+      // We're not waiting for a bit and we finished receiving the previous
+      // byte. Wait for the serial line to go low, which signals the start of
+      // the next byte.
+      else if (serial == 0) {
+        bit_delay = 0;
+        bit_count = 0;
+      }
+    }
+  }
+
+ private:
+  // We wait for cycles_per_bit cycles
+  static const int bit_delay_width = clog2(cycles_per_bit);
+  static const int bit_delay_max = cycles_per_bit - 1;
+  logic<bit_delay_width> bit_delay;
+
+  // Our serial data format is 8n1, which is short for "one start bit, 8 data
+  // bits, no parity bit, one stop bit". If bit_count == 1, we're only waiting
+  // on the stop bit.
+  static const int bit_count_max = 9;
+  static const int bit_count_width = clog2(bit_count_max);
+  logic<bit_count_width> bit_count;
+
+  // The received byte
+  logic<8> data_out;
+
+  // The checksum of all bytes received so far.
+  logic<32> checksum;
 };
 
-// This module uses temporaries to update both A and B in a single function
-class Module4 {
-public:
-  int a;
-  int b;
+//==============================================================================
 
-  void update() {
-    int old_a = a;
-    int old_b = b;
-    a = old_b + 1;
-    b = old_a + 1;
-  }
-};
-// By default, "sum" is an output signal assigned in always_comb.
-class Adder1 {
+#endif // UART_RX_H
+#ifndef UART_TOP_H
+#define UART_TOP_H
+
+#include "metron_tools.h"
+#include "uart_hello.h"
+#include "uart_rx.h"
+#include "uart_tx.h"
+
+//==============================================================================
+
+template <int cycles_per_bit = 3, int repeat_msg = 0>
+class uart_top {
 public:
-  int sum;
-  void add(int a, int b) {
-    sum = a + b;
+
+  // The actual bit of data currently on the transmitter's output
+  logic<1> get_serial() const {
+    return tx.get_serial();
   }
+
+  // Returns true if the receiver has a byte in its buffer
+  logic<1> get_valid() const {
+    return rx.get_valid();
+  }
+
+  // The next byte of data from the receiver
+  logic<8> get_data_out() const {
+    return rx.get_data_out();
+  }
+
+  // True if the client has sent its message and the transmitter has finished
+  // transmitting it.
+  logic<1> get_done() const {
+    return hello.get_done() && tx.get_idle();
+  }
+
+  // Checksum of all the bytes received
+  logic<32> get_checksum() const {
+    return rx.get_checksum();
+  }
+
+  void tock(logic<1> reset) {
+    // Grab signals from our submodules before we tick them.
+    logic<8> data = hello.get_data();
+    logic<1> request = hello.get_request();
+
+    logic<1> serial = tx.get_serial();
+    logic<1> clear_to_send = tx.get_clear_to_send();
+    logic<1> idle = tx.get_idle();
+
+    // Tick all submodules.
+    hello.tick(reset, clear_to_send, idle);
+    tx.tick(reset, data, request);
+    rx.tick(reset, serial);
+  }
+
+  //----------------------------------------
+private:
+  uart_hello<repeat_msg>  hello; // Our UART client that transmits our "hello world" test message
+  uart_tx<cycles_per_bit> tx;    // The UART transmitter
+  uart_rx<cycles_per_bit> rx;    // The UART receiver
 };
 
-// We can force Metron to emit "sum" as a register by reading from it before
-// we write to it.
-class Adder2 {
-public:
-  int sum;
-  void add(int a, int b) {
-    int dummy = sum;
-    sum = a + b;
-  }
-};
+//==============================================================================
 
-// Or we can prefix the function name with "tick", which does basically the
-// same thing.
-class Adder3 {
-public:
-  int sum;
-  void tick_add(int a, int b) {
-    sum = a + b;
-  }
-};
-class Adder {
-public:
-  int add(int a, int b) {
-    return a + b;
-  }
-};
-
-//----------
-
-class Adder2 {
-public:
-  int a;
-  int b;
-  int sum;
-
-  void add() {
-    sum = a + b;
-  }
-};
-// A very basic counter in plain C++, converted to Verilog using Metron.
-
-class Counter {
-public:
-  int count;
-  void update() {
-    count++;
-  }
-};
+#endif // UART_TOP_H
 #ifndef UART_TX_H
 #define UART_TX_H
 
@@ -541,251 +789,3 @@ private:
 //==============================================================================
 
 #endif // UART_TX_H
-#ifndef UART_RX_H
-#define UART_RX_H
-
-#include "metron_tools.h"
-
-//==============================================================================
-
-template <int cycles_per_bit = 4>
-class uart_rx {
-public:
-
-  // Our output is valid once we've received 8 bits.
-  logic<1> get_valid() const {
-    return bit_count == 8;
-  }
-
-  // The most recent data byte received.
-  logic<8> get_data_out() const {
-    return data_out;
-  }
-
-  // The checksum of all bytes received so far.
-  logic<32> get_checksum() const {
-    return checksum;
-  }
-
-  void tick(
-    logic<1> reset,  // Top-level reset signal
-    logic<1> serial) // Serial input from the transmitter
-  {
-    if (reset) {
-      bit_delay = bit_delay_max;
-      bit_count = bit_count_max;
-      data_out = 0;
-      checksum = 0;
-    }
-    else {
-
-      // If we're waiting for the next bit to arrive, keep waiting until our
-      // bit delay counter runs out.
-      if (bit_delay < bit_delay_max) {
-        bit_delay = bit_delay + 1;
-      }
-
-      // We're done waiting for a bit. If we have bits left to receive, shift
-      // them into the top of the output register.
-      else if (bit_count < bit_count_max) {
-        logic<8> new_output = (serial << 7) | (data_out >> 1);
-
-        // If that was the last data bit, add the finished byte to our checksum.
-        if (bit_count == 7) {
-          checksum = checksum + new_output;
-        }
-
-        // Move to the next bit and reset our delay counter.
-        bit_delay = 0;
-        bit_count = bit_count + 1;
-        data_out = new_output;
-      }
-
-      // We're not waiting for a bit and we finished receiving the previous
-      // byte. Wait for the serial line to go low, which signals the start of
-      // the next byte.
-      else if (serial == 0) {
-        bit_delay = 0;
-        bit_count = 0;
-      }
-    }
-  }
-
- private:
-  // We wait for cycles_per_bit cycles
-  static const int bit_delay_width = clog2(cycles_per_bit);
-  static const int bit_delay_max = cycles_per_bit - 1;
-  logic<bit_delay_width> bit_delay;
-
-  // Our serial data format is 8n1, which is short for "one start bit, 8 data
-  // bits, no parity bit, one stop bit". If bit_count == 1, we're only waiting
-  // on the stop bit.
-  static const int bit_count_max = 9;
-  static const int bit_count_width = clog2(bit_count_max);
-  logic<bit_count_width> bit_count;
-
-  // The received byte
-  logic<8> data_out;
-
-  // The checksum of all bytes received so far.
-  logic<32> checksum;
-};
-
-//==============================================================================
-
-#endif // UART_RX_H
-#ifndef UART_HELLO_H
-#define UART_HELLO_H
-
-#include "metron_tools.h"
-
-//==============================================================================
-
-template <int repeat_msg = 0>
-class uart_hello {
-public:
-  uart_hello() {
-    readmemh("examples/uart/message.hex", memory, 0, 511);
-  }
-
-  // The byte of data we want transmitted is always the one at the cursor.
-  logic<8> get_data() const {
-    return memory[cursor];
-  }
-
-  // True if we want to transmit a byte
-  logic<1> get_request() const {
-    return state == SEND;
-  }
-
-  // True if we've transmitted the whole message.
-  logic<1> get_done() const {
-    return state == DONE;
-  }
-
-  void tick(
-    logic<1> reset,          // Top-level reset signal.
-    logic<1> clear_to_send,  // True if the transmitter can accept an input byte
-    logic<1> idle)           // True if the transmitter is idle
-  {
-    // In reset we're always in WAIT state with the message cursor set to
-    // the start of the message buffer.
-    if (reset) {
-      state = WAIT;
-      cursor = 0;
-    }
-
-    else {
-
-      // If we're waiting for the transmitter to be free and it's told us that
-      // it's idle, go to SEND state.
-      if (state == WAIT && idle) {
-        state = SEND;
-      }
-
-      // If we're currently sending a message and the transmitter is ready to
-      // accept another byte,
-      else if (state == SEND && clear_to_send) {
-        // either go to DONE state if we're about to send the last character of
-        // the message
-        if (cursor == message_len - 1) {
-          state = DONE;
-        }
-
-        // or just advance the message cursor.
-        else {
-          cursor = cursor + 1;
-        }
-      }
-
-      // If we've finished transmitting, reset the message cursor and either go
-      // back to WAIT state if we want to re-transmit or just stay in DONE
-      // otherwise.
-      else if (state == DONE) {
-        cursor = 0;
-        if (repeat_msg) state = WAIT;
-      }
-    }
-  }
-
-private:
-  static const int message_len = 512;
-  static const int cursor_bits = clog2(message_len);
-
-  static const int WAIT = 0; // Waiting for the transmitter to be free
-  static const int SEND = 1; // Sending the message buffer
-  static const int DONE = 2; // Message buffer sent
-  logic<2> state;            // One of the above states
-
-  logic<8> memory[512];      // The buffer preloaded with our message
-  logic<cursor_bits> cursor; // Index into the message buffer of the _next_ character to transmit
-};
-
-//==============================================================================
-
-#endif // UART_HELLO_H
-#ifndef UART_TOP_H
-#define UART_TOP_H
-
-#include "metron_tools.h"
-#include "uart_hello.h"
-#include "uart_rx.h"
-#include "uart_tx.h"
-
-//==============================================================================
-
-template <int cycles_per_bit = 3, int repeat_msg = 0>
-class uart_top {
-public:
-
-  // The actual bit of data currently on the transmitter's output
-  logic<1> get_serial() const {
-    return tx.get_serial();
-  }
-
-  // Returns true if the receiver has a byte in its buffer
-  logic<1> get_valid() const {
-    return rx.get_valid();
-  }
-
-  // The next byte of data from the receiver
-  logic<8> get_data_out() const {
-    return rx.get_data_out();
-  }
-
-  // True if the client has sent its message and the transmitter has finished
-  // transmitting it.
-  logic<1> get_done() const {
-    return hello.get_done() && tx.get_idle();
-  }
-
-  // Checksum of all the bytes received
-  logic<32> get_checksum() const {
-    return rx.get_checksum();
-  }
-
-  void tock(logic<1> reset) {
-    // Grab signals from our submodules before we tick them.
-    logic<8> data = hello.get_data();
-    logic<1> request = hello.get_request();
-
-    logic<1> serial = tx.get_serial();
-    logic<1> clear_to_send = tx.get_clear_to_send();
-    logic<1> idle = tx.get_idle();
-
-    // Tick all submodules.
-    hello.tick(reset, clear_to_send, idle);
-    tx.tick(reset, data, request);
-    rx.tick(reset, serial);
-  }
-
-  //----------------------------------------
-private:
-  uart_hello<repeat_msg>  hello; // Our UART client that transmits our "hello world" test message
-  uart_tx<cycles_per_bit> tx;    // The UART transmitter
-  uart_rx<cycles_per_bit> rx;    // The UART receiver
-};
-
-//==============================================================================
-
-#endif // UART_TOP_H

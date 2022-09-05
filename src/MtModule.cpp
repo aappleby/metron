@@ -689,6 +689,9 @@ CHECK_RETURN Err MtModule::categorize_fields(bool verbose) {
     }
     else if (f->is_enum()) {
     }
+    else if (f->is_dead()) {
+      dead_fields.push_back(f);
+    }
     else {
       err << ERR("Don't know how to categorize %s = %s\n", f->cname(),
                  to_string(f->_state));

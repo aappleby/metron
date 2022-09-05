@@ -382,6 +382,214 @@ public:
         }
       }
 
+      //----------
+      // s4 length
+
+      if (length_tick && s4_running && s4_len_en) {
+        if (s4_len_timer == 0x3F) {
+          s4_len_timer = 0;
+          s4_running = 0;
+        }
+        else {
+          s4_len_timer = s4_len_timer + 1;
+        }
+      }
+
+      //----------
+      // s4 env
+
+      if (env_tick && s4_env_timer_init) {
+        if (s4_env_timer) {
+          s4_env_timer = s4_env_timer - 1;
+        }
+        else {
+          s4_env_timer = s4_env_timer_init;
+          if (s4_env_add) { if (s4_env_vol < 15) s4_env_vol = s4_env_vol + 1; }
+          else            { if (s4_env_vol >  0) s4_env_vol = s4_env_vol - 1; }
+        }
+      }
+
+      //----------
+      // Triggers
+
+      if (s1_trig && (s1_env_vol_init || s1_env_add)) {
+        s1_running     = 1;
+        s1_len_timer   = s1_len_timer_init;
+        s1_sweep_timer = s1_sweep_timer_init;
+        s1_sweep_freq  = s1_freq_timer_init;
+        s1_env_vol     = s1_env_vol_init;
+        s1_env_timer   = s1_env_timer_init;
+        s1_freq_timer  = s1_freq_timer_init;
+        s1_phase       = 0;
+        s1_trig        = 0;
+      }
+
+      if (s2_trig && (s2_env_vol_init || s2_env_add)) {
+        s2_running    = 1;
+        s2_len_timer  = s2_len_timer_init;
+        s2_env_vol    = s2_env_vol_init;
+        s2_env_timer  = s2_env_timer_init;
+        s2_freq_timer = s2_freq_timer_init;
+        s2_phase      = 0;
+        s2_trig       = 0;
+      }
+
+      if (s3_trig) {
+        s3_running    = 1;
+        s3_len_timer  = s3_len_timer_init;
+        s3_freq_timer = s3_freq_timer_init;
+        s3_phase      = 0;
+        s3_trig       = 0;
+      }
+
+      if (s4_trig && (s4_env_vol_init || s4_env_add)) {
+        s4_running    = 1;
+        s4_len_timer  = s4_len_timer_init;
+        s4_env_vol    = s4_env_vol_init;
+        s4_env_timer  = s4_env_timer_init;
+        s4_freq_timer = s4_freq_timer_init;
+        s4_lfsr       = 0;
+        s4_trig       = 0;
+      }
+
+      //----------
+      // Register writes
+
+      if (write && addr >= 0xFF10 && addr <= 0xFF26) {
+        switch (addr) {
+          case 0xFF10: {
+            s1_sweep_shift      = b3(data_in, 0);
+            s1_sweep_dir        = b1(data_in, 3);
+            s1_sweep_timer_init = b3(data_in, 4);
+            break;
+          }
+          case 0xFF11: {
+            s1_len_timer_init = b6(data_in, 0);
+            s1_duty           = b2(data_in, 6);
+            break;
+          }
+          case 0xFF12: {
+            s1_env_timer_init = b3(data_in, 0);
+            s1_env_add        = b1(data_in, 3);
+            s1_env_vol_init   = b4(data_in, 4);
+            break;
+          }
+          case 0xFF13: {
+            s1_freq_timer_init = cat(b3(s1_freq_timer_init, 8), data_in);
+            break;
+          }
+          case 0xFF14: {
+            s1_freq_timer_init = cat(b3(data_in, 0), b8(s1_freq_timer_init, 0));
+            s1_len_en          = b1(data_in, 6);
+            s1_trig            = b1(data_in, 7);
+            break;
+          }
+
+          //----------
+
+          case 0xFF16: {
+            s2_len_timer_init = b6(data_in, 0);
+            s2_duty           = b2(data_in, 6);
+            break;
+          }
+          case 0xFF17: {
+            s2_env_timer_init = b3(data_in, 0);
+            s2_env_add        = b1(data_in, 3);
+            s2_env_vol_init   = b4(data_in, 4);
+            break;
+          }
+          case 0xFF18: {
+            s2_freq_timer_init = cat(b3(s2_freq_timer_init, 8), data_in);
+            break;
+          }
+          case 0xFF19: {
+            s2_freq_timer_init = cat(b3(data_in, 0), b8(s2_freq_timer_init, 0));
+            s2_len_en          = b1(data_in, 6);
+            s2_trig            = b1(data_in, 7);
+            break;
+          }
+
+          //----------
+
+          case 0xFF1A: {
+            s3_power = b1(data_in, 7);
+            break;
+          }
+          case 0xFF1B: {
+            s3_len_timer_init = b8(data_in, 0);
+            break;
+          }
+          case 0xFF1C: {
+            switch (b2(data_in, 5)) {
+              case 0: s3_volume_shift = 4; break;
+              case 1: s3_volume_shift = 0; break;
+              case 2: s3_volume_shift = 1; break;
+              case 3: s3_volume_shift = 2; break;
+            }
+            break;
+          }
+          case 0xFF1D: {
+            s3_freq_timer_init = cat(b3(s3_freq_timer_init, 8), data_in);
+            break;
+          }
+          case 0xFF1E: {
+            s3_freq_timer_init = cat(b3(data_in, 0), b8(s3_freq_timer_init, 0));
+            s3_len_en          = b1(data_in, 6);
+            s3_trig            = b1(data_in, 7);
+            break;
+          }
+
+          //----------
+
+          case 0xFF20: {
+            s4_len_timer_init = b6(data_in, 0);
+            break;
+          }
+          case 0xFF21: {
+            s4_env_timer_init = b3(data_in, 0);
+            s4_env_add        = b1(data_in, 3);
+            s4_env_vol_init   = b4(data_in, 4);
+            break;
+          }
+          case 0xFF22: {
+            s4_freq_timer_init = b3(data_in, 0);
+            s4_mode            = b1(data_in, 3);
+            s4_shift           = b4(data_in, 4);
+            break;
+          }
+          case 0xFF23: {
+            s4_len_en = b1(data_in, 6);
+            s4_trig   = b1(data_in, 7);
+            break;
+          }
+
+          //----------
+
+          case 0xFF24: {
+            volume_r = b3(data_in, 0) + 1;
+            volume_l = b3(data_in, 4) + 1;
+            break;
+          }
+          case 0xFF25: {
+            mix_r1 = b1(data_in, 0);
+            mix_r2 = b1(data_in, 1);
+            mix_r3 = b1(data_in, 2);
+            mix_r4 = b1(data_in, 3);
+            mix_l1 = b1(data_in, 4);
+            mix_l2 = b1(data_in, 5);
+            mix_l3 = b1(data_in, 6);
+            mix_l4 = b1(data_in, 7);
+            break;
+          }
+          case 0xFF26: {
+            spu_power = b1(data_in, 7);
+            break;
+          }
+          default: {
+            break;
+          }
+        }
+      }
 
 
       spu_clock_old = spu_clock_new;

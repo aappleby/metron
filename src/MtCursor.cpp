@@ -420,6 +420,23 @@ CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnNode call, int bx_width) {
   auto arg0 = call.get_field(field_arguments).named_child(0);
   auto arg1 = call.get_field(field_arguments).named_child(1);
 
+  auto arg0_text = arg0.text();
+
+  if (current_method->has_param(arg0_text)) {
+    //printf("bit extract!\n");
+    arg0_text = std::string(current_method->cname()) + "_" + arg0_text;
+  }
+
+  /*
+  auto arg0_field = current_mod->get_field(arg0_text);
+  if (arg0_field) {
+    if (arg0_field->is_input()) {
+      printf("INPUT FIELD %s!\n", arg0_field->cname());
+    }
+  }
+  */
+
+
   if (arg_count == 1) {
     if (arg0.sym == sym_number_literal) {
       // Explicitly sized literal - 8'd10
@@ -454,20 +471,20 @@ CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnNode call, int bx_width) {
     if (arg1.sym == sym_number_literal) {
       // Slice at offset
       if (bx_width == 1) {
-        err << emit_replacement(call, "%s[%s]", arg0.text().c_str(),
+        err << emit_replacement(call, "%s[%s]", arg0_text.c_str(),
                                 arg1.text().c_str());
       } else {
         int offset = atoi(arg1.start());
-        err << emit_replacement(call, "%s[%d:%d]", arg0.text().c_str(),
+        err << emit_replacement(call, "%s[%d:%d]", arg0_text.c_str(),
                                 bx_width - 1 + offset, offset);
       }
     } else {
       if (bx_width == 1) {
-        err << emit_replacement(call, "%s[%s]", arg0.text().c_str(),
+        err << emit_replacement(call, "%s[%s]", arg0_text.c_str(),
                                 arg1.text().c_str());
         ;
       } else {
-        err << emit_replacement(call, "%s[%d + %s : %s]", arg0.text().c_str(),
+        err << emit_replacement(call, "%s[%d + %s : %s]", arg0_text.c_str(),
                                 bx_width - 1, arg1.text().c_str(),
                                 arg1.text().c_str());
       }
@@ -490,6 +507,15 @@ CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnNode call,
 
   auto arg0 = call.get_field(field_arguments).named_child(0);
   auto arg1 = call.get_field(field_arguments).named_child(1);
+
+  auto arg0_text = arg0.text();
+
+  auto arg0_field = current_mod->get_field(arg0_text);
+  if (arg0_field) {
+    if (arg0_field->is_input()) {
+      printf("INPUT FIELD %s!\n", arg0_field->cname());
+    }
+  }
 
   if (arg_count == 1) {
     // Non-literal size-casting expression - bits'(expression)

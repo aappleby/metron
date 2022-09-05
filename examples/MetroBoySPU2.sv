@@ -183,6 +183,9 @@ module MetroBoySPU2 (
       length_tick = spu_tick[11];
       env_tick    = spu_tick[13];
 
+      //----------------------------------------
+      // Reg read
+
       if (tick_read) begin
         case (tick_addr)
           16'hFF10: data_out <= {1'd1, s1_sweep_timer_init, s1_sweep_dir, s1_sweep_shift};
@@ -292,7 +295,7 @@ module MetroBoySPU2 (
       //----------
       // s2 clock
 
-      if (s2_freq_timer == 11'b11111111111) begin
+      if (s2_freq_timer == 12'h7FF) begin
         s2_phase <= s2_phase + 1;
         s2_freq_timer <= s2_freq_timer_init;
       end
@@ -304,7 +307,7 @@ module MetroBoySPU2 (
       // s2 length
 
       if (length_tick && s2_running && s2_len_en) begin
-        if (s2_len_timer == 6'b111111) begin
+        if (s2_len_timer == 8'h3F) begin
           s2_len_timer <= 0;
           s2_running <= 0;
         end
@@ -372,28 +375,32 @@ module MetroBoySPU2 (
       //----------
       // s4 lfsr
 
-      lfsr_clock_old = 0;
-      lfsr_clock_new = 0;
+      lfsr_clock_old = spu_clock_old[s4_shift + 1];
+      lfsr_clock_new = spu_clock_new[s4_shift + 1];
 
-      case(s4_shift)
-        0 : begin lfsr_clock_old = spu_clock_old[1 ]; lfsr_clock_new = spu_clock_new[1 ];  end
-        1 : begin lfsr_clock_old = spu_clock_old[2 ]; lfsr_clock_new = spu_clock_new[2 ];  end
-        2 : begin lfsr_clock_old = spu_clock_old[3 ]; lfsr_clock_new = spu_clock_new[3 ];  end
-        3 : begin lfsr_clock_old = spu_clock_old[4 ]; lfsr_clock_new = spu_clock_new[4 ];  end
-        4 : begin lfsr_clock_old = spu_clock_old[5 ]; lfsr_clock_new = spu_clock_new[5 ];  end
-        5 : begin lfsr_clock_old = spu_clock_old[6 ]; lfsr_clock_new = spu_clock_new[6 ];  end
-        6 : begin lfsr_clock_old = spu_clock_old[7 ]; lfsr_clock_new = spu_clock_new[7 ];  end
-        7 : begin lfsr_clock_old = spu_clock_old[8 ]; lfsr_clock_new = spu_clock_new[8 ];  end
-        8 : begin lfsr_clock_old = spu_clock_old[9 ]; lfsr_clock_new = spu_clock_new[9 ];  end
-        9 : begin lfsr_clock_old = spu_clock_old[10]; lfsr_clock_new = spu_clock_new[10];  end
-        10: begin lfsr_clock_old = spu_clock_old[11]; lfsr_clock_new = spu_clock_new[11];  end
-        11: begin lfsr_clock_old = spu_clock_old[12]; lfsr_clock_new = spu_clock_new[12];  end
-        12: begin lfsr_clock_old = spu_clock_old[13]; lfsr_clock_new = spu_clock_new[13];  end
-        13: begin lfsr_clock_old = spu_clock_old[14]; lfsr_clock_new = spu_clock_new[14];  end
-        14: begin lfsr_clock_old = spu_clock_old[15]; lfsr_clock_new = spu_clock_new[15];  end
-        15: begin lfsr_clock_old = 0;                 lfsr_clock_new = 0;                  end
-      endcase
+      /*
+      logic<1> lfsr_clock_old = 0;
+      logic<1> lfsr_clock_new = 0;
 
+      switch(s4_shift) {
+        case 0 : { lfsr_clock_old = spu_clock_old[1 ]; lfsr_clock_new = spu_clock_new[1 ]; break; }
+        case 1 : { lfsr_clock_old = spu_clock_old[2 ]; lfsr_clock_new = spu_clock_new[2 ]; break; }
+        case 2 : { lfsr_clock_old = spu_clock_old[3 ]; lfsr_clock_new = spu_clock_new[3 ]; break; }
+        case 3 : { lfsr_clock_old = spu_clock_old[4 ]; lfsr_clock_new = spu_clock_new[4 ]; break; }
+        case 4 : { lfsr_clock_old = spu_clock_old[5 ]; lfsr_clock_new = spu_clock_new[5 ]; break; }
+        case 5 : { lfsr_clock_old = spu_clock_old[6 ]; lfsr_clock_new = spu_clock_new[6 ]; break; }
+        case 6 : { lfsr_clock_old = spu_clock_old[7 ]; lfsr_clock_new = spu_clock_new[7 ]; break; }
+        case 7 : { lfsr_clock_old = spu_clock_old[8 ]; lfsr_clock_new = spu_clock_new[8 ]; break; }
+        case 8 : { lfsr_clock_old = spu_clock_old[9 ]; lfsr_clock_new = spu_clock_new[9 ]; break; }
+        case 9 : { lfsr_clock_old = spu_clock_old[10]; lfsr_clock_new = spu_clock_new[10]; break; }
+        case 10: { lfsr_clock_old = spu_clock_old[11]; lfsr_clock_new = spu_clock_new[11]; break; }
+        case 11: { lfsr_clock_old = spu_clock_old[12]; lfsr_clock_new = spu_clock_new[12]; break; }
+        case 12: { lfsr_clock_old = spu_clock_old[13]; lfsr_clock_new = spu_clock_new[13]; break; }
+        case 13: { lfsr_clock_old = spu_clock_old[14]; lfsr_clock_new = spu_clock_new[14]; break; }
+        case 14: { lfsr_clock_old = spu_clock_old[15]; lfsr_clock_new = spu_clock_new[15]; break; }
+        case 15: { lfsr_clock_old = 0;                 lfsr_clock_new = 0;                 break; }
+      }
+      */
 
       if ((lfsr_clock_old == 0) && (lfsr_clock_new == 1)) begin
         if (s4_freq_timer) begin
@@ -598,10 +605,79 @@ module MetroBoySPU2 (
         endcase
       end
 
+      //----------
+      // Wavetable writes
+
+      if (tick_write && tick_addr >= 16'hFF30 && tick_addr <= 16'hFF3F) begin
+        s3_wave[tick_addr & 4'hF] <= tick_data_in;
+      end
 
       spu_clock_old <= spu_clock_new;
     end
   end
+
+  //----------------------------------------
+
+  /*
+  void dump(Dumper& d) const {
+    d("\002--------------SPU--------------\001\n");
+
+    const char* bar = "===============";
+
+    logic<4> s3_env_vol = 0;
+    switch (s3_volume_shift) {
+    case 0: s3_env_vol = 15; break;
+    case 1: s3_env_vol = 7; break;
+    case 2: s3_env_vol = 3; break;
+    case 4: s3_env_vol = 0; break;
+    }
+
+    d("s1 running %d\n", s1_running);
+    d("s2 running %d\n", s2_running);
+    d("s3 running %d\n", s3_running);
+    d("s4 running %d\n", s4_running);
+
+    d("s1 len %d\n", s1_len_timer);
+    d("s2 len %d\n", s2_len_timer);
+    d("s3 len %d\n", s3_len_timer);
+    d("s4 len %d\n", s4_len_timer);
+
+    d("s1 env timer %d\n", s1_env_timer);
+    d("s2 env timer %d\n", s2_env_timer);
+    d("s4 env timer %d\n", s4_env_timer);
+
+    d("s1 vol %2d %s\n", s1_env_vol, bar + 15 - s1_env_vol);
+    d("s2 vol %2d %s\n", s2_env_vol, bar + 15 - s2_env_vol);
+    d("s3 vol %2d %s\n", s3_env_vol, bar + 15 - s3_env_vol);
+    d("s4 vol %2d %s\n", s4_env_vol, bar + 15 - s4_env_vol);
+
+    d("s1 sweep timer %2d\n", s1_sweep_timer);
+    d("s1 sweep freq  %2d\n", s1_sweep_freq);
+
+    d("s1 freq timer %d\n", s1_freq_timer);
+    d("s2 freq timer %d\n", s2_freq_timer);
+    d("s3 freq timer %d\n", s3_freq_timer);
+    d("s4 freq timer %d\n", s4_freq_timer);
+
+    d("s1 phase %d\n", s1_phase);
+    d("s2 phase %d\n", s2_phase);
+    d("s3 phase %d\n", s3_phase);
+
+    d("s4 lfsr 0x%04x\n", s4_lfsr);
+
+    char buf[33];
+    for (int i = 0; i < 16; i++) {
+      logic<4> a = b4(s3_wave[i], 4);
+      logic<4> b = b4(s3_wave[i], 0);
+
+      buf[2 * i + 0] = a > 9 ? 'A' + a - 10 : '0' + a;
+      buf[2 * i + 1] = b > 9 ? 'B' + b - 10 : '0' + b;
+    }
+
+    buf[32] = 0;
+    d("[%s]\n", buf);
+  }
+  */
 
    // signals
    // signals

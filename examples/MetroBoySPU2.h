@@ -1,3 +1,4 @@
+#pragma once
 #include "metron_tools.h"
 
 //------------------------------------------------------------------------------
@@ -158,6 +159,9 @@ public:
       logic<1> length_tick = b1(spu_tick, 11);
       logic<1> env_tick    = b1(spu_tick, 13);
 
+      //----------------------------------------
+      // Reg read
+
       if (read) {
         switch (addr) {
           case 0xFF10: data_out = cat(b1(1), s1_sweep_timer_init, s1_sweep_dir, s1_sweep_shift); break;
@@ -266,7 +270,7 @@ public:
       //----------
       // s2 clock
 
-      if (s2_freq_timer == 0b11111111111) {
+      if (s2_freq_timer == 0x7FF) {
         s2_phase = s2_phase + 1;
         s2_freq_timer = s2_freq_timer_init;
       }
@@ -278,7 +282,7 @@ public:
       // s2 length
 
       if (length_tick && s2_running && s2_len_en) {
-        if (s2_len_timer == 0b111111) {
+        if (s2_len_timer == 0x3F) {
           s2_len_timer = 0;
           s2_running = 0;
         }
@@ -344,6 +348,10 @@ public:
       //----------
       // s4 lfsr
 
+      logic<1> lfsr_clock_old = spu_clock_old[s4_shift + 1];
+      logic<1> lfsr_clock_new = spu_clock_new[s4_shift + 1];
+
+      /*
       logic<1> lfsr_clock_old = 0;
       logic<1> lfsr_clock_new = 0;
 
@@ -365,7 +373,7 @@ public:
         case 14: { lfsr_clock_old = spu_clock_old[15]; lfsr_clock_new = spu_clock_new[15]; break; }
         case 15: { lfsr_clock_old = 0;                 lfsr_clock_new = 0;                 break; }
       }
-
+      */
 
       if ((lfsr_clock_old == 0) && (lfsr_clock_new == 1)) {
         if (s4_freq_timer) {
@@ -591,10 +599,79 @@ public:
         }
       }
 
+      //----------
+      // Wavetable writes
+
+      if (write && addr >= 0xFF30 && addr <= 0xFF3F) {
+        s3_wave[addr & 0xF] = data_in;
+      }
 
       spu_clock_old = spu_clock_new;
     }
   }
+
+  //----------------------------------------
+
+  /*
+  void dump(Dumper& d) const {
+    d("\002--------------SPU--------------\001\n");
+
+    const char* bar = "===============";
+
+    logic<4> s3_env_vol = 0;
+    switch (s3_volume_shift) {
+    case 0: s3_env_vol = 15; break;
+    case 1: s3_env_vol = 7; break;
+    case 2: s3_env_vol = 3; break;
+    case 4: s3_env_vol = 0; break;
+    }
+
+    d("s1 running %d\n", s1_running);
+    d("s2 running %d\n", s2_running);
+    d("s3 running %d\n", s3_running);
+    d("s4 running %d\n", s4_running);
+
+    d("s1 len %d\n", s1_len_timer);
+    d("s2 len %d\n", s2_len_timer);
+    d("s3 len %d\n", s3_len_timer);
+    d("s4 len %d\n", s4_len_timer);
+
+    d("s1 env timer %d\n", s1_env_timer);
+    d("s2 env timer %d\n", s2_env_timer);
+    d("s4 env timer %d\n", s4_env_timer);
+
+    d("s1 vol %2d %s\n", s1_env_vol, bar + 15 - s1_env_vol);
+    d("s2 vol %2d %s\n", s2_env_vol, bar + 15 - s2_env_vol);
+    d("s3 vol %2d %s\n", s3_env_vol, bar + 15 - s3_env_vol);
+    d("s4 vol %2d %s\n", s4_env_vol, bar + 15 - s4_env_vol);
+
+    d("s1 sweep timer %2d\n", s1_sweep_timer);
+    d("s1 sweep freq  %2d\n", s1_sweep_freq);
+
+    d("s1 freq timer %d\n", s1_freq_timer);
+    d("s2 freq timer %d\n", s2_freq_timer);
+    d("s3 freq timer %d\n", s3_freq_timer);
+    d("s4 freq timer %d\n", s4_freq_timer);
+
+    d("s1 phase %d\n", s1_phase);
+    d("s2 phase %d\n", s2_phase);
+    d("s3 phase %d\n", s3_phase);
+
+    d("s4 lfsr 0x%04x\n", s4_lfsr);
+
+    char buf[33];
+    for (int i = 0; i < 16; i++) {
+      logic<4> a = b4(s3_wave[i], 4);
+      logic<4> b = b4(s3_wave[i], 0);
+
+      buf[2 * i + 0] = a > 9 ? 'A' + a - 10 : '0' + a;
+      buf[2 * i + 1] = b > 9 ? 'B' + b - 10 : '0' + b;
+    }
+
+    buf[32] = 0;
+    d("[%s]\n", buf);
+  }
+  */
 
   logic<9>  out_r; // signals
   logic<9>  out_l; // signals

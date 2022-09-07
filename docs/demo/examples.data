@@ -1,2661 +1,780 @@
-/// plait_noparse
-
 #pragma once
-
-#include "gates.h"
-#include "regs.h"
-
-//==============================================================================
-//             CONTROL
-//==============================================================================
-
-struct SpuControl {
-  /*#p15.CEMO*/ DFF17 CEMO_1MHZ;
-  /*_p15.ATEP*/ DFF17 ATEP_2MHZ;
-
-  //----------
-  // clocks for the apu
-
-  /*_p01.CERY*/ DFF17 CERY_2M;
-  /*_p01.ATYK*/ DFF17 ATYK_2M;
-  /*_p01.AVOK*/ DFF17 AVOK_1M;
-  /*_p09.AJER*/ DFF17 AJER_2M;
-  /*_p01.JESO*/ DFF17 JESO_CLK_512K;
-
-  /*_p01.BARA*/ DFF17 BARA_CLK_512;
-  /*_p01.CARU*/ DFF17 CARU_CLK_256;
-  /*_p01.BYLU*/ DFF17 BYLU_CLK_128;
-
-  //----------
-  // FF24 NR50
-  
-  /*_p09.APEG*/ DFF9 APEG_NR50_VOL_L0;
-  /*_p09.BYGA*/ DFF9 BYGA_NR50_VOL_L1;
-  /*_p09.AGER*/ DFF9 AGER_NR50_VOL_L2;
-  /*_p09.APOS*/ DFF9 APOS_NR50_VIN_TO_L;
-  /*_p09.BYRE*/ DFF9 BYRE_NR50_VOL_R0;
-  /*_p09.BUMO*/ DFF9 BUMO_NR50_VOL_R1;
-  /*_p09.COZU*/ DFF9 COZU_NR50_VOL_R2;
-  /*_p09.BEDU*/ DFF9 BEDU_NR50_VIN_TO_R;
-
-  //----------
-  // FF25 NR51
-
-  /*_p09.ANEV*/ DFF9 ANEV_NR51_D0; // these are mixer control bits
-  /*_p09.BOGU*/ DFF9 BOGU_NR51_D1;
-  /*_p09.BAFO*/ DFF9 BAFO_NR51_D2;
-  /*_p09.ATUF*/ DFF9 ATUF_NR51_D3;
-  /*_p09.BUME*/ DFF9 BUME_NR51_D4;
-  /*_p09.BOFA*/ DFF9 BOFA_NR51_D5;
-  /*_p09.BEFO*/ DFF9 BEFO_NR51_D6;
-  /*_p09.BEPU*/ DFF9 BEPU_NR51_D7;
-
-  //----------
-  // FF26 NR52
-
-  // DBG_APUn polarity?
-  /*_p09.FERO*/ DFF9  FERO_NR52_DBG_APUn;     // secret debug bit
-  /*_p09.BOWY*/ DFF17 BOWY_NR52_DBG_SWEEP;    // secret debug bit
-  /*_p09.HADA*/ DFF17 HADA_NR52_ALL_SOUND_ON; //FF26_7
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//==============================================================================
-//             CHANNEL 1
-//==============================================================================
-
-struct SpuChannel1 {
-
-  /*#p13.HOCA*/ wire HOCA_CH1_AMP_ENn() const {
-    return nor5(JAFY_NR12_ENV_DIR.qn_new(),
-                JATY_NR12_VOL0.qn_new(),
-                JAXO_NR12_VOL1.qn_new(),
-                JENA_NR12_VOL2.qn_new(),
-                JOPU_NR12_VOL3.qn_new());
-  }
-
-
-  /*#p13.BUGE*/ wire BUGE_SWEEP_ENn() const {
-    return nand3(ANAZ_NR10_SWEEP_SHIFT2.qp_new(),
-                 ARAX_NR10_SWEEP_SHIFT1.qp_new(),
-                 BANY_NR10_SWEEP_SHIFT0.qp_new());
-  }
-
-  /*?p13.EGOR*/ wire EGOR_SHIFT_CLK() const {
-    /*#p13.EGYP*/   wire EGYP_SHIFT_CLK = nor2(FEMU_SHIFTINGn.qn_new(), DYFA_CLK_1M());
-    /*#p13.CELE*/   wire CELE_SWEEP_ENp = not1(BUGE_SWEEP_ENn());
-    /*#p13.DODY*/   wire DODY_SHIFT_CLK = nor2(EGYP_SHIFT_CLK, CELE_SWEEP_ENp); // border color wrong on die
-    /*?p13.EGOR*/ wire EGOR_SHIFT_CLK = not1(DODY_SHIFT_CLK); // This looks like a nor3, but it almost definiteily is a not1.
-    return EGOR_SHIFT_CLK;
-  }
-
-  /*#p12.FAJA*/ wire FAJA_SHIFT_CLK() const { return not1(EGOR_SHIFT_CLK()); }
-  /*#p12.EJYB*/ wire EJYB_SHIFT_CLK() const { return not1(FAJA_SHIFT_CLK()); }
-  /*#p12.CYBE*/ wire CYBE_SHIFT_CLK() const { return not1(EJYB_SHIFT_CLK()); }
-  /*#p12.BECY*/ wire BECY_SHIFT_CLK() const { return not1(CYBE_SHIFT_CLK()); }
-
-
-
-  /*#p09.DYFA*/ wire DYFA_CLK_1M() const { return not1(CALO_CLK_1M.qn_new()); }
-
-  /*#p12.ARYL*/ wire ARYL_NR10_SWEEP_DIRn() const { return not1(AVAF_NR10_SWEEP_DIR_p.qp_new()); }
-
-  // so this implies that NR12_DELAY* is DFFn?
-  /*#p13.KOMA*/ wire KOMA_ENV_OFFp() const { return nor3(JUSA_NR12_DELAY0n.qn_new(), JUZY_NR12_DELAY1n.qn_new(), JOMA_NR12_DELAY2n.qn_new()); }
-
-  /*#p13.CYTE*/ wire CYTE_SAMPLE_CLKn() const { return not1(COMY_SAMPLE_CLKp.qp_new()); }
-  /*#p13.COPE*/ wire COPE_SAMPLE_CLKp() const { return not1(CYTE_SAMPLE_CLKn()); }
-  /*#p13.DAJO*/ wire DAJO_SAMPLE_CLKn() const { return not1(COPE_SAMPLE_CLKp()); }
-  /*#p11.EPYK*/ wire EPYK_FREQ_LOADn()  const { return nor2(COPE_SAMPLE_CLKp(), FEKU_CH1_TRIGp.qp_new()); }
-  /*#p11.FUME*/ wire FUME_FREQ_LOADp()  const { return not1(EPYK_FREQ_LOADn()); }
-  /*#p11.DEGA*/ wire DEGA_FREQ_LOADp()  const { return not1(EPYK_FREQ_LOADn()); }
-  /*#p11.DAKO*/ wire DAKO_FREQ_LOADp()  const { return not1(EPYK_FREQ_LOADn()); }
-
-
-
-  /*#p11.BANY*/ DFF9 BANY_NR10_SWEEP_SHIFT0;
-  /*#p11.ARAX*/ DFF9 ARAX_NR10_SWEEP_SHIFT1;
-  /*#p11.ANAZ*/ DFF9 ANAZ_NR10_SWEEP_SHIFT2;
-  /*#p11.AVAF*/ DFF9 AVAF_NR10_SWEEP_DIR_p;
-  /*#p11.ADEK*/ DFF9 ADEK_NR10_SWEEP_PERIOD0p;
-  /*#p11.BANA*/ DFF9 BANA_NR10_SWEEP_PERIOD1p;
-  /*#p11.BOTU*/ DFF9 BOTU_NR10_SWEEP_PERIOD2p;
-
-  //----------
-
-  /*_p11.CENA*/ DFF9  CENA_NR11_DUTY_0;
-  /*_p11.DYCA*/ DFF9  DYCA_NR11_DUTY_1;
-  /*_p13.BACY*/ DFF20 BACY_NR11_LEN0;
-  /*_p13.CAVY*/ DFF20 CAVY_NR11_LEN1;
-  /*_p13.BOVY*/ DFF20 BOVY_NR11_LEN2;
-  /*_p13.CUNO*/ DFF20 CUNO_NR11_LEN3;
-  /*_p13.CURA*/ DFF20 CURA_NR11_LEN4;
-  /*_p13.ERAM*/ DFF20 ERAM_NR11_LEN5;
-
-  //----------
-
-  /*_p11.JUSA*/ DFF9 JUSA_NR12_DELAY0n;
-  /*_p11.JUZY*/ DFF9 JUZY_NR12_DELAY1n;
-  /*_p11.JOMA*/ DFF9 JOMA_NR12_DELAY2n;
-  /*_p11.JAFY*/ DFF9 JAFY_NR12_ENV_DIR;
-  /*_p11.JATY*/ DFF9 JATY_NR12_VOL0;
-  /*_p11.JAXO*/ DFF9 JAXO_NR12_VOL1;
-  /*_p11.JENA*/ DFF9 JENA_NR12_VOL2;
-  /*_p11.JOPU*/ DFF9 JOPU_NR12_VOL3;
-
-  //----------
-
-  /*_p11.BOKO*/ DFF9 BOKO_NR14_LEN_EN;
-  /*#p13.DUPE*/ DFF9 DUPE_NR14_TRIG;
-
-  /*#p13.CYTO*/ NorLatch CYTO_CH1_ACTIVEp;
-
-  /*#p13.EZEC*/ DFF17 EZEC_CH1_TRIGn;
-
-  /*_p12.HYKA*/ DFF22 HYKA_CH1_FREQ00;
-  /*_p12.JYKA*/ DFF22 JYKA_CH1_FREQ01;
-  /*_p12.HAVO*/ DFF22 HAVO_CH1_FREQ02;
-  /*_p12.EDUL*/ DFF22 EDUL_CH1_FREQ03;
-  /*_p12.FELY*/ DFF22 FELY_CH1_FREQ04;
-  /*_p12.HOLU*/ DFF22 HOLU_CH1_FREQ05;
-  /*_p12.HYXU*/ DFF22 HYXU_CH1_FREQ06;
-  /*_p12.HOPO*/ DFF22 HOPO_CH1_FREQ07;
-  /*_p12.DYGY*/ DFF22 DYGY_CH1_FREQ08;
-  /*_p12.EVAB*/ DFF22 EVAB_CH1_FREQ09;
-  /*_p12.AXAN*/ DFF22 AXAN_CH1_FREQ10;
-
-  /*_p09.CALO*/ DFF17 CALO_CLK_1M;
-
-  /*_p13.FEKU*/ DFF17 FEKU_CH1_TRIGp;
-  /*_p13.FARE*/ DFF17 FARE_CH1_TRIGp;
-  /*_p13.FYTE*/ DFF17 FYTE_CH1_TRIGp;
-
-  /*_p13.BYTE*/ DFF17 BYTE_SHIFT_DONE;
-
-  /*_p13.CERO*/ DFF17 CERO_CH1_LEN_DONE;
-
-  /*_p11.GAXE*/ DFF20 GAXE_CH1_FREQ_CNT_00;
-  /*_p11.HYFE*/ DFF20 HYFE_CH1_FREQ_CNT_01;
-  /*_p11.JYTY*/ DFF20 JYTY_CH1_FREQ_CNT_02;
-  /*_p11.KYNA*/ DFF20 KYNA_CH1_FREQ_CNT_03;
-  /*_p11.JEMA*/ DFF20 JEMA_CH1_FREQ_CNT_04;
-  /*_p11.HYKE*/ DFF20 HYKE_CH1_FREQ_CNT_05;
-  /*_p11.FEVA*/ DFF20 FEVA_CH1_FREQ_CNT_06;
-  /*_p11.EKOV*/ DFF20 EKOV_CH1_FREQ_CNT_07;
-  /*_p11.EMUS*/ DFF20 EMUS_CH1_FREQ_CNT_08;
-  /*_p11.EVAK*/ DFF20 EVAK_CH1_FREQ_CNT_09;
-  /*_p11.COPU*/ DFF20 COPU_CH1_FREQ_CNT_10;  
-
-  /*#p09.BAZA*/ DFF17 BAZA_DBG_SWEEP_CLK;
-  /*_p13.BEXA*/ DFF17 BEXA_SWEEP_TRIGGERp;
-  /*_p13.CUPO*/ DFF20 CUPO_SWEEP_DELAY0p;
-  /*_p13.CYPU*/ DFF20 CYPU_SWEEP_DELAY1p;
-  /*_p13.CAXY*/ DFF20 CAXY_SWEEP_DELAY2p;
-
-  /*_p12.FABU*/ DFF22 FABU_CH1_SHIFT00;
-  /*_p12.JEFA*/ DFF22 JEFA_CH1_SHIFT01;
-  /*_p12.GOGA*/ DFF22 GOGA_CH1_SHIFT02;
-  /*_p12.JOLU*/ DFF22 JOLU_CH1_SHIFT03;
-  /*_p12.JOTA*/ DFF22 JOTA_CH1_SHIFT04;
-  /*_p12.FUDE*/ DFF22 FUDE_CH1_SHIFT05;
-  /*_p12.FEDO*/ DFF22 FEDO_CH1_SHIFT06;
-  /*_p12.EXAC*/ DFF22 EXAC_CH1_SHIFT07;
-  /*_p12.ELUX*/ DFF22 ELUX_CH1_SHIFT08;
-  /*_p12.AGEZ*/ DFF22 AGEZ_CH1_SHIFT09;
-  /*_p12.BEKU*/ DFF22 BEKU_CH1_SHIFT10;
-
-  /*_p12.GALO*/ DFF11 GALO_SUM_A00;
-  /*_p12.JODE*/ DFF11 JODE_SUM_A01;
-  /*_p12.KARE*/ DFF11 KARE_SUM_A02;
-  /*_p12.JYME*/ DFF11 JYME_SUM_A03;
-  /*_p12.GYME*/ DFF11 GYME_SUM_A04;
-  /*_p12.FAXO*/ DFF11 FAXO_SUM_A05;
-  /*_p12.EXAP*/ DFF11 EXAP_SUM_A06;
-  /*_p12.DELE*/ DFF11 DELE_SUM_A07;
-  /*_p12.DEXE*/ DFF11 DEXE_SUM_A08;
-  /*_p12.DOFY*/ DFF11 DOFY_SUM_A09;
-  /*_p12.DOLY*/ DFF11 DOLY_SUM_A10;
-
-  /*_p12.HORA*/ DFF11 HORA_SUM_B00;
-  /*_p12.HOPA*/ DFF11 HOPA_SUM_B01;
-  /*_p12.HELE*/ DFF11 HELE_SUM_B02;
-  /*_p12.JAPE*/ DFF11 JAPE_SUM_B03;
-  /*_p12.JETE*/ DFF11 JETE_SUM_B04;
-  /*_p12.GELE*/ DFF11 GELE_SUM_B05;
-  /*_p12.EPYR*/ DFF11 EPYR_SUM_B06;
-  /*_p12.EDOK*/ DFF11 EDOK_SUM_B07;
-  /*_p12.DEFA*/ DFF11 DEFA_SUM_B08;
-  /*_p12.ETER*/ DFF11 ETER_SUM_B09;
-  /*_p12.DEVA*/ DFF11 DEVA_SUM_B10;
-
-  /*_p13.FEMU*/ NandLatch FEMU_SHIFTINGn;
-
-  /*#p13.COPA*/ DFF20 COPA_SHIFTCNT0;
-  /*#p13.CAJA*/ DFF20 CAJA_SHIFTCNT1;
-  /*#p13.BYRA*/ DFF20 BYRA_SHIFTCNT2;
-
-  /*_p13.FYFO*/ NorLatch FYFO_CH1_TRIGn;
-  /*_p13.COMY*/ DFF17 COMY_SAMPLE_CLKp;
-  /*_p13.GEXU*/ NandLatch GEXU_FREQ_GATE;
-
-  /*_p13.ESUT*/ DFF17 ESUT_PHASE_xBxDxFxH;
-  /*_p13.EROS*/ DFF13 EROS_PHASE_xxCDxxGH;
-  /*_p13.DAPE*/ DFF13 DAPE_PHASE_xxxxEFGH;
-
-  /*#p13.KOZY*/ DFF17 KOZY_ENV_CLKp;
-  /*#p13.KYNO*/ DFF17 KYNO_ENV_STOP;
-
-  /*_p13.JOVA*/ DFF20 JOVA_ENV_DELAY0p;
-  /*_p13.KENU*/ DFF20 KENU_ENV_DELAY1p;
-  /*_p13.KERA*/ DFF20 KERA_ENV_DELAY2p;  
-
-  /*_p13.HEVO*/ DFF20 HEVO_CH1_ENV3p;
-  /*_p13.HOKO*/ DFF20 HOKO_CH1_ENV2p;
-  /*_p13.HEMY*/ DFF20 HEMY_CH1_ENV1p;
-  /*_p13.HAFO*/ DFF20 HAFO_CH1_ENV0p;
-
-  /*_p13.KALY*/ DFF17 KALY_ENV_DELAY_CLK_64n;
-
-  /*_p13.DUWO*/ DFF17 DUWO_RAW_BIT_SYNCp;
-  /*#p13.KEZU*/ NorLatch KEZU_ENV_ACTIVE;
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//==============================================================================
-//             CHANNEL 2
-//==============================================================================
-
-struct SpuChannel2 {
-
-  /*#p15.ETUK*/ wire ETUK_CLK() const { return not1(GYKO_CLK.qp_new()); }
-  /*#p15.DAVU*/ wire DAVU_CLK() const { return not1(ETUK_CLK()); }
-  /*#p15.CULE*/ wire CULE_CLK() const { return not1(DAVU_CLK()); }
-
-  /*#p15.FUTE*/ wire FUTE_CH2_AMP_ENn() const {
-    return nor5(FORE_NR22_ADD.qn_new(),
-                GATA_NR22_V0.qn_new(),
-                GUFE_NR22_V1.qn_new(),
-                GURA_NR22_V2.qn_new(),
-                GAGE_NR22_V3.qn_new());
-  }
-
-  /*#p15.JUPU*/ wire JUPU_ENV_OFFp() const { return nor3(HYFU_NR22_P0n.qn_new(), HORE_NR22_P1n.qn_new(), HAVA_NR22_P2n.qn_new()); }
-
-
-  /*_p15.ERYC*/ DFF20 ERYC_NR21_L0;
-  /*_p15.CERA*/ DFF20 CERA_NR21_L1;
-  /*_p15.CONU*/ DFF20 CONU_NR21_L2;
-  /*_p15.CAME*/ DFF20 CAME_NR21_L3;
-  /*_p15.BUVA*/ DFF20 BUVA_NR21_L4;
-  /*_p15.AKYD*/ DFF20 AKYD_NR21_L5;
-  /*_p14.BERA*/ DFF9  BERA_NR21_D6;
-  /*_p14.BAMY*/ DFF9  BAMY_NR21_D7;
-
-  //----------
-  // FF17 NR22 - channel 2 vol/env/period
-
-  /*_p14.HYFU*/ DFF9 HYFU_NR22_P0n;
-  /*_p14.HORE*/ DFF9 HORE_NR22_P1n;
-  /*_p14.HAVA*/ DFF9 HAVA_NR22_P2n;
-  /*_p14.FORE*/ DFF9 FORE_NR22_ADD;
-  /*_p14.GATA*/ DFF9 GATA_NR22_V0;
-  /*_p14.GUFE*/ DFF9 GUFE_NR22_V1;
-  /*_p14.GURA*/ DFF9 GURA_NR22_V2;
-  /*_p14.GAGE*/ DFF9 GAGE_NR22_V3;
-
-  //----------
-
-  DFF9 FOFE_NR23_FREQ_00;
-  DFF9 FOVA_NR23_FREQ_01;
-  DFF9 FEDY_NR23_FREQ_02;
-  DFF9 FOME_NR23_FREQ_03;
-  DFF9 FORA_NR23_FREQ_04;
-  DFF9 GODA_NR23_FREQ_05;
-  DFF9 GUMY_NR23_FREQ_06;
-  DFF9 GUPU_NR23_FREQ_07;
-
-  //----------
-
-  DFF9 JEFU_NR24_FREQ_08;
-  DFF9 JANY_NR24_FREQ_09;
-  DFF9 JUPY_NR24_FREQ_10;
-
-  /*_p15.DANE*/ NorLatch DANE_CH2_ACTIVEp;
-
-  DFF20 JORE_CH2_ENV_DELAYp;
-  DFF20 JONA_CH2_ENV_DELAYp;
-  DFF20 JEVY_CH2_ENV_DELAYp;
-  DFF17 JOPA_CH2_ENV_TICK;
-
-  DFF20 DONE_CH2_FREQ_00;
-  DFF20 DYNU_CH2_FREQ_01;
-  DFF20 EZOF_CH2_FREQ_02;
-  DFF20 CYVO_CH2_FREQ_03;
-  DFF20 FUXO_CH2_FREQ_04;
-  DFF20 GANO_CH2_FREQ_05;
-  DFF20 GOCA_CH2_FREQ_06;
-  DFF20 GANE_CH2_FREQ_07;
-  DFF20 HEVY_CH2_FREQ_08;
-  DFF20 HEPU_CH2_FREQ_09;
-  DFF20 HERO_CH2_FREQ_10;
-
-  DFF17 DOME_CH2_OUTp;
-
-  DFF17 ELOX_CH2_TRIGp;
-  DFF17 CAZA_CH2_TRIGp;
-  DFF9 EMER_NR24_LENENp;
-  DFF17 DOPE_CH2_TRIGp;
-
-  NorLatch DALA_CH2_TRIGp;
-
-  DFF9 ETAP_NR24_TRIGp;
-  DFF17 DORY_CH2_TRIGp;
-  DFF17 GYKO_CLK;
-  /*#p15.CANO*/ DFF17 CANO_00;
-  /*#p15.CAGY*/ DFF13 CAGY_01;
-  /*#p15.DYVE*/ DFF13 DYVE_02;
-  NandLatch BUTA_FREQ_GATEp;
-  DFF20 FENA_CH2_VOL3;
-  DFF20 FOMY_CH2_VOL2;
-  DFF20 FETE_CH2_VOL1;
-  DFF20 FENO_CH2_VOL0;
-  DFF17 HEPO;
-  NorLatch JEME;
-
-  DFF17 JYNA_CLK_64n;
-  /*_p15.CYRE*/ DFF17 CYRE_CH2_LEN_DONEp;
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//==============================================================================
-//             CHANNEL 3
-//==============================================================================
-
-struct SpuChannel3 {
-
-  /*#p18.HEMA*/ wire HEMA_WAVE_CLKp() const { return not1(HUNO_WAVE_CLKn.qp_new()); }
-  /*#p18.GASE*/ wire GASE_WAVE_CLKn() const { return not1(HEMA_WAVE_CLKp()); }
-  /*#p18.DERO*/ wire DERO_WAVE_CLKp() const { return not1(GASE_WAVE_CLKn()); }
-
-
-
-  /*_p16.KOGA*/ DFF9 KOGA_NR33_FREQ00;
-  /*_p16.JOVY*/ DFF9 JOVY_NR33_FREQ01;
-  /*_p16.JAXA*/ DFF9 JAXA_NR33_FREQ02;
-  /*_p16.JEFE*/ DFF9 JEFE_NR33_FREQ03;
-  /*_p16.JYPO*/ DFF9 JYPO_NR33_FREQ04;
-  /*_p16.JOVE*/ DFF9 JOVE_NR33_FREQ05;
-  /*_p16.KANA*/ DFF9 KANA_NR33_FREQ06;
-  /*_p16.KOGU*/ DFF9 KOGU_NR33_FREQ07;
-
-  //----------
-
-  /*_p16.JEMO*/ DFF9 JEMO_NR34_FREQ08;
-  /*_p16.JETY*/ DFF9 JETY_NR34_FREQ09;
-  /*_p16.JACY*/ DFF9 JACY_NR34_FREQ10;
-  /*_p16.HOTO*/ DFF9 HOTO_NR34_LENEN;
-  /*_p16.GAVU*/ DFF9 GAVU_NR34_TRIG;
-
-  /*_p18.DAVO*/ DFF17    DAVO_CH3_ACTIVEp;
-
-  /*_p16.GOFY*/ NorLatch GOFY_CH3_TRIGn;
-  NorLatch FOZU;
-
-
-  /*_p16.GUXE*/ DFF9 GUXE_CH3_AMP_ENn;
-
-  /*_p18.GEVO*/ DFF20 GEVO_CH3_LEN0p;
-  /*_p18.FORY*/ DFF20 FORY_CH3_LEN1p;
-  /*_p18.GATU*/ DFF20 GATU_CH3_LEN2p;
-  /*_p18.GAPO*/ DFF20 GAPO_CH3_LEN3p;
-  /*_p18.GEMO*/ DFF20 GEMO_CH3_LEN4p;
-  /*_p18.FORO*/ DFF20 FORO_CH3_LEN5p;
-  /*_p18.FAVE*/ DFF20 FAVE_CH3_LEN6p;
-  /*_p18.FYRU*/ DFF20 FYRU_CH3_LEN7p;  
-
-  /*_p18.FEXU*/ DFF17 FEXU_LEN_DONEp;
-
-  /*_p16.HUKY*/ DFF9 HUKY_NR32_VOL0;
-  /*_p16.HODY*/ DFF9 HODY_NR32_VOL1;
-
-  /*_p16.GARA*/ DFF17 GARA;
-  /*_p16.GYTA*/ DFF17 GYTA;
-  /*_p16.GYRA*/ DFF17 GYRA;
-
-  /*_p18.KUTU*/ DFF20 KUTU_FREQ_00;
-  /*_p18.KUPE*/ DFF20 KUPE_FREQ_01;
-  /*_p18.KUNU*/ DFF20 KUNU_FREQ_02;
-  /*_p18.KEMU*/ DFF20 KEMU_FREQ_03;
-  /*_p18.KYGU*/ DFF20 KYGU_FREQ_04;
-  /*_p18.KEPA*/ DFF20 KEPA_FREQ_05;
-  /*_p18.KAFO*/ DFF20 KAFO_FREQ_06;
-  /*_p18.KENO*/ DFF20 KENO_FREQ_07;
-  /*_p18.KEJU*/ DFF20 KEJU_FREQ_08;
-  /*_p18.KEZA*/ DFF20 KEZA_FREQ_09;
-  /*_p18.JAPU*/ DFF20 JAPU_FREQ_10;
-
-  /*_p18.HUNO*/ DFF17 HUNO_WAVE_CLKn;
-  /*_p18.EFAR*/ DFF17 EFAR_WAVE_IDX0;
-  /*_p18.ERUS*/ DFF17 ERUS_WAVE_IDX1;
-  /*_p18.EFUZ*/ DFF17 EFUZ_WAVE_IDX2;
-  /*_p18.EXEL*/ DFF17 EXEL_WAVE_IDX3;
-  /*_p18.EFAL*/ DFF17 EFAL_WAVE_IDX4;
-  /*_p18.FETY*/ DFF17 FETY_WAVE_LOOP;
-
-  /*_p17.CYFO*/ DFF9 CYFO_SAMPLE_0;
-  /*_p17.CESY*/ DFF9 CESY_SAMPLE_1;
-  /*_p17.BUDY*/ DFF9 BUDY_SAMPLE_2;
-  /*_p17.BEGU*/ DFF9 BEGU_SAMPLE_3;
-  /*_p17.CUVO*/ DFF9 CUVO_SAMPLE_4;
-  /*_p17.CEVO*/ DFF9 CEVO_SAMPLE_5;
-  /*_p17.BORA*/ DFF9 BORA_SAMPLE_6;
-  /*_p17.BEPA*/ DFF9 BEPA_SAMPLE_7;
-
-  /*_p16.FOBA*/ DFF17 FOBA_CH3_TRIGp;
-  NandLatch GUGU_FREQ_CLK_STOP;
-
-  // This is a pulse generator for wave ram control line 2/3
-  /*_p17.BUSA*/ DFF17 BUSA_WAVE_CLK_D1;
-  /*_p17.BANO*/ DFF17 BANO_WAVE_CLK_D2;
-  /*_p17.AZUS*/ DFF17 AZUS_WAVE_CLK_D3;
-  /*_p17.AZET*/ DFF17 AZET_WAVE_CLK_D4;
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//==============================================================================
-//             CHANNEL 4
-//==============================================================================
-
-struct SpuChannel4 {
-
-  /*#p20.GEVY*/ wire GEVY_CH4_AMP_ENn() const { 
-    return nor5(GEKY_NR42_ENV_DIR.qn_new(),
-                GARU_NR42_ENV0.qn_new(),
-                GOKY_NR42_ENV1.qn_new(),
-                GOZO_NR42_ENV2.qn_new(),
-                GEDU_NR42_ENV3.qn_new());
-  }
-
-  /*#p20.FOWA*/ wire FOWA_ENV_OFFp() const {
-    return nor3(EMOK_NR42_ENV_TIMER0.qn_new(), ETYJ_NR42_ENV_TIMER1.qn_new(), EZYK_NR42_ENV_TIMER2.qn_new());
-  }
-
-  /*#p20.FEME*/ bool FEME_LFSR_CLKp() const {
-    /*_p20.EMOF*/ wire EMOF_LFSR_CLK_MUX_7 = nor3(FETA_NR43_FREQ0.qn_new(), FYTO_NR43_FREQ1.qn_new(), GOGO_NR43_FREQ2.qn_new());
-    /*_p20.ELAR*/ wire ELAR_LFSR_CLK_MUX_6 = nor3(FETA_NR43_FREQ0.qn_new(), FYTO_NR43_FREQ1.qn_new(), GOGO_NR43_FREQ2.qp_new());
-    /*_p20.DUDU*/ wire DUDU_LFSR_CLK_MUX_5 = nor3(FETA_NR43_FREQ0.qn_new(), FYTO_NR43_FREQ1.qp_new(), GOGO_NR43_FREQ2.qn_new());
-    /*_p20.ETAT*/ wire ETAT_LFSR_CLK_MUX_4 = nor3(FETA_NR43_FREQ0.qn_new(), FYTO_NR43_FREQ1.qp_new(), GOGO_NR43_FREQ2.qp_new());
-    /*_p20.FURA*/ wire FURA_LFSR_CLK_MUX_3 = nor3(FETA_NR43_FREQ0.qp_new(), FYTO_NR43_FREQ1.qn_new(), GOGO_NR43_FREQ2.qn_new());
-    /*_p20.ETAR*/ wire ETAR_LFSR_CLK_MUX_2 = nor3(FETA_NR43_FREQ0.qp_new(), FYTO_NR43_FREQ1.qn_new(), GOGO_NR43_FREQ2.qp_new());
-    /*_p20.EVER*/ wire EVER_LFSR_CLK_MUX_1 = nor3(FETA_NR43_FREQ0.qp_new(), FYTO_NR43_FREQ1.qp_new(), GOGO_NR43_FREQ2.qn_new());
-    /*_p20.ETOV*/ wire ETOV_LFSR_CLK_MUX_0 = nor3(FETA_NR43_FREQ0.qp_new(), FYTO_NR43_FREQ1.qp_new(), GOGO_NR43_FREQ2.qp_new());
-
-    /*_p20.ETYR*/ wire ETYR_LFSR_CLK_MUX_A = amux6(ESEP_FREQ_13.qp_new(), DUDU_LFSR_CLK_MUX_5,
-                                                   DERE_FREQ_12.qp_new(), ETAT_LFSR_CLK_MUX_4,
-                                                   DOTA_FREQ_11.qp_new(), FURA_LFSR_CLK_MUX_3,
-                                                   ERUT_FREQ_10.qp_new(), ETAR_LFSR_CLK_MUX_2,
-                                                   DETE_FREQ_09.qp_new(), EVER_LFSR_CLK_MUX_1,
-                                                   DOSE_FREQ_08.qp_new(), ETOV_LFSR_CLK_MUX_0);
-
-    /*_p20.ELYX*/ wire ELYX_LFSR_CLK_MUX_B = amux4(DEMO_FREQ_07.qp_new(), EMOF_LFSR_CLK_MUX_7,
-                                                   DOKE_FREQ_06.qp_new(), ELAR_LFSR_CLK_MUX_6,
-                                                   DALE_FREQ_05.qp_new(), DUDU_LFSR_CLK_MUX_5,
-                                                   DURE_FREQ_04.qp_new(), ETAT_LFSR_CLK_MUX_4);
-
-    /*_p20.DARY*/ wire DARY_LFSR_CLK_MUX_C = amux4(EPOR_FREQ_03.qp_new(), FURA_LFSR_CLK_MUX_3,
-                                                   EZEF_FREQ_02.qp_new(), ETAR_LFSR_CLK_MUX_2,
-                                                   DEKO_FREQ_01.qp_new(), EVER_LFSR_CLK_MUX_1,
-                                                   CEXO_FREQ_00.qp_new(), ETOV_LFSR_CLK_MUX_0);
-
-    /*_p20.ERYF*/ wire ERYF_LFSR_CLK_MUX_D = or2(ELYX_LFSR_CLK_MUX_B, DARY_LFSR_CLK_MUX_C);
-
-
-    /*#p20.FEME*/ wire FEME_LFSR_CLKp = mux2p(GAFO_NR43_FREQ3.qn_new(), ETYR_LFSR_CLK_MUX_A, ERYF_LFSR_CLK_MUX_D);
-    return FEME_LFSR_CLKp;
-  }
-
-  /*#p20.JYJA*/ wire JYJA_LFSR_CLKn() const { return not1(FEME_LFSR_CLKp()); }
-  /*#p20.GUFA*/ wire GUFA_LFSR_CLKn() const { return not1(FEME_LFSR_CLKp()); }
-  /*#p20.GYVE*/ wire GYVE_LFSR_CLKp() const { return not1(GUFA_LFSR_CLKn()); }
-  /*#p20.KARA*/ wire KARA_LFSR_CLKn() const { return not1(GYVE_LFSR_CLKp()); }
-  /*#p20.KOPA*/ wire KOPA_LFSR_CLKp() const { return not1(KARA_LFSR_CLKn()); }
-
-
-
-
-  /*_p19.EMOK*/ DFF9 EMOK_NR42_ENV_TIMER0;
-  /*_p19.ETYJ*/ DFF9 ETYJ_NR42_ENV_TIMER1;
-  /*_p19.EZYK*/ DFF9 EZYK_NR42_ENV_TIMER2;
-  /*_p19.GEKY*/ DFF9 GEKY_NR42_ENV_DIR;
-  /*_p19.GARU*/ DFF9 GARU_NR42_ENV0;
-  /*_p19.GOKY*/ DFF9 GOKY_NR42_ENV1;
-  /*_p19.GOZO*/ DFF9 GOZO_NR42_ENV2;
-  /*_p19.GEDU*/ DFF9 GEDU_NR42_ENV3;
-
-  //----------
-
-  /*_p19.JARE*/ DFF9 JARE_NR43_DIV0;
-  /*_p19.JERO*/ DFF9 JERO_NR43_DIV1;
-  /*_p19.JAKY*/ DFF9 JAKY_NR43_DIV2;
-  /*_p19.JAMY*/ DFF9 JAMY_NR43_MODE;
-  /*_p19.FETA*/ DFF9 FETA_NR43_FREQ0;
-  /*_p19.FYTO*/ DFF9 FYTO_NR43_FREQ1;
-  /*_p19.GOGO*/ DFF9 GOGO_NR43_FREQ2;
-  /*_p19.GAFO*/ DFF9 GAFO_NR43_FREQ3;
-
-  /*_p20.GENA*/ NorLatch GENA_CH4_ACTIVEp;
-
-  //========================================
-  //             CHANNEL 4
-  //========================================
-
-  /*_p20.GONE*/ DFF17 GONE_CH4_TRIGp;
-  /*_p20.GORA*/ DFF17 GORA_CH4_TRIGp;
-  /*_p20.GATY*/ DFF17 GATY_CH4_TRIGp;
-  /*_p19.FUGO*/ DFF17 FUGO_CH4_LEN_DONEp;
-
-  /*#p19.DANO*/ DFF20 DANO_NR41_LEN0;
-  /*#p19.FAVY*/ DFF20 FAVY_NR41_LEN1;
-  /*#p19.DENA*/ DFF20 DENA_NR41_LEN2;
-  /*#p19.CEDO*/ DFF20 CEDO_NR41_LEN3;
-  /*#p19.FYLO*/ DFF20 FYLO_NR41_LEN4;
-  /*_p19.EDOP*/ DFF20 EDOP_NR41_LEN5;
-
-  /*#p19.CUNY*/ DFF9 CUNY_NR44_LEN_ENp;
-  /*#p19.HOGA*/ DFF9 HOGA_NR44_TRIG;
-  /*#p20.GYSU*/ DFF17 GYSU_CH4_TRIG;
-
-  /*#p20.HAZO*/ NorLatch HAZO_CH4_TRIGn;
-  /*#p20.JERY*/ NandLatch JERY_DIV_GATE;
-  /*#p20.JYCO*/ DFF20 JYCO_DIV0;
-  /*#p20.JYRE*/ DFF20 JYRE_DIV1;
-  /*#p20.JYFU*/ DFF20 JYFU_DIV2;
-  /*#p20.GARY*/ DFF17 GARY_FREQ_GATEp;
-
-  /*_p20.CEXO*/ DFF17 CEXO_FREQ_00;
-  /*_p20.DEKO*/ DFF17 DEKO_FREQ_01;
-  /*_p20.EZEF*/ DFF17 EZEF_FREQ_02;
-  /*_p20.EPOR*/ DFF17 EPOR_FREQ_03;
-  /*_p20.DURE*/ DFF17 DURE_FREQ_04;
-  /*_p20.DALE*/ DFF17 DALE_FREQ_05;
-  /*_p20.DOKE*/ DFF17 DOKE_FREQ_06;
-  /*_p20.DEMO*/ DFF17 DEMO_FREQ_07;
-  /*_p20.DOSE*/ DFF17 DOSE_FREQ_08;
-  /*_p20.DETE*/ DFF17 DETE_FREQ_09;
-  /*_p20.ERUT*/ DFF17 ERUT_FREQ_10;
-  /*_p20.DOTA*/ DFF17 DOTA_FREQ_11;
-  /*_p20.DERE*/ DFF17 DERE_FREQ_12;
-  /*_p20.ESEP*/ DFF17 ESEP_FREQ_13;
-
-  /*_p20.JOTO*/ DFF17 JOTO_LFSR_00;
-  /*_p20.KOMU*/ DFF17 KOMU_LFSR_01;
-  /*_p20.KETU*/ DFF17 KETU_LFSR_02;
-  /*_p20.KUTA*/ DFF17 KUTA_LFSR_03;
-  /*_p20.KUZY*/ DFF17 KUZY_LFSR_04;
-  /*_p20.KYWY*/ DFF17 KYWY_LFSR_05;
-  /*_p20.JAJU*/ DFF17 JAJU_LFSR_06;
-  /*_p20.HAPE*/ DFF17 HAPE_LFSR_07;
-  /*_p20.JUXE*/ DFF17 JUXE_LFSR_08;
-  /*_p20.JEPE*/ DFF17 JEPE_LFSR_09;
-  /*_p20.JAVO*/ DFF17 JAVO_LFSR_10;
-  /*_p20.HEPA*/ DFF17 HEPA_LFSR_11;
-  /*_p20.HORY*/ DFF17 HORY_LFSR_12;
-  /*_p20.HENO*/ DFF17 HENO_LFSR_13;
-  /*_p20.HYRO*/ DFF17 HYRO_LFSR_14;
-  /*_p20.HEZU*/ DFF17 HEZU_LFSR_15;
-
-  /*#p20.ABEL*/ DFF17 ABEL_CLK_64;
-  /*#p20.CUNA*/ DFF20 CUNA_ENV_DELAY0n;
-  /*#p20.COFE*/ DFF20 COFE_ENV_DELAY1n;
-  /*#p20.DOGO*/ DFF20 DOGO_ENV_DELAY2n;
-
-  /*#p20.FOSY*/ DFF17 FOSY_ENV_CLKp;
-  /*#p20.FYNO*/ DFF17 FYNO_ENV_MAXp;
-
-  /*#p20.FEKO*/ DFF20 FEKO_CH4_VOL0;
-  /*#p20.FATY*/ DFF20 FATY_CH4_VOL1;
-  /*#p20.FERU*/ DFF20 FERU_CH4_VOL2;
-  /*#p20.FYRO*/ DFF20 FYRO_CH4_VOL3;
-  /*#p20.EROX*/ NorLatch EROX_ENV_RUNNINGn;
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//==============================================================================
-//             TOP
-//==============================================================================
-
-struct GBSound {
-  wire SYKE_ADDR_FFXXp = 0;
-  wire UNOR_MODE_DBG2 = 0;
-  wire ALUR_SYS_RSTn = true;
-  wire TEDO_CPU_RDp = false;
-  wire TAPU_CPU_WRp = false;
-  wire AZOF_xBxDxFxH = 0;
-  wire BUDE_xxxxEFGH = 0;
-  wire UMER_DIV10n_old = 0;
-  wire SIG_CPU_HOLD_MEM = 0;
-  wire SIG_IN_CPU_DBUS_FREE = 0;
-  wire BUKE_ABxxxxxH = 0;
-
-  void tick();
-
-  void tick_nr10();
-  void tick_nr11();
-  void tick_nr12();
-  void tick_nr13();
-  void tick_nr14();
-
-  void tick_nr21();
-  void tick_nr22();
-  void tick_nr23();
-  void tick_nr24();
-
-  void tick_nr30();
-  void tick_nr31();
-  void tick_nr32();
-  void tick_nr33();
-  void tick_nr34();
-
-  void tick_nr41();
-  void tick_nr42();
-  void tick_nr43();
-  void tick_nr44();
-
-  void tick_nr50();
-  void tick_nr51();
-  void tick_nr52();
-
-  //----------
-  // CPU read/write signals
-
-  /*_p09.AGUZ*/ wire AGUZ_CPU_RDn() const { return not1(TEDO_CPU_RDp); }
-  /*#p19.BYLO*/ wire BYLO_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
-  /*_p09.GAXO*/ wire GAXO_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
-  /*#p20.COSA*/ wire COSA_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
-  /*_p14.FOGE*/ wire FOGE_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
-  /*_p16.DOVO*/ wire DOVO_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
-  /*#p11.CEGE*/ wire CEGE_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
-  /*#pXX.GADO*/ wire GADO_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
-  /*#p17.BOKE*/ wire BOKE_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
-  /*_p14.BYGO*/ wire BYGO_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
-  /*_p09.CETO*/ wire CETO_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
-  /*_p09.KAZO*/ wire KAZO_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
-  /*_p09.CURU*/ wire CURU_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
-  /*_p09.KYDU*/ wire KYDU_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
-  /*_p16.JOTU*/ wire JOTU_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
-  /*_p18.JECO*/ wire JECO_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
-  /*_p16.GORY*/ wire GORY_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
-  /*#p19.KAGE*/ wire KAGE_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
-  /*#p11.BUDA*/ wire BUDA_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
-  /*#p11.BUWA*/ wire BUWA_CPU_RDp() const { return not1(AGUZ_CPU_RDn()); }
-
-  /*_p10.BAFU*/ wire BAFU_CPU_WRn() const { return not1(TAPU_CPU_WRp); }
-  /*_p10.BOGY*/ wire BOGY_CPU_WRp() const { return not1(BAFU_CPU_WRn()); }
-
-  //----------
-  // Debug control signals
-
-  /*_p16.ANUJ*/ wire ANUJ_CPU_WR_WEIRD()  const { return and2(SIG_IN_CPU_DBUS_FREE, BOGY_CPU_WRp()); }
-  /*_p09.EDEK*/ wire EDEK_NR52_DBG_APUp() const { return not1(spu.FERO_NR52_DBG_APUn.qn_new()); }
-  /*_p14.FAPE*/ wire FAPE_CPU_RDp_DBGp()  const { return and2(FOGE_CPU_RDp(), EDEK_NR52_DBG_APUp()); }
-  /*_p16.EGAD*/ wire EGAD_CPU_RDn_DBGn()  const { return nand2(DOVO_CPU_RDp(), EDEK_NR52_DBG_APUp()); }
-  /*#p11.DAXA*/ wire DAXA_CPU_RDn_DBGn()  const { return nand2(CEGE_CPU_RDp(), EDEK_NR52_DBG_APUp()); }
-
-  //----------
-  // SPU clock tree
-
-  /*_p01.ATAG*/ wire ATAG_AxCxExGx() const { return not1(AZOF_xBxDxFxH); }
-  /*_p01.DOVA*/ wire DOVA_ABCDxxxx() const { return not1(BUDE_xxxxEFGH); } // this goes to all the trigger regs
-
-  /*_p01.AMUK*/ wire AMUK_xBxDxFxH() const { return not1(ATAG_AxCxExGx()); } // goes to clock generators and wave ram clock
-  /*_p01.CYBO*/ wire CYBO_AxCxExGx() const { return not1(AMUK_xBxDxFxH()); }
-  /*_p01.ARYF*/ wire ARYF_AxCxExGx() const { return not1(AMUK_xBxDxFxH()); }
-  /*_p01.APUV*/ wire APUV_AxCxExGx() const { return not1(AMUK_xBxDxFxH()); }
-  /*_p15.AZEG*/ wire AZEG()          const { return not1(AMUK_xBxDxFxH()); }
-
-  //----------
-  // SPU reset tree
-
-  /*_p09.HAPO*/ wire HAPO_SYS_RSTp() const { return not1(ALUR_SYS_RSTn); }
-  /*_p09.GUFO*/ wire GUFO_SYS_RSTn() const { return not1(HAPO_SYS_RSTp()); }
-
-  /*_p09.JYRO*/ wire JYRO_APU_RSTp() const { return  or2(HAPO_SYS_RSTp(), spu.HADA_NR52_ALL_SOUND_ON.qn_new()); }
-  /*_p09.KEPY*/ wire KEPY_APU_RSTn() const { return not1(JYRO_APU_RSTp()); }
-  /*_p09.KUBY*/ wire KUBY_APU_RSTn() const { return not1(JYRO_APU_RSTp()); }
-  /*_p09.KEBA*/ wire KEBA_APU_RSTp() const { return not1(KUBY_APU_RSTn()); }
-
-  /*_p01.ATUS*/ wire ATUS_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*_p01.BELA*/ wire BELA_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*_p01.BOPO*/ wire BOPO_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*_p09.ATYV*/ wire ATYV_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*_p09.KAME*/ wire KAME_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*_p14.HUDE*/ wire HUDE_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*_p14.JYBU*/ wire JYBU_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*_p15.BUWE*/ wire BUWE_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*_p15.CEXE*/ wire CEXE_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*_p15.CYWU*/ wire CYWU_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*#p09.AFAT*/ wire AFAT_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*#p09.AGUR*/ wire AGUR_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*#p11.CAMY*/ wire CAMY_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*#p11.CEPO*/ wire CEPO_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*#p19.CABE*/ wire CABE_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*_p14.KYPU*/ wire KYPU_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*_p14.FAZO*/ wire FAZO_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*_p16.GOVE*/ wire GOVE_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*#p11.HATO*/ wire HATO_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*_p16.KOPY*/ wire KOPY_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*_p16.HEKY*/ wire HEKY_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*_p16.GAZE*/ wire GAZE_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*#p18.CALU*/ wire CALU_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*#p17.BAMA*/ wire BAMA_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*#p17.ACOR*/ wire ACOR_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*#p09.DAPA*/ wire DAPA_APU_RSTn() const { return not1(KEBA_APU_RSTp()); } // bavu crosses over this? why is it 3-rung?
-  /*#p19.FEXO*/ wire FEXO_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*#p19.HYNE*/ wire HYNE_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*#p20.GASO*/ wire GASO_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*#p20.FEBY*/ wire FEBY_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*#p20.BOKY*/ wire BOKY_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*#p13.DUKA*/ wire DUKA_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*#p13.ERUM*/ wire ERUM_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*#p13.KADO*/ wire KADO_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*_p15.KATY*/ wire KATY_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*_p16.GURO*/ wire GURO_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*_p16.KUHA*/ wire KUHA_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-  /*#p16.GOMA*/ wire GOMA_APU_RSTn() const { return not1(KEBA_APU_RSTp()); }
-
-
-  //----------
-
-  /*_p10.DYTE*/ wire DYTE_A00n() const { return not1(BUS_CPU_A00p.out_new()); }
-  /*_p10.AFOB*/ wire AFOB_A01n() const { return not1(BUS_CPU_A01p.out_new()); }
-  /*_p10.ABUB*/ wire ABUB_A02n() const { return not1(BUS_CPU_A02p.out_new()); }
-  /*_p10.ACOL*/ wire ACOL_A03n() const { return not1(BUS_CPU_A03p.out_new()); }
-  /*#p10.ATUP*/ wire ATUP_A04n() const { return not1(BUS_CPU_A04p.out_new()); }
-  /*#p10.BOXY*/ wire BOXY_A05n() const { return not1(BUS_CPU_A05p.out_new()); }
-  /*#p10.ASAD*/ wire ASAD_A06n() const { return not1(BUS_CPU_A06p.out_new()); }
-  /*#p10.AVUN*/ wire AVUN_A07n() const { return not1(BUS_CPU_A07p.out_new()); }
-
-  /*_p10.DOSO*/ wire DOSO_A00p() const { return not1(DYTE_A00n()); }
-  /*_p10.DUPA*/ wire DUPA_A01p() const { return not1(AFOB_A01n()); }
-  /*_p10.DENO*/ wire DENO_A02p() const { return not1(ABUB_A02n()); }
-  /*_p10.DUCE*/ wire DUCE_A03p() const { return not1(ACOL_A03n()); }
-
-  /*_p10.ATEG*/ wire ATEG_ADDR_XX1Xn() const { return or4(BUS_CPU_A07p.out_new(), BUS_CPU_A06p.out_new(), BUS_CPU_A05p.out_new(), ATUP_A04n()); }
-  /*_p10.AWET*/ wire AWET_ADDR_XX2Xn() const { return or4(BUS_CPU_A07p.out_new(), BUS_CPU_A06p.out_new(), BOXY_A05n(), BUS_CPU_A04p.out_new()); }
-  /*#p10.ACOM*/ wire ACOM_ADDR_XX3Xn() const { return nand4(AVUN_A07n(), ASAD_A06n(), BUS_CPU_A05p.out_new(), BUS_CPU_A04p.out_new()); }
-
-  /*_p07.BAKO*/ wire BAKO_ADDR_FFXXn() const { return not1(SYKE_ADDR_FFXXp); }
-
-  /*_p10.BUNO*/ wire BUNO_ADDR_FF1Xp() const { return nor2(BAKO_ADDR_FFXXn(), ATEG_ADDR_XX1Xn()); }
-  /*_p10.BEZY*/ wire BEZY_ADDR_FF2Xn() const { return  or2(AWET_ADDR_XX2Xn(), BAKO_ADDR_FFXXn()); }
-  /*#p10.BARO*/ wire BARO_ADDR_FF3Xp() const { return nor2(ACOM_ADDR_XX3Xn(), BAKO_ADDR_FFXXn()); }
-
-  /*_p10.BANU*/ wire BANU_ADDR_FF1Xn() const { return not1(BUNO_ADDR_FF1Xp()); }
-  /*_p10.CONA*/ wire CONA_ADDR_FF2Xp() const { return not1(BEZY_ADDR_FF2Xn()); }
-
-  //----------
-
-  /*#p10.DUPO*/ wire DUPO_ADDR_0000n() const { return nand4(ACOL_A03n(), ABUB_A02n(), AFOB_A01n(), DYTE_A00n()); }
-  /*#p10.DUNO*/ wire DUNO_ADDR_0001n() const { return nand4(ACOL_A03n(), ABUB_A02n(), AFOB_A01n(), DOSO_A00p()); }
-  /*#p10.DAMY*/ wire DAMY_ADDR_0010n() const { return nand4(ACOL_A03n(), ABUB_A02n(), DUPA_A01p(), DYTE_A00n()); }
-  /*#p10.ETUF*/ wire ETUF_ADDR_0011n() const { return nand4(ACOL_A03n(), ABUB_A02n(), DUPA_A01p(), DOSO_A00p()); }
-  /*#p10.ESOT*/ wire ESOT_ADDR_0100n() const { return nand4(ACOL_A03n(), DENO_A02p(), AFOB_A01n(), DYTE_A00n()); }
-
-  /*_p10.DAZA*/ wire DAZA_ADDR_0110n() const { return nand4(ACOL_A03n(), DENO_A02p(), DUPA_A01p(), DYTE_A00n()); }
-  /*_p10.DUVU*/ wire DUVU_ADDR_0111n() const { return nand4(ACOL_A03n(), DENO_A02p(), DUPA_A01p(), DOSO_A00p()); }
-  /*_p10.DAFY*/ wire DAFY_ADDR_1000n() const { return nand4(DUCE_A03p(), ABUB_A02n(), AFOB_A01n(), DYTE_A00n()); }
-  /*_p10.DEJY*/ wire DEJY_ADDR_1001n() const { return nand4(DUCE_A03p(), ABUB_A02n(), AFOB_A01n(), DOSO_A00p()); }
-
-  /*_p10.EXAT*/ wire EXAT_ADDR_1010n() const { return nand4(DUCE_A03p(), ABUB_A02n(), DUPA_A01p(), DYTE_A00n()); }
-  /*_p10.EMAX*/ wire EMAX_ADDR_1011n() const { return nand4(DOSO_A00p(), DUPA_A01p(), ABUB_A02n(), DUCE_A03p()); }
-  /*_p10.GANY*/ wire GANY_ADDR_1100n() const { return nand4(DUCE_A03p(), DENO_A02p(), AFOB_A01n(), DYTE_A00n()); }
-  /*_p10.EMOS*/ wire EMOS_ADDR_1101n() const { return nand4(DOSO_A00p(), AFOB_A01n(), DENO_A02p(), DUCE_A03p()); }
-  /*_p10.EGEN*/ wire EGEN_ADDR_1110n() const { return nand4(DUCE_A03p(), DENO_A02p(), DUPA_A01p(), DYTE_A00n()); }
-
-  /*#p10.DONA*/ wire DONA_ADDR_0000n() const { return nand4(DYTE_A00n(), AFOB_A01n(), ABUB_A02n(), ACOL_A03n()); }
-  /*#p10.DEWA*/ wire DEWA_ADDR_0001n() const { return nand4(DOSO_A00p(), AFOB_A01n(), ABUB_A02n(), ACOL_A03n()); }
-  /*#p10.DOFA*/ wire DOFA_ADDR_0010p() const { return  and4(ACOL_A03n(), ABUB_A02n(), DUPA_A01p(), DYTE_A00n()); }
-  /*#p10.DUFE*/ wire DUFE_ADDR_0011n() const { return nand4(DOSO_A00p(), DUPA_A01p(), ABUB_A02n(), ACOL_A03n()); }
-
-  /*_p10.DATU*/ wire DATU_ADDR_0100n() const { return nand4(ACOL_A03n(), DENO_A02p(), AFOB_A01n(), DYTE_A00n()); }
-  /*_p10.DURA*/ wire DURA_ADDR_0101n() const { return nand4(ACOL_A03n(), DENO_A02p(), AFOB_A01n(), DOSO_A00p()); }
-  /*_p10.EKAG*/ wire EKAG_ADDR_0110n() const { return nand4(ACOL_A03n(), DENO_A02p(), DUPA_A01p(), DYTE_A00n()); }
-
-  /*#p10.DYVA*/ wire DYVA_ADDR_FF10p() const { return nor2(BANU_ADDR_FF1Xn(), DUPO_ADDR_0000n()); }
-  /*#p10.CAXE*/ wire CAXE_ADDR_FF11p() const { return nor2(BANU_ADDR_FF1Xn(), DUNO_ADDR_0001n()); }
-  /*#p10.EDAF*/ wire EDAF_ADDR_FF12p() const { return nor2(BANU_ADDR_FF1Xn(), DAMY_ADDR_0010n()); }
-  /*#p10.DECO*/ wire DECO_ADDR_FF13p() const { return nor2(BANU_ADDR_FF1Xn(), ETUF_ADDR_0011n()); }
-  /*#p10.DUJA*/ wire DUJA_ADDR_FF14p() const { return nor2(BANU_ADDR_FF1Xn(), ESOT_ADDR_0100n()); }
-
-  /*_p10.COVY*/ wire COVY_ADDR_FF16p() const { return nor2(BANU_ADDR_FF1Xn(), DAZA_ADDR_0110n()); }
-  /*_p10.DUTU*/ wire DUTU_ADDR_FF17p() const { return nor2(BANU_ADDR_FF1Xn(), DUVU_ADDR_0111n()); }
-  /*_p10.DARA*/ wire DARA_ADDR_FF18p() const { return nor2(BANU_ADDR_FF1Xn(), DAFY_ADDR_1000n()); }
-  /*_p10.DOZA*/ wire DOZA_ADDR_FF19p() const { return nor2(BANU_ADDR_FF1Xn(), DEJY_ADDR_1001n()); }
-
-  /*_p10.EMOR*/ wire EMOR_ADDR_FF1Ap() const { return nor2(BANU_ADDR_FF1Xn(), EXAT_ADDR_1010n()); }
-  /*_p10.DUSA*/ wire DUSA_ADDR_FF1Bp() const { return nor2(BANU_ADDR_FF1Xn(), EMAX_ADDR_1011n()); }
-  /*_p10.GEFO*/ wire GEFO_ADDR_FF1Cp() const { return nor2(BANU_ADDR_FF1Xn(), GANY_ADDR_1100n()); }
-  /*_p10.FENY*/ wire FENY_ADDR_FF1Dp() const { return nor2(BANU_ADDR_FF1Xn(), EMOS_ADDR_1101n()); }
-  /*_p10.DUGO*/ wire DUGO_ADDR_FF1Ep() const { return nor2(BANU_ADDR_FF1Xn(), EGEN_ADDR_1110n()); }
-
-  /*#p10.DANU*/ wire DANU_ADDR_FF20p() const { return nor2(DONA_ADDR_0000n(), BEZY_ADDR_FF2Xn()); }
-  /*#p10.COVO*/ wire COVO_ADDR_FF21p() const { return nor2(DEWA_ADDR_0001n(), BEZY_ADDR_FF2Xn()); }
-  /*#p10.EKEZ*/ wire EKEZ_ADDR_FF22p() const { return and2(CONA_ADDR_FF2Xp(), DOFA_ADDR_0010p()); }
-  /*#p10.CUGE*/ wire CUGE_ADDR_FF23p() const { return nor2(DUFE_ADDR_0011n(), BEZY_ADDR_FF2Xn()); }
-
-  /*_p10.CAFY*/ wire CAFY_ADDR_FF24p() const { return nor2(BEZY_ADDR_FF2Xn(), DATU_ADDR_0100n()); }
-  /*_p10.CORA*/ wire CORA_ADDR_FF25p() const { return nor2(BEZY_ADDR_FF2Xn(), DURA_ADDR_0101n()); }
-
-  /*#p11.BUZE*/ wire BUZE_ADDR_FF10n() const { return not1(DYVA_ADDR_FF10p()); }
-  /*#p11.HAXE*/ wire HAXE_ADDR_FF12n() const { return not1(EDAF_ADDR_FF12p()); }
-  /*#p11.GAGO*/ wire GAGO_ADDR_FF12n() const { return not1(EDAF_ADDR_FF12p()); }
-  /*#p11.CACA*/ wire CACA_ADDR_FF13n() const { return not1(DECO_ADDR_FF13p()); }
-  /*#p11.CURE*/ wire CURE_ADDR_FF14n() const { return not1(DUJA_ADDR_FF14p()); }
-  /*_p16.HOXA*/ wire HOXA_ADDR_FF1Dn() const { return not1(FENY_ADDR_FF1Dp()); }
-  /*_p16.GUNU*/ wire GUNU_ADDR_FF1En() const { return not1(DUGO_ADDR_FF1Ep()); }
-  /*_p09.BYMA*/ wire BYMA_ADDR_FF24n() const { return not1(CAFY_ADDR_FF24p()); }
-  /*_p09.GEPA*/ wire GEPA_ADDR_FF25n() const { return not1(CORA_ADDR_FF25p()); }
-
-
-
-
-
-  /*#p01.BATA*/ wire BATA_CLK_2M() const { return not1(spu.AJER_2M.qp_new()); }
-  /*_p01.BAVU*/ wire BAVU_1M() const { return not1(spu.AVOK_1M.qp_new()); }
-  /*#p16.FABO*/ wire FABO_CLK_xxCDxxGH() const { return not1(spu.CERY_2M.qp_new()); }
-
-  /*#p17.ABUR*/ wire ABUR_xxCDEFGx() const { return not1(BUKE_ABxxxxxH); }
-  /*#p17.BORY*/ wire BORY_ABxxxxxH() const { return not1(ABUR_xxCDEFGx()); }
-
-
-
-
-  /*#p01.HAMA*/ wire HAMA_CLK_512K() const { return not1(spu.JESO_CLK_512K.qp_new()); }
-  /*_p01.BURE*/ wire BURE_CLK_512() const { return not1(spu.BARA_CLK_512.qp_new()); }
-
-  /*_p01.HORU*/ wire HORU_CLK_512p() const {
-    /*_p01.FYNE*/ wire FYNE_CLK_512 = not1(BURE_CLK_512());
-    /*_p01.GALE*/ wire GALE_CLK_512 = mux2p(spu.FERO_NR52_DBG_APUn.qp_new(), HAMA_CLK_512K(), FYNE_CLK_512);
-    /*_p01.GEXY*/ wire GEXY_CLK_512 = not1(GALE_CLK_512);
-    /*_p01.HORU*/ wire HORU_CLK_512p = not1(GEXY_CLK_512);
-    return HORU_CLK_512p;
-  }
-
-  /*_p01.BUFY*/ wire BUFY_CLK_256n() const {
-    /*_p01.CULO*/ wire CULO_CLK_256 = not1(spu.CARU_CLK_256.qp_new());
-    /*_p01.BEZE*/ wire BEZE_CLK_256 = mux2p(spu.FERO_NR52_DBG_APUn.qp_new(), HAMA_CLK_512K(), CULO_CLK_256);
-    /*_p01.COFU*/ wire COFU_CLK_256 = not1(BEZE_CLK_256);
-    /*_p01.BUFY*/ wire BUFY_CLK_256n = not1(COFU_CLK_256);
-    return BUFY_CLK_256n;
-  }
-
-  /*_p01.BYFE*/ wire BYFE_CLK_128n() const {
-    /*_p01.APEF*/ wire APEF_CLK_128 = not1(spu.BYLU_CLK_128.qp_new());
-    /*_p01.BULE*/ wire BULE_CLK_128 = mux2p(spu.FERO_NR52_DBG_APUn.qp_new(), HAMA_CLK_512K(), APEF_CLK_128);
-    /*_p01.BARU*/ wire BARU_CLK_128 = not1(BULE_CLK_128);
-    /*_p01.BYFE*/ wire BYFE_CLK_128n = not1(BARU_CLK_128);
-    return BYFE_CLK_128n;
-  }
-
-  /*#p13.JONE*/ wire JONE_CLK_128p() const { return not1(BYFE_CLK_128n()); }
-
-
-  /*_p10.TACE*/ wire TACE_AMP_ENn() const {
-    return and4(ch1.HOCA_CH1_AMP_ENn(),
-                ch2.FUTE_CH2_AMP_ENn(),
-                ch3.GUXE_CH3_AMP_ENn.qp_new(),
-                ch4.GEVY_CH4_AMP_ENn());
-  }
-
-
-
-  /*#p17.BENA*/ wire BENA_CPU_WAVE_RDp() const { return  nand2(BOKE_CPU_RDp(), BARO_ADDR_FF3Xp()); }
-  /*#p17.CAZU*/ wire CAZU_CPU_WAVE_RDn() const { return  not1(BENA_CPU_WAVE_RDp()); }
-
-
-
-  SpuControl  spu;
-  SpuChannel1 ch1;
-  SpuChannel2 ch2;
-  SpuChannel3 ch3;
-  SpuChannel4 ch4;
-
-  /*_BUS_CPU_A00p*/ Bus BUS_CPU_A00p;
-  /*_BUS_CPU_A01p*/ Bus BUS_CPU_A01p;
-  /*_BUS_CPU_A02p*/ Bus BUS_CPU_A02p;
-  /*_BUS_CPU_A03p*/ Bus BUS_CPU_A03p;
-  /*_BUS_CPU_A04p*/ Bus BUS_CPU_A04p;
-  /*_BUS_CPU_A05p*/ Bus BUS_CPU_A05p;
-  /*_BUS_CPU_A06p*/ Bus BUS_CPU_A06p;
-  /*_BUS_CPU_A07p*/ Bus BUS_CPU_A07p;
-  /*_BUS_CPU_A08p*/ Bus BUS_CPU_A08p;
-  /*_BUS_CPU_A09p*/ Bus BUS_CPU_A09p;
-  /*_BUS_CPU_A10p*/ Bus BUS_CPU_A10p;
-  /*_BUS_CPU_A11p*/ Bus BUS_CPU_A11p;
-  /*_BUS_CPU_A12p*/ Bus BUS_CPU_A12p;
-  /*_BUS_CPU_A13p*/ Bus BUS_CPU_A13p;
-  /*_BUS_CPU_A14p*/ Bus BUS_CPU_A14p;
-  /*_BUS_CPU_A15p*/ Bus BUS_CPU_A15p;
-
-  /*_BUS_CPU_D00p*/ Bus BUS_CPU_D00p;
-  /*_BUS_CPU_D01p*/ Bus BUS_CPU_D01p;
-  /*_BUS_CPU_D02p*/ Bus BUS_CPU_D02p;
-  /*_BUS_CPU_D03p*/ Bus BUS_CPU_D03p;
-  /*_BUS_CPU_D04p*/ Bus BUS_CPU_D04p;
-  /*_BUS_CPU_D05p*/ Bus BUS_CPU_D05p;
-  /*_BUS_CPU_D06p*/ Bus BUS_CPU_D06p;
-  /*_BUS_CPU_D07p*/ Bus BUS_CPU_D07p;
-
-  /*_BUS_WAVE_D00p*/ Bus BUS_WAVE_D00p;
-  /*_BUS_WAVE_D01p*/ Bus BUS_WAVE_D01p;
-  /*_BUS_WAVE_D02p*/ Bus BUS_WAVE_D02p;
-  /*_BUS_WAVE_D03p*/ Bus BUS_WAVE_D03p;
-  /*_BUS_WAVE_D04p*/ Bus BUS_WAVE_D04p;
-  /*_BUS_WAVE_D05p*/ Bus BUS_WAVE_D05p;
-  /*_BUS_WAVE_D06p*/ Bus BUS_WAVE_D06p;
-  /*_BUS_WAVE_D07p*/ Bus BUS_WAVE_D07p;
-};
-#pragma once
-#include "regs.h"
-
-//-----------------------------------------------------------------------------
-
-inline wire not1(wire a) { return ~a; }
-
-inline wire and2(wire a, wire b) { return a & b; }
-inline wire and3(wire a, wire b, wire c) { return  (a & b & c); }
-
-inline wire and4(wire a, wire b, wire c, wire d) { return  (a & b & c & d); }
-inline wire and5(wire a, wire b, wire c, wire d, wire e) { return  (a & b & c & d & e); }
-inline wire and6(wire a, wire b, wire c, wire d, wire e, wire f) { return  (a & b & c & d & e & f); }
-inline wire and7(wire a, wire b, wire c, wire d, wire e, wire f, wire g) { return  (a & b & c & d & e & f & g); }
-
-inline wire or2(wire a, wire b) { return a | b; }
-inline wire or3(wire a, wire b, wire c) { return  (a | b | c); }
-inline wire or4(wire a, wire b, wire c, wire d) { return  (a | b | c | d); }
-inline wire or5(wire a, wire b, wire c, wire d, wire e) { return  (a | b | c | d | e); }
-inline wire or6(wire a, wire b, wire c, wire d, wire e, wire f) { return a | b | c | d | e | f; }
-
-// XOR2_01 >> D
-// XOR2_02 << A
-// XOR2_03 << B
-// XOR3_04 --
-// XOR3_05 --
-// XOR3_06 --
-
-inline wire xor2(wire a, wire b) { return a ^ b; }
-
-inline wire xnor2(wire a, wire b) { return ~(a ^ b); }
-
-inline wire nor2(wire a, wire b) { return ~(a | b); }
-inline wire nor3(wire a, wire b, wire c) { return ~(a | b | c); }
-inline wire nor4(wire a, wire b, wire c, wire d) { return ~(a | b | c | d); }
-inline wire nor5(wire a, wire b, wire c, wire d, wire e) { return ~(a | b | c | d | e); }
-inline wire nor6(wire a, wire b, wire c, wire d, wire e, wire f) { return ~(a | b | c | d | e | f); }
-inline wire nor8(wire a, wire b, wire c, wire d, wire e, wire f, wire g, wire h) { return ~(a | b | c | d | e | f | g | h); }
-
-inline wire nand2(wire a, wire b) { return ~(a & b); }
-inline wire nand3(wire a, wire b, wire c) { return ~(a & b & c); }
-inline wire nand4(wire a, wire b, wire c, wire d) { return ~(a & b & c & d); }
-inline wire nand5(wire a, wire b, wire c, wire d, wire e) { return ~(a & b & c & d & e); }
-inline wire nand6(wire a, wire b, wire c, wire d, wire e, wire f) { return ~(a & b & c & d & e & f); }
-inline wire nand7(wire a, wire b, wire c, wire d, wire e, wire f, wire g) { return ~(a & b & c & d & e & f & g); }
-
-inline wire and_or3(wire a, wire b, wire c) { return (a & b) | c; }
-inline wire or_and3(wire a, wire b, wire c) { return (a | b) & c; }
-
-inline wire not_or_and3(wire a, wire b, wire c) { return ~or_and3(a, b, c); }
-
-//-----------------------------------------------------------------------------
-
-// Six-rung mux cells are _non_inverting_. m = 1 selects input A
-inline wire mux2p(wire m, wire a, wire b) {
-  return bit0(m) ? a : b;
-}
-
-// Five-rung mux cells are _inverting_. m = 1 selects input A
-inline wire mux2n(wire m, wire a, wire b) {
-  return ~(bit0(m) ? a : b);
-}
-
-inline wire amux2(wire a0, wire b0, wire a1, wire b1) {
-  return (b0 & a0) | (b1 & a1);
-}
-
-inline wire amux3(wire a0, wire b0, wire a1, wire b1, wire a2, wire b2) {
-  return (b0 & a0) | (b1 & a1) | (b2 & a2);
-}
-
-inline wire amux4(wire a0, wire b0, wire a1, wire b1, wire a2, wire b2, wire a3, wire b3) {
-  return (b0 & a0) | (b1 & a1) | (b2 & a2) | (b3 & a3);
-}
-
-inline wire amux6(wire a0, wire b0, wire a1, wire b1, wire a2, wire b2, wire a3, wire b3, wire a4, wire b4, wire a5, wire b5) {
-  return (b0 & a0) | (b1 & a1) | (b2 & a2) | (b3 & a3) | (b4 & a4) | (b5 & a5);
-}
-
-//-----------------------------------------------------------------------------
 #include "metron_tools.h"
 
-typedef logic<16> sample_t;
+//------------------------------------------------------------------------------
 
-/*
-
-#pragma warning(push)
-#pragma warning(disable:4201)
-
-#pragma pack(push, 1)
-struct Req {
-  uint16_t addr = 0;
-  union {
-    struct {
-      uint8_t data_lo;
-      uint8_t data_hi;
-    };
-    uint16_t data = 0;
-  };
-  uint8_t  read = 0;
-  uint8_t  write = 0;
-  uint16_t pad1 = 0;
-
-  operator bool() const {
-    return read || write;
-  }
-};
-#pragma pack(pop)
-
-static_assert(sizeof(Req) == 8, "Req size != 8");
-
-struct Ack {
-  uint16_t addr = 0;
-  union {
-    struct {
-      uint8_t data_lo;
-      uint8_t data_hi;
-    };
-    uint16_t data = 0;
-  };
-  uint8_t  read = 0;
-  uint8_t  pad1 = 0;
-  uint16_t pad2 = 0;
-};
-
-static_assert(sizeof(Ack) == 8, "Ack size != 8");
-
-#pragma warning(pop)
- 
-struct Req {
-  logic<16> addr;
-  logic<8> data_lo;
-  logic<8> data_hi;
-  logic<8> read;
-  logic<8> write;
-};
-
-struct Ack {
-  logic<16> addr;
-  //logic<1> read;
-  //logic<1> write;
-  logic<8> read;
-  logic<8> write;
-
-  logic<8> data_lo;
-  logic<8> data_hi;
-};
-*/
-
-//-----------------------------------------------------------------------------
-
-class MetroBoySPU {
+class MetroBoySPU2 {
 public:
 
-  logic<16> out_r;
-  logic<16> out_l;
-
-  logic<8> ack_data;
-  logic<1> ack_valid;
-
-  void tock_ack(logic<16> addr) {
-    ack_data = 0;
-    ack_valid = 0;
-
-    if (addr >= 0xFF30 && addr <= 0xFF3F) {
-      // wavetable
-      ack_data = s3_wave[addr & 0xF];
-    }
-    else if (addr >= 0xFF10 && addr <= 0xFF26) {
-      switch (addr) {
-        case 0xFF10: ack_data = nr10 | 0x80; break;
-        case 0xFF11: ack_data = nr11 | 0x3F; break;
-        case 0xFF12: ack_data = nr12 | 0x00; break;
-        case 0xFF13: ack_data = nr13 | 0xFF; break;
-        case 0xFF14: ack_data = nr14 | 0xBF; break;
-
-        case 0xFF15: ack_data = nr20 | 0xFF; break;
-        case 0xFF16: ack_data = nr21 | 0x3F; break;
-        case 0xFF17: ack_data = nr22 | 0x00; break;
-        case 0xFF18: ack_data = nr23 | 0xFF; break;
-        case 0xFF19: ack_data = nr24 | 0xBF; break;
-
-        case 0xFF1A: ack_data = nr30 | 0x7F; break;
-        case 0xFF1B: ack_data = nr31 | 0xFF; break;
-        case 0xFF1C: ack_data = nr32 | 0x9F; break;
-        case 0xFF1D: ack_data = nr33 | 0xFF; break;
-        case 0xFF1E: ack_data = nr34 | 0xBF; break;
-
-        case 0xFF1F: ack_data = nr40 | 0xFF; break;
-        case 0xFF20: ack_data = nr41 | 0xFF; break;
-        case 0xFF21: ack_data = nr42 | 0x00; break;
-        case 0xFF22: ack_data = nr43 | 0x00; break;
-        case 0xFF23: ack_data = nr44 | 0xBF; break;
-
-        case 0xFF24: ack_data = nr50 | 0x00; break;
-        case 0xFF25: ack_data = nr51 | 0x00; break;
-
-        case 0xFF26: {
-          logic<8> bus_out_ = (nr52 & 0x80) | 0x70;
-          if (s1_enable) bus_out_ = bus_out_ | b8(0b00000001);
-          if (s2_enable) bus_out_ = bus_out_ | b8(0b00000010);
-          if (s3_enable) bus_out_ = bus_out_ | b8(0b00000100);
-          if (s4_enable) bus_out_ = bus_out_ | b8(0b00001000);
-          ack_data = bus_out_;
-          break;
-        }
-      }
-    }
-
-  }
-
-public:
+  //----------------------------------------
 
   void tock_out() {
-    out_l = 0;
-    out_r = 0;
+    logic<9> l;
+    logic<9> r;
 
-    //----------
-    // mixer & master volume
+    l = 0;
+    r = 0;
 
-    logic<16> out_r_ = 0;
-    logic<16> out_l_ = 0;
+    if (s1_running && s1_env_vol) {
+      logic<1> s1_out = 0;
+      switch(s1_duty) {
+        case 0: s1_out = s1_phase < 1; break;
+        case 1: s1_out = s1_phase < 2; break;
+        case 2: s1_out = s1_phase < 4; break;
+        case 3: s1_out = s1_phase < 6; break;
+      }
+      if (mix_l1 && s1_out) l = l + s1_env_vol;
+      if (mix_r1 && s1_out) r = r + s1_env_vol;
+    }
 
-    if (nr51 & 0b00000001) out_r_ = out_r_ + s1_out;
-    if (nr51 & 0b00000010) out_r_ = out_r_ + s2_out;
-    if (nr51 & 0b00000100) out_r_ = out_r_ + s3_out;
-    if (nr51 & 0b00001000) out_r_ = out_r_ + s4_out;
-    if (nr51 & 0b00010000) out_l_ = out_l_ + s1_out;
-    if (nr51 & 0b00100000) out_l_ = out_l_ + s2_out;
-    if (nr51 & 0b01000000) out_l_ = out_l_ + s3_out;
-    if (nr51 & 0b10000000) out_l_ = out_l_ + s4_out;
+    if (s2_running && s2_env_vol) {
+      logic<1> s2_out = 0;
+      switch(s2_duty) {
+        case 0: s2_out = s2_phase < 1; break;
+        case 1: s2_out = s2_phase < 2; break;
+        case 2: s2_out = s2_phase < 4; break;
+        case 3: s2_out = s2_phase < 6; break;
+      }
+      if (mix_l2 && s2_out) l = l + s2_env_vol;
+      if (mix_r2 && s2_out) r = r + s2_env_vol;
+    }
 
-    logic<4> volume_r = ((nr50 & 0b00000111) >> 0) + 1;
-    logic<4> volume_l = ((nr50 & 0b01110000) >> 4) + 1;
+    if (s3_running && s3_power) {
+      logic<8> s3_sample = s3_wave[s3_phase >> 1];
+      logic<4> s3_out = (s3_phase & 1) ? b4(s3_sample, 0) : b4(s3_sample, 4);
+      s3_out = s3_out >> s3_volume_shift;
+      if (mix_l3) l = l + s3_out;
+      if (mix_r3) r = r + s3_out;
+    }
 
-    out_r = out_r_ * volume_r;
-    out_l = out_l_ * volume_l;
+    if (s4_running && s4_env_vol) {
+      logic<1> s4_out = b1(s4_lfsr, 15);
+      if (mix_l4 && s4_out) l = l + s4_env_vol;
+      if (mix_r4 && s4_out) r = r + s4_env_vol;
+    }
+
+    l = l * volume_l;
+    r = r * volume_r;
+
+    out_l = l;
+    out_r = r;
   }
 
-  void tick(logic<1> reset, logic<16> addr, logic<8> data, logic<1> we) {
+  //----------------------------------------
+
+  void tick(logic<1> reset, logic<16> addr, logic<8> data_in, logic<1> read, logic<1> write) {
     if (reset) {
-      nr10 = 0x80;
-      nr11 = 0xBF;
-      nr12 = 0xF3;
-      nr13 = 0xFF;
-      nr14 = 0xBF;
+      spu_clock_old = 0;
+      data_out = 0;
 
-      nr20 = 0x00;
-      nr21 = 0x3F;
-      nr22 = 0x00;
-      nr23 = 0xFF;
-      nr24 = 0xBF;
+      s1_sweep_shift = 0;
+      s1_sweep_dir = 0;
+      s1_sweep_timer_init = 0;
+      s1_len_timer_init = 0;
+      s1_duty = 0;
+      s1_env_timer_init = 0;
+      s1_env_add = 0;
+      s1_env_vol_init = 0;
+      s1_freq_timer_init = 0;
+      s1_len_en = 0;
+      s1_trig = 0;
+      s1_running = 0;
+      s1_sweep_timer = 0;
+      s1_sweep_freq = 0;
+      s1_len_timer = 0;
+      s1_env_vol = 0;
+      s1_env_timer = 0;
+      s1_freq_timer = 0;
+      s1_phase = 0;
 
-      nr30 = 0x7F;
-      nr31 = 0xFF;
-      nr32 = 0x9F;
-      nr33 = 0xFF;
-      nr34 = 0xBF;
+      s2_len_timer_init = 0;
+      s2_duty = 0;
+      s2_env_timer_init = 0;
+      s2_env_add = 0;
+      s2_env_vol_init = 0;
+      s2_freq_timer_init = 0;
+      s2_len_en = 0;
+      s2_trig = 0;
 
-      nr40 = 0x80;
-      nr41 = 0xFF;
-      nr42 = 0x00;
-      nr43 = 0x00;
-      nr44 = 0xBF;
+      s2_len_timer = 0;
+      s2_running = 0;
+      s2_env_timer = 0;
+      s2_env_vol = 0;
+      s2_freq_timer = 0;
+      s2_phase = 0;
 
-      nr50 = 0x77;
-      nr51 = 0xF3;
-      nr52 = 0xF1;
+      s3_power = 0;
+      s3_len_timer_init = 0;
+      s3_volume_shift = 0;
+      s3_freq_timer_init = 0;
+      s3_len_en = 0;
+      s3_trig = 0;
+
+      s3_running = 0;
+      s3_len_timer = 0;
+      s3_freq_timer = 0;
+      s3_phase = 0;
 
       for (int i = 0; i < 16; i++) {
         s3_wave[i] = 0;
       }
 
-      s4_lfsr = 0x7FFF;
+      s4_len_timer_init = 0;
+      s4_env_timer_init = 0;
+      s4_env_add = 0;
+      s4_env_vol_init = 0;
+      s4_freq_timer_init = 0;
+      s4_mode = 0;
+      s4_shift = 0;
+      s4_len_en = 0;
+      s4_trig = 0;
 
-      spu_clock = 0;
+      s4_running = 0;
+      s4_len_timer = 0;
+      s4_env_timer = 0;
+      s4_env_vol = 0;
+      s4_freq_timer = 0;
+      s4_lfsr = 0;
 
-      s1_enable = 1;
-      s2_enable = 0;
-      s3_enable = 0;
-      s4_enable = 0;
+      volume_l = 0;
+      volume_r = 0;
 
-      s1_sweep_clock = 0;
-      s1_sweep_freq = 0;
+      mix_r1 = 0;
+      mix_r2 = 0;
+      mix_r3 = 0;
+      mix_r4 = 0;
+      mix_l1 = 0;
+      mix_l2 = 0;
+      mix_l3 = 0;
+      mix_l4 = 0;
 
+      spu_power = 0;
 
-      s1_duration = 0;
-      s2_duration = 0;
-      s3_duration = 0;
-
-      s4_duration = 0;
-      s1_env_clock = 0;
-      s2_env_clock = 0;
-      s4_env_clock = 0;
-
-      s1_env_volume = 0;
-      s2_env_volume = 0;
-      s4_env_volume = 0;
-
-      s1_phase_clock = 0;
-      s2_phase_clock = 0;
-      s3_phase_clock = 0;
-      s4_phase_clock = 0;
-
-      s1_phase = 0;
-      s2_phase = 0;
-      s3_phase = 0;
-
-      s1_out = 0;
-      s2_out = 0;
-      s3_out = 0;
-      s4_out = 0;
     }
     else {
-      logic<1> sound_on = (nr52 & 0x80);
-      logic<16> spu_clock_ = (spu_clock + 1) & 0x3FFF;
-      logic<16> clock_flip = (~spu_clock) & spu_clock_;
+      logic<16> spu_clock_new = spu_clock_old + 1;
+      logic<16> spu_tick = (~spu_clock_old) & (spu_clock_new);
 
-      logic<1> sweep_tick =  (spu_clock_ & 0b01111111111111) == 0b01000000000000;
-      logic<1> length_tick = (spu_clock_ & 0b00111111111111) == 0b00000000000000;
-      logic<1> env_tick =    (spu_clock_ & 0b11111111111111) == 0b11100000000000;
+      logic<1> sweep_tick  = b1(spu_tick, 12);
+      logic<1> length_tick = b1(spu_tick, 11);
+      logic<1> env_tick    = b1(spu_tick, 13);
 
-      //----------
-      // output
+      //----------------------------------------
+      // Reg read
 
-      s1_out = 0;
-      s2_out = 0;
-      s3_out = 0;
-      s4_out = 0;
+      if (read) {
+        switch (addr) {
+          case 0xFF10: data_out = cat(b1(1), s1_sweep_timer_init, s1_sweep_dir, s1_sweep_shift); break;
+          case 0xFF11: data_out = cat(s1_duty, s1_len_timer_init); break;
+          case 0xFF12: data_out = cat(s1_env_vol_init, s1_env_add, s1_env_timer_init); break;
+          case 0xFF13: data_out = b8(s1_freq_timer_init, 0); break;
+          case 0xFF14: data_out = cat(s1_trig, s1_len_en, b3(0b111), b3(s1_freq_timer_init, 8)); break;
 
-      if (s1_enable) {
-        logic<8> s1_volume = (nr12 & 0x08) ? b8(s1_env_volume) : b8(15 ^ s1_env_volume);
-        logic<8> s1_duty = (nr11 & 0b11000000) >> 6;
-        s1_duty = s1_duty ? s1_duty * 2 : 1;
-        logic<8> s1_sample = (s1_phase < s1_duty) ? b8(s1_volume) : b8(0);
-        s1_out = s1_sample;
-      }
+            //----------
 
-      if (s2_enable) {
-        logic<8> s2_volume = (nr22 & 0x08) ? b8(s2_env_volume) : b8(15 ^ s2_env_volume);
-        logic<8> s2_duty = (nr21 & 0b11000000) >> 6;
-        s2_duty = s2_duty ? s2_duty * 2 : 1;
-        logic<8> s2_sample = (s2_phase < s2_duty) ? b8(s2_volume) : b8(0);
-        s2_out = s2_sample;
-      }
+          case 0xFF16: data_out = cat(s2_duty, s2_len_timer_init); break;
+          case 0xFF17: data_out = cat(s2_env_vol_init, s2_env_add, s2_env_timer_init); break;
+          case 0xFF18: data_out = b8(s2_freq_timer_init, 0); break;
+          case 0xFF19: data_out = cat(s2_trig, s2_len_en, b3(0b111), b3(s2_freq_timer_init, 8)); break;
 
-      logic<1> s3_power = (nr30 & 0b10000000);
-      if (s3_enable && s3_power) {
-        logic<8> s3_volume_shift = 0;
-        switch ((nr32 & 0b01100000) >> 5) {
-          case 0: s3_volume_shift = 4; break;
-          case 1: s3_volume_shift = 0; break;
-          case 2: s3_volume_shift = 1; break;
-          case 3: s3_volume_shift = 2; break;
+            //----------
+
+          case 0xFF1A: data_out = cat(s3_power, b7(0b1111111)); break;
+          case 0xFF1B: data_out = s3_len_timer_init; break;
+
+          // metron didn't like the block without {}
+          case 0xFF1C: {
+            switch (s3_volume_shift) {
+              case 0: data_out = 0b01000000; break;
+              case 1: data_out = 0b10000000; break;
+              case 2: data_out = 0b11000000; break;
+              case 4: data_out = 0b00000000; break;
+            }
+            break;
+          }
+          case 0xFF1D: data_out = b8(s3_freq_timer_init, 0); break;
+          case 0xFF1E: data_out = cat(s3_trig, s3_len_en, b3(0b111), b3(s3_freq_timer_init, 8)); break;
+
+            //----------
+
+          case 0xFF20: data_out = cat(b2(0b11), s4_len_timer_init); break;
+          case 0xFF21: data_out = cat(s4_env_vol_init, s4_env_add, s4_env_timer_init); break;
+          case 0xFF22: data_out = cat(s4_shift, s4_mode, s4_freq_timer_init); break;
+          case 0xFF23: data_out = cat(s4_trig, s4_len_en, b6(0b111111)); break;
+
+            //----------
+
+          case 0xFF24: data_out = cat(b1(0), volume_l, b1(0), volume_r); break;
+          case 0xFF25: data_out = cat(mix_l4, mix_l3, mix_l2, mix_l1, mix_r4, mix_r3, mix_r2, mix_r1); break;
+          case 0xFF26: data_out = cat(spu_power, b7(0)); break;
+
+          // "default: break didn't work?"
+          default: { break; }
         }
-        logic<8> s3_sample = s3_wave[s3_phase >> 1];
-        s3_sample = (s3_phase & 1) ? b8(s3_sample & 0xF) : b8(s3_sample >> 4);
-        s3_sample = s3_sample >> s3_volume_shift;
-        s3_out = s3_sample;
-      }
-
-      if (s4_enable) {
-        logic<8> s4_volume = (nr42 & 0x08) ? b8(s4_env_volume) : b8(15 ^ s4_env_volume);
-        logic<8> s4_sample = (s4_lfsr & 1) ? b8(s4_volume) : b8(0);
-        s4_out = s4_sample;
       }
 
       //----------
       // s1 clock
 
-      if (!s1_phase_clock) {
-        logic<8> s1_sweep_period = (nr10 & 0b01110000) >> 4;
-        logic<16> s1_freq = ((nr14 << 8) | nr13) & 0x07FF;
-
-        s1_phase_clock = 2047 ^ (s1_sweep_period ? s1_sweep_freq : s1_freq);
-        s1_phase = (s1_phase + 1) & 7;
+      if (s1_freq_timer == 0b11111111111) {
+        s1_phase = s1_phase + 1;
+        s1_freq_timer = s1_sweep_timer_init ? s1_sweep_freq : s1_freq_timer_init;      
       }
       else {
-        s1_phase_clock = s1_phase_clock - 1;
+        s1_freq_timer = s1_freq_timer + 1;
+      }
+
+      //----------
+      // s1 length
+
+      if (length_tick && s1_running && s1_len_en) {
+        if (s1_len_timer == 0b111111) {
+          s1_len_timer = 0;
+          s1_running = 0;
+        }
+        else {
+          s1_len_timer = s1_len_timer + 1;
+        }
+      }
+
+      //----------
+      // s1 sweep
+
+      if (sweep_tick && s1_sweep_timer_init && s1_sweep_shift) {
+        if (s1_sweep_timer) {
+          s1_sweep_timer = s1_sweep_timer - 1;
+        }
+        else {
+          logic<11> delta = s1_sweep_freq >> s1_sweep_shift;
+          logic<12> next_freq = s1_sweep_freq + (s1_sweep_dir ? -delta : +delta);
+          if (next_freq > 2047) s1_running = 0;
+          s1_sweep_timer = s1_sweep_timer_init;
+          s1_sweep_freq = next_freq;
+        }
+      }
+
+      //----------
+      // s1 env
+
+      if (env_tick && s1_env_timer_init) {
+        if (s1_env_timer) {
+          s1_env_timer = s1_env_timer - 1;
+        }
+        else {
+          s1_env_timer = s1_env_timer_init;
+          if (s1_env_add) { if (s1_env_vol < 15) s1_env_vol = s1_env_vol + 1; }
+          else            { if (s1_env_vol >  0) s1_env_vol = s1_env_vol - 1; }
+        }
       }
 
       //----------
       // s2 clock
 
-      if (!s2_phase_clock) {
-        logic<16> s2_freq = ((nr24 << 8) | nr23) & 0x07FF;
-
-        s2_phase_clock = 2047 ^ s2_freq;
-        s2_phase = (s2_phase + 1) & 7;
+      if (s2_freq_timer == 0x7FF) {
+        s2_phase = s2_phase + 1;
+        s2_freq_timer = s2_freq_timer_init;
       }
       else {
-        s2_phase_clock = s2_phase_clock - 1;
+        s2_freq_timer = s2_freq_timer + 1;
       }
 
       //----------
-      // s3 clock - we run this twice because this is ticking at 1 mhz
+      // s2 length
 
-      logic<16> s3_phase_clock_ = s3_phase_clock;
-      logic<8> s3_phase_ = s3_phase;
-
-      if (!s3_phase_clock_) {
-        logic<16> s3_freq = ((nr34 << 8) | nr33) & 0x07FF;
-
-        s3_phase_clock_ = 2047 ^ s3_freq;
-        s3_phase_ = (s3_phase_ + 1) & 31;
-      }
-      else {
-        s3_phase_clock_ = s3_phase_clock_ - 1;
-      }
-
-      if (!s3_phase_clock_) {
-        logic<16> s3_freq = ((nr34 << 8) | nr33) & 0x07FF;
-
-        s3_phase_clock_ = 2047 ^ s3_freq;
-        s3_phase_ = (s3_phase_ + 1) & 31;
-      }
-      else {
-        s3_phase_clock_ = s3_phase_clock_ - 1;
-      }
-
-      s3_phase_clock = s3_phase_clock_;
-      s3_phase = s3_phase_;
-
-      //----------
-      // s4 clock
-
-      if (!s4_phase_clock) {
-        logic<1> s4_lfsr_mode = (nr43 & 0b00001000) >> 3;
-        logic<8> s4_phase_period = (nr43 & 0b00000111) ? (nr43 & 0b00000111) * 2 : 1;
-
-        s4_phase_clock = s4_phase_period;
-        logic<1> lfsr_bit = (s4_lfsr ^ (s4_lfsr >> 1)) & 1;
-        s4_phase_clock = s4_phase_period;
-        if (s4_lfsr_mode) {
-          s4_lfsr = ((s4_lfsr >> 1) & 0b0111111111011111) | (lfsr_bit << 5);
+      if (length_tick && s2_running && s2_len_en) {
+        if (s2_len_timer == 0x3F) {
+          s2_len_timer = 0;
+          s2_running = 0;
         }
         else {
-          s4_lfsr = ((s4_lfsr >> 1) & 0b0011111111111111) | (lfsr_bit << 14);
-        }
-      }
-      else {
-        logic<8> s4_clock_shift = (nr43 & 0b11110000) >> 4;
-        s4_phase_clock = s4_phase_clock - ((clock_flip >> s4_clock_shift) & 1);
-      }
-
-      //----------
-      // sweep
-
-      if (sweep_tick) {
-        logic<8> s1_sweep_period = (nr10 & 0b01110000) >> 4;
-        logic<8> s1_sweep_shift = (nr10 & 0b00000111) >> 0;
-        logic<1> s1_sweep_dir = (nr10 & 0b00001000) >> 3;
-
-        if (s1_sweep_period && s1_sweep_shift) {
-          if (s1_sweep_clock) {
-            s1_sweep_clock = s1_sweep_clock - 1;
-          }
-          else {
-            logic<16> delta = s1_sweep_freq >> s1_sweep_shift;
-            logic<16> new_freq = s1_sweep_freq + (s1_sweep_dir ? -delta : +delta);
-            s1_sweep_clock = s1_sweep_period;
-            if (new_freq > 2047) {
-              s1_enable = 0;
-            }
-            else {
-              s1_sweep_freq = new_freq;
-            }
-          }
+          s2_len_timer = s2_len_timer + 1;
         }
       }
 
       //----------
-      // length
+      // s2 env
 
-      if (length_tick) {
-        logic<1> s1_length_enable = (nr14 & 0b01000000) >> 6;
-        logic<1> s2_length_enable = (nr24 & 0b01000000) >> 6;
-        logic<1> s3_length_enable = (nr34 & 0b01000000) >> 6;
-        logic<1> s4_length_enable = (nr44 & 0b01000000) >> 6;
-        logic<8> s1_duration_ = s1_duration;
-        logic<8> s2_duration_ = s2_duration;
-        logic<16> s3_duration_ = s3_duration;
-        logic<8> s4_duration_ = s4_duration;
-
-        if (s1_length_enable && s1_duration_) s1_duration_ = s1_duration_ - 1;
-        if (s2_length_enable && s2_duration_) s2_duration_ = s2_duration_ - 1;
-        if (s3_length_enable && s3_duration_) s3_duration_ = s3_duration_ - 1;
-        if (s4_length_enable && s4_duration_) s4_duration_ = s4_duration_ - 1;
-
-        if (s1_length_enable && s1_duration_ == 0) s1_enable = 0;
-        if (s2_length_enable && s2_duration_ == 0) s2_enable = 0;
-        if (s3_length_enable && s3_duration_ == 0) s3_enable = 0;
-        if (s4_length_enable && s4_duration_ == 0) s4_enable = 0;
-
-        s1_duration = s1_duration_;
-        s2_duration = s2_duration_;
-        s3_duration = s3_duration_;
-        s4_duration = s4_duration_;
-      }
-
-      //----------
-      // env
-
-      if (env_tick) {
-        logic<1> s1_env_dir = (nr12 & 0b00001000) >> 3;
-        logic<1> s2_env_dir = (nr22 & 0b00001000) >> 3;
-        logic<1> s4_env_dir = (nr42 & 0b00001000) >> 3;
-
-        logic<8> s1_env_period = (nr12 & 0b00000111) >> 0;
-        logic<8> s2_env_period = (nr22 & 0b00000111) >> 0;
-        logic<8> s4_env_period = (nr42 & 0b00000111) >> 0;
-
-        if (s1_env_period) {
-          if (s1_env_clock) {
-            s1_env_clock = s1_env_clock - 1;
-          }
-          else {
-            s1_env_clock = s1_env_period;
-            if (s1_env_volume < 15) s1_env_volume = s1_env_volume + 1;
-          }
+      if (env_tick && s2_env_timer_init) {
+        if (s2_env_timer) {
+          s2_env_timer = s2_env_timer - 1;
         }
-
-        if (s2_env_period) {
-          if (s2_env_clock) {
-            s2_env_clock = s2_env_clock - 1;
-          }
-          else {
-            s2_env_clock = s2_env_period;
-            if (s2_env_volume < 15) s2_env_volume = s2_env_volume + 1;
-          }
-        }
-
-        if (s4_env_period) {
-          if (s4_env_clock) {
-            s4_env_clock = s4_env_clock - 1;
-          }
-          else {
-            s4_env_clock = s4_env_period;
-            if (s4_env_volume < 15) s4_env_volume = s4_env_volume + 1;
-          }
+        else {
+          s2_env_timer = s2_env_timer_init;
+          if (s2_env_add) { if (s2_env_vol < 15) s2_env_vol = s2_env_vol + 1; }
+          else            { if (s2_env_vol >  0) s2_env_vol = s2_env_vol - 1; }
         }
       }
 
-      spu_clock = spu_clock_;
+      //----------
+      // s3 clock - we run this twice because s3's timer ticks at 2 mhz
+
+      {
+        logic<5> next_phase = s3_phase;
+        logic<11> next_timer = s3_freq_timer;
+
+        if (next_timer == 0x7FF) {
+          next_phase = next_phase + 1;
+          next_timer = s3_freq_timer_init;
+        }
+        else {
+          next_timer = next_timer + 1;
+        }
+
+        if (next_timer == 0x7FF) {
+          next_phase = next_phase + 1;
+          next_timer = s3_freq_timer_init;
+        }
+        else {
+          next_timer = next_timer + 1;
+        }
+
+        s3_phase = next_phase;
+        s3_freq_timer = next_timer;
+      }
 
       //----------
-      // Wavetable writes
+      // s3 length
 
-      if (we && addr >= 0xFF30 && addr <= 0xFF3F) {
-        s3_wave[addr & 0xF] = data;
+      if (length_tick && s3_running && s3_len_en) {
+        if (s3_len_timer == 0xFF) {
+          s3_len_timer = 0;
+          s3_running = 0;
+        }
+        else {
+          s3_len_timer = s3_len_timer + 1;
+        }
+      }
+
+      //----------
+      // s4 lfsr
+
+      logic<1> lfsr_clock_old = spu_clock_old[s4_shift + 1];
+      logic<1> lfsr_clock_new = spu_clock_new[s4_shift + 1];
+
+      /*
+      logic<1> lfsr_clock_old = 0;
+      logic<1> lfsr_clock_new = 0;
+
+      switch(s4_shift) {
+        case 0 : { lfsr_clock_old = spu_clock_old[1 ]; lfsr_clock_new = spu_clock_new[1 ]; break; }
+        case 1 : { lfsr_clock_old = spu_clock_old[2 ]; lfsr_clock_new = spu_clock_new[2 ]; break; }
+        case 2 : { lfsr_clock_old = spu_clock_old[3 ]; lfsr_clock_new = spu_clock_new[3 ]; break; }
+        case 3 : { lfsr_clock_old = spu_clock_old[4 ]; lfsr_clock_new = spu_clock_new[4 ]; break; }
+        case 4 : { lfsr_clock_old = spu_clock_old[5 ]; lfsr_clock_new = spu_clock_new[5 ]; break; }
+        case 5 : { lfsr_clock_old = spu_clock_old[6 ]; lfsr_clock_new = spu_clock_new[6 ]; break; }
+        case 6 : { lfsr_clock_old = spu_clock_old[7 ]; lfsr_clock_new = spu_clock_new[7 ]; break; }
+        case 7 : { lfsr_clock_old = spu_clock_old[8 ]; lfsr_clock_new = spu_clock_new[8 ]; break; }
+        case 8 : { lfsr_clock_old = spu_clock_old[9 ]; lfsr_clock_new = spu_clock_new[9 ]; break; }
+        case 9 : { lfsr_clock_old = spu_clock_old[10]; lfsr_clock_new = spu_clock_new[10]; break; }
+        case 10: { lfsr_clock_old = spu_clock_old[11]; lfsr_clock_new = spu_clock_new[11]; break; }
+        case 11: { lfsr_clock_old = spu_clock_old[12]; lfsr_clock_new = spu_clock_new[12]; break; }
+        case 12: { lfsr_clock_old = spu_clock_old[13]; lfsr_clock_new = spu_clock_new[13]; break; }
+        case 13: { lfsr_clock_old = spu_clock_old[14]; lfsr_clock_new = spu_clock_new[14]; break; }
+        case 14: { lfsr_clock_old = spu_clock_old[15]; lfsr_clock_new = spu_clock_new[15]; break; }
+        case 15: { lfsr_clock_old = 0;                 lfsr_clock_new = 0;                 break; }
+      }
+      */
+
+      if ((lfsr_clock_old == 0) && (lfsr_clock_new == 1)) {
+        if (s4_freq_timer) {
+          s4_freq_timer = s4_freq_timer - 1;
+        }
+        else {
+          logic<1> new_bit = s4_lfsr[15] ^ s4_lfsr[14] ^ 1;
+          s4_lfsr = cat(
+            b6(s4_lfsr, 9),
+            s4_mode ? new_bit : s4_lfsr[8],
+            b8(s4_lfsr, 0),
+            new_bit);
+          s4_freq_timer = s4_freq_timer_init;
+        }
+      }
+
+      //----------
+      // s4 length
+
+      if (length_tick && s4_running && s4_len_en) {
+        if (s4_len_timer == 0x3F) {
+          s4_len_timer = 0;
+          s4_running = 0;
+        }
+        else {
+          s4_len_timer = s4_len_timer + 1;
+        }
+      }
+
+      //----------
+      // s4 env
+
+      if (env_tick && s4_env_timer_init) {
+        if (s4_env_timer) {
+          s4_env_timer = s4_env_timer - 1;
+        }
+        else {
+          s4_env_timer = s4_env_timer_init;
+          if (s4_env_add) { if (s4_env_vol < 15) s4_env_vol = s4_env_vol + 1; }
+          else            { if (s4_env_vol >  0) s4_env_vol = s4_env_vol - 1; }
+        }
       }
 
       //----------
       // Triggers
 
-      logic<1> s1_trigger_ = we && addr == 0xFF14 && (data & 0x80);
-      logic<1> s2_trigger_ = we && addr == 0xFF19 && (data & 0x80);
-      logic<1> s3_trigger_ = we && addr == 0xFF1E && (data & 0x80);
-      logic<1> s4_trigger_ = we && addr == 0xFF23 && (data & 0x80);
-
-      if (s1_trigger_) {
-        logic<8> s1_sweep_period = (nr10 & 0b01110000) >> 4;
-        logic<8> s1_length = 64 - (nr11 & 0b00111111);
-        logic<8> s1_start_volume = (nr12 & 0b11110000) >> 4;
-        logic<8> s1_env_period = (nr12 & 0b00000111) >> 0;
-        logic<16> s1_freq = ((nr14 << 8) | nr13) & 0x07FF;
-
-        s1_enable = (nr12 & 0xF8) != 0;
-        s1_duration = s1_length;
-        s1_sweep_clock = s1_sweep_period;
-        s1_sweep_freq = s1_freq;
-
-        s1_env_volume = (nr12 & 0x08) ? b8(s1_start_volume) : b8(15 ^ s1_start_volume);
-        s1_env_clock = s1_env_period;
-
-        s1_phase_clock = 2047 ^ s1_freq;
-        s1_phase = 0;
+      if (s1_trig && (s1_env_vol_init || s1_env_add)) {
+        s1_running     = 1;
+        s1_len_timer   = s1_len_timer_init;
+        s1_sweep_timer = s1_sweep_timer_init;
+        s1_sweep_freq  = s1_freq_timer_init;
+        s1_env_vol     = s1_env_vol_init;
+        s1_env_timer   = s1_env_timer_init;
+        s1_freq_timer  = s1_freq_timer_init;
+        s1_phase       = 0;
+        s1_trig        = 0;
       }
 
-      if (s2_trigger_) {
-        logic<8> s2_length = 64 - (nr21 & 0b00111111);
-        logic<8> s2_start_volume = (nr22 & 0b11110000) >> 4;
-        logic<8> s2_env_period = (nr22 & 0b00000111) >> 0;
-        logic<16> s2_freq = ((nr24 << 8) | nr23) & 0x07FF;
-
-        s2_enable = (nr22 & 0xF8) != 0;
-        s2_duration = s2_length;
-
-        s2_env_volume = (nr22 & 0x08) ? b8(s2_start_volume) : b8(15 ^ s2_start_volume);
-        s2_env_clock = s2_env_period;
-
-        s2_phase_clock = 2047 ^ s2_freq;
-        s2_phase = 0;
+      if (s2_trig && (s2_env_vol_init || s2_env_add)) {
+        s2_running    = 1;
+        s2_len_timer  = s2_len_timer_init;
+        s2_env_vol    = s2_env_vol_init;
+        s2_env_timer  = s2_env_timer_init;
+        s2_freq_timer = s2_freq_timer_init;
+        s2_phase      = 0;
+        s2_trig       = 0;
       }
 
-      if (s3_trigger_) {
-        logic<16> s3_length = 256 - nr31;
-        logic<16> s3_freq = ((nr34 << 8) | nr33) & 0x07FF;
-
-        s3_enable = (nr32 != 0);
-        s3_duration = s3_length;
-        s3_phase_clock = 2047 ^ s3_freq;
-        s3_phase = 0;
+      if (s3_trig) {
+        s3_running    = 1;
+        s3_len_timer  = s3_len_timer_init;
+        s3_freq_timer = s3_freq_timer_init;
+        s3_phase      = 0;
+        s3_trig       = 0;
       }
 
-      if (s4_trigger_) {
-        logic<8> s4_length = 64 - (nr41 & 0b00111111);
-        logic<8> s4_start_volume = (nr42 & 0b11110000) >> 4;
-        logic<8> s4_env_period = (nr42 & 0b00000111) >> 0;
-        logic<8> s4_phase_period = (nr43 & 0b00000111) ? (nr43 & 0b00000111) * 2 : 1;
-
-        s4_enable = (nr42 & 0xF8) != 0;
-        s4_duration = s4_length;
-
-        s4_env_volume = (nr42 & 0x08) ? b8(s4_start_volume) : b8(15 ^ s4_start_volume);
-        s4_env_clock = s4_env_period;
-
-        s4_phase_clock = s4_phase_period;
-        s4_lfsr = 0x7FFF;
+      if (s4_trig && (s4_env_vol_init || s4_env_add)) {
+        s4_running    = 1;
+        s4_len_timer  = s4_len_timer_init;
+        s4_env_vol    = s4_env_vol_init;
+        s4_env_timer  = s4_env_timer_init;
+        s4_freq_timer = s4_freq_timer_init;
+        s4_lfsr       = 0;
+        s4_trig       = 0;
       }
 
       //----------
       // Register writes
 
-      if (we && addr >= 0xFF10 && addr <= 0xFF26) {
+      if (write && addr >= 0xFF10 && addr <= 0xFF26) {
         switch (addr) {
-          case 0xFF10: nr10 = data | 0b10000000; break;
-          case 0xFF11: nr11 = data | 0b00000000; break;
-          case 0xFF12: nr12 = data | 0b00000000; break;
-          case 0xFF13: nr13 = data | 0b00000000; break;
-          case 0xFF14: nr14 = data | 0b00111000; break;
-          case 0xFF16: nr21 = data | 0b00000000; break;
-          case 0xFF17: nr22 = data | 0b00000000; break;
-          case 0xFF18: nr23 = data | 0b00000000; break;
-          case 0xFF19: nr24 = data | 0b00111000; break;
-          case 0xFF1A: nr30 = data | 0b01111111; break;
-          case 0xFF1B: nr31 = data | 0b00000000; break;
-          case 0xFF1C: nr32 = data | 0b10011111; break;
-          case 0xFF1D: nr33 = data | 0b00000000; break;
-          case 0xFF1E: nr34 = data | 0b00111000; break;
-          case 0xFF20: nr41 = data | 0b11000000; break;
-          case 0xFF21: nr42 = data | 0b00000000; break;
-          case 0xFF22: nr43 = data | 0b00000000; break;
-          case 0xFF23: nr44 = data | 0b00111111; break;
-          case 0xFF24: nr50 = data | 0b00000000; break;
-          case 0xFF25: nr51 = data | 0b00000000; break;
-          case 0xFF26: nr52 = data | 0b01110000; break;
+          case 0xFF10: {
+            s1_sweep_shift      = b3(data_in, 0);
+            s1_sweep_dir        = b1(data_in, 3);
+            s1_sweep_timer_init = b3(data_in, 4);
+            break;
+          }
+          case 0xFF11: {
+            s1_len_timer_init = b6(data_in, 0);
+            s1_duty           = b2(data_in, 6);
+            break;
+          }
+          case 0xFF12: {
+            s1_env_timer_init = b3(data_in, 0);
+            s1_env_add        = b1(data_in, 3);
+            s1_env_vol_init   = b4(data_in, 4);
+            break;
+          }
+          case 0xFF13: {
+            s1_freq_timer_init = cat(b3(s1_freq_timer_init, 8), data_in);
+            break;
+          }
+          case 0xFF14: {
+            s1_freq_timer_init = cat(b3(data_in, 0), b8(s1_freq_timer_init, 0));
+            s1_len_en          = b1(data_in, 6);
+            s1_trig            = b1(data_in, 7);
+            break;
+          }
+
+          //----------
+
+          case 0xFF16: {
+            s2_len_timer_init = b6(data_in, 0);
+            s2_duty           = b2(data_in, 6);
+            break;
+          }
+          case 0xFF17: {
+            s2_env_timer_init = b3(data_in, 0);
+            s2_env_add        = b1(data_in, 3);
+            s2_env_vol_init   = b4(data_in, 4);
+            break;
+          }
+          case 0xFF18: {
+            s2_freq_timer_init = cat(b3(s2_freq_timer_init, 8), data_in);
+            break;
+          }
+          case 0xFF19: {
+            s2_freq_timer_init = cat(b3(data_in, 0), b8(s2_freq_timer_init, 0));
+            s2_len_en          = b1(data_in, 6);
+            s2_trig            = b1(data_in, 7);
+            break;
+          }
+
+          //----------
+
+          case 0xFF1A: {
+            s3_power = b1(data_in, 7);
+            break;
+          }
+          case 0xFF1B: {
+            s3_len_timer_init = b8(data_in, 0);
+            break;
+          }
+          case 0xFF1C: {
+            switch (b2(data_in, 5)) {
+              case 0: s3_volume_shift = 4; break;
+              case 1: s3_volume_shift = 0; break;
+              case 2: s3_volume_shift = 1; break;
+              case 3: s3_volume_shift = 2; break;
+            }
+            break;
+          }
+          case 0xFF1D: {
+            s3_freq_timer_init = cat(b3(s3_freq_timer_init, 8), data_in);
+            break;
+          }
+          case 0xFF1E: {
+            s3_freq_timer_init = cat(b3(data_in, 0), b8(s3_freq_timer_init, 0));
+            s3_len_en          = b1(data_in, 6);
+            s3_trig            = b1(data_in, 7);
+            break;
+          }
+
+          //----------
+
+          case 0xFF20: {
+            s4_len_timer_init = b6(data_in, 0);
+            break;
+          }
+          case 0xFF21: {
+            s4_env_timer_init = b3(data_in, 0);
+            s4_env_add        = b1(data_in, 3);
+            s4_env_vol_init   = b4(data_in, 4);
+            break;
+          }
+          case 0xFF22: {
+            s4_freq_timer_init = b3(data_in, 0);
+            s4_mode            = b1(data_in, 3);
+            s4_shift           = b4(data_in, 4);
+            break;
+          }
+          case 0xFF23: {
+            s4_len_en = b1(data_in, 6);
+            s4_trig   = b1(data_in, 7);
+            break;
+          }
+
+          //----------
+
+          case 0xFF24: {
+            volume_r = b3(data_in, 0) + 1;
+            volume_l = b3(data_in, 4) + 1;
+            break;
+          }
+          case 0xFF25: {
+            mix_r1 = b1(data_in, 0);
+            mix_r2 = b1(data_in, 1);
+            mix_r3 = b1(data_in, 2);
+            mix_r4 = b1(data_in, 3);
+            mix_l1 = b1(data_in, 4);
+            mix_l2 = b1(data_in, 5);
+            mix_l3 = b1(data_in, 6);
+            mix_l4 = b1(data_in, 7);
+            break;
+          }
+          case 0xFF26: {
+            spu_power = b1(data_in, 7);
+            break;
+          }
+          default: {
+            break;
+          }
         }
       }
 
+      //----------
+      // Wavetable writes
 
+      if (write && addr >= 0xFF30 && addr <= 0xFF3F) {
+        s3_wave[addr & 0xF] = data_in;
+      }
+
+      spu_clock_old = spu_clock_new;
     }
   }
 
-  //-----------------------------------------------------------------------------
+  //----------------------------------------
 
-private:
+  /*
+  void dump(Dumper& d) const {
+    d("\002--------------SPU--------------\001\n");
 
-  logic<8> nr10;
-  logic<8> nr11;
-  logic<8> nr12;
-  logic<8> nr13;
+    const char* bar = "===============";
 
-  logic<8> nr14;
-  logic<8> nr20;
-  logic<8> nr21;
-  logic<8> nr22;
+    logic<4> s3_env_vol = 0;
+    switch (s3_volume_shift) {
+    case 0: s3_env_vol = 15; break;
+    case 1: s3_env_vol = 7; break;
+    case 2: s3_env_vol = 3; break;
+    case 4: s3_env_vol = 0; break;
+    }
 
-  logic<8> nr23;
-  logic<8> nr24;
-  logic<8> nr30;
-  logic<8> nr31;
+    d("s1 running %d\n", s1_running);
+    d("s2 running %d\n", s2_running);
+    d("s3 running %d\n", s3_running);
+    d("s4 running %d\n", s4_running);
 
-  logic<8> nr32;
-  logic<8> nr33;
-  logic<8> nr34;
-  logic<8> nr40;
+    d("s1 len %d\n", s1_len_timer);
+    d("s2 len %d\n", s2_len_timer);
+    d("s3 len %d\n", s3_len_timer);
+    d("s4 len %d\n", s4_len_timer);
 
-  logic<8> nr41;
-  logic<8> nr42;
-  logic<8> nr43;
-  logic<8> nr44;
+    d("s1 env timer %d\n", s1_env_timer);
+    d("s2 env timer %d\n", s2_env_timer);
+    d("s4 env timer %d\n", s4_env_timer);
 
-  logic<8> nr50;
-  logic<8> nr51;
-  logic<8> nr52;
+    d("s1 vol %2d %s\n", s1_env_vol, bar + 15 - s1_env_vol);
+    d("s2 vol %2d %s\n", s2_env_vol, bar + 15 - s2_env_vol);
+    d("s3 vol %2d %s\n", s3_env_vol, bar + 15 - s3_env_vol);
+    d("s4 vol %2d %s\n", s4_env_vol, bar + 15 - s4_env_vol);
 
-  logic<8> s3_wave[16];
+    d("s1 sweep timer %2d\n", s1_sweep_timer);
+    d("s1 sweep freq  %2d\n", s1_sweep_freq);
 
-  logic<16> s4_lfsr;
+    d("s1 freq timer %d\n", s1_freq_timer);
+    d("s2 freq timer %d\n", s2_freq_timer);
+    d("s3 freq timer %d\n", s3_freq_timer);
+    d("s4 freq timer %d\n", s4_freq_timer);
 
-  logic<16> spu_clock;
+    d("s1 phase %d\n", s1_phase);
+    d("s2 phase %d\n", s2_phase);
+    d("s3 phase %d\n", s3_phase);
 
-  logic<1> s1_enable;
-  logic<1> s2_enable;
-  logic<1> s3_enable;
-  logic<1> s4_enable;
+    d("s4 lfsr 0x%04x\n", s4_lfsr);
 
-  logic<8> s1_sweep_clock;
-  logic<16> s1_sweep_freq;
-
-  logic<8> s1_duration;
-  logic<8> s2_duration;
-  logic<16> s3_duration;
-
-  logic<8> s4_duration;
-  logic<8> s1_env_clock;
-  logic<8> s2_env_clock;
-  logic<8> s4_env_clock;
-
-  logic<8> s1_env_volume;
-  logic<8> s2_env_volume;
-  logic<8> s4_env_volume;
-
-  logic<16> s1_phase_clock;
-  logic<16> s2_phase_clock;
-  logic<16> s3_phase_clock;
-  logic<16> s4_phase_clock;
-
-  logic<8> s1_phase;
-  logic<8> s2_phase;
-  logic<8> s3_phase;
-
-  logic<8> s1_out;
-  logic<8> s2_out;
-  logic<8> s3_out;
-  logic<8> s4_out;
-};
-
-/*
-
-  void tick(int phase_total, const Req& req, Ack& ack) {
-
-  }
-
-  //----------
-  // glitches n stuff
-
-  if (we && addr == 0xFF12) {
-    if ((nr12 & 0x08) && s1_enable) s1_env_volume = (s1_env_volume + 1) & 15;
-    if ((data & 0xF8) == 0) s1_enable = 0;
-  }
-
-  if (we && addr == 0xFF17) {
-    if ((nr22 & 0x08) && s2_enable) s2_env_volume = (s2_env_volume + 1) & 15;
-    if ((data & 0xF8) == 0) s2_enable = 0;
-  }
-
-  if (we && addr == 0xFF21) {
-    if ((nr42 & 0x08) && s4_enable) s4_env_volume = (s4_env_volume + 1) & 15;
-    if ((data & 0xF8) == 0) s4_enable = 0;
-  }
-
-//-----------------------------------------------------------------------------
-
-void MetroBoySPU::dump(Dumper& d) const {
-  d("\002--------------SPU--------------\001\n");
-
-  d("NR10 %s\n", byte_to_bits(nr10));
-  d("NR11 %s\n", byte_to_bits(nr11));
-  d("NR12 %s\n", byte_to_bits(nr12));
-  d("NR13 %s\n", byte_to_bits(nr13));
-  d("NR14 %s\n", byte_to_bits(nr14));
-  d("NR20 %s\n", byte_to_bits(nr20));
-  d("NR21 %s\n", byte_to_bits(nr21));
-  d("NR22 %s\n", byte_to_bits(nr22));
-  d("NR23 %s\n", byte_to_bits(nr23));
-  d("NR24 %s\n", byte_to_bits(nr24));
-  d("NR30 %s\n", byte_to_bits(nr30));
-  d("NR31 %s\n", byte_to_bits(nr31));
-  d("NR32 %s\n", byte_to_bits(nr32));
-  d("NR33 %s\n", byte_to_bits(nr33));
-  d("NR34 %s\n", byte_to_bits(nr34));
-  d("NR40 %s\n", byte_to_bits(nr40));
-  d("NR41 %s\n", byte_to_bits(nr41));
-  d("NR42 %s\n", byte_to_bits(nr42));
-  d("NR43 %s\n", byte_to_bits(nr43));
-  d("NR44 %s\n", byte_to_bits(nr44));
-  d("NR50 %s\n", byte_to_bits(nr50));
-  d("NR51 %s\n", byte_to_bits(nr51));
-  d("NR52 %s\n", byte_to_bits(nr52));
-
-  const char* bar = "===============";
-
-  logic<8> s1_volume = (nr12 & 0x08) ? s1_env_volume : 15 ^ s1_env_volume;
-  d("s1 vol %s\n", bar + (15 - s1_volume));
-
-  logic<8> s2_volume = (nr22 & 0x08) ? s2_env_volume : 15 ^ s2_env_volume;
-  d("s2 vol %s\n", bar + (15 - s2_volume));
-
-  logic<8> s3_volume = 0;
-  switch ((nr32 & 0b01100000) >> 5) {
-  case 0: s3_volume = 0; break;
-  case 1: s3_volume = 15; break;
-  case 2: s3_volume = 7; break;
-  case 3: s3_volume = 3; break;
-  }
-  d("s3 vol %s\n", bar + (15 - s3_volume));
-
-  logic<8> s4_volume = (nr42 & 0x08) ? s4_env_volume : 15 ^ s4_env_volume;
-  d("s4 vol %s\n", bar + (15 - s4_volume));
-
-  if (0) {
     char buf[33];
     for (int i = 0; i < 16; i++) {
-      logic<8> a = (s3_wave[i] & 0x0F) >> 0;
-      logic<8> b = (s3_wave[i] & 0xF0) >> 4;
+      logic<4> a = b4(s3_wave[i], 4);
+      logic<4> b = b4(s3_wave[i], 0);
 
-      buf[2 * i + 0] = 'A' + a;
-      buf[2 * i + 1] = 'A' + b;
+      buf[2 * i + 0] = a > 9 ? 'A' + a - 10 : '0' + a;
+      buf[2 * i + 1] = b > 9 ? 'B' + b - 10 : '0' + b;
     }
 
     buf[32] = 0;
     d("[%s]\n", buf);
   }
-}
+  */
 
-//-----------------------------------------------------------------------------
-*/
-#pragma once
-#include <stdint.h>
-#include <stdio.h>
-typedef bool wire;
+  logic<9>  out_r; // signals
+  logic<9>  out_l; // signals
 
-inline wire bit0(uint32_t w) { return wire(w & 1); }
-inline wire bit(uint32_t w, int i) { return wire((w >> i) & 1); }
+  //----------------------------------------
 
-const bool config_use_flags = true;
-const bool config_check_flags = true;
-const bool config_dcheck = true;
+private:
 
-struct triwire { wire state; };
+  logic<16> spu_clock_old;
+  logic<8>  data_out;
 
-//-----------------------------------------------------------------------------
-// These _must_ be defined for all builds.
+  // Channel 1
 
-const wire BIT_DATA   = 0b00000001;
-const wire TRI_DRIVEN = 0b00001000;
-const wire BIT_CLOCK  = 0b00000010;
+  /*NR10*/ logic<3>  s1_sweep_shift;
+  /*NR10*/ logic<1>  s1_sweep_dir;
+  /*NR10*/ logic<3>  s1_sweep_timer_init;
+  /*NR11*/ logic<6>  s1_len_timer_init;
+  /*NR11*/ logic<2>  s1_duty;
+  /*NR12*/ logic<3>  s1_env_timer_init;
+  /*NR12*/ logic<1>  s1_env_add;
+  /*NR12*/ logic<4>  s1_env_vol_init;
+  /*NR13*/ logic<11> s1_freq_timer_init;
+  /*NR14*/ logic<1>  s1_len_en;
+  /*NR14*/ logic<1>  s1_trig;
 
-// These are only used for error checking and can be disabled in fast builds.
-const wire BIT_PULLED = config_use_flags ? 0b00000100 : 0b00000000;
-const wire BIT_DRIVEN = config_use_flags ? 0b00001000 : 0b00000000;
-const wire BIT_OLD    = config_use_flags ? 0b00010000 : 0b00000000;
-const wire BIT_NEW    = config_use_flags ? 0b00100000 : 0b00000000;
-const wire TRI_NEW    = config_use_flags ? 0b00100000 : 0b00000000;
+  logic<1>  s1_running;
+  logic<3>  s1_sweep_timer;
+  logic<11> s1_sweep_freq;
+  logic<6>  s1_len_timer;
+  logic<4>  s1_env_vol;
+  logic<3>  s1_env_timer;
+  logic<11> s1_freq_timer;
+  logic<3>  s1_phase;
 
-//------------------------------------------------------------------------------
+  // Channel 2
 
-#ifdef __GNUC__
-#include <csignal>
-#define debugbreak() raise(SIGTRAP);
-#endif
+  /*NR21*/ logic<6>  s2_len_timer_init;
+  /*NR21*/ logic<2>  s2_duty;
+  /*NR22*/ logic<3>  s2_env_timer_init;
+  /*NR22*/ logic<1>  s2_env_add;
+  /*NR22*/ logic<4>  s2_env_vol_init;
+  /*NR23*/ logic<11> s2_freq_timer_init;
+  /*NR24*/ logic<1>  s2_len_en;
+  /*NR24*/ logic<1>  s2_trig;
 
-#ifdef _MSC_VER
-#define debugbreak() __debugbreak();
-#endif
+  logic<6>  s2_len_timer;
+  logic<1>  s2_running;
+  logic<3>  s2_env_timer;
+  logic<4>  s2_env_vol;
+  logic<11> s2_freq_timer;
+  logic<3>  s2_phase;
 
-// Checks that always happen in every build.
-#define CHECK_P(A)  if (!(A)) { printf("ASSERT_P fail @ %s:%d : %s\n", __FILE__, __LINE__, #A); debugbreak(); }
-#define CHECK_N(A)  if ((A))  { printf("ASSERT_N fail @ %s:%d : %s\n", __FILE__, __LINE__, #A); debugbreak(); }
+  // Channel 3
 
-// Checks that only happen if "config_dcheck" is on.
-#define DCHECK_P(A)   if (config_dcheck) {if (!(A)) { printf("CHECK_P fail @ %s:%d : %s\n", __FILE__, __LINE__, #A);  debugbreak(); }}
-#define DCHECK_N(A)   if (config_dcheck) {if ((A))  { printf("CHECK_N fail @ %s:%d : %s\n", __FILE__, __LINE__, #A);  debugbreak(); }}
+  /*NR30*/ logic<1>  s3_power;
+  /*NR31*/ logic<8>  s3_len_timer_init;
+  /*NR32*/ logic<3>  s3_volume_shift;
+  /*NR33*/ logic<11> s3_freq_timer_init;
+  /*NR34*/ logic<1>  s3_len_en;
+  /*NR34*/ logic<1>  s3_trig;
 
-//-----------------------------------------------------------------------------
+  logic<1>  s3_running;
+  logic<8>  s3_len_timer;
+  logic<11> s3_freq_timer;
+  logic<5>  s3_phase;
+  logic<8>  s3_wave[16];
 
-// ADDER_01
-// ADDER_02
-// ADDER_03 << CI
-// ADDER_04
-// ADDER_05
-// ADDER_06 >> SO
-// ADDER_07
-// ADDER_08
-// ADDER_09
-// ADDER_10 >> CO
-// ADDER_11
-// ADDER_12
-// ADDER_13
-// ADDER_14
-// ADDER_15
-// ADDER_16 << A
-// ADDER_17 << B
-// ADDER_18
-// ADDER_19
-// ADDER_20
+  // Channel 4
 
-struct Adder {
-  wire sum;
-  wire carry;
+  /*NR41*/ logic<6>  s4_len_timer_init;
+  /*NR42*/ logic<3>  s4_env_timer_init;
+  /*NR42*/ logic<1>  s4_env_add;
+  /*NR42*/ logic<4>  s4_env_vol_init;
+  /*NR43*/ logic<3>  s4_freq_timer_init;
+  /*NR43*/ logic<1>  s4_mode;
+  /*NR43*/ logic<4>  s4_shift;
+  /*NR44*/ logic<1>  s4_len_en;
+  /*NR44*/ logic<1>  s4_trig;
+
+  logic<1>  s4_running;
+  logic<6>  s4_len_timer;
+  logic<3>  s4_env_timer;
+  logic<4>  s4_env_vol;
+  logic<3>  s4_freq_timer;
+  logic<16> s4_lfsr;
+
+  // SPU Control Registers
+
+  /*NR50*/ logic<4>  volume_l;
+  /*NR50*/ logic<4>  volume_r;
+
+  /*NR51*/ logic<1>  mix_r1;
+  /*NR51*/ logic<1>  mix_r2;
+  /*NR51*/ logic<1>  mix_r3;
+  /*NR51*/ logic<1>  mix_r4;
+  /*NR51*/ logic<1>  mix_l1;
+  /*NR51*/ logic<1>  mix_l2;
+  /*NR51*/ logic<1>  mix_l3;
+  /*NR51*/ logic<1>  mix_l4;
+
+  /*NR52*/ logic<1>  spu_power;
+
 };
-
-inline Adder add3(wire a, wire b, wire c) {
-  uint8_t s = bit0(a) + bit0(b) + bit0(c);
-  return { bit(s, 0), bit(s, 1) };
-}
-
-// this is in rung order
-inline Adder add3b(wire ci, wire a, wire b) {
-  uint8_t s = bit0(a) + bit0(b) + bit0(ci);
-  return { bit(s, 0), bit(s, 1) };
-}
-
-//-----------------------------------------------------------------------------
-
-struct BitBase {
-  BitBase() : state(0) {}
-  //BitBase(uint8_t _state) : state(_state) {}
-
-  wire qp_old() const { check_old(); return state; }
-  wire qn_old() const { check_old(); return ~state; }
-
-  wire qp_mid() const { return state; }
-  wire qn_mid() const { return ~state; }
-
-  wire qp_any() const { return state; }
-  wire qn_any() const { return ~state; }
-
-  wire qp_new() const { check_new(); return state; }
-  wire qn_new() const { check_new(); return ~state; }
-
-  //----------
-  // stuff in this section for logic mode only
-
-  //operator bool() const { return get_data(); }
-  //BitBase operator~() const { BitBase b; b.state = ~state; return b; }
-  //BitBase operator^(const BitBase& b) const { return BitBase(state ^ b.state); }
-
-  void rst() { state &= ~1; }
-  void set() { state |= 1; }
-
-  wire get_data() const { return bit0(state); }
-  void set_data(wire d) { state = (state & ~1) | bit0(d); }
-
-  wire get_clk() const { return bit(state, 1); }
-  void set_clk(wire c) { state = (state & ~2) | (bit0(c) << 1); }
-
-  void dff_pp(wire CLKp, wire Dp) {
-    wire clk_old = state & BIT_CLOCK;
-    wire clk_new = (CLKp << 1) & BIT_CLOCK;
-    wire d1 = (~clk_old & clk_new) ? Dp : state;
-    state = uint8_t(bit0(d1) | clk_new | BIT_NEW | BIT_DRIVEN);
-  }
-
-  //----------
-
-  void check_old() const {
-    if (config_check_flags) {
-      CHECK_P(bool(state & BIT_DRIVEN) != bool(state & BIT_PULLED));
-      CHECK_P((state & (BIT_OLD | BIT_NEW)) == BIT_OLD);
-    }
-  }
-
-  void check_new() const {
-    if (config_check_flags) {
-      CHECK_P(bool(state & BIT_DRIVEN) != bool(state & BIT_PULLED));
-      CHECK_P((state & (BIT_OLD | BIT_NEW)) == BIT_NEW);
-    }
-  }
-
-  void check_invalid() const {
-    if (config_check_flags) {
-      CHECK_N(state & (BIT_OLD | BIT_NEW));
-    }
-  }
-
-  uint8_t state;
-
-  // need default = for bit_purge
-  //BitBase& operator=(const BitBase&) = delete;
-};
-
-static_assert(sizeof(BitBase) == 1, "Bad BitBase size");
-
-
-inline wire bit(const BitBase& b) { return b.get_data(); }
-
-//-----------------------------------------------------------------------------
-
-struct Gate : public BitBase {
-  wire out_any() const { return state; }
-  wire out_old() const { check_old(); return state; }
-  wire out_mid() const { return state; }
-  wire out_new() const { check_new(); return state; }
-
-  void hold() {
-    state = uint8_t(BIT_NEW | BIT_DRIVEN | bit0(state));
-  }
-
-  void operator<<= (wire D) {
-    //check_unset(); // we use this in feeback loops, need better check...
-    state = uint8_t(BIT_NEW | BIT_DRIVEN | bit0(D));
-  }
-};
-
-//-----------------------------------------------------------------------------
-
-struct SigIn : public BitBase {
-  wire out_any() const { return state; }
-  wire out_old() const { check_old(); return state; }
-  wire out_new() const { check_new(); return state; }
-
-  void sig_in(wire D) {
-    check_invalid();
-    state = uint8_t(BIT_NEW | BIT_DRIVEN | bit0(D));
-  }
-};
-
-//-----------------------------------------------------------------------------
-
-struct SigOut : public BitBase {
-  wire out_old() const { check_old(); return state; }
-  wire out_new() const { check_new(); return state; }
-
-  void sig_out(wire D) {
-    check_invalid();
-    state = uint8_t(BIT_NEW | BIT_DRIVEN | bit0(D));
-  }
-};
-
-//-----------------------------------------------------------------------------
-// Generic DFF
-
-struct DFF : public BitBase {
-  void dff_r(wire CLKp, wire RSTn, wire Dp) {
-    check_invalid();
-
-    wire clk_old = state & BIT_CLOCK;
-    wire clk_new = (CLKp << 1) & BIT_CLOCK;
-
-    wire d1 = (~clk_old & clk_new) ? Dp : state;
-
-    state = uint8_t(bit0(d1 & RSTn) | clk_new | BIT_NEW | BIT_DRIVEN);
-  }
-};
-
-//-----------------------------------------------------------------------------
-// 8-rung register with no reset, inverting input, and dual outputs. Used by
-// sprite store, bg pix a, spr pix a/b, dma hi, bus mux sprite temp
-
-// DFF8_01 |o------O | << CLKn
-// DFF8_02 |====O====| << Dn
-// DFF8_03 |  -----  |
-// DFF8_04 |O-------o| << CLKp
-// DFF8_05 |  -----  |
-// DFF8_06 |==     ==|
-// DFF8_07 |xxx-O-xxx| >> Qn
-// DFF8_08 |xxx-O-xxx| >> Q  or this rung can be empty
-
-struct DFF8n : public BitBase {
-  void dff8n(wire CLKn, wire Dn) {
-    check_invalid();
-
-    wire clk_old = state & BIT_CLOCK;
-    wire clk_new = (~CLKn << 1) & BIT_CLOCK;
-
-    wire d1 = (~clk_old & clk_new) ? ~Dn : state;
-
-    state = uint8_t(bit0(d1) | clk_new | BIT_NEW | BIT_DRIVEN);
-  }
-};
-
-//-----------------------------------------------------------------------------
-// same w/ swapped clock inputs, not 100% positive this is correct but BGP has
-// to latch on the rising edge of the clock or m3_bgp_change is way off.
-
-// DFF8_01 |o------O | << CLKp
-// DFF8_02 |====O====| << Dn
-// DFF8_03 |  -----  |
-// DFF8_04 |O-------o| << CLKn
-// DFF8_05 |  -----  |
-// DFF8_06 |==     ==|
-// DFF8_07 |xxx-O-xxx| >> Qn
-// DFF8_08 |xxx-O-xxx| >> Q  or this rung can be empty
-
-struct DFF8p : public BitBase {
-  void dff8p(wire CLKp, wire Dn) {
-    check_invalid();
-
-    wire clk_old = state & BIT_CLOCK;
-    wire clk_new = (CLKp << 1) & BIT_CLOCK;
-
-    wire d1 = (~clk_old & clk_new) ? ~Dn : state;
-
-    state = uint8_t(bit0(d1) | clk_new | BIT_NEW | BIT_DRIVEN);
-  }
-};
-
-//-----------------------------------------------------------------------------
-// 9-rung register with async _set_?, inverting input, and dual outputs. Looks like
-// Reg8 with a hat and a belt. Used by clock phase (CHECK), LYC, BGP, OBP0,
-// OBP1, stat int enable, sprite store, SCY, SCX, LCDC, WX, WY.
-
-// DFF9_01 | O===--o |
-// DFF9_02 |==--O====| << CLKp
-// DFF9_03 | ------- | << D
-// DFF9_04 |o-------O| << CLKn
-// DFF9_05 |  -----  |
-// DFF9_06 |--xxOxx--| << RSTn
-// DFF9_07 |o-------o|
-// DFF9_08 |xxx-O-xxx| >> Qn
-// DFF9_09 |xxx-O-xxx| >> Q
-
-struct DFF9 : public BitBase {
-  void dff9(wire CLKp, wire SETn, wire Dn) {
-    check_invalid();
-
-    wire clk_old = state & BIT_CLOCK;
-    wire clk_new = (CLKp << 1) & BIT_CLOCK;
-
-    wire d1 = (~clk_old & clk_new) ? ~Dn : state;
-
-    state = uint8_t(bit0(d1 | (~SETn)) | clk_new | BIT_NEW | BIT_DRIVEN);
-  }
-};
-
-//-----------------------------------------------------------------------------
-// Reg11 is used by the background pixel temp state
-// Not sure why it's special.
-
-// DFF11_01 nc
-// DFF11_02 << RSTp? // FIXME trace this
-// DFF11_03 << D
-// DFF11_04 nc
-// DFF11_05 << CLKp
-// DFF11_06 nc
-// DFF11_07 nc
-// DFF11_08 << CLKn
-// DFF11_09 << RSTn
-// DFF11_10 nc
-// DFF11_11 >> Qp?
-
-struct DFF11 : public BitBase {
-  void dff11(wire CLKp, wire RSTn, wire Dp) {
-    check_invalid();
-    wire clk_old = state & BIT_CLOCK;
-    wire clk_new = (CLKp << 1) & BIT_CLOCK;
-
-    wire d1 = (~clk_old & clk_new) ? Dp : state;
-
-    state = uint8_t(bit0(d1 & RSTn) | clk_new | BIT_NEW | BIT_DRIVEN);
-  }
-};
-
-//-----------------------------------------------------------------------------
-
-// DFF13_01 nc
-// DFF13_02 << RSTn
-// DFF13_03 << D
-// DFF13_04 nc
-// DFF13_05 << CLKp
-// DFF13_06 nc
-// DFF13_07 nc
-// DFF13_08 << CLKn
-// DFF13_09 << RSTn
-// DFF13_10 nc
-// DFF13_11 nc
-// DFF13_12 >> Qn
-// DFF13_13 >> Q
-
-struct DFF13 : public BitBase {
-  void dff13(wire CLKp, wire RSTn, wire Dp) {
-    check_invalid();
-    wire clk_old = state & BIT_CLOCK;
-    wire clk_new = (CLKp << 1) & BIT_CLOCK;
-
-    wire d1 = (~clk_old & clk_new) ? Dp : state;
-
-    state = uint8_t(bit0(d1 & RSTn) | clk_new | BIT_NEW | BIT_DRIVEN);
-  }
-};
-
-//-----------------------------------------------------------------------------
-// DFF17_01 SC
-// DFF17_02 << CLKp
-// DFF17_03 SC
-// DFF17_04 --
-// DFF17_05 --
-// DFF17_06 << RSTn  // must be RSTn, see WUVU/VENA/WOSU
-// DFF17_07 << D
-// DFF17_08 --
-// DFF17_09 SC
-// DFF17_10 --
-// DFF17_11 --
-// DFF17_12 SC
-// DFF17_13 << RSTn
-// DFF17_14 --
-// DFF17_15 --
-// DFF17_16 >> QN   _MUST_ be QN - see TERO
-// DFF17_17 >> Q    _MUST_ be Q  - see TERO
-
-struct DFF17 : public BitBase {
-  void dff(wire CLKp, wire Dp) {
-    check_invalid();
-    wire clk_old = state & BIT_CLOCK;
-    wire clk_new = (CLKp << 1) & BIT_CLOCK;
-
-    wire d1 = (~clk_old & clk_new) ? Dp : state;
-
-    state = uint8_t(bit0(d1) | clk_new | BIT_NEW | BIT_DRIVEN);
-  }
-
-
-  void dff17(wire CLKp, wire RSTn, wire Dp) {
-    check_invalid();
-    dff17_any(CLKp, RSTn, Dp);
-  }
-
-  void dff17_any(wire CLKp, wire RSTn, wire Dp) {
-    wire clk_old = state & BIT_CLOCK;
-    wire clk_new = (CLKp << 1) & BIT_CLOCK;
-
-    wire d1 = (~clk_old & clk_new) ? Dp : state;
-
-    state = uint8_t(bit0(d1 & RSTn) | clk_new | BIT_NEW | BIT_DRIVEN);
-  }
-};
-
-//-----------------------------------------------------------------------------
-// 20-rung counter ff with async load. Only used by TIMA and a few audio regs.
-
-// DFF20_01 >> Q
-// DFF20_02 nc
-// DFF20_03 << D
-// DFF20_04 << LOADp
-// DFF20_05 nc
-// DFF20_06 sc
-// DFF20_07 nc
-// DFF20_08 nc
-// DFF20_09 nc
-// DFF20_10 nc
-// DFF20_11 sc
-// DFF20_12 nc
-// DFF20_13 nc
-// DFF20_14 << LOADp
-// DFF20_15 nc
-// DFF20_16 << D
-// DFF20_17 >> Qn
-// DFF20_18 sc
-// DFF20_19 sc
-// DFF20_20 << CLKn
-
-struct DFF20 : public BitBase {
-  void dff20_any(wire CLKn, wire LOADp, wire newD) {
-    wire clk_old = bit0(state >> 1);
-    wire clk_new = bit0(~CLKn);
-
-    state = bit0(state);
-
-    if (!bit0(clk_old) && bit0(clk_new)) {
-      state = !state;
-    }
-
-    state |= (clk_new << 1);
-    state |= BIT_NEW;
-    state |= BIT_DRIVEN;
-
-    if (bit0(LOADp)) {
-      state &= ~1;
-      state |= bit0(newD);
-    }
-  }
-
-  void dff20(wire CLKn, wire LOADp, wire newD) {
-    check_invalid();
-    dff20_any(CLKn, LOADp, newD);
-  }
-};
-
-//-----------------------------------------------------------------------------
-// DFF with async set/reset. Used by pixel pipes, serial data register.
-
-// SETn/RSTn are correct and not swapped, see serial + ALUR_RSTn
-
-// DFF22_01 sc other SETn?
-// DFF22_02 nc
-// DFF22_03 nc
-// DFF22_04 nc
-// DFF22_05 sc
-// DFF22_06 sc
-// DFF22_07 << D
-// DFF22_08 nc
-// DFF22_09 sc
-// DFF22_10 nc
-// DFF22_11 sc
-// DFF22_12 nc
-// DFF22_13 nc
-// DFF22_14 << SETn _MUST_ be SETn, see serial
-// DFF22_15 >> Qn
-// DFF22_16 >> Q
-// DFF22_17 << RSTn _MUST_ be RSTn, see serial
-// DFF22_18 nc
-// DFF22_19 sc
-// DFF22_20 sc
-// DFF22_21 sc
-// DFF22_22 << CLKp
-
-struct DFF22 : public BitBase {
-  void dff22_any(wire CLKp, wire SETn, wire RSTn, wire Dp) {
-    wire clk_old = state & BIT_CLOCK;
-    wire clk_new = (CLKp << 1) & BIT_CLOCK;
-
-    wire d1 = (~clk_old & clk_new) ? Dp : state;
-
-    state = uint8_t(bit0((d1 | (~SETn)) & RSTn) | clk_new | BIT_NEW | BIT_DRIVEN);
-  }
-
-  void dff22(wire CLKp, wire SETn, wire RSTn, wire Dp) {
-    check_invalid();
-    dff22_any(CLKp, SETn, RSTn, Dp);
-  }
-
-  void dff22_sync(wire CLKp, wire Dp) {
-    check_invalid();
-    wire clk_old = state & BIT_CLOCK;
-    wire clk_new = (CLKp << 1) & BIT_CLOCK;
-    wire d1 = (~clk_old & clk_new) ? Dp : state;
-    state = uint8_t(bit0(d1) | clk_new | BIT_DRIVEN);
-  }
-
-  void dff22_async(wire SETn, wire RSTn) {
-    check_invalid();
-    wire clk_new = state & BIT_CLOCK;
-    state = uint8_t(bit0((state | (~SETn)) & RSTn) | clk_new | BIT_NEW | BIT_DRIVEN);
-  }
-};
-
-//-----------------------------------------------------------------------------
-// Bus with pull-up
-
-// TYGO_01 << BUS_CPU_D2p
-// TYGO_02 nc
-// TYGO_03 nc
-// TYGO_04 nc
-// TYGO_05 << RAHU_04
-// TYGO_06 << BUS_CPU_D2p
-// TYGO_07 nc
-// TYGO_08 nc
-// TYGO_09 >> BUS_VRAM_D2p
-// TYGO_10 nc
-
-// tri6_nn : top rung tadpole _not_ facing second rung dot.
-// tri6_pn : top rung tadpole facing second rung dot.
-
-// TRI6NN_01 :
-// TRI6NN_02 : NC
-// TRI6NN_03 : NC
-// TRI6NN_04 :
-// TRI6NN_05 : NC
-// TRI6NN_06 :
-
-inline triwire tri_pp(wire OEp, wire Dp) {
-  return { wire(bit0(OEp) ? TRI_NEW | TRI_DRIVEN | bit0(Dp) : TRI_NEW) };
-}
-
-inline triwire tri6_nn(wire OEn, wire Dn) {
-  return { wire(bit0(OEn) ? TRI_NEW : TRI_NEW | TRI_DRIVEN | bit0(~Dn)) };
-}
-
-inline triwire tri6_pn(wire OEp, wire Dn) {
-  return { wire(bit0(OEp) ? TRI_NEW | TRI_DRIVEN | bit0(~Dn) : TRI_NEW) };
-}
-
-inline triwire tri10_np(wire OEn, wire Dp) {
-  return { wire(bit0(OEn) ? TRI_NEW : TRI_NEW | TRI_DRIVEN | bit0(Dp)) };
-}
-
-struct Bus : public BitBase {
-  wire out_old() const { check_old(); return state; }
-  wire out_any() const { return state; }
-  wire out_mid() const { return state; }
-  wire out_new() const { check_new(); return state; }
-
-  void tri_bus(triwire t) {
-    check_new();
-
-    // if both the new and old state are both driven, that's a bus collision.
-    DCHECK_N((t.state & TRI_DRIVEN) && (state & BIT_DRIVEN));
-
-    if (t.state & TRI_DRIVEN) state = t.state;
-  }
-};
-
-//-----------------------------------------------------------------------------
-// Pin structs store the bit as it apperas INSIDE the chip. Bits are inverted
-// when traveling across the chip boundary.
-
-struct PinBase : public BitBase {
-  PinBase(uint8_t _state) {
-    state = _state;
-  }
-
-  wire qp_int_old() const { return qp_old(); }
-  wire qp_int_any() const { return qp_any(); }
-  wire qp_int_new() const { return qp_new(); }
-
-  wire qp_ext_old() const { return qn_old(); }
-  wire qp_ext_new() const { return qn_new(); }
-  wire qn_ext_new() const { return qp_new(); }
-};
-
-struct PinIO : public PinBase {
-  PinIO() : PinBase(0) {}
-  void pin_io(wire int_PUn, wire int_HI, wire int_LO, wire ext_OEp, wire ext_Dp) {
-    check_invalid();
-    pin_io_any(int_PUn, int_HI, int_LO, ext_OEp, ext_Dp);
-  }
-
-  void pin_io_any(wire int_PUn, wire int_HI, wire int_LO, wire ext_OEp, wire ext_Dp) {
-    (void)int_PUn;
-
-    if (bit0(int_HI) == bit0(int_LO)) {
-      state = uint8_t(BIT_NEW | BIT_DRIVEN | bit0(int_LO));
-    }
-    else {
-      if (bit0(int_LO)) {
-        // shootthrough, this is bad
-        DCHECK_P(false);
-      }
-      else {
-        // hi-z, can be driven externally
-        DCHECK_N(bit0(int_PUn)); // must not be floating
-
-        // this is the _internal_ bit, so if this is pulled high externally it should read 0 internally.
-        // i think...
-        state = BIT_NEW | BIT_PULLED | 0;
-
-        //state = BIT_NEW | BIT_PULLED | 1;
-      }
-    }
-
-    if (bit0(ext_OEp)) {
-      DCHECK_N(state & BIT_DRIVEN);
-      // External bit is inverted when crossing the pin
-      state = uint8_t(BIT_NEW | BIT_DRIVEN | bit0(~ext_Dp));
-    }
-
-    DCHECK_P(bool(state & BIT_DRIVEN) != bool(state & BIT_PULLED));
-    DCHECK_P(bool(state & BIT_NEW));
-  }
-};
-
-//-----------------------------------------------------------------------------
-
-struct PinIn : public PinBase {
-  PinIn() : PinBase(0) {};
-  PinIn(uint8_t _state) : PinBase(_state) {}
-
-  void pin_in(wire ext_Dp) {
-    check_invalid();
-    state = ((~ext_Dp) & BIT_DATA) | BIT_DRIVEN | BIT_NEW;
-  }
-};
-
-//-----------------------------------------------------------------------------
-
-struct PinOut : public PinBase {
-  PinOut() : PinBase(0) {}
-  void pin_out(wire int_HI, wire int_LO) {
-    check_invalid();
-
-    if (!bit0(int_HI) && !bit0(int_LO)) {
-      // internal bit 0, external bit 1
-      state = BIT_NEW | BIT_DRIVEN | 0;
-    }
-    else if (bit0(int_HI) && bit0(int_LO)) {
-      // internal bit 1, external bit 0
-      state = BIT_NEW | BIT_DRIVEN | 1;
-    }
-    else if (bit0(int_HI) && !bit0(int_LO)) {
-      state = BIT_NEW;
-    }
-    else if (!bit0(int_HI) && bit0(int_LO)) {
-      // shootthrough, this is bad
-      debugbreak();
-    }
-  }
-};
-
-//-----------------------------------------------------------------------------
-
-struct PinClock {
-  wire clkgood_old() const { return CLKGOOD.qp_int_old(); }
-  wire clk_old()     const { return CLK.qp_int_old(); }
-
-  wire clkgood_new() const { return CLKGOOD.qp_int_new(); }
-  wire clk_new()     const { return CLK.qp_int_new(); }
-
-  void pin_clk(wire clk, wire clkgood) {
-    CLK.pin_in(clk);
-    CLKGOOD.pin_in(clkgood);
-  }
-
-  PinIn CLK;
-  PinIn CLKGOOD;
-};
-
-//-----------------------------------------------------------------------------
-// 6-rung cell, "arms" on ground side
-
-// NORLATCH_01 -|=== o ===|+ << SET
-// NORLATCH_02 -|--\      |+ nc
-// NORLATCH_03 -|=== o ===|+ >> QN
-// NORLATCH_04 -|=== o ===|+ >> Q
-// NORLATCH_05 -|--/      |+ nc
-// NORLATCH_06 -|=== o ===|+ << RST
-
-struct NorLatch : public BitBase {
-  void rst() {
-    state = BIT_DRIVEN | BIT_NEW | 0;
-  }
-
-  void nor_latch(wire SETp, wire RSTp) {
-    check_invalid();
-    state |= SETp;
-    state &= ~RSTp;
-
-    state = (state & BIT_DATA) | BIT_DRIVEN | BIT_NEW;
-  }
-};
-
-//-----------------------------------------------------------------------------
-// 6-rung cell, "arms" on VCC side. Only TAKA/LONY seem to use this cell
-
-// NANDLATCH_01 -|=== o ===|+ << SETn
-// NANDLATCH_02 -|      /--|+ nc
-// NANDLATCH_03 -|=== o ===|+ >> Q
-// NANDLATCH_04 -|=== o ===|+ >> QN
-// NANDLATCH_05 -|      \--|+ nc
-// NANDLATCH_06 -|=== o ===|+ << RSTn
-
-struct NandLatch : public BitBase {
-  void nand_latch(wire SETn, wire RSTn) {
-    check_invalid();
-    state |= ~SETn;
-    state &= RSTn;
-
-    state = (state & BIT_DATA) | BIT_DRIVEN | BIT_NEW;
-  }
-};
-
-//-----------------------------------------------------------------------------
-// Yellow 10-rung cells on die. Transparent latch, probably.
-
-// TPLATCH_01 << HOLDn
-// TPLATCH_02 nc
-// TPLATCH_03 << D
-// TPLATCH_04 nc
-// TPLATCH_05 nc
-// TPLATCH_06 nc
-// TPLATCH_07 nc
-// TPLATCH_08 >> Q
-// TPLATCH_09 nc
-// TPLATCH_10 >> Qn
-
-// Output 08 must _not_ be inverting, see pin EXT_A14p
-// Output 10 _must_ be inverting...?
-
-// FIXME - why do we have latchN and latchP?
-
-struct TpLatch : public BitBase {
-  void tp_latchn(wire HOLDn, wire Dp) {
-    check_invalid();
-    wire SETp = HOLDn & Dp;
-    wire RSTp = HOLDn & ~Dp;
-
-    state |= SETp;
-    state &= ~RSTp;
-
-    state = (state & BIT_DATA) | BIT_DRIVEN | BIT_NEW;
-  }
-
-  void tp_latchp(wire HOLDp, wire Dp) {
-    check_invalid();
-    wire SETp = (~HOLDp) & Dp;
-    wire RSTp = (~HOLDp) & ~Dp;
-
-    state |= SETp;
-    state &= ~RSTp;
-
-    state = (state & BIT_DATA) | BIT_DRIVEN | BIT_NEW;
-  }
-};
-
-//-----------------------------------------------------------------------------
 Unfinished port of the Ibex RISC-V core to Metron.
 // Copyright lowRISC contributors.
 // Copyright 2018 ETH Zurich and University of Bologna, see also CREDITS.md.

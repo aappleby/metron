@@ -1,7 +1,6 @@
-#include "metron/gb_spu.h"
+#include <stdio.h>
 
-#include "regs.h"
-#include "Sch_ApuControl.h"
+#include "metron/MetroBoySPU2.h"
 
 int main(int argc, char** argv) {
   printf("Hello World\n");

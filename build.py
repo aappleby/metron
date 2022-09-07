@@ -508,13 +508,12 @@ def build_gb_spu():
         bin_name="bin/examples/gb_spu",
         src_files=[
             "examples/gb_spu/gb_spu_main.cpp",
-            "examples/gb_spu/Sch_ApuControl.cpp",
         ],
         includes=["src"],
         src_objs=[],
         link_deps=["bin/libmetron.a"],
     )
-    gb_spu_srcs = metronize_dir("examples/gb_spu/metron", "gb_spu.h", "examples/gb_spu/metron_sv")
+    gb_spu_srcs = metronize_dir("examples/gb_spu/metron", "MetroBoySPU2.h", "examples/gb_spu/metron_sv")
 
 # ------------------------------------------------------------------------------
 # Simple Uart testbench

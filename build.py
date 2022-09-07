@@ -504,16 +504,32 @@ def build_j1():
 # ------------------------------------------------------------------------------
 
 def build_gb_spu():
+    gb_spu_srcs = metronize_dir("examples/gb_spu/metron", "MetroBoySPU2.h", "examples/gb_spu/metron_sv")
+    gb_spu_vhdr, gb_spu_vobj = verilate_dir(
+        src_dir="examples/gb_spu/metron_sv",
+        src_files=gb_spu_srcs,
+        src_top="MetroBoySPU2",
+        dst_dir="gen/examples/gb_spu/metron_vl",
+    )
     cpp_binary(
         bin_name="bin/examples/gb_spu",
-        src_files=[
-            "examples/gb_spu/gb_spu_main.cpp",
-        ],
-        includes=["src"],
-        src_objs=[],
+        src_files=["examples/gb_spu/gb_spu_main.cpp"],
+        includes=base_includes + ["gen/examples/gb_spu"],
+        src_objs=["obj/verilated.o", gb_spu_vobj],
+        deps=[gb_spu_vhdr],
         link_deps=["bin/libmetron.a"],
     )
-    gb_spu_srcs = metronize_dir("examples/gb_spu/metron", "MetroBoySPU2.h", "examples/gb_spu/metron_sv")
+    """
+    cpp_binary(
+        bin_name="bin/examples/uart_vl",
+        src_files=["examples/uart/main_vl.cpp"],
+        includes=base_includes + ["gen/examples/uart"],
+        src_objs=["obj/verilated.o", uart_vobj],
+        deps=[uart_vhdr],
+        link_deps=["bin/libmetron.a"],
+    )
+    """
+
 
 # ------------------------------------------------------------------------------
 # Simple Uart testbench

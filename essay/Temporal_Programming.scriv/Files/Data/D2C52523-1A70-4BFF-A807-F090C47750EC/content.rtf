@@ -1,0 +1,113 @@
+{\rtf1\ansi\ansicpg1252\uc1\deff0
+{\fonttbl{\f0\fmodern\fcharset0\fprq2 RobotoMono-SemiBold;}}
+{\colortbl;\red0\green0\blue0;\red255\green255\blue255;\red128\green128\blue128;}
+\paperw12240\paperh15840\margl1800\margr1800\margt1440\margb1440\f0\fs22\cf0
+\pard\plain \tx0\tx360\tx720\tx1080\tx1440\tx1800\tx2160\tx2880\tx3600\tx4320\ltrch\loch {\f0\fs22\b0\i0 FSMs / Automata-based programming}
+\par\plain {\f0\fs22\b0\i0    This computation model is a form of "Deterministic finite automaton"}
+\par\plain {\f0\fs22\b0\i0    "TECHNOLOGY OF AUTOMATA-BASED PROGRAMMING"}
+\par\plain {\f0\fs22\b0\i0    "Programming Language for Automata" by Knuth}
+\par\plain {\f0\fs22\b0\i0    }{\field{\*\fldinst HYPERLINK "https://en.wikipedia.org/wiki/Deterministic_finite_automaton"}{\fldrslt\f0\fs22\b0\i0 https://en.wikipedia.org/wiki/Deterministic_finite_automaton}}
+\par\plain {\f0\fs22\b0\i0    }{\field{\*\fldinst HYPERLINK "https://en.wikipedia.org/wiki/Mealy_machine"}{\fldrslt\f0\fs22\b0\i0 https://en.wikipedia.org/wiki/Mealy_machine}}
+\par\plain {\f0\fs22\b0\i0       "although a Mealy model could be used to describe the Enigma, the state diagram would be too complex to provide feasible means of designing complex ciphering machines."}
+\par\plain {\f0\fs22\b0\i0    "For the transition functions, this monoid is known as the transition monoid"}
+\par\plain {\f0\fs22\b0\i0    if "x" has 20 bits of state and "i" has 10 bits of state, then that's 2^20 states and 2^10 possible input "symbols"}
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\pard\plain \tx0\tx360\tx720\tx1080\tx1440\tx1800\tx2160\tx2880\tx3600\tx4320\ltrch\loch \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 ## #############################################################################}
+\par\plain {\f0\fs22\b0\i0 ## References!}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 "The Semantics of Pure Esterel"}
+\par\plain {\f0\fs22\b0\i0    important, read this}
+\par\plain {\f0\fs22\b0\i0    It seems like Esterel is still trying to jam some imperative semantics in there with "awaiting S" or whatev.}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 "Globally asynchronous locally synchronous"}
+\par\plain {\f0\fs22\b0\i0     - }{\field{\*\fldinst HYPERLINK "https://en.wikipedia.org/wiki/Globally_asynchronous_locally_synchronous"}{\fldrslt\f0\fs22\b0\i0 https://en.wikipedia.org/wiki/Globally_asynchronous_locally_synchronous}}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 "UNIFICATION OF SYNCHRONOUS AND ASYNCHRONOUS MODELS FOR PARALLEL PROGRAMMING LANGUAGES A Thesis" 1989}
+\par\plain {\f0\fs22\b0\i0    - }{\field{\*\fldinst HYPERLINK "https://web.archive.org/web/20050324021405/http://ece.purdue.edu"}{\fldrslt\f0\fs22\b0\i0 https://web.archive.org/web/20050324021405/http://ece.purdue.edu}}{\f0\fs22\b0\i0 /~hankd/CARP/XPC/paper.html}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 ChucK}
+\par\plain {\f0\fs22\b0\i0    - "advance time by 120 ms"}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 "The Synchronous Approach to Reactive and Real-Time Systems"}
+\par\plain {\f0\fs22\b0\i0    }{\field{\*\fldinst HYPERLINK "https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.137.2462"}{\fldrslt\f0\fs22\b0\i0 https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.137.2462}}{\f0\fs22\b0\i0 &rep=rep1&type=pdf}
+\par\plain {\f0\fs22\b0\i0    "Encompass within a single framework all reactive aspects"}
+\par\plain {\f0\fs22\b0\i0       no don't do that}
+\par\plain {\f0\fs22\b0\i0    "Using finite-states machine, also called finite automata. These objects have numerous advantages: they are deterministic, efficient, they can be automatically analyzed by numerous available verification systems. However, they have a severe drawback: they do not directly support hierarchical design and concurrency. "}
+\par\plain {\f0\fs22\b0\i0       yeah no don't do that either}
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 "On The Development of Reactive Systems"}
+\par\plain {\f0\fs22\b0\i0    }{\field{\*\fldinst HYPERLINK "https://www.wisdom.weizmann.ac.il"}{\fldrslt\f0\fs22\b0\i0 https://www.wisdom.weizmann.ac.il}}{\f0\fs22\b0\i0 /~harel/SCANNED.PAPERS/ReactiveSystems.pdf}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 "Real Time Programming: Special Purpose or General Purpose Languages"}
+\par\plain {\f0\fs22\b0\i0    file:///C:/Users/aappl/Downloads/RR-1065.pdf}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 "Synchronous Programming of Reactive Systems"}
+\par\plain {\f0\fs22\b0\i0    }{\field{\*\fldinst HYPERLINK "http://www-verimag.imag.fr"}{\fldrslt\f0\fs22\b0\i0 http://www-verimag.imag.fr}}{\f0\fs22\b0\i0 /~halbwach/newbook.pdf}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 "The Synchronous Languages 12 Years Later"}
+\par\plain {\f0\fs22\b0\i0    - "Microsteps"?}
+\par\plain {\f0\fs22\b0\i0    - }
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 "Blech, Imperative Synchronous Programming!"}
+\par\plain {\f0\fs22\b0\i0    - }
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 "Another look at real-time programming"}
+\par\plain {\f0\fs22\b0\i0    - where can I find this?}
+\par\plain {\f0\fs22\b0\i0    - doesn't seem to be available}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 - defunct }{\field{\*\fldinst HYPERLINK "https://lphrc.org"}{\fldrslt\f0\fs22\b0\i0 https://lphrc.org}}{\f0\fs22\b0\i0 /}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0  - Ceu}
+\par\plain {\f0\fs22\b0\i0     - }{\field{\*\fldinst HYPERLINK "http://www.ceu-lang.org/chico/ceu_tecs17_pre.pdf"}{\fldrslt\f0\fs22\b0\i0 http://www.ceu-lang.org/chico/ceu_tecs17_pre.pdf}}
+\par\plain {\f0\fs22\b0\i0     - "CEU\loch\af0\hich\af0\dbch\af0\uc1\u180\'B4 uses an event-triggered notion of time"}
+\par\plain {\f0\fs22\b0\i0     - "await" etc}
+\par\plain {\f0\fs22\b0\i0     - loops}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 "The Synchronous Hypothesis and Synchronous Languages"}
+\par\plain {\f0\fs22\b0\i0    - 2004, a summary of older work}
+\par\plain {\f0\fs22\b0\i0    - "Signals: broadcast signals are used to propagate information. At each execution instant, a signal can either be present}
+\par\plain {\f0\fs22\b0\i0 or absent"}
+\par\plain {\f0\fs22\b0\i0       - You don't actually need this}
+\par\plain {\f0\fs22\b0\i0    - "The key rule is that a signal must be consistent (same present/absent status, same data) for}
+\par\plain {\f0\fs22\b0\i0 all read operations during any given instant."}
+\par\plain {\f0\fs22\b0\i0       - This is fine}
+\par\plain {\f0\fs22\b0\i0    - "The crucial task of deciding whenever a signal can be declared absent is of utter importance in the theory}
+\par\plain {\f0\fs22\b0\i0 of S/R systems, and an important part of the theoretical body behind the Synchronous Hypothesis."}
+\par\plain {\f0\fs22\b0\i0       - Yeah we're ignoring all of that.}
+\par\plain {\f0\fs22\b0\i0    - "Activation conditions and clocks: Each signal can be seen as defining (or generating) a new clock, ticking when}
+\par\plain {\f0\fs22\b0\i0 it occurs; in hardware design, this is called gated clocks"}
+\par\plain {\f0\fs22\b0\i0       - Don't need these either}
+\par\plain {\f0\fs22\b0\i0    - "In the first case, the automaton structure is implemented as a big top-level switch between states."}
+\par\plain {\f0\fs22\b0\i0       - It doesn't have to be.}
+\par\plain {\f0\fs22\b0\i0    - "In essence, one seeks to represent hierarchical (Mealy) Finite State Machines (FSM), but with some data computation and communication treatment performed inside states and transitions."}
+\par\plain {\f0\fs22\b0\i0       - You don't have to}
+\par\plain {\f0\fs22\b0\i0    - "S/R modeling and programming environments are today marketed by two French software houses, Esterel Technologies for Esterel and SCADE/Lustre, and TNI-Valiosys for Sildex/Signal. The influence of S/R systems tentatively pervaded to hardware CAD products such as Synopsys CoCentric Studio and Cadence VCC, despite the omnipotence of classical HDLs there. The Ptolemy co-simulation environment from UC Berkeley comprises a S/R domain based on the synchronous hypothesis."}
+\par\plain {\f0\fs22\b0\i0       - This was still 18 years ago}
+\par\plain {\f0\fs22\b0\i0    Synchronous Hypothesis according to this paper}
+\par\plain {\f0\fs22\b0\i0       Instants and reactions}
+\par\plain {\f0\fs22\b0\i0       Signals}
+\par\plain {\f0\fs22\b0\i0       Causality}
+\par\plain {\f0\fs22\b0\i0       Activation conditions and clocks}
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 "Behavioral Specification of a Circuit using SyncCharts: a Case Study"}
+\par\plain {\f0\fs22\b0\i0    encoding using three-value logic levels and avoiding 0000 outputs}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 "Semantics of SyncCharts"}
+\par\plain {\f0\fs22\b0\i0    "A simple trigger is said to be satisfied when the associated signal is present"}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 "Behavioral Specification of a Circuit using SyncCharts"}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 "Structured Synchronous Reactive Programming"}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 "Semantics of SyncCharts"}
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0}

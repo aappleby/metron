@@ -1,0 +1,24 @@
+{\rtf1\ansi\ansicpg1252\uc1\deff0
+{\fonttbl{\f0\fmodern\fcharset0\fprq2 RobotoMono-SemiBold;}}
+{\colortbl;\red0\green0\blue0;\red255\green255\blue255;\red128\green128\blue128;}
+\paperw12240\paperh15840\margl1800\margr1800\margt1440\margb1440\f0\fs22\cf0
+\pard\plain \tx0\tx360\tx720\tx1080\tx1440\tx1800\tx2160\tx2880\tx3600\tx4320\ltrch\loch {\f0\fs22\b0\i0 There is one small modification to existing C syntax that I think would clarify how temporal programs work a _lot_.}
+\par\plain {\f0\fs22\b0\i0 Of the many symbols available on a typical keyboard, '@' currently has no meaning in C. I propose the following:}
+\par\plain {\f0\fs22\b0\i0 1. A variable with a '@' suffix is a "Temporal Reference". "foo@0" is a const reference to the _current_ value of "foo", "foo@1" is a mutable reference to the _next_ value of foo, "foo@-1" is a const reference to the _previous_ value of foo. "foo@" with no index refers to "foo@1" by default.}
+\par\plain {\f0\fs22\b0\i0 1. An assignment to a variable with a '@' suffix is a "Temporal Assignment". Temporal assignments do _not_ take effect immediately.}
+\par\plain {\f0\fs22\b0\i0 2. A block of code containing a temporal assignment is a "Temporal Block".}
+\par\plain {\f0\fs22\b0\i0 3. All blocks nested inside a temporal block are temporal blocks.}
+\par\plain {\f0\fs22\b0\i0 4. All assignments in temporal blocks must be to either local variables or a @-suffixed state variable.}
+\par\plain {\f0\fs22\b0\i0 5. Upon leaving the outermost temporal block, all temporal assignments take effect.}
+\par\plain {\f0\fs22\b0\i0 6. For a given top-level temporal block, there can be at most }
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 This would be a "basic tier" implementation of temporal programming support.}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 Additional possible features -}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 1. Reading from a @-suffixed variable returns the 'future' value of that variable, even if it hasn't been written 'yet'.}
+\par\plain {\f0\fs22\b0\i0 2. Writing to future values of a variable "foo@2 = 1;" is allowed as long as the assignments don't collide.}
+\par\plain {\f0\fs22\b0\i0 3. The compiler is responsible for figuring out the implementation details.}
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 Default Style}}

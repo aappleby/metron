@@ -1,0 +1,40 @@
+{\rtf1\ansi\ansicpg1252\uc1\deff0
+{\fonttbl{\f0\fmodern\fcharset0\fprq2 RobotoMono-SemiBold;}}
+{\colortbl;\red0\green0\blue0;\red255\green255\blue255;\red128\green128\blue128;}
+\paperw12240\paperh15840\margl1800\margr1800\margt1440\margb1440\f0\fs22\cf0
+\pard\plain \ltrch\loch {\f0\fs22\b0\i0 If it sounds like temporal programming should by definition be \loch\af0\hich\af0\dbch\af0\uc1\u8220\'93easy\u8221\'94, I can assure you that it is not. A seasoned C programmer might be able to comprehend isolated snippets of Verilog, but going from there to understanding something like a DDR memory controller is a _huge_ mental leap.}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 This is part of why you hear FPGA & ASIC developers say \loch\af0\hich\af0\dbch\af0\uc1\u8220\'93Writing code in Verilog is _not_ like writing Quicksort - everything happens at once!\u8221\'94 - true, but missing the point slightly. Quicksort makes intuitive sense in the imperative and functional paradigms, but attempting to write Quicksort in Verilog will quickly prove futile - while you may be able to produce something Quicksort-esque the result will almost certainly not be usable in actual hardware, as actual hardware has no notion of \u8220\'93recursion\u8221\'94.}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 Similarly, while you could write a memory controller in an imperative language that \loch\af0\hich\af0\dbch\af0\uc1\u8220\'93bit-bangs\u8221\'94 the control signals to a DDR chip, your implementation will be fundamentally and radically limited by the host processor - generating and responding to dozens of control signals and data wires within a handful of nanoseconds just isn\u8217\'92t something modern CPUs are designed for.}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 This isn\loch\af0\hich\af0\dbch\af0\uc1\u8217\'92t to say that temporal ideas aren\u8217\'92t useful in imperative or functional languages, or vice versa - for example, having a mechanism to coordinate atomic state changes across objects can be hugely useful in implementing simulations. Similarly, being able to model a Verilog module\u8217\'92s sub-circuits as collections of pure functions can greatly improve the maintainability of the codebase.}
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 ### Branch Vs. Mux}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 Let\loch\af0\hich\af0\dbch\af0\uc1\u8217\'92s look at two trivial C examples:}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 int result;}
+\par\plain {\f0\fs22\b0\i0 if (rand() > 0) \{}
+\par\plain {\f0\fs22\b0\i0   result = expensive_computation_a(input);}
+\par\plain {\f0\fs22\b0\i0 \}}
+\par\plain {\f0\fs22\b0\i0 else \{}
+\par\plain {\f0\fs22\b0\i0   result = expensive_computation_b(input);}
+\par\plain {\f0\fs22\b0\i0 \}}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 int result = rand() > 0 ? expensive_computation_a(input) : expensive_computation_b(input);}
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 A software programmer looks at these examples and sees branching control flow - first we generate a random number, then we evaluate either computation A or B but never both. }
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 A hardware programmer sees a mux - first we evaluate _both_ computation A and B, and _then_ we look at the result of rand() to see which one to assign to \loch\af0\hich\af0\dbch\af0\uc1\u8220\'93result\u8221\'94. To a hardware programmer the \u8220\'93expensive_computation\u8221\'94 functions are _things_ - the circuit doing the computation occupies physical space on the chip, so if we want to do both A and B then we need room on the chip for both of them even if we only rarely use one.}
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 \loch\af0\hich\af0\dbch\af0\uc1\u8220\'93Phi\u8221\'94 functions}
+\par\plain \f0\fs22\b0\i0}

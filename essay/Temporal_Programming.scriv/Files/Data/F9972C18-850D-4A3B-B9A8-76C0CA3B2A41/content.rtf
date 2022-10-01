@@ -1,0 +1,71 @@
+{\rtf1\ansi\ansicpg1252\uc1\deff0
+{\fonttbl{\f0\fmodern\fcharset0\fprq2 RobotoMono-SemiBold;}}
+{\colortbl;\red0\green0\blue0;\red255\green255\blue255;\red128\green128\blue128;}
+\paperw12240\paperh15840\margl1800\margr1800\margt1440\margb1440\f0\fs22\cf0
+\pard\plain \ltrch\loch {\f0\fs22\b0\i0 ## Translating C to Verilog?}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 If you\loch\af0\hich\af0\dbch\af0\uc1\u8217\'92re a veteran C programmer, I can virtually guarantee that you will not be able to write functional Verilog systems of any significant size until you sit down and internalize some temporal programming concepts.}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 Translating a C program into Verilog will almost never work, for the same reason that you can\loch\af0\hich\af0\dbch\af0\uc1\u8217\'92t translate a chocolate chip cookie recipe into a chocolate chip cookie factory - the former is a set of instructions that a complex actor can perform to produce cookies in series, the latter is a collection of machines and conveyor belts that produce cookies in parallel.}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 It\loch\af0\hich\af0\dbch\af0\uc1\u8217\'92s not impossible, however - it just requires that the C program be written in a more temporal style, one that will probably feel cumbersome and alien to procedural programmers at first.}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 In order to \loch\af0\hich\af0\dbch\af0\uc1\u8220\'93write\u8221\'94 a cookie factory in C, we need to describe our cookie recipe differently. In our factory, all the machines are running all the time.}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 We can imagine an initial version of our cookie factory that just replicates the steps in the recipe using a sequence of robots, each performing one step of the recipe. Robot A puts butter and sugar in a bowl and hands it off to robot B. Robot B creams the butter and sugar together and passes the bowl to robot C, etcetera etcetera.}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 This will work to a degree, but it doesn\loch\af0\hich\af0\dbch\af0\uc1\u8217\'92t scale up well. }
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0  Instead of \loch\af0\hich\af0\dbch\af0\uc1\u8220\'93cream together the butter and sugar\u8221\'94, we need to define a butter pipeline and a sugar pipeline }
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 We need to define a \loch\af0\hich\af0\dbch\af0\uc1\u8220\'93cookie pipeline\u8221\'94.}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 For our butter pipeline, we want to turn on the pipe when we have bowls to fill, fill all the bowls with the right amount of butter as fast as possible, and then turn off the pipe. Same for sugar.}
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 Right now our cookie factory is set up specifically for chocolate chip cookies, but as responsible factory owners we probably want to be able to produce other types of cookies as well. It would be nice if we could generalize our cookie factory to be able to handle oatmeal raisin cookies, snickerdoodles, and white chocolate macadamia nut cookies (one of my favorites).}
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 Our fully-automated cookie factory consists of:}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 Various tubes or conveyors containing raw ingredients}
+\par\plain {\f0\fs22\b0\i0 Dispensing mechanisms that can place measured amounts of those ingredients into mixing containers}
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 Some signals in our factory are \loch\af0\hich\af0\dbch\af0\uc1\u8220\'93fast\u8221\'94 - our dough dispenser might need a \u8220\'93dispense\u8221\'94 signal that lasts exactly 0.3 seconds in order for our cookies to all be the same size.}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 Some signals are \loch\af0\hich\af0\dbch\af0\uc1\u8220\'93slow\u8221\'94 - cookies need to be removed from the oven when they\u8217\'92re done, but a few seconds delay isn\u8217\'92t disastrous.}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 Some signals only change infrequently, if ever - we might make chocolate chip cookies for a week, then oatmeal cookies for a week, then back to chocolate chip.}
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 As you might have realized by now, while the \loch\af0\hich\af0\dbch\af0\uc1\u8220\'93pipeline\u8221\'94 is relatively simple, all the \u8220\'93control\u8221\'94 logic is a pain to wire up and has to change every time we want to use a new recipe. It would make more sense if we could wire up all the \u8220\'93slow\u8221\'94 control signals to a central computer and leave the machines on the factory floor solely responsible for the heavy lifting (and mixing, and baking) that needs to be parallelized.}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 And so in practice that\loch\af0\hich\af0\dbch\af0\uc1\u8217\'92s what most factories/circuits/etcetera do - they define a \u8220\'93factory\u8221\'94 full of machines and the connections to those machines, provide a way for an external \u8220\'93controller\u8221\'94 to change the settings on the machines and start/stop them remotely, and provide feedback to the controller on the current state of each machine.}
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 This analogy may sound ridiculous, but it\loch\af0\hich\af0\dbch\af0\uc1\u8217\'92s actually not that far off conceptually from how real hardware works for things like AI accelerator chips.}
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 Having sketched out our cookie factory, let\loch\af0\hich\af0\dbch\af0\uc1\u8217\'92s try describing it using temporal programming style.}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 If the oven is on and the timer has beeped,}
+\par\plain {\f0\fs22\b0\i0 Turn the oven off}
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 Even though these steps are written as a numbered list, they do _not_ }
+\par\plain {\f0\fs22\b0\i0 Each of these steps is an _atomic_ action. We can\loch\af0\hich\af0\dbch\af0\uc1\u8217\'92t say \u8220\'93stir for 5 minutes\u8221\'94, we have to say \u8220\'93if the ingredients are in the mixer and the timer is at 0, start the mixer. If the mixer is running and the timer reads 300 seconds, turn the mixer off and signal the next machine\u8221\'94.}
+\par\plain {\f0\fs22\b0\i0 Every action has to \loch\af0\hich\af0\dbch\af0\uc1\u8220\'93flip a switch\u8221\'94}
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 ### If we want a language that is \loch\af0\hich\af0\dbch\af0\uc1\u8220\'93parallel by default\u8221\'94, then lexical ordering _can\u8217\'92t_ be the sole arbiter of execution order.}
+\par\plain \f0\fs22\b0\i0}

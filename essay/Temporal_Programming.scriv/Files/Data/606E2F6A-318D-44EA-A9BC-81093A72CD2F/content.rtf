@@ -1,0 +1,48 @@
+{\rtf1\ansi\ansicpg1252\uc1\deff0
+{\fonttbl{\f0\fmodern\fcharset0\fprq2 RobotoMono-SemiBold;}}
+{\colortbl;\red0\green0\blue0;\red255\green255\blue255;\red128\green128\blue128;}
+\paperw12240\paperh15840\margl1800\margr1800\margt1440\margb1440\f0\fs22\cf0
+\pard\plain \tx0\tx360\tx720\tx1080\tx1440\tx1800\tx2160\tx2880\tx3600\tx4320\ltrch\loch \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\pard\plain \tx0\tx360\tx720\tx1080\tx1440\tx1800\tx2160\tx2880\tx3600\tx4320\ltrch\loch {\f0\fs22\b0\i0 The ideas of synchronous programming are sound and made sense at the time, and the languages that grew from the initial research (Esterel, Lustre, Signal) are totally reasonable and not too painful to understand. I think one of the reasons that synchronous programming didn't become popular is that it didn't generalize the idea far enough - the languages wanted to embody certain ideas about what "synchronous programming" is, and in doing so they give the impression that synchronous programming is something you can _only_ do in a synchronous language. And that's not at all correct - if you've ever written any form of state machine or dealt with any sort of atomic transaction, then you've already done some synchronous programming even if you didn't know the name for it at the time.}
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\pard\plain \tx0\tx360\tx720\tx1080\tx1440\tx1800\tx2160\tx2880\tx3600\tx4320\ltrch\loch \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 You probably are already familiar with "functional programming" and "imperative programming", and if you've browsed through Wikipedia you've probably heard of a few more.}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 One progrmaming paradigm that you might not have heard of is "Synchronous Programming". Synchronous programming was first sketched out in the 1980s as a software equivalent of the "every register changes simultaneously" paradigm in synchronous logic circuits. Synchronous programming is still around today, but in a reduced fashion. Some of the languages and organizations mentioned on Wikipedia aren't around anymore, and as a programming paradigm it's hardly commonplace.}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 Now that many-core processors are ubiquitous and FPGAs with open-source toolchains are available for a few bucks, I think the obscurity of synchronous programming is a shame.}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 I think part of the reason that SP didn't become more popular is that the initial research focused too tightly on _how_ to do SP (in the form of new languages with new and somewhat unfamiliar semantics), at the expense of defining clearly _what_ synchronous programming is.}
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 I'd like to propose a "reboot" of Synchronous Programming, and in honor of Leslie Lamport's work "The Temporal Logic of Actions", I think we should call it "Temporal Programming".}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 There's no reason we can't just define a programming paradigm that matches TLA}
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 Lamport's papers on temporal logic are quite dense, and I'll be totally honest - I'm not very good at formal logic. Because of this, I've tried to focus on the simplest possible definitions that might be worth calling "Temporal Programming".}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 Pure temporal programs transform old states into new states using pure functions.}
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain {\field{\*\fldinst HYPERLINK "https://lamport.azurewebsites.net/pubs/lamport-actions.pdf"}{\fldrslt\f0\fs22\b0\i0 https://lamport.azurewebsites.net/pubs/lamport-actions.pdf}}
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 Temporal programming is a "reboot" of Synchronous Programming}
+\par\plain {\f0\fs22\b0\i0 A lot of my best ideas started out sounding really dumb.}
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0}

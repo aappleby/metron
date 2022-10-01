@@ -1,0 +1,86 @@
+{\rtf1\ansi\ansicpg1252\uc1\deff0
+{\fonttbl{\f0\fmodern\fcharset0\fprq2 RobotoMono-SemiBold;}}
+{\colortbl;\red0\green0\blue0;\red255\green255\blue255;\red128\green128\blue128;}
+\paperw12240\paperh15840\margl1800\margr1800\margt1440\margb1440\f0\fs22\cf0
+\pard\plain \ltrch\loch {\f0\fs22\b0\i0 When we\loch\af0\hich\af0\dbch\af0\uc1\u8217\'92re writing C, we implicitly assume that assigning to a variable changes the value of that variable before the next statement is executed. This can make }
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\pard\plain \tx0\tx360\tx720\tx1080\tx1440\tx1800\tx2160\tx2880\tx3600\tx4320\ltrch\loch \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 Even if our host language has no '<=' operator, as long as we do some bookkeeping to ensure that our "tick" function _behaves_ atomically we don't really have to overwrite everything each tick.}
+\par\plain {\f0\fs22\b0\i0 Back in C++, we don't have to _literally_ write "p = tick(p)" - we can update the program state in place via "p.tick()" as long as it _behaves_ atomically.}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 struct Program \{}
+\par\plain {\f0\fs22\b0\i0    int count = 0;}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0    void tick() \{}
+\par\plain {\f0\fs22\b0\i0       count = count + 1;}
+\par\plain {\f0\fs22\b0\i0    \}}
+\par\plain {\f0\fs22\b0\i0 \};}
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\pard\plain \ltrch\loch {\f0\fs22\b0\i0  Let's look at a trivial program}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0  int a = 10;}
+\par\plain {\f0\fs22\b0\i0  int b = 20;}
+\par\plain {\f0\fs22\b0\i0  a = b + 1;}
+\par\plain {\f0\fs22\b0\i0  b = a + 1;}
+\par\plain {\f0\fs22\b0\i0  printf("a = %d, b = %d\\n", a, b);}
+\par\plain {\f0\fs22\b0\i0  }
+\par\plain {\f0\fs22\b0\i0  In a procedural language, this will print "a = 21, b = 22". If we flip the order of assignments, we get }
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0  int a = 10;}
+\par\plain {\f0\fs22\b0\i0  int b = 20;}
+\par\plain {\f0\fs22\b0\i0  b = a + 1;}
+\par\plain {\f0\fs22\b0\i0  a = b + 1;}
+\par\plain {\f0\fs22\b0\i0  printf("a = %d, b = %d\\n", a, b);}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0  we now get "a = 12, b = 11". }
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0  If we could somehow simultaneously evaluate the two assignments, we might expect to see "a = 21, b = 11".}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0  But we can't express simultaneous anything in C, it's always sequential. So let's introduce some new notation}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0  a' = b + 1;}
+\par\plain {\f0\fs22\b0\i0  b' = a + 1;}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0  The tick mark indicates the _next_ value of a variable, no tick indicates the _previous_ value of a variable. This may look familiar if you've played around with Mandelbrot sets, which are defined by the recurrence relation "z' = z^2 + c".}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0  There's some ambiguity here, however - if I call a function that writes to a variable "foo'", when does that write actually take effect? If I read from "foo" after calling that function and then I print the value of "foo", does it print the old or new value of foo? To answer that question, we're going to need some more notation:}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0  int a = 10;}
+\par\plain {\f0\fs22\b0\i0  int b = 20;}
+\par\plain {\f0\fs22\b0\i0  temporal \{}
+\par\plain {\f0\fs22\b0\i0     a' = b + 1;}
+\par\plain {\f0\fs22\b0\i0     b' = a + 1;}
+\par\plain {\f0\fs22\b0\i0  \}}
+\par\plain {\f0\fs22\b0\i0  printf("a = %d, b = %d\\n", a, b);}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 Inside a temporal block, only ticked variables may be written to. Reading from a variable always gives the _old_ value. After the temporal block, reading from a variable gives the _new_ value.}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 It's perfectly legal to read from a ticked variable in a temporal block, provided that doing so doesn't create an evaluation loop. For example}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0  int a = 10;}
+\par\plain {\f0\fs22\b0\i0  int b = 20;}
+\par\plain {\f0\fs22\b0\i0  temporal \{}
+\par\plain {\f0\fs22\b0\i0     a' = b' + 1;}
+\par\plain {\f0\fs22\b0\i0     b' = a + 1;}
+\par\plain {\f0\fs22\b0\i0  \}}
+\par\plain {\f0\fs22\b0\i0  printf("a = %d, b = %d\\n", a, b);}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 will print "a = 12, b = 11".}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 However, }
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0  int a = 10;}
+\par\plain {\f0\fs22\b0\i0  int b = 20;}
+\par\plain {\f0\fs22\b0\i0  temporal \{}
+\par\plain {\f0\fs22\b0\i0     a' = b' + 1;}
+\par\plain {\f0\fs22\b0\i0     b' = a' + 1;}
+\par\plain {\f0\fs22\b0\i0  \}}
+\par\plain {\f0\fs22\b0\i0  printf("a = %d, b = %d\\n", a, b);}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 will not compile - in order to evaulate a' we need to know b', and in order to evaluate b' we need to know a'.}
+\par\plain \f0\fs22\b0\i0}

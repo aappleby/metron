@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Styles>
+    <Style ID="9CBEA61B-72CA-4C31-8AC3-316B7B6DE254" Name="Heading 1" Type="Para+Char" FontChange="Size">
+        <Format><![CDATA[{\rtf1\ansi\ansicpg1252\uc1\deff0
+{\fonttbl{\f0\fnil\fcharset0\fprq2 Arial-BoldMT;}}
+{\colortbl;\red0\green0\blue0;\red255\green255\blue255;\red128\green128\blue128;}
+\paperw12240\paperh15840\margl1800\margr1800\margt1440\margb1440\deftab1200\f0\fs36\cf0
+\pard\plain \tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sb320\sl288\slmult1\ltrch\loch {\f0\fs36\b1\i0 <$Scr_H::1>Attributes<!$Scr_H::1>}}]]></Format>
+    </Style>
+    <Style ID="7E20F577-E95D-4C89-8D3B-0ECA99E72681" Name="Heading 2" Type="Para+Char" FontChange="Size">
+        <Format><![CDATA[{\rtf1\ansi\ansicpg1252\uc1\deff0
+{\fonttbl{\f0\fnil\fcharset0\fprq2 Arial-BoldMT;}}
+{\colortbl;\red0\green0\blue0;\red255\green255\blue255;\red128\green128\blue128;}
+\paperw12240\paperh15840\margl1800\margr1800\margt1440\margb1440\deftab1200\f0\fs32\cf0
+\pard\plain \tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sb320\sl288\slmult1\ltrch\loch {\f0\fs32\b1\i0 <$Scr_H::2>Attributes<!$Scr_H::2>}}]]></Format>
+    </Style>
+    <Style ID="476920C5-FF38-4BA7-9B00-802366B91137" Name="Figure" Next="476920C5-FF38-4BA7-9B00-802366B91137" Type="Para">
+        <Format><![CDATA[{\rtf1\ansi\ansicpg1252\uc1\deff0
+{\fonttbl{\f0\fnil\fcharset0\fprq2 ArialMT;}}
+{\colortbl;\red0\green0\blue0;\red255\green255\blue255;\red128\green128\blue128;}
+\paperw12240\paperh15840\margl1800\margr1800\margt1440\margb1440\deftab1200\f0\fs32\cf0
+\pard\plain \tx720\tx1440\tx2160\tx2880\tx3600\tx4320\sa60\sl288\slmult1\qc\ltrch\loch {\f0\fs32\b0\i0 Attributes}}]]></Format>
+    </Style>
+    <Style ID="2DE2F871-5425-4F53-9C53-90ABD4409217" Name="Block Quote" Type="Para" FontChange="Size">
+        <Format><![CDATA[{\rtf1\ansi\ansicpg1252\uc1\deff0
+{\fonttbl{\f0\fnil\fcharset0\fprq2 ArialMT;}}
+{\colortbl;\red0\green0\blue0;\red255\green255\blue255;\red128\green128\blue128;}
+\paperw12240\paperh15840\margl1800\margr1800\margt1440\margb1440\deftab1200\f0\fs28\cf0
+\pard\plain \tx720\tx1080\tx1440\li720\sa240\sb240\sl288\slmult1\ltrch\loch {\f0\fs28\b0\i0 Attributes}}]]></Format>
+    </Style>
+    <Style ID="12E9F159-5A36-4103-934F-714DB19977EA" Name="Code Block" Next="12E9F159-5A36-4103-934F-714DB19977EA" Type="Para+Char" FontChange="Face+Size">
+        <Format><![CDATA[{\rtf1\ansi\ansicpg1252\uc1\deff0
+{\fonttbl{\f0\fnil\fcharset0\fprq2 CourierPrime;}}
+{\colortbl;\red0\green0\blue0;\red255\green255\blue255;\red128\green128\blue128;}
+\paperw12240\paperh15840\margl1800\margr1800\margt1440\margb1440\deftab1200\f0\fs22\cf0
+\pard\plain \tx720\tx1080\tx1440\tx1800\tx2160\li720\ltrch\loch {\f0\fs22\b0\i0 Attributes}}]]></Format>
+    </Style>
+    <Style ID="64D0DE92-D8C9-47D7-AEBE-12D2508184B6" Name="Code Span" Type="Char" FontChange="Face+Size">
+        <Format><![CDATA[{\rtf1\ansi\ansicpg1252\uc1\deff0
+{\fonttbl{\f0\fnil\fcharset0\fprq2 CourierPrime;}}
+{\colortbl;\red0\green0\blue0;\red255\green255\blue255;\red128\green128\blue128;}
+\paperw12240\paperh15840\margl1800\margr1800\margt1440\margb1440\deftab1200\f0\fs22\cf0
+\pard\plain \tx180\tx540\li540\fi-375\ltrch\loch {\f0\fs22\b0\i0 Attributes}}]]></Format>
+    </Style>
+    <Style ID="0C4AEDD7-719B-428D-BC32-E49ADEB194BF" Name="Emphasis" Type="Char">
+        <Format><![CDATA[{\rtf1\ansi\ansicpg1252\uc1\deff0
+{\fonttbl{\f0\fnil\fcharset0\fprq2 Arial-ItalicMT;}}
+{\colortbl;\red0\green0\blue0;\red255\green255\blue255;\red128\green128\blue128;}
+\paperw12240\paperh15840\margl1800\margr1800\margt1440\margb1440\deftab1200\f0\fs32\cf0
+\pard\plain \tx720\tx1440\tx2160\tx2880\tx3600\tx4320\sa60\sl288\slmult1\ltrch\loch {\f0\fs32\b0\i1 Attributes}}]]></Format>
+    </Style>
+    <Style ID="BA0C35DE-7C6D-4EF2-87F9-C51E0216684C" Name="Caption" Type="Char">
+        <Format><![CDATA[{\rtf1\ansi\ansicpg1252\uc1\deff0
+{\fonttbl{\f0\fnil\fcharset0\fprq2 ArialMT;}}
+{\colortbl;\red0\green0\blue0;\red255\green255\blue255;\red128\green128\blue128;}
+\paperw12240\paperh15840\margl1800\margr1800\margt1440\margb1440\deftab1200\f0\fs28\cf0
+\pard\plain \tx720\tx1440\tx2160\tx2880\tx3600\tx4320\sa60\sl288\slmult1\qc\ltrch\loch {\f0\fs28\b0\i0 Attributes}}]]></Format>
+    </Style>
+    <Style ID="93B3C899-98BB-411B-AC65-D7C41461FCBF" Name="Label" Type="Char" FontChange="Face+Size">
+        <Format><![CDATA[{\rtf1\ansi\ansicpg1252\uc1\deff0
+{\fonttbl{\f0\fnil\fcharset0\fprq2 ArialMT;}}
+{\colortbl;\red0\green0\blue0;\red255\green255\blue255;\red128\green128\blue128;\red16\green133\blue214;}
+\paperw12240\paperh15840\margl1800\margr1800\margt1440\margb1440\deftab1200\f0\fs24\cf0
+\pard\plain \tx720\tx1440\tx2160\tx2880\tx3600\tx4320\sa60\sl288\slmult1\qc\ltrch\loch {\f0\fs24\b0\i0\cf4 Attributes}}]]></Format>
+    </Style>
+    <Style ID="6EE42FA2-A3D7-4B47-9499-08D970B3753A" Name="Itemized List" Next="6EE42FA2-A3D7-4B47-9499-08D970B3753A" Box="0.968627 0.956863 0.898039" Type="Para">
+        <Format><![CDATA[{\rtf1\ansi\ansicpg1252\uc1\deff0
+{\fonttbl{\f0\fnil\fcharset0\fprq2 ArialMT;}}
+{\colortbl;\red0\green0\blue0;\red255\green255\blue255;\red128\green128\blue128;}
+\paperw12240\paperh15840\margl1800\margr1800\margt1440\margb1440\deftab1200\f0\fs24\cf0
+\pard\plain \tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li720\fi-720\sl288\slmult1\ltrch\loch {\f0\fs24\b0\i0 Attributes}}]]></Format>
+    </Style>
+    <Style ID="5BDBFC70-CE31-43F4-9D6B-9582083B4F68" Name="Enumerated List" Next="5BDBFC70-CE31-43F4-9D6B-9582083B4F68" Type="Para">
+        <Format><![CDATA[{\rtf1\ansi\ansicpg1252\uc1\deff0
+{\fonttbl{\f0\fnil\fcharset0\fprq2 CourierPrime;}}
+{\colortbl;\red0\green0\blue0;\red255\green255\blue255;\red128\green128\blue128;}
+\paperw12240\paperh15840\margl1800\margr1800\margt1440\margb1440\deftab1200\f0\fs22\cf0
+\pard\plain \tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li720\fi-720\sl288\slmult1\ltrch\loch {\f0\fs22\b0 Attributes}}]]></Format>
+    </Style>
+    <Style ID="C09282A9-E46F-43B9-B937-3AA964C98C74" Name="Verse" Next="C09282A9-E46F-43B9-B937-3AA964C98C74" Type="Para">
+        <Format><![CDATA[{\rtf1\ansi\ansicpg1252\uc1\deff0
+{\fonttbl{\f0\fnil\fcharset0\fprq2 ArialMT;}}
+{\colortbl;\red0\green0\blue0;\red255\green255\blue255;\red128\green128\blue128;}
+\paperw12240\paperh15840\margl1800\margr1800\margt1440\margb1440\deftab1200\f0\fs24\cf0
+\pard\plain \tx560\tx1140\tx1680\tx2260\li720\sl288\slmult1\ltrch\loch {\f0\fs24\b0\i0 Attributes}}]]></Format>
+    </Style>
+    <Style ID="7EE4353D-1656-4E69-B2B7-25AF57A94C44" Name="Inline Equation" Type="Char">
+        <Format><![CDATA[{\rtf1\ansi\ansicpg1252\uc1\deff0
+{\fonttbl{\f0\fnil\fcharset0\fprq2 ArialMT;}}
+{\colortbl;\red0\green0\blue0;\red255\green255\blue255;\red128\green128\blue128;\red48\green150\blue3;}
+\paperw12240\paperh15840\margl1800\margr1800\margt1440\margb1440\deftab1200\f0\fs24\cf0
+\pard\plain \tx560\tx1140\tx1680\tx2260\sl288\slmult1\ltrch\loch {\f0\fs24\b0\i0\cf4 Attributes}}]]></Format>
+    </Style>
+    <Style ID="843371BD-71C0-4E1D-ACF0-868750DEEF54" Name="Index Term" Type="Char">
+        <Format><![CDATA[{\rtf1\ansi\ansicpg1252\uc1\deff0
+{\fonttbl{\f0\fnil\fcharset0\fprq2 ArialMT;}}
+{\colortbl;\red0\green0\blue0;\red255\green255\blue255;\red128\green128\blue128;\red220\green35\blue103;}
+\paperw12240\paperh15840\margl1800\margr1800\margt1440\margb1440\deftab1200\f0\fs24\cf0
+\pard\plain \tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl360\slmult1\ltrch\loch {\f0\fs24\b0\i0\cf4 Attributes}}]]></Format>
+    </Style>
+    <Style ID="4847E3CA-D2AA-48CD-9BE8-016EC12EA0FA" Name="Index Key" Box="0.994888 0.461662 0.625834" Type="Char">
+        <Format><![CDATA[{\rtf1\ansi\ansicpg1252\uc1\deff0
+{\fonttbl{\f0\fnil\fcharset0\fprq2 ArialMT;}}
+{\colortbl;\red0\green0\blue0;\red255\green255\blue255;\red128\green128\blue128;}
+\paperw12240\paperh15840\margl1800\margr1800\margt1440\margb1440\deftab1200\f0\fs24\cf0
+\pard\plain \tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl360\slmult1\ltrch\loch {\f0\fs24\b0\i0 Attributes}}]]></Format>
+    </Style>
+    <Style ID="8DE09AE1-ED8E-4154-9AF8-541A3E89FAA3" Name="Equation" Type="Para+Char">
+        <Format><![CDATA[{\rtf1\ansi\ansicpg1252\uc1\deff0
+{\fonttbl{\f0\fnil\fcharset0\fprq2 ArialMT;}}
+{\colortbl;\red0\green0\blue0;\red255\green255\blue255;\red128\green128\blue128;\red48\green150\blue3;}
+\paperw12240\paperh15840\margl1800\margr1800\margt1440\margb1440\deftab1200\f0\fs24\cf0
+\pard\plain \sl264\slmult1\qc\ltrch\loch {\f0\fs24\b0\i0\cf4 Attributes}}]]></Format>
+    </Style>
+    <Style ID="3E25BA0F-D1E0-4D68-8537-83DD61253F7D" Name="Default" Shortcut="1" Type="Para+Char" FontChange="Face+Size">
+        <Format><![CDATA[{\rtf1\ansi\ansicpg1252\uc1\deff0
+{\fonttbl{\f0\fnil\fcharset0\fprq2 RobotoMono-SemiBold;}}
+{\colortbl;\red0\green0\blue0;\red255\green255\blue255;\red128\green128\blue128;}
+\paperw12240\paperh15840\margl1800\margr1800\margt1440\margb1440\deftab1200\f0\fs22\cf0
+\pard\plain \tx560\tx1140\tx1680\tx2260\li720\ltrch\loch {\f0\fs22\b0 Attributes}}]]></Format>
+    </Style>
+</Styles>

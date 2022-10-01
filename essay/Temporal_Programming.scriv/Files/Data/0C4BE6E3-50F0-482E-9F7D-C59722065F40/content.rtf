@@ -1,0 +1,128 @@
+{\rtf1\ansi\ansicpg1252\uc1\deff0
+{\fonttbl{\f0\fmodern\fcharset0\fprq2 RobotoMono-SemiBold;}}
+{\colortbl;\red0\green0\blue0;\red255\green255\blue255;\red128\green128\blue128;}
+\paperw12240\paperh15840\margl1800\margr1800\margt1440\margb1440\f0\fs22\cf0
+\pard\plain \tx0\tx360\tx720\tx1080\tx1440\tx1800\tx2160\tx2880\tx3600\tx4320\ltrch\loch {\f0\fs22\b0\i0 struct TapePlayer \{}
+\par\plain {\f0\fs22\b0\i0    bool locked = false;}
+\par\plain {\f0\fs22\b0\i0    bool playing = false;}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0    void update(bool play, bool stop, bool lock, bool unlock) \{}
+\par\plain {\f0\fs22\b0\i0       if (locked && unlock) @locked = false;}
+\par\plain {\f0\fs22\b0\i0       if (lock) @locked = true;}
+\par\plain {\f0\fs22\b0\i0       if (!@locked) \{}
+\par\plain {\f0\fs22\b0\i0          if (play) @playing = true;}
+\par\plain {\f0\fs22\b0\i0          if (stop) @playing = false;}
+\par\plain {\f0\fs22\b0\i0       \}}
+\par\plain {\f0\fs22\b0\i0    \}}
+\par\plain {\f0\fs22\b0\i0 \}}
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 for (int i=0; i<512; i++) \{}
+\par\plain {\f0\fs22\b0\i0   float x2 = x*x - y*y + cx;}
+\par\plain {\f0\fs22\b0\i0   float y2 = 2.0*x*y + cy;}
+\par\plain {\f0\fs22\b0\i0   x = x2;}
+\par\plain {\f0\fs22\b0\i0   y = y2;}
+\par\plain {\f0\fs22\b0\i0 \}}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 for( int i=0; i<512; i++ ) \{}
+\par\plain {\f0\fs22\b0\i0   x@ = x*x - y*y + cx;}
+\par\plain {\f0\fs22\b0\i0   y@ = 2.0*x*y + cy;}
+\par\plain {\f0\fs22\b0\i0 \}}
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 struct FDIV2 \{}
+\par\plain {\f0\fs22\b0\i0    bool c;}
+\par\plain {\f0\fs22\b0\i0    void update() \{}
+\par\plain {\f0\fs22\b0\i0       @c = !c;}
+\par\plain {\f0\fs22\b0\i0    \}}
+\par\plain {\f0\fs22\b0\i0 \}}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 struct Fibonacci \{}
+\par\plain {\f0\fs22\b0\i0    int a = 1;}
+\par\plain {\f0\fs22\b0\i0    int b = 1;}
+\par\plain {\f0\fs22\b0\i0    void update() \{}
+\par\plain {\f0\fs22\b0\i0       @a = b;}
+\par\plain {\f0\fs22\b0\i0       @b = a + b;}
+\par\plain {\f0\fs22\b0\i0    \}}
+\par\plain {\f0\fs22\b0\i0 \}}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 struct Switch \{}
+\par\plain {\f0\fs22\b0\i0    bool s = false;}
+\par\plain {\f0\fs22\b0\i0    void update(bool on, bool off) \{}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0    \}}
+\par\plain {\f0\fs22\b0\i0 \}}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 struct Counter \{}
+\par\plain {\f0\fs22\b0\i0    int c;}
+\par\plain {\f0\fs22\b0\i0    void update(bool reset, bool x) \{}
+\par\plain {\f0\fs22\b0\i0       @c = reset ? 0 : c + x;}
+\par\plain {\f0\fs22\b0\i0    \}}
+\par\plain {\f0\fs22\b0\i0 \}}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 struct Stopwatch \{}
+\par\plain {\f0\fs22\b0\i0    int count = 0;}
+\par\plain {\f0\fs22\b0\i0    int time = 0;  }
+\par\plain {\f0\fs22\b0\i0    bool running = 0;}
+\par\plain {\f0\fs22\b0\i0    bool frozen = 0;}
+\par\plain {\f0\fs22\b0\i0    void update(bool on_off, bool reset, bool freeze) \{}
+\par\plain {\f0\fs22\b0\i0       @running = running ^ @on_off;}
+\par\plain {\f0\fs22\b0\i0       @frozen = frozen ^ @freeze;}
+\par\plain {\f0\fs22\b0\i0       @count = @reset ? 0 : @running ? count + 1 : count;}
+\par\plain {\f0\fs22\b0\i0       @time = @frozen ? time : @count;}
+\par\plain {\f0\fs22\b0\i0    \}}
+\par\plain {\f0\fs22\b0\i0 \}}
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 struct TapePlayer \{}
+\par\plain {\f0\fs22\b0\i0    bool locked = false;}
+\par\plain {\f0\fs22\b0\i0    bool playing = false;}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0    void update(bool play, bool stop, bool lock, bool unlock) \{}
+\par\plain {\f0\fs22\b0\i0       if (locked && unlock) @locked = false;}
+\par\plain {\f0\fs22\b0\i0       if (lock) @locked = true;}
+\par\plain {\f0\fs22\b0\i0       if (!@locked) \{}
+\par\plain {\f0\fs22\b0\i0          if (play) @playing = true;}
+\par\plain {\f0\fs22\b0\i0          if (stop) @playing = false;}
+\par\plain {\f0\fs22\b0\i0       \}}
+\par\plain {\f0\fs22\b0\i0    \}}
+\par\plain {\f0\fs22\b0\i0 \}}
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 struct Clock \{}
+\par\plain {\f0\fs22\b0\i0    int second;}
+\par\plain {\f0\fs22\b0\i0    int minute;}
+\par\plain {\f0\fs22\b0\i0    int hour;}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0    void update(int clock) \{}
+\par\plain {\f0\fs22\b0\i0       if (posedge(clock)) \{}
+\par\plain {\f0\fs22\b0\i0          second@ = second + 1;}
+\par\plain {\f0\fs22\b0\i0       \}}
+\par\plain {\f0\fs22\b0\i0       if (second@ == 60) \{}
+\par\plain {\f0\fs22\b0\i0          second@ = 0;}
+\par\plain {\f0\fs22\b0\i0          minute@ = minute + 1;}
+\par\plain {\f0\fs22\b0\i0       \}}
+\par\plain {\f0\fs22\b0\i0       if (minute@ == 60) \{}
+\par\plain {\f0\fs22\b0\i0          minute@ = 0;}
+\par\plain {\f0\fs22\b0\i0          hour@ = hour@ + 1;}
+\par\plain {\f0\fs22\b0\i0       \}}
+\par\plain {\f0\fs22\b0\i0       if (hour@ == 24) \{}
+\par\plain {\f0\fs22\b0\i0          hour@ = 0;}
+\par\plain {\f0\fs22\b0\i0       \}}
+\par\plain {\f0\fs22\b0\i0    \}}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0    void some_other_update() \{}
+\par\plain {\f0\fs22\b0\i0       if (second@ == 0 && minute@ == 0 && hour@ == 0) \{}
+\par\plain {\f0\fs22\b0\i0          printf("Happy new year!\\n");}
+\par\plain {\f0\fs22\b0\i0       \}}
+\par\plain {\f0\fs22\b0\i0    \}}
+\par\plain {\f0\fs22\b0\i0 \}}}

@@ -1,0 +1,1031 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SearchIndexes Version="1.0">
+    <Documents>
+        <Document ID="03C43B49-1688-4364-BAA5-174AD1C1C2BC">
+            <Title>Communicating Sequential Processes</Title>
+            <Text> - Communicating Sequential Processes
+</Text>
+        </Document>
+        <Document ID="07B0D7C6-57CE-4D6F-8AD9-11F06A261A5F">
+            <Title>Notes</Title>
+        </Document>
+        <Document ID="09A53032-CCC7-4F95-B226-D0A8B5427C16">
+            <Title>Averest/Quartz</Title>
+            <Text> - Averest / Quartz
+   - Lots of examples http://www.averest.org/#documentation_Quartz_examples
+   - http://www.averest.org/examples/Quartz/EmbeddedSystems/CruiseControl/CruiseControl.html
+       - this is probably a good example of implicit state in the pc
+   - &quot;Averest is the result of still ongoing research efforts of the chair on embedded systems at the department of computer science of the university of Kaiserslautern&quot;
+   - http://www.averest.org/examples/Quartz/EmbeddedSystems/Elevator.html
+      - There is _implicit_ state in the position of the program counter!
+      - There's still an imaginary chef
+      - hell there's an explicit loop :P
+   - Presentation in 2021
+   - &quot;pause&quot; keyword but no old/new
+   - &quot;the ordering of microsteps in a macrostep does not matter&quot;
+   - &quot;Dynamic scheduling of micro steps&quot; - eh, I don't like that
+      - well yeah you have to do that because you're not distinguishing old and new
+      - they patch around it with next(x)
+   Some of the existing synchronous languages are &quot;weird&quot;
+      Quartz has a _lot_ of new kinds of statements
+         even the presentation shows a &quot;how not to do it&quot; example
+
+
+
+
+
+
+
+
+</Text>
+        </Document>
+        <Document ID="0C4BE6E3-50F0-482E-9F7D-C59722065F40">
+            <Title>Code Examples</Title>
+            <Text>struct TapePlayer {
+   bool locked = false;
+   bool playing = false;
+
+   void update(bool play, bool stop, bool lock, bool unlock) {
+      if (locked &amp;&amp; unlock) @locked = false;
+      if (lock) @locked = true;
+      if (!@locked) {
+         if (play) @playing = true;
+         if (stop) @playing = false;
+      }
+   }
+}
+
+
+
+
+
+for (int i=0; i&lt;512; i++) {
+  float x2 = x*x - y*y + cx;
+  float y2 = 2.0*x*y + cy;
+  x = x2;
+  y = y2;
+}
+
+for( int i=0; i&lt;512; i++ ) {
+  x@ = x*x - y*y + cx;
+  y@ = 2.0*x*y + cy;
+}
+
+
+
+
+
+struct FDIV2 {
+   bool c;
+   void update() {
+      @c = !c;
+   }
+}
+
+struct Fibonacci {
+   int a = 1;
+   int b = 1;
+   void update() {
+      @a = b;
+      @b = a + b;
+   }
+}
+
+struct Switch {
+   bool s = false;
+   void update(bool on, bool off) {
+
+   }
+}
+
+struct Counter {
+   int c;
+   void update(bool reset, bool x) {
+      @c = reset ? 0 : c + x;
+   }
+}
+
+struct Stopwatch {
+   int count = 0;
+   int time = 0;  
+   bool running = 0;
+   bool frozen = 0;
+   void update(bool on_off, bool reset, bool freeze) {
+      @running = running ^ @on_off;
+      @frozen = frozen ^ @freeze;
+      @count = @reset ? 0 : @running ? count + 1 : count;
+      @time = @frozen ? time : @count;
+   }
+}
+
+
+
+struct TapePlayer {
+   bool locked = false;
+   bool playing = false;
+
+   void update(bool play, bool stop, bool lock, bool unlock) {
+      if (locked &amp;&amp; unlock) @locked = false;
+      if (lock) @locked = true;
+      if (!@locked) {
+         if (play) @playing = true;
+         if (stop) @playing = false;
+      }
+   }
+}
+
+
+
+
+struct Clock {
+   int second;
+   int minute;
+   int hour;
+
+   void update(int clock) {
+      if (posedge(clock)) {
+         second@ = second + 1;
+      }
+      if (second@ == 60) {
+         second@ = 0;
+         minute@ = minute + 1;
+      }
+      if (minute@ == 60) {
+         minute@ = 0;
+         hour@ = hour@ + 1;
+      }
+      if (hour@ == 24) {
+         hour@ = 0;
+      }
+   }
+
+   void some_other_update() {
+      if (second@ == 0 &amp;&amp; minute@ == 0 &amp;&amp; hour@ == 0) {
+         printf(&quot;Happy new year!
+&quot;);
+      }
+   }
+}</Text>
+        </Document>
+        <Document ID="0F74FC65-0340-4362-85CC-82B0A85DE507">
+            <Title>FAQ</Title>
+        </Document>
+        <Document ID="11F17ADB-ACAC-46E0-960F-F82E55B818FE">
+            <Title>Functional Reactive Programming?</Title>
+            <Text>You’re just redefining reactive programming / functional reactive programming.
+    “A := b + c” continuously assigns to a
+
+</Text>
+        </Document>
+        <Document ID="15132E5A-F0FA-4410-AD84-B7E52C9204BA">
+            <Title>Temporal Programming in C</Title>
+        </Document>
+        <Document ID="1C65438B-F20E-4CD5-8620-3CE1B6BD8F53">
+            <Title>Surely this has been explored before?</Title>
+            <Text>
+### Surely this has all been investigated already - why haven’t I ever heard of temporal programming before?
+
+There have been a small number of languages that model something similar to temporal programming; you can find them in Wikipedia under the entry “Synchronous Programming Languages”.
+
+OK, this is starting to sound somewhat interesting. Surely all of this has been researched thoroughly by now?
+    Absolutely, but not to the extent you might think.
+    The ideas have been floating around for years in various obscure programming languages, research papers, and talks
+    &lt;reference list&gt;
+
+</Text>
+        </Document>
+        <Document ID="232AC60D-6945-4711-A0F4-AAB28AC6F0F4">
+            <Title>Temporal Programming for Hardware</Title>
+        </Document>
+        <Document ID="2592BC1C-AA99-4DEA-9595-576DE89207AC">
+            <Title>Guarded Atomic Actions</Title>
+            <Text> - Guarded Atomic Actions
+</Text>
+        </Document>
+        <Document ID="2A401011-5BBB-4B6E-BD5F-16C74FCBB707">
+            <Title>The Conceptual Leap</Title>
+            <Text>Now for a bit of a conceptual leap - This model of computation as used in Lamport's &quot;Temporal Logic of Actions&quot; _is_ a programming paradigm. It's not a complicated one, but it's distinctly different from the &quot;state changes incrementally&quot; style of imperative programming and the &quot;state doesn't change&quot; style of functional programming. You can also think of it as a reformulation of Synchronous Programming - one that focuses on &quot;all state changes simultaneously&quot; instead of &quot;lots of things happen simultaneously&quot;.
+
+It's also not at all new - it's the programming paradigm that folks who write code for FPGAs all day think in by default. It's also a paradigm that most software developers _don't_ think in by default, which is part of why Verilog and VHDL can seem so incomprehensible at first. It's a paradigm that a lot of us use every day, but we're so implicitly familiar with it our different sub-areas of programming that we don't really have a word for it at a global level.
+
+In honor of Leslie Lamport's work on temporal logic, I propose we call it &quot;Temporal Programming&quot;.
+</Text>
+        </Document>
+        <Document ID="2A9DA0E7-1B70-4030-899F-C16B90B36026">
+            <Title>Have you heard of...</Title>
+        </Document>
+        <Document ID="39354146-508C-4E91-91D9-39CA04689864">
+            <Title>What is Temporal Programming good for?</Title>
+        </Document>
+        <Document ID="40B82475-E27A-40BA-AF31-FCF4BDD1F241">
+            <Title>Plaid</Title>
+        </Document>
+        <Document ID="49C24234-0610-447F-B873-72AEDA8003D0">
+            <Title>Finite State Automata?</Title>
+        </Document>
+        <Document ID="4C628C76-49A0-49E0-88B7-9FE0FDB5906B">
+            <Title>Esterel</Title>
+            <Text> - Esterel
+   - esterel-eda.com is defunct
+   - http://www.esterel-technologies.com/ is defunct
+   - Ansys bought Esterel 10 years ago but it doesn't appear on their website?
+      - search may just be broken
+   - They appear to sell SCADE
+   - http://www.tni-valiosys.com/ defunct
+
+
+
+
+It's almost like the machines are _embedded_ in the code in Esterel, instead of the machines _being_ the code.
+
+In some ways, we can see Esterel and Lustre as two examples of doing temporal programming &quot;inside&quot; imperative/functional programming
+
+
+ - Esterel has some uncanny similarities
+    - “The language version is that of the Esterel v5 system, version v5 91. This new language version extends the previous version v5 21 by the addition of new pre operators, which makes it possible to access the previous status and value of a signal.”
+“Esterel v4 was much better than Esterel v3 since it avoided state space explosion. However, it required generated circuits to be acyclic. Although this condition is standard in hardware or data-flow systems design, it turned out to be too restrictive for Esterel.”
+</Text>
+        </Document>
+        <Document ID="4FE9B898-81A4-4235-8668-0FF16571C796">
+            <Title>Blech</Title>
+            <Text> - Blech
+   blech-lang.org
+   &quot;The software is not ready for production use. It has neither been developed nor tested for a specific use case.&quot;
+   &quot;Blech is no longer under active development at Bosch Research&quot;
+</Text>
+        </Document>
+        <Document ID="5298CB3B-D568-4409-8673-B50C88CEB8C6">
+            <Title>Signal</Title>
+            <Text> - Signal
+   - &quot;Implementation of the data-flow synchronous language Signal&quot;
+      - can reference past values of a signal with $
+      - stuff like &quot;X := U default V&quot; defines a merge of two event streams, which is out of scope for TP
+      - individual signals have a &quot;clock&quot; defining when they are present/absent
+   - http://www.irisa.fr/espresso/home_html/ defunct
+   - http://polychrony.inria.fr/
+   - https://www-verimag.imag.fr/Synchron.html defunct
+   - http://polychrony.inria.fr/Download/download.php how old is this stuff
+   - &quot;The Synchronous Programming Language SIGNAL&quot; 2004
+</Text>
+        </Document>
+        <Document ID="548C2750-D287-498E-8632-B9B05FD9F241">
+            <Title>Performance &amp; Efficiency</Title>
+        </Document>
+        <Document ID="5AED4086-674A-4BE4-AE84-1B83A0C8AC67">
+            <Title>Strange New Worlds</Title>
+            <Text>## So what would a “pure” temporal programming language look like?
+
+The _entire_ program state is X
+State changes atomically
+Type can change atomically
+Code can run backwards if F is invertible
+Order of expressions is mostly irrelevant. Temporal programs can be “flattened” into a list of “field’ = f(state)” expressions
+In a temporal programming language, the physical structure of the code (call trees, etc) is less relevant. Statements in a block are order-invariant. Branches select blocks for evaluation but there is no “program counter” in the usual sense
+
+A ring oscillator can’t be modeled directly in temporal programming as it has no clock and is not a pure function
+What could a temporal programming language do that {lang} can’t?
+
+
+
+
+
+
+Explicitly referring to past and future state
+
+“The value of X three cycles before Y exceeded 12”
+
+We should be able to write arbitrary statements about past and future events and the compiler should be able to figure it out.
+
+
+“Is it possible to get to a state with property X from the current state?”
+Does property X hold in all possible states?
+Tla+ type proof stuff
+
+Speculative execution and runahead
+    Some game console emulators improve responsiveness and input latency by implementing “runahead” - given an “old” emulation state, they compute every possible “next” state that could be reached by the user pressing some combination of input buttons. Once the user input is known the emulator can immediately switch to the selected pre-computed state, display the corresponding game image, and then begin computing the next set of possible states.
+    This is not right https://docs.libretro.com/guides/runahead/
+
+
+
+## Open Questions
+ - What do statements like “x@-2 = y@+3” even mean?
+ - A sufficiently smart compiler doesn’t need to keep as many intermediate copies
+ - Large programs are expression graphs that can be incrementally evaluated in parallel by a “swarm” of worker bees
+ - What would a processor designed specifically for temporal programs look like? Something in between a CPU and a FPGA?
+ - “Programming Paradigms for Dummies: What Every Programmer Should Know”
+ - “discrete synchronous programming”
+ - In this paradigm, a program waits for input events, does internal calculations, and emits output events
+ - “Waits” is meaningless in TPL
+ - Doesn’t discuss internal state change
+ - “output events from one subcomponent are instantaneously available as input events in other subcomponents”
+     - Well, not exactly. 
+
+
+</Text>
+        </Document>
+        <Document ID="5BBBE143-4B44-4CA0-BD38-041D0FC11301">
+            <Title>FAQ</Title>
+        </Document>
+        <Document ID="5D1D0671-72F6-4041-9100-BA0DE15B8CB1">
+            <Title>Automata-based programming?</Title>
+            <Text>Isn't this just &quot;Automata-Based Programming&quot;?
+	Yes, basically, though &quot;Automata-Based Programming&quot; seems to be even deader a term than &quot;Synchronous Programming&quot;.
+
+There’s a lot of research into finite-state automata, particularly in converting regular expressions to FSMs.</Text>
+        </Document>
+        <Document ID="5F2027F6-9BDD-4339-81C0-CF6B22E65038">
+            <Title>Concurrency</Title>
+            <Text>## Temporal Programming and Concurrency
+“Concurrency” is irrelevant at the language level. 
+“Concurrent programming would be much simpler if the nondeterminism were controlled in some way, so that it is not visible to the programmer.” - Van Roy
+“For example, if each of two threads assigns a variable cell to a different value, then each of the two values can be observed:”
+   This cannot be expressed in a temporal programming language - by definition a variable can have only one future
+“concurrency naturally implies nondeterminism.”
+   No it doesn’t, not in this context
+</Text>
+        </Document>
+        <Document ID="606E2F6A-318D-44EA-A9BC-81093A72CD2F">
+            <Title>Introduction</Title>
+            <Text>
+
+
+The ideas of synchronous programming are sound and made sense at the time, and the languages that grew from the initial research (Esterel, Lustre, Signal) are totally reasonable and not too painful to understand. I think one of the reasons that synchronous programming didn't become popular is that it didn't generalize the idea far enough - the languages wanted to embody certain ideas about what &quot;synchronous programming&quot; is, and in doing so they give the impression that synchronous programming is something you can _only_ do in a synchronous language. And that's not at all correct - if you've ever written any form of state machine or dealt with any sort of atomic transaction, then you've already done some synchronous programming even if you didn't know the name for it at the time.
+
+
+
+
+
+
+
+
+
+
+
+
+You probably are already familiar with &quot;functional programming&quot; and &quot;imperative programming&quot;, and if you've browsed through Wikipedia you've probably heard of a few more.
+
+One progrmaming paradigm that you might not have heard of is &quot;Synchronous Programming&quot;. Synchronous programming was first sketched out in the 1980s as a software equivalent of the &quot;every register changes simultaneously&quot; paradigm in synchronous logic circuits. Synchronous programming is still around today, but in a reduced fashion. Some of the languages and organizations mentioned on Wikipedia aren't around anymore, and as a programming paradigm it's hardly commonplace.
+
+Now that many-core processors are ubiquitous and FPGAs with open-source toolchains are available for a few bucks, I think the obscurity of synchronous programming is a shame.
+
+I think part of the reason that SP didn't become more popular is that the initial research focused too tightly on _how_ to do SP (in the form of new languages with new and somewhat unfamiliar semantics), at the expense of defining clearly _what_ synchronous programming is.
+
+
+I'd like to propose a &quot;reboot&quot; of Synchronous Programming, and in honor of Leslie Lamport's work &quot;The Temporal Logic of Actions&quot;, I think we should call it &quot;Temporal Programming&quot;.
+
+There's no reason we can't just define a programming paradigm that matches TLA
+
+
+Lamport's papers on temporal logic are quite dense, and I'll be totally honest - I'm not very good at formal logic. Because of this, I've tried to focus on the simplest possible definitions that might be worth calling &quot;Temporal Programming&quot;.
+
+Pure temporal programs transform old states into new states using pure functions.
+
+
+https://lamport.azurewebsites.net/pubs/lamport-actions.pdf
+
+
+
+
+Temporal programming is a &quot;reboot&quot; of Synchronous Programming
+A lot of my best ideas started out sounding really dumb.
+
+</Text>
+        </Document>
+        <Document ID="67D0FFB2-16A5-463A-812A-B05271CB45E0">
+            <Title>Verilog / VHDL?</Title>
+            <Text>Most of the hardware description languages (HDLs) used to design logic for FPGAs and chips also contain aspects of temporal programming - in particular the non-blocking assignment operator in Verilog “x &lt;= y” is equivalent to “x@ = y”.
+</Text>
+        </Document>
+        <Document ID="697C34B9-33DF-4F8A-A81C-1C61F10B71A9">
+            <Title>Notes on research papers to be organized</Title>
+        </Document>
+        <Document ID="6996BE07-7D43-4998-AA16-E3A8C14A8563">
+            <Title>A Trivial Example</Title>
+            <Text>Examples of &quot;x' = f(x)&quot;-style programs abound - synchronous logic circuits, state machines, transactions - and actually writing a program that &quot;moves through time in discrete steps&quot; is not particularly difficult. Here's a trivial example in C++: 
+
+struct Program {
+   int count = 0;
+};
+
+Program tick(Program old_p) {
+   Program new_p;
+   new_p.count = old_p.count + 1;
+   return new_p;
+}
+
+void main() {
+   Program p;
+   for (int i = 0; i &lt; 10; i++) {
+      p = tick(p);
+      printf(&quot;Output %d
+&quot;, p.count);
+   }
+}
+
+At first glance, &quot;constantly overwrite your entire state&quot; seems like a terribly inefficient way to write a program, but it's interesting - this example could be expressed equivalently in Javascript, Python, or just about any other mainstream language. In fact, the &quot;x' = f(x)&quot; model places no real requirements on the host language other than &quot;evaluate functions&quot; and &quot;change state atomically&quot;. We can write the same thing in Verilog, which does _not_ in general follow the execution semantics of C++ despite the similarities in syntax:
+
+module Program(input logic clock);
+  int count;
+  initial count = 0;
+
+  always_ff(@posedge clock) begin : tick
+    count &lt;= count + 1;
+  end
+endmodule
+
+This example modifies state in place instead of overwriting the whole Program object, but in Verilog doing so is guaranteed to be atomic - the '&lt;=' operator is defined such that the right hand sides of all '&lt;=' expressions are assigned to the left hand sides simultaneously and atomically at the end of the current simulation step. 
+
+</Text>
+        </Document>
+        <Document ID="713361D2-1DD1-4362-BC90-8663137DE753">
+            <Title>Lustre</Title>
+            <Text> - Lustre
+   - &quot;The Lustre Language&quot; http://homepage.cs.uiowa.edu/~tinelli/classes/181/Spring10/Notes/03-lustre.pdf
+   - is scade defunct too?
+   - &quot;order does not matter&quot; but there's no old/new split
+   - &quot;Previous operator 'pre'&quot;
+   - &quot;Not suitable for complex data types manupulation&quot;
+
+
+In some ways, we can see Esterel and Lustre as two examples of doing temporal programming &quot;inside&quot; imperative/functional programming
+
+
+ - Lustre - “pre p: Returns the previous value of p”
+</Text>
+        </Document>
+        <Document ID="74743332-3805-4EC4-8B13-1CDE7C95A938">
+            <Title>Others</Title>
+            <Text> - Argus
+   - Pretty old, has atomic actions, but not globally synchronous?
+
+ - Plaid
+</Text>
+        </Document>
+        <Document ID="7C5CAAB6-0CBA-4FF2-B9EE-E5B01CBB4249">
+            <Title>Introduction</Title>
+        </Document>
+        <Document ID="89CCFC49-04A4-4AA9-81AC-D0D7DB598DF1">
+            <Title>StateCharts</Title>
+            <Text> - StateCharts/SyncCharts
+   - SyncCharts and some of the other languages try and do _too_much_
+
+</Text>
+        </Document>
+        <Document ID="8DA5F89E-25C2-4333-A201-B6F254B46CEE">
+            <Title>Junk</Title>
+        </Document>
+        <Document ID="9027B414-C352-4407-ADD9-66DD36C704D6">
+            <Title>Temporal Execution Semantics in C</Title>
+            <Text>When we’re writing C, we implicitly assume that assigning to a variable changes the value of that variable before the next statement is executed. This can make 
+
+
+
+Even if our host language has no '&lt;=' operator, as long as we do some bookkeeping to ensure that our &quot;tick&quot; function _behaves_ atomically we don't really have to overwrite everything each tick.
+Back in C++, we don't have to _literally_ write &quot;p = tick(p)&quot; - we can update the program state in place via &quot;p.tick()&quot; as long as it _behaves_ atomically.
+
+struct Program {
+   int count = 0;
+
+   void tick() {
+      count = count + 1;
+   }
+};
+
+
+
+
+
+ Let's look at a trivial program
+
+ int a = 10;
+ int b = 20;
+ a = b + 1;
+ b = a + 1;
+ printf(&quot;a = %d, b = %d
+&quot;, a, b);
+ 
+ In a procedural language, this will print &quot;a = 21, b = 22&quot;. If we flip the order of assignments, we get 
+
+ int a = 10;
+ int b = 20;
+ b = a + 1;
+ a = b + 1;
+ printf(&quot;a = %d, b = %d
+&quot;, a, b);
+
+ we now get &quot;a = 12, b = 11&quot;. 
+
+ If we could somehow simultaneously evaluate the two assignments, we might expect to see &quot;a = 21, b = 11&quot;.
+
+ But we can't express simultaneous anything in C, it's always sequential. So let's introduce some new notation
+
+ a' = b + 1;
+ b' = a + 1;
+
+ The tick mark indicates the _next_ value of a variable, no tick indicates the _previous_ value of a variable. This may look familiar if you've played around with Mandelbrot sets, which are defined by the recurrence relation &quot;z' = z^2 + c&quot;.
+
+ There's some ambiguity here, however - if I call a function that writes to a variable &quot;foo'&quot;, when does that write actually take effect? If I read from &quot;foo&quot; after calling that function and then I print the value of &quot;foo&quot;, does it print the old or new value of foo? To answer that question, we're going to need some more notation:
+
+ int a = 10;
+ int b = 20;
+ temporal {
+    a' = b + 1;
+    b' = a + 1;
+ }
+ printf(&quot;a = %d, b = %d
+&quot;, a, b);
+
+Inside a temporal block, only ticked variables may be written to. Reading from a variable always gives the _old_ value. After the temporal block, reading from a variable gives the _new_ value.
+
+It's perfectly legal to read from a ticked variable in a temporal block, provided that doing so doesn't create an evaluation loop. For example
+
+ int a = 10;
+ int b = 20;
+ temporal {
+    a' = b' + 1;
+    b' = a + 1;
+ }
+ printf(&quot;a = %d, b = %d
+&quot;, a, b);
+
+will print &quot;a = 12, b = 11&quot;.
+
+However, 
+
+ int a = 10;
+ int b = 20;
+ temporal {
+    a' = b' + 1;
+    b' = a' + 1;
+ }
+ printf(&quot;a = %d, b = %d
+&quot;, a, b);
+
+will not compile - in order to evaulate a' we need to know b', and in order to evaluate b' we need to know a'.
+</Text>
+        </Document>
+        <Document ID="921A916E-D9A4-4535-A4CB-E15D30E375EB">
+            <Title>Leslie Lamport's Temporal Logic of Actions</Title>
+            <Text>Around the same time that the first papers on synchronous programming were being written, Leslie Lamport wrote &quot;The Temporal Logic of Actions&quot; - it's a pretty dense research paper if you're not used to formal logic (I am not), but it lays out a framework for proving the correctness of concurrent systems - these could be threads in a process, nodes in a distributed system, or logic gates in a CPU. His later works defined the languages TLA+ and PlusCal, which allowed those proofs to be expressed in something more like a programming language.
+
+At the core of Lamport's temporal logic is a very simple model of computation - programs move through time in discrete steps by computing &quot;new&quot; state from &quot;old&quot; state. We can state that a bit more formally as the simple recurrence &quot;x' = f(x)&quot;, where &quot;x&quot; represents the _old_ state of the program, &quot;x'&quot; represents the _new_ state of the program, and &quot;f&quot; is a pure function that computes the entire new state from the old state. If we add an input and output we get &quot;(x, o)' = f(x, i)&quot;, which is roughly equivalent to a Mealy machine except that our states and in/outputs are arbitrary data structures instead of sets of states and symbols.
+
+While TLA+ and PlusCal are not exactly programming languages, they still allows developers to test properties of real-world programs by representing them as collections of atomic changes to global state (the contents of the 'f'), writing provable statements about the program's behavior (things like &quot;x.foo will never exceed 10&quot;), and then proving or disproving those statements for all possible sequences of states using the formal methods of temporal logic (complicated).
+</Text>
+        </Document>
+        <Document ID="9AE34A2E-E058-4F0E-927B-CB4D872F032D">
+            <Title>Bluespec?</Title>
+        </Document>
+        <Document ID="A9A15308-1D22-4F61-9535-49A91F7E6150">
+            <Title>Isn't this going to be terribly inefficient?</Title>
+            <Text>&quot;Your definition of temporal programming is going to waste instructions recomputing things that haven't changed&quot;
+   Yes and no. The trivial implementation wastes cycles, a &quot;smart&quot; compiler could save cycles.
+   But &quot;smart&quot; may not actually be necessary. Simple TP runs fast enough for basic realtime tasks.
+Sensitivity lists are an optimization
+Synchronous programming seems like trying to cram the synchronous abstraction into an imperative or functional language
+The farther you get from pure temporal, the more work it is to translate to hardware
+</Text>
+        </Document>
+        <Document ID="AA975B49-E0E0-40E4-8942-7D898CA9CA08">
+            <Title>Extending C - A Syntax Proposal</Title>
+            <Text>There is one small modification to existing C syntax that I think would clarify how temporal programs work a _lot_.
+Of the many symbols available on a typical keyboard, '@' currently has no meaning in C. I propose the following:
+1. A variable with a '@' suffix is a &quot;Temporal Reference&quot;. &quot;foo@0&quot; is a const reference to the _current_ value of &quot;foo&quot;, &quot;foo@1&quot; is a mutable reference to the _next_ value of foo, &quot;foo@-1&quot; is a const reference to the _previous_ value of foo. &quot;foo@&quot; with no index refers to &quot;foo@1&quot; by default.
+1. An assignment to a variable with a '@' suffix is a &quot;Temporal Assignment&quot;. Temporal assignments do _not_ take effect immediately.
+2. A block of code containing a temporal assignment is a &quot;Temporal Block&quot;.
+3. All blocks nested inside a temporal block are temporal blocks.
+4. All assignments in temporal blocks must be to either local variables or a @-suffixed state variable.
+5. Upon leaving the outermost temporal block, all temporal assignments take effect.
+6. For a given top-level temporal block, there can be at most 
+
+This would be a &quot;basic tier&quot; implementation of temporal programming support.
+
+Additional possible features -
+
+1. Reading from a @-suffixed variable returns the 'future' value of that variable, even if it hasn't been written 'yet'.
+2. Writing to future values of a variable &quot;foo@2 = 1;&quot; is allowed as long as the assignments don't collide.
+3. The compiler is responsible for figuring out the implementation details.
+
+
+Default Style</Text>
+        </Document>
+        <Document ID="AE706F88-0353-41C5-B4B5-FF07630D557C">
+            <Title>Previous Work &amp; Prior Art</Title>
+        </Document>
+        <Document ID="B4A726A9-9CE0-44F0-B8C9-51E769D7C17A">
+            <Title>Temporal Programming for Hardware</Title>
+        </Document>
+        <Document ID="C8A9C4BD-25B1-43D0-B8E1-76792A5D0465">
+            <Title>Have you heard of &quot;Synchronous Programming?&quot;</Title>
+            <Text>Have you heard of &quot;Synchronous Programming&quot;? It's a programming paradigm first sketched out in the 1980's that &quot;makes the same abstraction for programming languages as the synchronous abstraction in digital circuits&quot;. To put this in more practical terms, synchronous languages let you describe systems where a bunch of stuff happens &quot;simultaneously&quot;, while also giving you tools to ensure that those simultaneous actions don't collide (so to speak) with each other. When writing programs that need to deal with exactly this sort of &quot;lots of things happening simultaneously&quot; environment (industrial machinery seems to come up often), synchronous languages can provide cleaner and (in some cases) provably-correct implementations. Some synchronous languages also include facilities for translating their source code into a form that can be run on FPGAs or etched into chips, meaning that your industrial machine controller might not need a CPU at all - it could &quot;run&quot; your control program directly from the logic circuits it generates.
+
+Research into sychronous programming seems to have peaked from the late 1990s to the early 2000s, and then gradually fallen into obscurity. Some of the languages mentioned in Wikipedia have been lost or abandoned, a few of the research groups seem to be defunct, and Google searches don't turn up any lively forums. There is one project that seems to be active and progressing - http://www.averest.org/#about_quartz - but in general it seems that synchronous programming didn't catch on.
+
+Since the original publications, modern technology has produced CPUs with hundreds of cores, server farms with thousands of CPUs, cheap FPGAs supported by open-source design tools, and a renewed interest in proving the correctness of distributed and/or parallel programs using tools like TLA+. I think Synchronous Programming is due for a reboot.
+
+
+
+
+
+If you ask a programmer to give examples of “programming paradigms”, the two most common answers you’ll usually receive are “Procedural Programming” and “Functional Programming”. 
+
+What do fractals, state machines, functional reactive programming, and chip design have in common?
+
+For the purposes of this essay, we will say that they all compute “new” state from “old” state. 
+
+x’ = f(x)
+
+ - “Discrete synchronous programming”
+
+
+- https://en.wikipedia.org/wiki/Synchronous_programming_language
+ - &quot;the synchronous abstraction&quot;
+ - “Guarded atomic actions”
+ - “An implementation can execute several rules concurrently in a clock cycle, provided some sequential execution of those rules can reproduce the behavior of the concurrent execution.”
+ - “http://www.averest.org/pdf/QuartzPresentation.pdf”
+ - Communicating sequential processes (CSP)
+ - https://hackage.haskell.org/package/atom
+
+</Text>
+        </Document>
+        <Document ID="CDE7D934-F980-4268-9A9C-EB86FFFC4546">
+            <Title>Defining Temporal Programming</Title>
+            <Text>
+## What can we express in a temporal language that we can't express in a procedural or functional language
+
+
+
+A recurrence is a mathematical function that defines a sequence of values {x0, x1, x2...} given a starting value x0 and a recurrence relation &quot;x' = f(x)&quot; that defines how to compute each element in the sequence from the previous values.
+
+Temporal programming is a paradigm in which programs are expressed solely as recurrences. In the above definition, &quot;x&quot; represents the entire state of the program and &quot;f(x)&quot; computes the next state of the program as a function of the previous state.
+ 
+ The ideas behind temporal programming have been around for decades, but &quot;pure&quot; temporal programming languages still don't exist yet. Once they do, they should allow us to do some very interesting things.
+
+Temporal programming is a generalization of the exceedingly common &quot;new_state = f(old_state)&quot; pattern that appears in...
+
+We call a program &quot;temporal&quot; if it relies on the ability to atomically change &quot;old&quot; state into &quot;new&quot; state.
+
+A temporal program advances from state to state like a ticking clock, with each new state being a pure function of the previous one.
+
+
+
+Changing “old” state into “new” state atomically is a programming paradigm.
+
+## What defines a programming paradigm?
+
+### It should provide a concise but abstract conceptual model
+
+A good programming paradigm should be explainable in a few sentences and should provide an answer to the general question of “What is programming?” without referring to concrete details like language, syntax, or implementation.
+
+For imperative programs, that would be Turing machines. For functional programming, lambda calculus. For temporal programming, recurrence relations
+
+### It should be practical and useful
+
+A good programming paradigm should be demonstrable using the tools we already have, even if those tools aren’t yet
+
+### It should extend our ability to think about programming
+
+If it’s worth calling a paradigm, it should be profound enough that it gives us new ways to think about and solve programming problems. It should add “new tools to the toolbox” that don’t exist in other paradigms.
+
+    x' = f(x)
+
+“Structural” and “Procedural” programming extended imperative programming by providing ways to simplify programs by clarifying control flow and allowing programs to be split into collections of sub-procedures. “Object-Oriented” programming extended that further by describing programs as collections of “things” that can perform “actions” at a higher level of abstraction.
+
+Functional programming gave us an alternate definition of programming, one based on applying and composing functions (link to wikipedia) 
+
+Temporal programming can be seen as a sort of “imperative programming rotated 90 degrees through time” - instead of modeling a program as a blob of data we call “state” that is incrementally modified by a sequence of actions over time, temporal programs consist of sequences of “states” placed at discrete points in time, each computed from the previous state in a single atomic action.
+
+
+
+
+## Can we go over the whole “atomic change old state into new state” in more detail?
+
+### Atomic: 
+
+From the code’s point of view, a program’s state can never be “partially modified”. A temporal programming language must enforce that every line of code sees the same consistent view of the universe during evaluation, even if 
+
+This has some knock-on effects: A temporal programming language compiler _must_ be able to prove that all possible evaluation graphs contain at most one assignment 
+
+### Change:
+
+Unlike pure functional programming languages, state _does_ change. Unlike most imperative programming languages, “change” can include things like type changes - it’s perfectly valid to say that X’s old type is “apple” and its new type is “orange”.
+
+Flip a coin and lock/unlock the door example
+
+### Old/New:
+A temporal program’s operations must form a directed acyclic graph - the “old” state is always read-only and “new” state must always be computed from the old state plus external inputs. Because the “direction” of computation is always explicit, the lexical ordering of statements in a block has no effect on the computation. You can read the new value of X “lexically before” you’ve assigned it, as long as you don’t create a feedback cycle. Branch statements don’t “change control flow”, they select or deselect blocks of statements for evaluation. Similarly, “calling” a function doesn’t immediately execute it, it just marks the statements in that function as belonging to the current moment’s evaluation graph.
+
+### State
+A temporal program’s state must persist even if no changes are currently being evaluated. “State” can refer to both data stored in memory and data implicitly stored in the type system (UnlockedDoor/LockedDoor). 
+
+The phrase “compute new state from old state” sounds so generic that it’s more like a design pattern than a paradigm. Why call it a paradigm?
+
+From the software world viewpoint it does seem to It seems much broader than a pattern, and saying that the entire FPGA/ASIC industry follows a “design pattern” sounds incongruous.
+
+Temporal programming is not just about “computing new state from old state”, it’s about how that computation is expressed in the language - does the compiler enforce that all state changes are atomic?
+
+</Text>
+        </Document>
+        <Document ID="D05521FD-70C8-409C-8764-43E45A1773DB">
+            <Title>Other Interesting Stuff</Title>
+        </Document>
+        <Document ID="D2C52523-1A70-4BFF-A807-F090C47750EC">
+            <Title>References</Title>
+            <Text>FSMs / Automata-based programming
+   This computation model is a form of &quot;Deterministic finite automaton&quot;
+   &quot;TECHNOLOGY OF AUTOMATA-BASED PROGRAMMING&quot;
+   &quot;Programming Language for Automata&quot; by Knuth
+   https://en.wikipedia.org/wiki/Deterministic_finite_automaton
+   https://en.wikipedia.org/wiki/Mealy_machine
+      &quot;although a Mealy model could be used to describe the Enigma, the state diagram would be too complex to provide feasible means of designing complex ciphering machines.&quot;
+   &quot;For the transition functions, this monoid is known as the transition monoid&quot;
+   if &quot;x&quot; has 20 bits of state and &quot;i&quot; has 10 bits of state, then that's 2^20 states and 2^10 possible input &quot;symbols&quot;
+
+
+
+
+## #############################################################################
+## References!
+
+&quot;The Semantics of Pure Esterel&quot;
+   important, read this
+   It seems like Esterel is still trying to jam some imperative semantics in there with &quot;awaiting S&quot; or whatev.
+
+&quot;Globally asynchronous locally synchronous&quot;
+    - https://en.wikipedia.org/wiki/Globally_asynchronous_locally_synchronous
+
+&quot;UNIFICATION OF SYNCHRONOUS AND ASYNCHRONOUS MODELS FOR PARALLEL PROGRAMMING LANGUAGES A Thesis&quot; 1989
+   - https://web.archive.org/web/20050324021405/http://ece.purdue.edu/~hankd/CARP/XPC/paper.html
+
+ChucK
+   - &quot;advance time by 120 ms&quot;
+
+&quot;The Synchronous Approach to Reactive and Real-Time Systems&quot;
+   https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.137.2462&amp;rep=rep1&amp;type=pdf
+   &quot;Encompass within a single framework all reactive aspects&quot;
+      no don't do that
+   &quot;Using finite-states machine, also called finite automata. These objects have numerous advantages: they are deterministic, efficient, they can be automatically analyzed by numerous available verification systems. However, they have a severe drawback: they do not directly support hierarchical design and concurrency. &quot;
+      yeah no don't do that either
+
+
+&quot;On The Development of Reactive Systems&quot;
+   https://www.wisdom.weizmann.ac.il/~harel/SCANNED.PAPERS/ReactiveSystems.pdf
+
+&quot;Real Time Programming: Special Purpose or General Purpose Languages&quot;
+   file:///C:/Users/aappl/Downloads/RR-1065.pdf
+
+&quot;Synchronous Programming of Reactive Systems&quot;
+   http://www-verimag.imag.fr/~halbwach/newbook.pdf
+
+&quot;The Synchronous Languages 12 Years Later&quot;
+   - &quot;Microsteps&quot;?
+   - 
+
+&quot;Blech, Imperative Synchronous Programming!&quot;
+   - 
+
+
+&quot;Another look at real-time programming&quot;
+   - where can I find this?
+   - doesn't seem to be available
+
+- defunct https://lphrc.org/
+
+ - Ceu
+    - http://www.ceu-lang.org/chico/ceu_tecs17_pre.pdf
+    - &quot;CEU´ uses an event-triggered notion of time&quot;
+    - &quot;await&quot; etc
+    - loops
+
+&quot;The Synchronous Hypothesis and Synchronous Languages&quot;
+   - 2004, a summary of older work
+   - &quot;Signals: broadcast signals are used to propagate information. At each execution instant, a signal can either be present
+or absent&quot;
+      - You don't actually need this
+   - &quot;The key rule is that a signal must be consistent (same present/absent status, same data) for
+all read operations during any given instant.&quot;
+      - This is fine
+   - &quot;The crucial task of deciding whenever a signal can be declared absent is of utter importance in the theory
+of S/R systems, and an important part of the theoretical body behind the Synchronous Hypothesis.&quot;
+      - Yeah we're ignoring all of that.
+   - &quot;Activation conditions and clocks: Each signal can be seen as defining (or generating) a new clock, ticking when
+it occurs; in hardware design, this is called gated clocks&quot;
+      - Don't need these either
+   - &quot;In the first case, the automaton structure is implemented as a big top-level switch between states.&quot;
+      - It doesn't have to be.
+   - &quot;In essence, one seeks to represent hierarchical (Mealy) Finite State Machines (FSM), but with some data computation and communication treatment performed inside states and transitions.&quot;
+      - You don't have to
+   - &quot;S/R modeling and programming environments are today marketed by two French software houses, Esterel Technologies for Esterel and SCADE/Lustre, and TNI-Valiosys for Sildex/Signal. The influence of S/R systems tentatively pervaded to hardware CAD products such as Synopsys CoCentric Studio and Cadence VCC, despite the omnipotence of classical HDLs there. The Ptolemy co-simulation environment from UC Berkeley comprises a S/R domain based on the synchronous hypothesis.&quot;
+      - This was still 18 years ago
+   Synchronous Hypothesis according to this paper
+      Instants and reactions
+      Signals
+      Causality
+      Activation conditions and clocks
+
+
+
+
+&quot;Behavioral Specification of a Circuit using SyncCharts: a Case Study&quot;
+   encoding using three-value logic levels and avoiding 0000 outputs
+
+&quot;Semantics of SyncCharts&quot;
+   &quot;A simple trigger is said to be satisfied when the associated signal is present&quot;
+
+&quot;Behavioral Specification of a Circuit using SyncCharts&quot;
+
+&quot;Structured Synchronous Reactive Programming&quot;
+
+&quot;Semantics of SyncCharts&quot;
+
+
+</Text>
+        </Document>
+        <Document ID="D5DED6CA-4DCD-4BA7-8305-0F3C64D4AF16">
+            <Title>Some Background, And A Caveat</Title>
+            <Text>## Some Background, And A Big Caveat
+
+I’ve been a professional programmer for a bit over 25 years now. In that time I’ve worked at pretty much all levels of both the hardware and software tech stacks, from WebGL to embedded assembly code to PCB design and bringup. About 10 years ago I started thinking about a question I couldn’t find a good answer to - “What would it look like for time itself to be a first-class entity in a programming language?”
+
+Since I am not a computer scientist, I wasn’t quite sure where to start looking for an answer. I skimmed all over the Wikipedia pages for programming languages and paradigms, browsed techy subreddits and various other forums, wrote a few toy programming languages that didn’t go anywhere, and eventually decided that I should learn Verilog and try building things for a FPGA. That led to me writing and testing a few CPU cores, which led to me looking into FPGA-based game console emulators, which led to me writing MetroBoy and GateBoy and LogicBoy and all the other Game Boy stuff that’s up on Github. At some point I realized that I wanted a tool to translate some of that code into Verilog, so I wrote Metron and built a live online demo and tutorial for it (also on Github).
+
+And all that, in turn, led to me rethinking my original question. What if the right way to get “time” into a programming language wasn’t to try and cram it into the syntax or type system, but to define it as a sort of design pattern? We keep seeing the “atomically change old state into new state” pattern repeating across a lot of different programming contexts, so what if a programming language made that pattern easier or clearer to express? Surely someone had already done that, coined a term for it, and written a bunch of papers about it? After more Wikipedia and Scholar searches I still didn’t have a solid answer - many articles seemed to describe things _like_ what I was thinking of, but none of them generalized their ideas into something I could point at and say “Yes, that is the umbrella term for describing how time interacts with a programming language that I’ve been looking for”.
+
+So I’m left with coining a term, something more elegant than “atomically change old state into new state” that can apply equally well to both a game’s state-machine-based AI and a Verilog barrel shifter. In honor of Leslie Lamport’s paper “The Temporal Logic of Actions”, I propose we call it “Temporal Programming”.
+
+Again, I am not a computer scientist. It’s quite possible that what I’m describing is an old research topic hidden in some corner of the internet that somehow I’m unable to find on Google Scholar. I’m not “inventing” a programming paradigm here, just putting a label on something that already exists - if there’s already a term that fits better than “Temporal Programming”, then we should use it instead.
+</Text>
+        </Document>
+        <Document ID="DC0C35B7-427A-47E6-864A-78BCB38B0578">
+            <Title>Is this really worth calling a &quot;paradigm&quot;?</Title>
+            <Text># That seems too simple to call a &quot;paradigm&quot;, shouldn't there be more _stuff_ to it?
+   Nobody was willing to do something as stupid as claim that &quot;x' = f(x)&quot; is a paradigm, so it didn't happen.
+
+## Wait a second - the phrase “atomically change old state into new state” is so generic as to be meaningless. Of _course_ we change old state into new state, we do it all the time. That isn’t a paradigm, it’s just regular programming.
+
+OK, so it's not exactly any of those things. Still, your definition of &quot;temporal programming&quot; sounds rather simplistic - why call it a programming paradigm?
+    Think about the lack of loops in some functional languages - at first that limitation seems like a annoyance, but once you've gained familiarity with recursion and map/reduce it starts to feel less annoying and more elegant. Going back to a procedural langauge, you might then find yourself annoyed at having to write loops again for something that would be a one-liner in your preferred functional language.
+
+A software developer who tries to read a large chunk of Verilog for the first time is in for a very, very steep learning curve - and it's not a syntax issue. Verilog _looks_ superficially like C but it doesn't _run_ like C, and the explanation that's often given to new devs is something along the lines of &quot;Hardware just doesn't work like that&quot;. Which is true, but it's missing the point - The learning curve isn't caused by the language, it's caused by thinking about the problem using the wrong programming paradigm.
+
+
+
+## I can already do what you’re talking about in {language} using {feature}, so why coin a new term?
+
+</Text>
+        </Document>
+        <Document ID="E7F7659E-3663-4DCA-B04F-CAD3A610E424">
+            <Title>TLA+ / PlusCal</Title>
+        </Document>
+        <Document ID="EB3C32F0-B7B8-4E76-BB78-CCE91748C73E">
+            <Title>Imperative, Functional, Temporal</Title>
+            <Text>### Imperative vs. Functional vs. Temporal
+
+If we are going to declare “temporal” programming to be something distinct from imperative and functional programming, we need some sort of orthogonal-ish classification to distinguish between them.
+
+ - Imperative - State changes incrementally
+ - Functional - State does not change
+ - Temporal - State changes atomically
+
+This is not a great classification, but it’s a start.
+</Text>
+        </Document>
+        <Document ID="EF27D140-3AAF-4E62-B3C8-14C007DB793E">
+            <Title>Why not resurrect synchronous programming?</Title>
+        </Document>
+        <Document ID="F2D19D6E-FC52-4558-8A05-C1103208396C">
+            <Title>Changing Mental Models of Computation</Title>
+            <Text>If it sounds like temporal programming should by definition be “easy”, I can assure you that it is not. A seasoned C programmer might be able to comprehend isolated snippets of Verilog, but going from there to understanding something like a DDR memory controller is a _huge_ mental leap.
+
+This is part of why you hear FPGA &amp; ASIC developers say “Writing code in Verilog is _not_ like writing Quicksort - everything happens at once!” - true, but missing the point slightly. Quicksort makes intuitive sense in the imperative and functional paradigms, but attempting to write Quicksort in Verilog will quickly prove futile - while you may be able to produce something Quicksort-esque the result will almost certainly not be usable in actual hardware, as actual hardware has no notion of “recursion”.
+
+Similarly, while you could write a memory controller in an imperative language that “bit-bangs” the control signals to a DDR chip, your implementation will be fundamentally and radically limited by the host processor - generating and responding to dozens of control signals and data wires within a handful of nanoseconds just isn’t something modern CPUs are designed for.
+
+This isn’t to say that temporal ideas aren’t useful in imperative or functional languages, or vice versa - for example, having a mechanism to coordinate atomic state changes across objects can be hugely useful in implementing simulations. Similarly, being able to model a Verilog module’s sub-circuits as collections of pure functions can greatly improve the maintainability of the codebase.
+
+
+
+
+
+
+
+### Branch Vs. Mux
+
+Let’s look at two trivial C examples:
+
+int result;
+if (rand() &gt; 0) {
+  result = expensive_computation_a(input);
+}
+else {
+  result = expensive_computation_b(input);
+}
+
+int result = rand() &gt; 0 ? expensive_computation_a(input) : expensive_computation_b(input);
+
+
+A software programmer looks at these examples and sees branching control flow - first we generate a random number, then we evaluate either computation A or B but never both. 
+
+A hardware programmer sees a mux - first we evaluate _both_ computation A and B, and _then_ we look at the result of rand() to see which one to assign to “result”. To a hardware programmer the “expensive_computation” functions are _things_ - the circuit doing the computation occupies physical space on the chip, so if we want to do both A and B then we need room on the chip for both of them even if we only rarely use one.
+
+
+“Phi” functions
+</Text>
+        </Document>
+        <Document ID="F2D2F625-535C-4D03-926A-12619309FCF1">
+            <Title>Old Draft Stuff</Title>
+        </Document>
+        <Document ID="F8DE5DBA-DEB1-40C5-8F27-7DCB5C043ADF">
+            <Title>Intro</Title>
+            <Text>## #############################################################################
+## Previous Work &amp; Prior Art
+
+This list is not at all comprehensive, and I keep finding new variations on these ideas as I stumble across new keywords to plug into Google Scholar. If you know of a project or language that seems to be related to temporal programming, email me and I'll add them to this list.
+
+Github search counts
+   - Lustre 58 repos (but there are other overloads)
+   - Esterel 4 repos
+   - Signal - too overloaded
+   - Blech - 8 from 2 users
+   - Quartz - too overloaded
+   - Statecharts - 53
+   - SyncCharts - 0
+   - JavaScript - 349576
+
+</Text>
+        </Document>
+        <Document ID="F9972C18-850D-4A3B-B9A8-76C0CA3B2A41">
+            <Title>Translating Temporal C to Verilog</Title>
+            <Text>## Translating C to Verilog?
+
+If you’re a veteran C programmer, I can virtually guarantee that you will not be able to write functional Verilog systems of any significant size until you sit down and internalize some temporal programming concepts.
+
+Translating a C program into Verilog will almost never work, for the same reason that you can’t translate a chocolate chip cookie recipe into a chocolate chip cookie factory - the former is a set of instructions that a complex actor can perform to produce cookies in series, the latter is a collection of machines and conveyor belts that produce cookies in parallel.
+
+It’s not impossible, however - it just requires that the C program be written in a more temporal style, one that will probably feel cumbersome and alien to procedural programmers at first.
+
+In order to “write” a cookie factory in C, we need to describe our cookie recipe differently. In our factory, all the machines are running all the time.
+
+We can imagine an initial version of our cookie factory that just replicates the steps in the recipe using a sequence of robots, each performing one step of the recipe. Robot A puts butter and sugar in a bowl and hands it off to robot B. Robot B creams the butter and sugar together and passes the bowl to robot C, etcetera etcetera.
+
+This will work to a degree, but it doesn’t scale up well. 
+
+ Instead of “cream together the butter and sugar”, we need to define a butter pipeline and a sugar pipeline 
+
+We need to define a “cookie pipeline”.
+
+For our butter pipeline, we want to turn on the pipe when we have bowls to fill, fill all the bowls with the right amount of butter as fast as possible, and then turn off the pipe. Same for sugar.
+
+
+
+
+Right now our cookie factory is set up specifically for chocolate chip cookies, but as responsible factory owners we probably want to be able to produce other types of cookies as well. It would be nice if we could generalize our cookie factory to be able to handle oatmeal raisin cookies, snickerdoodles, and white chocolate macadamia nut cookies (one of my favorites).
+
+
+
+Our fully-automated cookie factory consists of:
+
+Various tubes or conveyors containing raw ingredients
+Dispensing mechanisms that can place measured amounts of those ingredients into mixing containers
+
+
+
+Some signals in our factory are “fast” - our dough dispenser might need a “dispense” signal that lasts exactly 0.3 seconds in order for our cookies to all be the same size.
+
+Some signals are “slow” - cookies need to be removed from the oven when they’re done, but a few seconds delay isn’t disastrous.
+
+Some signals only change infrequently, if ever - we might make chocolate chip cookies for a week, then oatmeal cookies for a week, then back to chocolate chip.
+
+
+As you might have realized by now, while the “pipeline” is relatively simple, all the “control” logic is a pain to wire up and has to change every time we want to use a new recipe. It would make more sense if we could wire up all the “slow” control signals to a central computer and leave the machines on the factory floor solely responsible for the heavy lifting (and mixing, and baking) that needs to be parallelized.
+
+And so in practice that’s what most factories/circuits/etcetera do - they define a “factory” full of machines and the connections to those machines, provide a way for an external “controller” to change the settings on the machines and start/stop them remotely, and provide feedback to the controller on the current state of each machine.
+
+
+
+
+This analogy may sound ridiculous, but it’s actually not that far off conceptually from how real hardware works for things like AI accelerator chips.
+
+
+
+
+Having sketched out our cookie factory, let’s try describing it using temporal programming style.
+
+If the oven is on and the timer has beeped,
+Turn the oven off
+
+
+Even though these steps are written as a numbered list, they do _not_ 
+Each of these steps is an _atomic_ action. We can’t say “stir for 5 minutes”, we have to say “if the ingredients are in the mixer and the timer is at 0, start the mixer. If the mixer is running and the timer reads 300 seconds, turn the mixer off and signal the next machine”.
+Every action has to “flip a switch”
+
+
+
+### If we want a language that is “parallel by default”, then lexical ordering _can’t_ be the sole arbiter of execution order.
+</Text>
+        </Document>
+        <Document ID="FF544CEA-60D9-49C4-A020-E33DC1509A6E">
+            <Title>Temporal Programming Languages</Title>
+        </Document>
+    </Documents>
+</SearchIndexes>

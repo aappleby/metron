@@ -4,6 +4,7 @@
         <Document ID="03C43B49-1688-4364-BAA5-174AD1C1C2BC">
             <Title>Communicating Sequential Processes</Title>
             <Text> - Communicating Sequential Processes
+ - Communicating sequential processes (CSP)
 </Text>
         </Document>
         <Document ID="07B0D7C6-57CE-4D6F-8AD9-11F06A261A5F">
@@ -37,7 +38,12 @@
 
 
 
+ - “http://www.averest.org/pdf/QuartzPresentation.pdf”
 </Text>
+        </Document>
+        <Document ID="0A8AC0AD-E008-4821-B5B1-2CEF6318E625">
+            <Title>The Definition</Title>
+            <Text>Temporal programs atomically change old state into new state.</Text>
         </Document>
         <Document ID="0C4BE6E3-50F0-482E-9F7D-C59722065F40">
             <Title>Code Examples</Title>
@@ -214,11 +220,25 @@ In honor of Leslie Lamport's work on temporal logic, I propose we call it &quot;
         <Document ID="2A9DA0E7-1B70-4030-899F-C16B90B36026">
             <Title>Have you heard of...</Title>
         </Document>
+        <Document ID="2ADAC996-1C1F-455E-9DF8-B0E63F803674">
+            <Title>Weird Possibilities</Title>
+        </Document>
+        <Document ID="3015FFE4-4D2E-485F-84DE-4C19A8C61C35">
+            <Title>What can we express in a temporal programming language?</Title>
+            <Text>
+## What can we express in a temporal language that we can't express in a procedural or functional language
+
+
+</Text>
+        </Document>
         <Document ID="39354146-508C-4E91-91D9-39CA04689864">
             <Title>What is Temporal Programming good for?</Title>
         </Document>
         <Document ID="40B82475-E27A-40BA-AF31-FCF4BDD1F241">
             <Title>Plaid</Title>
+            <Text>
+ - Plaid
+</Text>
         </Document>
         <Document ID="49C24234-0610-447F-B873-72AEDA8003D0">
             <Title>Finite State Automata?</Title>
@@ -346,50 +366,7 @@ There’s a lot of research into finite-state automata, particularly in converti
         </Document>
         <Document ID="606E2F6A-318D-44EA-A9BC-81093A72CD2F">
             <Title>Introduction</Title>
-            <Text>
-
-
-The ideas of synchronous programming are sound and made sense at the time, and the languages that grew from the initial research (Esterel, Lustre, Signal) are totally reasonable and not too painful to understand. I think one of the reasons that synchronous programming didn't become popular is that it didn't generalize the idea far enough - the languages wanted to embody certain ideas about what &quot;synchronous programming&quot; is, and in doing so they give the impression that synchronous programming is something you can _only_ do in a synchronous language. And that's not at all correct - if you've ever written any form of state machine or dealt with any sort of atomic transaction, then you've already done some synchronous programming even if you didn't know the name for it at the time.
-
-
-
-
-
-
-
-
-
-
-
-
-You probably are already familiar with &quot;functional programming&quot; and &quot;imperative programming&quot;, and if you've browsed through Wikipedia you've probably heard of a few more.
-
-One progrmaming paradigm that you might not have heard of is &quot;Synchronous Programming&quot;. Synchronous programming was first sketched out in the 1980s as a software equivalent of the &quot;every register changes simultaneously&quot; paradigm in synchronous logic circuits. Synchronous programming is still around today, but in a reduced fashion. Some of the languages and organizations mentioned on Wikipedia aren't around anymore, and as a programming paradigm it's hardly commonplace.
-
-Now that many-core processors are ubiquitous and FPGAs with open-source toolchains are available for a few bucks, I think the obscurity of synchronous programming is a shame.
-
-I think part of the reason that SP didn't become more popular is that the initial research focused too tightly on _how_ to do SP (in the form of new languages with new and somewhat unfamiliar semantics), at the expense of defining clearly _what_ synchronous programming is.
-
-
-I'd like to propose a &quot;reboot&quot; of Synchronous Programming, and in honor of Leslie Lamport's work &quot;The Temporal Logic of Actions&quot;, I think we should call it &quot;Temporal Programming&quot;.
-
-There's no reason we can't just define a programming paradigm that matches TLA
-
-
-Lamport's papers on temporal logic are quite dense, and I'll be totally honest - I'm not very good at formal logic. Because of this, I've tried to focus on the simplest possible definitions that might be worth calling &quot;Temporal Programming&quot;.
-
-Pure temporal programs transform old states into new states using pure functions.
-
-
-https://lamport.azurewebsites.net/pubs/lamport-actions.pdf
-
-
-
-
-Temporal programming is a &quot;reboot&quot; of Synchronous Programming
-A lot of my best ideas started out sounding really dumb.
-
-</Text>
+            <Synopsis>This is the synopsis for the introduction. Can you only edit this in corkboard mode?</Synopsis>
         </Document>
         <Document ID="67D0FFB2-16A5-463A-812A-B05271CB45E0">
             <Title>Verilog / VHDL?</Title>
@@ -453,16 +430,23 @@ In some ways, we can see Esterel and Lustre as two examples of doing temporal pr
  - Lustre - “pre p: Returns the previous value of p”
 </Text>
         </Document>
+        <Document ID="727CBC62-66F7-4133-BE83-E5952852FD33">
+            <Title>Nesting!</Title>
+        </Document>
         <Document ID="74743332-3805-4EC4-8B13-1CDE7C95A938">
             <Title>Others</Title>
             <Text> - Argus
    - Pretty old, has atomic actions, but not globally synchronous?
-
- - Plaid
 </Text>
         </Document>
         <Document ID="7C5CAAB6-0CBA-4FF2-B9EE-E5B01CBB4249">
             <Title>Introduction</Title>
+            <Synopsis>what is this? notes?</Synopsis>
+            <Text>We can have arbitrary text here I guess?
+</Text>
+        </Document>
+        <Document ID="8158F6BD-2B71-415A-9E87-481B0EA848C0">
+            <Title>How does Temporal Programming differ from Synchronous Programming?</Title>
         </Document>
         <Document ID="89CCFC49-04A4-4AA9-81AC-D0D7DB598DF1">
             <Title>StateCharts</Title>
@@ -566,11 +550,66 @@ will not compile - in order to evaulate a' we need to know b', and in order to e
         </Document>
         <Document ID="921A916E-D9A4-4535-A4CB-E15D30E375EB">
             <Title>Leslie Lamport's Temporal Logic of Actions</Title>
-            <Text>Around the same time that the first papers on synchronous programming were being written, Leslie Lamport wrote &quot;The Temporal Logic of Actions&quot; - it's a pretty dense research paper if you're not used to formal logic (I am not), but it lays out a framework for proving the correctness of concurrent systems - these could be threads in a process, nodes in a distributed system, or logic gates in a CPU. His later works defined the languages TLA+ and PlusCal, which allowed those proofs to be expressed in something more like a programming language.
+            <Text>In order to “reboot” Synchronous Programming, we need to come up with a revised version of “everything happens simultaneously”
 
-At the core of Lamport's temporal logic is a very simple model of computation - programs move through time in discrete steps by computing &quot;new&quot; state from &quot;old&quot; state. We can state that a bit more formally as the simple recurrence &quot;x' = f(x)&quot;, where &quot;x&quot; represents the _old_ state of the program, &quot;x'&quot; represents the _new_ state of the program, and &quot;f&quot; is a pure function that computes the entire new state from the old state. If we add an input and output we get &quot;(x, o)' = f(x, i)&quot;, which is roughly equivalent to a Mealy machine except that our states and in/outputs are arbitrary data structures instead of sets of states and symbols.
+Around the same time that the first papers on synchronous programming were being written, Leslie Lamport wrote &quot;The Temporal Logic of Actions&quot; - it's a pretty dense research paper if you're not used to formal logic (I am not), but it lays out a framework for proving the correctness of concurrent systems - these could be threads in a process, nodes in a distributed system, or logic gates in a CPU.
 
-While TLA+ and PlusCal are not exactly programming languages, they still allows developers to test properties of real-world programs by representing them as collections of atomic changes to global state (the contents of the 'f'), writing provable statements about the program's behavior (things like &quot;x.foo will never exceed 10&quot;), and then proving or disproving those statements for all possible sequences of states using the formal methods of temporal logic (complicated).
+https://lamport.azurewebsites.net/pubs/lamport-actions.pdf
+
+His later works defined the languages TLA+ and PlusCal, which allowed those proofs to be expressed in something more like a programming language. TLA+ and PlusCal let you describe a real-world program in terms of every possible way the state of the program could change in response to an event. Once you’ve built that description, you can prove (in the strong sense) that certain combinations of states are never possible or always possible or will always happen in a certain sequence, etcetera. To be clear, TLA+ and PlusCal are not programming languages, they’re more like “provable specification languages” - statements like &quot;foo will never exceed 10&quot; can be proven or disproven using the formal methods of temporal logic (complicated). You can’t “run” them in the usual sense, but you can use them as a tool for building more reliable code.
+
+Even though those languages aren’t executable, there’s a very simple model of computation at the core of Lamport's temporal logic that’s worth digging into - TLA+ models move through time in discrete steps by computing new state from old state. In the paper Lamport calls these steps “actions”: “An action represents a relation between old states and new states, where the unprimed variables refer to the old state and the primed variables refer to the new state”. Paraphrased, “actions” are not functions that return a value, they’re expressions that define whether or not you can get from state A to state B, so to speak.
+
+This will be clearer with an example. The Collatz conjecture is an unsolved problem in mathematics that can be defined like this:
+
+https://xkcd.com/710
+
+1. Pick an integer x.
+2. If x is is even, set x to x/2.
+3. If x is odd, set x to 3*x + 1.
+4. If x is not equal to 1, go to step 2.
+
+For example, if we start with x = 12 we get the sequence of x’s = { 12, 6, 3, 10, 5, 16, 8, 4, 2, 1 }. The Collatz conjecture asks if these steps terminate for all positive integers, which is currently unknown but has been checked up to x=2^68.
+
+If we want to represent this process using something akin to TLA+ actions, we need some boolean expressions of x and x’ such that at least one evaluates to true if x and x’ are adjacent in the Collatz sequence. That turns out to be fairly straightforward:
+
+	Action A: (x % 2 == 0) &amp;&amp; (x’ == x / 2)
+	Action B: (x % 2 == 1) &amp;&amp; (x’ == 3 * x + 1)
+
+Given these actions, we can “get from” x=10 to x=5 because the pair (x=10, x’=5) makes action A true, and we can “get from” x=5 to x=16 because the pair (x=5, x’=16) makes action B true. The pair (x=17, x’=1) satisfies neither action, so it can’t be in the sequence. To “run” these actions for some arbitrary starting value of x we first find a value of x’ that makes one of our actions true, then replace x with x’ and repeat.
+
+Now for something slightly brain-hurty. If we swap x and x’ in our actions, we get the same state relations except with the time axis reversed. We can run the system “backwards” - we can always get from x to x*2 via backward-action-A, and we can get from x to (x-1)/3 if (x-1)/3 is an integer via backward-action-B. We can also refactor our expressions to keep our swapped actions in the same form as earlier:
+
+	Backward Action A: (x’ == x * 2)
+	Backward Action B: (x % 3 == 1) &amp;&amp; (x’ == (x - 1) / 3)
+
+Take a moment to plug in some values of x and x’ until you’re convinced that these actions accept the same pairs as the earlier ones, just with the values swapped. There’s a key difference here though - if we want to “run” the reversed program starting with x = 7, we hit a problem - both (x=7, x’=14) and (x=7, x’=2) make an action true, so which x’ do we choose as our “new” x? In this case, the answer is “both” - because this is a _specification_ and not a _program_. If we draw an arrow between x and x’ for all valid pairs, we get a graph where all values lead to 1 in “forward” mode and 1 leads to all values in “reverse” mode.
+
+https://en.wikipedia.org/wiki/Collatz_conjecture#/media/File:Collatz-graph-50-no27.svg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+We can state that a bit more formally as the simple recurrence &quot;x' = f(x)&quot;, where &quot;x&quot; represents the _old_ state of the program, &quot;x'&quot; represents the _new_ state of the program, and &quot;f&quot; is a pure function that computes the entire new state from the old state. If we add an input and output we get &quot;(x, o)' = f(x, i)&quot;, which is roughly equivalent to a Mealy machine except that our states and in/outputs are arbitrary data structures instead of sets of states and symbols.
+
+
+
+</Text>
+        </Document>
+        <Document ID="9542AECB-5210-487C-9BD0-042D7A4F3685">
+            <Title>Atom</Title>
+            <Text> - https://hackage.haskell.org/package/atom
+
 </Text>
         </Document>
         <Document ID="9AE34A2E-E058-4F0E-927B-CB4D872F032D">
@@ -617,114 +656,22 @@ Default Style</Text>
         </Document>
         <Document ID="C8A9C4BD-25B1-43D0-B8E1-76792A5D0465">
             <Title>Have you heard of &quot;Synchronous Programming?&quot;</Title>
-            <Text>Have you heard of &quot;Synchronous Programming&quot;? It's a programming paradigm first sketched out in the 1980's that &quot;makes the same abstraction for programming languages as the synchronous abstraction in digital circuits&quot;. To put this in more practical terms, synchronous languages let you describe systems where a bunch of stuff happens &quot;simultaneously&quot;, while also giving you tools to ensure that those simultaneous actions don't collide (so to speak) with each other. When writing programs that need to deal with exactly this sort of &quot;lots of things happening simultaneously&quot; environment (industrial machinery seems to come up often), synchronous languages can provide cleaner and (in some cases) provably-correct implementations. Some synchronous languages also include facilities for translating their source code into a form that can be run on FPGAs or etched into chips, meaning that your industrial machine controller might not need a CPU at all - it could &quot;run&quot; your control program directly from the logic circuits it generates.
+            <Text>Have you heard of &quot;Synchronous Programming&quot;? It's a programming paradigm first sketched out in the 1980's that &quot;makes the same abstraction for programming languages as the synchronous abstraction in digital circuits&quot; [citation]. To put this in more practical terms, synchronous languages let you describe systems where a bunch of stuff happens &quot;simultaneously&quot;, while also giving you tools to ensure that those simultaneous actions don't collide (so to speak) with each other. In hardware, 
+
+When writing programs that need to deal with exactly this sort of &quot;lots of things happening simultaneously&quot; environment (industrial machinery seems to come up often), synchronous languages can provide cleaner and (in some cases) provably-correct implementations. Some synchronous languages also include facilities for translating their source code into a form that can be run on FPGAs or etched into chips, meaning that your industrial machine controller might not need a CPU at all - it could &quot;run&quot; your control program directly from the logic circuits it generates.
 
 Research into sychronous programming seems to have peaked from the late 1990s to the early 2000s, and then gradually fallen into obscurity. Some of the languages mentioned in Wikipedia have been lost or abandoned, a few of the research groups seem to be defunct, and Google searches don't turn up any lively forums. There is one project that seems to be active and progressing - http://www.averest.org/#about_quartz - but in general it seems that synchronous programming didn't catch on.
 
 Since the original publications, modern technology has produced CPUs with hundreds of cores, server farms with thousands of CPUs, cheap FPGAs supported by open-source design tools, and a renewed interest in proving the correctness of distributed and/or parallel programs using tools like TLA+. I think Synchronous Programming is due for a reboot.
 
-
-
-
-
-If you ask a programmer to give examples of “programming paradigms”, the two most common answers you’ll usually receive are “Procedural Programming” and “Functional Programming”. 
-
-What do fractals, state machines, functional reactive programming, and chip design have in common?
-
-For the purposes of this essay, we will say that they all compute “new” state from “old” state. 
-
-x’ = f(x)
-
- - “Discrete synchronous programming”
-
-
 - https://en.wikipedia.org/wiki/Synchronous_programming_language
  - &quot;the synchronous abstraction&quot;
  - “Guarded atomic actions”
  - “An implementation can execute several rules concurrently in a clock cycle, provided some sequential execution of those rules can reproduce the behavior of the concurrent execution.”
- - “http://www.averest.org/pdf/QuartzPresentation.pdf”
- - Communicating sequential processes (CSP)
- - https://hackage.haskell.org/package/atom
-
 </Text>
         </Document>
         <Document ID="CDE7D934-F980-4268-9A9C-EB86FFFC4546">
             <Title>Defining Temporal Programming</Title>
-            <Text>
-## What can we express in a temporal language that we can't express in a procedural or functional language
-
-
-
-A recurrence is a mathematical function that defines a sequence of values {x0, x1, x2...} given a starting value x0 and a recurrence relation &quot;x' = f(x)&quot; that defines how to compute each element in the sequence from the previous values.
-
-Temporal programming is a paradigm in which programs are expressed solely as recurrences. In the above definition, &quot;x&quot; represents the entire state of the program and &quot;f(x)&quot; computes the next state of the program as a function of the previous state.
- 
- The ideas behind temporal programming have been around for decades, but &quot;pure&quot; temporal programming languages still don't exist yet. Once they do, they should allow us to do some very interesting things.
-
-Temporal programming is a generalization of the exceedingly common &quot;new_state = f(old_state)&quot; pattern that appears in...
-
-We call a program &quot;temporal&quot; if it relies on the ability to atomically change &quot;old&quot; state into &quot;new&quot; state.
-
-A temporal program advances from state to state like a ticking clock, with each new state being a pure function of the previous one.
-
-
-
-Changing “old” state into “new” state atomically is a programming paradigm.
-
-## What defines a programming paradigm?
-
-### It should provide a concise but abstract conceptual model
-
-A good programming paradigm should be explainable in a few sentences and should provide an answer to the general question of “What is programming?” without referring to concrete details like language, syntax, or implementation.
-
-For imperative programs, that would be Turing machines. For functional programming, lambda calculus. For temporal programming, recurrence relations
-
-### It should be practical and useful
-
-A good programming paradigm should be demonstrable using the tools we already have, even if those tools aren’t yet
-
-### It should extend our ability to think about programming
-
-If it’s worth calling a paradigm, it should be profound enough that it gives us new ways to think about and solve programming problems. It should add “new tools to the toolbox” that don’t exist in other paradigms.
-
-    x' = f(x)
-
-“Structural” and “Procedural” programming extended imperative programming by providing ways to simplify programs by clarifying control flow and allowing programs to be split into collections of sub-procedures. “Object-Oriented” programming extended that further by describing programs as collections of “things” that can perform “actions” at a higher level of abstraction.
-
-Functional programming gave us an alternate definition of programming, one based on applying and composing functions (link to wikipedia) 
-
-Temporal programming can be seen as a sort of “imperative programming rotated 90 degrees through time” - instead of modeling a program as a blob of data we call “state” that is incrementally modified by a sequence of actions over time, temporal programs consist of sequences of “states” placed at discrete points in time, each computed from the previous state in a single atomic action.
-
-
-
-
-## Can we go over the whole “atomic change old state into new state” in more detail?
-
-### Atomic: 
-
-From the code’s point of view, a program’s state can never be “partially modified”. A temporal programming language must enforce that every line of code sees the same consistent view of the universe during evaluation, even if 
-
-This has some knock-on effects: A temporal programming language compiler _must_ be able to prove that all possible evaluation graphs contain at most one assignment 
-
-### Change:
-
-Unlike pure functional programming languages, state _does_ change. Unlike most imperative programming languages, “change” can include things like type changes - it’s perfectly valid to say that X’s old type is “apple” and its new type is “orange”.
-
-Flip a coin and lock/unlock the door example
-
-### Old/New:
-A temporal program’s operations must form a directed acyclic graph - the “old” state is always read-only and “new” state must always be computed from the old state plus external inputs. Because the “direction” of computation is always explicit, the lexical ordering of statements in a block has no effect on the computation. You can read the new value of X “lexically before” you’ve assigned it, as long as you don’t create a feedback cycle. Branch statements don’t “change control flow”, they select or deselect blocks of statements for evaluation. Similarly, “calling” a function doesn’t immediately execute it, it just marks the statements in that function as belonging to the current moment’s evaluation graph.
-
-### State
-A temporal program’s state must persist even if no changes are currently being evaluated. “State” can refer to both data stored in memory and data implicitly stored in the type system (UnlockedDoor/LockedDoor). 
-
-The phrase “compute new state from old state” sounds so generic that it’s more like a design pattern than a paradigm. Why call it a paradigm?
-
-From the software world viewpoint it does seem to It seems much broader than a pattern, and saying that the entire FPGA/ASIC industry follows a “design pattern” sounds incongruous.
-
-Temporal programming is not just about “computing new state from old state”, it’s about how that computation is expressed in the language - does the compiler enforce that all state changes are atomic?
-
-</Text>
         </Document>
         <Document ID="D05521FD-70C8-409C-8764-43E45A1773DB">
             <Title>Other Interesting Stuff</Title>
@@ -845,6 +792,8 @@ it occurs; in hardware design, this is called gated clocks&quot;
             <Title>Some Background, And A Caveat</Title>
             <Text>## Some Background, And A Big Caveat
 
+A lot of my best ideas started out sounding really dumb.
+
 I’ve been a professional programmer for a bit over 25 years now. In that time I’ve worked at pretty much all levels of both the hardware and software tech stacks, from WebGL to embedded assembly code to PCB design and bringup. About 10 years ago I started thinking about a question I couldn’t find a good answer to - “What would it look like for time itself to be a first-class entity in a programming language?”
 
 Since I am not a computer scientist, I wasn’t quite sure where to start looking for an answer. I skimmed all over the Wikipedia pages for programming languages and paradigms, browsed techy subreddits and various other forums, wrote a few toy programming languages that didn’t go anywhere, and eventually decided that I should learn Verilog and try building things for a FPGA. That led to me writing and testing a few CPU cores, which led to me looking into FPGA-based game console emulators, which led to me writing MetroBoy and GateBoy and LogicBoy and all the other Game Boy stuff that’s up on Github. At some point I realized that I wanted a tool to translate some of that code into Verilog, so I wrote Metron and built a live online demo and tutorial for it (also on Github).
@@ -854,6 +803,69 @@ And all that, in turn, led to me rethinking my original question. What if the ri
 So I’m left with coining a term, something more elegant than “atomically change old state into new state” that can apply equally well to both a game’s state-machine-based AI and a Verilog barrel shifter. In honor of Leslie Lamport’s paper “The Temporal Logic of Actions”, I propose we call it “Temporal Programming”.
 
 Again, I am not a computer scientist. It’s quite possible that what I’m describing is an old research topic hidden in some corner of the internet that somehow I’m unable to find on Google Scholar. I’m not “inventing” a programming paradigm here, just putting a label on something that already exists - if there’s already a term that fits better than “Temporal Programming”, then we should use it instead.
+</Text>
+        </Document>
+        <Document ID="D72822A0-E7E0-48ED-9CFD-4E4FF650FAC8">
+            <Title>What would a &quot;pure&quot; temporal programming language look like?</Title>
+            <Text>
+
+No implicit state
+
+	A temporal program should have no “implicit” state - 
+
+Current state is always well-defined
+	Pausing a multi-threaded program is not guaranteed to produce consistent results.
+
+	If I pause a temporal program at cycle N, I should always end up with the same program state. 
+
+## Can we go over the whole “atomic change old state into new state” in more detail?
+
+### Atomic: 
+
+From the code’s point of view, a program’s state can never be “partially modified”. A temporal programming language must enforce that every line of code sees the same consistent view of the universe during evaluation, even if 
+
+This has some knock-on effects: A temporal programming language compiler _must_ be able to prove that all possible evaluation graphs contain at most one assignment 
+
+### Change:
+
+Unlike pure functional programming languages, state _does_ change. Unlike most imperative programming languages, “change” can include things like type changes - it’s perfectly valid to say that X’s old type is “apple” and its new type is “orange”.
+
+Flip a coin and lock/unlock the door example
+
+### Old/New:
+A temporal program’s operations must form a directed acyclic graph - the “old” state is always read-only and “new” state must always be computed from the old state plus external inputs. Because the “direction” of computation is always explicit, the lexical ordering of statements in a block has no effect on the computation. You can read the new value of X “lexically before” you’ve assigned it, as long as you don’t create a feedback cycle. Branch statements don’t “change control flow”, they select or deselect blocks of statements for evaluation. Similarly, “calling” a function doesn’t immediately execute it, it just marks the statements in that function as belonging to the current moment’s evaluation graph.
+
+### State
+A temporal program’s state must persist even if no changes are currently being evaluated. “State” can refer to both data stored in memory and data implicitly stored in the type system (UnlockedDoor/LockedDoor). 
+
+The phrase “compute new state from old state” sounds so generic that it’s more like a design pattern than a paradigm. Why call it a paradigm?
+
+From the software world viewpoint it does seem to It seems much broader than a pattern, and saying that the entire FPGA/ASIC industry follows a “design pattern” sounds incongruous.
+
+Temporal programming is not just about “computing new state from old state”, it’s about how that computation is expressed in the language - does the compiler enforce that all state changes are atomic?
+
+
+
+
+
+A recurrence is a mathematical function that defines a sequence of values {x0, x1, x2...} given a starting value x0 and a recurrence relation &quot;x' = f(x)&quot; that defines how to compute each element in the sequence from the previous values.
+
+Temporal programming is a paradigm in which programs are expressed solely as recurrences. In the above definition, &quot;x&quot; represents the entire state of the program and &quot;f(x)&quot; computes the next state of the program as a function of the previous state.
+ 
+ The ideas behind temporal programming have been around for decades, but &quot;pure&quot; temporal programming languages still don't exist yet. Once they do, they should allow us to do some very interesting things.
+
+Temporal programming is a generalization of the exceedingly common &quot;new_state = f(old_state)&quot; pattern that appears in...
+
+We call a program &quot;temporal&quot; if it relies on the ability to atomically change &quot;old&quot; state into &quot;new&quot; state.
+
+A temporal program advances from state to state like a ticking clock, with each new state being a pure function of the previous one.
+
+
+
+
+
+
+
 </Text>
         </Document>
         <Document ID="DC0C35B7-427A-47E6-864A-78BCB38B0578">
@@ -866,7 +878,6 @@ Again, I am not a computer scientist. It’s quite possible that what I’m desc
 OK, so it's not exactly any of those things. Still, your definition of &quot;temporal programming&quot; sounds rather simplistic - why call it a programming paradigm?
     Think about the lack of loops in some functional languages - at first that limitation seems like a annoyance, but once you've gained familiarity with recursion and map/reduce it starts to feel less annoying and more elegant. Going back to a procedural langauge, you might then find yourself annoyed at having to write loops again for something that would be a one-liner in your preferred functional language.
 
-A software developer who tries to read a large chunk of Verilog for the first time is in for a very, very steep learning curve - and it's not a syntax issue. Verilog _looks_ superficially like C but it doesn't _run_ like C, and the explanation that's often given to new devs is something along the lines of &quot;Hardware just doesn't work like that&quot;. Which is true, but it's missing the point - The learning curve isn't caused by the language, it's caused by thinking about the problem using the wrong programming paradigm.
 
 
 
@@ -930,7 +941,11 @@ A hardware programmer sees a mux - first we evaluate _both_ computation A and B,
 
 
 “Phi” functions
-</Text>
+
+
+
+
+A software developer who tries to read a large chunk of Verilog for the first time is in for a very, very steep learning curve - and it's not a syntax issue. Verilog _looks_ superficially like C but it doesn't _run_ like C, and the explanation that's often given to new devs is something along the lines of &quot;Hardware just doesn't work like that&quot;. Which is true, but it's missing the point - The learning curve isn't caused by the language, it's caused by thinking about the problem using the wrong programming paradigm.</Text>
         </Document>
         <Document ID="F2D2F625-535C-4D03-926A-12619309FCF1">
             <Title>Old Draft Stuff</Title>
@@ -1022,6 +1037,48 @@ Every action has to “flip a switch”
 
 
 ### If we want a language that is “parallel by default”, then lexical ordering _can’t_ be the sole arbiter of execution order.
+</Text>
+        </Document>
+        <Document ID="FB6531A9-3DD9-4FC6-81B6-BC93E7248848">
+            <Title>What do you mean, &quot;reboot&quot;?</Title>
+            <Text>The ideas of synchronous programming are sound and made sense at the time, and the languages that grew from the initial research (Esterel, Lustre, Signal) are totally reasonable and not too painful to understand.
+
+However, if you look at their uptake in the software industry they didn’t really catch on. Github contains a total of 4 repos that are tagged with “Esterel”, two of which are forks of the Columbia Esterel Compiler. StateCharts has 57 tagged repos, most related to the “XState” Javascript state machine library.
+
+[defunct site list]
+
+“When X happens, do Y”.
+
+I think part of the reason that SP didn't become more popular is that the initial research focused too tightly on _how_ to do SP (in the form of new languages with new and somewhat unfamiliar semantics), at the expense of defining clearly _what_ synchronous programming is. That in turn created the impression that SP is something you can only do in synchronous programming languages, which is not at all correct - you can apply the “synchronous abstraction” to code written in any language, much as you can do functional programming in any language - it might be limited and awkward, but it doesn’t require completely replacing your current dev environment. If you've ever written a state machine or dealt with any sort of atomic transactions, then you've already done some form of synchronous programming even if you didn't know the name for it at the time.</Text>
+        </Document>
+        <Document ID="FC1AED8B-D2DD-4868-9724-3C23A70F1416">
+            <Title>What defines a programming paradigm?</Title>
+            <Text>## What defines a programming paradigm?
+
+### It should provide a concise but abstract conceptual model
+
+A good programming paradigm should be explainable in a few sentences and should provide an answer to the general question of “What is programming?” without referring to concrete details like language, syntax, or implementation.
+
+For imperative programs, that would be Turing machines. For functional programming, lambda calculus. For temporal programming, recurrence relations
+
+### It should be practical and useful
+
+A good programming paradigm should be demonstrable using the tools we already have, even if those tools aren’t yet
+
+### It should extend our ability to think about programming
+
+If it’s worth calling a paradigm, it should be profound enough that it gives us new ways to think about and solve programming problems. It should add “new tools to the toolbox” that don’t exist in other paradigms.
+
+    x' = f(x)
+
+“Structural” and “Procedural” programming extended imperative programming by providing ways to simplify programs by clarifying control flow and allowing programs to be split into collections of sub-procedures. “Object-Oriented” programming extended that further by describing programs as collections of “things” that can perform “actions” at a higher level of abstraction.
+
+Functional programming gave us an alternate definition of programming, one based on applying and composing functions (link to wikipedia) 
+
+Temporal programming can be seen as a sort of “imperative programming rotated 90 degrees through time” - instead of modeling a program as a blob of data we call “state” that is incrementally modified by a sequence of actions over time, temporal programs consist of sequences of “states” placed at discrete points in time, each computed from the previous state in a single atomic action.
+
+Pure temporal programs transform old states into new states using pure functions.
+
 </Text>
         </Document>
         <Document ID="FF544CEA-60D9-49C4-A020-E33DC1509A6E">

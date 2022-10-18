@@ -7,6 +7,15 @@
  - Communicating sequential processes (CSP)
 </Text>
         </Document>
+        <Document ID="05E1B517-08E4-424E-80EC-8D702270B06A">
+            <Title>Learn TLA+</Title>
+        </Document>
+        <Document ID="06BDE2E2-EC67-4265-ADF2-217ADFA5208E">
+            <Title>The Essence of Bluespec</Title>
+            <Text>a synchronous digital circuit transforms old statet into new state every clock cycle. 
+
+</Text>
+        </Document>
         <Document ID="07B0D7C6-57CE-4D6F-8AD9-11F06A261A5F">
             <Title>Notes</Title>
         </Document>
@@ -183,6 +192,9 @@ struct Clock {
 
 </Text>
         </Document>
+        <Document ID="13468B2E-9F37-4E3F-863F-90135FD9FE39">
+            <Title>Checking statistical properties of protocols using TLA+</Title>
+        </Document>
         <Document ID="15132E5A-F0FA-4410-AD84-B7E52C9204BA">
             <Title>Temporal Programming in C</Title>
         </Document>
@@ -200,12 +212,18 @@ OK, this is starting to sound somewhat interesting. Surely all of this has been 
 
 </Text>
         </Document>
+        <Document ID="1EB36BDE-0795-41D4-B481-0C1620FC5683">
+            <Title>Explicit data graph CPU</Title>
+            <Text>Instructions refer to previous instructions as inputs
+</Text>
+        </Document>
         <Document ID="232AC60D-6945-4711-A0F4-AAB28AC6F0F4">
             <Title>Temporal Programming for Hardware</Title>
         </Document>
         <Document ID="2592BC1C-AA99-4DEA-9595-576DE89207AC">
             <Title>Guarded Atomic Actions</Title>
             <Text> - Guarded Atomic Actions
+ - “Guarded atomic actions”
 </Text>
         </Document>
         <Document ID="2A401011-5BBB-4B6E-BD5F-16C74FCBB707">
@@ -221,7 +239,17 @@ In honor of Leslie Lamport's work on temporal logic, I propose we call it &quot;
             <Title>Have you heard of...</Title>
         </Document>
         <Document ID="2ADAC996-1C1F-455E-9DF8-B0E63F803674">
-            <Title>Weird Possibilities</Title>
+            <Title>Unwrapping a temporal program</Title>
+            <Text>Unwr</Text>
+        </Document>
+        <Document ID="2C9345D4-B22E-43A5-B712-F408027669D6">
+            <Title>Bluespec</Title>
+        </Document>
+        <Document ID="2CE61B12-9C5F-4D3F-B452-65CB47B32871">
+            <Text>data moving around a chip, data moving around a codebase
+
+led scanner example
+	What if you need 1000 LED scanners running at different rates?</Text>
         </Document>
         <Document ID="3015FFE4-4D2E-485F-84DE-4C19A8C61C35">
             <Title>What can we express in a temporal programming language?</Title>
@@ -290,6 +318,9 @@ In some ways, we can see Esterel and Lustre as two examples of doing temporal pr
         </Document>
         <Document ID="548C2750-D287-498E-8632-B9B05FD9F241">
             <Title>Performance &amp; Efficiency</Title>
+        </Document>
+        <Document ID="59FC322B-94B2-4671-9E7D-E150DAC7A489">
+            <Title>State moving around a chip</Title>
         </Document>
         <Document ID="5AED4086-674A-4BE4-AE84-1B83A0C8AC67">
             <Title>Strange New Worlds</Title>
@@ -364,9 +395,15 @@ There’s a lot of research into finite-state automata, particularly in converti
    No it doesn’t, not in this context
 </Text>
         </Document>
+        <Document ID="60367942-E136-45DD-9723-61E8C23BBB80">
+            <Title>Sphery Vs Shapes</Title>
+        </Document>
         <Document ID="606E2F6A-318D-44EA-A9BC-81093A72CD2F">
             <Title>Introduction</Title>
             <Synopsis>This is the synopsis for the introduction. Can you only edit this in corkboard mode?</Synopsis>
+        </Document>
+        <Document ID="612916C2-0708-407C-8DE3-B3B3B492F281">
+            <Title>What would a &quot;temporal CPU&quot; look like?</Title>
         </Document>
         <Document ID="67D0FFB2-16A5-463A-812A-B05271CB45E0">
             <Title>Verilog / VHDL?</Title>
@@ -414,6 +451,112 @@ This example modifies state in place instead of overwriting the whole Program ob
 
 </Text>
         </Document>
+        <Document ID="70FC08F3-AFEA-441C-9AE1-A4DCF20062BC">
+            <Title>Imperative vs Temporal: A Working Example</Title>
+            <Synopsis>as;kdjfha;ksjdhfa;ksdj
+</Synopsis>
+            <Text>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// First you send the start bit, then you send the data bits, then you send the stop bit.
+
+const int bits_per_second = 9600;
+const int cycles_per_second = 10000000;
+const int cycles_per_bit = cycles_per_second / bits_per_second;
+
+void sleep_cycles(int c);
+void set_uart_pin(bool b);
+
+struct ImperativeUart {
+  void send_byte(uint8_t send_data) {
+    set_uart_pin(0);
+    sleep_cycles(cycles_per_bit);
+    for (int i = 0; i &lt; 8; i++) {
+      set_uart_pin((send_data &gt;&gt; i) &amp; 1);
+      sleep_cycles(cycles_per_bit);
+    }
+    set_uart_pin(1);
+    sleep_cycles(cycles_per_bit);
+  }
+};
+
+void main() {
+  const char* message = &quot;Hello World&quot;;
+  const char* cursor = message;
+  ImperativeUart uart;
+  while(*cursor) {
+    uart.send_byte(*cursor**);
+  }
+}
+
+// If data is 0b10011101, &quot;buffer&quot; changes like so:
+//
+// 0b10011101 0 &lt;-- start bit
+// 0b11001110 1 &lt;-- data 0
+// 0b11100111 0 &lt;-- data 1
+// 0b11110011 1 &lt;-- data 2
+// 0b11111001 1 &lt;-- data 3
+// 0b11111100 1 &lt;-- data 4
+// 0b11111110 0 &lt;-- data 5
+// 0b11111111 0 &lt;-- data 6
+// 0b11111111 1 &lt;-- data 7
+// 0b11111111 1 &lt;-- stop bit
+
+struct TemporalUart {
+	int bit_index = 9;
+	int buffer = 0;
+
+  bool ready() {
+    return bit_index == 9;
+  }
+
+  int get_output() {
+    return buffer &amp; 1;
+  }
+
+  void tick(uint8_t data, bool send) {
+    if (bit_index &lt; 9) {
+      bit_index++;
+      buffer = (output &gt;&gt; 1) | 0x100;
+    }
+    else if (send) {
+      bit_index = 0;
+      buffer = data &lt;&lt; 1;
+    }
+  }
+};
+
+void main() {
+  const char* message = &quot;Hello World&quot;;
+  const char* cursor = message;
+
+  TemporalUart uart;
+  while (*cursor) {
+    if (uart.ready()) {
+      uart.tick(*cursor++, true);
+    }
+    else {
+      uart.tick(0, 0);
+    }
+    uart_pin = uart.get_output();
+  }
+}</Text>
+            <Notes>Sidf;askdjhkf;jkashdf
+</Notes>
+        </Document>
         <Document ID="713361D2-1DD1-4362-BC90-8663137DE753">
             <Title>Lustre</Title>
             <Text> - Lustre
@@ -439,6 +582,15 @@ In some ways, we can see Esterel and Lustre as two examples of doing temporal pr
    - Pretty old, has atomic actions, but not globally synchronous?
 </Text>
         </Document>
+        <Document ID="74811661-76B9-4DFC-A90D-CC3C60FB1277">
+            <Title>Compiling_Esterel_into_static_discrete_e.pdf</Title>
+            <Text>Compiling_Esterel_into_static_discrete_e.pdf 
+Optimizations for Faster Execution of Esterel Programs 
+https://www.academia.edu/1622602/Compiling_Esterel_into_static_discrete_event_code?email_work_card=title</Text>
+        </Document>
+        <Document ID="79DBFDF4-545C-46AC-B8CA-8F4D4CEF2D23">
+            <Title>Braindump</Title>
+        </Document>
         <Document ID="7C5CAAB6-0CBA-4FF2-B9EE-E5B01CBB4249">
             <Title>Introduction</Title>
             <Synopsis>what is this? notes?</Synopsis>
@@ -452,6 +604,76 @@ In some ways, we can see Esterel and Lustre as two examples of doing temporal pr
             <Title>StateCharts</Title>
             <Text> - StateCharts/SyncCharts
    - SyncCharts and some of the other languages try and do _too_much_
+
+</Text>
+        </Document>
+        <Document ID="8C5AA09F-3D72-402B-AED9-A8B0F0FFDF68">
+            <Title>Defining the Computational Core</Title>
+            <Text>Even though TLA+ isn’t executable, there’s a very simple model of computation at the core of Lamport's temporal logic that’s worth digging into - TLA+ models move through time in discrete steps by computing new state from old state. In the paper Lamport calls these steps “actions”: “An action represents a relation between old states and new states, where the unprimed variables refer to the old state and the primed variables refer to the new state”. Paraphrased, “actions” are not functions that return a value, they’re boolean expressions that define whether or not you can get from state A to state B, so to speak.
+
+This will be clearer with an example. The Collatz conjecture is an unsolved problem in mathematics that can be defined like this:
+
+1. Pick an integer x.
+2. If x is is even, set x to x/2.
+3. If x is odd, set x to 3*x + 1.
+4. If x is not equal to 1, go to step 2.
+
+For example, if we start with x = 12 we get the sequence of x’s = { 12, 6, 3, 10, 5, 16, 8, 4, 2, 1 }. The Collatz conjecture asks if these steps terminate for all positive integers, which is currently unknown but has been checked up to x=2^68.
+
+If we want to represent this process using something akin to TLA+ actions, we need some boolean expressions of x and x’ such that one evaluates to true if x and x’ are adjacent in the Collatz sequence. That turns out to be fairly straightforward:
+
+	Action A: (x % 2 == 0) &amp;&amp; (x’ == x / 2)
+	Action B: (x % 2 == 1) &amp;&amp; (x’ == 3 * x + 1)
+
+Given these actions, we can “get from” x=10 to x=5 because the pair (x=10, x’=5) makes action A true, and we can “get from” x=5 to x=16 because the pair (x=5, x’=16) makes action B true. The pair (x=17, x’=1) satisfies neither action, so it can’t be in the sequence. To “run” these actions for some arbitrary starting value of x we first find a value of x’ that makes one of our actions true, then replace x with x’ and repeat.
+
+Now for something slightly brain-hurty. If we swap x and x’ in our actions, we get the same state relations except with the time axis reversed. We can run the system “backwards” - we can always get from x to x*2 via backward-action-A, and we can get from x to (x-1)/3 if (x-1)/3 is an odd integer via backward-action-B. We can also refactor our expressions to keep our swapped actions in the same form as earlier:
+
+	Backward Action A: (x’ == x * 2)
+	Backward Action B: (x % 6 == 4) &amp;&amp; (x’ == (x - 1) / 3)
+
+Take a moment to plug in some values of x and x’ until you’re convinced that these actions accept the same pairs as the earlier ones, just with the values swapped. There’s a key difference here though - if we want to “run” the reversed program starting with x = 10, we hit a problem - both (x=10, x’=20) and (x=10, x’=3) make an action true, so which x’ do we choose as our “new” x? In this case, the answer is “both” - because this is a _specification_ and not a _program_. If we draw an arrow between x and x’ for all valid pairs, we get a graph where all values lead to 1 in “forward” mode and 1 leads to all values in “backward” mode. It might not initially seem reasonable to have a program with multiple possible “future” states, but it’s perfectly well defined - we’re just used to programs changing state in response to inputs, of which there aren’t any here.
+
+https://xkcd.com/710
+
+**something from the tla paper here**
+
+So how can we summarize the computational model that TLA+ uses?
+
+1. A program is a blob of state. There is no implicit state - no stacks, no registers, no threads.
+2. Programs “run” by atomically transitioning between states. Partially-modified states are never externally visible.
+3. Transitions between states are pure functions that compute “new” states from “old” states without side effects.
+4. The set of all possible states combined with all possible transitions forms a directed graph.
+
+This is roughly equivalent to a “nondeterministic finite automaton” or a Mealy machine, with looser restrictions -  we don’t care about sets of symbols or stopping conditions or if the states or symbols are finite, 
+
+Something something
+
+Let’s look at the same system expressed as an imperative program and a temporal program:
+
+**imperative uart**
+
+**temporal uart**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+We can state that a bit more formally as the simple recurrence &quot;x' = f(x)&quot;, where &quot;x&quot; represents the _old_ state of the program, &quot;x'&quot; represents the _new_ state of the program, and &quot;f&quot; is a pure function that computes the entire new state from the old state. If we add an input and output we get &quot;(x, o)' = f(x, i)&quot;, which is roughly equivalent to a Mealy machine except that our states and in/outputs are arbitrary data structures instead of sets of states and symbols.
+
+
 
 </Text>
         </Document>
@@ -550,6 +772,8 @@ will not compile - in order to evaulate a' we need to know b', and in order to e
         </Document>
         <Document ID="921A916E-D9A4-4535-A4CB-E15D30E375EB">
             <Title>Leslie Lamport's Temporal Logic of Actions</Title>
+            <Synopsis>Define TLA
+Define &quot;the computational core&quot; of TLA</Synopsis>
             <Text>In order to “reboot” Synchronous Programming, we need to come up with a revised version of “everything happens simultaneously”
 
 Around the same time that the first papers on synchronous programming were being written, Leslie Lamport wrote &quot;The Temporal Logic of Actions&quot; - it's a pretty dense research paper if you're not used to formal logic (I am not), but it lays out a framework for proving the correctness of concurrent systems - these could be threads in a process, nodes in a distributed system, or logic gates in a CPU.
@@ -558,34 +782,6 @@ https://lamport.azurewebsites.net/pubs/lamport-actions.pdf
 
 His later works defined the languages TLA+ and PlusCal, which allowed those proofs to be expressed in something more like a programming language. TLA+ and PlusCal let you describe a real-world program in terms of every possible way the state of the program could change in response to an event. Once you’ve built that description, you can prove (in the strong sense) that certain combinations of states are never possible or always possible or will always happen in a certain sequence, etcetera. To be clear, TLA+ and PlusCal are not programming languages, they’re more like “provable specification languages” - statements like &quot;foo will never exceed 10&quot; can be proven or disproven using the formal methods of temporal logic (complicated). You can’t “run” them in the usual sense, but you can use them as a tool for building more reliable code.
 
-Even though those languages aren’t executable, there’s a very simple model of computation at the core of Lamport's temporal logic that’s worth digging into - TLA+ models move through time in discrete steps by computing new state from old state. In the paper Lamport calls these steps “actions”: “An action represents a relation between old states and new states, where the unprimed variables refer to the old state and the primed variables refer to the new state”. Paraphrased, “actions” are not functions that return a value, they’re expressions that define whether or not you can get from state A to state B, so to speak.
-
-This will be clearer with an example. The Collatz conjecture is an unsolved problem in mathematics that can be defined like this:
-
-https://xkcd.com/710
-
-1. Pick an integer x.
-2. If x is is even, set x to x/2.
-3. If x is odd, set x to 3*x + 1.
-4. If x is not equal to 1, go to step 2.
-
-For example, if we start with x = 12 we get the sequence of x’s = { 12, 6, 3, 10, 5, 16, 8, 4, 2, 1 }. The Collatz conjecture asks if these steps terminate for all positive integers, which is currently unknown but has been checked up to x=2^68.
-
-If we want to represent this process using something akin to TLA+ actions, we need some boolean expressions of x and x’ such that at least one evaluates to true if x and x’ are adjacent in the Collatz sequence. That turns out to be fairly straightforward:
-
-	Action A: (x % 2 == 0) &amp;&amp; (x’ == x / 2)
-	Action B: (x % 2 == 1) &amp;&amp; (x’ == 3 * x + 1)
-
-Given these actions, we can “get from” x=10 to x=5 because the pair (x=10, x’=5) makes action A true, and we can “get from” x=5 to x=16 because the pair (x=5, x’=16) makes action B true. The pair (x=17, x’=1) satisfies neither action, so it can’t be in the sequence. To “run” these actions for some arbitrary starting value of x we first find a value of x’ that makes one of our actions true, then replace x with x’ and repeat.
-
-Now for something slightly brain-hurty. If we swap x and x’ in our actions, we get the same state relations except with the time axis reversed. We can run the system “backwards” - we can always get from x to x*2 via backward-action-A, and we can get from x to (x-1)/3 if (x-1)/3 is an integer via backward-action-B. We can also refactor our expressions to keep our swapped actions in the same form as earlier:
-
-	Backward Action A: (x’ == x * 2)
-	Backward Action B: (x % 3 == 1) &amp;&amp; (x’ == (x - 1) / 3)
-
-Take a moment to plug in some values of x and x’ until you’re convinced that these actions accept the same pairs as the earlier ones, just with the values swapped. There’s a key difference here though - if we want to “run” the reversed program starting with x = 7, we hit a problem - both (x=7, x’=14) and (x=7, x’=2) make an action true, so which x’ do we choose as our “new” x? In this case, the answer is “both” - because this is a _specification_ and not a _program_. If we draw an arrow between x and x’ for all valid pairs, we get a graph where all values lead to 1 in “forward” mode and 1 leads to all values in “reverse” mode.
-
-https://en.wikipedia.org/wiki/Collatz_conjecture#/media/File:Collatz-graph-50-no27.svg
 
 
 
@@ -595,16 +791,13 @@ https://en.wikipedia.org/wiki/Collatz_conjecture#/media/File:Collatz-graph-50-no
 
 
 
-
-
-
-
-
-We can state that a bit more formally as the simple recurrence &quot;x' = f(x)&quot;, where &quot;x&quot; represents the _old_ state of the program, &quot;x'&quot; represents the _new_ state of the program, and &quot;f&quot; is a pure function that computes the entire new state from the old state. If we add an input and output we get &quot;(x, o)' = f(x, i)&quot;, which is roughly equivalent to a Mealy machine except that our states and in/outputs are arbitrary data structures instead of sets of states and symbols.
 
 
 
 </Text>
+        </Document>
+        <Document ID="950391DE-863C-49CA-A275-0DAF965E1949">
+            <Title>Weird Possibilities</Title>
         </Document>
         <Document ID="9542AECB-5210-487C-9BD0-042D7A4F3685">
             <Title>Atom</Title>
@@ -614,6 +807,7 @@ We can state that a bit more formally as the simple recurrence &quot;x' = f(x)&q
         </Document>
         <Document ID="9AE34A2E-E058-4F0E-927B-CB4D872F032D">
             <Title>Bluespec?</Title>
+            <Text>https://github.com/bluespec/Piccolo</Text>
         </Document>
         <Document ID="A9A15308-1D22-4F61-9535-49A91F7E6150">
             <Title>Isn't this going to be terribly inefficient?</Title>
@@ -654,9 +848,40 @@ Default Style</Text>
         <Document ID="B4A726A9-9CE0-44F0-B8C9-51E769D7C17A">
             <Title>Temporal Programming for Hardware</Title>
         </Document>
+        <Document ID="BA29C94C-A2B2-4077-80DC-13EE5BB9F13B">
+            <Title>Conway's Game of Life on FPGA</Title>
+            <Text>https://k155la3.blog/2020/10/09/conways-game-of-life-on-fpga/</Text>
+        </Document>
+        <Document ID="C314096F-E6D4-4442-92F8-15C3DEF5F054">
+            <Text>What does a@3 = b@5 even mean?
+
+
+We can define arbitrary graphs of computation
+	But the graphs can always be reduced back to &quot;x' = f(x)&quot;
+
+A variable's type can change from state to state. The compiler can keep track of it for us.
+
+
+Embedding the temporal logic in a procedural program guarantees that the evaluation order is a DAG, that it can run efficiently as a procedural program, and that humans can understand it better
+
+What does &quot;a@(b==3) = 1&quot; mean?
+Can we have arbitrary predicates as our @ rhs?
+	Wouldn't this just be the same as &quot;if (b==3) a@ = 1;&quot;
+
+
+methods that aren't callable unless predicate matches
+
+void doSomething @ state == ACTIVE () {}
+
+@state == ACTIVE {
+	doSomething()
+}</Text>
+        </Document>
         <Document ID="C8A9C4BD-25B1-43D0-B8E1-76792A5D0465">
             <Title>Have you heard of &quot;Synchronous Programming?&quot;</Title>
-            <Text>Have you heard of &quot;Synchronous Programming&quot;? It's a programming paradigm first sketched out in the 1980's that &quot;makes the same abstraction for programming languages as the synchronous abstraction in digital circuits&quot; [citation]. To put this in more practical terms, synchronous languages let you describe systems where a bunch of stuff happens &quot;simultaneously&quot;, while also giving you tools to ensure that those simultaneous actions don't collide (so to speak) with each other. In hardware, 
+            <Text>Have you heard of &quot;Synchronous Programming&quot;? It's a programming paradigm first sketched out in the 1980's that &quot;makes the same abstraction for programming languages as the synchronous abstraction in digital circuits&quot; [citation]. To put this in more practical terms, synchronous languages let you describe systems where a bunch of stuff happens &quot;simultaneously&quot;, while also giving you tools to ensure that those simultaneous actions don't collide (so to speak) with each other.
+
+In hardware, 
 
 When writing programs that need to deal with exactly this sort of &quot;lots of things happening simultaneously&quot; environment (industrial machinery seems to come up often), synchronous languages can provide cleaner and (in some cases) provably-correct implementations. Some synchronous languages also include facilities for translating their source code into a form that can be run on FPGAs or etched into chips, meaning that your industrial machine controller might not need a CPU at all - it could &quot;run&quot; your control program directly from the logic circuits it generates.
 
@@ -666,12 +891,18 @@ Since the original publications, modern technology has produced CPUs with hundre
 
 - https://en.wikipedia.org/wiki/Synchronous_programming_language
  - &quot;the synchronous abstraction&quot;
- - “Guarded atomic actions”
+
  - “An implementation can execute several rules concurrently in a clock cycle, provided some sequential execution of those rules can reproduce the behavior of the concurrent execution.”
 </Text>
         </Document>
         <Document ID="CDE7D934-F980-4268-9A9C-EB86FFFC4546">
             <Title>Defining Temporal Programming</Title>
+            <Synopsis>Defense of the concept
+How to define a programming paradigm
+Compare/contrast with imperative
+Compare/contrast with functional
+Unique TP weirdness
+</Synopsis>
         </Document>
         <Document ID="D05521FD-70C8-409C-8764-43E45A1773DB">
             <Title>Other Interesting Stuff</Title>
@@ -693,6 +924,9 @@ Since the original publications, modern technology has produced CPUs with hundre
 
 ## #############################################################################
 ## References!
+
+Checking statistical properties of protocols using TLA+
+	http://muratbuffalo.blogspot.com/2022/10/checking-statistical-properties-of.html?m=1
 
 &quot;The Semantics of Pure Esterel&quot;
    important, read this
@@ -787,6 +1021,10 @@ it occurs; in hardware design, this is called gated clocks&quot;
 
 
 </Text>
+        </Document>
+        <Document ID="D2E48B63-8D07-43D7-9382-7FB6615B60FF">
+            <Title>Guarded Atomic Actions</Title>
+            <Text>need to add &quot;guarded atomic actions&quot; to the &quot;aren't you just talking about&quot; list. </Text>
         </Document>
         <Document ID="D5DED6CA-4DCD-4BA7-8305-0F3C64D4AF16">
             <Title>Some Background, And A Caveat</Title>
@@ -887,6 +1125,16 @@ OK, so it's not exactly any of those things. Still, your definition of &quot;tem
         </Document>
         <Document ID="E7F7659E-3663-4DCA-B04F-CAD3A610E424">
             <Title>TLA+ / PlusCal</Title>
+        </Document>
+        <Document ID="E9DFC673-0455-4AE5-B50C-F041A71FD055">
+            <Title>Pipelines</Title>
+            <Text>Pipelines are just computations spread across time
+
+a@1 = f(b@0);
+c@2 = g(a@1);
+d@3 = h(c@2);
+
+etc</Text>
         </Document>
         <Document ID="EB3C32F0-B7B8-4E76-BB78-CCE91748C73E">
             <Title>Imperative, Functional, Temporal</Title>

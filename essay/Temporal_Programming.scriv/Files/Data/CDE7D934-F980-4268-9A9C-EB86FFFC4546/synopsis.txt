@@ -1,0 +1,5 @@
+Defense of the concept
+How to define a programming paradigm
+Compare/contrast with imperative
+Compare/contrast with functional
+Unique TP weirdness

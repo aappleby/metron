@@ -1,0 +1,2 @@
+Define TLA
+Define "the computational core" of TLA

@@ -1,0 +1,103 @@
+{\rtf1\ansi\ansicpg1252\uc1\deff0
+{\fonttbl{\f0\fmodern\fcharset0\fprq2 RobotoMono-SemiBold;}{\f1\fmodern\fcharset0\fprq2 RobotoMono-SemiBold;}}
+{\colortbl;\red0\green0\blue0;\red255\green255\blue255;\red128\green128\blue128;}
+\paperw12240\paperh15840\margl1800\margr1800\margt1440\margb1440\f0\fs22\cf0
+\pard\plain \tx0\tx360\tx720\tx1080\tx1440\tx1800\tx2160\tx2880\tx3600\tx4320\ltrch\loch \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 // First you send the start bit, then you send the data bits, then you send the stop bit.}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 const int bits_per_second = 9600;}
+\par\plain {\f0\fs22\b0\i0 const int cycles_per_second = 10000000;}
+\par\plain {\f0\fs22\b0\i0 const int cycles_per_bit = cycles_per_second / bits_per_second;}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 void sleep_cycles(int c);}
+\par\plain {\f0\fs22\b0\i0 void set_uart_pin(bool b);}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 struct ImperativeUart \{}
+\par\plain {\f0\fs22\b0\i0   void send_byte(uint8_t send_data) \{}
+\par\plain {\f0\fs22\b0\i0     set_uart_pin(0);}
+\par\plain {\f0\fs22\b0\i0     sleep_cycles(cycles_per_bit);}
+\par\plain {\f0\fs22\b0\i0     for (int i = 0; i < 8; i++) \{}
+\par\plain {\f0\fs22\b0\i0       set_uart_pin((send_data >> i) & 1);}
+\par\plain {\f0\fs22\b0\i0       sleep_cycles(cycles_per_bit);}
+\par\plain {\f0\fs22\b0\i0     \}}
+\par\plain {\f0\fs22\b0\i0     set_uart_pin(1);}
+\par\plain {\f0\fs22\b0\i0     sleep_cycles(cycles_per_bit);}
+\par\plain {\f0\fs22\b0\i0   \}}
+\par\plain {\f0\fs22\b0\i0 \};}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 void main() \{}
+\par\plain {\f0\fs22\b0\i0   const char* message = "Hello World";}
+\par\plain {\f0\fs22\b0\i0   const char* cursor = message;}
+\par\plain {\f0\fs22\b0\i0   ImperativeUart uart;}
+\par\plain {\f0\fs22\b0\i0   while(*cursor) \{}
+\par\plain {\f0\fs22\b0\i0     uart.send_byte(*cursor**);}
+\par\plain {\f0\fs22\b0\i0   \}}
+\par\plain {\f0\fs22\b0\i0 \}}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 // If data is 0b10011101, "buffer" changes like so:}
+\par\plain {\f0\fs22\b0\i0 //}
+\par\plain {\f0\fs22\b0\i0 // 0b10011101 0 <-- start bit}
+\par\plain {\f0\fs22\b0\i0 // 0b11001110 1 <-- data 0}
+\par\plain {\f0\fs22\b0\i0 // 0b11100111 0 <-- data 1}
+\par\plain {\f0\fs22\b0\i0 // 0b11110011 1 <-- data 2}
+\par\plain {\f0\fs22\b0\i0 // 0b11111001 1 <-- data 3}
+\par\plain {\f0\fs22\b0\i0 // 0b11111100 1 <-- data 4}
+\par\plain {\f0\fs22\b0\i0 // 0b11111110 0 <-- data 5}
+\par\plain {\f0\fs22\b0\i0 // 0b11111111 0 <-- data 6}
+\par\plain {\f0\fs22\b0\i0 // 0b11111111 1 <-- data 7}
+\par\plain {\f0\fs22\b0\i0 // 0b11111111 1 <-- stop bit}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 struct TemporalUart \{}
+\par\plain {\f0\fs22\b0\i0 \tab int }{\f1\fs22\b1\i0 bit_index}{\f0\fs22\b0\i0  = 9;}
+\par\plain {\f0\fs22\b0\i0 \tab int buffer = 0;}
+\par\plain \f0\fs22\b0\i0
+\par\pard\plain \ltrch\loch {\f1\fs22\b1\i0   bool ready() \{}
+\par\plain {\f1\fs22\b1\i0     return bit_index == 9;}
+\par\plain {\f1\fs22\b1\i0   \}}
+\par\plain \f1\fs22\b1\i0
+\par\plain {\f1\fs22\b1\i0   int get_output() \{}
+\par\plain {\f1\fs22\b1\i0     return buffer & 1;}
+\par\plain {\f1\fs22\b1\i0   \}}
+\par\pard\plain \tx0\tx360\tx720\tx1080\tx1440\tx1800\tx2160\tx2880\tx3600\tx4320\ltrch\loch \f1\fs22\b1\i0
+\par\plain {\f1\fs22\b1\i0 \~ void tick(uint8_t data, bool send) \{}
+\par\pard\plain \ltrch\loch {\f1\fs22\b1\i0   \~ if (bit_index < 9) \{}
+\par\plain {\f1\fs22\b1\i0 \~ \~ \~ bit_index++;}
+\par\plain {\f1\fs22\b1\i0       buffer = (output >> 1) | 0x100;}
+\par\plain {\f1\fs22\b1\i0 \~ \~ \}}
+\par\plain {\f1\fs22\b1\i0 \~ \~ else if (send) \{}
+\par\plain {\f1\fs22\b1\i0 \~ \~ \~ bit_index = 0;}
+\par\plain {\f1\fs22\b1\i0 \~ \~ \~ buffer = data << 1;}
+\par\plain {\f1\fs22\b1\i0 \~ \~ \}}
+\par\plain {\f1\fs22\b1\i0   \}}
+\par\pard\plain \tx0\tx360\tx720\tx1080\tx1440\tx1800\tx2160\tx2880\tx3600\tx4320\ltrch\loch {\f0\fs22\b0\i0 \};}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0 void main() \{}
+\par\plain {\f0\fs22\b0\i0   const char* message = "Hello World";}
+\par\plain {\f0\fs22\b0\i0   const char* cursor = message;}
+\par\plain \f0\fs22\b0\i0
+\par\plain {\f0\fs22\b0\i0   TemporalUart uart;}
+\par\plain {\f0\fs22\b0\i0   while (*cursor) \{}
+\par\plain {\f0\fs22\b0\i0     if (uart.ready()) \{}
+\par\plain {\f0\fs22\b0\i0       uart.tick(*cursor++, true);}
+\par\plain {\f0\fs22\b0\i0     \}}
+\par\plain {\f0\fs22\b0\i0     else \{}
+\par\plain {\f0\fs22\b0\i0       uart.tick(0, 0);}
+\par\plain {\f0\fs22\b0\i0     \}}
+\par\plain {\f0\fs22\b0\i0     uart_pin = uart.get_output();}
+\par\plain {\f0\fs22\b0\i0   \}}
+\par\plain {\f0\fs22\b0\i0 \}}}

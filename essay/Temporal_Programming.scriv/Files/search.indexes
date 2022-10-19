@@ -415,7 +415,9 @@ There’s a lot of research into finite-state automata, particularly in converti
         </Document>
         <Document ID="6996BE07-7D43-4998-AA16-E3A8C14A8563">
             <Title>A Trivial Example</Title>
-            <Text>Examples of &quot;x' = f(x)&quot;-style programs abound - synchronous logic circuits, state machines, transactions - and actually writing a program that &quot;moves through time in discrete steps&quot; is not particularly difficult. Here's a trivial example in C++: 
+            <Text>https://replit.com/@AustinAppleby/SwiftMelodicAbstractions#main.cpp
+
+Examples of &quot;x' = f(x)&quot;-style programs abound - synchronous logic circuits, state machines, transactions - and actually writing a program that &quot;moves through time in discrete steps&quot; is not particularly difficult. Here's a trivial example in C++: 
 
 struct Program {
    int count = 0;
@@ -867,6 +869,7 @@ Embedding the temporal logic in a procedural program guarantees that the evaluat
 What does &quot;a@(b==3) = 1&quot; mean?
 Can we have arbitrary predicates as our @ rhs?
 	Wouldn't this just be the same as &quot;if (b==3) a@ = 1;&quot;
+	Then you start looking FRP-ish with the decimation of inputs and such.
 
 
 methods that aren't callable unless predicate matches

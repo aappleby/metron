@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ScrivenerProject Template="No" Version="2.0" Identifier="BD87B4F4-DC28-4D78-B8F8-5E0F787F4206" Creator="SCRWIN-3.1.1.0" Device="TinyTron" Modified="2022-10-18 01:59:10 -0700" ModID="D8525120-98C9-4917-9659-168DB69EB8F1">
+<ScrivenerProject Template="No" Version="2.0" Identifier="BD87B4F4-DC28-4D78-B8F8-5E0F787F4206" Creator="SCRWIN-3.1.1.0" Device="TinyTron" Modified="2022-10-18 21:32:56 -0700" ModID="00ED817A-DC03-41EE-B18F-642FF080EE1A">
     <Binder>
         <BinderItem UUID="7A583553-3A84-40D6-B9B9-0430B8CD3E39" Type="DraftFolder" Created="2017-11-02 08:22:45 -0700" Modified="2022-10-01 22:11:16 -0700">
             <Title>Draft</Title>
@@ -261,12 +261,12 @@
                                 <TextSelection>98,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="C314096F-E6D4-4442-92F8-15C3DEF5F054" Type="Text" Created="2022-10-18 01:54:00 -0700" Modified="2022-10-18 01:58:39 -0700">
+                        <BinderItem UUID="C314096F-E6D4-4442-92F8-15C3DEF5F054" Type="Text" Created="2022-10-18 01:54:00 -0700" Modified="2022-10-18 02:00:50 -0700">
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
                             </MetaData>
                             <TextSettings>
-                                <TextSelection>694,0</TextSelection>
+                                <TextSelection>766,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
                     </Children>
@@ -389,13 +389,13 @@
                         <TextSelection>0,0</TextSelection>
                     </TextSettings>
                     <Children>
-                        <BinderItem UUID="6996BE07-7D43-4998-AA16-E3A8C14A8563" Type="Text" Created="2022-10-01 01:13:03 -0700" Modified="2022-10-01 01:17:11 -0700">
+                        <BinderItem UUID="6996BE07-7D43-4998-AA16-E3A8C14A8563" Type="Text" Created="2022-10-01 01:13:03 -0700" Modified="2022-10-18 20:49:51 -0700">
                             <Title>A Trivial Example</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
                             </MetaData>
                             <TextSettings>
-                                <TextSelection>450,0</TextSelection>
+                                <TextSelection>67,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
                         <BinderItem UUID="9027B414-C352-4407-ADD9-66DD36C704D6" Type="Text" Created="2022-09-28 22:40:47 -0700" Modified="2022-10-01 01:33:35 -0700">
@@ -706,6 +706,36 @@
                         <TextSelection>61,0</TextSelection>
                     </TextSettings>
                 </BinderItem>
+                <BinderItem UUID="16E6C956-C9B3-4FE7-A803-28FD5AC827BF" Type="PDF" Created="2022-10-18 21:31:46 -0700" Modified="2022-10-18 21:31:47 -0700">
+                    <Title>BSV_user-guide</Title>
+                    <MetaData>
+                        <IncludeInCompile>Yes</IncludeInCompile>
+                        <FileExtension>pdf</FileExtension>
+                    </MetaData>
+                    <MediaSettings>
+                        <CurrentPDFPage>1</CurrentPDFPage>
+                    </MediaSettings>
+                </BinderItem>
+                <BinderItem UUID="DD3EF510-C5BF-4390-9589-4B4569DC1E30" Type="PDF" Created="2022-10-18 21:32:00 -0700" Modified="2022-10-18 21:32:00 -0700">
+                    <Title>BSV_reference-guide</Title>
+                    <MetaData>
+                        <IncludeInCompile>Yes</IncludeInCompile>
+                        <FileExtension>pdf</FileExtension>
+                    </MetaData>
+                    <MediaSettings>
+                        <CurrentPDFPage>1</CurrentPDFPage>
+                    </MediaSettings>
+                </BinderItem>
+                <BinderItem UUID="E9819D59-9CC1-4FB5-8CE8-113BFBF40C10" Type="PDF" Created="2022-10-17 13:16:41 -0700" Modified="2022-10-17 13:16:41 -0700">
+                    <Title>BSV_ref_card</Title>
+                    <MetaData>
+                        <IncludeInCompile>Yes</IncludeInCompile>
+                        <FileExtension>pdf</FileExtension>
+                    </MetaData>
+                    <MediaSettings>
+                        <CurrentPDFPage>1</CurrentPDFPage>
+                    </MediaSettings>
+                </BinderItem>
             </Children>
         </BinderItem>
         <BinderItem UUID="A41BA2A1-C599-43C2-99CC-8C1A7FFC2C24" Type="TrashFolder" Created="2017-11-02 08:22:45 -0700" Modified="2022-10-01 22:02:13 -0700">
@@ -898,12 +928,12 @@
     <ProjectTargets Notify="No">
         <DraftTarget Type="Words" CountIncludedOnly="Yes" CurrentCompileGroupOnly="Yes" Deadline="2011-04-12 14:24:39 +0200" IgnoreDeadline="Yes">0</DraftTarget>
         <SessionTarget Type="Words" CountDraftOnly="Yes" AllowNegatives="No" ResetType="Time" ResetTime="00:00" DeterminedFromDeadline="No" CanWriteOnDeadlineDate="No" WritingDays="">0</SessionTarget>
-        <PreviousSession Words="118" Characters="694" Date="2022-10-18 01:59:10 -0700"/>
+        <PreviousSession Words="136" Characters="836" Date="2022-10-18 21:32:56 -0700"/>
     </ProjectTargets>
     <BookmarksFolderUUID>07B0D7C6-57CE-4D6F-8AD9-11F06A261A5F</BookmarksFolderUUID>
     <RecentWritingHistory Date="2022-10-18 00:00:00 -0700">
-        <DraftWordCount>118</DraftWordCount>
-        <DraftCharCount>694</DraftCharCount>
+        <DraftWordCount>136</DraftWordCount>
+        <DraftCharCount>836</DraftCharCount>
         <OtherWordCount>0</OtherWordCount>
         <OtherCharCount>0</OtherCharCount>
     </RecentWritingHistory>

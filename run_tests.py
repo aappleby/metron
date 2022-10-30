@@ -457,10 +457,8 @@ def test_examples():
         "bin/examples/rvsimple",
         "bin/examples/rvsimple_vl",
         "bin/examples/rvsimple_ref",
-        "bin/examples/rvtiny",
-        "bin/examples/rvtiny_vl",
-        "bin/examples/rvtiny_sync",
-        "bin/examples/rvtiny_sync_vl",
+        "bin/examples/pinwheel",
+        "bin/examples/pinwheel_vl",
     ]
 
     errors = sum(get_pool().map(run_simple_test, simple_tests))
@@ -489,8 +487,7 @@ def test_misc():
     good_commands = [
         f"bin/metron {metron_default_args()} -r examples/uart/metron uart_top.h",
         f"bin/metron {metron_default_args()} -r examples/rvsimple/metron toplevel.h",
-        f"bin/metron {metron_default_args()} -r examples/rvtiny/metron toplevel.h",
-        f"bin/metron {metron_default_args()} -r examples/rvtiny_sync/metron toplevel.h",
+        f"bin/metron {metron_default_args()} -r examples/pinwheel/metron pinwheel.h",
         f"bin/metron {metron_default_args()} -r examples/pong/metron pong.h",
     ]
 

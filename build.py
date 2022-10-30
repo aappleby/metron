@@ -32,8 +32,7 @@ def main():
     build_rvtests()
     build_uart()
     build_rvsimple()
-    build_rvtiny()
-    build_rvtiny_sync()
+    build_pinwheel()
     # build_ibex()
     build_pong()
     #build_j1()
@@ -671,69 +670,35 @@ def build_rvsimple():
 
 
 # ------------------------------------------------------------------------------
-# RVTiny
+# Pinwheel
 
-def build_rvtiny():
-    mt_root = "examples/rvtiny/metron"
-    sv_root = "examples/rvtiny/metron_sv"
-    vl_root = "gen/examples/rvtiny/metron_vl"
+def build_pinwheel():
+    mt_root = "examples/pinwheel/metron"
+    sv_root = "examples/pinwheel/metron_sv"
+    vl_root = "gen/examples/pinwheel/metron_vl"
 
     cpp_binary(
-        bin_name="bin/examples/rvtiny",
-        src_files=["examples/rvtiny/main.cpp"],
+        bin_name="bin/examples/pinwheel",
+        src_files=["examples/pinwheel/main.cpp"],
         includes=base_includes + [mt_root],
         link_deps=["bin/libmetron.a"],
     )
 
-    rvtiny_sv_srcs = metronize_dir(mt_root, "toplevel.h", sv_root)
+    pinwheel_sv_srcs = metronize_dir(mt_root, "pinwheel.h", sv_root)
 
-    rvtiny_vl_vhdr, rvtiny_vl_vobj = verilate_dir(
+    pinwheel_vl_vhdr, pinwheel_vl_vobj = verilate_dir(
         src_dir=sv_root,
-        src_files=rvtiny_sv_srcs,
-        src_top="toplevel",
+        src_files=pinwheel_sv_srcs,
+        src_top="pinwheel",
         dst_dir=vl_root
     )
 
     cpp_binary(
-        bin_name="bin/examples/rvtiny_vl",
-        src_files=["examples/rvtiny/main_vl.cpp"],
+        bin_name="bin/examples/pinwheel_vl",
+        src_files=["examples/pinwheel/main_vl.cpp"],
         includes=base_includes + [vl_root],
-        src_objs=["obj/verilated.o", rvtiny_vl_vobj],
-        deps=[rvtiny_vl_vhdr],
-        link_deps=["bin/libmetron.a"],
-    )
-
-
-# ------------------------------------------------------------------------------
-# RVTiny_Sync - synchronous-mem-only version of RVTiny
-
-def build_rvtiny_sync():
-    mt_root = "examples/rvtiny_sync/metron"
-    sv_root = "examples/rvtiny_sync/metron_sv"
-    vl_root = "gen/examples/rvtiny_sync/metron_vl"
-
-    cpp_binary(
-        bin_name="bin/examples/rvtiny_sync",
-        src_files=["examples/rvtiny_sync/main.cpp"],
-        includes=base_includes,
-        link_deps=["bin/libmetron.a"],
-    )
-
-    metronized_src = metronize_dir(mt_root, "toplevel.h", sv_root)
-
-    verilated_h, verilated_o = verilate_dir(
-        src_dir=sv_root,
-        src_files=metronized_src,
-        src_top="toplevel",
-        dst_dir=vl_root
-    )
-
-    cpp_binary(
-        bin_name="bin/examples/rvtiny_sync_vl",
-        src_files=["examples/rvtiny_sync/main_vl.cpp"],
-        includes=base_includes + [vl_root],
-        src_objs=["obj/verilated.o", verilated_o],
-        deps=[verilated_h],
+        src_objs=["obj/verilated.o", pinwheel_vl_vobj],
+        deps=[pinwheel_vl_vhdr],
         link_deps=["bin/libmetron.a"],
     )
 
@@ -766,29 +731,6 @@ def build_pong():
     )
 
     metronized_src = metronize_dir(mt_root, "pong.h", sv_root)
-
-    """
-    rvtiny_sync_metron_vl_h, rvtiny_sync_metron_vl_o = verilate_dir(
-        src_dir="examples/rvtiny_sync/metron_sv",
-        src_files=rvtiny_sync_metron_sv,
-        src_top="toplevel",
-        dst_dir="examples/rvtiny_sync/metron_vl"
-    )
-
-    cpp_binary(
-        bin_name="bin/examples/rvtiny_sync_vl",
-        src_files=["examples/rvtiny_sync/main_vl.cpp"],
-        includes=[
-            ".",
-            "src",
-            "obj/examples/rvtiny_sync",
-            "/usr/local/share/verilator/include"
-        ],
-        src_objs=["obj/verilated.o", rvtiny_sync_metron_vl_o],
-        deps=[rvtiny_sync_metron_vl_h]
-    )
-    """
-
 
 # ------------------------------------------------------------------------------
 

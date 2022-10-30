@@ -2,10 +2,10 @@
 
 #include "Platform.h"
 #include "Tests.h"
+#include "Vpinwheel.h"
 #include "submodules/CLI11/include/CLI/App.hpp"
 #include "submodules/CLI11/include/CLI/Config.hpp"
 #include "submodules/CLI11/include/CLI/Formatter.hpp"
-#include "toplevel.h"
 
 //------------------------------------------------------------------------------
 
@@ -31,7 +31,7 @@ TestResults test_instruction(const char* test_name, const int reps,
   sprintf(buf2, "+data_file=tests/rv_tests/%s.data.vh", test_name);
   const char* argv2[2] = {buf1, buf2};
 
-  metron_init(2, argv2);
+  Verilated::commandArgs(2, argv2);
 
   int elapsed_cycles = 0;
   int test_result = -1;
@@ -39,13 +39,22 @@ TestResults test_instruction(const char* test_name, const int reps,
 
   //----------
 
-  toplevel top;
+  Vpinwheel top;
 
   for (int rep = 0; rep < reps; rep++) {
-    top.tock(1);
+    top.tock_reset = 1;
+    top.clock = 0;
+    top.eval();
+    top.clock = 1;
+    top.eval();
     total_tocks++;
+    top.tock_reset = 0;
+
     for (elapsed_cycles = 0; elapsed_cycles < max_cycles; elapsed_cycles++) {
-      top.tock(0);
+      top.clock = 0;
+      top.eval();
+      top.clock = 1;
+      top.eval();
       total_tocks++;
 
       if (top.bus_address == 0xfffffff0 && top.bus_write_enable) {

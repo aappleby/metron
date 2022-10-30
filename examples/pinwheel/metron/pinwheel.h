@@ -1,9 +1,87 @@
 #pragma once
 #include "metron_tools.h"
 
-class toplevel {
+const int RV32I_OP_LOAD    = 0b00000;
+const int RV32I_OP_LOADFP  = 0b00001;
+const int RV32I_OP_CUSTOM0 = 0b00010;
+const int RV32I_OP_MISCMEM = 0b00011;
+const int RV32I_OP_OPIMM   = 0b00100;
+const int RV32I_OP_AUIPC   = 0b00101;
+const int RV32I_OP_OPIMM32 = 0b00110;
+const int RV32I_OP_48B1    = 0b00111;
+
+const int RV32I_OP_STORE   = 0b01000;
+const int RV32I_OP_STOREFP = 0b01001;
+const int RV32I_OP_CUSTOM1 = 0b01010;
+const int RV32I_OP_AMO     = 0b01011;
+const int RV32I_OP_OP      = 0b01100;
+const int RV32I_OP_LUI     = 0b01101;
+const int RV32I_OP_OP32    = 0b01110;
+const int RV32I_OP_64B     = 0b01111;
+
+const int RV32I_OP_MADD    = 0b10000;
+const int RV32I_OP_MSUB    = 0b10001;
+const int RV32I_OP_NMSUB   = 0b10010;
+const int RV32I_OP_NMADD   = 0b10011;
+const int RV32I_OP_OPFP    = 0b10100;
+const int RV32I_OP_RES1    = 0b10101;
+const int RV32I_OP_CUSTOM2 = 0b10110;
+const int RV32I_OP_48B2    = 0b10111;
+
+const int RV32I_OP_BRANCH  = 0b11000;
+const int RV32I_OP_JALR    = 0b11001;
+const int RV32I_OP_RES2    = 0b11010;
+const int RV32I_OP_JAL     = 0b11011;
+const int RV32I_OP_SYSTEM  = 0b11100;
+const int RV32I_OP_RES3    = 0b11101;
+const int RV32I_OP_CUSTOM3 = 0b11110;
+const int RV32I_OP_80B     = 0b11111;
+
+const int RV32I_F3_BEQ     = 0b000;
+const int RV32I_F3_BNE     = 0b001;
+const int RV32I_F3_BLT     = 0b100;
+const int RV32I_F3_BGE     = 0b101;
+const int RV32I_F3_BLTU    = 0b110;
+const int RV32I_F3_BGEU    = 0b111;
+
+const int RV32I_F3_LB      = 0b000;
+const int RV32I_F3_LH      = 0b001;
+const int RV32I_F3_LW      = 0b010;
+const int RV32I_F3_LBU     = 0b100;
+const int RV32I_F3_LHU     = 0b101;
+
+const int RV32I_F3_SB      = 0b000;
+const int RV32I_F3_SH      = 0b001;
+const int RV32I_F3_SW      = 0b010;
+
+const int RV32I_F3_ADDI = 0b000;
+const int RV32I_F3_SLI     = 0b001;
+const int RV32I_F3_SLTI    = 0b010;
+const int RV32I_F3_SLTIU   = 0b011;
+const int RV32I_F3_XORI    = 0b100;
+const int RV32I_F3_SRI     = 0b101;
+const int RV32I_F3_ORI     = 0b110;
+const int RV32I_F3_ANDI    = 0b111;
+
+const int RV32I_F3_ADDSUB  = 0b000;
+const int RV32I_F3_SL      = 0b001;
+const int RV32I_F3_SLT     = 0b010;
+const int RV32I_F3_SLTU    = 0b011;
+const int RV32I_F3_XOR     = 0b100;
+const int RV32I_F3_SR      = 0b101;
+const int RV32I_F3_OR      = 0b110;
+const int RV32I_F3_AND     = 0b111;
+
+const int RV32I_F3_CSRRW   = 0b001;
+const int RV32I_F3_CSRRS   = 0b010;
+const int RV32I_F3_CSRRC   = 0b011;
+const int RV32I_F3_CSRRWI  = 0b101;
+const int RV32I_F3_CSRRSI  = 0b110;
+const int RV32I_F3_CSRRCI  = 0b111;
+
+class Pinwheel {
  public:
-  toplevel() {
+  Pinwheel() {
     pc = 0;
     regs[0] = b32(0);
 
@@ -30,15 +108,15 @@ class toplevel {
   //----------------------------------------
 
  private:
-  static const int OP_ALU = 0x33;
-  static const int OP_ALUI = 0x13;
-  static const int OP_LOAD = 0x03;
-  static const int OP_STORE = 0x23;
-  static const int OP_BRANCH = 0x63;
-  static const int OP_JAL = 0x6F;
-  static const int OP_JALR = 0x67;
-  static const int OP_LUI = 0x37;
-  static const int OP_AUIPC = 0x17;
+  static const int OP_ALU    = 0b00110011;
+  static const int OP_ALUI   = 0b00010011;
+  static const int OP_LOAD   = 0b00000011;
+  static const int OP_STORE  = 0b00100011;
+  static const int OP_BRANCH = 0b01100011;
+  static const int OP_JAL    = 0b01101111;
+  static const int OP_JALR   = 0b01100111;
+  static const int OP_LUI    = 0b00110111;
+  static const int OP_AUIPC  = 0b00010111;
 
   void tick(logic<1> reset) {
     if (reset) {
@@ -59,6 +137,12 @@ class toplevel {
       logic<5> r1 = b5(inst, 15);
       logic<5> r2 = b5(inst, 20);
       logic<7> f7 = b7(inst, 25);
+
+      logic<32> imm_b = cat(dup<20>(inst[31]), inst[7], b6(inst, 25), b4(inst, 8), b1(0));
+      logic<32> imm_i = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 20));
+      logic<32> imm_j = cat(dup<12>(inst[31]), b8(inst, 12), inst[20], b6(inst, 25), b4(inst, 21), b1(0));
+      logic<32> imm_s = cat(dup<21>(inst[31]), b6(inst, 25), b5(inst, 7));
+      logic<32> imm_u = cat(inst[31], b11(inst, 20), b8(inst, 12), b12(0));
 
       bus_address = 0;
       bus_write_enable = 0;

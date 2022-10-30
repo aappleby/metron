@@ -115,9 +115,9 @@ build docs/demo/examples.data docs/demo/examples.js: command tests/Tests.h $
     examples/ibex/metron/ibex_multdiv_slow.h $
     examples/ibex/metron/ibex_pkg.h $
     examples/ibex/metron/prim_arbiter_fixed.h examples/j1/metron/dpram.h $
-    examples/j1/metron/j1.h examples/pong/metron/pong.h $
-    examples/rvsimple/metron/adder.h examples/rvsimple/metron/alu.h $
-    examples/rvsimple/metron/alu_control.h $
+    examples/j1/metron/j1.h examples/pinwheel/metron/pinwheel.h $
+    examples/pong/metron/pong.h examples/rvsimple/metron/adder.h $
+    examples/rvsimple/metron/alu.h examples/rvsimple/metron/alu_control.h $
     examples/rvsimple/metron/config.h examples/rvsimple/metron/constants.h $
     examples/rvsimple/metron/control_transfer.h $
     examples/rvsimple/metron/data_memory_interface.h $
@@ -135,8 +135,7 @@ build docs/demo/examples.data docs/demo/examples.js: command tests/Tests.h $
     examples/rvsimple/metron/singlecycle_control.h $
     examples/rvsimple/metron/singlecycle_ctlpath.h $
     examples/rvsimple/metron/singlecycle_datapath.h $
-    examples/rvsimple/metron/toplevel.h examples/rvtiny/metron/toplevel.h $
-    examples/rvtiny_sync/metron/toplevel.h examples/tutorial/adder.h $
+    examples/rvsimple/metron/toplevel.h examples/tutorial/adder.h $
     examples/tutorial/bit_twiddling.h examples/tutorial/blockram.h $
     examples/tutorial/checksum.h examples/tutorial/clocked_adder.h $
     examples/tutorial/counter.h examples/tutorial/declaration_order.h $
@@ -652,106 +651,55 @@ build bin/examples/rvsimple_ref: link obj/verilated.o $
 
 
 ################################################################################
-# Compile bin/examples/rvtiny
+# Compile bin/examples/pinwheel
 
-build obj/examples/rvtiny/main.o: compile_cpp examples/rvtiny/main.cpp
+build obj/examples/pinwheel/main.o: compile_cpp examples/pinwheel/main.cpp
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include $
-      -Iexamples/rvtiny/metron
-build bin/examples/rvtiny: link obj/examples/rvtiny/main.o bin/libmetron.a
+      -Iexamples/pinwheel/metron
+build bin/examples/pinwheel: link obj/examples/pinwheel/main.o bin/libmetron.a
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include $
-      -Iexamples/rvtiny/metron
+      -Iexamples/pinwheel/metron
 
 
 ################################################################################
-# Metronize examples/rvtiny/metron -> examples/rvtiny/metron_sv
+# Metronize examples/pinwheel/metron -> examples/pinwheel/metron_sv
 
-build examples/rvtiny/metron_sv/toplevel.sv: metron $
-    examples/rvtiny/metron/toplevel.h | bin/metron $
-    examples/rvtiny/metron/toplevel.h
-  src_dir = examples/rvtiny/metron
-  dst_dir = examples/rvtiny/metron_sv
-  src_top = toplevel.h
-
-
-################################################################################
-# Verilate toplevel@examples/rvtiny/metron_sv -> gen/examples/rvtiny/metron_vl
-
-build gen/examples/rvtiny/metron_vl/Vtoplevel.mk $
-    gen/examples/rvtiny/metron_vl/Vtoplevel.h: verilator $
-    examples/rvtiny/metron_sv/toplevel.sv
-  includes = -Isrc -Iexamples/rvtiny/metron_sv
-  src_top = toplevel
-  dst_dir = gen/examples/rvtiny/metron_vl
-build gen/examples/rvtiny/metron_vl/Vtoplevel__ALL.o: make $
-    gen/examples/rvtiny/metron_vl/Vtoplevel.mk
-  dst_dir = gen/examples/rvtiny/metron_vl
-  makefile = Vtoplevel.mk
+build examples/pinwheel/metron_sv/pinwheel.sv: metron $
+    examples/pinwheel/metron/pinwheel.h | bin/metron $
+    examples/pinwheel/metron/pinwheel.h
+  src_dir = examples/pinwheel/metron
+  dst_dir = examples/pinwheel/metron_sv
+  src_top = pinwheel.h
 
 
 ################################################################################
-# Compile bin/examples/rvtiny_vl
+# Verilate pinwheel@examples/pinwheel/metron_sv -> gen/examples/pinwheel/metron_vl
 
-build obj/examples/rvtiny/main_vl.o: compile_cpp $
-    examples/rvtiny/main_vl.cpp | gen/examples/rvtiny/metron_vl/Vtoplevel.h
+build gen/examples/pinwheel/metron_vl/Vpinwheel.mk $
+    gen/examples/pinwheel/metron_vl/Vpinwheel.h: verilator $
+    examples/pinwheel/metron_sv/pinwheel.sv
+  includes = -Isrc -Iexamples/pinwheel/metron_sv
+  src_top = pinwheel
+  dst_dir = gen/examples/pinwheel/metron_vl
+build gen/examples/pinwheel/metron_vl/Vpinwheel__ALL.o: make $
+    gen/examples/pinwheel/metron_vl/Vpinwheel.mk
+  dst_dir = gen/examples/pinwheel/metron_vl
+  makefile = Vpinwheel.mk
+
+
+################################################################################
+# Compile bin/examples/pinwheel_vl
+
+build obj/examples/pinwheel/main_vl.o: compile_cpp $
+    examples/pinwheel/main_vl.cpp | $
+    gen/examples/pinwheel/metron_vl/Vpinwheel.h
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include $
-      -Igen/examples/rvtiny/metron_vl
-build bin/examples/rvtiny_vl: link obj/verilated.o $
-    gen/examples/rvtiny/metron_vl/Vtoplevel__ALL.o $
-    obj/examples/rvtiny/main_vl.o bin/libmetron.a
+      -Igen/examples/pinwheel/metron_vl
+build bin/examples/pinwheel_vl: link obj/verilated.o $
+    gen/examples/pinwheel/metron_vl/Vpinwheel__ALL.o $
+    obj/examples/pinwheel/main_vl.o bin/libmetron.a
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include $
-      -Igen/examples/rvtiny/metron_vl
-
-
-################################################################################
-# Compile bin/examples/rvtiny_sync
-
-build obj/examples/rvtiny_sync/main.o: compile_cpp $
-    examples/rvtiny_sync/main.cpp
-  includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include
-build bin/examples/rvtiny_sync: link obj/examples/rvtiny_sync/main.o $
-    bin/libmetron.a
-  includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include
-
-
-################################################################################
-# Metronize examples/rvtiny_sync/metron -> examples/rvtiny_sync/metron_sv
-
-build examples/rvtiny_sync/metron_sv/toplevel.sv: metron $
-    examples/rvtiny_sync/metron/toplevel.h | bin/metron $
-    examples/rvtiny_sync/metron/toplevel.h
-  src_dir = examples/rvtiny_sync/metron
-  dst_dir = examples/rvtiny_sync/metron_sv
-  src_top = toplevel.h
-
-
-################################################################################
-# Verilate toplevel@examples/rvtiny_sync/metron_sv -> gen/examples/rvtiny_sync/metron_vl
-
-build gen/examples/rvtiny_sync/metron_vl/Vtoplevel.mk $
-    gen/examples/rvtiny_sync/metron_vl/Vtoplevel.h: verilator $
-    examples/rvtiny_sync/metron_sv/toplevel.sv
-  includes = -Isrc -Iexamples/rvtiny_sync/metron_sv
-  src_top = toplevel
-  dst_dir = gen/examples/rvtiny_sync/metron_vl
-build gen/examples/rvtiny_sync/metron_vl/Vtoplevel__ALL.o: make $
-    gen/examples/rvtiny_sync/metron_vl/Vtoplevel.mk
-  dst_dir = gen/examples/rvtiny_sync/metron_vl
-  makefile = Vtoplevel.mk
-
-
-################################################################################
-# Compile bin/examples/rvtiny_sync_vl
-
-build obj/examples/rvtiny_sync/main_vl.o: compile_cpp $
-    examples/rvtiny_sync/main_vl.cpp | $
-    gen/examples/rvtiny_sync/metron_vl/Vtoplevel.h
-  includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include $
-      -Igen/examples/rvtiny_sync/metron_vl
-build bin/examples/rvtiny_sync_vl: link obj/verilated.o $
-    gen/examples/rvtiny_sync/metron_vl/Vtoplevel__ALL.o $
-    obj/examples/rvtiny_sync/main_vl.o bin/libmetron.a
-  includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include $
-      -Igen/examples/rvtiny_sync/metron_vl
+      -Igen/examples/pinwheel/metron_vl
 
 
 ################################################################################

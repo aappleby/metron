@@ -17,7 +17,7 @@ set part xc7a12t
 set module toplevel
 
 create_project $module -in_memory -part $part
-add_files example_rvtiny/generated/toplevel.sv
+add_files example_pinwheel/generated/pinwheel.sv
 #read_xdc file.xdc
 synth_design -name $module -top $module -part $part
 #write_checkpoint -force $module-synth.dcp

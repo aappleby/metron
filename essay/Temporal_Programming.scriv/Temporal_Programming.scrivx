@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ScrivenerProject Template="No" Version="2.0" Identifier="BD87B4F4-DC28-4D78-B8F8-5E0F787F4206" Creator="SCRWIN-3.1.1.0" Device="TinyTron" Modified="2022-10-18 21:32:56 -0700" ModID="00ED817A-DC03-41EE-B18F-642FF080EE1A">
+<ScrivenerProject Template="No" Version="2.0" Identifier="BD87B4F4-DC28-4D78-B8F8-5E0F787F4206" Creator="SCRWIN-3.1.1.0" Device="TinyTron" Modified="2022-10-19 12:17:05 -0700" ModID="E8792D6E-AA36-4518-A22F-FCED9F1234A5">
     <Binder>
         <BinderItem UUID="7A583553-3A84-40D6-B9B9-0430B8CD3E39" Type="DraftFolder" Created="2017-11-02 08:22:45 -0700" Modified="2022-10-01 22:11:16 -0700">
             <Title>Draft</Title>
@@ -706,35 +706,86 @@
                         <TextSelection>61,0</TextSelection>
                     </TextSettings>
                 </BinderItem>
-                <BinderItem UUID="16E6C956-C9B3-4FE7-A803-28FD5AC827BF" Type="PDF" Created="2022-10-18 21:31:46 -0700" Modified="2022-10-18 21:31:47 -0700">
-                    <Title>BSV_user-guide</Title>
+                <BinderItem UUID="1564A019-0064-43E0-85B9-FAD25BC2509E" Type="Folder" Created="2022-10-18 21:36:55 -0700" Modified="2022-10-18 21:36:57 -0700">
+                    <Title>Bluespec</Title>
                     <MetaData>
                         <IncludeInCompile>Yes</IncludeInCompile>
-                        <FileExtension>pdf</FileExtension>
                     </MetaData>
-                    <MediaSettings>
-                        <CurrentPDFPage>1</CurrentPDFPage>
-                    </MediaSettings>
-                </BinderItem>
-                <BinderItem UUID="DD3EF510-C5BF-4390-9589-4B4569DC1E30" Type="PDF" Created="2022-10-18 21:32:00 -0700" Modified="2022-10-18 21:32:00 -0700">
-                    <Title>BSV_reference-guide</Title>
-                    <MetaData>
-                        <IncludeInCompile>Yes</IncludeInCompile>
-                        <FileExtension>pdf</FileExtension>
-                    </MetaData>
-                    <MediaSettings>
-                        <CurrentPDFPage>1</CurrentPDFPage>
-                    </MediaSettings>
-                </BinderItem>
-                <BinderItem UUID="E9819D59-9CC1-4FB5-8CE8-113BFBF40C10" Type="PDF" Created="2022-10-17 13:16:41 -0700" Modified="2022-10-17 13:16:41 -0700">
-                    <Title>BSV_ref_card</Title>
-                    <MetaData>
-                        <IncludeInCompile>Yes</IncludeInCompile>
-                        <FileExtension>pdf</FileExtension>
-                    </MetaData>
-                    <MediaSettings>
-                        <CurrentPDFPage>1</CurrentPDFPage>
-                    </MediaSettings>
+                    <TextSettings>
+                        <TextSelection>0,0</TextSelection>
+                    </TextSettings>
+                    <Children>
+                        <BinderItem UUID="D5E80103-EBD2-45EC-B185-1B3F93F4778A" Type="PDF" Created="2022-10-17 01:11:47 -0700" Modified="2022-10-19 12:16:31 -0700">
+                            <Title>An Exercise in High-Level Architectureal Description using a Synthesizable Subset of Term Rewriting Systems</Title>
+                            <MetaData>
+                                <IncludeInCompile>Yes</IncludeInCompile>
+                                <FileExtension>pdf</FileExtension>
+                            </MetaData>
+                            <MediaSettings>
+                                <CurrentPDFPage>1</CurrentPDFPage>
+                            </MediaSettings>
+                        </BinderItem>
+                        <BinderItem UUID="D86ADE51-B5C9-4C0B-852C-F8AC53751FB2" Type="PDF" Created="2022-10-17 01:10:53 -0700" Modified="2022-10-19 12:15:35 -0700">
+                            <Title>Synthesis of Operation-Centric Hardware Descriptions</Title>
+                            <MetaData>
+                                <IncludeInCompile>Yes</IncludeInCompile>
+                                <FileExtension>pdf</FileExtension>
+                            </MetaData>
+                            <MediaSettings>
+                                <CurrentPDFPage>1</CurrentPDFPage>
+                            </MediaSettings>
+                        </BinderItem>
+                        <BinderItem UUID="06A821B5-F8CD-4801-A0CB-7B35A6D4939D" Type="PDF" Created="2022-10-17 01:11:13 -0700" Modified="2022-10-19 12:16:03 -0700">
+                            <Title>Synchronous Extensions to Operation-Centric Hardware Description Languages</Title>
+                            <MetaData>
+                                <IncludeInCompile>Yes</IncludeInCompile>
+                                <FileExtension>pdf</FileExtension>
+                            </MetaData>
+                            <MediaSettings>
+                                <CurrentPDFPage>1</CurrentPDFPage>
+                            </MediaSettings>
+                        </BinderItem>
+                        <BinderItem UUID="56307444-8AE8-49A2-B641-2CEA2CAC0544" Type="PDF" Created="2022-10-17 01:05:43 -0700" Modified="2022-10-19 12:15:15 -0700">
+                            <Title>Operation-Centric Hardware Description and Synthesis</Title>
+                            <MetaData>
+                                <IncludeInCompile>Yes</IncludeInCompile>
+                                <FileExtension>pdf</FileExtension>
+                            </MetaData>
+                            <MediaSettings>
+                                <CurrentPDFPage>1</CurrentPDFPage>
+                            </MediaSettings>
+                        </BinderItem>
+                        <BinderItem UUID="16E6C956-C9B3-4FE7-A803-28FD5AC827BF" Type="PDF" Created="2022-10-18 21:31:46 -0700" Modified="2022-10-19 12:16:42 -0700">
+                            <Title>Bluespec SystemVerilog User Guide</Title>
+                            <MetaData>
+                                <IncludeInCompile>Yes</IncludeInCompile>
+                                <FileExtension>pdf</FileExtension>
+                            </MetaData>
+                            <MediaSettings>
+                                <CurrentPDFPage>1</CurrentPDFPage>
+                            </MediaSettings>
+                        </BinderItem>
+                        <BinderItem UUID="DD3EF510-C5BF-4390-9589-4B4569DC1E30" Type="PDF" Created="2022-10-18 21:32:00 -0700" Modified="2022-10-19 12:16:51 -0700">
+                            <Title>Bluespec SystemVerilog Reference Guide</Title>
+                            <MetaData>
+                                <IncludeInCompile>Yes</IncludeInCompile>
+                                <FileExtension>pdf</FileExtension>
+                            </MetaData>
+                            <MediaSettings>
+                                <CurrentPDFPage>1</CurrentPDFPage>
+                            </MediaSettings>
+                        </BinderItem>
+                        <BinderItem UUID="E9819D59-9CC1-4FB5-8CE8-113BFBF40C10" Type="PDF" Created="2022-10-17 13:16:41 -0700" Modified="2022-10-19 12:17:03 -0700">
+                            <Title>Bluespec SystemVerilog Reference Card</Title>
+                            <MetaData>
+                                <IncludeInCompile>Yes</IncludeInCompile>
+                                <FileExtension>pdf</FileExtension>
+                            </MetaData>
+                            <MediaSettings>
+                                <CurrentPDFPage>1</CurrentPDFPage>
+                            </MediaSettings>
+                        </BinderItem>
+                    </Children>
                 </BinderItem>
             </Children>
         </BinderItem>
@@ -928,12 +979,12 @@
     <ProjectTargets Notify="No">
         <DraftTarget Type="Words" CountIncludedOnly="Yes" CurrentCompileGroupOnly="Yes" Deadline="2011-04-12 14:24:39 +0200" IgnoreDeadline="Yes">0</DraftTarget>
         <SessionTarget Type="Words" CountDraftOnly="Yes" AllowNegatives="No" ResetType="Time" ResetTime="00:00" DeterminedFromDeadline="No" CanWriteOnDeadlineDate="No" WritingDays="">0</SessionTarget>
-        <PreviousSession Words="136" Characters="836" Date="2022-10-18 21:32:56 -0700"/>
+        <PreviousSession Words="0" Characters="0" Date="2022-10-19 12:17:05 -0700"/>
     </ProjectTargets>
     <BookmarksFolderUUID>07B0D7C6-57CE-4D6F-8AD9-11F06A261A5F</BookmarksFolderUUID>
-    <RecentWritingHistory Date="2022-10-18 00:00:00 -0700">
-        <DraftWordCount>136</DraftWordCount>
-        <DraftCharCount>836</DraftCharCount>
+    <RecentWritingHistory Date="2022-10-19 00:00:00 -0700">
+        <DraftWordCount>0</DraftWordCount>
+        <DraftCharCount>0</DraftCharCount>
         <OtherWordCount>0</OtherWordCount>
         <OtherCharCount>0</OtherCharCount>
     </RecentWritingHistory>

@@ -2631,16 +2631,20 @@ class Pinwheel {
   static const int OP_LUI    = 0b00110111;
   static const int OP_AUIPC  = 0b00010111;
 
+  void do_reset() {
+    pc = 0;
+    regs[0] = b32(0);
+    bus_read_data = 0;
+    bus_address = 0;
+    bus_write_data = 0;
+    bus_byte_enable = 0;
+    bus_read_enable = 0;
+    bus_write_enable = 0;
+  }
+
   void tick(logic<1> reset) {
     if (reset) {
-      pc = 0;
-      regs[0] = b32(0);
-      bus_read_data = 0;
-      bus_address = 0;
-      bus_write_data = 0;
-      bus_byte_enable = 0;
-      bus_read_enable = 0;
-      bus_write_enable = 0;
+      do_reset();
     } else {
       logic<32> inst = text_mem[b14(pc, 2)];
 

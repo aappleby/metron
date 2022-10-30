@@ -124,16 +124,20 @@ module Pinwheel (
   localparam int OP_LUI    = 8'b00110111;
   localparam int OP_AUIPC  = 8'b00010111;
 
+  task automatic do_reset();
+    pc <= 0;
+    regs[0] <= 32'd0;
+    bus_read_data <= 0;
+    bus_address <= 0;
+    bus_write_data <= 0;
+    bus_byte_enable <= 0;
+    bus_read_enable <= 0;
+    bus_write_enable <= 0;
+  endtask
+
   always_ff @(posedge clock) begin : tick
     if (tick_reset) begin
-      pc <= 0;
-      regs[0] <= 32'd0;
-      bus_read_data <= 0;
-      bus_address <= 0;
-      bus_write_data <= 0;
-      bus_byte_enable <= 0;
-      bus_read_enable <= 0;
-      bus_write_enable <= 0;
+      do_reset();
     end else begin
       logic[31:0] inst;
       logic[6:0] op;

@@ -1,82 +1,5 @@
 `include "metron_tools.sv"
-
-parameter int RV32I_OP_LOAD    = 5'b00000;
-parameter int RV32I_OP_LOADFP  = 5'b00001;
-parameter int RV32I_OP_CUSTOM0 = 5'b00010;
-parameter int RV32I_OP_MISCMEM = 5'b00011;
-parameter int RV32I_OP_OPIMM   = 5'b00100;
-parameter int RV32I_OP_AUIPC   = 5'b00101;
-parameter int RV32I_OP_OPIMM32 = 5'b00110;
-parameter int RV32I_OP_48B1    = 5'b00111;
-
-parameter int RV32I_OP_STORE   = 5'b01000;
-parameter int RV32I_OP_STOREFP = 5'b01001;
-parameter int RV32I_OP_CUSTOM1 = 5'b01010;
-parameter int RV32I_OP_AMO     = 5'b01011;
-parameter int RV32I_OP_OP      = 5'b01100;
-parameter int RV32I_OP_LUI     = 5'b01101;
-parameter int RV32I_OP_OP32    = 5'b01110;
-parameter int RV32I_OP_64B     = 5'b01111;
-
-parameter int RV32I_OP_MADD    = 5'b10000;
-parameter int RV32I_OP_MSUB    = 5'b10001;
-parameter int RV32I_OP_NMSUB   = 5'b10010;
-parameter int RV32I_OP_NMADD   = 5'b10011;
-parameter int RV32I_OP_OPFP    = 5'b10100;
-parameter int RV32I_OP_RES1    = 5'b10101;
-parameter int RV32I_OP_CUSTOM2 = 5'b10110;
-parameter int RV32I_OP_48B2    = 5'b10111;
-
-parameter int RV32I_OP_BRANCH  = 5'b11000;
-parameter int RV32I_OP_JALR    = 5'b11001;
-parameter int RV32I_OP_RES2    = 5'b11010;
-parameter int RV32I_OP_JAL     = 5'b11011;
-parameter int RV32I_OP_SYSTEM  = 5'b11100;
-parameter int RV32I_OP_RES3    = 5'b11101;
-parameter int RV32I_OP_CUSTOM3 = 5'b11110;
-parameter int RV32I_OP_80B     = 5'b11111;
-
-parameter int RV32I_F3_BEQ     = 3'b000;
-parameter int RV32I_F3_BNE     = 3'b001;
-parameter int RV32I_F3_BLT     = 3'b100;
-parameter int RV32I_F3_BGE     = 3'b101;
-parameter int RV32I_F3_BLTU    = 3'b110;
-parameter int RV32I_F3_BGEU    = 3'b111;
-
-parameter int RV32I_F3_LB      = 3'b000;
-parameter int RV32I_F3_LH      = 3'b001;
-parameter int RV32I_F3_LW      = 3'b010;
-parameter int RV32I_F3_LBU     = 3'b100;
-parameter int RV32I_F3_LHU     = 3'b101;
-
-parameter int RV32I_F3_SB      = 3'b000;
-parameter int RV32I_F3_SH      = 3'b001;
-parameter int RV32I_F3_SW      = 3'b010;
-
-parameter int RV32I_F3_ADDI = 3'b000;
-parameter int RV32I_F3_SLI     = 3'b001;
-parameter int RV32I_F3_SLTI    = 3'b010;
-parameter int RV32I_F3_SLTIU   = 3'b011;
-parameter int RV32I_F3_XORI    = 3'b100;
-parameter int RV32I_F3_SRI     = 3'b101;
-parameter int RV32I_F3_ORI     = 3'b110;
-parameter int RV32I_F3_ANDI    = 3'b111;
-
-parameter int RV32I_F3_ADDSUB  = 3'b000;
-parameter int RV32I_F3_SL      = 3'b001;
-parameter int RV32I_F3_SLT     = 3'b010;
-parameter int RV32I_F3_SLTU    = 3'b011;
-parameter int RV32I_F3_XOR     = 3'b100;
-parameter int RV32I_F3_SR      = 3'b101;
-parameter int RV32I_F3_OR      = 3'b110;
-parameter int RV32I_F3_AND     = 3'b111;
-
-parameter int RV32I_F3_CSRRW   = 3'b001;
-parameter int RV32I_F3_CSRRS   = 3'b010;
-parameter int RV32I_F3_CSRRC   = 3'b011;
-parameter int RV32I_F3_CSRRWI  = 3'b101;
-parameter int RV32I_F3_CSRRSI  = 3'b110;
-parameter int RV32I_F3_CSRRCI  = 3'b111;
+`include "constants.sv"
 
 module Pinwheel (
   // global clock
@@ -114,33 +37,29 @@ module Pinwheel (
   //----------------------------------------
 
  /*private:*/
-  localparam int OP_ALU    = 8'b00110011;
-  localparam int OP_ALUI   = 8'b00010011;
-  localparam int OP_LOAD   = 8'b00000011;
-  localparam int OP_STORE  = 8'b00100011;
-  localparam int OP_BRANCH = 8'b01100011;
-  localparam int OP_JAL    = 8'b01101111;
-  localparam int OP_JALR   = 8'b01100111;
-  localparam int OP_LUI    = 8'b00110111;
-  localparam int OP_AUIPC  = 8'b00010111;
-
-  task automatic do_reset();
-    pc <= 0;
-    regs[0] <= 32'd0;
-    bus_read_data <= 0;
-    bus_address <= 0;
-    bus_write_data <= 0;
-    bus_byte_enable <= 0;
-    bus_read_enable <= 0;
-    bus_write_enable <= 0;
-  endtask
+  localparam int OP_ALU    = 5'b01100;
+  localparam int OP_ALUI   = 5'b00100;
+  localparam int OP_LOAD   = 5'b00000;
+  localparam int OP_STORE  = 5'b01000;
+  localparam int OP_BRANCH = 5'b11000;
+  localparam int OP_JAL    = 5'b11011;
+  localparam int OP_JALR   = 5'b11001;
+  localparam int OP_LUI    = 5'b01101;
+  localparam int OP_AUIPC  = 5'b00101;
 
   always_ff @(posedge clock) begin : tick
     if (tick_reset) begin
-      do_reset();
+      pc <= 0;
+      regs[0] <= 32'd0;
+      bus_read_data <= 0;
+      bus_address <= 0;
+      bus_write_data <= 0;
+      bus_byte_enable <= 0;
+      bus_read_enable <= 0;
+      bus_write_enable <= 0;
     end else begin
       logic[31:0] inst;
-      logic[6:0] op;
+      logic[4:0] op;
       logic[4:0] rd;
       logic[2:0] f3;
       logic[4:0] r1;
@@ -151,9 +70,12 @@ module Pinwheel (
       logic[31:0] imm_j;
       logic[31:0] imm_s;
       logic[31:0] imm_u;
+      logic[31:0] ra;
+      logic[31:0] rb;
+      logic[2:0] alu_op;
       inst = text_mem[pc[15:2]];
 
-      op = inst[6:0];
+      op = inst[6:2];
       rd = inst[11:7];
       f3 = inst[14:12];
       r1 = inst[19:15];
@@ -170,39 +92,41 @@ module Pinwheel (
       bus_write_enable <= 0;
       bus_write_data <= 0;
 
+      ra = regs[r1];
+      rb = (op == RV32I_OP_OPIMM) ? imm_i : regs[r2];
+      //logic<32> rc = 0;
+      //logic<32> alu_result;
+      //logic<1>  writeback = false;
+      //logic<32> data_in;
+      alu_op = f3;
+
       //----------
       // Metron simulates this a few percent faster if we don't have ALU and
       // ALUI in the same branch, but then we duplicate the big ALU switch...
 
       if (op == OP_ALU || op == OP_ALUI) begin
-        logic[31:0] op_a;
-        logic[31:0] op_b;
         logic[31:0] alu_result;
-        op_a = regs[r1];
-        op_b =
-            op == OP_ALUI ? {{21 {inst[31]}}, inst[30:25], inst[24:20]}
-                          : regs[r2];
 
         // clang-format off
-        case (f3)
-          0: alu_result = (op == OP_ALU) && f7[5] ? op_a - op_b : op_a + op_b;
-          1: alu_result = op_a << 5'(op_b);
-          2: alu_result = $signed(op_a) < $signed(op_b);
-          3: alu_result = op_a < op_b;
-          4: alu_result = op_a ^ op_b;
+        case (alu_op)
+          0: alu_result = (op == OP_ALU) && f7[5] ? ra - rb : ra + rb;
+          1: alu_result = ra << 5'(rb);
+          2: alu_result = $signed(ra) < $signed(rb);
+          3: alu_result = ra < rb;
+          4: alu_result = ra ^ rb;
           5: begin
             // FIXME BUG Verilator isn't handling this ternary expression
             // correctly.
             // alu_result = f7[5] ? sra(op_a, b5(op_b)) : b32(op_a >> b5(op_b));
             // break;
             if (f7[5]) begin
-              alu_result = ($signed(op_a) >>> 5'(op_b));
+              alu_result = ($signed(ra) >>> 5'(rb));
             end else begin
-              alu_result = op_a >> 5'(op_b);
+              alu_result = ra >> 5'(rb);
             end
           end
-          6: alu_result = op_a | op_b;
-          7: alu_result = op_a & op_b;
+          6: alu_result = ra | rb;
+          7: alu_result = ra & rb;
         endcase
         // clang-format on
 

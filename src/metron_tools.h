@@ -578,11 +578,14 @@ inline int write(const char* fmt, ...) {
 // Verilog's signed right shift doesn't work quite the same as C++'s, so we
 // patch around it here.
 
-// FIXME get rid of this now that as_signed() works correctly
-
 template <int WIDTH>
 inline logic<WIDTH> sra(logic<WIDTH> x, int s) {
   return x.as_signed() >> s;
+}
+
+template <int WIDTH>
+inline logic<WIDTH> sla(logic<WIDTH> x, int s) {
+  return x.as_unsigned() >> s;
 }
 
 //----------------------------------------

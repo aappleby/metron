@@ -64,102 +64,104 @@ rule link_ems
       -sNO_DISABLE_EXCEPTION_CATCHING -sTOTAL_STACK=32MB $
       -sINITIAL_MEMORY=64MB -sFORCE_FILESYSTEM -o ${out}
 packager = $EMSDK/upstream/emscripten/tools/file_packager.py
-build docs/demo/examples.data docs/demo/examples.js: command tests/Tests.h $
-    tests/test_utils.h tests/metron_bad/basic_reg_rwr.h $
-    tests/metron_bad/basic_sig_wrw.h tests/metron_bad/bowtied_signals.h $
+build docs/demo/examples.data docs/demo/examples.js: command $
+    tests/test_utils.h tests/Tests.h tests/metron_bad/bowtied_signals.h $
     tests/metron_bad/case_without_break.h $
-    tests/metron_bad/constructor_has_params.h $
-    tests/metron_bad/if_with_no_compound.h $
-    tests/metron_bad/mid_block_break.h tests/metron_bad/mid_block_return.h $
-    tests/metron_bad/multiple_submod_function_bindings.h $
-    tests/metron_bad/multiple_tock_returns.h $
     tests/metron_bad/tick_with_return_value.h $
-    tests/metron_bad/too_many_breaks.h tests/metron_broken/bad_increment.h $
-    tests/metron_good/all_func_types.h $
-    tests/metron_good/basic_constructor.h $
-    tests/metron_good/basic_function.h tests/metron_good/basic_increment.h $
-    tests/metron_good/basic_inputs.h tests/metron_good/basic_literals.h $
-    tests/metron_good/basic_localparam.h tests/metron_good/basic_output.h $
-    tests/metron_good/basic_param.h tests/metron_good/basic_public_reg.h $
-    tests/metron_good/basic_public_sig.h tests/metron_good/basic_reg_rww.h $
-    tests/metron_good/basic_sig_wwr.h tests/metron_good/basic_submod.h $
+    tests/metron_bad/basic_sig_wrw.h tests/metron_bad/if_with_no_compound.h $
+    tests/metron_bad/multiple_tock_returns.h $
+    tests/metron_bad/constructor_has_params.h $
+    tests/metron_bad/mid_block_return.h tests/metron_bad/mid_block_break.h $
+    tests/metron_bad/multiple_submod_function_bindings.h $
+    tests/metron_bad/basic_reg_rwr.h tests/metron_bad/too_many_breaks.h $
+    tests/metron_good/all_func_types.h tests/metron_good/tock_task.h $
+    tests/metron_good/namespaces.h tests/metron_good/private_getter.h $
+    tests/metron_good/defines.h tests/metron_good/minimal.h $
+    tests/metron_good/basic_increment.h tests/metron_good/basic_submod.h $
+    tests/metron_good/bit_dup.h tests/metron_good/basic_submod_public_reg.h $
+    tests/metron_good/magic_comments.h tests/metron_good/local_localparam.h $
+    tests/metron_good/include_guards.h tests/metron_good/utf8-mod.h $
+    tests/metron_good/trivial_adder.h tests/metron_good/if_with_compound.h $
+    tests/metron_good/nested_submod_calls.h $
+    tests/metron_good/basic_function.h $
+    tests/metron_good/call_tick_from_tock.h $
+    tests/metron_good/basic_inputs.h tests/metron_good/input_signals.h $
     tests/metron_good/basic_submod_param.h $
-    tests/metron_good/basic_submod_public_reg.h $
-    tests/metron_good/basic_switch.h tests/metron_good/basic_task.h $
-    tests/metron_good/basic_template.h $
+    tests/metron_good/basic_reg_rww.h tests/metron_good/multi_tick.h $
+    tests/metron_good/for_loops.h tests/metron_good/bit_casts.h $
+    tests/metron_good/case_with_fallthrough.h $
+    tests/metron_good/init_chain.h tests/metron_good/oneliners.h $
+    tests/metron_good/plus_equals.h tests/metron_good/basic_task.h $
+    tests/metron_good/basic_output.h tests/metron_good/submod_bindings.h $
+    tests/metron_good/basic_param.h $
     tests/metron_good/basic_tock_with_return.h $
-    tests/metron_good/bit_casts.h tests/metron_good/bit_concat.h $
-    tests/metron_good/bit_dup.h $
+    tests/metron_good/basic_switch.h tests/metron_good/basic_public_sig.h $
+    tests/metron_good/good_order.h tests/metron_good/utf8-mod.bom.h $
+    tests/metron_good/enum_simple.h tests/metron_good/basic_localparam.h $
     tests/metron_good/both_tock_and_tick_use_tasks_and_funcs.h $
-    tests/metron_good/builtins.h tests/metron_good/call_tick_from_tock.h $
-    tests/metron_good/case_with_fallthrough.h tests/metron_good/defines.h $
-    tests/metron_good/dontcare.h tests/metron_good/enum_simple.h $
-    tests/metron_good/for_loops.h tests/metron_good/good_order.h $
-    tests/metron_good/if_with_compound.h tests/metron_good/include_guards.h $
-    tests/metron_good/init_chain.h tests/metron_good/input_signals.h $
-    tests/metron_good/local_localparam.h tests/metron_good/magic_comments.h $
+    tests/metron_good/builtins.h tests/metron_good/basic_sig_wwr.h $
+    tests/metron_good/bit_concat.h tests/metron_good/basic_literals.h $
+    tests/metron_good/basic_constructor.h tests/metron_good/dontcare.h $
+    tests/metron_good/basic_template.h tests/metron_good/structs.h $
+    tests/metron_good/nested_structs.h $
     tests/metron_good/matching_port_and_arg_names.h $
-    tests/metron_good/minimal.h tests/metron_good/multi_tick.h $
-    tests/metron_good/namespaces.h tests/metron_good/nested_structs.h $
-    tests/metron_good/nested_submod_calls.h tests/metron_good/oneliners.h $
-    tests/metron_good/plus_equals.h tests/metron_good/private_getter.h $
-    tests/metron_good/structs.h tests/metron_good/submod_bindings.h $
-    tests/metron_good/tock_task.h tests/metron_good/trivial_adder.h $
-    tests/metron_good/utf8-mod.bom.h tests/metron_good/utf8-mod.h $
-    tests/metron_lockstep/counter.h tests/metron_lockstep/funcs_and_tasks.h $
-    tests/metron_lockstep/lfsr.h tests/metron_lockstep/lockstep_bad.h $
-    tests/metron_lockstep/timeout_bad.h tests/rv_tests/riscv_test.h $
-    tests/rv_tests/test_macros.h examples/scratch.h $
-    examples/gb_spu/metron/MetroBoySPU2.h examples/ibex/metron/ibex_alu.h $
+    tests/metron_good/basic_public_reg.h tests/rv_tests/test_macros.h $
+    tests/rv_tests/riscv_test.h tests/metron_broken/bad_increment.h $
+    tests/metron_lockstep/lfsr.h tests/metron_lockstep/timeout_bad.h $
+    tests/metron_lockstep/lockstep_bad.h $
+    tests/metron_lockstep/funcs_and_tasks.h tests/metron_lockstep/counter.h $
+    examples/scratch.h examples/ibex/metron/ibex_pkg.h $
+    examples/ibex/metron/ibex_alu.h $
     examples/ibex/metron/ibex_compressed_decoder.h $
+    examples/ibex/metron/prim_arbiter_fixed.h $
     examples/ibex/metron/ibex_multdiv_slow.h $
-    examples/ibex/metron/ibex_pkg.h $
-    examples/ibex/metron/prim_arbiter_fixed.h examples/j1/metron/dpram.h $
-    examples/j1/metron/j1.h examples/pinwheel/metron/pinwheel.h $
-    examples/pong/metron/pong.h examples/rvsimple/metron/adder.h $
-    examples/rvsimple/metron/alu.h examples/rvsimple/metron/alu_control.h $
-    examples/rvsimple/metron/config.h examples/rvsimple/metron/constants.h $
     examples/rvsimple/metron/control_transfer.h $
-    examples/rvsimple/metron/data_memory_interface.h $
-    examples/rvsimple/metron/example_data_memory.h $
-    examples/rvsimple/metron/example_data_memory_bus.h $
-    examples/rvsimple/metron/example_text_memory.h $
-    examples/rvsimple/metron/example_text_memory_bus.h $
-    examples/rvsimple/metron/immediate_generator.h $
     examples/rvsimple/metron/instruction_decoder.h $
-    examples/rvsimple/metron/multiplexer2.h $
-    examples/rvsimple/metron/multiplexer4.h $
-    examples/rvsimple/metron/multiplexer8.h $
-    examples/rvsimple/metron/regfile.h examples/rvsimple/metron/register.h $
-    examples/rvsimple/metron/riscv_core.h $
-    examples/rvsimple/metron/singlecycle_control.h $
     examples/rvsimple/metron/singlecycle_ctlpath.h $
+    examples/rvsimple/metron/multiplexer8.h $
+    examples/rvsimple/metron/multiplexer4.h $
+    examples/rvsimple/metron/multiplexer2.h $
+    examples/rvsimple/metron/example_text_memory.h $
+    examples/rvsimple/metron/immediate_generator.h $
+    examples/rvsimple/metron/alu_control.h $
+    examples/rvsimple/metron/constants.h examples/rvsimple/metron/alu.h $
+    examples/rvsimple/metron/example_data_memory.h $
+    examples/rvsimple/metron/data_memory_interface.h $
+    examples/rvsimple/metron/toplevel.h $
+    examples/rvsimple/metron/example_data_memory_bus.h $
+    examples/rvsimple/metron/singlecycle_control.h $
     examples/rvsimple/metron/singlecycle_datapath.h $
-    examples/rvsimple/metron/toplevel.h examples/tutorial/adder.h $
-    examples/tutorial/bit_twiddling.h examples/tutorial/blockram.h $
-    examples/tutorial/checksum.h examples/tutorial/clocked_adder.h $
-    examples/tutorial/counter.h examples/tutorial/declaration_order.h $
-    examples/tutorial/functions_and_tasks.h examples/tutorial/nonblocking.h $
-    examples/tutorial/submodules.h examples/tutorial/templates.h $
-    examples/tutorial/tutorial2.h examples/tutorial/tutorial3.h $
-    examples/tutorial/tutorial4.h examples/tutorial/tutorial5.h $
-    examples/tutorial/vga.h examples/uart/metron/uart_hello.h $
-    examples/uart/metron/uart_rx.h examples/uart/metron/uart_top.h $
-    examples/uart/metron/uart_tx.h
+    examples/rvsimple/metron/adder.h $
+    examples/rvsimple/metron/example_text_memory_bus.h $
+    examples/rvsimple/metron/register.h examples/rvsimple/metron/config.h $
+    examples/rvsimple/metron/regfile.h $
+    examples/rvsimple/metron/riscv_core.h examples/pong/metron/pong.h $
+    examples/uart/metron/uart_tx.h examples/uart/metron/uart_rx.h $
+    examples/uart/metron/uart_hello.h examples/uart/metron/uart_top.h $
+    examples/tutorial/nonblocking.h examples/tutorial/checksum.h $
+    examples/tutorial/bit_twiddling.h examples/tutorial/tutorial5.h $
+    examples/tutorial/tutorial2.h examples/tutorial/vga.h $
+    examples/tutorial/templates.h examples/tutorial/functions_and_tasks.h $
+    examples/tutorial/tutorial4.h examples/tutorial/submodules.h $
+    examples/tutorial/blockram.h examples/tutorial/tutorial3.h $
+    examples/tutorial/declaration_order.h examples/tutorial/clocked_adder.h $
+    examples/tutorial/adder.h examples/tutorial/counter.h $
+    examples/gb_spu/metron/MetroBoySPU2.h examples/j1/metron/j1.h $
+    examples/j1/metron/dpram.h examples/pinwheel/metron/constants.h $
+    examples/pinwheel/metron/pinwheel.h
   command = python3 $$EMSDK/upstream/emscripten/tools/file_packager.py $
       docs/demo/examples.data --no-node --js-output=docs/demo/examples.js $
       --preload examples tests/metron_good tests/metron_bad --exclude *.cpp $
       *.sv *.MD *.hex *.pcf *.v *.txt
 build docs/tutorial/tutorial_src.data docs/tutorial/tutorial_src.js: $
-    command examples/tutorial/adder.h examples/tutorial/bit_twiddling.h $
-    examples/tutorial/blockram.h examples/tutorial/checksum.h $
-    examples/tutorial/clocked_adder.h examples/tutorial/counter.h $
-    examples/tutorial/declaration_order.h $
-    examples/tutorial/functions_and_tasks.h examples/tutorial/nonblocking.h $
-    examples/tutorial/submodules.h examples/tutorial/templates.h $
-    examples/tutorial/tutorial2.h examples/tutorial/tutorial3.h $
-    examples/tutorial/tutorial4.h examples/tutorial/tutorial5.h $
-    examples/tutorial/vga.h
+    command examples/tutorial/nonblocking.h examples/tutorial/checksum.h $
+    examples/tutorial/bit_twiddling.h examples/tutorial/tutorial5.h $
+    examples/tutorial/tutorial2.h examples/tutorial/vga.h $
+    examples/tutorial/templates.h examples/tutorial/functions_and_tasks.h $
+    examples/tutorial/tutorial4.h examples/tutorial/submodules.h $
+    examples/tutorial/blockram.h examples/tutorial/tutorial3.h $
+    examples/tutorial/declaration_order.h examples/tutorial/clocked_adder.h $
+    examples/tutorial/adder.h examples/tutorial/counter.h
   command = python3 $$EMSDK/upstream/emscripten/tools/file_packager.py $
       docs/tutorial/tutorial_src.data --no-node $
       --js-output=docs/tutorial/tutorial_src.js --preload examples/tutorial $
@@ -323,59 +325,59 @@ build obj/tests/test_utils.o: compile_cpp tests/test_utils.cpp
 build bin/metron_test: link obj/tests/test_main.o obj/tests/test_logic.o $
     obj/tests/test_utils.o bin/libmetron.a
   includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include
-build tests/rv_tests/add.text.vh tests/rv_tests/addi.text.vh $
-    tests/rv_tests/and.text.vh tests/rv_tests/andi.text.vh $
-    tests/rv_tests/auipc.text.vh tests/rv_tests/benchmark.text.vh $
-    tests/rv_tests/beq.text.vh tests/rv_tests/bge.text.vh $
-    tests/rv_tests/bgeu.text.vh tests/rv_tests/blt.text.vh $
-    tests/rv_tests/bltu.text.vh tests/rv_tests/bne.text.vh $
-    tests/rv_tests/jal.text.vh tests/rv_tests/jalr.text.vh $
-    tests/rv_tests/lb.text.vh tests/rv_tests/lbu.text.vh $
-    tests/rv_tests/lh.text.vh tests/rv_tests/lhu.text.vh $
-    tests/rv_tests/lui.text.vh tests/rv_tests/lw.text.vh $
-    tests/rv_tests/or.text.vh tests/rv_tests/ori.text.vh $
-    tests/rv_tests/sb.text.vh tests/rv_tests/sh.text.vh $
-    tests/rv_tests/simple.text.vh tests/rv_tests/sll.text.vh $
-    tests/rv_tests/slli.text.vh tests/rv_tests/slt.text.vh $
-    tests/rv_tests/slti.text.vh tests/rv_tests/sltiu.text.vh $
-    tests/rv_tests/sltu.text.vh tests/rv_tests/sra.text.vh $
-    tests/rv_tests/srai.text.vh tests/rv_tests/srl.text.vh $
-    tests/rv_tests/srli.text.vh tests/rv_tests/sub.text.vh $
-    tests/rv_tests/sw.text.vh tests/rv_tests/xor.text.vh $
-    tests/rv_tests/xori.text.vh tests/rv_tests/add.data.vh $
-    tests/rv_tests/addi.data.vh tests/rv_tests/and.data.vh $
-    tests/rv_tests/andi.data.vh tests/rv_tests/auipc.data.vh $
-    tests/rv_tests/benchmark.data.vh tests/rv_tests/beq.data.vh $
-    tests/rv_tests/bge.data.vh tests/rv_tests/bgeu.data.vh $
-    tests/rv_tests/blt.data.vh tests/rv_tests/bltu.data.vh $
-    tests/rv_tests/bne.data.vh tests/rv_tests/jal.data.vh $
-    tests/rv_tests/jalr.data.vh tests/rv_tests/lb.data.vh $
-    tests/rv_tests/lbu.data.vh tests/rv_tests/lh.data.vh $
-    tests/rv_tests/lhu.data.vh tests/rv_tests/lui.data.vh $
-    tests/rv_tests/lw.data.vh tests/rv_tests/or.data.vh $
-    tests/rv_tests/ori.data.vh tests/rv_tests/sb.data.vh $
-    tests/rv_tests/sh.data.vh tests/rv_tests/simple.data.vh $
-    tests/rv_tests/sll.data.vh tests/rv_tests/slli.data.vh $
-    tests/rv_tests/slt.data.vh tests/rv_tests/slti.data.vh $
-    tests/rv_tests/sltiu.data.vh tests/rv_tests/sltu.data.vh $
-    tests/rv_tests/sra.data.vh tests/rv_tests/srai.data.vh $
-    tests/rv_tests/srl.data.vh tests/rv_tests/srli.data.vh $
-    tests/rv_tests/sub.data.vh tests/rv_tests/sw.data.vh $
-    tests/rv_tests/xor.data.vh tests/rv_tests/xori.data.vh: make $
-    tests/rv_tests/makefile | tests/rv_tests/add.S tests/rv_tests/addi.S $
-    tests/rv_tests/and.S tests/rv_tests/andi.S tests/rv_tests/auipc.S $
-    tests/rv_tests/benchmark.S tests/rv_tests/beq.S tests/rv_tests/bge.S $
-    tests/rv_tests/bgeu.S tests/rv_tests/blt.S tests/rv_tests/bltu.S $
-    tests/rv_tests/bne.S tests/rv_tests/jal.S tests/rv_tests/jalr.S $
-    tests/rv_tests/lb.S tests/rv_tests/lbu.S tests/rv_tests/lh.S $
-    tests/rv_tests/lhu.S tests/rv_tests/lui.S tests/rv_tests/lw.S $
-    tests/rv_tests/or.S tests/rv_tests/ori.S tests/rv_tests/sb.S $
-    tests/rv_tests/sh.S tests/rv_tests/simple.S tests/rv_tests/sll.S $
-    tests/rv_tests/slli.S tests/rv_tests/slt.S tests/rv_tests/slti.S $
-    tests/rv_tests/sltiu.S tests/rv_tests/sltu.S tests/rv_tests/sra.S $
-    tests/rv_tests/srai.S tests/rv_tests/srl.S tests/rv_tests/srli.S $
-    tests/rv_tests/sub.S tests/rv_tests/sw.S tests/rv_tests/xor.S $
-    tests/rv_tests/xori.S
+build tests/rv_tests/bne.text.vh tests/rv_tests/srai.text.vh $
+    tests/rv_tests/sll.text.vh tests/rv_tests/bltu.text.vh $
+    tests/rv_tests/srl.text.vh tests/rv_tests/simple.text.vh $
+    tests/rv_tests/sw.text.vh tests/rv_tests/blt.text.vh $
+    tests/rv_tests/and.text.vh tests/rv_tests/srli.text.vh $
+    tests/rv_tests/andi.text.vh tests/rv_tests/xori.text.vh $
+    tests/rv_tests/lb.text.vh tests/rv_tests/jal.text.vh $
+    tests/rv_tests/lbu.text.vh tests/rv_tests/or.text.vh $
+    tests/rv_tests/sub.text.vh tests/rv_tests/sb.text.vh $
+    tests/rv_tests/slli.text.vh tests/rv_tests/ori.text.vh $
+    tests/rv_tests/add.text.vh tests/rv_tests/slt.text.vh $
+    tests/rv_tests/sra.text.vh tests/rv_tests/benchmark.text.vh $
+    tests/rv_tests/addi.text.vh tests/rv_tests/jalr.text.vh $
+    tests/rv_tests/sltu.text.vh tests/rv_tests/lhu.text.vh $
+    tests/rv_tests/slti.text.vh tests/rv_tests/xor.text.vh $
+    tests/rv_tests/sltiu.text.vh tests/rv_tests/bge.text.vh $
+    tests/rv_tests/lui.text.vh tests/rv_tests/bgeu.text.vh $
+    tests/rv_tests/sh.text.vh tests/rv_tests/beq.text.vh $
+    tests/rv_tests/lh.text.vh tests/rv_tests/auipc.text.vh $
+    tests/rv_tests/lw.text.vh tests/rv_tests/bne.data.vh $
+    tests/rv_tests/srai.data.vh tests/rv_tests/sll.data.vh $
+    tests/rv_tests/bltu.data.vh tests/rv_tests/srl.data.vh $
+    tests/rv_tests/simple.data.vh tests/rv_tests/sw.data.vh $
+    tests/rv_tests/blt.data.vh tests/rv_tests/and.data.vh $
+    tests/rv_tests/srli.data.vh tests/rv_tests/andi.data.vh $
+    tests/rv_tests/xori.data.vh tests/rv_tests/lb.data.vh $
+    tests/rv_tests/jal.data.vh tests/rv_tests/lbu.data.vh $
+    tests/rv_tests/or.data.vh tests/rv_tests/sub.data.vh $
+    tests/rv_tests/sb.data.vh tests/rv_tests/slli.data.vh $
+    tests/rv_tests/ori.data.vh tests/rv_tests/add.data.vh $
+    tests/rv_tests/slt.data.vh tests/rv_tests/sra.data.vh $
+    tests/rv_tests/benchmark.data.vh tests/rv_tests/addi.data.vh $
+    tests/rv_tests/jalr.data.vh tests/rv_tests/sltu.data.vh $
+    tests/rv_tests/lhu.data.vh tests/rv_tests/slti.data.vh $
+    tests/rv_tests/xor.data.vh tests/rv_tests/sltiu.data.vh $
+    tests/rv_tests/bge.data.vh tests/rv_tests/lui.data.vh $
+    tests/rv_tests/bgeu.data.vh tests/rv_tests/sh.data.vh $
+    tests/rv_tests/beq.data.vh tests/rv_tests/lh.data.vh $
+    tests/rv_tests/auipc.data.vh tests/rv_tests/lw.data.vh: make $
+    tests/rv_tests/makefile | tests/rv_tests/bne.S tests/rv_tests/srai.S $
+    tests/rv_tests/sll.S tests/rv_tests/bltu.S tests/rv_tests/srl.S $
+    tests/rv_tests/simple.S tests/rv_tests/sw.S tests/rv_tests/blt.S $
+    tests/rv_tests/and.S tests/rv_tests/srli.S tests/rv_tests/andi.S $
+    tests/rv_tests/xori.S tests/rv_tests/lb.S tests/rv_tests/jal.S $
+    tests/rv_tests/lbu.S tests/rv_tests/or.S tests/rv_tests/sub.S $
+    tests/rv_tests/sb.S tests/rv_tests/slli.S tests/rv_tests/ori.S $
+    tests/rv_tests/add.S tests/rv_tests/slt.S tests/rv_tests/sra.S $
+    tests/rv_tests/benchmark.S tests/rv_tests/addi.S tests/rv_tests/jalr.S $
+    tests/rv_tests/sltu.S tests/rv_tests/lhu.S tests/rv_tests/slti.S $
+    tests/rv_tests/xor.S tests/rv_tests/sltiu.S tests/rv_tests/bge.S $
+    tests/rv_tests/lui.S tests/rv_tests/bgeu.S tests/rv_tests/sh.S $
+    tests/rv_tests/beq.S tests/rv_tests/lh.S tests/rv_tests/auipc.S $
+    tests/rv_tests/lw.S
   dst_dir = tests/rv_tests
   makefile = makefile
 
@@ -392,14 +394,14 @@ build bin/examples/uart: link obj/examples/uart/main.o bin/libmetron.a
 ################################################################################
 # Metronize examples/uart/metron -> examples/uart/metron_sv
 
-build examples/uart/metron_sv/uart_hello.sv $
-    examples/uart/metron_sv/uart_rx.sv examples/uart/metron_sv/uart_top.sv $
-    examples/uart/metron_sv/uart_tx.sv: metron $
-    examples/uart/metron/uart_hello.h examples/uart/metron/uart_rx.h $
-    examples/uart/metron/uart_top.h examples/uart/metron/uart_tx.h | $
-    bin/metron examples/uart/metron/uart_hello.h $
-    examples/uart/metron/uart_rx.h examples/uart/metron/uart_top.h $
-    examples/uart/metron/uart_tx.h
+build examples/uart/metron_sv/uart_tx.sv examples/uart/metron_sv/uart_rx.sv $
+    examples/uart/metron_sv/uart_hello.sv $
+    examples/uart/metron_sv/uart_top.sv: metron $
+    examples/uart/metron/uart_tx.h examples/uart/metron/uart_rx.h $
+    examples/uart/metron/uart_hello.h examples/uart/metron/uart_top.h | $
+    bin/metron examples/uart/metron/uart_tx.h $
+    examples/uart/metron/uart_rx.h examples/uart/metron/uart_hello.h $
+    examples/uart/metron/uart_top.h
   src_dir = examples/uart/metron
   dst_dir = examples/uart/metron_sv
   src_top = uart_top.h
@@ -410,9 +412,8 @@ build examples/uart/metron_sv/uart_hello.sv $
 
 build gen/examples/uart/metron_vl/Vuart_top.mk $
     gen/examples/uart/metron_vl/Vuart_top.h: verilator $
-    examples/uart/metron_sv/uart_hello.sv $
-    examples/uart/metron_sv/uart_rx.sv examples/uart/metron_sv/uart_top.sv $
-    examples/uart/metron_sv/uart_tx.sv
+    examples/uart/metron_sv/uart_tx.sv examples/uart/metron_sv/uart_rx.sv $
+    examples/uart/metron_sv/uart_hello.sv examples/uart/metron_sv/uart_top.sv
   includes = -Isrc -Iexamples/uart/metron_sv
   src_top = uart_top
   dst_dir = gen/examples/uart/metron_vl
@@ -440,9 +441,8 @@ build bin/examples/uart_vl: link obj/verilated.o $
 # Icarus Verilog uart testbench
 
 build bin/examples/uart_iv: iverilog examples/uart/uart_test_iv.sv | $
-    examples/uart/metron_sv/uart_hello.sv $
-    examples/uart/metron_sv/uart_rx.sv examples/uart/metron_sv/uart_top.sv $
-    examples/uart/metron_sv/uart_tx.sv
+    examples/uart/metron_sv/uart_tx.sv examples/uart/metron_sv/uart_rx.sv $
+    examples/uart/metron_sv/uart_hello.sv examples/uart/metron_sv/uart_top.sv
   includes = -Isrc -Iexamples/uart -Iexamples/uart/metron_sv
   defines = -DIVERILOG
 
@@ -451,10 +451,10 @@ build bin/examples/uart_iv: iverilog examples/uart/uart_test_iv.sv | $
 # Yosys/NextPNR uart testbench
 
 build obj/examples/uart/uart_test_ice40.json: yosys $
-    examples/uart/uart_test_ice40.sv | $
+    examples/uart/uart_test_ice40.sv | examples/uart/metron_sv/uart_tx.sv $
+    examples/uart/metron_sv/uart_rx.sv $
     examples/uart/metron_sv/uart_hello.sv $
-    examples/uart/metron_sv/uart_rx.sv examples/uart/metron_sv/uart_top.sv $
-    examples/uart/metron_sv/uart_tx.sv examples/uart/SB_PLL40_CORE.v
+    examples/uart/metron_sv/uart_top.sv examples/uart/SB_PLL40_CORE.v
   includes = -Isrc -Iexamples/uart -Iexamples/uart/metron_sv
 build obj/examples/uart/uart_test_ice40.asc: nextpnr-ice40 $
     obj/examples/uart/uart_test_ice40.json
@@ -477,69 +477,70 @@ build bin/examples/rvsimple: link obj/examples/rvsimple/main.o bin/libmetron.a
 ################################################################################
 # Metronize examples/rvsimple/metron -> examples/rvsimple/metron_sv
 
-build examples/rvsimple/metron_sv/adder.sv $
-    examples/rvsimple/metron_sv/alu.sv $
-    examples/rvsimple/metron_sv/alu_control.sv $
-    examples/rvsimple/metron_sv/config.sv $
-    examples/rvsimple/metron_sv/constants.sv $
-    examples/rvsimple/metron_sv/control_transfer.sv $
-    examples/rvsimple/metron_sv/data_memory_interface.sv $
-    examples/rvsimple/metron_sv/example_data_memory.sv $
-    examples/rvsimple/metron_sv/example_data_memory_bus.sv $
-    examples/rvsimple/metron_sv/example_text_memory.sv $
-    examples/rvsimple/metron_sv/example_text_memory_bus.sv $
-    examples/rvsimple/metron_sv/immediate_generator.sv $
+build examples/rvsimple/metron_sv/control_transfer.sv $
     examples/rvsimple/metron_sv/instruction_decoder.sv $
-    examples/rvsimple/metron_sv/multiplexer2.sv $
-    examples/rvsimple/metron_sv/multiplexer4.sv $
-    examples/rvsimple/metron_sv/multiplexer8.sv $
-    examples/rvsimple/metron_sv/regfile.sv $
-    examples/rvsimple/metron_sv/register.sv $
-    examples/rvsimple/metron_sv/riscv_core.sv $
-    examples/rvsimple/metron_sv/singlecycle_control.sv $
     examples/rvsimple/metron_sv/singlecycle_ctlpath.sv $
+    examples/rvsimple/metron_sv/multiplexer8.sv $
+    examples/rvsimple/metron_sv/multiplexer4.sv $
+    examples/rvsimple/metron_sv/multiplexer2.sv $
+    examples/rvsimple/metron_sv/example_text_memory.sv $
+    examples/rvsimple/metron_sv/immediate_generator.sv $
+    examples/rvsimple/metron_sv/alu_control.sv $
+    examples/rvsimple/metron_sv/constants.sv $
+    examples/rvsimple/metron_sv/alu.sv $
+    examples/rvsimple/metron_sv/example_data_memory.sv $
+    examples/rvsimple/metron_sv/data_memory_interface.sv $
+    examples/rvsimple/metron_sv/toplevel.sv $
+    examples/rvsimple/metron_sv/example_data_memory_bus.sv $
+    examples/rvsimple/metron_sv/singlecycle_control.sv $
     examples/rvsimple/metron_sv/singlecycle_datapath.sv $
-    examples/rvsimple/metron_sv/toplevel.sv: metron $
-    examples/rvsimple/metron/adder.h examples/rvsimple/metron/alu.h $
-    examples/rvsimple/metron/alu_control.h $
-    examples/rvsimple/metron/config.h examples/rvsimple/metron/constants.h $
+    examples/rvsimple/metron_sv/adder.sv $
+    examples/rvsimple/metron_sv/example_text_memory_bus.sv $
+    examples/rvsimple/metron_sv/register.sv $
+    examples/rvsimple/metron_sv/config.sv $
+    examples/rvsimple/metron_sv/regfile.sv $
+    examples/rvsimple/metron_sv/riscv_core.sv: metron $
     examples/rvsimple/metron/control_transfer.h $
-    examples/rvsimple/metron/data_memory_interface.h $
-    examples/rvsimple/metron/example_data_memory.h $
-    examples/rvsimple/metron/example_data_memory_bus.h $
-    examples/rvsimple/metron/example_text_memory.h $
-    examples/rvsimple/metron/example_text_memory_bus.h $
-    examples/rvsimple/metron/immediate_generator.h $
     examples/rvsimple/metron/instruction_decoder.h $
-    examples/rvsimple/metron/multiplexer2.h $
-    examples/rvsimple/metron/multiplexer4.h $
-    examples/rvsimple/metron/multiplexer8.h $
-    examples/rvsimple/metron/regfile.h examples/rvsimple/metron/register.h $
-    examples/rvsimple/metron/riscv_core.h $
-    examples/rvsimple/metron/singlecycle_control.h $
     examples/rvsimple/metron/singlecycle_ctlpath.h $
-    examples/rvsimple/metron/singlecycle_datapath.h $
-    examples/rvsimple/metron/toplevel.h | bin/metron $
-    examples/rvsimple/metron/adder.h examples/rvsimple/metron/alu.h $
+    examples/rvsimple/metron/multiplexer8.h $
+    examples/rvsimple/metron/multiplexer4.h $
+    examples/rvsimple/metron/multiplexer2.h $
+    examples/rvsimple/metron/example_text_memory.h $
+    examples/rvsimple/metron/immediate_generator.h $
     examples/rvsimple/metron/alu_control.h $
-    examples/rvsimple/metron/config.h examples/rvsimple/metron/constants.h $
-    examples/rvsimple/metron/control_transfer.h $
-    examples/rvsimple/metron/data_memory_interface.h $
+    examples/rvsimple/metron/constants.h examples/rvsimple/metron/alu.h $
     examples/rvsimple/metron/example_data_memory.h $
+    examples/rvsimple/metron/data_memory_interface.h $
+    examples/rvsimple/metron/toplevel.h $
     examples/rvsimple/metron/example_data_memory_bus.h $
-    examples/rvsimple/metron/example_text_memory.h $
-    examples/rvsimple/metron/example_text_memory_bus.h $
-    examples/rvsimple/metron/immediate_generator.h $
-    examples/rvsimple/metron/instruction_decoder.h $
-    examples/rvsimple/metron/multiplexer2.h $
-    examples/rvsimple/metron/multiplexer4.h $
-    examples/rvsimple/metron/multiplexer8.h $
-    examples/rvsimple/metron/regfile.h examples/rvsimple/metron/register.h $
-    examples/rvsimple/metron/riscv_core.h $
     examples/rvsimple/metron/singlecycle_control.h $
-    examples/rvsimple/metron/singlecycle_ctlpath.h $
     examples/rvsimple/metron/singlecycle_datapath.h $
-    examples/rvsimple/metron/toplevel.h
+    examples/rvsimple/metron/adder.h $
+    examples/rvsimple/metron/example_text_memory_bus.h $
+    examples/rvsimple/metron/register.h examples/rvsimple/metron/config.h $
+    examples/rvsimple/metron/regfile.h $
+    examples/rvsimple/metron/riscv_core.h | bin/metron $
+    examples/rvsimple/metron/control_transfer.h $
+    examples/rvsimple/metron/instruction_decoder.h $
+    examples/rvsimple/metron/singlecycle_ctlpath.h $
+    examples/rvsimple/metron/multiplexer8.h $
+    examples/rvsimple/metron/multiplexer4.h $
+    examples/rvsimple/metron/multiplexer2.h $
+    examples/rvsimple/metron/example_text_memory.h $
+    examples/rvsimple/metron/immediate_generator.h $
+    examples/rvsimple/metron/alu_control.h $
+    examples/rvsimple/metron/constants.h examples/rvsimple/metron/alu.h $
+    examples/rvsimple/metron/example_data_memory.h $
+    examples/rvsimple/metron/data_memory_interface.h $
+    examples/rvsimple/metron/toplevel.h $
+    examples/rvsimple/metron/example_data_memory_bus.h $
+    examples/rvsimple/metron/singlecycle_control.h $
+    examples/rvsimple/metron/singlecycle_datapath.h $
+    examples/rvsimple/metron/adder.h $
+    examples/rvsimple/metron/example_text_memory_bus.h $
+    examples/rvsimple/metron/register.h examples/rvsimple/metron/config.h $
+    examples/rvsimple/metron/regfile.h examples/rvsimple/metron/riscv_core.h
   src_dir = examples/rvsimple/metron
   dst_dir = examples/rvsimple/metron_sv
   src_top = toplevel.h
@@ -550,28 +551,29 @@ build examples/rvsimple/metron_sv/adder.sv $
 
 build gen/examples/rvsimple/metron_vl/Vtoplevel.mk $
     gen/examples/rvsimple/metron_vl/Vtoplevel.h: verilator $
-    examples/rvsimple/metron_sv/adder.sv examples/rvsimple/metron_sv/alu.sv $
-    examples/rvsimple/metron_sv/alu_control.sv $
-    examples/rvsimple/metron_sv/config.sv $
-    examples/rvsimple/metron_sv/constants.sv $
     examples/rvsimple/metron_sv/control_transfer.sv $
-    examples/rvsimple/metron_sv/data_memory_interface.sv $
-    examples/rvsimple/metron_sv/example_data_memory.sv $
-    examples/rvsimple/metron_sv/example_data_memory_bus.sv $
-    examples/rvsimple/metron_sv/example_text_memory.sv $
-    examples/rvsimple/metron_sv/example_text_memory_bus.sv $
-    examples/rvsimple/metron_sv/immediate_generator.sv $
     examples/rvsimple/metron_sv/instruction_decoder.sv $
-    examples/rvsimple/metron_sv/multiplexer2.sv $
-    examples/rvsimple/metron_sv/multiplexer4.sv $
-    examples/rvsimple/metron_sv/multiplexer8.sv $
-    examples/rvsimple/metron_sv/regfile.sv $
-    examples/rvsimple/metron_sv/register.sv $
-    examples/rvsimple/metron_sv/riscv_core.sv $
-    examples/rvsimple/metron_sv/singlecycle_control.sv $
     examples/rvsimple/metron_sv/singlecycle_ctlpath.sv $
+    examples/rvsimple/metron_sv/multiplexer8.sv $
+    examples/rvsimple/metron_sv/multiplexer4.sv $
+    examples/rvsimple/metron_sv/multiplexer2.sv $
+    examples/rvsimple/metron_sv/example_text_memory.sv $
+    examples/rvsimple/metron_sv/immediate_generator.sv $
+    examples/rvsimple/metron_sv/alu_control.sv $
+    examples/rvsimple/metron_sv/constants.sv $
+    examples/rvsimple/metron_sv/alu.sv $
+    examples/rvsimple/metron_sv/example_data_memory.sv $
+    examples/rvsimple/metron_sv/data_memory_interface.sv $
+    examples/rvsimple/metron_sv/toplevel.sv $
+    examples/rvsimple/metron_sv/example_data_memory_bus.sv $
+    examples/rvsimple/metron_sv/singlecycle_control.sv $
     examples/rvsimple/metron_sv/singlecycle_datapath.sv $
-    examples/rvsimple/metron_sv/toplevel.sv
+    examples/rvsimple/metron_sv/adder.sv $
+    examples/rvsimple/metron_sv/example_text_memory_bus.sv $
+    examples/rvsimple/metron_sv/register.sv $
+    examples/rvsimple/metron_sv/config.sv $
+    examples/rvsimple/metron_sv/regfile.sv $
+    examples/rvsimple/metron_sv/riscv_core.sv
   includes = -Isrc -Iexamples/rvsimple/metron_sv
   src_top = toplevel
   dst_dir = gen/examples/rvsimple/metron_vl
@@ -601,31 +603,31 @@ build bin/examples/rvsimple_vl: link obj/verilated.o $
 
 build gen/examples/rvsimple/reference_vl/Vtoplevel.mk $
     gen/examples/rvsimple/reference_vl/Vtoplevel.h: verilator $
+    examples/rvsimple/reference_sv/control_transfer.sv $
+    examples/rvsimple/reference_sv/register.sv $
+    examples/rvsimple/reference_sv/multiplexer.sv $
+    examples/rvsimple/reference_sv/constants.sv $
+    examples/rvsimple/reference_sv/regfile.sv $
+    examples/rvsimple/reference_sv/toplevel.sv $
+    examples/rvsimple/reference_sv/singlecycle_datapath.sv $
+    examples/rvsimple/reference_sv/singlecycle_control.sv $
+    examples/rvsimple/reference_sv/example_text_memory.sv $
+    examples/rvsimple/reference_sv/multiplexer4.sv $
+    examples/rvsimple/reference_sv/example_text_memory_bus.sv $
+    examples/rvsimple/reference_sv/config.sv $
+    examples/rvsimple/reference_sv/example_data_memory_bus.sv $
+    examples/rvsimple/reference_sv/riscv_core.sv $
     examples/rvsimple/reference_sv/adder.sv $
     examples/rvsimple/reference_sv/alu.sv $
-    examples/rvsimple/reference_sv/alu_control.sv $
-    examples/rvsimple/reference_sv/config.sv $
-    examples/rvsimple/reference_sv/constants.sv $
-    examples/rvsimple/reference_sv/control_transfer.sv $
     examples/rvsimple/reference_sv/data_memory_interface.sv $
-    examples/rvsimple/reference_sv/example_data_memory.sv $
-    examples/rvsimple/reference_sv/example_data_memory_bus.sv $
-    examples/rvsimple/reference_sv/example_memory_bus.sv $
-    examples/rvsimple/reference_sv/example_text_memory.sv $
-    examples/rvsimple/reference_sv/example_text_memory_bus.sv $
-    examples/rvsimple/reference_sv/immediate_generator.sv $
     examples/rvsimple/reference_sv/instruction_decoder.sv $
-    examples/rvsimple/reference_sv/multiplexer.sv $
-    examples/rvsimple/reference_sv/multiplexer2.sv $
-    examples/rvsimple/reference_sv/multiplexer4.sv $
+    examples/rvsimple/reference_sv/alu_control.sv $
+    examples/rvsimple/reference_sv/example_memory_bus.sv $
     examples/rvsimple/reference_sv/multiplexer8.sv $
-    examples/rvsimple/reference_sv/regfile.sv $
-    examples/rvsimple/reference_sv/register.sv $
-    examples/rvsimple/reference_sv/riscv_core.sv $
-    examples/rvsimple/reference_sv/singlecycle_control.sv $
+    examples/rvsimple/reference_sv/immediate_generator.sv $
+    examples/rvsimple/reference_sv/multiplexer2.sv $
     examples/rvsimple/reference_sv/singlecycle_ctlpath.sv $
-    examples/rvsimple/reference_sv/singlecycle_datapath.sv $
-    examples/rvsimple/reference_sv/toplevel.sv
+    examples/rvsimple/reference_sv/example_data_memory.sv
   includes = -Isrc -Iexamples/rvsimple/reference_sv
   src_top = toplevel
   dst_dir = gen/examples/rvsimple/reference_vl
@@ -664,9 +666,11 @@ build bin/examples/pinwheel: link obj/examples/pinwheel/main.o bin/libmetron.a
 ################################################################################
 # Metronize examples/pinwheel/metron -> examples/pinwheel/metron_sv
 
-build examples/pinwheel/metron_sv/pinwheel.sv: metron $
+build examples/pinwheel/metron_sv/constants.sv $
+    examples/pinwheel/metron_sv/pinwheel.sv: metron $
+    examples/pinwheel/metron/constants.h $
     examples/pinwheel/metron/pinwheel.h | bin/metron $
-    examples/pinwheel/metron/pinwheel.h
+    examples/pinwheel/metron/constants.h examples/pinwheel/metron/pinwheel.h
   src_dir = examples/pinwheel/metron
   dst_dir = examples/pinwheel/metron_sv
   src_top = pinwheel.h
@@ -677,6 +681,7 @@ build examples/pinwheel/metron_sv/pinwheel.sv: metron $
 
 build gen/examples/pinwheel/metron_vl/Vpinwheel.mk $
     gen/examples/pinwheel/metron_vl/Vpinwheel.h: verilator $
+    examples/pinwheel/metron_sv/constants.sv $
     examples/pinwheel/metron_sv/pinwheel.sv
   includes = -Isrc -Iexamples/pinwheel/metron_sv
   src_top = pinwheel

@@ -110,7 +110,7 @@ var nodePath;
 var requireNodeFS;
 
 if (ENVIRONMENT_IS_NODE) {
-  if (typeof process == 'undefined' || !process.release || process.release.name !== 'node') throw new Error('not compiled for this environment (did you build to HTML and try to run it not on the web, or set ENVIRONMENT to something - like node - and run it someplace else - like on the web?)');
+  if (!(typeof process == 'object' && typeof require == 'function')) throw new Error('not compiled for this environment (did you build to HTML and try to run it not on the web, or set ENVIRONMENT to something - like node - and run it someplace else - like on the web?)');
   if (ENVIRONMENT_IS_WORKER) {
     scriptDirectory = require('path').dirname(scriptDirectory) + '/';
   } else {
@@ -720,8 +720,8 @@ function writeStackCookie() {
   // The stack grow downwards towards _emscripten_stack_get_end.
   // We write cookies to the final two words in the stack and detect if they are
   // ever overwritten.
-  HEAPU32[((max)>>2)] = 0x2135467;
-  HEAPU32[(((max)+(4))>>2)] = 0x89BACDFE;
+  HEAP32[((max)>>2)] = 0x2135467;
+  HEAP32[(((max)+(4))>>2)] = 0x89BACDFE;
   // Also test the global address 0 for integrity.
   HEAPU32[0] = 0x63736d65; /* 'emsc' */
 }
@@ -1510,14 +1510,15 @@ var ASM_CONSTS = {
         setTempRet0(0);
         return thrown;
       }
+      var typeArray = Array.prototype.slice.call(arguments);
   
       // can_catch receives a **, add indirection
       // The different catch blocks are denoted by different types.
       // Due to inheritance, those types may not precisely match the
       // type of the thrown object. Find one which matches, and
       // return the type of the catch block which should be called.
-      for (var i = 0; i < arguments.length; i++) {
-        var caughtType = arguments[i];
+      for (var i = 0; i < typeArray.length; i++) {
+        var caughtType = typeArray[i];
         if (caughtType === 0 || caughtType === thrownType) {
           // Catch all clause matched or exactly the same type is caught
           break;
@@ -1547,14 +1548,15 @@ var ASM_CONSTS = {
         setTempRet0(0);
         return thrown;
       }
+      var typeArray = Array.prototype.slice.call(arguments);
   
       // can_catch receives a **, add indirection
       // The different catch blocks are denoted by different types.
       // Due to inheritance, those types may not precisely match the
       // type of the thrown object. Find one which matches, and
       // return the type of the catch block which should be called.
-      for (var i = 0; i < arguments.length; i++) {
-        var caughtType = arguments[i];
+      for (var i = 0; i < typeArray.length; i++) {
+        var caughtType = typeArray[i];
         if (caughtType === 0 || caughtType === thrownType) {
           // Catch all clause matched or exactly the same type is caught
           break;
@@ -1584,14 +1586,15 @@ var ASM_CONSTS = {
         setTempRet0(0);
         return thrown;
       }
+      var typeArray = Array.prototype.slice.call(arguments);
   
       // can_catch receives a **, add indirection
       // The different catch blocks are denoted by different types.
       // Due to inheritance, those types may not precisely match the
       // type of the thrown object. Find one which matches, and
       // return the type of the catch block which should be called.
-      for (var i = 0; i < arguments.length; i++) {
-        var caughtType = arguments[i];
+      for (var i = 0; i < typeArray.length; i++) {
+        var caughtType = typeArray[i];
         if (caughtType === 0 || caughtType === thrownType) {
           // Catch all clause matched or exactly the same type is caught
           break;
@@ -1702,7 +1705,7 @@ var ASM_CONSTS = {
         if (lastSlash === -1) return path;
         return path.substr(lastSlash+1);
       },join:function() {
-        var paths = Array.prototype.slice.call(arguments);
+        var paths = Array.prototype.slice.call(arguments, 0);
         return PATH.normalize(paths.join('/'));
       },join2:(l, r) => {
         return PATH.normalize(l + '/' + r);
@@ -1931,7 +1934,6 @@ var ASM_CONSTS = {
   
   function zeroMemory(address, size) {
       HEAPU8.fill(0, address, address + size);
-      return address;
     }
   
   function alignMemory(size, alignment) {
@@ -3844,7 +3846,8 @@ var ASM_CONSTS = {
         if (dirfd === -100) {
           dir = FS.cwd();
         } else {
-          var dirstream = SYSCALLS.getStreamFromFD(dirfd);
+          var dirstream = FS.getStream(dirfd);
+          if (!dirstream) throw new FS.ErrnoError(8);
           dir = dirstream.path;
         }
         if (path.length == 0) {
@@ -3867,7 +3870,7 @@ var ASM_CONSTS = {
         HEAP32[((buf)>>2)] = stat.dev;
         HEAP32[(((buf)+(8))>>2)] = stat.ino;
         HEAP32[(((buf)+(12))>>2)] = stat.mode;
-        HEAPU32[(((buf)+(16))>>2)] = stat.nlink;
+        HEAP32[(((buf)+(16))>>2)] = stat.nlink;
         HEAP32[(((buf)+(20))>>2)] = stat.uid;
         HEAP32[(((buf)+(24))>>2)] = stat.gid;
         HEAP32[(((buf)+(28))>>2)] = stat.rdev;
@@ -3875,11 +3878,11 @@ var ASM_CONSTS = {
         HEAP32[(((buf)+(48))>>2)] = 4096;
         HEAP32[(((buf)+(52))>>2)] = stat.blocks;
         (tempI64 = [Math.floor(stat.atime.getTime() / 1000)>>>0,(tempDouble=Math.floor(stat.atime.getTime() / 1000),(+(Math.abs(tempDouble))) >= 1.0 ? (tempDouble > 0.0 ? ((Math.min((+(Math.floor((tempDouble)/4294967296.0))), 4294967295.0))|0)>>>0 : (~~((+(Math.ceil((tempDouble - +(((~~(tempDouble)))>>>0))/4294967296.0)))))>>>0) : 0)],HEAP32[(((buf)+(56))>>2)] = tempI64[0],HEAP32[(((buf)+(60))>>2)] = tempI64[1]);
-        HEAPU32[(((buf)+(64))>>2)] = 0;
+        HEAP32[(((buf)+(64))>>2)] = 0;
         (tempI64 = [Math.floor(stat.mtime.getTime() / 1000)>>>0,(tempDouble=Math.floor(stat.mtime.getTime() / 1000),(+(Math.abs(tempDouble))) >= 1.0 ? (tempDouble > 0.0 ? ((Math.min((+(Math.floor((tempDouble)/4294967296.0))), 4294967295.0))|0)>>>0 : (~~((+(Math.ceil((tempDouble - +(((~~(tempDouble)))>>>0))/4294967296.0)))))>>>0) : 0)],HEAP32[(((buf)+(72))>>2)] = tempI64[0],HEAP32[(((buf)+(76))>>2)] = tempI64[1]);
-        HEAPU32[(((buf)+(80))>>2)] = 0;
+        HEAP32[(((buf)+(80))>>2)] = 0;
         (tempI64 = [Math.floor(stat.ctime.getTime() / 1000)>>>0,(tempDouble=Math.floor(stat.ctime.getTime() / 1000),(+(Math.abs(tempDouble))) >= 1.0 ? (tempDouble > 0.0 ? ((Math.min((+(Math.floor((tempDouble)/4294967296.0))), 4294967295.0))|0)>>>0 : (~~((+(Math.ceil((tempDouble - +(((~~(tempDouble)))>>>0))/4294967296.0)))))>>>0) : 0)],HEAP32[(((buf)+(88))>>2)] = tempI64[0],HEAP32[(((buf)+(92))>>2)] = tempI64[1]);
-        HEAPU32[(((buf)+(96))>>2)] = 0;
+        HEAP32[(((buf)+(96))>>2)] = 0;
         (tempI64 = [stat.ino>>>0,(tempDouble=stat.ino,(+(Math.abs(tempDouble))) >= 1.0 ? (tempDouble > 0.0 ? ((Math.min((+(Math.floor((tempDouble)/4294967296.0))), 4294967295.0))|0)>>>0 : (~~((+(Math.ceil((tempDouble - +(((~~(tempDouble)))>>>0))/4294967296.0)))))>>>0) : 0)],HEAP32[(((buf)+(104))>>2)] = tempI64[0],HEAP32[(((buf)+(108))>>2)] = tempI64[1]);
         return 0;
       },doMsync:function(addr, stream, len, flags, offset) {
@@ -4306,9 +4309,20 @@ var ASM_CONSTS = {
   }
   }
 
+  var tempRet0 = 0;
+  function getTempRet0() {
+      return tempRet0;
+    }
+  var _getTempRet0 = getTempRet0;
+
   function _llvm_eh_typeid_for(type) {
       return type;
     }
+
+  function setTempRet0(val) {
+      tempRet0 = val;
+    }
+  var _setTempRet0 = setTempRet0;
 
   function __isLeapYear(year) {
         return year%4 === 0 && (year%100 !== 0 || year%400 === 0);
@@ -5105,6 +5119,8 @@ var ASM_CONSTS = {
 
 
 
+
+
   var FSNode = /** @constructor */ function(parent, name, mode, rdev) {
     if (!parent) {
       parent = this;  // root node sets parent to itself
@@ -5385,6 +5401,7 @@ var asmLibraryArg = {
   "fd_read": _fd_read,
   "fd_seek": _fd_seek,
   "fd_write": _fd_write,
+  "getTempRet0": _getTempRet0,
   "invoke_diii": invoke_diii,
   "invoke_fiii": invoke_fiii,
   "invoke_i": invoke_i,
@@ -5417,6 +5434,7 @@ var asmLibraryArg = {
   "invoke_viijii": invoke_viijii,
   "invoke_vij": invoke_vij,
   "llvm_eh_typeid_for": _llvm_eh_typeid_for,
+  "setTempRet0": _setTempRet0,
   "strftime_l": _strftime_l
 };
 var asm = createWasm();
@@ -5430,9 +5448,6 @@ var _malloc = Module["_malloc"] = createExportWrapper("malloc");
 var _free = Module["_free"] = createExportWrapper("free");
 
 /** @type {function(...*):?} */
-var getTempRet0 = Module["getTempRet0"] = createExportWrapper("getTempRet0");
-
-/** @type {function(...*):?} */
 var _main = Module["_main"] = createExportWrapper("__main_argc_argv");
 
 /** @type {function(...*):?} */
@@ -5443,9 +5458,6 @@ var _fflush = Module["_fflush"] = createExportWrapper("fflush");
 
 /** @type {function(...*):?} */
 var _setThrew = Module["_setThrew"] = createExportWrapper("setThrew");
-
-/** @type {function(...*):?} */
-var setTempRet0 = Module["setTempRet0"] = createExportWrapper("setTempRet0");
 
 /** @type {function(...*):?} */
 var _emscripten_stack_init = Module["_emscripten_stack_init"] = function() {
@@ -5888,13 +5900,14 @@ var unexportedRuntimeSymbols = [
   'abort',
   'keepRuntimeAlive',
   'wasmMemory',
-  'stackAlloc',
   'stackSave',
   'stackRestore',
-  'getTempRet0',
-  'setTempRet0',
+  'stackAlloc',
   'writeStackCookie',
   'checkStackCookie',
+  'tempRet0',
+  'getTempRet0',
+  'setTempRet0',
   'ptrToString',
   'zeroMemory',
   'stringToNewUTF8',

@@ -37,8 +37,8 @@ class Pinwheel {
 
     memset(regs, 0, sizeof(regs));
 
-    p2_sig_data_write = 0;
-    p2_sig_data_byte_en = 0;
+    p2_sig_data_data = 0;
+    p2_sig_data_byte_wren = 0;
     p1_regs_write_addr = 0;
     p0_reg_pc = 0;
     p1_imm = 0;
@@ -99,10 +99,10 @@ class Pinwheel {
 
   //----------------------------------------
 
-  struct sig_data_write {
+  struct sig_data {
     logic<5>  addr;
     logic<32> data;
-    logic<4>  byte_en;
+    logic<4>  byte_wren;
   };
 
   void delta12(logic<32> p1_imm, logic<32> p1_regs_read_data1, logic<32> p1_regs_read_data2) {
@@ -169,14 +169,14 @@ class Pinwheel {
     // Data mem read/write
 
     p2_sig_data_addr = p2_reg_alu_result;
-    p2_sig_data_write    = p1_regs_read_data2 << (8 * b2(p2_reg_alu_result));
+    p2_sig_data_data    = p1_regs_read_data2 << (8 * b2(p2_reg_alu_result));
     if (p1_op == OP_STORE) {
-      p2_sig_data_byte_en  = 0b1111;
-      if (p1_f3 == 0) p2_sig_data_byte_en = 0b0001 << b2(p2_reg_alu_result);
-      if (p1_f3 == 1) p2_sig_data_byte_en = 0b0011 << b2(p2_reg_alu_result);
+      p2_sig_data_byte_wren  = 0b1111;
+      if (p1_f3 == 0) p2_sig_data_byte_wren = 0b0001 << b2(p2_reg_alu_result);
+      if (p1_f3 == 1) p2_sig_data_byte_wren = 0b0011 << b2(p2_reg_alu_result);
     }
     else {
-      p2_sig_data_byte_en  = 0b0000;
+      p2_sig_data_byte_wren  = 0b0000;
     }
 
     p2_reg_regs_write_addr = p1_regs_write_addr;
@@ -193,9 +193,11 @@ class Pinwheel {
   logic<1>  p2_reg_pc_sel;
   logic<32> p2_reg_alu_result;
 
+  sig_data p2_sig_data;
+
   logic<32> p2_sig_data_addr;
-  logic<32> p2_sig_data_write;
-  logic<4>  p2_sig_data_byte_en;
+  logic<32> p2_sig_data_data;
+  logic<4>  p2_sig_data_byte_wren;
 
   logic<5>  p2_reg_regs_write_addr;
 
@@ -269,12 +271,12 @@ class Pinwheel {
       next_phase = 2;
     }
 
-    if (p2_sig_data_byte_en) {
+    if (p2_sig_data_byte_wren) {
       logic<32> old_mem = data_mem[b15(p2_reg_alu_result, 2)];
-      if (p2_sig_data_byte_en[0]) old_mem = (old_mem & 0xFFFFFF00) | (p2_sig_data_write & 0x000000FF);
-      if (p2_sig_data_byte_en[1]) old_mem = (old_mem & 0xFFFF00FF) | (p2_sig_data_write & 0x0000FF00);
-      if (p2_sig_data_byte_en[2]) old_mem = (old_mem & 0xFF00FFFF) | (p2_sig_data_write & 0x00FF0000);
-      if (p2_sig_data_byte_en[3]) old_mem = (old_mem & 0x00FFFFFF) | (p2_sig_data_write & 0xFF000000);
+      if (p2_sig_data_byte_wren[0]) old_mem = (old_mem & 0xFFFFFF00) | (p2_sig_data_data & 0x000000FF);
+      if (p2_sig_data_byte_wren[1]) old_mem = (old_mem & 0xFFFF00FF) | (p2_sig_data_data & 0x0000FF00);
+      if (p2_sig_data_byte_wren[2]) old_mem = (old_mem & 0xFF00FFFF) | (p2_sig_data_data & 0x00FF0000);
+      if (p2_sig_data_byte_wren[3]) old_mem = (old_mem & 0x00FFFFFF) | (p2_sig_data_data & 0xFF000000);
       data_mem[b15(p2_reg_alu_result, 2)] = old_mem;
     }
     logic<32> data_read = data_mem[b15(p2_reg_alu_result, 2)];

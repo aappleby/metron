@@ -45,7 +45,7 @@ TestResults test_instruction(const char* test_name, const int reps,
       top.tock(0);
       total_tocks++;
 
-      if (top.data_addr == 0xfffffff0 && top.data_write_en) {
+      if (top.alu_result == 0xfffffff0 && top.data_write_en) {
         if (top.data_write == 0) TEST_FAIL("FAIL %d @ %d\n", top.data_write, elapsed_cycles);
         /*
         if (rep == 0) {

@@ -38,22 +38,15 @@ class Pinwheel {
 
     memset(regs, 0, sizeof(regs));
 
-    prog_addr = 0;
-    prog_read = 0;
-    data_addr = 0;
     data_write = 0;
-    data_read = 0;
     data_write_en = 0;
     data_byte_en = 0;
     regs_read_addr1 = 0;
-    regs_read_data1 = 0;
     regs_read_addr2 = 0;
-    regs_read_data2 = 0;
     regs_write_addr = 0;
     regs_write_data = 0;
     regs_write_en = 0;
     pc = 0;
-    prog_read = 0;
     imm = 0;
     alu_result = 0;
     op = 0;
@@ -69,9 +62,8 @@ class Pinwheel {
   logic<7> f7;
   logic<5>  regs_read_addr1;
   logic<5>  regs_read_addr2;
-  logic<32> prog_read;
 
-  void phase0() {
+  void delta01(logic<32> prog_read) {
     logic<32> imm_b = cat(dup<20>(prog_read[31]), prog_read[7], b6(prog_read, 25), b4(prog_read, 8), b1(0));
     logic<32> imm_i = cat(dup<21>(prog_read[31]), b6(prog_read, 25), b5(prog_read, 20));
     logic<32> imm_j = cat(dup<12>(prog_read[31]), b8(prog_read, 12), prog_read[20], b6(prog_read, 25), b4(prog_read, 21), b1(0));
@@ -96,25 +88,50 @@ class Pinwheel {
 
     regs_read_addr1 = b5(prog_read, 15);
     regs_read_addr2 = b5(prog_read, 20);
+    regs_write_addr = b5(prog_read, 7);
   }
 
   //----------------------------------------
 
-  logic<32> regs_read_data1;
-  logic<32> regs_read_data2;
+  logic<1> pc_sel;
 
-  void phase1() {
+  void delta12(logic<32> imm, logic<32> regs_read_data1, logic<32> regs_read_data2) {
     logic<32> alu_in_a;
     logic<32> alu_in_b;
     logic<3> alu_op;
     logic<1> alu_alt;
 
-    regs_read_data1 = regs[regs_read_addr1];
-    regs_read_data2 = regs[regs_read_addr2];
+    // Branch selection
 
-    eq  = regs_read_data1 == regs_read_data2;
-    slt = signed(regs_read_data1) < signed(regs_read_data2);
-    ult = regs_read_data1 < regs_read_data2;
+    logic<1> eq  = regs_read_data1 == regs_read_data2;
+    logic<1> slt = signed(regs_read_data1) < signed(regs_read_data2);
+    logic<1> ult = regs_read_data1 < regs_read_data2;
+    logic<1>  take_branch;
+
+    switch (f3) {
+      case 0:  take_branch =   eq; break;
+      case 1:  take_branch =  !eq; break;
+      case 2:  take_branch =   eq; break;
+      case 3:  take_branch =  !eq; break;
+      case 4:  take_branch =  slt; break;
+      case 5:  take_branch = !slt; break;
+      case 6:  take_branch =  ult; break;
+      case 7:  take_branch = !ult; break;
+    }
+
+    switch(op) {
+      case OP_ALU:     pc_sel = 0; break;
+      case OP_ALUI:    pc_sel = 0; break;
+      case OP_LOAD:    pc_sel = 0; break;
+      case OP_STORE:   pc_sel = 0; break;
+      case OP_BRANCH:  pc_sel = take_branch; break;
+      case OP_JAL:     pc_sel = 1; break;
+      case OP_JALR:    pc_sel = 1; break;
+      case OP_LUI:     pc_sel = 0; break;
+      case OP_AUIPC:   pc_sel = 0; break;
+    }
+
+    // ALU
 
     switch(op) {
       case OP_ALU:     alu_in_a = regs_read_data1; alu_in_b = regs_read_data2; alu_op = f3; alu_alt = b1(f7, 5); break;
@@ -139,58 +156,37 @@ class Pinwheel {
       case 7: alu_result = alu_in_a & alu_in_b; break;
     }
 
-    data_addr     = alu_result;
-    data_write    = regs_read_data2 << (8 * b2(data_addr));
+    // Data mem read/write
+
+    data_write    = regs_read_data2 << (8 * b2(alu_result));
     data_write_en = (op == OP_STORE);
     data_byte_en  = 0b1111;
-    if (f3 == 0) data_byte_en = 0b0001 << b2(data_addr);
-    if (f3 == 1) data_byte_en = 0b0011 << b2(data_addr);
+    if (f3 == 0) data_byte_en = 0b0001 << b2(alu_result);
+    if (f3 == 1) data_byte_en = 0b0011 << b2(alu_result);
   }
 
   //----------------------------------------
 
-  logic<1> eq;
-  logic<1> slt;
-  logic<1> ult;
-
   logic<32> alu_result;
-
-  logic<32> data_read;
-  logic<32> data_addr;
   logic<32> data_write;
   logic<1>  data_write_en;
   logic<4>  data_byte_en;
 
   //----------------------------------------
 
-  void tick_datamem() {
-    if (data_write_en) {
-      logic<32> old_mem = data_mem[b15(data_addr, 2)];
-      if (data_byte_en[0]) old_mem = (old_mem & 0xFFFFFF00) | (data_write & 0x000000FF);
-      if (data_byte_en[1]) old_mem = (old_mem & 0xFFFF00FF) | (data_write & 0x0000FF00);
-      if (data_byte_en[2]) old_mem = (old_mem & 0xFF00FFFF) | (data_write & 0x00FF0000);
-      if (data_byte_en[3]) old_mem = (old_mem & 0x00FFFFFF) | (data_write & 0xFF000000);
-      data_mem[b15(data_addr, 2)] = old_mem;
-    }
-    data_read = data_mem[b15(data_addr, 2)];
-  }
-
-  //----------------------------------------
-
-  void phase2() {
+  void delta20(logic<32> data_read) {
     logic<32> unpacked_data;
     switch (f3) {
-      case 0: unpacked_data = sign_extend<32>(b8(data_read, 8 * b2(data_addr))); break;
-      case 1: unpacked_data = sign_extend<32>(b16(data_read, 8 * b2(data_addr))); break;
+      case 0: unpacked_data = sign_extend<32>(b8(data_read, 8 * b2(alu_result))); break;
+      case 1: unpacked_data = sign_extend<32>(b16(data_read, 8 * b2(alu_result))); break;
       case 2: unpacked_data = data_read; break;
       case 3: unpacked_data = data_read; break;
-      case 4: unpacked_data = b8(data_read, 8 * b2(data_addr)); break;
-      case 5: unpacked_data = b16(data_read, 8 * b2(data_addr)); break;
+      case 4: unpacked_data = b8(data_read, 8 * b2(alu_result)); break;
+      case 5: unpacked_data = b16(data_read, 8 * b2(alu_result)); break;
       case 6: unpacked_data = data_read; break;
       case 7: unpacked_data = data_read; break;
     }
 
-    regs_write_addr = b5(prog_read, 7);
     switch(op) {
       case OP_ALU:     regs_write_en = true;  regs_write_data = alu_result;    break;
       case OP_ALUI:    regs_write_en = true;  regs_write_data = alu_result;    break;
@@ -203,33 +199,11 @@ class Pinwheel {
       case OP_AUIPC:   regs_write_en = true;  regs_write_data = alu_result;    break;
     }
 
-    logic<1>  take_branch;
-    switch (f3) {
-      case 0:  take_branch =   eq; break;
-      case 1:  take_branch =  !eq; break;
-      case 2:  take_branch =   eq; break;
-      case 3:  take_branch =  !eq; break;
-      case 4:  take_branch =  slt; break;
-      case 5:  take_branch = !slt; break;
-      case 6:  take_branch =  ult; break;
-      case 7:  take_branch = !ult; break;
-    }
-
-    logic<1> pc_sel;
-    switch(op) {
-      case OP_ALU:     pc_sel = 0; break;
-      case OP_ALUI:    pc_sel = 0; break;
-      case OP_LOAD:    pc_sel = 0; break;
-      case OP_STORE:   pc_sel = 0; break;
-      case OP_BRANCH:  pc_sel = take_branch; break;
-      case OP_JAL:     pc_sel = 1; break;
-      case OP_JALR:    pc_sel = 1; break;
-      case OP_LUI:     pc_sel = 0; break;
-      case OP_AUIPC:   pc_sel = 0; break;
-    }
-
     pc = pc_sel ? b32(alu_result) : b32(pc + 4);
-    prog_addr = pc;
+
+    if (regs_write_addr && regs_write_en) {
+      regs[regs_write_addr] = regs_write_data;
+    }
   }
 
   //----------------------------------------
@@ -237,28 +211,48 @@ class Pinwheel {
   logic<5>  regs_write_addr;
   logic<32> regs_write_data;
   logic<1>  regs_write_en;
-  logic<32> prog_addr;
-
-  void tick_write_regs() {
-    if (regs_write_addr && regs_write_en) {
-      regs[regs_write_addr] = regs_write_data;
-    }
-  }
-
-  void tick_read_progmem() {
-    prog_read = prog_mem[b14(prog_addr, 2)];
-  }
 
   //----------------------------------------
 
   void tick(logic<1> reset_in) {
-    if      (reset_in)   { reset();  phase = 0; }
-    else if (phase == 0) { phase0(); phase = 1; }
-    else if (phase == 1) { phase1(); phase = 2; }
-    else if (phase == 2) { phase2(); phase = 0; }
+    logic<2> next_phase = 0;
 
-    tick_write_regs();
-    tick_datamem();
-    tick_read_progmem();
+    if (reset_in) {
+      reset();
+      phase = 0;
+      return;
+    }
+
+    logic<32> prog_read = prog_mem[b14(pc, 2)];
+
+    if (phase == 0) {
+      delta01(prog_read);
+      next_phase = 1;
+    }
+
+    logic<32> regs_read_data1 = regs[regs_read_addr1];
+    logic<32> regs_read_data2 = regs[regs_read_addr2];
+
+    if (phase == 1) {
+      delta12(imm, regs_read_data1, regs_read_data2);
+      next_phase = 2;
+    }
+
+    if (data_write_en) {
+      logic<32> old_mem = data_mem[b15(alu_result, 2)];
+      if (data_byte_en[0]) old_mem = (old_mem & 0xFFFFFF00) | (data_write & 0x000000FF);
+      if (data_byte_en[1]) old_mem = (old_mem & 0xFFFF00FF) | (data_write & 0x0000FF00);
+      if (data_byte_en[2]) old_mem = (old_mem & 0xFF00FFFF) | (data_write & 0x00FF0000);
+      if (data_byte_en[3]) old_mem = (old_mem & 0x00FFFFFF) | (data_write & 0xFF000000);
+      data_mem[b15(alu_result, 2)] = old_mem;
+    }
+    logic<32> data_read = data_mem[b15(alu_result, 2)];
+
+    if (phase == 2) {
+      delta20(data_read);
+      next_phase = 0;
+    }
+
+    phase = next_phase;
   }
 };

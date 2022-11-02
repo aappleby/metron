@@ -56,7 +56,7 @@ TestResults test_instruction(const char* test_name, const int reps,
       top.tock(0);
       total_tocks++;
 
-      if (top.sig_p12.addr == 0xfffffff0 && top.sig_p12.byte_wren) {
+      if (top.sig_p12.addr == 0xfffffff0 && top.sig_p12.mask) {
         if (top.sig_p12.data == 0) TEST_FAIL("FAIL @ %d\n", elapsed_cycles);
         if (rep == 0) {
           //LOG_B("pass on hart %d at cycle %d\n", top.sig_p12.hart, elapsed_cycles);

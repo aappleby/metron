@@ -27,6 +27,8 @@ inline const char* op_id_to_name(int op_id) {
   }
 }
 
+//------------------------------------------------------------------------------
+
 struct registers_p0 {
   logic<2>  hart;
   logic<32> pc;
@@ -71,10 +73,10 @@ struct signals_p12 {
   logic<2>  hart;
   logic<32> addr;
   logic<32> data;
-  logic<4>  byte_wren;
+  logic<4>  mask;
 };
 
-
+//------------------------------------------------------------------------------
 
 class Pinwheel {
  public:
@@ -155,7 +157,6 @@ class Pinwheel {
     logic<32> imm_s = cat(dup<21>(p0_prog_read[31]), b6(p0_prog_read, 25), b5(p0_prog_read, 7));
     logic<32> imm_u = cat(p0_prog_read[31], b11(p0_prog_read, 20), b8(p0_prog_read, 12), b12(0));
 
-
     logic<32> imm;
     switch(b5(p0_prog_read, 2)) {
       case OP_ALU:    imm = imm_i; break;
@@ -185,89 +186,89 @@ class Pinwheel {
 
   //----------------------------------------
 
-
-  static void delta12(const registers_p1& reg_p1, logic<32> p1_regs_read_data1, logic<32> p1_regs_read_data2, signals_p12& sig_p12, registers_p2& reg_p2) {
-    logic<32> alu_in_a;
-    logic<32> alu_in_b;
-    logic<3> alu_op;
-    logic<1> alu_alt;
-
+  static void delta12(const registers_p1& reg_p1, logic<32> ra, logic<32> rb, signals_p12& sig_p12, registers_p2& reg_p2) {
     // Branch selection
-
-    logic<1> eq  = p1_regs_read_data1 == p1_regs_read_data2;
-    logic<1> slt = signed(p1_regs_read_data1) < signed(p1_regs_read_data2);
-    logic<1> ult = p1_regs_read_data1 < p1_regs_read_data2;
-    logic<1> take_branch;
-
-    switch (reg_p1.f3) {
-      case 0:  take_branch =   eq; break;
-      case 1:  take_branch =  !eq; break;
-      case 2:  take_branch =   eq; break;
-      case 3:  take_branch =  !eq; break;
-      case 4:  take_branch =  slt; break;
-      case 5:  take_branch = !slt; break;
-      case 6:  take_branch =  ult; break;
-      case 7:  take_branch = !ult; break;
-    }
-
+    logic<1> pc_sel;
     switch(reg_p1.op) {
-      case OP_ALU:     reg_p2.pc_sel = 0; break;
-      case OP_ALUI:    reg_p2.pc_sel = 0; break;
-      case OP_LOAD:    reg_p2.pc_sel = 0; break;
-      case OP_STORE:   reg_p2.pc_sel = 0; break;
-      case OP_BRANCH:  reg_p2.pc_sel = take_branch; break;
-      case OP_JAL:     reg_p2.pc_sel = 1; break;
-      case OP_JALR:    reg_p2.pc_sel = 1; break;
-      case OP_LUI:     reg_p2.pc_sel = 0; break;
-      case OP_AUIPC:   reg_p2.pc_sel = 0; break;
+      case OP_ALU:     pc_sel = 0; break;
+      case OP_ALUI:    pc_sel = 0; break;
+      case OP_LOAD:    pc_sel = 0; break;
+      case OP_STORE:   pc_sel = 0; break;
+      case OP_BRANCH:  {
+        logic<1> eq  = ra == rb;
+        logic<1> slt = signed(ra) < signed(rb);
+        logic<1> ult = ra < rb;
+        logic<1> take_branch;
+        switch (reg_p1.f3) {
+          case 0: pc_sel =   eq; break;
+          case 1: pc_sel =  !eq; break;
+          case 2: pc_sel =   eq; break;
+          case 3: pc_sel =  !eq; break;
+          case 4: pc_sel =  slt; break;
+          case 5: pc_sel = !slt; break;
+          case 6: pc_sel =  ult; break;
+          case 7: pc_sel = !ult; break;
+        }
+        break;
+      }
+      case OP_JAL:     pc_sel = 1; break;
+      case OP_JALR:    pc_sel = 1; break;
+      case OP_LUI:     pc_sel = 0; break;
+      case OP_AUIPC:   pc_sel = 0; break;
     }
 
     // ALU
+    logic<32> alu_a;
+    logic<32> alu_b;
+    logic<3>  alu_op;
+    logic<1>  alu_alt;
 
     switch(reg_p1.op) {
-      case OP_ALU:     alu_in_a = p1_regs_read_data1; alu_in_b = p1_regs_read_data2; alu_op = reg_p1.f3; alu_alt = b1(reg_p1.f7, 5); break;
-      case OP_ALUI:    alu_in_a = p1_regs_read_data1; alu_in_b = reg_p1.imm;         alu_op = reg_p1.f3; alu_alt = b1(reg_p1.f7, 5); break;
-      case OP_LOAD:    alu_in_a = p1_regs_read_data1; alu_in_b = reg_p1.imm;         alu_op = 0; alu_alt = 0; break;
-      case OP_STORE:   alu_in_a = p1_regs_read_data1; alu_in_b = reg_p1.imm;         alu_op = 0; alu_alt = 0; break;
-      case OP_BRANCH:  alu_in_a = reg_p1.pc;          alu_in_b = reg_p1.imm;         alu_op = 0; alu_alt = 0; break;
-      case OP_JAL:     alu_in_a = reg_p1.pc;          alu_in_b = reg_p1.imm;         alu_op = 0; alu_alt = 0; break;
-      case OP_JALR:    alu_in_a = p1_regs_read_data1; alu_in_b = reg_p1.imm;         alu_op = 0; alu_alt = 0; break;
-      case OP_LUI:     alu_in_a = 0;                  alu_in_b = reg_p1.imm;         alu_op = 0; alu_alt = 0; break;
-      case OP_AUIPC:   alu_in_a = reg_p1.pc;          alu_in_b = reg_p1.imm;         alu_op = 0; alu_alt = 0; break;
+      case OP_ALU:     alu_a = ra;        alu_b = rb;         alu_op = reg_p1.f3; alu_alt = b1(reg_p1.f7, 5); break;
+      case OP_ALUI:    alu_a = ra;        alu_b = reg_p1.imm; alu_op = reg_p1.f3; alu_alt = b1(reg_p1.f7, 5); break;
+      case OP_LOAD:    alu_a = ra;        alu_b = reg_p1.imm; alu_op = 0;         alu_alt = 0;                break;
+      case OP_STORE:   alu_a = ra;        alu_b = reg_p1.imm; alu_op = 0;         alu_alt = 0;                break;
+      case OP_BRANCH:  alu_a = reg_p1.pc; alu_b = reg_p1.imm; alu_op = 0;         alu_alt = 0;                break;
+      case OP_JAL:     alu_a = reg_p1.pc; alu_b = reg_p1.imm; alu_op = 0;         alu_alt = 0;                break;
+      case OP_JALR:    alu_a = ra;        alu_b = reg_p1.imm; alu_op = 0;         alu_alt = 0;                break;
+      case OP_LUI:     alu_a = 0;         alu_b = reg_p1.imm; alu_op = 0;         alu_alt = 0;                break;
+      case OP_AUIPC:   alu_a = reg_p1.pc; alu_b = reg_p1.imm; alu_op = 0;         alu_alt = 0;                break;
     }
 
     logic<32> alu_result;
     switch (alu_op) {
-      case 0: alu_result = (reg_p1.op == OP_ALU) && alu_alt ? alu_in_a - alu_in_b : alu_in_a + alu_in_b; break;
-      case 1: alu_result = alu_in_a << b5(alu_in_b); break;
-      case 2: alu_result = signed(alu_in_a) < signed(alu_in_b); break;
-      case 3: alu_result = alu_in_a < alu_in_b; break;
-      case 4: alu_result = alu_in_a ^ alu_in_b; break;
-      case 5: alu_result = alu_alt ? sra(alu_in_a, b5(alu_in_b)) : sla(alu_in_a, b5(alu_in_b)); break;
-      case 6: alu_result = alu_in_a | alu_in_b; break;
-      case 7: alu_result = alu_in_a & alu_in_b; break;
+      case 0: alu_result = (reg_p1.op == OP_ALU) && alu_alt ? alu_a - alu_b : alu_a + alu_b; break;
+      case 1: alu_result = alu_a << b5(alu_b); break;
+      case 2: alu_result = signed(alu_a) < signed(alu_b); break;
+      case 3: alu_result = alu_a < alu_b; break;
+      case 4: alu_result = alu_a ^ alu_b; break;
+      case 5: alu_result = alu_alt ? sra(alu_a, b5(alu_b)) : sla(alu_a, b5(alu_b)); break;
+      case 6: alu_result = alu_a | alu_b; break;
+      case 7: alu_result = alu_a & alu_b; break;
     }
-
-    reg_p2.hart = reg_p1.hart;
-    reg_p2.alu = alu_result;
-    reg_p2.rd = reg_p1.rd;
-    reg_p2.op = reg_p1.op;
-    reg_p2.f3 = reg_p1.f3;
-    reg_p2.pc = reg_p1.pc;
 
     // Data mem read/write
+    logic<32> data = rb << (8 * b2(alu_result));
+    logic<4>  mask = 0b0000;
 
-    sig_p12.hart = reg_p1.hart;
-    sig_p12.addr = alu_result;
-    sig_p12.data    = p1_regs_read_data2 << (8 * b2(alu_result));
     if (reg_p1.op == OP_STORE) {
-      sig_p12.byte_wren  = 0b1111;
-      if (reg_p1.f3 == 0) sig_p12.byte_wren = 0b0001 << b2(alu_result);
-      if (reg_p1.f3 == 1) sig_p12.byte_wren = 0b0011 << b2(alu_result);
+      if (reg_p1.f3 == 0) mask = 0b0001 << b2(alu_result);
+      if (reg_p1.f3 == 1) mask = 0b0011 << b2(alu_result);
+      if (reg_p1.f3 == 2) mask = 0b1111;
     }
-    else {
-      sig_p12.byte_wren  = 0b0000;
-    }
+
+    reg_p2.hart   = reg_p1.hart;
+    reg_p2.alu    = alu_result;
+    reg_p2.rd     = reg_p1.rd;
+    reg_p2.op     = reg_p1.op;
+    reg_p2.f3     = reg_p1.f3;
+    reg_p2.pc     = reg_p1.pc;
+    reg_p2.pc_sel = pc_sel;
+
+    sig_p12.hart  = reg_p1.hart;
+    sig_p12.addr  = alu_result;
+    sig_p12.data  = data;
+    sig_p12.mask  = mask;
   }
 
   //----------------------------------------
@@ -285,16 +286,18 @@ class Pinwheel {
       case 7: unpacked_data = p2_data_read; break;
     }
 
+    logic<1>  reg_wren;
+    logic<32> reg_data;
     switch(reg_p2.op) {
-      case OP_ALU:     sig_p20.reg_wren = true;  sig_p20.reg_data = reg_p2.alu; break;
-      case OP_ALUI:    sig_p20.reg_wren = true;  sig_p20.reg_data = reg_p2.alu; break;
-      case OP_LOAD:    sig_p20.reg_wren = true;  sig_p20.reg_data = unpacked_data;     break;
-      case OP_STORE:   sig_p20.reg_wren = false; sig_p20.reg_data = b32(DONTCARE);     break;
-      case OP_BRANCH:  sig_p20.reg_wren = false; sig_p20.reg_data = b32(DONTCARE);     break;
-      case OP_JAL:     sig_p20.reg_wren = true;  sig_p20.reg_data = reg_p2.pc + 4;     break;
-      case OP_JALR:    sig_p20.reg_wren = true;  sig_p20.reg_data = reg_p2.pc + 4;     break;
-      case OP_LUI:     sig_p20.reg_wren = true;  sig_p20.reg_data = reg_p2.alu; break;
-      case OP_AUIPC:   sig_p20.reg_wren = true;  sig_p20.reg_data = reg_p2.alu; break;
+      case OP_ALU:     reg_wren = true;  reg_data = reg_p2.alu;    break;
+      case OP_ALUI:    reg_wren = true;  reg_data = reg_p2.alu;    break;
+      case OP_LOAD:    reg_wren = true;  reg_data = unpacked_data; break;
+      case OP_STORE:   reg_wren = false; reg_data = b32(DONTCARE); break;
+      case OP_BRANCH:  reg_wren = false; reg_data = b32(DONTCARE); break;
+      case OP_JAL:     reg_wren = true;  reg_data = reg_p2.pc + 4; break;
+      case OP_JALR:    reg_wren = true;  reg_data = reg_p2.pc + 4; break;
+      case OP_LUI:     reg_wren = true;  reg_data = reg_p2.alu;    break;
+      case OP_AUIPC:   reg_wren = true;  reg_data = reg_p2.alu;    break;
     }
 
     logic<32> new_pc = reg_p2.pc_sel ? b32(reg_p2.alu) : b32(reg_p2.pc + 4);
@@ -303,46 +306,42 @@ class Pinwheel {
     reg_p0.pc   = new_pc;
 
     sig_p20.hart     = reg_p2.hart;
-    sig_p20.reg_addr = reg_p2.rd;
     sig_p20.mem_addr = new_pc;
+    sig_p20.reg_addr = reg_p2.rd;
+    sig_p20.reg_wren = reg_wren;
+    sig_p20.reg_data = reg_data;
   }
 
   //----------------------------------------
 
   void tick(logic<1> reset_in) {
-    registers_p0 old_reg_p0 = reg_p0;
-    registers_p1 old_reg_p1 = reg_p1;
-    registers_p2 old_reg_p2 = reg_p2;
-
-    signals_p20 old_sig_p20 = sig_p20;
-    signals_p01 old_sig_p01 = sig_p01;
-    signals_p12 old_sig_p12 = sig_p12;
-
     if (reset_in) {
       reset();
       return;
     }
 
-    logic<32> old_data = data_mem[cat(old_sig_p12.hart, b10(old_sig_p12.addr, 2))];
-    logic<32> old_prog = prog_mem[b10(old_sig_p20.mem_addr, 2)];
+    logic<32> old_data = data_mem[cat(sig_p12.hart, b10(sig_p12.addr, 2))];
+    logic<32> old_prog = prog_mem[b10(sig_p20.mem_addr, 2)];
 
-    if (old_sig_p12.byte_wren) {
-      if (old_sig_p12.byte_wren[0]) old_data = (old_data & 0xFFFFFF00) | (old_sig_p12.data & 0x000000FF);
-      if (old_sig_p12.byte_wren[1]) old_data = (old_data & 0xFFFF00FF) | (old_sig_p12.data & 0x0000FF00);
-      if (old_sig_p12.byte_wren[2]) old_data = (old_data & 0xFF00FFFF) | (old_sig_p12.data & 0x00FF0000);
-      if (old_sig_p12.byte_wren[3]) old_data = (old_data & 0x00FFFFFF) | (old_sig_p12.data & 0xFF000000);
-      data_mem[cat(old_sig_p12.hart, b10(old_sig_p12.addr, 2))] = old_data;
+    logic<32> old_ra = regfile[cat(sig_p01.hart, sig_p01.addr1)];
+    logic<32> old_rb = regfile[cat(sig_p01.hart, sig_p01.addr2)];
+
+    registers_p0 old_reg_p0 = reg_p0;
+    delta20(reg_p2,     old_data,       sig_p20, reg_p0);
+    delta12(reg_p1,     old_ra, old_rb, sig_p12, reg_p2);
+    delta01(old_reg_p0, old_prog,       sig_p01, reg_p1);
+
+    if (sig_p12.mask) {
+      logic<32> data = data_mem[cat(sig_p12.hart, b10(sig_p12.addr, 2))];
+      if (sig_p12.mask[0]) data = (data & 0xFFFFFF00) | (sig_p12.data & 0x000000FF);
+      if (sig_p12.mask[1]) data = (data & 0xFFFF00FF) | (sig_p12.data & 0x0000FF00);
+      if (sig_p12.mask[2]) data = (data & 0xFF00FFFF) | (sig_p12.data & 0x00FF0000);
+      if (sig_p12.mask[3]) data = (data & 0x00FFFFFF) | (sig_p12.data & 0xFF000000);
+      data_mem[cat(sig_p12.hart, b10(sig_p12.addr, 2))] = data;
     }
 
-    if (old_sig_p20.reg_addr && old_sig_p20.reg_wren) {
-      regfile[cat(old_sig_p20.hart, old_sig_p20.reg_addr)] = old_sig_p20.reg_data;
+    if (sig_p20.reg_addr && sig_p20.reg_wren) {
+      regfile[cat(sig_p20.hart, sig_p20.reg_addr)] = sig_p20.reg_data;
     }
-
-    logic<32> old_regs_read_data1 = regfile[cat(old_sig_p01.hart, old_sig_p01.addr1)];
-    logic<32> old_regs_read_data2 = regfile[cat(old_sig_p01.hart, old_sig_p01.addr2)];
-
-    delta20(old_reg_p2, old_data, sig_p20, reg_p0);
-    delta01(old_reg_p0, old_prog, sig_p01, reg_p1);
-    delta12(old_reg_p1, old_regs_read_data1, old_regs_read_data2, sig_p12, reg_p2);
   }
 };

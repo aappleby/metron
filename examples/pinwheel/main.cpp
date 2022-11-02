@@ -17,13 +17,22 @@ const char* instructions[38] = {
   "srl", "srli", "sub", "sw",   "xor",   "xori"
 };
 
+/*
+const char* instructions[1] = {
+  "simple"
+};
+*/
+
+const int instruction_count = sizeof(instructions) / sizeof(instructions[0]);
+
+
 //------------------------------------------------------------------------------
 
 uint64_t total_tocks = 0;
 uint64_t total_time = 0;
 
 TestResults test_instruction(const char* test_name, const int reps,
-                             const int max_cycles) {
+                             int max_cycles) {
   TEST_INIT("Testing op %6s, %d reps: ", test_name, reps);
 
   char buf1[256];
@@ -42,14 +51,16 @@ TestResults test_instruction(const char* test_name, const int reps,
     top.tock(1);
     auto time_a = timestamp();
     for (elapsed_cycles = 0; elapsed_cycles < max_cycles; elapsed_cycles++) {
+      //top.dump();
+
       top.tock(0);
       total_tocks++;
 
       if (top.sig_p12.addr == 0xfffffff0 && top.sig_p12.byte_wren) {
         if (top.sig_p12.data == 0) TEST_FAIL("FAIL @ %d\n", elapsed_cycles);
-        //if (rep == 0) {
-        //  LOG_B("pass at cycle %d\n", elapsed_cycles);
-        //}
+        if (rep == 0) {
+          //LOG_B("pass on hart %d at cycle %d\n", top.sig_p12.hart, elapsed_cycles);
+        }
         break;
       }
     }
@@ -81,7 +92,7 @@ int main(int argc, const char** argv) {
 
   LOG_B("Testing...\n");
   TestResults results("main");
-  for (int i = 0; i < 38; i++) {
+  for (int i = 0; i < instruction_count; i++) {
     results << test_instruction(instructions[i], reps, max_cycles);
   }
 

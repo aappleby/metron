@@ -71,9 +71,14 @@ struct registers_p2 {
 
 struct signals_p12 {
   logic<2>  hart;
+  logic<32> pc;
+  logic<5>  op;
+  logic<3>  f3;
   logic<32> addr;
   logic<32> data;
   logic<4>  mask;
+  logic<32> alu;
+  logic<1>  pc_sel;
 };
 
 //------------------------------------------------------------------------------
@@ -265,42 +270,47 @@ class Pinwheel {
     reg_p2.pc     = reg_p1.pc;
     reg_p2.pc_sel = pc_sel;
 
-    sig_p12.hart  = reg_p1.hart;
-    sig_p12.addr  = alu_result;
+    sig_p12.hart  = reg_p2.hart;
+    sig_p12.pc    = reg_p2.pc;
+    sig_p12.op    = reg_p2.op;
+    sig_p12.f3    = reg_p2.f3;
+    sig_p12.addr  = reg_p2.alu;
     sig_p12.data  = data;
     sig_p12.mask  = mask;
+    sig_p12.alu   = reg_p2.alu;
+    sig_p12.pc_sel = pc_sel;
   }
 
   //----------------------------------------
 
-  static void delta20(const registers_p2& reg_p2, const logic<32> p2_data_read, signals_p20& sig_p20, registers_p0& reg_p0) {
+  static void delta20(const registers_p2& reg_p2, const signals_p12& sig_p12, const logic<32> p2_data_read, signals_p20& sig_p20, registers_p0& reg_p0) {
     logic<32> unpacked_data;
-    switch (reg_p2.f3) {
-      case 0: unpacked_data = sign_extend<32>(b8(p2_data_read, 8 * b2(reg_p2.alu))); break;
-      case 1: unpacked_data = sign_extend<32>(b16(p2_data_read, 8 * b2(reg_p2.alu))); break;
+    switch (sig_p12.f3) {
+      case 0: unpacked_data = sign_extend<32>(b8(p2_data_read, 8 * b2(sig_p12.addr))); break;
+      case 1: unpacked_data = sign_extend<32>(b16(p2_data_read, 8 * b2(sig_p12.addr))); break;
       case 2: unpacked_data = p2_data_read; break;
       case 3: unpacked_data = p2_data_read; break;
-      case 4: unpacked_data = b8(p2_data_read, 8 * b2(reg_p2.alu)); break;
-      case 5: unpacked_data = b16(p2_data_read, 8 * b2(reg_p2.alu)); break;
+      case 4: unpacked_data = b8(p2_data_read, 8 * b2(sig_p12.addr)); break;
+      case 5: unpacked_data = b16(p2_data_read, 8 * b2(sig_p12.addr)); break;
       case 6: unpacked_data = p2_data_read; break;
       case 7: unpacked_data = p2_data_read; break;
     }
 
     logic<1>  reg_wren;
     logic<32> reg_data;
-    switch(reg_p2.op) {
-      case OP_ALU:     reg_wren = true;  reg_data = reg_p2.alu;    break;
-      case OP_ALUI:    reg_wren = true;  reg_data = reg_p2.alu;    break;
-      case OP_LOAD:    reg_wren = true;  reg_data = unpacked_data; break;
-      case OP_STORE:   reg_wren = false; reg_data = b32(DONTCARE); break;
-      case OP_BRANCH:  reg_wren = false; reg_data = b32(DONTCARE); break;
-      case OP_JAL:     reg_wren = true;  reg_data = reg_p2.pc + 4; break;
-      case OP_JALR:    reg_wren = true;  reg_data = reg_p2.pc + 4; break;
-      case OP_LUI:     reg_wren = true;  reg_data = reg_p2.alu;    break;
-      case OP_AUIPC:   reg_wren = true;  reg_data = reg_p2.alu;    break;
+    switch(sig_p12.op) {
+      case OP_ALU:     reg_wren = true;  reg_data = sig_p12.alu;    break;
+      case OP_ALUI:    reg_wren = true;  reg_data = sig_p12.alu;    break;
+      case OP_LOAD:    reg_wren = true;  reg_data = unpacked_data;  break;
+      case OP_STORE:   reg_wren = false; reg_data = b32(DONTCARE);  break;
+      case OP_BRANCH:  reg_wren = false; reg_data = b32(DONTCARE);  break;
+      case OP_JAL:     reg_wren = true;  reg_data = sig_p12.pc + 4; break;
+      case OP_JALR:    reg_wren = true;  reg_data = sig_p12.pc + 4; break;
+      case OP_LUI:     reg_wren = true;  reg_data = sig_p12.alu;    break;
+      case OP_AUIPC:   reg_wren = true;  reg_data = sig_p12.alu;    break;
     }
 
-    logic<32> new_pc = reg_p2.pc_sel ? b32(reg_p2.alu) : b32(reg_p2.pc + 4);
+    logic<32> new_pc = sig_p12.pc_sel ? b32(sig_p12.alu) : b32(reg_p2.pc + 4);
 
     reg_p0.hart = reg_p2.hart;
     reg_p0.pc   = new_pc;
@@ -327,9 +337,9 @@ class Pinwheel {
     logic<32> old_rb = regfile[cat(sig_p01.hart, sig_p01.addr2)];
 
     registers_p0 old_reg_p0 = reg_p0;
-    delta20(reg_p2,     old_data,       sig_p20, reg_p0);
-    delta12(reg_p1,     old_ra, old_rb, sig_p12, reg_p2);
-    delta01(old_reg_p0, old_prog,       sig_p01, reg_p1);
+    delta20(reg_p2,     sig_p12, old_data,       sig_p20, reg_p0);
+    delta12(reg_p1,              old_ra, old_rb, sig_p12, reg_p2);
+    delta01(old_reg_p0,          old_prog,       sig_p01, reg_p1);
 
     if (sig_p12.mask) {
       logic<32> data = data_mem[cat(sig_p12.hart, b10(sig_p12.addr, 2))];

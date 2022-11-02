@@ -29,17 +29,23 @@ inline const char* op_id_to_name(int op_id) {
 
 //------------------------------------------------------------------------------
 
-struct registers_p0 {
-  logic<2>  hart;
-  logic<32> pc;
-};
-
 struct signals_p20 {
   logic<2>  hart;
   logic<5>  reg_addr;
   logic<32> reg_data;
   logic<1>  reg_wren;
-  logic<32> mem_addr;
+  logic<32> code_addr;
+};
+
+struct registers_p0 {
+  logic<2>  hart;
+  logic<32> pc;
+};
+
+struct signals_p01 {
+  logic<2>  hart;
+  logic<5> addr1;
+  logic<5> addr2;
 };
 
 struct registers_p1 {
@@ -53,10 +59,17 @@ struct registers_p1 {
   logic<5>  rd;
 };
 
-struct signals_p01 {
+struct signals_p12 {
   logic<2>  hart;
-  logic<5> addr1;
-  logic<5> addr2;
+  logic<32> pc;
+  logic<5>  op;
+  logic<3>  f3;
+  logic<5>  rd;
+  logic<32> addr;
+  logic<32> data;
+  logic<4>  mask;
+  logic<32> alu;
+  logic<1>  pc_sel;
 };
 
 struct registers_p2 {
@@ -69,18 +82,6 @@ struct registers_p2 {
   logic<5>  rd;
 };
 
-struct signals_p12 {
-  logic<2>  hart;
-  logic<32> pc;
-  logic<5>  op;
-  logic<3>  f3;
-  logic<32> addr;
-  logic<32> data;
-  logic<4>  mask;
-  logic<32> alu;
-  logic<1>  pc_sel;
-};
-
 //------------------------------------------------------------------------------
 
 class Pinwheel {
@@ -89,7 +90,7 @@ class Pinwheel {
     tick(reset);
   }
 
-  logic<32> prog_mem[1024];     // Cores share a 4K ROM
+  logic<32> code_mem[1024];     // Cores share a 4K ROM
   logic<32> data_mem[1024 * 4]; // Cores have their own 4K RAM
   logic<32> regfile[32*4];      // Cores have their own register file
 
@@ -118,7 +119,7 @@ class Pinwheel {
   void reset() {
     std::string s;
     value_plusargs("text_file=%s", s);
-    readmemh(s, prog_mem);
+    readmemh(s, code_mem);
 
     value_plusargs("data_file=%s", s);
     readmemh(s, data_mem + 1024 * 0);
@@ -155,15 +156,25 @@ class Pinwheel {
 
   //----------------------------------------
 
-  static void delta01(const registers_p0& reg_p0, logic<32> p0_prog_read, signals_p01& sig_p01, registers_p1& reg_p1) {
-    logic<32> imm_b = cat(dup<20>(p0_prog_read[31]), p0_prog_read[7], b6(p0_prog_read, 25), b4(p0_prog_read, 8), b1(0));
-    logic<32> imm_i = cat(dup<21>(p0_prog_read[31]), b6(p0_prog_read, 25), b5(p0_prog_read, 20));
-    logic<32> imm_j = cat(dup<12>(p0_prog_read[31]), b8(p0_prog_read, 12), p0_prog_read[20], b6(p0_prog_read, 25), b4(p0_prog_read, 21), b1(0));
-    logic<32> imm_s = cat(dup<21>(p0_prog_read[31]), b6(p0_prog_read, 25), b5(p0_prog_read, 7));
-    logic<32> imm_u = cat(p0_prog_read[31], b11(p0_prog_read, 20), b8(p0_prog_read, 12), b12(0));
+  static void tock01(const registers_p0& reg_p0, const signals_p20& sig_p20,
+                      logic<32> code,
+                      signals_p01& sig_p01) {
+    sig_p01.hart  = reg_p0.hart;
+    sig_p01.addr1 = b5(code, 15);
+    sig_p01.addr2 = b5(code, 20);
+  }
+
+  //----------------------------------------
+
+  static void tick01(const registers_p0& reg_p0, const signals_p01& sig_p01, logic<32> code, registers_p1& reg_p1) {
+    logic<32> imm_b = cat(dup<20>(code[31]), code[7], b6(code, 25), b4(code, 8), b1(0));
+    logic<32> imm_i = cat(dup<21>(code[31]), b6(code, 25), b5(code, 20));
+    logic<32> imm_j = cat(dup<12>(code[31]), b8(code, 12), code[20], b6(code, 25), b4(code, 21), b1(0));
+    logic<32> imm_s = cat(dup<21>(code[31]), b6(code, 25), b5(code, 7));
+    logic<32> imm_u = cat(code[31], b11(code, 20), b8(code, 12), b12(0));
 
     logic<32> imm;
-    switch(b5(p0_prog_read, 2)) {
+    switch(b5(code, 2)) {
       case OP_ALU:    imm = imm_i; break;
       case OP_ALUI:   imm = imm_i; break;
       case OP_LOAD:   imm = imm_i; break;
@@ -177,21 +188,19 @@ class Pinwheel {
 
     reg_p1.hart = reg_p0.hart;
     reg_p1.pc = reg_p0.pc;
-    reg_p1.inst = p0_prog_read;
-    reg_p1.op = b5(p0_prog_read, 2);
+    reg_p1.inst = code;
+    reg_p1.op = b5(code, 2);
     reg_p1.imm = imm;
-    reg_p1.f3 = b3(p0_prog_read, 12);
-    reg_p1.f7 = b7(p0_prog_read, 25);
-    reg_p1.rd = b5(p0_prog_read, 7);
-
-    sig_p01.hart  = reg_p0.hart;
-    sig_p01.addr1 = b5(p0_prog_read, 15);
-    sig_p01.addr2 = b5(p0_prog_read, 20);
+    reg_p1.f3 = b3(code, 12);
+    reg_p1.f7 = b7(code, 25);
+    reg_p1.rd = b5(code, 7);
   }
 
   //----------------------------------------
 
-  static void delta12(const registers_p1& reg_p1, logic<32> ra, logic<32> rb, signals_p12& sig_p12, registers_p2& reg_p2) {
+  static void tock12(const registers_p1& reg_p1, const signals_p01& sig_p01,
+                      logic<32> ra, logic<32> rb,
+                      signals_p12& sig_p12) {
     // Branch selection
     logic<1> pc_sel;
     switch(reg_p1.op) {
@@ -262,38 +271,45 @@ class Pinwheel {
       if (reg_p1.f3 == 2) mask = 0b1111;
     }
 
-    reg_p2.hart   = reg_p1.hart;
-    reg_p2.alu    = alu_result;
-    reg_p2.rd     = reg_p1.rd;
-    reg_p2.op     = reg_p1.op;
-    reg_p2.f3     = reg_p1.f3;
-    reg_p2.pc     = reg_p1.pc;
-    reg_p2.pc_sel = pc_sel;
-
-    sig_p12.hart  = reg_p2.hart;
-    sig_p12.pc    = reg_p2.pc;
-    sig_p12.op    = reg_p2.op;
-    sig_p12.f3    = reg_p2.f3;
-    sig_p12.addr  = reg_p2.alu;
-    sig_p12.data  = data;
-    sig_p12.mask  = mask;
-    sig_p12.alu   = reg_p2.alu;
+    sig_p12.hart   = reg_p1.hart;
+    sig_p12.pc     = reg_p1.pc;
+    sig_p12.op     = reg_p1.op;
+    sig_p12.f3     = reg_p1.f3;
+    sig_p12.addr   = alu_result;
+    sig_p12.data   = data;
+    sig_p12.mask   = mask;
+    sig_p12.alu    = alu_result;
     sig_p12.pc_sel = pc_sel;
+    sig_p12.rd     = reg_p1.rd;
   }
 
   //----------------------------------------
 
-  static void delta20(const registers_p2& reg_p2, const signals_p12& sig_p12, const logic<32> p2_data_read, signals_p20& sig_p20, registers_p0& reg_p0) {
+  static void tick12(const registers_p1& reg_p1, const signals_p12& sig_p12, registers_p2& reg_p2) {
+    reg_p2.hart   = reg_p1.hart;
+    reg_p2.alu    = sig_p12.alu;
+    reg_p2.rd     = reg_p1.rd;
+    reg_p2.op     = reg_p1.op;
+    reg_p2.f3     = reg_p1.f3;
+    reg_p2.pc     = reg_p1.pc;
+    reg_p2.pc_sel = sig_p12.pc_sel;
+  }
+
+  //----------------------------------------
+
+  static void tock20(const registers_p2& reg_p2, const signals_p12& sig_p12,
+                      const logic<32> mem_data,
+                      signals_p20& sig_p20) {
     logic<32> unpacked_data;
     switch (sig_p12.f3) {
-      case 0: unpacked_data = sign_extend<32>(b8(p2_data_read, 8 * b2(sig_p12.addr))); break;
-      case 1: unpacked_data = sign_extend<32>(b16(p2_data_read, 8 * b2(sig_p12.addr))); break;
-      case 2: unpacked_data = p2_data_read; break;
-      case 3: unpacked_data = p2_data_read; break;
-      case 4: unpacked_data = b8(p2_data_read, 8 * b2(sig_p12.addr)); break;
-      case 5: unpacked_data = b16(p2_data_read, 8 * b2(sig_p12.addr)); break;
-      case 6: unpacked_data = p2_data_read; break;
-      case 7: unpacked_data = p2_data_read; break;
+      case 0: unpacked_data = sign_extend<32>(b8(mem_data, 8 * b2(sig_p12.addr))); break;
+      case 1: unpacked_data = sign_extend<32>(b16(mem_data, 8 * b2(sig_p12.addr))); break;
+      case 2: unpacked_data = mem_data; break;
+      case 3: unpacked_data = mem_data; break;
+      case 4: unpacked_data = b8(mem_data, 8 * b2(sig_p12.addr)); break;
+      case 5: unpacked_data = b16(mem_data, 8 * b2(sig_p12.addr)); break;
+      case 6: unpacked_data = mem_data; break;
+      case 7: unpacked_data = mem_data; break;
     }
 
     logic<1>  reg_wren;
@@ -312,14 +328,19 @@ class Pinwheel {
 
     logic<32> new_pc = sig_p12.pc_sel ? b32(sig_p12.alu) : b32(reg_p2.pc + 4);
 
-    reg_p0.hart = reg_p2.hart;
-    reg_p0.pc   = new_pc;
-
     sig_p20.hart     = reg_p2.hart;
-    sig_p20.mem_addr = new_pc;
+    sig_p20.code_addr = new_pc;
     sig_p20.reg_addr = reg_p2.rd;
     sig_p20.reg_wren = reg_wren;
     sig_p20.reg_data = reg_data;
+  }
+
+  //----------------------------------------
+
+  static void tick20(const registers_p2& reg_p2, const signals_p20& sig_p20,
+                      registers_p0& reg_p0) {
+    reg_p0.hart = sig_p20.hart;
+    reg_p0.pc   = sig_p20.code_addr;
   }
 
   //----------------------------------------
@@ -331,15 +352,21 @@ class Pinwheel {
     }
 
     logic<32> old_data = data_mem[cat(sig_p12.hart, b10(sig_p12.addr, 2))];
-    logic<32> old_prog = prog_mem[b10(sig_p20.mem_addr, 2)];
+    logic<32> old_code = code_mem[b10(sig_p20.code_addr, 2)];
 
     logic<32> old_ra = regfile[cat(sig_p01.hart, sig_p01.addr1)];
     logic<32> old_rb = regfile[cat(sig_p01.hart, sig_p01.addr2)];
 
     registers_p0 old_reg_p0 = reg_p0;
-    delta20(reg_p2,     sig_p12, old_data,       sig_p20, reg_p0);
-    delta12(reg_p1,              old_ra, old_rb, sig_p12, reg_p2);
-    delta01(old_reg_p0,          old_prog,       sig_p01, reg_p1);
+
+    tock20(reg_p2, sig_p12, old_data, sig_p20);
+    tick20(reg_p2, sig_p20, reg_p0);
+
+    tock12(reg_p1,     sig_p01, old_ra, old_rb, sig_p12);
+    tick12(reg_p1,     sig_p12, reg_p2);
+
+    tock01(old_reg_p0, sig_p20, old_code, sig_p01);
+    tick01(old_reg_p0, sig_p01, old_code, reg_p1);
 
     if (sig_p12.mask) {
       logic<32> data = data_mem[cat(sig_p12.hart, b10(sig_p12.addr, 2))];

@@ -584,8 +584,13 @@ inline logic<WIDTH> sra(logic<WIDTH> x, int s) {
 }
 
 template <int WIDTH>
-inline logic<WIDTH> sla(logic<WIDTH> x, int s) {
+inline logic<WIDTH> srl(logic<WIDTH> x, int s) {
   return x.as_unsigned() >> s;
+}
+
+template <int WIDTH>
+inline logic<WIDTH> sll(logic<WIDTH> x, int s) {
+  return x.as_unsigned() << s;
 }
 
 //----------------------------------------

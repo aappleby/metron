@@ -44,8 +44,10 @@ struct registers_p0 {
 
 struct signals_p01 {
   logic<2>  hart;
-  logic<5> addr1;
-  logic<5> addr2;
+  logic<32> pc;
+  logic<32> code;
+  logic<5>  addr1;
+  logic<5>  addr2;
 };
 
 struct registers_p1 {
@@ -65,7 +67,7 @@ struct signals_p12 {
   logic<5>  op;
   logic<3>  f3;
   logic<5>  rd;
-  logic<32> addr;
+  logic<32> adder;
   logic<32> data;
   logic<4>  mask;
   logic<32> alu;
@@ -78,6 +80,7 @@ struct registers_p2 {
   logic<5>  op;
   logic<3>  f3;
   logic<1>  pc_sel;
+  logic<32> adder;
   logic<32> alu;
   logic<5>  rd;
 };
@@ -95,12 +98,11 @@ class Pinwheel {
   logic<32> regfile[32*4];      // Cores have their own register file
 
   registers_p0 reg_p0;
+  signals_p01  sig_p01;
   registers_p1 reg_p1;
+  signals_p12  sig_p12;
   registers_p2 reg_p2;
-
-  signals_p20 sig_p20;
-  signals_p01 sig_p01;
-  signals_p12 sig_p12;
+  signals_p20  sig_p20;
 
   void dump() {
     if (reg_p0.hart == 0) {
@@ -149,24 +151,27 @@ class Pinwheel {
     reg_p2.alu    = 0;
     reg_p2.rd     = 0;
 
-    sig_p20 = {0};
-    sig_p01 = {0};
-    sig_p12 = {0};
+    tock01(reg_p0, 0,    sig_p01);
+    tock12(reg_p1, 0, 0, sig_p12);
+    tock20(reg_p2, 0,    sig_p20);
   }
 
   //----------------------------------------
 
-  static void tock01(const registers_p0& reg_p0, const signals_p20& sig_p20,
-                      logic<32> code,
-                      signals_p01& sig_p01) {
+  static void tock01(const registers_p0& reg_p0, logic<32> code, signals_p01& sig_p01) {
     sig_p01.hart  = reg_p0.hart;
+    sig_p01.pc    = reg_p0.pc;
+    sig_p01.code  = code;
     sig_p01.addr1 = b5(code, 15);
     sig_p01.addr2 = b5(code, 20);
+
+    if (b5(code, 2) == OP_LUI) sig_p01.addr1 = 0;
   }
 
   //----------------------------------------
 
-  static void tick01(const registers_p0& reg_p0, const signals_p01& sig_p01, logic<32> code, registers_p1& reg_p1) {
+  static void tick01(const signals_p01& sig_p01, registers_p1& reg_p1) {
+    logic<32> code = sig_p01.code;
     logic<32> imm_b = cat(dup<20>(code[31]), code[7], b6(code, 25), b4(code, 8), b1(0));
     logic<32> imm_i = cat(dup<21>(code[31]), b6(code, 25), b5(code, 20));
     logic<32> imm_j = cat(dup<12>(code[31]), b8(code, 12), code[20], b6(code, 25), b4(code, 21), b1(0));
@@ -186,20 +191,19 @@ class Pinwheel {
       case OP_AUIPC:  imm = imm_u; break;
     }
 
-    reg_p1.hart = reg_p0.hart;
-    reg_p1.pc = reg_p0.pc;
+    reg_p1.hart = sig_p01.hart;
+    reg_p1.pc   = sig_p01.pc;
     reg_p1.inst = code;
-    reg_p1.op = b5(code, 2);
-    reg_p1.imm = imm;
-    reg_p1.f3 = b3(code, 12);
-    reg_p1.f7 = b7(code, 25);
-    reg_p1.rd = b5(code, 7);
+    reg_p1.imm  = imm;
+    reg_p1.op   = b5(code, 2);
+    reg_p1.f3   = b3(code, 12);
+    reg_p1.f7   = b7(code, 25);
+    reg_p1.rd   = b5(code, 7);
   }
 
   //----------------------------------------
 
-  static void tock12(const registers_p1& reg_p1, const signals_p01& sig_p01,
-                      logic<32> ra, logic<32> rb,
+  static void tock12(const registers_p1& reg_p1, logic<32> ra, logic<32> rb,
                       signals_p12& sig_p12) {
     // Branch selection
     logic<1> pc_sel;
@@ -232,42 +236,55 @@ class Pinwheel {
     }
 
     // ALU
-    logic<32> alu_a;
-    logic<32> alu_b;
-    logic<3>  alu_op;
-    logic<1>  alu_alt;
 
+    logic<32> adder;
     switch(reg_p1.op) {
-      case OP_ALU:     alu_a = ra;        alu_b = rb;         alu_op = reg_p1.f3; alu_alt = b1(reg_p1.f7, 5); break;
-      case OP_ALUI:    alu_a = ra;        alu_b = reg_p1.imm; alu_op = reg_p1.f3; alu_alt = b1(reg_p1.f7, 5); break;
-      case OP_LOAD:    alu_a = ra;        alu_b = reg_p1.imm; alu_op = 0;         alu_alt = 0;                break;
-      case OP_STORE:   alu_a = ra;        alu_b = reg_p1.imm; alu_op = 0;         alu_alt = 0;                break;
-      case OP_BRANCH:  alu_a = reg_p1.pc; alu_b = reg_p1.imm; alu_op = 0;         alu_alt = 0;                break;
-      case OP_JAL:     alu_a = reg_p1.pc; alu_b = reg_p1.imm; alu_op = 0;         alu_alt = 0;                break;
-      case OP_JALR:    alu_a = ra;        alu_b = reg_p1.imm; alu_op = 0;         alu_alt = 0;                break;
-      case OP_LUI:     alu_a = 0;         alu_b = reg_p1.imm; alu_op = 0;         alu_alt = 0;                break;
-      case OP_AUIPC:   alu_a = reg_p1.pc; alu_b = reg_p1.imm; alu_op = 0;         alu_alt = 0;                break;
+      case OP_ALU:     adder = ra        + reg_p1.imm; break;
+      case OP_ALUI:    adder = ra        + reg_p1.imm; break;
+      case OP_LOAD:    adder = ra        + reg_p1.imm; break;
+      case OP_STORE:   adder = ra        + reg_p1.imm; break;
+      case OP_JAL:     adder = reg_p1.pc + reg_p1.imm; break;
+      case OP_BRANCH:  adder = reg_p1.pc + reg_p1.imm; break;
+      case OP_JALR:    adder = ra        + reg_p1.imm; break;
+      case OP_LUI:     adder = ra        + reg_p1.imm; break;
+      case OP_AUIPC:   adder = reg_p1.pc + reg_p1.imm; break;
     }
 
-    logic<32> alu_result;
+    logic<3>  alu_op;
+    logic<32> alu_a = ra;
+    logic<32> alu_b = rb;
+
+    switch(reg_p1.op) {
+      case OP_ALU:     alu_op = reg_p1.f3; alu_a = ra;        alu_b = (reg_p1.f3 == 0 && b1(reg_p1.f7, 5)) ? uint32_t(-alu_b) : uint32_t(alu_b); break;
+      case OP_ALUI:    alu_op = reg_p1.f3; alu_a = ra;        alu_b = reg_p1.imm; break;
+      case OP_LOAD:    alu_op = 0;         alu_a = reg_p1.pc; alu_b = 4; break;
+      case OP_STORE:   alu_op = 0;         alu_a = reg_p1.pc; alu_b = 4; break;
+      case OP_JAL:     alu_op = 0;         alu_a = reg_p1.pc; alu_b = 4; break;
+      case OP_BRANCH:  alu_op = 0;         alu_a = reg_p1.pc; alu_b = 4; break;
+      case OP_JALR:    alu_op = 0;         alu_a = reg_p1.pc; alu_b = 4; break;
+      case OP_LUI:     alu_op = 0;         alu_a = reg_p1.pc; alu_b = 4; break;
+      case OP_AUIPC:   alu_op = 0;         alu_a = reg_p1.pc; alu_b = 4; break;
+    }
+
+    logic<32> alu;
     switch (alu_op) {
-      case 0: alu_result = (reg_p1.op == OP_ALU) && alu_alt ? alu_a - alu_b : alu_a + alu_b; break;
-      case 1: alu_result = alu_a << b5(alu_b); break;
-      case 2: alu_result = signed(alu_a) < signed(alu_b); break;
-      case 3: alu_result = alu_a < alu_b; break;
-      case 4: alu_result = alu_a ^ alu_b; break;
-      case 5: alu_result = alu_alt ? sra(alu_a, b5(alu_b)) : sla(alu_a, b5(alu_b)); break;
-      case 6: alu_result = alu_a | alu_b; break;
-      case 7: alu_result = alu_a & alu_b; break;
+      case 0: alu = alu_a + alu_b; break;
+      case 1: alu = sll(alu_a, b5(alu_b)); break;
+      case 2: alu = signed(alu_a) < signed(alu_b); break;
+      case 3: alu = alu_a < alu_b; break;
+      case 4: alu = alu_a ^ alu_b; break;
+      case 5: alu = b1(reg_p1.f7, 5) ? sra(alu_a, b5(alu_b)) : srl(alu_a, b5(alu_b)); break;
+      case 6: alu = alu_a | alu_b; break;
+      case 7: alu = alu_a & alu_b; break;
     }
 
     // Data mem read/write
-    logic<32> data = rb << (8 * b2(alu_result));
+    logic<32> data = rb << (8 * b2(adder));
     logic<4>  mask = 0b0000;
 
     if (reg_p1.op == OP_STORE) {
-      if (reg_p1.f3 == 0) mask = 0b0001 << b2(alu_result);
-      if (reg_p1.f3 == 1) mask = 0b0011 << b2(alu_result);
+      if (reg_p1.f3 == 0) mask = 0b0001 << b2(adder);
+      if (reg_p1.f3 == 1) mask = 0b0011 << b2(adder);
       if (reg_p1.f3 == 2) mask = 0b1111;
     }
 
@@ -275,70 +292,68 @@ class Pinwheel {
     sig_p12.pc     = reg_p1.pc;
     sig_p12.op     = reg_p1.op;
     sig_p12.f3     = reg_p1.f3;
-    sig_p12.addr   = alu_result;
+    sig_p12.rd     = reg_p1.rd;
+    sig_p12.adder  = adder;
     sig_p12.data   = data;
     sig_p12.mask   = mask;
-    sig_p12.alu    = alu_result;
+    sig_p12.alu    = alu;
     sig_p12.pc_sel = pc_sel;
-    sig_p12.rd     = reg_p1.rd;
   }
 
   //----------------------------------------
 
-  static void tick12(const registers_p1& reg_p1, const signals_p12& sig_p12, registers_p2& reg_p2) {
-    reg_p2.hart   = reg_p1.hart;
-    reg_p2.alu    = sig_p12.alu;
-    reg_p2.rd     = reg_p1.rd;
-    reg_p2.op     = reg_p1.op;
-    reg_p2.f3     = reg_p1.f3;
-    reg_p2.pc     = reg_p1.pc;
+  static void tick12(const signals_p12& sig_p12, registers_p2& reg_p2) {
+    reg_p2.hart   = sig_p12.hart;
+    reg_p2.pc     = sig_p12.pc;
+    reg_p2.op     = sig_p12.op;
+    reg_p2.f3     = sig_p12.f3;
     reg_p2.pc_sel = sig_p12.pc_sel;
+    reg_p2.adder  = sig_p12.adder;
+    reg_p2.alu    = sig_p12.alu;
+    reg_p2.rd     = sig_p12.rd;
   }
 
   //----------------------------------------
 
-  static void tock20(const registers_p2& reg_p2, const signals_p12& sig_p12,
-                      const logic<32> mem_data,
-                      signals_p20& sig_p20) {
-    logic<32> unpacked_data;
-    switch (sig_p12.f3) {
-      case 0: unpacked_data = sign_extend<32>(b8(mem_data, 8 * b2(sig_p12.addr))); break;
-      case 1: unpacked_data = sign_extend<32>(b16(mem_data, 8 * b2(sig_p12.addr))); break;
-      case 2: unpacked_data = mem_data; break;
-      case 3: unpacked_data = mem_data; break;
-      case 4: unpacked_data = b8(mem_data, 8 * b2(sig_p12.addr)); break;
-      case 5: unpacked_data = b16(mem_data, 8 * b2(sig_p12.addr)); break;
-      case 6: unpacked_data = mem_data; break;
-      case 7: unpacked_data = mem_data; break;
+  static void tock20(const registers_p2& reg_p2, const logic<32> data, signals_p20& sig_p20) {
+    logic<32> unpacked;
+    switch (reg_p2.f3) {
+      case 0: unpacked = sign_extend<32>(b8(data, 8 * b2(reg_p2.adder))); break;
+      case 1: unpacked = sign_extend<32>(b16(data, 8 * b2(reg_p2.adder))); break;
+      case 2: unpacked = data; break;
+      case 3: unpacked = data; break;
+      case 4: unpacked = b8(data, 8 * b2(reg_p2.adder)); break;
+      case 5: unpacked = b16(data, 8 * b2(reg_p2.adder)); break;
+      case 6: unpacked = data; break;
+      case 7: unpacked = data; break;
     }
 
     logic<1>  reg_wren;
     logic<32> reg_data;
-    switch(sig_p12.op) {
-      case OP_ALU:     reg_wren = true;  reg_data = sig_p12.alu;    break;
-      case OP_ALUI:    reg_wren = true;  reg_data = sig_p12.alu;    break;
-      case OP_LOAD:    reg_wren = true;  reg_data = unpacked_data;  break;
-      case OP_STORE:   reg_wren = false; reg_data = b32(DONTCARE);  break;
-      case OP_BRANCH:  reg_wren = false; reg_data = b32(DONTCARE);  break;
-      case OP_JAL:     reg_wren = true;  reg_data = sig_p12.pc + 4; break;
-      case OP_JALR:    reg_wren = true;  reg_data = sig_p12.pc + 4; break;
-      case OP_LUI:     reg_wren = true;  reg_data = sig_p12.alu;    break;
-      case OP_AUIPC:   reg_wren = true;  reg_data = sig_p12.alu;    break;
+    switch(reg_p2.op) {
+      case OP_ALU:     reg_wren = true;  reg_data = reg_p2.alu;    break;
+      case OP_ALUI:    reg_wren = true;  reg_data = reg_p2.alu;    break;
+      case OP_LOAD:    reg_wren = true;  reg_data = unpacked;      break;
+      case OP_STORE:   reg_wren = false; reg_data = b32(DONTCARE); break;
+      case OP_BRANCH:  reg_wren = false; reg_data = b32(DONTCARE); break;
+      case OP_JAL:     reg_wren = true;  reg_data = reg_p2.alu;    break;
+      case OP_JALR:    reg_wren = true;  reg_data = reg_p2.alu;    break;
+      case OP_LUI:     reg_wren = true;  reg_data = reg_p2.adder;  break;
+      case OP_AUIPC:   reg_wren = true;  reg_data = reg_p2.adder;  break;
     }
 
-    logic<32> new_pc = sig_p12.pc_sel ? b32(sig_p12.alu) : b32(reg_p2.pc + 4);
+    logic<32> new_pc = reg_p2.pc_sel ? b32(reg_p2.adder) : b32(reg_p2.pc + 4);
 
     sig_p20.hart     = reg_p2.hart;
-    sig_p20.code_addr = new_pc;
     sig_p20.reg_addr = reg_p2.rd;
-    sig_p20.reg_wren = reg_wren;
     sig_p20.reg_data = reg_data;
+    sig_p20.reg_wren = reg_wren;
+    sig_p20.code_addr = new_pc;
   }
 
   //----------------------------------------
 
-  static void tick20(const registers_p2& reg_p2, const signals_p20& sig_p20,
-                      registers_p0& reg_p0) {
+  static void tick20(const signals_p20& sig_p20, registers_p0& reg_p0) {
     reg_p0.hart = sig_p20.hart;
     reg_p0.pc   = sig_p20.code_addr;
   }
@@ -351,30 +366,27 @@ class Pinwheel {
       return;
     }
 
-    logic<32> old_data = data_mem[cat(sig_p12.hart, b10(sig_p12.addr, 2))];
-    logic<32> old_code = code_mem[b10(sig_p20.code_addr, 2)];
+    logic<32> data = data_mem[cat(sig_p12.hart, b10(sig_p12.adder, 2))];
+    logic<32> code = code_mem[b10(sig_p20.code_addr, 2)];
 
-    logic<32> old_ra = regfile[cat(sig_p01.hart, sig_p01.addr1)];
-    logic<32> old_rb = regfile[cat(sig_p01.hart, sig_p01.addr2)];
+    logic<32> ra = regfile[cat(sig_p01.hart, sig_p01.addr1)];
+    logic<32> rb = regfile[cat(sig_p01.hart, sig_p01.addr2)];
 
-    registers_p0 old_reg_p0 = reg_p0;
+    tock01(reg_p0, code,   sig_p01);
+    tock12(reg_p1, ra, rb, sig_p12);
+    tock20(reg_p2, data,   sig_p20);
 
-    tock20(reg_p2, sig_p12, old_data, sig_p20);
-    tick20(reg_p2, sig_p20, reg_p0);
-
-    tock12(reg_p1,     sig_p01, old_ra, old_rb, sig_p12);
-    tick12(reg_p1,     sig_p12, reg_p2);
-
-    tock01(old_reg_p0, sig_p20, old_code, sig_p01);
-    tick01(old_reg_p0, sig_p01, old_code, reg_p1);
+    tick20(sig_p20, reg_p0);
+    tick01(sig_p01, reg_p1);
+    tick12(sig_p12, reg_p2);
 
     if (sig_p12.mask) {
-      logic<32> data = data_mem[cat(sig_p12.hart, b10(sig_p12.addr, 2))];
+      logic<32> data = data_mem[cat(sig_p12.hart, b10(sig_p12.adder, 2))];
       if (sig_p12.mask[0]) data = (data & 0xFFFFFF00) | (sig_p12.data & 0x000000FF);
       if (sig_p12.mask[1]) data = (data & 0xFFFF00FF) | (sig_p12.data & 0x0000FF00);
       if (sig_p12.mask[2]) data = (data & 0xFF00FFFF) | (sig_p12.data & 0x00FF0000);
       if (sig_p12.mask[3]) data = (data & 0x00FFFFFF) | (sig_p12.data & 0xFF000000);
-      data_mem[cat(sig_p12.hart, b10(sig_p12.addr, 2))] = data;
+      data_mem[cat(sig_p12.hart, b10(sig_p12.adder, 2))] = data;
     }
 
     if (sig_p20.reg_addr && sig_p20.reg_wren) {

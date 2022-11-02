@@ -45,8 +45,8 @@ TestResults test_instruction(const char* test_name, const int reps,
       top.tock(0);
       total_tocks++;
 
-      if (top.p2_sig_data_addr == 0xfffffff0 && top.p2_sig_data_byte_wren) {
-        if (top.p2_sig_data_data == 0) TEST_FAIL("FAIL %d @ %d\n", top.p2_sig_data_data, elapsed_cycles);
+      if (top.sig_p12.addr == 0xfffffff0 && top.sig_p12.byte_wren) {
+        if (top.sig_p12.data == 0) TEST_FAIL("FAIL @ %d\n", elapsed_cycles);
         //if (rep == 0) {
         //  LOG_B("pass at cycle %d\n", elapsed_cycles);
         //}

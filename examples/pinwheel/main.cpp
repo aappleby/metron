@@ -96,6 +96,9 @@ int main(int argc, const char** argv) {
     results << test_instruction(instructions[i], reps, max_cycles);
   }
 
+  printf("Total tocks %f\n", double(total_tocks));
+  printf("Total time %f\n", double(total_time));
+
   double rate = double(total_tocks) / double(total_time);
   LOG_B("Sim rate %f mhz\n", rate * 1000.0);
 

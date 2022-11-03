@@ -31,7 +31,7 @@ inline const char* op_id_to_name(int op_id) {
 
 struct signals_p20 {
   logic<2>  hart;
-  logic<32> pbus_addr;
+  logic<32> pc;
 
   logic<5>  rbus_waddr;
   logic<32> rbus_wdata;
@@ -89,9 +89,9 @@ class Pinwheel {
     tick(reset);
   }
 
-  logic<32> code_mem[1024];     // Cores share a 4K ROM
-  logic<32> data_mem[1024 * 4]; // Cores have their own 4K RAM
-  logic<32> regfile[32*4];      // Cores have their own register file
+  uint32_t code_mem[1024];    // Cores share a 4K ROM
+  uint32_t data_mem[4][1024]; // Cores have their own 4K RAM
+  uint32_t regfile[4][32];    // Cores have their own register file
 
   registers_p0 reg_p0;
   signals_p01  sig_p01;
@@ -120,10 +120,10 @@ class Pinwheel {
     readmemh(s, code_mem);
 
     value_plusargs("data_file=%s", s);
-    readmemh(s, data_mem + 1024 * 0);
-    readmemh(s, data_mem + 1024 * 1);
-    readmemh(s, data_mem + 1024 * 2);
-    readmemh(s, data_mem + 1024 * 3);
+    readmemh(s, data_mem[0]);
+    readmemh(s, data_mem[1]);
+    readmemh(s, data_mem[2]);
+    readmemh(s, data_mem[3]);
 
     memset(regfile, 0, sizeof(regfile));
 
@@ -190,11 +190,11 @@ class Pinwheel {
     sig_p12.pc     = reg_p1.pc;
     sig_p12.insn   = reg_p1.insn;
 
-    logic<5> op = b5(reg_p1.insn, 2);
-    logic<3> f3 = b3(reg_p1.insn, 12);
+    logic<32> insn = reg_p1.insn;
+    logic<5> op = b5(insn, 2);
+    logic<3> f3 = b3(insn, 12);
 
     // Data bus driver
-    logic<32> insn = reg_p1.insn;
     logic<32> imm_i = cat(dup<21>(insn[31]), b6(insn, 25), b5(insn, 20));
     logic<32> imm_s = cat(dup<21>(insn[31]), b6(insn, 25), b5(insn, 7));
     logic<32> addr = ra + ((op == OP_STORE) ? imm_s : imm_i);
@@ -250,31 +250,66 @@ class Pinwheel {
   static void tock20(const registers_p2& reg_p2, const logic<32> dbus_data, signals_p20& sig_p20) {
     sig_p20.hart = reg_p2.hart;
 
-    logic<5> op = b5(reg_p2.insn, 2);
-    logic<3> f3 = b3(reg_p2.insn, 12);
-    logic<5> rd = b5(reg_p2.insn, 7);
-
     logic<32> insn = reg_p2.insn;
+    logic<5> op = b5(insn, 2);
+    logic<3> f3 = b3(insn, 12);
+    logic<5> rd = b5(insn, 7);
+
     logic<32> imm_b = cat(dup<20>(insn[31]), insn[7], b6(insn, 25), b4(insn, 8), b1(0));
     logic<32> imm_i = cat(dup<21>(insn[31]), b6(insn, 25), b5(insn, 20));
     logic<32> imm_j = cat(dup<12>(insn[31]), b8(insn, 12), insn[20], b6(insn, 25), b4(insn, 21), b1(0));
-    logic<32> imm_s = cat(dup<21>(insn[31]), b6(insn, 25), b5(insn, 7));
     logic<32> imm_u = cat(insn[31], b11(insn, 20), b8(insn, 12), b12(0));
-    logic<32> imm;
+
+    // ALU
+    logic<1>  alu_alt = b1(reg_p2.insn, 30);
+    logic<32> alu_a  = reg_p2.ra;
+    logic<32> alu_b  = reg_p2.rb;
+    logic<3>  alu_op = f3;
+
     switch(op) {
-      case OP_ALU:    imm = imm_i; break;
-      case OP_ALUI:   imm = imm_i; break;
-      case OP_LOAD:   imm = imm_i; break;
-      case OP_STORE:  imm = imm_s; break;
-      case OP_BRANCH: imm = imm_b; break;
-      case OP_JAL:    imm = imm_j; break;
-      case OP_JALR:   imm = imm_i; break;
-      case OP_LUI:    imm = imm_u; break;
-      case OP_AUIPC:  imm = imm_u; break;
+      case OP_ALU:    alu_op = f3;        alu_a = reg_p2.ra; alu_b = (f3 == 0 && alu_alt) ? b32(-reg_p2.rb) : reg_p2.rb; break;
+      case OP_ALUI:   alu_op = f3;        alu_a = reg_p2.ra; alu_b = imm_i; break;
+      case OP_LOAD:   alu_op = f3;        alu_a = reg_p2.ra; alu_b = reg_p2.rb;  break;
+      case OP_STORE:  alu_op = f3;        alu_a = reg_p2.ra; alu_b = reg_p2.rb;  break;
+      case OP_BRANCH: alu_op = f3;        alu_a = reg_p2.ra; alu_b = reg_p2.rb;  break;
+      case OP_JAL:    alu_op = 0;         alu_a = reg_p2.pc; alu_b = b32(4);     break;
+      case OP_JALR:   alu_op = 0;         alu_a = reg_p2.pc; alu_b = b32(4);     break;
+      case OP_LUI:    alu_op = 0;         alu_a = 0;         alu_b = imm_u; break;
+      case OP_AUIPC:  alu_op = 0;         alu_a = reg_p2.pc; alu_b = imm_u; break;
     }
 
-    // Unpack byte/word from memory dword
-    logic<32> unpacked;
+    // Shifters
+
+    logic<1> bit = (alu_op == 5) && alu_alt ? alu_a[31] : b1(0);
+
+    logic<32> sl = alu_a;
+    if (alu_b[4]) sl = cat(b16(sl, 0), dup<16>(bit));
+    if (alu_b[3]) sl = cat(b24(sl, 0), dup< 8>(bit));
+    if (alu_b[2]) sl = cat(b28(sl, 0), dup< 4>(bit));
+    if (alu_b[1]) sl = cat(b30(sl, 0), dup< 2>(bit));
+    if (alu_b[0]) sl = cat(b31(sl, 0), dup< 1>(bit));
+
+    logic<32> sr = alu_a;
+    if (alu_b[4]) sr = cat(dup<16>(bit), b16(sr, 16));
+    if (alu_b[3]) sr = cat(dup< 8>(bit), b24(sr,  8));
+    if (alu_b[2]) sr = cat(dup< 4>(bit), b28(sr,  4));
+    if (alu_b[1]) sr = cat(dup< 2>(bit), b30(sr,  2));
+    if (alu_b[0]) sr = cat(dup< 1>(bit), b31(sr,  1));
+
+    logic<32> alu_out;
+    switch (alu_op) {
+      case 0: alu_out = alu_a + alu_b;                 break;
+      case 1: alu_out = sl;                            break;
+      case 2: alu_out = signed(alu_a) < signed(alu_b); break;
+      case 3: alu_out = alu_a < alu_b;                 break;
+      case 4: alu_out = alu_a ^ alu_b;                 break;
+      case 5: alu_out = sr;                            break;
+      case 6: alu_out = alu_a | alu_b;                 break;
+      case 7: alu_out = alu_a & alu_b;                 break;
+    }
+
+    // Writeback
+    logic<32> unpacked; // Unpack byte/word from memory dword
     switch (f3) {
       case 0: unpacked = sign_extend<32>(b8(dbus_data, 8 * reg_p2.dbus_align)); break;
       case 1: unpacked = sign_extend<32>(b16(dbus_data, 8 * reg_p2.dbus_align)); break;
@@ -285,74 +320,45 @@ class Pinwheel {
       case 6: unpacked = dbus_data; break;
       case 7: unpacked = dbus_data; break;
     }
-
-    // Branch selection
-    logic<1> eq  = reg_p2.ra == reg_p2.rb;
-    logic<1> slt = signed(reg_p2.ra) < signed(reg_p2.rb);
-    logic<1> ult = reg_p2.ra < reg_p2.rb;
-    logic<1> jump_rel;
-    switch (f3) {
-      case 0: jump_rel =   eq; break;
-      case 1: jump_rel =  !eq; break;
-      case 2: jump_rel =   eq; break;
-      case 3: jump_rel =  !eq; break;
-      case 4: jump_rel =  slt; break;
-      case 5: jump_rel = !slt; break;
-      case 6: jump_rel =  ult; break;
-      case 7: jump_rel = !ult; break;
-    }
-
-    if (op != OP_BRANCH) jump_rel = 0;
-    if (op == OP_JAL)    jump_rel = 1;
-    if (op == OP_JALR)   jump_rel = 1;
-
-    // ALU
-    logic<1>  alu_alt = b1(reg_p2.insn, 30);
-    logic<32> alu_a  = reg_p2.ra;
-    logic<32> alu_b  = reg_p2.rb;
-    logic<3>  alu_op = f3;
-
-    switch(op) {
-      case OP_ALU:    alu_op = f3;        alu_a = reg_p2.ra; alu_b = (f3 == 0 && alu_alt) ? b32(-reg_p2.rb) : reg_p2.rb; break;
-      case OP_ALUI:   alu_op = f3;        alu_a = reg_p2.ra; alu_b = imm; break;
-      case OP_LOAD:   alu_op = f3;        alu_a = reg_p2.ra; alu_b = reg_p2.rb;  break;
-      case OP_STORE:  alu_op = f3;        alu_a = reg_p2.ra; alu_b = reg_p2.rb;  break;
-      case OP_BRANCH: alu_op = f3;        alu_a = reg_p2.ra; alu_b = reg_p2.rb;  break;
-      case OP_JAL:    alu_op = 0;         alu_a = reg_p2.pc; alu_b = b32(4);     break;
-      case OP_JALR:   alu_op = 0;         alu_a = reg_p2.pc; alu_b = b32(4);     break;
-      case OP_LUI:    alu_op = 0;         alu_a = 0;         alu_b = imm; break;
-      case OP_AUIPC:  alu_op = 0;         alu_a = reg_p2.pc; alu_b = imm; break;
-    }
-
-    logic<32> alu_out;
-    switch (alu_op) {
-      case 0: alu_out = alu_a + alu_b;                 break;
-      case 1: alu_out = sll(alu_a, b5(alu_b));         break;
-      case 2: alu_out = signed(alu_a) < signed(alu_b); break;
-      case 3: alu_out = alu_a < alu_b;                 break;
-      case 4: alu_out = alu_a ^ alu_b;                 break;
-      case 5: alu_out = alu_alt ? sra(alu_a, b5(alu_b)) : srl(alu_a, b5(alu_b)); break;
-      case 6: alu_out = alu_a | alu_b;                 break;
-      case 7: alu_out = alu_a & alu_b;                 break;
-    }
-
-    // Writeback
     sig_p20.rbus_wdata = op == OP_LOAD ? unpacked : alu_out;
     sig_p20.rbus_waddr = rd;
     if (op == OP_STORE)  sig_p20.rbus_waddr = 0;
     if (op == OP_BRANCH) sig_p20.rbus_waddr = 0;
 
     // Next PC
-    logic<32> pc_lhs = (op == OP_JALR) ? reg_p2.ra : reg_p2.pc;
-    logic<32> pc_rhs = jump_rel ? imm : b32(4);
-    sig_p20.pbus_addr = pc_lhs + pc_rhs;
+    logic<1> eq  = reg_p2.ra == reg_p2.rb;
+    logic<1> slt = signed(reg_p2.ra) < signed(reg_p2.rb);
+    logic<1> ult = reg_p2.ra < reg_p2.rb;
+    logic<1> jump_rel = 0;
+    if (op == OP_BRANCH) {
+      switch (f3) {
+        case 0: jump_rel =   eq; break;
+        case 1: jump_rel =  !eq; break;
+        case 2: jump_rel =   eq; break;
+        case 3: jump_rel =  !eq; break;
+        case 4: jump_rel =  slt; break;
+        case 5: jump_rel = !slt; break;
+        case 6: jump_rel =  ult; break;
+        case 7: jump_rel = !ult; break;
+      }
+    }
+    else if (op == OP_JAL)  jump_rel = 1;
+    else if (op == OP_JALR) jump_rel = 1;
+
+    logic<32> pc_lhs = reg_p2.pc;
+    logic<32> pc_rhs = b32(4);
+    if (op == OP_BRANCH) pc_rhs = jump_rel ? imm_b : b32(4);
+    if (op == OP_JAL)    pc_rhs = imm_j;
+    if (op == OP_JALR)   pc_lhs = reg_p2.ra;
+    if (op == OP_JALR)   pc_rhs = imm_i;
+    sig_p20.pc = pc_lhs + pc_rhs;
   }
 
   //----------------------------------------
 
   static void tick20(const signals_p20& sig_p20, registers_p0& reg_p0) {
     reg_p0.hart = sig_p20.hart;
-    reg_p0.pc   = sig_p20.pbus_addr;
+    reg_p0.pc   = sig_p20.pc;
   }
 
   //--------------------------------------------------------------------------------
@@ -402,11 +408,25 @@ class Pinwheel {
       return;
     }
 
-    logic<32> dbus_data = data_mem[cat(sig_p12.hart, b10(sig_p12.dbus_addr, 2))];
-    logic<32> pbus_data = code_mem[b10(sig_p20.pbus_addr, 2)];
+    // Progmem
+    logic<32> pbus_data = code_mem[b10(sig_p20.pc, 2)];
 
-    logic<32> ra = regfile[cat(sig_p01.hart, sig_p01.rbus_raddr1)];
-    logic<32> rb = regfile[cat(sig_p01.hart, sig_p01.rbus_raddr2)];
+    // Datamem
+    logic<32> dbus_data = data_mem[sig_p12.hart][b10(sig_p12.dbus_addr, 2)];
+    if (sig_p12.dbus_wmask) {
+      if (sig_p12.dbus_wmask[0]) dbus_data = (dbus_data & 0xFFFFFF00) | (sig_p12.dbus_wdata & 0x000000FF);
+      if (sig_p12.dbus_wmask[1]) dbus_data = (dbus_data & 0xFFFF00FF) | (sig_p12.dbus_wdata & 0x0000FF00);
+      if (sig_p12.dbus_wmask[2]) dbus_data = (dbus_data & 0xFF00FFFF) | (sig_p12.dbus_wdata & 0x00FF0000);
+      if (sig_p12.dbus_wmask[3]) dbus_data = (dbus_data & 0x00FFFFFF) | (sig_p12.dbus_wdata & 0xFF000000);
+      data_mem[sig_p12.hart][b10(sig_p12.dbus_addr, 2)] = dbus_data;
+    }
+
+    // Regfile
+    logic<32> ra = regfile[sig_p01.hart][sig_p01.rbus_raddr1];
+    logic<32> rb = regfile[sig_p01.hart][sig_p01.rbus_raddr2];
+    if (sig_p20.rbus_waddr) {
+      regfile[sig_p20.hart][sig_p20.rbus_waddr] = sig_p20.rbus_wdata;
+    }
 
     tock01(reg_p0,  pbus_data, sig_p01);
     tock12(reg_p1,  ra, rb,    sig_p12);
@@ -416,17 +436,5 @@ class Pinwheel {
     tick12(sig_p12, ra, rb,    reg_p2);
     tick20(sig_p20,            reg_p0);
 
-    if (sig_p12.dbus_wmask) {
-      logic<32> data = data_mem[cat(sig_p12.hart, b10(sig_p12.dbus_addr, 2))];
-      if (sig_p12.dbus_wmask[0]) data = (data & 0xFFFFFF00) | (sig_p12.dbus_wdata & 0x000000FF);
-      if (sig_p12.dbus_wmask[1]) data = (data & 0xFFFF00FF) | (sig_p12.dbus_wdata & 0x0000FF00);
-      if (sig_p12.dbus_wmask[2]) data = (data & 0xFF00FFFF) | (sig_p12.dbus_wdata & 0x00FF0000);
-      if (sig_p12.dbus_wmask[3]) data = (data & 0x00FFFFFF) | (sig_p12.dbus_wdata & 0xFF000000);
-      data_mem[cat(sig_p12.hart, b10(sig_p12.dbus_addr, 2))] = data;
-    }
-
-    if (sig_p20.rbus_waddr) {
-      regfile[cat(sig_p20.hart, sig_p20.rbus_waddr)] = sig_p20.rbus_wdata;
-    }
   }
 };

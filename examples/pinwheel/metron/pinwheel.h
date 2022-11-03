@@ -31,8 +31,7 @@ inline const char* op_id_to_name(int op_id) {
 
 struct signals_p20 {
   logic<2>  hart;
-  logic<32> pc;
-  logic<32> insn;
+  logic<32> pbus_addr;
 
   logic<5>  rbus_waddr;
   logic<32> rbus_wdata;
@@ -41,7 +40,6 @@ struct signals_p20 {
 struct registers_p0 {
   logic<2>  hart;
   logic<32> pc;
-  logic<32> insn;  // the _previous_ instruction. new instruction shows up in p01
 };
 
 struct signals_p01 {
@@ -65,11 +63,10 @@ struct signals_p12 {
   logic<32> insn;
 
   logic<32> dbus_addr;
+  logic<2>  dbus_align;
   logic<32> dbus_wdata;
   logic<4>  dbus_wmask;
-
   logic<32> alu;
-  logic<32> imm;
   logic<32> ra;
   logic<32> rb;
 };
@@ -79,7 +76,7 @@ struct registers_p2 {
   logic<32> pc;
   logic<32> insn;
 
-  logic<2>  align;
+  logic<2>  dbus_align;
   logic<32> ra;
   logic<32> rb;
 };
@@ -132,7 +129,6 @@ class Pinwheel {
 
     reg_p0.hart   = 2;
     reg_p0.pc     = -4;
-    reg_p0.insn   = 0;
 
     reg_p1.hart   = 1;
     reg_p1.pc     = -4;
@@ -196,32 +192,26 @@ class Pinwheel {
 
     logic<5> op = b5(reg_p1.insn, 2);
     logic<3> f3 = b3(reg_p1.insn, 12);
-    logic<7> f7 = b7(reg_p1.insn, 25);
-    logic<5> rd = b5(reg_p1.insn, 7);
 
     // Data bus driver
-    {
-      logic<32> insn = reg_p1.insn;
-      logic<32> imm_i = cat(dup<21>(insn[31]), b6(insn, 25), b5(insn, 20));
-      logic<32> imm_s = cat(dup<21>(insn[31]), b6(insn, 25), b5(insn, 7));
+    logic<32> insn = reg_p1.insn;
+    logic<32> imm_i = cat(dup<21>(insn[31]), b6(insn, 25), b5(insn, 20));
+    logic<32> imm_s = cat(dup<21>(insn[31]), b6(insn, 25), b5(insn, 7));
+    logic<32> addr = ra + ((op == OP_STORE) ? imm_s : imm_i);
+    logic<2>  align = b2(addr);
 
-      if (op == OP_STORE) {
-        logic<32> addr = ra + imm_s;
-        logic<2>  align = b2(addr);
-        sig_p12.dbus_addr = addr;
-        sig_p12.dbus_wdata = rb << (8 * align);
-        if      (f3 == 0) sig_p12.dbus_wmask = 0b0001 << align;
-        else if (f3 == 1) sig_p12.dbus_wmask = 0b0011 << align;
-        else if (f3 == 2) sig_p12.dbus_wmask = 0b1111;
-        else              sig_p12.dbus_wmask = 0b0000;
-      }
-      else {
-        logic<32> addr = ra + imm_i;
-        logic<2>  align = b2(addr);
-        sig_p12.dbus_addr = addr;
-        sig_p12.dbus_wdata = 0;
-        sig_p12.dbus_wmask = 0b0000;
-      }
+    sig_p12.dbus_addr = addr;
+    sig_p12.dbus_wdata = rb << (8 * align);
+    sig_p12.dbus_align = align;
+
+    if (op == OP_STORE) {
+      if      (f3 == 0) sig_p12.dbus_wmask = 0b0001 << align;
+      else if (f3 == 1) sig_p12.dbus_wmask = 0b0011 << align;
+      else if (f3 == 2) sig_p12.dbus_wmask = 0b1111;
+      else              sig_p12.dbus_wmask = 0b0000;
+    }
+    else {
+      sig_p12.dbus_wmask = 0b0000;
     }
   }
 
@@ -232,7 +222,7 @@ class Pinwheel {
     reg_p2.pc     = sig_p12.pc;
     reg_p2.insn   = sig_p12.insn;
 
-    reg_p2.align  = b2(sig_p12.dbus_addr);
+    reg_p2.dbus_align  = sig_p12.dbus_align;
     reg_p2.ra     = ra;
     reg_p2.rb     = rb;
   }
@@ -259,12 +249,9 @@ class Pinwheel {
 
   static void tock20(const registers_p2& reg_p2, const logic<32> dbus_data, signals_p20& sig_p20) {
     sig_p20.hart = reg_p2.hart;
-    sig_p20.pc   = reg_p2.pc;
-    sig_p20.insn = reg_p2.insn;
 
     logic<5> op = b5(reg_p2.insn, 2);
     logic<3> f3 = b3(reg_p2.insn, 12);
-    logic<7> f7 = b7(reg_p2.insn, 25);
     logic<5> rd = b5(reg_p2.insn, 7);
 
     logic<32> insn = reg_p2.insn;
@@ -274,7 +261,7 @@ class Pinwheel {
     logic<32> imm_s = cat(dup<21>(insn[31]), b6(insn, 25), b5(insn, 7));
     logic<32> imm_u = cat(insn[31], b11(insn, 20), b8(insn, 12), b12(0));
     logic<32> imm;
-    switch(b5(insn, 2)) {
+    switch(op) {
       case OP_ALU:    imm = imm_i; break;
       case OP_ALUI:   imm = imm_i; break;
       case OP_LOAD:   imm = imm_i; break;
@@ -289,12 +276,12 @@ class Pinwheel {
     // Unpack byte/word from memory dword
     logic<32> unpacked;
     switch (f3) {
-      case 0: unpacked = sign_extend<32>(b8(dbus_data, 8 * reg_p2.align)); break;
-      case 1: unpacked = sign_extend<32>(b16(dbus_data, 8 * reg_p2.align)); break;
+      case 0: unpacked = sign_extend<32>(b8(dbus_data, 8 * reg_p2.dbus_align)); break;
+      case 1: unpacked = sign_extend<32>(b16(dbus_data, 8 * reg_p2.dbus_align)); break;
       case 2: unpacked = dbus_data; break;
       case 3: unpacked = dbus_data; break;
-      case 4: unpacked = b8(dbus_data, 8 * reg_p2.align); break;
-      case 5: unpacked = b16(dbus_data, 8 * reg_p2.align); break;
+      case 4: unpacked = b8(dbus_data, 8 * reg_p2.dbus_align); break;
+      case 5: unpacked = b16(dbus_data, 8 * reg_p2.dbus_align); break;
       case 6: unpacked = dbus_data; break;
       case 7: unpacked = dbus_data; break;
     }
@@ -358,15 +345,14 @@ class Pinwheel {
     // Next PC
     logic<32> pc_lhs = (op == OP_JALR) ? reg_p2.ra : reg_p2.pc;
     logic<32> pc_rhs = jump_rel ? imm : b32(4);
-    sig_p20.pc = pc_lhs + pc_rhs;
+    sig_p20.pbus_addr = pc_lhs + pc_rhs;
   }
 
   //----------------------------------------
 
   static void tick20(const signals_p20& sig_p20, registers_p0& reg_p0) {
     reg_p0.hart = sig_p20.hart;
-    reg_p0.pc   = sig_p20.pc;
-    reg_p0.insn = sig_p20.insn;
+    reg_p0.pc   = sig_p20.pbus_addr;
   }
 
   //--------------------------------------------------------------------------------
@@ -417,7 +403,7 @@ class Pinwheel {
     }
 
     logic<32> dbus_data = data_mem[cat(sig_p12.hart, b10(sig_p12.dbus_addr, 2))];
-    logic<32> pbus_data = code_mem[b10(sig_p20.pc, 2)];
+    logic<32> pbus_data = code_mem[b10(sig_p20.pbus_addr, 2)];
 
     logic<32> ra = regfile[cat(sig_p01.hart, sig_p01.rbus_raddr1)];
     logic<32> rb = regfile[cat(sig_p01.hart, sig_p01.rbus_raddr2)];

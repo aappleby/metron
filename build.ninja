@@ -664,50 +664,6 @@ build bin/examples/pinwheel: link obj/examples/pinwheel/main.o bin/libmetron.a
 
 
 ################################################################################
-# Metronize examples/pinwheel/metron -> examples/pinwheel/metron_sv
-
-build examples/pinwheel/metron_sv/constants.sv $
-    examples/pinwheel/metron_sv/pinwheel.sv: metron $
-    examples/pinwheel/metron/constants.h $
-    examples/pinwheel/metron/pinwheel.h | bin/metron $
-    examples/pinwheel/metron/constants.h examples/pinwheel/metron/pinwheel.h
-  src_dir = examples/pinwheel/metron
-  dst_dir = examples/pinwheel/metron_sv
-  src_top = pinwheel.h
-
-
-################################################################################
-# Verilate pinwheel@examples/pinwheel/metron_sv -> gen/examples/pinwheel/metron_vl
-
-build gen/examples/pinwheel/metron_vl/Vpinwheel.mk $
-    gen/examples/pinwheel/metron_vl/Vpinwheel.h: verilator $
-    examples/pinwheel/metron_sv/constants.sv $
-    examples/pinwheel/metron_sv/pinwheel.sv
-  includes = -Isrc -Iexamples/pinwheel/metron_sv
-  src_top = pinwheel
-  dst_dir = gen/examples/pinwheel/metron_vl
-build gen/examples/pinwheel/metron_vl/Vpinwheel__ALL.o: make $
-    gen/examples/pinwheel/metron_vl/Vpinwheel.mk
-  dst_dir = gen/examples/pinwheel/metron_vl
-  makefile = Vpinwheel.mk
-
-
-################################################################################
-# Compile bin/examples/pinwheel_vl
-
-build obj/examples/pinwheel/main_vl.o: compile_cpp $
-    examples/pinwheel/main_vl.cpp | $
-    gen/examples/pinwheel/metron_vl/Vpinwheel.h
-  includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include $
-      -Igen/examples/pinwheel/metron_vl
-build bin/examples/pinwheel_vl: link obj/verilated.o $
-    gen/examples/pinwheel/metron_vl/Vpinwheel__ALL.o $
-    obj/examples/pinwheel/main_vl.o bin/libmetron.a
-  includes = -I. -Isrc -Itests -I/usr/local/share/verilator/include $
-      -Igen/examples/pinwheel/metron_vl
-
-
-################################################################################
 # Compile bin/examples/pong
 
 build obj/examples/pong/main.o: compile_cpp examples/pong/main.cpp

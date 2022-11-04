@@ -684,6 +684,7 @@ def build_pinwheel():
         link_deps=["bin/libmetron.a"],
     )
 
+    """
     pinwheel_sv_srcs = metronize_dir(mt_root, "pinwheel.h", sv_root)
 
     pinwheel_vl_vhdr, pinwheel_vl_vobj = verilate_dir(
@@ -701,6 +702,7 @@ def build_pinwheel():
         deps=[pinwheel_vl_vhdr],
         link_deps=["bin/libmetron.a"],
     )
+    """
 
 # ------------------------------------------------------------------------------
 # Ibex

@@ -1,16 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ScrivenerProject Template="No" Version="2.0" Identifier="BD87B4F4-DC28-4D78-B8F8-5E0F787F4206" Creator="SCRWIN-3.1.1.0" Device="TinyTron" Modified="2022-10-19 12:17:05 -0700" ModID="E8792D6E-AA36-4518-A22F-FCED9F1234A5">
+<ScrivenerProject Template="No" Version="2.0" Identifier="BD87B4F4-DC28-4D78-B8F8-5E0F787F4206" Creator="SCRWIN-3.1.2.0" Device="TinyTron" Modified="2022-11-08 16:59:35 -0800" ModID="9F157AA1-5776-4ACB-BDF7-B47C96145FC0">
     <Binder>
-        <BinderItem UUID="7A583553-3A84-40D6-B9B9-0430B8CD3E39" Type="DraftFolder" Created="2017-11-02 08:22:45 -0700" Modified="2022-10-01 22:11:16 -0700">
+        <BinderItem UUID="7A583553-3A84-40D6-B9B9-0430B8CD3E39" Type="DraftFolder" Created="2017-11-02 08:22:45 -0800" Modified="2022-10-01 22:11:16 -0800">
             <Title>Draft</Title>
             <MetaData/>
             <CorkboardAndOutliner>
                 <SelectedSubdocumentUUIDs>A9A15308-1D22-4F61-9535-49A91F7E6150</SelectedSubdocumentUUIDs>
                 <OutlinerExpandedState>
-                    <ItemID>15132E5A-F0FA-4410-AD84-B7E52C9204BA</ItemID>
-                </OutlinerExpandedState>
-                <OutlinerExpandedState>
-                    <ItemID>AE706F88-0353-41C5-B4B5-FF07630D557C</ItemID>
+                    <ItemID>FF544CEA-60D9-49C4-A020-E33DC1509A6E</ItemID>
                 </OutlinerExpandedState>
                 <OutlinerExpandedState>
                     <ItemID>7C5CAAB6-0CBA-4FF2-B9EE-E5B01CBB4249</ItemID>
@@ -19,17 +16,20 @@
                     <ItemID>232AC60D-6945-4711-A0F4-AAB28AC6F0F4</ItemID>
                 </OutlinerExpandedState>
                 <OutlinerExpandedState>
-                    <ItemID>FF544CEA-60D9-49C4-A020-E33DC1509A6E</ItemID>
+                    <ItemID>AE706F88-0353-41C5-B4B5-FF07630D557C</ItemID>
                 </OutlinerExpandedState>
                 <OutlinerExpandedState>
                     <ItemID>0F74FC65-0340-4362-85CC-82B0A85DE507</ItemID>
+                </OutlinerExpandedState>
+                <OutlinerExpandedState>
+                    <ItemID>15132E5A-F0FA-4410-AD84-B7E52C9204BA</ItemID>
                 </OutlinerExpandedState>
                 <CorkboardSettings>
                     <Arrangement>Linear</Arrangement>
                 </CorkboardSettings>
             </CorkboardAndOutliner>
             <Children>
-                <BinderItem UUID="79DBFDF4-545C-46AC-B8CA-8F4D4CEF2D23" Type="Folder" Created="2022-10-14 22:57:15 -0700" Modified="2022-10-14 22:57:19 -0700">
+                <BinderItem UUID="79DBFDF4-545C-46AC-B8CA-8F4D4CEF2D23" Type="Folder" Created="2022-10-14 22:57:15 -0800" Modified="2022-10-14 22:57:19 -0800">
                     <Title>Braindump</Title>
                     <MetaData>
                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -38,7 +38,7 @@
                         <TextSelection>0,0</TextSelection>
                     </TextSettings>
                     <Children>
-                        <BinderItem UUID="2CE61B12-9C5F-4D3F-B452-65CB47B32871" Type="Text" Created="2022-10-14 22:57:28 -0700" Modified="2022-10-14 22:58:17 -0700">
+                        <BinderItem UUID="2CE61B12-9C5F-4D3F-B452-65CB47B32871" Type="Text" Created="2022-10-14 22:57:28 -0800" Modified="2022-10-14 22:58:17 -0800">
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
                             </MetaData>
@@ -48,7 +48,7 @@
                         </BinderItem>
                     </Children>
                 </BinderItem>
-                <BinderItem UUID="7C5CAAB6-0CBA-4FF2-B9EE-E5B01CBB4249" Type="Folder" Created="2022-10-01 01:14:58 -0700" Modified="2022-10-01 22:07:04 -0700">
+                <BinderItem UUID="7C5CAAB6-0CBA-4FF2-B9EE-E5B01CBB4249" Type="Folder" Created="2022-10-01 01:14:58 -0800" Modified="2022-10-01 22:07:04 -0800">
                     <Title>Introduction</Title>
                     <BinderSeparator>Yes</BinderSeparator>
                     <MetaData>
@@ -58,17 +58,17 @@
                         <TextSelection>41,0</TextSelection>
                     </TextSettings>
                     <Children>
-                        <BinderItem UUID="C8A9C4BD-25B1-43D0-B8E1-76792A5D0465" Type="Text" Created="2022-10-01 01:15:07 -0700" Modified="2022-10-17 01:04:26 -0700">
+                        <BinderItem UUID="C8A9C4BD-25B1-43D0-B8E1-76792A5D0465" Type="Text" Created="2022-10-01 01:15:07 -0800" Modified="2022-10-17 01:04:26 -0800">
                             <Title>Have you heard of &quot;Synchronous Programming?&quot;</Title>
                             <MetaData>
                                 <StatusID>2</StatusID>
                                 <IncludeInCompile>Yes</IncludeInCompile>
                             </MetaData>
                             <TextSettings>
-                                <TextSelection>2183,0</TextSelection>
+                                <TextSelection>2184,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="FB6531A9-3DD9-4FC6-81B6-BC93E7248848" Type="Text" Created="2022-10-01 22:14:23 -0700" Modified="2022-10-04 00:47:05 -0700">
+                        <BinderItem UUID="FB6531A9-3DD9-4FC6-81B6-BC93E7248848" Type="Text" Created="2022-10-01 22:14:23 -0800" Modified="2022-10-04 00:47:05 -0800">
                             <Title>What do you mean, &quot;reboot&quot;?</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -77,7 +77,7 @@
                                 <TextSelection>547,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="921A916E-D9A4-4535-A4CB-E15D30E375EB" Type="Text" Created="2022-10-01 01:15:31 -0700" Modified="2022-10-08 13:51:13 -0700">
+                        <BinderItem UUID="921A916E-D9A4-4535-A4CB-E15D30E375EB" Type="Text" Created="2022-10-01 01:15:31 -0800" Modified="2022-10-08 13:51:13 -0800">
                             <Title>Leslie Lamport's Temporal Logic of Actions</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -86,7 +86,7 @@
                                 <TextSelection>1447,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="8C5AA09F-3D72-402B-AED9-A8B0F0FFDF68" Type="Text" Created="2022-10-08 13:50:17 -0700" Modified="2022-10-09 01:58:53 -0700">
+                        <BinderItem UUID="8C5AA09F-3D72-402B-AED9-A8B0F0FFDF68" Type="Text" Created="2022-10-08 13:50:17 -0800" Modified="2022-10-09 01:58:53 -0800">
                             <Title>Defining the Computational Core</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -95,7 +95,7 @@
                                 <TextSelection>4193,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="70FC08F3-AFEA-441C-9AE1-A4DCF20062BC" Type="Text" Created="2022-10-09 16:44:52 -0700" Modified="2022-10-10 23:36:44 -0700">
+                        <BinderItem UUID="70FC08F3-AFEA-441C-9AE1-A4DCF20062BC" Type="Text" Created="2022-10-09 16:44:52 -0800" Modified="2022-10-10 23:36:44 -0800">
                             <Title>Imperative vs Temporal: A Working Example</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -105,7 +105,7 @@
                                 <TextSelection>0,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="2A401011-5BBB-4B6E-BD5F-16C74FCBB707" Type="Text" Created="2022-10-01 01:21:19 -0700" Modified="2022-10-01 01:21:34 -0700">
+                        <BinderItem UUID="2A401011-5BBB-4B6E-BD5F-16C74FCBB707" Type="Text" Created="2022-10-01 01:21:19 -0800" Modified="2022-10-01 01:21:34 -0800">
                             <Title>The Conceptual Leap</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -114,7 +114,7 @@
                                 <TextSelection>1079,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="CDE7D934-F980-4268-9A9C-EB86FFFC4546" Type="Text" Created="2022-10-01 01:21:57 -0700" Modified="2022-10-08 13:24:43 -0700">
+                        <BinderItem UUID="CDE7D934-F980-4268-9A9C-EB86FFFC4546" Type="Text" Created="2022-10-01 01:21:57 -0800" Modified="2022-10-08 13:24:43 -0800">
                             <Title>Defining Temporal Programming</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -131,7 +131,7 @@
                                 </CorkboardSettings>
                             </CorkboardAndOutliner>
                             <Children>
-                                <BinderItem UUID="DC0C35B7-427A-47E6-864A-78BCB38B0578" Type="Text" Created="2022-10-01 01:09:23 -0700" Modified="2022-10-02 03:32:08 -0700">
+                                <BinderItem UUID="DC0C35B7-427A-47E6-864A-78BCB38B0578" Type="Text" Created="2022-10-01 01:09:23 -0800" Modified="2022-10-02 03:32:08 -0800">
                                     <Title>Is this really worth calling a &quot;paradigm&quot;?</Title>
                                     <MetaData>
                                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -140,7 +140,7 @@
                                         <TextSelection>1109,0</TextSelection>
                                     </TextSettings>
                                 </BinderItem>
-                                <BinderItem UUID="FC1AED8B-D2DD-4868-9724-3C23A70F1416" Type="Text" Created="2022-10-01 21:59:12 -0700" Modified="2022-10-02 03:33:54 -0700">
+                                <BinderItem UUID="FC1AED8B-D2DD-4868-9724-3C23A70F1416" Type="Text" Created="2022-10-01 21:59:12 -0800" Modified="2022-10-02 03:33:54 -0800">
                                     <Title>What defines a programming paradigm?</Title>
                                     <MetaData>
                                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -149,7 +149,7 @@
                                         <TextSelection>1912,0</TextSelection>
                                     </TextSettings>
                                 </BinderItem>
-                                <BinderItem UUID="0A8AC0AD-E008-4821-B5B1-2CEF6318E625" Type="Text" Created="2022-10-02 03:33:59 -0700" Modified="2022-10-02 03:34:31 -0700">
+                                <BinderItem UUID="0A8AC0AD-E008-4821-B5B1-2CEF6318E625" Type="Text" Created="2022-10-02 03:33:59 -0800" Modified="2022-10-02 03:34:31 -0800">
                                     <Title>The Definition</Title>
                                     <MetaData>
                                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -158,7 +158,7 @@
                                         <TextSelection>61,0</TextSelection>
                                     </TextSettings>
                                 </BinderItem>
-                                <BinderItem UUID="D72822A0-E7E0-48ED-9CFD-4E4FF650FAC8" Type="Text" Created="2022-10-01 22:04:49 -0700" Modified="2022-10-04 00:27:22 -0700">
+                                <BinderItem UUID="D72822A0-E7E0-48ED-9CFD-4E4FF650FAC8" Type="Text" Created="2022-10-01 22:04:49 -0800" Modified="2022-10-04 00:27:22 -0800">
                                     <Title>What would a &quot;pure&quot; temporal programming language look like?</Title>
                                     <MetaData>
                                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -167,7 +167,7 @@
                                         <TextSelection>1835,0</TextSelection>
                                     </TextSettings>
                                 </BinderItem>
-                                <BinderItem UUID="EB3C32F0-B7B8-4E76-BB78-CCE91748C73E" Type="Text" Created="2022-10-01 01:28:32 -0700" Modified="2022-10-01 01:28:51 -0700">
+                                <BinderItem UUID="EB3C32F0-B7B8-4E76-BB78-CCE91748C73E" Type="Text" Created="2022-10-01 01:28:32 -0800" Modified="2022-10-01 01:28:51 -0800">
                                     <Title>Imperative, Functional, Temporal</Title>
                                     <MetaData>
                                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -176,7 +176,7 @@
                                         <TextSelection>420,0</TextSelection>
                                     </TextSettings>
                                 </BinderItem>
-                                <BinderItem UUID="8158F6BD-2B71-415A-9E87-481B0EA848C0" Type="Text" Created="2022-10-01 22:04:01 -0700" Modified="2022-10-02 03:34:52 -0700">
+                                <BinderItem UUID="8158F6BD-2B71-415A-9E87-481B0EA848C0" Type="Text" Created="2022-10-01 22:04:01 -0800" Modified="2022-10-02 03:34:52 -0800">
                                     <Title>How does Temporal Programming differ from Synchronous Programming?</Title>
                                     <MetaData>
                                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -185,7 +185,7 @@
                                         <TextSelection>0,0</TextSelection>
                                     </TextSettings>
                                 </BinderItem>
-                                <BinderItem UUID="3015FFE4-4D2E-485F-84DE-4C19A8C61C35" Type="Text" Created="2022-10-01 22:04:29 -0700" Modified="2022-10-02 03:25:17 -0700">
+                                <BinderItem UUID="3015FFE4-4D2E-485F-84DE-4C19A8C61C35" Type="Text" Created="2022-10-01 22:04:29 -0800" Modified="2022-10-02 03:25:17 -0800">
                                     <Title>What can we express in a temporal programming language?</Title>
                                     <MetaData>
                                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -196,7 +196,7 @@
                                 </BinderItem>
                             </Children>
                         </BinderItem>
-                        <BinderItem UUID="D5DED6CA-4DCD-4BA7-8305-0F3C64D4AF16" Type="Text" Created="2022-10-01 01:04:39 -0700" Modified="2022-10-05 02:28:16 -0700">
+                        <BinderItem UUID="D5DED6CA-4DCD-4BA7-8305-0F3C64D4AF16" Type="Text" Created="2022-10-01 01:04:39 -0800" Modified="2022-10-05 02:28:16 -0800">
                             <Title>Some Background, And A Caveat</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -207,7 +207,7 @@
                         </BinderItem>
                     </Children>
                 </BinderItem>
-                <BinderItem UUID="950391DE-863C-49CA-A275-0DAF965E1949" Type="Folder" Created="2022-10-15 00:04:39 -0700" Modified="2022-10-15 00:04:46 -0700">
+                <BinderItem UUID="950391DE-863C-49CA-A275-0DAF965E1949" Type="Folder" Created="2022-10-15 00:04:39 -0800" Modified="2022-10-15 00:04:46 -0800">
                     <Title>Weird Possibilities</Title>
                     <MetaData>
                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -216,7 +216,7 @@
                         <TextSelection>0,0</TextSelection>
                     </TextSettings>
                     <Children>
-                        <BinderItem UUID="2ADAC996-1C1F-455E-9DF8-B0E63F803674" Type="Text" Created="2022-10-02 03:23:53 -0700" Modified="2022-10-15 00:05:01 -0700">
+                        <BinderItem UUID="2ADAC996-1C1F-455E-9DF8-B0E63F803674" Type="Text" Created="2022-10-02 03:23:53 -0800" Modified="2022-10-15 00:05:01 -0800">
                             <Title>Unwrapping a temporal program</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -225,7 +225,7 @@
                                 <TextSelection>4,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="612916C2-0708-407C-8DE3-B3B3B492F281" Type="Text" Created="2022-10-15 00:05:05 -0700" Modified="2022-10-15 00:05:14 -0700">
+                        <BinderItem UUID="612916C2-0708-407C-8DE3-B3B3B492F281" Type="Text" Created="2022-10-15 00:05:05 -0800" Modified="2022-10-15 00:05:14 -0800">
                             <Title>What would a &quot;temporal CPU&quot; look like?</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -234,7 +234,7 @@
                                 <TextSelection>0,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="59FC322B-94B2-4671-9E7D-E150DAC7A489" Type="Text" Created="2022-10-15 00:09:48 -0700" Modified="2022-10-15 00:09:51 -0700">
+                        <BinderItem UUID="59FC322B-94B2-4671-9E7D-E150DAC7A489" Type="Text" Created="2022-10-15 00:09:48 -0800" Modified="2022-10-15 00:09:51 -0800">
                             <Title>State moving around a chip</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -243,7 +243,7 @@
                                 <TextSelection>0,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="1EB36BDE-0795-41D4-B481-0C1620FC5683" Type="Text" Created="2022-10-15 21:47:57 -0700" Modified="2022-10-15 21:48:16 -0700">
+                        <BinderItem UUID="1EB36BDE-0795-41D4-B481-0C1620FC5683" Type="Text" Created="2022-10-15 21:47:57 -0800" Modified="2022-10-15 21:48:16 -0800">
                             <Title>Explicit data graph CPU</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -252,7 +252,7 @@
                                 <TextSelection>54,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="E9DFC673-0455-4AE5-B50C-F041A71FD055" Type="Text" Created="2022-10-15 21:48:20 -0700" Modified="2022-10-15 21:48:52 -0700">
+                        <BinderItem UUID="E9DFC673-0455-4AE5-B50C-F041A71FD055" Type="Text" Created="2022-10-15 21:48:20 -0800" Modified="2022-10-15 21:48:52 -0800">
                             <Title>Pipelines</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -261,7 +261,7 @@
                                 <TextSelection>98,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="C314096F-E6D4-4442-92F8-15C3DEF5F054" Type="Text" Created="2022-10-18 01:54:00 -0700" Modified="2022-10-18 02:00:50 -0700">
+                        <BinderItem UUID="C314096F-E6D4-4442-92F8-15C3DEF5F054" Type="Text" Created="2022-10-18 01:54:00 -0800" Modified="2022-10-18 02:00:50 -0800">
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
                             </MetaData>
@@ -271,7 +271,7 @@
                         </BinderItem>
                     </Children>
                 </BinderItem>
-                <BinderItem UUID="0F74FC65-0340-4362-85CC-82B0A85DE507" Type="Folder" Created="2022-10-01 01:10:57 -0700" Modified="2022-10-01 22:02:22 -0700">
+                <BinderItem UUID="0F74FC65-0340-4362-85CC-82B0A85DE507" Type="Folder" Created="2022-10-01 01:10:57 -0800" Modified="2022-10-01 22:02:22 -0800">
                     <Title>FAQ</Title>
                     <BinderSeparator>Yes</BinderSeparator>
                     <MetaData>
@@ -281,7 +281,7 @@
                         <TextSelection>0,0</TextSelection>
                     </TextSettings>
                     <Children>
-                        <BinderItem UUID="39354146-508C-4E91-91D9-39CA04689864" Type="Text" Created="2022-10-01 01:22:52 -0700" Modified="2022-10-01 01:22:59 -0700">
+                        <BinderItem UUID="39354146-508C-4E91-91D9-39CA04689864" Type="Text" Created="2022-10-01 01:22:52 -0800" Modified="2022-10-01 01:22:59 -0800">
                             <Title>What is Temporal Programming good for?</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -290,7 +290,7 @@
                                 <TextSelection>0,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="1C65438B-F20E-4CD5-8620-3CE1B6BD8F53" Type="Text" Created="2022-10-01 01:08:55 -0700" Modified="2022-10-01 01:22:46 -0700">
+                        <BinderItem UUID="1C65438B-F20E-4CD5-8620-3CE1B6BD8F53" Type="Text" Created="2022-10-01 01:08:55 -0800" Modified="2022-10-01 01:22:46 -0800">
                             <Title>Surely this has been explored before?</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -299,7 +299,7 @@
                                 <TextSelection>600,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="EF27D140-3AAF-4E62-B3C8-14C007DB793E" Type="Text" Created="2022-10-01 01:07:52 -0700" Modified="2022-10-01 01:08:01 -0700">
+                        <BinderItem UUID="EF27D140-3AAF-4E62-B3C8-14C007DB793E" Type="Text" Created="2022-10-01 01:07:52 -0800" Modified="2022-10-01 01:08:01 -0800">
                             <Title>Why not resurrect synchronous programming?</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -308,7 +308,7 @@
                                 <TextSelection>0,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="A9A15308-1D22-4F61-9535-49A91F7E6150" Type="Text" Created="2022-10-01 01:09:43 -0700" Modified="2022-10-01 01:10:19 -0700">
+                        <BinderItem UUID="A9A15308-1D22-4F61-9535-49A91F7E6150" Type="Text" Created="2022-10-01 01:09:43 -0800" Modified="2022-10-01 01:10:19 -0800">
                             <Title>Isn't this going to be terribly inefficient?</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -319,7 +319,7 @@
                         </BinderItem>
                     </Children>
                 </BinderItem>
-                <BinderItem UUID="232AC60D-6945-4711-A0F4-AAB28AC6F0F4" Type="Folder" Created="2022-10-01 01:24:13 -0700" Modified="2022-10-01 22:02:25 -0700">
+                <BinderItem UUID="232AC60D-6945-4711-A0F4-AAB28AC6F0F4" Type="Folder" Created="2022-10-01 01:24:13 -0800" Modified="2022-10-01 22:02:25 -0800">
                     <Title>Temporal Programming for Hardware</Title>
                     <BinderSeparator>Yes</BinderSeparator>
                     <MetaData>
@@ -329,7 +329,7 @@
                         <TextSelection>0,0</TextSelection>
                     </TextSettings>
                     <Children>
-                        <BinderItem UUID="F2D19D6E-FC52-4558-8A05-C1103208396C" Type="Text" Created="2022-10-01 01:24:41 -0700" Modified="2022-10-02 03:32:17 -0700">
+                        <BinderItem UUID="F2D19D6E-FC52-4558-8A05-C1103208396C" Type="Text" Created="2022-10-01 01:24:41 -0800" Modified="2022-10-02 03:32:17 -0800">
                             <Title>Changing Mental Models of Computation</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -338,7 +338,7 @@
                                 <TextSelection>1563,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="F9972C18-850D-4A3B-B9A8-76C0CA3B2A41" Type="Text" Created="2022-10-01 01:25:02 -0700" Modified="2022-10-01 01:25:46 -0700">
+                        <BinderItem UUID="F9972C18-850D-4A3B-B9A8-76C0CA3B2A41" Type="Text" Created="2022-10-01 01:25:02 -0800" Modified="2022-10-01 01:25:46 -0800">
                             <Title>Translating Temporal C to Verilog</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -349,7 +349,7 @@
                         </BinderItem>
                     </Children>
                 </BinderItem>
-                <BinderItem UUID="FF544CEA-60D9-49C4-A020-E33DC1509A6E" Type="Folder" Created="2022-10-01 01:12:40 -0700" Modified="2022-10-01 22:02:31 -0700">
+                <BinderItem UUID="FF544CEA-60D9-49C4-A020-E33DC1509A6E" Type="Folder" Created="2022-10-01 01:12:40 -0800" Modified="2022-10-01 22:02:31 -0800">
                     <Title>Temporal Programming Languages</Title>
                     <BinderSeparator>Yes</BinderSeparator>
                     <MetaData>
@@ -359,7 +359,7 @@
                         <TextSelection>0,0</TextSelection>
                     </TextSettings>
                     <Children>
-                        <BinderItem UUID="AA975B49-E0E0-40E4-8942-7D898CA9CA08" Type="Text" Created="2022-09-28 22:39:40 -0700" Modified="2022-10-01 01:29:41 -0700">
+                        <BinderItem UUID="AA975B49-E0E0-40E4-8942-7D898CA9CA08" Type="Text" Created="2022-09-28 22:39:40 -0800" Modified="2022-10-01 01:29:41 -0800">
                             <Title>Extending C - A Syntax Proposal</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -368,7 +368,7 @@
                                 <TextSelection>1156,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="5AED4086-674A-4BE4-AE84-1B83A0C8AC67" Type="Text" Created="2022-10-01 01:29:44 -0700" Modified="2022-10-01 01:32:24 -0700">
+                        <BinderItem UUID="5AED4086-674A-4BE4-AE84-1B83A0C8AC67" Type="Text" Created="2022-10-01 01:29:44 -0800" Modified="2022-10-01 01:32:24 -0800">
                             <Title>Strange New Worlds</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -379,7 +379,7 @@
                         </BinderItem>
                     </Children>
                 </BinderItem>
-                <BinderItem UUID="15132E5A-F0FA-4410-AD84-B7E52C9204BA" Type="Folder" Created="2022-10-01 01:12:16 -0700" Modified="2022-10-01 22:02:28 -0700">
+                <BinderItem UUID="15132E5A-F0FA-4410-AD84-B7E52C9204BA" Type="Folder" Created="2022-10-01 01:12:16 -0800" Modified="2022-10-01 22:02:28 -0800">
                     <Title>Temporal Programming in C</Title>
                     <BinderSeparator>Yes</BinderSeparator>
                     <MetaData>
@@ -389,7 +389,7 @@
                         <TextSelection>0,0</TextSelection>
                     </TextSettings>
                     <Children>
-                        <BinderItem UUID="6996BE07-7D43-4998-AA16-E3A8C14A8563" Type="Text" Created="2022-10-01 01:13:03 -0700" Modified="2022-10-18 20:49:51 -0700">
+                        <BinderItem UUID="6996BE07-7D43-4998-AA16-E3A8C14A8563" Type="Text" Created="2022-10-01 01:13:03 -0800" Modified="2022-10-18 20:49:51 -0800">
                             <Title>A Trivial Example</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -398,7 +398,7 @@
                                 <TextSelection>67,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="9027B414-C352-4407-ADD9-66DD36C704D6" Type="Text" Created="2022-09-28 22:40:47 -0700" Modified="2022-10-01 01:33:35 -0700">
+                        <BinderItem UUID="9027B414-C352-4407-ADD9-66DD36C704D6" Type="Text" Created="2022-09-28 22:40:47 -0800" Modified="2022-10-01 01:33:35 -0800">
                             <Title>Temporal Execution Semantics in C</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -407,7 +407,7 @@
                                 <TextSelection>162,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="548C2750-D287-498E-8632-B9B05FD9F241" Type="Text" Created="2022-10-01 01:17:34 -0700" Modified="2022-10-01 01:17:44 -0700">
+                        <BinderItem UUID="548C2750-D287-498E-8632-B9B05FD9F241" Type="Text" Created="2022-10-01 01:17:34 -0800" Modified="2022-10-01 01:17:44 -0800">
                             <Title>Performance &amp; Efficiency</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -416,7 +416,7 @@
                                 <TextSelection>0,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="5F2027F6-9BDD-4339-81C0-CF6B22E65038" Type="Text" Created="2022-10-01 01:31:50 -0700" Modified="2022-10-01 01:32:07 -0700">
+                        <BinderItem UUID="5F2027F6-9BDD-4339-81C0-CF6B22E65038" Type="Text" Created="2022-10-01 01:31:50 -0800" Modified="2022-10-01 01:32:07 -0800">
                             <Title>Concurrency</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -427,7 +427,7 @@
                         </BinderItem>
                     </Children>
                 </BinderItem>
-                <BinderItem UUID="AE706F88-0353-41C5-B4B5-FF07630D557C" Type="Folder" Created="2022-10-01 01:13:31 -0700" Modified="2022-10-01 22:02:34 -0700">
+                <BinderItem UUID="AE706F88-0353-41C5-B4B5-FF07630D557C" Type="Folder" Created="2022-10-01 01:13:31 -0800" Modified="2022-10-01 22:02:34 -0800">
                     <Title>Previous Work &amp; Prior Art</Title>
                     <BinderSeparator>Yes</BinderSeparator>
                     <MetaData>
@@ -437,7 +437,7 @@
                         <TextSelection>0,0</TextSelection>
                     </TextSettings>
                     <Children>
-                        <BinderItem UUID="67D0FFB2-16A5-463A-812A-B05271CB45E0" Type="Text" Created="2022-10-01 01:16:34 -0700" Modified="2022-10-01 01:33:45 -0700">
+                        <BinderItem UUID="67D0FFB2-16A5-463A-812A-B05271CB45E0" Type="Text" Created="2022-10-01 01:16:34 -0800" Modified="2022-10-01 01:33:45 -0800">
                             <Title>Verilog / VHDL?</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -446,7 +446,7 @@
                                 <TextSelection>236,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="11F17ADB-ACAC-46E0-960F-F82E55B818FE" Type="Text" Created="2022-10-01 01:14:11 -0700" Modified="2022-10-01 01:26:02 -0700">
+                        <BinderItem UUID="11F17ADB-ACAC-46E0-960F-F82E55B818FE" Type="Text" Created="2022-10-01 01:14:11 -0800" Modified="2022-10-01 01:26:02 -0800">
                             <Title>Functional Reactive Programming?</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -455,7 +455,7 @@
                                 <TextSelection>123,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="5D1D0671-72F6-4041-9100-BA0DE15B8CB1" Type="Text" Created="2022-10-01 01:10:32 -0700" Modified="2022-10-01 01:12:08 -0700">
+                        <BinderItem UUID="5D1D0671-72F6-4041-9100-BA0DE15B8CB1" Type="Text" Created="2022-10-01 01:10:32 -0800" Modified="2022-10-01 01:12:08 -0800">
                             <Title>Automata-based programming?</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -464,7 +464,7 @@
                                 <TextSelection>272,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="49C24234-0610-447F-B873-72AEDA8003D0" Type="Text" Created="2022-10-01 01:16:16 -0700" Modified="2022-10-01 01:16:20 -0700">
+                        <BinderItem UUID="49C24234-0610-447F-B873-72AEDA8003D0" Type="Text" Created="2022-10-01 01:16:16 -0800" Modified="2022-10-01 01:16:20 -0800">
                             <Title>Finite State Automata?</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -473,7 +473,7 @@
                                 <TextSelection>0,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="F8DE5DBA-DEB1-40C5-8F27-7DCB5C043ADF" Type="Text" Created="2022-09-28 22:41:27 -0700" Modified="2022-10-01 01:20:38 -0700">
+                        <BinderItem UUID="F8DE5DBA-DEB1-40C5-8F27-7DCB5C043ADF" Type="Text" Created="2022-09-28 22:41:27 -0800" Modified="2022-10-01 01:20:38 -0800">
                             <Title>Intro</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -482,7 +482,7 @@
                                 <TextSelection>390,248</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="2C9345D4-B22E-43A5-B712-F408027669D6" Type="Text" Created="2022-10-15 01:31:27 -0700" Modified="2022-10-15 01:31:31 -0700">
+                        <BinderItem UUID="2C9345D4-B22E-43A5-B712-F408027669D6" Type="Text" Created="2022-10-15 01:31:27 -0800" Modified="2022-10-15 01:31:31 -0800">
                             <Title>Bluespec</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -491,7 +491,7 @@
                                 <TextSelection>0,0</TextSelection>
                             </TextSettings>
                             <Children>
-                                <BinderItem UUID="9AE34A2E-E058-4F0E-927B-CB4D872F032D" Type="Text" Created="2022-10-01 01:16:42 -0700" Modified="2022-10-17 13:16:19 -0700">
+                                <BinderItem UUID="9AE34A2E-E058-4F0E-927B-CB4D872F032D" Type="Text" Created="2022-10-01 01:16:42 -0800" Modified="2022-10-17 13:16:19 -0800">
                                     <Title>Bluespec?</Title>
                                     <MetaData>
                                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -500,7 +500,7 @@
                                         <TextSelection>35,0</TextSelection>
                                     </TextSettings>
                                 </BinderItem>
-                                <BinderItem UUID="06BDE2E2-EC67-4265-ADF2-217ADFA5208E" Type="Text" Created="2022-10-15 01:30:30 -0700" Modified="2022-10-15 01:30:55 -0700">
+                                <BinderItem UUID="06BDE2E2-EC67-4265-ADF2-217ADFA5208E" Type="Text" Created="2022-10-15 01:30:30 -0800" Modified="2022-10-15 01:30:55 -0800">
                                     <Title>The Essence of Bluespec</Title>
                                     <MetaData>
                                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -511,7 +511,7 @@
                                 </BinderItem>
                             </Children>
                         </BinderItem>
-                        <BinderItem UUID="03C43B49-1688-4364-BAA5-174AD1C1C2BC" Type="Text" Created="2022-10-01 01:19:44 -0700" Modified="2022-10-01 22:13:22 -0700">
+                        <BinderItem UUID="03C43B49-1688-4364-BAA5-174AD1C1C2BC" Type="Text" Created="2022-10-01 01:19:44 -0800" Modified="2022-10-01 22:13:22 -0800">
                             <Title>Communicating Sequential Processes</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -520,7 +520,7 @@
                                 <TextSelection>82,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="2592BC1C-AA99-4DEA-9595-576DE89207AC" Type="Text" Created="2022-10-01 01:20:00 -0700" Modified="2022-10-17 01:04:29 -0700">
+                        <BinderItem UUID="2592BC1C-AA99-4DEA-9595-576DE89207AC" Type="Text" Created="2022-10-01 01:20:00 -0800" Modified="2022-10-17 01:04:29 -0800">
                             <Title>Guarded Atomic Actions</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -529,7 +529,7 @@
                                 <TextSelection>54,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="D2E48B63-8D07-43D7-9382-7FB6615B60FF" Type="Text" Created="2022-10-15 01:30:57 -0700" Modified="2022-10-15 01:31:08 -0700">
+                        <BinderItem UUID="D2E48B63-8D07-43D7-9382-7FB6615B60FF" Type="Text" Created="2022-10-15 01:30:57 -0800" Modified="2022-10-15 01:31:08 -0800">
                             <Title>Guarded Atomic Actions</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -538,7 +538,7 @@
                                 <TextSelection>82,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="E7F7659E-3663-4DCA-B04F-CAD3A610E424" Type="Text" Created="2022-10-01 01:19:26 -0700" Modified="2022-10-01 01:19:30 -0700">
+                        <BinderItem UUID="E7F7659E-3663-4DCA-B04F-CAD3A610E424" Type="Text" Created="2022-10-01 01:19:26 -0800" Modified="2022-10-01 01:19:30 -0800">
                             <Title>TLA+ / PlusCal</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -547,7 +547,7 @@
                                 <TextSelection>0,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="4C628C76-49A0-49E0-88B7-9FE0FDB5906B" Type="Text" Created="2022-10-01 01:13:43 -0700" Modified="2022-10-01 01:33:22 -0700">
+                        <BinderItem UUID="4C628C76-49A0-49E0-88B7-9FE0FDB5906B" Type="Text" Created="2022-10-01 01:13:43 -0800" Modified="2022-10-01 01:33:22 -0800">
                             <Title>Esterel</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -556,7 +556,7 @@
                                 <TextSelection>1094,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="713361D2-1DD1-4362-BC90-8663137DE753" Type="Text" Created="2022-10-01 01:13:47 -0700" Modified="2022-10-01 01:33:13 -0700">
+                        <BinderItem UUID="713361D2-1DD1-4362-BC90-8663137DE753" Type="Text" Created="2022-10-01 01:13:47 -0800" Modified="2022-10-01 01:33:13 -0800">
                             <Title>Lustre</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -565,7 +565,7 @@
                                 <TextSelection>478,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="5298CB3B-D568-4409-8673-B50C88CEB8C6" Type="Text" Created="2022-10-01 01:13:52 -0700" Modified="2022-10-01 01:18:14 -0700">
+                        <BinderItem UUID="5298CB3B-D568-4409-8673-B50C88CEB8C6" Type="Text" Created="2022-10-01 01:13:52 -0800" Modified="2022-10-01 01:18:14 -0800">
                             <Title>Signal</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -574,7 +574,7 @@
                                 <TextSelection>588,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="89CCFC49-04A4-4AA9-81AC-D0D7DB598DF1" Type="Text" Created="2022-10-01 01:13:56 -0700" Modified="2022-10-01 01:19:10 -0700">
+                        <BinderItem UUID="89CCFC49-04A4-4AA9-81AC-D0D7DB598DF1" Type="Text" Created="2022-10-01 01:13:56 -0800" Modified="2022-10-01 01:19:10 -0800">
                             <Title>StateCharts</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -583,7 +583,7 @@
                                 <TextSelection>97,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="09A53032-CCC7-4F95-B226-D0A8B5427C16" Type="Text" Created="2022-10-01 01:18:00 -0700" Modified="2022-10-01 22:13:50 -0700">
+                        <BinderItem UUID="09A53032-CCC7-4F95-B226-D0A8B5427C16" Type="Text" Created="2022-10-01 01:18:00 -0800" Modified="2022-10-01 22:13:50 -0800">
                             <Title>Averest/Quartz</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -592,7 +592,7 @@
                                 <TextSelection>1214,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="4FE9B898-81A4-4235-8668-0FF16571C796" Type="Text" Created="2022-10-01 01:18:17 -0700" Modified="2022-10-01 01:18:26 -0700">
+                        <BinderItem UUID="4FE9B898-81A4-4235-8668-0FF16571C796" Type="Text" Created="2022-10-01 01:18:17 -0800" Modified="2022-10-01 01:18:26 -0800">
                             <Title>Blech</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -601,7 +601,7 @@
                                 <TextSelection>211,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="74743332-3805-4EC4-8B13-1CDE7C95A938" Type="Text" Created="2022-10-01 01:18:54 -0700" Modified="2022-10-01 22:12:25 -0700">
+                        <BinderItem UUID="74743332-3805-4EC4-8B13-1CDE7C95A938" Type="Text" Created="2022-10-01 01:18:54 -0800" Modified="2022-10-01 22:12:25 -0800">
                             <Title>Others</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -610,7 +610,7 @@
                                 <TextSelection>76,0</TextSelection>
                             </TextSettings>
                             <Children>
-                                <BinderItem UUID="9542AECB-5210-487C-9BD0-042D7A4F3685" Type="Text" Created="2022-10-01 22:13:53 -0700" Modified="2022-10-01 22:14:04 -0700">
+                                <BinderItem UUID="9542AECB-5210-487C-9BD0-042D7A4F3685" Type="Text" Created="2022-10-01 22:13:53 -0800" Modified="2022-10-01 22:14:04 -0800">
                                     <Title>Atom</Title>
                                     <MetaData>
                                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -619,7 +619,7 @@
                                         <TextSelection>45,0</TextSelection>
                                     </TextSettings>
                                 </BinderItem>
-                                <BinderItem UUID="40B82475-E27A-40BA-AF31-FCF4BDD1F241" Type="Text" Created="2022-10-01 01:14:39 -0700" Modified="2022-10-01 22:12:27 -0700">
+                                <BinderItem UUID="40B82475-E27A-40BA-AF31-FCF4BDD1F241" Type="Text" Created="2022-10-01 01:14:39 -0800" Modified="2022-10-01 22:12:27 -0800">
                                     <Title>Plaid</Title>
                                     <MetaData>
                                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -632,7 +632,7 @@
                         </BinderItem>
                     </Children>
                 </BinderItem>
-                <BinderItem UUID="0C4BE6E3-50F0-482E-9F7D-C59722065F40" Type="Text" Created="2022-09-28 22:42:01 -0700" Modified="2022-10-01 22:12:02 -0700">
+                <BinderItem UUID="0C4BE6E3-50F0-482E-9F7D-C59722065F40" Type="Text" Created="2022-09-28 22:42:01 -0800" Modified="2022-10-01 22:12:02 -0800">
                     <Title>Code Examples</Title>
                     <BinderSeparator>Yes</BinderSeparator>
                     <MetaData>
@@ -644,21 +644,21 @@
                 </BinderItem>
             </Children>
         </BinderItem>
-        <BinderItem UUID="6B6E864E-D14F-4EF7-8C5F-1D489706989A" Type="ResearchFolder" Created="2017-11-02 08:22:45 -0700" Modified="2022-10-01 22:02:05 -0700">
+        <BinderItem UUID="6B6E864E-D14F-4EF7-8C5F-1D489706989A" Type="ResearchFolder" Created="2017-11-02 08:22:45 -0800" Modified="2022-10-01 22:02:05 -0800">
             <Title>Research</Title>
             <BinderSeparator>Yes</BinderSeparator>
             <MetaData/>
             <Children>
-                <BinderItem UUID="D2C52523-1A70-4BFF-A807-F090C47750EC" Type="Text" Created="2022-09-28 22:41:44 -0700" Modified="2022-10-15 00:32:11 -0700">
+                <BinderItem UUID="D2C52523-1A70-4BFF-A807-F090C47750EC" Type="Text" Created="2022-09-28 22:41:44 -0800" Modified="2022-11-08 16:55:14 -0800">
                     <Title>References</Title>
                     <MetaData>
                         <IncludeInCompile>Yes</IncludeInCompile>
                     </MetaData>
                     <TextSettings>
-                        <TextSelection>844,0</TextSelection>
+                        <TextSelection>127,0</TextSelection>
                     </TextSettings>
                 </BinderItem>
-                <BinderItem UUID="05E1B517-08E4-424E-80EC-8D702270B06A" Type="WebArchive" Created="2022-10-15 00:15:43 -0700" Modified="2022-10-15 00:15:43 -0700">
+                <BinderItem UUID="05E1B517-08E4-424E-80EC-8D702270B06A" Type="WebArchive" Created="2022-10-15 00:15:43 -0800" Modified="2022-10-15 00:15:43 -0800">
                     <Title>Learn TLA+</Title>
                     <MetaData>
                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -668,7 +668,7 @@
                         <OriginalURL>https://learntla.com/</OriginalURL>
                     </MediaSettings>
                 </BinderItem>
-                <BinderItem UUID="13468B2E-9F37-4E3F-863F-90135FD9FE39" Type="WebArchive" Created="2022-10-15 00:14:30 -0700" Modified="2022-10-15 00:32:04 -0700">
+                <BinderItem UUID="13468B2E-9F37-4E3F-863F-90135FD9FE39" Type="WebArchive" Created="2022-10-15 00:14:30 -0800" Modified="2022-10-15 00:32:04 -0800">
                     <Title>Checking statistical properties of protocols using TLA+</Title>
                     <MetaData>
                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -678,7 +678,7 @@
                         <OriginalURL>http://muratbuffalo.blogspot.com/2022/10/checking-statistical-properties-of.html?m=1</OriginalURL>
                     </MediaSettings>
                 </BinderItem>
-                <BinderItem UUID="60367942-E136-45DD-9723-61E8C23BBB80" Type="WebArchive" Created="2022-10-15 00:16:08 -0700" Modified="2022-10-15 00:16:08 -0700">
+                <BinderItem UUID="60367942-E136-45DD-9723-61E8C23BBB80" Type="WebArchive" Created="2022-10-15 00:16:08 -0800" Modified="2022-10-15 00:16:08 -0800">
                     <Title>Sphery Vs Shapes</Title>
                     <MetaData>
                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -688,7 +688,7 @@
                         <OriginalURL>https://youtu.be/hn3sr3VMJQU</OriginalURL>
                     </MediaSettings>
                 </BinderItem>
-                <BinderItem UUID="74811661-76B9-4DFC-A90D-CC3C60FB1277" Type="Text" Created="2022-10-15 01:32:34 -0700" Modified="2022-10-15 01:33:05 -0700">
+                <BinderItem UUID="74811661-76B9-4DFC-A90D-CC3C60FB1277" Type="Text" Created="2022-10-15 01:32:34 -0800" Modified="2022-10-15 01:33:05 -0800">
                     <Title>Compiling_Esterel_into_static_discrete_e.pdf</Title>
                     <MetaData>
                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -697,7 +697,7 @@
                         <TextSelection>206,0</TextSelection>
                     </TextSettings>
                 </BinderItem>
-                <BinderItem UUID="BA29C94C-A2B2-4077-80DC-13EE5BB9F13B" Type="Text" Created="2022-10-15 01:37:08 -0700" Modified="2022-10-15 01:37:15 -0700">
+                <BinderItem UUID="BA29C94C-A2B2-4077-80DC-13EE5BB9F13B" Type="Text" Created="2022-10-15 01:37:08 -0800" Modified="2022-10-15 01:37:15 -0800">
                     <Title>Conway's Game of Life on FPGA</Title>
                     <MetaData>
                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -706,7 +706,7 @@
                         <TextSelection>61,0</TextSelection>
                     </TextSettings>
                 </BinderItem>
-                <BinderItem UUID="1564A019-0064-43E0-85B9-FAD25BC2509E" Type="Folder" Created="2022-10-18 21:36:55 -0700" Modified="2022-10-18 21:36:57 -0700">
+                <BinderItem UUID="1564A019-0064-43E0-85B9-FAD25BC2509E" Type="Folder" Created="2022-10-18 21:36:55 -0800" Modified="2022-10-18 21:36:57 -0800">
                     <Title>Bluespec</Title>
                     <MetaData>
                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -715,7 +715,7 @@
                         <TextSelection>0,0</TextSelection>
                     </TextSettings>
                     <Children>
-                        <BinderItem UUID="D5E80103-EBD2-45EC-B185-1B3F93F4778A" Type="PDF" Created="2022-10-17 01:11:47 -0700" Modified="2022-10-19 12:16:31 -0700">
+                        <BinderItem UUID="D5E80103-EBD2-45EC-B185-1B3F93F4778A" Type="PDF" Created="2022-10-17 01:11:47 -0800" Modified="2022-10-19 12:16:31 -0800">
                             <Title>An Exercise in High-Level Architectureal Description using a Synthesizable Subset of Term Rewriting Systems</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -725,7 +725,7 @@
                                 <CurrentPDFPage>1</CurrentPDFPage>
                             </MediaSettings>
                         </BinderItem>
-                        <BinderItem UUID="D86ADE51-B5C9-4C0B-852C-F8AC53751FB2" Type="PDF" Created="2022-10-17 01:10:53 -0700" Modified="2022-10-19 12:15:35 -0700">
+                        <BinderItem UUID="D86ADE51-B5C9-4C0B-852C-F8AC53751FB2" Type="PDF" Created="2022-10-17 01:10:53 -0800" Modified="2022-10-19 12:15:35 -0800">
                             <Title>Synthesis of Operation-Centric Hardware Descriptions</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -735,7 +735,7 @@
                                 <CurrentPDFPage>1</CurrentPDFPage>
                             </MediaSettings>
                         </BinderItem>
-                        <BinderItem UUID="06A821B5-F8CD-4801-A0CB-7B35A6D4939D" Type="PDF" Created="2022-10-17 01:11:13 -0700" Modified="2022-10-19 12:16:03 -0700">
+                        <BinderItem UUID="06A821B5-F8CD-4801-A0CB-7B35A6D4939D" Type="PDF" Created="2022-10-17 01:11:13 -0800" Modified="2022-10-19 12:16:03 -0800">
                             <Title>Synchronous Extensions to Operation-Centric Hardware Description Languages</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -745,7 +745,7 @@
                                 <CurrentPDFPage>1</CurrentPDFPage>
                             </MediaSettings>
                         </BinderItem>
-                        <BinderItem UUID="56307444-8AE8-49A2-B641-2CEA2CAC0544" Type="PDF" Created="2022-10-17 01:05:43 -0700" Modified="2022-10-19 12:15:15 -0700">
+                        <BinderItem UUID="56307444-8AE8-49A2-B641-2CEA2CAC0544" Type="PDF" Created="2022-10-17 01:05:43 -0800" Modified="2022-10-19 12:15:15 -0800">
                             <Title>Operation-Centric Hardware Description and Synthesis</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -755,7 +755,7 @@
                                 <CurrentPDFPage>1</CurrentPDFPage>
                             </MediaSettings>
                         </BinderItem>
-                        <BinderItem UUID="16E6C956-C9B3-4FE7-A803-28FD5AC827BF" Type="PDF" Created="2022-10-18 21:31:46 -0700" Modified="2022-10-19 12:16:42 -0700">
+                        <BinderItem UUID="16E6C956-C9B3-4FE7-A803-28FD5AC827BF" Type="PDF" Created="2022-10-18 21:31:46 -0800" Modified="2022-10-19 12:16:42 -0800">
                             <Title>Bluespec SystemVerilog User Guide</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -765,7 +765,7 @@
                                 <CurrentPDFPage>1</CurrentPDFPage>
                             </MediaSettings>
                         </BinderItem>
-                        <BinderItem UUID="DD3EF510-C5BF-4390-9589-4B4569DC1E30" Type="PDF" Created="2022-10-18 21:32:00 -0700" Modified="2022-10-19 12:16:51 -0700">
+                        <BinderItem UUID="DD3EF510-C5BF-4390-9589-4B4569DC1E30" Type="PDF" Created="2022-10-18 21:32:00 -0800" Modified="2022-10-19 12:16:51 -0800">
                             <Title>Bluespec SystemVerilog Reference Guide</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -775,7 +775,7 @@
                                 <CurrentPDFPage>1</CurrentPDFPage>
                             </MediaSettings>
                         </BinderItem>
-                        <BinderItem UUID="E9819D59-9CC1-4FB5-8CE8-113BFBF40C10" Type="PDF" Created="2022-10-17 13:16:41 -0700" Modified="2022-10-19 12:17:03 -0700">
+                        <BinderItem UUID="E9819D59-9CC1-4FB5-8CE8-113BFBF40C10" Type="PDF" Created="2022-10-17 13:16:41 -0800" Modified="2022-10-19 12:17:03 -0800">
                             <Title>Bluespec SystemVerilog Reference Card</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -789,12 +789,12 @@
                 </BinderItem>
             </Children>
         </BinderItem>
-        <BinderItem UUID="A41BA2A1-C599-43C2-99CC-8C1A7FFC2C24" Type="TrashFolder" Created="2017-11-02 08:22:45 -0700" Modified="2022-10-01 22:02:13 -0700">
+        <BinderItem UUID="A41BA2A1-C599-43C2-99CC-8C1A7FFC2C24" Type="TrashFolder" Created="2017-11-02 08:22:45 -0800" Modified="2022-10-01 22:02:13 -0800">
             <Title>Trash</Title>
             <BinderSeparator>Yes</BinderSeparator>
             <MetaData/>
             <Children>
-                <BinderItem UUID="8DA5F89E-25C2-4333-A201-B6F254B46CEE" Type="Text" Created="2022-10-01 00:52:42 -0700" Modified="2022-10-01 01:07:39 -0700">
+                <BinderItem UUID="8DA5F89E-25C2-4333-A201-B6F254B46CEE" Type="Text" Created="2022-10-01 00:52:42 -0800" Modified="2022-10-01 01:07:39 -0800">
                     <Title>Junk</Title>
                     <MetaData>
                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -803,7 +803,7 @@
                         <TextSelection>0,0</TextSelection>
                     </TextSettings>
                 </BinderItem>
-                <BinderItem UUID="5BBBE143-4B44-4CA0-BD38-041D0FC11301" Type="Text" Created="2022-09-28 22:40:13 -0700" Modified="2022-10-01 01:10:43 -0700">
+                <BinderItem UUID="5BBBE143-4B44-4CA0-BD38-041D0FC11301" Type="Text" Created="2022-09-28 22:40:13 -0800" Modified="2022-10-01 01:10:43 -0800">
                     <Title>FAQ</Title>
                     <MetaData>
                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -815,7 +815,7 @@
                         <Bookmark BinderUUID="5BBBE143-4B44-4CA0-BD38-041D0FC11301">FAQ</Bookmark>
                     </Bookmarks>
                 </BinderItem>
-                <BinderItem UUID="B4A726A9-9CE0-44F0-B8C9-51E769D7C17A" Type="Text" Created="2022-10-01 01:23:56 -0700" Modified="2022-10-01 01:24:06 -0700">
+                <BinderItem UUID="B4A726A9-9CE0-44F0-B8C9-51E769D7C17A" Type="Text" Created="2022-10-01 01:23:56 -0800" Modified="2022-10-01 01:24:06 -0800">
                     <Title>Temporal Programming for Hardware</Title>
                     <MetaData>
                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -824,7 +824,7 @@
                         <TextSelection>0,0</TextSelection>
                     </TextSettings>
                 </BinderItem>
-                <BinderItem UUID="D05521FD-70C8-409C-8764-43E45A1773DB" Type="Folder" Created="2022-10-01 01:14:27 -0700" Modified="2022-10-01 01:14:30 -0700">
+                <BinderItem UUID="D05521FD-70C8-409C-8764-43E45A1773DB" Type="Folder" Created="2022-10-01 01:14:27 -0800" Modified="2022-10-01 01:14:30 -0800">
                     <Title>Other Interesting Stuff</Title>
                     <MetaData>
                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -833,7 +833,7 @@
                         <TextSelection>0,0</TextSelection>
                     </TextSettings>
                 </BinderItem>
-                <BinderItem UUID="F2D2F625-535C-4D03-926A-12619309FCF1" Type="Text" Created="2022-09-28 22:39:14 -0700" Modified="2022-10-01 01:34:04 -0700">
+                <BinderItem UUID="F2D2F625-535C-4D03-926A-12619309FCF1" Type="Text" Created="2022-09-28 22:39:14 -0800" Modified="2022-10-01 01:34:04 -0800">
                     <Title>Old Draft Stuff</Title>
                     <MetaData>
                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -842,7 +842,7 @@
                         <TextSelection>0,0</TextSelection>
                     </TextSettings>
                 </BinderItem>
-                <BinderItem UUID="07B0D7C6-57CE-4D6F-8AD9-11F06A261A5F" Type="Folder" Created="2017-11-02 08:22:45 -0700" Modified="2017-11-02 08:22:45 -0700">
+                <BinderItem UUID="07B0D7C6-57CE-4D6F-8AD9-11F06A261A5F" Type="Folder" Created="2017-11-02 08:22:45 -0800" Modified="2017-11-02 08:22:45 -0800">
                     <Title>Notes</Title>
                     <MetaData>
                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -852,7 +852,7 @@
                         <TextSelection>0,0</TextSelection>
                     </TextSettings>
                 </BinderItem>
-                <BinderItem UUID="697C34B9-33DF-4F8A-A81C-1C61F10B71A9" Type="Text" Created="2022-10-01 01:26:33 -0700" Modified="2022-10-01 01:35:25 -0700">
+                <BinderItem UUID="697C34B9-33DF-4F8A-A81C-1C61F10B71A9" Type="Text" Created="2022-10-01 01:26:33 -0800" Modified="2022-10-01 01:35:25 -0800">
                     <Title>Notes on research papers to be organized</Title>
                     <MetaData>
                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -861,7 +861,7 @@
                         <TextSelection>0,0</TextSelection>
                     </TextSettings>
                 </BinderItem>
-                <BinderItem UUID="727CBC62-66F7-4133-BE83-E5952852FD33" Type="Text" Created="2022-10-01 21:59:31 -0700" Modified="2022-10-01 21:59:33 -0700">
+                <BinderItem UUID="727CBC62-66F7-4133-BE83-E5952852FD33" Type="Text" Created="2022-10-01 21:59:31 -0800" Modified="2022-10-01 21:59:33 -0800">
                     <Title>Nesting!</Title>
                     <MetaData>
                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -870,7 +870,7 @@
                         <TextSelection>0,0</TextSelection>
                     </TextSettings>
                 </BinderItem>
-                <BinderItem UUID="606E2F6A-318D-44EA-A9BC-81093A72CD2F" Type="Text" Created="2017-11-02 08:22:45 -0700" Modified="2022-10-02 02:52:28 -0700">
+                <BinderItem UUID="606E2F6A-318D-44EA-A9BC-81093A72CD2F" Type="Text" Created="2017-11-02 08:22:45 -0800" Modified="2022-10-02 02:52:28 -0800">
                     <Title>Introduction</Title>
                     <MetaData>
                         <StatusID>2</StatusID>
@@ -880,7 +880,7 @@
                         <TextSelection>4,0</TextSelection>
                     </TextSettings>
                 </BinderItem>
-                <BinderItem UUID="2A9DA0E7-1B70-4030-899F-C16B90B36026" Type="Folder" Created="2022-10-01 01:11:16 -0700" Modified="2022-10-01 01:11:22 -0700">
+                <BinderItem UUID="2A9DA0E7-1B70-4030-899F-C16B90B36026" Type="Folder" Created="2022-10-01 01:11:16 -0800" Modified="2022-10-01 01:11:22 -0800">
                     <Title>Have you heard of...</Title>
                     <MetaData>
                         <IncludeInCompile>Yes</IncludeInCompile>
@@ -979,14 +979,14 @@
     <ProjectTargets Notify="No">
         <DraftTarget Type="Words" CountIncludedOnly="Yes" CurrentCompileGroupOnly="Yes" Deadline="2011-04-12 14:24:39 +0200" IgnoreDeadline="Yes">0</DraftTarget>
         <SessionTarget Type="Words" CountDraftOnly="Yes" AllowNegatives="No" ResetType="Time" ResetTime="00:00" DeterminedFromDeadline="No" CanWriteOnDeadlineDate="No" WritingDays="">0</SessionTarget>
-        <PreviousSession Words="0" Characters="0" Date="2022-10-19 12:17:05 -0700"/>
+        <PreviousSession Words="0" Characters="0" Date="2022-11-08 16:59:35 -0800"/>
     </ProjectTargets>
     <BookmarksFolderUUID>07B0D7C6-57CE-4D6F-8AD9-11F06A261A5F</BookmarksFolderUUID>
-    <RecentWritingHistory Date="2022-10-19 00:00:00 -0700">
+    <RecentWritingHistory Date="2022-11-08 00:00:00 -0800">
         <DraftWordCount>0</DraftWordCount>
         <DraftCharCount>0</DraftCharCount>
-        <OtherWordCount>0</OtherWordCount>
-        <OtherCharCount>0</OtherCharCount>
+        <OtherWordCount>140</OtherWordCount>
+        <OtherCharCount>964</OtherCharCount>
     </RecentWritingHistory>
     <PrintSettings PaperSize="612.0,792.0" LeftMargin="72.0" RightMargin="72.0" TopMargin="90.0" BottomMargin="90.0" PaperType="na-letter" Orientation="Portrait" ScaleFactor="1.0" HorizontallyCentered="Yes" VerticallyCentered="Yes" Collates="Yes" PagesAcross="1" PagesDown="1"/>
 </ScrivenerProject>

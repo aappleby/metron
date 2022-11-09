@@ -7088,6 +7088,11 @@ There’s a lot of research into finite-state automata, particularly in converti
         <Document ID="606E2F6A-318D-44EA-A9BC-81093A72CD2F">
             <Title>Introduction</Title>
             <Synopsis>This is the synopsis for the introduction. Can you only edit this in corkboard mode?</Synopsis>
+            <Text>
+
+
+
+</Text>
         </Document>
         <Document ID="612916C2-0708-407C-8DE3-B3B3B492F281">
             <Title>What would a &quot;temporal CPU&quot; look like?</Title>
@@ -7599,7 +7604,37 @@ Unique TP weirdness
         </Document>
         <Document ID="D2C52523-1A70-4BFF-A807-F090C47750EC">
             <Title>References</Title>
-            <Text>FSMs / Automata-based programming
+            <Text>&quot;Can Programming Be Liberated from the von Neumann Style? A Functional Style and Its Algebra of Programs&quot;
+	4000+ citations
+	TP Foundations: Recurrence relations. Concise and useful.
+	TP History sensitivity: Complete, unambiguous history. Is history sensitive.
+	TP Semantics: Global atomic state transition. &quot;State&quot; is arbitrary.
+	TP Program clarity: Both clear and useful conceptually.
+
+
+&quot;Applicative State Transition&quot;
+	3 pages of results in scholar
+
+&quot;Declarative State Transition&quot;
+	6 results in Scholar
+
+&quot;A DECLARATIVE STATE TRANSITION SYSTEM&quot;
+	Only referenced by two other papers according to Google Scholar, from 1995 and 1989
+
+
+&quot;A BLOCK STRUCTURED APPLICATIVE STATE TRANSITION LANGUAGE USING FUNCTIONAL FORMS&quot;
+	Lol, example of a/b swap issue in 1980
+	Not cited by anything according to Scholar
+
+&quot;In his 1977 ACM Turing Award Lecture [1], John Backus charges that the study and use of high level programming languages has fallen into a mental crevasse.&quot;
+
+
+
+
+
+
+
+FSMs / Automata-based programming
    This computation model is a form of &quot;Deterministic finite automaton&quot;
    &quot;TECHNOLOGY OF AUTOMATA-BASED PROGRAMMING&quot;
    &quot;Programming Language for Automata&quot; by Knuth

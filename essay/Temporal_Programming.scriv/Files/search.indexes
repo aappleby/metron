@@ -7088,11 +7088,6 @@ There’s a lot of research into finite-state automata, particularly in converti
         <Document ID="606E2F6A-318D-44EA-A9BC-81093A72CD2F">
             <Title>Introduction</Title>
             <Synopsis>This is the synopsis for the introduction. Can you only edit this in corkboard mode?</Synopsis>
-            <Text>
-
-
-
-</Text>
         </Document>
         <Document ID="612916C2-0708-407C-8DE3-B3B3B492F281">
             <Title>What would a &quot;temporal CPU&quot; look like?</Title>
@@ -7604,7 +7599,93 @@ Unique TP weirdness
         </Document>
         <Document ID="D2C52523-1A70-4BFF-A807-F090C47750EC">
             <Title>References</Title>
-            <Text>&quot;Can Programming Be Liberated from the von Neumann Style? A Functional Style and Its Algebra of Programs&quot;
+            <Text>Hi, my name is Austin Appleby and I'm the author of MurmurHash (a commonly used hash function), GateBoy (a gate-level Game Boy simulator), Metron (a very experimental C++ to SystemVerilog transpiler), and other neat things that you can find at https://github.com/aappleby.
+
+For the last few years I've been doing some projects and experiments to try and understand more about how time is represented in programming languages. I've also been reading a ton of research papers, and I've come up with something interesting enough to be worth writing about. I'll eventually have a full-length paper that goes into more detail, but for now you can consider this post to be a TL;DR summary of that paper.
+
+==========
+
+In 1978, John Backus wrote an article titled &quot;Can Programming Be Liberated from the von Neumann Style? A Functional Style and Its Algebra of Programs&quot;, in which he sketched out three ideas for programming language styles that departed from the &quot;von Neumann&quot; style of &quot;word-at-a-time&quot; modification of program state. The paper overall was hugely influential (4000+ citations on Google Scholar) yet the third example Backus presented -  &quot;Applicative State Transition&quot; (AST) - was referenced in only a few dozen papers and got relatively little traction. This is a shame, as it's a conceptual model that programmers (particularly hardware programmers) are familiar with in a less formal fashion - your program is a blob of state, you have a function that computes a &quot;new&quot; state from an &quot;old&quot; state, and you &quot;run&quot; the program by atomically replacing the old state with the newly computed state.
+
+In 1990, Leslie Lamport published &quot;A Temporal Logic of Actions&quot; (TLA), a research paper that defined a logical foundation for expressing amd proving properties of concurrent programs. The model of computation used in TLA is similar to Backus's AST, but presented from a more proof-oriented point of view. TLA programs are blobs of state and sets of logical expressions about pairs of states called &quot;actions&quot;. If we plug state A and state B into an action and the expression evaluates to true, then the program can &quot;get from&quot; state A to state B. To distinguish between the two states that are inputs to an action, Lamport uses &quot;primed&quot; and &quot;unprimed&quot; variables - &quot;x&quot; refers to the &quot;old&quot; state, &quot;x'&quot; refers to the &quot;new&quot; state. The expressions are not assignments in the imperative sense (&quot;x' = x + 1&quot; means the same thing as &quot;1 = x' - x&quot;) and thus don't need to be evaluated in any particular order, but they're still capable of modeling very complex behaviors in real programs. TLA proofs can be written and proved in Lamport's languages TLA+ and PlusCal, but they are not executable languages in the usual sense.
+
+I believe that these two papers and their fundamental ideas - programs as state transitions, programs as expresions about adjacent states - form the basis of a programming paradigm that we're mostly all familiar with but that so far has gone unnamed. I'd like to call it &quot;Temporal Programming&quot;, in honor of Lamport's paper.
+
+Temporal programs, as I am attempting to define them, are of the form &quot;x' = f(x)&quot; - a recurrence relation. Like the von Neumann model of imperative languages and the lambda calculus of functional languages, recurrence relations are a mathematically simple but general way of expressing computation. X represents the entire state of our program, F is the pure function that computes the next state of the program, and X' represents that next state. Replace X with &quot;strip of paper&quot; and F with &quot;Turing machine&quot; and it should be immediately clear that recurrences are Turing-complete.
+
+The two tenets that I think a temporal programming language should follow are:
+
+1. Temporal programs must change state atomically as in Backus's paper. Intermediate states should not be expressible or visible from within the language.
+
+2. Temporal programs must explicitly distinguish between &quot;old&quot; and &quot;new&quot; state as in Lamport's paper. A statement like &quot;x = x + 1&quot; would not be valid, while &quot;x' = x + 1&quot; would be.
+
+I believe that languages based on these two tenents have the potential to be far more expressive and powerful than  the original papers might suggest. Representing programs as atomic state transitions removes the possibility of large classes of bugs related to synchronization and concurrency. Enforcing a distinction between &quot;old&quot; and &quot;new&quot; state decouples declaration order from evaluation order - the program &quot;a' = b + 1; b' = a + 1;&quot; is the same regardless of which statement comes first. Programs that adhere to these tenets should in theory be far more optimizable than what would be possible in a procedural language, as the compiler is essentially given the entire evaluation graph for the program up front and can completely reschedule evaluations in whatever order is most efficient. They should also be more amenable to formal TLA-type proofs since their computation model is much closer to what TLA+ expects.
+
+Right now there are no languages available that follow both of these two tenets fully, though there are a huge number of languages and paradigms described in the literature that fit to some degree. To explore these ideas further, I will be building a minimal language based on a subset of C++, with the addition of one character that's currently unused:
+
+struct Program {
+  int a = 0;
+  int b = 0;
+
+  void tick() {
+    a@ = b + 1;
+    b@ = a + 1;
+  }
+};
+
+Blocks containing the &quot;@&quot; character are temporal blocks - from an imperative viewpoint, assignments to primed (&quot;atted&quot; sounds strange) variables don't take effect until after all temporal blocks have been evaluated. The language transpiler will insert temporary variables and reorder expressions to make the code compatible with C++ or Verilog as needed while ensuring the transpiled code is functionally identical to the original. To follow along with the metronome theme of my other projects, I intend to call the language &quot;MetroC&quot;. 
+
+To be absolutely clear, I am not claiming to have invented any of these concepts - I am merely assigning a name to a set of patterns that most programmers have already come across and am trying to express those patterns in a new and useful way. If you have suggestions for what the definition of &quot;Temporal Programming&quot; should be, I am very interested in hearing them.
+
+-Austin
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+&quot;In his 1977 ACM Turing Award Lecture [1], John Backus charges that the study and use of high level programming languages has fallen into a mental crevasse.&quot;
+
+&quot;Can Programming Be Liberated from the von Neumann Style? A Functional Style and Its Algebra of Programs&quot;
 	4000+ citations
 	TP Foundations: Recurrence relations. Concise and useful.
 	TP History sensitivity: Complete, unambiguous history. Is history sensitive.
@@ -7626,7 +7707,15 @@ Unique TP weirdness
 	Lol, example of a/b swap issue in 1980
 	Not cited by anything according to Scholar
 
-&quot;In his 1977 ACM Turing Award Lecture [1], John Backus charges that the study and use of high level programming languages has fallen into a mental crevasse.&quot;
+
+
+
+
+
+
+
+
+
 
 
 

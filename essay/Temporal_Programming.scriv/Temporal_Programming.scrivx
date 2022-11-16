@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ScrivenerProject Template="No" Version="2.0" Identifier="BD87B4F4-DC28-4D78-B8F8-5E0F787F4206" Creator="SCRWIN-3.1.2.0" Device="TinyTron" Modified="2022-11-08 16:59:35 -0800" ModID="9F157AA1-5776-4ACB-BDF7-B47C96145FC0">
+<ScrivenerProject Template="No" Version="2.0" Identifier="BD87B4F4-DC28-4D78-B8F8-5E0F787F4206" Creator="SCRWIN-3.1.2.0" Device="TinyTron" Modified="2022-11-16 01:02:32 -0800" ModID="CE07EE89-4DA2-4E55-B616-6AE6D20A5A8A">
     <Binder>
         <BinderItem UUID="7A583553-3A84-40D6-B9B9-0430B8CD3E39" Type="DraftFolder" Created="2017-11-02 08:22:45 -0800" Modified="2022-10-01 22:11:16 -0800">
             <Title>Draft</Title>
@@ -7,22 +7,22 @@
             <CorkboardAndOutliner>
                 <SelectedSubdocumentUUIDs>A9A15308-1D22-4F61-9535-49A91F7E6150</SelectedSubdocumentUUIDs>
                 <OutlinerExpandedState>
-                    <ItemID>FF544CEA-60D9-49C4-A020-E33DC1509A6E</ItemID>
-                </OutlinerExpandedState>
-                <OutlinerExpandedState>
-                    <ItemID>7C5CAAB6-0CBA-4FF2-B9EE-E5B01CBB4249</ItemID>
-                </OutlinerExpandedState>
-                <OutlinerExpandedState>
                     <ItemID>232AC60D-6945-4711-A0F4-AAB28AC6F0F4</ItemID>
-                </OutlinerExpandedState>
-                <OutlinerExpandedState>
-                    <ItemID>AE706F88-0353-41C5-B4B5-FF07630D557C</ItemID>
                 </OutlinerExpandedState>
                 <OutlinerExpandedState>
                     <ItemID>0F74FC65-0340-4362-85CC-82B0A85DE507</ItemID>
                 </OutlinerExpandedState>
                 <OutlinerExpandedState>
+                    <ItemID>FF544CEA-60D9-49C4-A020-E33DC1509A6E</ItemID>
+                </OutlinerExpandedState>
+                <OutlinerExpandedState>
                     <ItemID>15132E5A-F0FA-4410-AD84-B7E52C9204BA</ItemID>
+                </OutlinerExpandedState>
+                <OutlinerExpandedState>
+                    <ItemID>AE706F88-0353-41C5-B4B5-FF07630D557C</ItemID>
+                </OutlinerExpandedState>
+                <OutlinerExpandedState>
+                    <ItemID>7C5CAAB6-0CBA-4FF2-B9EE-E5B01CBB4249</ItemID>
                 </OutlinerExpandedState>
                 <CorkboardSettings>
                     <Arrangement>Linear</Arrangement>
@@ -65,7 +65,7 @@
                                 <IncludeInCompile>Yes</IncludeInCompile>
                             </MetaData>
                             <TextSettings>
-                                <TextSelection>2184,0</TextSelection>
+                                <TextSelection>0,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
                         <BinderItem UUID="FB6531A9-3DD9-4FC6-81B6-BC93E7248848" Type="Text" Created="2022-10-01 22:14:23 -0800" Modified="2022-10-04 00:47:05 -0800">
@@ -648,14 +648,20 @@
             <Title>Research</Title>
             <BinderSeparator>Yes</BinderSeparator>
             <MetaData/>
+            <CorkboardAndOutliner>
+                <SelectedSubdocumentUUIDs>D2C52523-1A70-4BFF-A807-F090C47750EC</SelectedSubdocumentUUIDs>
+                <CorkboardSettings>
+                    <Arrangement>Linear</Arrangement>
+                </CorkboardSettings>
+            </CorkboardAndOutliner>
             <Children>
-                <BinderItem UUID="D2C52523-1A70-4BFF-A807-F090C47750EC" Type="Text" Created="2022-09-28 22:41:44 -0800" Modified="2022-11-08 16:55:14 -0800">
+                <BinderItem UUID="D2C52523-1A70-4BFF-A807-F090C47750EC" Type="Text" Created="2022-09-28 22:41:44 -0800" Modified="2022-11-16 00:59:38 -0800">
                     <Title>References</Title>
                     <MetaData>
                         <IncludeInCompile>Yes</IncludeInCompile>
                     </MetaData>
                     <TextSettings>
-                        <TextSelection>127,0</TextSelection>
+                        <TextSelection>5821,0</TextSelection>
                     </TextSettings>
                 </BinderItem>
                 <BinderItem UUID="05E1B517-08E4-424E-80EC-8D702270B06A" Type="WebArchive" Created="2022-10-15 00:15:43 -0800" Modified="2022-10-15 00:15:43 -0800">
@@ -898,7 +904,7 @@
         </Collection>
         <Collection Type="RecentSearch" ID="2655DDF6-4AB8-42CB-A433-1CD76FC351D2" Color="0.250980 0.274510 0.290196">
             <Title>Search Results</Title>
-            <SearchSettings Operator="Exact" Type="All" Scope="All" CompileSetting="All" CaseSensitive="No" IgnoreDiacritics="No">latex</SearchSettings>
+            <SearchSettings Operator="Exact" Type="All" Scope="All" CompileSetting="All" CaseSensitive="No" IgnoreDiacritics="No">backus</SearchSettings>
         </Collection>
     </Collections>
     <SectionTypes>
@@ -979,14 +985,14 @@
     <ProjectTargets Notify="No">
         <DraftTarget Type="Words" CountIncludedOnly="Yes" CurrentCompileGroupOnly="Yes" Deadline="2011-04-12 14:24:39 +0200" IgnoreDeadline="Yes">0</DraftTarget>
         <SessionTarget Type="Words" CountDraftOnly="Yes" AllowNegatives="No" ResetType="Time" ResetTime="00:00" DeterminedFromDeadline="No" CanWriteOnDeadlineDate="No" WritingDays="">0</SessionTarget>
-        <PreviousSession Words="0" Characters="0" Date="2022-11-08 16:59:35 -0800"/>
+        <PreviousSession Words="0" Characters="0" Date="2022-11-16 01:02:32 -0800"/>
     </ProjectTargets>
     <BookmarksFolderUUID>07B0D7C6-57CE-4D6F-8AD9-11F06A261A5F</BookmarksFolderUUID>
-    <RecentWritingHistory Date="2022-11-08 00:00:00 -0800">
+    <RecentWritingHistory Date="2022-11-16 00:00:00 -0800">
         <DraftWordCount>0</DraftWordCount>
         <DraftCharCount>0</DraftCharCount>
-        <OtherWordCount>140</OtherWordCount>
-        <OtherCharCount>964</OtherCharCount>
+        <OtherWordCount>114</OtherWordCount>
+        <OtherCharCount>714</OtherCharCount>
     </RecentWritingHistory>
     <PrintSettings PaperSize="612.0,792.0" LeftMargin="72.0" RightMargin="72.0" TopMargin="90.0" BottomMargin="90.0" PaperType="na-letter" Orientation="Portrait" ScaleFactor="1.0" HorizontallyCentered="Yes" VerticallyCentered="Yes" Collates="Yes" PagesAcross="1" PagesDown="1"/>
 </ScrivenerProject>

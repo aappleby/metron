@@ -34,7 +34,7 @@ struct Program {
 };
 ```
 
-Blocks containing the "@" character are temporal blocks - from an imperative viewpoint, assignments to primed ("atted" sounds strange) variables don't take effect until after all temporal blocks have been evaluated. The language transpiler will insert temporary variables and reorder expressions to make the code compatible with C++ or Verilog as needed while ensuring the transpiled code is functionally identical to the original. To follow along with the metronome theme of my other projects, I intend to call the language "MetroC".
+Blocks containing the "@" character are temporal blocks - from an imperative viewpoint, assignments to primed ("atted" sounds strange) variables don't take effect until after all temporal blocks have been evaluated. The language transpiler will insert temporary variables and reorder expressions to make the code compatible with C++ or Verilog as needed while ensuring the transpiled code is functionally identical to the original. To follow along with the metronome theme of my other projects, I intend to call the language [MetroC](https://github.com/aappleby/MetroC) (note there's nothing in that repo yet).
 
 To be absolutely clear, I am not claiming to have invented any of these concepts - I am merely assigning a name to a set of patterns that most programmers have already come across and am trying to express those patterns in a new and useful way. If you have suggestions for what the definition of "Temporal Programming" should be, I am very interested in hearing them.
 

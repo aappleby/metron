@@ -1,3 +1,5 @@
+# Temporal Programming, a new name for an old paradigm
+
 Hi, my name is Austin Appleby and I'm the author of [MurmurHash](https://github.com/aappleby/smhasher) (a commonly used hash function), [GateBoy](https://github.com/aappleby/metroboy) (a gate-level Game Boy simulator), [Metron](https://github.com/aappleby/metron) (a very experimental C++ to SystemVerilog transpiler), and [other neat things](https://github.com/aappleby?tab=repositories).
 
 For the last few years I've been doing some projects and experiments to try and understand more about how time is represented in programming languages. I've also been reading a ton of research papers, and I've come up with something interesting enough to be worth writing about. I'll eventually have a full-length paper that goes into more detail, but for now you can consider this post to be a TL;DR summary of that paper.

@@ -14,13 +14,13 @@ I believe that these two papers and their fundamental ideas - programs as pure f
 
 Temporal programs, as I am attempting to define them, are of the form ```x' = f(x)``` - a recurrence relation. Like Backus's "von Neumann style" of imperative languages and the lambda calculus of functional languages, recurrence relations are a mathematically simple but general way of expressing computation. ```x``` represents the entire state of our program, ```f()``` is the pure function that computes the next state of the program, and ```x'``` represents that next state. Replace ```x``` with "strip of paper" and ```f()``` with "Turing machine" and it should be immediately clear that recurrences are Turing-complete. If you're more familiar with hardware than software, you can think of temporal programming as a form of [sequential logic](https://en.wikipedia.org/wiki/Sequential_logic) expressed using data structures and functions instead of registers and circuits.
 
-This definition is _very_ loose, in that it makes no requirements whatsoever about the languages used to implement the next-state function or the data structures used to define the state of the program. You can write temporal programs in C or Javascript or Python or Haskell or whatever you like, just as you can write functional programs in the same languages - you might be limited by the language syntax and the compiler may or may not be able to catch errors in your program when you break the rules, but it's at least possible.
-
 To really explore temporal programming, we will need to define some guidelines that we can use to constrain our language and make it more difficult or impossible to break the "rules". The two fundamental tenets that I think a dedicated temporal programming language should follow are:
 
 1. Temporal programs must change state atomically as in Backus's paper. Intermediate states should not be expressible or visible from within the language.
 
 2. Temporal programs must explicitly distinguish between "old" and "new" state as in Lamport's paper. A statement like ```x = x + 1``` would not be valid, while ```x' = x + 1``` would be.
+
+This definition is _very_ loose, in that it makes no requirements whatsoever about the languages used to implement the next-state function or the data structures used to define the state of the program. You can write temporal programs in C or Javascript or Python or Haskell or whatever you like, just as you can write functional programs in the same languages - you might be limited by the language syntax and the compiler may or may not be able to catch errors in your program when you break the rules, but it's at least possible.
 
 I believe that languages based on these two tenents have the potential to be far more expressive and powerful than  the original papers might suggest. Representing programs as atomic state transitions removes the possibility of large classes of bugs related to synchronization and concurrency. Enforcing a distinction between "old" and "new" state decouples declaration order from evaluation order - the program ```a' = b + 1; b' = a + 1;``` is the same regardless of which statement comes first. 
 

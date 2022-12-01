@@ -26,6 +26,15 @@ I believe that languages based on these two tenents have the potential to be far
 
 Programs that adhere to these tenets should in theory be far more optimizable than what would be possible in a procedural language, as the compiler is essentially given the entire evaluation graph for the program up front and can completely reschedule evaluations in whatever order is most efficient. They should also be more amenable to formal TLA-type proofs since their computation model is much closer to what TLA+ expects.
 
+There are a number of additional properties that I think temporal programs will inherit to varying degrees:
+ - Straightforward translation into Verilog or VHDL for use on a FPGA (assuming some synthesizable subset of the language)
+ - Automatic parallelism
+ - Language-level support for serializing the entire state of the app
+ - Language-level support for reverse debugging, "what if" debugging
+ - "Speculative execution" on a large scale
+
+However, all of these (except the first, which is pretty well covered by Metron) will require a _lot_ of additional experimentation to see if they're feasible.
+
 Right now there are no languages available that follow both of these two tenets fully, though there are a huge number of [languages](https://en.wikipedia.org/wiki/Esterel) and [paradigms](https://en.wikipedia.org/wiki/Synchronous_programming_language) described in the literature that fit to some degree. To explore these ideas further, I will be building a minimal language based on a subset of C++, with the addition of one character that's currently unused:
 
 ```

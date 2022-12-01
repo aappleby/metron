@@ -26,7 +26,7 @@ I believe that languages based on these two tenents have the potential to be far
 
 Programs that adhere to these tenets should in theory be far more optimizable than what would be possible in a procedural language, as the compiler is essentially given the entire evaluation graph for the program up front and can completely reschedule evaluations in whatever order is most efficient. They should also be more amenable to formal TLA-type proofs since their computation model is much closer to what TLA+ expects.
 
-There are a number of additional properties that I think temporal programs will inherit to varying degrees:
+There are a number of additional properties that I think temporal programming languages will inherit to varying degrees:
  - Straightforward translation into Verilog or VHDL for use on a FPGA (assuming some synthesizable subset of the language)
  - Automatic parallelism
  - Language-level support for serializing the entire state of the app

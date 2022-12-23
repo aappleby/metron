@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ScrivenerProject Template="No" Version="2.0" Identifier="BD87B4F4-DC28-4D78-B8F8-5E0F787F4206" Creator="SCRWIN-3.1.2.0" Device="TinyTron" Modified="2022-11-16 01:02:32 -0800" ModID="CE07EE89-4DA2-4E55-B616-6AE6D20A5A8A">
+<ScrivenerProject Template="No" Version="2.0" Identifier="BD87B4F4-DC28-4D78-B8F8-5E0F787F4206" Creator="SCRWIN-3.1.2.0" Device="TinyTron" Modified="2022-12-01 01:30:06 -0800" ModID="2807F5F9-7EE5-4F29-AAAB-C89EC7EF1918">
     <Binder>
         <BinderItem UUID="7A583553-3A84-40D6-B9B9-0430B8CD3E39" Type="DraftFolder" Created="2017-11-02 08:22:45 -0800" Modified="2022-10-01 22:11:16 -0800">
             <Title>Draft</Title>
             <MetaData/>
             <CorkboardAndOutliner>
                 <SelectedSubdocumentUUIDs>A9A15308-1D22-4F61-9535-49A91F7E6150</SelectedSubdocumentUUIDs>
-                <OutlinerExpandedState>
-                    <ItemID>232AC60D-6945-4711-A0F4-AAB28AC6F0F4</ItemID>
-                </OutlinerExpandedState>
                 <OutlinerExpandedState>
                     <ItemID>0F74FC65-0340-4362-85CC-82B0A85DE507</ItemID>
                 </OutlinerExpandedState>
@@ -19,10 +16,13 @@
                     <ItemID>15132E5A-F0FA-4410-AD84-B7E52C9204BA</ItemID>
                 </OutlinerExpandedState>
                 <OutlinerExpandedState>
-                    <ItemID>AE706F88-0353-41C5-B4B5-FF07630D557C</ItemID>
+                    <ItemID>232AC60D-6945-4711-A0F4-AAB28AC6F0F4</ItemID>
                 </OutlinerExpandedState>
                 <OutlinerExpandedState>
                     <ItemID>7C5CAAB6-0CBA-4FF2-B9EE-E5B01CBB4249</ItemID>
+                </OutlinerExpandedState>
+                <OutlinerExpandedState>
+                    <ItemID>AE706F88-0353-41C5-B4B5-FF07630D557C</ItemID>
                 </OutlinerExpandedState>
                 <CorkboardSettings>
                     <Arrangement>Linear</Arrangement>
@@ -65,7 +65,7 @@
                                 <IncludeInCompile>Yes</IncludeInCompile>
                             </MetaData>
                             <TextSettings>
-                                <TextSelection>0,0</TextSelection>
+                                <TextSelection>1325,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
                         <BinderItem UUID="FB6531A9-3DD9-4FC6-81B6-BC93E7248848" Type="Text" Created="2022-10-01 22:14:23 -0800" Modified="2022-10-04 00:47:05 -0800">
@@ -74,7 +74,7 @@
                                 <IncludeInCompile>Yes</IncludeInCompile>
                             </MetaData>
                             <TextSettings>
-                                <TextSelection>547,0</TextSelection>
+                                <TextSelection>360,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
                         <BinderItem UUID="921A916E-D9A4-4535-A4CB-E15D30E375EB" Type="Text" Created="2022-10-01 01:15:31 -0800" Modified="2022-10-08 13:51:13 -0800">
@@ -86,7 +86,7 @@
                                 <TextSelection>1447,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
-                        <BinderItem UUID="8C5AA09F-3D72-402B-AED9-A8B0F0FFDF68" Type="Text" Created="2022-10-08 13:50:17 -0800" Modified="2022-10-09 01:58:53 -0800">
+                        <BinderItem UUID="8C5AA09F-3D72-402B-AED9-A8B0F0FFDF68" Type="Text" Created="2022-10-08 13:50:17 -0800" Modified="2022-12-01 01:30:04 -0800">
                             <Title>Defining the Computational Core</Title>
                             <MetaData>
                                 <IncludeInCompile>Yes</IncludeInCompile>
@@ -374,7 +374,7 @@
                                 <IncludeInCompile>Yes</IncludeInCompile>
                             </MetaData>
                             <TextSettings>
-                                <TextSelection>2492,0</TextSelection>
+                                <TextSelection>1153,0</TextSelection>
                             </TextSettings>
                         </BinderItem>
                     </Children>
@@ -793,6 +793,15 @@
                         </BinderItem>
                     </Children>
                 </BinderItem>
+                <BinderItem UUID="2CE7CEBF-A246-44C9-93FF-30EDD1873573" Type="Folder" Created="2022-11-28 11:26:13 -0800" Modified="2022-11-28 11:26:16 -0800">
+                    <Title>High-Level Synthesis</Title>
+                    <MetaData>
+                        <IncludeInCompile>Yes</IncludeInCompile>
+                    </MetaData>
+                    <TextSettings>
+                        <TextSelection>0,0</TextSelection>
+                    </TextSettings>
+                </BinderItem>
             </Children>
         </BinderItem>
         <BinderItem UUID="A41BA2A1-C599-43C2-99CC-8C1A7FFC2C24" Type="TrashFolder" Created="2017-11-02 08:22:45 -0800" Modified="2022-10-01 22:02:13 -0800">
@@ -985,14 +994,14 @@
     <ProjectTargets Notify="No">
         <DraftTarget Type="Words" CountIncludedOnly="Yes" CurrentCompileGroupOnly="Yes" Deadline="2011-04-12 14:24:39 +0200" IgnoreDeadline="Yes">0</DraftTarget>
         <SessionTarget Type="Words" CountDraftOnly="Yes" AllowNegatives="No" ResetType="Time" ResetTime="00:00" DeterminedFromDeadline="No" CanWriteOnDeadlineDate="No" WritingDays="">0</SessionTarget>
-        <PreviousSession Words="0" Characters="0" Date="2022-11-16 01:02:32 -0800"/>
+        <PreviousSession Words="38" Characters="474" Date="2022-12-01 01:30:06 -0800"/>
     </ProjectTargets>
     <BookmarksFolderUUID>07B0D7C6-57CE-4D6F-8AD9-11F06A261A5F</BookmarksFolderUUID>
-    <RecentWritingHistory Date="2022-11-16 00:00:00 -0800">
-        <DraftWordCount>0</DraftWordCount>
-        <DraftCharCount>0</DraftCharCount>
-        <OtherWordCount>114</OtherWordCount>
-        <OtherCharCount>714</OtherCharCount>
+    <RecentWritingHistory Date="2022-12-01 00:00:00 -0800">
+        <DraftWordCount>38</DraftWordCount>
+        <DraftCharCount>474</DraftCharCount>
+        <OtherWordCount>0</OtherWordCount>
+        <OtherCharCount>0</OtherCharCount>
     </RecentWritingHistory>
     <PrintSettings PaperSize="612.0,792.0" LeftMargin="72.0" RightMargin="72.0" TopMargin="90.0" BottomMargin="90.0" PaperType="na-letter" Orientation="Portrait" ScaleFactor="1.0" HorizontallyCentered="Yes" VerticallyCentered="Yes" Collates="Yes" PagesAcross="1" PagesDown="1"/>
 </ScrivenerProject>

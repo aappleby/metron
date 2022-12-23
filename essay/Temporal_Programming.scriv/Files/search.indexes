@@ -5856,6 +5856,9 @@ In honor of Leslie Lamport's work on temporal logic, I propose we call it &quot;
 led scanner example
 	What if you need 1000 LED scanners running at different rates?</Text>
         </Document>
+        <Document ID="2CE7CEBF-A246-44C9-93FF-30EDD1873573">
+            <Title>High-Level Synthesis</Title>
+        </Document>
         <Document ID="3015FFE4-4D2E-485F-84DE-4C19A8C61C35">
             <Title>What can we express in a temporal programming language?</Title>
             <Text>
@@ -7298,7 +7301,7 @@ https://www.academia.edu/1622602/Compiling_Esterel_into_static_discrete_event_co
         </Document>
         <Document ID="8C5AA09F-3D72-402B-AED9-A8B0F0FFDF68">
             <Title>Defining the Computational Core</Title>
-            <Text>Even though TLA+ isn’t executable, there’s a very simple model of computation at the core of Lamport's temporal logic that’s worth digging into - TLA+ models move through time in discrete steps by computing new state from old state. In the paper Lamport calls these steps “actions”: “An action represents a relation between old states and new states, where the unprimed variables refer to the old state and the primed variables refer to the new state”. Paraphrased, “actions” are not functions that return a value, they’re boolean expressions that define whether or not you can get from state A to state B, so to speak.
+            <Text>Even though TLA+ isn’t executable, there’s a very simple model of computation at the core of Lamport's temporal logic that’s worth digging into - TLA+ models move through time in discrete steps by computing new state from old state. In the paper Lamport calls these steps “actions”: “An action represents a relation between old states and new states, where the unprimed variables refer to the old state and the primed variables refer to the new state”. Paraphrased, “actions” are not functions that return a value, they’re boolean expressions that define whether or not you can &quot;get from&quot; state A to state B, so to speak.
 
 This will be clearer with an example. The Collatz conjecture is an unsolved problem in mathematics that can be defined like this:
 
@@ -7336,6 +7339,24 @@ So how can we summarize the computational model that TLA+ uses?
 
 This is roughly equivalent to a “nondeterministic finite automaton” or a Mealy machine, with looser restrictions -  we don’t care about sets of symbols or stopping conditions or if the states or symbols are finite, 
 
+*******TRANSITION SYSTEMS********
+
+https://en.wikipedia.org/wiki/Category:Models_of_computation
+
+https://en.wikipedia.org/wiki/Abstract_machine
+
+https://en.wikipedia.org/wiki/Automata_theory
+
+https://en.wikipedia.org/wiki/Well-structured_transition_system
+
+https://en.wikipedia.org/wiki/Synchronous_circuit
+
+https://en.wikipedia.org/wiki/Mealy_machine
+
+https://en.wikipedia.org/wiki/Sequential_logic
+
+
+
 Something something
 
 Let’s look at the same system expressed as an imperative program and a temporal program:
@@ -7345,6 +7366,8 @@ Let’s look at the same system expressed as an imperative program and a tempora
 **temporal uart**
 
 
+
+&quot;Applicative State Transition&quot; doesn't even appear in Wikipedia!!!
 
 
 

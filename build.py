@@ -93,7 +93,7 @@ ninja.rule(name="link",
            command="g++ -rdynamic -g -O3 ${in} -Wl,--whole-archive ${local_libs} -Wl,--no-whole-archive ${global_libs} -o ${out}")
 
 ninja.rule(name="metron", # yes, we run metron with quiet and verbose both on for test coverage
-           command="bin/metron -q -v -r ${src_dir} -o ${dst_dir} -s ${src_top}")
+           command="bin/metron -q -v -a -r ${src_dir} -o ${dst_dir} -s ${src_top}")
 
 ninja.rule(name="verilator",
            command="verilator ${includes} --cc ${src_top} -Mdir ${dst_dir}")

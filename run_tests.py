@@ -173,7 +173,7 @@ def check_good(filename):
     basename = path.basename(filename)
     svname = path.splitext(basename)[0] + ".sv"
 
-    cmd = f"bin/metron {metron_default_args()} -r tests/metron_good -o tests/metron_sv -s {basename}"
+    cmd = f"bin/metron {metron_default_args()} -a -r tests/metron_good -o tests/metron_sv -s {basename}"
 
     print(f"  {cmd}");
 
@@ -204,7 +204,7 @@ def check_bad(filename):
         print(f"Test {filename} contained no expected errors. Dumping output.")
         # return 1
 
-    cmd = f"bin/metron {metron_default_args()} -r tests/metron_bad -o tests/metron_sv -s {basename}"
+    cmd = f"bin/metron {metron_default_args()} -a -r tests/metron_bad -o tests/metron_sv -s {basename}"
     print(f"  {cmd}")
 
     cmd_result = subprocess.run(
@@ -485,10 +485,10 @@ def test_misc():
     print_b("Running misc commands")
 
     good_commands = [
-        f"bin/metron {metron_default_args()} -r examples/uart/metron uart_top.h",
-        f"bin/metron {metron_default_args()} -r examples/rvsimple/metron toplevel.h",
-        #f"bin/metron {metron_default_args()} -r examples/pinwheel/metron pinwheel.h",
-        f"bin/metron {metron_default_args()} -r examples/pong/metron pong.h",
+        f"bin/metron {metron_default_args()} -a -r examples/uart/metron uart_top.h",
+        f"bin/metron {metron_default_args()} -a -r examples/rvsimple/metron toplevel.h",
+        #f"bin/metron {metron_default_args()} -a -r examples/pinwheel/metron pinwheel.h",
+        f"bin/metron {metron_default_args()} -a -r examples/pong/metron pong.h",
     ]
 
     bad_commands = [
@@ -530,7 +530,7 @@ def check_lockstep(filename):
 
     includes = f"-I. -Isrc -I{sv_root} -I/usr/local/share/verilator/include"
 
-    metronate_cmd = f"bin/metron -q -r {mt_root} -o {sv_root} -s {test_name}.h"
+    metronate_cmd = f"bin/metron -q -a -r {mt_root} -o {sv_root} -s {test_name}.h"
     print(f"  {metronate_cmd}")
     os.system(metronate_cmd)
     os.system(f"verilator {includes} --cc {test_name}.sv -Mdir {vl_root}")

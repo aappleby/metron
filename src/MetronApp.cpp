@@ -74,6 +74,7 @@ int main(int argc, char** argv) {
   bool dump = false;
   bool save = false;
   bool verbose = false;
+  bool convert_all = false;
   std::string src_root;
   std::string out_root;
   std::vector<std::string> source_names;
@@ -85,6 +86,7 @@ int main(int argc, char** argv) {
   app.add_flag  ("-s,--save",       save,         "Save converted source. If not specified, will only check inputs for convertibility.");
   app.add_flag  ("-e,--echo",       echo,         "Echo the converted source back to the terminal, with color-coding.");
   app.add_flag  ("--dump",          dump,         "Dump the syntax tree of the source file(s) to the console.");
+  app.add_flag  ("-a,--all",        convert_all,  "Convert all headers #included, not just the root module");
   app.add_option("-r,--src_root",   src_root,     "Root directory of the source to convert");
   app.add_option("-o,--out_root",   out_root,     "Root directory used for output files. If not specified, will use source root.");
   app.add_option("headers",         source_names, "List of .h files to convert from C++ to SystemVerilog");
@@ -356,6 +358,15 @@ int main(int argc, char** argv) {
   // Emit all modules.
 
   for (auto& source_file : lib.source_files) {
+    bool emit = convert_all;
+    for (auto& name : source_names) {
+      if (name == source_file->filename) {
+        emit = true;
+        break;
+      }
+    }
+    if (!emit) continue;
+
     LOG_G("Converting %s to SystemVerilog\n", source_file->full_path.c_str());
 
     std::string out_string;

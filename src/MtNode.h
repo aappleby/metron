@@ -98,6 +98,7 @@ struct MnNode {
   const char* end() const;
   std::string text() const;
   bool match(const char* s);
+  bool contains(const char* s) const;
 
   //----------
 

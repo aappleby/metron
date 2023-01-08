@@ -468,7 +468,14 @@ CHECK_RETURN Err MtModule::collect_parts() {
 
   bool in_public = false;
 
+  bool noconvert = false;
+
   for (const auto &n : mod_body) {
+    if (noconvert) {
+      noconvert = false;
+      continue;
+    }
+
     if (n.sym == sym_access_specifier) {
       in_public = n.child(0).text() == "public";
     }
@@ -483,6 +490,10 @@ CHECK_RETURN Err MtModule::collect_parts() {
         auto new_field = new MtField(this, n, in_public);
         all_fields.push_back(new_field);
       }
+    }
+
+    if (n.sym == sym_comment && n.contains("noconvert")) {
+      noconvert = true;
     }
 
     if (n.sym == sym_function_definition) {

@@ -2290,7 +2290,19 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n, bool is_str
   Err err = emit_ws_to(sym_field_declaration_list, n);
   push_indent(n);
 
+  bool noconvert = false;
+
   for (auto child : n) {
+    if (noconvert) {
+      err << comment_out(child);
+      noconvert = false;
+      continue;
+    }
+
+    if (child.sym == sym_comment && child.contains("noconvert")) {
+      noconvert = true;
+    }
+
     switch (child.sym) {
       case anon_sym_LBRACE:
         if (!is_struct) {
@@ -2541,7 +2553,17 @@ CHECK_RETURN Err MtCursor::emit_toplevel_node(MnNode node) {
 CHECK_RETURN Err MtCursor::emit_toplevel_block(MnNode n) {
   Err err = emit_ws_to(n);
 
+  bool noconvert = false;
+
   for (auto c : n) {
+    if (noconvert) {
+      noconvert = false;
+      err << comment_out(c);
+      err << check_done(c);
+      continue;
+    }
+    if (c.sym == sym_comment && c.contains("noconvert")) { noconvert = true; }
+
     err << emit_toplevel_node(c);
     err << check_done(c);
   }
@@ -3489,7 +3511,19 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
     MnNode node, const std::string& delim_begin, const std::string& delim_end) {
   Err err = emit_ws_to(sym_compound_statement, node);
 
+  bool noconvert = false;
+
   for (auto child : node) {
+
+    if (noconvert) {
+      noconvert = false;
+      err << comment_out(child);
+      continue;
+    }
+
+    if (child.sym == sym_comment && child.contains("noconvert")) {
+      noconvert = true;
+    }
 
     switch (child.sym) {
       case anon_sym_LBRACE:

@@ -156,6 +156,26 @@ bool MnNode::match(const char* s) {
   return true;
 }
 
+bool MnNode::contains(const char* s) const {
+  if (is_null()) return false;
+  const char* a = start();
+  const char* b = end();
+  const char* c = s;
+
+  while(a != b && *c) {
+    if (*a == *c) {
+      a++;
+      c++;
+    }
+    else {
+      a++;
+      c = s;
+    }
+  }
+
+  return *c == 0;
+}
+
 //------------------------------------------------------------------------------
 
 std::string MnNode::name4() const {

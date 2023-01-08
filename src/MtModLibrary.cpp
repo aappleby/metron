@@ -122,7 +122,19 @@ CHECK_RETURN Err MtModLibrary::load_blob(const std::string &filename,
 
   std::vector<std::string> includes;
 
+  bool noconvert = false;
+
   source_file->root_node.visit_tree([&](MnNode child) {
+    if (child.sym == sym_comment && child.contains("noconvert")) {
+      noconvert = true;
+      return;
+    }
+
+    if (noconvert) {
+      noconvert = false;
+      return;
+    }
+
     if (child.sym != sym_preproc_include) return;
 
     std::string filename = child.get_field(field_path).text();

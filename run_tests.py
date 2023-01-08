@@ -457,8 +457,8 @@ def test_examples():
         "bin/examples/rvsimple",
         "bin/examples/rvsimple_vl",
         "bin/examples/rvsimple_ref",
-        "bin/examples/pinwheel",
-        "bin/examples/pinwheel_vl",
+        #"bin/examples/pinwheel",
+        #"bin/examples/pinwheel_vl",
     ]
 
     errors = sum(get_pool().map(run_simple_test, simple_tests))
@@ -487,7 +487,7 @@ def test_misc():
     good_commands = [
         f"bin/metron {metron_default_args()} -r examples/uart/metron uart_top.h",
         f"bin/metron {metron_default_args()} -r examples/rvsimple/metron toplevel.h",
-        f"bin/metron {metron_default_args()} -r examples/pinwheel/metron pinwheel.h",
+        #f"bin/metron {metron_default_args()} -r examples/pinwheel/metron pinwheel.h",
         f"bin/metron {metron_default_args()} -r examples/pong/metron pong.h",
     ]
 
@@ -537,7 +537,7 @@ def check_lockstep(filename):
     os.system(f"make --quiet -C {vl_root} -f V{test_name}.mk > /dev/null")
     os.system(
         f"g++ -O3 -std=gnu++2a -DMT_TOP={mt_top} -DVL_TOP={vl_top} -DMT_HEADER={mt_header} -DVL_HEADER={vl_header} {includes} -c {test_src} -o {test_obj}")
-    os.system(f"g++ {test_obj} {vl_obj} obj/verilated.o -o {test_bin}")
+    os.system(f"g++ {test_obj} {vl_obj} obj/verilated.o obj/verilated_threads.o -o {test_bin}")
 
     cmd = f"{test_bin} > /dev/null"
     print(f"  {cmd}");

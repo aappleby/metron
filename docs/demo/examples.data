@@ -2736,17 +2736,6 @@ class Pinwheel {
     tock20(reg_p2, 0,    sig_p20);
   }
 
-
-
-
-
-
-
-
-
-
-
-
   //--------------------------------------------------------------------------------
 
   static void tock01(const registers_p0& reg_p0, logic<32> insn, signals_p01& sig_p01) {
@@ -2765,16 +2754,6 @@ class Pinwheel {
     reg_p1.pc   = sig_p01.pc;
     reg_p1.insn = sig_p01.insn;
   }
-
-
-
-
-
-
-
-
-
-
 
   //--------------------------------------------------------------------------------
 
@@ -2819,24 +2798,6 @@ class Pinwheel {
     reg_p2.ra     = ra;
     reg_p2.rb     = rb;
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   //--------------------------------------------------------------------------------
 
@@ -2956,45 +2917,6 @@ class Pinwheel {
 
   //--------------------------------------------------------------------------------
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   void tick(logic<1> reset_in) {
     if (reset_in) {
       reset();
@@ -3028,7 +2950,6 @@ class Pinwheel {
     tick01(sig_p01,            reg_p1);
     tick12(sig_p12, ra, rb,    reg_p2);
     tick20(sig_p20,            reg_p0);
-
   }
 };
 Verilated version of https://www.fpga4fun.com/PongGame.html

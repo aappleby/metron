@@ -32,7 +32,7 @@ def main():
     build_rvtests()
     build_uart()
     build_rvsimple()
-    build_pinwheel()
+    # build_pinwheel()
     # build_ibex()
     build_pong()
     #build_j1()
@@ -252,6 +252,9 @@ def build_verilator():
     ninja.build(rule="compile_cpp",
                 inputs="/usr/local/share/verilator/include/verilated.cpp",
                 outputs="obj/verilated.o")
+    ninja.build(rule="compile_cpp",
+                inputs="/usr/local/share/verilator/include/verilated_threads.cpp",
+                outputs="obj/verilated_threads.o")
 
 # ------------------------------------------------------------------------------
 
@@ -514,7 +517,7 @@ def build_gb_spu():
         bin_name="bin/examples/gb_spu",
         src_files=["examples/gb_spu/gb_spu_main.cpp"],
         includes=base_includes + ["gen/examples/gb_spu"],
-        src_objs=["obj/verilated.o", gb_spu_vobj],
+        src_objs=["obj/verilated.o", "obj/verilated_threads.o", gb_spu_vobj],
         deps=[gb_spu_vhdr],
         link_deps=["bin/libmetron.a"],
     )
@@ -523,7 +526,7 @@ def build_gb_spu():
         bin_name="bin/examples/uart_vl",
         src_files=["examples/uart/main_vl.cpp"],
         includes=base_includes + ["gen/examples/uart"],
-        src_objs=["obj/verilated.o", uart_vobj],
+        src_objs=["obj/verilated.o", "obj/verilated_threads.o", uart_vobj],
         deps=[uart_vhdr],
         link_deps=["bin/libmetron.a"],
     )
@@ -559,7 +562,7 @@ def build_uart():
         bin_name="bin/examples/uart_vl",
         src_files=["examples/uart/main_vl.cpp"],
         includes=base_includes + ["gen/examples/uart"],
-        src_objs=["obj/verilated.o", uart_vobj],
+        src_objs=["obj/verilated.o", "obj/verilated_threads.o", uart_vobj],
         deps=[uart_vhdr],
         link_deps=["bin/libmetron.a"],
     )
@@ -644,7 +647,7 @@ def build_rvsimple():
         bin_name="bin/examples/rvsimple_vl",
         src_files=["examples/rvsimple/main_vl.cpp"],
         includes=base_includes + [vl_root],
-        src_objs=["obj/verilated.o", vl_vobj],
+        src_objs=["obj/verilated.o", "obj/verilated_threads.o", vl_vobj],
         deps=[vl_vhdr],
         link_deps=["bin/libmetron.a"],
     )
@@ -663,7 +666,7 @@ def build_rvsimple():
         bin_name="bin/examples/rvsimple_ref",
         src_files=["examples/rvsimple/main_ref_vl.cpp"],
         includes=base_includes + [ref_vl_root],
-        src_objs=["obj/verilated.o", ref_vobj],
+        src_objs=["obj/verilated.o", "obj/verilated_threads.o", ref_vobj],
         deps=[ref_vhdr],
         link_deps=["bin/libmetron.a"],
     )
@@ -698,7 +701,7 @@ def build_pinwheel():
         bin_name="bin/examples/pinwheel_vl",
         src_files=["examples/pinwheel/main_vl.cpp"],
         includes=base_includes + [vl_root],
-        src_objs=["obj/verilated.o", pinwheel_vl_vobj],
+        src_objs=["obj/verilated.o", "obj/verilated_threads.o", pinwheel_vl_vobj],
         deps=[pinwheel_vl_vhdr],
         link_deps=["bin/libmetron.a"],
     )

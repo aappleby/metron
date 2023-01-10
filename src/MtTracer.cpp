@@ -370,7 +370,12 @@ CHECK_RETURN Err MtTracer::trace_sym_compound_statement(MtContext* ctx,
   assert(ctx->context_type == CTX_METHOD);
   assert(node.sym == sym_compound_statement);
 
+  bool dumpit = false;
+
   for (const auto& child : node) {
+    if (dumpit) { child.dump_tree(); dumpit = false; }
+    if (child.sym == sym_comment && child.contains("dumpit")) { dumpit = true; }
+
     if (child.sym == sym_declaration) {
       err << trace_sym_declaration(ctx, child);
     } else if (child.is_statement()) {
@@ -480,8 +485,10 @@ CHECK_RETURN Err MtTracer::trace_sym_call_expression(MtContext* ctx,
       // support
       auto node_name =
           node.get_field(field_function).get_field(field_name).text();
-      if (node_name == "bx" || node_name == "dup" ||
-          node_name == "sign_extend") {
+      if (node_name == "bx" ||
+          node_name == "dup" ||
+          node_name == "sign_extend" ||
+          node_name == "zero_extend") {
       } else {
         err << ERR("trace_sym_call_expression - Unhandled template func %s\n", node.text().c_str());
         return err;

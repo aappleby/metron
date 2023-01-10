@@ -469,12 +469,15 @@ CHECK_RETURN Err MtModule::collect_parts() {
   bool in_public = false;
 
   bool noconvert = false;
+  bool dumpit = false;
 
   for (const auto &n : mod_body) {
     if (noconvert) {
       noconvert = false;
       continue;
     }
+
+    if (dumpit) { n.dump_tree(); dumpit = false; }
 
     if (n.sym == sym_access_specifier) {
       in_public = n.child(0).text() == "public";
@@ -492,9 +495,8 @@ CHECK_RETURN Err MtModule::collect_parts() {
       }
     }
 
-    if (n.sym == sym_comment && n.contains("noconvert")) {
-      noconvert = true;
-    }
+    if (n.sym == sym_comment && n.contains("noconvert")) noconvert = true;
+    if (n.sym == sym_comment && n.contains("dumpit"))    dumpit = true;
 
     if (n.sym == sym_function_definition) {
       all_methods.push_back(new MtMethod(this, n, in_public));

@@ -136,6 +136,7 @@ CHECK_RETURN Err MtModLibrary::load_blob(const std::string &filename,
   std::vector<std::string> includes;
 
   bool noconvert = false;
+  bool dumpit = false;
 
   source_file->root_node.visit_tree([&](MnNode child) {
     if (child.sym == sym_comment && child.contains("noconvert")) {

@@ -707,6 +707,9 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
   } else if (func_name == "sign_extend") {
     err << emit_replacement(func, "$signed");
     err << emit_sym_argument_list(args);
+  } else if (func_name == "zero_extend") {
+    err << emit_replacement(func, "$unsigned");
+    err << emit_sym_argument_list(args);
   }
   else if (func_name == "bx") {
     // Bit extract.
@@ -2316,6 +2319,7 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n, bool is_str
   push_indent(n);
 
   bool noconvert = false;
+  bool dumpit = false;
 
   for (auto child : n) {
     if (noconvert) {
@@ -2324,9 +2328,10 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n, bool is_str
       continue;
     }
 
-    if (child.sym == sym_comment && child.contains("noconvert")) {
-      noconvert = true;
-    }
+    if (dumpit) { child.dump_tree(); dumpit = false; }
+
+    if (child.sym == sym_comment && child.contains("noconvert")) noconvert = true;
+    if (child.sym == sym_comment && child.contains("dumpit"))    dumpit = true;
 
     switch (child.sym) {
       case anon_sym_LBRACE:
@@ -2579,6 +2584,7 @@ CHECK_RETURN Err MtCursor::emit_toplevel_block(MnNode n) {
   Err err = emit_ws_to(n);
 
   bool noconvert = false;
+  bool dumpit = false;
 
   for (auto c : n) {
     if (noconvert) {
@@ -2587,7 +2593,11 @@ CHECK_RETURN Err MtCursor::emit_toplevel_block(MnNode n) {
       err << check_done(c);
       continue;
     }
-    if (c.sym == sym_comment && c.contains("noconvert")) { noconvert = true; }
+
+    if (dumpit) { c.dump_tree(); dumpit = false; }
+
+    if (c.sym == sym_comment && c.contains("noconvert"))  noconvert = true;
+    if (c.sym == sym_comment && c.contains("dumpit"))     dumpit = true;
 
     err << emit_toplevel_node(c);
     err << check_done(c);
@@ -2886,6 +2896,7 @@ CHECK_RETURN Err MtCursor::emit_sym_case_statement(MnNode n) {
           err << emit_replacement(child, ",");
         }
         break;
+      case sym_if_statement:
       case sym_compound_statement:
       case sym_expression_statement:
         err << emit_statement(child);
@@ -3540,6 +3551,7 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
   Err err = emit_ws_to(sym_compound_statement, node);
 
   bool noconvert = false;
+  bool dumpit = false;
 
   for (auto child : node) {
 
@@ -3549,9 +3561,10 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
       continue;
     }
 
-    if (child.sym == sym_comment && child.contains("noconvert")) {
-      noconvert = true;
-    }
+    if (dumpit) { child.dump_tree(); dumpit = false; }
+
+    if (child.sym == sym_comment && child.contains("noconvert"))  noconvert = true;
+    if (child.sym == sym_comment && child.contains("dumpit"))     dumpit = true;
 
     switch (child.sym) {
       case anon_sym_LBRACE:

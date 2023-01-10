@@ -127,7 +127,7 @@ module singlecycle_datapath (
     mux_next_pc_select_sel = next_pc_select;
     mux_next_pc_select_in0 = adder_pc_plus_4_result;
     mux_next_pc_select_in1 = adder_pc_plus_immediate_result;
-    mux_next_pc_select_in2 = {alu_core.result[31:1], 1'b0};
+    mux_next_pc_select_in2 = {alu_core_result[31:1], 1'b0};
     mux_next_pc_select_in3 = 32'b0;
   end
 

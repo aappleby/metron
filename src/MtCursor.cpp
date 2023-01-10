@@ -433,10 +433,12 @@ CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnNode call, int bx_width) {
 
   auto arg0_text = arg0.text();
 
+  /*
   if (current_method->has_param(arg0_text)) {
     //printf("bit extract!\n");
     arg0_text = std::string(current_method->cname()) + "_" + arg0_text;
   }
+  */
 
   /*
   auto arg0_field = current_mod->get_field(arg0_text);
@@ -479,28 +481,40 @@ CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnNode call, int bx_width) {
   } else if (arg_count == 2) {
     // Slicing logic array - foo[7:2]
 
-    if (arg1.sym == sym_number_literal) {
-      // Slice at offset
-      if (bx_width == 1) {
-        err << emit_replacement(call, "%s[%s]", arg0_text.c_str(),
-                                arg1.text().c_str());
-      } else {
-        int offset = atoi(arg1.start());
-        err << emit_replacement(call, "%s[%d:%d]", arg0_text.c_str(),
-                                bx_width - 1 + offset, offset);
-      }
-    } else {
-      if (bx_width == 1) {
-        err << emit_replacement(call, "%s[%s]", arg0_text.c_str(),
-                                arg1.text().c_str());
-        ;
-      } else {
-        err << emit_replacement(call, "%s[%d + %s : %s]", arg0_text.c_str(),
-                                bx_width - 1, arg1.text().c_str(),
-                                arg1.text().c_str());
-      }
+    if (bx_width == 1) {
+      // b1(foo, 7) -> foo[7]
+      cursor = arg0.start();
+      err << emit_expression(arg0);
+      err << emit_print("[");
+      cursor = arg1.start();
+      err << emit_expression(arg1);
+      err << emit_print("]");
+      cursor = call.end();
     }
+    else {
+      cursor = arg0.start();
+      err << emit_expression(arg0);
+      err << emit_print("[");
 
+      if (arg1.sym == sym_number_literal) {
+        // Static size slice, static offset
+        // b6(foo, 2) -> foo[7:2]
+        int offset = atoi(arg1.start());
+        err << emit_print("%d:%d", bx_width - 1 + offset, offset);
+      } else {
+        // Static size slice, dynamic offset
+        // b6(foo, offset) -> foo[5 + offset:offset]
+        err << emit_print("%d + ", bx_width - 1);
+        cursor = arg1.start();
+        err << emit_expression(arg1);
+        err << emit_print(" : ");
+        cursor = arg1.start();
+        err << emit_expression(arg1);
+      }
+      err << emit_print("]");
+      cursor = call.end();
+
+    }
   } else {
     err << ERR("emit_static_bit_extract got > 1 args\n");
   }
@@ -2875,6 +2889,9 @@ CHECK_RETURN Err MtCursor::emit_sym_case_statement(MnNode n) {
       case sym_compound_statement:
       case sym_expression_statement:
         err << emit_statement(child);
+        break;
+      case sym_qualified_identifier:
+        err << emit_sym_qualified_identifier(child);
         break;
       default:
         err << emit_default(child);

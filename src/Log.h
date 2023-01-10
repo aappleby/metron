@@ -74,12 +74,14 @@ struct TinyLog {
       set_color(0);
       //printf("%c", c); //putchar(c);
       fputc(c, file);
+      fflush(file);
       _start_line = true;
     }
     else {
       set_color(color);
       //printf("%c", c); //putchar(c);
       fputc(c, file);
+      fflush(file);
     }
   }
 

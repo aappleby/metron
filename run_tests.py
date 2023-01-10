@@ -173,7 +173,7 @@ def check_good(filename):
     basename = path.basename(filename)
     svname = path.splitext(basename)[0] + ".sv"
 
-    cmd = f"bin/metron {metron_default_args()} -a -r tests/metron_good -o tests/metron_sv -s {basename}"
+    cmd = f"bin/metron {metron_default_args()} -c tests/metron_good/{basename} -o tests/metron_sv/{svname}"
 
     print(f"  {cmd}");
 
@@ -204,7 +204,7 @@ def check_bad(filename):
         print(f"Test {filename} contained no expected errors. Dumping output.")
         # return 1
 
-    cmd = f"bin/metron {metron_default_args()} -a -r tests/metron_bad -o tests/metron_sv -s {basename}"
+    cmd = f"bin/metron {metron_default_args()} -c tests/metron_bad/{basename} -o tests/metron_sv/{svname}"
     print(f"  {cmd}")
 
     cmd_result = subprocess.run(
@@ -485,16 +485,15 @@ def test_misc():
     print_b("Running misc commands")
 
     good_commands = [
-        f"bin/metron {metron_default_args()} -a -r examples/uart/metron uart_top.h",
-        f"bin/metron {metron_default_args()} -a -r examples/rvsimple/metron toplevel.h",
-        #f"bin/metron {metron_default_args()} -a -r examples/pinwheel/metron pinwheel.h",
-        f"bin/metron {metron_default_args()} -a -r examples/pong/metron pong.h",
+        f"bin/metron {metron_default_args()} -c examples/uart/metron/uart_top.h",
+        f"bin/metron {metron_default_args()} -c examples/rvsimple/metron/toplevel.h",
+        #f"bin/metron {metron_default_args()} -c examples/pinwheel/metron/pinwheel.h",
+        f"bin/metron {metron_default_args()} -c examples/pong/metron/pong.h",
     ]
 
     bad_commands = [
         f"bin/metron {metron_default_args()} skjdlsfjkhdfsjhdf.h",
-        f"bin/metron {metron_default_args()} -s skjdlsfjkhdfsjhdf.h",
-        f"bin/metron {metron_default_args()} -o sdkjfshkdjfshyry skjdlsfjkhdfsjhdf.h",
+        f"bin/metron {metron_default_args()} -c skjdlsfjkhdfsjhdf.h",
     ]
 
     errors = 0

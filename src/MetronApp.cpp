@@ -140,9 +140,7 @@ int main(int argc, char** argv) {
   }
 
   if (dump) {
-    for (auto& source_file : lib.source_files) {
-      source_file->root_node.dump_tree(0, 0, 255);
-    }
+    source->root_node.dump_tree(0, 0, 255);
   }
 
   //----------------------------------------

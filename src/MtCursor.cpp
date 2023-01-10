@@ -236,10 +236,21 @@ CHECK_RETURN Err MtCursor::comment_out(MnNode n) {
   Err err = emit_ws_to(n);
 
   if (cursor != n.start()) err << ERR("comment_out did not start with cursor at node start\n");
+
   err << emit_print("/*");
-  err << emit_text(n);
+
+  auto start = n.start();
+  auto end1 = n.end();
+  auto end2 = end1;
+
+  // If the block ends in a newline, put the comment terminator _before_ the newline
+  if (end1[-1] == '\n') end1--;
+
+  err << emit_span(start, end1);
   err << emit_print("*/");
-  if (cursor != n.end()) err << ERR("comment_out did not leave cursor at node end\n");
+  if (end1 != end2)err << emit_span(end1, end2);
+
+  cursor = n.end();
 
   return err;
 }

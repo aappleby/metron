@@ -39,6 +39,15 @@ std::vector<std::string> split_path(const std::string& input) {
   return result;
 }
 
+std::string join_path(std::vector<std::string>& path) {
+  std::string result;
+  for (auto& s : path) {
+    if (result.size()) result += "/";
+    result += s;
+  }
+  return result;
+}
+
 //------------------------------------------------------------------------------
 
 void mkdir_all(const std::vector<std::string>& full_path) {
@@ -68,29 +77,25 @@ int main(int argc, char** argv) {
 
   CLI::App app{banner};
 
+  std::string src_name;
+  std::string dst_name;
+  bool verbose = false;
   bool quiet = false;
-  bool monochrome = false;
   bool echo = false;
   bool dump = false;
-  bool save = false;
-  bool verbose = false;
-  bool convert_all = false;
-  std::string src_root;
-  std::string out_root;
-  std::vector<std::string> source_names;
+  bool monochrome = false;
 
   // clang-format off
-  app.add_flag  ("-q,--quiet",      quiet,        "Quiet mode");
-  app.add_flag  ("-m,--monochrome", monochrome,   "Monochrome mode, no color-coding");
-  app.add_flag  ("-v,--verbose",    verbose,      "Print detailed stats about the source modules.");
-  app.add_flag  ("-s,--save",       save,         "Save converted source. If not specified, will only check inputs for convertibility.");
-  app.add_flag  ("-e,--echo",       echo,         "Echo the converted source back to the terminal, with color-coding.");
-  app.add_flag  ("--dump",          dump,         "Dump the syntax tree of the source file(s) to the console.");
-  app.add_flag  ("-a,--all",        convert_all,  "Convert all headers #included, not just the root module");
-  app.add_option("-r,--src_root",   src_root,     "Root directory of the source to convert");
-  app.add_option("-o,--out_root",   out_root,     "Root directory used for output files. If not specified, will use source root.");
-  app.add_option("headers",         source_names, "List of .h files to convert from C++ to SystemVerilog");
+  auto src_opt     = app.add_option("-c,--convert",    src_name,     "Full path to source file to translate from C++ to SystemVerilog");
+  auto dst_opt     = app.add_option("-o,--output",     dst_name,     "Output file path. If not specified, will only check the source for convertibility.");
+  auto verbose_opt = app.add_flag  ("-v,--verbose",    verbose,      "Print detailed stats about the source modules.");
+  auto quiet_opt   = app.add_flag  ("-q,--quiet",      quiet,        "Quiet mode");
+  auto echo_opt    = app.add_flag  ("-e,--echo",       echo,         "Echo the converted source back to the terminal, with color-coding.");
+  auto dump_opt    = app.add_flag  ("-d,--dump",       dump,         "Dump the syntax tree of the source file(s) to the console.");
+  auto mono_opt    = app.add_flag  ("-m,--monochrome", monochrome,   "Monochrome mode, no color-coding");
   // clang-format on
+
+  src_opt->check(CLI::ExistingFile);
 
   CLI11_PARSE(app, argc, argv);
 
@@ -101,36 +106,31 @@ int main(int argc, char** argv) {
   // Startup info
 
   LOG_B("Metron v0.0.1\n");
-  LOG_B("Quiet      %d\n", quiet);
-  LOG_B("Monochrome %d\n", monochrome);
-  LOG_B("Echo       %d\n", echo);
-  LOG_B("Save       %d\n", save);
+  LOG_B("Source file '%s'\n", src_name.empty() ? "<empty>" : src_name.c_str());
+  LOG_B("Output file '%s'\n", dst_name.empty() ? "<empty>" : dst_name.c_str());
   LOG_B("Verbose    %d\n", verbose);
-  LOG_B("Source root '%s'\n", src_root.empty() ? "<empty>" : src_root.c_str());
-  LOG_B("Output root '%s'\n", out_root.empty() ? "<empty>" : out_root.c_str());
-
-  for (auto& name : source_names) {
-    LOG_B("Header %s\n", name.c_str());
-  }
+  LOG_B("Quiet      %d\n", quiet);
+  LOG_B("Echo       %d\n", echo);
+  LOG_B("Dump       %d\n", dump);
+  LOG_B("Monochrome %d\n", monochrome);
   LOG_B("\n");
 
   //----------
   // Load all source files.
 
   Err err;
-
-  if (src_root.empty()) {
-    LOG_R("No source root specified, using current directory\n");
-    src_root = ".";
-  }
-
   MtModLibrary lib;
-  lib.add_search_path(src_root);
+  MtSourceFile* source = nullptr;
 
-  LOG_B("Loading source files\n");
-  for (auto& name : source_names) {
-    MtSourceFile* source;
-    err << lib.load_source(name.c_str(), source, verbose);
+  lib.add_search_path(".");
+
+  {
+    LOG_B("Loading source file %s\n", src_name.c_str());
+    auto src_path = split_path(src_name);
+    src_path.pop_back();
+    auto search_path = join_path(src_path);
+    lib.add_search_path(search_path);
+    err << lib.load_source(src_name.c_str(), source, verbose);
   }
 
   if (err.has_err()) {
@@ -357,20 +357,11 @@ int main(int argc, char** argv) {
   //----------
   // Emit all modules.
 
-  for (auto& source_file : lib.source_files) {
-    bool emit = convert_all;
-    for (auto& name : source_names) {
-      if (name == source_file->filename) {
-        emit = true;
-        break;
-      }
-    }
-    if (!emit) continue;
-
-    LOG_G("Converting %s to SystemVerilog\n", source_file->full_path.c_str());
+ {
+    LOG_G("Converting %s to SystemVerilog\n", src_name.c_str());
 
     std::string out_string;
-    MtCursor cursor(&lib, source_file, nullptr, &out_string);
+    MtCursor cursor(&lib, source, nullptr, &out_string);
     cursor.echo = echo && !quiet;
 
     if (echo) LOG_G("----------------------------------------\n\n");
@@ -383,26 +374,21 @@ int main(int argc, char** argv) {
       return -1;
     }
 
-    if (save) {
+    if (dst_name.size()) {
       // Save translated source to output directory, if there is one.
-      if (out_root.empty()) {
-        LOG_Y("No output root directory specified, using source root.\n");
-        out_root = src_root;
-      }
 
-      auto out_name = source_file->filename;
-      out_name.resize(out_name.size() - 2);
-      auto out_path = out_root + "/" + out_name + ".sv";
+      LOG_G("Saving %s\n", dst_name.c_str());
 
-      LOG_G("Saving %s\n", out_path.c_str());
-      mkdir_all(split_path(out_path));
+      auto dst_path = split_path(dst_name);
+      dst_path.pop_back();
+      mkdir_all(dst_path);
 
-      FILE* out_file = fopen(out_path.c_str(), "wb");
+      FILE* out_file = fopen(dst_name.c_str(), "wb");
       if (!out_file) {
-        LOG_R("ERROR Could not open %s for output\n", out_path.c_str());
+        LOG_R("ERROR Could not open %s for output\n", dst_name.c_str());
       } else {
         // Copy the BOM over if needed.
-        if (source_file->use_utf8_bom) {
+        if (source->use_utf8_bom) {
           uint8_t bom[3] = {239, 187, 191};
           fwrite(bom, 1, 3, out_file);
         }

@@ -55,10 +55,14 @@ void MtModLibrary::add_source(MtSourceFile *source_file) {
 
 //------------------------------------------------------------------------------
 
+std::vector<std::string> split_path(const std::string& input);
+
 CHECK_RETURN Err MtModLibrary::load_source(const char *filename,
                                            MtSourceFile *&out_source,
                                            bool verbose) {
   Err err;
+
+  //LOG_R("MtModLibrary::load_source %s\n", filename);
 
   if (!std::string(filename).ends_with(".h")) {
     return err << ERR("Source file %s does not end with .h\n", filename);
@@ -71,11 +75,19 @@ CHECK_RETURN Err MtModLibrary::load_source(const char *filename,
   bool found = false;
   for (auto &path : search_paths) {
     auto full_path = path.size() ? path + "/" + filename : filename;
+
+    /*
+    if (full_path.starts_with(".")) {
+      printf("relative to cwd\n");
+    }
+    */
+
     struct stat s;
     auto stat_result = stat(full_path.c_str(), &s);
     if (stat_result == 0) {
       found = true;
-      if (verbose) LOG_B("Loading %s from %s\n", filename, full_path.c_str());
+      //if (verbose) LOG_B("Loading %s from %s\n", filename, full_path.c_str());
+      LOG_B("Loading %s from %s\n", filename, full_path.c_str());
       LOG_INDENT_SCOPE();
 
       std::string src_blob;
@@ -91,7 +103,7 @@ CHECK_RETURN Err MtModLibrary::load_source(const char *filename,
         use_utf8_bom = true;
         src_blob.erase(src_blob.begin(), src_blob.begin() + 3);
       }
-      err << load_blob(filename, full_path, src_blob.data(), src_blob.size(), use_utf8_bom, verbose);
+      err << load_blob(filename, full_path, src_blob.data(), src_blob.size(), out_source, use_utf8_bom, verbose);
 
       break;
     }
@@ -110,6 +122,7 @@ CHECK_RETURN Err MtModLibrary::load_blob(const std::string &filename,
                                          const std::string &full_path,
                                          void* src_blob,
                                          int src_len,
+                                         MtSourceFile*& out_source,
                                          bool use_utf8_bom, bool verbose) {
   Err err;
 
@@ -153,6 +166,8 @@ CHECK_RETURN Err MtModLibrary::load_blob(const std::string &filename,
 
     source_file->includes.push_back(get_source(file));
   }
+
+  out_source = source_file;
 
   return err;
 }

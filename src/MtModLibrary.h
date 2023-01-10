@@ -23,7 +23,9 @@ struct MtModLibrary {
                                bool verbose);
   CHECK_RETURN Err load_blob(const std::string& filename,
                              const std::string& full_path,
-                             void* src_blob, int src_len, bool use_utf8_bom,
+                             void* src_blob, int src_len,
+                             MtSourceFile*& out_source,
+                             bool use_utf8_bom,
                              bool verbose);
 
   MtStruct* get_struct(const std::string& name) const;

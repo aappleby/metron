@@ -61,6 +61,7 @@ def divider(text):
 
 # ------------------------------------------------------------------------------
 
+"""
 outfile.write(
     "################################################################################\n")
 outfile.write("# Autoupdate this build.ninja from build.py.\n\n")
@@ -72,28 +73,39 @@ ninja.rule(name="autoupdate",
 ninja.build(outputs="build.ninja",
             rule="autoupdate",
             inputs="build.py")
+"""
+
+# ------------------------------------------------------------------------------
+
+divider("Variables")
+
+if ("--release" in sys.argv) or ("-r" in sys.argv):
+    ninja.variable("cpp_build_mode", "-rdynamic -O3")
+else:
+    ninja.variable("cpp_build_mode", "-rdynamic -g -O0")
 
 # ------------------------------------------------------------------------------
 
 divider("Rules")
 
 ninja.rule(name="compile_cpp",
-           command="g++ -rdynamic -g -O3 -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
+           command="g++ ${cpp_build_mode} -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
            deps="gcc",
            depfile="${out}.d")
 
 ninja.rule(name="compile_c",
-           command="gcc -rdynamic -g -O3 ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
+           command="gcc ${cpp_build_mode} ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
            deps="gcc",
            depfile="${out}.d")
 
-ninja.rule(name="static_lib",    command="ar rcs ${out} ${in} > /dev/null")
+ninja.rule(name="static_lib",
+           command="ar rcs ${out} ${in} > /dev/null")
 
 ninja.rule(name="link",
-           command="g++ -rdynamic -g -O3 ${in} -Wl,--whole-archive ${local_libs} -Wl,--no-whole-archive ${global_libs} -o ${out}")
+           command="g++ ${cpp_build_mode} ${in} -Wl,--whole-archive ${local_libs} -Wl,--no-whole-archive ${global_libs} -o ${out}")
 
 ninja.rule(name="metron", # yes, we run metron with quiet and verbose both on for test coverage
-           command="bin/metron -q -v -a -r ${src_dir} -o ${dst_dir} -s ${src_top}")
+           command="bin/metron -q -v -c ${in} -o ${out}")
 
 ninja.rule(name="verilator",
            command="verilator ${includes} --cc ${src_top} -Mdir ${dst_dir}")
@@ -133,16 +145,16 @@ def metronize_dir(src_dir, src_top, dst_dir):
     divider(f"Metronize {src_dir} -> {dst_dir}")
 
     src_paths = glob.glob(path.join(src_dir, "*.h"))
-    src_files = [path.basename(n) for n in src_paths]
-    dst_paths = [path.join(dst_dir, swap_ext(n, ".sv")) for n in src_files]
+    dst_paths = []
 
-    ninja.build(rule="metron",
-                inputs=src_paths,
-                implicit=["bin/metron"] + src_paths,
-                outputs=dst_paths,
-                src_dir=src_dir,
-                dst_dir=dst_dir,
-                src_top=src_top)
+    for src_path in src_paths:
+        src_dir, src_name = path.split(src_path)
+        dst_path = path.join(dst_dir, swap_ext(src_name, ".sv"))
+        ninja.build(rule="metron",
+                    inputs=[src_path],
+                    implicit=["bin/metron"],
+                    outputs=[dst_path])
+        dst_paths.append(dst_path)
 
     return dst_paths
 

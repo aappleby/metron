@@ -21,6 +21,7 @@ CHECK_RETURN Err MtSourceFile::init(MtModLibrary* _lib,
   Err err;
 
   lib = _lib;
+
   filename = _filename;
   full_path = _full_path;
   src_blob.resize(_src_len);

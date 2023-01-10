@@ -370,11 +370,14 @@ CHECK_RETURN Err MtTracer::trace_sym_compound_statement(MtContext* ctx,
   assert(ctx->context_type == CTX_METHOD);
   assert(node.sym == sym_compound_statement);
 
+  bool noconvert = false;
   bool dumpit = false;
 
   for (const auto& child : node) {
+    if (noconvert) { noconvert = false; continue; }
     if (dumpit) { child.dump_tree(); dumpit = false; }
     if (child.sym == sym_comment && child.contains("dumpit")) { dumpit = true; }
+    if (child.sym == sym_comment && child.contains("noconvert")) { noconvert = true; }
 
     if (child.sym == sym_declaration) {
       err << trace_sym_declaration(ctx, child);

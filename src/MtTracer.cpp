@@ -46,6 +46,15 @@ CHECK_RETURN Err MtTracer::log_action(MtContext* method_ctx, MtContext* dst_ctx,
   auto new_state = merge_action(old_state, action);
   dst_ctx->log_top.state = new_state;
 
+  if (new_state == CTX_INVALID) {
+    printf("Invalid context state at\n");
+    for (auto c = source.start; c != source.end; c++) {
+      putc(*c, stdout);
+    }
+    printf("\n");
+
+  }
+
   return err;
 }
 

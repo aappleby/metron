@@ -226,7 +226,7 @@ MtField *MtModule::get_output_register(const std::string &name) {
 
 bool MtModule::needs_tick() const {
   for (auto m : all_methods) {
-    if (m->in_tick) return true;
+    if (m->is_tick_) return true;
   }
 
   for (auto f : all_fields) {
@@ -238,8 +238,8 @@ bool MtModule::needs_tick() const {
 
 bool MtModule::needs_tock() const {
   for (auto m : all_methods) {
-    if (m->in_tock) return true;
-    if (m->in_func && m->internal_callers.empty() && m->is_public()) return true;
+    if (m->is_tock_) return true;
+    if (m->is_func_ && m->internal_callers.empty() && m->is_public()) return true;
   }
 
   for (auto f : all_fields) {

@@ -40,6 +40,12 @@ ContextState merge_action(ContextState state, ContextAction action) {
   }
   // clang-format on
 
+  if (result == CTX_INVALID) {
+    //printf("invalid!\n");
+      int x = 1;
+      x++;
+  }
+
   return result;
 }
 
@@ -71,6 +77,7 @@ ContextState merge_branch(ContextState ma, ContextState mb) {
     auto result = table[ma][mb];
 
     if (result  == CTX_INVALID) {
+      //printf("invalid!\n");
       int x = 1;
       x++;
     }

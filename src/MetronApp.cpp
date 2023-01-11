@@ -209,6 +209,7 @@ int main(int argc, char** argv) {
     mod->ctx->instantiate();
 
     MtTracer tracer(&lib, mod->ctx, verbose);
+
     for (auto method : mod->all_methods) {
       if (method->is_constructor()) continue;
       if (method->internal_callers.size()) continue;
@@ -216,6 +217,7 @@ int main(int argc, char** argv) {
         LOG_G("Tracing %s.%s\n", mod->cname(), method->cname());
       }
       err << tracer.trace_method(mod->ctx, method);
+      mod->ctx->dump_ctx_tree();
     }
     mod->ctx->assign_struct_states();
     if (verbose) {
@@ -307,10 +309,10 @@ int main(int argc, char** argv) {
 
   for (auto mod : lib.modules) {
     for (auto method : mod->all_methods) {
-      if (method->name().starts_with("tick") && !method->in_tick) {
+      if (method->name().starts_with("tick") && !method->is_tick_) {
         err << ERR("Method %s labeled 'tick' but is not a tick.\n", method->cname());
       }
-      if (method->name().starts_with("tock") && !method->in_tock) {
+      if (method->name().starts_with("tock") && !method->is_tock_) {
         err << ERR("Method %s labeled 'tock' but is not a tock.\n", method->cname());
       }
     }

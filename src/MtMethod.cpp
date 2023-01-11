@@ -36,12 +36,12 @@ std::string MtMethod::name() const { return _name; }
 bool MtMethod::is_constructor() const { return _name == _mod->name(); }
 
 bool MtMethod::categorized() const {
-  return in_init || in_tick || in_tock || in_func;
+  return is_init_ || is_tick_ || is_tock_ || is_func_;
 }
 
 bool MtMethod::is_valid() const {
   // A method must be only 1 of init/tick/tock/func
-  return (int(in_init) + int(in_tick) + int(in_tock) + int(in_func)) == 1;
+  return (int(is_init_) + int(is_tick_) + int(is_tock_) + int(is_func_)) == 1;
 }
 
 //------------------------------------------------------------------------------
@@ -50,8 +50,8 @@ void MtMethod::dump() {
   if (is_constructor()) {
     LOG_B("Constructor %s\n", cname());
   } else {
-    LOG_B("Method %s - init %d tick %d tock %d func %d\n", cname(), in_init,
-          in_tick, in_tock, in_func);
+    LOG_B("Method %s - init %d tick %d tock %d func %d\n", cname(), is_init_,
+          is_tick_, is_tock_, is_func_);
   }
 
   for (auto p : param_nodes) {

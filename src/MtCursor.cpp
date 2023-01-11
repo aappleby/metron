@@ -399,7 +399,7 @@ CHECK_RETURN Err MtCursor::emit_sym_assignment_expression(MnNode node) {
       case field_left: err << emit_expression(child); break;
       case field_operator:
         // There may not be a method if we're in an enum initializer list.
-        if (current_method && current_method->in_tick && left_is_field) {
+        if (current_method && current_method->is_tick_ && left_is_field) {
           err << emit_replacement(child, "<=");
         } else {
           err << emit_replacement(child, "=");
@@ -1172,12 +1172,6 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
 
   if (current_method->needs_binding) {
     err << emit_func_binding_vars(current_method);
-  }
-
-  // not currently using this
-  if (current_method->needs_trigger) {
-    if (current_method->in_tick) err << emit_func_trigger_ff(n);
-    if (current_method->in_func) err << emit_func_trigger_comb(n);
   }
 
   //----------
@@ -2724,15 +2718,15 @@ CHECK_RETURN Err MtCursor::emit_sym_return(MnNode n) {
   for (auto c : n) {
     if (c.sym == anon_sym_return) {
 
-      if (current_method->in_tock) {
+      if (current_method->is_tock_) {
         assert(current_method->needs_binding || current_method->needs_ports);
         err << emit_replacement(c, "%s_ret =", current_method->name().c_str());
       }
-      else if (current_method->in_func && current_method->is_public() && !current_method->called_in_module()) {
+      else if (current_method->is_func_ && current_method->is_public() && !current_method->called_in_module()) {
         assert(current_method->needs_binding || current_method->needs_ports);
         err << emit_replacement(c, "%s_ret =", current_method->name().c_str());
       }
-      else if (current_method->in_tick) {
+      else if (current_method->is_tick_) {
         assert(current_method->needs_binding || current_method->needs_ports);
         err << emit_replacement(c, "%s_ret <=", current_method->name().c_str());
       }
@@ -3638,7 +3632,7 @@ CHECK_RETURN Err MtCursor::emit_sym_update_expression(MnNode n) {
     push_cursor(id);
     err << emit_identifier(id);
     pop_cursor(id);
-    if (current_method && current_method->in_tick && left_is_field) {
+    if (current_method && current_method->is_tick_ && left_is_field) {
       err << emit_print(" <= ");
     }
     else{
@@ -3652,7 +3646,7 @@ CHECK_RETURN Err MtCursor::emit_sym_update_expression(MnNode n) {
     push_cursor(id);
     err << emit_identifier(id);
     pop_cursor(id);
-    if (current_method && current_method->in_tick && left_is_field) {
+    if (current_method && current_method->is_tick_ && left_is_field) {
       err << emit_print(" <= ");
     }
     else{

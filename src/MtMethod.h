@@ -13,6 +13,13 @@ struct MtContext;
 
 //------------------------------------------------------------------------------
 
+enum MethodType {
+  MT_INIT,
+  MT_FUNC,
+  MT_TICK,
+  MT_TOCK
+};
+
 struct MtMethod {
   MtMethod(MtModule* mod, MnNode n, bool is_public);
   ~MtMethod();
@@ -44,7 +51,7 @@ struct MtMethod {
 
   bool called_in_init() const {
     for (auto m : internal_callers) {
-      if (m->in_init) return true;
+      if (m->is_init_) return true;
       if (m->called_in_init()) return true;
     }
     return false;
@@ -52,7 +59,7 @@ struct MtMethod {
 
   bool called_in_tick() const {
     for (auto m : internal_callers) {
-      if (m->in_tick) return true;
+      if (m->is_tick_) return true;
       if (m->called_in_tick()) return true;
     }
     return false;
@@ -60,7 +67,7 @@ struct MtMethod {
 
   bool called_in_tock() const {
     for (auto m : internal_callers) {
-      if (m->in_tock) return true;
+      if (m->is_tock_) return true;
       if (m->called_in_tock()) return true;
     }
     return false;
@@ -68,14 +75,14 @@ struct MtMethod {
 
   bool called_by_tock() const {
     for (auto m : internal_callers) {
-      if (m->in_tock) return true;
+      if (m->is_tock_) return true;
     }
     return false;
   }
 
   bool called_in_func() const {
     for (auto m : internal_callers) {
-      if (m->in_tock) return true;
+      if (m->is_tock_) return true;
       if (m->called_in_tock()) return true;
     }
     return false;
@@ -93,10 +100,10 @@ struct MtMethod {
 
   //----------
 
-  bool in_init = false;
-  bool in_tick = false;
-  bool in_tock = false;
-  bool in_func = false;
+  bool is_init_ = false;
+  bool is_tick_ = false;
+  bool is_tock_ = false;
+  bool is_func_ = false;
   bool is_toplevel = false;
 
   bool emit_as_always_comb = false;
@@ -104,7 +111,6 @@ struct MtMethod {
   bool emit_as_init = false;
   bool emit_as_task = false;
   bool emit_as_func = false;
-  bool needs_trigger = false;
   bool needs_binding = false;
   bool needs_ports = false;
 

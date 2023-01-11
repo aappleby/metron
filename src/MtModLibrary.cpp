@@ -266,8 +266,6 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
   // Mark all methods called by the constructor as inits
 
   err << propagate([&](MtMethod *m) {
-    if (m->is_init_) return 0;
-
     if (m->is_constructor()) {
       if (verbose) LOG_B("%s.%s is init because it's the constructor.\n", m->_mod->cname(), m->cname());
       m->is_init_ = true;
@@ -291,8 +289,6 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
   // are funcs.
 
   err << propagate([&](MtMethod *m) {
-    if (m->is_init_) return 0;
-
     if (m->writes.empty() && m->external_callees.empty()) {
       bool only_calls_funcs = true;
       for (auto callee : m->internal_callees) {
@@ -443,65 +439,34 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
   for (auto mod : modules) {
     for (auto m : mod->all_methods) {
 
-
-      if (m->is_tock_ && !m->called_in_tock()) {
-        m->emit_as_always_comb = true;
-      }
-      if (m->is_tick_ && !m->called_in_tick()) {
-        m->emit_as_always_ff = true;
-      }
-      else if (m->is_constructor()) {
+      if (m->is_constructor()) {
         m->emit_as_init = true;
       }
-      else if (m->is_init_) {
+      else if (m->called_in_init()) {
         m->emit_as_task = true;
       }
       else if (m->is_tick_) {
-        m->emit_as_task = true;
+        m->emit_as_always_ff = !m->called_in_tick();
+        m->emit_as_task      =  m->called_in_tick();
+        m->needs_ports       = !m->called_in_module();
+        m->needs_binding     =  m->called_by_tock();
       }
       else if (m->is_tock_) {
-        //m->emit_as_task = true;
         m->emit_as_always_comb = true;
+        m->needs_binding       =  m->called_in_module();
+        m->needs_ports         = !m->called_in_module();
       }
       else if (m->is_func_) {
-        m->emit_as_func = true;
+        if (m->is_public() && !m->called_in_module()) {
+          m->needs_ports = true;
+          m->emit_as_always_comb = true;
+        }
+        else {
+          m->emit_as_func = true;
+        }
       }
       else {
         err << ERR("wat\n");
-      }
-
-      if (m->is_func_ && m->is_public() && !m->called_in_module()) {
-        m->needs_ports = true;
-      }
-
-      if (m->is_tick_) {
-        if (!m->called_in_module()) {
-          m->needs_ports = true;
-        }
-      }
-
-      if (m->is_tick_) {
-        if (m->called_by_tock()) {
-          m->needs_binding = true;
-        }
-      }
-
-      if (m->is_tock_) {
-        if (m->called_in_module()) {
-          m->needs_binding = true;
-        }
-      }
-
-      if (m->is_tock_) {
-        if (!m->called_in_module()) {
-          m->needs_ports = true;
-        }
-      }
-
-
-      if (m->is_func_ && m->is_public() && !m->called_in_module()) {
-        m->emit_as_func = false;
-        m->emit_as_always_comb = true;
       }
     }
   }
@@ -540,8 +505,6 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
       }
     }
   }
-
-
 
   //----------------------------------------
   // Check for ticks with return values.

@@ -51,7 +51,7 @@ struct MtMethod {
 
   bool called_in_init() const {
     for (auto m : internal_callers) {
-      if (m->is_init_) return true;
+      if (m->is_constructor()) return true;
       if (m->called_in_init()) return true;
     }
     return false;

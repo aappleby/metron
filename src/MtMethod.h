@@ -14,6 +14,8 @@ struct MtContext;
 //------------------------------------------------------------------------------
 
 enum MethodType {
+  MT_INVALID = 0,
+  MT_CONSTRUCTOR,
   MT_INIT,
   MT_FUNC,
   MT_TICK,
@@ -100,6 +102,7 @@ struct MtMethod {
 
   //----------
 
+  MethodType method_type = MT_INVALID;
   bool is_init_ = false;
   bool is_tick_ = false;
   bool is_tock_ = false;

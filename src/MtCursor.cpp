@@ -2323,7 +2323,10 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n, bool is_str
       continue;
     }
 
-    if (dumpit) { child.dump_tree(); dumpit = false; }
+    if (dumpit) {
+      child.dump_tree();
+      dumpit = false;
+    }
 
     if (child.sym == sym_comment && child.contains("metron_noconvert")) noconvert = true;
     if (child.sym == sym_comment && child.contains("dumpit"))    dumpit = true;
@@ -2589,7 +2592,10 @@ CHECK_RETURN Err MtCursor::emit_toplevel_block(MnNode n) {
       continue;
     }
 
-    if (dumpit) { c.dump_tree(); dumpit = false; }
+    if (dumpit) {
+      c.dump_tree();
+      dumpit = false;
+    }
 
     if (c.sym == sym_comment && c.contains("metron_noconvert"))  noconvert = true;
     if (c.sym == sym_comment && c.contains("dumpit"))     dumpit = true;
@@ -2826,8 +2832,8 @@ CHECK_RETURN Err MtCursor::emit_sym_template_declaration(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
-// Replace foo.bar.baz with foo_bar_baz, so that a field expression instead
-// refers to a glue expression.
+// Replace foo.bar.baz with foo_bar_baz if the field refers to a submodule port,
+// so that it instead refers to a glue expression.
 
 CHECK_RETURN Err MtCursor::emit_sym_field_expression(MnNode n) {
   Err err = emit_ws_to(sym_field_expression, n);
@@ -2837,7 +2843,10 @@ CHECK_RETURN Err MtCursor::emit_sym_field_expression(MnNode n) {
 
   auto component = current_mod->get_component(component_name);
 
-  if (component) {
+  bool is_port = component->_type_mod->is_port(component_field);
+  printf("is port %s %d\n", component_field.c_str(), is_port);
+
+  if (component && is_port) {
     auto field = n.text();
     for (auto& c : field) {
       if (c == '.') c = '_';
@@ -3556,7 +3565,10 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
       continue;
     }
 
-    if (dumpit) { child.dump_tree(); dumpit = false; }
+    if (dumpit) {
+      child.dump_tree();
+      dumpit = false;
+    }
 
     if (child.sym == sym_comment && child.contains("metron_noconvert"))  noconvert = true;
     if (child.sym == sym_comment && child.contains("dumpit"))     dumpit = true;

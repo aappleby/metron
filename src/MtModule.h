@@ -101,6 +101,8 @@ struct MtModule {
   std::vector<MtField*> private_registers;
 
   std::vector<MtField*> dead_fields;
+
+  bool is_port(const std::string& name) const;
 };
 
 //------------------------------------------------------------------------------

@@ -222,6 +222,26 @@ MtField *MtModule::get_output_register(const std::string &name) {
   return nullptr;
 }
 
+
+bool MtModule::is_port(const std::string& name) const {
+  for (auto p : input_signals) {
+    if (p->name() == name) return true;
+  }
+  for (auto p : input_method_params) {
+    if (p->name() == name) return true;
+  }
+  for (auto p : output_signals) {
+    if (p->name() == name) return true;
+  }
+  for (auto p : output_registers) {
+    if (p->name() == name) return true;
+  }
+  for (auto p : output_method_returns) {
+    if (p->name() == name) return true;
+  }
+  return false;
+}
+
 //------------------------------------------------------------------------------
 
 bool MtModule::needs_tick() const {

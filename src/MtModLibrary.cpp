@@ -139,7 +139,7 @@ CHECK_RETURN Err MtModLibrary::load_blob(const std::string &filename,
   bool dumpit = false;
 
   source_file->root_node.visit_tree([&](MnNode child) {
-    if (child.sym == sym_comment && child.contains("noconvert")) {
+    if (child.sym == sym_comment && child.contains("metron_noconvert")) {
       noconvert = true;
       return;
     }

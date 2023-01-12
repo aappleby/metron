@@ -480,7 +480,16 @@ CHECK_RETURN Err MtModule::collect_parts() {
     if (dumpit) { n.dump_tree(); dumpit = false; }
 
     if (n.sym == sym_access_specifier) {
+      n.dump_tree();
       in_public = n.child(0).text() == "public";
+    }
+
+    if (n.sym == sym_comment && n.contains("metron_internal")) {
+      in_public = false;
+    }
+
+    if (n.sym == sym_comment && n.contains("metron_external")) {
+      in_public = true;
     }
 
     if (n.sym == sym_field_declaration) {
@@ -495,7 +504,7 @@ CHECK_RETURN Err MtModule::collect_parts() {
       }
     }
 
-    if (n.sym == sym_comment && n.contains("noconvert")) noconvert = true;
+    if (n.sym == sym_comment && n.contains("metron_noconvert")) noconvert = true;
     if (n.sym == sym_comment && n.contains("dumpit"))    dumpit = true;
 
     if (n.sym == sym_function_definition) {

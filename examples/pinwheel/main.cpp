@@ -45,7 +45,7 @@ TestResults test_instruction(const char* test_name, const int reps,
 
   int elapsed_cycles = 0;
 
-  Pinwheel top;
+  pinwheel top;
 
   for (int rep = 0; rep < reps; rep++) {
     top.tock(1);

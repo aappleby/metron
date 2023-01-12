@@ -386,7 +386,7 @@ CHECK_RETURN Err MtTracer::trace_sym_compound_statement(MtContext* ctx,
     if (noconvert) { noconvert = false; continue; }
     if (dumpit) { child.dump_tree(); dumpit = false; }
     if (child.sym == sym_comment && child.contains("dumpit")) { dumpit = true; }
-    if (child.sym == sym_comment && child.contains("noconvert")) { noconvert = true; }
+    if (child.sym == sym_comment && child.contains("metron_noconvert")) { noconvert = true; }
 
     if (child.sym == sym_declaration) {
       err << trace_sym_declaration(ctx, child);

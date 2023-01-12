@@ -2313,6 +2313,7 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n, bool is_str
   push_indent(n);
 
   bool noconvert = false;
+  bool exclude = false;
   bool dumpit = false;
 
   for (auto child : n) {
@@ -2324,7 +2325,7 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n, bool is_str
 
     if (dumpit) { child.dump_tree(); dumpit = false; }
 
-    if (child.sym == sym_comment && child.contains("noconvert")) noconvert = true;
+    if (child.sym == sym_comment && child.contains("metron_noconvert")) noconvert = true;
     if (child.sym == sym_comment && child.contains("dumpit"))    dumpit = true;
 
     switch (child.sym) {
@@ -2590,7 +2591,7 @@ CHECK_RETURN Err MtCursor::emit_toplevel_block(MnNode n) {
 
     if (dumpit) { c.dump_tree(); dumpit = false; }
 
-    if (c.sym == sym_comment && c.contains("noconvert"))  noconvert = true;
+    if (c.sym == sym_comment && c.contains("metron_noconvert"))  noconvert = true;
     if (c.sym == sym_comment && c.contains("dumpit"))     dumpit = true;
 
     err << emit_toplevel_node(c);
@@ -3557,7 +3558,7 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
 
     if (dumpit) { child.dump_tree(); dumpit = false; }
 
-    if (child.sym == sym_comment && child.contains("noconvert"))  noconvert = true;
+    if (child.sym == sym_comment && child.contains("metron_noconvert"))  noconvert = true;
     if (child.sym == sym_comment && child.contains("dumpit"))     dumpit = true;
 
     switch (child.sym) {

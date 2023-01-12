@@ -83,7 +83,7 @@ struct registers_p2 {
 
 //------------------------------------------------------------------------------
 
-class Pinwheel {
+class pinwheel {
  public:
   void tock(logic<1> reset) {
     tick(reset);

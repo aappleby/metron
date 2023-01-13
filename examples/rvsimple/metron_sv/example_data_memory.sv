@@ -49,9 +49,9 @@ module example_data_memory (
 
  /*public:*/
   initial begin
-    string s;
-    $value$plusargs("data_file=%s", s);
-    $readmemh(s, mem);
+    //std::string s;
+    //value_plusargs("data_file=%s", s);
+    //readmemh(s, mem);
   end
 endmodule
 

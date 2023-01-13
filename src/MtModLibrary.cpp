@@ -253,10 +253,11 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
   }
 
   //----------------------------------------
-  // Methods named "tick" are ticks.
+  // Methods named "tick" are ticks, etc.
 
   for (auto mod : modules) {
     for (auto m : mod->all_methods) {
+      if (m->name().starts_with("init")) m->is_init_ = true;
       if (m->name().starts_with("tick")) m->is_tick_ = true;
       if (m->name().starts_with("tock")) m->is_tock_ = true;
     }

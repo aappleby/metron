@@ -18,9 +18,9 @@ module example_text_memory (
 );
  /*public:*/
   initial begin
-    string s;
-    $value$plusargs("text_file=%s", s);
-    $readmemh(s, mem);
+    //std::string s;
+    //value_plusargs("text_file=%s", s);
+    //readmemh(s, mem);
   end
 
   always_comb begin : tock_q q = mem[address]; end

@@ -131,9 +131,7 @@ build docs/demo/examples.data docs/demo/examples.js: command tests/Tests.h $
     examples/rvsimple/metron/constants.h $
     examples/rvsimple/metron/example_text_memory_bus.h $
     examples/rvsimple/metron/immediate_generator.h $
-    examples/rvsimple/metron/multiplexer2.h $
-    examples/pinwheel/metron/constants.h $
-    examples/pinwheel/metron/pinwheel.h examples/j1/metron/j1.h $
+    examples/rvsimple/metron/multiplexer2.h examples/j1/metron/j1.h $
     examples/j1/metron/dpram.h examples/pong/metron/pong.h $
     examples/ibex/metron/ibex_multdiv_slow.h $
     examples/ibex/metron/ibex_compressed_decoder.h $

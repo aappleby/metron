@@ -465,41 +465,6 @@ inline logic<DST_WIDTH> sign_extend(const logic<SRC_WIDTH> a) {
 }
 
 //------------------------------------------------------------------------------
-// Trivial support for Verilog's "+foo=bar" test arg syntax.
-// This only works for $value$plusargs("NAME=%s", s);
-
-inline std::vector<std::string>& get_plusargs() {
-  static std::vector<std::string> plusargs;
-  return plusargs;
-}
-
-inline void metron_init(int argc, const char** argv) {
-  get_plusargs().clear();
-  for (int argi = 0; argi < argc; argi++) {
-    if (argv[argi][0] == '+') {
-      get_plusargs().push_back(argv[argi] + 1);
-    }
-  }
-}
-
-inline void value_plusargs(const char* fmt, std::string& out) {
-  int prefix_len = 0;
-  const char* cursor = fmt;
-  while (*cursor != '=' && *cursor != 0) {
-    prefix_len++;
-    cursor++;
-  }
-
-  std::string prefix(fmt, fmt + prefix_len);
-
-  for (const auto& arg : get_plusargs()) {
-    if (arg.starts_with(prefix)) {
-      out = arg.c_str() + prefix_len + 1;
-    }
-  }
-}
-
-//------------------------------------------------------------------------------
 // "Magic" constant that gets translated to 'x' in Verilog
 
 static const uint64_t DONTCARE = 0;

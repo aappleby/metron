@@ -25,13 +25,14 @@ TestResults test_instruction(const char* test_name, const int reps,
                              const int max_cycles) {
   TEST_INIT("Testing op %6s, %d reps", test_name, reps);
 
+  // FIXME need to init the memory directly
+  /*
   char buf1[256];
   char buf2[256];
   sprintf(buf1, "+text_file=tests/rv_tests/%s.text.vh", test_name);
   sprintf(buf2, "+data_file=tests/rv_tests/%s.data.vh", test_name);
   const char* argv2[2] = {buf1, buf2};
-
-  metron_init(2, argv2);
+  */
 
   int elapsed_cycles = 0;
   int test_result = -1;

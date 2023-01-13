@@ -40,7 +40,7 @@ int main(int argc, char** arv) {
       printf("================================================================================\n");
       printf("%d\n", cycle);
       if (top.get_checksum() == 0x0000b764) {
-        printf("All tests pass.\n");
+        printf("All tests pass\n");
         break;
       }
     }

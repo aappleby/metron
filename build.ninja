@@ -31,7 +31,7 @@ rule verilator
 rule make
   command = make --quiet -C ${dst_dir} -f ${makefile} > /dev/null
 rule run_test
-  command = ${in} | grep "All tests pass." && touch ${out}
+  command = ${in} | grep "All tests pass" && touch ${out}
 rule console
   command = ${in}
   pool = console

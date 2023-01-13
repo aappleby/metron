@@ -114,7 +114,7 @@ ninja.rule(name="make",
            command="make --quiet -C ${dst_dir} -f ${makefile} > /dev/null")
 
 ninja.rule(name="run_test",
-           command="${in} | grep \"All tests pass.\" && touch ${out}")
+           command="${in} | grep \"All tests pass\" && touch ${out}")
 
 ninja.rule(name="console",
            command="${in}",

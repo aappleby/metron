@@ -68,7 +68,7 @@ module uart_test;
 
     $write("\n");
     $write("================================================================================\n");
-    if (out_sum == 32'h0000b764) $write("All tests pass.\n");
+    if (out_sum == 32'h0000b764) $write("All tests pass\n");
     $finish();
   end
 

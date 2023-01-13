@@ -106,8 +106,9 @@ def get_pool():
 
 
 def metron_default_args():
-    return "-v -e"
-    # return "-q"
+    #return "-v -e"
+    #return "-q"
+    return ""
 
 
 def metron_good():
@@ -454,8 +455,9 @@ def test_examples():
         "bin/examples/uart",
         "bin/examples/uart_vl",
         "bin/examples/uart_iv",
-        "bin/examples/rvsimple",
-        "bin/examples/rvsimple_vl",
+        # FIXME need to redo these once we have better mem init
+        #"bin/examples/rvsimple",
+        #"bin/examples/rvsimple_vl",
         "bin/examples/rvsimple_ref",
         #"bin/examples/pinwheel",
         #"bin/examples/pinwheel_vl",
@@ -529,7 +531,7 @@ def check_lockstep(filename):
 
     includes = f"-I. -Isrc -I{sv_root} -I/usr/local/share/verilator/include"
 
-    metronate_cmd = f"bin/metron -q -a -r {mt_root} -o {sv_root} -s {test_name}.h"
+    metronate_cmd = f"bin/metron -q -c {mt_root}/{test_name}.h -o {sv_root}/{test_name}.sv"
     print(f"  {metronate_cmd}")
     os.system(metronate_cmd)
     os.system(f"verilator {includes} --cc {test_name}.sv -Mdir {vl_root}")

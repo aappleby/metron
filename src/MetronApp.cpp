@@ -52,11 +52,12 @@ std::string join_path(std::vector<std::string>& path) {
 
 void mkdir_all(const std::vector<std::string>& full_path) {
   std::string temp;
-  for (size_t i = 0; i < full_path.size() - 1; i++) {
+  for (size_t i = 0; i < full_path.size(); i++) {
     if (temp.size()) temp += "/";
     temp += full_path[i];
     //printf("making dir %s\n", temp.c_str());
-    plat_mkdir(temp.c_str());
+    int result = plat_mkdir(temp.c_str());
+    //printf("mkdir result %d\n", result);
   }
 }
 

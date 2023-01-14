@@ -2843,7 +2843,7 @@ CHECK_RETURN Err MtCursor::emit_sym_field_expression(MnNode n) {
 
   auto component = current_mod->get_component(component_name);
 
-  bool is_port = component->_type_mod->is_port(component_field);
+  bool is_port = component && component->_type_mod->is_port(component_field);
   //printf("is port %s %d\n", component_field.c_str(), is_port);
 
   if (component && is_port) {

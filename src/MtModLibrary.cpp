@@ -242,9 +242,6 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
       if (m->is_constructor()) {
         if (mod->constructor) {
           err << ERR("Module %s has multiple constructors\n", mod->cname());
-        } else if (m->has_params()) {
-          err << ERR("Constructor for %s is not allowed to have params\n",
-                     mod->cname());
         } else {
           mod->constructor = m;
         }

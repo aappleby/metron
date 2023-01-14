@@ -2198,7 +2198,7 @@ CHECK_RETURN Err MtCursor::emit_module_ports(MnNode class_body) {
   }
 
   for (auto m : current_mod->all_methods) {
-    if (m->is_public() && m->internal_callers.empty()) {
+    if (!m->is_init_ && m->is_public() && m->internal_callers.empty()) {
       err << emit_method_ports(m);
     }
   }

@@ -500,7 +500,6 @@ CHECK_RETURN Err MtModule::collect_parts() {
     if (dumpit) { n.dump_tree(); dumpit = false; }
 
     if (n.sym == sym_access_specifier) {
-      n.dump_tree();
       in_public = n.child(0).text() == "public";
     }
 

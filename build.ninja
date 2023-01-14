@@ -77,6 +77,7 @@ build docs/demo/examples.data docs/demo/examples.js: command tests/Tests.h $
     tests/metron_good/submod_bindings.h $
     tests/metron_good/case_with_fallthrough.h $
     tests/metron_good/basic_submod_param.h $
+    tests/metron_good/constructor_args.h $
     tests/metron_good/basic_localparam.h tests/metron_good/basic_task.h $
     tests/metron_good/private_getter.h tests/metron_good/basic_output.h $
     tests/metron_good/basic_submod.h $

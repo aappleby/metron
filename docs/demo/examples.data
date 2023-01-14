@@ -6225,6 +6225,19 @@ private:
 };
 #include "metron_tools.h"
 
+class Module {
+public:
+
+  Module(const char* filename) {
+    readmemh(filename, data);
+  }
+
+private:
+
+  logic<8> data[1024];
+};
+#include "metron_tools.h"
+
 // Basic #defines should work as long as their contents are simultaneously
 // valid C++ and SV
 

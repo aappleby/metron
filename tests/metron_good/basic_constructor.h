@@ -5,6 +5,7 @@
 class Module {
 public:
 
+  // dumpit
   Module() {
     my_reg = 7;
   }

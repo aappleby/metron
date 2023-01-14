@@ -995,19 +995,6 @@ CHECK_RETURN Err MtCursor::emit_call_arg_bindings(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_func_as_init(MnNode n) {
   Err err;
 
-  n.dump_tree();
-
-  /*
-  if (current_mod->constructor && current_mod->constructor->param_nodes.size()) {
-    MtCursor sub_cursor = *this;
-    for (const auto& c : current_mod->constructor->param_nodes) {
-      err << sub_cursor.emit_print("parameter %s", c.name4().c_str());
-      err << sub_cursor.emit_print(";");
-      err << sub_cursor.emit_newline();
-    }
-  }
-  */
-
   auto func_decl = n.get_field(field_declarator);
   auto func_init = n.child_by_sym(sym_field_initializer_list);
   auto func_body = n.get_field(field_body);
@@ -1018,7 +1005,10 @@ CHECK_RETURN Err MtCursor::emit_func_as_init(MnNode n) {
   err << emit_module_parameter_list(func_params);
 
   err << emit_replacement(func_decl, "initial");
-  if (func_init) err << comment_out(func_init);
+  if (func_init) {
+    err << skip_over(func_init);
+    err << skip_ws();
+  }
   err << emit_sym_compound_statement(func_body, "begin", "end");
   assert(cursor == n.end());
 
@@ -1214,15 +1204,110 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
 
   cursor = node_type.start();
   err << emit_type(node_type);
+
+  bool has_template_params = node_type.sym == sym_template_type && component_mod->mod_param_list;
+  bool has_constructor_params = component_mod->constructor && component_mod->constructor->param_nodes.size();
+
+  if (has_template_params || has_constructor_params) {
+    err << emit_print(" #(");
+    err << emit_newline();
+    indent_stack.push_back(indent_stack.back() + "  ");
+
+    int param_count = 0;
+    if (has_template_params) {
+        for (auto c : component_mod->mod_param_list) {
+          if (c.is_named()) param_count++;
+        }
+    }
+    if (has_constructor_params) param_count += component_mod->constructor->param_nodes.size();
+
+    // Template arguments -> module parameters
+    if (has_template_params) {
+      err << emit_indent();
+      err << emit_print("// Template Parameters");
+      err << emit_newline();
+
+      auto template_args = node_type.get_field(field_arguments);
+
+      std::vector<MnNode> params;
+      std::vector<MnNode> args;
+
+      for (auto c : component_mod->mod_param_list) {
+        if (c.is_named()) params.push_back(c);
+      }
+
+      for (auto c : template_args) {
+        if (c.is_named()) args.push_back(c);
+      }
+
+      for (int param_index = 0; param_index < args.size(); param_index++) {
+        MtCursor sub_cursor = *this;
+        sub_cursor.cursor = args[param_index].start();
+
+        auto param = params[param_index];
+        auto arg = args[param_index];
+
+        err << sub_cursor.emit_indent();
+        err << sub_cursor.emit_print(".%s(", param.name4().c_str());
+        err << sub_cursor.emit_expression(arg);
+        err << sub_cursor.emit_print(")");
+        if(--param_count) err << sub_cursor.emit_print(",");
+        err << sub_cursor.emit_newline();
+      }
+    }
+
+    // Constructor arguments -> module parameters
+    if (has_constructor_params) {
+      err << emit_indent();
+      err << emit_print("// Constructor Parameters");
+      err << emit_newline();
+
+      // The parameter names come from the submodule's constructor
+      const auto& params = component_mod->constructor->param_nodes;
+
+      // Find the initializer node for the component and extract arguments
+      std::vector<MnNode> args;
+      for(auto initializer : current_mod->constructor->_node.child_by_sym(sym_field_initializer_list)) {
+        if (initializer.sym != sym_field_initializer) continue;
+        if (initializer.child_by_sym(alias_sym_field_identifier).text() == inst_name) {
+          for (auto c : initializer.child_by_sym(sym_argument_list)) {
+            if (c.is_named()) args.push_back(c);
+          }
+          break;
+        }
+      }
+
+      for (int param_index = 0; param_index < args.size(); param_index++) {
+        MtCursor sub_cursor = *this;
+        sub_cursor.cursor = args[param_index].start();
+
+        auto param = params[param_index];
+        auto arg = args[param_index];
+
+        err << sub_cursor.emit_indent();
+        err << sub_cursor.emit_print(".%s(", param.name4().c_str());
+        err << sub_cursor.emit_expression(arg);
+        err << sub_cursor.emit_print(")");
+        if(--param_count) err << sub_cursor.emit_print(",");
+        err << sub_cursor.emit_newline();
+      }
+    }
+    indent_stack.pop_back();
+
+    err << emit_indent();
+    err << emit_print(")");
+  }
+
+  //err << emit_indent();
   err << emit_identifier(node_decl);
   err << emit_print("(");
   err << emit_newline();
-
   indent_stack.push_back(indent_stack.back() + "  ");
+
 
   if (component_mod->needs_tick()) {
     err << emit_indent();
-    err << emit_print("// global clock");
+    err << emit_print("// Global clock");
     err << emit_newline();
     err << emit_indent();
     err << emit_print(".clock(clock),");
@@ -1232,7 +1317,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
 
   if (component_mod->input_signals.size()) {
     err << emit_indent();
-    err << emit_print("// input signals");
+    err << emit_print("// Input signals");
     err << emit_newline();
     for (auto f : component_mod->input_signals) {
       err << emit_indent();
@@ -1244,7 +1329,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
 
   if (component_mod->output_signals.size()) {
     err << emit_indent();
-    err << emit_print("// output signals");
+    err << emit_print("// Output signals");
     err << emit_newline();
     for (auto f : component_mod->output_signals) {
       err << emit_indent();
@@ -1256,7 +1341,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
 
   if (component_mod->output_registers.size()) {
     err << emit_indent();
-    err << emit_print("// output registers");
+    err << emit_print("// Output registers");
     err << emit_newline();
     for (auto f : component_mod->output_registers) {
       err << emit_indent();
@@ -1267,6 +1352,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
   }
 
   for (auto m : component_mod->all_methods) {
+    if (m->is_constructor()) continue;
     if (m->is_public() && m->internal_callers.empty()) {
 
       if (m->param_nodes.size() || m->has_return()) {
@@ -2540,7 +2626,8 @@ CHECK_RETURN Err MtCursor::emit_sym_template_type(MnNode n) {
         break;
     }
   } else {
-    err << emit_sym_template_argument_list(args);
+    // Don't do this here, it needs to go with the rest of the args in the full param list
+    //err << emit_sym_template_argument_list(args);
   }
   cursor = n.end();
 
@@ -3816,7 +3903,7 @@ CHECK_RETURN Err MtCursor::emit_child_expressions(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_default(MnNode node) {
   Err err = emit_ws_to(node);
 
-  static std::map<std::string,std::string> literal_map = {
+  static std::map<std::string,std::string> keyword_map = {
     {"#ifdef",  "`ifdef"},
     {"#ifndef", "`ifndef"},
     {"#else",   "`else"},
@@ -3827,8 +3914,8 @@ CHECK_RETURN Err MtCursor::emit_default(MnNode node) {
   };
 
   if (!node.is_named()) {
-    auto it = literal_map.find(node.text());
-    if (it != literal_map.end()) {
+    auto it = keyword_map.find(node.text());
+    if (it != keyword_map.end()) {
       err << emit_replacement(node, (*it).second.c_str());
     }
     else {
@@ -3837,15 +3924,27 @@ CHECK_RETURN Err MtCursor::emit_default(MnNode node) {
     return err;
   }
 
+  if (node.is_literal()) {
+    switch (node.sym) {
+      case sym_string_literal:
+        err << emit_text(node);
+        break;
+      case sym_number_literal:
+        err << emit_sym_number_literal(node);
+        break;
+      default:
+        // KCOV_OFF
+        err << ERR("%s : No handler for %s\n", __func__, node.ts_node_type());
+        node.error();
+        break;
+        // KCOV_ON
+    }
+    return err;
+  }
+
   switch (node.sym) {
     case sym_comment:
       err << emit_sym_comment(node);
-      break;
-    case sym_string_literal:
-      err << emit_text(node);
-      break;
-    case sym_number_literal:
-      err << emit_sym_number_literal(node);
       break;
     default:
       // KCOV_OFF

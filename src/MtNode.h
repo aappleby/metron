@@ -58,6 +58,19 @@ struct MnNode {
     }
   }
 
+  bool is_literal() const {
+    switch(sym) {
+      case sym_string_literal:
+      case sym_raw_string_literal:
+      case sym_char_literal:
+      case sym_number_literal:
+      case sym_user_defined_literal:
+        return true;
+      default:
+        return false;
+    }
+  }
+
   bool is_statement() const {
     switch (sym) {
       case sym_break_statement:

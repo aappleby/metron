@@ -112,7 +112,9 @@ def metron_default_args():
 
 
 def metron_good():
-    return glob.glob("tests/metron_good/*.h")
+    result = glob.glob("tests/metron_good/*.h")
+    result.sort()
+    return result
     #return glob.glob("tests/metron_good/all_func_types.h")
 
 
@@ -239,10 +241,6 @@ def check_bad(filename):
 
 
 def check_icarus(filename):
-    # Icarus doesn't really support module parameters it seems...
-    if "basic_template" in filename:
-        return 0
-
     errors = 0
     basename = path.basename(filename)
     svname = path.splitext(basename)[0] + ".sv"
@@ -250,9 +248,6 @@ def check_icarus(filename):
     cmd = f"iverilog -g2012 -Wall -Isrc -o bin/{svname}.o tests/metron_sv/{svname}"
 
     print(f"  {cmd}")
-    #result = os.system(cmd)
-
-    #cmd = "iverilog"
 
     cmd_result = subprocess.run(
         prep_cmd(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="charmap")

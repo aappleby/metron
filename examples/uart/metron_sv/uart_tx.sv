@@ -5,8 +5,7 @@
 
 //==============================================================================
 
-module uart_tx #(parameter int cycles_per_bit = 4)
-(
+module uart_tx (
   // global clock
   input logic clock,
   // get_serial() ports
@@ -20,6 +19,7 @@ module uart_tx #(parameter int cycles_per_bit = 4)
   input logic[7:0] tick_send_data,
   input logic tick_send_request
 );
+parameter  cycles_per_bit = 4;
 /*public:*/
   initial begin
     bit_delay = bit_delay_max;

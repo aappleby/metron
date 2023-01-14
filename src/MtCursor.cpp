@@ -995,10 +995,30 @@ CHECK_RETURN Err MtCursor::emit_call_arg_bindings(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_func_as_init(MnNode n) {
   Err err;
 
+  n.dump_tree();
+
+  /*
+  if (current_mod->constructor && current_mod->constructor->param_nodes.size()) {
+    MtCursor sub_cursor = *this;
+    for (const auto& c : current_mod->constructor->param_nodes) {
+      err << sub_cursor.emit_print("parameter %s", c.name4().c_str());
+      err << sub_cursor.emit_print(";");
+      err << sub_cursor.emit_newline();
+    }
+  }
+  */
+
   auto func_decl = n.get_field(field_declarator);
+  auto func_init = n.child_by_sym(sym_field_initializer_list);
   auto func_body = n.get_field(field_body);
 
+  auto func_params = func_decl.get_field(field_parameters);
+
+  err << emit_ws_to(func_decl);
+  err << emit_module_parameter_list(func_params);
+
   err << emit_replacement(func_decl, "initial");
+  if (func_init) err << comment_out(func_init);
   err << emit_sym_compound_statement(func_body, "begin", "end");
   assert(cursor == n.end());
 
@@ -1781,6 +1801,12 @@ CHECK_RETURN Err MtCursor::emit_declarator(MnNode node, bool elide_value) {
         err << skip_over(node.child(2));
       }
       break;
+    case sym_pointer_declarator: {
+      auto decl2 = node.get_field(field_declarator);
+      cursor = decl2.start();
+      err << emit_declarator(decl2, elide_value);
+      break;
+    }
     default:
       err << emit_default(node);
       break;
@@ -1792,24 +1818,54 @@ CHECK_RETURN Err MtCursor::emit_declarator(MnNode node, bool elide_value) {
 //------------------------------------------------------------------------------
 // FIXME break these out
 
-CHECK_RETURN Err MtCursor::emit_declaration(MnNode node) {
+CHECK_RETURN Err MtCursor::emit_parameter_declaration(MnNode node) {
   Err err = emit_ws_to(node);
+  assert(node.sym == sym_parameter_declaration);
 
-  switch (node.sym) {
-    case sym_optional_parameter_declaration:
-      err << emit_type(node.child(0));
-      err << emit_identifier(node.child(1));
-      err << emit_text(node.child(2));
-      err << emit_expression(node.child(3));
-      break;
-    case sym_parameter_declaration:
-      err << emit_type(node.child(0));
-      err << emit_identifier(node.child(1));
-      break;
-    default:
-      err << emit_default(node);
-      break;
-  }
+  err << emit_type(node.child(0));
+  err << emit_identifier(node.child(1));
+
+  return err << check_done(node);
+}
+
+CHECK_RETURN Err MtCursor::emit_optional_parameter_declaration(MnNode node) {
+  Err err = emit_ws_to(node);
+  assert(node.sym == sym_optional_parameter_declaration);
+
+  err << emit_type(node.child(0));
+  err << emit_identifier(node.child(1));
+  err << emit_text(node.child(2));
+  err << emit_expression(node.child(3));
+
+  return err << check_done(node);
+}
+
+CHECK_RETURN Err MtCursor::emit_module_parameter_declaration(MnNode node) {
+  Err err = emit_ws_to(node);
+  assert(node.sym == sym_optional_parameter_declaration);
+
+  //err << emit_type(node.child(0));
+  //err << skip_over(node.child(0));
+  //err << emit_identifier(node.child(1));
+  //err << emit_text(node.child(2));
+  //err << emit_expression(node.child(3));
+
+  auto param_type = node.get_field(field_type);
+  auto param_decl = node.get_field(field_declarator);
+  auto param_val  = node.get_field(field_default_value);
+
+  /*
+  cursor = param_type.start();
+  err << emit_type(param_type);
+  err << emit_print(" =$= ");
+  */
+  cursor = param_decl.start();
+  err << emit_declarator(param_decl);
+  err << emit_print(" = ");
+  cursor = param_val.start();
+  err << emit_expression(param_val);
+
+  cursor = node.end();
 
   return err << check_done(node);
 }
@@ -2109,41 +2165,75 @@ CHECK_RETURN Err MtCursor::emit_field_port(MtField* f) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_modparam_list() {
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_module_parameter_list(MnNode param_list) {
   Err err;
 
-  if (!current_mod->mod_param_list) return err;
+  int param_count = 0;
 
-  err << emit_indent();
-  MtCursor sub_cursor = *this;
-  sub_cursor.cursor = current_mod->mod_param_list.start();
-  for (const auto& c : (MnNode&)current_mod->mod_param_list) {
-    bool handled = false;
+  for (const auto& c : param_list) {
     switch (c.sym) {
-      case anon_sym_LT:
-        err << sub_cursor.emit_replacement(c, "#(");
-        handled = true;
-        break;
-      case anon_sym_GT:
-        err << sub_cursor.emit_replacement(c, ")");
-        handled = true;
-        break;
-
       case sym_optional_parameter_declaration:
       case sym_parameter_declaration:
-        err << sub_cursor.emit_print("parameter ");
-        err << sub_cursor.emit_declaration(c);
-        handled = true;
-        break;
-
-      case anon_sym_COMMA:
-        err << sub_cursor.emit_text(c);
-        handled = true;
+        param_count++;
         break;
     }
-    assert(handled);
   }
-  err << emit_newline();
+
+  /*
+  if (current_mod->constructor) {
+    param_count += current_mod->constructor->param_nodes.size();
+  }
+  */
+
+  if (!param_count) return err;
+
+  //----------
+
+  //err << emit_indent();
+  //err << emit_print("#(");
+  //err << emit_newline();
+
+  // FIXME handle default template params
+  if (param_list) {
+    MtCursor sub_cursor = *this;
+    sub_cursor.cursor = param_list.start();
+    for (const auto& c : param_list) {
+      switch (c.sym) {
+        case sym_optional_parameter_declaration:
+          err << sub_cursor.emit_print("parameter ");
+          err << sub_cursor.skip_ws();
+          err << sub_cursor.emit_module_parameter_declaration(c);
+          err << sub_cursor.emit_print(";");
+          err << sub_cursor.emit_newline();
+          err << sub_cursor.emit_indent();
+          break;
+
+        case sym_parameter_declaration:
+          err << ERR("Template parameters must have a default value\n");
+          break;
+
+        default:
+          err << sub_cursor.skip_over(c);
+          break;
+      }
+    }
+  }
+
+  /*
+  if (current_mod->constructor && current_mod->constructor->param_nodes.size()) {
+    MtCursor sub_cursor = *this;
+    for (const auto& c : current_mod->constructor->param_nodes) {
+      err << sub_cursor.emit_print("parameter %s", c.name4().c_str());
+      if (--param_count) err << sub_cursor.emit_print(",");
+      err << sub_cursor.emit_newline();
+    }
+  }
+  */
+
+  //err << emit_print(")");
+  //err << emit_newline();
   return err;
 }
 
@@ -2240,9 +2330,16 @@ CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnNode n) {
   err << emit_print(" ");
   //err << emit_newline();
 
-  err << emit_modparam_list();
   err << emit_module_ports(class_body);
+
+  push_indent(class_body);
+  err << emit_newline();
+  err << emit_indent();
+  err << emit_module_parameter_list(current_mod->mod_param_list);
+  err << emit_newline();
+  err << emit_indent();
   err << emit_sym_field_declaration_list(class_body, false);
+  pop_indent(class_body);
 
   cursor = n.end();
   current_mod = old_mod;
@@ -3135,6 +3232,9 @@ CHECK_RETURN Err MtCursor::emit_expression(MnNode n) {
     case sym_update_expression:
       err << emit_sym_update_expression(n);
       break;
+    case sym_nullptr:
+      err << emit_replacement(n, "\"\"");
+      break;
 
     default:
       err << emit_default(n);
@@ -3362,7 +3462,9 @@ CHECK_RETURN Err MtCursor::emit_sym_parameter_list(MnNode node) {
 
   for (auto child : node) {
     if (child.sym == sym_parameter_declaration)
-      err << emit_declaration(child);
+      err << emit_parameter_declaration(child);
+    else if (child.sym == sym_optional_parameter_declaration)
+      err << emit_optional_parameter_declaration(child);
     else
       err << emit_default(child);
   }

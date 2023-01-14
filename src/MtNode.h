@@ -108,12 +108,15 @@ struct MnNode {
   MnNode child(int i) const;
   MnNode named_child(int i) const;
   MnNode first_named_child() const;
+  MnNode child_by_sym(TSSymbol sym) const;
 
   bool is_static() const;
   bool is_const() const;
 
   bool is_null() const { return ts_node_is_null(node); }
   bool is_named() const { return !is_null() && ts_node_is_named(node); }
+
+
 
   //----------
 

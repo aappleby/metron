@@ -202,10 +202,8 @@ int main(int argc, char** argv) {
   // Trace
 
   for (auto mod : lib.modules) {
-    if (verbose) {
-      LOG_G("Tracing %s\n", mod->cname());
-      LOG_INDENT();
-    }
+    LOG_B("Tracing %s\n", mod->cname());
+    LOG_INDENT();
     mod->ctx = new MtContext(mod);
     mod->ctx->instantiate();
 
@@ -218,7 +216,9 @@ int main(int argc, char** argv) {
         LOG_G("Tracing %s.%s\n", mod->cname(), method->cname());
       }
       err << tracer.trace_method(mod->ctx, method);
-      mod->ctx->dump_ctx_tree();
+      if (verbose) {
+        mod->ctx->dump_ctx_tree();
+      }
     }
     mod->ctx->assign_struct_states();
     if (verbose) {
@@ -232,9 +232,7 @@ int main(int argc, char** argv) {
       lib.teardown();
       return -1;
     }
-    if (verbose) {
-      LOG_DEDENT();
-    }
+    LOG_DEDENT();
   }
 
   //----------

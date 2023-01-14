@@ -10,14 +10,14 @@
 `include "constants.sv"
 `include "metron_tools.sv"
 
-module adder #(parameter int WIDTH = 32)
-(
+module adder (
   // input signals
   input logic[WIDTH-1:0] operand_a,
   input logic[WIDTH-1:0] operand_b,
   // output signals
   output logic[WIDTH-1:0] result
 );
+parameter  WIDTH = 32;
  /*public:*/
 
   always_comb begin : tock result = operand_a + operand_b; end

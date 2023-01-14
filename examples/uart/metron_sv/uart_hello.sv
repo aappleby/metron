@@ -5,8 +5,7 @@
 
 //==============================================================================
 
-module uart_hello #(parameter int repeat_msg = 0)
-(
+module uart_hello (
   // global clock
   input logic clock,
   // get_data() ports
@@ -20,6 +19,7 @@ module uart_hello #(parameter int repeat_msg = 0)
   input logic tick_clear_to_send,
   input logic tick_idle
 );
+parameter  repeat_msg = 0;
 /*public:*/
   initial begin
     $readmemh("examples/uart/message.hex", memory, 0, 511);

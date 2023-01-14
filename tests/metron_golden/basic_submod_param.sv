@@ -2,7 +2,10 @@
 
 // We can instantiated templated classes as submodules.
 
-module Submod #(parameter int SOME_CONSTANT = 6)
+module Submod
+#(
+parameter int SOME_CONSTANT = 6
+)
 (
   // global clock
   input logic clock

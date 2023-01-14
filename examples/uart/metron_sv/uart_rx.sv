@@ -5,8 +5,7 @@
 
 //==============================================================================
 
-module uart_rx #(parameter int cycles_per_bit = 4)
-(
+module uart_rx (
   // global clock
   input logic clock,
   // get_valid() ports
@@ -19,6 +18,7 @@ module uart_rx #(parameter int cycles_per_bit = 4)
   input logic tick_reset,
   input logic tick_serial
 );
+parameter  cycles_per_bit = 4;
 /*public:*/
 
   // Our output is valid once we've received 8 bits.

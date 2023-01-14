@@ -2,13 +2,13 @@
 
 // Templates can be used for module parameters
 
-template<int WIDTH, int HEIGHT = 2>
+template<int WIDTH = 123, int HEIGHT = 456>
 class Submod {
 public:
 
-  void tock() {
-    my_width = bx<WIDTH>(100);
-    my_height = bx<HEIGHT>(200);
+  void tock(logic<WIDTH> dx, logic<HEIGHT> dy) {
+    my_width = bx<WIDTH>(100) + dx;
+    my_height = bx<HEIGHT>(200) + dy;
   }
 
   logic<WIDTH> my_width;

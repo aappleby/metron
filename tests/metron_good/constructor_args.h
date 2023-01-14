@@ -1,10 +1,13 @@
 #include "metron_tools.h"
 
-template<int data_len>
+// We should be able to handle constructor args.
+
+template<int data_len = 1024, int blarp = 7>
 class Module {
 public:
 
-  Module(const char* filename) {
+  Module(const char* filename = "examples/uart/message.hex", logic<10> start_addr = 0) {
+    addr = start_addr;
     readmemh(filename, data);
   }
 

@@ -56,7 +56,9 @@ struct MtCursor {
   CHECK_RETURN Err emit_preproc(MnNode n);
   CHECK_RETURN Err emit_type(MnNode n);
   CHECK_RETURN Err emit_declarator(MnNode n, bool elide_value = false);
-  CHECK_RETURN Err emit_declaration(MnNode n);
+  CHECK_RETURN Err emit_parameter_declaration(MnNode n);
+  CHECK_RETURN Err emit_optional_parameter_declaration(MnNode n);
+  CHECK_RETURN Err emit_module_parameter_declaration(MnNode n);
   CHECK_RETURN Err emit_template_argument(MnNode n);
   CHECK_RETURN Err emit_enum(MnNode n);
 
@@ -88,7 +90,7 @@ struct MtCursor {
   CHECK_RETURN Err emit_trigger_call(MtMethod* m);
   //CHECK_RETURN Err emit_trigger_calls();
   CHECK_RETURN Err emit_param_as_field(MtMethod* method, MnNode n);
-  CHECK_RETURN Err emit_modparam_list();
+  CHECK_RETURN Err emit_module_parameter_list(MnNode n);
   CHECK_RETURN Err emit_call_binding(MnNode n);
   CHECK_RETURN Err emit_simple_call(MnNode n);
 

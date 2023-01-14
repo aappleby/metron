@@ -117,6 +117,13 @@ MnNode MnNode::named_child(int index) const {
 
 MnNode MnNode::first_named_child() const { return named_child(0); }
 
+MnNode MnNode::child_by_sym(TSSymbol _sym) const {
+  for (auto c : *this) {
+    if (c.sym == _sym) return c;
+  }
+  return MnNode::null;
+}
+
 bool MnNode::is_static() const {
   for (const auto& c : *this) {
     if (c.sym == sym_storage_class_specifier && c.text() == "static")
@@ -236,6 +243,9 @@ std::string MnNode::name4() const {
 
     case sym_primitive_type:
       return text();
+
+    case sym_pointer_declarator:
+      return get_field(field_declarator).name4();
 
     default:
       Err err;

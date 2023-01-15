@@ -6,7 +6,8 @@ module Submod (
   // global clock
   input logic clock
 );
-parameter  SOME_CONSTANT = 6;
+  parameter SOME_CONSTANT = 6;
+
 /*public:*/
 
   always_comb begin : tock
@@ -30,8 +31,11 @@ module Module (
   always_comb begin : tock
   end
 
-  Submod #(99) submod(
-    // global clock
+  Submod #(
+    // Template Parameters
+    .SOME_CONSTANT(99)
+  ) submod(
+    // Global clock
     .clock(clock)
   );
 

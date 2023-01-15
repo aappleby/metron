@@ -18,7 +18,8 @@ module uart_rx (
   input logic tick_reset,
   input logic tick_serial
 );
-parameter  cycles_per_bit = 4;
+  parameter cycles_per_bit = 4;
+
 /*public:*/
 
   // Our output is valid once we've received 8 bits.

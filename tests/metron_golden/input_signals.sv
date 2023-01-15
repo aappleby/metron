@@ -57,13 +57,13 @@ module Module (
   logic[7:0] my_sig;
 
   Submod submod(
-    // global clock
+    // Global clock
     .clock(clock),
-    // input signals
+    // Input signals
     .i_signal(submod_i_signal),
-    // output signals
+    // Output signals
     .o_signal(submod_o_signal),
-    // output registers
+    // Output registers
     .o_reg(submod_o_reg),
     // tock() ports
     .tock_i_param(submod_tock_i_param),

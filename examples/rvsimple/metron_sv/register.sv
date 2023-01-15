@@ -20,8 +20,9 @@ module single_register (
   // output registers
   output logic[WIDTH-1:0] value
 );
-parameter  WIDTH = 32;
-parameter   INITIAL = 0;
+  parameter WIDTH = 32;
+  parameter INITIAL = 0;
+
  /*public:*/
 
   initial begin value = INITIAL; end

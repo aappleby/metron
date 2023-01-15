@@ -2251,8 +2251,6 @@ CHECK_RETURN Err MtCursor::emit_field_port(MtField* f) {
 
 //------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
-
 CHECK_RETURN Err MtCursor::emit_module_parameter_list(MnNode param_list) {
   Err err;
 
@@ -2419,9 +2417,11 @@ CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnNode n) {
   err << emit_module_ports(class_body);
 
   push_indent(class_body);
-  err << emit_newline();
-  err << emit_indent();
-  err << emit_module_parameter_list(current_mod->mod_param_list);
+  if (current_mod->mod_param_list) {
+    err << emit_newline();
+    err << emit_indent();
+    err << emit_module_parameter_list(current_mod->mod_param_list);
+  }
   err << emit_newline();
   err << emit_indent();
   err << emit_sym_field_declaration_list(class_body, false);

@@ -65,7 +65,6 @@ rule link_ems
 packager = $EMSDK/upstream/emscripten/tools/file_packager.py
 build docs/demo/examples.data docs/demo/examples.js: command tests/Tests.h $
     tests/test_utils.h tests/metron_broken/bad_increment.h $
-    tests/metron_bad/constructor_has_params.h $
     tests/metron_bad/if_with_no_compound.h $
     tests/metron_bad/mid_block_break.h tests/metron_bad/basic_sig_wrw.h $
     tests/metron_bad/mid_block_return.h tests/metron_bad/too_many_breaks.h $

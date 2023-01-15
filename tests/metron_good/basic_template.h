@@ -19,7 +19,7 @@ class Module {
 public:
 
   logic<20> tock() {
-    submodule.tock();
+    submodule.tock(1, 2);
     return submodule.my_width + submodule.my_height;
   }
 

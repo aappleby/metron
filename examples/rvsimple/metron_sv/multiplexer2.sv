@@ -18,7 +18,8 @@ module multiplexer2 (
   // output signals
   output logic[WIDTH-1:0] out
 );
-parameter  WIDTH = 32;
+  parameter WIDTH = 32;
+
  /*public:*/
 
   always_comb begin : tock

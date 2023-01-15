@@ -17,7 +17,8 @@ module adder (
   // output signals
   output logic[WIDTH-1:0] result
 );
-parameter  WIDTH = 32;
+  parameter WIDTH = 32;
+
  /*public:*/
 
   always_comb begin : tock result = operand_a + operand_b; end

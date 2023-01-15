@@ -10,8 +10,9 @@ module Submod (
   input logic[WIDTH-1:0] tock_dx,
   input logic[HEIGHT-1:0] tock_dy
 );
-parameter WIDTH = 123;
-parameter HEIGHT = 456;
+  parameter WIDTH = 123;
+  parameter HEIGHT = 456;
+
 /*public:*/
 
   always_comb begin : tock
@@ -28,11 +29,17 @@ module Module (
 /*public:*/
 
   always_comb begin : tock
+    submodule_tock_dx = 1;
+    submodule_tock_dy = 2;
     tock_ret = submodule_my_width + submodule_my_height;
   end
 
-  Submod #(10,11) submodule(
-    // output signals
+  Submod #(
+    // Template Parameters
+    .WIDTH(10),
+    .HEIGHT(11)
+  ) submodule(
+    // Output signals
     .my_width(submodule_my_width),
     .my_height(submodule_my_height),
     // tock() ports

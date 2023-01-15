@@ -24,8 +24,9 @@ module uart_top (
   // tock() ports
   input logic tock_reset
 );
-parameter  cycles_per_bit = 3;
-parameter   repeat_msg = 0;
+  parameter cycles_per_bit = 3;
+  parameter repeat_msg = 0;
+
 /*public:*/
 
   // The actual bit of data currently on the transmitter's output
@@ -81,8 +82,11 @@ parameter   repeat_msg = 0;
 
   //----------------------------------------
 /*private:*/
-  uart_hello #(repeat_msg)  hello(
-    // global clock
+  uart_hello #(
+    // Template Parameters
+    .repeat_msg(repeat_msg)
+  )  hello(
+    // Global clock
     .clock(clock),
     // get_data() ports
     .get_data_ret(hello_get_data_ret),
@@ -102,8 +106,11 @@ parameter   repeat_msg = 0;
   logic hello_get_request_ret;
   logic hello_get_done_ret;
  // Our UART client that transmits our "hello world" test message
-  uart_tx #(cycles_per_bit) tx(
-    // global clock
+  uart_tx #(
+    // Template Parameters
+    .cycles_per_bit(cycles_per_bit)
+  ) tx(
+    // Global clock
     .clock(clock),
     // get_serial() ports
     .get_serial_ret(tx_get_serial_ret),
@@ -123,8 +130,11 @@ parameter   repeat_msg = 0;
   logic tx_get_clear_to_send_ret;
   logic tx_get_idle_ret;
     // The UART transmitter
-  uart_rx #(cycles_per_bit) rx(
-    // global clock
+  uart_rx #(
+    // Template Parameters
+    .cycles_per_bit(cycles_per_bit)
+  ) rx(
+    // Global clock
     .clock(clock),
     // get_valid() ports
     .get_valid_ret(rx_get_valid_ret),

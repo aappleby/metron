@@ -157,22 +157,28 @@ module singlecycle_datapath (
   //----------------------------------------
 
  /*private:*/
-  adder #(32) adder_pc_plus_4(
-    // input signals
+  adder #(
+    // Template Parameters
+    .WIDTH(32)
+  ) adder_pc_plus_4(
+    // Input signals
     .operand_a(adder_pc_plus_4_operand_a),
     .operand_b(adder_pc_plus_4_operand_b),
-    // output signals
+    // Output signals
     .result(adder_pc_plus_4_result)
   );
   logic[32-1:0] adder_pc_plus_4_operand_a;
   logic[32-1:0] adder_pc_plus_4_operand_b;
   logic[32-1:0] adder_pc_plus_4_result;
 
-  adder #(32) adder_pc_plus_immediate(
-    // input signals
+  adder #(
+    // Template Parameters
+    .WIDTH(32)
+  ) adder_pc_plus_immediate(
+    // Input signals
     .operand_a(adder_pc_plus_immediate_operand_a),
     .operand_b(adder_pc_plus_immediate_operand_b),
-    // output signals
+    // Output signals
     .result(adder_pc_plus_immediate_result)
   );
   logic[32-1:0] adder_pc_plus_immediate_operand_a;
@@ -180,11 +186,11 @@ module singlecycle_datapath (
   logic[32-1:0] adder_pc_plus_immediate_result;
 
   alu alu_core(
-    // input signals
+    // Input signals
     .alu_function(alu_core_alu_function),
     .operand_a(alu_core_operand_a),
     .operand_b(alu_core_operand_b),
-    // output signals
+    // Output signals
     .result(alu_core_result),
     .result_equal_zero(alu_core_result_equal_zero)
   );
@@ -194,14 +200,17 @@ module singlecycle_datapath (
   logic[31:0] alu_core_result;
   logic alu_core_result_equal_zero;
 
-  multiplexer4 #(32) mux_next_pc_select(
-    // input signals
+  multiplexer4 #(
+    // Template Parameters
+    .WIDTH(32)
+  ) mux_next_pc_select(
+    // Input signals
     .in0(mux_next_pc_select_in0),
     .in1(mux_next_pc_select_in1),
     .in2(mux_next_pc_select_in2),
     .in3(mux_next_pc_select_in3),
     .sel(mux_next_pc_select_sel),
-    // output signals
+    // Output signals
     .out(mux_next_pc_select_out)
   );
   logic[32-1:0] mux_next_pc_select_in0;
@@ -211,12 +220,15 @@ module singlecycle_datapath (
   logic[1:0] mux_next_pc_select_sel;
   logic[32-1:0] mux_next_pc_select_out;
 
-  multiplexer2 #(32) mux_operand_a(
-    // input signals
+  multiplexer2 #(
+    // Template Parameters
+    .WIDTH(32)
+  ) mux_operand_a(
+    // Input signals
     .in0(mux_operand_a_in0),
     .in1(mux_operand_a_in1),
     .sel(mux_operand_a_sel),
-    // output signals
+    // Output signals
     .out(mux_operand_a_out)
   );
   logic[32-1:0] mux_operand_a_in0;
@@ -224,12 +236,15 @@ module singlecycle_datapath (
   logic mux_operand_a_sel;
   logic[32-1:0] mux_operand_a_out;
 
-  multiplexer2 #(32) mux_operand_b(
-    // input signals
+  multiplexer2 #(
+    // Template Parameters
+    .WIDTH(32)
+  ) mux_operand_b(
+    // Input signals
     .in0(mux_operand_b_in0),
     .in1(mux_operand_b_in1),
     .sel(mux_operand_b_sel),
-    // output signals
+    // Output signals
     .out(mux_operand_b_out)
   );
   logic[32-1:0] mux_operand_b_in0;
@@ -237,8 +252,11 @@ module singlecycle_datapath (
   logic mux_operand_b_sel;
   logic[32-1:0] mux_operand_b_out;
 
-  multiplexer8 #(32) mux_reg_writeback(
-    // input signals
+  multiplexer8 #(
+    // Template Parameters
+    .WIDTH(32)
+  ) mux_reg_writeback(
+    // Input signals
     .in0(mux_reg_writeback_in0),
     .in1(mux_reg_writeback_in1),
     .in2(mux_reg_writeback_in2),
@@ -248,7 +266,7 @@ module singlecycle_datapath (
     .in6(mux_reg_writeback_in6),
     .in7(mux_reg_writeback_in7),
     .sel(mux_reg_writeback_sel),
-    // output signals
+    // Output signals
     .out(mux_reg_writeback_out)
   );
   logic[32-1:0] mux_reg_writeback_in0;
@@ -262,14 +280,18 @@ module singlecycle_datapath (
   logic[2:0] mux_reg_writeback_sel;
   logic[32-1:0] mux_reg_writeback_out;
 
-  single_register #(32, rv_config::INITIAL_PC) program_counter(
-    // global clock
+  single_register #(
+    // Template Parameters
+    .WIDTH(32),
+    .INITIAL(rv_config::INITIAL_PC)
+  ) program_counter(
+    // Global clock
     .clock(clock),
-    // input signals
+    // Input signals
     .reset(program_counter_reset),
     .write_enable(program_counter_write_enable),
     .next(program_counter_next),
-    // output registers
+    // Output registers
     .value(program_counter_value)
   );
   logic program_counter_reset;
@@ -278,15 +300,15 @@ module singlecycle_datapath (
   logic[32-1:0] program_counter_value;
 
   regfile regs(
-    // global clock
+    // Global clock
     .clock(clock),
-    // input signals
+    // Input signals
     .write_enable(regs_write_enable),
     .rd_address(regs_rd_address),
     .rs1_address(regs_rs1_address),
     .rs2_address(regs_rs2_address),
     .rd_data(regs_rd_data),
-    // output signals
+    // Output signals
     .rs1_data(regs_rs1_data),
     .rs2_data(regs_rs2_data)
   );
@@ -299,9 +321,9 @@ module singlecycle_datapath (
   logic[31:0] regs_rs2_data;
 
   instruction_decoder idec(
-    // input signals
+    // Input signals
     .inst(idec_inst),
-    // output signals
+    // Output signals
     .inst_opcode(idec_inst_opcode),
     .inst_funct3(idec_inst_funct3),
     .inst_funct7(idec_inst_funct7),
@@ -318,9 +340,9 @@ module singlecycle_datapath (
   logic[4:0] idec_inst_rs2;
 
   immediate_generator igen(
-    // input signals
+    // Input signals
     .inst(igen_inst),
-    // output signals
+    // Output signals
     .immediate(igen_immediate)
   );
   logic[31:0] igen_inst;

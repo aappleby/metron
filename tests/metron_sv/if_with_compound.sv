@@ -38,7 +38,7 @@ module Module (
   end
 
   Submod submod(
-    // global clock
+    // Global clock
     .clock(clock),
     // tock() ports
     .tock_arg(submod_tock_arg)

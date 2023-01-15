@@ -987,6 +987,7 @@ module MetroBoySPU2 (
   input logic tick_read,
   input logic tick_write
 );
+
 /*public:*/
 
   //----------------------------------------
@@ -6660,6 +6661,7 @@ module Pong (
   input logic tock_game_in_quad_a,
   input logic tock_game_in_quad_b
 );
+
  /*public:*/
 
   //----------------------------------------
@@ -8789,17 +8791,15 @@ class toplevel {
 `include "constants.sv"
 `include "metron_tools.sv"
 
-module adder
-#(
-parameter int WIDTH = 32
-)
-(
+module adder (
   // input signals
   input logic[WIDTH-1:0] operand_a,
   input logic[WIDTH-1:0] operand_b,
   // output signals
   output logic[WIDTH-1:0] result
 );
+  parameter WIDTH = 32;
+
  /*public:*/
 
   always_comb begin : tock result = operand_a + operand_b; end
@@ -8827,6 +8827,7 @@ module alu (
   output logic[31:0] result,
   output logic result_equal_zero
 );
+
  /*public:*/
 
   always_comb begin : tock
@@ -8874,6 +8875,7 @@ module alu_control (
   // output signals
   output logic[4:0] alu_function
 );
+
  /*public:*/
 
  /*private:*/
@@ -9159,6 +9161,7 @@ module control_transfer (
   // output signals
   output logic take_branch
 );
+
  /*public:*/
 
   always_comb begin : tock_take_branch
@@ -9206,6 +9209,7 @@ module data_memory_interface (
   output logic bus_read_enable,
   output logic bus_write_enable
 );
+
  /*public:*/
 
 
@@ -9273,6 +9277,7 @@ module example_data_memory (
   // output signals
   output logic[31:0] q
 );
+
  /*public:*/
 
  /*private:*/
@@ -9333,6 +9338,7 @@ module example_data_memory_bus (
   // output signals
   output logic[31:0] read_data
 );
+
  /*public:*/
        // in
      // out
@@ -9343,14 +9349,14 @@ module example_data_memory_bus (
 
  /*private:*/
   example_data_memory data_memory(
-    // global clock
+    // Global clock
     .clock(clock),
-    // input signals
+    // Input signals
     .address(data_memory_address),
     .wren(data_memory_wren),
     .byteena(data_memory_byteena),
     .data(data_memory_data),
-    // output signals
+    // Output signals
     .q(data_memory_q)
   );
   logic[rv_config::DATA_BITS - 2-1:0] data_memory_address;
@@ -9396,6 +9402,7 @@ module example_text_memory (
   // output signals
   output logic[31:0] q
 );
+
  /*public:*/
   initial begin
     //std::string s;
@@ -9429,13 +9436,14 @@ module example_text_memory_bus (
   // output signals
   output logic[31:0] read_data
 );
+
  /*public:*/
 
  /*private:*/
   example_text_memory text_memory(
-    // input signals
+    // Input signals
     .address(text_memory_address),
-    // output signals
+    // Output signals
     .q(text_memory_q)
   );
   logic[rv_config::TEXT_BITS - 2-1:0] text_memory_address;
@@ -9473,6 +9481,7 @@ module immediate_generator (
   // output signals
   output logic[31:0] immediate
 );
+
  /*public:*/
 
   // clang-format off
@@ -9535,6 +9544,7 @@ module instruction_decoder (
   output logic[4:0] inst_rs1,
   output logic[4:0] inst_rs2
 );
+
  /*public:*/
 
   always_comb begin : tock
@@ -9560,11 +9570,7 @@ endmodule
 `include "constants.sv"
 `include "metron_tools.sv"
 
-module multiplexer2
-#(
-parameter int WIDTH = 32
-)
-(
+module multiplexer2 (
   // input signals
   input logic[WIDTH-1:0] in0,
   input logic[WIDTH-1:0] in1,
@@ -9572,6 +9578,8 @@ parameter int WIDTH = 32
   // output signals
   output logic[WIDTH-1:0] out
 );
+  parameter WIDTH = 32;
+
  /*public:*/
 
   always_comb begin : tock
@@ -9599,11 +9607,7 @@ endmodule
 `include "constants.sv"
 `include "metron_tools.sv"
 
-module multiplexer4
-#(
-parameter int WIDTH = 32
-)
-(
+module multiplexer4 (
   // input signals
   input logic[WIDTH-1:0] in0,
   input logic[WIDTH-1:0] in1,
@@ -9613,6 +9617,8 @@ parameter int WIDTH = 32
   // output signals
   output logic[WIDTH-1:0] out
 );
+  parameter WIDTH = 32;
+
  /*public:*/
 
   always_comb begin : tock
@@ -9644,11 +9650,7 @@ endmodule
 `include "constants.sv"
 `include "metron_tools.sv"
 
-module multiplexer8
-#(
-parameter int WIDTH = 32
-)
-(
+module multiplexer8 (
   // input signals
   input logic[WIDTH-1:0] in0,
   input logic[WIDTH-1:0] in1,
@@ -9662,6 +9664,8 @@ parameter int WIDTH = 32
   // output signals
   output logic[WIDTH-1:0] out
 );
+  parameter WIDTH = 32;
+
  /*public:*/
 
   always_comb begin : tock
@@ -9707,6 +9711,7 @@ module regfile (
   output logic[31:0] rs1_data,
   output logic[31:0] rs2_data
 );
+
  /*public:*/
 
  /*private:*/
@@ -9746,12 +9751,7 @@ endmodule
 `include "constants.sv"
 `include "metron_tools.sv"
 
-module single_register
-#(
-parameter int WIDTH = 32,
-parameter  int INITIAL = 0
-)
-(
+module single_register (
   // global clock
   input logic clock,
   // input signals
@@ -9761,6 +9761,9 @@ parameter  int INITIAL = 0
   // output registers
   output logic[WIDTH-1:0] value
 );
+  parameter WIDTH = 32;
+  parameter INITIAL = 0;
+
  /*public:*/
 
   initial begin value = INITIAL; end
@@ -9807,6 +9810,7 @@ module riscv_core (
   output logic bus_write_enable,
   output logic[31:0] pc
 );
+
  /*public:*/
 
 
@@ -9862,9 +9866,9 @@ module riscv_core (
 
  /*private:*/
   singlecycle_datapath datapath(
-    // global clock
+    // Global clock
     .clock(clock),
-    // input signals
+    // Input signals
     .reset(datapath_reset),
     .data_mem_read_data(datapath_data_mem_read_data),
     .inst(datapath_inst),
@@ -9875,7 +9879,7 @@ module riscv_core (
     .reg_writeback_select(datapath_reg_writeback_select),
     .next_pc_select(datapath_next_pc_select),
     .alu_function(datapath_alu_function),
-    // output signals
+    // Output signals
     .data_mem_address(datapath_data_mem_address),
     .data_mem_write_data(datapath_data_mem_write_data),
     .pc(datapath_pc),
@@ -9903,12 +9907,12 @@ module riscv_core (
   logic datapath_alu_result_equal_zero;
 
   singlecycle_ctlpath ctlpath(
-    // input signals
+    // Input signals
     .inst_opcode(ctlpath_inst_opcode),
     .inst_funct3(ctlpath_inst_funct3),
     .inst_funct7(ctlpath_inst_funct7),
     .alu_result_equal_zero(ctlpath_alu_result_equal_zero),
-    // output signals
+    // Output signals
     .pc_write_enable(ctlpath_pc_write_enable),
     .regfile_write_enable(ctlpath_regfile_write_enable),
     .alu_operand_a_select(ctlpath_alu_operand_a_select),
@@ -9934,14 +9938,14 @@ module riscv_core (
   logic[1:0] ctlpath_next_pc_select;
 
   data_memory_interface dmem(
-    // input signals
+    // Input signals
     .read_enable(dmem_read_enable),
     .write_enable(dmem_write_enable),
     .data_format(dmem_data_format),
     .address(dmem_address),
     .write_data(dmem_write_data),
     .bus_read_data(dmem_bus_read_data),
-    // output signals
+    // Output signals
     .read_data(dmem_read_data),
     .bus_address(dmem_bus_address),
     .bus_write_data(dmem_bus_write_data),
@@ -9992,6 +9996,7 @@ module singlecycle_control (
   output logic[2:0] reg_writeback_select,
   output logic[1:0] next_pc_select
 );
+
  /*public:*/
 
   always_comb begin : tock_next_pc_select
@@ -10150,6 +10155,7 @@ module singlecycle_ctlpath (
   output logic[4:0] alu_function,
   output logic[1:0] next_pc_select
 );
+
  /*public:*/
 
 
@@ -10194,10 +10200,10 @@ module singlecycle_ctlpath (
 
  /*private:*/
   singlecycle_control control(
-    // input signals
+    // Input signals
     .inst_opcode(control_inst_opcode),
     .take_branch(control_take_branch),
-    // output signals
+    // Output signals
     .pc_write_enable(control_pc_write_enable),
     .regfile_write_enable(control_regfile_write_enable),
     .alu_operand_a_select(control_alu_operand_a_select),
@@ -10221,10 +10227,10 @@ module singlecycle_ctlpath (
   logic[1:0] control_next_pc_select;
 
   control_transfer transfer(
-    // input signals
+    // Input signals
     .result_equal_zero(transfer_result_equal_zero),
     .inst_funct3(transfer_inst_funct3),
-    // output signals
+    // Output signals
     .take_branch(transfer_take_branch)
   );
   logic transfer_result_equal_zero;
@@ -10232,11 +10238,11 @@ module singlecycle_ctlpath (
   logic transfer_take_branch;
 
   alu_control alu_ctrl(
-    // input signals
+    // Input signals
     .alu_op_type(alu_ctrl_alu_op_type),
     .inst_funct3(alu_ctrl_inst_funct3),
     .inst_funct7(alu_ctrl_inst_funct7),
-    // output signals
+    // Output signals
     .alu_function(alu_ctrl_alu_function)
   );
   logic[1:0] alu_ctrl_alu_op_type;
@@ -10291,6 +10297,7 @@ module singlecycle_datapath (
   output logic[6:0] inst_funct7,
   output logic alu_result_equal_zero
 );
+
  /*public:*/
 
 
@@ -10406,22 +10413,28 @@ module singlecycle_datapath (
   //----------------------------------------
 
  /*private:*/
-  adder #(32) adder_pc_plus_4(
-    // input signals
+  adder #(
+    // Template Parameters
+    .WIDTH(32)
+  ) adder_pc_plus_4(
+    // Input signals
     .operand_a(adder_pc_plus_4_operand_a),
     .operand_b(adder_pc_plus_4_operand_b),
-    // output signals
+    // Output signals
     .result(adder_pc_plus_4_result)
   );
   logic[32-1:0] adder_pc_plus_4_operand_a;
   logic[32-1:0] adder_pc_plus_4_operand_b;
   logic[32-1:0] adder_pc_plus_4_result;
 
-  adder #(32) adder_pc_plus_immediate(
-    // input signals
+  adder #(
+    // Template Parameters
+    .WIDTH(32)
+  ) adder_pc_plus_immediate(
+    // Input signals
     .operand_a(adder_pc_plus_immediate_operand_a),
     .operand_b(adder_pc_plus_immediate_operand_b),
-    // output signals
+    // Output signals
     .result(adder_pc_plus_immediate_result)
   );
   logic[32-1:0] adder_pc_plus_immediate_operand_a;
@@ -10429,11 +10442,11 @@ module singlecycle_datapath (
   logic[32-1:0] adder_pc_plus_immediate_result;
 
   alu alu_core(
-    // input signals
+    // Input signals
     .alu_function(alu_core_alu_function),
     .operand_a(alu_core_operand_a),
     .operand_b(alu_core_operand_b),
-    // output signals
+    // Output signals
     .result(alu_core_result),
     .result_equal_zero(alu_core_result_equal_zero)
   );
@@ -10443,14 +10456,17 @@ module singlecycle_datapath (
   logic[31:0] alu_core_result;
   logic alu_core_result_equal_zero;
 
-  multiplexer4 #(32) mux_next_pc_select(
-    // input signals
+  multiplexer4 #(
+    // Template Parameters
+    .WIDTH(32)
+  ) mux_next_pc_select(
+    // Input signals
     .in0(mux_next_pc_select_in0),
     .in1(mux_next_pc_select_in1),
     .in2(mux_next_pc_select_in2),
     .in3(mux_next_pc_select_in3),
     .sel(mux_next_pc_select_sel),
-    // output signals
+    // Output signals
     .out(mux_next_pc_select_out)
   );
   logic[32-1:0] mux_next_pc_select_in0;
@@ -10460,12 +10476,15 @@ module singlecycle_datapath (
   logic[1:0] mux_next_pc_select_sel;
   logic[32-1:0] mux_next_pc_select_out;
 
-  multiplexer2 #(32) mux_operand_a(
-    // input signals
+  multiplexer2 #(
+    // Template Parameters
+    .WIDTH(32)
+  ) mux_operand_a(
+    // Input signals
     .in0(mux_operand_a_in0),
     .in1(mux_operand_a_in1),
     .sel(mux_operand_a_sel),
-    // output signals
+    // Output signals
     .out(mux_operand_a_out)
   );
   logic[32-1:0] mux_operand_a_in0;
@@ -10473,12 +10492,15 @@ module singlecycle_datapath (
   logic mux_operand_a_sel;
   logic[32-1:0] mux_operand_a_out;
 
-  multiplexer2 #(32) mux_operand_b(
-    // input signals
+  multiplexer2 #(
+    // Template Parameters
+    .WIDTH(32)
+  ) mux_operand_b(
+    // Input signals
     .in0(mux_operand_b_in0),
     .in1(mux_operand_b_in1),
     .sel(mux_operand_b_sel),
-    // output signals
+    // Output signals
     .out(mux_operand_b_out)
   );
   logic[32-1:0] mux_operand_b_in0;
@@ -10486,8 +10508,11 @@ module singlecycle_datapath (
   logic mux_operand_b_sel;
   logic[32-1:0] mux_operand_b_out;
 
-  multiplexer8 #(32) mux_reg_writeback(
-    // input signals
+  multiplexer8 #(
+    // Template Parameters
+    .WIDTH(32)
+  ) mux_reg_writeback(
+    // Input signals
     .in0(mux_reg_writeback_in0),
     .in1(mux_reg_writeback_in1),
     .in2(mux_reg_writeback_in2),
@@ -10497,7 +10522,7 @@ module singlecycle_datapath (
     .in6(mux_reg_writeback_in6),
     .in7(mux_reg_writeback_in7),
     .sel(mux_reg_writeback_sel),
-    // output signals
+    // Output signals
     .out(mux_reg_writeback_out)
   );
   logic[32-1:0] mux_reg_writeback_in0;
@@ -10511,14 +10536,18 @@ module singlecycle_datapath (
   logic[2:0] mux_reg_writeback_sel;
   logic[32-1:0] mux_reg_writeback_out;
 
-  single_register #(32, rv_config::INITIAL_PC) program_counter(
-    // global clock
+  single_register #(
+    // Template Parameters
+    .WIDTH(32),
+    .INITIAL(rv_config::INITIAL_PC)
+  ) program_counter(
+    // Global clock
     .clock(clock),
-    // input signals
+    // Input signals
     .reset(program_counter_reset),
     .write_enable(program_counter_write_enable),
     .next(program_counter_next),
-    // output registers
+    // Output registers
     .value(program_counter_value)
   );
   logic program_counter_reset;
@@ -10527,15 +10556,15 @@ module singlecycle_datapath (
   logic[32-1:0] program_counter_value;
 
   regfile regs(
-    // global clock
+    // Global clock
     .clock(clock),
-    // input signals
+    // Input signals
     .write_enable(regs_write_enable),
     .rd_address(regs_rd_address),
     .rs1_address(regs_rs1_address),
     .rs2_address(regs_rs2_address),
     .rd_data(regs_rd_data),
-    // output signals
+    // Output signals
     .rs1_data(regs_rs1_data),
     .rs2_data(regs_rs2_data)
   );
@@ -10548,9 +10577,9 @@ module singlecycle_datapath (
   logic[31:0] regs_rs2_data;
 
   instruction_decoder idec(
-    // input signals
+    // Input signals
     .inst(idec_inst),
-    // output signals
+    // Output signals
     .inst_opcode(idec_inst_opcode),
     .inst_funct3(idec_inst_funct3),
     .inst_funct7(idec_inst_funct7),
@@ -10567,9 +10596,9 @@ module singlecycle_datapath (
   logic[4:0] idec_inst_rs2;
 
   immediate_generator igen(
-    // input signals
+    // Input signals
     .inst(igen_inst),
-    // output signals
+    // Output signals
     .immediate(igen_immediate)
   );
   logic[31:0] igen_inst;
@@ -10593,11 +10622,7 @@ endmodule
 `include "metron_tools.sv"
 `include "riscv_core.sv"
 
-module toplevel
-#(
-parameter int foobar = 2
-)
-(
+module toplevel (
   // global clock
   input logic clock,
   // input signals
@@ -10614,6 +10639,8 @@ parameter int foobar = 2
   // tock() ports
   input int tock_bogus_param
 );
+  parameter foobar = 2;
+
  /*public:*/
 
 
@@ -10650,13 +10677,13 @@ parameter int foobar = 2
 
  /*private:*/
   riscv_core core(
-    // global clock
+    // Global clock
     .clock(clock),
-    // input signals
+    // Input signals
     .reset(core_reset),
     .bus_read_data(core_bus_read_data),
     .inst(core_inst),
-    // output signals
+    // Output signals
     .bus_address(core_bus_address),
     .bus_write_data(core_bus_write_data),
     .bus_byte_enable(core_bus_byte_enable),
@@ -10675,24 +10702,24 @@ parameter int foobar = 2
   logic[31:0] core_pc;
 
   example_text_memory_bus text_memory_bus(
-    // input signals
+    // Input signals
     .address(text_memory_bus_address),
-    // output signals
+    // Output signals
     .read_data(text_memory_bus_read_data)
   );
   logic[31:0] text_memory_bus_address;
   logic[31:0] text_memory_bus_read_data;
 
   example_data_memory_bus data_memory_bus(
-    // global clock
+    // Global clock
     .clock(clock),
-    // input signals
+    // Input signals
     .address(data_memory_bus_address),
     .write_data(data_memory_bus_write_data),
     .byte_enable(data_memory_bus_byte_enable),
     .read_enable(data_memory_bus_read_enable),
     .write_enable(data_memory_bus_write_enable),
-    // output signals
+    // Output signals
     .read_data(data_memory_bus_read_data)
   );
   logic[31:0] data_memory_bus_address;
@@ -13220,11 +13247,7 @@ private:
 
 //==============================================================================
 
-module uart_hello
-#(
-parameter int repeat_msg = 0
-)
-(
+module uart_hello (
   // global clock
   input logic clock,
   // get_data() ports
@@ -13238,6 +13261,8 @@ parameter int repeat_msg = 0
   input logic tick_clear_to_send,
   input logic tick_idle
 );
+  parameter repeat_msg = 0;
+
 /*public:*/
   initial begin
     $readmemh("examples/uart/message.hex", memory, 0, 511);
@@ -13323,11 +13348,7 @@ endmodule
 
 //==============================================================================
 
-module uart_rx
-#(
-parameter int cycles_per_bit = 4
-)
-(
+module uart_rx (
   // global clock
   input logic clock,
   // get_valid() ports
@@ -13340,6 +13361,8 @@ parameter int cycles_per_bit = 4
   input logic tick_reset,
   input logic tick_serial
 );
+  parameter cycles_per_bit = 4;
+
 /*public:*/
 
   // Our output is valid once we've received 8 bits.
@@ -13433,12 +13456,7 @@ endmodule
 
 //==============================================================================
 
-module uart_top
-#(
-parameter int cycles_per_bit = 3,
-parameter  int repeat_msg = 0
-)
-(
+module uart_top (
   // global clock
   input logic clock,
   // get_serial() ports
@@ -13454,6 +13472,9 @@ parameter  int repeat_msg = 0
   // tock() ports
   input logic tock_reset
 );
+  parameter cycles_per_bit = 3;
+  parameter repeat_msg = 0;
+
 /*public:*/
 
   // The actual bit of data currently on the transmitter's output
@@ -13509,8 +13530,11 @@ parameter  int repeat_msg = 0
 
   //----------------------------------------
 /*private:*/
-  uart_hello #(repeat_msg)  hello(
-    // global clock
+  uart_hello #(
+    // Template Parameters
+    .repeat_msg(repeat_msg)
+  )  hello(
+    // Global clock
     .clock(clock),
     // get_data() ports
     .get_data_ret(hello_get_data_ret),
@@ -13530,8 +13554,11 @@ parameter  int repeat_msg = 0
   logic hello_get_request_ret;
   logic hello_get_done_ret;
  // Our UART client that transmits our "hello world" test message
-  uart_tx #(cycles_per_bit) tx(
-    // global clock
+  uart_tx #(
+    // Template Parameters
+    .cycles_per_bit(cycles_per_bit)
+  ) tx(
+    // Global clock
     .clock(clock),
     // get_serial() ports
     .get_serial_ret(tx_get_serial_ret),
@@ -13551,8 +13578,11 @@ parameter  int repeat_msg = 0
   logic tx_get_clear_to_send_ret;
   logic tx_get_idle_ret;
     // The UART transmitter
-  uart_rx #(cycles_per_bit) rx(
-    // global clock
+  uart_rx #(
+    // Template Parameters
+    .cycles_per_bit(cycles_per_bit)
+  ) rx(
+    // Global clock
     .clock(clock),
     // get_valid() ports
     .get_valid_ret(rx_get_valid_ret),
@@ -13582,11 +13612,7 @@ endmodule
 
 //==============================================================================
 
-module uart_tx
-#(
-parameter int cycles_per_bit = 4
-)
-(
+module uart_tx (
   // global clock
   input logic clock,
   // get_serial() ports
@@ -13600,6 +13626,8 @@ parameter int cycles_per_bit = 4
   input logic[7:0] tick_send_data,
   input logic tick_send_request
 );
+  parameter cycles_per_bit = 4;
+
 /*public:*/
   initial begin
     bit_delay = bit_delay_max;
@@ -13945,14 +13973,6 @@ class Module {
   void tick() { my_reg = my_reg + 1; }
 
   logic<8> my_reg;
-};
-#include "metron_tools.h"
-
-// X Constructor for Module is not allowed to have params
-
-class Module {
- public:
-  Module(int x) {}
 };
 #include "metron_tools.h"
 
@@ -14643,13 +14663,13 @@ private:
 
 // Templates can be used for module parameters
 
-template<int WIDTH, int HEIGHT = 2>
+template<int WIDTH = 123, int HEIGHT = 456>
 class Submod {
 public:
 
-  void tock() {
-    my_width = bx<WIDTH>(100);
-    my_height = bx<HEIGHT>(200);
+  void tock(logic<WIDTH> dx, logic<HEIGHT> dy) {
+    my_width = bx<WIDTH>(100) + dx;
+    my_height = bx<HEIGHT>(200) + dy;
   }
 
   logic<WIDTH> my_width;
@@ -14660,7 +14680,7 @@ class Module {
 public:
 
   logic<20> tock() {
-    submodule.tock();
+    submodule.tock(1, 2);
     return submodule.my_width + submodule.my_height;
   }
 
@@ -15085,15 +15105,17 @@ private:
 
 //----------------------------------------
 
+template<int data_len = 1024, int blarp = 0>
 class Module {
 public:
 
-  Module(const char* filename = nullptr) {
+  Module(const char* filename = nullptr, logic<10> default_addr = 0x0000) {
     if (filename) readmemh(filename, data);
+    addr = default_addr;
   }
 
-  void tock(logic<10> addr_) {
-    addr = addr_;
+  void tock(logic<10> new_addr) {
+    addr = new_addr;
   }
 
   void tick() {
@@ -15106,7 +15128,7 @@ public:
 
 private:
   logic<10> addr;
-  logic<8> data[1024];
+  logic<8> data[data_len];
   logic<8> out;
 };
 
@@ -15114,7 +15136,7 @@ private:
 
 class Top {
 public:
-  Top() : mod("hello.hex") {
+  Top() : mod("examples/uart/message.hex", 0x1234), derp(7) {
   }
 
   void tock(logic<10> addr) {
@@ -15125,19 +15147,21 @@ public:
     mod.tick();
   }
 
-  Module mod;
+  Module<7777, 8383> mod;
+  logic<10> derp;
 };
 
 //----------------------------------------
 #include "metron_tools.h"
 
-// We should be able to handle mixed template parameters and constructor args.
+// We should be able to handle constructor args.
 
-template<int data_len = 1024>
+template<int data_len = 1024, int blarp = 7>
 class Module {
 public:
 
-  Module(const char* filename = nullptr) {
+  Module(const char* filename = "examples/uart/message.hex", logic<10> start_addr = 0) {
+    addr = start_addr;
     readmemh(filename, data);
   }
 

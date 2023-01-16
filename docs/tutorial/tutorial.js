@@ -86,19 +86,18 @@ class Tutorial {
   }
 
   convert() {
+    var src_filename = this.c_filename.innerText;
+    var dst_filename = this.v_filename.innerText;
+
     // Write the potentially modified source back to the filesystem
     let blob = new TextEncoder().encode(this.src_pane.code_jar.toString());
-    metron_mod.FS.writeFile(this.c_filename.innerText, blob);
+    metron_mod.FS.writeFile(src_filename, blob);
 
     // Run Metron
-    var path = this.c_filename.innerText.split("/");
-    var root = path.slice(0, -1).join("/");
-    var file = path[path.length - 1];
-
     stdout = "";
     stderr = "";
 
-    let args = ["-v", "-m", "-s", "-r", root, file];
+    let args = ["-v", "-m", "-c", src_filename, "-o", dst_filename];
     let ret = metron_mod.callMain(args);
     let cmdline = "metron " + args.join(" ");
     console.log(cmdline);
@@ -106,7 +105,7 @@ class Tutorial {
     // Read the output file back to the dst pane, or clear if no file.
     if (ret == 0) {
       try {
-        let verilog = new TextDecoder().decode(metron_mod.FS.readFile(this.v_filename.innerText));
+        let verilog = new TextDecoder().decode(metron_mod.FS.readFile(dst_filename));
         this.dst_pane.code_jar.updateCode(verilog);
         this.dst_pane.header_bar.style.backgroundColor = "#353";
       }

@@ -11,7 +11,7 @@ var opt_echo = document.getElementById("opt_echo");
 var opt_dump = document.getElementById("opt_dump");
 var opt_quiet = document.getElementById("opt_quiet");
 var opt_verbose = document.getElementById("opt_verbose");
-var opt_save = document.getElementById("opt_save");
+var opt_monochrome = document.getElementById("opt_monochrome");
 
 var dst_title = document.getElementById("dst_title");
 var dst_text = document.getElementById("dst_text");
@@ -127,10 +127,9 @@ function main(mod) {
   opt_dump.addEventListener("change", () => convert(mod));
   opt_quiet.addEventListener("change", () => convert(mod));
   opt_verbose.addEventListener("change", () => convert(mod));
-  opt_save.addEventListener("change", () => convert(mod));
+  opt_monochrome.addEventListener("change", () => convert(mod));
 
-  // Start with save mode on and trigger convert so we generate scratch.sv.
-  opt_save.checked = true;
+  // Trigger convert so we generate scratch.sv.
   convert(mod);
 }
 
@@ -138,38 +137,40 @@ function main(mod) {
 // Convert the selected .h file to Verilog and update the panes.
 
 function convert(mod) {
-  var selector_name = src_selector.options[src_selector.selectedIndex].value;
+  var src_filename = src_selector.options[src_selector.selectedIndex].value;
 
   // Write the potentially modified source back to the filesystem
   let blob = new TextEncoder().encode(src_jar.toString());
-  mod.FS.writeFile(selector_name, blob);
+  mod.FS.writeFile(src_filename, blob);
 
   // Abort conversion if file doesn't end with ".h"
-  if (!selector_name.endsWith(".h")) return;
+  if (!src_filename.endsWith(".h")) return;
 
   // Change dst pane title & delete any existing output file
-  var file_out = selector_name.substr(0, selector_name.lastIndexOf('.')) + ".sv";
-  dst_title.innerText = file_out;
+  var dst_filename = src_filename.substr(0, src_filename.lastIndexOf('.')) + ".sv";
+  dst_title.innerText = dst_filename;
   try {
-    mod.FS.unlink(file_out);
+    mod.FS.unlink(dst_filename);
   }
   catch {
   }
 
   // Run Metron
-  var path = selector_name.split("/");
+  var path = src_filename.split("/");
   var root = path.slice(0, path.length - 1).join("/");
   var file = path[path.length - 1];
 
   var args = [];
-  if (opt_echo.checked) args.push("-e");
-  if (opt_dump.checked) args.push("--dump");
-  if (opt_quiet.checked) args.push("-q");
+  if (opt_echo.checked)    args.push("-e");
+  if (opt_dump.checked)    args.push("-d");
+  if (opt_quiet.checked)   args.push("-q");
   if (opt_verbose.checked) args.push("-v");
-  if (opt_save.checked) args.push("-s");
-  args.push("-r");
-  args.push(root);
-  args.push(file);
+  if (opt_monochrome.checked) args.push("-m");
+  args.push("-c");
+  args.push(src_filename);
+  args.push("-o");
+  args.push(dst_filename);
+
   if (opt_help.checked) args = ["-h"];
 
   term.clear();
@@ -178,7 +179,7 @@ function convert(mod) {
 
   // Read the output file back to the dst pane, or clear if no file.
   try {
-    dst_jar.updateCode(new TextDecoder().decode(mod.FS.readFile(file_out)));
+    dst_jar.updateCode(new TextDecoder().decode(mod.FS.readFile(dst_filename)));
   }
   catch {
     dst_jar.updateCode("");

@@ -1,6 +1,7 @@
 #include "metron_tools.h"
 
 // Structs can be used as input/output ports to submodules.
+// ...but they have to be public member variables because Yosys...
 
 namespace TL {
   const int PutFullData = 0;
@@ -48,11 +49,8 @@ public:
       tld.d_data   = b32(DONTCARE);
       tld.d_valid  = 0;
     }
-
-    tick();
   }
 
-private:
   void tick() {
     if (tla.a_address == 0x1234) {
       if (tla.a_opcode == TL::PutFullData && tla.a_valid) {
@@ -63,26 +61,12 @@ private:
     }
   }
 
+private:
   logic<32> test_reg;
   logic<1>  oe;
 };
 
 //------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#if 0
 
 class TilelinkCPU {
 public:
@@ -92,31 +76,40 @@ public:
 
   TilelinkCPU() {
     addr = 0x1234;
+    data = 0x4321;
   }
 
-  void tock_tla() {
-    tla.a_address = addr;
-    tla.a_mask    = 0b1111;
-    tla.a_data    = 0xDEADBEEF;
-    tla.a_valid   = 1;
+  void tock() {
+    if (data & 1) {
+      tla.a_opcode  = TL::Get;
+      tla.a_address = addr;
+      tla.a_mask    = 0b1111;
+      tla.a_data    = b32(DONTCARE);
+      tla.a_valid   = 1;
+    } else {
+      tla.a_opcode  = TL::PutFullData;
+      tla.a_address = addr;
+      tla.a_mask    = 0b1111;
+      tla.a_data    = 0xDEADBEEF;
+      tla.a_valid   = 1;
+    }
   }
 
-  void tock_tld() {
+  void tick() {
+    if (tld.d_opcode == TL::AccessAckData && tld.d_valid) {
+      data = tld.d_data;
+    }
   }
 
 private:
-  void tick() {
-  }
-
   logic<32> addr;
-  logic<32> reg;
+  logic<32> data;
 };
 
 //------------------------------------------------------------------------------
 
 class Top {
 public:
-
   void tock() {
     cpu.tock();
     dev.tock();
@@ -133,4 +126,3 @@ public:
 };
 
 //------------------------------------------------------------------------------
-#endif

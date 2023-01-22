@@ -560,7 +560,7 @@ inline logic<WIDTH> sll(logic<WIDTH> x, int s) {
 
 //----------------------------------------
 
-inline int to_hex(uint8_t c) {
+inline int from_hex(uint8_t c) {
   if (c >= '0' && c <= '9')
     return c - '0';
   else if (c >= 'a' && c <= 'f')
@@ -625,7 +625,7 @@ inline void parse_hex(const char* src_filename, void* dst_data, int dst_size) {
     int chunk_data = 0;
     int chunk_size = 0;
     while (sc[0]) {
-      int d = to_hex(sc[0]);
+      int d = from_hex(sc[0]);
       if (d == -1) break;
       chunk_data <<= 4;
       chunk_data |= d;

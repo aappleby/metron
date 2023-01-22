@@ -97,11 +97,12 @@ build docs/demo/examples.data docs/demo/examples.js: command tests/Tests.h $
     tests/metron_good/basic_public_reg.h $
     tests/metron_good/constructor_arg_passing.h $
     tests/metron_good/basic_literals.h tests/metron_good/basic_switch.h $
-    tests/metron_good/bit_dup.h tests/metron_good/utf8-mod.h $
-    tests/metron_good/local_localparam.h tests/metron_good/minimal.h $
-    tests/metron_good/multi_tick.h tests/metron_good/basic_reg_rww.h $
-    tests/metron_good/namespaces.h tests/metron_good/structs.h $
-    tests/metron_good/basic_task.h tests/metron_good/nested_structs.h $
+    tests/metron_good/bit_dup.h tests/metron_good/structs_as_ports.h $
+    tests/metron_good/utf8-mod.h tests/metron_good/local_localparam.h $
+    tests/metron_good/minimal.h tests/metron_good/multi_tick.h $
+    tests/metron_good/basic_reg_rww.h tests/metron_good/namespaces.h $
+    tests/metron_good/structs.h tests/metron_good/basic_task.h $
+    tests/metron_good/nested_structs.h $
     tests/metron_good/matching_port_and_arg_names.h $
     tests/metron_good/private_getter.h tests/metron_good/init_chain.h $
     tests/metron_good/basic_submod_public_reg.h $

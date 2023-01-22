@@ -2,21 +2,87 @@
 
 // Structs can be used as input/output ports to submodules.
 
-typedef struct packed {
-  logic[7:0] a;
-} MyStruct1;
+package TL;
+  parameter int PutFullData = 0;
+  parameter int PutPartialData = 1;
+  parameter int Get = 4;
+  parameter int AccessAck = 0;
+  parameter int AccessAckData = 1;
+endpackage
 
-module Module (
+typedef struct packed {
+  logic[2:0]  a_opcode;
+  logic[31:0] a_address;
+  logic[3:0]  a_mask;
+  logic[31:0] a_data;
+  logic  a_valid;
+} tilelink_a;
+
+typedef struct packed {
+  logic[2:0]  d_opcode;
+  logic[31:0] d_data;
+  logic  d_valid;
+} tilelink_d;
+
+//------------------------------------------------------------------------------
+
+module TilelinkDevice (
+  // global clock
+  input logic clock,
+  // input signals
+  input tilelink_a tla,
   // output signals
-  output MyStruct1 my_struct1,
-  // tock() ports
-  output logic[7:0] tock_ret
+  output tilelink_d tld
 );
 /*public:*/
 
+  initial begin
+    test_reg = 0;
+    oe = 0;
+  end
+
 
   always_comb begin : tock
-    my_struct1.a = 1;
-    tock_ret = 17;
+    if (oe) begin
+      tld.d_opcode = TL::AccessAckData;
+      tld.d_data   = test_reg;
+      tld.d_valid  = 1;
+    end
+    else begin
+      tld.d_opcode = TL::AccessAckData;
+      tld.d_data   = 32'bx;
+      tld.d_valid  = 0;
+    end
+
   end
+
+/*private:*/
+  always_ff @(posedge clock) begin : tick
+    if (tla.a_address == 16'h1234) begin
+      if (tla.a_opcode == TL::PutFullData && tla.a_valid) begin
+        test_reg <= tla.a_data;
+      end else if (tla.a_opcode == TL::Get) begin
+        oe <= 1;
+      end
+    end
+  end
+
+  logic[31:0] test_reg;
+  logic  oe;
 endmodule
+
+//------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+

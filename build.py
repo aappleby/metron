@@ -376,8 +376,6 @@ ninja.rule(name="compile_cpp_ems",
 ninja.rule(name="link_ems",
            command="emcc ${in} -sEXPORT_ES6 -sEXPORTED_RUNTIME_METHODS=['FS','callMain'] -sNO_DISABLE_EXCEPTION_CATCHING -sTOTAL_STACK=32MB -sINITIAL_MEMORY=64MB -sFORCE_FILESYSTEM -o ${out}")
 
-#python3 $EMSDK/upstream/emscripten/tools/file_packager.py wasm/examples.data --lz4 --no-node --js-output=wasm/examples.js --preload examples tests/metron_good tests/metron_bad --exclude *.cpp *.sv *.MD *.hex *.pcf *.v *.txt
-
 ninja.variable(key="packager",
                value="$EMSDK/upstream/emscripten/tools/file_packager.py")
 

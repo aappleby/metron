@@ -8,7 +8,7 @@
       "request": "launch",
       "program": "${workspaceFolder}/bin/metron",
       "cwd": "${workspaceFolder}",
-      "args": ["-e", "-c", "tests/metron_good/constructor_arg_passing.h"],
+      "args": ["-d", "-e", "-c", "examples/scratch.h", "-o", "examples/scratch.sv"],
       "setupCommands": [
         { // Display content in STL containers pretty
           "description": "Enable pretty-printing for gdb",

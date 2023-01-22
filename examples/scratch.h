@@ -12,6 +12,10 @@ struct tilelink_a {
 class block_ram {
 public:
 
+  logic<32> unshell(tilelink_a tla) {
+    return tla.a_data;
+  }
+
   void tick(tilelink_a tla) {
     data = tla.a_data;
   }

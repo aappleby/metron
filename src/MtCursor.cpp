@@ -2567,10 +2567,16 @@ CHECK_RETURN Err MtCursor::emit_sym_expression_statement(MnNode node) {
 
   for (auto child : node) {
     switch (child.sym) {
-      case sym_call_expression:
       case sym_assignment_expression:
-      case sym_update_expression:
+        err << emit_expression(child);
+        break;
+      case sym_call_expression:
+        err << emit_expression(child);
+        break;
       case sym_conditional_expression:
+        err << emit_expression(child);
+        break;
+      case sym_update_expression:
         err << emit_expression(child);
         break;
       default:
@@ -3030,13 +3036,30 @@ CHECK_RETURN Err MtCursor::emit_sym_field_expression(MnNode n) {
   bool is_port = component && component->_type_mod->is_port(component_field);
   //printf("is port %s %d\n", component_field.c_str(), is_port);
 
+  is_port = component && component->_type_mod->is_port(component_field);
+  // FIXME needs to be || is_argument
+
+  bool is_port_arg = false;
+  if (current_method && (current_method->emit_as_always_comb || current_method->emit_as_always_ff)) {
+    for (auto c : current_method->param_nodes) {
+      if (c.get_field(field_declarator).text() == component_name) {
+        is_port_arg = true;
+        break;
+      }
+    }
+  }
+
   if (component && is_port) {
     auto field = n.text();
     for (auto& c : field) {
       if (c == '.') c = '_';
     }
     err << emit_replacement(n, field.c_str());
-  } else {
+  } else if (is_port_arg) {
+    err << emit_print("%s_", current_method->name().c_str());
+    err << emit_text(n);
+  }
+  else {
     // Local struct reference
     err << emit_text(n);
   }

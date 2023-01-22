@@ -1,8 +1,9 @@
 `include "metron_tools.sv"
 
+// Passing structs to functions that turn into always_comb or always_ff
+// should prepend the function name to the struct name.
+
 //------------------------------------------------------------------------------
-// verilator lint_off unusedsignal
-// verilator lint_off undriven
 
 typedef struct packed {
   logic[31:0] a_data;
@@ -30,8 +31,5 @@ module block_ram (
   end
 
 endmodule
-
-// verilator lint_on unusedsignal
-// verilator lint_on undriven
 
 //------------------------------------------------------------------------------

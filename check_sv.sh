@@ -1,6 +1,6 @@
 echo
 echo "Metron:"
-bin/metron -q -v -e -c examples/scratch.h -o examples/scratch.sv
+bin/metron -c examples/scratch.h -o examples/scratch.sv
 echo "Verilator:"
 verilator -Isrc --lint-only examples/scratch.sv
 echo

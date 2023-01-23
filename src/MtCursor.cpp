@@ -1209,19 +1209,39 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
   bool has_constructor_params = component_mod->constructor && component_mod->constructor->param_nodes.size();
 
   if (has_template_params || has_constructor_params) {
+
     err << emit_print(" #(");
     err << emit_newline();
     indent_stack.push_back(indent_stack.back() + "  ");
 
+    // Count up how many parameters we're passing to the submodule.
     int param_count = 0;
-    if (has_template_params) {
-        for (auto c : component_mod->mod_param_list) {
-          if (c.is_named()) param_count++;
-        }
-    }
-    if (has_constructor_params) param_count += component_mod->constructor->param_nodes.size();
 
-    // Template arguments -> module parameters
+    // All the named elements of the template argument list count as parameters.
+    if (has_template_params) {
+      auto template_args = node_type.get_field(field_arguments);
+      for (auto c : template_args) {
+        if (c.is_named()) param_count++;
+      }
+    }
+
+    // If the field initializer for this component passes arguments to the component's constructor,
+    // count them as parameters.
+    if (has_constructor_params && current_mod->constructor) {
+      for(auto initializer : current_mod->constructor->_node.child_by_sym(sym_field_initializer_list)) {
+        if (initializer.sym != sym_field_initializer) continue;
+        if (initializer.child_by_sym(alias_sym_field_identifier).text() == inst_name) {
+          for (auto c : initializer.child_by_sym(sym_argument_list)) {
+            if (c.is_named()) {
+              param_count++;
+            }
+          }
+          break;
+        }
+      }
+    }
+
+    // Emit template arguments as module parameters
     if (has_template_params) {
       err << emit_indent();
       err << emit_print("// Template Parameters");
@@ -1256,7 +1276,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
       }
     }
 
-    // Constructor arguments -> module parameters
+    // Emit constructor arguments as module parameters
     if (has_constructor_params) {
       err << emit_indent();
       err << emit_print("// Constructor Parameters");
@@ -1267,13 +1287,15 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
 
       // Find the initializer node for the component and extract arguments
       std::vector<MnNode> args;
-      for(auto initializer : current_mod->constructor->_node.child_by_sym(sym_field_initializer_list)) {
-        if (initializer.sym != sym_field_initializer) continue;
-        if (initializer.child_by_sym(alias_sym_field_identifier).text() == inst_name) {
-          for (auto c : initializer.child_by_sym(sym_argument_list)) {
-            if (c.is_named()) args.push_back(c);
+      if (current_mod->constructor) {
+        for(auto initializer : current_mod->constructor->_node.child_by_sym(sym_field_initializer_list)) {
+          if (initializer.sym != sym_field_initializer) continue;
+          if (initializer.child_by_sym(alias_sym_field_identifier).text() == inst_name) {
+            for (auto c : initializer.child_by_sym(sym_argument_list)) {
+              if (c.is_named()) args.push_back(c);
+            }
+            break;
           }
-          break;
         }
       }
 

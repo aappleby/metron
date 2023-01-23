@@ -2295,7 +2295,7 @@ CHECK_RETURN Err MtCursor::emit_module_parameter_list(MnNode param_list) {
           break;
 
         case sym_parameter_declaration:
-          err << ERR("Template parameters must have a default value\n");
+          err << ERR("Parameter '%s' must have a default value\n", c.text().c_str());
           break;
 
         default:

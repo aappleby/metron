@@ -3,27 +3,19 @@
 
 //------------------------------------------------------------------------------
 // verilator lint_off unusedsignal
-// verilator lint_off undriven
+// verilator lint_off unusedparam
 
-struct tilelink_a {
-  logic<32> a_data;
-};
-
-class block_ram {
+template <uint32_t addr_mask = 0xF0000000, uint32_t addr_tag = 0x00000000>
+class test_reg {
 public:
 
-  logic<32> unshell(tilelink_a tla) {
-    return tla.a_data;
+  test_reg(logic<32> init) {
   }
 
-  void tick(tilelink_a tla) {
-    data = tla.a_data;
+  void tick() {
   }
-
-  logic<32> data;
 };
 
 // verilator lint_on unusedsignal
-// verilator lint_on undriven
-
+// verilator lint_off unusedparam
 //------------------------------------------------------------------------------

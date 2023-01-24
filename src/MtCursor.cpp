@@ -3367,6 +3367,10 @@ CHECK_RETURN Err MtCursor::emit_expression(MnNode n) {
     case sym_nullptr:
       err << emit_replacement(n, "\"\"");
       break;
+    case sym_initializer_list:
+      err << emit_sym_initializer_list(n);
+      break;
+
 
     default:
       err << emit_default(n);

@@ -131,6 +131,10 @@ CHECK_RETURN Err MtTracer::trace_expression(MtContext* ctx, MnNode node,
       err << trace_sym_binary_expression(ctx, node);
       break;
 
+    case sym_initializer_list:
+      err << trace_sym_initializer_list(ctx, node);
+      break;
+
       /*
       case sym_condition_clause:
         err << trace_expression(ctx, node.child(1), action);
@@ -673,6 +677,26 @@ CHECK_RETURN Err MtTracer::trace_sym_binary_expression(MtContext* ctx,
 
   err << trace_expression(ctx, node_lhs, CTX_READ);
   err << trace_expression(ctx, node_rhs, CTX_READ);
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtTracer::trace_sym_initializer_list(MtContext* ctx, MnNode node) {
+  Err err;
+  assert(ctx->context_type == CTX_METHOD);
+  assert(node.sym == sym_initializer_list);
+
+  for (const auto& child : node) {
+    if (child.is_identifier()) {
+      err << trace_identifier(ctx, child, CTX_READ);
+    } else if (child.is_expression()) {
+      err << trace_expression(ctx, child, CTX_READ);
+    } else {
+      err << trace_default(ctx, child);
+    }
+  }
 
   return err;
 }

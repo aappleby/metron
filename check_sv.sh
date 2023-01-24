@@ -1,6 +1,7 @@
 echo
 echo "Metron:"
-bin/metron -d -e -c examples/scratch.h -o examples/scratch.sv
+#rm -f examples/scratch.sv
+#bin/metron -d -e -c examples/scratch.h -o examples/scratch.sv
 echo
 echo "GCC:"
 g++ -Isrc --std=gnu++2a -fsyntax-only -c examples/scratch.h

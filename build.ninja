@@ -85,6 +85,7 @@ build docs/demo/examples.data docs/demo/examples.js: command tests/Tests.h $
     tests/metron_good/defines.h tests/metron_good/bit_concat.h $
     tests/metron_good/basic_public_sig.h tests/metron_good/good_order.h $
     tests/metron_good/basic_template.h tests/metron_good/plus_equals.h $
+    tests/metron_good/initialize_struct_to_zero.h $
     tests/metron_good/bit_casts.h tests/metron_good/call_tick_from_tock.h $
     tests/metron_good/utf8-mod.bom.h tests/metron_good/basic_submod_param.h $
     tests/metron_good/tock_task.h tests/metron_good/basic_sig_wwr.h $

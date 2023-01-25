@@ -35,7 +35,7 @@ module multiplexer4 (
       3:
         out = in3;
       default:
-        out = WIDTH'(1'bx);
+        out = WIDTH'('x);
     endcase
   end
 endmodule

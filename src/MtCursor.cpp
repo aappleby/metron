@@ -547,7 +547,7 @@ CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnNode call,
     if (arg0.text() == "DONTCARE") {
       cursor = bx_node.start();
       err << emit_expression(bx_node);
-      err << emit_print("'(1'bx)");
+      err << emit_print("'('x)");
       cursor = call.end();
     } else {
       cursor = bx_node.start();
@@ -2981,12 +2981,15 @@ CHECK_RETURN Err MtCursor::emit_sym_identifier(MnNode n) {
   Err err = emit_ws_to(sym_identifier, n);
 
   auto name = n.name4();
+
   auto it = id_replacements.find(name);
   if (it != id_replacements.end()) {
     err << emit_replacement(n, it->second.c_str());
   } else if (preproc_vars.contains(name)) {
     err << emit_print("`");
     err << emit_text(n);
+  } else if (name == "DONTCARE") {
+    err << emit_replacement(n, "'x");
   } else {
     err << emit_text(n);
   }

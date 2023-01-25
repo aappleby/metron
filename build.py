@@ -543,8 +543,6 @@ def build_uart():
             "examples/uart/main.cpp",
         ],
         includes=["src"],
-        # FIXME Why the F does the build break if I don't pass an empty array here?
-        src_objs=[],
         link_deps=["bin/libmetron.a"],
     )
 

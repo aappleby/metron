@@ -89,17 +89,18 @@ TestResults test_lockstep(int argc, char** argv) {
 int main(int argc, char** argv) {
   printf("Running Verilated Metron uart test\n");
 
-  TestResults results("main");
-  results << test_lockstep(argc, argv);
-  if (results.test_fail) {
-    printf("Some tests fail.\n");
-  } else {
-    printf("All tests pass\n");
-  }
-
   //benchmark();
 
-  return 0;
+  TestResults results("main");
+  results << test_lockstep(argc, argv);
+
+  if (results.test_fail) {
+    printf("Some tests fail.\n");
+    return 1;
+  } else {
+    printf("All tests pass\n");
+    return 0;
+  }
 }
 
 //------------------------------------------------------------------------------

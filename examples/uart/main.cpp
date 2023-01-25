@@ -41,13 +41,10 @@ int main(int argc, char** arv) {
       printf("%d\n", cycle);
       if (top.get_checksum() == 0x0000b764) {
         printf("All tests pass\n");
-        break;
+        return 0;
       }
     }
   }
 
-  //benchmark();
-  //benchmark();
-
-  return -1;
+  return 1;
 }

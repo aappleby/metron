@@ -56,13 +56,13 @@ def main():
 
     print_b("Checking that all headers in tests/metron_good compile")
     errors += check_commands_good([
-        f"  g++ -Isrc --std=gnu++2a -fsyntax-only -c {filename}"
+        f"g++ -Isrc --std=gnu++2a -fsyntax-only -c {filename}"
         for filename in metron_good
     ])
 
     print_b("Checking that all headers in tests/metron_bad compile")
     errors += check_commands_good([
-        f"  g++ -Isrc --std=gnu++2a -fsyntax-only -c {filename}"
+        f"g++ -Isrc --std=gnu++2a -fsyntax-only -c {filename}"
         for filename in metron_bad
     ])
 

@@ -5,7 +5,6 @@
 		}
 	],
 	"settings": {
-		/*
 		"files.exclude": {
 			"submodules": true,
 			"vs": true,
@@ -20,7 +19,6 @@
 			".gitignore": true,
 			".gitmodules": true,
 		},
-		*/
 		"files.associations": {
 			"*.tcc": "cpp",
 			"array": "cpp",

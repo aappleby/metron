@@ -3,17 +3,16 @@
 // Zero-initializing structs should work for convenience.
 
 struct MyStruct1 {
-  logic<8> a;
+  logic<8> field;
 };
 
 class Module {
 public:
 
-  logic<8> tock() {
-    //MyStruct1 my_struct1 = {0};
-    // FIXME finish this test
-    //MyStruct1 my_struct1;
-    //my_struct1.a = 1;
-    return 17;
+  MyStruct1 my_struct1;
+  void tock() {
+    // FIXME fix this later glarghbh
+    //my_struct1 = {0};
+    //my_struct1.field = 1;
   }
 };

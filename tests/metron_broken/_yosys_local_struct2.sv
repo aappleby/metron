@@ -1,3 +1,5 @@
+`include "metron_tools.sv"
+
 // Yosys breaks if you refer to fields of a local struct in an always_comb
 
 typedef struct packed {

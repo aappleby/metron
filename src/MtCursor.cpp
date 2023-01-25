@@ -338,17 +338,40 @@ CHECK_RETURN Err MtCursor::emit_replacement(MnNode n, const char* fmt, ...) {
 CHECK_RETURN Err MtCursor::emit_sym_initializer_list(MnNode node) {
   Err err = emit_ws_to(sym_initializer_list, node);
 
+  bool has_zero = false;
+  bool bad_list = false;
   for (auto child : node) {
-    switch (child.sym) {
-      case sym_identifier:
-        err << emit_identifier(child);
-        break;
-      case sym_assignment_expression:
-        err << emit_expression(child);
-        break;
-      default:
-        err << emit_default(child);
-        break;
+    if (!child.is_named()) continue;
+    if (child.sym == sym_number_literal) {
+      if (child.text() == "0") {
+        if (has_zero) bad_list = true;
+        has_zero = true;
+      }
+      else {
+        bad_list = true;
+      }
+    }
+    else {
+      bad_list = true;
+    }
+  }
+
+  if (has_zero && !bad_list) {
+    err << emit_replacement(node, "'0");
+  }
+  else {
+    for (auto child : node) {
+      switch (child.sym) {
+        case sym_identifier:
+          err << emit_identifier(child);
+          break;
+        case sym_assignment_expression:
+          err << emit_expression(child);
+          break;
+        default:
+          err << emit_default(child);
+          break;
+      }
     }
   }
 

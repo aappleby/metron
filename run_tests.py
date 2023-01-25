@@ -5,7 +5,6 @@ import glob
 import subprocess
 import multiprocessing
 import shlex
-from os import path
 
 ################################################################################
 

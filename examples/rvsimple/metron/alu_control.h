@@ -38,13 +38,13 @@ class alu_control {
       case FUNCT3_ALU_SHIFTR:  default_funct = ALU_SRL; break;
       case FUNCT3_ALU_OR:      default_funct = ALU_OR; break;
       case FUNCT3_ALU_AND:     default_funct = ALU_AND; break;
-      default:                 default_funct = b5(DONTCARE); break;
+      default:                 default_funct = DONTCARE; break;
     }
 
     switch (inst_funct3) {
       case FUNCT3_ALU_ADD_SUB: secondary_funct = ALU_SUB; break;
       case FUNCT3_ALU_SHIFTR:  secondary_funct = ALU_SRA; break;
-      default:                 secondary_funct = b5(DONTCARE); break;
+      default:                 secondary_funct = DONTCARE; break;
     }
 
     if (inst_funct7[5])
@@ -64,7 +64,7 @@ class alu_control {
       case FUNCT3_BRANCH_GE:  branch_funct = ALU_SLT; break;
       case FUNCT3_BRANCH_LTU: branch_funct = ALU_SLTU; break;
       case FUNCT3_BRANCH_GEU: branch_funct = ALU_SLTU; break;
-      default:                branch_funct = b5(DONTCARE); break;
+      default:                branch_funct = DONTCARE; break;
     }
 
     switch (alu_op_type) {
@@ -72,7 +72,7 @@ class alu_control {
       case CTL_ALU_OP:     alu_function = op_funct; break;
       case CTL_ALU_OP_IMM: alu_function = op_imm_funct; break;
       case CTL_ALU_BRANCH: alu_function = branch_funct; break;
-      default:             alu_function = b5(DONTCARE); break;
+      default:             alu_function = DONTCARE; break;
     }
   }
   // clang-format on

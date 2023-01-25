@@ -52,7 +52,7 @@ class singlecycle_control {
       case OPCODE_LUI:      regfile_write_enable = 1; break;
       case OPCODE_JALR:     regfile_write_enable = 1; break;
       case OPCODE_JAL:      regfile_write_enable = 1; break;
-      default:              regfile_write_enable = b1(DONTCARE); break;
+      default:              regfile_write_enable = DONTCARE; break;
     }
     // clang-format on
   }
@@ -73,7 +73,7 @@ class singlecycle_control {
       case OPCODE_STORE:    alu_operand_a_select = CTL_ALU_A_RS1; break;
       case OPCODE_OP_IMM:   alu_operand_a_select = CTL_ALU_A_RS1; break;
       case OPCODE_JALR:     alu_operand_a_select = CTL_ALU_A_RS1; break;
-      default:              alu_operand_a_select = b1(DONTCARE); break;
+      default:              alu_operand_a_select = DONTCARE; break;
     }
     // clang-format on
   }
@@ -94,7 +94,7 @@ class singlecycle_control {
       case OPCODE_STORE:    alu_operand_b_select = CTL_ALU_B_IMM; break;
       case OPCODE_OP_IMM:   alu_operand_b_select = CTL_ALU_B_IMM; break;
       case OPCODE_JALR:     alu_operand_b_select = CTL_ALU_B_IMM; break;
-      default:              alu_operand_b_select = b1(DONTCARE); break;
+      default:              alu_operand_b_select = DONTCARE; break;
     }
     // clang-format on
   }
@@ -114,7 +114,7 @@ class singlecycle_control {
       case OPCODE_STORE:    alu_op_type = CTL_ALU_ADD; break;
       case OPCODE_OP_IMM:   alu_op_type = CTL_ALU_OP_IMM; break;
       case OPCODE_JALR:     alu_op_type = CTL_ALU_ADD; break;
-      default:              alu_op_type = b2(DONTCARE); break;
+      default:              alu_op_type = DONTCARE; break;
     }
     // clang-format on
   }
@@ -141,7 +141,7 @@ class singlecycle_control {
       case OPCODE_JALR:     reg_writeback_select = CTL_WRITEBACK_PC4; break;
       case OPCODE_JAL:      reg_writeback_select = CTL_WRITEBACK_PC4; break;
       case OPCODE_LOAD:     reg_writeback_select = CTL_WRITEBACK_DATA; break;
-      default:              reg_writeback_select = b3(DONTCARE); break;
+      default:              reg_writeback_select = DONTCARE; break;
     }
     // clang-format on
   }

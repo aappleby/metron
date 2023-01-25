@@ -35,7 +35,7 @@ class multiplexer4 {
         out = in3;
         break;
       default:
-        out = bx<WIDTH>(DONTCARE);
+        out = DONTCARE;
         break;
     }
   }

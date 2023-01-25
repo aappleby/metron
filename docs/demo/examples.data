@@ -2642,7 +2642,7 @@ private:
         case 0b1101: _st0 = st1 << b4(st0); break;
         case 0b1110: _st0 = cat(rsp, b3(0), dsp); break;
         case 0b1111: _st0 = dup<16>(b1(st1 < st0)); break;
-        default:     _st0 = b16(DONTCARE); break;
+        default:     _st0 = DONTCARE; break;
       }
     }
 
@@ -3410,13 +3410,13 @@ class alu_control {
       case FUNCT3_ALU_SHIFTR:  default_funct = ALU_SRL; break;
       case FUNCT3_ALU_OR:      default_funct = ALU_OR; break;
       case FUNCT3_ALU_AND:     default_funct = ALU_AND; break;
-      default:                 default_funct = b5(DONTCARE); break;
+      default:                 default_funct = DONTCARE; break;
     }
 
     switch (inst_funct3) {
       case FUNCT3_ALU_ADD_SUB: secondary_funct = ALU_SUB; break;
       case FUNCT3_ALU_SHIFTR:  secondary_funct = ALU_SRA; break;
-      default:                 secondary_funct = b5(DONTCARE); break;
+      default:                 secondary_funct = DONTCARE; break;
     }
 
     if (inst_funct7[5])
@@ -3436,7 +3436,7 @@ class alu_control {
       case FUNCT3_BRANCH_GE:  branch_funct = ALU_SLT; break;
       case FUNCT3_BRANCH_LTU: branch_funct = ALU_SLTU; break;
       case FUNCT3_BRANCH_GEU: branch_funct = ALU_SLTU; break;
-      default:                branch_funct = b5(DONTCARE); break;
+      default:                branch_funct = DONTCARE; break;
     }
 
     switch (alu_op_type) {
@@ -3444,7 +3444,7 @@ class alu_control {
       case CTL_ALU_OP:     alu_function = op_funct; break;
       case CTL_ALU_OP_IMM: alu_function = op_imm_funct; break;
       case CTL_ALU_BRANCH: alu_function = branch_funct; break;
-      default:             alu_function = b5(DONTCARE); break;
+      default:             alu_function = DONTCARE; break;
     }
   }
   // clang-format on
@@ -3681,7 +3681,7 @@ class control_transfer {
       case FUNCT3_BRANCH_GE:  take_branch = result_equal_zero; break;
       case FUNCT3_BRANCH_LTU: take_branch = !result_equal_zero; break;
       case FUNCT3_BRANCH_GEU: take_branch = result_equal_zero; break;
-      default:                take_branch = b1(DONTCARE); break;
+      default:                take_branch = DONTCARE; break;
     }
     // clang-format on
   }
@@ -3748,7 +3748,7 @@ class data_memory_interface {
       case 0b00: sign_fix = cat(dup<24>(b1(~data_format[2] & position_fix[7])), b8(position_fix)); break;
       case 0b01: sign_fix = cat(dup<16>(b1(~data_format[2] & position_fix[15])), b16(position_fix)); break;
       case 0b10: sign_fix = b32(position_fix); break;
-      default:   sign_fix = b32(DONTCARE); break;
+      default:   sign_fix = DONTCARE; break;
     }
     // clang-format on
 
@@ -4035,7 +4035,7 @@ class multiplexer2 {
         out = in1;
         break;
       default:
-        out = bx<WIDTH>(DONTCARE);
+        out = DONTCARE;
         break;
     }
   }
@@ -4079,7 +4079,7 @@ class multiplexer4 {
         out = in3;
         break;
       default:
-        out = bx<WIDTH>(DONTCARE);
+        out = DONTCARE;
         break;
     }
   }
@@ -4123,7 +4123,7 @@ class multiplexer8 {
       case 5:  out = in5; break;
       case 6:  out = in6; break;
       case 7:  out = in7; break;
-      default: out = bx<WIDTH>(DONTCARE); break;
+      default: out = DONTCARE; break;
     }
     // clang-format on
   }
@@ -4373,7 +4373,7 @@ class singlecycle_control {
       case OPCODE_LUI:      regfile_write_enable = 1; break;
       case OPCODE_JALR:     regfile_write_enable = 1; break;
       case OPCODE_JAL:      regfile_write_enable = 1; break;
-      default:              regfile_write_enable = b1(DONTCARE); break;
+      default:              regfile_write_enable = DONTCARE; break;
     }
     // clang-format on
   }
@@ -4394,7 +4394,7 @@ class singlecycle_control {
       case OPCODE_STORE:    alu_operand_a_select = CTL_ALU_A_RS1; break;
       case OPCODE_OP_IMM:   alu_operand_a_select = CTL_ALU_A_RS1; break;
       case OPCODE_JALR:     alu_operand_a_select = CTL_ALU_A_RS1; break;
-      default:              alu_operand_a_select = b1(DONTCARE); break;
+      default:              alu_operand_a_select = DONTCARE; break;
     }
     // clang-format on
   }
@@ -4415,7 +4415,7 @@ class singlecycle_control {
       case OPCODE_STORE:    alu_operand_b_select = CTL_ALU_B_IMM; break;
       case OPCODE_OP_IMM:   alu_operand_b_select = CTL_ALU_B_IMM; break;
       case OPCODE_JALR:     alu_operand_b_select = CTL_ALU_B_IMM; break;
-      default:              alu_operand_b_select = b1(DONTCARE); break;
+      default:              alu_operand_b_select = DONTCARE; break;
     }
     // clang-format on
   }
@@ -4435,7 +4435,7 @@ class singlecycle_control {
       case OPCODE_STORE:    alu_op_type = CTL_ALU_ADD; break;
       case OPCODE_OP_IMM:   alu_op_type = CTL_ALU_OP_IMM; break;
       case OPCODE_JALR:     alu_op_type = CTL_ALU_ADD; break;
-      default:              alu_op_type = b2(DONTCARE); break;
+      default:              alu_op_type = DONTCARE; break;
     }
     // clang-format on
   }
@@ -4462,7 +4462,7 @@ class singlecycle_control {
       case OPCODE_JALR:     reg_writeback_select = CTL_WRITEBACK_PC4; break;
       case OPCODE_JAL:      reg_writeback_select = CTL_WRITEBACK_PC4; break;
       case OPCODE_LOAD:     reg_writeback_select = CTL_WRITEBACK_DATA; break;
-      default:              reg_writeback_select = b3(DONTCARE); break;
+      default:              reg_writeback_select = DONTCARE; break;
     }
     // clang-format on
   }
@@ -7717,7 +7717,7 @@ public:
     }
     else {
       tld.d_opcode = TL::AccessAckData;
-      tld.d_data   = b32(DONTCARE);
+      tld.d_data   = DONTCARE;
       tld.d_valid  = 0;
     }
   }
@@ -7755,7 +7755,7 @@ public:
       tla.a_opcode  = TL::Get;
       tla.a_address = addr;
       tla.a_mask    = 0b1111;
-      tla.a_data    = b32(DONTCARE);
+      tla.a_data    = DONTCARE;
       tla.a_valid   = 1;
     } else {
       tla.a_opcode  = TL::PutFullData;

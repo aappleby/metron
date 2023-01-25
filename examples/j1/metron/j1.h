@@ -94,7 +94,7 @@ private:
         case 0b1101: _st0 = st1 << b4(st0); break;
         case 0b1110: _st0 = cat(rsp, b3(0), dsp); break;
         case 0b1111: _st0 = dup<16>(b1(st1 < st0)); break;
-        default:     _st0 = b16(DONTCARE); break;
+        default:     _st0 = DONTCARE; break;
       }
     }
 

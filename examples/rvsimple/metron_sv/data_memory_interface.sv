@@ -61,7 +61,7 @@ module data_memory_interface (
       2'b00: sign_fix = {{24 {1'(~data_format[2] & position_fix[7])}}, 8'(position_fix)};
       2'b01: sign_fix = {{16 {1'(~data_format[2] & position_fix[15])}}, 16'(position_fix)};
       2'b10: sign_fix = 32'(position_fix);
-      default:   sign_fix = 32'bx;
+      default:   sign_fix = 'x;
     endcase
     // clang-format on
 

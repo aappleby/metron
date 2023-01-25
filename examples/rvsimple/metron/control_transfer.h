@@ -26,7 +26,7 @@ class control_transfer {
       case FUNCT3_BRANCH_GE:  take_branch = result_equal_zero; break;
       case FUNCT3_BRANCH_LTU: take_branch = !result_equal_zero; break;
       case FUNCT3_BRANCH_GEU: take_branch = result_equal_zero; break;
-      default:                take_branch = b1(DONTCARE); break;
+      default:                take_branch = DONTCARE; break;
     }
     // clang-format on
   }

@@ -41,13 +41,13 @@ module alu_control (
       FUNCT3_ALU_SHIFTR:  default_funct = ALU_SRL;
       FUNCT3_ALU_OR:      default_funct = ALU_OR;
       FUNCT3_ALU_AND:     default_funct = ALU_AND;
-      default:                 default_funct = 5'bx;
+      default:                 default_funct = 'x;
     endcase
 
     case (inst_funct3)
       FUNCT3_ALU_ADD_SUB: secondary_funct = ALU_SUB;
       FUNCT3_ALU_SHIFTR:  secondary_funct = ALU_SRA;
-      default:                 secondary_funct = 5'bx;
+      default:                 secondary_funct = 'x;
     endcase
 
     if (inst_funct7[5])
@@ -67,7 +67,7 @@ module alu_control (
       FUNCT3_BRANCH_GE:  branch_funct = ALU_SLT;
       FUNCT3_BRANCH_LTU: branch_funct = ALU_SLTU;
       FUNCT3_BRANCH_GEU: branch_funct = ALU_SLTU;
-      default:                branch_funct = 5'bx;
+      default:                branch_funct = 'x;
     endcase
 
     case (alu_op_type)
@@ -75,7 +75,7 @@ module alu_control (
       CTL_ALU_OP:     alu_function = op_funct;
       CTL_ALU_OP_IMM: alu_function = op_imm_funct;
       CTL_ALU_BRANCH: alu_function = branch_funct;
-      default:             alu_function = 5'bx;
+      default:             alu_function = 'x;
     endcase
   end
   // clang-format on

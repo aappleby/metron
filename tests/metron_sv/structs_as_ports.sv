@@ -51,7 +51,7 @@ module TilelinkDevice (
     end
     else begin
       tld.d_opcode = TL::AccessAckData;
-      tld.d_data   = 32'bx;
+      tld.d_data   = 'x;
       tld.d_valid  = 0;
     end
   end
@@ -94,7 +94,7 @@ module TilelinkCPU (
       tla.a_opcode  = TL::Get;
       tla.a_address = addr;
       tla.a_mask    = 4'b1111;
-      tla.a_data    = 32'bx;
+      tla.a_data    = 'x;
       tla.a_valid   = 1;
     end else begin
       tla.a_opcode  = TL::PutFullData;

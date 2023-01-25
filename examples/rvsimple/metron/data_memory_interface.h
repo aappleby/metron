@@ -58,7 +58,7 @@ class data_memory_interface {
       case 0b00: sign_fix = cat(dup<24>(b1(~data_format[2] & position_fix[7])), b8(position_fix)); break;
       case 0b01: sign_fix = cat(dup<16>(b1(~data_format[2] & position_fix[15])), b16(position_fix)); break;
       case 0b10: sign_fix = b32(position_fix); break;
-      default:   sign_fix = b32(DONTCARE); break;
+      default:   sign_fix = DONTCARE; break;
     }
     // clang-format on
 

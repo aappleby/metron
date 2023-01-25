@@ -46,7 +46,7 @@ public:
     }
     else {
       tld.d_opcode = TL::AccessAckData;
-      tld.d_data   = b32(DONTCARE);
+      tld.d_data   = DONTCARE;
       tld.d_valid  = 0;
     }
   }
@@ -84,7 +84,7 @@ public:
       tla.a_opcode  = TL::Get;
       tla.a_address = addr;
       tla.a_mask    = 0b1111;
-      tla.a_data    = b32(DONTCARE);
+      tla.a_data    = DONTCARE;
       tla.a_valid   = 1;
     } else {
       tla.a_opcode  = TL::PutFullData;

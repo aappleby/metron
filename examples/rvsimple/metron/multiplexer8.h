@@ -35,7 +35,7 @@ class multiplexer8 {
       case 5:  out = in5; break;
       case 6:  out = in6; break;
       case 7:  out = in7; break;
-      default: out = bx<WIDTH>(DONTCARE); break;
+      default: out = DONTCARE; break;
     }
     // clang-format on
   }

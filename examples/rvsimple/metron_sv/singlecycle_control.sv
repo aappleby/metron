@@ -55,7 +55,7 @@ module singlecycle_control (
       OPCODE_LUI:      regfile_write_enable = 1;
       OPCODE_JALR:     regfile_write_enable = 1;
       OPCODE_JAL:      regfile_write_enable = 1;
-      default:              regfile_write_enable = 1'bx;
+      default:              regfile_write_enable = 'x;
     endcase
     // clang-format on
   end
@@ -76,7 +76,7 @@ module singlecycle_control (
       OPCODE_STORE:    alu_operand_a_select = CTL_ALU_A_RS1;
       OPCODE_OP_IMM:   alu_operand_a_select = CTL_ALU_A_RS1;
       OPCODE_JALR:     alu_operand_a_select = CTL_ALU_A_RS1;
-      default:              alu_operand_a_select = 1'bx;
+      default:              alu_operand_a_select = 'x;
     endcase
     // clang-format on
   end
@@ -97,7 +97,7 @@ module singlecycle_control (
       OPCODE_STORE:    alu_operand_b_select = CTL_ALU_B_IMM;
       OPCODE_OP_IMM:   alu_operand_b_select = CTL_ALU_B_IMM;
       OPCODE_JALR:     alu_operand_b_select = CTL_ALU_B_IMM;
-      default:              alu_operand_b_select = 1'bx;
+      default:              alu_operand_b_select = 'x;
     endcase
     // clang-format on
   end
@@ -117,7 +117,7 @@ module singlecycle_control (
       OPCODE_STORE:    alu_op_type = CTL_ALU_ADD;
       OPCODE_OP_IMM:   alu_op_type = CTL_ALU_OP_IMM;
       OPCODE_JALR:     alu_op_type = CTL_ALU_ADD;
-      default:              alu_op_type = 2'bx;
+      default:              alu_op_type = 'x;
     endcase
     // clang-format on
   end
@@ -144,7 +144,7 @@ module singlecycle_control (
       OPCODE_JALR:     reg_writeback_select = CTL_WRITEBACK_PC4;
       OPCODE_JAL:      reg_writeback_select = CTL_WRITEBACK_PC4;
       OPCODE_LOAD:     reg_writeback_select = CTL_WRITEBACK_DATA;
-      default:              reg_writeback_select = 3'bx;
+      default:              reg_writeback_select = 'x;
     endcase
     // clang-format on
   end

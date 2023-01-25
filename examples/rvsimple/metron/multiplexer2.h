@@ -27,7 +27,7 @@ class multiplexer2 {
         out = in1;
         break;
       default:
-        out = bx<WIDTH>(DONTCARE);
+        out = DONTCARE;
         break;
     }
   }

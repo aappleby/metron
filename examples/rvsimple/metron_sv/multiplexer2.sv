@@ -29,7 +29,7 @@ module multiplexer2 (
       1:
         out = in1;
       default:
-        out = WIDTH'('x);
+        out = 'x;
     endcase
   end
 endmodule

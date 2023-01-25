@@ -39,7 +39,7 @@ module multiplexer8 (
       5:  out = in5;
       6:  out = in6;
       7:  out = in7;
-      default: out = WIDTH'('x);
+      default: out = 'x;
     endcase
     // clang-format on
   end

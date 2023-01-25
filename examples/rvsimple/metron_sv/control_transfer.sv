@@ -29,7 +29,7 @@ module control_transfer (
       FUNCT3_BRANCH_GE:  take_branch = result_equal_zero;
       FUNCT3_BRANCH_LTU: take_branch = !result_equal_zero;
       FUNCT3_BRANCH_GEU: take_branch = result_equal_zero;
-      default:                take_branch = 1'bx;
+      default:                take_branch = 'x;
     endcase
     // clang-format on
   end

@@ -20,6 +20,10 @@ class example_data_memory_bus {
   logic<1> read_enable;  // in
   logic<1> write_enable; // in
 
+  example_data_memory_bus(const char* filename = nullptr)
+  : data_memory(filename) {
+  }
+
  private:
   example_data_memory data_memory;
 

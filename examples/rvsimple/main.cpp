@@ -25,14 +25,10 @@ TestResults test_instruction(const char* test_name, const int reps,
                              const int max_cycles) {
   TEST_INIT("Testing op %6s, %d reps", test_name, reps);
 
-  // FIXME need to init the memory directly
-  /*
-  char buf1[256];
-  char buf2[256];
-  sprintf(buf1, "+text_file=tests/rv_tests/%s.text.vh", test_name);
-  sprintf(buf2, "+data_file=tests/rv_tests/%s.data.vh", test_name);
-  const char* argv2[2] = {buf1, buf2};
-  */
+  char text_filename[256];
+  char data_filename[256];
+  sprintf(text_filename, "tests/rv_tests/%s.text.vh", test_name);
+  sprintf(data_filename, "tests/rv_tests/%s.data.vh", test_name);
 
   int elapsed_cycles = 0;
   int test_result = -1;
@@ -40,7 +36,7 @@ TestResults test_instruction(const char* test_name, const int reps,
 
   //----------
 
-  toplevel top;
+  toplevel top(text_filename, data_filename);
 
   for (int rep = 0; rep < reps; rep++) {
     top.reset = 1;

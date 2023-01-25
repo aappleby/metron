@@ -17,10 +17,9 @@ module example_text_memory (
   output logic[31:0] q
 );
  /*public:*/
+  parameter filename = "";
   initial begin
-    //std::string s;
-    //value_plusargs("text_file=%s", s);
-    //readmemh(s, mem);
+    if (filename) $readmemh(filename, mem);
   end
 
   always_comb begin : tock_q q = mem[address]; end

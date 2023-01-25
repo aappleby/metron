@@ -108,7 +108,7 @@ ninja.rule(name="metron", # yes, we run metron with quiet and verbose both on fo
            command="bin/metron -q -v -c ${in} -o ${out}")
 
 ninja.rule(name="verilator",
-           command="verilator ${includes} --cc ${src_top} -Mdir ${dst_dir}")
+           command="verilator --public ${includes} --cc ${src_top} -Mdir ${dst_dir}")
 
 ninja.rule(name="make",
            command="make --quiet -C ${dst_dir} -f ${makefile} > /dev/null")
@@ -531,16 +531,6 @@ def build_gb_spu():
         deps=[gb_spu_vhdr],
         link_deps=["bin/libmetron.a"],
     )
-    """
-    cpp_binary(
-        bin_name="bin/examples/uart_vl",
-        src_files=["examples/uart/main_vl.cpp"],
-        includes=base_includes + ["gen/examples/uart"],
-        src_objs=["obj/verilated.o", "obj/verilated_threads.o", uart_vobj],
-        deps=[uart_vhdr],
-        link_deps=["bin/libmetron.a"],
-    )
-    """
 
 
 # ------------------------------------------------------------------------------

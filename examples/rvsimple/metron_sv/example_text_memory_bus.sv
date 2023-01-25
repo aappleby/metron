@@ -19,8 +19,16 @@ module example_text_memory_bus (
 );
  /*public:*/
 
+  parameter filename = "";
+  initial
+  begin
+  end
+
  /*private:*/
-  example_text_memory text_memory(
+  example_text_memory #(
+    // Constructor Parameters
+    .filename(filename)
+  ) text_memory(
     // Input signals
     .address(text_memory_address),
     // Output signals

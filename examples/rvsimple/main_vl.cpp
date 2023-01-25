@@ -3,6 +3,7 @@
 #include "Platform.h"
 #include "Tests.h"
 #include "Vtoplevel.h"
+#include "Vtoplevel___024root.h"
 #include "submodules/CLI11/include/CLI/App.hpp"
 #include "submodules/CLI11/include/CLI/Config.hpp"
 #include "submodules/CLI11/include/CLI/Formatter.hpp"
@@ -25,21 +26,26 @@ TestResults test_instruction(const char* test_name, const int reps,
                              const int max_cycles) {
   TEST_INIT("Testing op %6s, %d reps", test_name, reps);
 
-  char buf1[256];
-  char buf2[256];
-  sprintf(buf1, "+text_file=tests/rv_tests/%s.text.vh", test_name);
-  sprintf(buf2, "+data_file=tests/rv_tests/%s.data.vh", test_name);
-  const char* argv2[2] = {buf1, buf2};
+  //----------
 
-  Verilated::commandArgs(2, argv2);
+  Vtoplevel top;
+
+  char text_filename[256];
+  char data_filename[256];
+  sprintf(text_filename, "tests/rv_tests/%s.text.vh", test_name);
+  sprintf(data_filename, "tests/rv_tests/%s.data.vh", test_name);
+
+  auto& text = top.rootp->toplevel__DOT__text_memory_bus__DOT__text_memory__DOT__mem;
+  auto& data = top.rootp->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__mem;
+
+  parse_hex(text_filename, &text, sizeof(text));
+  parse_hex(data_filename, &data, sizeof(data));
+
+  //----------
 
   int elapsed_cycles = 0;
   int test_result = -1;
   auto time_a = timestamp();
-
-  //----------
-
-  Vtoplevel top;
 
   for (int rep = 0; rep < reps; rep++) {
     top.reset = 1;
@@ -63,10 +69,10 @@ TestResults test_instruction(const char* test_name, const int reps,
     }
   }
 
-  //----------
-
   auto time_b = timestamp();
   total_time += time_b - time_a;
+
+  //----------
 
   if (elapsed_cycles == max_cycles) TEST_FAIL("TIMEOUT\n");
   if (test_result == 0) TEST_FAIL("FAIL %d @ %d\n", test_result, time);

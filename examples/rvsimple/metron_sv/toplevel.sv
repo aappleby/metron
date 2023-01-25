@@ -35,6 +35,12 @@ module toplevel (
  /*public:*/
 
 
+  parameter text_filename = "";
+  parameter data_filename = "";
+  initial
+  begin
+  end
+
   //----------------------------------------
 
   always_comb begin : tock
@@ -92,7 +98,11 @@ module toplevel (
   logic core_bus_write_enable;
   logic[31:0] core_pc;
 
-  example_text_memory_bus text_memory_bus(
+
+  example_text_memory_bus #(
+    // Constructor Parameters
+    .filename(text_filename)
+  ) text_memory_bus(
     // Input signals
     .address(text_memory_bus_address),
     // Output signals
@@ -101,7 +111,10 @@ module toplevel (
   logic[31:0] text_memory_bus_address;
   logic[31:0] text_memory_bus_read_data;
 
-  example_data_memory_bus data_memory_bus(
+  example_data_memory_bus #(
+    // Constructor Parameters
+    .filename(data_filename)
+  ) data_memory_bus(
     // Global clock
     .clock(clock),
     // Input signals

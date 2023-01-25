@@ -43,10 +43,8 @@ class example_data_memory {
   }
 
  public:
-  example_data_memory() {
-    //std::string s;
-    //value_plusargs("data_file=%s", s);
-    //readmemh(s, mem);
+  example_data_memory(const char* filename = nullptr) {
+    if (filename) readmemh(filename, mem);
   }
 };
 

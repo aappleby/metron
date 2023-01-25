@@ -27,7 +27,7 @@ rule link
 rule metron
   command = bin/metron -q -v -c ${in} -o ${out}
 rule verilator
-  command = verilator ${includes} --cc ${src_top} -Mdir ${dst_dir}
+  command = verilator --public ${includes} --cc ${src_top} -Mdir ${dst_dir}
 rule make
   command = make --quiet -C ${dst_dir} -f ${makefile} > /dev/null
 rule run_test

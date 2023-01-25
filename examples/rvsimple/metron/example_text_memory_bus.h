@@ -16,6 +16,10 @@ class example_text_memory_bus {
   logic<32> address;
   logic<32> read_data;
 
+  example_text_memory_bus(const char* filename = nullptr)
+  : text_memory(filename) {
+  }
+
  private:
   example_text_memory text_memory;
 

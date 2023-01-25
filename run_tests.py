@@ -5,9 +5,17 @@ import glob
 import subprocess
 import multiprocessing
 import shlex
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--basic',    action='store_true', help='Test only basic functionality')
+parser.add_argument('--verbose',  action='store_true', help='Print all commands tested')
+parser.add_argument('--serial',   action='store_true', help='Run only one command at a time')
+parser.add_argument('--synth',    action='store_true', help='Test Yosys synthesis (slower)')
+parser.add_argument('--coverage', action='store_true', help='Run Metron under kcov for coverage testing')
+options = parser.parse_args()
 
 ################################################################################
-
 
 def main():
     print()
@@ -17,23 +25,21 @@ def main():
     print_b(" ##  ##  ## ##         ##    ##   ## ##    ## ##  ## ## ")
     print_b(" ##      ## #######    ##    ##   ##  ######  ##   #### ")
 
-    basic = "--basic" in sys.argv
-
     ############################################################
 
     print()
     print_b("Refreshing build")
 
-    if basic:
+    if options.basic:
         if os.system("ninja bin/metron"):
             print("Build failed!")
-            sys.exit(-1)
+            return -1
     else:
         if os.system("ninja"):
             print("Build failed!")
-            sys.exit(-1)
+            return -1
 
-    if "--coverage" in sys.argv:
+    if options.coverage:
         print("Wiping old coverage run")
         os.system("rm -rf coverage")
 
@@ -41,6 +47,7 @@ def main():
 
     errors = 0
 
+    print_b("Wiping tests/metron_sv/*")
     os.system("rm tests/metron_sv/*")
 
     print_b("Checking that examples convert to SV cleanly")
@@ -91,7 +98,7 @@ def main():
         for filename in metron_sv
     ])
 
-    if "--synth" in sys.argv:
+    if options.synth:
         print_b("Checking that all converted files can be synthesized by Yosys")
         errors += check_commands_good([
             f"yosys -q -p 'read_verilog -Isrc -sv {filename}; dump; synth_ice40 -json /dev/null'"
@@ -122,9 +129,8 @@ def main():
         "bin/examples/uart",
         "bin/examples/uart_vl",
         "bin/examples/uart_iv",
-        # FIXME need to redo these once we have better mem init
-        # "bin/examples/rvsimple",
-        # "bin/examples/rvsimple_vl",
+        "bin/examples/rvsimple",
+        "bin/examples/rvsimple_vl",
         "bin/examples/rvsimple_ref",
     ])
 
@@ -175,9 +181,9 @@ def main():
 
 def get_pool():
     max_threads = multiprocessing.cpu_count()
-    if "--coverage" in sys.argv:
+    if options.coverage:
         max_threads = 1
-    if "--serial" in sys.argv:
+    if options.serial:
         max_threads = 1
     return multiprocessing.Pool(max_threads)
 
@@ -209,14 +215,14 @@ def print_b(*args):
 def prep_cmd(cmd):
     cmd = cmd.strip()
     kcov_prefix = "kcov --exclude-region=KCOV_OFF:KCOV_ON --include-pattern=Metron --exclude-pattern=submodules --exclude-line=debugbreak coverage"
-    if "--coverage" in sys.argv and cmd.startswith("bin/metron "):
+    if options.coverage and cmd.startswith("bin/metron "):
         cmd = kcov_prefix + " " + cmd
     args = [arg for arg in shlex.split(cmd) if len(arg)]
     return args
 
 
 def check_cmd_good(cmd):
-    if "--verbose" in sys.argv:
+    if options.verbose:
         print(cmd)
     else:
         print(".", end="")
@@ -233,7 +239,7 @@ def check_cmd_good(cmd):
 
 
 def check_cmd_bad(cmd, expected_outputs=[], expected_errors=[]):
-    if "--verbose" in sys.argv:
+    if options.verbose:
         print(cmd)
     else:
         print(".", end="")

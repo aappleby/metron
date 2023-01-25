@@ -31,8 +31,16 @@ module example_data_memory_bus (
     // in
    // in
 
+  parameter filename = "";
+  initial
+  begin
+  end
+
  /*private:*/
-  example_data_memory data_memory(
+  example_data_memory #(
+    // Constructor Parameters
+    .filename(filename)
+  ) data_memory(
     // Global clock
     .clock(clock),
     // Input signals

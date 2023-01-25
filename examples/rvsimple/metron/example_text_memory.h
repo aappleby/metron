@@ -12,10 +12,8 @@
 
 class example_text_memory {
  public:
-  example_text_memory() {
-    //std::string s;
-    //value_plusargs("text_file=%s", s);
-    //readmemh(s, mem);
+  example_text_memory(const char* filename = nullptr) {
+    if (filename) readmemh(filename, mem);
   }
 
   logic<rv_config::TEXT_BITS - 2> address;

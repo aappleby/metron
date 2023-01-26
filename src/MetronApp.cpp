@@ -152,8 +152,12 @@ int main(int argc, char** argv) {
     // All modules are now in the library, we can resolve references to other
     // modules when we're collecting fields.
 
-    for (auto mod : lib.all_modules) {
-      err << mod->collect_fields_and_methods();
+    for (auto m : lib.all_modules) {
+      err << m->collect_fields_and_methods();
+    }
+
+    for (auto s : lib.all_structs) {
+      err << s->collect_fields();
     }
 
     //----------------------------------------

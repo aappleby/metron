@@ -1,5 +1,16 @@
 #include "MtStruct.h"
 
+Err MtStruct::collect_fields() {
+  Err err;
+  for (auto f : node.get_field(field_body)) {
+    if (f.sym == sym_field_declaration) {
+      MtField* new_field = new MtField(this, f);
+      fields.push_back(new_field);
+    }
+  }
+  return err;
+}
+
 MtField *MtStruct::get_field(MnNode node) {
   if (node.sym == sym_identifier || node.sym == alias_sym_field_identifier) {
     for (auto f : fields) {

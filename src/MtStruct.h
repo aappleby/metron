@@ -14,6 +14,8 @@ struct MtStruct {
     source_file = _source_file;
   }
 
+  CHECK_RETURN Err collect_fields();
+
   // FIXME put something here
 
   void dump() {}

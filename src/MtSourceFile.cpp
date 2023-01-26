@@ -69,12 +69,6 @@ CHECK_RETURN Err MtSourceFile::collect_modules(MnNode toplevel) {
     switch (c.sym) {
       case sym_struct_specifier: {
         MtStruct* new_struct = new MtStruct(c, this);
-        for (auto f : c.get_field(field_body)) {
-          if (f.sym == sym_field_declaration) {
-            MtField* new_field = new MtField(new_struct, f);
-            new_struct->fields.push_back(new_field);
-          }
-        }
         lib->all_structs.push_back(new_struct);
         break;
       }

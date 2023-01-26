@@ -8,19 +8,9 @@
 
 struct MtModule;
 struct MtModLibrary;
-struct MtField;
 struct MtContext;
 
 //------------------------------------------------------------------------------
-
-enum MethodType {
-  MT_INVALID = 0,
-  MT_CONSTRUCTOR,
-  MT_INIT,
-  MT_FUNC,
-  MT_TICK,
-  MT_TOCK
-};
 
 struct MtMethod {
   MtMethod(MtModule* mod, MnNode n, bool is_public);
@@ -32,63 +22,21 @@ struct MtMethod {
 
   bool categorized() const;
   bool is_valid() const;
-  bool is_public() const { return _public; }
+  bool is_public() const;
 
   void dump();
   void dump_call_graph();
 
-  bool has_params() const { return !param_nodes.empty(); }
-  bool has_return() const { return !_type.is_null() && _type.text() != "void"; }
+  bool has_params() const;
+  bool has_return() const;
 
-  bool has_param(const std::string& name) {
-    for (const auto& p : param_nodes) {
-      if (p.name4() == name) return true;
-    }
-    return false;
-  }
-
-  bool called_in_module() const {
-    return !internal_callers.empty();
-  }
-
-  bool called_in_init() const {
-    for (auto m : internal_callers) {
-      if (m->is_constructor()) return true;
-      if (m->called_in_init()) return true;
-    }
-    return false;
-  }
-
-  bool called_in_tick() const {
-    for (auto m : internal_callers) {
-      if (m->is_tick_) return true;
-      if (m->called_in_tick()) return true;
-    }
-    return false;
-  }
-
-  bool called_in_tock() const {
-    for (auto m : internal_callers) {
-      if (m->is_tock_) return true;
-      if (m->called_in_tock()) return true;
-    }
-    return false;
-  }
-
-  bool called_by_tock() const {
-    for (auto m : internal_callers) {
-      if (m->is_tock_) return true;
-    }
-    return false;
-  }
-
-  bool called_in_func() const {
-    for (auto m : internal_callers) {
-      if (m->is_tock_) return true;
-      if (m->called_in_tock()) return true;
-    }
-    return false;
-  }
+  bool has_param(const std::string& name);
+  bool called_in_module() const;
+  bool called_in_init() const;
+  bool called_in_tick() const;
+  bool called_in_tock() const;
+  bool called_by_tock() const;
+  bool called_in_func() const;
 
   //----------------------------------------
 
@@ -102,7 +50,6 @@ struct MtMethod {
 
   //----------
 
-  MethodType method_type = MT_INVALID;
   bool is_init_ = false;
   bool is_tick_ = false;
   bool is_tock_ = false;

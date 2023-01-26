@@ -52,7 +52,7 @@ MtContext::MtContext(MtContext *_parent, MtField *_field) {
   assert(_parent);
   assert(_field);
 
-  name = _field->_name;
+  name = _field->name();
 
   if (_field->is_component()) {
     context_type = CTX_COMPONENT;
@@ -223,63 +223,6 @@ void MtContext::instantiate() {
     c->instantiate();
   }
 }
-
-/*
-void MtContext::instantiate(MtModule *_mod, MtContext *parent) {
-  for (auto f : _mod->all_fields) {
-    MtContext *result = new MtContext(parent, f);
-
-    if (result->mod) {
-      instantiate(result->mod, result);
-    }
-
-    if (result->_struct) {
-      instantiate(result->_struct, result);
-    }
-
-    parent->children.push_back(result);
-  }
-
-  for (auto m : _mod->all_methods) {
-    MtContext *method_ctx = new MtContext(parent, m);
-
-    parent->children.push_back(method_ctx);
-
-    if (m->has_params()) {
-      auto params =
-          m->_node.get_field(field_declarator).get_field(field_parameters);
-      for (const auto &param : params) {
-        if (param.sym == sym_parameter_declaration) {
-          MtContext *param_ctx = MtContext::param(
-              method_ctx, param.get_field(field_declarator).text());
-          method_ctx->children.push_back(param_ctx);
-        }
-      }
-    }
-
-    if (m->has_return()) {
-      MtContext *return_ctx = MtContext::construct_return(method_ctx);
-      method_ctx->children.push_back(return_ctx);
-    }
-  }
-}
-*/
-
-//------------------------------------------------------------------------------
-
-/*
-void MtContext::instantiate(MtStruct *_struct, MtContext *parent) {
-  for (auto f : _struct->fields) {
-    MtContext *result = new MtContext(parent, f);
-
-    if (result->_type_struct) {
-      instantiate(result->mod, result);
-    }
-
-    parent->children.push_back(result);
-  }
-}
-*/
 
 //------------------------------------------------------------------------------
 

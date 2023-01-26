@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
     src_path.pop_back();
     auto search_path = join_path(src_path);
     lib.add_search_path(search_path);
-    err << lib.load_source(src_name.c_str(), source, verbose);
+    err << lib.load_source(src_name.c_str(), source);
   }
 
   if (err.has_err()) {
@@ -147,56 +147,62 @@ int main(int argc, char** argv) {
   //----------------------------------------
 
   LOG_B("Processing source files\n");
-
-  for (auto s : lib.source_files) {
-    for (auto m : s->modules) {
-      lib.modules.push_back(m);
+  {
+    for (auto s : lib.source_files) {
+      for (auto m : s->modules) {
+        lib.modules.push_back(m);
+      }
     }
-  }
 
-  err << lib.collect_structs();
+    err << lib.collect_structs();
 
-  //----------------------------------------
-  // All modules are now in the library, we can resolve references to other
-  // modules when we're collecting fields.
+    //----------------------------------------
+    // All modules are now in the library, we can resolve references to other
+    // modules when we're collecting fields.
 
-  for (auto mod : lib.modules) {
-    err << mod->collect_parts();
-  }
-
-  //----------------------------------------
-  // Give all fields pointers to their type struct or mod
-
-  for (auto m : lib.modules) {
-    for (auto f : m->all_fields) {
-      f->_type_mod = lib.get_module(f->type_name());
-      f->_type_struct = lib.get_struct(f->type_name());
+    for (auto mod : lib.modules) {
+      err << mod->collect_parts();
     }
-  }
 
-  for (auto s : lib.structs) {
-    for (auto f : s->fields) {
-      f->_type_struct = lib.get_struct(f->type_name());
+    //----------------------------------------
+    // Give all fields pointers to their type struct or mod
+
+    for (auto m : lib.modules) {
+      for (auto f : m->all_fields) {
+        f->_type_mod = lib.get_module(f->type_name());
+        f->_type_struct = lib.get_struct(f->type_name());
+      }
     }
-  }
 
-  //----------------------------------------
-  // Build call graphs
+    for (auto s : lib.structs) {
+      for (auto f : s->fields) {
+        f->_type_struct = lib.get_struct(f->type_name());
+      }
+    }
 
-  for (auto m : lib.modules) {
-    err << m->build_call_graph();
-  }
+    //----------------------------------------
+    // Build call graphs
 
-  //----------------------------------------
-  // Count module instances so we can find top modules.
+    for (auto m : lib.modules) {
+      err << m->build_call_graph();
+    }
 
-  for (auto mod : lib.modules) {
-    for (auto field : mod->all_fields) {
-      if (field->is_component()) {
-        field->_type_mod->refcount++;
+    //----------------------------------------
+    // Count module instances so we can find top modules.
+
+    for (auto mod : lib.modules) {
+      for (auto field : mod->all_fields) {
+        if (field->is_component()) {
+          field->_type_mod->refcount++;
+        }
       }
     }
   }
+  LOG_B("\n");
+
+  LOG_G("\n");
+  lib.dump();
+  LOG_G("\n");
 
   //----------------------------------------
   // Trace
@@ -216,13 +222,15 @@ int main(int argc, char** argv) {
         LOG_G("Tracing %s.%s\n", mod->cname(), method->cname());
       }
       err << tracer.trace_method(mod->ctx, method);
-      if (verbose) {
-        mod->ctx->dump_ctx_tree();
-      }
+      //if (verbose) {
+      //  mod->ctx->dump_ctx_tree();
+      //}
     }
     mod->ctx->assign_struct_states();
     if (verbose) {
+      LOG_G("Final context tree for module %s:\n", mod->cname());
       mod->ctx->dump_ctx_tree();
+      LOG("\n");
     }
     mod->ctx->assign_state_to_field(mod);
 
@@ -249,15 +257,14 @@ int main(int argc, char** argv) {
     lib.teardown();
     return -1;
   }
+  LOG("\n");
 
   //----------
   // Categorize methods
 
   LOG_B("Categorizing methods\n");
-  {
-    LOG_INDENT_SCOPE();
-    err << lib.categorize_methods(verbose);
-  }
+  LOG_INDENT();
+  err << lib.categorize_methods(verbose);
 
   int uncategorized = 0;
   int invalid = 0;
@@ -282,9 +289,48 @@ int main(int argc, char** argv) {
     lib.teardown();
     return -1;
   }
+  LOG_DEDENT();
+  LOG("\n");
+
+  //----------------------------------------
 
   if (verbose) {
+    LOG_B("Module info:\n");
+    LOG_INDENT();
+
+    //----------------------------------------
+    // Print module tree
+
+    LOG_B("Module tree:\n");
+    LOG_INDENT();
+    std::function<void(MtModule*, int, bool)> step;
+    step = [&](MtModule* m, int rank, bool last) -> void {
+      for (int i = 0; i < rank - 1; i++) LOG_Y("|  ");
+      if (last) {
+        if (rank) LOG_Y("\\--");
+      } else {
+        if (rank) LOG_Y("|--");
+      }
+      LOG_Y("%s\n", m->name().c_str());
+      auto field_count = m->all_fields.size();
+      for (auto i = 0; i < field_count; i++) {
+        auto field = m->all_fields[i];
+        if (!field->is_component()) continue;
+        step(lib.get_module(field->type_name()), rank + 1,
+              i == field_count - 1);
+      }
+    };
+
+    for (auto m : lib.modules) {
+      if (m->refcount == 0) step(m, 0, false);
+    }
+    LOG_DEDENT();
+    LOG_G("\n");
+
     for (auto m : lib.modules) m->dump();
+
+    LOG_DEDENT();
+    LOG("\n");
   }
 
   //----------------------------------------
@@ -322,36 +368,6 @@ int main(int argc, char** argv) {
     lib.teardown();
     return -1;
   }
-
-  //----------------------------------------
-  // Print module tree
-
-  LOG_G("\n");
-  LOG_G("Module tree:\n");
-  LOG_INDENT();
-  std::function<void(MtModule*, int, bool)> step;
-  step = [&](MtModule* m, int rank, bool last) -> void {
-    for (int i = 0; i < rank - 1; i++) LOG_Y("|  ");
-    if (last) {
-      if (rank) LOG_Y("\\--");
-    } else {
-      if (rank) LOG_Y("|--");
-    }
-    LOG_Y("%s\n", m->name().c_str());
-    auto field_count = m->all_fields.size();
-    for (auto i = 0; i < field_count; i++) {
-      auto field = m->all_fields[i];
-      if (!field->is_component()) continue;
-      step(lib.get_module(field->type_name()), rank + 1,
-            i == field_count - 1);
-    }
-  };
-
-  for (auto m : lib.modules) {
-    if (m->refcount == 0) step(m, 0, false);
-  }
-  LOG_DEDENT();
-  LOG_G("\n");
 
   //----------
   // Emit all modules.

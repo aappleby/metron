@@ -12,6 +12,7 @@
 
 MtField::MtField(MtModule *_parent_mod, const MnNode &n, bool is_public) {
   assert(n.sym == sym_field_declaration);
+  assert(_parent_mod);
 
   this->_node = n;
   this->_name = _node.name4();
@@ -45,19 +46,87 @@ MtField::MtField(MtStruct *_parent_struct, const MnNode &n) {
 
 //------------------------------------------------------------------------------
 
-bool MtField::is_component() const { return _type_mod != nullptr; }
+const char *MtField::cname() const {
+  return _name.c_str();
+}
 
-bool MtField::is_struct() const { return _type_struct != nullptr; }
+const std::string &MtField::name() const {
+  return _name;
+}
 
-bool MtField::is_param() const { return _node.is_static() && _node.is_const(); }
+const std::string &MtField::type_name() const {
+  return _type;
+}
 
-bool MtField::is_public() const { return _public; }
+//------------------------------------------------------------------------------
 
-const char *MtField::cname() const { return _name.c_str(); }
+bool MtField::is_component() const {
+  return _type_mod != nullptr;
+}
 
-const std::string &MtField::name() const { return _name; }
+bool MtField::is_struct() const {
+  return _type_struct != nullptr;
+}
 
-const std::string &MtField::type_name() const { return _type; }
+bool MtField::is_enum() {
+  return _node.sym == sym_enum_specifier;
+}
+
+bool MtField::is_param() const {
+  return _node.is_static() && _node.is_const();
+}
+
+bool MtField::is_public() const {
+  return _public;
+}
+
+bool MtField::is_port() const {
+  return is_public();
+}
+
+bool MtField::is_input() const {
+  return _state == CTX_INPUT;
+}
+
+bool MtField::is_register() const {
+  return _state == CTX_REGISTER || _state == CTX_MAYBE;
+}
+
+bool MtField::is_signal() const {
+  return _state == CTX_OUTPUT || _state == CTX_SIGNAL;
+}
+
+bool MtField::is_dead() const {
+  return _state == CTX_NONE;
+}
+
+bool MtField::is_public_input() const {
+  return _public && is_input();
+}
+
+bool MtField::is_public_signal() const {
+  return _public && is_signal();
+}
+
+bool MtField::is_public_register() const {
+  return _public && is_register();
+}
+
+bool MtField::is_private_signal() const {
+  return !_public && is_signal();
+}
+
+bool MtField::is_private_register() const {
+  return !_public && is_register();
+}
+
+MnNode MtField::get_type_node() const {
+  return _node.get_field(field_type);
+}
+
+MnNode MtField::get_decl_node() const {
+  return _node.get_field(field_declarator);
+}
 
 //------------------------------------------------------------------------------
 

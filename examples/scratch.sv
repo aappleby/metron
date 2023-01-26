@@ -1,36 +1,48 @@
 `include "metron_tools.sv"
 
-// Zero-initializing structs should work for convenience.
+/* verilator lint_off UNUSEDSIGNAL */
+// verilator lint_off undriven
 
 typedef struct packed {
-  logic[7:0] field;
-} MyStruct1;
+  logic[2:0]  d_opcode;
+} tilelink_d;
 
-module Module (input logic clock);
 
-  function derp();
-    MyStruct1 asdf;
-    asdf.field = 1;
-    derp = asdf;
-  endfunction
+module pinwheel_core (
+  // tock() ports
+  input tilelink_d tock_bus_tld
+);
+/*public:*/
+  always_comb begin : tock
+  end
+endmodule
 
-  MyStruct1 my_struct1;
-  task automatic derp2(logic[7:0] arg);
-    MyStruct1 asdf;
-    asdf.field = arg;
-    my_struct1 = asdf;
-    my_struct1.field = 2;
-  endtask
+module pinwheel (
+  // global clock
+  input logic clock,
+  // input signals
+  input logic cond_1,
+  // output signals
+  output tilelink_d bus_tld,
+  // output registers
+  output tilelink_d bus_tld2
+);
+/*public:*/
 
-  MyStruct1 my_struct2;
-  always_comb begin
-    MyStruct1 asdf;
-    //asdf = my_struct2;
-    //my_struct2 = asdf;
+  pinwheel_core core(
+    // tock() ports
+    .tock_bus_tld(core_tock_bus_tld)
+  );
+  tilelink_d core_tock_bus_tld;
 
-    // Yosys breaks if you refer to fields of a local struct...
-    //my_struct2.field = asdf.field;
-    //asdf.field = my_struct2.field;
+
+  always_comb begin : tock
+    bus_tld.d_opcode = 3'bx;
+    if (cond_1 == 1)  bus_tld = bus_tld2;
+    core_tock_bus_tld = bus_tld;
   end
 
+  always_ff @(posedge clock) begin : tick
+    bus_tld2.d_opcode <= bus_tld2.d_opcode + 1;
+  end
 endmodule

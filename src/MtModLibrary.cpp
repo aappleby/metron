@@ -58,11 +58,8 @@ void MtModLibrary::add_source(MtSourceFile *source_file) {
 std::vector<std::string> split_path(const std::string& input);
 
 CHECK_RETURN Err MtModLibrary::load_source(const char *filename,
-                                           MtSourceFile *&out_source,
-                                           bool verbose) {
+                                           MtSourceFile *&out_source) {
   Err err;
-
-  //LOG_R("MtModLibrary::load_source %s\n", filename);
 
   if (!std::string(filename).ends_with(".h")) {
     return err << ERR("Source file %s does not end with .h\n", filename);
@@ -76,17 +73,10 @@ CHECK_RETURN Err MtModLibrary::load_source(const char *filename,
   for (auto &path : search_paths) {
     auto full_path = path.size() ? path + "/" + filename : filename;
 
-    /*
-    if (full_path.starts_with(".")) {
-      printf("relative to cwd\n");
-    }
-    */
-
     struct stat s;
     auto stat_result = stat(full_path.c_str(), &s);
     if (stat_result == 0) {
       found = true;
-      //if (verbose) LOG_B("Loading %s from %s\n", filename, full_path.c_str());
       LOG_B("Loading %s from %s\n", filename, full_path.c_str());
       LOG_INDENT_SCOPE();
 
@@ -103,7 +93,7 @@ CHECK_RETURN Err MtModLibrary::load_source(const char *filename,
         use_utf8_bom = true;
         src_blob.erase(src_blob.begin(), src_blob.begin() + 3);
       }
-      err << load_blob(filename, full_path, src_blob.data(), src_blob.size(), out_source, use_utf8_bom, verbose);
+      err << load_blob(filename, full_path, src_blob.data(), src_blob.size(), out_source, use_utf8_bom);
 
       break;
     }
@@ -123,7 +113,7 @@ CHECK_RETURN Err MtModLibrary::load_blob(const std::string &filename,
                                          void* src_blob,
                                          int src_len,
                                          MtSourceFile*& out_source,
-                                         bool use_utf8_bom, bool verbose) {
+                                         bool use_utf8_bom) {
   Err err;
 
   auto source_file = new MtSourceFile();
@@ -162,7 +152,7 @@ CHECK_RETURN Err MtModLibrary::load_blob(const std::string &filename,
 
     if (!get_source(file)) {
       MtSourceFile *source = nullptr;
-      err << load_source(file.c_str(), source, verbose);
+      err << load_source(file.c_str(), source);
     }
 
     source_file->includes.push_back(get_source(file));
@@ -375,18 +365,6 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
     return 0;
   });
 
-
-
-
-
-
-
-
-
-
-
-
-
   //----------------------------------------
   // Methods that write outputs are tocks unless they're already ticks.
 
@@ -562,56 +540,3 @@ void MtModLibrary::dump_call_graph() {
 // KCOV_ON
 
 //------------------------------------------------------------------------------
-
-#if 0
-//----------------------------------------
-// Dump stuff
-
-if (parents.empty()) {
-  LOG_B("Dumping %s trace\n", cname());
-  LOG_INDENT_SCOPE();
-  MtTracer::dump_trace(mod_state);
-}
-
-LOG_B("Dumping %s\n", cname());
-LOG_INDENT_SCOPE();
-for (auto method : all_methods) {
-  if (method->in_init) continue;
-  LOG_B("Dumping %s.%s\n", cname(), method->cname());
-  LOG_INDENT_SCOPE();
-
-  if (method->callers.empty()) {
-    LOG_G("Root!\n");
-  }
-
-  if (method->callees.empty()) {
-    LOG_G("Leaf!\n");
-  }
-
-  for (auto ref : method->callees) {
-    LOG_G("Calls %s.%s\n", ref.mod->cname(), ref.method->cname());
-  }
-  for (auto ref : method->callers) {
-    LOG_Y("Called by %s.%s\n", ref.mod->cname(), ref.method->cname());
-  }
-
-  for (const auto& ref : method->fields_read) {
-    if (ref.subfield) {
-      LOG_G("Reads %s.%s\n", ref.field->cname(), ref.subfield->cname());
-    }
-    else {
-      LOG_G("Reads %s\n", ref.field->cname());
-    }
-  }
-
-  for (const auto& ref : method->fields_written) {
-    if (ref.subfield) {
-      LOG_R("Writes %s.%s\n", ref.field->cname(), ref.subfield->cname());
-    }
-    else {
-      LOG_R("Writes %s\n", ref.field->cname());
-    }
-  }
-}
-
-#endif

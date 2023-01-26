@@ -44,35 +44,9 @@ bool MtMethod::is_valid() const {
   return (int(is_init_) + int(is_tick_) + int(is_tock_) + int(is_func_)) == 1;
 }
 
-//------------------------------------------------------------------------------
+bool MtMethod::is_public() const { return _public; }
 
-/*
-      case CTX_NONE:
-        LOG_C(0x808080, "Unknown field '%s' : %s", cname(), _type.c_str());
-        break;
-      case CTX_INPUT:
-        LOG_C(0xFFFFFF, "-> Input '%s' : %s", cname(), _type.c_str());
-        break;
-      case CTX_OUTPUT:
-        LOG_C(0xAAAAFF, "<- Output '%s' : %s", cname(), _type.c_str());
-        break;
-      case CTX_SIGNAL:
-        LOG_C(0xAACCFF, "-- Signal '%s' : %s", cname(), _type.c_str());
-        break;
-      case CTX_REGISTER:
-      case CTX_MAYBE:
-        LOG_C(0xAAFFAA, ">| Register '%s' : %s", cname(), _type.c_str());
-        break;
-      case CTX_INVALID:
-        LOG_C(0x8080FF, "Invalid field '%s' : %s", cname(), _type.c_str());
-        break;
-      case CTX_PENDING:
-        LOG_C(0x8080FF, "Pending field '%s' : %s", cname(), _type.c_str());
-        break;
-      case CTX_NIL:
-        LOG_C(0x8080FF, "Nil field '%s' : %s", cname(), _type.c_str());
-        break;
-*/
+//------------------------------------------------------------------------------
 
 void MtMethod::dump() {
   if (is_constructor()) {
@@ -121,3 +95,56 @@ void MtMethod::dump() {
 }
 
 //------------------------------------------------------------------------------
+
+bool MtMethod::has_params() const { return !param_nodes.empty(); }
+bool MtMethod::has_return() const { return !_type.is_null() && _type.text() != "void"; }
+
+bool MtMethod::has_param(const std::string& name) {
+  for (const auto& p : param_nodes) {
+    if (p.name4() == name) return true;
+  }
+  return false;
+}
+
+bool MtMethod::called_in_module() const {
+  return !internal_callers.empty();
+}
+
+bool MtMethod::called_in_init() const {
+  for (auto m : internal_callers) {
+    if (m->is_constructor()) return true;
+    if (m->called_in_init()) return true;
+  }
+  return false;
+}
+
+bool MtMethod::called_in_tick() const {
+  for (auto m : internal_callers) {
+    if (m->is_tick_) return true;
+    if (m->called_in_tick()) return true;
+  }
+  return false;
+}
+
+bool MtMethod::called_in_tock() const {
+  for (auto m : internal_callers) {
+    if (m->is_tock_) return true;
+    if (m->called_in_tock()) return true;
+  }
+  return false;
+}
+
+bool MtMethod::called_by_tock() const {
+  for (auto m : internal_callers) {
+    if (m->is_tock_) return true;
+  }
+  return false;
+}
+
+bool MtMethod::called_in_func() const {
+  for (auto m : internal_callers) {
+    if (m->is_tock_) return true;
+    if (m->called_in_tock()) return true;
+  }
+  return false;
+}

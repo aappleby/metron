@@ -6,11 +6,11 @@
       "preLaunchTask": "build_metron",
       "type": "cppdbg",
       "request": "launch",
-      //"program": "${workspaceFolder}/bin/metron",
-      "program": "${workspaceFolder}/bin/examples/rvsimple_vl",
+      "program": "${workspaceFolder}/bin/metron",
+      //"program": "${workspaceFolder}/bin/examples/rvsimple_vl",
       "cwd": "${workspaceFolder}",
-      //"args": ["-d", "-e", "-c", "examples/scratch.h", "-o", "examples/scratch.sv"],
-      "args": [],
+      "args": ["-v", "-d", "-e", "-c", "examples/scratch.h", "-o", "examples/scratch.sv"],
+      //"args": [],
       "setupCommands": [
         { // Display content in STL containers pretty
           "description": "Enable pretty-printing for gdb",

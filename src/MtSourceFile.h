@@ -41,9 +41,9 @@ struct MtSourceFile {
   TSParser* parser = nullptr;
   TSTree* tree = nullptr;
 
-  std::vector<MtModule*> modules;
-  std::vector<MtStruct*> src_structs;
-  std::vector<MtSourceFile*> includes;
+  std::vector<MtModule*>     src_modules;
+  std::vector<MtStruct*>     src_structs;
+  std::vector<MtSourceFile*> src_includes;
 
 };
 

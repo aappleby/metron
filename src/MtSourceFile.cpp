@@ -48,7 +48,7 @@ CHECK_RETURN Err MtSourceFile::init(MtModLibrary* _lib,
 
   root_node = MnNode(MnNode(ts_root, root_sym, 0, this));
 
-  assert(modules.empty());
+  assert(src_modules.empty());
   err << collect_modules(root_node);
 
   return err;
@@ -60,8 +60,8 @@ MtSourceFile::~MtSourceFile() {
   ts_tree_delete(tree);
   ts_parser_delete(parser);
 
-  for (auto m : modules) delete m;
-  modules.clear();
+  for (auto m : src_modules) delete m;
+  src_modules.clear();
   lang = nullptr;
   parser = nullptr;
   tree = nullptr;
@@ -94,7 +94,8 @@ CHECK_RETURN Err MtSourceFile::collect_modules(MnNode toplevel) {
         //MnNode mod_root(c.node, c.sym, 0, this);
         MtModule* mod = new MtModule(lib);
         err << mod->init(this, c);
-        modules.push_back(mod);
+        src_modules.push_back(mod);
+        lib->all_modules.push_back(mod);
         break;
       }
       case sym_preproc_ifdef: {
@@ -110,7 +111,7 @@ CHECK_RETURN Err MtSourceFile::collect_modules(MnNode toplevel) {
 //------------------------------------------------------------------------------
 
 MtModule* MtSourceFile::get_module(const std::string& name) {
-  for (auto m : modules) {
+  for (auto m : src_modules) {
     if (m->name() == name) return m;
   }
   return nullptr;
@@ -122,7 +123,7 @@ MtModule* MtSourceFile::get_module(const std::string& name) {
 void MtSourceFile::dump() {
   LOG_G("Source file %s @ %s\n", filename.c_str(), full_path.c_str());
   LOG_INDENT_SCOPE();
-  for (auto m : modules) {
+  for (auto m : src_modules) {
     m->dump();
   }
 }

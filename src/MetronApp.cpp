@@ -148,14 +148,6 @@ int main(int argc, char** argv) {
 
   LOG_B("Processing source files\n");
   {
-    for (auto s : lib.source_files) {
-      for (auto m : s->modules) {
-        lib.all_modules.push_back(m);
-      }
-    }
-
-    err << lib.collect_structs();
-
     //----------------------------------------
     // All modules are now in the library, we can resolve references to other
     // modules when we're collecting fields.

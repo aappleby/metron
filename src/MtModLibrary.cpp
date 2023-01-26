@@ -155,7 +155,7 @@ CHECK_RETURN Err MtModLibrary::load_blob(const std::string &filename,
       err << load_source(file.c_str(), source);
     }
 
-    source_file->includes.push_back(get_source(file));
+    source_file->src_includes.push_back(get_source(file));
   }
 
   out_source = source_file;
@@ -202,22 +202,6 @@ MtStruct* MtModLibrary::get_struct(const std::string& name) const {
     if (s->name == name) return s;
   }
   return nullptr;
-}
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtModLibrary::collect_structs() {
-  Err err;
-
-  /*
-  for (auto source : source_files) {
-    for (auto s : source->src_structs) {
-      structs.push_back(s);
-    }
-  }
-  */
-
-  return err;
 }
 
 //------------------------------------------------------------------------------

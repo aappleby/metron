@@ -153,7 +153,7 @@ int main(int argc, char** argv) {
     // modules when we're collecting fields.
 
     for (auto mod : lib.all_modules) {
-      err << mod->collect_parts();
+      err << mod->collect_fields_and_methods();
     }
 
     //----------------------------------------

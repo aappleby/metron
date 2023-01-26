@@ -14,6 +14,10 @@ struct MtStruct {
     source_file = _source_file;
   }
 
+  // FIXME put something here
+
+  void dump() {}
+
   MtField* get_field(MnNode node);
 
   std::string name;

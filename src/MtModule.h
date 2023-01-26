@@ -20,7 +20,7 @@ typedef std::vector<uint8_t> blob;
 //------------------------------------------------------------------------------
 
 struct MtModule {
-  MtModule(MtModLibrary* lib) : lib(lib) {}
+  MtModule(MtSourceFile* source_file);
   ~MtModule();
 
   const char* cname() const { return mod_name.c_str(); }
@@ -41,7 +41,7 @@ struct MtModule {
   void dump();
   void dump_method_list(const std::vector<MtMethod*>& methods) const;
 
-  CHECK_RETURN Err collect_parts();
+  CHECK_RETURN Err collect_fields_and_methods();
   CHECK_RETURN Err build_call_graph();
   CHECK_RETURN Err categorize_fields(bool verbose);
 
@@ -66,26 +66,22 @@ struct MtModule {
   //----------
 
   std::vector<MtModParam*> all_modparams;
-  std::vector<MtField*> all_fields;
-  std::vector<MtField*> all_enums;
-  std::vector<MtMethod*> all_methods;
-  std::vector<MtFuncParam*> input_method_params;
+  std::vector<MtField*>    all_fields;
+  std::vector<MtField*>    all_enums;
+  std::vector<MtMethod*>   all_methods;
 
   //----------
 
-  // Categorized fields
-
   std::vector<MtField*> input_signals;
-
   std::vector<MtField*> output_signals;
   std::vector<MtField*> output_registers;
 
-  std::vector<MtMethod*> output_method_returns;
+  std::vector<MtFuncParam*> input_method_params;
+  std::vector<MtMethod*>    output_method_returns;
 
   std::vector<MtField*> components;
   std::vector<MtField*> private_signals;
   std::vector<MtField*> private_registers;
-
   std::vector<MtField*> dead_fields;
 };
 

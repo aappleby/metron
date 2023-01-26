@@ -2448,7 +2448,7 @@ CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnNode n) {
   auto class_body = n.get_field(field_body);
 
   auto old_mod = current_mod;
-  current_mod = current_source->get_module(class_name.text());
+  current_mod = lib->get_module(class_name.text());
   assert(current_mod);
 
   //----------

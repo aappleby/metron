@@ -22,9 +22,7 @@ struct MtSourceFile {
   ~MtSourceFile();
 
   CHECK_RETURN Err collect_modules(MnNode toplevel);
-  MtModule* get_module(const std::string& name);
-
-  void dump();
+  //MtModule* get_module(const std::string& name);
 
   MtModLibrary* lib = nullptr;
 
@@ -40,11 +38,6 @@ struct MtSourceFile {
   const TSLanguage* lang = nullptr;
   TSParser* parser = nullptr;
   TSTree* tree = nullptr;
-
-  std::vector<MtModule*>     src_modules;
-  std::vector<MtStruct*>     src_structs;
-  std::vector<MtSourceFile*> src_includes;
-
 };
 
 //------------------------------------------------------------------------------

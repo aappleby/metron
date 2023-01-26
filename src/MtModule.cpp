@@ -25,6 +25,9 @@ extern const TSLanguage *tree_sitter_cpp();
 
 //------------------------------------------------------------------------------
 
+MtModule::MtModule(MtSourceFile* source_file) : source_file(source_file), lib(source_file->lib) {
+}
+
 MtModule::~MtModule() {
   for (auto p : all_modparams) delete p;
   for (auto f : all_fields) delete f;
@@ -236,7 +239,7 @@ void MtModule::dump_method_list(const std::vector<MtMethod *> &methods) const {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtModule::collect_parts() {
+CHECK_RETURN Err MtModule::collect_fields_and_methods() {
   Err err;
 
   if (!all_fields.empty()) return err << ERR("all_fields dirty\n");

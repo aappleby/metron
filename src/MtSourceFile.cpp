@@ -48,7 +48,6 @@ CHECK_RETURN Err MtSourceFile::init(MtModLibrary* _lib,
 
   root_node = MnNode(MnNode(ts_root, root_sym, 0, this));
 
-  assert(src_modules.empty());
   err << collect_modules(root_node);
 
   return err;
@@ -60,15 +59,11 @@ MtSourceFile::~MtSourceFile() {
   ts_tree_delete(tree);
   ts_parser_delete(parser);
 
-  for (auto m : src_modules) delete m;
-  src_modules.clear();
   lang = nullptr;
   parser = nullptr;
   tree = nullptr;
   source = nullptr;
 }
-
-//------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
 
@@ -85,16 +80,14 @@ CHECK_RETURN Err MtSourceFile::collect_modules(MnNode toplevel) {
             new_struct->fields.push_back(new_field);
           }
         }
-        src_structs.push_back(new_struct);
         lib->all_structs.push_back(new_struct);
         break;
       }
       case sym_class_specifier:
       case sym_template_declaration: {
         //MnNode mod_root(c.node, c.sym, 0, this);
-        MtModule* mod = new MtModule(lib);
+        MtModule* mod = new MtModule(this);
         err << mod->init(this, c);
-        src_modules.push_back(mod);
         lib->all_modules.push_back(mod);
         break;
       }
@@ -107,26 +100,5 @@ CHECK_RETURN Err MtSourceFile::collect_modules(MnNode toplevel) {
 
   return err;
 }
-
-//------------------------------------------------------------------------------
-
-MtModule* MtSourceFile::get_module(const std::string& name) {
-  for (auto m : src_modules) {
-    if (m->name() == name) return m;
-  }
-  return nullptr;
-}
-
-//------------------------------------------------------------------------------
-
-// KCOV_OFF
-void MtSourceFile::dump() {
-  LOG_G("Source file %s @ %s\n", filename.c_str(), full_path.c_str());
-  LOG_INDENT_SCOPE();
-  for (auto m : src_modules) {
-    m->dump();
-  }
-}
-// KCOV_ON
 
 //------------------------------------------------------------------------------

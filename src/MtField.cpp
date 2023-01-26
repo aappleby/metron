@@ -11,6 +11,8 @@
 //------------------------------------------------------------------------------
 
 MtField::MtField(MtModule *_parent_mod, const MnNode &n, bool is_public) {
+  n.dump_tree();
+
   assert(n.sym == sym_field_declaration);
   assert(_parent_mod);
 
@@ -19,17 +21,23 @@ MtField::MtField(MtModule *_parent_mod, const MnNode &n, bool is_public) {
   this->_decl = n.get_field(field_declarator);
 
   if (_type.sym == sym_enum_specifier) {
-    //this->_name = _type.name4();
-
     auto name = _type.get_field(field_name);
     if (name.is_null()) {
       this->_name = "<anonymous enum>";
     } else {
-      this->_name = _type.get_field(field_name).name4();
+      this->_name = _type.get_field(field_name).text();
     }
   }
   else {
-    this->_name = _decl.name4();
+    if (_decl.sym == alias_sym_field_identifier) {
+      this->_name = _decl.text();
+    }
+    else if (_decl.sym == sym_array_declarator) {
+      this->_name = _decl.get_field(field_declarator).text();
+    }
+    else {
+      assert(false);
+    }
   }
 
   this->_type_name = _type.type5();

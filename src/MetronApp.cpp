@@ -167,6 +167,8 @@ int main(int argc, char** argv) {
     //----------------------------------------
     // Give all fields pointers to their type struct or mod
 
+    // FIXME: Why aren't these being intialized in the field constructors?
+
     for (auto m : lib.modules) {
       for (auto f : m->all_fields) {
         f->_type_mod = lib.get_module(f->type_name());

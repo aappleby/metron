@@ -11,7 +11,7 @@
 //------------------------------------------------------------------------------
 
 MtField::MtField(MtModule *_parent_mod, const MnNode &n, bool is_public) {
-  n.dump_tree();
+  //n.dump_tree();
 
   assert(n.sym == sym_field_declaration);
   assert(_parent_mod);

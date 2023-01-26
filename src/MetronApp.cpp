@@ -172,7 +172,13 @@ int main(int argc, char** argv) {
     for (auto m : lib.modules) {
       for (auto f : m->all_fields) {
         f->_type_mod = lib.get_module(f->type_name());
-        f->_type_struct = lib.get_struct(f->type_name());
+
+        auto new_struct = lib.get_struct(f->type_name());
+        if (new_struct != f->_type_struct) {
+          f->_node.dump_tree();
+          //assert(false);
+          f->_type_struct = new_struct;
+        }
       }
     }
 

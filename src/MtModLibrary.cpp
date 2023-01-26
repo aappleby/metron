@@ -210,7 +210,7 @@ CHECK_RETURN Err MtModLibrary::collect_structs() {
   Err err;
 
   for (auto source : source_files) {
-    for (auto s : source->structs) {
+    for (auto s : source->src_structs) {
       structs.push_back(s);
     }
   }

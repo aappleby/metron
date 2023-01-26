@@ -85,7 +85,7 @@ CHECK_RETURN Err MtSourceFile::collect_modules(MnNode toplevel) {
             new_struct->fields.push_back(new_field);
           }
         }
-        structs.push_back(new_struct);
+        src_structs.push_back(new_struct);
         break;
       }
       case sym_class_specifier:

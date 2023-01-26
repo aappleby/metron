@@ -42,7 +42,7 @@ struct MtSourceFile {
   TSTree* tree = nullptr;
 
   std::vector<MtModule*> modules;
-  std::vector<MtStruct*> structs;
+  std::vector<MtStruct*> src_structs;
   std::vector<MtSourceFile*> includes;
 
 };

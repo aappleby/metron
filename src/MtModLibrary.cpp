@@ -164,12 +164,12 @@ CHECK_RETURN Err MtModLibrary::load_blob(const std::string &filename,
 
 //------------------------------------------------------------------------------
 
-void MtModLibrary::dump() {
+void MtModLibrary::dump_lib() {
   LOG_G("Mod library:\n");
   LOG_INDENT_SCOPE();
 
-  for (auto m : all_modules) m->dump();
-  for (auto s : all_structs) s->dump();
+  for (auto m : all_modules) m->dump_module();
+  for (auto s : all_structs) s->dump_struct();
 }
 
 //------------------------------------------------------------------------------

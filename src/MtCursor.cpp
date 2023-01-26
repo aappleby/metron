@@ -412,7 +412,7 @@ CHECK_RETURN Err MtCursor::emit_sym_assignment_expression(MnNode node) {
   auto lhs = node.get_field(field_left);
   auto op  = node.get_field(field_operator).text();
   auto rhs = node.get_field(field_right);
-  bool left_is_field = current_mod->get_field(lhs) != nullptr;
+  bool left_is_field = current_mod->get_field(lhs.name4()) != nullptr;
 
   bool is_compound = op != "=";
 
@@ -3903,7 +3903,7 @@ CHECK_RETURN Err MtCursor::emit_sym_update_expression(MnNode n) {
   auto id = n.get_field(field_argument);
   auto op = n.get_field(field_operator);
 
-  auto left_is_field = current_mod->get_field(id) != nullptr;
+  auto left_is_field = current_mod->get_field(id.name4()) != nullptr;
 
   if (n.get_field(field_operator).text() == "++") {
     push_cursor(id);

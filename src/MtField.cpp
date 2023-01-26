@@ -154,7 +154,7 @@ MtField* MtField::get_subfield(MnNode node) {
     return _type_struct->get_field(node);
   }
   else if (_type_mod) {
-    return _type_mod->get_field(node);
+    return _type_mod->get_field(node.name4());
   }
   else {
     return nullptr;

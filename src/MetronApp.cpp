@@ -180,8 +180,8 @@ int main(int argc, char** argv) {
   }
   LOG_B("\n");
 
-  if (verbose) {
-    lib.dump();
+  if (1 /*verbose*/) {
+    lib.dump_lib();
     LOG_G("\n");
   }
 
@@ -308,7 +308,7 @@ int main(int argc, char** argv) {
     LOG_DEDENT();
     LOG_G("\n");
 
-    for (auto m : lib.all_modules) m->dump();
+    for (auto m : lib.all_modules) m->dump_module();
 
     LOG_DEDENT();
     LOG("\n");

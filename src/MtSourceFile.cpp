@@ -74,7 +74,7 @@ CHECK_RETURN Err MtSourceFile::collect_modules(MnNode toplevel) {
       }
       case sym_class_specifier:
       case sym_template_declaration: {
-        MtModule* mod = new MtModule(this);
+        MtModule* mod = new MtModule();
         err << mod->init(this, c);
         lib->all_modules.push_back(mod);
         break;

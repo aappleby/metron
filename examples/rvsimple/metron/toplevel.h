@@ -13,7 +13,6 @@
 #include "metron_tools.h"
 #include "riscv_core.h"
 
-template <int foobar = 2>
 class toplevel {
  public:
   logic<1> reset;

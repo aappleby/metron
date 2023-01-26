@@ -20,25 +20,23 @@ typedef std::vector<uint8_t> blob;
 //------------------------------------------------------------------------------
 
 struct MtModule {
-  MtModule(MtSourceFile* source_file);
+  CHECK_RETURN Err init(MtSourceFile* source_file, MnNode node);
   ~MtModule();
 
   const char* cname() const { return mod_name.c_str(); }
   std::string name() const { return mod_name; }
 
-  CHECK_RETURN Err init(MtSourceFile* source_file, MnNode node);
 
   MtMethod* get_method(const std::string& name);
-  MtField* get_field(const std::string& name);
-  MtField* get_field(MnNode node);
-  MtField* get_component(const std::string& name);
-  MtField* get_enum(const std::string& name);
+  MtField*  get_field(const std::string& name);
+  MtField*  get_component(const std::string& name);
+  MtField*  get_enum(const std::string& name);
 
-  MtField* get_input_signal(const std::string& name);
-  MtField* get_output_signal(const std::string& name);
-  MtField* get_output_register(const std::string& name);
+  MtField*  get_input_signal(const std::string& name);
+  MtField*  get_output_signal(const std::string& name);
+  MtField*  get_output_register(const std::string& name);
 
-  void dump();
+  void dump_module();
   void dump_method_list(const std::vector<MtMethod*>& methods) const;
 
   CHECK_RETURN Err collect_fields_and_methods();

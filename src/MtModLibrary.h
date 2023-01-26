@@ -37,7 +37,7 @@ struct MtModLibrary {
   CHECK_RETURN Err propagate(propagate_visitor v);
 
 
-  void dump();
+  void dump_lib();
   void teardown();
 
   //----------

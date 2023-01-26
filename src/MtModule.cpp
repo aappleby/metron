@@ -25,9 +25,6 @@ extern const TSLanguage *tree_sitter_cpp();
 
 //------------------------------------------------------------------------------
 
-MtModule::MtModule(MtSourceFile* source_file) : source_file(source_file), lib(source_file->lib) {
-}
-
 MtModule::~MtModule() {
   for (auto p : all_modparams) delete p;
   for (auto f : all_fields) delete f;
@@ -41,6 +38,9 @@ MtModule::~MtModule() {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtModule::init(MtSourceFile *_source_file, MnNode _node) {
+  this->source_file = _source_file;
+  this->lib = _source_file->lib;
+
   Err err;
 
   if (_node.sym == sym_template_declaration) {
@@ -103,33 +103,6 @@ MtField *MtModule::get_field(const std::string &name) {
     if (f->name() == name) return f;
   }
   return nullptr;
-}
-
-MtField *MtModule::get_field(MnNode node) {
-  if (node.sym == sym_subscript_expression) {
-    return get_field(node.get_field(field_argument));
-  }
-
-  if (node.sym == sym_identifier || node.sym == alias_sym_field_identifier) {
-    for (auto f : all_fields) {
-      if (f->name() == node.text()) return f;
-    }
-    return nullptr;
-  }
-  else if (node.sym == sym_field_expression) {
-    auto lhs = node.get_field(field_argument);
-    auto rhs = node.get_field(field_field);
-
-    auto lhs_field = get_field(lhs);
-    if (lhs_field) {
-      return lhs_field->get_subfield(rhs);
-    } else {
-      return nullptr;
-    }
-  }
-  else {
-    return nullptr;
-  }
 }
 
 MtField *MtModule::get_component(const std::string &name) {
@@ -334,7 +307,7 @@ CHECK_RETURN Err MtModule::build_call_graph() {
           auto component_name = func.get_field(field_argument);
           auto component_method_name = func.get_field(field_field).text();
 
-          auto component = get_field(component_name);
+          auto component = get_field(component_name.name4());
           if (component) {
             auto dst_mod = source_file->lib->get_module(component->type_name());
             if (dst_mod) {
@@ -405,7 +378,7 @@ CHECK_RETURN Err MtModule::categorize_fields(bool verbose) {
 
 //------------------------------------------------------------------------------
 
-void MtModule::dump() {
+void MtModule::dump_module() {
   LOG_B("Module %s, %d instances\n", cname(), refcount);
   LOG_INDENT();
 

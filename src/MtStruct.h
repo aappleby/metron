@@ -18,7 +18,7 @@ struct MtStruct {
 
   // FIXME put something here
 
-  void dump() {}
+  void dump_struct() {}
 
   MtField* get_field(MnNode node);
 

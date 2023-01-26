@@ -30,8 +30,6 @@ module toplevel (
   // tock() ports
   input int tock_bogus_param
 );
-  parameter foobar = 2;
-
  /*public:*/
 
 

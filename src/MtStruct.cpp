@@ -1,5 +1,7 @@
 #include "MtStruct.h"
 
+#include "MtField.h"
+
 Err MtStruct::collect_fields() {
   Err err;
   for (auto f : node.get_field(field_body)) {

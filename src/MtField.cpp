@@ -11,8 +11,6 @@
 //------------------------------------------------------------------------------
 
 MtField::MtField(MtModule *_parent_mod, const MnNode &n, bool is_public) {
-  //n.dump_tree();
-
   assert(n.sym == sym_field_declaration);
   assert(_parent_mod);
 
@@ -46,11 +44,11 @@ MtField::MtField(MtModule *_parent_mod, const MnNode &n, bool is_public) {
   this->_const = _node.is_const();
   this->_enum = _type.sym == sym_enum_specifier;
 
-  this->_parent_mod = _parent_mod;
+  this->_parent_mod    = _parent_mod;
   this->_parent_struct = nullptr;
 
-  this->_type_mod = _parent_mod->lib->get_module(_type_name);
-  this->_type_struct = nullptr;
+  this->_type_mod    = _parent_mod->lib->get_module(_type_name);
+  this->_type_struct = _parent_mod->lib->get_struct(_type_name);
 }
 
 //------------------------------------------------------------------------------

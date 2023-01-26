@@ -4819,36 +4819,42 @@ class toplevel {
 #endif // TOPLEVEL_H
 #include "metron_tools.h"
 
-/* verilator lint_off UNUSEDSIGNAL */
-// verilator lint_off undriven
+// Yosys doesn't seem to support passing structs as args or returning them from
+// functions. :/
 
-struct tilelink_d {
-  logic<3>  d_opcode;
+struct InnerStruct {
+  logic<8> a;
+  logic<8> b;
+  logic<8> c;
 };
 
-
-class pinwheel_core {
-public:
-  void tock(tilelink_d bus_tld) {
-  }
+struct OuterStruct {
+  InnerStruct x;
+  InnerStruct y;
+  InnerStruct z;
 };
 
-class pinwheel {
+class Module {
 public:
 
-  pinwheel_core core;
-  tilelink_d bus_tld;
-  tilelink_d bus_tld2;
-  logic<1> cond_1;
+  OuterStruct s;
 
-  void tock() {
-    bus_tld.d_opcode = b3(DONTCARE);
-    if (cond_1 == 1)  bus_tld = bus_tld2;
-    core.tock(bus_tld);
+  void func1() {
+    s.x.a = 1;
+    s.x.b = 2;
+    s.x.c = 3;
   }
 
-  void tick() {
-    bus_tld2.d_opcode = bus_tld2.d_opcode + 1;
+  void func2() {
+    s.y.a = 4;
+    s.y.b = 5;
+    s.y.c = 6;
+  }
+
+  void func3() {
+    s.z.a = 7;
+    s.z.b = 8;
+    s.z.c = 9;
   }
 };
 class Adder {

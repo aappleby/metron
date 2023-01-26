@@ -92,69 +92,73 @@ def main():
         for filename in metron_sv
     ])
 
-    print_b("Checking that all converted files can be parsed by Verilator")
-    errors += check_commands_good([
-        f"verilator -Isrc --lint-only {filename}"
-        for filename in metron_sv
-    ])
+    ################################################################################
+    # These tests are skipped in basic mode
 
-    if options.synth:
-        print_b("Checking that all converted files can be synthesized by Yosys")
+    if not options.basic:
+        print_b("Checking that all converted files can be parsed by Verilator")
         errors += check_commands_good([
-            f"yosys -q -p 'read_verilog -Isrc -sv {filename}; dump; synth_ice40 -json /dev/null'"
-            for filename in metron_sv
-        ])
-    else:
-        print_b("Checking that all converted files can be parsed by Yosys")
-        errors += check_commands_good([
-            f"yosys -q -p 'read_verilog -Isrc -sv {filename};'"
+            f"verilator -Isrc --lint-only {filename}"
             for filename in metron_sv
         ])
 
-    print_b("Checking that all converted files can be parsed by Icarus")
-    errors += check_commands_good([
-        f"iverilog -g2012 -Wall -Isrc -o /dev/null {filename}"
-        for filename in metron_sv
-    ])
+        if options.synth:
+            print_b("Checking that all converted files can be synthesized by Yosys")
+            errors += check_commands_good([
+                f"yosys -q -p 'read_verilog -Isrc -sv {filename}; dump; synth_ice40 -json /dev/null'"
+                for filename in metron_sv
+            ])
+        else:
+            print_b("Checking that all converted files can be parsed by Yosys")
+            errors += check_commands_good([
+                f"yosys -q -p 'read_verilog -Isrc -sv {filename};'"
+                for filename in metron_sv
+            ])
 
-    print_b("Running misc bad commands")
-    errors += check_commands_bad([
-        f"bin/metron skjdlsfjkhdfsjhdf.h",
-        f"bin/metron -c skjdlsfjkhdfsjhdf.h",
-    ])
+        print_b("Checking that all converted files can be parsed by Icarus")
+        errors += check_commands_good([
+            f"iverilog -g2012 -Wall -Isrc -o /dev/null {filename}"
+            for filename in metron_sv
+        ])
 
-    print_b("Running standalone tests")
-    errors += check_commands_good([
-        "bin/metron_test",
-        "bin/examples/uart",
-        "bin/examples/uart_vl",
-        "bin/examples/uart_iv",
-        "bin/examples/rvsimple",
-        "bin/examples/rvsimple_vl",
-        "bin/examples/rvsimple_ref",
-    ])
+        print_b("Running misc bad commands")
+        errors += check_commands_bad([
+            f"bin/metron skjdlsfjkhdfsjhdf.h",
+            f"bin/metron -c skjdlsfjkhdfsjhdf.h",
+        ])
 
-    # Lockstep tests are slow because compiler...
-    print_b("Testing lockstep simulations")
-    errors += test_lockstep()
+        print_b("Running standalone tests")
+        errors += check_commands_good([
+            "bin/metron_test",
+            "bin/examples/uart",
+            "bin/examples/uart_vl",
+            "bin/examples/uart_iv",
+            "bin/examples/rvsimple",
+            "bin/examples/rvsimple_vl",
+            "bin/examples/rvsimple_ref",
+        ])
 
-    print_b("Checking bug repro cases for Verilator")
-    errors += check_commands_bad([
-        f"verilator -Isrc --lint-only {filename}"
-        for filename in sorted(glob.glob("tests/metron_broken/verilator*.sv"))
-    ])
+        # Lockstep tests are slow because compiler...
+        print_b("Testing lockstep simulations")
+        errors += test_lockstep()
 
-    print_b("Checking bug repro cases for Yosys")
-    errors += check_commands_bad([
-        f"yosys -q -p 'read_verilog -Isrc -sv {filename};  dump; synth_ice40 -json /dev/null'"
-        for filename in sorted(glob.glob("tests/metron_broken/yosys*.sv"))
-    ])
+        print_b("Checking bug repro cases for Verilator")
+        errors += check_commands_bad([
+            f"verilator -Isrc --lint-only {filename}"
+            for filename in sorted(glob.glob("tests/metron_broken/verilator*.sv"))
+        ])
 
-    print_b("Checking bug repro cases for Icarus")
-    errors += check_commands_bad([
-        f"iverilog -g2012 -Wall -Isrc -o /dev/null {filename}"
-        for filename in sorted(glob.glob("tests/metron_blocked/icarus*.sv"))
-    ])
+        print_b("Checking bug repro cases for Yosys")
+        errors += check_commands_bad([
+            f"yosys -q -p 'read_verilog -Isrc -sv {filename};  dump; synth_ice40 -json /dev/null'"
+            for filename in sorted(glob.glob("tests/metron_broken/yosys*.sv"))
+        ])
+
+        print_b("Checking bug repro cases for Icarus")
+        errors += check_commands_bad([
+            f"iverilog -g2012 -Wall -Isrc -o /dev/null {filename}"
+            for filename in sorted(glob.glob("tests/metron_blocked/icarus*.sv"))
+        ])
 
     ############################################################
 

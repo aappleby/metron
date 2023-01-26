@@ -157,30 +157,6 @@ int main(int argc, char** argv) {
     }
 
     //----------------------------------------
-    // Give all fields pointers to their type struct or mod
-
-    // FIXME: Why aren't these being intialized in the field constructors?
-
-    for (auto m : lib.all_modules) {
-      for (auto f : m->all_fields) {
-        f->_type_mod = lib.get_module(f->type_name());
-
-        auto new_struct = lib.get_struct(f->type_name());
-        if (new_struct != f->_type_struct) {
-          f->_node.dump_tree();
-          //assert(false);
-          f->_type_struct = new_struct;
-        }
-      }
-    }
-
-    for (auto s : lib.all_structs) {
-      for (auto f : s->fields) {
-        f->_type_struct = lib.get_struct(f->type_name());
-      }
-    }
-
-    //----------------------------------------
     // Build call graphs
 
     for (auto m : lib.all_modules) {

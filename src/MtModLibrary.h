@@ -38,7 +38,6 @@ struct MtModLibrary {
 
 
   void dump();
-  void dump_call_graph();
   void teardown();
 
   //----------

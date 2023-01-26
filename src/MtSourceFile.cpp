@@ -42,7 +42,7 @@ CHECK_RETURN Err MtSourceFile::init(MtModLibrary* _lib,
   // Pull out all modules from the top level of the source.
   TSNode ts_root = ts_tree_root_node(tree);
   auto root_sym = ts_node_symbol(ts_root);
-  root_node = MnNode(MnNode(ts_root, root_sym, 0, this));
+  root_node = MnNode(ts_root, root_sym, 0, this);
   err << collect_modules(root_node);
 
   return err;

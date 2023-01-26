@@ -36,8 +36,9 @@ MtSourceFile *MtModLibrary::get_source(const std::string &name) {
 //------------------------------------------------------------------------------
 
 void MtModLibrary::teardown() {
-  all_modules.clear();
   for (auto s : source_files) delete s;
+  for (auto m : all_modules) delete m;
+  for (auto s : all_structs) delete s;
 }
 
 //------------------------------------------------------------------------------
@@ -483,44 +484,5 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
 
   return err;
 }
-
-//------------------------------------------------------------------------------
-
-// KCOV_OFF
-void MtModLibrary::dump_call_graph() {
-  LOG_G("Call graph:\n");
-
-  std::function<void(MtModule *, MtMethod *)> dump_call_tree =
-      [&](MtModule *mod, MtMethod *method) {
-        uint32_t color = 0x808080;
-
-        if (method->is_init_) color = 0x8080FF;
-        if (method->is_tick_) color = 0x80FF80;
-        if (method->is_tock_) color = 0xFF8080;
-        if (method->is_func_) color = 0xFFFFFF;
-
-        if (!method->is_valid()) color = 0x808080;
-
-        LOG_C(color, " %s.%s()\n", mod->cname(), method->cname());
-
-        LOG_INDENT_SCOPE();
-        for (auto callee : method->internal_callees) {
-          dump_call_tree(callee->_mod, callee);
-        }
-      };
-
-  /*
-  for (auto mod : modules) {
-    if (mod->parents.size()) continue;
-    for (auto method : mod->all_methods) {
-      if (method->callers.empty()) {
-        LOG_INDENT_SCOPE();
-        dump_call_tree(mod, method);
-      }
-    }
-  }
-  */
-}
-// KCOV_ON
 
 //------------------------------------------------------------------------------

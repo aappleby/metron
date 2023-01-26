@@ -25,7 +25,6 @@ struct MtMethod {
   bool is_public() const;
 
   void dump();
-  void dump_call_graph();
 
   bool has_params() const;
   bool has_return() const;

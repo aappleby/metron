@@ -2278,8 +2278,8 @@ CHECK_RETURN Err MtCursor::emit_field_port(MtField* f) {
 
   if (err.has_err()) return err;
 
-  auto node_type = f->_node.get_field(field_type);
-  auto node_decl = f->_node.get_field(field_declarator);
+  auto node_type = f->get_type_node();
+  auto node_decl = f->get_decl_node();
 
   MtCursor sub_cursor = *this;
   sub_cursor.cursor = node_type.start();

@@ -155,6 +155,8 @@ CHECK_RETURN Err MtModLibrary::load_blob(const std::string &filename,
       MtSourceFile *source = nullptr;
       err << load_source(file.c_str(), source);
     }
+
+    source_file->src_includes.push_back(get_source(file));
   }
 
   out_source = source_file;

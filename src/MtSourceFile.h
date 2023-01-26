@@ -21,7 +21,7 @@ struct MtSourceFile {
                         void* _src_blob, int _src_len);
   ~MtSourceFile();
 
-  CHECK_RETURN Err collect_modules(MnNode toplevel);
+  CHECK_RETURN Err collect_modules_and_structs(MnNode toplevel);
 
   MtModLibrary* lib = nullptr;
 
@@ -37,6 +37,10 @@ struct MtSourceFile {
   const TSLanguage* lang = nullptr;
   TSParser* parser = nullptr;
   TSTree* tree = nullptr;
+
+  std::vector<MtModule*>     src_modules;
+  std::vector<MtStruct*>     src_structs;
+  std::vector<MtSourceFile*> src_includes;
 };
 
 //------------------------------------------------------------------------------

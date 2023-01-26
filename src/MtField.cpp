@@ -119,6 +119,10 @@ bool MtField::is_port() const {
   return is_public();
 }
 
+bool MtField::is_array() const {
+  return _decl.sym == sym_array_declarator;
+}
+
 //------------------------------------------------------------------------------
 
 bool MtField::is_input() const {

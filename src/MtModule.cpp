@@ -369,7 +369,7 @@ CHECK_RETURN Err MtModule::categorize_fields(bool verbose) {
     else {
       err << ERR("Don't know how to categorize %s = %s\n", f->cname(),
                  to_string(f->_state));
-      f->_node.error();
+      f->error();
     }
   }
 

@@ -28,6 +28,7 @@ struct MtField {
   bool is_register() const;
   bool is_signal() const;
   bool is_dead() const;
+  bool is_array() const;
 
   MnNode get_type_node() const;
   MnNode get_decl_node() const;
@@ -38,11 +39,11 @@ struct MtField {
 
   void dump() const;
 
-  //----------
+  void error() const {
+    _node.error();
+  }
 
-  MnNode _node;
-  MnNode _type;
-  MnNode _decl;
+  //----------
 
   ContextState _state = CTX_PENDING;
 
@@ -55,6 +56,10 @@ struct MtField {
   MtStruct* _type_struct = nullptr;
 
 private:
+
+  MnNode _node;
+  MnNode _type;
+  MnNode _decl;
 
   std::string _name;
   std::string _type_name;

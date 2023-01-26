@@ -2266,11 +2266,11 @@ CHECK_RETURN Err MtCursor::emit_field_port(MtField* f) {
 
   err << emit_indent();
 
-  if (f->is_public_input()) {
+  if (f->is_public() && f->is_input()) {
     err << emit_print("input ");
-  } else if (f->is_public_signal()) {
+  } else if (f->is_public() && f->is_signal()) {
     err << emit_print("output ");
-  } else if (f->is_public_register()) {
+  } else if (f->is_public() && f->is_register()) {
     err << emit_print("output ");
   } else {
     err << ERR("Unknown field port type for %s\n", f->cname());

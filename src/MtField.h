@@ -21,17 +21,13 @@ struct MtField {
   bool is_struct() const;
   bool is_param() const;
   bool is_public() const;
+  bool is_private() const;
 
   bool is_port() const;
   bool is_input() const;
   bool is_register() const;
   bool is_signal() const;
   bool is_dead() const;
-  bool is_public_input() const;
-  bool is_public_signal() const;
-  bool is_public_register() const;
-  bool is_private_signal() const;
-  bool is_private_register() const;
 
   MnNode get_type_node() const;
   MnNode get_decl_node() const;
@@ -47,15 +43,19 @@ struct MtField {
   MnNode _node;
 
   bool _public = false;
+  bool _static = false;
+  bool _const = false;
   bool _is_enum = false;
 
-  MtModule* _parent_mod = nullptr;
-  MtModule* _type_mod = nullptr;
-
-  MtStruct* _parent_struct = nullptr;
-  MtStruct* _type_struct = nullptr;
-
   ContextState _state = CTX_PENDING;
+
+  // The module or structure that this field is a child of.
+  MtModule* _parent_mod = nullptr;
+  MtStruct* _parent_struct = nullptr;
+
+  // The module or structure that this field is an instance of.
+  MtModule* _type_mod = nullptr;
+  MtStruct* _type_struct = nullptr;
 
 private:
   std::string _name;

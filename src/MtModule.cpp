@@ -368,19 +368,19 @@ CHECK_RETURN Err MtModule::categorize_fields(bool verbose) {
     if (f->is_component()) {
       components.push_back(f);
     }
-    else if (f->is_public_input()) {
+    else if (f->is_public() && f->is_input()) {
       input_signals.push_back(f);
     }
-    else if (f->is_public_signal()) {
+    else if (f->is_public() && f->is_signal()) {
       output_signals.push_back(f);
     }
-    else if (f->is_public_register()) {
+    else if (f->is_public() && f->is_register()) {
       output_registers.push_back(f);
     }
-    else if (f->is_private_register()) {
+    else if (f->is_private() && f->is_register()) {
       private_registers.push_back(f);
     }
-    else if (f->is_private_signal()) {
+    else if (f->is_private() && f->is_signal()) {
       private_signals.push_back(f);
     }
     else if (!f->is_public() && f->is_input()) {

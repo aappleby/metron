@@ -18,6 +18,8 @@ MtField::MtField(MtModule *_parent_mod, const MnNode &n, bool is_public) {
   this->_name = _node.name4();
   this->_type = _node.type5();
   this->_public = is_public;
+  this->_static = _node.is_static();
+  this->_const = _node.is_const();
   this->_is_enum = false;
 
   this->_parent_mod = _parent_mod;
@@ -35,6 +37,8 @@ MtField::MtField(MtStruct *_parent_struct, const MnNode &n) {
   this->_node = n;
   this->_name = _node.name4();
   this->_type = _node.type5();
+  this->_static = _node.is_static();
+  this->_const = _node.is_const();
   this->_is_enum = false;
 
   this->_parent_mod = nullptr;
@@ -80,6 +84,10 @@ bool MtField::is_public() const {
   return _public;
 }
 
+bool MtField::is_private() const {
+  return !_public;
+}
+
 bool MtField::is_port() const {
   return is_public();
 }
@@ -98,26 +106,6 @@ bool MtField::is_signal() const {
 
 bool MtField::is_dead() const {
   return _state == CTX_NONE;
-}
-
-bool MtField::is_public_input() const {
-  return _public && is_input();
-}
-
-bool MtField::is_public_signal() const {
-  return _public && is_signal();
-}
-
-bool MtField::is_public_register() const {
-  return _public && is_register();
-}
-
-bool MtField::is_private_signal() const {
-  return !_public && is_signal();
-}
-
-bool MtField::is_private_register() const {
-  return !_public && is_register();
 }
 
 MnNode MtField::get_type_node() const {

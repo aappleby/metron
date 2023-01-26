@@ -193,7 +193,7 @@ int main(int argc, char** argv) {
     LOG_B("Tracing version 2: %s\n", mod->cname());
     LOG_INDENT();
 
-    MtModuleInstance* mod_inst = new MtModuleInstance();
+    MtModuleInstance* mod_inst = new MtModuleInstance(mod);
 
     delete mod_inst;
 

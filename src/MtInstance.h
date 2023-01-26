@@ -4,44 +4,51 @@
 #include "MtUtils.h"
 
 struct MtField;
+struct MtMethod;
 struct MtModule;
 struct MtStruct;
 
 struct MtArgumentInstance;
-struct MtRetvalInstance;
 struct MtFieldInstance;
 struct MtMethodInstance;
 struct MtModuleInstance;
+struct MtRetvalInstance;
 struct MtStructInstance;
 
 //------------------------------------------------------------------------------
 
 struct MtArgumentInstance {
-  std::string name;
-  ContextType log_top;
-  ContextType log_next;
+  std::string _name;
+  ContextType _log_top;
+  ContextType _log_next;
 };
 
 //------------------------------------------------------------------------------
 
 struct MtRetvalInstance {
-  ContextType log_top;
-  ContextType log_next;
+  ContextType _log_top;
+  ContextType _log_next;
 };
 
 //------------------------------------------------------------------------------
 
 struct MtFieldInstance {
-  ContextType log_top;
-  ContextType log_next;
+  MtFieldInstance(MtField* f);
+
+  std::string _name;
+  ContextType _log_top;
+  ContextType _log_next;
 
   MtField*  _field;
-  std::vector<ContextType> action_log;
+  std::vector<ContextType> _action_log;
 };
 
 //------------------------------------------------------------------------------
 
 struct MtMethodInstance {
+  MtMethodInstance(MtMethod* m);
+
+  MtMethod* _method;
   std::vector<MtArgumentInstance*> _args;
   MtRetvalInstance* _retval = nullptr;
 };
@@ -49,6 +56,8 @@ struct MtMethodInstance {
 //------------------------------------------------------------------------------
 
 struct MtModuleInstance {
+  MtModuleInstance(MtModule* m);
+
   MtModule* _mod;
   std::vector<MtFieldInstance*> _fields;
   std::vector<MtMethodInstance*> _methods;
@@ -57,6 +66,8 @@ struct MtModuleInstance {
 //------------------------------------------------------------------------------
 
 struct MtStructInstance {
+  MtStructInstance(MtStruct* s);
+
   MtStruct* _struct;
   std::vector<MtFieldInstance*> _fields;
 };

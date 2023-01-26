@@ -45,9 +45,9 @@ struct MtModLibrary {
 
   std::vector<std::string> search_paths;
   std::vector<MtSourceFile*> source_files;
-  std::vector<MtModule*> modules;
+  std::vector<MtModule*> all_modules;
 
-  std::vector<MtStruct*> structs;
+  std::vector<MtStruct*> all_structs;
 };
 
 //------------------------------------------------------------------------------

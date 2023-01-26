@@ -20,7 +20,7 @@ std::vector<std::string> split_field_path(const std::string &path);
 //------------------------------------------------------------------------------
 
 MtModule *MtModLibrary::get_module(const std::string &name) {
-  for (auto mod : modules) {
+  for (auto mod : all_modules) {
     if (mod->mod_name == name) return mod;
   }
   return nullptr;
@@ -36,7 +36,7 @@ MtSourceFile *MtModLibrary::get_source(const std::string &name) {
 //------------------------------------------------------------------------------
 
 void MtModLibrary::teardown() {
-  modules.clear();
+  all_modules.clear();
   for (auto s : source_files) delete s;
 }
 
@@ -183,7 +183,7 @@ CHECK_RETURN Err MtModLibrary::propagate(propagate_visitor v) {
   do {
     passes++;
     changes = 0;
-    for (auto mod : modules) {
+    for (auto mod : all_modules) {
       for (auto m : mod->all_methods) {
         if (!m->categorized()) {
           changes += v(m);
@@ -198,7 +198,7 @@ CHECK_RETURN Err MtModLibrary::propagate(propagate_visitor v) {
 //------------------------------------------------------------------------------
 
 MtStruct* MtModLibrary::get_struct(const std::string& name) const {
-  for (auto s : structs) {
+  for (auto s : all_structs) {
     if (s->name == name) return s;
   }
   return nullptr;
@@ -209,11 +209,13 @@ MtStruct* MtModLibrary::get_struct(const std::string& name) const {
 CHECK_RETURN Err MtModLibrary::collect_structs() {
   Err err;
 
+  /*
   for (auto source : source_files) {
     for (auto s : source->src_structs) {
       structs.push_back(s);
     }
   }
+  */
 
   return err;
 }
@@ -227,7 +229,7 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
   // Trace done, all our fields should have a state assigned. Categorize the
   // methods.
 
-  for (auto mod : modules) {
+  for (auto mod : all_modules) {
     for (auto m : mod->all_methods) {
       if (m->is_constructor()) {
         if (mod->constructor) {
@@ -242,7 +244,7 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
   //----------------------------------------
   // Methods named "tick" are ticks, etc.
 
-  for (auto mod : modules) {
+  for (auto mod : all_modules) {
     for (auto m : mod->all_methods) {
       //if (m->name().starts_with("init")) m->is_init_ = true;
       if (m->name().starts_with("tick")) m->is_tick_ = true;
@@ -412,7 +414,7 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
   //----------------------------------------
   // Methods categorized, we can assign emit types
 
-  for (auto mod : modules) {
+  for (auto mod : all_modules) {
     for (auto m : mod->all_methods) {
 
       if (m->is_constructor()) {
@@ -450,7 +452,7 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
   //----------------------------------------
   // Methods categorized, we can split up internal_callers
 
-  for (auto mod : modules) {
+  for (auto mod : all_modules) {
     for (auto m : mod->all_methods) {
       for (auto c : m->internal_callers) {
         if (c->is_tick_) m->tick_callers.insert(c);
@@ -463,7 +465,7 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
   //----------------------------------------
   // Methods categorized, now we can categorize the inputs of the methods.
 
-  for (auto mod : modules) {
+  for (auto mod : all_modules) {
     for (auto m : mod->all_methods) {
       if (!m->is_public()) continue;
 
@@ -485,7 +487,7 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
   //----------------------------------------
   // Check for ticks with return values.
 
-  for (auto mod : modules) {
+  for (auto mod : all_modules) {
     for (auto m : mod->all_methods) {
       if (m->is_tick_ && m->has_return()) {
         err << ERR("Tick method %s.%s is not allowed to have a return value.\n",

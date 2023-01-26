@@ -150,7 +150,7 @@ int main(int argc, char** argv) {
   {
     for (auto s : lib.source_files) {
       for (auto m : s->modules) {
-        lib.modules.push_back(m);
+        lib.all_modules.push_back(m);
       }
     }
 
@@ -160,7 +160,7 @@ int main(int argc, char** argv) {
     // All modules are now in the library, we can resolve references to other
     // modules when we're collecting fields.
 
-    for (auto mod : lib.modules) {
+    for (auto mod : lib.all_modules) {
       err << mod->collect_parts();
     }
 
@@ -169,7 +169,7 @@ int main(int argc, char** argv) {
 
     // FIXME: Why aren't these being intialized in the field constructors?
 
-    for (auto m : lib.modules) {
+    for (auto m : lib.all_modules) {
       for (auto f : m->all_fields) {
         f->_type_mod = lib.get_module(f->type_name());
 
@@ -182,7 +182,7 @@ int main(int argc, char** argv) {
       }
     }
 
-    for (auto s : lib.structs) {
+    for (auto s : lib.all_structs) {
       for (auto f : s->fields) {
         f->_type_struct = lib.get_struct(f->type_name());
       }
@@ -191,14 +191,14 @@ int main(int argc, char** argv) {
     //----------------------------------------
     // Build call graphs
 
-    for (auto m : lib.modules) {
+    for (auto m : lib.all_modules) {
       err << m->build_call_graph();
     }
 
     //----------------------------------------
     // Count module instances so we can find top modules.
 
-    for (auto mod : lib.modules) {
+    for (auto mod : lib.all_modules) {
       for (auto field : mod->all_fields) {
         if (field->is_component()) {
           field->_type_mod->refcount++;
@@ -216,7 +216,7 @@ int main(int argc, char** argv) {
   //----------------------------------------
   // Trace
 
-  for (auto mod : lib.modules) {
+  for (auto mod : lib.all_modules) {
     LOG_B("Tracing %s\n", mod->cname());
     LOG_INDENT();
     mod->ctx = new MtContext(mod);
@@ -256,7 +256,7 @@ int main(int argc, char** argv) {
   // Categorize fields
 
   LOG_B("Categorizing fields\n");
-  for (auto m : lib.modules) {
+  for (auto m : lib.all_modules) {
     LOG_INDENT_SCOPE();
     err << m->categorize_fields(verbose);
   }
@@ -277,7 +277,7 @@ int main(int argc, char** argv) {
 
   int uncategorized = 0;
   int invalid = 0;
-  for (auto mod : lib.modules) {
+  for (auto mod : lib.all_modules) {
     for (auto m : mod->all_methods) {
       if (!m->categorized()) {
         uncategorized++;
@@ -330,13 +330,13 @@ int main(int argc, char** argv) {
       }
     };
 
-    for (auto m : lib.modules) {
+    for (auto m : lib.all_modules) {
       if (m->refcount == 0) step(m, 0, false);
     }
     LOG_DEDENT();
     LOG_G("\n");
 
-    for (auto m : lib.modules) m->dump();
+    for (auto m : lib.all_modules) m->dump();
 
     LOG_DEDENT();
     LOG("\n");
@@ -346,7 +346,7 @@ int main(int argc, char** argv) {
   // Check for and report bad fields.
 
   std::vector<MtField*> bad_fields;
-  for (auto mod : lib.modules) {
+  for (auto mod : lib.all_modules) {
     for (auto field : mod->all_fields) {
       if (field->_state == CTX_INVALID) {
         err << ERR("Field %s is in an invalid state\n", field->cname());
@@ -361,7 +361,7 @@ int main(int argc, char** argv) {
     LOG_G("\n");
   }
 
-  for (auto mod : lib.modules) {
+  for (auto mod : lib.all_modules) {
     for (auto method : mod->all_methods) {
       if (method->name().starts_with("tick") && !method->is_tick_) {
         err << ERR("Method %s labeled 'tick' but is not a tick.\n", method->cname());

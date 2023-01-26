@@ -119,7 +119,7 @@ MtField *MtModule::get_field(MnNode node) {
 
     auto lhs_field = get_field(lhs);
     if (lhs_field) {
-      return lhs_field->get_field(rhs);
+      return lhs_field->get_subfield(rhs);
     } else {
       return nullptr;
     }
@@ -289,7 +289,6 @@ CHECK_RETURN Err MtModule::collect_parts() {
       auto node_type = n.get_field(field_type);
       if (node_type.sym == sym_enum_specifier) {
         auto e = new MtField(this, n, in_public);
-        e->_is_enum = true;
         all_enums.push_back(e);
       } else {
         auto new_field = new MtField(this, n, in_public);

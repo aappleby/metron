@@ -34,18 +34,15 @@ struct MtField {
 
   bool is_enum();
 
-  MtField* get_field(MnNode node);
+  MtField* get_subfield(MnNode node);
 
   void dump() const;
 
   //----------
 
   MnNode _node;
-
-  bool _public = false;
-  bool _static = false;
-  bool _const = false;
-  bool _is_enum = false;
+  MnNode _type;
+  MnNode _decl;
 
   ContextState _state = CTX_PENDING;
 
@@ -58,9 +55,14 @@ struct MtField {
   MtStruct* _type_struct = nullptr;
 
 private:
-  std::string _name;
-  std::string _type;
 
+  std::string _name;
+  std::string _type_name;
+
+  bool _static = false;
+  bool _const = false;
+  bool _public = false;
+  bool _enum = false;
 };
 
 //------------------------------------------------------------------------------

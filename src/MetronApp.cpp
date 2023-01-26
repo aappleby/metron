@@ -200,9 +200,10 @@ int main(int argc, char** argv) {
   }
   LOG_B("\n");
 
-  LOG_G("\n");
-  lib.dump();
-  LOG_G("\n");
+  if (verbose) {
+    lib.dump();
+    LOG_G("\n");
+  }
 
   //----------------------------------------
   // Trace

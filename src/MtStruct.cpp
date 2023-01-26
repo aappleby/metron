@@ -12,7 +12,7 @@ MtField *MtStruct::get_field(MnNode node) {
     auto rhs = node.get_field(field_field);
 
     auto lhs_field = get_field(lhs);
-    return lhs_field->get_field(rhs);
+    return lhs_field->get_subfield(rhs);
   }
   else {
     return nullptr;

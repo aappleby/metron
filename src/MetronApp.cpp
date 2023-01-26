@@ -2,11 +2,12 @@
 #include "MtContext.h"
 #include "MtCursor.h"
 #include "MtField.h"
+#include "MtInstance.h"
 #include "MtMethod.h"
-#include "MtStruct.h"
 #include "MtModLibrary.h"
 #include "MtModule.h"
 #include "MtSourceFile.h"
+#include "MtStruct.h"
 #include "MtTracer.h"
 #include "submodules/CLI11/include/CLI/App.hpp"
 #include "submodules/CLI11/include/CLI/Config.hpp"
@@ -183,6 +184,20 @@ int main(int argc, char** argv) {
   if (1 /*verbose*/) {
     lib.dump_lib();
     LOG_G("\n");
+  }
+
+  //----------------------------------------
+  // New Trace
+
+  for (auto mod : lib.all_modules) {
+    LOG_B("Tracing version 2: %s\n", mod->cname());
+    LOG_INDENT();
+
+    MtModuleInstance* mod_inst = new MtModuleInstance();
+
+    delete mod_inst;
+
+    LOG_DEDENT();
   }
 
   //----------------------------------------

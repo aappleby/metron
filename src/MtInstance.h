@@ -1,21 +1,23 @@
 #pragma once
 #include <vector>
+#include <string>
 #include "MtUtils.h"
 
 struct MtField;
 struct MtModule;
 struct MtStruct;
 
-struct MtFieldInstance;
-struct MtModuleInstance;
-struct MtStructInstance;
-struct MtCallInstance;
 struct MtArgumentInstance;
 struct MtRetvalInstance;
+struct MtFieldInstance;
+struct MtMethodInstance;
+struct MtModuleInstance;
+struct MtStructInstance;
 
 //------------------------------------------------------------------------------
 
 struct MtArgumentInstance {
+  std::string name;
   ContextType log_top;
   ContextType log_next;
 };
@@ -39,9 +41,17 @@ struct MtFieldInstance {
 
 //------------------------------------------------------------------------------
 
+struct MtMethodInstance {
+  std::vector<MtArgumentInstance*> _args;
+  MtRetvalInstance* _retval = nullptr;
+};
+
+//------------------------------------------------------------------------------
+
 struct MtModuleInstance {
   MtModule* _mod;
   std::vector<MtFieldInstance*> _fields;
+  std::vector<MtMethodInstance*> _methods;
 };
 
 //------------------------------------------------------------------------------
@@ -49,13 +59,6 @@ struct MtModuleInstance {
 struct MtStructInstance {
   MtStruct* _struct;
   std::vector<MtFieldInstance*> _fields;
-};
-
-//------------------------------------------------------------------------------
-
-struct MtMethodInstance {
-  std::vector<MtArgumentInstance*> _args;
-  MtRetvalInstance* _retval = nullptr;
 };
 
 //------------------------------------------------------------------------------

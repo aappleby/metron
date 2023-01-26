@@ -13,10 +13,15 @@ struct MtField {
   MtField(MtModule* _parent_mod, const MnNode& n, bool is_public);
   MtField(MtStruct* _parent_struct, const MnNode& n);
 
+  MnNode get_type_node() const;
+  MnNode get_decl_node() const;
+
   const char* cname() const;
   const std::string& name() const;
   const std::string& type_name() const;
 
+  bool is_enum() const;
+  bool is_array() const;
   bool is_component() const;
   bool is_struct() const;
   bool is_param() const;
@@ -28,20 +33,11 @@ struct MtField {
   bool is_register() const;
   bool is_signal() const;
   bool is_dead() const;
-  bool is_array() const;
-
-  MnNode get_type_node() const;
-  MnNode get_decl_node() const;
-
-  bool is_enum();
 
   MtField* get_subfield(MnNode node);
 
   void dump() const;
-
-  void error() const {
-    _node.error();
-  }
+  void error() const;
 
   //----------
 

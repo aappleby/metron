@@ -99,7 +99,7 @@ bool MtField::is_struct() const {
   return _type_struct != nullptr;
 }
 
-bool MtField::is_enum() {
+bool MtField::is_enum() const {
   return _enum;
 }
 
@@ -206,6 +206,10 @@ void MtField::dump() const {
   }
 
   LOG("\n");
+}
+
+void MtField::error() const {
+  _node.error();
 }
 
 //------------------------------------------------------------------------------

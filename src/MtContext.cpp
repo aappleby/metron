@@ -137,35 +137,6 @@ MtContext *MtContext::construct_return(MtContext *_parent) {
 
 //------------------------------------------------------------------------------
 
-/*
-MtContext *MtContext::clone() {
-  MtContext *result = new MtContext();
-
-  result->name = name;
-  result->context_type = context_type;
-  result->parent = parent;
-
-  result->field = field;
-  result->method = method;
-
-  result->parent_mod = parent_mod;
-  result->parent_struct = parent_struct;
-
-  result->type_mod = type_mod;
-  result->type_struct = type_struct;
-
-  for (auto c : children) {
-    result->children.push_back(c->clone());
-  }
-
-  result->action_log = action_log;
-
-  return result;
-}
-*/
-
-//------------------------------------------------------------------------------
-
 std::string MtContext::get_path() const {
   if (parent) {
     return parent->get_path() + "." + name;

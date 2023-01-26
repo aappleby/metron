@@ -204,6 +204,8 @@ build wasm/obj/src/MtField.o: compile_cpp_ems src/MtField.cpp
   includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
 build wasm/obj/src/MtFuncParam.o: compile_cpp_ems src/MtFuncParam.cpp
   includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
+build wasm/obj/src/MtInstance.o: compile_cpp_ems src/MtInstance.cpp
+  includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
 build wasm/obj/src/MtMethod.o: compile_cpp_ems src/MtMethod.cpp
   includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
 build wasm/obj/src/MtModLibrary.o: compile_cpp_ems src/MtModLibrary.cpp
@@ -229,9 +231,9 @@ build docs/app/metron.js: link_ems $
     wasm/obj/src/MetronApp.o wasm/obj/src/Platform.o wasm/obj/src/Err.o $
     wasm/obj/src/MtChecker.o wasm/obj/src/MtContext.o $
     wasm/obj/src/MtCursor.o wasm/obj/src/MtField.o $
-    wasm/obj/src/MtFuncParam.o wasm/obj/src/MtMethod.o $
-    wasm/obj/src/MtModLibrary.o wasm/obj/src/MtModParam.o $
-    wasm/obj/src/MtModule.o wasm/obj/src/MtNode.o $
+    wasm/obj/src/MtFuncParam.o wasm/obj/src/MtInstance.o $
+    wasm/obj/src/MtMethod.o wasm/obj/src/MtModLibrary.o $
+    wasm/obj/src/MtModParam.o wasm/obj/src/MtModule.o wasm/obj/src/MtNode.o $
     wasm/obj/src/MtSourceFile.o wasm/obj/src/MtStruct.o $
     wasm/obj/src/MtTracer.o wasm/obj/src/MtUtils.o
   includes = -I. -Isrc -Isubmodules/tree-sitter/lib/include
@@ -275,6 +277,8 @@ build obj/src/MtField.o: compile_cpp src/MtField.cpp
   includes = -I. -Isubmodules/tree-sitter/lib/include
 build obj/src/MtFuncParam.o: compile_cpp src/MtFuncParam.cpp
   includes = -I. -Isubmodules/tree-sitter/lib/include
+build obj/src/MtInstance.o: compile_cpp src/MtInstance.cpp
+  includes = -I. -Isubmodules/tree-sitter/lib/include
 build obj/src/MtMethod.o: compile_cpp src/MtMethod.cpp
   includes = -I. -Isubmodules/tree-sitter/lib/include
 build obj/src/MtModLibrary.o: compile_cpp src/MtModLibrary.cpp
@@ -299,10 +303,10 @@ build bin/libmetron.a: static_lib obj/submodules/tree-sitter/lib/src/lib.o $
     obj/submodules/tree-sitter-cpp/src/parser.o $
     obj/submodules/tree-sitter-cpp/src/scanner.o obj/src/Err.o $
     obj/src/MtChecker.o obj/src/MtContext.o obj/src/MtCursor.o $
-    obj/src/MtField.o obj/src/MtFuncParam.o obj/src/MtMethod.o $
-    obj/src/MtModLibrary.o obj/src/MtModParam.o obj/src/MtModule.o $
-    obj/src/MtNode.o obj/src/MtSourceFile.o obj/src/MtStruct.o $
-    obj/src/MtTracer.o obj/src/MtUtils.o obj/src/Platform.o
+    obj/src/MtField.o obj/src/MtFuncParam.o obj/src/MtInstance.o $
+    obj/src/MtMethod.o obj/src/MtModLibrary.o obj/src/MtModParam.o $
+    obj/src/MtModule.o obj/src/MtNode.o obj/src/MtSourceFile.o $
+    obj/src/MtStruct.o obj/src/MtTracer.o obj/src/MtUtils.o obj/src/Platform.o
   includes = -I. -Isubmodules/tree-sitter/lib/include
 
 

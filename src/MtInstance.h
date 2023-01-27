@@ -78,6 +78,9 @@ struct MtModuleInstance : public MtInstance {
   virtual ~MtModuleInstance();
   void dump() override;
 
+  MtMethodInstance* get_method(const std::string& name);
+  MtInstance* get_field(const std::string& name);
+
   MtField* _field;
   MtModule* _mod;
   std::vector<MtInstance*> _fields;

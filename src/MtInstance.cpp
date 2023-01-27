@@ -164,4 +164,14 @@ void MtModuleInstance::dump() {
   for (auto m : _methods) m->dump();
 }
 
+MtMethodInstance* MtModuleInstance::get_method(const std::string& name) {
+  for (auto m : _methods) if (m->_name == name) return m;
+  return nullptr;
+}
+
+MtInstance* MtModuleInstance::get_field(const std::string& name) {
+  for (auto f : _fields) if (f->_name == name) return f;
+  return nullptr;
+}
+
 //------------------------------------------------------------------------------

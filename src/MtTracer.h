@@ -22,7 +22,6 @@ class MtTracer {
   CHECK_RETURN Err trace_default(MtContext* mod_ctx, MnNode node,
                                  ContextAction action = CTX_READ);
 
-  // clang-format off
   CHECK_RETURN Err trace_identifier(MtContext* ctx, MnNode node, ContextAction action);
   CHECK_RETURN Err trace_expression(MtContext* ctx, MnNode node, ContextAction action);
   CHECK_RETURN Err trace_statement(MtContext* ctx, MnNode node);
@@ -50,8 +49,6 @@ class MtTracer {
   CHECK_RETURN Err trace_sym_template_argument_list(MtContext* ctx, MnNode node);
   CHECK_RETURN Err trace_sym_template_type(MtContext* ctx, MnNode node);
   CHECK_RETURN Err trace_sym_type_identifier(MtContext* ctx, MnNode node);
-
-  // clang-format on
 
   MtModLibrary* lib;
   MtContext* ctx_root;

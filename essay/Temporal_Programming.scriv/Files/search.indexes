@@ -7091,6 +7091,11 @@ There’s a lot of research into finite-state automata, particularly in converti
         <Document ID="606E2F6A-318D-44EA-A9BC-81093A72CD2F">
             <Title>Introduction</Title>
             <Synopsis>This is the synopsis for the introduction. Can you only edit this in corkboard mode?</Synopsis>
+            <Text>
+
+
+
+</Text>
         </Document>
         <Document ID="612916C2-0708-407C-8DE3-B3B3B492F281">
             <Title>What would a &quot;temporal CPU&quot; look like?</Title>

@@ -14,7 +14,10 @@ public:
   MtTracer2(MtModLibrary* lib, MtModuleInstance* root_inst, bool verbose);
 
   CHECK_RETURN Err trace_method(MtMethod* method);
+
   CHECK_RETURN Err trace_declarator(MtMethodInstance* inst, MnNode node);
+  CHECK_RETURN Err trace_statement (MtMethodInstance* inst, MnNode node);
+  CHECK_RETURN Err trace_default   (MtMethodInstance* inst, MnNode node);
 
   CHECK_RETURN Err trace_sym_function_definition(MtMethodInstance* inst, MnNode node);
   CHECK_RETURN Err trace_sym_compound_statement (MtMethodInstance* inst, MnNode node);

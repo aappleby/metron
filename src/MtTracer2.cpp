@@ -48,6 +48,94 @@ CHECK_RETURN Err MtTracer2::trace_declarator(MtMethodInstance* inst, MnNode node
   return err;
 }
 
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtTracer2::trace_statement(MtMethodInstance* inst, MnNode node) {
+  Err err;
+
+  switch (node.sym) {
+    case sym_compound_statement:
+      //err << trace_sym_compound_statement(ctx, node);
+      break;
+    case sym_case_statement:
+      //err << trace_sym_case_statement(ctx, node);
+      break;
+    case sym_break_statement:
+      //err << trace_sym_break_statement(ctx, node);
+      break;
+    case sym_if_statement:
+      //err << trace_sym_if_statement(ctx, node);
+      break;
+    case sym_expression_statement:
+      //err << trace_expression(ctx, node.child(0), CTX_READ);
+      break;
+    case sym_switch_statement:
+      //err << trace_sym_switch_statement(ctx, node);
+      break;
+    case sym_return_statement:
+      //err << trace_sym_return_statement(ctx, node);
+      break;
+    case sym_for_statement:
+      //err << trace_sym_for_statement(ctx, node);
+      break;
+
+    default:
+      //err << trace_default(ctx, node);
+      break;
+  }
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtTracer2::trace_default(MtMethodInstance* inst, MnNode node) {
+  Err err;
+  if (!node.is_named()) return err;
+
+  switch (node.sym) {
+    case sym_comment:
+    case sym_using_declaration:
+    case sym_number_literal:
+    case sym_string_literal:
+      break;
+    default:
+      // KCOV_OFF
+      err << ERR("%s : No handler for %s\n", __func__, node.ts_node_type());
+      node.error();
+      break;
+      // KCOV_ON
+  }
+
+  return err;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -107,11 +195,11 @@ CHECK_RETURN Err MtTracer2::trace_sym_compound_statement(MtMethodInstance* inst,
     if (child.sym == sym_comment && child.contains("metron_noconvert")) { noconvert = true; }
 
     if (child.sym == sym_declaration) {
-      //err << trace_sym_declaration(ctx, child);
+      err << trace_sym_declaration(inst, child);
     } else if (child.is_statement()) {
-      //err << trace_statement(ctx, child);
+      err << trace_statement(inst, child);
     } else {
-      //err << trace_default(ctx, child);
+      err << trace_default(inst, child);
     }
   }
 

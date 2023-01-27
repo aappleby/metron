@@ -190,15 +190,20 @@ int main(int argc, char** argv) {
   // New Trace
 
   for (auto mod : lib.all_modules) {
+    if (mod->refcount) continue;
+
     LOG_B("Tracing version 2: %s\n", mod->cname());
     LOG_INDENT();
 
     MtModuleInstance* mod_inst = new MtModuleInstance(mod);
 
+    mod_inst->dump();
+
     delete mod_inst;
 
     LOG_DEDENT();
   }
+  LOG_B("\n");
 
   //----------------------------------------
   // Trace

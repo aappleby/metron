@@ -1,48 +1,43 @@
 `include "metron_tools.sv"
 
-/* verilator lint_off UNUSEDSIGNAL */
-// verilator lint_off undriven
+// Yosys doesn't seem to support passing structs as args or returning them from
+// functions. :/
 
 typedef struct packed {
-  logic[2:0]  d_opcode;
-} tilelink_d;
+  logic[7:0] a;
+  logic[7:0] b;
+  logic[7:0] c;
+} InnerStruct;
 
-
-module pinwheel_core (
-  // tock() ports
-  input tilelink_d tock_bus_tld
+module Submodule (
 );
 /*public:*/
-  always_comb begin : tock
-  end
 endmodule
 
-module pinwheel (
+module Module (
   // global clock
   input logic clock,
-  // input signals
-  input logic cond_1,
-  // output signals
-  output tilelink_d bus_tld,
   // output registers
-  output tilelink_d bus_tld2
+  output logic[7:0] a,
+  output logic[7:0] b,
+  output logic[7:0] c,
+  // func1() ports
+  input InnerStruct func1_is,
+  input logic[7:0] func1_derp
 );
 /*public:*/
 
-  pinwheel_core core(
-    // tock() ports
-    .tock_bus_tld(core_tock_bus_tld)
+  Submodule sm(
   );
-  tilelink_d core_tock_bus_tld;
 
 
-  always_comb begin : tock
-    bus_tld.d_opcode = 3'bx;
-    if (cond_1 == 1)  bus_tld = bus_tld2;
-    core_tock_bus_tld = bus_tld;
-  end
 
-  always_ff @(posedge clock) begin : tick
-    bus_tld2.d_opcode <= bus_tld2.d_opcode + 1;
+  always_ff @(posedge clock) begin : func1
+    sm.d = a;
+    sm.e = b;
+    sm.f = c;
+    a <= func1_is.c + func1_derp;
+    b <= func1_is.b + func1_derp;
+    c <= func1_is.a + func1_derp;
   end
 endmodule

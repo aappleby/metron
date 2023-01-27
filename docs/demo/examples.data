@@ -4827,33 +4827,29 @@ struct InnerStruct {
   logic<8> c;
 };
 
-struct OuterStruct {
-  InnerStruct x;
-  InnerStruct y;
-  InnerStruct z;
+class Submodule {
+public:
+  logic<8> d;
+  logic<8> e;
+  logic<8> f;
 };
 
 class Module {
 public:
 
-  OuterStruct s;
+  Submodule sm;
 
-  void func1() {
-    s.x.a = 1;
-    s.x.b = 2;
-    s.x.c = 3;
-  }
+  logic<8> a;
+  logic<8> b;
+  logic<8> c;
 
-  void func2() {
-    s.y.a = 4;
-    s.y.b = 5;
-    s.y.c = 6;
-  }
-
-  void func3() {
-    s.z.a = 7;
-    s.z.b = 8;
-    s.z.c = 9;
+  void func1(InnerStruct is, logic<8> derp) {
+    sm.d = a;
+    sm.e = b;
+    sm.f = c;
+    a = is.c + derp;
+    b = is.b + derp;
+    c = is.a + derp;
   }
 };
 class Adder {

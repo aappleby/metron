@@ -24,11 +24,19 @@ public:
   CHECK_RETURN Err trace_expression(MtMethodInstance* inst, MnNode node, TraceAction action);
   CHECK_RETURN Err trace_default   (MtMethodInstance* inst, MnNode node);
 
-  CHECK_RETURN Err trace_sym_case_statement     (MtMethodInstance* inst, MnNode node);
-  CHECK_RETURN Err trace_sym_compound_statement (MtMethodInstance* inst, MnNode node);
-  CHECK_RETURN Err trace_sym_declaration        (MtMethodInstance* inst, MnNode node);
-  CHECK_RETURN Err trace_sym_for_statement      (MtMethodInstance* inst, MnNode node);
-  CHECK_RETURN Err trace_sym_function_definition(MtMethodInstance* inst, MnNode node);
+  CHECK_RETURN Err trace_sym_assignment_expression (MtMethodInstance* inst, MnNode node);
+  CHECK_RETURN Err trace_sym_binary_expression     (MtMethodInstance* inst, MnNode node);
+  CHECK_RETURN Err trace_sym_case_statement        (MtMethodInstance* inst, MnNode node);
+  CHECK_RETURN Err trace_sym_compound_statement    (MtMethodInstance* inst, MnNode node);
+  CHECK_RETURN Err trace_sym_condition_clause      (MtMethodInstance* inst, MnNode node);
+  CHECK_RETURN Err trace_sym_conditional_expression(MtMethodInstance* inst, MnNode node);
+  CHECK_RETURN Err trace_sym_declaration           (MtMethodInstance* inst, MnNode node);
+  CHECK_RETURN Err trace_sym_for_statement         (MtMethodInstance* inst, MnNode node);
+  CHECK_RETURN Err trace_sym_function_definition   (MtMethodInstance* inst, MnNode node);
+  CHECK_RETURN Err trace_sym_if_statement          (MtMethodInstance* inst, MnNode node);
+  CHECK_RETURN Err trace_sym_init_declarator       (MtMethodInstance* inst, MnNode node);
+  CHECK_RETURN Err trace_sym_return_statement      (MtMethodInstance* inst, MnNode node);
+  CHECK_RETURN Err trace_sym_switch_statement      (MtMethodInstance* inst, MnNode node);
 
   std::vector<MtInstance*> path;
 

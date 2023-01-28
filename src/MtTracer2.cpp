@@ -91,7 +91,7 @@ CHECK_RETURN Err MtTracer2::trace_declarator(MtMethodInstance* inst, MnNode node
       err << trace_identifier(inst, node, CTX_READ);
       break;
     case sym_init_declarator:
-      //err << trace_sym_init_declarator(ctx, node);
+      err << trace_sym_init_declarator(inst, node);
       break;
     default:
       err << trace_default(inst, node);
@@ -111,22 +111,22 @@ CHECK_RETURN Err MtTracer2::trace_statement(MtMethodInstance* inst, MnNode node)
       err << trace_sym_compound_statement(inst, node);
       break;
     case sym_case_statement:
-      //err << trace_sym_case_statement(inst, node);
+      err << trace_sym_case_statement(inst, node);
       break;
     case sym_if_statement:
-      //err << trace_sym_if_statement(inst, node);
+      err << trace_sym_if_statement(inst, node);
       break;
     case sym_expression_statement:
       err << trace_expression(inst, node.child(0), CTX_READ);
       break;
     case sym_switch_statement:
-      //err << trace_sym_switch_statement(inst, node);
+      err << trace_sym_switch_statement(inst, node);
       break;
     case sym_return_statement:
-      //err << trace_sym_return_statement(inst, node);
+      err << trace_sym_return_statement(inst, node);
       break;
     case sym_for_statement:
-      //err << trace_sym_for_statement(inst, node);
+      err << trace_sym_for_statement(inst, node);
       break;
 
     default:
@@ -148,7 +148,7 @@ CHECK_RETURN Err MtTracer2::trace_expression(MtMethodInstance* inst, MnNode node
       err << trace_identifier(inst, node, action);
       break;
     case sym_conditional_expression:
-      //err << trace_sym_conditional_expression(inst, node);
+      err << trace_sym_conditional_expression(inst, node);
       break;
     case sym_field_expression:
       //err << trace_sym_field_expression(inst, node, action);
@@ -177,18 +177,12 @@ CHECK_RETURN Err MtTracer2::trace_expression(MtMethodInstance* inst, MnNode node
       break;
 
     case sym_binary_expression:
-      //err << trace_sym_binary_expression(inst, node);
+      err << trace_sym_binary_expression(inst, node);
       break;
 
     case sym_initializer_list:
       //err << trace_sym_initializer_list(inst, node);
       break;
-
-      /*
-      case sym_condition_clause:
-        err << trace_expression(ctx, node.child(1), action);
-        break;
-      */
 
     default:
       err << trace_default(inst, node);
@@ -278,6 +272,41 @@ CHECK_RETURN Err MtTracer2::trace_default(MtMethodInstance* inst, MnNode node) {
 
 //------------------------------------------------------------------------------
 
+CHECK_RETURN Err MtTracer2::trace_sym_assignment_expression(MtMethodInstance* inst, MnNode node) {
+  Err err;
+
+  auto op = node.get_field(field_operator).text();
+
+  if (op == "=") {
+    err << trace_expression(inst, node.get_field(field_right), CTX_READ);
+    err << trace_expression(inst, node.get_field(field_left), CTX_WRITE);
+  }
+  else {
+    err << trace_expression(inst, node.get_field(field_right), CTX_READ);
+    err << trace_expression(inst, node.get_field(field_left), CTX_READ);
+    err << trace_expression(inst, node.get_field(field_left), CTX_WRITE);
+  }
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtTracer2::trace_sym_binary_expression(MtMethodInstance* inst, MnNode node) {
+  Err err;
+  assert(node.sym == sym_binary_expression);
+
+  auto node_lhs = node.get_field(field_left);
+  auto node_rhs = node.get_field(field_right);
+
+  err << trace_expression(inst, node_lhs, CTX_READ);
+  err << trace_expression(inst, node_rhs, CTX_READ);
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
 CHECK_RETURN Err MtTracer2::trace_sym_case_statement(MtMethodInstance* inst, MnNode node) {
   Err err;
   assert(node.sym == sym_case_statement);
@@ -325,6 +354,66 @@ CHECK_RETURN Err MtTracer2::trace_sym_compound_statement(MtMethodInstance* inst,
       err << trace_default(inst, child);
     }
   }
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtTracer2::trace_sym_condition_clause(MtMethodInstance* ctx, MnNode node) {
+  Err err;
+  assert(node.sym == sym_condition_clause);
+
+  auto node_value = node.get_field(field_value);
+  err << trace_expression(ctx, node_value, CTX_READ);
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+// TREESITTER BUG - it isn't parsing "new_pad_x = pad_x + quad_dir ? 1 : 0;"
+// correctly
+
+/*
+[000.009] ========== tree dump begin
+[000.009]  � conditional_expression =
+[000.009]  ���� condition: assignment_expression =
+[000.009]  �  ���� left: identifier = "new_pad_x"
+[000.009]  �  ���� operator: lit = "="
+[000.009]  �  ���� right: binary_expression =
+[000.009]  �     ���� left: identifier = "pad_x"
+[000.009]  �     ���� operator: lit = "+"
+[000.009]  �     ���� right: identifier = "quad_dir"
+[000.009]  ���� lit = "?"
+[000.009]  ���� consequence: number_literal = "1"
+[000.009]  ���� lit = ":"
+[000.009]  ���� alternative: number_literal = "0"
+*/
+
+CHECK_RETURN Err MtTracer2::trace_sym_conditional_expression(MtMethodInstance* inst, MnNode node) {
+  Err err;
+  assert(node.sym == sym_conditional_expression);
+
+  auto node_cond = node.get_field(field_condition);
+  auto node_branch_a = node.get_field(field_consequence);
+  auto node_branch_b = node.get_field(field_alternative);
+
+  err << trace_expression(inst, node_cond, CTX_READ);
+
+  /*
+  ctx_root->start_branch_a();
+  if (!node_branch_a.is_null()) {
+    err << trace_expression(inst, node_branch_a, CTX_READ);
+  }
+  ctx_root->end_branch_a();
+
+  ctx_root->start_branch_b();
+  if (!node_branch_b.is_null()) {
+    err << trace_expression(inst, node_branch_b, CTX_READ);
+  }
+  ctx_root->end_branch_b();
+  */
 
   return err;
 }
@@ -382,6 +471,111 @@ CHECK_RETURN Err MtTracer2::trace_sym_function_definition(MtMethodInstance* inst
   auto node_body = node.get_field(field_body);
 
   err << trace_sym_compound_statement(inst, node_body);
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtTracer2::trace_sym_if_statement(MtMethodInstance* inst, MnNode node) {
+  Err err;
+  assert(node.sym == sym_if_statement);
+
+  auto node_cond = node.get_field(field_condition);
+  auto node_branch_a = node.get_field(field_consequence);
+  auto node_branch_b = node.get_field(field_alternative);
+
+  err << trace_sym_condition_clause(inst, node_cond);
+
+  /*
+  ctx_root->start_branch_a();
+  if (!node_branch_a.is_null()) {
+    err << trace_statement(ctx, node_branch_a);
+  }
+  ctx_root->end_branch_a();
+
+  ctx_root->start_branch_b();
+  if (!node_branch_b.is_null()) {
+    err << trace_statement(ctx, node_branch_b);
+  }
+  ctx_root->end_branch_b();
+  */
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtTracer2::trace_sym_init_declarator(MtMethodInstance* inst, MnNode node) {
+  Err err;
+  assert(node.sym == sym_init_declarator);
+
+  err << trace_expression(inst, node.get_field(field_value), CTX_READ);
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtTracer2::trace_sym_return_statement(MtMethodInstance* inst, MnNode node) {
+  Err err;
+  assert(node.sym == sym_return_statement);
+
+  auto node_lit = node.child(0);
+  auto node_value = node.child(1);
+  auto node_semi = node.child(2);
+
+  err << trace_expression(inst, node_value, CTX_READ);
+
+  //auto return_ctx = ctx->resolve("<return>");
+  //err << log_action(inst, CTX_WRITE, node.get_source());
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtTracer2::trace_sym_switch_statement(MtMethodInstance* inst, MnNode node) {
+  Err err;
+  assert(node.sym == sym_switch_statement);
+
+  err << trace_sym_condition_clause(inst, node.get_field(field_condition));
+
+  auto body = node.get_field(field_body);
+
+  bool has_default = false;
+  for (const auto& child : body) {
+    if (child.sym == sym_case_statement) {
+      if (child.named_child_count() == 1) {
+        continue;
+      }
+      if (child.child(0).text() == "default") {
+        has_default = true;
+      }
+    }
+  }
+
+  /*
+  ctx_root->start_switch();
+
+  for (const auto& child : body) {
+    if (child.sym == sym_case_statement) {
+      // skip cases without bodies
+      if (child.named_child_count() > 1) {
+        ctx_root->start_case();
+        err << trace_sym_case_statement(ctx, child);
+        ctx_root->end_case();
+      }
+    }
+  }
+
+  if (!has_default) {
+    ctx_root->start_case();
+    ctx_root->end_case();
+  }
+
+  ctx_root->end_switch();
+  */
 
   return err;
 }

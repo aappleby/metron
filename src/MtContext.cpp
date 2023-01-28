@@ -272,7 +272,7 @@ MtContext *MtContext::resolve(MnNode node) {
 
 //------------------------------------------------------------------------------
 
-void log_state(ContextState s) {
+void log_state(TraceState s) {
   if (s == CTX_SIGNAL || s == CTX_OUTPUT) {
     LOG_B("%s", to_string(s));
   } else if (s == CTX_NONE) {

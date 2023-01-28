@@ -20,7 +20,7 @@ enum ContextType {
   CTX_RETURN,
 };
 
-enum ContextState {
+enum TraceState {
   CTX_NONE = 0,
   CTX_INPUT,
   CTX_OUTPUT,
@@ -32,13 +32,13 @@ enum ContextState {
   CTX_NIL,      // not an actual state, just a placeholder
 };
 
-enum ContextAction {
+enum TraceAction {
   CTX_READ = 0,
   CTX_WRITE = 1,
 };
 
 // KCOV_OFF
-inline const char* to_string(ContextAction f) {
+inline const char* to_string(TraceAction f) {
   switch (f) {
     case CTX_READ:
       return "CTX_READ";
@@ -68,7 +68,7 @@ inline const char* to_string(ContextType c) {
   }
 }
 
-inline const char* to_string(ContextState f) {
+inline const char* to_string(TraceState f) {
   switch (f) {
     case CTX_NONE:
       return "CTX_NONE";
@@ -94,8 +94,8 @@ inline const char* to_string(ContextState f) {
 }
 // KCOV_ON
 
-ContextState merge_action(ContextState state, ContextAction action);
-ContextState merge_branch(ContextState ma, ContextState mb);
+TraceState merge_action(TraceState state, TraceAction action);
+TraceState merge_branch(TraceState ma, TraceState mb);
 
 std::string str_printf(const char* fmt, ...);
 

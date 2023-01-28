@@ -9,6 +9,7 @@
 #include "MtSourceFile.h"
 #include "MtStruct.h"
 #include "MtTracer.h"
+#include "MtTracer2.h"
 #include "submodules/CLI11/include/CLI/App.hpp"
 #include "submodules/CLI11/include/CLI/Config.hpp"
 #include "submodules/CLI11/include/CLI/Formatter.hpp"
@@ -181,7 +182,7 @@ int main(int argc, char** argv) {
   }
   LOG_B("\n");
 
-  if (1 /*verbose*/) {
+  if (verbose) {
     lib.dump_lib();
     LOG_G("\n");
   }
@@ -195,14 +196,20 @@ int main(int argc, char** argv) {
     LOG_B("Tracing version 2: %s\n", mod->cname());
     LOG_INDENT();
 
-    MtModuleInstance* mod_inst = new MtModuleInstance(mod);
+    MtModuleInstance* root_inst = new MtModuleInstance(mod);
+    root_inst->dump();
 
-    mod_inst->dump();
+    MtTracer2 tracer(&lib, root_inst, true);
 
-    delete mod_inst;
+    for (auto m : root_inst->_methods) {
+      err << tracer.trace_method(m->_method);
+    }
+
+    delete root_inst;
 
     LOG_DEDENT();
   }
+  LOG_B("Tracing version 2 done\n");
   LOG_B("\n");
 
   //----------------------------------------

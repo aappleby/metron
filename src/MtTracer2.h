@@ -3,6 +3,7 @@
 #include "Err.h"
 #include "Platform.h"
 #include "MtInstance.h"
+#include "MtUtils.h"
 
 struct MtModLibrary;
 struct MtField;
@@ -15,6 +16,7 @@ public:
 
   CHECK_RETURN Err trace_method(MtMethod* method);
 
+  CHECK_RETURN Err trace_identifier(MtMethodInstance* inst, MnNode node, TraceAction action);
   CHECK_RETURN Err trace_declarator(MtMethodInstance* inst, MnNode node);
   CHECK_RETURN Err trace_statement (MtMethodInstance* inst, MnNode node);
   CHECK_RETURN Err trace_default   (MtMethodInstance* inst, MnNode node);

@@ -7,6 +7,8 @@ struct MtField;
 struct MtMethod;
 struct MtModule;
 struct MtStruct;
+struct MnNode;
+
 
 struct MtInstance;
 struct MtPrimitiveInstance;
@@ -14,59 +16,82 @@ struct MtStructInstance;
 struct MtMethodInstance;
 struct MtModuleInstance;
 
+struct MtInstance {
+  MtInstance() {}
+  virtual ~MtInstance() {}
+
+  virtual void dump() {}
+};
+
 //------------------------------------------------------------------------------
 
-struct MtInstance {
-  MtInstance(const std::string& name);
-  virtual ~MtInstance();
-
+struct MtScope {
+  MtScope();
+  virtual ~MtScope();
   virtual void dump();
-
-  std::string _name;
-  ContextType _log_top;
-  ContextType _log_next;
-  std::vector<ContextType> _action_log;
 };
 
 //------------------------------------------------------------------------------
 
 struct MtPrimitiveInstance : public MtInstance {
-  MtPrimitiveInstance(MtField* _field);
+  MtPrimitiveInstance();
   virtual ~MtPrimitiveInstance();
-  void dump() override;
-
-  MtField* _field;
+  virtual void dump();
 };
 
 //------------------------------------------------------------------------------
 
 struct MtArrayInstance : public MtInstance {
-  MtArrayInstance(MtField* _field);
+  MtArrayInstance();
   virtual ~MtArrayInstance();
-  void dump() override;
+  virtual void dump();
+};
 
-  MtField* _field;
+//------------------------------------------------------------------------------
+
+struct MtParamInstance {
+  MtParamInstance(const std::string& name, MtInstance* value);
+  virtual ~MtParamInstance();
+  virtual void dump();
+
+  std::string _name;
+  MtInstance* _value;
+};
+
+//------------------------------------------------------------------------------
+
+struct MtFieldInstance {
+  MtFieldInstance(MtField* field);
+  virtual ~MtFieldInstance();
+  virtual void dump();
+
+  std::string _name;
+  MtField*    _field;
+  MtInstance* _value;
 };
 
 //------------------------------------------------------------------------------
 
 struct MtStructInstance : public MtInstance {
-  MtStructInstance(MtField* f);
-  void dump() override;
+  MtStructInstance(MtStruct* s);
+  virtual ~MtStructInstance();
+  virtual void dump();
 
-  MtField* _field;
-  std::vector<MtInstance*> _fields;
+  MtStruct* _struct;
+  std::vector<MtFieldInstance*> _fields;
 };
 
 //------------------------------------------------------------------------------
 
-struct MtMethodInstance : public MtInstance {
-  MtMethodInstance(MtMethod* m);
+struct MtMethodInstance {
+  MtMethodInstance(MtModuleInstance* module, MtMethod* method);
   virtual ~MtMethodInstance();
-  void dump() override;
+  virtual void dump();
 
+  std::string _name;
   MtMethod* _method;
-  std::vector<MtInstance*> _args;
+  MtModuleInstance* _module;
+  std::vector<MtParamInstance*> _params;
   MtInstance* _retval = nullptr;
 };
 
@@ -74,16 +99,14 @@ struct MtMethodInstance : public MtInstance {
 
 struct MtModuleInstance : public MtInstance {
   MtModuleInstance(MtModule* m);
-  MtModuleInstance(MtField* f);
   virtual ~MtModuleInstance();
-  void dump() override;
+  virtual void dump();
 
   MtMethodInstance* get_method(const std::string& name);
-  MtInstance* get_field(const std::string& name);
+  MtFieldInstance*  get_field (const std::string& name);
 
-  MtField* _field;
   MtModule* _mod;
-  std::vector<MtInstance*> _fields;
+  std::vector<MtFieldInstance*>  _fields;
   std::vector<MtMethodInstance*> _methods;
 };
 

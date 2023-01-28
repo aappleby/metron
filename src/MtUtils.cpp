@@ -6,10 +6,10 @@
 
 //------------------------------------------------------------------------------
 
-ContextState merge_action(ContextState state, ContextAction action) {
+TraceState merge_action(TraceState state, TraceAction action) {
   // clang-format off
 
-  ContextState result = CTX_INVALID;
+  TraceState result = CTX_INVALID;
 
   if (action == CTX_READ) {
     switch (state) {
@@ -51,7 +51,7 @@ ContextState merge_action(ContextState state, ContextAction action) {
 
 //-----------------------------------------------------------------------------
 
-ContextState merge_branch(ContextState ma, ContextState mb) {
+TraceState merge_branch(TraceState ma, TraceState mb) {
   if (ma == CTX_PENDING) {
     return mb;
   } else if (mb == CTX_PENDING) {
@@ -62,7 +62,7 @@ ContextState merge_branch(ContextState ma, ContextState mb) {
     return CTX_INVALID;
   } else {
     // clang-format off
-    ContextState table[6][6] = {
+    TraceState table[6][6] = {
       {CTX_NONE,     CTX_INPUT,    CTX_MAYBE,    CTX_MAYBE,    CTX_INVALID, CTX_REGISTER},
       {CTX_INPUT,    CTX_INPUT,    CTX_REGISTER, CTX_REGISTER, CTX_INVALID, CTX_REGISTER},
       {CTX_MAYBE,    CTX_REGISTER, CTX_OUTPUT,   CTX_MAYBE,    CTX_SIGNAL,  CTX_REGISTER},

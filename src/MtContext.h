@@ -12,7 +12,7 @@ struct MnNode;
 //------------------------------------------------------------------------------
 
 struct LogEntry {
-  ContextState state;
+  TraceState state;
 };
 
 //------------------------------------------------------------------------------
@@ -95,7 +95,7 @@ struct MtContext {
     for (auto c : children) c->end_switch();
   }
 
-  ContextState state() const {
+  TraceState state() const {
     return log_top.state;
   }
 

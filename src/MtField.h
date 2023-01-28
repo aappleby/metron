@@ -41,7 +41,7 @@ struct MtField {
 
   //----------
 
-  ContextState _state = CTX_PENDING;
+  TraceState _state = CTX_PENDING;
 
   // The module or structure that this field is a child of.
   MtModule* _parent_mod = nullptr;

@@ -23,8 +23,37 @@ CHECK_RETURN Err MtTracer2::trace_method(MtMethod* method) {
     err << ERR("Method %s has non-terminal return\n", method->cname());
   }
 
-  //err << trace_sym_function_definition(method_ctx, method->_node);
+  err << trace_sym_function_definition(method_inst, method->_node);
 
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtTracer2::trace_identifier(MtMethodInstance* inst, MnNode node, TraceAction action) {
+  Err err;
+
+  switch (node.sym) {
+    case sym_qualified_identifier:
+    case alias_sym_namespace_identifier:
+      // pretty sure these can't do anything
+      break;
+    case sym_identifier:
+    case alias_sym_field_identifier: {
+      MtFieldInstance* f = inst->_module->get_field(node.text());
+
+      /*
+      auto field_ctx = ctx->resolve(node.text());
+      if (field_ctx) {
+        err << log_action(ctx, field_ctx, action, node.get_source());
+      }
+      */
+      break;
+    }
+    default:
+      err << trace_default(inst, node);
+      break;
+  }
   return err;
 }
 
@@ -35,7 +64,7 @@ CHECK_RETURN Err MtTracer2::trace_declarator(MtMethodInstance* inst, MnNode node
 
   switch (node.sym) {
     case sym_identifier:
-      //err << trace_identifier(ctx, node, CTX_READ);
+      err << trace_identifier(inst, node, CTX_READ);
       break;
     case sym_init_declarator:
       //err << trace_sym_init_declarator(ctx, node);

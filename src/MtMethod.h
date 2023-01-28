@@ -45,7 +45,7 @@ struct MtMethod {
   MtModLibrary* _lib = nullptr;
   std::string _name;
   MnNode _type;
-  ContextState state = CTX_NONE;
+  TraceState state = CTX_NONE;
 
   //----------
 

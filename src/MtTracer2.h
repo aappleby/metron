@@ -14,6 +14,8 @@ class MtTracer2 {
 public:
   MtTracer2(MtModLibrary* lib, MtModuleInstance* root_inst, bool verbose);
 
+  CHECK_RETURN Err log_action(MtFieldInstance* field_inst, TraceAction action, SourceRange source);
+
   CHECK_RETURN Err trace_method(MtMethod* method);
 
   CHECK_RETURN Err trace_identifier(MtMethodInstance* inst, MnNode node, TraceAction action);

@@ -11,6 +11,36 @@ MtTracer2::MtTracer2(MtModLibrary* lib, MtModuleInstance* root_inst, bool verbos
   verbose(verbose) {
 }
 
+CHECK_RETURN Err MtTracer2::log_action(MtFieldInstance* field_inst, TraceAction action, SourceRange source) {
+
+  Err err;
+#if 0
+  assert(method_ctx->context_type == CTX_METHOD);
+  assert(method_ctx);
+  assert(dst_ctx);
+
+  if (action == CTX_WRITE) {
+    if (dst_ctx->context_type != CTX_RETURN) {
+      method_ctx->method->writes.insert(dst_ctx);
+    }
+  }
+
+  auto old_state = dst_ctx->log_top.state;
+  auto new_state = merge_action(old_state, action);
+  dst_ctx->log_top.state = new_state;
+
+  if (new_state == CTX_INVALID) {
+    printf("Invalid context state at\n");
+    for (auto c = source.start; c != source.end; c++) {
+      putc(*c, stdout);
+    }
+    printf("\n");
+
+  }
+#endif
+  return err;
+}
+
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer2::trace_method(MtMethod* method) {
@@ -40,14 +70,8 @@ CHECK_RETURN Err MtTracer2::trace_identifier(MtMethodInstance* inst, MnNode node
       break;
     case sym_identifier:
     case alias_sym_field_identifier: {
-      MtFieldInstance* f = inst->_module->get_field(node.text());
-
-      /*
-      auto field_ctx = ctx->resolve(node.text());
-      if (field_ctx) {
-        err << log_action(ctx, field_ctx, action, node.get_source());
-      }
-      */
+      MtFieldInstance* field_inst = inst->_module->get_field(node.text());
+      err << log_action(field_inst, action, node.get_source());
       break;
     }
     default:
@@ -70,7 +94,7 @@ CHECK_RETURN Err MtTracer2::trace_declarator(MtMethodInstance* inst, MnNode node
       //err << trace_sym_init_declarator(ctx, node);
       break;
     default:
-      //err << trace_default(ctx, node);
+      err << trace_default(inst, node);
       break;
   }
 
@@ -109,7 +133,7 @@ CHECK_RETURN Err MtTracer2::trace_statement(MtMethodInstance* inst, MnNode node)
       break;
 
     default:
-      //err << trace_default(ctx, node);
+      err << trace_default(inst, node);
       break;
   }
 

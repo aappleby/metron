@@ -108,7 +108,7 @@ CHECK_RETURN Err MtTracer2::trace_statement(MtMethodInstance* inst, MnNode node)
 
   switch (node.sym) {
     case sym_compound_statement:
-      //err << trace_sym_compound_statement(ctx, node);
+      err << trace_sym_compound_statement(inst, node);
       break;
     case sym_case_statement:
       //err << trace_sym_case_statement(ctx, node);
@@ -131,6 +131,67 @@ CHECK_RETURN Err MtTracer2::trace_statement(MtMethodInstance* inst, MnNode node)
     case sym_for_statement:
       //err << trace_sym_for_statement(ctx, node);
       break;
+
+    default:
+      err << trace_default(inst, node);
+      break;
+  }
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtTracer2::trace_expression(MtMethodInstance* inst, MnNode node, TraceAction action) {
+  Err err;
+
+  switch (node.sym) {
+    case sym_identifier:
+    case sym_qualified_identifier:
+      err << trace_identifier(inst, node, action);
+      break;
+    case sym_conditional_expression:
+      //err << trace_sym_conditional_expression(inst, node);
+      break;
+    case sym_field_expression:
+      //err << trace_sym_field_expression(inst, node, action);
+      break;
+    case sym_subscript_expression:
+      err << trace_expression(inst, node.get_field(field_index), CTX_READ);
+      err << trace_expression(inst, node.get_field(field_argument), action);
+      break;
+    case sym_call_expression:
+      //err << trace_sym_call_expression(inst, node);
+      break;
+    case sym_update_expression:
+      // this is "i++" or similar, which is a read and a write.
+      err << trace_expression(inst, node.get_field(field_argument), CTX_READ);
+      err << trace_expression(inst, node.get_field(field_argument), CTX_WRITE);
+      break;
+    case sym_assignment_expression:
+      //err << trace_sym_assignment_expression(inst, node);
+      break;
+    case sym_parenthesized_expression:
+      err << trace_expression(inst, node.child(1), action);
+      break;
+
+    case sym_unary_expression:
+      err << trace_expression(inst, node.get_field(field_argument), CTX_READ);
+      break;
+
+    case sym_binary_expression:
+      //err << trace_sym_binary_expression(inst, node);
+      break;
+
+    case sym_initializer_list:
+      //err << trace_sym_initializer_list(inst, node);
+      break;
+
+      /*
+      case sym_condition_clause:
+        err << trace_expression(ctx, node.child(1), action);
+        break;
+      */
 
     default:
       err << trace_default(inst, node);
@@ -219,21 +280,6 @@ CHECK_RETURN Err MtTracer2::trace_default(MtMethodInstance* inst, MnNode node) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer2::trace_sym_function_definition(MtMethodInstance* inst, MnNode node) {
-  Err err;
-  assert(node.sym == sym_function_definition);
-
-  auto node_type = node.get_field(field_type);
-  auto node_decl = node.get_field(field_declarator);
-  auto node_body = node.get_field(field_body);
-
-  err << trace_sym_compound_statement(inst, node_body);
-
-  return err;
-}
-
-//------------------------------------------------------------------------------
-
 CHECK_RETURN Err MtTracer2::trace_sym_compound_statement(MtMethodInstance* inst, MnNode node) {
   Err err;
   assert(node.sym == sym_compound_statement);
@@ -269,6 +315,49 @@ CHECK_RETURN Err MtTracer2::trace_sym_declaration(MtMethodInstance* inst, MnNode
   auto node_decl = node.get_field(field_declarator);
 
   err << trace_declarator(inst, node_decl);
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtTracer2::trace_sym_for_statement(MtMethodInstance* inst, MnNode node) {
+  Err err;
+
+  for (auto c : node) {
+    if (c.field == field_initializer) {
+      if (c.sym == sym_declaration) {
+        err << trace_sym_declaration(inst, c);
+      }
+      else {
+        err << trace_expression(inst, c, CTX_READ);
+      }
+    }
+    else if (c.is_expression()) {
+      err << trace_expression(inst, c, CTX_READ);
+    }
+    else if (c.is_statement()) {
+      err << trace_statement(inst, c);
+    }
+    else {
+      err << trace_default(inst, c);
+    }
+  }
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtTracer2::trace_sym_function_definition(MtMethodInstance* inst, MnNode node) {
+  Err err;
+  assert(node.sym == sym_function_definition);
+
+  auto node_type = node.get_field(field_type);
+  auto node_decl = node.get_field(field_declarator);
+  auto node_body = node.get_field(field_body);
+
+  err << trace_sym_compound_statement(inst, node_body);
 
   return err;
 }

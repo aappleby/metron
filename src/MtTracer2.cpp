@@ -111,25 +111,22 @@ CHECK_RETURN Err MtTracer2::trace_statement(MtMethodInstance* inst, MnNode node)
       err << trace_sym_compound_statement(inst, node);
       break;
     case sym_case_statement:
-      //err << trace_sym_case_statement(ctx, node);
-      break;
-    case sym_break_statement:
-      //err << trace_sym_break_statement(ctx, node);
+      //err << trace_sym_case_statement(inst, node);
       break;
     case sym_if_statement:
-      //err << trace_sym_if_statement(ctx, node);
+      //err << trace_sym_if_statement(inst, node);
       break;
     case sym_expression_statement:
-      //err << trace_expression(ctx, node.child(0), CTX_READ);
+      err << trace_expression(inst, node.child(0), CTX_READ);
       break;
     case sym_switch_statement:
-      //err << trace_sym_switch_statement(ctx, node);
+      //err << trace_sym_switch_statement(inst, node);
       break;
     case sym_return_statement:
-      //err << trace_sym_return_statement(ctx, node);
+      //err << trace_sym_return_statement(inst, node);
       break;
     case sym_for_statement:
-      //err << trace_sym_for_statement(ctx, node);
+      //err << trace_sym_for_statement(inst, node);
       break;
 
     default:
@@ -212,6 +209,7 @@ CHECK_RETURN Err MtTracer2::trace_default(MtMethodInstance* inst, MnNode node) {
     case sym_using_declaration:
     case sym_number_literal:
     case sym_string_literal:
+    case sym_break_statement:
       break;
     default:
       // KCOV_OFF
@@ -277,6 +275,32 @@ CHECK_RETURN Err MtTracer2::trace_default(MtMethodInstance* inst, MnNode node) {
 
 
 
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtTracer2::trace_sym_case_statement(MtMethodInstance* inst, MnNode node) {
+  Err err;
+  assert(node.sym == sym_case_statement);
+
+  // Everything after the colon should be statements.
+
+  bool hit_colon = false;
+  for (auto child : node) {
+    if (child.sym == anon_sym_COLON) {
+      hit_colon = true;
+      continue;
+    }
+    if (hit_colon) {
+      err << trace_statement(inst, child);
+    }
+  }
+
+  if (!MtChecker::ends_with_break(node)) {
+    err << ERR("Case statement in %s does not end with break\n", inst->_name.c_str());
+  }
+
+  return err;
+}
 
 //------------------------------------------------------------------------------
 

@@ -24,6 +24,7 @@ public:
   CHECK_RETURN Err trace_expression(MtMethodInstance* inst, MnNode node, TraceAction action);
   CHECK_RETURN Err trace_default   (MtMethodInstance* inst, MnNode node);
 
+  CHECK_RETURN Err trace_sym_case_statement     (MtMethodInstance* inst, MnNode node);
   CHECK_RETURN Err trace_sym_compound_statement (MtMethodInstance* inst, MnNode node);
   CHECK_RETURN Err trace_sym_declaration        (MtMethodInstance* inst, MnNode node);
   CHECK_RETURN Err trace_sym_for_statement      (MtMethodInstance* inst, MnNode node);

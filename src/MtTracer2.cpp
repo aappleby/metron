@@ -151,14 +151,14 @@ CHECK_RETURN Err MtTracer2::trace_expression(MtMethodInstance* inst, MnNode node
       err << trace_sym_conditional_expression(inst, node);
       break;
     case sym_field_expression:
-      //err << trace_sym_field_expression(inst, node, action);
+      err << trace_sym_field_expression(inst, node, action);
       break;
     case sym_subscript_expression:
       err << trace_expression(inst, node.get_field(field_index), CTX_READ);
       err << trace_expression(inst, node.get_field(field_argument), action);
       break;
     case sym_call_expression:
-      //err << trace_sym_call_expression(inst, node);
+      err << trace_sym_call_expression(inst, node);
       break;
     case sym_update_expression:
       // this is "i++" or similar, which is a read and a write.
@@ -166,7 +166,7 @@ CHECK_RETURN Err MtTracer2::trace_expression(MtMethodInstance* inst, MnNode node
       err << trace_expression(inst, node.get_field(field_argument), CTX_WRITE);
       break;
     case sym_assignment_expression:
-      //err << trace_sym_assignment_expression(inst, node);
+      err << trace_sym_assignment_expression(inst, node);
       break;
     case sym_parenthesized_expression:
       err << trace_expression(inst, node.child(1), action);
@@ -181,7 +181,7 @@ CHECK_RETURN Err MtTracer2::trace_expression(MtMethodInstance* inst, MnNode node
       break;
 
     case sym_initializer_list:
-      //err << trace_sym_initializer_list(inst, node);
+      err << trace_sym_initializer_list(inst, node);
       break;
 
     default:
@@ -301,6 +301,62 @@ CHECK_RETURN Err MtTracer2::trace_sym_binary_expression(MtMethodInstance* inst, 
 
   err << trace_expression(inst, node_lhs, CTX_READ);
   err << trace_expression(inst, node_rhs, CTX_READ);
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtTracer2::trace_sym_call_expression(MtMethodInstance* inst, MnNode node) {
+  Err err;
+  assert(node.sym == sym_call_expression);
+
+  auto node_func = node.get_field(field_function);
+  auto node_args = node.get_field(field_arguments);
+
+#if 0
+  // Trace the args first.
+  err << trace_sym_argument_list(inst, node_args);
+
+  // Now trace the actual call.
+  switch (node_func.sym) {
+    case sym_field_expression: {
+      auto child_name = node_func.get_field(field_argument).text();
+      auto child_ctx = ctx->resolve(child_name);
+      if (!child_ctx) return err << ERR("Child context missing\n");
+
+      auto child_func = node_func.get_field(field_field).text();
+      err << trace_call(inst, child_ctx->resolve(child_func), node);
+      break;
+    }
+    case sym_identifier:
+      err << trace_call(inst, ctx->resolve(node_func.text()), node);
+      break;
+
+    case sym_template_function: {
+      // FIXME this is a stub, we don't currently have real template function
+      // support
+      auto node_name =
+          node.get_field(field_function).get_field(field_name).text();
+      if (node_name == "bx" ||
+          node_name == "dup" ||
+          node_name == "sign_extend" ||
+          node_name == "zero_extend") {
+      } else {
+        err << ERR("trace_sym_call_expression - Unhandled template func %s\n", node.text().c_str());
+        return err;
+      }
+      break;
+    }
+
+    default:
+      // KCOV_OFF
+      err << ERR("%s : No handler for %s\n", __func__, node.ts_node_type());
+      node.error();
+      break;
+      // KCOV_ON
+  }
+#endif
 
   return err;
 }
@@ -434,6 +490,23 @@ CHECK_RETURN Err MtTracer2::trace_sym_declaration(MtMethodInstance* inst, MnNode
 
 //------------------------------------------------------------------------------
 
+CHECK_RETURN Err MtTracer2::trace_sym_field_expression(MtMethodInstance* ctx, MnNode node, TraceAction action) {
+  Err err;
+  assert(node.sym == sym_field_expression);
+
+  /*
+  auto field_ctx = ctx->resolve(node);
+
+  if (field_ctx) {
+    err << log_action(ctx, field_ctx, action, node.get_source());
+  }
+  */
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
 CHECK_RETURN Err MtTracer2::trace_sym_for_statement(MtMethodInstance* inst, MnNode node) {
   Err err;
 
@@ -511,6 +584,25 @@ CHECK_RETURN Err MtTracer2::trace_sym_init_declarator(MtMethodInstance* inst, Mn
   assert(node.sym == sym_init_declarator);
 
   err << trace_expression(inst, node.get_field(field_value), CTX_READ);
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtTracer2::trace_sym_initializer_list(MtMethodInstance* inst, MnNode node) {
+  Err err;
+  assert(node.sym == sym_initializer_list);
+
+  for (const auto& child : node) {
+    if (child.is_identifier()) {
+      err << trace_identifier(inst, child, CTX_READ);
+    } else if (child.is_expression()) {
+      err << trace_expression(inst, child, CTX_READ);
+    } else {
+      err << trace_default(inst, child);
+    }
+  }
 
   return err;
 }

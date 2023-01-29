@@ -120,7 +120,7 @@ MtStructInstance::~MtStructInstance() {
 }
 
 const std::string& MtStructInstance::name() const {
-  const std::string dummy = "<nullptr>";
+  static const std::string dummy = "<nullptr>";
   return _struct ? _struct->name : dummy;
 }
 

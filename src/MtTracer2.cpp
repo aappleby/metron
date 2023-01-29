@@ -1,7 +1,10 @@
 #include "MtTracer2.h"
-#include "MtNode.h"
-#include "MtMethod.h"
+
+#include "Log.h"
 #include "MtChecker.h"
+#include "MtField.h"
+#include "MtMethod.h"
+#include "MtNode.h"
 
 //------------------------------------------------------------------------------
 
@@ -11,9 +14,20 @@ MtTracer2::MtTracer2(MtModLibrary* lib, MtModuleInstance* root_inst, bool verbos
   verbose(verbose) {
 }
 
-CHECK_RETURN Err MtTracer2::log_action(MtFieldInstance* field_inst, TraceAction action, SourceRange source) {
+CHECK_RETURN Err MtTracer2::log_action(MtInstance* inst, TraceAction action, SourceRange source) {
 
   Err err;
+
+  if (action == CTX_READ) {
+    LOG_R("Read %s\n", inst->name().c_str());
+  }
+  else if (action == CTX_WRITE) {
+    LOG_R("Write %s\n", inst->name().c_str());
+  }
+  else {
+    LOG_R("???? %s\n", inst->name().c_str());
+  }
+
 #if 0
   assert(method_ctx->context_type == CTX_METHOD);
   assert(method_ctx);
@@ -71,7 +85,19 @@ CHECK_RETURN Err MtTracer2::trace_identifier(MtMethodInstance* inst, MnNode node
     case sym_identifier:
     case alias_sym_field_identifier: {
       MtFieldInstance* field_inst = inst->_module->get_field(node.text());
-      err << log_action(field_inst, action, node.get_source());
+      if (field_inst) {
+        err << log_action(field_inst->_value, action, node.get_source());
+        break;
+      }
+
+      MtParamInstance* param_inst = inst->get_param(node.text());
+      if (param_inst) {
+        err << log_action(param_inst->_value, action, node.get_source());
+        break;
+      }
+      else {
+        LOG_R("No field_inst for identifier %s\n", node.text().c_str());
+      }
       break;
     }
     default:
@@ -194,6 +220,36 @@ CHECK_RETURN Err MtTracer2::trace_expression(MtMethodInstance* inst, MnNode node
 
 //------------------------------------------------------------------------------
 
+CHECK_RETURN Err MtTracer2::trace_call(MtMethodInstance* src_inst, MtMethodInstance* dst_inst, MnNode node_call) {
+  Err err;
+
+  if (!dst_inst) return err;
+
+  // If the source and dest functions are not in the same module and the source
+  // module has to pass params to the dest module, we have to bind the params
+  // to ports to "call" it.
+
+  /*
+  bool cross_mod_call = src_inst->method->_mod != dst_inst->method->_mod;
+
+  if (cross_mod_call && dst_inst->method->has_params()) {
+    err << log_action(src_inst, dst_inst, CTX_WRITE, node_call.get_source());
+  }
+  */
+
+  err << trace_sym_function_definition(dst_inst, dst_inst->_method->_node);
+
+  /*
+  if (cross_mod_call && dst_inst->method->has_params()) {
+    err << log_action(src_inst, dst_inst, CTX_READ, node_call.get_source());
+  }
+  */
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
 CHECK_RETURN Err MtTracer2::trace_default(MtMethodInstance* inst, MnNode node) {
   Err err;
   if (!node.is_named()) return err;
@@ -272,6 +328,25 @@ CHECK_RETURN Err MtTracer2::trace_default(MtMethodInstance* inst, MnNode node) {
 
 //------------------------------------------------------------------------------
 
+CHECK_RETURN Err MtTracer2::trace_sym_argument_list(MtMethodInstance* inst, MnNode node) {
+  Err err;
+  assert(node.sym == sym_argument_list);
+
+  for (const auto& child : node) {
+    if (child.is_identifier()) {
+      err << trace_identifier(inst, child, CTX_READ);
+    } else if (child.is_expression()) {
+      err << trace_expression(inst, child, CTX_READ);
+    } else {
+      err << trace_default(inst, child);
+    }
+  }
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
 CHECK_RETURN Err MtTracer2::trace_sym_assignment_expression(MtMethodInstance* inst, MnNode node) {
   Err err;
 
@@ -314,26 +389,30 @@ CHECK_RETURN Err MtTracer2::trace_sym_call_expression(MtMethodInstance* inst, Mn
   auto node_func = node.get_field(field_function);
   auto node_args = node.get_field(field_arguments);
 
-#if 0
   // Trace the args first.
   err << trace_sym_argument_list(inst, node_args);
 
   // Now trace the actual call.
   switch (node_func.sym) {
     case sym_field_expression: {
+      /*
       auto child_name = node_func.get_field(field_argument).text();
       auto child_ctx = ctx->resolve(child_name);
       if (!child_ctx) return err << ERR("Child context missing\n");
 
       auto child_func = node_func.get_field(field_field).text();
       err << trace_call(inst, child_ctx->resolve(child_func), node);
+      */
       break;
     }
     case sym_identifier:
+      /*
       err << trace_call(inst, ctx->resolve(node_func.text()), node);
+      */
       break;
 
     case sym_template_function: {
+      /*
       // FIXME this is a stub, we don't currently have real template function
       // support
       auto node_name =
@@ -346,6 +425,7 @@ CHECK_RETURN Err MtTracer2::trace_sym_call_expression(MtMethodInstance* inst, Mn
         err << ERR("trace_sym_call_expression - Unhandled template func %s\n", node.text().c_str());
         return err;
       }
+      */
       break;
     }
 
@@ -356,7 +436,6 @@ CHECK_RETURN Err MtTracer2::trace_sym_call_expression(MtMethodInstance* inst, Mn
       break;
       // KCOV_ON
   }
-#endif
 
   return err;
 }
@@ -490,17 +569,42 @@ CHECK_RETURN Err MtTracer2::trace_sym_declaration(MtMethodInstance* inst, MnNode
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer2::trace_sym_field_expression(MtMethodInstance* ctx, MnNode node, TraceAction action) {
+CHECK_RETURN Err MtTracer2::trace_sym_field_expression(MtMethodInstance* inst, MnNode node, TraceAction action) {
   Err err;
   assert(node.sym == sym_field_expression);
 
-  /*
-  auto field_ctx = ctx->resolve(node);
+  auto base  = node.get_field(field_argument).text();
+  auto field = node.get_field(field_field).text();
 
-  if (field_ctx) {
-    err << log_action(ctx, field_ctx, action, node.get_source());
+  // FIXME need to actually traverse into base.field
+
+  MtFieldInstance* dst_field = nullptr;
+  for (auto f : inst->_module->_fields) {
+    if (f->_name == base) {
+      dst_field = f;
+      break;
+    }
   }
-  */
+
+  if (dst_field) {
+    err << log_action(dst_field->_value, action, node.get_source());
+    return err;
+  }
+
+  MtParamInstance* dst_param = nullptr;
+  for (auto p : inst->_params) {
+    if (p->_name == base) {
+      dst_param = p;
+      break;
+    }
+  }
+
+  if (dst_param) {
+    err << log_action(dst_param->_value, action, node.get_source());
+    return err;
+  }
+
+  err << ERR("Could not resolve %s in method %s\n", node.text().c_str(), inst->_name.c_str());
 
   return err;
 }

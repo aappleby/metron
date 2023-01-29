@@ -19,7 +19,7 @@ struct MtModuleInstance;
 struct MtInstance {
   MtInstance() {}
   virtual ~MtInstance() {}
-
+  virtual const std::string& name() const;
   virtual void dump() {}
 };
 
@@ -36,6 +36,7 @@ struct MtScope {
 struct MtPrimitiveInstance : public MtInstance {
   MtPrimitiveInstance();
   virtual ~MtPrimitiveInstance();
+  virtual const std::string& name() const;
   virtual void dump();
 };
 
@@ -44,6 +45,7 @@ struct MtPrimitiveInstance : public MtInstance {
 struct MtArrayInstance : public MtInstance {
   MtArrayInstance();
   virtual ~MtArrayInstance();
+  virtual const std::string& name() const;
   virtual void dump();
 };
 
@@ -52,6 +54,7 @@ struct MtArrayInstance : public MtInstance {
 struct MtParamInstance {
   MtParamInstance(const std::string& name, MtInstance* value);
   virtual ~MtParamInstance();
+  virtual const std::string& name() const { return _name; }
   virtual void dump();
 
   std::string _name;
@@ -63,6 +66,7 @@ struct MtParamInstance {
 struct MtFieldInstance {
   MtFieldInstance(MtField* field);
   virtual ~MtFieldInstance();
+  virtual const std::string& name() const { return _name; }
   virtual void dump();
 
   std::string _name;
@@ -75,6 +79,7 @@ struct MtFieldInstance {
 struct MtStructInstance : public MtInstance {
   MtStructInstance(MtStruct* s);
   virtual ~MtStructInstance();
+  virtual const std::string& name() const;
   virtual void dump();
 
   MtStruct* _struct;
@@ -86,6 +91,8 @@ struct MtStructInstance : public MtInstance {
 struct MtMethodInstance {
   MtMethodInstance(MtModuleInstance* module, MtMethod* method);
   virtual ~MtMethodInstance();
+  virtual const std::string& name() const;
+  MtParamInstance* get_param(const std::string& name);
   virtual void dump();
 
   std::string _name;

@@ -9,6 +9,13 @@
 
 //------------------------------------------------------------------------------
 
+const std::string& MtInstance::name() const {
+  static const std::string dummy = "<none>";
+  return dummy;
+}
+
+//------------------------------------------------------------------------------
+
 MtScope::MtScope() {
 }
 
@@ -27,6 +34,11 @@ MtPrimitiveInstance::MtPrimitiveInstance() {
 MtPrimitiveInstance::~MtPrimitiveInstance() {
 }
 
+const std::string& MtPrimitiveInstance::name() const {
+  static const std::string dummy = "<primitive>";
+  return dummy;
+}
+
 void MtPrimitiveInstance::dump() {
   LOG_B("MtPrimitiveInstance @ %p\n", this);
 }
@@ -37,6 +49,11 @@ MtArrayInstance::MtArrayInstance() {
 }
 
 MtArrayInstance::~MtArrayInstance() {
+}
+
+const std::string& MtArrayInstance::name() const {
+  static const std::string dummy = "<array>";
+  return dummy;
 }
 
 void MtArrayInstance::dump() {
@@ -62,6 +79,7 @@ void MtParamInstance::dump() {
 //------------------------------------------------------------------------------
 
 MtFieldInstance::MtFieldInstance(MtField* field) : _field(field) {
+  _name = field->name();
   if (field->is_struct()) {
     _value = new MtStructInstance(field->_type_struct);
   }
@@ -85,6 +103,31 @@ void MtFieldInstance::dump() {
   LOG_B("MtFieldInstance @ %p\n", this);
   LOG_INDENT_SCOPE();
   if (_value) _value->dump();
+}
+
+//------------------------------------------------------------------------------
+
+MtStructInstance::MtStructInstance(MtStruct* _struct)
+: _struct(_struct)
+{
+#if 0
+  for (auto cf : _struct->fields) {
+  }
+#endif
+}
+
+MtStructInstance::~MtStructInstance() {
+}
+
+const std::string& MtStructInstance::name() const {
+  const std::string dummy = "<nullptr>";
+  return _struct ? _struct->name : dummy;
+}
+
+void MtStructInstance::dump() {
+  LOG_B("MtStructInstance @ %p\n", this);
+  LOG_INDENT_SCOPE();
+  for (auto f : _fields) f->dump();
 }
 
 //------------------------------------------------------------------------------
@@ -117,31 +160,20 @@ MtMethodInstance::~MtMethodInstance() {
   _params.clear();
 }
 
+const std::string& MtMethodInstance::name() const {
+  return _name;
+}
+
+MtParamInstance* MtMethodInstance::get_param(const std::string& name) {
+  for (auto p : _params) if (p->_name == name) return p;
+  return nullptr;
+}
+
 void MtMethodInstance::dump() {
   LOG_B("MtMethodInstance '%s' @ %p\n", _name.c_str(), this);
   LOG_INDENT_SCOPE();
   for (auto p : _params) p->dump();
   if (_retval) _retval->dump();
-}
-
-//------------------------------------------------------------------------------
-
-MtStructInstance::MtStructInstance(MtStruct* _struct)
-: _struct(_struct)
-{
-#if 0
-  for (auto cf : _struct->fields) {
-  }
-#endif
-}
-
-MtStructInstance::~MtStructInstance() {
-}
-
-void MtStructInstance::dump() {
-  LOG_B("MtStructInstance @ %p\n", this);
-  LOG_INDENT_SCOPE();
-  for (auto f : _fields) f->dump();
 }
 
 //------------------------------------------------------------------------------

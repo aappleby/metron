@@ -190,6 +190,7 @@ int main(int argc, char** argv) {
   //----------------------------------------
   // New Trace
 
+#if 0
   for (auto mod : lib.all_modules) {
     if (mod->refcount) continue;
 
@@ -211,6 +212,7 @@ int main(int argc, char** argv) {
   }
   LOG_B("Tracing version 2 done\n");
   LOG_B("\n");
+#endif
 
   //----------------------------------------
   // Trace

@@ -14,7 +14,7 @@ class MtTracer2 {
 public:
   MtTracer2(MtModLibrary* lib, MtModuleInstance* root_inst, bool verbose);
 
-  CHECK_RETURN Err log_action(MtFieldInstance* field_inst, TraceAction action, SourceRange source);
+  CHECK_RETURN Err log_action(MtInstance* field_inst, TraceAction action, SourceRange source);
 
   CHECK_RETURN Err trace_method(MtMethod* method);
 
@@ -22,8 +22,10 @@ public:
   CHECK_RETURN Err trace_declarator(MtMethodInstance* inst, MnNode node);
   CHECK_RETURN Err trace_statement (MtMethodInstance* inst, MnNode node);
   CHECK_RETURN Err trace_expression(MtMethodInstance* inst, MnNode node, TraceAction action);
+  CHECK_RETURN Err trace_call      (MtMethodInstance* src_inst, MtMethodInstance* dst_inst, MnNode node_call);
   CHECK_RETURN Err trace_default   (MtMethodInstance* inst, MnNode node);
 
+  CHECK_RETURN Err trace_sym_argument_list         (MtMethodInstance* inst, MnNode node);
   CHECK_RETURN Err trace_sym_assignment_expression (MtMethodInstance* inst, MnNode node);
   CHECK_RETURN Err trace_sym_binary_expression     (MtMethodInstance* inst, MnNode node);
   CHECK_RETURN Err trace_sym_call_expression       (MtMethodInstance* inst, MnNode node);

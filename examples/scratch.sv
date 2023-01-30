@@ -7,37 +7,62 @@ typedef struct packed {
   logic[7:0] a;
   logic[7:0] b;
   logic[7:0] c;
+  logic[31:0] d[7];
 } InnerStruct;
 
-module Submodule (
+typedef struct packed {
+  InnerStruct x;
+  InnerStruct y;
+  InnerStruct z;
+} OuterStruct;
+
+module Mipule (
+  // tock() ports
+  input logic[6:0] tock_slkdfjlskdj
 );
-/*public:*/
+  /*public:*/
+
+  always_comb begin : tock
+  end
+
 endmodule
 
 module Module (
-  // global clock
-  input logic clock,
   // output registers
-  output logic[7:0] a,
-  output logic[7:0] b,
-  output logic[7:0] c,
+  output OuterStruct s,
   // func1() ports
-  input InnerStruct func1_is,
-  input logic[7:0] func1_derp
+  input logic[6:0] func1_blerp,
+  // func2() ports
+  input OuterStruct func2_clarnk,
+  // func3() ports
+  input InnerStruct func3_querz
 );
 /*public:*/
 
-  Submodule sm(
+  Mipule the_mip(
+    // tock() ports
+    .tock_slkdfjlskdj(the_mip_tock_slkdfjlskdj)
   );
+  logic[6:0] the_mip_tock_slkdfjlskdj;
 
 
 
-  always_ff @(posedge clock) begin : func1
-    sm.d = a;
-    sm.e = b;
-    sm.f = c;
-    a <= func1_is.c + func1_derp;
-    b <= func1_is.b + func1_derp;
-    c <= func1_is.a + func1_derp;
+
+  always_comb begin : func1
+    s.x.a = 1;
+    s.x.b = 2 + func1_blerp;
+    s.x.c = 3;
+  end
+
+  always_comb begin : func2
+    s.y.a = 4;
+    s.y.b = 5;
+    s.y.c = 6;
+  end
+
+  always_comb begin : func3
+    s.z.a = 7;
+    s.z.b = 8;
+    s.z.c = 9;
   end
 endmodule

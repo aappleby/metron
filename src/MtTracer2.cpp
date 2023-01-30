@@ -84,15 +84,15 @@ CHECK_RETURN Err MtTracer2::trace_identifier(MtMethodInstance* inst, MnNode node
       break;
     case sym_identifier:
     case alias_sym_field_identifier: {
-      MtFieldInstance* field_inst = inst->_module->get_field(node.text());
+      MtInstance* field_inst = inst->_module->get_field(node.text());
       if (field_inst) {
-        err << log_action(field_inst->_value, action, node.get_source());
+        err << log_action(field_inst, action, node.get_source());
         break;
       }
 
-      MtParamInstance* param_inst = inst->get_param(node.text());
+      MtInstance* param_inst = inst->get_param(node.text());
       if (param_inst) {
-        err << log_action(param_inst->_value, action, node.get_source());
+        err << log_action(param_inst, action, node.get_source());
         break;
       }
       else {
@@ -569,27 +569,81 @@ CHECK_RETURN Err MtTracer2::trace_sym_declaration(MtMethodInstance* inst, MnNode
 
 //------------------------------------------------------------------------------
 
+std::vector<std::string> split_field(const std::string& input) {
+  std::vector<std::string> result;
+  std::string temp;
+
+  const char* c = input.c_str();
+
+  do {
+    if (*c == '.' || *c == 0) {
+      if (temp.size()) result.push_back(temp);
+      temp.clear();
+    } else {
+      temp.push_back(*c);
+    }
+  } while (*c++ != 0);
+
+  return result;
+}
+
 CHECK_RETURN Err MtTracer2::trace_sym_field_expression(MtMethodInstance* inst, MnNode node, TraceAction action) {
   Err err;
   assert(node.sym == sym_field_expression);
 
-  auto base  = node.get_field(field_argument).text();
-  auto field = node.get_field(field_field).text();
+  LOG_R("path %s\n", node.text().c_str());
+
+  auto path = split_field(node.text());
+  //for (auto& p : path) LOG_R("%s\n", p.c_str());
+
+  auto f = inst->_module->get_field(path[0]);
+  if (f == nullptr) {
+    return ERR("Could not resolve %s\n", node.text().c_str());
+  }
+
+  if (auto s = dynamic_cast<MtStructInstance*>(f)) {
+    s->dump();
+    auto cursor = s->get_field(path[1]);
+    if (cursor) cursor->dump();
+    for (int i = 2; cursor && i < path.size(); i++) {
+      if (auto s2 = dynamic_cast<MtStructInstance*>(cursor)) {
+        cursor = s2->get_field(path[i]);
+      }
+      else {
+        return ERR("Could not resolve %s\n", node.text().c_str());
+      }
+    }
+    if (cursor == nullptr) return ERR("Could not resolve %s\n", node.text().c_str());
+  }
+  else if (auto m = dynamic_cast<MtModuleInstance*>(f)) {
+    LOG_R("yep it's a submodule\n");
+  }
+  else {
+    return ERR("Trying to get a field from a primitive/array instance\n");
+  }
+
+  //auto base  = node.get_field(field_argument).text();
 
   // FIXME need to actually traverse into base.field
 
-  MtFieldInstance* dst_field = nullptr;
+  /*
   for (auto f : inst->_module->_fields) {
     if (f->_name == base) {
       dst_field = f;
       break;
     }
   }
+  */
 
+
+#if 0
+
+  /*
   if (dst_field) {
     err << log_action(dst_field->_value, action, node.get_source());
     return err;
   }
+  */
 
   MtParamInstance* dst_param = nullptr;
   for (auto p : inst->_params) {
@@ -599,12 +653,16 @@ CHECK_RETURN Err MtTracer2::trace_sym_field_expression(MtMethodInstance* inst, M
     }
   }
 
+  /*
   if (dst_param) {
     err << log_action(dst_param->_value, action, node.get_source());
     return err;
   }
+  */
 
   err << ERR("Could not resolve %s in method %s\n", node.text().c_str(), inst->_name.c_str());
+  node.dump_tree();
+#endif
 
   return err;
 }

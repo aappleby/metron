@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include <map>
 #include "MtUtils.h"
 
 struct MtField;
@@ -11,17 +12,14 @@ struct MnNode;
 
 
 struct MtInstance;
+struct MtArrayInstance;
 struct MtPrimitiveInstance;
 struct MtStructInstance;
 struct MtMethodInstance;
 struct MtModuleInstance;
 
-struct MtInstance {
-  MtInstance() {}
-  virtual ~MtInstance() {}
-  virtual const std::string& name() const;
-  virtual void dump() {}
-};
+typedef struct std::map<std::string, MtInstance*> field_map;
+typedef struct std::map<std::string, MtMethodInstance*> method_map;
 
 //------------------------------------------------------------------------------
 
@@ -29,6 +27,19 @@ struct MtScope {
   MtScope();
   virtual ~MtScope();
   virtual void dump();
+};
+
+//------------------------------------------------------------------------------
+
+struct MtInstance {
+  MtInstance() {}
+  virtual ~MtInstance() {}
+  virtual const std::string& name() const;
+  virtual void dump() {}
+
+  MtInstance* resolve(const std::vector<std::string>& path, int index) {
+    return (index == path.size()) ? this : nullptr;
+  }
 };
 
 //------------------------------------------------------------------------------
@@ -51,54 +62,48 @@ struct MtArrayInstance : public MtInstance {
 
 //------------------------------------------------------------------------------
 
-struct MtParamInstance {
-  MtParamInstance(const std::string& name, MtInstance* value);
-  virtual ~MtParamInstance();
-  virtual const std::string& name() const { return _name; }
-  virtual void dump();
-
-  std::string _name;
-  MtInstance* _value;
-};
-
-//------------------------------------------------------------------------------
-
-struct MtFieldInstance {
-  MtFieldInstance(MtField* field);
-  virtual ~MtFieldInstance();
-  virtual const std::string& name() const { return _name; }
-  virtual void dump();
-
-  std::string _name;
-  MtField*    _field;
-  MtInstance* _value;
-};
-
-//------------------------------------------------------------------------------
-
 struct MtStructInstance : public MtInstance {
   MtStructInstance(MtStruct* s);
   virtual ~MtStructInstance();
   virtual const std::string& name() const;
   virtual void dump();
 
+  MtInstance* get_field(const std::string& name);
+  MtInstance* resolve(const std::vector<std::string>& path, int index);
+
   MtStruct* _struct;
-  std::vector<MtFieldInstance*> _fields;
+  field_map _fields;
 };
 
 //------------------------------------------------------------------------------
 
-struct MtMethodInstance {
+
+
+
+
+
+
+
+
+
+
+
+
+//------------------------------------------------------------------------------
+
+struct MtMethodInstance : public MtInstance {
   MtMethodInstance(MtModuleInstance* module, MtMethod* method);
   virtual ~MtMethodInstance();
   virtual const std::string& name() const;
-  MtParamInstance* get_param(const std::string& name);
+  MtInstance* get_param(const std::string& name);
   virtual void dump();
+
+  MtInstance* resolve(const std::vector<std::string>& path, int index);
 
   std::string _name;
   MtMethod* _method;
   MtModuleInstance* _module;
-  std::vector<MtParamInstance*> _params;
+  field_map _params;
   MtInstance* _retval = nullptr;
 };
 
@@ -110,11 +115,13 @@ struct MtModuleInstance : public MtInstance {
   virtual void dump();
 
   MtMethodInstance* get_method(const std::string& name);
-  MtFieldInstance*  get_field (const std::string& name);
+  MtInstance*       get_field (const std::string& name);
 
-  MtModule* _mod;
-  std::vector<MtFieldInstance*>  _fields;
-  std::vector<MtMethodInstance*> _methods;
+  MtInstance* resolve(const std::vector<std::string>& path, int index);
+
+  MtModule*  _mod;
+  field_map  _fields;
+  method_map _methods;
 };
 
 //------------------------------------------------------------------------------

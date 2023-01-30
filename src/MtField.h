@@ -51,7 +51,7 @@ struct MtField {
   MtModule* _type_mod = nullptr;
   MtStruct* _type_struct = nullptr;
 
-private:
+//private:
 
   MnNode _node;
   MnNode _type;

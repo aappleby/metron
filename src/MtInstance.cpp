@@ -7,11 +7,69 @@
 #include "MtStruct.h"
 #include "MtField.h"
 
+void dump_state(TraceState state) {
+  switch(state) {
+    case CTX_NONE:     LOG_C(0x444444, "CTX_NONE"); break;
+    case CTX_INPUT:    LOG_C(0x88FFFF, "CTX_INPUT"); break;
+    case CTX_OUTPUT:   LOG_C(0xFFCCCC, "CTX_OUTPUT"); break;
+    case CTX_MAYBE:    LOG_C(0x44CCFF, "CTX_MAYBE"); break;
+    case CTX_SIGNAL:   LOG_C(0x88FF88, "CTX_SIGNAL"); break;
+    case CTX_REGISTER: LOG_C(0x88BBBB, "CTX_REGISTER"); break;
+    case CTX_INVALID:  LOG_C(0xFF00FF, "CTX_INVALID"); break;
+    case CTX_PENDING:  LOG_C(0x444444, "CTX_PENDING"); break;
+    case CTX_NIL:      LOG_C(0x444444, "CTX_NIL"); break;
+  }
+}
+
+//------------------------------------------------------------------------------
+
+MtInstance* field_to_inst(MtField* field) {
+
+  if (field->is_struct()) {
+    return new MtStructInstance(field->_type_struct);
+  }
+  else if (field->is_component()) {
+    return new MtModuleInstance(field->_type_mod);
+  }
+  else if (field->is_array()) {
+    return new MtArrayInstance();
+  }
+  else {
+    return new MtPrimitiveInstance();
+  }
+}
+
+MtInstance* node_to_inst(MnNode n, MtModLibrary* lib) {
+  auto param_type = n.type5();
+  auto param_decl = n.get_field(field_declarator);
+  auto param_name = n.name4();
+
+  if (auto s = lib->get_struct(param_type)) {
+    return new MtStructInstance(s);
+  }
+  else if (param_decl.sym == sym_array_declarator) {
+    return new MtArrayInstance();
+  }
+  else {
+    return new MtPrimitiveInstance();
+  }
+}
+
 //------------------------------------------------------------------------------
 
 const std::string& MtInstance::name() const {
   static const std::string dummy = "<none>";
   return dummy;
+}
+
+//------------------------------------------------------------------------------
+
+MtInstance::MtInstance() {
+  log_top = {CTX_NONE};
+  //log_next = {CTX_NONE};
+}
+
+MtInstance::~MtInstance() {
 }
 
 //------------------------------------------------------------------------------
@@ -40,7 +98,9 @@ const std::string& MtPrimitiveInstance::name() const {
 }
 
 void MtPrimitiveInstance::dump() {
-  LOG_B("MtPrimitiveInstance @ %p\n", this);
+  LOG_B("Primitive @ 0x%04X ", uint64_t(this) & 0xFFFF);
+  dump_state(log_top.state);
+  LOG("\n");
 }
 
 //------------------------------------------------------------------------------
@@ -57,25 +117,9 @@ const std::string& MtArrayInstance::name() const {
 }
 
 void MtArrayInstance::dump() {
-  LOG_B("MtArrayInstance @ %p\n", this);
-}
-
-//------------------------------------------------------------------------------
-
-MtInstance* field_to_inst(MtField* field) {
-
-  if (field->is_struct()) {
-    return new MtStructInstance(field->_type_struct);
-  }
-  else if (field->is_component()) {
-    return new MtModuleInstance(field->_type_mod);
-  }
-  else if (field->is_array()) {
-    return new MtArrayInstance();
-  }
-  else {
-    return new MtPrimitiveInstance();
-  }
+  LOG_B("Array @ 0x%04X ", uint64_t(this) & 0xFFFF);
+  dump_state(log_top.state);
+  LOG("\n");
 }
 
 //------------------------------------------------------------------------------
@@ -98,7 +142,9 @@ const std::string& MtStructInstance::name() const {
 }
 
 void MtStructInstance::dump() {
-  LOG_B("MtStructInstance @ %p\n", this);
+  LOG_B("Struct @ 0x%04X ", uint64_t(this) & 0xFFFF);
+  dump_state(log_top.state);
+  LOG("\n");
   LOG_INDENT_SCOPE();
 
   for (const auto& f : _fields) {
@@ -108,13 +154,19 @@ void MtStructInstance::dump() {
 }
 
 MtInstance* MtStructInstance::get_field(const std::string& name) {
-  return _fields[name];
+  auto it = _fields.find(name);
+  if (it == _fields.end()) {
+    return nullptr;
+  }
+  else {
+    return (*it).second;
+  }
 }
 
 MtInstance* MtStructInstance::resolve(const std::vector<std::string>& path, int index) {
   if (index == path.size()) return this;
 
-  auto result = _fields[path[index]];
+  auto result = get_field(path[index]);
   if (result) {
     return result->resolve(path, index + 1);
   }
@@ -123,29 +175,11 @@ MtInstance* MtStructInstance::resolve(const std::vector<std::string>& path, int 
 
 //------------------------------------------------------------------------------
 
+
 MtMethodInstance::MtMethodInstance(MtModuleInstance* module, MtMethod* method) : _module(module), _method(method) {
   _name = method->name();
-
-  auto lib = _method->_lib;
-
   for (auto c : _method->param_nodes) {
-    auto param_type = c.type5();
-    auto param_decl = c.get_field(field_declarator);
-    auto param_name = c.name4();
-
-    if (auto s = lib->get_struct(param_type)) {
-      _params[param_name] = new MtStructInstance(s);
-    }
-    else if (param_decl.sym == sym_array_declarator) {
-      _params[param_name] = new MtArrayInstance();
-    }
-    else {
-      _params[param_name] = new MtPrimitiveInstance();
-    }
-  }
-
-  if (_method->has_return()) {
-    //_retval = new MtRetvalInstance();
+    _params[c.name4()] = node_to_inst(c, _method->_lib);
   }
 }
 
@@ -159,11 +193,19 @@ const std::string& MtMethodInstance::name() const {
 }
 
 MtInstance* MtMethodInstance::get_param(const std::string& name) {
-  return _params[name];
+  auto it = _params.find(name);
+  if (it == _params.end()) {
+    return nullptr;
+  }
+  else {
+    return (*it).second;
+  }
 }
 
 void MtMethodInstance::dump() {
-  LOG_B("MtMethodInstance '%s' @ %p\n", _name.c_str(), this);
+  LOG_B("Method '%s' @ 0x%04X ", _name.c_str(), uint64_t(this) & 0xFFFF);
+  dump_state(log_top.state);
+  LOG("\n");
   LOG_INDENT_SCOPE();
   for (auto p : _params) {
     LOG_G("%s: ", p.first.c_str());
@@ -175,7 +217,7 @@ void MtMethodInstance::dump() {
 MtInstance* MtMethodInstance::resolve(const std::vector<std::string>& path, int index) {
   if (index == path.size()) return this;
 
-  auto param_inst = _params[path[index]];
+  auto param_inst = get_param(path[index]);
   if (param_inst) {
     return param_inst->resolve(path, index + 1);
   }
@@ -209,7 +251,7 @@ MtModuleInstance::~MtModuleInstance() {
 //----------------------------------------
 
 void MtModuleInstance::dump() {
-  LOG_B("MtModuleInstance @ %p\n", this);
+  LOG_B("Module @ 0x%04X\n", uint64_t(this) & 0xFFFF);
   LOG_INDENT_SCOPE();
   for (auto f : _fields) {
     LOG_G("%s: ", f.first.c_str());
@@ -224,11 +266,18 @@ void MtModuleInstance::dump() {
 //----------------------------------------
 
 MtMethodInstance* MtModuleInstance::get_method(const std::string& name) {
-  return _methods[name];
+  auto it = _methods.find(name);
+  if (it == _methods.end()) {
+    return nullptr;
+  }
+  else {
+    return (*it).second;
+  }
 }
 
 MtInstance* MtModuleInstance::get_field(const std::string& name) {
-  return _fields[name];
+  auto it = _fields.find(name);
+  return it == _fields.end() ? nullptr : (*it).second;
 }
 
 //------------------------------------------------------------------------------

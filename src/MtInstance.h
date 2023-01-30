@@ -32,14 +32,18 @@ struct MtScope {
 //------------------------------------------------------------------------------
 
 struct MtInstance {
-  MtInstance() {}
-  virtual ~MtInstance() {}
+  MtInstance();
+  virtual ~MtInstance();
   virtual const std::string& name() const;
   virtual void dump() {}
 
-  MtInstance* resolve(const std::vector<std::string>& path, int index) {
+  virtual MtInstance* resolve(const std::vector<std::string>& path, int index) {
     return (index == path.size()) ? this : nullptr;
   }
+
+  LogEntry log_top;
+  //LogEntry log_next;
+  //std::vector<LogEntry> action_log;
 };
 
 //------------------------------------------------------------------------------

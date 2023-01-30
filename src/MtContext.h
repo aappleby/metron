@@ -11,12 +11,6 @@ struct MnNode;
 
 //------------------------------------------------------------------------------
 
-struct LogEntry {
-  TraceState state;
-};
-
-//------------------------------------------------------------------------------
-
 struct MtContext {
   MtContext(MtModule* top_mod);
   MtContext(MtContext* parent, MtMethod* _method);

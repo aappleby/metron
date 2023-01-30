@@ -18,6 +18,10 @@ CHECK_RETURN Err MtTracer2::log_action(MtInstance* inst, TraceAction action, Sou
 
   Err err;
 
+  auto old_state = inst->log_top.state;
+  auto new_state = merge_action(old_state, action);
+
+  /*
   if (action == CTX_READ) {
     LOG_R("Read %s\n", inst->name().c_str());
   }
@@ -28,11 +32,17 @@ CHECK_RETURN Err MtTracer2::log_action(MtInstance* inst, TraceAction action, Sou
     LOG_R("???? %s\n", inst->name().c_str());
   }
 
-#if 0
-  assert(method_ctx->context_type == CTX_METHOD);
-  assert(method_ctx);
-  assert(dst_ctx);
+  LOG_B("state %s -> %s\n", to_string(old_state), to_string(new_state));
+  */
 
+  inst->log_top.state = new_state;
+
+  if (new_state == CTX_INVALID) {
+    return ERR("Invalid context state at\n");
+  }
+
+
+#if 0
   if (action == CTX_WRITE) {
     if (dst_ctx->context_type != CTX_RETURN) {
       method_ctx->method->writes.insert(dst_ctx);
@@ -486,7 +496,7 @@ CHECK_RETURN Err MtTracer2::trace_sym_compound_statement(MtMethodInstance* inst,
     } else if (child.is_statement()) {
       err << trace_statement(inst, child);
     } else {
-      err << trace_default(inst, child);
+      //err << trace_default(inst, child);
     }
   }
 
@@ -591,20 +601,22 @@ CHECK_RETURN Err MtTracer2::trace_sym_field_expression(MtMethodInstance* inst, M
   Err err;
   assert(node.sym == sym_field_expression);
 
-  LOG_R("path %s\n", node.text().c_str());
+  //LOG_R("path %s\n", node.text().c_str());
 
   auto path = split_field(node.text());
-  //for (auto& p : path) LOG_R("%s\n", p.c_str());
 
   auto f = inst->_module->get_field(path[0]);
   auto p = inst->get_param(path[0]);
 
-  if (f) {
-    LOG_G("field %s\n", node.text().c_str());
-  }
+  MtInstance* r = nullptr;
+  if (f) r = f->resolve(path, 1);
+  if (p) r = p->resolve(path, 1);
 
-  if (p) {
-    LOG_G("param %s\n", node.text().c_str());
+  if (r) {
+    err << log_action(r, action, node.get_source());
+  }
+  else {
+    return ERR("Not resolved\n");
   }
 
 
@@ -641,21 +653,6 @@ CHECK_RETURN Err MtTracer2::trace_sym_field_expression(MtMethodInstance* inst, M
   /*
   if (dst_field) {
     err << log_action(dst_field->_value, action, node.get_source());
-    return err;
-  }
-  */
-
-  MtParamInstance* dst_param = nullptr;
-  for (auto p : inst->_params) {
-    if (p->_name == base) {
-      dst_param = p;
-      break;
-    }
-  }
-
-  /*
-  if (dst_param) {
-    err << log_action(dst_param->_value, action, node.get_source());
     return err;
   }
   */

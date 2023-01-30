@@ -32,6 +32,10 @@ enum TraceState {
   CTX_NIL,      // not an actual state, just a placeholder
 };
 
+struct LogEntry {
+  TraceState state;
+};
+
 enum TraceAction {
   CTX_READ = 0,
   CTX_WRITE = 1,

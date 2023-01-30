@@ -17,9 +17,15 @@ class Module {
 public:
   OuterStruct s;
 
-  void func2(OuterStruct clarnk) {
+  InnerStruct func2(OuterStruct clarnk) {
+    clarnk.x.a = clarnk.x.a + 1;
+
+    clarnk.y.a = 7;
+    logic<8> blep = clarnk.y.a;
+
     s.y.a = clarnk.y.d[2];
     s.y.d[6] = 5;
     s.y.a = 6;
+    return s.x;
   }
 };

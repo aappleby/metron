@@ -198,7 +198,7 @@ int main(int argc, char** argv) {
     LOG_INDENT();
 
     MtModuleInstance* root_inst = new MtModuleInstance(mod);
-    root_inst->dump();
+    //root_inst->dump();
 
     MtTracer2 tracer(&lib, root_inst, true);
 
@@ -206,11 +206,14 @@ int main(int argc, char** argv) {
       err << tracer.trace_method(m.second->_method);
     }
 
+    //LOG_B("\n");
+    //root_inst->dump();
+
     delete root_inst;
 
     LOG_DEDENT();
   }
-  LOG_B("Tracing version 2 done\n");
+  LOG_B("Tracing version 2: done\n");
   LOG_B("\n");
 #endif
 

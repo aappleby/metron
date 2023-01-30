@@ -200,13 +200,11 @@ int main(int argc, char** argv) {
     MtModuleInstance* root_inst = new MtModuleInstance(mod);
     root_inst->dump();
 
-    /*
     MtTracer2 tracer(&lib, root_inst, true);
 
     for (auto m : root_inst->_methods) {
-      err << tracer.trace_method(m->_method);
+      err << tracer.trace_method(m.second->_method);
     }
-    */
 
     delete root_inst;
 

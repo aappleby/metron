@@ -597,14 +597,22 @@ CHECK_RETURN Err MtTracer2::trace_sym_field_expression(MtMethodInstance* inst, M
   //for (auto& p : path) LOG_R("%s\n", p.c_str());
 
   auto f = inst->_module->get_field(path[0]);
-  if (f == nullptr) {
-    return ERR("Could not resolve %s\n", node.text().c_str());
+  auto p = inst->get_param(path[0]);
+
+  if (f) {
+    LOG_G("field %s\n", node.text().c_str());
   }
 
+  if (p) {
+    LOG_G("param %s\n", node.text().c_str());
+  }
+
+
+#if 0
   if (auto s = dynamic_cast<MtStructInstance*>(f)) {
-    s->dump();
+    //s->dump();
     auto cursor = s->get_field(path[1]);
-    if (cursor) cursor->dump();
+    //if (cursor) cursor->dump();
     for (int i = 2; cursor && i < path.size(); i++) {
       if (auto s2 = dynamic_cast<MtStructInstance*>(cursor)) {
         cursor = s2->get_field(path[i]);
@@ -613,7 +621,12 @@ CHECK_RETURN Err MtTracer2::trace_sym_field_expression(MtMethodInstance* inst, M
         return ERR("Could not resolve %s\n", node.text().c_str());
       }
     }
-    if (cursor == nullptr) return ERR("Could not resolve %s\n", node.text().c_str());
+    if (cursor == nullptr) {
+      return ERR("Could not resolve %s\n", node.text().c_str());
+    }
+    else {
+      cursor->dump();
+    }
   }
   else if (auto m = dynamic_cast<MtModuleInstance*>(f)) {
     LOG_R("yep it's a submodule\n");
@@ -621,20 +634,7 @@ CHECK_RETURN Err MtTracer2::trace_sym_field_expression(MtMethodInstance* inst, M
   else {
     return ERR("Trying to get a field from a primitive/array instance\n");
   }
-
-  //auto base  = node.get_field(field_argument).text();
-
-  // FIXME need to actually traverse into base.field
-
-  /*
-  for (auto f : inst->_module->_fields) {
-    if (f->_name == base) {
-      dst_field = f;
-      break;
-    }
-  }
-  */
-
+#endif
 
 #if 0
 

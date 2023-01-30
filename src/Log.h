@@ -109,6 +109,10 @@ struct TinyLog {
     vprint(file, color, format, args);
     va_end(args);
   }
+
+  void putc(char c) {
+    print_char(stdout, c, _color);
+  }
 };
 
 #define LOG(...)      TinyLog::get().print(stdout, 0x00000000, __VA_ARGS__)

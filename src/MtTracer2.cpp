@@ -21,24 +21,35 @@ CHECK_RETURN Err MtTracer2::log_action(MtInstance* inst, TraceAction action, Sou
   auto old_state = inst->log_top.state;
   auto new_state = merge_action(old_state, action);
 
-  /*
   if (action == CTX_READ) {
-    LOG_R("Read %s\n", inst->name().c_str());
+    LOG_R("Read %s: ", inst->name().c_str());
+    for (auto c = source.start; c != source.end; c++) {
+      if (*c != '\n') LOG("%c", *c);
+    }
+    LOG_R("'\n");
   }
   else if (action == CTX_WRITE) {
-    LOG_R("Write %s\n", inst->name().c_str());
+    LOG_R("Write %s: ", inst->name().c_str());
+    for (auto c = source.start; c != source.end; c++) {
+      if (*c != '\n') LOG("%c", *c);
+    }
+    LOG_R("'\n");
   }
   else {
     LOG_R("???? %s\n", inst->name().c_str());
   }
 
   LOG_B("state %s -> %s\n", to_string(old_state), to_string(new_state));
-  */
 
   inst->log_top.state = new_state;
 
   if (new_state == CTX_INVALID) {
-    return ERR("Invalid context state at\n");
+    LOG_R("Invalid context state at '");
+    for (auto c = source.start; c != source.end; c++) {
+      if (*c != '\n') LOG("%c", *c);
+    }
+    printf("'\n");
+    err << ERR("Invalid context state\n");
   }
 
 
@@ -56,7 +67,7 @@ CHECK_RETURN Err MtTracer2::log_action(MtInstance* inst, TraceAction action, Sou
   if (new_state == CTX_INVALID) {
     printf("Invalid context state at\n");
     for (auto c = source.start; c != source.end; c++) {
-      putc(*c, stdout);
+      LOG("%c", *c);
     }
     printf("\n");
 
@@ -106,7 +117,7 @@ CHECK_RETURN Err MtTracer2::trace_identifier(MtMethodInstance* inst, MnNode node
         break;
       }
       else {
-        LOG_R("No field_inst for identifier %s\n", node.text().c_str());
+        LOG_R("No param_inst for identifier %s\n", node.text().c_str());
       }
       break;
     }
@@ -601,7 +612,7 @@ CHECK_RETURN Err MtTracer2::trace_sym_field_expression(MtMethodInstance* inst, M
   Err err;
   assert(node.sym == sym_field_expression);
 
-  //LOG_R("path %s\n", node.text().c_str());
+  LOG_R("path %s\n", node.text().c_str());
 
   auto path = split_field(node.text());
 
@@ -609,8 +620,12 @@ CHECK_RETURN Err MtTracer2::trace_sym_field_expression(MtMethodInstance* inst, M
   auto p = inst->get_param(path[0]);
 
   MtInstance* r = nullptr;
-  if (f) r = f->resolve(path, 1);
-  if (p) r = p->resolve(path, 1);
+  if (f) {
+    r = f->resolve(path, 1);
+  }
+  if (p) {
+    r = p->resolve(path, 1);
+  }
 
   if (r) {
     err << log_action(r, action, node.get_source());

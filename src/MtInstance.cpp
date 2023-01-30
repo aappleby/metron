@@ -72,6 +72,10 @@ MtInstance::MtInstance() {
 MtInstance::~MtInstance() {
 }
 
+void MtInstance::reset_state() {
+  log_top = {CTX_NONE};
+}
+
 //------------------------------------------------------------------------------
 
 MtScope::MtScope() {
@@ -173,6 +177,10 @@ MtInstance* MtStructInstance::resolve(const std::vector<std::string>& path, int 
   return nullptr;
 }
 
+void MtStructInstance::reset_state() {
+  for (auto f : _fields) f.second->reset_state();
+}
+
 //------------------------------------------------------------------------------
 
 
@@ -225,6 +233,10 @@ MtInstance* MtMethodInstance::resolve(const std::vector<std::string>& path, int 
   return _module->resolve(path, index);
 }
 
+void MtMethodInstance::reset_state() {
+  for (auto p : _params) p.second->reset_state();
+}
+
 //------------------------------------------------------------------------------
 
 MtModuleInstance::MtModuleInstance(MtModule* _mod) {
@@ -237,6 +249,7 @@ MtModuleInstance::MtModuleInstance(MtModule* _mod) {
   }
 
   for (auto m : _mod->all_methods) {
+    if (m->is_constructor() || m->is_init_) continue;
     _methods[m->name()] = new MtMethodInstance(this, m);
   }
 }
@@ -265,6 +278,13 @@ void MtModuleInstance::dump() {
 
 //----------------------------------------
 
+void MtModuleInstance::reset_state() {
+  for (auto f : _fields)  f.second->reset_state();
+  for (auto m : _methods) m.second->reset_state();
+}
+
+//----------------------------------------
+
 MtMethodInstance* MtModuleInstance::get_method(const std::string& name) {
   auto it = _methods.find(name);
   if (it == _methods.end()) {
@@ -286,7 +306,9 @@ MtInstance* MtModuleInstance::resolve(const std::vector<std::string>& path, int 
   if (index == path.size()) return this;
 
   for (auto f : _fields) {
-    if (f.second->name() == path[index]) return f.second->resolve(path, index + 1);
+    if (f.first == path[index]) {
+      return f.second->resolve(path, index + 1);
+    }
   }
 
   for (auto m : _methods) {

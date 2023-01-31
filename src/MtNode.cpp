@@ -247,6 +247,12 @@ std::string MnNode::name4() const {
     case sym_pointer_declarator:
       return get_field(field_declarator).name4();
 
+    case sym_declaration:
+      return get_field(field_declarator).name4();
+
+    case sym_init_declarator:
+      return get_field(field_declarator).name4();
+
     default:
       Err err;
       err << ERR("Unknown node type %s for name4()\n", ts_node_type());

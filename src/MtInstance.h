@@ -2,7 +2,10 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <set>
+#include <functional>
 #include "MtUtils.h"
+#include "Log.h"
 
 struct MtField;
 struct MtMethod;
@@ -21,21 +24,17 @@ struct MtModuleInstance;
 typedef struct std::map<std::string, MtInstance*> field_map;
 typedef struct std::map<std::string, MtMethodInstance*> method_map;
 
-//------------------------------------------------------------------------------
-
-struct MtScope {
-  MtScope();
-  virtual ~MtScope();
-  virtual void dump();
-};
+typedef std::function<void(MtInstance*)> inst_visitor;
 
 //------------------------------------------------------------------------------
 
 struct MtInstance {
-  MtInstance();
+  MtInstance(const std::string& path);
   virtual ~MtInstance();
   virtual const std::string& name() const;
   virtual void dump() {}
+
+  virtual void visit(const inst_visitor& v) { v(this); }
 
   virtual MtInstance* resolve(const std::vector<std::string>& path, int index) {
     return (index == path.size()) ? this : nullptr;
@@ -67,6 +66,21 @@ struct MtInstance {
     log_next.state = CTX_PENDING;
   }
 
+  /*
+    action_stack.push_back(log_next);
+    action_stack.push_back(log_top);
+    log_next.state = CTX_PENDING;
+
+    log_top = action_stack.back();
+    log_next.state = merge_branch(log_top.state, log_next.state);
+
+    log_top = log_next;
+    action_stack.pop_back();
+    log_next = action_stack.back();
+    action_stack.pop_back();
+
+  */
+
   virtual void start_case() {
     log_top = action_stack.back();
   }
@@ -82,7 +96,7 @@ struct MtInstance {
     action_stack.pop_back();
   }
 
-
+  std::string path;
   LogEntry log_top;
   LogEntry log_next;
   std::vector<LogEntry> action_stack;
@@ -92,7 +106,7 @@ struct MtInstance {
 //------------------------------------------------------------------------------
 
 struct MtPrimitiveInstance : public MtInstance {
-  MtPrimitiveInstance();
+  MtPrimitiveInstance(const std::string& path);
   virtual ~MtPrimitiveInstance();
   virtual const std::string& name() const;
   virtual void dump();
@@ -101,7 +115,7 @@ struct MtPrimitiveInstance : public MtInstance {
 //------------------------------------------------------------------------------
 
 struct MtArrayInstance : public MtInstance {
-  MtArrayInstance();
+  MtArrayInstance(const std::string& path);
   virtual ~MtArrayInstance();
   virtual const std::string& name() const;
   virtual void dump();
@@ -110,7 +124,7 @@ struct MtArrayInstance : public MtInstance {
 //------------------------------------------------------------------------------
 
 struct MtStructInstance : public MtInstance {
-  MtStructInstance(MtStruct* s);
+  MtStructInstance(const std::string& path, MtStruct* s);
   virtual ~MtStructInstance();
   virtual const std::string& name() const;
   virtual void dump();
@@ -159,6 +173,10 @@ struct MtStructInstance : public MtInstance {
     //for (auto c : children) c->end_switch();
   }
 
+  virtual void visit(const inst_visitor& v) {
+    v(this);
+    for (auto& f : _fields) v(f.second);
+  }
 
 
   MtStruct* _struct;
@@ -167,22 +185,8 @@ struct MtStructInstance : public MtInstance {
 
 //------------------------------------------------------------------------------
 
-
-
-
-
-
-
-
-
-
-
-
-
-//------------------------------------------------------------------------------
-
 struct MtMethodInstance : public MtInstance {
-  MtMethodInstance(MtModuleInstance* module, MtMethod* method);
+  MtMethodInstance(const std::string& path, MtModuleInstance* module, MtMethod* method);
   virtual ~MtMethodInstance();
   virtual const std::string& name() const;
   MtInstance* get_param(const std::string& name);
@@ -196,12 +200,21 @@ struct MtMethodInstance : public MtInstance {
   MtModuleInstance* _module;
   field_map _params;
   MtInstance* _retval = nullptr;
+
+  bool has_local(const std::string& s) {
+    for (int i = (int)scope_stack.size() - 1; i >= 0; i--) {
+      if (scope_stack[i].contains(s)) return true;
+    }
+    return false;
+  }
+
+  std::vector<std::set<std::string>> scope_stack;
 };
 
 //------------------------------------------------------------------------------
 
 struct MtModuleInstance : public MtInstance {
-  MtModuleInstance(MtModule* m);
+  MtModuleInstance(const std::string& path, MtModule* m);
   virtual ~MtModuleInstance();
   virtual void dump();
 
@@ -210,6 +223,12 @@ struct MtModuleInstance : public MtInstance {
 
   virtual MtInstance* resolve(const std::vector<std::string>& path, int index);
   virtual void reset_state();
+
+  virtual void visit(const inst_visitor& v) {
+    v(this);
+    for (auto& f : _fields)  v(f.second);
+    for (auto& m : _methods) v(m.second);
+  }
 
   MtModule*  _mod;
   field_map  _fields;

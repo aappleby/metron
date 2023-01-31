@@ -9,8 +9,9 @@
       "program": "${workspaceFolder}/bin/metron",
       //"program": "${workspaceFolder}/bin/examples/rvsimple_vl",
       "cwd": "${workspaceFolder}",
-      //"args": [/*"-d",*/ "-c", "examples/scratch.h", "-o", "examples/scratch.sv"],
-      "args": [/*"-d",*/ "-c", "examples/pong/metron/pong.h"],
+      "args": [/*"-d",*/ "-c", "examples/scratch.h"],
+      //"args": [/*"-d",*/ "-c", "examples/pong/metron/pong.h"],
+      //"args": [/*"-d",*/ "-c", "examples/rvsimple/metron/singlecycle_control.h"],
       //"args": [],
       "setupCommands": [
         { // Display content in STL containers pretty

@@ -7,6 +7,13 @@
 struct SourceRange {
   const char* start;
   const char* end;
+
+  SourceRange trim() {
+    SourceRange r = *this;
+    while(r.start < r.end && isspace(*r.start)) r.start++;
+    while(r.end > r.start && isspace(r.end[-1])) r.end--;
+    return r;
+  }
 };
 
 //------------------------------------------------------------------------------

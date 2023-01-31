@@ -2540,12 +2540,16 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n, bool is_str
   Err err = emit_ws_to(sym_field_declaration_list, n);
   push_indent(n);
 
+  bool convert = true;
   bool noconvert = false;
   bool exclude = false;
   bool dumpit = false;
 
   for (auto child : n) {
-    if (noconvert) {
+    if (child.sym == sym_comment && child.contains("metron_convert off")) convert = false;
+    if (child.sym == sym_comment && child.contains("metron_convert on"))  convert = true;
+
+    if (noconvert || !convert) {
       err << comment_out(child);
       noconvert = false;
       continue;

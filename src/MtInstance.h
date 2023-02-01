@@ -42,25 +42,25 @@ struct MtInstance {
 
   virtual void reset_state();
 
-  virtual void start_branch_a() {
+  void start_branch_a() {
     action_stack.push_back(log_next);
     log_next = log_top;
   }
 
-  virtual void end_branch_a() {
+  void end_branch_a() {
   }
 
-  virtual void start_branch_b() {
+  void start_branch_b() {
     std::swap(log_top, log_next);
   }
 
-  virtual void end_branch_b() {
+  void end_branch_b() {
     log_top.state = merge_branch(log_top.state, log_next.state);
     log_next = action_stack.back();
     action_stack.pop_back();
   }
 
-  virtual void start_switch() {
+  void start_switch() {
     action_stack.push_back(log_next);
     action_stack.push_back(log_top);
     log_next.state = CTX_PENDING;
@@ -81,15 +81,21 @@ struct MtInstance {
 
   */
 
-  virtual void start_case() {
+  void start_case() {
     log_top = action_stack.back();
   }
 
-  virtual void end_case() {
+  void end_case() {
     log_next.state = merge_branch(log_top.state, log_next.state);
   }
 
-  virtual void end_switch() {
+  void end_switch(bool has_default) {
+
+    if (!has_default) {
+      start_case();
+      end_case();
+    }
+
     log_top = log_next;
     action_stack.pop_back();
     log_next = action_stack.back();
@@ -97,6 +103,7 @@ struct MtInstance {
   }
 
   std::string path;
+  FieldType field_type = FT_UNKNOWN;
   LogEntry log_top;
   LogEntry log_next;
   std::vector<LogEntry> action_stack;
@@ -133,48 +140,8 @@ struct MtStructInstance : public MtInstance {
   virtual MtInstance* resolve(const std::vector<std::string>& path, int index);
   virtual void reset_state();
 
-  void start_branch_a() {
-    MtInstance::start_branch_a();
-    //for (auto c : children) c->start_branch_a();
-  }
-
-  void end_branch_a() {
-    MtInstance::end_branch_a();
-    //for (auto c : children) c->end_branch_a();
-  }
-
-  void start_branch_b() {
-    MtInstance::start_branch_b();
-    //for (auto c : children) c->start_branch_b();
-  }
-
-  void end_branch_b() {
-    MtInstance::end_branch_b();
-    //for (auto c : children) c->end_branch_b();
-  }
-
-  void start_switch() {
-    MtInstance::start_switch();
-    //for (auto c : children) c->start_switch();
-  }
-
-  void start_case() {
-    MtInstance::start_case();
-    //for (auto c : children) c->start_case();
-  }
-
-  void end_case() {
-    MtInstance::end_case();
-    //for (auto c : children) c->end_case();
-  }
-
-  void end_switch() {
-    MtInstance::end_switch();
-    //for (auto c : children) c->end_switch();
-  }
-
   virtual void visit(const inst_visitor& v) {
-    v(this);
+    MtInstance::visit(v);
     for (auto& f : _fields) v(f.second);
   }
 
@@ -195,12 +162,6 @@ struct MtMethodInstance : public MtInstance {
   virtual MtInstance* resolve(const std::vector<std::string>& path, int index);
   virtual void reset_state();
 
-  std::string _name;
-  MtMethod* _method;
-  MtModuleInstance* _module;
-  field_map _params;
-  MtInstance* _retval = nullptr;
-
   bool has_local(const std::string& s) {
     for (int i = (int)scope_stack.size() - 1; i >= 0; i--) {
       if (scope_stack[i].contains(s)) return true;
@@ -208,7 +169,21 @@ struct MtMethodInstance : public MtInstance {
     return false;
   }
 
+  virtual void visit(const inst_visitor& v) {
+    MtInstance::visit(v);
+    for (auto p : _params) {
+      p.second->visit(v);
+    }
+  }
+
+  std::string _name;
+  MtMethod* _method;
+  MtModuleInstance* _module;
+  field_map _params;
+  MtInstance* _retval = nullptr;
   std::vector<std::set<std::string>> scope_stack;
+  std::set<MtInstance*> writes;
+  std::set<MtInstance*> reads;
 };
 
 //------------------------------------------------------------------------------
@@ -225,9 +200,9 @@ struct MtModuleInstance : public MtInstance {
   virtual void reset_state();
 
   virtual void visit(const inst_visitor& v) {
-    v(this);
-    for (auto& f : _fields)  v(f.second);
-    for (auto& m : _methods) v(m.second);
+    MtInstance::visit(v);
+    for (auto& f : _fields)  f.second->visit(v);
+    for (auto& m : _methods) m.second->visit(v);
   }
 
   MtModule*  _mod;

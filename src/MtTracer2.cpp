@@ -8,13 +8,33 @@
 
 //------------------------------------------------------------------------------
 
+std::vector<std::string> split_field(const std::string& input) {
+  std::vector<std::string> result;
+  std::string temp;
+
+  const char* c = input.c_str();
+
+  do {
+    if (*c == '.' || *c == 0) {
+      if (temp.size()) result.push_back(temp);
+      temp.clear();
+    } else {
+      temp.push_back(*c);
+    }
+  } while (*c++ != 0);
+
+  return result;
+}
+
+//------------------------------------------------------------------------------
+
 MtTracer2::MtTracer2(MtModLibrary* lib, MtModuleInstance* root_inst, bool verbose)
 : lib(lib),
   root_inst(root_inst),
   verbose(verbose) {
 }
 
-CHECK_RETURN Err MtTracer2::log_action(MnNode node, MtInstance* inst, TraceAction action) {
+CHECK_RETURN Err MtTracer2::log_action(MtMethodInstance* method, MnNode node, MtInstance* inst, TraceAction action) {
 
   Err err;
   auto source = node.get_source().trim();
@@ -54,27 +74,14 @@ CHECK_RETURN Err MtTracer2::log_action(MnNode node, MtInstance* inst, TraceActio
     err << ERR("Invalid context state\n");
   }
 
-
-#if 0
   if (action == CTX_WRITE) {
-    if (dst_ctx->context_type != CTX_RETURN) {
-      method_ctx->method->writes.insert(dst_ctx);
-    }
+    method->writes.insert(inst);
   }
 
-  auto old_state = dst_ctx->log_top.state;
-  auto new_state = merge_action(old_state, action);
-  dst_ctx->log_top.state = new_state;
-
-  if (new_state == CTX_INVALID) {
-    printf("Invalid context state at\n");
-    for (auto c = source.start; c != source.end; c++) {
-      LOG("%c", *c);
-    }
-    printf("\n");
-
+  if (action == CTX_READ) {
+    method->reads.insert(inst);
   }
-#endif
+
   return err;
 }
 
@@ -109,13 +116,13 @@ CHECK_RETURN Err MtTracer2::trace_identifier(MtMethodInstance* inst, MnNode node
     case alias_sym_field_identifier: {
       MtInstance* field_inst = inst->_module->get_field(node.text());
       if (field_inst) {
-        err << log_action(node, field_inst, action);
+        err << log_action(inst, node, field_inst, action);
         break;
       }
 
       MtInstance* param_inst = inst->get_param(node.text());
       if (param_inst) {
-        err << log_action(node, param_inst, action);
+        err << log_action(inst, node, param_inst, action);
         break;
       }
 
@@ -123,6 +130,7 @@ CHECK_RETURN Err MtTracer2::trace_identifier(MtMethodInstance* inst, MnNode node
         //LOG_B("Identifier %s is a local\n", node.text().c_str());
       }
       else {
+        // FIXME can't currently resolve constants from namespaces
         //LOG_R("Could not resolve identifier %s\n", node.text().c_str());
       }
       break;
@@ -250,7 +258,15 @@ CHECK_RETURN Err MtTracer2::trace_expression(MtMethodInstance* inst, MnNode node
 CHECK_RETURN Err MtTracer2::trace_call(MtMethodInstance* src_inst, MtMethodInstance* dst_inst, MnNode node_call) {
   Err err;
 
-  if (!dst_inst) return err;
+  if (!dst_inst) {
+    // This is a call to b32() or something similar. We should eventually check
+    // that this is a known helper function, but for now we can ignore it.
+    //node_call.dump_tree();
+    //return ERR("dst_inst is null");
+    return err;
+  }
+
+  if (!src_inst) return ERR("src_inst is null");
 
   // If the source and dest functions are not in the same module and the source
   // module has to pass params to the dest module, we have to bind the params
@@ -259,20 +275,14 @@ CHECK_RETURN Err MtTracer2::trace_call(MtMethodInstance* src_inst, MtMethodInsta
   bool cross_mod_call = src_inst->_module != dst_inst->_module;
 
   if (cross_mod_call) {
-    //src_inst->dump();
-    //dst_inst->dump();
-    /*
-    err << log_action(src_inst, dst_inst, CTX_WRITE, node_call.get_source());
-    */
+
+    for (auto param : dst_inst->_params) {
+      //LOG_R("Write %s.%s.%s\n", child_name.c_str(), child_func.c_str(), param.first.c_str());
+      err << log_action(src_inst, node_call, param.second, CTX_WRITE);
+    }
   }
 
   err << trace_sym_function_definition(dst_inst, dst_inst->_method->_node);
-
-  /*
-  if (cross_mod_call && dst_inst->method->has_params()) {
-    err << log_action(src_inst, dst_inst, CTX_READ, node_call.get_source());
-  }
-  */
 
   return err;
 }
@@ -428,29 +438,14 @@ CHECK_RETURN Err MtTracer2::trace_sym_call_expression(MtMethodInstance* inst, Mn
       auto child_func = node_func.get_field(field_field).name4();
       auto child_inst = inst->_module->get_field(child_name);
       auto child_func_inst = dynamic_cast<MtModuleInstance*>(child_inst)->get_method(child_func);
-      for (auto param : child_func_inst->_params) {
-        //param.second->dump();
-        //LOG_R("Write %s.%s.%s\n", child_name.c_str(), child_func.c_str(), param.first.c_str());
-        err << log_action(node, param.second, CTX_WRITE);
-      }
-      /*
-      auto child_name = node_func.get_field(field_argument).text();
-      auto child_ctx = ctx->resolve(child_name);
-      if (!child_ctx) return err << ERR("Child context missing\n");
-
-      auto child_func = node_func.get_field(field_field).text();
-      err << trace_call(inst, child_ctx->resolve(child_func), node);
-      */
+      err << trace_call(inst, child_func_inst, node);
       break;
     }
     case sym_identifier:
-      /*
-      err << trace_call(inst, ctx->resolve(node_func.text()), node);
-      */
+      err << trace_call(inst, inst->_module->get_method(node_func.text()), node);
       break;
 
     case sym_template_function: {
-      /*
       // FIXME this is a stub, we don't currently have real template function
       // support
       auto node_name =
@@ -463,7 +458,6 @@ CHECK_RETURN Err MtTracer2::trace_sym_call_expression(MtMethodInstance* inst, Mn
         err << ERR("trace_sym_call_expression - Unhandled template func %s\n", node.text().c_str());
         return err;
       }
-      */
       break;
     }
 
@@ -524,7 +518,7 @@ CHECK_RETURN Err MtTracer2::trace_sym_compound_statement(MtMethodInstance* inst,
     } else if (child.is_statement()) {
       err << trace_statement(inst, child);
     } else {
-      //err << trace_default(inst, child);
+      err << trace_default(inst, child);
     }
   }
 
@@ -595,9 +589,6 @@ CHECK_RETURN Err MtTracer2::trace_sym_declaration(MtMethodInstance* inst, MnNode
   Err err;
   assert(node.sym == sym_declaration);
 
-  //node.dump_tree();
-  //LOG_Y("node '%s'\n", node.name4().c_str());
-
   inst->scope_stack.back().insert(node.name4());
 
   auto node_type = node.get_field(field_type);
@@ -609,24 +600,6 @@ CHECK_RETURN Err MtTracer2::trace_sym_declaration(MtMethodInstance* inst, MnNode
 }
 
 //------------------------------------------------------------------------------
-
-std::vector<std::string> split_field(const std::string& input) {
-  std::vector<std::string> result;
-  std::string temp;
-
-  const char* c = input.c_str();
-
-  do {
-    if (*c == '.' || *c == 0) {
-      if (temp.size()) result.push_back(temp);
-      temp.clear();
-    } else {
-      temp.push_back(*c);
-    }
-  } while (*c++ != 0);
-
-  return result;
-}
 
 CHECK_RETURN Err MtTracer2::trace_sym_field_expression(MtMethodInstance* inst, MnNode node, TraceAction action) {
   Err err;
@@ -647,7 +620,7 @@ CHECK_RETURN Err MtTracer2::trace_sym_field_expression(MtMethodInstance* inst, M
   }
 
   if (r) {
-    err << log_action(node, r, action);
+    err << log_action(inst, node, r, action);
   }
   else {
     return ERR("Not resolved\n");
@@ -717,7 +690,11 @@ CHECK_RETURN Err MtTracer2::trace_sym_if_statement(MtMethodInstance* inst, MnNod
   }
   inst->_module->visit([](MtInstance* m) { m->end_branch_a(); });
 
-  inst->_module->visit([](MtInstance* m) { m->start_branch_b(); });
+  inst->_module->visit(
+    [](MtInstance* m) {
+      m->start_branch_b();
+    }
+  );
   if (!node_branch_b.is_null()) {
     err << trace_statement(inst, node_branch_b);
   }
@@ -809,12 +786,7 @@ CHECK_RETURN Err MtTracer2::trace_sym_switch_statement(MtMethodInstance* inst, M
     }
   }
 
-  if (!has_default) {
-    inst->_module->visit([](MtInstance* m) { m->start_case(); });
-    inst->_module->visit([](MtInstance* m) { m->end_case(); });
-  }
-
-  inst->_module->visit([](MtInstance* m) { m->end_switch(); });
+  inst->_module->visit([=](MtInstance* m) { m->end_switch(has_default); });
 
   return err;
 }

@@ -92,7 +92,7 @@ const std::string& MtPrimitiveInstance::name() const {
 void MtPrimitiveInstance::dump() {
   LOG_B("Primitive %s @ 0x%04X ", path.c_str(), uint64_t(this) & 0xFFFF);
   dump_state(log_top.state);
-  LOG("\n");
+  LOG(" - %s\n", to_string(field_type));
 }
 
 //------------------------------------------------------------------------------
@@ -111,7 +111,7 @@ const std::string& MtArrayInstance::name() const {
 void MtArrayInstance::dump() {
   LOG_B("Array @ 0x%04X ", uint64_t(this) & 0xFFFF);
   dump_state(log_top.state);
-  LOG("\n");
+  LOG(" - %s\n", to_string(field_type));
 }
 
 //------------------------------------------------------------------------------
@@ -134,7 +134,7 @@ const std::string& MtStructInstance::name() const {
 
 void MtStructInstance::dump() {
   LOG_B("Struct '%s' @ 0x%04X ", path.c_str(), uint64_t(this) & 0xFFFF);
-  dump_state(log_top.state);
+  //dump_state(log_top.state);
   LOG("\n");
   LOG_INDENT_SCOPE();
 
@@ -200,7 +200,7 @@ MtInstance* MtMethodInstance::get_param(const std::string& name) {
 
 void MtMethodInstance::dump() {
   LOG_B("Method '%s' @ 0x%04X ", path.c_str(), uint64_t(this) & 0xFFFF);
-  dump_state(log_top.state);
+  //dump_state(log_top.state);
   LOG("\n");
   LOG_INDENT_SCOPE();
   for (auto p : _params) {

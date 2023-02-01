@@ -190,7 +190,7 @@ int main(int argc, char** argv) {
   //----------------------------------------
   // New Trace
 
-#if 0
+#if 1
   for (auto mod : lib.all_modules) {
     if (mod->refcount) continue;
 
@@ -209,8 +209,8 @@ int main(int argc, char** argv) {
         err << tracer.trace_method(m.second->_method);
       }
       LOG_B("Tracing %s done\n", m.second->_name.c_str());
+      //root_inst->dump();
       LOG_B("\n");
-      root_inst->dump();
       root_inst->reset_state();
     }
 

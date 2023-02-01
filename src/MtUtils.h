@@ -18,6 +18,15 @@ struct SourceRange {
 
 //------------------------------------------------------------------------------
 
+enum FieldType {
+  FT_UNKNOWN = 0,
+  FT_REGISTER,
+  FT_SIGNAL,
+  FT_INPUT,
+  FT_OUTPUT,
+  FT_INVALID
+};
+
 enum ContextType {
   CTX_MODULE,
   CTX_COMPONENT,
@@ -41,6 +50,7 @@ enum TraceState {
 
 struct LogEntry {
   TraceState state;
+  SourceRange range;
 };
 
 enum TraceAction {
@@ -49,6 +59,18 @@ enum TraceAction {
 };
 
 // KCOV_OFF
+inline const char* to_string(FieldType f) {
+  switch (f) {
+    case FT_UNKNOWN:  return "FT_UNKNOWN";
+    case FT_REGISTER: return "FT_REGISTER";
+    case FT_SIGNAL:   return "FT_SIGNAL";
+    case FT_INPUT:    return "FT_INPUT";
+    case FT_OUTPUT:   return "FT_OUTPUT";
+    case FT_INVALID:  return "FT_INVALID";
+    default:          return "???";
+  }
+}
+
 inline const char* to_string(TraceAction f) {
   switch (f) {
     case CTX_READ:

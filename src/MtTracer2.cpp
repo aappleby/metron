@@ -37,10 +37,14 @@ MtTracer2::MtTracer2(MtModLibrary* lib, MtModuleInstance* root_inst, bool verbos
 CHECK_RETURN Err MtTracer2::log_action(MtMethodInstance* method, MnNode node, MtInstance* inst, TraceAction action) {
 
   Err err;
+
+  inst->action_log.push_back({action, node});
+
   {
     auto source = node.get_source().trim();
-    auto old_state = inst->log_top;
+    auto old_state = inst->state_stack.back();
     auto new_state = merge_action(old_state, action);
+    inst->state_stack.back() = new_state;
 
 #if 1
     if (action == CTX_READ) {
@@ -62,7 +66,6 @@ CHECK_RETURN Err MtTracer2::log_action(MtMethodInstance* method, MnNode node, Mt
     }
 #endif
 
-    inst->log_top = new_state;
 
     if (new_state == CTX_INVALID) {
       LOG_R("Invalid context state at '");
@@ -80,16 +83,6 @@ CHECK_RETURN Err MtTracer2::log_action(MtMethodInstance* method, MnNode node, Mt
     if (action == CTX_READ) {
       method->reads.insert(inst);
     }
-  }
-
-  {
-    auto old_state = inst->state_stack.back();
-    auto new_state = merge_action(old_state, action);
-    inst->state_stack.back() = new_state;
-  }
-
-  if (inst->log_top != inst->state_stack.back()) {
-    return ERR("mismatch");
   }
 
   return err;
@@ -578,17 +571,15 @@ CHECK_RETURN Err MtTracer2::trace_sym_conditional_expression(MtMethodInstance* i
 
   err << trace_expression(inst, node_cond, CTX_READ);
 
-  inst->_module->visit([](MtInstance* m) { m->start_branch_a(); });
+  inst->_module->visit([](MtInstance* m) { m->push_state(); });
   if (!node_branch_a.is_null()) {
     err << trace_expression(inst, node_branch_a, CTX_READ);
   }
-  inst->_module->visit([](MtInstance* m) { m->end_branch_a(); });
-
-  inst->_module->visit([](MtInstance* m) { m->start_branch_b(); });
+  inst->_module->visit([](MtInstance* m) { m->swap_state(); });
   if (!node_branch_b.is_null()) {
     err << trace_expression(inst, node_branch_b, CTX_READ);
   }
-  inst->_module->visit([](MtInstance* m) { m->end_branch_b(); });
+  inst->_module->visit([](MtInstance* m) { m->merge_state(); });
 
   return err;
 }
@@ -695,18 +686,13 @@ CHECK_RETURN Err MtTracer2::trace_sym_if_statement(MtMethodInstance* inst, MnNod
   err << trace_sym_condition_clause(inst, node_cond);
 
   inst->_module->visit([](MtInstance* m) { m->push_state(); });
-  inst->_module->visit([](MtInstance* m) { m->start_branch_a(); });
   if (!node_branch_a.is_null()) {
     err << trace_statement(inst, node_branch_a);
   }
-  inst->_module->visit([](MtInstance* m) { m->end_branch_a(); });
-
   inst->_module->visit([](MtInstance* m) { m->swap_state(); });
-  inst->_module->visit([](MtInstance* m) {m->start_branch_b();});
   if (!node_branch_b.is_null()) {
     err << trace_statement(inst, node_branch_b);
   }
-  inst->_module->visit([](MtInstance* m) { m->end_branch_b(); });
   inst->_module->visit([](MtInstance* m) { m->merge_state(); });
 
   return err;
@@ -763,8 +749,6 @@ CHECK_RETURN Err MtTracer2::trace_sym_return_statement(MtMethodInstance* inst, M
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer2::trace_sym_switch_statement(MtMethodInstance* inst, MnNode node) {
-  node.dump_tree();
-
   Err err;
   assert(node.sym == sym_switch_statement);
 
@@ -784,19 +768,14 @@ CHECK_RETURN Err MtTracer2::trace_sym_switch_statement(MtMethodInstance* inst, M
     }
   }
 
-  inst->_module->visit([](MtInstance* m) { m->start_switch(); });
-
   for (const auto& child : body) {
     // skip cases without bodies
     if (child.sym == sym_case_statement && child.named_child_count() > 1) {
       inst->_module->visit([](MtInstance* m) { m->push_state(); });
-      inst->_module->visit([](MtInstance* m) { m->start_case(); });
       err << trace_sym_case_statement(inst, child);
-      inst->_module->visit([](MtInstance* m) { m->end_case(); });
       inst->_module->visit([](MtInstance* m) { m->swap_state(); });
     }
   }
-  inst->_module->visit([=](MtInstance* m) { m->end_switch(has_default); });
 
   if (has_default) {
     inst->_module->visit([](MtInstance* m) { m->pop_state(); });

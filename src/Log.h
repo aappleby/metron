@@ -113,9 +113,17 @@ struct TinyLog {
   void putc(char c) {
     print_char(stdout, c, _color);
   }
+
+  void put_range(const char* a, const char* b) {
+    while(a != b) {
+      print_char(stdout, *a, _color);
+      a++;
+    }
+  }
 };
 
 #define LOG(...)      TinyLog::get().print(stdout, 0x00000000, __VA_ARGS__)
+#define LOG_RANGE(a)  TinyLog::get().put_range(a.start, a.end)
 #define LOG_C(c, ...) TinyLog::get().print(stdout, c, __VA_ARGS__)
 #define LOG_R(...)    TinyLog::get().print(stdout, 0x008080FF, __VA_ARGS__)
 #define LOG_G(...)    TinyLog::get().print(stdout, 0x0080FF80, __VA_ARGS__)

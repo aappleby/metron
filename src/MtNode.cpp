@@ -39,15 +39,28 @@ SourceRange MnNode::get_source() const {
   auto source_start = source->source;
   auto source_end = source->source_end;
 
-  auto a = start();
-  auto b = end();
+  /*
+  typedef struct {
+    uint32_t row;
+    uint32_t column;
+  } TSPoint;
+  */
+
+  auto sp = ts_node_start_point(node);
+  auto ep = ts_node_end_point(node);
+
+
+
+  //auto a = start();
+  auto a = &source->source[ts_node_start_byte(node)];
+  auto b = &source->source[ts_node_end_byte(node)];
 
   while (a > source_start && *a != '\n' && *a != '\r') a--;
   while (b < source_end && *b != '\n' && *b != '\r') b++;
   if (*a == '\n' || *a == '\r') a++;
   if (*b == '\n' || *b == '\r') b--;
 
-  return {a, b};
+  return {source->filename.c_str(), (int)sp.row, (int)sp.column, a, b};
 }
 
 //------------------------------------------------------------------------------

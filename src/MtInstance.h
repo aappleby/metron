@@ -7,13 +7,13 @@
 #include <assert.h>
 #include "MtUtils.h"
 #include "Log.h"
+#include "MtNode.h"
 
 struct MtField;
 struct MtMethod;
 struct MtModule;
 struct MtStruct;
 struct MnNode;
-
 
 struct MtInstance;
 struct MtArrayInstance;
@@ -39,69 +39,9 @@ struct MtInstance {
 
   virtual void reset_state();
 
-  void start_branch_a() {
-    action_stack.push_back(log_next);
-    log_next = log_top;
-  }
-
-  void end_branch_a() {
-  }
-
-  void start_branch_b() {
-    std::swap(log_top, log_next);
-  }
-
-  void end_branch_b() {
-    log_top = merge_branch(log_top, log_next);
-    log_next = action_stack.back();
-    action_stack.pop_back();
-  }
-
-  void start_switch() {
-    action_stack.push_back(log_next);
-    action_stack.push_back(log_top);
-    log_next = CTX_PENDING;
-  }
-
-  /*
-    action_stack.push_back(log_next);
-    action_stack.push_back(log_top);
-    log_next.state = CTX_PENDING;
-
-    log_top = action_stack.back();
-    log_next.state = merge_branch(log_top.state, log_next.state);
-
-    log_top = log_next;
-    action_stack.pop_back();
-    log_next = action_stack.back();
-    action_stack.pop_back();
-
-  */
-
-  void start_case() {
-    log_top = action_stack.back();
-  }
-
-  void end_case() {
-    log_next = merge_branch(log_top, log_next);
-  }
-
-  void end_switch(bool has_default) {
-
-    if (!has_default) {
-      start_case();
-      end_case();
-    }
-
-    log_top = log_next;
-    action_stack.pop_back();
-    log_next = action_stack.back();
-    action_stack.pop_back();
-  }
-
-
-  struct LogEntry2 {
-    TraceState state;
+  struct LogEntry {
+    TraceAction action;
+    MnNode node;
     //SourceRange range;
   };
 
@@ -128,11 +68,8 @@ struct MtInstance {
   std::string _name;
   std::string _path;
   FieldType  field_type = FT_UNKNOWN;
-  TraceState log_top;
-  TraceState log_next;
-  std::vector<TraceState> action_stack;
   std::vector<TraceState> state_stack;
-  std::vector<LogEntry2>  action_log;
+  std::vector<LogEntry>   action_log;
 };
 
 //------------------------------------------------------------------------------

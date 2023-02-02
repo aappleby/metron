@@ -59,17 +59,14 @@ MtInstance* node_to_inst(const std::string& name, const std::string& path, MnNod
 
 MtInstance::MtInstance(const std::string& name, const std::string& path)
 : _name(name), _path(path) {
-  log_top = {CTX_NONE};
-  //log_next = {CTX_NONE};
-
-  state_stack.push_back(CTX_NONE);
+  state_stack = {CTX_NONE};
 }
 
 MtInstance::~MtInstance() {
 }
 
 void MtInstance::reset_state() {
-  log_top = {CTX_NONE};
+  state_stack = {CTX_NONE};
 }
 
 //------------------------------------------------------------------------------
@@ -82,10 +79,29 @@ MtPrimitiveInstance::~MtPrimitiveInstance() {
 
 void MtPrimitiveInstance::dump() {
   LOG_B("Primitive %s %s @ 0x%04X ", _name.c_str(), _path.c_str(), uint64_t(this) & 0xFFFF);
-  dump_state(log_top);
-  LOG(" ");
   dump_state(state_stack.back());
   LOG(" - %s\n", to_string(field_type));
+  LOG_INDENT_SCOPE();
+  for (auto a : action_log) {
+    if (a.action == CTX_READ) {
+      auto s = a.node.get_source();
+      s = s.trim();
+      LOG_G("%s@%d:%d = ", s.filename, s.row, s.col);
+      TinyLog::get().set_color(0);
+      LOG("\"");
+      LOG_RANGE(s);
+      LOG("\"\n");
+    }
+    else if (a.action == CTX_WRITE) {
+      auto s = a.node.get_source();
+      s = s.trim();
+      LOG_R("%s@%d:%d = ", s.filename, s.row, s.col);
+      TinyLog::get().set_color(0);
+      LOG("\"");
+      LOG_RANGE(s);
+      LOG("\"\n");
+    }
+ }
 }
 
 //------------------------------------------------------------------------------
@@ -98,8 +114,6 @@ MtArrayInstance::~MtArrayInstance() {
 
 void MtArrayInstance::dump() {
   LOG_B("Array %s %s @ 0x%04X ", _name.c_str(), _path.c_str(), uint64_t(this) & 0xFFFF);
-  dump_state(log_top);
-  LOG(" ");
   dump_state(state_stack.back());
   LOG(" - %s\n", to_string(field_type));
 }
@@ -120,8 +134,6 @@ MtStructInstance::~MtStructInstance() {
 
 void MtStructInstance::dump() {
   LOG_B("Struct %s %s @ 0x%04X ", _name.c_str(), _path.c_str(), uint64_t(this) & 0xFFFF);
-  dump_state(log_top);
-  LOG(" ");
   dump_state(state_stack.back());
   LOG("\n");
   LOG_INDENT_SCOPE();

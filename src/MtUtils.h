@@ -5,6 +5,9 @@
 //------------------------------------------------------------------------------
 
 struct SourceRange {
+  const char* filename;
+  int row;
+  int col;
   const char* start;
   const char* end;
 

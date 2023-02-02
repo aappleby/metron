@@ -46,7 +46,7 @@ CHECK_RETURN Err MtTracer2::log_action(MtMethodInstance* method, MnNode node, Mt
     auto new_state = merge_action(old_state, action);
     inst->state_stack.back() = new_state;
 
-#if 1
+#if 0
     if (action == CTX_READ) {
       LOG_B("Read %s: '", inst->_name.c_str());
       for (auto c = source.start; c != source.end; c++) {
@@ -68,11 +68,8 @@ CHECK_RETURN Err MtTracer2::log_action(MtMethodInstance* method, MnNode node, Mt
 
 
     if (new_state == CTX_INVALID) {
-      LOG_R("Invalid context state at '");
-      for (auto c = source.start; c != source.end; c++) {
-        if (*c != '\n') LOG("%c", *c);
-      }
-      printf("'\n");
+      LOG_R("Trace error: state went from %s to %s\n", to_string(old_state), to_string(new_state));
+      inst->dump();
       err << ERR("Invalid context state\n");
     }
 

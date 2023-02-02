@@ -217,7 +217,7 @@ int main(int argc, char** argv) {
     }
 
     //LOG_B("\n");
-    root_inst->dump();
+    //root_inst->dump();
 
     delete root_inst;
   }

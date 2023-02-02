@@ -69,6 +69,29 @@ void MtInstance::reset_state() {
   state_stack = {CTX_NONE};
 }
 
+void MtInstance::dump_log() {
+  for (auto a : action_log) {
+    if (a.action == CTX_READ) {
+      auto s = a.node.get_source();
+      s = s.trim();
+      LOG_G("%s@%-4d", s.filename, s.row);
+      TinyLog::get().set_color(0);
+      LOG(" \"");
+      LOG_RANGE(s);
+      LOG("\"\n");
+    }
+    else if (a.action == CTX_WRITE) {
+      auto s = a.node.get_source();
+      s = s.trim();
+      LOG_R("%s@%-4d", s.filename, s.row);
+      TinyLog::get().set_color(0);
+      LOG(" \"");
+      LOG_RANGE(s);
+      LOG("\"\n");
+    }
+  }
+}
+
 //------------------------------------------------------------------------------
 
 MtPrimitiveInstance::MtPrimitiveInstance(const std::string& name, const std::string& path) : MtInstance(name, path) {
@@ -78,30 +101,11 @@ MtPrimitiveInstance::~MtPrimitiveInstance() {
 }
 
 void MtPrimitiveInstance::dump() {
-  LOG_B("Primitive %s %s @ 0x%04X ", _name.c_str(), _path.c_str(), uint64_t(this) & 0xFFFF);
+  LOG_B("Primitive '%s' @ 0x%04X ", _path.c_str(), uint64_t(this) & 0xFFFF);
   dump_state(state_stack.back());
   LOG(" - %s\n", to_string(field_type));
   LOG_INDENT_SCOPE();
-  for (auto a : action_log) {
-    if (a.action == CTX_READ) {
-      auto s = a.node.get_source();
-      s = s.trim();
-      LOG_G("%s@%d:%d = ", s.filename, s.row, s.col);
-      TinyLog::get().set_color(0);
-      LOG("\"");
-      LOG_RANGE(s);
-      LOG("\"\n");
-    }
-    else if (a.action == CTX_WRITE) {
-      auto s = a.node.get_source();
-      s = s.trim();
-      LOG_R("%s@%d:%d = ", s.filename, s.row, s.col);
-      TinyLog::get().set_color(0);
-      LOG("\"");
-      LOG_RANGE(s);
-      LOG("\"\n");
-    }
- }
+  dump_log();
 }
 
 //------------------------------------------------------------------------------
@@ -116,6 +120,8 @@ void MtArrayInstance::dump() {
   LOG_B("Array %s %s @ 0x%04X ", _name.c_str(), _path.c_str(), uint64_t(this) & 0xFFFF);
   dump_state(state_stack.back());
   LOG(" - %s\n", to_string(field_type));
+  LOG_INDENT_SCOPE();
+  dump_log();
 }
 
 //------------------------------------------------------------------------------

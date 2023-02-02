@@ -30,6 +30,7 @@ struct MtInstance {
   MtInstance(const std::string& name, const std::string& path);
   virtual ~MtInstance();
   virtual void dump() {}
+  void dump_log();
 
   virtual void visit(const inst_visitor& v) { v(this); }
 

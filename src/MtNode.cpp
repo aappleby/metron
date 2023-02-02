@@ -60,7 +60,7 @@ SourceRange MnNode::get_source() const {
   if (*a == '\n' || *a == '\r') a++;
   if (*b == '\n' || *b == '\r') b--;
 
-  return {source->filename.c_str(), (int)sp.row, (int)sp.column, a, b};
+  return {source->filename.c_str(), source->full_path.c_str(), (int)sp.row, (int)sp.column, a, b};
 }
 
 //------------------------------------------------------------------------------

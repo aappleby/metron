@@ -20,7 +20,7 @@ class MtTracer {
   CHECK_RETURN Err trace_method(MtContext* mod_ctx, MtMethod* method);
 
   CHECK_RETURN Err trace_default(MtContext* mod_ctx, MnNode node,
-                                 TraceAction action = CTX_READ);
+                                 TraceAction action = ACT_READ);
 
   CHECK_RETURN Err trace_identifier(MtContext* ctx, MnNode node, TraceAction action);
   CHECK_RETURN Err trace_expression(MtContext* ctx, MnNode node, TraceAction action);

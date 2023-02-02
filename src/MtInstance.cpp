@@ -9,15 +9,15 @@
 
 void dump_state(TraceState state) {
   switch(state) {
-    case CTX_NONE:     LOG_C(0x444444, "CTX_NONE"); break;
-    case CTX_INPUT:    LOG_C(0x88FFFF, "CTX_INPUT"); break;
-    case CTX_OUTPUT:   LOG_C(0xFFCCCC, "CTX_OUTPUT"); break;
-    case CTX_MAYBE:    LOG_C(0x44CCFF, "CTX_MAYBE"); break;
-    case CTX_SIGNAL:   LOG_C(0x88FF88, "CTX_SIGNAL"); break;
-    case CTX_REGISTER: LOG_C(0x88BBBB, "CTX_REGISTER"); break;
-    case CTX_INVALID:  LOG_C(0xFF00FF, "CTX_INVALID"); break;
-    case CTX_PENDING:  LOG_C(0x444444, "CTX_PENDING"); break;
-    case CTX_NIL:      LOG_C(0x444444, "CTX_NIL"); break;
+    case CTX_NONE:     LOG_C(0x444444, "NONE"); break;
+    case CTX_INPUT:    LOG_C(0x88FFFF, "INPUT"); break;
+    case CTX_OUTPUT:   LOG_C(0xFFCCCC, "OUTPUT"); break;
+    case CTX_MAYBE:    LOG_C(0x44CCFF, "MAYBE"); break;
+    case CTX_SIGNAL:   LOG_C(0x88FF88, "SIGNAL"); break;
+    case CTX_REGISTER: LOG_C(0x88BBBB, "REGISTER"); break;
+    case CTX_INVALID:  LOG_C(0xFF00FF, "INVALID"); break;
+    case CTX_PENDING:  LOG_C(0x444444, "PENDING"); break;
+    case CTX_NIL:      LOG_C(0x444444, "NIL"); break;
   }
 }
 
@@ -71,24 +71,20 @@ void MtInstance::reset_state() {
 
 void MtInstance::dump_log() {
   for (auto a : action_log) {
-    if (a.action == CTX_READ) {
-      auto s = a.node.get_source();
-      s = s.trim();
-      LOG_G("%s@%-4d", s.filename, s.row);
-      TinyLog::get().set_color(0);
-      LOG(" \"");
-      LOG_RANGE(s);
-      LOG("\"\n");
-    }
-    else if (a.action == CTX_WRITE) {
-      auto s = a.node.get_source();
-      s = s.trim();
-      LOG_R("%s@%-4d", s.filename, s.row);
-      TinyLog::get().set_color(0);
-      LOG(" \"");
-      LOG_RANGE(s);
-      LOG("\"\n");
-    }
+    auto s = a.node.get_source();
+    s = s.trim();
+    LOG_C(0x444444, "%s@%-4d\n", s.path, s.row + 1);
+    LOG_INDENT_SCOPE();
+    TinyLog::get().set_color(0);
+    LOG(" \"");
+    LOG_RANGE(s);
+    LOG("\" :: ");
+    LOG("%s(", to_string(a.action));
+    dump_state(a.old_state);
+    LOG(") = ");
+    dump_state(a.new_state);
+    LOG("\n");
+    LOG("%s\n", merge_message(a.old_state, a.action));
   }
 }
 
@@ -192,9 +188,8 @@ MtInstance* MtMethodInstance::get_param(const std::string& name) {
 }
 
 void MtMethodInstance::dump() {
-  LOG_B("Method '%s' @ 0x%04X ", _path.c_str(), uint64_t(this) & 0xFFFF);
-  //dump_state(log_top.state);
-  LOG("\n");
+  LOG_B("Method '%s' @ 0x%04X", _path.c_str(), uint64_t(this) & 0xFFFF);
+  LOG(" - %s\n", to_string(_method_type));
   LOG_INDENT_SCOPE();
   for (auto p : _params) {
     LOG_G("%s: ", p->_name.c_str());

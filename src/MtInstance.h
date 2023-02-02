@@ -41,9 +41,10 @@ struct MtInstance {
   virtual void reset_state();
 
   struct LogEntry {
+    TraceState  old_state;
     TraceAction action;
+    TraceState  new_state;
     MnNode node;
-    //SourceRange range;
   };
 
   void push_state() {
@@ -135,6 +136,7 @@ struct MtMethodInstance : public MtInstance {
     }
   }
 
+  MethodType _method_type = MT_UNKNOWN;
   MtMethod* _method;
   MtModuleInstance* _module;
   std::vector<MtInstance*> _params;

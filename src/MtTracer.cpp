@@ -36,7 +36,7 @@ CHECK_RETURN Err MtTracer::log_action(MtContext* method_ctx, MtContext* dst_ctx,
   assert(method_ctx);
   assert(dst_ctx);
 
-  if (action == CTX_WRITE) {
+  if (action == ACT_WRITE) {
     if (dst_ctx->context_type != CTX_RETURN) {
       method_ctx->method->writes.insert(dst_ctx);
     }
@@ -47,11 +47,11 @@ CHECK_RETURN Err MtTracer::log_action(MtContext* method_ctx, MtContext* dst_ctx,
   dst_ctx->log_top.state = new_state;
 
   if (new_state == CTX_INVALID) {
-    printf("Invalid context state at\n");
+    LOG_R("Invalid context state at\n");
     for (auto c = source.start; c != source.end; c++) {
-      putc(*c, stdout);
+      LOG_R("%c", *c);
     }
-    printf("\n");
+    LOG_R("\n");
 
   }
 
@@ -105,7 +105,7 @@ CHECK_RETURN Err MtTracer::trace_expression(MtContext* ctx, MnNode node,
       err << trace_sym_field_expression(ctx, node, action);
       break;
     case sym_subscript_expression:
-      err << trace_expression(ctx, node.get_field(field_index), CTX_READ);
+      err << trace_expression(ctx, node.get_field(field_index), ACT_READ);
       err << trace_expression(ctx, node.get_field(field_argument), action);
       break;
     case sym_call_expression:
@@ -113,8 +113,8 @@ CHECK_RETURN Err MtTracer::trace_expression(MtContext* ctx, MnNode node,
       break;
     case sym_update_expression:
       // this is "i++" or similar, which is a read and a write.
-      err << trace_expression(ctx, node.get_field(field_argument), CTX_READ);
-      err << trace_expression(ctx, node.get_field(field_argument), CTX_WRITE);
+      err << trace_expression(ctx, node.get_field(field_argument), ACT_READ);
+      err << trace_expression(ctx, node.get_field(field_argument), ACT_WRITE);
       break;
     case sym_assignment_expression:
       err << trace_sym_assignment_expression(ctx, node);
@@ -124,7 +124,7 @@ CHECK_RETURN Err MtTracer::trace_expression(MtContext* ctx, MnNode node,
       break;
 
     case sym_unary_expression:
-      err << trace_expression(ctx, node.get_field(field_argument), CTX_READ);
+      err << trace_expression(ctx, node.get_field(field_argument), ACT_READ);
       break;
 
     case sym_binary_expression:
@@ -169,7 +169,7 @@ CHECK_RETURN Err MtTracer::trace_statement(MtContext* ctx, MnNode node) {
       err << trace_sym_if_statement(ctx, node);
       break;
     case sym_expression_statement:
-      err << trace_expression(ctx, node.child(0), CTX_READ);
+      err << trace_expression(ctx, node.child(0), ACT_READ);
       break;
     case sym_switch_statement:
       err << trace_sym_switch_statement(ctx, node);
@@ -197,7 +197,7 @@ CHECK_RETURN Err MtTracer::trace_declarator(MtContext* ctx, MnNode node) {
 
   switch (node.sym) {
     case sym_identifier:
-      err << trace_identifier(ctx, node, CTX_READ);
+      err << trace_identifier(ctx, node, ACT_READ);
       break;
     case sym_init_declarator:
       err << trace_sym_init_declarator(ctx, node);
@@ -218,13 +218,13 @@ CHECK_RETURN Err MtTracer::trace_sym_assignment_expression(MtContext* ctx, MnNod
   auto op = node.get_field(field_operator).text();
 
   if (op == "=") {
-    err << trace_expression(ctx, node.get_field(field_right), CTX_READ);
-    err << trace_expression(ctx, node.get_field(field_left), CTX_WRITE);
+    err << trace_expression(ctx, node.get_field(field_right), ACT_READ);
+    err << trace_expression(ctx, node.get_field(field_left),  ACT_WRITE);
   }
   else {
-    err << trace_expression(ctx, node.get_field(field_right), CTX_READ);
-    err << trace_expression(ctx, node.get_field(field_left), CTX_READ);
-    err << trace_expression(ctx, node.get_field(field_left), CTX_WRITE);
+    err << trace_expression(ctx, node.get_field(field_right), ACT_READ);
+    err << trace_expression(ctx, node.get_field(field_left),  ACT_READ);
+    err << trace_expression(ctx, node.get_field(field_left),  ACT_WRITE);
   }
 
   return err;
@@ -242,11 +242,11 @@ CHECK_RETURN Err MtTracer::trace_sym_for_statement(MtContext* ctx, MnNode node) 
         err << trace_sym_declaration(ctx, c);
       }
       else {
-        err << trace_expression(ctx, c, CTX_READ);
+        err << trace_expression(ctx, c, ACT_READ);
       }
     }
     else if (c.is_expression()) {
-      err << trace_expression(ctx, c, CTX_READ);
+      err << trace_expression(ctx, c, ACT_READ);
     }
     else if (c.is_statement()) {
       err << trace_statement(ctx, c);
@@ -318,17 +318,17 @@ CHECK_RETURN Err MtTracer::trace_sym_conditional_expression(MtContext* ctx,
   auto node_branch_a = node.get_field(field_consequence);
   auto node_branch_b = node.get_field(field_alternative);
 
-  err << trace_expression(ctx, node_cond, CTX_READ);
+  err << trace_expression(ctx, node_cond, ACT_READ);
 
   ctx_root->start_branch_a();
   if (!node_branch_a.is_null()) {
-    err << trace_expression(ctx, node_branch_a, CTX_READ);
+    err << trace_expression(ctx, node_branch_a, ACT_READ);
   }
   ctx_root->end_branch_a();
 
   ctx_root->start_branch_b();
   if (!node_branch_b.is_null()) {
-    err << trace_expression(ctx, node_branch_b, CTX_READ);
+    err << trace_expression(ctx, node_branch_b, ACT_READ);
   }
   ctx_root->end_branch_b();
 
@@ -352,13 +352,13 @@ CHECK_RETURN Err MtTracer::trace_call(MtContext* src_ctx, MtContext* dst_ctx,
   bool cross_mod_call = src_ctx->method->_mod != dst_ctx->method->_mod;
 
   if (cross_mod_call && dst_ctx->method->has_params()) {
-    err << log_action(src_ctx, dst_ctx, CTX_WRITE, node_call.get_source());
+    err << log_action(src_ctx, dst_ctx, ACT_WRITE, node_call.get_source());
   }
 
   err << trace_sym_function_definition(dst_ctx, dst_ctx->method->_node);
 
   if (cross_mod_call && dst_ctx->method->has_params()) {
-    err << log_action(src_ctx, dst_ctx, CTX_READ, node_call.get_source());
+    err << log_action(src_ctx, dst_ctx, ACT_READ, node_call.get_source());
   }
 
   return err;
@@ -639,7 +639,7 @@ CHECK_RETURN Err MtTracer::trace_sym_init_declarator(MtContext* ctx,
   assert(ctx->context_type == CTX_METHOD);
   assert(node.sym == sym_init_declarator);
 
-  err << trace_expression(ctx, node.get_field(field_value), CTX_READ);
+  err << trace_expression(ctx, node.get_field(field_value), ACT_READ);
 
   return err;
 }
@@ -656,10 +656,10 @@ CHECK_RETURN Err MtTracer::trace_sym_return_statement(MtContext* ctx,
   auto node_value = node.child(1);
   auto node_semi = node.child(2);
 
-  err << trace_expression(ctx, node_value, CTX_READ);
+  err << trace_expression(ctx, node_value, ACT_READ);
 
   auto return_ctx = ctx->resolve("<return>");
-  err << log_action(ctx, return_ctx, CTX_WRITE, node.get_source());
+  err << log_action(ctx, return_ctx, ACT_WRITE, node.get_source());
 
   return err;
 }
@@ -675,8 +675,8 @@ CHECK_RETURN Err MtTracer::trace_sym_binary_expression(MtContext* ctx,
   auto node_lhs = node.get_field(field_left);
   auto node_rhs = node.get_field(field_right);
 
-  err << trace_expression(ctx, node_lhs, CTX_READ);
-  err << trace_expression(ctx, node_rhs, CTX_READ);
+  err << trace_expression(ctx, node_lhs, ACT_READ);
+  err << trace_expression(ctx, node_rhs, ACT_READ);
 
   return err;
 }
@@ -690,9 +690,9 @@ CHECK_RETURN Err MtTracer::trace_sym_initializer_list(MtContext* ctx, MnNode nod
 
   for (const auto& child : node) {
     if (child.is_identifier()) {
-      err << trace_identifier(ctx, child, CTX_READ);
+      err << trace_identifier(ctx, child, ACT_READ);
     } else if (child.is_expression()) {
-      err << trace_expression(ctx, child, CTX_READ);
+      err << trace_expression(ctx, child, ACT_READ);
     } else {
       err << trace_default(ctx, child);
     }
@@ -711,9 +711,9 @@ CHECK_RETURN Err MtTracer::trace_sym_argument_list(MtContext* ctx,
 
   for (const auto& child : node) {
     if (child.is_identifier()) {
-      err << trace_identifier(ctx, child, CTX_READ);
+      err << trace_identifier(ctx, child, ACT_READ);
     } else if (child.is_expression()) {
-      err << trace_expression(ctx, child, CTX_READ);
+      err << trace_expression(ctx, child, ACT_READ);
     } else {
       err << trace_default(ctx, child);
     }
@@ -731,7 +731,7 @@ CHECK_RETURN Err MtTracer::trace_sym_condition_clause(MtContext* ctx,
   assert(node.sym == sym_condition_clause);
 
   auto node_value = node.get_field(field_value);
-  err << trace_expression(ctx, node_value, CTX_READ);
+  err << trace_expression(ctx, node_value, ACT_READ);
 
   return err;
 }

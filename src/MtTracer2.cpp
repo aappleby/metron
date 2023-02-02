@@ -38,23 +38,23 @@ CHECK_RETURN Err MtTracer2::log_action(MtMethodInstance* method, MnNode node, Mt
 
   Err err;
 
-  inst->action_log.push_back({action, node});
+  auto old_state = inst->state_stack.back();
+  auto new_state = merge_action(old_state, action);
+  inst->action_log.push_back({old_state, action, new_state, node});
 
   {
     auto source = node.get_source().trim();
-    auto old_state = inst->state_stack.back();
-    auto new_state = merge_action(old_state, action);
     inst->state_stack.back() = new_state;
 
 #if 0
-    if (action == CTX_READ) {
+    if (action == ACT_READ) {
       LOG_B("Read %s: '", inst->_name.c_str());
       for (auto c = source.start; c != source.end; c++) {
         if (*c != '\n') LOG("%c", *c);
       }
       LOG_B("' state %s -> %s\n", to_string(old_state), to_string(new_state));
     }
-    else if (action == CTX_WRITE) {
+    else if (action == ACT_WRITE) {
       LOG_B("Write %s: '", inst->_name.c_str());
       for (auto c = source.start; c != source.end; c++) {
         if (*c != '\n') LOG("%c", *c);
@@ -73,11 +73,11 @@ CHECK_RETURN Err MtTracer2::log_action(MtMethodInstance* method, MnNode node, Mt
       err << ERR("Invalid context state\n");
     }
 
-    if (action == CTX_WRITE) {
+    if (action == ACT_WRITE) {
       method->writes.insert(inst);
     }
 
-    if (action == CTX_READ) {
+    if (action == ACT_READ) {
       method->reads.insert(inst);
     }
   }
@@ -149,7 +149,7 @@ CHECK_RETURN Err MtTracer2::trace_declarator(MtMethodInstance* inst, MnNode node
 
   switch (node.sym) {
     case sym_identifier:
-      err << trace_identifier(inst, node, CTX_READ);
+      err << trace_identifier(inst, node, ACT_READ);
       break;
     case sym_init_declarator:
       err << trace_sym_init_declarator(inst, node);
@@ -178,7 +178,7 @@ CHECK_RETURN Err MtTracer2::trace_statement(MtMethodInstance* inst, MnNode node)
       err << trace_sym_if_statement(inst, node);
       break;
     case sym_expression_statement:
-      err << trace_expression(inst, node.child(0), CTX_READ);
+      err << trace_expression(inst, node.child(0), ACT_READ);
       break;
     case sym_switch_statement:
       err << trace_sym_switch_statement(inst, node);
@@ -215,7 +215,7 @@ CHECK_RETURN Err MtTracer2::trace_expression(MtMethodInstance* inst, MnNode node
       err << trace_sym_field_expression(inst, node, action);
       break;
     case sym_subscript_expression:
-      err << trace_expression(inst, node.get_field(field_index), CTX_READ);
+      err << trace_expression(inst, node.get_field(field_index), ACT_READ);
       err << trace_expression(inst, node.get_field(field_argument), action);
       break;
     case sym_call_expression:
@@ -223,8 +223,8 @@ CHECK_RETURN Err MtTracer2::trace_expression(MtMethodInstance* inst, MnNode node
       break;
     case sym_update_expression:
       // this is "i++" or similar, which is a read and a write.
-      err << trace_expression(inst, node.get_field(field_argument), CTX_READ);
-      err << trace_expression(inst, node.get_field(field_argument), CTX_WRITE);
+      err << trace_expression(inst, node.get_field(field_argument), ACT_READ);
+      err << trace_expression(inst, node.get_field(field_argument), ACT_WRITE);
       break;
     case sym_assignment_expression:
       err << trace_sym_assignment_expression(inst, node);
@@ -234,7 +234,7 @@ CHECK_RETURN Err MtTracer2::trace_expression(MtMethodInstance* inst, MnNode node
       break;
 
     case sym_unary_expression:
-      err << trace_expression(inst, node.get_field(field_argument), CTX_READ);
+      err << trace_expression(inst, node.get_field(field_argument), ACT_READ);
       break;
 
     case sym_binary_expression:
@@ -278,7 +278,7 @@ CHECK_RETURN Err MtTracer2::trace_call(MtMethodInstance* src_inst, MtMethodInsta
 
     for (auto param : dst_inst->_params) {
       //LOG_R("Write %s.%s.%s\n", child_name.c_str(), child_func.c_str(), param.first.c_str());
-      err << log_action(src_inst, node_call, param, CTX_WRITE);
+      err << log_action(src_inst, node_call, param, ACT_WRITE);
     }
   }
 
@@ -373,9 +373,9 @@ CHECK_RETURN Err MtTracer2::trace_sym_argument_list(MtMethodInstance* inst, MnNo
 
   for (const auto& child : node) {
     if (child.is_identifier()) {
-      err << trace_identifier(inst, child, CTX_READ);
+      err << trace_identifier(inst, child, ACT_READ);
     } else if (child.is_expression()) {
-      err << trace_expression(inst, child, CTX_READ);
+      err << trace_expression(inst, child, ACT_READ);
     } else {
       err << trace_default(inst, child);
     }
@@ -392,13 +392,13 @@ CHECK_RETURN Err MtTracer2::trace_sym_assignment_expression(MtMethodInstance* in
   auto op = node.get_field(field_operator).text();
 
   if (op == "=") {
-    err << trace_expression(inst, node.get_field(field_right), CTX_READ);
-    err << trace_expression(inst, node.get_field(field_left), CTX_WRITE);
+    err << trace_expression(inst, node.get_field(field_right), ACT_READ);
+    err << trace_expression(inst, node.get_field(field_left), ACT_WRITE);
   }
   else {
-    err << trace_expression(inst, node.get_field(field_right), CTX_READ);
-    err << trace_expression(inst, node.get_field(field_left), CTX_READ);
-    err << trace_expression(inst, node.get_field(field_left), CTX_WRITE);
+    err << trace_expression(inst, node.get_field(field_right), ACT_READ);
+    err << trace_expression(inst, node.get_field(field_left), ACT_READ);
+    err << trace_expression(inst, node.get_field(field_left), ACT_WRITE);
   }
 
   return err;
@@ -413,8 +413,8 @@ CHECK_RETURN Err MtTracer2::trace_sym_binary_expression(MtMethodInstance* inst, 
   auto node_lhs = node.get_field(field_left);
   auto node_rhs = node.get_field(field_right);
 
-  err << trace_expression(inst, node_lhs, CTX_READ);
-  err << trace_expression(inst, node_rhs, CTX_READ);
+  err << trace_expression(inst, node_lhs, ACT_READ);
+  err << trace_expression(inst, node_rhs, ACT_READ);
 
   return err;
 }
@@ -532,7 +532,7 @@ CHECK_RETURN Err MtTracer2::trace_sym_condition_clause(MtMethodInstance* ctx, Mn
   assert(node.sym == sym_condition_clause);
 
   auto node_value = node.get_field(field_value);
-  err << trace_expression(ctx, node_value, CTX_READ);
+  err << trace_expression(ctx, node_value, ACT_READ);
 
   return err;
 }
@@ -566,15 +566,15 @@ CHECK_RETURN Err MtTracer2::trace_sym_conditional_expression(MtMethodInstance* i
   auto node_branch_a = node.get_field(field_consequence);
   auto node_branch_b = node.get_field(field_alternative);
 
-  err << trace_expression(inst, node_cond, CTX_READ);
+  err << trace_expression(inst, node_cond, ACT_READ);
 
   inst->_module->visit([](MtInstance* m) { m->push_state(); });
   if (!node_branch_a.is_null()) {
-    err << trace_expression(inst, node_branch_a, CTX_READ);
+    err << trace_expression(inst, node_branch_a, ACT_READ);
   }
   inst->_module->visit([](MtInstance* m) { m->swap_state(); });
   if (!node_branch_b.is_null()) {
-    err << trace_expression(inst, node_branch_b, CTX_READ);
+    err << trace_expression(inst, node_branch_b, ACT_READ);
   }
   inst->_module->visit([](MtInstance* m) { m->merge_state(); });
 
@@ -638,11 +638,11 @@ CHECK_RETURN Err MtTracer2::trace_sym_for_statement(MtMethodInstance* inst, MnNo
         err << trace_sym_declaration(inst, c);
       }
       else {
-        err << trace_expression(inst, c, CTX_READ);
+        err << trace_expression(inst, c, ACT_READ);
       }
     }
     else if (c.is_expression()) {
-      err << trace_expression(inst, c, CTX_READ);
+      err << trace_expression(inst, c, ACT_READ);
     }
     else if (c.is_statement()) {
       err << trace_statement(inst, c);
@@ -701,7 +701,7 @@ CHECK_RETURN Err MtTracer2::trace_sym_init_declarator(MtMethodInstance* inst, Mn
   Err err;
   assert(node.sym == sym_init_declarator);
 
-  err << trace_expression(inst, node.get_field(field_value), CTX_READ);
+  err << trace_expression(inst, node.get_field(field_value), ACT_READ);
 
   return err;
 }
@@ -714,9 +714,9 @@ CHECK_RETURN Err MtTracer2::trace_sym_initializer_list(MtMethodInstance* inst, M
 
   for (const auto& child : node) {
     if (child.is_identifier()) {
-      err << trace_identifier(inst, child, CTX_READ);
+      err << trace_identifier(inst, child, ACT_READ);
     } else if (child.is_expression()) {
-      err << trace_expression(inst, child, CTX_READ);
+      err << trace_expression(inst, child, ACT_READ);
     } else {
       err << trace_default(inst, child);
     }
@@ -735,7 +735,7 @@ CHECK_RETURN Err MtTracer2::trace_sym_return_statement(MtMethodInstance* inst, M
   auto node_value = node.child(1);
   auto node_semi = node.child(2);
 
-  err << trace_expression(inst, node_value, CTX_READ);
+  err << trace_expression(inst, node_value, ACT_READ);
 
   //auto return_ctx = ctx->resolve("<return>");
   //err << log_action(inst, CTX_WRITE, node.get_source());

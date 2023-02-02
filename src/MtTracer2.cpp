@@ -37,49 +37,59 @@ MtTracer2::MtTracer2(MtModLibrary* lib, MtModuleInstance* root_inst, bool verbos
 CHECK_RETURN Err MtTracer2::log_action(MtMethodInstance* method, MnNode node, MtInstance* inst, TraceAction action) {
 
   Err err;
-  auto source = node.get_source().trim();
-
-  auto old_state = inst->log_top;
-  auto new_state = merge_action(old_state, action);
+  {
+    auto source = node.get_source().trim();
+    auto old_state = inst->log_top;
+    auto new_state = merge_action(old_state, action);
 
 #if 1
-  if (action == CTX_READ) {
-    LOG_B("Read %s: '", inst->_path.c_str());
-    for (auto c = source.start; c != source.end; c++) {
-      if (*c != '\n') LOG("%c", *c);
+    if (action == CTX_READ) {
+      LOG_B("Read %s: '", inst->_name.c_str());
+      for (auto c = source.start; c != source.end; c++) {
+        if (*c != '\n') LOG("%c", *c);
+      }
+      LOG_B("' state %s -> %s\n", to_string(old_state), to_string(new_state));
     }
-    LOG_B("' state %s -> %s\n", to_string(old_state), to_string(new_state));
-  }
-  else if (action == CTX_WRITE) {
-    LOG_B("Write %s: '", inst->_path.c_str());
-    for (auto c = source.start; c != source.end; c++) {
-      if (*c != '\n') LOG("%c", *c);
+    else if (action == CTX_WRITE) {
+      LOG_B("Write %s: '", inst->_name.c_str());
+      for (auto c = source.start; c != source.end; c++) {
+        if (*c != '\n') LOG("%c", *c);
+      }
+      LOG_B("' state %s -> %s\n", to_string(old_state), to_string(new_state));
     }
-    LOG_B("' state %s -> %s\n", to_string(old_state), to_string(new_state));
-  }
-  else {
-    LOG_R("???? '%s'\n", inst->_name.c_str());
-  }
+    else {
+      LOG_R("???? '%s'\n", inst->_name.c_str());
+    }
 #endif
 
+    inst->log_top = new_state;
 
-  inst->log_top = new_state;
-
-  if (new_state == CTX_INVALID) {
-    LOG_R("Invalid context state at '");
-    for (auto c = source.start; c != source.end; c++) {
-      if (*c != '\n') LOG("%c", *c);
+    if (new_state == CTX_INVALID) {
+      LOG_R("Invalid context state at '");
+      for (auto c = source.start; c != source.end; c++) {
+        if (*c != '\n') LOG("%c", *c);
+      }
+      printf("'\n");
+      err << ERR("Invalid context state\n");
     }
-    printf("'\n");
-    err << ERR("Invalid context state\n");
+
+    if (action == CTX_WRITE) {
+      method->writes.insert(inst);
+    }
+
+    if (action == CTX_READ) {
+      method->reads.insert(inst);
+    }
   }
 
-  if (action == CTX_WRITE) {
-    method->writes.insert(inst);
+  {
+    auto old_state = inst->state_stack.back();
+    auto new_state = merge_action(old_state, action);
+    inst->state_stack.back() = new_state;
   }
 
-  if (action == CTX_READ) {
-    method->reads.insert(inst);
+  if (inst->log_top != inst->state_stack.back()) {
+    return ERR("mismatch");
   }
 
   return err;
@@ -684,21 +694,20 @@ CHECK_RETURN Err MtTracer2::trace_sym_if_statement(MtMethodInstance* inst, MnNod
 
   err << trace_sym_condition_clause(inst, node_cond);
 
+  inst->_module->visit([](MtInstance* m) { m->push_state(); });
   inst->_module->visit([](MtInstance* m) { m->start_branch_a(); });
   if (!node_branch_a.is_null()) {
     err << trace_statement(inst, node_branch_a);
   }
   inst->_module->visit([](MtInstance* m) { m->end_branch_a(); });
 
-  inst->_module->visit(
-    [](MtInstance* m) {
-      m->start_branch_b();
-    }
-  );
+  inst->_module->visit([](MtInstance* m) { m->swap_state(); });
+  inst->_module->visit([](MtInstance* m) {m->start_branch_b();});
   if (!node_branch_b.is_null()) {
     err << trace_statement(inst, node_branch_b);
   }
   inst->_module->visit([](MtInstance* m) { m->end_branch_b(); });
+  inst->_module->visit([](MtInstance* m) { m->merge_state(); });
 
   return err;
 }
@@ -754,6 +763,8 @@ CHECK_RETURN Err MtTracer2::trace_sym_return_statement(MtMethodInstance* inst, M
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer2::trace_sym_switch_statement(MtMethodInstance* inst, MnNode node) {
+  node.dump_tree();
+
   Err err;
   assert(node.sym == sym_switch_statement);
 
@@ -762,11 +773,11 @@ CHECK_RETURN Err MtTracer2::trace_sym_switch_statement(MtMethodInstance* inst, M
   auto body = node.get_field(field_body);
 
   bool has_default = false;
+  int case_count = 0;
+
   for (const auto& child : body) {
-    if (child.sym == sym_case_statement) {
-      if (child.named_child_count() == 1) {
-        continue;
-      }
+    if (child.sym == sym_case_statement && child.named_child_count() > 1) {
+      case_count++;
       if (child.child(0).text() == "default") {
         has_default = true;
       }
@@ -776,17 +787,26 @@ CHECK_RETURN Err MtTracer2::trace_sym_switch_statement(MtMethodInstance* inst, M
   inst->_module->visit([](MtInstance* m) { m->start_switch(); });
 
   for (const auto& child : body) {
-    if (child.sym == sym_case_statement) {
-      // skip cases without bodies
-      if (child.named_child_count() > 1) {
-        inst->_module->visit([](MtInstance* m) { m->start_case(); });
-        err << trace_sym_case_statement(inst, child);
-        inst->_module->visit([](MtInstance* m) { m->end_case(); });
-      }
+    // skip cases without bodies
+    if (child.sym == sym_case_statement && child.named_child_count() > 1) {
+      inst->_module->visit([](MtInstance* m) { m->push_state(); });
+      inst->_module->visit([](MtInstance* m) { m->start_case(); });
+      err << trace_sym_case_statement(inst, child);
+      inst->_module->visit([](MtInstance* m) { m->end_case(); });
+      inst->_module->visit([](MtInstance* m) { m->swap_state(); });
     }
   }
-
   inst->_module->visit([=](MtInstance* m) { m->end_switch(has_default); });
+
+  if (has_default) {
+    inst->_module->visit([](MtInstance* m) { m->pop_state(); });
+    case_count--;
+  }
+
+  for (int i = 0; i < case_count; i++) {
+    inst->_module->visit([](MtInstance* m) { m->merge_state(); });
+  }
+
 
   return err;
 }

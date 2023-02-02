@@ -83,6 +83,8 @@ MtPrimitiveInstance::~MtPrimitiveInstance() {
 void MtPrimitiveInstance::dump() {
   LOG_B("Primitive %s %s @ 0x%04X ", _name.c_str(), _path.c_str(), uint64_t(this) & 0xFFFF);
   dump_state(log_top);
+  LOG(" ");
+  dump_state(state_stack.back());
   LOG(" - %s\n", to_string(field_type));
 }
 
@@ -97,6 +99,8 @@ MtArrayInstance::~MtArrayInstance() {
 void MtArrayInstance::dump() {
   LOG_B("Array %s %s @ 0x%04X ", _name.c_str(), _path.c_str(), uint64_t(this) & 0xFFFF);
   dump_state(log_top);
+  LOG(" ");
+  dump_state(state_stack.back());
   LOG(" - %s\n", to_string(field_type));
 }
 
@@ -116,7 +120,9 @@ MtStructInstance::~MtStructInstance() {
 
 void MtStructInstance::dump() {
   LOG_B("Struct %s %s @ 0x%04X ", _name.c_str(), _path.c_str(), uint64_t(this) & 0xFFFF);
-  //dump_state(log_top.state);
+  dump_state(log_top);
+  LOG(" ");
+  dump_state(state_stack.back());
   LOG("\n");
   LOG_INDENT_SCOPE();
 

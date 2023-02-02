@@ -48,11 +48,6 @@ enum TraceState {
   CTX_NIL,      // not an actual state, just a placeholder
 };
 
-struct LogEntry {
-  TraceState state;
-  SourceRange range;
-};
-
 enum TraceAction {
   CTX_READ = 0,
   CTX_WRITE = 1,

@@ -39,31 +39,31 @@ CHECK_RETURN Err MtTracer2::log_action(MtMethodInstance* method, MnNode node, Mt
   Err err;
   auto source = node.get_source().trim();
 
-  auto old_state = inst->log_top.state;
+  auto old_state = inst->log_top;
   auto new_state = merge_action(old_state, action);
 
-#if 0
+#if 1
   if (action == CTX_READ) {
-    LOG_B("Read %s: '", inst->path.c_str());
+    LOG_B("Read %s: '", inst->_path.c_str());
     for (auto c = source.start; c != source.end; c++) {
       if (*c != '\n') LOG("%c", *c);
     }
     LOG_B("' state %s -> %s\n", to_string(old_state), to_string(new_state));
   }
   else if (action == CTX_WRITE) {
-    LOG_B("Write %s: '", inst->path.c_str());
+    LOG_B("Write %s: '", inst->_path.c_str());
     for (auto c = source.start; c != source.end; c++) {
       if (*c != '\n') LOG("%c", *c);
     }
     LOG_B("' state %s -> %s\n", to_string(old_state), to_string(new_state));
   }
   else {
-    LOG_R("???? '%s'\n", inst->name().c_str());
+    LOG_R("???? '%s'\n", inst->_name.c_str());
   }
 #endif
 
 
-  inst->log_top.state = new_state;
+  inst->log_top = new_state;
 
   if (new_state == CTX_INVALID) {
     LOG_R("Invalid context state at '");
@@ -278,7 +278,7 @@ CHECK_RETURN Err MtTracer2::trace_call(MtMethodInstance* src_inst, MtMethodInsta
 
     for (auto param : dst_inst->_params) {
       //LOG_R("Write %s.%s.%s\n", child_name.c_str(), child_func.c_str(), param.first.c_str());
-      err << log_action(src_inst, node_call, param.second, CTX_WRITE);
+      err << log_action(src_inst, node_call, param, CTX_WRITE);
     }
   }
 

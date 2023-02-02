@@ -4,6 +4,7 @@
 #include <map>
 #include <set>
 #include <functional>
+#include <assert.h>
 #include "MtUtils.h"
 #include "Log.h"
 
@@ -21,17 +22,13 @@ struct MtStructInstance;
 struct MtMethodInstance;
 struct MtModuleInstance;
 
-typedef struct std::map<std::string, MtInstance*> field_map;
-typedef struct std::map<std::string, MtMethodInstance*> method_map;
-
 typedef std::function<void(MtInstance*)> inst_visitor;
 
 //------------------------------------------------------------------------------
 
 struct MtInstance {
-  MtInstance(const std::string& path);
+  MtInstance(const std::string& name, const std::string& path);
   virtual ~MtInstance();
-  virtual const std::string& name() const;
   virtual void dump() {}
 
   virtual void visit(const inst_visitor& v) { v(this); }
@@ -55,7 +52,7 @@ struct MtInstance {
   }
 
   void end_branch_b() {
-    log_top.state = merge_branch(log_top.state, log_next.state);
+    log_top = merge_branch(log_top, log_next);
     log_next = action_stack.back();
     action_stack.pop_back();
   }
@@ -63,7 +60,7 @@ struct MtInstance {
   void start_switch() {
     action_stack.push_back(log_next);
     action_stack.push_back(log_top);
-    log_next.state = CTX_PENDING;
+    log_next = CTX_PENDING;
   }
 
   /*
@@ -86,7 +83,7 @@ struct MtInstance {
   }
 
   void end_case() {
-    log_next.state = merge_branch(log_top.state, log_next.state);
+    log_next = merge_branch(log_top, log_next);
   }
 
   void end_switch(bool has_default) {
@@ -102,38 +99,63 @@ struct MtInstance {
     action_stack.pop_back();
   }
 
-  std::string path;
-  FieldType field_type = FT_UNKNOWN;
-  LogEntry log_top;
-  LogEntry log_next;
-  std::vector<LogEntry> action_stack;
-  std::vector<LogEntry> action_log;
+
+  struct LogEntry2 {
+    TraceState state;
+    //SourceRange range;
+  };
+
+  void push_state() {
+    state_stack.push_back(state_stack.back());
+  }
+
+  void pop_state() {
+    state_stack.pop_back();
+  }
+
+  void swap_state() {
+    assert(state_stack.size() >= 2);
+    std::swap(state_stack[state_stack.size() - 2], state_stack[state_stack.size() - 1]);
+  }
+
+  void merge_state() {
+    assert(state_stack.size() >= 2);
+    auto s = state_stack.size();
+    state_stack[s-2] = merge_branch(state_stack[s-2], state_stack[s-1]);
+    state_stack.pop_back();
+  }
+
+  std::string _name;
+  std::string _path;
+  FieldType  field_type = FT_UNKNOWN;
+  TraceState log_top;
+  TraceState log_next;
+  std::vector<TraceState> action_stack;
+  std::vector<TraceState> state_stack;
+  std::vector<LogEntry2>  action_log;
 };
 
 //------------------------------------------------------------------------------
 
 struct MtPrimitiveInstance : public MtInstance {
-  MtPrimitiveInstance(const std::string& path);
+  MtPrimitiveInstance(const std::string& name, const std::string& path);
   virtual ~MtPrimitiveInstance();
-  virtual const std::string& name() const;
   virtual void dump();
 };
 
 //------------------------------------------------------------------------------
 
 struct MtArrayInstance : public MtInstance {
-  MtArrayInstance(const std::string& path);
+  MtArrayInstance(const std::string& name, const std::string& path);
   virtual ~MtArrayInstance();
-  virtual const std::string& name() const;
   virtual void dump();
 };
 
 //------------------------------------------------------------------------------
 
 struct MtStructInstance : public MtInstance {
-  MtStructInstance(const std::string& path, MtStruct* s);
+  MtStructInstance(const std::string& name, const std::string& path, MtStruct* s);
   virtual ~MtStructInstance();
-  virtual const std::string& name() const;
   virtual void dump();
 
   MtInstance* get_field(const std::string& name);
@@ -142,20 +164,19 @@ struct MtStructInstance : public MtInstance {
 
   virtual void visit(const inst_visitor& v) {
     MtInstance::visit(v);
-    for (auto& f : _fields) v(f.second);
+    for (auto& f : _fields) v(f);
   }
 
 
   MtStruct* _struct;
-  field_map _fields;
+  std::vector<MtInstance*> _fields;
 };
 
 //------------------------------------------------------------------------------
 
 struct MtMethodInstance : public MtInstance {
-  MtMethodInstance(const std::string& path, MtModuleInstance* module, MtMethod* method);
+  MtMethodInstance(const std::string& name, const std::string& path, MtModuleInstance* module, MtMethod* method);
   virtual ~MtMethodInstance();
-  virtual const std::string& name() const;
   MtInstance* get_param(const std::string& name);
   virtual void dump();
 
@@ -172,14 +193,13 @@ struct MtMethodInstance : public MtInstance {
   virtual void visit(const inst_visitor& v) {
     MtInstance::visit(v);
     for (auto p : _params) {
-      p.second->visit(v);
+      p->visit(v);
     }
   }
 
-  std::string _name;
   MtMethod* _method;
   MtModuleInstance* _module;
-  field_map _params;
+  std::vector<MtInstance*> _params;
   MtInstance* _retval = nullptr;
   std::vector<std::set<std::string>> scope_stack;
   std::set<MtInstance*> writes;
@@ -189,7 +209,7 @@ struct MtMethodInstance : public MtInstance {
 //------------------------------------------------------------------------------
 
 struct MtModuleInstance : public MtInstance {
-  MtModuleInstance(const std::string& path, MtModule* m);
+  MtModuleInstance(const std::string& name, const std::string& path, MtModule* m);
   virtual ~MtModuleInstance();
   virtual void dump();
 
@@ -201,13 +221,13 @@ struct MtModuleInstance : public MtInstance {
 
   virtual void visit(const inst_visitor& v) {
     MtInstance::visit(v);
-    for (auto& f : _fields)  f.second->visit(v);
-    for (auto& m : _methods) m.second->visit(v);
+    for (auto& f : _fields)  f->visit(v);
+    for (auto& m : _methods) m->visit(v);
   }
 
   MtModule*  _mod;
-  field_map  _fields;
-  method_map _methods;
+  std::vector<MtInstance*> _fields;
+  std::vector<MtMethodInstance*> _methods;
 };
 
 //------------------------------------------------------------------------------

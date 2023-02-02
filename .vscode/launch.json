@@ -13,7 +13,7 @@
       //"args": [/*"-d",*/ "-c", "examples/pong/metron/pong.h"],
       //"args": [/*"-d",*/ "-c", "examples/rvsimple/metron/singlecycle_control.h"],
       //"args": [/*"-d",*/ "-c", "examples/rvsimple/metron/example_data_memory_bus.h"],
-      "args": [/*"-d",*/ "-c", "tests/metron_good/if_with_compound.h"],
+      "args": [/*"-d",*/ "-c", "examples/rvsimple/metron/regfile.h"],
       //"args": [],
       "setupCommands": [
         { // Display content in STL containers pretty

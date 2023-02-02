@@ -53,7 +53,6 @@ struct MtMethod {
   bool is_tick_ = false;
   bool is_tock_ = false;
   bool is_func_ = false;
-  bool is_toplevel = false;
 
   bool emit_as_always_comb = false;
   bool emit_as_always_ff = false;

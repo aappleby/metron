@@ -109,6 +109,10 @@ struct MtContext {
   MtModule* type_mod = nullptr;
   MtStruct* type_struct = nullptr;
 
+  struct LogEntry {
+    TraceState state;
+  };
+
   LogEntry log_top;
   LogEntry log_next;
 

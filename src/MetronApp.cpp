@@ -197,21 +197,26 @@ int main(int argc, char** argv) {
     LOG_B("Tracing version 2: %s\n", mod->cname());
     LOG_INDENT_SCOPE();
 
-    MtModuleInstance* root_inst = new MtModuleInstance("<top>", mod);
-    //root_inst->dump();
+    MtModuleInstance* root_inst = new MtModuleInstance("<top>", "<top>", mod);
+    root_inst->dump();
 
     MtTracer2 tracer(&lib, root_inst, true);
 
     for (auto m : root_inst->_methods) {
-      LOG_B("Tracing %s\n", m.second->_name.c_str());
+      auto m2 = m->_method;
+      if (m2->is_constructor()) continue;
+      if (m2->internal_callers.size()) continue;
+      //if (!m.second->_method->is_toplevel) continue;
+
+      LOG_B("Tracing %s\n", m->_name.c_str());
       {
         LOG_INDENT_SCOPE();
-        err << tracer.trace_method(m.second->_method);
+        err << tracer.trace_method(m->_method);
       }
-      LOG_B("Tracing %s done\n", m.second->_name.c_str());
+      LOG_B("Tracing %s done\n", m->_name.c_str());
       //root_inst->dump();
       LOG_B("\n");
-      root_inst->reset_state();
+      //root_inst->reset_state();
     }
 
     //LOG_B("\n");

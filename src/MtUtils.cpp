@@ -81,9 +81,26 @@ const char* merge_message(TraceState state, TraceAction action) {
       case CTX_NIL:      return "Cant write to Nil";
     }
   }
+
+  if (action == ACT_PUSH) {
+    return "Push a copy of state stack top";
+  }
+
+  if (action == ACT_POP) {
+    return "Pop state stack top";
+  }
+
+  if (action == ACT_SWAP) {
+    return "Swap state stack top and next";
+  }
+
+  if (action == ACT_MERGE) {
+    return "Merge branches";
+  }
+
   // clang-format on
 
-  return "Should never get here!";
+  return "### Fill in action messages ###";
 }
 
 //-----------------------------------------------------------------------------

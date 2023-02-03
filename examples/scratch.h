@@ -5,8 +5,9 @@
 class Module {
 public:
 
-  void tock(logic<2> selector) {
-    tick(selector);
+  void tock() {
+    tick(1);
+    tick(2);
   }
 
 private:

@@ -71,8 +71,8 @@ class alu_control {
       case CTL_ALU_ADD:    alu_function = ALU_ADD; break;
       case CTL_ALU_OP:     alu_function = op_funct; break;
       case CTL_ALU_OP_IMM: alu_function = op_imm_funct; break;
-      case CTL_ALU_BRANCH: alu_function = branch_funct; break;
       default:             alu_function = DONTCARE; break;
+      case CTL_ALU_BRANCH: alu_function = branch_funct; break;
     }
   }
   // clang-format on

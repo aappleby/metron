@@ -55,6 +55,71 @@ MtInstance* node_to_inst(const std::string& name, const std::string& path, MnNod
   }
 }
 
+void dump_log(const std::vector<LogEntry>& log) {
+  for (auto a : log) {
+    SourceRange source_range;
+    if (a.node) {
+      source_range = a.node.get_source();
+      source_range = source_range.trim();
+      LOG_C(0x444444, "%s@%d\n", source_range.path, source_range.row + 1);
+    }
+    else {
+      LOG_C(0x444444, "<no source>\n");
+    }
+
+    LOG_INDENT_SCOPE();
+
+    TinyLog::get().set_color(0);
+    if (a.node) {
+      LOG("\"");
+      LOG_RANGE(source_range);
+      LOG("\" :: ");
+    }
+
+
+    //a.node.dump_tree();
+
+    if (a.action == ACT_READ || a.action == ACT_WRITE) {
+      LOG("%s(", to_string(a.action));
+      dump_state(a.old_state);
+      LOG(") = ");
+      dump_state(a.new_state);
+    }
+    if (a.action == ACT_PUSH) {
+      LOG("%s(", to_string(a.action));
+      dump_state(a.old_state);
+      LOG(")");
+    }
+    if (a.action == ACT_POP) {
+      LOG("%s(", to_string(a.action));
+      dump_state(a.old_state);
+      LOG(")");
+    }
+    if (a.action == ACT_SWAP) {
+      LOG("%s(", to_string(a.action));
+      dump_state(a.old_state);
+      LOG(", ");
+      dump_state(a.new_state);
+      LOG(")");
+    }
+    if (a.action == ACT_MERGE) {
+      LOG("%s(", to_string(a.action));
+      dump_state(a.old_state);
+      LOG(", ");
+      dump_state(a.new_state);
+      LOG(") = ");
+      dump_state(merge_branch(a.old_state, a.new_state));
+    }
+    LOG("\n");
+
+    if (a.action == ACT_PUSH)  LOG_INDENT();
+    if (a.action == ACT_POP)   LOG_DEDENT();
+    if (a.action == ACT_MERGE) LOG_DEDENT();
+
+    //LOG("%s\n", merge_message(a.old_state, a.action));
+  }
+}
+
 //------------------------------------------------------------------------------
 
 MtInstance::MtInstance(const std::string& name, const std::string& path)
@@ -70,22 +135,7 @@ void MtInstance::reset_state() {
 }
 
 void MtInstance::dump_log() {
-  for (auto a : action_log) {
-    auto s = a.node.get_source();
-    s = s.trim();
-    LOG_C(0x444444, "%s@%-4d\n", s.path, s.row + 1);
-    LOG_INDENT_SCOPE();
-    TinyLog::get().set_color(0);
-    LOG(" \"");
-    LOG_RANGE(s);
-    LOG("\" :: ");
-    LOG("%s(", to_string(a.action));
-    dump_state(a.old_state);
-    LOG(") = ");
-    dump_state(a.new_state);
-    LOG("\n");
-    LOG("%s\n", merge_message(a.old_state, a.action));
-  }
+  ::dump_log(action_log);
 }
 
 //------------------------------------------------------------------------------
@@ -102,6 +152,7 @@ void MtPrimitiveInstance::dump() {
   LOG(" - %s\n", to_string(field_type));
   LOG_INDENT_SCOPE();
   dump_log();
+  assert(state_stack.size() == 1);
 }
 
 //------------------------------------------------------------------------------

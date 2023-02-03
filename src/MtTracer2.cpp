@@ -40,7 +40,10 @@ CHECK_RETURN Err MtTracer2::log_action(MtMethodInstance* method, MnNode node, Mt
 
   auto old_state = inst->state_stack.back();
   auto new_state = merge_action(old_state, action);
-  inst->action_log.push_back({old_state, action, new_state, node});
+
+  if (old_state != new_state) {
+    inst->action_log.push_back({old_state, new_state, action, node});
+  }
 
   {
     auto source = node.get_source().trim();
@@ -273,6 +276,8 @@ CHECK_RETURN Err MtTracer2::trace_call(MtMethodInstance* src_inst, MtMethodInsta
   // to ports to "call" it.
 
   bool cross_mod_call = src_inst->_module != dst_inst->_module;
+
+  // FIXME - this should also catch calling tick() multiple times inside a single module
 
   if (cross_mod_call) {
 
@@ -568,15 +573,15 @@ CHECK_RETURN Err MtTracer2::trace_sym_conditional_expression(MtMethodInstance* i
 
   err << trace_expression(inst, node_cond, ACT_READ);
 
-  inst->_module->visit([](MtInstance* m) { m->push_state(); });
+  inst->_module->visit([=](MtInstance* m) { m->push_state(node_branch_a); });
   if (!node_branch_a.is_null()) {
     err << trace_expression(inst, node_branch_a, ACT_READ);
   }
-  inst->_module->visit([](MtInstance* m) { m->swap_state(); });
+  inst->_module->visit([=](MtInstance* m) { m->swap_state(node_branch_b); });
   if (!node_branch_b.is_null()) {
     err << trace_expression(inst, node_branch_b, ACT_READ);
   }
-  inst->_module->visit([](MtInstance* m) { m->merge_state(); });
+  inst->_module->visit([=](MtInstance* m) { m->merge_state(MnNode::null); });
 
   return err;
 }
@@ -676,21 +681,23 @@ CHECK_RETURN Err MtTracer2::trace_sym_if_statement(MtMethodInstance* inst, MnNod
   Err err;
   assert(node.sym == sym_if_statement);
 
+  //node.dump_tree();
+
   auto node_cond = node.get_field(field_condition);
   auto node_branch_a = node.get_field(field_consequence);
   auto node_branch_b = node.get_field(field_alternative);
 
   err << trace_sym_condition_clause(inst, node_cond);
 
-  inst->_module->visit([](MtInstance* m) { m->push_state(); });
+  inst->_module->visit([=](MtInstance* m) { m->push_state(node_cond); });
   if (!node_branch_a.is_null()) {
     err << trace_statement(inst, node_branch_a);
   }
-  inst->_module->visit([](MtInstance* m) { m->swap_state(); });
+  inst->_module->visit([=](MtInstance* m) { m->swap_state(MnNode::null); });
   if (!node_branch_b.is_null()) {
     err << trace_statement(inst, node_branch_b);
   }
-  inst->_module->visit([](MtInstance* m) { m->merge_state(); });
+  inst->_module->visit([=](MtInstance* m) { m->merge_state(MnNode::null); });
 
   return err;
 }
@@ -768,19 +775,19 @@ CHECK_RETURN Err MtTracer2::trace_sym_switch_statement(MtMethodInstance* inst, M
   for (const auto& child : body) {
     // skip cases without bodies
     if (child.sym == sym_case_statement && child.named_child_count() > 1) {
-      inst->_module->visit([](MtInstance* m) { m->push_state(); });
+      inst->_module->visit([=](MtInstance* m) { m->push_state(child); });
       err << trace_sym_case_statement(inst, child);
-      inst->_module->visit([](MtInstance* m) { m->swap_state(); });
+      inst->_module->visit([=](MtInstance* m) { m->swap_state(MnNode::null); });
     }
   }
 
   if (has_default) {
-    inst->_module->visit([](MtInstance* m) { m->pop_state(); });
+    inst->_module->visit([=](MtInstance* m) { m->pop_state(MnNode::null); });
     case_count--;
   }
 
   for (int i = 0; i < case_count; i++) {
-    inst->_module->visit([](MtInstance* m) { m->merge_state(); });
+    inst->_module->visit([=](MtInstance* m) { m->merge_state(MnNode::null); });
   }
 
 

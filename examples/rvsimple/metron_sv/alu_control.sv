@@ -74,8 +74,8 @@ module alu_control (
       CTL_ALU_ADD:    alu_function = ALU_ADD;
       CTL_ALU_OP:     alu_function = op_funct;
       CTL_ALU_OP_IMM: alu_function = op_imm_funct;
-      CTL_ALU_BRANCH: alu_function = branch_funct;
       default:             alu_function = 'x;
+      CTL_ALU_BRANCH: alu_function = branch_funct;
     endcase
   end
   // clang-format on

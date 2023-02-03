@@ -9,13 +9,13 @@
       "program": "${workspaceFolder}/bin/metron",
       //"program": "${workspaceFolder}/bin/examples/rvsimple_vl",
       "cwd": "${workspaceFolder}",
-      //"args": [/*"-d",*/ "-c", "examples/scratch.h"],
+      "args": [/*"-d",*/ "-c", "examples/scratch.h"],
       //"args": [/*"-d",*/ "-c", "examples/pong/metron/pong.h"],
       //"args": [/*"-d",*/ "-c", "examples/rvsimple/metron/singlecycle_control.h"],
       //"args": [/*"-d",*/ "-c", "examples/rvsimple/metron/example_data_memory_bus.h"],
       //"args": [/*"-d",*/ "-c", "examples/rvsimple/metron/singlecycle_ctlpath.h"],
       //"args": [/*"-d",*/ "-c", "tests/metron_bad/basic_reg_rwr.h"],
-      "args": [/*"-d",*/ "-c", "examples/rvsimple/metron/toplevel.h"],
+      //"args": [/*"-d",*/ "-c", "examples/rvsimple/metron/toplevel.h"],
       //"args": [],
       "setupCommands": [
         { // Display content in STL containers pretty

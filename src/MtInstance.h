@@ -24,6 +24,13 @@ struct MtModuleInstance;
 
 typedef std::function<void(MtInstance*)> inst_visitor;
 
+struct LogEntry {
+  TraceState  old_state;
+  TraceState  new_state;
+  TraceAction action;
+  MnNode node;
+};
+
 //------------------------------------------------------------------------------
 
 struct MtInstance {
@@ -40,30 +47,65 @@ struct MtInstance {
 
   virtual void reset_state();
 
-  struct LogEntry {
-    TraceState  old_state;
-    TraceAction action;
-    TraceState  new_state;
-    MnNode node;
-  };
-
-  void push_state() {
+  void push_state(MnNode node) {
     state_stack.push_back(state_stack.back());
+    action_log.push_back({state_stack.back(), state_stack.back(), ACT_PUSH, node});
   }
 
-  void pop_state() {
+  void pop_state(MnNode node) {
+    if (action_log.size() >= 2) {
+      auto s = action_log.size();
+      auto a = action_log[s-2];
+      auto b = action_log[s-1];
+
+      if (a.action == ACT_PUSH && b.action == ACT_SWAP) {
+        action_log.pop_back();
+        action_log.pop_back();
+        state_stack.pop_back();
+        return;
+      }
+    }
+
+    action_log.push_back({state_stack.back(), state_stack.back(), ACT_POP, node});
     state_stack.pop_back();
   }
 
-  void swap_state() {
+  void swap_state(MnNode node) {
     assert(state_stack.size() >= 2);
-    std::swap(state_stack[state_stack.size() - 2], state_stack[state_stack.size() - 1]);
+
+    auto s = state_stack.size();
+    auto a = state_stack[s-2];
+    auto b = state_stack[s-1];
+
+    action_log.push_back({a, b, ACT_SWAP, node});
+
+    state_stack[state_stack.size() - 2] = b;
+    state_stack[state_stack.size() - 1] = a;
   }
 
-  void merge_state() {
+  void merge_state(MnNode node) {
+    if (action_log.size() >= 2) {
+      auto s = action_log.size();
+      auto a = action_log[s-2];
+      auto b = action_log[s-1];
+
+      if (a.action == ACT_PUSH && b.action == ACT_SWAP) {
+        action_log.pop_back();
+        action_log.pop_back();
+        state_stack.pop_back();
+        return;
+      }
+    }
+
+
     assert(state_stack.size() >= 2);
     auto s = state_stack.size();
-    state_stack[s-2] = merge_branch(state_stack[s-2], state_stack[s-1]);
+    auto a = state_stack[s-2];
+    auto b = state_stack[s-1];
+
+    action_log.push_back({a, b, ACT_MERGE, node});
+
+    state_stack[s-2] = merge_branch(a, b);
     state_stack.pop_back();
   }
 

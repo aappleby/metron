@@ -159,7 +159,8 @@ CHECK_RETURN Err MtInstance::sanity_check() {
 
 //------------------------------------------------------------------------------
 
-MtPrimitiveInstance::MtPrimitiveInstance(const std::string& name, const std::string& path) : MtInstance(name, path) {
+MtPrimitiveInstance::MtPrimitiveInstance(const std::string& name, const std::string& path)
+: MtFieldInstance(name, path) {
 }
 
 //----------------------------------------
@@ -184,9 +185,15 @@ CHECK_RETURN Err MtPrimitiveInstance::sanity_check() {
   return MtInstance::sanity_check();
 }
 
+//----------------------------------------
+
+void MtPrimitiveInstance::assign_types() {
+}
+
 //------------------------------------------------------------------------------
 
-MtArrayInstance::MtArrayInstance(const std::string& name, const std::string& path) : MtInstance(name, path) {
+MtArrayInstance::MtArrayInstance(const std::string& name, const std::string& path)
+: MtFieldInstance(name, path) {
 }
 
 //----------------------------------------
@@ -210,10 +217,15 @@ CHECK_RETURN Err MtArrayInstance::sanity_check() {
   return MtInstance::sanity_check();
 }
 
+//----------------------------------------
+
+void MtArrayInstance::assign_types() {
+}
+
 //------------------------------------------------------------------------------
 
 MtStructInstance::MtStructInstance(const std::string& name, const std::string& path, MtStruct* _struct)
-: MtInstance(name, path), _struct(_struct)
+: MtFieldInstance(name, path), _struct(_struct)
 {
   for (auto cf : _struct->fields) {
     _fields.push_back(field_to_inst(cf->_name, path + "." + cf->_name, cf));
@@ -269,6 +281,22 @@ MtInstance* MtStructInstance::resolve(const std::vector<std::string>& path, int 
 
 void MtStructInstance::reset_state() {
   for (auto f : _fields) f->reset_state();
+}
+
+//----------------------------------------
+
+void MtStructInstance::assign_types() {
+  int sig_count = 0;
+  int reg_count = 0;
+
+  // FT_REGISTER,
+  // FT_SIGNAL,
+  // FT_INPUT,
+  // FT_OUTPUT,
+
+  for (auto f : _fields) {
+    f->assign_types();
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -361,6 +389,12 @@ void MtMethodInstance::reset_state() {
   for (auto p : _params) p->reset_state();
 }
 
+//----------------------------------------
+
+void MtMethodInstance::assign_types() {
+  for (auto p : _params) p->assign_types();
+}
+
 //------------------------------------------------------------------------------
 
 MtModuleInstance::MtModuleInstance(const std::string& name, const std::string& path, MtModule* _mod)
@@ -435,6 +469,13 @@ MtInstance* MtModuleInstance::resolve(const std::vector<std::string>& path, int 
   if (auto f = get_field(path[index])) return f;
   if (auto m = get_method(path[index])) return m;
   return nullptr;
+}
+
+//----------------------------------------
+
+void MtModuleInstance::assign_types() {
+  for (auto f : _fields) f->assign_types();
+  for (auto m : _methods) m->assign_types();
 }
 
 //------------------------------------------------------------------------------

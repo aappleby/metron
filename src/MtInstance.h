@@ -37,6 +37,7 @@ struct MtInstance {
   MtInstance(const std::string& name, const std::string& path);
   virtual ~MtInstance();
   virtual void dump() {}
+  virtual void assign_types() {}
   void dump_log();
 
   virtual void visit(const inst_visitor& v) { v(this); }
@@ -112,32 +113,41 @@ struct MtInstance {
 
   std::string _name;
   std::string _path;
-  FieldType  field_type = FT_UNKNOWN;
   std::vector<TraceState> state_stack;
   std::vector<LogEntry>   action_log;
 };
 
 //------------------------------------------------------------------------------
 
-struct MtPrimitiveInstance : public MtInstance {
+struct MtFieldInstance : public MtInstance {
+  MtFieldInstance(const std::string& name, const std::string& path) : MtInstance(name, path) {}
+};
+
+//------------------------------------------------------------------------------
+
+struct MtPrimitiveInstance : public MtFieldInstance {
   MtPrimitiveInstance(const std::string& name, const std::string& path);
   virtual ~MtPrimitiveInstance();
   virtual void dump();
   virtual CHECK_RETURN Err sanity_check();
+  void assign_types();
+  FieldType  field_type = FT_UNKNOWN;
 };
 
 //------------------------------------------------------------------------------
 
-struct MtArrayInstance : public MtInstance {
+struct MtArrayInstance : public MtFieldInstance {
   MtArrayInstance(const std::string& name, const std::string& path);
   virtual ~MtArrayInstance();
   virtual void dump();
   virtual CHECK_RETURN Err sanity_check();
+  void assign_types();
+  FieldType  field_type = FT_UNKNOWN;
 };
 
 //------------------------------------------------------------------------------
 
-struct MtStructInstance : public MtInstance {
+struct MtStructInstance : public MtFieldInstance {
   MtStructInstance(const std::string& name, const std::string& path, MtStruct* s);
   virtual ~MtStructInstance();
   virtual void dump();
@@ -152,9 +162,11 @@ struct MtStructInstance : public MtInstance {
     for (auto& f : _fields) v(f);
   }
 
+  void assign_types();
 
   MtStruct* _struct;
   std::vector<MtInstance*> _fields;
+  FieldType  field_type = FT_UNKNOWN;
 };
 
 //------------------------------------------------------------------------------
@@ -183,6 +195,8 @@ struct MtMethodInstance : public MtInstance {
     }
   }
 
+  void assign_types();
+
   MethodType _method_type = MT_UNKNOWN;
   MtMethod* _method;
   MtModuleInstance* _module;
@@ -191,6 +205,8 @@ struct MtMethodInstance : public MtInstance {
   std::vector<std::set<std::string>> scope_stack;
   std::set<MtInstance*> writes;
   std::set<MtInstance*> reads;
+  std::set<MtInstance*> calls;
+  std::set<MtInstance*> called_by;
 };
 
 //------------------------------------------------------------------------------
@@ -212,6 +228,8 @@ struct MtModuleInstance : public MtInstance {
     for (auto& f : _fields)  f->visit(v);
     for (auto& m : _methods) m->visit(v);
   }
+
+  void assign_types();
 
   MtModule*  _mod;
   std::vector<MtInstance*> _fields;

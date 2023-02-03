@@ -275,6 +275,9 @@ CHECK_RETURN Err MtTracer2::trace_call(MtMethodInstance* src_inst, MtMethodInsta
   // module has to pass params to the dest module, we have to bind the params
   // to ports to "call" it.
 
+  src_inst->calls.insert(dst_inst);
+  dst_inst->called_by.insert(src_inst);
+
   bool cross_mod_call = src_inst->_module != dst_inst->_module;
 
   // FIXME - this should also catch calling tick() multiple times inside a single module

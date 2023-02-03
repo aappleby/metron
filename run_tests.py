@@ -142,22 +142,40 @@ def main():
         print_b("Testing lockstep simulations")
         errors += test_lockstep()
 
+        print_b("Checking feature tests for Verilator")
+        errors += check_commands_good([
+            f"verilator -Isrc --lint-only {filename}"
+            for filename in sorted(glob.glob("tests/tools_good/verilator*.sv"))
+        ])
+
         print_b("Checking bug repro cases for Verilator")
         errors += check_commands_bad([
             f"verilator -Isrc --lint-only {filename}"
-            for filename in sorted(glob.glob("tests/metron_broken/verilator*.sv"))
+            for filename in sorted(glob.glob("tests/tools_bad/verilator*.sv"))
+        ])
+
+        print_b("Checking feature tests for Yosys")
+        errors += check_commands_good([
+            f"yosys -q -p 'read_verilog -Isrc -sv {filename};  dump; synth_ice40 -json /dev/null'"
+            for filename in sorted(glob.glob("tests/tools_good/yosys*.sv"))
         ])
 
         print_b("Checking bug repro cases for Yosys")
         errors += check_commands_bad([
             f"yosys -q -p 'read_verilog -Isrc -sv {filename};  dump; synth_ice40 -json /dev/null'"
-            for filename in sorted(glob.glob("tests/metron_broken/yosys*.sv"))
+            for filename in sorted(glob.glob("tests/tools_bad/yosys*.sv"))
+        ])
+
+        print_b("Checking feature tests for Icarus")
+        errors += check_commands_good([
+            f"iverilog -g2012 -Wall -Isrc -o /dev/null {filename}"
+            for filename in sorted(glob.glob("tests/tools_good/icarus*.sv"))
         ])
 
         print_b("Checking bug repro cases for Icarus")
         errors += check_commands_bad([
             f"iverilog -g2012 -Wall -Isrc -o /dev/null {filename}"
-            for filename in sorted(glob.glob("tests/metron_blocked/icarus*.sv"))
+            for filename in sorted(glob.glob("tests/tools_bad/icarus*.sv"))
         ])
 
     ############################################################

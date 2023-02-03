@@ -219,7 +219,7 @@ int main(int argc, char** argv) {
     //LOG_B("\n");
     //root_inst->dump();
 
-    root_inst->visit([=](MtInstance* m) { Err err = m->sanity_check(); });
+    root_inst->visit([&](MtInstance* m) { err << m->sanity_check(); });
 
     delete root_inst;
   }

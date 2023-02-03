@@ -67,6 +67,7 @@ build docs/demo/examples.data docs/demo/examples.js: command tests/Tests.h $
     tests/test_utils.h tests/metron_broken/bad_increment.h $
     tests/metron_bad/if_with_no_compound.h $
     tests/metron_bad/mid_block_break.h tests/metron_bad/basic_sig_wrw.h $
+    tests/metron_bad/func_writes_sig_and_reg.h $
     tests/metron_bad/mid_block_return.h tests/metron_bad/too_many_breaks.h $
     tests/metron_bad/tick_with_return_value.h $
     tests/metron_bad/case_without_break.h $

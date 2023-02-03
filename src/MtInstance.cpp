@@ -326,13 +326,19 @@ CHECK_RETURN Err MtMethodInstance::sanity_check() {
       case CTX_INPUT:    break;
       case CTX_OUTPUT:   break;
       case CTX_MAYBE:    break;
-      case CTX_SIGNAL:   break;
-      case CTX_REGISTER: break;
+      case CTX_SIGNAL:   sig_writes++; break;
+      case CTX_REGISTER: reg_writes++; break;
       case CTX_INVALID:  break;
       case CTX_PENDING:  break;
     }
     //w->dump();
   }
+
+  if (sig_writes != 0 && reg_writes != 0) {
+    // Interesting, the old tracer didn't catch this?
+    return ERR("Method wrote both signals and registers\n");
+  }
+
   return err;
 }
 

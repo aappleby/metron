@@ -22,7 +22,7 @@ void dump_state(TraceState state) {
 
 //------------------------------------------------------------------------------
 
-MtInstance* field_to_inst(const std::string& name, const std::string& path, MtField* field) {
+MtFieldInstance* field_to_inst(const std::string& name, const std::string& path, MtField* field) {
 
   if (field->is_struct()) {
     return new MtStructInstance(name, path, field->_type_struct);
@@ -398,7 +398,7 @@ void MtMethodInstance::assign_types() {
 //------------------------------------------------------------------------------
 
 MtModuleInstance::MtModuleInstance(const std::string& name, const std::string& path, MtModule* _mod)
-: MtInstance(name, path) {
+: MtFieldInstance(name, path) {
   assert(_mod);
 
   this->_mod = _mod;

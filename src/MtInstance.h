@@ -121,6 +121,7 @@ struct MtInstance {
 
 struct MtFieldInstance : public MtInstance {
   MtFieldInstance(const std::string& name, const std::string& path) : MtInstance(name, path) {}
+  FieldType  field_type = FT_UNKNOWN;
 };
 
 //------------------------------------------------------------------------------
@@ -131,7 +132,6 @@ struct MtPrimitiveInstance : public MtFieldInstance {
   virtual void dump();
   virtual CHECK_RETURN Err sanity_check();
   void assign_types();
-  FieldType  field_type = FT_UNKNOWN;
 };
 
 //------------------------------------------------------------------------------
@@ -142,7 +142,6 @@ struct MtArrayInstance : public MtFieldInstance {
   virtual void dump();
   virtual CHECK_RETURN Err sanity_check();
   void assign_types();
-  FieldType  field_type = FT_UNKNOWN;
 };
 
 //------------------------------------------------------------------------------
@@ -165,8 +164,7 @@ struct MtStructInstance : public MtFieldInstance {
   void assign_types();
 
   MtStruct* _struct;
-  std::vector<MtInstance*> _fields;
-  FieldType  field_type = FT_UNKNOWN;
+  std::vector<MtFieldInstance*> _fields;
 };
 
 //------------------------------------------------------------------------------
@@ -211,7 +209,7 @@ struct MtMethodInstance : public MtInstance {
 
 //------------------------------------------------------------------------------
 
-struct MtModuleInstance : public MtInstance {
+struct MtModuleInstance : public MtFieldInstance {
   MtModuleInstance(const std::string& name, const std::string& path, MtModule* m);
   virtual ~MtModuleInstance();
   virtual void dump();

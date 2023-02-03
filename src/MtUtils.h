@@ -28,6 +28,7 @@ enum FieldType {
   FT_SIGNAL,
   FT_INPUT,
   FT_OUTPUT,
+  FT_SUBMODULE,
   FT_INVALID
 };
 
@@ -74,13 +75,14 @@ enum TraceAction {
 // KCOV_OFF
 inline const char* to_string(FieldType f) {
   switch (f) {
-    case FT_UNKNOWN:  return "FT_UNKNOWN";
-    case FT_REGISTER: return "FT_REGISTER";
-    case FT_SIGNAL:   return "FT_SIGNAL";
-    case FT_INPUT:    return "FT_INPUT";
-    case FT_OUTPUT:   return "FT_OUTPUT";
-    case FT_INVALID:  return "FT_INVALID";
-    default:          return "???";
+    case FT_UNKNOWN:   return "FT_UNKNOWN";
+    case FT_REGISTER:  return "FT_REGISTER";
+    case FT_SIGNAL:    return "FT_SIGNAL";
+    case FT_INPUT:     return "FT_INPUT";
+    case FT_OUTPUT:    return "FT_OUTPUT";
+    case FT_SUBMODULE: return "FT_SUBMODULE";
+    case FT_INVALID:   return "FT_INVALID";
+    default:           return "???";
   }
 }
 

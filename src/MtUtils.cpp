@@ -6,6 +6,21 @@
 
 //------------------------------------------------------------------------------
 
+FieldType trace_state_to_field_type(TraceState s) {
+  switch(s) {
+    case CTX_NONE:     return FT_SIGNAL;
+    case CTX_INPUT:    return FT_INPUT;
+    case CTX_OUTPUT:   return FT_OUTPUT;
+    case CTX_MAYBE:    return FT_REGISTER;
+    case CTX_SIGNAL:   return FT_SIGNAL;
+    case CTX_REGISTER: return FT_REGISTER;
+    case CTX_INVALID:  return FT_INVALID;
+    case CTX_PENDING:  return FT_INVALID;
+  }
+}
+
+//------------------------------------------------------------------------------
+
 TraceState merge_action(TraceState state, TraceAction action) {
   // clang-format off
 

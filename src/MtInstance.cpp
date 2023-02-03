@@ -173,7 +173,7 @@ MtPrimitiveInstance::~MtPrimitiveInstance() {
 void MtPrimitiveInstance::dump() {
   LOG_B("Primitive '%s' @ 0x%04X ", _path.c_str(), uint64_t(this) & 0xFFFF);
   dump_state(state_stack.back());
-  LOG(" - %s\n", to_string(field_type));
+  LOG(" - %s\n", to_string(_field_type));
   LOG_INDENT_SCOPE();
   dump_log();
   assert(state_stack.size() == 1);
@@ -187,7 +187,9 @@ CHECK_RETURN Err MtPrimitiveInstance::sanity_check() {
 
 //----------------------------------------
 
-void MtPrimitiveInstance::assign_types() {
+CHECK_RETURN Err MtPrimitiveInstance::assign_types() {
+  _field_type = trace_state_to_field_type(state_stack.back());
+  return Err::ok;
 }
 
 //------------------------------------------------------------------------------
@@ -206,7 +208,7 @@ MtArrayInstance::~MtArrayInstance() {
 void MtArrayInstance::dump() {
   LOG_B("Array %s %s @ 0x%04X ", _name.c_str(), _path.c_str(), uint64_t(this) & 0xFFFF);
   dump_state(state_stack.back());
-  LOG(" - %s\n", to_string(field_type));
+  LOG(" - %s\n", to_string(_field_type));
   LOG_INDENT_SCOPE();
   dump_log();
 }
@@ -219,7 +221,9 @@ CHECK_RETURN Err MtArrayInstance::sanity_check() {
 
 //----------------------------------------
 
-void MtArrayInstance::assign_types() {
+CHECK_RETURN Err MtArrayInstance::assign_types() {
+  _field_type = trace_state_to_field_type(state_stack.back());
+  return Err::ok;
 }
 
 //------------------------------------------------------------------------------
@@ -285,18 +289,22 @@ void MtStructInstance::reset_state() {
 
 //----------------------------------------
 
-void MtStructInstance::assign_types() {
-  int sig_count = 0;
-  int reg_count = 0;
+CHECK_RETURN Err MtStructInstance::assign_types() {
+  _field_type = FT_UNKNOWN;
 
-  // FT_REGISTER,
-  // FT_SIGNAL,
-  // FT_INPUT,
-  // FT_OUTPUT,
+  Err err;
 
   for (auto f : _fields) {
-    f->assign_types();
+    err << f->assign_types();
+    if (_field_type == FT_UNKNOWN) {
+      _field_type = f->_field_type;
+    }
+    else {
+      if (_field_type != f->_field_type) return ERR("Struct fields had inconsistent types\n");
+    }
   }
+
+  return err;
 }
 
 //------------------------------------------------------------------------------
@@ -391,8 +399,10 @@ void MtMethodInstance::reset_state() {
 
 //----------------------------------------
 
-void MtMethodInstance::assign_types() {
-  for (auto p : _params) p->assign_types();
+CHECK_RETURN Err MtMethodInstance::assign_types() {
+  Err err;
+  for (auto p : _params) err << p->assign_types();
+  return err;
 }
 
 //------------------------------------------------------------------------------
@@ -473,9 +483,11 @@ MtInstance* MtModuleInstance::resolve(const std::vector<std::string>& path, int 
 
 //----------------------------------------
 
-void MtModuleInstance::assign_types() {
-  for (auto f : _fields) f->assign_types();
-  for (auto m : _methods) m->assign_types();
+CHECK_RETURN Err MtModuleInstance::assign_types() {
+  Err err;
+  for (auto f : _fields)  err << f->assign_types();
+  for (auto m : _methods) err << m->assign_types();
+  return err;
 }
 
 //------------------------------------------------------------------------------

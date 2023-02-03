@@ -20,6 +20,8 @@ class Err {
   Err();
   Err(const ErrType& et);
 
+  static const Err ok;
+
   Err& operator<<(const Err& e);
   Err& operator<<(const ErrType& e);
   bool has_info() const;

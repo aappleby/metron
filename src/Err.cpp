@@ -7,6 +7,8 @@
 
 // KCOV_OFF
 
+const Err Err::ok;
+
 //------------------------------------------------------------------------------
 
 ErrType::ErrType(SEV_TYPE v, const char* file, int line, const char* func,

@@ -72,6 +72,8 @@ enum TraceAction {
   ACT_MERGE = 5
 };
 
+FieldType trace_state_to_field_type(TraceState s);
+
 // KCOV_OFF
 inline const char* to_string(FieldType f) {
   switch (f) {

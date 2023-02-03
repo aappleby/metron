@@ -37,7 +37,7 @@ struct MtInstance {
   MtInstance(const std::string& name, const std::string& path);
   virtual ~MtInstance();
   virtual void dump() {}
-  virtual void assign_types() {}
+  CHECK_RETURN virtual Err assign_types() { return Err::ok; }
   void dump_log();
 
   virtual void visit(const inst_visitor& v) { v(this); }
@@ -121,7 +121,7 @@ struct MtInstance {
 
 struct MtFieldInstance : public MtInstance {
   MtFieldInstance(const std::string& name, const std::string& path) : MtInstance(name, path) {}
-  FieldType  field_type = FT_UNKNOWN;
+  FieldType _field_type = FT_UNKNOWN;
 };
 
 //------------------------------------------------------------------------------
@@ -131,7 +131,7 @@ struct MtPrimitiveInstance : public MtFieldInstance {
   virtual ~MtPrimitiveInstance();
   virtual void dump();
   virtual CHECK_RETURN Err sanity_check();
-  void assign_types();
+  CHECK_RETURN virtual Err assign_types();
 };
 
 //------------------------------------------------------------------------------
@@ -141,7 +141,7 @@ struct MtArrayInstance : public MtFieldInstance {
   virtual ~MtArrayInstance();
   virtual void dump();
   virtual CHECK_RETURN Err sanity_check();
-  void assign_types();
+  CHECK_RETURN virtual Err assign_types();
 };
 
 //------------------------------------------------------------------------------
@@ -161,7 +161,7 @@ struct MtStructInstance : public MtFieldInstance {
     for (auto& f : _fields) v(f);
   }
 
-  void assign_types();
+  CHECK_RETURN virtual Err assign_types();
 
   MtStruct* _struct;
   std::vector<MtFieldInstance*> _fields;
@@ -193,7 +193,7 @@ struct MtMethodInstance : public MtInstance {
     }
   }
 
-  void assign_types();
+  CHECK_RETURN virtual Err assign_types();
 
   MethodType _method_type = MT_UNKNOWN;
   MtMethod* _method;
@@ -227,7 +227,7 @@ struct MtModuleInstance : public MtFieldInstance {
     for (auto& m : _methods) m->visit(v);
   }
 
-  void assign_types();
+  CHECK_RETURN virtual Err assign_types();
 
   MtModule*  _mod;
   std::vector<MtInstance*> _fields;

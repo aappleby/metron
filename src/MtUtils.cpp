@@ -21,7 +21,6 @@ TraceState merge_action(TraceState state, TraceAction action) {
       case CTX_REGISTER: result = CTX_INVALID; break;
       case CTX_INVALID:  result = CTX_INVALID; break;
       case CTX_PENDING:  result = CTX_INVALID; break;
-      case CTX_NIL:      result = CTX_INVALID; break;
     }
   }
 
@@ -35,7 +34,6 @@ TraceState merge_action(TraceState state, TraceAction action) {
       case CTX_REGISTER: result = CTX_REGISTER; break;
       case CTX_INVALID:  result = CTX_INVALID;  break;
       case CTX_PENDING:  result = CTX_INVALID; break;
-      case CTX_NIL:      result = CTX_INVALID; break;
     }
   }
   // clang-format on
@@ -64,7 +62,6 @@ const char* merge_message(TraceState state, TraceAction action) {
       case CTX_REGISTER: return "Can't read from a register after it has been written";
       case CTX_INVALID:  return "Can't read from Invalid";
       case CTX_PENDING:  return "Can't read from Pending";
-      case CTX_NIL:      return "Can't read from Nil";
     }
   }
 
@@ -78,7 +75,6 @@ const char* merge_message(TraceState state, TraceAction action) {
       case CTX_REGISTER: return "Overwriting a register is OK";
       case CTX_INVALID:  return "Cant write to Invalid";
       case CTX_PENDING:  return "Cant write to Pending";
-      case CTX_NIL:      return "Cant write to Nil";
     }
   }
 
@@ -141,14 +137,12 @@ TraceState merge_branch(TraceState ma, TraceState mb) {
 }
 
 const char* merge_branch_message(TraceState ma, TraceState mb) {
-  if (ma == CTX_PENDING || mb == CTX_PENDING) {
-    return "Can't merge a Pending";
-  } else if (ma == CTX_NIL || mb == CTX_NIL) {
+  if (ma == CTX_INVALID || mb == CTX_INVALID) {
+    return "Merging invalid branches is an error";
+  } else if (ma == CTX_PENDING || mb == CTX_PENDING) {
     return "Can't merge a Pending";
   } else if (ma == mb) {
     return "Merging identical branches is OK";
-  } else if (ma == CTX_INVALID || mb == CTX_INVALID) {
-    return "Merging invalid branches is an error";
   } else {
     // clang-format off
     const char* table[6][6] = {

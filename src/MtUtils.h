@@ -58,7 +58,6 @@ enum TraceState {
   CTX_REGISTER,
   CTX_INVALID,
   CTX_PENDING,  // hasn't been set yet
-  CTX_NIL,      // not an actual state, just a placeholder
 };
 
 enum TraceAction {
@@ -146,10 +145,8 @@ inline const char* to_string(TraceState f) {
       return "CTX_INVALID";
     case CTX_PENDING:
       return "CTX_PENDING";
-    case CTX_NIL:
-      return "CTX_NIL";
     default:
-      return "CTX_INVALID";
+      return "CTX_?????";
   }
 }
 // KCOV_ON

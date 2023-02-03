@@ -197,9 +197,6 @@ void MtField::dump() const {
       case CTX_PENDING:
         LOG_C(0x8080FF, "Pending field '%s' : %s", cname(), _type_name.c_str());
         break;
-      case CTX_NIL:
-        LOG_C(0x8080FF, "Nil field '%s' : %s", cname(), _type_name.c_str());
-        break;
     }
 
     LOG(" = %s", to_string(_state));

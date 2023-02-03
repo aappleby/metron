@@ -17,7 +17,6 @@ void dump_state(TraceState state) {
     case CTX_REGISTER: LOG_C(0x88BBBB, "REGISTER"); break;
     case CTX_INVALID:  LOG_C(0xFF00FF, "INVALID"); break;
     case CTX_PENDING:  LOG_C(0x444444, "PENDING"); break;
-    case CTX_NIL:      LOG_C(0x444444, "NIL"); break;
   }
 }
 
@@ -331,7 +330,6 @@ CHECK_RETURN Err MtMethodInstance::sanity_check() {
       case CTX_REGISTER: break;
       case CTX_INVALID:  break;
       case CTX_PENDING:  break;
-      case CTX_NIL:      break;
     }
     //w->dump();
   }

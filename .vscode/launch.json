@@ -15,7 +15,8 @@
       //"args": [/*"-d",*/ "-c", "examples/rvsimple/metron/example_data_memory_bus.h"],
       //"args": [/*"-d",*/ "-c", "examples/rvsimple/metron/singlecycle_ctlpath.h"],
       //"args": [/*"-d",*/ "-c", "tests/metron_bad/basic_reg_rwr.h"],
-      "args": [/*"-d",*/ "-c", "examples/rvsimple/metron/toplevel.h"],
+      "args": [/*"-d",*/ "-c", "tests/metron_good/structs_as_ports.h"],
+      //"args": [/*"-d",*/ "-c", "examples/rvsimple/metron/toplevel.h"],
       //"args": [],
       "setupCommands": [
         { // Display content in STL containers pretty

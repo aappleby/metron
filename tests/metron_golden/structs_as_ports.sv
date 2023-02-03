@@ -59,7 +59,13 @@ module TilelinkDevice (
   always_ff @(posedge clock) begin : tick
     if (tla.a_address == 16'h1234) begin
       if (tla.a_opcode == TL::PutFullData && tla.a_valid) begin
-        test_reg <= tla.a_data;
+        logic[31:0] mask;
+        mask = {
+          {8 {tla.a_mask[0]}},
+          {8 {tla.a_mask[1]}},
+          {8 {tla.a_mask[2]}},
+          {8 {tla.a_mask[3]}}};
+        test_reg <= (test_reg & ~mask) | (tla.a_data & mask);
       end else if (tla.a_opcode == TL::Get) begin
         oe <= 1;
       end

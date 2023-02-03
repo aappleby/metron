@@ -7748,7 +7748,12 @@ public:
   void tick() {
     if (tla.a_address == 0x1234) {
       if (tla.a_opcode == TL::PutFullData && tla.a_valid) {
-        test_reg = tla.a_data;
+        logic<32> mask = cat(
+          dup<8>(tla.a_mask[0]),
+          dup<8>(tla.a_mask[1]),
+          dup<8>(tla.a_mask[2]),
+          dup<8>(tla.a_mask[3]));
+        test_reg = (test_reg & ~mask) | (tla.a_data & mask);
       } else if (tla.a_opcode == TL::Get) {
         oe = 1;
       }

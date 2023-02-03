@@ -220,6 +220,7 @@ int main(int argc, char** argv) {
     //root_inst->dump();
 
     root_inst->visit([&](MtInstance* m) { err << m->sanity_check(); });
+    root_inst->visit([&](MtInstance* m) { err << m->assign_types(); });
 
     delete root_inst;
   }

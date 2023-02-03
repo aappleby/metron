@@ -300,7 +300,10 @@ CHECK_RETURN Err MtStructInstance::assign_types() {
       _field_type = f->_field_type;
     }
     else {
-      if (_field_type != f->_field_type) return ERR("Struct fields had inconsistent types\n");
+      if (_field_type != f->_field_type) {
+        dump();
+        return ERR("Struct fields had inconsistent types\n");
+      }
     }
   }
 

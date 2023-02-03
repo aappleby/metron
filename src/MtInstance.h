@@ -37,11 +37,12 @@ struct MtInstance {
   MtInstance(const std::string& name, const std::string& path);
   virtual ~MtInstance();
   virtual void dump() {}
-  CHECK_RETURN virtual Err assign_types() { return Err::ok; }
+  virtual CHECK_RETURN Err sanity_check();
+  virtual CHECK_RETURN Err assign_types();
+
   void dump_log();
 
   virtual void visit(const inst_visitor& v) { v(this); }
-  virtual CHECK_RETURN Err sanity_check();
 
   virtual MtInstance* resolve(const std::vector<std::string>& path, int index) {
     return (index == path.size()) ? this : nullptr;

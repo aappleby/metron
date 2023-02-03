@@ -28,7 +28,7 @@ enum FieldType {
   FT_SIGNAL,
   FT_INPUT,
   FT_OUTPUT,
-  FT_SUBMODULE,
+  FT_MODULE,
   FT_INVALID
 };
 
@@ -82,7 +82,7 @@ inline const char* to_string(FieldType f) {
     case FT_SIGNAL:    return "FT_SIGNAL";
     case FT_INPUT:     return "FT_INPUT";
     case FT_OUTPUT:    return "FT_OUTPUT";
-    case FT_SUBMODULE: return "FT_SUBMODULE";
+    case FT_MODULE: return "FT_MODULE";
     case FT_INVALID:   return "FT_INVALID";
     default:           return "???";
   }

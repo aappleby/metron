@@ -17,6 +17,7 @@ FieldType trace_state_to_field_type(TraceState s) {
     case CTX_INVALID:  return FT_INVALID;
     case CTX_PENDING:  return FT_INVALID;
   }
+  return FT_INVALID;
 }
 
 //------------------------------------------------------------------------------

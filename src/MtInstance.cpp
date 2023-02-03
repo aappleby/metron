@@ -157,6 +157,12 @@ CHECK_RETURN Err MtInstance::sanity_check() {
   return err;
 }
 
+//----------------------------------------
+
+CHECK_RETURN Err MtInstance::assign_types() {
+  return Err::ok;
+}
+
 //------------------------------------------------------------------------------
 
 MtPrimitiveInstance::MtPrimitiveInstance(const std::string& name, const std::string& path)
@@ -259,7 +265,32 @@ void MtStructInstance::dump() {
 //----------------------------------------
 
 CHECK_RETURN Err MtStructInstance::sanity_check() {
-  return MtInstance::sanity_check();
+  Err err = MtInstance::sanity_check();
+  for (auto f : _fields) err << f->sanity_check();
+  return err;
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err MtStructInstance::assign_types() {
+  _field_type = FT_UNKNOWN;
+
+  Err err;
+
+  for (auto f : _fields) {
+    err << f->assign_types();
+    if (_field_type == FT_UNKNOWN) {
+      _field_type = f->_field_type;
+    }
+    else {
+      if (_field_type != f->_field_type) {
+        dump();
+        return ERR("Struct fields had inconsistent types\n");
+      }
+    }
+  }
+
+  return err;
 }
 
 //----------------------------------------
@@ -287,29 +318,6 @@ void MtStructInstance::reset_state() {
   for (auto f : _fields) f->reset_state();
 }
 
-//----------------------------------------
-
-CHECK_RETURN Err MtStructInstance::assign_types() {
-  _field_type = FT_UNKNOWN;
-
-  Err err;
-
-  for (auto f : _fields) {
-    err << f->assign_types();
-    if (_field_type == FT_UNKNOWN) {
-      _field_type = f->_field_type;
-    }
-    else {
-      if (_field_type != f->_field_type) {
-        dump();
-        return ERR("Struct fields had inconsistent types\n");
-      }
-    }
-  }
-
-  return err;
-}
-
 //------------------------------------------------------------------------------
 
 
@@ -327,13 +335,6 @@ MtMethodInstance::MtMethodInstance(const std::string& name, const std::string& p
 MtMethodInstance::~MtMethodInstance() {
   for (auto p : _params) delete p;
   _params.clear();
-}
-
-//----------------------------------------
-
-MtInstance* MtMethodInstance::get_param(const std::string& name) {
-  for (auto p : _params) if (p->_name == name) return p;
-  return nullptr;
 }
 
 //----------------------------------------
@@ -378,7 +379,24 @@ CHECK_RETURN Err MtMethodInstance::sanity_check() {
     return ERR("Method wrote both signals and registers\n");
   }
 
+  for (auto p : _params) err << p->sanity_check();
+
   return err;
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err MtMethodInstance::assign_types() {
+  Err err;
+  for (auto p : _params) err << p->assign_types();
+  return err;
+}
+
+//----------------------------------------
+
+MtInstance* MtMethodInstance::get_param(const std::string& name) {
+  for (auto p : _params) if (p->_name == name) return p;
+  return nullptr;
 }
 
 //----------------------------------------
@@ -398,14 +416,6 @@ MtInstance* MtMethodInstance::resolve(const std::vector<std::string>& path, int 
 
 void MtMethodInstance::reset_state() {
   for (auto p : _params) p->reset_state();
-}
-
-//----------------------------------------
-
-CHECK_RETURN Err MtMethodInstance::assign_types() {
-  Err err;
-  for (auto p : _params) err << p->assign_types();
-  return err;
 }
 
 //------------------------------------------------------------------------------
@@ -451,7 +461,20 @@ void MtModuleInstance::dump() {
 //----------------------------------------
 
 CHECK_RETURN Err MtModuleInstance::sanity_check() {
-  return MtInstance::sanity_check();
+  Err err = MtInstance::sanity_check();
+  for (auto f : _fields)  err << f->sanity_check();
+  for (auto m : _methods) err << m->sanity_check();
+  return err;
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err MtModuleInstance::assign_types() {
+  Err err;
+  for (auto f : _fields)  err << f->assign_types();
+  for (auto m : _methods) err << m->assign_types();
+  _field_type = FT_MODULE;
+  return err;
 }
 
 //----------------------------------------
@@ -482,15 +505,6 @@ MtInstance* MtModuleInstance::resolve(const std::vector<std::string>& path, int 
   if (auto f = get_field(path[index])) return f;
   if (auto m = get_method(path[index])) return m;
   return nullptr;
-}
-
-//----------------------------------------
-
-CHECK_RETURN Err MtModuleInstance::assign_types() {
-  Err err;
-  for (auto f : _fields)  err << f->assign_types();
-  for (auto m : _methods) err << m->assign_types();
-  return err;
 }
 
 //------------------------------------------------------------------------------

@@ -219,8 +219,11 @@ int main(int argc, char** argv) {
     //LOG_B("\n");
     //root_inst->dump();
 
-    root_inst->visit([&](MtInstance* m) { err << m->sanity_check(); });
-    root_inst->visit([&](MtInstance* m) { err << m->assign_types(); });
+    //root_inst->visit([&](MtInstance* m) { err << m->sanity_check(); });
+    //root_inst->visit([&](MtInstance* m) { err << m->assign_types(); });
+
+    err << root_inst->sanity_check();
+    err << root_inst->assign_types();
 
     delete root_inst;
   }

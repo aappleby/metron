@@ -39,6 +39,8 @@ MtInstance* field_to_inst(const std::string& name, const std::string& path, MtFi
   }
 }
 
+//------------------------------------------------------------------------------
+
 MtInstance* node_to_inst(const std::string& name, const std::string& path, MnNode n, MtModLibrary* lib) {
   auto param_type = n.type5();
   auto param_decl = n.get_field(field_declarator);
@@ -54,6 +56,8 @@ MtInstance* node_to_inst(const std::string& name, const std::string& path, MnNod
     return new MtPrimitiveInstance(name, path);
   }
 }
+
+//------------------------------------------------------------------------------
 
 void dump_log(const std::vector<LogEntry>& log) {
   for (auto a : log) {
@@ -127,15 +131,31 @@ MtInstance::MtInstance(const std::string& name, const std::string& path)
   state_stack = {CTX_NONE};
 }
 
+//----------------------------------------
+
 MtInstance::~MtInstance() {
 }
+
+//----------------------------------------
 
 void MtInstance::reset_state() {
   state_stack = {CTX_NONE};
 }
 
+//----------------------------------------
+
 void MtInstance::dump_log() {
-  ::dump_log(action_log);
+  //::dump_log(action_log);
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err MtInstance::sanity_check() {
+  Err err;
+  if (state_stack.size() > 1) {
+    err << ERR("Had more than one item in the state stack after trace\n");
+  }
+  return err;
 }
 
 //------------------------------------------------------------------------------
@@ -143,8 +163,12 @@ void MtInstance::dump_log() {
 MtPrimitiveInstance::MtPrimitiveInstance(const std::string& name, const std::string& path) : MtInstance(name, path) {
 }
 
+//----------------------------------------
+
 MtPrimitiveInstance::~MtPrimitiveInstance() {
 }
+
+//----------------------------------------
 
 void MtPrimitiveInstance::dump() {
   LOG_B("Primitive '%s' @ 0x%04X ", _path.c_str(), uint64_t(this) & 0xFFFF);
@@ -155,13 +179,23 @@ void MtPrimitiveInstance::dump() {
   assert(state_stack.size() == 1);
 }
 
+//----------------------------------------
+
+CHECK_RETURN Err MtPrimitiveInstance::sanity_check() {
+  return MtInstance::sanity_check();
+}
+
 //------------------------------------------------------------------------------
 
 MtArrayInstance::MtArrayInstance(const std::string& name, const std::string& path) : MtInstance(name, path) {
 }
 
+//----------------------------------------
+
 MtArrayInstance::~MtArrayInstance() {
 }
+
+//----------------------------------------
 
 void MtArrayInstance::dump() {
   LOG_B("Array %s %s @ 0x%04X ", _name.c_str(), _path.c_str(), uint64_t(this) & 0xFFFF);
@@ -169,6 +203,12 @@ void MtArrayInstance::dump() {
   LOG(" - %s\n", to_string(field_type));
   LOG_INDENT_SCOPE();
   dump_log();
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err MtArrayInstance::sanity_check() {
+  return MtInstance::sanity_check();
 }
 
 //------------------------------------------------------------------------------
@@ -182,8 +222,12 @@ MtStructInstance::MtStructInstance(const std::string& name, const std::string& p
 
 }
 
+//----------------------------------------
+
 MtStructInstance::~MtStructInstance() {
 }
+
+//----------------------------------------
 
 void MtStructInstance::dump() {
   LOG_B("Struct %s %s @ 0x%04X ", _name.c_str(), _path.c_str(), uint64_t(this) & 0xFFFF);
@@ -197,10 +241,20 @@ void MtStructInstance::dump() {
   }
 }
 
+//----------------------------------------
+
+CHECK_RETURN Err MtStructInstance::sanity_check() {
+  return MtInstance::sanity_check();
+}
+
+//----------------------------------------
+
 MtInstance* MtStructInstance::get_field(const std::string& name) {
   for (auto f : _fields) if (f->_name == name) return f;
   return nullptr;
 }
+
+//----------------------------------------
 
 MtInstance* MtStructInstance::resolve(const std::vector<std::string>& path, int index) {
   if (index == path.size()) return this;
@@ -211,6 +265,8 @@ MtInstance* MtStructInstance::resolve(const std::vector<std::string>& path, int 
   }
   return nullptr;
 }
+
+//----------------------------------------
 
 void MtStructInstance::reset_state() {
   for (auto f : _fields) f->reset_state();
@@ -228,15 +284,21 @@ MtMethodInstance::MtMethodInstance(const std::string& name, const std::string& p
   scope_stack.resize(1);
 }
 
+//----------------------------------------
+
 MtMethodInstance::~MtMethodInstance() {
   for (auto p : _params) delete p;
   _params.clear();
 }
 
+//----------------------------------------
+
 MtInstance* MtMethodInstance::get_param(const std::string& name) {
   for (auto p : _params) if (p->_name == name) return p;
   return nullptr;
 }
+
+//----------------------------------------
 
 void MtMethodInstance::dump() {
   LOG_B("Method '%s' @ 0x%04X", _path.c_str(), uint64_t(this) & 0xFFFF);
@@ -249,6 +311,35 @@ void MtMethodInstance::dump() {
   if (_retval) _retval->dump();
 }
 
+//----------------------------------------
+
+CHECK_RETURN Err MtMethodInstance::sanity_check() {
+  Err err = MtInstance::sanity_check();
+
+  LOG_R("MtMethodInstance::sanity_check() %s\n", _name.c_str());
+
+  int sig_writes = 0;
+  int reg_writes = 0;
+
+  for (auto w : writes) {
+    switch(w->state_stack.back()) {
+      case CTX_NONE:     break;
+      case CTX_INPUT:    break;
+      case CTX_OUTPUT:   break;
+      case CTX_MAYBE:    break;
+      case CTX_SIGNAL:   break;
+      case CTX_REGISTER: break;
+      case CTX_INVALID:  break;
+      case CTX_PENDING:  break;
+      case CTX_NIL:      break;
+    }
+    //w->dump();
+  }
+  return err;
+}
+
+//----------------------------------------
+
 MtInstance* MtMethodInstance::resolve(const std::vector<std::string>& path, int index) {
   if (index == path.size()) return this;
 
@@ -259,6 +350,8 @@ MtInstance* MtMethodInstance::resolve(const std::vector<std::string>& path, int 
 
   return _module->resolve(path, index);
 }
+
+//----------------------------------------
 
 void MtMethodInstance::reset_state() {
   for (auto p : _params) p->reset_state();
@@ -306,6 +399,12 @@ void MtModuleInstance::dump() {
 
 //----------------------------------------
 
+CHECK_RETURN Err MtModuleInstance::sanity_check() {
+  return MtInstance::sanity_check();
+}
+
+//----------------------------------------
+
 void MtModuleInstance::reset_state() {
   for (auto f : _fields)  f->reset_state();
   for (auto m : _methods) m->reset_state();
@@ -318,12 +417,14 @@ MtMethodInstance* MtModuleInstance::get_method(const std::string& name) {
   return nullptr;
 }
 
+//----------------------------------------
+
 MtInstance* MtModuleInstance::get_field(const std::string& name) {
   for (auto f : _fields) if (f->_name == name) return f;
   return nullptr;
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------
 
 MtInstance* MtModuleInstance::resolve(const std::vector<std::string>& path, int index) {
   if (index == path.size()) return this;

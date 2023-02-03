@@ -744,9 +744,6 @@ CHECK_RETURN Err MtTracer2::trace_sym_return_statement(MtMethodInstance* inst, M
 
   err << trace_expression(inst, node_value, ACT_READ);
 
-  //auto return_ctx = ctx->resolve("<return>");
-  //err << log_action(inst, CTX_WRITE, node.get_source());
-
   return err;
 }
 
@@ -789,7 +786,6 @@ CHECK_RETURN Err MtTracer2::trace_sym_switch_statement(MtMethodInstance* inst, M
   for (int i = 0; i < case_count; i++) {
     inst->_module->visit([=](MtInstance* m) { m->merge_state(MnNode::null); });
   }
-
 
   return err;
 }

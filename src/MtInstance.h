@@ -40,6 +40,7 @@ struct MtInstance {
   void dump_log();
 
   virtual void visit(const inst_visitor& v) { v(this); }
+  virtual CHECK_RETURN Err sanity_check();
 
   virtual MtInstance* resolve(const std::vector<std::string>& path, int index) {
     return (index == path.size()) ? this : nullptr;
@@ -122,6 +123,7 @@ struct MtPrimitiveInstance : public MtInstance {
   MtPrimitiveInstance(const std::string& name, const std::string& path);
   virtual ~MtPrimitiveInstance();
   virtual void dump();
+  virtual CHECK_RETURN Err sanity_check();
 };
 
 //------------------------------------------------------------------------------
@@ -130,6 +132,7 @@ struct MtArrayInstance : public MtInstance {
   MtArrayInstance(const std::string& name, const std::string& path);
   virtual ~MtArrayInstance();
   virtual void dump();
+  virtual CHECK_RETURN Err sanity_check();
 };
 
 //------------------------------------------------------------------------------
@@ -138,6 +141,7 @@ struct MtStructInstance : public MtInstance {
   MtStructInstance(const std::string& name, const std::string& path, MtStruct* s);
   virtual ~MtStructInstance();
   virtual void dump();
+  virtual CHECK_RETURN Err sanity_check();
 
   MtInstance* get_field(const std::string& name);
   virtual MtInstance* resolve(const std::vector<std::string>& path, int index);
@@ -160,6 +164,7 @@ struct MtMethodInstance : public MtInstance {
   virtual ~MtMethodInstance();
   MtInstance* get_param(const std::string& name);
   virtual void dump();
+  virtual CHECK_RETURN Err sanity_check();
 
   virtual MtInstance* resolve(const std::vector<std::string>& path, int index);
   virtual void reset_state();
@@ -194,6 +199,7 @@ struct MtModuleInstance : public MtInstance {
   MtModuleInstance(const std::string& name, const std::string& path, MtModule* m);
   virtual ~MtModuleInstance();
   virtual void dump();
+  virtual CHECK_RETURN Err sanity_check();
 
   MtMethodInstance* get_method(const std::string& name);
   MtInstance*       get_field (const std::string& name);

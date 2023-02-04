@@ -57,7 +57,8 @@
 			"thread": "cpp",
 			"tuple": "cpp",
 			"typeinfo": "cpp",
-			"vector": "cpp"
+			"vector": "cpp",
+			"iomanip": "cpp"
 		},
 	}
 }

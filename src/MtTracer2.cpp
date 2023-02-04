@@ -38,51 +38,14 @@ CHECK_RETURN Err MtTracer2::log_action(MtMethodInstance* method, MnNode node, Mt
 
   Err err;
 
-  auto old_state = inst->state_stack.back();
-  auto new_state = merge_action(old_state, action);
+  err << inst->log_action(node, action);
 
-  if (old_state != new_state) {
-    inst->action_log.push_back({old_state, new_state, action, node});
+  if (action == ACT_WRITE) {
+    method->_writes.insert(inst);
   }
 
-  {
-    auto source = node.get_source().trim();
-    inst->state_stack.back() = new_state;
-
-#if 0
-    if (action == ACT_READ) {
-      LOG_B("Read %s: '", inst->_name.c_str());
-      for (auto c = source.start; c != source.end; c++) {
-        if (*c != '\n') LOG("%c", *c);
-      }
-      LOG_B("' state %s -> %s\n", to_string(old_state), to_string(new_state));
-    }
-    else if (action == ACT_WRITE) {
-      LOG_B("Write %s: '", inst->_name.c_str());
-      for (auto c = source.start; c != source.end; c++) {
-        if (*c != '\n') LOG("%c", *c);
-      }
-      LOG_B("' state %s -> %s\n", to_string(old_state), to_string(new_state));
-    }
-    else {
-      LOG_R("???? '%s'\n", inst->_name.c_str());
-    }
-#endif
-
-
-    if (new_state == CTX_INVALID) {
-      LOG_R("Trace error: state went from %s to %s\n", to_string(old_state), to_string(new_state));
-      inst->dump();
-      err << ERR("Invalid context state\n");
-    }
-
-    if (action == ACT_WRITE) {
-      method->writes.insert(inst);
-    }
-
-    if (action == ACT_READ) {
-      method->reads.insert(inst);
-    }
+  if (action == ACT_READ) {
+    method->_reads.insert(inst);
   }
 
   return err;
@@ -275,8 +238,8 @@ CHECK_RETURN Err MtTracer2::trace_call(MtMethodInstance* src_inst, MtMethodInsta
   // module has to pass params to the dest module, we have to bind the params
   // to ports to "call" it.
 
-  src_inst->calls.insert(dst_inst);
-  dst_inst->called_by.insert(src_inst);
+  src_inst->_calls.insert(dst_inst);
+  dst_inst->_called_by.insert(src_inst);
 
   bool cross_mod_call = src_inst->_module != dst_inst->_module;
 
@@ -321,59 +284,13 @@ CHECK_RETURN Err MtTracer2::trace_default(MtMethodInstance* inst, MnNode node) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+
+
 
 CHECK_RETURN Err MtTracer2::trace_sym_argument_list(MtMethodInstance* inst, MnNode node) {
   Err err;
@@ -396,6 +313,8 @@ CHECK_RETURN Err MtTracer2::trace_sym_argument_list(MtMethodInstance* inst, MnNo
 
 CHECK_RETURN Err MtTracer2::trace_sym_assignment_expression(MtMethodInstance* inst, MnNode node) {
   Err err;
+
+  //node.dump_tree();
 
   auto op = node.get_field(field_operator).text();
 
@@ -595,7 +514,7 @@ CHECK_RETURN Err MtTracer2::trace_sym_declaration(MtMethodInstance* inst, MnNode
   Err err;
   assert(node.sym == sym_declaration);
 
-  inst->scope_stack.back().insert(node.name4());
+  inst->_scope_stack.back().insert(node.name4());
 
   auto node_type = node.get_field(field_type);
   auto node_decl = node.get_field(field_declarator);

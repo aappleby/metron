@@ -123,7 +123,14 @@ void dump_log(const std::vector<LogEntry>& log) {
   }
 }
 
-//------------------------------------------------------------------------------
+
+
+
+
+
+//==============================================================================
+// MtInstance
+//==============================================================================
 
 MtInstance::MtInstance(const std::string& name, const std::string& path)
 : _name(name), _path(path) {
@@ -133,18 +140,6 @@ MtInstance::MtInstance(const std::string& name, const std::string& path)
 //----------------------------------------
 
 MtInstance::~MtInstance() {
-}
-
-//----------------------------------------
-
-void MtInstance::reset_state() {
-  state_stack = {CTX_NONE};
-}
-
-//----------------------------------------
-
-void MtInstance::dump_log() {
-  //::dump_log(action_log);
 }
 
 //----------------------------------------
@@ -163,7 +158,109 @@ CHECK_RETURN Err MtInstance::assign_types() {
   return Err::ok;
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------
+
+CHECK_RETURN Err MtInstance::log_action(MnNode node, TraceAction action) {
+  Err err;
+  auto old_state = state_stack.back();
+  auto new_state = merge_action(old_state, action);
+
+  if (new_state == CTX_INVALID) {
+    LOG_R("Trace error: state went from %s to %s\n", to_string(old_state), to_string(new_state));
+    dump();
+    err << ERR("Invalid context state\n");
+  }
+
+  if (old_state != new_state) {
+    action_log.push_back({old_state, new_state, action, node});
+  }
+
+  state_stack.back() = new_state;
+
+  return err;
+}
+
+//----------------------------------------
+
+void MtInstance::dump() {
+  LOG_R("MtInstance::dump()\n");
+  dump_log();
+}
+
+void MtInstance::dump_log() {
+  //::dump_log(action_log);
+}
+
+//----------------------------------------
+
+void MtInstance::reset_state() {
+  state_stack = {CTX_NONE};
+  action_log.clear();
+}
+
+//----------------------------------------
+
+void MtInstance::visit(const inst_visitor& v) {
+  v(this);
+}
+
+//----------------------------------------
+
+MtInstance* MtInstance::resolve(const std::vector<std::string>& path, int index) {
+  return (index == path.size()) ? this : nullptr;
+}
+
+
+
+
+
+
+//==============================================================================
+// MtFieldInstance
+//==============================================================================
+
+MtFieldInstance::MtFieldInstance(const std::string& name, const std::string& path) : MtInstance(name, path)
+{
+}
+
+//----------------------------------------
+
+MtFieldInstance::~MtFieldInstance() {
+}
+
+//----------------------------------------
+
+void MtFieldInstance::reset_state() {
+  _field_type = FT_UNKNOWN;
+}
+
+//----------------------------------------
+
+FieldType MtFieldInstance::get_field_type() const {
+  return _field_type;
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err MtFieldInstance::set_field_type(FieldType f) {
+  Err err;
+
+  if (_field_type != FT_UNKNOWN && _field_type != f) {
+    return ERR("MtFieldInstance::set_field_type - mismatched types old %s new %s\n", to_string(_field_type), to_string(f));
+  }
+
+  _field_type = f;
+  return err;
+}
+
+
+
+
+
+
+//==============================================================================
+// MtPrimitiveInstance
+//==============================================================================
 
 MtPrimitiveInstance::MtPrimitiveInstance(const std::string& name, const std::string& path)
 : MtFieldInstance(name, path) {
@@ -176,17 +273,6 @@ MtPrimitiveInstance::~MtPrimitiveInstance() {
 
 //----------------------------------------
 
-void MtPrimitiveInstance::dump() {
-  LOG_B("Primitive '%s' @ 0x%04X ", _path.c_str(), uint64_t(this) & 0xFFFF);
-  dump_state(state_stack.back());
-  LOG(" - %s\n", to_string(_field_type));
-  LOG_INDENT_SCOPE();
-  dump_log();
-  assert(state_stack.size() == 1);
-}
-
-//----------------------------------------
-
 CHECK_RETURN Err MtPrimitiveInstance::sanity_check() {
   return MtInstance::sanity_check();
 }
@@ -194,11 +280,30 @@ CHECK_RETURN Err MtPrimitiveInstance::sanity_check() {
 //----------------------------------------
 
 CHECK_RETURN Err MtPrimitiveInstance::assign_types() {
-  _field_type = trace_state_to_field_type(state_stack.back());
+  Err err;
+  err << set_field_type(trace_state_to_field_type(state_stack.back()));
   return Err::ok;
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------
+
+void MtPrimitiveInstance::dump() {
+  LOG_B("Primitive '%s' @ 0x%04X ", _path.c_str(), uint64_t(this) & 0xFFFF);
+  //dump_state(state_stack.back());
+  LOG(" - %s\n", to_string(get_field_type()));
+  LOG_INDENT_SCOPE();
+  dump_log();
+  assert(state_stack.size() == 1);
+}
+
+
+
+
+
+
+//==============================================================================
+// MtArrayInstance
+//==============================================================================
 
 MtArrayInstance::MtArrayInstance(const std::string& name, const std::string& path)
 : MtFieldInstance(name, path) {
@@ -213,8 +318,8 @@ MtArrayInstance::~MtArrayInstance() {
 
 void MtArrayInstance::dump() {
   LOG_B("Array %s %s @ 0x%04X ", _name.c_str(), _path.c_str(), uint64_t(this) & 0xFFFF);
-  dump_state(state_stack.back());
-  LOG(" - %s\n", to_string(_field_type));
+  //dump_state(state_stack.back());
+  LOG(" - %s\n", to_string(get_field_type()));
   LOG_INDENT_SCOPE();
   dump_log();
 }
@@ -228,11 +333,19 @@ CHECK_RETURN Err MtArrayInstance::sanity_check() {
 //----------------------------------------
 
 CHECK_RETURN Err MtArrayInstance::assign_types() {
-  _field_type = trace_state_to_field_type(state_stack.back());
+  Err err;
+  err << set_field_type(trace_state_to_field_type(state_stack.back()));
   return Err::ok;
 }
 
-//------------------------------------------------------------------------------
+
+
+
+
+
+//==============================================================================
+// MtStructInstance
+//==============================================================================
 
 MtStructInstance::MtStructInstance(const std::string& name, const std::string& path, MtStruct* _struct)
 : MtFieldInstance(name, path), _struct(_struct)
@@ -240,26 +353,11 @@ MtStructInstance::MtStructInstance(const std::string& name, const std::string& p
   for (auto cf : _struct->fields) {
     _fields.push_back(field_to_inst(cf->_name, path + "." + cf->_name, cf));
   }
-
 }
 
 //----------------------------------------
 
 MtStructInstance::~MtStructInstance() {
-}
-
-//----------------------------------------
-
-void MtStructInstance::dump() {
-  LOG_B("Struct %s %s @ 0x%04X ", _name.c_str(), _path.c_str(), uint64_t(this) & 0xFFFF);
-  dump_state(state_stack.back());
-  LOG("\n");
-  LOG_INDENT_SCOPE();
-
-  for (const auto& f : _fields) {
-    LOG_G("%s: ", f->_name.c_str());
-    f->dump();
-  }
 }
 
 //----------------------------------------
@@ -273,21 +371,23 @@ CHECK_RETURN Err MtStructInstance::sanity_check() {
 //----------------------------------------
 
 CHECK_RETURN Err MtStructInstance::assign_types() {
-  _field_type = FT_UNKNOWN;
+  /*
+  if (_field_type != FT_UNKNOWN) return Err::ok;
+
+
+  auto state = _fields[0]->state_stack.back();
+  for (int i = 1; i < _fields.size(); i++) {
+  }
+
+  for (auto f : _fields) {
+    err << set_field_type(f->get_field_type());
+  }
+  */
 
   Err err;
 
   for (auto f : _fields) {
     err << f->assign_types();
-    if (_field_type == FT_UNKNOWN) {
-      _field_type = f->_field_type;
-    }
-    else {
-      if (_field_type != f->_field_type) {
-        dump();
-        return ERR("Struct fields had inconsistent types\n");
-      }
-    }
   }
 
   return err;
@@ -295,9 +395,41 @@ CHECK_RETURN Err MtStructInstance::assign_types() {
 
 //----------------------------------------
 
-MtInstance* MtStructInstance::get_field(const std::string& name) {
-  for (auto f : _fields) if (f->_name == name) return f;
-  return nullptr;
+CHECK_RETURN Err MtStructInstance::log_action(MnNode node, TraceAction action) {
+  Err err;
+
+  for (auto f : _fields) {
+    err << f->log_action(node, action);
+  }
+
+  return err;
+}
+
+//----------------------------------------
+
+void MtStructInstance::dump() {
+  LOG_B("Struct %s %s @ 0x%04X ", _name.c_str(), _path.c_str(), uint64_t(this) & 0xFFFF);
+  //dump_state(state_stack.back());
+  LOG(" - %s\n", to_string(get_field_type()));
+  LOG_INDENT_SCOPE();
+
+  for (const auto& f : _fields) {
+    LOG_G("%s: ", f->_name.c_str());
+    f->dump();
+  }
+}
+
+//----------------------------------------
+
+void MtStructInstance::reset_state() {
+  for (auto f : _fields) f->reset_state();
+}
+
+//----------------------------------------
+
+void MtStructInstance::visit(const inst_visitor& v) {
+  MtInstance::visit(v);
+  for (auto& f : _fields) v(f);
 }
 
 //----------------------------------------
@@ -314,12 +446,37 @@ MtInstance* MtStructInstance::resolve(const std::vector<std::string>& path, int 
 
 //----------------------------------------
 
-void MtStructInstance::reset_state() {
-  for (auto f : _fields) f->reset_state();
+FieldType MtStructInstance::get_field_type() const {
+  auto state = _fields[0]->state_stack.back();
+  for (int i = 1; i < _fields.size(); i++) {
+    state = merge_branch(state, _fields[i]->state_stack.back());
+  }
+  return trace_state_to_field_type(state);
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------
 
+CHECK_RETURN Err MtStructInstance::set_field_type(FieldType f) {
+  return ERR("Should not get here");
+}
+
+//----------------------------------------
+
+MtInstance* MtStructInstance::get_field(const std::string& name) {
+  for (auto f : _fields) if (f->_name == name) return f;
+  return nullptr;
+}
+
+
+
+
+
+
+
+
+//==============================================================================
+// MtMethodInstance
+//==============================================================================
 
 MtMethodInstance::MtMethodInstance(const std::string& name, const std::string& path, MtModuleInstance* module, MtMethod* method)
 : MtInstance(name, path), _module(module), _method(method) {
@@ -327,7 +484,7 @@ MtMethodInstance::MtMethodInstance(const std::string& name, const std::string& p
   for (auto c : _method->param_nodes) {
     _params.push_back(node_to_inst(c.name4(), path + "." + c.name4(), c, _method->_lib));
   }
-  scope_stack.resize(1);
+  _scope_stack.resize(1);
 }
 
 //----------------------------------------
@@ -335,6 +492,15 @@ MtMethodInstance::MtMethodInstance(const std::string& name, const std::string& p
 MtMethodInstance::~MtMethodInstance() {
   for (auto p : _params) delete p;
   _params.clear();
+}
+
+//----------------------------------------
+
+void MtMethodInstance::visit(const inst_visitor& v) {
+  MtInstance::visit(v);
+  for (auto p : _params) {
+    p->visit(v);
+  }
 }
 
 //----------------------------------------
@@ -355,12 +521,27 @@ void MtMethodInstance::dump() {
 CHECK_RETURN Err MtMethodInstance::sanity_check() {
   Err err = MtInstance::sanity_check();
 
-  LOG_R("MtMethodInstance::sanity_check() %s\n", _name.c_str());
+  for (auto p : _params) err << p->sanity_check();
+
+  return err;
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err MtMethodInstance::assign_types() {
+  if (_method_type != MT_UNKNOWN) return Err::ok;
+  LOG_G("Assigning type to %s\n", _path.c_str());
+
+  Err err;
+  for (auto p : _params) err << p->assign_types();
+  for (auto w : _writes) err << w->assign_types();
+  for (auto r : _reads)  err << r->assign_types();
+  for (auto c : _calls)  err << c->assign_types();
 
   int sig_writes = 0;
   int reg_writes = 0;
 
-  for (auto w : writes) {
+  for (auto w : _writes) {
     switch(w->state_stack.back()) {
       case CTX_NONE:     break;
       case CTX_INPUT:    break;
@@ -378,17 +559,27 @@ CHECK_RETURN Err MtMethodInstance::sanity_check() {
     // Interesting, the old tracer didn't catch this?
     return ERR("Method wrote both signals and registers\n");
   }
+  else if (sig_writes) {
+    set_method_type(MT_TOCK);
+  }
+  else if (reg_writes) {
+    set_method_type(MT_TICK);
+  }
+  else {
+    for (auto c : _calls) {
+      if (c->get_method_type() == MT_TICK) {
+        set_method_type(MT_TICK);
+        break;
+      }
+      if (c->get_method_type() == MT_TOCK) {
+        set_method_type(MT_TOCK);
+        break;
+      }
+    }
+    //_method_type = MT_FUNC;
+  }
 
-  for (auto p : _params) err << p->sanity_check();
 
-  return err;
-}
-
-//----------------------------------------
-
-CHECK_RETURN Err MtMethodInstance::assign_types() {
-  Err err;
-  for (auto p : _params) err << p->assign_types();
   return err;
 }
 
@@ -418,7 +609,14 @@ void MtMethodInstance::reset_state() {
   for (auto p : _params) p->reset_state();
 }
 
-//------------------------------------------------------------------------------
+
+
+
+
+
+//==============================================================================
+// MtModuleInstance
+//==============================================================================
 
 MtModuleInstance::MtModuleInstance(const std::string& name, const std::string& path, MtModule* _mod)
 : MtFieldInstance(name, path) {
@@ -445,6 +643,24 @@ MtModuleInstance::~MtModuleInstance() {
 
 //----------------------------------------
 
+CHECK_RETURN Err MtModuleInstance::sanity_check() {
+  Err err = MtInstance::sanity_check();
+  for (auto f : _fields)  err << f->sanity_check();
+  for (auto m : _methods) err << m->sanity_check();
+  return err;
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err MtModuleInstance::assign_types() {
+  Err err = MtFieldInstance::set_field_type(FT_MODULE);
+  for (auto f : _fields)  err << f->assign_types();
+  for (auto m : _methods) err << m->assign_types();
+  return err;
+}
+
+//----------------------------------------
+
 void MtModuleInstance::dump() {
   LOG_B("Module '%s' @ 0x%04X\n", _path.c_str(), uint64_t(this) & 0xFFFF);
   LOG_INDENT_SCOPE();
@@ -460,28 +676,39 @@ void MtModuleInstance::dump() {
 
 //----------------------------------------
 
-CHECK_RETURN Err MtModuleInstance::sanity_check() {
-  Err err = MtInstance::sanity_check();
-  for (auto f : _fields)  err << f->sanity_check();
-  for (auto m : _methods) err << m->sanity_check();
-  return err;
-}
-
-//----------------------------------------
-
-CHECK_RETURN Err MtModuleInstance::assign_types() {
-  Err err;
-  for (auto f : _fields)  err << f->assign_types();
-  for (auto m : _methods) err << m->assign_types();
-  _field_type = FT_MODULE;
-  return err;
-}
-
-//----------------------------------------
-
 void MtModuleInstance::reset_state() {
+  MtFieldInstance::reset_state();
   for (auto f : _fields)  f->reset_state();
   for (auto m : _methods) m->reset_state();
+}
+
+//----------------------------------------
+
+void MtModuleInstance::visit(const inst_visitor& v) {
+  MtInstance::visit(v);
+  for (auto& f : _fields)  f->visit(v);
+  for (auto& m : _methods) m->visit(v);
+}
+
+//----------------------------------------
+
+MtInstance* MtModuleInstance::resolve(const std::vector<std::string>& path, int index) {
+  if (index == path.size()) return this;
+  if (auto f = get_field(path[index])) return f;
+  if (auto m = get_method(path[index])) return m;
+  return nullptr;
+}
+
+//----------------------------------------
+
+FieldType MtModuleInstance::get_field_type() const {
+  return MtFieldInstance::get_field_type();
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err MtModuleInstance::set_field_type(FieldType f) {
+  return ERR("Should not get here");
 }
 
 //----------------------------------------
@@ -495,15 +722,6 @@ MtMethodInstance* MtModuleInstance::get_method(const std::string& name) {
 
 MtInstance* MtModuleInstance::get_field(const std::string& name) {
   for (auto f : _fields) if (f->_name == name) return f;
-  return nullptr;
-}
-
-//----------------------------------------
-
-MtInstance* MtModuleInstance::resolve(const std::vector<std::string>& path, int index) {
-  if (index == path.size()) return this;
-  if (auto f = get_field(path[index])) return f;
-  if (auto m = get_method(path[index])) return m;
   return nullptr;
 }
 

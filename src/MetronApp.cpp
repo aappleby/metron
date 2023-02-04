@@ -225,6 +225,8 @@ int main(int argc, char** argv) {
     err << root_inst->sanity_check();
     err << root_inst->assign_types();
 
+    root_inst->dump();
+
     delete root_inst;
   }
   LOG_B("Tracing version 2: done\n");

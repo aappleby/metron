@@ -63,7 +63,7 @@ TraceState merge_action(TraceState state, TraceAction action) {
   return result;
 }
 
-const char* merge_message(TraceState state, TraceAction action) {
+const char* merge_action_message(TraceState state, TraceAction action) {
   // clang-format off
 
   TraceState result = CTX_INVALID;

@@ -36,19 +36,17 @@ struct LogEntry {
 struct MtInstance {
   MtInstance(const std::string& name, const std::string& path);
   virtual ~MtInstance();
-  virtual void dump() {}
+
   virtual CHECK_RETURN Err sanity_check();
   virtual CHECK_RETURN Err assign_types();
-
-  void dump_log();
-
-  virtual void visit(const inst_visitor& v) { v(this); }
-
-  virtual MtInstance* resolve(const std::vector<std::string>& path, int index) {
-    return (index == path.size()) ? this : nullptr;
-  }
-
+  virtual CHECK_RETURN Err log_action(MnNode node, TraceAction action);
+  virtual void dump();
+  virtual void dump_log();
   virtual void reset_state();
+  virtual void visit(const inst_visitor& v);
+  virtual MtInstance* resolve(const std::vector<std::string>& path, int index);
+
+  //----------
 
   void push_state(MnNode node) {
     state_stack.push_back(state_stack.back());
@@ -121,7 +119,18 @@ struct MtInstance {
 //------------------------------------------------------------------------------
 
 struct MtFieldInstance : public MtInstance {
-  MtFieldInstance(const std::string& name, const std::string& path) : MtInstance(name, path) {}
+  MtFieldInstance(const std::string& name, const std::string& path);
+  virtual ~MtFieldInstance();
+
+  // MtInstance
+  virtual void reset_state();
+
+  //----------
+
+  virtual FieldType get_field_type() const;
+  virtual CHECK_RETURN Err set_field_type(FieldType f);
+
+private:
   FieldType _field_type = FT_UNKNOWN;
 };
 
@@ -130,9 +139,13 @@ struct MtFieldInstance : public MtInstance {
 struct MtPrimitiveInstance : public MtFieldInstance {
   MtPrimitiveInstance(const std::string& name, const std::string& path);
   virtual ~MtPrimitiveInstance();
-  virtual void dump();
+
+  // MtInstance
   virtual CHECK_RETURN Err sanity_check();
-  CHECK_RETURN virtual Err assign_types();
+  virtual CHECK_RETURN Err assign_types();
+  virtual void dump();
+
+  // MtFieldInstance
 };
 
 //------------------------------------------------------------------------------
@@ -140,9 +153,13 @@ struct MtPrimitiveInstance : public MtFieldInstance {
 struct MtArrayInstance : public MtFieldInstance {
   MtArrayInstance(const std::string& name, const std::string& path);
   virtual ~MtArrayInstance();
-  virtual void dump();
+
+  // MtInstance
   virtual CHECK_RETURN Err sanity_check();
-  CHECK_RETURN virtual Err assign_types();
+  virtual CHECK_RETURN Err assign_types();
+  virtual void dump();
+
+  // MtFieldInstance
 };
 
 //------------------------------------------------------------------------------
@@ -150,19 +167,23 @@ struct MtArrayInstance : public MtFieldInstance {
 struct MtStructInstance : public MtFieldInstance {
   MtStructInstance(const std::string& name, const std::string& path, MtStruct* s);
   virtual ~MtStructInstance();
-  virtual void dump();
+
+  // MtInstance
   virtual CHECK_RETURN Err sanity_check();
+  virtual CHECK_RETURN Err assign_types();
+  virtual CHECK_RETURN Err log_action(MnNode node, TraceAction action);
+  virtual void dump();
+  virtual void reset_state();
+  virtual void visit(const inst_visitor& v);
+  virtual MtInstance* resolve(const std::vector<std::string>& path, int index);
+
+  // MtFieldInstance
+  virtual FieldType get_field_type() const;
+  virtual CHECK_RETURN Err set_field_type(FieldType f);
+
+  //----------
 
   MtInstance* get_field(const std::string& name);
-  virtual MtInstance* resolve(const std::vector<std::string>& path, int index);
-  virtual void reset_state();
-
-  virtual void visit(const inst_visitor& v) {
-    MtInstance::visit(v);
-    for (auto& f : _fields) v(f);
-  }
-
-  CHECK_RETURN virtual Err assign_types();
 
   MtStruct* _struct;
   std::vector<MtFieldInstance*> _fields;
@@ -173,39 +194,48 @@ struct MtStructInstance : public MtFieldInstance {
 struct MtMethodInstance : public MtInstance {
   MtMethodInstance(const std::string& name, const std::string& path, MtModuleInstance* module, MtMethod* method);
   virtual ~MtMethodInstance();
-  MtInstance* get_param(const std::string& name);
-  virtual void dump();
-  virtual CHECK_RETURN Err sanity_check();
 
-  virtual MtInstance* resolve(const std::vector<std::string>& path, int index);
+  // MtInstance
+  virtual CHECK_RETURN Err sanity_check();
+  virtual CHECK_RETURN Err assign_types();
+  virtual void dump();
   virtual void reset_state();
+  virtual void visit(const inst_visitor& v);
+  virtual MtInstance* resolve(const std::vector<std::string>& path, int index);
+
+  //----------
+
+  MtInstance* get_param(const std::string& name);
 
   bool has_local(const std::string& s) {
-    for (int i = (int)scope_stack.size() - 1; i >= 0; i--) {
-      if (scope_stack[i].contains(s)) return true;
+    for (int i = (int)_scope_stack.size() - 1; i >= 0; i--) {
+      if (_scope_stack[i].contains(s)) return true;
     }
     return false;
   }
 
-  virtual void visit(const inst_visitor& v) {
-    MtInstance::visit(v);
-    for (auto p : _params) {
-      p->visit(v);
-    }
+
+  virtual void set_method_type(MethodType t) {
+    assert(_method_type == MT_UNKNOWN || _method_type == t);
+    _method_type = t;
   }
 
-  CHECK_RETURN virtual Err assign_types();
+  virtual MethodType get_method_type() const {
+    return _method_type;
+  }
+
+  //----------
 
   MethodType _method_type = MT_UNKNOWN;
   MtMethod* _method;
   MtModuleInstance* _module;
   std::vector<MtInstance*> _params;
   MtInstance* _retval = nullptr;
-  std::vector<std::set<std::string>> scope_stack;
-  std::set<MtInstance*> writes;
-  std::set<MtInstance*> reads;
-  std::set<MtInstance*> calls;
-  std::set<MtInstance*> called_by;
+  std::vector<std::set<std::string>> _scope_stack;
+  std::set<MtInstance*> _writes;
+  std::set<MtInstance*> _reads;
+  std::set<MtMethodInstance*> _calls;
+  std::set<MtMethodInstance*> _called_by;
 };
 
 //------------------------------------------------------------------------------
@@ -213,22 +243,25 @@ struct MtMethodInstance : public MtInstance {
 struct MtModuleInstance : public MtFieldInstance {
   MtModuleInstance(const std::string& name, const std::string& path, MtModule* m);
   virtual ~MtModuleInstance();
-  virtual void dump();
+
+  // MtInstance
   virtual CHECK_RETURN Err sanity_check();
+  virtual CHECK_RETURN Err assign_types();
+  virtual void dump();
+  virtual void reset_state();
+  virtual void visit(const inst_visitor& v);
+  virtual MtInstance* resolve(const std::vector<std::string>& path, int index);
+
+  // MtFieldInstance
+  virtual FieldType get_field_type() const;
+  virtual CHECK_RETURN Err set_field_type(FieldType f);
+
+  //----------
 
   MtMethodInstance* get_method(const std::string& name);
   MtInstance*       get_field (const std::string& name);
 
-  virtual MtInstance* resolve(const std::vector<std::string>& path, int index);
-  virtual void reset_state();
-
-  virtual void visit(const inst_visitor& v) {
-    MtInstance::visit(v);
-    for (auto& f : _fields)  f->visit(v);
-    for (auto& m : _methods) m->visit(v);
-  }
-
-  CHECK_RETURN virtual Err assign_types();
+  //----------
 
   MtModule*  _mod;
   std::vector<MtInstance*> _fields;

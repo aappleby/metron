@@ -156,7 +156,7 @@ inline const char* to_string(TraceState f) {
 // KCOV_ON
 
 TraceState merge_action(TraceState state, TraceAction action);
-const char* merge_message(TraceState state, TraceAction action);
+const char* merge_action_message(TraceState state, TraceAction action);
 TraceState merge_branch(TraceState ma, TraceState mb);
 
 std::string str_printf(const char* fmt, ...);

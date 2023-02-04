@@ -216,9 +216,12 @@ struct MtMethodInstance : public MtInstance {
   }
 
 
-  virtual void set_method_type(MethodType t) {
-    assert(_method_type == MT_UNKNOWN || _method_type == t);
+  CHECK_RETURN Err set_method_type(MethodType t) {
+    if(_method_type != MT_UNKNOWN && _method_type != t) {
+      return ERR("MtMethodInstance::set_method_type - mismatch %s %s\n", to_string(_method_type), to_string(t));
+    }
     _method_type = t;
+    return Err::ok;
   }
 
   virtual MethodType get_method_type() const {

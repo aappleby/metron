@@ -145,6 +145,7 @@ MtInstance::~MtInstance() {
 //----------------------------------------
 
 CHECK_RETURN Err MtInstance::sanity_check() {
+  //LOG_B("MtInstance::sanity_check() %s\n", _path.c_str());
   Err err;
   if (state_stack.size() > 1) {
     err << ERR("Had more than one item in the state stack after trace\n");
@@ -231,6 +232,7 @@ MtFieldInstance::~MtFieldInstance() {
 //----------------------------------------
 
 CHECK_RETURN Err MtFieldInstance::sanity_check() {
+  //LOG_B("MtFieldInstance::sanity_check() %s\n", _path.c_str());
   if (_field_type == FT_UNKNOWN) return ERR("MtFieldInstance::sanity_check() - Field type is unknown");
   return Err::ok;
 }
@@ -281,6 +283,8 @@ MtPrimitiveInstance::~MtPrimitiveInstance() {
 //----------------------------------------
 
 CHECK_RETURN Err MtPrimitiveInstance::sanity_check() {
+  LOG_B("MtPrimitiveInstance::sanity_check() %s\n", _path.c_str());
+  LOG_INDENT_SCOPE();
   return MtInstance::sanity_check();
 }
 
@@ -334,7 +338,9 @@ void MtArrayInstance::dump() {
 //----------------------------------------
 
 CHECK_RETURN Err MtArrayInstance::sanity_check() {
-  return MtInstance::sanity_check();
+  LOG_B("MtArrayInstance::sanity_check() %s\n", _path.c_str());
+  LOG_INDENT_SCOPE();
+  return MtFieldInstance::sanity_check();
 }
 
 //----------------------------------------
@@ -370,6 +376,8 @@ MtStructInstance::~MtStructInstance() {
 //----------------------------------------
 
 CHECK_RETURN Err MtStructInstance::sanity_check() {
+  LOG_B("MtStructInstance::sanity_check() %s\n", _path.c_str());
+  LOG_INDENT_SCOPE();
   Err err = MtInstance::sanity_check();
   for (auto f : _fields) err << f->sanity_check();
   return err;
@@ -526,6 +534,11 @@ void MtMethodInstance::dump() {
 //----------------------------------------
 
 CHECK_RETURN Err MtMethodInstance::sanity_check() {
+  LOG_B("MtMethodInstance::sanity_check() %s\n", _path.c_str());
+  LOG_INDENT_SCOPE();
+
+  if (_method_type == MT_UNKNOWN) return ERR("MtMethodInstance::sanity_check() - Method type is unknown - %s", _path.c_str());
+
   Err err = MtInstance::sanity_check();
 
   for (auto p : _params) err << p->sanity_check();
@@ -544,6 +557,15 @@ CHECK_RETURN Err MtMethodInstance::assign_types() {
   for (auto w : _writes) err << w->assign_types();
   for (auto r : _reads)  err << r->assign_types();
   for (auto c : _calls)  err << c->assign_types();
+
+  if (_name.starts_with("tick")) {
+    err << set_method_type(MT_TICK);
+    return err;
+  }
+  else if (_name.starts_with("tock")) {
+    err << set_method_type(MT_TOCK);
+    return err;
+  }
 
   int sig_writes = 0;
   int reg_writes = 0;
@@ -567,27 +589,33 @@ CHECK_RETURN Err MtMethodInstance::assign_types() {
     return ERR("Method wrote both signals and registers\n");
   }
   else if (sig_writes) {
-    set_method_type(MT_TOCK);
+    err << set_method_type(MT_TOCK);
+    return err;
   }
   else if (reg_writes) {
-    set_method_type(MT_TICK);
+    err << set_method_type(MT_TICK);
+    return err;
   }
   else {
     for (auto c : _calls) {
       if (c->get_method_type() == MT_TICK) {
-        set_method_type(MT_TICK);
-        break;
+        err << set_method_type(MT_TICK);
+        return err;
       }
       if (c->get_method_type() == MT_TOCK) {
-        set_method_type(MT_TOCK);
-        break;
+        err << set_method_type(MT_TOCK);
+        return err;
       }
     }
     //_method_type = MT_FUNC;
   }
 
+  // We didn't write anything, we didn't call anything - must be a function.
 
+  err << set_method_type(MT_FUNC);
   return err;
+
+  //return ERR("Could not assign type to method %s\n", _path.c_str());
 }
 
 //----------------------------------------
@@ -651,6 +679,8 @@ MtModuleInstance::~MtModuleInstance() {
 //----------------------------------------
 
 CHECK_RETURN Err MtModuleInstance::sanity_check() {
+  LOG_B("MtModuleInstance::sanity_check() %s\n", _path.c_str());
+  LOG_INDENT_SCOPE();
   Err err = MtFieldInstance::sanity_check();
   for (auto f : _fields)  err << f->sanity_check();
   for (auto m : _methods) err << m->sanity_check();

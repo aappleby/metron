@@ -213,18 +213,10 @@ int main(int argc, char** argv) {
         err << tracer.trace_method(m->_method);
       }
       LOG_B("Tracing %s done\n", m->_name.c_str());
-      LOG_B("\n");
     }
-
-    //LOG_B("\n");
-    //root_inst->dump();
-
-    //root_inst->visit([&](MtInstance* m) { err << m->sanity_check(); });
-    //root_inst->visit([&](MtInstance* m) { err << m->assign_types(); });
 
     err << root_inst->assign_types();
     err << root_inst->sanity_check();
-
     root_inst->dump();
 
     delete root_inst;

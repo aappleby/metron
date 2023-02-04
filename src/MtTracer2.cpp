@@ -245,6 +245,12 @@ CHECK_RETURN Err MtTracer2::trace_call(MtMethodInstance* src_inst, MtMethodInsta
 
   // FIXME - this should also catch calling tick() multiple times inside a single module
 
+  /*
+  if (!cross_mod_call) {
+    dst_inst->reset_state();
+  }
+  */
+
   if (cross_mod_call) {
 
     for (auto param : dst_inst->_params) {
@@ -253,7 +259,16 @@ CHECK_RETURN Err MtTracer2::trace_call(MtMethodInstance* src_inst, MtMethodInsta
     }
   }
 
+  /*
+  for (auto param : dst_inst->_params) {
+    //LOG_R("Write %s.%s.%s\n", child_name.c_str(), child_func.c_str(), param.first.c_str());
+    err << log_action(src_inst, node_call, param, ACT_WRITE);
+  }
+  */
+
   err << trace_sym_function_definition(dst_inst, dst_inst->_method->_node);
+
+  //err << dst_inst->_retval->log_action(node_call, ACT_READ);
 
   return err;
 }
@@ -600,6 +615,8 @@ CHECK_RETURN Err MtTracer2::trace_sym_function_definition(MtMethodInstance* inst
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer2::trace_sym_if_statement(MtMethodInstance* inst, MnNode node) {
+  //node.dump_tree();
+
   Err err;
   assert(node.sym == sym_if_statement);
 
@@ -665,6 +682,12 @@ CHECK_RETURN Err MtTracer2::trace_sym_return_statement(MtMethodInstance* inst, M
   auto node_semi = node.child(2);
 
   err << trace_expression(inst, node_value, ACT_READ);
+
+  /*
+  if (inst->_retval) {
+    inst->_retval->log_action(node, ACT_WRITE);
+  }
+  */
 
   return err;
 }

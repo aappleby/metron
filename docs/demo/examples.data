@@ -4818,33 +4818,23 @@ class toplevel {
 #endif // TOPLEVEL_H
 #include "metron_tools.h"
 
-// Simple switch statements are OK.
-
 class Module {
 public:
 
-  void tock() {
-    tick(1);
-    tick(2);
+  int my_sig5a;
+  void tock_calls_funcs1(int x) {
+    my_sig5a = 12 + my_func5(x);
+  }
+
+  int my_sig5b;
+  void tock_calls_funcs2(int x) {
+    my_sig5b = 2 + my_func5(x - 7);
   }
 
 private:
-
-  void tick(logic<2> selector) {
-    switch(selector) {
-      case 0: // comment
-        my_reg = 17; break;
-      case 1:  // comment
-        my_reg = 22; break;
-      case 2: my_reg = 30; break;
-      case 3: // fallthrough
-      case 4:
-      case 5:
-      case 6: my_reg = 72; break;
-    }
+  int my_func5(int x) {
+    return x + 1;
   }
-
-  logic<8> my_reg;
 };
 class Adder {
 public:

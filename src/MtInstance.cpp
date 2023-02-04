@@ -177,17 +177,17 @@ CHECK_RETURN Err MtInstance::log_action(MnNode node, TraceAction action) {
   auto old_state = state_stack.back();
   auto new_state = merge_action(old_state, action);
 
-  if (new_state == CTX_INVALID) {
-    LOG_R("Trace error: state went from %s to %s\n", to_string(old_state), to_string(new_state));
-    dump();
-    err << ERR("Invalid context state\n");
-  }
-
   if (old_state != new_state) {
     action_log.push_back({old_state, new_state, action, node});
   }
 
   state_stack.back() = new_state;
+
+  if (new_state == CTX_INVALID) {
+    LOG_R("Trace error: state went from %s to %s\n", to_string(old_state), to_string(new_state));
+    dump();
+    err << ERR("Invalid context state\n");
+  }
 
   return err;
 }
@@ -258,6 +258,7 @@ CHECK_RETURN Err MtFieldInstance::sanity_check() {
 //----------------------------------------
 
 void MtFieldInstance::reset_state() {
+  //MtInstance::reset_state();
   _field_type = FT_UNKNOWN;
 }
 
@@ -474,6 +475,7 @@ void MtStructInstance::dump() {
 //----------------------------------------
 
 void MtStructInstance::reset_state() {
+  //MtFieldInstance::reset_state();
   for (auto f : _fields) f->reset_state();
 }
 
@@ -543,9 +545,11 @@ MtMethodInstance::MtMethodInstance(const std::string& name, const std::string& p
   for (auto c : _method->param_nodes) {
     _params.push_back(param_node_to_inst(c.name4(), path + "." + c.name4(), c, _method->_lib));
   }
+  /*
   if (method->has_return()) {
     _retval = return_node_to_inst("<retval>", path + ".<retval>", method->_return_type, _method->_lib);
   }
+  */
   _scope_stack.resize(1);
 }
 
@@ -554,7 +558,7 @@ MtMethodInstance::MtMethodInstance(const std::string& name, const std::string& p
 MtMethodInstance::~MtMethodInstance() {
   for (auto p : _params) delete p;
   _params.clear();
-  delete _retval;
+  //delete _retval;
 }
 
 //----------------------------------------
@@ -564,7 +568,7 @@ void MtMethodInstance::visit(const inst_visitor& v) {
   for (auto p : _params) {
     p->visit(v);
   }
-  if (_retval) _retval->visit(v);
+  //if (_retval) _retval->visit(v);
 }
 
 //----------------------------------------
@@ -577,10 +581,12 @@ void MtMethodInstance::dump() {
     LOG_G("%s: ", p->_name.c_str());
     p->dump();
   }
+  /*
   if (_retval) {
-    LOG_G("retval: ");
+    LOG_G("<retval>: ");
     _retval->dump();
   }
+  */
 }
 
 //----------------------------------------
@@ -594,7 +600,7 @@ CHECK_RETURN Err MtMethodInstance::sanity_check() {
   Err err = MtInstance::sanity_check();
 
   for (auto p : _params) err << p->sanity_check();
-  if (_retval) err << _retval->sanity_check();
+  //if (_retval) err << _retval->sanity_check();
 
   return err;
 }
@@ -610,7 +616,7 @@ CHECK_RETURN Err MtMethodInstance::assign_types() {
   for (auto w : _writes) err << w->assign_types();
   for (auto r : _reads)  err << r->assign_types();
   for (auto c : _calls)  err << c->assign_types();
-  if (_retval) err << _retval->assign_types();
+  //if (_retval) err << _retval->assign_types();
 
   if (_name.starts_with("tick")) {
     err << set_method_type(MT_TICK);
@@ -700,8 +706,9 @@ MtInstance* MtMethodInstance::resolve(const std::vector<std::string>& path, int 
 //----------------------------------------
 
 void MtMethodInstance::reset_state() {
+  MtInstance::reset_state();
   for (auto p : _params) p->reset_state();
-  if (_retval) _retval->reset_state();
+  //if (_retval) _retval->reset_state();
 }
 
 //----------------------------------------

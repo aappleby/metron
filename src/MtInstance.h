@@ -73,7 +73,12 @@ struct MtInstance {
   }
 
   void swap_state(MnNode node) {
-    assert(state_stack.size() >= 2);
+    //assert(state_stack.size() >= 2);
+    if (state_stack.size() < 2) {
+      dump();
+      node.dump_tree();
+      assert(false);
+    }
 
     auto s = state_stack.size();
     auto a = state_stack[s-2];
@@ -241,7 +246,7 @@ struct MtMethodInstance : public MtInstance {
   MtMethod* _method;
   MtModuleInstance* _module;
   std::vector<MtInstance*> _params;
-  MtInstance* _retval = nullptr;
+  //MtInstance* _retval = nullptr;
   std::vector<std::set<std::string>> _scope_stack;
   std::set<MtInstance*> _writes;
   std::set<MtInstance*> _reads;

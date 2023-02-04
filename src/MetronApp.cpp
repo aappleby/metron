@@ -231,7 +231,6 @@ int main(int argc, char** argv) {
     LOG_B("Tracing version 2: done\n");
     LOG_B("\n");
   }
-  delete root_inst;
 
   //----------------------------------------
   // Trace
@@ -397,6 +396,14 @@ int main(int argc, char** argv) {
     lib.teardown();
     return -1;
   }
+
+  //----------
+
+  if (root_inst) {
+    err << root_inst->merge_with_source();
+  }
+  delete root_inst;
+
 
   //----------
   // Emit all modules.

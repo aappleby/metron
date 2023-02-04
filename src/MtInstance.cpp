@@ -509,6 +509,7 @@ MtInstance* MtStructInstance::get_field(const std::string& name) {
 
 CHECK_RETURN Err MtStructInstance::merge_with_source() {
   Err err;
+  for (auto& f : _fields)  err << f->merge_with_source();
   return err;
 }
 
@@ -677,10 +678,8 @@ void MtMethodInstance::reset_state() {
 
 CHECK_RETURN Err MtMethodInstance::merge_with_source() {
   Err err;
-  return err;
-}
 
-/*
+  /*
   bool is_init_ = false;
   bool is_tick_ = false;
   bool is_tock_ = false;
@@ -693,7 +692,23 @@ CHECK_RETURN Err MtMethodInstance::merge_with_source() {
   bool emit_as_func = false;
   bool needs_binding = false;
   bool needs_ports = false;
-*/
+  */
+
+  for (auto& p : _params)  err << p->merge_with_source();
+
+  LOG_B("%s is_init_ %d\n", _name.c_str(), _method->is_init_);
+  LOG_B("%s is_tick_ %d\n", _name.c_str(), _method->is_tick_);
+  LOG_B("%s is_tock_ %d\n", _name.c_str(), _method->is_tock_);
+  LOG_B("%s is_func_ %d\n", _name.c_str(), _method->is_func_);
+
+  if ((_method->is_init_ + _method->is_tick_ + _method->is_tock_ + _method->is_func_) > 1) {
+    return ERR("Too many types");
+  }
+
+
+  return err;
+}
+
 
 
 
@@ -789,6 +804,8 @@ MtInstance* MtModuleInstance::resolve(const std::vector<std::string>& path, int 
 
 CHECK_RETURN Err MtModuleInstance::merge_with_source() {
   Err err;
+  for (auto& f : _fields)  err << f->merge_with_source();
+  for (auto& m : _methods) err << m->merge_with_source();
   return err;
 }
 

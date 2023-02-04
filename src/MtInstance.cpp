@@ -200,7 +200,7 @@ void MtInstance::dump() {
 }
 
 void MtInstance::dump_log() {
-  //::dump_log(action_log);
+  ::dump_log(action_log);
 }
 
 //----------------------------------------

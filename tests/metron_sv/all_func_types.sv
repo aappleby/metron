@@ -8,7 +8,8 @@ module Module (
   output int my_sig2,
   output int my_sig3,
   output int my_sig4,
-  output int my_sig5,
+  output int my_sig5a,
+  output int my_sig5b,
   output int my_sig6a,
   // output registers
   output int my_reg1,
@@ -26,8 +27,10 @@ module Module (
   // tock_params_return() ports
   input int tock_params_return_x,
   output int tock_params_return_ret,
-  // tock_calls_funcs() ports
-  input int tock_calls_funcs_x,
+  // tock_calls_funcs1() ports
+  input int tock_calls_funcs1_x,
+  // tock_calls_funcs2() ports
+  input int tock_calls_funcs2_x,
   // tock_calls_tock() ports
   input int tock_calls_tock_x,
   output int tock_calls_tock_ret,
@@ -77,8 +80,12 @@ module Module (
     tock_params_return_ret = my_sig4;
   end
 
-  always_comb begin : tock_calls_funcs
-    my_sig5 = 12 + my_func5(tock_calls_funcs_x);
+  always_comb begin : tock_calls_funcs1
+    my_sig5a = 12 + my_func5(tock_calls_funcs1_x);
+  end
+
+  always_comb begin : tock_calls_funcs2
+    my_sig5b = 2 + my_func5(tock_calls_funcs2_x - 7);
   end
 
 /*private:*/

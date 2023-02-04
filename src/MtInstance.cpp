@@ -25,34 +25,45 @@ void dump_state(TraceState state) {
 MtFieldInstance* field_to_inst(const std::string& name, const std::string& path, MtField* field) {
 
   if (field->is_struct()) {
-    return new MtStructInstance(name, path, field->_type_struct);
+    return new MtStructInstance(name, path, field->_type_struct, field);
   }
   else if (field->is_component()) {
-    return new MtModuleInstance(name, path, field->_type_mod);
+    return new MtModuleInstance(name, path, field->_type_mod, field);
   }
   else if (field->is_array()) {
-    return new MtArrayInstance(name, path);
+    return new MtArrayInstance(name, path, field);
   }
   else {
-    return new MtPrimitiveInstance(name, path);
+    return new MtPrimitiveInstance(name, path, field);
   }
 }
 
 //------------------------------------------------------------------------------
 
-MtInstance* node_to_inst(const std::string& name, const std::string& path, MnNode n, MtModLibrary* lib) {
+MtInstance* param_node_to_inst(const std::string& name, const std::string& path, MnNode n, MtModLibrary* lib) {
   auto param_type = n.type5();
   auto param_decl = n.get_field(field_declarator);
   auto param_name = n.name4();
 
   if (auto s = lib->get_struct(param_type)) {
-    return new MtStructInstance(name, path, s);
+    return new MtStructInstance(name, path, s, nullptr);
   }
   else if (param_decl.sym == sym_array_declarator) {
-    return new MtArrayInstance(name, path);
+    return new MtArrayInstance(name, path, nullptr);
   }
   else {
-    return new MtPrimitiveInstance(name, path);
+    return new MtPrimitiveInstance(name, path, nullptr);
+  }
+}
+
+//------------------------------------------------------------------------------
+
+MtInstance* return_node_to_inst(const std::string& name, const std::string& path, MnNode n, MtModLibrary* lib) {
+  if (auto s = lib->get_struct(n.type5())) {
+    return new MtStructInstance(name, path, s, nullptr);
+  }
+  else {
+    return new MtPrimitiveInstance(name, path, nullptr);
   }
 }
 
@@ -225,7 +236,9 @@ CHECK_RETURN Err MtInstance::merge_with_source() {
 // MtFieldInstance
 //==============================================================================
 
-MtFieldInstance::MtFieldInstance(const std::string& name, const std::string& path) : MtInstance(name, path)
+MtFieldInstance::MtFieldInstance(const std::string& name, const std::string& path, MtField* field)
+: MtInstance(name, path),
+  _field(field)
 {
 }
 
@@ -282,8 +295,8 @@ CHECK_RETURN Err MtFieldInstance::merge_with_source() {
 // MtPrimitiveInstance
 //==============================================================================
 
-MtPrimitiveInstance::MtPrimitiveInstance(const std::string& name, const std::string& path)
-: MtFieldInstance(name, path) {
+MtPrimitiveInstance::MtPrimitiveInstance(const std::string& name, const std::string& path, MtField* field)
+: MtFieldInstance(name, path, field) {
 }
 
 //----------------------------------------
@@ -294,8 +307,8 @@ MtPrimitiveInstance::~MtPrimitiveInstance() {
 //----------------------------------------
 
 CHECK_RETURN Err MtPrimitiveInstance::sanity_check() {
-  LOG_B("MtPrimitiveInstance::sanity_check() %s\n", _path.c_str());
-  LOG_INDENT_SCOPE();
+  //LOG_B("MtPrimitiveInstance::sanity_check() %s\n", _path.c_str());
+  //LOG_INDENT_SCOPE();
   return MtInstance::sanity_check();
 }
 
@@ -333,8 +346,8 @@ CHECK_RETURN Err MtPrimitiveInstance::merge_with_source() {
 // MtArrayInstance
 //==============================================================================
 
-MtArrayInstance::MtArrayInstance(const std::string& name, const std::string& path)
-: MtFieldInstance(name, path) {
+MtArrayInstance::MtArrayInstance(const std::string& name, const std::string& path, MtField* field)
+: MtFieldInstance(name, path, field) {
 }
 
 //----------------------------------------
@@ -355,8 +368,8 @@ void MtArrayInstance::dump() {
 //----------------------------------------
 
 CHECK_RETURN Err MtArrayInstance::sanity_check() {
-  LOG_B("MtArrayInstance::sanity_check() %s\n", _path.c_str());
-  LOG_INDENT_SCOPE();
+  //LOG_B("MtArrayInstance::sanity_check() %s\n", _path.c_str());
+  //LOG_INDENT_SCOPE();
   return MtFieldInstance::sanity_check();
 }
 
@@ -383,8 +396,9 @@ CHECK_RETURN Err MtArrayInstance::merge_with_source() {
 // MtStructInstance
 //==============================================================================
 
-MtStructInstance::MtStructInstance(const std::string& name, const std::string& path, MtStruct* _struct)
-: MtFieldInstance(name, path), _struct(_struct)
+MtStructInstance::MtStructInstance(const std::string& name, const std::string& path, MtStruct* _struct, MtField* field)
+: MtFieldInstance(name, path, field),
+  _struct(_struct)
 {
   for (auto cf : _struct->fields) {
     _fields.push_back(field_to_inst(cf->_name, path + "." + cf->_name, cf));
@@ -399,8 +413,8 @@ MtStructInstance::~MtStructInstance() {
 //----------------------------------------
 
 CHECK_RETURN Err MtStructInstance::sanity_check() {
-  LOG_B("MtStructInstance::sanity_check() %s\n", _path.c_str());
-  LOG_INDENT_SCOPE();
+  //LOG_B("MtStructInstance::sanity_check() %s\n", _path.c_str());
+  //LOG_INDENT_SCOPE();
   Err err = MtInstance::sanity_check();
   for (auto f : _fields) err << f->sanity_check();
   return err;
@@ -527,10 +541,10 @@ MtMethodInstance::MtMethodInstance(const std::string& name, const std::string& p
 : MtInstance(name, path), _module(module), _method(method) {
   _name = method->name();
   for (auto c : _method->param_nodes) {
-    _params.push_back(node_to_inst(c.name4(), path + "." + c.name4(), c, _method->_lib));
+    _params.push_back(param_node_to_inst(c.name4(), path + "." + c.name4(), c, _method->_lib));
   }
   if (method->has_return()) {
-    _retval = node_to_inst("<retval>", path + ".<retval>", method->_return_type, _method->_lib);
+    _retval = return_node_to_inst("<retval>", path + ".<retval>", method->_return_type, _method->_lib);
   }
   _scope_stack.resize(1);
 }
@@ -572,8 +586,8 @@ void MtMethodInstance::dump() {
 //----------------------------------------
 
 CHECK_RETURN Err MtMethodInstance::sanity_check() {
-  LOG_B("MtMethodInstance::sanity_check() %s\n", _path.c_str());
-  LOG_INDENT_SCOPE();
+  //LOG_B("MtMethodInstance::sanity_check() %s\n", _path.c_str());
+  //LOG_INDENT_SCOPE();
 
   if (_method_type == MT_UNKNOWN) return ERR("MtMethodInstance::sanity_check() - Method type is unknown - %s", _path.c_str());
 
@@ -589,7 +603,7 @@ CHECK_RETURN Err MtMethodInstance::sanity_check() {
 
 CHECK_RETURN Err MtMethodInstance::assign_types() {
   if (_method_type != MT_UNKNOWN) return Err::ok;
-  LOG_G("Assigning type to %s\n", _path.c_str());
+  //LOG_G("Assigning type to %s\n", _path.c_str());
 
   Err err;
   for (auto p : _params) err << p->assign_types();
@@ -712,10 +726,10 @@ CHECK_RETURN Err MtMethodInstance::merge_with_source() {
 
   for (auto& p : _params)  err << p->merge_with_source();
 
-  LOG_B("%s is_init_ %d\n", _name.c_str(), _method->is_init_);
-  LOG_B("%s is_tick_ %d\n", _name.c_str(), _method->is_tick_);
-  LOG_B("%s is_tock_ %d\n", _name.c_str(), _method->is_tock_);
-  LOG_B("%s is_func_ %d\n", _name.c_str(), _method->is_func_);
+  //LOG_B("%s is_init_ %d\n", _name.c_str(), _method->is_init_);
+  //LOG_B("%s is_tick_ %d\n", _name.c_str(), _method->is_tick_);
+  //LOG_B("%s is_tock_ %d\n", _name.c_str(), _method->is_tock_);
+  //LOG_B("%s is_func_ %d\n", _name.c_str(), _method->is_func_);
 
   if ((_method->is_init_ + _method->is_tick_ + _method->is_tock_ + _method->is_func_) > 1) {
     return ERR("Too many types");
@@ -741,8 +755,8 @@ CHECK_RETURN Err MtMethodInstance::merge_with_source() {
 // MtModuleInstance
 //==============================================================================
 
-MtModuleInstance::MtModuleInstance(const std::string& name, const std::string& path, MtModule* _mod)
-: MtFieldInstance(name, path) {
+MtModuleInstance::MtModuleInstance(const std::string& name, const std::string& path, MtModule* _mod, MtField* field)
+: MtFieldInstance(name, path, field) {
   assert(_mod);
 
   this->_mod = _mod;
@@ -767,8 +781,8 @@ MtModuleInstance::~MtModuleInstance() {
 //----------------------------------------
 
 CHECK_RETURN Err MtModuleInstance::sanity_check() {
-  LOG_B("MtModuleInstance::sanity_check() %s\n", _path.c_str());
-  LOG_INDENT_SCOPE();
+  //LOG_B("MtModuleInstance::sanity_check() %s\n", _path.c_str());
+  //LOG_INDENT_SCOPE();
   Err err = MtFieldInstance::sanity_check();
   for (auto f : _fields)  err << f->sanity_check();
   for (auto m : _methods) err << m->sanity_check();

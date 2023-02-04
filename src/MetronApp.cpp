@@ -206,7 +206,7 @@ int main(int argc, char** argv) {
     LOG_B("Tracing version 2: top is '%s'\n", top->cname());
     LOG_INDENT_SCOPE();
 
-    root_inst = new MtModuleInstance("<top>", "<top>", top);
+    root_inst = new MtModuleInstance("<top>", "<top>", top, nullptr);
     //root_inst->dump();
 
     MtTracer2 tracer(&lib, root_inst, true);
@@ -226,7 +226,7 @@ int main(int argc, char** argv) {
 
     err << root_inst->assign_types();
     err << root_inst->sanity_check();
-    root_inst->dump();
+    //root_inst->dump();
 
     LOG_B("Tracing version 2: done\n");
     LOG_B("\n");

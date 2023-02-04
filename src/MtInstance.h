@@ -120,7 +120,7 @@ struct MtInstance {
 //------------------------------------------------------------------------------
 
 struct MtFieldInstance : public MtInstance {
-  MtFieldInstance(const std::string& name, const std::string& path);
+  MtFieldInstance(const std::string& name, const std::string& path, MtField* field);
   virtual ~MtFieldInstance();
 
   // MtInstance
@@ -134,13 +134,14 @@ struct MtFieldInstance : public MtInstance {
   virtual CHECK_RETURN Err set_field_type(FieldType f);
 
 private:
+  MtField*  _field;
   FieldType _field_type = FT_UNKNOWN;
 };
 
 //------------------------------------------------------------------------------
 
 struct MtPrimitiveInstance : public MtFieldInstance {
-  MtPrimitiveInstance(const std::string& name, const std::string& path);
+  MtPrimitiveInstance(const std::string& name, const std::string& path, MtField* field);
   virtual ~MtPrimitiveInstance();
 
   // MtInstance
@@ -155,7 +156,7 @@ struct MtPrimitiveInstance : public MtFieldInstance {
 //------------------------------------------------------------------------------
 
 struct MtArrayInstance : public MtFieldInstance {
-  MtArrayInstance(const std::string& name, const std::string& path);
+  MtArrayInstance(const std::string& name, const std::string& path, MtField* field);
   virtual ~MtArrayInstance();
 
   // MtInstance
@@ -170,7 +171,7 @@ struct MtArrayInstance : public MtFieldInstance {
 //------------------------------------------------------------------------------
 
 struct MtStructInstance : public MtFieldInstance {
-  MtStructInstance(const std::string& name, const std::string& path, MtStruct* s);
+  MtStructInstance(const std::string& name, const std::string& path, MtStruct* s, MtField* field);
   virtual ~MtStructInstance();
 
   // MtInstance
@@ -251,7 +252,7 @@ struct MtMethodInstance : public MtInstance {
 //------------------------------------------------------------------------------
 
 struct MtModuleInstance : public MtFieldInstance {
-  MtModuleInstance(const std::string& name, const std::string& path, MtModule* m);
+  MtModuleInstance(const std::string& name, const std::string& path, MtModule* m, MtField* field);
   virtual ~MtModuleInstance();
 
   // MtInstance

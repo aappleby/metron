@@ -123,6 +123,7 @@ struct MtFieldInstance : public MtInstance {
   virtual ~MtFieldInstance();
 
   // MtInstance
+  virtual CHECK_RETURN Err sanity_check();
   virtual void reset_state();
 
   //----------

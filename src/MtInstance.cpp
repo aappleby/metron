@@ -230,6 +230,13 @@ MtFieldInstance::~MtFieldInstance() {
 
 //----------------------------------------
 
+CHECK_RETURN Err MtFieldInstance::sanity_check() {
+  if (_field_type == FT_UNKNOWN) return ERR("MtFieldInstance::sanity_check() - Field type is unknown");
+  return Err::ok;
+}
+
+//----------------------------------------
+
 void MtFieldInstance::reset_state() {
   _field_type = FT_UNKNOWN;
 }
@@ -644,7 +651,7 @@ MtModuleInstance::~MtModuleInstance() {
 //----------------------------------------
 
 CHECK_RETURN Err MtModuleInstance::sanity_check() {
-  Err err = MtInstance::sanity_check();
+  Err err = MtFieldInstance::sanity_check();
   for (auto f : _fields)  err << f->sanity_check();
   for (auto m : _methods) err << m->sanity_check();
   return err;

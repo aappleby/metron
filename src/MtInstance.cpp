@@ -627,13 +627,18 @@ CHECK_RETURN Err MtMethodInstance::assign_types() {
     return err;
   }
   else {
+    // If it calls a tock, it has to be a tock.
+
+    for (auto c : _calls) {
+      if (c->get_method_type() == MT_TOCK) {
+        err << set_method_type(MT_TOCK);
+        return err;
+      }
+    }
+
     for (auto c : _calls) {
       if (c->get_method_type() == MT_TICK) {
         err << set_method_type(MT_TICK);
-        return err;
-      }
-      if (c->get_method_type() == MT_TOCK) {
-        err << set_method_type(MT_TOCK);
         return err;
       }
     }
@@ -704,6 +709,14 @@ CHECK_RETURN Err MtMethodInstance::merge_with_source() {
   if ((_method->is_init_ + _method->is_tick_ + _method->is_tock_ + _method->is_func_) > 1) {
     return ERR("Too many types");
   }
+
+  // This one breaks
+  //if (_method_type == MT_TICK && !_method->is_tick_) return ERR("Tick mismatch");
+
+  // This one is ok
+  if (_method_type == MT_TOCK && !_method->is_tock_) return ERR("Tock mismatch");
+
+  //if (_method_type == MT_FUNC && !_method->is_func_) return ERR("Func mismatch");
 
 
   return err;

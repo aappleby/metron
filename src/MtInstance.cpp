@@ -529,6 +529,9 @@ MtMethodInstance::MtMethodInstance(const std::string& name, const std::string& p
   for (auto c : _method->param_nodes) {
     _params.push_back(node_to_inst(c.name4(), path + "." + c.name4(), c, _method->_lib));
   }
+  if (method->has_return()) {
+    _retval = node_to_inst("<retval>", path + ".<retval>", method->_return_type, _method->_lib);
+  }
   _scope_stack.resize(1);
 }
 
@@ -537,6 +540,7 @@ MtMethodInstance::MtMethodInstance(const std::string& name, const std::string& p
 MtMethodInstance::~MtMethodInstance() {
   for (auto p : _params) delete p;
   _params.clear();
+  delete _retval;
 }
 
 //----------------------------------------
@@ -546,6 +550,7 @@ void MtMethodInstance::visit(const inst_visitor& v) {
   for (auto p : _params) {
     p->visit(v);
   }
+  if (_retval) _retval->visit(v);
 }
 
 //----------------------------------------
@@ -558,7 +563,10 @@ void MtMethodInstance::dump() {
     LOG_G("%s: ", p->_name.c_str());
     p->dump();
   }
-  if (_retval) _retval->dump();
+  if (_retval) {
+    LOG_G("retval: ");
+    _retval->dump();
+  }
 }
 
 //----------------------------------------
@@ -572,6 +580,7 @@ CHECK_RETURN Err MtMethodInstance::sanity_check() {
   Err err = MtInstance::sanity_check();
 
   for (auto p : _params) err << p->sanity_check();
+  if (_retval) err << _retval->sanity_check();
 
   return err;
 }
@@ -587,6 +596,7 @@ CHECK_RETURN Err MtMethodInstance::assign_types() {
   for (auto w : _writes) err << w->assign_types();
   for (auto r : _reads)  err << r->assign_types();
   for (auto c : _calls)  err << c->assign_types();
+  if (_retval) err << _retval->assign_types();
 
   if (_name.starts_with("tick")) {
     err << set_method_type(MT_TICK);
@@ -677,6 +687,7 @@ MtInstance* MtMethodInstance::resolve(const std::vector<std::string>& path, int 
 
 void MtMethodInstance::reset_state() {
   for (auto p : _params) p->reset_state();
+  if (_retval) _retval->reset_state();
 }
 
 //----------------------------------------

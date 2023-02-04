@@ -11,7 +11,7 @@ MtMethod::MtMethod(MtModule* mod, MnNode n, bool is_public) {
   _public = is_public;
   _lib = _mod->lib;
   _name = n.name4();
-  _type = n.get_field(field_type);
+  _return_type = n.get_field(field_type);
 
   auto params = n.get_field(field_declarator).get_field(field_parameters);
   for (const auto& param : params) {
@@ -97,7 +97,7 @@ void MtMethod::dump() {
 //------------------------------------------------------------------------------
 
 bool MtMethod::has_params() const { return !param_nodes.empty(); }
-bool MtMethod::has_return() const { return !_type.is_null() && _type.text() != "void"; }
+bool MtMethod::has_return() const { return !_return_type.is_null() && _return_type.text() != "void"; }
 
 bool MtMethod::has_param(const std::string& name) {
   for (const auto& p : param_nodes) {

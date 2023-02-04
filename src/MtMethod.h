@@ -44,7 +44,7 @@ struct MtMethod {
   bool _public = false;
   MtModLibrary* _lib = nullptr;
   std::string _name;
-  MnNode _type;
+  MnNode _return_type;
   TraceState state = CTX_NONE;
 
   //----------

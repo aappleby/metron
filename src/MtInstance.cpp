@@ -211,6 +211,11 @@ MtInstance* MtInstance::resolve(const std::vector<std::string>& path, int index)
   return (index == path.size()) ? this : nullptr;
 }
 
+//----------------------------------------
+
+CHECK_RETURN Err MtInstance::merge_with_source() {
+  return ERR("Should never get here");
+}
 
 
 
@@ -262,6 +267,12 @@ CHECK_RETURN Err MtFieldInstance::set_field_type(FieldType f) {
   return err;
 }
 
+//----------------------------------------
+
+CHECK_RETURN Err MtFieldInstance::merge_with_source() {
+  Err err;
+  return err;
+}
 
 
 
@@ -307,6 +318,12 @@ void MtPrimitiveInstance::dump() {
   assert(state_stack.size() == 1);
 }
 
+//----------------------------------------
+
+CHECK_RETURN Err MtPrimitiveInstance::merge_with_source() {
+  Err err;
+  return err;
+}
 
 
 
@@ -351,6 +368,12 @@ CHECK_RETURN Err MtArrayInstance::assign_types() {
   return Err::ok;
 }
 
+//----------------------------------------
+
+CHECK_RETURN Err MtArrayInstance::merge_with_source() {
+  Err err;
+  return err;
+}
 
 
 
@@ -482,6 +505,12 @@ MtInstance* MtStructInstance::get_field(const std::string& name) {
   return nullptr;
 }
 
+//----------------------------------------
+
+CHECK_RETURN Err MtStructInstance::merge_with_source() {
+  Err err;
+  return err;
+}
 
 
 
@@ -644,7 +673,27 @@ void MtMethodInstance::reset_state() {
   for (auto p : _params) p->reset_state();
 }
 
+//----------------------------------------
 
+CHECK_RETURN Err MtMethodInstance::merge_with_source() {
+  Err err;
+  return err;
+}
+
+/*
+  bool is_init_ = false;
+  bool is_tick_ = false;
+  bool is_tock_ = false;
+  bool is_func_ = false;
+
+  bool emit_as_always_comb = false;
+  bool emit_as_always_ff = false;
+  bool emit_as_init = false;
+  bool emit_as_task = false;
+  bool emit_as_func = false;
+  bool needs_binding = false;
+  bool needs_ports = false;
+*/
 
 
 
@@ -734,6 +783,13 @@ MtInstance* MtModuleInstance::resolve(const std::vector<std::string>& path, int 
   if (auto f = get_field(path[index])) return f;
   if (auto m = get_method(path[index])) return m;
   return nullptr;
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err MtModuleInstance::merge_with_source() {
+  Err err;
+  return err;
 }
 
 //----------------------------------------

@@ -45,6 +45,7 @@ struct MtInstance {
   virtual void reset_state();
   virtual void visit(const inst_visitor& v);
   virtual MtInstance* resolve(const std::vector<std::string>& path, int index);
+  virtual CHECK_RETURN Err merge_with_source();
 
   //----------
 
@@ -125,6 +126,7 @@ struct MtFieldInstance : public MtInstance {
   // MtInstance
   virtual CHECK_RETURN Err sanity_check();
   virtual void reset_state();
+  virtual CHECK_RETURN Err merge_with_source();
 
   //----------
 
@@ -145,6 +147,7 @@ struct MtPrimitiveInstance : public MtFieldInstance {
   virtual CHECK_RETURN Err sanity_check();
   virtual CHECK_RETURN Err assign_types();
   virtual void dump();
+  virtual CHECK_RETURN Err merge_with_source();
 
   // MtFieldInstance
 };
@@ -159,6 +162,7 @@ struct MtArrayInstance : public MtFieldInstance {
   virtual CHECK_RETURN Err sanity_check();
   virtual CHECK_RETURN Err assign_types();
   virtual void dump();
+  virtual CHECK_RETURN Err merge_with_source();
 
   // MtFieldInstance
 };
@@ -177,6 +181,7 @@ struct MtStructInstance : public MtFieldInstance {
   virtual void reset_state();
   virtual void visit(const inst_visitor& v);
   virtual MtInstance* resolve(const std::vector<std::string>& path, int index);
+  virtual CHECK_RETURN Err merge_with_source();
 
   // MtFieldInstance
   virtual FieldType get_field_type() const;
@@ -203,6 +208,7 @@ struct MtMethodInstance : public MtInstance {
   virtual void reset_state();
   virtual void visit(const inst_visitor& v);
   virtual MtInstance* resolve(const std::vector<std::string>& path, int index);
+  virtual CHECK_RETURN Err merge_with_source();
 
   //----------
 
@@ -255,6 +261,7 @@ struct MtModuleInstance : public MtFieldInstance {
   virtual void reset_state();
   virtual void visit(const inst_visitor& v);
   virtual MtInstance* resolve(const std::vector<std::string>& path, int index);
+  virtual CHECK_RETURN Err merge_with_source();
 
   // MtFieldInstance
   virtual FieldType get_field_type() const;

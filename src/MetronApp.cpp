@@ -190,14 +190,23 @@ int main(int argc, char** argv) {
   //----------------------------------------
   // New Trace
 
-#if 1
+  MtModule* top = nullptr;
   for (auto mod : lib.all_modules) {
     if (mod->refcount) continue;
+    if (top) {
+      LOG_R("Multiple tops!\n");
+    }
+    else {
+      top = mod;
+    }
+  }
 
-    LOG_B("Tracing version 2: %s\n", mod->cname());
+  MtModuleInstance* root_inst = nullptr;
+  if (top) {
+    LOG_B("Tracing version 2: top is '%s'\n", top->cname());
     LOG_INDENT_SCOPE();
 
-    MtModuleInstance* root_inst = new MtModuleInstance("<top>", "<top>", mod);
+    root_inst = new MtModuleInstance("<top>", "<top>", top);
     //root_inst->dump();
 
     MtTracer2 tracer(&lib, root_inst, true);
@@ -219,11 +228,10 @@ int main(int argc, char** argv) {
     err << root_inst->sanity_check();
     root_inst->dump();
 
-    delete root_inst;
+    LOG_B("Tracing version 2: done\n");
+    LOG_B("\n");
   }
-  LOG_B("Tracing version 2: done\n");
-  LOG_B("\n");
-#endif
+  delete root_inst;
 
   //----------------------------------------
   // Trace

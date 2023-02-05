@@ -219,6 +219,8 @@ int main(int argc, char** argv) {
       LOG_B("Tracing %s\n", m->_name.c_str());
       {
         LOG_INDENT_SCOPE();
+        auto call_inst = new MtCallInstance(m->_name, "<top>." + m->_name, nullptr, MnNode::null, m);
+
         err << tracer.trace_method(m->_method);
       }
       LOG_B("Tracing %s done\n", m->_name.c_str());

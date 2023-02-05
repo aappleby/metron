@@ -36,7 +36,7 @@ public:
   CHECK_RETURN Err trace_sym_declaration           (MtMethodInstance* inst, MnNode node);
   CHECK_RETURN Err trace_sym_field_expression      (MtMethodInstance* ctx, MnNode node, TraceAction action);
   CHECK_RETURN Err trace_sym_for_statement         (MtMethodInstance* inst, MnNode node);
-  CHECK_RETURN Err trace_sym_function_definition   (MtMethodInstance* inst, MnNode node);
+  CHECK_RETURN Err trace_sym_function_definition   (MtMethodInstance* inst, MtCallInstance* call_inst, MnNode node);
   CHECK_RETURN Err trace_sym_if_statement          (MtMethodInstance* inst, MnNode node);
   CHECK_RETURN Err trace_sym_init_declarator       (MtMethodInstance* inst, MnNode node);
   CHECK_RETURN Err trace_sym_initializer_list      (MtMethodInstance* inst, MnNode node);
@@ -44,6 +44,8 @@ public:
   CHECK_RETURN Err trace_sym_switch_statement      (MtMethodInstance* inst, MnNode node);
 
   std::vector<MtInstance*> path;
+
+  std::vector<MtMethodInstance*> call_stack;
 
   MtModLibrary* lib;
   MtModuleInstance* root_inst;

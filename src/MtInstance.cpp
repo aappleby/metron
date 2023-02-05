@@ -615,7 +615,7 @@ CHECK_RETURN Err MtMethodInstance::assign_types() {
   for (auto p : _params) err << p->assign_types();
   for (auto w : _writes) err << w->assign_types();
   for (auto r : _reads)  err << r->assign_types();
-  for (auto c : _calls)  err << c->assign_types();
+  for (auto c : _call_methods)  err << c->assign_types();
   //if (_retval) err << _retval->assign_types();
 
   if (_name.starts_with("tick")) {
@@ -659,14 +659,14 @@ CHECK_RETURN Err MtMethodInstance::assign_types() {
   else {
     // If it calls a tock, it has to be a tock.
 
-    for (auto c : _calls) {
+    for (auto c : _call_methods) {
       if (c->get_method_type() == MT_TOCK) {
         err << set_method_type(MT_TOCK);
         return err;
       }
     }
 
-    for (auto c : _calls) {
+    for (auto c : _call_methods) {
       if (c->get_method_type() == MT_TICK) {
         err << set_method_type(MT_TICK);
         return err;
@@ -753,6 +753,35 @@ CHECK_RETURN Err MtMethodInstance::merge_with_source() {
 
   return err;
 }
+
+
+
+
+
+
+//==============================================================================
+// MtCallInstance
+//==============================================================================
+
+MtCallInstance::MtCallInstance(const std::string& name, const std::string& path, MtCallInstance* parent_call, MnNode call_node, MtMethodInstance* dst_method)
+: MtInstance(name, path),
+  _parent_call(parent_call),
+  _call_node(call_node),
+  _dst_method(dst_method)
+{
+  auto m = _dst_method->_method;
+
+  for (auto c : m->param_nodes) {
+    _params.push_back(param_node_to_inst(c.name4(), path + "." + c.name4(), c, m->_lib));
+  }
+  if (m->has_return()) {
+    _retval = return_node_to_inst("<retval>", path + ".<retval>", m->_return_type, m->_lib);
+  }
+}
+
+MtCallInstance::~MtCallInstance() {
+}
+
 
 
 

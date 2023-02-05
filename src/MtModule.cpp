@@ -292,30 +292,31 @@ CHECK_RETURN Err MtModule::build_call_graph() {
     auto src_mod = this;
 
     src_method->_node.visit_tree([&](MnNode child) {
-      if (child.sym == sym_call_expression) {
-        auto func = child.get_field(field_function);
-        if (func.sym == sym_identifier) {
-          auto dst_mod = this;
-          auto dst_method = get_method(func.text());
-          if (dst_method) {
-            dst_method->internal_callers.insert(src_method);
-            src_method->internal_callees.insert(dst_method);
-          }
+      if (child.sym != sym_call_expression) return;
+
+      auto func = child.get_field(field_function);
+
+      if (func.sym == sym_identifier) {
+        auto dst_mod = this;
+        auto dst_method = get_method(func.text());
+        if (dst_method) {
+          dst_method->internal_callers.insert(src_method);
+          src_method->internal_callees.insert(dst_method);
         }
+      }
 
-        if (func.sym == sym_field_expression) {
-          auto component_name = func.get_field(field_argument);
-          auto component_method_name = func.get_field(field_field).text();
+      if (func.sym == sym_field_expression) {
+        auto component_name = func.get_field(field_argument);
+        auto component_method_name = func.get_field(field_field).text();
 
-          auto component = get_field(component_name.name4());
-          if (component) {
-            auto dst_mod = source_file->lib->get_module(component->type_name());
-            if (dst_mod) {
-              auto dst_method = dst_mod->get_method(component_method_name);
-              if (dst_method) {
-                dst_method->external_callers.insert(src_method);
-                src_method->external_callees.insert(dst_method);
-              }
+        auto component = get_field(component_name.name4());
+        if (component) {
+          auto dst_mod = source_file->lib->get_module(component->type_name());
+          if (dst_mod) {
+            auto dst_method = dst_mod->get_method(component_method_name);
+            if (dst_method) {
+              dst_method->external_callers.insert(src_method);
+              src_method->external_callees.insert(dst_method);
             }
           }
         }

@@ -1,20 +1,17 @@
+#pragma once
 #include "metron_tools.h"
 
-class Module {
-public:
+class Pong {
+ public:
 
-  int my_sig5a;
-  void tock_calls_funcs1(int x) {
-    my_sig5a = 12 + my_func5(x);
+  void tock_video() {
+    logic<1> vga_R = 1;
+    if (1) {
+      vga_R = in_border();
+    }
   }
 
-  int my_sig5b;
-  void tock_calls_funcs2(int x) {
-    my_sig5b = 2 + my_func5(x - 7);
-  }
-
-private:
-  int my_func5(int x) {
-    return x + 1;
+  logic<1> in_border() const {
+    return 0;
   }
 };

@@ -63,7 +63,7 @@ CHECK_RETURN Err MtTracer2::trace_method(MtMethod* method) {
     err << ERR("Method %s has non-terminal return\n", method->cname());
   }
 
-  err << trace_sym_function_definition(method_inst, method->_node);
+  err << trace_sym_function_definition(method_inst, nullptr, method->_node);
 
   return err;
 }
@@ -238,13 +238,17 @@ CHECK_RETURN Err MtTracer2::trace_call(MtMethodInstance* src_inst, MtMethodInsta
   // module has to pass params to the dest module, we have to bind the params
   // to ports to "call" it.
 
-  src_inst->_calls.insert(dst_inst);
+  src_inst->_call_methods.insert(dst_inst);
   dst_inst->_called_by.insert(src_inst);
 
   bool cross_mod_call = src_inst->_module != dst_inst->_module;
 
+  auto call_inst = new MtCallInstance("name", "path", nullptr, node_call, dst_inst);
+  src_inst->_calls.push_back(call_inst);
+
   // FIXME - this should also catch calling tick() multiple times inside a single module
 
+  // This doesn't work because it destroys state inside branches
   /*
   if (!cross_mod_call) {
     dst_inst->reset_state();
@@ -266,7 +270,7 @@ CHECK_RETURN Err MtTracer2::trace_call(MtMethodInstance* src_inst, MtMethodInsta
   }
   */
 
-  err << trace_sym_function_definition(dst_inst, dst_inst->_method->_node);
+  err << trace_sym_function_definition(dst_inst, call_inst, dst_inst->_method->_node);
 
   //err << dst_inst->_retval->log_action(node_call, ACT_READ);
 
@@ -599,7 +603,7 @@ CHECK_RETURN Err MtTracer2::trace_sym_for_statement(MtMethodInstance* inst, MnNo
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer2::trace_sym_function_definition(MtMethodInstance* inst, MnNode node) {
+CHECK_RETURN Err MtTracer2::trace_sym_function_definition(MtMethodInstance* inst, MtCallInstance* call_inst, MnNode node) {
   Err err;
   assert(node.sym == sym_function_definition);
 

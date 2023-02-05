@@ -17,6 +17,7 @@ public:
   CHECK_RETURN Err log_action(MtMethodInstance* method, MnNode node, MtInstance* field_inst, TraceAction action);
 
   CHECK_RETURN Err trace_method(MtMethod* method);
+  CHECK_RETURN Err trace_call(MtCallInstance* call);
 
   CHECK_RETURN Err trace_identifier(MtMethodInstance* inst, MnNode node, TraceAction action);
   CHECK_RETURN Err trace_declarator(MtMethodInstance* inst, MnNode node);
@@ -24,6 +25,7 @@ public:
   CHECK_RETURN Err trace_expression(MtMethodInstance* inst, MnNode node, TraceAction action);
   CHECK_RETURN Err trace_call      (MtMethodInstance* src_inst, MtMethodInstance* dst_inst, MnNode node_call);
   CHECK_RETURN Err trace_default   (MtMethodInstance* inst, MnNode node);
+
 
   CHECK_RETURN Err trace_sym_argument_list         (MtMethodInstance* inst, MnNode node);
   CHECK_RETURN Err trace_sym_assignment_expression (MtMethodInstance* inst, MnNode node);
@@ -37,6 +39,7 @@ public:
   CHECK_RETURN Err trace_sym_field_expression      (MtMethodInstance* ctx, MnNode node, TraceAction action);
   CHECK_RETURN Err trace_sym_for_statement         (MtMethodInstance* inst, MnNode node);
   CHECK_RETURN Err trace_sym_function_definition   (MtMethodInstance* inst, MtCallInstance* call_inst, MnNode node);
+  CHECK_RETURN Err trace_sym_function_definition   (MtCallInstance* call_inst, MnNode node);
   CHECK_RETURN Err trace_sym_if_statement          (MtMethodInstance* inst, MnNode node);
   CHECK_RETURN Err trace_sym_init_declarator       (MtMethodInstance* inst, MnNode node);
   CHECK_RETURN Err trace_sym_initializer_list      (MtMethodInstance* inst, MnNode node);

@@ -221,14 +221,14 @@ int main(int argc, char** argv) {
         LOG_INDENT_SCOPE();
         auto call_inst = new MtCallInstance(m->_name, "<top>." + m->_name, nullptr, MnNode::null, m);
 
-        err << tracer.trace_method(m->_method);
+        err << tracer.trace_call(call_inst);
       }
       LOG_B("Tracing %s done\n", m->_name.c_str());
     }
 
     err << root_inst->assign_types();
     err << root_inst->sanity_check();
-    //root_inst->dump();
+    root_inst->dump();
 
     LOG_B("Tracing version 2: done\n");
     LOG_B("\n");

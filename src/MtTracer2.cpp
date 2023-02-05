@@ -68,6 +68,22 @@ CHECK_RETURN Err MtTracer2::trace_method(MtMethod* method) {
   return err;
 }
 
+CHECK_RETURN Err MtTracer2::trace_call(MtCallInstance* call_inst) {
+  Err err;
+
+  auto method_inst = call_inst->_dst_method;
+  auto method = call_inst->_dst_method->_method;
+
+  auto node_body = method->_node.get_field(field_body);
+  if (MtChecker::has_non_terminal_return(node_body)) {
+    err << ERR("Method %s has non-terminal return\n", method->cname());
+  }
+
+  err << trace_sym_function_definition(method_inst, nullptr, method->_node);
+
+  return err;
+}
+
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtTracer2::trace_identifier(MtMethodInstance* inst, MnNode node, TraceAction action) {
@@ -612,6 +628,19 @@ CHECK_RETURN Err MtTracer2::trace_sym_function_definition(MtMethodInstance* inst
   auto node_body = node.get_field(field_body);
 
   err << trace_sym_compound_statement(inst, node_body);
+
+  return err;
+}
+
+CHECK_RETURN Err MtTracer2::trace_sym_function_definition(MtCallInstance* call_inst, MnNode node) {
+  Err err;
+  assert(node.sym == sym_function_definition);
+
+  auto node_type = node.get_field(field_type);
+  auto node_decl = node.get_field(field_declarator);
+  auto node_body = node.get_field(field_body);
+
+  err << trace_sym_compound_statement(call_inst->_dst_method, node_body);
 
   return err;
 }

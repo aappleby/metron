@@ -221,6 +221,10 @@ int main(int argc, char** argv) {
         LOG_INDENT_SCOPE();
         auto call_inst = new MtCallInstance(m->_name, "<top>." + m->_name, nullptr, MnNode::null, m);
 
+        for (auto p : call_inst->_params) {
+          err << p->log_action(MnNode::null, ACT_WRITE);
+        }
+
         err << tracer.trace_call(call_inst);
       }
       LOG_B("Tracing %s done\n", m->_name.c_str());

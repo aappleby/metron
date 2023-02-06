@@ -273,10 +273,12 @@ CHECK_RETURN Err MtTracer2::trace_call(MtMethodInstance* src_inst, MtMethodInsta
 
   if (cross_mod_call) {
 
+    /*
     for (auto param : dst_inst->_params) {
       //LOG_R("Write %s.%s.%s\n", child_name.c_str(), child_func.c_str(), param.first.c_str());
       err << log_action(src_inst, node_call, param, ACT_WRITE);
     }
+    */
   }
 
   /*
@@ -583,7 +585,10 @@ CHECK_RETURN Err MtTracer2::trace_sym_field_expression(MtMethodInstance* inst, M
     err << log_action(inst, node, r, action);
   }
   else {
-    return ERR("Not resolved\n");
+    // FIXME
+    LOG_R("Not resolved\n");
+    node.dump_tree();
+    //return ERR("Not resolved\n");
   }
 
   return err;

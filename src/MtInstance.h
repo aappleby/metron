@@ -248,7 +248,7 @@ struct MtMethodInstance : public MtInstance {
   MethodType _method_type = MT_UNKNOWN;
   MtMethod* _method;
   MtModuleInstance* _module;
-  std::vector<MtInstance*> _params;
+  //std::vector<MtInstance*> _params;
   //MtInstance* _retval = nullptr;
   std::vector<std::set<std::string>> _scope_stack;
   std::set<MtInstance*> _writes;

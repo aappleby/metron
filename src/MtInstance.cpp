@@ -178,6 +178,8 @@ CHECK_RETURN Err MtInstance::log_action(MnNode node, TraceAction action) {
   auto old_state = state_stack.back();
   auto new_state = merge_action(old_state, action);
 
+  //LOG_R("%s %s %s %s\n", node.name4().c_str(), to_string(action), to_string(old_state), to_string(new_state));
+
   if (old_state != new_state) {
     action_log.push_back({old_state, new_state, action, node});
   }
@@ -774,9 +776,9 @@ MtCallInstance::MtCallInstance(const std::string& name, const std::string& path,
 : MtInstance(name, path),
   _parent_call(parent_call),
   _call_node(call_node),
-  _dst_method(dst_method)
+  _method(dst_method)
 {
-  auto m = _dst_method->_method;
+  auto m = _method->_method;
 
   for (auto c : m->param_nodes) {
     _params.push_back(param_node_to_inst(c.name4(), path + "." + c.name4(), c, m->_lib));

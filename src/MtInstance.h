@@ -267,7 +267,7 @@ struct MtCallInstance : public MtInstance {
 
   MnNode _call_node;
   MtCallInstance* _parent_call;
-  MtMethodInstance* _dst_method;
+  MtMethodInstance* _method;
   std::vector<MtInstance*> _params;
   MtInstance* _retval = nullptr;
 

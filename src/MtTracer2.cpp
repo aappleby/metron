@@ -34,59 +34,44 @@ MtTracer2::MtTracer2(MtModLibrary* lib, MtModuleInstance* root_inst, bool verbos
   verbose(verbose) {
 }
 
-CHECK_RETURN Err MtTracer2::log_action(MtMethodInstance* method, MnNode node, MtInstance* inst, TraceAction action) {
+CHECK_RETURN Err MtTracer2::log_action(MtCallInstance* inst, MnNode node, MtInstance* target, TraceAction action) {
 
   Err err;
 
-  err << inst->log_action(node, action);
+  err << target->log_action(node, action);
 
   if (action == ACT_WRITE) {
-    method->_writes.insert(inst);
+    inst->_method->_writes.insert(target);
   }
 
   if (action == ACT_READ) {
-    method->_reads.insert(inst);
+    inst->_method->_reads.insert(target);
   }
 
   return err;
 }
 
 //------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtTracer2::trace_method(MtMethod* method) {
-  Err err;
-
-  auto method_inst = root_inst->get_method(method->name());
-
-  auto node_body = method->_node.get_field(field_body);
-  if (MtChecker::has_non_terminal_return(node_body)) {
-    err << ERR("Method %s has non-terminal return\n", method->cname());
-  }
-
-  err << trace_sym_function_definition(method_inst, nullptr, method->_node);
-
-  return err;
-}
 
 CHECK_RETURN Err MtTracer2::trace_call(MtCallInstance* call_inst) {
   Err err;
 
-  auto method_inst = call_inst->_dst_method;
-  auto method = call_inst->_dst_method->_method;
+  auto method_inst = call_inst->_method;
+  auto method = call_inst->_method->_method;
 
   auto node_body = method->_node.get_field(field_body);
   if (MtChecker::has_non_terminal_return(node_body)) {
     err << ERR("Method %s has non-terminal return\n", method->cname());
   }
 
-  err << trace_sym_function_definition(method_inst, nullptr, method->_node);
+  err << trace_sym_function_definition(call_inst, method->_node);
 
   return err;
 }
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer2::trace_identifier(MtMethodInstance* inst, MnNode node, TraceAction action) {
+CHECK_RETURN Err MtTracer2::trace_identifier(MtCallInstance* inst, MnNode node, TraceAction action) {
   Err err;
 
   switch (node.sym) {
@@ -96,19 +81,19 @@ CHECK_RETURN Err MtTracer2::trace_identifier(MtMethodInstance* inst, MnNode node
       break;
     case sym_identifier:
     case alias_sym_field_identifier: {
-      MtInstance* field_inst = inst->_module->get_field(node.text());
+      MtInstance* field_inst = inst->_method->_module->get_field(node.text());
       if (field_inst) {
         err << log_action(inst, node, field_inst, action);
         break;
       }
 
-      MtInstance* param_inst = inst->get_param(node.text());
+      MtInstance* param_inst = inst->_method->get_param(node.text());
       if (param_inst) {
         err << log_action(inst, node, param_inst, action);
         break;
       }
 
-      if (inst->has_local(node.text())) {
+      if (inst->_method->has_local(node.text())) {
         //LOG_B("Identifier %s is a local\n", node.text().c_str());
       }
       else {
@@ -126,7 +111,7 @@ CHECK_RETURN Err MtTracer2::trace_identifier(MtMethodInstance* inst, MnNode node
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer2::trace_declarator(MtMethodInstance* inst, MnNode node) {
+CHECK_RETURN Err MtTracer2::trace_declarator(MtCallInstance* inst, MnNode node) {
   Err err;
 
   switch (node.sym) {
@@ -146,7 +131,7 @@ CHECK_RETURN Err MtTracer2::trace_declarator(MtMethodInstance* inst, MnNode node
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer2::trace_statement(MtMethodInstance* inst, MnNode node) {
+CHECK_RETURN Err MtTracer2::trace_statement(MtCallInstance* inst, MnNode node) {
   Err err;
 
   switch (node.sym) {
@@ -182,7 +167,7 @@ CHECK_RETURN Err MtTracer2::trace_statement(MtMethodInstance* inst, MnNode node)
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer2::trace_expression(MtMethodInstance* inst, MnNode node, TraceAction action) {
+CHECK_RETURN Err MtTracer2::trace_expression(MtCallInstance* inst, MnNode node, TraceAction action) {
   Err err;
 
   switch (node.sym) {
@@ -237,7 +222,7 @@ CHECK_RETURN Err MtTracer2::trace_expression(MtMethodInstance* inst, MnNode node
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer2::trace_call(MtMethodInstance* src_inst, MtMethodInstance* dst_inst, MnNode node_call) {
+CHECK_RETURN Err MtTracer2::trace_call(MtCallInstance* src_inst, MtMethodInstance* dst_inst, MnNode node_call) {
   Err err;
 
   if (!dst_inst) {
@@ -254,13 +239,13 @@ CHECK_RETURN Err MtTracer2::trace_call(MtMethodInstance* src_inst, MtMethodInsta
   // module has to pass params to the dest module, we have to bind the params
   // to ports to "call" it.
 
-  src_inst->_call_methods.insert(dst_inst);
-  dst_inst->_called_by.insert(src_inst);
+  src_inst->_method->_call_methods.insert(dst_inst);
+  dst_inst->_called_by.insert(src_inst->_method);
 
-  bool cross_mod_call = src_inst->_module != dst_inst->_module;
+  bool cross_mod_call = src_inst->_method->_module != dst_inst->_module;
 
   auto call_inst = new MtCallInstance("name", "path", nullptr, node_call, dst_inst);
-  src_inst->_calls.push_back(call_inst);
+  src_inst->_method->_calls.push_back(call_inst);
 
   // FIXME - this should also catch calling tick() multiple times inside a single module
 
@@ -288,7 +273,7 @@ CHECK_RETURN Err MtTracer2::trace_call(MtMethodInstance* src_inst, MtMethodInsta
   }
   */
 
-  err << trace_sym_function_definition(dst_inst, call_inst, dst_inst->_method->_node);
+  err << trace_sym_function_definition(call_inst, dst_inst->_method->_node);
 
   //err << dst_inst->_retval->log_action(node_call, ACT_READ);
 
@@ -297,7 +282,7 @@ CHECK_RETURN Err MtTracer2::trace_call(MtMethodInstance* src_inst, MtMethodInsta
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer2::trace_default(MtMethodInstance* inst, MnNode node) {
+CHECK_RETURN Err MtTracer2::trace_default(MtCallInstance* inst, MnNode node) {
   Err err;
   if (!node.is_named()) return err;
 
@@ -329,7 +314,7 @@ CHECK_RETURN Err MtTracer2::trace_default(MtMethodInstance* inst, MnNode node) {
 
 
 
-CHECK_RETURN Err MtTracer2::trace_sym_argument_list(MtMethodInstance* inst, MnNode node) {
+CHECK_RETURN Err MtTracer2::trace_sym_argument_list(MtCallInstance* inst, MnNode node) {
   Err err;
   assert(node.sym == sym_argument_list);
 
@@ -348,7 +333,7 @@ CHECK_RETURN Err MtTracer2::trace_sym_argument_list(MtMethodInstance* inst, MnNo
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer2::trace_sym_assignment_expression(MtMethodInstance* inst, MnNode node) {
+CHECK_RETURN Err MtTracer2::trace_sym_assignment_expression(MtCallInstance* inst, MnNode node) {
   Err err;
 
   //node.dump_tree();
@@ -370,7 +355,7 @@ CHECK_RETURN Err MtTracer2::trace_sym_assignment_expression(MtMethodInstance* in
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer2::trace_sym_binary_expression(MtMethodInstance* inst, MnNode node) {
+CHECK_RETURN Err MtTracer2::trace_sym_binary_expression(MtCallInstance* inst, MnNode node) {
   Err err;
   assert(node.sym == sym_binary_expression);
 
@@ -385,7 +370,7 @@ CHECK_RETURN Err MtTracer2::trace_sym_binary_expression(MtMethodInstance* inst, 
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer2::trace_sym_call_expression(MtMethodInstance* inst, MnNode node) {
+CHECK_RETURN Err MtTracer2::trace_sym_call_expression(MtCallInstance* inst, MnNode node) {
   Err err;
   assert(node.sym == sym_call_expression);
 
@@ -400,13 +385,13 @@ CHECK_RETURN Err MtTracer2::trace_sym_call_expression(MtMethodInstance* inst, Mn
     case sym_field_expression: {
       auto child_name = node_func.get_field(field_argument).name4();
       auto child_func = node_func.get_field(field_field).name4();
-      auto child_inst = inst->_module->get_field(child_name);
+      auto child_inst = inst->_method->_module->get_field(child_name);
       auto child_func_inst = dynamic_cast<MtModuleInstance*>(child_inst)->get_method(child_func);
       err << trace_call(inst, child_func_inst, node);
       break;
     }
     case sym_identifier:
-      err << trace_call(inst, inst->_module->get_method(node_func.text()), node);
+      err << trace_call(inst, inst->_method->_module->get_method(node_func.text()), node);
       break;
 
     case sym_template_function: {
@@ -438,7 +423,7 @@ CHECK_RETURN Err MtTracer2::trace_sym_call_expression(MtMethodInstance* inst, Mn
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer2::trace_sym_case_statement(MtMethodInstance* inst, MnNode node) {
+CHECK_RETURN Err MtTracer2::trace_sym_case_statement(MtCallInstance* inst, MnNode node) {
   Err err;
   assert(node.sym == sym_case_statement);
 
@@ -464,7 +449,7 @@ CHECK_RETURN Err MtTracer2::trace_sym_case_statement(MtMethodInstance* inst, MnN
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer2::trace_sym_compound_statement(MtMethodInstance* inst, MnNode node) {
+CHECK_RETURN Err MtTracer2::trace_sym_compound_statement(MtCallInstance* inst, MnNode node) {
   Err err;
   assert(node.sym == sym_compound_statement);
 
@@ -491,12 +476,12 @@ CHECK_RETURN Err MtTracer2::trace_sym_compound_statement(MtMethodInstance* inst,
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer2::trace_sym_condition_clause(MtMethodInstance* ctx, MnNode node) {
+CHECK_RETURN Err MtTracer2::trace_sym_condition_clause(MtCallInstance* inst, MnNode node) {
   Err err;
   assert(node.sym == sym_condition_clause);
 
   auto node_value = node.get_field(field_value);
-  err << trace_expression(ctx, node_value, ACT_READ);
+  err << trace_expression(inst, node_value, ACT_READ);
 
   return err;
 }
@@ -522,7 +507,7 @@ CHECK_RETURN Err MtTracer2::trace_sym_condition_clause(MtMethodInstance* ctx, Mn
 [000.009]  ���� alternative: number_literal = "0"
 */
 
-CHECK_RETURN Err MtTracer2::trace_sym_conditional_expression(MtMethodInstance* inst, MnNode node) {
+CHECK_RETURN Err MtTracer2::trace_sym_conditional_expression(MtCallInstance* inst, MnNode node) {
   Err err;
   assert(node.sym == sym_conditional_expression);
 
@@ -532,26 +517,26 @@ CHECK_RETURN Err MtTracer2::trace_sym_conditional_expression(MtMethodInstance* i
 
   err << trace_expression(inst, node_cond, ACT_READ);
 
-  inst->_module->visit([=](MtInstance* m) { m->push_state(node_branch_a); });
+  inst->_method->_module->visit([=](MtInstance* m) { m->push_state(node_branch_a); });
   if (!node_branch_a.is_null()) {
     err << trace_expression(inst, node_branch_a, ACT_READ);
   }
-  inst->_module->visit([=](MtInstance* m) { m->swap_state(node_branch_b); });
+  inst->_method->_module->visit([=](MtInstance* m) { m->swap_state(node_branch_b); });
   if (!node_branch_b.is_null()) {
     err << trace_expression(inst, node_branch_b, ACT_READ);
   }
-  inst->_module->visit([=](MtInstance* m) { m->merge_state(MnNode::null); });
+  inst->_method->_module->visit([=](MtInstance* m) { m->merge_state(MnNode::null); });
 
   return err;
 }
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer2::trace_sym_declaration(MtMethodInstance* inst, MnNode node) {
+CHECK_RETURN Err MtTracer2::trace_sym_declaration(MtCallInstance* inst, MnNode node) {
   Err err;
   assert(node.sym == sym_declaration);
 
-  inst->_scope_stack.back().insert(node.name4());
+  inst->_method->_scope_stack.back().insert(node.name4());
 
   auto node_type = node.get_field(field_type);
   auto node_decl = node.get_field(field_declarator);
@@ -563,15 +548,15 @@ CHECK_RETURN Err MtTracer2::trace_sym_declaration(MtMethodInstance* inst, MnNode
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer2::trace_sym_field_expression(MtMethodInstance* inst, MnNode node, TraceAction action) {
+CHECK_RETURN Err MtTracer2::trace_sym_field_expression(MtCallInstance* inst, MnNode node, TraceAction action) {
   Err err;
   assert(node.sym == sym_field_expression);
 
 
   auto path = split_field(node.text());
 
-  auto f = inst->_module->get_field(path[0]);
-  auto p = inst->get_param(path[0]);
+  auto f = inst->_method->_module->get_field(path[0]);
+  auto p = inst->_method->get_param(path[0]);
 
   MtInstance* r = nullptr;
   if (f) {
@@ -596,7 +581,7 @@ CHECK_RETURN Err MtTracer2::trace_sym_field_expression(MtMethodInstance* inst, M
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer2::trace_sym_for_statement(MtMethodInstance* inst, MnNode node) {
+CHECK_RETURN Err MtTracer2::trace_sym_for_statement(MtCallInstance* inst, MnNode node) {
   Err err;
 
   for (auto c : node) {
@@ -624,7 +609,7 @@ CHECK_RETURN Err MtTracer2::trace_sym_for_statement(MtMethodInstance* inst, MnNo
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer2::trace_sym_function_definition(MtMethodInstance* inst, MtCallInstance* call_inst, MnNode node) {
+CHECK_RETURN Err MtTracer2::trace_sym_function_definition(MtCallInstance* inst, MnNode node) {
   Err err;
   assert(node.sym == sym_function_definition);
 
@@ -637,22 +622,9 @@ CHECK_RETURN Err MtTracer2::trace_sym_function_definition(MtMethodInstance* inst
   return err;
 }
 
-CHECK_RETURN Err MtTracer2::trace_sym_function_definition(MtCallInstance* call_inst, MnNode node) {
-  Err err;
-  assert(node.sym == sym_function_definition);
-
-  auto node_type = node.get_field(field_type);
-  auto node_decl = node.get_field(field_declarator);
-  auto node_body = node.get_field(field_body);
-
-  err << trace_sym_compound_statement(call_inst->_dst_method, node_body);
-
-  return err;
-}
-
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer2::trace_sym_if_statement(MtMethodInstance* inst, MnNode node) {
+CHECK_RETURN Err MtTracer2::trace_sym_if_statement(MtCallInstance* inst, MnNode node) {
   //node.dump_tree();
 
   Err err;
@@ -666,22 +638,22 @@ CHECK_RETURN Err MtTracer2::trace_sym_if_statement(MtMethodInstance* inst, MnNod
 
   err << trace_sym_condition_clause(inst, node_cond);
 
-  inst->_module->visit([=](MtInstance* m) { m->push_state(node_cond); });
+  inst->_method->_module->visit([=](MtInstance* m) { m->push_state(node_cond); });
   if (!node_branch_a.is_null()) {
     err << trace_statement(inst, node_branch_a);
   }
-  inst->_module->visit([=](MtInstance* m) { m->swap_state(MnNode::null); });
+  inst->_method->_module->visit([=](MtInstance* m) { m->swap_state(MnNode::null); });
   if (!node_branch_b.is_null()) {
     err << trace_statement(inst, node_branch_b);
   }
-  inst->_module->visit([=](MtInstance* m) { m->merge_state(MnNode::null); });
+  inst->_method->_module->visit([=](MtInstance* m) { m->merge_state(MnNode::null); });
 
   return err;
 }
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer2::trace_sym_init_declarator(MtMethodInstance* inst, MnNode node) {
+CHECK_RETURN Err MtTracer2::trace_sym_init_declarator(MtCallInstance* inst, MnNode node) {
   Err err;
   assert(node.sym == sym_init_declarator);
 
@@ -692,7 +664,7 @@ CHECK_RETURN Err MtTracer2::trace_sym_init_declarator(MtMethodInstance* inst, Mn
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer2::trace_sym_initializer_list(MtMethodInstance* inst, MnNode node) {
+CHECK_RETURN Err MtTracer2::trace_sym_initializer_list(MtCallInstance* inst, MnNode node) {
   Err err;
   assert(node.sym == sym_initializer_list);
 
@@ -711,7 +683,7 @@ CHECK_RETURN Err MtTracer2::trace_sym_initializer_list(MtMethodInstance* inst, M
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer2::trace_sym_return_statement(MtMethodInstance* inst, MnNode node) {
+CHECK_RETURN Err MtTracer2::trace_sym_return_statement(MtCallInstance* inst, MnNode node) {
   Err err;
   assert(node.sym == sym_return_statement);
 
@@ -732,7 +704,7 @@ CHECK_RETURN Err MtTracer2::trace_sym_return_statement(MtMethodInstance* inst, M
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtTracer2::trace_sym_switch_statement(MtMethodInstance* inst, MnNode node) {
+CHECK_RETURN Err MtTracer2::trace_sym_switch_statement(MtCallInstance* inst, MnNode node) {
   Err err;
   assert(node.sym == sym_switch_statement);
 
@@ -755,19 +727,19 @@ CHECK_RETURN Err MtTracer2::trace_sym_switch_statement(MtMethodInstance* inst, M
   for (const auto& child : body) {
     // skip cases without bodies
     if (child.sym == sym_case_statement && child.named_child_count() > 1) {
-      inst->_module->visit([=](MtInstance* m) { m->push_state(child); });
+      inst->_method->_module->visit([=](MtInstance* m) { m->push_state(child); });
       err << trace_sym_case_statement(inst, child);
-      inst->_module->visit([=](MtInstance* m) { m->swap_state(MnNode::null); });
+      inst->_method->_module->visit([=](MtInstance* m) { m->swap_state(MnNode::null); });
     }
   }
 
   if (has_default) {
-    inst->_module->visit([=](MtInstance* m) { m->pop_state(MnNode::null); });
+    inst->_method->_module->visit([=](MtInstance* m) { m->pop_state(MnNode::null); });
     case_count--;
   }
 
   for (int i = 0; i < case_count; i++) {
-    inst->_module->visit([=](MtInstance* m) { m->merge_state(MnNode::null); });
+    inst->_method->_module->visit([=](MtInstance* m) { m->merge_state(MnNode::null); });
   }
 
   return err;

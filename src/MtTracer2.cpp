@@ -41,11 +41,11 @@ CHECK_RETURN Err MtTracer2::log_action(MtCallInstance* inst, MnNode node, MtInst
   err << target->log_action(node, action);
 
   if (action == ACT_WRITE) {
-    inst->_method->_writes.insert(target);
+    inst->_method_inst->_writes.insert(target);
   }
 
   if (action == ACT_READ) {
-    inst->_method->_reads.insert(target);
+    inst->_method_inst->_reads.insert(target);
   }
 
   return err;
@@ -56,8 +56,8 @@ CHECK_RETURN Err MtTracer2::log_action(MtCallInstance* inst, MnNode node, MtInst
 CHECK_RETURN Err MtTracer2::trace_call(MtCallInstance* call_inst) {
   Err err;
 
-  auto method_inst = call_inst->_method;
-  auto method = call_inst->_method->_method;
+  auto method_inst = call_inst->_method_inst;
+  auto method = call_inst->_method_inst->_method;
 
   auto node_body = method->_node.get_field(field_body);
   if (MtChecker::has_non_terminal_return(node_body)) {
@@ -81,19 +81,19 @@ CHECK_RETURN Err MtTracer2::trace_identifier(MtCallInstance* inst, MnNode node, 
       break;
     case sym_identifier:
     case alias_sym_field_identifier: {
-      MtInstance* field_inst = inst->_method->_module->get_field(node.text());
+      MtInstance* field_inst = inst->_method_inst->_module->get_field(node.text());
       if (field_inst) {
         err << log_action(inst, node, field_inst, action);
         break;
       }
 
-      MtInstance* param_inst = inst->_method->get_param(node.text());
+      MtInstance* param_inst = inst->_method_inst->get_param(node.text());
       if (param_inst) {
         err << log_action(inst, node, param_inst, action);
         break;
       }
 
-      if (inst->_method->has_local(node.text())) {
+      if (inst->_method_inst->has_local(node.text())) {
         //LOG_B("Identifier %s is a local\n", node.text().c_str());
       }
       else {
@@ -239,13 +239,13 @@ CHECK_RETURN Err MtTracer2::trace_call(MtCallInstance* src_inst, MtMethodInstanc
   // module has to pass params to the dest module, we have to bind the params
   // to ports to "call" it.
 
-  src_inst->_method->_call_methods.insert(dst_inst);
-  dst_inst->_called_by.insert(src_inst->_method);
+  src_inst->_method_inst->_call_methods.insert(dst_inst);
+  dst_inst->_called_by.insert(src_inst->_method_inst);
 
-  bool cross_mod_call = src_inst->_method->_module != dst_inst->_module;
+  bool cross_mod_call = src_inst->_method_inst->_module != dst_inst->_module;
 
   auto call_inst = new MtCallInstance("name", "path", nullptr, node_call, dst_inst);
-  src_inst->_method->_calls.push_back(call_inst);
+  src_inst->_method_inst->_calls.push_back(call_inst);
 
   // FIXME - this should also catch calling tick() multiple times inside a single module
 
@@ -385,13 +385,13 @@ CHECK_RETURN Err MtTracer2::trace_sym_call_expression(MtCallInstance* inst, MnNo
     case sym_field_expression: {
       auto child_name = node_func.get_field(field_argument).name4();
       auto child_func = node_func.get_field(field_field).name4();
-      auto child_inst = inst->_method->_module->get_field(child_name);
+      auto child_inst = inst->_method_inst->_module->get_field(child_name);
       auto child_func_inst = dynamic_cast<MtModuleInstance*>(child_inst)->get_method(child_func);
       err << trace_call(inst, child_func_inst, node);
       break;
     }
     case sym_identifier:
-      err << trace_call(inst, inst->_method->_module->get_method(node_func.text()), node);
+      err << trace_call(inst, inst->_method_inst->_module->get_method(node_func.text()), node);
       break;
 
     case sym_template_function: {
@@ -517,15 +517,15 @@ CHECK_RETURN Err MtTracer2::trace_sym_conditional_expression(MtCallInstance* ins
 
   err << trace_expression(inst, node_cond, ACT_READ);
 
-  inst->_method->_module->visit([=](MtInstance* m) { m->push_state(node_branch_a); });
+  inst->_method_inst->_module->visit([=](MtInstance* m) { m->push_state(node_branch_a); });
   if (!node_branch_a.is_null()) {
     err << trace_expression(inst, node_branch_a, ACT_READ);
   }
-  inst->_method->_module->visit([=](MtInstance* m) { m->swap_state(node_branch_b); });
+  inst->_method_inst->_module->visit([=](MtInstance* m) { m->swap_state(node_branch_b); });
   if (!node_branch_b.is_null()) {
     err << trace_expression(inst, node_branch_b, ACT_READ);
   }
-  inst->_method->_module->visit([=](MtInstance* m) { m->merge_state(MnNode::null); });
+  inst->_method_inst->_module->visit([=](MtInstance* m) { m->merge_state(MnNode::null); });
 
   return err;
 }
@@ -536,7 +536,7 @@ CHECK_RETURN Err MtTracer2::trace_sym_declaration(MtCallInstance* inst, MnNode n
   Err err;
   assert(node.sym == sym_declaration);
 
-  inst->_method->_scope_stack.back().insert(node.name4());
+  inst->_method_inst->_scope_stack.back().insert(node.name4());
 
   auto node_type = node.get_field(field_type);
   auto node_decl = node.get_field(field_declarator);
@@ -555,8 +555,8 @@ CHECK_RETURN Err MtTracer2::trace_sym_field_expression(MtCallInstance* inst, MnN
 
   auto path = split_field(node.text());
 
-  auto f = inst->_method->_module->get_field(path[0]);
-  auto p = inst->_method->get_param(path[0]);
+  auto f = inst->_method_inst->_module->get_field(path[0]);
+  auto p = inst->_method_inst->get_param(path[0]);
 
   MtInstance* r = nullptr;
   if (f) {
@@ -638,15 +638,15 @@ CHECK_RETURN Err MtTracer2::trace_sym_if_statement(MtCallInstance* inst, MnNode 
 
   err << trace_sym_condition_clause(inst, node_cond);
 
-  inst->_method->_module->visit([=](MtInstance* m) { m->push_state(node_cond); });
+  inst->_method_inst->_module->visit([=](MtInstance* m) { m->push_state(node_cond); });
   if (!node_branch_a.is_null()) {
     err << trace_statement(inst, node_branch_a);
   }
-  inst->_method->_module->visit([=](MtInstance* m) { m->swap_state(MnNode::null); });
+  inst->_method_inst->_module->visit([=](MtInstance* m) { m->swap_state(MnNode::null); });
   if (!node_branch_b.is_null()) {
     err << trace_statement(inst, node_branch_b);
   }
-  inst->_method->_module->visit([=](MtInstance* m) { m->merge_state(MnNode::null); });
+  inst->_method_inst->_module->visit([=](MtInstance* m) { m->merge_state(MnNode::null); });
 
   return err;
 }
@@ -727,19 +727,19 @@ CHECK_RETURN Err MtTracer2::trace_sym_switch_statement(MtCallInstance* inst, MnN
   for (const auto& child : body) {
     // skip cases without bodies
     if (child.sym == sym_case_statement && child.named_child_count() > 1) {
-      inst->_method->_module->visit([=](MtInstance* m) { m->push_state(child); });
+      inst->_method_inst->_module->visit([=](MtInstance* m) { m->push_state(child); });
       err << trace_sym_case_statement(inst, child);
-      inst->_method->_module->visit([=](MtInstance* m) { m->swap_state(MnNode::null); });
+      inst->_method_inst->_module->visit([=](MtInstance* m) { m->swap_state(MnNode::null); });
     }
   }
 
   if (has_default) {
-    inst->_method->_module->visit([=](MtInstance* m) { m->pop_state(MnNode::null); });
+    inst->_method_inst->_module->visit([=](MtInstance* m) { m->pop_state(MnNode::null); });
     case_count--;
   }
 
   for (int i = 0; i < case_count; i++) {
-    inst->_method->_module->visit([=](MtInstance* m) { m->merge_state(MnNode::null); });
+    inst->_method_inst->_module->visit([=](MtInstance* m) { m->merge_state(MnNode::null); });
   }
 
   return err;

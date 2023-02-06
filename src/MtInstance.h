@@ -262,12 +262,22 @@ struct MtMethodInstance : public MtInstance {
 //------------------------------------------------------------------------------
 
 struct MtCallInstance : public MtInstance {
-  MtCallInstance(const std::string& name, const std::string& path, MtCallInstance* parent_call, MnNode call_node, MtMethodInstance* dst_method);
+  MtCallInstance(
+    const std::string& name,
+    const std::string& path,
+    MtCallInstance* caller,
+    MnNode call_node,
+    MtMethodInstance* method);
   virtual ~MtCallInstance();
 
+  virtual void dump();
+
   MnNode _call_node;
-  MtCallInstance* _parent_call;
-  MtMethodInstance* _method;
+
+  MtCallInstance* _caller;
+  std::vector<MtCallInstance> _calls;
+
+  MtMethodInstance* _method_inst;
   std::vector<MtInstance*> _params;
   MtInstance* _retval = nullptr;
 
@@ -275,7 +285,6 @@ struct MtCallInstance : public MtInstance {
   // MtInstance
   virtual CHECK_RETURN Err sanity_check();
   virtual CHECK_RETURN Err assign_types();
-  virtual void dump();
   virtual void reset_state();
   virtual void visit(const inst_visitor& v);
   virtual MtInstance* resolve(const std::vector<std::string>& path, int index);

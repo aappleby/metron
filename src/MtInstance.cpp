@@ -772,13 +772,19 @@ CHECK_RETURN Err MtMethodInstance::merge_with_source() {
 // MtCallInstance
 //==============================================================================
 
-MtCallInstance::MtCallInstance(const std::string& name, const std::string& path, MtCallInstance* parent_call, MnNode call_node, MtMethodInstance* dst_method)
+MtCallInstance::MtCallInstance(
+  const std::string& name,
+  const std::string& path,
+  MtCallInstance* caller,
+  MnNode call_node,
+  MtMethodInstance* method
+)
 : MtInstance(name, path),
-  _parent_call(parent_call),
+  _caller(caller),
   _call_node(call_node),
-  _method(dst_method)
+  _method_inst(method)
 {
-  auto m = _method->_method;
+  auto m = _method_inst->_method;
 
   for (auto c : m->param_nodes) {
     _params.push_back(param_node_to_inst(c.name4(), path + "." + c.name4(), c, m->_lib));
@@ -788,9 +794,26 @@ MtCallInstance::MtCallInstance(const std::string& name, const std::string& path,
   }
 }
 
+//----------------------------------------
+
 MtCallInstance::~MtCallInstance() {
 }
 
+//----------------------------------------
+
+void MtCallInstance::dump() {
+  LOG_B("Call %s %s\n", _name.c_str(), _path.c_str());
+
+  LOG_INDENT_SCOPE();
+  for (auto p : _params) {
+    LOG_G("%s: ", p->_name.c_str());
+    p->dump();
+  }
+  if (_retval) {
+    LOG_G("<retval>: ");
+    _retval->dump();
+  }
+}
 
 
 

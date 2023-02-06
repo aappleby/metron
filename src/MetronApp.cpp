@@ -211,24 +211,31 @@ int main(int argc, char** argv) {
 
     MtTracer2 tracer(&lib, root_inst, true);
 
+    std::vector<MtCallInstance*> calls;
+
     for (auto m : root_inst->_methods) {
       auto m2 = m->_method;
       if (m2->is_constructor()) continue;
       if (m2->internal_callers.size()) continue;
 
       LOG_B("Tracing %s\n", m->_name.c_str());
-      {
-        LOG_INDENT_SCOPE();
-        auto call_inst = new MtCallInstance(m->_name, "<top>." + m->_name, nullptr, MnNode::null, m);
+      LOG_INDENT();
+      auto call_inst = new MtCallInstance(m->_name, "<top>." + m->_name, nullptr, MnNode::null, m);
 
-        for (auto p : call_inst->_params) {
-          err << p->log_action(MnNode::null, ACT_WRITE);
-        }
-
-        err << tracer.trace_call(call_inst);
+      for (auto p : call_inst->_params) {
+        err << p->log_action(MnNode::null, ACT_WRITE);
       }
+
+      calls.push_back(call_inst);
+      err << tracer.trace_call(call_inst);
+      LOG_DEDENT();
       LOG_B("Tracing %s done\n", m->_name.c_str());
     }
+
+    LOG_B("Calls:\n");
+    LOG_INDENT();
+    for (auto c : calls) c->dump();
+    LOG_DEDENT();
 
     err << root_inst->assign_types();
     err << root_inst->sanity_check();

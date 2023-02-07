@@ -273,13 +273,20 @@ struct MtCallInstance : public MtInstance {
   virtual void dump();
 
   MnNode _call_node;
-
-  MtCallInstance* _caller;
-  std::vector<MtCallInstance> _calls;
-
-  MtMethodInstance* _method_inst;
   std::vector<MtInstance*> _params;
   MtInstance* _retval = nullptr;
+
+  MtCallInstance* _caller= nullptr;
+  std::vector<MtCallInstance> _calls;
+
+  MtModule* _module = nullptr;
+  MtMethod* _method = nullptr;
+
+  MtModuleInstance* _module_inst = nullptr;
+  MtMethodInstance* _method_inst = nullptr;
+
+  std::set<MtInstance*> _writes;
+  std::set<MtInstance*> _reads;
 
   /*
   // MtInstance

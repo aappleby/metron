@@ -70,7 +70,6 @@ MtInstance* return_node_to_inst(const std::string& name, const std::string& path
 //------------------------------------------------------------------------------
 
 void dump_log(const std::vector<LogEntry>& log) {
-  return;
   for (auto a : log) {
     SourceRange source_range;
     if (a.node) {
@@ -782,15 +781,16 @@ MtCallInstance::MtCallInstance(
 : MtInstance(name, path),
   _caller(caller),
   _call_node(call_node),
+  _module(method->_method->_mod),
+  _method(method->_method),
+  _module_inst(method->_module),
   _method_inst(method)
 {
-  auto m = _method_inst->_method;
-
-  for (auto c : m->param_nodes) {
-    _params.push_back(param_node_to_inst(c.name4(), path + "." + c.name4(), c, m->_lib));
+  for (auto c : _method->param_nodes) {
+    _params.push_back(param_node_to_inst(c.name4(), path + "." + c.name4(), c, _method->_lib));
   }
-  if (m->has_return()) {
-    _retval = return_node_to_inst("<retval>", path + ".<retval>", m->_return_type, m->_lib);
+  if (_method->has_return()) {
+    _retval = return_node_to_inst("<retval>", path + ".<retval>", _method->_return_type, _method->_lib);
   }
 }
 

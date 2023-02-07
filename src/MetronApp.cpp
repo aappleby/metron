@@ -227,7 +227,7 @@ int main(int argc, char** argv) {
       }
 
       calls.push_back(call_inst);
-      err << tracer.trace_call(call_inst);
+      err << tracer.trace_top_call(call_inst);
       LOG_DEDENT();
       LOG_B("Tracing %s done\n", m->_name.c_str());
     }
@@ -238,7 +238,7 @@ int main(int argc, char** argv) {
     LOG_DEDENT();
 
     err << root_inst->assign_types();
-    err << root_inst->sanity_check();
+    //err << root_inst->sanity_check();
     root_inst->dump();
 
     LOG_B("Tracing version 2: done\n");

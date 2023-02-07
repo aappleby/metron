@@ -43,10 +43,12 @@ CHECK_RETURN Err MtTracer2::log_action(MtCallInstance* call, MnNode node, MtInst
 
   if (action == ACT_WRITE) {
     call->_method_inst->_writes.insert(target);
+    call->_writes.insert(target);
   }
 
   if (action == ACT_READ) {
     call->_method_inst->_reads.insert(target);
+    call->_reads.insert(target);
   }
 
   return err;
@@ -79,15 +81,13 @@ CHECK_RETURN Err MtTracer2::trace_identifier(MtCallInstance* call, MnNode node, 
       break;
     case sym_identifier:
     case alias_sym_field_identifier: {
-      MtInstance* field_inst = call->_method_inst->_module->get_field(node.text());
-      if (field_inst) {
+      if (auto field_inst = call->_method_inst->_module->get_field(node.text())) {
         err << log_action(call, node, field_inst, action);
         break;
       }
 
       /*
-      MtInstance* param_inst = call->_method_inst->get_param(node.text());
-      if (param_inst) {
+      if (auto param_inst = call->get_param(node.text())) {
         err << log_action(call, node, param_inst, action);
         break;
       }
@@ -265,6 +265,13 @@ CHECK_RETURN Err MtTracer2::trace_call(MtCallInstance* call, MtMethodInstance* m
   }
   */
 
+  /*
+  for (auto p : new_call->_params) {
+    err << log_action(call, call_node, p, ACT_WRITE);
+  }
+  */
+
+
   if (cross_mod_call) {
 
     /*
@@ -283,6 +290,12 @@ CHECK_RETURN Err MtTracer2::trace_call(MtCallInstance* call, MtMethodInstance* m
   */
 
   err << trace_sym_function_definition(new_call, method->_method->_node);
+
+  /*
+  if (new_call->_retval) {
+    err << new_call->_retval->log_action(call_node, ACT_READ);
+  }
+  */
 
   //err << dst_inst->_retval->log_action(node_call, ACT_READ);
 
@@ -705,8 +718,8 @@ CHECK_RETURN Err MtTracer2::trace_sym_return_statement(MtCallInstance* call, MnN
   err << trace_expression(call, node_value, ACT_READ);
 
   /*
-  if (inst->_retval) {
-    inst->_retval->log_action(node, ACT_WRITE);
+  if (call->_retval) {
+    err << call->_retval->log_action(node, ACT_WRITE);
   }
   */
 

@@ -492,11 +492,7 @@ void MtStructInstance::visit(const inst_visitor& v) {
 
 MtInstance* MtStructInstance::resolve(const std::vector<std::string>& path, int index) {
   if (index == path.size()) return this;
-
-  auto result = get_field(path[index]);
-  if (result) {
-    return result->resolve(path, index + 1);
-  }
+  if (auto f = get_field(path[index])) return f->resolve(path, index + 1);
   return nullptr;
 }
 
@@ -544,37 +540,18 @@ CHECK_RETURN Err MtStructInstance::merge_with_source() {
 MtMethodInstance::MtMethodInstance(const std::string& name, const std::string& path, MtModuleInstance* module, MtMethod* method)
 : MtInstance(name, path), _module(module), _method(method) {
   _name = method->name();
-  /*
-  for (auto c : _method->param_nodes) {
-    _params.push_back(param_node_to_inst(c.name4(), path + "." + c.name4(), c, _method->_lib));
-  }
-  */
-  /*
-  if (method->has_return()) {
-    _retval = return_node_to_inst("<retval>", path + ".<retval>", method->_return_type, _method->_lib);
-  }
-  */
   _scope_stack.resize(1);
 }
 
 //----------------------------------------
 
 MtMethodInstance::~MtMethodInstance() {
-  //for (auto p : _params) delete p;
-  //_params.clear();
-  //delete _retval;
 }
 
 //----------------------------------------
 
 void MtMethodInstance::visit(const inst_visitor& v) {
   MtInstance::visit(v);
-  /*
-  for (auto p : _params) {
-    p->visit(v);
-  }
-  */
-  //if (_retval) _retval->visit(v);
 }
 
 //----------------------------------------
@@ -583,18 +560,6 @@ void MtMethodInstance::dump() {
   LOG_B("Method '%s' @ 0x%04X", _path.c_str(), uint64_t(this) & 0xFFFF);
   LOG(" - %s\n", to_string(_method_type));
   LOG_INDENT_SCOPE();
-  /*
-  for (auto p : _params) {
-    LOG_G("%s: ", p->_name.c_str());
-    p->dump();
-  }
-  */
-  /*
-  if (_retval) {
-    LOG_G("<retval>: ");
-    _retval->dump();
-  }
-  */
 }
 
 //----------------------------------------
@@ -695,8 +660,6 @@ CHECK_RETURN Err MtMethodInstance::assign_types() {
 
 void MtMethodInstance::reset_state() {
   MtInstance::reset_state();
-  //for (auto p : _params) p->reset_state();
-  //if (_retval) _retval->reset_state();
 }
 
 //----------------------------------------
@@ -777,6 +740,20 @@ MtCallInstance::MtCallInstance(
 //----------------------------------------
 
 MtCallInstance::~MtCallInstance() {
+}
+
+//----------------------------------------
+
+MtInstance* MtCallInstance::resolve(const std::vector<std::string>& path, int index) {
+  if (index == path.size()) return this;
+  if (auto p = get_param(path[index])) return p->resolve(path, index+1);
+  return nullptr;
+}
+
+MtInstance* MtCallInstance::get_param(const std::string& name) {
+  for (auto p : _params) if (p->_name == name) return p;
+
+  return nullptr;
 }
 
 //----------------------------------------

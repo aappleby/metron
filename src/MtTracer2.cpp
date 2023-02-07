@@ -565,7 +565,7 @@ CHECK_RETURN Err MtTracer2::trace_sym_field_expression(MtCallInstance* call, MnN
   auto path = split_field(node.text());
 
   auto f = call->_module_inst->get_field(path[0]);
-  //auto p = call->_method_inst->get_param(path[0]);
+  auto p = call->get_param(path[0]);
 
   MtInstance* r = nullptr;
   if (f) {

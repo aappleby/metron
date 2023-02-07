@@ -266,6 +266,9 @@ struct MtCallInstance : public MtInstance {
   virtual ~MtCallInstance();
 
   virtual void dump();
+  virtual MtInstance* resolve(const std::vector<std::string>& path, int index);
+
+  MtInstance* get_param(const std::string& name);
 
   MnNode _call_node;
   std::vector<MtInstance*> _params;
@@ -289,7 +292,6 @@ struct MtCallInstance : public MtInstance {
   virtual CHECK_RETURN Err assign_types();
   virtual void reset_state();
   virtual void visit(const inst_visitor& v);
-  virtual MtInstance* resolve(const std::vector<std::string>& path, int index);
   virtual CHECK_RETURN Err merge_with_source();
 
   //----------

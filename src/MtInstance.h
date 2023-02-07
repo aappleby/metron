@@ -216,12 +216,9 @@ struct MtMethodInstance : public MtInstance {
   virtual void dump();
   virtual void reset_state();
   virtual void visit(const inst_visitor& v);
-  virtual MtInstance* resolve(const std::vector<std::string>& path, int index);
   virtual CHECK_RETURN Err merge_with_source();
 
   //----------
-
-  MtInstance* get_param(const std::string& name);
 
   bool has_local(const std::string& s) {
     for (int i = (int)_scope_stack.size() - 1; i >= 0; i--) {
@@ -248,8 +245,6 @@ struct MtMethodInstance : public MtInstance {
   MethodType _method_type = MT_UNKNOWN;
   MtMethod* _method;
   MtModuleInstance* _module;
-  //std::vector<MtInstance*> _params;
-  //MtInstance* _retval = nullptr;
   std::vector<std::set<std::string>> _scope_stack;
   std::set<MtInstance*> _writes;
   std::set<MtInstance*> _reads;
@@ -277,7 +272,7 @@ struct MtCallInstance : public MtInstance {
   MtInstance* _retval = nullptr;
 
   MtCallInstance* _caller= nullptr;
-  std::vector<MtCallInstance> _calls;
+  std::vector<MtCallInstance*> _calls;
 
   MtModule* _module = nullptr;
   MtMethod* _method = nullptr;

@@ -202,7 +202,7 @@ void MtInstance::dump() {
 }
 
 void MtInstance::dump_log() {
-  ::dump_log(action_log);
+  //::dump_log(action_log);
 }
 
 //----------------------------------------
@@ -693,26 +693,6 @@ CHECK_RETURN Err MtMethodInstance::assign_types() {
 
 //----------------------------------------
 
-MtInstance* MtMethodInstance::get_param(const std::string& name) {
-  //for (auto p : _params) if (p->_name == name) return p;
-  return nullptr;
-}
-
-//----------------------------------------
-
-MtInstance* MtMethodInstance::resolve(const std::vector<std::string>& path, int index) {
-  if (index == path.size()) return this;
-
-  auto param_inst = get_param(path[index]);
-  if (param_inst) {
-    return param_inst->resolve(path, index + 1);
-  }
-
-  return _module->resolve(path, index);
-}
-
-//----------------------------------------
-
 void MtMethodInstance::reset_state() {
   MtInstance::reset_state();
   //for (auto p : _params) p->reset_state();
@@ -802,7 +782,7 @@ MtCallInstance::~MtCallInstance() {
 //----------------------------------------
 
 void MtCallInstance::dump() {
-  LOG_B("Call %s %s\n", _name.c_str(), _path.c_str());
+  LOG_B("Call %s\n", _name.c_str());
 
   LOG_INDENT_SCOPE();
   for (auto p : _params) {
@@ -812,6 +792,9 @@ void MtCallInstance::dump() {
   if (_retval) {
     LOG_G("<retval>: ");
     _retval->dump();
+  }
+  for (auto c : _calls) {
+    c->dump();
   }
 }
 
@@ -875,10 +858,12 @@ void MtModuleInstance::dump() {
     LOG_G("%s: ", f->_name.c_str());
     f->dump();
   }
+  /*
   for (auto m : _methods) {
     LOG_G("%s: ", m->_name.c_str());
     m->dump();
   }
+  */
 }
 
 //----------------------------------------

@@ -4,6 +4,7 @@
 #include "MtChecker.h"
 #include "MtField.h"
 #include "MtMethod.h"
+#include "MtModule.h"
 #include "MtNode.h"
 
 //------------------------------------------------------------------------------
@@ -84,11 +85,13 @@ CHECK_RETURN Err MtTracer2::trace_identifier(MtCallInstance* call, MnNode node, 
         break;
       }
 
+      /*
       MtInstance* param_inst = call->_method_inst->get_param(node.text());
       if (param_inst) {
         err << log_action(call, node, param_inst, action);
         break;
       }
+      */
 
       if (call->_method_inst->has_local(node.text())) {
         //LOG_B("Identifier %s is a local\n", node.text().c_str());
@@ -230,7 +233,7 @@ CHECK_RETURN Err MtTracer2::trace_call(MtCallInstance* call, MtMethodInstance* m
     return err;
   }
 
-  if (!call) return ERR("src_inst is null");
+  if (!call) return ERR("parent call is null");
 
   // If the source and dest functions are not in the same module and the source
   // module has to pass params to the dest module, we have to bind the params
@@ -241,8 +244,17 @@ CHECK_RETURN Err MtTracer2::trace_call(MtCallInstance* call, MtMethodInstance* m
 
   bool cross_mod_call = call->_method_inst->_module != method->_module;
 
-  auto call_inst = new MtCallInstance("name", "path", nullptr, call_node, method);
-  call->_method_inst->_calls.push_back(call_inst);
+  auto new_call = new MtCallInstance(
+    method->_name,
+    call->_path + "." + call->_module->name() + "::" + method->_name,
+    call,
+    call_node,
+    method
+  );
+
+  call->_method_inst->_calls.push_back(new_call);
+
+  call->_calls.push_back(new_call);
 
   // FIXME - this should also catch calling tick() multiple times inside a single module
 
@@ -270,7 +282,7 @@ CHECK_RETURN Err MtTracer2::trace_call(MtCallInstance* call, MtMethodInstance* m
   }
   */
 
-  err << trace_sym_function_definition(call_inst, method->_method->_node);
+  err << trace_sym_function_definition(new_call, method->_method->_node);
 
   //err << dst_inst->_retval->log_action(node_call, ACT_READ);
 
@@ -553,15 +565,17 @@ CHECK_RETURN Err MtTracer2::trace_sym_field_expression(MtCallInstance* call, MnN
   auto path = split_field(node.text());
 
   auto f = call->_module_inst->get_field(path[0]);
-  auto p = call->_method_inst->get_param(path[0]);
+  //auto p = call->_method_inst->get_param(path[0]);
 
   MtInstance* r = nullptr;
   if (f) {
     r = f->resolve(path, 1);
   }
+  /*
   if (p) {
     r = p->resolve(path, 1);
   }
+  */
 
   if (r) {
     err << log_action(call, node, r, action);

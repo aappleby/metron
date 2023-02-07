@@ -15,9 +15,9 @@
       //"args": [/*"-d",*/ "-c", "examples/rvsimple/metron/example_data_memory_bus.h"],
       //"args": [/*"-d",*/ "-c", "examples/rvsimple/metron/singlecycle_ctlpath.h"],
       //"args": [/*"-d",*/ "-c", "tests/metron_bad/basic_reg_rwr.h"],
-      //"args": [/*"-d",*/ "-c", "tests/metron_good/all_func_types.h"],
+      "args": [/*"-d",*/ "-c", "tests/metron_good/all_func_types.h"],
       //"args": [/*"-d",*/ "-c", "examples/rvsimple/metron/toplevel.h"],
-      "args": [/*"-d",*/ "-c", "examples/pong/metron/pong.h"],
+      //"args": [/*"-d",*/ "-c", "examples/pong/metron/pong.h"],
       "setupCommands": [
         { // Display content in STL containers pretty
           "description": "Enable pretty-printing for gdb",

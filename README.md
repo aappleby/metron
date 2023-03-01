@@ -126,7 +126,7 @@ make
 sudo make install
 ```
 
-## Building Nextpnr from source:
+## Building Nextpnr from source (note - requires Icestorm to be installed first):
 ```
 cd ~
 git clone https://github.com/YosysHQ/nextpnr

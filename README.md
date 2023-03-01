@@ -61,11 +61,11 @@ ninja bin/metron
 ## Building everything in the repo:
 The full test suite requires quite a bit of stuff. The versions of Verilator and Yosys available via apt are slightly too old and have some bugs, so build them from source - instructions tested on a clean install of Ubuntu 22.04:
 ```
-#sudo apt install verilator // too old, get verilated_heavy.h error
-#sudo apt install yosys // too old, doesn't like "module uart_hello #(parameter int repeat_msg = 0)"
-sudo apt install iverilog
-sudo apt install nextpnr-ice40
-sudo apt install fpga-icestorm
+#sudo apt install verilator    // too old, get verilated_heavy.h error
+#sudo apt install yosys        // too old, doesn't like "module uart_hello #(parameter int repeat_msg = 0)"
+sudo apt install iverilog      // strongly recommended to build from source
+sudo apt install nextpnr-ice40 // strongly recommended to build from source
+sudo apt install fpga-icestorm // strongly recommended to build from source
 sudo apt install libsdl2-dev
 sudo apt install gcc-riscv64-unknown-elf
 sudo apt install srecord
@@ -99,6 +99,18 @@ sudo apt-get install git perl python3 make autoconf g++ flex bison ccache libgoo
 git clone https://github.com/verilator/verilator
 cd verilator
 autoconf
+./configure
+make -j$(nproc)
+sudo make install
+```
+
+## Building Icarus from source:
+```
+cd ~
+sudo apt install build-essential bison flex gperf libreadline-dev autoconf
+git clone https://github.com/steveicarus/iverilog
+cd iverilog
+sh autoconf.sh
 ./configure
 make -j$(nproc)
 sudo make install

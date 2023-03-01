@@ -64,8 +64,8 @@ The full test suite requires quite a bit of stuff. The versions of Verilator and
 #sudo apt install verilator    // too old, get verilated_heavy.h error
 #sudo apt install yosys        // too old, doesn't like "module uart_hello #(parameter int repeat_msg = 0)"
 sudo apt install iverilog      // strongly recommended to build from source
-sudo apt install nextpnr-ice40 // strongly recommended to build from source
 sudo apt install fpga-icestorm // strongly recommended to build from source
+sudo apt install nextpnr-ice40 // strongly recommended to build from source
 sudo apt install libsdl2-dev
 sudo apt install gcc-riscv64-unknown-elf
 sudo apt install srecord
@@ -112,6 +112,27 @@ git clone https://github.com/steveicarus/iverilog
 cd iverilog
 sh autoconf.sh
 ./configure
+make -j$(nproc)
+sudo make install
+```
+
+## Building Icestorm from source:
+```
+cd ~
+git clone https://github.com/YosysHQ/icestorm
+cd icestorm
+sudo apt install build-essential libftdi-dev
+make
+sudo make install
+```
+
+## Building Nextpnr from source:
+```
+cd ~
+git clone https://github.com/YosysHQ/nextpnr
+cd nextpnr
+sudo apt install cmake libboost-dev libboost-filesystem-dev libboost-thread-dev libboost-program-options-dev libboost-iostreams-dev libboost-dev libeigen3-dev
+cmake . -DARCH=ice40
 make -j$(nproc)
 sudo make install
 ```

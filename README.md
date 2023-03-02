@@ -131,7 +131,7 @@ sudo make install
 cd ~
 git clone https://github.com/YosysHQ/nextpnr
 cd nextpnr
-sudo apt install cmake libboost-dev libboost-filesystem-dev libboost-thread-dev libboost-program-options-dev libboost-iostreams-dev libboost-dev libeigen3-dev
+sudo apt install python3 python3-dev cmake libboost-dev libboost-filesystem-dev libboost-thread-dev libboost-program-options-dev libboost-iostreams-dev libboost-dev libeigen3-dev
 cmake . -DARCH=ice40
 make -j$(nproc)
 sudo make install

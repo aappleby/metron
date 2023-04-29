@@ -206,10 +206,6 @@ def cpp_binary(bin_name, src_files, src_objs=None, deps=None, link_deps=None, **
 
     divider(f"Compile {bin_name}")
 
-    # Tack -I onto the includes
-    #if kwargs["includes"] is not None:
-    #    kwargs["includes"] = ["-I" + path for path in kwargs["includes"]]
-
     for n in src_files:
         obj_name = path.join(obj_dir, swap_ext(n, ".o"))
         ninja.build(outputs=obj_name,
@@ -232,10 +228,6 @@ def cpp_library(lib_name, src_files, src_objs=None, deps=None, **kwargs):
         deps = []
 
     divider(f"Create static library {lib_name}")
-
-    # Tack -I onto the includes
-    #if kwargs["includes"] is not None:
-    #    kwargs["includes"] = ["-I" + path for path in kwargs["includes"]]
 
     for n in src_files:
         obj_name = path.join(obj_dir, swap_ext(n, ".o"))
@@ -434,10 +426,6 @@ def cpp_binary2(bin_name, rule_compile, rule_link, src_files, src_objs, obj_dir,
 
     divider(f"Compile {bin_name} using {rule_compile} and {rule_link}")
 
-    # Tack -I onto the includes
-    #if kwargs["includes"] is not None:
-    #    kwargs["includes"] = ["-I" + path for path in kwargs["includes"]]
-
     for n in src_files:
         obj_name = path.join(obj_dir, swap_ext(n, ".o"))
         ninja.build(outputs=obj_name,
@@ -479,11 +467,6 @@ cpp_binary2(
     src_objs=treesitter_objs_wasi,
     obj_dir = "wasm/obj",
     includes=base_includes
-    #[
-    #    ".",
-    #    "src",
-    #    "symlinks/tree-sitter/lib/include"
-    #],
 )
 
 # ------------------------------------------------------------------------------
@@ -509,7 +492,6 @@ def build_j1():
         src_files=[
             "examples/j1/main.cpp",
         ],
-        #includes=["src"],
         includes=base_includes,
         src_objs=[],
         link_deps=["bin/libmetron.a"],
@@ -545,7 +527,6 @@ def build_uart():
         src_files=[
             "examples/uart/main.cpp",
         ],
-        #includes=["src"],
         includes=base_includes,
         link_deps=["bin/libmetron.a"],
     )

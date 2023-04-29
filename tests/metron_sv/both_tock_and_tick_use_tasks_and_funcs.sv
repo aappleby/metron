@@ -13,7 +13,7 @@ module Module (
   // tock() ports
   input int tock_z
 );
-/*public:*/
+/*public*/
 
 
   always_comb begin : tock
@@ -34,7 +34,7 @@ module Module (
     public_func = my_reg1 + private_func(x);
   endfunction
 
-/*private:*/
+/*private*/
 
   always_ff @(posedge clock) begin : tick
     private_task(private_func(tick_w));

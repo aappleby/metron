@@ -11,7 +11,7 @@ module Module (
   // test() ports
   output logic[7:0] test_ret
 );
-/*public:*/
+/*public*/
 
   always_comb begin : test
     test_ret = `MY_OTHER_CONSTANT;

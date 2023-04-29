@@ -11,7 +11,7 @@ module Module (
   // test3() ports
   output logic[7:0] test3_ret
 );
-/*public:*/
+/*public*/
 
   always_comb begin : test1
     test1_ret = 'x;

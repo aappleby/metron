@@ -35,7 +35,7 @@ module TilelinkDevice (
   // output signals
   output tilelink_d tld
 );
-/*public:*/
+/*public*/
 
   initial begin
     test_reg = 0;
@@ -72,7 +72,7 @@ module TilelinkDevice (
     end
   end
 
-/*private:*/
+/*private*/
   logic[31:0] test_reg;
   logic  oe;
 endmodule
@@ -87,7 +87,7 @@ module TilelinkCPU (
   // output signals
   output tilelink_a tla
 );
-/*public:*/
+/*public*/
 
 
   initial begin
@@ -117,7 +117,7 @@ module TilelinkCPU (
     end
   end
 
-/*private:*/
+/*private*/
   logic[31:0] addr;
   logic[31:0] data;
 endmodule
@@ -128,7 +128,7 @@ module Top (
   // global clock
   input logic clock
 );
-/*public:*/
+/*public*/
   always_comb begin : tock
 
     cpu_tld = dev_tld;

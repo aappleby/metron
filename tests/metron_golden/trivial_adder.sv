@@ -8,7 +8,7 @@ module Adder (
   input logic[7:0] add_b,
   output logic[7:0] add_ret
 );
-/*public:*/
+/*public*/
 
   always_comb begin : add
     add_ret = add_a + add_b;

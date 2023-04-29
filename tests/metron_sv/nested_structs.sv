@@ -16,7 +16,7 @@ module Module (
   // output signals
   output OuterStruct s
 );
-/*public:*/
+/*public*/
 
 
   always_comb begin : func1

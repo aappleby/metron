@@ -7,7 +7,7 @@ module Submod1 (
   input logic[7:0] add_one_a,
   output logic[7:0] add_one_ret
 );
-/*public:*/
+/*public*/
   always_comb begin : add_one
     add_one_ret = add_one_a + 1;
   end
@@ -18,7 +18,7 @@ module Submod2 (
   input logic[7:0] add_two_a,
   output logic[7:0] add_two_ret
 );
-/*public:*/
+/*public*/
   always_comb begin : add_two
     add_two_ret = add_two_a + 1;
   end
@@ -29,7 +29,7 @@ module Module (
   input logic[7:0] tock_old_counter,
   output logic[7:0] tock_ret
 );
-/*public:*/
+/*public*/
 
   always_comb begin : tock
     logic[7:0] new_counter;
@@ -40,7 +40,7 @@ module Module (
     tock_ret = new_counter;
   end
 
-/*private:*/
+/*private*/
 
   Submod1 submod1(
     // add_one() ports

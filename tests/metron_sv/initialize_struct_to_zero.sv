@@ -8,7 +8,7 @@ typedef struct packed {
 
 module Module (
 );
-/*public:*/
+/*public*/
 
   always_comb begin : tock
     // FIXME fix this later glarghbh

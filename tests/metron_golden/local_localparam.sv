@@ -4,7 +4,7 @@ module Module (
   // func() ports
   output logic[7:0] func_ret
 );
-/*public:*/
+/*public*/
 
   always_comb begin : func
     parameter thing1 = 1;

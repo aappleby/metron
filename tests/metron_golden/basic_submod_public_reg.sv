@@ -8,13 +8,13 @@ module Submod (
   // output registers
   output logic[7:0] sub_reg
 );
-/*public:*/
+/*public*/
 
   always_comb begin : tock
   end
 
 
-/*private:*/
+/*private*/
 
   always_ff @(posedge clock) begin : tick
     sub_reg <= sub_reg + 1;
@@ -28,7 +28,7 @@ module Module (
   // get_submod_reg() ports
   output logic[7:0] get_submod_reg_ret
 );
-/*public:*/
+/*public*/
 
   always_comb begin : get_submod_reg
     get_submod_reg_ret = submod_sub_reg;

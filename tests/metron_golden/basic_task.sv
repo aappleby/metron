@@ -8,13 +8,13 @@ module Module (
   // tock() ports
   output int tock_ret
 );
-/*public:*/
+/*public*/
 
   always_comb begin : tock
     tock_ret = 0;
   end
 
-/*private:*/
+/*private*/
 
   always_ff @(posedge clock) begin : tick
     my_reg <= my_reg + my_reg2 + 3;

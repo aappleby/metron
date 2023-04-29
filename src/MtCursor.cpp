@@ -1670,89 +1670,67 @@ CHECK_RETURN Err MtCursor::emit_anonymous_enum(MnNode n) {
 // enum e { FOO, BAR }; => typedef enum { FOO, BAR } e;
 
 CHECK_RETURN Err MtCursor::emit_simple_enum(MnNode n) {
+
   Err err = emit_ws_to(n);
 
-  MnNode node_lit;
-  MnNode node_name;
+  MnNode node_type = n.get_field(field_type);
+  MnNode node_name = node_type.get_field(field_name);
+  MnNode node_base = node_type.get_field(field_base);
+  MnNode node_body = node_type.get_field(field_body);
 
-  for (auto child : n) {
-    if (child.field == field_type) {
-      node_name = child.get_field(field_name);
-      err << emit_replacement(child, "typedef enum");
-    } else if (child.field == field_default_value) {
-      override_size = 32;
-      err << emit_sym_initializer_list(child);
-      override_size = 0;
-    } else if (child.sym == anon_sym_SEMI) {
-      err << emit_replacement(child, " %s;", node_name.text().c_str());
-    } else if (child.sym == 65535) {
-      // Declaring an enum class with a type is currently broken in TreeSitter.
-      // This broken node contains the type info, pull it out manually.
-      for (auto gchild : child) {
-        if (gchild.sym == anon_sym_COLON) {
-          err << skip_ws();
-          err << skip_over(gchild);
-        } else if (gchild.sym == sym_primitive_type) {
-          err << emit_type(gchild);
-        } else {
-          err << emit_default(gchild);
+  // typedef enum { A1, B1, C1 } simple_enum1;
+
+  err << emit_print("typedef enum ");
+
+  if (node_base) {
+    if (node_base.sym == sym_qualified_identifier) {
+      // enum class sized_enum : logic<8>::BASE { A8 = 0b01, B8 = 0x02, C8 = 3 };
+      auto node_scope = node_base.get_field(field_scope);
+      auto node_type_args = node_scope.get_field(field_arguments);
+
+      int enum_width = 0;
+      for (auto c : node_type_args) {
+        if (c.sym == sym_number_literal) {
+          enum_width = atoi(c.start());
         }
       }
-      cursor = child.end();
-    } else {
-      err << emit_default(child);
+
+      cursor = node_scope.start();
+      err << emit_type(node_scope);
+      err << emit_print(" ");
+      cursor = node_body.start();
+
+      override_size = enum_width;
+      err << emit_sym_enumerator_list(node_body);
+      override_size = 0;
+    }
+    else {
+      cursor = node_base.start();
+      err << emit_type(node_base);
+      err << emit_print(" ");
+      cursor = node_body.start();
+      override_size = 32;
+      err << emit_sym_enumerator_list(node_body);
+      override_size = 0;
     }
   }
-
-  return err << check_done(n);
-}
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtCursor::emit_broken_enum(MnNode n) {
-  Err err = emit_ws_to(sym_field_declaration, n);
-
-  auto node_type = n.get_field(field_type);
-
-  MnNode node_bitfield;
-  for (auto c : n)
-    if (c.sym == sym_bitfield_clause) node_bitfield = c;
-
-  MnNode node_compound;
-  for (auto c : node_bitfield)
-    if (c.sym == sym_compound_literal_expression) node_compound = c;
-
-  auto node_type_args = node_compound.get_field(field_type)
-                            .get_field(field_scope)
-                            .get_field(field_arguments);
-
-  int enum_width = 0;
-  for (auto c : node_type_args) {
-    if (c.sym == sym_number_literal) {
-      enum_width = atoi(c.start());
-    }
+  else {
+    cursor = node_body.start();
+    override_size = 32;
+    err << emit_sym_enumerator_list(node_body);
+    override_size = 0;
   }
 
-  auto node_name = node_type.get_field(field_name);
-  auto node_vals = node_compound.get_field(field_value);
 
-  if (!enum_width) err << ERR("Enum is 0 bits wide?");
-
-  err << emit_print("typedef enum logic[%d:0] ", enum_width - 1);
-
-  override_size = enum_width;
-  push_cursor(node_vals);
-  err << emit_sym_initializer_list(node_vals);
-  pop_cursor(node_vals);
   err << emit_print(" ");
-  override_size = 0;
 
-  push_cursor(node_name);
-  err << emit_identifier(node_name);
-  pop_cursor(node_name);
+  cursor = node_name.start();
+  err << emit_text(node_name);
+
   err << emit_print(";");
 
   cursor = n.end();
+
   return err << check_done(n);
 }
 
@@ -1763,16 +1741,7 @@ CHECK_RETURN Err MtCursor::emit_enum(MnNode n) {
   auto node_type = n.get_field(field_type);
   assert(node_type.sym == sym_enum_specifier);
 
-  // TreeSitter is broken for "enum foo : logic<8>::BASE {}".
-  // Work around it by manually extracting the required field
-  MnNode node_bitfield;
-  for (auto c : n) {
-    if (c.sym == sym_bitfield_clause) node_bitfield = c;
-  };
-
-  if (node_bitfield) {
-    err << emit_broken_enum(n);
-  } else if (node_type.get_field(field_name)) {
+  if (node_type.get_field(field_name)) {
     err << emit_simple_enum(n);
   } else {
     err << emit_anonymous_enum(n);
@@ -3273,6 +3242,11 @@ CHECK_RETURN Err MtCursor::emit_sym_qualified_identifier(MnNode node) {
 
   for (auto child : node) {
     if (child.field == field_scope) {
+
+      // FIXME something weird going on here in the latest treesitter
+      if (child.sym == sym_template_type) {
+      }
+
       if (child.text() == "std") elide_scope = true;
       if (current_mod->get_enum(child.text())) elide_scope = true;
     }

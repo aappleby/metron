@@ -9,7 +9,7 @@
       "program": "${workspaceFolder}/bin/metron",
       //"program": "${workspaceFolder}/bin/examples/rvsimple_vl",
       "cwd": "${workspaceFolder}",
-      "args" : ["-v", "-c", "examples/uart/metron/uart_rx.h"],
+      "args" : ["-v", "-e", "-c", "tests/metron_good/enum_simple.h"],
       //"args": [/*"-d",*/ "-c", "examples/scratch.h"],
       //"args": [/*"-d",*/ "-c", "examples/uart/metron/uart_tx.h"],
       //"args": [/*"-d",*/ "-c", "examples/rvsimple/metron/singlecycle_control.h"],

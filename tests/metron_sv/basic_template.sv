@@ -13,7 +13,7 @@ module Submod (
   parameter WIDTH = 123;
   parameter HEIGHT = 456;
 
-/*public:*/
+/*public*/
 
   always_comb begin : tock
     my_width = (WIDTH)'(100) + tock_dx;
@@ -26,7 +26,7 @@ module Module (
   // tock() ports
   output logic[19:0] tock_ret
 );
-/*public:*/
+/*public*/
 
   always_comb begin : tock
     submodule_tock_dx = 1;

@@ -8,12 +8,12 @@ module Module (
 );
   parameter SOME_CONSTANT = 7;
 
-/*public:*/
+/*public*/
 
   always_comb begin : tock
   end
 
-/*private:*/
+/*private*/
 
   always_ff @(posedge clock) begin : tick
     my_reg <= my_reg + SOME_CONSTANT;

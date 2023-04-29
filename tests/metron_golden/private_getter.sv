@@ -8,7 +8,7 @@ module Module (
   // tock() ports
   output int tock_ret
 );
-/*public:*/
+/*public*/
 
 
   always_comb begin : tock
@@ -16,7 +16,7 @@ module Module (
     tock_ret = my_sig;
   end
 
-/*private:*/
+/*private*/
 
   function int my_getter();
     my_getter = 12;

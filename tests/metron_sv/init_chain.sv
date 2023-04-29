@@ -8,7 +8,7 @@ module Module (
   // tock() ports
   output int tock_ret
 );
-/*public:*/
+/*public*/
   initial begin
     init1();
   end
@@ -17,7 +17,7 @@ module Module (
     tock_ret = 0;
   end
 
-/*private:*/
+/*private*/
 
   always_ff @(posedge clock) begin : tick
     reg1 <= reg1 + 1;

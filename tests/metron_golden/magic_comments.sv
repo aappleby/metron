@@ -9,7 +9,7 @@ module Module (
   // output registers
   output int my_reg
 );
-/*public:*/
+/*public*/
 
   always_ff @(posedge clock) begin : tick
     my_reg <= my_reg + 1;

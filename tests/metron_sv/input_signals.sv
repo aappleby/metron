@@ -16,7 +16,7 @@ module Submod (
   input logic[7:0] tock_i_param,
   output logic[7:0] tock_ret
 );
-/*public:*/
+/*public*/
 
 
   always_comb begin : tock
@@ -24,7 +24,7 @@ module Submod (
     tock_ret = o_signal + 7;
   end
 
-/*private:*/
+/*private*/
 
   always_ff @(posedge clock) begin : tick
     o_reg <= o_reg + o_signal;
@@ -37,7 +37,7 @@ module Module (
   // output registers
   output logic[7:0] my_reg
 );
-/*public:*/
+/*public*/
 
   always_comb begin : tock
     logic[7:0] submod_return;
@@ -48,7 +48,7 @@ module Module (
   end
 
 
-/*private:*/
+/*private*/
 
   always_ff @(posedge clock) begin : tick
     my_reg <= my_reg + my_sig - 2;

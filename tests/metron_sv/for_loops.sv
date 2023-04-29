@@ -6,7 +6,7 @@ module Module (
   // loop2() ports
   output int loop2_ret
 );
-  /*public:*/
+  /*public*/
 
   // decl in for
   always_comb begin : loop1

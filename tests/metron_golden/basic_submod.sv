@@ -6,12 +6,12 @@ module Submod (
   // global clock
   input logic clock
 );
-/*public:*/
+/*public*/
 
   always_comb begin : tock
   end
 
-/*private:*/
+/*private*/
 
   always_ff @(posedge clock) begin : tick
     sub_reg <= sub_reg + 1;
@@ -24,7 +24,7 @@ module Module (
   // global clock
   input logic clock
 );
-/*public:*/
+/*public*/
 
   always_comb begin : tock
   end

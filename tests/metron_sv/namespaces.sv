@@ -17,7 +17,7 @@ module Module (
   // tock() ports
   output int tock_ret
 );
-/*public:*/
+/*public*/
 
 
   always_comb begin : tock

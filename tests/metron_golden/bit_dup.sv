@@ -6,7 +6,7 @@ module Module (
   // test_dup4() ports
   output int test_dup4_ret
 );
-/*public:*/
+/*public*/
 
   always_comb begin : test_dup1
     logic a1;

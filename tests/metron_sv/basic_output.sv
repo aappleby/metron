@@ -8,7 +8,7 @@ module Module (
   // get_reg() ports
   output logic[6:0] get_reg_ret
 );
-/*public:*/
+/*public*/
 
   always_comb begin : get_reg
     get_reg_ret = my_reg;
@@ -18,7 +18,7 @@ module Module (
   end
 
 
-/*private:*/
+/*private*/
 
   always_ff @(posedge clock) begin : tick
     my_reg <= my_reg + 1;

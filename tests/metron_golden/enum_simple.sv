@@ -22,7 +22,7 @@ module Module (
   // test1() ports
   output int test1_ret
 );
- /*public:*/
+ /*public*/
   typedef enum { A1, B1, C1 } simple_enum1;
   typedef enum { A2 = 32'b01, B2 = 32'h02, C2 = 32'd3 } simple_enum2;
 
@@ -32,7 +32,7 @@ module Module (
   typedef enum { A5, B5, C5 } enum_class1;
   typedef enum { A6 = 32'b01, B6 = 32'h02, C6 = 32'd3 } enum_class2;
 
-  // This is currently broken in TreeSitter
+  // These should work in TreeSitter now
   typedef enum int { A7 = 32'b01, B7 = 32'h02, C7 = 32'd3 } typed_enum;
   typedef enum logic[7:0] { A8 = 8'b01, B8 = 8'h02, C8 = 8'd3 } sized_enum;
 

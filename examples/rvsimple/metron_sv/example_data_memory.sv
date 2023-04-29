@@ -21,18 +21,18 @@ module example_data_memory (
   // output signals
   output logic[31:0] q
 );
- /*public:*/
+ /*public*/
 
- /*private:*/
+ /*private*/
   (* nomem2reg *)
   logic[31:0] mem[2**(rv_config::DATA_BITS - 2)];
 
- /*public:*/
+ /*public*/
   always_comb begin : tock
     q = mem[address];
   end
 
- /*private:*/
+ /*private*/
   always_ff @(posedge clock) begin : tick
     if (wren) begin
       logic[31:0] mask;
@@ -47,7 +47,7 @@ module example_data_memory (
     end
   end
 
- /*public:*/
+ /*public*/
   parameter filename = "";
   initial begin
     if (filename) $readmemh(filename, mem);

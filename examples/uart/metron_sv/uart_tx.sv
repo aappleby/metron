@@ -21,7 +21,7 @@ module uart_tx (
 );
   parameter cycles_per_bit = 4;
 
-/*public:*/
+/*public*/
   initial begin
     bit_delay = bit_delay_max;
     bit_count = bit_count_max;
@@ -84,7 +84,7 @@ module uart_tx (
     end
   end
 
-/*private:*/
+/*private*/
 
   // We wait {cycles_per_bit} cycles between sending bits.
   localparam int bit_delay_width = $clog2(cycles_per_bit);

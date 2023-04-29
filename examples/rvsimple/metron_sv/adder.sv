@@ -19,7 +19,7 @@ module adder (
 );
   parameter WIDTH = 32;
 
- /*public:*/
+ /*public*/
 
   always_comb begin : tock result = operand_a + operand_b; end
 endmodule

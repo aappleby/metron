@@ -26,7 +26,7 @@ module multiplexer8 (
 );
   parameter WIDTH = 32;
 
- /*public:*/
+ /*public*/
 
   always_comb begin : tock
     // clang-format off

@@ -3,9 +3,9 @@
 #include "Platform.h"
 #include "Tests.h"
 #include "Vtoplevel.h"
-#include "submodules/CLI11/include/CLI/App.hpp"
-#include "submodules/CLI11/include/CLI/Config.hpp"
-#include "submodules/CLI11/include/CLI/Formatter.hpp"
+#include "CLI11/include/CLI/App.hpp"
+#include "CLI11/include/CLI/Config.hpp"
+#include "CLI11/include/CLI/Formatter.hpp"
 
 //------------------------------------------------------------------------------
 

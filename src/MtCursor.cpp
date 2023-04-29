@@ -32,6 +32,7 @@ void MtCursor::push_indent(MnNode body) {
          body.sym == sym_field_declaration_list);
 
   auto n = body.first_named_child().node;
+
   if (ts_node_is_null(n)) {
     indent_stack.push_back("");
     return;
@@ -40,6 +41,11 @@ void MtCursor::push_indent(MnNode body) {
   if (ts_node_symbol(n) == sym_access_specifier) {
     n = ts_node_next_sibling(n);
   }
+
+  if (ts_node_symbol(n) == anon_sym_COLON) {
+    n = ts_node_next_sibling(n);
+  }
+
   const char* begin = &current_source->source[ts_node_start_byte(n)] - 1;
   const char* end = &current_source->source[ts_node_start_byte(n)];
 
@@ -2574,6 +2580,10 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n, bool is_str
         break;
       case sym_access_specifier:
         err << comment_out(child);
+        break;
+      case anon_sym_COLON:
+        // The latest tree sitter is not putting this in with the access specifier...
+        err << skip_over(child);
         break;
       case sym_field_declaration:
         err << emit_sym_field_declaration(child);

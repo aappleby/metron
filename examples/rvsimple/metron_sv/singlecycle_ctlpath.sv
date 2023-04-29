@@ -30,7 +30,7 @@ module singlecycle_ctlpath (
   output logic[4:0] alu_function,
   output logic[1:0] next_pc_select
 );
- /*public:*/
+ /*public*/
 
 
   always_comb begin : tock_alu_function
@@ -72,7 +72,7 @@ module singlecycle_ctlpath (
 
   //----------------------------------------
 
- /*private:*/
+ /*private*/
   singlecycle_control control(
     // Input signals
     .inst_opcode(control_inst_opcode),

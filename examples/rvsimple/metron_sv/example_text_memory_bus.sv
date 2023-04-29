@@ -17,14 +17,14 @@ module example_text_memory_bus (
   // output signals
   output logic[31:0] read_data
 );
- /*public:*/
+ /*public*/
 
   parameter filename = "";
   initial
   begin
   end
 
- /*private:*/
+ /*private*/
   example_text_memory #(
     // Constructor Parameters
     .filename(filename)
@@ -38,7 +38,7 @@ module example_text_memory_bus (
   logic[31:0] text_memory_q;
 
 
- /*public:*/
+ /*public*/
   always_comb begin : tock_read_data
     logic[31:0] fetched;
     text_memory_address = address[rv_config::TEXT_BITS - 2+1:2];

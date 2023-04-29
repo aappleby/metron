@@ -8,7 +8,7 @@
 #include "MtUtils.h"
 #include "Platform.h"
 #include "TreeSymbols.h"
-#include "submodules/tree-sitter/lib/include/tree_sitter/api.h"
+#include "tree-sitter/lib/include/tree_sitter/api.h"
 
 struct MtSourceFile;
 

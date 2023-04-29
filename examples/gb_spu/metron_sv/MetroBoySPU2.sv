@@ -15,7 +15,7 @@ module MetroBoySPU2 (
   input logic tick_read,
   input logic tick_write
 );
-/*public:*/
+/*public*/
 
   //----------------------------------------
 
@@ -684,7 +684,7 @@ module MetroBoySPU2 (
 
   //----------------------------------------
 
-/*private:*/
+/*private*/
 
   logic[15:0] spu_clock_old;
   logic[7:0]  data_out;

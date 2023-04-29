@@ -34,7 +34,7 @@ module Pong (
   input logic tock_game_in_quad_a,
   input logic tock_game_in_quad_b
 );
- /*public:*/
+ /*public*/
 
   //----------------------------------------
 
@@ -86,7 +86,7 @@ module Pong (
 
   //----------------------------------------
 
- /*private:*/
+ /*private*/
   always_ff @(posedge clock) begin : tick
     logic[9:0] new_px;
     logic[9:0] new_py;

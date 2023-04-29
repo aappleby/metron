@@ -18,16 +18,16 @@ module alu_control (
   // output signals
   output logic[4:0] alu_function
 );
- /*public:*/
+ /*public*/
 
- /*private:*/
+ /*private*/
   logic[4:0] default_funct;
   logic[4:0] secondary_funct;
   logic[4:0] op_funct;
   logic[4:0] op_imm_funct;
   logic[4:0] branch_funct;
 
- /*public:*/
+ /*public*/
   // clang-format off
   always_comb begin : tock_alu_function
     import rv_constants::*;

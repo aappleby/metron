@@ -2,9 +2,9 @@
 
 #include "Platform.h"
 #include "metron/toplevel.h"
-#include "submodules/CLI11/include/CLI/App.hpp"
-#include "submodules/CLI11/include/CLI/Config.hpp"
-#include "submodules/CLI11/include/CLI/Formatter.hpp"
+#include "CLI11/include/CLI/App.hpp"
+#include "CLI11/include/CLI/Config.hpp"
+#include "CLI11/include/CLI/Formatter.hpp"
 #include "tests/Tests.h"
 
 //------------------------------------------------------------------------------

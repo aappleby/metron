@@ -6,7 +6,7 @@
 	],
 	"settings": {
 		"files.exclude": {
-			"submodules": true,
+			//"symlinks": true,
 			"vs": true,
 			"bin": true,
 			"obj": true,

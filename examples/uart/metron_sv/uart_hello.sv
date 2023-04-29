@@ -21,7 +21,7 @@ module uart_hello (
 );
   parameter repeat_msg = 0;
 
-/*public:*/
+/*public*/
   initial begin
     $readmemh("examples/uart/message.hex", memory, 0, 511);
   end
@@ -83,7 +83,7 @@ module uart_hello (
     end
   end
 
-/*private:*/
+/*private*/
   localparam int message_len = 512;
   localparam int cursor_bits = $clog2(message_len);
 

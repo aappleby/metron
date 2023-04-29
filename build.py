@@ -12,10 +12,14 @@ outfile = open("build.ninja", "w+")
 ninja = ninja_syntax.Writer(outfile)
 
 base_includes = [
-    ".",
-    "src",
-    "tests",
-    "/usr/local/share/verilator/include",
+    "-I.",
+    "-I/usr/local/share/verilator/include",
+    "-Isrc",
+    "-Isymlinks",
+    "-Isymlinks/tree-sitter/lib/include",
+    "-Isymlinks/tree-sitter/lib/src",
+    "-Isymlinks/CLI11/include",
+    "-Itests",
 ]
 
 # ------------------------------------------------------------------------------
@@ -203,8 +207,8 @@ def cpp_binary(bin_name, src_files, src_objs=None, deps=None, link_deps=None, **
     divider(f"Compile {bin_name}")
 
     # Tack -I onto the includes
-    if kwargs["includes"] is not None:
-        kwargs["includes"] = ["-I" + path for path in kwargs["includes"]]
+    #if kwargs["includes"] is not None:
+    #    kwargs["includes"] = ["-I" + path for path in kwargs["includes"]]
 
     for n in src_files:
         obj_name = path.join(obj_dir, swap_ext(n, ".o"))
@@ -230,8 +234,8 @@ def cpp_library(lib_name, src_files, src_objs=None, deps=None, **kwargs):
     divider(f"Create static library {lib_name}")
 
     # Tack -I onto the includes
-    if kwargs["includes"] is not None:
-        kwargs["includes"] = ["-I" + path for path in kwargs["includes"]]
+    #if kwargs["includes"] is not None:
+    #    kwargs["includes"] = ["-I" + path for path in kwargs["includes"]]
 
     for n in src_files:
         obj_name = path.join(obj_dir, swap_ext(n, ".o"))
@@ -278,9 +282,9 @@ def build_treesitter():
     divider("TreeSitter libraries")
 
     treesitter_srcs = [
-        "submodules/tree-sitter/lib/src/lib.c",
-        "submodules/tree-sitter-cpp/src/parser.c",
-        "submodules/tree-sitter-cpp/src/scanner.cc",
+        "symlinks/tree-sitter/lib/src/lib.c",
+        "symlinks/tree-sitter-cpp/src/parser.c",
+        "symlinks/tree-sitter-cpp/src/scanner.cc",
     ]
 
     for n in treesitter_srcs:
@@ -289,13 +293,12 @@ def build_treesitter():
             o,
             "compile_c",
             n,
-            includes="-Isubmodules/tree-sitter/lib/include"
+            includes=base_includes
         )
         treesitter_objs.append(o)
 
 # ------------------------------------------------------------------------------
 # Build Metron itself
-
 
 def build_metron_lib():
     cpp_library(
@@ -320,10 +323,7 @@ def build_metron_lib():
             "src/MtUtils.cpp",
             "src/Platform.cpp",
         ],
-        includes=[
-            ".",
-            "submodules/tree-sitter/lib/include"
-        ],
+        includes=base_includes,
         src_objs=treesitter_objs,
     )
 
@@ -336,11 +336,11 @@ def build_metron_app():
         src_files=[
             "src/MetronApp.cpp",
         ],
-        includes=[
-            ".",
-            "bin",
-            "submodules/tree-sitter/lib/include"
-        ],
+        includes=base_includes,
+        #    ".",
+        #    "bin",
+        #    "symlinks/tree-sitter/lib/include"
+        #],
         link_deps=["bin/libmetron.a"],
     )
 
@@ -407,9 +407,9 @@ def build_treesitter_ems():
     divider("TreeSitter libraries emscripten")
 
     treesitter_srcs = [
-        "submodules/tree-sitter/lib/src/lib.c",
-        "submodules/tree-sitter-cpp/src/parser.c",
-        "submodules/tree-sitter-cpp/src/scanner.cc",
+        "symlinks/tree-sitter/lib/src/lib.c",
+        "symlinks/tree-sitter-cpp/src/parser.c",
+        "symlinks/tree-sitter-cpp/src/scanner.cc",
     ]
 
     for n in treesitter_srcs:
@@ -418,10 +418,7 @@ def build_treesitter_ems():
             o,
             "compile_c_ems",
             n,
-            includes=[
-                "-Isubmodules/tree-sitter/lib/include",
-                "-Isubmodules/tree-sitter/lib/src",
-            ]
+            includes=base_includes
         )
         treesitter_objs_wasi.append(o)
 
@@ -438,8 +435,8 @@ def cpp_binary2(bin_name, rule_compile, rule_link, src_files, src_objs, obj_dir,
     divider(f"Compile {bin_name} using {rule_compile} and {rule_link}")
 
     # Tack -I onto the includes
-    if kwargs["includes"] is not None:
-        kwargs["includes"] = ["-I" + path for path in kwargs["includes"]]
+    #if kwargs["includes"] is not None:
+    #    kwargs["includes"] = ["-I" + path for path in kwargs["includes"]]
 
     for n in src_files:
         obj_name = path.join(obj_dir, swap_ext(n, ".o"))
@@ -481,11 +478,12 @@ cpp_binary2(
     ],
     src_objs=treesitter_objs_wasi,
     obj_dir = "wasm/obj",
-    includes=[
-        ".",
-        "src",
-        "submodules/tree-sitter/lib/include"
-    ],
+    includes=base_includes
+    #[
+    #    ".",
+    #    "src",
+    #    "symlinks/tree-sitter/lib/include"
+    #],
 )
 
 # ------------------------------------------------------------------------------
@@ -511,7 +509,8 @@ def build_j1():
         src_files=[
             "examples/j1/main.cpp",
         ],
-        includes=["src"],
+        #includes=["src"],
+        includes=base_includes,
         src_objs=[],
         link_deps=["bin/libmetron.a"],
     )
@@ -530,7 +529,7 @@ def build_gb_spu():
     cpp_binary(
         bin_name="bin/examples/gb_spu",
         src_files=["examples/gb_spu/gb_spu_main.cpp"],
-        includes=base_includes + ["gen/examples/gb_spu"],
+        includes=base_includes + ["-Igen/examples/gb_spu"],
         src_objs=["obj/verilated.o", "obj/verilated_threads.o", gb_spu_vobj],
         deps=[gb_spu_vhdr],
         link_deps=["bin/libmetron.a"],
@@ -546,7 +545,8 @@ def build_uart():
         src_files=[
             "examples/uart/main.cpp",
         ],
-        includes=["src"],
+        #includes=["src"],
+        includes=base_includes,
         link_deps=["bin/libmetron.a"],
     )
 
@@ -563,7 +563,7 @@ def build_uart():
     cpp_binary(
         bin_name="bin/examples/uart_vl",
         src_files=["examples/uart/main_vl.cpp"],
-        includes=base_includes + ["gen/examples/uart"],
+        includes=base_includes + ["-Igen/examples/uart"],
         src_objs=["obj/verilated.o", "obj/verilated_threads.o", uart_vobj],
         deps=[uart_vhdr],
         link_deps=["bin/libmetron.a"],
@@ -648,7 +648,7 @@ def build_rvsimple():
     cpp_binary(
         bin_name="bin/examples/rvsimple_vl",
         src_files=["examples/rvsimple/main_vl.cpp"],
-        includes=base_includes + [vl_root],
+        includes=base_includes + [f"-I{vl_root}"],
         src_objs=["obj/verilated.o", "obj/verilated_threads.o", vl_vobj],
         deps=[vl_vhdr],
         link_deps=["bin/libmetron.a"],
@@ -667,7 +667,7 @@ def build_rvsimple():
     cpp_binary(
         bin_name="bin/examples/rvsimple_ref",
         src_files=["examples/rvsimple/main_ref_vl.cpp"],
-        includes=base_includes + [ref_vl_root],
+        includes=base_includes + [f"-I{ref_vl_root}"],
         src_objs=["obj/verilated.o", "obj/verilated_threads.o", ref_vobj],
         deps=[ref_vhdr],
         link_deps=["bin/libmetron.a"],

@@ -23,13 +23,13 @@ module regfile (
   output logic[31:0] rs1_data,
   output logic[31:0] rs2_data
 );
- /*public:*/
+ /*public*/
 
- /*private:*/
+ /*private*/
   // 32 registers of 32-bit width
   logic[31:0] _register[32];
 
- /*public:*/
+ /*public*/
   // Read ports for rs1 and rs1
   always_comb begin : tock1
     rs1_data = _register[rs1_address];
@@ -41,7 +41,7 @@ module regfile (
 
   always_comb begin : tock  end
 
- /*private:*/
+ /*private*/
   // Write port for rd
   always_ff @(posedge clock) begin : tick
     if (write_enable)

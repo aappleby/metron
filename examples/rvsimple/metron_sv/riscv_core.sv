@@ -28,7 +28,7 @@ module riscv_core (
   output logic bus_write_enable,
   output logic[31:0] pc
 );
- /*public:*/
+ /*public*/
 
 
   always_comb begin : tock_pc
@@ -81,7 +81,7 @@ module riscv_core (
 
   //----------------------------------------
 
- /*private:*/
+ /*private*/
   singlecycle_datapath datapath(
     // Global clock
     .clock(clock),

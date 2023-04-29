@@ -15,7 +15,7 @@
 #include "Platform.h"
 #include "MtStruct.h"
 #include "metron_tools.h"
-#include "submodules/tree-sitter/lib/include/tree_sitter/api.h"
+#include "tree-sitter/lib/include/tree_sitter/api.h"
 
 #pragma warning(disable : 4996)  // unsafe fopen()
 

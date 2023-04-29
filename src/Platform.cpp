@@ -24,7 +24,7 @@
 #endif
 
 #include "TreeSymbols.h"
-#include "submodules/tree-sitter/lib/include/tree_sitter/api.h"
+#include "tree-sitter/lib/include/tree_sitter/api.h"
 
 // KCOV_OFF
 

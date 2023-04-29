@@ -22,7 +22,7 @@ module multiplexer4 (
 );
   parameter WIDTH = 32;
 
- /*public:*/
+ /*public*/
 
   always_comb begin : tock
     case (sel)

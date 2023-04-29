@@ -5,7 +5,7 @@
 #include "Err.h"
 #include "MtNode.h"
 #include "Platform.h"
-#include "submodules/tree-sitter/lib/include/tree_sitter/api.h"
+#include "tree-sitter/lib/include/tree_sitter/api.h"
 
 struct MnNode;
 struct MtModule;

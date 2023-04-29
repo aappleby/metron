@@ -3,7 +3,7 @@
 #define SDL_MAIN_HANDLED
 
 #ifdef _MSC_VER
-#include "SDL/include/SDL.h"
+#include <SDL2/SDL.h>
 #else
 #include <SDL2/SDL.h>
 #endif

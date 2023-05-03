@@ -1824,7 +1824,7 @@ CHECK_RETURN Err MtCursor::emit_type(MnNode node) {
       err << emit_sym_enum_specifier(node);
       break;
     default:
-      err << emit_default(node);
+      err << ERR("Unknown node type in emit_type");
       break;
   }
 
@@ -2069,10 +2069,17 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
   }
   else {
     for (auto c : n) {
-      switch(c.field) {
-        case field_type:       err << emit_type(c); break;
-        case field_declarator: err << emit_declarator(c); break;
-        default:               err << emit_default(c); break;
+      if (c.field == field_type) {
+        err << emit_type(c);
+      }
+      else if (c.field == field_declarator) {
+        err << emit_declarator(c);
+      }
+      else if (c.sym == anon_sym_SEMI) {
+        err << emit_text(c);
+      }
+      else {
+        err << ERR("Unknown node type in field");
       }
     }
     return err << check_done(n);

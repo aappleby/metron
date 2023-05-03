@@ -1,4 +1,4 @@
-#include "metron_tools.h"
+#include "metron/tools/metron_tools.h"
 
 // A submod function can only produce one value per tock(). Trying to use it
 // twice should be an error.

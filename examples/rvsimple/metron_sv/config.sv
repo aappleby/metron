@@ -6,7 +6,7 @@
 `ifndef CONFIG_H
 `define CONFIG_H
 
-`include "metron_tools.sv"
+`include "metron/tools/metron_tools.sv"
 
 package rv_config;
 

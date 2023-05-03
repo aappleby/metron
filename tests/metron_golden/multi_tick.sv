@@ -1,4 +1,4 @@
-`include "metron_tools.sv"
+`include "metron/tools/metron_tools.sv"
 
 // Multiple tick methods are OK as long as they're all called by tock()
 

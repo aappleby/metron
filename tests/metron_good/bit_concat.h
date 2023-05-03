@@ -1,4 +1,4 @@
-#include "metron_tools.h"
+#include "metron/tools/metron_tools.h"
 
 // Concatenating logics should produce logics with correct <N>
 

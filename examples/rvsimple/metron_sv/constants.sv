@@ -6,7 +6,7 @@
 `ifndef CONSTANTS_H
 `define CONSTANTS_H
 
-`include "metron_tools.sv"
+`include "metron/tools/metron_tools.sv"
 
 package rv_constants;
 

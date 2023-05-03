@@ -10,7 +10,7 @@
 `include "constants.sv"
 `include "example_data_memory_bus.sv"
 `include "example_text_memory_bus.sv"
-`include "metron_tools.sv"
+`include "metron/tools/metron_tools.sv"
 `include "riscv_core.sv"
 
 module toplevel (

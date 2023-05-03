@@ -1,4 +1,4 @@
-#include "metron_tools.h"
+#include "metron/tools/metron_tools.h"
 
 // Increment/decrement should be translated into equivalent Verilog, but they
 // do _not_ return the old/new value.

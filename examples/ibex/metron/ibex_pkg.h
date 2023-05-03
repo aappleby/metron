@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #pragma once
-#include "metron_tools.h"
+#include "metron/tools/metron_tools.h"
 
 /**
  * Package with constants used by Ibex
@@ -333,7 +333,7 @@ namespace ibex_pkg {
   };
 
   // ICache constants
-  static const unsigned int ADDR_W           = 32; 
+  static const unsigned int ADDR_W           = 32;
   static const unsigned int BUS_SIZE         = 32;
   static const unsigned int BUS_BYTES        = BUS_SIZE/8;
   static const unsigned int BUS_W            = clog2(BUS_BYTES);
@@ -600,7 +600,7 @@ namespace ibex_pkg {
   // $ opentitan/util/design/gen-lfsr-seed.py --width 32 --seed 2480124384 --prefix ""
   static const int LfsrWidth = 32;
   typedef logic<LfsrWidth> lfsr_seed_t;
-  typedef logic<LfsrWidth> lfsr_perm_t[clog2(LfsrWidth)]; 
+  typedef logic<LfsrWidth> lfsr_perm_t[clog2(LfsrWidth)];
   static const lfsr_seed_t RndCnstLfsrSeedDefault = b32(0xac533bf4);
   static const lfsr_perm_t RndCnstLfsrPermDefault = { b32(0x78a8daed), b32(0xc04fa438), b32(0x2e958152), b32(0x467fd1b1), b32(0x1e35ecba) };
 

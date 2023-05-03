@@ -2,8 +2,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "Platform.h"
-#include "Tests.h"
+#include "metrolib/core/Platform.h"
+#include "metrolib/core/Tests.h"
 #include "metron_vl/Vuart_top.h"
 
 //------------------------------------------------------------------------------
@@ -79,7 +79,7 @@ TestResults test_lockstep(int argc, char** argv) {
   LOG_B("\n");
   LOG_B("========================================\n");
   LOG_B("%d\n", cycle);
-  EXPECT_EQ(vtop.get_checksum_ret, 0x0000b764, "Verilator uart checksum fail");
+  EXPECT_EQ(0x0000b764, vtop.get_checksum_ret, "Verilator uart checksum fail");
 
   TEST_DONE();
 }
@@ -91,16 +91,10 @@ int main(int argc, char** argv) {
 
   //benchmark();
 
-  TestResults results("main");
+  TestResults results;
   results << test_lockstep(argc, argv);
 
-  if (results.test_fail) {
-    printf("Some tests fail.\n");
-    return 1;
-  } else {
-    printf("All tests pass\n");
-    return 0;
-  }
+  return results.show_result();
 }
 
 //------------------------------------------------------------------------------

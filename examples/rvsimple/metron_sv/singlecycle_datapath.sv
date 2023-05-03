@@ -12,7 +12,7 @@
 `include "constants.sv"
 `include "immediate_generator.sv"
 `include "instruction_decoder.sv"
-`include "metron_tools.sv"
+`include "metron/tools/metron_tools.sv"
 `include "multiplexer2.sv"
 `include "multiplexer4.sv"
 `include "multiplexer8.sv"

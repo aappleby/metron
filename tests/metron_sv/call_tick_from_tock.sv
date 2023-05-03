@@ -1,4 +1,4 @@
-`include "metron_tools.sv"
+`include "metron/tools/metron_tools.sv"
 
 // Calling tick() from tock() in the same module should work and should
 // generate bindings for the tick() call.

@@ -12,7 +12,7 @@
  */
 
 #pragma once
-#include "metron_tools.h"
+#include "metron/tools/metron_tools.h"
 #include "ibex_pkg.h"
 
 struct ibex_compressed_decoder {
@@ -26,7 +26,7 @@ struct ibex_compressed_decoder {
   void tock2(bool rst_n, logic<1> valid_i) {
     unused_valid = valid_i;
   }
-  
+
   ////////////////////////
   // Compressed decoder //
   ////////////////////////
@@ -65,7 +65,7 @@ struct ibex_compressed_decoder {
                        b2(0b00), b7(opcode_e::OPCODE_STORE));
             break;
           }
-          
+
           case 0b001:
           case 0b011:
           case 0b100:

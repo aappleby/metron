@@ -1,4 +1,4 @@
-`include "metron_tools.sv"
+`include "metron/tools/metron_tools.sv"
 
 // Port and function arg names can collide, the latter is disambiguated by its
 // function name.

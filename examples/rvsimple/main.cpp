@@ -1,11 +1,11 @@
-#include <stdio.h>
-
-#include "Platform.h"
-#include "metron/toplevel.h"
 #include "CLI11/include/CLI/App.hpp"
 #include "CLI11/include/CLI/Config.hpp"
 #include "CLI11/include/CLI/Formatter.hpp"
-#include "tests/Tests.h"
+#include "metrolib/core/Platform.h"
+#include "metrolib/core/Tests.h"
+#include "metron/toplevel.h"
+
+#include <stdio.h>
 
 //------------------------------------------------------------------------------
 
@@ -58,9 +58,9 @@ TestResults test_instruction(const char* test_name, const int reps,
   auto time_b = timestamp();
   total_time += time_b - time_a;
 
-  if (elapsed_cycles == max_cycles) TEST_FAIL("TIMEOUT\n");
-  if (test_result == 0) TEST_FAIL("FAIL %d @ %d\n", test_result, time);
-  TEST_PASS();
+  EXPECT_NE(max_cycles, elapsed_cycles, "TIMEOUT");
+  EXPECT_NE(0, test_result, "FAIL %d @ %d\n", test_result, time);
+  TEST_DONE();
 }
 
 //------------------------------------------------------------------------------
@@ -82,7 +82,7 @@ int main(int argc, const char** argv) {
   total_time = 0;
 
   LOG_B("Testing...\n");
-  TestResults results("main");
+  TestResults results;
   for (int i = 0; i < 38; i++) {
     results << test_instruction(instructions[i], reps, max_cycles);
   }
@@ -90,5 +90,5 @@ int main(int argc, const char** argv) {
   double rate = double(total_tocks) / double(total_time);
   LOG_B("Sim rate %f mhz\n", rate * 1000.0);
 
-  return results.show_banner();
+  return results.show_result();
 }

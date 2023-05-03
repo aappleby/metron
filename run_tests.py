@@ -63,14 +63,14 @@ def main():
 
     print_b("Checking that all headers in tests/metron_good compile")
     errors += check_commands_good([
-        f"g++ -Isrc --std=gnu++2a -fsyntax-only -c {filename}"
+        f"g++ -I. --std=gnu++2a -fsyntax-only -c {filename}"
         for filename in metron_good
     ])
     print()
 
     print_b("Checking that all headers in tests/metron_bad compile")
     errors += check_commands_good([
-        f"g++ -Isrc --std=gnu++2a -fsyntax-only -c {filename}"
+        f"g++ -I. --std=gnu++2a -fsyntax-only -c {filename}"
         for filename in metron_bad
     ])
     print()
@@ -104,7 +104,7 @@ def main():
     if not options.basic:
         print_b("Checking that all converted files can be parsed by Verilator")
         errors += check_commands_good([
-            f"verilator -Isrc --lint-only {filename}"
+            f"verilator -I. --lint-only {filename}"
             for filename in metron_sv
         ])
         print()
@@ -112,20 +112,20 @@ def main():
         if options.synth:
             print_b("Checking that all converted files can be synthesized by Yosys")
             errors += check_commands_good([
-                f"yosys -q -p 'read_verilog -Isrc -sv {filename}; dump; synth_ice40 -json /dev/null'"
+                f"yosys -q -p 'read_verilog -I. -sv {filename}; dump; synth_ice40 -json /dev/null'"
                 for filename in metron_sv
             ])
         else:
             print_b("Checking that all converted files can be parsed by Yosys")
             errors += check_commands_good([
-                f"yosys -q -p 'read_verilog -Isrc -sv {filename};'"
+                f"yosys -q -p 'read_verilog -I. -sv {filename};'"
                 for filename in metron_sv
             ])
         print()
 
         print_b("Checking that all converted files can be parsed by Icarus")
         errors += check_commands_good([
-            f"iverilog -g2012 -Wall -Isrc -o /dev/null {filename}"
+            f"iverilog -g2012 -Wall -I. -o /dev/null {filename}"
             for filename in metron_sv
         ])
         print()
@@ -139,7 +139,7 @@ def main():
 
         print_b("Running standalone tests")
         errors += check_commands_good([
-            "bin/metron_test",
+            "bin/tests/metron_test",
             "bin/examples/uart",
             "bin/examples/uart_vl",
             "bin/examples/uart_iv",
@@ -324,37 +324,37 @@ def check_commands_bad(commands):
 
 def check_verilator_good(filenames):
     return check_commands_good([
-        f"verilator -Isrc --lint-only {filename}"
+        f"verilator -I. --lint-only {filename}"
         for filename in filenames
     ])
 
 def check_verilator_bad(filenames):
     return check_commands_good([
-        f"verilator -Isrc --lint-only {filename}"
+        f"verilator -I. --lint-only {filename}"
         for filename in filenames
     ])
 
 def check_yosys_good(filenames):
     return check_commands_good([
-        f"yosys -q -p 'read_verilog -Isrc -sv {filename};  dump; synth_ice40 -json /dev/null'"
+        f"yosys -q -p 'read_verilog -I. -sv {filename};  dump; synth_ice40 -json /dev/null'"
         for filename in filenames
     ])
 
 def check_yosys_bad(filenames):
     return check_commands_bad([
-        f"yosys -q -p 'read_verilog -Isrc -sv {filename};  dump; synth_ice40 -json /dev/null'"
+        f"yosys -q -p 'read_verilog -I. -sv {filename};  dump; synth_ice40 -json /dev/null'"
         for filename in filenames
     ])
 
 def check_icarus_good(filenames):
     return check_commands_good([
-        f"iverilog -g2012 -Wall -Isrc -o /dev/null {filename}"
+        f"iverilog -g2012 -Wall -I. -o /dev/null {filename}"
         for filename in filenames
     ])
 
 def check_icarus_bad(filenames):
     return check_commands_bad([
-        f"iverilog -g2012 -Wall -Isrc -o /dev/null {filename}"
+        f"iverilog -g2012 -Wall -I. -o /dev/null {filename}"
         for filename in filenames
     ])
 
@@ -395,7 +395,7 @@ def build_lockstep(filename):
     test_obj = f"obj/{mt_root}/{test_name}.o"
     test_bin = f"bin/{mt_root}/{test_name}"
 
-    includes = f"-I. -Isrc -I{sv_root} -I/usr/local/share/verilator/include"
+    includes = f"-I. -Isymlinks -I{sv_root} -I/usr/local/share/verilator/include"
 
     errors = 0
 

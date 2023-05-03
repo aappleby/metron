@@ -9,7 +9,7 @@
 `include "config.sv"
 `include "constants.sv"
 `include "example_data_memory.sv"
-`include "metron_tools.sv"
+`include "metron/tools/metron_tools.sv"
 
 module example_data_memory_bus (
   // global clock

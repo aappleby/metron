@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "Tests.h"
+#include "metrolib/core/Tests.h"
 
 #define STRINGIZE1(M) #M
 #define STRINGIZE2(M) STRINGIZE1(M)
@@ -38,5 +38,5 @@ TestResults test_lockstep() {
 
 int main(int argc, char** argv) {
   TestResults results = test_lockstep();
-  return results.test_fail ? -1 : 0;
+  return results.show_result();
 }

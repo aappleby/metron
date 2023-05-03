@@ -6,7 +6,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include "metron_tools.h"
+#include "metron/tools/metron_tools.h"
 
 namespace rv_config {
 

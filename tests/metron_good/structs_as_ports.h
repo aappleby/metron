@@ -1,4 +1,4 @@
-#include "metron_tools.h"
+#include "metron/tools/metron_tools.h"
 
 // Structs can be used as input/output ports to submodules.
 // ...but they have to be public member variables because Yosys...

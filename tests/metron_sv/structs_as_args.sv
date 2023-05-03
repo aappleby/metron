@@ -1,4 +1,4 @@
-`include "metron_tools.sv"
+`include "metron/tools/metron_tools.sv"
 
 // Passing structs to functions that turn into always_comb or always_ff
 // should prepend the function name to the struct name.

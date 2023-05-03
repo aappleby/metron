@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
 #if 0
 #include <stdio.h>
 
-#include "Platform.h"
+#include "metrolib/core/Platform.h"
 #include "metron/uart_top.h"
 
 void benchmark() {
@@ -90,8 +90,8 @@ int main(int argc, char** arv) {
 #include <stdint.h>
 #include <stdio.h>
 
-#include "Platform.h"
-#include "Tests.h"
+#include "metrolib/core/Platform.h"
+#include "metrolib/core/Tests.h"
 #include "metron_vl/Vuart_top.h"
 
 //------------------------------------------------------------------------------
@@ -167,7 +167,7 @@ TestResults test_lockstep(int argc, char** argv) {
   LOG_B("\n");
   LOG_B("========================================\n");
   LOG_B("%d\n", cycle);
-  EXPECT_EQ(vtop.get_checksum_ret, 0x0000b764, "Verilator uart checksum fail");
+  EXPECT_EQ(0x0000b764, vtop.get_checksum_ret, "Verilator uart checksum fail");
 
   TEST_DONE();
 }
@@ -177,17 +177,12 @@ TestResults test_lockstep(int argc, char** argv) {
 int main(int argc, char** argv) {
   printf("Running Verilated Metron uart test\n");
 
-  TestResults results("main");
+  TestResults results;
   results << test_lockstep(argc, argv);
-  if (results.test_fail) {
-    printf("Some tests fail.\n");
-  } else {
-    printf("All tests pass\n");
-  }
 
   //benchmark();
 
-  return 0;
+  return results.show_result();
 }
 
 //------------------------------------------------------------------------------

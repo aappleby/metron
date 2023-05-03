@@ -8,7 +8,7 @@
 
 `include "config.sv"
 `include "constants.sv"
-`include "metron_tools.sv"
+`include "metron/tools/metron_tools.sv"
 
 module immediate_generator (
   // input signals

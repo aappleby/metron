@@ -1,4 +1,4 @@
-`include "metron_tools.sv"
+`include "metron/tools/metron_tools.sv"
 
 // Yosys doesn't seem to support passing structs as args or returning them from
 // functions. :/

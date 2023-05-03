@@ -17,7 +17,7 @@ public:
     sum = a + b;
   }
 };
-#include "metron_tools.h"
+#include "metron/tools/metron_tools.h"
 
 class Module {
   // Private only so we don't spam our port list for this example
@@ -48,7 +48,7 @@ private:
     return dup<3>(a);
   }
 };
-#include "metron_tools.h"
+#include "metron/tools/metron_tools.h"
 
 //------------------------------------------------------------------------------
 
@@ -76,7 +76,7 @@ private:
   logic<8> memory[256];
   logic<8> data_out;
 };
-#include "metron_tools.h"
+#include "metron/tools/metron_tools.h"
 #include "blockram.h"
 
 //------------------------------------------------------------------------------
@@ -329,7 +329,7 @@ private:
   Adder my_adder;
   Counter my_counter;
 };
-#include "metron_tools.h"
+#include "metron/tools/metron_tools.h"
 
 namespace MyPackage {
   static const int ADDER_WIDTH = 17;
@@ -375,7 +375,7 @@ public:
 class Module {
 public:
 };
-#include "metron_tools.h"
+#include "metron/tools/metron_tools.h"
 
 /*
 640x480x60
@@ -447,7 +447,7 @@ class VGAOut {
 #ifndef UART_HELLO_H
 #define UART_HELLO_H
 
-#include "metron_tools.h"
+#include "metron/tools/metron_tools.h"
 
 //==============================================================================
 
@@ -537,7 +537,7 @@ private:
 #ifndef UART_RX_H
 #define UART_RX_H
 
-#include "metron_tools.h"
+#include "metron/tools/metron_tools.h"
 
 //==============================================================================
 
@@ -630,7 +630,7 @@ public:
 #ifndef UART_TOP_H
 #define UART_TOP_H
 
-#include "metron_tools.h"
+#include "metron/tools/metron_tools.h"
 #include "uart_hello.h"
 #include "uart_rx.h"
 #include "uart_tx.h"
@@ -695,7 +695,7 @@ private:
 #ifndef UART_TX_H
 #define UART_TX_H
 
-#include "metron_tools.h"
+#include "metron/tools/metron_tools.h"
 
 //==============================================================================
 

@@ -3341,8 +3341,11 @@ CHECK_RETURN Err MtCursor::emit_sym_qualified_identifier(MnNode node) {
       err << skip_over(child);
       err << skip_ws();
     }
+    else if (child.sym == anon_sym_COLON_COLON) {
+      err << emit_text(child);
+    }
     else {
-      err << emit_default(child);
+      err << ERR("Unknown node type in sym_qualified_identifier");
     }
   }
 

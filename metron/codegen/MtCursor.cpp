@@ -2910,9 +2910,13 @@ CHECK_RETURN Err MtCursor::emit_sym_namespace_definition(MnNode n) {
         err << skip_over(c);
         break;
       case sym_struct_specifier:
+        err << emit_sym_struct_specifier(c);
+        break;
       case sym_class_specifier:
+        err << emit_sym_class_specifier(c);
+        break;
       case sym_template_declaration:
-        err << emit_type(c);
+        err << emit_sym_template_declaration(c);
         break;
       case sym_namespace_definition:
         err << emit_sym_namespace_definition(c);
@@ -2921,8 +2925,11 @@ CHECK_RETURN Err MtCursor::emit_sym_namespace_definition(MnNode n) {
         // not sure what happens if we see an "int x = 1" in a namespace...
         err << emit_sym_declaration(c, false, false);
         break;
+      case sym_comment:
+        err << emit_sym_comment(c);
+        break;
       default:
-        err << emit_default(c);
+        err << ERR("Unknown node type in sym_namespace_definition");
         break;
     }
   }
@@ -3010,8 +3017,13 @@ CHECK_RETURN Err MtCursor::emit_sym_return(MnNode n) {
       err << emit_expression(c);
     } else if (c.is_identifier()) {
       err << emit_identifier(c);
-    } else {
-      err << emit_default(c);
+    } else if (c.is_literal()) {
+      err << emit_literal(c);
+    } else if (c.sym == anon_sym_SEMI) {
+      err << emit_text(c);
+    }
+    else {
+      err << ERR("Unknown node type in sym_return");
     }
   }
 
@@ -3194,8 +3206,17 @@ CHECK_RETURN Err MtCursor::emit_sym_case_statement(MnNode n) {
       case sym_qualified_identifier:
         err << emit_sym_qualified_identifier(child);
         break;
+      case sym_comment:
+        err << emit_sym_comment(child);
+        break;
+      case sym_number_literal:
+        err << emit_sym_number_literal(child);
+        break;
+      case anon_sym_default:
+        err << emit_text(child);
+        break;
       default:
-        err << emit_default(child);
+        err << ERR("Unknown node type in sym_case_statement");
         break;
     }
   }
@@ -3212,12 +3233,15 @@ CHECK_RETURN Err MtCursor::emit_sym_switch_statement(MnNode node) {
     if (child.sym == anon_sym_switch) {
       err << emit_replacement(child, "case");
     }
-    else if (child.field == field_condition)
+    else if (child.field == field_condition) {
       err << emit_sym_condition_clause(child);
-    else if (child.field == field_body)
+    }
+    else if (child.field == field_body) {
       err << emit_sym_compound_statement(child, "", "endcase");
-    else
-      err << emit_default(child);
+    }
+    else {
+      err << ERR("Unknown node in sym_switch_statement");
+    }
   }
 
   return err << check_done(node);
@@ -3339,6 +3363,35 @@ bool MtCursor::branch_contains_component_call(MnNode n) {
   }
 
   return false;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_literal(MnNode n) {
+  Err err = emit_ws_to(n);
+
+  switch(n.sym) {
+    case sym_string_literal:
+      err << emit_text(n);
+      break;
+    case sym_raw_string_literal:
+      err << ERR("Raw string literals are not supported yet");
+      break;
+    case sym_char_literal:
+      err << emit_text(n);
+      break;
+    case sym_number_literal:
+      err << emit_sym_number_literal(n);
+      break;
+    case sym_user_defined_literal:
+      err << ERR("User-defined literals are not supported yet");
+      break;
+    default:
+      err << ERR("Unknown node type in literal");
+      break;
+  }
+
+  return err << check_done(n);
 }
 
 //------------------------------------------------------------------------------
@@ -4040,36 +4093,20 @@ CHECK_RETURN Err MtCursor::emit_default(MnNode node) {
     }
     return err;
   }
-
-  if (node.is_literal()) {
-    switch (node.sym) {
-      case sym_string_literal:
-        err << emit_text(node);
-        break;
-      case sym_number_literal:
-        err << emit_sym_number_literal(node);
-        break;
-      default:
-        // KCOV_OFF
-        err << ERR("%s : No handler for %s\n", __func__, node.ts_node_type());
-        node.error();
-        break;
-        // KCOV_ON
-    }
-    return err;
+  else if (node.is_literal()) {
+    err << emit_literal(node);
   }
-
-  switch (node.sym) {
-    case sym_comment:
-      err << emit_sym_comment(node);
-      break;
-    default:
-      // KCOV_OFF
-      err << ERR("%s : No handler for %s\n", __func__, node.ts_node_type());
-      node.error();
-      break;
-      // KCOV_ON
+  else if (node.sym == sym_comment) {
+    err << emit_sym_comment(node);
+  }
+  else {
+    // KCOV_OFF
+    err << ERR("%s : No handler for %s\n", __func__, node.ts_node_type());
+    node.error();
+    // KCOV_ON
   }
 
   return err << check_done(node);
 }
+
+//------------------------------------------------------------------------------

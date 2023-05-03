@@ -790,12 +790,7 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
 
     if (!dst_method) return err << ERR("dst_method null\n");
 
-    if (dst_method->has_return()) {
-      err << emit_print("%s_%s_ret", node_component.text().c_str(), dst_method->cname());
-    }
-    else {
-      err << comment_out(func);
-    }
+    err << emit_print("%s_%s_ret", node_component.text().c_str(), dst_method->cname());
     cursor = n.end();
   }
   else {
@@ -2581,8 +2576,11 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n, bool is_str
 CHECK_RETURN Err MtCursor::emit_sym_expression_statement(MnNode node) {
   Err err = emit_ws_to(sym_expression_statement, node);
 
+  // A call expression by itself (not on the right of an assignment) is replaced
+  // by binding statements if it's a submodule call or if the method called
+  // requires bindings.
+
   if (node.child(0).sym == sym_call_expression) {
-    node.dump_tree();
     if (can_omit_call(node.child(0))) {
       err << skip_over(node);
       return err;
@@ -3719,6 +3717,8 @@ CHECK_RETURN Err MtCursor::emit_sym_preproc_ifdef(MnNode n) {
   cursor = n.end();
 #endif
 
+//------------------------------------------------------------------------------
+
 CHECK_RETURN Err MtCursor::emit_sym_preproc_def(MnNode n) {
   Err err = emit_ws_to(sym_preproc_def, n);
 
@@ -3789,8 +3789,12 @@ CHECK_RETURN Err MtCursor::emit_sym_for_statement(MnNode node) {
     else if (child.is_statement()) {
       err << emit_statement(child);
     }
+    else if (!child.is_named()) {
+      err << emit_text(child);
+    }
     else {
-      err << emit_default(child);
+      child.dump_tree();
+      err << ERR("Unknown node type in for statement");
     }
    }
 

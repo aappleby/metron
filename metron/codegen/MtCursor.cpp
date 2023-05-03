@@ -377,7 +377,7 @@ CHECK_RETURN Err MtCursor::emit_sym_initializer_list(MnNode node) {
           err << emit_expression(child);
           break;
         default:
-          err << emit_default(child);
+          err << ERR("Unknown node type in sym_initializer_list");
           break;
       }
     }
@@ -403,8 +403,12 @@ CHECK_RETURN Err MtCursor::emit_sym_preproc_include(MnNode n) {
       err << emit_replacement(child, "`include");
     } else if (child.field == field_path) {
       err << emit_replacement(child, path.c_str());
-    } else {
-      err << emit_default(child);
+    }
+    else if (!child.is_named()) {
+      err << emit_text(child);
+    }
+    else {
+      err << ERR("Unknown node type in sym_preproc_include");
     }
   }
 
@@ -444,8 +448,12 @@ CHECK_RETURN Err MtCursor::emit_sym_assignment_expression(MnNode node) {
         }
 
         break;
-      case field_right: err << emit_expression(child); break;
-      default: err << emit_default(child); break;
+      case field_right:
+        err << emit_expression(child);
+        break;
+      default:
+        err << ERR("Unknown node type in sym_assignment_expression");
+        break;
     }
   }
 
@@ -618,12 +626,15 @@ CHECK_RETURN Err MtCursor::emit_simple_call(MnNode n) {
   Err err;
 
   for (auto c : n) {
-    if (c.field == field_function)
+    if (c.field == field_function) {
       err << emit_identifier(c);
-    else if (c.field == field_arguments)
+    }
+    else if (c.field == field_arguments) {
       err << emit_sym_argument_list(c);
-    else
-      err << emit_default(c);
+    }
+    else {
+      err << ERR("Unknown node type in simple call");
+    }
   }
 
   return err;
@@ -1120,11 +1131,21 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_ff(MnNode n) {
   }
 
   for (auto c : n) {
-    switch(c.field) {
-    case field_type:       err << emit_replacement(c, "always_ff @(posedge clock) begin : %s", func_decl.name4().c_str()); break;
-    case field_declarator: err << skip_over(c); break;
-    case field_body:       err << emit_sym_compound_statement(c, "", "end"); break;
-    default:               err << emit_default(c); break;
+    if (c.field == field_type) {
+      err << emit_replacement(c, "always_ff @(posedge clock) begin : %s", func_decl.name4().c_str());
+    }
+    else if (c.field == field_declarator) {
+      err << skip_over(c);
+    }
+    else if (c.field == field_body) {
+      err << emit_sym_compound_statement(c, "", "end");
+    }
+    else if (c.sym == sym_comment) {
+      err << emit_sym_comment(c);
+    }
+    else {
+      c.dump_tree();
+      exit(1);
     }
   }
 
@@ -1827,7 +1848,7 @@ CHECK_RETURN Err MtCursor::emit_identifier(MnNode node) {
       err << emit_sym_qualified_identifier(node);
       break;
     default:
-      err << emit_default(node);
+      err << ERR("Identifier has unknown node type");
       break;
   }
 
@@ -1856,8 +1877,11 @@ CHECK_RETURN Err MtCursor::emit_sym_init_declarator(MnNode node, bool elide_valu
         err << emit_expression(child);
       }
     }
+    else if (child.sym == anon_sym_EQ) {
+      err << emit_text(child);
+    }
     else {
-      err << emit_default(child);
+      err << ERR("Unknown node type in sym_init_declarator");
     }
   }
 
@@ -1904,7 +1928,7 @@ CHECK_RETURN Err MtCursor::emit_declarator(MnNode node, bool elide_value) {
       break;
     }
     default:
-      err << emit_default(node);
+      err << ERR("Unknown node type in declarator");
       break;
   }
 

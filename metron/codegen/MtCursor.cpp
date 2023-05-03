@@ -2570,7 +2570,7 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n, bool is_str
           err << skip_over(child);
         }
         else {
-          err << emit_default(child);
+          err << emit_text(child);
         }
         break;
       case sym_access_specifier:
@@ -2589,16 +2589,17 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n, bool is_str
       case anon_sym_RBRACE:
         err << emit_ws_to_newline();
         if (is_struct) {
-          err << emit_default(child);
+          err << emit_text(child);
         }
         else {
-          //err << emit_newline();
-          //err << emit_trigger_calls();
           err << emit_replacement(child, "endmodule");
         }
         break;
+      case sym_comment:
+        err << emit_sym_comment(child);
+        break;
       default:
-        err << emit_default(child);
+        err << ERR("Unknown node type in sym_field_declaration_list");
         break;
     }
   }

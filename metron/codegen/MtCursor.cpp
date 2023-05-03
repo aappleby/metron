@@ -3308,41 +3308,37 @@ CHECK_RETURN Err MtCursor::emit_sym_storage_class_specifier(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_sym_qualified_identifier(MnNode node) {
   Err err = emit_ws_to(sym_qualified_identifier, node);
 
-  // FIXME loop style
-
   bool elide_scope = false;
 
   for (auto child : node) {
     if (child.field == field_scope) {
-
-      // FIXME something weird going on here in the latest treesitter
-      if (child.sym == sym_template_type) {
-      }
-
       if (child.text() == "std") elide_scope = true;
       if (current_mod->get_enum(child.text())) elide_scope = true;
     }
   }
 
   for (auto child : node) {
-    if (child.field == field_scope) {
+    if (child.sym == alias_sym_namespace_identifier) {
       if (elide_scope) {
         err << skip_over(child);
-        err << skip_ws();
       }
       else {
-        err << emit_identifier(child);
+        err << emit_text(child);
       }
     }
-    else if (child.field == field_name) {
-      err << emit_identifier(child);
+    else if (child.sym == sym_identifier) {
+      err << emit_sym_identifier(child);
     }
-    else if (!child.is_named() && child.text() == "::" && elide_scope) {
-      err << skip_over(child);
-      err << skip_ws();
+    else if (child.sym == alias_sym_type_identifier) {
+      err << emit_sym_type_identifier(child);
     }
     else if (child.sym == anon_sym_COLON_COLON) {
-      err << emit_text(child);
+      if (elide_scope) {
+        err << skip_over(child);
+      }
+      else {
+        err << emit_text(child);
+      }
     }
     else {
       err << ERR("Unknown node type in sym_qualified_identifier");
@@ -3432,7 +3428,7 @@ CHECK_RETURN Err MtCursor::emit_statement(MnNode n) {
       err << emit_sym_break_statement(n);
       break;
     default:
-      err << emit_default(n);
+      err << ERR("Unknown node type in emit_statement");
       break;
   }
 
@@ -3443,6 +3439,11 @@ CHECK_RETURN Err MtCursor::emit_statement(MnNode n) {
 
 CHECK_RETURN Err MtCursor::emit_expression(MnNode n) {
   Err err = emit_ws_to(n);
+
+  if (!n.is_named()) {
+    err << emit_text(n);
+    return err << check_done(n);
+  }
 
   switch (n.sym) {
     case sym_identifier:
@@ -3488,10 +3489,14 @@ CHECK_RETURN Err MtCursor::emit_expression(MnNode n) {
     case sym_initializer_list:
       err << emit_sym_initializer_list(n);
       break;
-
-
+    case sym_number_literal:
+      err << emit_sym_number_literal(n);
+      break;
+    case sym_string_literal:
+      err << emit_text(n);
+      break;
     default:
-      err << emit_default(n);
+      err << ERR("Unknown node type in emit_expression");
       break;
   }
 

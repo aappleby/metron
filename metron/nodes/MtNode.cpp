@@ -407,7 +407,7 @@ struct NodeDumper {
               "%s: ", ts_language_field_name_for_id(n.source->lang, n.field));
       }
 
-      LOG_C(color, "%s = ", n.is_named() ? n.ts_node_type() : "lit");
+      LOG_C(color, "%s (%d) = ", n.is_named() ? n.ts_node_type() : "lit", n.sym);
 
       if (!n.child_count()) {
         std::string escaped =

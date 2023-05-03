@@ -2759,10 +2759,18 @@ CHECK_RETURN Err MtCursor::emit_sym_enumerator_list(MnNode node) {
   Err err = emit_ws_to(sym_enumerator_list, node);
 
   for (auto child : node) {
-    if (child.sym == sym_enumerator)
+    if (child.sym == sym_enumerator) {
       err << emit_sym_enumerator(child);
-    else
-      err << emit_default(child);
+    }
+    else if (!child.is_named()) {
+      err << emit_text(child);
+    }
+    else if (child.sym == sym_comment) {
+      err << emit_sym_comment(child);
+    }
+    else {
+      err << ERR("Unknown node type in sym_enumerator_list");
+    }
   }
 
   return err << check_done(node);

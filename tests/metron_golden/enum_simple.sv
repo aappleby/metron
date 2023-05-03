@@ -23,7 +23,7 @@ module Module (
   output int test1_ret
 );
  /*public*/
-  typedef enum { A1, B1, C1 } simple_enum1;
+  typedef enum { A1, /* random comment */ B1, C1 } simple_enum1;
   typedef enum { A2 = 32'b01, B2 = 32'h02, C2 = 32'd3 } simple_enum2;
 
   enum { A3, B3, C3 } anon_enum_field1;

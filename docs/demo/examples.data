@@ -6404,7 +6404,7 @@ public:
 // clang-format off
 class Module {
  public:
-  enum simple_enum1 { A1, B1, C1 };
+  enum simple_enum1 { A1, /* random comment */ B1, C1 };
   enum simple_enum2 { A2 = 0b01, B2 = 0x02, C2 = 3 };
 
   enum { A3, B3, C3 } anon_enum_field1;

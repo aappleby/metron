@@ -1659,18 +1659,19 @@ CHECK_RETURN Err MtCursor::emit_anonymous_enum(MnNode n) {
   Err err = emit_ws_to(n);
 
   for (auto child : n) {
-    switch (child.field) {
-      case field_type:
-        override_size = 32;
-        err << emit_type(child);
-        override_size = 0;
-        break;
-      case field_declarator:
-        err << emit_declarator(child);
-        break;
-      default:
-        err << emit_default(child);
-        break;
+    if (child.field == field_type) {
+      override_size = 32;
+      err << emit_type(child);
+      override_size = 0;
+    }
+    else if (child.field == field_declarator) {
+      err << emit_declarator(child);
+    }
+    else if (child.sym == anon_sym_SEMI) {
+      err << emit_text(child);
+    }
+    else {
+      err << ERR("Unknown node in anonymous enum");
     }
   }
 
@@ -1767,10 +1768,14 @@ CHECK_RETURN Err MtCursor::emit_sym_type_definition(MnNode node) {
   Err err = emit_ws_to(sym_type_definition, node);
 
   for (auto child : node) {
-    switch(child.field) {
-      case field_type:       err << emit_type(child); break;
-      case field_declarator: err << emit_declarator(child); break;
-      default:               err << emit_default(child); break;
+    if (child.field == field_type) {
+      err << emit_type(child);
+    }
+    else if (child.field == field_declarator) {
+      err << emit_declarator(child);
+    }
+    else {
+      err << ERR("Unknown node in sym_type_definition");
     }
   }
 

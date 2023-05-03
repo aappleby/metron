@@ -129,8 +129,6 @@ struct MnNode {
   bool is_null() const { return ts_node_is_null(node); }
   bool is_named() const { return !is_null() && ts_node_is_named(node); }
 
-
-
   //----------
 
   MnNode get_field(int field_id) const;

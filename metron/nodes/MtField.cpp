@@ -1,8 +1,7 @@
 #include "metron/nodes/MtField.h"
 
-#include "metron/app/MtModLibrary.h"
-#include "metron/app/MtSourceFile.h"
 #include "metrolib/core/Log.h"
+#include "metron/app/MtModLibrary.h" // _parent_mod
 #include "metron/nodes/MtMethod.h"
 #include "metron/nodes/MtModule.h"
 #include "metron/nodes/MtNode.h"

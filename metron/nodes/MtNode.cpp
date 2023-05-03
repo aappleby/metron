@@ -41,19 +41,9 @@ SourceRange MnNode::get_source() const {
   auto source_start = source->source;
   auto source_end = source->source_end;
 
-  /*
-  typedef struct {
-    uint32_t row;
-    uint32_t column;
-  } TSPoint;
-  */
-
   auto sp = ts_node_start_point(node);
   auto ep = ts_node_end_point(node);
 
-
-
-  //auto a = start();
   auto a = &source->source[ts_node_start_byte(node)];
   auto b = &source->source[ts_node_end_byte(node)];
 

@@ -631,27 +631,20 @@ CHECK_RETURN Err MtCursor::emit_simple_call(MnNode n) {
 
 
 //------------------------------------------------------------------------------
+// Call expressions turn into either Verilog calls, or are replaced with binding
+// statements.
 
 CHECK_RETURN bool MtCursor::can_omit_call(MnNode n) {
+  assert(n.sym == sym_call_expression);
   MnNode func = n.get_field(field_function);
   MnNode args = n.get_field(field_arguments);
 
-  std::string func_name = func.name4();
-
-  auto method = current_mod->get_method(func_name);
-
   if (func.sym == sym_field_expression) {
-    auto node_component = func.get_field(field_argument);
-    auto node_method = func.get_field(field_field);
-
-    auto dst_component = current_mod->get_field(node_component.text());
-    auto dst_method = dst_component->_type_mod->get_method(node_method.text());
-
-    if (dst_method && !dst_method->has_return()) {
-      return true;
-    }
+    // Calls into submodules always turn into bindings.
+    return true;
   }
   else {
+    // Calls into methods in the same module turn into bindings if needed.
     auto dst_method = current_mod->get_method(func.name4());
     if (dst_method && dst_method->needs_binding) {
       return true;
@@ -2589,6 +2582,7 @@ CHECK_RETURN Err MtCursor::emit_sym_expression_statement(MnNode node) {
   Err err = emit_ws_to(sym_expression_statement, node);
 
   if (node.child(0).sym == sym_call_expression) {
+    node.dump_tree();
     if (can_omit_call(node.child(0))) {
       err << skip_over(node);
       return err;
@@ -2598,19 +2592,22 @@ CHECK_RETURN Err MtCursor::emit_sym_expression_statement(MnNode node) {
   for (auto child : node) {
     switch (child.sym) {
       case sym_assignment_expression:
-        err << emit_expression(child);
+        err << emit_sym_assignment_expression(child);
         break;
       case sym_call_expression:
-        err << emit_expression(child);
+        err << emit_sym_call_expression(child);
         break;
       case sym_conditional_expression:
-        err << emit_expression(child);
+        err << emit_sym_conditional_expression(child);
         break;
       case sym_update_expression:
-        err << emit_expression(child);
+        err << emit_sym_update_expression(child);
+        break;
+      case anon_sym_SEMI:
+        err << emit_text(child);
         break;
       default:
-        err << emit_default(child);
+        err << ERR("Unknown symbol %d in expression statement", child.sym);
         break;
     }
   }

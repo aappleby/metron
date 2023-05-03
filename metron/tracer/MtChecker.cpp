@@ -1,8 +1,8 @@
 #include "metron/tracer/MtChecker.h"
 
+#include "metrolib/core/Log.h"
 #include "metron/app/MtModLibrary.h"
 #include "metron/app/MtSourceFile.h"
-#include "metrolib/core/Log.h"
 #include "metron/nodes/MtModule.h"
 #include "metron/tools/metron_tools.h"
 

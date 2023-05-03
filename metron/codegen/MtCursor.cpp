@@ -2655,12 +2655,15 @@ CHECK_RETURN Err MtCursor::emit_sym_expression_statement(MnNode node) {
 CHECK_RETURN Err MtCursor::emit_template_argument(MnNode node) {
   Err err = emit_ws_to(node);
 
-  if (node.sym == sym_type_descriptor)
+  if (node.sym == sym_type_descriptor) {
     err << emit_type(node);
-  else if (node.is_expression())
+  }
+  else if (node.is_expression()) {
     err << emit_expression(node);
-  else
-    err << emit_default(node);
+  }
+  else {
+    err << ERR("Unknown node type in template argument");
+  }
 
   return err << check_done(node);
 }
@@ -2741,8 +2744,11 @@ CHECK_RETURN Err MtCursor::emit_sym_enumerator(MnNode node) {
       err << emit_identifier(child);
     } else if (child.field == field_value) {
       err << emit_expression(child);
-    } else {
-      err << emit_default(child);
+    } else if (child.sym == anon_sym_EQ) {
+      err << emit_text(child);
+    }
+    else {
+      err << ERR("Unknown node type in sym_enumerator");
     }
   }
 

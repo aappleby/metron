@@ -3509,10 +3509,25 @@ CHECK_RETURN Err MtCursor::emit_sym_condition_clause(MnNode node) {
   Err err = emit_ws_to(sym_condition_clause, node);
 
   for (auto child : node) {
-    if (child.field == field_value)
+    if (child.sym == anon_sym_LPAREN || child.sym == anon_sym_RPAREN) {
+      err << emit_text(child);
+    }
+    else if (child.is_comment()) {
+      err << emit_sym_comment(child);
+    }
+    else if (child.is_identifier()) {
+      err << emit_identifier(child);
+    }
+    else if (child.is_expression()) {
       err << emit_expression(child);
-    else
-      err << emit_default(child);
+    }
+    else if (child.is_literal()) {
+      err << emit_literal(child);
+    }
+    else {
+      child.dump_tree();
+      err << ERR("Unknown node type in sym_condition_clause");
+    }
   }
 
   return err << check_done(node);

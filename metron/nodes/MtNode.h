@@ -20,6 +20,10 @@ struct MnNode {
 
   //----------
 
+  bool is_comment() const {
+    return sym == sym_comment;
+  }
+
   bool is_identifier() const {
     switch (sym) {
       case alias_sym_field_identifier:

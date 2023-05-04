@@ -1751,132 +1751,6 @@ CHECK_RETURN Err MtCursor::emit_sym_enumerator_list(MnNode node) {
 
 
 
-
-
-// enum { FOO, BAR } e; => enum { FOO, BAR } e;
-
-CHECK_RETURN Err MtCursor::emit_anonymous_enum(MnNode n) {
-  Err err = emit_ws_to(n);
-
-  for (auto child : n) {
-    if (child.sym == sym_enum_specifier) {
-      override_size = 32;
-      //err << emit_type(child);
-      err << emit_sym_enum_specifier(child);
-      override_size = 0;
-    }
-    else if (child.field == field_declarator) {
-      err << emit_declarator(child);
-    }
-    else if (child.sym == anon_sym_SEMI) {
-      err << emit_text(child);
-    }
-    else {
-      err << ERR("Unknown node in anonymous enum");
-    }
-  }
-
-  return err << check_done(n);
-}
-
-
-// enum e { FOO, BAR }; => typedef enum { FOO, BAR } e;
-
-CHECK_RETURN Err MtCursor::emit_simple_enum(MnNode n) {
-
-  Err err = emit_ws_to(n);
-
-  MnNode node_type = n.get_field(field_type);
-  MnNode node_name = node_type.get_field(field_name);
-  MnNode node_base = node_type.get_field(field_base);
-  MnNode node_body = node_type.get_field(field_body);
-
-  // typedef enum { A1, B1, C1 } simple_enum1;
-
-  err << emit_print("typedef enum ");
-
-  if (node_base) {
-    if (node_base.sym == sym_qualified_identifier) {
-      // enum class sized_enum : logic<8>::BASE { A8 = 0b01, B8 = 0x02, C8 = 3 };
-      auto node_scope = node_base.get_field(field_scope);
-      auto node_type_args = node_scope.get_field(field_arguments);
-
-      int enum_width = 0;
-      for (auto c : node_type_args) {
-        if (c.sym == sym_number_literal) {
-          enum_width = atoi(c.start());
-        }
-      }
-
-      cursor = node_scope.start();
-      err << emit_type(node_scope);
-      err << emit_print(" ");
-      cursor = node_body.start();
-
-      override_size = enum_width;
-      err << emit_sym_enumerator_list(node_body);
-      override_size = 0;
-    }
-    else {
-      cursor = node_base.start();
-      err << emit_type(node_base);
-      err << emit_print(" ");
-      cursor = node_body.start();
-      override_size = 32;
-      err << emit_sym_enumerator_list(node_body);
-      override_size = 0;
-    }
-  }
-  else {
-    cursor = node_body.start();
-    override_size = 32;
-    err << emit_sym_enumerator_list(node_body);
-    override_size = 0;
-  }
-
-
-  err << emit_print(" ");
-
-  cursor = node_name.start();
-  err << emit_text(node_name);
-
-  err << emit_print(";");
-
-  cursor = n.end();
-
-  return err << check_done(n);
-}
-
-
-
-
-
-
-/*
-Not sure if Verilog allows this
-enum external_enum {
-  A0,
-  B0,
-  C0
-};
-*/
-
-
-CHECK_RETURN Err MtCursor::emit_enum(MnNode n) {
-
-  Err err = emit_ws_to(n);
-  auto node_type = n.get_field(field_type);
-  assert(node_type.sym == sym_enum_specifier);
-
-  if (node_type.get_field(field_name)) {
-    err << emit_simple_enum(n);
-  } else {
-    err << emit_anonymous_enum(n);
-  }
-
-  return err << check_done(n);
-}
-
 CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode node) {
   Err err = emit_ws_to(sym_enum_specifier, node);
 
@@ -1899,6 +1773,112 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode node) {
 
   return err << check_done(node);
 }
+
+
+
+
+
+
+
+/*
+Not sure if Verilog allows this
+enum external_enum {
+  A0,
+  B0,
+  C0
+};
+*/
+
+
+CHECK_RETURN Err MtCursor::emit_enum(MnNode n) {
+  n.dump_tree();
+
+  Err err = emit_ws_to(n);
+  auto node_type = n.get_field(field_type);
+  assert(node_type.sym == sym_enum_specifier);
+  MnNode node_name = node_type.get_field(field_name);
+  MnNode node_base = node_type.get_field(field_base);
+  MnNode node_body = node_type.get_field(field_body);
+
+  if (node_type.get_field(field_name)) {
+    // enum e { FOO, BAR }; => typedef enum { FOO, BAR } e;
+
+
+    err << emit_print("typedef enum ");
+
+    if (node_base) {
+      if (node_base.sym == sym_qualified_identifier) {
+        // enum class sized_enum : logic<8>::BASE { A8 = 0b01, B8 = 0x02, C8 = 3 };
+        auto node_scope = node_base.get_field(field_scope);
+        auto node_type_args = node_scope.get_field(field_arguments);
+
+        int enum_width = 0;
+        for (auto c : node_type_args) {
+          if (c.sym == sym_number_literal) {
+            enum_width = atoi(c.start());
+          }
+        }
+
+        cursor = node_scope.start();
+        err << emit_type(node_scope);
+        err << emit_print(" ");
+        cursor = node_body.start();
+
+        override_size = enum_width;
+        err << emit_sym_enumerator_list(node_body);
+        override_size = 0;
+      }
+      else {
+        cursor = node_base.start();
+        err << emit_type(node_base);
+        err << emit_print(" ");
+        cursor = node_body.start();
+        override_size = 32;
+        err << emit_sym_enumerator_list(node_body);
+        override_size = 0;
+      }
+    }
+    else {
+      cursor = node_body.start();
+      override_size = 32;
+      err << emit_sym_enumerator_list(node_body);
+      override_size = 0;
+    }
+
+
+    err << emit_print(" ");
+
+    cursor = node_name.start();
+    err << emit_text(node_name);
+
+    err << emit_print(";");
+
+    cursor = n.end();
+  } else {
+    // enum { FOO, BAR } e; => enum { FOO, BAR } e;
+
+    for (auto child : n) {
+      if (child.sym == sym_enum_specifier) {
+        override_size = 32;
+        //err << emit_type(child);
+        err << emit_sym_enum_specifier(child);
+        override_size = 0;
+      }
+      else if (child.field == field_declarator) {
+        err << emit_declarator(child);
+      }
+      else if (child.sym == anon_sym_SEMI) {
+        err << emit_text(child);
+      }
+      else {
+        err << ERR("Unknown node in anonymous enum");
+      }
+    }
+  }
+
+  return err << check_done(n);
+}
+
 
 
 
@@ -2023,11 +2003,6 @@ CHECK_RETURN Err MtCursor::emit_type(MnNode node) {
       break;
     case sym_class_specifier:
       err << emit_sym_class_specifier(node);
-      break;
-    case sym_enum_specifier:
-      node.dump_tree();
-      exit(1);
-      err << emit_sym_enum_specifier(node);
       break;
     default:
       err << ERR("Unknown node type in emit_type");

@@ -1775,13 +1775,8 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode node) {
 }
 
 
-
-
-
-
-
 /*
-Not sure if Verilog allows this
+need to support top-level enums...
 enum external_enum {
   A0,
   B0,
@@ -1789,13 +1784,9 @@ enum external_enum {
 };
 */
 
+CHECK_RETURN Err MtCursor::emit_enum2(MnNode node_type) {
 
-CHECK_RETURN Err MtCursor::emit_enum(MnNode n) {
-  n.dump_tree();
-
-  Err err = emit_ws_to(n);
-  auto node_type = n.get_field(field_type);
-  assert(node_type.sym == sym_enum_specifier);
+  Err err = emit_ws_to(sym_enum_specifier, node_type);
   MnNode node_name = node_type.get_field(field_name);
   MnNode node_base = node_type.get_field(field_base);
   MnNode node_body = node_type.get_field(field_body);
@@ -1850,29 +1841,34 @@ CHECK_RETURN Err MtCursor::emit_enum(MnNode n) {
 
     cursor = node_name.start();
     err << emit_text(node_name);
-
-    err << emit_print(";");
-
-    cursor = n.end();
+    cursor = node_type.end();
   } else {
-    // enum { FOO, BAR } e; => enum { FOO, BAR } e;
+    override_size = 32;
+    err << emit_sym_enum_specifier(node_type);
+    override_size = 0;
+  }
 
-    for (auto child : n) {
-      if (child.sym == sym_enum_specifier) {
-        override_size = 32;
-        //err << emit_type(child);
-        err << emit_sym_enum_specifier(child);
-        override_size = 0;
-      }
-      else if (child.field == field_declarator) {
-        err << emit_declarator(child);
-      }
-      else if (child.sym == anon_sym_SEMI) {
-        err << emit_text(child);
-      }
-      else {
-        err << ERR("Unknown node in anonymous enum");
-      }
+  return err << check_done(node_type);
+}
+
+CHECK_RETURN Err MtCursor::emit_enum_field(MnNode n) {
+  n.dump_tree();
+
+  Err err = emit_ws_to(n);
+
+
+  for (auto child : n) {
+    if (child.sym == sym_enum_specifier) {
+      err << emit_enum2(child);
+    }
+    else if (child.field == field_declarator) {
+      err << emit_declarator(child);
+    }
+    else if (child.sym == anon_sym_SEMI) {
+      err << emit_text(child);
+    }
+    else {
+      err << ERR("Unknown node in anonymous enum");
     }
   }
 
@@ -2225,7 +2221,7 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
 
   // Enum
   if (n.get_field(field_type).sym == sym_enum_specifier) {
-    return emit_enum(n);
+    return emit_enum_field(n);
   }
 
   //----------

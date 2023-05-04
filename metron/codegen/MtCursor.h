@@ -61,7 +61,8 @@ struct MtCursor {
   CHECK_RETURN Err emit_optional_parameter_declaration(MnNode n);
   CHECK_RETURN Err emit_module_parameter_declaration(MnNode n);
   CHECK_RETURN Err emit_template_argument(MnNode n);
-  CHECK_RETURN Err emit_enum(MnNode n);
+  CHECK_RETURN Err emit_enum_field(MnNode n);
+  CHECK_RETURN Err emit_enum2(MnNode n);
   CHECK_RETURN Err emit_leaf(MnNode n);
   CHECK_RETURN Err emit_literal(MnNode n);
 

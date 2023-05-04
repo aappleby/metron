@@ -1144,8 +1144,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_ff(MnNode n) {
       err << emit_sym_comment(c);
     }
     else {
-      c.dump_tree();
-      exit(1);
+      err << ERR("Unknown node type in emit_func_as_always_ff");
     }
   }
 
@@ -1652,16 +1651,118 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
   return err;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //------------------------------------------------------------------------------
+// Enum lists do _not_ turn braces into begin/end.
+
+CHECK_RETURN Err MtCursor::emit_sym_enumerator(MnNode node) {
+  Err err = emit_ws_to(sym_enumerator, node);
+
+  for (auto child : node) {
+    if (child.field == field_name) {
+      err << emit_identifier(child);
+    } else if (child.field == field_value) {
+      err << emit_expression(child);
+    } else if (child.sym == anon_sym_EQ) {
+      err << emit_text(child);
+    }
+    else {
+      err << ERR("Unknown node type in sym_enumerator");
+    }
+  }
+
+  return err << check_done(node);
+}
+
+CHECK_RETURN Err MtCursor::emit_sym_enumerator_list(MnNode node) {
+  Err err = emit_ws_to(sym_enumerator_list, node);
+
+  for (auto child : node) {
+    if (child.sym == sym_enumerator) {
+      err << emit_sym_enumerator(child);
+    }
+    else if (!child.is_named()) {
+      err << emit_text(child);
+    }
+    else if (child.sym == sym_comment) {
+      err << emit_sym_comment(child);
+    }
+    else {
+      err << ERR("Unknown node type in sym_enumerator_list");
+    }
+  }
+
+  return err << check_done(node);
+}
+
+
+
+
+
+
 // enum { FOO, BAR } e; => enum { FOO, BAR } e;
 
 CHECK_RETURN Err MtCursor::emit_anonymous_enum(MnNode n) {
   Err err = emit_ws_to(n);
 
   for (auto child : n) {
-    if (child.field == field_type) {
+    if (child.sym == sym_enum_specifier) {
       override_size = 32;
-      err << emit_type(child);
+      //err << emit_type(child);
+      err << emit_sym_enum_specifier(child);
       override_size = 0;
     }
     else if (child.field == field_declarator) {
@@ -1678,7 +1779,7 @@ CHECK_RETURN Err MtCursor::emit_anonymous_enum(MnNode n) {
   return err << check_done(n);
 }
 
-//------------------------------------------------------------------------------
+
 // enum e { FOO, BAR }; => typedef enum { FOO, BAR } e;
 
 CHECK_RETURN Err MtCursor::emit_simple_enum(MnNode n) {
@@ -1746,9 +1847,23 @@ CHECK_RETURN Err MtCursor::emit_simple_enum(MnNode n) {
   return err << check_done(n);
 }
 
-//------------------------------------------------------------------------------
+
+
+
+
+
+/*
+Not sure if Verilog allows this
+enum external_enum {
+  A0,
+  B0,
+  C0
+};
+*/
+
 
 CHECK_RETURN Err MtCursor::emit_enum(MnNode n) {
+
   Err err = emit_ws_to(n);
   auto node_type = n.get_field(field_type);
   assert(node_type.sym == sym_enum_specifier);
@@ -1761,6 +1876,95 @@ CHECK_RETURN Err MtCursor::emit_enum(MnNode n) {
 
   return err << check_done(n);
 }
+
+CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode node) {
+  Err err = emit_ws_to(sym_enum_specifier, node);
+
+  for (auto child : node) {
+    if (child.field == field_name) {
+      child.dump_tree();
+      exit(1);
+      err << emit_declarator(child);
+    }
+    else if (child.field == field_body) {
+      err << emit_sym_enumerator_list(child);
+    }
+    else if (child.sym == anon_sym_enum) {
+      err << emit_text(child);
+    }
+    else {
+      err << ERR("Unknown node type in sym_enum_specifier");
+    }
+  }
+
+  return err << check_done(node);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //------------------------------------------------------------------------------
 
@@ -1821,6 +2025,8 @@ CHECK_RETURN Err MtCursor::emit_type(MnNode node) {
       err << emit_sym_class_specifier(node);
       break;
     case sym_enum_specifier:
+      node.dump_tree();
+      exit(1);
       err << emit_sym_enum_specifier(node);
       break;
     default:
@@ -2734,49 +2940,6 @@ CHECK_RETURN Err MtCursor::emit_sym_template_argument_list(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
-// Enum lists do _not_ turn braces into begin/end.
-
-CHECK_RETURN Err MtCursor::emit_sym_enumerator(MnNode node) {
-  Err err = emit_ws_to(sym_enumerator, node);
-
-  for (auto child : node) {
-    if (child.field == field_name) {
-      err << emit_identifier(child);
-    } else if (child.field == field_value) {
-      err << emit_expression(child);
-    } else if (child.sym == anon_sym_EQ) {
-      err << emit_text(child);
-    }
-    else {
-      err << ERR("Unknown node type in sym_enumerator");
-    }
-  }
-
-  return err << check_done(node);
-}
-
-CHECK_RETURN Err MtCursor::emit_sym_enumerator_list(MnNode node) {
-  Err err = emit_ws_to(sym_enumerator_list, node);
-
-  for (auto child : node) {
-    if (child.sym == sym_enumerator) {
-      err << emit_sym_enumerator(child);
-    }
-    else if (!child.is_named()) {
-      err << emit_text(child);
-    }
-    else if (child.sym == sym_comment) {
-      err << emit_sym_comment(child);
-    }
-    else {
-      err << ERR("Unknown node type in sym_enumerator_list");
-    }
-  }
-
-  return err << check_done(node);
-}
-
-//------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_everything() {
   Err err;
@@ -3552,7 +3715,6 @@ CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnNode node) {
       case sym_expression_statement:
         if (branch_contains_component_call(child)) {
           return err << ERR("If branches that contain component calls must use {}.\n");
-          err << skip_over(child);
         } else {
           err << emit_statement(child);
         }
@@ -3561,24 +3723,6 @@ CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnNode node) {
         err << emit_default(child);
         break;
     }
-  }
-
-  return err << check_done(node);
-}
-
-//------------------------------------------------------------------------------
-// Enums are broken.
-
-CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode node) {
-  Err err = emit_ws_to(sym_enum_specifier, node);
-
-  for (auto child : node) {
-    if (child.field == field_name)
-      err << emit_declarator(child);
-    else if (child.field == field_body)
-      err << emit_sym_enumerator_list(child);
-    else
-      err << emit_default(child);
   }
 
   return err << check_done(node);

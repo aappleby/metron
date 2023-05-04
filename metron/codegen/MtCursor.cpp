@@ -14,6 +14,8 @@
 //#include <memory.h>
 //#include "metrolib/core/Platform.h"
 #include <string.h>
+#include <functional>
+#include <map>
 
 //------------------------------------------------------------------------------
 
@@ -1706,74 +1708,6 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
 
 //------------------------------------------------------------------------------
-// Enum lists do _not_ turn braces into begin/end.
-
-CHECK_RETURN Err MtCursor::emit_sym_enumerator(MnNode node) {
-  Err err = emit_ws_to(sym_enumerator, node);
-
-  for (auto child : node) {
-    if (child.field == field_name) {
-      err << emit_identifier(child);
-    } else if (child.field == field_value) {
-      err << emit_expression(child);
-    } else if (child.sym == anon_sym_EQ) {
-      err << emit_text(child);
-    }
-    else {
-      err << ERR("Unknown node type in sym_enumerator");
-    }
-  }
-
-  return err << check_done(node);
-}
-
-CHECK_RETURN Err MtCursor::emit_sym_enumerator_list(MnNode node) {
-  Err err = emit_ws_to(sym_enumerator_list, node);
-
-  for (auto child : node) {
-    if (child.sym == sym_enumerator) {
-      err << emit_sym_enumerator(child);
-    }
-    else if (!child.is_named()) {
-      err << emit_text(child);
-    }
-    else if (child.sym == sym_comment) {
-      err << emit_sym_comment(child);
-    }
-    else {
-      err << ERR("Unknown node type in sym_enumerator_list");
-    }
-  }
-
-  return err << check_done(node);
-}
-
-
-
-
-CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode node) {
-  Err err = emit_ws_to(sym_enum_specifier, node);
-
-  for (auto child : node) {
-    if (child.field == field_name) {
-      child.dump_tree();
-      exit(1);
-      err << emit_declarator(child);
-    }
-    else if (child.field == field_body) {
-      err << emit_sym_enumerator_list(child);
-    }
-    else if (child.sym == anon_sym_enum) {
-      err << emit_text(child);
-    }
-    else {
-      err << ERR("Unknown node type in sym_enum_specifier");
-    }
-  }
-
-  return err << check_done(node);
-}
-
 
 /*
 need to support top-level enums...
@@ -1784,82 +1718,205 @@ enum external_enum {
 };
 */
 
-CHECK_RETURN Err MtCursor::emit_enum2(MnNode node_type) {
+// Enum lists do _not_ turn braces into begin/end.
 
-  Err err = emit_ws_to(sym_enum_specifier, node_type);
-  MnNode node_name = node_type.get_field(field_name);
-  MnNode node_base = node_type.get_field(field_base);
-  MnNode node_body = node_type.get_field(field_body);
+CHECK_RETURN Err MtCursor::emit_sym_enumerator(MnNode node) {
+  Err err = emit_ws_to(sym_enumerator, node);
 
-  if (node_type.get_field(field_name)) {
-    // enum e { FOO, BAR }; => typedef enum { FOO, BAR } e;
-
-
-    err << emit_print("typedef enum ");
-
-    if (node_base) {
-      if (node_base.sym == sym_qualified_identifier) {
-        // enum class sized_enum : logic<8>::BASE { A8 = 0b01, B8 = 0x02, C8 = 3 };
-        auto node_scope = node_base.get_field(field_scope);
-        auto node_type_args = node_scope.get_field(field_arguments);
-
-        int enum_width = 0;
-        for (auto c : node_type_args) {
-          if (c.sym == sym_number_literal) {
-            enum_width = atoi(c.start());
-          }
-        }
-
-        cursor = node_scope.start();
-        err << emit_type(node_scope);
-        err << emit_print(" ");
-        cursor = node_body.start();
-
-        override_size = enum_width;
-        err << emit_sym_enumerator_list(node_body);
-        override_size = 0;
-      }
-      else {
-        cursor = node_base.start();
-        err << emit_type(node_base);
-        err << emit_print(" ");
-        cursor = node_body.start();
-        override_size = 32;
-        err << emit_sym_enumerator_list(node_body);
-        override_size = 0;
-      }
+  for (auto child : node) {
+    if (child.sym == sym_identifier) {
+      err << emit_identifier(child);
+    }
+    else if (child.sym == sym_number_literal) {
+      err << emit_sym_number_literal(child);
+    }
+    else if (child.sym == anon_sym_EQ) {
+      err << emit_text(child);
     }
     else {
-      cursor = node_body.start();
-      override_size = 32;
-      err << emit_sym_enumerator_list(node_body);
-      override_size = 0;
+      err << ERR("Unknown node type in sym_enumerator");
     }
-
-
-    err << emit_print(" ");
-
-    cursor = node_name.start();
-    err << emit_text(node_name);
-    cursor = node_type.end();
-  } else {
-    override_size = 32;
-    err << emit_sym_enum_specifier(node_type);
-    override_size = 0;
   }
 
-  return err << check_done(node_type);
+  return err << check_done(node);
 }
 
-CHECK_RETURN Err MtCursor::emit_enum_field(MnNode n) {
+// sym_enumerator_list
+//   anon_sym_COMMA
+//   anon_sym_RBRACE
+//   anon_sym_LBRACE
+//   sym_comment
+//   sym_enumerator
+
+typedef std::function<Err(MtCursor*, MnNode node)> emit_cb;
+typedef std::map<std::pair<int, int>, emit_cb> emit_map;
+
+emit_map emit_sym_enumerator_list_map = {
+  { {0, anon_sym_COMMA},  &MtCursor::emit_text },
+  { {0, anon_sym_RBRACE}, &MtCursor::emit_text },
+  { {0, anon_sym_LBRACE}, &MtCursor::emit_text },
+  { {0, sym_comment},     &MtCursor::emit_sym_comment },
+  { {0, sym_enumerator},  &MtCursor::emit_sym_enumerator },
+};
+
+typedef std::map<int, emit_map*> emit_metamap;
+
+emit_metamap _emits = {
+  { sym_enumerator_list, &emit_sym_enumerator_list_map },
+};
+
+CHECK_RETURN Err MtCursor::emit_sym_enumerator_list(MnNode node) {
+  Err err = emit_ws_to(sym_enumerator_list, node);
+
+  auto& sym_map = emit_sym_enumerator_list_map;
+
+  for (auto child : node) {
+    if (auto cb = sym_map.find(std::pair<int, int>(child.field, child.sym)); cb != sym_map.end()) {
+      err << cb->second(this, child);
+    }
+    else {
+      err << ERR("Unknown node type in sym_enumerator_list");
+    }
+  }
+
+  return err << check_done(node);
+}
+
+/*
+[000.003] ========== tree dump begin
+[000.003]  + type: enum_specifier (253) =
+[000.003]  |--# lit (81) = "enum"
+[000.003]  |--# lit (82) = "class"
+[000.003]  |--# name: type_identifier (444) = "sized_enum"
+[000.004]  |--# lit (85) = ":"
+[000.004]  |--+ base: qualified_identifier (401) =
+[000.004]  |  |--+ scope: template_type (348) =
+[000.004]  |  |  |--# name: type_identifier (444) = "logic"
+[000.004]  |  |  |--+ arguments: template_argument_list (351) =
+[000.004]  |  |     |--# lit (36) = "<"
+[000.004]  |  |     |--# number_literal (126) = "8"
+[000.004]  |  |     |--# lit (33) = ">"
+[000.004]  |  |--# lit (43) = "::"
+[000.004]  |  |--# name: type_identifier (444) = "BASE"
+[000.004]  |--+ body: enumerator_list (254) =
+[000.004]     |--# lit (59) = "{"
+[000.004]     |--+ enumerator (261) =
+[000.004]     |  |--# name: identifier (1) = "A8"
+[000.004]     |  |--# lit (63) = "="
+[000.004]     |  |--# value: number_literal (126) = "0b01"
+[000.005]     |--# lit (7) = ","
+[000.005]     |--+ enumerator (261) =
+[000.005]     |  |--# name: identifier (1) = "B8"
+[000.005]     |  |--# lit (63) = "="
+[000.005]     |  |--# value: number_literal (126) = "0x02"
+[000.005]     |--# lit (7) = ","
+[000.005]     |--+ enumerator (261) =
+[000.005]     |  |--# name: identifier (1) = "C8"
+[000.005]     |  |--# lit (63) = "="
+[000.005]     |  |--# value: number_literal (126) = "3"
+[000.005]     |--# lit (60) = "}"
+[000.005] ========== tree dump end
+
+
+[000.003] ========== tree dump begin
+[000.003]  + type: enum_specifier (253) =
+[000.003]  |--# lit (81) = "enum" anon_sym_enum
+[000.003]  |--# lit (82) = "class"  anon_sym_class
+[000.003]  |--# name: type_identifier (444) = "sized_enum"
+[000.004]  |--# lit (85) = ":" anon_sym_COLON
+[000.004]  |--+ base: qualified_identifier (401) =
+[000.004]  |--+ body: enumerator_list (254) =
+[000.005] ========== tree dump end
+
+
+  typedef enum logic[7:0] { A8 = 8'b01, B8 = 8'h02, C8 = 8'd3 } sized_enum;
+
+*/
+
+CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
+  Err err = emit_ws_to(sym_enum_specifier, n);
+
   n.dump_tree();
+
+  // Extract enum name, if present.
+  std::string enum_name = "";
+  MnNode node_name = n.get_field(field_name);
+  if (node_name) {
+    enum_name = node_name.text();
+  }
+
+  // Extract enum bit width, if present.
+  override_size = 32;
+  MnNode node_base = n.get_field(field_base);
+  if (node_base) {
+    auto node_scope = node_base.get_field(field_scope);
+    auto node_type_args = node_scope.get_field(field_arguments);
+    for (auto c : node_type_args) {
+      if (c.sym == sym_number_literal) {
+        override_size = atoi(c.start());
+        break;
+      }
+    }
+  }
+
+  if (node_name) {
+    err << emit_print("typedef ");
+  }
+
+  for (auto child : n) {
+    if (child.sym == anon_sym_enum) {
+      err << emit_text(child);
+    }
+    else if (child.sym == anon_sym_class) {
+      err << skip_over(child);
+      err << skip_ws();
+    }
+    else if (child.field == field_name && child.sym == alias_sym_type_identifier) {
+      err << skip_over(child);
+      err << skip_ws();
+    }
+    else if (child.sym == anon_sym_COLON) {
+      err << skip_over(child);
+      err << skip_ws();
+    }
+    else if (child.field == field_base && child.sym == alias_sym_type_identifier) {
+      err << emit_sym_type_identifier(child);
+    }
+    else if (child.field == field_base && child.sym == sym_qualified_identifier) {
+      // enum class sized_enum : logic<8>::BASE { A8 = 0b01, B8 = 0x02, C8 = 3 };
+      auto node_scope = child.get_field(field_scope);
+      cursor = node_scope.start();
+      err << emit_type(node_scope);
+      cursor = child.end();
+    }
+    else if (child.sym == sym_enumerator_list) {
+      err << emit_sym_enumerator_list(child);
+    }
+  }
+
+  if (node_name) {
+    auto old_cursor = cursor;
+    cursor = node_name.start();
+    err << emit_print(" ");
+    err << emit_sym_type_identifier(node_name);
+    cursor = old_cursor;
+  }
+
+  override_size = 0;
+  return err << check_done(n);
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_enum_field(MnNode n) {
+  //n.dump_tree();
 
   Err err = emit_ws_to(n);
 
 
   for (auto child : n) {
     if (child.sym == sym_enum_specifier) {
-      err << emit_enum2(child);
+      err << emit_sym_enum_specifier(child);
     }
     else if (child.field == field_declarator) {
       err << emit_declarator(child);

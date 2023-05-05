@@ -1716,13 +1716,11 @@ emit_map emit_sym_enumerator_list_map = {
   { {0, sym_enumerator},  &MtCursor::emit_sym_enumerator },
 };
 
-#if 0
 emit_map emit_sym_enumerator_map = {
   { {0, sym_identifier},      &MtCursor::emit_sym_identifier },
   { {0, anon_sym_EQ},         &MtCursor::emit_text },
-  { {0, sym_number_literal},  &MtCursor::emit_sym_number_literal },
+  { {0, sym_number_literal},  &MtCursor::emit_sym_number_literal2 },
 };
-#endif
 
 typedef std::map<int, emit_map*> emit_metamap;
 
@@ -1741,7 +1739,7 @@ CHECK_RETURN Err MtCursor::emit_sym_enumerator(MnNode node) {
       err << emit_identifier(child);
     }
     else if (child.sym == sym_number_literal) {
-      err << emit_sym_number_literal(child);
+      err << emit_sym_number_literal(child, 0);
     }
     else if (child.sym == anon_sym_EQ) {
       err << emit_text(child);
@@ -1863,13 +1861,11 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-#if 0
 emit_map emit_sym_field_declaration_map = {
-  { {field_none,       sym_enum_specifier},          &MtCursor::emit_sym_enum_specifier},
-  { {field_declarator, anon_sym_class},              &MtCursor::skip_over },
+  { {field_none, sym_enum_specifier},           &MtCursor::emit_sym_enum_specifier},
+  { {field_none, alias_sym_field_identifier},   &MtCursor::skip_over },
+  { {field_none, anon_sym_SEMI},                &MtCursor::emit_text },
 };
-#endif
-
 
 CHECK_RETURN Err MtCursor::emit_enum_field(MnNode n) {
   //n.dump_tree();
@@ -3366,7 +3362,7 @@ CHECK_RETURN Err MtCursor::emit_sym_case_statement(MnNode n) {
         err << emit_sym_comment(child);
         break;
       case sym_number_literal:
-        err << emit_sym_number_literal(child);
+        err << emit_sym_number_literal(child, 0);
         break;
       case anon_sym_default:
         err << emit_text(child);
@@ -3535,7 +3531,7 @@ CHECK_RETURN Err MtCursor::emit_literal(MnNode n) {
       err << emit_text(n);
       break;
     case sym_number_literal:
-      err << emit_sym_number_literal(n);
+      err << emit_sym_number_literal(n, 0);
       break;
     case sym_user_defined_literal:
       err << ERR("User-defined literals are not supported yet");
@@ -3645,7 +3641,7 @@ CHECK_RETURN Err MtCursor::emit_expression(MnNode n) {
       err << emit_sym_initializer_list(n);
       break;
     case sym_number_literal:
-      err << emit_sym_number_literal(n);
+      err << emit_sym_number_literal(n, 0);
       break;
     case sym_string_literal:
       err << emit_text(n);

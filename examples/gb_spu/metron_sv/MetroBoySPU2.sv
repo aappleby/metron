@@ -232,7 +232,7 @@ module MetroBoySPU2 (
           16'hFF26: data_out <= {spu_power, 7'd0};
 
           // "default: break didn't work?"
-          default: begin  end
+          default: begin end
         endcase
       end
 
@@ -679,8 +679,8 @@ module MetroBoySPU2 (
   }
   */
 
-   // signals
-   // signals
+  // signals
+  // signals
 
   //----------------------------------------
 

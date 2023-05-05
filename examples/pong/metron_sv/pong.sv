@@ -185,7 +185,7 @@ module Pong (
            (py <= ball_y + 7);
   endfunction
 
-  function logic in_checker();  in_checker = px[3] ^ py[3]; endfunction
+  function logic in_checker(); in_checker = px[3] ^ py[3]; endfunction
 
   logic[9:0] px;
   logic[9:0] py;

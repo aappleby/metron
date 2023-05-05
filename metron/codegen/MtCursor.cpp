@@ -210,6 +210,7 @@ CHECK_RETURN Err MtCursor::skip_over(MnNode n) {
     cursor = n.end();
     line_elided = true;
   }
+  err << skip_ws();
   return err;
 }
 
@@ -1039,7 +1040,6 @@ CHECK_RETURN Err MtCursor::emit_func_as_init(MnNode n) {
   err << emit_replacement(func_decl, "initial");
   if (func_init) {
     err << skip_over(func_init);
-    err << skip_ws();
   }
   err << emit_sym_compound_statement(func_body, "begin", "end");
   assert(cursor == n.end());
@@ -1078,7 +1078,6 @@ CHECK_RETURN Err MtCursor::emit_func_as_task(MnNode n) {
 
   err << emit_print("task automatic ");
   err << skip_over(func_ret);
-  err << skip_ws();
   err << emit_declarator(func_decl);
   err << prune_trailing_ws();
   err << emit_print(";");
@@ -1106,9 +1105,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_comb(MnNode n) {
 
   err << emit_print("always_comb begin : %s", func_decl.name4().c_str());
   err << skip_over(func_ret);
-  err << skip_ws();
   err << skip_over(func_decl);
-  err << skip_ws();
   err << emit_sym_compound_statement(func_body, "", "end");
 
   id_replacements = old_replacements;
@@ -1640,7 +1637,6 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
     sub_cursor.cursor = getter_type.start();
 
     err << emit_indent();
-    err << sub_cursor.skip_ws();
     err << sub_cursor.emit_type(getter_type);
     err << sub_cursor.emit_ws();
     err << emit_print("%s_", component_cname);
@@ -1709,17 +1705,6 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
 //------------------------------------------------------------------------------
 
-/*
-need to support top-level enums...
-enum external_enum {
-  A0,
-  B0,
-  C0
-};
-*/
-
-// Enum lists do _not_ turn braces into begin/end.
-
 CHECK_RETURN Err MtCursor::emit_sym_enumerator(MnNode node) {
   Err err = emit_ws_to(sym_enumerator, node);
 
@@ -1746,6 +1731,7 @@ typedef std::map<std::pair<int, int>, emit_cb> emit_map;
 
 emit_map emit_sym_enumerator_list_map = {
   { {0, anon_sym_COMMA},  &MtCursor::emit_text },
+  // Enum lists do _not_ turn braces into begin/end.
   { {0, anon_sym_RBRACE}, &MtCursor::emit_text },
   { {0, anon_sym_LBRACE}, &MtCursor::emit_text },
   { {0, sym_comment},     &MtCursor::emit_sym_comment },
@@ -1809,15 +1795,12 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
     }
     else if (child.sym == anon_sym_class) {
       err << skip_over(child);
-      err << skip_ws();
     }
     else if (child.field == field_name && child.sym == alias_sym_type_identifier) {
       err << skip_over(child);
-      err << skip_ws();
     }
     else if (child.sym == anon_sym_COLON) {
       err << skip_over(child);
-      err << skip_ws();
     }
     else if (child.field == field_base && child.sym == alias_sym_type_identifier) {
       err << emit_sym_type_identifier(child);
@@ -2047,7 +2030,6 @@ CHECK_RETURN Err MtCursor::emit_sym_init_declarator(MnNode node, bool elide_valu
     else if (child.field == field_value) {
       if (elide_value) {
         err << skip_over(child);
-        err << skip_ws();
       }
       else {
         err << emit_expression(child);
@@ -2504,7 +2486,6 @@ CHECK_RETURN Err MtCursor::emit_module_parameter_list(MnNode param_list) {
       switch (c.sym) {
         case sym_optional_parameter_declaration:
           err << sub_cursor.emit_print("parameter ");
-          err << sub_cursor.skip_ws();
           err << sub_cursor.emit_module_parameter_declaration(c);
           err << sub_cursor.emit_print(";");
           err << sub_cursor.emit_newline();
@@ -3323,7 +3304,6 @@ CHECK_RETURN Err MtCursor::emit_sym_case_statement(MnNode n) {
         break;
       case anon_sym_case:
         err << skip_over(child);
-        err << skip_ws();
         break;
       case anon_sym_COLON:
         if (anything_after_colon) {
@@ -3430,7 +3410,6 @@ CHECK_RETURN Err MtCursor::emit_sym_storage_class_specifier(MnNode n) {
   Err err = emit_ws_to(sym_storage_class_specifier, n);
 
   err << skip_over(n);
-  err << skip_ws();
 
   return err;
 }
@@ -3765,18 +3744,17 @@ CHECK_RETURN Err MtCursor::emit_sym_declaration(MnNode n, bool elide_type, bool 
 
   if (elide_decl) {
     err << skip_over(n);
-    err << skip_ws();
   }
   else {
     for (auto child : n) {
       if (child.sym == sym_storage_class_specifier)
-        err << skip_over(child) << skip_ws();
+        err << skip_over(child);
       else if (child.sym == sym_type_qualifier) {
-        err << skip_over(child) << skip_ws();
+        err << skip_over(child);
       }
       else if (child.field == field_type) {
         if (elide_type) {
-          err << skip_over(child) << skip_ws();
+          err << skip_over(child);
         }
         else {
           err << emit_type(child);
@@ -3816,7 +3794,6 @@ CHECK_RETURN Err MtCursor::emit_sym_sized_type_specifier(MnNode n) {
   for (auto c : n) {
     if (c.field == field_type) {
       err << skip_over(c);
-      err << skip_ws();
     }
     else {
       err << emit_default(c);

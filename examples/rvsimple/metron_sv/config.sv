@@ -35,6 +35,6 @@ parameter int unsigned DATA_END = (DATA_BEGIN + DATA_WIDTH - 1);
 localparam string TEXT_HEX = "add.text.vh";
 localparam string DATA_HEX = "add.data.vh";
 
-endpackage  // namespace rv_config
+endpackage// namespace rv_config
 
 `endif // CONFIG_H

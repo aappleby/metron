@@ -37,7 +37,7 @@ module uart_rx (
     get_checksum_ret = checksum;
   end
 
-  always_ff @(posedge clock) begin : tick  // Serial input from the transmitter
+  always_ff @(posedge clock) begin : tick // Serial input from the transmitter
 
     if (tick_reset) begin
       bit_delay <= bit_delay_max;

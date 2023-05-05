@@ -39,7 +39,7 @@ module regfile (
   // Register x0 is always 0
   initial begin _register[0] = 32'b0; end
 
-  always_comb begin : tock  end
+  always_comb begin : tock end
 
  /*private*/
   // Write port for rd

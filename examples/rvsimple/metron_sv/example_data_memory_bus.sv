@@ -24,12 +24,12 @@ module example_data_memory_bus (
   output logic[31:0] read_data
 );
  /*public*/
-       // in
-     // out
-    // in
-    // in
-    // in
-   // in
+  // in
+  // out
+  // in
+  // in
+  // in
+  // in
 
   parameter filename = "";
   initial

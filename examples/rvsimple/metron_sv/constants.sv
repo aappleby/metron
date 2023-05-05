@@ -157,6 +157,6 @@ parameter int MC_CTL_ALU_B_RS2 = 2'b00;
 parameter int MC_CTL_ALU_B_IMM = 2'b01;
 parameter int MC_CTL_ALU_B_4 = 2'b10;
 
-endpackage  // namespace rv_constants
+endpackage// namespace rv_constants
 
 `endif // CONSTANTS_H

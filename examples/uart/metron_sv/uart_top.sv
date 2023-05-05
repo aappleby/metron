@@ -82,6 +82,7 @@ module uart_top (
 
   //----------------------------------------
 /*private*/
+  // Our UART client that transmits our "hello world" test message
   uart_hello #(
     // Template Parameters
     .repeat_msg(repeat_msg)
@@ -105,7 +106,7 @@ module uart_top (
   logic[7:0] hello_get_data_ret;
   logic hello_get_request_ret;
   logic hello_get_done_ret;
- // Our UART client that transmits our "hello world" test message
+  // The UART transmitter
   uart_tx #(
     // Template Parameters
     .cycles_per_bit(cycles_per_bit)
@@ -129,7 +130,7 @@ module uart_top (
   logic tx_get_serial_ret;
   logic tx_get_clear_to_send_ret;
   logic tx_get_idle_ret;
-    // The UART transmitter
+  // The UART receiver
   uart_rx #(
     // Template Parameters
     .cycles_per_bit(cycles_per_bit)
@@ -151,7 +152,6 @@ module uart_top (
   logic rx_get_valid_ret;
   logic[7:0] rx_get_data_out_ret;
   logic[31:0] rx_get_checksum_ret;
-    // The UART receiver
 endmodule
 
 //==============================================================================

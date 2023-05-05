@@ -50,5 +50,4 @@ module Module (
   logic[11-1:0] submodule_tock_dy;
   logic[10-1:0] submodule_my_width;
   logic[11-1:0] submodule_my_height;
-
 endmodule

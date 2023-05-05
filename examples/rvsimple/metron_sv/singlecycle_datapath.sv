@@ -170,7 +170,6 @@ module singlecycle_datapath (
   logic[32-1:0] adder_pc_plus_4_operand_a;
   logic[32-1:0] adder_pc_plus_4_operand_b;
   logic[32-1:0] adder_pc_plus_4_result;
-
   adder #(
     // Template Parameters
     .WIDTH(32)
@@ -184,7 +183,6 @@ module singlecycle_datapath (
   logic[32-1:0] adder_pc_plus_immediate_operand_a;
   logic[32-1:0] adder_pc_plus_immediate_operand_b;
   logic[32-1:0] adder_pc_plus_immediate_result;
-
   alu alu_core(
     // Input signals
     .alu_function(alu_core_alu_function),
@@ -199,7 +197,6 @@ module singlecycle_datapath (
   logic[31:0] alu_core_operand_b;
   logic[31:0] alu_core_result;
   logic alu_core_result_equal_zero;
-
   multiplexer4 #(
     // Template Parameters
     .WIDTH(32)
@@ -219,7 +216,6 @@ module singlecycle_datapath (
   logic[32-1:0] mux_next_pc_select_in3;
   logic[1:0] mux_next_pc_select_sel;
   logic[32-1:0] mux_next_pc_select_out;
-
   multiplexer2 #(
     // Template Parameters
     .WIDTH(32)
@@ -235,7 +231,6 @@ module singlecycle_datapath (
   logic[32-1:0] mux_operand_a_in1;
   logic mux_operand_a_sel;
   logic[32-1:0] mux_operand_a_out;
-
   multiplexer2 #(
     // Template Parameters
     .WIDTH(32)
@@ -251,7 +246,6 @@ module singlecycle_datapath (
   logic[32-1:0] mux_operand_b_in1;
   logic mux_operand_b_sel;
   logic[32-1:0] mux_operand_b_out;
-
   multiplexer8 #(
     // Template Parameters
     .WIDTH(32)
@@ -279,7 +273,6 @@ module singlecycle_datapath (
   logic[32-1:0] mux_reg_writeback_in7;
   logic[2:0] mux_reg_writeback_sel;
   logic[32-1:0] mux_reg_writeback_out;
-
   single_register #(
     // Template Parameters
     .WIDTH(32),
@@ -298,7 +291,6 @@ module singlecycle_datapath (
   logic program_counter_write_enable;
   logic[32-1:0] program_counter_next;
   logic[32-1:0] program_counter_value;
-
   regfile regs(
     // Global clock
     .clock(clock),
@@ -319,7 +311,6 @@ module singlecycle_datapath (
   logic[31:0] regs_rd_data;
   logic[31:0] regs_rs1_data;
   logic[31:0] regs_rs2_data;
-
   instruction_decoder idec(
     // Input signals
     .inst(idec_inst),
@@ -338,7 +329,6 @@ module singlecycle_datapath (
   logic[4:0] idec_inst_rd;
   logic[4:0] idec_inst_rs1;
   logic[4:0] idec_inst_rs2;
-
   immediate_generator igen(
     // Input signals
     .inst(igen_inst),
@@ -347,7 +337,6 @@ module singlecycle_datapath (
   );
   logic[31:0] igen_inst;
   logic[31:0] igen_immediate;
-
 endmodule
 
 `endif // SINGLECYCLE_DATAPATH_H

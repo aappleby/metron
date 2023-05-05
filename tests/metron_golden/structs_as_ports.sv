@@ -146,7 +146,6 @@ module Top (
   );
   tilelink_d cpu_tld;
   tilelink_a cpu_tla;
-
   TilelinkDevice dev(
     // Global clock
     .clock(clock),
@@ -157,7 +156,6 @@ module Top (
   );
   tilelink_a dev_tla;
   tilelink_d dev_tld;
-
 endmodule
 
 //------------------------------------------------------------------------------

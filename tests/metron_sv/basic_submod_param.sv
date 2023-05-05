@@ -38,5 +38,4 @@ module Module (
     // Global clock
     .clock(clock)
   );
-
 endmodule

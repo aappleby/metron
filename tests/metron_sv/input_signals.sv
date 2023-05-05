@@ -74,5 +74,4 @@ module Module (
   logic[7:0] submod_o_signal;
   logic[7:0] submod_o_reg;
   logic[7:0] submod_tock_ret;
-
 endmodule

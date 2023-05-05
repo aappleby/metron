@@ -28,6 +28,7 @@ struct MtCursor {
   CHECK_RETURN Err emit_newline();
   CHECK_RETURN Err emit_backspace();
   CHECK_RETURN Err emit_indent();
+  CHECK_RETURN Err start_line();
 
   // Generic emit()s.
   CHECK_RETURN Err emit_char(char c, uint32_t color = 0);
@@ -62,17 +63,12 @@ struct MtCursor {
   CHECK_RETURN Err emit_module_parameter_declaration(MnNode n);
   CHECK_RETURN Err emit_template_argument(MnNode n);
   CHECK_RETURN Err emit_enum_field(MnNode n);
-  CHECK_RETURN Err emit_leaf(MnNode n);
   CHECK_RETURN Err emit_literal(MnNode n);
 
   // Special-purpose emit()s
-  //CHECK_RETURN Err emit_broken_enum(MnNode n);
-  CHECK_RETURN Err emit_simple_enum(MnNode n);
   CHECK_RETURN Err emit_static_bit_extract(MnNode n, int bx_width);
   CHECK_RETURN Err emit_dynamic_bit_extract(MnNode n, MnNode bx_node);
   CHECK_RETURN Err emit_hoisted_decls(MnNode n);
-  CHECK_RETURN Err emit_init_declarator_as_decl(MnNode n);
-  CHECK_RETURN Err emit_init_declarator_as_assign(MnNode n);
   CHECK_RETURN Err emit_submod_binding_fields(MnNode n);
   CHECK_RETURN Err emit_field_as_component(MnNode field_decl);
   CHECK_RETURN Err emit_component_port_list(MnNode n);

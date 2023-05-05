@@ -57,7 +57,6 @@ module example_data_memory_bus (
   logic[31:0] data_memory_data;
   logic[31:0] data_memory_q;
 
-
  /*public*/
   always_comb begin : tock
     logic is_data_memory;

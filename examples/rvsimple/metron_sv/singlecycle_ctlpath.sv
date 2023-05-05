@@ -99,7 +99,6 @@ module singlecycle_ctlpath (
   logic control_data_mem_write_enable;
   logic[2:0] control_reg_writeback_select;
   logic[1:0] control_next_pc_select;
-
   control_transfer transfer(
     // Input signals
     .result_equal_zero(transfer_result_equal_zero),
@@ -110,7 +109,6 @@ module singlecycle_ctlpath (
   logic transfer_result_equal_zero;
   logic[2:0] transfer_inst_funct3;
   logic transfer_take_branch;
-
   alu_control alu_ctrl(
     // Input signals
     .alu_op_type(alu_ctrl_alu_op_type),
@@ -123,7 +121,6 @@ module singlecycle_ctlpath (
   logic[2:0] alu_ctrl_inst_funct3;
   logic[6:0] alu_ctrl_inst_funct7;
   logic[4:0] alu_ctrl_alu_function;
-
 endmodule
 
 `endif // SINGLECYCLE_CTLPATH_H

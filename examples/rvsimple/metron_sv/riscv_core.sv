@@ -122,7 +122,6 @@ module riscv_core (
   logic[2:0] datapath_inst_funct3;
   logic[6:0] datapath_inst_funct7;
   logic datapath_alu_result_equal_zero;
-
   singlecycle_ctlpath ctlpath(
     // Input signals
     .inst_opcode(ctlpath_inst_opcode),
@@ -153,7 +152,6 @@ module riscv_core (
   logic[2:0] ctlpath_reg_writeback_select;
   logic[4:0] ctlpath_alu_function;
   logic[1:0] ctlpath_next_pc_select;
-
   data_memory_interface dmem(
     // Input signals
     .read_enable(dmem_read_enable),
@@ -182,7 +180,6 @@ module riscv_core (
   logic[3:0] dmem_bus_byte_enable;
   logic dmem_bus_read_enable;
   logic dmem_bus_write_enable;
-
 endmodule
 
 `endif // RISCV_CORE_H

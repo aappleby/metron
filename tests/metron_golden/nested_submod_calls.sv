@@ -49,7 +49,6 @@ module Module (
   );
   logic[7:0] submod1_add_one_a;
   logic[7:0] submod1_add_one_ret;
-
   Submod2 submod2(
     // add_two() ports
     .add_two_a(submod2_add_two_a),
@@ -57,5 +56,4 @@ module Module (
   );
   logic[7:0] submod2_add_two_a;
   logic[7:0] submod2_add_two_ret;
-
 endmodule

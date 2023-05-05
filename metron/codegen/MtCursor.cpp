@@ -97,6 +97,17 @@ CHECK_RETURN Err MtCursor::emit_indent() {
 
 //----------------------------------------
 
+CHECK_RETURN Err MtCursor::start_line() {
+  Err err;
+  if (!at_newline) {
+    err << emit_newline();
+    err << emit_indent();
+  }
+  return err;
+}
+
+//----------------------------------------
+
 CHECK_RETURN Err MtCursor::emit_char(char c, uint32_t color) {
   Err err;
   // We ditch all '\r'.
@@ -822,47 +833,6 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
-// Replace "logic blah = x;" with "logic blah;"
-
-CHECK_RETURN Err MtCursor::emit_init_declarator_as_decl(MnNode n) {
-  Err err = emit_ws_to(n);
-
-  // FIXME loop style
-
-  err << emit_type(n.get_field(field_type));
-  err << emit_identifier(n.get_field(field_declarator).get_field(field_declarator));
-  err << prune_trailing_ws();
-  err << emit_print(";");
-  cursor = n.end();
-
-  return err << check_done(n);
-}
-
-//------------------------------------------------------------------------------
-// Replace "logic blah = x;" with "blah = x;"
-
-CHECK_RETURN Err MtCursor::emit_init_declarator_as_assign(MnNode n) {
-  Err err = emit_ws_to(n);
-
-  // FIXME loop style
-
-  auto decl = n.get_field(field_declarator);
-
-  // We don't need to emit anything for decls without initialization values.
-  if (decl.sym != sym_init_declarator) {
-    err << skip_over(n);
-  } else {
-    cursor = decl.start();
-    err << emit_declarator(decl);
-    err << prune_trailing_ws();
-    err << emit_print(";");
-    cursor = n.end();
-  }
-
-  return err << check_done(n);
-}
-
-//------------------------------------------------------------------------------
 // Emit local variable declarations at the top of the block scope.
 
 CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
@@ -1249,7 +1219,6 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
   if (has_template_params || has_constructor_params) {
 
     err << emit_print(" #(");
-    err << emit_newline();
     indent_stack.push_back(indent_stack.back() + "  ");
 
     // Count up how many parameters we're passing to the submodule.
@@ -1281,9 +1250,8 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
 
     // Emit template arguments as module parameters
     if (has_template_params) {
-      err << emit_indent();
+      err << start_line();
       err << emit_print("// Template Parameters");
-      err << emit_newline();
 
       auto template_args = node_type.get_field(field_arguments);
 
@@ -1305,20 +1273,18 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
         auto param = params[param_index];
         auto arg = args[param_index];
 
-        err << sub_cursor.emit_indent();
+        err << start_line();
         err << sub_cursor.emit_print(".%s(", param.name4().c_str());
         err << sub_cursor.emit_expression(arg);
         err << sub_cursor.emit_print(")");
         if(--param_count) err << sub_cursor.emit_print(",");
-        err << sub_cursor.emit_newline();
       }
     }
 
     // Emit constructor arguments as module parameters
     if (has_constructor_params) {
-      err << emit_indent();
+      err << start_line();
       err << emit_print("// Constructor Parameters");
-      err << emit_newline();
 
       // The parameter names come from the submodule's constructor
       const auto& params = component_mod->constructor->param_nodes;
@@ -1344,124 +1310,110 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
         auto param = params[param_index];
         auto arg = args[param_index];
 
-        err << sub_cursor.emit_indent();
+        err << start_line();
         err << sub_cursor.emit_print(".%s(", param.name4().c_str());
         err << sub_cursor.emit_expression(arg);
         err << sub_cursor.emit_print(")");
         if(--param_count) err << sub_cursor.emit_print(",");
-        err << sub_cursor.emit_newline();
       }
     }
     indent_stack.pop_back();
 
-    err << emit_indent();
+    err << start_line();
     err << emit_print(")");
   }
 
-  //err << emit_indent();
   err << emit_identifier(node_decl);
   err << emit_print("(");
-  err << emit_newline();
-  indent_stack.push_back(indent_stack.back() + "  ");
 
+  {
+    indent_stack.push_back(indent_stack.back() + "  ");
 
-  if (component_mod->needs_tick()) {
-    err << emit_indent();
-    err << emit_print("// Global clock");
-    err << emit_newline();
-    err << emit_indent();
-    err << emit_print(".clock(clock),");
-    err << emit_newline();
-    trailing_comma = true;
-  }
-
-  if (component_mod->input_signals.size()) {
-    err << emit_indent();
-    err << emit_print("// Input signals");
-    err << emit_newline();
-    for (auto f : component_mod->input_signals) {
-      err << emit_indent();
-      err << emit_print(".%s(%s_%s),", f->cname(), inst_name.c_str(), f->cname());
-      err << emit_newline();
+    if (component_mod->needs_tick()) {
+      err << start_line();
+      err << emit_print("// Global clock");
+      err << start_line();
+      err << emit_print(".clock(clock),");
       trailing_comma = true;
     }
-  }
 
-  if (component_mod->output_signals.size()) {
-    err << emit_indent();
-    err << emit_print("// Output signals");
-    err << emit_newline();
-    for (auto f : component_mod->output_signals) {
-      err << emit_indent();
-      err << emit_print(".%s(%s_%s),", f->cname(), inst_name.c_str(), f->cname());
-      err << emit_newline();
-      trailing_comma = true;
-    }
-  }
-
-  if (component_mod->output_registers.size()) {
-    err << emit_indent();
-    err << emit_print("// Output registers");
-    err << emit_newline();
-    for (auto f : component_mod->output_registers) {
-      err << emit_indent();
-      err << emit_print(".%s(%s_%s),", f->cname(), inst_name.c_str(), f->cname());
-      err << emit_newline();
-      trailing_comma = true;
-    }
-  }
-
-  for (auto m : component_mod->all_methods) {
-    if (m->is_constructor()) continue;
-    if (m->is_public() && m->internal_callers.empty()) {
-
-      if (m->param_nodes.size() || m->has_return()) {
-        err << emit_indent();
-        err << emit_print("// %s() ports", m->cname());
-        err << emit_newline();
-      }
-
-      int param_count = m->param_nodes.size();
-      for (int i = 0; i < param_count; i++) {
-        auto param = m->param_nodes[i];
-        auto node_type = param.get_field(field_type);
-        auto node_decl = param.get_field(field_declarator);
-
-        err << emit_indent();
-        err << emit_print(".%s_%s(%s_%s_%s),", m->cname(), node_decl.text().c_str(),
-                          inst_name.c_str(), m->cname(), node_decl.text().c_str());
-        err << emit_newline();
-        trailing_comma = true;
-      }
-
-      if (m->has_return()) {
-        auto node_type = m->_node.get_field(field_type);
-        auto node_decl = m->_node.get_field(field_declarator);
-        auto node_name = node_decl.get_field(field_declarator);
-
-        err << emit_indent();
-        err << emit_print(".%s_ret(%s_%s_ret),", m->cname(),
-                          inst_name.c_str(), m->cname());
-        err << emit_newline();
+    if (component_mod->input_signals.size()) {
+      err << start_line();
+      err << emit_print("// Input signals");
+      for (auto f : component_mod->input_signals) {
+        err << start_line();
+        err << emit_print(".%s(%s_%s),", f->cname(), inst_name.c_str(), f->cname());
         trailing_comma = true;
       }
     }
+
+    if (component_mod->output_signals.size()) {
+      err << start_line();
+      err << emit_print("// Output signals");
+      for (auto f : component_mod->output_signals) {
+        err << start_line();
+        err << emit_print(".%s(%s_%s),", f->cname(), inst_name.c_str(), f->cname());
+        trailing_comma = true;
+      }
+    }
+
+    if (component_mod->output_registers.size()) {
+      err << start_line();
+      err << emit_print("// Output registers");
+      for (auto f : component_mod->output_registers) {
+        err << start_line();
+        err << emit_print(".%s(%s_%s),", f->cname(), inst_name.c_str(), f->cname());
+        trailing_comma = true;
+      }
+    }
+
+    for (auto m : component_mod->all_methods) {
+      if (m->is_constructor()) continue;
+      if (m->is_public() && m->internal_callers.empty()) {
+
+        if (m->param_nodes.size() || m->has_return()) {
+          err << start_line();
+          err << emit_print("// %s() ports", m->cname());
+        }
+
+        int param_count = m->param_nodes.size();
+        for (int i = 0; i < param_count; i++) {
+          auto param = m->param_nodes[i];
+          auto node_type = param.get_field(field_type);
+          auto node_decl = param.get_field(field_declarator);
+
+          err << start_line();
+          err << emit_print(".%s_%s(%s_%s_%s),", m->cname(), node_decl.text().c_str(),
+                            inst_name.c_str(), m->cname(), node_decl.text().c_str());
+          trailing_comma = true;
+        }
+
+        if (m->has_return()) {
+          auto node_type = m->_node.get_field(field_type);
+          auto node_decl = m->_node.get_field(field_declarator);
+          auto node_name = node_decl.get_field(field_declarator);
+
+          err << start_line();
+          err << emit_print(".%s_ret(%s_%s_ret),", m->cname(),
+                            inst_name.c_str(), m->cname());
+          trailing_comma = true;
+        }
+      }
+    }
+
+    // Remove trailing comma from port list
+    if (trailing_comma) {
+      //err << emit_backspace();
+      err << emit_backspace();
+      trailing_comma = false;
+    }
+
+    indent_stack.pop_back();
   }
 
-  // Remove trailing comma from port list
-  if (trailing_comma) {
-    err << emit_backspace();
-    err << emit_backspace();
-    err << emit_newline();
-    trailing_comma = false;
-  }
-
-  indent_stack.pop_back();
-
-  err << emit_indent();
+  err << start_line();
   err << emit_print(")");
   err << emit_text(node_semi);
-  err << emit_newline();
 
   return err;
 }
@@ -1496,7 +1448,6 @@ CHECK_RETURN Err MtCursor::emit_field_as_component(MnNode n) {
   }
 
   err << emit_component_port_list(n);
-
   err << emit_submod_binding_fields(n);
   cursor = n.end();
 
@@ -1517,8 +1468,6 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
   if (current_mod->components.empty()) {
     return err;
   }
-
-  assert(at_newline);
 
   auto component_type_node = component_decl.child(0);  // type
   auto component_name_node = component_decl.child(1);  // decl
@@ -1554,14 +1503,13 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
     subcursor.id_replacements = replacements;
     subcursor.cursor = output_type.start();
 
-    err << emit_indent();
+    err << start_line();
     err << subcursor.emit_type(output_type);
     err << subcursor.emit_ws();
     err << emit_print("%s_", component_cname);
     err << subcursor.emit_identifier(output_decl);
     err << prune_trailing_ws();
     err << emit_print(";");
-    err << emit_newline();
   }
 
   for (auto n : component_mod->input_method_params) {
@@ -1574,14 +1522,13 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
     subcursor.id_replacements = replacements;
     subcursor.cursor = output_type.start();
 
-    err << emit_indent();
+    err << start_line();
     err << subcursor.emit_type(output_type);
     err << subcursor.emit_ws();
     err << emit_print("%s_%s_", component_cname, n->func_name.c_str());
     err << subcursor.emit_identifier(output_decl);
     err << prune_trailing_ws();
     err << emit_print(";");
-    err << emit_newline();
   }
 
   for (auto n : component_mod->output_signals) {
@@ -1594,14 +1541,13 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
     subcursor.id_replacements = replacements;
     subcursor.cursor = output_type.start();
 
-    err << emit_indent();
+    err << start_line();
     err << subcursor.emit_type(output_type);
     err << subcursor.emit_ws();
     err << emit_print("%s_", component_cname);
     err << subcursor.emit_identifier(output_decl);
     err << prune_trailing_ws();
     err << emit_print(";");
-    err << emit_newline();
   }
 
   for (auto n : component_mod->output_registers) {
@@ -1614,14 +1560,13 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
     subcursor.id_replacements = replacements;
     subcursor.cursor = output_type.start();
 
-    err << emit_indent();
+    err << start_line();
     err << subcursor.emit_type(output_type);
     err << subcursor.emit_ws();
     err << emit_print("%s_", component_cname);
     err << subcursor.emit_identifier(output_decl);
     err << prune_trailing_ws();
     err << emit_print(";");
-    err << emit_newline();
   }
 
   for (auto m : component_mod->output_method_returns) {
@@ -1636,14 +1581,13 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     sub_cursor.cursor = getter_type.start();
 
-    err << emit_indent();
+    err << start_line();
     err << sub_cursor.emit_type(getter_type);
     err << sub_cursor.emit_ws();
     err << emit_print("%s_", component_cname);
     err << sub_cursor.emit_identifier(getter_name);
     err << prune_trailing_ws();
     err << emit_print("_ret;");
-    err << emit_newline();
   }
 
   return err;

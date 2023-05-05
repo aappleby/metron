@@ -44,5 +44,4 @@ module Module (
     .tock_arg(submod_tock_arg)
   );
   logic[7:0] submod_tock_arg;
-
 endmodule

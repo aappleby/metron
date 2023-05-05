@@ -37,7 +37,6 @@ module example_text_memory_bus (
   logic[rv_config::TEXT_BITS - 2-1:0] text_memory_address;
   logic[31:0] text_memory_q;
 
-
  /*public*/
   always_comb begin : tock_read_data
     logic[31:0] fetched;

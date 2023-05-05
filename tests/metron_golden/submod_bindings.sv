@@ -66,5 +66,4 @@ module Module (
   logic[7:0] submod_sum_b_b2;
   logic[7:0] submod_sum_a_ret;
   logic[7:0] submod_sum_b_ret;
-
 endmodule

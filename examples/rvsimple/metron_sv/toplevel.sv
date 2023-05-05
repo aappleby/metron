@@ -96,7 +96,6 @@ module toplevel (
   logic core_bus_write_enable;
   logic[31:0] core_pc;
 
-
   example_text_memory_bus #(
     // Constructor Parameters
     .filename(text_filename)
@@ -108,7 +107,6 @@ module toplevel (
   );
   logic[31:0] text_memory_bus_address;
   logic[31:0] text_memory_bus_read_data;
-
   example_data_memory_bus #(
     // Constructor Parameters
     .filename(data_filename)
@@ -130,7 +128,6 @@ module toplevel (
   logic data_memory_bus_read_enable;
   logic data_memory_bus_write_enable;
   logic[31:0] data_memory_bus_read_data;
-
 endmodule
 
 `endif // TOPLEVEL_H

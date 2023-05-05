@@ -78,7 +78,6 @@ module Top (
   );
   logic[9:0] mod_tock_new_addr;
   logic[7:0] mod_get_data_ret;
-
 endmodule
 
 //----------------------------------------

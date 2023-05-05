@@ -44,5 +44,4 @@ module Module (
     .sub_reg(submod_sub_reg)
   );
   logic[7:0] submod_sub_reg;
-
 endmodule

@@ -1702,6 +1702,34 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
 
 
+//------------------------------------------------------------------------------
+
+typedef std::function<Err(MtCursor*, MnNode node)> emit_cb;
+typedef std::map<std::pair<int, int>, emit_cb> emit_map;
+
+emit_map emit_sym_enumerator_list_map = {
+  { {0, anon_sym_COMMA},  &MtCursor::emit_text },
+  // Enum lists do _not_ turn braces into begin/end.
+  { {0, anon_sym_RBRACE}, &MtCursor::emit_text },
+  { {0, anon_sym_LBRACE}, &MtCursor::emit_text },
+  { {0, sym_comment},     &MtCursor::emit_sym_comment },
+  { {0, sym_enumerator},  &MtCursor::emit_sym_enumerator },
+};
+
+#if 0
+emit_map emit_sym_enumerator_map = {
+  { {0, sym_identifier},      &MtCursor::emit_sym_identifier },
+  { {0, anon_sym_EQ},         &MtCursor::emit_text },
+  { {0, sym_number_literal},  &MtCursor::emit_sym_number_literal },
+};
+#endif
+
+typedef std::map<int, emit_map*> emit_metamap;
+
+emit_metamap _emits = {
+  { sym_enumerator_list, &emit_sym_enumerator_list_map },
+  //{ sym_enumerator,      &emit_sym_enumerator_map },
+};
 
 //------------------------------------------------------------------------------
 
@@ -1726,31 +1754,13 @@ CHECK_RETURN Err MtCursor::emit_sym_enumerator(MnNode node) {
   return err << check_done(node);
 }
 
-typedef std::function<Err(MtCursor*, MnNode node)> emit_cb;
-typedef std::map<std::pair<int, int>, emit_cb> emit_map;
-
-emit_map emit_sym_enumerator_list_map = {
-  { {0, anon_sym_COMMA},  &MtCursor::emit_text },
-  // Enum lists do _not_ turn braces into begin/end.
-  { {0, anon_sym_RBRACE}, &MtCursor::emit_text },
-  { {0, anon_sym_LBRACE}, &MtCursor::emit_text },
-  { {0, sym_comment},     &MtCursor::emit_sym_comment },
-  { {0, sym_enumerator},  &MtCursor::emit_sym_enumerator },
-};
-
-typedef std::map<int, emit_map*> emit_metamap;
-
-emit_metamap _emits = {
-  { sym_enumerator_list, &emit_sym_enumerator_list_map },
-};
-
 CHECK_RETURN Err MtCursor::emit_sym_enumerator_list(MnNode node) {
   Err err = emit_ws_to(sym_enumerator_list, node);
 
-  auto& sym_map = emit_sym_enumerator_list_map;
+  auto& sym_map = _emits[sym_enumerator_list];
 
   for (auto child : node) {
-    if (auto cb = sym_map.find(std::pair<int, int>(child.field, child.sym)); cb != sym_map.end()) {
+    if (auto cb = sym_map->find(std::pair<int, int>(child.field, child.sym)); cb != sym_map->end()) {
       err << cb->second(this, child);
     }
     else {
@@ -1759,6 +1769,28 @@ CHECK_RETURN Err MtCursor::emit_sym_enumerator_list(MnNode node) {
   }
 
   return err << check_done(node);
+}
+
+const int field_none = 0;
+
+
+emit_map emit_sym_enum_specifier_map = {
+  { {field_none, anon_sym_enum},               &MtCursor::emit_text },
+  { {field_none, anon_sym_class},              &MtCursor::skip_over },
+  { {field_name, alias_sym_type_identifier},   &MtCursor::skip_over },
+  { {field_none, anon_sym_COLON},              &MtCursor::skip_over },
+  { {field_base, alias_sym_type_identifier},   &MtCursor::emit_sym_type_identifier },
+  { {field_body, sym_enumerator_list},         &MtCursor::emit_sym_enumerator_list },
+};
+
+CHECK_RETURN Err MtCursor::emit_sym_qualified_identifier_as_type(MnNode n) {
+  // enum class sized_enum : logic<8>::BASE { A8 = 0b01, B8 = 0x02, C8 = 3 };
+  Err err = emit_ws_to(sym_qualified_identifier, n);
+  auto node_scope = n.get_field(field_scope);
+  cursor = node_scope.start();
+  err << emit_type(node_scope);
+  cursor = n.end();
+  return err;
 }
 
 CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
@@ -1831,15 +1863,25 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
 
 //------------------------------------------------------------------------------
 
+#if 0
+emit_map emit_sym_field_declaration_map = {
+  { {field_none,       sym_enum_specifier},          &MtCursor::emit_sym_enum_specifier},
+  { {field_declarator, anon_sym_class},              &MtCursor::skip_over },
+};
+#endif
+
+
 CHECK_RETURN Err MtCursor::emit_enum_field(MnNode n) {
+  //n.dump_tree();
+
   Err err = emit_ws_to(sym_field_declaration, n);
 
   for (auto child : n) {
     if (child.sym == sym_enum_specifier) {
       err << emit_sym_enum_specifier(child);
     }
-    else if (child.field == field_declarator) {
-      err << emit_declarator(child);
+    else if (child.sym == alias_sym_field_identifier) {
+      err << emit_sym_field_identifier(child);
     }
     else if (child.sym == anon_sym_SEMI) {
       err << emit_text(child);

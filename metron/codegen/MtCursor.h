@@ -105,6 +105,8 @@ struct MtCursor {
   CHECK_RETURN Err emit_func_trigger_comb(MnNode n);
   CHECK_RETURN Err emit_func_trigger_ff(MnNode n);
 
+  CHECK_RETURN Err emit_sym_qualified_identifier_as_type(MnNode node);
+
   // Per-symbol emit()s.
   // clang-format off
   CHECK_RETURN Err emit_sym_translation_unit(MnNode n);

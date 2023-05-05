@@ -17,6 +17,12 @@
 
 // enum struct {} ? same as enum class
 
+typedef enum {
+  A0,
+  B0,
+  C0
+} top_level_enum;
+
 // clang-format off
 module Module (
   // test1() ports

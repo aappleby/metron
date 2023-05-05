@@ -1741,13 +1741,6 @@ CHECK_RETURN Err MtCursor::emit_sym_enumerator(MnNode node) {
   return err << check_done(node);
 }
 
-// sym_enumerator_list
-//   anon_sym_COMMA
-//   anon_sym_RBRACE
-//   anon_sym_LBRACE
-//   sym_comment
-//   sym_enumerator
-
 typedef std::function<Err(MtCursor*, MnNode node)> emit_cb;
 typedef std::map<std::pair<int, int>, emit_cb> emit_map;
 
@@ -1782,61 +1775,8 @@ CHECK_RETURN Err MtCursor::emit_sym_enumerator_list(MnNode node) {
   return err << check_done(node);
 }
 
-/*
-[000.003] ========== tree dump begin
-[000.003]  + type: enum_specifier (253) =
-[000.003]  |--# lit (81) = "enum"
-[000.003]  |--# lit (82) = "class"
-[000.003]  |--# name: type_identifier (444) = "sized_enum"
-[000.004]  |--# lit (85) = ":"
-[000.004]  |--+ base: qualified_identifier (401) =
-[000.004]  |  |--+ scope: template_type (348) =
-[000.004]  |  |  |--# name: type_identifier (444) = "logic"
-[000.004]  |  |  |--+ arguments: template_argument_list (351) =
-[000.004]  |  |     |--# lit (36) = "<"
-[000.004]  |  |     |--# number_literal (126) = "8"
-[000.004]  |  |     |--# lit (33) = ">"
-[000.004]  |  |--# lit (43) = "::"
-[000.004]  |  |--# name: type_identifier (444) = "BASE"
-[000.004]  |--+ body: enumerator_list (254) =
-[000.004]     |--# lit (59) = "{"
-[000.004]     |--+ enumerator (261) =
-[000.004]     |  |--# name: identifier (1) = "A8"
-[000.004]     |  |--# lit (63) = "="
-[000.004]     |  |--# value: number_literal (126) = "0b01"
-[000.005]     |--# lit (7) = ","
-[000.005]     |--+ enumerator (261) =
-[000.005]     |  |--# name: identifier (1) = "B8"
-[000.005]     |  |--# lit (63) = "="
-[000.005]     |  |--# value: number_literal (126) = "0x02"
-[000.005]     |--# lit (7) = ","
-[000.005]     |--+ enumerator (261) =
-[000.005]     |  |--# name: identifier (1) = "C8"
-[000.005]     |  |--# lit (63) = "="
-[000.005]     |  |--# value: number_literal (126) = "3"
-[000.005]     |--# lit (60) = "}"
-[000.005] ========== tree dump end
-
-
-[000.003] ========== tree dump begin
-[000.003]  + type: enum_specifier (253) =
-[000.003]  |--# lit (81) = "enum" anon_sym_enum
-[000.003]  |--# lit (82) = "class"  anon_sym_class
-[000.003]  |--# name: type_identifier (444) = "sized_enum"
-[000.004]  |--# lit (85) = ":" anon_sym_COLON
-[000.004]  |--+ base: qualified_identifier (401) =
-[000.004]  |--+ body: enumerator_list (254) =
-[000.005] ========== tree dump end
-
-
-  typedef enum logic[7:0] { A8 = 8'b01, B8 = 8'h02, C8 = 8'd3 } sized_enum;
-
-*/
-
 CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
   Err err = emit_ws_to(sym_enum_specifier, n);
-
-  n.dump_tree();
 
   // Extract enum name, if present.
   std::string enum_name = "";
@@ -1909,10 +1849,7 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_enum_field(MnNode n) {
-  //n.dump_tree();
-
-  Err err = emit_ws_to(n);
-
+  Err err = emit_ws_to(sym_field_declaration, n);
 
   for (auto child : n) {
     if (child.sym == sym_enum_specifier) {
@@ -3023,6 +2960,12 @@ CHECK_RETURN Err MtCursor::emit_toplevel_node(MnNode node) {
 
     case anon_sym_SEMI:
       err << skip_over(node);
+      //err << emit_text(node);
+      break;
+
+    case sym_enum_specifier:
+      err << emit_sym_enum_specifier(node);
+      err << emit_print(";");
       break;
 
     default:

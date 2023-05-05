@@ -17,6 +17,12 @@
 
 // enum struct {} ? same as enum class
 
+enum top_level_enum {
+  A0,
+  B0,
+  C0
+};
+
 // clang-format off
 class Module {
  public:

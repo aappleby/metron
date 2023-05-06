@@ -1088,7 +1088,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_task(MnNode n) {
   for (auto c : n) {
     err << emit_ws_to(c);
     if (c.field == field_type) {
-      err << emit_print("task automatic ");
+      err << emit_print("task automatic");
       err << skip_over(c);
     }
     else if (c.field == field_declarator) {
@@ -2675,7 +2675,6 @@ CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnNode n) {
 
   err << emit_ws_to(class_name);
   err << emit_type(class_name);
-  err << emit_print(" ");
 
   err << emit_ws_to(class_body);
   err << emit_module_ports(class_body);
@@ -3802,14 +3801,18 @@ CHECK_RETURN Err MtCursor::emit_sym_declaration(MnNode n, bool elide_type, bool 
     for (auto child : n) {
       err << emit_ws_to(child);
 
-      if (child.sym == sym_storage_class_specifier)
+      if (child.sym == sym_storage_class_specifier) {
         err << skip_over(child);
+        err << skip_ws();
+      }
       else if (child.sym == sym_type_qualifier) {
         err << skip_over(child);
+        err << skip_ws();
       }
       else if (child.field == field_type) {
         if (elide_type) {
           err << skip_over(child);
+          err << skip_ws();
         }
         else {
           err << emit_type(child);
@@ -3847,6 +3850,8 @@ CHECK_RETURN Err MtCursor::emit_sym_sized_type_specifier(MnNode n) {
   }
 
   for (auto c : n) {
+    err << emit_ws_to(c);
+
     if (c.field == field_type) {
       err << skip_over(c);
     }

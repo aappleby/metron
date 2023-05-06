@@ -9,7 +9,7 @@ typedef struct packed {
   logic[31:0] a_data;
 } tilelink_a;
 
-module block_ram  (
+module block_ram (
   // global clock
   input logic clock,
   // output signals

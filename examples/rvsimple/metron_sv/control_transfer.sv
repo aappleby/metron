@@ -20,17 +20,15 @@ module control_transfer (
  /*public*/
 
   always_comb begin : tock_take_branch
-
     import rv_constants::*;
     // clang-format off
     case (inst_funct3)
-
-      FUNCT3_BRANCH_EQ:  take_branch = !result_equal_zero;
-      FUNCT3_BRANCH_NE:  take_branch = result_equal_zero;
-      FUNCT3_BRANCH_LT:  take_branch = !result_equal_zero;
-      FUNCT3_BRANCH_GE:  take_branch = result_equal_zero;
-      FUNCT3_BRANCH_LTU: take_branch = !result_equal_zero;
-      FUNCT3_BRANCH_GEU: take_branch = result_equal_zero;
+       FUNCT3_BRANCH_EQ:  take_branch = !result_equal_zero;
+       FUNCT3_BRANCH_NE:  take_branch = result_equal_zero;
+       FUNCT3_BRANCH_LT:  take_branch = !result_equal_zero;
+       FUNCT3_BRANCH_GE:  take_branch = result_equal_zero;
+       FUNCT3_BRANCH_LTU: take_branch = !result_equal_zero;
+       FUNCT3_BRANCH_GEU: take_branch = result_equal_zero;
       default:                take_branch = 'x;
     endcase
     // clang-format on

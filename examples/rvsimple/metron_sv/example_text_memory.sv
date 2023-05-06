@@ -17,13 +17,12 @@ module example_text_memory (
   output logic[31:0] q
 );
  /*public*/
-  parameter filename = "";initial begin
-
+  parameter filename = "";
+  initial begin
     if (filename) $readmemh(filename, mem);
   end
 
-  always_comb begin : tock_q
- q = mem[address]; end
+  always_comb begin : tock_q   q = mem[address]; end
 
  /*private*/
   logic[31:0] mem[2**(rv_config::TEXT_BITS - 2)];

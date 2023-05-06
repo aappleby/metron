@@ -2,7 +2,7 @@
 
 // Make sure our built-in functions translate.
 
-module Module  (
+module Module (
   // output signals
   output int sig
 );
@@ -16,12 +16,12 @@ module Module  (
     logic[7:0] e;
     logic[7:0] c;
     logic[7:0] d;
-     src = 100;
-     a = $signed(src);
-     b = $unsigned(src);
-     e = $signed(2'(src));
-     c = $clog2(100);
-     d = 2**(4);
+    src = 100;
+    a = $signed(src);
+    b = $unsigned(src);
+    e = $signed(2'(src));
+    c = $clog2(100);
+    d = 2**(4);
     sig = 1;
   end
 

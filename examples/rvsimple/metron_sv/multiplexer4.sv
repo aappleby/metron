@@ -24,16 +24,14 @@ module multiplexer4 (
  /*public*/
 
   always_comb begin : tock
-
     case (sel)
-
-      0:
+       0:
         out = in0;
-      1:
+       1:
         out = in1;
-      2:
+       2:
         out = in2;
-      3:
+       3:
         out = in3;
       default:
         out = 'x;

@@ -3,7 +3,7 @@
 // Port and function arg names can collide, the latter is disambiguated by its
 // function name.
 
-module Module  (
+module Module (
   // input signals
   input int input_val,
   // output signals

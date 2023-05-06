@@ -34,15 +34,14 @@ module toplevel (
 
 
   parameter text_filename = "";
-  parameter data_filename = "";initial
+  parameter data_filename = "";
+  initial
   begin
-
   end
 
   //----------------------------------------
 
   always_comb begin : tock
-
     core_reset = reset;
 
     text_memory_bus_address = core_pc;

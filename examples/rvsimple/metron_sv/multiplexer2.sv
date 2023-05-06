@@ -22,12 +22,10 @@ module multiplexer2 (
  /*public*/
 
   always_comb begin : tock
-
     case (sel)
-
-      0:
+       0:
         out = in0;
-      1:
+       1:
         out = in1;
       default:
         out = 'x;

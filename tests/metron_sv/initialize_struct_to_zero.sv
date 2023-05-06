@@ -6,7 +6,7 @@ typedef struct packed {
   logic[7:0] field;
 } MyStruct1;
 
-module Module  (
+module Module (
 );
 /*public*/
 

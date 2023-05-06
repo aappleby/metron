@@ -3,7 +3,7 @@
 // Public fields that are read by the module but never written become input
 // ports.
 
-module Submod  (
+module Submod (
   // global clock
   input logic clock,
   // input signals
@@ -31,7 +31,7 @@ module Submod  (
   end
 endmodule
 
-module Module  (
+module Module (
   // global clock
   input logic clock,
   // output registers
@@ -42,7 +42,7 @@ module Module  (
   always_comb begin : tock
     logic[7:0] submod_return;
     submod_i_signal = 12;
-    submod_tock_i_param = 13; submod_return = submod_tock_ret;
+    submod_tock_i_param = 13;submod_return = submod_tock_ret;
     my_sig = submod_return + 3;
   end
 

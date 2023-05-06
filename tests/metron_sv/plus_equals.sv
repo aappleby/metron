@@ -1,4 +1,4 @@
-module Metron  (
+module Metron (
   // global clock
   input logic clock,
   // output signals
@@ -15,7 +15,7 @@ module Metron  (
 
   always_comb begin : tock
     int x;
-     x = 7;
+    x = 7;
     x = x + 13;
     x = x - 13;
     x = x * 13;

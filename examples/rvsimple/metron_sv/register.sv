@@ -24,15 +24,12 @@ module single_register (
   parameter INITIAL = 0;
  /*public*/
 
-  initial begin
- value = INITIAL; end
+  initial begin value = INITIAL; end
 
-  always_comb begin : tock
- end
+  always_comb begin : tock    end
 
  /*private*/
   always_ff @(posedge clock) begin : tick
-
     if (reset)
       value <= INITIAL;
     else if (write_enable)

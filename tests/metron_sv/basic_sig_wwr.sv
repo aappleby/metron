@@ -2,7 +2,7 @@
 
 // Writing a register multiple times in the same function is OK.
 
-module Module  (
+module Module (
   // output signals
   output logic my_sig
 );
@@ -12,7 +12,7 @@ module Module  (
     logic temp;
     my_sig = 0;
     my_sig = 1;
-     temp = my_sig;
+    temp = my_sig;
   end
 
 endmodule

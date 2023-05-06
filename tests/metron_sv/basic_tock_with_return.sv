@@ -2,7 +2,7 @@
 
 // Tock methods can return values.
 
-module Module  (
+module Module (
   // output signals
   output int my_sig,
   // tock() ports

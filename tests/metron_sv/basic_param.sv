@@ -2,7 +2,7 @@
 
 // Template parameters become SV module parameters.
 
-module Module  (
+module Module (
   // global clock
   input logic clock
 );

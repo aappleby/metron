@@ -3,7 +3,7 @@
 // Submodule bindings should be placed immediately before the statement
 // containing the call
 
-module Submod  (
+module Submod (
   // sum_a() ports
   input logic[7:0] sum_a_a1,
   input logic[7:0] sum_a_a2,
@@ -19,7 +19,7 @@ module Submod  (
   always_comb begin : sum_b   sum_b_ret = sum_b_b1 + sum_b_b2; end
 endmodule
 
-module Module  (
+module Module (
   // tock_bindings() ports
   output logic[7:0] tock_bindings_ret
 );

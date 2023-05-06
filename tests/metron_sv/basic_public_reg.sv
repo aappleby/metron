@@ -2,7 +2,7 @@
 
 // Public register member variables get moved to the output port list.
 
-module Module  (
+module Module (
   // global clock
   input logic clock,
   // output registers

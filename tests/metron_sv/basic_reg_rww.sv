@@ -2,7 +2,7 @@
 
 // Writing a register multiple times in the same function is OK.
 
-module Module  (
+module Module (
   // global clock
   input logic clock
 );
@@ -15,7 +15,7 @@ module Module  (
 
   always_ff @(posedge clock) begin : tick
     logic temp;
-     temp = my_reg;
+    temp = my_reg;
     my_reg <= 0;
     my_reg <= 1;
   end

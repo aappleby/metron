@@ -273,6 +273,19 @@ CHECK_RETURN Err MtCursor::skip_ws() {
   return err;
 }
 
+CHECK_RETURN Err MtCursor::skip_ws_inside(const MnNode& n) {
+  Err err;
+
+  while (*cursor && isspace(*cursor) && (*cursor != '\n') && (cursor < n.end())) {
+    if (echo) {
+      LOG_C(0x8080FF, "_");
+    }
+    cursor++;
+  }
+
+  return err;
+}
+
 //----------------------------------------
 
 CHECK_RETURN Err MtCursor::prune_trailing_ws() {
@@ -3342,12 +3355,14 @@ CHECK_RETURN Err MtCursor::emit_sym_case_statement(MnNode n) {
     switch (c.sym) {
       case sym_break_statement:
         err << skip_over(c);
+        err << skip_ws_inside(n);
         break;
       case sym_identifier:
         err << emit_sym_identifier(c);
         break;
       case anon_sym_case:
         err << skip_over(c);
+        err << skip_ws();
         break;
       case anon_sym_COLON:
         if (anything_after_colon) {

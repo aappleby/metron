@@ -2,11 +2,11 @@ module Metron  (
   // global clock
   input logic clock,
   // output signals
-  output intmy_sig,
+  output int my_sig,
   // output registers
-  output intmy_reg1,
-  output intmy_reg2,
-  output intmy_reg3
+  output int my_reg1,
+  output int my_reg2,
+  output int my_reg3
 );
 /*public*/
 

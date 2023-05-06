@@ -5,10 +5,10 @@
 
 module Module  (
   // input signals
-  input intinput_val,
+  input int input_val,
   // output signals
-  output intoutput1,
-  output intoutput2,
+  output int output1,
+  output int output2,
   // tock2() ports
   input int tock2_input_val
 );

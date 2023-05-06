@@ -6,7 +6,7 @@ module Module  (
   // global clock
   input logic clock,
   // output registers
-  output logicmy_reg
+  output logic my_reg
 );
 /*public*/
   always_comb begin : tock

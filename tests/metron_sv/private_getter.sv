@@ -4,7 +4,7 @@
 
 module Module  (
   // output signals
-  output intmy_sig,
+  output int my_sig,
   // tock() ports
   output int tock_ret
 );

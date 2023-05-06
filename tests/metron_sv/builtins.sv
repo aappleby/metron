@@ -4,7 +4,7 @@
 
 module Module  (
   // output signals
-  output intsig
+  output int sig
 );
 /*public*/
 

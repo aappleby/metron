@@ -4,7 +4,7 @@
 
 module Module  (
   // output signals
-  output logicmy_sig
+  output logic my_sig
 );
 /*public*/
 

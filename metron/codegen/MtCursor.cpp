@@ -2529,7 +2529,7 @@ CHECK_RETURN Err MtCursor::emit_field_port(MtField* f) {
   cursor = node_type.start();
   err << emit_type(node_type);
 
-  cursor = node_decl.start();
+  err << emit_ws_to(node_decl);
   err << emit_identifier(node_decl);
 
   err << emit_print(",");

@@ -2,12 +2,11 @@
 
 // Template parameters become SV module parameters.
 
-module Module (
+module Module  (
   // global clock
   input logic clock
 );
   parameter SOME_CONSTANT = 7;
-
 /*public*/
 
   always_comb begin : tock

@@ -3,11 +3,11 @@
 // Comments surrounded by / * # <something # * / get unwrapped and dropped
 // directly in the output file.
 
-module Module (
+module Module  (
   // global clock
   input logic clock,
   // output registers
-  output int my_reg
+  output intmy_reg
 );
 /*public*/
 

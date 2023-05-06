@@ -26,36 +26,41 @@ module uart_top (
 );
   parameter cycles_per_bit = 3;
   parameter repeat_msg = 0;
-
 /*public*/
 
   // The actual bit of data currently on the transmitter's output
   always_comb begin : get_serial
+
     get_serial_ret = tx_get_serial_ret;
   end
 
   // Returns true if the receiver has a byte in its buffer
   always_comb begin : get_valid
+
     get_valid_ret = rx_get_valid_ret;
   end
 
   // The next byte of data from the receiver
   always_comb begin : get_data_out
+
     get_data_out_ret = rx_get_data_out_ret;
   end
 
   // True if the client has sent its message and the transmitter has finished
   // transmitting it.
   always_comb begin : get_done
+
     get_done_ret = hello_get_done_ret && tx_get_idle_ret;
   end
 
   // Checksum of all the bytes received
   always_comb begin : get_checksum
+
     get_checksum_ret = rx_get_checksum_ret;
   end
 
   always_comb begin : tock
+
     logic[7:0] data;
     logic request;
     logic serial;

@@ -28,9 +28,11 @@ module singlecycle_control (
  /*public*/
 
   always_comb begin : tock_next_pc_select
+
     import rv_constants::*;
     // clang-format off
     case (inst_opcode)
+
       OPCODE_BRANCH: next_pc_select = take_branch ? CTL_PC_PC_IMM : CTL_PC_PC4;
       OPCODE_JALR:   next_pc_select = CTL_PC_RS1_IMM;
       OPCODE_JAL:    next_pc_select = CTL_PC_PC_IMM;
@@ -39,12 +41,15 @@ module singlecycle_control (
     // clang-format on
   end
 
-  always_comb begin : tock_pc_write_enable pc_write_enable = 1'b1; end
+  always_comb begin : tock_pc_write_enable
+ pc_write_enable = 1'b1; end
 
   always_comb begin : tock_regfile_write_enable
+
     import rv_constants::*;
     // clang-format off
     case (inst_opcode)
+
       OPCODE_MISC_MEM: regfile_write_enable = 0;
       OPCODE_STORE:    regfile_write_enable = 0;
       OPCODE_BRANCH:   regfile_write_enable = 0;
@@ -61,10 +66,12 @@ module singlecycle_control (
   end
 
   always_comb begin : tock_alu_operand_a_select
+
     import rv_constants::*;
 
     // clang-format off
     case (inst_opcode)
+
       OPCODE_AUIPC:    alu_operand_a_select = CTL_ALU_A_PC;
       OPCODE_JAL:      alu_operand_a_select = CTL_ALU_A_PC;
 
@@ -82,10 +89,12 @@ module singlecycle_control (
   end
 
   always_comb begin : tock_alu_operand_b_select
+
     import rv_constants::*;
 
     // clang-format off
     case (inst_opcode)
+
       OPCODE_AUIPC:    alu_operand_b_select = CTL_ALU_B_IMM;
       OPCODE_JAL:      alu_operand_b_select = CTL_ALU_B_IMM;
 
@@ -103,10 +112,12 @@ module singlecycle_control (
   end
 
   always_comb begin : tock_alu_op_type
+
     import rv_constants::*;
 
     // clang-format off
     case (inst_opcode)
+
       OPCODE_AUIPC:    alu_op_type = CTL_ALU_ADD;
       OPCODE_JAL:      alu_op_type = CTL_ALU_ADD;
 
@@ -123,20 +134,24 @@ module singlecycle_control (
   end
 
   always_comb begin : tock_data_mem_read_enable
+
     import rv_constants::*;
     data_mem_read_enable = inst_opcode == OPCODE_LOAD;
   end
 
   always_comb begin : tock_data_mem_write_enable
+
     import rv_constants::*;
     data_mem_write_enable = inst_opcode == OPCODE_STORE;
   end
 
   always_comb begin : tock_reg_writeback_select
+
     import rv_constants::*;
 
     // clang-format off
     case (inst_opcode)
+
       OPCODE_OP_IMM:   reg_writeback_select = CTL_WRITEBACK_ALU;
       OPCODE_AUIPC:    reg_writeback_select = CTL_WRITEBACK_ALU;
       OPCODE_OP:       reg_writeback_select = CTL_WRITEBACK_ALU;

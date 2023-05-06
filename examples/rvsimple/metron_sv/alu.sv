@@ -22,10 +22,12 @@ module alu (
  /*public*/
 
   always_comb begin : tock
+
     import rv_constants::*;
 
     // clang-format off
     case (alu_function)
+
       ALU_ADD:  result = operand_a + operand_b;
       ALU_SUB:  result = operand_a - operand_b;
       ALU_SLL:  result = operand_a << 5'(operand_b);

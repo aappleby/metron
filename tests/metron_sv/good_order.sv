@@ -3,7 +3,7 @@
 // Declaration order _matters_ - a tock() that reads a reg before the tick()
 // that writes it is OK.
 
-module Module (
+module Module  (
   // global clock
   input logic clock
 );

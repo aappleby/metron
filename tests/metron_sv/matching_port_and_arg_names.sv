@@ -3,12 +3,12 @@
 // Port and function arg names can collide, the latter is disambiguated by its
 // function name.
 
-module Module (
+module Module  (
   // input signals
-  input int input_val,
+  input intinput_val,
   // output signals
-  output int output1,
-  output int output2,
+  output intoutput1,
+  output intoutput2,
   // tock2() ports
   input int tock2_input_val
 );

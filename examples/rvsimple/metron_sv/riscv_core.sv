@@ -32,10 +32,12 @@ module riscv_core (
 
 
   always_comb begin : tock_pc
+
     pc = datapath_pc;
   end
 
   always_comb begin : tock_execute
+
     datapath_inst = inst;
 
     ctlpath_inst_opcode = datapath_inst_opcode;
@@ -66,6 +68,7 @@ module riscv_core (
   end
 
   always_comb begin : tock_writeback
+
     dmem_bus_read_data = bus_read_data;
 
     datapath_next_pc_select = ctlpath_next_pc_select;

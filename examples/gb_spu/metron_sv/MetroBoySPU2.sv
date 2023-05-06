@@ -20,15 +20,13 @@ module MetroBoySPU2 (
   //----------------------------------------
 
   always_comb begin : tock_out
-    logic[8:0] l;
-    logic[8:0] r;
+logic[8:0] l;
 
     l = 0;
     r = 0;
 
     if (s1_running && s1_env_vol) begin
-      logic s1_out;
-      s1_out = 0;
+logic s1_out;      s1_out = 0;
       case(s1_duty)
         0: s1_out = s1_phase < 1;
         1: s1_out = s1_phase < 2;
@@ -40,8 +38,7 @@ module MetroBoySPU2 (
     end
 
     if (s2_running && s2_env_vol) begin
-      logic s2_out;
-      s2_out = 0;
+logic s2_out;      s2_out = 0;
       case(s2_duty)
         0: s2_out = s2_phase < 1;
         1: s2_out = s2_phase < 2;
@@ -53,9 +50,8 @@ module MetroBoySPU2 (
     end
 
     if (s3_running && s3_power) begin
-      logic[7:0] s3_sample;
-      logic[3:0] s3_out;
-      s3_sample = s3_wave[s3_phase >> 1];
+logic[7:0] s3_sample;
+      logic[3:0] s3_out;      s3_sample = s3_wave[s3_phase >> 1];
       s3_out = (s3_phase & 1) ? s3_sample[3:0] : s3_sample[7:4];
       s3_out = s3_out >> s3_volume_shift;
       if (mix_l3) l = l + s3_out;
@@ -63,8 +59,7 @@ module MetroBoySPU2 (
     end
 
     if (s4_running && s4_env_vol) begin
-      logic s4_out;
-      s4_out = s4_lfsr[15];
+logic s4_out;      s4_out = s4_lfsr[15];
       if (mix_l4 && s4_out) l = l + s4_env_vol;
       if (mix_r4 && s4_out) r = r + s4_env_vol;
     end
@@ -80,8 +75,7 @@ module MetroBoySPU2 (
 
   always_ff @(posedge clock) begin : tick
     if (tick_reset) begin
-      int i;
-      spu_clock_old <= 0;
+int i;      spu_clock_old <= 0;
       data_out <= 0;
 
       s1_sweep_shift <= 0;
@@ -169,14 +163,13 @@ module MetroBoySPU2 (
 
     end
     else begin
-      logic[15:0] spu_clock_new;
+logic[15:0] spu_clock_new;
       logic[15:0] spu_tick;
       logic sweep_tick;
       logic length_tick;
       logic env_tick;
       logic lfsr_clock_old;
-      logic lfsr_clock_new;
-      spu_clock_new = spu_clock_old + 1;
+      logic lfsr_clock_new;      spu_clock_new = spu_clock_old + 1;
       spu_tick = (~spu_clock_old) & (spu_clock_new);
 
       sweep_tick  = spu_tick[12];
@@ -268,9 +261,8 @@ module MetroBoySPU2 (
           s1_sweep_timer <= s1_sweep_timer - 1;
         end
         else begin
-          logic[10:0] delta;
-          logic[11:0] next_freq;
-          delta = s1_sweep_freq >> s1_sweep_shift;
+logic[10:0] delta;
+          logic[11:0] next_freq;          delta = s1_sweep_freq >> s1_sweep_shift;
           next_freq = s1_sweep_freq + (s1_sweep_dir ? -delta : +delta);
           if (next_freq > 2047) s1_running <= 0;
           s1_sweep_timer <= s1_sweep_timer_init;
@@ -334,9 +326,8 @@ module MetroBoySPU2 (
       // s3 clock - we run this twice because s3's timer ticks at 2 mhz
 
       begin
-        logic[4:0] next_phase;
-        logic[10:0] next_timer;
-        next_phase = s3_phase;
+logic[4:0] next_phase;
+        logic[10:0] next_timer;        next_phase = s3_phase;
         next_timer = s3_freq_timer;
 
         if (next_timer == 12'h7FF) begin
@@ -407,8 +398,7 @@ module MetroBoySPU2 (
           s4_freq_timer <= s4_freq_timer - 1;
         end
         else begin
-          logic new_bit;
-          new_bit = s4_lfsr[15] ^ s4_lfsr[14] ^ 1;
+logic new_bit;          new_bit = s4_lfsr[15] ^ s4_lfsr[14] ^ 1;
           s4_lfsr <= {
             s4_lfsr[14:9],
             s4_mode ? new_bit : s4_lfsr[8],

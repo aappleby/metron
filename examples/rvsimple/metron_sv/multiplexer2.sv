@@ -19,11 +19,12 @@ module multiplexer2 (
   output logic[WIDTH-1:0] out
 );
   parameter WIDTH = 32;
-
  /*public*/
 
   always_comb begin : tock
+
     case (sel)
+
       0:
         out = in0;
       1:

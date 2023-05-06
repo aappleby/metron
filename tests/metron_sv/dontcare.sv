@@ -3,7 +3,7 @@
 // DONTCARE gets translated to 'x
 // bN(DONTCARE) gets translated to N'bx
 
-module Module (
+module Module  (
   // test1() ports
   output logic[7:0] test1_ret,
   // test2() ports

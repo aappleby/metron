@@ -32,18 +32,22 @@ module regfile (
  /*public*/
   // Read ports for rs1 and rs1
   always_comb begin : tock1
+
     rs1_data = _register[rs1_address];
     rs2_data = _register[rs2_address];
   end
 
   // Register x0 is always 0
-  initial begin _register[0] = 32'b0; end
+  initial begin
+ _register[0] = 32'b0; end
 
-  always_comb begin : tock end
+  always_comb begin : tock
+ end
 
  /*private*/
   // Write port for rd
   always_ff @(posedge clock) begin : tick
+
     if (write_enable)
       if (rd_address != 5'b0) _register[rd_address] <= rd_data;
   end

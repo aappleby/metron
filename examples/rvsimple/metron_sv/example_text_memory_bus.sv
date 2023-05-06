@@ -19,9 +19,9 @@ module example_text_memory_bus (
 );
  /*public*/
 
-  parameter filename = "";
-  initial
+  parameter filename = "";initial
   begin
+
   end
 
  /*private*/
@@ -39,6 +39,7 @@ module example_text_memory_bus (
 
  /*public*/
   always_comb begin : tock_read_data
+
     logic[31:0] fetched;
     text_memory_address = address[rv_config::TEXT_BITS - 2+1:2];
     fetched = text_memory_q;

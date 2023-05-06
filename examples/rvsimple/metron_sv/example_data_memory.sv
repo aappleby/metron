@@ -29,12 +29,15 @@ module example_data_memory (
 
  /*public*/
   always_comb begin : tock
+
     q = mem[address];
   end
 
  /*private*/
   always_ff @(posedge clock) begin : tick
+
     if (wren) begin
+
       logic[31:0] mask;
       // doing this slightly differently from rvsimple so we don't have to do
       // sub-array writes to mem.
@@ -48,8 +51,8 @@ module example_data_memory (
   end
 
  /*public*/
-  parameter filename = "";
-  initial begin
+  parameter filename = "";initial begin
+
     if (filename) $readmemh(filename, mem);
   end
 endmodule

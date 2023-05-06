@@ -6,9 +6,9 @@ typedef struct packed {
   logic[7:0] a;
 } MyStruct1;
 
-module Module (
+module Module  (
   // output signals
-  output MyStruct1 my_struct1,
+  output MyStruct1my_struct1,
   // tock() ports
   output logic[7:0] tock_ret
 );

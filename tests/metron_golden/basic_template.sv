@@ -12,7 +12,6 @@ module Submod (
 );
   parameter WIDTH = 123;
   parameter HEIGHT = 456;
-
 /*public*/
 
   always_comb begin : tock

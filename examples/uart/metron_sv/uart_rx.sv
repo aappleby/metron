@@ -19,27 +19,31 @@ module uart_rx (
   input logic tick_serial
 );
   parameter cycles_per_bit = 4;
-
 /*public*/
 
   // Our output is valid once we've received 8 bits.
   always_comb begin : get_valid
+
     get_valid_ret = bit_count == 8;
   end
 
   // The most recent data byte received.
   always_comb begin : get_data_out
+
     get_data_out_ret = data_out;
   end
 
   // The checksum of all bytes received so far.
   always_comb begin : get_checksum
+
     get_checksum_ret = checksum;
   end
 
   always_ff @(posedge clock) begin : tick // Serial input from the transmitter
 
+
     if (tick_reset) begin
+
       bit_delay <= bit_delay_max;
       bit_count <= bit_count_max;
       data_out <= 0;
@@ -47,20 +51,24 @@ module uart_rx (
     end
     else begin
 
+
       // If we're waiting for the next bit to arrive, keep waiting until our
       // bit delay counter runs out.
       if (bit_delay < bit_delay_max) begin
+
         bit_delay <= bit_delay + 1;
       end
 
       // We're done waiting for a bit. If we have bits left to receive, shift
       // them into the top of the output register.
       else if (bit_count < bit_count_max) begin
+
         logic[7:0] new_output;
         new_output = (tick_serial << 7) | (data_out >> 1);
 
         // If that was the last data bit, add the finished byte to our checksum.
         if (bit_count == 7) begin
+
           checksum <= checksum + new_output;
         end
 
@@ -74,6 +82,7 @@ module uart_rx (
       // byte. Wait for the serial line to go low, which signals the start of
       // the next byte.
       else if (tick_serial == 0) begin
+
         bit_delay <= 0;
         bit_count <= 0;
       end

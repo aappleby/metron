@@ -39,6 +39,7 @@ module Pong (
   //----------------------------------------
 
   initial begin
+
     px = 0;
     py = 0;
 
@@ -57,20 +58,25 @@ module Pong (
 
   //----------------------------------------
 
-  always_comb begin : pix_x pix_x_ret = px; end
-  always_comb begin : pix_y pix_y_ret = py; end
+  always_comb begin : pix_x
+ pix_x_ret = px; end
+  always_comb begin : pix_y
+ pix_y_ret = py; end
 
   //----------------------------------------
 
   always_comb begin : tock_video
+
     vga_hsync = !((px >= 656) && (py <= 751));
     vga_vsync = !((py >= 490) && (py <= 491));
 
     if ((px < 640) && (py < 480)) begin
+
       vga_R = in_border() | in_paddle() | in_ball() | in_checker();
       vga_G = in_border() | in_paddle() | in_ball();
       vga_B = in_border() | in_paddle() | in_ball();
     end else begin
+
       vga_R = 0;
       vga_G = 0;
       vga_B = 0;
@@ -80,6 +86,7 @@ module Pong (
   //----------------------------------------
 
   always_comb begin : tock_game
+
     tick_in_quad_a = tock_game_in_quad_a;
     tick_in_quad_b = tock_game_in_quad_b;
   end
@@ -88,6 +95,7 @@ module Pong (
 
  /*private*/
   always_ff @(posedge clock) begin : tick
+
     logic[9:0] new_px;
     logic[9:0] new_py;
     logic quad_dir;
@@ -105,11 +113,13 @@ module Pong (
     // Update screen coord
 
     if (new_px == 800) begin
+
       new_px = 0;
       new_py = new_py + 1;
     end
 
     if (new_py == 525) begin
+
       new_py = 0;
     end
 
@@ -123,6 +133,7 @@ module Pong (
     new_pad_y = pad_y;
 
     if (quad_step) begin
+
       new_pad_x = pad_x + quad_dir ? 1 : 0;
       if (new_pad_x < 120) new_pad_x = 120;
       if (new_pad_x > 520) new_pad_x = 520;
@@ -137,6 +148,7 @@ module Pong (
     new_ball_dy = ball_dy;
 
     if (in_border() | in_paddle()) begin
+
       if ((px == ball_x - 7) && (py == ball_y + 0)) new_ball_dx = 1;
       if ((px == ball_x + 7) && (py == ball_y + 0)) new_ball_dx = 0;
       if ((px == ball_x + 0) && (py == ball_y - 7)) new_ball_dy = 1;
@@ -144,6 +156,7 @@ module Pong (
     end
 
     if (new_px == 0 && new_py == 0) begin
+
       new_ball_x = ball_x + (new_ball_dx ? 1 : -1);
       new_ball_y = ball_y + (new_ball_dy ? 1 : -1);
     end
@@ -166,26 +179,29 @@ module Pong (
     quad_a <= quad_a << 1 | tick_in_quad_a;
     quad_b <= quad_b << 1 | tick_in_quad_b;
   end
-  logic tick_in_quad_a;
+logic tick_in_quad_a;
   logic tick_in_quad_b;
-
   //----------------------------------------
 
   function logic in_border();
+
     in_border = (px <= 7) || (px >= 633) || (py <= 7) || (py >= 473);
   endfunction
 
   function logic in_paddle();
+
     in_paddle = (px >= pad_x - 63) && (px <= pad_x + 63) && (py >= pad_y - 3) &&
            (py <= pad_y + 3);
   endfunction
 
   function logic in_ball();
+
     in_ball = (px >= ball_x - 7) && (px <= ball_x + 7) && (py >= ball_y - 7) &&
            (py <= ball_y + 7);
   endfunction
 
-  function logic in_checker(); in_checker = px[3] ^ py[3]; endfunction
+  function logic in_checker();
+ in_checker = px[3] ^ py[3]; endfunction
 
   logic[9:0] px;
   logic[9:0] py;

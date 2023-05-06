@@ -35,6 +35,7 @@ module data_memory_interface (
 
  /*public*/
   always_comb begin : tock_bus
+
     bus_address = address;
     bus_write_enable = write_enable;
     bus_read_enable = read_enable;
@@ -43,6 +44,7 @@ module data_memory_interface (
     // calculate byte enable
     // clang-format off
     case (2'(data_format))
+
       2'b00: bus_byte_enable = 4'b0001 << 2'(address);
       2'b01: bus_byte_enable = 4'b0011 << 2'(address);
       2'b10: bus_byte_enable = 4'b1111 << 2'(address);
@@ -53,11 +55,13 @@ module data_memory_interface (
 
   // correct for unaligned accesses
   always_comb begin : tock_read_data
+
     position_fix = 32'(bus_read_data >> (8 * 2'(address)));
 
     // sign-extend if necessary
     // clang-format off
     case (2'(data_format))
+
       2'b00: sign_fix = {{24 {1'(~data_format[2] & position_fix[7])}}, 8'(position_fix)};
       2'b01: sign_fix = {{16 {1'(~data_format[2] & position_fix[15])}}, 16'(position_fix)};
       2'b10: sign_fix = 32'(position_fix);

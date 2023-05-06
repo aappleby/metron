@@ -2,7 +2,7 @@
 
 // If statements whose sub-blocks contain submodule calls _must_ use {}.
 
-module Submod (
+module Submod  (
   // global clock
   input logic clock,
   // tock() ports
@@ -22,7 +22,7 @@ module Submod (
 endmodule
 
 
-module Module (
+module Module  (
   // global clock
   input logic clock
 );

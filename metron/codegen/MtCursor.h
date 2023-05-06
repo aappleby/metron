@@ -19,6 +19,10 @@ struct MtCursor {
   MtCursor(MtModLibrary* lib, MtSourceFile* source, MtModule* mod,
            std::string* out);
 
+  CHECK_RETURN Err check_at(const MnNode& n);
+  CHECK_RETURN Err check_at(TSSymbol sym, const MnNode& n);
+  CHECK_RETURN Err check_done(MnNode n);
+
   // Top-level emit function
   CHECK_RETURN Err emit_everything();
 
@@ -35,7 +39,6 @@ struct MtCursor {
   CHECK_RETURN Err emit_ws();
   CHECK_RETURN Err emit_ws_to(const MnNode& n);
   CHECK_RETURN Err emit_ws_to(TSSymbol sym, const MnNode& n);
-  CHECK_RETURN Err emit_ws_to_newline();
   CHECK_RETURN Err emit_span(const char* a, const char* b);
   CHECK_RETURN Err emit_text(MnNode n);
   CHECK_RETURN Err emit_print(const char* fmt, ...);
@@ -87,9 +90,7 @@ struct MtCursor {
   CHECK_RETURN Err emit_module_ports(MnNode class_body);
   CHECK_RETURN Err emit_trigger_call(MtMethod* m);
   //CHECK_RETURN Err emit_trigger_calls();
-  CHECK_RETURN Err emit_param_as_field(MtMethod* method, MnNode n);
   CHECK_RETURN Err emit_module_parameter_list(MnNode n);
-  CHECK_RETURN Err emit_call_binding(MnNode n);
   CHECK_RETURN Err emit_simple_call(MnNode n);
 
   CHECK_RETURN Err emit_func_as_init(MnNode n);
@@ -97,9 +98,6 @@ struct MtCursor {
   CHECK_RETURN Err emit_func_as_task(MnNode n);
   CHECK_RETURN Err emit_func_as_always_comb(MnNode n);
   CHECK_RETURN Err emit_func_as_always_ff(MnNode n);
-
-  CHECK_RETURN Err emit_func_trigger_comb(MnNode n);
-  CHECK_RETURN Err emit_func_trigger_ff(MnNode n);
 
   CHECK_RETURN Err emit_sym_qualified_identifier_as_type(MnNode node);
 
@@ -158,7 +156,6 @@ struct MtCursor {
 
   bool branch_contains_component_call(MnNode n);
 
-  CHECK_RETURN Err check_done(MnNode n);
 
   //----------
 
@@ -176,7 +173,8 @@ struct MtCursor {
   }
 
   void pop_cursor(const MnNode& node) {
-    assert(cursor == node.end());
+    auto end = node.end();
+    assert(cursor == end);
     cursor = cursor_stack.top();
     cursor_stack.pop();
   }

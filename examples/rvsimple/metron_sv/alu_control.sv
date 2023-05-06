@@ -30,9 +30,11 @@ module alu_control (
  /*public*/
   // clang-format off
   always_comb begin : tock_alu_function
+
     import rv_constants::*;
 
     case (inst_funct3)
+
       FUNCT3_ALU_ADD_SUB: default_funct = ALU_ADD;
       FUNCT3_ALU_SLL:     default_funct = ALU_SLL;
       FUNCT3_ALU_SLT:     default_funct = ALU_SLT;
@@ -45,6 +47,7 @@ module alu_control (
     endcase
 
     case (inst_funct3)
+
       FUNCT3_ALU_ADD_SUB: secondary_funct = ALU_SUB;
       FUNCT3_ALU_SHIFTR:  secondary_funct = ALU_SRA;
       default:                 secondary_funct = 'x;
@@ -61,6 +64,7 @@ module alu_control (
       op_imm_funct = default_funct;
 
     case (inst_funct3)
+
       FUNCT3_BRANCH_EQ:  branch_funct = ALU_SEQ;
       FUNCT3_BRANCH_NE:  branch_funct = ALU_SEQ;
       FUNCT3_BRANCH_LT:  branch_funct = ALU_SLT;
@@ -71,6 +75,7 @@ module alu_control (
     endcase
 
     case (alu_op_type)
+
       CTL_ALU_ADD:    alu_function = ALU_ADD;
       CTL_ALU_OP:     alu_function = op_funct;
       CTL_ALU_OP_IMM: alu_function = op_imm_funct;

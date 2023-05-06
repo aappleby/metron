@@ -31,9 +31,9 @@ module example_data_memory_bus (
   // in
   // in
 
-  parameter filename = "";
-  initial
+  parameter filename = "";initial
   begin
+
   end
 
  /*private*/
@@ -59,6 +59,7 @@ module example_data_memory_bus (
 
  /*public*/
   always_comb begin : tock
+
     logic is_data_memory;
     logic[31:0] fetched;
     is_data_memory =

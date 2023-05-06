@@ -2,11 +2,11 @@
 
 // Public register member variables get moved to the output port list.
 
-module Module (
+module Module  (
   // global clock
   input logic clock,
   // output registers
-  output logic my_reg
+  output logicmy_reg
 );
 /*public*/
   always_comb begin : tock

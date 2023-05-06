@@ -29,10 +29,12 @@ module immediate_generator (
   // clang-format on
 
   always_comb begin : tock
+
     import rv_constants::*;
     // clang-format off
     immediate = 32'b0;
-    case (7'(inst))  // Opcode
+    case (7'(inst))
+ // Opcode
       OPCODE_LOAD,
       OPCODE_LOAD_FP,
       OPCODE_OP_IMM,

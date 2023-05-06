@@ -1004,13 +1004,13 @@ CHECK_RETURN Err MtCursor::emit_call_arg_bindings(MnNode n) {
         if (!component_method) return err << ERR("Component method missing\n");
 
         for (int i = 0; i < component_method->param_nodes.size(); i++) {
-          err << start_line();
           err << emit_component_call_arg_binding(
             inst_id,
             component_method,
             component_method->param_nodes[i],
             args_node.named_child(i)
           );
+          err << start_line();
         }
       }
     }
@@ -1018,12 +1018,12 @@ CHECK_RETURN Err MtCursor::emit_call_arg_bindings(MnNode n) {
       auto method = current_mod->get_method(func_node.text().c_str());
       if (method && method->needs_binding) {
         for (int i = 0; i < method->param_nodes.size(); i++) {
-          err << start_line();
           err << emit_local_call_arg_binding(
             method,
             method->param_nodes[i],
             args_node.named_child(i)
           );
+          err << start_line();
         }
       }
     }
@@ -1720,6 +1720,8 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
 //------------------------------------------------------------------------------
 
+#if 0
+
 typedef std::function<Err(MtCursor*, MnNode node)> emit_cb;
 typedef std::map<std::pair<int, int>, emit_cb> emit_map;
 
@@ -1744,6 +1746,29 @@ emit_metamap _emits = {
   { sym_enumerator_list, &emit_sym_enumerator_list_map },
   //{ sym_enumerator,      &emit_sym_enumerator_map },
 };
+
+const int field_none = 0;
+
+/*
+emit_map emit_sym_enum_specifier_map = {
+  { {field_none, anon_sym_enum},               &MtCursor::emit_text },
+  { {field_none, anon_sym_class},              &MtCursor::skip_over },
+  { {field_name, alias_sym_type_identifier},   &MtCursor::skip_over },
+  { {field_none, anon_sym_COLON},              &MtCursor::skip_over },
+  { {field_base, alias_sym_type_identifier},   &MtCursor::emit_sym_type_identifier },
+  { {field_body, sym_enumerator_list},         &MtCursor::emit_sym_enumerator_list },
+};
+*/
+
+/*
+emit_map emit_sym_field_declaration_map = {
+  { {field_none, sym_enum_specifier},           &MtCursor::emit_sym_enum_specifier},
+  { {field_none, alias_sym_field_identifier},   &MtCursor::skip_over },
+  { {field_none, anon_sym_SEMI},                &MtCursor::emit_text },
+};
+*/
+
+#endif
 
 //------------------------------------------------------------------------------
 
@@ -1773,13 +1798,14 @@ CHECK_RETURN Err MtCursor::emit_sym_enumerator(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_sym_enumerator_list(MnNode n) {
   Err err = check_at(sym_enumerator_list, n);
 
-  auto& sym_map = _emits[sym_enumerator_list];
-
   for (auto c : n) {
     err << emit_ws_to(c);
 
-    if (auto cb = sym_map->find(std::pair<int, int>(c.field, c.sym)); cb != sym_map->end()) {
-      err << cb->second(this, c);
+    if (c.sym == sym_enumerator) {
+      err << emit_sym_enumerator(c);
+    }
+    else if (c.is_leaf()) {
+      err << emit_leaf(c);
     }
     else {
       err << ERR("Unknown node type in sym_enumerator_list");
@@ -1789,18 +1815,6 @@ CHECK_RETURN Err MtCursor::emit_sym_enumerator_list(MnNode n) {
   return err << check_done(n);
 }
 
-const int field_none = 0;
-
-
-emit_map emit_sym_enum_specifier_map = {
-  { {field_none, anon_sym_enum},               &MtCursor::emit_text },
-  { {field_none, anon_sym_class},              &MtCursor::skip_over },
-  { {field_name, alias_sym_type_identifier},   &MtCursor::skip_over },
-  { {field_none, anon_sym_COLON},              &MtCursor::skip_over },
-  { {field_base, alias_sym_type_identifier},   &MtCursor::emit_sym_type_identifier },
-  { {field_body, sym_enumerator_list},         &MtCursor::emit_sym_enumerator_list },
-};
-
 CHECK_RETURN Err MtCursor::emit_sym_qualified_identifier_as_type(MnNode n) {
   // enum class sized_enum : logic<8>::BASE { A8 = 0b01, B8 = 0x02, C8 = 3 };
   Err err = check_at(sym_qualified_identifier, n);
@@ -1808,7 +1822,7 @@ CHECK_RETURN Err MtCursor::emit_sym_qualified_identifier_as_type(MnNode n) {
   cursor = node_scope.start();
   err << emit_type(node_scope);
   cursor = n.end();
-  return err;
+  return err << check_done(n);
 }
 
 CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
@@ -1847,12 +1861,15 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
     }
     else if (c.sym == anon_sym_class) {
       err << skip_over(c);
+      err << skip_ws_inside(n);
     }
     else if (c.field == field_name && c.sym == alias_sym_type_identifier) {
       err << skip_over(c);
+      err << skip_ws_inside(n);
     }
     else if (c.sym == anon_sym_COLON) {
       err << skip_over(c);
+      err << skip_ws_inside(n);
     }
     else if (c.field == field_base && c.sym == alias_sym_type_identifier) {
       err << emit_sym_type_identifier(c);
@@ -1883,15 +1900,7 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-emit_map emit_sym_field_declaration_map = {
-  { {field_none, sym_enum_specifier},           &MtCursor::emit_sym_enum_specifier},
-  { {field_none, alias_sym_field_identifier},   &MtCursor::skip_over },
-  { {field_none, anon_sym_SEMI},                &MtCursor::emit_text },
-};
-
 CHECK_RETURN Err MtCursor::emit_enum_field(MnNode n) {
-  //n.dump_tree();
-
   Err err = check_at(sym_field_declaration, n);
 
   for (auto c : n) {

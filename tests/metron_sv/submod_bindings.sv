@@ -32,15 +32,18 @@ module Module (
     begin
       // Only sum_a's bindings should be here.
       submod_sum_a_a1 = 1;
-      submod_sum_a_a2 = 2;if (submod_sum_a_ret) begin
+      submod_sum_a_a2 = 2;
+      if (submod_sum_a_ret) begin
         // Only sum_b's bindings should be here.
         submod_sum_b_b1 = 3;
-        submod_sum_b_b2 = 4;result = submod_sum_b_ret;
+        submod_sum_b_b2 = 4;
+        result = submod_sum_b_ret;
       end
       else begin
         // Only sum_b's bindings should be here.
         submod_sum_b_b1 = 5;
-        submod_sum_b_b2 = 6;result = submod_sum_b_ret;
+        submod_sum_b_b2 = 6;
+        result = submod_sum_b_ret;
       end
     end
 

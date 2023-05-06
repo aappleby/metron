@@ -35,7 +35,8 @@ module Module (
     logic[7:0] new_counter;
     // Two bindings should end up here.
     submod2_add_two_a = tock_old_counter;
-    submod1_add_one_a = submod2_add_two_ret;new_counter = submod1_add_one_ret;
+    submod1_add_one_a = submod2_add_two_ret;
+    new_counter = submod1_add_one_ret;
     tock_ret = new_counter;
   end
 

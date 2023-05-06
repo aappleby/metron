@@ -15,8 +15,8 @@ module Submod (
 );
 /*public*/
 
-  always_comb begin : sum_a sum_a_ret = sum_a_a1 + sum_a_a2; end
-  always_comb begin : sum_b sum_b_ret = sum_b_b1 + sum_b_b2; end
+  always_comb begin : sum_a   sum_a_ret = sum_a_a1 + sum_a_a2; end
+  always_comb begin : sum_b   sum_b_ret = sum_b_b1 + sum_b_b2; end
 endmodule
 
 module Module (

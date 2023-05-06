@@ -791,16 +791,25 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
     // Remove "cat" and replace parens with brackets
     err << skip_over(func);
     for (const auto& arg : (MnNode&)args) {
-      switch (arg.sym) {
-        case anon_sym_LPAREN:
-          err << emit_replacement(arg, "{");
-          break;
-        case anon_sym_RPAREN:
-          err << emit_replacement(arg, "}");
-          break;
-        default:
-          err << emit_expression(arg);
-          break;
+      err << emit_ws_to(arg);
+
+      if (arg.sym == anon_sym_LPAREN) {
+        err << emit_replacement(arg, "{");
+      }
+      else if(arg.sym == anon_sym_RPAREN) {
+        err << emit_replacement(arg, "}");
+      }
+      else if (arg.is_identifier()) {
+        err << emit_identifier(arg);
+      }
+      else if (arg.is_expression()) {
+        err << emit_expression(arg);
+      }
+      else if (arg.is_leaf()) {
+        err << emit_leaf(arg);
+      }
+      else {
+        err << ERR("Unknown node %d in arg list", arg.sym);
       }
     }
   }
@@ -1091,7 +1100,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_task(MnNode n) {
       err << emit_sym_compound_statement(c, "", "endtask");
     }
     else {
-      err << emit_default(c);
+      err << emit_leaf(c);
     }
   }
 
@@ -1725,42 +1734,46 @@ emit_metamap _emits = {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_sym_enumerator(MnNode node) {
-  Err err = check_at(sym_enumerator, node);
+CHECK_RETURN Err MtCursor::emit_sym_enumerator(MnNode n) {
+  Err err = check_at(sym_enumerator, n);
 
-  for (auto child : node) {
-    if (child.sym == sym_identifier) {
-      err << emit_identifier(child);
+  for (auto c : n) {
+    err << emit_ws_to(c);
+
+    if (c.sym == sym_identifier) {
+      err << emit_identifier(c);
     }
-    else if (child.sym == sym_number_literal) {
-      err << emit_sym_number_literal(child, 0);
+    else if (c.sym == sym_number_literal) {
+      err << emit_sym_number_literal(c, 0);
     }
-    else if (child.sym == anon_sym_EQ) {
-      err << emit_text(child);
+    else if (c.sym == anon_sym_EQ) {
+      err << emit_text(c);
     }
     else {
       err << ERR("Unknown node type in sym_enumerator");
     }
   }
 
-  return err << check_done(node);
+  return err << check_done(n);
 }
 
-CHECK_RETURN Err MtCursor::emit_sym_enumerator_list(MnNode node) {
-  Err err = check_at(sym_enumerator_list, node);
+CHECK_RETURN Err MtCursor::emit_sym_enumerator_list(MnNode n) {
+  Err err = check_at(sym_enumerator_list, n);
 
   auto& sym_map = _emits[sym_enumerator_list];
 
-  for (auto child : node) {
-    if (auto cb = sym_map->find(std::pair<int, int>(child.field, child.sym)); cb != sym_map->end()) {
-      err << cb->second(this, child);
+  for (auto c : n) {
+    err << emit_ws_to(c);
+
+    if (auto cb = sym_map->find(std::pair<int, int>(c.field, c.sym)); cb != sym_map->end()) {
+      err << cb->second(this, c);
     }
     else {
       err << ERR("Unknown node type in sym_enumerator_list");
     }
   }
 
-  return err << check_done(node);
+  return err << check_done(n);
 }
 
 const int field_none = 0;
@@ -1813,31 +1826,33 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
     err << emit_print("typedef ");
   }
 
-  for (auto child : n) {
-    if (child.sym == anon_sym_enum) {
-      err << emit_text(child);
+  for (auto c : n) {
+    err << emit_ws_to(c);
+
+    if (c.sym == anon_sym_enum) {
+      err << emit_text(c);
     }
-    else if (child.sym == anon_sym_class) {
-      err << skip_over(child);
+    else if (c.sym == anon_sym_class) {
+      err << skip_over(c);
     }
-    else if (child.field == field_name && child.sym == alias_sym_type_identifier) {
-      err << skip_over(child);
+    else if (c.field == field_name && c.sym == alias_sym_type_identifier) {
+      err << skip_over(c);
     }
-    else if (child.sym == anon_sym_COLON) {
-      err << skip_over(child);
+    else if (c.sym == anon_sym_COLON) {
+      err << skip_over(c);
     }
-    else if (child.field == field_base && child.sym == alias_sym_type_identifier) {
-      err << emit_sym_type_identifier(child);
+    else if (c.field == field_base && c.sym == alias_sym_type_identifier) {
+      err << emit_sym_type_identifier(c);
     }
-    else if (child.field == field_base && child.sym == sym_qualified_identifier) {
+    else if (c.field == field_base && c.sym == sym_qualified_identifier) {
       // enum class sized_enum : logic<8>::BASE { A8 = 0b01, B8 = 0x02, C8 = 3 };
-      auto node_scope = child.get_field(field_scope);
+      auto node_scope = c.get_field(field_scope);
       cursor = node_scope.start();
       err << emit_type(node_scope);
-      cursor = child.end();
+      cursor = c.end();
     }
-    else if (child.sym == sym_enumerator_list) {
-      err << emit_sym_enumerator_list(child);
+    else if (c.sym == sym_enumerator_list) {
+      err << emit_sym_enumerator_list(c);
     }
   }
 
@@ -1866,15 +1881,17 @@ CHECK_RETURN Err MtCursor::emit_enum_field(MnNode n) {
 
   Err err = check_at(sym_field_declaration, n);
 
-  for (auto child : n) {
-    if (child.sym == sym_enum_specifier) {
-      err << emit_sym_enum_specifier(child);
+  for (auto c : n) {
+    err << emit_ws_to(c);
+
+    if (c.sym == sym_enum_specifier) {
+      err << emit_sym_enum_specifier(c);
     }
-    else if (child.sym == alias_sym_field_identifier) {
-      err << emit_sym_field_identifier(child);
+    else if (c.sym == alias_sym_field_identifier) {
+      err << emit_sym_field_identifier(c);
     }
-    else if (child.sym == anon_sym_SEMI) {
-      err << emit_text(child);
+    else if (c.sym == anon_sym_SEMI) {
+      err << emit_text(c);
     }
     else {
       err << ERR("Unknown node in anonymous enum");
@@ -2144,7 +2161,7 @@ CHECK_RETURN Err MtCursor::emit_parameter_declaration(MnNode n) {
       err << emit_declarator(c);
     }
     else {
-      err << emit_default(c);
+      err << emit_leaf(c);
     }
   }
 
@@ -2213,40 +2230,65 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
     //   field_declarator : sym_field_identifier
     //   lit ;
 
-    // FIXME loop style
+    for (auto c : n) {
+      err << emit_ws_to(c);
 
-    auto node_type = n.get_field(field_type);
-    auto node_decl = n.get_field(field_declarator);
-    auto node_semi = n.child(2);
+      if (c.sym == sym_storage_class_specifier) {
+        err << skip_over(c);
+        err << skip_ws();
+      }
+      else if (c.sym == sym_type_qualifier) {
+        err << skip_over(c);
+        err << skip_ws();
+      }
+      else if (c.field == field_type) {
+        err << emit_type(c);
+      }
+      else if(c.field == field_declarator) {
+        err << emit_identifier(c);
+      }
+      else if (c.is_leaf()) {
+        err << emit_leaf(c);
+      }
+      else if (c.field == field_default_value) {
+        err << emit_expression(c);
+      }
+    }
 
-    err << emit_type(node_type);
-    err << emit_ws_to(node_decl);
-    err << emit_declarator(node_decl);
-    err << emit_ws_to(node_semi);
-    err << emit_text(node_semi);
     return err << check_done(n);
   }
 
   // Const local variable
   if (n.is_const()) {
-    auto node_static = n.child(0);
-    auto node_const = n.child(1);
-    auto node_type = n.child(2);
-    auto node_decl = n.child(3);
-    auto node_equals = n.child(4);
-    auto node_value = n.child(5);
-    auto node_semi = n.child(6);
-
-    // err << emit_sym_storage_class_specifier(node_static);
-    // err << emit_sym_type_qualifier(node_const);
+    err << emit_ws_to(n);
     err << emit_print("localparam ");
-    cursor = node_type.start();
-    err << emit_type(node_type);
-    err << emit_identifier(node_decl);
-    err << emit_text(node_equals);
-    err << emit_expression(node_value);
-    err << emit_text(node_semi);
-    return err;
+
+    for (auto c : n) {
+      err << emit_ws_to(c);
+
+      if (c.sym == sym_storage_class_specifier) {
+        err << skip_over(c);
+        err << skip_ws();
+      }
+      else if (c.sym == sym_type_qualifier) {
+        err << skip_over(c);
+        err << skip_ws();
+      }
+      else if (c.field == field_type) {
+        err << emit_type(c);
+      }
+      else if(c.field == field_declarator) {
+        err << emit_identifier(c);
+      }
+      else if (c.is_leaf()) {
+        err << emit_leaf(c);
+      }
+      else if (c.field == field_default_value) {
+        err << emit_expression(c);
+      }
+    }
+
+    return err << check_done(n);
   }
 
   // Enum
@@ -2946,7 +2988,7 @@ CHECK_RETURN Err MtCursor::emit_toplevel_node(MnNode node) {
       break;
 
     default:
-      err << emit_default(node);
+      err << emit_leaf(node);
       break;
   }
 
@@ -3017,6 +3059,8 @@ CHECK_RETURN Err MtCursor::emit_sym_namespace_definition(MnNode n) {
   cursor = node_body.start();
 
   for (auto c : node_body) {
+    err << emit_ws_to(c);
+
     switch (c.sym) {
       case anon_sym_LBRACE:
       case anon_sym_RBRACE:
@@ -3293,40 +3337,42 @@ CHECK_RETURN Err MtCursor::emit_sym_case_statement(MnNode n) {
     }
   }
 
-  for (auto child : n) {
-    switch (child.sym) {
+  for (auto c : n) {
+    err << emit_ws_to(c);
+
+    switch (c.sym) {
       case sym_break_statement:
-        err << skip_over(child);
+        err << skip_over(c);
         break;
       case sym_identifier:
-        err << emit_sym_identifier(child);
+        err << emit_sym_identifier(c);
         break;
       case anon_sym_case:
-        err << skip_over(child);
+        err << skip_over(c);
         break;
       case anon_sym_COLON:
         if (anything_after_colon) {
-          err << emit_text(child);
+          err << emit_text(c);
         } else {
-          err << emit_replacement(child, ",");
+          err << emit_replacement(c, ",");
         }
         break;
       case sym_if_statement:
       case sym_compound_statement:
       case sym_expression_statement:
-        err << emit_statement(child);
+        err << emit_statement(c);
         break;
       case sym_qualified_identifier:
-        err << emit_sym_qualified_identifier(child);
+        err << emit_sym_qualified_identifier(c);
         break;
       case sym_comment:
-        err << emit_sym_comment(child);
+        err << emit_sym_comment(c);
         break;
       case sym_number_literal:
-        err << emit_sym_number_literal(child, 0);
+        err << emit_sym_number_literal(c, 0);
         break;
       case anon_sym_default:
-        err << emit_text(child);
+        err << emit_text(c);
         break;
       default:
         err << ERR("Unknown node type in sym_case_statement");
@@ -3339,25 +3385,27 @@ CHECK_RETURN Err MtCursor::emit_sym_case_statement(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_sym_switch_statement(MnNode node) {
-  Err err = check_at(sym_switch_statement, node);
+CHECK_RETURN Err MtCursor::emit_sym_switch_statement(MnNode n) {
+  Err err = check_at(sym_switch_statement, n);
 
-  for (auto child : node) {
-    if (child.sym == anon_sym_switch) {
-      err << emit_replacement(child, "case");
+  for (auto c : n) {
+    err << emit_ws_to(c);
+
+    if (c.sym == anon_sym_switch) {
+      err << emit_replacement(c, "case");
     }
-    else if (child.field == field_condition) {
-      err << emit_sym_condition_clause(child);
+    else if (c.field == field_condition) {
+      err << emit_sym_condition_clause(c);
     }
-    else if (child.field == field_body) {
-      err << emit_sym_compound_statement(child, "", "endcase");
+    else if (c.field == field_body) {
+      err << emit_sym_compound_statement(c, "", "endcase");
     }
     else {
-      err << ERR("Unknown node in sym_switch_statement");
+      err << emit_leaf(c);
     }
   }
 
-  return err << check_done(node);
+  return err << check_done(n);
 }
 
 //------------------------------------------------------------------------------
@@ -3675,7 +3723,7 @@ CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnNode node) {
         }
         break;
       default:
-        err << emit_default(child);
+        err << emit_leaf(child);
         break;
     }
   }
@@ -3771,7 +3819,7 @@ CHECK_RETURN Err MtCursor::emit_sym_declaration(MnNode n, bool elide_type, bool 
         err << emit_declarator(child, elide_value);
       }
       else {
-        err << emit_default(child);
+        err << emit_leaf(child);
       }
     }
   }
@@ -3803,7 +3851,7 @@ CHECK_RETURN Err MtCursor::emit_sym_sized_type_specifier(MnNode n) {
       err << skip_over(c);
     }
     else {
-      err << emit_default(c);
+      err << emit_leaf(c);
     }
   }
 
@@ -3813,36 +3861,46 @@ CHECK_RETURN Err MtCursor::emit_sym_sized_type_specifier(MnNode n) {
 //------------------------------------------------------------------------------
 // Arg lists are the same in C and Verilog.
 
-CHECK_RETURN Err MtCursor::emit_sym_argument_list(MnNode node) {
-  Err err = check_at(sym_argument_list, node);
+CHECK_RETURN Err MtCursor::emit_sym_argument_list(MnNode n) {
+  Err err = check_at(sym_argument_list, n);
 
-  for (auto child : node) {
-    if (child.is_identifier())
-      err << emit_identifier(child);
-    else if (child.is_expression())
-      err << emit_expression(child);
-    else
-      err << emit_default(child);
+  for (auto c : n) {
+    err << emit_ws_to(c);
+
+    if (c.is_identifier()) {
+      err << emit_identifier(c);
+    }
+    else if (c.is_expression()) {
+      err << emit_expression(c);
+    }
+    else {
+      err << emit_leaf(c);
+    }
   }
 
-  return err << check_done(node);
+  return err << check_done(n);
 }
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_sym_parameter_list(MnNode node) {
-  Err err = check_at(sym_parameter_list, node);
+CHECK_RETURN Err MtCursor::emit_sym_parameter_list(MnNode n) {
+  Err err = check_at(sym_parameter_list, n);
 
-  for (auto child : node) {
-    if (child.sym == sym_parameter_declaration)
-      err << emit_parameter_declaration(child);
-    else if (child.sym == sym_optional_parameter_declaration)
-      err << emit_optional_parameter_declaration(child);
-    else
-      err << emit_default(child);
+  for (auto c : n) {
+    err << emit_ws_to(c);
+
+    if (c.sym == sym_parameter_declaration) {
+      err << emit_parameter_declaration(c);
+    }
+    else if (c.sym == sym_optional_parameter_declaration) {
+      err << emit_optional_parameter_declaration(c);
+    }
+    else {
+      err << emit_leaf(c);
+    }
   }
 
-  return err << check_done(node);
+  return err << check_done(n);
 }
 
 //------------------------------------------------------------------------------
@@ -3937,7 +3995,7 @@ CHECK_RETURN Err MtCursor::emit_sym_preproc_ifdef(MnNode n) {
       err << preproc_cursor.emit_statement(dummy_source.root_node);
     }
     else {
-      err << preproc_cursor.emit_default(dummy_source.root_node);
+      err << preproc_cursor.emit_leaf(dummy_source.root_node);
     }
   }
   cursor = n.end();
@@ -3961,7 +4019,7 @@ CHECK_RETURN Err MtCursor::emit_sym_preproc_def(MnNode n) {
       err << emit_sym_preproc_arg(child);
     }
     else {
-      err << emit_default(child);
+      err << emit_leaf(child);
     }
   }
 
@@ -4007,6 +4065,8 @@ CHECK_RETURN Err MtCursor::emit_sym_for_statement(MnNode node) {
   Err err = check_at(sym_for_statement, node);
 
   for (auto child : node) {
+    err << emit_ws_to(child);
+
     if (child.sym == sym_declaration) {
       err << emit_sym_declaration(child, true, false);
     }
@@ -4016,8 +4076,8 @@ CHECK_RETURN Err MtCursor::emit_sym_for_statement(MnNode node) {
     else if (child.is_statement()) {
       err << emit_statement(child);
     }
-    else if (!child.is_named()) {
-      err << emit_text(child);
+    else if (child.is_leaf()) {
+      err << emit_leaf(child);
     }
     else {
       child.dump_tree();
@@ -4103,7 +4163,7 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
         break;
 
       default:
-        err << emit_default(child);
+        err << emit_leaf(child);
         break;
     }
   }
@@ -4173,7 +4233,7 @@ CHECK_RETURN Err MtCursor::emit_child_expressions(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_default(MnNode node) {
+CHECK_RETURN Err MtCursor::emit_leaf(MnNode node) {
   Err err = check_at(node);
 
   static std::map<std::string,std::string> keyword_map = {
@@ -4199,7 +4259,7 @@ CHECK_RETURN Err MtCursor::emit_default(MnNode node) {
   else if (node.is_literal()) {
     err << emit_literal(node);
   }
-  else if (node.sym == sym_comment) {
+  else if (node.is_comment()) {
     err << emit_sym_comment(node);
   }
   else {

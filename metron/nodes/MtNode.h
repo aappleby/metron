@@ -18,11 +18,30 @@ struct MnNode {
   MnNode();
   MnNode(TSNode node, int sym, int field, MtSourceFile* source);
 
-  //----------
+  //----------------------------------------
+
+  bool is_literal() const {
+    switch(sym) {
+      case sym_string_literal:
+      case sym_raw_string_literal:
+      case sym_char_literal:
+      case sym_number_literal:
+      case sym_user_defined_literal:
+        return true;
+      default:
+        return false;
+    }
+  }
 
   bool is_comment() const {
     return sym == sym_comment;
   }
+
+  bool is_leaf() const {
+    return !is_named() || is_literal() || is_comment();
+  }
+
+  //----------------------------------------
 
   bool is_identifier() const {
     switch (sym) {
@@ -44,6 +63,8 @@ struct MnNode {
     }
   }
 
+  //----------------------------------------
+
   bool is_expression() const {
     switch (sym) {
       case sym_conditional_expression:
@@ -62,18 +83,7 @@ struct MnNode {
     }
   }
 
-  bool is_literal() const {
-    switch(sym) {
-      case sym_string_literal:
-      case sym_raw_string_literal:
-      case sym_char_literal:
-      case sym_number_literal:
-      case sym_user_defined_literal:
-        return true;
-      default:
-        return false;
-    }
-  }
+  //----------------------------------------
 
   bool is_statement() const {
     switch (sym) {
@@ -94,6 +104,8 @@ struct MnNode {
         return false;
     }
   }
+
+  //----------------------------------------
 
   SourceRange get_source() const;
   void dump_source_lines() const;

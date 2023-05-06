@@ -55,7 +55,7 @@ struct MtCursor {
   CHECK_RETURN Err emit_expression(MnNode n);
   CHECK_RETURN Err emit_identifier(MnNode n);
   CHECK_RETURN Err emit_child_expressions(MnNode n);
-  CHECK_RETURN Err emit_default(MnNode n);
+  CHECK_RETURN Err emit_leaf(MnNode n);
   CHECK_RETURN Err emit_toplevel_block(MnNode n);
   CHECK_RETURN Err emit_toplevel_node(MnNode n);
   CHECK_RETURN Err emit_preproc(MnNode n);

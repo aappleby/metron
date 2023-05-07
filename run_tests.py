@@ -29,6 +29,7 @@ def main():
 
     print()
     print_b("Refreshing build")
+    os.system("./build.py")
 
     if options.basic:
         if os.system("ninja bin/metron"):
@@ -411,7 +412,7 @@ def build_lockstep(filename):
     cmd = f"g++ -O3 -std=gnu++2a -DMT_TOP={mt_top} -DVL_TOP={vl_top} -DMT_HEADER={mt_header} -DVL_HEADER={vl_header} {includes} -c {test_src} -o {test_obj}"
     errors += check_cmd_good(cmd)
 
-    cmd = f"g++ {test_obj} {vl_obj} obj/verilated.o obj/verilated_threads.o -o {test_bin}"
+    cmd = f"g++ {test_obj} {vl_obj} obj/symlinks/metrolib/core/Utils.o obj/verilated.o obj/verilated_threads.o -o {test_bin}"
     errors += check_cmd_good(cmd)
 
     return errors

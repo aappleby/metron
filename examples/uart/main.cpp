@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "metrolib/core/Platform.h"
+#include "metrolib/core/Utils.h"
 #include "metron/uart_top.h"
 
 void benchmark() {

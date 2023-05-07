@@ -296,6 +296,7 @@ def build_metron_lib():
         lib_name="bin/libmetron.a",
         src_files=[
             "symlinks/metrolib/core/Platform.cpp",
+            "symlinks/metrolib/core/Utils.cpp",
             "symlinks/metrolib/core/Err.cpp",
             "metron/app/MtModLibrary.cpp",
             "metron/app/MtSourceFile.cpp",
@@ -445,6 +446,7 @@ cpp_binary2(
     src_files=[
         "symlinks/metrolib/core/Err.cpp",
         "symlinks/metrolib/core/Platform.cpp",
+        "symlinks/metrolib/core/Utils.cpp",
         "metron/app/MetronApp.cpp",
         "metron/app/MtModLibrary.cpp",
         "metron/app/MtSourceFile.cpp",

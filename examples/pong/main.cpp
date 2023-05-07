@@ -9,6 +9,7 @@
 #endif
 
 #include "metrolib/core/Platform.h"
+#include "metrolib/core/Utils.h"
 #include "metron/pong.h"
 
 #define SCREEN_WIDTH 640

@@ -55,16 +55,14 @@ struct MtCursor {
   CHECK_RETURN Err emit_dispatch(MnNode n);
   CHECK_RETURN Err emit_statement(MnNode n);
   CHECK_RETURN Err emit_expression(MnNode n);
-  CHECK_RETURN Err emit_identifier(MnNode n);
   CHECK_RETURN Err emit_child_expressions(MnNode n);
+  CHECK_RETURN Err emit_children(MnNode n);
   CHECK_RETURN Err emit_leaf(MnNode n);
   CHECK_RETURN Err emit_toplevel_block(MnNode n);
   CHECK_RETURN Err emit_toplevel_node(MnNode n);
   CHECK_RETURN Err emit_preproc(MnNode n);
-  CHECK_RETURN Err emit_type(MnNode n);
   CHECK_RETURN Err emit_declarator(MnNode n, bool elide_value = false);
   CHECK_RETURN Err emit_parameter_declaration(MnNode n);
-  CHECK_RETURN Err emit_optional_parameter_declaration(MnNode n);
   CHECK_RETURN Err emit_module_parameter_declaration(MnNode n);
   CHECK_RETURN Err emit_template_argument(MnNode n);
   CHECK_RETURN Err emit_enum_field(MnNode n);
@@ -119,7 +117,6 @@ struct MtCursor {
   CHECK_RETURN Err emit_sym_declaration(MnNode n, bool elide_type, bool elide_value);
   CHECK_RETURN Err emit_sym_enum_specifier(MnNode n);
   CHECK_RETURN Err emit_sym_enumerator(MnNode n);
-  CHECK_RETURN Err emit_sym_enumerator_list(MnNode n);
   CHECK_RETURN Err emit_sym_expression_statement(MnNode n);
   CHECK_RETURN Err emit_sym_field_declaration(MnNode decl);
   CHECK_RETURN Err emit_sym_field_declaration_list(MnNode n, bool is_struct);
@@ -149,7 +146,6 @@ struct MtCursor {
   CHECK_RETURN Err emit_sym_template_argument_list(MnNode n);
   CHECK_RETURN Err emit_sym_template_declaration(MnNode n);
   CHECK_RETURN Err emit_sym_template_type(MnNode n);
-  CHECK_RETURN Err emit_sym_type_definition(MnNode node);
   CHECK_RETURN Err emit_sym_type_identifier(MnNode n);
   CHECK_RETURN Err emit_sym_update_expression(MnNode n);
   CHECK_RETURN Err emit_sym_using_declaration(MnNode n);

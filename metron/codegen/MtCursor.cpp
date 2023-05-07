@@ -48,10 +48,15 @@ emit_map emit_sym_map = {
   { sym_nullptr,                        &MtCursor::emit_sym_nullptr },
   { sym_parameter_list,                 &MtCursor::emit_sym_parameter_list },
   { sym_parenthesized_expression,       &MtCursor::emit_children },
+
   { sym_preproc_arg,                    &MtCursor::emit_sym_preproc_arg },
   { sym_preproc_def,                    &MtCursor::emit_sym_preproc_def },
   { sym_preproc_ifdef,                  &MtCursor::emit_sym_preproc_ifdef },
   { sym_preproc_include,                &MtCursor::emit_sym_preproc_include },
+  { sym_preproc_if,                     &MtCursor::skip_over },
+  { sym_preproc_call,                   &MtCursor::skip_over },
+  { sym_preproc_else,                   &MtCursor::skip_over },
+
   { sym_primitive_type,                 &MtCursor::emit_sym_primitive_type },
   { sym_qualified_identifier,           &MtCursor::emit_sym_qualified_identifier },
   { sym_return_statement,               &MtCursor::emit_sym_return_statement },
@@ -2707,55 +2712,13 @@ CHECK_RETURN Err MtCursor::emit_sym_expression_statement(MnNode node) {
   // by binding statements if it's a submodule call or if the method called
   // requires bindings.
 
-  if (node.child(0).sym == sym_call_expression) {
-    if (can_omit_call(node.child(0))) {
-      err << skip_over(node);
-      return err;
-    }
-  }
-
-  for (auto child : node) {
-    switch (child.sym) {
-      case sym_assignment_expression:
-        err << emit_sym_assignment_expression(child);
-        break;
-      case sym_call_expression:
-        err << emit_sym_call_expression(child);
-        break;
-      case sym_conditional_expression:
-        err << emit_sym_conditional_expression(child);
-        break;
-      case sym_update_expression:
-        err << emit_sym_update_expression(child);
-        break;
-      case anon_sym_SEMI:
-        err << emit_text(child);
-        break;
-      default:
-        err << ERR("Unknown symbol %d in expression statement", child.sym);
-        break;
-    }
-  }
-
-  return err << check_done(node);
-}
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtCursor::emit_template_argument(MnNode node) {
-  Err err = check_at(node);
-
-  if (node.sym == sym_type_descriptor) {
-    err << emit_dispatch(node);
-  }
-  else if (node.is_expression()) {
-    err << emit_expression(node);
+  if (node.child(0).sym == sym_call_expression && can_omit_call(node.child(0))) {
+    err << skip_over(node);
+    return err;
   }
   else {
-    err << ERR("Unknown node type in template argument");
+    return err << emit_children(node);
   }
-
-  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
@@ -2782,7 +2745,7 @@ CHECK_RETURN Err MtCursor::emit_sym_template_type(MnNode n) {
       default:
         cursor = logic_size.start();
         err << emit_print("[");
-        err << emit_template_argument(logic_size);
+        err << emit_dispatch(logic_size);
         err << emit_print("-1:0]");
         break;
     }
@@ -2811,11 +2774,8 @@ CHECK_RETURN Err MtCursor::emit_sym_template_argument_list(MnNode n) {
       case anon_sym_GT:
         err << emit_replacement(c, ")");
         break;
-      case anon_sym_COMMA:
-        err << emit_text(c);
-        break;
       default:
-        err << emit_template_argument(c);
+        err << emit_dispatch(c);
         break;
     }
   }
@@ -2840,26 +2800,6 @@ CHECK_RETURN Err MtCursor::emit_toplevel_node(MnNode node) {
   Err err = check_at(node);
 
   switch (node.sym) {
-    case sym_identifier:
-      err << emit_dispatch(node);
-      break;
-
-    case sym_preproc_def:
-    case sym_preproc_if:
-    case sym_preproc_ifdef:
-    case sym_preproc_else:
-    case sym_preproc_call:
-    case sym_preproc_arg:
-    case sym_preproc_include:
-      err << emit_preproc(node);
-      break;
-
-    case sym_class_specifier:
-    case sym_struct_specifier:
-    case sym_type_definition:
-    case sym_template_declaration:
-      err << emit_dispatch(node);
-      break;
 
     case sym_namespace_definition:
       err << emit_sym_namespace_definition(node);
@@ -2867,8 +2807,7 @@ CHECK_RETURN Err MtCursor::emit_toplevel_node(MnNode node) {
 
     case sym_expression_statement:
       if (node.text() != ";") {
-        err << ERR(
-            "Found unexpected expression statement in translation unit\n");
+        err << ERR("Found unexpected expression statement in translation unit\n");
       }
       err << skip_over(node);
       break;
@@ -2879,7 +2818,6 @@ CHECK_RETURN Err MtCursor::emit_toplevel_node(MnNode node) {
 
     case anon_sym_SEMI:
       err << skip_over(node);
-      //err << emit_text(node);
       break;
 
     case sym_enum_specifier:
@@ -2888,7 +2826,7 @@ CHECK_RETURN Err MtCursor::emit_toplevel_node(MnNode node) {
       break;
 
     default:
-      err << emit_leaf(node);
+      err << emit_dispatch(node);
       break;
   }
 
@@ -2896,9 +2834,10 @@ CHECK_RETURN Err MtCursor::emit_toplevel_node(MnNode node) {
 }
 
 //------------------------------------------------------------------------------
+// Discard any trailing semicolons in the translation unit.
 
-CHECK_RETURN Err MtCursor::emit_toplevel_block(MnNode n) {
-  Err err = check_at(n);
+CHECK_RETURN Err MtCursor::emit_sym_translation_unit(MnNode n) {
+  Err err = check_at(sym_translation_unit, n);
 
   bool noconvert = false;
   bool dumpit = false;
@@ -2930,21 +2869,6 @@ CHECK_RETURN Err MtCursor::emit_toplevel_block(MnNode n) {
   err << emit_ws();
 
   return err << check_done(n);
-}
-
-//------------------------------------------------------------------------------
-// Discard any trailing semicolons in the translation unit.
-
-CHECK_RETURN Err MtCursor::emit_sym_translation_unit(MnNode n) {
-  Err err = check_at(sym_translation_unit, n);
-
-  err << emit_toplevel_block(n);
-
-  if (cursor < current_source->source_end) {
-    err << emit_span(cursor, current_source->source_end);
-  }
-
-  return err << emit_ws();
 }
 
 //------------------------------------------------------------------------------

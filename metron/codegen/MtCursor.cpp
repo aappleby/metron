@@ -12,11 +12,6 @@
 #include "metrolib/core/Log.h"
 
 #include <string.h>
-#include <functional>
-#include <map>
-
-typedef std::function<Err(MtCursor*, MnNode node)> emit_cb;
-typedef std::map<TSSymbol, emit_cb> emit_map;
 
 emit_map emit_sym_map = {
   { alias_sym_namespace_identifier,     &MtCursor::emit_text },
@@ -1776,6 +1771,8 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
   }
 
   // Extract enum bit width, if present.
+  push_config();
+  config.number_width = 32;
   override_size = 32;
   MnNode node_base = n.get_field(field_base);
   if (node_base) {
@@ -1783,6 +1780,7 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
     auto node_type_args = node_scope.get_field(field_arguments);
     for (auto c : node_type_args) {
       if (c.sym == sym_number_literal) {
+        config.number_width = atoi(c.start());
         override_size = atoi(c.start());
         break;
       }
@@ -1829,33 +1827,10 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
   }
 
   override_size = 0;
+  pop_config();
   return err << check_done(n);
 }
 
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtCursor::emit_enum_field(MnNode n) {
-  Err err = check_at(sym_field_declaration, n);
-
-  for (auto c : n) {
-    err << emit_ws_to(c);
-
-    if (c.sym == sym_enum_specifier) {
-      err << emit_sym_enum_specifier(c);
-    }
-    else if (c.sym == alias_sym_field_identifier) {
-      err << emit_sym_field_identifier(c);
-    }
-    else if (c.sym == anon_sym_SEMI) {
-      err << emit_text(c);
-    }
-    else {
-      err << ERR("Unknown node in anonymous enum");
-    }
-  }
-
-  return err << check_done(n);
-}
 
 
 
@@ -1942,6 +1917,7 @@ CHECK_RETURN Err MtCursor::emit_sym_init_declarator(MnNode node, bool elide_valu
     else if (child.field == field_value) {
       if (elide_value) {
         err << skip_over(child);
+        err << skip_ws_inside(node);
       }
       else {
         err << emit_expression(child);
@@ -1977,6 +1953,7 @@ CHECK_RETURN Err MtCursor::emit_declarator(MnNode node, bool elide_value) {
         // err << emit_sym_type_qualifier(node.child(2));
         cursor = node.child(2).start();
         err << skip_over(node.child(2));
+        err << skip_ws_inside(node);
       }
       break;
     case sym_pointer_declarator: {
@@ -2071,23 +2048,14 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
 
       if (c.sym == sym_storage_class_specifier) {
         err << skip_over(c);
-        err << skip_ws();
+        err << skip_ws_inside(n);
       }
       else if (c.sym == sym_type_qualifier) {
         err << skip_over(c);
-        err << skip_ws();
+        err << skip_ws_inside(n);
       }
-      else if (c.field == field_type) {
+      else {
         err << emit_dispatch(c);
-      }
-      else if(c.field == field_declarator) {
-        err << emit_dispatch(c);
-      }
-      else if (c.is_leaf()) {
-        err << emit_leaf(c);
-      }
-      else if (c.field == field_default_value) {
-        err << emit_expression(c);
       }
     }
 
@@ -2104,23 +2072,14 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
 
       if (c.sym == sym_storage_class_specifier) {
         err << skip_over(c);
-        err << skip_ws();
+        err << skip_ws_inside(n);
       }
       else if (c.sym == sym_type_qualifier) {
         err << skip_over(c);
-        err << skip_ws();
+        err << skip_ws_inside(n);
       }
-      else if (c.field == field_type) {
+      else {
         err << emit_dispatch(c);
-      }
-      else if(c.field == field_declarator) {
-        err << emit_dispatch(c);
-      }
-      else if (c.is_leaf()) {
-        err << emit_leaf(c);
-      }
-      else if (c.field == field_default_value) {
-        err << emit_expression(c);
       }
     }
 
@@ -2129,7 +2088,7 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
 
   // Enum
   if (n.get_field(field_type).sym == sym_enum_specifier) {
-    return emit_enum_field(n);
+    return emit_children(n);
   }
 
   //----------
@@ -2236,6 +2195,7 @@ CHECK_RETURN Err MtCursor::emit_param_port(MtMethod* m, MnNode node_type, MnNode
 CHECK_RETURN Err MtCursor::emit_param_binding(MtMethod* m, MnNode node_type, MnNode node_name) {
   Err err;
 
+  /*
   MtCursor sub_cursor = *this;
   sub_cursor.cursor = node_type.start();
   err << sub_cursor.emit_dispatch(node_type);
@@ -2243,8 +2203,19 @@ CHECK_RETURN Err MtCursor::emit_param_binding(MtMethod* m, MnNode node_type, MnN
   err << sub_cursor.emit_print("%s_", m->cname());
   err << sub_cursor.emit_dispatch(node_name);
   err << emit_print(";");
+  */
 
-  trailing_comma = true;
+  push_cursor(node_type);
+  err << emit_dispatch(node_type);
+  pop_cursor(node_type);
+
+  err << emit_print(" %s_", m->cname());
+
+  push_cursor(node_name);
+  err << emit_dispatch(node_name);
+  pop_cursor(node_name);
+
+  err << emit_print(";");
 
   return err;
 }
@@ -2254,13 +2225,13 @@ CHECK_RETURN Err MtCursor::emit_param_binding(MtMethod* m, MnNode node_type, MnN
 CHECK_RETURN Err MtCursor::emit_return_port(MtMethod* m, MnNode node_type, MnNode node_name) {
   Err err;
 
-  MtCursor sub_cursor = *this;
-  sub_cursor.cursor = node_type.start();
   err << emit_print("output ");
-  err << sub_cursor.emit_dispatch(node_type);
-  err << sub_cursor.emit_ws();
-  err << sub_cursor.emit_print("%s_ret", m->cname());
-  err << emit_print(",");
+
+  push_cursor(node_type);
+  err << emit_dispatch(node_type);
+  pop_cursor(node_type);
+
+  err << emit_print(" %s_ret,", m->cname());
 
   trailing_comma = true;
 

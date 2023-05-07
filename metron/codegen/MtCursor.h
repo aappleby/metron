@@ -6,16 +6,23 @@
 #include <map>
 #include <stack>
 #include <vector>
+#include <functional>
 
 struct MtMethod;
 struct MtModule;
 struct MtField;
 struct MtSourceFile;
 struct MtModLibrary;
+struct MtCursor;
+
+typedef std::function<Err(MtCursor*, MnNode node)> emit_cb;
+typedef std::map<TSSymbol, emit_cb> emit_map;
 
 //------------------------------------------------------------------------------
 
 struct MtCursorConfig {
+  MtCursorConfig* parent = nullptr;
+  emit_map* emits = nullptr;
   int number_width = 0;
   const char* block_prefix = "begin";
   const char* block_suffix = "end";
@@ -73,7 +80,6 @@ struct MtCursor {
   CHECK_RETURN Err emit_declarator(MnNode n, bool elide_value = false);
   CHECK_RETURN Err emit_parameter_declaration(MnNode n);
   CHECK_RETURN Err emit_module_parameter_declaration(MnNode n);
-  CHECK_RETURN Err emit_enum_field(MnNode n);
   CHECK_RETURN Err emit_literal(MnNode n);
 
   // Special-purpose emit()s

@@ -1204,11 +1204,11 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_comb(MnNode n) {
 
   err << emit_print("always_comb begin : %s", func_decl.name4().c_str());
   err << skip_over(func_ret);
+  err << skip_ws_inside(n);
 
-  err << emit_ws_to(func_decl);
   err << skip_over(func_decl);
+  err << skip_ws_inside(n);
 
-  err << emit_ws_to(func_body);
   err << emit_sym_compound_statement(func_body, "", "end");
 
   id_replacements = old_replacements;

@@ -20,7 +20,7 @@ module adder (
   parameter WIDTH = 32;
  /*public*/
 
-  always_comb begin : tock   result = operand_a + operand_b; end
+  always_comb begin : tock result = operand_a + operand_b; end
 endmodule
 
 `endif // ADDER_H

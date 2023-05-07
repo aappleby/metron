@@ -39,7 +39,7 @@ module singlecycle_control (
     // clang-format on
   end
 
-  always_comb begin : tock_pc_write_enable   pc_write_enable = 1'b1; end
+  always_comb begin : tock_pc_write_enable pc_write_enable = 1'b1; end
 
   always_comb begin : tock_regfile_write_enable
     import rv_constants::*;

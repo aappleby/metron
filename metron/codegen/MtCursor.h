@@ -52,6 +52,7 @@ struct MtCursor {
   CHECK_RETURN bool can_omit_call(MnNode n);
 
   // Generic emit()s.
+  CHECK_RETURN Err emit_dispatch(MnNode n);
   CHECK_RETURN Err emit_statement(MnNode n);
   CHECK_RETURN Err emit_expression(MnNode n);
   CHECK_RETURN Err emit_identifier(MnNode n);
@@ -100,10 +101,10 @@ struct MtCursor {
   CHECK_RETURN Err emit_func_as_always_comb(MnNode n);
   CHECK_RETURN Err emit_func_as_always_ff(MnNode n);
 
-  CHECK_RETURN Err emit_sym_qualified_identifier_as_type(MnNode node);
 
   // Per-symbol emit()s.
   // clang-format off
+  CHECK_RETURN Err emit_sym_qualified_identifier_as_type(MnNode node);
   CHECK_RETURN Err emit_sym_translation_unit(MnNode n);
   CHECK_RETURN Err emit_sym_argument_list(MnNode n);
   CHECK_RETURN Err emit_sym_assignment_expression(MnNode n);
@@ -140,12 +141,11 @@ struct MtCursor {
   CHECK_RETURN Err emit_sym_preproc_include(MnNode n);
   CHECK_RETURN Err emit_sym_primitive_type(MnNode n);
   CHECK_RETURN Err emit_sym_qualified_identifier(MnNode n);
-  CHECK_RETURN Err emit_sym_return(MnNode n);
+  CHECK_RETURN Err emit_sym_return_statement(MnNode n);
   CHECK_RETURN Err emit_sym_sized_type_specifier(MnNode n);
   CHECK_RETURN Err emit_sym_storage_class_specifier(MnNode n);
   CHECK_RETURN Err emit_sym_struct_specifier(MnNode n);
   CHECK_RETURN Err emit_sym_switch_statement(MnNode n);
-  CHECK_RETURN Err emit_sym_switch(MnNode n);
   CHECK_RETURN Err emit_sym_template_argument_list(MnNode n);
   CHECK_RETURN Err emit_sym_template_declaration(MnNode n);
   CHECK_RETURN Err emit_sym_template_type(MnNode n);

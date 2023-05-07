@@ -11,11 +11,71 @@
 
 #include "metrolib/core/Log.h"
 
-//#include <memory.h>
-//#include "metrolib/core/Platform.h"
 #include <string.h>
 #include <functional>
 #include <map>
+
+typedef std::function<Err(MtCursor*, MnNode node)> emit_cb;
+typedef std::map<TSSymbol, emit_cb> emit_map;
+
+emit_map emit_sym_map = {
+  { alias_sym_field_identifier,   &MtCursor::emit_sym_field_identifier },
+  { alias_sym_type_identifier,    &MtCursor::emit_sym_type_identifier },
+  { sym_argument_list,            &MtCursor::emit_sym_argument_list },
+  { sym_assignment_expression,    &MtCursor::emit_sym_assignment_expression },
+  { sym_binary_expression,        &MtCursor::emit_child_expressions },
+  { sym_break_statement,          &MtCursor::emit_sym_break_statement },
+  { sym_call_expression,          &MtCursor::emit_sym_call_expression },
+  { sym_case_statement,           &MtCursor::emit_sym_case_statement },
+  { sym_class_specifier,          &MtCursor::emit_sym_class_specifier },
+  { sym_comment,                  &MtCursor::emit_sym_comment },
+  { sym_condition_clause,         &MtCursor::emit_sym_condition_clause },
+  { sym_conditional_expression,   &MtCursor::emit_sym_conditional_expression },
+  { sym_enum_specifier,           &MtCursor::emit_sym_enum_specifier },
+  { sym_enumerator_list,          &MtCursor::emit_sym_enumerator_list },
+  { sym_enumerator,               &MtCursor::emit_sym_enumerator },
+  { sym_expression_statement,     &MtCursor::emit_sym_expression_statement },
+  { sym_field_declaration,        &MtCursor::emit_sym_field_declaration },
+  { sym_field_expression,         &MtCursor::emit_sym_field_expression },
+  { sym_for_statement,            &MtCursor::emit_sym_for_statement },
+  { sym_function_definition,      &MtCursor::emit_sym_function_definition },
+  { sym_identifier,               &MtCursor::emit_sym_identifier },
+  { sym_if_statement,             &MtCursor::emit_sym_if_statement },
+  { sym_initializer_list,         &MtCursor::emit_sym_initializer_list },
+  { sym_namespace_definition,     &MtCursor::emit_sym_namespace_definition },
+  { sym_parameter_list,           &MtCursor::emit_sym_parameter_list },
+  { sym_parenthesized_expression, &MtCursor::emit_child_expressions },
+  { sym_preproc_arg,              &MtCursor::emit_sym_preproc_arg },
+  { sym_preproc_def,              &MtCursor::emit_sym_preproc_def },
+  { sym_preproc_ifdef,            &MtCursor::emit_sym_preproc_ifdef },
+  { sym_preproc_include,          &MtCursor::emit_sym_preproc_include },
+  { sym_primitive_type,           &MtCursor::emit_sym_primitive_type },
+  { sym_qualified_identifier,     &MtCursor::emit_sym_qualified_identifier },
+  { sym_return_statement,         &MtCursor::emit_sym_return_statement },
+  { sym_sized_type_specifier,     &MtCursor::emit_sym_sized_type_specifier },
+  { sym_storage_class_specifier,  &MtCursor::emit_sym_storage_class_specifier },
+  { sym_struct_specifier,         &MtCursor::emit_sym_struct_specifier },
+  { sym_subscript_expression,     &MtCursor::emit_child_expressions },
+  { sym_switch_statement,         &MtCursor::emit_sym_switch_statement },
+  { sym_template_argument_list,   &MtCursor::emit_sym_template_argument_list },
+  { sym_template_declaration,     &MtCursor::emit_sym_template_declaration },
+  { sym_template_type,            &MtCursor::emit_sym_template_type },
+  { sym_translation_unit,         &MtCursor::emit_sym_translation_unit },
+  { sym_type_definition,          &MtCursor::emit_sym_type_definition },
+  { sym_unary_expression,         &MtCursor::emit_child_expressions },
+  { sym_update_expression,        &MtCursor::emit_sym_update_expression },
+  { sym_using_declaration,        &MtCursor::emit_sym_using_declaration },
+
+#if 0
+  CHECK_RETURN Err emit_sym_qualified_identifier_as_type(MnNode node);
+  CHECK_RETURN Err emit_sym_compound_statement(MnNode n, const std::string& delim_begin, const std::string& delim_end);
+  CHECK_RETURN Err emit_sym_declaration(MnNode n, bool elide_type, bool elide_value);
+  CHECK_RETURN Err emit_sym_field_declaration_list(MnNode n, bool is_struct);
+  CHECK_RETURN Err emit_sym_init_declarator(MnNode n, bool elide_value);
+  CHECK_RETURN Err emit_sym_number_literal(MnNode n, int size_cast);
+  CHECK_RETURN Err emit_sym_number_literal2(MnNode n) { return emit_sym_number_literal(n, 0); }
+#endif
+};
 
 //------------------------------------------------------------------------------
 
@@ -1117,19 +1177,6 @@ CHECK_RETURN Err MtCursor::emit_func_as_task(MnNode n) {
     }
   }
 
-#if 0
-  auto func_ret = n.get_field(field_type);
-  auto func_decl = n.get_field(field_declarator);
-  auto func_body = n.get_field(field_body);
-
-  err << emit_print("task automatic ");
-  err << skip_over(func_ret);
-  err << emit_declarator(func_decl);
-  err << prune_trailing_ws();
-  err << emit_print(";");
-  err << emit_sym_compound_statement(func_body, "", "endtask");
-#endif
-
   return err << check_done(n);
 }
 
@@ -1722,8 +1769,6 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
 #if 0
 
-typedef std::function<Err(MtCursor*, MnNode node)> emit_cb;
-typedef std::map<std::pair<int, int>, emit_cb> emit_map;
 
 emit_map emit_sym_enumerator_list_map = {
   { {0, anon_sym_COMMA},  &MtCursor::emit_text },
@@ -1778,17 +1823,11 @@ CHECK_RETURN Err MtCursor::emit_sym_enumerator(MnNode n) {
   for (auto c : n) {
     err << emit_ws_to(c);
 
-    if (c.sym == sym_identifier) {
-      err << emit_identifier(c);
-    }
-    else if (c.sym == sym_number_literal) {
+    if (c.sym == sym_number_literal) {
       err << emit_sym_number_literal(c, 0);
     }
-    else if (c.sym == anon_sym_EQ) {
-      err << emit_text(c);
-    }
     else {
-      err << ERR("Unknown node type in sym_enumerator");
+      err << emit_dispatch(c);
     }
   }
 
@@ -1800,16 +1839,7 @@ CHECK_RETURN Err MtCursor::emit_sym_enumerator_list(MnNode n) {
 
   for (auto c : n) {
     err << emit_ws_to(c);
-
-    if (c.sym == sym_enumerator) {
-      err << emit_sym_enumerator(c);
-    }
-    else if (c.is_leaf()) {
-      err << emit_leaf(c);
-    }
-    else {
-      err << ERR("Unknown node type in sym_enumerator_list");
-    }
+    err << emit_dispatch(c);
   }
 
   return err << check_done(n);
@@ -3169,7 +3199,7 @@ CHECK_RETURN Err MtCursor::emit_sym_number_literal(MnNode n, int size_cast) {
 //------------------------------------------------------------------------------
 // Change "return x" to "(funcname) = x" to match old Verilog return style.
 
-CHECK_RETURN Err MtCursor::emit_sym_return(MnNode n) {
+CHECK_RETURN Err MtCursor::emit_sym_return_statement(MnNode n) {
   Err err = check_at(sym_return_statement, n);
 
   for (auto c : n) {
@@ -3380,16 +3410,11 @@ CHECK_RETURN Err MtCursor::emit_sym_case_statement(MnNode n) {
           err << emit_replacement(c, ",");
         }
         break;
-      case sym_if_statement:
       case sym_compound_statement:
-      case sym_expression_statement:
         err << emit_statement(c);
         break;
       case sym_qualified_identifier:
         err << emit_sym_qualified_identifier(c);
-        break;
-      case sym_comment:
-        err << emit_sym_comment(c);
         break;
       case sym_number_literal:
         err << emit_sym_number_literal(c, 0);
@@ -3398,7 +3423,7 @@ CHECK_RETURN Err MtCursor::emit_sym_case_statement(MnNode n) {
         err << emit_text(c);
         break;
       default:
-        err << ERR("Unknown node type in sym_case_statement");
+        err << emit_dispatch(c);
         break;
     }
   }
@@ -3579,6 +3604,24 @@ CHECK_RETURN Err MtCursor::emit_literal(MnNode n) {
 
 //------------------------------------------------------------------------------
 
+CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
+  Err err = check_at(n);
+
+  if (n.is_leaf()) {
+    err << emit_leaf(n);
+  }
+  else if (auto it = emit_sym_map.find(n.sym); it != emit_sym_map.end()) {
+    err << it->second(this, n);
+  }
+  else {
+    err << ERR("emit_dispatch - no handler for sym %s\n", n.ts_node_type());
+  }
+
+  return err << check_done(n);
+}
+
+//------------------------------------------------------------------------------
+
 CHECK_RETURN Err MtCursor::emit_statement(MnNode n) {
   Err err;
 
@@ -3587,32 +3630,11 @@ CHECK_RETURN Err MtCursor::emit_statement(MnNode n) {
       // type should be hoisted.
       err << emit_sym_declaration(n, true, false);
       break;
-    case sym_if_statement:
-      err << emit_sym_if_statement(n);
-      break;
     case sym_compound_statement:
       err << emit_sym_compound_statement(n, "begin", "end");
       break;
-    case sym_expression_statement:
-      err << emit_sym_expression_statement(n);
-      break;
-    case sym_return_statement:
-      err << emit_sym_return(n);
-      break;
-    case sym_switch_statement:
-      err << emit_sym_switch_statement(n);
-      break;
-    case sym_using_declaration:
-      err << emit_sym_using_declaration(n);
-      break;
-    case sym_case_statement:
-      err << emit_sym_case_statement(n);
-      break;
-    case sym_break_statement:
-      err << emit_sym_break_statement(n);
-      break;
     default:
-      err << ERR("Unknown node type in emit_statement");
+      err << emit_dispatch(n);
       break;
   }
 
@@ -3651,22 +3673,6 @@ CHECK_RETURN Err MtCursor::emit_expression(MnNode n) {
     case sym_unary_expression:
       err << emit_child_expressions(n);
       break;
-
-    case sym_field_expression:
-      err << emit_sym_field_expression(n);
-      break;
-    case sym_call_expression:
-      err << emit_sym_call_expression(n);
-      break;
-    case sym_assignment_expression:
-      err << emit_sym_assignment_expression(n);
-      break;
-    case sym_conditional_expression:
-      err << emit_sym_conditional_expression(n);
-      break;
-    case sym_update_expression:
-      err << emit_sym_update_expression(n);
-      break;
     case sym_nullptr:
       err << emit_replacement(n, "\"\"");
       break;
@@ -3680,7 +3686,7 @@ CHECK_RETURN Err MtCursor::emit_expression(MnNode n) {
       err << emit_text(n);
       break;
     default:
-      err << ERR("Unknown node type in emit_expression");
+      err << emit_dispatch(n);
       break;
   }
 
@@ -3735,8 +3741,10 @@ CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnNode node) {
         err << emit_sym_condition_clause(child);
         break;
       case sym_if_statement:
+        err << emit_sym_if_statement(child);
+        break;
       case sym_compound_statement:
-        err << emit_statement(child);
+        err << emit_sym_compound_statement(child, "begin", "end");
         break;
       case sym_expression_statement:
         if (branch_contains_component_call(child)) {

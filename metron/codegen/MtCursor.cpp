@@ -556,7 +556,7 @@ CHECK_RETURN Err MtCursor::emit_sym_assignment_expression(MnNode node) {
     err << emit_ws_to(child);
 
     switch (child.field) {
-      case field_left: err << emit_expression(child); break;
+      case field_left: err << emit_dispatch(child); break;
       case field_operator:
         // There may not be a method if we're in an enum initializer list.
         if (current_method && current_method->is_tick_ && left_is_field) {
@@ -567,14 +567,14 @@ CHECK_RETURN Err MtCursor::emit_sym_assignment_expression(MnNode node) {
         if (is_compound) {
           push_cursor(lhs);
           err << emit_print(" ");
-          err << emit_expression(lhs);
+          err << emit_dispatch(lhs);
           err << emit_print(" %c", op[0]);
           pop_cursor(lhs);
         }
 
         break;
       case field_right:
-        err << emit_expression(child);
+        err << emit_dispatch(child);
         break;
       default:
         err << ERR("Unknown node type in sym_assignment_expression");
@@ -602,7 +602,12 @@ CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnNode call, int bx_width) {
       // Explicitly sized literal - 8'd10
 
       cursor = arg0.start();
+
+      push_config();
+      config.number_width = bx_width;
       err << emit_sym_number_literal(MnNode(arg0), bx_width);
+      pop_config();
+
       cursor = call.end();
     } else if (arg0.sym == sym_identifier ||
                arg0.sym == sym_subscript_expression) {
@@ -1007,7 +1012,7 @@ CHECK_RETURN Err MtCursor::emit_local_call_arg_binding(MtMethod* method, MnNode 
   err << emit_print("%s_%s = ", method->cname(), param_name.c_str());
 
   cursor = val.start();
-  err << emit_expression(val);
+  err << emit_dispatch(val);
   cursor = val.end();
 
   err << prune_trailing_ws();
@@ -1024,7 +1029,7 @@ CHECK_RETURN Err MtCursor::emit_component_call_arg_binding(MnNode inst, MtMethod
                     param.get_field(field_declarator).text().c_str());
 
   cursor = val.start();
-  err << emit_expression(val);
+  err << emit_dispatch(val);
   cursor = val.end();
 
   err << prune_trailing_ws();
@@ -1960,18 +1965,8 @@ CHECK_RETURN Err MtCursor::emit_declarator(MnNode node, bool elide_value) {
   Err err = check_at(node);
 
   switch (node.sym) {
-    case alias_sym_type_identifier:
-      err << emit_sym_type_identifier(node);
-      break;
-    case sym_identifier:
-    case alias_sym_field_identifier:
-      err << emit_dispatch(node);
-      break;
     case sym_init_declarator:
       err << emit_sym_init_declarator(node, elide_value);
-      break;
-    case sym_array_declarator:
-      err << emit_dispatch(node);
       break;
     case sym_function_declarator:
       err << emit_declarator(node.get_field(field_declarator));
@@ -1991,7 +1986,7 @@ CHECK_RETURN Err MtCursor::emit_declarator(MnNode node, bool elide_value) {
       break;
     }
     default:
-      err << ERR("Unknown node type in declarator");
+      err << emit_dispatch(node);
       break;
   }
 

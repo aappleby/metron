@@ -15,6 +15,16 @@ struct MtModLibrary;
 
 //------------------------------------------------------------------------------
 
+struct MtCursorConfig {
+  int number_width = 0;
+  const char* block_prefix = "begin";
+  const char* block_suffix = "end";
+  bool elide_type = false;
+  bool elide_value = false;
+};
+
+//------------------------------------------------------------------------------
+
 struct MtCursor {
   MtCursor(MtModLibrary* lib, MtSourceFile* source, MtModule* mod,
            std::string* out);
@@ -158,6 +168,18 @@ struct MtCursor {
   MtSourceFile* current_source = nullptr;
   MtModule* current_mod = nullptr;
   MtMethod* current_method = nullptr;
+
+  MtCursorConfig config;
+  std::stack<MtCursorConfig> config_stack;
+
+  void push_config() {
+    config_stack.push(config);
+  }
+
+  void pop_config() {
+    config = config_stack.top();
+    config_stack.pop();
+  }
 
   const char* cursor = nullptr;
   std::stack<const char*> cursor_stack;

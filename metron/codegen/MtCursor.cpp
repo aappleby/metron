@@ -22,6 +22,7 @@ emit_map emit_sym_map = {
   { alias_sym_namespace_identifier,     &MtCursor::emit_text },
   { alias_sym_field_identifier,         &MtCursor::emit_sym_field_identifier },
   { alias_sym_type_identifier,          &MtCursor::emit_sym_type_identifier },
+  { sym_array_declarator,               &MtCursor::emit_children },
   { sym_argument_list,                  &MtCursor::emit_sym_argument_list },
   { sym_assignment_expression,          &MtCursor::emit_sym_assignment_expression },
   { sym_binary_expression,              &MtCursor::emit_children },
@@ -44,6 +45,7 @@ emit_map emit_sym_map = {
   { sym_if_statement,                   &MtCursor::emit_sym_if_statement },
   { sym_initializer_list,               &MtCursor::emit_sym_initializer_list },
   { sym_namespace_definition,           &MtCursor::emit_sym_namespace_definition },
+  { sym_nullptr,                        &MtCursor::emit_sym_nullptr },
   { sym_parameter_list,                 &MtCursor::emit_sym_parameter_list },
   { sym_parenthesized_expression,       &MtCursor::emit_children },
   { sym_preproc_arg,                    &MtCursor::emit_sym_preproc_arg },
@@ -68,17 +70,6 @@ emit_map emit_sym_map = {
   { sym_update_expression,              &MtCursor::emit_sym_update_expression },
   { sym_using_declaration,              &MtCursor::emit_sym_using_declaration },
   { sym_optional_parameter_declaration, &MtCursor::emit_children },
-
-
-#if 0
-  CHECK_RETURN Err emit_sym_qualified_identifier_as_type(MnNode node);
-  CHECK_RETURN Err emit_sym_compound_statement(MnNode n, const std::string& delim_begin, const std::string& delim_end);
-  CHECK_RETURN Err emit_sym_declaration(MnNode n, bool elide_type, bool elide_value);
-  CHECK_RETURN Err emit_sym_field_declaration_list(MnNode n, bool is_struct);
-  CHECK_RETURN Err emit_sym_init_declarator(MnNode n, bool elide_value);
-  CHECK_RETURN Err emit_sym_number_literal(MnNode n, int size_cast);
-  CHECK_RETURN Err emit_sym_number_literal2(MnNode n) { return emit_sym_number_literal(n, 0); }
-#endif
 };
 
 //------------------------------------------------------------------------------
@@ -2040,7 +2031,7 @@ CHECK_RETURN Err MtCursor::emit_declarator(MnNode node, bool elide_value) {
       err << emit_sym_init_declarator(node, elide_value);
       break;
     case sym_array_declarator:
-      err << emit_children(node);
+      err << emit_dispatch(node);
       break;
     case sym_function_declarator:
       err << emit_declarator(node.get_field(field_declarator));
@@ -3501,6 +3492,12 @@ CHECK_RETURN Err MtCursor::emit_statement(MnNode n) {
 
 //------------------------------------------------------------------------------
 
+CHECK_RETURN Err MtCursor::emit_sym_nullptr(MnNode n) {
+  return emit_replacement(n, "\"\"");
+}
+
+//------------------------------------------------------------------------------
+
 CHECK_RETURN Err MtCursor::emit_expression(MnNode n) {
   Err err = check_at(n);
 
@@ -3510,38 +3507,8 @@ CHECK_RETURN Err MtCursor::emit_expression(MnNode n) {
   }
 
   switch (n.sym) {
-    case sym_identifier:
-    case sym_qualified_identifier:
-      err << emit_dispatch(n);
-      break;
-
-    case sym_type_descriptor:
-      err << emit_dispatch(n);
-      break;
-
-    case sym_subscript_expression:
-      err << emit_child_expressions(n);
-      break;
-    case sym_binary_expression:
-      err << emit_child_expressions(n);
-      break;
-    case sym_parenthesized_expression:
-      err << emit_child_expressions(n);
-      break;
-    case sym_unary_expression:
-      err << emit_child_expressions(n);
-      break;
-    case sym_nullptr:
-      err << emit_replacement(n, "\"\"");
-      break;
-    case sym_initializer_list:
-      err << emit_sym_initializer_list(n);
-      break;
     case sym_number_literal:
       err << emit_sym_number_literal(n, 0);
-      break;
-    case sym_string_literal:
-      err << emit_text(n);
       break;
     default:
       err << emit_dispatch(n);

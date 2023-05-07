@@ -35,7 +35,7 @@ emit_map emit_sym_map = {
   { sym_conditional_expression,         &MtCursor::emit_sym_conditional_expression },
   { sym_enum_specifier,                 &MtCursor::emit_sym_enum_specifier },
   { sym_enumerator_list,                &MtCursor::emit_children },
-  { sym_enumerator,                     &MtCursor::emit_sym_enumerator },
+  { sym_enumerator,                     &MtCursor::emit_children },
   { sym_expression_statement,           &MtCursor::emit_sym_expression_statement },
   { sym_field_declaration,              &MtCursor::emit_sym_field_declaration },
   { sym_field_expression,               &MtCursor::emit_sym_field_expression },
@@ -45,6 +45,7 @@ emit_map emit_sym_map = {
   { sym_if_statement,                   &MtCursor::emit_sym_if_statement },
   { sym_initializer_list,               &MtCursor::emit_sym_initializer_list },
   { sym_namespace_definition,           &MtCursor::emit_sym_namespace_definition },
+  { sym_number_literal,                 &MtCursor::emit_sym_number_literal2 },
   { sym_nullptr,                        &MtCursor::emit_sym_nullptr },
   { sym_parameter_list,                 &MtCursor::emit_sym_parameter_list },
   { sym_parenthesized_expression,       &MtCursor::emit_children },
@@ -1746,74 +1747,8 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
 
 
-//------------------------------------------------------------------------------
-
-#if 0
-
-
-emit_map emit_sym_enumerator_list_map = {
-  { {0, anon_sym_COMMA},  &MtCursor::emit_text },
-  // Enum lists do _not_ turn braces into begin/end.
-  { {0, anon_sym_RBRACE}, &MtCursor::emit_text },
-  { {0, anon_sym_LBRACE}, &MtCursor::emit_text },
-  { {0, sym_comment},     &MtCursor::emit_sym_comment },
-  { {0, sym_enumerator},  &MtCursor::emit_sym_enumerator },
-};
-
-emit_map emit_sym_enumerator_map = {
-  { {0, sym_identifier},      &MtCursor::emit_sym_identifier },
-  { {0, anon_sym_EQ},         &MtCursor::emit_text },
-  { {0, sym_number_literal},  &MtCursor::emit_sym_number_literal2 },
-};
-
-typedef std::map<int, emit_map*> emit_metamap;
-
-emit_metamap _emits = {
-  { sym_enumerator_list, &emit_sym_enumerator_list_map },
-  //{ sym_enumerator,      &emit_sym_enumerator_map },
-};
-
-const int field_none = 0;
-
-/*
-emit_map emit_sym_enum_specifier_map = {
-  { {field_none, anon_sym_enum},               &MtCursor::emit_text },
-  { {field_none, anon_sym_class},              &MtCursor::skip_over },
-  { {field_name, alias_sym_type_identifier},   &MtCursor::skip_over },
-  { {field_none, anon_sym_COLON},              &MtCursor::skip_over },
-  { {field_base, alias_sym_type_identifier},   &MtCursor::emit_sym_type_identifier },
-  { {field_body, sym_enumerator_list},         &MtCursor::emit_sym_enumerator_list },
-};
-*/
-
-/*
-emit_map emit_sym_field_declaration_map = {
-  { {field_none, sym_enum_specifier},           &MtCursor::emit_sym_enum_specifier},
-  { {field_none, alias_sym_field_identifier},   &MtCursor::skip_over },
-  { {field_none, anon_sym_SEMI},                &MtCursor::emit_text },
-};
-*/
-
-#endif
 
 //------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtCursor::emit_sym_enumerator(MnNode n) {
-  Err err = check_at(sym_enumerator, n);
-
-  for (auto c : n) {
-    err << emit_ws_to(c);
-
-    if (c.sym == sym_number_literal) {
-      err << emit_sym_number_literal(c, 0);
-    }
-    else {
-      err << emit_dispatch(c);
-    }
-  }
-
-  return err << check_done(n);
-}
 
 CHECK_RETURN Err MtCursor::emit_sym_qualified_identifier_as_type(MnNode n) {
   // enum class sized_enum : logic<8>::BASE { A8 = 0b01, B8 = 0x02, C8 = 3 };
@@ -2890,27 +2825,12 @@ CHECK_RETURN Err MtCursor::emit_sym_namespace_definition(MnNode n) {
       case anon_sym_RBRACE:
         err << skip_over(c);
         break;
-      case sym_struct_specifier:
-        err << emit_sym_struct_specifier(c);
-        break;
-      case sym_class_specifier:
-        err << emit_sym_class_specifier(c);
-        break;
-      case sym_template_declaration:
-        err << emit_sym_template_declaration(c);
-        break;
-      case sym_namespace_definition:
-        err << emit_sym_namespace_definition(c);
-        break;
       case sym_declaration:
         // not sure what happens if we see an "int x = 1" in a namespace...
         err << emit_sym_declaration(c, false, false);
         break;
-      case sym_comment:
-        err << emit_sym_comment(c);
-        break;
       default:
-        err << ERR("Unknown node type in sym_namespace_definition");
+        err << emit_dispatch(c);
         break;
     }
   }
@@ -3862,12 +3782,8 @@ CHECK_RETURN Err MtCursor::emit_sym_for_statement(MnNode node) {
     else if (child.is_statement()) {
       err << emit_statement(child);
     }
-    else if (child.is_leaf()) {
-      err << emit_leaf(child);
-    }
     else {
-      child.dump_tree();
-      err << ERR("Unknown node type in for statement");
+      err << emit_dispatch(child);
     }
    }
 

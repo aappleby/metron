@@ -114,7 +114,6 @@ struct MtCursor {
   CHECK_RETURN Err emit_sym_conditional_expression(MnNode n);
   CHECK_RETURN Err emit_sym_declaration(MnNode n, bool elide_type, bool elide_value);
   CHECK_RETURN Err emit_sym_enum_specifier(MnNode n);
-  CHECK_RETURN Err emit_sym_enumerator(MnNode n);
   CHECK_RETURN Err emit_sym_expression_statement(MnNode n);
   CHECK_RETURN Err emit_sym_field_declaration(MnNode decl);
   CHECK_RETURN Err emit_sym_field_declaration_list(MnNode n, bool is_struct);

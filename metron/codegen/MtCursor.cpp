@@ -1604,18 +1604,31 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
     auto output_type = n->get_type_node();
     auto output_decl = n->get_decl_node();
 
-    MtCursor subcursor(lib, component_mod->source_file, component_mod, str_out);
-    subcursor.echo = echo;
-    subcursor.id_replacements = replacements;
-    subcursor.cursor = output_type.start();
+    auto old_source = current_source;
+    auto old_mod = current_mod;
+    auto old_ids = id_replacements;
+    auto old_cursor = cursor;
+
+    push_config();
+
+    current_source = component_mod->source_file;
+    id_replacements = replacements;
+    cursor = output_type.start();
 
     err << start_line();
-    err << subcursor.emit_dispatch(output_type);
-    err << subcursor.emit_ws();
+    err << emit_dispatch(output_type);
+    err << emit_ws();
     err << emit_print("%s_", component_cname);
-    err << subcursor.emit_dispatch(output_decl);
+    err << emit_dispatch(output_decl);
     err << prune_trailing_ws();
     err << emit_print(";");
+
+    pop_config();
+
+    current_source = old_source;
+    current_mod = old_mod;
+    id_replacements = old_ids;
+    cursor = old_cursor;
   }
 
   for (auto n : component_mod->input_method_params) {
@@ -1623,18 +1636,31 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
     auto output_type = n->get_type_node();
     auto output_decl = n->get_decl_node();
 
-    MtCursor subcursor(lib, component_mod->source_file, component_mod, str_out);
-    subcursor.echo = echo;
-    subcursor.id_replacements = replacements;
-    subcursor.cursor = output_type.start();
+    auto old_source = current_source;
+    auto old_mod = current_mod;
+    auto old_ids = id_replacements;
+    auto old_cursor = cursor;
+
+    push_config();
+
+    current_source = component_mod->source_file;
+    id_replacements = replacements;
+    cursor = output_type.start();
 
     err << start_line();
-    err << subcursor.emit_dispatch(output_type);
-    err << subcursor.emit_ws();
+    err << emit_dispatch(output_type);
+    err << emit_ws();
     err << emit_print("%s_%s_", component_cname, n->func_name.c_str());
-    err << subcursor.emit_dispatch(output_decl);
+    err << emit_dispatch(output_decl);
     err << prune_trailing_ws();
     err << emit_print(";");
+
+    pop_config();
+
+    current_source = old_source;
+    current_mod = old_mod;
+    id_replacements = old_ids;
+    cursor = old_cursor;
   }
 
   for (auto n : component_mod->output_signals) {
@@ -1642,18 +1668,31 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
     auto output_type = n->get_type_node();
     auto output_decl = n->get_decl_node();
 
-    MtCursor subcursor(lib, component_mod->source_file, component_mod, str_out);
-    subcursor.echo = echo;
-    subcursor.id_replacements = replacements;
-    subcursor.cursor = output_type.start();
+    auto old_source = current_source;
+    auto old_mod = current_mod;
+    auto old_ids = id_replacements;
+    auto old_cursor = cursor;
+
+    push_config();
+
+    current_source = component_mod->source_file;
+    id_replacements = replacements;
+    cursor = output_type.start();
 
     err << start_line();
-    err << subcursor.emit_dispatch(output_type);
-    err << subcursor.emit_ws();
+    err << emit_dispatch(output_type);
+    err << emit_ws();
     err << emit_print("%s_", component_cname);
-    err << subcursor.emit_dispatch(output_decl);
+    err << emit_dispatch(output_decl);
     err << prune_trailing_ws();
     err << emit_print(";");
+
+    pop_config();
+
+    current_source = old_source;
+    current_mod = old_mod;
+    id_replacements = old_ids;
+    cursor = old_cursor;
   }
 
   for (auto n : component_mod->output_registers) {
@@ -1661,18 +1700,31 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
     auto output_type = n->get_type_node();
     auto output_decl = n->get_decl_node();
 
-    MtCursor subcursor(lib, component_mod->source_file, component_mod, str_out);
-    subcursor.echo = echo;
-    subcursor.id_replacements = replacements;
-    subcursor.cursor = output_type.start();
+    auto old_source = current_source;
+    auto old_mod = current_mod;
+    auto old_ids = id_replacements;
+    auto old_cursor = cursor;
+
+    push_config();
+
+    current_source = component_mod->source_file;
+    id_replacements = replacements;
+    cursor = output_type.start();
 
     err << start_line();
-    err << subcursor.emit_dispatch(output_type);
-    err << subcursor.emit_ws();
+    err << emit_dispatch(output_type);
+    err << emit_ws();
     err << emit_print("%s_", component_cname);
-    err << subcursor.emit_dispatch(output_decl);
+    err << emit_dispatch(output_decl);
     err << prune_trailing_ws();
     err << emit_print(";");
+
+    pop_config();
+
+    current_source = old_source;
+    current_mod = old_mod;
+    id_replacements = old_ids;
+    cursor = old_cursor;
   }
 
   for (auto m : component_mod->output_method_returns) {
@@ -1680,20 +1732,31 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
     auto getter_decl = m->_node.get_field(field_declarator);
     auto getter_name = getter_decl.get_field(field_declarator);
 
-    MtCursor sub_cursor(lib, component_mod->source_file, component_mod,
-                        str_out);
-    sub_cursor.echo = echo;
-    sub_cursor.id_replacements = replacements;
+    auto old_source = current_source;
+    auto old_mod = current_mod;
+    auto old_ids = id_replacements;
+    auto old_cursor = cursor;
 
-    sub_cursor.cursor = getter_type.start();
+    push_config();
+
+    current_source = component_mod->source_file;
+    id_replacements = replacements;
+    cursor = getter_type.start();
 
     err << start_line();
-    err << sub_cursor.emit_dispatch(getter_type);
-    err << sub_cursor.emit_ws();
+    err << emit_dispatch(getter_type);
+    err << emit_ws();
     err << emit_print("%s_", component_cname);
-    err << sub_cursor.emit_dispatch(getter_name);
+    err << emit_dispatch(getter_name);
     err << prune_trailing_ws();
     err << emit_print("_ret;");
+
+    pop_config();
+
+    current_source = old_source;
+    current_mod = old_mod;
+    id_replacements = old_ids;
+    cursor = old_cursor;
   }
 
   return err;

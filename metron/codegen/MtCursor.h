@@ -28,6 +28,7 @@ struct MtCursorConfig {
   bool elide_type = false;
   bool elide_value = false;
   int override_size = 0;
+  std::map<std::string, std::string> id_replacements;
 };
 
 //------------------------------------------------------------------------------
@@ -207,7 +208,6 @@ struct MtCursor {
   MtModule* current_mod = nullptr;
   MtMethod* current_method = nullptr;
 
-  std::map<std::string, std::string> id_replacements;
   std::map<std::string, MnNode> preproc_vars;
 };
 

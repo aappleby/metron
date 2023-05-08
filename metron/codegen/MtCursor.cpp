@@ -1183,10 +1183,10 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_comb(MnNode n) {
   auto func_body = n.get_field(field_body);
   auto func_params = func_decl.get_field(field_parameters);
 
-  auto old_replacements = id_replacements;
+  auto old_replacements = config.id_replacements;
   for (auto c : func_params) {
     if (!c.is_named()) continue;
-    id_replacements[c.name4()] = func_decl.name4() + "_" + c.name4();
+    config.id_replacements[c.name4()] = func_decl.name4() + "_" + c.name4();
   }
 
   for (auto c : n) {
@@ -1209,7 +1209,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_comb(MnNode n) {
     }
   }
 
-  id_replacements = old_replacements;
+  config.id_replacements = old_replacements;
 
   return err << check_done(n);
 }
@@ -1222,10 +1222,10 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_ff(MnNode n) {
   auto func_decl = n.get_field(field_declarator);
   auto func_params = func_decl.get_field(field_parameters);
 
-  auto old_replacements = id_replacements;
+  auto old_replacements = config.id_replacements;
   for (auto c : func_params) {
     if (c.sym == sym_parameter_declaration) {
-      id_replacements[c.name4()] = func_decl.name4() + "_" + c.name4();
+      config.id_replacements[c.name4()] = func_decl.name4() + "_" + c.name4();
     }
   }
 
@@ -1253,7 +1253,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_ff(MnNode n) {
     }
   }
 
-  id_replacements = old_replacements;
+  config.id_replacements = old_replacements;
 
   assert(cursor == n.end());
   return err;
@@ -1608,13 +1608,13 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     auto old_source = current_source;
     auto old_mod = current_mod;
-    auto old_ids = id_replacements;
+    auto old_ids = config.id_replacements;
     auto old_cursor = cursor;
 
     push_config();
 
     current_source = component_mod->source_file;
-    id_replacements = replacements;
+    config.id_replacements = replacements;
     cursor = output_type.start();
 
     err << start_line();
@@ -1629,7 +1629,7 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     current_source = old_source;
     current_mod = old_mod;
-    id_replacements = old_ids;
+    config.id_replacements = old_ids;
     cursor = old_cursor;
   }
 
@@ -1640,13 +1640,13 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     auto old_source = current_source;
     auto old_mod = current_mod;
-    auto old_ids = id_replacements;
+    auto old_ids = config.id_replacements;
     auto old_cursor = cursor;
 
     push_config();
 
     current_source = component_mod->source_file;
-    id_replacements = replacements;
+    config.id_replacements = replacements;
     cursor = output_type.start();
 
     err << start_line();
@@ -1661,7 +1661,7 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     current_source = old_source;
     current_mod = old_mod;
-    id_replacements = old_ids;
+    config.id_replacements = old_ids;
     cursor = old_cursor;
   }
 
@@ -1672,13 +1672,13 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     auto old_source = current_source;
     auto old_mod = current_mod;
-    auto old_ids = id_replacements;
+    auto old_ids = config.id_replacements;
     auto old_cursor = cursor;
 
     push_config();
 
     current_source = component_mod->source_file;
-    id_replacements = replacements;
+    config.id_replacements = replacements;
     cursor = output_type.start();
 
     err << start_line();
@@ -1693,7 +1693,7 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     current_source = old_source;
     current_mod = old_mod;
-    id_replacements = old_ids;
+    config.id_replacements = old_ids;
     cursor = old_cursor;
   }
 
@@ -1704,13 +1704,13 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     auto old_source = current_source;
     auto old_mod = current_mod;
-    auto old_ids = id_replacements;
+    auto old_ids = config.id_replacements;
     auto old_cursor = cursor;
 
     push_config();
 
     current_source = component_mod->source_file;
-    id_replacements = replacements;
+    config.id_replacements = replacements;
     cursor = output_type.start();
 
     err << start_line();
@@ -1725,7 +1725,7 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     current_source = old_source;
     current_mod = old_mod;
-    id_replacements = old_ids;
+    config.id_replacements = old_ids;
     cursor = old_cursor;
   }
 
@@ -1736,13 +1736,13 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     auto old_source = current_source;
     auto old_mod = current_mod;
-    auto old_ids = id_replacements;
+    auto old_ids = config.id_replacements;
     auto old_cursor = cursor;
 
     push_config();
 
     current_source = component_mod->source_file;
-    id_replacements = replacements;
+    config.id_replacements = replacements;
     cursor = getter_type.start();
 
     err << start_line();
@@ -1757,7 +1757,7 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     current_source = old_source;
     current_mod = old_mod;
-    id_replacements = old_ids;
+    config.id_replacements = old_ids;
     cursor = old_cursor;
   }
 
@@ -2980,8 +2980,8 @@ CHECK_RETURN Err MtCursor::emit_sym_identifier(MnNode n) {
 
   auto name = n.name4();
 
-  auto it = id_replacements.find(name);
-  if (it != id_replacements.end()) {
+  auto it = config.id_replacements.find(name);
+  if (it != config.id_replacements.end()) {
     err << emit_replacement(n, it->second.c_str());
   } else if (preproc_vars.contains(name)) {
     err << emit_print("`");
@@ -3001,8 +3001,8 @@ CHECK_RETURN Err MtCursor::emit_sym_type_identifier(MnNode n) {
   Err err = check_at(alias_sym_type_identifier, n);
 
   auto name = n.name4();
-  auto it = id_replacements.find(name);
-  if (it != id_replacements.end()) {
+  auto it = config.id_replacements.find(name);
+  if (it != config.id_replacements.end()) {
     err << emit_replacement(n, it->second.c_str());
   } else {
     err << emit_text(n);

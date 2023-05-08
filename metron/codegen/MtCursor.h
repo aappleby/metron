@@ -23,11 +23,11 @@ typedef std::map<TSSymbol, emit_cb> emit_map;
 struct MtCursorConfig {
   MtCursorConfig* parent = nullptr;
   emit_map* emits = nullptr;
-  int number_width = 0;
   std::string block_prefix = "begin";
   std::string block_suffix = "end";
   bool elide_type = false;
   bool elide_value = false;
+  int override_size = 0;
 };
 
 //------------------------------------------------------------------------------
@@ -136,8 +136,7 @@ struct MtCursor {
   CHECK_RETURN Err emit_sym_initializer_list(MnNode n);
   CHECK_RETURN Err emit_sym_namespace_definition(MnNode n);
   CHECK_RETURN Err emit_sym_nullptr(MnNode n);
-  CHECK_RETURN Err emit_sym_number_literal(MnNode n, int size_cast);
-  CHECK_RETURN Err emit_sym_number_literal2(MnNode n) { return emit_sym_number_literal(n, 0); }
+  CHECK_RETURN Err emit_sym_number_literal(MnNode n);
   CHECK_RETURN Err emit_sym_pointer_declarator(MnNode n);
   CHECK_RETURN Err emit_sym_preproc_arg(MnNode n);
   CHECK_RETURN Err emit_sym_preproc_def(MnNode n);
@@ -160,13 +159,7 @@ struct MtCursor {
 
   bool branch_contains_component_call(MnNode n);
 
-
-  //----------
-
-  MtModLibrary* lib = nullptr;
-  MtSourceFile* current_source = nullptr;
-  MtModule* current_mod = nullptr;
-  MtMethod* current_method = nullptr;
+  //----------------------------------------
 
   MtCursorConfig config;
   std::stack<MtCursorConfig> config_stack;
@@ -180,6 +173,8 @@ struct MtCursor {
     config_stack.pop();
   }
 
+  //----------------------------------------
+
   const char* cursor = nullptr;
   std::stack<const char*> cursor_stack;
 
@@ -188,28 +183,32 @@ struct MtCursor {
     cursor = node.start();
   }
 
-  void pop_cursor(const MnNode& node) {
-    auto end = node.end();
-    assert(cursor == end);
+  void pop_cursor() {
     cursor = cursor_stack.top();
     cursor_stack.pop();
   }
 
+  //----------------------------------------
+  // Output state
+
+  std::string* str_out;
   std::vector<std::string> indent_stack;
   bool at_newline = true;
   bool line_dirty = false;
   bool line_elided = false;
-
-  std::string* str_out;
-
-  // FIXME move to config
-  std::map<std::string, std::string> id_replacements;
-  std::map<std::string, MnNode> preproc_vars;
-
   bool echo = false;
   bool trailing_comma = false;
 
-  int override_size = 0;
+  //----------------------------------------
+  // Config state
+
+  MtModLibrary* lib = nullptr;
+  MtSourceFile* current_source = nullptr;
+  MtModule* current_mod = nullptr;
+  MtMethod* current_method = nullptr;
+
+  std::map<std::string, std::string> id_replacements;
+  std::map<std::string, MnNode> preproc_vars;
 };
 
 //------------------------------------------------------------------------------

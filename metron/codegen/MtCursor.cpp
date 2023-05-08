@@ -3757,9 +3757,7 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
 
     switch (child.sym) {
       case anon_sym_LBRACE:
-        push_indent(node);
         err << emit_replacement(child, "%s", delim_begin.c_str());
-        err << emit_hoisted_decls(node);
         break;
 
       case sym_declaration:
@@ -3771,13 +3769,22 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
         break;
 
       case anon_sym_RBRACE:
-        pop_indent(node);
         err << emit_replacement(child, "%s", delim_end.c_str());
         break;
 
       default:
         err << emit_dispatch(child);
         break;
+    }
+
+    // Hoisted decls go immediately after the opening brace
+    if (child.sym == anon_sym_LBRACE) {
+      push_indent(node);
+      err << emit_hoisted_decls(node);
+    }
+
+    if (child.sym == anon_sym_RBRACE) {
+      pop_indent(node);
     }
   }
 

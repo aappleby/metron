@@ -202,6 +202,7 @@ struct MtCursor {
 
   std::string* str_out;
 
+  // FIXME move to config
   std::map<std::string, std::string> id_replacements;
   std::map<std::string, MnNode> preproc_vars;
 

@@ -34,6 +34,23 @@ struct MtCursorConfig {
   MtMethod* current_method = nullptr;
   std::map<std::string, MnNode> preproc_vars;
   MtModLibrary* lib = nullptr;
+
+  bool operator == (const MtCursorConfig& b) const {
+    const auto& a = *this;
+    if (a.emits != b.emits) return false;
+    if (a.block_prefix != b.block_prefix) return false;
+    if (a.block_suffix != b.block_suffix) return false;
+    if (a.elide_type != b.elide_type) return false;
+    if (a.elide_value != b.elide_value) return false;
+    if (a.override_size != b.override_size) return false;
+    if (a.id_replacements != b.id_replacements) return false;
+    if (a.current_source != b.current_source) return false;
+    if (a.current_mod != b.current_mod) return false;
+    if (a.current_method != b.current_method) return false;
+    if (a.preproc_vars != b.preproc_vars) return false;
+    if (a.lib != b.lib) return false;
+    return true;
+  }
 };
 
 //------------------------------------------------------------------------------
@@ -52,7 +69,6 @@ struct MtCursor {
   // Indentation
   void push_indent(MnNode n);
   void pop_indent(MnNode n);
-  CHECK_RETURN Err emit_newline();
   CHECK_RETURN Err emit_backspace();
   CHECK_RETURN Err emit_indent();
   CHECK_RETURN Err start_line();
@@ -198,7 +214,7 @@ struct MtCursor {
   // Output state
 
   std::string* str_out;
-  std::vector<std::string> indent_stack;
+  std::stack<std::string> indent_stack;
   bool at_newline = true;
   bool line_dirty = false;
   bool line_elided = false;

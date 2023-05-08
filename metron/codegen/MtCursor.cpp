@@ -14,11 +14,11 @@
 #include <string.h>
 
 emit_map emit_sym_map = {
-  { alias_sym_namespace_identifier,     &MtCursor::emit_text },
   { alias_sym_field_identifier,         &MtCursor::emit_text },
+  { alias_sym_namespace_identifier,     &MtCursor::emit_text },
   { alias_sym_type_identifier,          &MtCursor::emit_sym_type_identifier },
-  { sym_array_declarator,               &MtCursor::emit_children },
   { sym_argument_list,                  &MtCursor::emit_children },
+  { sym_array_declarator,               &MtCursor::emit_children },
   { sym_assignment_expression,          &MtCursor::emit_sym_assignment_expression },
   { sym_binary_expression,              &MtCursor::emit_children },
   { sym_break_statement,                &MtCursor::emit_sym_break_statement },
@@ -26,9 +26,9 @@ emit_map emit_sym_map = {
   { sym_case_statement,                 &MtCursor::emit_sym_case_statement },
   { sym_class_specifier,                &MtCursor::emit_sym_class_specifier },
   { sym_comment,                        &MtCursor::emit_sym_comment },
+  { sym_compound_statement,             &MtCursor::emit_sym_compound_statement },
   { sym_condition_clause,               &MtCursor::emit_sym_condition_clause },
   { sym_conditional_expression,         &MtCursor::emit_sym_conditional_expression },
-  { sym_compound_statement,             &MtCursor::emit_sym_compound_statement },
   { sym_declaration,                    &MtCursor::emit_sym_declaration },
   { sym_enum_specifier,                 &MtCursor::emit_sym_enum_specifier },
   { sym_enumerator_list,                &MtCursor::emit_children },
@@ -37,28 +37,27 @@ emit_map emit_sym_map = {
   { sym_field_declaration,              &MtCursor::emit_sym_field_declaration },
   { sym_field_expression,               &MtCursor::emit_sym_field_expression },
   { sym_for_statement,                  &MtCursor::emit_sym_for_statement },
-  { sym_function_definition,            &MtCursor::emit_sym_function_definition },
   { sym_function_declarator,            &MtCursor::emit_sym_function_declarator },
+  { sym_function_definition,            &MtCursor::emit_sym_function_definition },
   { sym_identifier,                     &MtCursor::emit_sym_identifier },
   { sym_if_statement,                   &MtCursor::emit_sym_if_statement },
-  { sym_initializer_list,               &MtCursor::emit_sym_initializer_list },
   { sym_init_declarator,                &MtCursor::emit_sym_init_declarator },
+  { sym_initializer_list,               &MtCursor::emit_sym_initializer_list },
   { sym_namespace_definition,           &MtCursor::emit_sym_namespace_definition },
-  { sym_number_literal,                 &MtCursor::emit_sym_number_literal },
   { sym_nullptr,                        &MtCursor::emit_sym_nullptr },
-  { sym_parameter_list,                 &MtCursor::emit_children},
+  { sym_number_literal,                 &MtCursor::emit_sym_number_literal },
+  { sym_optional_parameter_declaration, &MtCursor::emit_children },
   { sym_parameter_declaration,          &MtCursor::emit_children },
+  { sym_parameter_list,                 &MtCursor::emit_children},
   { sym_parenthesized_expression,       &MtCursor::emit_children },
   { sym_pointer_declarator,             &MtCursor::emit_sym_pointer_declarator },
-
   { sym_preproc_arg,                    &MtCursor::emit_sym_preproc_arg },
+  { sym_preproc_call,                   &MtCursor::skip_over },
   { sym_preproc_def,                    &MtCursor::emit_sym_preproc_def },
+  { sym_preproc_else,                   &MtCursor::skip_over },
+  { sym_preproc_if,                     &MtCursor::skip_over },
   { sym_preproc_ifdef,                  &MtCursor::emit_sym_preproc_ifdef },
   { sym_preproc_include,                &MtCursor::emit_sym_preproc_include },
-  { sym_preproc_if,                     &MtCursor::skip_over },
-  { sym_preproc_call,                   &MtCursor::skip_over },
-  { sym_preproc_else,                   &MtCursor::skip_over },
-
   { sym_primitive_type,                 &MtCursor::emit_sym_primitive_type },
   { sym_qualified_identifier,           &MtCursor::emit_sym_qualified_identifier },
   { sym_return_statement,               &MtCursor::emit_sym_return_statement },
@@ -76,7 +75,6 @@ emit_map emit_sym_map = {
   { sym_unary_expression,               &MtCursor::emit_children },
   { sym_update_expression,              &MtCursor::emit_sym_update_expression },
   { sym_using_declaration,              &MtCursor::emit_sym_using_declaration },
-  { sym_optional_parameter_declaration, &MtCursor::emit_children },
 };
 
 //------------------------------------------------------------------------------
@@ -87,7 +85,7 @@ MtCursor::MtCursor(MtModLibrary* lib, MtSourceFile* source, MtModule* mod,
   config.lib = lib;
   config.current_source = source;
   config.current_mod = mod;
-  indent_stack.push_back("");
+  indent_stack.push("");
   cursor = config.current_source->source;
 
   // FIXME preproc_vars should be a set
@@ -153,7 +151,7 @@ void MtCursor::push_indent(MnNode body) {
   auto n = body.first_named_child().node;
 
   if (ts_node_is_null(n)) {
-    indent_stack.push_back("");
+    indent_stack.push("");
     return;
   }
 
@@ -181,15 +179,13 @@ void MtCursor::push_indent(MnNode body) {
     assert(isspace(c));
   }
 
-  indent_stack.push_back(indent);
+  indent_stack.push(indent);
 }
 
-void MtCursor::pop_indent(MnNode class_body) { indent_stack.pop_back(); }
+void MtCursor::pop_indent(MnNode class_body) { indent_stack.pop(); }
 
 //------------------------------------------------------------------------------
 // Generic emit() methods
-
-CHECK_RETURN Err MtCursor::emit_newline() { return emit_char('\n'); }
 
 CHECK_RETURN Err MtCursor::emit_backspace() {
   Err err;
@@ -204,7 +200,7 @@ CHECK_RETURN Err MtCursor::emit_backspace() {
 
 CHECK_RETURN Err MtCursor::emit_indent() {
   Err err;
-  for (auto c : indent_stack.back()) {
+  for (auto c : indent_stack.top()) {
     err << emit_char(c);
   }
   return err;
@@ -215,7 +211,7 @@ CHECK_RETURN Err MtCursor::emit_indent() {
 CHECK_RETURN Err MtCursor::start_line() {
   Err err;
   if (line_dirty) {
-    err << emit_newline();
+    err << emit_char('\n');
     err << emit_indent();
   }
   return err;
@@ -368,10 +364,6 @@ CHECK_RETURN Err MtCursor::prune_trailing_ws() {
 CHECK_RETURN Err MtCursor::comment_out(MnNode n) {
   Err err = check_at(n);
 
-  if (cursor != n.start()) err << ERR("comment_out did not start with cursor at node start\n");
-
-  err << emit_print("/*");
-
   auto start = n.start();
   auto end1 = n.end();
   auto end2 = end1;
@@ -379,6 +371,7 @@ CHECK_RETURN Err MtCursor::comment_out(MnNode n) {
   // If the block ends in a newline, put the comment terminator _before_ the newline
   if (end1[-1] == '\n') end1--;
 
+  err << emit_print("/*");
   err << emit_span(start, end1);
   err << emit_print("*/");
   if (end1 != end2)err << emit_span(end1, end2);
@@ -405,10 +398,6 @@ CHECK_RETURN Err MtCursor::emit_span(const char* a, const char* b) {
 
 CHECK_RETURN Err MtCursor::emit_text(MnNode n) {
   Err err = check_at(n);
-
-  if (cursor != n.start()) {
-    return err << ERR("MtCursor::emit_text - cursor not at start of node\n");
-  }
 
   err << emit_span(n.start(), n.end());
   cursor = n.end();
@@ -445,8 +434,6 @@ CHECK_RETURN Err MtCursor::emit_print(const char* fmt, ...) {
 CHECK_RETURN Err MtCursor::emit_replacement(MnNode n, const char* fmt, ...) {
   Err err = check_at(n);
 
-  cursor = n.end();
-
   va_list args;
   va_start(args, fmt);
   int size = vsnprintf(nullptr, 0, fmt, args);
@@ -463,12 +450,16 @@ CHECK_RETURN Err MtCursor::emit_replacement(MnNode n, const char* fmt, ...) {
   }
   delete[] buf;
 
+  cursor = n.end();
   return err << check_done(n);
 }
 
 //------------------------------------------------------------------------------
+// FIXME we don't seem to be exercising this...
 
 CHECK_RETURN Err MtCursor::emit_sym_initializer_list(MnNode node) {
+  exit(1);
+
   Err err = check_at(sym_initializer_list, node);
 
   bool has_zero = false;
@@ -493,19 +484,7 @@ CHECK_RETURN Err MtCursor::emit_sym_initializer_list(MnNode node) {
     err << emit_replacement(node, "'0");
   }
   else {
-    for (auto child : node) {
-      switch (child.sym) {
-        case sym_identifier:
-          err << emit_dispatch(child);
-          break;
-        case sym_assignment_expression:
-          err << emit_dispatch(child);
-          break;
-        default:
-          err << ERR("Unknown node type in sym_initializer_list");
-          break;
-      }
-    }
+    err << emit_children(node);
   }
 
   return err << check_done(node);
@@ -531,11 +510,8 @@ CHECK_RETURN Err MtCursor::emit_sym_preproc_include(MnNode n) {
     } else if (child.field == field_path) {
       err << emit_replacement(child, path.c_str());
     }
-    else if (!child.is_named()) {
-      err << emit_text(child);
-    }
     else {
-      err << ERR("Unknown node type in sym_preproc_include");
+      err << emit_dispatch(child);
     }
   }
 
@@ -1330,7 +1306,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
   if (has_template_params || has_constructor_params) {
 
     err << emit_print(" #(");
-    indent_stack.push_back(indent_stack.back() + "  ");
+    indent_stack.push(indent_stack.top() + "  ");
 
     // Count up how many parameters we're passing to the submodule.
     int param_count = 0;
@@ -1427,7 +1403,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
         if(--param_count) err << emit_print(",");
       }
     }
-    indent_stack.pop_back();
+    indent_stack.pop();
 
     err << start_line();
     err << emit_print(")");
@@ -1439,7 +1415,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
   err << emit_print("(");
 
   {
-    indent_stack.push_back(indent_stack.back() + "  ");
+    indent_stack.push(indent_stack.top() + "  ");
 
     if (component_mod->needs_tick()) {
       err << start_line();
@@ -1519,7 +1495,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
       trailing_comma = false;
     }
 
-    indent_stack.pop_back();
+    indent_stack.pop();
   }
 
   err << start_line();
@@ -2059,9 +2035,6 @@ CHECK_RETURN Err MtCursor::emit_sym_function_declarator(MnNode node) {
 CHECK_RETURN Err MtCursor::emit_module_parameter_declaration(MnNode node) {
   Err err = check_at(sym_optional_parameter_declaration, node);
 
-  push_config();
-  config.elide_value = false;
-
   for (auto c : node) {
     err << emit_ws_to(c);
 
@@ -2078,7 +2051,6 @@ CHECK_RETURN Err MtCursor::emit_module_parameter_declaration(MnNode node) {
     }
   }
 
-  pop_config();
   return err << check_done(node);
 }
 
@@ -2843,10 +2815,6 @@ CHECK_RETURN Err MtCursor::emit_sym_declaration_list(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_sym_namespace_definition(MnNode n) {
   Err err = check_at(sym_namespace_definition, n);
 
-  push_config();
-  config.elide_type = false;
-  config.elide_value = false;
-
   for (auto c : n) {
     err << emit_ws_to(c);
 
@@ -2867,7 +2835,6 @@ CHECK_RETURN Err MtCursor::emit_sym_namespace_definition(MnNode n) {
     }
   }
 
-  pop_config();
   return err << check_done(n);
 }
 
@@ -3895,13 +3862,14 @@ CHECK_RETURN Err MtCursor::emit_leaf(MnNode node) {
   Err err = check_at(node);
 
   static std::map<std::string,std::string> keyword_map = {
-    {"#ifdef",  "`ifdef"},
-    {"#ifndef", "`ifndef"},
-    {"#else",   "`else"},
-    {"#elif",   "`elif"},
-    {"#endif",  "`endif"},
-    {"#define", "`define"},
-    {"#undef",  "`undef"},
+    {"#include", "`include"},
+    {"#ifdef",   "`ifdef"},
+    {"#ifndef",  "`ifndef"},
+    {"#else",    "`else"},
+    {"#elif",    "`elif"},
+    {"#endif",   "`endif"},
+    {"#define",  "`define"},
+    {"#undef",   "`undef"},
   };
 
   if (!node.is_named()) {

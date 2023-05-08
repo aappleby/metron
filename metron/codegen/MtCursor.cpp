@@ -39,6 +39,7 @@ emit_map emit_sym_map = {
   { sym_identifier,                     &MtCursor::emit_sym_identifier },
   { sym_if_statement,                   &MtCursor::emit_sym_if_statement },
   { sym_initializer_list,               &MtCursor::emit_sym_initializer_list },
+  { sym_init_declarator,                &MtCursor::emit_sym_init_declarator },
   { sym_namespace_definition,           &MtCursor::emit_sym_namespace_definition },
   { sym_number_literal,                 &MtCursor::emit_sym_number_literal2 },
   { sym_nullptr,                        &MtCursor::emit_sym_nullptr },
@@ -1151,7 +1152,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_func(MnNode n) {
       err << emit_dispatch(c);
     }
     else if (c.field == field_declarator) {
-      err << emit_declarator(c);
+      err << emit_declarator(c, false);
       err << emit_print(";");
     }
     else if (c.field == field_body) {
@@ -1179,7 +1180,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_task(MnNode n) {
       err << skip_over(c);
     }
     else if (c.field == field_declarator) {
-      err << emit_declarator(c);
+      err << emit_declarator(c, false);
       err << prune_trailing_ws();
       err << emit_print(";");
     }
@@ -1926,7 +1927,7 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_sym_init_declarator(MnNode node, bool elide_value) {
+CHECK_RETURN Err MtCursor::emit_sym_init_declarator(MnNode node) {
   Err err = check_at(node);
 
   for (auto child : node) {
@@ -1934,13 +1935,13 @@ CHECK_RETURN Err MtCursor::emit_sym_init_declarator(MnNode node, bool elide_valu
 
     if (child.field == field_declarator) {
       err << emit_dispatch(child);
-      if (elide_value) {
+      if (config.elide_value) {
         cursor = node.end();
         break;
       }
     }
     else if (child.field == field_value) {
-      if (elide_value) {
+      if (config.elide_value) {
         err << skip_over(child);
         err << skip_ws_inside(node);
       }
@@ -1972,6 +1973,33 @@ CHECK_RETURN Err MtCursor::emit_sym_pointer_declarator(MnNode node) {
 }
 
 //------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_sym_function_declarator(MnNode node) {
+  Err err = check_at(node);
+
+  err << emit_declarator(node.get_field(field_declarator), false);
+  err << emit_sym_parameter_list(node.get_field(field_parameters));
+
+  // FIXME wat? what was this for?
+  /*
+  [000.040]  + declarator: function_declarator (239) =
+  [000.040]  |--# declarator: field_identifier (440) = "in_border"
+  [000.040]  |--+ parameters: parameter_list (262) =
+  [000.040]  |  |--# lit (5) = "("
+  [000.040]  |  |--# lit (8) = ")"
+  [000.040]  |--+ type_qualifier (250) =
+  [000.040]     |--# lit (68) = "const"
+  */
+  if (node.child_count() == 3) {
+    cursor = node.child(2).start();
+    err << skip_over(node.child(2));
+    err << skip_ws_inside(node);
+  }
+
+  return err << check_done(node);
+}
+
+//------------------------------------------------------------------------------
 // FIXME break these out
 
 CHECK_RETURN Err MtCursor::emit_declarator(MnNode node, bool elide_value) {
@@ -1981,33 +2009,9 @@ CHECK_RETURN Err MtCursor::emit_declarator(MnNode node, bool elide_value) {
   config.elide_value = elide_value;
 
   switch (node.sym) {
-    case sym_init_declarator:
-      err << emit_sym_init_declarator(node, elide_value);
-      break;
     case sym_function_declarator:
-      err << emit_declarator(node.get_field(field_declarator));
-      err << emit_sym_parameter_list(node.get_field(field_parameters));
-
-      // FIXME wat? what was this for?
-      /*
-      [000.040]  + declarator: function_declarator (239) =
-      [000.040]  |--# declarator: field_identifier (440) = "in_border"
-      [000.040]  |--+ parameters: parameter_list (262) =
-      [000.040]  |  |--# lit (5) = "("
-      [000.040]  |  |--# lit (8) = ")"
-      [000.040]  |--+ type_qualifier (250) =
-      [000.040]     |--# lit (68) = "const"
-      */
-      if (node.child_count() == 3) {
-        cursor = node.child(2).start();
-        err << skip_over(node.child(2));
-        err << skip_ws_inside(node);
-      }
+      err << emit_sym_function_declarator(node);
       break;
-    case sym_pointer_declarator: {
-      err << emit_sym_pointer_declarator(node);
-      break;
-    }
     default:
       err << emit_dispatch(node);
       break;
@@ -2030,7 +2034,7 @@ CHECK_RETURN Err MtCursor::emit_parameter_declaration(MnNode n) {
       err << emit_dispatch(c);
     }
     else if (c.field == field_declarator) {
-      err << emit_declarator(c);
+      err << emit_declarator(c, false);
     }
     else {
       err << emit_leaf(c);
@@ -2060,7 +2064,7 @@ CHECK_RETURN Err MtCursor::emit_module_parameter_declaration(MnNode node) {
   err << emit_print(" =$= ");
   */
   cursor = param_decl.start();
-  err << emit_declarator(param_decl);
+  err << emit_declarator(param_decl, false);
   err << emit_print(" = ");
   cursor = param_val.start();
   err << emit_dispatch(param_val);
@@ -2166,7 +2170,7 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
         err << emit_dispatch(c);
       }
       else if (c.field == field_declarator) {
-        err << emit_declarator(c);
+        err << emit_declarator(c, false);
       }
       else if (c.sym == anon_sym_SEMI) {
         err << emit_text(c);

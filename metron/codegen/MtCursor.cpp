@@ -963,7 +963,11 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
       } else {
         err << start_line();
         cursor = c.start();
-        err << emit_sym_declaration(c, false, true);
+        push_config();
+        config.elide_type = false;
+        config.elide_value = true;
+        err << emit_sym_declaration(c);
+        pop_config();
       }
     }
 
@@ -972,7 +976,11 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
       if (init.sym == sym_declaration) {
         cursor = init.start();
         err << start_line();
-        err << emit_sym_declaration(init, false, true);
+        push_config();
+        config.elide_type = false;
+        config.elide_value = true;
+        err << emit_sym_declaration(init);
+        pop_config();
       }
     }
   }
@@ -2704,7 +2712,11 @@ CHECK_RETURN Err MtCursor::emit_toplevel_node(MnNode node) {
       break;
 
     case sym_declaration:
-      err << emit_sym_declaration(node, false, false);
+      push_config();
+      config.elide_type = false;
+      config.elide_value = false;
+      err << emit_sym_declaration(node);
+      pop_config();
       break;
 
     case anon_sym_SEMI:
@@ -2783,7 +2795,11 @@ CHECK_RETURN Err MtCursor::emit_sym_namespace_definition(MnNode n) {
         break;
       case sym_declaration:
         // not sure what happens if we see an "int x = 1" in a namespace...
-        err << emit_sym_declaration(c, false, false);
+        push_config();
+        config.elide_type = false;
+        config.elide_value = false;
+        err << emit_sym_declaration(c);
+        pop_config();
         break;
       default:
         err << emit_dispatch(c);
@@ -3285,7 +3301,11 @@ CHECK_RETURN Err MtCursor::emit_statement(MnNode n) {
   switch (n.sym) {
     case sym_declaration:
       // type should be hoisted.
-      err << emit_sym_declaration(n, true, false);
+      push_config();
+      config.elide_type = true;
+      config.elide_value = false;
+      err << emit_sym_declaration(n);
+      pop_config();
       break;
     case sym_compound_statement:
       err << emit_dispatch(n);
@@ -3392,7 +3412,10 @@ CHECK_RETURN Err MtCursor::emit_sym_using_declaration(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_sym_declaration(MnNode n, bool elide_type, bool elide_value) {
+CHECK_RETURN Err MtCursor::emit_sym_declaration(MnNode n) {
+  bool elide_type = config.elide_type;
+  bool elide_value = config.elide_value;
+
   Err err = check_at(sym_declaration, n);
 
   push_config();
@@ -3705,7 +3728,11 @@ CHECK_RETURN Err MtCursor::emit_sym_for_statement(MnNode node) {
     err << emit_ws_to(child);
 
     if (child.sym == sym_declaration) {
-      err << emit_sym_declaration(child, true, false);
+      push_config();
+      config.elide_type = true;
+      config.elide_value = false;
+      err << emit_sym_declaration(child);
+      pop_config();
     }
     else if (child.is_expression()) {
       err << emit_dispatch(child);
@@ -3763,7 +3790,11 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(MnNode node) {
         break;
 
       case sym_declaration:
-        err << emit_sym_declaration(child, true, false);
+        push_config();
+        config.elide_type = true;
+        config.elide_value = false;
+        err << emit_sym_declaration(child);
+        pop_config();
         break;
 
       case sym_compound_statement:

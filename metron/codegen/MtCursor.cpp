@@ -83,9 +83,11 @@ emit_map emit_sym_map = {
 
 MtCursor::MtCursor(MtModLibrary* lib, MtSourceFile* source, MtModule* mod,
                    std::string* out)
-    : lib(lib), current_source(source), current_mod(mod), str_out(out) {
+    : lib(lib), str_out(out) {
+  config.current_source = source;
+  config.current_mod = mod;
   indent_stack.push_back("");
-  cursor = current_source->source;
+  cursor = config.current_source->source;
 
   // FIXME preproc_vars should be a set
   preproc_vars["IV_TEST"] = MnNode();
@@ -162,8 +164,8 @@ void MtCursor::push_indent(MnNode body) {
     n = ts_node_next_sibling(n);
   }
 
-  const char* begin = &current_source->source[ts_node_start_byte(n)] - 1;
-  const char* end = &current_source->source[ts_node_start_byte(n)];
+  const char* begin = &config.current_source->source[ts_node_start_byte(n)] - 1;
+  const char* end = &config.current_source->source[ts_node_start_byte(n)];
 
   std::string indent;
 
@@ -268,7 +270,7 @@ CHECK_RETURN Err MtCursor::emit_char(char c, uint32_t color) {
 
 CHECK_RETURN Err MtCursor::emit_ws() {
   Err err;
-  while (cursor < current_source->source_end && isspace(*cursor)) {
+  while (cursor < config.current_source->source_end && isspace(*cursor)) {
     err << emit_char(*cursor++);
   }
   return err;
@@ -278,7 +280,7 @@ CHECK_RETURN Err MtCursor::emit_ws() {
 
 CHECK_RETURN Err MtCursor::emit_ws_to(const MnNode& n) {
   Err err;
-  while (cursor < current_source->source_end && isspace(*cursor) &&
+  while (cursor < config.current_source->source_end && isspace(*cursor) &&
          cursor < n.start()) {
     err << emit_char(*cursor++);
   }
@@ -548,7 +550,7 @@ CHECK_RETURN Err MtCursor::emit_sym_assignment_expression(MnNode node) {
   auto lhs = node.get_field(field_left);
   auto op  = node.get_field(field_operator).text();
   auto rhs = node.get_field(field_right);
-  bool left_is_field = current_mod->get_field(lhs.name4()) != nullptr;
+  bool left_is_field = config.current_mod->get_field(lhs.name4()) != nullptr;
 
   bool is_compound = op != "=";
 
@@ -560,7 +562,7 @@ CHECK_RETURN Err MtCursor::emit_sym_assignment_expression(MnNode node) {
       case field_left: err << emit_dispatch(child); break;
       case field_operator:
         // There may not be a method if we're in an enum initializer list.
-        if (current_method && current_method->is_tick_ && left_is_field) {
+        if (config.current_method && config.current_method->is_tick_ && left_is_field) {
           err << emit_replacement(child, "<=");
         } else {
           err << emit_replacement(child, "=");
@@ -688,7 +690,7 @@ CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnNode call,
 
   auto arg0_text = arg0.text();
 
-  auto arg0_field = current_mod->get_field(arg0_text);
+  auto arg0_field = config.current_mod->get_field(arg0_text);
   if (arg0_field) {
     if (arg0_field->is_input()) {
       printf("INPUT FIELD %s!\n", arg0_field->cname());
@@ -749,7 +751,7 @@ CHECK_RETURN bool MtCursor::can_omit_call(MnNode n) {
   }
   else {
     // Calls into methods in the same module turn into bindings if needed.
-    auto dst_method = current_mod->get_method(func.name4());
+    auto dst_method = config.current_mod->get_method(func.name4());
     if (dst_method && dst_method->needs_binding) {
       return true;
     }
@@ -771,7 +773,7 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
 
   std::string func_name = func.name4();
 
-  auto method = current_mod->get_method(func_name);
+  auto method = config.current_mod->get_method(func_name);
 
   //----------
   // Handle bN
@@ -897,7 +899,7 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
 
     auto node_component = n.get_field(field_function).get_field(field_argument);
 
-    auto dst_component = current_mod->get_field(node_component.text());
+    auto dst_component = config.current_mod->get_field(node_component.text());
     auto dst_mod = lib->get_module(dst_component->type_name());
     if (!dst_mod) return err << ERR("dst_mod null\n");
     auto node_func = n.get_field(field_function).get_field(field_field);
@@ -1026,7 +1028,7 @@ CHECK_RETURN Err MtCursor::emit_call_arg_bindings(MnNode n) {
         auto inst_id = func_node.get_field(field_argument);
         auto meth_id = func_node.get_field(field_field);
 
-        auto component = current_mod->get_component(inst_id.text());
+        auto component = config.current_mod->get_component(inst_id.text());
         assert(component);
 
         auto component_method = component->_type_mod->get_method(meth_id.text());
@@ -1044,7 +1046,7 @@ CHECK_RETURN Err MtCursor::emit_call_arg_bindings(MnNode n) {
       }
     }
     else if (func_node.sym == sym_identifier) {
-      auto method = current_mod->get_method(func_node.text().c_str());
+      auto method = config.current_mod->get_method(func_node.text().c_str());
       if (method && method->needs_binding) {
         for (int i = 0; i < method->param_nodes.size(); i++) {
           err << emit_local_call_arg_binding(
@@ -1274,35 +1276,35 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
   auto return_type = n.get_field(field_type);
   auto func_decl = n.get_field(field_declarator);
 
-  current_method = current_mod->get_method(n.name4());
-  assert(current_method);
+  config.current_method = config.current_mod->get_method(n.name4());
+  assert(config.current_method);
 
   //----------
   // Emit a block declaration for the type of function we're in.
 
-  if (current_method->emit_as_always_comb) {
+  if (config.current_method->emit_as_always_comb) {
     err << emit_func_as_always_comb(n);
   }
-  else if (current_method->emit_as_always_ff) {
+  else if (config.current_method->emit_as_always_ff) {
     err << emit_func_as_always_ff(n);
   }
-  else if (current_method->emit_as_init) {
+  else if (config.current_method->emit_as_init) {
     err << emit_func_as_init(n);
   }
-  else if (current_method->emit_as_task) {
+  else if (config.current_method->emit_as_task) {
     err << emit_func_as_task(n);
   }
-  else if (current_method->emit_as_func) {
+  else if (config.current_method->emit_as_func) {
     err << emit_func_as_func(n);
   }
 
   //----------
 
-  if (current_method->needs_binding) {
-    err << emit_func_binding_vars(current_method);
+  if (config.current_method->needs_binding) {
+    err << emit_func_binding_vars(config.current_method);
   }
 
-  current_method = nullptr;
+  config.current_method = nullptr;
   return err << check_done(n);
 }
 
@@ -1342,8 +1344,8 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
 
     // If the field initializer for this component passes arguments to the component's constructor,
     // count them as parameters.
-    if (has_constructor_params && current_mod->constructor) {
-      for(auto initializer : current_mod->constructor->_node.child_by_sym(sym_field_initializer_list)) {
+    if (has_constructor_params && config.current_mod->constructor) {
+      for(auto initializer : config.current_mod->constructor->_node.child_by_sym(sym_field_initializer_list)) {
         if (initializer.sym != sym_field_initializer) continue;
         if (initializer.child_by_sym(alias_sym_field_identifier).text() == inst_name) {
           for (auto c : initializer.child_by_sym(sym_argument_list)) {
@@ -1399,8 +1401,8 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
 
       // Find the initializer node for the component and extract arguments
       std::vector<MnNode> args;
-      if (current_mod->constructor) {
-        for(auto initializer : current_mod->constructor->_node.child_by_sym(sym_field_initializer_list)) {
+      if (config.current_mod->constructor) {
+        for(auto initializer : config.current_mod->constructor->_node.child_by_sym(sym_field_initializer_list)) {
           if (initializer.sym != sym_field_initializer) continue;
           if (initializer.child_by_sym(alias_sym_field_identifier).text() == inst_name) {
             for (auto c : initializer.child_by_sym(sym_argument_list)) {
@@ -1573,7 +1575,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_component(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
   Err err;
 
-  if (current_mod->components.empty()) {
+  if (config.current_mod->components.empty()) {
     return err;
   }
 
@@ -1606,14 +1608,14 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
     auto output_type = n->get_type_node();
     auto output_decl = n->get_decl_node();
 
-    auto old_source = current_source;
-    auto old_mod = current_mod;
+    auto old_source = config.current_source;
+    auto old_mod = config.current_mod;
     auto old_ids = config.id_replacements;
     auto old_cursor = cursor;
 
     push_config();
 
-    current_source = component_mod->source_file;
+    config.current_source = component_mod->source_file;
     config.id_replacements = replacements;
     cursor = output_type.start();
 
@@ -1627,8 +1629,8 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     pop_config();
 
-    current_source = old_source;
-    current_mod = old_mod;
+    config.current_source = old_source;
+    config.current_mod = old_mod;
     config.id_replacements = old_ids;
     cursor = old_cursor;
   }
@@ -1638,14 +1640,14 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
     auto output_type = n->get_type_node();
     auto output_decl = n->get_decl_node();
 
-    auto old_source = current_source;
-    auto old_mod = current_mod;
+    auto old_source = config.current_source;
+    auto old_mod = config.current_mod;
     auto old_ids = config.id_replacements;
     auto old_cursor = cursor;
 
     push_config();
 
-    current_source = component_mod->source_file;
+    config.current_source = component_mod->source_file;
     config.id_replacements = replacements;
     cursor = output_type.start();
 
@@ -1659,8 +1661,8 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     pop_config();
 
-    current_source = old_source;
-    current_mod = old_mod;
+    config.current_source = old_source;
+    config.current_mod = old_mod;
     config.id_replacements = old_ids;
     cursor = old_cursor;
   }
@@ -1670,14 +1672,14 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
     auto output_type = n->get_type_node();
     auto output_decl = n->get_decl_node();
 
-    auto old_source = current_source;
-    auto old_mod = current_mod;
+    auto old_source = config.current_source;
+    auto old_mod = config.current_mod;
     auto old_ids = config.id_replacements;
     auto old_cursor = cursor;
 
     push_config();
 
-    current_source = component_mod->source_file;
+    config.current_source = component_mod->source_file;
     config.id_replacements = replacements;
     cursor = output_type.start();
 
@@ -1691,8 +1693,8 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     pop_config();
 
-    current_source = old_source;
-    current_mod = old_mod;
+    config.current_source = old_source;
+    config.current_mod = old_mod;
     config.id_replacements = old_ids;
     cursor = old_cursor;
   }
@@ -1702,14 +1704,14 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
     auto output_type = n->get_type_node();
     auto output_decl = n->get_decl_node();
 
-    auto old_source = current_source;
-    auto old_mod = current_mod;
+    auto old_source = config.current_source;
+    auto old_mod = config.current_mod;
     auto old_ids = config.id_replacements;
     auto old_cursor = cursor;
 
     push_config();
 
-    current_source = component_mod->source_file;
+    config.current_source = component_mod->source_file;
     config.id_replacements = replacements;
     cursor = output_type.start();
 
@@ -1723,8 +1725,8 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     pop_config();
 
-    current_source = old_source;
-    current_mod = old_mod;
+    config.current_source = old_source;
+    config.current_mod = old_mod;
     config.id_replacements = old_ids;
     cursor = old_cursor;
   }
@@ -1734,14 +1736,14 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
     auto getter_decl = m->_node.get_field(field_declarator);
     auto getter_name = getter_decl.get_field(field_declarator);
 
-    auto old_source = current_source;
-    auto old_mod = current_mod;
+    auto old_source = config.current_source;
+    auto old_mod = config.current_mod;
     auto old_ids = config.id_replacements;
     auto old_cursor = cursor;
 
     push_config();
 
-    current_source = component_mod->source_file;
+    config.current_source = component_mod->source_file;
     config.id_replacements = replacements;
     cursor = getter_type.start();
 
@@ -1755,8 +1757,8 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     pop_config();
 
-    current_source = old_source;
-    current_mod = old_mod;
+    config.current_source = old_source;
+    config.current_mod = old_mod;
     config.id_replacements = old_ids;
     cursor = old_cursor;
   }
@@ -2093,7 +2095,7 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
   assert(n.sym == sym_field_declaration);
 
   // Struct outside of class
-  if (current_mod == nullptr) {
+  if (config.current_mod == nullptr) {
     // sym_field_declaration
     //   field_type : sym_template_type
     //   field_declarator : sym_field_identifier
@@ -2150,7 +2152,7 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
   //----------
   // Actual fields
 
-  auto field = current_mod->get_field(n.name4());
+  auto field = config.current_mod->get_field(n.name4());
   assert(field);
 
   if (field->is_component()) {
@@ -2448,7 +2450,7 @@ CHECK_RETURN Err MtCursor::emit_module_ports(MnNode class_body) {
   // port list.
   push_indent(class_body);
 
-  if (current_mod->needs_tick()) {
+  if (config.current_mod->needs_tick()) {
     err << start_line();
     err << emit_print("// global clock");
     err << start_line();
@@ -2456,34 +2458,34 @@ CHECK_RETURN Err MtCursor::emit_module_ports(MnNode class_body) {
     trailing_comma = true;
   }
 
-  if (current_mod->input_signals.size()) {
+  if (config.current_mod->input_signals.size()) {
     err << start_line();
     err << emit_print("// input signals");
-    for (auto f : current_mod->input_signals) {
+    for (auto f : config.current_mod->input_signals) {
       err << start_line();
       err << emit_field_port(f);
     }
   }
 
-  if (current_mod->output_signals.size()) {
+  if (config.current_mod->output_signals.size()) {
     err << start_line();
     err << emit_print("// output signals");
-    for (auto f : current_mod->output_signals) {
+    for (auto f : config.current_mod->output_signals) {
       err << start_line();
       err << emit_field_port(f);
     }
   }
 
-  if (current_mod->output_registers.size()) {
+  if (config.current_mod->output_registers.size()) {
     err << start_line();
     err << emit_print("// output registers");
-    for (auto f : current_mod->output_registers) {
+    for (auto f : config.current_mod->output_registers) {
       err << start_line();
       err << emit_field_port(f);
     }
   }
 
-  for (auto m : current_mod->all_methods) {
+  for (auto m : config.current_mod->all_methods) {
     if (!m->is_init_ && m->is_public() && m->internal_callers.empty()) {
       err << emit_method_ports(m);
     }
@@ -2517,9 +2519,9 @@ CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnNode n) {
   auto class_name = n.get_field(field_name);
   auto class_body = n.get_field(field_body);
 
-  auto old_mod = current_mod;
-  current_mod = lib->get_module(class_name.text());
-  assert(current_mod);
+  auto old_mod = config.current_mod;
+  config.current_mod = lib->get_module(class_name.text());
+  assert(config.current_mod);
 
   //----------
 
@@ -2532,9 +2534,9 @@ CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnNode n) {
   err << emit_module_ports(class_body);
 
   push_indent(class_body);
-  if (current_mod->mod_param_list) {
-    push_cursor(current_mod->mod_param_list);
-    err << emit_module_parameter_list(current_mod->mod_param_list);
+  if (config.current_mod->mod_param_list) {
+    push_cursor(config.current_mod->mod_param_list);
+    err << emit_module_parameter_list(config.current_mod->mod_param_list);
     pop_cursor();
   }
   cursor = class_body.start();
@@ -2542,7 +2544,7 @@ CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnNode n) {
   pop_indent(class_body);
 
   cursor = n.end();
-  current_mod = old_mod;
+  config.current_mod = old_mod;
 
   return err << check_done(n);
 }
@@ -2732,8 +2734,8 @@ CHECK_RETURN Err MtCursor::emit_sym_template_argument_list(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_everything() {
   Err err;
 
-  cursor = current_source->source;
-  err << emit_dispatch(current_source->root_node);
+  cursor = config.current_source->source;
+  err << emit_dispatch(config.current_source->root_node);
 
   return err;
 }
@@ -2930,20 +2932,20 @@ CHECK_RETURN Err MtCursor::emit_sym_return_statement(MnNode n) {
 
     if (c.sym == anon_sym_return) {
 
-      if (current_method->is_tock_) {
-        assert(current_method->needs_binding || current_method->needs_ports);
-        err << emit_replacement(c, "%s_ret =", current_method->name().c_str());
+      if (config.current_method->is_tock_) {
+        assert(config.current_method->needs_binding || config.current_method->needs_ports);
+        err << emit_replacement(c, "%s_ret =", config.current_method->name().c_str());
       }
-      else if (current_method->is_func_ && current_method->is_public() && !current_method->called_in_module()) {
-        assert(current_method->needs_binding || current_method->needs_ports);
-        err << emit_replacement(c, "%s_ret =", current_method->name().c_str());
+      else if (config.current_method->is_func_ && config.current_method->is_public() && !config.current_method->called_in_module()) {
+        assert(config.current_method->needs_binding || config.current_method->needs_ports);
+        err << emit_replacement(c, "%s_ret =", config.current_method->name().c_str());
       }
-      else if (current_method->is_tick_) {
-        assert(current_method->needs_binding || current_method->needs_ports);
-        err << emit_replacement(c, "%s_ret <=", current_method->name().c_str());
+      else if (config.current_method->is_tick_) {
+        assert(config.current_method->needs_binding || config.current_method->needs_ports);
+        err << emit_replacement(c, "%s_ret <=", config.current_method->name().c_str());
       }
       else {
-        err << emit_replacement(c, "%s =", current_method->name().c_str());
+        err << emit_replacement(c, "%s =", config.current_method->name().c_str());
       }
     } else if (c.is_expression()) {
       err << emit_dispatch(c);
@@ -3032,14 +3034,14 @@ CHECK_RETURN Err MtCursor::emit_sym_template_declaration(MnNode n) {
   assert(!class_specifier.is_null());
   std::string class_name = class_specifier.get_field(field_name).text();
 
-  auto old_mod = current_mod;
-  current_mod = lib->get_module(class_name);
+  auto old_mod = config.current_mod;
+  config.current_mod = lib->get_module(class_name);
 
   cursor = class_specifier.start();
   err << emit_dispatch(class_specifier);
   cursor = n.end();
 
-  current_mod = old_mod;
+  config.current_mod = old_mod;
 
   return err << check_done(n);
 }
@@ -3054,7 +3056,7 @@ CHECK_RETURN Err MtCursor::emit_sym_field_expression(MnNode n) {
   auto component_name = n.get_field(field_argument).text();
   auto component_field = n.get_field(field_field).text();
 
-  auto component = current_mod->get_component(component_name);
+  auto component = config.current_mod->get_component(component_name);
 
   bool is_port = component && component->_type_mod->is_port(component_field);
   //printf("is port %s %d\n", component_field.c_str(), is_port);
@@ -3063,8 +3065,8 @@ CHECK_RETURN Err MtCursor::emit_sym_field_expression(MnNode n) {
   // FIXME needs to be || is_argument
 
   bool is_port_arg = false;
-  if (current_method && (current_method->emit_as_always_comb || current_method->emit_as_always_ff)) {
-    for (auto c : current_method->param_nodes) {
+  if (config.current_method && (config.current_method->emit_as_always_comb || config.current_method->emit_as_always_ff)) {
+    for (auto c : config.current_method->param_nodes) {
       if (c.get_field(field_declarator).text() == component_name) {
         is_port_arg = true;
         break;
@@ -3079,7 +3081,7 @@ CHECK_RETURN Err MtCursor::emit_sym_field_expression(MnNode n) {
     }
     err << emit_replacement(n, field.c_str());
   } else if (is_port_arg) {
-    err << emit_print("%s_", current_method->name().c_str());
+    err << emit_print("%s_", config.current_method->name().c_str());
     err << emit_text(n);
   }
   else {
@@ -3256,7 +3258,7 @@ CHECK_RETURN Err MtCursor::emit_sym_qualified_identifier(MnNode node) {
   for (auto child : node) {
     if (child.field == field_scope) {
       if (child.text() == "std") elide_scope = true;
-      if (current_mod->get_enum(child.text())) elide_scope = true;
+      if (config.current_mod->get_enum(child.text())) elide_scope = true;
     }
   }
 
@@ -3839,13 +3841,13 @@ CHECK_RETURN Err MtCursor::emit_sym_update_expression(MnNode n) {
   auto id = n.get_field(field_argument);
   auto op = n.get_field(field_operator);
 
-  auto left_is_field = current_mod->get_field(id.name4()) != nullptr;
+  auto left_is_field = config.current_mod->get_field(id.name4()) != nullptr;
 
   if (n.get_field(field_operator).text() == "++") {
     push_cursor(id);
     err << emit_dispatch(id);
     pop_cursor();
-    if (current_method && current_method->is_tick_ && left_is_field) {
+    if (config.current_method && config.current_method->is_tick_ && left_is_field) {
       err << emit_print(" <= ");
     }
     else{
@@ -3859,7 +3861,7 @@ CHECK_RETURN Err MtCursor::emit_sym_update_expression(MnNode n) {
     push_cursor(id);
     err << emit_dispatch(id);
     pop_cursor();
-    if (current_method && current_method->is_tick_ && left_is_field) {
+    if (config.current_method && config.current_method->is_tick_ && left_is_field) {
       err << emit_print(" <= ");
     }
     else{

@@ -29,6 +29,9 @@ struct MtCursorConfig {
   bool elide_value = false;
   int override_size = 0;
   std::map<std::string, std::string> id_replacements;
+  MtSourceFile* current_source = nullptr;
+  MtModule* current_mod = nullptr;
+  MtMethod* current_method = nullptr;
 };
 
 //------------------------------------------------------------------------------
@@ -204,9 +207,6 @@ struct MtCursor {
   // Config state
 
   MtModLibrary* lib = nullptr;
-  MtSourceFile* current_source = nullptr;
-  MtModule* current_mod = nullptr;
-  MtMethod* current_method = nullptr;
 
   std::map<std::string, MnNode> preproc_vars;
 };

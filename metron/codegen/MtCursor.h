@@ -24,8 +24,8 @@ struct MtCursorConfig {
   MtCursorConfig* parent = nullptr;
   emit_map* emits = nullptr;
   int number_width = 0;
-  const char* block_prefix = "begin";
-  const char* block_suffix = "end";
+  std::string block_prefix = "begin";
+  std::string block_suffix = "end";
   bool elide_type = false;
   bool elide_value = false;
 };

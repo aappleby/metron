@@ -2010,27 +2010,35 @@ CHECK_RETURN Err MtCursor::emit_sym_function_declarator(MnNode node) {
 
 //------------------------------------------------------------------------------
 
+/*
+[000.018]  + optional_parameter_declaration (321) =
+[000.018]  |--# type: primitive_type (80) = "int"
+[000.018]  |--# declarator: identifier (1) = "cycles_per_bit"
+[000.018]  |--# lit (63) = "="
+[000.018]  |--# default_value: number_literal (126) = "4"
+*/
+
 CHECK_RETURN Err MtCursor::emit_module_parameter_declaration(MnNode node) {
   Err err = check_at(sym_optional_parameter_declaration, node);
 
   push_config();
   config.elide_value = false;
 
-  auto param_type = node.get_field(field_type);
-  auto param_decl = node.get_field(field_declarator);
-  auto param_val  = node.get_field(field_default_value);
+  for (auto c : node) {
+    err << emit_ws_to(c);
 
-  push_cursor(param_decl);
-  err << emit_dispatch(param_decl);
-  pop_cursor(param_decl);
-
-  err << emit_print(" = ");
-
-  push_cursor(param_val);
-  err << emit_dispatch(param_val);
-  pop_cursor(param_val);
-
-  cursor = node.end();
+    if (c.field == field_type) {
+      err << skip_over(c);
+      err << skip_ws_inside(node);
+    }
+    else if (c.sym == sym_type_qualifier) {
+      err << skip_over(c);
+      err << skip_ws_inside(node);
+    }
+    else {
+      err << emit_dispatch(c);
+    }
+  }
 
   pop_config();
   return err << check_done(node);
@@ -3491,16 +3499,15 @@ CHECK_RETURN Err MtCursor::emit_sym_declaration(MnNode n, bool elide_type, bool 
 CHECK_RETURN Err MtCursor::emit_sym_sized_type_specifier(MnNode n) {
   Err err = check_at(sym_sized_type_specifier, n);
 
-  // FIXME loop style
+  MnNode node_size;
+  MnNode node_type;
 
   for (auto c : n) {
     if (c.field == field_type) {
-      push_cursor(c);
-      err << emit_dispatch(c);
-      err << emit_ws();
-      cursor = c.end();
-      pop_cursor(c);
-      break;
+      node_type = c;
+    }
+    else if (c.sym == anon_sym_signed || c.sym == anon_sym_unsigned) {
+      node_size = c;
     }
   }
 
@@ -3508,10 +3515,19 @@ CHECK_RETURN Err MtCursor::emit_sym_sized_type_specifier(MnNode n) {
     err << emit_ws_to(c);
 
     if (c.field == field_type) {
-      err << skip_over(c);
+      push_cursor(node_size);
+      err << emit_dispatch(node_size);
+      pop_cursor(node_size);
+      cursor = c.end();
+    }
+    else if (c.sym == anon_sym_signed || c.sym == anon_sym_unsigned) {
+      push_cursor(node_type);
+      err << emit_dispatch(node_type);
+      pop_cursor(node_type);
+      cursor = c.end();
     }
     else {
-      err << emit_leaf(c);
+      err << emit_dispatch(c);
     }
   }
 

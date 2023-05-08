@@ -1122,7 +1122,12 @@ CHECK_RETURN Err MtCursor::emit_func_as_init(MnNode n) {
   }
 
   err << emit_ws_to(func_body);
-  err << emit_sym_compound_statement(func_body, "begin", "end");
+
+  push_config();
+  config.block_prefix = "begin";
+  config.block_suffix = "end";
+  err << emit_sym_compound_statement(func_body);
+  pop_config();
 
   return err << check_done(n);
 }
@@ -1145,7 +1150,13 @@ CHECK_RETURN Err MtCursor::emit_func_as_func(MnNode n) {
   err << emit_print(";");
 
   err << emit_ws_to(func_body);
-  err << emit_sym_compound_statement(func_body, "", "endfunction");
+
+  push_config();
+  config.block_prefix = "";
+  config.block_suffix = "endfunction";
+  err << emit_sym_compound_statement(func_body);
+  pop_config();
+
 
   return err << check_done(n);
 }
@@ -1171,7 +1182,11 @@ CHECK_RETURN Err MtCursor::emit_func_as_task(MnNode n) {
       err << emit_print(";");
     }
     else if (c.field == field_body) {
-      err << emit_sym_compound_statement(c, "", "endtask");
+      push_config();
+      config.block_prefix = "";
+      config.block_suffix = "endtask";
+      err << emit_sym_compound_statement(c);
+      pop_config();
     }
     else {
       err << emit_leaf(c);
@@ -1204,7 +1219,11 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_comb(MnNode n) {
   err << skip_over(func_decl);
   err << skip_ws_inside(n);
 
-  err << emit_sym_compound_statement(func_body, "", "end");
+  push_config();
+  config.block_prefix = "";
+  config.block_suffix = "end";
+  err << emit_sym_compound_statement(func_body);
+  pop_config();
 
   id_replacements = old_replacements;
 
@@ -1236,7 +1255,11 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_ff(MnNode n) {
       err << skip_over(c);
     }
     else if (c.field == field_body) {
-      err << emit_sym_compound_statement(c, "", "end");
+      push_config();
+      config.block_prefix = "";
+      config.block_suffix = "end";
+      err << emit_sym_compound_statement(c);
+      pop_config();
     }
     else if (c.sym == sym_comment) {
       err << emit_sym_comment(c);
@@ -3091,7 +3114,11 @@ CHECK_RETURN Err MtCursor::emit_sym_switch_statement(MnNode n) {
       err << emit_sym_condition_clause(c);
     }
     else if (c.field == field_body) {
-      err << emit_sym_compound_statement(c, "", "endcase");
+      push_config();
+      config.block_prefix = "";
+      config.block_suffix = "endcase";
+      err << emit_sym_compound_statement(c);
+      pop_config();
     }
     else {
       err << emit_leaf(c);
@@ -3276,7 +3303,11 @@ CHECK_RETURN Err MtCursor::emit_statement(MnNode n) {
       err << emit_sym_declaration(n, true, false);
       break;
     case sym_compound_statement:
-      err << emit_sym_compound_statement(n, "begin", "end");
+      push_config();
+      config.block_prefix = "begin";
+      config.block_suffix = "end";
+      err << emit_sym_compound_statement(n);
+      pop_config();
       break;
     default:
       err << emit_dispatch(n);
@@ -3343,7 +3374,11 @@ CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnNode node) {
         err << emit_sym_if_statement(child);
         break;
       case sym_compound_statement:
-        err << emit_sym_compound_statement(child, "begin", "end");
+        push_config();
+        config.block_prefix = "begin";
+        config.block_suffix = "end";
+        err << emit_sym_compound_statement(child);
+        pop_config();
         break;
       case sym_expression_statement:
         if (branch_contains_component_call(child)) {
@@ -3724,8 +3759,9 @@ CHECK_RETURN Err MtCursor::emit_sym_for_statement(MnNode node) {
 // Emit the block with the correct type of "begin/end" pair, hoisting locals
 // to the top of the body scope.
 
-CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
-    MnNode node, const std::string& delim_begin, const std::string& delim_end) {
+CHECK_RETURN Err MtCursor::emit_sym_compound_statement(MnNode node) {
+  const std::string& delim_begin = config.block_prefix;
+  const std::string& delim_end = config.block_suffix;
   Err err = check_at(sym_compound_statement, node);
 
   bool noconvert = false;

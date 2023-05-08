@@ -123,7 +123,7 @@ struct MtCursor {
   CHECK_RETURN Err emit_sym_case_statement(MnNode n);
   CHECK_RETURN Err emit_sym_class_specifier(MnNode n);
   CHECK_RETURN Err emit_sym_comment(MnNode n);
-  CHECK_RETURN Err emit_sym_compound_statement(MnNode n, const std::string& delim_begin, const std::string& delim_end);
+  CHECK_RETURN Err emit_sym_compound_statement(MnNode n);
   CHECK_RETURN Err emit_sym_condition_clause(MnNode n);
   CHECK_RETURN Err emit_sym_conditional_expression(MnNode n);
   CHECK_RETURN Err emit_sym_declaration(MnNode n, bool elide_type, bool elide_value);

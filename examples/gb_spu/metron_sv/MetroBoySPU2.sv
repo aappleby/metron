@@ -6,8 +6,8 @@ module MetroBoySPU2 (
   // global clock
   input logic clock,
   // output signals
-  output logic[8:0]  out_r,
-  output logic[8:0]  out_l,
+  output logic[8:0] out_r,
+  output logic[8:0] out_l,
   // tick() ports
   input logic tick_reset,
   input logic[15:0] tick_addr,

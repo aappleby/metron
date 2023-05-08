@@ -490,7 +490,7 @@ CHECK_RETURN Err MtCursor::emit_sym_initializer_list(MnNode node) {
           err << emit_dispatch(child);
           break;
         case sym_assignment_expression:
-          err << emit_expression(child);
+          err << emit_dispatch(child);
           break;
         default:
           err << ERR("Unknown node type in sym_initializer_list");
@@ -613,7 +613,7 @@ CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnNode call, int bx_width) {
       } else {
         // Size-casting expression
         cursor = arg0.start();
-        err << emit_print("%d'(", bx_width) << emit_expression(arg0)
+        err << emit_print("%d'(", bx_width) << emit_dispatch(arg0)
             << emit_print(")");
         cursor = call.end();
       }
@@ -621,7 +621,7 @@ CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnNode call, int bx_width) {
     } else {
       // Size-casting expression
       cursor = arg0.start();
-      err << emit_print("%d'(", bx_width) << emit_expression(arg0)
+      err << emit_print("%d'(", bx_width) << emit_dispatch(arg0)
           << emit_print(")");
       cursor = call.end();
     }
@@ -631,16 +631,16 @@ CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnNode call, int bx_width) {
     if (bx_width == 1) {
       // b1(foo, 7) -> foo[7]
       cursor = arg0.start();
-      err << emit_expression(arg0);
+      err << emit_dispatch(arg0);
       err << emit_print("[");
       cursor = arg1.start();
-      err << emit_expression(arg1);
+      err << emit_dispatch(arg1);
       err << emit_print("]");
       cursor = call.end();
     }
     else {
       cursor = arg0.start();
-      err << emit_expression(arg0);
+      err << emit_dispatch(arg0);
       err << emit_print("[");
 
       if (arg1.sym == sym_number_literal) {
@@ -653,10 +653,10 @@ CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnNode call, int bx_width) {
         // b6(foo, offset) -> foo[5 + offset:offset]
         err << emit_print("%d + ", bx_width - 1);
         cursor = arg1.start();
-        err << emit_expression(arg1);
+        err << emit_dispatch(arg1);
         err << emit_print(" : ");
         cursor = arg1.start();
-        err << emit_expression(arg1);
+        err << emit_dispatch(arg1);
       }
       err << emit_print("]");
       cursor = call.end();
@@ -693,17 +693,17 @@ CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnNode call,
     // Non-literal size-casting expression - bits'(expression)
     if (arg0.text() == "DONTCARE") {
       cursor = bx_node.start();
-      err << emit_expression(bx_node);
+      err << emit_dispatch(bx_node);
       err << emit_print("'('x)");
       cursor = call.end();
     } else {
       cursor = bx_node.start();
       err << emit_print("(");
-      err << emit_expression(bx_node);
+      err << emit_dispatch(bx_node);
       err << emit_print(")");
       err << emit_print("'(");
       cursor = arg0.start();
-      err << emit_expression(arg0);
+      err << emit_dispatch(arg0);
       err << emit_print(")");
       cursor = call.end();
     }
@@ -712,7 +712,7 @@ CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnNode call,
     // Non-literal slice expression - expression[bits+offset-1:offset];
 
     cursor = arg0.start();
-    err << emit_expression(arg0);
+    err << emit_dispatch(arg0);
 
     if (arg1.sym != sym_number_literal) {
       err << ERR("emit_dynamic_bit_extract saw a non-literal?\n");
@@ -821,10 +821,10 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
 
     err << emit_print("($signed(");
     cursor = lhs.start();
-    err << emit_expression(lhs);
+    err << emit_dispatch(lhs);
     err << emit_print(") >>> ");
     cursor = rhs.start();
-    err << emit_expression(rhs);
+    err << emit_dispatch(rhs);
     err << emit_print(")");
     cursor = n.end();
 
@@ -877,7 +877,7 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
         err << emit_dispatch(arg);
       }
       else if (arg.is_expression()) {
-        err << emit_expression(arg);
+        err << emit_dispatch(arg);
       }
       else if (arg.is_leaf()) {
         err << emit_leaf(arg);
@@ -901,7 +901,7 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
 
     auto func_arg = args.named_child(0);
     cursor = func_arg.start();
-    err << emit_expression(func_arg);
+    err << emit_dispatch(func_arg);
 
     err << emit_print("}}");
     cursor = n.end();
@@ -1376,7 +1376,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
 
         err << start_line();
         err << emit_print(".%s(", param.name4().c_str());
-        err << emit_expression(arg);
+        err << emit_dispatch(arg);
         err << emit_print(")");
         if(--param_count) err << emit_print(",");
       }
@@ -1412,7 +1412,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
 
         err << start_line();
         err << emit_print(".%s(", param.name4().c_str());
-        err << emit_expression(arg);
+        err << emit_dispatch(arg);
         err << emit_print(")");
         if(--param_count) err << emit_print(",");
       }
@@ -1920,7 +1920,7 @@ CHECK_RETURN Err MtCursor::emit_sym_init_declarator(MnNode node, bool elide_valu
         err << skip_ws_inside(node);
       }
       else {
-        err << emit_expression(child);
+        err << emit_dispatch(child);
       }
     }
     else if (child.sym == anon_sym_EQ) {
@@ -2001,7 +2001,7 @@ CHECK_RETURN Err MtCursor::emit_module_parameter_declaration(MnNode node) {
   //err << skip_over(node.child(0));
   //err << emit_dispatch(node.child(1));
   //err << emit_text(node.child(2));
-  //err << emit_expression(node.child(3));
+  //err << emit_dispatch(node.child(3));
 
   auto param_type = node.get_field(field_type);
   auto param_decl = node.get_field(field_declarator);
@@ -2016,7 +2016,7 @@ CHECK_RETURN Err MtCursor::emit_module_parameter_declaration(MnNode node) {
   err << emit_declarator(param_decl);
   err << emit_print(" = ");
   cursor = param_val.start();
-  err << emit_expression(param_val);
+  err << emit_dispatch(param_val);
 
   cursor = node.end();
 
@@ -2176,14 +2176,16 @@ CHECK_RETURN Err MtCursor::emit_sym_struct_specifier(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_param_port(MtMethod* m, MnNode node_type, MnNode node_name) {
   Err err;
 
-  MtCursor sub_cursor = *this;
-  sub_cursor.cursor = node_type.start();
+  push_cursor(node_type);
   err << emit_print("input ");
-  err << sub_cursor.emit_dispatch(node_type);
-  err << sub_cursor.emit_ws();
-  err << sub_cursor.emit_print("%s_", m->cname());
-  err << sub_cursor.emit_dispatch(node_name);
+  err << emit_dispatch(node_type);
+  pop_cursor(node_type);
+
+  push_cursor(node_name);
+  err << emit_print(" %s_", m->cname());
+  err << emit_dispatch(node_name);
   err << emit_print(",");
+  pop_cursor(node_name);
 
   trailing_comma = true;
 
@@ -2195,27 +2197,17 @@ CHECK_RETURN Err MtCursor::emit_param_port(MtMethod* m, MnNode node_type, MnNode
 CHECK_RETURN Err MtCursor::emit_param_binding(MtMethod* m, MnNode node_type, MnNode node_name) {
   Err err;
 
-  /*
-  MtCursor sub_cursor = *this;
-  sub_cursor.cursor = node_type.start();
-  err << sub_cursor.emit_dispatch(node_type);
-  err << sub_cursor.emit_ws();
-  err << sub_cursor.emit_print("%s_", m->cname());
-  err << sub_cursor.emit_dispatch(node_name);
-  err << emit_print(";");
-  */
-
   push_cursor(node_type);
   err << emit_dispatch(node_type);
   pop_cursor(node_type);
 
-  err << emit_print(" %s_", m->cname());
-
   push_cursor(node_name);
+  err << emit_print(" %s_", m->cname());
   err << emit_dispatch(node_name);
+  err << emit_print(";");
   pop_cursor(node_name);
 
-  err << emit_print(";");
+  trailing_comma = false;
 
   return err;
 }
@@ -2225,13 +2217,11 @@ CHECK_RETURN Err MtCursor::emit_param_binding(MtMethod* m, MnNode node_type, MnN
 CHECK_RETURN Err MtCursor::emit_return_port(MtMethod* m, MnNode node_type, MnNode node_name) {
   Err err;
 
-  err << emit_print("output ");
-
   push_cursor(node_type);
+  err << emit_print("output ");
   err << emit_dispatch(node_type);
-  pop_cursor(node_type);
-
   err << emit_print(" %s_ret,", m->cname());
+  pop_cursor(node_type);
 
   trailing_comma = true;
 
@@ -2243,14 +2233,12 @@ CHECK_RETURN Err MtCursor::emit_return_port(MtMethod* m, MnNode node_type, MnNod
 CHECK_RETURN Err MtCursor::emit_return_binding(MtMethod* m, MnNode node_type, MnNode node_name) {
   Err err;
 
-  MtCursor sub_cursor = *this;
-  sub_cursor.cursor = node_type.start();
-  err << sub_cursor.emit_dispatch(node_type);
-  err << sub_cursor.emit_ws();
-  err << sub_cursor.emit_print("%s_ret", m->cname());
-  err << emit_print(";");
+  push_cursor(node_type);
+  err << emit_dispatch(node_type);
+  err << emit_print(" %s_ret;", m->cname());
+  pop_cursor(node_type);
 
-  trailing_comma = true;
+  trailing_comma = false;
 
   return err;
 }
@@ -2265,9 +2253,7 @@ CHECK_RETURN Err MtCursor::emit_method_ports(MtMethod* m) {
     err << emit_print("// %s() ports", m->cname());
   }
 
-  int param_count = m->param_nodes.size();
-  for (int i = 0; i < param_count; i++) {
-    auto param = m->param_nodes[i];
+  for (auto& param : m->param_nodes) {
     auto node_type = param.get_field(field_type);
     auto node_decl = param.get_field(field_declarator);
     err << start_line();
@@ -2290,9 +2276,7 @@ CHECK_RETURN Err MtCursor::emit_method_ports(MtMethod* m) {
 CHECK_RETURN Err MtCursor::emit_func_binding_vars(MtMethod* m) {
   Err err;
 
-  int param_count = m->param_nodes.size();
-  for (int i = 0; i < param_count; i++) {
-    auto param = m->param_nodes[i];
+  for (auto& param : m->param_nodes) {
     auto node_type = param.get_field(field_type);
     auto node_decl = param.get_field(field_declarator);
     err << start_line();
@@ -2333,13 +2317,15 @@ CHECK_RETURN Err MtCursor::emit_field_port(MtField* f) {
   auto node_type = f->get_type_node();
   auto node_decl = f->get_decl_node();
 
-  cursor = node_type.start();
+  push_cursor(node_type);
   err << emit_dispatch(node_type);
+  pop_cursor(node_type);
 
-  err << emit_ws_to(node_decl);
+  push_cursor(node_decl);
+  err << emit_print(" ");
   err << emit_dispatch(node_decl);
-
   err << emit_print(",");
+  pop_cursor(node_decl);
 
   trailing_comma = true;
 
@@ -2882,7 +2868,7 @@ CHECK_RETURN Err MtCursor::emit_sym_return_statement(MnNode n) {
         err << emit_replacement(c, "%s =", current_method->name().c_str());
       }
     } else if (c.is_expression()) {
-      err << emit_expression(c);
+      err << emit_dispatch(c);
     } else if (c.is_identifier()) {
       err << emit_dispatch(c);
     } else if (c.is_literal()) {
@@ -3152,7 +3138,7 @@ CHECK_RETURN Err MtCursor::emit_sym_conditional_expression(MnNode n) {
 
   for (auto child : n) {
     err << emit_ws_to(child);
-    err << emit_expression(child);
+    err << emit_dispatch(child);
   }
 
   return err << check_done(n);
@@ -3308,28 +3294,6 @@ CHECK_RETURN Err MtCursor::emit_sym_nullptr(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_expression(MnNode n) {
-  Err err = check_at(n);
-
-  if (!n.is_named()) {
-    err << emit_text(n);
-    return err << check_done(n);
-  }
-
-  switch (n.sym) {
-    case sym_number_literal:
-      err << emit_sym_number_literal(n, 0);
-      break;
-    default:
-      err << emit_dispatch(n);
-      break;
-  }
-
-  return err << check_done(n);
-}
-
-//------------------------------------------------------------------------------
-
 CHECK_RETURN Err MtCursor::emit_sym_condition_clause(MnNode node) {
   assert(node.sym == sym_condition_clause);
   Err err;
@@ -3347,7 +3311,7 @@ CHECK_RETURN Err MtCursor::emit_sym_condition_clause(MnNode node) {
       err << emit_dispatch(child);
     }
     else if (child.is_expression()) {
-      err << emit_expression(child);
+      err << emit_dispatch(child);
     }
     else if (child.is_literal()) {
       err << emit_literal(child);
@@ -3543,7 +3507,7 @@ CHECK_RETURN Err MtCursor::emit_sym_argument_list(MnNode n) {
       err << emit_dispatch(c);
     }
     else if (c.is_expression()) {
-      err << emit_expression(c);
+      err << emit_dispatch(c);
     }
     else {
       err << emit_leaf(c);
@@ -3661,7 +3625,7 @@ CHECK_RETURN Err MtCursor::emit_sym_preproc_ifdef(MnNode n) {
 
     //dummy_source.root_node.dump_tree();
     if (dummy_source.root_node.is_expression()) {
-      err << preproc_cursor.emit_expression(dummy_source.root_node);
+      err << preproc_cursor.emit_dispatch(dummy_source.root_node);
     }
     else if (dummy_source.root_node.is_statement()) {
       err << preproc_cursor.emit_statement(dummy_source.root_node);
@@ -3743,7 +3707,7 @@ CHECK_RETURN Err MtCursor::emit_sym_for_statement(MnNode node) {
       err << emit_sym_declaration(child, true, false);
     }
     else if (child.is_expression()) {
-      err << emit_expression(child);
+      err << emit_dispatch(child);
     }
     else if (child.is_statement()) {
       err << emit_statement(child);
@@ -3784,6 +3748,10 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
     if (child.sym == sym_comment && child.contains("metron_noconvert"))  noconvert = true;
     if (child.sym == sym_comment && child.contains("dumpit"))     dumpit = true;
 
+    if (child.sym != sym_compound_statement) {
+      err << emit_call_arg_bindings(child);
+    }
+
     switch (child.sym) {
       case anon_sym_LBRACE:
         push_indent(node);
@@ -3795,21 +3763,12 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
         // We may need to insert input port bindings before any statement that
         // could include a call expression. We search the tree for calls and emit
         // those bindings here.
-        err << emit_call_arg_bindings(child);
         // type should be hoisted
         err << emit_sym_declaration(child, true, false);
         break;
 
-      case sym_using_declaration:
-        err << emit_sym_using_declaration(child);
-        break;
-
       case sym_compound_statement:
         err << emit_statement(child);
-        break;
-
-      case sym_for_statement:
-        err << emit_sym_for_statement(child);
         break;
 
       case sym_break_statement:
@@ -3821,8 +3780,7 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
         // We may need to insert input port bindings before any statement that
         // could include a call expression. We search the tree for calls and emit
         // those bindings here.
-        err << emit_call_arg_bindings(child);
-        err << emit_statement(child);
+        err << emit_dispatch(child);
         break;
 
       case anon_sym_RBRACE:
@@ -3831,7 +3789,7 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
         break;
 
       default:
-        err << emit_leaf(child);
+        err << emit_dispatch(child);
         break;
     }
   }
@@ -3887,17 +3845,6 @@ CHECK_RETURN Err MtCursor::emit_sym_update_expression(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtCursor::emit_child_expressions(MnNode n) {
-  Err err = check_at(n);
-
-  for (auto child : n) {
-    err << emit_ws_to(child);
-    err << emit_expression(child);
-  }
-
-  return err << check_done(n);
-}
 
 CHECK_RETURN Err MtCursor::emit_children(MnNode n) {
   Err err = check_at(n);

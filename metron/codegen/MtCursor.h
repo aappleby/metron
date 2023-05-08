@@ -32,6 +32,7 @@ struct MtCursorConfig {
   MtSourceFile* current_source = nullptr;
   MtModule* current_mod = nullptr;
   MtMethod* current_method = nullptr;
+  std::map<std::string, MnNode> preproc_vars;
 };
 
 //------------------------------------------------------------------------------
@@ -207,8 +208,6 @@ struct MtCursor {
   // Config state
 
   MtModLibrary* lib = nullptr;
-
-  std::map<std::string, MnNode> preproc_vars;
 };
 
 //------------------------------------------------------------------------------

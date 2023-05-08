@@ -8,7 +8,7 @@
       "request": "launch",
       "program": "${workspaceFolder}/bin/metron",
       "cwd": "${workspaceFolder}",
-      "args" : ["-d", "-v", "-e", "-c", "tests/metron_good/submod_bindings.h"],
+      "args" : ["-d", "-v", "-e", "-c", "tests/metron_good/defines.h"],
       //"args" : ["-v", "-e", "-c", "examples/gb_spu/metron/MetroBoySPU2.h"],
       "setupCommands": [
         { // Display content in STL containers pretty

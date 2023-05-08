@@ -90,7 +90,7 @@ MtCursor::MtCursor(MtModLibrary* lib, MtSourceFile* source, MtModule* mod,
   cursor = config.current_source->source;
 
   // FIXME preproc_vars should be a set
-  preproc_vars["IV_TEST"] = MnNode();
+  config.preproc_vars["IV_TEST"] = MnNode();
 }
 
 //------------------------------------------------------------------------------
@@ -2745,10 +2745,6 @@ CHECK_RETURN Err MtCursor::emit_everything() {
 CHECK_RETURN Err MtCursor::emit_toplevel_node(MnNode node) {
   Err err = check_at(node);
 
-  push_config();
-  config.elide_type = false;
-  config.elide_value = false;
-
   switch (node.sym) {
 
     case sym_expression_statement:
@@ -2772,7 +2768,6 @@ CHECK_RETURN Err MtCursor::emit_toplevel_node(MnNode node) {
       break;
   }
 
-  pop_config();
   return err << check_done(node);
 }
 
@@ -2985,7 +2980,7 @@ CHECK_RETURN Err MtCursor::emit_sym_identifier(MnNode n) {
   auto it = config.id_replacements.find(name);
   if (it != config.id_replacements.end()) {
     err << emit_replacement(n, it->second.c_str());
-  } else if (preproc_vars.contains(name)) {
+  } else if (config.preproc_vars.contains(name)) {
     err << emit_print("`");
     err << emit_text(n);
   } else if (name == "DONTCARE") {
@@ -3587,7 +3582,7 @@ CHECK_RETURN Err MtCursor::emit_sym_preproc_arg(MnNode n) {
   std::string new_arg;
 
   for (int i = 0; i < arg.size(); i++) {
-    for (const auto& def_pair : preproc_vars) {
+    for (const auto& def_pair : config.preproc_vars) {
       if (def_pair.first == arg) continue;
       if (strncmp(&arg[i], def_pair.first.c_str(), def_pair.first.size()) ==
           0) {
@@ -3677,7 +3672,7 @@ CHECK_RETURN Err MtCursor::emit_sym_preproc_def(MnNode n) {
       node_name = child;
     }
     else if (child.field == field_value) {
-      preproc_vars[node_name.text()] = child;
+      config.preproc_vars[node_name.text()] = child;
       err << emit_sym_preproc_arg(child);
     }
     else {

@@ -927,40 +927,13 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
 
 CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
   Err err;
-  bool any_to_hoist = false;
-
-  for (const auto& c : (MnNode&)n) {
-    if (c.sym == sym_declaration) {
-      bool is_localparam = c.sym == sym_declaration && c.is_const();
-
-      if (is_localparam) {
-      } else {
-        any_to_hoist = true;
-        break;
-      }
-    }
-
-    if (c.sym == sym_for_statement) {
-      auto init = c.get_field(field_initializer);
-      if (init.sym == sym_declaration) {
-        any_to_hoist = true;
-      }
-    }
-
-  }
-
-  if (!any_to_hoist) {
-    return err;
-  }
 
   MtCursor old_cursor = *this;
   for (const auto& c : (MnNode&)n) {
     if (c.sym == sym_declaration) {
-      bool is_localparam = c.sym == sym_declaration && c.is_const();
-
-      if (is_localparam) {
-        // fixme?
-        err << ERR("FIXME - emit_hoisted_decls emitting a localparam?\n");
+      if (c.sym == sym_declaration && c.is_const()) {
+        // Don't emit decls for localparams
+        continue;
       } else {
         err << start_line();
         cursor = c.start();
@@ -3090,7 +3063,6 @@ CHECK_RETURN Err MtCursor::emit_sym_case_statement(MnNode n) {
         }
         break;
       case sym_compound_statement:
-        //err << emit_statement(c);
         push_config();
         config.block_prefix = "begin";
         config.block_suffix = "end";
@@ -3378,7 +3350,6 @@ CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnNode node) {
         if (branch_contains_component_call(child)) {
           return err << ERR("If branches that contain component calls must use {}.\n");
         } else {
-          //err << emit_statement(child);
           push_config();
           config.block_prefix = "begin";
           config.block_suffix = "end";
@@ -3696,7 +3667,6 @@ CHECK_RETURN Err MtCursor::emit_sym_for_statement(MnNode node) {
       err << emit_dispatch(child);
     }
     else if (child.is_statement()) {
-      //err << emit_statement(child);
       push_config();
       config.block_prefix = "begin";
       config.block_suffix = "end";
@@ -3720,6 +3690,7 @@ CHECK_RETURN Err MtCursor::emit_sym_for_statement(MnNode node) {
 CHECK_RETURN Err MtCursor::emit_sym_compound_statement(MnNode node) {
   const std::string& delim_begin = config.block_prefix;
   const std::string& delim_end = config.block_suffix;
+
   Err err = check_at(sym_compound_statement, node);
 
   bool noconvert = false;
@@ -3766,7 +3737,6 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(MnNode node) {
         break;
 
       case sym_compound_statement:
-        //err << emit_statement(child);
         push_config();
         config.block_prefix = "begin";
         config.block_suffix = "end";

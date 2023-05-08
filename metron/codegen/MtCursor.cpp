@@ -3748,6 +3748,9 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
     if (child.sym == sym_comment && child.contains("metron_noconvert"))  noconvert = true;
     if (child.sym == sym_comment && child.contains("dumpit"))     dumpit = true;
 
+    // We may need to insert input port bindings before any statement that
+    // could include a call expression. We search the tree for calls and emit
+    // those bindings here.
     if (child.sym != sym_compound_statement) {
       err << emit_call_arg_bindings(child);
     }
@@ -3760,27 +3763,11 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(
         break;
 
       case sym_declaration:
-        // We may need to insert input port bindings before any statement that
-        // could include a call expression. We search the tree for calls and emit
-        // those bindings here.
-        // type should be hoisted
         err << emit_sym_declaration(child, true, false);
         break;
 
       case sym_compound_statement:
         err << emit_statement(child);
-        break;
-
-      case sym_break_statement:
-      case sym_if_statement:
-      case sym_expression_statement:
-      case sym_return_statement:
-      case sym_switch_statement:
-      case sym_case_statement:
-        // We may need to insert input port bindings before any statement that
-        // could include a call expression. We search the tree for calls and emit
-        // those bindings here.
-        err << emit_dispatch(child);
         break;
 
       case anon_sym_RBRACE:

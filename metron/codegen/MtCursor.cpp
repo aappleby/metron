@@ -18,7 +18,7 @@ emit_map emit_sym_map = {
   { alias_sym_field_identifier,         &MtCursor::emit_sym_field_identifier },
   { alias_sym_type_identifier,          &MtCursor::emit_sym_type_identifier },
   { sym_array_declarator,               &MtCursor::emit_children },
-  { sym_argument_list,                  &MtCursor::emit_sym_argument_list },
+  { sym_argument_list,                  &MtCursor::emit_children },
   { sym_assignment_expression,          &MtCursor::emit_sym_assignment_expression },
   { sym_binary_expression,              &MtCursor::emit_children },
   { sym_break_statement,                &MtCursor::emit_sym_break_statement },
@@ -28,6 +28,7 @@ emit_map emit_sym_map = {
   { sym_comment,                        &MtCursor::emit_sym_comment },
   { sym_condition_clause,               &MtCursor::emit_sym_condition_clause },
   { sym_conditional_expression,         &MtCursor::emit_sym_conditional_expression },
+  { sym_compound_statement,             &MtCursor::emit_sym_compound_statement },
   { sym_enum_specifier,                 &MtCursor::emit_sym_enum_specifier },
   { sym_enumerator_list,                &MtCursor::emit_children },
   { sym_enumerator,                     &MtCursor::emit_children },
@@ -733,27 +734,6 @@ CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnNode call,
 }
 
 //------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtCursor::emit_simple_call(MnNode n) {
-  Err err;
-
-  for (auto c : n) {
-    if (c.field == field_function) {
-      err << emit_dispatch(c);
-    }
-    else if (c.field == field_arguments) {
-      err << emit_sym_argument_list(c);
-    }
-    else {
-      err << ERR("Unknown node type in simple call");
-    }
-  }
-
-  return err;
-}
-
-
-//------------------------------------------------------------------------------
 // Call expressions turn into either Verilog calls, or are replaced with binding
 // statements.
 
@@ -834,31 +814,31 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
 
   } else if (func_name == "signed") {
     err << emit_replacement(func, "$signed");
-    err << emit_sym_argument_list(args);
+    err << emit_dispatch(args);
   } else if (func_name == "unsigned") {
     err << emit_replacement(func, "$unsigned");
-    err << emit_sym_argument_list(args);
+    err << emit_dispatch(args);
   } else if (func_name == "clog2") {
     err << emit_replacement(func, "$clog2");
-    err << emit_sym_argument_list(args);
+    err << emit_dispatch(args);
   } else if (func_name == "pow2") {
     err << emit_replacement(func, "2**");
-    err << emit_sym_argument_list(args);
+    err << emit_dispatch(args);
   } else if (func_name == "readmemh") {
     err << emit_replacement(func, "$readmemh");
-    err << emit_sym_argument_list(args);
+    err << emit_dispatch(args);
   } else if (func_name == "value_plusargs") {
     err << emit_replacement(func, "$value$plusargs");
-    err << emit_sym_argument_list(args);
+    err << emit_dispatch(args);
   } else if (func_name == "write") {
     err << emit_replacement(func, "$write");
-    err << emit_sym_argument_list(args);
+    err << emit_dispatch(args);
   } else if (func_name == "sign_extend") {
     err << emit_replacement(func, "$signed");
-    err << emit_sym_argument_list(args);
+    err << emit_dispatch(args);
   } else if (func_name == "zero_extend") {
     err << emit_replacement(func, "$unsigned");
-    err << emit_sym_argument_list(args);
+    err << emit_dispatch(args);
   }
   else if (func_name == "bx") {
     // Bit extract.
@@ -934,7 +914,7 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
       err << emit_replacement(n, "%s_ret", method->cname());
     }
     else {
-      err << emit_simple_call(n);
+      err << emit_children(n);
     }
   }
 
@@ -3298,23 +3278,24 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_statement(MnNode n) {
   Err err;
 
+  push_config();
+  config.block_prefix = "begin";
+  config.block_suffix = "end";
+
   switch (n.sym) {
     case sym_declaration:
       // type should be hoisted.
       err << emit_sym_declaration(n, true, false);
       break;
     case sym_compound_statement:
-      push_config();
-      config.block_prefix = "begin";
-      config.block_suffix = "end";
-      err << emit_sym_compound_statement(n);
-      pop_config();
+      err << emit_dispatch(n);
       break;
     default:
       err << emit_dispatch(n);
       break;
   }
 
+  pop_config();
   return err << check_done(n);
 }
 
@@ -3528,29 +3509,6 @@ CHECK_RETURN Err MtCursor::emit_sym_sized_type_specifier(MnNode n) {
     }
     else {
       err << emit_dispatch(c);
-    }
-  }
-
-  return err << check_done(n);
-}
-
-//------------------------------------------------------------------------------
-// Arg lists are the same in C and Verilog.
-
-CHECK_RETURN Err MtCursor::emit_sym_argument_list(MnNode n) {
-  Err err = check_at(sym_argument_list, n);
-
-  for (auto c : n) {
-    err << emit_ws_to(c);
-
-    if (c.is_identifier()) {
-      err << emit_dispatch(c);
-    }
-    else if (c.is_expression()) {
-      err << emit_dispatch(c);
-    }
-    else {
-      err << emit_leaf(c);
     }
   }
 

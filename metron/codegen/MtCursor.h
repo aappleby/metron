@@ -99,9 +99,7 @@ struct MtCursor {
   CHECK_RETURN Err emit_return_binding(MtMethod* m, MnNode node_type, MnNode node_name);
   CHECK_RETURN Err emit_module_ports(MnNode class_body);
   CHECK_RETURN Err emit_trigger_call(MtMethod* m);
-  //CHECK_RETURN Err emit_trigger_calls();
   CHECK_RETURN Err emit_module_parameter_list(MnNode n);
-  CHECK_RETURN Err emit_simple_call(MnNode n);
 
   CHECK_RETURN Err emit_func_as_init(MnNode n);
   CHECK_RETURN Err emit_func_as_func(MnNode n);
@@ -114,7 +112,6 @@ struct MtCursor {
   // clang-format off
   CHECK_RETURN Err emit_sym_qualified_identifier_as_type(MnNode node);
   CHECK_RETURN Err emit_sym_translation_unit(MnNode n);
-  CHECK_RETURN Err emit_sym_argument_list(MnNode n);
   CHECK_RETURN Err emit_sym_assignment_expression(MnNode n);
   CHECK_RETURN Err emit_sym_break_statement(MnNode n);
   CHECK_RETURN Err emit_sym_call_expression(MnNode n);

@@ -493,6 +493,8 @@ CHECK_RETURN Err MtCursor::emit_sym_initializer_list(MnNode node) {
 //------------------------------------------------------------------------------
 // Replace "#include" with "`include" and ".h" with ".sv"
 
+// FIXME handle the path .h to .sv with string replacement?
+
 CHECK_RETURN Err MtCursor::emit_sym_preproc_include(MnNode n) {
   Err err = check_at(sym_preproc_include, n);
 
@@ -505,9 +507,7 @@ CHECK_RETURN Err MtCursor::emit_sym_preproc_include(MnNode n) {
   for (auto child : n) {
     err << emit_ws_to(child);
 
-    if (child.sym == aux_sym_preproc_include_token1) {
-      err << emit_replacement(child, "`include");
-    } else if (child.field == field_path) {
+    if (child.field == field_path) {
       err << emit_replacement(child, path.c_str());
     }
     else {

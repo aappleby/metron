@@ -2031,20 +2031,12 @@ CHECK_RETURN Err MtCursor::emit_declarator(MnNode node, bool elide_value) {
 CHECK_RETURN Err MtCursor::emit_parameter_declaration(MnNode n) {
   Err err = check_at(sym_parameter_declaration, n);
 
-  for (auto c : n) {
-    err << emit_ws_to(c);
+  push_config();
+  config.elide_value = false;
 
-    if (c.field == field_declarator) {
-      push_config();
-      config.elide_value = false;
-      err << emit_dispatch(c);
-      pop_config();
-    }
-    else {
-      err << emit_dispatch(c);
-    }
-  }
+  err << emit_children(n);
 
+  pop_config();
   return err << check_done(n);
 }
 
@@ -2068,7 +2060,12 @@ CHECK_RETURN Err MtCursor::emit_module_parameter_declaration(MnNode node) {
   err << emit_print(" =$= ");
   */
   cursor = param_decl.start();
-  err << emit_declarator(param_decl, false);
+
+  push_config();
+  config.elide_value = false;
+  err << emit_dispatch(param_decl);
+  pop_config();
+
   err << emit_print(" = ");
   cursor = param_val.start();
   err << emit_dispatch(param_val);
@@ -2174,7 +2171,10 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
         err << emit_dispatch(c);
       }
       else if (c.field == field_declarator) {
-        err << emit_declarator(c, false);
+        push_config();
+        config.elide_value = false;
+        err << emit_dispatch(c);
+        pop_config();
       }
       else if (c.sym == anon_sym_SEMI) {
         err << emit_text(c);
@@ -3445,6 +3445,9 @@ CHECK_RETURN Err MtCursor::emit_sym_using_declaration(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_sym_declaration(MnNode n, bool elide_type, bool elide_value) {
   Err err = check_at(sym_declaration, n);
 
+  push_config();
+  config.elide_value = elide_value;
+
   bool is_static = false;
   bool is_const = false;
 
@@ -3507,24 +3510,17 @@ CHECK_RETURN Err MtCursor::emit_sym_declaration(MnNode n, bool elide_type, bool 
         err << skip_over(child);
         err << skip_ws();
       }
-      else if (child.field == field_type) {
-        if (elide_type) {
-          err << skip_over(child);
-          err << skip_ws();
-        }
-        else {
-          err << emit_dispatch(child);
-        }
-      }
-      else if (child.field == field_declarator) {
-        err << emit_declarator(child, elide_value);
+      else if (child.field == field_type && elide_type) {
+        err << skip_over(child);
+        err << skip_ws();
       }
       else {
-        err << emit_leaf(child);
+        err << emit_dispatch(child);
       }
     }
   }
 
+  pop_config();
   return err << check_done(n);
 }
 

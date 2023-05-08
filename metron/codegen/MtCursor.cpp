@@ -1987,28 +1987,24 @@ CHECK_RETURN Err MtCursor::emit_sym_function_declarator(MnNode node) {
 
   push_config();
   config.elide_value = false;
-  err << emit_dispatch(node.get_field(field_declarator));
-  pop_config();
 
+  for (auto c : node) {
+    err << emit_ws_to(c);
 
-  err << emit_sym_parameter_list(node.get_field(field_parameters));
-
-  // FIXME wat? what was this for?
-  /*
-  [000.040]  + declarator: function_declarator (239) =
-  [000.040]  |--# declarator: field_identifier (440) = "in_border"
-  [000.040]  |--+ parameters: parameter_list (262) =
-  [000.040]  |  |--# lit (5) = "("
-  [000.040]  |  |--# lit (8) = ")"
-  [000.040]  |--+ type_qualifier (250) =
-  [000.040]     |--# lit (68) = "const"
-  */
-  if (node.child_count() == 3) {
-    cursor = node.child(2).start();
-    err << skip_over(node.child(2));
-    err << skip_ws_inside(node);
+    if (c.sym == sym_parameter_list) {
+      err << emit_dispatch(c);
+      err << skip_ws_inside(node);
+    }
+    else if (c.sym == sym_type_qualifier) {
+      err << skip_over(c);
+      err << skip_ws_inside(node);
+    }
+    else {
+      err << emit_dispatch(c);
+    }
   }
 
+  pop_config();
   return err << check_done(node);
 }
 

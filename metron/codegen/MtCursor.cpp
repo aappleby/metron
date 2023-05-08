@@ -36,6 +36,7 @@ emit_map emit_sym_map = {
   { sym_field_expression,               &MtCursor::emit_sym_field_expression },
   { sym_for_statement,                  &MtCursor::emit_sym_for_statement },
   { sym_function_definition,            &MtCursor::emit_sym_function_definition },
+  { sym_function_declarator,            &MtCursor::emit_sym_function_declarator },
   { sym_identifier,                     &MtCursor::emit_sym_identifier },
   { sym_if_statement,                   &MtCursor::emit_sym_if_statement },
   { sym_initializer_list,               &MtCursor::emit_sym_initializer_list },
@@ -1180,7 +1181,11 @@ CHECK_RETURN Err MtCursor::emit_func_as_task(MnNode n) {
       err << skip_over(c);
     }
     else if (c.field == field_declarator) {
-      err << emit_declarator(c, false);
+      push_config();
+      config.elide_value = false;
+      err << emit_dispatch(c);
+      pop_config();
+
       err << prune_trailing_ws();
       err << emit_print(";");
     }
@@ -1967,7 +1972,8 @@ CHECK_RETURN Err MtCursor::emit_sym_pointer_declarator(MnNode node) {
 
   auto decl2 = node.get_field(field_declarator);
   cursor = decl2.start();
-  err << emit_declarator(decl2, config.elide_value);
+
+  err << emit_dispatch(decl2);
 
   return err << check_done(node);
 }
@@ -1977,7 +1983,12 @@ CHECK_RETURN Err MtCursor::emit_sym_pointer_declarator(MnNode node) {
 CHECK_RETURN Err MtCursor::emit_sym_function_declarator(MnNode node) {
   Err err = check_at(node);
 
-  err << emit_declarator(node.get_field(field_declarator), false);
+  push_config();
+  config.elide_value = false;
+  err << emit_dispatch(node.get_field(field_declarator));
+  pop_config();
+
+
   err << emit_sym_parameter_list(node.get_field(field_parameters));
 
   // FIXME wat? what was this for?
@@ -2008,14 +2019,7 @@ CHECK_RETURN Err MtCursor::emit_declarator(MnNode node, bool elide_value) {
   push_config();
   config.elide_value = elide_value;
 
-  switch (node.sym) {
-    case sym_function_declarator:
-      err << emit_sym_function_declarator(node);
-      break;
-    default:
-      err << emit_dispatch(node);
-      break;
-  }
+  err << emit_dispatch(node);
 
   pop_config();
   return err << check_done(node);
@@ -2030,14 +2034,14 @@ CHECK_RETURN Err MtCursor::emit_parameter_declaration(MnNode n) {
   for (auto c : n) {
     err << emit_ws_to(c);
 
-    if (c.field == field_type) {
+    if (c.field == field_declarator) {
+      push_config();
+      config.elide_value = false;
       err << emit_dispatch(c);
-    }
-    else if (c.field == field_declarator) {
-      err << emit_declarator(c, false);
+      pop_config();
     }
     else {
-      err << emit_leaf(c);
+      err << emit_dispatch(c);
     }
   }
 

@@ -1061,7 +1061,6 @@ CHECK_RETURN Err MtCursor::emit_call_arg_bindings(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
-
 // sym_function_definition
 //  field_declarator : sym_function_declarator
 //  sym_field_initializer_list (optional)
@@ -1075,13 +1074,10 @@ CHECK_RETURN Err MtCursor::emit_func_as_init(MnNode n) {
 
     if (c.sym == sym_function_declarator) {
       auto func_params = c.get_field(field_parameters);
-
       push_cursor(func_params);
       err << emit_module_parameter_list(func_params);
       pop_cursor(func_params);
-
       err << emit_replacement(c, "initial");
-
     }
     else if (c.sym == sym_field_initializer_list) {
       err << skip_over(c);
@@ -1099,57 +1095,44 @@ CHECK_RETURN Err MtCursor::emit_func_as_init(MnNode n) {
     }
   }
 
-#if 0
-  auto func_decl = n.get_field(field_declarator);
-  auto func_init = n.child_by_sym(sym_field_initializer_list);
-  auto func_body = n.get_field(field_body);
-
-
-  if (func_init) {
-    cursor = func_init.start();
-    err << skip_over(func_init);
-  }
-
-  err << emit_ws_to(func_body);
-
-  push_config();
-  config.block_prefix = "begin";
-  config.block_suffix = "end";
-  err << emit_dispatch(func_body);
-  pop_config();
-#endif
-
   return err << check_done(n);
 }
 
 //------------------------------------------------------------------------------
+/*
+[000.017]  + function_definition (209) =
+[000.017]  |--+ type: template_type (348) =
+[000.017]  |--+ declarator: function_declarator (239) =
+[000.017]  |--+ body: compound_statement (248) =
+*/
 
 CHECK_RETURN Err MtCursor::emit_func_as_func(MnNode n) {
   Err err = check_at(sym_function_definition, n);
-
-  push_config();
-  config.block_prefix = "";
-  config.block_suffix = "endfunction";
-  config.elide_value = false;
-
-  err << emit_print("function ");
 
   for (auto c : n) {
     err << emit_ws_to(c);
 
     if (c.field == field_type) {
+      err << emit_print("function ");
       err << emit_dispatch(c);
     }
     else if (c.field == field_declarator) {
       err << emit_dispatch(c);
+      err << prune_trailing_ws();
       err << emit_print(";");
     }
     else if (c.field == field_body) {
+      push_config();
+      config.block_prefix = "";
+      config.block_suffix = "endfunction";
+      err << emit_dispatch(c);
+      pop_config();
+    }
+    else {
       err << emit_dispatch(c);
     }
   }
 
-  pop_config();
   return err << check_done(n);
 }
 
@@ -1164,16 +1147,12 @@ CHECK_RETURN Err MtCursor::emit_func_as_task(MnNode n) {
 
   for (auto c : n) {
     err << emit_ws_to(c);
+
     if (c.field == field_type) {
-      err << emit_print("task automatic");
-      err << skip_over(c);
+      err << emit_replacement(c, "task automatic");
     }
     else if (c.field == field_declarator) {
-      push_config();
-      config.elide_value = false;
       err << emit_dispatch(c);
-      pop_config();
-
       err << prune_trailing_ws();
       err << emit_print(";");
     }
@@ -1185,7 +1164,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_task(MnNode n) {
       pop_config();
     }
     else {
-      err << emit_leaf(c);
+      err << emit_dispatch(c);
     }
   }
 
@@ -1208,18 +1187,25 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_comb(MnNode n) {
     id_replacements[c.name4()] = func_decl.name4() + "_" + c.name4();
   }
 
-  err << emit_print("always_comb begin : %s", func_decl.name4().c_str());
-  err << skip_over(func_ret);
-  err << skip_ws_inside(n);
+  for (auto c : n) {
+    err << emit_ws_to(c);
 
-  err << skip_over(func_decl);
-  err << skip_ws_inside(n);
-
-  push_config();
-  config.block_prefix = "";
-  config.block_suffix = "end";
-  err << emit_dispatch(func_body);
-  pop_config();
+    if (c.field == field_type) {
+      err << skip_over(c);
+      err << skip_ws_inside(n);
+    }
+    else if (c.field == field_declarator) {
+      err << emit_replacement(c, "always_comb begin : %s", c.name4().c_str());
+      err << skip_ws_inside(n);
+    }
+    else if (c.field == field_body) {
+      push_config();
+      config.block_prefix = "";
+      config.block_suffix = "end";
+      err << emit_dispatch(c);
+      pop_config();
+    }
+  }
 
   id_replacements = old_replacements;
 

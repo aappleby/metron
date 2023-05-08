@@ -15,7 +15,7 @@
 
 emit_map emit_sym_map = {
   { alias_sym_namespace_identifier,     &MtCursor::emit_text },
-  { alias_sym_field_identifier,         &MtCursor::emit_sym_field_identifier },
+  { alias_sym_field_identifier,         &MtCursor::emit_text },
   { alias_sym_type_identifier,          &MtCursor::emit_sym_type_identifier },
   { sym_array_declarator,               &MtCursor::emit_children },
   { sym_argument_list,                  &MtCursor::emit_children },
@@ -45,7 +45,7 @@ emit_map emit_sym_map = {
   { sym_namespace_definition,           &MtCursor::emit_sym_namespace_definition },
   { sym_number_literal,                 &MtCursor::emit_sym_number_literal2 },
   { sym_nullptr,                        &MtCursor::emit_sym_nullptr },
-  { sym_parameter_list,                 &MtCursor::emit_sym_parameter_list },
+  { sym_parameter_list,                 &MtCursor::emit_children},
   { sym_parameter_declaration,          &MtCursor::emit_children },
   { sym_parenthesized_expression,       &MtCursor::emit_children },
   { sym_pointer_declarator,             &MtCursor::emit_sym_pointer_declarator },
@@ -3413,13 +3413,7 @@ CHECK_RETURN Err MtCursor::emit_sym_using_declaration(MnNode n) {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_sym_declaration(MnNode n) {
-  bool elide_type = config.elide_type;
-  bool elide_value = config.elide_value;
-
   Err err = check_at(sym_declaration, n);
-
-  push_config();
-  config.elide_value = elide_value;
 
   bool is_static = false;
   bool is_const = false;
@@ -3463,7 +3457,7 @@ CHECK_RETURN Err MtCursor::emit_sym_declaration(MnNode n) {
 
   bool elide_decl = false;
   for (auto child : n) {
-    if (child.field == field_declarator && child.is_identifier() && elide_type) {
+    if (child.field == field_declarator && child.is_identifier() && config.elide_type) {
       elide_decl = true;
     }
   }
@@ -3483,7 +3477,7 @@ CHECK_RETURN Err MtCursor::emit_sym_declaration(MnNode n) {
         err << skip_over(child);
         err << skip_ws();
       }
-      else if (child.field == field_type && elide_type) {
+      else if (child.field == field_type && config.elide_type) {
         err << skip_over(child);
         err << skip_ws();
       }
@@ -3493,7 +3487,6 @@ CHECK_RETURN Err MtCursor::emit_sym_declaration(MnNode n) {
     }
   }
 
-  pop_config();
   return err << check_done(n);
 }
 
@@ -3534,41 +3527,6 @@ CHECK_RETURN Err MtCursor::emit_sym_sized_type_specifier(MnNode n) {
       err << emit_dispatch(c);
     }
   }
-
-  return err << check_done(n);
-}
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtCursor::emit_sym_parameter_list(MnNode n) {
-  Err err = check_at(sym_parameter_list, n);
-
-  for (auto c : n) {
-    err << emit_ws_to(c);
-
-    if (c.sym == sym_parameter_declaration) {
-      push_config();
-      config.elide_value = false;
-      err << emit_dispatch(c);
-      pop_config();
-    }
-    else if (c.sym == sym_optional_parameter_declaration) {
-      err << emit_dispatch(c);
-    }
-    else {
-      err << emit_dispatch(c);
-    }
-  }
-
-  return err << check_done(n);
-}
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtCursor::emit_sym_field_identifier(MnNode n) {
-  Err err = check_at(alias_sym_field_identifier, n);
-
-  err << emit_text(n);
 
   return err << check_done(n);
 }

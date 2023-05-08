@@ -127,7 +127,6 @@ struct MtCursor {
   CHECK_RETURN Err emit_sym_field_declaration(MnNode decl);
   CHECK_RETURN Err emit_sym_field_declaration_list(MnNode n, bool is_struct);
   CHECK_RETURN Err emit_sym_field_expression(MnNode n);
-  CHECK_RETURN Err emit_sym_field_identifier(MnNode n);
   CHECK_RETURN Err emit_sym_for_statement(MnNode n);
   CHECK_RETURN Err emit_sym_function_definition(MnNode n);
   CHECK_RETURN Err emit_sym_function_declarator(MnNode n);
@@ -139,7 +138,6 @@ struct MtCursor {
   CHECK_RETURN Err emit_sym_nullptr(MnNode n);
   CHECK_RETURN Err emit_sym_number_literal(MnNode n, int size_cast);
   CHECK_RETURN Err emit_sym_number_literal2(MnNode n) { return emit_sym_number_literal(n, 0); }
-  CHECK_RETURN Err emit_sym_parameter_list(MnNode n);
   CHECK_RETURN Err emit_sym_pointer_declarator(MnNode n);
   CHECK_RETURN Err emit_sym_preproc_arg(MnNode n);
   CHECK_RETURN Err emit_sym_preproc_def(MnNode n);

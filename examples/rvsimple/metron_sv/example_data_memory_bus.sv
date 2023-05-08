@@ -32,7 +32,8 @@ module example_data_memory_bus (
    // in
 
   parameter filename = "";
-  initial begin
+  initial
+  begin
   end
 
  /*private*/

@@ -972,9 +972,9 @@ CHECK_RETURN Err MtCursor::emit_local_call_arg_binding(MtMethod* method, MnNode 
 
   err << emit_print("%s_%s = ", method->cname(), param_name.c_str());
 
-  cursor = val.start();
+  push_cursor(val);
   err << emit_dispatch(val);
-  cursor = val.end();
+  pop_cursor(val);
 
   err << prune_trailing_ws();
   err << emit_print(";");
@@ -989,9 +989,9 @@ CHECK_RETURN Err MtCursor::emit_component_call_arg_binding(MnNode inst, MtMethod
                     method->name().c_str(),
                     param.get_field(field_declarator).text().c_str());
 
-  cursor = val.start();
+  push_cursor(val);
   err << emit_dispatch(val);
-  cursor = val.end();
+  pop_cursor(val);
 
   err << prune_trailing_ws();
   err << emit_print(";");
@@ -1070,17 +1070,40 @@ CHECK_RETURN Err MtCursor::emit_call_arg_bindings(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_func_as_init(MnNode n) {
   Err err = check_at(sym_function_definition, n);
 
+  for (auto c : n) {
+    err << emit_ws_to(c);
+
+    if (c.sym == sym_function_declarator) {
+      auto func_params = c.get_field(field_parameters);
+
+      push_cursor(func_params);
+      err << emit_module_parameter_list(func_params);
+      pop_cursor(func_params);
+
+      err << emit_replacement(c, "initial");
+
+    }
+    else if (c.sym == sym_field_initializer_list) {
+      err << skip_over(c);
+      err << skip_ws_inside(n);
+    }
+    else if (c.sym == sym_compound_statement) {
+      push_config();
+      config.block_prefix = "begin";
+      config.block_suffix = "end";
+      err << emit_dispatch(c);
+      pop_config();
+    }
+    else {
+      err << emit_dispatch(c);
+    }
+  }
+
+#if 0
   auto func_decl = n.get_field(field_declarator);
   auto func_init = n.child_by_sym(sym_field_initializer_list);
   auto func_body = n.get_field(field_body);
 
-  auto func_params = func_decl.get_field(field_parameters);
-
-  push_cursor(func_params);
-  err << emit_module_parameter_list(func_params);
-  pop_cursor(func_params);
-
-  err << emit_replacement(func_decl, "initial");
 
   if (func_init) {
     cursor = func_init.start();
@@ -1094,6 +1117,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_init(MnNode n) {
   config.block_suffix = "end";
   err << emit_dispatch(func_body);
   pop_config();
+#endif
 
   return err << check_done(n);
 }

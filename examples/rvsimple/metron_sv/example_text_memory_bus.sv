@@ -20,7 +20,8 @@ module example_text_memory_bus (
  /*public*/
 
   parameter filename = "";
-  initial begin
+  initial
+  begin
   end
 
  /*private*/

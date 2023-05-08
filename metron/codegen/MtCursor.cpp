@@ -45,6 +45,7 @@ emit_map emit_sym_map = {
   { sym_number_literal,                 &MtCursor::emit_sym_number_literal2 },
   { sym_nullptr,                        &MtCursor::emit_sym_nullptr },
   { sym_parameter_list,                 &MtCursor::emit_sym_parameter_list },
+  { sym_parameter_declaration,          &MtCursor::emit_children },
   { sym_parenthesized_expression,       &MtCursor::emit_children },
   { sym_pointer_declarator,             &MtCursor::emit_sym_pointer_declarator },
 
@@ -1143,6 +1144,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_func(MnNode n) {
   push_config();
   config.block_prefix = "";
   config.block_suffix = "endfunction";
+  config.elide_value = false;
 
   err << emit_print("function ");
 
@@ -1153,7 +1155,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_func(MnNode n) {
       err << emit_dispatch(c);
     }
     else if (c.field == field_declarator) {
-      err << emit_declarator(c, false);
+      err << emit_dispatch(c);
       err << emit_print(";");
     }
     else if (c.field == field_body) {
@@ -2011,34 +2013,6 @@ CHECK_RETURN Err MtCursor::emit_sym_function_declarator(MnNode node) {
 }
 
 //------------------------------------------------------------------------------
-// FIXME break these out
-
-CHECK_RETURN Err MtCursor::emit_declarator(MnNode node, bool elide_value) {
-  Err err = check_at(node);
-
-  push_config();
-  config.elide_value = elide_value;
-
-  err << emit_dispatch(node);
-
-  pop_config();
-  return err << check_done(node);
-}
-
-//------------------------------------------------------------------------------
-// FIXME break these out
-
-CHECK_RETURN Err MtCursor::emit_parameter_declaration(MnNode n) {
-  Err err = check_at(sym_parameter_declaration, n);
-
-  push_config();
-  config.elide_value = false;
-
-  err << emit_children(n);
-
-  pop_config();
-  return err << check_done(n);
-}
 
 CHECK_RETURN Err MtCursor::emit_module_parameter_declaration(MnNode node) {
   Err err = check_at(node);
@@ -3589,7 +3563,10 @@ CHECK_RETURN Err MtCursor::emit_sym_parameter_list(MnNode n) {
     err << emit_ws_to(c);
 
     if (c.sym == sym_parameter_declaration) {
-      err << emit_parameter_declaration(c);
+      push_config();
+      config.elide_value = false;
+      err << emit_dispatch(c);
+      pop_config();
     }
     else if (c.sym == sym_optional_parameter_declaration) {
       err << emit_dispatch(c);

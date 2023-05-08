@@ -75,8 +75,6 @@ struct MtCursor {
   CHECK_RETURN Err emit_leaf(MnNode n);
   CHECK_RETURN Err emit_toplevel_node(MnNode n);
   CHECK_RETURN Err emit_preproc(MnNode n);
-  CHECK_RETURN Err emit_declarator(MnNode n, bool elide_value);
-  CHECK_RETURN Err emit_parameter_declaration(MnNode n);
   CHECK_RETURN Err emit_module_parameter_declaration(MnNode n);
   CHECK_RETURN Err emit_literal(MnNode n);
 

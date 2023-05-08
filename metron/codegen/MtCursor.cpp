@@ -83,7 +83,8 @@ emit_map emit_sym_map = {
 
 MtCursor::MtCursor(MtModLibrary* lib, MtSourceFile* source, MtModule* mod,
                    std::string* out)
-    : lib(lib), str_out(out) {
+    : str_out(out) {
+  config.lib = lib;
   config.current_source = source;
   config.current_mod = mod;
   indent_stack.push_back("");
@@ -900,7 +901,7 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
     auto node_component = n.get_field(field_function).get_field(field_argument);
 
     auto dst_component = config.current_mod->get_field(node_component.text());
-    auto dst_mod = lib->get_module(dst_component->type_name());
+    auto dst_mod = config.lib->get_module(dst_component->type_name());
     if (!dst_mod) return err << ERR("dst_mod null\n");
     auto node_func = n.get_field(field_function).get_field(field_field);
     auto dst_method = dst_mod->get_method(node_func.text());
@@ -1318,7 +1319,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
   auto node_semi = n.child(2);  // semi
 
   auto inst_name = node_decl.text();
-  auto component_mod = lib->get_module(n.type5());
+  auto component_mod = config.lib->get_module(n.type5());
 
   cursor = node_type.start();
   err << emit_dispatch(node_type);
@@ -1536,7 +1537,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_component(MnNode n) {
   // FIXME loop style?
 
   std::string type_name = n.type5();
-  auto component_mod = lib->get_module(type_name);
+  auto component_mod = config.lib->get_module(type_name);
 
   auto node_type = n.child(0);  // type
   auto node_decl = n.child(1);  // decl
@@ -1587,7 +1588,7 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
   auto component_cname = component_name.c_str();
 
   std::string type_name = component_type_node.type5();
-  auto component_mod = lib->get_module(type_name);
+  auto component_mod = config.lib->get_module(type_name);
 
   // Swap template arguments with the values from the template
   // instantiation.
@@ -2520,7 +2521,7 @@ CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnNode n) {
   auto class_body = n.get_field(field_body);
 
   auto old_mod = config.current_mod;
-  config.current_mod = lib->get_module(class_name.text());
+  config.current_mod = config.lib->get_module(class_name.text());
   assert(config.current_mod);
 
   //----------
@@ -3030,7 +3031,7 @@ CHECK_RETURN Err MtCursor::emit_sym_template_declaration(MnNode n) {
   std::string class_name = class_specifier.get_field(field_name).text();
 
   auto old_mod = config.current_mod;
-  config.current_mod = lib->get_module(class_name);
+  config.current_mod = config.lib->get_module(class_name);
 
   cursor = class_specifier.start();
   err << emit_dispatch(class_specifier);

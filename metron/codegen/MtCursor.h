@@ -33,6 +33,7 @@ struct MtCursorConfig {
   MtModule* current_mod = nullptr;
   MtMethod* current_method = nullptr;
   std::map<std::string, MnNode> preproc_vars;
+  MtModLibrary* lib = nullptr;
 };
 
 //------------------------------------------------------------------------------
@@ -203,11 +204,6 @@ struct MtCursor {
   bool line_elided = false;
   bool echo = false;
   bool trailing_comma = false;
-
-  //----------------------------------------
-  // Config state
-
-  MtModLibrary* lib = nullptr;
 };
 
 //------------------------------------------------------------------------------

@@ -928,7 +928,8 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
   Err err;
 
-  MtCursor old_cursor = *this;
+  push_cursor(n);
+
   for (const auto& c : (MnNode&)n) {
     if (c.sym == sym_declaration) {
       if (c.sym == sym_declaration && c.is_const()) {
@@ -958,7 +959,9 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
       }
     }
   }
-  *this = old_cursor;
+
+  cursor = n.end();
+  pop_cursor(n);
 
   return err;
 }

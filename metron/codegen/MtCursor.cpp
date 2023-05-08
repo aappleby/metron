@@ -1110,7 +1110,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_init(MnNode n) {
   push_config();
   config.block_prefix = "begin";
   config.block_suffix = "end";
-  err << emit_sym_compound_statement(func_body);
+  err << emit_dispatch(func_body);
   pop_config();
 
   return err << check_done(n);
@@ -1139,7 +1139,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_func(MnNode n) {
       err << emit_print(";");
     }
     else if (c.field == field_body) {
-      err << emit_sym_compound_statement(c);
+      err << emit_dispatch(c);
     }
   }
 
@@ -1175,7 +1175,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_task(MnNode n) {
       push_config();
       config.block_prefix = "";
       config.block_suffix = "endtask";
-      err << emit_sym_compound_statement(c);
+      err << emit_dispatch(c);
       pop_config();
     }
     else {
@@ -1212,7 +1212,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_comb(MnNode n) {
   push_config();
   config.block_prefix = "";
   config.block_suffix = "end";
-  err << emit_sym_compound_statement(func_body);
+  err << emit_dispatch(func_body);
   pop_config();
 
   id_replacements = old_replacements;
@@ -1248,7 +1248,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_ff(MnNode n) {
       push_config();
       config.block_prefix = "";
       config.block_suffix = "end";
-      err << emit_sym_compound_statement(c);
+      err << emit_dispatch(c);
       pop_config();
     }
     else if (c.sym == sym_comment) {
@@ -3098,7 +3098,7 @@ CHECK_RETURN Err MtCursor::emit_sym_switch_statement(MnNode n) {
       push_config();
       config.block_prefix = "";
       config.block_suffix = "endcase";
-      err << emit_sym_compound_statement(c);
+      err << emit_dispatch(c);
       pop_config();
     }
     else {
@@ -3359,7 +3359,7 @@ CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnNode node) {
         push_config();
         config.block_prefix = "begin";
         config.block_suffix = "end";
-        err << emit_sym_compound_statement(child);
+        err << emit_dispatch(child);
         pop_config();
         break;
       case sym_expression_statement:

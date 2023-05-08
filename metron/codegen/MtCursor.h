@@ -70,7 +70,6 @@ struct MtCursor {
 
   // Generic emit()s.
   CHECK_RETURN Err emit_dispatch(MnNode n);
-  CHECK_RETURN Err emit_statement(MnNode n);
   CHECK_RETURN Err emit_children(MnNode n);
   CHECK_RETURN Err emit_leaf(MnNode n);
   CHECK_RETURN Err emit_toplevel_node(MnNode n);
@@ -122,6 +121,7 @@ struct MtCursor {
   CHECK_RETURN Err emit_sym_condition_clause(MnNode n);
   CHECK_RETURN Err emit_sym_conditional_expression(MnNode n);
   CHECK_RETURN Err emit_sym_declaration(MnNode n);
+  CHECK_RETURN Err emit_sym_declaration_list(MnNode n);
   CHECK_RETURN Err emit_sym_enum_specifier(MnNode n);
   CHECK_RETURN Err emit_sym_expression_statement(MnNode n);
   CHECK_RETURN Err emit_sym_field_declaration(MnNode decl);

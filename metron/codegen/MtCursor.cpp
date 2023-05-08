@@ -29,6 +29,7 @@ emit_map emit_sym_map = {
   { sym_condition_clause,               &MtCursor::emit_sym_condition_clause },
   { sym_conditional_expression,         &MtCursor::emit_sym_conditional_expression },
   { sym_compound_statement,             &MtCursor::emit_sym_compound_statement },
+  { sym_declaration,                    &MtCursor::emit_sym_declaration },
   { sym_enum_specifier,                 &MtCursor::emit_sym_enum_specifier },
   { sym_enumerator_list,                &MtCursor::emit_children },
   { sym_enumerator,                     &MtCursor::emit_children },
@@ -966,7 +967,7 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
         push_config();
         config.elide_type = false;
         config.elide_value = true;
-        err << emit_sym_declaration(c);
+        err << emit_dispatch(c);
         pop_config();
       }
     }
@@ -979,7 +980,7 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
         push_config();
         config.elide_type = false;
         config.elide_value = true;
-        err << emit_sym_declaration(init);
+        err << emit_dispatch(init);
         pop_config();
       }
     }
@@ -2663,8 +2664,6 @@ CHECK_RETURN Err MtCursor::emit_sym_template_type(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_sym_template_argument_list(MnNode n) {
   Err err = check_at(sym_template_argument_list, n);
 
-  // FIXME weird loop style
-
   for (auto c : n) {
     switch (c.sym) {
       case anon_sym_LT:
@@ -2688,7 +2687,7 @@ CHECK_RETURN Err MtCursor::emit_everything() {
   Err err;
 
   cursor = current_source->source;
-  err << emit_sym_translation_unit(current_source->root_node);
+  err << emit_dispatch(current_source->root_node);
 
   return err;
 }
@@ -2698,25 +2697,17 @@ CHECK_RETURN Err MtCursor::emit_everything() {
 CHECK_RETURN Err MtCursor::emit_toplevel_node(MnNode node) {
   Err err = check_at(node);
 
-  switch (node.sym) {
+  push_config();
+  config.elide_type = false;
+  config.elide_value = false;
 
-    case sym_namespace_definition:
-      err << emit_sym_namespace_definition(node);
-      break;
+  switch (node.sym) {
 
     case sym_expression_statement:
       if (node.text() != ";") {
         err << ERR("Found unexpected expression statement in translation unit\n");
       }
       err << skip_over(node);
-      break;
-
-    case sym_declaration:
-      push_config();
-      config.elide_type = false;
-      config.elide_value = false;
-      err << emit_sym_declaration(node);
-      pop_config();
       break;
 
     case anon_sym_SEMI:
@@ -2733,6 +2724,7 @@ CHECK_RETURN Err MtCursor::emit_toplevel_node(MnNode node) {
       break;
   }
 
+  pop_config();
   return err << check_done(node);
 }
 
@@ -2776,16 +2768,10 @@ CHECK_RETURN Err MtCursor::emit_sym_translation_unit(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_sym_namespace_definition(MnNode n) {
-  Err err = check_at(sym_namespace_definition, n);
+CHECK_RETURN Err MtCursor::emit_sym_declaration_list(MnNode n) {
+  Err err = check_at(sym_declaration_list, n);
 
-  auto node_name = n.get_field(field_name);
-  auto node_body = n.get_field(field_body);
-
-  err << emit_print("package %s;", node_name.text().c_str());
-  cursor = node_body.start();
-
-  for (auto c : node_body) {
+  for (auto c : n) {
     err << emit_ws_to(c);
 
     switch (c.sym) {
@@ -2793,23 +2779,51 @@ CHECK_RETURN Err MtCursor::emit_sym_namespace_definition(MnNode n) {
       case anon_sym_RBRACE:
         err << skip_over(c);
         break;
-      case sym_declaration:
-        // not sure what happens if we see an "int x = 1" in a namespace...
-        push_config();
-        config.elide_type = false;
-        config.elide_value = false;
-        err << emit_sym_declaration(c);
-        pop_config();
-        break;
       default:
         err << emit_dispatch(c);
         break;
     }
   }
 
-  err << emit_print("endpackage");
-  cursor = n.end();
+  return err << check_done(n);
+}
 
+//------------------------------------------------------------------------------
+/*
+[000.004]  + namespace_definition (352) =
+[000.004]  |--# lit (163) = "namespace"
+[000.004]  |--# name: namespace_identifier (441) = "rv_config"
+[000.004]  |--+ body: declaration_list (223) =
+*/
+
+CHECK_RETURN Err MtCursor::emit_sym_namespace_definition(MnNode n) {
+  Err err = check_at(sym_namespace_definition, n);
+
+  push_config();
+  config.elide_type = false;
+  config.elide_value = false;
+
+  for (auto c : n) {
+    err << emit_ws_to(c);
+
+    if (c.sym == anon_sym_namespace) {
+      err << emit_replacement(c, "package");
+    }
+    else if (c.sym == alias_sym_namespace_identifier) {
+      err << emit_text(c);
+      err << emit_print(";");
+    }
+    else if (c.sym == sym_declaration_list) {
+      err << emit_sym_declaration_list(c);
+      err << emit_print("endpackage");
+    }
+    else {
+      c.dump_tree();
+      exit(1);
+    }
+  }
+
+  pop_config();
   return err << check_done(n);
 }
 
@@ -3076,7 +3090,15 @@ CHECK_RETURN Err MtCursor::emit_sym_case_statement(MnNode n) {
         }
         break;
       case sym_compound_statement:
-        err << emit_statement(c);
+        //err << emit_statement(c);
+        push_config();
+        config.block_prefix = "begin";
+        config.block_suffix = "end";
+        config.elide_type = true;
+        config.elide_value = false;
+        err << emit_dispatch(c);
+        pop_config();
+
         break;
       case sym_qualified_identifier:
         err << emit_sym_qualified_identifier(c);
@@ -3291,36 +3313,6 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_statement(MnNode n) {
-  Err err;
-
-  push_config();
-  config.block_prefix = "begin";
-  config.block_suffix = "end";
-
-  switch (n.sym) {
-    case sym_declaration:
-      // type should be hoisted.
-      push_config();
-      config.elide_type = true;
-      config.elide_value = false;
-      err << emit_sym_declaration(n);
-      pop_config();
-      break;
-    case sym_compound_statement:
-      err << emit_dispatch(n);
-      break;
-    default:
-      err << emit_dispatch(n);
-      break;
-  }
-
-  pop_config();
-  return err << check_done(n);
-}
-
-//------------------------------------------------------------------------------
-
 CHECK_RETURN Err MtCursor::emit_sym_nullptr(MnNode n) {
   return emit_replacement(n, "\"\"");
 }
@@ -3386,7 +3378,15 @@ CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnNode node) {
         if (branch_contains_component_call(child)) {
           return err << ERR("If branches that contain component calls must use {}.\n");
         } else {
-          err << emit_statement(child);
+          //err << emit_statement(child);
+          push_config();
+          config.block_prefix = "begin";
+          config.block_suffix = "end";
+          config.elide_type = true;
+          config.elide_value = false;
+          err << emit_dispatch(child);
+          pop_config();
+
         }
         break;
       default:
@@ -3689,14 +3689,21 @@ CHECK_RETURN Err MtCursor::emit_sym_for_statement(MnNode node) {
       push_config();
       config.elide_type = true;
       config.elide_value = false;
-      err << emit_sym_declaration(child);
+      err << emit_dispatch(child);
       pop_config();
     }
     else if (child.is_expression()) {
       err << emit_dispatch(child);
     }
     else if (child.is_statement()) {
-      err << emit_statement(child);
+      //err << emit_statement(child);
+      push_config();
+      config.block_prefix = "begin";
+      config.block_suffix = "end";
+      config.elide_type = true;
+      config.elide_value = false;
+      err << emit_dispatch(child);
+      pop_config();
     }
     else {
       err << emit_dispatch(child);
@@ -3745,37 +3752,38 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(MnNode node) {
     switch (child.sym) {
       case anon_sym_LBRACE:
         err << emit_replacement(child, "%s", delim_begin.c_str());
+        // Hoisted decls go immediately after the opening brace
+        push_indent(node);
+        err << emit_hoisted_decls(node);
         break;
 
       case sym_declaration:
         push_config();
         config.elide_type = true;
         config.elide_value = false;
-        err << emit_sym_declaration(child);
+        err << emit_dispatch(child);
         pop_config();
         break;
 
       case sym_compound_statement:
-        err << emit_statement(child);
+        //err << emit_statement(child);
+        push_config();
+        config.block_prefix = "begin";
+        config.block_suffix = "end";
+        config.elide_type = true;
+        config.elide_value = false;
+        err << emit_dispatch(child);
+        pop_config();
         break;
 
       case anon_sym_RBRACE:
         err << emit_replacement(child, "%s", delim_end.c_str());
+        pop_indent(node);
         break;
 
       default:
         err << emit_dispatch(child);
         break;
-    }
-
-    // Hoisted decls go immediately after the opening brace
-    if (child.sym == anon_sym_LBRACE) {
-      push_indent(node);
-      err << emit_hoisted_decls(node);
-    }
-
-    if (child.sym == anon_sym_RBRACE) {
-      pop_indent(node);
     }
   }
 

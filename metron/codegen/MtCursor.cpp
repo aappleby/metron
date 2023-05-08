@@ -2011,37 +2011,28 @@ CHECK_RETURN Err MtCursor::emit_sym_function_declarator(MnNode node) {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_module_parameter_declaration(MnNode node) {
-  Err err = check_at(node);
-  assert(node.sym == sym_optional_parameter_declaration);
+  Err err = check_at(sym_optional_parameter_declaration, node);
 
-  //err << emit_dispatch(node.child(0));
-  //err << skip_over(node.child(0));
-  //err << emit_dispatch(node.child(1));
-  //err << emit_text(node.child(2));
-  //err << emit_dispatch(node.child(3));
+  push_config();
+  config.elide_value = false;
 
   auto param_type = node.get_field(field_type);
   auto param_decl = node.get_field(field_declarator);
   auto param_val  = node.get_field(field_default_value);
 
-  /*
-  cursor = param_type.start();
-  err << emit_dispatch(param_type);
-  err << emit_print(" =$= ");
-  */
-  cursor = param_decl.start();
-
-  push_config();
-  config.elide_value = false;
+  push_cursor(param_decl);
   err << emit_dispatch(param_decl);
-  pop_config();
+  pop_cursor(param_decl);
 
   err << emit_print(" = ");
-  cursor = param_val.start();
+
+  push_cursor(param_val);
   err << emit_dispatch(param_val);
+  pop_cursor(param_val);
 
   cursor = node.end();
 
+  pop_config();
   return err << check_done(node);
 }
 

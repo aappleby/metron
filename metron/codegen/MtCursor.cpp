@@ -62,7 +62,6 @@ emit_map emit_sym_map = {
   { sym_qualified_identifier,           &MtCursor::emit_sym_qualified_identifier },
   { sym_return_statement,               &MtCursor::emit_sym_return_statement },
   { sym_sized_type_specifier,           &MtCursor::emit_sym_sized_type_specifier },
-  { sym_storage_class_specifier,        &MtCursor::emit_sym_storage_class_specifier },
   { sym_struct_specifier,               &MtCursor::emit_sym_struct_specifier },
   { sym_subscript_expression,           &MtCursor::emit_children },
   { sym_switch_statement,               &MtCursor::emit_sym_switch_statement },
@@ -1914,6 +1913,8 @@ CHECK_RETURN Err MtCursor::emit_sym_function_declarator(MnNode node) {
 CHECK_RETURN Err MtCursor::emit_module_parameter_declaration(MnNode node) {
   Err err = check_at(sym_optional_parameter_declaration, node);
 
+  err << emit_line("parameter ");
+
   for (auto c : node) {
     err << emit_ws_to(c);
 
@@ -1929,6 +1930,8 @@ CHECK_RETURN Err MtCursor::emit_module_parameter_declaration(MnNode node) {
       err << emit_dispatch(c);
     }
   }
+
+  err << emit_print(";");
 
   return err << check_done(node);
 }
@@ -2010,16 +2013,13 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
   if (field->is_component()) {
     // Component
     err << emit_field_as_component(n);
-    return err << check_done(n);
   }
   else if (field->is_port()) {
     // Ports don't go in the class body.
     err << skip_over(n);
-    return err << check_done(n);
   }
   else if (field->is_dead()) {
     err << comment_out(n);
-    return err << check_done(n);
   }
   else {
     for (auto c : n) {
@@ -2040,11 +2040,12 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
         err << ERR("Unknown node type in field");
       }
     }
-    return err << check_done(n);
   }
+  return err << check_done(n);
 }
 
 //------------------------------------------------------------------------------
+// FIXME loop style
 
 CHECK_RETURN Err MtCursor::emit_sym_struct_specifier(MnNode n) {
   Err err = check_at(n);
@@ -2088,16 +2089,11 @@ CHECK_RETURN Err MtCursor::emit_sym_struct_specifier(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_param_port(MtMethod* m, MnNode node_type, MnNode node_name) {
   Err err;
 
-  push_cursor(node_type);
-  err << emit_print("input ");
-  err << emit_dispatch(node_type);
-  pop_cursor();
-
-  push_cursor(node_name);
+  err << emit_line("input ");
+  err << emit_splice(node_type);
   err << emit_print(" %s_", m->cname());
-  err << emit_dispatch(node_name);
+  err << emit_splice(node_name);
   err << emit_print(",");
-  pop_cursor();
 
   return err;
 }
@@ -2107,15 +2103,11 @@ CHECK_RETURN Err MtCursor::emit_param_port(MtMethod* m, MnNode node_type, MnNode
 CHECK_RETURN Err MtCursor::emit_param_binding(MtMethod* m, MnNode node_type, MnNode node_name) {
   Err err;
 
-  push_cursor(node_type);
-  err << emit_dispatch(node_type);
-  pop_cursor();
-
-  push_cursor(node_name);
+  err << start_line();
+  err << emit_splice(node_type);
   err << emit_print(" %s_", m->cname());
-  err << emit_dispatch(node_name);
+  err << emit_splice(node_name);
   err << emit_print(";");
-  pop_cursor();
 
   return err;
 }
@@ -2125,11 +2117,9 @@ CHECK_RETURN Err MtCursor::emit_param_binding(MtMethod* m, MnNode node_type, MnN
 CHECK_RETURN Err MtCursor::emit_return_port(MtMethod* m, MnNode node_type, MnNode node_name) {
   Err err;
 
-  push_cursor(node_type);
-  err << emit_print("output ");
-  err << emit_dispatch(node_type);
+  err << emit_line("output ");
+  err << emit_splice(node_type);
   err << emit_print(" %s_ret,", m->cname());
-  pop_cursor();
 
   return err;
 }
@@ -2139,10 +2129,9 @@ CHECK_RETURN Err MtCursor::emit_return_port(MtMethod* m, MnNode node_type, MnNod
 CHECK_RETURN Err MtCursor::emit_return_binding(MtMethod* m, MnNode node_type, MnNode node_name) {
   Err err;
 
-  push_cursor(node_type);
-  err << emit_dispatch(node_type);
+  err << start_line();
+  err << emit_splice(node_type);
   err << emit_print(" %s_ret;", m->cname());
-  pop_cursor();
 
   return err;
 }
@@ -2153,14 +2142,12 @@ CHECK_RETURN Err MtCursor::emit_method_ports(MtMethod* m) {
   Err err;
 
   if (m->param_nodes.size() || m->has_return()) {
-    err << start_line();
-    err << emit_print("// %s() ports", m->cname());
+    err << emit_line("// %s() ports", m->cname());
   }
 
   for (auto& param : m->param_nodes) {
     auto node_type = param.get_field(field_type);
     auto node_decl = param.get_field(field_declarator);
-    err << start_line();
     err << emit_param_port(m, node_type, node_decl);
   }
 
@@ -2168,7 +2155,6 @@ CHECK_RETURN Err MtCursor::emit_method_ports(MtMethod* m) {
     auto node_type = m->_node.get_field(field_type);
     auto node_decl = m->_node.get_field(field_declarator);
     auto node_name = node_decl.get_field(field_declarator);
-    err << start_line();
     err << emit_return_port(m, node_type, node_name);
   }
 
@@ -2183,7 +2169,6 @@ CHECK_RETURN Err MtCursor::emit_func_binding_vars(MtMethod* m) {
   for (auto& param : m->param_nodes) {
     auto node_type = param.get_field(field_type);
     auto node_decl = param.get_field(field_declarator);
-    err << start_line();
     err << emit_param_binding(m, node_type, node_decl);
   }
 
@@ -2191,7 +2176,6 @@ CHECK_RETURN Err MtCursor::emit_func_binding_vars(MtMethod* m) {
     auto node_type = m->_node.get_field(field_type);
     auto node_decl = m->_node.get_field(field_declarator);
     auto node_name = node_decl.get_field(field_declarator);
-    err << start_line();
     err << emit_return_binding(m, node_type, node_name);
   }
 
@@ -2221,15 +2205,10 @@ CHECK_RETURN Err MtCursor::emit_field_port(MtField* f) {
   auto node_type = f->get_type_node();
   auto node_decl = f->get_decl_node();
 
-  push_cursor(node_type);
-  err << emit_dispatch(node_type);
-  pop_cursor();
-
-  push_cursor(node_decl);
+  err << emit_splice(node_type);
   err << emit_print(" ");
-  err << emit_dispatch(node_decl);
+  err << emit_splice(node_decl);
   err << emit_print(",");
-  pop_cursor();
 
   return err;
 }
@@ -2260,10 +2239,7 @@ CHECK_RETURN Err MtCursor::emit_module_parameter_list(MnNode param_list) {
 
     switch (c.sym) {
       case sym_optional_parameter_declaration:
-        err << start_line();
-        err << emit_print("parameter ");
         err << emit_module_parameter_declaration(c);
-        err << emit_print(";");
         break;
 
       case sym_parameter_declaration:

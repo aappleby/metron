@@ -133,6 +133,7 @@ CHECK_RETURN Err MtCursor::check_at(const MnNode& n) {
   return err;
 }
 
+//------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::check_at(TSSymbol sym, const MnNode& n) {
   Err err;
@@ -151,6 +152,8 @@ CHECK_RETURN Err MtCursor::check_at(TSSymbol sym, const MnNode& n) {
   }
   return err;
 }
+
+//------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::check_done(MnNode n) {
   Err err;
@@ -359,6 +362,8 @@ CHECK_RETURN Err MtCursor::skip_ws() {
   return err;
 }
 
+//----------------------------------------
+
 CHECK_RETURN Err MtCursor::skip_ws_inside(const MnNode& n) {
   Err err;
 
@@ -393,13 +398,15 @@ CHECK_RETURN Err MtCursor::comment_out(MnNode n) {
   auto end1 = n.end();
   auto end2 = end1;
 
-  // If the block ends in a newline, put the comment terminator _before_ the newline
-  if (end1[-1] == '\n') end1--;
+  // Don't include whitespace in the commented-out bit
+  while(isspace(end1[-1]) && end1 > start) {
+    end1--;
+  }
 
   err << emit_print("/*");
   err << emit_span(start, end1);
   err << emit_print("*/");
-  if (end1 != end2)err << emit_span(end1, end2);
+  err << emit_span(end1, end2);
 
   cursor = n.end();
 
@@ -410,8 +417,6 @@ CHECK_RETURN Err MtCursor::comment_out(MnNode n) {
 
 CHECK_RETURN Err MtCursor::emit_span(const char* a, const char* b) {
   Err err;
-
-  if (a == b) return err << ERR("Empty span\n");
 
   for (auto c = a; c < b; c++) {
     err << emit_char(*c);
@@ -432,18 +437,15 @@ CHECK_RETURN Err MtCursor::emit_text(MnNode n) {
 
 //----------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_line(const char* fmt, ...) {
+CHECK_RETURN Err MtCursor::emit_vprint(const char* fmt, va_list args) {
   Err err;
-  err << start_line();
 
-  va_list args;
-  va_start(args, fmt);
-  int size = vsnprintf(nullptr, 0, fmt, args);
-  va_end(args);
+  va_list args2;
+  va_copy(args2, args);
+  int size = vsnprintf(nullptr, 0, fmt, args2);
+  va_end(args2);
 
   auto buf = new char[size + 1];
-
-  va_start(args, fmt);
   vsnprintf(buf, size_t(size) + 1, fmt, args);
   va_end(args);
 
@@ -451,7 +453,16 @@ CHECK_RETURN Err MtCursor::emit_line(const char* fmt, ...) {
     err << emit_char(buf[i], 0x80FF80);
   }
   delete[] buf;
+  return err;
+}
 
+//----------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_line(const char* fmt, ...) {
+  Err err = start_line();
+  va_list args;
+  va_start(args, fmt);
+  err << emit_vprint(fmt, args);
   return err;
 }
 
@@ -459,23 +470,9 @@ CHECK_RETURN Err MtCursor::emit_line(const char* fmt, ...) {
 
 CHECK_RETURN Err MtCursor::emit_print(const char* fmt, ...) {
   Err err;
-
   va_list args;
   va_start(args, fmt);
-  int size = vsnprintf(nullptr, 0, fmt, args);
-  va_end(args);
-
-  auto buf = new char[size + 1];
-
-  va_start(args, fmt);
-  vsnprintf(buf, size_t(size) + 1, fmt, args);
-  va_end(args);
-
-  for (int i = 0; i < size; i++) {
-    err << emit_char(buf[i], 0x80FF80);
-  }
-  delete[] buf;
-
+  err << emit_vprint(fmt, args);
   return err;
 }
 
@@ -483,23 +480,9 @@ CHECK_RETURN Err MtCursor::emit_print(const char* fmt, ...) {
 
 CHECK_RETURN Err MtCursor::emit_replacement(MnNode n, const char* fmt, ...) {
   Err err = check_at(n);
-
   va_list args;
   va_start(args, fmt);
-  int size = vsnprintf(nullptr, 0, fmt, args);
-  va_end(args);
-
-  auto buf = new char[size + 1];
-
-  va_start(args, fmt);
-  vsnprintf(buf, size_t(size) + 1, fmt, args);
-  va_end(args);
-
-  for (int i = 0; i < size; i++) {
-    err << emit_char(buf[i], 0x80FFFF);
-  }
-  delete[] buf;
-
+  err << emit_vprint(fmt, args);
   cursor = n.end();
   return err << check_done(n);
 }
@@ -621,8 +604,6 @@ CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnNode call, int bx_width) {
 
   auto arg0 = call.get_field(field_arguments).named_child(0);
   auto arg1 = call.get_field(field_arguments).named_child(1);
-
-  auto arg0_text = arg0.text();
 
   if (arg_count == 1) {
     if (arg0.sym == sym_number_literal) {
@@ -765,6 +746,10 @@ CHECK_RETURN bool MtCursor::can_omit_call(MnNode n) {
 // Replace function names with macro names where needed, comment out explicit
 // init/tick/tock calls.
 
+// + call_expression (289) =
+// |--# function: identifier (1) = "readmemh"
+// |--+ arguments: argument_list (290) =
+
 CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
   assert(n.sym == sym_call_expression);
   Err err;
@@ -808,39 +793,60 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
     err << emit_print(") >>> ");
     err << emit_splice(rhs);
     err << emit_print(")");
-
+    cursor = n.end();
+    return err << check_done(n);
   } else if (func_name == "signed") {
     err << emit_replacement(func, "$signed");
     err << emit_dispatch(args);
+    cursor = n.end();
+    return err << check_done(n);
   } else if (func_name == "unsigned") {
     err << emit_replacement(func, "$unsigned");
     err << emit_dispatch(args);
+    cursor = n.end();
+    return err << check_done(n);
   } else if (func_name == "clog2") {
     err << emit_replacement(func, "$clog2");
     err << emit_dispatch(args);
+    cursor = n.end();
+    return err << check_done(n);
   } else if (func_name == "pow2") {
     err << emit_replacement(func, "2**");
     err << emit_dispatch(args);
+    cursor = n.end();
+    return err << check_done(n);
   } else if (func_name == "readmemh") {
     err << emit_replacement(func, "$readmemh");
     err << emit_dispatch(args);
+    cursor = n.end();
+    return err << check_done(n);
   } else if (func_name == "value_plusargs") {
     err << emit_replacement(func, "$value$plusargs");
     err << emit_dispatch(args);
+    cursor = n.end();
+    return err << check_done(n);
   } else if (func_name == "write") {
     err << emit_replacement(func, "$write");
     err << emit_dispatch(args);
+    cursor = n.end();
+    return err << check_done(n);
   } else if (func_name == "sign_extend") {
     err << emit_replacement(func, "$signed");
     err << emit_dispatch(args);
+    cursor = n.end();
+    return err << check_done(n);
   } else if (func_name == "zero_extend") {
     err << emit_replacement(func, "$unsigned");
     err << emit_dispatch(args);
+    cursor = n.end();
+    return err << check_done(n);
   }
   else if (func_name == "bx") {
     // Bit extract.
     auto template_arg = func.get_field(field_arguments).named_child(0);
     err << emit_dynamic_bit_extract(n, template_arg);
+    cursor = n.end();
+    return err << check_done(n);
   }
   else if (func_name == "cat") {
     // Remove "cat" and replace parens with brackets
@@ -858,6 +864,8 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
         err << emit_dispatch(arg);
       }
     }
+    cursor = n.end();
+    return err << check_done(n);
   }
   else if (func_name == "dup") {
     // Convert "dup<15>(x)" to "{15 {x}}"
@@ -872,8 +880,9 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
     err << emit_print("{%d {", dup_count);
     err << emit_splice(func_arg);
     err << emit_print("}}");
+    cursor = n.end();
+    return err << check_done(n);
   }
-
   else if (func.sym == sym_field_expression) {
     // Component method call.
 
@@ -888,6 +897,8 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
     if (!dst_method) return err << ERR("dst_method null\n");
 
     err << emit_print("%s_%s_ret", node_component.text().c_str(), dst_method->cname());
+    cursor = n.end();
+    return err << check_done(n);
   }
   else {
     // Internal method call.
@@ -898,10 +909,10 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
     else {
       err << emit_children(n);
     }
+    cursor = n.end();
+    return err << check_done(n);
   }
 
-  cursor = n.end();
-  return err << check_done(n);
 }
 
 //------------------------------------------------------------------------------
@@ -2825,20 +2836,20 @@ CHECK_RETURN Err MtCursor::emit_sym_template_declaration(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_sym_field_expression(MnNode n) {
   Err err = check_at(sym_field_expression, n);
 
+  auto method = current_method.top();
   auto component_name = n.get_field(field_argument).text();
   auto component_field = n.get_field(field_field).text();
 
   auto component = current_mod.top()->get_component(component_name);
 
   bool is_port = component && component->_type_mod->is_port(component_field);
-  //printf("is port %s %d\n", component_field.c_str(), is_port);
 
   is_port = component && component->_type_mod->is_port(component_field);
   // FIXME needs to be || is_argument
 
   bool is_port_arg = false;
-  if (current_method.top() && (current_method.top()->emit_as_always_comb || current_method.top()->emit_as_always_ff)) {
-    for (auto c : current_method.top()->param_nodes) {
+  if (method && (method->emit_as_always_comb || method->emit_as_always_ff)) {
+    for (auto c : method->param_nodes) {
       if (c.get_field(field_declarator).text() == component_name) {
         is_port_arg = true;
         break;
@@ -2853,7 +2864,7 @@ CHECK_RETURN Err MtCursor::emit_sym_field_expression(MnNode n) {
     }
     err << emit_replacement(n, field.c_str());
   } else if (is_port_arg) {
-    err << emit_print("%s_", current_method.top()->name().c_str());
+    err << emit_print("%s_", method->name().c_str());
     err << emit_text(n);
   }
   else {
@@ -3023,11 +3034,19 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
   if (auto it = emit_sym_map.find(n.sym); it != emit_sym_map.end()) {
     err << it->second(this, n);
   }
-  else if (n.is_leaf()) {
-    err << emit_leaf(n);
+  else if (!n.is_named()) {
+    if (auto it = token_map.top().find(n.text()); it != token_map.top().end()) {
+      err << emit_replacement(n, (*it).second.c_str());
+    }
+    else {
+      err << emit_text(n);
+    }
   }
   else {
-    err << ERR("emit_dispatch - no handler for sym %s\n", n.ts_node_type());
+    // KCOV_OFF
+    err << ERR("%s : No handler for %s\n", __func__, n.ts_node_type());
+    n.error();
+    // KCOV_ON
   }
 
   return err << check_done(n);
@@ -3321,7 +3340,7 @@ CHECK_RETURN Err MtCursor::emit_sym_preproc_ifdef(MnNode n) {
       err << preproc_cursor.emit_statement(dummy_source.root_node);
     }
     else {
-      err << preproc_cursor.emit_leaf(dummy_source.root_node);
+      err << preproc_cursor.emit_dispatch(dummy_source.root_node);
     }
   }
   cursor = n.end();
@@ -3345,7 +3364,7 @@ CHECK_RETURN Err MtCursor::emit_sym_preproc_def(MnNode n) {
       err << emit_sym_preproc_arg(child);
     }
     else {
-      err << emit_leaf(child);
+      err << emit_dispatch(child);
     }
   }
 
@@ -3559,38 +3578,6 @@ CHECK_RETURN Err MtCursor::emit_children(MnNode n) {
   }
 
   return err << check_done(n);
-}
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtCursor::emit_leaf(MnNode node) {
-  Err err = check_at(node);
-
-  if (!node.is_named()) {
-    if (auto it = token_map.top().find(node.text()); it != token_map.top().end()) {
-      err << emit_replacement(node, (*it).second.c_str());
-    }
-    else {
-      err << emit_text(node);
-    }
-    return err;
-  }
-  /*
-  else if (node.is_literal()) {
-    err << emit_dispatch(node);
-  }
-  */
-  else if (node.is_comment()) {
-    err << emit_sym_comment(node);
-  }
-  else {
-    // KCOV_OFF
-    err << ERR("%s : No handler for %s\n", __func__, node.ts_node_type());
-    node.error();
-    // KCOV_ON
-  }
-
-  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------

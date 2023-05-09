@@ -7,6 +7,7 @@ module Module (
   input logic clock
 );
   parameter SOME_CONSTANT = 7;
+
 /*public*/
 
   always_comb begin : tock

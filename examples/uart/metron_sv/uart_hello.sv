@@ -20,6 +20,7 @@ module uart_hello (
   input logic tick_idle
 );
   parameter repeat_msg = 0;
+
 /*public*/
   initial begin
     $readmemh("examples/uart/message.hex", memory, 0, 511);

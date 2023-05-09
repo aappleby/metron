@@ -12,6 +12,7 @@ module Module (
 );
   parameter data_len = 1024;
   parameter blarp = 7;
+
 /*public*/
 
   parameter filename = "examples/uart/message.hex";

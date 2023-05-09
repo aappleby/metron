@@ -20,6 +20,7 @@ module uart_tx (
   input logic tick_send_request
 );
   parameter cycles_per_bit = 4;
+
 /*public*/
   initial begin
     bit_delay = bit_delay_max;

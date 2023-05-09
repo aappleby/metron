@@ -17,6 +17,7 @@ emit_map emit_sym_map = {
   { alias_sym_field_identifier,         &MtCursor::emit_text },
   { alias_sym_namespace_identifier,     &MtCursor::emit_text },
   { alias_sym_type_identifier,          &MtCursor::emit_sym_type_identifier },
+  { sym_access_specifier,               &MtCursor::comment_out },
   { sym_argument_list,                  &MtCursor::emit_children },
   { sym_array_declarator,               &MtCursor::emit_children },
   { sym_assignment_expression,          &MtCursor::emit_sym_assignment_expression },
@@ -2058,14 +2059,19 @@ CHECK_RETURN Err MtCursor::emit_sym_struct_specifier(MnNode n) {
   auto node_name = n.get_field(field_name);
   auto node_body = n.get_field(field_body);
 
+  block_prefix.push("{");
+  block_suffix.push("}");
+
   if (node_name) {
     // struct Foo {};
 
     err << emit_print("typedef ");
     err << emit_text(n.child(0));
     err << emit_print(" packed ");
+
     cursor = node_body.start();
     err << emit_sym_field_declaration_list(node_body, true);
+
     err << emit_print(" ");
 
     push_cursor(node_name);
@@ -2081,6 +2087,9 @@ CHECK_RETURN Err MtCursor::emit_sym_struct_specifier(MnNode n) {
     err << emit_print(" packed ");
     err << emit_sym_field_declaration_list(node_body, true);
   }
+
+  block_prefix.pop();
+  block_suffix.pop();
 
   return err << check_done(n);
 }
@@ -2320,6 +2329,8 @@ CHECK_RETURN Err MtCursor::emit_module_ports(MnNode class_body) {
 //   field_name:sym_type_idenfiier
 //   field_body:sym_field_declaration_list
 
+// FIXME loop style
+
 CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnNode n) {
   Err err = check_at(sym_class_specifier, n);
 
@@ -2346,9 +2357,15 @@ CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnNode n) {
     pop_indent(class_body);
   }
 
+  block_prefix.push("");
+  block_suffix.push("endmodule");
+
   push_cursor(class_body);
   err << emit_sym_field_declaration_list(class_body, false);
   pop_cursor();
+
+  block_prefix.pop();
+  block_suffix.pop();
 
   //----------
 
@@ -2364,6 +2381,7 @@ CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnNode n) {
 // Replace the closing brace with "endmodule"
 
 // FIXME get rid of is_struct?
+// FIXME this should use block delimiters
 
 CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n, bool is_struct) {
   Err err = check_at(sym_field_declaration_list, n);
@@ -2396,27 +2414,15 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n, bool is_str
 
     switch (child.sym) {
       case anon_sym_LBRACE:
-        if (!is_struct) {
-          err << skip_over(child);
-        }
-        else {
-          err << emit_text(child);
-        }
-        break;
-      case sym_access_specifier:
-        err << comment_out(child);
+        err << emit_replacement(child, block_prefix.top().c_str());
+        err << skip_ws();
         break;
       case anon_sym_COLON:
         // The latest tree sitter is not putting this in with the access specifier...
         err << skip_over(child);
         break;
       case anon_sym_RBRACE:
-        if (is_struct) {
-          err << emit_text(child);
-        }
-        else {
-          err << emit_replacement(child, "endmodule");
-        }
+        err << emit_replacement(child, block_suffix.top().c_str());
         break;
       default:
         err << emit_dispatch(child);
@@ -2701,17 +2707,16 @@ CHECK_RETURN Err MtCursor::emit_sym_return_statement(MnNode n) {
     err << emit_ws_to(c);
 
     if (c.sym == anon_sym_return) {
-      if (method->is_tock_) {
-        err << emit_replacement(c, "%s_ret =", method_name.c_str());
+      err << emit_replacement(c, method_name.c_str());
+
+      if (method->emit_as_always_comb) {
+        err << emit_print("_ret =");
       }
-      else if (method->is_func_ && method->is_public() && !method->called_in_module()) {
-        err << emit_replacement(c, "%s_ret =", method_name.c_str());
-      }
-      else if (method->is_tick_) {
-        err << emit_replacement(c, "%s_ret <=", method_name.c_str());
+      else if (method->emit_as_always_ff) {
+        err << emit_print("_ret <=");
       }
       else {
-        err << emit_replacement(c, "%s =", method_name.c_str());
+        err << emit_print(" =");
       }
     }
     else {
@@ -2773,13 +2778,13 @@ CHECK_RETURN Err MtCursor::emit_sym_type_identifier(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
+// FIXME loop style
 
 CHECK_RETURN Err MtCursor::emit_sym_template_declaration(MnNode n) {
   Err err = check_at(sym_template_declaration, n);
 
-  // FIXME does this have a field name?
+  // The class_specifier node does _not_ have a field name.
   MnNode class_specifier;
-
   for (auto child : (MnNode)n) {
     if (child.sym == sym_class_specifier) {
       class_specifier = MnNode(child);

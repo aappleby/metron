@@ -81,14 +81,22 @@ emit_map emit_sym_map = {
 
 MtCursor::MtCursor(MtModLibrary* lib, MtSourceFile* source, MtModule* mod,
                    std::string* out)
-    : indent(""), str_out(out) {
-  config.lib = lib;
+    : str_out(out) {
+  this->lib = lib;
   config.current_source = source;
   config.current_mod = mod;
   cursor = config.current_source->source;
 
+  //block_prefix.push("begin");
+  //block_suffix.push("end");
+  override_size.push(0);
+  indent.push("");
+
   // FIXME preproc_vars should be a set
-  config.preproc_vars["IV_TEST"] = MnNode();
+  preproc_vars.push(string_to_node());
+  preproc_vars.top()["IV_TEST"] = MnNode();
+
+  id_replacements.push(string_to_string());
 }
 
 //------------------------------------------------------------------------------
@@ -199,7 +207,7 @@ CHECK_RETURN Err MtCursor::emit_backspace() {
 
 CHECK_RETURN Err MtCursor::emit_indent() {
   Err err;
-  for (auto c : indent.get()) {
+  for (auto c : indent.top()) {
     err << emit_char(c);
   }
   return err;
@@ -862,7 +870,7 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
     auto node_component = n.get_field(field_function).get_field(field_argument);
 
     auto dst_component = config.current_mod->get_field(node_component.text());
-    auto dst_mod = config.lib->get_module(dst_component->type_name());
+    auto dst_mod = lib->get_module(dst_component->type_name());
     if (!dst_mod) return err << ERR("dst_mod null\n");
     auto node_func = n.get_field(field_function).get_field(field_field);
     auto dst_method = dst_mod->get_method(node_func.text());
@@ -1143,10 +1151,10 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_comb(MnNode n) {
   auto func_body = n.get_field(field_body);
   auto func_params = func_decl.get_field(field_parameters);
 
-  auto old_replacements = config.id_replacements;
+  id_replacements.push(id_replacements.top());
   for (auto c : func_params) {
     if (!c.is_named()) continue;
-    config.id_replacements[c.name4()] = func_decl.name4() + "_" + c.name4();
+    id_replacements.top()[c.name4()] = func_decl.name4() + "_" + c.name4();
   }
 
   for (auto c : n) {
@@ -1169,7 +1177,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_comb(MnNode n) {
     }
   }
 
-  config.id_replacements = old_replacements;
+  id_replacements.pop();
 
   return err << check_done(n);
 }
@@ -1182,10 +1190,10 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_ff(MnNode n) {
   auto func_decl = n.get_field(field_declarator);
   auto func_params = func_decl.get_field(field_parameters);
 
-  auto old_replacements = config.id_replacements;
+  id_replacements.push(id_replacements.top());
   for (auto c : func_params) {
     if (c.sym == sym_parameter_declaration) {
-      config.id_replacements[c.name4()] = func_decl.name4() + "_" + c.name4();
+      id_replacements.top()[c.name4()] = func_decl.name4() + "_" + c.name4();
     }
   }
 
@@ -1213,7 +1221,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_ff(MnNode n) {
     }
   }
 
-  config.id_replacements = old_replacements;
+  id_replacements.pop();
 
   assert(cursor == n.end());
   return err;
@@ -1276,7 +1284,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
   auto node_semi = n.child(2);  // semi
 
   auto inst_name = node_decl.text();
-  auto component_mod = config.lib->get_module(n.type5());
+  auto component_mod = lib->get_module(n.type5());
 
   cursor = node_type.start();
   err << emit_dispatch(node_type);
@@ -1287,7 +1295,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
   if (has_template_params || has_constructor_params) {
 
     err << emit_print(" #(");
-    indent.push(indent.get() + "  ");
+    indent.push(indent.top() + "  ");
 
     // Count up how many parameters we're passing to the submodule.
     int param_count = 0;
@@ -1396,7 +1404,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
   err << emit_print("(");
 
   {
-    indent.push(indent.get() + "  ");
+    indent.push(indent.top() + "  ");
 
     if (component_mod->needs_tick()) {
       err << start_line();
@@ -1494,7 +1502,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_component(MnNode n) {
   // FIXME loop style?
 
   std::string type_name = n.type5();
-  auto component_mod = config.lib->get_module(type_name);
+  auto component_mod = lib->get_module(type_name);
 
   auto node_type = n.child(0);  // type
   auto node_decl = n.child(1);  // decl
@@ -1545,7 +1553,7 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
   auto component_cname = component_name.c_str();
 
   std::string type_name = component_type_node.type5();
-  auto component_mod = config.lib->get_module(type_name);
+  auto component_mod = lib->get_module(type_name);
 
   // Swap template arguments with the values from the template
   // instantiation.
@@ -1568,13 +1576,12 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     auto old_source = config.current_source;
     auto old_mod = config.current_mod;
-    auto old_ids = config.id_replacements;
     auto old_cursor = cursor;
 
     push_config();
 
     config.current_source = component_mod->source_file;
-    config.id_replacements = replacements;
+    id_replacements.push(replacements);
     cursor = output_type.start();
 
     err << start_line();
@@ -1589,7 +1596,7 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     config.current_source = old_source;
     config.current_mod = old_mod;
-    config.id_replacements = old_ids;
+    id_replacements.pop();
     cursor = old_cursor;
   }
 
@@ -1600,13 +1607,12 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     auto old_source = config.current_source;
     auto old_mod = config.current_mod;
-    auto old_ids = config.id_replacements;
     auto old_cursor = cursor;
 
     push_config();
 
     config.current_source = component_mod->source_file;
-    config.id_replacements = replacements;
+    id_replacements.push(replacements);
     cursor = output_type.start();
 
     err << start_line();
@@ -1621,7 +1627,7 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     config.current_source = old_source;
     config.current_mod = old_mod;
-    config.id_replacements = old_ids;
+    id_replacements.pop();
     cursor = old_cursor;
   }
 
@@ -1632,13 +1638,12 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     auto old_source = config.current_source;
     auto old_mod = config.current_mod;
-    auto old_ids = config.id_replacements;
     auto old_cursor = cursor;
 
     push_config();
 
     config.current_source = component_mod->source_file;
-    config.id_replacements = replacements;
+    id_replacements.push(replacements);
     cursor = output_type.start();
 
     err << start_line();
@@ -1653,7 +1658,7 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     config.current_source = old_source;
     config.current_mod = old_mod;
-    config.id_replacements = old_ids;
+    id_replacements.pop();
     cursor = old_cursor;
   }
 
@@ -1664,13 +1669,12 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     auto old_source = config.current_source;
     auto old_mod = config.current_mod;
-    auto old_ids = config.id_replacements;
     auto old_cursor = cursor;
 
     push_config();
 
     config.current_source = component_mod->source_file;
-    config.id_replacements = replacements;
+    id_replacements.push(replacements);
     cursor = output_type.start();
 
     err << start_line();
@@ -1685,7 +1689,7 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     config.current_source = old_source;
     config.current_mod = old_mod;
-    config.id_replacements = old_ids;
+    id_replacements.pop();
     cursor = old_cursor;
   }
 
@@ -1696,13 +1700,12 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     auto old_source = config.current_source;
     auto old_mod = config.current_mod;
-    auto old_ids = config.id_replacements;
     auto old_cursor = cursor;
 
     push_config();
 
     config.current_source = component_mod->source_file;
-    config.id_replacements = replacements;
+    id_replacements.push(replacements);
     cursor = getter_type.start();
 
     err << start_line();
@@ -1717,7 +1720,7 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     config.current_source = old_source;
     config.current_mod = old_mod;
-    config.id_replacements = old_ids;
+    id_replacements.pop();
     cursor = old_cursor;
   }
 
@@ -1808,7 +1811,7 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
     auto node_type_args = node_scope.get_field(field_arguments);
     for (auto c : node_type_args) {
       if (c.sym == sym_number_literal) {
-        override_size = atoi(c.start());
+        override_size.top() = atoi(c.start());
         break;
       }
     }
@@ -2472,7 +2475,7 @@ CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnNode n) {
   auto class_body = n.get_field(field_body);
 
   auto old_mod = config.current_mod;
-  config.current_mod = config.lib->get_module(class_name.text());
+  config.current_mod = lib->get_module(class_name.text());
   assert(config.current_mod);
 
   //----------
@@ -2826,7 +2829,7 @@ CHECK_RETURN Err MtCursor::emit_sym_number_literal(MnNode n) {
   Err err = check_at(sym_number_literal, n);
 
   std::string body = n.text();
-  int size_cast = override_size;
+  int size_cast = override_size.top();
 
   // Count how many 's are in the number
   int spacer_count = 0;
@@ -2924,10 +2927,10 @@ CHECK_RETURN Err MtCursor::emit_sym_identifier(MnNode n) {
 
   auto name = n.name4();
 
-  auto it = config.id_replacements.find(name);
-  if (it != config.id_replacements.end()) {
+  auto it = id_replacements.top().find(name);
+  if (it != id_replacements.top().end()) {
     err << emit_replacement(n, it->second.c_str());
-  } else if (config.preproc_vars.contains(name)) {
+  } else if (preproc_vars.top().contains(name)) {
     err << emit_print("`");
     err << emit_text(n);
   } else if (name == "DONTCARE") {
@@ -2945,8 +2948,8 @@ CHECK_RETURN Err MtCursor::emit_sym_type_identifier(MnNode n) {
   Err err = check_at(alias_sym_type_identifier, n);
 
   auto name = n.name4();
-  auto it = config.id_replacements.find(name);
-  if (it != config.id_replacements.end()) {
+  auto it = id_replacements.top().find(name);
+  if (it != id_replacements.top().end()) {
     err << emit_replacement(n, it->second.c_str());
   } else {
     err << emit_text(n);
@@ -2977,7 +2980,7 @@ CHECK_RETURN Err MtCursor::emit_sym_template_declaration(MnNode n) {
   std::string class_name = class_specifier.get_field(field_name).text();
 
   auto old_mod = config.current_mod;
-  config.current_mod = config.lib->get_module(class_name);
+  config.current_mod = lib->get_module(class_name);
 
   cursor = class_specifier.start();
   err << emit_dispatch(class_specifier);
@@ -3533,7 +3536,7 @@ CHECK_RETURN Err MtCursor::emit_sym_preproc_arg(MnNode n) {
   std::string new_arg;
 
   for (int i = 0; i < arg.size(); i++) {
-    for (const auto& def_pair : config.preproc_vars) {
+    for (const auto& def_pair : preproc_vars.top()) {
       if (def_pair.first == arg) continue;
       if (strncmp(&arg[i], def_pair.first.c_str(), def_pair.first.size()) ==
           0) {
@@ -3623,7 +3626,7 @@ CHECK_RETURN Err MtCursor::emit_sym_preproc_def(MnNode n) {
       node_name = child;
     }
     else if (child.field == field_value) {
-      config.preproc_vars[node_name.text()] = child;
+      preproc_vars.top()[node_name.text()] = child;
       err << emit_sym_preproc_arg(child);
     }
     else {
@@ -3709,8 +3712,8 @@ CHECK_RETURN Err MtCursor::emit_sym_for_statement(MnNode node) {
 // to the top of the body scope.
 
 CHECK_RETURN Err MtCursor::emit_sym_compound_statement(MnNode node) {
-  const std::string& delim_begin = block_prefix;
-  const std::string& delim_end = block_suffix;
+  const std::string& delim_begin = block_prefix.top();
+  const std::string& delim_end = block_suffix.top();
 
   Err err = check_at(sym_compound_statement, node);
 

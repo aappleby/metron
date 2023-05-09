@@ -18,40 +18,8 @@ struct MtCursor;
 typedef std::function<Err(MtCursor*, MnNode node)> emit_cb;
 typedef std::map<TSSymbol, emit_cb> emit_map;
 
-//------------------------------------------------------------------------------
-
-template<typename T>
-class StackedVal {
-public:
-
-  StackedVal(const T& t) {
-    val = t;
-  }
-
-  operator T&() {
-    return val;
-  }
-
-  T& get() { return val; }
-
-  StackedVal& operator=(const T& t) {
-    val = t;
-    return *this;
-  }
-
-  void push(const T& t) {
-    val_stack.push(val);
-    val = t;
-  }
-
-  void pop() {
-    val = val_stack.top();
-    val_stack.pop();
-  }
-
-  T val;
-  std::stack<T> val_stack;
-};
+typedef std::map<std::string, MnNode> string_to_node;
+typedef std::map<std::string, std::string> string_to_string;
 
 //------------------------------------------------------------------------------
 
@@ -60,24 +28,18 @@ struct MtCursorConfig {
   emit_map* emits = nullptr;
   bool elide_type = false;
   bool elide_value = false;
-  std::map<std::string, std::string> id_replacements;
   MtSourceFile* current_source = nullptr;
   MtModule* current_mod = nullptr;
   MtMethod* current_method = nullptr;
-  std::map<std::string, MnNode> preproc_vars;
-  MtModLibrary* lib = nullptr;
 
   bool operator == (const MtCursorConfig& b) const {
     const auto& a = *this;
     if (a.emits != b.emits) return false;
     if (a.elide_type != b.elide_type) return false;
     if (a.elide_value != b.elide_value) return false;
-    if (a.id_replacements != b.id_replacements) return false;
     if (a.current_source != b.current_source) return false;
     if (a.current_mod != b.current_mod) return false;
     if (a.current_method != b.current_method) return false;
-    if (a.preproc_vars != b.preproc_vars) return false;
-    if (a.lib != b.lib) return false;
     return true;
   }
 };
@@ -241,15 +203,19 @@ struct MtCursor {
 
   //----------------------------------------
 
-  StackedVal<std::string> block_prefix = std::string("begin");
-  StackedVal<std::string> block_suffix = std::string("end");
-  StackedVal<int> override_size = 0;
+  MtModLibrary* lib = nullptr;
+
+  std::stack<std::string> block_prefix;
+  std::stack<std::string> block_suffix;
+  std::stack<int> override_size;
+  std::stack<string_to_node> preproc_vars;
+  std::stack<string_to_string> id_replacements;
 
   //----------------------------------------
   // Output state
 
   std::string* str_out;
-  StackedVal<std::string> indent;
+  std::stack<std::string> indent;
   bool at_newline = true;
   bool line_dirty = false;
   bool line_elided = false;

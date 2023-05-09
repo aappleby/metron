@@ -58,8 +58,6 @@ public:
 struct MtCursorConfig {
   MtCursorConfig* parent = nullptr;
   emit_map* emits = nullptr;
-  std::string block_prefix = "begin";
-  std::string block_suffix = "end";
   bool elide_type = false;
   bool elide_value = false;
   std::map<std::string, std::string> id_replacements;
@@ -72,8 +70,6 @@ struct MtCursorConfig {
   bool operator == (const MtCursorConfig& b) const {
     const auto& a = *this;
     if (a.emits != b.emits) return false;
-    if (a.block_prefix != b.block_prefix) return false;
-    if (a.block_suffix != b.block_suffix) return false;
     if (a.elide_type != b.elide_type) return false;
     if (a.elide_value != b.elide_value) return false;
     if (a.id_replacements != b.id_replacements) return false;
@@ -245,6 +241,8 @@ struct MtCursor {
 
   //----------------------------------------
 
+  StackedVal<std::string> block_prefix = std::string("begin");
+  StackedVal<std::string> block_suffix = std::string("end");
   StackedVal<int> override_size = 0;
 
   //----------------------------------------

@@ -1046,11 +1046,11 @@ CHECK_RETURN Err MtCursor::emit_func_as_init(MnNode n) {
       err << skip_ws_inside(n);
     }
     else if (c.sym == sym_compound_statement) {
-      push_config();
-      config.block_prefix = "begin";
-      config.block_suffix = "end";
+      block_prefix.push("begin");
+      block_suffix.push("end");
       err << emit_dispatch(c);
-      pop_config();
+      block_prefix.pop();
+      block_suffix.pop();
     }
     else {
       err << emit_dispatch(c);
@@ -1084,11 +1084,11 @@ CHECK_RETURN Err MtCursor::emit_func_as_func(MnNode n) {
       err << emit_print(";");
     }
     else if (c.field == field_body) {
-      push_config();
-      config.block_prefix = "";
-      config.block_suffix = "endfunction";
+      block_prefix.push("");
+      block_suffix.push("endfunction");
       err << emit_dispatch(c);
-      pop_config();
+      block_prefix.pop();
+      block_suffix.pop();
     }
     else {
       err << emit_dispatch(c);
@@ -1119,11 +1119,11 @@ CHECK_RETURN Err MtCursor::emit_func_as_task(MnNode n) {
       err << emit_print(";");
     }
     else if (c.field == field_body) {
-      push_config();
-      config.block_prefix = "";
-      config.block_suffix = "endtask";
+      block_prefix.push("");
+      block_suffix.push("endtask");
       err << emit_dispatch(c);
-      pop_config();
+      block_prefix.pop();
+      block_suffix.pop();
     }
     else {
       err << emit_dispatch(c);
@@ -1161,11 +1161,11 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_comb(MnNode n) {
       err << skip_ws_inside(n);
     }
     else if (c.field == field_body) {
-      push_config();
-      config.block_prefix = "";
-      config.block_suffix = "end";
+      block_prefix.push("");
+      block_suffix.push("end");
       err << emit_dispatch(c);
-      pop_config();
+      block_prefix.pop();
+      block_suffix.pop();
     }
   }
 
@@ -1199,11 +1199,11 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_ff(MnNode n) {
       err << skip_over(c);
     }
     else if (c.field == field_body) {
-      push_config();
-      config.block_prefix = "";
-      config.block_suffix = "end";
+      block_prefix.push("");
+      block_suffix.push("end");
       err << emit_dispatch(c);
-      pop_config();
+      block_prefix.pop();
+      block_suffix.pop();
     }
     else if (c.sym == sym_comment) {
       err << emit_sym_comment(c);
@@ -3079,11 +3079,13 @@ CHECK_RETURN Err MtCursor::emit_sym_case_statement(MnNode n) {
         break;
       case sym_compound_statement:
         push_config();
-        config.block_prefix = "begin";
-        config.block_suffix = "end";
+        block_prefix.push("begin");
+        block_suffix.push("end");
         config.elide_type = true;
         config.elide_value = false;
         err << emit_dispatch(c);
+        block_prefix.pop();
+        block_suffix.pop();
         pop_config();
 
         break;
@@ -3120,11 +3122,11 @@ CHECK_RETURN Err MtCursor::emit_sym_switch_statement(MnNode n) {
       err << emit_sym_condition_clause(c);
     }
     else if (c.field == field_body) {
-      push_config();
-      config.block_prefix = "";
-      config.block_suffix = "endcase";
+      block_prefix.push("");
+      block_suffix.push("endcase");
       err << emit_dispatch(c);
-      pop_config();
+      block_prefix.pop();
+      block_suffix.pop();
     }
     else {
       err << emit_leaf(c);
@@ -3355,22 +3357,24 @@ CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnNode node) {
         err << emit_sym_if_statement(child);
         break;
       case sym_compound_statement:
-        push_config();
-        config.block_prefix = "begin";
-        config.block_suffix = "end";
+        block_prefix.push("begin");
+        block_suffix.push("end");
         err << emit_dispatch(child);
-        pop_config();
+        block_prefix.pop();
+        block_suffix.pop();
         break;
       case sym_expression_statement:
         if (branch_contains_component_call(child)) {
           return err << ERR("If branches that contain component calls must use {}.\n");
         } else {
           push_config();
-          config.block_prefix = "begin";
-          config.block_suffix = "end";
+          block_prefix.push("begin");
+          block_suffix.push("end");
           config.elide_type = true;
           config.elide_value = false;
           err << emit_dispatch(child);
+          block_prefix.pop();
+          block_suffix.pop();
           pop_config();
 
         }
@@ -3683,11 +3687,13 @@ CHECK_RETURN Err MtCursor::emit_sym_for_statement(MnNode node) {
     }
     else if (child.is_statement()) {
       push_config();
-      config.block_prefix = "begin";
-      config.block_suffix = "end";
+      block_prefix.push("begin");
+      block_suffix.push("end");
       config.elide_type = true;
       config.elide_value = false;
       err << emit_dispatch(child);
+      block_prefix.pop();
+      block_suffix.pop();
       pop_config();
     }
     else {
@@ -3703,8 +3709,8 @@ CHECK_RETURN Err MtCursor::emit_sym_for_statement(MnNode node) {
 // to the top of the body scope.
 
 CHECK_RETURN Err MtCursor::emit_sym_compound_statement(MnNode node) {
-  const std::string& delim_begin = config.block_prefix;
-  const std::string& delim_end = config.block_suffix;
+  const std::string& delim_begin = block_prefix;
+  const std::string& delim_end = block_suffix;
 
   Err err = check_at(sym_compound_statement, node);
 
@@ -3753,11 +3759,13 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(MnNode node) {
 
       case sym_compound_statement:
         push_config();
-        config.block_prefix = "begin";
-        config.block_suffix = "end";
+        block_prefix.push("begin");
+        block_suffix.push("end");
         config.elide_type = true;
         config.elide_value = false;
         err << emit_dispatch(child);
+        block_prefix.pop();
+        block_suffix.pop();
         pop_config();
         break;
 

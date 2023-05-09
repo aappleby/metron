@@ -81,11 +81,10 @@ emit_map emit_sym_map = {
 
 MtCursor::MtCursor(MtModLibrary* lib, MtSourceFile* source, MtModule* mod,
                    std::string* out)
-    : str_out(out) {
+    : indent(""), str_out(out) {
   config.lib = lib;
   config.current_source = source;
   config.current_mod = mod;
-  indent_stack.push("");
   cursor = config.current_source->source;
 
   // FIXME preproc_vars should be a set
@@ -151,7 +150,7 @@ void MtCursor::push_indent(MnNode body) {
   auto n = body.first_named_child().node;
 
   if (ts_node_is_null(n)) {
-    indent_stack.push("");
+    indent.push("");
     return;
   }
 
@@ -166,23 +165,23 @@ void MtCursor::push_indent(MnNode body) {
   const char* begin = &config.current_source->source[ts_node_start_byte(n)] - 1;
   const char* end = &config.current_source->source[ts_node_start_byte(n)];
 
-  std::string indent;
+  std::string new_indent;
 
   while (*begin != '\n' && *begin != '{') begin--;
   if (*begin == '{') {
-    indent = "";
+    new_indent = "";
   } else {
-    indent = std::string(begin + 1, end);
+    new_indent = std::string(begin + 1, end);
   }
 
-  for (auto& c : indent) {
+  for (auto& c : new_indent) {
     assert(isspace(c));
   }
 
-  indent_stack.push(indent);
+  indent.push(new_indent);
 }
 
-void MtCursor::pop_indent(MnNode class_body) { indent_stack.pop(); }
+void MtCursor::pop_indent(MnNode class_body) { indent.pop(); }
 
 //------------------------------------------------------------------------------
 // Generic emit() methods
@@ -200,7 +199,7 @@ CHECK_RETURN Err MtCursor::emit_backspace() {
 
 CHECK_RETURN Err MtCursor::emit_indent() {
   Err err;
-  for (auto c : indent_stack.top()) {
+  for (auto c : indent.get()) {
     err << emit_char(c);
   }
   return err;
@@ -1288,7 +1287,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
   if (has_template_params || has_constructor_params) {
 
     err << emit_print(" #(");
-    indent_stack.push(indent_stack.top() + "  ");
+    indent.push(indent.get() + "  ");
 
     // Count up how many parameters we're passing to the submodule.
     int param_count = 0;
@@ -1385,7 +1384,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
         if(--param_count) err << emit_print(",");
       }
     }
-    indent_stack.pop();
+    indent.pop();
 
     err << start_line();
     err << emit_print(")");
@@ -1397,7 +1396,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
   err << emit_print("(");
 
   {
-    indent_stack.push(indent_stack.top() + "  ");
+    indent.push(indent.get() + "  ");
 
     if (component_mod->needs_tick()) {
       err << start_line();
@@ -1477,7 +1476,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
       trailing_comma = false;
     }
 
-    indent_stack.pop();
+    indent.pop();
   }
 
   err << start_line();

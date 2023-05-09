@@ -24,13 +24,15 @@ template<typename T>
 class StackedVal {
 public:
 
-  StackedVal(T t) {
+  StackedVal(const T& t) {
     val = t;
   }
 
   operator T&() {
     return val;
   }
+
+  T& get() { return val; }
 
   StackedVal& operator=(const T& t) {
     val = t;
@@ -249,7 +251,7 @@ struct MtCursor {
   // Output state
 
   std::string* str_out;
-  std::stack<std::string> indent_stack;
+  StackedVal<std::string> indent;
   bool at_newline = true;
   bool line_dirty = false;
   bool line_elided = false;

@@ -669,39 +669,31 @@ CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnNode call,
   if (arg_count == 1) {
     // Non-literal size-casting expression - bits'(expression)
     if (arg0.text() == "DONTCARE") {
-      cursor = bx_node.start();
-      err << emit_dispatch(bx_node);
+      err << emit_splice(bx_node);
       err << emit_print("'('x)");
-      cursor = call.end();
     } else {
       err << emit_print("(");
-      cursor = bx_node.start();
-      err << emit_dispatch(bx_node);
+      err << emit_splice(bx_node);
+      err << emit_print(")'(");
+      err << emit_splice(arg0);
       err << emit_print(")");
-      err << emit_print("'(");
-      cursor = arg0.start();
-      err << emit_dispatch(arg0);
-      err << emit_print(")");
-      cursor = call.end();
     }
 
   } else if (arg_count == 2) {
     // Non-literal slice expression - expression[bits+offset-1:offset];
-
-    cursor = arg0.start();
-    err << emit_dispatch(arg0);
 
     if (arg1.sym != sym_number_literal) {
       err << ERR("emit_dynamic_bit_extract saw a non-literal?\n");
     }
     int offset = atoi(arg1.start());
 
+    err << emit_splice(arg0);
     err << emit_print("[%s+%d:%d]", bx_node.text().c_str(), offset - 1, offset);
-    cursor = call.end();
   } else {
     err << ERR("emit_dynamic_bit_extract saw too many args?\n");
   }
 
+  cursor = call.end();
   return err << check_done(call);
 }
 
@@ -772,13 +764,10 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
     auto rhs = args.named_child(1);
 
     err << emit_print("($signed(");
-    cursor = lhs.start();
-    err << emit_dispatch(lhs);
+    err << emit_splice(lhs);
     err << emit_print(") >>> ");
-    cursor = rhs.start();
-    err << emit_dispatch(rhs);
+    err << emit_splice(rhs);
     err << emit_print(")");
-    cursor = n.end();
 
   } else if (func_name == "signed") {
     err << emit_replacement(func, "$signed");
@@ -839,15 +828,10 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
 
     auto template_arg = func.get_field(field_arguments).named_child(0);
     int dup_count = atoi(template_arg.start());
-    err << emit_print("{%d ", dup_count);
-    err << emit_print("{");
-
     auto func_arg = args.named_child(0);
-    cursor = func_arg.start();
-    err << emit_dispatch(func_arg);
-
+    err << emit_print("{%d {", dup_count);
+    err << emit_splice(func_arg);
     err << emit_print("}}");
-    cursor = n.end();
   }
 
   else if (func.sym == sym_field_expression) {
@@ -864,7 +848,6 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
     if (!dst_method) return err << ERR("dst_method null\n");
 
     err << emit_print("%s_%s_ret", node_component.text().c_str(), dst_method->cname());
-    cursor = n.end();
   }
   else {
     // Internal method call.
@@ -877,6 +860,7 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
     }
   }
 
+  cursor = n.end();
   return err << check_done(n);
 }
 
@@ -897,8 +881,7 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
         continue;
       } else {
         err << start_line();
-        cursor = c.start();
-        err << emit_dispatch(c);
+        err << emit_splice(c);
       }
     }
 
@@ -906,8 +889,7 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
       auto init = c.get_field(field_initializer);
       if (init.sym == sym_declaration) {
         err << start_line();
-        cursor = init.start();
-        err << emit_dispatch(init);
+        err << emit_splice(init);
       }
     }
   }
@@ -927,11 +909,7 @@ CHECK_RETURN Err MtCursor::emit_local_call_arg_binding(MtMethod* method, MnNode 
   auto param_name = param.get_field(field_declarator).text();
 
   err << emit_print("%s_%s = ", method->cname(), param_name.c_str());
-
-  push_cursor(val);
-  err << emit_dispatch(val);
-  pop_cursor();
-
+  err << emit_splice(val);
   err << prune_trailing_ws();
   err << emit_print(";");
 
@@ -944,11 +922,7 @@ CHECK_RETURN Err MtCursor::emit_component_call_arg_binding(MnNode inst, MtMethod
   err << emit_print("%s_%s_%s = ", inst.text().c_str(),
                     method->name().c_str(),
                     param.get_field(field_declarator).text().c_str());
-
-  push_cursor(val);
-  err << emit_dispatch(val);
-  pop_cursor();
-
+  err << emit_splice(val);
   err << prune_trailing_ws();
   err << emit_print(";");
 
@@ -958,7 +932,7 @@ CHECK_RETURN Err MtCursor::emit_component_call_arg_binding(MnNode inst, MtMethod
 
 CHECK_RETURN Err MtCursor::emit_call_arg_bindings(MnNode n) {
   Err err;
-  auto old_cursor = cursor;
+  push_cursor(n);
 
   // Emit bindings for child nodes first, but do _not_ recurse into compound
   // blocks.
@@ -1012,7 +986,7 @@ CHECK_RETURN Err MtCursor::emit_call_arg_bindings(MnNode n) {
     }
   }
 
-  cursor = old_cursor;
+  pop_cursor();
   return err;
 }
 
@@ -1030,9 +1004,12 @@ CHECK_RETURN Err MtCursor::emit_func_as_init(MnNode n) {
 
     if (c.sym == sym_function_declarator) {
       auto func_params = c.get_field(field_parameters);
+
+      // FIXME can this be emit_splice?
       push_cursor(func_params);
       err << emit_module_parameter_list(func_params);
       pop_cursor();
+
       err << emit_replacement(c, "initial");
     }
     else if (c.sym == sym_field_initializer_list) {
@@ -1161,6 +1138,9 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_comb(MnNode n) {
       block_prefix.pop();
       block_suffix.pop();
     }
+    else {
+      err << emit_dispatch(c);
+    }
   }
 
   id_replacements.pop();
@@ -1199,11 +1179,8 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_ff(MnNode n) {
       block_prefix.pop();
       block_suffix.pop();
     }
-    else if (c.sym == sym_comment) {
-      err << emit_sym_comment(c);
-    }
     else {
-      err << ERR("Unknown node type in emit_func_as_always_ff");
+      err << emit_dispatch(c);
     }
   }
 
@@ -1272,8 +1249,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
   auto inst_name = node_decl.text();
   auto component_mod = lib->get_module(n.type5());
 
-  cursor = node_type.start();
-  err << emit_dispatch(node_type);
+  err << emit_splice(node_type);
 
   bool has_template_params = node_type.sym == sym_template_type && component_mod->mod_param_list;
   bool has_constructor_params = component_mod->constructor && component_mod->constructor->param_nodes.size();
@@ -1328,16 +1304,13 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
         if (c.is_named()) args.push_back(c);
       }
 
-      //auto old_cursor = cursor;
       for (int param_index = 0; param_index < args.size(); param_index++) {
-        cursor = args[param_index].start();
-
         auto param = params[param_index];
         auto arg = args[param_index];
 
         err << start_line();
         err << emit_print(".%s(", param.name4().c_str());
-        err << emit_dispatch(arg);
+        err << emit_splice(arg);
         err << emit_print(")");
         if(--param_count) err << emit_print(",");
       }

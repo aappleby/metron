@@ -508,16 +508,14 @@ CHECK_RETURN Err MtCursor::emit_sym_initializer_list(MnNode node) {
 CHECK_RETURN Err MtCursor::emit_sym_preproc_include(MnNode n) {
   Err err = check_at(sym_preproc_include, n);
 
-  auto path = n.get_field(field_path).text();
-  if (!path.ends_with(".h\"")) return err << ERR("Include did not end with .h\n");
-
-  path.resize(path.size() - 3);
-  path = path + ".sv\"";
-
   for (auto child : n) {
     err << emit_ws_to(child);
 
     if (child.field == field_path) {
+      auto path = child.text();
+      if (!path.ends_with(".h\"")) return err << ERR("Include did not end with .h\n");
+      path.resize(path.size() - 3);
+      path = path + ".sv\"";
       err << emit_replacement(child, path.c_str());
     }
     else {
@@ -542,7 +540,8 @@ CHECK_RETURN Err MtCursor::emit_sym_assignment_expression(MnNode node) {
     switch (child.field) {
       case field_left: {
         lhs = child;
-        err << emit_dispatch(child); break;
+        err << emit_dispatch(child);
+        break;
       }
       case field_operator: {
         // There may not be a method if we're in an enum initializer list.
@@ -563,12 +562,10 @@ CHECK_RETURN Err MtCursor::emit_sym_assignment_expression(MnNode node) {
         }
         break;
       }
-      case field_right:
+      default: {
         err << emit_dispatch(child);
         break;
-      default:
-        err << ERR("Unknown node type in sym_assignment_expression");
-        break;
+      }
     }
   }
 
@@ -590,51 +587,39 @@ CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnNode call, int bx_width) {
   if (arg_count == 1) {
     if (arg0.sym == sym_number_literal) {
       // Explicitly sized literal - 8'd10
-
-      cursor = arg0.start();
-
       override_size.push(bx_width);
-      err << emit_sym_number_literal(MnNode(arg0));
+      err << emit_splice(arg0);
       override_size.pop();
-
-      cursor = call.end();
-    } else if (arg0.sym == sym_identifier ||
-               arg0.sym == sym_subscript_expression) {
+    }
+    else if (arg0.sym == sym_identifier || arg0.sym == sym_subscript_expression) {
       if (arg0.text() == "DONTCARE") {
         // Size-casting expression
         err << emit_print("%d'bx", bx_width);
-        cursor = call.end();
       } else {
         // Size-casting expression
-        cursor = arg0.start();
-        err << emit_print("%d'(", bx_width) << emit_dispatch(arg0)
-            << emit_print(")");
-        cursor = call.end();
+        err << emit_print("%d'(", bx_width);
+        err << emit_splice(arg0);
+        err << emit_print(")");
       }
 
     } else {
       // Size-casting expression
-      cursor = arg0.start();
-      err << emit_print("%d'(", bx_width) << emit_dispatch(arg0)
-          << emit_print(")");
-      cursor = call.end();
+      err << emit_print("%d'(", bx_width);
+      err << emit_splice(arg0);
+      err << emit_print(")");
     }
   } else if (arg_count == 2) {
     // Slicing logic array - foo[7:2]
 
     if (bx_width == 1) {
       // b1(foo, 7) -> foo[7]
-      cursor = arg0.start();
-      err << emit_dispatch(arg0);
+      err << emit_splice(arg0);
       err << emit_print("[");
-      cursor = arg1.start();
-      err << emit_dispatch(arg1);
+      err << emit_splice(arg1);
       err << emit_print("]");
-      cursor = call.end();
     }
     else {
-      cursor = arg0.start();
-      err << emit_dispatch(arg0);
+      err << emit_splice(arg0);
       err << emit_print("[");
 
       if (arg1.sym == sym_number_literal) {
@@ -646,20 +631,18 @@ CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnNode call, int bx_width) {
         // Static size slice, dynamic offset
         // b6(foo, offset) -> foo[5 + offset:offset]
         err << emit_print("%d + ", bx_width - 1);
-        cursor = arg1.start();
-        err << emit_dispatch(arg1);
+        err << emit_splice(arg1);
         err << emit_print(" : ");
-        cursor = arg1.start();
-        err << emit_dispatch(arg1);
+        err << emit_splice(arg1);
       }
       err << emit_print("]");
-      cursor = call.end();
 
     }
   } else {
     err << ERR("emit_static_bit_extract got > 1 args\n");
   }
 
+  cursor = call.end();
   return err << check_done(call);
 }
 
@@ -691,8 +674,8 @@ CHECK_RETURN Err MtCursor::emit_dynamic_bit_extract(MnNode call,
       err << emit_print("'('x)");
       cursor = call.end();
     } else {
-      cursor = bx_node.start();
       err << emit_print("(");
+      cursor = bx_node.start();
       err << emit_dispatch(bx_node);
       err << emit_print(")");
       err << emit_print("'(");
@@ -3265,6 +3248,16 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
   }
 
   return err << check_done(n);
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_splice(MnNode n) {
+  Err err;
+  push_cursor(n);
+  err << emit_dispatch(n);
+  pop_cursor();
+  return err;
 }
 
 //------------------------------------------------------------------------------

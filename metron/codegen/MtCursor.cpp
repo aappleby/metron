@@ -418,6 +418,31 @@ CHECK_RETURN Err MtCursor::emit_text(MnNode n) {
 
 //----------------------------------------
 
+CHECK_RETURN Err MtCursor::emit_line(const char* fmt, ...) {
+  Err err;
+  err << start_line();
+
+  va_list args;
+  va_start(args, fmt);
+  int size = vsnprintf(nullptr, 0, fmt, args);
+  va_end(args);
+
+  auto buf = new char[size + 1];
+
+  va_start(args, fmt);
+  vsnprintf(buf, size_t(size) + 1, fmt, args);
+  va_end(args);
+
+  for (int i = 0; i < size; i++) {
+    err << emit_char(buf[i], 0x80FF80);
+  }
+  delete[] buf;
+
+  return err;
+}
+
+//----------------------------------------
+
 CHECK_RETURN Err MtCursor::emit_print(const char* fmt, ...) {
   Err err;
 
@@ -929,7 +954,9 @@ CHECK_RETURN Err MtCursor::emit_component_call_arg_binding(MnNode inst, MtMethod
 
   return err;
 }
+
 //------------------------------------------------------------------------------
+// FIXME using start_line weirdly here
 
 CHECK_RETURN Err MtCursor::emit_call_arg_bindings(MnNode n) {
   Err err;
@@ -1262,8 +1289,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
 
     // Emit template arguments as module parameters
     if (has_template_params) {
-      err << start_line();
-      err << emit_print("// Template Parameters");
+      err << emit_line("// Template Parameters");
 
       auto template_args = node_type.get_field(field_arguments);
 
@@ -1282,8 +1308,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
         auto param = params[param_index];
         auto arg = args[param_index];
 
-        err << start_line();
-        err << emit_print(".%s(", param.name4().c_str());
+        err << emit_line(".%s(", param.name4().c_str());
         err << emit_splice(arg);
         err << emit_print("),");
       }
@@ -1291,8 +1316,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
 
     // Emit constructor arguments as module parameters
     if (has_constructor_params) {
-      err << start_line();
-      err << emit_print("// Constructor Parameters");
+      err << emit_line("// Constructor Parameters");
 
       // The parameter names come from the submodule's constructor
       const auto& params = component_mod->constructor->param_nodes;
@@ -1315,8 +1339,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
         auto param = params[param_index];
         auto arg = args[param_index];
 
-        err << start_line();
-        err << emit_print(".%s(", param.name4().c_str());
+        err << emit_line(".%s(", param.name4().c_str());
         err << emit_splice(arg);
         err << emit_print("),");
       }
@@ -1328,8 +1351,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
       err << emit_backspace();
     }
 
-    err << start_line();
-    err << emit_print(")");
+    err << emit_line(")");
   }
 
   cursor = node_type.end();
@@ -1337,85 +1359,69 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
   err << emit_dispatch(node_decl);
   err << emit_print("(");
 
-  {
-    indent.push(indent.top() + "  ");
+  indent.push(indent.top() + "  ");
 
-    if (component_mod->needs_tick()) {
-      err << start_line();
-      err << emit_print("// Global clock");
-      err << start_line();
-      err << emit_print(".clock(clock),");
-    }
-
-    if (component_mod->input_signals.size()) {
-      err << start_line();
-      err << emit_print("// Input signals");
-      for (auto f : component_mod->input_signals) {
-        err << start_line();
-        err << emit_print(".%s(%s_%s),", f->cname(), inst_name.c_str(), f->cname());
-      }
-    }
-
-    if (component_mod->output_signals.size()) {
-      err << start_line();
-      err << emit_print("// Output signals");
-      for (auto f : component_mod->output_signals) {
-        err << start_line();
-        err << emit_print(".%s(%s_%s),", f->cname(), inst_name.c_str(), f->cname());
-      }
-    }
-
-    if (component_mod->output_registers.size()) {
-      err << start_line();
-      err << emit_print("// Output registers");
-      for (auto f : component_mod->output_registers) {
-        err << start_line();
-        err << emit_print(".%s(%s_%s),", f->cname(), inst_name.c_str(), f->cname());
-      }
-    }
-
-    for (auto m : component_mod->all_methods) {
-      if (m->is_constructor()) continue;
-      if (m->is_public() && m->internal_callers.empty()) {
-
-        if (m->param_nodes.size() || m->has_return()) {
-          err << start_line();
-          err << emit_print("// %s() ports", m->cname());
-        }
-
-        int param_count = m->param_nodes.size();
-        for (int i = 0; i < param_count; i++) {
-          auto param = m->param_nodes[i];
-          auto node_type = param.get_field(field_type);
-          auto node_decl = param.get_field(field_declarator);
-
-          err << start_line();
-          err << emit_print(".%s_%s(%s_%s_%s),", m->cname(), node_decl.text().c_str(),
-                            inst_name.c_str(), m->cname(), node_decl.text().c_str());
-        }
-
-        if (m->has_return()) {
-          auto node_type = m->_node.get_field(field_type);
-          auto node_decl = m->_node.get_field(field_declarator);
-          auto node_name = node_decl.get_field(field_declarator);
-
-          err << start_line();
-          err << emit_print(".%s_ret(%s_%s_ret),", m->cname(),
-                            inst_name.c_str(), m->cname());
-        }
-      }
-    }
-
-    // Remove trailing comma from port list
-    if (at_comma) {
-      err << emit_backspace();
-    }
-
-    indent.pop();
+  if (component_mod->needs_tick()) {
+    err << emit_line("// Global clock");
+    err << emit_line(".clock(clock),");
   }
 
-  err << start_line();
-  err << emit_print(");");
+  if (component_mod->input_signals.size()) {
+    err << emit_line("// Input signals");
+    for (auto f : component_mod->input_signals) {
+      err << emit_line(".%s(%s_%s),", f->cname(), inst_name.c_str(), f->cname());
+    }
+  }
+
+  if (component_mod->output_signals.size()) {
+    err << emit_line("// Output signals");
+    for (auto f : component_mod->output_signals) {
+      err << emit_line(".%s(%s_%s),", f->cname(), inst_name.c_str(), f->cname());
+    }
+  }
+
+  if (component_mod->output_registers.size()) {
+    err << emit_line("// Output registers");
+    for (auto f : component_mod->output_registers) {
+      err << emit_line(".%s(%s_%s),", f->cname(), inst_name.c_str(), f->cname());
+    }
+  }
+
+  for (auto m : component_mod->all_methods) {
+    if (m->is_constructor()) continue;
+    if (m->is_public() && m->internal_callers.empty()) {
+
+      if (m->param_nodes.size() || m->has_return()) {
+        err << emit_line("// %s() ports", m->cname());
+      }
+
+      int param_count = m->param_nodes.size();
+      for (int i = 0; i < param_count; i++) {
+        auto param = m->param_nodes[i];
+        auto node_type = param.get_field(field_type);
+        auto node_decl = param.get_field(field_declarator);
+
+        err << emit_line(".%s_%s(%s_%s_%s),", m->cname(), node_decl.text().c_str(), inst_name.c_str(), m->cname(), node_decl.text().c_str());
+      }
+
+      if (m->has_return()) {
+        auto node_type = m->_node.get_field(field_type);
+        auto node_decl = m->_node.get_field(field_declarator);
+        auto node_name = node_decl.get_field(field_declarator);
+
+        err << emit_line(".%s_ret(%s_%s_ret),", m->cname(), inst_name.c_str(), m->cname());
+      }
+    }
+  }
+
+  // Remove trailing comma from port list
+  if (at_comma) {
+    err << emit_backspace();
+  }
+
+  indent.pop();
+
+  err << emit_line(");");
 
   cursor = n.end();
   return err;
@@ -1880,9 +1886,9 @@ CHECK_RETURN Err MtCursor::emit_sym_function_declarator(MnNode node) {
 
     if (c.sym == sym_parameter_list) {
       err << emit_dispatch(c);
-      err << skip_ws_inside(node);
     }
     else if (c.sym == sym_type_qualifier) {
+      // FIXME this should be in the dispatch table
       err << skip_over(c);
       err << skip_ws_inside(node);
     }

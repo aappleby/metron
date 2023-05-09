@@ -25,10 +25,11 @@ emit_map emit_sym_map = {
   { sym_break_statement,                &MtCursor::skip_over }, // Verilog doesn't use "break"
   { sym_call_expression,                &MtCursor::emit_sym_call_expression },
   { sym_case_statement,                 &MtCursor::emit_sym_case_statement },
+  { sym_char_literal,                   &MtCursor::emit_text },
   { sym_class_specifier,                &MtCursor::emit_sym_class_specifier },
   { sym_comment,                        &MtCursor::emit_sym_comment },
   { sym_compound_statement,             &MtCursor::emit_sym_compound_statement },
-  { sym_condition_clause,               &MtCursor::emit_sym_condition_clause },
+  { sym_condition_clause,               &MtCursor::emit_children },
   { sym_conditional_expression,         &MtCursor::emit_children},
   { sym_declaration,                    &MtCursor::emit_sym_declaration },
   { sym_enum_specifier,                 &MtCursor::emit_sym_enum_specifier },
@@ -64,6 +65,7 @@ emit_map emit_sym_map = {
   { sym_return_statement,               &MtCursor::emit_sym_return_statement },
   { sym_sized_type_specifier,           &MtCursor::emit_sym_sized_type_specifier },
   { sym_storage_class_specifier,        &MtCursor::skip_over },
+  { sym_string_literal,                 &MtCursor::emit_text },
   { sym_struct_specifier,               &MtCursor::emit_sym_struct_specifier },
   { sym_subscript_expression,           &MtCursor::emit_children },
   { sym_switch_statement,               &MtCursor::emit_sym_switch_statement },
@@ -97,7 +99,18 @@ MtCursor::MtCursor(MtModLibrary* lib, MtSourceFile* source, MtModule* mod,
   preproc_vars.push(string_to_node());
   preproc_vars.top()["IV_TEST"] = MnNode();
 
-  id_replacements.push(string_to_string());
+  id_map.push(string_to_string());
+
+  token_map.push({
+    {"#include", "`include"},
+    {"#ifdef",   "`ifdef"},
+    {"#ifndef",  "`ifndef"},
+    {"#else",    "`else"},
+    {"#elif",    "`elif"},
+    {"#endif",   "`endif"},
+    {"#define",  "`define"},
+    {"#undef",   "`undef"},
+  });
 
   elide_type.push(false);
   elide_value.push(false);
@@ -1143,10 +1156,10 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_comb(MnNode n) {
   auto func_body = n.get_field(field_body);
   auto func_params = func_decl.get_field(field_parameters);
 
-  id_replacements.push(id_replacements.top());
+  id_map.push(id_map.top());
   for (auto c : func_params) {
     if (!c.is_named()) continue;
-    id_replacements.top()[c.name4()] = func_decl.name4() + "_" + c.name4();
+    id_map.top()[c.name4()] = func_decl.name4() + "_" + c.name4();
   }
 
   for (auto c : n) {
@@ -1172,7 +1185,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_comb(MnNode n) {
     }
   }
 
-  id_replacements.pop();
+  id_map.pop();
 
   return err << check_done(n);
 }
@@ -1185,10 +1198,10 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_ff(MnNode n) {
   auto func_decl = n.get_field(field_declarator);
   auto func_params = func_decl.get_field(field_parameters);
 
-  id_replacements.push(id_replacements.top());
+  id_map.push(id_map.top());
   for (auto c : func_params) {
     if (c.sym == sym_parameter_declaration) {
-      id_replacements.top()[c.name4()] = func_decl.name4() + "_" + c.name4();
+      id_map.top()[c.name4()] = func_decl.name4() + "_" + c.name4();
     }
   }
 
@@ -1213,7 +1226,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_ff(MnNode n) {
     }
   }
 
-  id_replacements.pop();
+  id_map.pop();
 
   assert(cursor == n.end());
   return err;
@@ -1510,7 +1523,7 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     current_source.push(component_mod->source_file);
     current_mod.push(component_mod);
-    id_replacements.push(replacements);
+    id_map.push(replacements);
     push_cursor(output_type);
 
     err << start_line();
@@ -1523,7 +1536,7 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     current_source.pop();
     current_mod.pop();
-    id_replacements.pop();
+    id_map.pop();
     pop_cursor();
   }
 
@@ -1534,7 +1547,7 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     current_source.push(component_mod->source_file);
     current_mod.push(component_mod);
-    id_replacements.push(replacements);
+    id_map.push(replacements);
     push_cursor(output_type);
 
     err << start_line();
@@ -1547,7 +1560,7 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     current_source.pop();
     current_mod.pop();
-    id_replacements.pop();
+    id_map.pop();
     pop_cursor();
   }
 
@@ -1558,7 +1571,7 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     current_source.push(component_mod->source_file);
     current_mod.push(component_mod);
-    id_replacements.push(replacements);
+    id_map.push(replacements);
     push_cursor(output_type);
 
     err << start_line();
@@ -1571,7 +1584,7 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     current_source.pop();
     current_mod.pop();
-    id_replacements.pop();
+    id_map.pop();
     pop_cursor();
   }
 
@@ -1582,7 +1595,7 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     current_source.push(component_mod->source_file);
     current_mod.push(component_mod);
-    id_replacements.push(replacements);
+    id_map.push(replacements);
     push_cursor(output_type);
 
     err << start_line();
@@ -1595,7 +1608,7 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     current_source.pop();
     current_mod.pop();
-    id_replacements.pop();
+    id_map.pop();
     pop_cursor();
   }
 
@@ -1606,7 +1619,7 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     current_source.push(component_mod->source_file);
     current_mod.push(component_mod);
-    id_replacements.push(replacements);
+    id_map.push(replacements);
     push_cursor(getter_type);
 
     err << start_line();
@@ -1619,7 +1632,7 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
     current_source.pop();
     current_mod.pop();
-    id_replacements.pop();
+    id_map.pop();
     pop_cursor();
   }
 
@@ -2747,7 +2760,7 @@ CHECK_RETURN Err MtCursor::emit_sym_identifier(MnNode n) {
   Err err = check_at(sym_identifier, n);
 
   auto name = n.name4();
-  auto& rep = id_replacements.top();
+  auto& rep = id_map.top();
 
   if (auto it = rep.find(name); it != rep.end()) {
     err << emit_replacement(n, it->second.c_str());
@@ -2769,7 +2782,7 @@ CHECK_RETURN Err MtCursor::emit_sym_type_identifier(MnNode n) {
   Err err = check_at(alias_sym_type_identifier, n);
 
   auto name = n.name4();
-  auto& rep = id_replacements.top();
+  auto& rep = id_map.top();
 
   if (auto it = rep.find(name); it != rep.end()) {
     err << emit_replacement(n, it->second.c_str());
@@ -3020,43 +3033,14 @@ bool MtCursor::branch_contains_component_call(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_literal(MnNode n) {
-  Err err;
-
-  switch(n.sym) {
-    case sym_string_literal:
-      err << emit_text(n);
-      break;
-    case sym_raw_string_literal:
-      err << ERR("Raw string literals are not supported yet");
-      break;
-    case sym_char_literal:
-      err << emit_text(n);
-      break;
-    case sym_number_literal:
-      err << emit_sym_number_literal(n);
-      break;
-    case sym_user_defined_literal:
-      err << ERR("User-defined literals are not supported yet");
-      break;
-    default:
-      err << ERR("Unknown node type in literal");
-      break;
-  }
-
-  return err << check_done(n);
-}
-
-//------------------------------------------------------------------------------
-
 CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
   Err err = check_at(n);
 
-  if (n.is_leaf()) {
-    err << emit_leaf(n);
-  }
-  else if (auto it = emit_sym_map.find(n.sym); it != emit_sym_map.end()) {
+  if (auto it = emit_sym_map.find(n.sym); it != emit_sym_map.end()) {
     err << it->second(this, n);
+  }
+  else if (n.is_leaf()) {
+    err << emit_leaf(n);
   }
   else {
     err << ERR("emit_dispatch - no handler for sym %s\n", n.ts_node_type());
@@ -3082,83 +3066,34 @@ CHECK_RETURN Err MtCursor::emit_sym_nullptr(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtCursor::emit_sym_condition_clause(MnNode node) {
-  assert(node.sym == sym_condition_clause);
-  Err err;
-
-  for (auto child : node) {
-    err << emit_ws_to(child);
-
-    if (child.sym == anon_sym_LPAREN || child.sym == anon_sym_RPAREN) {
-      err << emit_text(child);
-    }
-    else if (child.is_comment()) {
-      err << emit_sym_comment(child);
-    }
-    else if (child.is_identifier()) {
-      err << emit_dispatch(child);
-    }
-    else if (child.is_expression()) {
-      err << emit_dispatch(child);
-    }
-    else if (child.is_literal()) {
-      err << emit_literal(child);
-    }
-    else {
-      child.dump_tree();
-      err << ERR("Unknown node type in sym_condition_clause");
-    }
-  }
-
-  return err << check_done(node);
-}
-
-//------------------------------------------------------------------------------
 // If statements _must_ use {}, otherwise we have no place to insert component
 // bindings if the branch contains a component method call.
+
+// + if_statement (267) =
+// |--# lit (86) = "if"
+// |--+ condition: condition_clause (362) =
+// |--+ consequence: compound_statement (248) =
+// |--# lit (87) = "else"
+// |--+ alternative: compound_statement (248) =
 
 CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnNode node) {
   Err err = check_at(sym_if_statement, node);
 
-  for (auto child : node) {
-    err << emit_ws_to(child);
+  block_prefix.push("begin");
+  block_suffix.push("end");
 
-    switch (child.sym) {
-      case sym_condition_clause:
-        err << emit_sym_condition_clause(child);
-        break;
-      case sym_if_statement:
-        err << emit_sym_if_statement(child);
-        break;
-      case sym_compound_statement:
-        block_prefix.push("begin");
-        block_suffix.push("end");
-        err << emit_dispatch(child);
-        block_prefix.pop();
-        block_suffix.pop();
-        break;
-      case sym_expression_statement:
-        if (branch_contains_component_call(child)) {
-          return err << ERR("If branches that contain component calls must use {}.\n");
-        } else {
-          block_prefix.push("begin");
-          block_suffix.push("end");
-          elide_type.push(true);
-          elide_value.push(false);
-          err << emit_dispatch(child);
-          elide_type.pop();
-          elide_value.pop();
-          block_prefix.pop();
-          block_suffix.pop();
-        }
-        break;
-      default:
-        err << emit_leaf(child);
-        break;
+  for (auto child : node) {
+    if (child.sym == sym_expression_statement) {
+      if (branch_contains_component_call(child)) {
+        return err << ERR("If branches that contain component calls must use {}.\n");
+      }
     }
   }
 
+  err << emit_children(node);
+
+  block_prefix.pop();
+  block_suffix.pop();
   return err << check_done(node);
 }
 
@@ -3622,20 +3557,8 @@ CHECK_RETURN Err MtCursor::emit_children(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_leaf(MnNode node) {
   Err err = check_at(node);
 
-  static std::map<std::string,std::string> keyword_map = {
-    {"#include", "`include"},
-    {"#ifdef",   "`ifdef"},
-    {"#ifndef",  "`ifndef"},
-    {"#else",    "`else"},
-    {"#elif",    "`elif"},
-    {"#endif",   "`endif"},
-    {"#define",  "`define"},
-    {"#undef",   "`undef"},
-  };
-
   if (!node.is_named()) {
-    auto it = keyword_map.find(node.text());
-    if (it != keyword_map.end()) {
+    if (auto it = token_map.top().find(node.text()); it != token_map.top().end()) {
       err << emit_replacement(node, (*it).second.c_str());
     }
     else {
@@ -3643,9 +3566,11 @@ CHECK_RETURN Err MtCursor::emit_leaf(MnNode node) {
     }
     return err;
   }
+  /*
   else if (node.is_literal()) {
-    err << emit_literal(node);
+    err << emit_dispatch(node);
   }
+  */
   else if (node.is_comment()) {
     err << emit_sym_comment(node);
   }

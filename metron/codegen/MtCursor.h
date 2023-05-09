@@ -18,6 +18,7 @@ struct MtCursor;
 typedef std::function<Err(MtCursor*, MnNode node)> emit_cb;
 typedef std::map<TSSymbol, emit_cb> emit_map;
 
+typedef std::map<TSSymbol, std::string> sym_to_string;
 typedef std::map<std::string, MnNode> string_to_node;
 typedef std::map<std::string, std::string> string_to_string;
 
@@ -66,7 +67,6 @@ struct MtCursor {
   CHECK_RETURN Err emit_leaf(MnNode n);
   CHECK_RETURN Err emit_toplevel_node(MnNode n);
   CHECK_RETURN Err emit_preproc(MnNode n);
-  CHECK_RETURN Err emit_literal(MnNode n);
 
   // Special-purpose emit()s
   CHECK_RETURN Err emit_static_bit_extract(MnNode n, int bx_width);
@@ -107,7 +107,6 @@ struct MtCursor {
   CHECK_RETURN Err emit_sym_class_specifier(MnNode n);
   CHECK_RETURN Err emit_sym_comment(MnNode n);
   CHECK_RETURN Err emit_sym_compound_statement(MnNode n);
-  CHECK_RETURN Err emit_sym_condition_clause(MnNode n);
   CHECK_RETURN Err emit_sym_declaration_list(MnNode n);
   CHECK_RETURN Err emit_sym_declaration(MnNode n);
   CHECK_RETURN Err emit_sym_enum_specifier(MnNode n);
@@ -175,7 +174,8 @@ struct MtCursor {
   std::stack<std::string> block_suffix;
   std::stack<int> override_size;
   std::stack<string_to_node> preproc_vars;
-  std::stack<string_to_string> id_replacements;
+  std::stack<string_to_string> id_map;
+  std::stack<string_to_string> token_map;
   std::stack<bool> elide_type;
   std::stack<bool> elide_value;
 

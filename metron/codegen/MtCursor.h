@@ -66,7 +66,6 @@ struct MtCursor {
   CHECK_RETURN Err emit_splice(MnNode n);
   CHECK_RETURN Err emit_children(MnNode n);
   CHECK_RETURN Err emit_toplevel_node(MnNode n);
-  CHECK_RETURN Err emit_preproc(MnNode n);
 
   // Special-purpose emit()s
   CHECK_RETURN Err emit_static_bit_extract(MnNode n, int bx_width);

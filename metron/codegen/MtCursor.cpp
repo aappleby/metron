@@ -53,6 +53,7 @@ emit_map emit_sym_map = {
   { sym_parameter_list,                 &MtCursor::emit_children },
   { sym_parenthesized_expression,       &MtCursor::emit_children },
   { sym_pointer_declarator,             &MtCursor::emit_sym_pointer_declarator },
+
   { sym_preproc_arg,                    &MtCursor::emit_sym_preproc_arg },
   { sym_preproc_call,                   &MtCursor::skip_over },
   { sym_preproc_def,                    &MtCursor::emit_sym_preproc_def },
@@ -60,6 +61,7 @@ emit_map emit_sym_map = {
   { sym_preproc_if,                     &MtCursor::skip_over },
   { sym_preproc_ifdef,                  &MtCursor::emit_sym_preproc_ifdef },
   { sym_preproc_include,                &MtCursor::emit_sym_preproc_include },
+
   { sym_primitive_type,                 &MtCursor::emit_sym_primitive_type },
   { sym_qualified_identifier,           &MtCursor::emit_sym_qualified_identifier },
   { sym_return_statement,               &MtCursor::emit_sym_return_statement },
@@ -2375,6 +2377,7 @@ CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnNode n) {
         pop_indent(c);
       }
 
+      // Emit the module body
       block_prefix.push("");
       block_suffix.push("endmodule");
       err << emit_dispatch(c);
@@ -2468,37 +2471,49 @@ CHECK_RETURN Err MtCursor::emit_sym_expression_statement(MnNode node) {
 //------------------------------------------------------------------------------
 // Change logic<N> to logic[N-1:0]
 
-// FIXME loop style
+// + type: template_type (348) =
+// |--# name: type_identifier (444) = "logic"
+// |--+ arguments: template_argument_list (351) =
 
 CHECK_RETURN Err MtCursor::emit_sym_template_type(MnNode n) {
   Err err = check_at(sym_template_type, n);
 
-  err << emit_sym_type_identifier(n.get_field(field_name));
-  auto args = n.get_field(field_arguments);
+  bool is_logic = false;
 
-  bool is_logic = n.get_field(field_name).match("logic");
-  if (is_logic) {
-    auto logic_size = args.first_named_child();
-    switch (logic_size.sym) {
-      case sym_number_literal: {
-        int width = atoi(logic_size.start());
-        if (width > 1) {
-          err << emit_replacement(args, "[%d:0]", width - 1);
-        }
-        break;
-      }
-      default:
-        err << emit_print("[");
-        err << emit_splice(logic_size);
-        err << emit_print("-1:0]");
-        break;
+  for (auto c : n) {
+    if (c.field == field_name) {
+      is_logic = c.match("logic");
+      err << emit_dispatch(c);
     }
-  } else {
-    // Don't do this here, it needs to go with the rest of the args in the full param list
-    //err << emit_sym_template_argument_list(args);
+    else if (c.field == field_arguments) {
+      if (is_logic) {
+        auto logic_size = c.first_named_child();
+        switch (logic_size.sym) {
+          case sym_number_literal: {
+            int width = atoi(logic_size.start());
+            if (width > 1) {
+              err << emit_replacement(c, "[%d:0]", width - 1);
+            }
+            break;
+          }
+          default:
+            err << emit_print("[");
+            err << emit_splice(logic_size);
+            err << emit_print("-1:0]");
+            break;
+        }
+      }
+      else {
+        // Template arguments for submodules and stuff end up in the param list
+      }
+      cursor = c.end();
+    }
+    else {
+      err << emit_dispatch(c);
+    }
   }
-  cursor = n.end();
 
+  cursor = n.end();
   return err << check_done(n);
 }
 
@@ -3018,7 +3033,9 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
   Err err = check_at(n);
 
   if (auto it = emit_sym_map.find(n.sym); it != emit_sym_map.end()) {
+    err << check_at(n);
     err << it->second(this, n);
+    err << check_done(n);
   }
   else if (!n.is_named()) {
     if (auto it = token_map.top().find(n.text()); it != token_map.top().end()) {
@@ -3225,20 +3242,15 @@ CHECK_RETURN Err MtCursor::emit_sym_sized_type_specifier(MnNode n) {
     err << emit_ws_to(c);
 
     if (c.field == field_type) {
-      push_cursor(node_size);
-      err << emit_dispatch(node_size);
-      pop_cursor();
-      cursor = c.end();
+      err << emit_splice(node_size);
     }
     else if (c.sym == anon_sym_signed || c.sym == anon_sym_unsigned) {
-      push_cursor(node_type);
-      err << emit_dispatch(node_type);
-      pop_cursor();
-      cursor = c.end();
+      err << emit_splice(node_type);
     }
     else {
       err << emit_dispatch(c);
     }
+    cursor = c.end();
   }
 
   return err << check_done(n);
@@ -3287,53 +3299,6 @@ CHECK_RETURN Err MtCursor::emit_sym_preproc_ifdef(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-// This doesn't really work right, TreeSitter interprets "logic<8>" in "#define FOO logic<8>" as a template function call
-#if 0
-
-  {
-    MtSourceFile dummy_source;
-    dummy_source.lib = current_source->lib;
-    dummy_source.source = arg.data();
-    dummy_source.source_end = arg.data() + arg.size();
-    dummy_source.lang = tree_sitter_cpp();
-    dummy_source.parser = ts_parser_new();
-    ts_parser_set_language(dummy_source.parser, dummy_source.lang);
-    dummy_source.tree = ts_parser_parse_string(dummy_source.parser, NULL, arg.data(), (uint32_t)arg.size());
-
-    TSNode ts_root = ts_tree_root_node(dummy_source.tree);
-    auto root_sym = ts_node_symbol(ts_root);
-    dummy_source.root_node = MnNode(ts_root, root_sym, 0, &dummy_source);
-
-    if (dummy_source.root_node.sym == sym_translation_unit) {
-      dummy_source.root_node = dummy_source.root_node.child(0);
-    }
-
-    // TreeSitter tacks an ERROR node on if we parse just a bare integer constant
-    if (dummy_source.root_node.sym == 0xFFFF) {
-      dummy_source.root_node = dummy_source.root_node.child(0);
-    }
-
-    //dummy_source.root_node.dump_tree();
-
-    MtCursor preproc_cursor(current_source->lib, &dummy_source, nullptr, str_out);
-    preproc_cursor.preproc_vars = preproc_vars;
-
-    //dummy_source.root_node.dump_tree();
-    if (dummy_source.root_node.is_expression()) {
-      err << preproc_cursor.emit_dispatch(dummy_source.root_node);
-    }
-    else if (dummy_source.root_node.is_statement()) {
-      err << preproc_cursor.emit_statement(dummy_source.root_node);
-    }
-    else {
-      err << preproc_cursor.emit_dispatch(dummy_source.root_node);
-    }
-  }
-  cursor = n.end();
-#endif
-
-//------------------------------------------------------------------------------
-
 CHECK_RETURN Err MtCursor::emit_sym_preproc_def(MnNode n) {
   Err err = check_at(sym_preproc_def, n);
 
@@ -3341,142 +3306,108 @@ CHECK_RETURN Err MtCursor::emit_sym_preproc_def(MnNode n) {
 
   for (auto child : n) {
     err << emit_ws_to(child);
+
     if (child.field == field_name) {
-      err << emit_dispatch(child);
       node_name = child;
     }
     else if (child.field == field_value) {
       preproc_vars.top()[node_name.text()] = child;
-      err << emit_sym_preproc_arg(child);
     }
-    else {
-      err << emit_dispatch(child);
-    }
+
+    err << emit_dispatch(child);
   }
 
   return err << check_done(n);
 }
 
 //------------------------------------------------------------------------------
-// FIXME need to do smarter stuff here...
+// + for_statement (272) =
+// |--# lit (93) = "for"
+// |--# lit (5) = "("
+// |--+ initializer: declaration (210) =
+// |--+ condition: binary_expression (283) =
+// |--# lit (39) = ";"
+// |--+ update: update_expression (284) =
+// |--# lit (8) = ")"
+// |--+ body: compound_statement (248) =
 
-CHECK_RETURN Err MtCursor::emit_preproc(MnNode n) {
-  Err err = check_at(n);
+CHECK_RETURN Err MtCursor::emit_sym_for_statement(MnNode n) {
+  Err err = check_at(sym_for_statement, n);
 
-  switch (n.sym) {
-    case sym_preproc_def:
-      err << emit_sym_preproc_def(n);
-      break;
-    case sym_preproc_if:
-      err << skip_over(n);
-      break;
-    case sym_preproc_call:
-      err << skip_over(n);
-      break;
-    case sym_preproc_arg:
-      err << emit_sym_preproc_arg(n);
-      break;
-    case sym_preproc_include:
-      err << emit_sym_preproc_include(n);
-      break;
-    case sym_preproc_ifdef:
-      err << emit_sym_preproc_ifdef(n);
-      break;
-    default:
-      n.error();
-      break;
-  }
+  elide_type.push(true);
+  elide_value.push(false);
 
-  return err << check_done(n);
-}
+  for (auto c : n) {
+    err << emit_ws_to(c);
 
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtCursor::emit_sym_for_statement(MnNode node) {
-  Err err = check_at(sym_for_statement, node);
-
-  for (auto child : node) {
-    err << emit_ws_to(child);
-
-    if (child.sym == sym_declaration) {
-      elide_type.push(true);
-      elide_value.push(false);
-      err << emit_dispatch(child);
-      elide_type.pop();
-      elide_value.pop();
-    }
-    else if (child.is_expression()) {
-      err << emit_dispatch(child);
-    }
-    else if (child.is_statement()) {
+    if (c.field == field_body) {
       block_prefix.push("begin");
       block_suffix.push("end");
-      elide_type.push(true);
-      elide_value.push(false);
-      err << emit_dispatch(child);
-      elide_type.pop();
-      elide_value.pop();
+      err << emit_dispatch(c);
       block_prefix.pop();
       block_suffix.pop();
     }
     else {
-      err << emit_dispatch(child);
+      err << emit_dispatch(c);
     }
-   }
+  }
 
-  return err << check_done(node);
+  elide_type.pop();
+  elide_value.pop();
+
+  return err << check_done(n);
 }
 
 //------------------------------------------------------------------------------
 // Emit the block with the correct type of "begin/end" pair, hoisting locals
 // to the top of the body scope.
 
-CHECK_RETURN Err MtCursor::emit_sym_compound_statement(MnNode node) {
+CHECK_RETURN Err MtCursor::emit_sym_compound_statement(MnNode n) {
   const std::string& delim_begin = block_prefix.top();
   const std::string& delim_end = block_suffix.top();
 
-  Err err = check_at(sym_compound_statement, node);
+  Err err = check_at(sym_compound_statement, n);
 
   bool noconvert = false;
   bool dumpit = false;
 
-  for (auto child : node) {
-    err << emit_ws_to(child);
+  for (auto c : n) {
+    err << emit_ws_to(c);
 
     if (noconvert) {
       noconvert = false;
-      err << comment_out(child);
+      err << comment_out(c);
       continue;
     }
 
     if (dumpit) {
-      child.dump_tree();
+      c.dump_tree();
       dumpit = false;
     }
 
-    if (child.sym == sym_comment && child.contains("metron_noconvert"))  noconvert = true;
-    if (child.sym == sym_comment && child.contains("dumpit"))     dumpit = true;
+    if (c.sym == sym_comment && c.contains("metron_noconvert")) noconvert = true;
+    if (c.sym == sym_comment && c.contains("dumpit")) dumpit = true;
 
     // We may need to insert input port bindings before any statement that
     // could include a call expression. We search the tree for calls and emit
     // those bindings here.
-    if (child.sym != sym_compound_statement) {
-      err << emit_call_arg_bindings(child);
+    if (c.sym != sym_compound_statement) {
+      err << emit_call_arg_bindings(c);
     }
 
-    switch (child.sym) {
+    switch (c.sym) {
 
       // Hoisted decls go immediately after the opening brace
       case anon_sym_LBRACE:
-        err << emit_replacement(child, "%s", delim_begin.c_str());
-        push_indent(node);
-        err << emit_hoisted_decls(node);
+        err << emit_replacement(c, "%s", delim_begin.c_str());
+        push_indent(n);
+        err << emit_hoisted_decls(n);
         break;
 
       case sym_declaration:
         elide_type.push(true);
         elide_value.push(false);
-        err << emit_dispatch(child);
+        err << emit_dispatch(c);
         elide_type.pop();
         elide_value.pop();
         break;
@@ -3486,7 +3417,7 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(MnNode node) {
         block_suffix.push("end");
         elide_type.push(true);
         elide_value.push(false);
-        err << emit_dispatch(child);
+        err << emit_dispatch(c);
         elide_type.pop();
         elide_value.pop();
         block_prefix.pop();
@@ -3494,17 +3425,17 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(MnNode node) {
         break;
 
       case anon_sym_RBRACE:
-        err << emit_replacement(child, "%s", delim_end.c_str());
-        pop_indent(node);
+        err << emit_replacement(c, "%s", delim_end.c_str());
+        pop_indent(n);
         break;
 
       default:
-        err << emit_dispatch(child);
+        err << emit_dispatch(c);
         break;
     }
   }
 
-  return err << check_done(node);
+  return err << check_done(n);
 }
 
 //------------------------------------------------------------------------------
@@ -3512,45 +3443,30 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(MnNode node) {
 CHECK_RETURN Err MtCursor::emit_sym_update_expression(MnNode n) {
   Err err = check_at(sym_update_expression, n);
 
+  auto mod = current_mod.top();
+  auto method = current_method.top();
   auto id = n.get_field(field_argument);
   auto op = n.get_field(field_operator);
 
-  auto left_is_field = current_mod.top()->get_field(id.name4()) != nullptr;
+  auto left_is_field = mod->get_field(id.name4()) != nullptr;
+
+  const char* new_op = (method && method->is_tick_ && left_is_field) ? " <= " : " = ";
 
   if (n.get_field(field_operator).text() == "++") {
-    push_cursor(id);
-    err << emit_dispatch(id);
-    pop_cursor();
-    if (current_method.top() && current_method.top()->is_tick_ && left_is_field) {
-      err << emit_print(" <= ");
-    }
-    else{
-      err << emit_print(" = ");
-    }
-    push_cursor(id);
-    err << emit_dispatch(id);
-    pop_cursor();
+    err << emit_splice(id);
+    err << emit_print(new_op);
+    err << emit_splice(id);
     err << emit_print(" + 1");
   } else if (n.get_field(field_operator).text() == "--") {
-    push_cursor(id);
-    err << emit_dispatch(id);
-    pop_cursor();
-    if (current_method.top() && current_method.top()->is_tick_ && left_is_field) {
-      err << emit_print(" <= ");
-    }
-    else{
-      err << emit_print(" = ");
-    }
-    push_cursor(id);
-    err << emit_dispatch(id);
-    pop_cursor();
+    err << emit_splice(id);
+    err << emit_print(new_op);
+    err << emit_splice(id);
     err << emit_print(" - 1");
   } else {
     err << ERR("Unknown update expression %s\n", n.text().c_str());
   }
 
   cursor = n.end();
-
   return err << check_done(n);
 }
 

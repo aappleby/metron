@@ -23,25 +23,6 @@ typedef std::map<std::string, std::string> string_to_string;
 
 //------------------------------------------------------------------------------
 
-struct MtCursorConfig {
-  MtCursorConfig* parent = nullptr;
-  emit_map* emits = nullptr;
-  MtSourceFile* current_source = nullptr;
-  MtModule* current_mod = nullptr;
-  MtMethod* current_method = nullptr;
-
-  bool operator == (const MtCursorConfig& b) const {
-    const auto& a = *this;
-    if (a.emits != b.emits) return false;
-    if (a.current_source != b.current_source) return false;
-    if (a.current_mod != b.current_mod) return false;
-    if (a.current_method != b.current_method) return false;
-    return true;
-  }
-};
-
-//------------------------------------------------------------------------------
-
 struct MtCursor {
   MtCursor(MtModLibrary* lib, MtSourceFile* source, MtModule* mod,
            std::string* out);
@@ -170,20 +151,6 @@ struct MtCursor {
 
   //----------------------------------------
 
-  MtCursorConfig config;
-  std::stack<MtCursorConfig> config_stack;
-
-  void push_config() {
-    config_stack.push(config);
-  }
-
-  void pop_config() {
-    config = config_stack.top();
-    config_stack.pop();
-  }
-
-  //----------------------------------------
-
   const char* cursor = nullptr;
   std::stack<const char*> cursor_stack;
 
@@ -200,6 +167,10 @@ struct MtCursor {
   //----------------------------------------
 
   MtModLibrary* lib = nullptr;
+
+  std::stack<MtSourceFile*> current_source;
+  std::stack<MtModule*> current_mod;
+  std::stack<MtMethod*> current_method;
 
   std::stack<std::string> block_prefix;
   std::stack<std::string> block_suffix;

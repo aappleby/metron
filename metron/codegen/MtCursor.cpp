@@ -751,15 +751,14 @@ CHECK_RETURN bool MtCursor::can_omit_call(MnNode n) {
 // |--+ arguments: argument_list (290) =
 
 CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
-  assert(n.sym == sym_call_expression);
-  Err err;
+  Err err = check_at(sym_call_expression, n);
+
+  err << emit_ws_to(n);
 
   MnNode func = n.get_field(field_function);
   MnNode args = n.get_field(field_arguments);
 
   std::string func_name = func.name4();
-
-  auto method = current_mod.top()->get_method(func_name);
 
   //----------
   // Handle bN
@@ -781,75 +780,19 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
 
   //----------
 
-  err << emit_ws_to(n);
-  assert(cursor == n.start());
-
-  if (func_name == "sra") {
-    auto lhs = args.named_child(0);
-    auto rhs = args.named_child(1);
-
-    err << emit_print("($signed(");
-    err << emit_splice(lhs);
-    err << emit_print(") >>> ");
-    err << emit_splice(rhs);
-    err << emit_print(")");
-    cursor = n.end();
-    return err << check_done(n);
-  } else if (func_name == "signed") {
-    err << emit_replacement(func, "$signed");
-    err << emit_dispatch(args);
-    cursor = n.end();
-    return err << check_done(n);
-  } else if (func_name == "unsigned") {
-    err << emit_replacement(func, "$unsigned");
-    err << emit_dispatch(args);
-    cursor = n.end();
-    return err << check_done(n);
-  } else if (func_name == "clog2") {
-    err << emit_replacement(func, "$clog2");
-    err << emit_dispatch(args);
-    cursor = n.end();
-    return err << check_done(n);
-  } else if (func_name == "pow2") {
-    err << emit_replacement(func, "2**");
-    err << emit_dispatch(args);
-    cursor = n.end();
-    return err << check_done(n);
-  } else if (func_name == "readmemh") {
-    err << emit_replacement(func, "$readmemh");
-    err << emit_dispatch(args);
-    cursor = n.end();
-    return err << check_done(n);
-  } else if (func_name == "value_plusargs") {
-    err << emit_replacement(func, "$value$plusargs");
-    err << emit_dispatch(args);
-    cursor = n.end();
-    return err << check_done(n);
-  } else if (func_name == "write") {
-    err << emit_replacement(func, "$write");
-    err << emit_dispatch(args);
-    cursor = n.end();
-    return err << check_done(n);
-  } else if (func_name == "sign_extend") {
-    err << emit_replacement(func, "$signed");
-    err << emit_dispatch(args);
-    cursor = n.end();
-    return err << check_done(n);
-  } else if (func_name == "zero_extend") {
-    err << emit_replacement(func, "$unsigned");
-    err << emit_dispatch(args);
-    cursor = n.end();
-    return err << check_done(n);
-  }
-  else if (func_name == "bx") {
+  if (func_name == "bx") {
     // Bit extract.
     auto template_arg = func.get_field(field_arguments).named_child(0);
+    err << emit_ws_to(n);
     err << emit_dynamic_bit_extract(n, template_arg);
     cursor = n.end();
     return err << check_done(n);
   }
-  else if (func_name == "cat") {
-    // Remove "cat" and replace parens with brackets
+
+  //----------
+  // Remove "cat" and replace parens with brackets
+
+  if (func_name == "cat") {
     err << skip_over(func);
     for (const auto& arg : (MnNode&)args) {
       err << emit_ws_to(arg);
@@ -867,8 +810,11 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
     cursor = n.end();
     return err << check_done(n);
   }
-  else if (func_name == "dup") {
-    // Convert "dup<15>(x)" to "{15 {x}}"
+
+  //----------
+  // Convert "dup<15>(x)" to "{15 {x}}"
+
+  if (func_name == "dup") {
 
     if (args.named_child_count() != 1) return err << ERR("dup() had too many children\n");
 
@@ -883,8 +829,26 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
     cursor = n.end();
     return err << check_done(n);
   }
-  else if (func.sym == sym_field_expression) {
-    // Component method call.
+
+  //----------
+
+  if (func_name == "sra") {
+    auto lhs = args.named_child(0);
+    auto rhs = args.named_child(1);
+
+    err << emit_print("($signed(");
+    err << emit_splice(lhs);
+    err << emit_print(") >>> ");
+    err << emit_splice(rhs);
+    err << emit_print(")");
+    cursor = n.end();
+    return err << check_done(n);
+  }
+
+  //----------
+  // Component method call.
+
+  if (func.sym == sym_field_expression) {
 
     auto node_component = n.get_field(field_function).get_field(field_argument);
 
@@ -900,19 +864,42 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
     cursor = n.end();
     return err << check_done(n);
   }
-  else {
-    // Internal method call.
 
-    if (method->needs_binding) {
-      err << emit_replacement(n, "%s_ret", method->cname());
-    }
-    else {
-      err << emit_children(n);
-    }
+  //----------
+  // Builtins
+
+  string_to_string renames = {
+    {"signed",         "$signed"},
+    {"unsigned",       "$unsigned"},
+    {"clog2",          "$clog2" },
+    {"pow2",           "2**" },
+    {"readmemh",       "$readmemh" },
+    {"value_plusargs", "$value$plusargs" },
+    {"write",          "$write" },
+    {"sign_extend",    "$signed" },
+    {"zero_extend",    "$unsigned" },
+  };
+
+  if (auto it = renames.find(func_name); it != renames.end()) {
+    err << emit_replacement(func, (*it).second.c_str());
+    err << emit_dispatch(args);
     cursor = n.end();
     return err << check_done(n);
   }
 
+  //----------
+  // Internal method call.
+
+  auto method = current_mod.top()->get_method(func_name);
+  if (method->needs_binding) {
+    err << emit_replacement(n, "%s_ret", method->cname());
+  }
+  else {
+    err << emit_children(n);
+  }
+
+  cursor = n.end();
+  return err << check_done(n);
 }
 
 //------------------------------------------------------------------------------
@@ -921,7 +908,6 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
   Err err;
 
-  push_cursor(n);
   elide_type.push(false);
   elide_value.push(true);
 
@@ -947,7 +933,6 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
 
   elide_type.pop();
   elide_value.pop();
-  pop_cursor();
 
   return err;
 }
@@ -957,22 +942,9 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_local_call_arg_binding(MtMethod* method, MnNode param, MnNode val) {
   Err err;
 
-  auto param_name = param.get_field(field_declarator).text();
-
-  err << emit_print("%s_%s = ", method->cname(), param_name.c_str());
-  err << emit_splice(val);
-  err << prune_trailing_ws();
-  err << emit_print(";");
-
-  return err;
-}
-
-CHECK_RETURN Err MtCursor::emit_component_call_arg_binding(MnNode inst, MtMethod* method, MnNode param, MnNode val) {
-  Err err;
-
-  err << emit_print("%s_%s_%s = ", inst.text().c_str(),
-                    method->name().c_str(),
-                    param.get_field(field_declarator).text().c_str());
+  err << emit_line("%s_%s = ",
+    method->cname(),
+    param.get_field(field_declarator).text().c_str());
   err << emit_splice(val);
   err << prune_trailing_ws();
   err << emit_print(";");
@@ -981,11 +953,25 @@ CHECK_RETURN Err MtCursor::emit_component_call_arg_binding(MnNode inst, MtMethod
 }
 
 //------------------------------------------------------------------------------
-// FIXME using start_line weirdly here
+
+CHECK_RETURN Err MtCursor::emit_component_call_arg_binding(MnNode inst, MtMethod* method, MnNode param, MnNode val) {
+  Err err;
+
+  err << emit_line("%s_%s_%s = ",
+    inst.text().c_str(),
+    method->name().c_str(),
+    param.get_field(field_declarator).text().c_str());
+  err << emit_splice(val);
+  err << prune_trailing_ws();
+  err << emit_print(";");
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_call_arg_bindings(MnNode n) {
   Err err;
-  push_cursor(n);
 
   // Emit bindings for child nodes first, but do _not_ recurse into compound
   // blocks.
@@ -997,6 +983,8 @@ CHECK_RETURN Err MtCursor::emit_call_arg_bindings(MnNode n) {
   }
 
   // OK, now we can emit bindings for the call we're at.
+
+  bool any_bindings = false;
 
   if (n.sym == sym_call_expression) {
     auto func_node = n.get_field(field_function);
@@ -1020,7 +1008,7 @@ CHECK_RETURN Err MtCursor::emit_call_arg_bindings(MnNode n) {
             component_method->param_nodes[i],
             args_node.named_child(i)
           );
-          err << start_line();
+          any_bindings = true;
         }
       }
     }
@@ -1033,13 +1021,16 @@ CHECK_RETURN Err MtCursor::emit_call_arg_bindings(MnNode n) {
             method->param_nodes[i],
             args_node.named_child(i)
           );
-          err << start_line();
+          any_bindings = true;
         }
       }
     }
   }
 
-  pop_cursor();
+  if (any_bindings) {
+    err << start_line();
+  }
+
   return err;
 }
 
@@ -1057,12 +1048,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_init(MnNode n) {
 
     if (c.sym == sym_function_declarator) {
       auto func_params = c.get_field(field_parameters);
-
-      // FIXME can this be emit_splice?
-      push_cursor(func_params);
       err << emit_param_list_as_modparams(func_params);
-      pop_cursor();
-
       err << emit_replacement(c, "initial");
     }
     else if (c.sym == sym_field_initializer_list) {
@@ -2236,7 +2222,10 @@ CHECK_RETURN Err MtCursor::emit_field_port(MtField* f) {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_param_list_as_modparams(MnNode param_list) {
-  Err err = check_at(param_list);
+  Err err;
+  push_cursor(param_list);
+
+  bool any_params = false;
 
   for (const auto& c : param_list) {
     err << emit_ws_to(c);
@@ -2263,13 +2252,15 @@ CHECK_RETURN Err MtCursor::emit_param_list_as_modparams(MnNode param_list) {
   }
 
   err << start_line();
+  pop_cursor();
   return err;
 }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_template_params_as_modparams(MnNode param_list) {
-  Err err = check_at(param_list);
+  Err err;
+  push_cursor(param_list);
 
   for (const auto& c : param_list) {
     err << emit_ws_to(c);
@@ -2295,7 +2286,7 @@ CHECK_RETURN Err MtCursor::emit_template_params_as_modparams(MnNode param_list) 
     }
   }
 
-  err << start_line();
+  pop_cursor();
   return err;
 }
 
@@ -2303,12 +2294,6 @@ CHECK_RETURN Err MtCursor::emit_template_params_as_modparams(MnNode param_list) 
 
 CHECK_RETURN Err MtCursor::emit_module_ports(MnNode class_body) {
   Err err;
-
-  err << emit_print("(");
-
-  // Save the indentation level of the struct body so we can use it in the
-  // port list.
-  push_indent(class_body);
 
   if (current_mod.top()->needs_tick()) {
     err << emit_line("// global clock");
@@ -2347,9 +2332,6 @@ CHECK_RETURN Err MtCursor::emit_module_ports(MnNode class_body) {
     err << emit_backspace();
   }
 
-  pop_indent(class_body);
-  err << emit_line(");");
-
   return err;
 }
 
@@ -2362,47 +2344,51 @@ CHECK_RETURN Err MtCursor::emit_module_ports(MnNode class_body) {
 //   field_name:sym_type_idenfiier
 //   field_body:sym_field_declaration_list
 
-// FIXME loop style
-
 CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnNode n) {
   Err err = check_at(sym_class_specifier, n);
 
-  auto class_lit = n.child(0);
-  auto class_name = n.get_field(field_name);
-  auto class_body = n.get_field(field_body);
-
-  current_mod.push(lib->get_module(class_name.text()));
-  assert(current_mod.top());
-
   //----------
 
-  err << emit_replacement(class_lit, "module");
-  err << emit_ws_to(class_name);
-  err << emit_dispatch(class_name);
-  err << emit_ws_to(class_body);
-  err << emit_module_ports(class_body);
+  for (auto c : n) {
+    err << emit_ws_to(c);
 
-  if (current_mod.top()->mod_param_list) {
-    push_indent(class_body);
-    push_cursor(current_mod.top()->mod_param_list);
-    err << emit_template_params_as_modparams(current_mod.top()->mod_param_list);
-    pop_cursor();
-    pop_indent(class_body);
+    if (c.sym == anon_sym_class) {
+      err << emit_replacement(c, "module");
+    }
+    else if (c.field == field_name) {
+      current_mod.push(lib->get_module(c.text()));
+      err << emit_dispatch(c);
+    }
+    else if (c.field == field_body) {
+      // Insert the port list before the module body
+      err << emit_print("(");
+      push_indent(c);
+      err << emit_module_ports(c);
+      pop_indent(c);
+      err << emit_line(");");
+
+      // Insert the modparam list before the module body
+      if (current_mod.top()->mod_param_list) {
+        push_indent(c);
+        err << emit_template_params_as_modparams(current_mod.top()->mod_param_list);
+        err << start_line();
+        pop_indent(c);
+      }
+
+      block_prefix.push("");
+      block_suffix.push("endmodule");
+      err << emit_dispatch(c);
+      block_prefix.pop();
+      block_suffix.pop();
+    }
+    else {
+      err << emit_dispatch(c);
+    }
   }
-
-  block_prefix.push("");
-  block_suffix.push("endmodule");
-
-  err << emit_splice(class_body);
-
-  block_prefix.pop();
-  block_suffix.pop();
 
   //----------
 
   current_mod.pop();
-
-  cursor = n.end();
   return err << check_done(n);
 }
 
@@ -3479,9 +3465,10 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(MnNode node) {
     }
 
     switch (child.sym) {
+
+      // Hoisted decls go immediately after the opening brace
       case anon_sym_LBRACE:
         err << emit_replacement(child, "%s", delim_begin.c_str());
-        // Hoisted decls go immediately after the opening brace
         push_indent(node);
         err << emit_hoisted_decls(node);
         break;

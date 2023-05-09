@@ -21,14 +21,14 @@ emit_map emit_sym_map = {
   { sym_array_declarator,               &MtCursor::emit_children },
   { sym_assignment_expression,          &MtCursor::emit_sym_assignment_expression },
   { sym_binary_expression,              &MtCursor::emit_children },
-  { sym_break_statement,                &MtCursor::emit_sym_break_statement },
+  { sym_break_statement,                &MtCursor::skip_over }, // Verilog doesn't use "break"
   { sym_call_expression,                &MtCursor::emit_sym_call_expression },
   { sym_case_statement,                 &MtCursor::emit_sym_case_statement },
   { sym_class_specifier,                &MtCursor::emit_sym_class_specifier },
   { sym_comment,                        &MtCursor::emit_sym_comment },
   { sym_compound_statement,             &MtCursor::emit_sym_compound_statement },
   { sym_condition_clause,               &MtCursor::emit_sym_condition_clause },
-  { sym_conditional_expression,         &MtCursor::emit_sym_conditional_expression },
+  { sym_conditional_expression,         &MtCursor::emit_children},
   { sym_declaration,                    &MtCursor::emit_sym_declaration },
   { sym_enum_specifier,                 &MtCursor::emit_sym_enum_specifier },
   { sym_enumerator_list,                &MtCursor::emit_children },
@@ -62,6 +62,7 @@ emit_map emit_sym_map = {
   { sym_qualified_identifier,           &MtCursor::emit_sym_qualified_identifier },
   { sym_return_statement,               &MtCursor::emit_sym_return_statement },
   { sym_sized_type_specifier,           &MtCursor::emit_sym_sized_type_specifier },
+  { sym_storage_class_specifier,        &MtCursor::skip_over },
   { sym_struct_specifier,               &MtCursor::emit_sym_struct_specifier },
   { sym_subscript_expression,           &MtCursor::emit_children },
   { sym_switch_statement,               &MtCursor::emit_sym_switch_statement },
@@ -2191,11 +2192,11 @@ CHECK_RETURN Err MtCursor::emit_field_port(MtField* f) {
   if (f->is_component()) return err;
 
   if (f->is_public() && f->is_input()) {
-    err << emit_print("input ");
+    err << emit_line("input ");
   } else if (f->is_public() && f->is_signal()) {
-    err << emit_print("output ");
+    err << emit_line("output ");
   } else if (f->is_public() && f->is_register()) {
-    err << emit_print("output ");
+    err << emit_line("output ");
   } else {
     err << ERR("Unknown field port type for %s\n", f->cname());
   }
@@ -2268,35 +2269,27 @@ CHECK_RETURN Err MtCursor::emit_module_ports(MnNode class_body) {
   push_indent(class_body);
 
   if (current_mod.top()->needs_tick()) {
-    err << start_line();
-    err << emit_print("// global clock");
-    err << start_line();
-    err << emit_print("input logic clock,");
+    err << emit_line("// global clock");
+    err << emit_line("input logic clock,");
   }
 
   if (current_mod.top()->input_signals.size()) {
-    err << start_line();
-    err << emit_print("// input signals");
+    err << emit_line("// input signals");
     for (auto f : current_mod.top()->input_signals) {
-      err << start_line();
       err << emit_field_port(f);
     }
   }
 
   if (current_mod.top()->output_signals.size()) {
-    err << start_line();
-    err << emit_print("// output signals");
+    err << emit_line("// output signals");
     for (auto f : current_mod.top()->output_signals) {
-      err << start_line();
       err << emit_field_port(f);
     }
   }
 
   if (current_mod.top()->output_registers.size()) {
-    err << start_line();
-    err << emit_print("// output registers");
+    err << emit_line("// output registers");
     for (auto f : current_mod.top()->output_registers) {
-      err << start_line();
       err << emit_field_port(f);
     }
   }
@@ -2306,14 +2299,14 @@ CHECK_RETURN Err MtCursor::emit_module_ports(MnNode class_body) {
       err << emit_method_ports(m);
     }
   }
+
   // Remove trailing comma from port list
   if (at_comma) {
     err << emit_backspace();
   }
 
   pop_indent(class_body);
-  err << start_line();
-  err << emit_print(");");
+  err << emit_line(");");
 
   return err;
 }
@@ -2340,58 +2333,37 @@ CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnNode n) {
   //----------
 
   err << emit_replacement(class_lit, "module");
-
   err << emit_ws_to(class_name);
   err << emit_dispatch(class_name);
-
   err << emit_ws_to(class_body);
   err << emit_module_ports(class_body);
 
-  push_indent(class_body);
   if (current_mod.top()->mod_param_list) {
+    push_indent(class_body);
     push_cursor(current_mod.top()->mod_param_list);
     err << emit_module_parameter_list(current_mod.top()->mod_param_list);
     pop_cursor();
+    pop_indent(class_body);
   }
-  cursor = class_body.start();
-  err << emit_sym_field_declaration_list(class_body, false);
-  pop_indent(class_body);
 
-  cursor = n.end();
+  push_cursor(class_body);
+  err << emit_sym_field_declaration_list(class_body, false);
+  pop_cursor();
+
+  //----------
+
   current_mod.pop();
 
+  cursor = n.end();
   return err << check_done(n);
-}
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtCursor::emit_trigger_call(MtMethod* m) {
-  Err err;
-
-  if (m->has_return()) {
-    err << emit_print("%s_ret = ", m->cname());
-  }
-
-  err << emit_print("%s(", m->cname());
-
-  int param_count = m->param_nodes.size();
-  for (int i = 0; i < param_count; i++) {
-    auto param = m->param_nodes[i];
-    err << emit_print("%s_%s", m->cname(),
-                      param.get_field(field_declarator).text().c_str());
-    if (i < param_count - 1) {
-      err << emit_print(", ");
-    }
-  }
-  err << emit_print(");");
-
-  return err;
 }
 
 //------------------------------------------------------------------------------
 // Emit the module body, with a few modifications.
 // Discard the opening brace
 // Replace the closing brace with "endmodule"
+
+// FIXME get rid of is_struct?
 
 CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n, bool is_struct) {
   Err err = check_at(sym_field_declaration_list, n);
@@ -2438,12 +2410,6 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n, bool is_str
         // The latest tree sitter is not putting this in with the access specifier...
         err << skip_over(child);
         break;
-      case sym_field_declaration:
-        err << emit_sym_field_declaration(child);
-        break;
-      case sym_function_definition:
-        err << emit_sym_function_definition(child);
-        break;
       case anon_sym_RBRACE:
         if (is_struct) {
           err << emit_text(child);
@@ -2452,11 +2418,8 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n, bool is_str
           err << emit_replacement(child, "endmodule");
         }
         break;
-      case sym_comment:
-        err << emit_sym_comment(child);
-        break;
       default:
-        err << ERR("Unknown node type in sym_field_declaration_list");
+        err << emit_dispatch(child);
         break;
     }
   }
@@ -2486,6 +2449,8 @@ CHECK_RETURN Err MtCursor::emit_sym_expression_statement(MnNode node) {
 //------------------------------------------------------------------------------
 // Change logic<N> to logic[N-1:0]
 
+// FIXME loop style
+
 CHECK_RETURN Err MtCursor::emit_sym_template_type(MnNode n) {
   Err err = check_at(sym_template_type, n);
 
@@ -2501,13 +2466,11 @@ CHECK_RETURN Err MtCursor::emit_sym_template_type(MnNode n) {
         if (width > 1) {
           err << emit_replacement(args, "[%d:0]", width - 1);
         }
-        cursor = args.end();
         break;
       }
       default:
-        cursor = logic_size.start();
         err << emit_print("[");
-        err << emit_dispatch(logic_size);
+        err << emit_splice(logic_size);
         err << emit_print("-1:0]");
         break;
     }
@@ -2523,20 +2486,20 @@ CHECK_RETURN Err MtCursor::emit_sym_template_type(MnNode n) {
 //------------------------------------------------------------------------------
 // Change <param, param> to #(param, param)
 
+// FIXME use string replacement?
+
 CHECK_RETURN Err MtCursor::emit_sym_template_argument_list(MnNode n) {
   Err err = check_at(sym_template_argument_list, n);
 
   for (auto c : n) {
-    switch (c.sym) {
-      case anon_sym_LT:
-        err << emit_replacement(c, " #(");
-        break;
-      case anon_sym_GT:
-        err << emit_replacement(c, ")");
-        break;
-      default:
-        err << emit_dispatch(c);
-        break;
+    if (c.sym == anon_sym_LT) {
+      err << emit_replacement(c, " #(");
+    }
+    else if (c.sym == anon_sym_GT) {
+      err << emit_replacement(c, ")");
+    }
+    else {
+      err << emit_dispatch(c);
     }
   }
 
@@ -2613,7 +2576,6 @@ CHECK_RETURN Err MtCursor::emit_sym_translation_unit(MnNode n) {
     if (c.sym == sym_comment && c.contains("dumpit"))     dumpit = true;
 
     err << emit_toplevel_node(c);
-    err << check_done(c);
   }
 
   // Toplevel blocks can have trailing whitespace that isn't contained by child
@@ -2624,6 +2586,8 @@ CHECK_RETURN Err MtCursor::emit_sym_translation_unit(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
+
+// FIXME use string replace?
 
 CHECK_RETURN Err MtCursor::emit_sym_declaration_list(MnNode n) {
   Err err = check_at(sym_declaration_list, n);
@@ -2671,8 +2635,7 @@ CHECK_RETURN Err MtCursor::emit_sym_namespace_definition(MnNode n) {
       err << emit_print("endpackage");
     }
     else {
-      c.dump_tree();
-      exit(1);
+      err << emit_dispatch(c);
     }
   }
 
@@ -2731,37 +2694,28 @@ CHECK_RETURN Err MtCursor::emit_sym_number_literal(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_sym_return_statement(MnNode n) {
   Err err = check_at(sym_return_statement, n);
 
+  auto& method = current_method.top();
+  auto method_name = method->name();
+
   for (auto c : n) {
     err << emit_ws_to(c);
 
     if (c.sym == anon_sym_return) {
-
-      if (current_method.top()->is_tock_) {
-        assert(current_method.top()->needs_binding || current_method.top()->needs_ports);
-        err << emit_replacement(c, "%s_ret =", current_method.top()->name().c_str());
+      if (method->is_tock_) {
+        err << emit_replacement(c, "%s_ret =", method_name.c_str());
       }
-      else if (current_method.top()->is_func_ && current_method.top()->is_public() && !current_method.top()->called_in_module()) {
-        assert(current_method.top()->needs_binding || current_method.top()->needs_ports);
-        err << emit_replacement(c, "%s_ret =", current_method.top()->name().c_str());
+      else if (method->is_func_ && method->is_public() && !method->called_in_module()) {
+        err << emit_replacement(c, "%s_ret =", method_name.c_str());
       }
-      else if (current_method.top()->is_tick_) {
-        assert(current_method.top()->needs_binding || current_method.top()->needs_ports);
-        err << emit_replacement(c, "%s_ret <=", current_method.top()->name().c_str());
+      else if (method->is_tick_) {
+        err << emit_replacement(c, "%s_ret <=", method_name.c_str());
       }
       else {
-        err << emit_replacement(c, "%s =", current_method.top()->name().c_str());
+        err << emit_replacement(c, "%s =", method_name.c_str());
       }
-    } else if (c.is_expression()) {
-      err << emit_dispatch(c);
-    } else if (c.is_identifier()) {
-      err << emit_dispatch(c);
-    } else if (c.is_literal()) {
-      err << emit_literal(c);
-    } else if (c.sym == anon_sym_SEMI) {
-      err << emit_text(c);
     }
     else {
-      err << ERR("Unknown node type in sym_return");
+      err << emit_dispatch(c);
     }
   }
 
@@ -2785,9 +2739,9 @@ CHECK_RETURN Err MtCursor::emit_sym_identifier(MnNode n) {
   Err err = check_at(sym_identifier, n);
 
   auto name = n.name4();
+  auto& rep = id_replacements.top();
 
-  auto it = id_replacements.top().find(name);
-  if (it != id_replacements.top().end()) {
+  if (auto it = rep.find(name); it != rep.end()) {
     err << emit_replacement(n, it->second.c_str());
   } else if (preproc_vars.top().contains(name)) {
     err << emit_print("`");
@@ -2807,8 +2761,9 @@ CHECK_RETURN Err MtCursor::emit_sym_type_identifier(MnNode n) {
   Err err = check_at(alias_sym_type_identifier, n);
 
   auto name = n.name4();
-  auto it = id_replacements.top().find(name);
-  if (it != id_replacements.top().end()) {
+  auto& rep = id_replacements.top();
+
+  if (auto it = rep.find(name); it != rep.end()) {
     err << emit_replacement(n, it->second.c_str());
   } else {
     err << emit_text(n);
@@ -2822,14 +2777,10 @@ CHECK_RETURN Err MtCursor::emit_sym_type_identifier(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_sym_template_declaration(MnNode n) {
   Err err = check_at(sym_template_declaration, n);
 
+  // FIXME does this have a field name?
   MnNode class_specifier;
-  MnNode param_list;
 
   for (auto child : (MnNode)n) {
-    if (child.sym == sym_template_parameter_list) {
-      param_list = MnNode(child);
-    }
-
     if (child.sym == sym_class_specifier) {
       class_specifier = MnNode(child);
     }
@@ -2839,13 +2790,10 @@ CHECK_RETURN Err MtCursor::emit_sym_template_declaration(MnNode n) {
   std::string class_name = class_specifier.get_field(field_name).text();
 
   current_mod.push(lib->get_module(class_name));
-
-  cursor = class_specifier.start();
-  err << emit_dispatch(class_specifier);
-  cursor = n.end();
-
+  err << emit_splice(class_specifier);
   current_mod.pop();
 
+  cursor = n.end();
   return err << check_done(n);
 }
 
@@ -2924,9 +2872,6 @@ CHECK_RETURN Err MtCursor::emit_sym_case_statement(MnNode n) {
         err << skip_over(c);
         err << skip_ws_inside(n);
         break;
-      case sym_identifier:
-        err << emit_sym_identifier(c);
-        break;
       case anon_sym_case:
         err << skip_over(c);
         err << skip_ws();
@@ -2948,16 +2893,6 @@ CHECK_RETURN Err MtCursor::emit_sym_case_statement(MnNode n) {
         elide_value.pop();
         block_prefix.pop();
         block_suffix.pop();
-
-        break;
-      case sym_qualified_identifier:
-        err << emit_sym_qualified_identifier(c);
-        break;
-      case sym_number_literal:
-        err << emit_sym_number_literal(c);
-        break;
-      case anon_sym_default:
-        err << emit_text(c);
         break;
       default:
         err << emit_dispatch(c);
@@ -2979,9 +2914,6 @@ CHECK_RETURN Err MtCursor::emit_sym_switch_statement(MnNode n) {
     if (c.sym == anon_sym_switch) {
       err << emit_replacement(c, "case");
     }
-    else if (c.field == field_condition) {
-      err << emit_sym_condition_clause(c);
-    }
     else if (c.field == field_body) {
       block_prefix.push("");
       block_suffix.push("endcase");
@@ -2990,7 +2922,7 @@ CHECK_RETURN Err MtCursor::emit_sym_switch_statement(MnNode n) {
       block_suffix.pop();
     }
     else {
-      err << emit_leaf(c);
+      err << emit_dispatch(c);
     }
   }
 
@@ -3013,42 +2945,6 @@ CHECK_RETURN Err MtCursor::emit_sym_comment(MnNode n) {
   }
 
   return err << check_done(n);
-}
-
-//------------------------------------------------------------------------------
-// Verilog doesn't use "break"
-
-CHECK_RETURN Err MtCursor::emit_sym_break_statement(MnNode n) {
-  Err err = check_at(sym_break_statement, n);
-
-  err << skip_over(n);
-
-  return err << check_done(n);
-}
-
-//------------------------------------------------------------------------------
-// TreeSitter nodes slightly broken for "a = b ? c : d;"...
-
-CHECK_RETURN Err MtCursor::emit_sym_conditional_expression(MnNode n) {
-  Err err = check_at(sym_conditional_expression, n);
-
-  for (auto child : n) {
-    err << emit_ws_to(child);
-    err << emit_dispatch(child);
-  }
-
-  return err << check_done(n);
-}
-
-//------------------------------------------------------------------------------
-// Static variables become localparams at module level.
-
-CHECK_RETURN Err MtCursor::emit_sym_storage_class_specifier(MnNode n) {
-  Err err = check_at(sym_storage_class_specifier, n);
-
-  err << skip_over(n);
-
-  return err;
 }
 
 //------------------------------------------------------------------------------

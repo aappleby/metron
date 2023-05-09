@@ -3099,12 +3099,33 @@ CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnNode node) {
 
 //------------------------------------------------------------------------------
 
+// + using_declaration (356) =
+// |--# lit (164) = "using"
+// |--# lit (163) = "namespace"
+// |--# identifier (1) = "rv_constants"
+// |--# lit (39) = ";"
+
 CHECK_RETURN Err MtCursor::emit_sym_using_declaration(MnNode n) {
   Err err = check_at(sym_using_declaration, n);
 
-  // FIXME child index
-  auto name = n.child(2).text();
-  err << emit_replacement(n, "import %s::*;", name.c_str());
+  for (auto c : n) {
+    err << emit_ws_to(c);
+
+    if (c.sym == anon_sym_using) {
+      err << emit_replacement(c, "import");
+    }
+    else if (c.sym == anon_sym_namespace) {
+      err << skip_over(c);
+      err << skip_ws_inside(n);
+    }
+    else if (c.sym == sym_identifier) {
+      err << emit_dispatch(c);
+      err << emit_print("::*");
+    }
+    else {
+      err << emit_dispatch(c);
+    }
+  }
 
   return err << check_done(n);
 }

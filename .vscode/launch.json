@@ -8,8 +8,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/bin/metron",
       "cwd": "${workspaceFolder}",
-      //"args" : ["-d", "-v", "-e", "-c", "tests/metron_good/defines.h"],
-      "args" : ["-v", "-e", "-c", "examples/uart/metron/uart_tx.h"],
+      "args" : ["-d", "-v", "-e", "-c", "tests/metron_good/initialize_struct_to_zero.h"],
+      //"args" : ["-v", "-e", "-c", "examples/uart/metron/uart_tx.h"],
       "setupCommands": [
         { // Display content in STL containers pretty
           "description": "Enable pretty-printing for gdb",

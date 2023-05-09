@@ -36,6 +36,7 @@ emit_map emit_sym_map = {
   { sym_enumerator,                     &MtCursor::emit_children },
   { sym_expression_statement,           &MtCursor::emit_sym_expression_statement },
   { sym_field_declaration,              &MtCursor::emit_sym_field_declaration },
+  { sym_field_declaration_list,         &MtCursor::emit_sym_field_declaration_list },
   { sym_field_expression,               &MtCursor::emit_sym_field_expression },
   { sym_for_statement,                  &MtCursor::emit_sym_for_statement },
   { sym_function_declarator,            &MtCursor::emit_sym_function_declarator },
@@ -47,9 +48,9 @@ emit_map emit_sym_map = {
   { sym_namespace_definition,           &MtCursor::emit_sym_namespace_definition },
   { sym_nullptr,                        &MtCursor::emit_sym_nullptr },
   { sym_number_literal,                 &MtCursor::emit_sym_number_literal },
-  { sym_optional_parameter_declaration, &MtCursor::emit_children },
+  { sym_optional_parameter_declaration, &MtCursor::emit_sym_optional_parameter_declaration },
   { sym_parameter_declaration,          &MtCursor::emit_children },
-  { sym_parameter_list,                 &MtCursor::emit_children},
+  { sym_parameter_list,                 &MtCursor::emit_children },
   { sym_parenthesized_expression,       &MtCursor::emit_children },
   { sym_pointer_declarator,             &MtCursor::emit_sym_pointer_declarator },
   { sym_preproc_arg,                    &MtCursor::emit_sym_preproc_arg },
@@ -1036,7 +1037,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_init(MnNode n) {
 
       // FIXME can this be emit_splice?
       push_cursor(func_params);
-      err << emit_module_parameter_list(func_params);
+      err << emit_sym_parameter_list_as_modparams(func_params);
       pop_cursor();
 
       err << emit_replacement(c, "initial");
@@ -1912,7 +1913,7 @@ CHECK_RETURN Err MtCursor::emit_sym_function_declarator(MnNode node) {
 [000.018]  |--# default_value: number_literal (126) = "4"
 */
 
-CHECK_RETURN Err MtCursor::emit_module_parameter_declaration(MnNode node) {
+CHECK_RETURN Err MtCursor::emit_sym_optional_parameter_declaration(MnNode node) {
   Err err = check_at(sym_optional_parameter_declaration, node);
 
   err << emit_line("parameter ");
@@ -2047,45 +2048,40 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
-// FIXME loop style
+/*
+[000.004]  + struct_specifier (255) =
+[000.004]  |--# lit (83) = "struct"
+[000.004]  |--# name: type_identifier (444) = "MyStruct1"
+[000.004]  |--+ body: field_declaration_list (257) =
+*/
 
 CHECK_RETURN Err MtCursor::emit_sym_struct_specifier(MnNode n) {
-  Err err = check_at(n);
-  assert(n.sym == sym_struct_specifier);
-
-  // FIXME loop style
-  // FIXME - Do we _have_ to mark it as packed?
-
-  auto node_name = n.get_field(field_name);
-  auto node_body = n.get_field(field_body);
+  Err err = check_at(sym_struct_specifier, n);
 
   block_prefix.push("{");
   block_suffix.push("}");
 
-  if (node_name) {
-    // struct Foo {};
+  MnNode node_name = n.get_field(field_name);
 
-    err << emit_print("typedef ");
-    err << emit_text(n.child(0));
-    err << emit_print(" packed ");
+  for (auto c : n) {
+    err << emit_ws_to(c);
 
-    cursor = node_body.start();
-    err << emit_sym_field_declaration_list(node_body, true);
-
-    err << emit_print(" ");
-
-    push_cursor(node_name);
-    err << emit_dispatch(node_name);
-    pop_cursor();
-
-    err << emit_print(";");
-    cursor = n.end();
-  } else {
-    // typedef struct {} Foo;
-
-    err << emit_text(n.child(0));
-    err << emit_print(" packed ");
-    err << emit_sym_field_declaration_list(node_body, true);
+    if (c.sym == anon_sym_struct) {
+      err << emit_replacement(c, "typedef struct packed");
+    }
+    else if (c.field == field_name) {
+      err << skip_over(c);
+      err << skip_ws_inside(n);
+    }
+    else if (c.field == field_body) {
+      err << emit_dispatch(c);
+      err << emit_print(" ");
+      err << emit_splice(node_name);
+      err << emit_print(";");
+    }
+    else {
+      err << emit_dispatch(c);
+    }
   }
 
   block_prefix.pop();
@@ -2197,27 +2193,18 @@ CHECK_RETURN Err MtCursor::emit_func_binding_vars(MtMethod* m) {
 CHECK_RETURN Err MtCursor::emit_field_port(MtField* f) {
   Err err;
 
-  if (!f->is_public()) return err;
-  if (f->is_component()) return err;
+  if (!f->is_public()) return ERR("Can't emit port for private field");
+  if (f->is_component()) return ERR("Can't emit port for component field");
 
-  if (f->is_public() && f->is_input()) {
+  if (f->is_input()) {
     err << emit_line("input ");
-  } else if (f->is_public() && f->is_signal()) {
-    err << emit_line("output ");
-  } else if (f->is_public() && f->is_register()) {
-    err << emit_line("output ");
   } else {
-    err << ERR("Unknown field port type for %s\n", f->cname());
+    err << emit_line("output ");
   }
 
-  if (err.has_err()) return err;
-
-  auto node_type = f->get_type_node();
-  auto node_decl = f->get_decl_node();
-
-  err << emit_splice(node_type);
+  err << emit_splice(f->get_type_node());
   err << emit_print(" ");
-  err << emit_splice(node_decl);
+  err << emit_splice(f->get_decl_node());
   err << emit_print(",");
 
   return err;
@@ -2225,31 +2212,21 @@ CHECK_RETURN Err MtCursor::emit_field_port(MtField* f) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_module_parameter_list(MnNode param_list) {
-  Err err;
-  assert(cursor == param_list.start());
-  assert(param_list.sym == sym_parameter_list || param_list.sym == sym_template_parameter_list);
-
-  int param_count = 0;
-
-  for (const auto& c : param_list) {
-    switch (c.sym) {
-      case sym_optional_parameter_declaration:
-      case sym_parameter_declaration:
-        param_count++;
-        break;
-    }
-  }
-
-  //----------
-  // FIXME handle default template params
+CHECK_RETURN Err MtCursor::emit_sym_parameter_list_as_modparams(MnNode param_list) {
+  Err err = check_at(param_list);
 
   for (const auto& c : param_list) {
     err << emit_ws_to(c);
 
     switch (c.sym) {
+      case anon_sym_LPAREN:
+      case anon_sym_RPAREN:
+      case anon_sym_COMMA:
+        err << skip_over(c);
+        break;
+
       case sym_optional_parameter_declaration:
-        err << emit_module_parameter_declaration(c);
+        err << emit_dispatch(c);
         break;
 
       case sym_parameter_declaration:
@@ -2257,7 +2234,40 @@ CHECK_RETURN Err MtCursor::emit_module_parameter_list(MnNode param_list) {
         break;
 
       default:
+        err << emit_dispatch(c);
+        break;
+    }
+  }
+
+  err << start_line();
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_sym_template_parameter_list_as_modparams(MnNode param_list) {
+  Err err = check_at(param_list);
+
+  for (const auto& c : param_list) {
+    err << emit_ws_to(c);
+
+    switch (c.sym) {
+      case anon_sym_LT:
+      case anon_sym_GT:
+      case anon_sym_COMMA:
         err << skip_over(c);
+        break;
+
+      case sym_optional_parameter_declaration:
+        err << emit_dispatch(c);
+        break;
+
+      case sym_parameter_declaration:
+        err << ERR("Parameter '%s' must have a default value\n", c.text().c_str());
+        break;
+
+      default:
+        err << emit_dispatch(c);
         break;
     }
   }
@@ -2352,7 +2362,7 @@ CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnNode n) {
   if (current_mod.top()->mod_param_list) {
     push_indent(class_body);
     push_cursor(current_mod.top()->mod_param_list);
-    err << emit_module_parameter_list(current_mod.top()->mod_param_list);
+    err << emit_sym_template_parameter_list_as_modparams(current_mod.top()->mod_param_list);
     pop_cursor();
     pop_indent(class_body);
   }
@@ -2360,9 +2370,7 @@ CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnNode n) {
   block_prefix.push("");
   block_suffix.push("endmodule");
 
-  push_cursor(class_body);
-  err << emit_sym_field_declaration_list(class_body, false);
-  pop_cursor();
+  err << emit_splice(class_body);
 
   block_prefix.pop();
   block_suffix.pop();
@@ -2380,10 +2388,7 @@ CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnNode n) {
 // Discard the opening brace
 // Replace the closing brace with "endmodule"
 
-// FIXME get rid of is_struct?
-// FIXME this should use block delimiters
-
-CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n, bool is_struct) {
+CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n) {
   Err err = check_at(sym_field_declaration_list, n);
   push_indent(n);
 
@@ -2415,7 +2420,6 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration_list(MnNode n, bool is_str
     switch (child.sym) {
       case anon_sym_LBRACE:
         err << emit_replacement(child, block_prefix.top().c_str());
-        err << skip_ws();
         break;
       case anon_sym_COLON:
         // The latest tree sitter is not putting this in with the access specifier...

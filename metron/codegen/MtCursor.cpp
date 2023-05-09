@@ -2972,47 +2972,31 @@ CHECK_RETURN Err MtCursor::emit_sym_comment(MnNode n) {
 // Change "std::string" to "string".
 // Change "enum::val" to "val" (SV doesn't support scoped enum values)
 
-CHECK_RETURN Err MtCursor::emit_sym_qualified_identifier(MnNode node) {
-  Err err = check_at(sym_qualified_identifier, node);
+// + left: qualified_identifier (401) =
+// |--# scope: namespace_identifier (441) = "rv_config"
+// |--# lit (43) = "::"
+// |--# name: identifier (1) = "DATA_BITS"
+
+CHECK_RETURN Err MtCursor::emit_sym_qualified_identifier(MnNode n) {
+  Err err = check_at(sym_qualified_identifier, n);
 
   bool elide_scope = false;
 
-  for (auto child : node) {
-    if (child.field == field_scope) {
-      if (child.text() == "std") elide_scope = true;
-      if (current_mod.top()->get_enum(child.text())) elide_scope = true;
+  for (auto c : n) {
+    if (c.field == field_scope) {
+      if (c.text() == "std") elide_scope = true;
+      if (current_mod.top()->get_enum(c.text())) elide_scope = true;
+      err << (elide_scope ? skip_over(c) : emit_dispatch(c));
     }
-  }
-
-  for (auto child : node) {
-    if (child.sym == alias_sym_namespace_identifier) {
-      if (elide_scope) {
-        err << skip_over(child);
-      }
-      else {
-        err << emit_text(child);
-      }
-    }
-    else if (child.sym == sym_identifier) {
-      err << emit_sym_identifier(child);
-    }
-    else if (child.sym == alias_sym_type_identifier) {
-      err << emit_sym_type_identifier(child);
-    }
-    else if (child.sym == anon_sym_COLON_COLON) {
-      if (elide_scope) {
-        err << skip_over(child);
-      }
-      else {
-        err << emit_text(child);
-      }
+    else if (c.sym == anon_sym_COLON_COLON) {
+      err << (elide_scope ? skip_over(c) : emit_dispatch(c));
     }
     else {
-      err << ERR("Unknown node type in sym_qualified_identifier");
+      err << emit_dispatch(c);
     }
   }
 
-  return err << check_done(node);
+  return err << check_done(n);
 }
 
 //------------------------------------------------------------------------------
@@ -3098,7 +3082,6 @@ CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnNode node) {
 }
 
 //------------------------------------------------------------------------------
-
 // + using_declaration (356) =
 // |--# lit (164) = "using"
 // |--# lit (163) = "namespace"
@@ -3131,79 +3114,84 @@ CHECK_RETURN Err MtCursor::emit_sym_using_declaration(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
+// Const string:
+// + declaration (210) =
+// |--+ storage_class_specifier (249) =
+// |  |--# lit (64) = "static"
+// |--+ type_qualifier (250) =
+// |  |--# lit (68) = "const"
+// |--# type: primitive_type (80) = "char"
+// |--+ declarator: init_declarator (247) =
+// |  |--+ declarator: pointer_declarator (235) =
+// |  |  |--# lit (23) = "*"
+// |  |  |--# declarator: identifier (1) = "TEXT_HEX"
+// |  |--# lit (63) = "="
+// |  |--+ value: string_literal (300) =
+// |     |--# lit (137) = "\""
+// |     |--# lit (137) = "\""
+// |--# lit (39) = ";"
 
 CHECK_RETURN Err MtCursor::emit_sym_declaration(MnNode n) {
   Err err = check_at(sym_declaration, n);
 
-  bool is_static = false;
   bool is_const = false;
 
-  MnNode node_type;
-
-  for (auto child : (MnNode)n) {
-    if (child.sym == sym_storage_class_specifier && child.text() == "static")
-      is_static = true;
-    if (child.sym == sym_type_qualifier && child.text() == "const")
-      is_const = true;
-
-    if (child.field == field_type) node_type = child;
+  for (auto c : n) {
+    if (c.sym == sym_type_qualifier)
+      is_const = c.text() == "const";
   }
 
   // Check for "static const char"
-  if (is_const && node_type.text() == "char") {
-    err << emit_print("localparam string ");
+  if (is_const && n.get_field(field_type).text() == "char") {
     auto init_decl = n.get_field(field_declarator);
     auto pointer_decl = init_decl.get_field(field_declarator);
     auto name = pointer_decl.get_field(field_declarator);
-    cursor = name.start();
-    err << emit_text(name);
-    err << emit_print(" = ");
-
     auto val = init_decl.get_field(field_value);
-    cursor = val.start();
-    err << emit_text(val);
+
+    err << emit_print("localparam string ");
+    err << emit_splice(name);
+    err << emit_print(" = ");
+    err << emit_splice(val);
     err << prune_trailing_ws();
     err << emit_print(";");
+
     cursor = n.end();
     return err;
-  }
-
-  if (is_const) {
-    err << emit_print("parameter ");
   }
 
   // Declarations inside scopes get their type removed, as the type+name decl
   // has been hoisted to the top of the scope.
 
-  bool elide_decl = false;
   for (auto child : n) {
     if (child.field == field_declarator && child.is_identifier() && elide_type.top()) {
-      elide_decl = true;
+        return err << skip_over(n);
     }
   }
 
-  if (elide_decl) {
-    err << skip_over(n);
-  }
-  else {
-    for (auto child : n) {
-      err << emit_ws_to(child);
+  // Otherwise we emit the declaration as normal
 
-      if (child.sym == sym_storage_class_specifier) {
-        err << skip_over(child);
-        err << skip_ws();
-      }
-      else if (child.sym == sym_type_qualifier) {
-        err << skip_over(child);
-        err << skip_ws();
-      }
-      else if (child.field == field_type && elide_type.top()) {
-        err << skip_over(child);
-        err << skip_ws();
+  for (auto child : n) {
+    err << emit_ws_to(child);
+
+    if (child.sym == sym_storage_class_specifier) {
+      err << skip_over(child);
+      err << skip_ws();
+    }
+    else if (child.sym == sym_type_qualifier) {
+      if (child.text() == "const") {
+        err << emit_replacement(child, "parameter");
       }
       else {
-        err << emit_dispatch(child);
+        err << skip_over(child);
+        err << skip_ws();
       }
+    }
+    else if (child.field == field_type && elide_type.top()) {
+      err << skip_over(child);
+      err << skip_ws();
+    }
+    else {
+      err << emit_dispatch(child);
     }
   }
 

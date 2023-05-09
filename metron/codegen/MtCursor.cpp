@@ -1260,33 +1260,6 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
     err << emit_print(" #(");
     indent.push(indent.top() + "  ");
 
-    // Count up how many parameters we're passing to the submodule.
-    int param_count = 0;
-
-    // All the named elements of the template argument list count as parameters.
-    if (has_template_params) {
-      auto template_args = node_type.get_field(field_arguments);
-      for (auto c : template_args) {
-        if (c.is_named()) param_count++;
-      }
-    }
-
-    // If the field initializer for this component passes arguments to the component's constructor,
-    // count them as parameters.
-    if (has_constructor_params && current_mod.top()->constructor) {
-      for(auto initializer : current_mod.top()->constructor->_node.child_by_sym(sym_field_initializer_list)) {
-        if (initializer.sym != sym_field_initializer) continue;
-        if (initializer.child_by_sym(alias_sym_field_identifier).text() == inst_name) {
-          for (auto c : initializer.child_by_sym(sym_argument_list)) {
-            if (c.is_named()) {
-              param_count++;
-            }
-          }
-          break;
-        }
-      }
-    }
-
     // Emit template arguments as module parameters
     if (has_template_params) {
       err << start_line();
@@ -1312,8 +1285,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
         err << start_line();
         err << emit_print(".%s(", param.name4().c_str());
         err << emit_splice(arg);
-        err << emit_print(")");
-        if(--param_count) err << emit_print(",");
+        err << emit_print("),");
       }
     }
 
@@ -1346,11 +1318,15 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
         err << start_line();
         err << emit_print(".%s(", param.name4().c_str());
         err << emit_splice(arg);
-        err << emit_print(")");
-        if(--param_count) err << emit_print(",");
+        err << emit_print("),");
       }
     }
     indent.pop();
+
+    // Remove trailing comma from port list
+    if (at_comma) {
+      err << emit_backspace();
+    }
 
     err << start_line();
     err << emit_print(")");
@@ -1439,8 +1415,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
   }
 
   err << start_line();
-  err << emit_print(")");
-  err << emit_text(node_semi);
+  err << emit_print(");");
 
   cursor = n.end();
   return err;

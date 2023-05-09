@@ -95,8 +95,9 @@ struct MtCursor {
   CHECK_RETURN Err emit_func_as_always_comb(MnNode n);
   CHECK_RETURN Err emit_func_as_always_ff(MnNode n);
 
-  CHECK_RETURN Err emit_sym_parameter_list_as_modparams(MnNode n);
-  CHECK_RETURN Err emit_sym_template_parameter_list_as_modparams(MnNode n);
+  CHECK_RETURN Err emit_optional_param_as_modparam(MnNode n);
+  CHECK_RETURN Err emit_param_list_as_modparams(MnNode n);
+  CHECK_RETURN Err emit_template_params_as_modparams(MnNode n);
 
   // Per-symbol emit()s.
   // clang-format off
@@ -124,7 +125,6 @@ struct MtCursor {
   CHECK_RETURN Err emit_sym_namespace_definition(MnNode n);
   CHECK_RETURN Err emit_sym_nullptr(MnNode n);
   CHECK_RETURN Err emit_sym_number_literal(MnNode n);
-  CHECK_RETURN Err emit_sym_optional_parameter_declaration(MnNode n);
   CHECK_RETURN Err emit_sym_pointer_declarator(MnNode n);
   CHECK_RETURN Err emit_sym_preproc_arg(MnNode n);
   CHECK_RETURN Err emit_sym_preproc_def(MnNode n);

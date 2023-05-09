@@ -48,7 +48,6 @@ emit_map emit_sym_map = {
   { sym_namespace_definition,           &MtCursor::emit_sym_namespace_definition },
   { sym_nullptr,                        &MtCursor::emit_sym_nullptr },
   { sym_number_literal,                 &MtCursor::emit_sym_number_literal },
-  { sym_optional_parameter_declaration, &MtCursor::emit_sym_optional_parameter_declaration },
   { sym_parameter_declaration,          &MtCursor::emit_children },
   { sym_parameter_list,                 &MtCursor::emit_children },
   { sym_parenthesized_expression,       &MtCursor::emit_children },
@@ -1037,7 +1036,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_init(MnNode n) {
 
       // FIXME can this be emit_splice?
       push_cursor(func_params);
-      err << emit_sym_parameter_list_as_modparams(func_params);
+      err << emit_param_list_as_modparams(func_params);
       pop_cursor();
 
       err << emit_replacement(c, "initial");
@@ -1913,7 +1912,7 @@ CHECK_RETURN Err MtCursor::emit_sym_function_declarator(MnNode node) {
 [000.018]  |--# default_value: number_literal (126) = "4"
 */
 
-CHECK_RETURN Err MtCursor::emit_sym_optional_parameter_declaration(MnNode node) {
+CHECK_RETURN Err MtCursor::emit_optional_param_as_modparam(MnNode node) {
   Err err = check_at(sym_optional_parameter_declaration, node);
 
   err << emit_line("parameter ");
@@ -2212,7 +2211,7 @@ CHECK_RETURN Err MtCursor::emit_field_port(MtField* f) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_sym_parameter_list_as_modparams(MnNode param_list) {
+CHECK_RETURN Err MtCursor::emit_param_list_as_modparams(MnNode param_list) {
   Err err = check_at(param_list);
 
   for (const auto& c : param_list) {
@@ -2226,7 +2225,7 @@ CHECK_RETURN Err MtCursor::emit_sym_parameter_list_as_modparams(MnNode param_lis
         break;
 
       case sym_optional_parameter_declaration:
-        err << emit_dispatch(c);
+        err << emit_optional_param_as_modparam(c);
         break;
 
       case sym_parameter_declaration:
@@ -2245,7 +2244,7 @@ CHECK_RETURN Err MtCursor::emit_sym_parameter_list_as_modparams(MnNode param_lis
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_sym_template_parameter_list_as_modparams(MnNode param_list) {
+CHECK_RETURN Err MtCursor::emit_template_params_as_modparams(MnNode param_list) {
   Err err = check_at(param_list);
 
   for (const auto& c : param_list) {
@@ -2259,7 +2258,7 @@ CHECK_RETURN Err MtCursor::emit_sym_template_parameter_list_as_modparams(MnNode 
         break;
 
       case sym_optional_parameter_declaration:
-        err << emit_dispatch(c);
+        err << emit_optional_param_as_modparam(c);
         break;
 
       case sym_parameter_declaration:
@@ -2362,7 +2361,7 @@ CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnNode n) {
   if (current_mod.top()->mod_param_list) {
     push_indent(class_body);
     push_cursor(current_mod.top()->mod_param_list);
-    err << emit_sym_template_parameter_list_as_modparams(current_mod.top()->mod_param_list);
+    err << emit_template_params_as_modparams(current_mod.top()->mod_param_list);
     pop_cursor();
     pop_indent(class_body);
   }

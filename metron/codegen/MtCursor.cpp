@@ -270,6 +270,7 @@ CHECK_RETURN Err MtCursor::emit_char(char c, uint32_t color) {
   }
 
   at_newline = c == '\n';
+  at_comma = c == ',';
   return err;
 }
 
@@ -1339,14 +1340,12 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
       }
 
       for (int param_index = 0; param_index < args.size(); param_index++) {
-        cursor = args[param_index].start();
-
         auto param = params[param_index];
         auto arg = args[param_index];
 
         err << start_line();
         err << emit_print(".%s(", param.name4().c_str());
-        err << emit_dispatch(arg);
+        err << emit_splice(arg);
         err << emit_print(")");
         if(--param_count) err << emit_print(",");
       }
@@ -1356,8 +1355,8 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
     err << start_line();
     err << emit_print(")");
   }
-  cursor = node_type.end();
 
+  cursor = node_type.end();
   err << emit_ws_to(node_decl);
   err << emit_dispatch(node_decl);
   err << emit_print("(");
@@ -1370,7 +1369,6 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
       err << emit_print("// Global clock");
       err << start_line();
       err << emit_print(".clock(clock),");
-      trailing_comma = true;
     }
 
     if (component_mod->input_signals.size()) {
@@ -1379,7 +1377,6 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
       for (auto f : component_mod->input_signals) {
         err << start_line();
         err << emit_print(".%s(%s_%s),", f->cname(), inst_name.c_str(), f->cname());
-        trailing_comma = true;
       }
     }
 
@@ -1389,7 +1386,6 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
       for (auto f : component_mod->output_signals) {
         err << start_line();
         err << emit_print(".%s(%s_%s),", f->cname(), inst_name.c_str(), f->cname());
-        trailing_comma = true;
       }
     }
 
@@ -1399,7 +1395,6 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
       for (auto f : component_mod->output_registers) {
         err << start_line();
         err << emit_print(".%s(%s_%s),", f->cname(), inst_name.c_str(), f->cname());
-        trailing_comma = true;
       }
     }
 
@@ -1421,7 +1416,6 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
           err << start_line();
           err << emit_print(".%s_%s(%s_%s_%s),", m->cname(), node_decl.text().c_str(),
                             inst_name.c_str(), m->cname(), node_decl.text().c_str());
-          trailing_comma = true;
         }
 
         if (m->has_return()) {
@@ -1432,15 +1426,13 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
           err << start_line();
           err << emit_print(".%s_ret(%s_%s_ret),", m->cname(),
                             inst_name.c_str(), m->cname());
-          trailing_comma = true;
         }
       }
     }
 
     // Remove trailing comma from port list
-    if (trailing_comma) {
+    if (at_comma) {
       err << emit_backspace();
-      trailing_comma = false;
     }
 
     indent.pop();
@@ -1450,6 +1442,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
   err << emit_print(")");
   err << emit_text(node_semi);
 
+  cursor = n.end();
   return err;
 }
 
@@ -2125,8 +2118,6 @@ CHECK_RETURN Err MtCursor::emit_param_port(MtMethod* m, MnNode node_type, MnNode
   err << emit_print(",");
   pop_cursor();
 
-  trailing_comma = true;
-
   return err;
 }
 
@@ -2145,8 +2136,6 @@ CHECK_RETURN Err MtCursor::emit_param_binding(MtMethod* m, MnNode node_type, MnN
   err << emit_print(";");
   pop_cursor();
 
-  trailing_comma = false;
-
   return err;
 }
 
@@ -2161,8 +2150,6 @@ CHECK_RETURN Err MtCursor::emit_return_port(MtMethod* m, MnNode node_type, MnNod
   err << emit_print(" %s_ret,", m->cname());
   pop_cursor();
 
-  trailing_comma = true;
-
   return err;
 }
 
@@ -2175,8 +2162,6 @@ CHECK_RETURN Err MtCursor::emit_return_binding(MtMethod* m, MnNode node_type, Mn
   err << emit_dispatch(node_type);
   err << emit_print(" %s_ret;", m->cname());
   pop_cursor();
-
-  trailing_comma = false;
 
   return err;
 }
@@ -2265,8 +2250,6 @@ CHECK_RETURN Err MtCursor::emit_field_port(MtField* f) {
   err << emit_print(",");
   pop_cursor();
 
-  trailing_comma = true;
-
   return err;
 }
 
@@ -2332,7 +2315,6 @@ CHECK_RETURN Err MtCursor::emit_module_ports(MnNode class_body) {
     err << emit_print("// global clock");
     err << start_line();
     err << emit_print("input logic clock,");
-    trailing_comma = true;
   }
 
   if (current_mod.top()->input_signals.size()) {
@@ -2368,9 +2350,8 @@ CHECK_RETURN Err MtCursor::emit_module_ports(MnNode class_body) {
     }
   }
   // Remove trailing comma from port list
-  if (trailing_comma) {
+  if (at_comma) {
     err << emit_backspace();
-    trailing_comma = false;
   }
 
   pop_indent(class_body);

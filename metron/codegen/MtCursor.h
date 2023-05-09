@@ -187,10 +187,10 @@ struct MtCursor {
   std::string* str_out;
   std::stack<std::string> indent;
   bool at_newline = true;
+  bool at_comma = false;
   bool line_dirty = false;
   bool line_elided = false;
   bool echo = false;
-  bool trailing_comma = false;
 };
 
 //------------------------------------------------------------------------------

@@ -26,8 +26,6 @@ typedef std::map<std::string, std::string> string_to_string;
 struct MtCursorConfig {
   MtCursorConfig* parent = nullptr;
   emit_map* emits = nullptr;
-  bool elide_type = false;
-  bool elide_value = false;
   MtSourceFile* current_source = nullptr;
   MtModule* current_mod = nullptr;
   MtMethod* current_method = nullptr;
@@ -35,8 +33,6 @@ struct MtCursorConfig {
   bool operator == (const MtCursorConfig& b) const {
     const auto& a = *this;
     if (a.emits != b.emits) return false;
-    if (a.elide_type != b.elide_type) return false;
-    if (a.elide_value != b.elide_value) return false;
     if (a.current_source != b.current_source) return false;
     if (a.current_mod != b.current_mod) return false;
     if (a.current_method != b.current_method) return false;
@@ -210,6 +206,8 @@ struct MtCursor {
   std::stack<int> override_size;
   std::stack<string_to_node> preproc_vars;
   std::stack<string_to_string> id_replacements;
+  std::stack<bool> elide_type;
+  std::stack<bool> elide_value;
 
   //----------------------------------------
   // Output state

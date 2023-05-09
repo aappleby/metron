@@ -97,6 +97,9 @@ MtCursor::MtCursor(MtModLibrary* lib, MtSourceFile* source, MtModule* mod,
   preproc_vars.top()["IV_TEST"] = MnNode();
 
   id_replacements.push(string_to_string());
+
+  elide_type.push(false);
+  elide_value.push(false);
 }
 
 //------------------------------------------------------------------------------
@@ -902,8 +905,8 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
 
   push_cursor(n);
   push_config();
-  config.elide_type = false;
-  config.elide_value = true;
+  elide_type.push(false);
+  elide_value.push(true);
 
   for (const auto& c : (MnNode&)n) {
     if (c.sym == sym_declaration) {
@@ -927,6 +930,8 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
     }
   }
 
+  elide_type.pop();
+  elide_value.pop();
   pop_config();
   pop_cursor();
 
@@ -1938,13 +1943,13 @@ CHECK_RETURN Err MtCursor::emit_sym_init_declarator(MnNode node) {
 
     if (child.field == field_declarator) {
       err << emit_dispatch(child);
-      if (config.elide_value) {
+      if (elide_value.top()) {
         cursor = node.end();
         break;
       }
     }
     else if (child.field == field_value) {
-      if (config.elide_value) {
+      if (elide_value.top()) {
         err << skip_over(child);
         err << skip_ws_inside(node);
       }
@@ -1982,7 +1987,7 @@ CHECK_RETURN Err MtCursor::emit_sym_function_declarator(MnNode node) {
   Err err = check_at(node);
 
   push_config();
-  config.elide_value = false;
+  elide_value.push(false);
 
   for (auto c : node) {
     err << emit_ws_to(c);
@@ -2000,6 +2005,7 @@ CHECK_RETURN Err MtCursor::emit_sym_function_declarator(MnNode node) {
     }
   }
 
+  elide_value.pop();
   pop_config();
   return err << check_done(node);
 }
@@ -2133,8 +2139,9 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
       }
       else if (c.field == field_declarator) {
         push_config();
-        config.elide_value = false;
+        elide_value.push(false);
         err << emit_dispatch(c);
+        elide_value.pop();
         pop_config();
       }
       else if (c.sym == anon_sym_SEMI) {
@@ -3084,9 +3091,11 @@ CHECK_RETURN Err MtCursor::emit_sym_case_statement(MnNode n) {
         push_config();
         block_prefix.push("begin");
         block_suffix.push("end");
-        config.elide_type = true;
-        config.elide_value = false;
+        elide_type.push(true);
+        elide_value.push(false);
         err << emit_dispatch(c);
+        elide_type.pop();
+        elide_value.pop();
         block_prefix.pop();
         block_suffix.pop();
         pop_config();
@@ -3373,9 +3382,11 @@ CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnNode node) {
           push_config();
           block_prefix.push("begin");
           block_suffix.push("end");
-          config.elide_type = true;
-          config.elide_value = false;
+          elide_type.push(true);
+          elide_value.push(false);
           err << emit_dispatch(child);
+          elide_type.pop();
+          elide_value.pop();
           block_prefix.pop();
           block_suffix.pop();
           pop_config();
@@ -3450,7 +3461,7 @@ CHECK_RETURN Err MtCursor::emit_sym_declaration(MnNode n) {
 
   bool elide_decl = false;
   for (auto child : n) {
-    if (child.field == field_declarator && child.is_identifier() && config.elide_type) {
+    if (child.field == field_declarator && child.is_identifier() && elide_type.top()) {
       elide_decl = true;
     }
   }
@@ -3470,7 +3481,7 @@ CHECK_RETURN Err MtCursor::emit_sym_declaration(MnNode n) {
         err << skip_over(child);
         err << skip_ws();
       }
-      else if (child.field == field_type && config.elide_type) {
+      else if (child.field == field_type && elide_type.top()) {
         err << skip_over(child);
         err << skip_ws();
       }
@@ -3680,9 +3691,11 @@ CHECK_RETURN Err MtCursor::emit_sym_for_statement(MnNode node) {
 
     if (child.sym == sym_declaration) {
       push_config();
-      config.elide_type = true;
-      config.elide_value = false;
+      elide_type.push(true);
+      elide_value.push(false);
       err << emit_dispatch(child);
+      elide_type.pop();
+      elide_value.pop();
       pop_config();
     }
     else if (child.is_expression()) {
@@ -3692,9 +3705,11 @@ CHECK_RETURN Err MtCursor::emit_sym_for_statement(MnNode node) {
       push_config();
       block_prefix.push("begin");
       block_suffix.push("end");
-      config.elide_type = true;
-      config.elide_value = false;
+      elide_type.push(true);
+      elide_value.push(false);
       err << emit_dispatch(child);
+      elide_type.pop();
+      elide_value.pop();
       block_prefix.pop();
       block_suffix.pop();
       pop_config();
@@ -3754,9 +3769,11 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(MnNode node) {
 
       case sym_declaration:
         push_config();
-        config.elide_type = true;
-        config.elide_value = false;
+        elide_type.push(true);
+        elide_value.push(false);
         err << emit_dispatch(child);
+        elide_type.pop();
+        elide_value.pop();
         pop_config();
         break;
 
@@ -3764,9 +3781,11 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(MnNode node) {
         push_config();
         block_prefix.push("begin");
         block_suffix.push("end");
-        config.elide_type = true;
-        config.elide_value = false;
+        elide_type.push(true);
+        elide_value.push(false);
         err << emit_dispatch(child);
+        elide_type.pop();
+        elide_value.pop();
         block_prefix.pop();
         block_suffix.pop();
         pop_config();

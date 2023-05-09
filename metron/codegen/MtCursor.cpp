@@ -520,30 +520,30 @@ CHECK_RETURN Err MtCursor::emit_sym_preproc_include(MnNode n) {
 
 //------------------------------------------------------------------------------
 // Change '=' to '<=' if lhs is a field and we're inside a sequential block.
+// Change "a += b" to "a = a + b", etc.
 
 CHECK_RETURN Err MtCursor::emit_sym_assignment_expression(MnNode node) {
   Err err = check_at(sym_assignment_expression, node);
 
-  auto lhs = node.get_field(field_left);
-  auto op  = node.get_field(field_operator).text();
-  auto rhs = node.get_field(field_right);
-  bool left_is_field = config.current_mod->get_field(lhs.name4()) != nullptr;
-
-  bool is_compound = op != "=";
-
+  MnNode lhs;
 
   for (auto child : node) {
     err << emit_ws_to(child);
-
     switch (child.field) {
-      case field_left: err << emit_dispatch(child); break;
-      case field_operator:
+      case field_left: {
+        lhs = child;
+        err << emit_dispatch(child); break;
+      }
+      case field_operator: {
         // There may not be a method if we're in an enum initializer list.
+        bool left_is_field = config.current_mod->get_field(lhs.name4()) != nullptr;
         if (config.current_method && config.current_method->is_tick_ && left_is_field) {
           err << emit_replacement(child, "<=");
         } else {
           err << emit_replacement(child, "=");
         }
+        auto op  = child.text();
+        bool is_compound = op != "=";
         if (is_compound) {
           push_cursor(lhs);
           err << emit_print(" ");
@@ -551,8 +551,8 @@ CHECK_RETURN Err MtCursor::emit_sym_assignment_expression(MnNode node) {
           err << emit_print(" %c", op[0]);
           pop_cursor();
         }
-
         break;
+      }
       case field_right:
         err << emit_dispatch(child);
         break;
@@ -583,10 +583,9 @@ CHECK_RETURN Err MtCursor::emit_static_bit_extract(MnNode call, int bx_width) {
 
       cursor = arg0.start();
 
-      push_config();
-      config.override_size = bx_width;
+      override_size.push(bx_width);
       err << emit_sym_number_literal(MnNode(arg0));
-      pop_config();
+      override_size.pop();
 
       cursor = call.end();
     } else if (arg0.sym == sym_identifier ||
@@ -775,11 +774,7 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
   err << emit_ws_to(n);
   assert(cursor == n.start());
 
-  if (func_name == "coerce") {
-    // Convert to cast? We probably shouldn't be calling coerce() directly.
-    err << ERR("Shouldn't be calling coerce() directly?\n");
-
-  } else if (func_name == "sra") {
+  if (func_name == "sra") {
     auto lhs = args.named_child(0);
     auto rhs = args.named_child(1);
 
@@ -837,17 +832,8 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
       else if(arg.sym == anon_sym_RPAREN) {
         err << emit_replacement(arg, "}");
       }
-      else if (arg.is_identifier()) {
-        err << emit_dispatch(arg);
-      }
-      else if (arg.is_expression()) {
-        err << emit_dispatch(arg);
-      }
-      else if (arg.is_leaf()) {
-        err << emit_leaf(arg);
-      }
       else {
-        err << ERR("Unknown node %d in arg list", arg.sym);
+        err << emit_dispatch(arg);
       }
     }
   }
@@ -908,37 +894,33 @@ CHECK_RETURN Err MtCursor::emit_hoisted_decls(MnNode n) {
   Err err;
 
   push_cursor(n);
+  push_config();
+  config.elide_type = false;
+  config.elide_value = true;
 
   for (const auto& c : (MnNode&)n) {
     if (c.sym == sym_declaration) {
-      if (c.sym == sym_declaration && c.is_const()) {
+      if (c.is_const()) {
         // Don't emit decls for localparams
         continue;
       } else {
         err << start_line();
         cursor = c.start();
-        push_config();
-        config.elide_type = false;
-        config.elide_value = true;
         err << emit_dispatch(c);
-        pop_config();
       }
     }
 
     if (c.sym == sym_for_statement) {
       auto init = c.get_field(field_initializer);
       if (init.sym == sym_declaration) {
-        cursor = init.start();
         err << start_line();
-        push_config();
-        config.elide_type = false;
-        config.elide_value = true;
+        cursor = init.start();
         err << emit_dispatch(init);
-        pop_config();
       }
     }
   }
 
+  pop_config();
   pop_cursor();
 
   return err;
@@ -1820,15 +1802,14 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
   }
 
   // Extract enum bit width, if present.
-  push_config();
-  config.override_size = 32;
+  override_size.push(32);
   MnNode node_base = n.get_field(field_base);
   if (node_base) {
     auto node_scope = node_base.get_field(field_scope);
     auto node_type_args = node_scope.get_field(field_arguments);
     for (auto c : node_type_args) {
       if (c.sym == sym_number_literal) {
-        config.override_size = atoi(c.start());
+        override_size = atoi(c.start());
         break;
       }
     }
@@ -1873,8 +1854,7 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
     cursor = old_cursor;
   }
 
-  config.override_size = 0;
-  pop_config();
+  override_size.pop();
   return err << check_done(n);
 }
 
@@ -2847,7 +2827,7 @@ CHECK_RETURN Err MtCursor::emit_sym_number_literal(MnNode n) {
   Err err = check_at(sym_number_literal, n);
 
   std::string body = n.text();
-  int size_cast = config.override_size;
+  int size_cast = override_size;
 
   // Count how many 's are in the number
   int spacer_count = 0;

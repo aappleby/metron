@@ -20,6 +20,39 @@ typedef std::map<TSSymbol, emit_cb> emit_map;
 
 //------------------------------------------------------------------------------
 
+template<typename T>
+class StackedVal {
+public:
+
+  StackedVal(T t) {
+    val = t;
+  }
+
+  operator T&() {
+    return val;
+  }
+
+  StackedVal& operator=(const T& t) {
+    val = t;
+    return *this;
+  }
+
+  void push(const T& t) {
+    val_stack.push(val);
+    val = t;
+  }
+
+  void pop() {
+    val = val_stack.top();
+    val_stack.pop();
+  }
+
+  T val;
+  std::stack<T> val_stack;
+};
+
+//------------------------------------------------------------------------------
+
 struct MtCursorConfig {
   MtCursorConfig* parent = nullptr;
   emit_map* emits = nullptr;
@@ -27,7 +60,6 @@ struct MtCursorConfig {
   std::string block_suffix = "end";
   bool elide_type = false;
   bool elide_value = false;
-  int override_size = 0;
   std::map<std::string, std::string> id_replacements;
   MtSourceFile* current_source = nullptr;
   MtModule* current_mod = nullptr;
@@ -42,7 +74,6 @@ struct MtCursorConfig {
     if (a.block_suffix != b.block_suffix) return false;
     if (a.elide_type != b.elide_type) return false;
     if (a.elide_value != b.elide_value) return false;
-    if (a.override_size != b.override_size) return false;
     if (a.id_replacements != b.id_replacements) return false;
     if (a.current_source != b.current_source) return false;
     if (a.current_mod != b.current_mod) return false;
@@ -209,6 +240,10 @@ struct MtCursor {
     cursor = cursor_stack.top();
     cursor_stack.pop();
   }
+
+  //----------------------------------------
+
+  StackedVal<int> override_size = 0;
 
   //----------------------------------------
   // Output state

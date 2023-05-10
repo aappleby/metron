@@ -264,6 +264,11 @@ build wasm/obj/metron/nodes/MtStruct.o: compile_cpp_ems $
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/tree-sitter/lib/include -Isymlinks/tree-sitter/lib/src $
       -Isymlinks/CLI11/include -Itests
+build wasm/obj/metron/parser/Parser.o: compile_cpp_ems $
+    metron/parser/Parser.cpp
+  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
+      -Isymlinks/tree-sitter/lib/include -Isymlinks/tree-sitter/lib/src $
+      -Isymlinks/CLI11/include -Itests
 build wasm/obj/metron/tools/MtUtils.o: compile_cpp_ems $
     metron/tools/MtUtils.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
@@ -306,9 +311,10 @@ build docs/app/metron.js: link_ems $
     wasm/obj/metron/nodes/MtFuncParam.o wasm/obj/metron/nodes/MtMethod.o $
     wasm/obj/metron/nodes/MtModParam.o wasm/obj/metron/nodes/MtModule.o $
     wasm/obj/metron/nodes/MtNode.o wasm/obj/metron/nodes/MtStruct.o $
-    wasm/obj/metron/tools/MtUtils.o wasm/obj/metron/tracer/MtChecker.o $
-    wasm/obj/metron/tracer/MtContext.o wasm/obj/metron/tracer/MtInstance.o $
-    wasm/obj/metron/tracer/MtTracer.o wasm/obj/metron/tracer/MtTracer2.o
+    wasm/obj/metron/parser/Parser.o wasm/obj/metron/tools/MtUtils.o $
+    wasm/obj/metron/tracer/MtChecker.o wasm/obj/metron/tracer/MtContext.o $
+    wasm/obj/metron/tracer/MtInstance.o wasm/obj/metron/tracer/MtTracer.o $
+    wasm/obj/metron/tracer/MtTracer2.o
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/tree-sitter/lib/include -Isymlinks/tree-sitter/lib/src $
       -Isymlinks/CLI11/include -Itests
@@ -401,6 +407,10 @@ build obj/metron/nodes/MtStruct.o: compile_cpp metron/nodes/MtStruct.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/tree-sitter/lib/include -Isymlinks/tree-sitter/lib/src $
       -Isymlinks/CLI11/include -Itests
+build obj/metron/parser/Parser.o: compile_cpp metron/parser/Parser.cpp
+  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
+      -Isymlinks/tree-sitter/lib/include -Isymlinks/tree-sitter/lib/src $
+      -Isymlinks/CLI11/include -Itests
 build obj/metron/tools/MtUtils.o: compile_cpp metron/tools/MtUtils.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/tree-sitter/lib/include -Isymlinks/tree-sitter/lib/src $
@@ -435,9 +445,10 @@ build bin/libmetron.a: static_lib obj/symlinks/tree-sitter/lib/src/lib.o $
     obj/metron/nodes/MtFuncParam.o obj/metron/nodes/MtMethod.o $
     obj/metron/nodes/MtModParam.o obj/metron/nodes/MtModule.o $
     obj/metron/nodes/MtNode.o obj/metron/nodes/MtStruct.o $
-    obj/metron/tools/MtUtils.o obj/metron/tracer/MtChecker.o $
-    obj/metron/tracer/MtContext.o obj/metron/tracer/MtInstance.o $
-    obj/metron/tracer/MtTracer.o obj/metron/tracer/MtTracer2.o
+    obj/metron/parser/Parser.o obj/metron/tools/MtUtils.o $
+    obj/metron/tracer/MtChecker.o obj/metron/tracer/MtContext.o $
+    obj/metron/tracer/MtInstance.o obj/metron/tracer/MtTracer.o $
+    obj/metron/tracer/MtTracer2.o
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/tree-sitter/lib/include -Isymlinks/tree-sitter/lib/src $
       -Isymlinks/CLI11/include -Itests

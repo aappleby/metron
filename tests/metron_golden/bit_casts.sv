@@ -321,8 +321,8 @@ module Module (
     test_bN_offset_ret = 0;
   end
 
-  localparam int some_size1 = 64;
-  localparam int some_size2 = 8;
+  localparam /*static*/ /*const*/ int some_size1 = 64;
+  localparam /*static*/ /*const*/ int some_size2 = 8;
 
   always_comb begin : test_bx_param
     logic[some_size1-1:0] a;

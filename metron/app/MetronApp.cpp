@@ -11,6 +11,7 @@
 #include "metron/tracer/MtInstance.h"
 #include "metron/tracer/MtTracer.h"
 #include "metron/tracer/MtTracer2.h"
+#include "metron/parser/Parser.h"
 
 #include "metrolib/core/Log.h"
 
@@ -66,6 +67,8 @@ void mkdir_all(const std::vector<std::string>& full_path) {
 }
 
 //------------------------------------------------------------------------------
+
+//#define TEST_PARSER
 
 int main(int argc, char** argv) {
   TinyLog::get().reset();
@@ -126,6 +129,7 @@ int main(int argc, char** argv) {
   Err err;
   MtModLibrary lib;
   MtSourceFile* source = nullptr;
+  Parser parser;
 
   lib.add_search_path(".");
 
@@ -136,6 +140,10 @@ int main(int argc, char** argv) {
     auto search_path = join_path(src_path);
     lib.add_search_path(search_path);
     err << lib.load_source(src_name.c_str(), source);
+#ifdef TEST_PARSER
+    //parser.parse(src_name.c_str(), source->source);
+    parser.parse(source);
+#endif
   }
 
   if (err.has_err()) {
@@ -147,6 +155,10 @@ int main(int argc, char** argv) {
   if (dump) {
     source->root_node.dump_tree(0, 0, 255);
   }
+
+#ifdef TEST_PARSER
+  exit(1);
+#endif
 
   //----------------------------------------
 

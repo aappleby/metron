@@ -15,7 +15,7 @@ module Module (
 
 /*public*/
 
-  parameter filename = "examples/uart/message.hex";
+  parameter /*const*/ filename = "examples/uart/message.hex";
   parameter start_addr = 0;
   initial begin
     addr = start_addr;

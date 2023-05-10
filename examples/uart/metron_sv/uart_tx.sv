@@ -87,18 +87,18 @@ module uart_tx (
 /*private*/
 
   // We wait {cycles_per_bit} cycles between sending bits.
-  localparam int bit_delay_width = $clog2(cycles_per_bit);
-  localparam int bit_delay_max   = cycles_per_bit - 1;
+  localparam /*static*/ /*const*/ int bit_delay_width = $clog2(cycles_per_bit);
+  localparam /*static*/ /*const*/ int bit_delay_max   = cycles_per_bit - 1;
   logic[bit_delay_width-1:0] bit_delay;
 
   // We send 1 start bit, 8 data bits, and 1 stop bit per byte = 10 bits per
   // byte total. We also send 7 additional stop bits between messages to
   // guarantee that the receiver can resynchronize with our start bit.
 
-  localparam int bit_count_done  = 10;
-  localparam int extra_stop_bits = 7;
-  localparam int bit_count_width = $clog2(10 + extra_stop_bits);
-  localparam int bit_count_max   = bit_count_done + extra_stop_bits;
+  localparam /*static*/ /*const*/ int bit_count_done  = 10;
+  localparam /*static*/ /*const*/ int extra_stop_bits = 7;
+  localparam /*static*/ /*const*/ int bit_count_width = $clog2(10 + extra_stop_bits);
+  localparam /*static*/ /*const*/ int bit_count_max   = bit_count_done + extra_stop_bits;
   logic[bit_count_width-1:0] bit_count;
 
   // Our output buffer is 9 (not 8) bits wide so that the low bit can serve as

@@ -84,12 +84,12 @@ module uart_hello (
   end
 
 /*private*/
-  localparam int message_len = 512;
-  localparam int cursor_bits = $clog2(message_len);
+  localparam /*static*/ /*const*/ int message_len = 512;
+  localparam /*static*/ /*const*/ int cursor_bits = $clog2(message_len);
 
-  localparam int WAIT = 0; // Waiting for the transmitter to be free
-  localparam int SEND = 1; // Sending the message buffer
-  localparam int DONE = 2; // Message buffer sent
+  localparam /*static*/ /*const*/ int WAIT = 0; // Waiting for the transmitter to be free
+  localparam /*static*/ /*const*/ int SEND = 1; // Sending the message buffer
+  localparam /*static*/ /*const*/ int DONE = 2; // Message buffer sent
   logic[1:0] state;            // One of the above states
 
   logic[7:0] memory[512];      // The buffer preloaded with our message

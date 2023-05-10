@@ -13,7 +13,7 @@ module Module (
 
 /*private*/
 
-  localparam int my_val = 7;
+  localparam /*static*/ /*const*/ int my_val = 7;
 
   always_ff @(posedge clock) begin : tick
     my_reg <= my_reg + my_val;

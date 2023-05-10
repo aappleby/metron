@@ -40,11 +40,11 @@ emit_map emit_sym_map = {
   { sym_field_declaration_list,         &MtCursor::emit_sym_field_declaration_list },
   { sym_field_expression,               &MtCursor::emit_sym_field_expression },
   { sym_for_statement,                  &MtCursor::emit_sym_for_statement },
-  { sym_function_declarator,            &MtCursor::emit_sym_function_declarator },
+  { sym_function_declarator,            &MtCursor::emit_children },
   { sym_function_definition,            &MtCursor::emit_sym_function_definition },
   { sym_identifier,                     &MtCursor::emit_sym_identifier },
   { sym_if_statement,                   &MtCursor::emit_sym_if_statement },
-  { sym_init_declarator,                &MtCursor::emit_sym_init_declarator },
+  { sym_init_declarator,                &MtCursor::emit_children },
   { sym_initializer_list,               &MtCursor::emit_sym_initializer_list },
   { sym_namespace_definition,           &MtCursor::emit_sym_namespace_definition },
   { sym_nullptr,                        &MtCursor::emit_sym_nullptr },
@@ -62,11 +62,11 @@ emit_map emit_sym_map = {
   { sym_preproc_ifdef,                  &MtCursor::emit_sym_preproc_ifdef },
   { sym_preproc_include,                &MtCursor::emit_sym_preproc_include },
 
-  { sym_primitive_type,                 &MtCursor::emit_sym_primitive_type },
+  { sym_primitive_type,                 &MtCursor::emit_text },
   { sym_qualified_identifier,           &MtCursor::emit_sym_qualified_identifier },
   { sym_return_statement,               &MtCursor::emit_sym_return_statement },
   { sym_sized_type_specifier,           &MtCursor::emit_sym_sized_type_specifier },
-  { sym_storage_class_specifier,        &MtCursor::skip_over },
+  { sym_storage_class_specifier,        &MtCursor::comment_out },
   { sym_string_literal,                 &MtCursor::emit_text },
   { sym_struct_specifier,               &MtCursor::emit_sym_struct_specifier },
   { sym_subscript_expression,           &MtCursor::emit_children },
@@ -77,6 +77,7 @@ emit_map emit_sym_map = {
   { sym_translation_unit,               &MtCursor::emit_sym_translation_unit },
   { sym_type_definition,                &MtCursor::emit_children },
   { sym_type_descriptor,                &MtCursor::emit_children },
+  { sym_type_qualifier,                 &MtCursor::comment_out },
   { sym_unary_expression,               &MtCursor::emit_children },
   { sym_update_expression,              &MtCursor::emit_sym_update_expression },
   { sym_using_declaration,              &MtCursor::emit_sym_using_declaration },
@@ -165,6 +166,7 @@ CHECK_RETURN Err MtCursor::check_done(MnNode n) {
   }
 
   if (cursor > n.end()) {
+    n.dump_tree();
     err << ERR("Cursor was left past the end of the current node\n");
   }
 
@@ -528,8 +530,6 @@ CHECK_RETURN Err MtCursor::emit_sym_initializer_list(MnNode node) {
 //------------------------------------------------------------------------------
 // Replace "#include" with "`include" and ".h" with ".sv"
 
-// FIXME handle the path .h to .sv with string replacement?
-
 CHECK_RETURN Err MtCursor::emit_sym_preproc_include(MnNode n) {
   Err err = check_at(sym_preproc_include, n);
 
@@ -817,6 +817,8 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
   // Convert "dup<15>(x)" to "{15 {x}}"
 
   if (func_name == "dup") {
+
+    // printf("{%d {%s}}", call.func.args[0], call.args[0]); ???
 
     if (args.named_child_count() != 1) return err << ERR("dup() had too many children\n");
 
@@ -1841,41 +1843,6 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_sym_init_declarator(MnNode node) {
-  Err err = check_at(node);
-
-  for (auto child : node) {
-    err << emit_ws_to(child);
-
-    if (child.field == field_declarator) {
-      err << emit_dispatch(child);
-      if (elide_value.top()) {
-        cursor = node.end();
-        break;
-      }
-    }
-    else if (child.field == field_value) {
-      if (elide_value.top()) {
-        err << skip_over(child);
-        err << skip_ws_inside(node);
-      }
-      else {
-        err << emit_dispatch(child);
-      }
-    }
-    else if (child.sym == anon_sym_EQ) {
-      err << emit_dispatch(child);
-    }
-    else {
-      err << ERR("Unknown node type in sym_init_declarator");
-    }
-  }
-
-  return err << check_done(node);
-}
-
-//------------------------------------------------------------------------------
-
 CHECK_RETURN Err MtCursor::emit_sym_pointer_declarator(MnNode node) {
   Err err = check_at(node);
 
@@ -1884,33 +1851,6 @@ CHECK_RETURN Err MtCursor::emit_sym_pointer_declarator(MnNode node) {
 
   err << emit_dispatch(decl2);
 
-  return err << check_done(node);
-}
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtCursor::emit_sym_function_declarator(MnNode node) {
-  Err err = check_at(node);
-
-  elide_value.push(false);
-
-  for (auto c : node) {
-    err << emit_ws_to(c);
-
-    if (c.sym == sym_parameter_list) {
-      err << emit_dispatch(c);
-    }
-    else if (c.sym == sym_type_qualifier) {
-      // FIXME this should be in the dispatch table
-      err << skip_over(c);
-      err << skip_ws_inside(node);
-    }
-    else {
-      err << emit_dispatch(c);
-    }
-  }
-
-  elide_value.pop();
   return err << check_done(node);
 }
 
@@ -1933,10 +1873,6 @@ CHECK_RETURN Err MtCursor::emit_optional_param_as_modparam(MnNode node) {
     err << emit_ws_to(c);
 
     if (c.field == field_type) {
-      err << skip_over(c);
-      err << skip_ws_inside(node);
-    }
-    else if (c.sym == sym_type_qualifier) {
       err << skip_over(c);
       err << skip_ws_inside(node);
     }
@@ -1970,46 +1906,14 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
     //   field_declarator : sym_field_identifier
     //   lit ;
 
-    for (auto c : n) {
-      err << emit_ws_to(c);
-
-      if (c.sym == sym_storage_class_specifier) {
-        err << skip_over(c);
-        err << skip_ws_inside(n);
-      }
-      else if (c.sym == sym_type_qualifier) {
-        err << skip_over(c);
-        err << skip_ws_inside(n);
-      }
-      else {
-        err << emit_dispatch(c);
-      }
-    }
-
-    return err << check_done(n);
+    return err << emit_children(n);
   }
 
   // Const local variable
   if (n.is_const()) {
     err << emit_ws_to(n);
     err << emit_print("localparam ");
-
-    for (auto c : n) {
-      err << emit_ws_to(c);
-
-      if (c.sym == sym_storage_class_specifier) {
-        err << skip_over(c);
-        err << skip_ws_inside(n);
-      }
-      else if (c.sym == sym_type_qualifier) {
-        err << skip_over(c);
-        err << skip_ws_inside(n);
-      }
-      else {
-        err << emit_dispatch(c);
-      }
-    }
-
+    err << emit_children(n);
     return err << check_done(n);
   }
 
@@ -2756,17 +2660,6 @@ CHECK_RETURN Err MtCursor::emit_sym_return_statement(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
-// FIXME translate types here
-
-CHECK_RETURN Err MtCursor::emit_sym_primitive_type(MnNode n) {
-  Err err = check_at(sym_primitive_type, n);
-
-  err << emit_text(n);
-
-  return err << check_done(n);
-}
-
-//------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_sym_identifier(MnNode n) {
   Err err = check_at(sym_identifier, n);
@@ -2833,6 +2726,8 @@ CHECK_RETURN Err MtCursor::emit_sym_template_declaration(MnNode n) {
 //------------------------------------------------------------------------------
 // Replace foo.bar.baz with foo_bar_baz if the field refers to a submodule port,
 // so that it instead refers to a glue expression.
+
+// FIXME loop style
 
 CHECK_RETURN Err MtCursor::emit_sym_field_expression(MnNode n) {
   Err err = check_at(sym_field_expression, n);
@@ -3153,15 +3048,18 @@ CHECK_RETURN Err MtCursor::emit_sym_using_declaration(MnNode n) {
 // |     |--# lit (137) = "\""
 // |--# lit (39) = ";"
 
+// + declaration (210) =
+// |--+ type: template_type (348) =
+// |--+ declarator: init_declarator (247) =
+// |  |--# declarator: identifier (1) = "b"
+// |  |--# lit (63) = "="
+// |  |--+ value: call_expression (289) =
+// |--# lit (39) = ";"
+
 CHECK_RETURN Err MtCursor::emit_sym_declaration(MnNode n) {
   Err err = check_at(sym_declaration, n);
 
-  bool is_const = false;
-
-  for (auto c : n) {
-    if (c.sym == sym_type_qualifier)
-      is_const = c.text() == "const";
-  }
+  bool is_const = n.is_const();
 
   // Check for "static const char"
   if (is_const && n.get_field(field_type).text() == "char") {
@@ -3181,36 +3079,32 @@ CHECK_RETURN Err MtCursor::emit_sym_declaration(MnNode n) {
     return err;
   }
 
-  // Declarations inside scopes get their type removed, as the type+name decl
-  // has been hoisted to the top of the scope.
+  // If a declaration does _not_ have an init value and we're eliding types, elide the whole declaration
+  // as it's already in the hoisted decl list.
 
   for (auto child : n) {
-    if (child.field == field_declarator && child.is_identifier() && elide_type.top()) {
+    if (child.field == field_declarator && (child.sym != sym_init_declarator) && elide_type.top()) {
         return err << skip_over(n);
     }
   }
 
   // Otherwise we emit the declaration as normal
 
+  if (n.is_const()) {
+    err << emit_print("parameter ");
+  }
+
   for (auto child : n) {
     err << emit_ws_to(child);
 
-    if (child.sym == sym_storage_class_specifier) {
+    if (child.field == field_type && elide_type.top()) {
       err << skip_over(child);
-      err << skip_ws();
+      err << skip_ws_inside(n);
     }
-    else if (child.sym == sym_type_qualifier) {
-      if (child.text() == "const") {
-        err << emit_replacement(child, "parameter");
-      }
-      else {
-        err << skip_over(child);
-        err << skip_ws();
-      }
-    }
-    else if (child.field == field_type && elide_type.top()) {
-      err << skip_over(child);
-      err << skip_ws();
+    else if (child.field == field_declarator && child.sym == sym_init_declarator && elide_value.top()) {
+      auto decl_name = child.get_field(field_declarator);
+      err << emit_splice(decl_name);
+      cursor = child.end();
     }
     else {
       err << emit_dispatch(child);

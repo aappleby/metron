@@ -118,7 +118,6 @@ struct MtCursor {
   CHECK_RETURN Err emit_sym_function_definition(MnNode n);
   CHECK_RETURN Err emit_sym_identifier(MnNode n);
   CHECK_RETURN Err emit_sym_if_statement(MnNode n);
-  CHECK_RETURN Err emit_sym_init_declarator(MnNode n);
   CHECK_RETURN Err emit_sym_initializer_list(MnNode n);
   CHECK_RETURN Err emit_sym_namespace_definition(MnNode n);
   CHECK_RETURN Err emit_sym_nullptr(MnNode n);

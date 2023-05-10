@@ -171,21 +171,21 @@ module Pong (
 
   //----------------------------------------
 
-  function logic in_border();
+  function logic in_border() /*const*/;
     in_border = (px <= 7) || (px >= 633) || (py <= 7) || (py >= 473);
   endfunction
 
-  function logic in_paddle();
+  function logic in_paddle() /*const*/;
     in_paddle = (px >= pad_x - 63) && (px <= pad_x + 63) && (py >= pad_y - 3) &&
            (py <= pad_y + 3);
   endfunction
 
-  function logic in_ball();
+  function logic in_ball() /*const*/;
     in_ball = (px >= ball_x - 7) && (px <= ball_x + 7) && (py >= ball_y - 7) &&
            (py <= ball_y + 7);
   endfunction
 
-  function logic in_checker();  in_checker = px[3] ^ py[3]; endfunction
+  function logic in_checker() /*const*/;  in_checker = px[3] ^ py[3]; endfunction
 
   logic[9:0] px;
   logic[9:0] py;

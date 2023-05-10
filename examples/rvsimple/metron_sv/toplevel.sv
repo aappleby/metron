@@ -33,8 +33,8 @@ module toplevel (
  /*public*/
 
 
-  parameter text_filename = "";
-  parameter data_filename = "";
+  parameter /*const*/ text_filename = "";
+  parameter /*const*/ data_filename = "";
   initial
   begin
   end

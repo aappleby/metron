@@ -82,15 +82,15 @@ module uart_rx (
 
  /*private*/
   // We wait for cycles_per_bit cycles
-  localparam int bit_delay_width = $clog2(cycles_per_bit);
-  localparam int bit_delay_max = cycles_per_bit - 1;
+  localparam /*static*/ /*const*/ int bit_delay_width = $clog2(cycles_per_bit);
+  localparam /*static*/ /*const*/ int bit_delay_max = cycles_per_bit - 1;
   logic[bit_delay_width-1:0] bit_delay;
 
   // Our serial data format is 8n1, which is short for "one start bit, 8 data
   // bits, no parity bit, one stop bit". If bit_count == 1, we're only waiting
   // on the stop bit.
-  localparam int bit_count_max = 9;
-  localparam int bit_count_width = $clog2(bit_count_max);
+  localparam /*static*/ /*const*/ int bit_count_max = 9;
+  localparam /*static*/ /*const*/ int bit_count_width = $clog2(bit_count_max);
   logic[bit_count_width-1:0] bit_count;
 
   // The received byte

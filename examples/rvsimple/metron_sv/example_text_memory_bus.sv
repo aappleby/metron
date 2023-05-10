@@ -19,7 +19,7 @@ module example_text_memory_bus (
 );
  /*public*/
 
-  parameter filename = "";
+  parameter /*const*/ filename = "";
   initial
   begin
   end

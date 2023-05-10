@@ -17,7 +17,7 @@ module Module (
 
 /*public*/
 
-  parameter filename = "";
+  parameter /*const*/ filename = "";
   parameter default_addr = 16'h0000;
   initial begin
     if (filename) $readmemh(filename, data);

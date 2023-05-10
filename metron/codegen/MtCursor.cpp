@@ -1847,6 +1847,8 @@ CHECK_RETURN Err MtCursor::emit_sym_pointer_declarator(MnNode n) {
   Err err = check_at(sym_pointer_declarator, n);
 
   for (auto c : n) {
+    err << emit_ws_to(c);
+
     if (c.sym == anon_sym_STAR) {
       err << skip_over(c);
       err << skip_ws_inside(n);
@@ -2136,8 +2138,6 @@ CHECK_RETURN Err MtCursor::emit_param_list_as_modparams(MnNode param_list) {
   Err err;
   push_cursor(param_list);
 
-  bool any_params = false;
-
   for (const auto& c : param_list) {
     err << emit_ws_to(c);
 
@@ -2197,6 +2197,7 @@ CHECK_RETURN Err MtCursor::emit_template_params_as_modparams(MnNode param_list) 
     }
   }
 
+  err << start_line();
   pop_cursor();
   return err;
 }
@@ -2258,6 +2259,9 @@ CHECK_RETURN Err MtCursor::emit_module_ports(MnNode class_body) {
 CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnNode n) {
   Err err = check_at(sym_class_specifier, n);
 
+  auto node_name = n.get_field(field_name);
+  current_mod.push(lib->get_module(node_name.text()));
+
   //----------
 
   for (auto c : n) {
@@ -2265,10 +2269,6 @@ CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnNode n) {
 
     if (c.sym == anon_sym_class) {
       err << emit_replacement(c, "module");
-    }
-    else if (c.field == field_name) {
-      current_mod.push(lib->get_module(c.text()));
-      err << emit_dispatch(c);
     }
     else if (c.field == field_body) {
       // Insert the port list before the module body

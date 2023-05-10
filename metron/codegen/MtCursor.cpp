@@ -1459,6 +1459,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_component(MnNode n) {
   auto inst_name = node_decl.text();
 
   // Swap template arguments with the values from the template instantiation.
+  // FIXME we're not actually using this map? Wat?
   std::map<std::string, std::string> replacements;
 
   auto args = node_type.get_field(field_arguments);
@@ -1695,13 +1696,11 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
 
 
 //------------------------------------------------------------------------------
+// enum class sized_enum : logic<8>::BASE { A8 = 0b01, B8 = 0x02, C8 = 3 };
 
 CHECK_RETURN Err MtCursor::emit_sym_qualified_identifier_as_type(MnNode n) {
-  // enum class sized_enum : logic<8>::BASE { A8 = 0b01, B8 = 0x02, C8 = 3 };
   Err err = check_at(sym_qualified_identifier, n);
-  auto node_scope = n.get_field(field_scope);
-  cursor = node_scope.start();
-  err << emit_dispatch(node_scope);
+  err << emit_splice(n.get_field(field_scope));
   cursor = n.end();
   return err << check_done(n);
 }
@@ -1842,16 +1841,22 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
 
 
 //------------------------------------------------------------------------------
+// Pointer decls are used to pass strings as params, but we pull the '*' off.
 
-CHECK_RETURN Err MtCursor::emit_sym_pointer_declarator(MnNode node) {
-  Err err = check_at(node);
+CHECK_RETURN Err MtCursor::emit_sym_pointer_declarator(MnNode n) {
+  Err err = check_at(sym_pointer_declarator, n);
 
-  auto decl2 = node.get_field(field_declarator);
-  cursor = decl2.start();
+  for (auto c : n) {
+    if (c.sym == anon_sym_STAR) {
+      err << skip_over(c);
+      err << skip_ws_inside(n);
+    }
+    else {
+      err << emit_dispatch(c);
+    }
+  }
 
-  err << emit_dispatch(decl2);
-
-  return err << check_done(node);
+  return err << check_done(n);
 }
 
 //------------------------------------------------------------------------------

@@ -32,6 +32,7 @@ emit_map emit_sym_map = {
   { sym_condition_clause,               &MtCursor::emit_children },
   { sym_conditional_expression,         &MtCursor::emit_children},
   { sym_declaration,                    &MtCursor::emit_sym_declaration },
+  { sym_declaration_list,               &MtCursor::emit_sym_declaration_list },
   { sym_enum_specifier,                 &MtCursor::emit_sym_enum_specifier },
   { sym_enumerator_list,                &MtCursor::emit_children },
   { sym_enumerator,                     &MtCursor::emit_children },
@@ -115,7 +116,7 @@ MtCursor::MtCursor(MtModLibrary* lib, MtSourceFile* source, MtModule* mod,
     {"#undef",   "`undef"},
   });
 
-  elide_type.push(false);
+  elide_type.push(true);
   elide_value.push(false);
 }
 
@@ -2467,6 +2468,8 @@ CHECK_RETURN Err MtCursor::emit_toplevel_node(MnNode node) {
 
   switch (node.sym) {
 
+    // Skip weird expression statements with only semis in them that Treesitter
+    // generates for some reason
     case sym_expression_statement:
       if (node.text() != ";") {
         err << ERR("Found unexpected expression statement in translation unit\n");
@@ -2474,10 +2477,12 @@ CHECK_RETURN Err MtCursor::emit_toplevel_node(MnNode node) {
       err << skip_over(node);
       break;
 
+    // Skip trailing semis after class decls
     case anon_sym_SEMI:
       err << skip_over(node);
       break;
 
+    // Add semis after enums
     case sym_enum_specifier:
       err << emit_sym_enum_specifier(node);
       err << emit_print(";");
@@ -2539,6 +2544,7 @@ CHECK_RETURN Err MtCursor::emit_sym_declaration_list(MnNode n) {
     err << emit_ws_to(c);
 
     switch (c.sym) {
+      // Skip braces around package decls
       case anon_sym_LBRACE:
       case anon_sym_RBRACE:
         err << skip_over(c);
@@ -2563,6 +2569,9 @@ CHECK_RETURN Err MtCursor::emit_sym_declaration_list(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_sym_namespace_definition(MnNode n) {
   Err err = check_at(sym_namespace_definition, n);
 
+  elide_type.push(false);
+  elide_value.push(false);
+
   for (auto c : n) {
     err << emit_ws_to(c);
 
@@ -2574,13 +2583,16 @@ CHECK_RETURN Err MtCursor::emit_sym_namespace_definition(MnNode n) {
       err << emit_print(";");
     }
     else if (c.sym == sym_declaration_list) {
-      err << emit_sym_declaration_list(c);
+      err << emit_dispatch(c);
       err << emit_print("endpackage");
     }
     else {
       err << emit_dispatch(c);
     }
   }
+
+  elide_type.pop();
+  elide_value.pop();
 
   return err << check_done(n);
 }
@@ -2807,7 +2819,7 @@ CHECK_RETURN Err MtCursor::emit_sym_case_statement(MnNode n) {
         break;
       case anon_sym_case:
         err << skip_over(c);
-        err << skip_ws();
+        err << skip_ws_inside(n);
         break;
       case anon_sym_COLON:
         if (anything_after_colon) {
@@ -2819,11 +2831,7 @@ CHECK_RETURN Err MtCursor::emit_sym_case_statement(MnNode n) {
       case sym_compound_statement:
         block_prefix.push("begin");
         block_suffix.push("end");
-        elide_type.push(true);
-        elide_value.push(false);
         err << emit_dispatch(c);
-        elide_type.pop();
-        elide_value.pop();
         block_prefix.pop();
         block_suffix.pop();
         break;
@@ -3233,9 +3241,6 @@ CHECK_RETURN Err MtCursor::emit_sym_preproc_def(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_sym_for_statement(MnNode n) {
   Err err = check_at(sym_for_statement, n);
 
-  elide_type.push(true);
-  elide_value.push(false);
-
   for (auto c : n) {
     err << emit_ws_to(c);
 
@@ -3250,9 +3255,6 @@ CHECK_RETURN Err MtCursor::emit_sym_for_statement(MnNode n) {
       err << emit_dispatch(c);
     }
   }
-
-  elide_type.pop();
-  elide_value.pop();
 
   return err << check_done(n);
 }
@@ -3304,21 +3306,13 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(MnNode n) {
         break;
 
       case sym_declaration:
-        elide_type.push(true);
-        elide_value.push(false);
         err << emit_dispatch(c);
-        elide_type.pop();
-        elide_value.pop();
         break;
 
       case sym_compound_statement:
         block_prefix.push("begin");
         block_suffix.push("end");
-        elide_type.push(true);
-        elide_value.push(false);
         err << emit_dispatch(c);
-        elide_type.pop();
-        elide_value.pop();
         block_prefix.pop();
         block_suffix.pop();
         break;

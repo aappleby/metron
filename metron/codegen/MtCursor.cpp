@@ -1725,49 +1725,19 @@ CHECK_RETURN Err MtCursor::emit_optional_param_as_modparam(MnNode n) {
   auto node_eq   = n.child_by_sym(anon_sym_EQ);
   auto node_val  = n.get_field(field_default_value);
 
+  err << emit_line("parameter ");
   if (node_qual) {
-    err << emit_line("parameter ");
     err << emit_dispatch(node_qual);
     err << emit_gap(node_qual, node_type);
-    err << skip_over(node_type);
-    err << skip_gap(node_type, node_decl);
-    err << emit_dispatch(node_decl);
-    err << emit_gap(node_decl, node_eq);
-    err << emit_dispatch(node_eq);
-    err << emit_gap(node_eq, node_val);
-    err << emit_dispatch(node_val);
-    err << emit_print(";");
   }
-  else {
-    err << emit_line("parameter ");
-    err << skip_over(node_type);
-    err << skip_gap(node_type, node_decl);
-    err << emit_dispatch(node_decl);
-    err << emit_gap(node_decl, node_eq);
-    err << emit_dispatch(node_eq);
-    err << emit_gap(node_eq, node_val);
-    err << emit_dispatch(node_val);
-    err << emit_print(";");
-  }
-
-
-#if 0
-  err << emit_line("parameter ");
-
-  for (auto c : node) {
-    err << emit_ws_to(c);
-
-    if (c.field == field_type) {
-      err << skip_over(c);
-      err << skip_ws_inside(node);
-    }
-    else {
-      err << emit_dispatch(c);
-    }
-  }
-
+  err << skip_over(node_type);
+  err << skip_gap(node_type, node_decl);
+  err << emit_dispatch(node_decl);
+  err << emit_gap(node_decl, node_eq);
+  err << emit_dispatch(node_eq);
+  err << emit_gap(node_eq, node_val);
+  err << emit_dispatch(node_val);
   err << emit_print(";");
-#endif
 
   return err << check_done(n);
 }

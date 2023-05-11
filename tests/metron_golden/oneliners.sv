@@ -15,7 +15,7 @@ module Module (
   always_comb begin : test
 logic[7:0] a; a = 1; a = a + 7; test_ret = a; end
 
-  always_ff @(posedge clock) begin : tick   if (my_reg & 1) my_reg <= my_reg - 7; end
+  always_ff @(posedge clock) begin : tick  if (my_reg & 1) my_reg <= my_reg - 7; end
 
 
 endmodule

@@ -1211,7 +1211,6 @@ CHECK_RETURN Err MtCursor::emit_func_as_func(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
-
 // + function_definition (209) =
 // |--# type: primitive_type (80) = "void"
 // |--+ declarator: function_declarator (239) =
@@ -1255,7 +1254,6 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_comb(MnNode n) {
     id_map.top()[c.name4()] = func_decl.name4() + "_" + c.name4();
   }
 
-#if 1
   err << emit_replacement(func_type, "always_comb begin :");
   err << emit_gap(func_type, func_decl);
   err << emit_replacement(func_decl, func_decl.name4().c_str());
@@ -1266,35 +1264,8 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_comb(MnNode n) {
   err << emit_dispatch(func_body);
   block_prefix.pop();
   block_suffix.pop();
-#endif
-
-#if 0
-  for (auto c : n) {
-    err << emit_ws_to(c);
-
-    if (c.field == field_type) {
-      err << skip_over(c);
-      err << skip_ws_inside(n);
-    }
-    else if (c.field == field_declarator) {
-      err << emit_replacement(c, "always_comb begin : %s", c.name4().c_str());
-      err << skip_ws_inside(n);
-    }
-    else if (c.field == field_body) {
-      block_prefix.push("");
-      block_suffix.push("end");
-      err << emit_dispatch(c);
-      block_prefix.pop();
-      block_suffix.pop();
-    }
-    else {
-      err << emit_dispatch(c);
-    }
-  }
-#endif
 
   id_map.pop();
-
   return err << check_done(n);
 }
 
@@ -1303,7 +1274,9 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_comb(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_func_as_always_ff(MnNode n) {
   Err err;
 
+  auto func_type = n.get_field(field_type);
   auto func_decl = n.get_field(field_declarator);
+  auto func_body = n.get_field(field_body);
   auto func_params = func_decl.get_field(field_parameters);
 
   id_map.push(id_map.top());
@@ -1313,31 +1286,19 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_ff(MnNode n) {
     }
   }
 
-  for (auto c : n) {
-    err << emit_ws_to(c);
+  err << emit_replacement(func_type, "always_ff @(posedge clock) begin :");
+  err << emit_gap(func_type, func_decl);
+  err << emit_replacement(func_decl, func_decl.name4().c_str());
+  err << emit_gap(func_decl, func_body);
 
-    if (c.field == field_type) {
-      err << emit_replacement(c, "always_ff @(posedge clock) begin : %s", func_decl.name4().c_str());
-    }
-    else if (c.field == field_declarator) {
-      err << skip_over(c);
-    }
-    else if (c.field == field_body) {
-      block_prefix.push("");
-      block_suffix.push("end");
-      err << emit_dispatch(c);
-      block_prefix.pop();
-      block_suffix.pop();
-    }
-    else {
-      err << emit_dispatch(c);
-    }
-  }
+  block_prefix.push("");
+  block_suffix.push("end");
+  err << emit_dispatch(func_body);
+  block_prefix.pop();
+  block_suffix.pop();
 
   id_map.pop();
-
-  assert(cursor == n.end());
-  return err;
+  return err << check_done(n);
 }
 
 //------------------------------------------------------------------------------

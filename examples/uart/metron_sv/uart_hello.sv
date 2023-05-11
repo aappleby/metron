@@ -41,7 +41,7 @@ module uart_hello (
     get_done_ret = state == DONE;
   end
 
-  always_ff @(posedge clock) begin : tick            // True if the transmitter is idle
+  always_ff @(posedge clock) begin : tick           // True if the transmitter is idle
 
     // In reset we're always in WAIT state with the message cursor set to
     // the start of the message buffer.

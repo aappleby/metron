@@ -1820,13 +1820,7 @@ CHECK_RETURN Err MtCursor::emit_sym_struct_specifier(MnNode n) {
   err << emit_gap(node_struct, node_name);
   err << skip_over(node_name);
   err << skip_gap(node_name, node_body);
-
-  block_prefix.push("{");
-  block_suffix.push("}");
-  err << emit_dispatch(node_body);
-  block_prefix.pop();
-  block_suffix.pop();
-
+  err << emit_block(node_body, "{", "}");
   err << emit_print(" ");
   err << emit_splice(node_name);
   err << emit_print(";");
@@ -1960,7 +1954,7 @@ CHECK_RETURN Err MtCursor::emit_param_list_as_modparams(MnNode param_list) {
   Err err;
   push_cursor(param_list);
 
-  for (const auto& c : param_list) {
+  for (auto c : param_list) {
     err << emit_ws_to(c);
 
     switch (c.sym) {
@@ -1995,7 +1989,7 @@ CHECK_RETURN Err MtCursor::emit_template_params_as_modparams(MnNode param_list) 
   Err err;
   push_cursor(param_list);
 
-  for (const auto& c : param_list) {
+  for (auto c : param_list) {
     err << emit_ws_to(c);
 
     switch (c.sym) {
@@ -2073,54 +2067,42 @@ CHECK_RETURN Err MtCursor::emit_module_ports(MnNode class_body) {
 // Change class/struct to module, add default clk/rst inputs, add input and
 // ouptut ports to module param list.
 
-// sym_class_specifier
-//   lit "class"
-//   field_name:sym_type_idenfiier
-//   field_body:sym_field_declaration_list
+// + class_specifier (306) =
+// |--# lit (82) = "class"
+// |--# name: type_identifier (444) = "uart_rx"
+// |--+ body: field_declaration_list (257) =
 
 CHECK_RETURN Err MtCursor::emit_sym_class_specifier(MnNode n) {
   Err err = check_at(sym_class_specifier, n);
 
-  auto node_name = n.get_field(field_name);
+  auto node_class = n.child_by_sym(anon_sym_class);
+  auto node_name  = n.get_field(field_name);
+  auto node_body  = n.get_field(field_body);
+
   current_mod.push(lib->get_module(node_name.text()));
 
-  //----------
+  err << emit_replacement(node_class, "module");
+  err << emit_gap(node_class, node_name);
+  err << emit_dispatch(node_name);
+  err << emit_gap(node_name, node_body);
 
-  for (auto c : n) {
-    err << emit_ws_to(c);
+  // Insert the port list before the module body
+  err << emit_print("(");
+  push_indent(node_body);
+  err << emit_module_ports(node_body);
+  pop_indent(node_body);
+  err << emit_line(");");
 
-    if (c.sym == anon_sym_class) {
-      err << emit_replacement(c, "module");
-    }
-    else if (c.field == field_body) {
-      // Insert the port list before the module body
-      err << emit_print("(");
-      push_indent(c);
-      err << emit_module_ports(c);
-      pop_indent(c);
-      err << emit_line(");");
-
-      // Insert the modparam list before the module body
-      if (current_mod.top()->mod_param_list) {
-        push_indent(c);
-        err << emit_template_params_as_modparams(current_mod.top()->mod_param_list);
-        err << start_line();
-        pop_indent(c);
-      }
-
-      // Emit the module body
-      block_prefix.push("");
-      block_suffix.push("endmodule");
-      err << emit_dispatch(c);
-      block_prefix.pop();
-      block_suffix.pop();
-    }
-    else {
-      err << emit_dispatch(c);
-    }
+  // Insert the modparam list before the module body
+  if (current_mod.top()->mod_param_list) {
+    push_indent(node_body);
+    err << emit_template_params_as_modparams(current_mod.top()->mod_param_list);
+    err << start_line();
+    pop_indent(node_body);
   }
 
-  //----------
+  // Emit the module body
+  err << emit_block(node_body, "", "endmodule");
 
   current_mod.pop();
   return err << check_done(n);
@@ -2209,42 +2191,36 @@ CHECK_RETURN Err MtCursor::emit_sym_expression_statement(MnNode node) {
 CHECK_RETURN Err MtCursor::emit_sym_template_type(MnNode n) {
   Err err = check_at(sym_template_type, n);
 
-  bool is_logic = false;
+  auto node_name = n.get_field(field_name);
+  auto node_args = n.get_field(field_arguments);
 
-  for (auto c : n) {
-    if (c.field == field_name) {
-      is_logic = c.match("logic");
-      err << emit_dispatch(c);
-    }
-    else if (c.field == field_arguments) {
-      if (is_logic) {
-        auto logic_size = c.first_named_child();
-        switch (logic_size.sym) {
-          case sym_number_literal: {
-            int width = atoi(logic_size.start());
-            if (width > 1) {
-              err << emit_replacement(c, "[%d:0]", width - 1);
-            }
-            break;
-          }
-          default:
-            err << emit_print("[");
-            err << emit_splice(logic_size);
-            err << emit_print("-1:0]");
-            break;
-        }
+  bool is_logic = node_name.match("logic");
+
+  err << emit_dispatch(node_name);
+  err << emit_gap(node_name, node_args);
+
+  if (is_logic) {
+    auto logic_size = node_args.first_named_child();
+    if (logic_size.sym == sym_number_literal) {
+      int width = atoi(logic_size.start());
+      if (width > 1) {
+        err << emit_replacement(node_args, "[%d:0]", width - 1);
       }
       else {
-        // Template arguments for submodules and stuff end up in the param list
+        err << skip_over(node_args);
       }
-      cursor = c.end();
     }
     else {
-      err << emit_dispatch(c);
+      err << skip_over(node_args);
+      err << emit_print("[");
+      err << emit_splice(logic_size);
+      err << emit_print("-1:0]");
     }
   }
+  else {
+    err << skip_over(node_args);
+  }
 
-  cursor = n.end();
   return err << check_done(n);
 }
 

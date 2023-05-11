@@ -2702,20 +2702,27 @@ CHECK_RETURN Err MtCursor::emit_sym_comment(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_sym_qualified_identifier(MnNode n) {
   Err err = check_at(sym_qualified_identifier, n);
 
-  bool elide_scope = false;
+  auto node_scope = n.child(0);
+  auto node_colon = n.child(1);
+  auto node_name  = n.child(2);
 
-  for (auto c : n) {
-    if (c.field == field_scope) {
-      if (c.text() == "std") elide_scope = true;
-      if (current_mod.top()->get_enum(c.text())) elide_scope = true;
-      err << (elide_scope ? skip_over(c) : emit_dispatch(c));
-    }
-    else if (c.sym == anon_sym_COLON_COLON) {
-      err << (elide_scope ? skip_over(c) : emit_dispatch(c));
-    }
-    else {
-      err << emit_dispatch(c);
-    }
+  bool elide_scope = false;
+  if (node_scope.text() == "std") elide_scope = true;
+  if (current_mod.top()->get_enum(node_scope.text())) elide_scope = true;
+
+  if (elide_scope) {
+    err << skip_over(node_scope);
+    err << skip_gap(node_scope, node_colon);
+    err << skip_over(node_colon);
+    err << skip_gap(node_colon, node_name);
+    err << emit_dispatch(node_name);
+  }
+  else {
+    err << emit_dispatch(node_scope);
+    err << emit_gap(node_scope, node_colon);
+    err << emit_dispatch(node_colon);
+    err << emit_gap(node_colon, node_name);
+    err << emit_dispatch(node_name);
   }
 
   return err << check_done(n);

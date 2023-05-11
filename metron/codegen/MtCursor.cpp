@@ -1953,20 +1953,6 @@ CHECK_RETURN Err MtCursor::emit_sym_pointer_declarator(MnNode n) {
   err << skip_gap(node_star, node_decl);
   err << emit_dispatch(node_decl);
 
-#if 0
-  for (auto c : n) {
-    err << emit_ws_to(c);
-
-    if (c.sym == anon_sym_STAR) {
-      err << skip_over(c);
-      err << skip_ws_inside(n);
-    }
-    else {
-      err << emit_dispatch(c);
-    }
-  }
-#endif
-
   return err << check_done(n);
 }
 
@@ -2063,9 +2049,7 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
         err << emit_dispatch(c);
       }
       else if (c.field == field_declarator) {
-        elide_value.push(false);
         err << emit_dispatch(c);
-        elide_value.pop();
       }
       else if (c.sym == anon_sym_SEMI) {
         err << emit_text(c);

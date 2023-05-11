@@ -53,6 +53,7 @@ struct MtCursor {
   CHECK_RETURN Err skip_char(char c);
 
   CHECK_RETURN Err emit_ws();
+  CHECK_RETURN Err emit_ws_inside(MnNode n);
   CHECK_RETURN Err emit_ws_to(const MnNode& n);
   CHECK_RETURN Err emit_ws_to(TSSymbol sym, const MnNode& n);
   CHECK_RETURN Err emit_span(const char* a, const char* b);

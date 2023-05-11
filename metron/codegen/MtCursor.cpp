@@ -512,6 +512,16 @@ CHECK_RETURN Err MtCursor::emit_ws() {
 
 //----------------------------------------
 
+CHECK_RETURN Err MtCursor::emit_ws_inside(MnNode n) {
+  Err err;
+  while (*cursor && isspace(*cursor) && (cursor < n.end())) {
+    err << emit_char(*cursor++);
+  }
+  return err;
+}
+
+//----------------------------------------
+
 CHECK_RETURN Err MtCursor::emit_ws_to(const MnNode& n) {
   Err err;
   while (cursor < current_source.top()->source_end && isspace(*cursor) &&
@@ -2078,17 +2088,17 @@ CHECK_RETURN Err MtCursor::emit_template_params_as_modparams(MnNode n) {
   push_cursor(n);
 
   for (auto c : n) {
-    err << emit_ws_to(c);
-
     switch (c.sym) {
       case anon_sym_LT:
       case anon_sym_GT:
       case anon_sym_COMMA:
         err << skip_over(c);
+        err << skip_ws_inside(n);
         break;
 
       case sym_optional_parameter_declaration:
         err << emit_optional_param_as_modparam(c);
+        err << emit_ws_inside(n);
         break;
 
       case sym_parameter_declaration:
@@ -2097,6 +2107,7 @@ CHECK_RETURN Err MtCursor::emit_template_params_as_modparams(MnNode n) {
 
       default:
         err << emit_dispatch(c);
+        err << emit_ws_inside(n);
         break;
     }
   }

@@ -58,7 +58,7 @@ module singlecycle_datapath (
  /*public*/
   //----------------------------------------
 
-  always_comb begin : tock_pc pc = program_counter_value; end
+  always_comb begin : tock_pc  pc = program_counter_value; end
 
   //----------------------------------------
 

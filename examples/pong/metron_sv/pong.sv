@@ -57,8 +57,8 @@ module Pong (
 
   //----------------------------------------
 
-  always_comb begin : pix_x pix_x_ret = px; end
-  always_comb begin : pix_y pix_y_ret = py; end
+  always_comb begin : pix_x  pix_x_ret = px; end
+  always_comb begin : pix_y  pix_y_ret = py; end
 
   //----------------------------------------
 

@@ -22,7 +22,7 @@ module example_text_memory (
     if (filename) $readmemh(filename, mem);
   end
 
-  always_comb begin : tock_q q = mem[address]; end
+  always_comb begin : tock_q  q = mem[address]; end
 
  /*private*/
   logic[31:0] mem[2**(rv_config::TEXT_BITS - 2)];

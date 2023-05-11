@@ -1211,36 +1211,30 @@ CHECK_RETURN Err MtCursor::emit_func_as_func(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
-// sym_function_definition
-//  field_type
-//  field_declarator : sym_function_declarator
-//  field_body : sym_compound_statement
+
+// + function_definition (209) =
+// |--# type: primitive_type (80) = "void"
+// |--+ declarator: function_declarator (239) =
+// |--+ body: compound_statement (248) =
 
 CHECK_RETURN Err MtCursor::emit_func_as_task(MnNode n) {
   Err err = check_at(sym_function_definition, n);
 
-  for (auto c : n) {
-    err << emit_ws_to(c);
+  auto func_type = n.get_field(field_type);
+  auto func_decl = n.get_field(field_declarator);
+  auto func_body = n.get_field(field_body);
 
-    if (c.field == field_type) {
-      err << emit_replacement(c, "task automatic");
-    }
-    else if (c.field == field_declarator) {
-      err << emit_dispatch(c);
-      err << prune_trailing_ws();
-      err << emit_print(";");
-    }
-    else if (c.field == field_body) {
-      block_prefix.push("");
-      block_suffix.push("endtask");
-      err << emit_dispatch(c);
-      block_prefix.pop();
-      block_suffix.pop();
-    }
-    else {
-      err << emit_dispatch(c);
-    }
-  }
+  err << emit_replacement(func_type, "task automatic");
+  err << emit_gap(func_type, func_decl);
+  err << emit_dispatch(func_decl);
+  err << emit_print(";");
+  err << emit_gap(func_decl, func_body);
+
+  block_prefix.push("");
+  block_suffix.push("endtask");
+  err << emit_dispatch(func_body);
+  block_prefix.pop();
+  block_suffix.pop();
 
   return err << check_done(n);
 }
@@ -1250,7 +1244,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_task(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_func_as_always_comb(MnNode n) {
   Err err = check_at(sym_function_definition, n);
 
-  auto func_ret = n.get_field(field_type);
+  auto func_type = n.get_field(field_type);
   auto func_decl = n.get_field(field_declarator);
   auto func_body = n.get_field(field_body);
   auto func_params = func_decl.get_field(field_parameters);
@@ -1261,6 +1255,20 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_comb(MnNode n) {
     id_map.top()[c.name4()] = func_decl.name4() + "_" + c.name4();
   }
 
+#if 1
+  err << emit_replacement(func_type, "always_comb begin :");
+  err << emit_gap(func_type, func_decl);
+  err << emit_replacement(func_decl, func_decl.name4().c_str());
+  err << emit_gap(func_decl, func_body);
+
+  block_prefix.push("");
+  block_suffix.push("end");
+  err << emit_dispatch(func_body);
+  block_prefix.pop();
+  block_suffix.pop();
+#endif
+
+#if 0
   for (auto c : n) {
     err << emit_ws_to(c);
 
@@ -1283,6 +1291,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_comb(MnNode n) {
       err << emit_dispatch(c);
     }
   }
+#endif
 
   id_map.pop();
 

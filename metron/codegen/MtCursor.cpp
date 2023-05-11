@@ -2434,32 +2434,38 @@ CHECK_RETURN Err MtCursor::emit_sym_number_literal(MnNode n) {
 //------------------------------------------------------------------------------
 // Change "return x" to "(funcname) = x" to match old Verilog return style.
 
+// + return_statement (273) =
+// |--# lit (94) = "return"
+// |--+ binary_expression (283) =
+// |--# lit (39) = ";"
+
 CHECK_RETURN Err MtCursor::emit_sym_return_statement(MnNode n) {
   Err err = check_at(sym_return_statement, n);
 
   auto& method = current_method.top();
   auto method_name = method->name();
 
-  for (auto c : n) {
-    err << emit_ws_to(c);
+  auto node_ret  = n.child(0);
+  auto node_expr = n.child(1);
+  auto node_semi = n.child(2);
 
-    if (c.sym == anon_sym_return) {
-      err << emit_replacement(c, method_name.c_str());
+  err << emit_replacement(node_ret, method_name.c_str());
 
-      if (method->emit_as_always_comb) {
-        err << emit_print("_ret =");
-      }
-      else if (method->emit_as_always_ff) {
-        err << emit_print("_ret <=");
-      }
-      else {
-        err << emit_print(" =");
-      }
-    }
-    else {
-      err << emit_dispatch(c);
-    }
+  if (method->emit_as_always_comb || method->emit_as_always_ff) {
+    err << emit_print("_ret");
   }
+
+  if (method->emit_as_always_ff) {
+    err << emit_print(" <=");
+  }
+  else {
+    err << emit_print(" =");
+  }
+
+  err << emit_gap(node_ret, node_expr);
+  err << emit_dispatch(node_expr);
+  err << emit_gap(node_expr, node_semi);
+  err << emit_dispatch(node_semi);
 
   return err << check_done(n);
 }
@@ -2474,12 +2480,15 @@ CHECK_RETURN Err MtCursor::emit_sym_identifier(MnNode n) {
 
   if (auto it = rep.find(name); it != rep.end()) {
     err << emit_replacement(n, it->second.c_str());
-  } else if (preproc_vars.top().contains(name)) {
+  }
+  else if (preproc_vars.top().contains(name)) {
     err << emit_print("`");
     err << emit_text(n);
-  } else if (name == "DONTCARE") {
+  }
+  else if (name == "DONTCARE") {
     err << emit_replacement(n, "'x");
-  } else {
+  }
+  else {
     err << emit_text(n);
   }
 
@@ -2496,7 +2505,8 @@ CHECK_RETURN Err MtCursor::emit_sym_type_identifier(MnNode n) {
 
   if (auto it = rep.find(name); it != rep.end()) {
     err << emit_replacement(n, it->second.c_str());
-  } else {
+  }
+  else {
     err << emit_text(n);
   }
 
@@ -2504,27 +2514,34 @@ CHECK_RETURN Err MtCursor::emit_sym_type_identifier(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
-// FIXME loop style
+// + template_declaration (314) =
+// |--# lit (152) = "template"
+// |--+ parameters: template_parameter_list (316) =
+// |--+ class_specifier (306) =
+// |--# lit (39) = ";"
 
 CHECK_RETURN Err MtCursor::emit_sym_template_declaration(MnNode n) {
   Err err = check_at(sym_template_declaration, n);
 
-  // The class_specifier node does _not_ have a field name.
-  MnNode class_specifier;
-  for (auto child : (MnNode)n) {
-    if (child.sym == sym_class_specifier) {
-      class_specifier = MnNode(child);
-    }
-  }
+  auto node_template = n.child(0);
+  auto node_params   = n.child(1);
+  auto node_class    = n.child(2);
+  auto node_semi     = n.child(3);
 
-  assert(!class_specifier.is_null());
-  std::string class_name = class_specifier.get_field(field_name).text();
-
+  std::string class_name = node_class.get_field(field_name).text();
   current_mod.push(lib->get_module(class_name));
-  err << emit_splice(class_specifier);
-  current_mod.pop();
 
-  cursor = n.end();
+  // Template params have to go _inside_ the class definition in Verilog, so
+  // we skip them here.
+  err << skip_over(node_template);
+  err << skip_gap(node_template, node_params);
+  err << skip_over(node_params);
+  err << skip_gap(node_params, node_class);
+  err << emit_dispatch(node_class);
+  err << skip_gap(node_class, node_semi);
+  err << skip_over(node_semi);
+
+  current_mod.pop();
   return err << check_done(n);
 }
 
@@ -2577,6 +2594,7 @@ CHECK_RETURN Err MtCursor::emit_sym_field_expression(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
+// Case statements are more like compound statements than single statements.
 
 CHECK_RETURN Err MtCursor::emit_sym_case_statement(MnNode n) {
   Err err = check_at(sym_case_statement, n);
@@ -2633,27 +2651,23 @@ CHECK_RETURN Err MtCursor::emit_sym_case_statement(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
+// + switch_statement (268) =
+// |--# lit (88) = "switch"
+// |--+ condition: condition_clause (362) =
+// |--+ body: compound_statement (248) =
 
 CHECK_RETURN Err MtCursor::emit_sym_switch_statement(MnNode n) {
   Err err = check_at(sym_switch_statement, n);
 
-  for (auto c : n) {
-    err << emit_ws_to(c);
+  auto node_switch = n.child(0);
+  auto node_cond   = n.child(1);
+  auto node_body   = n.child(2);
 
-    if (c.sym == anon_sym_switch) {
-      err << emit_replacement(c, "case");
-    }
-    else if (c.field == field_body) {
-      block_prefix.push("");
-      block_suffix.push("endcase");
-      err << emit_dispatch(c);
-      block_prefix.pop();
-      block_suffix.pop();
-    }
-    else {
-      err << emit_dispatch(c);
-    }
-  }
+  err << emit_replacement(node_switch, "case");
+  err << emit_gap(node_switch, node_cond);
+  err << emit_dispatch(node_cond);
+  err << emit_gap(node_cond, node_body);
+  err << emit_block(node_body, "", "endcase");
 
   return err << check_done(n);
 }

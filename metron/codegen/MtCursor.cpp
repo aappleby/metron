@@ -1349,18 +1349,28 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
+// + field_declaration (259) =
+// |--# type: type_identifier (444) = "example_data_memory"
+// |--# declarator: field_identifier (440) = "data_memory"
+// |--# lit (39) = ";"
 
-CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
+CHECK_RETURN Err MtCursor::emit_component(MnNode n) {
   Err err;
 
-  auto node_type = n.child(0);  // type
-  auto node_decl = n.child(1);  // decl
-  auto node_semi = n.child(2);  // semi
+  auto node_type = n.get_field(field_type);
+  auto node_decl = n.get_field(field_declarator);
+  auto node_semi = n.child_by_sym(anon_sym_SEMI);
 
   auto inst_name = node_decl.text();
   auto component_mod = lib->get_module(n.type5());
 
+  //----------------------------------------
+  // Component name
+
   err << emit_dispatch(node_type);
+
+  //----------------------------------------
+  // Component modparams
 
   bool has_template_params = node_type.sym == sym_template_type && component_mod->mod_param_list;
   bool has_constructor_params = component_mod->constructor && component_mod->constructor->param_nodes.size();
@@ -1437,8 +1447,15 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
     err << emit_line(")");
   }
 
+  //----------------------------------------
+  // Component name
+
   err << emit_gap(node_type, node_decl);
   err << emit_dispatch(node_decl);
+
+  //----------------------------------------
+  // Port list
+
   err << emit_print("(");
 
   indent.push(indent.top() + "  ");
@@ -1546,7 +1563,7 @@ CHECK_RETURN Err MtCursor::emit_field_as_component(MnNode n) {
     }
   }
 
-  err << emit_component_port_list(n);
+  err << emit_component(n);
   err << emit_submod_binding_fields(n);
   cursor = n.end();
 

@@ -2811,25 +2811,37 @@ CHECK_RETURN Err MtCursor::emit_sym_nullptr(MnNode n) {
 // |--# lit (87) = "else"
 // |--+ alternative: compound_statement (248) =
 
-CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnNode node) {
-  Err err = check_at(sym_if_statement, node);
+CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnNode n) {
+  Err err = check_at(sym_if_statement, n);
 
-  block_prefix.push("begin");
-  block_suffix.push("end");
+  auto node_if   = n.child_by_sym(anon_sym_if);
+  auto node_cond = n.get_field(field_condition);
+  auto node_then = n.get_field(field_consequence);
+  auto node_else = n.child_by_sym(anon_sym_else);
+  auto node_alt  = n.get_field(field_alternative);
 
-  for (auto child : node) {
-    if (child.sym == sym_expression_statement) {
-      if (branch_contains_component_call(child)) {
-        return err << ERR("If branches that contain component calls must use {}.\n");
-      }
-    }
+  if (node_then.sym == sym_expression_statement && branch_contains_component_call(node_then)) {
+    return err << ERR("If branches that contain component calls must use {}.\n");
   }
 
-  err << emit_children(node);
+  if (node_alt && node_alt.sym == sym_expression_statement && branch_contains_component_call(node_alt)) {
+    return err << ERR("Else branches that contain component calls must use {}.\n");
+  }
 
-  block_prefix.pop();
-  block_suffix.pop();
-  return err << check_done(node);
+  err << emit_dispatch(node_if);
+  err << emit_gap(node_if, node_cond);
+  err << emit_dispatch(node_cond);
+  err << emit_gap(node_cond, node_then);
+  err << emit_block(node_then, "begin", "end");
+
+  if (node_else) {
+    err << emit_gap(node_then, node_else);
+    err << emit_dispatch(node_else);
+    err << emit_gap(node_else, node_alt);
+    err << emit_block(node_alt, "begin", "end");
+  }
+
+  return err << check_done(n);
 }
 
 //------------------------------------------------------------------------------

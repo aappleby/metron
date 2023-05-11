@@ -344,6 +344,79 @@ CHECK_RETURN Err MtCursor::skip_gap(MnNode a, MnNode d) {
 }
 
 //----------------------------------------
+// Emit all whitespace and comments after node A.
+
+CHECK_RETURN Err MtCursor::emit_tail(MnNode a) {
+  Err err;
+  if (cursor != a.end()) {
+    err << ERR("emit_gap() - Did not start on a.end()");
+    return err;
+  }
+
+  auto source = a.source->source;
+  auto pair_lhs = a.node;
+  auto pair_rhs = ts_node_next_sibling(a.node);
+
+  while(1) {
+    err << emit_span(
+      &source[ts_node_end_byte(pair_lhs)],
+      &source[ts_node_start_byte(pair_rhs)]
+    );
+
+    pair_lhs = pair_rhs;
+    pair_rhs = ts_node_next_sibling(pair_rhs);
+
+    if (ts_node_symbol(pair_lhs) != sym_comment) {
+      break;
+    }
+    else {
+      err << emit_span(
+        &source[ts_node_start_byte(pair_lhs)],
+        &source[ts_node_end_byte(pair_lhs)]
+      );
+    }
+  }
+
+  return err;
+}
+
+//----------------------------------------
+// Skip all whitespace and comments after node A.
+
+CHECK_RETURN Err MtCursor::skip_tail(MnNode a) {
+  Err err;
+  if (cursor != a.end()) {
+    err << ERR("skip_gap() - Did not start on a.end()");
+    return err;
+  }
+
+  auto source = a.source->source;
+  auto pair_lhs = a.node;
+  auto pair_rhs = ts_node_next_sibling(a.node);
+
+  while(1) {
+    err << skip_span(
+      &source[ts_node_end_byte(pair_lhs)],
+      &source[ts_node_start_byte(pair_rhs)]
+    );
+
+    pair_lhs = pair_rhs;
+    pair_rhs = ts_node_next_sibling(pair_rhs);
+
+    if (ts_node_symbol(pair_lhs) != sym_comment) {
+      break;
+    }
+    else {
+      err << skip_span(
+        &source[ts_node_start_byte(pair_lhs)],
+        &source[ts_node_end_byte(pair_lhs)]
+      );
+    }
+  }
+
+  return err;
+}
+//----------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_char(char c, uint32_t color) {
   Err err;
@@ -1609,6 +1682,10 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
     }
   }
 
+  if (node_name) {
+    err << emit_print("typedef ");
+  }
+
   if (node_base) {
     // + type: enum_specifier (253) =
     // |--# lit (81) = "enum"
@@ -1617,7 +1694,6 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
     // |--# lit (85) = ":"
     // |--# base: type_identifier (444) = "int"
     // |--+ body: enumerator_list (254) =
-    err << emit_print("typedef ");
     err << emit_dispatch(node_enum);
     err << emit_gap(node_enum, node_class);
     err << skip_over(node_class);
@@ -1648,7 +1724,6 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
     // |--# lit (82) = "class"
     // |--# name: type_identifier (444) = "enum_class1"
     // |--+ body: enumerator_list (254) =
-    err << emit_print("typedef ");
     err << emit_dispatch(node_enum);
     err << emit_gap(node_enum, node_class);
     err << skip_over(node_class);
@@ -1664,7 +1739,6 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
     // |--# lit (81) = "enum"
     // |--# name: type_identifier (444) = "top_level_enum"
     // |--+ body: enumerator_list (254) =
-    err << emit_print("typedef ");
     err << emit_dispatch(node_enum);
     err << emit_gap(node_enum, node_name);
     err << skip_over(node_name);
@@ -2854,24 +2928,19 @@ CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_sym_using_declaration(MnNode n) {
   Err err = check_at(sym_using_declaration, n);
 
-  for (auto c : n) {
-    err << emit_ws_to(c);
+  auto node_using     = n.child_by_sym(anon_sym_using);
+  auto node_namespace = n.child_by_sym(anon_sym_namespace);
+  auto node_id        = n.child_by_sym(sym_identifier);
+  auto node_semi      = n.child_by_sym(anon_sym_SEMI);
 
-    if (c.sym == anon_sym_using) {
-      err << emit_replacement(c, "import");
-    }
-    else if (c.sym == anon_sym_namespace) {
-      err << skip_over(c);
-      err << skip_ws_inside(n);
-    }
-    else if (c.sym == sym_identifier) {
-      err << emit_dispatch(c);
-      err << emit_print("::*");
-    }
-    else {
-      err << emit_dispatch(c);
-    }
-  }
+  err << emit_replacement(node_using, "import");
+  err << emit_gap(node_using, node_namespace);
+  err << skip_over(node_namespace);
+  err << skip_gap(node_namespace, node_id);
+  err << emit_dispatch(node_id);
+  err << emit_print("::*");
+  err << emit_gap(node_id, node_semi);
+  err << emit_dispatch(node_semi);
 
   return err << check_done(n);
 }
@@ -2880,26 +2949,14 @@ CHECK_RETURN Err MtCursor::emit_sym_using_declaration(MnNode n) {
 // Const string:
 // + declaration (210) =
 // |--+ storage_class_specifier (249) =
-// |  |--# lit (64) = "static"
 // |--+ type_qualifier (250) =
-// |  |--# lit (68) = "const"
 // |--# type: primitive_type (80) = "char"
 // |--+ declarator: init_declarator (247) =
-// |  |--+ declarator: pointer_declarator (235) =
-// |  |  |--# lit (23) = "*"
-// |  |  |--# declarator: identifier (1) = "TEXT_HEX"
-// |  |--# lit (63) = "="
-// |  |--+ value: string_literal (300) =
-// |     |--# lit (137) = "\""
-// |     |--# lit (137) = "\""
 // |--# lit (39) = ";"
 
 // + declaration (210) =
 // |--+ type: template_type (348) =
 // |--+ declarator: init_declarator (247) =
-// |  |--# declarator: identifier (1) = "b"
-// |  |--# lit (63) = "="
-// |  |--+ value: call_expression (289) =
 // |--# lit (39) = ";"
 
 CHECK_RETURN Err MtCursor::emit_sym_declaration(MnNode n) {

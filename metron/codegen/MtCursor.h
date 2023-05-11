@@ -45,6 +45,9 @@ struct MtCursor {
   CHECK_RETURN Err emit_gap(MnNode a, MnNode b);
   CHECK_RETURN Err skip_gap(MnNode a, MnNode b);
 
+  CHECK_RETURN Err emit_tail(MnNode a);
+  CHECK_RETURN Err skip_tail(MnNode a);
+
   // Generic emit()s.
   CHECK_RETURN Err emit_char(char c, uint32_t color = 0);
   CHECK_RETURN Err emit_ws();

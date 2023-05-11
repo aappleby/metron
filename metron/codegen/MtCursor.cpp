@@ -1658,6 +1658,28 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
+// + type: enum_specifier (253) =
+// |--# lit (81) = "enum"
+// |--# lit (82) = "class"
+// |--# name: type_identifier (444) = "typed_enum"
+// |--# lit (85) = ":"
+// |--# base: type_identifier (444) = "int"
+// |--+ body: enumerator_list (254) =
+
+// + type: enum_specifier (253) =
+// |--# lit (81) = "enum"
+// |--# lit (82) = "class"
+// |--# name: type_identifier (444) = "enum_class1"
+// |--+ body: enumerator_list (254) =
+
+// + enum_specifier (253) =
+// |--# lit (81) = "enum"
+// |--# name: type_identifier (444) = "top_level_enum"
+// |--+ body: enumerator_list (254) =
+
+// + type: enum_specifier (253) =
+// |--# lit (81) = "enum"
+// |--+ body: enumerator_list (254) =
 
 CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
   Err err = check_at(sym_enum_specifier, n);
@@ -1685,26 +1707,24 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
   if (node_name) {
     err << emit_print("typedef ");
   }
+  err << emit_dispatch(node_enum);
+  err << emit_tail(node_enum);
+
+  if (node_class) {
+    err << skip_over(node_class);
+    err << skip_tail(node_class);
+  }
+
+  if (node_name) {
+    err << skip_over(node_name);
+    err << skip_tail(node_name);
+  }
 
   if (node_base) {
-    // + type: enum_specifier (253) =
-    // |--# lit (81) = "enum"
-    // |--# lit (82) = "class"
-    // |--# name: type_identifier (444) = "typed_enum"
-    // |--# lit (85) = ":"
-    // |--# base: type_identifier (444) = "int"
-    // |--+ body: enumerator_list (254) =
-    err << emit_dispatch(node_enum);
-    err << emit_gap(node_enum, node_class);
-    err << skip_over(node_class);
-    err << skip_gap(node_class, node_name);
-    err << skip_over(node_name);
-    err << skip_gap(node_name, node_colon);
     err << skip_over(node_colon);
-    err << skip_gap(node_colon, node_base);
+    err << skip_tail(node_colon);
 
     auto node_scope = node_base.get_field(field_scope);
-
     if (node_scope) {
       err << skip_over(node_base);
       err << emit_splice(node_base.get_field(field_scope));
@@ -1713,47 +1733,14 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
       err << emit_dispatch(node_base);
     }
 
-    err << emit_gap(node_base, node_body);
-    err << emit_dispatch(node_body);
+    err << emit_tail(node_base);
+  }
+
+  err << emit_dispatch(node_body);
+
+  if (node_name) {
     err << emit_print(" ");
     err << emit_splice(node_name);
-  }
-  else if (node_class) {
-    // + type: enum_specifier (253) =
-    // |--# lit (81) = "enum"
-    // |--# lit (82) = "class"
-    // |--# name: type_identifier (444) = "enum_class1"
-    // |--+ body: enumerator_list (254) =
-    err << emit_dispatch(node_enum);
-    err << emit_gap(node_enum, node_class);
-    err << skip_over(node_class);
-    err << skip_gap(node_class, node_name);
-    err << skip_over(node_name);
-    err << skip_gap(node_name, node_body);
-    err << emit_dispatch(node_body);
-    err << emit_print(" ");
-    err << emit_splice(node_name);
-  }
-  else if (node_name) {
-    // + enum_specifier (253) =
-    // |--# lit (81) = "enum"
-    // |--# name: type_identifier (444) = "top_level_enum"
-    // |--+ body: enumerator_list (254) =
-    err << emit_dispatch(node_enum);
-    err << emit_gap(node_enum, node_name);
-    err << skip_over(node_name);
-    err << skip_gap(node_name, node_body);
-    err << emit_dispatch(node_body);
-    err << emit_print(" ");
-    err << emit_splice(node_name);
-  }
-  else {
-    // + type: enum_specifier (253) =
-    // |--# lit (81) = "enum"
-    // |--+ body: enumerator_list (254) =
-    err << emit_dispatch(node_enum);
-    err << emit_gap(node_enum, node_body);
-    err << emit_dispatch(node_body);
   }
 
   override_size.pop();

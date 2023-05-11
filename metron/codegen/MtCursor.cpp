@@ -1158,11 +1158,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_init(MnNode n) {
       err << skip_ws_inside(n);
     }
     else if (c.sym == sym_compound_statement) {
-      block_prefix.push("begin");
-      block_suffix.push("end");
-      err << emit_dispatch(c);
-      block_prefix.pop();
-      block_suffix.pop();
+      err << emit_block(c, "begin", "end");
     }
     else {
       err << emit_dispatch(c);
@@ -1173,39 +1169,25 @@ CHECK_RETURN Err MtCursor::emit_func_as_init(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
-/*
-[000.017]  + function_definition (209) =
-[000.017]  |--+ type: template_type (348) =
-[000.017]  |--+ declarator: function_declarator (239) =
-[000.017]  |--+ body: compound_statement (248) =
-*/
+// + function_definition (209) =
+// |--+ type: template_type (348) =
+// |--+ declarator: function_declarator (239) =
+// |--+ body: compound_statement (248) =
 
 CHECK_RETURN Err MtCursor::emit_func_as_func(MnNode n) {
   Err err = check_at(sym_function_definition, n);
 
-  for (auto c : n) {
-    err << emit_ws_to(c);
+  auto func_type = n.get_field(field_type);
+  auto func_decl = n.get_field(field_declarator);
+  auto func_body = n.get_field(field_body);
 
-    if (c.field == field_type) {
-      err << emit_print("function ");
-      err << emit_dispatch(c);
-    }
-    else if (c.field == field_declarator) {
-      err << emit_dispatch(c);
-      err << prune_trailing_ws();
-      err << emit_print(";");
-    }
-    else if (c.field == field_body) {
-      block_prefix.push("");
-      block_suffix.push("endfunction");
-      err << emit_dispatch(c);
-      block_prefix.pop();
-      block_suffix.pop();
-    }
-    else {
-      err << emit_dispatch(c);
-    }
-  }
+  err << emit_print("function ");
+  err << emit_dispatch(func_type);
+  err << emit_gap(func_type, func_decl);
+  err << emit_dispatch(func_decl);
+  err << emit_print(";");
+  err << emit_gap(func_decl, func_body);
+  err << emit_block(func_body, "", "endfunction");
 
   return err << check_done(n);
 }
@@ -1228,12 +1210,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_task(MnNode n) {
   err << emit_dispatch(func_decl);
   err << emit_print(";");
   err << emit_gap(func_decl, func_body);
-
-  block_prefix.push("");
-  block_suffix.push("endtask");
-  err << emit_dispatch(func_body);
-  block_prefix.pop();
-  block_suffix.pop();
+  err << emit_block(func_body, "", "endtask");
 
   return err << check_done(n);
 }
@@ -3375,11 +3352,7 @@ CHECK_RETURN Err MtCursor::emit_sym_compound_statement(MnNode n) {
         break;
 
       case sym_compound_statement:
-        block_prefix.push("begin");
-        block_suffix.push("end");
-        err << emit_dispatch(c);
-        block_prefix.pop();
-        block_suffix.pop();
+        err << emit_block(c, "begin", "end");
         break;
 
       case anon_sym_RBRACE:

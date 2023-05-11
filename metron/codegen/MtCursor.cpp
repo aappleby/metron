@@ -551,7 +551,7 @@ CHECK_RETURN Err MtCursor::skip_over(MnNode n) {
 CHECK_RETURN Err MtCursor::skip_ws() {
   Err err;
 
-  while (*cursor && isspace(*cursor) && (*cursor != '\n')) {
+  while (*cursor && isspace(*cursor)) {
     err << skip_char(*cursor++);
   }
 
@@ -563,7 +563,7 @@ CHECK_RETURN Err MtCursor::skip_ws() {
 CHECK_RETURN Err MtCursor::skip_ws_inside(const MnNode& n) {
   Err err;
 
-  while (*cursor && isspace(*cursor) && (*cursor != '\n') && (cursor < n.end())) {
+  while (*cursor && isspace(*cursor) && (cursor < n.end())) {
     err << skip_char(*cursor++);
   }
 
@@ -2073,11 +2073,11 @@ CHECK_RETURN Err MtCursor::emit_param_list_as_modparams(MnNode n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_template_params_as_modparams(MnNode param_list) {
+CHECK_RETURN Err MtCursor::emit_template_params_as_modparams(MnNode n) {
   Err err;
-  push_cursor(param_list);
+  push_cursor(n);
 
-  for (auto c : param_list) {
+  for (auto c : n) {
     err << emit_ws_to(c);
 
     switch (c.sym) {

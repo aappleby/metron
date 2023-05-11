@@ -1941,8 +1941,10 @@ CHECK_RETURN Err MtCursor::emit_optional_param_as_modparam(MnNode node) {
 // Emit field declarations. For components, also emit glue declarations and
 // append the glue parameter list to the field.
 
-// field_declaration = { type:type_identifier, declarator:field_identifier+ }
-// field_declaration = { type:template_type,   declarator:field_identifier+ }
+// + field_declaration (259) =
+// |--# type: type_identifier (444) = "example_data_memory"
+// |--# declarator: field_identifier (440) = "data_memory"
+// |--# lit (39) = ";"
 
 CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
   Err err = check_at(n);
@@ -1997,44 +1999,32 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
-/*
-[000.004]  + struct_specifier (255) =
-[000.004]  |--# lit (83) = "struct"
-[000.004]  |--# name: type_identifier (444) = "MyStruct1"
-[000.004]  |--+ body: field_declaration_list (257) =
-*/
+// + struct_specifier (255) =
+// |--# lit (83) = "struct"
+// |--# name: type_identifier (444) = "MyStruct1"
+// |--+ body: field_declaration_list (257) =
 
 CHECK_RETURN Err MtCursor::emit_sym_struct_specifier(MnNode n) {
   Err err = check_at(sym_struct_specifier, n);
 
+  auto node_struct = n.child_by_sym(anon_sym_struct);
+  auto node_name   = n.get_field(field_name);
+  auto node_body   = n.get_field(field_body);
+
+  err << emit_replacement(node_struct, "typedef struct packed");
+  err << emit_gap(node_struct, node_name);
+  err << skip_over(node_name);
+  err << skip_gap(node_name, node_body);
+
   block_prefix.push("{");
   block_suffix.push("}");
-
-  MnNode node_name = n.get_field(field_name);
-
-  for (auto c : n) {
-    err << emit_ws_to(c);
-
-    if (c.sym == anon_sym_struct) {
-      err << emit_replacement(c, "typedef struct packed");
-    }
-    else if (c.field == field_name) {
-      err << skip_over(c);
-      err << skip_ws_inside(n);
-    }
-    else if (c.field == field_body) {
-      err << emit_dispatch(c);
-      err << emit_print(" ");
-      err << emit_splice(node_name);
-      err << emit_print(";");
-    }
-    else {
-      err << emit_dispatch(c);
-    }
-  }
-
+  err << emit_dispatch(node_body);
   block_prefix.pop();
   block_suffix.pop();
+
+  err << emit_print(" ");
+  err << emit_splice(node_name);
+  err << emit_print(";");
 
   return err << check_done(n);
 }

@@ -1943,8 +1943,6 @@ CHECK_RETURN Err MtCursor::emit_optional_param_as_modparam(MnNode node) {
 
 // field_declaration = { type:type_identifier, declarator:field_identifier+ }
 // field_declaration = { type:template_type,   declarator:field_identifier+ }
-// field_declaration = { type:enum_specifier,  bitfield_clause (TREESITTER BUG)
-// }
 
 CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
   Err err = check_at(n);
@@ -1992,23 +1990,9 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
     err << comment_out(n);
   }
   else {
-    for (auto c : n) {
-      err << emit_ws_to(c);
-
-      if (c.field == field_type) {
-        err << emit_dispatch(c);
-      }
-      else if (c.field == field_declarator) {
-        err << emit_dispatch(c);
-      }
-      else if (c.sym == anon_sym_SEMI) {
-        err << emit_text(c);
-      }
-      else {
-        err << ERR("Unknown node type in field");
-      }
-    }
+    err << emit_children(n);
   }
+
   return err << check_done(n);
 }
 

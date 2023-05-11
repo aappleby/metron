@@ -1235,12 +1235,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_comb(MnNode n) {
   err << emit_gap(func_type, func_decl);
   err << emit_replacement(func_decl, func_decl.name4().c_str());
   err << emit_gap(func_decl, func_body);
-
-  block_prefix.push("");
-  block_suffix.push("end");
-  err << emit_dispatch(func_body);
-  block_prefix.pop();
-  block_suffix.pop();
+  err << emit_block(func_body, "", "end");
 
   id_map.pop();
   return err << check_done(n);
@@ -1267,12 +1262,7 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_ff(MnNode n) {
   err << emit_gap(func_type, func_decl);
   err << emit_replacement(func_decl, func_decl.name4().c_str());
   err << emit_gap(func_decl, func_body);
-
-  block_prefix.push("");
-  block_suffix.push("end");
-  err << emit_dispatch(func_body);
-  block_prefix.pop();
-  block_suffix.pop();
+  err << emit_block(func_body, "", "end");
 
   id_map.pop();
   return err << check_done(n);
@@ -1511,28 +1501,28 @@ CHECK_RETURN Err MtCursor::emit_component(MnNode n) {
 // );
 // logic my_mod_foo; <-- this part
 
-CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
+CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode n) {
   Err err;
 
   if (current_mod.top()->components.empty()) {
     return err;
   }
 
-  auto component_type_node = component_decl.child(0);  // type
-  auto component_name_node = component_decl.child(1);  // decl
-  auto component_semi_node = component_decl.child(2);  // semi
+  auto node_type = n.get_field(field_type);
+  auto node_decl = n.get_field(field_declarator);
+  auto node_semi = n.child_by_sym(anon_sym_SEMI);
 
-  auto component_name = component_name_node.text();
+  auto component_name = node_decl.text();
   auto component_cname = component_name.c_str();
 
-  std::string type_name = component_type_node.type5();
+  std::string type_name = node_type.type5();
   auto component_mod = lib->get_module(type_name);
 
   // Swap template arguments with the values from the template
   // instantiation.
   std::map<std::string, std::string> replacements;
 
-  auto args = component_type_node.get_field(field_arguments);
+  auto args = node_type.get_field(field_arguments);
   if (args) {
     int arg_count = args.named_child_count();
     for (int i = 0; i < arg_count; i++) {

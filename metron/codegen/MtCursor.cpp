@@ -1703,18 +1703,55 @@ CHECK_RETURN Err MtCursor::emit_sym_pointer_declarator(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
+// + optional_parameter_declaration (321) =
+// |--# type: primitive_type (80) = "int"
+// |--# declarator: identifier (1) = "cycles_per_bit"
+// |--# lit (63) = "="
+// |--# default_value: number_literal (126) = "4"
 
-/*
-[000.018]  + optional_parameter_declaration (321) =
-[000.018]  |--# type: primitive_type (80) = "int"
-[000.018]  |--# declarator: identifier (1) = "cycles_per_bit"
-[000.018]  |--# lit (63) = "="
-[000.018]  |--# default_value: number_literal (126) = "4"
-*/
+// + optional_parameter_declaration (321) =
+// |--+ type_qualifier (250) =
+// |--# type: primitive_type (80) = "char"
+// |--+ declarator: pointer_declarator (235) =
+// |--# lit (63) = "="
+// |--# default_value: nullptr (184) = "nullptr"
 
-CHECK_RETURN Err MtCursor::emit_optional_param_as_modparam(MnNode node) {
-  Err err = check_at(sym_optional_parameter_declaration, node);
+CHECK_RETURN Err MtCursor::emit_optional_param_as_modparam(MnNode n) {
+  Err err = check_at(sym_optional_parameter_declaration, n);
 
+  auto node_qual = n.child_by_sym(sym_type_qualifier);
+  auto node_type = n.get_field(field_type);
+  auto node_decl = n.get_field(field_declarator);
+  auto node_eq   = n.child_by_sym(anon_sym_EQ);
+  auto node_val  = n.get_field(field_default_value);
+
+  if (node_qual) {
+    err << emit_line("parameter ");
+    err << emit_dispatch(node_qual);
+    err << emit_gap(node_qual, node_type);
+    err << skip_over(node_type);
+    err << skip_gap(node_type, node_decl);
+    err << emit_dispatch(node_decl);
+    err << emit_gap(node_decl, node_eq);
+    err << emit_dispatch(node_eq);
+    err << emit_gap(node_eq, node_val);
+    err << emit_dispatch(node_val);
+    err << emit_print(";");
+  }
+  else {
+    err << emit_line("parameter ");
+    err << skip_over(node_type);
+    err << skip_gap(node_type, node_decl);
+    err << emit_dispatch(node_decl);
+    err << emit_gap(node_decl, node_eq);
+    err << emit_dispatch(node_eq);
+    err << emit_gap(node_eq, node_val);
+    err << emit_dispatch(node_val);
+    err << emit_print(";");
+  }
+
+
+#if 0
   err << emit_line("parameter ");
 
   for (auto c : node) {
@@ -1730,8 +1767,9 @@ CHECK_RETURN Err MtCursor::emit_optional_param_as_modparam(MnNode node) {
   }
 
   err << emit_print(";");
+#endif
 
-  return err << check_done(node);
+  return err << check_done(n);
 }
 
 //------------------------------------------------------------------------------

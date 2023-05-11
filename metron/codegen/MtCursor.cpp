@@ -1457,11 +1457,11 @@ CHECK_RETURN Err MtCursor::emit_component(MnNode n) {
       std::vector<MnNode> args;
 
       for (auto c : component_mod->mod_param_list) {
-        if (c.is_named()) params.push_back(c);
+        if (c.is_named() && !c.is_comment()) params.push_back(c);
       }
 
       for (auto c : template_args) {
-        if (c.is_named()) args.push_back(c);
+        if (c.is_named() && !c.is_comment()) args.push_back(c);
       }
 
       for (int param_index = 0; param_index < args.size(); param_index++) {
@@ -2043,17 +2043,17 @@ CHECK_RETURN Err MtCursor::emit_param_list_as_modparams(MnNode n) {
   push_cursor(n);
 
   for (auto c : n) {
+    err << emit_ws_to(c);
+
     switch (c.sym) {
       case anon_sym_LPAREN:
       case anon_sym_RPAREN:
       case anon_sym_COMMA:
         err << skip_over(c);
-        err << skip_tail(c, n);
         break;
 
       case sym_optional_parameter_declaration:
         err << emit_optional_param_as_modparam(c);
-        err << emit_tail(c, n);
         break;
 
       case sym_parameter_declaration:
@@ -2062,7 +2062,6 @@ CHECK_RETURN Err MtCursor::emit_param_list_as_modparams(MnNode n) {
 
       default:
         err << emit_dispatch(c);
-        err << emit_tail(c, n);
         break;
     }
   }

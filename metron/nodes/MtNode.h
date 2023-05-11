@@ -121,6 +121,7 @@ struct MnNode {
 
   bool is_null() const { return ts_node_is_null(node); }
   bool is_named() const { return !is_null() && ts_node_is_named(node); }
+  bool is_comment() const { return sym == sym_comment; }
 
   //----------
 

@@ -2356,40 +2356,31 @@ CHECK_RETURN Err MtCursor::emit_sym_declaration_list(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
-/*
-[000.004]  + namespace_definition (352) =
-[000.004]  |--# lit (163) = "namespace"
-[000.004]  |--# name: namespace_identifier (441) = "rv_config"
-[000.004]  |--+ body: declaration_list (223) =
-*/
+// + namespace_definition (352) =
+// |--# lit (163) = "namespace"
+// |--# name: namespace_identifier (441) = "rv_config"
+// |--+ body: declaration_list (223) =
 
 CHECK_RETURN Err MtCursor::emit_sym_namespace_definition(MnNode n) {
   Err err = check_at(sym_namespace_definition, n);
 
+  auto node_namespace = n.child_by_sym(anon_sym_namespace);
+  auto node_name      = n.get_field(field_name);
+  auto node_body      = n.get_field(field_body);
+
+  err << emit_replacement(node_namespace, "package");
+  err << emit_gap(node_namespace, node_name);
+  err << emit_dispatch(node_name);
+  err << emit_print(";");
+  err << emit_gap(node_name, node_body);
+
   elide_type.push(false);
   elide_value.push(false);
-
-  for (auto c : n) {
-    err << emit_ws_to(c);
-
-    if (c.sym == anon_sym_namespace) {
-      err << emit_replacement(c, "package");
-    }
-    else if (c.sym == alias_sym_namespace_identifier) {
-      err << emit_text(c);
-      err << emit_print(";");
-    }
-    else if (c.sym == sym_declaration_list) {
-      err << emit_dispatch(c);
-      err << emit_print("endpackage");
-    }
-    else {
-      err << emit_dispatch(c);
-    }
-  }
-
+  err << emit_dispatch(node_body);
   elide_type.pop();
   elide_value.pop();
+
+  err << emit_print("endpackage");
 
   return err << check_done(n);
 }

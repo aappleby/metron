@@ -250,6 +250,100 @@ CHECK_RETURN Err MtCursor::start_line() {
 }
 
 //----------------------------------------
+// Emit all whitespace and comments between node A and D. Error if we see
+// anything that isn't comment or whitespace.
+
+CHECK_RETURN Err MtCursor::emit_gap(MnNode a, MnNode d) {
+  Err err;
+  if (cursor != a.end()) {
+    err << ERR("emit_gap() - Did not start on a.end()");
+    return err;
+  }
+
+  auto source = a.source->source;
+  auto pair_lhs = a.node;
+  auto pair_rhs = ts_node_next_sibling(a.node);
+
+  while(1) {
+    err << emit_span(
+      &source[ts_node_end_byte(pair_lhs)],
+      &source[ts_node_start_byte(pair_rhs)]
+    );
+
+    pair_lhs = pair_rhs;
+    pair_rhs = ts_node_next_sibling(pair_rhs);
+
+    if (ts_node_eq(pair_lhs, d.node)) {
+      break;
+    }
+    else if (ts_node_symbol(pair_lhs) != sym_comment) {
+      err << ERR("Non-comment found in gap between nodes");
+      return err;
+    }
+    else {
+      err << emit_span(
+        &source[ts_node_start_byte(pair_lhs)],
+        &source[ts_node_end_byte(pair_lhs)]
+      );
+    }
+  }
+
+  if (cursor != d.start()) {
+    err << ERR("emit_gap() - Did not end on d.end()");
+    return err;
+  }
+
+  return err;
+}
+
+//----------------------------------------
+// Skip all whitespace and comments between node A and B. Error if we see
+// anything that isn't comment or whitespace.
+
+CHECK_RETURN Err MtCursor::skip_gap(MnNode a, MnNode d) {
+  Err err;
+  if (cursor != a.end()) {
+    err << ERR("skip_gap() - Did not start on a.end()");
+    return err;
+  }
+
+  auto source = a.source->source;
+  auto pair_lhs = a.node;
+  auto pair_rhs = ts_node_next_sibling(a.node);
+
+  while(1) {
+    err << skip_span(
+      &source[ts_node_end_byte(pair_lhs)],
+      &source[ts_node_start_byte(pair_rhs)]
+    );
+
+    pair_lhs = pair_rhs;
+    pair_rhs = ts_node_next_sibling(pair_rhs);
+
+    if (ts_node_eq(pair_lhs, d.node)) {
+      break;
+    }
+    else if (ts_node_symbol(pair_lhs) != sym_comment) {
+      err << ERR("Non-comment found in gap between nodes");
+      return err;
+    }
+    else {
+      err << skip_span(
+        &source[ts_node_start_byte(pair_lhs)],
+        &source[ts_node_end_byte(pair_lhs)]
+      );
+    }
+  }
+
+  if (cursor != d.start()) {
+    err << ERR("skip_gap() - Did not end on d.end()");
+    return err;
+  }
+
+  return err;
+}
+
+//----------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_char(char c, uint32_t color) {
   Err err;
@@ -288,7 +382,9 @@ CHECK_RETURN Err MtCursor::emit_char(char c, uint32_t color) {
   }
 
   if (echo) {
-    LOG_C(color, "%c", c);
+    auto d = c;
+    if (color && d == ' ') d = '_';
+    LOG_C(color, "%c", d);
   }
 
   at_newline = c == '\n';
@@ -338,18 +434,8 @@ CHECK_RETURN Err MtCursor::emit_ws_to(TSSymbol sym, const MnNode& n) {
 //----------------------------------------
 
 CHECK_RETURN Err MtCursor::skip_over(MnNode n) {
-  if (n.is_null()) {
-    return ERR("Skipping over null node\n");
-  }
-
   Err err = check_at(n);
-  if (echo) {
-    LOG_C(0x8080FF, "%s", n.text().c_str());
-  }
-  cursor = n.end();
-  line_elided = true;
-
-  return err;
+  return skip_span(n.start(), n.end());;
 }
 
 //----------------------------------------
@@ -401,7 +487,7 @@ CHECK_RETURN Err MtCursor::comment_out(MnNode n) {
 
   auto start = n.start();
   auto end1 = n.end();
-  auto end2 = end1;
+  auto end2 = n.end();
 
   // Don't include whitespace in the commented-out bit
   while(isspace(end1[-1]) && end1 > start) {
@@ -422,10 +508,22 @@ CHECK_RETURN Err MtCursor::comment_out(MnNode n) {
 
 CHECK_RETURN Err MtCursor::emit_span(const char* a, const char* b) {
   Err err;
-
   for (auto c = a; c < b; c++) {
     err << emit_char(*c);
   }
+  cursor = b;
+  return err;
+}
+
+CHECK_RETURN Err MtCursor::skip_span(const char* a, const char* b) {
+  Err err;
+  if (echo) {
+    for (auto c = a; c < b; c++) {
+      LOG_C(0x8080FF, "%c", *c);
+    }
+  }
+  cursor = b;
+  line_elided = true;
   return err;
 }
 
@@ -435,7 +533,6 @@ CHECK_RETURN Err MtCursor::emit_text(MnNode n) {
   Err err = check_at(n);
 
   err << emit_span(n.start(), n.end());
-  cursor = n.end();
 
   return err << check_done(n);
 }
@@ -1519,6 +1616,8 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode component_decl) {
     }
   }
 
+  // FIXME clean this mess up
+
   for (auto n : component_mod->input_signals) {
     // field_declaration
     auto output_type = n->get_type_node();
@@ -1847,6 +1946,14 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
 CHECK_RETURN Err MtCursor::emit_sym_pointer_declarator(MnNode n) {
   Err err = check_at(sym_pointer_declarator, n);
 
+  auto node_star = n.child(0);
+  auto node_decl = n.get_field(field_declarator);
+
+  err << skip_over(node_star);
+  err << skip_gap(node_star, node_decl);
+  err << emit_dispatch(node_decl);
+
+#if 0
   for (auto c : n) {
     err << emit_ws_to(c);
 
@@ -1858,6 +1965,7 @@ CHECK_RETURN Err MtCursor::emit_sym_pointer_declarator(MnNode n) {
       err << emit_dispatch(c);
     }
   }
+#endif
 
   return err << check_done(n);
 }

@@ -1520,10 +1520,10 @@ CHECK_RETURN Err MtCursor::emit_component(MnNode n) {
 
   indent.pop();
 
-  err << emit_line(");");
+  err << emit_line(")");
+  err << emit_dispatch(node_semi);
 
-  cursor = n.end();
-  return err;
+  return err << check_done(n);
 }
 
 //------------------------------------------------------------------------------

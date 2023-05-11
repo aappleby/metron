@@ -1360,7 +1360,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
   auto inst_name = node_decl.text();
   auto component_mod = lib->get_module(n.type5());
 
-  err << emit_splice(node_type);
+  err << emit_dispatch(node_type);
 
   bool has_template_params = node_type.sym == sym_template_type && component_mod->mod_param_list;
   bool has_constructor_params = component_mod->constructor && component_mod->constructor->param_nodes.size();
@@ -1437,8 +1437,7 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
     err << emit_line(")");
   }
 
-  cursor = node_type.end();
-  err << emit_ws_to(node_decl);
+  err << emit_gap(node_type, node_decl);
   err << emit_dispatch(node_decl);
   err << emit_print("(");
 
@@ -1511,9 +1510,16 @@ CHECK_RETURN Err MtCursor::emit_component_port_list(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
+// + field_declaration (259) =
+// |--# type: type_identifier (444) = "example_data_memory"
+// |--# declarator: field_identifier (440) = "data_memory"
+// |--# lit (39) = ";"
 
 CHECK_RETURN Err MtCursor::emit_field_as_component(MnNode n) {
   Err err = check_at(n);
+
+  //n.dump_tree();
+  //exit(1);
 
   // FIXME loop style?
 

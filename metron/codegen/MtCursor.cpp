@@ -344,9 +344,10 @@ CHECK_RETURN Err MtCursor::skip_gap(MnNode a, MnNode d) {
 }
 
 //----------------------------------------
-// Emit all whitespace and comments after node A.
+// Emit all whitespace and comments immediately after node A that are contained
+// in node P
 
-CHECK_RETURN Err MtCursor::emit_tail(MnNode a) {
+CHECK_RETURN Err MtCursor::emit_tail(MnNode a, MnNode p) {
   Err err;
   if (cursor != a.end()) {
     err << ERR("emit_gap() - Did not start on a.end()");
@@ -357,11 +358,18 @@ CHECK_RETURN Err MtCursor::emit_tail(MnNode a) {
   auto pair_lhs = a.node;
   auto pair_rhs = ts_node_next_sibling(a.node);
 
+  auto parent_b = &source[ts_node_end_byte(p.node)];
+
   while(1) {
-    err << emit_span(
-      &source[ts_node_end_byte(pair_lhs)],
-      &source[ts_node_start_byte(pair_rhs)]
-    );
+    auto gap_a = &source[ts_node_end_byte(pair_lhs)];
+    auto gap_b = &source[ts_node_start_byte(pair_rhs)];
+
+    assert(cursor == gap_a);
+    while(cursor != gap_b && cursor != parent_b) {
+      err << emit_char(*cursor++);
+    }
+
+    if (cursor == parent_b) break;
 
     pair_lhs = pair_rhs;
     pair_rhs = ts_node_next_sibling(pair_rhs);
@@ -370,10 +378,14 @@ CHECK_RETURN Err MtCursor::emit_tail(MnNode a) {
       break;
     }
     else {
-      err << emit_span(
-        &source[ts_node_start_byte(pair_lhs)],
-        &source[ts_node_end_byte(pair_lhs)]
-      );
+      auto span_a = &source[ts_node_start_byte(pair_lhs)];
+      auto span_b = &source[ts_node_end_byte(pair_lhs)];
+
+      assert(cursor == span_a);
+      while(cursor != span_b && cursor != parent_b) {
+        err << emit_char(*cursor++);
+      }
+      if (cursor == parent_b) break;
     }
   }
 
@@ -383,7 +395,7 @@ CHECK_RETURN Err MtCursor::emit_tail(MnNode a) {
 //----------------------------------------
 // Skip all whitespace and comments after node A.
 
-CHECK_RETURN Err MtCursor::skip_tail(MnNode a) {
+CHECK_RETURN Err MtCursor::skip_tail(MnNode a, MnNode p) {
   Err err;
   if (cursor != a.end()) {
     err << ERR("skip_gap() - Did not start on a.end()");
@@ -394,11 +406,18 @@ CHECK_RETURN Err MtCursor::skip_tail(MnNode a) {
   auto pair_lhs = a.node;
   auto pair_rhs = ts_node_next_sibling(a.node);
 
+  auto parent_b = &source[ts_node_end_byte(p.node)];
+
   while(1) {
-    err << skip_span(
-      &source[ts_node_end_byte(pair_lhs)],
-      &source[ts_node_start_byte(pair_rhs)]
-    );
+    auto gap_a = &source[ts_node_end_byte(pair_lhs)];
+    auto gap_b = &source[ts_node_start_byte(pair_rhs)];
+
+    assert(cursor == gap_a);
+    while(cursor != gap_b && cursor != parent_b) {
+      err << skip_char(*cursor++);
+    }
+
+    if (cursor == parent_b) break;
 
     pair_lhs = pair_rhs;
     pair_rhs = ts_node_next_sibling(pair_rhs);
@@ -407,15 +426,20 @@ CHECK_RETURN Err MtCursor::skip_tail(MnNode a) {
       break;
     }
     else {
-      err << skip_span(
-        &source[ts_node_start_byte(pair_lhs)],
-        &source[ts_node_end_byte(pair_lhs)]
-      );
+      auto span_a = &source[ts_node_start_byte(pair_lhs)];
+      auto span_b = &source[ts_node_end_byte(pair_lhs)];
+
+      assert(cursor == span_a);
+      while(cursor != span_b && cursor != parent_b) {
+        err << skip_char(*cursor++);
+      }
+      if (cursor == parent_b) break;
     }
   }
 
   return err;
 }
+
 //----------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_char(char c, uint32_t color) {
@@ -462,6 +486,17 @@ CHECK_RETURN Err MtCursor::emit_char(char c, uint32_t color) {
 
   at_newline = c == '\n';
   at_comma = c == ',';
+  return err;
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err MtCursor::skip_char(char c) {
+  Err err;
+  if (echo) {
+    if (c == ' ') c = '_';
+    LOG_C(0x8080FF, "%c", c);
+  }
   return err;
 }
 
@@ -517,10 +552,7 @@ CHECK_RETURN Err MtCursor::skip_ws() {
   Err err;
 
   while (*cursor && isspace(*cursor) && (*cursor != '\n')) {
-    if (echo) {
-      LOG_C(0x8080FF, "_");
-    }
-    cursor++;
+    err << skip_char(*cursor++);
   }
 
   return err;
@@ -532,10 +564,7 @@ CHECK_RETURN Err MtCursor::skip_ws_inside(const MnNode& n) {
   Err err;
 
   while (*cursor && isspace(*cursor) && (*cursor != '\n') && (cursor < n.end())) {
-    if (echo) {
-      LOG_C(0x8080FF, "_");
-    }
-    cursor++;
+    err << skip_char(*cursor++);
   }
 
   return err;
@@ -590,10 +619,8 @@ CHECK_RETURN Err MtCursor::emit_span(const char* a, const char* b) {
 
 CHECK_RETURN Err MtCursor::skip_span(const char* a, const char* b) {
   Err err;
-  if (echo) {
-    for (auto c = a; c < b; c++) {
-      LOG_C(0x8080FF, "%c", *c);
-    }
+  for (auto c = a; c < b; c++) {
+    err << skip_char(*c);
   }
   cursor = b;
   line_elided = true;
@@ -1212,7 +1239,7 @@ CHECK_RETURN Err MtCursor::emit_call_arg_bindings(MnNode n) {
 //------------------------------------------------------------------------------
 // sym_function_definition
 //  field_declarator : sym_function_declarator
-//  sym_field_initializer_list (optional)
+//  sym_field_initializer_list (optional, used in constructor)
 //  field_body : sym_compound_statement
 
 CHECK_RETURN Err MtCursor::emit_func_as_init(MnNode n) {
@@ -1708,21 +1735,21 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
     err << emit_print("typedef ");
   }
   err << emit_dispatch(node_enum);
-  err << emit_tail(node_enum);
+  err << emit_tail(node_enum, n);
 
   if (node_class) {
     err << skip_over(node_class);
-    err << skip_tail(node_class);
+    err << skip_tail(node_class, n);
   }
 
   if (node_name) {
     err << skip_over(node_name);
-    err << skip_tail(node_name);
+    err << skip_tail(node_name, n);
   }
 
   if (node_base) {
     err << skip_over(node_colon);
-    err << skip_tail(node_colon);
+    err << skip_tail(node_colon, n);
 
     auto node_scope = node_base.get_field(field_scope);
     if (node_scope) {
@@ -1733,7 +1760,7 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
       err << emit_dispatch(node_base);
     }
 
-    err << emit_tail(node_base);
+    err << emit_tail(node_base, n);
   }
 
   err << emit_dispatch(node_body);
@@ -2011,22 +2038,22 @@ CHECK_RETURN Err MtCursor::emit_field_port(MtField* f) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_param_list_as_modparams(MnNode param_list) {
+CHECK_RETURN Err MtCursor::emit_param_list_as_modparams(MnNode n) {
   Err err;
-  push_cursor(param_list);
+  push_cursor(n);
 
-  for (auto c : param_list) {
-    err << emit_ws_to(c);
-
+  for (auto c : n) {
     switch (c.sym) {
       case anon_sym_LPAREN:
       case anon_sym_RPAREN:
       case anon_sym_COMMA:
         err << skip_over(c);
+        err << skip_tail(c, n);
         break;
 
       case sym_optional_parameter_declaration:
         err << emit_optional_param_as_modparam(c);
+        err << emit_tail(c, n);
         break;
 
       case sym_parameter_declaration:
@@ -2035,6 +2062,7 @@ CHECK_RETURN Err MtCursor::emit_param_list_as_modparams(MnNode param_list) {
 
       default:
         err << emit_dispatch(c);
+        err << emit_tail(c, n);
         break;
     }
   }

@@ -45,11 +45,13 @@ struct MtCursor {
   CHECK_RETURN Err emit_gap(MnNode a, MnNode b);
   CHECK_RETURN Err skip_gap(MnNode a, MnNode b);
 
-  CHECK_RETURN Err emit_tail(MnNode a);
-  CHECK_RETURN Err skip_tail(MnNode a);
+  CHECK_RETURN Err emit_tail(MnNode a, MnNode p);
+  CHECK_RETURN Err skip_tail(MnNode a, MnNode p);
 
   // Generic emit()s.
   CHECK_RETURN Err emit_char(char c, uint32_t color = 0);
+  CHECK_RETURN Err skip_char(char c);
+
   CHECK_RETURN Err emit_ws();
   CHECK_RETURN Err emit_ws_to(const MnNode& n);
   CHECK_RETURN Err emit_ws_to(TSSymbol sym, const MnNode& n);

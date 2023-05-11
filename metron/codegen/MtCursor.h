@@ -76,7 +76,6 @@ struct MtCursor {
   CHECK_RETURN Err emit_dynamic_bit_extract(MnNode n, MnNode bx_node);
   CHECK_RETURN Err emit_hoisted_decls(MnNode n);
   CHECK_RETURN Err emit_submod_binding_fields(MnNode n);
-  CHECK_RETURN Err emit_field_as_component(MnNode field_decl);
   CHECK_RETURN Err emit_component(MnNode n);
 
   CHECK_RETURN Err emit_local_call_arg_binding(MtMethod* method, MnNode param, MnNode val);

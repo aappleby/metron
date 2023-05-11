@@ -1527,50 +1527,6 @@ CHECK_RETURN Err MtCursor::emit_component(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
-// + field_declaration (259) =
-// |--# type: type_identifier (444) = "example_data_memory"
-// |--# declarator: field_identifier (440) = "data_memory"
-// |--# lit (39) = ";"
-
-CHECK_RETURN Err MtCursor::emit_field_as_component(MnNode n) {
-  Err err = check_at(n);
-
-  //n.dump_tree();
-  //exit(1);
-
-  // FIXME loop style?
-
-  std::string type_name = n.type5();
-  auto component_mod = lib->get_module(type_name);
-
-  auto node_type = n.child(0);  // type
-  auto node_decl = n.child(1);  // decl
-  auto node_semi = n.child(2);  // semi
-
-  auto inst_name = node_decl.text();
-
-  // Swap template arguments with the values from the template instantiation.
-  // FIXME we're not actually using this map? Wat?
-  std::map<std::string, std::string> replacements;
-
-  auto args = node_type.get_field(field_arguments);
-  if (args) {
-    int arg_count = args.named_child_count();
-    for (int i = 0; i < arg_count; i++) {
-      auto key = component_mod->all_modparams[i]->name();
-      auto val = args.named_child(i).text();
-      replacements[key] = val;
-    }
-  }
-
-  err << emit_component(n);
-  err << emit_submod_binding_fields(n);
-  cursor = n.end();
-
-  return err << check_done(n);
-}
-
-//------------------------------------------------------------------------------
 // Emits the fields that come after a submod declaration
 
 // module my_mod(
@@ -2025,7 +1981,8 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
 
   if (field->is_component()) {
     // Component
-    err << emit_field_as_component(n);
+    err << emit_component(n);
+    err << emit_submod_binding_fields(n);
   }
   else if (field->is_port()) {
     // Ports don't go in the class body.

@@ -67,6 +67,7 @@ struct MtCursor {
 
   // Generic emit()s.
   CHECK_RETURN Err emit_dispatch(MnNode n);
+  CHECK_RETURN Err emit_block(MnNode n, const char* prefix, const char* suffix);
   CHECK_RETURN Err emit_splice(MnNode n);
   CHECK_RETURN Err emit_children(MnNode n);
   CHECK_RETURN Err emit_toplevel_node(MnNode n);

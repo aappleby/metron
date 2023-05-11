@@ -2981,6 +2981,18 @@ CHECK_RETURN Err MtCursor::emit_dispatch(MnNode n) {
 
 //------------------------------------------------------------------------------
 
+CHECK_RETURN Err MtCursor::emit_block(MnNode n, const char* prefix, const char* suffix) {
+  Err err;
+  block_prefix.push(prefix);
+  block_suffix.push(suffix);
+  err << emit_dispatch(n);
+  block_prefix.pop();
+  block_suffix.pop();
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
 CHECK_RETURN Err MtCursor::emit_splice(MnNode n) {
   Err err;
   push_cursor(n);
@@ -3244,6 +3256,9 @@ CHECK_RETURN Err MtCursor::emit_sym_preproc_def(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
+// TreeSitter gives us inconsistent semicolons between sections of the for
+// expression :/
+
 // + for_statement (272) =
 // |--# lit (93) = "for"
 // |--# lit (5) = "("
@@ -3254,18 +3269,52 @@ CHECK_RETURN Err MtCursor::emit_sym_preproc_def(MnNode n) {
 // |--# lit (8) = ")"
 // |--+ body: compound_statement (248) =
 
+// + for_statement (272) =
+// |--# lit (93) = "for"
+// |--# lit (5) = "("
+// |--+ initializer: assignment_expression (280) =
+// |--# lit (39) = ";"
+// |--+ condition: binary_expression (283) =
+// |--# lit (39) = ";"
+// |--+ update: update_expression (284) =
+// |--# lit (8) = ")"
+// |--+ body: compound_statement (248) =
+
 CHECK_RETURN Err MtCursor::emit_sym_for_statement(MnNode n) {
   Err err = check_at(sym_for_statement, n);
+
+#if 0
+  auto node_for    = n.child_by_sym(anon_sym_for);
+  auto node_lparen = n.child_by_sym(anon_sym_LPAREN);
+  auto node_init   = n.get_field(field_initializer);
+  auto node_cond   = n.get_field(field_condition);
+  auto node_semi   = n.child_by_sym(anon_sym_SEMI);
+  auto node_update = n.get_field(field_update);
+  auto node_rparen = n.child_by_sym(anon_sym_RPAREN);
+  auto node_body   = n.get_field(field_body);
+
+  err << emit_dispatch(node_for);
+  err << emit_gap(node_for, node_lparen);
+  err << emit_dispatch(node_lparen);
+  err << emit_gap(node_lparen, node_init);
+  err << emit_dispatch(node_init);
+  err << emit_gap(node_init, node_cond);
+  err << emit_dispatch(node_cond);
+  err << emit_gap(node_cond, node_semi);
+  err << emit_dispatch(node_semi);
+  err << emit_gap(node_semi, node_update);
+  err << emit_dispatch(node_update);
+  err << emit_gap(node_update, node_rparen);
+  err << emit_dispatch(node_rparen);
+  err << emit_gap(node_rparen, node_body);
+  err << emit_block(node_body, "begin", "end");
+#endif
 
   for (auto c : n) {
     err << emit_ws_to(c);
 
     if (c.field == field_body) {
-      block_prefix.push("begin");
-      block_suffix.push("end");
-      err << emit_dispatch(c);
-      block_prefix.pop();
-      block_suffix.pop();
+      err << emit_block(c, "begin", "end");
     }
     else {
       err << emit_dispatch(c);

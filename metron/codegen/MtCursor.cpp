@@ -1510,7 +1510,6 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode n) {
 
   auto node_type = n.get_field(field_type);
   auto node_decl = n.get_field(field_declarator);
-  auto node_semi = n.child_by_sym(anon_sym_SEMI);
 
   auto component_name = node_decl.text();
   auto component_cname = component_name.c_str();
@@ -1534,206 +1533,93 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode n) {
 
   // FIXME clean this mess up
 
-  for (auto n : component_mod->input_signals) {
-    // field_declaration
-    auto output_type = n->get_type_node();
-    auto output_decl = n->get_decl_node();
+  current_source.push(component_mod->source_file);
+  current_mod.push(component_mod);
+  id_map.push(replacements);
 
-    current_source.push(component_mod->source_file);
-    current_mod.push(component_mod);
-    id_map.push(replacements);
-    push_cursor(output_type);
-
+  for (auto field : component_mod->input_signals) {
     err << start_line();
-    err << emit_dispatch(output_type);
-    err << emit_ws();
-    err << emit_print("%s_", component_cname);
-    err << emit_dispatch(output_decl);
-    err << prune_trailing_ws();
+    err << emit_splice(field->get_type_node());
+    err << emit_print(" %s_", component_cname);
+    err << emit_splice(field->get_decl_node());
     err << emit_print(";");
-
-    current_source.pop();
-    current_mod.pop();
-    id_map.pop();
-    pop_cursor();
   }
 
-  for (auto n : component_mod->input_method_params) {
-    // field_declaration
-    auto output_type = n->get_type_node();
-    auto output_decl = n->get_decl_node();
-
-    current_source.push(component_mod->source_file);
-    current_mod.push(component_mod);
-    id_map.push(replacements);
-    push_cursor(output_type);
-
+  for (auto param : component_mod->input_method_params) {
     err << start_line();
-    err << emit_dispatch(output_type);
-    err << emit_ws();
-    err << emit_print("%s_%s_", component_cname, n->func_name.c_str());
-    err << emit_dispatch(output_decl);
-    err << prune_trailing_ws();
+    err << emit_splice(param->get_type_node());
+    err << emit_print(" %s_%s_", component_cname, param->func_name.c_str());
+    err << emit_splice(param->get_decl_node());
     err << emit_print(";");
-
-    current_source.pop();
-    current_mod.pop();
-    id_map.pop();
-    pop_cursor();
   }
 
-  for (auto n : component_mod->output_signals) {
-    // field_declaration
-    auto output_type = n->get_type_node();
-    auto output_decl = n->get_decl_node();
-
-    current_source.push(component_mod->source_file);
-    current_mod.push(component_mod);
-    id_map.push(replacements);
-    push_cursor(output_type);
-
+  for (auto field : component_mod->output_signals) {
     err << start_line();
-    err << emit_dispatch(output_type);
-    err << emit_ws();
-    err << emit_print("%s_", component_cname);
-    err << emit_dispatch(output_decl);
-    err << prune_trailing_ws();
+    err << emit_splice(field->get_type_node());
+    err << emit_print(" %s_", component_cname);
+    err << emit_splice(field->get_decl_node());
     err << emit_print(";");
-
-    current_source.pop();
-    current_mod.pop();
-    id_map.pop();
-    pop_cursor();
   }
 
-  for (auto n : component_mod->output_registers) {
-    // field_declaration
-    auto output_type = n->get_type_node();
-    auto output_decl = n->get_decl_node();
-
-    current_source.push(component_mod->source_file);
-    current_mod.push(component_mod);
-    id_map.push(replacements);
-    push_cursor(output_type);
-
+  for (auto field : component_mod->output_registers) {
     err << start_line();
-    err << emit_dispatch(output_type);
-    err << emit_ws();
-    err << emit_print("%s_", component_cname);
-    err << emit_dispatch(output_decl);
-    err << prune_trailing_ws();
+    err << emit_splice(field->get_type_node());
+    err << emit_print(" %s_", component_cname);
+    err << emit_splice(field->get_decl_node());
     err << emit_print(";");
-
-    current_source.pop();
-    current_mod.pop();
-    id_map.pop();
-    pop_cursor();
   }
 
-  for (auto m : component_mod->output_method_returns) {
-    auto getter_type = m->_node.get_field(field_type);
-    auto getter_decl = m->_node.get_field(field_declarator);
-    auto getter_name = getter_decl.get_field(field_declarator);
-
-    current_source.push(component_mod->source_file);
-    current_mod.push(component_mod);
-    id_map.push(replacements);
-    push_cursor(getter_type);
-
+  for (auto method : component_mod->output_method_returns) {
     err << start_line();
-    err << emit_dispatch(getter_type);
-    err << emit_ws();
-    err << emit_print("%s_", component_cname);
-    err << emit_dispatch(getter_name);
-    err << prune_trailing_ws();
+    err << emit_splice(method->_node.get_field(field_type));
+    err << emit_print(" %s_", component_cname);
+    err << emit_splice(method->_node.get_field(field_declarator).get_field(field_declarator));
     err << emit_print("_ret;");
-
-    current_source.pop();
-    current_mod.pop();
-    id_map.pop();
-    pop_cursor();
   }
+
+  current_source.pop();
+  current_mod.pop();
+  id_map.pop();
 
   return err;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //------------------------------------------------------------------------------
-// enum class sized_enum : logic<8>::BASE { A8 = 0b01, B8 = 0x02, C8 = 3 };
+// + type: enum_specifier (253) =
+// |--# lit (81) = "enum"
+// |--+ body: enumerator_list (254) =
 
-CHECK_RETURN Err MtCursor::emit_sym_qualified_identifier_as_type(MnNode n) {
-  Err err = check_at(sym_qualified_identifier, n);
-  err << emit_splice(n.get_field(field_scope));
-  cursor = n.end();
-  return err << check_done(n);
-}
+// + enum_specifier (253) =
+// |--# lit (81) = "enum"
+// |--# name: type_identifier (444) = "top_level_enum"
+// |--+ body: enumerator_list (254) =
+
+// + type: enum_specifier (253) =
+// |--# lit (81) = "enum"
+// |--# lit (82) = "class"
+// |--# name: type_identifier (444) = "enum_class1"
+// |--+ body: enumerator_list (254) =
+
+// + type: enum_specifier (253) =
+// |--# lit (81) = "enum"
+// |--# lit (82) = "class"
+// |--# name: type_identifier (444) = "typed_enum"
+// |--# lit (85) = ":"
+// |--# base: type_identifier (444) = "int"
+// |--+ body: enumerator_list (254) =
 
 CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
   Err err = check_at(sym_enum_specifier, n);
 
-  // Extract enum name, if present.
-  std::string enum_name = "";
-  MnNode node_name = n.get_field(field_name);
-  if (node_name) {
-    enum_name = node_name.text();
-  }
+  auto node_enum  = n.child_by_sym(anon_sym_enum);
+  auto node_class = n.child_by_sym(anon_sym_class);
+  auto node_name  = n.get_field(field_name);
+  auto node_colon = n.child_by_sym(anon_sym_COLON);
+  auto node_base  = n.get_field(field_base);
+  auto node_body  = n.get_field(field_body);
 
   // Extract enum bit width, if present.
   override_size.push(32);
-  MnNode node_base = n.get_field(field_base);
   if (node_base) {
     auto node_scope = node_base.get_field(field_scope);
     auto node_type_args = node_scope.get_field(field_arguments);
@@ -1777,84 +1663,13 @@ CHECK_RETURN Err MtCursor::emit_sym_enum_specifier(MnNode n) {
   }
 
   if (node_name) {
-    auto old_cursor = cursor;
-    cursor = node_name.start();
     err << emit_print(" ");
-    err << emit_sym_type_identifier(node_name);
-    cursor = old_cursor;
+    err << emit_splice(node_name);
   }
 
   override_size.pop();
   return err << check_done(n);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 //------------------------------------------------------------------------------
 // Pointer decls are used to pass strings as params, but we pull the '*' off.

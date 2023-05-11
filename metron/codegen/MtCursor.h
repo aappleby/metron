@@ -132,7 +132,6 @@ struct MtCursor {
   CHECK_RETURN Err emit_sym_preproc_ifdef(MnNode n);
   CHECK_RETURN Err emit_sym_preproc_include(MnNode n);
   CHECK_RETURN Err emit_sym_primitive_type(MnNode n);
-  CHECK_RETURN Err emit_sym_qualified_identifier_as_type(MnNode node);
   CHECK_RETURN Err emit_sym_qualified_identifier(MnNode n);
   CHECK_RETURN Err emit_sym_return_statement(MnNode n);
   CHECK_RETURN Err emit_sym_sized_type_specifier(MnNode n);

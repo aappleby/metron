@@ -58,7 +58,8 @@
 			"tuple": "cpp",
 			"typeinfo": "cpp",
 			"vector": "cpp",
-			"iomanip": "cpp"
+			"iomanip": "cpp",
+			"ranges": "cpp"
 		},
 	}
 }

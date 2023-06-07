@@ -37,6 +37,7 @@ The output signals are:
 	BEEP (BEEP TYPE): towards the beeper
 */
 
+/*
 enum WATCH_MODE {
 	MODE_WATCH,
 	MODE_SET,
@@ -177,3 +178,4 @@ int main(int argc, char** argv) {
 	printf("Hello World\n");
 	return 0;
 }
+*/

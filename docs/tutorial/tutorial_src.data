@@ -336,7 +336,7 @@ namespace MyPackage {
   static const int INCREMENT_VAL = 3;
 };
 
-template<int width>
+template<int width = 32>
 class AdjustableAdder {
 public:
   logic<width> add(logic<width> a, logic<width> b) {

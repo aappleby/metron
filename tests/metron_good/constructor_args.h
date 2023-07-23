@@ -6,8 +6,7 @@ template<int data_len = 1024, int blarp = 7>
 class Module {
 public:
 
-  Module(const char* filename = "examples/uart/message.hex", logic<10> start_addr = 0) {
-    addr = start_addr;
+  Module(const char* filename = "examples/uart/message.hex") {
     readmemh(filename, data);
   }
 

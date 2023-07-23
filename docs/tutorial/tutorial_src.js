@@ -57,7 +57,7 @@ var REMOTE_PACKAGE_SIZE = metadata['remote_package_size'];
               num++;
             }
             total = Math.ceil(total * Module.expectedDataFileDownloads/num);
-            if (Module['setStatus']) Module['setStatus']('Downloading data... (' + loaded + '/' + total + ')');
+            if (Module['setStatus']) Module['setStatus'](`Downloading data... (${loaded}/${total})`);
           } else if (!Module.dataFileDownloads) {
             if (Module['setStatus']) Module['setStatus']('Downloading data...');
           }
@@ -113,7 +113,7 @@ Module['FS_createPath']("/examples/uart", "metron", true, true);
         open: function(mode, name) {
           this.name = name;
           this.requests[name] = this;
-          Module['addRunDependency']('fp ' + this.name);
+          Module['addRunDependency'](`fp ${this.name}`);
         },
         send: function() {},
         onload: function() {
@@ -124,7 +124,7 @@ Module['FS_createPath']("/examples/uart", "metron", true, true);
           var that = this;
           // canOwn this data in the filesystem, it is a slide into the heap that will never change
           Module['FS_createDataFile'](this.name, null, byteArray, true, true, true);
-          Module['removeRunDependency']('fp ' + that.name);
+          Module['removeRunDependency'](`fp ${that.name}`);
           this.requests[this.name] = null;
         }
       };

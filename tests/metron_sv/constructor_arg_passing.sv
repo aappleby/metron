@@ -18,10 +18,8 @@ module Module (
 /*public*/
 
   parameter /*const*/ filename = "";
-  parameter default_addr = 16'h0000;
   initial begin
     if (filename) $readmemh(filename, data);
-    addr = default_addr;
   end
 
   always_comb begin : tock
@@ -66,8 +64,7 @@ module Top (
     .data_len(7777),
     .blarp(8383),
     // Constructor Parameters
-    .filename("examples/uart/message.hex"),
-    .default_addr(16'h1234)
+    .filename("examples/uart/message.hex")
   ) mod(
     // Global clock
     .clock(clock),

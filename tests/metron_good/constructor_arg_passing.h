@@ -8,9 +8,8 @@ template<int data_len = 1024, int blarp = 0>
 class Module {
 public:
 
-  Module(const char* filename = nullptr, logic<10> default_addr = 0x0000) {
+  Module(const char* filename = nullptr) {
     if (filename) readmemh(filename, data);
-    addr = default_addr;
   }
 
   void tock(logic<10> new_addr) {
@@ -35,7 +34,7 @@ private:
 
 class Top {
 public:
-  Top() : mod("examples/uart/message.hex", 0x1234), derp(7) {
+  Top() : mod("examples/uart/message.hex"), derp(7) {
   }
 
   void tock(logic<10> addr) {

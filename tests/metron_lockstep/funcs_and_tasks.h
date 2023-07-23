@@ -5,7 +5,6 @@
 class Module {
 public:
   Module() {
-    my_sig = 0;
     my_reg = 0;
     counter = 0;
   }

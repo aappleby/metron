@@ -684,9 +684,12 @@ public:
 
   //----------------------------------------
 private:
-  uart_hello<repeat_msg>  hello; // Our UART client that transmits our "hello world" test message
-  uart_tx<cycles_per_bit> tx;    // The UART transmitter
-  uart_rx<cycles_per_bit> rx;    // The UART receiver
+  // Our UART client that transmits our "hello world" test message
+  uart_hello<repeat_msg>  hello;
+  // The UART transmitter
+  uart_tx<cycles_per_bit> tx;
+  // The UART receiver
+  uart_rx<cycles_per_bit> rx;
 };
 
 //==============================================================================

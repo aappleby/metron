@@ -27,26 +27,27 @@ base_includes = [
 def main():
     global outfile
     print("Regenerating build.ninja...")
-    build_verilator()
+
+    # FIXME turn these back on
+
+    #build_verilator()
     build_treesitter()
+    build_parser()
     build_metron_lib()
     build_metron_app()
-    build_metron_test()
-    build_rvtests()
-    build_uart()
-    build_rvsimple()
+    #build_metron_test()
+    #build_rvtests()
+    #build_uart()
+    #build_rvsimple()
     # build_pinwheel()
     # build_ibex()
-    build_pong()
+    #build_pong()
     #build_j1()
-    build_gb_spu()
+    #build_gb_spu()
     print("Done!")
     outfile.close()
     outfile = None
-
-    # this hangs...
-    # return os.system("ninja")
-    return 0
+    return os.system("ninja")
 
 # ------------------------------------------------------------------------------
 
@@ -226,6 +227,9 @@ def cpp_library(lib_name, src_files, src_objs=None, deps=None, **kwargs):
     if deps is None:
         deps = []
 
+    if src_objs is None:
+        src_objs = []
+
     divider(f"Create static library {lib_name}")
 
     for n in src_files:
@@ -289,6 +293,22 @@ def build_treesitter():
         treesitter_objs.append(o)
 
 # ------------------------------------------------------------------------------
+
+def build_parser():
+    cpp_library(
+        lib_name="bin/libparser.a",
+        src_files=[
+            "metron/parser/CContext.cpp",
+            "metron/parser/CLexer.cpp",
+            "metron/parser/CNode.cpp",
+            "metron/parser/CParser.cpp",
+            "metron/parser/CScope.cpp",
+            "metron/parser/CToken.cpp",
+        ],
+        includes=base_includes
+    )
+
+# ------------------------------------------------------------------------------
 # Build Metron itself
 
 def build_metron_lib():
@@ -329,34 +349,17 @@ def build_metron_app():
             "metron/app/MetronApp.cpp",
         ],
         includes=base_includes,
-        #    ".",
-        #    "bin",
-        #    "symlinks/tree-sitter/lib/include"
-        #],
-        link_deps=["bin/libmetron.a"],
+        link_deps=["bin/libmetron.a", "bin/libparser.a"],
     )
-
-# ------------------------------------------------------------------------------
-# Fetch and unpack the wasi-sysroot library
-
-"""
-ninja.variable(key="wasi_sysroot_url",
-               value="https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-14/wasi-sysroot-14.0.tar.gz")
-
-ninja.variable(key="wasi_sysroot_tar",
-               value="wasi-sysroot-14.0.tar.gz")
-
-ninja.build(outputs="wasi-sysroot",
-            rule="command",
-            inputs=[],
-            command="wget -q $wasi_sysroot_url && tar -xf $wasi_sysroot_tar && rm $wasi_sysroot_tar")
-"""
 
 # ------------------------------------------------------------------------------
 # Emscriptenization
 
 # Not including a -O2 or -Os causes Emscripten's memory use to blow up :/
 
+# FIXME turn ems back on
+
+"""
 ninja.rule(name="compile_c_ems",
            command="emcc -sNO_DISABLE_EXCEPTION_CATCHING -O2 ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
            deps="gcc",
@@ -458,6 +461,12 @@ cpp_binary2(
         "metron/nodes/MtModule.cpp",
         "metron/nodes/MtNode.cpp",
         "metron/nodes/MtStruct.cpp",
+        "metron/parser/CContext.cpp",
+        "metron/parser/CLexer.cpp",
+        "metron/parser/CNode.cpp",
+        "metron/parser/CParser.cpp",
+        "metron/parser/CScope.cpp",
+        "metron/parser/CToken.cpp",
         "metron/tools/MtUtils.cpp",
         "metron/tracer/MtChecker.cpp",
         "metron/tracer/MtContext.cpp",
@@ -469,6 +478,8 @@ cpp_binary2(
     obj_dir = "wasm/obj",
     includes=base_includes
 )
+
+"""
 
 # ------------------------------------------------------------------------------
 # Low-level tests

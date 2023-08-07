@@ -12,6 +12,11 @@
 #include "metron/tracer/MtTracer.h"
 #include "metron/tracer/MtTracer2.h"
 
+#include "metron/parser/CContext.hpp"
+#include "metron/parser/CLexer.hpp"
+#include "metron/parser/CParser.hpp"
+#include "matcheroni/Utilities.hpp"
+
 #include "metrolib/core/Log.h"
 
 #include "CLI11/include/CLI/App.hpp"
@@ -89,6 +94,7 @@ int main(int argc, char** argv) {
   bool echo = false;
   bool dump = false;
   bool monochrome = false;
+  bool parse = false;
 
   // clang-format off
   auto src_opt     = app.add_option("-c,--convert",    src_name,     "Full path to source file to translate from C++ to SystemVerilog");
@@ -98,6 +104,7 @@ int main(int argc, char** argv) {
   auto echo_opt    = app.add_flag  ("-e,--echo",       echo,         "Echo the converted source back to the terminal, with color-coding.");
   auto dump_opt    = app.add_flag  ("-d,--dump",       dump,         "Dump the syntax tree of the source file(s) to the console.");
   auto mono_opt    = app.add_flag  ("-m,--monochrome", monochrome,   "Monochrome mode, no color-coding");
+  auto parse_opt   = app.add_flag  ("-p,--parser",     parse,       "Test new parser");
   // clang-format on
 
   src_opt->check(CLI::ExistingFile);
@@ -118,6 +125,7 @@ int main(int argc, char** argv) {
   LOG_B("Echo       %d\n", echo);
   LOG_B("Dump       %d\n", dump);
   LOG_B("Monochrome %d\n", monochrome);
+  LOG_B("Parse      %d\n", parse);
   LOG_B("\n");
 
   //----------
@@ -147,6 +155,43 @@ int main(int argc, char** argv) {
   if (dump) {
     source->root_node.dump_tree(0, 0, 255);
   }
+
+  //----------------------------------------
+  // Test new Matcheroni parser
+
+  if (parse) {
+    auto source_span = matcheroni::utils::to_span(source->src_blob);
+
+    CLexer lexer;
+    lexer.lex(source_span);
+
+    TokenSpan tok_span(lexer.tokens.data(), lexer.tokens.data() + lexer.tokens.size());
+
+    CContext context;
+    auto tail = context.parse(source_span, tok_span);
+
+    for (auto t : context.tokens) {
+      t.dump();
+      printf("\n");
+    }
+
+    //printf("%s\n", source->src_blob.c_str());
+
+    printf("\n");
+    printf("### tail.is_valid() %d\n", tail.is_valid());
+    printf("### tail.begin == tok_span.end? %d\n", tail.begin == tok_span.end);
+    printf("\n");
+
+    auto tail_span = matcheroni::TextSpan((tail.end - 1)->text.end, source_span.end);
+
+    matcheroni::utils::print_summary(context, source_span, tail_span, 50);
+    //for (auto node = context.top_head; node; node = node->node_next) {
+    //  matcheroni::utils::print_tree(source_span, node, 50, 0);
+    //}
+
+    exit(0);
+  }
+
 
   //----------------------------------------
 

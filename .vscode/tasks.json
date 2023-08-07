@@ -4,7 +4,7 @@
     {
       "type": "shell",
       "label": "build_metron",
-      "command": "ninja",
+      "command": "./build.py",
       "args": [
         //"bin/examples/pinwheel"
         "bin/metron"

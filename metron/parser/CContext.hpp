@@ -7,17 +7,19 @@
 #include "matcheroni/Parseroni.hpp"
 #include "matcheroni/Utilities.hpp"
 
-#include <array>
-#include <stdio.h>
-#include <string>
-#include <vector>
-
 #include "CConstants.hpp"
 #include "CToken.hpp"
 #include "CLexer.hpp"
 #include "CNode.hpp"
 #include "CScope.hpp"
 #include "SST.hpp"
+
+#include <array>
+#include <stdio.h>
+#include <string>
+#include <vector>
+#include <set>
+#include <filesystem>
 
 struct CToken;
 struct CNode;
@@ -30,6 +32,19 @@ using TokenSpan = matcheroni::Span<CToken>;
 
 class CContext : public parseroni::NodeContext<CNode> {
  public:
+
+  std::vector<std::string> search_paths = {""};
+  std::set<std::string> visited_files;
+
+  std::string find_file(const std::string& file_path) {
+    bool found = false;
+    for (auto &path : search_paths) {
+      auto full_path = path + file_path;
+      if (!std::filesystem::is_regular_file(full_path)) continue;
+      return full_path;
+    }
+    return "";
+  }
 
   using AtomType = CToken;
   using SpanType = matcheroni::Span<CToken>;
@@ -78,6 +93,12 @@ class CContext : public parseroni::NodeContext<CNode> {
 
   void append_node(CNode* node);
   void enclose_nodes(CNode* start, CNode* node);
+
+  //----------------------------------------
+
+  matcheroni::TextSpan handle_include(matcheroni::TextSpan body);
+
+  //----------------------------------------
 
   void debug_dump(std::string& out) {
     for (auto node = top_head; node; node = node->node_next) {

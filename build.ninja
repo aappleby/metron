@@ -131,6 +131,10 @@ build obj/metron/app/MtSourceFile.o: compile_cpp metron/app/MtSourceFile.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/tree-sitter/lib/include -Isymlinks/tree-sitter/lib/src $
       -Isymlinks/CLI11/include -Itests
+build obj/metron/app/IncludeWalker.o: compile_cpp metron/app/IncludeWalker.cpp
+  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
+      -Isymlinks/tree-sitter/lib/include -Isymlinks/tree-sitter/lib/src $
+      -Isymlinks/CLI11/include -Itests
 build obj/metron/codegen/MtCursor.o: compile_cpp metron/codegen/MtCursor.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/tree-sitter/lib/include -Isymlinks/tree-sitter/lib/src $
@@ -193,13 +197,14 @@ build bin/libmetron.a: static_lib obj/symlinks/tree-sitter/lib/src/lib.o $
     obj/symlinks/metrolib/core/Platform.o $
     obj/symlinks/metrolib/core/Utils.o obj/symlinks/metrolib/core/Err.o $
     obj/metron/app/MtModLibrary.o obj/metron/app/MtSourceFile.o $
-    obj/metron/codegen/MtCursor.o obj/metron/nodes/MtField.o $
-    obj/metron/nodes/MtFuncParam.o obj/metron/nodes/MtMethod.o $
-    obj/metron/nodes/MtModParam.o obj/metron/nodes/MtModule.o $
-    obj/metron/nodes/MtNode.o obj/metron/nodes/MtStruct.o $
-    obj/metron/tools/MtUtils.o obj/metron/tracer/MtChecker.o $
-    obj/metron/tracer/MtContext.o obj/metron/tracer/MtInstance.o $
-    obj/metron/tracer/MtTracer.o obj/metron/tracer/MtTracer2.o
+    obj/metron/app/IncludeWalker.o obj/metron/codegen/MtCursor.o $
+    obj/metron/nodes/MtField.o obj/metron/nodes/MtFuncParam.o $
+    obj/metron/nodes/MtMethod.o obj/metron/nodes/MtModParam.o $
+    obj/metron/nodes/MtModule.o obj/metron/nodes/MtNode.o $
+    obj/metron/nodes/MtStruct.o obj/metron/tools/MtUtils.o $
+    obj/metron/tracer/MtChecker.o obj/metron/tracer/MtContext.o $
+    obj/metron/tracer/MtInstance.o obj/metron/tracer/MtTracer.o $
+    obj/metron/tracer/MtTracer2.o
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/tree-sitter/lib/include -Isymlinks/tree-sitter/lib/src $
       -Isymlinks/CLI11/include -Itests

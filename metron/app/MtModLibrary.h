@@ -20,11 +20,8 @@ struct MtModLibrary {
   void add_source(MtSourceFile* source_file);
 
   CHECK_RETURN Err load_source(const char* name, MtSourceFile*& out_source);
-  CHECK_RETURN Err load_blob(const std::string& filename,
-                             const std::string& full_path,
-                             void* src_blob, int src_len,
-                             MtSourceFile*& out_source,
-                             bool use_utf8_bom);
+
+  CHECK_RETURN Err load_includes(MtSourceFile* source_file);
 
   MtStruct* get_struct(const std::string& name) const;
 
@@ -36,6 +33,8 @@ struct MtModLibrary {
 
   CHECK_RETURN Err propagate(propagate_visitor v);
 
+
+  std::string resolve_path(const std::string& path);
 
   void dump_lib();
   void teardown();

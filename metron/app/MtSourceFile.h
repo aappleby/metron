@@ -4,6 +4,10 @@
 #include "metrolib/core/Err.h"
 #include "metrolib/core/Platform.h"
 
+#include "metron/parser/CContext.hpp"
+#include "metron/parser/CParser.hpp"
+#include "metron/parser/CLexer.hpp"
+
 #include "tree-sitter/lib/include/tree_sitter/api.h"
 
 #include <string>
@@ -18,9 +22,10 @@ typedef std::vector<uint8_t> blob;
 //------------------------------------------------------------------------------
 
 struct MtSourceFile {
-  CHECK_RETURN Err init(MtModLibrary* _lib, const std::string& _filename,
+  CHECK_RETURN Err init(MtModLibrary* _lib,
+                        const std::string& _filename,
                         const std::string& _full_path,
-                        void* _src_blob, int _src_len);
+                        const std::string& _src_blob);
   ~MtSourceFile();
 
   CHECK_RETURN Err collect_modules_and_structs(MnNode toplevel);
@@ -43,6 +48,9 @@ struct MtSourceFile {
   std::vector<MtModule*>     src_modules;
   std::vector<MtStruct*>     src_structs;
   std::vector<MtSourceFile*> src_includes;
+
+  CLexer   lexer;
+  CContext context;
 };
 
 //------------------------------------------------------------------------------

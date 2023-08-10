@@ -19,17 +19,14 @@ extern const TSLanguage* tree_sitter_cpp();
 CHECK_RETURN Err MtSourceFile::init(MtModLibrary* _lib,
                                     const std::string& _filename,
                                     const std::string& _full_path,
-                                    void* _src_blob,
-                                    int _src_len) {
+                                    const std::string& _src_blob) {
   Err err;
 
   lib = _lib;
 
   filename = _filename;
   full_path = _full_path;
-  src_blob.resize(_src_len);
-  memcpy(src_blob.data(), _src_blob, _src_len);
-  assert(src_blob.back() != 0);
+  src_blob = _src_blob;
 
   auto blob_size = src_blob.size();
   source = (const char*)src_blob.data();
@@ -47,6 +44,18 @@ CHECK_RETURN Err MtSourceFile::init(MtModLibrary* _lib,
   auto root_sym = ts_node_symbol(ts_root);
   root_node = MnNode(ts_root, root_sym, 0, this);
   err << collect_modules_and_structs(root_node);
+
+  {
+    auto source_span = matcheroni::utils::to_span(src_blob);
+    lexer.lex(source_span);
+
+    TokenSpan tok_span(lexer.tokens.data(), lexer.tokens.data() + lexer.tokens.size());
+    auto tail = context.parse(source_span, tok_span);
+
+    if (!tail.is_valid() || !tail.is_empty()) {
+      printf("could not parse %s\n", full_path.c_str());
+    }
+  }
 
   return err;
 }

@@ -62,6 +62,7 @@ constexpr std::array builtin_type_base = {
   "double",
   "float",
   "int",
+  "logic", // FIXME THIS IS PROBABLY BAD
   "long",
   "short",
   "signed",

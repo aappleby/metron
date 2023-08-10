@@ -72,6 +72,8 @@ void mkdir_all(const std::vector<std::string>& full_path) {
 
 //------------------------------------------------------------------------------
 
+void test_include_walker(const std::string& path);
+
 int main(int argc, char** argv) {
   TinyLog::get().reset();
 
@@ -110,6 +112,9 @@ int main(int argc, char** argv) {
   src_opt->check(CLI::ExistingFile);
 
   CLI11_PARSE(app, argc, argv);
+
+  //test_include_walker(src_name);
+  //exit(0);
 
   if (quiet) TinyLog::get().mute();
   if (monochrome) TinyLog::get().mono();
@@ -159,7 +164,8 @@ int main(int argc, char** argv) {
   //----------------------------------------
   // Test new Matcheroni parser
 
-  if (parse) {
+#if 0
+  if (1) {
     auto source_span = matcheroni::utils::to_span(source->src_blob);
 
     CLexer lexer;
@@ -170,28 +176,23 @@ int main(int argc, char** argv) {
     CContext context;
     auto tail = context.parse(source_span, tok_span);
 
-    for (auto t : context.tokens) {
-      t.dump();
-      printf("\n");
-    }
-
-    //printf("%s\n", source->src_blob.c_str());
-
     printf("\n");
     printf("### tail.is_valid() %d\n", tail.is_valid());
-    printf("### tail.begin == tok_span.end? %d\n", tail.begin == tok_span.end);
+    printf("### tail.is_empty() %d\n", tail.is_empty());
     printf("\n");
 
-    auto tail_span = matcheroni::TextSpan((tail.end - 1)->text.end, source_span.end);
+    for (auto node = context.top_head; node; node = node->node_next) {
+      matcheroni::utils::print_tree(source_span, node, 50, 0);
+    }
 
-    matcheroni::utils::print_summary(context, source_span, tail_span, 50);
-    //for (auto node = context.top_head; node; node = node->node_next) {
-    //  matcheroni::utils::print_tree(source_span, node, 50, 0);
-    //}
-
-    exit(0);
+    if (!tail.is_valid() || !tail.is_empty()) {
+      exit(-1);
+    }
+    else {
+      exit(0);
+    }
   }
-
+#endif
 
   //----------------------------------------
 

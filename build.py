@@ -320,6 +320,7 @@ def build_metron_lib():
             "symlinks/metrolib/core/Err.cpp",
             "metron/app/MtModLibrary.cpp",
             "metron/app/MtSourceFile.cpp",
+            "metron/app/IncludeWalker.cpp",
             "metron/codegen/MtCursor.cpp",
             "metron/nodes/MtField.cpp",
             "metron/nodes/MtFuncParam.cpp",

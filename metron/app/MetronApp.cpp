@@ -12,6 +12,8 @@
 #include "metron/tracer/MtTracer.h"
 #include "metron/tracer/MtTracer2.h"
 
+#include "metron/parser/CSourceFile.hpp"
+#include "metron/parser/CSourceRepo.hpp"
 #include "metron/parser/CContext.hpp"
 #include "metron/parser/CLexer.hpp"
 #include "metron/parser/CParser.hpp"
@@ -22,6 +24,7 @@
 #include "CLI11/include/CLI/App.hpp"
 #include "CLI11/include/CLI/Config.hpp"
 #include "CLI11/include/CLI/Formatter.hpp"
+
 
 #include <dirent.h>
 #include <stdio.h>
@@ -71,8 +74,6 @@ void mkdir_all(const std::vector<std::string>& full_path) {
 }
 
 //------------------------------------------------------------------------------
-
-void test_include_walker(const std::string& path);
 
 int main(int argc, char** argv) {
   TinyLog::get().reset();
@@ -137,6 +138,14 @@ int main(int argc, char** argv) {
   // Load all source files.
 
   Err err;
+
+  CSourceRepo repo;
+
+  LOG_B("Loading source file %s\n", src_name.c_str());
+
+  err << repo.load_source(src_name);
+
+#if 0
   MtModLibrary lib;
   MtSourceFile* source = nullptr;
 
@@ -160,39 +169,6 @@ int main(int argc, char** argv) {
   if (dump) {
     source->root_node.dump_tree(0, 0, 255);
   }
-
-  //----------------------------------------
-  // Test new Matcheroni parser
-
-#if 0
-  if (1) {
-    auto source_span = matcheroni::utils::to_span(source->src_blob);
-
-    CLexer lexer;
-    lexer.lex(source_span);
-
-    TokenSpan tok_span(lexer.tokens.data(), lexer.tokens.data() + lexer.tokens.size());
-
-    CContext context;
-    auto tail = context.parse(source_span, tok_span);
-
-    printf("\n");
-    printf("### tail.is_valid() %d\n", tail.is_valid());
-    printf("### tail.is_empty() %d\n", tail.is_empty());
-    printf("\n");
-
-    for (auto node = context.top_head; node; node = node->node_next) {
-      matcheroni::utils::print_tree(source_span, node, 50, 0);
-    }
-
-    if (!tail.is_valid() || !tail.is_empty()) {
-      exit(-1);
-    }
-    else {
-      exit(0);
-    }
-  }
-#endif
 
   //----------------------------------------
 
@@ -513,6 +489,7 @@ int main(int argc, char** argv) {
 
   LOG_B("Done!\n");
   lib.teardown();
+#endif
 
   return 0;
 }

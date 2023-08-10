@@ -45,22 +45,6 @@ CHECK_RETURN Err MtSourceFile::init(MtModLibrary* _lib,
   root_node = MnNode(ts_root, root_sym, 0, this);
   err << collect_modules_and_structs(root_node);
 
-  // Run the Matcheroni parser
-  {
-    auto source_span = matcheroni::utils::to_span(src_blob);
-    lexer.lex(source_span);
-
-    TokenSpan tok_span(lexer.tokens.data(), lexer.tokens.data() + lexer.tokens.size());
-    auto tail = context.parse(source_span, tok_span);
-
-    matcheroni::utils::print_trees(context, source_span, 50);
-
-    if (!tail.is_valid() || !tail.is_empty()) {
-      printf("could not parse %s\n", full_path.c_str());
-      //exit(-1);
-    }
-  }
-
   return err;
 }
 

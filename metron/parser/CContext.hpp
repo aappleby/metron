@@ -25,6 +25,7 @@ struct CToken;
 struct CNode;
 struct CContext;
 struct CScope;
+struct CSourceRepo;
 
 using TokenSpan = matcheroni::Span<CToken>;
 
@@ -107,6 +108,8 @@ class CContext : public parseroni::NodeContext<CNode> {
   }
 
   //----------------------------------------
+
+  CSourceRepo* repo;
 
   matcheroni::TextSpan text_span;
   TokenSpan  lexemes;

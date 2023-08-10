@@ -25,7 +25,8 @@ struct MtSourceFile {
   CHECK_RETURN Err init(MtModLibrary* _lib,
                         const std::string& _filename,
                         const std::string& _full_path,
-                        const std::string& _src_blob);
+                        const std::string& _src_blob,
+                        bool use_utf8_bom);
   ~MtSourceFile();
 
   CHECK_RETURN Err collect_modules_and_structs(MnNode toplevel);

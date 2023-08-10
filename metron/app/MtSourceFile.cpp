@@ -19,14 +19,15 @@ extern const TSLanguage* tree_sitter_cpp();
 CHECK_RETURN Err MtSourceFile::init(MtModLibrary* _lib,
                                     const std::string& _filename,
                                     const std::string& _full_path,
-                                    const std::string& _src_blob) {
+                                    const std::string& _src_blob,
+                                    bool _use_utf8_bom) {
   Err err;
 
   lib = _lib;
-
   filename = _filename;
   full_path = _full_path;
   src_blob = _src_blob;
+  use_utf8_bom = _use_utf8_bom;
 
   auto blob_size = src_blob.size();
   source = (const char*)src_blob.data();
@@ -36,7 +37,6 @@ CHECK_RETURN Err MtSourceFile::init(MtModLibrary* _lib,
   parser = ts_parser_new();
   lang = tree_sitter_cpp();
   ts_parser_set_language(parser, lang);
-
   tree = ts_parser_parse_string(parser, NULL, source, (uint32_t)blob_size);
 
   // Pull out all modules from the top level of the source.
@@ -45,6 +45,7 @@ CHECK_RETURN Err MtSourceFile::init(MtModLibrary* _lib,
   root_node = MnNode(ts_root, root_sym, 0, this);
   err << collect_modules_and_structs(root_node);
 
+  // Run the Matcheroni parser
   {
     auto source_span = matcheroni::utils::to_span(src_blob);
     lexer.lex(source_span);
@@ -52,8 +53,11 @@ CHECK_RETURN Err MtSourceFile::init(MtModLibrary* _lib,
     TokenSpan tok_span(lexer.tokens.data(), lexer.tokens.data() + lexer.tokens.size());
     auto tail = context.parse(source_span, tok_span);
 
+    matcheroni::utils::print_trees(context, source_span, 50);
+
     if (!tail.is_valid() || !tail.is_empty()) {
       printf("could not parse %s\n", full_path.c_str());
+      //exit(-1);
     }
   }
 

@@ -106,8 +106,7 @@ CHECK_RETURN Err MtModLibrary::load_source(const char *filename,
   }
 
   auto source_file = new MtSourceFile();
-  err << source_file->init(this, filename, full_path, src_blob);
-  source_file->use_utf8_bom = use_utf8_bom;
+  err << source_file->init(this, filename, full_path, src_blob, use_utf8_bom);
   add_source(source_file);
 
   // Recurse through #includes

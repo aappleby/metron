@@ -398,7 +398,7 @@ TokenSpan match_prefix_cast(CContext& ctx, TokenSpan body) {
 
 TokenSpan match_expression(CContext& ctx, TokenSpan body);
 
-TokenSpan match_expression_paren(CContext& ctx, TokenSpan body) {
+TokenSpan match_expression_list(CContext& ctx, TokenSpan body) {
   using pattern =
   DelimitedList<
     Atom<'('>,
@@ -479,7 +479,7 @@ Oneof<
 using ExpressionCore =
 Oneof<
   Cap<"call_expression", Ref<match_call_expression>, CNode>,
-  Cap<"paren",           Ref<match_expression_paren>, CNode>,
+  Cap<"paren",           Ref<match_expression_list>, CNode>,
   //Cap<"init",         NodeInitializerList>,
   Cap<"braces",          Ref<match_expression_braces>, CNode>,
   Cap<"identifier",      Ref<match_identifier>, CNode>,
@@ -494,7 +494,7 @@ using ExpressionSuffixOp =
 Oneof<
   //Cap<"initializer", NodeSuffixInitializerList>,  // must be before NodeSuffixBraces
   Cap<"braces",      Ref<match_expression_braces>, CNode>,
-  Cap<"paren",       Ref<match_expression_paren>, CNode>,
+  Cap<"paren",       Ref<match_expression_list>, CNode>,
   Cap<"subscript",   Ref<match_subscript>, CNode>,
   Cap<"postinc",     Ref<match_suffix_op<"++">>, CNode>,
   Cap<"postdec",     Ref<match_suffix_op<"--">>, CNode>
@@ -1197,10 +1197,22 @@ TokenSpan match_function(CContext& ctx, TokenSpan body) {
 
 TokenSpan match_constructor(CContext& ctx, TokenSpan body) {
   // clang-format off
+
+  using initializers = Seq<
+    Atom<':'>,
+    cookbook::comma_separated<
+      Seq<
+        Ref<match_identifier>,
+        Ref<match_expression_list>
+      >
+    >
+  >;
+
   using pattern =
   Seq<
     Ref<&CContext::match_class_name>,
     Cap<"params", Ref<match_parameter_list>, CNode>,
+    Cap<"init",   Opt<initializers>, CNode>,
     Cap<"body",   Ref<match_compound_statement>, CNode>
   >;
   // clang-format om
@@ -1269,7 +1281,7 @@ TokenSpan match_if_statement(CContext& ctx, TokenSpan body) {
   using pattern =
   Seq<
     Ref<match_keyword<"if">>,
-    Cap<"condition", Ref<match_expression_paren>, CNode>,
+    Cap<"condition", Ref<match_expression_list>, CNode>,
     Cap<"then", Ref<match_statement>, CNode>,
     Opt<Seq<
       Ref<match_keyword<"else">>,
@@ -1362,7 +1374,7 @@ TokenSpan match_while_statement(CContext& ctx, TokenSpan body) {
   using pattern =
   Seq<
     Ref<match_keyword<"while">>,
-    Ref<match_expression_paren>,
+    Ref<match_expression_list>,
     Cap<"body", Ref<match_statement>, CNode>
   >;
   // clang-format off
@@ -1378,7 +1390,7 @@ TokenSpan match_dowhile_statement(CContext& ctx, TokenSpan body) {
     Ref<match_keyword<"do">>,
     Cap<"body", Ref<match_statement>, CNode>,
     Ref<match_keyword<"while">>,
-    Ref<match_expression_paren>,
+    Ref<match_expression_list>,
     Atom<';'>
   >;
   // clang-format on

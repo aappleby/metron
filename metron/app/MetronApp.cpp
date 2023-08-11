@@ -145,6 +145,10 @@ int main(int argc, char** argv) {
 
   err << repo.load_source(src_name);
 
+  if (!err) {
+    LOG_G("Parsing %s OK\n", src_name.c_str());
+  }
+
 #if 0
   MtModLibrary lib;
   MtSourceFile* source = nullptr;

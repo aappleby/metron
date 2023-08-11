@@ -16,6 +16,8 @@ struct CScope {
 
   using token_list = std::vector<matcheroni::TextSpan>;
 
+  void merge(CScope* other);
+
   void clear();
   bool has_type(CContext& ctx, TokenSpan body, token_list& types);
   void add_type(CContext& ctx, const CToken* a, token_list& types);
@@ -33,6 +35,8 @@ struct CScope {
   void add_typedef(CContext& ctx, const CToken* a);
 
   void add_typedef(const char* t);
+
+  void dump();
 
   CScope* parent;
   token_list class_types;

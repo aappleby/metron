@@ -9,6 +9,7 @@
 using namespace matcheroni;
 namespace fs = std::filesystem;
 
+#if 0
 //------------------------------------------------------------------------------
 
 struct FileFinder {
@@ -141,3 +142,5 @@ void test_include_walker(const std::string& path) {
 }
 
 //------------------------------------------------------------------------------
+
+#endif

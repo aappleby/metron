@@ -1,15 +1,19 @@
 // SPDX-FileCopyrightText:  2023 Austin Appleby <aappleby@gmail.com>
 // SPDX-License-Identifier: MIT License
 
+#include "metrolib/core/Log.h"
+
 #include "matcheroni/Matcheroni.hpp"
 #include "matcheroni/Parseroni.hpp"
 #include "matcheroni/Utilities.hpp"
 #include "matcheroni/Cookbook.hpp"
 
 #include "CConstants.hpp"
-#include "CToken.hpp"
-#include "CNode.hpp"
 #include "CContext.hpp"
+#include "CNode.hpp"
+#include "CSourceFile.hpp"
+#include "CSourceRepo.hpp"
+#include "CToken.hpp"
 #include "SST.hpp"
 
 #include <assert.h>
@@ -194,7 +198,31 @@ TextSpan CContext::handle_include(TextSpan body) {
   //putc('\n', stdout);
   //fflush(stdout);
 
+  if (body.begin[0] == '<') return body.fail();
+
   std::string path(body.begin + 1, body.end - 1);
+
+  if (path.find("metron_tools.h") != std::string::npos) {
+    //LOG_Y("Skipping metron_tools.h\n");
+    return body.fail();
+  }
+
+  //printf("path %s\n", body.begin);
+
+  //utils::print_span("Include: ", body);
+
+  CSourceFile* include_file = nullptr;
+  Err err = repo->load_source(path, &include_file);
+
+  if (!err) {
+    LOG_G("Parse OK\n");
+
+    type_scope->merge(include_file->context.type_scope);
+  }
+
+  // type_scope
+
+  /*
   auto full_path = find_file(path);
   if (full_path.empty()) {
     printf("Could not find file %s\n", path.c_str());
@@ -230,6 +258,7 @@ TextSpan CContext::handle_include(TextSpan body) {
 
   rewind(bookmark);
   search_paths.pop_back();
+  */
 
   return body.consume();
 }
@@ -834,10 +863,7 @@ TokenSpan match_type(CContext& ctx, TokenSpan body) {
       Ref<&CContext::match_enum_name>,
 
       Ref<match_builtin_type>,
-      Ref<&CContext::match_typedef_name>,
-
-      // FIXME adding this in until we have some way to handle #includes
-      Ref<match_identifier>
+      Ref<&CContext::match_typedef_name>
     >,
     Opt<Cap<"template_args", Ref<match_template_args>, CNode>>,
     Opt<Seq<

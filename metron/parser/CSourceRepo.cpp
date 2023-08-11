@@ -2,6 +2,7 @@
 
 #include "CSourceFile.hpp"
 #include "matcheroni/Utilities.hpp"
+#include "metrolib/core/Log.h"
 
 namespace fs = std::filesystem;
 
@@ -10,12 +11,12 @@ namespace fs = std::filesystem;
 std::string CSourceRepo::resolve_path(const std::string& filename) {
   for (auto& path : search_paths) {
     std::string full_path = fs::absolute(path + filename);
-    printf("%s exists? ", full_path.c_str());
+    LOG("%s exists? ", full_path.c_str());
     if (fs::is_regular_file(full_path)) {
-      printf("YES\n");
+      LOG_G("YES\n");
       return full_path;
     } else {
-      printf("NO\n");
+      LOG_R("NO\n");
     }
   }
   return "";
@@ -23,7 +24,7 @@ std::string CSourceRepo::resolve_path(const std::string& filename) {
 
 //------------------------------------------------------------------------------
 
-Err CSourceRepo::load_source(std::string filename) {
+Err CSourceRepo::load_source(std::string filename, CSourceFile** out_source) {
   std::string absolute_path = resolve_path(filename);
 
   if (source_map.contains(absolute_path)) return Err();
@@ -47,6 +48,8 @@ Err CSourceRepo::load_source(std::string filename) {
   auto source_file = new CSourceFile();
 
   (void)source_file->init(this, filename, absolute_path, src_blob, use_utf8_bom);
+
+  if (out_source) *out_source = source_file;
 
   return Err();
 }

@@ -2,6 +2,8 @@
 
 #include "CSourceRepo.hpp"
 
+#include "metrolib/core/Log.h"
+
 namespace fs = std::filesystem;
 
 //------------------------------------------------------------------------------
@@ -19,17 +21,19 @@ namespace fs = std::filesystem;
 
   context.repo = _repo;
 
+  LOG("Lexing %s\n", filename.c_str());
   auto source_span = matcheroni::utils::to_span(source_code);
   lexer.lex(source_span);
 
+  LOG("Parsing %s\n", filename.c_str());
   TokenSpan tok_span(lexer.tokens.data(),
                      lexer.tokens.data() + lexer.tokens.size());
   auto tail = context.parse(source_span, tok_span);
 
-  matcheroni::utils::print_trees(context, source_span, 50);
+  //matcheroni::utils::print_trees(context, source_span, 50);
 
   if (!tail.is_valid() || !tail.is_empty()) {
-    printf("could not parse %s\n", filepath.c_str());
+    LOG_R("could not parse %s\n", filepath.c_str());
     return ERR("Could not parse file");
   }
 

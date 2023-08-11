@@ -3,15 +3,29 @@
 
 #include "CScope.hpp"
 
+#include "metrolib/core/Log.h"
+
 #include "CConstants.hpp"
 #include "CContext.hpp"
 #include "CToken.hpp"
-
+#include "metrolib/core/Log.h"
 #include <string_view>
 
 using matcheroni::TextSpan;
 
 using std::string_view;
+
+void CScope::merge(CScope* other) {
+  LOG_G("CScope::merge()\n");
+
+  class_types.insert(class_types.begin(), other->class_types.begin(), other->class_types.end());
+  struct_types.insert(struct_types.begin(), other->struct_types.begin(), other->struct_types.end());
+  union_types.insert(union_types.begin(), other->union_types.begin(), other->union_types.end());
+  enum_types.insert(enum_types.begin(), other->enum_types.begin(), other->enum_types.end());
+  typedef_types.insert(typedef_types.begin(), other->typedef_types.begin(), other->typedef_types.end());
+
+  dump();
+}
 
 void CScope::clear() {
   class_types.clear();
@@ -37,6 +51,10 @@ bool CScope::has_type(CContext& ctx, TokenSpan body, token_list& types) {
 
 void CScope::add_type(CContext& ctx, const CToken* a, token_list& types) {
   matcheroni_assert(ctx.atom_cmp(*a, LEX_IDENTIFIER) == 0);
+
+  LOG_G("add_type ");
+  LOG_SPAN(a->text);
+  LOG_G("\n");
 
   TextSpan span(a->text.begin, a->text.end);
 
@@ -72,3 +90,41 @@ void CScope::add_struct (CContext& ctx, const CToken* a) { return add_type(ctx, 
 void CScope::add_union  (CContext& ctx, const CToken* a) { return add_type(ctx, a, union_types  ); }
 void CScope::add_enum   (CContext& ctx, const CToken* a) { return add_type(ctx, a, enum_types   ); }
 void CScope::add_typedef(CContext& ctx, const CToken* a) { return add_type(ctx, a, typedef_types); }
+
+void CScope::dump() {
+
+  LOG_G("class_types\n");
+  for (auto s : class_types) {
+    LOG("  ");
+    LOG_SPAN(s);
+    LOG("\n");
+  }
+
+  LOG_G("struct_types\n");
+  for (auto s : struct_types) {
+    LOG("  ");
+    LOG_SPAN(s);
+    LOG("\n");
+  }
+
+  LOG_G("union_types\n");
+  for (auto s : union_types) {
+    LOG("  ");
+    LOG_SPAN(s);
+    LOG("\n");
+  }
+
+  LOG_G("enum_types\n");
+  for (auto s : enum_types) {
+    LOG("  ");
+    LOG_SPAN(s);
+    LOG("\n");
+  }
+
+  LOG_G("typedef_types\n");
+  for (auto s : typedef_types) {
+    LOG("  ");
+    LOG_SPAN(s);
+    LOG("\n");
+  }
+}

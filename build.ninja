@@ -63,7 +63,7 @@ build obj/symlinks/tree-sitter-cpp/src/parser.o: compile_c $
       -Isymlinks/tree-sitter/lib/include -Isymlinks/tree-sitter/lib/src $
       -Isymlinks/CLI11/include -Itests
 build obj/symlinks/tree-sitter-cpp/src/scanner.o: compile_c $
-    symlinks/tree-sitter-cpp/src/scanner.cc
+    symlinks/tree-sitter-cpp/src/scanner.c
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/tree-sitter/lib/include -Isymlinks/tree-sitter/lib/src $
       -Isymlinks/CLI11/include -Itests

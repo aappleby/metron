@@ -279,7 +279,7 @@ def build_treesitter():
     treesitter_srcs = [
         "symlinks/tree-sitter/lib/src/lib.c",
         "symlinks/tree-sitter-cpp/src/parser.c",
-        "symlinks/tree-sitter-cpp/src/scanner.cc",
+        "symlinks/tree-sitter-cpp/src/scanner.c",
     ]
 
     for n in treesitter_srcs:

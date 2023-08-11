@@ -34,19 +34,6 @@ using TokenSpan = matcheroni::Span<CToken>;
 class CContext : public parseroni::NodeContext<CNode> {
  public:
 
-  std::vector<std::string> search_paths = {""};
-  std::set<std::string> visited_files;
-
-  std::string find_file(const std::string& file_path) {
-    bool found = false;
-    for (auto &path : search_paths) {
-      auto full_path = path + file_path;
-      if (!std::filesystem::is_regular_file(full_path)) continue;
-      return full_path;
-    }
-    return "";
-  }
-
   using AtomType = CToken;
   using SpanType = matcheroni::Span<CToken>;
   using NodeType = CNode;

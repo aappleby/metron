@@ -83,10 +83,11 @@ void dump_log(const std::vector<LogEntry>& log) {
 
     LOG_INDENT_SCOPE();
 
-    TinyLog::get().set_color(0);
+    TinyLog::get().color(0);
     if (a.node) {
       LOG("\"");
-      LOG_RANGE(source_range);
+      LOG("LOG_RANGE broken? where did it go?\n");
+      //LOG_RANGE(source_range);
       LOG("\" :: ");
     }
 

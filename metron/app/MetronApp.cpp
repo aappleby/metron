@@ -76,7 +76,7 @@ void mkdir_all(const std::vector<std::string>& full_path) {
 //------------------------------------------------------------------------------
 
 int main(int argc, char** argv) {
-  TinyLog::get().reset();
+  //TinyLog::get().reset();
 
   const char* banner =
       "                                                        \n"

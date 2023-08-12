@@ -6,9 +6,39 @@
 #include "CParser.hpp"
 #include <assert.h>
 
+#include "metrolib/core/Log.h"
+
 using namespace matcheroni;
 
+using namespace matcheroni::utils;
+
 TokenSpan match_translation_unit(CContext& ctx, TokenSpan body);
+
+
+
+struct CNodeIterator {
+  CNodeIterator(CNode* cursor) : n(cursor) {}
+  CNodeIterator& operator++() {
+    n = n->node_next;
+    return *this;
+  }
+  bool operator!=(CNodeIterator& b) const { return n != b.n; }
+  CNode* operator*() const { return n; }
+  CNode* n;
+};
+
+inline CNodeIterator begin(CNode* parent) {
+  return CNodeIterator(parent->child_head);
+}
+
+inline CNodeIterator end(CNode* parent) {
+  return CNodeIterator(nullptr);
+}
+
+
+
+
+
 
 //------------------------------------------------------------------------------
 
@@ -44,27 +74,21 @@ TokenSpan CContext::parse(matcheroni::TextSpan text, TokenSpan lexemes) {
   auto tok_b = tokens.data() + tokens.size() - 1;
   TokenSpan body(tok_a, tok_b);
 
-  return match_translation_unit(*this, body);
-}
+  auto tail = match_translation_unit(*this, body);
 
-/*
-bool CContext::parse(std::vector<CToken>& lexemes) {
+  if (tail.is_valid() && tail.is_empty()) {
 
-  for (auto& t : lexemes) {
-    if (!t.is_gap()) {
-      tokens.push_back(t);
+    if (top_head == top_tail) {
+      LOG_G("Parse OK\n");
+      root = top_head;
+    }
+    else {
+      LOG_R("Too many top-level parse nodes!\n");
     }
   }
 
-  // Skip over BOF, stop before EOF
-  auto tok_a = tokens.data() + 1;
-  auto tok_b = tokens.data() + tokens.size() - 1;
-  TokenSpan body(tok_a, tok_b);
-
-  auto tail = NodeTranslationUnit::match(*this, body);
-  return tail.is_valid();
+  return tail;
 }
-*/
 
 //------------------------------------------------------------------------------
 

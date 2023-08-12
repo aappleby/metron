@@ -4,22 +4,25 @@
 #pragma once
 
 #include <cstddef>  // for size_t
-#include <typeinfo>
 #include <string>
+#include <typeinfo>
 
-#include "matcheroni/Parseroni.hpp"
 #include "CToken.hpp"
+#include "matcheroni/Parseroni.hpp"
 
 typedef matcheroni::Span<CToken> TokenSpan;
 
 //------------------------------------------------------------------------------
 
 struct CNode : public parseroni::NodeBase<CNode, CToken> {
+  virtual ~CNode() {}
+
   using AtomType = CToken;
   using SpanType = matcheroni::Span<CToken>;
 
   matcheroni::TextSpan as_text() const {
-    return matcheroni::TextSpan(span.begin->text.begin, (span.end - 1)->text.end);
+    return matcheroni::TextSpan(span.begin->text.begin,
+                                (span.end - 1)->text.end);
   }
 
   void debug_dump(std::string& out) {
@@ -30,8 +33,7 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
       for (auto c = child_head; c; c = c->node_next) {
         c->debug_dump(out);
       }
-    }
-    else {
+    } else {
       out += '`';
       out += std::string(span.begin->text.begin, (span.end - 1)->text.end);
       out += '`';
@@ -39,15 +41,19 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
     out += "]";
   }
 
-
   //----------------------------------------
 
-  /*
   template <typename P>
   bool is_a() const {
     return typeid(*this) == typeid(P);
   }
 
+  template <typename P>
+  P* as_a() {
+    return dynamic_cast<P*>(this);
+  }
+
+  /*
   template <typename P>
   P* child() {
     for (auto cursor = child_head; cursor; cursor = cursor->node_next) {
@@ -69,11 +75,6 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   }
 
   template <typename P>
-  P* as_a() {
-    return dynamic_cast<P*>(this);
-  }
-
-  template <typename P>
   const P* as_a() const {
     return dynamic_cast<const P*>(this);
   }
@@ -86,5 +87,18 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   // -2 = prefix, -1 = right-to-left, 0 = none, 1 = left-to-right, 2 = suffix
   int assoc = 0;
 };
+
+//------------------------------------------------------------------------------
+
+struct CNodeClass : public CNode {};
+struct CNodeDeclaration : public CNode {};
+struct CNodeEnum : public CNode {};
+struct CNodeFunction : public CNode {};
+struct CNodeNamespace : public CNode {};
+struct CNodePreproc : public CNode {};
+struct CNodeStruct : public CNode {};
+struct CNodeTemplate : public CNode {};
+struct CNodeTypedef : public CNode {};
+struct CNodeUnion : public CNode {};
 
 //------------------------------------------------------------------------------

@@ -11,12 +11,12 @@ namespace fs = std::filesystem;
 std::string CSourceRepo::resolve_path(const std::string& filename) {
   for (auto& path : search_paths) {
     std::string full_path = fs::absolute(path + filename);
-    LOG("%s exists? ", full_path.c_str());
+    //LOG("%s exists? ", full_path.c_str());
     if (fs::is_regular_file(full_path)) {
-      LOG_G("YES\n");
+      //LOG_G("YES\n");
       return full_path;
     } else {
-      LOG_R("NO\n");
+      //LOG_R("NO\n");
     }
   }
   return "";
@@ -55,3 +55,28 @@ Err CSourceRepo::load_source(std::string filename, CSourceFile** out_source) {
 }
 
 //------------------------------------------------------------------------------
+
+void CSourceRepo::dump() {
+  //std::vector<std::string> search_paths = {""};
+  //std::map<std::string, CSourceFile*> source_map;
+
+  LOG_B("Search paths:\n");
+  LOG_INDENT();
+  for (auto s : search_paths) {
+    LOG("`%s`\n", s.c_str());
+  }
+  LOG_DEDENT();
+
+  LOG_B("Source files:\n");
+  LOG_INDENT();
+  for (auto pair : source_map) {
+    LOG("`%s`\n", pair.first.c_str());
+  }
+  LOG_DEDENT();
+
+  for (auto pair : source_map) {
+    auto s = pair.second;
+    printf("\n\n\n");
+    s->dump();
+  }
+}

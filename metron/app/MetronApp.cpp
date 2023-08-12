@@ -149,6 +149,8 @@ int main(int argc, char** argv) {
     LOG_G("Parsing %s OK\n", src_name.c_str());
   }
 
+  repo.dump();
+
 #if 0
   MtModLibrary lib;
   MtSourceFile* source = nullptr;

@@ -215,7 +215,7 @@ TextSpan CContext::handle_include(TextSpan body) {
   Err err = repo->load_source(path, &include_file);
 
   if (!err) {
-    LOG_G("Parse OK\n");
+    //LOG_G("Parse OK\n");
 
     type_scope->merge(include_file->context.type_scope);
   }
@@ -1564,23 +1564,23 @@ TokenSpan match_translation_unit(CContext& ctx, TokenSpan body) {
   using pattern =
   Any<
     Oneof<
-      Cap<"class",       Seq<Ref<match_class>,       Atom<';'>>, CNode>,
-      Cap<"struct",      Seq<Ref<match_struct>,      Atom<';'>>, CNode>,
-      Cap<"union",       Seq<Ref<match_union>,       Atom<';'>>, CNode>,
-      Cap<"enum",        Seq<Ref<match_enum>,        Atom<';'>>, CNode>,
-      Cap<"template",    Seq<Ref<match_template>,    Atom<';'>>, CNode>,
-      Cap<"declaration", Seq<Ref<match_declaration>, Atom<';'>>, CNode>,
+      Cap<"class",       Seq<Ref<match_class>,       Atom<';'>>, CNodeClass>,
+      Cap<"struct",      Seq<Ref<match_struct>,      Atom<';'>>, CNodeStruct>,
+      Cap<"union",       Seq<Ref<match_union>,       Atom<';'>>, CNodeUnion>,
+      Cap<"enum",        Seq<Ref<match_enum>,        Atom<';'>>, CNodeEnum>,
+      Cap<"template",    Seq<Ref<match_template>,    Atom<';'>>, CNodeTemplate>,
+      Cap<"declaration", Seq<Ref<match_declaration>, Atom<';'>>, CNodeDeclaration>,
 
-      Cap<"typedef",     Ref<match_typedef>,         CNode>,
-      Cap<"preproc",     Ref<match_preproc>,         CNode>,
-      Cap<"function",    Ref<match_function>,        CNode>,
-      Cap<"namespace",   Ref<match_namespace>,       CNode>,
+      Cap<"typedef",     Ref<match_typedef>,         CNodeTypedef>,
+      Cap<"preproc",     Ref<match_preproc>,         CNodePreproc>,
+      Cap<"function",    Ref<match_function>,        CNodeFunction>,
+      Cap<"namespace",   Ref<match_namespace>,       CNodeNamespace>,
       Atom<';'>
     >
   >;
   // clang-format on
 
-  return pattern::match(ctx, body);
+  return Cap<"translation_unit", pattern, CNode>::match(ctx, body);
 }
 
 //------------------------------------------------------------------------------

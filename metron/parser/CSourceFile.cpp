@@ -21,7 +21,7 @@ namespace fs = std::filesystem;
 
   context.repo = _repo;
 
-  LOG("Lexing %s\n", filename.c_str());
+  //LOG("Lexing %s\n", filename.c_str());
   auto source_span = matcheroni::utils::to_span(source_code);
   lexer.lex(source_span);
 
@@ -40,6 +40,19 @@ namespace fs = std::filesystem;
   repo->source_map[filename] = this;
 
   return Err();
+}
+
+//------------------------------------------------------------------------------
+
+[[nodiscard]] Err CSourceFile::collect_modules_and_structs() {
+  return Err();
+}
+
+//------------------------------------------------------------------------------
+
+void CSourceFile::dump() {
+  auto source_span = matcheroni::utils::to_span(source_code);
+  matcheroni::utils::print_trees(context, source_span, 50, 2);
 }
 
 //------------------------------------------------------------------------------

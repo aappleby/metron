@@ -51,12 +51,15 @@ First public release!
 
 ## Building the Metron binary from source:
 
+### Important - tree-sitter-cpp needs to be checked out at rev d63acf7c2ae9599a2f01c8e8beb7d333e54956e4
+
 Note: Metron doesn't use Git submodules anymore, instead it expects its dependencies to be checked out in folders alongside itself.
 ```
 sudo apt install git build-essential ninja-build python3 libicu-dev libsdl2-dev
 git clone https://github.com/CLIUtils/CLI11
 git clone https://github.com/tree-sitter/tree-sitter
 git clone https://github.com/tree-sitter/tree-sitter-cpp
+(cd tree-sitter-cpp && git checkout d63acf7c2ae9599a2f01c8e8beb7d333e54956e4)
 git clone https://github.com/aappleby/Metron
 cd Metron
 ./build.py

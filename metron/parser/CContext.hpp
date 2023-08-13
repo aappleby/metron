@@ -104,7 +104,7 @@ class CContext : public parseroni::NodeContext<CNode> {
   std::vector<CToken> tokens;
   CScope* type_scope;
 
-  CNode* root = nullptr;
+  CNode* root_node = nullptr;
 };
 
 //------------------------------------------------------------------------------

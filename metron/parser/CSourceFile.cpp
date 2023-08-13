@@ -25,10 +25,19 @@ namespace fs = std::filesystem;
   auto source_span = matcheroni::utils::to_span(source_code);
   lexer.lex(source_span);
 
-  LOG("Parsing %s\n", filename.c_str());
+  LOG("Parsing %s\n", filepath.c_str());
+  LOG_INDENT_SCOPE();
   TokenSpan tok_span(lexer.tokens.data(),
                      lexer.tokens.data() + lexer.tokens.size());
   auto tail = context.parse(source_span, tok_span);
+
+  if (tail.is_valid() && tail.is_empty() && context.root_node) {
+    LOG_G("Parse OK\n");
+  }
+  else {
+    LOG_R("Parse failed!\n");
+  }
+
 
   //matcheroni::utils::print_trees(context, source_span, 50);
 

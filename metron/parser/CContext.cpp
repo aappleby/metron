@@ -55,11 +55,14 @@ void CContext::reset() {
   tokens.clear();
   while (type_scope->parent) pop_scope();
   type_scope->clear();
+  root_node = nullptr;
 }
 
 //------------------------------------------------------------------------------
 
 TokenSpan CContext::parse(matcheroni::TextSpan text, TokenSpan lexemes) {
+  reset();
+
   this->text_span = text;
   this->lexemes = lexemes;
 
@@ -77,13 +80,8 @@ TokenSpan CContext::parse(matcheroni::TextSpan text, TokenSpan lexemes) {
   auto tail = match_translation_unit(*this, body);
 
   if (tail.is_valid() && tail.is_empty()) {
-
     if (top_head == top_tail) {
-      LOG_G("Parse OK\n");
-      root = top_head;
-    }
-    else {
-      LOG_R("Too many top-level parse nodes!\n");
+      root_node = top_head;
     }
   }
 

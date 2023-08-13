@@ -9,8 +9,8 @@
       "program": "${workspaceFolder}/bin/metron",
       "cwd": "${workspaceFolder}",
       //"args" : ["-d", "-v", "-e", "-c", "tests/metron_good/basic_template.h"],
-      //"args" : ["-v", "-e", "-c", "examples/uart/metron/uart_top.h"],
-      "args" : ["-d", "-v", "-e", "-p", "-c", "examples/scratch.h"],
+      "args" : ["-p", "-v", "-e", "-c", "examples/uart/metron/uart_top.h"],
+      //"args" : ["-d", "-v", "-e", "-p", "-c", "examples/scratch.h"],
       //"args" : ["-v", "-e", "-c", "examples/uart/metron/uart_rx.h"],
       "setupCommands": [
         { // Display content in STL containers pretty

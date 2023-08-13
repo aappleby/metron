@@ -4,7 +4,7 @@
     {
       "type": "shell",
       "label": "build_metron",
-      "command": "./build.py",
+      "command": "ninja",
       "args": [
         //"bin/examples/pinwheel"
         "bin/metron"
@@ -13,6 +13,23 @@
       "group": {
         "kind": "build",
         "isDefault": true
+      },
+      "dependsOn":["regen_ninja"],
+      "presentation": {
+        "echo": false,
+        "showReuseMessage": false,
+        "clear": true
+      }
+    },
+    {
+      "type": "shell",
+      "label": "regen_ninja",
+      "command": "./build.py",
+      "group": "build",
+      "presentation": {
+        "echo": false,
+        "showReuseMessage": false,
+        "clear": true
       }
     }
   ]

@@ -192,8 +192,15 @@ build wasm/obj/symlinks/tree-sitter-cpp/src/scanner.o: compile_c_ems $
 ################################################################################
 # Compile docs/app/metron.js using compile_cpp_ems and link_ems
 
-build wasm/obj/metron/app/MetronApp.o: compile_cpp_ems $
-    metron/app/MetronApp.cpp
+build wasm/obj/metron/app/main_new.o: compile_cpp_ems metron/app/main_new.cpp
+  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
+      -Isymlinks/tree-sitter/lib/include -Isymlinks/tree-sitter/lib/src $
+      -Isymlinks/CLI11/include -Itests
+build wasm/obj/metron/app/main_old.o: compile_cpp_ems metron/app/main_old.cpp
+  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
+      -Isymlinks/tree-sitter/lib/include -Isymlinks/tree-sitter/lib/src $
+      -Isymlinks/CLI11/include -Itests
+build wasm/obj/metron/app/main.o: compile_cpp_ems metron/app/main.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/tree-sitter/lib/include -Isymlinks/tree-sitter/lib/src $
       -Isymlinks/CLI11/include -Itests
@@ -334,7 +341,8 @@ build docs/app/metron.js: link_ems $
     wasm/obj/symlinks/tree-sitter/lib/src/lib.o $
     wasm/obj/symlinks/tree-sitter-cpp/src/parser.o $
     wasm/obj/symlinks/tree-sitter-cpp/src/scanner.o $
-    wasm/obj/metron/app/MetronApp.o wasm/obj/metron/app/MtModLibrary.o $
+    wasm/obj/metron/app/main_new.o wasm/obj/metron/app/main_old.o $
+    wasm/obj/metron/app/main.o wasm/obj/metron/app/MtModLibrary.o $
     wasm/obj/metron/app/MtSourceFile.o wasm/obj/metron/codegen/MtCursor.o $
     wasm/obj/metron/nodes/MtField.o wasm/obj/metron/nodes/MtFuncParam.o $
     wasm/obj/metron/nodes/MtMethod.o wasm/obj/metron/nodes/MtModParam.o $
@@ -534,12 +542,20 @@ build bin/libmetron.a: static_lib obj/symlinks/tree-sitter/lib/src/lib.o $
 ################################################################################
 # Compile bin/metron
 
-build obj/metron/app/MetronApp.o: compile_cpp metron/app/MetronApp.cpp
+build obj/metron/app/main_new.o: compile_cpp metron/app/main_new.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/tree-sitter/lib/include -Isymlinks/tree-sitter/lib/src $
       -Isymlinks/CLI11/include -Itests
-build bin/metron: link obj/metron/app/MetronApp.o bin/libmetron.a $
-    bin/libparser.a
+build obj/metron/app/main_old.o: compile_cpp metron/app/main_old.cpp
+  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
+      -Isymlinks/tree-sitter/lib/include -Isymlinks/tree-sitter/lib/src $
+      -Isymlinks/CLI11/include -Itests
+build obj/metron/app/main.o: compile_cpp metron/app/main.cpp
+  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
+      -Isymlinks/tree-sitter/lib/include -Isymlinks/tree-sitter/lib/src $
+      -Isymlinks/CLI11/include -Itests
+build bin/metron: link obj/metron/app/main_new.o obj/metron/app/main_old.o $
+    obj/metron/app/main.o bin/libmetron.a bin/libparser.a
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/tree-sitter/lib/include -Isymlinks/tree-sitter/lib/src $
       -Isymlinks/CLI11/include -Itests

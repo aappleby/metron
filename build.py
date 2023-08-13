@@ -44,7 +44,7 @@ def main():
     print("Done!")
     outfile.close()
     outfile = None
-    return os.system("ninja")
+    #return os.system("ninja")
 
 # ------------------------------------------------------------------------------
 
@@ -345,7 +345,9 @@ def build_metron_app():
     cpp_binary(
         bin_name="bin/metron",
         src_files=[
-            "metron/app/MetronApp.cpp",
+            "metron/app/main_new.cpp",
+            "metron/app/main_old.cpp",
+            "metron/app/main.cpp",
         ],
         includes=base_includes,
         link_deps=["bin/libmetron.a", "bin/libparser.a"],
@@ -443,7 +445,9 @@ cpp_binary2(
     rule_compile="compile_cpp_ems",
     rule_link="link_ems",
     src_files=[
-        "metron/app/MetronApp.cpp",
+        "metron/app/main_new.cpp",
+        "metron/app/main_old.cpp",
+        "metron/app/main.cpp",
         "metron/app/MtModLibrary.cpp",
         "metron/app/MtSourceFile.cpp",
         "metron/codegen/MtCursor.cpp",

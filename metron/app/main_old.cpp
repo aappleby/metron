@@ -1,35 +1,17 @@
-#include "metron/app/MetronApp.h"
+#include "MetronApp.h"
 
 #include "metron/app/MtModLibrary.h"
-#include "metron/app/MtSourceFile.h"
-#include "metron/codegen/MtCursor.h"
-#include "metron/nodes/MtField.h"
-#include "metron/nodes/MtMethod.h"
-#include "metron/nodes/MtModule.h"
-#include "metron/nodes/MtStruct.h"
-#include "metron/tracer/MtContext.h"
-#include "metron/tracer/MtInstance.h"
-#include "metron/tracer/MtTracer.h"
-#include "metron/tracer/MtTracer2.h"
-
-#include "metron/parser/CSourceFile.hpp"
-#include "metron/parser/CSourceRepo.hpp"
-#include "metron/parser/CContext.hpp"
-#include "metron/parser/CLexer.hpp"
-#include "metron/parser/CParser.hpp"
-#include "matcheroni/Utilities.hpp"
-
 #include "metrolib/core/Log.h"
-
-#include "CLI11/include/CLI/App.hpp"
-#include "CLI11/include/CLI/Config.hpp"
-#include "CLI11/include/CLI/Formatter.hpp"
-
-
-#include <dirent.h>
-#include <stdio.h>
-
-#pragma warning(disable : 4996)
+#include "metron/nodes/MtField.h"
+#include "metron/nodes/MtModule.h"
+#include "metron/nodes/MtMethod.h"
+#include "metron/nodes/MtStruct.h"
+#include "metron/app/MtSourceFile.h"
+#include "metron/tracer/MtInstance.h"
+#include "metron/tracer/MtTracer2.h"
+#include "metron/tracer/MtContext.h"
+#include "metron/tracer/MtTracer.h"
+#include "metron/codegen/MtCursor.h"
 
 //------------------------------------------------------------------------------
 
@@ -75,64 +57,7 @@ void mkdir_all(const std::vector<std::string>& full_path) {
 
 //------------------------------------------------------------------------------
 
-int main(int argc, char** argv) {
-  //TinyLog::get().reset();
-
-  const char* banner =
-      "                                                        \n"
-      " ###    ### ####### ######## ######   ######  ###    ## \n"
-      " ####  #### ##         ##    ##   ## ##    ## ####   ## \n"
-      " ## #### ## #####      ##    ######  ##    ## ## ##  ## \n"
-      " ##  ##  ## ##         ##    ##   ## ##    ## ##  ## ## \n"
-      " ##      ## #######    ##    ##   ##  ######  ##   #### \n"
-      "                                                        \n"
-      "            a C++ to SystemVerilog Translator           \n";
-
-  CLI::App app{banner};
-
-  std::string src_name;
-  std::string dst_name;
-  bool verbose = false;
-  bool quiet = false;
-  bool echo = false;
-  bool dump = false;
-  bool monochrome = false;
-  bool parse = false;
-
-  // clang-format off
-  auto src_opt     = app.add_option("-c,--convert",    src_name,     "Full path to source file to translate from C++ to SystemVerilog");
-  auto dst_opt     = app.add_option("-o,--output",     dst_name,     "Output file path. If not specified, will only check the source for convertibility.");
-  auto verbose_opt = app.add_flag  ("-v,--verbose",    verbose,      "Print detailed stats about the source modules.");
-  auto quiet_opt   = app.add_flag  ("-q,--quiet",      quiet,        "Quiet mode");
-  auto echo_opt    = app.add_flag  ("-e,--echo",       echo,         "Echo the converted source back to the terminal, with color-coding.");
-  auto dump_opt    = app.add_flag  ("-d,--dump",       dump,         "Dump the syntax tree of the source file(s) to the console.");
-  auto mono_opt    = app.add_flag  ("-m,--monochrome", monochrome,   "Monochrome mode, no color-coding");
-  auto parse_opt   = app.add_flag  ("-p,--parser",     parse,       "Test new parser");
-  // clang-format on
-
-  src_opt->check(CLI::ExistingFile);
-
-  CLI11_PARSE(app, argc, argv);
-
-  //test_include_walker(src_name);
-  //exit(0);
-
-  if (quiet) TinyLog::get().mute();
-  if (monochrome) TinyLog::get().mono();
-
-  //----------
-  // Startup info
-
-  LOG_B("Metron v0.0.1\n");
-  LOG_B("Source file '%s'\n", src_name.empty() ? "<empty>" : src_name.c_str());
-  LOG_B("Output file '%s'\n", dst_name.empty() ? "<empty>" : dst_name.c_str());
-  LOG_B("Verbose    %d\n", verbose);
-  LOG_B("Quiet      %d\n", quiet);
-  LOG_B("Echo       %d\n", echo);
-  LOG_B("Dump       %d\n", dump);
-  LOG_B("Monochrome %d\n", monochrome);
-  LOG_B("Parse      %d\n", parse);
-  LOG_B("\n");
+int main_old(Options opts) {
 
   //----------
   // Load all source files.
@@ -144,12 +69,12 @@ int main(int argc, char** argv) {
   lib.add_search_path(".");
 
   {
-    LOG_B("Loading source file %s\n", src_name.c_str());
-    auto src_path = split_path(src_name);
+    LOG_B("Loading source file %s\n", opts.src_name.c_str());
+    auto src_path = split_path(opts.src_name);
     src_path.pop_back();
     auto search_path = join_path(src_path);
     lib.add_search_path(search_path);
-    err << lib.load_source(src_name.c_str(), source);
+    err << lib.load_source(opts.src_name.c_str(), source);
   }
 
   if (err.has_err()) {
@@ -158,7 +83,7 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-  if (dump) {
+  if (opts.dump) {
     source->root_node.dump_tree(0, 0, 255);
   }
 
@@ -198,7 +123,7 @@ int main(int argc, char** argv) {
   }
   LOG_B("\n");
 
-  if (verbose) {
+  if (opts.verbose) {
     lib.dump_lib();
     LOG_G("\n");
   }
@@ -270,12 +195,12 @@ int main(int argc, char** argv) {
     mod->ctx = new MtContext(mod);
     mod->ctx->instantiate();
 
-    MtTracer tracer(&lib, mod->ctx, verbose);
+    MtTracer tracer(&lib, mod->ctx, opts.verbose);
 
     for (auto method : mod->all_methods) {
       if (method->is_constructor()) continue;
       if (method->internal_callers.size()) continue;
-      if (verbose) {
+      if (opts.verbose) {
         LOG_G("Tracing %s.%s\n", mod->cname(), method->cname());
       }
       err << tracer.trace_method(mod->ctx, method);
@@ -284,7 +209,7 @@ int main(int argc, char** argv) {
       //}
     }
     mod->ctx->assign_struct_states();
-    if (verbose) {
+    if (opts.verbose) {
       LOG_G("Final context tree for module %s:\n", mod->cname());
       mod->ctx->dump_ctx_tree();
       LOG("\n");
@@ -306,7 +231,7 @@ int main(int argc, char** argv) {
   LOG_B("Categorizing fields\n");
   for (auto m : lib.all_modules) {
     LOG_INDENT_SCOPE();
-    err << m->categorize_fields(verbose);
+    err << m->categorize_fields(opts.verbose);
   }
 
   if (err.has_err()) {
@@ -321,7 +246,7 @@ int main(int argc, char** argv) {
 
   LOG_B("Categorizing methods\n");
   LOG_INDENT();
-  err << lib.categorize_methods(verbose);
+  err << lib.categorize_methods(opts.verbose);
 
   int uncategorized = 0;
   int invalid = 0;
@@ -336,7 +261,7 @@ int main(int argc, char** argv) {
     }
   }
 
-  if (verbose) {
+  if (opts.verbose) {
     LOG_G("Methods uncategorized %d\n", uncategorized);
     LOG_G("Methods invalid %d\n", invalid);
   }
@@ -351,7 +276,7 @@ int main(int argc, char** argv) {
 
   //----------------------------------------
 
-  if (verbose) {
+  if (opts.verbose) {
     LOG_B("Module info:\n");
     LOG_INDENT();
 
@@ -438,15 +363,15 @@ int main(int argc, char** argv) {
   // Emit all modules.
 
  {
-    LOG_G("Converting %s to SystemVerilog\n", src_name.c_str());
+    LOG_G("Converting %s to SystemVerilog\n", opts.src_name.c_str());
 
     std::string out_string;
     MtCursor cursor(&lib, source, nullptr, &out_string);
-    cursor.echo = echo && !quiet;
+    cursor.echo = opts.echo && !opts.quiet;
 
-    if (echo) LOG_G("----------------------------------------\n\n");
+    if (opts.echo) LOG_G("----------------------------------------\n\n");
     err << cursor.emit_everything();
-    if (echo) LOG_G("----------------------------------------\n\n");
+    if (opts.echo) LOG_G("----------------------------------------\n\n");
 
     if (err.has_err()) {
       LOG_R("Error during code generation\n");
@@ -454,18 +379,18 @@ int main(int argc, char** argv) {
       return -1;
     }
 
-    if (dst_name.size()) {
+    if (opts.dst_name.size()) {
       // Save translated source to output directory, if there is one.
 
-      LOG_G("Saving %s\n", dst_name.c_str());
+      LOG_G("Saving %s\n", opts.dst_name.c_str());
 
-      auto dst_path = split_path(dst_name);
+      auto dst_path = split_path(opts.dst_name);
       dst_path.pop_back();
       mkdir_all(dst_path);
 
-      FILE* out_file = fopen(dst_name.c_str(), "wb");
+      FILE* out_file = fopen(opts.dst_name.c_str(), "wb");
       if (!out_file) {
-        LOG_R("ERROR Could not open %s for output\n", dst_name.c_str());
+        LOG_R("ERROR Could not open %s for output\n", opts.dst_name.c_str());
       } else {
         // Copy the BOM over if needed.
         if (source->use_utf8_bom) {

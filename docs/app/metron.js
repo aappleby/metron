@@ -5169,13 +5169,13 @@ var _malloc = createExportWrapper("malloc");
 /** @type {function(...*):?} */
 var _free = Module['_free'] = createExportWrapper("free");
 /** @type {function(...*):?} */
-var _main = Module['_main'] = createExportWrapper("__main_argc_argv");
+var _fflush = Module['_fflush'] = createExportWrapper("fflush");
 /** @type {function(...*):?} */
 var ___cxa_free_exception = createExportWrapper("__cxa_free_exception");
 /** @type {function(...*):?} */
-var ___errno_location = createExportWrapper("__errno_location");
+var _main = Module['_main'] = createExportWrapper("__main_argc_argv");
 /** @type {function(...*):?} */
-var _fflush = Module['_fflush'] = createExportWrapper("fflush");
+var ___errno_location = createExportWrapper("__errno_location");
 /** @type {function(...*):?} */
 var _setThrew = createExportWrapper("setThrew");
 /** @type {function(...*):?} */
@@ -5236,6 +5236,50 @@ var dynCall_iiiiijj = Module['dynCall_iiiiijj'] = createExportWrapper("dynCall_i
 /** @type {function(...*):?} */
 var dynCall_iiiiiijj = Module['dynCall_iiiiiijj'] = createExportWrapper("dynCall_iiiiiijj");
 
+function invoke_vii(index,a1,a2) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2);
+  } catch(e) {
+    stackRestore(sp);
+    if (!(e instanceof EmscriptenEH)) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_ii(index,a1) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1);
+  } catch(e) {
+    stackRestore(sp);
+    if (!(e instanceof EmscriptenEH)) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_iiiii(index,a1,a2,a3,a4) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2,a3,a4);
+  } catch(e) {
+    stackRestore(sp);
+    if (!(e instanceof EmscriptenEH)) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_vi(index,a1) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1);
+  } catch(e) {
+    stackRestore(sp);
+    if (!(e instanceof EmscriptenEH)) throw e;
+    _setThrew(1, 0);
+  }
+}
+
 function invoke_iiii(index,a1,a2,a3) {
   var sp = stackSave();
   try {
@@ -5258,43 +5302,10 @@ function invoke_iii(index,a1,a2) {
   }
 }
 
-function invoke_ii(index,a1) {
+function invoke_viiiii(index,a1,a2,a3,a4,a5) {
   var sp = stackSave();
   try {
-    return getWasmTableEntry(index)(a1);
-  } catch(e) {
-    stackRestore(sp);
-    if (!(e instanceof EmscriptenEH)) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_iid(index,a1,a2) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2);
-  } catch(e) {
-    stackRestore(sp);
-    if (!(e instanceof EmscriptenEH)) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_vii(index,a1,a2) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)(a1,a2);
-  } catch(e) {
-    stackRestore(sp);
-    if (!(e instanceof EmscriptenEH)) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_iiiii(index,a1,a2,a3,a4) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2,a3,a4);
+    getWasmTableEntry(index)(a1,a2,a3,a4,a5);
   } catch(e) {
     stackRestore(sp);
     if (!(e instanceof EmscriptenEH)) throw e;
@@ -5313,32 +5324,10 @@ function invoke_viii(index,a1,a2,a3) {
   }
 }
 
-function invoke_v(index) {
+function invoke_viiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8) {
   var sp = stackSave();
   try {
-    getWasmTableEntry(index)();
-  } catch(e) {
-    stackRestore(sp);
-    if (!(e instanceof EmscriptenEH)) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_vi(index,a1) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)(a1);
-  } catch(e) {
-    stackRestore(sp);
-    if (!(e instanceof EmscriptenEH)) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_iiiiiii(index,a1,a2,a3,a4,a5,a6) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6);
+    getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7,a8);
   } catch(e) {
     stackRestore(sp);
     if (!(e instanceof EmscriptenEH)) throw e;
@@ -5368,6 +5357,28 @@ function invoke_iiiiii(index,a1,a2,a3,a4,a5) {
   }
 }
 
+function invoke_iiiiiii(index,a1,a2,a3,a4,a5,a6) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6);
+  } catch(e) {
+    stackRestore(sp);
+    if (!(e instanceof EmscriptenEH)) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_v(index) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)();
+  } catch(e) {
+    stackRestore(sp);
+    if (!(e instanceof EmscriptenEH)) throw e;
+    _setThrew(1, 0);
+  }
+}
+
 function invoke_iiiiiiii(index,a1,a2,a3,a4,a5,a6,a7) {
   var sp = stackSave();
   try {
@@ -5379,21 +5390,10 @@ function invoke_iiiiiiii(index,a1,a2,a3,a4,a5,a6,a7) {
   }
 }
 
-function invoke_viiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8) {
+function invoke_iid(index,a1,a2) {
   var sp = stackSave();
   try {
-    getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7,a8);
-  } catch(e) {
-    stackRestore(sp);
-    if (!(e instanceof EmscriptenEH)) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_viiiii(index,a1,a2,a3,a4,a5) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)(a1,a2,a3,a4,a5);
+    return getWasmTableEntry(index)(a1,a2);
   } catch(e) {
     stackRestore(sp);
     if (!(e instanceof EmscriptenEH)) throw e;

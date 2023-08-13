@@ -25,6 +25,12 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
                                 (span.end - 1)->text.end);
   }
 
+  std::string match_text() {
+    auto a = span.begin->text.begin;
+    auto b = (span.end - 1)->text.end;
+    return std::string(a, b);
+  }
+
   void debug_dump(std::string& out) {
     out += "[";
     out += match_name;
@@ -52,6 +58,19 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   P* as_a() {
     return dynamic_cast<P*>(this);
   }
+
+  CNode* child(const char* match_name) {
+    for (auto cursor = child_head; cursor; cursor = cursor->node_next) {
+      if (strcmp(match_name, cursor->match_name) == 0) return cursor;
+    }
+    return nullptr;
+  }
+
+  template<typename P>
+  P* child_as(const char* match_name) {
+    return child(match_name)->as_a<P>();
+  }
+
 
   /*
   template <typename P>
@@ -90,7 +109,16 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
 
 //------------------------------------------------------------------------------
 
-struct CNodeClass : public CNode {};
+struct CNodeClass : public CNode {
+  void init(const char* match_name, SpanType span, uint64_t flags) {
+    CNode::init(match_name, span, flags);
+  }
+
+  std::string class_name() {
+    return child("name")->match_text();
+  }
+};
+
 struct CNodeDeclaration : public CNode {};
 struct CNodeEnum : public CNode {};
 struct CNodeFunction : public CNode {};

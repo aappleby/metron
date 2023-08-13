@@ -1083,17 +1083,14 @@ TokenSpan match_template(CContext& ctx, TokenSpan body) {
     Ref<match_keyword<"template">>,
     Cap<"template_params", Ref<match_template_params>, CNode>,
     Oneof<
-      Cap<"templated_class",    Ref<match_class>,    CNode>,
-      Cap<"templated_function", Ref<match_function>, CNode>
+      Cap<"template_class",    Ref<match_class>,    CNodeClass>,
+      Cap<"template_function", Ref<match_function>, CNodeFunction>
     >
   >;
   return pattern::match(ctx, body);
 }
 
 //------------------------------------------------------------------------------
-// FIXME should probably have a few diffeerent versions instead of all the opts
-
-// FIXME enum_simple.h parsing is currently broken
 
 TokenSpan enum_type_adder(CContext& ctx, TokenSpan body) {
   auto tail = match_identifier(ctx, body);
@@ -1135,7 +1132,6 @@ TokenSpan match_enumerator_list(CContext& ctx, TokenSpan body) {
 }
 
 TokenSpan match_enum(CContext& ctx, TokenSpan body) {
-  // clang-format off
   using pattern =
   Seq<
     Ref<match_keyword<"enum">>,

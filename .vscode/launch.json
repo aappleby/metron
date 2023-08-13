@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "Metron",
-      "preLaunchTask": "build_metron",
+      "preLaunchTask": "build_metron_bin",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/bin/metron",

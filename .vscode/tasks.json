@@ -3,7 +3,23 @@
   "tasks": [
     {
       "type": "shell",
-      "label": "build_metron",
+      "label": "build_metron_all",
+      "command": "ninja",
+      "problemMatcher": "$gcc",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "dependsOn":["regen_ninja"],
+      "presentation": {
+        "echo": false,
+        "showReuseMessage": false,
+        "clear": true
+      }
+    },
+    {
+      "type": "shell",
+      "label": "build_metron_bin",
       "command": "ninja",
       "args": [
         //"bin/examples/pinwheel"
@@ -12,7 +28,7 @@
       "problemMatcher": "$gcc",
       "group": {
         "kind": "build",
-        "isDefault": true
+        "isDefault": false
       },
       "dependsOn":["regen_ninja"],
       "presentation": {

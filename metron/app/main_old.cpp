@@ -15,7 +15,7 @@
 
 //------------------------------------------------------------------------------
 
-std::vector<std::string> split_path(const std::string& input) {
+static std::vector<std::string> split_path(const std::string& input) {
   std::vector<std::string> result;
   std::string temp;
 
@@ -33,7 +33,9 @@ std::vector<std::string> split_path(const std::string& input) {
   return result;
 }
 
-std::string join_path(std::vector<std::string>& path) {
+//------------------------------------------------------------------------------
+
+static std::string join_path(std::vector<std::string>& path) {
   std::string result;
   for (auto& s : path) {
     if (result.size()) result += "/";
@@ -44,7 +46,7 @@ std::string join_path(std::vector<std::string>& path) {
 
 //------------------------------------------------------------------------------
 
-void mkdir_all(const std::vector<std::string>& full_path) {
+static void mkdir_all(const std::vector<std::string>& full_path) {
   std::string temp;
   for (size_t i = 0; i < full_path.size(); i++) {
     if (temp.size()) temp += "/";

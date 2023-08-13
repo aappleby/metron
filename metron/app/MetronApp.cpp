@@ -12,11 +12,19 @@
 #include "metron/tracer/MtTracer.h"
 #include "metron/tracer/MtTracer2.h"
 
+#include "metron/parser/CSourceFile.hpp"
+#include "metron/parser/CSourceRepo.hpp"
+#include "metron/parser/CContext.hpp"
+#include "metron/parser/CLexer.hpp"
+#include "metron/parser/CParser.hpp"
+#include "matcheroni/Utilities.hpp"
+
 #include "metrolib/core/Log.h"
 
 #include "CLI11/include/CLI/App.hpp"
 #include "CLI11/include/CLI/Config.hpp"
 #include "CLI11/include/CLI/Formatter.hpp"
+
 
 #include <dirent.h>
 #include <stdio.h>
@@ -68,7 +76,7 @@ void mkdir_all(const std::vector<std::string>& full_path) {
 //------------------------------------------------------------------------------
 
 int main(int argc, char** argv) {
-  TinyLog::get().reset();
+  //TinyLog::get().reset();
 
   const char* banner =
       "                                                        \n"
@@ -89,6 +97,7 @@ int main(int argc, char** argv) {
   bool echo = false;
   bool dump = false;
   bool monochrome = false;
+  bool parse = false;
 
   // clang-format off
   auto src_opt     = app.add_option("-c,--convert",    src_name,     "Full path to source file to translate from C++ to SystemVerilog");
@@ -98,11 +107,15 @@ int main(int argc, char** argv) {
   auto echo_opt    = app.add_flag  ("-e,--echo",       echo,         "Echo the converted source back to the terminal, with color-coding.");
   auto dump_opt    = app.add_flag  ("-d,--dump",       dump,         "Dump the syntax tree of the source file(s) to the console.");
   auto mono_opt    = app.add_flag  ("-m,--monochrome", monochrome,   "Monochrome mode, no color-coding");
+  auto parse_opt   = app.add_flag  ("-p,--parser",     parse,       "Test new parser");
   // clang-format on
 
   src_opt->check(CLI::ExistingFile);
 
   CLI11_PARSE(app, argc, argv);
+
+  //test_include_walker(src_name);
+  //exit(0);
 
   if (quiet) TinyLog::get().mute();
   if (monochrome) TinyLog::get().mono();
@@ -118,6 +131,7 @@ int main(int argc, char** argv) {
   LOG_B("Echo       %d\n", echo);
   LOG_B("Dump       %d\n", dump);
   LOG_B("Monochrome %d\n", monochrome);
+  LOG_B("Parse      %d\n", parse);
   LOG_B("\n");
 
   //----------

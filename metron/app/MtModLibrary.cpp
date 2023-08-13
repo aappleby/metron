@@ -10,8 +10,10 @@
 
 #include "metrolib/core/Log.h"
 
+#include <filesystem>
 #include <sys/stat.h>
 
+namespace fs = std::filesystem;
 
 #pragma warning(disable : 4996) // unsafe fopen
 
@@ -54,90 +56,74 @@ void MtModLibrary::add_source(MtSourceFile *source_file) {
 
 //------------------------------------------------------------------------------
 
-std::vector<std::string> split_path(const std::string& input);
+std::string MtModLibrary::resolve_path(const std::string& filename) {
+  for (auto &path : search_paths) {
+    std::string full_path = path.size() ? path + "/" + filename : filename;
+    if (fs::is_regular_file(full_path)) {
+      return full_path;
+    }
+  }
+
+  return "";
+}
+
+//------------------------------------------------------------------------------
 
 CHECK_RETURN Err MtModLibrary::load_source(const char *filename,
                                            MtSourceFile *&out_source) {
   Err err;
 
-  if (!std::string(filename).ends_with(".h")) {
-    return err << ERR("Source file %s does not end with .h\n", filename);
-  }
-
   if (get_source(filename)) {
     return WARN("Duplicate filename %s\n", filename);
   }
 
-  bool found = false;
-  for (auto &path : search_paths) {
-    auto full_path = path.size() ? path + "/" + filename : filename;
+  std::string full_path = resolve_path(filename);
 
-    struct stat s;
-    auto stat_result = stat(full_path.c_str(), &s);
-    if (stat_result == 0) {
-      found = true;
-      LOG_B("Loading %s from %s\n", filename, full_path.c_str());
-      LOG_INDENT_SCOPE();
-
-      std::string src_blob;
-      src_blob.resize(s.st_size);
-
-      auto f = fopen(full_path.c_str(), "rb");
-      size_t result = fread((void *)src_blob.data(), 1, src_blob.size(), f);
-      fclose(f);
-
-      bool use_utf8_bom = false;
-      if (uint8_t(src_blob[0]) == 239 && uint8_t(src_blob[1]) == 187 &&
-          uint8_t(src_blob[2]) == 191) {
-        use_utf8_bom = true;
-        src_blob.erase(src_blob.begin(), src_blob.begin() + 3);
-      }
-      err << load_blob(filename, full_path, src_blob.data(), src_blob.size(), out_source, use_utf8_bom);
-
-      break;
-    }
+  if (full_path.empty()) {
+    return ERR("Couldn't find %s in path!", filename);
   }
 
-  if (!found) {
-    err << ERR("Couldn't find %s in path!", filename);
+  LOG_B("Loading %s from %s\n", filename, full_path.c_str());
+  LOG_INDENT_SCOPE();
+
+  auto size = fs::file_size(full_path);
+
+  std::string src_blob;
+  src_blob.resize(size);
+
+  auto f = fopen(full_path.c_str(), "rb");
+  size_t result = fread((void *)src_blob.data(), 1, src_blob.size(), f);
+  fclose(f);
+
+  bool use_utf8_bom = false;
+  if (uint8_t(src_blob[0]) == 239 &&
+      uint8_t(src_blob[1]) == 187 &&
+      uint8_t(src_blob[2]) == 191) {
+    use_utf8_bom = true;
+    src_blob.erase(src_blob.begin(), src_blob.begin() + 3);
   }
+
+  auto source_file = new MtSourceFile();
+  err << source_file->init(this, filename, full_path, src_blob, use_utf8_bom);
+  add_source(source_file);
+
+  // Recurse through #includes
+  err << load_includes(source_file);
+
+  out_source = source_file;
+
 
   return err;
 }
 
 //------------------------------------------------------------------------------
+// Recurse through #includes
 
-CHECK_RETURN Err MtModLibrary::load_blob(const std::string &filename,
-                                         const std::string &full_path,
-                                         void* src_blob,
-                                         int src_len,
-                                         MtSourceFile*& out_source,
-                                         bool use_utf8_bom) {
+CHECK_RETURN Err MtModLibrary::load_includes(MtSourceFile* source_file) {
   Err err;
-
-  auto source_file = new MtSourceFile();
-  err << source_file->init(this, filename, full_path, src_blob, src_len);
-  source_file->use_utf8_bom = use_utf8_bom;
-  add_source(source_file);
-
-  // Recurse through #includes
-
   std::vector<std::string> includes;
 
-  bool noconvert = false;
-  bool dumpit = false;
-
   source_file->root_node.visit_tree([&](MnNode child) {
-    if (child.sym == sym_comment && child.contains("metron_noconvert")) {
-      noconvert = true;
-      return;
-    }
-
-    if (noconvert) {
-      noconvert = false;
-      return;
-    }
-
     if (child.sym != sym_preproc_include) return;
 
     std::string filename = child.get_field(field_path).text();
@@ -156,8 +142,6 @@ CHECK_RETURN Err MtModLibrary::load_blob(const std::string &filename,
 
     source_file->src_includes.push_back(get_source(file));
   }
-
-  out_source = source_file;
 
   return err;
 }

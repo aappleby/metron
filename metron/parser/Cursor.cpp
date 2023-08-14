@@ -258,6 +258,26 @@ CHECK_RETURN Err Cursor::emit_print(const char* fmt, ...) {
   return err;
 }
 
+//----------------------------------------
+
+CHECK_RETURN Err Cursor::emit_string(const std::string_view& s) {
+  Err err;
+  for (auto c : s) {
+    err << emit_char(c, 0x80FF80);
+  }
+  return err;
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err Cursor::emit_replacement(CNode* n, const std::string& s) {
+  Err err = check_at(n);
+  for (auto c : s) {
+    err << emit_char(c, 0x80FFFF);
+  }
+  text_cursor = n->text_end();
+  return err;
+}
 
 //------------------------------------------------------------------------------
 

@@ -3,6 +3,17 @@
 #include "CNode.hpp"
 #include "Cursor.hpp"
 
+#include <assert.h>
+
+inline void replace(std::string& s, const std::string& a, const std::string& b) {
+  auto i = s.find(a);
+  if (i == std::string::npos) {
+    assert(false);
+    return;
+  }
+  s.replace(i, a.size(), b);
+}
+
 //------------------------------------------------------------------------------
 
 struct CNodeClass : public CNode {
@@ -32,7 +43,6 @@ struct CNodeNamespace : public CNode {};
 //------------------------------------------------------------------------------
 
 /*
-
 CHECK_RETURN Err MtCursor::emit_sym_preproc_include(MnNode n) {
   Err err = check_at(sym_preproc_include, n);
 
@@ -133,9 +143,10 @@ struct CNodePreproc : public CNode {
       err << cursor.emit_span(s.begin, s.end);
     }
     else if (starts_with("#include")) {
-      err << cursor.emit_print("`include");
-      auto s = as_text_span().advance(strlen("#include"));
-      err << cursor.emit_span(s.begin, s.end);
+      auto s = as_string();
+      replace(s, "#include", "`include");
+      replace(s, ".h", ".sv");
+      err << cursor.emit_replacement(this, s);
     }
     else if (starts_with("#endif")) {
       err << cursor.emit_print("`endif");
@@ -187,17 +198,14 @@ struct CNodeTemplate : public CNode {
   virtual Err emit(Cursor& cursor) {
     Err err = cursor.check_at(this);
 
-    //std::string class_name = node_class.get_field(field_name).text();
-    //current_mod.push(lib->get_module(class_name));
-
-    auto class_node = child("template_class");
 
     // Template params have to go _inside_ the class definition in Verilog, so
     // we skip them here.
-    cursor.text_cursor = class_node->text_begin();
+    auto class_node = child("template_class");
+    err << cursor.skip_span(cursor.text_cursor, class_node->text_begin());
     err << class_node->emit(cursor);
 
-    cursor.text_cursor = text_end();
+    err << cursor.skip_span(cursor.text_cursor, text_end());
     //err << emit_rest(cursor);
 
     //cursor.current_mod.pop();
@@ -212,9 +220,7 @@ struct CNodeUnion : public CNode {};
 
 struct CNodeTranslationUnit : public CNode {
   virtual Err emit(Cursor& cursor) {
-    Err err = cursor.check_at(this);
-    err << emit_children(cursor);
-    return err << cursor.check_done(this);
+    return emit_default(cursor);
   }
 };
 

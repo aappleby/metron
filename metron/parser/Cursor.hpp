@@ -5,6 +5,7 @@
 #include <vector>
 #include <functional>
 #include <string>
+#include <string_view>
 
 #include "CSourceRepo.hpp"
 #include "CSourceFile.hpp"
@@ -38,6 +39,44 @@ struct Cursor {
   CHECK_RETURN Err emit_vprint(const char* fmt, va_list args);
   CHECK_RETURN Err emit_line(const char* fmt, ...);
   CHECK_RETURN Err emit_print(const char* fmt, ...);
+  CHECK_RETURN Err emit_string(const std::string_view& s);
+  CHECK_RETURN Err emit_replacement(CNode* n, const std::string& s);
+
+#if 0
+
+  void blah() {
+    emit_replacements(this, "#include", "`include", ".h", ".sv");
+  }
+
+  CHECK_RETURN Err emit_replacement(std::string_view text, std::string_view s_old, std::string_view s_new) {
+    while (text.size()) {
+      if (text.starts_with(s_old)) {
+        for (auto c : s_new) err << emit_char(c, 0x80FF80);
+        text.remove_prefix(s_old.size());
+        continue;
+      }
+
+      err << emit_replacement_step(text);
+    }
+  }
+
+  CHECK_RETURN Err emit_replacement_step(std::string_view& text, std::string_view s_old, std::string_view s_new) {
+    Err err;
+    if (text.starts_with(s_old)) {
+      for (auto c : s_new) err << emit_char(c, 0x80FF80);
+      text.remove_prefix(s_old.size());
+    }
+    return err;
+  }
+
+  CHECK_RETURN Err emit_replacement(std::string_view& text) {
+    Err err;
+    err << emit_char(text[0]);
+    text.remove_prefix(1);
+    return err;
+  }
+
+#endif
 
   //----------------------------------------
   // Top-level emit function

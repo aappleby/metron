@@ -10,6 +10,7 @@
 #include <cstddef>  // for size_t
 #include <string>
 #include <typeinfo>
+#include <string_view>
 
 struct Cursor;
 
@@ -39,6 +40,10 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
     return std::string(text_begin(), text_end());
   }
 
+  std::string_view as_string_view() {
+    return std::string_view(text_begin(), text_end());
+  }
+
   void debug_dump(std::string& out) {
     out += "[";
     out += match_name;
@@ -56,16 +61,7 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   }
 
   bool starts_with(const char* lit) {
-    auto s = as_text_span();
-
-    while (1) {
-      auto ca = s.begin == s.end ? 0 : *s.begin;
-      auto cb = *lit;
-      if (cb == 0)  return true;
-      if (ca != cb) return false;
-      s.begin++;
-      lit++;
-    }
+    return as_string_view().starts_with(lit);
   }
 
   //----------------------------------------
@@ -95,6 +91,8 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   //----------------------------------------
 
   CHECK_RETURN virtual Err emit(Cursor& c);
+
+  CHECK_RETURN Err emit_default(Cursor& cursor);
 
   CHECK_RETURN Err emit_children(Cursor& cursor);
 

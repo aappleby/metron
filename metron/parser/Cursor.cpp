@@ -2,10 +2,10 @@
 
 #include "metrolib/core/Log.h"
 
-Cursor::Cursor(CSourceRepo* repo, CSourceFile* source, std::string* out) {
+Cursor::Cursor(CSourceRepo* repo, CSourceFile* source, std::string* str_out) {
   this->repo = repo;
   this->source_file = source;
-  this->out = out;
+  this->str_out = str_out;
 }
 
 //------------------------------------------------------------------------------
@@ -57,12 +57,12 @@ void Cursor::pop_indent(MnNode class_body) { indent.pop(); }
 CHECK_RETURN Err Cursor::check_at(CNode* n) {
   Err err;
 
-  if (cursor != n->text_begin()) {
+  if (text_cursor != n->text_begin()) {
     char buf1[10];
     char buf2[10];
     memcpy(buf1, n->text_begin(), 9);
     buf1[9] = 0;
-    memcpy(buf2, cursor, 9);
+    memcpy(buf2, text_cursor, 9);
     buf2[9] = 0;
 
     err << ERR("check_at - bad cursor\nwant @%10s@\ngot  @%10s@\n", buf1, buf2);
@@ -76,11 +76,13 @@ CHECK_RETURN Err Cursor::check_at(CNode* n) {
 CHECK_RETURN Err Cursor::check_done(CNode* n) {
   Err err;
 
-  if (cursor < n->text_end()) {
+  auto text_end = n->text_end();
+
+  if (text_cursor < text_end) {
     err << ERR("Cursor was left inside the current node\n");
   }
 
-  if (cursor > n->text_end()) {
+  if (text_cursor > text_end) {
     //n.dump_tree();
     err << ERR("Cursor was left past the end of the current node\n");
   }
@@ -183,12 +185,23 @@ CHECK_RETURN Err Cursor::skip_char(char c) {
 
 //----------------------------------------
 
+CHECK_RETURN Err Cursor::emit_to(const char* b) {
+  Err err;
+  for (auto c = text_cursor; c < b; c++) {
+    err << emit_char(*c);
+  }
+  text_cursor = b;
+  return err;
+}
+
+//----------------------------------------
+
 CHECK_RETURN Err Cursor::emit_span(const char* a, const char* b) {
   Err err;
   for (auto c = a; c < b; c++) {
     err << emit_char(*c);
   }
-  cursor = b;
+  text_cursor = b;
   return err;
 }
 
@@ -199,7 +212,7 @@ CHECK_RETURN Err Cursor::skip_span(const char* a, const char* b) {
   for (auto c = a; c < b; c++) {
     err << skip_char(*c);
   }
-  cursor = b;
+  text_cursor = b;
   line_elided = true;
   return err;
 }
@@ -251,10 +264,127 @@ CHECK_RETURN Err Cursor::emit_print(const char* fmt, ...) {
 CHECK_RETURN Err Cursor::emit_everything() {
   Err err;
 
-  cursor = source_file->source_code.data();
+  text_cursor = source_file->source_code.data();
   err << emit_dispatch(source_file->context.root_node);
 
   return err;
+}
+
+//------------------------------------------------------------------------------
+// Emit all whitespace and comments between node A and D. Error if we see
+// anything that isn't comment or whitespace.
+
+CHECK_RETURN Err Cursor::emit_gap(CNode* a, CNode* b) {
+  Err err;
+  if (text_cursor != a->text_end()) {
+    err << ERR("skip_gap() - Did not start on a.end()");
+    return err;
+  }
+
+  if (a->node_next != b) return ERR("a->node_next != b");
+  if (b->node_prev != a) return ERR("b->node_prev != a");
+
+  err << emit_span(a->text_end(), b->text_begin());
+
+  return err;
+
+  /*
+  Err err;
+  if (cursor != a.end()) {
+    err << ERR("emit_gap() - Did not start on a.end()");
+    return err;
+  }
+
+  auto source = a.source->source;
+  auto pair_lhs = a.node;
+  auto pair_rhs = ts_node_next_sibling(a.node);
+
+  while(1) {
+    err << emit_span(
+      &source[ts_node_end_byte(pair_lhs)],
+      &source[ts_node_start_byte(pair_rhs)]
+    );
+
+    pair_lhs = pair_rhs;
+    pair_rhs = ts_node_next_sibling(pair_rhs);
+
+    if (ts_node_eq(pair_lhs, d.node)) {
+      break;
+    }
+    else if (ts_node_symbol(pair_lhs) != sym_comment) {
+      err << ERR("Non-comment found in gap between nodes");
+      return err;
+    }
+    else {
+      err << emit_span(
+        &source[ts_node_start_byte(pair_lhs)],
+        &source[ts_node_end_byte(pair_lhs)]
+      );
+    }
+  }
+
+  if (cursor != d.start()) {
+    err << ERR("emit_gap() - Did not end on d.end()");
+    return err;
+  }
+  return err;
+  */
+}
+
+//----------------------------------------
+// Skip all whitespace and comments between node A and B. Error if we see
+// anything that isn't comment or whitespace.
+
+CHECK_RETURN Err Cursor::skip_gap(CNode* a, CNode* b) {
+  Err err;
+  if (text_cursor != a->text_end()) {
+    err << ERR("skip_gap() - Did not start on a.end()");
+    return err;
+  }
+
+  if (a->node_next != b) return ERR("a->node_next != b");
+  if (b->node_prev != a) return ERR("b->node_prev != a");
+
+  text_cursor = b->text_begin();
+
+  return err;
+
+  /*
+  auto source = a.source->source;
+  auto pair_lhs = a.node;
+  auto pair_rhs = ts_node_next_sibling(a.node);
+
+  while(1) {
+    err << skip_span(
+      &source[ts_node_end_byte(pair_lhs)],
+      &source[ts_node_start_byte(pair_rhs)]
+    );
+
+    pair_lhs = pair_rhs;
+    pair_rhs = ts_node_next_sibling(pair_rhs);
+
+    if (ts_node_eq(pair_lhs, d.node)) {
+      break;
+    }
+    else if (ts_node_symbol(pair_lhs) != sym_comment) {
+      err << ERR("Non-comment found in gap between nodes");
+      return err;
+    }
+    else {
+      err << skip_span(
+        &source[ts_node_start_byte(pair_lhs)],
+        &source[ts_node_end_byte(pair_lhs)]
+      );
+    }
+  }
+
+  if (cursor != d.start()) {
+    err << ERR("skip_gap() - Did not end on d.end()");
+    return err;
+  }
+
+  return err;
+  */
 }
 
 //------------------------------------------------------------------------------

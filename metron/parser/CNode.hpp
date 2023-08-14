@@ -55,6 +55,19 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
     out += "]";
   }
 
+  bool starts_with(const char* lit) {
+    auto s = as_text_span();
+
+    while (1) {
+      auto ca = s.begin == s.end ? 0 : *s.begin;
+      auto cb = *lit;
+      if (cb == 0)  return true;
+      if (ca != cb) return false;
+      s.begin++;
+      lit++;
+    }
+  }
+
   //----------------------------------------
 
   template <typename P>
@@ -82,6 +95,10 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   //----------------------------------------
 
   CHECK_RETURN virtual Err emit(Cursor& c);
+
+  CHECK_RETURN Err emit_children(Cursor& cursor);
+
+  CHECK_RETURN Err emit_rest(Cursor& cursor);
 
   //----------------------------------------
 

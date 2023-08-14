@@ -32,6 +32,7 @@ struct Cursor {
   CHECK_RETURN Err emit_indent();
   CHECK_RETURN Err emit_char(char c, uint32_t color = 0);
   CHECK_RETURN Err skip_char(char c);
+  CHECK_RETURN Err emit_to(const char* b);
   CHECK_RETURN Err emit_span(const char* a, const char* b);
   CHECK_RETURN Err skip_span(const char* a, const char* b);
   CHECK_RETURN Err emit_vprint(const char* fmt, va_list args);
@@ -43,20 +44,32 @@ struct Cursor {
 
   CHECK_RETURN Err emit_everything();
 
+  CHECK_RETURN Err emit_gap(CNode* a, CNode* b);
+  CHECK_RETURN Err skip_gap(CNode* a, CNode* b);
   CHECK_RETURN Err emit_dispatch(CNode* node);
+
+  CHECK_RETURN Err emit_trailing_whitespace() {
+    Err err;
+    auto& text = source_file->source_code;
+    auto source_span = matcheroni::utils::to_span(text);
+    while(text_cursor < source_span.end) {
+      err << emit_char(*text_cursor++);
+    }
+    return err;
+  }
 
   //----------------------------------------
 
-  const char* cursor = nullptr;
+  const char* text_cursor = nullptr;
   std::stack<const char*> cursor_stack;
 
   void push_cursor(const char* new_cursor) {
-    cursor_stack.push(cursor);
-    cursor = new_cursor;
+    cursor_stack.push(text_cursor);
+    text_cursor = new_cursor;
   }
 
   void pop_cursor() {
-    cursor = cursor_stack.top();
+    text_cursor = cursor_stack.top();
     cursor_stack.pop();
   }
 
@@ -64,7 +77,6 @@ struct Cursor {
 
   CSourceRepo* repo = nullptr;
   CSourceFile* source_file = nullptr;
-  std::string* out = nullptr;
 
   //----------------------------------------
 

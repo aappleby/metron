@@ -8,7 +8,7 @@
       "problemMatcher": "$gcc",
       "group": {
         "kind": "build",
-        "isDefault": true
+        "isDefault": false
       },
       "dependsOn":["regen_ninja"],
       "presentation": {
@@ -28,7 +28,7 @@
       "problemMatcher": "$gcc",
       "group": {
         "kind": "build",
-        "isDefault": false
+        "isDefault": true
       },
       "dependsOn":["regen_ninja"],
       "presentation": {

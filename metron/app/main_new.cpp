@@ -106,11 +106,14 @@ int main_new(Options opts) {
 
   std::string out_string;
 
+  LOG("out_string at %p\n", &out_string);
+
   Cursor cursor(&repo, root_file, &out_string);
   cursor.echo = opts.echo && !opts.quiet;
 
-  if (opts.echo) LOG_G("----------------------------------------\n\n");
+  if (opts.echo) LOG_G("\n----------------------------------------\n");
   err << cursor.emit_everything();
+  err << cursor.emit_trailing_whitespace();
   if (opts.echo) LOG_G("----------------------------------------\n\n");
 
   if (err.has_err()) {

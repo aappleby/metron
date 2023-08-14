@@ -20,6 +20,11 @@ struct Cursor {
 
   //----------------------------------------
 
+  CHECK_RETURN Err check_at(CNode* n);
+  CHECK_RETURN Err check_done(CNode* n);
+
+  //----------------------------------------
+
   //void push_indent(MnNode n);
   //void pop_indent(MnNode n);
   CHECK_RETURN Err start_line();
@@ -37,6 +42,8 @@ struct Cursor {
   // Top-level emit function
 
   CHECK_RETURN Err emit_everything();
+
+  CHECK_RETURN Err emit_dispatch(CNode* node);
 
   //----------------------------------------
 
@@ -56,7 +63,7 @@ struct Cursor {
   //----------------------------------------
 
   CSourceRepo* repo = nullptr;
-  CSourceFile* source = nullptr;
+  CSourceFile* source_file = nullptr;
   std::string* out = nullptr;
 
   //----------------------------------------

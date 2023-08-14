@@ -1,8 +1,9 @@
 // SPDX-FileCopyrightText:  2023 Austin Appleby <aappleby@gmail.com>
 // SPDX-License-Identifier: MIT License
 
-#include "metrolib/core/Log.h"
+#include "CParser.hpp"
 
+#include "metrolib/core/Log.h"
 #include "matcheroni/Matcheroni.hpp"
 #include "matcheroni/Parseroni.hpp"
 #include "matcheroni/Utilities.hpp"
@@ -20,6 +21,8 @@
 
 using namespace matcheroni;
 using namespace parseroni;
+
+//------------------------------------------------------------------------------
 
 TokenSpan match_access_specifier   (CContext& ctx, TokenSpan body);
 TokenSpan match_class              (CContext& ctx, TokenSpan body);
@@ -1576,7 +1579,7 @@ TokenSpan match_translation_unit(CContext& ctx, TokenSpan body) {
   >;
   // clang-format on
 
-  return Cap<"translation_unit", pattern, CNode>::match(ctx, body);
+  return Cap<"translation_unit", pattern, CNodeTranslationUnit>::match(ctx, body);
 }
 
 //------------------------------------------------------------------------------

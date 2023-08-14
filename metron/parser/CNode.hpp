@@ -3,12 +3,15 @@
 
 #pragma once
 
+#include "CToken.hpp"
+#include "matcheroni/Parseroni.hpp"
+#include "metrolib/core/Err.h"
+#include "metrolib/core/Platform.h"
 #include <cstddef>  // for size_t
 #include <string>
 #include <typeinfo>
 
-#include "CToken.hpp"
-#include "matcheroni/Parseroni.hpp"
+struct Cursor;
 
 typedef matcheroni::Span<CToken> TokenSpan;
 
@@ -20,15 +23,20 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   using AtomType = CToken;
   using SpanType = matcheroni::Span<CToken>;
 
-  matcheroni::TextSpan as_text() const {
-    return matcheroni::TextSpan(span.begin->text.begin,
-                                (span.end - 1)->text.end);
+  const char* text_begin() const {
+    return span.begin->text.begin;
   }
 
-  std::string match_text() {
-    auto a = span.begin->text.begin;
-    auto b = (span.end - 1)->text.end;
-    return std::string(a, b);
+  const char* text_end() const {
+    return (span.end - 1)->text.end;
+  }
+
+  matcheroni::TextSpan as_text_span() const {
+    return matcheroni::TextSpan(text_begin(), text_end());
+  }
+
+  std::string as_string() {
+    return std::string(text_begin(), text_end());
   }
 
   void debug_dump(std::string& out) {
@@ -41,7 +49,7 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
       }
     } else {
       out += '`';
-      out += std::string(span.begin->text.begin, (span.end - 1)->text.end);
+      out += as_string();
       out += '`';
     }
     out += "]";
@@ -71,6 +79,11 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
     return child(match_name)->as_a<P>();
   }
 
+  //----------------------------------------
+
+  CHECK_RETURN virtual Err emit(Cursor& c);
+
+  //----------------------------------------
 
   /*
   template <typename P>
@@ -106,27 +119,5 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   // -2 = prefix, -1 = right-to-left, 0 = none, 1 = left-to-right, 2 = suffix
   int assoc = 0;
 };
-
-//------------------------------------------------------------------------------
-
-struct CNodeClass : public CNode {
-  void init(const char* match_name, SpanType span, uint64_t flags) {
-    CNode::init(match_name, span, flags);
-  }
-
-  std::string class_name() {
-    return child("name")->match_text();
-  }
-};
-
-struct CNodeDeclaration : public CNode {};
-struct CNodeEnum : public CNode {};
-struct CNodeFunction : public CNode {};
-struct CNodeNamespace : public CNode {};
-struct CNodePreproc : public CNode {};
-struct CNodeStruct : public CNode {};
-struct CNodeTemplate : public CNode {};
-struct CNodeTypedef : public CNode {};
-struct CNodeUnion : public CNode {};
 
 //------------------------------------------------------------------------------

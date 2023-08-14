@@ -4,7 +4,7 @@
 
 Cursor::Cursor(CSourceRepo* repo, CSourceFile* source, std::string* out) {
   this->repo = repo;
-  this->source = source;
+  this->source_file = source;
   this->out = out;
 }
 
@@ -51,6 +51,42 @@ void Cursor::push_indent(MnNode body) {
 
 void Cursor::pop_indent(MnNode class_body) { indent.pop(); }
 */
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err Cursor::check_at(CNode* n) {
+  Err err;
+
+  if (cursor != n->text_begin()) {
+    char buf1[10];
+    char buf2[10];
+    memcpy(buf1, n->text_begin(), 9);
+    buf1[9] = 0;
+    memcpy(buf2, cursor, 9);
+    buf2[9] = 0;
+
+    err << ERR("check_at - bad cursor\nwant @%10s@\ngot  @%10s@\n", buf1, buf2);
+  }
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err Cursor::check_done(CNode* n) {
+  Err err;
+
+  if (cursor < n->text_end()) {
+    err << ERR("Cursor was left inside the current node\n");
+  }
+
+  if (cursor > n->text_end()) {
+    //n.dump_tree();
+    err << ERR("Cursor was left past the end of the current node\n");
+  }
+
+  return err;
+}
 
 //------------------------------------------------------------------------------
 // Generic emit() methods
@@ -212,8 +248,47 @@ CHECK_RETURN Err Cursor::emit_print(const char* fmt, ...) {
 
 //------------------------------------------------------------------------------
 
-Err Cursor::emit_everything() {
+CHECK_RETURN Err Cursor::emit_everything() {
+  Err err;
+
+  cursor = source_file->source_code.data();
+  err << emit_dispatch(source_file->context.root_node);
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err Cursor::emit_dispatch(CNode* node) {
+
+  return node->emit(*this);
+
+  /*
+  Err err = check_at(n);
+
+  if (auto it = emit_sym_map.find(n.sym); it != emit_sym_map.end()) {
+    err << check_at(n);
+    err << it->second(this, n);
+    err << check_done(n);
+  }
+  else if (!n.is_named()) {
+    if (auto it = token_map.top().find(n.text()); it != token_map.top().end()) {
+      err << emit_replacement(n, (*it).second.c_str());
+    }
+    else {
+      err << emit_text(n);
+    }
+  }
+  else {
+    // KCOV_OFF
+    err << ERR("%s : No handler for %s\n", __func__, n.ts_node_type());
+    n.error();
+    // KCOV_ON
+  }
+
+  return err << check_done(n);
   return Err();
+  */
 }
 
 //------------------------------------------------------------------------------

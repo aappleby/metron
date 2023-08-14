@@ -4,6 +4,8 @@
 
 #include "metron/parser/CSourceFile.hpp"
 #include "metron/parser/CSourceRepo.hpp"
+#include "metron/parser/CParser.hpp"
+#include "metron/parser/Cursor.hpp"
 
 #include "matcheroni/Utilities.hpp"
 
@@ -103,8 +105,8 @@ int main_new(Options opts) {
   LOG_G("Converting %s to SystemVerilog\n", opts.src_name.c_str());
 
   std::string out_string;
-  /*
-  MtCursor cursor(&lib, source, nullptr, &out_string);
+
+  Cursor cursor(&repo, root_file, &out_string);
   cursor.echo = opts.echo && !opts.quiet;
 
   if (opts.echo) LOG_G("----------------------------------------\n\n");
@@ -113,10 +115,9 @@ int main_new(Options opts) {
 
   if (err.has_err()) {
     LOG_R("Error during code generation\n");
-    lib.teardown();
+    //lib.teardown();
     return -1;
   }
-  */
 
 
 

@@ -145,6 +145,71 @@ CHECK_RETURN Err Cursor::skip_char(char c) {
   return err;
 }
 
+//----------------------------------------
+
+CHECK_RETURN Err Cursor::emit_span(const char* a, const char* b) {
+  Err err;
+  for (auto c = a; c < b; c++) {
+    err << emit_char(*c);
+  }
+  cursor = b;
+  return err;
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err Cursor::skip_span(const char* a, const char* b) {
+  Err err;
+  for (auto c = a; c < b; c++) {
+    err << skip_char(*c);
+  }
+  cursor = b;
+  line_elided = true;
+  return err;
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err Cursor::emit_vprint(const char* fmt, va_list args) {
+  Err err;
+
+  va_list args2;
+  va_copy(args2, args);
+  int size = vsnprintf(nullptr, 0, fmt, args2);
+  va_end(args2);
+
+  auto buf = new char[size + 1];
+  vsnprintf(buf, size_t(size) + 1, fmt, args);
+  va_end(args);
+
+  for (int i = 0; i < size; i++) {
+    err << emit_char(buf[i], 0x80FF80);
+  }
+  delete[] buf;
+  return err;
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err Cursor::emit_line(const char* fmt, ...) {
+  Err err = start_line();
+  va_list args;
+  va_start(args, fmt);
+  err << emit_vprint(fmt, args);
+  return err;
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err Cursor::emit_print(const char* fmt, ...) {
+  Err err;
+  va_list args;
+  va_start(args, fmt);
+  err << emit_vprint(fmt, args);
+  return err;
+}
+
+
 //------------------------------------------------------------------------------
 
 Err Cursor::emit_everything() {

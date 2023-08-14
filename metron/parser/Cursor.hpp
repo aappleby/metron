@@ -27,9 +27,31 @@ struct Cursor {
   CHECK_RETURN Err emit_indent();
   CHECK_RETURN Err emit_char(char c, uint32_t color = 0);
   CHECK_RETURN Err skip_char(char c);
+  CHECK_RETURN Err emit_span(const char* a, const char* b);
+  CHECK_RETURN Err skip_span(const char* a, const char* b);
+  CHECK_RETURN Err emit_vprint(const char* fmt, va_list args);
+  CHECK_RETURN Err emit_line(const char* fmt, ...);
+  CHECK_RETURN Err emit_print(const char* fmt, ...);
 
+  //----------------------------------------
   // Top-level emit function
+
   CHECK_RETURN Err emit_everything();
+
+  //----------------------------------------
+
+  const char* cursor = nullptr;
+  std::stack<const char*> cursor_stack;
+
+  void push_cursor(const char* new_cursor) {
+    cursor_stack.push(cursor);
+    cursor = new_cursor;
+  }
+
+  void pop_cursor() {
+    cursor = cursor_stack.top();
+    cursor_stack.pop();
+  }
 
   //----------------------------------------
 

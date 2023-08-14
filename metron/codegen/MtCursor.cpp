@@ -216,8 +216,46 @@ void MtCursor::push_indent(MnNode body) {
 
 void MtCursor::pop_indent(MnNode class_body) { indent.pop(); }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //------------------------------------------------------------------------------
 // Generic emit() methods
+
+CHECK_RETURN Err MtCursor::start_line() {
+  Err err;
+  if (line_dirty) {
+    err << emit_char('\n');
+    err << emit_indent();
+  }
+  return err;
+}
+
+//----------------------------------------
 
 CHECK_RETURN Err MtCursor::emit_backspace() {
   Err err;
@@ -240,16 +278,173 @@ CHECK_RETURN Err MtCursor::emit_indent() {
 
 //----------------------------------------
 
-CHECK_RETURN Err MtCursor::start_line() {
+CHECK_RETURN Err MtCursor::emit_char(char c, uint32_t color) {
   Err err;
-  if (line_dirty) {
-    err << emit_char('\n');
-    err << emit_indent();
+  // We ditch all '\r'.
+  if (c == '\r') return err;
+
+  if (c < 0 || !isspace(c)) {
+    line_dirty = true;
+  }
+
+  if (c == '\n') {
+    // Strip trailing whitespace
+    while (str_out->size() && str_out->back() == ' ') {
+      err << emit_backspace();
+    }
+
+    // Discard the line if it contained only whitespace after elisions
+    if (!line_dirty && line_elided) {
+      if (echo) {
+        LOG_C(0xFF8080, " (Line elided)");
+      }
+      while (str_out->size() && str_out->back() != '\n') {
+        str_out->pop_back();
+      }
+    } else {
+      if (echo) {
+        LOG_C(0xFFFFFF, "\\n");
+      }
+      str_out->push_back(c);
+    }
+
+    line_dirty = false;
+    line_elided = false;
+  } else {
+    str_out->push_back(c);
+  }
+
+  if (echo) {
+    auto d = c;
+    if (color && d == ' ') d = '_';
+    LOG_C(color, "%c", d);
+  }
+
+  at_newline = c == '\n';
+  at_comma = c == ',';
+  return err;
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err MtCursor::skip_char(char c) {
+  Err err;
+  if (echo) {
+    if (c == ' ') c = '_';
+    LOG_C(0x8080FF, "%c", c);
   }
   return err;
 }
 
 //----------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_span(const char* a, const char* b) {
+  Err err;
+  for (auto c = a; c < b; c++) {
+    err << emit_char(*c);
+  }
+  cursor = b;
+  return err;
+}
+
+CHECK_RETURN Err MtCursor::skip_span(const char* a, const char* b) {
+  Err err;
+  for (auto c = a; c < b; c++) {
+    err << skip_char(*c);
+  }
+  cursor = b;
+  line_elided = true;
+  return err;
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_vprint(const char* fmt, va_list args) {
+  Err err;
+
+  va_list args2;
+  va_copy(args2, args);
+  int size = vsnprintf(nullptr, 0, fmt, args2);
+  va_end(args2);
+
+  auto buf = new char[size + 1];
+  vsnprintf(buf, size_t(size) + 1, fmt, args);
+  va_end(args);
+
+  for (int i = 0; i < size; i++) {
+    err << emit_char(buf[i], 0x80FF80);
+  }
+  delete[] buf;
+  return err;
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_line(const char* fmt, ...) {
+  Err err = start_line();
+  va_list args;
+  va_start(args, fmt);
+  err << emit_vprint(fmt, args);
+  return err;
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_print(const char* fmt, ...) {
+  Err err;
+  va_list args;
+  va_start(args, fmt);
+  err << emit_vprint(fmt, args);
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//------------------------------------------------------------------------------
 // Emit all whitespace and comments between node A and D. Error if we see
 // anything that isn't comment or whitespace.
 
@@ -440,65 +635,6 @@ CHECK_RETURN Err MtCursor::skip_tail(MnNode a, MnNode p) {
   return err;
 }
 
-//----------------------------------------
-
-CHECK_RETURN Err MtCursor::emit_char(char c, uint32_t color) {
-  Err err;
-  // We ditch all '\r'.
-  if (c == '\r') return err;
-
-  if (c < 0 || !isspace(c)) {
-    line_dirty = true;
-  }
-
-  if (c == '\n') {
-    // Strip trailing whitespace
-    while (str_out->size() && str_out->back() == ' ') {
-      err << emit_backspace();
-    }
-
-    // Discard the line if it contained only whitespace after elisions
-    if (!line_dirty && line_elided) {
-      if (echo) {
-        LOG_C(0xFF8080, " (Line elided)");
-      }
-      while (str_out->size() && str_out->back() != '\n') {
-        str_out->pop_back();
-      }
-    } else {
-      if (echo) {
-        LOG_C(0xFFFFFF, "\\n");
-      }
-      str_out->push_back(c);
-    }
-
-    line_dirty = false;
-    line_elided = false;
-  } else {
-    str_out->push_back(c);
-  }
-
-  if (echo) {
-    auto d = c;
-    if (color && d == ' ') d = '_';
-    LOG_C(color, "%c", d);
-  }
-
-  at_newline = c == '\n';
-  at_comma = c == ',';
-  return err;
-}
-
-//----------------------------------------
-
-CHECK_RETURN Err MtCursor::skip_char(char c) {
-  Err err;
-  if (echo) {
-    if (c == ' ') c = '_';
-    LOG_C(0x8080FF, "%c", c);
-  }
-  return err;
-}
 
 //----------------------------------------
 
@@ -618,74 +754,12 @@ CHECK_RETURN Err MtCursor::comment_out(MnNode n) {
 
 //----------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_span(const char* a, const char* b) {
-  Err err;
-  for (auto c = a; c < b; c++) {
-    err << emit_char(*c);
-  }
-  cursor = b;
-  return err;
-}
-
-CHECK_RETURN Err MtCursor::skip_span(const char* a, const char* b) {
-  Err err;
-  for (auto c = a; c < b; c++) {
-    err << skip_char(*c);
-  }
-  cursor = b;
-  line_elided = true;
-  return err;
-}
-
-//----------------------------------------
-
 CHECK_RETURN Err MtCursor::emit_text(MnNode n) {
   Err err = check_at(n);
 
   err << emit_span(n.start(), n.end());
 
   return err << check_done(n);
-}
-
-//----------------------------------------
-
-CHECK_RETURN Err MtCursor::emit_vprint(const char* fmt, va_list args) {
-  Err err;
-
-  va_list args2;
-  va_copy(args2, args);
-  int size = vsnprintf(nullptr, 0, fmt, args2);
-  va_end(args2);
-
-  auto buf = new char[size + 1];
-  vsnprintf(buf, size_t(size) + 1, fmt, args);
-  va_end(args);
-
-  for (int i = 0; i < size; i++) {
-    err << emit_char(buf[i], 0x80FF80);
-  }
-  delete[] buf;
-  return err;
-}
-
-//----------------------------------------
-
-CHECK_RETURN Err MtCursor::emit_line(const char* fmt, ...) {
-  Err err = start_line();
-  va_list args;
-  va_start(args, fmt);
-  err << emit_vprint(fmt, args);
-  return err;
-}
-
-//----------------------------------------
-
-CHECK_RETURN Err MtCursor::emit_print(const char* fmt, ...) {
-  Err err;
-  va_list args;
-  va_start(args, fmt);
-  err << emit_vprint(fmt, args);
-  return err;
 }
 
 //----------------------------------------

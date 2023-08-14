@@ -38,9 +38,23 @@ struct MtCursor {
   // Indentation
   void push_indent(MnNode n);
   void pop_indent(MnNode n);
+
+  // Generic emit()s.
+  CHECK_RETURN Err start_line();
   CHECK_RETURN Err emit_backspace();
   CHECK_RETURN Err emit_indent();
-  CHECK_RETURN Err start_line();
+  CHECK_RETURN Err emit_char(char c, uint32_t color = 0);
+  CHECK_RETURN Err skip_char(char c);
+  CHECK_RETURN Err emit_span(const char* a, const char* b);
+  CHECK_RETURN Err skip_span(const char* a, const char* b);
+  CHECK_RETURN Err emit_vprint(const char* fmt, va_list args);
+  CHECK_RETURN Err emit_line(const char* fmt, ...);
+  CHECK_RETURN Err emit_print(const char* fmt, ...);
+
+
+
+
+
 
   CHECK_RETURN Err emit_gap(MnNode a, MnNode b);
   CHECK_RETURN Err skip_gap(MnNode a, MnNode b);
@@ -48,20 +62,14 @@ struct MtCursor {
   CHECK_RETURN Err emit_tail(MnNode a, MnNode p);
   CHECK_RETURN Err skip_tail(MnNode a, MnNode p);
 
-  // Generic emit()s.
-  CHECK_RETURN Err emit_char(char c, uint32_t color = 0);
-  CHECK_RETURN Err skip_char(char c);
+
+
 
   CHECK_RETURN Err emit_ws();
   CHECK_RETURN Err emit_ws_inside(MnNode n);
   CHECK_RETURN Err emit_ws_to(const MnNode& n);
   CHECK_RETURN Err emit_ws_to(TSSymbol sym, const MnNode& n);
-  CHECK_RETURN Err emit_span(const char* a, const char* b);
-  CHECK_RETURN Err skip_span(const char* a, const char* b);
   CHECK_RETURN Err emit_text(MnNode n);
-  CHECK_RETURN Err emit_vprint(const char* fmt, va_list args);
-  CHECK_RETURN Err emit_line(const char* fmt, ...);
-  CHECK_RETURN Err emit_print(const char* fmt, ...);
   CHECK_RETURN Err emit_replacement(MnNode n, const char* fmt, ...);
   CHECK_RETURN Err skip_over(MnNode n);
   CHECK_RETURN Err skip_ws();

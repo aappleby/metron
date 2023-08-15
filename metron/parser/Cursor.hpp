@@ -36,6 +36,7 @@ struct Cursor {
   CHECK_RETURN Err emit_to(const char* b);
   CHECK_RETURN Err emit_span(const char* a, const char* b);
   CHECK_RETURN Err skip_span(const char* a, const char* b);
+  CHECK_RETURN Err skip_over(CNode* n);
   CHECK_RETURN Err comment_out(CNode* n);
   CHECK_RETURN Err emit_vprint(const char* fmt, va_list args);
   CHECK_RETURN Err emit_line(const char* fmt, ...);
@@ -76,7 +77,7 @@ struct Cursor {
   }
 
   template<typename ... Args>
-  CHECK_RETURN Err emit_replacements(std::string_view& text, Args... args) {
+  CHECK_RETURN Err emit_replacements(std::string_view text, Args... args) {
     Err err;
     while (text.size()) {
       err << emit_replacement_step(text, args...);

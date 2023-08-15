@@ -6,6 +6,11 @@ Cursor::Cursor(CSourceRepo* repo, CSourceFile* source, std::string* str_out) {
   this->repo = repo;
   this->source_file = source;
   this->str_out = str_out;
+
+  block_prefix.push("begin");
+  block_suffix.push("end");
+  override_size.push(0);
+  indent.push("");
 }
 
 //------------------------------------------------------------------------------
@@ -218,6 +223,12 @@ CHECK_RETURN Err Cursor::skip_span(const char* a, const char* b) {
 }
 
 //----------------------------------------
+
+CHECK_RETURN Err Cursor::skip_over(CNode* n) {
+  Err err = check_at(n);
+  err << skip_span(n->text_begin(), n->text_end());
+  return err << check_done(n);
+}
 
 CHECK_RETURN Err Cursor::comment_out(CNode* n) {
   Err err = check_at(n);

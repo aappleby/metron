@@ -100,6 +100,9 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
 
   CHECK_RETURN Err emit_rest(Cursor& cursor);
 
+
+  CHECK_RETURN Err emit_gap_after(Cursor& cursor);
+
   //----------------------------------------
 
   /*
@@ -136,5 +139,53 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   // -2 = prefix, -1 = right-to-left, 0 = none, 1 = left-to-right, 2 = suffix
   int assoc = 0;
 };
+
+//------------------------------------------------------------------------------
+
+#if 1
+template<typename NodeType>
+struct NodeIterator {
+  NodeIterator(NodeType* cursor) : n(cursor) {}
+  NodeIterator& operator++() {
+    n = n->node_next;
+    return *this;
+  }
+  bool operator!=(NodeIterator& b) const { return n != b.n; }
+  NodeType* operator*() const { return n; }
+  NodeType* n;
+};
+
+template<typename NodeType>
+inline NodeIterator<NodeType> begin(NodeType* parent) {
+  return NodeIterator<NodeType>(parent->child_head);
+}
+
+template<typename NodeType>
+inline NodeIterator<NodeType> end(NodeType* parent) {
+  return NodeIterator<NodeType>(nullptr);
+}
+
+template<typename NodeType>
+struct ConstNodeIterator {
+  ConstNodeIterator(const NodeType* cursor) : n(cursor) {}
+  ConstNodeIterator& operator++() {
+    n = n->node_next;
+    return *this;
+  }
+  bool operator!=(const ConstNodeIterator& b) const { return n != b.n; }
+  const NodeType* operator*() const { return n; }
+  const NodeType* n;
+};
+
+template<typename NodeType>
+inline ConstNodeIterator<NodeType> begin(const NodeType* parent) {
+  return ConstNodeIterator<NodeType>(parent->child_head);
+}
+
+template<typename NodeType>
+inline ConstNodeIterator<NodeType> end(const NodeType* parent) {
+  return ConstNodeIterator<NodeType>(nullptr);
+}
+#endif
 
 //------------------------------------------------------------------------------

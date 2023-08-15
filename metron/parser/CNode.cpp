@@ -56,6 +56,11 @@ CHECK_RETURN Err CNode::emit_rest(Cursor& cursor) {
   return cursor.emit_span(cursor.text_cursor, text_end());
 }
 
+CHECK_RETURN Err CNode::emit_gap_after(Cursor& cursor) {
+  Err err;
+  if (node_next) err << cursor.emit_gap(this, node_next);
+  return err;
+}
 
 
 //------------------------------------------------------------------------------

@@ -80,15 +80,17 @@ int main_new(Options opts) {
   err << repo.load_source(opts.src_name, &root_file);
 
   if (root_file) {
-    utils::print_trees(root_file->context, utils::to_span(root_file->source_code), 50, 3);
+    //utils::print_trees(root_file->context, utils::to_span(root_file->source_code), 50, 3);
+    root_file->context.root_node->dump_tree();
   }
 
+#if 1
   std::vector<CNodeClass*> class_nodes;
 
   for (auto pair : repo.source_map) {
     visit(pair.second->context.root_node, [&class_nodes](CNode* n){
       if (auto node_class = n->as_a<CNodeClass>()) {
-        printf("%s %s\n", node_class->match_name, node_class->class_name().c_str());
+        //printf("%s %s\n", node_class->match_name, node_class->class_name().c_str());
         class_nodes.push_back(node_class);
       }
     });
@@ -105,9 +107,6 @@ int main_new(Options opts) {
   LOG_G("Converting %s to SystemVerilog\n", opts.src_name.c_str());
 
   std::string out_string;
-
-  LOG("out_string at %p\n", &out_string);
-
   Cursor cursor(&repo, root_file, &out_string);
   cursor.echo = opts.echo && !opts.quiet;
 
@@ -150,6 +149,7 @@ int main_new(Options opts) {
       fclose(out_file);
     }
   }
+#endif
 
   LOG_B("Done!\n");
 

@@ -44,6 +44,12 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
     return std::string_view(text_begin(), text_end());
   }
 
+  //----------------------------------------
+
+  virtual uint32_t debug_color() const { return 0x999999; }
+
+  void dump_tree(int max_depth = 0) const;
+
   void debug_dump(std::string& out) {
     out += "[";
     out += match_name;
@@ -58,10 +64,6 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
       out += '`';
     }
     out += "]";
-  }
-
-  bool starts_with(const char* lit) {
-    return as_string_view().starts_with(lit);
   }
 
   //----------------------------------------

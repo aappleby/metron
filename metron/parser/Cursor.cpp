@@ -219,6 +219,18 @@ CHECK_RETURN Err Cursor::skip_span(const char* a, const char* b) {
 
 //----------------------------------------
 
+CHECK_RETURN Err Cursor::comment_out(CNode* n) {
+  Err err = check_at(n);
+
+  err << emit_print("/*");
+  err << emit_span(n->text_begin(), n->text_end());
+  err << emit_print("*/");
+
+  return err << check_done(n);
+}
+
+//----------------------------------------
+
 CHECK_RETURN Err Cursor::emit_vprint(const char* fmt, va_list args) {
   Err err;
 

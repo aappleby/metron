@@ -36,47 +36,54 @@ struct Cursor {
   CHECK_RETURN Err emit_to(const char* b);
   CHECK_RETURN Err emit_span(const char* a, const char* b);
   CHECK_RETURN Err skip_span(const char* a, const char* b);
+  CHECK_RETURN Err comment_out(CNode* n);
   CHECK_RETURN Err emit_vprint(const char* fmt, va_list args);
   CHECK_RETURN Err emit_line(const char* fmt, ...);
   CHECK_RETURN Err emit_print(const char* fmt, ...);
   CHECK_RETURN Err emit_string(const std::string_view& s);
   CHECK_RETURN Err emit_replacement(CNode* n, const std::string& s);
 
-#if 0
-
-  void blah() {
-    emit_replacements(this, "#include", "`include", ".h", ".sv");
-  }
-
-  CHECK_RETURN Err emit_replacement(std::string_view text, std::string_view s_old, std::string_view s_new) {
-    while (text.size()) {
-      if (text.starts_with(s_old)) {
-        for (auto c : s_new) err << emit_char(c, 0x80FF80);
-        text.remove_prefix(s_old.size());
-        continue;
-      }
-
-      err << emit_replacement_step(text);
-    }
-  }
+  //----------------------------------------
 
   CHECK_RETURN Err emit_replacement_step(std::string_view& text, std::string_view s_old, std::string_view s_new) {
     Err err;
     if (text.starts_with(s_old)) {
-      for (auto c : s_new) err << emit_char(c, 0x80FF80);
+      for (auto c : s_new) {
+        err << emit_char(c, 0x80FFFF);
+      }
       text.remove_prefix(s_old.size());
+    }
+    else {
+      err << emit_char(text[0]);
+      text.remove_prefix(1);
     }
     return err;
   }
 
-  CHECK_RETURN Err emit_replacement(std::string_view& text) {
+  template<typename ... Args>
+  CHECK_RETURN Err emit_replacement_step(std::string_view& text, std::string_view s_old, std::string_view s_new, Args... args) {
     Err err;
-    err << emit_char(text[0]);
-    text.remove_prefix(1);
+    if (text.starts_with(s_old)) {
+      for (auto c : s_new) {
+        err << emit_char(c, 0x80FFFF);
+      }
+      text.remove_prefix(s_old.size());
+    }
+    else {
+      err << emit_replacement_step(text, args...);
+    }
     return err;
   }
 
-#endif
+  template<typename ... Args>
+  CHECK_RETURN Err emit_replacements(std::string_view& text, Args... args) {
+    Err err;
+    while (text.size()) {
+      err << emit_replacement_step(text, args...);
+    }
+    text_cursor = text.data();
+    return err;
+  }
 
   //----------------------------------------
   // Top-level emit function

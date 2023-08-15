@@ -5,27 +5,23 @@
 
 #include <assert.h>
 
-inline void replace(std::string& s, const std::string& a, const std::string& b) {
-  auto i = s.find(a);
-  if (i == std::string::npos) {
-    assert(false);
-    return;
-  }
-  s.replace(i, a.size(), b);
-}
-
 //------------------------------------------------------------------------------
 
 struct CNodeClass : public CNode {
+  virtual uint32_t debug_color() const { return 0x00FF00; }
+
   void init(const char* match_name, SpanType span, uint64_t flags) {
     CNode::init(match_name, span, flags);
   }
 
   virtual Err emit(Cursor& cursor) {
+    /*
     Err err;
     err << cursor.emit_print("{{CNodeClass}}");
     cursor.text_cursor = text_end();
     return err;
+    */
+    return emit_default(cursor);
   }
 
   std::string class_name() {
@@ -35,123 +31,72 @@ struct CNodeClass : public CNode {
 
 //------------------------------------------------------------------------------
 
-struct CNodeDeclaration : public CNode {};
+struct CNodeDeclaration : public CNode {
+  virtual uint32_t debug_color() const { return 0xFF00FF; }
+
+  virtual Err emit(Cursor& cursor) {
+    Err err = cursor.check_at(this);
+    err << cursor.emit_print("{{CNodeDeclaration}}");
+    cursor.text_cursor = text_end();
+    return err << cursor.check_done(this);
+  }
+};
+
 struct CNodeEnum : public CNode {};
-struct CNodeFunction : public CNode {};
+
+struct CNodeFunction : public CNode {
+  virtual uint32_t debug_color() const { return 0x0000FF; }
+
+  virtual Err emit(Cursor& cursor) {
+    Err err = cursor.check_at(this);
+    err << cursor.emit_print("{{CNodeFunction}}");
+    cursor.text_cursor = text_end();
+    return err << cursor.check_done(this);
+  }
+};
+
 struct CNodeNamespace : public CNode {};
 
 //------------------------------------------------------------------------------
 
-/*
-CHECK_RETURN Err MtCursor::emit_sym_preproc_include(MnNode n) {
-  Err err = check_at(sym_preproc_include, n);
+struct CNodeIdentifier : public CNode {
+  virtual uint32_t debug_color() const { return 0x80FF80; }
 
-  for (auto child : n) {
-    err << emit_ws_to(child);
-
-    if (child.field == field_path) {
-      auto path = child.text();
-      if (!path.ends_with(".h\"")) return err << ERR("Include did not end with .h\n");
-      path.resize(path.size() - 3);
-      path = path + ".sv\"";
-      err << emit_replacement(child, path.c_str());
-    }
-    else {
-      err << emit_dispatch(child);
-    }
+  virtual Err emit(Cursor& cursor) {
+    return emit_default(cursor);
   }
-
-  return err << check_done(n);
-}
-
-CHECK_RETURN Err MtCursor::emit_sym_preproc_arg(MnNode n) {
-  Err err = check_at(n);
-
-  // If we see any other #defined constants inside a #defined value,
-  // prefix them with '`'
-  std::string arg = n.text();
-  std::string new_arg;
-
-  for (int i = 0; i < arg.size(); i++) {
-    for (const auto& def_pair : preproc_vars.top()) {
-      if (def_pair.first == arg) continue;
-      if (strncmp(&arg[i], def_pair.first.c_str(), def_pair.first.size()) ==
-          0) {
-        new_arg.push_back('`');
-        break;
-      }
-    }
-    new_arg.push_back(arg[i]);
-  }
-
-  err << emit_replacement(n, new_arg.c_str());
-
-  return err << check_done(n);
-}
+};
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err MtCursor::emit_sym_preproc_ifdef(MnNode n) {
-  Err err = check_at(sym_preproc_ifdef, n);
+struct CNodeFieldList : public CNode {
+  virtual uint32_t debug_color() const { return 0xFF8080; }
 
-  for (auto child : n) {
-    err << emit_ws_to(child);
-    err << emit_toplevel_node(child);
+  virtual Err emit(Cursor& cursor) {
+    return emit_default(cursor);
   }
-
-  return err << check_done(n);
-}
+};
 
 //------------------------------------------------------------------------------
-
-CHECK_RETURN Err MtCursor::emit_sym_preproc_def(MnNode n) {
-  Err err = check_at(sym_preproc_def, n);
-
-  MnNode node_name;
-
-  for (auto child : n) {
-    err << emit_ws_to(child);
-
-    if (child.field == field_name) {
-      node_name = child;
-    }
-    else if (child.field == field_value) {
-      preproc_vars.top()[node_name.text()] = child;
-    }
-
-    err << emit_dispatch(child);
-  }
-
-  return err << check_done(n);
-}
-
-*/
 
 struct CNodePreproc : public CNode {
+  virtual uint32_t debug_color() const { return 0x00BBBB; }
+
   virtual Err emit(Cursor& cursor) {
     Err err = cursor.check_at(this);
-    //return cursor.emit_span(text_begin(), text_end());
+    auto v = as_string_view();
 
-    if (starts_with("#ifndef")) {
-      err << cursor.emit_print("`ifndef");
-      auto s = as_text_span().advance(strlen("#ifndef"));
-      err << cursor.emit_span(s.begin, s.end);
+    if (v.starts_with("#include")) {
+      err << cursor.emit_replacements(v, "#include", "`include", ".h", ".sv");
     }
-    else if (starts_with("#define")) {
-      err << cursor.emit_print("`define");
-      auto s = as_text_span().advance(strlen("#define"));
-      err << cursor.emit_span(s.begin, s.end);
+    else if (v.starts_with("#ifndef")) {
+      err << cursor.emit_replacements(v, "#ifndef", "`ifndef");
     }
-    else if (starts_with("#include")) {
-      auto s = as_string();
-      replace(s, "#include", "`include");
-      replace(s, ".h", ".sv");
-      err << cursor.emit_replacement(this, s);
+    else if (v.starts_with("#define")) {
+      err << cursor.emit_replacements(v, "#define", "`define");
     }
-    else if (starts_with("#endif")) {
-      err << cursor.emit_print("`endif");
-      auto s = as_text_span().advance(strlen("#endif"));
-      err << cursor.emit_span(s.begin, s.end);
+    else if (v.starts_with("#endif")) {
+      err << cursor.emit_replacements(v, "#endif", "`endif");
     }
     else {
       return ERR("Don't know how to handle this preproc");
@@ -165,36 +110,22 @@ struct CNodePreproc : public CNode {
 
 struct CNodeStruct : public CNode {};
 
+struct CNodeCall : public CNode {
+  virtual uint32_t debug_color() const { return 0xFF0040; }
+};
+
 //------------------------------------------------------------------------------
 
-/*
-CHECK_RETURN Err MtCursor::emit_sym_template_declaration(MnNode n) {
-  Err err = check_at(sym_template_declaration, n);
+struct CNodeList : public CNode {
+  virtual uint32_t debug_color() const { return 0xFFFF00; }
+  virtual Err emit(Cursor& cursor) { return emit_default(cursor); }
+};
 
-  auto node_template = n.child(0);
-  auto node_params   = n.child(1);
-  auto node_class    = n.child(2);
-  auto node_semi     = n.child(3);
-
-  std::string class_name = node_class.get_field(field_name).text();
-  current_mod.push(lib->get_module(class_name));
-
-  // Template params have to go _inside_ the class definition in Verilog, so
-  // we skip them here.
-  err << skip_over(node_template);
-  err << skip_gap(node_template, node_params);
-  err << skip_over(node_params);
-  err << skip_gap(node_params, node_class);
-  err << emit_dispatch(node_class);
-  err << skip_gap(node_class, node_semi);
-  err << skip_over(node_semi);
-
-  current_mod.pop();
-  return err << check_done(n);
-}
-*/
+//------------------------------------------------------------------------------
 
 struct CNodeTemplate : public CNode {
+  virtual uint32_t debug_color() const { return 0x00FFFF; }
+
   virtual Err emit(Cursor& cursor) {
     Err err = cursor.check_at(this);
 
@@ -213,15 +144,48 @@ struct CNodeTemplate : public CNode {
   }
 };
 
+struct CNodeTemplateParams : public CNode {
+  virtual uint32_t debug_color() const { return 0x0088FF; }
+};
+
+struct CNodeTemplateParam : public CNode {
+  virtual uint32_t debug_color() const { return 0x0044FF; }
+};
+
 //------------------------------------------------------------------------------
 
+struct CNodePunct : public CNode {
+  virtual uint32_t debug_color() const { return 0x00FFFF; }
+  virtual Err emit(Cursor& cursor) { return emit_default(cursor); }
+};
+
+struct CNodeAccess : public CNode {
+  virtual uint32_t debug_color() const { return 0xFF88FF; }
+  virtual Err emit(Cursor& cursor) {
+    return cursor.comment_out(this);
+  }
+};
+
+struct CNodeKeyword : public CNode {
+  virtual uint32_t debug_color() const { return 0xFFFF88; }
+  virtual Err emit(Cursor& cursor) { return emit_default(cursor); }
+};
+
+struct CNodeType : public CNode {
+  virtual uint32_t debug_color() const { return 0xFFFFFF; }
+};
+
 struct CNodeTypedef : public CNode {};
+
 struct CNodeUnion : public CNode {};
 
 struct CNodeTranslationUnit : public CNode {
-  virtual Err emit(Cursor& cursor) {
-    return emit_default(cursor);
-  }
+  virtual uint32_t debug_color() const { return 0xFFFF00; }
+  virtual Err emit(Cursor& cursor) { return emit_default(cursor); }
+};
+
+struct CNodeCompoundStatement : public CNode {
+  virtual uint32_t debug_color() const { return 0xFF8888; }
 };
 
 //------------------------------------------------------------------------------

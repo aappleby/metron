@@ -16,24 +16,6 @@ TokenSpan match_translation_unit(CContext& ctx, TokenSpan body);
 
 
 
-struct CNodeIterator {
-  CNodeIterator(CNode* cursor) : n(cursor) {}
-  CNodeIterator& operator++() {
-    n = n->node_next;
-    return *this;
-  }
-  bool operator!=(CNodeIterator& b) const { return n != b.n; }
-  CNode* operator*() const { return n; }
-  CNode* n;
-};
-
-inline CNodeIterator begin(CNode* parent) {
-  return CNodeIterator(parent->child_head);
-}
-
-inline CNodeIterator end(CNode* parent) {
-  return CNodeIterator(nullptr);
-}
 
 
 

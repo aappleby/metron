@@ -22,6 +22,22 @@
 using namespace matcheroni;
 using namespace parseroni;
 
+void CNodeClass::init(const char* match_name, SpanType span, uint64_t flags) {
+  CNode::init(match_name, span, flags);
+
+  for (auto c : this) {
+    if (auto n = c->as_a<CNodeDeclaration>()) {
+      decls.push_back(n);
+    }
+    if (auto n = c->as_a<CNodeFunction>()) {
+      methods.push_back(n);
+    }
+  }
+
+}
+
+
+
 //------------------------------------------------------------------------------
 
 TokenSpan match_access_specifier   (CContext& ctx, TokenSpan body);
@@ -939,7 +955,7 @@ TokenSpan match_field(CContext& ctx, TokenSpan body) {
   Oneof<
     Atom<';'>,
     Cap<"access",      Ref<match_access_specifier>, CNodeAccess>,
-    Cap<"constructor", Ref<match_constructor>,      CNodeFunction>,
+    Cap<"constructor", Ref<match_constructor>,      CNodeConstructor>,
     Cap<"function",    Ref<match_function>,         CNodeFunction>,
     Cap<"struct",      Ref<match_struct>,           CNodeStruct>,
     Cap<"union",       Ref<match_union>,            CNodeUnion>,

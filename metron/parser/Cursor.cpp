@@ -2,6 +2,8 @@
 
 #include "metrolib/core/Log.h"
 
+//------------------------------------------------------------------------------
+
 Cursor::Cursor(CSourceRepo* repo, CSourceFile* source, std::string* str_out) {
   this->repo = repo;
   this->source_file = source;
@@ -12,6 +14,73 @@ Cursor::Cursor(CSourceRepo* repo, CSourceFile* source, std::string* str_out) {
   override_size.push(0);
   indent.push("");
 }
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err Cursor::emit(CNode* n) {
+  Err err = check_at(n);
+  err << n->emit(*this);
+  return err << check_done(n);
+}
+
+CHECK_RETURN Err Cursor::skip_over(CNode* n) {
+  Err err = check_at(n);
+  err << skip_span(n->text_begin(), n->text_end());
+  return err << check_done(n);
+}
+
+CHECK_RETURN Err Cursor::comment_out(CNode* n) {
+  Err err = check_at(n);
+
+  err << emit_print("/*");
+  err << emit_span(n->text_begin(), n->text_end());
+  err << emit_print("*/");
+
+  return err << check_done(n);
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err Cursor::emit_default(CNode* n) {
+  Err err = check_at(n);
+
+  if (n->child_head) {
+    err << emit_span(n->text_begin(), n->child_head->text_begin());
+    err << emit_children(n);
+    err << emit_span(n->child_tail->text_end(), n->text_end());
+  }
+  else {
+    err << emit_span(n->text_begin(), n->text_end());
+  }
+
+  return err << check_done(n);
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err Cursor::emit_children(CNode* n) {
+  Err err;
+  for (auto c = n->child_head; c; c = c->node_next) {
+    err << emit(c);
+    if (c->node_next) err << emit_gap(c, c->node_next);
+  }
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err Cursor::emit_rest(CNode* n) {
+  return emit_span(text_cursor, n->text_end());
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err Cursor::emit_gap_after(CNode* n) {
+  Err err;
+  if (n->node_next) err << emit_gap(n, n->node_next);
+  return err;
+}
+
 
 //------------------------------------------------------------------------------
 
@@ -224,24 +293,6 @@ CHECK_RETURN Err Cursor::skip_span(const char* a, const char* b) {
 
 //----------------------------------------
 
-CHECK_RETURN Err Cursor::skip_over(CNode* n) {
-  Err err = check_at(n);
-  err << skip_span(n->text_begin(), n->text_end());
-  return err << check_done(n);
-}
-
-CHECK_RETURN Err Cursor::comment_out(CNode* n) {
-  Err err = check_at(n);
-
-  err << emit_print("/*");
-  err << emit_span(n->text_begin(), n->text_end());
-  err << emit_print("*/");
-
-  return err << check_done(n);
-}
-
-//----------------------------------------
-
 CHECK_RETURN Err Cursor::emit_vprint(const char* fmt, va_list args) {
   Err err;
 
@@ -299,7 +350,7 @@ CHECK_RETURN Err Cursor::emit_replacement(CNode* n, const std::string& s) {
     err << emit_char(c, 0x80FFFF);
   }
   text_cursor = n->text_end();
-  return err;
+  return err << check_done(n);
 }
 
 //------------------------------------------------------------------------------
@@ -308,7 +359,7 @@ CHECK_RETURN Err Cursor::emit_everything() {
   Err err;
 
   text_cursor = source_file->source_code.data();
-  err << emit_dispatch(source_file->context.root_node);
+  err << source_file->context.root_node->emit(*this);
 
   return err;
 }
@@ -427,40 +478,6 @@ CHECK_RETURN Err Cursor::skip_gap(CNode* a, CNode* b) {
   }
 
   return err;
-  */
-}
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err Cursor::emit_dispatch(CNode* node) {
-
-  return node->emit(*this);
-
-  /*
-  Err err = check_at(n);
-
-  if (auto it = emit_sym_map.find(n.sym); it != emit_sym_map.end()) {
-    err << check_at(n);
-    err << it->second(this, n);
-    err << check_done(n);
-  }
-  else if (!n.is_named()) {
-    if (auto it = token_map.top().find(n.text()); it != token_map.top().end()) {
-      err << emit_replacement(n, (*it).second.c_str());
-    }
-    else {
-      err << emit_text(n);
-    }
-  }
-  else {
-    // KCOV_OFF
-    err << ERR("%s : No handler for %s\n", __func__, n.ts_node_type());
-    n.error();
-    // KCOV_ON
-  }
-
-  return err << check_done(n);
-  return Err();
   */
 }
 

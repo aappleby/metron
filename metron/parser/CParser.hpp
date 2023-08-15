@@ -4,15 +4,22 @@
 #include "Cursor.hpp"
 
 #include <assert.h>
+#include <vector>
+
+struct CNodeDeclaration;
+struct CNodeFunction;
+struct CNodeConstructor;
 
 //------------------------------------------------------------------------------
 
 struct CNodeClass : public CNode {
   virtual uint32_t debug_color() const { return 0x00FF00; }
 
-  void init(const char* match_name, SpanType span, uint64_t flags) {
-    CNode::init(match_name, span, flags);
-  }
+  std::vector<CNodeDeclaration*> decls;
+  std::vector<CNodeFunction*>    methods;
+  std::vector<CNodeConstructor*> constructors;
+
+  void init(const char* match_name, SpanType span, uint64_t flags);
 
   virtual Err emit(Cursor& cursor) {
     Err err = cursor.check_at(this);
@@ -23,7 +30,7 @@ struct CNodeClass : public CNode {
 
     err << cursor.emit_replacements(n_class->as_string_view(), "class", "module");
     err << cursor.emit_gap(n_class, n_name);
-    err << n_name->emit(cursor);
+    err << cursor.emit(n_name);
     err << cursor.emit_gap(n_name, n_body);
 
     err << cursor.emit_print("(\n");
@@ -34,7 +41,7 @@ struct CNodeClass : public CNode {
     err << cursor.emit_line(");");
 
 
-    err << n_body->emit(cursor);
+    err << cursor.emit(n_body);
 
     return err << cursor.check_done(this);
   }
@@ -42,6 +49,53 @@ struct CNodeClass : public CNode {
   std::string class_name() {
     return child("name")->as_string();
   }
+
+  /*
+  CHECK_RETURN Err MtCursor::emit_module_ports(MnNode class_body) {
+    Err err;
+
+    if (current_mod.top()->needs_tick()) {
+      err << emit_line("// global clock");
+      err << emit_line("input logic clock,");
+    }
+
+    if (current_mod.top()->input_signals.size()) {
+      err << emit_line("// input signals");
+      for (auto f : current_mod.top()->input_signals) {
+        err << emit_field_port(f);
+      }
+    }
+
+    if (current_mod.top()->output_signals.size()) {
+      err << emit_line("// output signals");
+      for (auto f : current_mod.top()->output_signals) {
+        err << emit_field_port(f);
+      }
+    }
+
+    if (current_mod.top()->output_registers.size()) {
+      err << emit_line("// output registers");
+      for (auto f : current_mod.top()->output_registers) {
+        err << emit_field_port(f);
+      }
+    }
+
+    for (auto m : current_mod.top()->all_methods) {
+      if (!m->is_init_ && m->is_public() && m->internal_callers.empty()) {
+        err << emit_method_ports(m);
+      }
+    }
+
+    // Remove trailing comma from port list
+    if (at_comma) {
+      err << emit_backspace();
+    }
+
+    return err;
+  }
+  */
+
+
 };
 
 //------------------------------------------------------------------------------
@@ -50,10 +104,7 @@ struct CNodeDeclaration : public CNode {
   virtual uint32_t debug_color() const { return 0xFF00FF; }
 
   virtual Err emit(Cursor& cursor) {
-    Err err = cursor.check_at(this);
-    err << cursor.emit_print("{{CNodeDeclaration}}");
-    cursor.text_cursor = text_end();
-    return err << cursor.check_done(this);
+    return cursor.emit_replacement(this, "{{CNodeDeclaration}}");
   }
 };
 
@@ -63,10 +114,15 @@ struct CNodeFunction : public CNode {
   virtual uint32_t debug_color() const { return 0x0000FF; }
 
   virtual Err emit(Cursor& cursor) {
-    Err err = cursor.check_at(this);
-    err << cursor.emit_print("{{CNodeFunction}}");
-    cursor.text_cursor = text_end();
-    return err << cursor.check_done(this);
+    return cursor.emit_replacement(this, "{{CNodeFunction}}");
+  }
+};
+
+struct CNodeConstructor : public CNode {
+  virtual uint32_t debug_color() const { return 0x0000FF; }
+
+  virtual Err emit(Cursor& cursor) {
+    return cursor.emit_replacement(this, "{{CNodeConstructor}}");
   }
 };
 
@@ -78,7 +134,7 @@ struct CNodeIdentifier : public CNode {
   virtual uint32_t debug_color() const { return 0x80FF80; }
 
   virtual Err emit(Cursor& cursor) {
-    return emit_default(cursor);
+    return cursor.emit_default(this);
   }
 };
 
@@ -86,7 +142,7 @@ struct CNodeIdentifier : public CNode {
 
 struct CNodePunct : public CNode {
   virtual uint32_t debug_color() const { return 0x00FFFF; }
-  virtual Err emit(Cursor& cursor) { return emit_default(cursor); }
+  virtual Err emit(Cursor& cursor) { return cursor.emit_default(this); }
 };
 
 //------------------------------------------------------------------------------
@@ -108,20 +164,17 @@ struct CNodeFieldList : public CNode {
 
     for (auto c : (CNode*)this) {
       if (c->as_string_view() == "{") {
-        //err << cursor.emit_replacements(d->as_string_view(), "{", "", "}", "endmodule");
         err << cursor.skip_over(c);
-        err << c->emit_gap_after(cursor);
+        err << cursor.emit_gap_after(c);
         err << cursor.emit_print("{{template parameter list}}\n");
       }
       else if (c->as_string_view() == "}") {
-        //err << cursor.emit_replacements(d->as_string_view(), "{", "", "}", "endmodule");
-        err << cursor.emit_print("endmodule");
-        cursor.text_cursor = c->text_end();
-        err << c->emit_gap_after(cursor);
+        err << cursor.emit_replacement(c, "endmodule");
+        err << cursor.emit_gap_after(c);
       }
       else {
-        err << c->emit(cursor);
-        err << c->emit_gap_after(cursor);
+        err << cursor.emit(c);
+        err << cursor.emit_gap_after(c);
       }
 
     }
@@ -163,7 +216,9 @@ struct CNodePreproc : public CNode {
 
 //------------------------------------------------------------------------------
 
-struct CNodeStruct : public CNode {};
+struct CNodeStruct : public CNode {
+  virtual uint32_t debug_color() const { return 0xFFAAAA; }
+};
 
 struct CNodeCall : public CNode {
   virtual uint32_t debug_color() const { return 0xFF0040; }
@@ -173,7 +228,7 @@ struct CNodeCall : public CNode {
 
 struct CNodeList : public CNode {
   virtual uint32_t debug_color() const { return 0xFFFF00; }
-  virtual Err emit(Cursor& cursor) { return emit_default(cursor); }
+  virtual Err emit(Cursor& cursor) { return cursor.emit_default(this); }
 };
 
 //------------------------------------------------------------------------------
@@ -189,8 +244,7 @@ struct CNodeTemplate : public CNode {
     // we skip them here.
     auto class_node = child("template_class");
     err << cursor.skip_span(cursor.text_cursor, class_node->text_begin());
-    err << class_node->emit(cursor);
-
+    err << cursor.emit(class_node);
     err << cursor.skip_span(cursor.text_cursor, text_end());
     //err << emit_rest(cursor);
 
@@ -211,7 +265,7 @@ struct CNodeTemplateParam : public CNode {
 
 struct CNodeKeyword : public CNode {
   virtual uint32_t debug_color() const { return 0xFFFF88; }
-  virtual Err emit(Cursor& cursor) { return emit_default(cursor); }
+  virtual Err emit(Cursor& cursor) { return cursor.emit_default(this); }
 };
 
 struct CNodeType : public CNode {
@@ -224,7 +278,7 @@ struct CNodeUnion : public CNode {};
 
 struct CNodeTranslationUnit : public CNode {
   virtual uint32_t debug_color() const { return 0xFFFF00; }
-  virtual Err emit(Cursor& cursor) { return emit_default(cursor); }
+  virtual Err emit(Cursor& cursor) { return cursor.emit_default(this); }
 };
 
 struct CNodeCompoundStatement : public CNode {

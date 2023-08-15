@@ -28,6 +28,17 @@ struct Cursor {
 
   //void push_indent(MnNode n);
   //void pop_indent(MnNode n);
+
+  CHECK_RETURN Err emit(CNode* n);
+  CHECK_RETURN Err skip_over(CNode* n);
+  CHECK_RETURN Err comment_out(CNode* n);
+
+  CHECK_RETURN Err emit_default(CNode* n);
+  CHECK_RETURN Err emit_children(CNode* n);
+  CHECK_RETURN Err emit_rest(CNode* n);
+  CHECK_RETURN Err emit_gap_after(CNode* n);
+  CHECK_RETURN Err emit_replacement(CNode* n, const std::string& s);
+
   CHECK_RETURN Err start_line();
   CHECK_RETURN Err emit_backspace();
   CHECK_RETURN Err emit_indent();
@@ -36,13 +47,10 @@ struct Cursor {
   CHECK_RETURN Err emit_to(const char* b);
   CHECK_RETURN Err emit_span(const char* a, const char* b);
   CHECK_RETURN Err skip_span(const char* a, const char* b);
-  CHECK_RETURN Err skip_over(CNode* n);
-  CHECK_RETURN Err comment_out(CNode* n);
   CHECK_RETURN Err emit_vprint(const char* fmt, va_list args);
   CHECK_RETURN Err emit_line(const char* fmt, ...);
   CHECK_RETURN Err emit_print(const char* fmt, ...);
   CHECK_RETURN Err emit_string(const std::string_view& s);
-  CHECK_RETURN Err emit_replacement(CNode* n, const std::string& s);
 
   //----------------------------------------
 
@@ -93,7 +101,6 @@ struct Cursor {
 
   CHECK_RETURN Err emit_gap(CNode* a, CNode* b);
   CHECK_RETURN Err skip_gap(CNode* a, CNode* b);
-  CHECK_RETURN Err emit_dispatch(CNode* node);
 
   CHECK_RETURN Err emit_trailing_whitespace() {
     Err err;

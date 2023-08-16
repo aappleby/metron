@@ -113,6 +113,27 @@ TokenSpan match_keyword(CContext& ctx, TokenSpan body) {
 }
 
 template <StringParam lit>
+struct CapKeyword {
+  static TokenSpan match_keyword(CContext& ctx, TokenSpan body) {
+    static_assert(SST<c_keywords>::contains(lit.str_val));
+    if (!body.is_valid()) return body.fail();
+    if (ctx.atom_cmp(*body.begin, LEX_KEYWORD) != 0) return body.fail();
+    if (ctx.atom_cmp(*body.begin, lit.span()) != 0) return body.fail();
+    return body.advance(1);
+  }
+
+  static TokenSpan match(CContext& ctx, TokenSpan body) {
+    using pattern =
+    Cap1<
+      lit.str_val,
+      Ref<CapKeyword<lit>::match_keyword>,
+      CNodeKeyword
+    >;
+    return pattern::match(ctx, body);
+  }
+};
+
+template <StringParam lit>
 TokenSpan match_literal(CContext& ctx, TokenSpan body) {
   if (!body.is_valid()) return body.fail();
   if (ctx.atom_cmp(*body.begin, lit.span()) != 0) return body.fail();
@@ -820,7 +841,7 @@ TokenSpan match_field(CContext& ctx, TokenSpan body) {
   // clang-format off
   using pattern =
   Oneof<
-    Atom<';'>,
+    Cap3<"semi",        Atom<';'>>,
     Cap2<"access",      CNodeAccess>,
     Cap2<"constructor", CNodeConstructor>,
     Cap2<"function",    CNodeFunction>,
@@ -941,10 +962,11 @@ TokenSpan CNodeClass::match(CContext& ctx, TokenSpan body) {
   // clang-format off
   using pattern =
   Seq<
-    Cap<"class", Ref<match_keyword<"class">>, CNodeKeyword>,
-    Cap<"name",  Ref<class_type_adder>,       CNodeIdentifier>,
+    //Cap<"class", Ref<match_keyword<"class">>, CNodeKeyword>,
+    CapKeyword<"class">,
+    Cap1<"name",  Ref<class_type_adder>,       CNodeIdentifier>,
     Cap2<"body", CNodeFieldList>,
-    Cap<"semi",  Atom<';'>,                   CNodePunct>
+    Cap1<"semi",  Atom<';'>,                   CNodePunct>
   >;
   // clang-format on
   return pattern::match(ctx, body);
@@ -1079,8 +1101,6 @@ TokenSpan change_scope(CContext& ctx, TokenSpan body) {
   ctx.pop_scope();
   return tail;
 }
-
-//------------------------------------------------------------------------------
 
 TokenSpan CNodeCompound::match(CContext& ctx, TokenSpan body) {
   using pattern =

@@ -150,7 +150,7 @@ void CSourceRepo::dump() {
   LOG_B("Classes:\n");
   LOG_INDENT();
   for (auto n : all_modules) {
-    //n->dump_tree(3);
+    n->dump_tree(3);
 
     LOG_B("%s @ %p\n", std::string(n->get_name()).c_str(), n);
 

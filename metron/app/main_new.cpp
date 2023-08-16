@@ -6,6 +6,7 @@
 #include "metron/parser/CSourceRepo.hpp"
 #include "metron/parser/CParser.hpp"
 #include "metron/parser/Cursor.hpp"
+#include "metron/parser/NodeTypes.hpp"
 
 #include "matcheroni/Utilities.hpp"
 

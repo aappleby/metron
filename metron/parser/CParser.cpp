@@ -16,27 +16,12 @@
 #include "CSourceRepo.hpp"
 #include "CToken.hpp"
 #include "SST.hpp"
+#include "NodeTypes.hpp"
 
 #include <assert.h>
 
 using namespace matcheroni;
 using namespace parseroni;
-
-void CNodeClass::init(const char* match_name, SpanType span, uint64_t flags) {
-  CNode::init(match_name, span, flags);
-
-  for (auto c : this) {
-    if (auto n = c->as_a<CNodeDeclaration>()) {
-      decls.push_back(n);
-    }
-    if (auto n = c->as_a<CNodeFunction>()) {
-      methods.push_back(n);
-    }
-  }
-
-}
-
-
 
 //------------------------------------------------------------------------------
 
@@ -1164,61 +1149,6 @@ TokenSpan match_enum(CContext& ctx, TokenSpan body) {
   >;
   return pattern::match(ctx, body);
 }
-
-//------------------------------------------------------------------------------
-
-#if 0
-
-struct NodeDesignation : public CNode, public PatternWrapper<NodeDesignation> {
-  // clang-format off
-  using pattern =
-  Some<
-    Seq<Atom<'['>, NodeConstant, Atom<']'>>,
-    Seq<Atom<'['>, NodeIdentifier::pattern, Atom<']'>>,
-    Seq<Atom<'.'>, NodeIdentifier::pattern>
-  >;
-  // clang-format on
-};
-
-struct NodeInitializerList : public CNode, public PatternWrapper<NodeInitializerList> {
-  using pattern = DelimitedList<
-      Atom<'{'>,
-      Seq<Opt<Seq<NodeDesignation, Atom<'='>>,
-              Seq<NodeIdentifier::pattern, Atom<':'>>  // This isn't in the C grammar but
-                                              // compndlit-1.c uses it?
-              >,
-          NodeInitializer>,
-      Atom<','>, Atom<'}'>>;
-};
-
-struct NodeSuffixInitializerList : public CNode, public PatternWrapper<NodeSuffixInitializerList> {
-  NodeSuffixInitializerList() {
-    precedence = 2;
-    assoc = 2;
-  }
-
-  // clang-format off
-  using pattern =
-  DelimitedList<
-    Atom<'{'>,
-    Seq<
-      Opt<
-        Seq<NodeDesignation, Atom<'='>>,
-        Seq<NodeIdentifier::pattern, Atom<':'>>  // This isn't in the C grammar but compndlit-1.c uses it?
-      >,
-      Cap<"initializer", NodeInitializer>
-    >,
-    Atom<','>,
-    Atom<'}'>
-  >;
-  // clang-format on
-};
-
-struct NodeInitializer : public CNode, public PatternWrapper<NodeInitializer> {
-  using pattern = Oneof<NodeInitializerList, Ref<match_expression>>;
-};
-
-#endif
 
 //------------------------------------------------------------------------------
 

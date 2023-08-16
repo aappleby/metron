@@ -208,6 +208,38 @@ struct CNodeCall : public CNode {
 
 //------------------------------------------------------------------------------
 
+// (int a = 1, int b = 2)
+struct CNodeDeclList : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+  virtual uint32_t debug_color() const { return 0xFF00FF; }
+};
+
+// <int a = 1, int b = 2>
+struct CNodeTDeclList : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+  virtual uint32_t debug_color() const { return 0xFF00FF; }
+};
+
+// (a * 7, b / 2)
+struct CNodeExpList : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+  virtual uint32_t debug_color() const { return 0xFF00FF; }
+};
+
+// <a * 7, b / 2>
+struct CNodeTExpList : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+  virtual uint32_t debug_color() const { return 0xFF00FF; }
+};
+
+// [a/2, b/2]
+struct CNodeIndexList : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+  virtual uint32_t debug_color() const { return 0xFF00FF; }
+};
+
+//------------------------------------------------------------------------------
+
 struct CNodeList : public CNode {
   static TokenSpan match(CContext& ctx, TokenSpan body);
   virtual uint32_t debug_color() const { return 0xFFFF00; }

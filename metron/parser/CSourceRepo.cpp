@@ -3,6 +3,9 @@
 #include "CSourceFile.hpp"
 #include "matcheroni/Utilities.hpp"
 #include "metrolib/core/Log.h"
+#include "NodeTypes.hpp"
+
+#include <functional>
 
 namespace fs = std::filesystem;
 
@@ -56,27 +59,126 @@ Err CSourceRepo::load_source(std::string filename, CSourceFile** out_source) {
 
 //------------------------------------------------------------------------------
 
+typedef std::function<void(CNode*)> node_visitor;
+
+void visit(CNode* n, node_visitor v) {
+  v(n);
+  for (auto c = n->child_head; c; c = c->node_next) {
+    visit(c, v);
+  }
+}
+
+//------------------------------------------------------------------------------
+
+Err CSourceRepo::collect_fields_and_methods() {
+  Err err;
+
+  for (auto pair : source_map) {
+    visit(pair.second->context.root_node, [this](CNode* n){
+      if (auto node_class = n->as_a<CNodeClass>()) {
+        //printf("%s %s\n", node_class->match_name, node_class->class_name().c_str());
+        all_modules.push_back(node_class);
+        node_class->collect_fields_and_methods();
+      }
+      if (auto node_struct = n->as_a<CNodeStruct>()) {
+        all_structs.push_back(node_struct);
+        node_struct->collect_fields_and_methods();
+      }
+
+    });
+  }
+
+
+  /*
+
+  for (auto s : all_structs) {
+    err << s->collect_fields();
+  }
+
+  //----------------------------------------
+  // Count module instances so we can find top modules.
+
+  for (auto mod : all_modules) {
+    for (auto field : mod->all_fields) {
+      if (field->is_component()) {
+        field->_type_mod->refcount++;
+      }
+    }
+  }
+  */
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+Err CSourceRepo::build_call_graphs() {
+  Err err;
+
+  /*
+  for (auto m : lib.all_modules) {
+    err << m->build_call_graph();
+  }
+  */
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
 void CSourceRepo::dump() {
   //std::vector<std::string> search_paths = {""};
   //std::map<std::string, CSourceFile*> source_map;
 
+  LOG_B("//----------------------------------------\n");
+  LOG_B("// Repo dump\n");
+
   LOG_B("Search paths:\n");
   LOG_INDENT();
   for (auto s : search_paths) {
-    LOG("`%s`\n", s.c_str());
+    LOG_B("`%s`\n", s.c_str());
   }
   LOG_DEDENT();
 
   LOG_B("Source files:\n");
   LOG_INDENT();
   for (auto pair : source_map) {
-    LOG("`%s`\n", pair.first.c_str());
+    LOG_B("`%s`\n", pair.first.c_str());
   }
   LOG_DEDENT();
 
+  LOG_B("Classes:\n");
+  LOG_INDENT();
+  for (auto n : all_modules) {
+    //n->dump_tree(3);
+
+    LOG_B("%s @ %p\n", std::string(n->get_name()).c_str(), n);
+
+    /*
+    if (n->node_parent && n->node_parent->is_a<CNodeTemplate>()) {
+      LOG_B("CNodeClass has template parent\n");
+    }
+    */
+
+  }
+  LOG_DEDENT();
+
+  LOG_B("Structs:\n");
+  LOG_INDENT();
+  for (auto n : all_structs) {
+    LOG_B("%p\n", n);
+  }
+  LOG_DEDENT();
+
+  LOG_B("//----------------------------------------\n");
+
+  /*
   for (auto pair : source_map) {
     auto s = pair.second;
     printf("\n\n\n");
     s->dump();
   }
+  */
 }
+
+//------------------------------------------------------------------------------

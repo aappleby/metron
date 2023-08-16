@@ -7,7 +7,6 @@
 #include "matcheroni/Parseroni.hpp"
 #include "metrolib/core/Err.h"
 #include "metrolib/core/Platform.h"
-#include <cstddef>  // for size_t
 #include <string>
 #include <typeinfo>
 #include <string_view>
@@ -19,18 +18,17 @@ typedef matcheroni::Span<CToken> TokenSpan;
 //------------------------------------------------------------------------------
 
 struct CNode : public parseroni::NodeBase<CNode, CToken> {
-  virtual ~CNode() {}
 
   using AtomType = CToken;
   using SpanType = matcheroni::Span<CToken>;
 
-  const char* text_begin() const {
-    return span.begin->text.begin;
-  }
+  CNode() {}
+  virtual ~CNode() {}
 
-  const char* text_end() const {
-    return (span.end - 1)->text.end;
-  }
+  virtual std::string_view get_name() const { return "<CNode>"; }
+
+  const char* text_begin() const { return span.begin->text.begin; }
+  const char* text_end() const   { return (span.end - 1)->text.end; }
 
   matcheroni::TextSpan as_text_span() const {
     return matcheroni::TextSpan(text_begin(), text_end());
@@ -44,29 +42,17 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
     return std::string_view(text_begin(), text_end());
   }
 
+  const std::string_view as_string_view() const {
+    return std::string_view(text_begin(), text_end());
+  }
+
   CHECK_RETURN virtual Err emit(Cursor& c);
 
   //----------------------------------------
 
   virtual uint32_t debug_color() const { return 0x999999; }
-
   void dump_tree(int max_depth = 0) const;
-
-  void debug_dump(std::string& out) {
-    out += "[";
-    out += match_name;
-    out += ":";
-    if (child_head) {
-      for (auto c = child_head; c; c = c->node_next) {
-        c->debug_dump(out);
-      }
-    } else {
-      out += '`';
-      out += as_string();
-      out += '`';
-    }
-    out += "]";
-  }
+  void debug_dump(std::string& out);
 
   //----------------------------------------
 
@@ -81,6 +67,13 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   }
 
   CNode* child(const char* match_name) {
+    for (auto cursor = child_head; cursor; cursor = cursor->node_next) {
+      if (strcmp(match_name, cursor->match_name) == 0) return cursor;
+    }
+    return nullptr;
+  }
+
+  const CNode* child(const char* match_name) const {
     for (auto cursor = child_head; cursor; cursor = cursor->node_next) {
       if (strcmp(match_name, cursor->match_name) == 0) return cursor;
     }

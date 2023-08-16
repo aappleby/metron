@@ -10,8 +10,6 @@
 
 #include "matcheroni/Utilities.hpp"
 
-#include <functional>
-
 using namespace matcheroni;
 
 //------------------------------------------------------------------------------
@@ -60,17 +58,6 @@ static void mkdir_all(const std::vector<std::string>& full_path) {
 
 //------------------------------------------------------------------------------
 
-typedef std::function<void(CNode*)> node_visitor;
-
-void visit(CNode* n, node_visitor v) {
-  v(n);
-  for (auto c = n->child_head; c; c = c->node_next) {
-    visit(c, v);
-  }
-}
-
-//------------------------------------------------------------------------------
-
 int main_new(Options opts) {
   LOG_G("New parser!\n");
 
@@ -80,24 +67,28 @@ int main_new(Options opts) {
   CSourceFile* root_file = nullptr;
   err << repo.load_source(opts.src_name, &root_file);
 
-  if (root_file) {
-    //utils::print_trees(root_file->context, utils::to_span(root_file->source_code), 50, 3);
-    root_file->context.root_node->dump_tree();
+  if (!root_file) {
+    LOG_R("Could not load %s\n", opts.src_name.c_str());
+    return -1;
   }
 
-#if 1
-  std::vector<CNodeClass*> class_nodes;
-
-  for (auto pair : repo.source_map) {
-    visit(pair.second->context.root_node, [&class_nodes](CNode* n){
-      if (auto node_class = n->as_a<CNodeClass>()) {
-        //printf("%s %s\n", node_class->match_name, node_class->class_name().c_str());
-        class_nodes.push_back(node_class);
-      }
-    });
+  if (opts.verbose) {
+    //root_file->context.root_node->dump_tree();
   }
 
+  //----------------------------------------
+  // All modules are now in the library, we can resolve references to other
+  // modules when we're collecting fields.
 
+  LOG_B("Processing source files\n");
+  err << repo.collect_fields_and_methods();
+  err << repo.build_call_graphs();
+  LOG_B("\n");
+
+  if (opts.verbose) {
+    repo.dump();
+    LOG_G("\n");
+  }
 
 
 
@@ -150,7 +141,6 @@ int main_new(Options opts) {
       fclose(out_file);
     }
   }
-#endif
 
   LOG_B("Done!\n");
 

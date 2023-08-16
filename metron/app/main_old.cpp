@@ -90,36 +90,32 @@ int main_old(Options opts) {
   }
 
   //----------------------------------------
+  // All modules are now in the library, we can resolve references to other
+  // modules when we're collecting fields.
 
   LOG_B("Processing source files\n");
-  {
-    //----------------------------------------
-    // All modules are now in the library, we can resolve references to other
-    // modules when we're collecting fields.
+  for (auto m : lib.all_modules) {
+    err << m->collect_fields_and_methods();
+  }
 
-    for (auto m : lib.all_modules) {
-      err << m->collect_fields_and_methods();
-    }
+  for (auto s : lib.all_structs) {
+    err << s->collect_fields();
+  }
 
-    for (auto s : lib.all_structs) {
-      err << s->collect_fields();
-    }
+  //----------------------------------------
+  // Build call graphs
 
-    //----------------------------------------
-    // Build call graphs
+  for (auto m : lib.all_modules) {
+    err << m->build_call_graph();
+  }
 
-    for (auto m : lib.all_modules) {
-      err << m->build_call_graph();
-    }
+  //----------------------------------------
+  // Count module instances so we can find top modules.
 
-    //----------------------------------------
-    // Count module instances so we can find top modules.
-
-    for (auto mod : lib.all_modules) {
-      for (auto field : mod->all_fields) {
-        if (field->is_component()) {
-          field->_type_mod->refcount++;
-        }
+  for (auto mod : lib.all_modules) {
+    for (auto field : mod->all_fields) {
+      if (field->is_component()) {
+        field->_type_mod->refcount++;
       }
     }
   }

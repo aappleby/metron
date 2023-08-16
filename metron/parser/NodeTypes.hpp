@@ -7,111 +7,136 @@
 #include <assert.h>
 #include <vector>
 
+struct CContext;
 struct CNodeDeclaration;
 struct CNodeFunction;
 struct CNodeConstructor;
+struct CNodeTemplateParams;
+struct CNodeDeclaration;
 
-//------------------------------------------------------------------------------
+//==============================================================================
+// Toplevel stuff
+//==============================================================================
 
-struct CNodeClass : public CNode {
-  virtual uint32_t debug_color() const { return 0x00FF00; }
-
-  std::vector<CNodeDeclaration*> decls;
-  std::vector<CNodeFunction*>    methods;
-  std::vector<CNodeConstructor*> constructors;
-
-  void init(const char* match_name, SpanType span, uint64_t flags);
-
-  virtual Err emit(Cursor& cursor) {
-    Err err = cursor.check_at(this);
-
-    auto n_class = child("class");
-    auto n_name  = child("name");
-    auto n_body  = child("body");
-
-    err << cursor.emit_replacements(n_class->as_string_view(), "class", "module");
-    err << cursor.emit_gap(n_class, n_name);
-    err << cursor.emit(n_name);
-    err << cursor.emit_gap(n_name, n_body);
-
-    err << cursor.emit_print("(\n");
-    //cursor.push_indent(node_body);
-    err << cursor.emit_print("{{port list}}");
-    //err << cursor.emit_module_ports(node_body);
-    //cursor.pop_indent(node_body);
-    err << cursor.emit_line(");");
-
-
-    err << cursor.emit(n_body);
-
-    return err << cursor.check_done(this);
-  }
-
-  std::string class_name() {
-    return child("name")->as_string();
-  }
-
-  /*
-  CHECK_RETURN Err MtCursor::emit_module_ports(MnNode class_body) {
-    Err err;
-
-    if (current_mod.top()->needs_tick()) {
-      err << emit_line("// global clock");
-      err << emit_line("input logic clock,");
-    }
-
-    if (current_mod.top()->input_signals.size()) {
-      err << emit_line("// input signals");
-      for (auto f : current_mod.top()->input_signals) {
-        err << emit_field_port(f);
-      }
-    }
-
-    if (current_mod.top()->output_signals.size()) {
-      err << emit_line("// output signals");
-      for (auto f : current_mod.top()->output_signals) {
-        err << emit_field_port(f);
-      }
-    }
-
-    if (current_mod.top()->output_registers.size()) {
-      err << emit_line("// output registers");
-      for (auto f : current_mod.top()->output_registers) {
-        err << emit_field_port(f);
-      }
-    }
-
-    for (auto m : current_mod.top()->all_methods) {
-      if (!m->is_init_ && m->is_public() && m->internal_callers.empty()) {
-        err << emit_method_ports(m);
-      }
-    }
-
-    // Remove trailing comma from port list
-    if (at_comma) {
-      err << emit_backspace();
-    }
-
-    return err;
-  }
-  */
-
-
+struct CNodeTranslationUnit : public CNode {
+  virtual uint32_t debug_color() const { return 0xFFFF00; }
+  virtual Err emit(Cursor& cursor) { return cursor.emit_default(this); }
 };
 
 //------------------------------------------------------------------------------
 
-struct CNodeDeclaration : public CNode {
-  virtual uint32_t debug_color() const { return 0xFF00FF; }
+struct CNodeNamespace : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+};
 
+//------------------------------------------------------------------------------
+
+struct CNodePreproc : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+  virtual uint32_t debug_color() const { return 0x00BBBB; }
+  virtual Err emit(Cursor& cursor);
+};
+
+//==============================================================================
+// Data Structures
+//==============================================================================
+
+struct CNodeClass : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+
+  virtual uint32_t debug_color() const { return 0x00FF00; }
+  void init(const char* match_name, SpanType span, uint64_t flags);
+
+  virtual Err emit(Cursor& cursor);
+
+  virtual std::string_view get_name() const {
+    return child("name")->get_name();
+  }
+
+  Err collect_fields_and_methods();
+
+  std::string name;
+  std::vector<CNodeDeclaration*> all_modparams;
+  std::vector<CNodeConstructor*> all_constructors;
+  std::vector<CNodeDeclaration*> all_fields;
+  std::vector<CNodeFunction*>    all_methods;
+};
+
+//------------------------------------------------------------------------------
+
+struct CNodeTemplate : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+  virtual uint32_t debug_color() const { return 0x00FFFF; }
+  virtual Err emit(Cursor& cursor);
+};
+
+//------------------------------------------------------------------------------
+
+struct CNodeStruct : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+  virtual uint32_t debug_color() const { return 0xFFAAAA; }
+
+  Err collect_fields_and_methods();
+};
+
+//------------------------------------------------------------------------------
+
+struct CNodeUnion : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+};
+
+//------------------------------------------------------------------------------
+
+struct CNodeEnum : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+};
+
+//------------------------------------------------------------------------------
+
+struct CNodeFieldList : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+  virtual uint32_t debug_color() const { return 0xFF8080; }
+  virtual Err emit(Cursor& cursor);
+};
+
+//==============================================================================
+//
+//==============================================================================
+
+struct CNodeExpression : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+  virtual uint32_t debug_color() const { return 0xFF00FF; }
+};
+
+struct CNodeStatement : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+  virtual uint32_t debug_color() const { return 0xFF00FF; }
+};
+
+struct CNodeDeclaration : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+
+  virtual std::string_view get_name() const {
+    return child("decl_name")->get_name();
+  }
+
+  virtual uint32_t debug_color() const { return 0xFF00FF; }
   virtual Err emit(Cursor& cursor) {
     return cursor.emit_replacement(this, "{{CNodeDeclaration}}");
   }
 };
 
-struct CNodeEnum : public CNode {};
+//------------------------------------------------------------------------------
+
+struct CNodeType : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+  virtual uint32_t debug_color() const { return 0xFF00FF; }
+};
+
+//------------------------------------------------------------------------------
 
 struct CNodeFunction : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
   virtual uint32_t debug_color() const { return 0x0000FF; }
 
   virtual Err emit(Cursor& cursor) {
@@ -119,7 +144,24 @@ struct CNodeFunction : public CNode {
   }
 };
 
+//------------------------------------------------------------------------------
+
+struct CNodeQualifier : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+  virtual uint32_t debug_color() const { return 0x0000FF; }
+};
+
+//------------------------------------------------------------------------------
+
+struct CNodeConstant : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+  virtual uint32_t debug_color() const { return 0x0000FF; }
+};
+
+//------------------------------------------------------------------------------
+
 struct CNodeConstructor : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
   virtual uint32_t debug_color() const { return 0x0000FF; }
 
   virtual Err emit(Cursor& cursor) {
@@ -127,12 +169,13 @@ struct CNodeConstructor : public CNode {
   }
 };
 
-struct CNodeNamespace : public CNode {};
-
 //------------------------------------------------------------------------------
 
 struct CNodeIdentifier : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
   virtual uint32_t debug_color() const { return 0x80FF80; }
+
+  virtual std::string_view get_name() const { return as_string_view(); }
 
   virtual Err emit(Cursor& cursor) {
     return cursor.emit_default(this);
@@ -149,6 +192,7 @@ struct CNodePunct : public CNode {
 //------------------------------------------------------------------------------
 
 struct CNodeAccess : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
   virtual uint32_t debug_color() const { return 0xFF88FF; }
   virtual Err emit(Cursor& cursor) {
     return cursor.comment_out(this);
@@ -157,109 +201,24 @@ struct CNodeAccess : public CNode {
 
 //------------------------------------------------------------------------------
 
-struct CNodeFieldList : public CNode {
-  virtual uint32_t debug_color() const { return 0xFF8080; }
-
-  virtual Err emit(Cursor& cursor) {
-    Err err = cursor.check_at(this);
-
-    for (auto c : (CNode*)this) {
-      if (c->as_string_view() == "{") {
-        err << cursor.skip_over(c);
-        err << cursor.emit_gap_after(c);
-        err << cursor.emit_print("{{template parameter list}}\n");
-      }
-      else if (c->as_string_view() == "}") {
-        err << cursor.emit_replacement(c, "endmodule");
-        err << cursor.emit_gap_after(c);
-      }
-      else {
-        err << cursor.emit(c);
-        err << cursor.emit_gap_after(c);
-      }
-
-    }
-
-    return err << cursor.check_done(this);
-
-    //return emit_default(cursor);
-  }
-};
-
-//------------------------------------------------------------------------------
-
-struct CNodePreproc : public CNode {
-  virtual uint32_t debug_color() const { return 0x00BBBB; }
-
-  virtual Err emit(Cursor& cursor) {
-    Err err = cursor.check_at(this);
-    auto v = as_string_view();
-
-    if (v.starts_with("#include")) {
-      err << cursor.emit_replacements(v, "#include", "`include", ".h", ".sv");
-    }
-    else if (v.starts_with("#ifndef")) {
-      err << cursor.emit_replacements(v, "#ifndef", "`ifndef");
-    }
-    else if (v.starts_with("#define")) {
-      err << cursor.emit_replacements(v, "#define", "`define");
-    }
-    else if (v.starts_with("#endif")) {
-      err << cursor.emit_replacements(v, "#endif", "`endif");
-    }
-    else {
-      return ERR("Don't know how to handle this preproc");
-    }
-
-    return err << cursor.check_done(this);
-  }
-};
-
-//------------------------------------------------------------------------------
-
-struct CNodeStruct : public CNode {
-  virtual uint32_t debug_color() const { return 0xFFAAAA; }
-};
-
 struct CNodeCall : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
   virtual uint32_t debug_color() const { return 0xFF0040; }
 };
 
 //------------------------------------------------------------------------------
 
 struct CNodeList : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
   virtual uint32_t debug_color() const { return 0xFFFF00; }
   virtual Err emit(Cursor& cursor) { return cursor.emit_default(this); }
 };
 
 //------------------------------------------------------------------------------
 
-struct CNodeTemplate : public CNode {
-  virtual uint32_t debug_color() const { return 0x00FFFF; }
-
-  virtual Err emit(Cursor& cursor) {
-    Err err = cursor.check_at(this);
-
-
-    // Template params have to go _inside_ the class definition in Verilog, so
-    // we skip them here.
-    auto class_node = child("template_class");
-    err << cursor.skip_span(cursor.text_cursor, class_node->text_begin());
-    err << cursor.emit(class_node);
-    err << cursor.skip_span(cursor.text_cursor, text_end());
-    //err << emit_rest(cursor);
-
-    //cursor.current_mod.pop();
-    return err << cursor.check_done(this);
-  }
-};
-
 struct CNodeTemplateParams : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
   virtual uint32_t debug_color() const { return 0x0088FF; }
-};
-
-struct CNodeTemplateParam : public CNode {
-  virtual uint32_t debug_color() const { return 0x0044FF; }
 };
 
 //------------------------------------------------------------------------------
@@ -269,27 +228,75 @@ struct CNodeKeyword : public CNode {
   virtual Err emit(Cursor& cursor) { return cursor.emit_default(this); }
 };
 
-struct CNodeType : public CNode {
-  virtual uint32_t debug_color() const { return 0xFFFFFF; }
+//------------------------------------------------------------------------------
+
+struct CNodeTypedef : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
 };
 
-struct CNodeTypedef : public CNode {};
+//==============================================================================
+// Control flow
+//==============================================================================
 
-struct CNodeUnion : public CNode {};
-
-struct CNodeTranslationUnit : public CNode {
-  virtual uint32_t debug_color() const { return 0xFFFF00; }
-  virtual Err emit(Cursor& cursor) { return cursor.emit_default(this); }
+struct CNodeFor : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+  virtual uint32_t debug_color() const { return 0xFF00FF; }
 };
 
-struct CNodeCompoundStatement : public CNode {
-  virtual uint32_t debug_color() const { return 0xFF8888; }
+struct CNodeIf : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+  virtual uint32_t debug_color() const { return 0xFF00FF; }
+};
 
-  /*
-  virtual Err emit(Cursor& cursor) {
-    return emit_default(cursor);
-  }
-  */
+struct CNodeReturn : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+  virtual uint32_t debug_color() const { return 0xFF00FF; }
 };
 
 //------------------------------------------------------------------------------
+
+struct CNodeSwitch : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+  virtual uint32_t debug_color() const { return 0xFF00FF; }
+};
+
+struct CNodeCase : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+  virtual uint32_t debug_color() const { return 0xFF00FF; }
+};
+
+struct CNodeDefault : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+  virtual uint32_t debug_color() const { return 0xFF00FF; }
+};
+
+//------------------------------------------------------------------------------
+
+struct CNodeDoWhile : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+  virtual uint32_t debug_color() const { return 0xFF00FF; }
+};
+
+struct CNodeWhile : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+  virtual uint32_t debug_color() const { return 0xFF00FF; }
+};
+
+struct CNodeCompound : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+  virtual uint32_t debug_color() const { return 0xFF8888; }
+};
+
+struct CNodeBreak : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+  virtual uint32_t debug_color() const { return 0xFF00FF; }
+};
+
+struct CNodeContinue : public CNode {
+  static TokenSpan match(CContext& ctx, TokenSpan body);
+  virtual uint32_t debug_color() const { return 0xFF00FF; }
+};
+
+//==============================================================================
+//
+//==============================================================================

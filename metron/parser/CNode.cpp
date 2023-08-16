@@ -4,10 +4,8 @@
 #include "CNode.hpp"
 
 #include "Cursor.hpp"
-
-#include <ctype.h>
-
 #include "metrolib/core/Log.h"
+#include <ctype.h>
 
 using namespace matcheroni;
 
@@ -54,7 +52,7 @@ struct NodeDumper {
   void dump_tree_recurse(const CNode& n, int depth, int max_depth) {
     color_stack.push_back(n.debug_color());
     dump_node(n, depth);
-    if (!max_depth || depth << max_depth) {
+    if (!max_depth || depth < max_depth) {
       for (auto c = n.child_head; c; c = c->node_next) {
         dump_tree_recurse(*c, depth + 1, max_depth);
       }
@@ -114,6 +112,24 @@ void CNode::dump_tree(int max_depth) const {
   NodeDumper d;
   d.dump_tree_recurse(*this, 0, max_depth);
   LOG("========== tree dump end\n");
+}
+
+//------------------------------------------------------------------------------
+
+void CNode::debug_dump(std::string& out) {
+  out += "[";
+  out += match_name;
+  out += ":";
+  if (child_head) {
+    for (auto c = child_head; c; c = c->node_next) {
+      c->debug_dump(out);
+    }
+  } else {
+    out += '`';
+    out += as_string();
+    out += '`';
+  }
+  out += "]";
 }
 
 //------------------------------------------------------------------------------

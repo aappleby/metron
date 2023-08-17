@@ -114,9 +114,6 @@ struct Cursor {
 
   //----------------------------------------
 
-  const char* text_cursor = nullptr;
-  std::stack<const char*> cursor_stack;
-
   void push_cursor(const char* new_cursor) {
     cursor_stack.push(text_cursor);
     text_cursor = new_cursor;
@@ -131,6 +128,13 @@ struct Cursor {
 
   CSourceRepo* repo = nullptr;
   CSourceFile* source_file = nullptr;
+
+  // FIXME need to switch from text cursor to token cursor...
+
+  const char* text_cursor = nullptr;
+  std::stack<const char*> cursor_stack;
+
+  const CToken* tok_cursor = nullptr;
 
   //----------------------------------------
 

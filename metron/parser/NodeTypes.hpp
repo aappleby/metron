@@ -116,9 +116,7 @@ struct CNodeDeclaration : public CNode {
   }
 
   virtual uint32_t debug_color() const { return 0xFF00FF; }
-  virtual Err emit(Cursor& cursor) {
-    return cursor.emit_replacement(this, "{{CNodeDeclaration}}");
-  }
+  virtual Err emit(Cursor& cursor);
 };
 
 //------------------------------------------------------------------------------

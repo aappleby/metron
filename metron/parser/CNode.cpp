@@ -126,7 +126,7 @@ void CNode::debug_dump(std::string& out) {
     }
   } else {
     out += '`';
-    out += as_string();
+    out += text();
     out += '`';
   }
   out += "]";

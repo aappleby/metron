@@ -19,6 +19,8 @@ private:
     --my_reg4;
   }
 
+  const char* blarp = "hello world";
+
   int my_reg1;
   int my_reg2;
   int my_reg3;

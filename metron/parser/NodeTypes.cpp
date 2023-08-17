@@ -8,7 +8,7 @@ using namespace parseroni;
 void CNodeClass::init(const char* match_name, SpanType span, uint64_t flags) {
   CNode::init(match_name, span, flags);
 
-  name = child("name")->as_string();
+  name = child("name")->text();
 }
 
 //------------------------------------------------------------------------------
@@ -60,7 +60,6 @@ Err CNodeClass::emit(Cursor& cursor) {
   //err << cursor.emit_module_ports(node_body);
   //cursor.pop_indent(node_body);
   err << cursor.emit_line(");");
-
 
   err << cursor.emit(n_body);
 
@@ -124,7 +123,6 @@ Err CNodeStruct::collect_fields_and_methods() {
 Err CNodeTemplate::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
-
   // Template params have to go _inside_ the class definition in Verilog, so
   // we skip them here.
   auto class_node = child("template_class");
@@ -182,6 +180,43 @@ Err CNodeFieldList::emit(Cursor& cursor) {
       err << cursor.emit_gap_after(c);
     }
 
+  }
+
+  return err << cursor.check_done(this);
+}
+
+//------------------------------------------------------------------------------
+
+Err CNodeDeclaration::emit(Cursor& cursor) {
+  Err err = cursor.check_at(this);
+  //dump_tree();
+
+  // Check for const char*
+  auto type = child("decl_type");
+
+  bool is_const_char_ptr = false;
+  if (child("const")) {
+    if (type->child("base_type")->text() == "char") {
+      if (type->child("star")) {
+        is_const_char_ptr = true;
+      }
+    }
+  }
+
+  if (is_const_char_ptr) {
+    return cursor.emit_replacement(this, "{{const char*}}");
+
+    /*
+    err << cursor.skip_over(child("const"));
+    err << cursor.skip_over(child("decl_type"));
+    err << cursor.emit_print("localparam string ");
+    err << cursor.emit_default(child("decl_name"));
+    err << cursor.emit_print(" = ");
+    err << cursor.emit_default(child("decl_value"));
+    */
+  }
+  else {
+    err << cursor.emit_replacement(this, "{{CNodeDeclaration}}");
   }
 
   return err << cursor.check_done(this);

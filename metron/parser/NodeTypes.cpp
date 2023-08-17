@@ -63,7 +63,6 @@ Err CNodeClass::emit(Cursor& cursor) {
 
 
   err << cursor.emit(n_body);
-  err << cursor.skip_over(child("semi"));
 
   return err << cursor.check_done(this);
 }

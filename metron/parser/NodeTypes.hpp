@@ -108,11 +108,6 @@ struct CNodeExpression : public CNode {
   virtual uint32_t debug_color() const { return 0xFF00FF; }
 };
 
-struct CNodeStatement : public CNode {
-  static TokenSpan match(CContext& ctx, TokenSpan body);
-  virtual uint32_t debug_color() const { return 0xFF00FF; }
-};
-
 struct CNodeDeclaration : public CNode {
   static TokenSpan match(CContext& ctx, TokenSpan body);
 

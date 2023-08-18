@@ -122,11 +122,9 @@ Err CSourceRepo::collect_fields_and_methods() {
 Err CSourceRepo::build_call_graphs() {
   Err err;
 
-  /*
-  for (auto m : lib.all_modules) {
-    err << m->build_call_graph();
+  for (auto mod : all_modules) {
+    err << mod->build_call_graph();
   }
-  */
 
   return err;
 }

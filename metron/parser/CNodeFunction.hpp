@@ -9,7 +9,6 @@
 //------------------------------------------------------------------------------
 
 struct CNodeFunction : public CNode {
-  static TokenSpan match(CContext& ctx, TokenSpan body);
   virtual uint32_t debug_color() const { return 0x0000FF; }
 
   virtual std::string_view get_name() const;

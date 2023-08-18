@@ -2,6 +2,7 @@
 
 #include "NodeTypes.hpp"
 #include "CNodeFunction.hpp"
+#include "CNodeField.hpp"
 
 //------------------------------------------------------------------------------
 
@@ -9,18 +10,36 @@ void CNodeClass::init(const char* match_name, SpanType span, uint64_t flags) {
   CNode::init(match_name, span, flags);
 }
 
+uint32_t CNodeClass::debug_color() const {
+  return 0x00FF00;
+}
+
 std::string_view CNodeClass::get_name() const {
   return child("name")->get_name();
 }
 
-//------------------------------------------------------------------------------
+CNodeField* CNodeClass::get_field(std::string_view name) {
+  for (auto f : all_fields) if (f->get_name() == name) return f;
+  return nullptr;
+}
 
+CNodeFunction* CNodeClass::get_method(std::string_view name) {
+  for (auto m : all_methods) if (m->get_name() == name) return m;
+  return nullptr;
+}
+
+CNodeDeclaration* CNodeClass::get_modparam(std::string_view name) {
+  for (auto p : all_modparams) if (p->get_name() == name) return p;
+  return nullptr;
+}
+
+//------------------------------------------------------------------------------
 
 Err CNodeClass::collect_fields_and_methods() {
   Err err;
 
   for (auto c : this) {
-    if (auto n = c->as_a<CNodeDeclaration>()) {
+    if (auto n = c->as_a<CNodeField>()) {
       all_fields.push_back(n);
     }
     if (auto n = c->as_a<CNodeFunction>()) {
@@ -30,8 +49,8 @@ Err CNodeClass::collect_fields_and_methods() {
 
   if (auto parent = node_parent->as_a<CNodeTemplate>()) {
     //LOG_B("CNodeClass has template parent\n");
-    auto params = parent->child_as<CNodeTemplateParams>("template_params");
-    for (auto param : params) {
+    CNode* params = parent->child("template_params");
+    for (CNode*  param : params) {
       if (param->is_a<CNodeDeclaration>()) {
         //param->dump_tree(3);
         all_modparams.push_back(param->as_a<CNodeDeclaration>());
@@ -42,12 +61,17 @@ Err CNodeClass::collect_fields_and_methods() {
   return err;
 }
 
+//------------------------------------------------------------------------------
+
 Err CNodeClass::build_call_graph() {
   Err err;
 
   for (auto method : all_methods) {
-    visit(method, [](CNode* child) {
+    visit(method, [&](CNode* child) {
       if (!child->is_a<CNodeCall>()) return;
+
+
+
     });
   }
 
@@ -90,6 +114,42 @@ Err CNodeClass::build_call_graph() {
   */
 
   return err;
+}
+
+//------------------------------------------------------------------------------
+
+CNodeFunction* CNodeClass::field_path_to_function(CNode* field_head) {
+  if (!field_head) return nullptr;
+
+  auto next = field_head->node_next;
+
+  if (field_head->node_next) {
+  }
+  else {
+    //auto next_field = get_field(field_head->get_text());
+    //return get_field(field_head->get_text())->field_path_to_function(
+  }
+
+  return nullptr;
+}
+
+//------------------------------------------------------------------------------
+
+CNodeFunction* CNodeClass::resolve_function(CNode* name) {
+  if (!name) return nullptr;
+
+  if (auto field = name->as_a<CNodeFieldExpression>()) {
+  }
+  else if (auto qual = name->as_a<CNodeQualifiedIdentifier>()) {
+    assert(false);
+    return nullptr;
+  }
+  else if (auto id = name->as_a<CNodeIdentifier>()) {
+  }
+  else {
+    assert(false && "Could not resolve function name");
+    return nullptr;
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -194,5 +254,34 @@ CHECK_RETURN Err MtCursor::emit_module_ports(MnNode class_body) {
   return err;
 }
 */
+
+
+//------------------------------------------------------------------------------
+
+/*
+Err CNodeFi eldList::emit(Cursor& cursor) {
+  Err err = cursor.check_at(this);
+
+  for (auto c : (CNode*)this) {
+    if (c->get_text() == "{") {
+      err << cursor.skip_over(c);
+      err << cursor.emit_gap_after(c);
+      err << cursor.emit_print("{{template parameter list}}\n");
+    }
+    else if (c->get_text() == "}") {
+      err << cursor.emit_replacement(c, "endmodule");
+      err << cursor.emit_gap_after(c);
+    }
+    else {
+      err << cursor.emit(c);
+      err << cursor.emit_gap_after(c);
+    }
+
+  }
+
+  return err << cursor.check_done(this);
+}
+*/
+
 
 //------------------------------------------------------------------------------

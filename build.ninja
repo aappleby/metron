@@ -287,6 +287,11 @@ build wasm/obj/metron/parser/CNodeStruct.o: compile_cpp_ems $
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/tree-sitter/lib/include -Isymlinks/tree-sitter/lib/src $
       -Isymlinks/CLI11/include -Itests
+build wasm/obj/metron/parser/CNodeField.o: compile_cpp_ems $
+    metron/parser/CNodeField.cpp
+  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
+      -Isymlinks/tree-sitter/lib/include -Isymlinks/tree-sitter/lib/src $
+      -Isymlinks/CLI11/include -Itests
 build wasm/obj/metron/parser/NodeTypes.o: compile_cpp_ems $
     metron/parser/NodeTypes.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
@@ -386,7 +391,8 @@ build docs/app/metron.js: link_ems $
     wasm/obj/metron/parser/CLexer.o wasm/obj/metron/parser/CNode.o $
     wasm/obj/metron/parser/CParser.o wasm/obj/metron/parser/CNodeClass.o $
     wasm/obj/metron/parser/CNodeFunction.o $
-    wasm/obj/metron/parser/CNodeStruct.o wasm/obj/metron/parser/NodeTypes.o $
+    wasm/obj/metron/parser/CNodeStruct.o $
+    wasm/obj/metron/parser/CNodeField.o wasm/obj/metron/parser/NodeTypes.o $
     wasm/obj/metron/parser/Tracer.o wasm/obj/metron/parser/Instance.o $
     wasm/obj/metron/parser/Cursor.o wasm/obj/metron/parser/CScope.o $
     wasm/obj/metron/parser/CSourceFile.o $
@@ -464,6 +470,10 @@ build obj/metron/parser/CNodeStruct.o: compile_cpp $
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/tree-sitter/lib/include -Isymlinks/tree-sitter/lib/src $
       -Isymlinks/CLI11/include -Itests
+build obj/metron/parser/CNodeField.o: compile_cpp metron/parser/CNodeField.cpp
+  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
+      -Isymlinks/tree-sitter/lib/include -Isymlinks/tree-sitter/lib/src $
+      -Isymlinks/CLI11/include -Itests
 build obj/metron/parser/NodeTypes.o: compile_cpp metron/parser/NodeTypes.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/tree-sitter/lib/include -Isymlinks/tree-sitter/lib/src $
@@ -502,10 +512,11 @@ build bin/libparser.a: static_lib obj/metron/parser/CContext.o $
     obj/metron/parser/CLexer.o obj/metron/parser/CNode.o $
     obj/metron/parser/CParser.o obj/metron/parser/CNodeClass.o $
     obj/metron/parser/CNodeFunction.o obj/metron/parser/CNodeStruct.o $
-    obj/metron/parser/NodeTypes.o obj/metron/parser/Tracer.o $
-    obj/metron/parser/Instance.o obj/metron/parser/Cursor.o $
-    obj/metron/parser/CScope.o obj/metron/parser/CSourceFile.o $
-    obj/metron/parser/CSourceRepo.o obj/metron/parser/CToken.o
+    obj/metron/parser/CNodeField.o obj/metron/parser/NodeTypes.o $
+    obj/metron/parser/Tracer.o obj/metron/parser/Instance.o $
+    obj/metron/parser/Cursor.o obj/metron/parser/CScope.o $
+    obj/metron/parser/CSourceFile.o obj/metron/parser/CSourceRepo.o $
+    obj/metron/parser/CToken.o
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/tree-sitter/lib/include -Isymlinks/tree-sitter/lib/src $
       -Isymlinks/CLI11/include -Itests

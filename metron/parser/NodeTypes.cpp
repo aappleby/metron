@@ -47,31 +47,6 @@ Err CNodePreproc::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-Err CNodeFieldList::emit(Cursor& cursor) {
-  Err err = cursor.check_at(this);
-
-  for (auto c : (CNode*)this) {
-    if (c->get_text() == "{") {
-      err << cursor.skip_over(c);
-      err << cursor.emit_gap_after(c);
-      err << cursor.emit_print("{{template parameter list}}\n");
-    }
-    else if (c->get_text() == "}") {
-      err << cursor.emit_replacement(c, "endmodule");
-      err << cursor.emit_gap_after(c);
-    }
-    else {
-      err << cursor.emit(c);
-      err << cursor.emit_gap_after(c);
-    }
-
-  }
-
-  return err << cursor.check_done(this);
-}
-
-//------------------------------------------------------------------------------
-
 Err CNodeDeclaration::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
   //dump_tree();

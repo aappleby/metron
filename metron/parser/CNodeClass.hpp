@@ -9,17 +9,19 @@ struct CNodeConstructor;
 struct CNodeFunction;
 struct CSourceRepo;
 struct CSourceFile;
+struct CNodeField;
 
 //------------------------------------------------------------------------------
 
 struct CNodeClass : public CNode {
-  static TokenSpan match(CContext& ctx, TokenSpan body);
-
   void init(const char* match_name, SpanType span, uint64_t flags);
 
-  virtual uint32_t debug_color() const override { return 0x00FF00; }
-  virtual Err emit(Cursor& cursor) override;
+  virtual uint32_t debug_color() const override;
   virtual std::string_view get_name() const override;
+
+  CNodeField*       get_field(std::string_view name);
+  CNodeFunction*    get_method(std::string_view name);
+  CNodeDeclaration* get_modparam(std::string_view name);
 
   bool needs_tick();
   bool needs_tock();
@@ -27,16 +29,24 @@ struct CNodeClass : public CNode {
   Err collect_fields_and_methods();
   Err build_call_graph();
 
+  CNodeFunction* field_path_to_function(CNode* field_head);
+
+  CNodeFunction* resolve_function(CNode* name);
+
+  CNode* resolve_scope(CNode* name);
+
+  virtual Err emit(Cursor& cursor) override;
+
   //----------------------------------------
 
   CSourceRepo* repo;
   CSourceFile* file;
   int refcount = 0;
 
-  std::vector<CNodeDeclaration*> all_modparams;
   std::vector<CNodeConstructor*> all_constructors;
-  std::vector<CNodeDeclaration*> all_fields;
   std::vector<CNodeFunction*>    all_methods;
+  std::vector<CNodeField*>       all_fields;
+  std::vector<CNodeDeclaration*> all_modparams;
 
   /*
   std::vector<MtField*> input_signals;

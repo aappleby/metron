@@ -81,8 +81,17 @@ int main_new(Options opts) {
   // modules when we're collecting fields.
 
   LOG_B("Processing source files\n");
-  err << repo.collect_fields_and_methods();
-  err << repo.build_call_graphs();
+
+  {
+    LOG_INDENT_SCOPE();
+
+    LOG_B("collect_fields_and_methods\n");
+    err << repo.collect_fields_and_methods();
+
+    LOG_B("build_call_graphs\n");
+    err << repo.build_call_graphs();
+  }
+
   LOG_B("\n");
 
   if (opts.verbose) {

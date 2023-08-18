@@ -77,17 +77,6 @@ Err CSourceRepo::load_source(std::string filename, CSourceFile** out_source) {
 
 //------------------------------------------------------------------------------
 
-typedef std::function<void(CNode*)> node_visitor;
-
-void visit(CNode* n, node_visitor v) {
-  v(n);
-  for (auto c = n->child_head; c; c = c->node_next) {
-    visit(c, v);
-  }
-}
-
-//------------------------------------------------------------------------------
-
 Err CSourceRepo::collect_fields_and_methods() {
   Err err;
 

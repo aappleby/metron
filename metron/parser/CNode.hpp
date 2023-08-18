@@ -10,6 +10,7 @@
 #include <string>
 #include <typeinfo>
 #include <string_view>
+#include <functional>
 
 struct Cursor;
 
@@ -108,6 +109,17 @@ inline CNodeIterator begin(CNode* parent) {
 
 inline CNodeIterator end(CNode* parent) {
   return CNodeIterator(nullptr);
+}
+
+//------------------------------------------------------------------------------
+
+typedef std::function<void(CNode*)> node_visitor;
+
+inline void visit(CNode* n, node_visitor v) {
+  v(n);
+  for (auto c = n->child_head; c; c = c->node_next) {
+    visit(c, v);
+  }
 }
 
 //------------------------------------------------------------------------------

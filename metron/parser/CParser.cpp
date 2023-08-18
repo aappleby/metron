@@ -162,6 +162,9 @@ inline TokenSpan match_punct(CContext& ctx, TokenSpan body) {
   return body;
 }
 
+template<StringParam lit>
+using Punct = Ref<match_punct<lit>>;
+
 //------------------------------------------------------------------------------
 // Our builtin types are any sequence of prefixes followed by a builtin type
 
@@ -199,12 +202,29 @@ TokenSpan CNodeIdentifier::match(CContext& ctx, TokenSpan body) {
   Seq<
     Not<Ref<match_builtin_type>>,
     Not<Ref<&CContext::match_typedef_name>>,
+
+    Atom<LEX_IDENTIFIER>,
+    Opt<Seq<
+      Atom<'.'>,
+      Cap2<"field", CNodeIdentifier>
+    >>,
+
+    Opt<Seq<
+      Punct<"::">,
+      Cap2<"scope", CNodeIdentifier>
+    >>
+
+    /*
     Atom<LEX_IDENTIFIER>,
     Opt<Seq<
       // FIXME we should really handle scoped identifiers better...
-      Ref<match_punct<"::">>,
+      Oneof<
+        Atom<'.'>,
+        Ref<match_punct<"::">>,
+      >,
       CNodeIdentifier
     >>
+    */
   >;
   return pattern::match(ctx, body);
 }
@@ -381,7 +401,7 @@ TokenSpan match_prefix_cast(CContext& ctx, TokenSpan body) {
 TokenSpan CNodeCall::match(CContext& ctx, TokenSpan body) {
   using pattern = Seq<
     Cap2<"func_name",     CNodeIdentifier>,
-    Cap3<"template_args", CNodeTExpList>,
+    Opt<Cap3<"template_args", CNodeTExpList>>,
     Cap2<"func_args",     CNodeExpList>
   >;
   return pattern::match(ctx, body);

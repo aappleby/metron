@@ -45,6 +45,12 @@ Err CNodeClass::collect_fields_and_methods() {
 Err CNodeClass::build_call_graph() {
   Err err;
 
+  for (auto method : all_methods) {
+    visit(method, [](CNode* child) {
+      if (!child->is_a<CNodeCall>()) return;
+    });
+  }
+
   /*
   for (auto src_method : all_methods) {
     auto src_mod = this;

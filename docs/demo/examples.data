@@ -4224,10 +4224,16 @@ public:
 private:
 
   void tick(int a, int b, int c = 12) {
+
+    tock(1, 2, 3);
+
     my_reg1++;
     ++my_reg2;
     my_reg3--;
     --my_reg4;
+  }
+
+  void tock(int q, int r, int s) {
   }
 
   const char* blarp = "hello world";

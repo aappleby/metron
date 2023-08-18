@@ -34,15 +34,7 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
     return matcheroni::TextSpan(text_begin(), text_end());
   }
 
-  std::string text() {
-    return std::string(text_begin(), text_end());
-  }
-
-  std::string_view as_string_view() {
-    return std::string_view(text_begin(), text_end());
-  }
-
-  const std::string_view as_string_view() const {
+  const std::string_view get_text() const {
     return std::string_view(text_begin(), text_end());
   }
 

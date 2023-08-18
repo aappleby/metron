@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 
 #include "CNode.hpp"
 #include "Cursor.hpp"
@@ -8,8 +7,6 @@
 #include <vector>
 
 struct CContext;
-struct CNodeDeclaration;
-struct CNodeFunction;
 struct CNodeConstructor;
 struct CNodeTemplateParams;
 struct CNodeDeclaration;
@@ -41,42 +38,10 @@ struct CNodePreproc : public CNode {
 // Data Structures
 //==============================================================================
 
-struct CNodeClass : public CNode {
-  static TokenSpan match(CContext& ctx, TokenSpan body);
-
-  virtual uint32_t debug_color() const { return 0x00FF00; }
-  void init(const char* match_name, SpanType span, uint64_t flags);
-
-  virtual Err emit(Cursor& cursor);
-
-  virtual std::string_view get_name() const {
-    return child("name")->get_name();
-  }
-
-  Err collect_fields_and_methods();
-
-  std::string name;
-  std::vector<CNodeDeclaration*> all_modparams;
-  std::vector<CNodeConstructor*> all_constructors;
-  std::vector<CNodeDeclaration*> all_fields;
-  std::vector<CNodeFunction*>    all_methods;
-};
-
-//------------------------------------------------------------------------------
-
 struct CNodeTemplate : public CNode {
   static TokenSpan match(CContext& ctx, TokenSpan body);
   virtual uint32_t debug_color() const { return 0x00FFFF; }
   virtual Err emit(Cursor& cursor);
-};
-
-//------------------------------------------------------------------------------
-
-struct CNodeStruct : public CNode {
-  static TokenSpan match(CContext& ctx, TokenSpan body);
-  virtual uint32_t debug_color() const { return 0xFFAAAA; }
-
-  Err collect_fields_and_methods();
 };
 
 //------------------------------------------------------------------------------
@@ -128,17 +93,6 @@ struct CNodeType : public CNode {
 
 //------------------------------------------------------------------------------
 
-struct CNodeFunction : public CNode {
-  static TokenSpan match(CContext& ctx, TokenSpan body);
-  virtual uint32_t debug_color() const { return 0x0000FF; }
-
-  virtual Err emit(Cursor& cursor) {
-    return cursor.emit_replacement(this, "{{CNodeFunction}}");
-  }
-};
-
-//------------------------------------------------------------------------------
-
 struct CNodeQualifier : public CNode {
   static TokenSpan match(CContext& ctx, TokenSpan body);
   virtual uint32_t debug_color() const { return 0x0000FF; }
@@ -168,7 +122,7 @@ struct CNodeIdentifier : public CNode {
   static TokenSpan match(CContext& ctx, TokenSpan body);
   virtual uint32_t debug_color() const { return 0x80FF80; }
 
-  virtual std::string_view get_name() const { return as_string_view(); }
+  virtual std::string_view get_name() const { return get_text(); }
 
   virtual Err emit(Cursor& cursor) {
     return cursor.emit_default(this);

@@ -1,6 +1,8 @@
 #include "CSourceRepo.hpp"
 
 #include "CSourceFile.hpp"
+#include "CNodeStruct.hpp"
+#include "CNodeClass.hpp"
 #include "matcheroni/Utilities.hpp"
 #include "metrolib/core/Log.h"
 #include "NodeTypes.hpp"
@@ -8,6 +10,22 @@
 #include <functional>
 
 namespace fs = std::filesystem;
+
+//------------------------------------------------------------------------------
+
+CNodeClass* CSourceRepo::get_module(std::string_view name) {
+  for (auto c : all_modules) {
+    if (c->get_name() == name) return c;
+  }
+  return nullptr;
+}
+
+CNodeStruct* CSourceRepo::get_struct(std::string_view name) {
+  for (auto c : all_structs) {
+    if (c->get_name() == name) return c;
+  }
+  return nullptr;
+}
 
 //------------------------------------------------------------------------------
 
@@ -126,6 +144,12 @@ Err CSourceRepo::build_call_graphs() {
 
 //------------------------------------------------------------------------------
 
+void CSourceRepo::categorize_methods() {
+}
+
+
+//------------------------------------------------------------------------------
+
 void CSourceRepo::dump() {
   //std::vector<std::string> search_paths = {""};
   //std::map<std::string, CSourceFile*> source_map;
@@ -150,9 +174,9 @@ void CSourceRepo::dump() {
   LOG_B("Classes:\n");
   LOG_INDENT();
   for (auto n : all_modules) {
-    n->dump_tree(3);
-
+    //n->dump_tree(3);
     LOG_B("%s @ %p\n", std::string(n->get_name()).c_str(), n);
+    n->dump_tree();
 
     /*
     if (n->node_parent && n->node_parent->is_a<CNodeTemplate>()) {

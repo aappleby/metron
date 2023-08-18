@@ -12,7 +12,7 @@ public:
 
 private:
 
-  void tick() {
+  void tick(int a, int b, int c = 12) {
     my_reg1++;
     ++my_reg2;
     my_reg3--;

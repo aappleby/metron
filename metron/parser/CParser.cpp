@@ -3,21 +3,22 @@
 
 #include "CParser.hpp"
 
-#include "metrolib/core/Log.h"
-#include "matcheroni/Matcheroni.hpp"
-#include "matcheroni/Parseroni.hpp"
-#include "matcheroni/Utilities.hpp"
-#include "matcheroni/Cookbook.hpp"
-
 #include "CConstants.hpp"
 #include "CContext.hpp"
 #include "CNode.hpp"
+#include "CNodeClass.hpp"
+#include "CNodeFunction.hpp"
+#include "CNodeStruct.hpp"
 #include "CSourceFile.hpp"
 #include "CSourceRepo.hpp"
 #include "CToken.hpp"
-#include "SST.hpp"
+#include "matcheroni/Cookbook.hpp"
+#include "matcheroni/Matcheroni.hpp"
+#include "matcheroni/Parseroni.hpp"
+#include "matcheroni/Utilities.hpp"
+#include "metrolib/core/Log.h"
 #include "NodeTypes.hpp"
-
+#include "SST.hpp"
 #include <assert.h>
 
 using namespace matcheroni;
@@ -1040,7 +1041,7 @@ TokenSpan CNodeFunction::match(CContext& ctx, TokenSpan body) {
     Cap2<"type",   CNodeType>,
     Cap2<"name",   CNodeIdentifier>,
     Cap2<"params", CNodeDeclList>,
-    Cap3<"const",  Opt<Ref<match_keyword<"const">>>>,
+    Opt<Cap3<"const",  Ref<match_keyword<"const">>>>,
     Cap2<"body",   CNodeCompound>
   >;
   // clang-format on

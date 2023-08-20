@@ -10,8 +10,9 @@
 using namespace matcheroni;
 
 CHECK_RETURN Err CNode::emit(Cursor& c) {
-  LOG_R("CNode::emit() %s\n", match_name);
-  return ERR("Don't know how to emit a %s, tag `%s`", typeid(*this).name(), match_name);
+  LOG_R("CNode::emit() %s\n", match_tag);
+  dump_tree();
+  return ERR("Don't know how to emit a %s, tag `%s`", typeid(*this).name(), match_tag);
 }
 
 //------------------------------------------------------------------------------
@@ -82,7 +83,7 @@ struct NodeDumper {
       LOG_C(color, "━━ ");
     }
 
-    LOG_C(color, "%s %s = ", class_name(n), n.match_name);
+    LOG_C(color, "%s %s = ", class_name(n), n.match_tag);
 
     if (n.child_head == nullptr) {
       std::string escaped = escape(n.text_begin(), n.text_end());
@@ -118,7 +119,7 @@ void CNode::dump_tree(int max_depth) const {
 
 void CNode::debug_dump(std::string& out) {
   out += "[";
-  out += match_name;
+  out += match_tag;
   out += ":";
   if (child_head) {
     for (auto c = child_head; c; c = c->node_next) {

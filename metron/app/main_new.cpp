@@ -100,6 +100,8 @@ int main_new(Options opts) {
   }
 
 
+  exit(0);
+
 
 
   //----------

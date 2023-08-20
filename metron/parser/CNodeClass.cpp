@@ -3,11 +3,12 @@
 #include "NodeTypes.hpp"
 #include "CNodeFunction.hpp"
 #include "CNodeField.hpp"
+#include "metrolib/core/Log.h"
 
 //------------------------------------------------------------------------------
 
-void CNodeClass::init(const char* match_name, SpanType span, uint64_t flags) {
-  CNode::init(match_name, span, flags);
+void CNodeClass::init(const char* match_tag, SpanType span, uint64_t flags) {
+  CNode::init(match_tag, span, flags);
 }
 
 uint32_t CNodeClass::debug_color() const {
@@ -38,7 +39,9 @@ CNodeDeclaration* CNodeClass::get_modparam(std::string_view name) {
 Err CNodeClass::collect_fields_and_methods() {
   Err err;
 
-  for (auto c : this) {
+  auto body = child("body");
+
+  for (auto c : body) {
     if (auto n = c->as_a<CNodeField>()) {
       all_fields.push_back(n);
     }
@@ -51,7 +54,7 @@ Err CNodeClass::collect_fields_and_methods() {
     //LOG_B("CNodeClass has template parent\n");
     CNode* params = parent->child("template_params");
     for (CNode*  param : params) {
-      if (param->is_a<CNodeDeclaration>()) {
+      if (param->as_a<CNodeDeclaration>()) {
         //param->dump_tree(3);
         all_modparams.push_back(param->as_a<CNodeDeclaration>());
       }
@@ -63,15 +66,28 @@ Err CNodeClass::collect_fields_and_methods() {
 
 //------------------------------------------------------------------------------
 
-Err CNodeClass::build_call_graph() {
+Err CNodeClass::build_call_graph(CSourceRepo* repo) {
   Err err;
 
-  for (auto method : all_methods) {
-    visit(method, [&](CNode* child) {
-      if (!child->is_a<CNodeCall>()) return;
+  for (auto src_method : all_methods) {
+    visit(src_method, [&](CNode* child) {
+      auto call = child->as_a<CNodeCall>();
+      if (!call) return;
 
+      auto dst_method = repo->resolve(this, call->child("func_name"))->as_a<CNodeFunction>();
+      assert(dst_method);
 
+      if (dst_method->get_parent_class() == this) {
+        src_method->internal_callees.insert(dst_method);
+        dst_method->internal_callers.insert(src_method);
+      }
+      else {
+        src_method->external_callees.insert(dst_method);
+        dst_method->external_callers.insert(src_method);
+      }
 
+      //
+      //src_method->called_by.insert(src_method);
     });
   }
 
@@ -118,38 +134,43 @@ Err CNodeClass::build_call_graph() {
 
 //------------------------------------------------------------------------------
 
-CNodeFunction* CNodeClass::field_path_to_function(CNode* field_head) {
-  if (!field_head) return nullptr;
-
-  auto next = field_head->node_next;
-
-  if (field_head->node_next) {
-  }
-  else {
-    //auto next_field = get_field(field_head->get_text());
-    //return get_field(field_head->get_text())->field_path_to_function(
-  }
-
-  return nullptr;
-}
-
-//------------------------------------------------------------------------------
-
-CNodeFunction* CNodeClass::resolve_function(CNode* name) {
+CNode* CNodeClass::resolve(CNode* name, CSourceRepo* repo) {
   if (!name) return nullptr;
 
+  //----------
+
   if (auto field = name->as_a<CNodeFieldExpression>()) {
+    return resolve(name->child_head, repo);
   }
-  else if (auto qual = name->as_a<CNodeQualifiedIdentifier>()) {
-    assert(false);
-    return nullptr;
+
+  //----------
+
+  if (auto qual = name->as_a<CNodeQualifiedIdentifier>()) {
+    return resolve(name->child_head, repo);
   }
-  else if (auto id = name->as_a<CNodeIdentifier>()) {
+
+  //----------
+
+  if (auto id = name->as_a<CNodeIdentifier>()) {
+    if (name->tag_is("scope")) {
+      assert(false);
+      return nullptr;
+    }
+
+    if (name->tag_is("field")) {
+      auto field = get_field(name->get_text());
+      auto field_class = repo->get_class(field->get_type_name());
+      return repo->resolve(field_class, name->node_next);
+    }
+
+    printf("### %s ###\n", name->match_tag);
+    return get_method(name->get_name());
   }
-  else {
-    assert(false && "Could not resolve function name");
-    return nullptr;
-  }
+
+  //----------
+
+  assert(false && "Could not resolve function name");
+  return nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -205,7 +226,22 @@ Err CNodeClass::emit(Cursor& cursor) {
   //cursor.pop_indent(node_body);
   err << cursor.emit_line(");");
 
-  err << cursor.emit(n_body);
+  //err << cursor.emit(n_body);
+  for (auto child : n_body) {
+    if (child->get_text() == "{") {
+      err << cursor.skip_over(child);
+      err << cursor.emit_gap_after(child);
+      err << cursor.emit_print("{{template parameter list}}\n");
+    }
+    else if (child->get_text() == "}") {
+      err << cursor.emit_replacement(child, "endmodule");
+      err << cursor.emit_gap_after(child);
+    }
+    else {
+      err << cursor.emit(child);
+      err << cursor.emit_gap_after(child);
+    }
+  }
 
   return err << cursor.check_done(this);
 }
@@ -285,3 +321,19 @@ Err CNodeFi eldList::emit(Cursor& cursor) {
 
 
 //------------------------------------------------------------------------------
+
+void CNodeClass::dump() {
+  auto name = get_name();
+  LOG_B("Class %.*s @ %p\n", name.size(), name.data(), this);
+  LOG_INDENT();
+
+  if (all_fields.size()) {
+    for (auto f : all_fields) f->dump();
+  }
+
+  if (all_methods.size()) {
+    for (auto m : all_methods) m->dump();
+  }
+
+  LOG_DEDENT();
+}

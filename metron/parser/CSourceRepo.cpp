@@ -1,8 +1,10 @@
 #include "CSourceRepo.hpp"
 
-#include "CSourceFile.hpp"
-#include "CNodeStruct.hpp"
 #include "CNodeClass.hpp"
+#include "CNodeField.hpp"
+#include "CNodeFunction.hpp"
+#include "CNodeStruct.hpp"
+#include "CSourceFile.hpp"
 #include "matcheroni/Utilities.hpp"
 #include "metrolib/core/Log.h"
 #include "NodeTypes.hpp"
@@ -13,8 +15,8 @@ namespace fs = std::filesystem;
 
 //------------------------------------------------------------------------------
 
-CNodeClass* CSourceRepo::get_module(std::string_view name) {
-  for (auto c : all_modules) {
+CNodeClass* CSourceRepo::get_class(std::string_view name) {
+  for (auto c : all_classes) {
     if (c->get_name() == name) return c;
   }
   return nullptr;
@@ -29,7 +31,7 @@ CNodeStruct* CSourceRepo::get_struct(std::string_view name) {
 
 //------------------------------------------------------------------------------
 
-std::string CSourceRepo::resolve_path(const std::string& filename) {
+std::string CSourceRepo::resolve_filename(const std::string& filename) {
   for (auto& path : search_paths) {
     std::string full_path = fs::absolute(path + filename);
     //LOG("%s exists? ", full_path.c_str());
@@ -46,7 +48,7 @@ std::string CSourceRepo::resolve_path(const std::string& filename) {
 //------------------------------------------------------------------------------
 
 Err CSourceRepo::load_source(std::string filename, CSourceFile** out_source) {
-  std::string absolute_path = resolve_path(filename);
+  std::string absolute_path = resolve_filename(filename);
 
   if (source_map.contains(absolute_path)) return Err();
 
@@ -83,8 +85,8 @@ Err CSourceRepo::collect_fields_and_methods() {
   for (auto pair : source_map) {
     visit(pair.second->context.root_node, [this](CNode* n){
       if (auto node_class = n->as_a<CNodeClass>()) {
-        //printf("%s %s\n", node_class->match_name, node_class->class_name().c_str());
-        all_modules.push_back(node_class);
+        //printf("%s %s\n", node_class->match_tag, node_class->class_name().c_str());
+        all_classes.push_back(node_class);
         node_class->collect_fields_and_methods();
       }
       if (auto node_struct = n->as_a<CNodeStruct>()) {
@@ -122,8 +124,8 @@ Err CSourceRepo::collect_fields_and_methods() {
 Err CSourceRepo::build_call_graphs() {
   Err err;
 
-  for (auto mod : all_modules) {
-    err << mod->build_call_graph();
+  for (auto mod : all_classes) {
+    err << mod->build_call_graph(this);
   }
 
   return err;
@@ -144,26 +146,19 @@ void CSourceRepo::dump() {
   LOG_B("//----------------------------------------\n");
   LOG_B("// Repo dump\n");
 
-  LOG_B("Search paths:\n");
-  LOG_INDENT();
   for (auto s : search_paths) {
-    LOG_B("`%s`\n", s.c_str());
+    LOG_G("Search path `%s`\n", s.c_str());
   }
-  LOG_DEDENT();
 
-  LOG_B("Source files:\n");
-  LOG_INDENT();
   for (auto pair : source_map) {
-    LOG_B("`%s`\n", pair.first.c_str());
+    LOG_L("Source file `%s`\n", pair.first.c_str());
   }
-  LOG_DEDENT();
 
-  LOG_B("Classes:\n");
-  LOG_INDENT();
-  for (auto n : all_modules) {
+  for (auto n : all_classes) {
+    n->dump();
     //n->dump_tree(3);
-    LOG_B("%s @ %p\n", std::string(n->get_name()).c_str(), n);
-    n->dump_tree();
+    // auto name = n->get_name();
+    //LOG_B("%.*s @ %p\n", name.size(), name.data(), n);
 
     /*
     if (n->node_parent && n->node_parent->is_a<CNodeTemplate>()) {
@@ -172,14 +167,10 @@ void CSourceRepo::dump() {
     */
 
   }
-  LOG_DEDENT();
 
-  LOG_B("Structs:\n");
-  LOG_INDENT();
   for (auto n : all_structs) {
     LOG_B("%p\n", n);
   }
-  LOG_DEDENT();
 
   LOG_B("//----------------------------------------\n");
 
@@ -193,3 +184,48 @@ void CSourceRepo::dump() {
 }
 
 //------------------------------------------------------------------------------
+
+CNode* CSourceRepo::resolve(CNodeClass* parent, CNode* path) {
+  if (!path) return nullptr;
+
+  //----------
+
+  if (auto field_path = path->as_a<CNodeFieldExpression>()) {
+    return resolve(parent, field_path->child_head);
+  }
+
+  //----------
+
+  if (auto scope_path = path->as_a<CNodeQualifiedIdentifier>()) {
+    return resolve(parent, scope_path->child_head);
+  }
+
+  //----------
+
+  if (auto id = path->as_a<CNodeIdentifier>()) {
+    if (id->tag_is("field_path")) {
+      auto field = parent->get_field(id->get_text())->as_a<CNodeField>();
+      auto field_class = get_class(field->get_type_name());
+      return resolve(field_class, id->node_next);
+    }
+    else if (id->tag_is("scope_path")) {
+      assert(false);
+      return nullptr;
+    }
+    else {
+      if (auto field = parent->get_field(id->get_text())) {
+        return field;
+      }
+      if (auto method = parent->get_method(id->get_text())) {
+        return method;
+      }
+      assert(false);
+      return nullptr;
+    }
+  }
+
+  //----------
+
+  assert(false && "Could not resolve function name");
+  return nullptr;
+}

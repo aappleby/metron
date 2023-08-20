@@ -1,5 +1,9 @@
 #include "CNodeField.hpp"
 
+#include "NodeTypes.hpp"
+
+#include "metrolib/core/Log.h"
+
 //------------------------------------------------------------------------------
 
 std::string_view CNodeField::get_name() const {
@@ -50,3 +54,13 @@ Err CNodeField::emit(Cursor& cursor) {
 }
 
 //------------------------------------------------------------------------------
+
+std::string_view CNodeField::get_type_name() const {
+  return child("decl_type")->child("type")->get_text();
+}
+
+
+void CNodeField::dump() {
+  auto name = get_name();
+  LOG_A("Field %.*s\n", name.size(), name.data());
+}

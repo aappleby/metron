@@ -46,7 +46,7 @@ TokenSpan match_enum          (CContext& ctx, TokenSpan body);
 
 //------------------------------------------------------------------------------
 
-template <StringParam match_name, typename P>
+template <StringParam match_tag, typename P>
 struct TraceToken {
 
   inline static void print_match2(TokenSpan body, TokenSpan tail, int width) {
@@ -68,12 +68,12 @@ struct TraceToken {
     matcheroni_assert(body.is_valid());
     if (body.is_empty()) return body.fail();
 
-    auto name = match_name.str_val;
+    auto tag = match_tag.str_val;
 
     int depth = ctx.trace_depth++;
 
     print_match2(body, body, 40);
-    utils::print_trellis(depth, name, "?", 0xCCCCCC);
+    utils::print_trellis(depth, tag, "?", 0xCCCCCC);
 
     auto tail = P::match(ctx, body);
     depth = --ctx.trace_depth;
@@ -81,19 +81,19 @@ struct TraceToken {
     print_match2(body, tail, 40);
 
     if (tail.is_valid()) {
-      utils::print_trellis(depth, name, "!", 0x80FF80);
+      utils::print_trellis(depth, tag, "!", 0x80FF80);
     }
     else {
-      utils::print_trellis(depth, name, "X", 0x8080FF);
+      utils::print_trellis(depth, tag, "X", 0x8080FF);
     }
 
     return tail;
   }
 };
 
-template <StringParam match_name, typename pattern, typename node_type>
-//using Cap = TraceToken<match_name, Capture<match_name, pattern, node_type>>;
-using Cap = Capture<match_name, pattern, node_type>;
+template <StringParam match_tag, typename pattern, typename node_type>
+//using Cap = TraceToken<match_tag, Capture<match_tag, pattern, node_type>>;
+using Cap = Capture<match_tag, pattern, node_type>;
 
 //------------------------------------------------------------------------------
 
@@ -191,13 +191,13 @@ TokenSpan match_identifier(CContext& ctx, TokenSpan body) {
 TokenSpan match_field_expression(CContext& ctx, TokenSpan body) {
   using pattern =
   Seq<
-    Cap<"field", Atom<LEX_IDENTIFIER>, CNodeIdentifier>,
     Some<
       Seq<
-        Atom<'.'>,
-        Cap<"field", Atom<LEX_IDENTIFIER>, CNodeIdentifier>
+        Cap<"field_path", Atom<LEX_IDENTIFIER>, CNodeIdentifier>,
+        Ref<match_punct<".">>
       >
-    >
+    >,
+    Cap<"identifier", Atom<LEX_IDENTIFIER>, CNodeIdentifier>
   >;
   return pattern::match(ctx, body);
 }
@@ -207,11 +207,11 @@ TokenSpan match_qualified_identifier(CContext& ctx, TokenSpan body) {
   Seq<
     Some<
       Seq<
-        Cap<"scope", Atom<LEX_IDENTIFIER>, CNodeIdentifier>,
+        Cap<"scope_path", Atom<LEX_IDENTIFIER>, CNodeIdentifier>,
         Ref<match_punct<"::">>
       >
     >,
-    Cap<"field", Atom<LEX_IDENTIFIER>, CNodeIdentifier>
+    Cap<"identifier", Atom<LEX_IDENTIFIER>, CNodeIdentifier>
   >;
   return pattern::match(ctx, body);
 }
@@ -388,12 +388,12 @@ TokenSpan match_prefix_cast(CContext& ctx, TokenSpan body) {
 TokenSpan match_call(CContext& ctx, TokenSpan body) {
   using pattern = Seq<
     Oneof<
-      Cap<"name", Ref<match_qualified_identifier>, CNodeQualifiedIdentifier>,
-      Cap<"name", Ref<match_field_expression>,     CNodeFieldExpression>,
-      Cap<"name", Ref<match_identifier>,           CNodeIdentifier>
+      Cap<"func_name",    Ref<match_qualified_identifier>, CNodeQualifiedIdentifier>,
+      Cap<"func_name",    Ref<match_field_expression>,     CNodeFieldExpression>,
+      Cap<"func_name",    Ref<match_identifier>,           CNodeIdentifier>
     >,
-    Opt<Cap<"template_args", Ref<match_texp_list>, CNode>>,
-    Cap<"func_args",         Ref<match_exp_list>,  CNode>
+    Cap<"func_targs",     Opt<Ref<match_texp_list>>,       CNode>,
+    Cap<"func_args",      Ref<match_exp_list>,             CNode>
   >;
   return pattern::match(ctx, body);
 }
@@ -809,7 +809,7 @@ TokenSpan match_type(CContext& ctx, TokenSpan body) {
       CNode
     >,
     Opt<Cap<"targs", Ref<match_texp_list>, CNode>>,
-    Any<Cap<"star",   Atom<'*'>, CNode>>
+    Any<Cap<"star",  Atom<'*'>,            CNode>>
   >;
   // clang-format on
   return pattern::match(ctx, body);
@@ -821,15 +821,15 @@ TokenSpan match_declaration(CContext& ctx, TokenSpan body) {
   using pattern =
   Seq<
     Any<
-      Cap<"static", Ref<match_keyword<"static">>, CNodeKeyword>,
-      Cap<"const",  Ref<match_keyword<"const">>,  CNodeKeyword>
+      Cap<"static",       Ref<match_keyword<"static">>, CNodeKeyword>,
+      Cap<"const",        Ref<match_keyword<"const">>,  CNodeKeyword>
     >,
-    Cap<"decl_type",      Ref<match_type>,       CNodeType>,
-    Cap<"decl_name",      Ref<match_identifier>, CNodeIdentifier>,
-    Any<Cap<"decl_array", Ref<match_index_list>, CNode>>,
+    Cap<"decl_type",      Ref<match_type>,              CNodeType>,
+    Cap<"decl_name",      Ref<match_identifier>,        CNodeIdentifier>,
+    Any<Cap<"decl_array", Ref<match_index_list>,        CNode>>,
     Opt<Seq<
-      Atom<'='>,
-      Cap<"decl_value",   Ref<match_expression>, CNodeExpression>
+      Cap<"eq",           Atom<'='>,                    CNodePunct>,
+      Cap<"decl_value",   Ref<match_expression>,        CNodeExpression>
     >>
   >;
   return pattern::match(ctx, body);
@@ -855,8 +855,8 @@ TokenSpan match_field(CContext& ctx, TokenSpan body) {
   // clang-format off
   using pattern =
   Oneof<
-    Cap<"semi",        Atom<';'>,               CNode>,
-    Cap<"access",      Ref<match_access>,       CNode>,
+    Cap<"semi",        Atom<';'>,               CNodePunct>,
+    Cap<"access",      Ref<match_access>,       CNodeAccess>,
     Cap<"constructor", Ref<match_constructor>,  CNodeConstructor>,
     Cap<"function",    Ref<match_function>,     CNodeFunction>,
     Cap<"struct",      Ref<match_struct>,       CNodeStruct>,
@@ -1130,26 +1130,18 @@ TokenSpan match_compound(CContext& ctx, TokenSpan body) {
 
 TokenSpan match_for(CContext& ctx, TokenSpan body) {
   // clang-format off
+  using exp_or_decl = Oneof<Ref<match_expression>, Ref<match_declaration>>;
   using pattern =
   Seq<
-    Ref<match_keyword<"for">>,
-    Atom<'('>,
-    Cap<
-      "init",
-      // This is _not_ the same as
-      // Opt<Oneof<e, x>>, Atom<';'>
-      Oneof<
-        Seq<comma_separated<Ref<match_expression>>,   Atom<';'>>,
-        Seq<comma_separated<Ref<match_declaration>>,  Atom<';'>>,
-        Atom<';'>
-      >,
-      CNode
-    >,
-    Cap<"condition", Opt<comma_separated<Ref<match_expression>>>, CNode>,
-    Atom<';'>,
-    Cap<"step", Opt<comma_separated<Ref<match_expression>>>,      CNode>,
-    Atom<')'>,
-    Ref<match_any_statement>
+    Cap<"for",       Ref<match_keyword<"for">>,  CNodeKeyword>,
+    Cap<"ldelim",    Atom<'('>,                  CNodePunct>,
+    Cap<"init",      Opt<exp_or_decl>,           CNode>,
+    Cap<"semi",      Atom<';'>,                  CNodePunct>,
+    Cap<"condition", Opt<Ref<match_expression>>, CNode>,
+    Cap<"semi",      Atom<';'>,                  CNodePunct>,
+    Cap<"step",      Opt<Ref<match_expression>>, CNode>,
+    Cap<"rdelim",    Atom<')'>,                  CNodePunct>,
+    Cap<"body",      Ref<match_any_statement>,   CNode>
   >;
   // clang-format on
   return pattern::match(ctx, body);
@@ -1160,11 +1152,11 @@ TokenSpan match_for(CContext& ctx, TokenSpan body) {
 TokenSpan match_if(CContext& ctx, TokenSpan body) {
   using pattern =
   Seq<
-    Cap<"if",        Ref<match_keyword<"if">>,   CNode>,
+    Cap<"if",        Ref<match_keyword<"if">>,   CNodeKeyword>,
     Cap<"condition", Ref<match_exp_list>,        CNode>,
     Cap<"then",      Ref<match_any_statement>,   CNode>,
     Opt<Seq<
-      Cap<"else",    Ref<match_keyword<"else">>, CNode>,
+      Cap<"else",    Ref<match_keyword<"else">>, CNodeKeyword>,
       Cap<"body",    Ref<match_any_statement>,   CNode>
     >>
   >;
@@ -1208,9 +1200,9 @@ TokenSpan match_case(CContext& ctx, TokenSpan body) {
   // clang-format off
   using pattern =
   Seq<
-    Cap<"case",      Ref<match_keyword<"case">>, CNode>,
+    Cap<"case",      Ref<match_keyword<"case">>, CNodeKeyword>,
     Cap<"condition", Ref<match_expression>,      CNodeExpression>,
-    Cap<"colon",     Atom<':'>,                  CNode>,
+    Cap<"colon",     Atom<':'>,                  CNodePunct>,
     Opt<Ref<match_case_body>>
   >;
   // clang-format on
@@ -1221,8 +1213,8 @@ TokenSpan match_default(CContext& ctx, TokenSpan body) {
   // clang-format off
   using pattern =
   Seq<
-    Cap<"default", Ref<match_keyword<"default">>, CNode>,
-    Cap<"colon",   Atom<':'>,                     CNode>,
+    Cap<"default", Ref<match_keyword<"default">>, CNodeKeyword>,
+    Cap<"colon",   Atom<':'>,                     CNodePunct>,
     Opt<Ref<match_case_body>>
   >;
   // clang-format on
@@ -1235,14 +1227,14 @@ TokenSpan match_switch(CContext& ctx, TokenSpan body) {
   // clang-format off
   using pattern =
   Seq<
-    Cap<"switch",     Ref<match_keyword<"switch">>, CNode>,
+    Cap<"switch",     Ref<match_keyword<"switch">>, CNodeKeyword>,
     Cap<"condition",  Ref<match_expression>,        CNodeExpression>,
-    Cap<"ldelim",     Atom<'{'>,                    CNode>,
+    Cap<"ldelim",     Atom<'{'>,                    CNodePunct>,
     Any<
       Cap<"case",     Ref<match_case>,              CNodeCase>,
       Cap<"default",  Ref<match_default>,           CNodeDefault>
     >,
-    Cap<"rdelim",     Atom<'}'>,                    CNode>
+    Cap<"rdelim",     Atom<'}'>,                    CNodePunct>
   >;
   // clang-format on
   return pattern::match(ctx, body);
@@ -1254,7 +1246,7 @@ TokenSpan match_while(CContext& ctx, TokenSpan body) {
   // clang-format on
   using pattern =
   Seq<
-    Cap<"while", Ref<match_keyword<"while">>, CNode>,
+    Cap<"while", Ref<match_keyword<"while">>, CNodeKeyword>,
     Cap<"cond",  Ref<match_exp_list>,         CNode>,
     Cap<"body",  Ref<match_any_statement>,    CNode>
   >;
@@ -1268,9 +1260,9 @@ TokenSpan match_do_while(CContext& ctx, TokenSpan body) {
   // clang-format off
   using pattern =
   Seq<
-    Cap<"do",    Ref<match_keyword<"do">>,    CNode>,
+    Cap<"do",    Ref<match_keyword<"do">>,    CNodeKeyword>,
     Cap<"body",  Ref<match_any_statement>,    CNode>,
-    Cap<"while", Ref<match_keyword<"while">>, CNode>,
+    Cap<"while", Ref<match_keyword<"while">>, CNodeKeyword>,
     Cap<"cond",  Ref<match_exp_list>,         CNode>
   >;
   // clang-format on
@@ -1283,6 +1275,8 @@ TokenSpan match_break(CContext& ctx, TokenSpan body) {
   using pattern = Ref<match_keyword<"break">>;
   return pattern::match(ctx, body);
 }
+
+//------------------------------------------------------------------------------
 
 TokenSpan match_continue(CContext& ctx, TokenSpan body) {
   using pattern = Ref<match_keyword<"continue">>;
@@ -1303,7 +1297,7 @@ static void extract_declarator_list(CContext& ctx, CNode* decls) {
   if (!decls) return;
   for (auto child = decls->child_head; child; child = child->node_next) {
 
-    if (strcmp(child->match_name, "decl") == 0) {
+    if (child->tag_is("decl")) {
       extract_declarator(ctx, child);
     }
     else {
@@ -1387,7 +1381,7 @@ TokenSpan match_any_statement(CContext& ctx, TokenSpan body) {
   // clang-format off
   using pattern =
   Oneof<
-    Cap<"semi",        Atom<';'>,              CNode>,
+    Cap<"semi",        Atom<';'>,              CNodePunct>,
     Cap<"for",         Ref<match_for>,         CNodeFor>,
     Cap<"if",          Ref<match_if>,          CNodeIf>,
     Cap<"return",      Ref<match_return>,      CNodeReturn>,
@@ -1410,7 +1404,7 @@ TokenSpan match_translation_unit(CContext& ctx, TokenSpan body) {
   // clang-format off
   using pattern =
   Any<
-    Cap<"semi",        Atom<';'>,               CNode>,
+    Cap<"semi",        Atom<';'>,               CNodePunct>,
     Cap<"class",       Ref<match_class>,        CNodeClass>,
     Cap<"struct",      Ref<match_struct>,       CNodeStruct>,
     Cap<"union",       Ref<match_union>,        CNodeUnion>,

@@ -126,6 +126,23 @@ struct CNodeKeyword : public CNode {
 struct CNodeTypedef : public CNode {
 };
 
+//------------------------------------------------------------------------------
+
+struct CNodeAccess : public CNode {
+  virtual Err emit(Cursor& cursor) override {
+    return cursor.comment_out(this);
+  }
+};
+
+
+//------------------------------------------------------------------------------
+
+struct CNodePunct : public CNode {
+  virtual Err emit(Cursor& cursor) override {
+    return cursor.emit_default(this);
+  }
+};
+
 //==============================================================================
 // Control flow
 //==============================================================================

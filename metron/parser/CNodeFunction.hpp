@@ -5,13 +5,19 @@
 
 #include <assert.h>
 #include <vector>
+#include <set>
+
+struct CNodeClass;
 
 //------------------------------------------------------------------------------
 
 struct CNodeFunction : public CNode {
   virtual uint32_t debug_color() const { return 0x0000FF; }
 
+  void dump();
+
   virtual std::string_view get_name() const;
+  CNodeClass* get_parent_class();
 
   bool is_constructor() const;
   bool is_public() const;
@@ -26,8 +32,6 @@ struct CNodeFunction : public CNode {
   bool called_in_tick() const;
   bool called_in_tock() const;
   bool called_in_func() const;
-
-  void dump();
 
   virtual Err emit(Cursor& cursor);
 
@@ -57,10 +61,10 @@ struct CNodeFunction : public CNode {
   bool needs_ports = false;
 
   //std::vector<CNodeDeclaration*> param_nodes;
-  //std::set<CNodeFunction*> internal_callers;
-  //std::set<CNodeFunction*> internal_callees;
-  //std::set<CNodeFunction*> external_callers;
-  //std::set<CNodeFunction*> external_callees;
+  std::set<CNodeFunction*> internal_callers;
+  std::set<CNodeFunction*> internal_callees;
+  std::set<CNodeFunction*> external_callers;
+  std::set<CNodeFunction*> external_callees;
 
   // These are available after categorize_methods
   //std::set<CNodeFunction*> tick_callers;

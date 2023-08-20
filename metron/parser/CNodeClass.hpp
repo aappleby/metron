@@ -14,7 +14,9 @@ struct CNodeField;
 //------------------------------------------------------------------------------
 
 struct CNodeClass : public CNode {
-  void init(const char* match_name, SpanType span, uint64_t flags);
+  void init(const char* match_tag, SpanType span, uint64_t flags);
+
+  void dump();
 
   virtual uint32_t debug_color() const override;
   virtual std::string_view get_name() const override;
@@ -27,11 +29,9 @@ struct CNodeClass : public CNode {
   bool needs_tock();
 
   Err collect_fields_and_methods();
-  Err build_call_graph();
+  Err build_call_graph(CSourceRepo* repo);
 
-  CNodeFunction* field_path_to_function(CNode* field_head);
-
-  CNodeFunction* resolve_function(CNode* name);
+  CNode* resolve(CNode* name, CSourceRepo* repo);
 
   CNode* resolve_scope(CNode* name);
 

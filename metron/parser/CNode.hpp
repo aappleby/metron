@@ -13,6 +13,8 @@
 #include <functional>
 
 struct Cursor;
+struct CNodeClass;
+struct CSourceRepo;
 
 typedef matcheroni::Span<CToken> TokenSpan;
 
@@ -50,32 +52,37 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   //----------------------------------------
 
   template <typename P>
-  bool is_a() const {
-    return typeid(*this) == typeid(P);
-  }
-
-  template <typename P>
   P* as_a() {
     return dynamic_cast<P*>(this);
   }
 
-  CNode* child(const char* match_name) {
+  CNode* child(const char* tag) {
     for (auto cursor = child_head; cursor; cursor = cursor->node_next) {
-      if (strcmp(match_name, cursor->match_name) == 0) return cursor;
+      if (cursor->tag_is(tag)) return cursor;
     }
     return nullptr;
   }
 
-  const CNode* child(const char* match_name) const {
+  const CNode* child(const char* tag) const {
     for (auto cursor = child_head; cursor; cursor = cursor->node_next) {
-      if (strcmp(match_name, cursor->match_name) == 0) return cursor;
+      if (cursor->tag_is(tag)) return cursor;
     }
     return nullptr;
   }
 
   template<typename P>
-  P* child_as(const char* match_name) {
-    return child(match_name)->as_a<P>();
+  P* ancestor() {
+    for (auto cursor = node_parent; cursor; cursor = cursor->node_parent) {
+      if (auto p = cursor->as_a<P>()) {
+        return p;
+      }
+    }
+    return nullptr;
+  }
+
+  template<typename P>
+  P* child_as(const char* tag) {
+    return child(tag)->as_a<P>();
   }
 
   //----------------------------------------

@@ -4,6 +4,8 @@
 #include "CNodeFunction.hpp"
 #include "CNodeField.hpp"
 #include "metrolib/core/Log.h"
+#include "CNodeClass.hpp"
+#include "CNodeStruct.hpp"
 
 //------------------------------------------------------------------------------
 
@@ -25,7 +27,7 @@ CNodeField* CNodeClass::get_field(std::string_view name) {
 }
 
 CNodeFunction* CNodeClass::get_method(std::string_view name) {
-  for (auto m : all_methods) if (m->get_name() == name) return m;
+  for (auto m : all_functions) if (m->get_name() == name) return m;
   return nullptr;
 }
 
@@ -36,17 +38,46 @@ CNodeDeclaration* CNodeClass::get_modparam(std::string_view name) {
 
 //------------------------------------------------------------------------------
 
-Err CNodeClass::collect_fields_and_methods() {
+Err CNodeClass::collect_fields_and_methods(CSourceRepo* repo) {
   Err err;
 
   auto body = child("body");
 
+  bool is_public = false;
+
   for (auto c : body) {
+    if (auto access = c->as_a<CNodeAccess>()) {
+      is_public = c->get_text() == "public:";
+    }
+
     if (auto n = c->as_a<CNodeField>()) {
+      n->_static = n->child("static") != nullptr;
+      n->_const  = n->child("const")  != nullptr;
+      n->_public = is_public;
+
+      n->_parent_class  = n->ancestor<CNodeClass>();
+      n->_parent_struct = n->ancestor<CNodeStruct>();
+      n->_type_class    = repo->get_class(n->get_type_name());
+      n->_type_struct   = repo->get_struct(n->get_type_name());
+
+
       all_fields.push_back(n);
     }
     if (auto n = c->as_a<CNodeFunction>()) {
-      all_methods.push_back(n);
+      n->is_public_ = is_public;
+      all_functions.push_back(n);
+
+      // Hook up _type_struct on all struct params
+      auto params = n->child("params");
+      for (auto p : params) {
+        p->dump_tree();
+        auto decl = p->is_a<CNodeDeclaration>();
+        decl->_type_class = repo->get_class(decl->get_type_name());
+        decl->_type_struct = repo->get_struct(decl->get_type_name());
+        LOG_G("%p %p\n", decl->_type_class, decl->_type_struct);
+      }
+
+
     }
   }
 
@@ -69,7 +100,7 @@ Err CNodeClass::collect_fields_and_methods() {
 Err CNodeClass::build_call_graph(CSourceRepo* repo) {
   Err err;
 
-  for (auto src_method : all_methods) {
+  for (auto src_method : all_functions) {
     visit(src_method, [&](CNode* child) {
       auto call = child->as_a<CNodeCall>();
       if (!call) return;
@@ -132,6 +163,61 @@ Err CNodeClass::build_call_graph(CSourceRepo* repo) {
   return err;
 }
 
+
+//------------------------------------------------------------------------------
+
+Err CNodeClass::categorize_fields(bool verbose) {
+  Err err;
+
+  if (verbose) {
+    auto name = get_name();
+    LOG_G("Categorizing %.*s\n", int(name.size()), name.data());
+  }
+
+#if 0
+  for (auto f : all_fields) {
+    if (f->is_param()) {
+      continue;
+    }
+
+    if (f->is_component()) {
+      components.push_back(f);
+    }
+    else if (f->is_public() && f->is_input()) {
+      input_signals.push_back(f);
+    }
+    else if (f->is_public() && f->is_signal()) {
+      output_signals.push_back(f);
+    }
+    else if (f->is_public() && f->is_register()) {
+      output_registers.push_back(f);
+    }
+    else if (f->is_private() && f->is_register()) {
+      private_registers.push_back(f);
+    }
+    else if (f->is_private() && f->is_signal()) {
+      private_signals.push_back(f);
+    }
+    else if (!f->is_public() && f->is_input()) {
+      private_registers.push_back(f);
+    }
+    else if (f->is_enum()) {
+    }
+    else if (f->is_dead()) {
+      dead_fields.push_back(f);
+    }
+    else {
+      err << ERR("Don't know how to categorize %s = %s\n", f->cname(),
+                 to_string(f->_state));
+      f->error();
+    }
+  }
+#endif
+
+  return err;
+}
+
+
 //------------------------------------------------------------------------------
 
 CNode* CNodeClass::resolve(CNode* name, CSourceRepo* repo) {
@@ -176,8 +262,8 @@ CNode* CNodeClass::resolve(CNode* name, CSourceRepo* repo) {
 //------------------------------------------------------------------------------
 
 bool CNodeClass::needs_tick() {
-  for (auto m : all_methods) {
-    if (m->is_tick()) return true;
+  for (auto m : all_functions) {
+    //if (m->is_tick()) return true;
   }
 
   /*
@@ -327,12 +413,19 @@ void CNodeClass::dump() {
   LOG_B("Class %.*s @ %p\n", name.size(), name.data(), this);
   LOG_INDENT();
 
+  if (refcount) {
+    LOG_G("Refcount %d\n", refcount);
+  }
+  else {
+    LOG_G("Top module\n");
+  }
+
   if (all_fields.size()) {
     for (auto f : all_fields) f->dump();
   }
 
-  if (all_methods.size()) {
-    for (auto m : all_methods) m->dump();
+  if (all_functions.size()) {
+    for (auto m : all_functions) m->dump();
   }
 
   LOG_DEDENT();

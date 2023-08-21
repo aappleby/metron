@@ -19,6 +19,10 @@ CNodeClass* CNodeFunction::get_parent_class() {
   return ancestor<CNodeClass>();
 }
 
+std::string_view CNodeFunction::get_return_type_name() const {
+  return child("return_type")->get_text();
+}
+
 void CNodeFunction::dump() {
   auto name = get_name();
 
@@ -41,6 +45,7 @@ void CNodeFunction::dump() {
       LOG_T("Calls %.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
     }
   }
+
   if (internal_callers.size()) {
     LOG_INDENT_SCOPE();
     for (auto c : internal_callers) {

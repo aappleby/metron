@@ -24,7 +24,8 @@ CNodeClass* CSourceRepo::get_class(std::string_view name) {
 
 CNodeStruct* CSourceRepo::get_struct(std::string_view name) {
   for (auto c : all_structs) {
-    if (c->get_name() == name) return c;
+    auto struct_name = c->get_name();
+    if (struct_name == name) return c;
   }
   return nullptr;
 }
@@ -83,18 +84,18 @@ Err CSourceRepo::collect_fields_and_methods() {
   Err err;
 
   for (auto pair : source_map) {
-    visit(pair.second->context.root_node, [this](CNode* n){
+    for (auto n : pair.second->context.root_node) {
       if (auto node_class = n->as_a<CNodeClass>()) {
-        //printf("%s %s\n", node_class->match_tag, node_class->class_name().c_str());
         all_classes.push_back(node_class);
-        node_class->collect_fields_and_methods();
-      }
-      if (auto node_struct = n->as_a<CNodeStruct>()) {
-        all_structs.push_back(node_struct);
-        node_struct->collect_fields_and_methods();
+        node_class->collect_fields_and_methods(this);
       }
 
-    });
+      if (auto node_struct = n->as_a<CNodeStruct>()) {
+        all_structs.push_back(node_struct);
+        node_struct->collect_fields_and_methods(this);
+      }
+
+    }
   }
 
 
@@ -169,7 +170,7 @@ void CSourceRepo::dump() {
   }
 
   for (auto n : all_structs) {
-    LOG_B("%p\n", n);
+    n->dump();
   }
 
   LOG_B("//----------------------------------------\n");

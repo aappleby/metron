@@ -3,6 +3,8 @@
 #include "CNode.hpp"
 #include "Cursor.hpp"
 
+#include "metrolib/core/Log.h"
+
 #include <assert.h>
 #include <vector>
 #include <set>
@@ -11,27 +13,34 @@ struct CNodeClass;
 
 //------------------------------------------------------------------------------
 
+struct CNodeParameter : public CNode {
+  virtual uint32_t debug_color() const { return COL_YELLOW; }
+};
+
+//------------------------------------------------------------------------------
+
 struct CNodeFunction : public CNode {
-  virtual uint32_t debug_color() const { return 0x0000FF; }
+  virtual uint32_t debug_color() const { return COL_ORANGE; }
 
   void dump();
 
   virtual std::string_view get_name() const;
   CNodeClass* get_parent_class();
 
-  bool is_constructor() const;
-  bool is_public() const;
-  bool is_tick() const { assert(false); return false; }
-  bool is_tock() const { assert(false); return false; }
+  std::string_view get_return_type_name() const;
 
-  bool has_params() const;
-  bool has_return() const;
+  //bool is_public() const;
+  //bool is_tick() const { assert(false); return false; }
+  //bool is_tock() const { assert(false); return false; }
 
-  bool called_in_module() const;
-  bool called_in_init() const;
-  bool called_in_tick() const;
-  bool called_in_tock() const;
-  bool called_in_func() const;
+  //bool has_params() const;
+  //bool has_return() const;
+
+  //bool called_in_module() const;
+  //bool called_in_init() const;
+  //bool called_in_tick() const;
+  //bool called_in_tock() const;
+  //bool called_in_func() const;
 
   virtual Err emit(Cursor& cursor);
 
@@ -47,6 +56,7 @@ struct CNodeFunction : public CNode {
 
   //----------
 
+  bool is_public_ = false;
   bool is_init_ = false;
   bool is_tick_ = false;
   bool is_tock_ = false;

@@ -1,3 +1,4 @@
+#pragma once
 #include "CNode.hpp"
 #include "Cursor.hpp"
 
@@ -28,8 +29,9 @@ struct CNodeClass : public CNode {
   bool needs_tick();
   bool needs_tock();
 
-  Err collect_fields_and_methods();
+  Err collect_fields_and_methods(CSourceRepo* repo);
   Err build_call_graph(CSourceRepo* repo);
+  Err categorize_fields(bool verbose);
 
   CNode* resolve(CNode* name, CSourceRepo* repo);
 
@@ -44,7 +46,7 @@ struct CNodeClass : public CNode {
   int refcount = 0;
 
   std::vector<CNodeConstructor*> all_constructors;
-  std::vector<CNodeFunction*>    all_methods;
+  std::vector<CNodeFunction*>    all_functions;
   std::vector<CNodeField*>       all_fields;
   std::vector<CNodeDeclaration*> all_modparams;
 

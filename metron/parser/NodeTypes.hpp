@@ -3,12 +3,13 @@
 #include "CNode.hpp"
 #include "Cursor.hpp"
 
+#include "metrolib/core/Log.h"
+
 #include <assert.h>
 #include <vector>
 
 struct CContext;
 struct CNodeConstructor;
-struct CNodeTemplateParams;
 struct CNodeDeclaration;
 
 //==============================================================================
@@ -56,7 +57,7 @@ struct CNodeEnum : public CNode {
 //==============================================================================
 
 struct CNodeExpression : public CNode {
-  virtual uint32_t debug_color() const { return 0xFF00FF; }
+  virtual uint32_t debug_color() const { return COL_YELLOW; }
 };
 
 struct CNodeDeclaration : public CNode {
@@ -64,8 +65,28 @@ struct CNodeDeclaration : public CNode {
     return child("decl_name")->get_name();
   }
 
+  std::string_view get_type_name() const {
+    auto decl_type = child("decl_type");
+    /*
+    if (auto name = decl_type->child("type_name")) return name->get_text();
+    if (auto name = decl_type->child("builtin_name")) return builtin->get_text();
+
+    assert(false);
+    return "<could not get type of decl>";
+    */
+    return decl_type->child_head->get_text();
+  }
+
+  bool is_array() const {
+    return child("decl_array") != nullptr;
+  }
+
+
   virtual uint32_t debug_color() const { return 0xFF00FF; }
   virtual Err emit(Cursor& cursor);
+
+  CNodeClass*  _type_class = nullptr;
+  CNodeStruct* _type_struct = nullptr;
 };
 
 //------------------------------------------------------------------------------
@@ -78,16 +99,6 @@ struct CNodeType : public CNode {
 
 struct CNodeConstant : public CNode {
   virtual uint32_t debug_color() const { return 0x0000FF; }
-};
-
-//------------------------------------------------------------------------------
-
-struct CNodeConstructor : public CNode {
-  virtual uint32_t debug_color() const { return 0x0000FF; }
-
-  virtual Err emit(Cursor& cursor) {
-    return cursor.emit_replacement(this, "{{CNodeConstructor}}");
-  }
 };
 
 //------------------------------------------------------------------------------
@@ -111,7 +122,12 @@ struct CNodeQualifiedIdentifier : public CNode {
 //------------------------------------------------------------------------------
 
 struct CNodeCall : public CNode {
-  virtual uint32_t debug_color() const { return 0xFF0040; }
+  virtual std::string_view get_name() const { return child("func_name")->get_text(); }
+  virtual uint32_t debug_color() const { return COL_SKY; }
+};
+
+struct CNodeArgument : public CNode {
+  virtual std::string_view get_name() const { return "arg"; }
 };
 
 //------------------------------------------------------------------------------

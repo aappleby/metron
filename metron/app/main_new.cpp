@@ -7,6 +7,11 @@
 #include "metron/parser/CParser.hpp"
 #include "metron/parser/Cursor.hpp"
 #include "metron/parser/NodeTypes.hpp"
+#include "metron/parser/CNodeClass.hpp"
+#include "metron/parser/CNodeStruct.hpp"
+#include "metron/parser/CNodeField.hpp"
+#include "metron/parser/CNodeFunction.hpp"
+#include "metron/parser/CInstance.hpp"
 
 #include "matcheroni/Utilities.hpp"
 
@@ -73,7 +78,7 @@ int main_new(Options opts) {
   }
 
   if (opts.verbose) {
-    //root_file->context.root_node->dump_tree();
+    root_file->context.root_node->dump_tree();
   }
 
   //----------------------------------------
@@ -91,6 +96,38 @@ int main_new(Options opts) {
     LOG_B("build_call_graphs\n");
     err << repo.build_call_graphs();
   }
+
+  //----------------------------------------
+  // Count module instances so we can find top modules.
+
+  for (auto c : repo.all_classes) {
+    for (auto f : c->all_fields) {
+      if (f->is_component()) {
+        f->_type_class->refcount++;
+      }
+    }
+  }
+
+  CNodeClass* top = nullptr;
+  for (auto c : repo.all_classes) {
+    if (c->refcount == 0) {
+      if (top == nullptr) {
+        top = c;
+      }
+      else {
+        LOG_R("Multiple top modules!\n");
+        exit(-1);
+      }
+    }
+  }
+  if (top == nullptr) {
+    LOG_R("No top module?\n");
+    exit(-1);
+  }
+
+  LOG_V("Instance:\n");
+  auto inst = new CInstClass(top);
+  inst->dump();
 
   LOG_B("\n");
 

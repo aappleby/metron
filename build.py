@@ -296,6 +296,7 @@ def build_parser():
         lib_name="bin/libparser.a",
         src_files=[
             "metron/parser/CContext.cpp",
+            "metron/parser/CInstance.cpp",
             "metron/parser/CLexer.cpp",
             "metron/parser/CNode.cpp",
             "metron/parser/CParser.cpp",
@@ -467,6 +468,7 @@ cpp_binary2(
         "metron/nodes/MtNode.cpp",
         "metron/nodes/MtStruct.cpp",
         "metron/parser/CContext.cpp",
+        "metron/parser/CInstance.cpp",
         "metron/parser/CLexer.cpp",
         "metron/parser/CNode.cpp",
         "metron/parser/CParser.cpp",

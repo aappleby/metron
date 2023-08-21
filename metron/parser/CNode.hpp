@@ -52,9 +52,12 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   //----------------------------------------
 
   template <typename P>
-  P* as_a() {
-    return dynamic_cast<P*>(this);
-  }
+  P* as_a() { return dynamic_cast<P*>(this); }
+
+  template <typename P>
+  P* is_a() { auto result = dynamic_cast<P*>(this); assert(result); return result; }
+
+  //----------------------------------------
 
   CNode* child(const char* tag) {
     for (auto cursor = child_head; cursor; cursor = cursor->node_next) {

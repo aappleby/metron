@@ -24,6 +24,7 @@ CHECK_RETURN Err Cursor::emit(CNode* n) {
 }
 
 CHECK_RETURN Err Cursor::skip_over(CNode* n) {
+  if (n == nullptr) return Err();
   Err err = check_at(n);
   err << skip_span(n->text_begin(), n->text_end());
   return err << check_done(n);
@@ -84,7 +85,7 @@ CHECK_RETURN Err Cursor::emit_gap_after(CNode* n) {
 CHECK_RETURN Err Cursor::skip_gap_after(CNode* n) {
   Err err;
   if (n->node_next) {
-    text_cursor = n->node_next->text_begin();
+    err << skip_span(n->text_end(), n->node_next->text_begin());
   }
   return err;
 }
@@ -362,11 +363,28 @@ CHECK_RETURN Err Cursor::emit_replacement(CNode* n, const std::string& s) {
 
 //----------------------------------------
 
+CHECK_RETURN Err Cursor::emit_replacement(CNode* n, const char* fmt, ...) {
+  Err err = check_at(n);
+  va_list args;
+  va_start(args, fmt);
+  err << emit_vprint(fmt, args);
+  text_cursor = n->text_end();
+  return err << check_done(n);
+}
+
+//----------------------------------------
+
 CHECK_RETURN Err Cursor::emit_splice(CNode* n) {
   Err err;
   push_cursor(n->text_begin());
   err << emit(n);
   pop_cursor();
+  return err;
+}
+
+CHECK_RETURN Err Cursor::emit_raw(CNode* n) {
+  Err err;
+  err << emit_span(n->text_begin(), n->text_end());
   return err;
 }
 

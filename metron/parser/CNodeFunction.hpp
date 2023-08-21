@@ -42,8 +42,6 @@ struct CNodeFunction : public CNode {
   //bool called_in_tock() const;
   //bool called_in_func() const;
 
-  virtual Err emit(Cursor& cursor);
-
   //----------------------------------------
 
   //MtModule* _mod = nullptr;

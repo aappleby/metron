@@ -65,18 +65,9 @@ Err CNodeDeclaration::emit(Cursor& cursor) {
 
   if (is_const_char_ptr) {
     return cursor.emit_replacement(this, "{{const char*}}");
-
-    /*
-    err << cursor.skip_over(child("const"));
-    err << cursor.skip_over(child("decl_type"));
-    err << cursor.emit_print("localparam string ");
-    err << cursor.emit_default(child("decl_name"));
-    err << cursor.emit_print(" = ");
-    err << cursor.emit_default(child("decl_value"));
-    */
   }
   else {
-    err << cursor.emit_replacement(this, "{{CNodeDeclaration}}");
+    err << CNode::emit(cursor);
   }
 
   return err << cursor.check_done(this);

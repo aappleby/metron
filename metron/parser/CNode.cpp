@@ -9,10 +9,12 @@
 
 using namespace matcheroni;
 
-CHECK_RETURN Err CNode::emit(Cursor& c) {
-  LOG_R("CNode::emit() %s\n", match_tag);
-  dump_tree();
-  return ERR("Don't know how to emit a %s, tag `%s`", typeid(*this).name(), match_tag);
+CHECK_RETURN Err CNode::emit(Cursor& cursor) {
+  //LOG_R("CNode::emit() %s\n", match_tag);
+  //dump_tree();
+  //return ERR("Don't know how to emit a %s, tag `%s`", typeid(*this).name(), match_tag);
+
+  return cursor.emit_replacement(this, "{{%s}}", typeid(*this).name());
 }
 
 //------------------------------------------------------------------------------

@@ -35,6 +35,7 @@ struct CNodeField : public CNode {
   bool is_param() const;
   bool is_public() const;
   bool is_private() const;
+  bool is_const_char() const;
 
   bool is_input() const;
   bool is_register() const;

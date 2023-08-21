@@ -112,7 +112,6 @@ struct CInstParam : public CInstance {
 
 struct CInstReturn : public CInstance {
   CInstReturn();
-  virtual void dump();
 };
 
 //------------------------------------------------------------------------------

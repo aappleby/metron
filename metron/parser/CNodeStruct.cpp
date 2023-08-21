@@ -35,6 +35,18 @@ Err CNodeStruct::collect_fields_and_methods(CSourceRepo* repo) {
 
 //------------------------------------------------------------------------------
 
+/*
+  // Struct outside of class
+  if (current_mod.top() == nullptr) {
+    // sym_field_declaration
+    //   field_type : sym_template_type
+    //   field_declarator : sym_field_identifier
+    //   lit ;
+
+    return err << emit_children(n);
+  }
+*/
+
 Err CNodeStruct::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
@@ -53,7 +65,6 @@ Err CNodeStruct::emit(Cursor& cursor) {
 
   return err << cursor.check_done(this);
 }
-
 
 //------------------------------------------------------------------------------
 

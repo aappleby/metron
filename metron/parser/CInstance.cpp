@@ -10,7 +10,7 @@
 //------------------------------------------------------------------------------
 
 void CInstance::dump() {
-  assert(false);
+  LOG_R("{{%s}}", typeid(*this).name());
 }
 
 //------------------------------------------------------------------------------
@@ -140,7 +140,6 @@ CInstParam::CInstParam(CNodeDeclaration* node_decl) : node_decl(node_decl) {
 void CInstParam::dump() {
   auto name = node_decl->get_name();
   LOG_G("Param %.*s\n", int(name.size()), name.data());
-  //LOG_G("{{CParamInstance}}\n");
   LOG_INDENT_SCOPE();
   inst_decl->dump();
 }
@@ -148,10 +147,6 @@ void CInstParam::dump() {
 //------------------------------------------------------------------------------
 
 CInstReturn::CInstReturn() {
-}
-
-void CInstReturn::dump() {
-  LOG_G("{{CInstReturn}}\n");
 }
 
 //------------------------------------------------------------------------------

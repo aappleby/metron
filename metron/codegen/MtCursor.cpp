@@ -1976,10 +1976,7 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
 }
 
 //------------------------------------------------------------------------------
-// + struct_specifier (255) =
-// |--# lit (83) = "struct"
-// |--# name: type_identifier (444) = "MyStruct1"
-// |--+ body: field_declaration_list (257) =
+// CNodeStruct::emit OK
 
 CHECK_RETURN Err MtCursor::emit_sym_struct_specifier(MnNode n) {
   Err err = check_at(sym_struct_specifier, n);

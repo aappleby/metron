@@ -47,42 +47,6 @@ uint32_t CNodeField::debug_color() const {
   return 0xFF00FF;
 }
 
-//------------------------------------------------------------------------------
-
-Err CNodeField::emit(Cursor& cursor) {
-  Err err = cursor.check_at(this);
-  //dump_tree();
-
-  // Check for const char*
-  auto type = child("decl_type");
-
-  bool is_const_char_ptr = false;
-  if (child("const")) {
-    if (type->child("base_type")->get_text() == "char") {
-      if (type->child("star")) {
-        is_const_char_ptr = true;
-      }
-    }
-  }
-
-  if (is_const_char_ptr) {
-    return cursor.emit_replacement(this, "{{const char*}}");
-
-    /*
-    err << cursor.skip_over(child("const"));
-    err << cursor.skip_over(child("decl_type"));
-    err << cursor.emit_print("localparam string ");
-    err << cursor.emit_default(child("decl_name"));
-    err << cursor.emit_print(" = ");
-    err << cursor.emit_default(child("decl_value"));
-    */
-  }
-  else {
-    err << cursor.emit_replacement(this, "{{CNodeField}}");
-  }
-
-  return err << cursor.check_done(this);
-}
 
 //------------------------------------------------------------------------------
 
@@ -118,6 +82,21 @@ bool CNodeField::is_private() const {
   return !_public;
 }
 
+bool CNodeField::is_const_char() const {
+  auto node_static = child("static");
+  auto node_const  = child("const");
+  auto node_type   = child("decl_type");
+
+  if (node_static && node_const) {
+    auto builtin = node_type->child("builtin_name");
+    auto star    = node_type->child("star");
+    if (builtin && star && builtin->get_text() == "char") {
+      return true;
+    }
+  }
+  return false;
+}
+
 //------------------------------------------------------------------------------
 
 bool CNodeField::is_input() const {
@@ -134,6 +113,98 @@ bool CNodeField::is_signal() const {
 
 bool CNodeField::is_dead() const {
   return _state == CTX_NONE;
+}
+
+//------------------------------------------------------------------------------
+
+#if 0
+//------------------------------------------------------------------------------
+// Emit field declarations. For components, also emit glue declarations and
+// append the glue parameter list to the field.
+
+// + field_declaration (259) =
+// |--# type: type_identifier (444) = "example_data_memory"
+// |--# declarator: field_identifier (440) = "data_memory"
+// |--# lit (39) = ";"
+
+CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
+  Err err = check_at(n);
+  assert(n.sym == sym_field_declaration);
+
+  //----------
+  // Actual fields
+
+  auto field = current_mod.top()->get_field(n.name4());
+  assert(field);
+
+  if (field->is_component()) {
+    // Component
+    err << emit_component(n);
+    err << emit_submod_binding_fields(n);
+  }
+  else if (field->is_port()) {
+    // Ports don't go in the class body.
+    err << skip_over(n);
+  }
+  else if (field->is_dead()) {
+    err << comment_out(n);
+  }
+  else {
+    err << emit_children(n);
+  }
+
+  return err << check_done(n);
+}
+
+/*
+[000.013] ========== tree dump begin
+[000.013]  ┳━ CNodeField field =
+[000.013]  ┣━━┳━ CNodeType decl_type =
+[000.013]  ┃  ┗━━━━ CNode builtin_name = "int"
+[000.013]  ┗━━━━ CNodeIdentifier decl_name = "x"
+[000.013] ========== tree dump end
+*/
+#endif
+
+
+Err CNodeField::emit(Cursor& cursor) {
+  //dump_tree();
+
+  Err err = cursor.check_at(this);
+
+  auto node_static = child("static");
+  auto node_const  = child("const");
+  auto node_type   = child("decl_type");
+  auto node_name   = child("decl_name");
+  auto node_eq     = child("eq");
+  auto node_value  = child("decl_value");
+
+  if (is_const_char()) {
+    err << cursor.skip_over(node_static);
+    err << cursor.skip_gap_after(node_static);
+    err << cursor.skip_over(node_const);
+    err << cursor.skip_gap_after(node_const);
+    err << cursor.skip_over(node_type);
+    err << cursor.skip_gap_after(node_type);
+    err << cursor.emit_print("localparam string ");
+    err << cursor.emit(node_name);
+    err << cursor.emit_gap_after(node_name);
+    err << cursor.emit(node_eq);
+    err << cursor.emit_gap_after(node_eq);
+    err << cursor.emit_raw(node_value);
+    err << cursor.emit_gap_after(node_value);
+    return err << cursor.check_done(this);
+  }
+
+  if (is_component()) {
+    err << CNode::emit(cursor);
+    return err << cursor.check_done(this);
+  }
+
+  err << cursor.emit_default(this);
+
+
+  return err << cursor.check_done(this);
 }
 
 //------------------------------------------------------------------------------

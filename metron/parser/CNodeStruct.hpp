@@ -14,6 +14,8 @@ struct CNodeStruct : public CNode {
 
   Err collect_fields_and_methods(CSourceRepo* repo);
 
+  virtual Err emit(Cursor& cursor) override;
+
   void dump();
 
   std::vector<CNodeField*> all_fields;

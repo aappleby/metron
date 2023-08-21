@@ -4213,35 +4213,16 @@ class toplevel {
 
 //------------------------------------------------------------------------------
 
-class UartRX {
-public:
-  void tick(int a, int b, int c) {
-  }
+struct S {
+  int x;
+  int y;
 };
 
-//------------------------------------------------------------------------------
-
-class UartTX {
+class Top {
 public:
-  UartRX rx;
-};
-
-//------------------------------------------------------------------------------
-
-class Module {
-public:
-  void tick(int a, int b, int c = 12) {
-    tx.rx.tick(1, 2, 3);
-  }
-
-  void shift_input() {
-    dec_shift();
-  }
-
-  void dec_shift() {
-  }
-
-  UartTX tx;
+  void foo(logic<7>* a, int b, S c) {}
+  void bar() { foo(1+ 3 * 1000, 2); }
+  S blarp;
 };
 
 //------------------------------------------------------------------------------

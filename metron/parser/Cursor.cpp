@@ -81,6 +81,13 @@ CHECK_RETURN Err Cursor::emit_gap_after(CNode* n) {
   return err;
 }
 
+CHECK_RETURN Err Cursor::skip_gap_after(CNode* n) {
+  Err err;
+  if (n->node_next) {
+    text_cursor = n->node_next->text_begin();
+  }
+  return err;
+}
 
 //------------------------------------------------------------------------------
 
@@ -351,6 +358,16 @@ CHECK_RETURN Err Cursor::emit_replacement(CNode* n, const std::string& s) {
   }
   text_cursor = n->text_end();
   return err << check_done(n);
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err Cursor::emit_splice(CNode* n) {
+  Err err;
+  push_cursor(n->text_begin());
+  err << emit(n);
+  pop_cursor();
+  return err;
 }
 
 //------------------------------------------------------------------------------

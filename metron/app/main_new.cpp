@@ -103,7 +103,7 @@ int main_new(Options opts) {
   for (auto c : repo.all_classes) {
     for (auto f : c->all_fields) {
       if (f->is_component()) {
-        f->_type_class->refcount++;
+        f->_type_class->refcount++; 
       }
     }
   }
@@ -137,7 +137,7 @@ int main_new(Options opts) {
   }
 
 
-  exit(0);
+  //exit(0);
 
 
 
@@ -190,7 +190,7 @@ int main_new(Options opts) {
     }
   }
 
-  LOG_B("Done!\n");
+  LOG("Done!\n");
 
   return 0;
 }

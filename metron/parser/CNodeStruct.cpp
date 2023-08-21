@@ -35,6 +35,28 @@ Err CNodeStruct::collect_fields_and_methods(CSourceRepo* repo) {
 
 //------------------------------------------------------------------------------
 
+Err CNodeStruct::emit(Cursor& cursor) {
+  Err err = cursor.check_at(this);
+
+  auto node_struct = child("struct");
+  auto node_name   = child("name");
+  auto node_body   = child("body");
+
+  err << cursor.emit_replacement(node_struct, "typedef struct packed");
+  err << cursor.emit_gap_after(node_struct);
+  err << cursor.skip_over(node_name);
+  err << cursor.skip_gap_after(node_name);
+  err << cursor.emit_default(node_body);
+  err << cursor.emit_print(" ");
+  err << cursor.emit_splice(node_name);
+  err << cursor.emit_gap_after(node_body);
+
+  return err << cursor.check_done(this);
+}
+
+
+//------------------------------------------------------------------------------
+
 void CNodeStruct::dump() {
   auto name = get_name();
   LOG_B("Struct %.*s @ %p\n", name.size(), name.data(), this);

@@ -42,12 +42,15 @@ struct CToken {
 
   const char* type_to_str() const;
   uint32_t type_to_color() const;
-  void dump() const;
+  void dump_token() const;
 
   //----------------------------------------
 
   LexemeType type;
   matcheroni::TextSpan text;
+  int row;
+  int col;
+  int indent;
 };
 
 //------------------------------------------------------------------------------

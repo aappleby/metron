@@ -91,9 +91,11 @@ uint32_t CToken::type_to_color() const {
 
 //----------------------------------------------------------------------------
 
-void CToken::dump() const {
+void CToken::dump_token() const {
   const int span_len = 20;
   std::string dump = "";
+
+
 
   if (type == LEX_BOF) dump = "<bof>";
   if (type == LEX_EOF) dump = "<eof>";
@@ -112,6 +114,8 @@ void CToken::dump() const {
     dump = dump + "...`";
   }
   while (dump.size() < span_len) dump += " ";
+
+  printf("r%04d c%02d i%02d ", row, col, indent);
 
   utils::set_color(type_to_color());
   printf("%-14.14s ", type_to_str());

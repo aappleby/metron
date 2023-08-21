@@ -15,9 +15,14 @@ struct CLexer {
   void reset();
   bool lex(matcheroni::TextSpan text);
 
+  CToken next_lexeme(matcheroni::TextMatchContext& ctx, matcheroni::TextSpan body);
+
   std::vector<CToken> tokens;
+  int current_row = 0;
+  int current_col = 0;
+  int current_indent = 0;
+  bool in_indent = true;
 };
 
-CToken next_lexeme(matcheroni::TextMatchContext& ctx, matcheroni::TextSpan body);
 
 //------------------------------------------------------------------------------

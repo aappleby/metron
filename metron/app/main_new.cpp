@@ -77,6 +77,14 @@ int main_new(Options opts) {
     return -1;
   }
 
+  /*
+  for (auto t : root_file->context.tokens) {
+    t.dump_token();
+    printf("\n");
+  }
+  exit(0);
+  */
+
   if (opts.verbose) {
     root_file->context.root_node->dump_tree();
   }
@@ -103,7 +111,7 @@ int main_new(Options opts) {
   for (auto c : repo.all_classes) {
     for (auto f : c->all_fields) {
       if (f->is_component()) {
-        f->_type_class->refcount++; 
+        f->_type_class->refcount++;
       }
     }
   }

@@ -37,6 +37,8 @@ class CSourceRepo {
 
   std::vector<CNodeClass*>  all_classes;
   std::vector<CNodeStruct*> all_structs;
+
+  CNodeClass* top = nullptr;
 };
 
 //------------------------------------------------------------------------------

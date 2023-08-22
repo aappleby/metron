@@ -47,7 +47,7 @@ void CContext::reset() {
 TokenSpan CContext::parse() {
 
   // Skip over BOF, stop before EOF
-  printf("tokens.size() %d\n", int(tokens.size()));
+  //printf("tokens.size() %d\n", int(tokens.size()));
 
   TokenSpan body(tokens.data() + 1, tokens.data() + tokens.size() - 1);
 

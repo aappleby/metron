@@ -12,7 +12,7 @@
 //------------------------------------------------------------------------------
 
 void CInstance::dump() {
-  LOG_R("{{%s}}", typeid(*this).name());
+  LOG_R("{{%s}}\n", typeid(*this).name());
 }
 
 //------------------------------------------------------------------------------
@@ -84,9 +84,6 @@ void CInstField::dump() {
 //------------------------------------------------------------------------------
 
 CInstFunction::CInstFunction(CNodeFunction* node_function) : node_function(node_function) {
-  node_function->dump_tree();
-
-
   auto node_params = node_function->child("params");
   for (auto n : node_params) {
     auto inst_param = new CInstParam(n->is_a<CNodeDeclaration>());
@@ -120,7 +117,6 @@ void CInstFunction::dump() {
 //------------------------------------------------------------------------------
 
 CInstParam::CInstParam(CNodeDeclaration* node_decl) : node_decl(node_decl) {
-  node_decl->dump_tree();
   if (node_decl->is_array()) {
     auto node_type = node_decl->child_as<CNodeType>("decl_type");
     auto node_array = node_decl->child_as<CNode>("decl_array");

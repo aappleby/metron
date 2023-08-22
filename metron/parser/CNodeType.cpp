@@ -121,8 +121,6 @@ CHECK_RETURN Err MtCursor::emit_sym_sized_type_specifier(MnNode n) {
 Err CNodeType::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
-  //dump_tree();
-
   auto node_builtin = child("builtin_name");
   auto node_args = child("type_args");
 

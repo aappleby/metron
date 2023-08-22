@@ -87,6 +87,7 @@ int main_new(Options opts) {
 
   if (opts.verbose) {
     root_file->context.root_node->dump_tree();
+    LOG("\n");
   }
 
   //----------------------------------------
@@ -105,36 +106,9 @@ int main_new(Options opts) {
     err << repo.build_call_graphs();
   }
 
-  //----------------------------------------
-  // Count module instances so we can find top modules.
-
-  for (auto c : repo.all_classes) {
-    for (auto f : c->all_fields) {
-      if (f->is_component()) {
-        f->_type_class->refcount++;
-      }
-    }
-  }
-
-  CNodeClass* top = nullptr;
-  for (auto c : repo.all_classes) {
-    if (c->refcount == 0) {
-      if (top == nullptr) {
-        top = c;
-      }
-      else {
-        LOG_R("Multiple top modules!\n");
-        exit(-1);
-      }
-    }
-  }
-  if (top == nullptr) {
-    LOG_R("No top module?\n");
-    exit(-1);
-  }
-
+  LOG_V("\n");
   LOG_V("Instance:\n");
-  auto inst = new CInstClass(top);
+  auto inst = new CInstClass(repo.top);
   inst->dump();
 
   LOG_B("\n");
@@ -144,11 +118,7 @@ int main_new(Options opts) {
     LOG_G("\n");
   }
 
-
-  //exit(0);
-
-
-
+#if 0
   //----------
   // Emit all modules.
 
@@ -197,6 +167,7 @@ int main_new(Options opts) {
       fclose(out_file);
     }
   }
+#endif
 
   LOG("Done!\n");
 

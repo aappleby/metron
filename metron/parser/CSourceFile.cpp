@@ -31,7 +31,7 @@ namespace fs = std::filesystem;
       context.tokens.push_back(CToken(&t));
     }
   }
-  printf("Token count %d\n", int(context.tokens.size()));
+  //printf("Token count %d\n", int(context.tokens.size()));
 
   LOG("Parsing %s\n", filepath.c_str());
   LOG_INDENT_SCOPE();

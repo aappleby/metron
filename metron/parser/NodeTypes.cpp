@@ -22,23 +22,6 @@ Err CNodeTemplate::emit(Cursor& cursor) {
 
   err << cursor.emit(node_class);
 
-  /*
-  dump_tree();
-  LOG_R("FIXME\n");
-  exit(-1);
-  */
-
-  // Template params have to go _inside_ the class definition in Verilog, so
-  // we skip them here.
-  /*
-  auto class_node = child("template_class");
-  err << cursor.skip_span(cursor.text_cursor, class_node->text_begin());
-  err << cursor.emit(class_node);
-  err << cursor.skip_span(cursor.text_cursor, text_end());
-  */
-  //err << emit_rest(cursor);
-
-  //cursor.current_mod.pop();
   return err << cursor.check_done(this);
 }
 
@@ -79,7 +62,6 @@ Err CNodePreproc::emit(Cursor& cursor) {
 
 Err CNodeDeclaration::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
-  //dump_tree();
 
   // Check for const char*
   auto type = child("decl_type");

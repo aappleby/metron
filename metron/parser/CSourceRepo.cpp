@@ -104,18 +104,35 @@ Err CSourceRepo::collect_fields_and_methods() {
   for (auto s : all_structs) {
     err << s->collect_fields();
   }
+  */
 
   //----------------------------------------
   // Count module instances so we can find top modules.
 
-  for (auto mod : all_modules) {
-    for (auto field : mod->all_fields) {
-      if (field->is_component()) {
-        field->_type_mod->refcount++;
+  for (auto c : all_classes) {
+    for (auto f : c->all_fields) {
+      if (f->is_component()) {
+        f->_type_class->refcount++;
       }
     }
   }
-  */
+
+  top = nullptr;
+  for (auto c : all_classes) {
+    if (c->refcount == 0) {
+      if (top == nullptr) {
+        top = c;
+      }
+      else {
+        LOG_R("Multiple top modules!\n");
+        exit(-1);
+      }
+    }
+  }
+  if (top == nullptr) {
+    LOG_R("No top module?\n");
+    exit(-1);
+  }
 
   return err;
 }

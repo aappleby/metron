@@ -8,9 +8,11 @@ struct CSourceRepo;
 
 class Tracer {
 public:
-  Tracer(CSourceRepo* repo, CInstance* root_inst, bool verbose);
+  Tracer(CSourceRepo* repo, bool verbose);
 
   CHECK_RETURN Err log_action(CInstCall* call, CNode* node, CInstField* field_inst, TraceAction action);
+
+  CHECK_RETURN Err trace();
 
   CHECK_RETURN Err trace_top_call(CInstCall* call);
 
@@ -47,7 +49,6 @@ public:
   //MtModuleInstance* root_inst;
 
   CSourceRepo* repo;
-  CInstance* root_inst;
 
   bool verbose;
 };

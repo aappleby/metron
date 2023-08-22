@@ -176,8 +176,6 @@ if (n.is_const()) {
 
 
 Err CNodeField::emit(Cursor& cursor) {
-  //dump_tree();
-
   Err err = cursor.check_at(this);
 
   auto node_static = child("static");

@@ -10,10 +10,6 @@
 using namespace matcheroni;
 
 CHECK_RETURN Err CNode::emit(Cursor& cursor) {
-  //LOG_R("CNode::emit() %s\n", match_tag);
-  //dump_tree();
-  //return ERR("Don't know how to emit a %s, tag `%s`", typeid(*this).name(), match_tag);
-
   return cursor.emit_replacement(this, "{{%s}}", typeid(*this).name());
 }
 
@@ -68,21 +64,37 @@ struct NodeDumper {
   void dump_node(const CNode& n, int depth) {
     LOG(" ");
 
+    /*
+    const char* trellis_1 = "   ";
+    const char* trellis_2 = "|  ";
+    const char* trellis_3 = "|--";
+    const char* trellis_4 = "\\--";
+    const char* dot_1     = "O ";
+    const char* dot_2     = "O ";
+    */
+
+    const char* trellis_1 = "   ";
+    const char* trellis_2 = "┃  ";
+    const char* trellis_3 = "┣━╸";
+    const char* trellis_4 = "┗━╸";
+    const char* dot_1     = "▆ ";
+    const char* dot_2     = "▆ ";
+
     for (int i = 0; i < color_stack.size() - 1; i++) {
       bool stack_top = i == color_stack.size() - 2;
       uint32_t color = color_stack[i];
-      if      (color == -1)  LOG_C(0x000000, "   ");
-      else if (!stack_top)   LOG_C(color,    "┃  ");
-      else if (!n.node_next) LOG_C(color,    "┗━━");
-      else                   LOG_C(color,    "┣━━");
+      if      (color == -1)  LOG_C(0x000000, trellis_1);
+      else if (!stack_top)   LOG_C(color,    trellis_2);
+      else if (n.node_next)  LOG_C(color,    trellis_3);
+      else                   LOG_C(color,    trellis_4);
     }
 
     auto color = color_stack.back();
 
     if (n.child_head != nullptr) {
-      LOG_C(color, "┳━ ");
+      LOG_C(color, dot_1);
     } else {
-      LOG_C(color, "━━ ");
+      LOG_C(color, dot_2);
     }
 
     LOG_C(color, "%s %s = ", class_name(n), n.match_tag);

@@ -300,7 +300,8 @@ Err CNodeClass::emit(Cursor& cursor) {
   auto n_name  = child("name");
   auto n_body  = child("body");
 
-  err << cursor.emit_replacements(n_class->get_text(), "class", "module");
+  err << cursor.emit_replacements(n_class, "class", "module");
+
   err << cursor.emit_gap(n_class, n_name);
   err << cursor.emit(n_name);
   err << cursor.emit_gap(n_name, n_body);

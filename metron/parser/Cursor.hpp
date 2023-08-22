@@ -29,10 +29,10 @@ struct Cursor {
   //void push_indent(MnNode n);
   //void pop_indent(MnNode n);
 
+  // Node-level emit()
   CHECK_RETURN Err emit(CNode* n);
   CHECK_RETURN Err skip_over(CNode* n);
   CHECK_RETURN Err comment_out(CNode* n);
-
   CHECK_RETURN Err emit_default(CNode* n);
   CHECK_RETURN Err emit_children(CNode* n);
   CHECK_RETURN Err emit_rest(CNode* n);
@@ -43,14 +43,18 @@ struct Cursor {
   CHECK_RETURN Err emit_splice(CNode* n);
   CHECK_RETURN Err emit_raw(CNode* n);
 
+  // Token-level emit()
+  CHECK_RETURN Err emit_token(const CToken* a);
+  CHECK_RETURN Err emit_span(const CToken* a, const CToken* b);
+  CHECK_RETURN Err skip_span(const CToken* a, const CToken* b);
+  CHECK_RETURN Err emit_to(const CToken* b);
+
+  // Char-level emit()
   CHECK_RETURN Err start_line();
   CHECK_RETURN Err emit_backspace();
   CHECK_RETURN Err emit_indent();
   CHECK_RETURN Err emit_char(char c, uint32_t color = 0);
   CHECK_RETURN Err skip_char(char c);
-  CHECK_RETURN Err emit_to(const char* b);
-  CHECK_RETURN Err emit_span(const char* a, const char* b);
-  CHECK_RETURN Err skip_span(const char* a, const char* b);
   CHECK_RETURN Err emit_vprint(const char* fmt, va_list args);
   CHECK_RETURN Err emit_line(const char* fmt, ...);
   CHECK_RETURN Err emit_print(const char* fmt, ...);
@@ -90,12 +94,13 @@ struct Cursor {
   }
 
   template<typename ... Args>
-  CHECK_RETURN Err emit_replacements(std::string_view text, Args... args) {
+  CHECK_RETURN Err emit_replacements(CNode* n, Args... args) {
     Err err;
+    auto text = n->get_text();
     while (text.size()) {
       err << emit_replacement_step(text, args...);
     }
-    text_cursor = text.data();
+    tok_cursor = n->tok_end();
     return err;
   }
 
@@ -107,27 +112,12 @@ struct Cursor {
   CHECK_RETURN Err emit_gap(CNode* a, CNode* b);
   CHECK_RETURN Err skip_gap(CNode* a, CNode* b);
 
-  CHECK_RETURN Err emit_trailing_whitespace() {
-    Err err;
-    auto& text = source_file->source_code;
-    auto source_span = matcheroni::utils::to_span(text);
-    while(text_cursor < source_span.end) {
-      err << emit_char(*text_cursor++);
-    }
-    return err;
-  }
+  CHECK_RETURN Err emit_trailing_whitespace();
 
   //----------------------------------------
 
-  void push_cursor(const char* new_cursor) {
-    cursor_stack.push(text_cursor);
-    text_cursor = new_cursor;
-  }
-
-  void pop_cursor() {
-    text_cursor = cursor_stack.top();
-    cursor_stack.pop();
-  }
+  void push_cursor(const CToken* new_cursor);
+  void pop_cursor();
 
   //----------------------------------------
 
@@ -136,9 +126,10 @@ struct Cursor {
 
   // FIXME need to switch from text cursor to token cursor...
 
-  const char* text_cursor = nullptr;
-  std::stack<const char*> cursor_stack;
+  std::stack<const CToken*> cursor_stack;
 
+  const CToken* tok_begin = nullptr;
+  const CToken* tok_end = nullptr;
   const CToken* tok_cursor = nullptr;
 
   //----------------------------------------

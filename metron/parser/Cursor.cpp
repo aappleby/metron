@@ -9,6 +9,12 @@ Cursor::Cursor(CSourceRepo* repo, CSourceFile* source, std::string* str_out) {
   this->source_file = source;
   this->str_out = str_out;
 
+  this->tok_begin  = source->context.tokens.data();
+  this->tok_end    = this->tok_begin + source->context.tokens.size();
+
+  // Skip LEX_BOF
+  this->tok_cursor = this->tok_begin + 1;
+
   block_prefix.push("begin");
   block_suffix.push("end");
   override_size.push(0);
@@ -26,7 +32,7 @@ CHECK_RETURN Err Cursor::emit(CNode* n) {
 CHECK_RETURN Err Cursor::skip_over(CNode* n) {
   if (n == nullptr) return Err();
   Err err = check_at(n);
-  err << skip_span(n->text_begin(), n->text_end());
+  err << skip_span(n->tok_begin(), n->tok_end());
   return err << check_done(n);
 }
 
@@ -34,7 +40,7 @@ CHECK_RETURN Err Cursor::comment_out(CNode* n) {
   Err err = check_at(n);
 
   err << emit_print("/*");
-  err << emit_span(n->text_begin(), n->text_end());
+  err << emit_span(n->tok_begin(), n->tok_end());
   err << emit_print("*/");
 
   return err << check_done(n);
@@ -46,12 +52,12 @@ CHECK_RETURN Err Cursor::emit_default(CNode* n) {
   Err err = check_at(n);
 
   if (n->child_head) {
-    err << emit_span(n->text_begin(), n->child_head->text_begin());
+    err << emit_span(n->tok_begin(), n->child_head->tok_begin());
     err << emit_children(n);
-    err << emit_span(n->child_tail->text_end(), n->text_end());
+    err << emit_span(n->child_tail->tok_end(), n->tok_end());
   }
   else {
-    err << emit_span(n->text_begin(), n->text_end());
+    err << emit_span(n->tok_begin(), n->tok_end());
   }
 
   return err << check_done(n);
@@ -71,7 +77,7 @@ CHECK_RETURN Err Cursor::emit_children(CNode* n) {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err Cursor::emit_rest(CNode* n) {
-  return emit_span(text_cursor, n->text_end());
+  return emit_span(tok_cursor, n->tok_end());
 }
 
 //------------------------------------------------------------------------------
@@ -85,7 +91,7 @@ CHECK_RETURN Err Cursor::emit_gap_after(CNode* n) {
 CHECK_RETURN Err Cursor::skip_gap_after(CNode* n) {
   Err err;
   if (n->node_next) {
-    err << skip_span(n->text_end(), n->node_next->text_begin());
+    err << skip_span(n->tok_end(), n->node_next->tok_begin());
   }
   return err;
 }
@@ -137,38 +143,54 @@ void Cursor::pop_indent(MnNode class_body) { indent.pop(); }
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err Cursor::check_at(CNode* n) {
-  Err err;
 
-  if (text_cursor != n->text_begin()) {
-    char buf1[10];
-    char buf2[10];
-    memcpy(buf1, n->text_begin(), 9);
-    buf1[9] = 0;
-    memcpy(buf2, text_cursor, 9);
-    buf2[9] = 0;
-
-    err << ERR("check_at - bad cursor\nwant @%10s@\ngot  @%10s@\n", buf1, buf2);
+  if (tok_cursor != n->tok_begin()) {
+    LOG_R("check_at - bad tok_cursor\n");
+    LOG_R("  want @%.10s@\n", n->text_begin());
+    LOG_R("  got  @%.10s@\n", tok_cursor->text.begin);
+    exit(-1);
   }
 
-  return err;
+  return Err();
 }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err Cursor::check_done(CNode* n) {
+
+  if (tok_cursor < n->tok_end()) {
+    LOG_R("Token cursor was left inside the current node\n");
+    exit(-1);
+  }
+
+  if (tok_cursor > n->tok_end()) {
+    LOG_R("Token cursor was left past the end of the current node\n");
+    exit(-1);
+  }
+
+  return Err();
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err Cursor::emit_token(const CToken* a) {
+  auto begin = a->text.begin;
+  auto end   = a->text.end;
+
   Err err;
-
-  auto text_end = n->text_end();
-
-  if (text_cursor < text_end) {
-    err << ERR("Cursor was left inside the current node\n");
+  for (auto c = begin; c < end; c++) {
+    err << emit_char(*c);
   }
+  tok_cursor = a + 1;
+  return err;
+}
 
-  if (text_cursor > text_end) {
-    //n.dump_tree();
-    err << ERR("Cursor was left past the end of the current node\n");
+CHECK_RETURN Err Cursor::emit_span(const CToken* a, const CToken* b) {
+  Err err;
+  for (auto c = a; c < b; c++) {
+    err << emit_token(c);
   }
-
+  tok_cursor = b;
   return err;
 }
 
@@ -267,34 +289,26 @@ CHECK_RETURN Err Cursor::skip_char(char c) {
 
 //----------------------------------------
 
-CHECK_RETURN Err Cursor::emit_to(const char* b) {
+CHECK_RETURN Err Cursor::emit_to(const CToken* b) {
   Err err;
-  for (auto c = text_cursor; c < b; c++) {
+  for (auto c = tok_cursor->text.begin; c < b->text.end; c++) {
     err << emit_char(*c);
   }
-  text_cursor = b;
+  tok_cursor = b;
   return err;
 }
 
 //----------------------------------------
 
-CHECK_RETURN Err Cursor::emit_span(const char* a, const char* b) {
-  Err err;
-  for (auto c = a; c < b; c++) {
-    err << emit_char(*c);
-  }
-  text_cursor = b;
-  return err;
-}
+CHECK_RETURN Err Cursor::skip_span(const CToken* a, const CToken* b) {
+  auto begin = a->text.begin;
+  auto end   = a->text.end;
 
-//----------------------------------------
-
-CHECK_RETURN Err Cursor::skip_span(const char* a, const char* b) {
   Err err;
-  for (auto c = a; c < b; c++) {
+  for (auto c = begin; c < end; c++) {
     err << skip_char(*c);
   }
-  text_cursor = b;
+  tok_cursor = b;
   line_elided = true;
   return err;
 }
@@ -357,7 +371,7 @@ CHECK_RETURN Err Cursor::emit_replacement(CNode* n, const std::string& s) {
   for (auto c : s) {
     err << emit_char(c, 0x80FFFF);
   }
-  text_cursor = n->text_end();
+  tok_cursor = n->tok_end();
   return err << check_done(n);
 }
 
@@ -368,7 +382,7 @@ CHECK_RETURN Err Cursor::emit_replacement(CNode* n, const char* fmt, ...) {
   va_list args;
   va_start(args, fmt);
   err << emit_vprint(fmt, args);
-  text_cursor = n->text_end();
+  tok_cursor = n->tok_end();
   return err << check_done(n);
 }
 
@@ -376,7 +390,7 @@ CHECK_RETURN Err Cursor::emit_replacement(CNode* n, const char* fmt, ...) {
 
 CHECK_RETURN Err Cursor::emit_splice(CNode* n) {
   Err err;
-  push_cursor(n->text_begin());
+  push_cursor(n->tok_begin());
   err << emit(n);
   pop_cursor();
   return err;
@@ -384,136 +398,74 @@ CHECK_RETURN Err Cursor::emit_splice(CNode* n) {
 
 CHECK_RETURN Err Cursor::emit_raw(CNode* n) {
   Err err;
-  err << emit_span(n->text_begin(), n->text_end());
+  err << emit_span(n->tok_begin(), n->tok_end());
   return err;
 }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err Cursor::emit_everything() {
-  Err err;
+  return source_file->context.root_node->emit(*this);
+}
 
-  text_cursor = source_file->source_code.data();
-  err << source_file->context.root_node->emit(*this);
+//------------------------------------------------------------------------------
+// Emit all whitespace and comments between node A and B.
+
+CHECK_RETURN Err Cursor::emit_gap(CNode* ta, CNode* tb) {
+  Err err;
+  if (tok_cursor != ta->tok_end()) {
+    return ERR("skip_gap() - Did not start on a.end()");
+  }
+
+  if (ta->node_next != tb) return ERR("a->node_next != b");
+  if (tb->node_prev != ta) return ERR("b->node_prev != a");
+
+  for (auto c = ta->text_end(); c < tb->text_begin(); c++) {
+    err << emit_char(*c);
+  }
+  tok_cursor = tb->tok_begin();
+  return err;
+}
+
+//----------------------------------------
+// Skip all whitespace and comments between node A and B.
+
+CHECK_RETURN Err Cursor::skip_gap(CNode* a, CNode* b) {
+  Err err;
+  if (tok_cursor != a->tok_end()) {
+    err << ERR("skip_gap() - Did not start on a.end()");
+    return err;
+  }
+
+  if (a->node_next != b) return ERR("a->node_next != b");
+  if (b->node_prev != a) return ERR("b->node_prev != a");
+
+  tok_cursor = b->tok_begin();
 
   return err;
 }
 
 //------------------------------------------------------------------------------
-// Emit all whitespace and comments between node A and D. Error if we see
-// anything that isn't comment or whitespace.
 
-CHECK_RETURN Err Cursor::emit_gap(CNode* a, CNode* b) {
+CHECK_RETURN Err Cursor::emit_trailing_whitespace() {
   Err err;
-  if (text_cursor != a->text_end()) {
-    err << ERR("skip_gap() - Did not start on a.end()");
-    return err;
-  }
-
-  if (a->node_next != b) return ERR("a->node_next != b");
-  if (b->node_prev != a) return ERR("b->node_prev != a");
-
-  err << emit_span(a->text_end(), b->text_begin());
-
-  return err;
-
-  /*
-  Err err;
-  if (cursor != a.end()) {
-    err << ERR("emit_gap() - Did not start on a.end()");
-    return err;
-  }
-
-  auto source = a.source->source;
-  auto pair_lhs = a.node;
-  auto pair_rhs = ts_node_next_sibling(a.node);
-
-  while(1) {
-    err << emit_span(
-      &source[ts_node_end_byte(pair_lhs)],
-      &source[ts_node_start_byte(pair_rhs)]
-    );
-
-    pair_lhs = pair_rhs;
-    pair_rhs = ts_node_next_sibling(pair_rhs);
-
-    if (ts_node_eq(pair_lhs, d.node)) {
-      break;
-    }
-    else if (ts_node_symbol(pair_lhs) != sym_comment) {
-      err << ERR("Non-comment found in gap between nodes");
-      return err;
-    }
-    else {
-      err << emit_span(
-        &source[ts_node_start_byte(pair_lhs)],
-        &source[ts_node_end_byte(pair_lhs)]
-      );
-    }
-  }
-
-  if (cursor != d.start()) {
-    err << ERR("emit_gap() - Did not end on d.end()");
-    return err;
+  while(tok_cursor < tok_end) {
+    err << emit_token(tok_cursor);
+    tok_cursor++;
   }
   return err;
-  */
 }
 
-//----------------------------------------
-// Skip all whitespace and comments between node A and B. Error if we see
-// anything that isn't comment or whitespace.
+//------------------------------------------------------------------------------
 
-CHECK_RETURN Err Cursor::skip_gap(CNode* a, CNode* b) {
-  Err err;
-  if (text_cursor != a->text_end()) {
-    err << ERR("skip_gap() - Did not start on a.end()");
-    return err;
-  }
+void Cursor::push_cursor(const CToken* new_cursor) {
+  cursor_stack.push(tok_cursor);
+  tok_cursor = new_cursor;
+}
 
-  if (a->node_next != b) return ERR("a->node_next != b");
-  if (b->node_prev != a) return ERR("b->node_prev != a");
-
-  text_cursor = b->text_begin();
-
-  return err;
-
-  /*
-  auto source = a.source->source;
-  auto pair_lhs = a.node;
-  auto pair_rhs = ts_node_next_sibling(a.node);
-
-  while(1) {
-    err << skip_span(
-      &source[ts_node_end_byte(pair_lhs)],
-      &source[ts_node_start_byte(pair_rhs)]
-    );
-
-    pair_lhs = pair_rhs;
-    pair_rhs = ts_node_next_sibling(pair_rhs);
-
-    if (ts_node_eq(pair_lhs, d.node)) {
-      break;
-    }
-    else if (ts_node_symbol(pair_lhs) != sym_comment) {
-      err << ERR("Non-comment found in gap between nodes");
-      return err;
-    }
-    else {
-      err << skip_span(
-        &source[ts_node_start_byte(pair_lhs)],
-        &source[ts_node_end_byte(pair_lhs)]
-      );
-    }
-  }
-
-  if (cursor != d.start()) {
-    err << ERR("skip_gap() - Did not end on d.end()");
-    return err;
-  }
-
-  return err;
-  */
+void Cursor::pop_cursor() {
+  tok_cursor = cursor_stack.top();
+  cursor_stack.pop();
 }
 
 //------------------------------------------------------------------------------

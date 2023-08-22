@@ -30,6 +30,9 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
 
   virtual std::string_view get_name() const { return "<CNode>"; }
 
+  const CToken* tok_begin() const { return span.begin; }
+  const CToken* tok_end() const   { return span.end; }
+
   const char* text_begin() const { return span.begin->text.begin; }
   const char* text_end() const   { return (span.end - 1)->text.end; }
 

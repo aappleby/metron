@@ -16,20 +16,26 @@ namespace fs = std::filesystem;
   this->repo = _repo;
   this->filename = _filename;
   this->filepath = _filepath;
-  this->source_code = _source_code;
   this->use_utf8_bom = _use_utf8_bom;
 
+  context.reset();
   context.repo = _repo;
+  context.source = _source_code;
 
-  //LOG("Lexing %s\n", filename.c_str());
-  auto source_span = matcheroni::utils::to_span(source_code);
-  lexer.lex(source_span);
+  LOG("Lexing %s\n", filename.c_str());
+  lexer.lex(context.source, context.lexemes);
+
+  LOG("Tokenizing %s\n", filename.c_str());
+  for (auto& t : context.lexemes) {
+    if (!t.is_gap()) {
+      context.tokens.push_back(CToken(&t));
+    }
+  }
+  printf("Token count %d\n", int(context.tokens.size()));
 
   LOG("Parsing %s\n", filepath.c_str());
   LOG_INDENT_SCOPE();
-  TokenSpan tok_span(lexer.tokens.data(),
-                     lexer.tokens.data() + lexer.tokens.size());
-  auto tail = context.parse(source_span, tok_span);
+  auto tail = context.parse();
 
   if (tail.is_valid() && tail.is_empty() && context.root_node) {
     LOG_G("Parse OK\n");
@@ -60,7 +66,7 @@ namespace fs = std::filesystem;
 //------------------------------------------------------------------------------
 
 void CSourceFile::dump() {
-  auto source_span = matcheroni::utils::to_span(source_code);
+  auto source_span = matcheroni::utils::to_span(context.source);
   matcheroni::utils::print_trees(context, source_span, 50, 2);
 }
 

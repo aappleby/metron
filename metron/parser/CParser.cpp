@@ -8,9 +8,11 @@
 #include "CNode.hpp"
 #include "CNodeClass.hpp"
 #include "CNodeConstructor.hpp"
+#include "CNodeField.hpp"
 #include "CNodeFunction.hpp"
 #include "CNodeStruct.hpp"
-#include "CNodeField.hpp"
+#include "CNodeCall.hpp"
+#include "CNodeType.hpp"
 #include "CSourceFile.hpp"
 #include "CSourceRepo.hpp"
 #include "CToken.hpp"
@@ -53,14 +55,14 @@ struct TraceToken {
   inline static void print_match2(TokenSpan body, TokenSpan tail, int width) {
 
     if (tail.is_valid()) {
-      const char* a = body.begin->text.begin;
-      const char* b = tail.begin->text.begin;
-      const char* c = (body.end - 1)->text.end;
+      const char* a = body.begin->text_begin();
+      const char* b = tail.begin->text_begin();
+      const char* c = (body.end - 1)->text_end();
       utils::print_match(a, b, c, 0x80FF80, 0xCCCCCC, width);
     } else {
-      const char* a = body.begin->text.begin;
-      const char* b = tail.end->text.begin;
-      const char* c = (body.end - 1)->text.end;
+      const char* a = body.begin->text_begin();
+      const char* b = tail.end->text_begin();
+      const char* c = (body.end - 1)->text_end();
       utils::print_match(a, b, c, 0xCCCCCC, 0x8080FF, width);
     }
   }
@@ -140,7 +142,7 @@ inline TokenSpan match_punct(CContext& ctx, TokenSpan body) {
   for (auto i = 0; i < lit.str_len; i++) {
     const CToken& tok_a = body.begin[0];
     if (ctx.atom_cmp(tok_a, LEX_PUNCT) != 0) return body.fail();
-    if (ctx.atom_cmp(tok_a.text.begin[0], lit.str_val[i]) != 0) return body.fail();
+    if (ctx.atom_cmp(tok_a.text_begin()[0], lit.str_val[i]) != 0) return body.fail();
     body = body.advance(1);
   }
 
@@ -245,9 +247,9 @@ TextSpan CContext::handle_include(TextSpan body) {
 //------------------------------------------------------------------------------
 
 TokenSpan match_preproc(CContext& ctx, TokenSpan body) {
-  if (body.begin->type != LEX_PREPROC) return body.fail();
+  if (body.begin->lex_type() != LEX_PREPROC) return body.fail();
 
-  std::string s(body.begin->text.begin, body.begin->text.end);
+  std::string s(body.begin->text_begin(), body.begin->text_end());
 
   if (s.find("stdio") != std::string::npos) {
     for (auto t : stdio_typedefs) {
@@ -273,7 +275,7 @@ TokenSpan match_preproc(CContext& ctx, TokenSpan body) {
   using namespace cookbook;
 
   {
-    c_include_line<Ref<&CContext::handle_include>>::match(ctx, body.begin->text);
+    c_include_line<Ref<&CContext::handle_include>>::match(ctx, body.begin->as_text_span());
   }
 
   return body.advance(1);
@@ -346,7 +348,7 @@ using suffix_op = Ref<match_suffix_op<lit>>;
 //------------------------------------------------------------------------------
 
 TokenSpan match_qualifier(CContext& ctx, TokenSpan body) {
-  TextSpan span = body.begin->text;
+  TextSpan span = body.begin->as_text_span();
   if (SST<qualifiers>::match(span.begin, span.end)) {
     return body.advance(1);
   }
@@ -495,7 +497,7 @@ TokenSpan match_binary_op2(CContext& ctx, TokenSpan body) {
   }
 
   // clang-format off
-  switch (body.begin->text.begin[0]) {
+  switch (body.begin->text_begin()[0]) {
     case '+':
       return Oneof<Ref<match_binary_op<"+=">>, Ref<match_binary_op<"+">>>::match(ctx, body);
     case '-':
@@ -736,37 +738,47 @@ TokenSpan match_index_list(CContext& ctx, TokenSpan body) {
 
 const CToken* find_matching_delimiter(const CToken* begin, const CToken* end) {
   for (auto cursor = begin + 1; cursor < end; cursor++) {
-    if (cursor->text.begin[0] == '>') return cursor;
-    if (cursor->text.begin[0] == '<') cursor = find_matching_delimiter(cursor, end);
+    if (cursor->text_begin()[0] == '>') return cursor;
+    if (cursor->text_begin()[0] == '<') cursor = find_matching_delimiter(cursor, end);
     if (!cursor) return cursor;
   }
   return nullptr;
 }
 
 TokenSpan get_template_span(TokenSpan body) {
-  if (body.begin->text.begin[0] != '<') return body.fail();
+  if (body.begin->text_begin()[0] != '<') return body.fail();
   auto ldelim = body.begin;
   auto rdelim = find_matching_delimiter(body.begin, body.end);
   if (rdelim == nullptr) return body.fail();
   return TokenSpan(ldelim + 1, rdelim);
 }
 
+/*
+  DelimitedList<
+    Cap<"ldelim",     Atom<'{'>,             CNodePunct>,
+    Cap<"enumerator", Ref<match_enumerator>, CNode>,
+    Cap<"comma",      Atom<','>,             CNodePunct>,
+    Cap<"rdelim",     Atom<'}'>,             CNodePunct>
+  >;
+*/
+
 TokenSpan match_texp_list(CContext& ctx, TokenSpan body) {
   auto tight_span = get_template_span(body);
   if (!tight_span.is_valid()) return body.fail();
 
-  using pattern =
-  comma_separated<
-    Cap<"exp", Ref<match_expression>, CNodeExpression>
-  >;
-  auto tail = pattern::match(ctx, tight_span);
+  TokenSpan tail;
 
-  if (tail.is_valid() && tail.is_empty()) {
-    return TokenSpan(tight_span.end + 1, body.end);
-  }
-  else {
-    return body.fail();
-  }
+  tail = Cap<"ldelim", Atom<'<'>, CNodePunct>::match(ctx, body);
+  if (!tail.is_valid()) return tail;
+
+  tail = comma_separated<Cap<"exp", Ref<match_expression>, CNodeExpression>>::match(ctx, tight_span);
+  if (!tail.is_valid()) return tail;
+  if (!tail.is_empty()) return body.fail();
+
+  TokenSpan rdelim_body(tight_span.end, body.end);
+  tail = Cap<"rdelim", Atom<'>'>, CNodePunct>::match(ctx, rdelim_body);
+
+  return tail;
 };
 
 TokenSpan match_tdecl_list(CContext& ctx, TokenSpan body) {

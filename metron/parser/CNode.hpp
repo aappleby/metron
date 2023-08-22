@@ -33,8 +33,8 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   const CToken* tok_begin() const { return span.begin; }
   const CToken* tok_end() const   { return span.end; }
 
-  const char* text_begin() const { return span.begin->text.begin; }
-  const char* text_end() const   { return (span.end - 1)->text.end; }
+  const char* text_begin() const { return span.begin->lex->text_begin; }
+  const char* text_end() const   { return (span.end - 1)->lex->text_end; }
 
   matcheroni::TextSpan as_text_span() const {
     return matcheroni::TextSpan(text_begin(), text_end());

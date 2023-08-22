@@ -164,6 +164,14 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
 [000.013]  ┗━━━━ CNodeIdentifier decl_name = "x"
 [000.013] ========== tree dump end
 */
+
+if (n.is_const()) {
+  err << emit_ws_to(n);
+  err << emit_print("localparam ");
+  err << emit_children(n);
+  return err << check_done(n);
+}
+
 #endif
 
 
@@ -191,17 +199,57 @@ Err CNodeField::emit(Cursor& cursor) {
     err << cursor.emit_gap_after(node_name);
     err << cursor.emit(node_eq);
     err << cursor.emit_gap_after(node_eq);
-    err << cursor.emit_raw(node_value);
+    err << cursor.emit(node_value);
     err << cursor.emit_gap_after(node_value);
     return err << cursor.check_done(this);
   }
 
-  if (is_component()) {
-    err << CNode::emit(cursor);
+  if (node_static && node_const) {
+    // Localparam
+    err << cursor.emit_print("localparam ");
+    err << cursor.comment_out(node_static);
+    err << cursor.emit_gap_after(node_static);
+    err << cursor.comment_out(node_const);
+    err << cursor.emit_gap_after(node_const);
+    err << cursor.emit(node_type);
+    err << cursor.emit_gap_after(node_type);
+    err << cursor.emit(node_eq);
+    err << cursor.emit_gap_after(node_eq);
+    err << cursor.emit(node_value);
+    err << cursor.emit_gap_after(node_value);
     return err << cursor.check_done(this);
   }
 
-  err << cursor.emit_default(this);
+  auto node_builtin = node_type->child("builtin_name");
+  auto node_args    = node_type->child("type_args");
+
+  if (node_builtin && node_args) {
+    err << cursor.comment_out(node_static);
+    err << cursor.emit_gap_after(node_static);
+    err << cursor.comment_out(node_const);
+    err << cursor.emit_gap_after(node_const);
+    err << cursor.emit(node_type);
+    err << cursor.emit_gap_after(node_type);
+    err << cursor.emit(node_name);
+    err << cursor.emit_gap_after(node_name);
+    err << cursor.emit(node_eq);
+    err << cursor.emit_gap_after(node_eq);
+    err << cursor.emit(node_value);
+    err << cursor.emit_gap_after(node_value);
+
+    return err;
+  }
+
+  if (is_struct()) {
+  }
+
+
+  if (is_component()) {
+    return err << CNode::emit(cursor);
+  }
+
+  //err << cursor.emit_default(this);
+  err << CNode::emit(cursor);
 
 
   return err << cursor.check_done(this);

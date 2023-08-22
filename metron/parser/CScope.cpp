@@ -40,8 +40,7 @@ bool CScope::has_type(CContext& ctx, TokenSpan body, token_list& types) {
     return false;
   }
 
-  TextSpan span(body.begin->text.begin, body.begin->text.end);
-
+  auto span = body.begin->as_text_span();
   for (const auto& c : types) {
     if (strcmp_span(span, c) == 0) return true;
   }
@@ -56,7 +55,7 @@ void CScope::add_type(CContext& ctx, const CToken* a, token_list& types) {
   //LOG_SPAN(a->text);
   //LOG_G("\n");
 
-  TextSpan span(a->text.begin, a->text.end);
+  auto span = a->as_text_span();
 
   for (const auto& c : types) {
     if (strcmp_span(span, c) == 0) return;

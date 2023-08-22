@@ -24,7 +24,6 @@ class CSourceFile {
   CSourceRepo* repo;
   std::string filename;
   std::string filepath;
-  std::string source_code;
   bool use_utf8_bom = false;
 
   CLexer lexer;

@@ -4,6 +4,8 @@
 #include "CNodeField.hpp"
 #include "CNodeFunction.hpp"
 #include "CNodeStruct.hpp"
+#include "CNodeType.hpp"
+#include "CNodeCall.hpp"
 
 #include "NodeTypes.hpp"
 

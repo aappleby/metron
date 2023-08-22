@@ -38,59 +38,31 @@ TextSpan  match_eof        (TextMatchContext& ctx, TextSpan body);
 
 //------------------------------------------------------------------------------
 
-CLexer::CLexer() { tokens.reserve(65536); }
+bool CLexer::lex(const std::string& source, std::vector<Lexeme>& out_lexemes) {
+  TextSpan source_span = utils::to_span(source);
 
-void CLexer::reset() { tokens.clear(); }
-
-//------------------------------------------------------------------------------
-
-bool CLexer::lex(TextSpan text) {
-  tokens.push_back(CToken(LEX_BOF, TextSpan(text.begin, text.begin)));
-
-  //std::vector<int> indent_histogram;
-  //indent_histogram.resize(64, 0);
+  out_lexemes.clear();
+  out_lexemes.reserve(65536);
+  out_lexemes.push_back(Lexeme(LEX_BOF, source_span.begin, source_span.begin));
 
   current_row = 0;
   current_col = 0;
   in_indent = true;
 
-  /*
-  for (auto c = text.begin; c < text.end; c++) {
-    if (*c == '\n') {
-      current_indent = 0;
-      in_indent = true;
-    }
-    else if (in_indent) {
-      if (*c == ' ') {
-        current_indent++;
-      }
-      else {
-        //indent_histogram[current_indent]++;
-        in_indent = false;
-      }
-    }
-  }
-  */
-
-  //for (auto i = 0; i < 64; i++) {
-  //  LOG_R("indent %02d : %d\n", i, indent_histogram[i]);
-  //}
-
-
   TextMatchContext ctx;
-  while (text.is_valid()) {
-    auto token = next_lexeme(ctx, text);
-    token.row = current_row;
-    token.col = current_col;
-    token.indent = current_indent;
-    tokens.push_back(token);
-    if (token.type == LEX_INVALID) {
+  while (source_span.is_valid()) {
+    auto lex = next_lexeme(ctx, source_span);
+    lex.row = current_row;
+    lex.col = current_col;
+    lex.indent = current_indent;
+    out_lexemes.push_back(lex);
+    if (lex.type == LEX_INVALID) {
       return false;
     }
-    if (token.type == LEX_EOF) break;
+    if (lex.type == LEX_EOF) break;
 
-    while(text.begin < token.text.end) {
-      if (*text.begin == '\n') {
+    while(source_span.begin < lex.text_end) {
+      if (*source_span.begin == '\n') {
         current_indent = 0;
         current_col = 0;
         current_row++;
@@ -98,7 +70,7 @@ bool CLexer::lex(TextSpan text) {
       }
       else {
         if (in_indent) {
-          if (*text.begin == ' ') {
+          if (*source_span.begin == ' ') {
             current_indent++;
           }
           else {
@@ -108,7 +80,7 @@ bool CLexer::lex(TextSpan text) {
         current_col++;
       }
 
-      text.begin++;
+      source_span.begin++;
     }
   }
 
@@ -117,37 +89,36 @@ bool CLexer::lex(TextSpan text) {
 
 //------------------------------------------------------------------------------
 
-CToken CLexer::next_lexeme(TextMatchContext& ctx, TextSpan body) {
+Lexeme CLexer::next_lexeme(TextMatchContext& ctx, TextSpan body) {
   TextSpan tail;
 
-  if (tail = match_space(ctx, body)  ) return CToken(LEX_SPACE,   TextSpan(body.begin, tail.begin));
-  if (tail = match_newline(ctx, body)) return CToken(LEX_NEWLINE, TextSpan(body.begin, tail.begin));
-  if (tail = match_string(ctx, body) ) return CToken(LEX_STRING,  TextSpan(body.begin, tail.begin));
+  if (tail = match_space(ctx, body)  ) return Lexeme(LEX_SPACE,   body.begin, tail.begin);
+  if (tail = match_newline(ctx, body)) return Lexeme(LEX_NEWLINE, body.begin, tail.begin);
+  if (tail = match_string(ctx, body) ) return Lexeme(LEX_STRING,  body.begin, tail.begin);
 
   // Match char needs to come before match identifier because of its possible
   // L'_' prefix...
-  if (tail = match_char(ctx, body)   ) return CToken(LEX_CHAR, TextSpan(body.begin, tail.begin));
+  if (tail = match_char(ctx, body)   ) return Lexeme(LEX_CHAR, body.begin, tail.begin);
 
   if (tail = match_identifier(ctx, body)) {
-    auto text = TextSpan(body.begin, tail.begin);
-    if (SST<c_keywords>::match(text.begin, text.end)) {
-      return CToken(LEX_KEYWORD, text);
+    if (SST<c_keywords>::match(body.begin, tail.begin)) {
+      return Lexeme(LEX_KEYWORD, body.begin, tail.begin);
     } else {
-      return CToken(LEX_IDENTIFIER, text);
+      return Lexeme(LEX_IDENTIFIER, body.begin, tail.begin);
     }
   }
 
-  if (tail = match_comment(ctx, body) ) return CToken(LEX_COMMENT,  TextSpan(body.begin, tail.begin));
-  if (tail = match_preproc(ctx, body) ) return CToken(LEX_PREPROC,  TextSpan(body.begin, tail.begin));
-  if (tail = match_float(ctx, body)   ) return CToken(LEX_FLOAT,    TextSpan(body.begin, tail.begin));
-  if (tail = match_int(ctx, body)     ) return CToken(LEX_INT,      TextSpan(body.begin, tail.begin));
-  if (tail = match_punct(ctx, body)   ) return CToken(LEX_PUNCT,    TextSpan(body.begin, tail.begin));
-  if (tail = match_splice(ctx, body)  ) return CToken(LEX_SPLICE,   TextSpan(body.begin, tail.begin));
-  if (tail = match_formfeed(ctx, body)) return CToken(LEX_FORMFEED, TextSpan(body.begin, tail.begin));
-  if (tail = match_eof(ctx, body)     ) return CToken(LEX_EOF,      TextSpan(body.begin, tail.begin));
-  if (tail = match_string(ctx, body)  ) return CToken(LEX_STRING,   TextSpan(body.begin, tail.begin));
+  if (tail = match_comment(ctx, body) ) return Lexeme(LEX_COMMENT,  body.begin, tail.begin);
+  if (tail = match_preproc(ctx, body) ) return Lexeme(LEX_PREPROC,  body.begin, tail.begin);
+  if (tail = match_float(ctx, body)   ) return Lexeme(LEX_FLOAT,    body.begin, tail.begin);
+  if (tail = match_int(ctx, body)     ) return Lexeme(LEX_INT,      body.begin, tail.begin);
+  if (tail = match_punct(ctx, body)   ) return Lexeme(LEX_PUNCT,    body.begin, tail.begin);
+  if (tail = match_splice(ctx, body)  ) return Lexeme(LEX_SPLICE,   body.begin, tail.begin);
+  if (tail = match_formfeed(ctx, body)) return Lexeme(LEX_FORMFEED, body.begin, tail.begin);
+  if (tail = match_eof(ctx, body)     ) return Lexeme(LEX_EOF,      body.begin, tail.begin);
+  if (tail = match_string(ctx, body)  ) return Lexeme(LEX_STRING,   body.begin, tail.begin);
 
-  return CToken(LEX_INVALID, body.fail());
+  return Lexeme(LEX_INVALID, nullptr, body.begin);
 }
 
 //------------------------------------------------------------------------------

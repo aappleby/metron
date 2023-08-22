@@ -8,25 +8,17 @@
 
 using namespace matcheroni;
 
-//------------------------------------------------------------------------------
-
-CToken::CToken(LexemeType type, TextSpan text) {
-  this->type = type;
-  this->text.begin = text.begin;
-  this->text.end = text.end;
-}
-
 //----------------------------------------------------------------------------
 
-bool CToken::is_bof() const {
+bool Lexeme::is_bof() const {
   return type == LEX_BOF;
 }
 
-bool CToken::is_eof() const {
+bool Lexeme::is_eof() const {
   return type == LEX_EOF;
 }
 
-bool CToken::is_gap() const {
+bool Lexeme::is_gap() const {
   switch(type) {
     case LEX_NEWLINE:
     case LEX_SPACE:
@@ -41,7 +33,7 @@ bool CToken::is_gap() const {
 
 //----------------------------------------------------------------------------
 
-const char* CToken::type_to_str() const {
+const char* Lexeme::type_to_str() const {
   switch(type) {
     case LEX_INVALID    : return "LEX_INVALID";
     case LEX_SPACE      : return "LEX_SPACE";
@@ -66,7 +58,7 @@ const char* CToken::type_to_str() const {
 
 //----------------------------------------------------------------------------
 
-uint32_t CToken::type_to_color() const {
+uint32_t Lexeme::type_to_color() const {
   switch(type) {
     case LEX_INVALID    : return 0x0000FF;
     case LEX_SPACE      : return 0x804040;
@@ -91,16 +83,14 @@ uint32_t CToken::type_to_color() const {
 
 //----------------------------------------------------------------------------
 
-void CToken::dump_token() const {
+void Lexeme::dump_lexeme() const {
   const int span_len = 20;
   std::string dump = "";
-
-
 
   if (type == LEX_BOF) dump = "<bof>";
   if (type == LEX_EOF) dump = "<eof>";
 
-  for (auto c = text.begin; c < text.end; c++) {
+  for (auto c = text_begin; c < text_end; c++) {
     if      (*c == '\n') dump += "\\n";
     else if (*c == '\t') dump += "\\t";
     else if (*c == '\r') dump += "\\r";

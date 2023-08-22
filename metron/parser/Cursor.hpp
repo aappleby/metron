@@ -42,6 +42,7 @@ struct Cursor {
   CHECK_RETURN Err emit_replacement(CNode* n, const char* fmt, ...);
   CHECK_RETURN Err emit_splice(CNode* n);
   CHECK_RETURN Err emit_raw(CNode* n);
+  CHECK_RETURN Err emit_indent();
 
   // Token-level emit()
   CHECK_RETURN Err emit_token(const CToken* a);
@@ -52,11 +53,9 @@ struct Cursor {
   // Char-level emit()
   CHECK_RETURN Err start_line();
   CHECK_RETURN Err emit_backspace();
-  CHECK_RETURN Err emit_indent();
   CHECK_RETURN Err emit_char(char c, uint32_t color = 0);
   CHECK_RETURN Err skip_char(char c);
   CHECK_RETURN Err emit_vprint(const char* fmt, va_list args);
-  CHECK_RETURN Err emit_line(const char* fmt, ...);
   CHECK_RETURN Err emit_print(const char* fmt, ...);
   CHECK_RETURN Err emit_string(const std::string_view& s);
 
@@ -150,7 +149,7 @@ struct Cursor {
   // Output state
 
   std::string* str_out;
-  std::stack<std::string> indent;
+  int indent_level = 0;
   bool at_newline = true;
   bool at_comma = false;
   bool line_dirty = false;

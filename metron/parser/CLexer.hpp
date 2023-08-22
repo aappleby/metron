@@ -6,18 +6,16 @@
 #include "CToken.hpp"
 #include "matcheroni/Matcheroni.hpp"
 
+#include <string>
 #include <vector>
 
 //------------------------------------------------------------------------------
 
 struct CLexer {
-  CLexer();
-  void reset();
-  bool lex(matcheroni::TextSpan text);
+  bool lex(const std::string& source, std::vector<Lexeme>& out_lexemes);
 
-  CToken next_lexeme(matcheroni::TextMatchContext& ctx, matcheroni::TextSpan body);
+  Lexeme next_lexeme(matcheroni::TextMatchContext& ctx, matcheroni::TextSpan body);
 
-  std::vector<CToken> tokens;
   int current_row = 0;
   int current_col = 0;
   int current_indent = 0;

@@ -18,37 +18,37 @@ Cursor::Cursor(CSourceRepo* repo, CSourceFile* source, std::string* str_out) {
   block_prefix.push("begin");
   block_suffix.push("end");
   override_size.push(0);
-  indent.push("");
 }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err Cursor::emit(CNode* n) {
+  if (n == nullptr) return Err();
   Err err = check_at(n);
   err << n->emit(*this);
   return err << check_done(n);
 }
 
 CHECK_RETURN Err Cursor::skip_over(CNode* n) {
-  if (n == nullptr) return Err();
+    if (n == nullptr) return Err();
   Err err = check_at(n);
   err << skip_span(n->tok_begin(), n->tok_end());
   return err << check_done(n);
 }
 
 CHECK_RETURN Err Cursor::comment_out(CNode* n) {
+  if (n == nullptr) return Err();
   Err err = check_at(n);
-
   err << emit_print("/*");
   err << emit_span(n->tok_begin(), n->tok_end());
   err << emit_print("*/");
-
   return err << check_done(n);
 }
 
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err Cursor::emit_default(CNode* n) {
+  if (n == nullptr) return Err();
   Err err = check_at(n);
 
   if (n->child_head) {
@@ -83,16 +83,22 @@ CHECK_RETURN Err Cursor::emit_rest(CNode* n) {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err Cursor::emit_gap_after(CNode* n) {
+  if (n == nullptr) return Err();
   Err err;
   if (n->node_next) err << emit_gap(n, n->node_next);
   return err;
 }
 
 CHECK_RETURN Err Cursor::skip_gap_after(CNode* n) {
+  auto begin = n->text_end();
+  auto end   = n->node_next->text_begin();
+
   Err err;
-  if (n->node_next) {
-    err << skip_span(n->tok_end(), n->node_next->tok_begin());
+  for (auto c = begin; c < end; c++) {
+    err << skip_char(*c);
   }
+  tok_cursor = n->node_next->tok_begin();
+  line_elided = true;
   return err;
 }
 
@@ -147,7 +153,7 @@ CHECK_RETURN Err Cursor::check_at(CNode* n) {
   if (tok_cursor != n->tok_begin()) {
     LOG_R("check_at - bad tok_cursor\n");
     LOG_R("  want @%.10s@\n", n->text_begin());
-    LOG_R("  got  @%.10s@\n", tok_cursor->text.begin);
+    LOG_R("  got  @%.10s@\n", tok_cursor->text_begin());
     exit(-1);
   }
 
@@ -158,12 +164,14 @@ CHECK_RETURN Err Cursor::check_at(CNode* n) {
 
 CHECK_RETURN Err Cursor::check_done(CNode* n) {
 
-  if (tok_cursor < n->tok_end()) {
+  auto tok_end = n->tok_end();
+
+  if (tok_cursor < tok_end) {
     LOG_R("Token cursor was left inside the current node\n");
     exit(-1);
   }
 
-  if (tok_cursor > n->tok_end()) {
+  if (tok_cursor > tok_end) {
     LOG_R("Token cursor was left past the end of the current node\n");
     exit(-1);
   }
@@ -174,8 +182,8 @@ CHECK_RETURN Err Cursor::check_done(CNode* n) {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err Cursor::emit_token(const CToken* a) {
-  auto begin = a->text.begin;
-  auto end   = a->text.end;
+  auto begin = a->text_begin();
+  auto end   = a->text_end();
 
   Err err;
   for (auto c = begin; c < end; c++) {
@@ -208,22 +216,22 @@ CHECK_RETURN Err Cursor::start_line() {
 
 //----------------------------------------
 
+CHECK_RETURN Err Cursor::emit_indent() {
+  Err err;
+  for (int i = 0; i < indent_level; i++) {
+    err << emit_print("  ");
+  }
+  return err;
+}
+
+//----------------------------------------
+
 CHECK_RETURN Err Cursor::emit_backspace() {
   Err err;
   if (echo) {
     LOG_C(0x8080FF, "^H");
   }
   str_out->pop_back();
-  return err;
-}
-
-//----------------------------------------
-
-CHECK_RETURN Err Cursor::emit_indent() {
-  Err err;
-  for (auto c : indent.top()) {
-    err << emit_char(c);
-  }
   return err;
 }
 
@@ -267,7 +275,8 @@ CHECK_RETURN Err Cursor::emit_char(char c, uint32_t color) {
 
   if (echo) {
     auto d = c;
-    if (color && d == ' ') d = '_';
+    //if (color && d == ' ') d = '_';
+    if (d == ' ') d = '_';
     LOG_C(color, "%c", d);
   }
 
@@ -280,9 +289,18 @@ CHECK_RETURN Err Cursor::emit_char(char c, uint32_t color) {
 
 CHECK_RETURN Err Cursor::skip_char(char c) {
   Err err;
+  if (c == '\r') return err;
+
   if (echo) {
-    if (c == ' ') c = '_';
-    LOG_C(0x8080FF, "%c", c);
+    if (c == ' ') {
+      LOG_C(0x8080FF, "_", c);
+    }
+    else if (c == '\n') {
+      LOG_C(0x8080FF, "\\n\n", c);
+    }
+    else {
+      LOG_C(0x8080FF, "%c", c);
+    }
   }
   return err;
 }
@@ -291,7 +309,7 @@ CHECK_RETURN Err Cursor::skip_char(char c) {
 
 CHECK_RETURN Err Cursor::emit_to(const CToken* b) {
   Err err;
-  for (auto c = tok_cursor->text.begin; c < b->text.end; c++) {
+  for (auto c = tok_cursor->text_begin(); c < b->text_end(); c++) {
     err << emit_char(*c);
   }
   tok_cursor = b;
@@ -301,8 +319,8 @@ CHECK_RETURN Err Cursor::emit_to(const CToken* b) {
 //----------------------------------------
 
 CHECK_RETURN Err Cursor::skip_span(const CToken* a, const CToken* b) {
-  auto begin = a->text.begin;
-  auto end   = a->text.end;
+  auto begin = a->text_begin();
+  auto end   = (b-1)->text_end();
 
   Err err;
   for (auto c = begin; c < end; c++) {
@@ -331,16 +349,6 @@ CHECK_RETURN Err Cursor::emit_vprint(const char* fmt, va_list args) {
     err << emit_char(buf[i], 0x80FF80);
   }
   delete[] buf;
-  return err;
-}
-
-//----------------------------------------
-
-CHECK_RETURN Err Cursor::emit_line(const char* fmt, ...) {
-  Err err = start_line();
-  va_list args;
-  va_start(args, fmt);
-  err << emit_vprint(fmt, args);
   return err;
 }
 

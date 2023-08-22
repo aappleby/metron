@@ -5,6 +5,7 @@
 #include "CNodeField.hpp"
 #include "metrolib/core/Log.h"
 #include "CNodeClass.hpp"
+#include "CNodeCall.hpp"
 #include "CNodeStruct.hpp"
 
 //------------------------------------------------------------------------------
@@ -290,7 +291,6 @@ bool CNodeClass::needs_tock() {
   return false;
 }
 
-
 //------------------------------------------------------------------------------
 
 Err CNodeClass::emit(Cursor& cursor) {
@@ -301,26 +301,22 @@ Err CNodeClass::emit(Cursor& cursor) {
   auto n_body  = child("body");
 
   err << cursor.emit_replacements(n_class, "class", "module");
-
   err << cursor.emit_gap(n_class, n_name);
+
   err << cursor.emit(n_name);
   err << cursor.emit_gap(n_name, n_body);
 
-  err << cursor.emit_print("(\n");
-  //cursor.push_indent(node_body);
-  err << cursor.emit_print("{{port list}}");
-  //err << cursor.emit_module_ports(node_body);
-  //cursor.pop_indent(node_body);
-  err << cursor.emit_line(");");
+  err << emit_module_ports(cursor);
 
-  //err << cursor.emit(n_body);
   for (auto child : n_body) {
     if (child->get_text() == "{") {
+      cursor.indent_level++;
       err << cursor.skip_over(child);
+      err << emit_template_parameter_list(cursor);
       err << cursor.emit_gap_after(child);
-      err << cursor.emit_print("{{template parameter list}}\n");
     }
     else if (child->get_text() == "}") {
+      cursor.indent_level--;
       err << cursor.emit_replacement(child, "endmodule");
       err << cursor.emit_gap_after(child);
     }
@@ -332,6 +328,8 @@ Err CNodeClass::emit(Cursor& cursor) {
 
   return err << cursor.check_done(this);
 }
+
+//------------------------------------------------------------------------------
 
 /*
 CHECK_RETURN Err MtCursor::emit_module_ports(MnNode class_body) {
@@ -378,34 +376,64 @@ CHECK_RETURN Err MtCursor::emit_module_ports(MnNode class_body) {
 }
 */
 
+Err CNodeClass::emit_module_ports(Cursor& cursor) {
+  Err err;
+  err << cursor.emit_print("(\n");
+  err << cursor.emit_print("{{port list}}\n");
+  err << cursor.emit_print(");\n");
+  return err;
+}
 
 //------------------------------------------------------------------------------
 
 /*
-Err CNodeFi eldList::emit(Cursor& cursor) {
-  Err err = cursor.check_at(this);
+CHECK_RETURN Err MtCursor::emit_template_params_as_modparams(MnNode n) {
+  Err err;
+  push_cursor(n);
 
-  for (auto c : (CNode*)this) {
-    if (c->get_text() == "{") {
-      err << cursor.skip_over(c);
-      err << cursor.emit_gap_after(c);
-      err << cursor.emit_print("{{template parameter list}}\n");
-    }
-    else if (c->get_text() == "}") {
-      err << cursor.emit_replacement(c, "endmodule");
-      err << cursor.emit_gap_after(c);
-    }
-    else {
-      err << cursor.emit(c);
-      err << cursor.emit_gap_after(c);
-    }
+  for (auto c : n) {
+    switch (c.sym) {
+      case anon_sym_LT:
+      case anon_sym_GT:
+      case anon_sym_COMMA:
+        err << skip_over(c);
+        err << skip_ws_inside(n);
+        break;
 
+      case sym_optional_parameter_declaration:
+        err << emit_optional_param_as_modparam(c);
+        err << emit_ws_inside(n);
+        break;
+
+      case sym_parameter_declaration:
+        err << ERR("Parameter '%s' must have a default value\n", c.text().c_str());
+        break;
+
+      default:
+        err << emit_dispatch(c);
+        err << emit_ws_inside(n);
+        break;
+    }
   }
 
-  return err << cursor.check_done(this);
+  err << start_line();
+  pop_cursor();
+  return err;
 }
 */
 
+Err CNodeClass::emit_template_parameter_list(Cursor& cursor) {
+  Err err;
+
+  auto node_template = ancestor<CNodeTemplate>();
+  if (node_template) {
+    err << cursor.emit_char('\n');
+    err << cursor.emit_indent();
+    err << cursor.emit_print("{{template parameter list}}");
+  }
+
+  return err;
+}
 
 //------------------------------------------------------------------------------
 

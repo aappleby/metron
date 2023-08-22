@@ -39,6 +39,9 @@ struct CNodeClass : public CNode {
 
   virtual Err emit(Cursor& cursor) override;
 
+  Err emit_module_ports(Cursor& cursor);
+  Err emit_template_parameter_list(Cursor& cursor);
+
   //----------------------------------------
 
   CSourceRepo* repo;

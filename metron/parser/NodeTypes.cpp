@@ -1,5 +1,7 @@
 #include "NodeTypes.hpp"
 
+#include "CNodeClass.hpp"
+
 using namespace matcheroni;
 using namespace parseroni;
 
@@ -8,9 +10,23 @@ using namespace parseroni;
 Err CNodeTemplate::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
+  auto node_template = child("template");
+  auto node_params   = child("params");
+  auto node_class    = child("class");
+
+  err << cursor.skip_over(node_template);
+  err << cursor.skip_gap_after(node_template);
+
+  err << cursor.skip_over(node_params);
+  err << cursor.skip_gap_after(node_params);
+
+  err << cursor.emit(node_class);
+
+  /*
   dump_tree();
   LOG_R("FIXME\n");
   exit(-1);
+  */
 
   // Template params have to go _inside_ the class definition in Verilog, so
   // we skip them here.
@@ -24,6 +40,14 @@ Err CNodeTemplate::emit(Cursor& cursor) {
 
   //cursor.current_mod.pop();
   return err << cursor.check_done(this);
+}
+
+//------------------------------------------------------------------------------
+
+Err CNodeAccess::emit(Cursor& cursor) {
+  Err err;
+  err << cursor.comment_out(this);
+  return err;
 }
 
 //------------------------------------------------------------------------------

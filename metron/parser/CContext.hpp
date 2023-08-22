@@ -45,20 +45,20 @@ class CContext : public parseroni::NodeContext<CNode> {
   }
 
   static int atom_cmp(const CToken& a, const LexemeType& b) {
-    return a.type - b;
+    return a.lex->type - b;
   }
 
   static int atom_cmp(const CToken& a, const char& b) {
-    if (auto d = a.text.len() - 1) return d;
-    return a.text.begin[0] - b;
+    if (auto d = a.lex->len() - 1) return d;
+    return a.lex->text_begin[0] - b;
   }
 
   static int atom_cmp(const CToken& a, const matcheroni::TextSpan& b) {
-    return strcmp_span(a.text, b);
+    return strcmp_span(matcheroni::TextSpan(a.lex->text_begin, a.lex->text_end), b);
   }
 
   void reset();
-  TokenSpan parse(matcheroni::TextSpan text, TokenSpan lexemes);
+  TokenSpan parse();
 
   TokenSpan match_builtin_type_base  (TokenSpan body);
   TokenSpan match_builtin_type_prefix(TokenSpan body);
@@ -98,10 +98,10 @@ class CContext : public parseroni::NodeContext<CNode> {
 
   CSourceRepo* repo;
 
-  matcheroni::TextSpan text_span;
-  TokenSpan  lexemes;
-
+  std::string source;
+  std::vector<Lexeme> lexemes;
   std::vector<CToken> tokens;
+
   CScope* type_scope;
 
   CNode* root_node = nullptr;

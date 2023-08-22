@@ -58,6 +58,21 @@ struct CNodeEnum : public CNode {
 
 struct CNodeExpression : public CNode {
   virtual uint32_t debug_color() const { return COL_YELLOW; }
+  virtual Err emit(Cursor& cursor) {
+    return cursor.emit_default(child("unit"));
+  }
+
+  bool is_integer_constant() {
+    if (child_count() != 1) return false;
+    auto node_unit = child("unit");
+    if (!node_unit || node_unit->child_count() != 1) return false;
+    auto node_constant = node_unit->child("constant");
+    if (!node_constant) return false;
+    auto node_int = node_constant->child("int");
+    if (!node_int) return false;
+    return true;
+  }
+
 };
 
 struct CNodeDeclaration : public CNode {
@@ -67,13 +82,6 @@ struct CNodeDeclaration : public CNode {
 
   std::string_view get_type_name() const {
     auto decl_type = child("decl_type");
-    /*
-    if (auto name = decl_type->child("type_name")) return name->get_text();
-    if (auto name = decl_type->child("builtin_name")) return builtin->get_text();
-
-    assert(false);
-    return "<could not get type of decl>";
-    */
     return decl_type->child_head->get_text();
   }
 
@@ -91,14 +99,11 @@ struct CNodeDeclaration : public CNode {
 
 //------------------------------------------------------------------------------
 
-struct CNodeType : public CNode {
-  virtual uint32_t debug_color() const { return 0xFF00FF; }
-};
-
-//------------------------------------------------------------------------------
-
 struct CNodeConstant : public CNode {
   virtual uint32_t debug_color() const { return 0x0000FF; }
+  virtual Err emit(Cursor& cursor) {
+    return cursor.emit_raw(this);
+  }
 };
 
 //------------------------------------------------------------------------------
@@ -121,17 +126,6 @@ struct CNodeQualifiedIdentifier : public CNode {
 
 //------------------------------------------------------------------------------
 
-struct CNodeCall : public CNode {
-  virtual std::string_view get_name() const { return child("func_name")->get_text(); }
-  virtual uint32_t debug_color() const { return COL_SKY; }
-};
-
-struct CNodeArgument : public CNode {
-  virtual std::string_view get_name() const { return "arg"; }
-};
-
-//------------------------------------------------------------------------------
-
 struct CNodeKeyword : public CNode {
   virtual uint32_t debug_color() const { return 0xFFFF88; }
   virtual Err emit(Cursor& cursor) { return cursor.emit_default(this); }
@@ -145,9 +139,7 @@ struct CNodeTypedef : public CNode {
 //------------------------------------------------------------------------------
 
 struct CNodeAccess : public CNode {
-  virtual Err emit(Cursor& cursor) override {
-    return cursor.comment_out(this);
-  }
+  virtual Err emit(Cursor& cursor) override;
 };
 
 

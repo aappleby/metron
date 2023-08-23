@@ -86,9 +86,11 @@ void CInstField::dump() {
 
 CInstFunction::CInstFunction(CNodeFunction* node_function) : node_function(node_function) {
   auto node_params = node_function->child("params");
-  for (auto n : node_params) {
-    auto inst_param = new CInstParam(n->is_a<CNodeDeclaration>());
-    inst_params.push_back(inst_param);
+  for (auto p : node_params) {
+    if (auto param = p->as_a<CNodeDeclaration>()) {
+      auto inst_param = new CInstParam(param);
+      inst_params.push_back(inst_param);
+    }
   }
 
   auto node_body = node_function->child("body");

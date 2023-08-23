@@ -71,10 +71,11 @@ Err CNodeClass::collect_fields_and_methods(CSourceRepo* repo) {
       // Hook up _type_struct on all struct params
       auto params = n->child("params");
       for (auto p : params) {
-        auto decl = p->is_a<CNodeDeclaration>();
-        decl->_type_class = repo->get_class(decl->get_type_name());
-        decl->_type_struct = repo->get_struct(decl->get_type_name());
-        LOG_G("%p %p\n", decl->_type_class, decl->_type_struct);
+        if (auto decl = p->as_a<CNodeDeclaration>()) {
+          decl->_type_class = repo->get_class(decl->get_type_name());
+          decl->_type_struct = repo->get_struct(decl->get_type_name());
+          LOG_G("%p %p\n", decl->_type_class, decl->_type_struct);
+        }
       }
 
 

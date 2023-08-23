@@ -166,28 +166,6 @@ inline TokenSpan match_punct(CContext& ctx, TokenSpan body) {
 // Our builtin types are any sequence of prefixes followed by a builtin type
 
 TokenSpan match_builtin_type(CContext& ctx, TokenSpan body) {
-  /*
-  using match_prefix = Ref<&CContext::match_builtin_type_prefix>;
-  using match_base   = Ref<&CContext::match_builtin_type_base>;
-  using match_suffix = Ref<&CContext::match_builtin_type_suffix>;
-
-  // clang-format off
-  using pattern =
-  Seq<
-    Any<
-      Seq<
-        Cap<"prefix", match_prefix, CNodeText>,
-        And<match_base>
-      >
-    >,
-    Cap<"base_type", match_base, CNodeTypeName>,
-    Opt<Cap<"suffix", match_suffix, CNodeText>>
-  >;
-
-  auto tail = pattern::match(ctx, body);
-  return tail;
-  */
-
   return ctx.match_builtin_type_base(body);
 }
 
@@ -208,16 +186,18 @@ TokenSpan match_identifier(CContext& ctx, TokenSpan body) {
   return pattern::match(ctx, body);
 }
 
+using cap_identifier = CaptureAnon<Ref<match_identifier>, CNodeIdentifier>;
+
 TokenSpan match_field_expression(CContext& ctx, TokenSpan body) {
   using pattern =
   Seq<
     Some<
       Seq<
-        Cap<"field_path", Atom<LEX_IDENTIFIER>, CNodeIdentifier>,
+        Label<"field_path", cap_identifier>,
         Ref<match_punct<".">>
       >
     >,
-    Cap<"identifier", Atom<LEX_IDENTIFIER>, CNodeIdentifier>
+    Label<"identifier", cap_identifier>
   >;
   return pattern::match(ctx, body);
 }
@@ -227,11 +207,11 @@ TokenSpan match_qualified_identifier(CContext& ctx, TokenSpan body) {
   Seq<
     Some<
       Seq<
-        Cap<"scope_path", Atom<LEX_IDENTIFIER>, CNodeIdentifier>,
+        Label<"scope_path", cap_identifier>,
         Ref<match_punct<"::">>
       >
     >,
-    Cap<"identifier", Atom<LEX_IDENTIFIER>, CNodeIdentifier>
+    Label<"identifier", cap_identifier>
   >;
   return pattern::match(ctx, body);
 }
@@ -760,13 +740,15 @@ TokenSpan match_assignment(CContext& ctx, TokenSpan body) {
 template<auto c>
 using cap_punct = CaptureAnon<Atom<c>, CNodePunct>;
 
+using cap_declaration = CaptureAnon<Ref<match_declaration>, CNodeDeclaration>;
+
 TokenSpan match_decl_list(CContext& ctx, TokenSpan body) {
   using pattern =
   DelimitedList<
-    Atom<'('>,
-    Cap<"decl", Ref<match_declaration>, CNodeDeclaration>,
-    Atom<','>,
-    Atom<')'>
+    Label<"ldelim", cap_punct<'('>>,
+    Label<"decl",   cap_declaration>,
+    Label<"comma",  cap_punct<','>>,
+    Label<"rdelim", cap_punct<')'>>
   >;
   return pattern::match(ctx, body);
 }

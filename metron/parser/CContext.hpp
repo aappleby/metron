@@ -76,6 +76,12 @@ class CContext : public parseroni::NodeContext<CNode> {
   void add_enum   (const CToken* a);
   void add_typedef(const CToken* a);
 
+  TokenSpan add_struct2(TokenSpan body) {
+    type_scope->add_struct(*this, body.begin);
+    return body;
+  }
+
+
   void push_scope();
   void pop_scope();
 

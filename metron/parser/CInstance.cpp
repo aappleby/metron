@@ -65,12 +65,12 @@ CInstField::CInstField(CNodeField* node_field) : node_field(node_field) {
     inst_decl = new CInstStruct(node_field->_type_struct);
   }
   else if (node_field->is_array()) {
-    auto node_type = node_field->child_as<CNodeType>("decl_type");
-    auto node_array = node_field->child_as<CNode>("decl_array");
+    auto node_type = node_field->child<CNodeType>();
+    auto node_array = node_field->child("decl_array")->as_a<CNode>();
     inst_decl = new CInstArray(node_type, node_array);
   }
   else {
-    auto node_type = node_field->child_as<CNodeType>("decl_type");
+    auto node_type = node_field->child<CNodeType>();
     inst_decl = new CInstPrimitive(node_type);
   }
 }

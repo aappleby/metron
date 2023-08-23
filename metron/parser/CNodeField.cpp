@@ -218,9 +218,9 @@ Err CNodeField::emit(Cursor& cursor) {
   }
 
   auto node_builtin = node_type->child("builtin_name");
-  auto node_args    = node_type->child("type_args");
+  auto node_targs    = node_type->child("template_args");
 
-  if (node_builtin && node_args) {
+  if (node_builtin && node_targs) {
     err << cursor.comment_out(node_static);
     err << cursor.emit_gap_after(node_static);
     err << cursor.comment_out(node_const);

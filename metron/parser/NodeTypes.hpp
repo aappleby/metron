@@ -3,6 +3,8 @@
 #include "CNode.hpp"
 #include "Cursor.hpp"
 
+#include "CNodeType.hpp"
+
 #include "metrolib/core/Log.h"
 
 #include <assert.h>
@@ -62,7 +64,7 @@ struct CNodeDeclaration : public CNode {
   }
 
   std::string_view get_type_name() const {
-    auto decl_type = child("decl_type");
+    auto decl_type = child<CNodeType>();
     return decl_type->child_head->get_text();
   }
 
@@ -120,6 +122,13 @@ struct CNodeKeyword : public CNode {
 
 struct CNodeOperator : public CNode {
   virtual uint32_t debug_color() const { return COL_BLUE; }
+  virtual Err emit(Cursor& cursor) { return cursor.emit_default(this); }
+};
+
+//------------------------------------------------------------------------------
+
+struct CNodeAssignment : public CNode {
+  virtual uint32_t debug_color() const { return COL_TEAL; }
   virtual Err emit(Cursor& cursor) { return cursor.emit_default(this); }
 };
 
@@ -205,14 +214,6 @@ struct CNodeWhile : public CNode {
 struct CNodeCompound : public CNode {
   virtual uint32_t debug_color() const;
   virtual Err trace(CInstance* instance);
-};
-
-struct CNodeBreak : public CNode {
-  virtual uint32_t debug_color() const { return 0xFF00FF; }
-};
-
-struct CNodeContinue : public CNode {
-  virtual uint32_t debug_color() const { return 0xFF00FF; }
 };
 
 //==============================================================================

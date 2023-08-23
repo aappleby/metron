@@ -63,10 +63,17 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   //----------------------------------------
 
   template <typename P>
-  P* as_a() { return dynamic_cast<P*>(this); }
+  P* as_a() {
+    if (this == nullptr) return nullptr;
+    return dynamic_cast<P*>(this);
+  }
 
   template <typename P>
-  P* is_a() { auto result = dynamic_cast<P*>(this); assert(result); return result; }
+  P* is_a() {
+    auto result = dynamic_cast<P*>(this);
+    assert(result);
+    return result;
+  }
 
   //----------------------------------------
 
@@ -98,6 +105,22 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   template<typename P>
   P* child_is(const char* tag) {
     return child(tag)->is_a<P>();
+  }
+
+  template<typename P>
+  P* child() {
+    for (auto cursor = child_head; cursor; cursor = cursor->node_next) {
+      if (typeid(*cursor) == typeid(P)) return (P*)cursor;
+    }
+    return nullptr;
+  }
+
+  template<typename P>
+  const P* child() const {
+    for (auto cursor = child_head; cursor; cursor = cursor->node_next) {
+      if (typeid(*cursor) == typeid(P)) return (P*)cursor;
+    }
+    return nullptr;
   }
 
   //----------------------------------------

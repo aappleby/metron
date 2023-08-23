@@ -5,7 +5,7 @@
 #include "CNodeExpression.hpp"
 
 uint32_t CNodeType::debug_color() const {
-  return 0xFF00FF;
+  return COL_VIOLET;
 }
 
 /*
@@ -123,17 +123,17 @@ Err CNodeType::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
   auto node_builtin = child("builtin_name");
-  auto node_args = child("type_args");
+  auto node_targs   = child("template_args");
 
-  if (node_builtin && node_args) {
+  if (node_builtin && node_targs) {
     // Change logic<N> to logic[N-1:0]
 
     err << cursor.emit_raw(node_builtin);
     err << cursor.emit_gap_after(node_builtin);
 
-    auto node_ldelim = node_args->child("ldelim");
-    auto node_exp    = node_args->child("exp")->is_a<CNodeExpression>();
-    auto node_rdelim = node_args->child("rdelim");
+    auto node_ldelim = node_targs->child("ldelim");
+    auto node_exp    = node_targs->child("exp")->is_a<CNodeExpression>();
+    auto node_rdelim = node_targs->child("rdelim");
 
     err << cursor.emit_replacement(node_ldelim, "[");
     err << cursor.emit_gap_after(node_ldelim);

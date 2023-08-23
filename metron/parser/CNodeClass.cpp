@@ -296,7 +296,7 @@ bool CNodeClass::needs_tock() {
 Err CNodeClass::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
-  auto n_class = child("class");
+  auto n_class = child<CNodeKeyword>();
   auto n_name  = child("name");
   auto n_body  = child("body");
 

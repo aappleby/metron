@@ -94,10 +94,10 @@ struct NodeDumper {
     const char* dot_2     = "O ";
     */
 
-    const char* trellis_1 = "   ";
-    const char* trellis_2 = "┃  ";
-    const char* trellis_3 = "┣━╸";
-    const char* trellis_4 = "┗━╸";
+    const char* trellis_1 = "    ";
+    const char* trellis_2 = "┃   ";
+    const char* trellis_3 = "┣━━╸";
+    const char* trellis_4 = "┗━━╸";
     const char* dot_1     = "▆ ";
     const char* dot_2     = "▆ ";
 
@@ -118,7 +118,10 @@ struct NodeDumper {
       LOG_C(color, dot_2);
     }
 
-    LOG_C(color, "%s : %s = ", n.match_tag, class_name(n));
+    if (n.match_tag) {
+      LOG_C(color, "%s : ", n.match_tag);
+    }
+    LOG_C(color, "%s = ", class_name(n));
 
     if (n.child_head == nullptr) {
       std::string escaped = escape(n.text_begin(), n.text_end());

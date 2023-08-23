@@ -1,6 +1,7 @@
 #include "NodeTypes.hpp"
 
 #include "CNodeClass.hpp"
+#include "CNodeType.hpp"
 
 using namespace matcheroni;
 using namespace parseroni;
@@ -64,7 +65,7 @@ Err CNodeDeclaration::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
   // Check for const char*
-  auto type = child("decl_type");
+  auto type = child<CNodeType>();
 
   bool is_const_char_ptr = false;
   if (child("const")) {

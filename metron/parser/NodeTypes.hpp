@@ -156,7 +156,7 @@ struct CNodeCast : public CNode {
 //------------------------------------------------------------------------------
 
 struct CNodePunct : public CNode {
-  virtual uint32_t debug_color() const { return 0xFF8888; }
+  virtual uint32_t debug_color() const { return 0x88FF88; }
   virtual Err emit(Cursor& cursor) override {
     return cursor.emit_default(this);
   }

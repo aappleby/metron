@@ -118,7 +118,7 @@ struct NodeDumper {
       LOG_C(color, dot_2);
     }
 
-    LOG_C(color, "%s %s = ", class_name(n), n.match_tag);
+    LOG_C(color, "%s : %s = ", n.match_tag, class_name(n));
 
     if (n.child_head == nullptr) {
       std::string escaped = escape(n.text_begin(), n.text_end());

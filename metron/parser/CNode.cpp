@@ -9,8 +9,29 @@
 
 using namespace matcheroni;
 
-CHECK_RETURN Err CNode::emit(Cursor& cursor) {
+//------------------------------------------------------------------------------
+
+uint32_t CNode::debug_color() const {
+  return 0x222244;
+}
+
+std::string_view CNode::get_name() const {
+  return "<CNode>";
+}
+
+Err CNode::emit(Cursor& cursor) {
   return cursor.emit_replacement(this, "{{%s}}", typeid(*this).name());
+}
+
+Err CNode::trace(CInstance* instance) {
+  LOG_R("Don't know how to trace {{%s}}\n", typeid(*this).name());
+  exit(-1);
+}
+
+Err CNode::trace_children(CInstance* instance) {
+  Err err;
+  for (auto c : this) c->trace(instance);
+  return err;
 }
 
 //------------------------------------------------------------------------------
@@ -127,24 +148,6 @@ void CNode::dump_tree(int max_depth) const {
   NodeDumper d;
   d.dump_tree_recurse(*this, 0, max_depth);
   LOG("========== tree dump end\n");
-}
-
-//------------------------------------------------------------------------------
-
-void CNode::debug_dump(std::string& out) {
-  out += "[";
-  out += match_tag;
-  out += ":";
-  if (child_head) {
-    for (auto c = child_head; c; c = c->node_next) {
-      c->debug_dump(out);
-    }
-  } else {
-    out += '`';
-    out += get_text();
-    out += '`';
-  }
-  out += "]";
 }
 
 //------------------------------------------------------------------------------

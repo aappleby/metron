@@ -20,12 +20,19 @@ struct CInstance;
 
 struct CNodeField : public CNode {
 
+  //----------------------------------------
+  // Methods to be implemented by subclasses.
+
+  virtual uint32_t debug_color() const;
+  virtual std::string_view get_name() const;
+  virtual Err emit(Cursor& c);
+  //virtual Err trace(CInstance* instance);
+
+  //----------------------------------------
+
   void init(const char* match_tag, SpanType span, uint64_t flags);
 
-  virtual std::string_view get_name() const override;
   std::string_view get_type_name() const;
-  virtual uint32_t debug_color() const override;
-  virtual Err emit(Cursor& cursor) override;
 
   bool is_component() const;
   bool is_struct() const;

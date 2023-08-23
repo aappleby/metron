@@ -1,19 +1,19 @@
 #include "MetronApp.h"
-#include "metrolib/core/Log.h"
-#include "metrolib/core/Platform.h"
-
-#include "metron/parser/CSourceFile.hpp"
-#include "metron/parser/CSourceRepo.hpp"
-#include "metron/parser/CParser.hpp"
-#include "metron/parser/Cursor.hpp"
-#include "metron/parser/NodeTypes.hpp"
-#include "metron/parser/CNodeClass.hpp"
-#include "metron/parser/CNodeStruct.hpp"
-#include "metron/parser/CNodeField.hpp"
-#include "metron/parser/CNodeFunction.hpp"
-#include "metron/parser/CInstance.hpp"
 
 #include "matcheroni/Utilities.hpp"
+#include "metrolib/core/Log.h"
+#include "metrolib/core/Platform.h"
+#include "metron/parser/CInstance.hpp"
+#include "metron/parser/CNodeClass.hpp"
+#include "metron/parser/CNodeField.hpp"
+#include "metron/parser/CNodeFunction.hpp"
+#include "metron/parser/CNodeStruct.hpp"
+#include "metron/parser/CParser.hpp"
+#include "metron/parser/CSourceFile.hpp"
+#include "metron/parser/CSourceRepo.hpp"
+#include "metron/parser/Cursor.hpp"
+#include "metron/parser/NodeTypes.hpp"
+#include "metron/parser/Tracer.hpp"
 
 using namespace matcheroni;
 
@@ -94,9 +94,9 @@ int main_new(Options opts) {
   // All modules are now in the library, we can resolve references to other
   // modules when we're collecting fields.
 
-  LOG_B("Processing source files\n");
-
   {
+    LOG_B("//----------------------------------------\n");
+    LOG_B("Processing source files\n");
     LOG_INDENT_SCOPE();
 
     LOG_B("collect_fields_and_methods\n");
@@ -106,12 +106,25 @@ int main_new(Options opts) {
     err << repo.build_call_graphs();
   }
 
-  LOG_V("\n");
-  LOG_V("Instance:\n");
-  auto inst = new CInstClass(repo.top);
-  inst->dump();
+  //----------------------------------------
 
-  LOG_B("\n");
+  {
+    LOG_B("//----------------------------------------\n");
+    LOG_B("Tracing top methods\n");
+
+    auto root_inst = new CInstClass(repo.top);
+
+    for (auto inst_func : root_inst->functions) {
+      auto node_func = inst_func->node_function;
+      err << node_func->trace(inst_func);
+    }
+
+    //Tracer tracer(&repo, true);
+    //err << tracer.trace();
+    LOG_B("Tracing done\n");
+  }
+
+  //----------------------------------------
 
   if (opts.verbose) {
     repo.dump();

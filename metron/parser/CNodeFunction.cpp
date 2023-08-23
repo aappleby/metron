@@ -2,14 +2,32 @@
 
 #include "CNodeClass.hpp"
 #include "metrolib/core/Log.h"
-
+#include "NodeTypes.hpp"
 #include "matcheroni/Utilities.hpp"
 
 using namespace matcheroni;
 
+//------------------------------------------------------------------------------
+
+uint32_t CNodeFunction::debug_color() const {
+  return COL_ORANGE;
+}
+
 std::string_view CNodeFunction::get_name() const {
   return child("name")->get_name();
 }
+
+Err CNodeFunction::emit(Cursor& c) {
+  return CNode::emit(c);
+}
+
+Err CNodeFunction::trace(CInstance* instance) {
+  Err err;
+  err << child_is<CNodeCompound>("body")->trace(instance);
+  return err;
+}
+
+//------------------------------------------------------------------------------
 
 CNodeClass* CNodeFunction::get_parent_class() {
   return ancestor<CNodeClass>();

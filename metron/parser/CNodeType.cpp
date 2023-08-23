@@ -2,6 +2,7 @@
 
 #include "metrolib/core/Log.h"
 #include "NodeTypes.hpp"
+#include "CNodeExpression.hpp"
 
 uint32_t CNodeType::debug_color() const {
   return 0xFF00FF;

@@ -15,6 +15,7 @@
 struct Cursor;
 struct CNodeClass;
 struct CSourceRepo;
+struct CInstance;
 
 typedef matcheroni::Span<CToken> TokenSpan;
 
@@ -28,7 +29,17 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   CNode() {}
   virtual ~CNode() {}
 
-  virtual std::string_view get_name() const { return "<CNode>"; }
+  //----------------------------------------
+  // Methods to be implemented by subclasses.
+
+  virtual uint32_t debug_color() const;
+  virtual std::string_view get_name() const;
+  virtual Err emit(Cursor& c);
+  virtual Err trace(CInstance* instance);
+
+  //----------------------------------------
+
+  Err trace_children(CInstance* instance);
 
   const CToken* tok_begin() const { return span.begin; }
   const CToken* tok_end() const   { return span.end; }
@@ -44,13 +55,10 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
     return std::string_view(text_begin(), text_end());
   }
 
-  CHECK_RETURN virtual Err emit(Cursor& c);
 
   //----------------------------------------
 
-  virtual uint32_t debug_color() const { return 0x999999; }
   void dump_tree(int max_depth = 0) const;
-  void debug_dump(std::string& out);
 
   //----------------------------------------
 
@@ -78,17 +86,18 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
 
   template<typename P>
   P* ancestor() {
-    for (auto cursor = node_parent; cursor; cursor = cursor->node_parent) {
-      if (auto p = cursor->as_a<P>()) {
-        return p;
-      }
-    }
-    return nullptr;
+    if (auto p = as_a<P>()) return p;
+    return node_parent ? node_parent->ancestor<P>() : nullptr;
   }
 
   template<typename P>
   P* child_as(const char* tag) {
     return child(tag)->as_a<P>();
+  }
+
+  template<typename P>
+  P* child_is(const char* tag) {
+    return child(tag)->is_a<P>();
   }
 
   //----------------------------------------

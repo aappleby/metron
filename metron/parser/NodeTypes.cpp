@@ -86,3 +86,15 @@ Err CNodeDeclaration::emit(Cursor& cursor) {
 }
 
 //------------------------------------------------------------------------------
+
+uint32_t CNodeCompound::debug_color() const {
+  return 0xFF8888;
+}
+
+Err CNodeCompound::trace(CInstance* instance) {
+  Err err;
+  for (auto c : this) err << c->trace(instance);
+  return err;
+}
+
+//------------------------------------------------------------------------------

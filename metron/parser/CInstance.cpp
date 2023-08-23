@@ -6,6 +6,7 @@
 #include "CNodeStruct.hpp"
 #include "CNodeType.hpp"
 #include "CNodeCall.hpp"
+#include "CNodeExpression.hpp"
 
 #include "NodeTypes.hpp"
 
@@ -149,10 +150,11 @@ CInstReturn::CInstReturn() {
 
 //------------------------------------------------------------------------------
 
+CInstCall::CInstCall() {
+}
+
 CInstCall::CInstCall(CNodeCall* node_call) : node_call(node_call) {
-
   auto node_args = node_call->child("func_args");
-
   for (auto n : node_args) {
     auto exp = n->is_a<CNodeExpression>();
     inst_args.push_back(new CInstArg(exp));
@@ -161,8 +163,13 @@ CInstCall::CInstCall(CNodeCall* node_call) : node_call(node_call) {
 }
 
 void CInstCall::dump() {
-  auto name = node_call->get_name();
-  LOG_G("Call %.*s\n", int(name.size()), name.data());
+  if (node_call) {
+    auto name = node_call->get_name();
+    LOG_G("Call %.*s\n", int(name.size()), name.data());
+  }
+  else {
+    LOG_G("Call <top>\n");
+  }
   LOG_INDENT_SCOPE();
   for (auto a : inst_args) a->dump();
   inst_return->dump();
@@ -170,12 +177,20 @@ void CInstCall::dump() {
 
 //------------------------------------------------------------------------------
 
+CInstArg::CInstArg() {
+}
+
 CInstArg::CInstArg(CNodeExpression* node_arg) : node_arg(node_arg) {
 }
 
 void CInstArg::dump() {
-  auto text = node_arg->get_text();
-  LOG_G("Arg {{ %.*s }}\n", int(text.size()), text.data());
+  if (node_arg) {
+    auto text = node_arg->get_text();
+    LOG_G("Arg {{ %.*s }}\n", int(text.size()), text.data());
+  }
+  else {
+    LOG_G("Arg <top>\n");
+  }
 }
 
 //------------------------------------------------------------------------------

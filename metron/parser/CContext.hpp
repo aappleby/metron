@@ -88,14 +88,6 @@ class CContext : public parseroni::NodeContext<CNode> {
 
   //----------------------------------------
 
-  void debug_dump(std::string& out) {
-    for (auto node = top_head; node; node = node->node_next) {
-      node->debug_dump(out);
-    }
-  }
-
-  //----------------------------------------
-
   CSourceRepo* repo;
 
   std::string source;

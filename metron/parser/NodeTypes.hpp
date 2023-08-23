@@ -56,25 +56,6 @@ struct CNodeEnum : public CNode {
 //
 //==============================================================================
 
-struct CNodeExpression : public CNode {
-  virtual uint32_t debug_color() const { return COL_YELLOW; }
-  virtual Err emit(Cursor& cursor) {
-    return cursor.emit_default(child("unit"));
-  }
-
-  bool is_integer_constant() {
-    if (child_count() != 1) return false;
-    auto node_unit = child("unit");
-    if (!node_unit || node_unit->child_count() != 1) return false;
-    auto node_constant = node_unit->child("constant");
-    if (!node_constant) return false;
-    auto node_int = node_constant->child("int");
-    if (!node_int) return false;
-    return true;
-  }
-
-};
-
 struct CNodeDeclaration : public CNode {
   virtual std::string_view get_name() const {
     return child("decl_name")->get_name();
@@ -100,7 +81,7 @@ struct CNodeDeclaration : public CNode {
 //------------------------------------------------------------------------------
 
 struct CNodeConstant : public CNode {
-  virtual uint32_t debug_color() const { return 0x0000FF; }
+  virtual uint32_t debug_color() const { return COL_SKY; }
   virtual Err emit(Cursor& cursor) {
     return cursor.emit_raw(this);
   }
@@ -118,6 +99,10 @@ struct CNodeIdentifier : public CNode {
 
 struct CNodeFieldExpression : public CNode {
   virtual uint32_t debug_color() const { return 0x80FF80; }
+  virtual Err trace(CInstance* instance) {
+    dump_tree();
+    return CNode::trace(instance);
+  }
 };
 
 struct CNodeQualifiedIdentifier : public CNode {
@@ -133,19 +118,45 @@ struct CNodeKeyword : public CNode {
 
 //------------------------------------------------------------------------------
 
+struct CNodeOperator : public CNode {
+  virtual uint32_t debug_color() const { return COL_BLUE; }
+  virtual Err emit(Cursor& cursor) { return cursor.emit_default(this); }
+};
+
+//------------------------------------------------------------------------------
+
 struct CNodeTypedef : public CNode {
+};
+
+struct CNodeTypeName : public CNode {
+  virtual uint32_t debug_color() const { return COL_ORANGE; }
+};
+
+struct CNodeList : public CNode {
+  virtual uint32_t debug_color() const { return 0xCCCCCC; }
 };
 
 //------------------------------------------------------------------------------
 
 struct CNodeAccess : public CNode {
+  virtual uint32_t debug_color() const { return COL_VIOLET; }
   virtual Err emit(Cursor& cursor) override;
 };
 
+struct CNodeText : public CNode {
+  virtual uint32_t debug_color() const { return 0x888888; }
+  virtual Err emit(Cursor& cursor) { return cursor.emit_default(this); }
+};
+
+struct CNodeCast : public CNode {
+  virtual uint32_t debug_color() const { return 0x888888; }
+  virtual Err emit(Cursor& cursor) { return cursor.emit_default(this); }
+};
 
 //------------------------------------------------------------------------------
 
 struct CNodePunct : public CNode {
+  virtual uint32_t debug_color() const { return 0xFF8888; }
   virtual Err emit(Cursor& cursor) override {
     return cursor.emit_default(this);
   }
@@ -192,7 +203,8 @@ struct CNodeWhile : public CNode {
 };
 
 struct CNodeCompound : public CNode {
-  virtual uint32_t debug_color() const { return 0xFF8888; }
+  virtual uint32_t debug_color() const;
+  virtual Err trace(CInstance* instance);
 };
 
 struct CNodeBreak : public CNode {

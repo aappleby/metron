@@ -6,6 +6,8 @@
 #include "metron/tools/MtUtils.h"
 
 #include "metrolib/core/Log.h"
+#include "metrolib/core/Platform.h"
+#include "metrolib/core/Err.h"
 
 struct CNode;
 struct CNodeCall;
@@ -39,14 +41,44 @@ struct CLogEntry {
 //------------------------------------------------------------------------------
 
 struct CInstance {
+  CInstance() {
+    state_stack.push_back(CTX_NONE);
+  }
   virtual ~CInstance() {}
   virtual void dump();
+
+  virtual CInstance* resolve(const std::string& name) {
+    return nullptr;
+  }
 
   template <typename P>
   P* as_a() { return dynamic_cast<P*>(this); }
 
   template <typename P>
   P* is_a() { auto p = dynamic_cast<P*>(this); assert(p); return p; }
+
+  CHECK_RETURN Err log_action(CNode* node, TraceAction action) {
+    Err err;
+    auto old_state = state_stack.back();
+    auto new_state = merge_action(old_state, action);
+
+    //LOG_R("%s %s %s\n", to_string(action), to_string(old_state), to_string(new_state));
+
+    if (old_state != new_state) {
+      action_log.push_back({old_state, new_state, action, node});
+    }
+
+    state_stack.back() = new_state;
+
+    if (new_state == CTX_INVALID) {
+      LOG_R("Trace error: state went from %s to %s\n", to_string(old_state), to_string(new_state));
+      dump();
+      err << ERR("Invalid context state\n");
+    }
+
+    return err;
+  }
+
 
   std::string _name;
   std::string _path;
@@ -112,26 +144,33 @@ struct CInstParam : public CInstance {
 
 struct CInstReturn : public CInstance {
   CInstReturn();
+
+  CNodeType* node_return = nullptr;
 };
 
 //------------------------------------------------------------------------------
 
 struct CInstCall : public CInstance {
+  CInstCall();
   CInstCall(CNodeCall* node_call);
 
   virtual void dump();
 
-  CNodeCall* node_call;
+  CNodeFunction* node_function = nullptr;
+  CNodeCall* node_call = nullptr;
   std::vector<CInstArg*> inst_args;
-  CInstReturn* inst_return;
+  CInstReturn* inst_return = nullptr;
 };
 
 //----------------------------------------
 
 struct CInstArg : public CInstance {
+  CInstArg();
   CInstArg(CNodeExpression* node_arg);
+
   virtual void dump();
-  CNodeExpression* node_arg;
+  CNode* node_param = nullptr;
+  CNodeExpression* node_arg = nullptr;
 };
 
 //------------------------------------------------------------------------------

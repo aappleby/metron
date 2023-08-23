@@ -20,14 +20,22 @@ struct CNodeParameter : public CNode {
 //------------------------------------------------------------------------------
 
 struct CNodeFunction : public CNode {
-  virtual uint32_t debug_color() const { return COL_ORANGE; }
+
+  //----------------------------------------
+  // Methods to be implemented by subclasses.
+
+  virtual uint32_t debug_color() const;
+  virtual std::string_view get_name() const;
+  virtual Err emit(Cursor& c);
+  virtual Err trace(CInstance* instance);
+
+  //----------------------------------------
+
+  CNodeClass* get_parent_class();
+  std::string_view get_return_type_name() const;
 
   void dump();
 
-  virtual std::string_view get_name() const;
-  CNodeClass* get_parent_class();
-
-  std::string_view get_return_type_name() const;
 
   //bool is_public() const;
   //bool is_tick() const { assert(false); return false; }

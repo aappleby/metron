@@ -10,14 +10,18 @@
 
 //------------------------------------------------------------------------------
 
-void CNodeField::init(const char* match_tag, SpanType span, uint64_t flags) {
-  CNode::init(match_tag, span, flags);
+uint32_t CNodeField::debug_color() const {
+  return COL_PINK;
+}
+
+std::string_view CNodeField::get_name() const {
+  return child("decl_name")->get_name();
 }
 
 //------------------------------------------------------------------------------
 
-std::string_view CNodeField::get_name() const {
-  return child("decl_name")->get_name();
+void CNodeField::init(const char* match_tag, SpanType span, uint64_t flags) {
+  CNode::init(match_tag, span, flags);
 }
 
 //------------------------------------------------------------------------------
@@ -41,11 +45,6 @@ std::string_view CNodeField::get_type_name() const {
   */
 }
 
-//------------------------------------------------------------------------------
-
-uint32_t CNodeField::debug_color() const {
-  return 0xFF00FF;
-}
 
 
 //------------------------------------------------------------------------------

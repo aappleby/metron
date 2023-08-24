@@ -146,11 +146,11 @@ struct NodeDumper {
 //------------------------------------------------------------------------------
 
 void CNode::dump_tree(int max_depth) const {
-  LOG("\n");
-  LOG("========== tree dump begin\n");
+  //LOG("\n");
+  //LOG("========== tree dump begin\n");
   NodeDumper d;
   d.dump_tree_recurse(*this, 0, max_depth);
-  LOG("========== tree dump end\n");
+  //LOG("========== tree dump end\n");
 }
 
 //------------------------------------------------------------------------------

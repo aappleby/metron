@@ -10,6 +10,7 @@
       "cwd": "${workspaceFolder}",
       //"args" : ["-p", "-d", "-v", "-e", "-c", "examples/uart/metron/uart_top.h"],
       "args" : ["-p", "-d", "-v", "-e", "-c", "examples/scratch.h", "-o", "examples/scratch.sv"],
+      //"args" : ["-d", "-v", "-e", "-c", "examples/scratch.h"],
       "setupCommands": [
         { // Display content in STL containers pretty
           "description": "Enable pretty-printing for gdb",

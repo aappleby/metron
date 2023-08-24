@@ -120,10 +120,60 @@ struct CNodeKeyword : public CNode {
 
 //------------------------------------------------------------------------------
 
-struct CNodeOperator : public CNode {
+struct CNodeBinaryOp : public CNode {
+  virtual uint32_t debug_color() const { return COL_SKY; }
+  virtual Err emit(Cursor& cursor) { return cursor.emit_default(this); }
+  void init(const char* match_tag, SpanType span, uint64_t flags) {
+    CNode::init(match_tag, span, flags);
+
+    // FIXME this is silly
+    char buf[16] = {0};
+    memcpy(buf, span.begin->lex->text_begin, span.begin->lex->len());
+    precedence = binary_precedence(buf);
+    assoc = binary_assoc(buf);
+
+    printf("CNodeBinaryOp::init() `%s` precedence %d\n", buf, precedence);
+  }
+
+  int precedence = -1;
+};
+
+struct CNodePrefixOp : public CNode {
+  virtual uint32_t debug_color() const { return COL_SKY; }
+  virtual Err emit(Cursor& cursor) { return cursor.emit_default(this); }
+};
+
+struct CNodeSuffixOp : public CNode {
+  virtual uint32_t debug_color() const { return COL_SKY; }
+  virtual Err emit(Cursor& cursor) { return cursor.emit_default(this); }
+};
+
+struct CNodeAssignOp : public CNode {
+  virtual uint32_t debug_color() const { return COL_SKY; }
+  virtual Err emit(Cursor& cursor) { return cursor.emit_default(this); }
+};
+
+
+struct CNodeBinaryExp : public CNode {
   virtual uint32_t debug_color() const { return COL_BLUE; }
   virtual Err emit(Cursor& cursor) { return cursor.emit_default(this); }
 };
+
+struct CNodePrefixExp : public CNode {
+  virtual uint32_t debug_color() const { return COL_AQUA; }
+  virtual Err emit(Cursor& cursor) { return cursor.emit_default(this); }
+};
+
+struct CNodeSuffixExp : public CNode {
+  virtual uint32_t debug_color() const { return COL_AQUA; }
+  virtual Err emit(Cursor& cursor) { return cursor.emit_default(this); }
+};
+
+struct CNodeAssignExp : public CNode {
+  virtual uint32_t debug_color() const { return COL_BLUE; }
+  virtual Err emit(Cursor& cursor) { return cursor.emit_default(this); }
+};
+
 
 //------------------------------------------------------------------------------
 

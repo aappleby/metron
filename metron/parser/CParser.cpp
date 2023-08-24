@@ -152,6 +152,10 @@ TokenSpan match_literal(CContext& ctx, TokenSpan body) {
 }
 
 //------------------------------------------------------------------------------
+// This is slightly weird - as emitted from the lexer, each punctuator is a
+// single token. However, to match multi-character punctuators we need N
+// consecutive punctuator tokens, _and_ the punctuators can't have any
+// whitespace between them.
 
 template <StringParam lit>
 inline TokenSpan match_punct(CContext& ctx, TokenSpan body) {
@@ -163,11 +167,16 @@ inline TokenSpan match_punct(CContext& ctx, TokenSpan body) {
   if (body.len() < lit.str_len) return body.fail();
 
   for (auto i = 0; i < lit.str_len; i++) {
-    const CToken& tok_a = body.begin[0];
-    if (ctx.atom_cmp(tok_a, LEX_PUNCT) != 0) return body.fail();
-    if (ctx.atom_cmp(tok_a.text_begin()[0], lit.str_val[i]) != 0) return body.fail();
-    body = body.advance(1);
+    if (ctx.atom_cmp(body.begin[i], LEX_PUNCT) != 0) return body.fail();
   }
+
+  auto text_begin = body.begin[0].text_begin();
+
+  for (auto i = 0; i < lit.str_len; i++) {
+    if (ctx.atom_cmp(text_begin[i], lit.str_val[i]) != 0) return body.fail();
+  }
+
+  body = body.advance(lit.str_len);
 
   return body;
 }
@@ -422,18 +431,21 @@ TokenSpan match_call(CContext& ctx, TokenSpan body) {
 
 //------------------------------------------------------------------------------
 
+template<StringParam p>
+using cap_prefix_op = CaptureAnon<Ref<match_punct<p>>, CNodePrefixOp>;
+
 // clang-format off
 using cap_exp_prefix =
 Oneof<
   cap_cast,
-  cap_punct<"++">,
-  cap_punct<"--">,
-  cap_punct<"+">,
-  cap_punct<"-">,
-  cap_punct<"!">,
-  cap_punct<"~">,
-  cap_punct<"*">,
-  cap_punct<"&">
+  cap_prefix_op<"++">,
+  cap_prefix_op<"--">,
+  cap_prefix_op<"+">,
+  cap_prefix_op<"-">,
+  cap_prefix_op<"!">,
+  cap_prefix_op<"~">,
+  cap_prefix_op<"*">,
+  cap_prefix_op<"&">
 >;
 // clang-format on
 
@@ -452,32 +464,75 @@ Oneof<
 
 //----------------------------------------
 
+
+TokenSpan match_prefix_op_recurse(CContext& ctx, TokenSpan body) {
+  using cap_prefix_op =
+  CaptureAnon<
+    Seq<
+      cap_exp_prefix,
+      Oneof<Ref<match_prefix_op_recurse>, cap_exp_core>
+    >,
+    CNodeBinaryOp
+  >;
+
+  return cap_prefix_op::match(ctx, body);
+}
+
+//----------------------------------------
+
+TokenSpan match_suffix_op_recurse(CContext& ctx, TokenSpan body) {
+  return body.fail();
+}
+
+//----------------------------------------
+
+template<StringParam p>
+using cap_suffix_op = CaptureAnon<Ref<match_punct<p>>, CNodeSuffixOp>;
+
 // clang-format off
 using cap_exp_suffix =
 Oneof<
-  cap_exp_list,
-  CaptureAnon<Ref<match_index_list>,      CNodeList>,
-  CaptureAnon<Ref<match_suffix_op<"++">>, CNodePunct>,
-  CaptureAnon<Ref<match_suffix_op<"--">>, CNodePunct>
+  //cap_exp_list,
+  cap_index_list,
+  cap_suffix_op<"++">,
+  cap_suffix_op<"--">
 >;
 // clang-format on
 
 
 //----------------------------------------
 
-TokenSpan match_exp_unit(CContext& ctx, TokenSpan body) {
-  // clang-format off
-  using pattern = Seq<
-    Any<Tag<"prefix", cap_exp_prefix>>,
-        Tag<"core",   cap_exp_core>,
-    Any<Tag<"suffix", cap_exp_suffix>>
-  >;
-  // clang-format on
+TokenSpan cap_exp_unit(CContext& ctx, TokenSpan body) {
+  auto old_tail = ctx.top_tail;
 
-  return pattern::match(ctx, body);
+  TokenSpan rest;
+
+  // Put all the prefixes on the node list.
+  rest = Any<cap_exp_prefix>::match(ctx, body);
+  if (!rest) return rest;
+  body = rest;
+
+  // Match the core
+  rest = cap_exp_core::match(ctx, body);
+  if (!rest) return rest;
+  body = rest;
+
+  // Match suffixes and enclose them as we see them.
+  while(1) {
+    rest = cap_exp_suffix::match(ctx, body);
+    if (!rest) break;
+    body = rest;
+
+    ctx.enclose_tail<CNodeSuffixExp>(2);
+  }
+
+  // Enclose all prefixes
+  while(ctx.top_tail->node_prev != old_tail) {
+    ctx.enclose_tail<CNodePrefixExp>(2);
+  }
+
+  return body;
 }
-
-using cap_exp_unit = CaptureAnon<Ref<match_exp_unit>, CNodeUnit>;
 
 //----------------------------------------
 // FIXME need to cap the then
@@ -537,7 +592,7 @@ TokenSpan cap_binary_ops(CContext& ctx, TokenSpan body) {
   >;
   // clang-format on
 
-  return CaptureAnon<pattern, CNodeOperator>::match(ctx, body);
+  return CaptureAnon<pattern, CNodeBinaryOp>::match(ctx, body);
 }
 
 TokenSpan match_assignment_ops(CContext& ctx, TokenSpan body) {
@@ -566,7 +621,7 @@ TokenSpan match_assignment_ops(CContext& ctx, TokenSpan body) {
 }
 
 
-using cap_assignment_op = CaptureAnon<Ref<match_assignment_ops>, CNodeOperator>;
+using cap_assignment_op = CaptureAnon<Ref<match_assignment_ops>, CNodeAssignOp>;
 
 //----------------------------------------
 
@@ -580,153 +635,82 @@ subtraction.
 */
 
 TokenSpan match_expression(CContext& ctx, TokenSpan body) {
+  auto old_tail = ctx.top_tail;
+  TokenSpan rest;
 
-  using pattern =
-  Seq<
-    Tag<"unit",   cap_exp_unit>,
-    Any<Seq<
-      Tag<"op",   Ref<cap_binary_ops>>,
-      Tag<"unit", cap_exp_unit>
-    >>
-  >;
+  rest = cap_exp_unit(ctx, body);
+  if (!rest) return rest;
+  CNode* unit_a = ctx.top_tail;
+  body = rest;
 
-  auto tail = pattern::match(ctx, body);
-  if (!tail.is_valid()) {
-    return body.fail();
-  }
+  rest = cap_binary_ops(ctx, body);
+  if (!rest) return body;
+  CNodeBinaryOp* op_x = ctx.top_tail->is_a<CNodeBinaryOp>();
+  body = rest;
 
-  //auto tok_a = body.begin;
-  //auto tok_b = tail.begin;
+  rest = cap_exp_unit(ctx, body);
+  if (!rest) return rest;
+  CNode* unit_b = ctx.top_tail;
+  body = rest;
 
-  /*
-  while (0) {
-    {
-      auto c = tok_a;
-      while (c && c < tok_b) {
-        c = c->step_right();
-      }
-      printf("\n");
-    }
-
-    auto c = tok_a;
-    while (c && c->span->precedence && c < tok_b) {
-      c = c->step_right();
-    }
-
-    // ran out of units?
-    if (c->span->precedence) break;
-
-    auto l = c - 1;
-    if (l && l >= tok_a) {
-      if (l->span->assoc == -2) {
-        auto node = new CNodeExpressionPrefix();
-        node->init_node(ctx, l, c, l->span, c->span);
-        continue;
-      }
-    }
-
-    break;
-  }
-  */
-
-  // Fold up as many nodes based on precedence as we can
-#if 0
   while(1) {
-    ParseNode*    na = nullptr;
-    NodeOpBinary* ox = nullptr;
-    ParseNode*    nb = nullptr;
-    NodeOpBinary* oy = nullptr;
-    ParseNode*    nc = nullptr;
+    // We have matched an expression, an operator, and an expression. We can't
+    // collapse them into a single BinaryExpression though, as we don't know if
+    // there's a higher-precedence operator on the right.
 
-    nc = (cursor - 1)->span->as_a<ParseNode>();
-    oy = nc ? nc->left_neighbor()->as_a<NodeOpBinary>()   : nullptr;
-    nb = oy ? oy->left_neighbor()->as_a<ParseNode>() : nullptr;
-    ox = nb ? nb->left_neighbor()->as_a<NodeOpBinary>()   : nullptr;
-    na = ox ? ox->left_neighbor()->as_a<ParseNode>() : nullptr;
+    // If there are no more binary operators, we're done with this phase of
+    // parsing.
+    rest = cap_binary_ops(ctx, body);
+    if (!rest) break;
+    CNodeBinaryOp* op_y = ctx.top_tail->is_a<CNodeBinaryOp>();
+    body = rest;
 
+    // If there's no expression after the operator, parsing fails.
+    rest = cap_exp_unit(ctx, body);
+    if (!rest) return rest;
+    CNode* unit_c = ctx.top_tail;
+    body = rest;
 
+    // We now have three expressions separated by two operators - "a # b # c"
+    // We either merge the left pair together to make (a # b) # c, or we shift
+    // everything left to make "b # c _ _" and repeat the process. The
+    // expression and op shifted out aren't lost, they will be merged at the
+    // end.
 
+    bool fold_left = false;
+    // Fold the left side when the right operator is "lower" precedence.
+    // "a * b + c" -> "(a * b) + c"
+    fold_left |= op_x->precedence < op_y->precedence;
 
-    if (!na || !ox || !nb || !oy || !nc) break;
+    // Fold the left side when the ops match and associate left-to-right.
+    // "a + b - c" -> "(a + b) - c"
+    fold_left |= op_x->precedence == op_y->precedence && op_x->assoc == 1;
 
-    if (na->tok_b() < a) break;
+    if (fold_left) {
+      auto new_node = ctx.create_node<CNodeBinaryExp>();
+      ctx.splice(new_node, unit_a, unit_b);
 
-    if (ox->precedence < oy->precedence) {
-      // Left-associate because right operator is "lower" precedence.
-      // "a * b + c" -> "(a * b) + c"
-      auto node = new CNodeExpressionBinary();
-      node->init(na->tok_a(), nb->tok_b());
-    }
-    else if (ox->precedence == oy->precedence) {
-      matcheroni_assert(ox->assoc == oy->assoc);
-
-      if (ox->assoc == 1) {
-        // Left to right
-        // "a + b - c" -> "(a + b) - c"
-        auto node = new CNodeExpressionBinary();
-        node->init(na->tok_a(), nb->tok_b());
-      }
-      else if (ox->assoc == -1) {
-        // Right to left
-        // "a = b = c" -> "a = (b = c)"
-        auto node = new CNodeExpressionBinary();
-        node->init(nb->tok_a(), nc->tok_b());
-      }
-      else {
-        matcheroni_assert(false);
-      }
+      unit_a = new_node;
+      op_x   = op_y;
+      unit_b = unit_c;
+      op_y   = nullptr;
+      unit_c = nullptr;
     }
     else {
-      break;
+      // Precedence is increasing, shift nodes over and continue.
+      unit_a = unit_b;
+      op_x   = op_y;
+      unit_b = unit_c;
     }
   }
-#endif
 
-  // Any binary operators left on the tokens are in increasing-precedence
-  // order, but since there are no more operators we can just fold them up
-  // right-to-left
-#if 0
-  while(1) {
-    ParseNode*    nb = nullptr;
-    NodeOpBinary* oy = nullptr;
-    ParseNode*    nc = nullptr;
-
-    nc = (cursor - 1)->span->as_a<ParseNode>();
-    oy = nc ? nc->left_neighbor()->as_a<NodeOpBinary>()   : nullptr;
-    nb = oy ? oy->left_neighbor()->as_a<ParseNode>() : nullptr;
-
-    if (!nb || !oy || !nc) break;
-    if (nb->tok_b() < a) break;
-
-    auto node = new CNodeExpressionBinary();
-    node->init(nb->tok_a(), nc->tok_b());
+  // Any binary operators left are in increasing-precedence order, but since
+  // there are no more operators we can just fold them all up right-to-left
+  while(ctx.top_tail->node_prev != old_tail) {
+    ctx.enclose_tail<CNodeBinaryExp>(3);
   }
-#endif
 
-#if 0
-  if (auto tail = SpanTernaryOp::match(ctx, cursor, b)) {
-    auto node = new CNodeExpressionTernary();
-    node->init(a, tail - 1);
-    cursor = tail;
-  }
-#endif
-
-#if 0
-  {
-    const CToken* c = a;
-    while(1) {
-      if (auto tail = c->span->tok_b()) {
-        c = tail + 1;
-      }
-      else {
-        c++;
-      }
-      if (c == tok_b) break;
-    }
-  }
-#endif
-
-  return tail;
+  return body;
 }
 
 //------------------------------------------------------------------------------
@@ -1218,8 +1202,8 @@ using cap_if = CaptureAnon<Ref<match_if>, CNodeIf>;
 TokenSpan match_return(CContext& ctx, TokenSpan body) {
   using pattern =
   Seq<
-    Tag<"return", cap_keyword<"return">>,
-    Tag<"value",  Opt<cap_expression>>
+    cap_keyword<"return">,
+    Opt<Tag<"value", cap_expression>>
   >;
   return pattern::match(ctx, body);
 }

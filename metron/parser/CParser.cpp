@@ -859,19 +859,18 @@ TokenSpan match_declaration(CContext& ctx, TokenSpan body) {
       cap_keyword<"static">,
       cap_keyword<"const">
     >,
-
-    Tag<"decl_type", cap_type>,
-    Tag<"decl_name", cap_identifier>,
-    Any<
-      Tag<"decl_array", cap_index_list>
-    >,
+    Tag<"type",      cap_type>,
+    Tag<"name",      cap_identifier>,
+    Any<Tag<"array", cap_index_list>>,
     Opt<Seq<
       cap_punct<"=">,
-      Tag<"decl_value",   cap_expression>
+      Tag<"value",   cap_expression>
     >>
   >;
   return pattern::match(ctx, body);
 }
+
+using cap_field = CaptureAnon<Ref<match_declaration>,  CNodeField>;
 
 //------------------------------------------------------------------------------
 
@@ -888,8 +887,6 @@ TokenSpan match_type_name(CContext& ctx, TokenSpan body) {
 }
 
 //------------------------------------------------------------------------------
-
-using cap_field = CaptureAnon<Ref<match_declaration>,  CNodeField>;
 
 TokenSpan match_field_list(CContext& ctx, TokenSpan body) {
   using pattern = DelimitedBlock<
@@ -928,9 +925,9 @@ TokenSpan match_struct(CContext& ctx, TokenSpan body) {
   // clang-format off
   using pattern =
   Seq<
-    Tag<"struct",  cap_keyword<"struct">>,
-    Tag<"name",    Dispatch<cap_identifier, Ref<&CContext::add_struct2>>>,
-    Tag<"body",    cap_field_list>
+    cap_keyword<"struct">,
+    Tag<"name", Dispatch<cap_identifier, Ref<&CContext::add_struct2>>>,
+    Tag<"body", cap_field_list>
   >;
   // clang-format on
   return pattern::match(ctx, body);
@@ -962,7 +959,7 @@ TokenSpan match_union(CContext& ctx, TokenSpan body) {
   // clang-format off
   using pattern =
   Seq<
-    Tag<"union", cap_keyword<"union">>,
+    cap_keyword<"union">,
     Tag<"name",  cap_union_type_name>,
     Tag<"body",  cap_field_list>
   >;
@@ -1421,10 +1418,6 @@ CaptureAnon<
 >;
 
 //------------------------------------------------------------------------------
-// If declaration is before statemetn, we parse "x = 1;" as a declaration
-// because it matches a declarator (bare identifier) + initializer list :/
-
-// FIXME - is that still true?
 
 TokenSpan match_statement(CContext& ctx, TokenSpan body) {
   // clang-format off
@@ -1441,7 +1434,6 @@ TokenSpan match_statement(CContext& ctx, TokenSpan body) {
     cap_keyword<"break">,
     cap_keyword<"continue">,
     cap_assignment,
-    cap_expression,
     cap_declaration
   >;
   // clang-format on

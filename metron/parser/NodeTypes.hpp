@@ -60,7 +60,7 @@ struct CNodeEnum : public CNode {
 
 struct CNodeDeclaration : public CNode {
   virtual std::string_view get_name() const {
-    return child("decl_name")->get_name();
+    return child("name")->get_name();
   }
 
   std::string_view get_type_name() const {
@@ -69,7 +69,7 @@ struct CNodeDeclaration : public CNode {
   }
 
   bool is_array() const {
-    return child("decl_array") != nullptr;
+    return child("array") != nullptr;
   }
 
 

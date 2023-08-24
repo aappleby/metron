@@ -66,7 +66,7 @@ CInstField::CInstField(CNodeField* node_field) : node_field(node_field) {
   }
   else if (node_field->is_array()) {
     auto node_type = node_field->child<CNodeType>();
-    auto node_array = node_field->child("decl_array")->as_a<CNode>();
+    auto node_array = node_field->child("array")->as_a<CNode>();
     inst_decl = new CInstArray(node_type, node_array);
   }
   else {
@@ -121,13 +121,13 @@ void CInstFunction::dump() {
 
 CInstParam::CInstParam(CNodeDeclaration* node_decl) : node_decl(node_decl) {
   if (node_decl->is_array()) {
-    auto node_type = node_decl->child_as<CNodeType>("decl_type");
-    auto node_array = node_decl->child_as<CNode>("decl_array");
+    auto node_type = node_decl->child_as<CNodeType>("type");
+    auto node_array = node_decl->child_as<CNode>("array");
 
     inst_decl = new CInstArray(node_type, node_array);
   }
   else {
-    auto node_type = node_decl->child_as<CNodeType>("decl_type");
+    auto node_type = node_decl->child_as<CNodeType>("type");
 
     if (node_type->child("builtin_name")) {
       inst_decl = new CInstPrimitive(node_type);

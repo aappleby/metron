@@ -15,7 +15,7 @@ uint32_t CNodeField::debug_color() const {
 }
 
 std::string_view CNodeField::get_name() const {
-  return child("decl_name")->get_name();
+  return child("name")->get_name();
 }
 
 //------------------------------------------------------------------------------
@@ -27,11 +27,11 @@ void CNodeField::init(const char* match_tag, SpanType span, uint64_t flags) {
 //------------------------------------------------------------------------------
 
 std::string_view CNodeField::get_type_name() const {
-  auto decl_type = child("decl_type");
+  auto decl_type = child("type");
   return decl_type->child_head->get_text();
 
   /*
-  auto decl_type = child("decl_type");
+  auto decl_type = child("type");
   if (auto name = decl_type->child("type_name")) {
     return name->get_text();
   }
@@ -58,7 +58,7 @@ bool CNodeField::is_struct() const {
 }
 
 bool CNodeField::is_array() const {
-  return child("decl_array") != nullptr;
+  return child("array") != nullptr;
 }
 
 bool CNodeField::is_enum() const {
@@ -84,7 +84,7 @@ bool CNodeField::is_private() const {
 bool CNodeField::is_const_char() const {
   auto node_static = child("static");
   auto node_const  = child("const");
-  auto node_type   = child("decl_type");
+  auto node_type   = child("type");
 
   if (node_static && node_const) {
     auto builtin = node_type->child("builtin_name");
@@ -179,10 +179,10 @@ Err CNodeField::emit(Cursor& cursor) {
 
   auto node_static = child("static");
   auto node_const  = child("const");
-  auto node_type   = child("decl_type");
-  auto node_name   = child("decl_name");
+  auto node_type   = child("type");
+  auto node_name   = child("name");
   auto node_eq     = child("eq");
-  auto node_value  = child("decl_value");
+  auto node_value  = child("value");
 
   if (is_const_char()) {
     err << cursor.skip_over(node_static);

@@ -90,17 +90,15 @@ bool CLexer::lex(const std::string& source, std::vector<Lexeme>& out_lexemes) {
 //------------------------------------------------------------------------------
 
 Lexeme CLexer::next_lexeme(TextMatchContext& ctx, TextSpan body) {
-  TextSpan tail;
-
-  if (tail = match_space(ctx, body)  ) return Lexeme(LEX_SPACE,   body.begin, tail.begin);
-  if (tail = match_newline(ctx, body)) return Lexeme(LEX_NEWLINE, body.begin, tail.begin);
-  if (tail = match_string(ctx, body) ) return Lexeme(LEX_STRING,  body.begin, tail.begin);
+  if (auto tail = match_space(ctx, body)  ) return Lexeme(LEX_SPACE,   body.begin, tail.begin);
+  if (auto tail = match_newline(ctx, body)) return Lexeme(LEX_NEWLINE, body.begin, tail.begin);
+  if (auto tail = match_string(ctx, body) ) return Lexeme(LEX_STRING,  body.begin, tail.begin);
 
   // Match char needs to come before match identifier because of its possible
   // L'_' prefix...
-  if (tail = match_char(ctx, body)   ) return Lexeme(LEX_CHAR, body.begin, tail.begin);
+  if (auto tail = match_char(ctx, body)   ) return Lexeme(LEX_CHAR, body.begin, tail.begin);
 
-  if (tail = match_identifier(ctx, body)) {
+  if (auto tail = match_identifier(ctx, body)) {
     if (SST<c_keywords>::match(body.begin, tail.begin)) {
       return Lexeme(LEX_KEYWORD, body.begin, tail.begin);
     } else {
@@ -108,15 +106,15 @@ Lexeme CLexer::next_lexeme(TextMatchContext& ctx, TextSpan body) {
     }
   }
 
-  if (tail = match_comment(ctx, body) ) return Lexeme(LEX_COMMENT,  body.begin, tail.begin);
-  if (tail = match_preproc(ctx, body) ) return Lexeme(LEX_PREPROC,  body.begin, tail.begin);
-  if (tail = match_float(ctx, body)   ) return Lexeme(LEX_FLOAT,    body.begin, tail.begin);
-  if (tail = match_int(ctx, body)     ) return Lexeme(LEX_INT,      body.begin, tail.begin);
-  if (tail = match_punct(ctx, body)   ) return Lexeme(LEX_PUNCT,    body.begin, tail.begin);
-  if (tail = match_splice(ctx, body)  ) return Lexeme(LEX_SPLICE,   body.begin, tail.begin);
-  if (tail = match_formfeed(ctx, body)) return Lexeme(LEX_FORMFEED, body.begin, tail.begin);
-  if (tail = match_eof(ctx, body)     ) return Lexeme(LEX_EOF,      body.begin, tail.begin);
-  if (tail = match_string(ctx, body)  ) return Lexeme(LEX_STRING,   body.begin, tail.begin);
+  if (auto tail = match_comment(ctx, body) ) return Lexeme(LEX_COMMENT,  body.begin, tail.begin);
+  if (auto tail = match_preproc(ctx, body) ) return Lexeme(LEX_PREPROC,  body.begin, tail.begin);
+  if (auto tail = match_float(ctx, body)   ) return Lexeme(LEX_FLOAT,    body.begin, tail.begin);
+  if (auto tail = match_int(ctx, body)     ) return Lexeme(LEX_INT,      body.begin, tail.begin);
+  if (auto tail = match_punct(ctx, body)   ) return Lexeme(LEX_PUNCT,    body.begin, tail.begin);
+  if (auto tail = match_splice(ctx, body)  ) return Lexeme(LEX_SPLICE,   body.begin, tail.begin);
+  if (auto tail = match_formfeed(ctx, body)) return Lexeme(LEX_FORMFEED, body.begin, tail.begin);
+  if (auto tail = match_eof(ctx, body)     ) return Lexeme(LEX_EOF,      body.begin, tail.begin);
+  if (auto tail = match_string(ctx, body)  ) return Lexeme(LEX_STRING,   body.begin, tail.begin);
 
   return Lexeme(LEX_INVALID, nullptr, body.begin);
 }

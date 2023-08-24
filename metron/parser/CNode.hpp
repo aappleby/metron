@@ -93,7 +93,7 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
 
   template<typename P>
   P* ancestor() {
-    if (auto p = as_a<P>()) return p;
+    if (auto p = dynamic_cast<P*>(this)) return p;
     return node_parent ? node_parent->ancestor<P>() : nullptr;
   }
 

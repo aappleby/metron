@@ -66,7 +66,7 @@ CInstField::CInstField(CNodeField* node_field) : node_field(node_field) {
   }
   else if (node_field->is_array()) {
     auto node_type = node_field->child<CNodeType>();
-    auto node_array = node_field->child("array")->as_a<CNode>();
+    auto node_array = node_field->child("array");
     inst_decl = new CInstArray(node_type, node_array);
   }
   else {
@@ -87,7 +87,7 @@ void CInstField::dump() {
 CInstFunction::CInstFunction(CNodeFunction* node_function) : node_function(node_function) {
   auto node_params = node_function->child("params");
   for (auto p : node_params) {
-    if (auto param = p->as_a<CNodeDeclaration>()) {
+    if (auto param = dynamic_cast<CNodeDeclaration*>(p)) {
       auto inst_param = new CInstParam(param);
       inst_params.push_back(inst_param);
     }
@@ -96,7 +96,7 @@ CInstFunction::CInstFunction(CNodeFunction* node_function) : node_function(node_
   auto node_body = node_function->child("body");
 
   visit(node_body, [&](CNode* n) {
-    auto call = n->as_a<CNodeCall>();
+    auto call = dynamic_cast<CNodeCall*>(n);
     if (!call) return;
 
     auto inst_call = new CInstCall(call);

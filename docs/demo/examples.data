@@ -4211,21 +4211,13 @@ class toplevel {
 #endif // TOPLEVEL_H
 #include "metron/tools/metron_tools.h"
 
-//------------------------------------------------------------------------------
-
-struct S {
-  int x;
-  int y;
-};
-
-class Top {
+class Module {
 public:
-  void foo(logic<7>* a, int b, S c) {}
-  void bar() { foo(1+ 3 * 1000, 2); }
-  S blarp;
+  int tock(int a, int b, int c) {
+    return ++a * b-- + ++c--;
+    return;
+  }
 };
-
-//------------------------------------------------------------------------------
 class Adder {
 public:
   int add(int a, int b) {

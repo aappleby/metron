@@ -85,12 +85,12 @@ Err CSourceRepo::collect_fields_and_methods() {
 
   for (auto pair : source_map) {
     for (auto n : pair.second->context.root_node) {
-      if (auto node_class = n->as_a<CNodeClass>()) {
+      if (auto node_class = dynamic_cast<CNodeClass*>(n)) {
         all_classes.push_back(node_class);
         node_class->collect_fields_and_methods(this);
       }
 
-      if (auto node_struct = n->as_a<CNodeStruct>()) {
+      if (auto node_struct = dynamic_cast<CNodeStruct*>(n)) {
         all_structs.push_back(node_struct);
         node_struct->collect_fields_and_methods(this);
       }

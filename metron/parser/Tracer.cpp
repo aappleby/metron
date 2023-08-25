@@ -1,12 +1,14 @@
 #include "Tracer.hpp"
 
 #include "CSourceRepo.hpp"
-#include "NodeTypes.hpp"
 #include "CInstance.hpp"
+
 #include "CNodeClass.hpp"
-#include "CNodeType.hpp"
-#include "CNodeFunction.hpp"
 #include "CNodeExpression.hpp"
+#include "CNodeFunction.hpp"
+#include "CNodeStatement.hpp"
+#include "CNodeType.hpp"
+#include "NodeTypes.hpp"
 
 //------------------------------------------------------------------------------
 
@@ -42,12 +44,12 @@ CHECK_RETURN Err Tracer::trace() {
   Err err;
   LOG_INDENT_SCOPE();
 
-  auto root_inst = new CInstClass(repo->top);
+  auto root_inst = new CInstClass(nullptr, repo->top);
   auto root_name = repo->top->get_name();
 
   std::vector<CInstCall*> calls;
 
-  for (auto inst_func : root_inst->functions) {
+  for (auto inst_func : root_inst->inst_functions) {
     auto node_func = inst_func->node_function;
     //node_func->dump_tree();
 
@@ -60,9 +62,13 @@ CHECK_RETURN Err Tracer::trace() {
       int(func_name.size()), func_name.data()
     );
 
-    auto inst_call = new CInstCall();
-    inst_call->node_function = node_func;
+    auto inst_call = new CInstCall(root_inst, nullptr, inst_func);
 
+    for (auto inst_arg : inst_call->inst_args) {
+      err << inst_arg->log_action(nullptr, ACT_WRITE);
+    }
+
+    /*
     for(auto node_param : node_func->child("params")) {
       auto inst_arg = new CInstArg();
       inst_arg->node_param = node_param;
@@ -73,10 +79,13 @@ CHECK_RETURN Err Tracer::trace() {
     }
     inst_call->inst_return = new CInstReturn();
     inst_call->inst_return->node_return = node_func->child_is<CNodeType>("return_type");
+    */
 
     calls.push_back(inst_call);
     LOG_INDENT();
-    err << trace_top_call(inst_call);
+    //err << trace_top_call(inst_call);
+    //err << inst_call->trace();
+    err << inst_call->trace(ACT_READ);
     LOG_DEDENT();
 
     LOG_B("Tracing %.*s::%.*s done\n",
@@ -87,7 +96,7 @@ CHECK_RETURN Err Tracer::trace() {
 
   LOG_B("Calls:\n");
   LOG_INDENT();
-  for (auto c : calls) c->dump();
+  for (auto c : calls) c->dump_tree();
   LOG_DEDENT();
 
 #if 0
@@ -474,7 +483,7 @@ CHECK_RETURN Err Tracer::trace_call_expression(CInstCall* call, CNode* node) {
       auto child_name = node_func.get_field(field_argument).name4();
       auto child_func = node_func.get_field(field_field).name4();
       auto child_inst = call->_method_inst->_module->get_field(child_name);
-      auto child_func_inst = dynamic_cast<MtModuleInstance*>(child_inst)->get_method(child_func);
+      auto child_func_inst = child_inst->as_a<MtModuleInstance>()->get_method(child_func);
       err << trace_call(call, child_func_inst, node);
       break;
     }

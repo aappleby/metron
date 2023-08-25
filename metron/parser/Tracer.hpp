@@ -1,11 +1,16 @@
 #pragma once
 
+#include "metron/tools/MtUtils.h"
 #include "metrolib/core/Err.h"
 #include "metrolib/core/Platform.h"
-#include "CInstance.hpp"
-#include "NodeTypes.hpp"
 
+struct CNode;
+struct CNodeExpression;
+struct CNodeCompound;
 struct CSourceRepo;
+struct CInstCall;
+struct CInstField;
+struct CInstFunction;
 
 class Tracer {
 public:

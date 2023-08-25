@@ -14,13 +14,31 @@ struct CNodeField;
 
 //------------------------------------------------------------------------------
 
+struct CNodeAccess : public CNode {
+  virtual uint32_t debug_color() const { return COL_VIOLET; }
+  virtual Err emit(Cursor& cursor) override;
+};
+
+//------------------------------------------------------------------------------
+
+struct CNodeTemplate : public CNode {
+  virtual uint32_t debug_color() const { return 0x00FFFF; }
+  virtual Err emit(Cursor& cursor);
+};
+
+//------------------------------------------------------------------------------
+
 struct CNodeClass : public CNode {
   void init(const char* match_tag, SpanType span, uint64_t flags);
 
-  void dump();
+  //----------
 
   virtual uint32_t debug_color() const override;
   virtual std::string_view get_name() const override;
+  virtual Err emit(Cursor& cursor) override;
+  virtual void dump();
+
+  //----------
 
   CNodeField*       get_field(std::string_view name);
   CNodeFunction*    get_method(std::string_view name);
@@ -36,8 +54,6 @@ struct CNodeClass : public CNode {
   CNode* resolve(CNode* name, CSourceRepo* repo);
 
   CNode* resolve_scope(CNode* name);
-
-  virtual Err emit(Cursor& cursor) override;
 
   Err emit_module_ports(Cursor& cursor);
   Err emit_template_parameter_list(Cursor& cursor);

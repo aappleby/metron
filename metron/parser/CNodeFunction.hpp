@@ -27,7 +27,7 @@ struct CNodeFunction : public CNode {
   virtual uint32_t debug_color() const;
   virtual std::string_view get_name() const;
   virtual Err emit(Cursor& c);
-  virtual Err trace(CInstance* instance);
+  virtual Err trace(CInstance* instance, TraceAction action);
 
   //----------------------------------------
 
@@ -87,6 +87,11 @@ struct CNodeFunction : public CNode {
   //std::set<CNodeFunction*> tock_callers;
   //std::set<CNodeFunction*> func_callers;
 
+};
+
+//------------------------------------------------------------------------------
+
+struct CNodeConstructor : public CNodeFunction {
 };
 
 //------------------------------------------------------------------------------

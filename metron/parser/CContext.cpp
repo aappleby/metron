@@ -7,6 +7,7 @@
 #include <assert.h>
 
 #include "metrolib/core/Log.h"
+#include "matcheroni/Matcheroni.hpp"
 
 using namespace matcheroni;
 
@@ -83,6 +84,18 @@ TokenSpan CContext::match_enum_name(TokenSpan body) {
 TokenSpan CContext::match_typedef_name(TokenSpan body) {
   return type_scope->has_typedef(*this, body) ? body.advance(1) : body.fail();
 }
+
+TokenSpan CContext::match_type(TokenSpan body) {
+  return Oneof<
+    Ref<&CContext::match_class_name>,
+    Ref<&CContext::match_struct_name>,
+    Ref<&CContext::match_union_name>,
+    Ref<&CContext::match_enum_name>,
+    Ref<&CContext::match_typedef_name>,
+    Ref<&CContext::match_builtin_type_base>
+  >::match(*this, body);
+}
+
 
 void CContext::add_class  (const CToken* a) { type_scope->add_class(*this, a); }
 void CContext::add_struct (const CToken* a) { type_scope->add_struct(*this, a); }

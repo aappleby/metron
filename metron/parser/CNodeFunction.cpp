@@ -1,8 +1,10 @@
 #include "CNodeFunction.hpp"
 
 #include "CNodeClass.hpp"
-#include "metrolib/core/Log.h"
+#include "CNodeStatement.hpp"
 #include "NodeTypes.hpp"
+
+#include "metrolib/core/Log.h"
 #include "matcheroni/Utilities.hpp"
 
 using namespace matcheroni;
@@ -21,9 +23,9 @@ Err CNodeFunction::emit(Cursor& c) {
   return CNode::emit(c);
 }
 
-Err CNodeFunction::trace(CInstance* instance) {
+Err CNodeFunction::trace(CInstance* instance, TraceAction action) {
   Err err;
-  err << child_is<CNodeCompound>("body")->trace(instance);
+  err << child_is<CNodeCompound>("body")->trace(instance, action);
   return err;
 }
 

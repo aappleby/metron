@@ -1,12 +1,42 @@
 #include "CNodeClass.hpp"
 
-#include "NodeTypes.hpp"
-#include "CNodeFunction.hpp"
-#include "CNodeField.hpp"
-#include "metrolib/core/Log.h"
-#include "CNodeClass.hpp"
 #include "CNodeCall.hpp"
+#include "CNodeClass.hpp"
+#include "CNodeDeclaration.hpp"
+#include "CNodeField.hpp"
+#include "CNodeFunction.hpp"
 #include "CNodeStruct.hpp"
+#include "NodeTypes.hpp"
+
+#include "metrolib/core/Log.h"
+
+//------------------------------------------------------------------------------
+
+Err CNodeAccess::emit(Cursor& cursor) {
+  Err err;
+  err << cursor.comment_out(this);
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+Err CNodeTemplate::emit(Cursor& cursor) {
+  Err err = cursor.check_at(this);
+
+  auto node_template = child("template");
+  auto node_params   = child("params");
+  auto node_class    = child("class");
+
+  err << cursor.skip_over(node_template);
+  err << cursor.skip_gap_after(node_template);
+
+  err << cursor.skip_over(node_params);
+  err << cursor.skip_gap_after(node_params);
+
+  err << cursor.emit(node_class);
+
+  return err << cursor.check_done(this);
+}
 
 //------------------------------------------------------------------------------
 
@@ -47,11 +77,11 @@ Err CNodeClass::collect_fields_and_methods(CSourceRepo* repo) {
   bool is_public = false;
 
   for (auto c : body) {
-    if (auto access = c->as_a<CNodeAccess>()) {
+    if (auto access = as<CNodeAccess>(c)) {
       is_public = c->get_text() == "public:";
     }
 
-    if (auto n = c->as_a<CNodeField>()) {
+    if (auto n = as<CNodeField>(c)) {
       n->_static = n->child("static") != nullptr;
       n->_const  = n->child("const")  != nullptr;
       n->_public = is_public;
@@ -64,7 +94,7 @@ Err CNodeClass::collect_fields_and_methods(CSourceRepo* repo) {
 
       all_fields.push_back(n);
     }
-    if (auto n = c->as_a<CNodeFunction>()) {
+    if (auto n = as<CNodeFunction>(c)) {
       n->is_public_ = is_public;
       all_functions.push_back(n);
 

@@ -3,10 +3,14 @@
 
 #pragma once
 
+#include "metrolib/core/Log.h"
 #include "CToken.hpp"
+
 #include "matcheroni/Parseroni.hpp"
 #include "metrolib/core/Err.h"
 #include "metrolib/core/Platform.h"
+#include "metron/tools/MtUtils.h"
+
 #include <string>
 #include <typeinfo>
 #include <string_view>
@@ -35,11 +39,11 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   virtual uint32_t debug_color() const;
   virtual std::string_view get_name() const;
   virtual Err emit(Cursor& c);
-  virtual Err trace(CInstance* instance);
+  virtual Err trace(CInstance* instance, TraceAction action);
 
   //----------------------------------------
 
-  Err trace_children(CInstance* instance);
+  Err trace_children(CInstance* instance, TraceAction action);
 
   const CToken* tok_begin() const { return span.begin; }
   const CToken* tok_end() const   { return span.end; }
@@ -55,6 +59,10 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
     return std::string_view(text_begin(), text_end());
   }
 
+  const std::string get_string() const {
+    return std::string(text_begin(), text_end());
+  }
+
 
   //----------------------------------------
 
@@ -64,7 +72,6 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
 
   template <typename P>
   P* as_a() {
-    if (this == nullptr) return nullptr;
     return dynamic_cast<P*>(this);
   }
 
@@ -73,6 +80,11 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
     auto result = dynamic_cast<P*>(this);
     assert(result);
     return result;
+  }
+
+  template<typename P>
+  static P* as(CNode* n) {
+    return dynamic_cast<P*>(n);
   }
 
   //----------------------------------------
@@ -110,7 +122,7 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   template<typename P>
   P* child() {
     for (auto cursor = child_head; cursor; cursor = cursor->node_next) {
-      if (typeid(*cursor) == typeid(P)) return (P*)cursor;
+      if (auto result = dynamic_cast<P*>(cursor)) return result;
     }
     return nullptr;
   }
@@ -118,7 +130,7 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   template<typename P>
   const P* child() const {
     for (auto cursor = child_head; cursor; cursor = cursor->node_next) {
-      if (typeid(*cursor) == typeid(P)) return (P*)cursor;
+      if (auto result = dynamic_cast<const P*>(cursor)) return result;
     }
     return nullptr;
   }

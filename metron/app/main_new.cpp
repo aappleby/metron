@@ -14,6 +14,7 @@
 #include "metron/parser/Cursor.hpp"
 #include "metron/parser/NodeTypes.hpp"
 #include "metron/parser/Tracer.hpp"
+#include "metron/tools/MtUtils.h"
 
 using namespace matcheroni;
 
@@ -112,11 +113,13 @@ int main_new(Options opts) {
     LOG_B("//----------------------------------------\n");
     LOG_B("Tracing top methods\n");
 
-    auto root_inst = new CInstClass(repo.top);
+    auto root_inst = new CInstClass(nullptr, repo.top);
+
+    root_inst->dump_tree();
 
     for (auto inst_func : root_inst->functions) {
       auto node_func = inst_func->node_function;
-      err << node_func->trace(inst_func);
+      err << node_func->trace(inst_func, ACT_READ);
     }
 
     //Tracer tracer(&repo, true);

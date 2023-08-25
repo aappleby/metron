@@ -70,6 +70,9 @@ class CContext : public parseroni::NodeContext<CNode> {
   TokenSpan match_enum_name   (TokenSpan body);
   TokenSpan match_typedef_name(TokenSpan body);
 
+  // matches any of the above
+  TokenSpan match_type(TokenSpan body);
+
   void add_class  (const CToken* a);
   void add_struct (const CToken* a);
   void add_union  (const CToken* a);

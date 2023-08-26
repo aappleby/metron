@@ -23,6 +23,8 @@ Err CNode::emit(Cursor& cursor) {
   return cursor.emit_replacement(this, "{{%s}}", typeid(*this).name());
 }
 
+//------------------------------------------------------------------------------
+
 Err CNode::trace(CInstance* instance, TraceAction action) {
   LOG_R("Don't know how to trace {{%s}}\n", typeid(*this).name());
   exit(-1);
@@ -30,7 +32,7 @@ Err CNode::trace(CInstance* instance, TraceAction action) {
 
 Err CNode::trace_children(CInstance* instance, TraceAction action) {
   Err err;
-  for (auto c : this) c->trace(instance, action);
+  for (auto c : this) err << c->trace(instance, action);
   return err;
 }
 

@@ -12,6 +12,8 @@ struct CInstCall;
 struct CInstField;
 struct CInstFunction;
 
+#if 0
+
 class Tracer {
 public:
   Tracer(CSourceRepo* repo, bool verbose);
@@ -58,3 +60,5 @@ public:
 
   bool verbose;
 };
+
+#endif

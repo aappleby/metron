@@ -115,11 +115,10 @@ int main_new(Options opts) {
 
     auto root_inst = new CInstClass(nullptr, repo.top);
 
-    root_inst->dump_tree();
+    //root_inst->dump_tree();
 
-    for (auto inst_func : root_inst->functions) {
-      auto node_func = inst_func->node_function;
-      err << node_func->trace(inst_func, ACT_READ);
+    for (auto inst_func : root_inst->inst_functions) {
+      err << inst_func->trace(ACT_READ);
     }
 
     //Tracer tracer(&repo, true);

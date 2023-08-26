@@ -25,7 +25,6 @@
 struct CNodeExpression : public CNode {
   virtual uint32_t debug_color() const;
   virtual Err emit(Cursor& cursor);
-  virtual Err trace(CInstance* instance, TraceAction action);
 
   bool is_integer_constant();
 
@@ -36,28 +35,30 @@ protected:
 //------------------------------------------------------------------------------
 
 struct CNodeBinaryExp : public CNodeExpression {
+  virtual Err trace(CInstance* instance, TraceAction action);
 };
 
 struct CNodePrefixExp : public CNodeExpression {
+  virtual Err trace(CInstance* instance, TraceAction action);
 };
 
 struct CNodeSuffixExp : public CNodeExpression {
+  virtual Err trace(CInstance* instance, TraceAction action);
 };
 
 struct CNodeAssignExp : public CNodeExpression {
+  virtual Err trace(CInstance* instance, TraceAction action);
 };
 
 struct CNodeIdentifierExp : public CNodeExpression {
+  virtual Err trace(CInstance* instance, TraceAction action);
 };
 
 //------------------------------------------------------------------------------
 
 struct CNodeConstant : public CNodeExpression {
-  virtual Err emit(Cursor& cursor) {
-    return cursor.emit_raw(this);
-  }
-
-  virtual Err trace(CInstance* instance, TraceAction action) { return Err(); }
+  virtual Err emit(Cursor& cursor);
+  virtual Err trace(CInstance* instance, TraceAction action);
 
 protected:
   CNodeConstant() {}
@@ -71,10 +72,12 @@ struct CNodeConstString : public CNodeConstant {};
 //------------------------------------------------------------------------------
 
 struct CNodeOperator : public CNode {
-  virtual uint32_t debug_color() const { return COL_SKY; }
-  virtual Err emit(Cursor& cursor) { return cursor.emit_default(this); }
-  virtual Err trace(CInstance* instance, TraceAction action) { return Err(); }
+  virtual uint32_t debug_color() const;
+  virtual Err emit(Cursor& cursor);
+  virtual Err trace(CInstance* instance, TraceAction action);
 };
+
+//----------------------------------------
 
 struct CNodeBinaryOp : public CNodeOperator {
   void init(const char* match_tag, SpanType span, uint64_t flags) {

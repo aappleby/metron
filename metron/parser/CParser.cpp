@@ -458,28 +458,6 @@ Oneof<
 
 //----------------------------------------
 
-
-TokenSpan match_prefix_op_recurse(CContext& ctx, TokenSpan body) {
-  using cap_prefix_op =
-  CaptureAnon<
-    Seq<
-      cap_exp_prefix,
-      Oneof<Ref<match_prefix_op_recurse>, cap_exp_core>
-    >,
-    CNodeBinaryOp
-  >;
-
-  return cap_prefix_op::match(ctx, body);
-}
-
-//----------------------------------------
-
-TokenSpan match_suffix_op_recurse(CContext& ctx, TokenSpan body) {
-  return body.fail();
-}
-
-//----------------------------------------
-
 template<StringParam p>
 using cap_suffix_op = CaptureAnon<Ref<match_punct<p>>, CNodeSuffixOp>;
 
@@ -518,11 +496,15 @@ TokenSpan cap_exp_unit(CContext& ctx, TokenSpan body) {
     body = rest;
 
     ctx.enclose_tail<CNodeSuffixExp>(2);
+    ctx.top_tail->child_head->match_tag = "lhs";
+    ctx.top_tail->child_tail->match_tag = "suffix";
   }
 
   // Enclose all prefixes
   while(ctx.top_tail->node_prev != old_tail) {
     ctx.enclose_tail<CNodePrefixExp>(2);
+    ctx.top_tail->child_head->match_tag = "prefix";
+    ctx.top_tail->child_tail->match_tag = "rhs";
   }
 
   return body;
@@ -684,6 +666,9 @@ TokenSpan match_expression(CContext& ctx, TokenSpan body) {
       auto new_node = ctx.create_node<CNodeBinaryExp>();
       ctx.splice(new_node, unit_a, unit_b);
 
+      new_node->child_head->match_tag = "lhs";
+      new_node->child_tail->match_tag = "rhs";
+
       unit_a = new_node;
       op_x   = op_y;
       unit_b = unit_c;
@@ -702,6 +687,8 @@ TokenSpan match_expression(CContext& ctx, TokenSpan body) {
   // there are no more operators we can just fold them all up right-to-left
   while(ctx.top_tail->node_prev != old_tail) {
     ctx.enclose_tail<CNodeBinaryExp>(3);
+    ctx.top_tail->child_head->match_tag = "lhs";
+    ctx.top_tail->child_tail->match_tag = "rhs";
   }
 
   return body;

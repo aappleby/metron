@@ -24,9 +24,7 @@ Err CNodeFunction::emit(Cursor& c) {
 }
 
 Err CNodeFunction::trace(CInstance* instance, TraceAction action) {
-  Err err;
-  err << child_is<CNodeCompound>("body")->trace(instance, action);
-  return err;
+  return child("body")->trace(instance, action);
 }
 
 //------------------------------------------------------------------------------

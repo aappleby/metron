@@ -40,10 +40,9 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   virtual std::string_view get_name() const;
   virtual Err emit(Cursor& c);
   virtual Err trace(CInstance* instance, TraceAction action);
+  virtual Err trace_children(CInstance* instance, TraceAction action);
 
   //----------------------------------------
-
-  Err trace_children(CInstance* instance, TraceAction action);
 
   const CToken* tok_begin() const { return span.begin; }
   const CToken* tok_end() const   { return span.end; }

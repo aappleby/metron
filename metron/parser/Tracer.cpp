@@ -10,6 +10,8 @@
 #include "CNodeType.hpp"
 #include "NodeTypes.hpp"
 
+#if 0
+
 //------------------------------------------------------------------------------
 
 Tracer::Tracer(CSourceRepo* repo, bool verbose)
@@ -62,7 +64,7 @@ CHECK_RETURN Err Tracer::trace() {
       int(func_name.size()), func_name.data()
     );
 
-    auto inst_call = new CInstCall(root_inst, nullptr, inst_func);
+    auto inst_call = new CInstCall(nullptr, nullptr);
 
     for (auto inst_arg : inst_call->inst_args) {
       err << inst_arg->log_action(nullptr, ACT_WRITE);
@@ -122,7 +124,7 @@ CHECK_RETURN Err Tracer::trace_top_call(CInstCall* call) {
   err << trace_function_definition(call, call->_method->_node);
   */
 
-  err << trace_function_definition(call, call->node_function);
+  //err << trace_function_definition(call, call->node_function);
 
   return err;
 }
@@ -863,3 +865,5 @@ CHECK_RETURN Err Tracer::trace_switch_statement(CInstCall* call, CNode* node) {
 }
 
 //------------------------------------------------------------------------------
+
+#endif

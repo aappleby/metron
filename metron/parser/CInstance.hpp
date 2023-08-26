@@ -2,6 +2,7 @@
 
 #include <map>
 #include <vector>
+#include <string_view>
 
 #include "metron/tools/MtUtils.h"
 
@@ -46,19 +47,15 @@ struct CInstance {
     state_stack.push_back(CTX_NONE);
   }
   virtual ~CInstance() {}
+
+  //----------------------------------------
+
+  virtual std::string_view get_name() const;
+  virtual Err trace(TraceAction action);
+  virtual CInstance* resolve(std::string_view name);
   virtual void dump_tree();
 
-  virtual Err trace(TraceAction action) {
-    LOG_R("unimp");
-    exit(-1);
-    return ERR("Can't trace CInstance base class\n");
-  }
-
-  virtual CInstance* resolve(const std::string& name) {
-    LOG_R("unimp");
-    exit(-1);
-    return nullptr;
-  }
+  //----------------------------------------
 
   template <typename P>
   P* as_a() { return dynamic_cast<P*>(this); }
@@ -66,31 +63,13 @@ struct CInstance {
   template <typename P>
   P* is_a() { auto p = dynamic_cast<P*>(this); assert(p); return p; }
 
-  CHECK_RETURN Err log_action(CNode* node, TraceAction action) {
-    Err err;
-    auto old_state = state_stack.back();
-    auto new_state = merge_action(old_state, action);
+  //----------------------------------------
 
-    //LOG_R("%s %s %s\n", to_string(action), to_string(old_state), to_string(new_state));
+  CHECK_RETURN Err log_action(CNode* node, TraceAction action);
 
-    if (old_state != new_state) {
-      action_log.push_back({old_state, new_state, action, node});
-    }
-
-    state_stack.back() = new_state;
-
-    if (new_state == CTX_INVALID) {
-      LOG_R("Trace error: state went from %s to %s\n", to_string(old_state), to_string(new_state));
-      dump_tree();
-      err << ERR("Invalid context state\n");
-    }
-
-    return err;
-  }
+  //----------------------------------------
 
   CInstance* parent;
-  std::string _name;
-  std::string _path;
   std::vector<TraceState> state_stack;
   std::vector<CLogEntry>   action_log;
 };
@@ -100,12 +79,9 @@ struct CInstance {
 struct CInstClass : public CInstance {
   CInstClass(CInstance* parent, CNodeClass* node_class);
 
-  virtual CInstance* resolve(const std::string& name) {
-    LOG_R("unimp");
-    exit(-1);
-    return nullptr;
-  }
-
+  virtual std::string_view get_name() const;
+  virtual Err trace(TraceAction action);
+  virtual CInstance* resolve(std::string_view name);
   virtual void dump_tree();
 
   CNodeClass* node_class;
@@ -118,12 +94,9 @@ struct CInstClass : public CInstance {
 struct CInstStruct : public CInstance {
   CInstStruct(CInstance* parent, CNodeStruct* node_struct);
 
-  virtual CInstance* resolve(const std::string& name) {
-    LOG_R("unimp");
-    exit(-1);
-    return nullptr;
-  }
-
+  virtual std::string_view get_name() const;
+  virtual Err trace(TraceAction action);
+  virtual CInstance* resolve(std::string_view name);
   virtual void dump_tree();
 
   CNodeStruct* node_struct;
@@ -135,12 +108,9 @@ struct CInstStruct : public CInstance {
 struct CInstField : public CInstance {
   CInstField(CInstance* parent, CNodeField* node_field);
 
-  virtual CInstance* resolve(const std::string& name) {
-    LOG_R("unimp");
-    exit(-1);
-    return nullptr;
-  }
-
+  virtual std::string_view get_name() const;
+  virtual Err trace(TraceAction action);
+  virtual CInstance* resolve(std::string_view name);
   virtual void dump_tree();
 
   CNodeField* node_field;
@@ -152,12 +122,9 @@ struct CInstField : public CInstance {
 struct CInstFunction : public CInstance {
   CInstFunction(CInstance* parent, CNodeFunction* node_function);
 
-  virtual CInstance* resolve(const std::string& name) {
-    LOG_R("unimp");
-    exit(-1);
-    return nullptr;
-  }
-
+  virtual std::string_view get_name() const;
+  virtual Err trace(TraceAction action);
+  virtual CInstance* resolve(std::string_view name);
   virtual void dump_tree();
 
   CNodeFunction* node_function;
@@ -171,13 +138,11 @@ struct CInstFunction : public CInstance {
 struct CInstParam : public CInstance {
   CInstParam(CInstance* parent, CNodeDeclaration* node_decl);
 
-  virtual CInstance* resolve(const std::string& name) {
-    LOG_R("unimp");
-    exit(-1);
-    return nullptr;
-  }
-
+  virtual std::string_view get_name() const;
+  virtual Err trace(TraceAction action);
+  virtual CInstance* resolve(std::string_view name);
   virtual void dump_tree();
+
 
   CNodeDeclaration* node_decl;
   CInstance* inst_decl;
@@ -188,11 +153,10 @@ struct CInstParam : public CInstance {
 struct CInstReturn : public CInstance {
   CInstReturn(CInstance* parent);
 
-  virtual CInstance* resolve(const std::string& name) {
-    LOG_R("unimp");
-    exit(-1);
-    return nullptr;
-  }
+  virtual std::string_view get_name() const;
+  virtual Err trace(TraceAction action);
+  virtual CInstance* resolve(std::string_view name);
+  virtual void dump_tree();
 
   CNodeType* node_return = nullptr;
 };
@@ -200,18 +164,15 @@ struct CInstReturn : public CInstance {
 //------------------------------------------------------------------------------
 
 struct CInstCall : public CInstance {
-  CInstCall(CInstance* parent, CNodeCall* node_call, CInstFunction* inst_func);
+  CInstCall(CInstance* parent, CNodeCall* node_call);
 
-  virtual CInstance* resolve(const std::string& name) {
-    LOG_R("unimp");
-    exit(-1);
-    return nullptr;
-  }
-
+  virtual std::string_view get_name() const;
+  virtual Err trace(TraceAction action);
+  virtual CInstance* resolve(std::string_view name);
   virtual void dump_tree();
 
+  // our parent is the CInstFunction containing this call
   CNodeCall*     node_call; // call node
-  CInstFunction* inst_func; // target function instance
 
   CInstReturn*           inst_return; // our return value
   std::vector<CInstArg*> inst_args;   // our function arguments
@@ -222,12 +183,9 @@ struct CInstCall : public CInstance {
 struct CInstArg : public CInstance {
   CInstArg(CInstance* parent, CNodeExpression* node_arg);
 
-  virtual CInstance* resolve(const std::string& name) {
-    LOG_R("unimp");
-    exit(-1);
-    return nullptr;
-  }
-
+  virtual std::string_view get_name() const;
+  virtual Err trace(TraceAction action);
+  virtual CInstance* resolve(std::string_view name);
   virtual void dump_tree();
 
   CNode* node_param = nullptr;
@@ -239,13 +197,11 @@ struct CInstArg : public CInstance {
 struct CInstPrimitive : public CInstance {
   CInstPrimitive(CInstance* parent, CNodeType* node_type);
 
-  virtual CInstance* resolve(const std::string& name) {
-    LOG_R("unimp");
-    exit(-1);
-    return nullptr;
-  }
-
+  virtual std::string_view get_name() const;
+  virtual Err trace(TraceAction action);
+  virtual CInstance* resolve(std::string_view name);
   virtual void dump_tree();
+
 
   CNodeType* node_type = nullptr;
 };
@@ -255,12 +211,9 @@ struct CInstPrimitive : public CInstance {
 struct CInstArray : public CInstance {
   CInstArray(CInstance* parent, CNodeType* node_type, CNode* node_array);
 
-  virtual CInstance* resolve(const std::string& name) {
-    LOG_R("unimp");
-    exit(-1);
-    return nullptr;
-  }
-
+  virtual std::string_view get_name() const;
+  virtual Err trace(TraceAction action);
+  virtual CInstance* resolve(std::string_view name);
   virtual void dump_tree();
 
   CNodeType* node_type = nullptr;

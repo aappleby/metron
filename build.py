@@ -83,7 +83,7 @@ divider("Variables")
 if ("--release" in sys.argv) or ("-r" in sys.argv):
     ninja.variable("cpp_build_mode", "-rdynamic -O3")
 else:
-    ninja.variable("cpp_build_mode", "-rdynamic -g -O0")
+    ninja.variable("cpp_build_mode", "-rdynamic -ggdb3 -O0")
 
 # ------------------------------------------------------------------------------
 

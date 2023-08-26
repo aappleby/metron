@@ -1,12 +1,18 @@
 #include "CNodeStatement.hpp"
 
+//------------------------------------------------------------------------------
+
 uint32_t CNodeStatement::debug_color() const {
   return COL_TEAL;
 }
 
+//------------------------------------------------------------------------------
+
 Err CNodeStatement::emit(Cursor& cursor) {
   return cursor.emit_default(this);
 }
+
+//------------------------------------------------------------------------------
 
 Err CNodeCompound::trace(CInstance* instance, TraceAction action) {
   Err err;
@@ -14,6 +20,7 @@ Err CNodeCompound::trace(CInstance* instance, TraceAction action) {
   return err;
 }
 
+//------------------------------------------------------------------------------
 
 Err CNodeReturn::trace(CInstance* instance, TraceAction action) {
   Err err;
@@ -22,3 +29,5 @@ Err CNodeReturn::trace(CInstance* instance, TraceAction action) {
   }
   return err;
 }
+
+//------------------------------------------------------------------------------

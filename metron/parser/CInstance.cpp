@@ -90,7 +90,9 @@ CInstance* CInstance::resolve(std::string_view name) {
 
 //----------------------------------------
 
-void CInstance::dump_tree() { LOG_R("{{%s}}\n", typeid(*this).name()); }
+void CInstance::dump_tree() {
+  LOG_R("{{%s}}\n", typeid(*this).name());
+}
 
 //----------------------------------------
 
@@ -153,7 +155,7 @@ Err CInstClass::trace(TraceAction action) {
 //----------------------------------------
 
 CInstance* CInstClass::resolve(std::string_view name) {
-  dump_tree();
+  //dump_tree();
   /*
   LOG_R("###UNIMPLEMENTED### %s\n", __PRETTY_FUNCTION__);
   assert(false); exit(-1);
@@ -270,9 +272,15 @@ CInstance* CInstField::resolve(std::string_view name) {
 
 void CInstField::dump_tree() {
   auto name = node_field->get_name();
-  LOG_G("Field %.*s\n", int(name.size()), name.data());
-  LOG_INDENT_SCOPE();
-  inst_decl->dump_tree();
+
+  LOG_G("Field %.*s", int(name.size()), name.data());
+  for (auto s : state_stack) LOG_G(" %s ", to_string(s));
+  LOG_G("\n");
+
+  if (!inst_decl->as_a<CInstPrimitive>()) {
+    LOG_INDENT_SCOPE();
+    inst_decl->dump_tree();
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -327,12 +335,19 @@ CInstance* CInstFunction::resolve(std::string_view name) {
 //----------------------------------------
 
 void CInstFunction::dump_tree() {
-  auto name = node_function->get_name();
-  LOG_G("Function %.*s\n", int(name.size()), name.data());
-  LOG_INDENT_SCOPE();
-  for (auto p : inst_params) p->dump_tree();
-  for (auto c : inst_calls) c->dump_tree();
-  inst_return->dump_tree();
+  //auto name = node_function->get_name();
+  //LOG_G("Function %.*s\n", int(name.size()), name.data());
+  //LOG_INDENT_SCOPE();
+  //for (auto p : inst_params) p->dump_tree();
+  //for (auto c : inst_calls) c->dump_tree();
+  //inst_return->dump_tree();
+}
+
+//----------------------------------------
+
+CInstCall* CInstFunction::get_call(CNodeCall* call) {
+  for (auto c : inst_calls) if (c->node_call = call) return c;
+  return nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -347,7 +362,7 @@ CInstParam::CInstParam(CInstance* parent, CNodeDeclaration* node_decl)
   } else {
     auto node_type = node_decl->child_as<CNodeType>("type");
 
-    if (node_type->is_a<CNodeBuiltinType>()) {
+    if (node_type->as_a<CNodeBuiltinType>()) {
       inst_decl = new CInstPrimitive(this, node_type);
     } else {
       inst_decl = new CInstStruct(this, node_decl->_type_struct);
@@ -380,10 +395,10 @@ CInstance* CInstParam::resolve(std::string_view name) {
 //----------------------------------------
 
 void CInstParam::dump_tree() {
-  auto name = node_decl->get_name();
-  LOG_G("Param %.*s\n", int(name.size()), name.data());
-  LOG_INDENT_SCOPE();
-  inst_decl->dump_tree();
+  //auto name = node_decl->get_name();
+  //LOG_G("Param %.*s\n", int(name.size()), name.data());
+  //LOG_INDENT_SCOPE();
+  //inst_decl->dump_tree();
 }
 
 //------------------------------------------------------------------------------
@@ -417,7 +432,7 @@ CInstance* CInstReturn::resolve(std::string_view name) {
 //----------------------------------------
 
 void CInstReturn::dump_tree() {
-  LOG_G("Return\n");
+  //LOG_G("Return\n");
 }
 
 //------------------------------------------------------------------------------
@@ -444,9 +459,18 @@ std::string_view CInstCall::get_name() const {
 //----------------------------------------
 
 Err CInstCall::trace(TraceAction action) {
-  LOG_R("###UNIMPLEMENTED### %s\n", __PRETTY_FUNCTION__);
-  assert(false); exit(-1);
-  return ERR("Can't trace CInstance base class\n");
+  Err err;
+  for (auto arg : inst_args) arg->trace(ACT_WRITE);
+
+  //err << inst_call->trace(ACT_READ);
+
+  err << inst_return->trace(ACT_READ);
+
+  //LOG_R("###UNIMPLEMENTED### %s\n", __PRETTY_FUNCTION__);
+  //assert(false); exit(-1);
+  //return ERR("Can't trace CInstance base class\n");
+  assert(false);
+  return err;
 }
 
 //----------------------------------------
@@ -487,9 +511,13 @@ std::string_view CInstArg::get_name() const {
 //----------------------------------------
 
 Err CInstArg::trace(TraceAction action) {
-  LOG_R("###UNIMPLEMENTED### %s\n", __PRETTY_FUNCTION__);
-  assert(false); exit(-1);
-  return ERR("Can't trace CInstance base class\n");
+  //LOG_R("###UNIMPLEMENTED### %s\n", __PRETTY_FUNCTION__);
+
+  //node_arg->dump_tree();
+  //assert(false); exit(-1);
+  //return ERR("Can't trace CInstance base class\n");
+
+  return node_arg->trace(this, action);
 }
 
 //----------------------------------------

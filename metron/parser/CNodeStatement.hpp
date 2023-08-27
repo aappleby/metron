@@ -58,7 +58,6 @@ jump-statement:
 
 struct CNodeStatement : public CNode {
   virtual uint32_t debug_color() const;
-  virtual Err emit(Cursor& cursor);
 protected:
   CNodeStatement() {}
 };
@@ -66,9 +65,13 @@ protected:
 //------------------------------------------------------------------------------
 
 struct CNodeExpStatement : public CNodeStatement {
+  virtual Err emit(Cursor& c);
+  virtual Err trace(CInstance* instance, TraceAction action);
 };
 
 struct CNodeAssignment : public CNodeStatement {
+  virtual Err emit(Cursor& c);
+  virtual Err trace(CInstance* instance, TraceAction action);
 };
 
 //------------------------------------------------------------------------------

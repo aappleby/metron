@@ -621,7 +621,7 @@ TokenSpan match_expression(CContext& ctx, TokenSpan body) {
 
   rest = cap_binary_ops(ctx, body);
   if (!rest) return body;
-  CNodeBinaryOp* op_x = ctx.top_tail->is_a<CNodeBinaryOp>();
+  CNodeBinaryOp* op_x = ctx.top_tail->as_a<CNodeBinaryOp>();
   body = rest;
 
   rest = cap_exp_unit(ctx, body);
@@ -640,7 +640,7 @@ TokenSpan match_expression(CContext& ctx, TokenSpan body) {
     // parsing.
     rest = cap_binary_ops(ctx, body);
     if (!rest) break;
-    CNodeBinaryOp* op_y = ctx.top_tail->is_a<CNodeBinaryOp>();
+    CNodeBinaryOp* op_y = ctx.top_tail->as_a<CNodeBinaryOp>();
     body = rest;
 
     // If there's no expression after the operator, parsing fails.
@@ -896,11 +896,10 @@ TokenSpan match_field_list(CContext& ctx, TokenSpan body) {
   using pattern = DelimitedBlock<
     Tag<"ldelim", cap_punct<"{">>,
     Oneof<
-      cap_punct<";">,
       cap_access,
       cap_constructor,
       cap_function,
-      cap_field
+      Seq<cap_field, cap_punct<";">>
     >,
     Tag<"rdelim", cap_punct<"}">>
   >;
@@ -1415,11 +1414,18 @@ TokenSpan match_typedef(CContext& ctx, TokenSpan body) {
 
 //------------------------------------------------------------------------------
 
-using cap_assignment =
-CaptureAnon<
-  Seq<cap_any_identifier, cap_assignment_op, cap_expression>,
-  CNodeAssignment
->;
+TokenSpan cap_assignment(CContext& ctx, TokenSpan body) {
+  using pattern =
+  CaptureAnon<
+    Seq<
+      Tag<"lhs", cap_any_identifier>,
+      Tag<"op",  cap_assignment_op>,
+      Tag<"rhs", cap_expression>
+    >,
+    CNodeAssignment
+  >;
+  return pattern::match(ctx, body);
+}
 
 //------------------------------------------------------------------------------
 
@@ -1427,7 +1433,6 @@ TokenSpan match_statement(CContext& ctx, TokenSpan body) {
   // clang-format off
   using pattern =
   Oneof<
-    cap_punct<";">,
     cap_for,
     cap_if,
     cap_return,
@@ -1435,11 +1440,11 @@ TokenSpan match_statement(CContext& ctx, TokenSpan body) {
     cap_do_while,
     cap_while,
     cap_compound,
-    cap_keyword<"break">,
-    cap_keyword<"continue">,
-    cap_expstatement,
-    cap_assignment,
-    cap_declaration
+    Seq<cap_keyword<"break">,    cap_punct<";">>,
+    Seq<cap_keyword<"continue">, cap_punct<";">>,
+    Seq<Ref<cap_assignment>,     cap_punct<";">>,
+    Seq<cap_expstatement,        cap_punct<";">>,
+    Seq<cap_declaration,         cap_punct<";">>
   >;
   // clang-format on
   return pattern::match(ctx, body);
@@ -1451,16 +1456,17 @@ TokenSpan match_translation_unit(CContext& ctx, TokenSpan body) {
   // clang-format off
   using pattern =
   Any<
-    cap_punct<";">,
-    cap_class,
-    cap_struct,
-    cap_union,
-    cap_enum,
-    cap_template,
-    cap_declaration,
     cap_preproc,
     cap_function,
-    cap_namespace
+    cap_namespace,
+
+    Seq<cap_class,       cap_punct<";">>,
+    Seq<cap_struct,      cap_punct<";">>,
+    Seq<cap_union,       cap_punct<";">>,
+    Seq<cap_enum,        cap_punct<";">>,
+    Seq<cap_template,    cap_punct<";">>,
+    Seq<cap_declaration, cap_punct<";">>
+
     //cap_typedef FIXME
   >;
   // clang-format on

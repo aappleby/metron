@@ -95,9 +95,8 @@ std::string_view CNodeIdentifier::get_name() const {
 Err CNodeIdentifier::emit(Cursor& cursor) { return cursor.emit_default(this); }
 
 Err CNodeIdentifier::trace(CInstance* instance, TraceAction action) {
-  dump_tree();
-  assert(false);
-  return Err();
+  auto inst_field = instance->resolve(get_text());
+  return inst_field->log_action(this, action);
 }
 
 //------------------------------------------------------------------------------

@@ -44,6 +44,10 @@ namespace fs = std::filesystem;
     LOG_R("Parse failed!\n");
   }
 
+  if (context.root_node) {
+    context.root_node->dump_tree();
+  }
+
 
   //matcheroni::utils::print_trees(context, source_span, 50);
 

@@ -132,7 +132,7 @@ Err CNodeType::emit(Cursor& cursor) {
     err << cursor.emit_gap_after(node_builtin);
 
     auto node_ldelim = node_targs->child("ldelim");
-    auto node_exp    = node_targs->child("exp")->is_a<CNodeExpression>();
+    auto node_exp    = node_targs->child("exp")->as_a<CNodeExpression>();
     auto node_rdelim = node_targs->child("rdelim");
 
     err << cursor.emit_replacement(node_ldelim, "[");

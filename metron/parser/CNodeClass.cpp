@@ -77,11 +77,11 @@ Err CNodeClass::collect_fields_and_methods(CSourceRepo* repo) {
   bool is_public = false;
 
   for (auto c : body) {
-    if (auto access = as<CNodeAccess>(c)) {
+    if (auto access = c->as_a<CNodeAccess>()) {
       is_public = c->get_text() == "public:";
     }
 
-    if (auto n = as<CNodeField>(c)) {
+    if (auto n = c->as_a<CNodeField>()) {
       n->_static = n->child("static") != nullptr;
       n->_const  = n->child("const")  != nullptr;
       n->_public = is_public;
@@ -94,7 +94,7 @@ Err CNodeClass::collect_fields_and_methods(CSourceRepo* repo) {
 
       all_fields.push_back(n);
     }
-    if (auto n = as<CNodeFunction>(c)) {
+    if (auto n = c->as_a<CNodeFunction>()) {
       n->is_public_ = is_public;
       all_functions.push_back(n);
 

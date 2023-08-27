@@ -1,5 +1,7 @@
 #include "CNodeStatement.hpp"
 
+#include "CNodeExpression.hpp"
+
 //------------------------------------------------------------------------------
 
 uint32_t CNodeStatement::debug_color() const {
@@ -8,8 +10,38 @@ uint32_t CNodeStatement::debug_color() const {
 
 //------------------------------------------------------------------------------
 
-Err CNodeStatement::emit(Cursor& cursor) {
-  return cursor.emit_default(this);
+Err CNodeExpStatement::emit(Cursor& c) {
+  dump_tree();
+  assert(false);
+  return Err();
+}
+
+Err CNodeExpStatement::trace(CInstance* instance, TraceAction action) {
+  return trace_children(instance, action);
+}
+
+//------------------------------------------------------------------------------
+
+Err CNodeAssignment::emit(Cursor& c) {
+  dump_tree();
+  assert(false);
+  return Err();
+}
+
+Err CNodeAssignment::trace(CInstance* instance, TraceAction action) {
+  Err err;
+
+  if (child("op")->get_text() == "=") {
+    err << child("rhs")->trace(instance, ACT_READ);
+    err << child("lhs")->trace(instance, ACT_WRITE);
+  }
+  else {
+    err << child("rhs")->trace(instance, ACT_READ);
+    err << child("lhs")->trace(instance, ACT_READ);
+    err << child("lhs")->trace(instance, ACT_WRITE);
+  }
+
+  return Err();
 }
 
 //------------------------------------------------------------------------------

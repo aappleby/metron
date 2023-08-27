@@ -30,7 +30,6 @@ bool CNodeExpression::is_integer_constant() {
 
 Err CNodeBinaryExp::trace(CInstance* instance, TraceAction action) {
   Err err;
-  dump_tree();
 
   err << child("lhs")->trace(instance, action);
   err << child("rhs")->trace(instance, action);

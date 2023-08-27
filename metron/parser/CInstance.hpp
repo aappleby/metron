@@ -60,9 +60,6 @@ struct CInstance {
   template <typename P>
   P* as_a() { return dynamic_cast<P*>(this); }
 
-  template <typename P>
-  P* is_a() { auto p = dynamic_cast<P*>(this); assert(p); return p; }
-
   //----------------------------------------
 
   CHECK_RETURN Err log_action(CNode* node, TraceAction action);
@@ -126,6 +123,8 @@ struct CInstFunction : public CInstance {
   virtual Err trace(TraceAction action);
   virtual CInstance* resolve(std::string_view name);
   virtual void dump_tree();
+
+  CInstCall* get_call(CNodeCall* call);
 
   CNodeFunction* node_function;
   std::vector<CInstParam*> inst_params;

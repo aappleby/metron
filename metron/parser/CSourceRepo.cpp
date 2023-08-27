@@ -179,7 +179,7 @@ void CSourceRepo::dump() {
     //LOG_B("%.*s @ %p\n", name.size(), name.data(), n);
 
     /*
-    if (n->node_parent && n->node_parent->is_a<CNodeTemplate>()) {
+    if (n->node_parent && n->node_parent->as_a<CNodeTemplate>()) {
       LOG_B("CNodeClass has template parent\n");
     }
     */

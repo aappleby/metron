@@ -115,11 +115,19 @@ int main_new(Options opts) {
 
     auto root_inst = new CInstClass(nullptr, repo.top);
 
-    //root_inst->dump_tree();
-
     for (auto inst_func : root_inst->inst_functions) {
-      err << inst_func->trace(ACT_READ);
+      LOG_INDENT_SCOPE();
+      auto func_name = inst_func->get_name();
+      if (inst_func->node_function->internal_callers.size()) {
+        LOG_B("Skipping %.*s\n", int(func_name.size()), func_name.data());
+      }
+      else {
+        LOG_B("Tracing %.*s\n", int(func_name.size()), func_name.data());
+        err << inst_func->trace(ACT_READ);
+      }
     }
+
+    root_inst->dump_tree();
 
     //Tracer tracer(&repo, true);
     //err << tracer.trace();

@@ -460,8 +460,8 @@ CHECK_RETURN Err Tracer::trace_assignment_expression(CInstCall * call, CNode* no
 
 CHECK_RETURN Err Tracer::trace_binary_expression(CInstCall* call, CNodeExpression* node) {
   Err err;
-  err << trace_expression(call, node->child("lhs")->is_a<CNodeExpression>(), ACT_READ);
-  err << trace_expression(call, node->child("rhs")->is_a<CNodeExpression>(), ACT_READ);
+  err << trace_expression(call, node->child("lhs")->as_a<CNodeExpression>(), ACT_READ);
+  err << trace_expression(call, node->child("rhs")->as_a<CNodeExpression>(), ACT_READ);
   return err;
 }
 

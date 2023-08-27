@@ -62,14 +62,13 @@ enum TraceState {
 };
 
 enum TraceAction {
-  //CTX_READ = 0,
-  //CTX_WRITE = 1,
   ACT_READ = 0,
   ACT_WRITE = 1,
   ACT_PUSH = 2,
   ACT_POP = 3,
   ACT_SWAP = 4,
-  ACT_MERGE = 5
+  ACT_MERGE = 5,
+  ACT_INVALID = -1
 };
 
 FieldType trace_state_to_field_type(TraceState s);
@@ -102,13 +101,14 @@ inline const char* to_string(MethodType f) {
 
 inline const char* to_string(TraceAction f) {
   switch (f) {
-    case ACT_READ:  return "READ";
-    case ACT_WRITE: return "WRITE";
-    case ACT_PUSH:  return "PUSH";
-    case ACT_POP:   return "POP";
-    case ACT_SWAP:  return "SWAP";
-    case ACT_MERGE: return "MERGE";
-    default:        return "???";
+    case ACT_READ:    return "READ";
+    case ACT_WRITE:   return "WRITE";
+    case ACT_PUSH:    return "PUSH";
+    case ACT_POP:     return "POP";
+    case ACT_SWAP:    return "SWAP";
+    case ACT_MERGE:   return "MERGE";
+    case ACT_INVALID: return "INVALID";
+    default:          return "???";
   }
 }
 

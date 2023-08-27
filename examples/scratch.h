@@ -1,5 +1,6 @@
 #include "metron/tools/metron_tools.h"
 
+/*
 struct Baz {
   int a;
   int b;
@@ -17,10 +18,24 @@ struct Foo {
   Bar b;
   Bar c;
 };
+*/
 
 class Module {
 public:
 
+  int x;
+  int y;
+
+  void tock(int d) {
+    y = x + d;
+    x = y + d;
+  }
+
+  void tick() {
+    tock(2);
+  }
+
+  /*
   Foo sjdlfk;
   int jwioerj;
   logic<8> blarp;
@@ -33,4 +48,5 @@ public:
     return a * b + c;
     return 1;
   }
+  */
 };

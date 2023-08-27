@@ -629,6 +629,8 @@ TokenSpan match_expression(CContext& ctx, TokenSpan body) {
   CNode* unit_b = ctx.top_tail;
   body = rest;
 
+  //unit_b->dump_tree();
+
   while(1) {
     // We have matched an expression, an operator, and an expression. We can't
     // collapse them into a single BinaryExpression though, as we don't know if
@@ -663,11 +665,32 @@ TokenSpan match_expression(CContext& ctx, TokenSpan body) {
     fold_left |= op_x->precedence == op_y->precedence && op_x->assoc == 1;
 
     if (fold_left) {
+
+      //LOG_R("----------\n");
+
+      //ctx.top_tail->node_prev->node_prev->node_prev->node_prev->dump_tree();
+      //ctx.top_tail->node_prev->node_prev->node_prev->dump_tree();
+      //ctx.top_tail->node_prev->node_prev->dump_tree();
+      //ctx.top_tail->node_prev->dump_tree();
+      //ctx.top_tail->dump_tree();
+
+      //LOG_R("----------\n");
+
       auto new_node = ctx.create_node<CNodeBinaryExp>();
       ctx.splice(new_node, unit_a, unit_b);
 
+      //ctx.top_tail->node_prev->node_prev->node_prev->node_prev->dump_tree();
+      //ctx.top_tail->node_prev->node_prev->node_prev->dump_tree();
+      //ctx.top_tail->node_prev->node_prev->dump_tree();
+      //ctx.top_tail->node_prev->dump_tree();
+      //ctx.top_tail->dump_tree();
+
+      //LOG_R("----------\n");
+
       new_node->child_head->match_tag = "lhs";
       new_node->child_tail->match_tag = "rhs";
+
+      //new_node->dump_tree();
 
       unit_a = new_node;
       op_x   = op_y;
@@ -683,13 +706,23 @@ TokenSpan match_expression(CContext& ctx, TokenSpan body) {
     }
   }
 
+  LOG_R("----------\n");
+
   // Any binary operators left are in increasing-precedence order, but since
   // there are no more operators we can just fold them all up right-to-left
   while(ctx.top_tail->node_prev != old_tail) {
+    //ctx.top_tail->node_prev->node_prev->dump_tree();
+    //ctx.top_tail->node_prev->dump_tree();
+    //ctx.top_tail->dump_tree();
+
     ctx.enclose_tail<CNodeBinaryExp>(3);
+    //ctx.top_tail->dump_tree();
+
     ctx.top_tail->child_head->match_tag = "lhs";
     ctx.top_tail->child_tail->match_tag = "rhs";
+    //ctx.top_tail->dump_tree();
   }
+
 
   return body;
 }

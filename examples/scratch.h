@@ -30,7 +30,7 @@ public:
   }
 
   int tock(int a, int b, int c) {
-    return ++a * b-- + ++blarg(c)--;
+    return a * b + c;
     return 1;
   }
 };

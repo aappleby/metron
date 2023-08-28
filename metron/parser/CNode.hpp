@@ -19,7 +19,7 @@
 struct Cursor;
 struct CNodeClass;
 struct CSourceRepo;
-struct CInstance;
+struct IContext;
 
 typedef matcheroni::Span<CToken> TokenSpan;
 
@@ -39,8 +39,8 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   virtual uint32_t debug_color() const;
   virtual std::string_view get_name() const;
   virtual Err emit(Cursor& c);
-  virtual Err trace(CInstance* instance, TraceAction action);
-  virtual Err trace_children(CInstance* instance, TraceAction action);
+  virtual Err trace(IContext* context, TraceAction action);
+  virtual Err trace_children(IContext* context, TraceAction action);
 
   //----------------------------------------
 

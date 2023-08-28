@@ -28,32 +28,32 @@ bool CNodeExpression::is_integer_constant() {
 
 //------------------------------------------------------------------------------
 
-Err CNodeBinaryExp::trace(CInstance* instance, TraceAction action) {
+Err CNodeBinaryExp::trace(IContext* context, TraceAction action) {
   Err err;
 
-  err << child("lhs")->trace(instance, action);
-  err << child("rhs")->trace(instance, action);
+  err << child("lhs")->trace(context, action);
+  err << child("rhs")->trace(context, action);
   return Err();
 }
 
 //------------------------------------------------------------------------------
 
-Err CNodePrefixExp::trace(CInstance* instance, TraceAction action) {
-  return child("rhs")->trace(instance, action);
+Err CNodePrefixExp::trace(IContext* context, TraceAction action) {
+  return child("rhs")->trace(context, action);
 }
 
 //------------------------------------------------------------------------------
 
-Err CNodeSuffixExp::trace(CInstance* instance, TraceAction action) {
-  return child("lhs")->trace(instance, action);
+Err CNodeSuffixExp::trace(IContext* context, TraceAction action) {
+  return child("lhs")->trace(context, action);
 }
 
 //------------------------------------------------------------------------------
 
-Err CNodeAssignExp::trace(CInstance* instance, TraceAction action) {
+Err CNodeAssignExp::trace(IContext* context, TraceAction action) {
   //Err err;
   //err <<
-  //return child("lhs")->trace(instance, action);
+  //return child("lhs")->trace(context, action);
   dump_tree();
   assert(false);
   return Err();
@@ -61,9 +61,11 @@ Err CNodeAssignExp::trace(CInstance* instance, TraceAction action) {
 
 //------------------------------------------------------------------------------
 
-Err CNodeIdentifierExp::trace(CInstance* instance, TraceAction action) {
-  auto field = instance->resolve(get_text());
-  return field->log_action(this, action);
+Err CNodeIdentifierExp::trace(IContext* context, TraceAction action) {
+  auto field = context->resolve(get_text());
+  auto field_mut = dynamic_cast<IMutable*>(field);
+  assert(field_mut);
+  return field_mut->log_action(this, action);
 }
 
 //------------------------------------------------------------------------------
@@ -72,7 +74,7 @@ Err CNodeConstant::emit(Cursor& cursor) {
   return cursor.emit_raw(this);
 }
 
-Err CNodeConstant::trace(CInstance* instance, TraceAction action) {
+Err CNodeConstant::trace(IContext* context, TraceAction action) {
   return Err();
 }
 
@@ -86,7 +88,7 @@ Err CNodeOperator::emit(Cursor& cursor) {
   return cursor.emit_default(this);
 }
 
-Err CNodeOperator::trace(CInstance* instance, TraceAction action) {
+Err CNodeOperator::trace(IContext* context, TraceAction action) {
   return Err();
 }
 

@@ -16,8 +16,8 @@ Err CNodeExpStatement::emit(Cursor& c) {
   return Err();
 }
 
-Err CNodeExpStatement::trace(CInstance* instance, TraceAction action) {
-  return trace_children(instance, action);
+Err CNodeExpStatement::trace(IContext* context, TraceAction action) {
+  return trace_children(context, action);
 }
 
 //------------------------------------------------------------------------------
@@ -28,17 +28,17 @@ Err CNodeAssignment::emit(Cursor& c) {
   return Err();
 }
 
-Err CNodeAssignment::trace(CInstance* instance, TraceAction action) {
+Err CNodeAssignment::trace(IContext* context, TraceAction action) {
   Err err;
 
   if (child("op")->get_text() == "=") {
-    err << child("rhs")->trace(instance, ACT_READ);
-    err << child("lhs")->trace(instance, ACT_WRITE);
+    err << child("rhs")->trace(context, ACT_READ);
+    err << child("lhs")->trace(context, ACT_WRITE);
   }
   else {
-    err << child("rhs")->trace(instance, ACT_READ);
-    err << child("lhs")->trace(instance, ACT_READ);
-    err << child("lhs")->trace(instance, ACT_WRITE);
+    err << child("rhs")->trace(context, ACT_READ);
+    err << child("lhs")->trace(context, ACT_READ);
+    err << child("lhs")->trace(context, ACT_WRITE);
   }
 
   return Err();
@@ -46,18 +46,18 @@ Err CNodeAssignment::trace(CInstance* instance, TraceAction action) {
 
 //------------------------------------------------------------------------------
 
-Err CNodeCompound::trace(CInstance* instance, TraceAction action) {
+Err CNodeCompound::trace(IContext* context, TraceAction action) {
   Err err;
-  for (auto c : this) err << c->trace(instance, action);
+  for (auto c : this) err << c->trace(context, action);
   return err;
 }
 
 //------------------------------------------------------------------------------
 
-Err CNodeReturn::trace(CInstance* instance, TraceAction action) {
+Err CNodeReturn::trace(IContext* context, TraceAction action) {
   Err err;
   if (auto value = child("value")) {
-    err << value->trace(instance, action);
+    err << value->trace(context, action);
   }
   return err;
 }

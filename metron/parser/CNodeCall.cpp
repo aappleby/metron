@@ -17,22 +17,21 @@ Err CNodeCall::emit(Cursor& c) {
   return Err();
 }
 
-Err CNodeCall::trace(CInstance* instance, TraceAction action) {
+Err CNodeCall::trace(IContext* context, TraceAction action) {
   Err err;
   dump_tree();
 
-  for (auto arg : child("func_args")) {
-    arg->trace(instance, ACT_READ);
-  }
+  //CInstFunction* inst_function = dynamic_cast<CInstFunction*>(context);
+  //CInstCall* inst_call = inst_function->get_call(this);
 
-  CInstFunction* inst_function = dynamic_cast<CInstFunction*>(instance);
-  CInstCall* inst_call = inst_function->get_call(this);
-
-  //for (auto arg : inst_call->inst_args) {
-  //  arg->trace(ACT_WRITE);
+  //for (auto arg : inst_call->inst_func->inst_args) {
+  //  arg->log_action(this, ACT_WRITE);
   //}
 
-  err << inst_call->trace(ACT_READ);
+  // FIXME
+  assert(false);
+
+  //err << inst_call->trace(ACT_READ);
 
   //err << inst_call->inst_return->trace(ACT_READ);
 

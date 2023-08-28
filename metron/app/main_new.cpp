@@ -113,21 +113,39 @@ int main_new(Options opts) {
     LOG_B("//----------------------------------------\n");
     LOG_B("Tracing top methods\n");
 
-    auto root_inst = new CInstClass(nullptr, repo.top);
+    //for (auto inst_func : root_inst->inst_functions) {
+    for (auto node_class : repo.all_classes) {
+      auto name = node_class->get_name();
+      if (node_class->refcount) {
+        LOG_G("Skipping %.*s because it's not a top module\n", int(name.size()), name.data());
+        continue;
+      }
 
-    for (auto inst_func : root_inst->inst_functions) {
-      LOG_INDENT_SCOPE();
-      auto func_name = inst_func->get_name();
-      if (inst_func->node_function->internal_callers.size()) {
-        LOG_B("Skipping %.*s\n", int(func_name.size()), func_name.data());
+      LOG_G("Tracing top methods in %.*s\n", int(name.size()), name.data());
+      auto root_inst = new CInstClass(node_class);
+
+      for (auto node_func : node_class->all_functions) {
+        LOG_INDENT_SCOPE();
+        auto func_name = node_func->get_name();
+        if (node_func->internal_callers.size()) {
+          LOG_B("Skipping %.*s\n", int(func_name.size()), func_name.data());
+        }
+        else {
+          LOG_B("Tracing %.*s\n", int(func_name.size()), func_name.data());
+
+          auto inst_func = new CInstFunction(root_inst, node_func);
+          auto inst_call = new CInstCall(nullptr, inst_func);
+
+          inst_call->dump_tree();
+
+          root_inst->entry_points.push_back(inst_call);
+
+          //err << inst_func->node_function->trace(inst_func, ACT_READ);
+        }
       }
-      else {
-        LOG_B("Tracing %.*s\n", int(func_name.size()), func_name.data());
-        err << inst_func->trace(ACT_READ);
-      }
+
+      delete root_inst;
     }
-
-    root_inst->dump_tree();
 
     //Tracer tracer(&repo, true);
     //err << tracer.trace();

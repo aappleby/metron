@@ -35,30 +35,30 @@ protected:
 //------------------------------------------------------------------------------
 
 struct CNodeBinaryExp : public CNodeExpression {
-  virtual Err trace(CInstance* instance, TraceAction action);
+  virtual Err trace(IContext* context, TraceAction action);
 };
 
 struct CNodePrefixExp : public CNodeExpression {
-  virtual Err trace(CInstance* instance, TraceAction action);
+  virtual Err trace(IContext* context, TraceAction action);
 };
 
 struct CNodeSuffixExp : public CNodeExpression {
-  virtual Err trace(CInstance* instance, TraceAction action);
+  virtual Err trace(IContext* context, TraceAction action);
 };
 
 struct CNodeAssignExp : public CNodeExpression {
-  virtual Err trace(CInstance* instance, TraceAction action);
+  virtual Err trace(IContext* context, TraceAction action);
 };
 
 struct CNodeIdentifierExp : public CNodeExpression {
-  virtual Err trace(CInstance* instance, TraceAction action);
+  virtual Err trace(IContext* context, TraceAction action);
 };
 
 //------------------------------------------------------------------------------
 
 struct CNodeConstant : public CNodeExpression {
   virtual Err emit(Cursor& cursor);
-  virtual Err trace(CInstance* instance, TraceAction action);
+  virtual Err trace(IContext* context, TraceAction action);
 
 protected:
   CNodeConstant() {}
@@ -74,7 +74,7 @@ struct CNodeConstString : public CNodeConstant {};
 struct CNodeOperator : public CNode {
   virtual uint32_t debug_color() const;
   virtual Err emit(Cursor& cursor);
-  virtual Err trace(CInstance* instance, TraceAction action);
+  virtual Err trace(IContext* context, TraceAction action);
 };
 
 //----------------------------------------

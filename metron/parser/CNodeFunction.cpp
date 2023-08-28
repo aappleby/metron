@@ -23,8 +23,8 @@ Err CNodeFunction::emit(Cursor& c) {
   return CNode::emit(c);
 }
 
-Err CNodeFunction::trace(CInstance* instance, TraceAction action) {
-  return child("body")->trace(instance, action);
+Err CNodeFunction::trace(IContext* context, TraceAction action) {
+  return child("body")->trace(context, action);
 }
 
 //------------------------------------------------------------------------------

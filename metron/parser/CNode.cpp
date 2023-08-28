@@ -26,14 +26,14 @@ Err CNode::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-Err CNode::trace(CInstance* instance, TraceAction action) {
+Err CNode::trace(IContext* context, TraceAction action) {
   LOG_R("Don't know how to trace {{%s}}\n", typeid(*this).name());
   exit(-1);
 }
 
-Err CNode::trace_children(CInstance* instance, TraceAction action) {
+Err CNode::trace_children(IContext* context, TraceAction action) {
   Err err;
-  for (auto c : this) err << c->trace(instance, action);
+  for (auto c : this) err << c->trace(context, action);
   return err;
 }
 

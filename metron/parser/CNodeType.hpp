@@ -14,6 +14,9 @@ protected:
 };
 
 struct CNodeBuiltinType : public CNodeType {
+  virtual std::string_view get_name() const {
+    return get_text();
+  }
 };
 
 struct CNodeStructType : public CNodeType {

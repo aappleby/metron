@@ -12,7 +12,7 @@ struct CNodeTranslationUnit : public CNode {
   virtual uint32_t debug_color() const;
   virtual std::string_view get_name() const;
   virtual Err emit(Cursor& c);
-  virtual Err trace(CInstance* instance, TraceAction action);
+  virtual Err trace(IContext* context, TraceAction action);
 };
 
 //------------------------------------------------------------------------------
@@ -21,7 +21,7 @@ struct CNodeNamespace : public CNode {
   virtual uint32_t debug_color() const;
   virtual std::string_view get_name() const;
   virtual Err emit(Cursor& c);
-  virtual Err trace(CInstance* instance, TraceAction action);
+  virtual Err trace(IContext* context, TraceAction action);
 };
 
 //------------------------------------------------------------------------------
@@ -30,7 +30,7 @@ struct CNodePreproc : public CNode {
   virtual uint32_t debug_color() const;
   virtual std::string_view get_name() const;
   virtual Err emit(Cursor& c);
-  virtual Err trace(CInstance* instance, TraceAction action);
+  virtual Err trace(IContext* context, TraceAction action);
 };
 
 //------------------------------------------------------------------------------
@@ -39,7 +39,7 @@ struct CNodeIdentifier : public CNode {
   virtual uint32_t debug_color() const;
   virtual std::string_view get_name() const;
   virtual Err emit(Cursor& c);
-  virtual Err trace(CInstance* instance, TraceAction action);
+  virtual Err trace(IContext* context, TraceAction action);
 };
 
 //------------------------------------------------------------------------------
@@ -48,7 +48,7 @@ struct CNodePunct : public CNode {
   virtual uint32_t debug_color() const;
   virtual std::string_view get_name() const;
   virtual Err emit(Cursor& c);
-  virtual Err trace(CInstance* instance, TraceAction action);
+  virtual Err trace(IContext* context, TraceAction action);
 };
 
 //------------------------------------------------------------------------------
@@ -57,7 +57,7 @@ struct CNodeFieldExpression : public CNode {
   virtual uint32_t debug_color() const;
   virtual std::string_view get_name() const;
   virtual Err emit(Cursor& c);
-  virtual Err trace(CInstance* instance, TraceAction action);
+  virtual Err trace(IContext* context, TraceAction action);
 };
 
 //------------------------------------------------------------------------------
@@ -66,7 +66,7 @@ struct CNodeQualifiedIdentifier : public CNode {
   virtual uint32_t debug_color() const;
   virtual std::string_view get_name() const;
   virtual Err emit(Cursor& c);
-  virtual Err trace(CInstance* instance, TraceAction action);
+  virtual Err trace(IContext* context, TraceAction action);
 };
 
 //------------------------------------------------------------------------------
@@ -75,7 +75,7 @@ struct CNodeText : public CNode {
   virtual uint32_t debug_color() const;
   virtual std::string_view get_name() const;
   virtual Err emit(Cursor& c);
-  virtual Err trace(CInstance* instance, TraceAction action);
+  virtual Err trace(IContext* context, TraceAction action);
 };
 
 //------------------------------------------------------------------------------
@@ -84,7 +84,7 @@ struct CNodeKeyword : public CNode {
   virtual uint32_t debug_color() const;
   virtual std::string_view get_name() const;
   virtual Err emit(Cursor& c);
-  virtual Err trace(CInstance* instance, TraceAction action);
+  virtual Err trace(IContext* context, TraceAction action);
 };
 
 //------------------------------------------------------------------------------
@@ -93,7 +93,7 @@ struct CNodeTypedef : public CNode {
   virtual uint32_t debug_color() const;
   virtual std::string_view get_name() const;
   virtual Err emit(Cursor& c);
-  virtual Err trace(CInstance* instance, TraceAction action);
+  virtual Err trace(IContext* context, TraceAction action);
 };
 
 //------------------------------------------------------------------------------
@@ -102,7 +102,7 @@ struct CNodeList : public CNode {
   virtual uint32_t debug_color() const;
   virtual std::string_view get_name() const;
   virtual Err emit(Cursor& c);
-  virtual Err trace(CInstance* instance, TraceAction action);
+  virtual Err trace(IContext* context, TraceAction action);
 };
 
 //------------------------------------------------------------------------------

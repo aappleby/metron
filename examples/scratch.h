@@ -20,11 +20,24 @@ struct Foo {
 };
 */
 
+class Submod {
+};
+
+struct Substruct {
+};
+
 class Module {
 public:
 
+  Submod s;
+  Substruct t;
+
   int x;
   int y;
+
+  int derp() {
+    return 2;
+  }
 
   void tock(int d) {
     y = x + d;

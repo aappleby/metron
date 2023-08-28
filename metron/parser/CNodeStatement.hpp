@@ -66,12 +66,12 @@ protected:
 
 struct CNodeExpStatement : public CNodeStatement {
   virtual Err emit(Cursor& c);
-  virtual Err trace(CInstance* instance, TraceAction action);
+  virtual Err trace(IContext* context, TraceAction action);
 };
 
 struct CNodeAssignment : public CNodeStatement {
   virtual Err emit(Cursor& c);
-  virtual Err trace(CInstance* instance, TraceAction action);
+  virtual Err trace(IContext* context, TraceAction action);
 };
 
 //------------------------------------------------------------------------------
@@ -83,7 +83,7 @@ struct CNodeIf : public CNodeStatement {
 };
 
 struct CNodeReturn : public CNodeStatement {
-  virtual Err trace(CInstance* instance, TraceAction action);
+  virtual Err trace(IContext* context, TraceAction action);
 };
 
 //------------------------------------------------------------------------------
@@ -106,7 +106,7 @@ struct CNodeWhile : public CNodeStatement {
 };
 
 struct CNodeCompound : public CNodeStatement {
-  virtual Err trace(CInstance* instance, TraceAction action);
+  virtual Err trace(IContext* context, TraceAction action);
 };
 
 //------------------------------------------------------------------------------

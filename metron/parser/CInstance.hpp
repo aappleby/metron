@@ -10,6 +10,8 @@
 #include "metrolib/core/Platform.h"
 #include "metrolib/core/Err.h"
 
+#include <assert.h>
+
 struct CNode;
 struct CNodeCall;
 struct CNodeClass;
@@ -28,8 +30,12 @@ struct CInstClass;
 struct CInstField;
 struct CInstFunction;
 struct CInstParam;
-struct CInstReturn;
 struct CInstStruct;
+
+struct INamed;
+struct IContext;
+struct IMutable;
+struct IDumpable;
 
 //------------------------------------------------------------------------------
 
@@ -41,59 +47,76 @@ struct CLogEntry {
 };
 
 //------------------------------------------------------------------------------
+// Anything with a name.
 
-struct CInstance {
-  CInstance(CInstance* parent) : parent(parent) {
-    state_stack.push_back(CTX_NONE);
-  }
-  virtual ~CInstance() {}
+struct INamed {
+  virtual std::string_view get_name() const = 0;
+};
 
-  //----------------------------------------
+//----------------------------------------
+// Anything that can look up names. Classes, structs, functions, namespaces.
 
-  virtual std::string_view get_name() const;
-  virtual Err trace(TraceAction action);
-  virtual CInstance* resolve(std::string_view name);
-  virtual void dump_tree();
+struct IContext {
+  virtual INamed* resolve(std::string_view name) = 0;
+};
 
-  //----------------------------------------
+//----------------------------------------
+// Anything that can be read or written.
+// Primitives, arrays, struct instances, call arguments, call returns.
 
-  template <typename P>
-  P* as_a() { return dynamic_cast<P*>(this); }
+struct IMutable {
+  IMutable() { state_stack.push_back(CTX_NONE); }
 
-  //----------------------------------------
+  // Record an action applied to a mutable by the given parse node.
+  virtual Err log_action(CNode* node, TraceAction action);
 
-  CHECK_RETURN Err log_action(CNode* node, TraceAction action);
-
-  //----------------------------------------
-
-  CInstance* parent;
   std::vector<TraceState> state_stack;
-  std::vector<CLogEntry>   action_log;
+  std::vector<CLogEntry>  action_log;
+};
+
+//----------------------------------------
+// Anything that can be dumped. :D
+
+struct IDumpable {
+  virtual void dump_tree() = 0;
 };
 
 //------------------------------------------------------------------------------
 
-struct CInstClass : public CInstance {
-  CInstClass(CInstance* parent, CNodeClass* node_class);
+/*
+struct CInstTop : public IContext, IDumpable {
+  CInstTop(CNodeTranslationUnit* node_unit);
+
+  virtual INamed* resolve(std::string_view name);
+  virtual void dump_tree();
+
+  CNodeTranslationUnit* node_unit;
+};
+*/
+
+//------------------------------------------------------------------------------
+
+struct CInstClass : public INamed, IContext, IMutable, IDumpable {
+  CInstClass(CNodeClass* node_class);
 
   virtual std::string_view get_name() const;
-  virtual Err trace(TraceAction action);
-  virtual CInstance* resolve(std::string_view name);
+  virtual INamed* resolve(std::string_view name);
   virtual void dump_tree();
 
   CNodeClass* node_class;
-  std::vector<CInstField*>    inst_fields;
-  std::vector<CInstFunction*> inst_functions;
+  std::vector<CInstField*> inst_fields;
+  std::vector<CInstCall*>  entry_points;
 };
 
 //------------------------------------------------------------------------------
+// Structs can be mutated directly "struct x; x = y;" and their fields can also
+// be mutated individually.
 
-struct CInstStruct : public CInstance {
-  CInstStruct(CInstance* parent, CNodeStruct* node_struct);
+struct CInstStruct : public INamed, IContext, IMutable, IDumpable {
+  CInstStruct(CNodeStruct* node_struct);
 
   virtual std::string_view get_name() const;
-  virtual Err trace(TraceAction action);
-  virtual CInstance* resolve(std::string_view name);
+  virtual INamed* resolve(std::string_view name);
   virtual void dump_tree();
 
   CNodeStruct* node_struct;
@@ -102,117 +125,89 @@ struct CInstStruct : public CInstance {
 
 //------------------------------------------------------------------------------
 
-struct CInstField : public CInstance {
-  CInstField(CInstance* parent, CNodeField* node_field);
+struct CInstField : public INamed, IDumpable {
+  CInstField(CNodeField* node_field);
 
   virtual std::string_view get_name() const;
-  virtual Err trace(TraceAction action);
-  virtual CInstance* resolve(std::string_view name);
   virtual void dump_tree();
 
   CNodeField* node_field;
-  CInstance*  inst_decl;
+  IMutable*   inst_value;
 };
 
 //------------------------------------------------------------------------------
 
-struct CInstFunction : public CInstance {
-  CInstFunction(CInstance* parent, CNodeFunction* node_function);
+struct CInstReturn : public IMutable, IDumpable {
+  CInstReturn(CNodeType* node_field);
+
+  virtual void dump_tree();
+
+  CNodeType*  node_type;
+  IMutable*   inst_value;
+};
+
+//------------------------------------------------------------------------------
+
+struct CInstFunction : public INamed, IContext, IDumpable {
+  CInstFunction(IContext* parent, CNodeFunction* node_function);
 
   virtual std::string_view get_name() const;
-  virtual Err trace(TraceAction action);
-  virtual CInstance* resolve(std::string_view name);
+  virtual INamed* resolve(std::string_view name);
   virtual void dump_tree();
 
   CInstCall* get_call(CNodeCall* call);
 
+  IContext* parent = nullptr;
   CNodeFunction* node_function;
-  std::vector<CInstParam*> inst_params;
-  std::vector<CInstCall*>  inst_calls;
-  CInstReturn* inst_return;
+
+  std::vector<CInstArg*>  inst_args;   // Function arguments
+  std::vector<CInstCall*> inst_calls; // Call instances for everything this function calls.
+  IMutable*               inst_return; // Function return
 };
 
 //----------------------------------------
 
-struct CInstParam : public CInstance {
-  CInstParam(CInstance* parent, CNodeDeclaration* node_decl);
+struct CInstArg : public INamed, IMutable, IDumpable {
+  CInstArg(CNodeDeclaration* node_decl);
 
   virtual std::string_view get_name() const;
-  virtual Err trace(TraceAction action);
-  virtual CInstance* resolve(std::string_view name);
   virtual void dump_tree();
 
-
-  CNodeDeclaration* node_decl;
-  CInstance* inst_decl;
+  IMutable*         inst_decl = nullptr;
+  CNodeDeclaration* node_decl = nullptr; // The parameter declaration in the function param list
+  CNodeExpression*  node_arg  = nullptr; // The expression at the corresponding slot in the callsite
 };
 
 //----------------------------------------
 
-struct CInstReturn : public CInstance {
-  CInstReturn(CInstance* parent);
+struct CInstCall : public INamed, IDumpable {
+  CInstCall(CNodeCall* node_call, CInstFunction* inst_func);
 
   virtual std::string_view get_name() const;
-  virtual Err trace(TraceAction action);
-  virtual CInstance* resolve(std::string_view name);
   virtual void dump_tree();
 
-  CNodeType* node_return = nullptr;
+  // our parent is the CInstFunction containing this call, _not_ the function
+  // we are _calling_.
+
+  CNodeCall*     node_call = nullptr;
+  CInstFunction* inst_func = nullptr; // <-- this is what we're calling
 };
 
 //------------------------------------------------------------------------------
 
-struct CInstCall : public CInstance {
-  CInstCall(CInstance* parent, CNodeCall* node_call);
+struct CInstPrimitive : public IMutable, IDumpable {
+  CInstPrimitive(CNodeType* node_type);
 
-  virtual std::string_view get_name() const;
-  virtual Err trace(TraceAction action);
-  virtual CInstance* resolve(std::string_view name);
   virtual void dump_tree();
-
-  // our parent is the CInstFunction containing this call
-  CNodeCall*     node_call; // call node
-
-  CInstReturn*           inst_return; // our return value
-  std::vector<CInstArg*> inst_args;   // our function arguments
-};
-
-//----------------------------------------
-
-struct CInstArg : public CInstance {
-  CInstArg(CInstance* parent, CNodeExpression* node_arg);
-
-  virtual std::string_view get_name() const;
-  virtual Err trace(TraceAction action);
-  virtual CInstance* resolve(std::string_view name);
-  virtual void dump_tree();
-
-  CNode* node_param = nullptr;
-  CNodeExpression* node_arg = nullptr;
-};
-
-//------------------------------------------------------------------------------
-
-struct CInstPrimitive : public CInstance {
-  CInstPrimitive(CInstance* parent, CNodeType* node_type);
-
-  virtual std::string_view get_name() const;
-  virtual Err trace(TraceAction action);
-  virtual CInstance* resolve(std::string_view name);
-  virtual void dump_tree();
-
 
   CNodeType* node_type = nullptr;
 };
 
 //------------------------------------------------------------------------------
 
-struct CInstArray : public CInstance {
-  CInstArray(CInstance* parent, CNodeType* node_type, CNode* node_array);
+struct CInstArray : public IMutable, IDumpable {
+  CInstArray(CNodeType* node_type, CNode* node_array);
 
-  virtual std::string_view get_name() const;
-  virtual Err trace(TraceAction action);
-  virtual CInstance* resolve(std::string_view name);
   virtual void dump_tree();
 
   CNodeType* node_type = nullptr;

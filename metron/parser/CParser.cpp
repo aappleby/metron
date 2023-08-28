@@ -1435,16 +1435,17 @@ TokenSpan match_statement(CContext& ctx, TokenSpan body) {
   Oneof<
     cap_for,
     cap_if,
-    cap_return,
     cap_switch,
-    cap_do_while,
     cap_while,
     cap_compound,
+    Seq<cap_do_while,            cap_punct<";">>,
+    Seq<cap_return,              cap_punct<";">>,
     Seq<cap_keyword<"break">,    cap_punct<";">>,
     Seq<cap_keyword<"continue">, cap_punct<";">>,
     Seq<Ref<cap_assignment>,     cap_punct<";">>,
     Seq<cap_expstatement,        cap_punct<";">>,
-    Seq<cap_declaration,         cap_punct<";">>
+    Seq<cap_declaration,         cap_punct<";">>,
+    cap_punct<";">
   >;
   // clang-format on
   return pattern::match(ctx, body);

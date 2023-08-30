@@ -25,7 +25,6 @@ struct CNodeType;
 struct CNodeDeclaration;
 
 struct CInstArg;
-struct CInstCall;
 struct CInstClass;
 struct CInstField;
 struct CInstFunction;
@@ -105,7 +104,7 @@ struct CInstClass : public INamed, IContext, IMutable, IDumpable {
 
   CNodeClass* node_class;
   std::vector<CInstField*> inst_fields;
-  std::vector<CInstCall*>  entry_points;
+  std::vector<CInstFunction*>  entry_points;
 };
 
 //------------------------------------------------------------------------------
@@ -146,25 +145,6 @@ struct CInstReturn : public IMutable, IDumpable {
   IMutable*   inst_value;
 };
 
-//------------------------------------------------------------------------------
-
-struct CInstFunction : public INamed, IContext, IDumpable {
-  CInstFunction(IContext* parent, CNodeFunction* node_function);
-
-  virtual std::string_view get_name() const;
-  virtual INamed* resolve(std::string_view name);
-  virtual void dump_tree();
-
-  CInstCall* get_call(CNodeCall* call);
-
-  IContext* parent = nullptr;
-  CNodeFunction* node_function;
-
-  std::vector<CInstArg*>  inst_args;   // Function arguments
-  std::vector<CInstCall*> inst_calls; // Call instances for everything this function calls.
-  IMutable*               inst_return; // Function return
-};
-
 //----------------------------------------
 
 struct CInstArg : public INamed, IMutable, IDumpable {
@@ -180,7 +160,28 @@ struct CInstArg : public INamed, IMutable, IDumpable {
 
 //----------------------------------------
 
-struct CInstCall : public INamed, IDumpable {
+struct CInstFunction : public INamed, IContext, IDumpable {
+  CInstFunction(IContext* parent, CNodeFunction* node_function);
+
+  virtual std::string_view get_name() const;
+  virtual INamed* resolve(std::string_view name);
+  virtual void dump_tree();
+
+  IContext* parent = nullptr;
+
+  CNodeCall*     node_call;
+  CNodeFunction* node_function;
+
+  std::vector<CInstArg*>      inst_args;   // Function arguments
+  std::vector<CInstFunction*> inst_calls;  // Call instances for everything this function calls.
+  IMutable*                   inst_return; // Function return
+};
+
+//----------------------------------------
+// IContext because we look up function arguments from it?
+
+#if 0
+struct CInstCall : public INamed, IContext, IDumpable {
   CInstCall(CNodeCall* node_call, CInstFunction* inst_func);
 
   virtual std::string_view get_name() const;
@@ -192,6 +193,7 @@ struct CInstCall : public INamed, IDumpable {
   CNodeCall*     node_call = nullptr;
   CInstFunction* inst_func = nullptr; // <-- this is what we're calling
 };
+#endif
 
 //------------------------------------------------------------------------------
 

@@ -20,7 +20,7 @@ Tracer::Tracer(CSourceRepo* repo, bool verbose)
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Tracer::log_action(CInstCall* call, CNode* node, CInstField* field_inst, TraceAction action) {
+CHECK_RETURN Err Tracer::log_action(CInstFunction* func, CNode* node, CInstField* field_inst, TraceAction action) {
   Err err;
 
   err << field_inst->log_action(node, action);
@@ -49,14 +49,8 @@ CHECK_RETURN Err Tracer::trace() {
   auto root_inst = new CInstClass(nullptr, repo->top);
   auto root_name = repo->top->get_name();
 
-  std::vector<CInstCall*> calls;
-
-  for (auto inst_func : root_inst->inst_functions) {
-    auto node_func = inst_func->node_function;
-    //node_func->dump_tree();
-
+  for (auto node_func : root_node->all_functions) {
     if (node_func->internal_callers.size()) continue;
-
     auto func_name = node_func->get_name();
 
     LOG_B("Tracing %.*s::%.*s\n",
@@ -64,9 +58,7 @@ CHECK_RETURN Err Tracer::trace() {
       int(func_name.size()), func_name.data()
     );
 
-    auto inst_call = new CInstCall(nullptr, nullptr);
-
-    for (auto inst_arg : inst_call->inst_args) {
+    for (auto inst_arg : inst_func->inst_args) {
       err << inst_arg->log_action(nullptr, ACT_WRITE);
     }
 
@@ -112,7 +104,7 @@ CHECK_RETURN Err Tracer::trace() {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Tracer::trace_top_call(CInstCall* call) {
+CHECK_RETURN Err Tracer::trace_top_call(CInstFunction* func) {
   Err err;
 
   /*
@@ -131,7 +123,7 @@ CHECK_RETURN Err Tracer::trace_top_call(CInstCall* call) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Tracer::trace_identifier(CInstCall* call, CNode* node, TraceAction action) {
+CHECK_RETURN Err Tracer::trace_identifier(CInstFunction* func, CNode* node, TraceAction action) {
   Err err;
 
   if (auto id = node->as_a<CNodeIdentifier>()) {
@@ -177,7 +169,7 @@ CHECK_RETURN Err Tracer::trace_identifier(CInstCall* call, CNode* node, TraceAct
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Tracer::trace_declarator(CInstCall* call, CNode* node) {
+CHECK_RETURN Err Tracer::trace_declarator(CInstFunction* func, CNode* node) {
   Err err;
 
   /*
@@ -199,7 +191,7 @@ CHECK_RETURN Err Tracer::trace_declarator(CInstCall* call, CNode* node) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Tracer::trace_statement(CInstCall* call, CNode* node) {
+CHECK_RETURN Err Tracer::trace_statement(CInstFunction* func, CNode* node) {
   Err err;
 
   /*
@@ -237,7 +229,7 @@ CHECK_RETURN Err Tracer::trace_statement(CInstCall* call, CNode* node) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Tracer::trace_expression(CInstCall* call, CNodeExpression* node, TraceAction action) {
+CHECK_RETURN Err Tracer::trace_expression(CInstFunction* func, CNodeExpression* node, TraceAction action) {
   Err err;
 
   /*
@@ -294,7 +286,7 @@ CHECK_RETURN Err Tracer::trace_expression(CInstCall* call, CNodeExpression* node
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Tracer::trace_call(CInstCall* call, CInstFunction* method, CNode* call_node) {
+CHECK_RETURN Err Tracer::trace_call(CInstFunction* func, CInstFunction* method, CNode* call_node) {
   Err err;
 
 #if 0
@@ -378,7 +370,7 @@ CHECK_RETURN Err Tracer::trace_call(CInstCall* call, CInstFunction* method, CNod
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Tracer::trace_default(CInstCall* call, CNode* node) {
+CHECK_RETURN Err Tracer::trace_default(CInstFunction* func, CNode* node) {
   Err err;
 
 #if 0
@@ -414,7 +406,7 @@ CHECK_RETURN Err Tracer::trace_default(CInstCall* call, CNode* node) {
 
 
 
-CHECK_RETURN Err Tracer::trace_argument_list(CInstCall* call, CNode* node) {
+CHECK_RETURN Err Tracer::trace_argument_list(CInstFunction* func, CNode* node) {
   Err err;
 
 #if 0
@@ -436,7 +428,7 @@ CHECK_RETURN Err Tracer::trace_argument_list(CInstCall* call, CNode* node) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Tracer::trace_assignment_expression(CInstCall * call, CNode* node) {
+CHECK_RETURN Err Tracer::trace_assignment_expression(CInstFunction* func, CNode* node) {
   Err err;
 
 #if 0
@@ -458,7 +450,7 @@ CHECK_RETURN Err Tracer::trace_assignment_expression(CInstCall * call, CNode* no
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Tracer::trace_binary_expression(CInstCall* call, CNodeExpression* node) {
+CHECK_RETURN Err Tracer::trace_binary_expression(CInstFunction* func, CNodeExpression* node) {
   Err err;
   err << trace_expression(call, node->child("lhs")->as_a<CNodeExpression>(), ACT_READ);
   err << trace_expression(call, node->child("rhs")->as_a<CNodeExpression>(), ACT_READ);
@@ -467,7 +459,7 @@ CHECK_RETURN Err Tracer::trace_binary_expression(CInstCall* call, CNodeExpressio
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Tracer::trace_call_expression(CInstCall* call, CNode* node) {
+CHECK_RETURN Err Tracer::trace_call_expression(CInstFunction* func, CNode* node) {
   Err err;
 
 #if 0
@@ -523,7 +515,7 @@ CHECK_RETURN Err Tracer::trace_call_expression(CInstCall* call, CNode* node) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Tracer::trace_case_statement(CInstCall* call, CNode* node) {
+CHECK_RETURN Err Tracer::trace_case_statement(CInstFunction* func, CNode* node) {
   Err err;
 
 #if 0
@@ -552,7 +544,7 @@ CHECK_RETURN Err Tracer::trace_case_statement(CInstCall* call, CNode* node) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Tracer::trace_compound_statement(CInstCall* call, CNodeCompound* node) {
+CHECK_RETURN Err Tracer::trace_compound_statement(CInstFunction* func, CNodeCompound* node) {
   Err err;
 
   node->dump_tree(1);
@@ -587,7 +579,7 @@ CHECK_RETURN Err Tracer::trace_compound_statement(CInstCall* call, CNodeCompound
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Tracer::trace_condition_clause(CInstCall* call, CNode* node) {
+CHECK_RETURN Err Tracer::trace_condition_clause(CInstFunction* func, CNode* node) {
   Err err;
 #if 0
   assert(node.sym == sym_condition_clause);
@@ -601,7 +593,7 @@ CHECK_RETURN Err Tracer::trace_condition_clause(CInstCall* call, CNode* node) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Tracer::trace_conditional_expression(CInstCall* call, CNode* node) {
+CHECK_RETURN Err Tracer::trace_conditional_expression(CInstFunction* func, CNode* node) {
   Err err;
   #if 0
   assert(node.sym == sym_conditional_expression);
@@ -628,7 +620,7 @@ CHECK_RETURN Err Tracer::trace_conditional_expression(CInstCall* call, CNode* no
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Tracer::trace_declaration(CInstCall* call, CNode* node) {
+CHECK_RETURN Err Tracer::trace_declaration(CInstFunction* func, CNode* node) {
   Err err;
   #if 0
   assert(node.sym == sym_declaration);
@@ -646,7 +638,7 @@ CHECK_RETURN Err Tracer::trace_declaration(CInstCall* call, CNode* node) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Tracer::trace_field_expression(CInstCall* call, CNode* node, TraceAction action) {
+CHECK_RETURN Err Tracer::trace_field_expression(CInstFunction* func, CNode* node, TraceAction action) {
   Err err;
   #if 0
   assert(node.sym == sym_field_expression);
@@ -683,7 +675,7 @@ CHECK_RETURN Err Tracer::trace_field_expression(CInstCall* call, CNode* node, Tr
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Tracer::trace_for_statement(CInstCall* call, CNode* node) {
+CHECK_RETURN Err Tracer::trace_for_statement(CInstFunction* func, CNode* node) {
   Err err;
 
 #if 0
@@ -713,7 +705,7 @@ CHECK_RETURN Err Tracer::trace_for_statement(CInstCall* call, CNode* node) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Tracer::trace_function_definition(CInstCall* call, CNode* node) {
+CHECK_RETURN Err Tracer::trace_function_definition(CInstFunction* func, CNode* node) {
   Err err;
 
   auto func = call->node_function;
@@ -736,7 +728,7 @@ CHECK_RETURN Err Tracer::trace_function_definition(CInstCall* call, CNode* node)
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Tracer::trace_if_statement(CInstCall* call, CNode* node) {
+CHECK_RETURN Err Tracer::trace_if_statement(CInstFunction* func, CNode* node) {
   Err err;
   #if 0
   assert(node.sym == sym_if_statement);
@@ -765,7 +757,7 @@ CHECK_RETURN Err Tracer::trace_if_statement(CInstCall* call, CNode* node) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Tracer::trace_init_declarator(CInstCall* call, CNode* node) {
+CHECK_RETURN Err Tracer::trace_init_declarator(CInstFunction* func, CNode* node) {
   Err err;
   #if 0
   assert(node.sym == sym_init_declarator);
@@ -778,7 +770,7 @@ CHECK_RETURN Err Tracer::trace_init_declarator(CInstCall* call, CNode* node) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Tracer::trace_initializer_list(CInstCall* call, CNode* node) {
+CHECK_RETURN Err Tracer::trace_initializer_list(CInstFunction* func, CNode* node) {
   Err err;
   #if 0
   assert(node.sym == sym_initializer_list);
@@ -799,7 +791,7 @@ CHECK_RETURN Err Tracer::trace_initializer_list(CInstCall* call, CNode* node) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Tracer::trace_return_statement(CInstCall* call, CNode* node) {
+CHECK_RETURN Err Tracer::trace_return_statement(CInstFunction* func, CNode* node) {
   Err err;
 #if 0
   assert(node.sym == sym_return_statement);
@@ -822,7 +814,7 @@ CHECK_RETURN Err Tracer::trace_return_statement(CInstCall* call, CNode* node) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Tracer::trace_switch_statement(CInstCall* call, CNode* node) {
+CHECK_RETURN Err Tracer::trace_switch_statement(CInstFunction* func, CNode* node) {
   Err err;
 #if 0
   assert(node.sym == sym_switch_statement);

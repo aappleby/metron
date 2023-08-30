@@ -211,19 +211,6 @@ CInstFunction::CInstFunction(IContext* parent, CNodeFunction* node_function)
     //LOG_G("is void\n");
   }
 
-  /*
-  auto node_body = node_function->child("body");
-  visit(node_body, [&](CNode* n) {
-    auto call = n->as_a<CNodeCall>();
-    if (!call) return;
-
-    auto dst_inst = parent->resolve(call->get_name());
-    CInstFunction* dst_func = dynamic_cast<CInstFunction*>(dst_inst);
-    auto inst_call = new CInstCall(call, dst_func);
-    inst_calls.push_back(inst_call);
-  });
-  */
-
   // FIXME create return mutable from return type decl in function decl
   // inst_return = new CInstReturn();
 }
@@ -256,16 +243,9 @@ void CInstFunction::dump_tree() {
   //inst_return->dump_tree();
 }
 
-//----------------------------------------
-
-CInstCall* CInstFunction::get_call(CNodeCall* call) {
-  for (auto c : inst_calls)
-    if (c->node_call = call) return c;
-  return nullptr;
-}
-
 //------------------------------------------------------------------------------
 
+#if 0
 CInstCall::CInstCall(CNodeCall* node_call, CInstFunction* inst_func)
     : node_call(node_call), inst_func(inst_func) {
   // inst_func =
@@ -305,6 +285,7 @@ void CInstCall::dump_tree() {
   LOG_INDENT_SCOPE();
   inst_func->dump_tree();
 }
+#endif
 
 //------------------------------------------------------------------------------
 

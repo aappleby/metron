@@ -4209,40 +4209,15 @@ class toplevel {
 };
 
 #endif // TOPLEVEL_H
-#include "metron/tools/metron_tools.h"
-
-struct Baz {
-  int a;
-  int b;
-  int c;
-};
-
-struct Bar {
-  Baz x;
-  Baz y;
-  Baz z;
-};
-
-struct Foo {
-  Bar a;
-  Bar b;
-  Bar c;
-};
-
 class Module {
 public:
 
-  Foo sjdlfk;
-  int jwioerj;
-  logic<8> blarp;
+  int x;
+  int y;
 
-  int blarg(int x) {
-    return 2;
-  }
-
-  int tock(int a, int b, int c) {
-    return a * b + c;
-    return 1;
+  void tock() {
+    y = x + 1;
+    x = y + 1;
   }
 };
 class Adder {

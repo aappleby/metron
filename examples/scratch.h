@@ -1,65 +1,11 @@
-#include "metron/tools/metron_tools.h"
-
-/*
-struct Baz {
-  int a;
-  int b;
-  int c;
-};
-
-struct Bar {
-  Baz x;
-  Baz y;
-  Baz z;
-};
-
-struct Foo {
-  Bar a;
-  Bar b;
-  Bar c;
-};
-*/
-
-class Submod {
-};
-
-struct Substruct {
-};
-
 class Module {
 public:
-
-  Submod s;
-  Substruct t;
 
   int x;
   int y;
 
-  int derp() {
-    return 2;
+  void tock() {
+    y = x + 1;
+    x = y + 1;
   }
-
-  void tock(int d) {
-    y = x + d;
-    x = y + d;
-  }
-
-  void tick() {
-    tock(2);
-  }
-
-  /*
-  Foo sjdlfk;
-  int jwioerj;
-  logic<8> blarp;
-
-  int blarg(int x) {
-    return 2;
-  }
-
-  int tock(int a, int b, int c) {
-    return a * b + c;
-    return 1;
-  }
-  */
 };

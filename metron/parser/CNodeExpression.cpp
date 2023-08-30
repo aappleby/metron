@@ -62,10 +62,11 @@ Err CNodeAssignExp::trace(IContext* context, TraceAction action) {
 //------------------------------------------------------------------------------
 
 Err CNodeIdentifierExp::trace(IContext* context, TraceAction action) {
-  auto field = context->resolve(get_text());
-  auto field_mut = dynamic_cast<IMutable*>(field);
-  assert(field_mut);
-  return field_mut->log_action(this, action);
+  auto field_name = get_text();
+  INamed* named = context->resolve(field_name);
+  auto field = dynamic_cast<CInstField*>(named);
+  assert(field);
+  return field->log_action(this, action);
 }
 
 //------------------------------------------------------------------------------

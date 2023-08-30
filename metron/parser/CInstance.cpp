@@ -12,7 +12,7 @@
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err IMutable::log_action(CNode* node, TraceAction action) {
+CHECK_RETURN Err CInstLog::log_action(CNode* node, TraceAction action) {
   Err err;
   auto old_state = state_stack.back();
   auto new_state = merge_action(old_state, action);
@@ -70,6 +70,16 @@ INamed* CInstClass::resolve(std::string_view name) {
 
 //----------------------------------------
 
+Err CInstClass::log_action(CNode* node, TraceAction action) {
+  Err err;
+  for (auto f : inst_fields) {
+    err << f->log_action(node, action);
+  }
+  return err;
+}
+
+//----------------------------------------
+
 void CInstClass::dump_tree() {
   auto name = node_class->get_name();
   LOG_G("Class %.*s\n", int(name.size()), name.data());
@@ -100,6 +110,16 @@ INamed* CInstStruct::resolve(std::string_view name) {
     if (field->get_name() == name) return field;
   }
   return nullptr;
+}
+
+//----------------------------------------
+
+Err CInstStruct::log_action(CNode* node, TraceAction action) {
+  Err err;
+  for (auto f : inst_fields) {
+    err << f->log_action(node, action);
+  }
+  return err;
 }
 
 //----------------------------------------

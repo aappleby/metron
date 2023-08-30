@@ -64,13 +64,8 @@ struct IContext {
 // Primitives, arrays, struct instances, call arguments, call returns.
 
 struct IMutable {
-  IMutable() { state_stack.push_back(CTX_NONE); }
-
   // Record an action applied to a mutable by the given parse node.
-  virtual Err log_action(CNode* node, TraceAction action);
-
-  std::vector<TraceState> state_stack;
-  std::vector<CLogEntry>  action_log;
+  virtual Err log_action(CNode* node, TraceAction action) = 0;
 };
 
 //----------------------------------------
@@ -82,16 +77,15 @@ struct IDumpable {
 
 //------------------------------------------------------------------------------
 
-/*
-struct CInstTop : public IContext, IDumpable {
-  CInstTop(CNodeTranslationUnit* node_unit);
+struct CInstLog : public IMutable {
+  CInstLog() { state_stack.push_back(CTX_NONE); }
 
-  virtual INamed* resolve(std::string_view name);
-  virtual void dump_tree();
+  // Record an action applied to a mutable by the given parse node.
+  virtual Err log_action(CNode* node, TraceAction action);
 
-  CNodeTranslationUnit* node_unit;
+  std::vector<TraceState> state_stack;
+  std::vector<CLogEntry>  action_log;
 };
-*/
 
 //------------------------------------------------------------------------------
 
@@ -100,6 +94,7 @@ struct CInstClass : public INamed, IContext, IMutable, IDumpable {
 
   virtual std::string_view get_name() const;
   virtual INamed* resolve(std::string_view name);
+  virtual Err log_action(CNode* node, TraceAction action);
   virtual void dump_tree();
 
   CNodeClass* node_class;
@@ -116,6 +111,7 @@ struct CInstStruct : public INamed, IContext, IMutable, IDumpable {
 
   virtual std::string_view get_name() const;
   virtual INamed* resolve(std::string_view name);
+  virtual Err log_action(CNode* node, TraceAction action);
   virtual void dump_tree();
 
   CNodeStruct* node_struct;
@@ -130,13 +126,18 @@ struct CInstField : public INamed, IDumpable {
   virtual std::string_view get_name() const;
   virtual void dump_tree();
 
+  // Record an action applied to a mutable by the given parse node.
+  Err log_action(CNode* node, TraceAction action) {
+    return inst_value->log_action(node, action);
+  }
+
   CNodeField* node_field;
   IMutable*   inst_value;
 };
 
 //------------------------------------------------------------------------------
 
-struct CInstReturn : public IMutable, IDumpable {
+struct CInstReturn : public CInstLog, IDumpable {
   CInstReturn(CNodeType* node_field);
 
   virtual void dump_tree();
@@ -147,7 +148,7 @@ struct CInstReturn : public IMutable, IDumpable {
 
 //----------------------------------------
 
-struct CInstArg : public INamed, IMutable, IDumpable {
+struct CInstArg : public INamed, CInstLog, IDumpable {
   CInstArg(CNodeDeclaration* node_decl);
 
   virtual std::string_view get_name() const;
@@ -197,7 +198,7 @@ struct CInstCall : public INamed, IContext, IDumpable {
 
 //------------------------------------------------------------------------------
 
-struct CInstPrimitive : public IMutable, IDumpable {
+struct CInstPrimitive : public CInstLog, IDumpable {
   CInstPrimitive(CNodeType* node_type);
 
   virtual void dump_tree();
@@ -207,7 +208,7 @@ struct CInstPrimitive : public IMutable, IDumpable {
 
 //------------------------------------------------------------------------------
 
-struct CInstArray : public IMutable, IDumpable {
+struct CInstArray : public CInstLog, IDumpable {
   CInstArray(CNodeType* node_type, CNode* node_array);
 
   virtual void dump_tree();

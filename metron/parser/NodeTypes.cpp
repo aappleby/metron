@@ -95,10 +95,11 @@ std::string_view CNodeIdentifier::get_name() const {
 Err CNodeIdentifier::emit(Cursor& cursor) { return cursor.emit_default(this); }
 
 Err CNodeIdentifier::trace(IContext* context, TraceAction action) {
-  auto field = context->resolve(get_text());
-  auto field_mut = dynamic_cast<IMutable*>(field);
-  assert(field_mut);
-  return field_mut->log_action(this, action);
+  auto field_name = get_text();
+  auto named = context->resolve(get_text());
+  auto field = dynamic_cast<CInstField*>(named);
+  assert(field);
+  return field->log_action(this, action);
 }
 
 //------------------------------------------------------------------------------

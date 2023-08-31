@@ -26,15 +26,19 @@ Err CNode::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-Err CNode::trace(IContext* context, TraceAction action) {
+Err CNode::trace(IContext* context) {
   LOG_R("Don't know how to trace {{%s}}\n", typeid(*this).name());
   exit(-1);
 }
 
-Err CNode::trace_children(IContext* context, TraceAction action) {
-  Err err;
-  for (auto c : this) err << c->trace(context, action);
-  return err;
+Err CNode::trace_read(IContext* context) {
+  LOG_R("Don't know how to trace_read {{%s}}\n", typeid(*this).name());
+  exit(-1);
+}
+
+Err CNode::trace_write(IContext* context) {
+  LOG_R("Don't know how to trace_write {{%s}}\n", typeid(*this).name());
+  exit(-1);
 }
 
 //------------------------------------------------------------------------------

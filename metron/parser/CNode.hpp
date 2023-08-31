@@ -39,8 +39,10 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   virtual uint32_t debug_color() const;
   virtual std::string_view get_name() const;
   virtual Err emit(Cursor& c);
-  virtual Err trace(IContext* context, TraceAction action);
-  virtual Err trace_children(IContext* context, TraceAction action);
+
+  virtual Err trace(IContext* context);
+  virtual Err trace_read(IContext* context);
+  virtual Err trace_write(IContext* context);
 
   //----------------------------------------
 

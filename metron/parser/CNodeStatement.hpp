@@ -66,12 +66,12 @@ protected:
 
 struct CNodeExpStatement : public CNodeStatement {
   virtual Err emit(Cursor& c);
-  virtual Err trace(IContext* context, TraceAction action);
+  virtual Err trace(IContext* context);
 };
 
 struct CNodeAssignment : public CNodeStatement {
   virtual Err emit(Cursor& c);
-  virtual Err trace(IContext* context, TraceAction action);
+  virtual Err trace(IContext* context);
 };
 
 //------------------------------------------------------------------------------

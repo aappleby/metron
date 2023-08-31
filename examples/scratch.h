@@ -2,18 +2,12 @@ class Module {
 public:
 
   int x;
-  int y;
 
-  void tock(int c) {
-    y = x + c;
-    x = y + c;
+  int tock() {
+    return 2;
   }
 
-  void tack(int b) {
-    tock(b + 1);
-  }
-
-  void tick(int a) {
-    tack(a + 1);
+  void tick() {
+    x = tock();
   }
 };

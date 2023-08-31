@@ -28,18 +28,18 @@ bool CNodeExpression::is_integer_constant() {
 
 //------------------------------------------------------------------------------
 
-Err CNodeBinaryExp::trace(IContext* context, TraceAction action) {
+Err CNodeBinaryExp::trace_read(IContext* context) {
   Err err;
 
-  err << child("lhs")->trace(context, action);
-  err << child("rhs")->trace(context, action);
+  err << child("lhs")->trace_read(context);
+  err << child("rhs")->trace_read(context);
   return Err();
 }
 
 //------------------------------------------------------------------------------
 
-Err CNodePrefixExp::trace(IContext* context, TraceAction action) {
-  return child("rhs")->trace(context, action);
+Err CNodePrefixExp::trace_read(IContext* context) {
+  return child("rhs")->trace_read(context);
 }
 
 //------------------------------------------------------------------------------

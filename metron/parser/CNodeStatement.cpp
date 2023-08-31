@@ -2,6 +2,8 @@
 
 #include "CNodeExpression.hpp"
 
+#include "CInstance.hpp"
+
 //------------------------------------------------------------------------------
 
 uint32_t CNodeStatement::debug_color() const {
@@ -16,8 +18,10 @@ Err CNodeExpStatement::emit(Cursor& c) {
   return Err();
 }
 
-Err CNodeExpStatement::trace(IContext* context, TraceAction action) {
-  return trace_children(context, action);
+Err CNodeExpStatement::trace(IContext* context) {
+  Err err;
+  for (auto c : this) err << c->trace_read(context);
+  return err;
 }
 
 //------------------------------------------------------------------------------
@@ -32,13 +36,13 @@ Err CNodeAssignment::trace(IContext* context, TraceAction action) {
   Err err;
 
   if (child("op")->get_text() == "=") {
-    err << child("rhs")->trace(context, ACT_READ);
-    err << child("lhs")->trace(context, ACT_WRITE);
+    err << child("rhs")->trace_read(context);
+    err << child("lhs")->trace_write(context);
   }
   else {
-    err << child("rhs")->trace(context, ACT_READ);
-    err << child("lhs")->trace(context, ACT_READ);
-    err << child("lhs")->trace(context, ACT_WRITE);
+    err << child("rhs")->trace_read(context);
+    err << child("lhs")->trace_read(context);
+    err << child("lhs")->trace_write(context);
   }
 
   return Err();
@@ -56,9 +60,10 @@ Err CNodeCompound::trace(IContext* context, TraceAction action) {
 
 Err CNodeReturn::trace(IContext* context, TraceAction action) {
   Err err;
-  if (auto value = child("value")) {
-    err << value->trace(context, action);
-  }
+
+  auto inst_return = dynamic_cast<CInstReturn*>(context->resolve("return"));
+  err << inst_return->log_action(this, ACT_WRITE);
+
   return err;
 }
 

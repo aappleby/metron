@@ -97,9 +97,9 @@ struct CInstClass : public INamed, IContext, IMutable, IDumpable {
   virtual Err log_action(CNode* node, TraceAction action);
   virtual void dump_tree();
 
-  CNodeClass* node_class;
-  std::vector<CInstField*>    inst_fields;
-  std::vector<CInstCall*> entry_points;
+  CNodeClass* node_class = nullptr;
+  std::vector<CInstField*> inst_fields;
+  std::vector<CInstCall*>  entry_points;
 };
 
 //------------------------------------------------------------------------------
@@ -114,7 +114,7 @@ struct CInstStruct : public INamed, IContext, IMutable, IDumpable {
   virtual Err log_action(CNode* node, TraceAction action);
   virtual void dump_tree();
 
-  CNodeStruct* node_struct;
+  CNodeStruct* node_struct = nullptr;
   std::vector<CInstField*> inst_fields;
 };
 
@@ -133,14 +133,18 @@ struct CInstField : public INamed, IMutable, IDumpable {
   virtual void dump_tree();
 
 
-  CNodeField* node_field;
-  IMutable*   inst_value;
+  CNodeField* node_field = nullptr;
+  IMutable*   inst_value = nullptr;
 };
 
 //------------------------------------------------------------------------------
 
-struct CInstReturn : public IMutable, IDumpable {
+struct CInstReturn : public INamed, IMutable, IDumpable {
   CInstReturn(CNodeType* node_field);
+
+  virtual std::string_view get_name() const {
+    return "return";
+  }
 
   // Record an action applied to a mutable by the given parse node.
   virtual Err log_action(CNode* node, TraceAction action) {
@@ -149,8 +153,8 @@ struct CInstReturn : public IMutable, IDumpable {
 
   virtual void dump_tree();
 
-  CNodeType*  node_type;
-  IMutable*   inst_value;
+  CNodeType*  node_type = nullptr;
+  IMutable*   inst_value = nullptr;
 };
 
 //----------------------------------------
@@ -174,7 +178,7 @@ struct CInstArg : public INamed, IMutable, IDumpable {
 //----------------------------------------
 
 struct CInstCall : public INamed, IContext, IDumpable {
-  CInstCall(CInstClass* parent, CNodeCall* node_call);
+  CInstCall(CInstClass* parent, CNodeFunction* node_function, CNodeCall* node_call);
 
   virtual std::string_view get_name() const;
   virtual INamed* resolve(std::string_view name);
@@ -182,11 +186,11 @@ struct CInstCall : public INamed, IContext, IDumpable {
 
   CInstClass* parent = nullptr;
 
-  CNodeCall*     node_call;
-  CNodeFunction* node_function;
+  CNodeCall*     node_call = nullptr;
+  CNodeFunction* node_function = nullptr;
 
   std::vector<CInstArg*>  inst_args;   // Function arguments
-  IMutable*               inst_return = nullptr; // Function return
+  CInstReturn*            inst_return = nullptr; // Function return
   std::vector<CInstCall*> inst_calls;  // Call instances for everything this function calls.
 };
 

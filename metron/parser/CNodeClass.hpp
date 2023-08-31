@@ -15,14 +15,14 @@ struct CNodeField;
 //------------------------------------------------------------------------------
 
 struct CNodeAccess : public CNode {
-  virtual uint32_t debug_color() const { return COL_VIOLET; }
+  virtual uint32_t debug_color() const override { return COL_VIOLET; }
   virtual Err emit(Cursor& cursor) override;
 };
 
 //------------------------------------------------------------------------------
 
 struct CNodeTemplate : public CNode {
-  virtual uint32_t debug_color() const { return 0x00FFFF; }
+  virtual uint32_t debug_color() const override { return 0x00FFFF; }
   virtual Err emit(Cursor& cursor);
 };
 

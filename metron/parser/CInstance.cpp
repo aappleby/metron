@@ -14,6 +14,12 @@
 
 CHECK_RETURN Err CInstLog::log_action(CNode* node, TraceAction action) {
   Err err;
+
+  if (action != ACT_READ && action != ACT_WRITE) {
+    assert(false);
+    exit(-1);
+  }
+
   auto old_state = state_stack.back();
   auto new_state = merge_action(old_state, action);
 
@@ -195,16 +201,16 @@ CInstReturn::CInstReturn(CNodeType* node_type) : node_type(node_type) {
 }
 
 void CInstReturn::dump_tree() {
-  auto name = node_type->get_name();
-  LOG_G("CInstReturn : %.*s\n", int(name.size()), name.data());
+  LOG_G("Return : ");
+  dynamic_cast<IDumpable*>(inst_value)->dump_tree();
 }
 
 //------------------------------------------------------------------------------
 
-CInstCall::CInstCall(CInstClass* parent, CNodeCall* node_call)
-    : parent(parent), node_call(node_call) {
+CInstCall::CInstCall(CInstClass* parent, CNodeFunction* node_function, CNodeCall* node_call)
+    : parent(parent), node_function(node_function), node_call(node_call) {
 
-  auto func_name = node_call->get_name();
+  //auto func_name = node_call->get_name();
 
   LOG_R("----------\n");
   node_function->dump_tree();
@@ -216,19 +222,12 @@ CInstCall::CInstCall(CInstClass* parent, CNodeCall* node_call)
     if (auto param = p->as_a<CNodeDeclaration>()) {
       auto inst_arg = new CInstArg(param);
       inst_args.push_back(inst_arg);
-
-      // auto inst_param = new CInstParam(this, param);
-      // inst_params.push_back(inst_param);
     }
   }
 
   auto node_return = node_function->child_as<CNodeType>("return_type");
   assert(node_return);
   inst_return = new CInstReturn(node_return);
-
-
-  // FIXME create return mutable from return type decl in function decl
-  // inst_return = new CInstReturn();
 }
 
 //----------------------------------------
@@ -244,6 +243,10 @@ INamed* CInstCall::resolve(std::string_view name) {
     if (p->get_name() == name) return p;
   }
 
+  if (name == "return") {
+    return inst_return;
+  }
+
   assert(parent);
   return parent->resolve(name);
 }
@@ -252,7 +255,7 @@ INamed* CInstCall::resolve(std::string_view name) {
 
 void CInstCall::dump_tree() {
    auto name = node_function->get_name();
-   LOG_G("Function %.*s\n", int(name.size()), name.data());
+   LOG_G("Call %.*s\n", int(name.size()), name.data());
    LOG_INDENT_SCOPE();
   for (auto p : inst_args)  p->dump_tree();
   if (inst_return) dynamic_cast<IDumpable*>(inst_return)->dump_tree();
@@ -278,8 +281,6 @@ CInstArg::CInstArg(CNodeDeclaration* node_param)
       inst_value = new CInstStruct(node_param->_type_struct);
     }
   }
-
-  LOG_R("?\n");
 }
 
 //----------------------------------------
@@ -290,7 +291,8 @@ std::string_view CInstArg::get_name() const { return node_param->get_name(); }
 
 void CInstArg::dump_tree() {
   auto name = node_param->get_name();
-  LOG_G("Param %.*s\n", int(name.size()), name.data());
+  LOG_G("Param %.*s : ", int(name.size()), name.data());
+  dynamic_cast<IDumpable*>(inst_value)->dump_tree();
 }
 
 //------------------------------------------------------------------------------

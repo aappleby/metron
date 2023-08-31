@@ -132,13 +132,13 @@ int main_new(Options opts) {
         else {
           LOG_B("Tracing %.*s\n", int(func_name.size()), func_name.data());
 
-          auto inst_func = new CInstCall(root_inst, nullptr);
+          auto inst_func = new CInstCall(root_inst, node_func, nullptr);
 
           //inst_call->dump_tree();
 
           root_inst->entry_points.push_back(inst_func);
 
-          err << inst_func->node_function->trace(inst_func, ACT_READ);
+          err << inst_func->node_function->trace(inst_func);
         }
       }
 

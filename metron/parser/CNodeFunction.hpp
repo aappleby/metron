@@ -27,7 +27,7 @@ struct CNodeFunction : public CNode {
   virtual uint32_t debug_color() const;
   virtual std::string_view get_name() const;
   virtual Err emit(Cursor& c);
-  virtual Err trace(IContext* context, TraceAction action);
+  virtual Err trace(IContext* context);
 
   //----------------------------------------
 

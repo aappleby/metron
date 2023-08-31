@@ -35,30 +35,31 @@ protected:
 //------------------------------------------------------------------------------
 
 struct CNodeBinaryExp : public CNodeExpression {
-  virtual Err trace(IContext* context, TraceAction action);
+  virtual Err trace_read(IContext* context);
 };
 
 struct CNodePrefixExp : public CNodeExpression {
-  virtual Err trace(IContext* context, TraceAction action);
+  virtual Err trace_read(IContext* context);
 };
 
 struct CNodeSuffixExp : public CNodeExpression {
-  virtual Err trace(IContext* context, TraceAction action);
+  virtual Err trace_read(IContext* context);
 };
 
 struct CNodeAssignExp : public CNodeExpression {
-  virtual Err trace(IContext* context, TraceAction action);
+  virtual Err trace(IContext* context);
 };
 
 struct CNodeIdentifierExp : public CNodeExpression {
-  virtual Err trace(IContext* context, TraceAction action);
+  virtual Err trace_read(IContext* context);
+  virtual Err trace_write(IContext* context);
 };
 
 //------------------------------------------------------------------------------
 
 struct CNodeConstant : public CNodeExpression {
   virtual Err emit(Cursor& cursor);
-  virtual Err trace(IContext* context, TraceAction action);
+  virtual Err trace_read(IContext* context);
 
 protected:
   CNodeConstant() {}

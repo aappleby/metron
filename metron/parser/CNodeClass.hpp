@@ -41,7 +41,7 @@ struct CNodeClass : public CNode {
   //----------
 
   CNodeField*       get_field(std::string_view name);
-  CNodeFunction*    get_method(std::string_view name);
+  CNodeFunction*    get_function(std::string_view name);
   CNodeDeclaration* get_modparam(std::string_view name);
 
   bool needs_tick();

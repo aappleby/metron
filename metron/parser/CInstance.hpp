@@ -27,7 +27,7 @@ struct CNodeDeclaration;
 struct CInstArg;
 struct CInstClass;
 struct CInstField;
-struct CInstFunction;
+struct CInstCall;
 struct CInstParam;
 struct CInstStruct;
 
@@ -98,8 +98,8 @@ struct CInstClass : public INamed, IContext, IMutable, IDumpable {
   virtual void dump_tree();
 
   CNodeClass* node_class;
-  std::vector<CInstField*> inst_fields;
-  std::vector<CInstFunction*>  entry_points;
+  std::vector<CInstField*>    inst_fields;
+  std::vector<CInstCall*> entry_points;
 };
 
 //------------------------------------------------------------------------------
@@ -120,16 +120,18 @@ struct CInstStruct : public INamed, IContext, IMutable, IDumpable {
 
 //------------------------------------------------------------------------------
 
-struct CInstField : public INamed, IDumpable {
+struct CInstField : public INamed, IMutable, IDumpable {
   CInstField(CNodeField* node_field);
 
   virtual std::string_view get_name() const;
-  virtual void dump_tree();
 
   // Record an action applied to a mutable by the given parse node.
-  Err log_action(CNode* node, TraceAction action) {
+  virtual Err log_action(CNode* node, TraceAction action) {
     return inst_value->log_action(node, action);
   }
+
+  virtual void dump_tree();
+
 
   CNodeField* node_field;
   IMutable*   inst_value;
@@ -137,8 +139,13 @@ struct CInstField : public INamed, IDumpable {
 
 //------------------------------------------------------------------------------
 
-struct CInstReturn : public CInstLog, IDumpable {
+struct CInstReturn : public IMutable, IDumpable {
   CInstReturn(CNodeType* node_field);
+
+  // Record an action applied to a mutable by the given parse node.
+  virtual Err log_action(CNode* node, TraceAction action) {
+    return inst_value->log_action(node, action);
+  }
 
   virtual void dump_tree();
 
@@ -148,53 +155,40 @@ struct CInstReturn : public CInstLog, IDumpable {
 
 //----------------------------------------
 
-struct CInstArg : public INamed, CInstLog, IDumpable {
+struct CInstArg : public INamed, IMutable, IDumpable {
   CInstArg(CNodeDeclaration* node_decl);
 
   virtual std::string_view get_name() const;
+
+  // Record an action applied to a mutable by the given parse node.
+  virtual Err log_action(CNode* node, TraceAction action) {
+    return inst_value->log_action(node, action);
+  }
+
   virtual void dump_tree();
 
-  IMutable*         inst_decl = nullptr;
-  CNodeDeclaration* node_decl = nullptr; // The parameter declaration in the function param list
-  CNodeExpression*  node_arg  = nullptr; // The expression at the corresponding slot in the callsite
+  CNodeDeclaration* node_param = nullptr; // The parameter declaration in the function param list
+  IMutable*         inst_value = nullptr;
 };
 
 //----------------------------------------
 
-struct CInstFunction : public INamed, IContext, IDumpable {
-  CInstFunction(IContext* parent, CNodeFunction* node_function);
+struct CInstCall : public INamed, IContext, IDumpable {
+  CInstCall(CInstClass* parent, CNodeCall* node_call);
 
   virtual std::string_view get_name() const;
   virtual INamed* resolve(std::string_view name);
   virtual void dump_tree();
 
-  IContext* parent = nullptr;
+  CInstClass* parent = nullptr;
 
   CNodeCall*     node_call;
   CNodeFunction* node_function;
 
-  std::vector<CInstArg*>      inst_args;   // Function arguments
-  std::vector<CInstFunction*> inst_calls;  // Call instances for everything this function calls.
-  IMutable*                   inst_return; // Function return
+  std::vector<CInstArg*>  inst_args;   // Function arguments
+  IMutable*               inst_return = nullptr; // Function return
+  std::vector<CInstCall*> inst_calls;  // Call instances for everything this function calls.
 };
-
-//----------------------------------------
-// IContext because we look up function arguments from it?
-
-#if 0
-struct CInstCall : public INamed, IContext, IDumpable {
-  CInstCall(CNodeCall* node_call, CInstFunction* inst_func);
-
-  virtual std::string_view get_name() const;
-  virtual void dump_tree();
-
-  // our parent is the CInstFunction containing this call, _not_ the function
-  // we are _calling_.
-
-  CNodeCall*     node_call = nullptr;
-  CInstFunction* inst_func = nullptr; // <-- this is what we're calling
-};
-#endif
 
 //------------------------------------------------------------------------------
 

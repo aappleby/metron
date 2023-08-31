@@ -113,7 +113,6 @@ int main_new(Options opts) {
     LOG_B("//----------------------------------------\n");
     LOG_B("Tracing top methods\n");
 
-    //for (auto inst_func : root_inst->inst_functions) {
     for (auto node_class : repo.all_classes) {
       auto name = node_class->get_name();
       if (node_class->refcount) {
@@ -133,7 +132,7 @@ int main_new(Options opts) {
         else {
           LOG_B("Tracing %.*s\n", int(func_name.size()), func_name.data());
 
-          auto inst_func = new CInstFunction(root_inst, node_func);
+          auto inst_func = new CInstCall(root_inst, nullptr);
 
           //inst_call->dump_tree();
 

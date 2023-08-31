@@ -1,5 +1,7 @@
 #include "CNodeCall.hpp"
 
+#include "CNodeClass.hpp"
+#include "CNodeFunction.hpp"
 #include "CInstance.hpp"
 
 //------------------------------------------------------------------------------
@@ -19,23 +21,19 @@ Err CNodeCall::emit(Cursor& c) {
 
 Err CNodeCall::trace(IContext* context, TraceAction action) {
   Err err;
-  dump_tree();
+  //dump_tree();
+  //dynamic_cast<IDumpable*>(context)->dump_tree();
 
-  //CInstFunction* inst_function = dynamic_cast<CInstFunction*>(context);
-  //CInstCall* inst_call = inst_function->get_call(this);
+  auto src_inst  = dynamic_cast<CInstCall*>(context);
+  auto src_class = dynamic_cast<CInstClass*>(src_inst->parent);
 
-  //for (auto arg : inst_call->inst_func->inst_args) {
-  //  arg->log_action(this, ACT_WRITE);
-  //}
+  auto dst_name  = get_name();
+  auto dst_func  = src_class->node_class->get_function(dst_name);
+  auto dst_inst  = new CInstCall(src_class, this);
 
-  // FIXME
-  assert(false);
+  src_inst->inst_calls.push_back(dst_inst);
+  err << dst_func->trace(dst_inst, action);
 
-  //err << inst_call->trace(ACT_READ);
-
-  //err << inst_call->inst_return->trace(ACT_READ);
-
-  assert(false);
   return err;
 }
 

@@ -57,7 +57,7 @@ CNodeField* CNodeClass::get_field(std::string_view name) {
   return nullptr;
 }
 
-CNodeFunction* CNodeClass::get_method(std::string_view name) {
+CNodeFunction* CNodeClass::get_function(std::string_view name) {
   for (auto m : all_functions) if (m->get_name() == name) return m;
   return nullptr;
 }
@@ -281,7 +281,7 @@ CNode* CNodeClass::resolve(CNode* name, CSourceRepo* repo) {
     }
 
     printf("### %s ###\n", name->match_tag);
-    return get_method(name->get_name());
+    return get_function(name->get_name());
   }
 
   //----------

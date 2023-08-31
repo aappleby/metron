@@ -234,7 +234,7 @@ CNode* CSourceRepo::resolve(CNodeClass* parent, CNode* path) {
       if (auto field = parent->get_field(id->get_text())) {
         return field;
       }
-      if (auto method = parent->get_method(id->get_text())) {
+      if (auto method = parent->get_function(id->get_text())) {
         return method;
       }
       assert(false);

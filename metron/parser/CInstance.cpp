@@ -40,13 +40,6 @@ CHECK_RETURN Err CInstLog::log_action(CNode* node, TraceAction action) {
 //------------------------------------------------------------------------------
 
 CInstClass::CInstClass(CNodeClass* node_class) : node_class(node_class) {
-  /*
-  for (auto node_func : node_class->all_functions) {
-    auto func_inst = new CInstFunction(this, node_func);
-    inst_functions.push_back(func_inst);
-  }
-  */
-
   for (auto node_field : node_class->all_fields) {
     auto field_inst = new CInstField(node_field);
     inst_fields.push_back(field_inst);
@@ -84,7 +77,8 @@ void CInstClass::dump_tree() {
   auto name = node_class->get_name();
   LOG_G("Class %.*s\n", int(name.size()), name.data());
   LOG_INDENT_SCOPE();
-  for (auto f : inst_fields) f->dump_tree();
+  for (auto f : inst_fields)  f->dump_tree();
+  for (auto f : entry_points) f->dump_tree();
 }
 
 //------------------------------------------------------------------------------
@@ -201,13 +195,21 @@ CInstReturn::CInstReturn(CNodeType* node_type) : node_type(node_type) {
 }
 
 void CInstReturn::dump_tree() {
-  assert(false);
+  auto name = node_type->get_name();
+  LOG_G("CInstReturn : %.*s\n", int(name.size()), name.data());
 }
 
 //------------------------------------------------------------------------------
 
-CInstFunction::CInstFunction(IContext* parent, CNodeFunction* node_function)
-    : parent(parent), node_function(node_function) {
+CInstCall::CInstCall(CInstClass* parent, CNodeCall* node_call)
+    : parent(parent), node_call(node_call) {
+
+  auto func_name = node_call->get_name();
+
+  LOG_R("----------\n");
+  node_function->dump_tree();
+
+  //LOG_M("CInstFunction(%p, %p) = %.*s\n", parent, node_function, int(func_name.size()), func_name.data());
 
   auto node_params = node_function->child("params");
   for (auto p : node_params) {
@@ -222,14 +224,8 @@ CInstFunction::CInstFunction(IContext* parent, CNodeFunction* node_function)
 
   auto node_return = node_function->child_as<CNodeType>("return_type");
   assert(node_return);
+  inst_return = new CInstReturn(node_return);
 
-  if (node_return->get_name() != "void") {
-    //LOG_G("not void\n");
-    inst_return = new CInstReturn(node_return);
-  }
-  else {
-    //LOG_G("is void\n");
-  }
 
   // FIXME create return mutable from return type decl in function decl
   // inst_return = new CInstReturn();
@@ -237,13 +233,13 @@ CInstFunction::CInstFunction(IContext* parent, CNodeFunction* node_function)
 
 //----------------------------------------
 
-std::string_view CInstFunction::get_name() const {
+std::string_view CInstCall::get_name() const {
   return node_function->get_name();
 }
 
 //----------------------------------------
 
-INamed* CInstFunction::resolve(std::string_view name) {
+INamed* CInstCall::resolve(std::string_view name) {
   for (auto p : inst_args) {
     if (p->get_name() == name) return p;
   }
@@ -254,92 +250,47 @@ INamed* CInstFunction::resolve(std::string_view name) {
 
 //----------------------------------------
 
-void CInstFunction::dump_tree() {
+void CInstCall::dump_tree() {
    auto name = node_function->get_name();
    LOG_G("Function %.*s\n", int(name.size()), name.data());
    LOG_INDENT_SCOPE();
-  for (auto p : inst_args) p->dump_tree();
+  for (auto p : inst_args)  p->dump_tree();
+  if (inst_return) dynamic_cast<IDumpable*>(inst_return)->dump_tree();
   for (auto c : inst_calls) c->dump_tree();
   //inst_return->dump_tree();
 }
 
 //------------------------------------------------------------------------------
 
-#if 0
-CInstCall::CInstCall(CNodeCall* node_call, CInstFunction* inst_func)
-    : node_call(node_call), inst_func(inst_func) {
-  // inst_func =
-  // dynamic_cast<CInstFunction*>(parent->resolve(node_call->get_name()));
-  // assert(inst_func);
-}
+CInstArg::CInstArg(CNodeDeclaration* node_param)
+    : node_param(node_param) {
+  if (node_param->is_array()) {
+    auto node_type  = node_param->child_as<CNodeType>("type");
+    auto node_array = node_param->child_as<CNode>("array");
 
-//----------------------------------------
-
-std::string_view CInstCall::get_name() const { return inst_func->get_name(); }
-
-//----------------------------------------
-
-/*
-Err CInstCall::trace(TraceAction action) {
-  Err err;
-
-  for (auto arg : node_call->child("func_args")) {
-    arg->trace(this, ACT_READ);
-  }
-
-  for (auto arg : inst_func->inst_args) arg->trace(ACT_WRITE);
-
-  err << inst_func->trace(ACT_READ);
-
-  err << inst_func->inst_return->trace(ACT_READ);
-
-  return err;
-}
-*/
-
-//----------------------------------------
-
-void CInstCall::dump_tree() {
-  auto name = inst_func->get_name();
-  LOG_G("Call %.*s\n", int(name.size()), name.data());
-  LOG_INDENT_SCOPE();
-  inst_func->dump_tree();
-}
-#endif
-
-//------------------------------------------------------------------------------
-
-CInstArg::CInstArg(CNodeDeclaration* node_decl)
-    : node_decl(node_decl), node_arg(nullptr) {
-  if (node_decl->is_array()) {
-    auto node_type = node_decl->child_as<CNodeType>("type");
-    auto node_array = node_decl->child_as<CNode>("array");
-
-    inst_decl = new CInstArray(node_type, node_array);
+    inst_value = new CInstArray(node_type, node_array);
   } else {
-    auto node_type = node_decl->child_as<CNodeType>("type");
+    auto node_type = node_param->child_as<CNodeType>("type");
 
     if (node_type->as_a<CNodeBuiltinType>()) {
-      inst_decl = new CInstPrimitive(node_type);
+      inst_value = new CInstPrimitive(node_type);
     } else {
-      inst_decl = new CInstStruct(node_decl->_type_struct);
+      inst_value = new CInstStruct(node_param->_type_struct);
     }
   }
+
+  LOG_R("?\n");
 }
 
 //----------------------------------------
 
-std::string_view CInstArg::get_name() const { return node_decl->get_name(); }
+std::string_view CInstArg::get_name() const { return node_param->get_name(); }
 
 //----------------------------------------
 
 void CInstArg::dump_tree() {
-  assert(node_decl);
-  assert(node_arg);
-  auto name = node_decl->get_name();
-  auto value = node_arg->get_text();
-  LOG_G("Param %.*s = %.*s\n", int(name.size()), name.data(), int(value.size()),
-        value.data());
+  auto name = node_param->get_name();
+  LOG_G("Param %.*s\n", int(name.size()), name.data());
 }
 
 //------------------------------------------------------------------------------

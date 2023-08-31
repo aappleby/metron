@@ -6,15 +6,15 @@
 //------------------------------------------------------------------------------
 
 struct CNodeType : public CNode {
-  virtual uint32_t debug_color() const;
-  virtual Err emit(Cursor& cursor);
+  virtual uint32_t debug_color() const override;
+  virtual Err emit(Cursor& cursor) override;
 
 protected:
   CNodeType() {}
 };
 
 struct CNodeBuiltinType : public CNodeType {
-  virtual std::string_view get_name() const {
+  virtual std::string_view get_name() const override {
     return get_text();
   }
 };

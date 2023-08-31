@@ -1,13 +1,18 @@
+struct Vec {
+  int x;
+  int y;
+};
+
 class Module {
 public:
 
-  int x;
+  Vec v;
 
   int tock() {
     return 2;
   }
 
   void tick() {
-    x = tock();
+    v.x += tock();
   }
 };

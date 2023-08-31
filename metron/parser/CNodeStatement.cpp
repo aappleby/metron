@@ -20,7 +20,7 @@ Err CNodeExpStatement::emit(Cursor& c) {
 
 Err CNodeExpStatement::trace(IContext* context) {
   Err err;
-  for (auto c : this) err << c->trace_read(context);
+  for (auto c : this) err << c->trace(context);
   return err;
 }
 
@@ -32,33 +32,40 @@ Err CNodeAssignment::emit(Cursor& c) {
   return Err();
 }
 
-Err CNodeAssignment::trace(IContext* context, TraceAction action) {
+Err CNodeAssignment::trace(IContext* context) {
   Err err;
 
+  auto rhs = child("rhs");
+  auto lhs = child("lhs");
+
+  auto lhs_name = lhs->get_name();
+  auto inst_lhs = context->resolve(lhs_name);
+  assert(inst_lhs);
+
   if (child("op")->get_text() == "=") {
-    err << child("rhs")->trace_read(context);
-    err << child("lhs")->trace_write(context);
+    err << rhs->trace(context);
   }
   else {
-    err << child("rhs")->trace_read(context);
-    err << child("lhs")->trace_read(context);
-    err << child("lhs")->trace_write(context);
+    err << rhs->trace(context);
+    err << lhs->trace(context);
   }
+
+  err << inst_lhs->log_action(this, ACT_WRITE);
 
   return Err();
 }
 
 //------------------------------------------------------------------------------
 
-Err CNodeCompound::trace(IContext* context, TraceAction action) {
+Err CNodeCompound::trace(IContext* context) {
   Err err;
-  for (auto c : this) err << c->trace(context, action);
+  for (auto c : this) err << c->trace(context);
   return err;
 }
 
 //------------------------------------------------------------------------------
 
-Err CNodeReturn::trace(IContext* context, TraceAction action) {
+Err CNodeReturn::trace(IContext* context) {
   Err err;
 
   auto inst_return = dynamic_cast<CInstReturn*>(context->resolve("return"));

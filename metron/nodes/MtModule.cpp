@@ -18,7 +18,7 @@
 
 #include "tree-sitter/lib/include/tree_sitter/api.h"
 
-#pragma warning(disable : 4996)  // unsafe fopen()
+//#pragma warning(disable : 4996)  // unsafe fopen()
 
 extern "C" {
 extern const TSLanguage *tree_sitter_cpp();

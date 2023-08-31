@@ -31,16 +31,6 @@ Err CNode::trace(IContext* context) {
   exit(-1);
 }
 
-Err CNode::trace_read(IContext* context) {
-  LOG_R("Don't know how to trace_read {{%s}}\n", typeid(*this).name());
-  exit(-1);
-}
-
-Err CNode::trace_write(IContext* context) {
-  LOG_R("Don't know how to trace_write {{%s}}\n", typeid(*this).name());
-  exit(-1);
-}
-
 //------------------------------------------------------------------------------
 // Node debugging
 

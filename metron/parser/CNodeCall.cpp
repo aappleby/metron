@@ -19,13 +19,13 @@ Err CNodeCall::emit(Cursor& c) {
   return Err();
 }
 
-Err CNodeCall::trace(IContext* context, TraceAction action) {
+Err CNodeCall::trace(IContext* context) {
   Err err;
   dump_tree();
-  //dynamic_cast<IDumpable*>(context)->dump_tree();
+  //context->dump_tree();
 
   for (auto arg : child("func_args")) {
-    arg->trace(context, ACT_READ);
+    arg->trace(context);
   }
 
   auto src_inst  = dynamic_cast<CInstCall*>(context);
@@ -41,7 +41,7 @@ Err CNodeCall::trace(IContext* context, TraceAction action) {
     a->log_action(this, ACT_WRITE);
   }
 
-  err << dst_func->trace(dst_inst, action);
+  err << dst_func->trace(dst_inst);
 
   dst_inst->inst_return->log_action(this, ACT_READ);
 

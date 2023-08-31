@@ -15,7 +15,7 @@
 
 namespace fs = std::filesystem;
 
-#pragma warning(disable : 4996) // unsafe fopen
+//#pragma warning(disable : 4996) // unsafe fopen
 
 //------------------------------------------------------------------------------
 

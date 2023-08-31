@@ -7,7 +7,7 @@
 //------------------------------------------------------------------------------
 
 MtFuncParam::MtFuncParam(const std::string& func_name, const MnNode& n)
-    : func_name(func_name), node(n) {
+    : node(n), func_name(func_name) {
   _name = node.name4();
   _type = node.type5();
 }

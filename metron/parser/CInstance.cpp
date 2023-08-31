@@ -58,7 +58,7 @@ std::string_view CInstClass::get_name() const { return node_class->get_name(); }
 
 //----------------------------------------
 
-INamed* CInstClass::resolve(std::string_view name) {
+IContext* CInstClass::resolve(std::string_view name) {
   for (auto f : inst_fields) {
     if (f->node_field->get_name() == name) return f;
   }
@@ -105,7 +105,7 @@ std::string_view CInstStruct::get_name() const {
 
 //----------------------------------------
 
-INamed* CInstStruct::resolve(std::string_view name) {
+IContext* CInstStruct::resolve(std::string_view name) {
   for (auto field : inst_fields) {
     if (field->get_name() == name) return field;
   }
@@ -179,8 +179,8 @@ void CInstField::dump_tree() {
   {
     LOG_INDENT_SCOPE();
 
-    if (auto dumpable = dynamic_cast<IDumpable*>(inst_value)) {
-      dumpable->dump_tree();
+    if (inst_value) {
+      inst_value->dump_tree();
     }
   }
 }
@@ -202,13 +202,13 @@ CInstReturn::CInstReturn(CNodeType* node_type) : node_type(node_type) {
 
 void CInstReturn::dump_tree() {
   LOG_G("Return : ");
-  dynamic_cast<IDumpable*>(inst_value)->dump_tree();
+  inst_value->dump_tree();
 }
 
 //------------------------------------------------------------------------------
 
 CInstCall::CInstCall(CInstClass* parent, CNodeFunction* node_function, CNodeCall* node_call)
-    : parent(parent), node_function(node_function), node_call(node_call) {
+    : parent(parent), node_call(node_call), node_function(node_function) {
 
   //auto func_name = node_call->get_name();
 
@@ -238,7 +238,7 @@ std::string_view CInstCall::get_name() const {
 
 //----------------------------------------
 
-INamed* CInstCall::resolve(std::string_view name) {
+IContext* CInstCall::resolve(std::string_view name) {
   for (auto p : inst_args) {
     if (p->get_name() == name) return p;
   }
@@ -258,7 +258,7 @@ void CInstCall::dump_tree() {
    LOG_G("Call %.*s\n", int(name.size()), name.data());
    LOG_INDENT_SCOPE();
   for (auto p : inst_args)  p->dump_tree();
-  if (inst_return) dynamic_cast<IDumpable*>(inst_return)->dump_tree();
+  if (inst_return) inst_return->dump_tree();
   for (auto c : inst_calls) c->dump_tree();
   //inst_return->dump_tree();
 }
@@ -292,7 +292,7 @@ std::string_view CInstArg::get_name() const { return node_param->get_name(); }
 void CInstArg::dump_tree() {
   auto name = node_param->get_name();
   LOG_G("Param %.*s : ", int(name.size()), name.data());
-  dynamic_cast<IDumpable*>(inst_value)->dump_tree();
+  inst_value->dump_tree();
 }
 
 //------------------------------------------------------------------------------

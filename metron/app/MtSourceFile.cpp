@@ -8,7 +8,7 @@
 
 #include <memory.h>
 
-#pragma warning(disable : 4996)
+//#pragma warning(disable : 4996)
 
 extern "C" {
 extern const TSLanguage* tree_sitter_cpp();

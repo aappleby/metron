@@ -538,7 +538,7 @@ CHECK_RETURN Err MtStructInstance::merge_with_source() {
 //==============================================================================
 
 MtMethodInstance::MtMethodInstance(const std::string& name, const std::string& path, MtModuleInstance* module, MtMethod* method)
-: MtInstance(name, path), _module(module), _method(method) {
+: MtInstance(name, path), _method(method), _module(module) {
   _name = method->name();
   _scope_stack.resize(1);
 }
@@ -722,8 +722,8 @@ MtCallInstance::MtCallInstance(
   MtMethodInstance* method
 )
 : MtInstance(name, path),
-  _caller(caller),
   _call_node(call_node),
+  _caller(caller),
   _module(method->_method->_mod),
   _method(method->_method),
   _module_inst(method->_module),

@@ -10,11 +10,11 @@ struct CNodeType;
 //==============================================================================
 
 struct CNodeDeclaration : public CNode {
-  virtual std::string_view get_name() const;
+  virtual std::string_view get_name() const override;
   std::string_view get_type_name() const;
   bool is_array() const;
-  virtual uint32_t debug_color() const;
-  virtual Err emit(Cursor& cursor);
+  virtual uint32_t debug_color() const override;
+  virtual Err emit(Cursor& cursor) override;
 
   CNodeClass*  _type_class = nullptr;
   CNodeStruct* _type_struct = nullptr;

@@ -21,7 +21,7 @@ Err CNodeTranslationUnit::emit(Cursor& cursor) {
   return cursor.emit_default(this);
 }
 
-Err CNodeTranslationUnit::trace(IContext* context, TraceAction action) {
+Err CNodeTranslationUnit::trace(IContext* context) {
   dump_tree();
   assert(false);
   return Err();
@@ -43,7 +43,7 @@ Err CNodeNamespace::emit(Cursor& c) {
   return Err();
 }
 
-Err CNodeNamespace::trace(IContext* context, TraceAction action) {
+Err CNodeNamespace::trace(IContext* context) {
   dump_tree();
   assert(false);
   return Err();
@@ -78,7 +78,7 @@ Err CNodePreproc::emit(Cursor& cursor) {
   return err << cursor.check_done(this);
 }
 
-Err CNodePreproc::trace(IContext* context, TraceAction action) {
+Err CNodePreproc::trace(IContext* context) {
   dump_tree();
   assert(false);
   return Err();
@@ -94,12 +94,12 @@ std::string_view CNodeIdentifier::get_name() const {
 
 Err CNodeIdentifier::emit(Cursor& cursor) { return cursor.emit_default(this); }
 
-Err CNodeIdentifier::trace(IContext* context, TraceAction action) {
+Err CNodeIdentifier::trace(IContext* context) {
   auto field_name = get_text();
   auto named = context->resolve(get_text());
   auto field = dynamic_cast<CInstField*>(named);
   assert(field);
-  return field->log_action(this, action);
+  return field->log_action(this, ACT_READ);
 }
 
 //------------------------------------------------------------------------------
@@ -116,7 +116,7 @@ Err CNodePunct::emit(Cursor& c) {
   return c.emit_default(this);
 }
 
-Err CNodePunct::trace(IContext* context, TraceAction action) {
+Err CNodePunct::trace(IContext* context) {
   return Err();
 }
 
@@ -136,7 +136,7 @@ Err CNodeFieldExpression::emit(Cursor& c) {
   return Err();
 }
 
-Err CNodeFieldExpression::trace(IContext* context, TraceAction action) {
+Err CNodeFieldExpression::trace(IContext* context) {
   dump_tree();
   assert(false);
   return Err();
@@ -158,7 +158,7 @@ Err CNodeQualifiedIdentifier::emit(Cursor& c) {
   return Err();
 }
 
-Err CNodeQualifiedIdentifier::trace(IContext* context, TraceAction action) {
+Err CNodeQualifiedIdentifier::trace(IContext* context) {
   dump_tree();
   assert(false);
   return Err();
@@ -180,7 +180,7 @@ Err CNodeText::emit(Cursor& c) {
   return Err();
 }
 
-Err CNodeText::trace(IContext* context, TraceAction action) {
+Err CNodeText::trace(IContext* context) {
   dump_tree();
   assert(false);
   return Err();
@@ -202,7 +202,7 @@ Err CNodeKeyword::emit(Cursor& c) {
   return Err();
 }
 
-Err CNodeKeyword::trace(IContext* context, TraceAction action) {
+Err CNodeKeyword::trace(IContext* context) {
   dump_tree();
   assert(false);
   return Err();
@@ -224,7 +224,7 @@ Err CNodeTypedef::emit(Cursor& c) {
   return Err();
 }
 
-Err CNodeTypedef::trace(IContext* context, TraceAction action) {
+Err CNodeTypedef::trace(IContext* context) {
   dump_tree();
   assert(false);
   return Err();
@@ -246,7 +246,7 @@ Err CNodeList::emit(Cursor& c) {
   return Err();
 }
 
-Err CNodeList::trace(IContext* context, TraceAction action) {
+Err CNodeList::trace(IContext* context) {
   dump_tree();
   assert(false);
   return Err();

@@ -41,8 +41,6 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   virtual Err emit(Cursor& c);
 
   virtual Err trace(IContext* context);
-  virtual Err trace_read(IContext* context);
-  virtual Err trace_write(IContext* context);
 
   //----------------------------------------
 

@@ -28,29 +28,29 @@ bool CNodeExpression::is_integer_constant() {
 
 //------------------------------------------------------------------------------
 
-Err CNodeBinaryExp::trace_read(IContext* context) {
+Err CNodeBinaryExp::trace(IContext* context) {
   Err err;
 
-  err << child("lhs")->trace_read(context);
-  err << child("rhs")->trace_read(context);
+  err << child("lhs")->trace(context);
+  err << child("rhs")->trace(context);
   return Err();
 }
 
 //------------------------------------------------------------------------------
 
-Err CNodePrefixExp::trace_read(IContext* context) {
-  return child("rhs")->trace_read(context);
+Err CNodePrefixExp::trace(IContext* context) {
+  return child("rhs")->trace(context);
 }
 
 //------------------------------------------------------------------------------
 
-Err CNodeSuffixExp::trace(IContext* context, TraceAction action) {
-  return child("lhs")->trace(context, action);
+Err CNodeSuffixExp::trace(IContext* context) {
+  return child("lhs")->trace(context);
 }
 
 //------------------------------------------------------------------------------
 
-Err CNodeAssignExp::trace(IContext* context, TraceAction action) {
+Err CNodeAssignExp::trace(IContext* context) {
   //Err err;
   //err <<
   //return child("lhs")->trace(context, action);
@@ -61,15 +61,15 @@ Err CNodeAssignExp::trace(IContext* context, TraceAction action) {
 
 //------------------------------------------------------------------------------
 
-Err CNodeIdentifierExp::trace(IContext* context, TraceAction action) {
+Err CNodeIdentifierExp::trace(IContext* context) {
   auto field_name = get_text();
-  INamed* named = context->resolve(field_name);
+  auto named = context->resolve(field_name);
   assert(named);
   if (auto field = dynamic_cast<CInstField*>(named)) {
-    return field->log_action(this, action);
+    return field->log_action(this, ACT_READ);
   }
   if (auto arg = dynamic_cast<CInstArg*>(named)) {
-    return arg->log_action(this, action);
+    return arg->log_action(this, ACT_READ);
   }
   assert(false);
   return Err();
@@ -81,7 +81,7 @@ Err CNodeConstant::emit(Cursor& cursor) {
   return cursor.emit_raw(this);
 }
 
-Err CNodeConstant::trace(IContext* context, TraceAction action) {
+Err CNodeConstant::trace(IContext* context) {
   return Err();
 }
 
@@ -95,7 +95,7 @@ Err CNodeOperator::emit(Cursor& cursor) {
   return cursor.emit_default(this);
 }
 
-Err CNodeOperator::trace(IContext* context, TraceAction action) {
+Err CNodeOperator::trace(IContext* context) {
   return Err();
 }
 

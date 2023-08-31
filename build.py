@@ -82,8 +82,10 @@ divider("Variables")
 
 if ("--release" in sys.argv) or ("-r" in sys.argv):
     ninja.variable("cpp_build_mode", "-rdynamic -O3")
+    ninja.variable("c_build_mode", "-rdynamic -O3")
 else:
-    ninja.variable("cpp_build_mode", "-rdynamic -ggdb3 -O0")
+    ninja.variable("cpp_build_mode", "-rdynamic -ggdb3 -O0 -Wall -Werror -Wsuggest-override -Wno-unused-function -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable")
+    ninja.variable("c_build_mode", "-rdynamic -ggdb3 -O0 -Wall -Werror -Wno-unused-function -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable")
 
 # ------------------------------------------------------------------------------
 
@@ -95,7 +97,7 @@ ninja.rule(name="compile_cpp",
            depfile="${out}.d")
 
 ninja.rule(name="compile_c",
-           command="gcc ${cpp_build_mode} ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
+           command="gcc ${c_build_mode} ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
            deps="gcc",
            depfile="${out}.d")
 

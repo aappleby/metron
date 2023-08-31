@@ -23,8 +23,8 @@
 //------------------------------------------------------------------------------
 
 struct CNodeExpression : public CNode {
-  virtual uint32_t debug_color() const;
-  virtual Err emit(Cursor& cursor);
+  virtual uint32_t debug_color() const override;
+  virtual Err emit(Cursor& cursor) override;
 
   bool is_integer_constant();
 
@@ -35,31 +35,30 @@ protected:
 //------------------------------------------------------------------------------
 
 struct CNodeBinaryExp : public CNodeExpression {
-  virtual Err trace_read(IContext* context);
+  virtual Err trace(IContext* context) override;
 };
 
 struct CNodePrefixExp : public CNodeExpression {
-  virtual Err trace_read(IContext* context);
+  virtual Err trace(IContext* context) override;
 };
 
 struct CNodeSuffixExp : public CNodeExpression {
-  virtual Err trace_read(IContext* context);
+  virtual Err trace(IContext* context) override;
 };
 
 struct CNodeAssignExp : public CNodeExpression {
-  virtual Err trace(IContext* context);
+  virtual Err trace(IContext* context) override;
 };
 
 struct CNodeIdentifierExp : public CNodeExpression {
-  virtual Err trace_read(IContext* context);
-  virtual Err trace_write(IContext* context);
+  virtual Err trace(IContext* context) override;
 };
 
 //------------------------------------------------------------------------------
 
 struct CNodeConstant : public CNodeExpression {
-  virtual Err emit(Cursor& cursor);
-  virtual Err trace_read(IContext* context);
+  virtual Err emit(Cursor& cursor) override;
+  virtual Err trace(IContext* context) override;
 
 protected:
   CNodeConstant() {}
@@ -73,9 +72,9 @@ struct CNodeConstString : public CNodeConstant {};
 //------------------------------------------------------------------------------
 
 struct CNodeOperator : public CNode {
-  virtual uint32_t debug_color() const;
-  virtual Err emit(Cursor& cursor);
-  virtual Err trace(IContext* context, TraceAction action);
+  uint32_t debug_color() const override;
+  Err emit(Cursor& cursor) override;
+  Err trace(IContext* context) override;
 };
 
 //----------------------------------------

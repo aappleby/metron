@@ -11,6 +11,7 @@
 #include "metrolib/core/Err.h"
 
 #include <assert.h>
+#include <typeinfo>
 
 struct CNode;
 struct CNodeCall;
@@ -47,17 +48,20 @@ struct CLogEntry {
 struct IContext {
   virtual ~IContext() {}
 
-  virtual IContext* resolve(std::string_view name) {
+  virtual IContext* resolve(CNode* node) {
+    LOG_R("bad bad %s\n", typeid(*this).name());
     assert(false);
     return nullptr;
   }
 
   virtual void dump_tree() {
+    LOG_R("bad bad %s\n", typeid(*this).name());
     assert(false);
   }
 
   // Record an action applied to a mutable by the given parse node.
   virtual Err log_action(CNode* node, TraceAction action) {
+    LOG_R("bad bad %s\n", typeid(*this).name());
     assert(false);
     return Err();
   }
@@ -83,7 +87,7 @@ struct CInstClass : public IContext {
   virtual ~CInstClass() {}
 
   std::string_view get_name() const;
-  virtual IContext* resolve(std::string_view name) override;
+  virtual IContext* resolve(CNode* node) override;
   virtual Err log_action(CNode* node, TraceAction action) override;
   virtual void dump_tree() override;
 
@@ -101,7 +105,7 @@ struct CInstStruct : public IContext {
   virtual ~CInstStruct() {}
 
   std::string_view get_name() const;
-  virtual IContext* resolve(std::string_view name) override;
+  virtual IContext* resolve(CNode* node) override;
   virtual Err log_action(CNode* node, TraceAction action) override;
   virtual void dump_tree() override;
 
@@ -115,6 +119,10 @@ struct CInstField : public IContext {
   CInstField(CNodeField* node_field);
 
   std::string_view get_name() const;
+
+  virtual IContext* resolve(CNode* node) override {
+    return inst_value->resolve(node);
+  }
 
   // Record an action applied to a mutable by the given parse node.
   virtual Err log_action(CNode* node, TraceAction action) override {
@@ -171,7 +179,7 @@ struct CInstCall : public IContext {
   CInstCall(CInstClass* parent, CNodeFunction* node_function, CNodeCall* node_call);
 
   std::string_view get_name() const;
-  virtual IContext* resolve(std::string_view name) override;
+  virtual IContext* resolve(CNode* node) override;
   virtual void dump_tree() override;
 
   CInstClass* parent = nullptr;

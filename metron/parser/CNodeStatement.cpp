@@ -38,16 +38,13 @@ Err CNodeAssignment::trace(IContext* context) {
   auto rhs = child("rhs");
   auto lhs = child("lhs");
 
-  auto lhs_name = lhs->get_name();
-  auto inst_lhs = context->resolve(lhs_name);
+  auto inst_lhs = context->resolve(lhs);
   assert(inst_lhs);
 
-  if (child("op")->get_text() == "=") {
-    err << rhs->trace(context);
-  }
-  else {
-    err << rhs->trace(context);
-    err << lhs->trace(context);
+  err << rhs->trace(context);
+
+  if (child("op")->get_text() != "=") {
+    err << inst_lhs->log_action(this, ACT_READ);
   }
 
   err << inst_lhs->log_action(this, ACT_WRITE);
@@ -68,7 +65,7 @@ Err CNodeCompound::trace(IContext* context) {
 Err CNodeReturn::trace(IContext* context) {
   Err err;
 
-  auto inst_return = dynamic_cast<CInstReturn*>(context->resolve("return"));
+  auto inst_return = context->resolve(this);
   err << inst_return->log_action(this, ACT_WRITE);
 
   return err;

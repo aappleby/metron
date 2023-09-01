@@ -13,6 +13,7 @@ public:
   }
 
   void tick() {
-    v.x += tock();
+    v.x = tock();
+    v.y += tock();
   }
 };

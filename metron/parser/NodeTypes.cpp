@@ -95,10 +95,7 @@ std::string_view CNodeIdentifier::get_name() const {
 Err CNodeIdentifier::emit(Cursor& cursor) { return cursor.emit_default(this); }
 
 Err CNodeIdentifier::trace(IContext* context) {
-  auto field_name = get_text();
-  auto named = context->resolve(get_text());
-  auto field = dynamic_cast<CInstField*>(named);
-  assert(field);
+  auto field = context->resolve(this);
   return field->log_action(this, ACT_READ);
 }
 

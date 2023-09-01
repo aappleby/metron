@@ -62,17 +62,11 @@ Err CNodeAssignExp::trace(IContext* context) {
 //------------------------------------------------------------------------------
 
 Err CNodeIdentifierExp::trace(IContext* context) {
-  auto field_name = get_text();
-  auto named = context->resolve(field_name);
-  assert(named);
-  if (auto field = dynamic_cast<CInstField*>(named)) {
-    return field->log_action(this, ACT_READ);
-  }
-  if (auto arg = dynamic_cast<CInstArg*>(named)) {
-    return arg->log_action(this, ACT_READ);
-  }
+  Err err;
   assert(false);
-  return Err();
+  auto inst = context->resolve(this);
+  err << inst->log_action(this, ACT_READ);
+  return err;
 }
 
 //------------------------------------------------------------------------------

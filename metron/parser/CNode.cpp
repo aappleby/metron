@@ -16,6 +16,7 @@ uint32_t CNode::debug_color() const {
 }
 
 std::string_view CNode::get_name() const {
+  LOG_R("bad bad %s\n", typeid(*this).name());
   assert(false);
   return "<CNode>";
 }

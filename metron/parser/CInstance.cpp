@@ -8,6 +8,7 @@
 #include "CNodeFunction.hpp"
 #include "CNodeStruct.hpp"
 #include "CNodeType.hpp"
+#include "CNodeStatement.hpp"
 #include "NodeTypes.hpp"
 
 //------------------------------------------------------------------------------
@@ -58,7 +59,23 @@ std::string_view CInstClass::get_name() const { return node_class->get_name(); }
 
 //----------------------------------------
 
-IContext* CInstClass::resolve(std::string_view name) {
+IContext* CInstClass::resolve(CNode* node) {
+  if (auto field_exp = node->as_a<CNodeFieldExpression>()) {
+    node->dump_tree();
+    IContext* cursor = this;
+    for (auto path_piece : field_exp) {
+      if (path_piece->as_a<CNodeIdentifier>()) {
+        IContext* next_cursor = cursor->resolve(path_piece);
+        assert(next_cursor);
+        cursor = next_cursor;
+        continue;
+      }
+    }
+
+    return cursor;
+  }
+
+  auto name = node->get_name();
   for (auto f : inst_fields) {
     if (f->node_field->get_name() == name) return f;
   }
@@ -105,9 +122,9 @@ std::string_view CInstStruct::get_name() const {
 
 //----------------------------------------
 
-IContext* CInstStruct::resolve(std::string_view name) {
+IContext* CInstStruct::resolve(CNode* node) {
   for (auto field : inst_fields) {
-    if (field->get_name() == name) return field;
+    if (field->get_name() == node->get_name()) return field;
   }
   return nullptr;
 }
@@ -238,17 +255,22 @@ std::string_view CInstCall::get_name() const {
 
 //----------------------------------------
 
-IContext* CInstCall::resolve(std::string_view name) {
-  for (auto p : inst_args) {
-    if (p->get_name() == name) return p;
+IContext* CInstCall::resolve(CNode* node) {
+
+  if (auto field_exp = node->as_a<CNodeFieldExpression>()) {
+    return parent->resolve(node);
   }
 
-  if (name == "return") {
+  for (auto p : inst_args) {
+    if (p->get_name() == node->get_name()) return p;
+  }
+
+  if (node->as_a<CNodeReturn>()) {
     return inst_return;
   }
 
   assert(parent);
-  return parent->resolve(name);
+  return parent->resolve(node);
 }
 
 //----------------------------------------

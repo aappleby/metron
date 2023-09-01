@@ -15,15 +15,15 @@ struct CNodeField;
 //------------------------------------------------------------------------------
 
 struct CNodeAccess : public CNode {
-  virtual uint32_t debug_color() const override { return COL_VIOLET; }
-  virtual Err emit(Cursor& cursor) override;
+  uint32_t debug_color() const override { return COL_VIOLET; }
+  CHECK_RETURN Err emit(Cursor& cursor) override;
 };
 
 //------------------------------------------------------------------------------
 
 struct CNodeTemplate : public CNode {
-  virtual uint32_t debug_color() const override { return 0x00FFFF; }
-  virtual Err emit(Cursor& cursor) override;
+  uint32_t debug_color() const override { return 0x00FFFF; }
+  CHECK_RETURN Err emit(Cursor& cursor) override;
 };
 
 //------------------------------------------------------------------------------
@@ -33,9 +33,9 @@ struct CNodeClass : public CNode {
 
   //----------
 
-  virtual uint32_t debug_color() const override;
-  virtual std::string_view get_name() const override;
-  virtual Err emit(Cursor& cursor) override;
+  uint32_t debug_color() const override;
+  std::string_view get_name() const override;
+  CHECK_RETURN Err emit(Cursor& cursor) override;
   virtual void dump();
 
   //----------

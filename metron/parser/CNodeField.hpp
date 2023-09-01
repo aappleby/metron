@@ -23,9 +23,9 @@ struct CNodeField : public CNode {
   //----------------------------------------
   // Methods to be implemented by subclasses.
 
-  virtual uint32_t debug_color() const override;
-  virtual std::string_view get_name() const override;
-  virtual Err emit(Cursor& c) override;
+  uint32_t debug_color() const override;
+  std::string_view get_name() const override;
+  CHECK_RETURN Err emit(Cursor& c) override;
 
   //----------------------------------------
 

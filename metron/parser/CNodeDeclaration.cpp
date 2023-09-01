@@ -43,3 +43,11 @@ Err CNodeDeclaration::emit(Cursor& cursor) {
 
   return err << cursor.check_done(this);
 }
+
+CHECK_RETURN Err CNodeDeclaration::trace(IContext* context) {
+  Err err;
+  if (auto value = child("value")) {
+    err << value->trace(context);
+  }
+  return err;
+}

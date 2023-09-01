@@ -57,7 +57,7 @@ jump-statement:
 //==============================================================================
 
 struct CNodeStatement : public CNode {
-  virtual uint32_t debug_color() const override;
+  uint32_t debug_color() const override;
 protected:
   CNodeStatement() {}
 };
@@ -65,13 +65,13 @@ protected:
 //------------------------------------------------------------------------------
 
 struct CNodeExpStatement : public CNodeStatement {
-  virtual Err emit(Cursor& c) override;
-  virtual Err trace(IContext* context) override;
+  CHECK_RETURN Err emit(Cursor& c) override;
+  CHECK_RETURN Err trace(IContext* context) override;
 };
 
 struct CNodeAssignment : public CNodeStatement {
-  virtual Err emit(Cursor& c) override;
-  virtual Err trace(IContext* context) override;
+  CHECK_RETURN Err emit(Cursor& c) override;
+  CHECK_RETURN Err trace(IContext* context) override;
 };
 
 //------------------------------------------------------------------------------
@@ -83,7 +83,7 @@ struct CNodeIf : public CNodeStatement {
 };
 
 struct CNodeReturn : public CNodeStatement {
-  virtual Err trace(IContext* context) override;
+  CHECK_RETURN Err trace(IContext* context) override;
 };
 
 //------------------------------------------------------------------------------
@@ -106,7 +106,7 @@ struct CNodeWhile : public CNodeStatement {
 };
 
 struct CNodeCompound : public CNodeStatement {
-  virtual Err trace(IContext* context) override;
+  CHECK_RETURN Err trace(IContext* context) override;
 };
 
 //------------------------------------------------------------------------------

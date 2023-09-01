@@ -60,7 +60,7 @@ struct IContext {
   }
 
   // Record an action applied to a mutable by the given parse node.
-  virtual Err log_action(CNode* node, TraceAction action) {
+  virtual CHECK_RETURN Err log_action(CNode* node, TraceAction action) {
     LOG_R("bad bad %s\n", typeid(*this).name());
     assert(false);
     return Err();
@@ -71,10 +71,9 @@ struct IContext {
 
 struct CInstLog : public IContext {
   CInstLog() { state_stack.push_back(CTX_NONE); }
-  virtual ~CInstLog() {}
 
   // Record an action applied to a mutable by the given parse node.
-  virtual Err log_action(CNode* node, TraceAction action) override;
+  CHECK_RETURN Err log_action(CNode* node, TraceAction action) override;
 
   std::vector<TraceState> state_stack;
   std::vector<CLogEntry>  action_log;
@@ -84,12 +83,11 @@ struct CInstLog : public IContext {
 
 struct CInstClass : public IContext {
   CInstClass(CNodeClass* node_class);
-  virtual ~CInstClass() {}
 
   std::string_view get_name() const;
-  virtual IContext* resolve(CNode* node) override;
-  virtual Err log_action(CNode* node, TraceAction action) override;
-  virtual void dump_tree() override;
+  IContext* resolve(CNode* node) override;
+  CHECK_RETURN Err log_action(CNode* node, TraceAction action) override;
+  void dump_tree() override;
 
   CNodeClass* node_class = nullptr;
   std::vector<CInstField*> inst_fields;
@@ -105,9 +103,9 @@ struct CInstStruct : public IContext {
   virtual ~CInstStruct() {}
 
   std::string_view get_name() const;
-  virtual IContext* resolve(CNode* node) override;
-  virtual Err log_action(CNode* node, TraceAction action) override;
-  virtual void dump_tree() override;
+  IContext* resolve(CNode* node) override;
+  CHECK_RETURN Err log_action(CNode* node, TraceAction action) override;
+  void dump_tree() override;
 
   CNodeStruct* node_struct = nullptr;
   std::vector<CInstField*> inst_fields;
@@ -120,16 +118,16 @@ struct CInstField : public IContext {
 
   std::string_view get_name() const;
 
-  virtual IContext* resolve(CNode* node) override {
+  IContext* resolve(CNode* node) override {
     return inst_value->resolve(node);
   }
 
   // Record an action applied to a mutable by the given parse node.
-  virtual Err log_action(CNode* node, TraceAction action) override {
+  CHECK_RETURN Err log_action(CNode* node, TraceAction action) override {
     return inst_value->log_action(node, action);
   }
 
-  virtual void dump_tree() override;
+  void dump_tree() override;
 
   CNodeField* node_field = nullptr;
   IContext*   inst_value = nullptr;
@@ -145,11 +143,11 @@ struct CInstReturn : public IContext {
   }
 
   // Record an action applied to a mutable by the given parse node.
-  virtual Err log_action(CNode* node, TraceAction action) override {
+  CHECK_RETURN Err log_action(CNode* node, TraceAction action) override {
     return inst_value->log_action(node, action);
   }
 
-  virtual void dump_tree() override;
+  void dump_tree() override;
 
   CNodeType*  node_type = nullptr;
   IContext*   inst_value = nullptr;
@@ -163,11 +161,11 @@ struct CInstArg : public IContext {
   std::string_view get_name() const;
 
   // Record an action applied to a mutable by the given parse node.
-  virtual Err log_action(CNode* node, TraceAction action) override {
+  CHECK_RETURN Err log_action(CNode* node, TraceAction action) override {
     return inst_value->log_action(node, action);
   }
 
-  virtual void dump_tree() override;
+  void dump_tree() override;
 
   CNodeDeclaration* node_param = nullptr; // The parameter declaration in the function param list
   IContext*         inst_value = nullptr;
@@ -179,8 +177,8 @@ struct CInstCall : public IContext {
   CInstCall(CInstClass* parent, CNodeFunction* node_function, CNodeCall* node_call);
 
   std::string_view get_name() const;
-  virtual IContext* resolve(CNode* node) override;
-  virtual void dump_tree() override;
+  IContext* resolve(CNode* node) override;
+  void dump_tree() override;
 
   CInstClass* parent = nullptr;
 
@@ -197,7 +195,7 @@ struct CInstCall : public IContext {
 struct CInstPrimitive : public CInstLog {
   CInstPrimitive(CNodeType* node_type);
 
-  virtual void dump_tree() override;
+  void dump_tree() override;
 
   CNodeType* node_type = nullptr;
 };
@@ -207,7 +205,7 @@ struct CInstPrimitive : public CInstLog {
 struct CInstArray : public CInstLog {
   CInstArray(CNodeType* node_type, CNode* node_array);
 
-  virtual void dump_tree() override;
+  void dump_tree() override;
 
   CNodeType* node_type = nullptr;
   CNode* node_array = nullptr;

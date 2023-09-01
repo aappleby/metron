@@ -96,7 +96,13 @@ Err CNodeClass::collect_fields_and_methods(CSourceRepo* repo) {
     }
     if (auto n = c->as_a<CNodeFunction>()) {
       n->is_public_ = is_public;
-      all_functions.push_back(n);
+
+      if (auto constructor = c->as_a<CNodeConstructor>()) {
+        all_constructors.push_back(constructor);
+      }
+      else {
+        all_functions.push_back(n);
+      }
 
       // Hook up _type_struct on all struct params
       auto params = n->child("params");

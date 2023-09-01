@@ -666,31 +666,11 @@ TokenSpan match_expression(CContext& ctx, TokenSpan body) {
 
     if (fold_left) {
 
-      //LOG_R("----------\n");
-
-      //ctx.top_tail->node_prev->node_prev->node_prev->node_prev->dump_tree();
-      //ctx.top_tail->node_prev->node_prev->node_prev->dump_tree();
-      //ctx.top_tail->node_prev->node_prev->dump_tree();
-      //ctx.top_tail->node_prev->dump_tree();
-      //ctx.top_tail->dump_tree();
-
-      //LOG_R("----------\n");
-
       auto new_node = ctx.create_node<CNodeBinaryExp>();
       ctx.splice(new_node, unit_a, unit_b);
 
-      //ctx.top_tail->node_prev->node_prev->node_prev->node_prev->dump_tree();
-      //ctx.top_tail->node_prev->node_prev->node_prev->dump_tree();
-      //ctx.top_tail->node_prev->node_prev->dump_tree();
-      //ctx.top_tail->node_prev->dump_tree();
-      //ctx.top_tail->dump_tree();
-
-      //LOG_R("----------\n");
-
       new_node->child_head->match_tag = "lhs";
       new_node->child_tail->match_tag = "rhs";
-
-      //new_node->dump_tree();
 
       unit_a = new_node;
       op_x   = op_y;
@@ -711,16 +691,9 @@ TokenSpan match_expression(CContext& ctx, TokenSpan body) {
   // Any binary operators left are in increasing-precedence order, but since
   // there are no more operators we can just fold them all up right-to-left
   while(ctx.top_tail->node_prev != old_tail) {
-    //ctx.top_tail->node_prev->node_prev->dump_tree();
-    //ctx.top_tail->node_prev->dump_tree();
-    //ctx.top_tail->dump_tree();
-
     ctx.enclose_tail<CNodeBinaryExp>(3);
-    //ctx.top_tail->dump_tree();
-
     ctx.top_tail->child_head->match_tag = "lhs";
     ctx.top_tail->child_tail->match_tag = "rhs";
-    //ctx.top_tail->dump_tree();
   }
 
 

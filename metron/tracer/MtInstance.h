@@ -133,9 +133,9 @@ struct MtFieldInstance : public MtInstance {
   virtual ~MtFieldInstance();
 
   // MtInstance
-  virtual CHECK_RETURN Err sanity_check() override;
-  virtual void reset_state() override;
-  virtual CHECK_RETURN Err merge_with_source() override;
+  CHECK_RETURN Err sanity_check() override;
+  void reset_state() override;
+  CHECK_RETURN Err merge_with_source() override;
 
   //----------
 
@@ -154,10 +154,10 @@ struct MtPrimitiveInstance : public MtFieldInstance {
   virtual ~MtPrimitiveInstance();
 
   // MtInstance
-  virtual CHECK_RETURN Err sanity_check() override;
-  virtual CHECK_RETURN Err assign_types() override;
-  virtual void dump() override;
-  virtual CHECK_RETURN Err merge_with_source() override;
+  CHECK_RETURN Err sanity_check() override;
+  CHECK_RETURN Err assign_types() override;
+  void dump() override;
+  CHECK_RETURN Err merge_with_source() override;
 
   // MtFieldInstance
 };
@@ -169,10 +169,10 @@ struct MtArrayInstance : public MtFieldInstance {
   virtual ~MtArrayInstance();
 
   // MtInstance
-  virtual CHECK_RETURN Err sanity_check() override;
-  virtual CHECK_RETURN Err assign_types() override;
-  virtual void dump() override;
-  virtual CHECK_RETURN Err merge_with_source() override;
+  CHECK_RETURN Err sanity_check() override;
+  CHECK_RETURN Err assign_types() override;
+  void dump() override;
+  CHECK_RETURN Err merge_with_source() override;
 
   // MtFieldInstance
 };
@@ -184,18 +184,18 @@ struct MtStructInstance : public MtFieldInstance {
   virtual ~MtStructInstance();
 
   // MtInstance
-  virtual CHECK_RETURN Err sanity_check() override;
-  virtual CHECK_RETURN Err assign_types() override;
-  virtual CHECK_RETURN Err log_action(MnNode node, TraceAction action) override;
-  virtual void dump() override;
-  virtual void reset_state() override;
-  virtual void visit(const inst_visitor& v) override;
-  virtual MtInstance* resolve(const std::vector<std::string>& path, int index) override;
-  virtual CHECK_RETURN Err merge_with_source() override;
+  CHECK_RETURN Err sanity_check() override;
+  CHECK_RETURN Err assign_types() override;
+  CHECK_RETURN Err log_action(MnNode node, TraceAction action) override;
+  void dump() override;
+  void reset_state() override;
+  void visit(const inst_visitor& v) override;
+  MtInstance* resolve(const std::vector<std::string>& path, int index) override;
+  CHECK_RETURN Err merge_with_source() override;
 
   // MtFieldInstance
-  virtual FieldType get_field_type() const override;
-  virtual CHECK_RETURN Err set_field_type(FieldType f) override;
+  FieldType get_field_type() const override;
+  CHECK_RETURN Err set_field_type(FieldType f) override;
 
   //----------
 
@@ -212,12 +212,12 @@ struct MtMethodInstance : public MtInstance {
   virtual ~MtMethodInstance();
 
   // MtInstance
-  virtual CHECK_RETURN Err sanity_check() override;
-  virtual CHECK_RETURN Err assign_types() override;
-  virtual void dump() override;
-  virtual void reset_state() override;
-  virtual void visit(const inst_visitor& v) override;
-  virtual CHECK_RETURN Err merge_with_source() override;
+  CHECK_RETURN Err sanity_check() override;
+  CHECK_RETURN Err assign_types() override;
+  void dump() override;
+  void reset_state() override;
+  void visit(const inst_visitor& v) override;
+  CHECK_RETURN Err merge_with_source() override;
 
   //----------
 
@@ -266,8 +266,8 @@ struct MtCallInstance : public MtInstance {
     MtMethodInstance* method);
   virtual ~MtCallInstance();
 
-  virtual void dump() override;
-  virtual MtInstance* resolve(const std::vector<std::string>& path, int index) override;
+  void dump() override;
+  MtInstance* resolve(const std::vector<std::string>& path, int index) override;
 
   MtInstance* get_param(const std::string& name);
 
@@ -335,17 +335,17 @@ struct MtModuleInstance : public MtFieldInstance {
   virtual ~MtModuleInstance();
 
   // MtInstance
-  virtual CHECK_RETURN Err sanity_check() override;
-  virtual CHECK_RETURN Err assign_types() override;
-  virtual void dump() override;
-  virtual void reset_state() override;
-  virtual void visit(const inst_visitor& v) override;
-  virtual MtInstance* resolve(const std::vector<std::string>& path, int index) override;
-  virtual CHECK_RETURN Err merge_with_source() override;
+  CHECK_RETURN Err sanity_check() override;
+  CHECK_RETURN Err assign_types() override;
+  void dump() override;
+  void reset_state() override;
+  void visit(const inst_visitor& v) override;
+  MtInstance* resolve(const std::vector<std::string>& path, int index) override;
+  CHECK_RETURN Err merge_with_source() override;
 
   // MtFieldInstance
-  virtual FieldType get_field_type() const override;
-  virtual CHECK_RETURN Err set_field_type(FieldType f) override;
+  FieldType get_field_type() const override;
+  CHECK_RETURN Err set_field_type(FieldType f) override;
 
   //----------
 

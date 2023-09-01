@@ -25,7 +25,7 @@ Err CNodeCall::trace(IContext* context) {
   //context->dump_tree();
 
   for (auto arg : child("func_args")) {
-    arg->trace(context);
+    err << arg->trace(context);
   }
 
   auto src_inst  = dynamic_cast<CInstCall*>(context);
@@ -38,12 +38,14 @@ Err CNodeCall::trace(IContext* context) {
   src_inst->inst_calls.push_back(dst_inst);
 
   for (auto a : dst_inst->inst_args) {
-    a->log_action(this, ACT_WRITE);
+    err << a->log_action(this, ACT_WRITE);
   }
 
   err << dst_func->trace(dst_inst);
 
-  dst_inst->inst_return->log_action(this, ACT_READ);
+  if (dst_inst->inst_return) {
+    err << dst_inst->inst_return->log_action(this, ACT_READ);
+  }
 
   return err;
 }

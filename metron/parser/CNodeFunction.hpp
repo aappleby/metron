@@ -14,7 +14,7 @@ struct CNodeClass;
 //------------------------------------------------------------------------------
 
 struct CNodeParameter : public CNode {
-  virtual uint32_t debug_color() const override { return COL_YELLOW; }
+  uint32_t debug_color() const override { return COL_YELLOW; }
 };
 
 //------------------------------------------------------------------------------
@@ -24,10 +24,10 @@ struct CNodeFunction : public CNode {
   //----------------------------------------
   // Methods to be implemented by subclasses.
 
-  virtual uint32_t debug_color() const override;
-  virtual std::string_view get_name() const override;
-  virtual Err emit(Cursor& c) override;
-  virtual Err trace(IContext* context) override;
+  uint32_t debug_color() const override;
+  std::string_view get_name() const override;
+  CHECK_RETURN Err emit(Cursor& c) override;
+  CHECK_RETURN Err trace(IContext* context) override;
 
   //----------------------------------------
 
@@ -35,7 +35,6 @@ struct CNodeFunction : public CNode {
   std::string_view get_return_type_name() const;
 
   void dump();
-
 
   //bool is_public() const;
   //bool is_tick() const { assert(false); return false; }

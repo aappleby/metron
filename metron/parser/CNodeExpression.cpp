@@ -39,13 +39,37 @@ Err CNodeBinaryExp::trace(IContext* context) {
 //------------------------------------------------------------------------------
 
 Err CNodePrefixExp::trace(IContext* context) {
-  return child("rhs")->trace(context);
+  Err err;
+
+  auto rhs = child("rhs");
+  auto op  = child("prefix")->get_text();
+  err << rhs->trace(context);
+
+  if (op == "++" || op == "--") {
+    auto inst = context->resolve(rhs);
+    err << inst->log_action(this, ACT_READ);
+    err << inst->log_action(this, ACT_WRITE);
+  }
+
+  return err;
 }
 
 //------------------------------------------------------------------------------
 
 Err CNodeSuffixExp::trace(IContext* context) {
-  return child("lhs")->trace(context);
+  Err err;
+
+  auto lhs = child("lhs");
+  auto op  = child("suffix")->get_text();
+  err << lhs->trace(context);
+
+  if (op == "++" || op == "--") {
+    auto inst = context->resolve(lhs);
+    err << inst->log_action(this, ACT_READ);
+    err << inst->log_action(this, ACT_WRITE);
+  }
+
+  return err;
 }
 
 //------------------------------------------------------------------------------
@@ -61,11 +85,15 @@ Err CNodeAssignExp::trace(IContext* context) {
 
 //------------------------------------------------------------------------------
 
+std::string_view CNodeIdentifierExp::get_name() const {
+  return get_text();
+}
+
 Err CNodeIdentifierExp::trace(IContext* context) {
   Err err;
-  assert(false);
-  auto inst = context->resolve(this);
-  err << inst->log_action(this, ACT_READ);
+  if (auto field = context->resolve(this)) {
+    err << field->log_action(this, ACT_READ);
+  }
   return err;
 }
 

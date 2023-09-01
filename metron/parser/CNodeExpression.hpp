@@ -23,8 +23,8 @@
 //------------------------------------------------------------------------------
 
 struct CNodeExpression : public CNode {
-  virtual uint32_t debug_color() const override;
-  virtual Err emit(Cursor& cursor) override;
+  uint32_t debug_color() const override;
+  CHECK_RETURN Err emit(Cursor& cursor) override;
 
   bool is_integer_constant();
 
@@ -35,30 +35,31 @@ protected:
 //------------------------------------------------------------------------------
 
 struct CNodeBinaryExp : public CNodeExpression {
-  virtual Err trace(IContext* context) override;
+  CHECK_RETURN Err trace(IContext* context) override;
 };
 
 struct CNodePrefixExp : public CNodeExpression {
-  virtual Err trace(IContext* context) override;
+  CHECK_RETURN Err trace(IContext* context) override;
 };
 
 struct CNodeSuffixExp : public CNodeExpression {
-  virtual Err trace(IContext* context) override;
+  CHECK_RETURN Err trace(IContext* context) override;
 };
 
 struct CNodeAssignExp : public CNodeExpression {
-  virtual Err trace(IContext* context) override;
+  CHECK_RETURN Err trace(IContext* context) override;
 };
 
 struct CNodeIdentifierExp : public CNodeExpression {
-  virtual Err trace(IContext* context) override;
+  std::string_view get_name() const override;
+  CHECK_RETURN Err trace(IContext* context) override;
 };
 
 //------------------------------------------------------------------------------
 
 struct CNodeConstant : public CNodeExpression {
-  virtual Err emit(Cursor& cursor) override;
-  virtual Err trace(IContext* context) override;
+  CHECK_RETURN Err emit(Cursor& cursor) override;
+  CHECK_RETURN Err trace(IContext* context) override;
 
 protected:
   CNodeConstant() {}

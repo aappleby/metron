@@ -8,16 +8,16 @@
 //------------------------------------------------------------------------------
 
 struct CNodeCall : public CNode {
-  virtual std::string_view get_name() const override;
-  virtual uint32_t debug_color() const override;
-  virtual Err emit(Cursor& c) override;
-  virtual Err trace(IContext* context) override;
+  std::string_view get_name() const override;
+  uint32_t debug_color() const override;
+  CHECK_RETURN Err emit(Cursor& c) override;
+  CHECK_RETURN Err trace(IContext* context) override;
 };
 
 //------------------------------------------------------------------------------
 
 struct CNodeArgument : public CNode {
-  virtual std::string_view get_name() const override { return "arg"; }
+  std::string_view get_name() const override { return "arg"; }
 };
 
 //------------------------------------------------------------------------------

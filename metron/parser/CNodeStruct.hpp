@@ -9,12 +9,12 @@ struct CNodeField;
 //------------------------------------------------------------------------------
 
 struct CNodeStruct : public CNode {
-  virtual uint32_t debug_color() const override;
-  virtual std::string_view get_name() const override;
+  uint32_t debug_color() const override;
+  std::string_view get_name() const override;
 
   Err collect_fields_and_methods(CSourceRepo* repo);
 
-  virtual Err emit(Cursor& cursor) override;
+  CHECK_RETURN Err emit(Cursor& cursor) override;
 
   void dump();
 

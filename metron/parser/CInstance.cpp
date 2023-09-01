@@ -61,7 +61,6 @@ std::string_view CInstClass::get_name() const { return node_class->get_name(); }
 
 IContext* CInstClass::resolve(CNode* node) {
   if (auto field_exp = node->as_a<CNodeFieldExpression>()) {
-    node->dump_tree();
     IContext* cursor = this;
     for (auto path_piece : field_exp) {
       if (path_piece->as_a<CNodeIdentifier>()) {
@@ -79,8 +78,10 @@ IContext* CInstClass::resolve(CNode* node) {
   for (auto f : inst_fields) {
     if (f->node_field->get_name() == name) return f;
   }
-  LOG_R("Could not resolve %.*s\n", name.size(), name.data());
-  assert(false);
+
+  //LOG_R("Could not resolve %.*s\n", name.size(), name.data());
+  //assert(false);
+
   return nullptr;
 }
 
@@ -229,8 +230,8 @@ CInstCall::CInstCall(CInstClass* parent, CNodeFunction* node_function, CNodeCall
 
   //auto func_name = node_call->get_name();
 
-  LOG_R("----------\n");
-  node_function->dump_tree();
+  //LOG_R("----------\n");
+  //node_function->dump_tree();
 
   //LOG_M("CInstFunction(%p, %p) = %.*s\n", parent, node_function, int(func_name.size()), func_name.data());
 
@@ -244,7 +245,10 @@ CInstCall::CInstCall(CInstClass* parent, CNodeFunction* node_function, CNodeCall
 
   auto node_return = node_function->child_as<CNodeType>("return_type");
   assert(node_return);
-  inst_return = new CInstReturn(node_return);
+
+  if (node_return->get_name() != "void") {
+    inst_return = new CInstReturn(node_return);
+  }
 }
 
 //----------------------------------------
@@ -257,16 +261,24 @@ std::string_view CInstCall::get_name() const {
 
 IContext* CInstCall::resolve(CNode* node) {
 
+  if (auto suffix = node->as_a<CNodePrefixExp>()) {
+    return resolve(suffix->child("rhs"));
+  }
+
+  if (auto suffix = node->as_a<CNodeSuffixExp>()) {
+    return resolve(suffix->child("lhs"));
+  }
+
+  if (node->as_a<CNodeReturn>()) {
+    return inst_return;
+  }
+
   if (auto field_exp = node->as_a<CNodeFieldExpression>()) {
     return parent->resolve(node);
   }
 
   for (auto p : inst_args) {
     if (p->get_name() == node->get_name()) return p;
-  }
-
-  if (node->as_a<CNodeReturn>()) {
-    return inst_return;
   }
 
   assert(parent);

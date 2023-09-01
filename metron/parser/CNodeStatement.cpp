@@ -65,8 +65,14 @@ Err CNodeCompound::trace(IContext* context) {
 Err CNodeReturn::trace(IContext* context) {
   Err err;
 
+  if (auto value = child("value")) {
+    err << value->trace(context);
+  }
+
   auto inst_return = context->resolve(this);
-  err << inst_return->log_action(this, ACT_WRITE);
+  if (inst_return) {
+    err << inst_return->log_action(this, ACT_WRITE);
+  }
 
   return err;
 }

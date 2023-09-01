@@ -15,6 +15,9 @@ parser.add_argument('--synth',    action='store_true', help='Test Yosys synthesi
 parser.add_argument('--coverage', action='store_true', help='Run Metron under kcov for coverage testing')
 options = parser.parse_args()
 
+def sorted_glob(*args, **kwargs):
+    return sorted(glob.glob(*args, **kwargs))
+
 ################################################################################
 
 def main():
@@ -59,8 +62,8 @@ def main():
     ])
     print()
 
-    metron_good = sorted(glob.glob("tests/metron_good/*.h"))
-    metron_bad = sorted(glob.glob("tests/metron_bad/*.h"))
+    metron_good = sorted(sorted_glob("tests/metron_good/*.h"))
+    metron_bad = sorted(sorted_glob("tests/metron_bad/*.h"))
 
     print_b("Checking that all headers in tests/metron_good compile")
     errors += check_commands_good([
@@ -90,7 +93,7 @@ def main():
     ])
     print()
 
-    metron_sv = sorted(glob.glob("tests/metron_sv/*.sv"))
+    metron_sv = sorted(sorted_glob("tests/metron_sv/*.sv"))
 
     print_b("Checking that all converted files match their golden version, if present")
     errors += check_commands_good([
@@ -157,14 +160,14 @@ def main():
 
         # Various tests to isolate quirks/bugs in Verilator/Yosys/Icarus
 
-        verilator_good = sorted(glob.glob("tests/tools_good/verilator*.sv"))
-        verilator_bad  = sorted(glob.glob("tests/tools_bad/verilator*.sv"))
+        verilator_good = sorted(sorted_glob("tests/tools_good/verilator*.sv"))
+        verilator_bad  = sorted(sorted_glob("tests/tools_bad/verilator*.sv"))
 
-        yosys_good = sorted(glob.glob("tests/tools_good/yosys*.sv"))
-        yosys_bad  = sorted(glob.glob("tests/tools_bad/yosys*.sv"))
+        yosys_good = sorted(sorted_glob("tests/tools_good/yosys*.sv"))
+        yosys_bad  = sorted(sorted_glob("tests/tools_bad/yosys*.sv"))
 
-        icarus_good = sorted(glob.glob("tests/tools_good/icarus*.sv"))
-        icarus_bad  = sorted(glob.glob("tests/tools_bad/icarus*.sv"))
+        icarus_good = sorted(sorted_glob("tests/tools_good/icarus*.sv"))
+        icarus_bad  = sorted(sorted_glob("tests/tools_bad/icarus*.sv"))
 
         print_b("Checking Verilator quirks")
         errors += check_verilator_good(verilator_good)

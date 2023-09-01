@@ -21,6 +21,9 @@ base_includes = [
     "-Itests",
 ]
 
+def sorted_glob(*args, **kwargs):
+    return sorted(glob.glob(*args, **kwargs))
+
 # ------------------------------------------------------------------------------
 
 
@@ -147,7 +150,7 @@ def metronize_dir(src_dir, src_top, dst_dir):
     """
     divider(f"Metronize {src_dir} -> {dst_dir}")
 
-    src_paths = glob.glob(path.join(src_dir, "*.h"))
+    src_paths = sorted_glob(path.join(src_dir, "*.h"))
     dst_paths = []
 
     for src_path in src_paths:
@@ -390,8 +393,8 @@ ninja.rule(name="link_ems",
 ninja.variable(key="packager",
                value="$EMSDK/upstream/emscripten/tools/file_packager.py")
 
-all_test_headers = glob.glob("tests/**/*.h", recursive=True)
-all_example_headers = glob.glob("examples/**/*.h", recursive=True)
+all_test_headers = sorted_glob("tests/**/*.h", recursive=True)
+all_example_headers = sorted_glob("examples/**/*.h", recursive=True)
 
 ninja.build(outputs = [
                 "docs/demo/examples.data",
@@ -407,7 +410,7 @@ ninja.build(outputs = [
                 "docs/tutorial/tutorial_src.js",
             ],
             rule="command",
-            inputs=glob.glob("examples/tutorial/*.h"),
+            inputs=sorted_glob("examples/tutorial/*.h"),
             command="python3 $$EMSDK/upstream/emscripten/tools/file_packager.py docs/tutorial/tutorial_src.data --no-node --js-output=docs/tutorial/tutorial_src.js --preload examples/tutorial examples/uart/metron");
 
 treesitter_objs_wasi = [];
@@ -632,7 +635,7 @@ def build_uart():
 
 
 def build_rvtests():
-    src_files = glob.glob("tests/rv_tests/*.S")
+    src_files = sorted_glob("tests/rv_tests/*.S")
     dst_text = [swap_ext(f, ".text.vh") for f in src_files]
     dst_data = [swap_ext(f, ".data.vh") for f in src_files]
 
@@ -682,7 +685,7 @@ def build_rvsimple():
 
     ref_vhdr, ref_vobj = verilate_dir(
         src_dir=ref_sv_root,
-        src_files=glob.glob(f"{ref_sv_root}/*.sv"),
+        src_files=sorted_glob(f"{ref_sv_root}/*.sv"),
         src_top="toplevel",
         dst_dir=ref_vl_root
     )

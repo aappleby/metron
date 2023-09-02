@@ -1,9 +1,9 @@
 #include "metron/tools/metron_tools.h"
 
-// Increment/decrement should be translated into equivalent Verilog, but they
-// do _not_ return the old/new value.
+// We can instantiated templated classes as submodules.
 
-class Module {
+template<int SOME_CONSTANT = 6>
+class Submod {
 public:
 
   void tock() {
@@ -13,8 +13,18 @@ public:
 private:
 
   void tick() {
-    my_reg1--;
+    sub_reg = sub_reg + SOME_CONSTANT;
   }
 
-  int my_reg1;
+  logic<8> sub_reg;
+};
+
+class Module {
+public:
+
+  void tock() {
+    submod.tock();
+  }
+
+  Submod<99> submod;
 };

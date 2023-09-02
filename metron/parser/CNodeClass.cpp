@@ -113,14 +113,12 @@ Err CNodeClass::collect_fields_and_methods(CSourceRepo* repo) {
           LOG_G("%p %p\n", decl->_type_class, decl->_type_struct);
         }
       }
-
-
     }
   }
 
   if (auto parent = node_parent->as_a<CNodeTemplate>()) {
     //LOG_B("CNodeClass has template parent\n");
-    CNode* params = parent->child("template_params");
+    CNode* params = parent->child("params");
     for (CNode*  param : params) {
       if (param->as_a<CNodeDeclaration>()) {
         //param->dump_tree(3);
@@ -262,6 +260,20 @@ CNode* CNodeClass::resolve(CNode* name, CSourceRepo* repo) {
 
   //----------
 
+  if (auto id = name->as_a<CNodeIdentifier>()) {
+    if (auto func = get_function(name->get_name()) {
+      return func;
+    }
+    else if (auto field = get_field(name->get_name()) {
+      return field;
+    }
+    else {
+      return nullptr;
+    }
+  }
+
+  //----------
+
   if (auto field = name->as_a<CNodeFieldExpression>()) {
     return resolve(name->child_head, repo);
   }
@@ -280,13 +292,13 @@ CNode* CNodeClass::resolve(CNode* name, CSourceRepo* repo) {
       return nullptr;
     }
 
-    if (name->tag_is("field")) {
+    if (name->tag_is("field_path")) {
       auto field = get_field(name->get_text());
       auto field_class = repo->get_class(field->get_type_name());
       return repo->resolve(field_class, name->node_next);
     }
 
-    printf("### %s ###\n", name->match_tag);
+    //printf("### %s ###\n", name->match_tag);
     return get_function(name->get_name());
   }
 

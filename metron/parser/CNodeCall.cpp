@@ -31,8 +31,10 @@ Err CNodeCall::trace(IContext* context) {
   auto src_inst  = dynamic_cast<CInstCall*>(context);
   auto src_class = dynamic_cast<CInstClass*>(src_inst->parent);
 
-  auto dst_name  = get_name();
-  auto dst_func  = src_class->node_class->get_function(dst_name);
+  auto dst_name  = child("func_name");
+
+  auto dst_node  = src_class->node_class->resolve(dst_name, src_class->node_class->repo);
+  auto dst_func  = dst_node->as_a<CNodeFunction>();
   auto dst_inst  = new CInstCall(src_class, dst_func, this);
 
   src_inst->inst_calls.push_back(dst_inst);

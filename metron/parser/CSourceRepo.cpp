@@ -85,12 +85,17 @@ Err CSourceRepo::collect_fields_and_methods() {
 
   for (auto pair : source_map) {
     for (auto n : pair.second->context.root_node) {
-      if (auto node_class = n->as_a<CNodeClass>()) {
+
+      if (auto node_template = n->as_a<CNodeTemplate>()) {
+        auto node_class = node_template->child<CNodeClass>();
         all_classes.push_back(node_class);
         node_class->collect_fields_and_methods(this);
       }
-
-      if (auto node_struct = n->as_a<CNodeStruct>()) {
+      else if (auto node_class = n->as_a<CNodeClass>()) {
+        all_classes.push_back(node_class);
+        node_class->collect_fields_and_methods(this);
+      }
+      else if (auto node_struct = n->as_a<CNodeStruct>()) {
         all_structs.push_back(node_struct);
         node_struct->collect_fields_and_methods(this);
       }
@@ -206,7 +211,13 @@ void CSourceRepo::dump() {
 CNode* CSourceRepo::resolve(CNodeClass* parent, CNode* path) {
   if (!path) return nullptr;
 
+  path->dump_tree();
+
   //----------
+
+  if (path->get_text() == ".") {
+    return resolve(parent, path->node_next);
+  }
 
   if (auto field_path = path->as_a<CNodeFieldExpression>()) {
     return resolve(parent, field_path->child_head);

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "metrolib/core/Err.h"
+#include "CInstance.hpp"
 
 class CSourceFile;
 class CNodeClass;
@@ -15,7 +16,7 @@ class CNode;
 
 //------------------------------------------------------------------------------
 
-class CSourceRepo {
+class CSourceRepo /* : public IContext maybe? */ {
  public:
 
   CNodeClass*  get_class(std::string_view name);

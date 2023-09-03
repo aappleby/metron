@@ -34,17 +34,15 @@ namespace fs = std::filesystem;
   //printf("Token count %d\n", int(context.tokens.size()));
 
   LOG("Parsing %s\n", filepath.c_str());
-  LOG_INDENT_SCOPE();
+
+  LOG_INDENT();
   auto tail = context.parse();
+  LOG_DEDENT();
 
   if (tail.is_valid() && tail.is_empty() && context.root_node) {
-    LOG_G("Parse OK\n");
+    LOG("Parse OK\n");
   }
   else {
-    LOG_R("Parse failed!\n");
-  }
-
-  if (!tail.is_valid() || !tail.is_empty()) {
     LOG_R("could not parse %s\n", filepath.c_str());
     return ERR("Could not parse file");
   }

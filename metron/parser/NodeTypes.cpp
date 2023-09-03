@@ -91,11 +91,6 @@ Err CNodeIdentifier::trace(CCall* call) {
   if (auto inst_field = call->inst_class->resolve(this)) {
     return inst_field->log_action(this, ACT_READ);
   }
-  /*
-  else if (auto inst_arg = call->resolve(this)) {
-    return inst_arg->log_action(this, ACT_READ);
-  }
-  */
   return Err();
 }
 
@@ -230,8 +225,11 @@ Err CNodeList::emit(Cursor& c) {
 }
 
 Err CNodeList::trace(CCall* call) {
-  NODE_ERR("FIXME");
-  return Err();
+  Err err;
+  for (auto child : this) {
+    err << child->trace(call);
+  }
+  return err;
 }
 
 //------------------------------------------------------------------------------

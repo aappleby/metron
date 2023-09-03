@@ -685,8 +685,6 @@ TokenSpan match_expression(CContext& ctx, TokenSpan body) {
     }
   }
 
-  LOG_R("----------\n");
-
   // Any binary operators left are in increasing-precedence order, but since
   // there are no more operators we can just fold them all up right-to-left
   while(ctx.top_tail->node_prev != old_tail) {
@@ -1158,10 +1156,10 @@ TokenSpan match_if(CContext& ctx, TokenSpan body) {
   Seq<
     Tag<"if",        cap_keyword<"if">>,
     Tag<"condition", cap_exp_list>,
-    Tag<"then",      cap_statement>,
+    Tag<"body_true", cap_statement>,
     Opt<Seq<
-      Tag<"else",    cap_keyword<"else">>,
-      Tag<"body",    cap_statement>
+      Tag<"else",       cap_keyword<"else">>,
+      Tag<"body_false", cap_statement>
     >>
   >;
   return pattern::match(ctx, body);

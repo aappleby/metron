@@ -51,8 +51,17 @@ Err CNodeAssignment::trace(CCall* call) {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err CNodeIf::trace(CCall* call) {
-  assert(false);
-  return Err();
+  Err err;
+
+  err << child("condition")->trace(call);
+
+  call->inst_class->push_state();
+  if (auto body_true = child("body_true")) err << body_true->trace(call);
+  call->inst_class->swap_state();
+  if (auto body_false = child("body_false")) err << body_false->trace(call);
+  call->inst_class->merge_state();
+
+  return err;
 }
 
 //------------------------------------------------------------------------------
@@ -71,12 +80,6 @@ Err CNodeReturn::trace(CCall* call) {
   if (auto node_value = child("value")) {
     err << node_value->trace(call);
   }
-
-  /*
-  if (call->inst_return) {
-    err << call->inst_return->log_action(this, ACT_WRITE);
-  }
-  */
 
   return err;
 }

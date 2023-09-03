@@ -104,6 +104,7 @@ int main_new(Options opts) {
   {
     LOG_B("//----------------------------------------\n");
     LOG_B("Tracing top methods\n");
+    LOG_INDENT_SCOPE();
 
     for (auto node_class : repo.all_classes) {
       auto name = node_class->get_name();
@@ -136,7 +137,7 @@ int main_new(Options opts) {
         }
       }
 
-      LOG_B("Tracing done for %.*s\n", int(name.size()), name.data());
+      LOG_G("Tracing done for %.*s\n", int(name.size()), name.data());
       top_inst->dump_tree();
       delete top_inst;
     }

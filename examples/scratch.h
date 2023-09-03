@@ -13,14 +13,12 @@ class Module {
 public:
 
   void tick() {
-    /*
     if (1) {
       z = 2;
     }
     else {
       z = 3;
     }
-    */
     submod.tack();
   }
 

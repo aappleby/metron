@@ -451,7 +451,8 @@ using cap_exp_core =
 Oneof<
   cap_call,
   cap_exp_list,
-  CaptureAnon<cap_any_identifier, CNodeIdentifierExp>,
+  //CaptureAnon<cap_any_identifier, CNodeIdentifierExp>,
+  cap_any_identifier,
   cap_constant
 >;
 // clang-format on
@@ -628,8 +629,6 @@ TokenSpan match_expression(CContext& ctx, TokenSpan body) {
   if (!rest) return rest;
   CNode* unit_b = ctx.top_tail;
   body = rest;
-
-  //unit_b->dump_tree();
 
   while(1) {
     // We have matched an expression, an operator, and an expression. We can't

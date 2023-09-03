@@ -138,7 +138,6 @@ CHECK_RETURN Err Tracer::trace_call(CInstCall* call, CNode* call_node) {
   if (!method) {
     // This is a call to b32() or something similar. We should eventually check
     // that this is a known helper function, but for now we can ignore it.
-    //node_call.dump_tree();
     //return ERR("dst_inst is null");
     return err;
   }
@@ -389,41 +388,6 @@ CHECK_RETURN Err Tracer::trace_case_statement(CInstCall* call, CNode* node) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Tracer::trace_compound_statement(CInstCall* call, CNodeCompound* node) {
-  Err err;
-
-  node->dump_tree(1);
-
-  for (auto n : node) {
-  }
-
-#if 0
-  assert(node.sym == sym_compound_statement);
-
-  bool noconvert = false;
-  bool dumpit = false;
-
-  for (const auto& child : node) {
-    if (noconvert) { noconvert = false; continue; }
-    if (dumpit) { child.dump_tree(); dumpit = false; }
-    if (child.sym == sym_comment && child.contains("dumpit")) { dumpit = true; }
-    if (child.sym == sym_comment && child.contains("metron_noconvert")) { noconvert = true; }
-
-    if (child.sym == sym_declaration) {
-      err << trace_declaration(call, child);
-    } else if (child.is_statement()) {
-      err << trace_statement(call, child);
-    } else {
-      err << trace_default(call, child);
-    }
-  }
-#endif
-
-  return err;
-}
-
-//------------------------------------------------------------------------------
-
 CHECK_RETURN Err Tracer::trace_condition_clause(CInstCall* call, CNode* node) {
   Err err;
 #if 0
@@ -510,7 +474,6 @@ CHECK_RETURN Err Tracer::trace_field_expression(CInstCall* call, CNode* node, Tr
   else {
     // FIXME
     LOG_R("Not resolved\n");
-    node.dump_tree();
     //return ERR("Not resolved\n");
   }
   #endif
@@ -577,8 +540,6 @@ CHECK_RETURN Err Tracer::trace_if_statement(CInstCall* call, CNode* node) {
   Err err;
   #if 0
   assert(node.sym == sym_if_statement);
-
-  //node.dump_tree();
 
   auto node_cond = node.get_field(field_condition);
   auto node_branch_a = node.get_field(field_consequence);

@@ -30,7 +30,7 @@ class CSourceRepo /* : public IContext maybe? */ {
   void categorize_methods();
   void dump();
 
-  CNode* resolve(CNodeClass* parent, CNode* path);
+  //CNode* resolve(CNodeClass* parent, CNode* path);
 
 
   std::vector<std::string> search_paths = {""};

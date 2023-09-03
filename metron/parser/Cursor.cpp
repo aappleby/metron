@@ -154,7 +154,7 @@ CHECK_RETURN Err Cursor::check_at(CNode* n) {
     LOG_R("check_at - bad tok_cursor\n");
     LOG_R("  want @%.10s@\n", n->text_begin());
     LOG_R("  got  @%.10s@\n", tok_cursor->text_begin());
-    exit(-1);
+    assert(false);
   }
 
   return Err();
@@ -168,12 +168,12 @@ CHECK_RETURN Err Cursor::check_done(CNode* n) {
 
   if (tok_cursor < tok_end) {
     LOG_R("Token cursor was left inside the current node\n");
-    exit(-1);
+    assert(false);
   }
 
   if (tok_cursor > tok_end) {
     LOG_R("Token cursor was left past the end of the current node\n");
-    exit(-1);
+    assert(false);
   }
 
   return Err();

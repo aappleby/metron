@@ -66,12 +66,12 @@ protected:
 
 struct CNodeExpStatement : public CNodeStatement {
   CHECK_RETURN Err emit(Cursor& c) override;
-  CHECK_RETURN Err trace(IContext* context) override;
+  CHECK_RETURN Err trace(CCall* call) override;
 };
 
 struct CNodeAssignment : public CNodeStatement {
   CHECK_RETURN Err emit(Cursor& c) override;
-  CHECK_RETURN Err trace(IContext* context) override;
+  CHECK_RETURN Err trace(CCall* call) override;
 };
 
 //------------------------------------------------------------------------------
@@ -80,10 +80,11 @@ struct CNodeFor : public CNodeStatement {
 };
 
 struct CNodeIf : public CNodeStatement {
+  CHECK_RETURN Err trace(CCall* call) override;
 };
 
 struct CNodeReturn : public CNodeStatement {
-  CHECK_RETURN Err trace(IContext* context) override;
+  CHECK_RETURN Err trace(CCall* call) override;
 };
 
 //------------------------------------------------------------------------------
@@ -106,7 +107,7 @@ struct CNodeWhile : public CNodeStatement {
 };
 
 struct CNodeCompound : public CNodeStatement {
-  CHECK_RETURN Err trace(IContext* context) override;
+  CHECK_RETURN Err trace(CCall* call) override;
 };
 
 //------------------------------------------------------------------------------

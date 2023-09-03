@@ -163,9 +163,7 @@ Err CNodeType::emit(Cursor& cursor) {
     err << CNode::emit(cursor);
   }
   else {
-    dump_tree();
-    LOG_R("Don't know how to handle this type\n");
-    exit(-1);
+    NODE_ERR("Don't know how to handle this type\n");
   }
 
   return err << cursor.check_done(this);

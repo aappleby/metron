@@ -44,10 +44,10 @@ Err CNodeDeclaration::emit(Cursor& cursor) {
   return err << cursor.check_done(this);
 }
 
-CHECK_RETURN Err CNodeDeclaration::trace(IContext* context) {
+CHECK_RETURN Err CNodeDeclaration::trace(CCall* call) {
   Err err;
   if (auto value = child("value")) {
-    err << value->trace(context);
+    err << value->trace(call);
   }
   return err;
 }

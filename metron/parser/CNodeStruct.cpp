@@ -4,6 +4,9 @@
 #include "CNodeFunction.hpp"
 #include "metrolib/core/Log.h"
 
+struct CSourceRepo;
+struct CSourceFile;
+
 //------------------------------------------------------------------------------
 
 uint32_t CNodeStruct::debug_color() const {
@@ -18,7 +21,7 @@ std::string_view CNodeStruct::get_name() const {
 
 //------------------------------------------------------------------------------
 
-Err CNodeStruct::collect_fields_and_methods(CSourceRepo* repo) {
+Err CNodeStruct::collect_fields_and_methods() {
   Err err;
 
   auto body = child("body");

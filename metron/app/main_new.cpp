@@ -78,14 +78,6 @@ int main_new(Options opts) {
     return -1;
   }
 
-  /*
-  for (auto t : root_file->context.tokens) {
-    t.dump_token();
-    printf("\n");
-  }
-  exit(0);
-  */
-
   if (opts.verbose) {
     root_file->context.root_node->dump_tree();
     LOG("\n");
@@ -121,7 +113,7 @@ int main_new(Options opts) {
       }
 
       LOG_G("Tracing top methods in %.*s\n", int(name.size()), name.data());
-      auto root_inst = new CInstClass(node_class);
+      auto top_inst = new CInstClass(nullptr, nullptr, node_class);
 
       for (auto node_func : node_class->all_functions) {
         LOG_INDENT_SCOPE();
@@ -132,19 +124,21 @@ int main_new(Options opts) {
         else {
           LOG_B("Tracing %.*s\n", int(func_name.size()), func_name.data());
 
-          auto inst_func = new CInstCall(root_inst, node_func, nullptr);
+          auto top_call = new CCall(top_inst, nullptr, node_func);
 
           //inst_call->dump_tree();
 
-          root_inst->entry_points.push_back(inst_func);
+          top_inst->entry_points.push_back(top_call);
 
-          err << inst_func->node_function->trace(inst_func);
+          //top_call->dump_tree();
+
+          err << node_func->trace(top_call);
         }
       }
 
       LOG_B("Tracing done for %.*s\n", int(name.size()), name.data());
-      root_inst->dump_tree();
-      delete root_inst;
+      top_inst->dump_tree();
+      delete top_inst;
     }
 
     //Tracer tracer(&repo, true);

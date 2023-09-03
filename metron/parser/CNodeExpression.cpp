@@ -28,27 +28,29 @@ bool CNodeExpression::is_integer_constant() {
 
 //------------------------------------------------------------------------------
 
-Err CNodeBinaryExp::trace(IContext* context) {
+Err CNodeBinaryExp::trace(CCall* call) {
   Err err;
 
-  err << child("lhs")->trace(context);
-  err << child("rhs")->trace(context);
+  err << child("lhs")->trace(call);
+  err << child("rhs")->trace(call);
   return Err();
 }
 
 //------------------------------------------------------------------------------
 
-Err CNodePrefixExp::trace(IContext* context) {
+Err CNodePrefixExp::trace(CCall* call) {
   Err err;
 
   auto rhs = child("rhs");
-  auto op  = child("prefix")->get_text();
-  err << rhs->trace(context);
+  err << rhs->trace(call);
 
+  auto op  = child("prefix")->get_text();
   if (op == "++" || op == "--") {
-    auto inst = context->resolve(rhs);
-    err << inst->log_action(this, ACT_READ);
-    err << inst->log_action(this, ACT_WRITE);
+    auto inst_rhs = call->inst_class->resolve(rhs);
+    if (inst_rhs) {
+      err << inst_rhs->log_action(this, ACT_READ);
+      err << inst_rhs->log_action(this, ACT_WRITE);
+    }
   }
 
   return err;
@@ -56,17 +58,19 @@ Err CNodePrefixExp::trace(IContext* context) {
 
 //------------------------------------------------------------------------------
 
-Err CNodeSuffixExp::trace(IContext* context) {
+Err CNodeSuffixExp::trace(CCall* call) {
   Err err;
 
   auto lhs = child("lhs");
   auto op  = child("suffix")->get_text();
-  err << lhs->trace(context);
+  err << lhs->trace(call);
 
   if (op == "++" || op == "--") {
-    auto inst = context->resolve(lhs);
-    err << inst->log_action(this, ACT_READ);
-    err << inst->log_action(this, ACT_WRITE);
+    auto inst_lhs = call->inst_class->resolve(lhs);
+    if (inst_lhs) {
+      err << inst_lhs->log_action(this, ACT_READ);
+      err << inst_lhs->log_action(this, ACT_WRITE);
+    }
   }
 
   return err;
@@ -74,12 +78,8 @@ Err CNodeSuffixExp::trace(IContext* context) {
 
 //------------------------------------------------------------------------------
 
-Err CNodeAssignExp::trace(IContext* context) {
-  //Err err;
-  //err <<
-  //return child("lhs")->trace(context, action);
-  dump_tree();
-  assert(false);
+Err CNodeAssignExp::trace(CCall* call) {
+  NODE_ERR("fixme");
   return Err();
 }
 
@@ -89,12 +89,16 @@ std::string_view CNodeIdentifierExp::get_name() const {
   return get_text();
 }
 
-Err CNodeIdentifierExp::trace(IContext* context) {
-  Err err;
-  if (auto field = context->resolve(this)) {
-    err << field->log_action(this, ACT_READ);
+Err CNodeIdentifierExp::trace(CCall* call) {
+  if (auto inst_field = call->inst_class->resolve(this)) {
+    return inst_field->log_action(this, ACT_READ);
   }
-  return err;
+  /*
+  if (auto inst_arg = call->resolve(this)) {
+    return inst_arg->log_action(this, ACT_READ);
+  }
+  */
+  return Err();
 }
 
 //------------------------------------------------------------------------------
@@ -103,7 +107,7 @@ Err CNodeConstant::emit(Cursor& cursor) {
   return cursor.emit_raw(this);
 }
 
-Err CNodeConstant::trace(IContext* context) {
+Err CNodeConstant::trace(CCall* call) {
   return Err();
 }
 
@@ -117,7 +121,7 @@ Err CNodeOperator::emit(Cursor& cursor) {
   return cursor.emit_default(this);
 }
 
-Err CNodeOperator::trace(IContext* context) {
+Err CNodeOperator::trace(CCall* call) {
   return Err();
 }
 

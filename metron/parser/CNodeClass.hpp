@@ -47,21 +47,17 @@ struct CNodeClass : public CNode {
   bool needs_tick();
   bool needs_tock();
 
-  Err collect_fields_and_methods(CSourceRepo* repo);
+  Err collect_fields_and_methods();
   Err build_call_graph(CSourceRepo* repo);
   Err categorize_fields(bool verbose);
-
-  CNode* resolve(CNode* name, CSourceRepo* repo);
-
-  CNode* resolve_scope(CNode* name);
 
   Err emit_module_ports(Cursor& cursor);
   Err emit_template_parameter_list(Cursor& cursor);
 
   //----------------------------------------
 
-  CSourceRepo* repo;
-  CSourceFile* file;
+  CSourceRepo* repo = nullptr;
+  CSourceFile* file = nullptr;
   int refcount = 0;
 
   std::vector<CNodeConstructor*> all_constructors;

@@ -1,30 +1,29 @@
 #include "metron/tools/metron_tools.h"
 
-// We can instantiated templated classes as submodules.
-
-template<int SOME_CONSTANT = 6>
 class Submod {
-public:
-
-  void tock() {
-    tick();
+  void tack() {
+    x = y + 1;
   }
 
-private:
-
-  void tick() {
-    sub_reg = sub_reg + SOME_CONSTANT;
-  }
-
-  logic<8> sub_reg;
+  int x;
+  int y;
 };
 
 class Module {
 public:
 
-  void tock() {
-    submod.tock();
+  void tick() {
+    /*
+    if (1) {
+      z = 2;
+    }
+    else {
+      z = 3;
+    }
+    */
+    submod.tack();
   }
 
-  Submod<99> submod;
+  Submod submod;
+  int z;
 };

@@ -7,7 +7,7 @@
 
 struct CNodeClass;
 struct CSourceRepo;
-struct IContext;
+struct CInstance;
 
 /*
 [000.006]       ┣━━┳━ CNodeField field =

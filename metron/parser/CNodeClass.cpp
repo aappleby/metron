@@ -69,7 +69,7 @@ CNodeDeclaration* CNodeClass::get_modparam(std::string_view name) {
 
 //------------------------------------------------------------------------------
 
-Err CNodeClass::collect_fields_and_methods(CSourceRepo* repo) {
+Err CNodeClass::collect_fields_and_methods() {
   Err err;
 
   auto body = child("body");
@@ -140,7 +140,27 @@ Err CNodeClass::build_call_graph(CSourceRepo* repo) {
       auto call = child->as_a<CNodeCall>();
       if (!call) return;
 
-      auto dst_method = repo->resolve(this, call->child("func_name"))->as_a<CNodeFunction>();
+      auto func_name = call->child("func_name");
+
+      if (auto submod_path = func_name->as_a<CNodeFieldExpression>()) {
+        auto submod_field = get_field(submod_path->child("field_path")->get_text());
+        auto submod_class = repo->get_class(submod_field->get_type_name());
+        auto submod_func  = submod_class->get_function(submod_path->child("identifier")->get_text());
+
+        src_method->external_callees.insert(submod_func);
+        submod_func->external_callers.insert(src_method);
+      }
+      else if (auto func_id = func_name->as_a<CNodeIdentifier>()) {
+        auto dst_method = get_function(func_id->get_text());
+        src_method->internal_callees.insert(dst_method);
+        dst_method->internal_callers.insert(src_method);
+      }
+      else {
+        assert(false);
+      }
+
+      /*
+      auto dst_method = resolve(call->child("func_name"))->as_a<CNodeFunction>();
       assert(dst_method);
 
       if (dst_method->get_parent_class() == this) {
@@ -151,49 +171,9 @@ Err CNodeClass::build_call_graph(CSourceRepo* repo) {
         src_method->external_callees.insert(dst_method);
         dst_method->external_callers.insert(src_method);
       }
-
-      //
-      //src_method->called_by.insert(src_method);
+      */
     });
   }
-
-  /*
-  for (auto src_method : all_methods) {
-    auto src_mod = this;
-
-    src_method->_node.visit_tree([&](MnNode child) {
-      if (child.sym != sym_call_expression) return;
-
-      auto func = child.get_field(field_function);
-
-      if (func.sym == sym_identifier) {
-        auto dst_mod = this;
-        auto dst_method = get_method(func.text());
-        if (dst_method) {
-          dst_method->internal_callers.insert(src_method);
-          src_method->internal_callees.insert(dst_method);
-        }
-      }
-
-      if (func.sym == sym_field_expression) {
-        auto component_name = func.get_field(field_argument);
-        auto component_method_name = func.get_field(field_field).text();
-
-        auto component = get_field(component_name.name4());
-        if (component) {
-          auto dst_mod = source_file->lib->get_module(component->type_name());
-          if (dst_mod) {
-            auto dst_method = dst_mod->get_method(component_method_name);
-            if (dst_method) {
-              dst_method->external_callers.insert(src_method);
-              src_method->external_callees.insert(dst_method);
-            }
-          }
-        }
-      }
-    });
-  }
-  */
 
   return err;
 }
@@ -255,17 +235,41 @@ Err CNodeClass::categorize_fields(bool verbose) {
 
 //------------------------------------------------------------------------------
 
-CNode* CNodeClass::resolve(CNode* name, CSourceRepo* repo) {
-  if (!name) return nullptr;
+#if 0
+CNode* CNodeClass::resolve(CNode* name) {
+  if (!name) {
+    assert(false);
+    return nullptr;
+  }
+
+  //----------
+
+  if (auto punct = name->as_a<CNodePunct>()) {
+    return resolve(name->node_next);
+  }
+
+  if (auto field = name->as_a<CNodeFieldExpression>()) {
+    return resolve(name->child_head);
+  }
+
+  if (auto qual = name->as_a<CNodeQualifiedIdentifier>()) {
+    return resolve(name->child_head);
+  }
 
   //----------
 
   if (auto id = name->as_a<CNodeIdentifier>()) {
-    if (auto func = get_function(name->get_name()) {
+    if (auto func = get_function(name->get_name())) {
       return func;
     }
-    else if (auto field = get_field(name->get_name()) {
-      return field;
+    else if (auto field = get_field(name->get_name())) {
+      if (field->node_next) {
+        auto field_class = repo->get_class(field->get_type_name());
+        return field_class->resolve(name->node_next);
+      }
+      else {
+        return field;
+      }
     }
     else {
       return nullptr;
@@ -274,18 +278,7 @@ CNode* CNodeClass::resolve(CNode* name, CSourceRepo* repo) {
 
   //----------
 
-  if (auto field = name->as_a<CNodeFieldExpression>()) {
-    return resolve(name->child_head, repo);
-  }
-
-  //----------
-
-  if (auto qual = name->as_a<CNodeQualifiedIdentifier>()) {
-    return resolve(name->child_head, repo);
-  }
-
-  //----------
-
+  /*
   if (auto id = name->as_a<CNodeIdentifier>()) {
     if (name->tag_is("scope")) {
       assert(false);
@@ -294,19 +287,19 @@ CNode* CNodeClass::resolve(CNode* name, CSourceRepo* repo) {
 
     if (name->tag_is("field_path")) {
       auto field = get_field(name->get_text());
-      auto field_class = repo->get_class(field->get_type_name());
-      return repo->resolve(field_class, name->node_next);
     }
 
     //printf("### %s ###\n", name->match_tag);
     return get_function(name->get_name());
   }
+  */
 
   //----------
 
   assert(false && "Could not resolve function name");
   return nullptr;
 }
+#endif
 
 //------------------------------------------------------------------------------
 

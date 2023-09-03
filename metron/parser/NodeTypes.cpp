@@ -12,8 +12,7 @@ using namespace parseroni;
 uint32_t CNodeTranslationUnit::debug_color() const { return 0xFFFF00; }
 
 std::string_view CNodeTranslationUnit::get_name() const {
-  dump_tree();
-  assert(false);
+  NODE_ERR("FIXME");
   return "";
 }
 
@@ -21,9 +20,8 @@ Err CNodeTranslationUnit::emit(Cursor& cursor) {
   return cursor.emit_default(this);
 }
 
-Err CNodeTranslationUnit::trace(IContext* context) {
-  dump_tree();
-  assert(false);
+Err CNodeTranslationUnit::trace(CCall* call) {
+  NODE_ERR("FIXME");
   return Err();
 }
 
@@ -32,20 +30,17 @@ Err CNodeTranslationUnit::trace(IContext* context) {
 uint32_t CNodeNamespace::debug_color() const { return 0xFFFFFF; }
 
 std::string_view CNodeNamespace::get_name() const {
-  dump_tree();
-  assert(false);
+  NODE_ERR("FIXME");
   return "";
 }
 
 Err CNodeNamespace::emit(Cursor& c) {
-  dump_tree();
-  assert(false);
+  NODE_ERR("FIXME");
   return Err();
 }
 
-Err CNodeNamespace::trace(IContext* context) {
-  dump_tree();
-  assert(false);
+Err CNodeNamespace::trace(CCall* call) {
+  NODE_ERR("FIXME");
   return Err();
 }
 
@@ -54,8 +49,7 @@ Err CNodeNamespace::trace(IContext* context) {
 uint32_t CNodePreproc::debug_color() const { return 0x00BBBB; }
 
 std::string_view CNodePreproc::get_name() const {
-  dump_tree();
-  assert(false);
+  NODE_ERR("FIXME");
   return "";
 }
 
@@ -78,9 +72,8 @@ Err CNodePreproc::emit(Cursor& cursor) {
   return err << cursor.check_done(this);
 }
 
-Err CNodePreproc::trace(IContext* context) {
-  dump_tree();
-  assert(false);
+Err CNodePreproc::trace(CCall* call) {
+  NODE_ERR("FIXME");
   return Err();
 }
 
@@ -94,9 +87,16 @@ std::string_view CNodeIdentifier::get_name() const {
 
 Err CNodeIdentifier::emit(Cursor& cursor) { return cursor.emit_default(this); }
 
-Err CNodeIdentifier::trace(IContext* context) {
-  auto field = context->resolve(this);
-  return field->log_action(this, ACT_READ);
+Err CNodeIdentifier::trace(CCall* call) {
+  if (auto inst_field = call->inst_class->resolve(this)) {
+    return inst_field->log_action(this, ACT_READ);
+  }
+  /*
+  else if (auto inst_arg = call->resolve(this)) {
+    return inst_arg->log_action(this, ACT_READ);
+  }
+  */
+  return Err();
 }
 
 //------------------------------------------------------------------------------
@@ -104,8 +104,7 @@ Err CNodeIdentifier::trace(IContext* context) {
 uint32_t CNodePunct::debug_color() const { return 0x88FF88; }
 
 std::string_view CNodePunct::get_name() const {
-  dump_tree();
-  assert(false);
+  NODE_ERR("FIXME");
   return "";
 }
 
@@ -113,7 +112,7 @@ Err CNodePunct::emit(Cursor& c) {
   return c.emit_default(this);
 }
 
-Err CNodePunct::trace(IContext* context) {
+Err CNodePunct::trace(CCall* call) {
   return Err();
 }
 
@@ -122,21 +121,22 @@ Err CNodePunct::trace(IContext* context) {
 uint32_t CNodeFieldExpression::debug_color() const { return 0x80FF80; }
 
 std::string_view CNodeFieldExpression::get_name() const {
-  dump_tree();
-  assert(false);
+  NODE_ERR("FIXME");
   return "";
 }
 
 Err CNodeFieldExpression::emit(Cursor& c) {
-  dump_tree();
-  assert(false);
+  NODE_ERR("FIXME");
   return Err();
 }
 
-Err CNodeFieldExpression::trace(IContext* context) {
-  dump_tree();
-  assert(false);
-  return Err();
+Err CNodeFieldExpression::trace(CCall* call) {
+  Err err;
+
+  auto inst = call->inst_class->resolve(this);
+  err << inst->log_action(this, ACT_READ);
+
+  return err;
 }
 
 //------------------------------------------------------------------------------
@@ -144,20 +144,17 @@ Err CNodeFieldExpression::trace(IContext* context) {
 uint32_t CNodeQualifiedIdentifier::debug_color() const { return 0x80FF80; }
 
 std::string_view CNodeQualifiedIdentifier::get_name() const {
-  dump_tree();
-  assert(false);
+  NODE_ERR("FIXME");
   return "";
 }
 
 Err CNodeQualifiedIdentifier::emit(Cursor& c) {
-  dump_tree();
-  assert(false);
+  NODE_ERR("FIXME");
   return Err();
 }
 
-Err CNodeQualifiedIdentifier::trace(IContext* context) {
-  dump_tree();
-  assert(false);
+Err CNodeQualifiedIdentifier::trace(CCall* call) {
+  NODE_ERR("FIXME");
   return Err();
 }
 
@@ -166,20 +163,17 @@ Err CNodeQualifiedIdentifier::trace(IContext* context) {
 uint32_t CNodeText::debug_color() const { return 0x888888; }
 
 std::string_view CNodeText::get_name() const {
-  dump_tree();
-  assert(false);
+  NODE_ERR("FIXME");
   return "";
 }
 
 Err CNodeText::emit(Cursor& c) {
-  dump_tree();
-  assert(false);
+  NODE_ERR("FIXME");
   return Err();
 }
 
-Err CNodeText::trace(IContext* context) {
-  dump_tree();
-  assert(false);
+Err CNodeText::trace(CCall* call) {
+  NODE_ERR("FIXME");
   return Err();
 }
 
@@ -188,20 +182,17 @@ Err CNodeText::trace(IContext* context) {
 uint32_t CNodeKeyword::debug_color() const { return 0xFFFF88; }
 
 std::string_view CNodeKeyword::get_name() const {
-  dump_tree();
-  assert(false);
+  NODE_ERR("FIXME");
   return "";
 }
 
 Err CNodeKeyword::emit(Cursor& c) {
-  dump_tree();
-  assert(false);
+  NODE_ERR("FIXME");
   return Err();
 }
 
-Err CNodeKeyword::trace(IContext* context) {
-  dump_tree();
-  assert(false);
+Err CNodeKeyword::trace(CCall* call) {
+  NODE_ERR("FIXME");
   return Err();
 }
 
@@ -210,20 +201,17 @@ Err CNodeKeyword::trace(IContext* context) {
 uint32_t CNodeTypedef::debug_color() const { return 0xFFFF88; }
 
 std::string_view CNodeTypedef::get_name() const {
-  dump_tree();
-  assert(false);
+  NODE_ERR("FIXME");
   return "";
 }
 
 Err CNodeTypedef::emit(Cursor& c) {
-  dump_tree();
-  assert(false);
+  NODE_ERR("FIXME");
   return Err();
 }
 
-Err CNodeTypedef::trace(IContext* context) {
-  dump_tree();
-  assert(false);
+Err CNodeTypedef::trace(CCall* call) {
+  NODE_ERR("FIXME");
   return Err();
 }
 
@@ -232,20 +220,17 @@ Err CNodeTypedef::trace(IContext* context) {
 uint32_t CNodeList::debug_color() const { return 0xCCCCCC; }
 
 std::string_view CNodeList::get_name() const {
-  dump_tree();
-  assert(false);
+  NODE_ERR("FIXME");
   return "";
 }
 
 Err CNodeList::emit(Cursor& c) {
-  dump_tree();
-  assert(false);
+  NODE_ERR("FIXME");
   return Err();
 }
 
-Err CNodeList::trace(IContext* context) {
-  dump_tree();
-  assert(false);
+Err CNodeList::trace(CCall* call) {
+  NODE_ERR("FIXME");
   return Err();
 }
 

@@ -9,4 +9,4 @@ struct CNodeExpression;
 struct CNodeCompound;
 struct CSourceRepo;
 struct CInstField;
-struct CInstCall;
+struct CCall;

@@ -13,66 +13,70 @@ uint32_t CNodeStatement::debug_color() const {
 //------------------------------------------------------------------------------
 
 Err CNodeExpStatement::emit(Cursor& c) {
-  dump_tree();
-  assert(false);
+  NODE_ERR("Can't emit statement base class");
   return Err();
 }
 
-Err CNodeExpStatement::trace(IContext* context) {
+Err CNodeExpStatement::trace(CCall* call) {
   Err err;
-  for (auto c : this) err << c->trace(context);
+  for (auto c : this) err << c->trace(call);
   return err;
 }
 
 //------------------------------------------------------------------------------
 
 Err CNodeAssignment::emit(Cursor& c) {
-  dump_tree();
-  assert(false);
+  NODE_ERR("FIXME");
   return Err();
 }
 
-Err CNodeAssignment::trace(IContext* context) {
+Err CNodeAssignment::trace(CCall* call) {
   Err err;
 
   auto rhs = child("rhs");
+  err << rhs->trace(call);
+
   auto lhs = child("lhs");
+  auto inst_lhs = call->inst_class->resolve(lhs);
 
-  auto inst_lhs = context->resolve(lhs);
-  assert(inst_lhs);
-
-  err << rhs->trace(context);
-
-  if (child("op")->get_text() != "=") {
-    err << inst_lhs->log_action(this, ACT_READ);
+  if (inst_lhs) {
+    auto op_text = child("op")->get_text();
+    if (op_text != "=") err << inst_lhs->log_action(this, ACT_READ);
+    err << inst_lhs->log_action(this, ACT_WRITE);
   }
-
-  err << inst_lhs->log_action(this, ACT_WRITE);
 
   return Err();
 }
 
 //------------------------------------------------------------------------------
 
-Err CNodeCompound::trace(IContext* context) {
+CHECK_RETURN Err CNodeIf::trace(CCall* call) {
+  assert(false);
+  return Err();
+}
+
+//------------------------------------------------------------------------------
+
+Err CNodeCompound::trace(CCall* call) {
   Err err;
-  for (auto c : this) err << c->trace(context);
+  for (auto c : this) err << c->trace(call);
   return err;
 }
 
 //------------------------------------------------------------------------------
 
-Err CNodeReturn::trace(IContext* context) {
+Err CNodeReturn::trace(CCall* call) {
   Err err;
 
-  if (auto value = child("value")) {
-    err << value->trace(context);
+  if (auto node_value = child("value")) {
+    err << node_value->trace(call);
   }
 
-  auto inst_return = context->resolve(this);
-  if (inst_return) {
-    err << inst_return->log_action(this, ACT_WRITE);
+  /*
+  if (call->inst_return) {
+    err << call->inst_return->log_action(this, ACT_WRITE);
   }
+  */
 
   return err;
 }

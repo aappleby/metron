@@ -16,9 +16,7 @@ uint32_t CNode::debug_color() const {
 }
 
 std::string_view CNode::get_name() const {
-  dump_tree();
-  LOG_R("bad bad %s\n", typeid(*this).name());
-  assert(false);
+  NODE_ERR("Can't get name for CNode base class");
   return "<CNode>";
 }
 
@@ -28,10 +26,9 @@ Err CNode::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-Err CNode::trace(IContext* context) {
-  dump_tree();
-  LOG_R("Don't know how to trace {{%s}}\n", typeid(*this).name());
-  exit(-1);
+Err CNode::trace(CCall* call) {
+  NODE_ERR("Can't trace CNode base class");
+  return Err();
 }
 
 //------------------------------------------------------------------------------

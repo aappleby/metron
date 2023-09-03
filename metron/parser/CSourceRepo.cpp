@@ -84,20 +84,33 @@ Err CSourceRepo::collect_fields_and_methods() {
   Err err;
 
   for (auto pair : source_map) {
-    for (auto n : pair.second->context.root_node) {
+    CSourceFile* file = pair.second;
+
+    for (auto n : file->context.root_node) {
 
       if (auto node_template = n->as_a<CNodeTemplate>()) {
         auto node_class = node_template->child<CNodeClass>();
+
+        node_class->repo = this;
+        node_class->file = file;
+
         all_classes.push_back(node_class);
-        node_class->collect_fields_and_methods(this);
+        node_class->collect_fields_and_methods();
       }
       else if (auto node_class = n->as_a<CNodeClass>()) {
+
+        node_class->repo = this;
+        node_class->file = file;
+
         all_classes.push_back(node_class);
-        node_class->collect_fields_and_methods(this);
+        node_class->collect_fields_and_methods();
       }
       else if (auto node_struct = n->as_a<CNodeStruct>()) {
+        node_struct->repo = this;
+        node_struct->file = file;
+
         all_structs.push_back(node_struct);
-        node_struct->collect_fields_and_methods(this);
+        node_struct->collect_fields_and_methods();
       }
 
     }
@@ -130,13 +143,13 @@ Err CSourceRepo::collect_fields_and_methods() {
       }
       else {
         LOG_R("Multiple top modules!\n");
-        exit(-1);
+        assert(false);
       }
     }
   }
   if (top == nullptr) {
     LOG_R("No top module?\n");
-    exit(-1);
+    assert(false);
   }
 
   return err;
@@ -208,10 +221,9 @@ void CSourceRepo::dump() {
 
 //------------------------------------------------------------------------------
 
+#if 0
 CNode* CSourceRepo::resolve(CNodeClass* parent, CNode* path) {
   if (!path) return nullptr;
-
-  path->dump_tree();
 
   //----------
 
@@ -258,3 +270,4 @@ CNode* CSourceRepo::resolve(CNodeClass* parent, CNode* path) {
   assert(false && "Could not resolve function name");
   return nullptr;
 }
+#endif

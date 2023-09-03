@@ -151,9 +151,22 @@ Err CNodeClass::build_call_graph(CSourceRepo* repo) {
         submod_func->external_callers.insert(src_method);
       }
       else if (auto func_id = func_name->as_a<CNodeIdentifier>()) {
+        /*
+        func_name->dump_tree();
+        auto func_name = func_id->get_text();
+        if (func_name == "bx" ||
+            func_name == "dup" ||
+            func_name == "sign_extend" ||
+            func_name == "zero_extend") {
+          return;
+        }
+        */
+
         auto dst_method = get_function(func_id->get_text());
-        src_method->internal_callees.insert(dst_method);
-        dst_method->internal_callers.insert(src_method);
+        if (dst_method) {
+          src_method->internal_callees.insert(dst_method);
+          dst_method->internal_callers.insert(src_method);
+        }
       }
       else {
         assert(false);

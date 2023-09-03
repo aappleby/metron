@@ -41,6 +41,7 @@ CInstance* CInstance::resolve(CNode* node) {
     while(cursor) {
       if (cursor->as_a<CNodePunct>()) cursor = cursor->node_next;
       inst = inst->resolve(cursor);
+      if (!inst) return inst;
       assert(cursor);
       cursor = cursor->node_next;
     }

@@ -28,6 +28,8 @@ Err CNodeCall::trace(CCall* call) {
   auto src_inst  = call->inst_class;
   auto src_class = src_inst->node_class;
 
+  err << child("func_args")->trace(call);
+
   auto dst_name = child("func_name");
 
   if (auto field_exp = dst_name->as_a<CNodeFieldExpression>()) {
@@ -41,9 +43,11 @@ Err CNodeCall::trace(CCall* call) {
   }
   else {
     auto dst_func = src_class->get_function(dst_name->get_text());
-    auto dst_call = new CCall(src_inst, this, dst_func);
-    call->call_map[this] = dst_call;
-    err << dst_func->trace(dst_call);
+    if (dst_func) {
+      auto dst_call = new CCall(src_inst, this, dst_func);
+      call->call_map[this] = dst_call;
+      err << dst_func->trace(dst_call);
+    }
   }
 
   return err;

@@ -30,6 +30,14 @@ CNodeStruct* CSourceRepo::get_struct(std::string_view name) {
   return nullptr;
 }
 
+CNodeNamespace* CSourceRepo::get_namespace(std::string_view name) {
+  for (auto c : all_namespaces) {
+    auto namespace_name = c->get_name();
+    if (namespace_name == name) return c;
+  }
+  return nullptr;
+}
+
 //------------------------------------------------------------------------------
 
 std::string CSourceRepo::resolve_filename(const std::string& filename) {
@@ -111,6 +119,13 @@ Err CSourceRepo::collect_fields_and_methods() {
 
         all_structs.push_back(node_struct);
         node_struct->collect_fields_and_methods();
+      }
+      else if (auto node_namespace = n->as_a<CNodeNamespace>()) {
+        node_namespace->repo = this;
+        node_namespace->file = file;
+
+        all_namespaces.push_back(node_namespace);
+        node_namespace->collect_fields_and_methods();
       }
 
     }

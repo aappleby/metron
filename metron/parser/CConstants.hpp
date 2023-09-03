@@ -40,7 +40,7 @@ constexpr std::array c_keywords = {
 "register",
 "return",
 "short",
-"signed",
+//"signed",
 "sizeof",
 "static",
 "static_cast",
@@ -50,7 +50,7 @@ constexpr std::array c_keywords = {
 "true",
 "typedef",
 "union",
-"unsigned",
+//"unsigned",
 "void",
 "while",
 };
@@ -67,8 +67,8 @@ constexpr std::array builtin_type_base = {
   "logic", // FIXME THIS IS PROBABLY BAD
   "long",
   "short",
-  "signed",
-  "unsigned",
+  //"signed",
+  //"unsigned",
   "void",
 };
 

@@ -50,18 +50,75 @@ Err CNodeAssignment::trace(CCall* call) {
 
 //------------------------------------------------------------------------------
 
+CHECK_RETURN Err CNodeFor::trace(CCall* call) {
+  Err err;
+  err << child("init")->trace(call);
+  err << child("condition")->trace(call);
+  err << child("body")->trace(call);
+  err << child("step")->trace(call);
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
 CHECK_RETURN Err CNodeIf::trace(CCall* call) {
   Err err;
 
   err << child("condition")->trace(call);
 
-  call->inst_class->push_state();
+  auto inst = call->inst_class;
+
+  inst->push_state();
   if (auto body_true = child("body_true")) err << body_true->trace(call);
-  call->inst_class->swap_state();
+  inst->swap_state();
   if (auto body_false = child("body_false")) err << body_false->trace(call);
-  call->inst_class->merge_state();
+  inst->merge_state();
 
   return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err CNodeSwitch::trace(CCall* call) {
+  Err err;
+
+  err << child("condition")->trace(call);
+
+  auto inst = call->inst_class;
+
+  int case_count = 0;
+  bool has_default = false;
+
+  for (auto cursor = child("ldelim"); cursor; cursor = cursor->node_next) {
+    if (cursor->tag_is("default")) has_default = true;
+
+    // Skip cases without bodies
+    if (!cursor->child("body")) continue;
+
+    inst->push_state();
+    case_count++;
+    err << cursor->trace(call);
+    inst->swap_state();
+  }
+
+  if (has_default) {
+    inst->pop_state();
+    case_count--;
+  }
+
+  for (int i = 0; i < case_count; i++) {
+    inst->merge_state();
+  }
+
+  return err;
+}
+
+CHECK_RETURN Err CNodeCase::trace(CCall* call) {
+  return child("body")->trace(call);
+}
+
+CHECK_RETURN Err CNodeDefault::trace(CCall* call) {
+  return child("body")->trace(call);
 }
 
 //------------------------------------------------------------------------------

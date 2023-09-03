@@ -254,6 +254,12 @@ Err CNodeField::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
+CHECK_RETURN Err CNodeField::trace(CCall* call) {
+  return child("value")->trace(call);
+}
+
+//------------------------------------------------------------------------------
+
 void CNodeField::dump() {
   auto name = get_name();
   LOG_A("Field %.*s : ", name.size(), name.data());

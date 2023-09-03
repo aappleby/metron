@@ -3,6 +3,8 @@
 #include "CInstance.hpp"
 #include "CNodeClass.hpp"
 #include "CNodeType.hpp"
+#include "CNodeCall.hpp"
+#include "CNodeField.hpp"
 
 using namespace matcheroni;
 using namespace parseroni;
@@ -27,11 +29,28 @@ Err CNodeTranslationUnit::trace(CCall* call) {
 
 //------------------------------------------------------------------------------
 
+/*
+[000.001]  ┣━━╸▆ CNodeNamespace =
+[000.001]  ┃   ┣━━╸▆ namespace : CNodeKeyword = "namespace"
+[000.001]  ┃   ┣━━╸▆ name : CNodeIdentifier = "MyPackage"
+[000.001]  ┃   ┗━━╸▆ fields : CNodeList =
+[000.001]  ┃       ┣━━╸▆ ldelim : CNodePunct = "{"
+[000.001]  ┃       ┣━━╸▆ CNodeField =
+[000.001]  ┃       ┃   ┣━━╸▆ CNodeKeyword = "static"
+[000.001]  ┃       ┃   ┣━━╸▆ CNodeKeyword = "const"
+[000.001]  ┃       ┃   ┣━━╸▆ type : CNodeBuiltinType =
+[000.002]  ┃       ┃   ┃   ┗━━╸▆ name : CNodeIdentifier = "int"
+[000.002]  ┃       ┃   ┣━━╸▆ name : CNodeIdentifier = "foo"
+[000.002]  ┃       ┃   ┣━━╸▆ CNodePunct = "="
+[000.002]  ┃       ┃   ┗━━╸▆ value : CNodeConstInt = "3"
+[000.002]  ┃       ┣━━╸▆ CNodePunct = ";"
+[000.002]  ┃       ┗━━╸▆ rdelim : CNodePunct = "}"
+*/
+
 uint32_t CNodeNamespace::debug_color() const { return 0xFFFFFF; }
 
 std::string_view CNodeNamespace::get_name() const {
-  NODE_ERR("FIXME");
-  return "";
+  return child("name")->get_text();
 }
 
 Err CNodeNamespace::emit(Cursor& c) {
@@ -42,6 +61,23 @@ Err CNodeNamespace::emit(Cursor& c) {
 Err CNodeNamespace::trace(CCall* call) {
   NODE_ERR("FIXME");
   return Err();
+}
+
+Err CNodeNamespace::collect_fields_and_methods() {
+  for (auto c : child("fields")) {
+    if (auto field = c->as_a<CNodeField>()) {
+      all_fields.push_back(field);
+    }
+  }
+
+  return Err();
+}
+
+CNodeField* CNodeNamespace::get_field(std::string_view name) {
+  for (auto f : all_fields) {
+    if (f->get_name() == name) return f;
+  }
+  return nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -129,7 +165,9 @@ Err CNodeFieldExpression::trace(CCall* call) {
   Err err;
 
   auto inst = call->inst_class->resolve(this);
-  err << inst->log_action(this, ACT_READ);
+  if (inst) {
+    err << inst->log_action(this, ACT_READ);
+  }
 
   return err;
 }
@@ -149,8 +187,15 @@ Err CNodeQualifiedIdentifier::emit(Cursor& c) {
 }
 
 Err CNodeQualifiedIdentifier::trace(CCall* call) {
-  NODE_ERR("FIXME");
-  return Err();
+  Err err;
+
+  auto namespace_name = child("scope_path")->get_name();
+  auto field_name     = child("identifier")->get_name();
+
+  auto namespace_node = get_repo()->get_namespace(namespace_name);
+  err << namespace_node->get_field(field_name)->trace(call);
+
+  return err;
 }
 
 //------------------------------------------------------------------------------
@@ -187,7 +232,6 @@ Err CNodeKeyword::emit(Cursor& c) {
 }
 
 Err CNodeKeyword::trace(CCall* call) {
-  NODE_ERR("FIXME");
   return Err();
 }
 

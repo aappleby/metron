@@ -77,6 +77,7 @@ struct CNodeAssignment : public CNodeStatement {
 //------------------------------------------------------------------------------
 
 struct CNodeFor : public CNodeStatement {
+  CHECK_RETURN Err trace(CCall* call) override;
 };
 
 struct CNodeIf : public CNodeStatement {
@@ -90,12 +91,15 @@ struct CNodeReturn : public CNodeStatement {
 //------------------------------------------------------------------------------
 
 struct CNodeSwitch : public CNodeStatement {
+  CHECK_RETURN Err trace(CCall* call) override;
 };
 
 struct CNodeCase : public CNodeStatement {
+  CHECK_RETURN Err trace(CCall* call) override;
 };
 
 struct CNodeDefault : public CNodeStatement {
+  CHECK_RETURN Err trace(CCall* call) override;
 };
 
 //------------------------------------------------------------------------------

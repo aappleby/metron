@@ -38,6 +38,10 @@ struct CNodeClass : public CNode {
   CHECK_RETURN Err emit(Cursor& cursor) override;
   virtual void dump();
 
+  CSourceRepo* get_repo() override {
+    return repo;
+  }
+
   //----------
 
   CNodeField*       get_field(std::string_view name);

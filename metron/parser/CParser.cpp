@@ -55,6 +55,8 @@ TokenSpan match_access      (CContext& ctx, TokenSpan body);
 TokenSpan match_type        (CContext& ctx, TokenSpan body);
 TokenSpan match_call        (CContext& ctx, TokenSpan body);
 
+using cap_enum =  CaptureAnon<Ref<match_enum>, CNodeEnum>;
+
 TokenSpan cap_type(CContext& ctx, TokenSpan body);
 
 using cap_targ_list    = CaptureAnon<Ref<match_targ_list>,   CNodeList>;
@@ -819,6 +821,13 @@ CaptureAnon<
   Seq<
     Tag<"name", cap_name>,
     Opt<Tag<"template_args", cap_targ_list>>,
+
+    // FIXME this is bleh
+    Opt<Seq<
+      cap_punct<"::">,
+      cap_identifier
+    >>,
+
     Any<Tag<"star", cap_punct<"*">>>
   >,
   node_type
@@ -869,6 +878,7 @@ TokenSpan match_field_list(CContext& ctx, TokenSpan body) {
       cap_access,
       cap_constructor,
       cap_function,
+      Seq<cap_enum,  cap_punct<";">>,
       Seq<cap_field, cap_punct<";">>
     >,
     Tag<"rdelim", cap_punct<"}">>
@@ -1055,8 +1065,6 @@ TokenSpan match_enum(CContext& ctx, TokenSpan body) {
   return pattern::match(ctx, body);
 }
 
-using cap_enum =  CaptureAnon<Ref<match_enum>, CNodeEnum>;
-
 //------------------------------------------------------------------------------
 
 TokenSpan match_function(CContext& ctx, TokenSpan body) {
@@ -1128,9 +1136,18 @@ TokenSpan match_compound(CContext& ctx, TokenSpan body) {
 //------------------------------------------------------------------------------
 // FIXME we should cap the condition/step differently or something
 
+TokenSpan cap_assignment(CContext& ctx, TokenSpan body);
+
 TokenSpan match_for(CContext& ctx, TokenSpan body) {
   // clang-format off
-  using exp_or_decl = Oneof<Ref<match_expression>, Ref<match_declaration>>;
+
+  using exp_or_decl =
+  Oneof<
+    Ref<cap_assignment>,
+    Ref<match_expression>,
+    Ref<match_declaration>
+  >;
+
   using pattern =
   Seq<
     Tag<"for",       cap_keyword<"for">>,
@@ -1195,7 +1212,7 @@ TokenSpan match_case_body(CContext& ctx, TokenSpan body) {
           Ref<match_statement>
         >
       >,
-      CNode
+      CNodeList
     >
   >;
   // clang-format on
@@ -1429,8 +1446,7 @@ TokenSpan match_translation_unit(CContext& ctx, TokenSpan body) {
   Any<
     cap_preproc,
     cap_function,
-    cap_namespace,
-
+    Seq<cap_namespace,   cap_punct<";">>,
     Seq<cap_class,       cap_punct<";">>,
     Seq<cap_struct,      cap_punct<";">>,
     Seq<cap_union,       cap_punct<";">>,

@@ -1,27 +1,31 @@
 #include "metron/tools/metron_tools.h"
 
-class Submod {
-  void tack() {
-    x = y + 1;
-  }
+// UTF-8 text files with a byte order mark should be supported.
 
-  int x;
-  int y;
-};
+// From https://www.w3.org/2001/06/utf-8-test/UTF-8-demo.html:
+
+/*
+Runes:
+
+  ᚻᛖ ᚳᚹᚫᚦ ᚦᚫᛏ ᚻᛖ ᛒᚢᛞᛖ ᚩᚾ ᚦᚫᛗ ᛚᚪᚾᛞᛖ ᚾᚩᚱᚦᚹᛖᚪᚱᛞᚢᛗ ᚹᛁᚦ ᚦᚪ ᚹᛖᛥᚫ
+
+  (Old English, which transcribed into Latin reads 'He cwaeth that he
+  bude thaem lande northweardum with tha Westsae.' and means 'He said
+  that he lived in the northern land near the Western Sea.')
+*/
 
 class Module {
 public:
 
-  void tick() {
-    if (1) {
-      z = 2;
-    }
-    else {
-      z = 3;
-    }
-    submod.tack();
+  Module() {
+    my_reg = 7;
   }
 
-  Submod submod;
-  int z;
+  logic<8> get_reg() {
+    return my_reg;
+  }
+
+private:
+
+  logic<8> my_reg;
 };

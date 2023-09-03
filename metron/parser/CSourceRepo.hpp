@@ -12,6 +12,7 @@
 class CSourceFile;
 class CNodeClass;
 class CNodeStruct;
+class CNodeNamespace;
 class CNode;
 
 //------------------------------------------------------------------------------
@@ -19,8 +20,9 @@ class CNode;
 class CSourceRepo /* : public IContext maybe? */ {
  public:
 
-  CNodeClass*  get_class(std::string_view name);
-  CNodeStruct* get_struct(std::string_view name);
+  CNodeClass*     get_class(std::string_view name);
+  CNodeStruct*    get_struct(std::string_view name);
+  CNodeNamespace* get_namespace(std::string_view name);
 
   std::string resolve_filename(const std::string& filename);
   Err load_source(std::string filename, CSourceFile** out_source = nullptr);
@@ -36,8 +38,9 @@ class CSourceRepo /* : public IContext maybe? */ {
   std::vector<std::string> search_paths = {""};
   std::map<std::string, CSourceFile*> source_map;
 
-  std::vector<CNodeClass*>  all_classes;
-  std::vector<CNodeStruct*> all_structs;
+  std::vector<CNodeClass*>     all_classes;
+  std::vector<CNodeStruct*>    all_structs;
+  std::vector<CNodeNamespace*> all_namespaces;
 
   CNodeClass* top = nullptr;
 };

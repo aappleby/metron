@@ -22,6 +22,16 @@ struct CNodeNamespace : public CNode {
   std::string_view get_name() const override;
   CHECK_RETURN Err emit(Cursor& c) override;
   CHECK_RETURN Err trace(CCall* call) override;
+
+  Err collect_fields_and_methods();
+
+  CNodeField* get_field(std::string_view name);
+
+  CSourceRepo* repo = nullptr;
+  CSourceFile* file = nullptr;
+  int refcount = 0;
+
+  std::vector<CNodeField*> all_fields;
 };
 
 //------------------------------------------------------------------------------

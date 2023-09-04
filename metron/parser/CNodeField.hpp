@@ -60,8 +60,6 @@ struct CNodeField : public CNode {
   CNodeClass*  _type_class;
   CNodeStruct* _type_struct;
 
-  //TraceState _state = CTX_PENDING;
-
   bool _static = false;
   bool _const = false;
   bool _public = false;

@@ -272,23 +272,25 @@ void CNodeField::dump() {
 
   if (_parent_class) {
     auto name = _parent_class->get_name();
-    LOG_A("parent %.*s ", int(name.size()), name.data());
+    LOG_A("parent class %.*s ", int(name.size()), name.data());
   }
 
   if (_parent_struct) {
     auto name = _parent_struct->get_name();
-    LOG_A("parent %.*s ", int(name.size()), name.data());
+    LOG_A("parent struct %.*s ", int(name.size()), name.data());
   }
 
   if (_type_class) {
     auto name = _type_class->get_name();
-    LOG_A("type %.*s ", int(name.size()), name.data());
+    LOG_A("type class %.*s ", int(name.size()), name.data());
   }
 
   if (_type_struct) {
     auto name = _type_struct->get_name();
-    LOG_A("type %.*s ", int(name.size()), name.data());
+    LOG_A("type struct %.*s ", int(name.size()), name.data());
   }
+
+  LOG_A("%s", to_string(_state));
 
   LOG_A("\n");
 }

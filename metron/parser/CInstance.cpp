@@ -216,6 +216,16 @@ void CInstPrim::dump_tree() const {
   LOG_G("\n");
 }
 
+//----------------------------------------
+
+void CInstPrim::commit_state() {
+  assert(node_field);
+  if (node_field->_state == CTX_PENDING) {
+    node_field->_state = state_stack.back();
+  }
+  assert(node_field->_state == state_stack.back());
+}
+
 //------------------------------------------------------------------------------
 
 CCall::CCall(CInstClass* inst_class, CNodeCall* node_call, CNodeFunction* node_func)

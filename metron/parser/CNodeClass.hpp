@@ -58,6 +58,8 @@ struct CNodeClass : public CNode {
   Err emit_module_ports(Cursor& cursor);
   Err emit_template_parameter_list(Cursor& cursor);
 
+  void dump_fields();
+
   //----------------------------------------
 
   CSourceRepo* repo = nullptr;

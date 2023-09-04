@@ -4211,32 +4211,16 @@ class toplevel {
 #endif // TOPLEVEL_H
 #include "metron/tools/metron_tools.h"
 
-// Modules can contain other modules.
-
-class Submod {
-public:
-
-  void tock() {
-    tick();
-  }
-
-private:
-
-  void tick() {
-    sub_reg = sub_reg + 1;
-  }
-
-  logic<8> sub_reg;
-};
+// Empty module should pass.
 
 class Module {
-public:
+  logic<1> x;
+  logic<1> y;
 
-  void tock() {
-    submod.tock();
+  void tick() {
+    x = ~y;
+    y = x;
   }
-
-  Submod submod;
 };
 class Adder {
 public:

@@ -126,19 +126,13 @@ int main_new(Options opts) {
           LOG_B("Tracing %.*s\n", int(func_name.size()), func_name.data());
 
           auto top_call = new CCall(top_inst, nullptr, node_func);
-
-          //inst_call->dump_tree();
-
           top_inst->entry_points.push_back(top_call);
-
-          //top_call->dump_tree();
-
           err << node_func->trace(top_call);
         }
       }
 
       LOG_G("Tracing done for %.*s\n", int(name.size()), name.data());
-      top_inst->dump_tree();
+      top_inst->commit_state();
       delete top_inst;
     }
 
@@ -153,7 +147,6 @@ int main_new(Options opts) {
     LOG_G("\n");
   }
 
-#if 0
   //----------
   // Emit all modules.
 
@@ -173,12 +166,6 @@ int main_new(Options opts) {
     //lib.teardown();
     return -1;
   }
-
-
-
-
-
-
 
   // Save translated source to output directory, if there is one.
   if (opts.dst_name.size()) {
@@ -202,7 +189,6 @@ int main_new(Options opts) {
       fclose(out_file);
     }
   }
-#endif
 
   LOG("Done!\n");
 

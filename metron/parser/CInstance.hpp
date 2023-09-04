@@ -6,6 +6,8 @@
 #include "metrolib/core/Err.h"
 #include "CNode.hpp"
 
+#include "CNodeField.hpp"
+
 #include <map>
 #include <vector>
 #include <string_view>
@@ -53,12 +55,21 @@ struct CInstance {
     return nullptr;
   }
 
+  //----------
+
   virtual void dump_tree() const = 0;
+
+  virtual CHECK_RETURN Err log_action(CNode* node, TraceAction action);
+
+  virtual void commit_state() {
+    assert(false);
+  }
+
+  //----------
 
   std::string_view get_name() const;
   CInstance* resolve(CNode* node);
 
-  CHECK_RETURN Err log_action(CNode* node, TraceAction action);
   void push_state();
   void pop_state();
   void swap_state();
@@ -75,7 +86,23 @@ struct CInstance {
 
 struct CInstClass : public CInstance {
   CInstClass(CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class);
+
+  //----------
+
   void dump_tree() const override;
+
+  CHECK_RETURN Err log_action(CNode* node, TraceAction action) override {
+    Err err;
+    for (auto pair : inst_map) err << pair.second->log_action(node, action);
+    return err;
+  }
+
+  void commit_state() override {
+    for (auto pair : inst_map) pair.second->commit_state();
+  }
+
+  //----------
+
   CNodeClass* node_class = nullptr;
   std::vector<CCall*> entry_points;
 };
@@ -84,7 +111,23 @@ struct CInstClass : public CInstance {
 
 struct CInstStruct : public CInstance {
   CInstStruct(CInstance* inst_parent, CNodeField* node_field, CNodeStruct* node_struct);
+
+  //----------
+
   void dump_tree() const override;
+
+  CHECK_RETURN Err log_action(CNode* node, TraceAction action) override {
+    Err err;
+    for (auto pair : inst_map) err << pair.second->log_action(node, action);
+    return err;
+  }
+
+  void commit_state() override {
+    for (auto pair : inst_map) pair.second->commit_state();
+  }
+
+  //----------
+
   CNodeStruct* node_struct = nullptr;
 };
 
@@ -92,7 +135,19 @@ struct CInstStruct : public CInstance {
 
 struct CInstPrim : public CInstance {
   CInstPrim(CInstance* inst_parent, CNodeField* node_field);
+
+  //----------
+
   void dump_tree() const override;
+
+  CHECK_RETURN Err log_action(CNode* node, TraceAction action) override {
+    return CInstance::log_action(node, action);
+  }
+
+  void commit_state() override;
+
+  //----------
+
 };
 
 //------------------------------------------------------------------------------

@@ -80,6 +80,12 @@ CNodeField* CNodeNamespace::get_field(std::string_view name) {
   return nullptr;
 }
 
+void CNodeNamespace::dump() {
+  LOG_G("Fields:\n");
+  LOG_INDENT_SCOPE();
+  for (auto n : all_fields) n->dump();
+}
+
 //------------------------------------------------------------------------------
 
 uint32_t CNodePreproc::debug_color() const { return 0x00BBBB; }

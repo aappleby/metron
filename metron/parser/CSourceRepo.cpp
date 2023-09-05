@@ -150,6 +150,7 @@ Err CSourceRepo::collect_fields_and_methods() {
     }
   }
 
+  /*
   top = nullptr;
   for (auto c : all_classes) {
     if (c->refcount == 0) {
@@ -166,6 +167,7 @@ Err CSourceRepo::collect_fields_and_methods() {
     LOG_R("No top module?\n");
     assert(false);
   }
+  */
 
   return err;
 }
@@ -184,54 +186,164 @@ Err CSourceRepo::build_call_graphs() {
 
 //------------------------------------------------------------------------------
 
-void CSourceRepo::categorize_methods() {
+Err CSourceRepo::categorize_fields() {
+  Err err;
+
+  for (auto c : all_classes) {
+    auto cname = c->get_name();
+    LOG_G("Categorizing %.*s\n", cname.size(), cname.data());
+
+    for (auto f : c->all_fields) {
+      auto fname = f->get_name();
+
+
+#if 0
+      if (f->is_param()) {
+        continue;
+      }
+
+      if (f->is_component()) {
+        components.push_back(f);
+      }
+      else if (f->is_public() && f->is_input()) {
+        input_signals.push_back(f);
+      }
+      else if (f->is_public() && f->is_signal()) {
+        output_signals.push_back(f);
+      }
+      else if (f->is_public() && f->is_register()) {
+        output_registers.push_back(f);
+      }
+      else if (f->is_private() && f->is_register()) {
+        private_registers.push_back(f);
+      }
+      else if (f->is_private() && f->is_signal()) {
+        private_signals.push_back(f);
+      }
+      else if (!f->is_public() && f->is_input()) {
+        private_registers.push_back(f);
+      }
+      else if (f->is_enum()) {
+      }
+      else if (f->is_dead()) {
+        dead_fields.push_back(f);
+      }
+      else {
+      }
+#endif
+      //return ERR("Don't know how to categorize %.*s = %s\n", fname.size(), fname.data(), to_string(f->_state));
+    }
+  }
+
+
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+Err CSourceRepo::categorize_methods() {
+  //----------------------------------------
+  // Trace done, all our fields should have a state assigned. Categorize the
+  // methods.
+
+  for (auto c : all_classes) {
+    if (c->all_constructors.size() > 1) {
+      auto name = c->get_name();
+      return ERR("Class %.*s has multiple constructors", int(name.size()), name.data());
+    }
+  }
+
+  //----------------------------------------
+  // Methods named "tick" are ticks, etc.
+
+  for (auto c : all_classes) {
+    for (auto f : c->all_functions) {
+      if (f->get_name().starts_with("tick")) f->is_tick_ = true;
+      if (f->get_name().starts_with("tock")) f->is_tock_ = true;
+    }
+  }
+
+  //----------------------------------------
+  // Methods that only call funcs in the same module and don't write anything
+  // are funcs.
+
+  //----------------------------------------
+  // Methods that call funcs in other modules _must_ be tocks.
+
+  //----------------------------------------
+  // Methods that write registers _must_ be ticks.
+
+  //----------------------------------------
+  // Methods that are downstream from ticks _must_ be ticks.
+
+  //----------------------------------------
+  // Methods that write signals _must_ be tocks.
+
+  //----------------------------------------
+  // Methods that are upstream from tocks _must_ be tocks.
+
+  //----------------------------------------
+  // Methods that write outputs are tocks unless they're already ticks.
+
+  //----------------------------------------
+  // Methods that are downstream from tocks are tocks unless they're already
+  // ticks.
+
+  //----------------------------------------
+  // Just mark everything left as tock.
+
+  //----------------------------------------
+  // Methods categorized, we can assign emit types
+
+  //----------------------------------------
+  // Methods categorized, we can split up internal_callers
+
+  //----------------------------------------
+  // Methods categorized, now we can categorize the inputs of the methods.
+
+  //----------------------------------------
+  // Check for ticks with return values.
+
+  //----------------------------------------
+  // Done!
+
+  return Err();
 }
 
 
 //------------------------------------------------------------------------------
 
 void CSourceRepo::dump() {
-  //std::vector<std::string> search_paths = {""};
-  //std::map<std::string, CSourceFile*> source_map;
-
-  LOG_B("//----------------------------------------\n");
-  LOG_B("// Repo dump\n");
-
-  for (auto s : search_paths) {
-    LOG_G("Search path `%s`\n", s.c_str());
+  {
+    LOG_G("Search paths:\n");
+    LOG_INDENT_SCOPE();
+    for (auto s : search_paths) LOG_G("`%s`\n", s.c_str());
   }
 
-  for (auto pair : source_map) {
-    LOG_L("Source file `%s`\n", pair.first.c_str());
+  {
+    LOG_G("Source files:\n");
+    LOG_INDENT_SCOPE();
+    for (auto pair : source_map) LOG_L("`%s`\n", pair.first.c_str());
   }
 
-  for (auto n : all_classes) {
-    n->dump();
-    //n->dump_tree(3);
-    // auto name = n->get_name();
-    //LOG_B("%.*s @ %p\n", name.size(), name.data(), n);
-
-    /*
-    if (n->node_parent && n->node_parent->as_a<CNodeTemplate>()) {
-      LOG_B("CNodeClass has template parent\n");
-    }
-    */
-
+  {
+    LOG_G("Classes:\n");
+    LOG_INDENT_SCOPE();
+    for (auto n : all_classes) n->dump();
   }
 
-  for (auto n : all_structs) {
-    n->dump();
+  {
+    LOG_G("Structs:\n");
+    LOG_INDENT_SCOPE();
+    for (auto n : all_structs) n->dump();
   }
 
-  LOG_B("//----------------------------------------\n");
-
-  /*
-  for (auto pair : source_map) {
-    auto s = pair.second;
-    printf("\n\n\n");
-    s->dump();
+  {
+    LOG_G("Namespaces:\n");
+    LOG_INDENT_SCOPE();
+    for (auto n : all_namespaces) n->dump();
   }
-  */
 }
 
 //------------------------------------------------------------------------------

@@ -78,28 +78,77 @@ int main_new(Options opts) {
     return -1;
   }
 
+  /*
   if (opts.verbose) {
     root_file->context.root_node->dump_tree();
     LOG("\n");
   }
+  */
 
   //----------------------------------------
   // All modules are now in the library, we can resolve references to other
   // modules when we're collecting fields.
 
+  LOG_B("//----------------------------------------\n");
+  LOG_B("Processing source files\n");
+
+  LOG_B("collect_fields_and_methods\n");
+  err << repo.collect_fields_and_methods();
+
+  LOG_B("build_call_graphs\n");
+  err << repo.build_call_graphs();
+
+
   {
     LOG_B("//----------------------------------------\n");
-    LOG_B("Processing source files\n");
-    LOG_INDENT_SCOPE();
-
-    LOG_B("collect_fields_and_methods\n");
-    err << repo.collect_fields_and_methods();
-
-    LOG_B("build_call_graphs\n");
-    err << repo.build_call_graphs();
+    LOG_B("// Repo dump\n");
+    repo.dump();
+    LOG_B("//----------------------------------------\n");
   }
 
+
+
+
+
+
+
+  exit(0);
+
+
   //----------------------------------------
+  // Mark all methods called by the constructor as inits
+
+#if 0
+  std::set<CNodeFunction*> marked;
+  std::vector<CNodeFunction*> queue;
+
+  for (auto c : repo.all_classes) {
+    if (c->all_constructors.empty()) continue;
+
+    marked.clear();
+    queue.clear();
+    queue.push_back(c->all_constructors[0]);
+    while(queue.size()) {
+      auto f1 = queue.back();
+
+      auto fname = f1->get_name();
+      LOG_R("Func %.*s is init\n", fname.size(), fname.data());
+
+      queue.pop_back();
+      f1->is_init_ = true;
+      for (auto f2 : f1->internal_callees) {
+        if (!marked.contains(f2)) {
+          queue.push_back(f2);
+          marked.insert(f2);
+        }
+      }
+    }
+
+  }
+#endif
+
+  //----------------------------------------
+  // Trace
 
   {
     LOG_B("//----------------------------------------\n");
@@ -117,10 +166,14 @@ int main_new(Options opts) {
       auto top_inst = new CInstClass(nullptr, nullptr, node_class);
 
       for (auto node_func : node_class->all_functions) {
+
         LOG_INDENT_SCOPE();
         auto func_name = node_func->get_name();
         if (node_func->internal_callers.size()) {
-          LOG_B("Skipping %.*s\n", int(func_name.size()), func_name.data());
+          LOG_B("Skipping %.*s because it's not toplevel\n", int(func_name.size()), func_name.data());
+        }
+        else if (node_func->is_init_) {
+          LOG_B("Skipping %.*s because it's an initializer\n", int(func_name.size()), func_name.data());
         }
         else {
           LOG_B("Tracing %.*s\n", int(func_name.size()), func_name.data());
@@ -139,6 +192,15 @@ int main_new(Options opts) {
     //Tracer tracer(&repo, true);
     //err << tracer.trace();
   }
+
+  //----------
+  // Categorize fields
+
+  LOG_B("Categorizing fields\n");
+  err << repo.categorize_fields();
+
+  LOG_B("Categorizing methods\n");
+  err << repo.categorize_methods();
 
   //----------------------------------------
 

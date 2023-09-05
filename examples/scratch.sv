@@ -5,6 +5,17 @@
 module Module (
 {{port list}}
 );
+  /*
+  Module() {
+    blep();
+  }
+
+  void blep() {
+    x = 1;
+    y = 2;
+  }
+  */
+
   {{10CNodeField}};
   {{10CNodeField}};
 

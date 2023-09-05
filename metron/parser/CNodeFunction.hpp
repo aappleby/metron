@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <vector>
 #include <set>
+#include <functional>
 
 struct CNodeClass;
 
@@ -48,6 +49,15 @@ struct CNodeFunction : public CNode {
   //bool called_in_tick() const;
   //bool called_in_tock() const;
   //bool called_in_func() const;
+
+  using func_visitor = std::function<void(CNodeFunction*)>;
+
+  inline void visit_internal_callees(func_visitor v) {
+    for (auto f : internal_callees) {
+      v(f);
+      f->visit_internal_callees(v);
+    }
+  }
 
   //----------------------------------------
 

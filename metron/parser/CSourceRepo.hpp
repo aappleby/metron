@@ -26,10 +26,12 @@ class CSourceRepo /* : public IContext maybe? */ {
 
   std::string resolve_filename(const std::string& filename);
   Err load_source(std::string filename, CSourceFile** out_source = nullptr);
+
   Err collect_fields_and_methods();
   Err build_call_graphs();
+  Err categorize_fields();
+  Err categorize_methods();
 
-  void categorize_methods();
   void dump();
 
   //CNode* resolve(CNodeClass* parent, CNode* path);

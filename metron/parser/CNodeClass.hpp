@@ -66,6 +66,8 @@ struct CNodeClass : public CNode {
   CSourceFile* file = nullptr;
   int refcount = 0;
 
+  std::vector<CNodeFunction*>    top_functions;
+
   std::vector<CNodeConstructor*> all_constructors;
   std::vector<CNodeFunction*>    all_functions;
   std::vector<CNodeField*>       all_fields;

@@ -79,6 +79,7 @@ Err CNodeClass::collect_fields_and_methods() {
   for (auto c : body) {
     if (auto access = c->as_a<CNodeAccess>()) {
       is_public = c->get_text() == "public:";
+      continue;
     }
 
     if (auto n = c->as_a<CNodeField>()) {
@@ -93,7 +94,9 @@ Err CNodeClass::collect_fields_and_methods() {
 
 
       all_fields.push_back(n);
+      continue;
     }
+
     if (auto n = c->as_a<CNodeFunction>()) {
       n->is_public_ = is_public;
 
@@ -110,10 +113,11 @@ Err CNodeClass::collect_fields_and_methods() {
         if (auto decl = p->as_a<CNodeDeclaration>()) {
           decl->_type_class = repo->get_class(decl->get_type_name());
           decl->_type_struct = repo->get_struct(decl->get_type_name());
-          LOG_G("%p %p\n", decl->_type_class, decl->_type_struct);
         }
       }
+      continue;
     }
+
   }
 
   if (auto parent = node_parent->as_a<CNodeTemplate>()) {
@@ -135,57 +139,70 @@ Err CNodeClass::collect_fields_and_methods() {
 Err CNodeClass::build_call_graph(CSourceRepo* repo) {
   Err err;
 
-  for (auto src_method : all_functions) {
+#if 0
+  {
+    using func_visitor = std::function<void(CNodeFunction*)>;
+
+    std::function<void(CNodeFunction* node, func_visitor v)> visit;
+
+    visit = [&visit](CNodeFunction* n, func_visitor v) {
+      v(n);
+      for (auto f : n->internal_callees) visit(f, v);
+    };
+
+    for (auto f : all_constructors) {
+      visit(f, [](CNodeFunction* f) {
+        auto name = f->get_name();
+        LOG_R("Visited func %.*s is init\n", name.size(), name.data());
+
+        //f->is_init_ = true;
+      });
+    }
+  }
+
+  for (auto src_method : all_constructors) {
     visit(src_method, [&](CNode* child) {
       auto call = child->as_a<CNodeCall>();
       if (!call) return;
+      auto func_id = call->child("func_name")->as_a<CNodeIdentifier>();
+      auto dst_method = get_function(func_id->get_text());
+      dst_method->is_init_ = true;
+      auto name = func_id->get_text();
+      LOG_Y("Func %.*s is called by constructor\n", name.size(), name.data());
+    });
+  }
+#endif
 
-      auto func_name = call->child("func_name");
+  node_visitor link_callers = [&](CNode* child) {
+    auto call = child->as_a<CNodeCall>();
+    if (!call) return;
 
-      if (auto submod_path = func_name->as_a<CNodeFieldExpression>()) {
-        auto submod_field = get_field(submod_path->child("field_path")->get_text());
-        auto submod_class = repo->get_class(submod_field->get_type_name());
-        auto submod_func  = submod_class->get_function(submod_path->child("identifier")->get_text());
+    auto src_method = call->ancestor<CNodeFunction>();
 
-        src_method->external_callees.insert(submod_func);
-        submod_func->external_callers.insert(src_method);
-      }
-      else if (auto func_id = func_name->as_a<CNodeIdentifier>()) {
-        /*
-        func_name->dump_tree();
-        auto func_name = func_id->get_text();
-        if (func_name == "bx" ||
-            func_name == "dup" ||
-            func_name == "sign_extend" ||
-            func_name == "zero_extend") {
-          return;
-        }
-        */
+    auto func_name = call->child("func_name");
 
-        auto dst_method = get_function(func_id->get_text());
-        if (dst_method) {
-          src_method->internal_callees.insert(dst_method);
-          dst_method->internal_callers.insert(src_method);
-        }
-      }
-      else {
-        assert(false);
-      }
+    if (auto submod_path = func_name->as_a<CNodeFieldExpression>()) {
+      auto submod_field = get_field(submod_path->child("field_path")->get_text());
+      auto submod_class = repo->get_class(submod_field->get_type_name());
+      auto submod_func  = submod_class->get_function(submod_path->child("identifier")->get_text());
 
-      /*
-      auto dst_method = resolve(call->child("func_name"))->as_a<CNodeFunction>();
-      assert(dst_method);
-
-      if (dst_method->get_parent_class() == this) {
+      src_method->external_callees.insert(submod_func);
+      submod_func->external_callers.insert(src_method);
+    }
+    else if (auto func_id = func_name->as_a<CNodeIdentifier>()) {
+      auto dst_method = get_function(func_id->get_text());
+      if (dst_method) {
         src_method->internal_callees.insert(dst_method);
         dst_method->internal_callers.insert(src_method);
       }
-      else {
-        src_method->external_callees.insert(dst_method);
-        dst_method->external_callers.insert(src_method);
-      }
-      */
-    });
+    }
+    else {
+      assert(false);
+    }
+  };
+
+  for (auto src_method : all_functions) {
+    visit_children(src_method, link_callers);
   }
 
   return err;

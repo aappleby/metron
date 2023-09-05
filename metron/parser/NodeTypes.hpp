@@ -27,6 +27,8 @@ struct CNodeNamespace : public CNode {
 
   CNodeField* get_field(std::string_view name);
 
+  void dump();
+
   CSourceRepo* repo = nullptr;
   CSourceFile* file = nullptr;
   int refcount = 0;

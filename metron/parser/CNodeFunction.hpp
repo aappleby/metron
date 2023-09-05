@@ -82,8 +82,8 @@ struct CNodeFunction : public CNode {
   //bool emit_as_init = false;
   //bool emit_as_task = false;
   //bool emit_as_func = false;
-  bool needs_binding = false;
-  bool needs_ports = false;
+  //bool needs_binding = false;
+  //bool needs_ports = false;
 
   //std::vector<CNodeDeclaration*> param_nodes;
   std::set<CNodeFunction*> internal_callers;

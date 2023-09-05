@@ -81,10 +81,55 @@ std::string_view CNodeFunction::get_return_type_name() const {
   return child("return_type")->get_text();
 }
 
+//------------------------------------------------------------------------------
+
+/*
+  bool is_public_ = false;
+  bool is_init_ = false;
+  bool is_tick_ = false;
+  bool is_tock_ = false;
+  bool is_func_ = false;
+
+  std::set<CNodeFunction*> internal_callers;
+  std::set<CNodeFunction*> internal_callees;
+  std::set<CNodeFunction*> external_callers;
+  std::set<CNodeFunction*> external_callees;
+*/
+
+// FIXME constructor needs to be in internal_callers
+
+// FIXME function should pull out its list of args
+
 void CNodeFunction::dump() {
   auto name = get_name();
 
-  LOG_S("Method %.*s\n", name.size(), name.data());
+  LOG_S("Method \"%.*s\" ", name.size(), name.data());
+
+  if (is_public_)  LOG_G("public ");
+  if (!is_public_) LOG_G("private ");
+  if (is_init_)    LOG_G("is_init_ ");
+  if (is_tick_)    LOG_G("is_tick_ ");
+  if (is_tock_)    LOG_G("is_tock_ ");
+  if (is_func_)    LOG_G("is_func_ ");
+  LOG_G("\n");
+
+  if (internal_callers.size()) {
+    LOG_INDENT_SCOPE();
+    for (auto c : internal_callers) {
+      auto func_name = c->get_name();
+      auto class_name = c->get_parent_class()->get_name();
+      LOG_V("Called by %.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
+    }
+  }
+
+  if (external_callers.size()) {
+    LOG_INDENT_SCOPE();
+    for (auto c : external_callers) {
+      auto func_name = c->get_name();
+      auto class_name = c->get_parent_class()->get_name();
+      LOG_V("Called by %.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
+    }
+  }
 
   if (internal_callees.size()) {
     LOG_INDENT_SCOPE();
@@ -103,22 +148,6 @@ void CNodeFunction::dump() {
       LOG_T("Calls %.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
     }
   }
-
-  if (internal_callers.size()) {
-    LOG_INDENT_SCOPE();
-    for (auto c : internal_callers) {
-      auto func_name = c->get_name();
-      auto class_name = c->get_parent_class()->get_name();
-      LOG_T("Called by %.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
-    }
-  }
-
-  if (external_callers.size()) {
-    LOG_INDENT_SCOPE();
-    for (auto c : external_callers) {
-      auto func_name = c->get_name();
-      auto class_name = c->get_parent_class()->get_name();
-      LOG_T("Called by %.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
-    }
-  }
 }
+
+//------------------------------------------------------------------------------

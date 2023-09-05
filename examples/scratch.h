@@ -3,6 +3,9 @@
 // Empty module should pass.
 
 class Zoerpoaro {
+public:
+  void zonk() {
+  }
 };
 
 struct Vec3 {
@@ -12,22 +15,29 @@ struct Vec3 {
 };
 
 class Module {
+public:
   Module() {
     blep();
   }
+
+  void tick() {
+    tack();
+  }
+
+private:
 
   void blep() {
     x = 1;
     y = 2;
   }
 
-  logic<1> x;
-  logic<1> y;
-
-  void tick() {
+  void tack() {
     x = ~y;
     y = x;
+    sdfhhr.zonk();
   }
 
+  logic<1> x;
+  logic<1> y;
   Zoerpoaro sdfhhr;
 };

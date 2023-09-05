@@ -201,6 +201,10 @@ Err CNodeClass::build_call_graph(CSourceRepo* repo) {
     }
   };
 
+  for (auto src_method : all_constructors) {
+    visit_children(src_method, link_callers);
+  }
+
   for (auto src_method : all_functions) {
     visit_children(src_method, link_callers);
   }
@@ -511,22 +515,34 @@ Err CNodeClass::emit_template_parameter_list(Cursor& cursor) {
 void CNodeClass::dump() {
   auto name = get_name();
   LOG_B("Class %.*s @ %p\n", name.size(), name.data(), this);
-  LOG_INDENT();
+  LOG_INDENT_SCOPE();
 
-  if (refcount) {
-    LOG_G("Refcount %d\n", refcount);
-  }
-  else {
-    LOG_G("Top module\n");
+  LOG_G("File %s\n", file->filename.c_str());
+  LOG_G("Refcount %d\n", refcount);
+
+  if (all_modparams.size()) {
+    LOG_G("Params\n");
+    LOG_INDENT_SCOPE();
+    for (auto f : all_modparams) f->dump();
   }
 
-  if (all_fields.size()) {
-    for (auto f : all_fields) f->dump();
+  if (all_constructors.size()) {
+    LOG_G("Constructors\n");
+    LOG_INDENT_SCOPE();
+    for (auto f : all_constructors) f->dump();
   }
 
   if (all_functions.size()) {
+    LOG_G("Functions\n");
+    LOG_INDENT_SCOPE();
     for (auto m : all_functions) m->dump();
   }
 
-  LOG_DEDENT();
+  if (all_fields.size()) {
+    LOG_G("Fields\n");
+    LOG_INDENT_SCOPE();
+    for (auto f : all_fields) f->dump();
+  }
 }
+
+//------------------------------------------------------------------------------

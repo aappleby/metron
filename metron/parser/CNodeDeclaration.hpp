@@ -15,6 +15,8 @@ struct CNodeDeclaration : public CNode {
   CHECK_RETURN Err emit(Cursor& cursor) override;
   CHECK_RETURN Err trace(CCall* call) override;
 
+  void dump();
+
   std::string_view get_type_name() const;
   bool is_array() const;
 

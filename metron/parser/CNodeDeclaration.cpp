@@ -51,3 +51,9 @@ CHECK_RETURN Err CNodeDeclaration::trace(CCall* call) {
   }
   return err;
 }
+
+
+void CNodeDeclaration::dump() {
+  auto text = get_text();
+  LOG_G("Declaration `%.*s`\n", text.size(), text.data());
+}

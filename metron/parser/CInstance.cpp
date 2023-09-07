@@ -79,10 +79,10 @@ CHECK_RETURN Err CInstance::log_action(CNode* node, TraceAction action) {
   assert(func);
 
   if (action == ACT_READ) {
-    func->reads.insert(node_field);
+    func->self_reads.insert(node_field);
   }
   else if (action == ACT_WRITE) {
-    func->writes.insert(node_field);
+    func->self_writes.insert(node_field);
   }
 
   auto old_state = state_stack.back();

@@ -86,6 +86,14 @@ def main():
     ])
     print()
 
+    print_g("Checking new parser on all test cases in metron_good")
+    #"args" : ["-p", "-d", "-v", "-e", "-c", "examples/scratch.h", "-o", "examples/scratch.sv"],
+    errors += check_commands_good([
+        f"bin/metron -p -c {filename}"
+        for filename in metron_good
+    ])
+    print()
+
     print_b("Checking that all test cases in metron_bad fail conversion")
     errors += check_commands_bad([
         f"bin/metron -c {filename} -o {filename.replace('_bad', '_sv').replace('.h', '.sv')}"

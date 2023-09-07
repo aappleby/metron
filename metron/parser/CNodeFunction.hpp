@@ -71,6 +71,18 @@ struct CNodeFunction : public CNode {
   }
 
   void set_type(MethodType new_type) {
+    auto name = get_name();
+
+    if (method_type == MT_UNKNOWN) {
+      LOG_R("%.*s %s\n", name.size(), name.data(), to_string(new_type));
+    }
+
+    if (method_type != MT_UNKNOWN) {
+      if (method_type != new_type) {
+        LOG_R("%.*s %s %s\n", name.size(), name.data(), to_string(method_type), to_string(new_type));
+      }
+    }
+
     assert(method_type == MT_UNKNOWN || method_type == new_type);
     method_type = new_type;
   }
@@ -79,8 +91,8 @@ struct CNodeFunction : public CNode {
     for (auto c : internal_callees) c->propagate_rw();
     for (auto c : external_callees) c->propagate_rw();
 
-    all_reads = reads;
-    all_writes = writes;
+    all_reads = self_reads;
+    all_writes = self_writes;
 
     auto name = get_name();
 
@@ -119,8 +131,8 @@ struct CNodeFunction : public CNode {
   //bool needs_binding = false;
   //bool needs_ports = false;
 
-  std::set<CNodeField*> reads;
-  std::set<CNodeField*> writes;
+  std::set<CNodeField*> self_reads;
+  std::set<CNodeField*> self_writes;
 
   std::set<CNodeField*> all_reads;
   std::set<CNodeField*> all_writes;

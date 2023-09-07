@@ -270,76 +270,62 @@ int main_new(Options opts) {
   }
 
   //----------------------------------------
-  // Methods that write registers _must_ be ticks.
+  // public/private
+  // directly writes signal
+  // indirectly writes signal
+  // directly writes register
+  // indirectly writes register
+
+  // PB DS IS DR IR
+  //  -  -  -  -  - FUNC
+
+  //  -  -  -  -  # TICK
+  //  -  -  -  #  - TICK
+  //  -  -  -  #  # TICK
+
+  //  -  -  #  -  - TOCK
+  //  -  -  #  -  # TOCK
+  //  -  #  -  -  - TOCK
+  //  -  #  -  -  # TOCK
+  //  -  #  #  -  - TOCK
+  //  -  #  #  -  # TOCK
+
+  //----------------------------------------
 
   for (auto c : repo.all_classes) {
     for (auto f : c->all_functions) {
-      bool writes_reg = false;
+      if (f->method_type == MT_INIT) continue;
+
+      bool self_writes_sig = false;
+      bool self_writes_reg = false;
+      bool all_writes_sig = false;
+      bool all_writes_reg = false;
+      bool all_writes_out = false;
+
+      for (auto w : f->self_writes) {
+        if (w->field_type == FT_SIGNAL)   self_writes_sig = true;
+        if (w->field_type == FT_REGISTER) self_writes_reg = true;
+      }
+
       for (auto w : f->all_writes) {
-        if (w->field_type == FT_REGISTER) writes_reg = true;
+        if (w->field_type == FT_SIGNAL)   all_writes_sig = true;
+        if (w->field_type == FT_REGISTER) all_writes_reg = true;
+        if (w->field_type == FT_OUTPUT)   all_writes_out = true;
       }
 
-      if (writes_reg) f->set_type(MT_TICK);
-    }
-  }
-
-  //----------------------------------------
-  // Methods that are downstream from ticks _must_ be ticks.
-
-  for (auto c : repo.all_classes) {
-    for (auto f : c->all_functions) {
-      if (f->method_type == MT_TICK) {
-        f->visit_internal_callees([](CNodeFunction* f2) {
-          f2->set_type(MT_TICK);
-        });
-        assert(f->external_callees.empty());
+      if (self_writes_sig && self_writes_reg) {
+        // Methods that directly write both signals and registers are invalid.
+        assert(false);
       }
-    }
-  }
-
-  //----------------------------------------
-  // Methods that write signals _must_ be tocks.
-
-  for (auto c : repo.all_classes) {
-    for (auto f : c->all_functions) {
-      bool writes_sig = false;
-      for (auto w : f->all_writes) {
-        if (w->field_type == FT_SIGNAL) writes_sig = true;
+      else if (self_writes_reg) {
+        f->set_type(MT_TICK);
       }
-
-      if (writes_sig) f->set_type(MT_TOCK);
-    }
-  }
-
-  //----------------------------------------
-  // Methods that are upstream from tocks _must_ be tocks.
-
-  for (auto c : repo.all_classes) {
-    for (auto f : c->all_functions) {
-      if (f->method_type == MT_TOCK) {
-        f->visit_internal_callers([](CNodeFunction* f2) {
-          f2->set_type(MT_TOCK);
-        });
-        f->visit_external_callers([](CNodeFunction* f2) {
-          f2->set_type(MT_TOCK);
-        });
+      else if (all_writes_reg || all_writes_sig || all_writes_out) {
+        f->set_type(MT_TOCK);
       }
-    }
-  }
-
-  //----------------------------------------
-  // Methods that write outputs are tocks unless they're already ticks.
-
-  //----------------------------------------
-  // Methods that are downstream from tocks are tocks unless they're already
-  // ticks.
-
-  //----------------------------------------
-  // Just mark everything left as tock.
-
-  for (auto c : repo.all_classes) {
-    for (auto f : c->all_functions) {
-      assert(f->method_type != MT_UNKNOWN);
+      else {
+        f->set_type(MT_FUNC);
+      }
     }
   }
 
@@ -359,7 +345,17 @@ int main_new(Options opts) {
   // Done!
   //----------------------------------------
 
-  {
+  for (auto c : repo.all_classes) {
+    for (auto f : c->all_fields) {
+      assert(f->field_type != FT_UNKNOWN);
+    }
+    for (auto f : c->all_functions) {
+      if (f->method_type == MT_UNKNOWN) {
+        auto name = f->get_name();
+        LOG_R("%.*s did not get a type\n", name.size(), name.data());
+      }
+      assert(f->method_type != MT_UNKNOWN);
+    }
   }
 
   //----------------------------------------

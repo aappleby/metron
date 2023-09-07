@@ -3,6 +3,7 @@
 #include "CNodeClass.hpp"
 #include "CNodeStatement.hpp"
 #include "NodeTypes.hpp"
+#include "CNodeDeclaration.hpp"
 
 #include "metrolib/core/Log.h"
 #include "matcheroni/Utilities.hpp"
@@ -17,6 +18,16 @@ uint32_t CNodeFunction::debug_color() const {
 
 std::string_view CNodeFunction::get_name() const {
   return child("name")->get_name();
+}
+
+void CNodeFunction::init(const char* match_tag, SpanType span, uint64_t flags) {
+  CNode::init(match_tag, span, flags);
+
+  for (auto c : child("params")) {
+    if (auto param = c->as_a<CNodeDeclaration>()) {
+      params.push_back(param);
+    }
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -101,18 +112,33 @@ std::string_view CNodeFunction::get_return_type_name() const {
 // FIXME function should pull out its list of args
 
 void CNodeFunction::dump() {
+  //dump_tree();
+
   auto name = get_name();
 
   LOG_S("Method \"%.*s\" ", name.size(), name.data());
 
   if (is_public_)  LOG_G("public ");
   if (!is_public_) LOG_G("private ");
-  if (is_init_)    LOG_G("is_init_ ");
-  if (is_tick_)    LOG_G("is_tick_ ");
-  if (is_tock_)    LOG_G("is_tock_ ");
-  if (is_func_)    LOG_G("is_func_ ");
+  LOG_G("%s ", to_string(method_type));
   LOG_G("\n");
 
+  if (params.size()) {
+    LOG_INDENT_SCOPE();
+    for (auto p : params) {
+      auto text = p->child("type")->get_text();
+      LOG_G("Param %.*s : %.*s", name.size(), name.data(), text.size(), text.data());
+
+      if (auto val = p->child("value")) {
+        auto text = val->get_text();
+        LOG_G(" = %.*s", text.size(), text.data());
+      }
+
+      LOG_G("\n");
+    }
+  }
+
+#if 0
   if (internal_callers.size()) {
     LOG_INDENT_SCOPE();
     for (auto c : internal_callers) {
@@ -130,6 +156,7 @@ void CNodeFunction::dump() {
       LOG_V("Called by %.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
     }
   }
+#endif
 
   if (internal_callees.size()) {
     LOG_INDENT_SCOPE();

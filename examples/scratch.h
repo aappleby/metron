@@ -4,7 +4,13 @@
 
 class Zoerpoaro {
 public:
-  void zonk() {
+
+  static const int some_param = 7;
+
+  int vv;
+
+  void zonk(int q = 7) {
+    vv = q + 4;
   }
 };
 
@@ -26,6 +32,8 @@ public:
 
 private:
 
+  static int bleh;
+
   void blep() {
     x = 1;
     y = 2;
@@ -34,7 +42,7 @@ private:
   void tack() {
     x = ~y;
     y = x;
-    sdfhhr.zonk();
+    sdfhhr.zonk(7);
   }
 
   logic<1> x;

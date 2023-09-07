@@ -83,8 +83,6 @@ Err CNodeClass::collect_fields_and_methods() {
     }
 
     if (auto n = c->as_a<CNodeField>()) {
-      n->_static = n->child("static") != nullptr;
-      n->_const  = n->child("const")  != nullptr;
       n->_public = is_public;
 
       n->_parent_class  = n->ancestor<CNodeClass>();
@@ -92,8 +90,13 @@ Err CNodeClass::collect_fields_and_methods() {
       n->_type_class    = repo->get_class(n->get_type_name());
       n->_type_struct   = repo->get_struct(n->get_type_name());
 
+      if (n->child("static") && n->child("const")) {
+        all_localparams.push_back(n);
+      }
+      else {
+        all_fields.push_back(n);
+      }
 
-      all_fields.push_back(n);
       continue;
     }
 
@@ -208,60 +211,6 @@ Err CNodeClass::build_call_graph(CSourceRepo* repo) {
   for (auto src_method : all_functions) {
     visit_children(src_method, link_callers);
   }
-
-  return err;
-}
-
-
-//------------------------------------------------------------------------------
-
-Err CNodeClass::categorize_fields(bool verbose) {
-  Err err;
-
-  if (verbose) {
-    auto name = get_name();
-    LOG_G("Categorizing %.*s\n", int(name.size()), name.data());
-  }
-
-#if 0
-  for (auto f : all_fields) {
-    if (f->is_param()) {
-      continue;
-    }
-
-    if (f->is_component()) {
-      components.push_back(f);
-    }
-    else if (f->is_public() && f->is_input()) {
-      input_signals.push_back(f);
-    }
-    else if (f->is_public() && f->is_signal()) {
-      output_signals.push_back(f);
-    }
-    else if (f->is_public() && f->is_register()) {
-      output_registers.push_back(f);
-    }
-    else if (f->is_private() && f->is_register()) {
-      private_registers.push_back(f);
-    }
-    else if (f->is_private() && f->is_signal()) {
-      private_signals.push_back(f);
-    }
-    else if (!f->is_public() && f->is_input()) {
-      private_registers.push_back(f);
-    }
-    else if (f->is_enum()) {
-    }
-    else if (f->is_dead()) {
-      dead_fields.push_back(f);
-    }
-    else {
-      err << ERR("Don't know how to categorize %s = %s\n", f->cname(),
-                 to_string(f->_state));
-      f->error();
-    }
-  }
-#endif
 
   return err;
 }
@@ -521,9 +470,15 @@ void CNodeClass::dump() {
   LOG_G("Refcount %d\n", refcount);
 
   if (all_modparams.size()) {
-    LOG_G("Params\n");
+    LOG_G("Modparams\n");
     LOG_INDENT_SCOPE();
     for (auto f : all_modparams) f->dump();
+  }
+
+  if (all_localparams.size()) {
+    LOG_G("Localparams\n");
+    LOG_INDENT_SCOPE();
+    for (auto f : all_localparams) f->dump();
   }
 
   if (all_constructors.size()) {

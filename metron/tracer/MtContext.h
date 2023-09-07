@@ -67,7 +67,7 @@ struct MtContext {
   void start_switch() {
     action_log.push_back(log_next);
     action_log.push_back(log_top);
-    log_next.state = CTX_PENDING;
+    log_next.state = TS_PENDING;
     for (auto c : children) c->start_switch();
   }
 

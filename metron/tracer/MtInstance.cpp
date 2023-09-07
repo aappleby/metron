@@ -9,14 +9,14 @@
 
 void dump_state(TraceState state) {
   switch(state) {
-    case CTX_NONE:     LOG_C(0x444444, "NONE"); break;
-    case CTX_INPUT:    LOG_C(0x88FFFF, "INPUT"); break;
-    case CTX_OUTPUT:   LOG_C(0xFFCCCC, "OUTPUT"); break;
-    case CTX_MAYBE:    LOG_C(0x44CCFF, "MAYBE"); break;
-    case CTX_SIGNAL:   LOG_C(0x88FF88, "SIGNAL"); break;
-    case CTX_REGISTER: LOG_C(0x88BBBB, "REGISTER"); break;
-    case CTX_INVALID:  LOG_C(0xFF00FF, "INVALID"); break;
-    case CTX_PENDING:  LOG_C(0x444444, "PENDING"); break;
+    case TS_NONE:     LOG_C(0x444444, "NONE"); break;
+    case TS_INPUT:    LOG_C(0x88FFFF, "INPUT"); break;
+    case TS_OUTPUT:   LOG_C(0xFFCCCC, "OUTPUT"); break;
+    case TS_MAYBE:    LOG_C(0x44CCFF, "MAYBE"); break;
+    case TS_SIGNAL:   LOG_C(0x88FF88, "SIGNAL"); break;
+    case TS_REGISTER: LOG_C(0x88BBBB, "REGISTER"); break;
+    case TS_INVALID:  LOG_C(0xFF00FF, "INVALID"); break;
+    case TS_PENDING:  LOG_C(0x444444, "PENDING"); break;
   }
 }
 
@@ -145,7 +145,7 @@ void dump_log(const std::vector<LogEntry>& log) {
 
 MtInstance::MtInstance(const std::string& name, const std::string& path)
 : _name(name), _path(path) {
-  state_stack = {CTX_NONE};
+  state_stack = {TS_NONE};
 }
 
 //----------------------------------------
@@ -185,7 +185,7 @@ CHECK_RETURN Err MtInstance::log_action(MnNode node, TraceAction action) {
 
   state_stack.back() = new_state;
 
-  if (new_state == CTX_INVALID) {
+  if (new_state == TS_INVALID) {
     LOG_R("Trace error: state went from %s to %s\n", to_string(old_state), to_string(new_state));
     dump();
     err << ERR("Invalid context state\n");
@@ -208,7 +208,7 @@ void MtInstance::dump_log() {
 //----------------------------------------
 
 void MtInstance::reset_state() {
-  state_stack = {CTX_NONE};
+  state_stack = {TS_NONE};
   action_log.clear();
 }
 
@@ -605,14 +605,14 @@ CHECK_RETURN Err MtMethodInstance::assign_types() {
 
   for (auto w : _writes) {
     switch(w->state_stack.back()) {
-      case CTX_NONE:     break;
-      case CTX_INPUT:    break;
-      case CTX_OUTPUT:   break;
-      case CTX_MAYBE:    break;
-      case CTX_SIGNAL:   sig_writes++; break;
-      case CTX_REGISTER: reg_writes++; break;
-      case CTX_INVALID:  break;
-      case CTX_PENDING:  break;
+      case TS_NONE:     break;
+      case TS_INPUT:    break;
+      case TS_OUTPUT:   break;
+      case TS_MAYBE:    break;
+      case TS_SIGNAL:   sig_writes++; break;
+      case TS_REGISTER: reg_writes++; break;
+      case TS_INVALID:  break;
+      case TS_PENDING:  break;
     }
     //w->dump();
   }

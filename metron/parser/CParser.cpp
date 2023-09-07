@@ -853,8 +853,8 @@ TokenSpan match_declaration(CContext& ctx, TokenSpan body) {
   using pattern =
   Seq<
     Any<
-      cap_keyword<"static">,
-      cap_keyword<"const">
+      Tag<"static", cap_keyword<"static">>,
+      Tag<"const",  cap_keyword<"const">>
     >,
     Tag<"type",      Ref<cap_type>>,
     Tag<"name",      cap_identifier>,

@@ -23,8 +23,8 @@ MtContext::MtContext(MtModule *_top_mod) {
   type_mod = _top_mod;
   type_struct = nullptr;
 
-  log_top = {CTX_NONE};
-  log_next = {CTX_NONE};
+  log_top = {TS_NONE};
+  log_next = {TS_NONE};
 }
 
 MtContext::MtContext(MtContext *_parent, MtMethod *_method) {
@@ -44,8 +44,8 @@ MtContext::MtContext(MtContext *_parent, MtMethod *_method) {
   type_mod = nullptr;
   type_struct = nullptr;
 
-  log_top = {CTX_NONE};
-  log_next = {CTX_NONE};
+  log_top = {TS_NONE};
+  log_next = {TS_NONE};
 }
 
 MtContext::MtContext(MtContext *_parent, MtField *_field) {
@@ -73,8 +73,8 @@ MtContext::MtContext(MtContext *_parent, MtField *_field) {
   type_mod = _field->_type_mod;
   type_struct = _field->_type_struct;
 
-  log_top = {CTX_NONE};
-  log_next = {CTX_NONE};
+  log_top = {TS_NONE};
+  log_next = {TS_NONE};
 }
 
 //------------------------------------------------------------------------------
@@ -105,8 +105,8 @@ MtContext *MtContext::param(MtContext *_parent, const std::string &_name) {
   param_ctx->type_mod = nullptr;
   param_ctx->type_struct = nullptr;
 
-  param_ctx->log_top = {CTX_NONE};
-  param_ctx->log_next = {CTX_NONE};
+  param_ctx->log_top = {TS_NONE};
+  param_ctx->log_next = {TS_NONE};
 
   return param_ctx;
 }
@@ -129,8 +129,8 @@ MtContext *MtContext::construct_return(MtContext *_parent) {
   return_ctx->type_mod = nullptr;
   return_ctx->type_struct = nullptr;
 
-  return_ctx->log_top = {CTX_NONE};
-  return_ctx->log_next = {CTX_NONE};
+  return_ctx->log_top = {TS_NONE};
+  return_ctx->log_next = {TS_NONE};
 
   return return_ctx;
 }
@@ -273,11 +273,11 @@ MtContext *MtContext::resolve(MnNode node) {
 //------------------------------------------------------------------------------
 
 void log_state(TraceState s) {
-  if (s == CTX_SIGNAL || s == CTX_OUTPUT) {
+  if (s == TS_SIGNAL || s == TS_OUTPUT) {
     LOG_B("%s", to_string(s));
-  } else if (s == CTX_NONE) {
+  } else if (s == TS_NONE) {
     LOG_Y("%s", to_string(s));
-  } else if (s == CTX_INVALID) {
+  } else if (s == TS_INVALID) {
     LOG_R("%s", to_string(s));
   } else {
     LOG_G("%s", to_string(s));
@@ -318,15 +318,15 @@ CHECK_RETURN Err MtContext::check_done() {
     err << ERR("Had leftover contexts in action_log\n");
   }
 
-  if (log_next.state != CTX_NONE) {
+  if (log_next.state != TS_NONE) {
     err << ERR("Had leftover context in log_next\n");
   }
 
-  if (log_top.state == CTX_INVALID) {
+  if (log_top.state == TS_INVALID) {
     err << ERR("Context %s had invalid state after trace\n", name.c_str());
   }
 
-  if (log_top.state == CTX_PENDING) {
+  if (log_top.state == TS_PENDING) {
     err << ERR("Context %s had pending state after trace\n", name.c_str());
   }
 

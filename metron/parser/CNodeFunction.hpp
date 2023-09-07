@@ -14,13 +14,9 @@ struct CNodeClass;
 
 //------------------------------------------------------------------------------
 
-struct CNodeParameter : public CNode {
-  uint32_t debug_color() const override { return COL_YELLOW; }
-};
-
-//------------------------------------------------------------------------------
-
 struct CNodeFunction : public CNode {
+
+  void init(const char* match_tag, SpanType span, uint64_t flags);
 
   //----------------------------------------
   // Methods to be implemented by subclasses.
@@ -44,12 +40,6 @@ struct CNodeFunction : public CNode {
   //bool has_params() const;
   //bool has_return() const;
 
-  //bool called_in_module() const;
-  //bool called_in_init() const;
-  //bool called_in_tick() const;
-  //bool called_in_tock() const;
-  //bool called_in_func() const;
-
   using func_visitor = std::function<void(CNodeFunction*)>;
 
   inline void visit_internal_callees(func_visitor v) {
@@ -57,6 +47,11 @@ struct CNodeFunction : public CNode {
       v(f);
       f->visit_internal_callees(v);
     }
+  }
+
+  void set_type(MethodType new_type) {
+    assert(method_type == MT_UNKNOWN);
+    method_type = new_type;
   }
 
   //----------------------------------------
@@ -71,11 +66,9 @@ struct CNodeFunction : public CNode {
 
   //----------
 
+  MethodType method_type = MT_UNKNOWN;
+
   bool is_public_ = false;
-  bool is_init_ = false;
-  bool is_tick_ = false;
-  bool is_tock_ = false;
-  bool is_func_ = false;
 
   //bool emit_as_always_comb = false;
   //bool emit_as_always_ff = false;
@@ -85,7 +78,8 @@ struct CNodeFunction : public CNode {
   //bool needs_binding = false;
   //bool needs_ports = false;
 
-  //std::vector<CNodeDeclaration*> param_nodes;
+  std::vector<CNodeDeclaration*> params;
+
   std::set<CNodeFunction*> internal_callers;
   std::set<CNodeFunction*> internal_callees;
   std::set<CNodeFunction*> external_callers;

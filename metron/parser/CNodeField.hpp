@@ -2,19 +2,7 @@
 
 #include "CNode.hpp"
 #include "Cursor.hpp"
-
 #include "metron/tools/MtUtils.h"
-
-struct CNodeClass;
-struct CSourceRepo;
-struct CInstance;
-
-/*
-[000.006]       ┣━━┳━ CNodeField field =
-[000.006]       ┃  ┣━━┳━ CNodeType decl_type =
-[000.006]       ┃  ┃  ┗━━━━ CNode type = "Snip"
-[000.006]       ┃  ┗━━━━ CNodeIdentifier decl_name = "snip"
-*/
 
 //------------------------------------------------------------------------------
 
@@ -37,22 +25,11 @@ struct CNodeField : public CNode {
   bool is_component() const;
   bool is_struct() const;
   bool is_array() const;
-  bool is_enum() const;
-  bool is_port() const;
-  bool is_param() const;
-  bool is_public() const;
-  bool is_private() const;
   bool is_const_char() const;
 
-  bool is_input() const;
-  bool is_register() const;
-  bool is_signal() const;
-  bool is_dead() const;
-
   void dump();
-  void error();
 
-  TraceState _state = CTX_PENDING;
+  FieldType field_type = FT_UNKNOWN;
 
   CNodeClass*  _parent_class;
   CNodeStruct* _parent_struct;
@@ -60,8 +37,6 @@ struct CNodeField : public CNode {
   CNodeClass*  _type_class;
   CNodeStruct* _type_struct;
 
-  bool _static = false;
-  bool _const = false;
   bool _public = false;
   bool _enum = false;
 };

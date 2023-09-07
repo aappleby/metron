@@ -61,26 +61,6 @@ bool CNodeField::is_array() const {
   return child("array") != nullptr;
 }
 
-bool CNodeField::is_enum() const {
-  return _enum;
-}
-
-bool CNodeField::is_port() const {
-  return is_public();
-}
-
-bool CNodeField::is_param() const {
-  return _static && _const;
-}
-
-bool CNodeField::is_public() const {
-  return _public;
-}
-
-bool CNodeField::is_private() const {
-  return !_public;
-}
-
 bool CNodeField::is_const_char() const {
   auto node_static = child("static");
   auto node_const  = child("const");
@@ -94,24 +74,6 @@ bool CNodeField::is_const_char() const {
     }
   }
   return false;
-}
-
-//------------------------------------------------------------------------------
-
-bool CNodeField::is_input() const {
-  return _state == CTX_INPUT;
-}
-
-bool CNodeField::is_register() const {
-  return _state == CTX_REGISTER || _state == CTX_MAYBE;
-}
-
-bool CNodeField::is_signal() const {
-  return _state == CTX_OUTPUT || _state == CTX_SIGNAL;
-}
-
-bool CNodeField::is_dead() const {
-  return _state == CTX_NONE;
 }
 
 //------------------------------------------------------------------------------
@@ -260,12 +222,29 @@ CHECK_RETURN Err CNodeField::trace(CCall* call) {
 
 //------------------------------------------------------------------------------
 
+/*
+  TraceState _state = CTX_PENDING;
+
+  CNodeClass*  _parent_class;
+  CNodeStruct* _parent_struct;
+
+  CNodeClass*  _type_class;
+  CNodeStruct* _type_struct;
+
+  bool _static = false;
+  bool _const = false;
+  bool _public = false;
+  bool _enum = false;
+*/
+
 void CNodeField::dump() {
+  //dump_tree();
+
   auto name = get_name();
   LOG_A("Field %.*s : ", name.size(), name.data());
 
-  if (_static)    LOG_A("static ");
-  if (_const)     LOG_A("const ");
+  if (child("static")) LOG_A("static ");
+  if (child("const"))  LOG_A("const ");
   if (_public)    LOG_A("public ");
   if (is_array()) LOG_A("array ");
   if (_enum)      LOG_A("enum ");
@@ -290,7 +269,7 @@ void CNodeField::dump() {
     LOG_A("type struct %.*s ", int(name.size()), name.data());
   }
 
-  LOG_A("%s", to_string(_state));
+  LOG_A("%s", to_string(field_type));
 
   LOG_A("\n");
 }

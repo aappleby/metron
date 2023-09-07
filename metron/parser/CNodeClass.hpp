@@ -53,7 +53,6 @@ struct CNodeClass : public CNode {
 
   Err collect_fields_and_methods();
   Err build_call_graph(CSourceRepo* repo);
-  Err categorize_fields(bool verbose);
 
   Err emit_module_ports(Cursor& cursor);
   Err emit_template_parameter_list(Cursor& cursor);
@@ -72,6 +71,7 @@ struct CNodeClass : public CNode {
   std::vector<CNodeFunction*>    all_functions;
   std::vector<CNodeField*>       all_fields;
   std::vector<CNodeDeclaration*> all_modparams;
+  std::vector<CNodeField*>       all_localparams;
 
   /*
   std::vector<MtField*> input_signals;

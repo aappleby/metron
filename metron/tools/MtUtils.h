@@ -24,16 +24,17 @@ struct SourceRange {
 
 enum FieldType {
   FT_UNKNOWN = 0,
-  FT_REGISTER,
-  FT_SIGNAL,
   FT_INPUT,
   FT_OUTPUT,
+  FT_REGISTER,
+  FT_SIGNAL,
   FT_MODULE,
   FT_INVALID
 };
 
 enum MethodType {
   MT_UNKNOWN = 0,
+  MT_INIT,
   MT_TICK,
   MT_TOCK,
   MT_FUNC,
@@ -51,14 +52,14 @@ enum ContextType {
 };
 
 enum TraceState {
-  CTX_NONE = 0,
-  CTX_INPUT,
-  CTX_OUTPUT,
-  CTX_MAYBE,
-  CTX_SIGNAL,
-  CTX_REGISTER,
-  CTX_INVALID,
-  CTX_PENDING,  // hasn't been set yet
+  TS_NONE = 0,
+  TS_INPUT,
+  TS_OUTPUT,
+  TS_MAYBE,
+  TS_SIGNAL,
+  TS_REGISTER,
+  TS_INVALID,
+  TS_PENDING,  // hasn't been set yet
 };
 
 enum TraceAction {
@@ -90,6 +91,7 @@ inline const char* to_string(FieldType f) {
 inline const char* to_string(MethodType f) {
   switch (f) {
     case MT_UNKNOWN: return "MT_UNKNOWN";
+    case MT_INIT:    return "MT_INIT";
     case MT_TICK:    return "MT_TICK";
     case MT_TOCK:    return "MT_TOCK";
     case MT_FUNC:    return "MT_FUNC";
@@ -133,21 +135,21 @@ inline const char* to_string(ContextType c) {
 
 inline const char* to_string(TraceState f) {
   switch (f) {
-    case CTX_NONE:
+    case TS_NONE:
       return "CTX_NONE";
-    case CTX_INPUT:
+    case TS_INPUT:
       return "CTX_INPUT";
-    case CTX_OUTPUT:
+    case TS_OUTPUT:
       return "CTX_OUTPUT";
-    case CTX_MAYBE:
+    case TS_MAYBE:
       return "CTX_MAYBE";
-    case CTX_SIGNAL:
+    case TS_SIGNAL:
       return "CTX_SIGNAL";
-    case CTX_REGISTER:
+    case TS_REGISTER:
       return "CTX_REGISTER";
-    case CTX_INVALID:
+    case TS_INVALID:
       return "CTX_INVALID";
-    case CTX_PENDING:
+    case TS_PENDING:
       return "CTX_PENDING";
     default:
       return "CTX_?????";

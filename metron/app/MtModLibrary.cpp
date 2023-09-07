@@ -282,7 +282,7 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
 
   err << propagate([&](MtMethod *m) {
     for (auto f : m->writes) {
-      if (f->state() == CTX_REGISTER || f->state() == CTX_MAYBE) {
+      if (f->state() == TS_REGISTER || f->state() == TS_MAYBE) {
         if (verbose) LOG_B("%s.%s is tick because it writes registers.\n", m->_mod->cname(), m->cname());
         m->is_tick_ = true;
         return 1;
@@ -311,7 +311,7 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
 
   err << propagate([&](MtMethod *m) {
     for (auto f : m->writes) {
-      if (f->state() == CTX_SIGNAL) {
+      if (f->state() == TS_SIGNAL) {
         if (verbose) LOG_B("%s.%s is tock because it writes signals.\n", m->_mod->cname(), m->cname());
         m->is_tock_ = true;
         return 1;
@@ -339,7 +339,7 @@ CHECK_RETURN Err MtModLibrary::categorize_methods(bool verbose) {
 
   err << propagate([&](MtMethod *m) {
     for (auto f : m->writes) {
-      if (f->state() == CTX_OUTPUT) {
+      if (f->state() == TS_OUTPUT) {
         if (verbose) LOG_B(
             "%-20s is tock because it writes outputs and isn't already a "
             "tick.\n",

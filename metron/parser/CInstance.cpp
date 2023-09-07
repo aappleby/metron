@@ -15,7 +15,7 @@
 
 CInstance::CInstance(CInstance* inst_parent, CNodeField* node_field)
     : inst_parent(inst_parent), node_field(node_field) {
-  state_stack.push_back(CTX_NONE);
+  state_stack.push_back(TS_NONE);
 }
 
 CInstance::~CInstance() {}
@@ -85,7 +85,7 @@ CHECK_RETURN Err CInstance::log_action(CNode* node, TraceAction action) {
 
   state_stack.back() = new_state;
 
-  if (new_state == CTX_INVALID) {
+  if (new_state == TS_INVALID) {
     LOG_R("Trace error: state went from %s to %s\n", to_string(old_state),
           to_string(new_state));
     err << ERR("Invalid context state\n");
@@ -220,10 +220,13 @@ void CInstPrim::dump_tree() const {
 
 void CInstPrim::commit_state() {
   assert(node_field);
-  if (node_field->_state == CTX_PENDING) {
-    node_field->_state = state_stack.back();
+
+  auto new_type = trace_state_to_field_type(state_stack.back());
+
+  if (node_field->field_type == FT_UNKNOWN) {
+    node_field->field_type = new_type;
   }
-  assert(node_field->_state == state_stack.back());
+  assert(node_field->field_type == new_type);
 }
 
 //------------------------------------------------------------------------------

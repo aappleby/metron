@@ -125,19 +125,19 @@ bool MtField::is_array() const {
 //------------------------------------------------------------------------------
 
 bool MtField::is_input() const {
-  return _state == CTX_INPUT;
+  return _state == TS_INPUT;
 }
 
 bool MtField::is_register() const {
-  return _state == CTX_REGISTER || _state == CTX_MAYBE;
+  return _state == TS_REGISTER || _state == TS_MAYBE;
 }
 
 bool MtField::is_signal() const {
-  return _state == CTX_OUTPUT || _state == CTX_SIGNAL;
+  return _state == TS_OUTPUT || _state == TS_SIGNAL;
 }
 
 bool MtField::is_dead() const {
-  return _state == CTX_NONE;
+  return _state == TS_NONE;
 }
 
 //------------------------------------------------------------------------------
@@ -174,26 +174,26 @@ void MtField::dump() const {
     LOG_C(0xFF80CC, "Component '%s' : %s", cname(), _type_name.c_str());
   } else {
     switch (_state) {
-      case CTX_NONE:
+      case TS_NONE:
         LOG_C(0x808080, "Unknown field '%s' : %s", cname(), _type_name.c_str());
         break;
-      case CTX_INPUT:
+      case TS_INPUT:
         LOG_C(0xFFFFFF, "-> Input '%s' : %s", cname(), _type_name.c_str());
         break;
-      case CTX_OUTPUT:
+      case TS_OUTPUT:
         LOG_C(0xAAAAFF, "<- Output '%s' : %s", cname(), _type_name.c_str());
         break;
-      case CTX_SIGNAL:
+      case TS_SIGNAL:
         LOG_C(0xAACCFF, "-- Signal '%s' : %s", cname(), _type_name.c_str());
         break;
-      case CTX_REGISTER:
-      case CTX_MAYBE:
+      case TS_REGISTER:
+      case TS_MAYBE:
         LOG_C(0xAAFFAA, ">| Register '%s' : %s", cname(), _type_name.c_str());
         break;
-      case CTX_INVALID:
+      case TS_INVALID:
         LOG_C(0x8080FF, "Invalid field '%s' : %s", cname(), _type_name.c_str());
         break;
-      case CTX_PENDING:
+      case TS_PENDING:
         LOG_C(0x8080FF, "Pending field '%s' : %s", cname(), _type_name.c_str());
         break;
     }

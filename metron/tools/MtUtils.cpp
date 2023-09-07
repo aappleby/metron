@@ -8,14 +8,14 @@
 
 FieldType trace_state_to_field_type(TraceState s) {
   switch(s) {
-    case CTX_NONE:     return FT_SIGNAL;
-    case CTX_INPUT:    return FT_INPUT;
-    case CTX_OUTPUT:   return FT_OUTPUT;
-    case CTX_MAYBE:    return FT_REGISTER;
-    case CTX_SIGNAL:   return FT_SIGNAL;
-    case CTX_REGISTER: return FT_REGISTER;
-    case CTX_INVALID:  return FT_INVALID;
-    case CTX_PENDING:  return FT_INVALID;
+    case TS_NONE:     return FT_SIGNAL;
+    case TS_INPUT:    return FT_INPUT;
+    case TS_OUTPUT:   return FT_OUTPUT;
+    case TS_MAYBE:    return FT_REGISTER;
+    case TS_SIGNAL:   return FT_SIGNAL;
+    case TS_REGISTER: return FT_REGISTER;
+    case TS_INVALID:  return FT_INVALID;
+    case TS_PENDING:  return FT_INVALID;
   }
   return FT_INVALID;
 }
@@ -25,36 +25,36 @@ FieldType trace_state_to_field_type(TraceState s) {
 TraceState merge_action(TraceState state, TraceAction action) {
   // clang-format off
 
-  TraceState result = CTX_INVALID;
+  TraceState result = TS_INVALID;
 
   if (action == ACT_READ) {
     switch (state) {
-      case CTX_NONE:     result = CTX_INPUT;   break;
-      case CTX_INPUT:    result = CTX_INPUT;   break;
-      case CTX_OUTPUT:   result = CTX_SIGNAL;  break;
-      case CTX_MAYBE:    result = CTX_INVALID; break;
-      case CTX_SIGNAL:   result = CTX_SIGNAL;  break;
-      case CTX_REGISTER: result = CTX_INVALID; break;
-      case CTX_INVALID:  result = CTX_INVALID; break;
-      case CTX_PENDING:  result = CTX_INVALID; break;
+      case TS_NONE:     result = TS_INPUT;   break;
+      case TS_INPUT:    result = TS_INPUT;   break;
+      case TS_OUTPUT:   result = TS_SIGNAL;  break;
+      case TS_MAYBE:    result = TS_INVALID; break;
+      case TS_SIGNAL:   result = TS_SIGNAL;  break;
+      case TS_REGISTER: result = TS_INVALID; break;
+      case TS_INVALID:  result = TS_INVALID; break;
+      case TS_PENDING:  result = TS_INVALID; break;
     }
   }
 
   if (action == ACT_WRITE) {
     switch (state) {
-      case CTX_NONE:     result = CTX_OUTPUT;   break;
-      case CTX_INPUT:    result = CTX_REGISTER; break;
-      case CTX_OUTPUT:   result = CTX_OUTPUT;   break;
-      case CTX_MAYBE:    result = CTX_OUTPUT;   break;
-      case CTX_SIGNAL:   result = CTX_INVALID;  break;
-      case CTX_REGISTER: result = CTX_REGISTER; break;
-      case CTX_INVALID:  result = CTX_INVALID;  break;
-      case CTX_PENDING:  result = CTX_INVALID; break;
+      case TS_NONE:     result = TS_OUTPUT;   break;
+      case TS_INPUT:    result = TS_REGISTER; break;
+      case TS_OUTPUT:   result = TS_OUTPUT;   break;
+      case TS_MAYBE:    result = TS_OUTPUT;   break;
+      case TS_SIGNAL:   result = TS_INVALID;  break;
+      case TS_REGISTER: result = TS_REGISTER; break;
+      case TS_INVALID:  result = TS_INVALID;  break;
+      case TS_PENDING:  result = TS_INVALID; break;
     }
   }
   // clang-format on
 
-  if (result == CTX_INVALID) {
+  if (result == TS_INVALID) {
     //printf("invalid!\n");
       int x = 1;
       x++;
@@ -66,31 +66,31 @@ TraceState merge_action(TraceState state, TraceAction action) {
 const char* merge_action_message(TraceState state, TraceAction action) {
   // clang-format off
 
-  TraceState result = CTX_INVALID;
+  TraceState result = TS_INVALID;
 
   if (action == ACT_READ) {
     switch (state) {
-      case CTX_NONE:     return "Field was untouched, is now an input";
-      case CTX_INPUT:    return "Reading from an input is OK";
-      case CTX_OUTPUT:   return "Reading from an output makes it a signal";
-      case CTX_MAYBE:    return "Can't read from a maybe";
-      case CTX_SIGNAL:   return "Reading a signal is OK";
-      case CTX_REGISTER: return "Can't read from a register after it has been written";
-      case CTX_INVALID:  return "Can't read from Invalid";
-      case CTX_PENDING:  return "Can't read from Pending";
+      case TS_NONE:     return "Field was untouched, is now an input";
+      case TS_INPUT:    return "Reading from an input is OK";
+      case TS_OUTPUT:   return "Reading from an output makes it a signal";
+      case TS_MAYBE:    return "Can't read from a maybe";
+      case TS_SIGNAL:   return "Reading a signal is OK";
+      case TS_REGISTER: return "Can't read from a register after it has been written";
+      case TS_INVALID:  return "Can't read from Invalid";
+      case TS_PENDING:  return "Can't read from Pending";
     }
   }
 
   if (action == ACT_WRITE) {
     switch (state) {
-      case CTX_NONE:     return "Field was untouched, is now an output";
-      case CTX_INPUT:    return "Writing to an input makes it a register";
-      case CTX_OUTPUT:   return "Overwriting an output is OK";
-      case CTX_MAYBE:    return "Overwriting a maybe is OK";
-      case CTX_SIGNAL:   return "Can't write a signal after it has been read";
-      case CTX_REGISTER: return "Overwriting a register is OK";
-      case CTX_INVALID:  return "Cant write to Invalid";
-      case CTX_PENDING:  return "Cant write to Pending";
+      case TS_NONE:     return "Field was untouched, is now an output";
+      case TS_INPUT:    return "Writing to an input makes it a register";
+      case TS_OUTPUT:   return "Overwriting an output is OK";
+      case TS_MAYBE:    return "Overwriting a maybe is OK";
+      case TS_SIGNAL:   return "Can't write a signal after it has been read";
+      case TS_REGISTER: return "Overwriting a register is OK";
+      case TS_INVALID:  return "Cant write to Invalid";
+      case TS_PENDING:  return "Cant write to Pending";
     }
   }
 
@@ -118,23 +118,23 @@ const char* merge_action_message(TraceState state, TraceAction action) {
 //-----------------------------------------------------------------------------
 
 TraceState merge_branch(TraceState ma, TraceState mb) {
-  if (ma == CTX_PENDING) {
+  if (ma == TS_PENDING) {
     return mb;
-  } else if (mb == CTX_PENDING) {
+  } else if (mb == TS_PENDING) {
     return ma;
   } else if (ma == mb) {
     return ma;
-  } else if (ma == CTX_INVALID || mb == CTX_INVALID) {
-    return CTX_INVALID;
+  } else if (ma == TS_INVALID || mb == TS_INVALID) {
+    return TS_INVALID;
   } else {
     // clang-format off
     TraceState table[6][6] = {
-      {CTX_NONE,     CTX_INPUT,    CTX_MAYBE,    CTX_MAYBE,    CTX_INVALID, CTX_REGISTER},
-      {CTX_INPUT,    CTX_INPUT,    CTX_REGISTER, CTX_REGISTER, CTX_INVALID, CTX_REGISTER},
-      {CTX_MAYBE,    CTX_REGISTER, CTX_OUTPUT,   CTX_MAYBE,    CTX_SIGNAL,  CTX_REGISTER},
-      {CTX_MAYBE,    CTX_REGISTER, CTX_MAYBE,    CTX_MAYBE,    CTX_INVALID, CTX_REGISTER},
-      {CTX_INVALID,  CTX_INVALID,  CTX_SIGNAL,   CTX_INVALID,  CTX_SIGNAL,  CTX_INVALID },
-      {CTX_REGISTER, CTX_REGISTER, CTX_REGISTER, CTX_REGISTER, CTX_INVALID, CTX_REGISTER},
+      {TS_NONE,     TS_INPUT,    TS_MAYBE,    TS_MAYBE,    TS_INVALID, TS_REGISTER},
+      {TS_INPUT,    TS_INPUT,    TS_REGISTER, TS_REGISTER, TS_INVALID, TS_REGISTER},
+      {TS_MAYBE,    TS_REGISTER, TS_OUTPUT,   TS_MAYBE,    TS_SIGNAL,  TS_REGISTER},
+      {TS_MAYBE,    TS_REGISTER, TS_MAYBE,    TS_MAYBE,    TS_INVALID, TS_REGISTER},
+      {TS_INVALID,  TS_INVALID,  TS_SIGNAL,   TS_INVALID,  TS_SIGNAL,  TS_INVALID },
+      {TS_REGISTER, TS_REGISTER, TS_REGISTER, TS_REGISTER, TS_INVALID, TS_REGISTER},
     };
     // clang-format on
 
@@ -142,7 +142,7 @@ TraceState merge_branch(TraceState ma, TraceState mb) {
 
     auto result = table[ma][mb];
 
-    if (result  == CTX_INVALID) {
+    if (result  == TS_INVALID) {
       //printf("invalid!\n");
       int x = 1;
       x++;
@@ -153,9 +153,9 @@ TraceState merge_branch(TraceState ma, TraceState mb) {
 }
 
 const char* merge_branch_message(TraceState ma, TraceState mb) {
-  if (ma == CTX_INVALID || mb == CTX_INVALID) {
+  if (ma == TS_INVALID || mb == TS_INVALID) {
     return "Merging invalid branches is an error";
-  } else if (ma == CTX_PENDING || mb == CTX_PENDING) {
+  } else if (ma == TS_PENDING || mb == TS_PENDING) {
     return "Can't merge a Pending";
   } else if (ma == mb) {
     return "Merging identical branches is OK";

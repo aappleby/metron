@@ -319,7 +319,7 @@ int main_old(Options opts) {
   std::vector<MtField*> bad_fields;
   for (auto mod : lib.all_modules) {
     for (auto field : mod->all_fields) {
-      if (field->_state == CTX_INVALID) {
+      if (field->_state == TS_INVALID) {
         err << ERR("Field %s is in an invalid state\n", field->cname());
         bad_fields.push_back(field);
       }

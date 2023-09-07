@@ -82,6 +82,8 @@ CHECK_RETURN Err CInstance::log_action(CNode* node, TraceAction action) {
     func->self_reads.insert(node_field);
   }
   else if (action == ACT_WRITE) {
+    node->dump_tree();
+    func->dump_tree();
     func->self_writes.insert(node_field);
   }
 

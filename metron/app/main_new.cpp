@@ -279,7 +279,7 @@ int main_new(Options opts) {
     for (auto f : c->all_functions) {
       // FIXME in init_chain, why wasn't the transitive write showing up in init1?
       // because we're not tracing constructors yet
-      if (f->method_type != MT_INIT) {
+      if (f->method_type == MT_UNKNOWN) {
         if (f->all_writes.empty() && f->external_callees.empty()) f->set_type(MT_FUNC);
       }
     }

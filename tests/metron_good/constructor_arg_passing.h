@@ -14,6 +14,7 @@ public:
 
   void tock(logic<10> new_addr) {
     addr = new_addr;
+    tick();
   }
 
   void tick() {
@@ -42,7 +43,7 @@ public:
   }
 
   void tick() {
-    mod.tick();
+    //mod.tick();
   }
 
   Module<7777, 8383> mod;

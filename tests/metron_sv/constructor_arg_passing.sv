@@ -57,6 +57,7 @@ module Top (
   end
 
   always_ff @(posedge clock) begin : tick
+    //mod.tick();
   end
 
   Module #(

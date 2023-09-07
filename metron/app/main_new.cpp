@@ -78,13 +78,6 @@ int main_new(Options opts) {
     return -1;
   }
 
-  /*
-  if (opts.verbose) {
-    root_file->context.root_node->dump_tree();
-    LOG("\n");
-  }
-  */
-
   //----------------------------------------
   // All modules are now in the library, we can resolve references to other
   // modules when we're collecting fields.
@@ -153,38 +146,6 @@ int main_new(Options opts) {
   }
 
   //----------------------------------------
-  // Mark all methods called by the constructor as inits
-
-#if 0
-  std::set<CNodeFunction*> marked;
-  std::vector<CNodeFunction*> queue;
-
-  for (auto c : repo.all_classes) {
-    if (c->all_constructors.empty()) continue;
-
-    marked.clear();
-    queue.clear();
-    queue.push_back(c->all_constructors[0]);
-    while(queue.size()) {
-      auto f1 = queue.back();
-
-      auto fname = f1->get_name();
-      LOG_R("Func %.*s is init\n", fname.size(), fname.data());
-
-      queue.pop_back();
-      f1->is_init_ = true;
-      for (auto f2 : f1->internal_callees) {
-        if (!marked.contains(f2)) {
-          queue.push_back(f2);
-          marked.insert(f2);
-        }
-      }
-    }
-
-  }
-#endif
-
-  //----------------------------------------
   // Trace
 
   {
@@ -224,6 +185,12 @@ int main_new(Options opts) {
       LOG_G("Tracing done for %.*s\n", int(name.size()), name.data());
       top_inst->commit_state();
       delete top_inst;
+    }
+  }
+
+  for (auto c : repo.all_classes) {
+    for (auto f : c->all_functions) {
+      f->propagate_rw();
     }
   }
 
@@ -287,20 +254,78 @@ int main_new(Options opts) {
   // Methods that only call funcs in the same module and don't write anything
   // are funcs.
 
+  for (auto c : repo.all_classes) {
+    for (auto f : c->all_functions) {
+      if (f->all_writes.empty() && f->external_callees.empty()) f->set_type(MT_FUNC);
+    }
+  }
+
   //----------------------------------------
   // Methods that call funcs in other modules _must_ be tocks.
+
+  for (auto c : repo.all_classes) {
+    for (auto f : c->all_functions) {
+      if (f->external_callees.size()) f->set_type(MT_TOCK);
+    }
+  }
 
   //----------------------------------------
   // Methods that write registers _must_ be ticks.
 
+  for (auto c : repo.all_classes) {
+    for (auto f : c->all_functions) {
+      bool writes_reg = false;
+      for (auto w : f->all_writes) {
+        if (w->field_type == FT_REGISTER) writes_reg = true;
+      }
+
+      if (writes_reg) f->set_type(MT_TICK);
+    }
+  }
+
   //----------------------------------------
   // Methods that are downstream from ticks _must_ be ticks.
+
+  for (auto c : repo.all_classes) {
+    for (auto f : c->all_functions) {
+      if (f->method_type == MT_TICK) {
+        f->visit_internal_callees([](CNodeFunction* f2) {
+          f2->set_type(MT_TICK);
+        });
+        assert(f->external_callees.empty());
+      }
+    }
+  }
 
   //----------------------------------------
   // Methods that write signals _must_ be tocks.
 
+  for (auto c : repo.all_classes) {
+    for (auto f : c->all_functions) {
+      bool writes_sig = false;
+      for (auto w : f->all_writes) {
+        if (w->field_type == FT_SIGNAL) writes_sig = true;
+      }
+
+      if (writes_sig) f->set_type(MT_TOCK);
+    }
+  }
+
   //----------------------------------------
   // Methods that are upstream from tocks _must_ be tocks.
+
+  for (auto c : repo.all_classes) {
+    for (auto f : c->all_functions) {
+      if (f->method_type == MT_TOCK) {
+        f->visit_internal_callers([](CNodeFunction* f2) {
+          f2->set_type(MT_TOCK);
+        });
+        f->visit_external_callers([](CNodeFunction* f2) {
+          f2->set_type(MT_TOCK);
+        });
+      }
+    }
+  }
 
   //----------------------------------------
   // Methods that write outputs are tocks unless they're already ticks.
@@ -311,6 +336,12 @@ int main_new(Options opts) {
 
   //----------------------------------------
   // Just mark everything left as tock.
+
+  for (auto c : repo.all_classes) {
+    for (auto f : c->all_functions) {
+      assert(f->method_type != MT_UNKNOWN);
+    }
+  }
 
   //----------------------------------------
   // Methods categorized, we can assign emit types

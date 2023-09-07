@@ -138,6 +138,22 @@ void CNodeFunction::dump() {
     }
   }
 
+  if (all_reads.size()) {
+    LOG_INDENT_SCOPE();
+    for (auto r : all_reads) {
+      auto name = r->get_name();
+      LOG_G("Reads  %.*s : %s\n", name.size(), name.data(), to_string(r->field_type));
+    }
+  }
+
+  if (all_writes.size()) {
+    LOG_INDENT_SCOPE();
+    for (auto w : all_writes) {
+      auto name = w->get_name();
+      LOG_G("Writes %.*s : %s\n", name.size(), name.data(), to_string(w->field_type));
+    }
+  }
+
 #if 0
   if (internal_callers.size()) {
     LOG_INDENT_SCOPE();

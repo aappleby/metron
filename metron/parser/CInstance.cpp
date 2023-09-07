@@ -75,6 +75,16 @@ CHECK_RETURN Err CInstance::log_action(CNode* node, TraceAction action) {
 
   assert(action == ACT_READ || action == ACT_WRITE);
 
+  auto func = node->ancestor<CNodeFunction>();
+  assert(func);
+
+  if (action == ACT_READ) {
+    func->reads.insert(node_field);
+  }
+  else if (action == ACT_WRITE) {
+    func->writes.insert(node_field);
+  }
+
   auto old_state = state_stack.back();
   auto new_state = merge_action(old_state, action);
 

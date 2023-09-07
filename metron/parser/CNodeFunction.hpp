@@ -49,10 +49,51 @@ struct CNodeFunction : public CNode {
     }
   }
 
+  inline void visit_external_callees(func_visitor v) {
+    for (auto f : external_callees) {
+      v(f);
+      f->visit_external_callees(v);
+    }
+  }
+
+  inline void visit_internal_callers(func_visitor v) {
+    for (auto f : internal_callers) {
+      v(f);
+      f->visit_internal_callers(v);
+    }
+  }
+
+  inline void visit_external_callers(func_visitor v) {
+    for (auto f : external_callers) {
+      v(f);
+      f->visit_external_callers(v);
+    }
+  }
+
   void set_type(MethodType new_type) {
-    assert(method_type == MT_UNKNOWN);
+    assert(method_type == MT_UNKNOWN || method_type == new_type);
     method_type = new_type;
   }
+
+  void propagate_rw() {
+    for (auto c : internal_callees) c->propagate_rw();
+    for (auto c : external_callees) c->propagate_rw();
+
+    all_reads = reads;
+    all_writes = writes;
+
+    auto name = get_name();
+
+    for (auto c : internal_callees) {
+      all_reads.insert(c->all_reads.begin(), c->all_reads.end());
+      all_writes.insert(c->all_writes.begin(), c->all_writes.end());
+    }
+    for (auto c : external_callees) {
+      all_reads.insert(c->all_reads.begin(), c->all_reads.end());
+      all_writes.insert(c->all_writes.begin(), c->all_writes.end());
+    }
+  }
+
 
   //----------------------------------------
 
@@ -77,6 +118,12 @@ struct CNodeFunction : public CNode {
   //bool emit_as_func = false;
   //bool needs_binding = false;
   //bool needs_ports = false;
+
+  std::set<CNodeField*> reads;
+  std::set<CNodeField*> writes;
+
+  std::set<CNodeField*> all_reads;
+  std::set<CNodeField*> all_writes;
 
   std::vector<CNodeDeclaration*> params;
 

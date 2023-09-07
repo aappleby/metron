@@ -43,7 +43,9 @@ Err CNodeTemplate::emit(Cursor& cursor) {
 void CNodeClass::init(const char* match_tag, SpanType span, uint64_t flags) {
   CNode::init(match_tag, span, flags);
 
-  for (auto c : this) {
+  //dump_tree();
+
+  for (auto c : child("body")) {
     if (auto node_enum = c->as_a<CNodeEnum>()) {
       all_enums.push_back(node_enum);
     }

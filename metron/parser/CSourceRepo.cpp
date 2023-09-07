@@ -126,6 +126,13 @@ void CSourceRepo::dump() {
     for (auto n : all_namespaces) n->dump();
     LOG("\n");
   }
+
+  {
+    LOG_G("Enums:\n");
+    LOG_INDENT_SCOPE();
+    for (auto n : all_enums) n->dump();
+    LOG("\n");
+  }
 }
 
 //------------------------------------------------------------------------------

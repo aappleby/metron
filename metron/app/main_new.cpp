@@ -399,7 +399,7 @@ int main_new(Options opts) {
   for (auto pair : repo.source_map) {
     auto file = pair.second;
     for (auto cursor = file->context.top_head; cursor; cursor = cursor->node_next) {
-      cursor->dump_tree();
+      //cursor->dump_tree();
     }
   }
 

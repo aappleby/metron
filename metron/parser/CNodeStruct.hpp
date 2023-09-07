@@ -34,13 +34,19 @@ struct CNodeUnion : public CNode {
 //------------------------------------------------------------------------------
 
 struct CNodeEnum : public CNode {
+  std::string_view get_name() const override {
+    auto n = child("name");
+    return n ? n->get_text() : "<unnamed>";
+  }
+
+  void dump() {
+    auto name = get_name();
+    LOG_G("Enum %.*s\n", name.size(), name.data());
+  }
+
   CSourceRepo* repo = nullptr;
   CSourceFile* file = nullptr;
   int refcount = 0;
-
-  void dump() {
-    dump_tree();
-  }
 };
 
 //------------------------------------------------------------------------------

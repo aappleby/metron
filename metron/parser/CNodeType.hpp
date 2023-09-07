@@ -17,6 +17,11 @@ struct CNodeBuiltinType : public CNodeType {
   std::string_view get_name() const override {
     return get_text();
   }
+
+  Err trace(CCall* call) override {
+    return Err();
+  }
+
 };
 
 struct CNodeStructType : public CNodeType {

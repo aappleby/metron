@@ -211,6 +211,16 @@ void CInstStruct::dump_tree() const {
   }
 }
 
+void CInstStruct::commit_state() {
+  auto merged_state = TS_PENDING;
+  for (auto pair : inst_map) {
+    pair.second->commit_state();
+    merged_state = merge_branch(merged_state, pair.second->state_stack.back());
+  }
+  node_field->field_type = trace_state_to_field_type(merged_state);
+}
+
+
 //------------------------------------------------------------------------------
 
 CInstPrim::CInstPrim(CInstance* inst_parent, CNodeField* node_field)

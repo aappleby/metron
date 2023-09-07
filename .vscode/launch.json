@@ -11,7 +11,7 @@
       //"args" : ["-p", "-d", "-v", "-e", "-c", "examples/uart/metron/uart_top.h"],
       //"args" : ["-p", "-d", "-v", "-e", "-c", "examples/scratch.h", "-o", "examples/scratch.sv"],
       //"args" : ["-d", "-v", "-e", "-c", "examples/scratch.h"],
-      "args" : ["-p", "-d", "-v", "-e", "-c", "tests/metron_good/enum_simple.h"],
+      "args" : ["-p", "-d", "-v", "-e", "-c", "tests/metron_good/initialize_struct_to_zero.h"],
       "setupCommands": [
         { // Display content in STL containers pretty
           "description": "Enable pretty-printing for gdb",

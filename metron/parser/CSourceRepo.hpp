@@ -24,6 +24,7 @@ class CSourceRepo /* : public IContext maybe? */ {
   CNodeClass*     get_class(std::string_view name);
   CNodeStruct*    get_struct(std::string_view name);
   CNodeNamespace* get_namespace(std::string_view name);
+  CNodeEnum*      get_enum(std::string_view name);
 
   std::string resolve_filename(const std::string& filename);
   Err load_source(std::string filename, CSourceFile** out_source = nullptr);

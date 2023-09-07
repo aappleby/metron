@@ -122,9 +122,7 @@ struct CInstStruct : public CInstance {
     return err;
   }
 
-  void commit_state() override {
-    for (auto pair : inst_map) pair.second->commit_state();
-  }
+  void commit_state() override;
 
   //----------
 

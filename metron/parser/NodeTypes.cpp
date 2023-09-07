@@ -5,6 +5,7 @@
 #include "CNodeType.hpp"
 #include "CNodeCall.hpp"
 #include "CNodeField.hpp"
+#include "CNodeStruct.hpp"
 
 using namespace matcheroni;
 using namespace parseroni;
@@ -201,13 +202,25 @@ Err CNodeQualifiedIdentifier::emit(Cursor& c) {
 Err CNodeQualifiedIdentifier::trace(CCall* call) {
   Err err;
 
-  auto namespace_name = child("scope_path")->get_name();
-  auto field_name     = child("identifier")->get_name();
+  auto scope = child("scope_path")->get_name();
+  auto field = child("identifier")->get_name();
 
-  auto namespace_node = get_repo()->get_namespace(namespace_name);
-  if (namespace_node) {
-    err << namespace_node->get_field(field_name)->trace(call);
+  if (auto node_namespace = get_repo()->get_namespace(scope)) {
+    LOG_R("namespace!\n");
+    return node_namespace->get_field(field)->trace(call);
   }
+
+  if (auto node_enum = get_repo()->get_enum(scope)) {
+    return Err();
+  }
+
+  if (auto node_class = ancestor<CNodeClass>()) {
+    if (auto node_enum = node_class->get_enum(scope)) {
+      return Err();
+    }
+  }
+
+  NODE_ERR("Don't know how to trace this qualified identifier");
 
   return err;
 }

@@ -75,6 +75,11 @@ CNodeDeclaration* CNodeClass::get_modparam(std::string_view name) {
   return nullptr;
 }
 
+CNodeEnum* CNodeClass::get_enum(std::string_view name) {
+  for (auto e : all_enums) if (e->get_name() == name) return e;
+  return nullptr;
+}
+
 //------------------------------------------------------------------------------
 // FIXME move this to init()
 

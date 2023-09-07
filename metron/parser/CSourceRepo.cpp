@@ -38,6 +38,14 @@ CNodeNamespace* CSourceRepo::get_namespace(std::string_view name) {
   return nullptr;
 }
 
+CNodeEnum* CSourceRepo::get_enum(std::string_view name) {
+  for (auto c : all_enums) {
+    auto enum_name = c->get_name();
+    if (enum_name == name) return c;
+  }
+  return nullptr;
+}
+
 //------------------------------------------------------------------------------
 
 std::string CSourceRepo::resolve_filename(const std::string& filename) {

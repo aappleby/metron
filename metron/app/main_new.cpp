@@ -191,6 +191,7 @@ int main_new(Options opts) {
 
       LOG_G("Tracing done for %.*s\n", int(name.size()), name.data());
       top_inst->commit_state();
+      top_inst->dump_tree();
       delete top_inst;
     }
   }
@@ -214,6 +215,9 @@ int main_new(Options opts) {
   }
 
   for (auto c : repo.all_classes) {
+
+    c->dump_tree();
+
     auto cname = c->get_name();
     for (auto f : c->all_fields) {
       auto fname = f->get_name();

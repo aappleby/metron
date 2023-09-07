@@ -13,6 +13,6 @@ public:
   void tock() {
     // FIXME fix this later glarghbh
     //my_struct1 = {0};
-    //my_struct1.field = 1;
+    my_struct1.field = 0;
   }
 };

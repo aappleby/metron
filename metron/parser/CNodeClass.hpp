@@ -8,6 +8,7 @@
 struct CNodeDeclaration;
 struct CNodeConstructor;
 struct CNodeFunction;
+struct CNodeEnum;
 struct CSourceRepo;
 struct CSourceFile;
 struct CNodeField;
@@ -72,6 +73,7 @@ struct CNodeClass : public CNode {
   std::vector<CNodeField*>       all_fields;
   std::vector<CNodeDeclaration*> all_modparams;
   std::vector<CNodeField*>       all_localparams;
+  std::vector<CNodeEnum*>        all_enums;
 
   /*
   std::vector<MtField*> input_signals;

@@ -34,6 +34,13 @@ struct CNodeUnion : public CNode {
 //------------------------------------------------------------------------------
 
 struct CNodeEnum : public CNode {
+  CSourceRepo* repo = nullptr;
+  CSourceFile* file = nullptr;
+  int refcount = 0;
+
+  void dump() {
+    dump_tree();
+  }
 };
 
 //------------------------------------------------------------------------------

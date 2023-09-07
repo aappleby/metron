@@ -178,19 +178,25 @@ Err CNodeFieldExpression::trace(CCall* call) {
   return err;
 }
 
-//------------------------------------------------------------------------------
+//==============================================================================
 
 uint32_t CNodeQualifiedIdentifier::debug_color() const { return 0x80FF80; }
+
+//----------------------------------------
 
 std::string_view CNodeQualifiedIdentifier::get_name() const {
   NODE_ERR("FIXME");
   return "";
 }
 
+//----------------------------------------
+
 Err CNodeQualifiedIdentifier::emit(Cursor& c) {
   NODE_ERR("FIXME");
   return Err();
 }
+
+//----------------------------------------
 
 Err CNodeQualifiedIdentifier::trace(CCall* call) {
   Err err;
@@ -199,12 +205,14 @@ Err CNodeQualifiedIdentifier::trace(CCall* call) {
   auto field_name     = child("identifier")->get_name();
 
   auto namespace_node = get_repo()->get_namespace(namespace_name);
-  err << namespace_node->get_field(field_name)->trace(call);
+  if (namespace_node) {
+    err << namespace_node->get_field(field_name)->trace(call);
+  }
 
   return err;
 }
 
-//------------------------------------------------------------------------------
+//==============================================================================
 
 uint32_t CNodeText::debug_color() const { return 0x888888; }
 

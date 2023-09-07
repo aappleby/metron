@@ -42,6 +42,12 @@ Err CNodeTemplate::emit(Cursor& cursor) {
 
 void CNodeClass::init(const char* match_tag, SpanType span, uint64_t flags) {
   CNode::init(match_tag, span, flags);
+
+  for (auto c : this) {
+    if (auto node_enum = c->as_a<CNodeEnum>()) {
+      all_enums.push_back(node_enum);
+    }
+  }
 }
 
 uint32_t CNodeClass::debug_color() const {
@@ -68,6 +74,7 @@ CNodeDeclaration* CNodeClass::get_modparam(std::string_view name) {
 }
 
 //------------------------------------------------------------------------------
+// FIXME move this to init()
 
 Err CNodeClass::collect_fields_and_methods() {
   Err err;
@@ -497,6 +504,12 @@ void CNodeClass::dump() {
     LOG_G("Fields\n");
     LOG_INDENT_SCOPE();
     for (auto f : all_fields) f->dump();
+  }
+
+  if (all_enums.size()) {
+    LOG_G("Enums\n");
+    LOG_INDENT_SCOPE();
+    for (auto e : all_enums) e->dump();
   }
 }
 

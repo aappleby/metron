@@ -13,6 +13,7 @@ class CSourceFile;
 class CNodeClass;
 class CNodeStruct;
 class CNodeNamespace;
+struct CNodeEnum;
 class CNode;
 
 //------------------------------------------------------------------------------
@@ -38,6 +39,7 @@ class CSourceRepo /* : public IContext maybe? */ {
   std::vector<CNodeClass*>     all_classes;
   std::vector<CNodeStruct*>    all_structs;
   std::vector<CNodeNamespace*> all_namespaces;
+  std::vector<CNodeEnum*>      all_enums;
 
   CNodeClass* top = nullptr;
 };

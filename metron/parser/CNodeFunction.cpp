@@ -138,19 +138,37 @@ void CNodeFunction::dump() {
     }
   }
 
+  if (self_reads.size()) {
+    LOG_INDENT_SCOPE();
+    for (auto r : self_reads) {
+      auto name = r->get_name();
+      LOG_G("Directly reads  %.*s : %s\n", name.size(), name.data(), to_string(r->field_type));
+    }
+  }
+
+  if (self_writes.size()) {
+    LOG_INDENT_SCOPE();
+    for (auto w : self_writes) {
+      auto name = w->get_name();
+      LOG_G("Directly writes %.*s : %s\n", name.size(), name.data(), to_string(w->field_type));
+    }
+  }
+
   if (all_reads.size()) {
     LOG_INDENT_SCOPE();
     for (auto r : all_reads) {
+      if (self_reads.contains(r)) continue;
       auto name = r->get_name();
-      LOG_G("Reads  %.*s : %s\n", name.size(), name.data(), to_string(r->field_type));
+      LOG_G("Indirectly reads  %.*s : %s\n", name.size(), name.data(), to_string(r->field_type));
     }
   }
 
   if (all_writes.size()) {
     LOG_INDENT_SCOPE();
     for (auto w : all_writes) {
+      if (self_writes.contains(w)) continue;
       auto name = w->get_name();
-      LOG_G("Writes %.*s : %s\n", name.size(), name.data(), to_string(w->field_type));
+      LOG_G("Indirectly writes %.*s : %s\n", name.size(), name.data(), to_string(w->field_type));
     }
   }
 

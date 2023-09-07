@@ -123,6 +123,13 @@ int main_new(Options opts) {
         repo.all_namespaces.push_back(node_namespace);
         node_namespace->collect_fields_and_methods();
       }
+      else if (auto node_enum = n->as_a<CNodeEnum>()) {
+        //LOG_G("top level enum!!!!\n");
+        node_enum->repo = &repo;
+        node_enum->file = file;
+
+        repo.all_enums.push_back(node_enum);
+      }
 
     }
   }
@@ -224,6 +231,16 @@ int main_new(Options opts) {
     }
   }
 
+  if (opts.verbose) {
+    LOG_B("\n");
+    LOG_B("//----------------------------------------\n");
+    LOG_B("// Repo dump\n\n");
+    LOG_INDENT_SCOPE();
+    repo.dump();
+    LOG_B("//----------------------------------------\n");
+    LOG_B("\n");
+  }
+
   //========================================
 
   LOG_B("Categorizing methods\n");
@@ -270,28 +287,36 @@ int main_new(Options opts) {
   }
 
   //----------------------------------------
-  // public/private
-  // directly writes signal
-  // indirectly writes signal
-  // directly writes register
-  // indirectly writes register
+  // Methods that directly read or write arrays _must_ be ticks.
 
-  // PB DS IS DR IR
-  //  -  -  -  -  - FUNC
+  for (auto c : repo.all_classes) {
+    for (auto f : c->all_functions) {
+      for (auto r : f->self_reads)  if (r->is_array()) f->set_type(MT_TICK);
+      for (auto w : f->self_writes) if (w->is_array()) f->set_type(MT_TICK);
+    }
+  }
 
-  //  -  -  -  -  # TICK
-  //  -  -  -  #  - TICK
-  //  -  -  -  #  # TICK
+  //----------------------------------------
+  // Methods that directly write registers _must_ be ticks.
 
-  //  -  -  #  -  - TOCK
-  //  -  -  #  -  # TOCK
-  //  -  #  -  -  - TOCK
-  //  -  #  -  -  # TOCK
-  //  -  #  #  -  - TOCK
-  //  -  #  #  -  # TOCK
+  for (auto c : repo.all_classes) {
+    for (auto f : c->all_functions) {
+      for (auto w : f->self_writes) if (w->field_type == FT_REGISTER) f->set_type(MT_TICK);
+    }
+  }
+
+  //----------------------------------------
+  // Everything else that's unassigned can be a tock? Sure?
+
+  for (auto c : repo.all_classes) {
+    for (auto f : c->all_functions) {
+      if (f->method_type == MT_UNKNOWN) f->set_type(MT_TOCK);
+    }
+  }
 
   //----------------------------------------
 
+#if 0
   for (auto c : repo.all_classes) {
     for (auto f : c->all_functions) {
       if (f->method_type == MT_INIT) continue;
@@ -328,6 +353,7 @@ int main_new(Options opts) {
       }
     }
   }
+#endif
 
   //----------------------------------------
   // Methods categorized, we can assign emit types
@@ -368,6 +394,13 @@ int main_new(Options opts) {
     repo.dump();
     LOG_B("//----------------------------------------\n");
     LOG_B("\n");
+  }
+
+  for (auto pair : repo.source_map) {
+    auto file = pair.second;
+    for (auto cursor = file->context.top_head; cursor; cursor = cursor->node_next) {
+      cursor->dump_tree();
+    }
   }
 
 

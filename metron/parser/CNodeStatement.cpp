@@ -123,6 +123,20 @@ CHECK_RETURN Err CNodeDefault::trace(CCall* call) {
 
 //------------------------------------------------------------------------------
 
+Err CNodeCompound::emit_block(Cursor& c, std::string ldelim, std::string rdelim) {
+  dump_tree();
+  /*
+  Err err;
+  block_prefix.push(prefix);
+  block_suffix.push(suffix);
+  err << emit_dispatch(n);
+  block_prefix.pop();
+  block_suffix.pop();
+  return err;
+  */
+  return Err();
+}
+
 Err CNodeCompound::trace(CCall* call) {
   Err err;
   for (auto c : this) err << c->trace(call);

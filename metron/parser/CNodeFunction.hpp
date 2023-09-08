@@ -31,6 +31,8 @@ struct CNodeFunction : public CNode {
   CNodeClass* get_parent_class();
   std::string_view get_return_type_name() const;
 
+  Err emit_always_comb(Cursor& c);
+
   void dump();
 
   //bool is_public() const;

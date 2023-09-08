@@ -15,6 +15,8 @@ Cursor::Cursor(CSourceRepo* repo, CSourceFile* source, std::string* str_out) {
   // Skip LEX_BOF
   this->tok_cursor = this->tok_begin + 1;
 
+  id_map.push(string_to_string());
+
   block_prefix.push("begin");
   block_suffix.push("end");
   override_size.push(0);

@@ -352,6 +352,45 @@ int main_new(Options opts) {
   //----------------------------------------
   // Methods categorized, we can assign emit types
 
+  for (auto c : repo.all_classes) {
+    for (auto f : c->all_functions) {
+
+#if 0
+      if (f->as_a<CNodeConstructor>()) {
+        m->emit_as_init = true;
+      }
+      else if (m->called_in_init()) {
+        m->emit_as_task = true;
+      }
+
+      f->needs_ports = f->is_public() && f->internal_callers.empty();
+
+      if (f->method_type == MT_TICK) {
+        m->emit_as_always_ff = !m->called_in_tick();
+        m->emit_as_task      =  m->called_in_tick();
+        m->needs_binding = m->called_by_tock();
+      }
+
+      if (f->method_type == MT_TOCK) {
+        m->emit_as_always_comb = true;
+        m->needs_binding =  m->called_in_module();
+      }
+
+      if (f->method_type == MT_FUNC) {
+        if (m->is_public() && !f->internal_callers.empty()) {
+          m->emit_as_always_comb = true;
+        }
+        else {
+          m->emit_as_func = true;
+        }
+      }
+      else {
+        err << ERR("wat\n");
+      }
+#endif
+    }
+  }
+
   //----------------------------------------
   // Methods categorized, we can split up internal_callers
 

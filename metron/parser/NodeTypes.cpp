@@ -55,7 +55,36 @@ std::string_view CNodeNamespace::get_name() const {
 }
 
 Err CNodeNamespace::emit(Cursor& c) {
-  NODE_ERR("FIXME");
+  Err err;
+  auto node_namespace = child("namespace");
+  auto node_name      = child("name");
+  auto node_fields    = child("fields");
+
+  err << c.emit_replacement(node_namespace, "package");
+  err << c.emit_gap_after(node_namespace);
+
+  err << c.emit_raw(node_name);
+  err << c.emit_print(";");
+  err << c.emit_gap_after(node_name);
+
+  for (auto f : node_fields) {
+    if (f->tag_is("ldelim")) {
+      err << c.skip_over(f);
+      err << c.emit_gap_after(f);
+      continue;
+    }
+    else if (f->tag_is("rdelim")) {
+      err << c.emit_replacement(f, "endpackage");
+      err << c.emit_gap_after(f);
+      continue;
+    }
+    else {
+      err << f->emit(c);
+      err << c.emit_gap_after(f);
+      continue;
+    }
+  }
+
   return Err();
 }
 
@@ -291,8 +320,7 @@ std::string_view CNodeList::get_name() const {
 }
 
 Err CNodeList::emit(Cursor& c) {
-  NODE_ERR("FIXME");
-  return Err();
+  return c.emit_default(this);
 }
 
 Err CNodeList::trace(CCall* call) {

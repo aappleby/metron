@@ -136,7 +136,7 @@ Err CNodeType::emit(Cursor& cursor) {
 
   if (as_a<CNodeBuiltinType>() && node_targs) {
     auto node_ldelim = node_targs->child("ldelim");
-    auto node_exp    = node_targs->child<CNodeExpression>();
+    auto node_exp    = node_targs->child("arg");
     auto node_rdelim = node_targs->child("rdelim");
 
     err << cursor.emit_raw(node_name);
@@ -161,7 +161,7 @@ Err CNodeType::emit(Cursor& cursor) {
       }
     }
     else {
-        // logic<exp> -> logic[(exp)-1:0]
+      // logic<exp> -> logic[(exp)-1:0]
       err << cursor.emit_replacement(node_ldelim, "[");
       err << cursor.emit_gap_after(node_ldelim);
       err << cursor.emit_print("(");
@@ -171,6 +171,10 @@ Err CNodeType::emit(Cursor& cursor) {
       err << cursor.emit_replacement(node_rdelim, "]");
       err << cursor.emit_gap_after(node_rdelim);
     }
+  }
+  else if (as_a<CNodeBuiltinType>()) {
+    err << cursor.emit_raw(this);
+    err << cursor.emit_gap_after(this);
   }
   else if (auto node_struct = child("struct_name")) {
     err << CNode::emit(cursor);

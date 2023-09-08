@@ -21,6 +21,8 @@ Err CNodeAccess::emit(Cursor& cursor) {
 //------------------------------------------------------------------------------
 
 Err CNodeTemplate::emit(Cursor& cursor) {
+  dump_tree();
+
   Err err = cursor.check_at(this);
 
   auto node_template = child("template");

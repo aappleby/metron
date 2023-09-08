@@ -138,10 +138,13 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
 Err CNodeField::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
+  bool in_namespace = ancestor<CNodeNamespace>() != nullptr;
+
   auto node_static = child("static");
   auto node_const  = child("const");
   auto node_type   = child("type");
   auto node_name   = child("name");
+  auto node_array  = child("array");
   auto node_eq     = child("eq");
   auto node_value  = child("value");
 
@@ -153,8 +156,13 @@ Err CNodeField::emit(Cursor& cursor) {
     err << cursor.skip_over(node_type);
     err << cursor.skip_gap_after(node_type);
     err << cursor.emit_print("localparam string ");
+
     err << cursor.emit(node_name);
     err << cursor.emit_gap_after(node_name);
+
+    err << cursor.emit(node_array);
+    err << cursor.emit_gap_after(node_array);
+
     err << cursor.emit(node_eq);
     err << cursor.emit_gap_after(node_eq);
     err << cursor.emit(node_value);
@@ -164,15 +172,26 @@ Err CNodeField::emit(Cursor& cursor) {
 
   if (node_static && node_const) {
     // Localparam
-    err << cursor.emit_print("localparam ");
+    err << cursor.emit_print(in_namespace ? "parameter " : "localparam ");
+
     err << cursor.comment_out(node_static);
     err << cursor.emit_gap_after(node_static);
+
     err << cursor.comment_out(node_const);
     err << cursor.emit_gap_after(node_const);
+
     err << cursor.emit(node_type);
     err << cursor.emit_gap_after(node_type);
+
+    err << cursor.emit(node_name);
+    err << cursor.emit_gap_after(node_name);
+
+    err << cursor.emit(node_array);
+    err << cursor.emit_gap_after(node_array);
+
     err << cursor.emit(node_eq);
     err << cursor.emit_gap_after(node_eq);
+
     err << cursor.emit(node_value);
     err << cursor.emit_gap_after(node_value);
     return err << cursor.check_done(this);
@@ -188,8 +207,13 @@ Err CNodeField::emit(Cursor& cursor) {
     err << cursor.emit_gap_after(node_const);
     err << cursor.emit(node_type);
     err << cursor.emit_gap_after(node_type);
+
     err << cursor.emit(node_name);
     err << cursor.emit_gap_after(node_name);
+
+    err << cursor.emit(node_array);
+    err << cursor.emit_gap_after(node_array);
+
     err << cursor.emit(node_eq);
     err << cursor.emit_gap_after(node_eq);
     err << cursor.emit(node_value);

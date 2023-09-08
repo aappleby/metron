@@ -778,7 +778,7 @@ TokenSpan match_targ_list(CContext& ctx, TokenSpan body) {
   tail = Tag<"ldelim", cap_punct<"<">>::match(ctx, body);
   if (!tail.is_valid()) return tail;
 
-  tail = comma_separated<cap_expression>::match(ctx, tight_span);
+  tail = comma_separated<Tag<"arg", cap_expression>>::match(ctx, tight_span);
   if (!tail.is_valid()) return tail;
   if (!tail.is_empty()) return body.fail();
 
@@ -860,7 +860,7 @@ TokenSpan match_declaration(CContext& ctx, TokenSpan body) {
     Tag<"name",      cap_identifier>,
     Any<Tag<"array", cap_index_list>>,
     Opt<Seq<
-      cap_punct<"=">,
+      Tag<"eq", cap_punct<"=">>,
       Tag<"value",   cap_expression>
     >>
   >;
@@ -908,7 +908,7 @@ TokenSpan match_struct(CContext& ctx, TokenSpan body) {
   // clang-format off
   using pattern =
   Seq<
-    cap_keyword<"struct">,
+    Tag<"struct", cap_keyword<"struct">>,
     Tag<"name", Dispatch<cap_identifier, Ref<&CContext::add_struct2>>>,
     Tag<"body", cap_field_list>
   >;
@@ -989,9 +989,9 @@ using cap_class = CaptureAnon<Ref<match_class>, CNodeClass>;
 
 using cap_template = CaptureAnon<
   Seq<
-    cap_keyword<"template">,
+    Tag<"template", cap_keyword<"template">>,
     Tag<"params", cap_tdecl_list>,
-    cap_class
+    Tag<"class", cap_class>
   >,
   CNodeTemplate
 >;

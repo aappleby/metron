@@ -1,23 +1,18 @@
 `include "metron/tools/metron_tools.sv"
 
-// Empty module should pass.
-
 module Module (
 {{port list}}
 );
-  /*
-  Module() {
-    blep();
-  }
-
-  void blep() {
-    x = 1;
-    y = 2;
-  }
-  */
-
-  {{10CNodeField}};
-  {{10CNodeField}};
+/*public:*/
 
   {{13CNodeFunction}}
+
+  {{13CNodeFunction}}
+
+/*private:*/
+
+  logic x;
+  logic y;
+  logic z;
+  logic[1:0] out;
 endmodule;

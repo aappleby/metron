@@ -117,44 +117,60 @@ CHECK_RETURN Err MtCursor::emit_sym_sized_type_specifier(MnNode n) {
 [000.012]           ┗━━┳━ CNodeConstant constant =
 [000.012]              ┗━━━━ CNode int = "8"
 
+[000.004] __ ▆ CNodeField =
+[000.004]  ┣━━╸▆ type : CNodeBuiltinType =
+[000.004]  ┃   ┣━━╸▆ name : CNodeIdentifier = "logic"
+[000.004]  ┃   ┗━━╸▆ template_args : CNodeList =
+[000.004]  ┃       ┣━━╸▆ CNodePunct = "<"
+[000.005]  ┃       ┣━━╸▆ CNodeConstInt = "1"
+[000.005]  ┃       ┗━━╸▆ CNodePunct = ">"
+[000.005]  ┗━━╸▆ name : CNodeIdentifier = "x"
+
 */
 
 Err CNodeType::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
-  auto node_builtin = child("builtin_name");
-  auto node_targs   = child("template_args");
+  auto node_name  = child("name");
+  auto node_targs = child("template_args");
 
-  if (node_builtin && node_targs) {
-    // Change logic<N> to logic[N-1:0]
-
-    err << cursor.emit_raw(node_builtin);
-    err << cursor.emit_gap_after(node_builtin);
-
+  if (as_a<CNodeBuiltinType>() && node_targs) {
     auto node_ldelim = node_targs->child("ldelim");
-    auto node_exp    = node_targs->child("exp")->as_a<CNodeExpression>();
+    auto node_exp    = node_targs->child<CNodeExpression>();
     auto node_rdelim = node_targs->child("rdelim");
 
-    err << cursor.emit_replacement(node_ldelim, "[");
-    err << cursor.emit_gap_after(node_ldelim);
+    err << cursor.emit_raw(node_name);
+    err << cursor.emit_gap_after(node_name);
 
-    if (node_exp->is_integer_constant()) {
-      err << cursor.skip_over(node_exp);
-      err << cursor.emit_gap_after(node_exp);
-
+    if (auto node_const_int = node_exp->as_a<CNodeConstInt>()) {
       auto width = atoi(node_exp->text_begin());
-      err << cursor.emit_print("%d:0", width - 1);
+      if (width == 1) {
+        // logic<1> -> logic
+        err << cursor.skip_over(node_targs);
+        err << cursor.emit_gap_after(node_targs);
+      }
+      else {
+        // logic<N> -> logic[N-1:0]
+        err << cursor.emit_replacement(node_ldelim, "[");
+        err << cursor.emit_gap_after(node_ldelim);
+        err << cursor.skip_over(node_exp);
+        err << cursor.emit_gap_after(node_exp);
+        err << cursor.emit_print("%d:0", width - 1);
+        err << cursor.emit_replacement(node_rdelim, "]");
+        err << cursor.emit_gap_after(node_rdelim);
+      }
     }
     else {
+        // logic<exp> -> logic[(exp)-1:0]
+      err << cursor.emit_replacement(node_ldelim, "[");
+      err << cursor.emit_gap_after(node_ldelim);
       err << cursor.emit_print("(");
       err << cursor.emit(node_exp);
       err << cursor.emit_gap_after(node_exp);
       err << cursor.emit_print(")-1:0");
+      err << cursor.emit_replacement(node_rdelim, "]");
+      err << cursor.emit_gap_after(node_rdelim);
     }
-
-    err << cursor.emit_replacement(node_rdelim, "]");
-    err << cursor.emit_gap_after(node_rdelim);
-
   }
   else if (auto node_struct = child("struct_name")) {
     err << CNode::emit(cursor);

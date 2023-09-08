@@ -191,7 +191,6 @@ int main_new(Options opts) {
 
       LOG_G("Tracing done for %.*s\n", int(name.size()), name.data());
       top_inst->commit_state();
-      top_inst->dump_tree();
       delete top_inst;
     }
   }
@@ -215,9 +214,6 @@ int main_new(Options opts) {
   }
 
   for (auto c : repo.all_classes) {
-
-    c->dump_tree();
-
     auto cname = c->get_name();
     for (auto f : c->all_fields) {
       auto fname = f->get_name();
@@ -233,16 +229,6 @@ int main_new(Options opts) {
       auto name = c->get_name();
       err << ERR("Class %.*s has multiple constructors", int(name.size()), name.data());
     }
-  }
-
-  if (opts.verbose) {
-    LOG_B("\n");
-    LOG_B("//----------------------------------------\n");
-    LOG_B("// Repo dump\n\n");
-    LOG_INDENT_SCOPE();
-    repo.dump();
-    LOG_B("//----------------------------------------\n");
-    LOG_B("\n");
   }
 
   //========================================
@@ -404,15 +390,7 @@ int main_new(Options opts) {
     LOG_B("\n");
   }
 
-  for (auto pair : repo.source_map) {
-    auto file = pair.second;
-    for (auto cursor = file->context.top_head; cursor; cursor = cursor->node_next) {
-      //cursor->dump_tree();
-    }
-  }
-
-
-  exit(0);
+  //exit(0);
 
 
   //----------------------------------------

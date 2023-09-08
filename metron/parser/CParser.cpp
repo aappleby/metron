@@ -775,7 +775,7 @@ TokenSpan match_targ_list(CContext& ctx, TokenSpan body) {
 
   TokenSpan tail;
 
-  tail = cap_punct<"<">::match(ctx, body);
+  tail = Tag<"ldelim", cap_punct<"<">>::match(ctx, body);
   if (!tail.is_valid()) return tail;
 
   tail = comma_separated<cap_expression>::match(ctx, tight_span);
@@ -783,7 +783,7 @@ TokenSpan match_targ_list(CContext& ctx, TokenSpan body) {
   if (!tail.is_empty()) return body.fail();
 
   TokenSpan rdelim_body(tight_span.end, body.end);
-  tail = cap_punct<">">::match(ctx, rdelim_body);
+  tail = Tag<"rdelim", cap_punct<">">>::match(ctx, rdelim_body);
 
   return tail;
 };

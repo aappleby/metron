@@ -74,12 +74,12 @@ struct CNodeFunction : public CNode {
     auto name = get_name();
 
     if (method_type == MT_UNKNOWN) {
-      LOG_R("%.*s %s\n", name.size(), name.data(), to_string(new_type));
+      //LOG_R("%.*s %s\n", name.size(), name.data(), to_string(new_type));
     }
 
     if (method_type != MT_UNKNOWN) {
       if (method_type != new_type) {
-        LOG_R("%.*s %s %s\n", name.size(), name.data(), to_string(method_type), to_string(new_type));
+        //LOG_R("%.*s %s %s\n", name.size(), name.data(), to_string(method_type), to_string(new_type));
       }
     }
 

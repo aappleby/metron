@@ -5,6 +5,7 @@
 #include "CNodeClass.hpp"
 #include "CNodeStruct.hpp"
 #include "CInstance.hpp"
+#include "CNodeType.hpp"
 
 #include "metrolib/core/Log.h"
 
@@ -79,18 +80,32 @@ bool CNodeField::is_const_char() const {
 //------------------------------------------------------------------------------
 
 #if 0
-//------------------------------------------------------------------------------
-// Emit field declarations. For components, also emit glue declarations and
-// append the glue parameter list to the field.
-
-// + field_declaration (259) =
-// |--# type: type_identifier (444) = "example_data_memory"
-// |--# declarator: field_identifier (440) = "data_memory"
-// |--# lit (39) = ";"
-
 CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
   Err err = check_at(n);
   assert(n.sym == sym_field_declaration);
+
+  // Struct outside of class
+  if (current_mod.top() == nullptr) {
+    // sym_field_declaration
+    //   field_type : sym_template_type
+    //   field_declarator : sym_field_identifier
+    //   lit ;
+
+    return err << emit_children(n);
+  }
+
+  // Const local variable
+  if (n.is_const()) {
+    err << emit_ws_to(n);
+    err << emit_print("localparam ");
+    err << emit_children(n);
+    return err << check_done(n);
+  }
+
+  // Enum
+  if (n.get_field(field_type).sym == sym_enum_specifier) {
+    return emit_children(n);
+  }
 
   //----------
   // Actual fields
@@ -114,22 +129,6 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
     err << emit_children(n);
   }
 
-  return err << check_done(n);
-}
-
-/*
-[000.013] ========== tree dump begin
-[000.013]  ┳━ CNodeField field =
-[000.013]  ┣━━┳━ CNodeType decl_type =
-[000.013]  ┃  ┗━━━━ CNode builtin_name = "int"
-[000.013]  ┗━━━━ CNodeIdentifier decl_name = "x"
-[000.013] ========== tree dump end
-*/
-
-if (n.is_const()) {
-  err << emit_ws_to(n);
-  err << emit_print("localparam ");
-  err << emit_children(n);
   return err << check_done(n);
 }
 
@@ -179,8 +178,8 @@ Err CNodeField::emit(Cursor& cursor) {
     return err << cursor.check_done(this);
   }
 
-  auto node_builtin = node_type->child("builtin_name");
-  auto node_targs    = node_type->child("template_args");
+  auto node_builtin = node_type->as_a<CNodeBuiltinType>();
+  auto node_targs   = node_type->child("template_args");
 
   if (node_builtin && node_targs) {
     err << cursor.comment_out(node_static);
@@ -222,21 +221,6 @@ CHECK_RETURN Err CNodeField::trace(CCall* call) {
 
 //------------------------------------------------------------------------------
 
-/*
-  TraceState _state = CTX_PENDING;
-
-  CNodeClass*  _parent_class;
-  CNodeStruct* _parent_struct;
-
-  CNodeClass*  _type_class;
-  CNodeStruct* _type_struct;
-
-  bool _static = false;
-  bool _const = false;
-  bool _public = false;
-  bool _enum = false;
-*/
-
 void CNodeField::dump() {
   //dump_tree();
 
@@ -273,3 +257,5 @@ void CNodeField::dump() {
 
   LOG_A("\n");
 }
+
+//------------------------------------------------------------------------------

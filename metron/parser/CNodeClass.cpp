@@ -375,9 +375,6 @@ Err CNodeClass::emit(Cursor& cursor) {
 
 Err CNodeClass::emit_module_ports(Cursor& cursor) {
   Err err;
-  //err << cursor.emit_print("(\n");
-  //err << cursor.emit_print("{{port list}}\n");
-  //err << cursor.emit_print(");\n");
 
   if (needs_tick()) {
     err << cursor.start_line();
@@ -388,33 +385,31 @@ Err CNodeClass::emit_module_ports(Cursor& cursor) {
 
   if (input_signals.size()) {
     err << cursor.start_line();
-    err << cursor.emit_print("// input signals\n");
+    err << cursor.emit_print("// input signals");
     for (auto f : input_signals) {
-      //err << emit_field_port(f);
+      err << emit_field_ports(f, cursor);
+    }
+  }
+
+  if (output_signals.size()) {
+    err << cursor.start_line();
+    err << cursor.emit_print("// output signals");
+    for (auto f : output_signals) {
+      err << emit_field_ports(f, cursor);
+    }
+  }
+
+  if (output_registers.size()) {
+    err << cursor.start_line();
+    err << cursor.emit_print("// output registers");
+    for (auto f : output_registers) {
+      err << emit_field_ports(f, cursor);
     }
   }
 
   for (auto f : all_functions) {
     err << emit_function_ports(f, cursor);
   }
-
-  /*
-  if (output_signals.size()) {
-    err << emit_line("// output signals");
-    for (auto f : output_signals) err << emit_field_port(f);
-  }
-
-  if (output_registers.size()) {
-    err << emit_line("// output registers");
-    for (auto f : output_registers) err << emit_field_port(f);
-  }
-
-  for (auto m : all_methods) {
-    if (!m->is_init_ && m->internal_callers.empty()) {
-      err << emit_method_ports(m);
-    }
-  }
-  */
 
   // Remove trailing comma from port list
   if (cursor.at_comma) {
@@ -429,16 +424,12 @@ Err CNodeClass::emit_module_ports(Cursor& cursor) {
 Err CNodeClass::emit_function_ports(CNodeFunction* f, Cursor& cursor) {
   Err err;
 
-  //f->dump_tree();
-
+  auto fname = f->get_namestr();
   auto rtype = f->child("return_type");
-
 
   if (!f->is_public_) return err;
   if (f->internal_callers.size()) return err;
   if (!f->params.size() && rtype->get_text() == "void") return err;
-
-  auto fname = f->get_namestr();
 
   err << cursor.start_line();
   err << cursor.emit_print("// %s() ports", fname.c_str());
@@ -462,15 +453,27 @@ Err CNodeClass::emit_function_ports(CNodeFunction* f, Cursor& cursor) {
     err << cursor.emit_print(" %s_ret,", fname.c_str());
   }
 
-  /*
-  if (m->has_return()) {
-    auto node_type = m->_node.get_field(field_type);
-    auto node_decl = m->_node.get_field(field_declarator);
-    auto node_name = node_decl.get_field(field_declarator);
+  return err;
+}
 
+//----------------------------------------
+
+Err CNodeClass::emit_field_ports(CNodeField* f, Cursor& cursor) {
+  Err err;
+
+  auto fname = f->get_namestr();
+
+  err << cursor.start_line();
+  if (f->field_type == FT_INPUT) {
+    err << cursor.emit_print("input ");
+  }
+  else if (f->field_type == FT_OUTPUT) {
+    err << cursor.emit_print("output ");
   }
 
-  */
+  err << cursor.emit_splice(f->child("type"));
+  err << cursor.emit_print(" %s,", fname.c_str());
+
   return err;
 }
 

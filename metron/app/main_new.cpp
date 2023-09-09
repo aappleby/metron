@@ -261,15 +261,20 @@ int main_new(Options opts) {
     LOG_G("Categorizing %.*s\n", name.size(), name.data());
 
     for (auto f : c->all_fields) {
+      auto fname = f->get_namestr();
+
       if (!f->_public) continue;
 
       if (f->field_type == FT_INPUT) {
+        LOG_G("input signal %s\n", fname.c_str());
         c->input_signals.push_back(f);
       }
       else if (f->field_type == FT_OUTPUT) {
+        LOG_G("output signal %s\n", fname.c_str());
         c->output_signals.push_back(f);
       }
       else if (f->field_type == FT_REGISTER) {
+        LOG_G("output register %s\n", fname.c_str());
         c->output_registers.push_back(f);
       }
     }
@@ -492,7 +497,7 @@ int main_new(Options opts) {
 
   //----------------------------------------
 
-  if (opts.verbose) {
+  /*if (opts.verbose)*/ {
     LOG_B("\n");
     LOG_B("//----------------------------------------\n");
     LOG_B("// Repo dump\n\n");
@@ -547,6 +552,9 @@ int main_new(Options opts) {
       fclose(out_file);
     }
   }
+
+  LOG_B("================================================================================\n\n");
+  LOG_G("%s\n", out_string.c_str());
 
   //----------------------------------------
 

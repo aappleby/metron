@@ -59,6 +59,7 @@ struct CNodeClass : public CNode {
   Err emit_module_ports(Cursor& cursor);
   Err emit_template_parameter_list(Cursor& cursor);
   Err emit_function_ports(CNodeFunction* f, Cursor& cursor);
+  Err emit_field_ports(CNodeField* f, Cursor& cursor);
 
   void dump_fields();
 

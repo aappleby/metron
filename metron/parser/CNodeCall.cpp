@@ -17,8 +17,9 @@ uint32_t CNodeCall::debug_color() const {
 }
 
 Err CNodeCall::emit(Cursor& c) {
-  assert(false);
-  return Err();
+  return CNode::emit(c);
+  //assert(false);
+  //return Err();
 }
 
 // FIXME not dealing with nested submod paths right now

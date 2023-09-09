@@ -14,8 +14,7 @@ uint32_t CNodeStatement::debug_color() const {
 //------------------------------------------------------------------------------
 
 Err CNodeExpStatement::emit(Cursor& c) {
-  NODE_ERR("Can't emit statement base class");
-  return Err();
+  return c.emit_default(this);
 }
 
 Err CNodeExpStatement::trace(CCall* call) {

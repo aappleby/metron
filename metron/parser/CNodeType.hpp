@@ -28,6 +28,7 @@ struct CNodeStructType : public CNodeType {
   std::string_view get_name() const override {
     return get_text();
   }
+  CHECK_RETURN Err emit(Cursor& cursor) override;
 };
 
 struct CNodeClassType : public CNodeType {

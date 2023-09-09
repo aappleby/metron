@@ -230,8 +230,7 @@ std::string_view CNodeFieldExpression::get_name() const {
 }
 
 Err CNodeFieldExpression::emit(Cursor& c) {
-  NODE_ERR("FIXME");
-  return Err();
+  return CNode::emit(c);
 }
 
 Err CNodeFieldExpression::trace(CCall* call) {
@@ -259,8 +258,7 @@ std::string_view CNodeQualifiedIdentifier::get_name() const {
 //----------------------------------------
 
 Err CNodeQualifiedIdentifier::emit(Cursor& c) {
-  NODE_ERR("FIXME");
-  return Err();
+  return CNode::emit(c);
 }
 
 //----------------------------------------

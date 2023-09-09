@@ -188,3 +188,8 @@ Err CNodeType::emit(Cursor& cursor) {
 
   return err << cursor.check_done(this);
 }
+
+
+CHECK_RETURN Err CNodeStructType::emit(Cursor& cursor) {
+  return cursor.emit_raw(this);
+}

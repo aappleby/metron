@@ -137,10 +137,18 @@ int main_new(Options opts) {
   //----------------------------------------
   // Count module instances so we can find top modules.
 
+  for (auto c : repo.all_classes) {
+    for (auto f : c->all_fields) {
+      if (f->_type_class) f->_type_class->refcount++;
+    }
+  }
+
+  /*
   for (auto pair : repo.source_map) {
     CSourceFile* file = pair.second;
     file->context.top_head->dump_tree();
   }
+  */
 
   //----------------------------------------
 

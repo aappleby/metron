@@ -44,13 +44,13 @@ struct CInstance {
   virtual ~CInstance();
 
   template<typename T>
-  T* as_a() {
+  T* as() {
     return dynamic_cast<T*>(this);
   }
 
   template<typename T>
   T* ancestor() {
-    if (auto self = as_a<T>()) return self;
+    if (auto self = as<T>()) return self;
     if (inst_parent) return inst_parent->ancestor<T>();
     return nullptr;
   }

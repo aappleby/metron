@@ -115,7 +115,7 @@ int main_new(Options opts) {
 
     for (auto n : file->context.root_node) {
 
-      if (auto node_template = n->as_a<CNodeTemplate>()) {
+      if (auto node_template = n->as<CNodeTemplate>()) {
         auto node_class = node_template->child<CNodeClass>();
 
         node_class->repo = &repo;
@@ -124,7 +124,7 @@ int main_new(Options opts) {
         repo.all_classes.push_back(node_class);
         node_class->collect_fields_and_methods();
       }
-      else if (auto node_class = n->as_a<CNodeClass>()) {
+      else if (auto node_class = n->as<CNodeClass>()) {
 
         node_class->repo = &repo;
         node_class->file = file;
@@ -132,21 +132,21 @@ int main_new(Options opts) {
         repo.all_classes.push_back(node_class);
         node_class->collect_fields_and_methods();
       }
-      else if (auto node_struct = n->as_a<CNodeStruct>()) {
+      else if (auto node_struct = n->as<CNodeStruct>()) {
         node_struct->repo = &repo;
         node_struct->file = file;
 
         repo.all_structs.push_back(node_struct);
         node_struct->collect_fields_and_methods();
       }
-      else if (auto node_namespace = n->as_a<CNodeNamespace>()) {
+      else if (auto node_namespace = n->as<CNodeNamespace>()) {
         node_namespace->repo = &repo;
         node_namespace->file = file;
 
         repo.all_namespaces.push_back(node_namespace);
         node_namespace->collect_fields_and_methods();
       }
-      else if (auto node_enum = n->as_a<CNodeEnum>()) {
+      else if (auto node_enum = n->as<CNodeEnum>()) {
         //LOG_G("top level enum!!!!\n");
         node_enum->repo = &repo;
         node_enum->file = file;
@@ -166,12 +166,10 @@ int main_new(Options opts) {
     }
   }
 
-  /*
   for (auto pair : repo.source_map) {
     CSourceFile* file = pair.second;
     file->context.top_head->dump_tree();
   }
-  */
 
   //----------------------------------------
 
@@ -457,7 +455,7 @@ int main_new(Options opts) {
     for (auto f : c->all_functions) {
 
 #if 0
-      if (f->as_a<CNodeConstructor>()) {
+      if (f->as<CNodeConstructor>()) {
         m->emit_as_init = true;
       }
       else if (m->called_in_init()) {

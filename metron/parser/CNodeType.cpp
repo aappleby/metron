@@ -134,7 +134,7 @@ Err CNodeType::emit(Cursor& cursor) {
   auto node_name  = child("name");
   auto node_targs = child("template_args");
 
-  if (as_a<CNodeBuiltinType>() && node_targs) {
+  if (as<CNodeBuiltinType>() && node_targs) {
     auto node_ldelim = node_targs->child("ldelim");
     auto node_exp    = node_targs->child("arg");
     auto node_rdelim = node_targs->child("rdelim");
@@ -142,7 +142,7 @@ Err CNodeType::emit(Cursor& cursor) {
     err << cursor.emit_raw(node_name);
     err << cursor.emit_gap_after(node_name);
 
-    if (auto node_const_int = node_exp->as_a<CNodeConstInt>()) {
+    if (auto node_const_int = node_exp->as<CNodeConstInt>()) {
       auto width = atoi(node_exp->text_begin());
       if (width == 1) {
         // logic<1> -> logic
@@ -171,7 +171,7 @@ Err CNodeType::emit(Cursor& cursor) {
       err << cursor.emit_replacement(node_rdelim, "]");
     }
   }
-  else if (as_a<CNodeBuiltinType>()) {
+  else if (as<CNodeBuiltinType>()) {
     err << cursor.emit_raw(this);
   }
   else if (auto node_struct = child("struct_name")) {

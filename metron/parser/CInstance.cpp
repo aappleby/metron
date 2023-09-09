@@ -35,11 +35,11 @@ std::string_view CInstance::get_name() const {
 
 CInstance* CInstance::resolve(CNode* node) {
 
-  if (node->as_a<CNodeFieldExpression>()) {
+  if (node->as<CNodeFieldExpression>()) {
     auto cursor = node->child_head;
     CInstance* inst = this;
     while(cursor) {
-      if (cursor->as_a<CNodePunct>()) cursor = cursor->node_next;
+      if (cursor->as<CNodePunct>()) cursor = cursor->node_next;
       inst = inst->resolve(cursor);
       if (!inst) return inst;
       assert(cursor);
@@ -48,10 +48,10 @@ CInstance* CInstance::resolve(CNode* node) {
     return inst;
   }
 
-  if (node->as_a<CNodePrefixExp>()) return resolve(node->child("rhs"));
-  if (node->as_a<CNodeSuffixExp>()) return resolve(node->child("lhs"));
+  if (node->as<CNodePrefixExp>()) return resolve(node->child("rhs"));
+  if (node->as<CNodeSuffixExp>()) return resolve(node->child("lhs"));
 
-  if (auto id = node->as_a<CNodeIdentifier>()) {
+  if (auto id = node->as<CNodeIdentifier>()) {
     auto name = id->get_text();
 
     if (auto it = inst_map.find(name); it != inst_map.end()) {

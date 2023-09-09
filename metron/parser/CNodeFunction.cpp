@@ -25,7 +25,7 @@ void CNodeFunction::init(const char* match_tag, SpanType span, uint64_t flags) {
   CNode::init(match_tag, span, flags);
 
   for (auto c : child("params")) {
-    if (auto param = c->as_a<CNodeDeclaration>()) {
+    if (auto param = c->as<CNodeDeclaration>()) {
       params.push_back(param);
     }
   }
@@ -96,19 +96,17 @@ Err CNodeFunction::emit(Cursor& c) {
 Err CNodeFunction::emit_always_comb(Cursor& c) {
   Err err;
 
-  dump_tree();
-
-  auto node_type   = child("return_type")->as_a<CNodeType>();
-  auto node_name   = child("name")->as_a<CNodeIdentifier>();
-  auto node_params = child("params")->as_a<CNodeList>();
+  auto node_type   = child("return_type")->as<CNodeType>();
+  auto node_name   = child("name")->as<CNodeIdentifier>();
+  auto node_params = child("params")->as<CNodeList>();
   auto node_const  = child("const");
-  auto node_body   = child("body")->as_a<CNodeCompound>();
+  auto node_body   = child("body")->as<CNodeCompound>();
 
   auto func_name = get_namestr();
 
   c.id_map.push(c.id_map.top());
   for (auto node_param : node_params) {
-    auto param = node_param->as_a<CNodeDeclaration>();
+    auto param = node_param->as<CNodeDeclaration>();
     if (!param) continue;
 
     auto param_name = param->get_namestr();
@@ -166,16 +164,16 @@ CHECK_RETURN Err MtCursor::emit_func_as_always_ff(MnNode n) {
 Err CNodeFunction::emit_always_ff(Cursor& c) {
   Err err;
 
-  auto node_type   = child("return_type")->as_a<CNodeType>();
-  auto node_name   = child("name")->as_a<CNodeIdentifier>();
-  auto node_params = child("params")->as_a<CNodeList>();
-  auto node_body   = child("body")->as_a<CNodeCompound>();
+  auto node_type   = child("return_type")->as<CNodeType>();
+  auto node_name   = child("name")->as<CNodeIdentifier>();
+  auto node_params = child("params")->as<CNodeList>();
+  auto node_body   = child("body")->as<CNodeCompound>();
 
   auto func_name = get_namestr();
 
   c.id_map.push(c.id_map.top());
   for (auto node_param : node_params) {
-    auto param = node_param->as_a<CNodeDeclaration>();
+    auto param = node_param->as<CNodeDeclaration>();
     if (!param) continue;
 
     auto param_name = param->get_namestr();

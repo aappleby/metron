@@ -80,6 +80,15 @@ bool CNodeField::is_const_char() const {
 //------------------------------------------------------------------------------
 
 #if 0
+//------------------------------------------------------------------------------
+// Emit field declarations. For components, also emit glue declarations and
+// append the glue parameter list to the field.
+
+// + field_declaration (259) =
+// |--# type: type_identifier (444) = "example_data_memory"
+// |--# declarator: field_identifier (440) = "data_memory"
+// |--# lit (39) = ";"
+
 CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
   Err err = check_at(n);
   assert(n.sym == sym_field_declaration);
@@ -197,10 +206,32 @@ Err CNodeField::emit(Cursor& cursor) {
     return err << cursor.check_done(this);
   }
 
-  auto node_builtin = node_type->as_a<CNodeBuiltinType>();
+  auto node_builtin = node_type->as<CNodeBuiltinType>();
   auto node_targs   = node_type->child("template_args");
 
   if (node_builtin && node_targs) {
+    err << cursor.comment_out(node_static);
+    err << cursor.emit_gap_after(node_static);
+    err << cursor.comment_out(node_const);
+    err << cursor.emit_gap_after(node_const);
+    err << cursor.emit(node_type);
+    err << cursor.emit_gap_after(node_type);
+
+    err << cursor.emit(node_name);
+    err << cursor.emit_gap_after(node_name);
+
+    err << cursor.emit(node_array);
+    err << cursor.emit_gap_after(node_array);
+
+    err << cursor.emit(node_eq);
+    err << cursor.emit_gap_after(node_eq);
+    err << cursor.emit(node_value);
+    err << cursor.emit_gap_after(node_value);
+
+    return err;
+  }
+
+  if (node_builtin) {
     err << cursor.comment_out(node_static);
     err << cursor.emit_gap_after(node_static);
     err << cursor.comment_out(node_const);

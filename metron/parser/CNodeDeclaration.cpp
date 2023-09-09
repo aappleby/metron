@@ -19,9 +19,19 @@ bool CNodeDeclaration::is_array() const {
 
 //------------------------------------------------------------------------------
 
-Err CNodeDeclaration::emit(Cursor& cursor) {
-  // Check for const char*
+/*
+[000.014]  ▆ CNodeDeclaration = 0x7ffff7e1c288:0x7ffff7e1c2a8
+[000.014]  ┣━━╸▆ type : CNodeBuiltinType = 0x7ffff7e1c288:0x7ffff7e1c290
+[000.014]  ┃   ┗━━╸▆ name : CNodeIdentifier = 0x7ffff7e1c288:0x7ffff7e1c290 "int"
+[000.014]  ┣━━╸▆ name : CNodeIdentifier = 0x7ffff7e1c290:0x7ffff7e1c298 "y"
+[000.014]  ┣━━╸▆ eq : CNodePunct = 0x7ffff7e1c298:0x7ffff7e1c2a0 "="
+[000.014]  ┗━━╸▆ value : CNodeIdentifier = 0x7ffff7e1c2a0:0x7ffff7e1c2a8 "my_sig3"
+*/
 
+Err CNodeDeclaration::emit(Cursor& cursor) {
+  Err err;
+
+  // Check for const char*
   if (child("const")) {
     auto type = child<CNodeType>();
     if (type->child("name")->get_text() == "char") {
@@ -30,11 +40,10 @@ Err CNodeDeclaration::emit(Cursor& cursor) {
       }
     }
 
-    Err err;
     err << cursor.emit_print("parameter ");
 
     for (auto c = child_head; c; c = c->node_next) {
-      if (c->as_a<CNodeType>()) {
+      if (c->as<CNodeType>()) {
         err << cursor.skip_over(c);
         if (c->node_next) err << cursor.skip_gap(c, c->node_next);
       }
@@ -47,10 +56,21 @@ Err CNodeDeclaration::emit(Cursor& cursor) {
     return err;
   }
 
-  return CNode::emit(cursor);
+  for (auto child : this) {
+    if (child->as<CNodeType>()) {
+      err << cursor.skip_over(child);
+      err << cursor.skip_gap_after(child);
+    }
+    else {
+      err << cursor.emit_default(child);
+      err << cursor.emit_gap_after(child);
+    }
+  }
+
+  return err;
 }
 
-//----------------------------------------
+//------------------------------------------------------------------------------
 
 CHECK_RETURN Err CNodeDeclaration::trace(CCall* call) {
   Err err;
@@ -60,7 +80,7 @@ CHECK_RETURN Err CNodeDeclaration::trace(CCall* call) {
   return err;
 }
 
-//----------------------------------------
+//------------------------------------------------------------------------------
 
 void CNodeDeclaration::dump() {
   auto text = get_text();

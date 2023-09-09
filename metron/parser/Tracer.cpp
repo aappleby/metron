@@ -296,8 +296,8 @@ CHECK_RETURN Err Tracer::trace_assignment_expression(CInstCall* call, CNode* nod
 
 CHECK_RETURN Err Tracer::trace_binary_expression(CInstCall* call, CNodeExpression* node) {
   Err err;
-  err << trace_expression(call, node->child("lhs")->as_a<CNodeExpression>(), ACT_READ);
-  err << trace_expression(call, node->child("rhs")->as_a<CNodeExpression>(), ACT_READ);
+  err << trace_expression(call, node->child("lhs")->as<CNodeExpression>(), ACT_READ);
+  err << trace_expression(call, node->child("rhs")->as<CNodeExpression>(), ACT_READ);
   return err;
 }
 
@@ -321,7 +321,7 @@ CHECK_RETURN Err Tracer::trace_call_expression(CInstCall* call, CNode* node) {
       auto child_name = node_func.get_field(field_argument).name4();
       auto child_func = node_func.get_field(field_field).name4();
       auto child_inst = call->_method_inst->_module->get_field(child_name);
-      auto child_func_inst = child_inst->as_a<MtModuleInstance>()->get_method(child_func);
+      auto child_func_inst = child_inst->as<MtModuleInstance>()->get_method(child_func);
       err << trace_call(call, child_func_inst, node);
       break;
     }

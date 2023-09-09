@@ -2,6 +2,7 @@
 
 #include "CNodeExpression.hpp"
 #include "CNodeFunction.hpp"
+#include "CNodeDeclaration.hpp"
 
 #include "CInstance.hpp"
 
@@ -204,20 +205,31 @@ CHECK_RETURN Err CNodeDefault::trace(CCall* call) {
 
 //------------------------------------------------------------------------------
 
-Err CNodeCompound::emit_block(Cursor& c, std::string ldelim, std::string rdelim) {
+Err CNodeCompound::trace(CCall* call) {
+  Err err;
+  for (auto c : this) err << c->trace(call);
+  return err;
+}
+
+//----------------------------------------
+
+Err CNodeCompound::emit_block(Cursor& cursor, std::string ldelim, std::string rdelim) {
   Err err;
 
   for (auto child : this) {
     if (child->tag_is("ldelim")) {
-      err << c.emit_replacement(child, "%s", ldelim.c_str());
+      err << cursor.emit_replacement(child, "%s", ldelim.c_str());
+      cursor.indent_level++;
+      err << emit_hoisted_decls(cursor);
     }
     else if (child->tag_is("rdelim")) {
-      err << c.emit_replacement(child, "%s", rdelim.c_str());
+      cursor.indent_level--;
+      err << cursor.emit_replacement(child, "%s", rdelim.c_str());
     }
     else {
-      err << c.emit(child);
+      err << cursor.emit(child);
     }
-    err << c.emit_gap_after(child);
+    err << cursor.emit_gap_after(child);
   }
 
   return err;
@@ -225,9 +237,34 @@ Err CNodeCompound::emit_block(Cursor& c, std::string ldelim, std::string rdelim)
 
 //----------------------------------------
 
-Err CNodeCompound::trace(CCall* call) {
+Err CNodeCompound::emit_hoisted_decls(Cursor& cursor) {
   Err err;
-  for (auto c : this) err << c->trace(call);
+
+  cursor.elide_type.push(false);
+  cursor.elide_value.push(true);
+
+  for (auto child : this) {
+    if (auto decl = child->as<CNodeDeclaration>()) {
+      // Don't emit decls for localparams
+      if (decl->child("const")) continue;
+
+      auto name = decl->get_namestr();
+
+      auto decl_type = decl->child("type");
+      auto decl_name = decl->child("name");
+
+      err << cursor.start_line();
+      //err << cursor.emit_print("DECL %s", name.c_str());
+      err << cursor.emit_splice(decl_type);
+      err << cursor.emit_print(" ");
+      err << cursor.emit_splice(decl_name);
+      err << cursor.emit_print(";");
+    }
+  }
+
+  cursor.elide_type.pop();
+  cursor.elide_value.pop();
+
   return err;
 }
 

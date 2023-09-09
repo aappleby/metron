@@ -112,7 +112,8 @@ struct CNodeWhile : public CNodeStatement {
 };
 
 struct CNodeCompound : public CNodeStatement {
-  CHECK_RETURN Err emit_block(Cursor& c, std::string ldelim, std::string rdelim);
+  CHECK_RETURN Err emit_block(Cursor& cursor, std::string ldelim, std::string rdelim);
+  CHECK_RETURN Err emit_hoisted_decls(Cursor& cursor);
 
   CHECK_RETURN Err trace(CCall* call) override;
 };

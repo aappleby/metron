@@ -48,7 +48,7 @@ void CNodeClass::init(const char* match_tag, SpanType span, uint64_t flags) {
   //dump_tree();
 
   for (auto c : child("body")) {
-    if (auto node_enum = c->as_a<CNodeEnum>()) {
+    if (auto node_enum = c->as<CNodeEnum>()) {
       all_enums.push_back(node_enum);
     }
   }
@@ -93,12 +93,12 @@ Err CNodeClass::collect_fields_and_methods() {
   bool is_public = false;
 
   for (auto c : body) {
-    if (auto access = c->as_a<CNodeAccess>()) {
+    if (auto access = c->as<CNodeAccess>()) {
       is_public = c->get_text() == "public:";
       continue;
     }
 
-    if (auto n = c->as_a<CNodeField>()) {
+    if (auto n = c->as<CNodeField>()) {
       n->_public = is_public;
 
       n->_parent_class  = n->ancestor<CNodeClass>();
@@ -116,10 +116,10 @@ Err CNodeClass::collect_fields_and_methods() {
       continue;
     }
 
-    if (auto n = c->as_a<CNodeFunction>()) {
+    if (auto n = c->as<CNodeFunction>()) {
       n->is_public_ = is_public;
 
-      if (auto constructor = c->as_a<CNodeConstructor>()) {
+      if (auto constructor = c->as<CNodeConstructor>()) {
         all_constructors.push_back(constructor);
       }
       else {
@@ -129,7 +129,7 @@ Err CNodeClass::collect_fields_and_methods() {
       // Hook up _type_struct on all struct params
       auto params = n->child("params");
       for (auto p : params) {
-        if (auto decl = p->as_a<CNodeDeclaration>()) {
+        if (auto decl = p->as<CNodeDeclaration>()) {
           decl->_type_class = repo->get_class(decl->get_type_name());
           decl->_type_struct = repo->get_struct(decl->get_type_name());
         }
@@ -139,13 +139,13 @@ Err CNodeClass::collect_fields_and_methods() {
 
   }
 
-  if (auto parent = node_parent->as_a<CNodeTemplate>()) {
+  if (auto parent = node_parent->as<CNodeTemplate>()) {
     //LOG_B("CNodeClass has template parent\n");
     CNode* params = parent->child("params");
     for (CNode*  param : params) {
-      if (param->as_a<CNodeDeclaration>()) {
+      if (param->as<CNodeDeclaration>()) {
         //param->dump_tree(3);
-        all_modparams.push_back(param->as_a<CNodeDeclaration>());
+        all_modparams.push_back(param->as<CNodeDeclaration>());
       }
     }
   }
@@ -181,9 +181,9 @@ Err CNodeClass::build_call_graph(CSourceRepo* repo) {
 
   for (auto src_method : all_constructors) {
     visit(src_method, [&](CNode* child) {
-      auto call = child->as_a<CNodeCall>();
+      auto call = child->as<CNodeCall>();
       if (!call) return;
-      auto func_id = call->child("func_name")->as_a<CNodeIdentifier>();
+      auto func_id = call->child("func_name")->as<CNodeIdentifier>();
       auto dst_method = get_function(func_id->get_text());
       dst_method->is_init_ = true;
       auto name = func_id->get_text();
@@ -193,14 +193,14 @@ Err CNodeClass::build_call_graph(CSourceRepo* repo) {
 #endif
 
   node_visitor link_callers = [&](CNode* child) {
-    auto call = child->as_a<CNodeCall>();
+    auto call = child->as<CNodeCall>();
     if (!call) return;
 
     auto src_method = call->ancestor<CNodeFunction>();
 
     auto func_name = call->child("func_name");
 
-    if (auto submod_path = func_name->as_a<CNodeFieldExpression>()) {
+    if (auto submod_path = func_name->as<CNodeFieldExpression>()) {
       auto submod_field = get_field(submod_path->child("field_path")->get_text());
       auto submod_class = repo->get_class(submod_field->get_type_name());
       auto submod_func  = submod_class->get_function(submod_path->child("identifier")->get_text());
@@ -208,7 +208,7 @@ Err CNodeClass::build_call_graph(CSourceRepo* repo) {
       src_method->external_callees.insert(submod_func);
       submod_func->external_callers.insert(src_method);
     }
-    else if (auto func_id = func_name->as_a<CNodeIdentifier>()) {
+    else if (auto func_id = func_name->as<CNodeIdentifier>()) {
       auto dst_method = get_function(func_id->get_text());
       if (dst_method) {
         src_method->internal_callees.insert(dst_method);
@@ -243,21 +243,21 @@ CNode* CNodeClass::resolve(CNode* name) {
 
   //----------
 
-  if (auto punct = name->as_a<CNodePunct>()) {
+  if (auto punct = name->as<CNodePunct>()) {
     return resolve(name->node_next);
   }
 
-  if (auto field = name->as_a<CNodeFieldExpression>()) {
+  if (auto field = name->as<CNodeFieldExpression>()) {
     return resolve(name->child_head);
   }
 
-  if (auto qual = name->as_a<CNodeQualifiedIdentifier>()) {
+  if (auto qual = name->as<CNodeQualifiedIdentifier>()) {
     return resolve(name->child_head);
   }
 
   //----------
 
-  if (auto id = name->as_a<CNodeIdentifier>()) {
+  if (auto id = name->as<CNodeIdentifier>()) {
     if (auto func = get_function(name->get_name())) {
       return func;
     }
@@ -278,7 +278,7 @@ CNode* CNodeClass::resolve(CNode* name) {
   //----------
 
   /*
-  if (auto id = name->as_a<CNodeIdentifier>()) {
+  if (auto id = name->as<CNodeIdentifier>()) {
     if (name->tag_is("scope")) {
       assert(false);
       return nullptr;

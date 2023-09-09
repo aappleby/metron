@@ -90,6 +90,7 @@ CHECK_RETURN Err Cursor::emit_gap_after(CNode* n) {
 }
 
 CHECK_RETURN Err Cursor::skip_gap_after(CNode* n) {
+  if (!n->node_next) return Err();
   auto begin = n->text_end();
   auto end   = n->node_next->text_begin();
 
@@ -423,6 +424,7 @@ CHECK_RETURN Err Cursor::emit_everything() {
 CHECK_RETURN Err Cursor::emit_gap(CNode* ta, CNode* tb) {
   Err err;
   if (tok_cursor != ta->tok_end()) {
+    assert(false);
     return ERR("skip_gap() - Did not start on a.end()");
   }
 

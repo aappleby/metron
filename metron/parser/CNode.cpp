@@ -21,6 +21,7 @@ std::string_view CNode::get_name() const {
 }
 
 Err CNode::emit(Cursor& cursor) {
+  //assert(false);
   return cursor.emit_replacement(this, "{{%s}}", typeid(*this).name());
 }
 
@@ -120,7 +121,7 @@ struct NodeDumper {
     }
     LOG_C(color, "%s = ", class_name(n));
 
-    LOG_C(color, "%p:%p ", n.span.begin, n.span.end);
+    //LOG_C(color, "%p:%p ", n.span.begin, n.span.end);
 
     if (n.child_head == nullptr) {
       std::string escaped = escape(n.text_begin(), n.text_end());

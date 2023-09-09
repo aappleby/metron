@@ -155,21 +155,21 @@ CNode* CSourceRepo::resolve(CNodeClass* parent, CNode* path) {
     return resolve(parent, path->node_next);
   }
 
-  if (auto field_path = path->as_a<CNodeFieldExpression>()) {
+  if (auto field_path = path->as<CNodeFieldExpression>()) {
     return resolve(parent, field_path->child_head);
   }
 
   //----------
 
-  if (auto scope_path = path->as_a<CNodeQualifiedIdentifier>()) {
+  if (auto scope_path = path->as<CNodeQualifiedIdentifier>()) {
     return resolve(parent, scope_path->child_head);
   }
 
   //----------
 
-  if (auto id = path->as_a<CNodeIdentifier>()) {
+  if (auto id = path->as<CNodeIdentifier>()) {
     if (id->tag_is("field_path")) {
-      auto field = parent->get_field(id->get_text())->as_a<CNodeField>();
+      auto field = parent->get_field(id->get_text())->as<CNodeField>();
       auto field_class = get_class(field->get_type_name());
       return resolve(field_class, id->node_next);
     }

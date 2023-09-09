@@ -90,7 +90,7 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   //----------------------------------------
 
   template <typename P>
-  P* as_a() {
+  P* as() {
     return dynamic_cast<P*>(this);
   }
 
@@ -118,12 +118,12 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
 
   template<typename P>
   P* child_as(const char* tag) {
-    return child(tag)->as_a<P>();
+    return child(tag)->as<P>();
   }
 
   template<typename P>
   P* child_is(const char* tag) {
-    return child(tag)->as_a<P>();
+    return child(tag)->as<P>();
   }
 
   template<typename P>

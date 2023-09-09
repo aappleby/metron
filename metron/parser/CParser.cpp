@@ -624,7 +624,7 @@ TokenSpan match_expression(CContext& ctx, TokenSpan body) {
 
   rest = cap_binary_ops(ctx, body);
   if (!rest) return body;
-  CNodeBinaryOp* op_x = ctx.top_tail->as_a<CNodeBinaryOp>();
+  CNodeBinaryOp* op_x = ctx.top_tail->as<CNodeBinaryOp>();
   body = rest;
 
   rest = cap_exp_unit(ctx, body);
@@ -641,7 +641,7 @@ TokenSpan match_expression(CContext& ctx, TokenSpan body) {
     // parsing.
     rest = cap_binary_ops(ctx, body);
     if (!rest) break;
-    CNodeBinaryOp* op_y = ctx.top_tail->as_a<CNodeBinaryOp>();
+    CNodeBinaryOp* op_y = ctx.top_tail->as<CNodeBinaryOp>();
     body = rest;
 
     // If there's no expression after the operator, parsing fails.

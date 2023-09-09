@@ -31,7 +31,7 @@ Err CNodeTranslationUnit::emit(Cursor& cursor) {
 
   for (auto c = child_head; c; c = c->node_next) {
     // Skip semicolons after classes
-    if (c->get_text() == ";" && c->node_prev && c->node_prev->as_a<CNodeClass>()) {
+    if (c->get_text() == ";" && c->node_prev && c->node_prev->as<CNodeClass>()) {
       err << cursor.skip_over(c);
       err << cursor.emit_gap_after(c);
       continue;
@@ -122,7 +122,7 @@ Err CNodeNamespace::trace(CCall* call) {
 
 Err CNodeNamespace::collect_fields_and_methods() {
   for (auto c : child("fields")) {
-    if (auto field = c->as_a<CNodeField>()) {
+    if (auto field = c->as<CNodeField>()) {
       all_fields.push_back(field);
     }
   }

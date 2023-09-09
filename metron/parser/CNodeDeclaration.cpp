@@ -33,7 +33,6 @@ Err CNodeDeclaration::emit(Cursor& cursor) {
     Err err;
     err << cursor.emit_print("parameter ");
 
-    //err << cursor.emit_span(tok_begin(), child_head->tok_begin());
     for (auto c = child_head; c; c = c->node_next) {
       if (c->as_a<CNodeType>()) {
         err << cursor.skip_over(c);
@@ -44,7 +43,6 @@ Err CNodeDeclaration::emit(Cursor& cursor) {
         if (c->node_next) err << cursor.emit_gap(c, c->node_next);
       }
     }
-    //err << cursor.emit_span(child_tail->tok_end(), tok_end());
 
     return err;
   }

@@ -20,29 +20,41 @@ bool CNodeDeclaration::is_array() const {
 //------------------------------------------------------------------------------
 
 Err CNodeDeclaration::emit(Cursor& cursor) {
-  Err err = cursor.check_at(this);
-
   // Check for const char*
-  auto type = child<CNodeType>();
 
-  bool is_const_char_ptr = false;
+  dump_tree();
+
   if (child("const")) {
-    if (type->child("base_type")->get_text() == "char") {
+    auto type = child<CNodeType>();
+    if (type->child("name")->get_text() == "char") {
       if (type->child("star")) {
-        is_const_char_ptr = true;
+        return cursor.emit_replacement(this, "{{const char*}}");
       }
     }
+
+    Err err;
+    err << cursor.emit_print("parameter ");
+
+    err << cursor.emit_span(tok_begin(), child_head->tok_begin());
+    for (auto c = child_head; c; c = c->node_next) {
+      if (c->as_a<CNodeType>()) {
+        err << cursor.skip_over(c);
+        if (c->node_next) err << cursor.skip_gap(c, c->node_next);
+      }
+      else {
+        err << cursor.emit(c);
+        if (c->node_next) err << cursor.emit_gap(c, c->node_next);
+      }
+    }
+    err << cursor.emit_span(child_tail->tok_end(), tok_end());
+
+    return err;
   }
 
-  if (is_const_char_ptr) {
-    return cursor.emit_replacement(this, "{{const char*}}");
-  }
-  else {
-    err << CNode::emit(cursor);
-  }
-
-  return err << cursor.check_done(this);
+  return CNode::emit(cursor);
 }
+
+//----------------------------------------
 
 CHECK_RETURN Err CNodeDeclaration::trace(CCall* call) {
   Err err;
@@ -52,8 +64,11 @@ CHECK_RETURN Err CNodeDeclaration::trace(CCall* call) {
   return err;
 }
 
+//----------------------------------------
 
 void CNodeDeclaration::dump() {
   auto text = get_text();
   LOG_G("Declaration `%.*s`\n", text.size(), text.data());
 }
+
+//------------------------------------------------------------------------------

@@ -169,12 +169,10 @@ Err CNodeType::emit(Cursor& cursor) {
       err << cursor.emit_gap_after(node_exp);
       err << cursor.emit_print(")-1:0");
       err << cursor.emit_replacement(node_rdelim, "]");
-      err << cursor.emit_gap_after(node_rdelim);
     }
   }
   else if (as_a<CNodeBuiltinType>()) {
     err << cursor.emit_raw(this);
-    err << cursor.emit_gap_after(this);
   }
   else if (auto node_struct = child("struct_name")) {
     err << CNode::emit(cursor);

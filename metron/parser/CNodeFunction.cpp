@@ -76,13 +76,14 @@ CHECK_RETURN Err MtCursor::emit_sym_function_definition(MnNode n) {
 Err CNodeFunction::emit(Cursor& c) {
   Err err;
 
-  //dump_tree();
-
   if (method_type == MT_TOCK && internal_callers.empty()) {
     return emit_always_comb(c);
   }
   else if (method_type == MT_TICK && internal_callers.empty()) {
     return emit_always_ff(c);
+  }
+  else if (method_type == MT_FUNC && internal_callers.empty()) {
+    return emit_always_comb(c);
   }
 
   err << CNode::emit(c);

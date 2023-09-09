@@ -6,6 +6,7 @@
 #include "CNodeCall.hpp"
 #include "CNodeField.hpp"
 #include "CNodeStruct.hpp"
+#include "CNodeFunction.hpp"
 
 using namespace matcheroni;
 using namespace parseroni;
@@ -224,14 +225,14 @@ Err CNodePunct::trace(CCall* call) {
 
 uint32_t CNodeFieldExpression::debug_color() const { return 0x80FF80; }
 
+//----------------------------------------
+
 std::string_view CNodeFieldExpression::get_name() const {
   NODE_ERR("FIXME");
   return "";
 }
 
-Err CNodeFieldExpression::emit(Cursor& c) {
-  return CNode::emit(c);
-}
+//----------------------------------------
 
 Err CNodeFieldExpression::trace(CCall* call) {
   Err err;
@@ -243,6 +244,88 @@ Err CNodeFieldExpression::trace(CCall* call) {
 
   return err;
 }
+
+//----------------------------------------
+
+// [000.004]  ▆ rhs : CNodeFieldExpression = 0x7ffff77ca168:0x7ffff77ca180
+// [000.004]  ┣━━╸▆ field_path : CNodeIdentifier = 0x7ffff77ca168:0x7ffff77ca170 "tla"
+// [000.004]  ┣━━╸▆ CNodePunct = 0x7ffff77ca170:0x7ffff77ca178 "."
+// [000.004]  ┗━━╸▆ identifier : CNodeIdentifier = 0x7ffff77ca178:0x7ffff77ca180 "a_data"
+
+// Replace foo.bar.baz with foo_bar_baz if the field refers to a submodule port,
+// so that it instead refers to a glue expression.
+
+Err CNodeFieldExpression::emit(Cursor& c) {
+  Err err;
+
+  auto node_func = ancestor<CNodeFunction>();
+  auto node_class = ancestor<CNodeClass>();
+  auto node_path = child("field_path");
+  auto node_name = child("identifier");
+
+  auto field = node_class->get_field(node_path->get_text());
+
+  // FIXME this needs the submod_ prefix for submod ports
+
+  if (field) {
+    auto field = get_textstr();
+    for (auto& c : field) {
+      if (c == '.') c = '_';
+    }
+    err << c.emit_replacement(this, field.c_str());
+  }
+  else {
+    err << c.emit_default(this);
+  }
+  err << c.emit_gap_after(this);
+
+  return err;
+}
+
+
+/*
+CHECK_RETURN Err MtCursor::emit_sym_field_expression(MnNode n) {
+  Err err = check_at(sym_field_expression, n);
+
+  auto method = current_method.top();
+  auto component_name = n.get_field(field_argument).text();
+  auto component_field = n.get_field(field_field).text();
+
+  auto component = current_mod.top()->get_component(component_name);
+
+  bool is_port = component && component->_type_mod->is_port(component_field);
+
+  is_port = component && component->_type_mod->is_port(component_field);
+  // FIXME needs to be || is_argument
+
+  bool is_port_arg = false;
+  if (method && (method->emit_as_always_comb || method->emit_as_always_ff)) {
+    for (auto c : method->param_nodes) {
+      if (c.get_field(field_declarator).text() == component_name) {
+        is_port_arg = true;
+        break;
+      }
+    }
+  }
+
+  if (component && is_port) {
+    auto field = n.text();
+    for (auto& c : field) {
+      if (c == '.') c = '_';
+    }
+    err << emit_replacement(n, field.c_str());
+  } else if (is_port_arg) {
+    err << emit_print("%s_", method->name().c_str());
+    err << emit_text(n);
+  }
+  else {
+    // Local struct reference
+    err << emit_text(n);
+  }
+
+  return err << check_done(n);
+}
+*/
 
 //==============================================================================
 
@@ -318,6 +401,11 @@ std::string_view CNodeKeyword::get_name() const {
 }
 
 Err CNodeKeyword::emit(Cursor& c) {
+  Err err;
+  if (get_text() == "static" || get_text() == "const") {
+    err << c.comment_out(this);
+    return err;
+  }
   NODE_ERR("FIXME");
   return Err();
 }

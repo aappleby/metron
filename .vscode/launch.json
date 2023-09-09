@@ -10,7 +10,7 @@
       "cwd": "${workspaceFolder}",
       //"args" : ["-p", "-d", "-v", "-e", "-c", "examples/uart/metron/uart_top.h"],
       //"args" : ["-p", "-d", "-v", "-e", "-c", "examples/scratch.h", "-o", "examples/scratch.sv"],
-      "args" : ["-p", "-d", "-v", "-e", "-c", "tests/metron_good/local_localparam.h"],
+      "args" : ["-p", "-d", "-v", "-e", "-c", "tests/metron_good/basic_template.h"],
       "setupCommands": [
         { // Display content in STL containers pretty
           "description": "Enable pretty-printing for gdb",

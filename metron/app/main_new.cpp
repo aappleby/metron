@@ -78,6 +78,29 @@ int main_new(Options opts) {
     return -1;
   }
 
+  for (auto pair : repo.source_map) {
+    CSourceFile* file = pair.second;
+
+    node_visitor check_span = [](CNode* n) {
+      if (n->child_head) {
+        auto text = n->get_text();
+        if (n->span.begin != n->child_head->span.begin) {
+          LOG("%.*s\n", text.size(), text.data());
+          n->dump_tree();
+          assert(false);
+        }
+        if (n->span.end != n->child_tail->span.end) {
+          LOG("%.*s\n", text.size(), text.data());
+          n->dump_tree();
+          assert(false);
+        }
+      }
+    };
+
+    visit_children(file->context.root_node, check_span);
+  }
+
+
   //----------------------------------------
   // All modules are now in the library, we can resolve references to other
   // modules when we're collecting fields.
@@ -274,7 +297,7 @@ int main_new(Options opts) {
         c->output_signals.push_back(f);
       }
       else if (f->field_type == FT_REGISTER) {
-        LOG_G("output register %s\n", fname.c_str());
+        LOG_G("output register f%s\n", fname.c_str());
         c->output_registers.push_back(f);
       }
     }

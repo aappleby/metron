@@ -795,20 +795,20 @@ TokenSpan match_targ_list(CContext& ctx, TokenSpan body) {
   return tail;
 };
 
+// This is weird because we _dont_ want to include the trailing '>' of the
+// template param list when we're matching the decls in it.
 
 TokenSpan match_tdecl_list(CContext& ctx, TokenSpan body) {
+  auto tail1 = Tag<"ldelim", cap_punct<"<">>::match(ctx, body);
+
   auto tight_span = get_template_span(body);
   if (!tight_span.is_valid()) return body.fail();
+  auto tail2 = comma_separated<Tag<"decl", cap_declaration>>::match(ctx, tight_span);
+  if (!tail2.is_valid() || !tail2.is_empty()) return body.fail();
 
-  using pattern = comma_separated<Tag<"decl", cap_declaration>>;
-  auto tail = pattern::match(ctx, tight_span);
+  auto tail3 = Tag<"rdelim", cap_punct<">">>::match(ctx, TokenSpan(tail2.end, body.end));
 
-  if (tail.is_valid() && tail.is_empty()) {
-    return TokenSpan(tight_span.end + 1, body.end);
-  }
-  else {
-    return body.fail();
-  }
+  return tail3;
 };
 
 using cap_tdecl_list = CaptureAnon<Ref<match_tdecl_list>, CNodeList>;

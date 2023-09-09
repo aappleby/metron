@@ -207,7 +207,6 @@ CHECK_RETURN Err CNodeDefault::trace(CCall* call) {
 Err CNodeCompound::emit_block(Cursor& c, std::string ldelim, std::string rdelim) {
   Err err;
 
-  err << c.emit_span(tok_begin(), child_head->tok_begin());
   for (auto child : this) {
     if (child->tag_is("ldelim")) {
       err << c.emit_replacement(child, "%s", ldelim.c_str());
@@ -220,7 +219,6 @@ Err CNodeCompound::emit_block(Cursor& c, std::string ldelim, std::string rdelim)
     }
     err << c.emit_gap_after(child);
   }
-  err << c.emit_span(child_tail->tok_end(), tok_end());
 
   return err;
 }

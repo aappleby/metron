@@ -54,9 +54,7 @@ CHECK_RETURN Err Cursor::emit_default(CNode* n) {
   Err err = check_at(n);
 
   if (n->child_head) {
-    err << emit_span(n->tok_begin(), n->child_head->tok_begin());
     err << emit_children(n);
-    err << emit_span(n->child_tail->tok_end(), n->tok_end());
   }
   else {
     err << emit_span(n->tok_begin(), n->tok_end());
@@ -197,6 +195,7 @@ CHECK_RETURN Err Cursor::emit_token(const CToken* a) {
 
 CHECK_RETURN Err Cursor::emit_span(const CToken* a, const CToken* b) {
   Err err;
+  assert(a != b);
   for (auto c = a; c < b; c++) {
     err << emit_token(c);
   }

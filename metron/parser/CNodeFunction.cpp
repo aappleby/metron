@@ -96,9 +96,12 @@ Err CNodeFunction::emit(Cursor& c) {
 Err CNodeFunction::emit_always_comb(Cursor& c) {
   Err err;
 
+  dump_tree();
+
   auto node_type   = child("return_type")->as_a<CNodeType>();
   auto node_name   = child("name")->as_a<CNodeIdentifier>();
   auto node_params = child("params")->as_a<CNodeList>();
+  auto node_const  = child("const");
   auto node_body   = child("body")->as_a<CNodeCompound>();
 
   auto func_name = get_namestr();
@@ -119,6 +122,9 @@ Err CNodeFunction::emit_always_comb(Cursor& c) {
 
   err << c.skip_over(node_params);
   err << c.emit_gap_after(node_params);
+
+  err << c.comment_out(node_const);
+  err << c.emit_gap_after(node_const);
 
   err << node_body->emit_block(c, "", "end");
   err << c.emit_gap_after(node_body);

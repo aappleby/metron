@@ -25,7 +25,10 @@ Err CNodeTranslationUnit::emit(Cursor& cursor) {
 
   Err err = cursor.check_at(this);
 
-  err << cursor.emit_span(tok_begin(), child_head->tok_begin());
+  if (tok_begin() != child_head->tok_begin()) {
+    err << cursor.emit_span(tok_begin(), child_head->tok_begin());
+  }
+
   for (auto c = child_head; c; c = c->node_next) {
     // Skip semicolons after classes
     if (c->get_text() == ";" && c->node_prev && c->node_prev->as_a<CNodeClass>()) {
@@ -39,7 +42,10 @@ Err CNodeTranslationUnit::emit(Cursor& cursor) {
       err << cursor.emit_gap(c, c->node_next);
     }
   }
-  err << cursor.emit_span(child_tail->tok_end(), tok_end());
+
+  if (child_tail->tok_end() != tok_end()) {
+    err << cursor.emit_span(child_tail->tok_end(), tok_end());
+  }
 
   return err << cursor.check_done(this);
 }

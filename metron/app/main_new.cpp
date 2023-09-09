@@ -137,12 +137,9 @@ int main_new(Options opts) {
   //----------------------------------------
   // Count module instances so we can find top modules.
 
-  for (auto c : repo.all_classes) {
-    for (auto f : c->all_fields) {
-      if (f->is_component()) {
-        f->_type_class->refcount++;
-      }
-    }
+  for (auto pair : repo.source_map) {
+    CSourceFile* file = pair.second;
+    file->context.top_head->dump_tree();
   }
 
   //----------------------------------------
@@ -204,6 +201,74 @@ int main_new(Options opts) {
   //----------------------------------------
 
   LOG_B("Categorizing fields\n");
+
+  /*
+  Err err;
+
+  if (verbose) {
+    LOG_G("Categorizing %s\n", name().c_str());
+  }
+
+  for (auto f : all_fields) {
+    if (f->is_param()) {
+      continue;
+    }
+
+    if (f->is_component()) {
+      components.push_back(f);
+    }
+    else if (f->is_public() && f->is_input()) {
+      input_signals.push_back(f);
+    }
+    else if (f->is_public() && f->is_signal()) {
+      output_signals.push_back(f);
+    }
+    else if (f->is_public() && f->is_register()) {
+      output_registers.push_back(f);
+    }
+    else if (f->is_private() && f->is_register()) {
+      private_registers.push_back(f);
+    }
+    else if (f->is_private() && f->is_signal()) {
+      private_signals.push_back(f);
+    }
+    else if (!f->is_public() && f->is_input()) {
+      private_registers.push_back(f);
+    }
+    else if (f->is_enum()) {
+    }
+    else if (f->is_dead()) {
+      dead_fields.push_back(f);
+    }
+    else {
+      err << ERR("Don't know how to categorize %s = %s\n", f->cname(),
+                 to_string(f->_state));
+      f->error();
+    }
+  }
+  */
+  for (auto c : repo.all_classes) {
+    LOG_INDENT_SCOPE();
+    auto name = c->get_name();
+    LOG_G("Categorizing %.*s\n", name.size(), name.data());
+
+    for (auto f : c->all_fields) {
+      if (!f->_public) continue;
+
+      if (f->field_type == FT_INPUT) {
+        c->input_signals.push_back(f);
+      }
+      else if (f->field_type == FT_OUTPUT) {
+        c->output_signals.push_back(f);
+      }
+      else if (f->field_type == FT_REGISTER) {
+        c->output_registers.push_back(f);
+      }
+    }
+  }
+
+
+
 
   for (auto c : repo.all_classes) {
     for (auto f : c->all_fields) {

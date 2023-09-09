@@ -86,6 +86,7 @@ struct CNodeIf : public CNodeStatement {
 
 struct CNodeReturn : public CNodeStatement {
   CHECK_RETURN Err trace(CCall* call) override;
+  CHECK_RETURN Err emit(Cursor& c) override;
 };
 
 //------------------------------------------------------------------------------

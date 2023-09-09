@@ -571,7 +571,7 @@ TokenSpan cap_binary_ops(CContext& ctx, TokenSpan body) {
   >;
   // clang-format on
 
-  return CaptureAnon<pattern, CNodeBinaryOp>::match(ctx, body);
+  return Tag<"op", CaptureAnon<pattern, CNodeBinaryOp>>::match(ctx, body);
 }
 
 TokenSpan match_assignment_ops(CContext& ctx, TokenSpan body) {
@@ -670,8 +670,9 @@ TokenSpan match_expression(CContext& ctx, TokenSpan body) {
       auto new_node = ctx.create_node<CNodeBinaryExp>();
       ctx.splice(new_node, unit_a, unit_b);
 
-      new_node->child_head->match_tag = "lhs";
-      new_node->child_tail->match_tag = "rhs";
+      unit_a->match_tag = "lhs";
+      op_x->match_tag   = "op";
+      unit_b->match_tag = "rhs";
 
       unit_a = new_node;
       op_x   = op_y;
@@ -690,9 +691,15 @@ TokenSpan match_expression(CContext& ctx, TokenSpan body) {
   // Any binary operators left are in increasing-precedence order, but since
   // there are no more operators we can just fold them all up right-to-left
   while(ctx.top_tail->node_prev != old_tail) {
+    auto rhs = ctx.top_tail;
+    auto op  = rhs->node_prev;
+    auto lhs = op->node_prev;
+
+    lhs->match_tag = "lhs";
+    op->match_tag  = "op";
+    rhs->match_tag = "rhs";
+
     ctx.enclose_tail<CNodeBinaryExp>(3);
-    ctx.top_tail->child_head->match_tag = "lhs";
-    ctx.top_tail->child_tail->match_tag = "rhs";
   }
 
 
@@ -1125,9 +1132,9 @@ TokenSpan match_compound(CContext& ctx, TokenSpan body) {
   using pattern =
   Ref<change_scope<
     DelimitedBlock<
-      Atom<'{'>,
+      Tag<"ldelim", cap_punct<"{">>,
       Ref<match_statement>,
-      Atom<'}'>
+      Tag<"rdelim", cap_punct<"}">>
     >
   >>;
   return pattern::match(ctx, body);
@@ -1189,7 +1196,7 @@ using cap_if = CaptureAnon<Ref<match_if>, CNodeIf>;
 TokenSpan match_return(CContext& ctx, TokenSpan body) {
   using pattern =
   Seq<
-    cap_keyword<"return">,
+    Tag<"return", cap_keyword<"return">>,
     Opt<Tag<"value", cap_expression>>
   >;
   return pattern::match(ctx, body);

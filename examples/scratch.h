@@ -3,8 +3,9 @@
 class Module {
 public:
 
-  void tock(logic<1> q) {
+  logic<3> tock(logic<1> q) {
     out = x + y + z + q;
+    return 7;
   }
 
   void tick() {

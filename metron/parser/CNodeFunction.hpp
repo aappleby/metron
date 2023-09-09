@@ -32,6 +32,7 @@ struct CNodeFunction : public CNode {
   std::string_view get_return_type_name() const;
 
   Err emit_always_comb(Cursor& c);
+  Err emit_always_ff(Cursor& c);
 
   void dump();
 

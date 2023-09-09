@@ -2,12 +2,16 @@
 
 module Module (
   // global clock
-  input logic clock
+  input logic clock,
+  // tock() ports
+  input logic tock_q,
+  output logic[2:0] tock_ret
 );
 /*public*/
 
   always_comb begin : tock
-    out = x + y + z;
+    out = x + y + z + tock_q;
+    tock_ret = 7;
   end
 
   always_ff @(posedge clock) begin : tick

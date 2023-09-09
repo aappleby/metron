@@ -58,8 +58,10 @@ struct CNodeClass : public CNode {
 
   Err emit_module_ports(Cursor& cursor);
   Err emit_template_parameter_list(Cursor& cursor);
+  Err emit_function_ports(CNodeFunction* f, Cursor& cursor);
 
   void dump_fields();
+
 
   //----------------------------------------
 
@@ -76,18 +78,18 @@ struct CNodeClass : public CNode {
   std::vector<CNodeField*>       all_localparams;
   std::vector<CNodeEnum*>        all_enums;
 
-  /*
-  std::vector<MtField*> input_signals;
-  std::vector<MtField*> output_signals;
-  std::vector<MtField*> output_registers;
+  std::vector<CNodeField*> input_signals;
+  std::vector<CNodeField*> output_signals;
+  std::vector<CNodeField*> output_registers;
 
+  std::vector<CNodeField*> components;
+  std::vector<CNodeField*> private_signals;
+  std::vector<CNodeField*> private_registers;
+  std::vector<CNodeField*> dead_fields;
+
+  /*
   std::vector<MtFuncParam*> input_method_params;
   std::vector<MtMethod*>    output_method_returns;
-
-  std::vector<MtField*> components;
-  std::vector<MtField*> private_signals;
-  std::vector<MtField*> private_registers;
-  std::vector<MtField*> dead_fields;
   */
 
 

@@ -54,7 +54,12 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
 
   //----------------------------------------
 
-  virtual std::string get_namestr() const {
+  std::string get_textstr() const {
+    auto n = get_text();
+    return std::string(n.begin(), n.end());
+  }
+
+  std::string get_namestr() const {
     auto n = get_name();
     return std::string(n.begin(), n.end());
   }

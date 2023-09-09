@@ -20,7 +20,27 @@ std::string_view CNodeTranslationUnit::get_name() const {
 }
 
 Err CNodeTranslationUnit::emit(Cursor& cursor) {
-  return cursor.emit_default(this);
+  //return cursor.emit_default(this);
+
+  Err err = cursor.check_at(this);
+
+  err << cursor.emit_span(tok_begin(), child_head->tok_begin());
+  for (auto c = child_head; c; c = c->node_next) {
+    // Skip semicolons after classes
+    if (c->get_text() == ";" && c->node_prev && c->node_prev->as_a<CNodeClass>()) {
+      err << cursor.skip_over(c);
+      err << cursor.emit_gap_after(c);
+      continue;
+    }
+
+    err << cursor.emit(c);
+    if (c->node_next) {
+      err << cursor.emit_gap(c, c->node_next);
+    }
+  }
+  err << cursor.emit_span(child_tail->tok_end(), tok_end());
+
+  return err << cursor.check_done(this);
 }
 
 Err CNodeTranslationUnit::trace(CCall* call) {
@@ -157,7 +177,24 @@ std::string_view CNodeIdentifier::get_name() const {
   return get_text();
 }
 
-Err CNodeIdentifier::emit(Cursor& cursor) { return cursor.emit_default(this); }
+Err CNodeIdentifier::emit(Cursor& cursor) {
+  auto text = get_textstr();
+
+  auto& id_map = cursor.id_map.top();
+  auto found = id_map.find(text);
+
+  if (found != id_map.end()) {
+    auto replacement = (*found).second;
+    return cursor.emit_replacement(this, "%s", replacement.c_str());
+  }
+  else {
+    return cursor.emit_default(this);
+  }
+
+  //err << emit_span(n->tok_begin(), n->tok_end());
+
+  //
+}
 
 Err CNodeIdentifier::trace(CCall* call) {
   if (auto inst_field = call->inst_class->resolve(this)) {

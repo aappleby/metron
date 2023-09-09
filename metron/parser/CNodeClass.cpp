@@ -21,7 +21,7 @@ Err CNodeAccess::emit(Cursor& cursor) {
 //------------------------------------------------------------------------------
 
 Err CNodeTemplate::emit(Cursor& cursor) {
-  dump_tree();
+  //dump_tree();
 
   Err err = cursor.check_at(this);
 
@@ -303,30 +303,27 @@ CNode* CNodeClass::resolve(CNode* name) {
 //------------------------------------------------------------------------------
 
 bool CNodeClass::needs_tick() {
-  for (auto m : all_functions) {
-    //if (m->is_tick()) return true;
+  for (auto f : all_functions) {
+    if (f->method_type == MT_TICK) return true;
   }
 
-  /*
   for (auto f : all_fields) {
-    if (f->needs_tick()) return true;
+    if (f->_type_class && f->_type_class->needs_tick()) return true;
   }
-  */
 
   return false;
 }
 
+//----------------------------------------
+
 bool CNodeClass::needs_tock() {
-  /*
-  for (auto m : all_methods) {
-    if (m->is_tock()) return true;
-    if (m->is_func() && m->internal_callers.empty() && m->is_public()) return true;
+  for (auto f : all_functions) {
+    if (f->method_type == MT_TOCK) return true;
   }
 
   for (auto f : all_fields) {
-    if (f->is_module() && f->needs_tock()) return true;
+    if (f->_type_class && f->_type_class->needs_tock()) return true;
   }
-  */
 
   return false;
 }
@@ -346,7 +343,12 @@ Err CNodeClass::emit(Cursor& cursor) {
   err << cursor.emit(n_name);
   err << cursor.emit_gap(n_name, n_body);
 
+  err << cursor.emit_print("(");
+  cursor.indent_level++;
   err << emit_module_ports(cursor);
+  cursor.indent_level--;
+  err << cursor.start_line();
+  err << cursor.emit_print(");");
 
   for (auto child : n_body) {
     if (child->get_text() == "{") {
@@ -371,56 +373,104 @@ Err CNodeClass::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-/*
-CHECK_RETURN Err MtCursor::emit_module_ports(MnNode class_body) {
+Err CNodeClass::emit_module_ports(Cursor& cursor) {
   Err err;
+  //err << cursor.emit_print("(\n");
+  //err << cursor.emit_print("{{port list}}\n");
+  //err << cursor.emit_print(");\n");
 
-  if (current_mod.top()->needs_tick()) {
-    err << emit_line("// global clock");
-    err << emit_line("input logic clock,");
+  if (needs_tick()) {
+    err << cursor.start_line();
+    err << cursor.emit_print("// global clock");
+    err << cursor.start_line();
+    err << cursor.emit_print("input logic clock,");
   }
 
-  if (current_mod.top()->input_signals.size()) {
-    err << emit_line("// input signals");
-    for (auto f : current_mod.top()->input_signals) {
-      err << emit_field_port(f);
+  if (input_signals.size()) {
+    err << cursor.start_line();
+    err << cursor.emit_print("// input signals\n");
+    for (auto f : input_signals) {
+      //err << emit_field_port(f);
     }
   }
 
-  if (current_mod.top()->output_signals.size()) {
+  for (auto f : all_functions) {
+    err << emit_function_ports(f, cursor);
+  }
+
+  /*
+  if (output_signals.size()) {
     err << emit_line("// output signals");
-    for (auto f : current_mod.top()->output_signals) {
-      err << emit_field_port(f);
-    }
+    for (auto f : output_signals) err << emit_field_port(f);
   }
 
-  if (current_mod.top()->output_registers.size()) {
+  if (output_registers.size()) {
     err << emit_line("// output registers");
-    for (auto f : current_mod.top()->output_registers) {
-      err << emit_field_port(f);
-    }
+    for (auto f : output_registers) err << emit_field_port(f);
   }
 
-  for (auto m : current_mod.top()->all_methods) {
-    if (!m->is_init_ && m->is_public() && m->internal_callers.empty()) {
+  for (auto m : all_methods) {
+    if (!m->is_init_ && m->internal_callers.empty()) {
       err << emit_method_ports(m);
     }
   }
+  */
 
   // Remove trailing comma from port list
-  if (at_comma) {
-    err << emit_backspace();
+  if (cursor.at_comma) {
+    err << cursor.emit_backspace();
   }
 
   return err;
 }
-*/
 
-Err CNodeClass::emit_module_ports(Cursor& cursor) {
+//----------------------------------------
+
+Err CNodeClass::emit_function_ports(CNodeFunction* f, Cursor& cursor) {
   Err err;
-  err << cursor.emit_print("(\n");
-  err << cursor.emit_print("{{port list}}\n");
-  err << cursor.emit_print(");\n");
+
+  //f->dump_tree();
+
+  auto rtype = f->child("return_type");
+
+
+  if (!f->is_public_) return err;
+  if (f->internal_callers.size()) return err;
+  if (!f->params.size() && rtype->get_text() == "void") return err;
+
+  auto fname = f->get_namestr();
+
+  err << cursor.start_line();
+  err << cursor.emit_print("// %s() ports", fname.c_str());
+
+  for (auto param : f->params) {
+    auto pname = param->get_namestr();
+    auto ptype = param->child("type");
+
+    err << cursor.start_line();
+    err << cursor.emit_print("input ");
+    err << cursor.emit_splice(ptype);
+    err << cursor.emit_print(" %s_%s", fname.c_str(), pname.c_str());
+    err << cursor.emit_print(",");
+
+  }
+
+  if (rtype->get_text() != "void") {
+    err << cursor.start_line();
+    err << cursor.emit_print("output ");
+    err << cursor.emit_splice(rtype);
+    err << cursor.emit_print(" %s_ret,", fname.c_str());
+  }
+
+  /*
+  if (m->has_return()) {
+    auto node_type = m->_node.get_field(field_type);
+    auto node_decl = m->_node.get_field(field_declarator);
+    auto node_name = node_decl.get_field(field_declarator);
+
+  }
+
+  */
   return err;
 }
 

@@ -81,6 +81,9 @@ Err CNodeFunction::emit(Cursor& c) {
   if (method_type == MT_TOCK && internal_callers.empty()) {
     return emit_always_comb(c);
   }
+  else if (method_type == MT_TICK && internal_callers.empty()) {
+    return emit_always_ff(c);
+  }
 
   err << CNode::emit(c);
 
@@ -89,36 +92,8 @@ Err CNodeFunction::emit(Cursor& c) {
 
 //----------------------------------------
 
-/*
-CHECK_RETURN Err MtCursor::emit_func_as_always_comb(MnNode n) {
-  Err err = check_at(sym_function_definition, n);
-
-  auto func_type = n.get_field(field_type);
-  auto func_decl = n.get_field(field_declarator);
-  auto func_body = n.get_field(field_body);
-  auto func_params = func_decl.get_field(field_parameters);
-
-  id_map.push(id_map.top());
-  for (auto c : func_params) {
-    if (!c.is_named()) continue;
-    id_map.top()[c.name4()] = func_decl.name4() + "_" + c.name4();
-  }
-
-  err << emit_replacement(func_type, "always_comb begin :");
-  err << emit_gap(func_type, func_decl);
-  err << emit_replacement(func_decl, func_decl.name4().c_str());
-  err << emit_gap(func_decl, func_body);
-  err << emit_block(func_body, "", "end");
-
-  id_map.pop();
-  return err << check_done(n);
-}
-*/
-
 Err CNodeFunction::emit_always_comb(Cursor& c) {
   Err err;
-
-  dump_tree();
 
   auto node_type   = child("return_type")->as_a<CNodeType>();
   auto node_name   = child("name")->as_a<CNodeIdentifier>();
@@ -146,6 +121,72 @@ Err CNodeFunction::emit_always_comb(Cursor& c) {
 
   err << node_body->emit_block(c, "", "end");
   err << c.emit_gap_after(node_body);
+
+  c.id_map.pop();
+
+  return err;
+}
+
+//----------------------------------------
+
+/*
+CHECK_RETURN Err MtCursor::emit_func_as_always_ff(MnNode n) {
+  Err err;
+
+  auto func_type = n.get_field(field_type);
+  auto func_decl = n.get_field(field_declarator);
+  auto func_body = n.get_field(field_body);
+  auto func_params = func_decl.get_field(field_parameters);
+
+  id_map.push(id_map.top());
+  for (auto c : func_params) {
+    if (c.sym == sym_parameter_declaration) {
+      id_map.top()[c.name4()] = func_decl.name4() + "_" + c.name4();
+    }
+  }
+
+  err << emit_replacement(func_type, "always_ff @(posedge clock) begin :");
+  err << emit_gap(func_type, func_decl);
+  err << emit_replacement(func_decl, func_decl.name4().c_str());
+  err << emit_gap(func_decl, func_body);
+  err << emit_block(func_body, "", "end");
+
+  id_map.pop();
+  return err << check_done(n);
+}
+*/
+
+Err CNodeFunction::emit_always_ff(Cursor& c) {
+  Err err;
+
+  auto node_type   = child("return_type")->as_a<CNodeType>();
+  auto node_name   = child("name")->as_a<CNodeIdentifier>();
+  auto node_params = child("params")->as_a<CNodeList>();
+  auto node_body   = child("body")->as_a<CNodeCompound>();
+
+  auto func_name = get_namestr();
+
+  c.id_map.push(c.id_map.top());
+  for (auto node_param : node_params) {
+    auto param = node_param->as_a<CNodeDeclaration>();
+    if (!param) continue;
+
+    auto param_name = param->get_namestr();
+    c.id_map.top()[param_name] = func_name + "_" + param_name;
+  }
+
+  err << c.emit_replacement(node_type, "always_ff @(posedge clock) begin :");
+  err << c.emit_gap_after(node_type);
+  err << c.emit(node_name);
+  err << c.emit_gap_after(node_name);
+
+  err << c.skip_over(node_params);
+  err << c.emit_gap_after(node_params);
+
+  err << node_body->emit_block(c, "", "end");
+  err << c.emit_gap_after(node_body);
+
+  c.id_map.pop();
 
   return err;
 }

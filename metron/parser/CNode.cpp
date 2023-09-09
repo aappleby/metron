@@ -120,6 +120,8 @@ struct NodeDumper {
     }
     LOG_C(color, "%s = ", class_name(n));
 
+    LOG_C(color, "%p:%p ", n.span.begin, n.span.end);
+
     if (n.child_head == nullptr) {
       std::string escaped = escape(n.text_begin(), n.text_end());
       LOG_C(color, "%s", escaped.c_str());

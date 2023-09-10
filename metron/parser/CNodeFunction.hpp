@@ -31,17 +31,17 @@ struct CNodeFunction : public CNode {
   CNodeClass* get_parent_class();
   std::string_view get_return_type_name() const;
 
+  Err emit_init(Cursor& c);
   Err emit_always_comb(Cursor& c);
   Err emit_always_ff(Cursor& c);
+  Err emit_func(Cursor& c);
+  Err emit_task(Cursor& c);
+
+#if 0
+  needs_ports = is_public_ && internal_callers.empty();
+#endif
 
   void dump();
-
-  //bool is_public() const;
-  //bool is_tick() const { assert(false); return false; }
-  //bool is_tock() const { assert(false); return false; }
-
-  //bool has_params() const;
-  //bool has_return() const;
 
   using func_visitor = std::function<void(CNodeFunction*)>;
 
@@ -75,17 +75,6 @@ struct CNodeFunction : public CNode {
 
   void set_type(MethodType new_type) {
     auto name = get_name();
-
-    if (method_type == MT_UNKNOWN) {
-      //LOG_R("%.*s %s\n", name.size(), name.data(), to_string(new_type));
-    }
-
-    if (method_type != MT_UNKNOWN) {
-      if (method_type != new_type) {
-        //LOG_R("%.*s %s %s\n", name.size(), name.data(), to_string(method_type), to_string(new_type));
-      }
-    }
-
     assert(method_type == MT_UNKNOWN || method_type == new_type);
     method_type = new_type;
   }
@@ -109,30 +98,11 @@ struct CNodeFunction : public CNode {
     }
   }
 
-
   //----------------------------------------
-
-  //MtModule* _mod = nullptr;
-  //MnNode _node;
-  //bool _public = false;
-  //MtModLibrary* _lib = nullptr;
-  //std::string _name;
-  //MnNode _return_type;
-  //TraceState state = CTX_NONE;
-
-  //----------
 
   MethodType method_type = MT_UNKNOWN;
 
   bool is_public_ = false;
-
-  //bool emit_as_always_comb = false;
-  //bool emit_as_always_ff = false;
-  //bool emit_as_init = false;
-  //bool emit_as_task = false;
-  //bool emit_as_func = false;
-  //bool needs_binding = false;
-  //bool needs_ports = false;
 
   std::set<CNodeField*> self_reads;
   std::set<CNodeField*> self_writes;

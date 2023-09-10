@@ -265,7 +265,7 @@ void CCall::dump_tree() {
   LOG_G("Call %.*s::%.*s\n", int(class_name.size()), class_name.data(), int(func_name.size()), func_name.data());
 
   LOG_INDENT_SCOPE();
-  for (auto c : call_map) c.second->dump_tree();
+  for (auto pair : call_map) pair.second->dump_tree();
 }
 
 //------------------------------------------------------------------------------

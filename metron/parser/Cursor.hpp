@@ -32,6 +32,7 @@ struct Cursor {
   // Node-level emit()
   CHECK_RETURN Err emit(CNode* n);
   CHECK_RETURN Err skip_over(CNode* n);
+  CHECK_RETURN Err skip_to(CNode* n);
   CHECK_RETURN Err comment_out(CNode* n);
   CHECK_RETURN Err emit_default(CNode* n);
   CHECK_RETURN Err emit_children(CNode* n);
@@ -49,6 +50,8 @@ struct Cursor {
   CHECK_RETURN Err emit_span(const CToken* a, const CToken* b);
   CHECK_RETURN Err skip_span(const CToken* a, const CToken* b);
   CHECK_RETURN Err emit_to(const CToken* b);
+  CHECK_RETURN Err skip_current_token();
+
 
   // Char-level emit()
   CHECK_RETURN Err start_line();

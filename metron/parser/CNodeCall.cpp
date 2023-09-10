@@ -218,7 +218,6 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
 
 Err CNodeCall::emit(Cursor& cursor) {
   Err err;
-  dump_tree();
 
   auto node_class = ancestor<CNodeClass>();
   auto src_func = ancestor<CNodeFunction>();
@@ -244,9 +243,6 @@ Err CNodeCall::emit(Cursor& cursor) {
     if (src_mtype == MT_TOCK && (dst_mtype == MT_TOCK || dst_mtype == MT_TICK)) {
       err << cursor.skip_over(this);
       err << cursor.skip_gap_after(this);
-
-      dst_params->dump_tree();
-      func_args->dump_tree();
 
       auto param = dst_params->child_head;
       auto arg = func_args->child_head;

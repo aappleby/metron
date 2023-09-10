@@ -38,6 +38,22 @@ CHECK_RETURN Err Cursor::skip_over(CNode* n) {
   return err << check_done(n);
 }
 
+CHECK_RETURN Err Cursor::skip_to(CNode* n) {
+  Err err;
+  if (n == nullptr) return err;
+  while (tok_cursor < n->tok_begin()) err << skip_current_token();
+  return err;
+}
+
+CHECK_RETURN Err Cursor::skip_current_token() {
+  Err err;
+  for (auto c = tok_cursor->text_begin(); c < tok_cursor->text_end(); c++) {
+    err << skip_char(*c);
+  }
+  tok_cursor++;
+  return err;
+}
+
 CHECK_RETURN Err Cursor::comment_out(CNode* n) {
   if (n == nullptr) return Err();
   Err err = check_at(n);

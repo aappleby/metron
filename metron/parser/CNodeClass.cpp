@@ -47,8 +47,8 @@ void CNodeClass::init(const char* match_tag, SpanType span, uint64_t flags) {
 
   //dump_tree();
 
-  for (auto c : child("body")) {
-    if (auto node_enum = c->as<CNodeEnum>()) {
+  for (auto child : child("body")) {
+    if (auto node_enum = child->as<CNodeEnum>()) {
       all_enums.push_back(node_enum);
     }
   }
@@ -92,13 +92,13 @@ Err CNodeClass::collect_fields_and_methods() {
 
   bool is_public = false;
 
-  for (auto c : body) {
-    if (auto access = c->as<CNodeAccess>()) {
-      is_public = c->get_text() == "public:";
+  for (auto child : body) {
+    if (auto access = child->as<CNodeAccess>()) {
+      is_public = child->get_text() == "public:";
       continue;
     }
 
-    if (auto n = c->as<CNodeField>()) {
+    if (auto n = child->as<CNodeField>()) {
       n->_public = is_public;
 
       n->_parent_class  = n->ancestor<CNodeClass>();
@@ -116,10 +116,10 @@ Err CNodeClass::collect_fields_and_methods() {
       continue;
     }
 
-    if (auto n = c->as<CNodeFunction>()) {
+    if (auto n = child->as<CNodeFunction>()) {
       n->is_public_ = is_public;
 
-      if (auto constructor = c->as<CNodeConstructor>()) {
+      if (auto constructor = child->as<CNodeConstructor>()) {
         all_constructors.push_back(constructor);
       }
       else {

@@ -3,15 +3,10 @@
 class Module {
 public:
 
-  logic<3> tock(logic<1> q) {
-    out = x + y + z + q;
-    return 7;
-  }
-
-  void tick() {
-    x = x + 1;
-    y = y + 2;
-    z = z + 1;
+  Module(int q = 7) {
+    x = 1;
+    y = 2;
+    z = 3;
   }
 
 private:

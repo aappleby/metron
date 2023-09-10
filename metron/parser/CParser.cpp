@@ -1342,28 +1342,28 @@ static void extract_declarator_list(CContext& ctx, CNode* decls) {
 static void extract_type(CContext& ctx) {
   auto node = ctx.top_tail;
 
-  if (auto c = node->child("union")) {
-    extract_declarator_list(ctx, c->child("decls"));
+  if (auto child = node->child("union")) {
+    extract_declarator_list(ctx, child->child("decls"));
     return;
   }
 
-  if (auto c = node->child("struct")) {
-    extract_declarator_list(ctx, c->child("decls"));
+  if (auto child = node->child("struct")) {
+    extract_declarator_list(ctx, child->child("decls"));
     return;
   }
 
-  if (auto c = node->child("class")) {
-    extract_declarator_list(ctx, c->child("decls"));
+  if (auto child = node->child("class")) {
+    extract_declarator_list(ctx, child->child("decls"));
     return;
   }
 
-  if (auto c = node->child("enum")) {
-    extract_declarator_list(ctx, c->child("decls"));
+  if (auto child = node->child("enum")) {
+    extract_declarator_list(ctx, child->child("decls"));
     return;
   }
 
-  if (auto c = node->child("decl")) {
-    extract_declarator_list(ctx, c->child("decls"));
+  if (auto child = node->child("decl")) {
+    extract_declarator_list(ctx, child->child("decls"));
     return;
   }
 

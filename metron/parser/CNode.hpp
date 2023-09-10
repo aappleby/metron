@@ -179,10 +179,10 @@ inline CNodeIterator end(CNode* parent) {
 
 typedef std::function<void(CNode*)> node_visitor;
 
-inline void visit_children(CNode* n, node_visitor v) {
-  for (auto c = n->child_head; c; c = c->node_next) {
-    v(c);
-    visit_children(c, v);
+inline void visit_children(CNode* n, node_visitor visit) {
+  for (auto child = n->child_head; child; child = child->node_next) {
+    visit(child);
+    visit_children(child, visit);
   }
 }
 

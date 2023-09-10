@@ -94,6 +94,13 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
     return dynamic_cast<P*>(this);
   }
 
+  template <typename P>
+  P* must_be() {
+    auto result = dynamic_cast<P*>(this);
+    assert(result);
+    return result;
+  }
+
   //----------------------------------------
 
   CNode* child(const char* tag) {

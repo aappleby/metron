@@ -24,6 +24,13 @@ std::string_view CNodeFunction::get_name() const {
 void CNodeFunction::init(const char* match_tag, SpanType span, uint64_t flags) {
   CNode::init(match_tag, span, flags);
 
+  node_type   = child("return_type")->as<CNodeType>();
+  node_name   = child("name")->must_be<CNodeIdentifier>();
+  node_params = child("params")->must_be<CNodeList>();
+  node_init   = child("init")->as<CNodeList>();
+  node_const  = child("const")->as<CNodeKeyword>();
+  node_body   = child("body")->must_be<CNodeCompound>();
+
   for (auto c : child("params")) {
     if (auto param = c->as<CNodeDeclaration>()) {
       params.push_back(param);
@@ -75,10 +82,6 @@ Err CNodeFunction::emit_init(Cursor& cursor) {
   Err err;
 
   // FIXME not using node_init yet
-  auto node_name   = child("name")->as<CNodeIdentifier>();
-  auto node_params = child("params")->as<CNodeList>();
-  auto node_init   = child("init")->as<CNodeList>();
-  auto node_body   = child("body")->as<CNodeCompound>();
 
   for (auto param : node_params) {
     auto decl = param->as<CNodeDeclaration>();
@@ -104,12 +107,6 @@ Err CNodeFunction::emit_init(Cursor& cursor) {
 
 Err CNodeFunction::emit_always_comb(Cursor& cursor) {
   Err err;
-
-  auto node_type   = child("return_type")->as<CNodeType>();
-  auto node_name   = child("name")->as<CNodeIdentifier>();
-  auto node_params = child("params")->as<CNodeList>();
-  auto node_const  = child("const");
-  auto node_body   = child("body")->as<CNodeCompound>();
 
   auto func_name = get_namestr();
 
@@ -146,11 +143,6 @@ Err CNodeFunction::emit_always_comb(Cursor& cursor) {
 Err CNodeFunction::emit_always_ff(Cursor& cursor) {
   Err err;
 
-  auto node_type   = child("return_type")->as<CNodeType>();
-  auto node_name   = child("name")->as<CNodeIdentifier>();
-  auto node_params = child("params")->as<CNodeList>();
-  auto node_body   = child("body")->as<CNodeCompound>();
-
   auto func_name = get_namestr();
 
   cursor.id_map.push(cursor.id_map.top());
@@ -183,11 +175,6 @@ Err CNodeFunction::emit_always_ff(Cursor& cursor) {
 Err CNodeFunction::emit_func(Cursor& cursor) {
   Err err;
 
-  auto node_type   = child("return_type")->as<CNodeType>();
-  auto node_name   = child("name")->as<CNodeIdentifier>();
-  auto node_params = child("params")->as<CNodeList>();
-  auto node_body   = child("body")->as<CNodeCompound>();
-
   err << cursor.emit_print("function ");
 
   err << cursor.emit(node_type);
@@ -210,7 +197,22 @@ Err CNodeFunction::emit_func(Cursor& cursor) {
 
 Err CNodeFunction::emit_task(Cursor& cursor) {
   Err err;
-  assert(false);
+
+  err << cursor.emit_print("task automatic ");
+
+  err << cursor.skip_over(node_type);
+  err << cursor.skip_gap_after(node_type);
+
+  err << cursor.emit(node_name);
+  err << cursor.emit_gap_after(node_name);
+
+  err << cursor.emit(node_params);
+  err << cursor.emit_print(";");
+  err << cursor.emit_gap_after(node_params);
+
+  err << node_body->emit_block(cursor, "", "endtask");
+  err << cursor.emit_gap_after(node_body);
+
   return err;
 }
 

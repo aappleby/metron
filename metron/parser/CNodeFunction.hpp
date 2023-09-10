@@ -11,6 +11,10 @@
 #include <functional>
 
 struct CNodeClass;
+struct CNodeCompound;
+struct CNodeIdentifier;
+struct CNodeList;
+struct CNodeKeyword;
 
 //------------------------------------------------------------------------------
 
@@ -99,6 +103,13 @@ struct CNodeFunction : public CNode {
   }
 
   //----------------------------------------
+
+  CNodeType*       node_type   = nullptr;
+  CNodeIdentifier* node_name   = nullptr;
+  CNodeList*       node_params = nullptr;
+  CNodeList*       node_init   = nullptr;
+  CNodeKeyword*    node_const  = nullptr;
+  CNodeCompound*   node_body   = nullptr;
 
   MethodType method_type = MT_UNKNOWN;
 

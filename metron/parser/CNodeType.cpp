@@ -180,6 +180,9 @@ Err CNodeType::emit(Cursor& cursor) {
   else if (auto node_class = child("class_name")) {
     err << CNode::emit(cursor);
   }
+  else if (auto node_enum = as<CNodeEnumType>()) {
+    err << cursor.emit_default(this);
+  }
   else {
     NODE_ERR("Don't know how to handle this type\n");
   }

@@ -407,10 +407,11 @@ std::string_view CNodeKeyword::get_name() const {
 }
 
 Err CNodeKeyword::emit(Cursor& c) {
-  Err err;
   if (get_text() == "static" || get_text() == "const") {
-    err << c.comment_out(this);
-    return err;
+    return c.comment_out(this);
+  }
+  if (get_text() == "nullptr") {
+    return c.emit_replacement(this, "\"\"");
   }
   NODE_ERR("FIXME");
   return Err();

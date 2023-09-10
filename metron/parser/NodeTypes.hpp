@@ -112,9 +112,12 @@ struct CNodeTypedef : public CNode {
 
 struct CNodeList : public CNode {
   uint32_t debug_color() const override;
+  void init(const char* match_tag, SpanType span, uint64_t flags);
   std::string_view get_name() const override;
   CHECK_RETURN Err emit(Cursor& c) override;
   CHECK_RETURN Err trace(CCall* call) override;
+
+  std::vector<CNode*> items;
 };
 
 //------------------------------------------------------------------------------

@@ -105,7 +105,7 @@ struct CNodeFunction : public CNode {
   //----------------------------------------
 
   CNodeType*       node_type   = nullptr;
-  CNodeIdentifier* node_name   = nullptr;
+  CNode*           node_name   = nullptr;
   CNodeList*       node_params = nullptr;
   CNodeList*       node_init   = nullptr;
   CNodeKeyword*    node_const  = nullptr;

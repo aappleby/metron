@@ -24,8 +24,10 @@ std::string_view CNodeFunction::get_name() const {
 void CNodeFunction::init(const char* match_tag, SpanType span, uint64_t flags) {
   CNode::init(match_tag, span, flags);
 
+  dump_tree();
+
   node_type   = child("return_type")->as<CNodeType>();
-  node_name   = child("name")->must_be<CNodeIdentifier>();
+  node_name   = child("name");
   node_params = child("params")->must_be<CNodeList>();
   node_init   = child("init")->as<CNodeList>();
   node_const  = child("const")->as<CNodeKeyword>();
@@ -162,6 +164,9 @@ Err CNodeFunction::emit_always_ff(Cursor& cursor) {
   err << cursor.skip_over(node_params);
   err << cursor.emit_gap_after(node_params);
 
+  err << cursor.comment_out(node_const);
+  err << cursor.emit_gap_after(node_const);
+
   err << node_body->emit_block(cursor, "", "end");
   err << cursor.emit_gap_after(node_body);
 
@@ -187,6 +192,9 @@ Err CNodeFunction::emit_func(Cursor& cursor) {
   err << cursor.emit_print(";");
   err << cursor.emit_gap_after(node_params);
 
+  err << cursor.comment_out(node_const);
+  err << cursor.emit_gap_after(node_const);
+
   err << node_body->emit_block(cursor, "", "endfunction");
   err << cursor.emit_gap_after(node_body);
 
@@ -209,6 +217,9 @@ Err CNodeFunction::emit_task(Cursor& cursor) {
   err << cursor.emit(node_params);
   err << cursor.emit_print(";");
   err << cursor.emit_gap_after(node_params);
+
+  err << cursor.comment_out(node_const);
+  err << cursor.emit_gap_after(node_const);
 
   err << node_body->emit_block(cursor, "", "endtask");
   err << cursor.emit_gap_after(node_body);

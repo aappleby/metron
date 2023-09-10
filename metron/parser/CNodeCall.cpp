@@ -8,6 +8,14 @@
 
 //------------------------------------------------------------------------------
 
+void CNodeCall::init(const char* match_tag, SpanType span, uint64_t flags) {
+  node_name  = child("func_name");
+  node_targs = child("func_targs")->as<CNodeList>();
+  node_args  = child("func_args")->as<CNodeList>();
+}
+
+//------------------------------------------------------------------------------
+
 std::string_view CNodeCall::get_name() const {
   return child("func_name")->get_text();
 }
@@ -26,9 +34,9 @@ Err CNodeCall::trace(CCall* call) {
   auto src_inst  = call->inst_class;
   auto src_class = src_inst->node_class;
 
-  err << child("func_args")->trace(call);
+  err << node_args->trace(call);
 
-  auto dst_name = child("func_name");
+  auto dst_name = node_name;
 
   if (auto field_exp = dst_name->as<CNodeFieldExpression>()) {
     auto dst_inst  = src_inst->inst_map[field_exp->child("field_path")->get_text()]->as<CInstClass>();
@@ -222,10 +230,21 @@ Err CNodeCall::emit(Cursor& cursor) {
   auto node_class = ancestor<CNodeClass>();
   auto src_func = ancestor<CNodeFunction>();
 
-  auto func_name = child("func_name");
-  auto func_args = child("func_args");
+  dump_tree();
 
-  if (auto func_id = func_name->as<CNodeIdentifier>()) {
+  if (auto func_id = node_name->as<CNodeIdentifier>()) {
+
+    if (func_id->get_text() == "bx") {
+      // Bit extract.
+      err << cursor.emit_print("(");
+      err << cursor.emit_splice(node_targs->items[0]);
+      err << cursor.emit_print(")'");
+      err << cursor.skip_to(node_args);
+      err << cursor.emit(node_args);
+      return err;
+    }
+
+
     auto dst_func = node_class->get_function(func_id->get_text());
     auto dst_params = dst_func->child("params");
 
@@ -245,7 +264,7 @@ Err CNodeCall::emit(Cursor& cursor) {
       err << cursor.skip_gap_after(this);
 
       auto param = dst_params->child_head;
-      auto arg = func_args->child_head;
+      auto arg = node_args->child_head;
 
       bool first_arg = true;
 

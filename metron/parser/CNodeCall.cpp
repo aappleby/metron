@@ -233,7 +233,11 @@ Err CNodeCall::emit(Cursor& cursor) {
   //dump_tree();
 
   if (auto func_id = node_name->as<CNodeIdentifier>()) {
-    auto func_name = func_id->get_text();
+    auto func_name = func_id->get_textstr();
+
+    if (cursor.id_map.top().contains(func_name)) {
+      return cursor.emit_default(this);
+    }
 
     if (func_name == "bx") {
       // Bit extract.
@@ -268,6 +272,26 @@ Err CNodeCall::emit(Cursor& cursor) {
       }
     }
 
+    if (func_name == "cat") {
+      err << cursor.skip_to(node_args);
+      for (auto child : node_args) {
+        if (child->tag_is("ldelim")) {
+          err << cursor.emit_replacement(child, "{");
+        }
+        else if (child->tag_is("rdelim")) {
+          err << cursor.emit_replacement(child, "}");
+        }
+        else {
+          err << cursor.emit(child);
+        }
+
+        err << cursor.emit_gap_after(child);
+      }
+      return err;
+    }
+
+    //----------
+    // Not a special builtin call
 
     auto dst_func = node_class->get_function(func_id->get_text());
     auto dst_params = dst_func->child("params");

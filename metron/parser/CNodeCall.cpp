@@ -230,11 +230,12 @@ Err CNodeCall::emit(Cursor& cursor) {
   auto node_class = ancestor<CNodeClass>();
   auto src_func = ancestor<CNodeFunction>();
 
-  dump_tree();
+  //dump_tree();
 
   if (auto func_id = node_name->as<CNodeIdentifier>()) {
+    auto func_name = func_id->get_text();
 
-    if (func_id->get_text() == "bx") {
+    if (func_name == "bx") {
       // Bit extract.
       err << cursor.emit_print("(");
       err << cursor.emit_splice(node_targs->items[0]);
@@ -242,6 +243,29 @@ Err CNodeCall::emit(Cursor& cursor) {
       err << cursor.skip_to(node_args);
       err << cursor.emit(node_args);
       return err;
+    }
+
+    if (func_name[0] == 'b' && func_name.size() == 2) {
+      auto x = func_name[1];
+      if (x >= '0' && x <= '9') {
+        int width = (x - '0');
+        err << cursor.emit_print("%d'", width);
+        err << cursor.skip_to(node_args);
+        err << cursor.emit(node_args);
+        return err;
+      }
+    }
+
+    if (func_name[0] == 'b' && func_name.size() == 3) {
+      auto x = func_name[1];
+      auto y = func_name[2];
+      if (x >= '0' && x <= '9' && y >= '0' && y <= '9') {
+        int width = (x - '0') * 10 + (y - '0');
+        err << cursor.emit_print("%d'", width);
+        err << cursor.skip_to(node_args);
+        err << cursor.emit(node_args);
+        return err;
+      }
     }
 
 

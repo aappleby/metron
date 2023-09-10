@@ -15,7 +15,17 @@ Cursor::Cursor(CSourceRepo* repo, CSourceFile* source, std::string* str_out) {
   // Skip LEX_BOF
   this->tok_cursor = this->tok_begin + 1;
 
-  id_map.push(string_to_string());
+  id_map.push({
+    {"signed",         "$signed"},
+    {"unsigned",       "$unsigned"},
+    {"clog2",          "$clog2" },
+    {"pow2",           "2**" },
+    {"readmemh",       "$readmemh" },
+    {"value_plusargs", "$value$plusargs" },
+    {"write",          "$write" },
+    {"sign_extend",    "$signed" },
+    {"zero_extend",    "$unsigned" }
+  });
 
   block_prefix.push("begin");
   block_suffix.push("end");

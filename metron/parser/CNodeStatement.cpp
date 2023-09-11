@@ -227,30 +227,35 @@ CHECK_RETURN Err CNodeCompound::emit_call_arg_bindings(CNode* child, Cursor& cur
   }
 
   if (auto func_id = call->node_name->as<CNodeIdentifier>()) {
+    func_id->dump_tree();
     auto func_name = func_id->get_text();
 
     auto src_class = ancestor<CNodeClass>();
     auto dst_func = src_class->get_function(func_id->get_text());
 
-    bool needs_binding = false;
-    needs_binding |= dst_func->method_type == MT_TICK && dst_func->called_by_tock();
-    needs_binding |= dst_func->method_type == MT_TOCK && !dst_func->internal_callers.empty();
+    // FIXME we should have an is_builtin or something here...
 
-    if (needs_binding) {
-      int arg_count = call->node_args->items.size();
-      int param_count = dst_func->params.size();
-      assert(arg_count == param_count);
+    if (dst_func) {
+      bool needs_binding = false;
+      needs_binding |= dst_func->method_type == MT_TICK && dst_func->called_by_tock();
+      needs_binding |= dst_func->method_type == MT_TOCK && !dst_func->internal_callers.empty();
 
-      for (int i = 0; i < arg_count; i++) {
-        auto param_name = dst_func->params[i]->child("name")->get_text();
-        err << cursor.start_line();
-        err << cursor.emit_print("%.*s_%.*s = ",
-          func_name.size(), func_name.data(),
-          param_name.size(), param_name.data());
-        err << cursor.emit_splice(call->node_args->items[i]);
-        err << cursor.emit_print(";");
+      if (needs_binding) {
+        int arg_count = call->node_args->items.size();
+        int param_count = dst_func->params.size();
+        assert(arg_count == param_count);
 
-        any_bindings = true;
+        for (int i = 0; i < arg_count; i++) {
+          auto param_name = dst_func->params[i]->child("name")->get_text();
+          err << cursor.start_line();
+          err << cursor.emit_print("%.*s_%.*s = ",
+            func_name.size(), func_name.data(),
+            param_name.size(), param_name.data());
+          err << cursor.emit_splice(call->node_args->items[i]);
+          err << cursor.emit_print(";");
+
+          any_bindings = true;
+        }
       }
     }
   }

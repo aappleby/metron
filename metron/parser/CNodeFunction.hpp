@@ -104,6 +104,40 @@ struct CNodeFunction : public CNode {
 
   //----------------------------------------
 
+  bool called_by_init() {
+    bool called = false;
+    visit_internal_callers([&](CNodeFunction* f) {
+      called |= f->method_type == MT_INIT;
+    });
+    return called;
+  }
+
+  bool called_by_tick() {
+    bool called = false;
+    visit_internal_callers([&](CNodeFunction* f) {
+      called |= f->method_type == MT_TICK;
+    });
+    return called;
+  }
+
+  bool called_by_tock() {
+    bool called = false;
+    visit_internal_callers([&](CNodeFunction* f) {
+      called |= f->method_type == MT_TOCK;
+    });
+    return called;
+  }
+
+  bool called_by_func() {
+    bool called = false;
+    visit_internal_callers([&](CNodeFunction* f) {
+      called |= f->method_type == MT_FUNC;
+    });
+    return called;
+  }
+
+  //----------------------------------------
+
   CNodeType*       node_type   = nullptr;
   CNode*           node_name   = nullptr;
   CNodeList*       node_params = nullptr;

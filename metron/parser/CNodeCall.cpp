@@ -227,6 +227,8 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
 Err CNodeCall::emit(Cursor& cursor) {
   Err err;
 
+  dump_tree();
+
   auto node_class = ancestor<CNodeClass>();
   auto src_func = ancestor<CNodeFunction>();
 
@@ -291,6 +293,30 @@ Err CNodeCall::emit(Cursor& cursor) {
     }
 
     //----------
+    // Convert "dup<15>(x)" to "{15 {x}}"
+
+    if (func_name == "dup") {
+      assert(false);
+
+      /*
+      // printf("{%d {%s}}", call.func.args[0], call.args[0]); ???
+
+      if (args.named_child_count() != 1) return err << ERR("dup() had too many children\n");
+
+      err << skip_over(func);
+
+      auto template_arg = func.get_field(field_arguments).named_child(0);
+      int dup_count = atoi(template_arg.start());
+      auto func_arg = args.named_child(0);
+      err << emit_print("{%d {", dup_count);
+      err << emit_splice(func_arg);
+      err << emit_print("}}");
+      cursor = n.end();
+      return err << check_done(n);
+      */
+    }
+
+    //----------
     // Not a special builtin call
 
     auto dst_func = node_class->get_function(func_id->get_text());
@@ -308,7 +334,7 @@ Err CNodeCall::emit(Cursor& cursor) {
     }
 
     if (src_mtype == MT_TOCK && (dst_mtype == MT_TOCK || dst_mtype == MT_TICK)) {
-      err << cursor.skip_over(this);
+      err << cursor.comment_out(this);
       err << cursor.skip_gap_after(this);
 
       auto param = dst_params->child_head;
@@ -346,6 +372,29 @@ Err CNodeCall::emit(Cursor& cursor) {
       return err;
     }
   }
+
+  if (auto func_path = node_name->as<CNodeFieldExpression>()) {
+    auto field_name = func_path->child("field_path")->get_text();
+    auto func_name  = func_path->child("identifier")->get_text();
+
+    auto src_class = ancestor<CNodeClass>();
+    auto field = src_class->get_field(field_name);
+    auto dst_class = field->_type_class;
+    auto dst_func = dst_class->get_function(func_name);
+
+    if (dst_func->child("return_type")->get_text() == "void") {
+      err << cursor.comment_out(this);
+      err << cursor.emit_gap_after(this);
+    }
+    else {
+      err << cursor.skip_over(this);
+      err << cursor.emit_print("%.*s_%.*s_ret", field_name.size(), field_name.data(), func_name.size(), func_name.data());
+      err << cursor.emit_gap_after(this);
+    }
+
+    return err;
+  }
+
 
   err << CNode::emit(cursor);
   return err;

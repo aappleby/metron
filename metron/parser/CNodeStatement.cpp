@@ -3,6 +3,9 @@
 #include "CNodeExpression.hpp"
 #include "CNodeFunction.hpp"
 #include "CNodeDeclaration.hpp"
+#include "CNodeCall.hpp"
+#include "CNodeClass.hpp"
+#include "NodeTypes.hpp"
 
 #include "CInstance.hpp"
 
@@ -14,70 +17,45 @@ uint32_t CNodeStatement::debug_color() const {
 
 //------------------------------------------------------------------------------
 
-Err CNodeExpStatement::emit(Cursor& c) {
-  return c.emit_default(this);
-}
-
 Err CNodeExpStatement::trace(CCall* call) {
   Err err;
   for (auto c : this) err << c->trace(call);
   return err;
 }
 
+//----------------------------------------
+
+Err CNodeExpStatement::emit(Cursor& c) {
+  return c.emit_default(this);
+}
+
 //------------------------------------------------------------------------------
 
-/*
-//------------------------------------------------------------------------------
+Err CNodeAssignment::trace(CCall* call) {
+  Err err;
+
+  auto rhs = child("rhs");
+  err << rhs->trace(call);
+
+  auto lhs = child("lhs");
+  auto inst_lhs = call->inst_class->resolve(lhs);
+
+  if (inst_lhs) {
+    auto op_text = child("op")->get_text();
+    if (op_text != "=") err << inst_lhs->log_action(this, ACT_READ);
+    err << inst_lhs->log_action(this, ACT_WRITE);
+  }
+
+  return Err();
+}
+
+//----------------------------------------
+
 // Change '=' to '<=' if lhs is a field and we're inside a sequential block.
 // Change "a += b" to "a = a + b", etc.
 
-CHECK_RETURN Err MtCursor::emit_sym_assignment_expression(MnNode node) {
-  Err err = check_at(sym_assignment_expression, node);
-
-  MnNode lhs;
-
-  for (auto child : node) {
-    err << emit_ws_to(child);
-    switch (child.field) {
-      case field_left: {
-        lhs = child;
-        err << emit_dispatch(child);
-        break;
-      }
-      case field_operator: {
-        // There may not be a method if we're in an enum initializer list.
-        bool left_is_field = current_mod.top()->get_field(lhs.name4()) != nullptr;
-        if (current_method.top() && current_method.top()->is_tick_ && left_is_field) {
-          err << emit_replacement(child, "<=");
-        } else {
-          err << emit_replacement(child, "=");
-        }
-        auto op  = child.text();
-        bool is_compound = op != "=";
-        if (is_compound) {
-          push_cursor(lhs);
-          err << emit_print(" ");
-          err << emit_dispatch(lhs);
-          err << emit_print(" %c", op[0]);
-          pop_cursor();
-        }
-        break;
-      }
-      default: {
-        err << emit_dispatch(child);
-        break;
-      }
-    }
-  }
-
-  return err << check_done(node);
-}
-*/
-
 Err CNodeAssignment::emit(Cursor& c) {
   Err err;
-
-  //dump_tree();
 
   auto func = ancestor<CNodeFunction>();
 
@@ -110,24 +88,6 @@ Err CNodeAssignment::emit(Cursor& c) {
   err << c.emit_gap_after(rhs);
 
   return err;
-}
-
-Err CNodeAssignment::trace(CCall* call) {
-  Err err;
-
-  auto rhs = child("rhs");
-  err << rhs->trace(call);
-
-  auto lhs = child("lhs");
-  auto inst_lhs = call->inst_class->resolve(lhs);
-
-  if (inst_lhs) {
-    auto op_text = child("op")->get_text();
-    if (op_text != "=") err << inst_lhs->log_action(this, ACT_READ);
-    err << inst_lhs->log_action(this, ACT_WRITE);
-  }
-
-  return Err();
 }
 
 //------------------------------------------------------------------------------
@@ -195,9 +155,13 @@ CHECK_RETURN Err CNodeSwitch::trace(CCall* call) {
   return err;
 }
 
+//------------------------------------------------------------------------------
+
 CHECK_RETURN Err CNodeCase::trace(CCall* call) {
   return child("body")->trace(call);
 }
+
+//------------------------------------------------------------------------------
 
 CHECK_RETURN Err CNodeDefault::trace(CCall* call) {
   return child("body")->trace(call);
@@ -208,6 +172,93 @@ CHECK_RETURN Err CNodeDefault::trace(CCall* call) {
 Err CNodeCompound::trace(CCall* call) {
   Err err;
   for (auto c : this) err << c->trace(call);
+  return err;
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err CNodeCompound::emit_call_arg_bindings(CNode* child, Cursor& cursor) {
+  Err err;
+
+  // Emit bindings for child nodes first, but do _not_ recurse into compound
+  // blocks.
+
+  for (auto gc : child) {
+    if (!gc->as<CNodeCompound>()) {
+      err << emit_call_arg_bindings(gc, cursor);
+    }
+  }
+
+  // OK, now we can emit bindings for the statement we're at.
+
+  bool any_bindings = false;
+
+  auto call = child->as<CNodeCall>();
+  if (!call) return err;
+
+  if (call->node_args->items.empty()) return err;
+
+  if (auto func_path = call->node_name->as<CNodeFieldExpression>()) {
+    auto field_name = func_path->node_path->get_text();
+    auto func_name  = func_path->node_name->get_text();
+
+    auto src_class = ancestor<CNodeClass>();
+    auto field = src_class->get_field(field_name);
+    auto dst_class = field->_type_class;
+    auto dst_func = dst_class->get_function(func_name);
+
+    int arg_count = call->node_args->items.size();
+    int param_count = dst_func->params.size();
+    assert(arg_count == param_count);
+
+    for (int i = 0; i < arg_count; i++) {
+      auto param_name = dst_func->params[i]->child("name")->get_text();
+
+      err << cursor.start_line();
+      err << cursor.emit_print("%.*s_%.*s_%.*s = ",
+        field_name.size(), field_name.data(),
+        func_name.size(), func_name.data(),
+        param_name.size(), param_name.data());
+      err << cursor.emit_splice(call->node_args->items[i]);
+      err << cursor.emit_print(";");
+
+      any_bindings = true;
+    }
+  }
+
+  if (auto func_id = call->node_name->as<CNodeIdentifier>()) {
+    auto func_name = func_id->get_text();
+
+    auto src_class = ancestor<CNodeClass>();
+    auto dst_func = src_class->get_function(func_id->get_text());
+
+    bool needs_binding = false;
+    needs_binding |= dst_func->method_type == MT_TICK && dst_func->called_by_tock();
+    needs_binding |= dst_func->method_type == MT_TOCK && !dst_func->internal_callers.empty();
+
+    if (needs_binding) {
+      int arg_count = call->node_args->items.size();
+      int param_count = dst_func->params.size();
+      assert(arg_count == param_count);
+
+      for (int i = 0; i < arg_count; i++) {
+        auto param_name = dst_func->params[i]->child("name")->get_text();
+        err << cursor.start_line();
+        err << cursor.emit_print("%.*s_%.*s = ",
+          func_name.size(), func_name.data(),
+          param_name.size(), param_name.data());
+        err << cursor.emit_splice(call->node_args->items[i]);
+        err << cursor.emit_print(";");
+
+        any_bindings = true;
+      }
+    }
+  }
+
+  if (any_bindings) {
+    err << cursor.start_line();
+  }
+
   return err;
 }
 
@@ -227,6 +278,12 @@ Err CNodeCompound::emit_block(Cursor& cursor, std::string ldelim, std::string rd
       err << cursor.emit_replacement(child, "%s", rdelim.c_str());
     }
     else {
+      // We may need to insert input port bindings before any statement that
+      // could include a call expression. We search the tree for calls and emit
+      // those bindings here.
+      if (!child->as<CNodeCompound>()) {
+        err << emit_call_arg_bindings(child, cursor);
+      }
       err << cursor.emit(child);
     }
     err << cursor.emit_gap_after(child);
@@ -235,7 +292,7 @@ Err CNodeCompound::emit_block(Cursor& cursor, std::string ldelim, std::string rd
   return err;
 }
 
-//----------------------------------------
+//----------------------------------------7
 
 Err CNodeCompound::emit_hoisted_decls(Cursor& cursor) {
   Err err;
@@ -279,6 +336,8 @@ Err CNodeReturn::trace(CCall* call) {
 
   return err;
 }
+
+//----------------------------------------7
 
 Err CNodeReturn::emit(Cursor& cursor) {
   Err err;

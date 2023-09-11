@@ -229,6 +229,12 @@ Err CNodePunct::trace(CCall* call) {
 
 //------------------------------------------------------------------------------
 
+void CNodeFieldExpression::init(const char* match_tag, SpanType span, uint64_t flags) {
+  CNode::init(match_tag, span, flags);
+  node_path = child("field_path");
+  node_name = child("identifier");
+}
+
 uint32_t CNodeFieldExpression::debug_color() const { return 0x80FF80; }
 
 //----------------------------------------
@@ -442,16 +448,14 @@ Err CNodeTypedef::trace(CCall* call) {
 
 //------------------------------------------------------------------------------
 
-uint32_t CNodeList::debug_color() const { return 0xCCCCCC; }
-
 void CNodeList::init(const char* match_tag, SpanType span, uint64_t flags) {
   CNode::init(match_tag, span, flags);
-
   for (auto child : this) {
     if (!child->as<CNodePunct>()) items.push_back(child);
   }
 }
 
+uint32_t CNodeList::debug_color() const { return 0xCCCCCC; }
 
 std::string_view CNodeList::get_name() const {
   NODE_ERR("FIXME");

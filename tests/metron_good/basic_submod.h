@@ -5,14 +5,14 @@
 class Submod {
 public:
 
-  void tock() {
-    tick();
+  void tock(int x) {
+    tick(x);
   }
 
 private:
 
-  void tick() {
-    sub_reg = sub_reg + 1;
+  void tick(int x) {
+    sub_reg = sub_reg + x;
   }
 
   logic<8> sub_reg;
@@ -21,8 +21,8 @@ private:
 class Module {
 public:
 
-  void tock() {
-    submod.tock();
+  void tock(int x) {
+    submod.tock(x);
   }
 
   Submod submod;

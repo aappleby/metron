@@ -66,10 +66,14 @@ struct CNodePunct : public CNode {
 //------------------------------------------------------------------------------
 
 struct CNodeFieldExpression : public CNode {
+  void init(const char* match_tag, SpanType span, uint64_t flags);
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
   CHECK_RETURN Err emit(Cursor& c) override;
   CHECK_RETURN Err trace(CCall* call) override;
+
+  CNode* node_path = nullptr;
+  CNode* node_name = nullptr;
 };
 
 //------------------------------------------------------------------------------
@@ -111,8 +115,8 @@ struct CNodeTypedef : public CNode {
 //------------------------------------------------------------------------------
 
 struct CNodeList : public CNode {
-  uint32_t debug_color() const override;
   void init(const char* match_tag, SpanType span, uint64_t flags);
+  uint32_t debug_color() const override;
   std::string_view get_name() const override;
   CHECK_RETURN Err emit(Cursor& c) override;
   CHECK_RETURN Err trace(CCall* call) override;

@@ -48,38 +48,42 @@ Err CNodeAssignment::trace(CCall* call) {
 // Change '=' to '<=' if lhs is a field and we're inside a sequential block.
 // Change "a += b" to "a = a + b", etc.
 
-Err CNodeAssignment::emit(Cursor& c) {
+Err CNodeAssignment::emit(Cursor& cursor) {
   Err err;
 
   auto func = ancestor<CNodeFunction>();
 
-  auto lhs = child("lhs");
-  auto op  = child("op");
-  auto rhs = child("rhs");
+  auto node_lhs  = child("lhs");
+  auto node_op   = child("op");
+  auto node_rhs  = child("rhs");
+  auto node_semi = child("semi");
 
-  err << c.emit(lhs);
-  err << c.emit_gap_after(lhs);
+  err << cursor.emit(node_lhs);
+  err << cursor.emit_gap_after(node_lhs);
 
   // If we're in a tick, emit < to turn = into <=
   if (func->method_type == MT_TICK) {
-    err << c.emit_print("<");
+    err << cursor.emit_print("<");
   }
 
-  if (op->get_text() == "=") {
-    err << c.emit(op);
-    err << c.emit_gap_after(op);
+  if (node_op->get_text() == "=") {
+    err << cursor.emit(node_op);
+    err << cursor.emit_gap_after(node_op);
   }
   else {
-    auto lhs_text = lhs->get_text();
+    auto lhs_text = node_lhs->get_text();
 
-    err << c.skip_over(op);
-    err << c.emit_print("=");
-    err << c.emit_gap_after(op);
-    err << c.emit_print("%.*s %c ", lhs_text.size(), lhs_text.data(), op->get_text()[1]);
+    err << cursor.skip_over(node_op);
+    err << cursor.emit_print("=");
+    err << cursor.emit_gap_after(node_op);
+    err << cursor.emit_print("%.*s %c ", lhs_text.size(), lhs_text.data(), node_op->get_text()[1]);
   }
 
-  err << c.emit(rhs);
-  err << c.emit_gap_after(rhs);
+  err << cursor.emit(node_rhs);
+  err << cursor.emit_gap_after(node_rhs);
+
+  err << cursor.emit(node_semi);
+  err << cursor.emit_gap_after(node_semi);
 
   return err;
 }
@@ -401,8 +405,9 @@ Err CNodeReturn::emit(Cursor& cursor) {
   auto func = ancestor<CNodeFunction>();
   auto fname = func->get_namestr();
 
-  auto node_ret = child("return");
-  auto node_val = child("value");
+  auto node_ret  = child("return");
+  auto node_val  = child("value");
+  auto node_semi = child("semi");
 
   assert(node_val);
 
@@ -413,6 +418,9 @@ Err CNodeReturn::emit(Cursor& cursor) {
 
   err << cursor.emit(node_val);
   err << cursor.emit_gap_after(node_val);
+
+  err << cursor.emit(node_semi);
+  err << cursor.emit_gap_after(node_semi);
 
   return err;
 }

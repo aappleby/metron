@@ -70,8 +70,8 @@ struct CNodeExpStatement : public CNodeStatement {
 };
 
 struct CNodeAssignment : public CNodeStatement {
-  CHECK_RETURN Err emit(Cursor& c) override;
   CHECK_RETURN Err trace(CCall* call) override;
+  CHECK_RETURN Err emit(Cursor& c) override;
 };
 
 //------------------------------------------------------------------------------

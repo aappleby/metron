@@ -32,7 +32,7 @@ TokenSpan match_tdecl_list  (CContext& ctx, TokenSpan body);
 TokenSpan match_decl_list   (CContext& ctx, TokenSpan body);
 TokenSpan match_exp_list    (CContext& ctx, TokenSpan body);
 TokenSpan match_index_list  (CContext& ctx, TokenSpan body);
-TokenSpan match_expression  (CContext& ctx, TokenSpan body);
+TokenSpan cap_expression  (CContext& ctx, TokenSpan body);
 TokenSpan match_declaration (CContext& ctx, TokenSpan body);
 TokenSpan match_constructor (CContext& ctx, TokenSpan body);
 TokenSpan match_function    (CContext& ctx, TokenSpan body);
@@ -53,8 +53,7 @@ TokenSpan cap_type(CContext& ctx, TokenSpan body);
 using cap_targ_list    = CaptureAnon<Ref<match_targ_list>,   CNodeList>;
 using cap_statement    = CaptureAnon<Ref<match_statement>,   CNodeList>;
 using cap_exp_list     = CaptureAnon<Ref<match_exp_list>,    CNodeList>;
-using cap_expression   = Ref<match_expression>;
-using cap_expstatement = CaptureAnon<Ref<match_expression>,  CNodeExpStatement>;
+
 using cap_access       = CaptureAnon<Ref<match_access>,      CNodeAccess>;
 using cap_call         = CaptureAnon<Ref<match_call>,        CNodeCall>;
 using cap_decl_list    = CaptureAnon<Ref<match_decl_list>,   CNodeList>;
@@ -518,7 +517,7 @@ TokenSpan match_ternary_op(CContext& ctx, TokenSpan body) {
   using pattern =
   Seq<
     Ref<match_binary_op<"?">>,
-    Opt<comma_separated<cap_expression>>,
+    Opt<comma_separated<Ref<cap_expression>>>,
     Ref<match_binary_op<":">>
   >;
   return pattern::match(ctx, body);
@@ -604,7 +603,7 @@ a + (b - c) because of left-to-right associativity of addition and
 subtraction.
 */
 
-TokenSpan match_expression(CContext& ctx, TokenSpan body) {
+TokenSpan cap_expression(CContext& ctx, TokenSpan body) {
   auto old_tail = ctx.top_tail;
   TokenSpan rest;
 
@@ -730,7 +729,7 @@ TokenSpan match_exp_list(CContext& ctx, TokenSpan body) {
   using pattern =
   DelimitedList<
     Tag<"ldelim", cap_punct<"(">>,
-    Tag<"exp",    cap_expression>,
+    Tag<"exp",    Ref<cap_expression>>,
     cap_punct<",">,
     Tag<"rdelim", cap_punct<")">>
   >;
@@ -741,7 +740,7 @@ TokenSpan match_index_list(CContext& ctx, TokenSpan body) {
   using pattern =
   DelimitedList<
     Tag<"ldelim", cap_punct<"[">>,
-    Tag<"exp",    cap_expression>,
+    Tag<"exp",    Ref<cap_expression>>,
     cap_punct<",">,
     Tag<"rdelim", cap_punct<"]">>
   >;
@@ -776,7 +775,7 @@ TokenSpan match_targ_list(CContext& ctx, TokenSpan body) {
   tail = Tag<"ldelim", cap_punct<"<">>::match(ctx, body);
   if (!tail.is_valid()) return tail;
 
-  tail = comma_separated<Tag<"arg", cap_expression>>::match(ctx, tight_span);
+  tail = comma_separated<Tag<"arg", Ref<cap_expression>>>::match(ctx, tight_span);
   if (!tail.is_valid()) return tail;
   if (!tail.is_empty()) return body.fail();
 
@@ -859,7 +858,7 @@ TokenSpan match_declaration(CContext& ctx, TokenSpan body) {
     Any<Tag<"array", cap_index_list>>,
     Opt<Seq<
       Tag<"eq", cap_punct<"=">>,
-      Tag<"value",   cap_expression>
+      Tag<"value",   Ref<cap_expression>>
     >>
   >;
   return pattern::match(ctx, body);
@@ -1020,7 +1019,7 @@ TokenSpan match_enumerator(CContext& ctx, TokenSpan body) {
     Tag<"name",    cap_identifier>,
     Opt<Seq<
       Tag<"eq",    cap_punct<"=">>,
-      Tag<"value", cap_expression>
+      Tag<"value", Ref<cap_expression>>
     >>
   >;
   return pattern::match(ctx, body);
@@ -1056,7 +1055,7 @@ TokenSpan match_enum(CContext& ctx, TokenSpan body) {
     Tag<"body", CaptureAnon<Ref<match_enumerator_list>, CNodeList>>,
     Opt<
       comma_separated<
-        Tag<"decl", cap_expression>
+        Tag<"decl", Ref<cap_expression>>
       >
     >
   >;
@@ -1154,7 +1153,7 @@ TokenSpan match_for(CContext& ctx, TokenSpan body) {
   using exp_or_decl =
   Oneof<
     Ref<cap_assignment>,
-    Ref<match_expression>,
+    Ref<cap_expression>,
     Ref<match_declaration>
   >;
 
@@ -1164,9 +1163,9 @@ TokenSpan match_for(CContext& ctx, TokenSpan body) {
     Tag<"ldelim",    cap_punct<"(">>,
     Tag<"init",      CaptureAnon<Opt<exp_or_decl>, CNodeList>>,
     cap_punct<";">,
-    Tag<"condition", Opt<cap_expression>>,
+    Tag<"condition", Opt<Ref<cap_expression>>>,
     cap_punct<";">,
-    Tag<"step",      Opt<cap_expression>>,
+    Tag<"step",      Opt<Ref<cap_expression>>>,
     Tag<"rdelim",    cap_punct<")">>,
     Tag<"body",      cap_statement>
   >;
@@ -1200,7 +1199,8 @@ TokenSpan match_return(CContext& ctx, TokenSpan body) {
   using pattern =
   Seq<
     Tag<"return", cap_keyword<"return">>,
-    Opt<Tag<"value", cap_expression>>
+    Opt<Tag<"value", Ref<cap_expression>>>,
+    Tag<"semi", cap_punct<";">>
   >;
   return pattern::match(ctx, body);
 }
@@ -1234,7 +1234,7 @@ TokenSpan match_case(CContext& ctx, TokenSpan body) {
   using pattern =
   Seq<
     Tag<"case",      cap_keyword<"case">>,
-    Tag<"condition", cap_expression>,
+    Tag<"condition", Ref<cap_expression>>,
     Tag<"colon",     cap_punct<":">>,
     Opt<Ref<match_case_body>>
   >;
@@ -1265,7 +1265,7 @@ TokenSpan match_switch(CContext& ctx, TokenSpan body) {
   using pattern =
   Seq<
     Tag<"switch",     cap_keyword<"switch">>,
-    Tag<"condition",  cap_expression>,
+    Tag<"condition",  Ref<cap_expression>>,
     Tag<"ldelim",     cap_punct<"{">>,
     Any<
       Tag<"case", cap_case>,
@@ -1415,14 +1415,84 @@ TokenSpan cap_assignment(CContext& ctx, TokenSpan body) {
   using pattern =
   CaptureAnon<
     Seq<
-      Tag<"lhs", cap_any_identifier>,
-      Tag<"op",  cap_assignment_op>,
-      Tag<"rhs", cap_expression>
+      Tag<"lhs",  cap_any_identifier>,
+      Tag<"op",   cap_assignment_op>,
+      Tag<"rhs",  Ref<cap_expression>>//,
+      //Tag<"semi", cap_punct<";">>
     >,
     CNodeAssignment
   >;
   return pattern::match(ctx, body);
 }
+
+
+TokenSpan cap_assign_stmt(CContext& ctx, TokenSpan body) {
+  using pattern =
+  CaptureAnon<
+    Seq<
+      Tag<"exp", Ref<cap_assignment>>,
+      Tag<"semi", cap_punct<";">>
+    >,
+    CNodeExpStatement
+  >;
+  return pattern::match(ctx, body);
+}
+
+TokenSpan cap_break_stmt(CContext& ctx, TokenSpan body) {
+  using pattern =
+  CaptureAnon<
+    Seq<
+      Tag<"exp",  cap_keyword<"break">>,
+      Tag<"semi", cap_punct<";">>
+    >,
+    CNodeExpStatement
+  >;
+  return pattern::match(ctx, body);
+}
+
+TokenSpan cap_continue_stmt(CContext& ctx, TokenSpan body) {
+  using pattern =
+  CaptureAnon<
+    Seq<
+      Tag<"exp",  cap_keyword<"continue">>,
+      Tag<"semi", cap_punct<";">>
+    >,
+    CNodeExpStatement
+  >;
+  return pattern::match(ctx, body);
+}
+
+TokenSpan cap_decl_stmt(CContext& ctx, TokenSpan body) {
+  using pattern =
+  CaptureAnon<
+    Seq<
+      Tag<"exp",  cap_declaration>,
+      Tag<"semi", cap_punct<";">>
+    >,
+    CNodeExpStatement
+  >;
+  return pattern::match(ctx, body);
+}
+
+template<typename P>
+using statement_wrapper =
+CaptureAnon<
+  Seq<
+    Tag<"exp",  P>,
+    Tag<"semi", cap_punct<";">>
+  >,
+  CNodeExpStatement
+>;
+
+using cap_expstatement =
+CaptureAnon<
+  Seq<
+    Tag<"exp", Ref<cap_expression>>,
+    Tag<"semi", cap_punct<";">>
+  >,
+  CNodeExpStatement
+>;
+
 
 //------------------------------------------------------------------------------
 
@@ -1439,11 +1509,11 @@ TokenSpan match_statement(CContext& ctx, TokenSpan body) {
     // FIXME semis need to go back in the statement captures...
 
     Seq<cap_do_while,            cap_punct<";">>,
-    Seq<cap_return,              cap_punct<";">>,
-    Seq<cap_keyword<"break">,    cap_punct<";">>,
-    Seq<cap_keyword<"continue">, cap_punct<";">>,
-    Seq<Ref<cap_assignment>,     cap_punct<";">>,
-    Seq<cap_expstatement,        cap_punct<";">>,
+    cap_return,
+    Ref<cap_break_stmt>,
+    Ref<cap_continue_stmt>,
+    Ref<cap_assign_stmt>,
+    cap_expstatement,
     Seq<cap_declaration,         cap_punct<";">>,
     cap_punct<";">
   >;

@@ -214,6 +214,9 @@ int main_new(Options opts) {
       }
 
       LOG_G("Tracing done for %.*s\n", int(name.size()), name.data());
+
+      top_inst->dump_tree();
+
       top_inst->commit_state();
       delete top_inst;
     }

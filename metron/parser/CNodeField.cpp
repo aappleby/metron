@@ -364,7 +364,6 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode n) {
 
 Err CNodeField::emit_component(Cursor& cursor) {
   Err err;
-  dump_debug();
 
   err << cursor.skip_to(node_type);
   err << cursor.emit(node_type);
@@ -398,8 +397,6 @@ Err CNodeField::emit_component(Cursor& cursor) {
       int param_count = dst_template->params.size();
       int arg_count = args->items.size();
       assert(param_count == arg_count);
-      //int arg_count =
-      //dump_debug();
 
       for (int i = 0; i < param_count; i++) {
         auto param = dst_template->params[i];

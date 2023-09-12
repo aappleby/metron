@@ -13,7 +13,7 @@ void CNodeDeclaration::init(const char* match_tag, SpanType span, uint64_t flags
   node_name   = child("name")->as<CNodeIdentifier>();
   node_array  = child("array")->as<CNodeList>();
   node_eq     = child("eq")->as<CNodePunct>();
-  node_value  = child("value")->as<CNodeExpression>();
+  node_value  = child("value")->as<CNode>();
 }
 
 //------------------------------------------------------------------------------
@@ -88,6 +88,7 @@ Err CNodeDeclaration::emit(Cursor& cursor) {
 
 CHECK_RETURN Err CNodeDeclaration::trace(CCall* call) {
   Err err;
+  dump_debug();
   if (node_value) {
     err << node_value->trace(call);
   }

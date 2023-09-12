@@ -4213,10 +4213,6 @@ class toplevel {
 
 // Modules can contain other modules.
 
-<<<<<<< HEAD
-template<int width = 7>
-=======
->>>>>>> 7753174d (submod template/constructor args look ok, but we broke structs_as_ports)
 class Submod {
 public:
 
@@ -4240,13 +4236,6 @@ private:
 class Module {
 public:
 
-<<<<<<< HEAD
-  void tock() {
-    submod.tock();
-  }
-
-  Submod<2> submod;
-=======
   Module() : submod(2) {
   }
 
@@ -4255,7 +4244,6 @@ public:
   }
 
   Submod submod;
->>>>>>> 7753174d (submod template/constructor args look ok, but we broke structs_as_ports)
 };
 class Adder {
 public:

@@ -94,10 +94,20 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   }
 
   template <typename P>
-  P* must_be() {
-    auto result = dynamic_cast<P*>(this);
-    assert(result);
-    return result;
+  P* opt() {
+    auto result1 = dynamic_cast<CNode*>(this);
+    if (result1 == nullptr) return nullptr;
+
+    auto result2 = dynamic_cast<P*>(this);
+    assert(result2);
+    return result2;
+  }
+
+  template <typename P>
+  P* req() {
+    auto result2 = dynamic_cast<P*>(this);
+    assert(result2);
+    return result2;
   }
 
   //----------------------------------------

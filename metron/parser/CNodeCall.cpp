@@ -5,9 +5,9 @@
 //------------------------------------------------------------------------------
 
 void CNodeCall::init(const char* match_tag, SpanType span, uint64_t flags) {
-  node_name  = child("func_name");
-  node_targs = child("func_targs")->as<CNodeList>();
-  node_args  = child("func_args")->as<CNodeList>();
+  node_name  = child("func_name")->req<CNode>();
+  node_targs = child("func_targs")->opt<CNodeList>();
+  node_args  = child("func_args")->req<CNodeList>();
 }
 
 //------------------------------------------------------------------------------

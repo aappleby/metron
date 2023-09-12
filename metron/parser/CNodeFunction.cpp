@@ -20,12 +20,12 @@ std::string_view CNodeFunction::get_name() const {
 void CNodeFunction::init(const char* match_tag, SpanType span, uint64_t flags) {
   CNode::init(match_tag, span, flags);
 
-  node_type   = child("return_type")->as<CNodeType>();
-  node_name   = child("name");
-  node_params = child("params")->must_be<CNodeList>();
-  node_init   = child("init")->as<CNodeList>();
-  node_const  = child("const")->as<CNodeKeyword>();
-  node_body   = child("body")->must_be<CNodeCompound>();
+  node_type   = child("return_type")->req<CNodeType>();
+  node_name   = child("name")->req<CNodeIdentifier>();
+  node_params = child("params")->req<CNodeList>();
+  node_init   = child("init")->opt<CNodeList>();
+  node_const  = child("const")->opt<CNodeKeyword>();
+  node_body   = child("body")->req<CNodeCompound>();
 
   for (auto c : child("params")) {
     if (auto param = c->as<CNodeDeclaration>()) {

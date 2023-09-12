@@ -48,7 +48,7 @@ struct CNodeDeclaration : public CNode {
   CNodeIdentifier* node_name = nullptr;
   CNodeList*       node_array = nullptr;
   CNodePunct*      node_eq = nullptr;
-  CNodeExpression* node_value = nullptr;
+  CNode*           node_value = nullptr;
 
   CNodeClass*  _type_class = nullptr;
   CNodeStruct* _type_struct = nullptr;

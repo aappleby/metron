@@ -1,48 +1,96 @@
 `include "metron/tools/metron_tools.sv"
 
-// Modules can contain other modules.
+// Structs can be used as input/output ports to submodules.
+// ...but they have to be public member variables because Yosys...
 
-module Submod (
-  // global clock
-  input logic clock,
-  // tock() ports
-  output int tock_ret
-);
-/*public:*/
+package TL;
+  /*const*/ int PutFullData = 0;
+  /*const*/ int PutPartialData = 1;
+  /*const*/ int Get = 4;
+  /*const*/ int AccessAck = 0;
+  /*const*/ int AccessAckData = 1;
+endpackage;
 
-  parameter width = 7;
-  initial begin
-  end
+typedef struct packed {
+  logic[2:0]  a_opcode;
+  logic[31:0] a_address;
+  logic[3:0]  a_mask;
+  logic[31:0] a_data;
+  logic  a_valid;
+} tilelink_a;
 
-  always_comb begin : tock
-    /*tick()*/;
-    tock_ret = 1;
-  end
+typedef struct packed {
+  logic[2:0]  d_opcode;
+  logic[31:0] d_data;
+  logic  d_valid;
+} tilelink_d;
 
-/*private:*/
+//------------------------------------------------------------------------------
 
-  always_ff @(posedge clock) begin : tick
-    sub_reg <= sub_reg + 1;
-  end
-
-  logic[7:0] sub_reg;
-endmodule
-
-module Module (
+module TilelinkDevice (
   // global clock
   input logic clock
 );
 /*public:*/
 
-  initial begin
-  end
+  {{10CNodeField}};
+  {{10CNodeField}};
 
   always_comb begin : tock
-    submod_tock_ret;
+    {{7CNodeIf}}
   end
 
-  Submod submod #(
-    // Constructor Parameters
-    .width(2)
-  );
+  always_ff @(posedge clock) begin : tick
+    {{7CNodeIf}}
+  end
+
+/*private:*/
+  logic[31:0] test_reg;
+  logic  oe;
+endmodule
+
+//------------------------------------------------------------------------------
+
+module TilelinkCPU (
+  // global clock
+  input logic clock
+);
+/*public:*/
+
+  {{10CNodeField}};
+  {{10CNodeField}};
+
+  always_comb begin : tock
+    {{7CNodeIf}}
+  end
+
+  always_ff @(posedge clock) begin : tick
+    {{7CNodeIf}}
+  end
+
+/*private:*/
+  logic[31:0] addr;
+  logic[31:0] data;
+endmodule
+
+//------------------------------------------------------------------------------
+
+module Top (
+  // global clock
+  input logic clock
+);
+/*public:*/
+  always_comb begin : tock
+    /*cpu.tock()*/;
+    /*dev.tock()*/;
+
+    cpu_tld  = dev_tld;
+    dev_tla  = cpu_tla;
+
+    /*cpu.tick()*/;
+    /*dev.tick()*/;
+  end
+
+  TilelinkCPU cpu;
+  TilelinkDevice dev;
 endmodule

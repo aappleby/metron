@@ -88,7 +88,6 @@ Err CNodeDeclaration::emit(Cursor& cursor) {
 
 CHECK_RETURN Err CNodeDeclaration::trace(CCall* call) {
   Err err;
-  dump_debug();
   if (node_value) {
     err << node_value->trace(call);
   }

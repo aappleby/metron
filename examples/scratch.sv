@@ -8,8 +8,11 @@ module Submod (
   // tock() ports
   output int tock_ret
 );
-  {{template parameter list}}
 /*public:*/
+
+  parameter width = 7;
+  initial begin
+  end
 
   always_comb begin : tock
     /*tick()*/;
@@ -23,7 +26,7 @@ module Submod (
   end
 
   logic[7:0] sub_reg;
-endmodule;
+endmodule
 
 module Module (
   // global clock
@@ -31,9 +34,15 @@ module Module (
 );
 /*public:*/
 
+  initial begin
+  end
+
   always_comb begin : tock
     submod_tock_ret;
   end
 
-  Submod<2> submod;
+  Submod submod #(
+    // Constructor Parameters
+    .width(2)
+  );
 endmodule

@@ -2,10 +2,10 @@
 
 #include "CContext.hpp"
 #include "CNode.hpp"
+#include "NodeTypes.hpp"
 
 struct CSourceFile;
 struct CSourceRepo;
-struct CNodeField;
 
 //------------------------------------------------------------------------------
 

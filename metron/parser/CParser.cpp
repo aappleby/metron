@@ -1087,22 +1087,34 @@ TokenSpan match_constructor(CContext& ctx, TokenSpan body) {
 
   using initializers = Seq<
     cap_punct<":">,
-    comma_separated<
-      Seq<
-        Tag<"name",  cap_identifier>,
-        Tag<"value", cap_exp_list>
+    Tag<
+      "init",
+      CaptureAnon<
+        comma_separated<
+          Tag<"item",
+            CaptureAnon<
+              Seq<
+                Tag<"name", cap_identifier>,
+                Tag<"value", cap_exp_list>
+              >,
+              CNode
+            >
+          >
+        >,
+        CNodeList
       >
     >
   >;
 
-  using cap_class_name = CaptureAnon<Ref<&CContext::match_class_name>, CNodeClassType>;
+  using cap_class_name = CaptureAnon<Ref<&CContext::match_class_name>, CNodeIdentifier>;
 
 
   using pattern =
   Seq<
     Tag<"name",   cap_class_name>,
     Tag<"params", cap_decl_list>,
-    Tag<"init",   CaptureAnon<Opt<initializers>, CNodeList>>,
+    Opt<initializers>,
+    //Opt<Tag<"init", initializers>>,
     Tag<"body",   cap_compound>
   >;
   // clang-format om

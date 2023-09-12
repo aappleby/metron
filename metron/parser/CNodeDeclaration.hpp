@@ -3,11 +3,7 @@
 #include "CNode.hpp"
 #include "Cursor.hpp"
 
-struct CNodeType;
-struct CNodeKeyword;
-struct CNodeIdentifier;
-struct CNodePunct;
-struct CNodeExpression;
+#include "NodeTypes.hpp"
 
 //==============================================================================
 //

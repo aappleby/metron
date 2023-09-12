@@ -3,12 +3,7 @@
 #include "CNode.hpp"
 #include "Cursor.hpp"
 #include "metron/tools/MtUtils.h"
-
-struct CNodeKeyword;
-struct CNodeIdentifier;
-struct CNodeList;
-struct CNodePunct;
-struct CNodeExpression;
+#include "NodeTypes.hpp"
 
 //------------------------------------------------------------------------------
 
@@ -39,7 +34,7 @@ struct CNodeField : public CNode {
 
   CNodeKeyword*    node_static = nullptr;
   CNodeKeyword*    node_const = nullptr;
-  CNode*           node_type = nullptr;
+  CNodeType*       node_type = nullptr;
   CNodeIdentifier* node_name = nullptr;
   CNodeList*       node_array = nullptr;
   CNodePunct*      node_eq = nullptr;

@@ -5,7 +5,7 @@
 #include "CNode.hpp"
 #include "Cursor.hpp"
 
-struct CNodeList;
+#include "NodeTypes.hpp"
 
 //------------------------------------------------------------------------------
 

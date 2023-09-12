@@ -8,13 +8,10 @@
 
 #include "metrolib/core/Err.h"
 #include "CInstance.hpp"
+#include "NodeTypes.hpp"
 
 class CSourceFile;
-class CNodeClass;
-class CNodeStruct;
-class CNodeNamespace;
-struct CNodeEnum;
-class CNode;
+struct CNode;
 
 //------------------------------------------------------------------------------
 

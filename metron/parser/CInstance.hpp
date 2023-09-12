@@ -13,15 +13,6 @@
 #include <assert.h>
 #include <typeinfo>
 
-struct CNode;
-struct CNodeCall;
-struct CNodeClass;
-struct CNodeDeclaration;
-struct CNodeField;
-struct CNodeFunction;
-struct CNodeStruct;
-struct CNodeType;
-
 struct CInstance;
 struct CInstClass;
 struct CInstStruct;

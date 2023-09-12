@@ -199,74 +199,6 @@ Err CNodeClass::build_call_graph(CSourceRepo* repo) {
 
 //------------------------------------------------------------------------------
 
-#if 0
-CNode* CNodeClass::resolve(CNode* name) {
-  if (!name) {
-    assert(false);
-    return nullptr;
-  }
-
-  //----------
-
-  if (auto punct = name->as<CNodePunct>()) {
-    return resolve(name->node_next);
-  }
-
-  if (auto field = name->as<CNodeFieldExpression>()) {
-    return resolve(name->child_head);
-  }
-
-  if (auto qual = name->as<CNodeQualifiedIdentifier>()) {
-    return resolve(name->child_head);
-  }
-
-  //----------
-
-  if (auto id = name->as<CNodeIdentifier>()) {
-    if (auto func = get_function(name->get_name())) {
-      return func;
-    }
-    else if (auto field = get_field(name->get_name())) {
-      if (field->node_next) {
-        auto field_class = repo->get_class(field->get_type_name());
-        return field_class->resolve(name->node_next);
-      }
-      else {
-        return field;
-      }
-    }
-    else {
-      return nullptr;
-    }
-  }
-
-  //----------
-
-  /*
-  if (auto id = name->as<CNodeIdentifier>()) {
-    if (name->tag_is("scope")) {
-      assert(false);
-      return nullptr;
-    }
-
-    if (name->tag_is("field_path")) {
-      auto field = get_field(name->get_text());
-    }
-
-    //printf("### %s ###\n", name->match_tag);
-    return get_function(name->get_name());
-  }
-  */
-
-  //----------
-
-  assert(false && "Could not resolve function name");
-  return nullptr;
-}
-#endif
-
-//------------------------------------------------------------------------------
-
 bool CNodeClass::needs_tick() {
   for (auto f : all_functions) {
     if (f->method_type == MT_TICK) return true;
@@ -444,71 +376,25 @@ Err CNodeClass::emit_field_ports(CNodeField* f, Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-/*
-CHECK_RETURN Err MtCursor::emit_template_params_as_modparams(MnNode n) {
-  Err err;
-  push_cursor(n);
-
-  for (auto c : n) {
-    switch (c.sym) {
-      case anon_sym_LT:
-      case anon_sym_GT:
-      case anon_sym_COMMA:
-        err << skip_over(c);
-        err << skip_ws_inside(n);
-        break;
-
-      case sym_optional_parameter_declaration:
-        err << emit_optional_param_as_modparam(c);
-        err << emit_ws_inside(n);
-        break;
-
-      case sym_parameter_declaration:
-        err << ERR("Parameter '%s' must have a default value\n", c.text().c_str());
-        break;
-
-      default:
-        err << emit_dispatch(c);
-        err << emit_ws_inside(n);
-        break;
-    }
-  }
-
-  err << start_line();
-  pop_cursor();
-  return err;
-}
-
-[000.034] __{{template_parameter_list}} ▆ decl : CNodeDeclaration =
-[000.034]  ┣━━╸▆ type : CNodeBuiltinType =
-[000.034]  ┃   ┗━━╸▆ name : CNodeIdentifier = "int"
-[000.034]  ┣━━╸▆ name : CNodeIdentifier = "width"
-[000.034]  ┣━━╸▆ eq : CNodePunct = "="
-[000.035]  ┗━━╸▆ value : CNodeConstInt = "7"
-
-*/
-
 Err CNodeClass::emit_template_parameter_list(Cursor& cursor) {
   Err err;
 
   auto node_template = ancestor<CNodeTemplate>();
-  if (node_template) {
-    err << cursor.emit_char('\n');
-    err << cursor.emit_indent();
-    err << cursor.emit_print("{{template parameter list}}");
-    for (auto param : node_template->params) {
-      param->dump_debug();
-      err << cursor.start_line();
-      err << cursor.skip_to(param->node_name);
-      err << cursor.emit(param->node_name);
-      err << cursor.emit_gap_after(param->node_name);
-      err << cursor.emit(param->node_array);
-      err << cursor.emit_gap_after(param->node_array);
-      err << cursor.emit(param->node_value);
-      err << cursor.emit_gap_after(param->node_value);
+  if (!node_template) return err;
 
-
+  err << cursor.emit_char('\n');
+  err << cursor.emit_indent();
+  for (auto param : node_template->params) {
+    err << cursor.start_line();
+    err << cursor.emit_print("parameter ");
+    err << cursor.emit_splice(param->node_name);
+    err << cursor.emit_print(" ");
+    if (param->node_array) {
+      err << cursor.emit_splice(param->node_array);
+      err << cursor.emit_print(" ");
     }
+    err << cursor.emit_splice(param->node_value);
+    err << cursor.emit_print(";");
   }
 
   return err;

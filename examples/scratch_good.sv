@@ -8,9 +8,11 @@ module Submod (
   // tock() ports
   output int tock_ret
 );
-  parameter width = 7;
-
 /*public*/
+
+  parameter width = 7;
+  initial begin
+  end
 
   always_comb begin : tock
     tock_ret = 1;
@@ -31,11 +33,14 @@ module Module (
 );
 /*public*/
 
+  initial begin
+  end
+
   always_comb begin : tock
   end
 
   Submod #(
-    // Template Parameters
+    // Constructor Parameters
     .width(2)
   ) submod(
     // Global clock

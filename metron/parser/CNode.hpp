@@ -17,9 +17,6 @@
 #include <functional>
 
 struct Cursor;
-struct CNodeClass;
-struct CNodeStruct;
-struct CNodeField;
 struct CSourceRepo;
 
 struct CCall;

@@ -232,7 +232,7 @@ void CInstPrim::dump_tree() const {
 void CInstPrim::commit_state() {
   assert(node_field);
 
-  //node_field->dump_tree();
+  node_field->dump_tree();
 
   auto new_type = trace_state_to_field_type(state_stack.back());
 

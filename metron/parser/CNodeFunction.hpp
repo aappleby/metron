@@ -10,12 +10,7 @@
 #include <set>
 #include <functional>
 
-struct CNodeClass;
-struct CNodeCompound;
-struct CNodeIdentifier;
-struct CNodeList;
-struct CNodeKeyword;
-struct CNodeType;
+#include "NodeTypes.hpp"
 
 //------------------------------------------------------------------------------
 

@@ -1,7 +1,32 @@
 #pragma once
 
 #include "CNode.hpp"
-#include "Cursor.hpp"
+
+struct CNodeCall;
+struct CNodeClass;
+struct CNodeCompound;
+struct CNodeConstructor;
+struct CNodeDeclaration;
+struct CNodeEnum;
+struct CNodeExpression;
+struct CNodeField;
+struct CNodeFieldExpression;
+struct CNodeFunction;
+struct CNodeIdentifier;
+struct CNodeKeyword;
+struct CNodeList;
+struct CNodeNamespace;
+struct CNodePreproc;
+struct CNodePunct;
+struct CNodeQualifiedIdentifier;
+struct CNodeStatement;
+struct CNodeStruct;
+struct CNodeText;
+struct CNodeTranslationUnit;
+struct CNodeType;
+struct CNodeTypedef;
+
+struct Cursor;
 
 #include "CNodeCall.hpp"
 #include "CNodeClass.hpp"

@@ -33,6 +33,7 @@ struct CNodeStructType : public CNodeType {
 
 struct CNodeClassType : public CNodeType {
   std::string_view get_name() const override {
+    dump_debug();
     return child("name")->get_text();
   }
 };

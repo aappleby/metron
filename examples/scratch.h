@@ -2,9 +2,11 @@
 
 // Modules can contain other modules.
 
-template<int width = 7>
 class Submod {
 public:
+
+  Submod(int width = 7) {
+  }
 
   int tock() {
     tick();
@@ -23,9 +25,12 @@ private:
 class Module {
 public:
 
+  Module() : submod(2) {
+  }
+
   void tock() {
     submod.tock();
   }
 
-  Submod<2> submod;
+  Submod submod;
 };

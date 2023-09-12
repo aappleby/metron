@@ -5,16 +5,10 @@
 #include <assert.h>
 #include <vector>
 
-struct CNodeDeclaration;
-struct CNodeConstructor;
-struct CNodeFunction;
-struct CNodeEnum;
+#include "NodeTypes.hpp"
+
 struct CSourceRepo;
 struct CSourceFile;
-struct CNodeField;
-struct CNodeKeyword;
-struct CNodeList;
-struct CNodeIdentifier;
 
 //------------------------------------------------------------------------------
 

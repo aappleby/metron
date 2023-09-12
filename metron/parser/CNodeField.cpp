@@ -22,7 +22,7 @@ void CNodeField::init(const char* match_tag, SpanType span, uint64_t flags) {
 
   node_static = child("static")->as<CNodeKeyword>();
   node_const  = child("const")->as<CNodeKeyword>();
-  node_type   = child("type")->as<CNode>();
+  node_type   = child("type")->as<CNodeType>();
   node_name   = child("name")->as<CNodeIdentifier>();
   node_array  = child("array")->as<CNodeList>();
   node_eq     = child("eq")->as<CNodePunct>();
@@ -384,79 +384,77 @@ Err CNodeField::emit_component(Cursor& cursor) {
   bool has_constructor_params = dst_class->constructor && dst_class->constructor->params.size();
   bool has_template_params = dst_template != nullptr;
 
-
   if (has_template_params || has_constructor_params) {
-#if 0
-
-    err << emit_print(" #(");
-    indent.push(indent.top() + "  ");
+    err << cursor.emit_print(" #(");
+    cursor.indent_level++;
 
     // Emit template arguments as module parameters
     if (has_template_params) {
-      err << emit_line("// Template Parameters");
+      err << cursor.start_line();
+      err << cursor.emit_print("// Template Parameters");
 
-      auto template_args = node_type.get_field(field_arguments);
+      auto args = node_type->child("template_args")->as<CNodeList>();
 
-      std::vector<MnNode> params;
-      std::vector<MnNode> args;
+      int param_count = dst_template->params.size();
+      int arg_count = args->items.size();
+      assert(param_count == arg_count);
+      //int arg_count =
+      //dump_debug();
 
-      for (auto c : component_mod->mod_param_list) {
-        if (c.is_named() && !c.is_comment()) params.push_back(c);
-      }
+      for (int i = 0; i < param_count; i++) {
+        auto param = dst_template->params[i];
+        auto arg = args->items[i];
 
-      for (auto c : template_args) {
-        if (c.is_named() && !c.is_comment()) args.push_back(c);
-      }
+        auto param_name = param->get_name();
 
-      for (int param_index = 0; param_index < args.size(); param_index++) {
-        auto param = params[param_index];
-        auto arg = args[param_index];
-
-        err << emit_line(".%s(", param.name4().c_str());
-        err << emit_splice(arg);
-        err << emit_print("),");
+        err << cursor.start_line();
+        err << cursor.emit_print(".%.*s(", param_name.size(), param_name.data());
+        err << cursor.emit_splice(arg);
+        err << cursor.emit_print("),");
       }
     }
 
     // Emit constructor arguments as module parameters
     if (has_constructor_params) {
-      err << emit_line("// Constructor Parameters");
+      err << cursor.start_line();
+      err << cursor.emit_print("// Constructor Parameters");
 
-      // The parameter names come from the submodule's constructor
-      const auto& params = component_mod->constructor->param_nodes;
+      auto params = dst_class->constructor->params;
+
+      //for (auto param: dst_class->constructor->params) {
+      //}
 
       // Find the initializer node for the component and extract arguments
-      std::vector<MnNode> args;
-      if (current_mod.top()->constructor) {
-        for(auto initializer : current_mod.top()->constructor->_node.child_by_sym(sym_field_initializer_list)) {
-          if (initializer.sym != sym_field_initializer) continue;
-          if (initializer.child_by_sym(alias_sym_field_identifier).text() == inst_name) {
-            for (auto c : initializer.child_by_sym(sym_argument_list)) {
-              if (c.is_named()) args.push_back(c);
-            }
-            break;
-          }
+      assert(src_class->constructor->node_init);
+      CNodeList* args = nullptr;
+      for (auto init : src_class->constructor->node_init->items) {
+        if (init->child("name")->get_text() == node_name->get_text()) {
+          args = init->child("value")->as<CNodeList>();
         }
       }
 
-      for (int param_index = 0; param_index < args.size(); param_index++) {
-        auto param = params[param_index];
-        auto arg = args[param_index];
+      assert(params.size() == args->items.size());
 
-        err << emit_line(".%s(", param.name4().c_str());
-        err << emit_splice(arg);
-        err << emit_print("),");
+      for (auto i = 0; i < params.size(); i++) {
+        auto param = params[i];
+        auto arg = args->items[i];
+        auto param_name = param->get_name();
+
+        err << cursor.start_line();
+        err << cursor.emit_print(".%.*s(", param_name.size(), param_name.data());
+        err << cursor.emit_splice(arg);
+        err << cursor.emit_print("),");
       }
     }
-    indent.pop();
 
     // Remove trailing comma from port list
-    if (at_comma) {
-      err << emit_backspace();
+    if (cursor.at_comma) {
+      err << cursor.emit_backspace();
     }
 
-    err << emit_line(")");
-#endif
+    cursor.indent_level--;
+    err << cursor.start_line();
+    err << cursor.emit_print(")");
   }
 
 #if 0

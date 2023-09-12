@@ -15,6 +15,7 @@ struct CNodeCompound;
 struct CNodeIdentifier;
 struct CNodeList;
 struct CNodeKeyword;
+struct CNodeType;
 
 //------------------------------------------------------------------------------
 

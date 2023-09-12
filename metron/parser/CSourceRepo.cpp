@@ -1,9 +1,6 @@
 #include "CSourceRepo.hpp"
 
-#include "CNodeClass.hpp"
-#include "CNodeField.hpp"
-#include "CNodeFunction.hpp"
-#include "CNodeStruct.hpp"
+#include "NodeTypes.hpp"
 #include "CSourceFile.hpp"
 #include "matcheroni/Utilities.hpp"
 #include "metrolib/core/Log.h"

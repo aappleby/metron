@@ -1,10 +1,6 @@
 #include "CNodeCall.hpp"
 
-#include "CNodeClass.hpp"
-#include "CNodeFunction.hpp"
-#include "CInstance.hpp"
 #include "NodeTypes.hpp"
-#include "CNodeField.hpp"
 
 //------------------------------------------------------------------------------
 
@@ -218,21 +214,40 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
 }
 */
 
-//[000.066]  ┣━━╸▆ func_name : CNodeIdentifier = "my_func5"
-//[000.066]  ┗━━╸▆ func_args : CNodeList =
-//[000.066]      ┣━━╸▆ ldelim : CNodePunct = "("
-//[000.066]      ┣━━╸▆ exp : CNodeIdentifier = "x"
-//[000.066]      ┗━━╸▆ rdelim : CNodePunct = ")"
-
 Err CNodeCall::emit(Cursor& cursor) {
+
   Err err;
 
-  dump_tree();
-
-  auto node_class = ancestor<CNodeClass>();
+  auto src_class = ancestor<CNodeClass>();
   auto src_func = ancestor<CNodeFunction>();
 
-  //dump_tree();
+  if (auto func_path = node_name->as<CNodeFieldExpression>()) {
+    // We don't actually "call" into submodules, so we can just comment this
+    // call out.
+
+    auto field_name = func_path->node_path->get_text();
+    auto func_name  = func_path->node_name->get_text();
+
+    auto src_field = src_class->get_field(field_name);
+    auto dst_class = src_class->repo->get_class(src_field->get_type_name());
+    auto dst_func  = dst_class->get_function(func_name);
+
+    auto rtype = dst_func->child("return_type");
+
+    if (rtype->get_text() == "void") {
+      err << cursor.comment_out(this);
+      err << cursor.emit_gap_after(this);
+      return err;
+    }
+    else {
+      err << cursor.emit_replacement(this,
+        "%.*s_%.*s_ret",
+        field_name.size(), field_name.data(),
+        func_name.size(), func_name.data());
+      return err;
+    }
+  }
+
 
   if (auto func_id = node_name->as<CNodeIdentifier>()) {
     auto func_name = func_id->get_textstr();
@@ -319,7 +334,7 @@ Err CNodeCall::emit(Cursor& cursor) {
     //----------
     // Not a special builtin call
 
-    auto dst_func = node_class->get_function(func_id->get_text());
+    auto dst_func = src_class->get_function(func_id->get_text());
     auto dst_params = dst_func->child("params");
 
     auto src_mtype = src_func->method_type;

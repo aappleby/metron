@@ -3,11 +3,6 @@
 #include "CSourceRepo.hpp"
 #include "CInstance.hpp"
 
-#include "CNodeClass.hpp"
-#include "CNodeExpression.hpp"
-#include "CNodeFunction.hpp"
-#include "CNodeStatement.hpp"
-#include "CNodeType.hpp"
 #include "NodeTypes.hpp"
 
 #if 0

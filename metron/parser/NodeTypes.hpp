@@ -3,6 +3,16 @@
 #include "CNode.hpp"
 #include "Cursor.hpp"
 
+#include "CNodeCall.hpp"
+#include "CNodeClass.hpp"
+#include "CNodeDeclaration.hpp"
+#include "CNodeExpression.hpp"
+#include "CNodeField.hpp"
+#include "CNodeFunction.hpp"
+#include "CNodeStatement.hpp"
+#include "CNodeStruct.hpp"
+#include "CNodeType.hpp"
+
 #include "metrolib/core/Log.h"
 #include "metron/tools/MtUtils.h"
 
@@ -67,13 +77,14 @@ struct CNodePunct : public CNode {
 
 struct CNodeFieldExpression : public CNode {
   void init(const char* match_tag, SpanType span, uint64_t flags);
+
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
   CHECK_RETURN Err emit(Cursor& c) override;
   CHECK_RETURN Err trace(CCall* call) override;
 
-  CNode* node_path = nullptr;
-  CNode* node_name = nullptr;
+  CNodeIdentifier* node_path = nullptr;
+  CNodeIdentifier* node_name = nullptr;
 };
 
 //------------------------------------------------------------------------------
@@ -116,6 +127,7 @@ struct CNodeTypedef : public CNode {
 
 struct CNodeList : public CNode {
   void init(const char* match_tag, SpanType span, uint64_t flags);
+
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
   CHECK_RETURN Err emit(Cursor& c) override;

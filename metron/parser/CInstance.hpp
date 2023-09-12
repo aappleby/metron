@@ -4,9 +4,8 @@
 #include "metrolib/core/Log.h"
 #include "metrolib/core/Platform.h"
 #include "metrolib/core/Err.h"
-#include "CNode.hpp"
 
-#include "CNodeField.hpp"
+#include "NodeTypes.hpp"
 
 #include <map>
 #include <vector>

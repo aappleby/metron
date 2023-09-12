@@ -12,6 +12,9 @@ struct CNodeEnum;
 struct CSourceRepo;
 struct CSourceFile;
 struct CNodeField;
+struct CNodeKeyword;
+struct CNodeList;
+struct CNodeIdentifier;
 
 //------------------------------------------------------------------------------
 
@@ -23,8 +26,16 @@ struct CNodeAccess : public CNode {
 //------------------------------------------------------------------------------
 
 struct CNodeTemplate : public CNode {
+  void init(const char* match_tag, SpanType span, uint64_t flags);
+
   uint32_t debug_color() const override { return 0x00FFFF; }
   CHECK_RETURN Err emit(Cursor& cursor) override;
+
+  CNodeKeyword* node_template = nullptr;
+  CNodeList*    node_params = nullptr;
+  CNodeClass*   node_class = nullptr;
+
+  std::vector<CNodeDeclaration*> params;
 };
 
 //------------------------------------------------------------------------------
@@ -63,8 +74,11 @@ struct CNodeClass : public CNode {
 
   void dump_fields();
 
-
   //----------------------------------------
+
+  CNodeKeyword*    node_class = nullptr;
+  CNodeIdentifier* node_name = nullptr;
+  CNodeList*       node_body = nullptr;
 
   CSourceRepo* repo = nullptr;
   CSourceFile* file = nullptr;
@@ -72,7 +86,7 @@ struct CNodeClass : public CNode {
 
   std::vector<CNodeFunction*>    top_functions;
 
-  std::vector<CNodeConstructor*> all_constructors;
+  CNodeConstructor* constructor = nullptr;
   std::vector<CNodeFunction*>    all_functions;
   std::vector<CNodeField*>       all_fields;
   std::vector<CNodeDeclaration*> all_modparams;

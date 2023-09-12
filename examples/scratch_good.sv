@@ -1,30 +1,47 @@
 `include "metron/tools/metron_tools.sv"
 
-// Private non-const methods should turn into SV tasks.
+// Modules can contain other modules.
 
-module Module (
+module Submod (
   // global clock
   input logic clock,
   // tock() ports
   output int tock_ret
 );
+  parameter width = 7;
+
 /*public*/
 
   always_comb begin : tock
-    tock_ret = 0;
+    tock_ret = 1;
   end
 
 /*private*/
 
   always_ff @(posedge clock) begin : tick
-    my_reg <= my_reg + my_reg2 + 3;
-    some_task2();
+    sub_reg <= sub_reg + 1;
   end
 
-  task automatic some_task2();
-    my_reg2 <= my_reg2 + 3;
-  endtask
+  logic[7:0] sub_reg;
+endmodule
 
-  logic[7:0] my_reg;
-  logic[7:0] my_reg2;
+module Module (
+  // global clock
+  input logic clock
+);
+/*public*/
+
+  always_comb begin : tock
+  end
+
+  Submod #(
+    // Template Parameters
+    .width(2)
+  ) submod(
+    // Global clock
+    .clock(clock),
+    // tock() ports
+    .tock_ret(submod_tock_ret)
+  );
+  int submod_tock_ret;
 endmodule

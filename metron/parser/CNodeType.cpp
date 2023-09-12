@@ -2,7 +2,6 @@
 
 #include "metrolib/core/Log.h"
 #include "NodeTypes.hpp"
-#include "CNodeExpression.hpp"
 
 uint32_t CNodeType::debug_color() const {
   return COL_VIOLET;
@@ -181,6 +180,9 @@ Err CNodeType::emit(Cursor& cursor) {
     err << CNode::emit(cursor);
   }
   else if (auto node_enum = as<CNodeEnumType>()) {
+    err << cursor.emit_default(this);
+  }
+  else if (auto node_class_type = as<CNodeClassType>()) {
     err << cursor.emit_default(this);
   }
   else {

@@ -1,14 +1,5 @@
 #include "CInstance.hpp"
 
-#include "CNodeCall.hpp"
-#include "CNodeClass.hpp"
-#include "CNodeDeclaration.hpp"
-#include "CNodeExpression.hpp"
-#include "CNodeField.hpp"
-#include "CNodeFunction.hpp"
-#include "CNodeStatement.hpp"
-#include "CNodeStruct.hpp"
-#include "CNodeType.hpp"
 #include "NodeTypes.hpp"
 
 //------------------------------------------------------------------------------

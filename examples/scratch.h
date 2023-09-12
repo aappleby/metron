@@ -1,26 +1,31 @@
 #include "metron/tools/metron_tools.h"
 
-// Private non-const methods should turn into SV tasks.
+// Modules can contain other modules.
 
-class Module {
+template<int width = 7>
+class Submod {
 public:
 
   int tock() {
     tick();
-    return 0;
+    return 1;
   }
 
 private:
 
   void tick() {
-    my_reg = my_reg + my_reg2 + 3;
-    some_task2();
+    sub_reg = sub_reg + 1;
   }
 
-  void some_task2() {
-    my_reg2 = my_reg2 + 3;
+  logic<8> sub_reg;
+};
+
+class Module {
+public:
+
+  void tock() {
+    submod.tock();
   }
 
-  logic<8> my_reg;
-  logic<8> my_reg2;
+  Submod<2> submod;
 };

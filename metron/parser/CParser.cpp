@@ -6,16 +6,7 @@
 #include "CConstants.hpp"
 #include "CContext.hpp"
 
-#include "CNode.hpp"
-#include "CNodeCall.hpp"
-#include "CNodeClass.hpp"
-#include "CNodeDeclaration.hpp"
-#include "CNodeExpression.hpp"
-#include "CNodeField.hpp"
-#include "CNodeFunction.hpp"
-#include "CNodeStatement.hpp"
-#include "CNodeStruct.hpp"
-#include "CNodeType.hpp"
+#include "NodeTypes.hpp"
 
 #include "CSourceFile.hpp"
 #include "CSourceRepo.hpp"
@@ -982,7 +973,7 @@ TokenSpan match_class(CContext& ctx, TokenSpan body) {
   // clang-format off
   using pattern =
   Seq<
-    cap_keyword<"class">,
+    Tag<"class", cap_keyword<"class">>,
     Tag<"name",  cap_class_type_name>,
     Tag<"body",  cap_field_list>
   >;

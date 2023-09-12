@@ -4,6 +4,12 @@
 #include "Cursor.hpp"
 #include "metron/tools/MtUtils.h"
 
+struct CNodeKeyword;
+struct CNodeIdentifier;
+struct CNodeList;
+struct CNodePunct;
+struct CNodeExpression;
+
 //------------------------------------------------------------------------------
 
 struct CNodeField : public CNode {
@@ -20,6 +26,8 @@ struct CNodeField : public CNode {
 
   void init(const char* match_tag, SpanType span, uint64_t flags);
 
+  Err emit_component(Cursor& cursor);
+
   std::string_view get_type_name() const;
 
   bool is_component() const;
@@ -28,6 +36,14 @@ struct CNodeField : public CNode {
   bool is_const_char() const;
 
   void dump();
+
+  CNodeKeyword*    node_static = nullptr;
+  CNodeKeyword*    node_const = nullptr;
+  CNode*           node_type = nullptr;
+  CNodeIdentifier* node_name = nullptr;
+  CNodeList*       node_array = nullptr;
+  CNodePunct*      node_eq = nullptr;
+  CNodeExpression* node_value = nullptr;
 
   FieldType field_type = FT_UNKNOWN;
 

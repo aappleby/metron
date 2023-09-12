@@ -1,7 +1,6 @@
 #include "CNodeStruct.hpp"
 
-#include "CNodeField.hpp"
-#include "CNodeFunction.hpp"
+#include "NodeTypes.hpp"
 #include "metrolib/core/Log.h"
 
 struct CSourceRepo;

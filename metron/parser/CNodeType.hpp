@@ -26,32 +26,32 @@ struct CNodeBuiltinType : public CNodeType {
 
 struct CNodeStructType : public CNodeType {
   std::string_view get_name() const override {
-    return get_text();
+    return child("name")->get_text();
   }
   CHECK_RETURN Err emit(Cursor& cursor) override;
 };
 
 struct CNodeClassType : public CNodeType {
   std::string_view get_name() const override {
-    return get_text();
+    return child("name")->get_text();
   }
 };
 
 struct CNodeUnionType : public CNodeType {
   std::string_view get_name() const override {
-    return get_text();
+    return child("name")->get_text();
   }
 };
 
 struct CNodeEnumType : public CNodeType {
   std::string_view get_name() const override {
-    return get_text();
+    return child("name")->get_text();
   }
 };
 
 struct CNodeTypedefType : public CNodeType {
   std::string_view get_name() const override {
-    return get_text();
+    return child("name")->get_text();
   }
 };
 

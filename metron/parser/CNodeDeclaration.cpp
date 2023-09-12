@@ -1,20 +1,35 @@
 #include "CNodeDeclaration.hpp"
 
-#include "CNodeType.hpp"
+#include "NodeTypes.hpp"
+
+//------------------------------------------------------------------------------
+
+void CNodeDeclaration::init(const char* match_tag, SpanType span, uint64_t flags) {
+  CNode::init(match_tag, span, flags);
+
+  node_static = child("static")->as<CNodeKeyword>();
+  node_const  = child("const")->as<CNodeKeyword>();
+  node_type   = child("type")->as<CNodeType>();
+  node_name   = child("name")->as<CNodeIdentifier>();
+  node_array  = child("array")->as<CNodeList>();
+  node_eq     = child("eq")->as<CNodePunct>();
+  node_value  = child("value")->as<CNodeExpression>();
+}
+
+//------------------------------------------------------------------------------
 
 uint32_t CNodeDeclaration::debug_color() const { return 0xFF00FF; }
 
 std::string_view CNodeDeclaration::get_name() const {
-  return child("name")->get_name();
+  return node_name->get_name();
 }
 
 std::string_view CNodeDeclaration::get_type_name() const {
-  auto decl_type = child<CNodeType>();
-  return decl_type->child_head->get_text();
+  return node_type->child_head->get_text();
 }
 
 bool CNodeDeclaration::is_array() const {
-  return child("array") != nullptr;
+  return node_array != nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -32,10 +47,9 @@ Err CNodeDeclaration::emit(Cursor& cursor) {
   Err err;
 
   // Check for const char*
-  if (child("const")) {
-    auto type = child<CNodeType>();
-    if (type->child("name")->get_text() == "char") {
-      if (type->child("star")) {
+  if (node_const) {
+    if (node_type->child("name")->get_text() == "char") {
+      if (node_type->child("star")) {
         return cursor.emit_replacement(this, "{{const char*}}");
       }
     }
@@ -74,8 +88,8 @@ Err CNodeDeclaration::emit(Cursor& cursor) {
 
 CHECK_RETURN Err CNodeDeclaration::trace(CCall* call) {
   Err err;
-  if (auto value = child("value")) {
-    err << value->trace(call);
+  if (node_value) {
+    err << node_value->trace(call);
   }
   return err;
 }

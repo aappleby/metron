@@ -1,12 +1,6 @@
 #include "NodeTypes.hpp"
 
 #include "CInstance.hpp"
-#include "CNodeClass.hpp"
-#include "CNodeType.hpp"
-#include "CNodeCall.hpp"
-#include "CNodeField.hpp"
-#include "CNodeStruct.hpp"
-#include "CNodeFunction.hpp"
 
 using namespace matcheroni;
 using namespace parseroni;
@@ -231,9 +225,11 @@ Err CNodePunct::trace(CCall* call) {
 
 void CNodeFieldExpression::init(const char* match_tag, SpanType span, uint64_t flags) {
   CNode::init(match_tag, span, flags);
-  node_path = child("field_path");
-  node_name = child("identifier");
+  node_path = child("field_path")->as<CNodeIdentifier>();
+  node_name = child("identifier")->as<CNodeIdentifier>();
 }
+
+//----------------------------------------
 
 uint32_t CNodeFieldExpression::debug_color() const { return 0x80FF80; }
 

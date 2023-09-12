@@ -1,10 +1,6 @@
 #include "CNodeFunction.hpp"
 
-#include "CNodeClass.hpp"
-#include "CNodeType.hpp"
-#include "CNodeStatement.hpp"
 #include "NodeTypes.hpp"
-#include "CNodeDeclaration.hpp"
 
 #include "metrolib/core/Log.h"
 #include "matcheroni/Utilities.hpp"
@@ -23,8 +19,6 @@ std::string_view CNodeFunction::get_name() const {
 
 void CNodeFunction::init(const char* match_tag, SpanType span, uint64_t flags) {
   CNode::init(match_tag, span, flags);
-
-  dump_tree();
 
   node_type   = child("return_type")->as<CNodeType>();
   node_name   = child("name");
@@ -92,7 +86,14 @@ Err CNodeFunction::emit_init(Cursor& cursor) {
     err << cursor.emit_print("parameter ");
     err << cursor.emit_splice(decl->child("name"));
     err << cursor.emit_print(" = ");
-    err << cursor.emit_splice(decl->child("value"));
+
+    auto constructor_param_value = decl->child("value");
+    if (!constructor_param_value) {
+      LOG_R("All constructor params must have default values\n");
+      assert(false);
+    }
+
+    err << cursor.emit_splice(constructor_param_value);
     err << cursor.emit_print(";");
   }
 

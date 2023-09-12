@@ -1,11 +1,7 @@
 #include "CNodeField.hpp"
 
 #include "NodeTypes.hpp"
-
-#include "CNodeClass.hpp"
-#include "CNodeStruct.hpp"
 #include "CInstance.hpp"
-#include "CNodeType.hpp"
 
 #include "metrolib/core/Log.h"
 
@@ -23,13 +19,20 @@ std::string_view CNodeField::get_name() const {
 
 void CNodeField::init(const char* match_tag, SpanType span, uint64_t flags) {
   CNode::init(match_tag, span, flags);
+
+  node_static = child("static")->as<CNodeKeyword>();
+  node_const  = child("const")->as<CNodeKeyword>();
+  node_type   = child("type")->as<CNode>();
+  node_name   = child("name")->as<CNodeIdentifier>();
+  node_array  = child("array")->as<CNodeList>();
+  node_eq     = child("eq")->as<CNodePunct>();
+  node_value  = child("value")->as<CNodeExpression>();
 }
 
 //------------------------------------------------------------------------------
 
 std::string_view CNodeField::get_type_name() const {
-  auto decl_type = child("type");
-  return decl_type->child_head->get_text();
+  return node_type->child_head->get_text();
 
   /*
   auto decl_type = child("type");
@@ -59,14 +62,10 @@ bool CNodeField::is_struct() const {
 }
 
 bool CNodeField::is_array() const {
-  return child("array") != nullptr;
+  return node_array != nullptr;
 }
 
 bool CNodeField::is_const_char() const {
-  auto node_static = child("static");
-  auto node_const  = child("const");
-  auto node_type   = child("type");
-
   if (node_static && node_const) {
     auto builtin = node_type->child("builtin_name");
     auto star    = node_type->child("star");
@@ -148,14 +147,6 @@ Err CNodeField::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
   bool in_namespace = ancestor<CNodeNamespace>() != nullptr;
-
-  auto node_static = child("static");
-  auto node_const  = child("const");
-  auto node_type   = child("type");
-  auto node_name   = child("name");
-  auto node_array  = child("array");
-  auto node_eq     = child("eq");
-  auto node_value  = child("value");
 
   if (is_const_char()) {
     err << cursor.skip_over(node_static);
@@ -258,11 +249,303 @@ Err CNodeField::emit(Cursor& cursor) {
 
 
   if (is_component()) {
-    return err << CNode::emit(cursor);
+    return emit_component(cursor);
   }
 
   //err << cursor.emit_default(this);
   err << CNode::emit(cursor);
+
+
+  return err << cursor.check_done(this);
+}
+
+//------------------------------------------------------------------------------
+
+#if 0
+//------------------------------------------------------------------------------
+// Emits the fields that come after a submod declaration
+
+// module my_mod(
+//   .foo(my_mod_foo)
+// );
+// logic my_mod_foo; <-- this part
+
+CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode n) {
+  Err err;
+
+  if (current_mod.top()->components.empty()) {
+    return err;
+  }
+
+  auto node_type = n.get_field(field_type);
+  auto node_decl = n.get_field(field_declarator);
+
+  auto component_name = node_decl.text();
+  auto component_cname = component_name.c_str();
+
+  std::string type_name = node_type.type5();
+  auto component_mod = lib->get_module(type_name);
+
+  // Swap template arguments with the values from the template
+  // instantiation.
+  std::map<std::string, std::string> replacements;
+
+  auto args = node_type.get_field(field_arguments);
+  if (args) {
+    int arg_count = args.named_child_count();
+    for (int i = 0; i < arg_count; i++) {
+      auto key = component_mod->all_modparams[i]->name();
+      auto val = args.named_child(i).text();
+      replacements[key] = val;
+    }
+  }
+
+  // FIXME clean this mess up
+
+  current_source.push(component_mod->source_file);
+  current_mod.push(component_mod);
+  id_map.push(replacements);
+
+  for (auto field : component_mod->input_signals) {
+    err << start_line();
+    err << emit_splice(field->get_type_node());
+    err << emit_print(" %s_", component_cname);
+    err << emit_splice(field->get_decl_node());
+    err << emit_print(";");
+  }
+
+  for (auto param : component_mod->input_method_params) {
+    err << start_line();
+    err << emit_splice(param->get_type_node());
+    err << emit_print(" %s_%s_", component_cname, param->func_name.c_str());
+    err << emit_splice(param->get_decl_node());
+    err << emit_print(";");
+  }
+
+  for (auto field : component_mod->output_signals) {
+    err << start_line();
+    err << emit_splice(field->get_type_node());
+    err << emit_print(" %s_", component_cname);
+    err << emit_splice(field->get_decl_node());
+    err << emit_print(";");
+  }
+
+  for (auto field : component_mod->output_registers) {
+    err << start_line();
+    err << emit_splice(field->get_type_node());
+    err << emit_print(" %s_", component_cname);
+    err << emit_splice(field->get_decl_node());
+    err << emit_print(";");
+  }
+
+  for (auto method : component_mod->output_method_returns) {
+    err << start_line();
+    err << emit_splice(method->_node.get_field(field_type));
+    err << emit_print(" %s_", component_cname);
+    err << emit_splice(method->_node.get_field(field_declarator).get_field(field_declarator));
+    err << emit_print("_ret;");
+  }
+
+  current_source.pop();
+  current_mod.pop();
+  id_map.pop();
+
+  return err;
+}
+#endif
+
+/*
+[000.029] __ ▆ CNodeField =
+[000.029]  ┣━━╸▆ type : CNodeClassType =
+[000.029]  ┃   ┗━━╸▆ name : CNodeIdentifier = "Submod"
+[000.029]  ┗━━╸▆ name : CNodeIdentifier = "submod"
+[000.029] {{10CNodeField}};\n
+*/
+
+Err CNodeField::emit_component(Cursor& cursor) {
+  Err err;
+  dump_debug();
+
+  err << cursor.skip_to(node_type);
+  err << cursor.emit(node_type);
+  err << cursor.emit_gap_after(node_type);
+  err << cursor.emit(node_name);
+  err << cursor.emit_gap_after(node_name);
+
+  auto src_class = ancestor<CNodeClass>();
+  auto repo = src_class->repo;
+  auto dst_class = repo->get_class(node_type->get_name());
+
+  auto dst_template = dst_class->node_parent->as<CNodeTemplate>();
+
+  //----------------------------------------
+  // Component modparams
+
+  bool has_constructor_params = dst_class->constructor && dst_class->constructor->params.size();
+  bool has_template_params = dst_template != nullptr;
+
+
+  if (has_template_params || has_constructor_params) {
+#if 0
+
+    err << emit_print(" #(");
+    indent.push(indent.top() + "  ");
+
+    // Emit template arguments as module parameters
+    if (has_template_params) {
+      err << emit_line("// Template Parameters");
+
+      auto template_args = node_type.get_field(field_arguments);
+
+      std::vector<MnNode> params;
+      std::vector<MnNode> args;
+
+      for (auto c : component_mod->mod_param_list) {
+        if (c.is_named() && !c.is_comment()) params.push_back(c);
+      }
+
+      for (auto c : template_args) {
+        if (c.is_named() && !c.is_comment()) args.push_back(c);
+      }
+
+      for (int param_index = 0; param_index < args.size(); param_index++) {
+        auto param = params[param_index];
+        auto arg = args[param_index];
+
+        err << emit_line(".%s(", param.name4().c_str());
+        err << emit_splice(arg);
+        err << emit_print("),");
+      }
+    }
+
+    // Emit constructor arguments as module parameters
+    if (has_constructor_params) {
+      err << emit_line("// Constructor Parameters");
+
+      // The parameter names come from the submodule's constructor
+      const auto& params = component_mod->constructor->param_nodes;
+
+      // Find the initializer node for the component and extract arguments
+      std::vector<MnNode> args;
+      if (current_mod.top()->constructor) {
+        for(auto initializer : current_mod.top()->constructor->_node.child_by_sym(sym_field_initializer_list)) {
+          if (initializer.sym != sym_field_initializer) continue;
+          if (initializer.child_by_sym(alias_sym_field_identifier).text() == inst_name) {
+            for (auto c : initializer.child_by_sym(sym_argument_list)) {
+              if (c.is_named()) args.push_back(c);
+            }
+            break;
+          }
+        }
+      }
+
+      for (int param_index = 0; param_index < args.size(); param_index++) {
+        auto param = params[param_index];
+        auto arg = args[param_index];
+
+        err << emit_line(".%s(", param.name4().c_str());
+        err << emit_splice(arg);
+        err << emit_print("),");
+      }
+    }
+    indent.pop();
+
+    // Remove trailing comma from port list
+    if (at_comma) {
+      err << emit_backspace();
+    }
+
+    err << emit_line(")");
+#endif
+  }
+
+#if 0
+  //----------------------------------------
+  // Component name
+
+  err << emit_gap(node_type, node_decl);
+  err << emit_dispatch(node_decl);
+
+  //----------------------------------------
+  // Port list
+
+  err << emit_print("(");
+
+  indent.push(indent.top() + "  ");
+
+  if (component_mod->needs_tick()) {
+    err << emit_line("// Global clock");
+    err << emit_line(".clock(clock),");
+  }
+
+  if (component_mod->input_signals.size()) {
+    err << emit_line("// Input signals");
+    for (auto f : component_mod->input_signals) {
+      err << emit_line(".%s(%s_%s),", f->cname(), inst_name.c_str(), f->cname());
+    }
+  }
+
+  if (component_mod->output_signals.size()) {
+    err << emit_line("// Output signals");
+    for (auto f : component_mod->output_signals) {
+      err << emit_line(".%s(%s_%s),", f->cname(), inst_name.c_str(), f->cname());
+    }
+  }
+
+  if (component_mod->output_registers.size()) {
+    err << emit_line("// Output registers");
+    for (auto f : component_mod->output_registers) {
+      err << emit_line(".%s(%s_%s),", f->cname(), inst_name.c_str(), f->cname());
+    }
+  }
+
+  for (auto m : component_mod->all_methods) {
+    if (m->is_constructor()) continue;
+    if (m->is_public() && m->internal_callers.empty()) {
+
+      if (m->param_nodes.size() || m->has_return()) {
+        err << emit_line("// %s() ports", m->cname());
+      }
+
+      int param_count = m->param_nodes.size();
+      for (int i = 0; i < param_count; i++) {
+        auto param = m->param_nodes[i];
+        auto node_type = param.get_field(field_type);
+        auto node_decl = param.get_field(field_declarator);
+
+        err << emit_line(".%s_%s(%s_%s_%s),", m->cname(), node_decl.text().c_str(), inst_name.c_str(), m->cname(), node_decl.text().c_str());
+      }
+
+      if (m->has_return()) {
+        auto node_type = m->_node.get_field(field_type);
+        auto node_decl = m->_node.get_field(field_declarator);
+        auto node_name = node_decl.get_field(field_declarator);
+
+        err << emit_line(".%s_ret(%s_%s_ret),", m->cname(), inst_name.c_str(), m->cname());
+      }
+    }
+  }
+
+  // Remove trailing comma from port list
+  if (at_comma) {
+    err << emit_backspace();
+  }
+
+  indent.pop();
+
+  err << emit_line(")");
+  err << emit_dispatch(node_semi);
+
+  return err << check_done(n);
+#endif
+
+
+
+
+
+
+
+  //err << emit_submod_binding_fields(n);
 
 
   return err << cursor.check_done(this);

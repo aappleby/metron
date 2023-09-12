@@ -86,12 +86,10 @@ int main_new(Options opts) {
         auto text = n->get_text();
         if (n->span.begin != n->child_head->span.begin) {
           LOG("%.*s\n", text.size(), text.data());
-          n->dump_tree();
           assert(false);
         }
         if (n->span.end != n->child_tail->span.end) {
           LOG("%.*s\n", text.size(), text.data());
-          n->dump_tree();
           assert(false);
         }
       }
@@ -168,7 +166,7 @@ int main_new(Options opts) {
 
   for (auto pair : repo.source_map) {
     CSourceFile* file = pair.second;
-    file->context.top_head->dump_tree();
+    file->context.top_head->dump_debug();
   }
 
   //----------------------------------------
@@ -323,13 +321,6 @@ int main_new(Options opts) {
     }
   }
 
-  for (auto c : repo.all_classes) {
-    if (c->all_constructors.size() > 1) {
-      auto name = c->get_name();
-      err << ERR("Class %.*s has multiple constructors", int(name.size()), name.data());
-    }
-  }
-
   //========================================
 
   LOG_B("Categorizing methods\n");
@@ -338,7 +329,7 @@ int main_new(Options opts) {
   // Everything called by a constructor is init.
 
   for (auto c : repo.all_classes) {
-    for (auto f : c->all_constructors) {
+    if (auto f = c->constructor) {
       f->set_type(MT_INIT);
       f->visit_internal_callees([](CNodeFunction* f){
         f->set_type(MT_INIT);

@@ -1,13 +1,6 @@
 #include "CNodeClass.hpp"
 
-#include "CNodeCall.hpp"
-#include "CNodeClass.hpp"
-#include "CNodeDeclaration.hpp"
-#include "CNodeField.hpp"
-#include "CNodeFunction.hpp"
-#include "CNodeStruct.hpp"
 #include "NodeTypes.hpp"
-
 #include "metrolib/core/Log.h"
 
 //------------------------------------------------------------------------------
@@ -20,14 +13,23 @@ Err CNodeAccess::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
+void CNodeTemplate::init(const char* match_tag, SpanType span, uint64_t flags) {
+  CNode::init(match_tag, span, flags);
+  node_template = child("template")->as<CNodeKeyword>();
+  node_params   = child("params")->as<CNodeList>();
+  node_class    = child("class")->as<CNodeClass>();
+
+  for (auto child : node_params->items) {
+    auto decl = child->as<CNodeDeclaration>();
+    assert(decl);
+    params.push_back(decl);
+  }
+}
+
+//----------------------------------------
+
 Err CNodeTemplate::emit(Cursor& cursor) {
-  //dump_tree();
-
   Err err = cursor.check_at(this);
-
-  auto node_template = child("template");
-  auto node_params   = child("params");
-  auto node_class    = child("class");
 
   err << cursor.skip_over(node_template);
   err << cursor.skip_gap_after(node_template);
@@ -45,9 +47,11 @@ Err CNodeTemplate::emit(Cursor& cursor) {
 void CNodeClass::init(const char* match_tag, SpanType span, uint64_t flags) {
   CNode::init(match_tag, span, flags);
 
-  //dump_tree();
+  node_class = child("class")->as<CNodeKeyword>();
+  node_name  = child("name")->as<CNodeIdentifier>();
+  node_body  = child("body")->as<CNodeList>();
 
-  for (auto child : child("body")) {
+  for (auto child : node_body->items) {
     if (auto node_enum = child->as<CNodeEnum>()) {
       all_enums.push_back(node_enum);
     }
@@ -59,7 +63,7 @@ uint32_t CNodeClass::debug_color() const {
 }
 
 std::string_view CNodeClass::get_name() const {
-  return child("name")->get_name();
+  return node_name->get_name();
 }
 
 CNodeField* CNodeClass::get_field(std::string_view name) {
@@ -88,11 +92,9 @@ CNodeEnum* CNodeClass::get_enum(std::string_view name) {
 Err CNodeClass::collect_fields_and_methods() {
   Err err;
 
-  auto body = child("body");
-
   bool is_public = false;
 
-  for (auto child : body) {
+  for (auto child : node_body->items) {
     if (auto access = child->as<CNodeAccess>()) {
       is_public = child->get_text() == "public:";
       continue;
@@ -106,7 +108,7 @@ Err CNodeClass::collect_fields_and_methods() {
       n->_type_class    = repo->get_class(n->get_type_name());
       n->_type_struct   = repo->get_struct(n->get_type_name());
 
-      if (n->child("static") && n->child("const")) {
+      if (n->node_static && n->node_const) {
         all_localparams.push_back(n);
       }
       else {
@@ -120,19 +122,17 @@ Err CNodeClass::collect_fields_and_methods() {
       n->is_public_ = is_public;
 
       if (auto constructor = child->as<CNodeConstructor>()) {
-        all_constructors.push_back(constructor);
+        assert(this->constructor == nullptr);
+        this->constructor = constructor;
       }
       else {
         all_functions.push_back(n);
       }
 
       // Hook up _type_struct on all struct params
-      auto params = n->child("params");
-      for (auto p : params) {
-        if (auto decl = p->as<CNodeDeclaration>()) {
-          decl->_type_class = repo->get_class(decl->get_type_name());
-          decl->_type_struct = repo->get_struct(decl->get_type_name());
-        }
+      for (auto decl : n->params) {
+        decl->_type_class = repo->get_class(decl->get_type_name());
+        decl->_type_struct = repo->get_struct(decl->get_type_name());
       }
       continue;
     }
@@ -141,8 +141,7 @@ Err CNodeClass::collect_fields_and_methods() {
 
   if (auto parent = node_parent->as<CNodeTemplate>()) {
     //LOG_B("CNodeClass has template parent\n");
-    CNode* params = parent->child("params");
-    for (CNode*  param : params) {
+    for (CNode*  param : parent->node_params->items) {
       if (param->as<CNodeDeclaration>()) {
         //param->dump_tree(3);
         all_modparams.push_back(param->as<CNodeDeclaration>());
@@ -157,40 +156,6 @@ Err CNodeClass::collect_fields_and_methods() {
 
 Err CNodeClass::build_call_graph(CSourceRepo* repo) {
   Err err;
-
-#if 0
-  {
-    using func_visitor = std::function<void(CNodeFunction*)>;
-
-    std::function<void(CNodeFunction* node, func_visitor v)> visit;
-
-    visit = [&visit](CNodeFunction* n, func_visitor v) {
-      v(n);
-      for (auto f : n->internal_callees) visit(f, v);
-    };
-
-    for (auto f : all_constructors) {
-      visit(f, [](CNodeFunction* f) {
-        auto name = f->get_name();
-        LOG_R("Visited func %.*s is init\n", name.size(), name.data());
-
-        //f->is_init_ = true;
-      });
-    }
-  }
-
-  for (auto src_method : all_constructors) {
-    visit(src_method, [&](CNode* child) {
-      auto call = child->as<CNodeCall>();
-      if (!call) return;
-      auto func_id = call->child("func_name")->as<CNodeIdentifier>();
-      auto dst_method = get_function(func_id->get_text());
-      dst_method->is_init_ = true;
-      auto name = func_id->get_text();
-      LOG_Y("Func %.*s is called by constructor\n", name.size(), name.data());
-    });
-  }
-#endif
 
   node_visitor link_callers = [&](CNode* child) {
     auto call = child->as<CNodeCall>();
@@ -220,8 +185,8 @@ Err CNodeClass::build_call_graph(CSourceRepo* repo) {
     }
   };
 
-  for (auto src_method : all_constructors) {
-    visit_children(src_method, link_callers);
+  if (constructor) {
+    visit_children(constructor, link_callers);
   }
 
   for (auto src_method : all_functions) {
@@ -513,6 +478,14 @@ CHECK_RETURN Err MtCursor::emit_template_params_as_modparams(MnNode n) {
   pop_cursor();
   return err;
 }
+
+[000.034] __{{template_parameter_list}} ▆ decl : CNodeDeclaration =
+[000.034]  ┣━━╸▆ type : CNodeBuiltinType =
+[000.034]  ┃   ┗━━╸▆ name : CNodeIdentifier = "int"
+[000.034]  ┣━━╸▆ name : CNodeIdentifier = "width"
+[000.034]  ┣━━╸▆ eq : CNodePunct = "="
+[000.035]  ┗━━╸▆ value : CNodeConstInt = "7"
+
 */
 
 Err CNodeClass::emit_template_parameter_list(Cursor& cursor) {
@@ -523,6 +496,19 @@ Err CNodeClass::emit_template_parameter_list(Cursor& cursor) {
     err << cursor.emit_char('\n');
     err << cursor.emit_indent();
     err << cursor.emit_print("{{template parameter list}}");
+    for (auto param : node_template->params) {
+      param->dump_debug();
+      err << cursor.start_line();
+      err << cursor.skip_to(param->node_name);
+      err << cursor.emit(param->node_name);
+      err << cursor.emit_gap_after(param->node_name);
+      err << cursor.emit(param->node_array);
+      err << cursor.emit_gap_after(param->node_array);
+      err << cursor.emit(param->node_value);
+      err << cursor.emit_gap_after(param->node_value);
+
+
+    }
   }
 
   return err;
@@ -550,10 +536,10 @@ void CNodeClass::dump() {
     for (auto f : all_localparams) f->dump();
   }
 
-  if (all_constructors.size()) {
-    LOG_G("Constructors\n");
+  if (constructor) {
+    LOG_G("Constructor\n");
     LOG_INDENT_SCOPE();
-    for (auto f : all_constructors) f->dump();
+    constructor->dump();
   }
 
   if (all_functions.size()) {

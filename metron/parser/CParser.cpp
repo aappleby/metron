@@ -1435,6 +1435,9 @@ TokenSpan match_statement(CContext& ctx, TokenSpan body) {
     cap_switch,
     cap_while,
     cap_compound,
+
+    // FIXME semis need to go back in the statement captures...
+
     Seq<cap_do_while,            cap_punct<";">>,
     Seq<cap_return,              cap_punct<";">>,
     Seq<cap_keyword<"break">,    cap_punct<";">>,

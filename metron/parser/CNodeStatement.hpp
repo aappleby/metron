@@ -80,9 +80,21 @@ struct CNodeFor : public CNodeStatement {
   CHECK_RETURN Err trace(CCall* call) override;
 };
 
+//------------------------------------------------------------------------------
+
 struct CNodeIf : public CNodeStatement {
+  void init(const char* match_tag, SpanType span, uint64_t flags);
   CHECK_RETURN Err trace(CCall* call) override;
+  CHECK_RETURN Err emit(Cursor& c) override;
+
+  CNodeKeyword*   node_if = nullptr;
+  CNodeList*      node_cond = nullptr;
+  CNodeStatement* node_true = nullptr;
+  CNodeKeyword*   node_else = nullptr;
+  CNodeStatement* node_false = nullptr;
 };
+
+//------------------------------------------------------------------------------
 
 struct CNodeReturn : public CNodeStatement {
   CHECK_RETURN Err trace(CCall* call) override;

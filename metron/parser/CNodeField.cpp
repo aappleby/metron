@@ -12,7 +12,7 @@ uint32_t CNodeField::debug_color() const {
 }
 
 std::string_view CNodeField::get_name() const {
-  return child("name")->get_name();
+  return node_decl->get_name();
 }
 
 //------------------------------------------------------------------------------
@@ -20,19 +20,24 @@ std::string_view CNodeField::get_name() const {
 void CNodeField::init(const char* match_tag, SpanType span, uint64_t flags) {
   CNode::init(match_tag, span, flags);
 
-  node_static = child("static")->as<CNodeKeyword>();
-  node_const  = child("const")->as<CNodeKeyword>();
-  node_type   = child("type")->as<CNodeType>();
-  node_name   = child("name")->as<CNodeIdentifier>();
-  node_array  = child("array")->as<CNodeList>();
-  node_eq     = child("eq")->as<CNodePunct>();
-  node_value  = child("value")->as<CNodeExpression>();
+  node_decl = child("decl")->req<CNodeDeclaration>();
+  node_semi = child("semi")->req<CNodePunct>();
+
+  /*
+  auto node_static = node_decl->child("static")->as<CNodeKeyword>();
+  auto node_const  = node_decl->child("const")->as<CNodeKeyword>();
+  auto node_type   = node_decl->child("type")->as<CNodeType>();
+  auto node_name   = node_decl->child("name")->as<CNodeIdentifier>();
+  auto node_array  = node_decl->child("array")->as<CNodeList>();
+  auto node_eq     = node_decl->child("eq")->as<CNodePunct>();
+  auto node_value  = node_decl->child("value")->as<CNodeExpression>();
+  */
 }
 
 //------------------------------------------------------------------------------
 
 std::string_view CNodeField::get_type_name() const {
-  return node_type->child_head->get_text();
+  return node_decl->get_type_name();
 
   /*
   auto decl_type = child("type");
@@ -54,21 +59,21 @@ std::string_view CNodeField::get_type_name() const {
 //------------------------------------------------------------------------------
 
 bool CNodeField::is_component() const {
-  return _type_class != nullptr;
+  return node_decl->_type_class != nullptr;
 }
 
 bool CNodeField::is_struct() const {
-  return _type_struct != nullptr;
+  return node_decl->_type_struct != nullptr;
 }
 
 bool CNodeField::is_array() const {
-  return node_array != nullptr;
+  return node_decl->node_array != nullptr;
 }
 
 bool CNodeField::is_const_char() const {
-  if (node_static && node_const) {
-    auto builtin = node_type->child("builtin_name");
-    auto star    = node_type->child("star");
+  if (node_decl->node_static && node_decl->node_const) {
+    auto builtin = node_decl->node_type->child("builtin_name");
+    auto star    = node_decl->node_type->child("star");
     if (builtin && star && builtin->get_text() == "char") {
       return true;
     }
@@ -149,99 +154,107 @@ Err CNodeField::emit(Cursor& cursor) {
   bool in_namespace = ancestor<CNodeNamespace>() != nullptr;
 
   if (is_const_char()) {
-    err << cursor.skip_over(node_static);
-    err << cursor.skip_gap_after(node_static);
-    err << cursor.skip_over(node_const);
-    err << cursor.skip_gap_after(node_const);
-    err << cursor.skip_over(node_type);
-    err << cursor.skip_gap_after(node_type);
+    err << cursor.skip_over(node_decl->node_static);
+    err << cursor.skip_gap_after(node_decl->node_static);
+    err << cursor.skip_over(node_decl->node_const);
+    err << cursor.skip_gap_after(node_decl->node_const);
+    err << cursor.skip_over(node_decl->node_type);
+    err << cursor.skip_gap_after(node_decl->node_type);
     err << cursor.emit_print("localparam string ");
 
-    err << cursor.emit(node_name);
-    err << cursor.emit_gap_after(node_name);
+    err << cursor.emit(node_decl->node_name);
+    err << cursor.emit_gap_after(node_decl->node_name);
 
-    err << cursor.emit(node_array);
-    err << cursor.emit_gap_after(node_array);
+    err << cursor.emit(node_decl->node_array);
+    err << cursor.emit_gap_after(node_decl->node_array);
 
-    err << cursor.emit(node_eq);
-    err << cursor.emit_gap_after(node_eq);
-    err << cursor.emit(node_value);
-    err << cursor.emit_gap_after(node_value);
+    err << cursor.emit(node_decl->node_eq);
+    err << cursor.emit_gap_after(node_decl->node_eq);
+    err << cursor.emit(node_decl->node_value);
+    err << cursor.emit_gap_after(node_decl->node_value);
+
+     err << cursor.emit(node_semi);
+
     return err << cursor.check_done(this);
   }
 
-  if (node_static && node_const) {
+  if (node_decl->node_static && node_decl->node_const) {
     // Localparam
     err << cursor.emit_print(in_namespace ? "parameter " : "localparam ");
 
-    err << cursor.comment_out(node_static);
-    err << cursor.emit_gap_after(node_static);
+    err << cursor.comment_out(node_decl->node_static);
+    err << cursor.emit_gap_after(node_decl->node_static);
 
-    err << cursor.comment_out(node_const);
-    err << cursor.emit_gap_after(node_const);
+    err << cursor.comment_out(node_decl->node_const);
+    err << cursor.emit_gap_after(node_decl->node_const);
 
-    err << cursor.emit(node_type);
-    err << cursor.emit_gap_after(node_type);
+    err << cursor.emit(node_decl->node_type);
+    err << cursor.emit_gap_after(node_decl->node_type);
 
-    err << cursor.emit(node_name);
-    err << cursor.emit_gap_after(node_name);
+    err << cursor.emit(node_decl->node_name);
+    err << cursor.emit_gap_after(node_decl->node_name);
 
-    err << cursor.emit(node_array);
-    err << cursor.emit_gap_after(node_array);
+    err << cursor.emit(node_decl->node_array);
+    err << cursor.emit_gap_after(node_decl->node_array);
 
-    err << cursor.emit(node_eq);
-    err << cursor.emit_gap_after(node_eq);
+    err << cursor.emit(node_decl->node_eq);
+    err << cursor.emit_gap_after(node_decl->node_eq);
 
-    err << cursor.emit(node_value);
-    err << cursor.emit_gap_after(node_value);
+    err << cursor.emit(node_decl->node_value);
+    err << cursor.emit_gap_after(node_decl->node_value);
+
+    err << cursor.emit(node_semi);
     return err << cursor.check_done(this);
   }
 
-  auto node_builtin = node_type->as<CNodeBuiltinType>();
-  auto node_targs   = node_type->child("template_args");
+  auto node_builtin = node_decl->node_type->as<CNodeBuiltinType>();
+  auto node_targs   = node_decl->node_type->child("template_args");
 
   if (node_builtin && node_targs) {
-    err << cursor.comment_out(node_static);
-    err << cursor.emit_gap_after(node_static);
-    err << cursor.comment_out(node_const);
-    err << cursor.emit_gap_after(node_const);
-    err << cursor.emit(node_type);
-    err << cursor.emit_gap_after(node_type);
+    err << cursor.comment_out(node_decl->node_static);
+    err << cursor.emit_gap_after(node_decl->node_static);
+    err << cursor.comment_out(node_decl->node_const);
+    err << cursor.emit_gap_after(node_decl->node_const);
+    err << cursor.emit(node_decl->node_type);
+    err << cursor.emit_gap_after(node_decl->node_type);
 
-    err << cursor.emit(node_name);
-    err << cursor.emit_gap_after(node_name);
+    err << cursor.emit(node_decl->node_name);
+    err << cursor.emit_gap_after(node_decl->node_name);
 
-    err << cursor.emit(node_array);
-    err << cursor.emit_gap_after(node_array);
+    err << cursor.emit(node_decl->node_array);
+    err << cursor.emit_gap_after(node_decl->node_array);
 
-    err << cursor.emit(node_eq);
-    err << cursor.emit_gap_after(node_eq);
-    err << cursor.emit(node_value);
-    err << cursor.emit_gap_after(node_value);
+    err << cursor.emit(node_decl->node_eq);
+    err << cursor.emit_gap_after(node_decl->node_eq);
+    err << cursor.emit(node_decl->node_value);
+    err << cursor.emit_gap_after(node_decl->node_value);
 
-    return err;
+    err << cursor.emit(node_semi);
+
+    return err << cursor.check_done(this);
   }
 
   if (node_builtin) {
-    err << cursor.comment_out(node_static);
-    err << cursor.emit_gap_after(node_static);
-    err << cursor.comment_out(node_const);
-    err << cursor.emit_gap_after(node_const);
-    err << cursor.emit(node_type);
-    err << cursor.emit_gap_after(node_type);
+    err << cursor.comment_out(node_decl->node_static);
+    err << cursor.emit_gap_after(node_decl->node_static);
+    err << cursor.comment_out(node_decl->node_const);
+    err << cursor.emit_gap_after(node_decl->node_const);
+    err << cursor.emit(node_decl->node_type);
+    err << cursor.emit_gap_after(node_decl->node_type);
 
-    err << cursor.emit(node_name);
-    err << cursor.emit_gap_after(node_name);
+    err << cursor.emit(node_decl->node_name);
+    err << cursor.emit_gap_after(node_decl->node_name);
 
-    err << cursor.emit(node_array);
-    err << cursor.emit_gap_after(node_array);
+    err << cursor.emit(node_decl->node_array);
+    err << cursor.emit_gap_after(node_decl->node_array);
 
-    err << cursor.emit(node_eq);
-    err << cursor.emit_gap_after(node_eq);
-    err << cursor.emit(node_value);
-    err << cursor.emit_gap_after(node_value);
+    err << cursor.emit(node_decl->node_eq);
+    err << cursor.emit_gap_after(node_decl->node_eq);
+    err << cursor.emit(node_decl->node_value);
+    err << cursor.emit_gap_after(node_decl->node_value);
 
-    return err;
+    err << cursor.emit(node_semi);
+    return err << cursor.check_done(this);
   }
 
   if (is_struct()) {
@@ -365,15 +378,15 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode n) {
 Err CNodeField::emit_component(Cursor& cursor) {
   Err err;
 
-  err << cursor.skip_to(node_type);
-  err << cursor.emit(node_type);
-  err << cursor.emit_gap_after(node_type);
-  err << cursor.emit(node_name);
-  err << cursor.emit_gap_after(node_name);
+  err << cursor.skip_to(node_decl->node_type);
+  err << cursor.emit(node_decl->node_type);
+  err << cursor.emit_gap_after(node_decl->node_type);
+  err << cursor.emit(node_decl->node_name);
+  err << cursor.emit_gap_after(node_decl->node_name);
 
   auto src_class = ancestor<CNodeClass>();
   auto repo = src_class->repo;
-  auto dst_class = repo->get_class(node_type->get_name());
+  auto dst_class = repo->get_class(node_decl->node_type->get_name());
 
   auto dst_template = dst_class->node_parent->as<CNodeTemplate>();
 
@@ -392,7 +405,7 @@ Err CNodeField::emit_component(Cursor& cursor) {
       err << cursor.start_line();
       err << cursor.emit_print("// Template Parameters");
 
-      auto args = node_type->child("template_args")->as<CNodeList>();
+      auto args = node_decl->node_type->child("template_args")->as<CNodeList>();
 
       int param_count = dst_template->params.size();
       int arg_count = args->items.size();
@@ -425,7 +438,7 @@ Err CNodeField::emit_component(Cursor& cursor) {
       assert(src_class->constructor->node_init);
       CNodeList* args = nullptr;
       for (auto init : src_class->constructor->node_init->items) {
-        if (init->child("name")->get_text() == node_name->get_text()) {
+        if (init->child("name")->get_text() == node_decl->node_name->get_text()) {
           args = init->child("value")->as<CNodeList>();
         }
       }
@@ -542,6 +555,7 @@ Err CNodeField::emit_component(Cursor& cursor) {
 
   //err << emit_submod_binding_fields(n);
 
+  err << cursor.emit(node_semi);
 
   return err << cursor.check_done(this);
 }
@@ -549,7 +563,7 @@ Err CNodeField::emit_component(Cursor& cursor) {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err CNodeField::trace(CCall* call) {
-  return child("value")->trace(call);
+  return node_decl->child("value")->trace(call);
 }
 
 //------------------------------------------------------------------------------
@@ -563,8 +577,8 @@ void CNodeField::dump() {
   if (child("static")) LOG_A("static ");
   if (child("const"))  LOG_A("const ");
   if (_public)    LOG_A("public ");
-  if (is_array()) LOG_A("array ");
-  if (_enum)      LOG_A("enum ");
+  if (node_decl->is_array()) LOG_A("array ");
+  //if (_enum)      LOG_A("enum ");
 
   if (_parent_class) {
     auto name = _parent_class->get_name();
@@ -576,13 +590,13 @@ void CNodeField::dump() {
     LOG_A("parent struct %.*s ", int(name.size()), name.data());
   }
 
-  if (_type_class) {
-    auto name = _type_class->get_name();
+  if (node_decl->_type_class) {
+    auto name = node_decl->_type_class->get_name();
     LOG_A("type class %.*s ", int(name.size()), name.data());
   }
 
-  if (_type_struct) {
-    auto name = _type_struct->get_name();
+  if (node_decl->_type_struct) {
+    auto name = node_decl->_type_struct->get_name();
     LOG_A("type struct %.*s ", int(name.size()), name.data());
   }
 

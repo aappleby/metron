@@ -13,7 +13,7 @@ struct CNodeCall : public CNode {
   void init(const char* match_tag, SpanType span, uint64_t flags);
   std::string_view get_name() const override;
   uint32_t debug_color() const override;
-  CHECK_RETURN Err emit(Cursor& c) override;
+  CHECK_RETURN Err emit(Cursor& cursor) override;
   CHECK_RETURN Err trace(CCall* call) override;
 
   CNode*     node_name  = nullptr;

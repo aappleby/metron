@@ -19,8 +19,8 @@ Err CNodeExpStatement::trace(CCall* call) {
 
 //----------------------------------------
 
-Err CNodeExpStatement::emit(Cursor& c) {
-  return c.emit_default(this);
+Err CNodeExpStatement::emit(Cursor& cursor) {
+  return cursor.emit_default(this);
 }
 
 //------------------------------------------------------------------------------
@@ -85,7 +85,7 @@ Err CNodeAssignment::emit(Cursor& cursor) {
   err << cursor.emit(node_semi);
   err << cursor.emit_gap_after(node_semi);
 
-  return err;
+  return err << cursor.check_done(this);
 }
 
 //------------------------------------------------------------------------------
@@ -133,9 +133,9 @@ CHECK_RETURN Err CNodeIf::trace(CCall* call) {
 
 //----------------------------------------
 
-CHECK_RETURN Err CNodeIf::emit(Cursor& c) {
+CHECK_RETURN Err CNodeIf::emit(Cursor& cursor) {
   Err err;
-  err << CNode::emit(c);
+  err << CNode::emit(cursor);
   #if 0
 CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnNode n) {
   Err err = check_at(sym_if_statement, n);
@@ -170,7 +170,7 @@ CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnNode n) {
   return err << check_done(n);
 }
   #endif
-  return err;
+  return err << cursor.check_done(this);
 }
 
 
@@ -259,7 +259,7 @@ CHECK_RETURN Err CNodeCompound::emit_call_arg_bindings(CNode* child, Cursor& cur
 
     auto src_class = ancestor<CNodeClass>();
     auto field = src_class->get_field(field_name);
-    auto dst_class = field->_type_class;
+    auto dst_class = field->node_decl->_type_class;
     auto dst_func = dst_class->get_function(func_name);
 
     int arg_count = call->node_args->items.size();
@@ -422,7 +422,7 @@ Err CNodeReturn::emit(Cursor& cursor) {
   err << cursor.emit(node_semi);
   err << cursor.emit_gap_after(node_semi);
 
-  return err;
+  return err << cursor.check_done(this);
 }
 
 //------------------------------------------------------------------------------

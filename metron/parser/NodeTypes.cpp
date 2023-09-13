@@ -75,38 +75,41 @@ std::string_view CNodeNamespace::get_name() const {
   return child("name")->get_text();
 }
 
-Err CNodeNamespace::emit(Cursor& c) {
+Err CNodeNamespace::emit(Cursor& cursor) {
   Err err;
   auto node_namespace = child("namespace");
   auto node_name      = child("name");
   auto node_fields    = child("fields");
+  auto node_semi      = child("semi");
 
-  err << c.emit_replacement(node_namespace, "package");
-  err << c.emit_gap_after(node_namespace);
+  err << cursor.emit_replacement(node_namespace, "package");
+  err << cursor.emit_gap_after(node_namespace);
 
-  err << c.emit_raw(node_name);
-  err << c.emit_print(";");
-  err << c.emit_gap_after(node_name);
+  err << cursor.emit_raw(node_name);
+  err << cursor.emit_print(";");
+  err << cursor.emit_gap_after(node_name);
 
   for (auto f : node_fields) {
     if (f->tag_is("ldelim")) {
-      err << c.skip_over(f);
-      err << c.emit_gap_after(f);
+      err << cursor.skip_over(f);
+      err << cursor.emit_gap_after(f);
       continue;
     }
     else if (f->tag_is("rdelim")) {
-      err << c.emit_replacement(f, "endpackage");
-      err << c.emit_gap_after(f);
+      err << cursor.emit_replacement(f, "endpackage");
+      err << cursor.emit_gap_after(f);
       continue;
     }
     else {
-      err << f->emit(c);
-      err << c.emit_gap_after(f);
+      err << f->emit(cursor);
+      err << cursor.emit_gap_after(f);
       continue;
     }
   }
 
-  return Err();
+  err << cursor.emit(node_semi);
+
+  return err << cursor.check_done(this);
 }
 
 Err CNodeNamespace::trace(CCall* call) {
@@ -213,8 +216,8 @@ std::string_view CNodePunct::get_name() const {
   return "";
 }
 
-Err CNodePunct::emit(Cursor& c) {
-  return c.emit_default(this);
+Err CNodePunct::emit(Cursor& cursor) {
+  return cursor.emit_default(this);
 }
 
 Err CNodePunct::trace(CCall* call) {
@@ -263,7 +266,7 @@ Err CNodeFieldExpression::trace(CCall* call) {
 // Replace foo.bar.baz with foo_bar_baz if the field refers to a submodule port,
 // so that it instead refers to a glue expression.
 
-Err CNodeFieldExpression::emit(Cursor& c) {
+Err CNodeFieldExpression::emit(Cursor& cursor) {
   Err err;
 
   auto node_func = ancestor<CNodeFunction>();
@@ -280,14 +283,14 @@ Err CNodeFieldExpression::emit(Cursor& c) {
     for (auto& c : field) {
       if (c == '.') c = '_';
     }
-    err << c.emit_replacement(this, field.c_str());
+    err << cursor.emit_replacement(this, field.c_str());
   }
   else {
-    err << c.emit_default(this);
+    err << cursor.emit_default(this);
   }
-  err << c.emit_gap_after(this);
+  err << cursor.emit_gap_after(this);
 
-  return err;
+  return err << cursor.check_done(this);
 }
 
 
@@ -348,8 +351,8 @@ std::string_view CNodeQualifiedIdentifier::get_name() const {
 
 //----------------------------------------
 
-Err CNodeQualifiedIdentifier::emit(Cursor& c) {
-  return CNode::emit(c);
+Err CNodeQualifiedIdentifier::emit(Cursor& cursor) {
+  return CNode::emit(cursor);
 }
 
 //----------------------------------------
@@ -389,7 +392,7 @@ std::string_view CNodeText::get_name() const {
   return "";
 }
 
-Err CNodeText::emit(Cursor& c) {
+Err CNodeText::emit(Cursor& cursor) {
   NODE_ERR("FIXME");
   return Err();
 }
@@ -408,12 +411,12 @@ std::string_view CNodeKeyword::get_name() const {
   return "";
 }
 
-Err CNodeKeyword::emit(Cursor& c) {
+Err CNodeKeyword::emit(Cursor& cursor) {
   if (get_text() == "static" || get_text() == "const") {
-    return c.comment_out(this);
+    return cursor.comment_out(this);
   }
   if (get_text() == "nullptr") {
-    return c.emit_replacement(this, "\"\"");
+    return cursor.emit_replacement(this, "\"\"");
   }
   NODE_ERR("FIXME");
   return Err();
@@ -432,7 +435,7 @@ std::string_view CNodeTypedef::get_name() const {
   return "";
 }
 
-Err CNodeTypedef::emit(Cursor& c) {
+Err CNodeTypedef::emit(Cursor& cursor) {
   NODE_ERR("FIXME");
   return Err();
 }
@@ -458,8 +461,8 @@ std::string_view CNodeList::get_name() const {
   return "";
 }
 
-Err CNodeList::emit(Cursor& c) {
-  return c.emit_default(this);
+Err CNodeList::emit(Cursor& cursor) {
+  return cursor.emit_default(this);
 }
 
 Err CNodeList::trace(CCall* call) {

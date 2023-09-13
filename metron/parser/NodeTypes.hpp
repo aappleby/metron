@@ -46,7 +46,7 @@ struct Cursor;
 struct CNodeTranslationUnit : public CNode {
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
-  CHECK_RETURN Err emit(Cursor& c) override;
+  CHECK_RETURN Err emit(Cursor& cursor) override;
   CHECK_RETURN Err trace(CCall* call) override;
 };
 
@@ -55,7 +55,7 @@ struct CNodeTranslationUnit : public CNode {
 struct CNodeNamespace : public CNode {
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
-  CHECK_RETURN Err emit(Cursor& c) override;
+  CHECK_RETURN Err emit(Cursor& cursor) override;
   CHECK_RETURN Err trace(CCall* call) override;
 
   Err collect_fields_and_methods();
@@ -76,7 +76,7 @@ struct CNodeNamespace : public CNode {
 struct CNodePreproc : public CNode {
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
-  CHECK_RETURN Err emit(Cursor& c) override;
+  CHECK_RETURN Err emit(Cursor& cursor) override;
   CHECK_RETURN Err trace(CCall* call) override;
 };
 
@@ -85,7 +85,7 @@ struct CNodePreproc : public CNode {
 struct CNodeIdentifier : public CNode {
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
-  CHECK_RETURN Err emit(Cursor& c) override;
+  CHECK_RETURN Err emit(Cursor& cursor) override;
   CHECK_RETURN Err trace(CCall* call) override;
 };
 
@@ -94,7 +94,7 @@ struct CNodeIdentifier : public CNode {
 struct CNodePunct : public CNode {
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
-  CHECK_RETURN Err emit(Cursor& c) override;
+  CHECK_RETURN Err emit(Cursor& cursor) override;
   CHECK_RETURN Err trace(CCall* call) override;
 };
 
@@ -105,7 +105,7 @@ struct CNodeFieldExpression : public CNode {
 
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
-  CHECK_RETURN Err emit(Cursor& c) override;
+  CHECK_RETURN Err emit(Cursor& cursor) override;
   CHECK_RETURN Err trace(CCall* call) override;
 
   CNodeIdentifier* node_path = nullptr;
@@ -117,7 +117,7 @@ struct CNodeFieldExpression : public CNode {
 struct CNodeQualifiedIdentifier : public CNode {
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
-  CHECK_RETURN Err emit(Cursor& c) override;
+  CHECK_RETURN Err emit(Cursor& cursor) override;
   CHECK_RETURN Err trace(CCall* call) override;
 };
 
@@ -126,7 +126,7 @@ struct CNodeQualifiedIdentifier : public CNode {
 struct CNodeText : public CNode {
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
-  CHECK_RETURN Err emit(Cursor& c) override;
+  CHECK_RETURN Err emit(Cursor& cursor) override;
   CHECK_RETURN Err trace(CCall* call) override;
 };
 
@@ -135,7 +135,7 @@ struct CNodeText : public CNode {
 struct CNodeKeyword : public CNode {
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
-  CHECK_RETURN Err emit(Cursor& c) override;
+  CHECK_RETURN Err emit(Cursor& cursor) override;
   CHECK_RETURN Err trace(CCall* call) override;
 };
 
@@ -144,7 +144,7 @@ struct CNodeKeyword : public CNode {
 struct CNodeTypedef : public CNode {
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
-  CHECK_RETURN Err emit(Cursor& c) override;
+  CHECK_RETURN Err emit(Cursor& cursor) override;
   CHECK_RETURN Err trace(CCall* call) override;
 };
 
@@ -155,7 +155,7 @@ struct CNodeList : public CNode {
 
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
-  CHECK_RETURN Err emit(Cursor& c) override;
+  CHECK_RETURN Err emit(Cursor& cursor) override;
   CHECK_RETURN Err trace(CCall* call) override;
 
   std::vector<CNode*> items;

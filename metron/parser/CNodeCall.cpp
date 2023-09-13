@@ -237,14 +237,14 @@ Err CNodeCall::emit(Cursor& cursor) {
     if (rtype->get_text() == "void") {
       err << cursor.comment_out(this);
       err << cursor.emit_gap_after(this);
-      return err;
+      return err << cursor.check_done(this);
     }
     else {
       err << cursor.emit_replacement(this,
         "%.*s_%.*s_ret",
         field_name.size(), field_name.data(),
         func_name.size(), func_name.data());
-      return err;
+      return err << cursor.check_done(this);
     }
   }
 
@@ -263,7 +263,7 @@ Err CNodeCall::emit(Cursor& cursor) {
       err << cursor.emit_print(")'");
       err << cursor.skip_to(node_args);
       err << cursor.emit(node_args);
-      return err;
+      return err << cursor.check_done(this);
     }
 
     if (func_name[0] == 'b' && func_name.size() == 2) {
@@ -273,7 +273,7 @@ Err CNodeCall::emit(Cursor& cursor) {
         err << cursor.emit_print("%d'", width);
         err << cursor.skip_to(node_args);
         err << cursor.emit(node_args);
-        return err;
+        return err << cursor.check_done(this);
       }
     }
 
@@ -285,7 +285,7 @@ Err CNodeCall::emit(Cursor& cursor) {
         err << cursor.emit_print("%d'", width);
         err << cursor.skip_to(node_args);
         err << cursor.emit(node_args);
-        return err;
+        return err << cursor.check_done(this);
       }
     }
 
@@ -304,7 +304,7 @@ Err CNodeCall::emit(Cursor& cursor) {
 
         err << cursor.emit_gap_after(child);
       }
-      return err;
+      return err << cursor.check_done(this);
     }
 
     //----------
@@ -384,7 +384,7 @@ Err CNodeCall::emit(Cursor& cursor) {
 
       assert(param == nullptr);
       assert(arg == nullptr);
-      return err;
+      return err << cursor.check_done(this);
     }
   }
 
@@ -394,7 +394,7 @@ Err CNodeCall::emit(Cursor& cursor) {
 
     auto src_class = ancestor<CNodeClass>();
     auto field = src_class->get_field(field_name);
-    auto dst_class = field->_type_class;
+    auto dst_class = field->node_decl->_type_class;
     auto dst_func = dst_class->get_function(func_name);
 
     if (dst_func->child("return_type")->get_text() == "void") {
@@ -407,12 +407,12 @@ Err CNodeCall::emit(Cursor& cursor) {
       err << cursor.emit_gap_after(this);
     }
 
-    return err;
+    return err << cursor.check_done(this);
   }
 
 
   err << CNode::emit(cursor);
-  return err;
+  return err << cursor.check_done(this);
 }
 
 //------------------------------------------------------------------------------

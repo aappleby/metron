@@ -8,7 +8,7 @@
 Err CNodeAccess::emit(Cursor& cursor) {
   Err err;
   err << cursor.comment_out(this);
-  return err;
+  return err << cursor.check_done(this);
 }
 
 //------------------------------------------------------------------------------
@@ -105,10 +105,10 @@ Err CNodeClass::collect_fields_and_methods() {
 
       n->_parent_class  = n->ancestor<CNodeClass>();
       n->_parent_struct = n->ancestor<CNodeStruct>();
-      n->_type_class    = repo->get_class(n->get_type_name());
-      n->_type_struct   = repo->get_struct(n->get_type_name());
+      n->node_decl->_type_class    = repo->get_class(n->get_type_name());
+      n->node_decl->_type_struct   = repo->get_struct(n->get_type_name());
 
-      if (n->node_static && n->node_const) {
+      if (n->node_decl->node_static && n->node_decl->node_const) {
         all_localparams.push_back(n);
       }
       else {
@@ -205,7 +205,7 @@ bool CNodeClass::needs_tick() {
   }
 
   for (auto f : all_fields) {
-    if (f->_type_class && f->_type_class->needs_tick()) return true;
+    if (f->node_decl->_type_class && f->node_decl->_type_class->needs_tick()) return true;
   }
 
   return false;
@@ -219,7 +219,7 @@ bool CNodeClass::needs_tock() {
   }
 
   for (auto f : all_fields) {
-    if (f->_type_class && f->_type_class->needs_tock()) return true;
+    if (f->node_decl->_type_class && f->node_decl->_type_class->needs_tock()) return true;
   }
 
   return false;
@@ -368,7 +368,7 @@ Err CNodeClass::emit_field_ports(CNodeField* f, Cursor& cursor) {
     err << cursor.emit_print("output ");
   }
 
-  err << cursor.emit_splice(f->child("type"));
+  err << cursor.emit_splice(f->node_decl->child("type"));
   err << cursor.emit_print(" %s,", fname.c_str());
 
   return err;

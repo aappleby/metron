@@ -23,7 +23,7 @@ struct CNodeFunction : public CNode {
 
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
-  CHECK_RETURN Err emit(Cursor& c) override;
+  CHECK_RETURN Err emit(Cursor& cursor) override;
   CHECK_RETURN Err trace(CCall* call) override;
 
   //----------------------------------------
@@ -31,11 +31,11 @@ struct CNodeFunction : public CNode {
   CNodeClass* get_parent_class();
   std::string_view get_return_type_name() const;
 
-  Err emit_init(Cursor& c);
-  Err emit_always_comb(Cursor& c);
-  Err emit_always_ff(Cursor& c);
-  Err emit_func(Cursor& c);
-  Err emit_task(Cursor& c);
+  Err emit_init(Cursor& cursor);
+  Err emit_always_comb(Cursor& cursor);
+  Err emit_always_ff(Cursor& cursor);
+  Err emit_func(Cursor& cursor);
+  Err emit_task(Cursor& cursor);
 
 #if 0
   needs_ports = is_public_ && internal_callers.empty();

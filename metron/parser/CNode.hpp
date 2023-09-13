@@ -42,7 +42,7 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
 
   virtual uint32_t debug_color() const;
   virtual std::string_view get_name() const;
-  virtual CHECK_RETURN Err emit(Cursor& c);
+  virtual CHECK_RETURN Err emit(Cursor& cursor);
   virtual CHECK_RETURN Err trace(CCall* call);
 
   virtual CSourceRepo* get_repo() {

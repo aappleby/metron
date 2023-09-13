@@ -857,9 +857,16 @@ TokenSpan match_declaration(CContext& ctx, TokenSpan body) {
   return pattern::match(ctx, body);
 }
 
-using cap_field = CaptureAnon<Ref<match_declaration>,  CNodeField>;
-
 //------------------------------------------------------------------------------
+
+using cap_field =
+CaptureAnon<
+  Seq<
+    Tag<"decl", cap_declaration>,
+    Tag<"semi", cap_punct<";">>
+  >,
+  CNodeField
+>;
 
 TokenSpan match_field_list(CContext& ctx, TokenSpan body) {
   using pattern = DelimitedBlock<
@@ -869,7 +876,7 @@ TokenSpan match_field_list(CContext& ctx, TokenSpan body) {
       cap_constructor,
       cap_function,
       Seq<cap_enum,  cap_punct<";">>,
-      Seq<cap_field, cap_punct<";">>
+      cap_field
     >,
     Tag<"rdelim", cap_punct<"}">>
   >;
@@ -885,7 +892,8 @@ TokenSpan match_namespace(CContext& ctx, TokenSpan body) {
   Seq<
     Tag<"namespace", cap_keyword<"namespace">>,
     Tag<"name",      cap_identifier>,
-    Tag<"fields",    cap_field_list>
+    Tag<"fields",    cap_field_list>,
+    Tag<"semi",      cap_punct<";">>
   >;
   return pattern::match(ctx, body);
 }
@@ -1470,7 +1478,7 @@ TokenSpan match_translation_unit(CContext& ctx, TokenSpan body) {
   Any<
     cap_preproc,
     cap_function,
-    Seq<cap_namespace,   cap_punct<";">>,
+    cap_namespace,
     Seq<cap_class,       cap_punct<";">>,
     Seq<cap_struct,      cap_punct<";">>,
     Seq<cap_union,       cap_punct<";">>,

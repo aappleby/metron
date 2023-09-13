@@ -140,11 +140,11 @@ CInstClass::CInstClass(CInstance* inst_parent, CNodeField* node_field,
   for (auto node_field : node_class->all_fields) {
     auto field_name = node_field->get_name();
 
-    if (node_field->_type_class) {
-      auto inst = new CInstClass(this, node_field, node_field->_type_class);
+    if (node_field->node_decl->_type_class) {
+      auto inst = new CInstClass(this, node_field, node_field->node_decl->_type_class);
       inst_map[field_name] = inst;
-    } else if (node_field->_type_struct) {
-      auto inst = new CInstStruct(this, node_field, node_field->_type_struct);
+    } else if (node_field->node_decl->_type_struct) {
+      auto inst = new CInstStruct(this, node_field, node_field->node_decl->_type_struct);
       inst_map[field_name] = inst;
     } else {
       auto inst = new CInstPrim(this, node_field);
@@ -180,9 +180,9 @@ CInstStruct::CInstStruct(CInstance* inst_parent, CNodeField* node_field,
   for (auto node_field : node_struct->all_fields) {
     auto field_name = node_field->get_name();
 
-    if (node_field->_type_struct) {
+    if (node_field->node_decl->_type_struct) {
       inst_map[field_name] =
-          new CInstStruct(this, node_field, node_field->_type_struct);
+          new CInstStruct(this, node_field, node_field->node_decl->_type_struct);
     } else {
       inst_map[field_name] = new CInstPrim(this, node_field);
     }

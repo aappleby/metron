@@ -65,13 +65,13 @@ protected:
 //------------------------------------------------------------------------------
 
 struct CNodeExpStatement : public CNodeStatement {
-  CHECK_RETURN Err emit(Cursor& c) override;
+  CHECK_RETURN Err emit(Cursor& cursor) override;
   CHECK_RETURN Err trace(CCall* call) override;
 };
 
 struct CNodeAssignment : public CNodeStatement {
   CHECK_RETURN Err trace(CCall* call) override;
-  CHECK_RETURN Err emit(Cursor& c) override;
+  CHECK_RETURN Err emit(Cursor& cursor) override;
 };
 
 //------------------------------------------------------------------------------
@@ -85,7 +85,7 @@ struct CNodeFor : public CNodeStatement {
 struct CNodeIf : public CNodeStatement {
   void init(const char* match_tag, SpanType span, uint64_t flags);
   CHECK_RETURN Err trace(CCall* call) override;
-  CHECK_RETURN Err emit(Cursor& c) override;
+  CHECK_RETURN Err emit(Cursor& cursor) override;
 
   CNodeKeyword*   node_if = nullptr;
   CNodeList*      node_cond = nullptr;
@@ -98,7 +98,7 @@ struct CNodeIf : public CNodeStatement {
 
 struct CNodeReturn : public CNodeStatement {
   CHECK_RETURN Err trace(CCall* call) override;
-  CHECK_RETURN Err emit(Cursor& c) override;
+  CHECK_RETURN Err emit(Cursor& cursor) override;
 };
 
 //------------------------------------------------------------------------------

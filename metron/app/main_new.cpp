@@ -160,7 +160,7 @@ int main_new(Options opts) {
 
   for (auto c : repo.all_classes) {
     for (auto f : c->all_fields) {
-      if (f->_type_class) f->_type_class->refcount++;
+      if (f->node_decl->_type_class) f->node_decl->_type_class->refcount++;
     }
   }
 
@@ -306,7 +306,7 @@ int main_new(Options opts) {
 
   for (auto c : repo.all_classes) {
     for (auto f : c->all_fields) {
-      if (f->_type_class) {
+      if (f->node_decl->_type_class) {
         f->field_type = FT_MODULE;
       }
     }

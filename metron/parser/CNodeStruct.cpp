@@ -27,7 +27,7 @@ Err CNodeStruct::collect_fields_and_methods() {
   for (auto c : body) {
     if (auto n = c->as<CNodeField>()) {
       n->_parent_struct = n->ancestor<CNodeStruct>();
-      n->_type_struct  = repo->get_struct(n->get_type_name());
+      n->node_decl->_type_struct  = repo->get_struct(n->get_type_name());
       all_fields.push_back(n);
     }
   }

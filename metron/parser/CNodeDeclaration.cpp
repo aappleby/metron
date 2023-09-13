@@ -34,15 +34,6 @@ bool CNodeDeclaration::is_array() const {
 
 //------------------------------------------------------------------------------
 
-/*
-[000.014]  ▆ CNodeDeclaration = 0x7ffff7e1c288:0x7ffff7e1c2a8
-[000.014]  ┣━━╸▆ type : CNodeBuiltinType = 0x7ffff7e1c288:0x7ffff7e1c290
-[000.014]  ┃   ┗━━╸▆ name : CNodeIdentifier = 0x7ffff7e1c288:0x7ffff7e1c290 "int"
-[000.014]  ┣━━╸▆ name : CNodeIdentifier = 0x7ffff7e1c290:0x7ffff7e1c298 "y"
-[000.014]  ┣━━╸▆ eq : CNodePunct = 0x7ffff7e1c298:0x7ffff7e1c2a0 "="
-[000.014]  ┗━━╸▆ value : CNodeIdentifier = 0x7ffff7e1c2a0:0x7ffff7e1c2a8 "my_sig3"
-*/
-
 Err CNodeDeclaration::emit(Cursor& cursor) {
   Err err;
 
@@ -67,7 +58,7 @@ Err CNodeDeclaration::emit(Cursor& cursor) {
       }
     }
 
-    return err;
+    return err << cursor.check_done(this);
   }
 
   for (auto child : this) {
@@ -81,7 +72,7 @@ Err CNodeDeclaration::emit(Cursor& cursor) {
     }
   }
 
-  return err;
+  return err << cursor.check_done(this);
 }
 
 //------------------------------------------------------------------------------

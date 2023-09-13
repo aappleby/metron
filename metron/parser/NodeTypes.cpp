@@ -450,6 +450,12 @@ Err CNodeKeyword::emit(Cursor& cursor) {
   if (text == "if" || text == "else") {
     return cursor.emit_raw(this);
   }
+  if (text == "break") {
+    return cursor.comment_out(this);
+  }
+  if (text == "default") {
+    return cursor.emit_raw(this);
+  }
   NODE_ERR("FIXME");
   return Err();
 }

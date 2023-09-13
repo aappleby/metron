@@ -237,10 +237,57 @@ CHECK_RETURN Err CNodeCase::trace(CCall* call) {
   return child("body")->trace(call);
 }
 
+CHECK_RETURN Err CNodeCase::emit(Cursor& cursor) {
+  Err err = cursor.check_at(this);
+
+  auto node_case  = child("case");
+  auto node_cond  = child("condition");
+  auto node_colon = child("colon");
+  auto node_body  = child("body");
+
+  err << cursor.skip_over(node_case);
+  err << cursor.skip_gap();
+  err << cursor.emit(node_cond);
+  err << cursor.emit_gap();
+
+  if (node_body) {
+    err << cursor.emit(node_colon);
+    err << cursor.emit_gap();
+    err << cursor.emit(node_body);
+  }
+  else {
+    err << cursor.emit_replacement(node_colon, ",");
+  }
+
+  return err << cursor.check_done(this);
+}
+
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err CNodeDefault::trace(CCall* call) {
   return child("body")->trace(call);
+}
+
+CHECK_RETURN Err CNodeDefault::emit(Cursor& cursor) {
+  Err err = cursor.check_at(this);
+
+  auto node_default = child("default");
+  auto node_colon   = child("colon");
+  auto node_body    = child("body");
+
+  err << cursor.emit(node_default);
+  err << cursor.emit_gap();
+
+  if (node_body) {
+    err << cursor.emit(node_colon);
+    err << cursor.emit_gap();
+    err << cursor.emit(node_body);
+  }
+  else {
+    err << cursor.emit_replacement(node_colon, ",");
+  }
+
+  return err << cursor.check_done(this);
 }
 
 //------------------------------------------------------------------------------

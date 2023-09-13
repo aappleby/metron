@@ -110,10 +110,12 @@ struct CNodeSwitch : public CNodeStatement {
 
 struct CNodeCase : public CNodeStatement {
   CHECK_RETURN Err trace(CCall* call) override;
+  CHECK_RETURN Err emit(Cursor& cursor) override;
 };
 
 struct CNodeDefault : public CNodeStatement {
   CHECK_RETURN Err trace(CCall* call) override;
+  CHECK_RETURN Err emit(Cursor& cursor) override;
 };
 
 //------------------------------------------------------------------------------

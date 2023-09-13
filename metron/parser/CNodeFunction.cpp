@@ -37,7 +37,7 @@ void CNodeFunction::init(const char* match_tag, SpanType span, uint64_t flags) {
 //------------------------------------------------------------------------------
 
 Err CNodeFunction::emit(Cursor& cursor) {
-  Err err;
+  Err err = cursor.check_at(this);
 
   bool called_by_init = false;
   bool called_by_tick = false;

@@ -215,8 +215,7 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
 */
 
 Err CNodeCall::emit(Cursor& cursor) {
-
-  Err err;
+  Err err = cursor.check_at(this);
 
   auto src_class = ancestor<CNodeClass>();
   auto src_func = ancestor<CNodeFunction>();
@@ -236,7 +235,6 @@ Err CNodeCall::emit(Cursor& cursor) {
 
     if (rtype->get_text() == "void") {
       err << cursor.comment_out(this);
-      err << cursor.emit_gap_after(this);
       return err << cursor.check_done(this);
     }
     else {
@@ -301,8 +299,6 @@ Err CNodeCall::emit(Cursor& cursor) {
         else {
           err << cursor.emit(child);
         }
-
-        err << cursor.emit_gap_after(child);
       }
       return err << cursor.check_done(this);
     }
@@ -399,12 +395,10 @@ Err CNodeCall::emit(Cursor& cursor) {
 
     if (dst_func->child("return_type")->get_text() == "void") {
       err << cursor.comment_out(this);
-      err << cursor.emit_gap_after(this);
     }
     else {
       err << cursor.skip_over(this);
       err << cursor.emit_print("%.*s_%.*s_ret", field_name.size(), field_name.data(), func_name.size(), func_name.data());
-      err << cursor.emit_gap_after(this);
     }
 
     return err << cursor.check_done(this);

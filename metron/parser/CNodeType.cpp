@@ -194,5 +194,7 @@ Err CNodeType::emit(Cursor& cursor) {
 
 
 CHECK_RETURN Err CNodeStructType::emit(Cursor& cursor) {
-  return cursor.emit_raw(this);
+  Err err = cursor.check_at(this);
+  err << cursor.emit_raw(this);
+  return err << cursor.check_done(this);
 }

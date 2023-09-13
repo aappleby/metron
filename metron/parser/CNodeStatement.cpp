@@ -20,7 +20,9 @@ Err CNodeExpStatement::trace(CCall* call) {
 //----------------------------------------
 
 Err CNodeExpStatement::emit(Cursor& cursor) {
-  return cursor.emit_default(this);
+  Err err = cursor.check_at(this);
+  err << cursor.emit_default(this);
+  return err << cursor.check_done(this);
 }
 
 //------------------------------------------------------------------------------
@@ -49,7 +51,7 @@ Err CNodeAssignment::trace(CCall* call) {
 // Change "a += b" to "a = a + b", etc.
 
 Err CNodeAssignment::emit(Cursor& cursor) {
-  Err err;
+  Err err = cursor.check_at(this);
 
   auto func = ancestor<CNodeFunction>();
 
@@ -134,7 +136,7 @@ CHECK_RETURN Err CNodeIf::trace(CCall* call) {
 //----------------------------------------
 
 CHECK_RETURN Err CNodeIf::emit(Cursor& cursor) {
-  Err err;
+  Err err = cursor.check_at(this);
   err << CNode::emit(cursor);
   #if 0
 CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnNode n) {
@@ -400,7 +402,7 @@ Err CNodeReturn::trace(CCall* call) {
 //----------------------------------------7
 
 Err CNodeReturn::emit(Cursor& cursor) {
-  Err err;
+  Err err = cursor.check_at(this);
 
   auto func = ancestor<CNodeFunction>();
   auto fname = func->get_namestr();

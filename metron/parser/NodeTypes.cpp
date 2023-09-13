@@ -15,8 +15,6 @@ std::string_view CNodeTranslationUnit::get_name() const {
 }
 
 Err CNodeTranslationUnit::emit(Cursor& cursor) {
-  //return cursor.emit_default(this);
-
   Err err = cursor.check_at(this);
 
   if (tok_begin() != child_head->tok_begin()) {
@@ -76,7 +74,7 @@ std::string_view CNodeNamespace::get_name() const {
 }
 
 Err CNodeNamespace::emit(Cursor& cursor) {
-  Err err;
+  Err err = cursor.check_at(this);
   auto node_namespace = child("namespace");
   auto node_name      = child("name");
   auto node_fields    = child("fields");
@@ -182,6 +180,7 @@ std::string_view CNodeIdentifier::get_name() const {
 }
 
 Err CNodeIdentifier::emit(Cursor& cursor) {
+  Err err = cursor.check_at(this);
   auto text = get_textstr();
 
   auto& id_map = cursor.id_map.top();
@@ -189,13 +188,15 @@ Err CNodeIdentifier::emit(Cursor& cursor) {
 
   if (found != id_map.end()) {
     auto replacement = (*found).second;
-    return cursor.emit_replacement(this, "%s", replacement.c_str());
+    err << cursor.emit_replacement(this, "%s", replacement.c_str());
   }
   else {
-    return cursor.emit_default(this);
+    err << cursor.emit_default(this);
   }
 
   //err << emit_span(n->tok_begin(), n->tok_end());
+
+  return err << cursor.check_done(this);
 
   //
 }
@@ -217,7 +218,9 @@ std::string_view CNodePunct::get_name() const {
 }
 
 Err CNodePunct::emit(Cursor& cursor) {
-  return cursor.emit_default(this);
+  Err err = cursor.check_at(this);
+  err << cursor.emit_default(this);
+  return err << cursor.check_done(this);
 }
 
 Err CNodePunct::trace(CCall* call) {
@@ -267,7 +270,7 @@ Err CNodeFieldExpression::trace(CCall* call) {
 // so that it instead refers to a glue expression.
 
 Err CNodeFieldExpression::emit(Cursor& cursor) {
-  Err err;
+  Err err = cursor.check_at(this);
 
   auto node_func = ancestor<CNodeFunction>();
   auto node_class = ancestor<CNodeClass>();
@@ -352,7 +355,9 @@ std::string_view CNodeQualifiedIdentifier::get_name() const {
 //----------------------------------------
 
 Err CNodeQualifiedIdentifier::emit(Cursor& cursor) {
-  return CNode::emit(cursor);
+  Err err = cursor.check_at(this);
+  err << CNode::emit(cursor);
+  return err << cursor.check_done(this);
 }
 
 //----------------------------------------
@@ -462,7 +467,9 @@ std::string_view CNodeList::get_name() const {
 }
 
 Err CNodeList::emit(Cursor& cursor) {
-  return cursor.emit_default(this);
+  Err err = cursor.check_at(this);
+  err << cursor.emit_default(this);
+  return err << cursor.check_done(this);
 }
 
 Err CNodeList::trace(CCall* call) {

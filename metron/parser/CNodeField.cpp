@@ -154,24 +154,18 @@ Err CNodeField::emit(Cursor& cursor) {
   bool in_namespace = ancestor<CNodeNamespace>() != nullptr;
 
   if (is_const_char()) {
-    err << cursor.skip_over(node_decl->node_static);
-    err << cursor.skip_gap_after(node_decl->node_static);
-    err << cursor.skip_over(node_decl->node_const);
-    err << cursor.skip_gap_after(node_decl->node_const);
-    err << cursor.skip_over(node_decl->node_type);
-    err << cursor.skip_gap_after(node_decl->node_type);
     err << cursor.emit_print("localparam string ");
-
+    err << cursor.skip_to(node_decl->node_name);
     err << cursor.emit(node_decl->node_name);
-    err << cursor.emit_gap_after(node_decl->node_name);
+    err << cursor.emit_gap(node_decl->node_name, node_decl->node_array);
 
     err << cursor.emit(node_decl->node_array);
-    err << cursor.emit_gap_after(node_decl->node_array);
+    err << cursor.emit_gap(node_decl->node_array, node_decl->node_eq);
 
     err << cursor.emit(node_decl->node_eq);
-    err << cursor.emit_gap_after(node_decl->node_eq);
+    err << cursor.emit_gap(node_decl->node_eq, node_decl->node_value);
     err << cursor.emit(node_decl->node_value);
-    err << cursor.emit_gap_after(node_decl->node_value);
+    err << cursor.emit_gap(node_decl->node_value, node_semi);
 
      err << cursor.emit(node_semi);
 
@@ -182,12 +176,7 @@ Err CNodeField::emit(Cursor& cursor) {
     // Localparam
     err << cursor.emit_print(in_namespace ? "parameter " : "localparam ");
 
-    err << cursor.comment_out(node_decl->node_static);
-    err << cursor.emit_gap_after(node_decl->node_static);
-
-    err << cursor.comment_out(node_decl->node_const);
-    err << cursor.emit_gap_after(node_decl->node_const);
-
+    err << cursor.skip_to(node_decl->node_type);
     err << cursor.emit(node_decl->node_type);
     err << cursor.emit_gap_after(node_decl->node_type);
 
@@ -211,10 +200,7 @@ Err CNodeField::emit(Cursor& cursor) {
   auto node_targs   = node_decl->node_type->child("template_args");
 
   if (node_builtin && node_targs) {
-    err << cursor.comment_out(node_decl->node_static);
-    err << cursor.emit_gap_after(node_decl->node_static);
-    err << cursor.comment_out(node_decl->node_const);
-    err << cursor.emit_gap_after(node_decl->node_const);
+    err << cursor.skip_to(node_decl->node_type);
     err << cursor.emit(node_decl->node_type);
     err << cursor.emit_gap_after(node_decl->node_type);
 
@@ -235,10 +221,7 @@ Err CNodeField::emit(Cursor& cursor) {
   }
 
   if (node_builtin) {
-    err << cursor.comment_out(node_decl->node_static);
-    err << cursor.emit_gap_after(node_decl->node_static);
-    err << cursor.comment_out(node_decl->node_const);
-    err << cursor.emit_gap_after(node_decl->node_const);
+    err << cursor.skip_to(node_decl->node_type);
     err << cursor.emit(node_decl->node_type);
     err << cursor.emit_gap_after(node_decl->node_type);
 
@@ -466,92 +449,6 @@ Err CNodeField::emit_component(Cursor& cursor) {
     err << cursor.start_line();
     err << cursor.emit_print(")");
   }
-
-#if 0
-  //----------------------------------------
-  // Component name
-
-  err << emit_gap(node_type, node_decl);
-  err << emit_dispatch(node_decl);
-
-  //----------------------------------------
-  // Port list
-
-  err << emit_print("(");
-
-  indent.push(indent.top() + "  ");
-
-  if (component_mod->needs_tick()) {
-    err << emit_line("// Global clock");
-    err << emit_line(".clock(clock),");
-  }
-
-  if (component_mod->input_signals.size()) {
-    err << emit_line("// Input signals");
-    for (auto f : component_mod->input_signals) {
-      err << emit_line(".%s(%s_%s),", f->cname(), inst_name.c_str(), f->cname());
-    }
-  }
-
-  if (component_mod->output_signals.size()) {
-    err << emit_line("// Output signals");
-    for (auto f : component_mod->output_signals) {
-      err << emit_line(".%s(%s_%s),", f->cname(), inst_name.c_str(), f->cname());
-    }
-  }
-
-  if (component_mod->output_registers.size()) {
-    err << emit_line("// Output registers");
-    for (auto f : component_mod->output_registers) {
-      err << emit_line(".%s(%s_%s),", f->cname(), inst_name.c_str(), f->cname());
-    }
-  }
-
-  for (auto m : component_mod->all_methods) {
-    if (m->is_constructor()) continue;
-    if (m->is_public() && m->internal_callers.empty()) {
-
-      if (m->param_nodes.size() || m->has_return()) {
-        err << emit_line("// %s() ports", m->cname());
-      }
-
-      int param_count = m->param_nodes.size();
-      for (int i = 0; i < param_count; i++) {
-        auto param = m->param_nodes[i];
-        auto node_type = param.get_field(field_type);
-        auto node_decl = param.get_field(field_declarator);
-
-        err << emit_line(".%s_%s(%s_%s_%s),", m->cname(), node_decl.text().c_str(), inst_name.c_str(), m->cname(), node_decl.text().c_str());
-      }
-
-      if (m->has_return()) {
-        auto node_type = m->_node.get_field(field_type);
-        auto node_decl = m->_node.get_field(field_declarator);
-        auto node_name = node_decl.get_field(field_declarator);
-
-        err << emit_line(".%s_ret(%s_%s_ret),", m->cname(), inst_name.c_str(), m->cname());
-      }
-    }
-  }
-
-  // Remove trailing comma from port list
-  if (at_comma) {
-    err << emit_backspace();
-  }
-
-  indent.pop();
-
-  err << emit_line(")");
-  err << emit_dispatch(node_semi);
-
-  return err << check_done(n);
-#endif
-
-
-
-
-
-
 
   //err << emit_submod_binding_fields(n);
 

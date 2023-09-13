@@ -6,7 +6,7 @@
 //------------------------------------------------------------------------------
 
 Err CNodeAccess::emit(Cursor& cursor) {
-  Err err;
+  Err err = cursor.check_at(this);
   err << cursor.comment_out(this);
   return err << cursor.check_done(this);
 }
@@ -252,16 +252,13 @@ Err CNodeClass::emit(Cursor& cursor) {
       cursor.indent_level++;
       err << cursor.skip_over(child);
       err << emit_template_parameter_list(cursor);
-      err << cursor.emit_gap_after(child);
     }
     else if (child->get_text() == "}") {
       cursor.indent_level--;
       err << cursor.emit_replacement(child, "endmodule");
-      err << cursor.emit_gap_after(child);
     }
     else {
       err << cursor.emit(child);
-      err << cursor.emit_gap_after(child);
     }
   }
 

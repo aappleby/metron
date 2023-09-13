@@ -35,7 +35,7 @@ bool CNodeDeclaration::is_array() const {
 //------------------------------------------------------------------------------
 
 Err CNodeDeclaration::emit(Cursor& cursor) {
-  Err err;
+  Err err = cursor.check_at(this);
 
   // Check for const char*
   if (node_const) {
@@ -64,11 +64,9 @@ Err CNodeDeclaration::emit(Cursor& cursor) {
   for (auto child : this) {
     if (child->as<CNodeType>()) {
       err << cursor.skip_over(child);
-      err << cursor.skip_gap_after(child);
     }
     else {
       err << cursor.emit_default(child);
-      err << cursor.emit_gap_after(child);
     }
   }
 

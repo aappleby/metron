@@ -10,7 +10,9 @@ uint32_t CNodeExpression::debug_color() const {
 }
 
 Err CNodeExpression::emit(Cursor& cursor) {
-  return cursor.emit_default(this);
+  Err err = cursor.check_at(this);
+  err << cursor.emit_default(this);
+  return err << cursor.check_done(this);
 }
 
 bool CNodeExpression::is_integer_constant() {
@@ -104,7 +106,9 @@ Err CNodeIdentifierExp::trace(CCall* call) {
 //------------------------------------------------------------------------------
 
 Err CNodeConstant::emit(Cursor& cursor) {
-  return cursor.emit_raw(this);
+  Err err = cursor.check_at(this);
+  err << cursor.emit_raw(this);
+  return err << cursor.check_done(this);
 }
 
 Err CNodeConstant::trace(CCall* call) {
@@ -118,7 +122,9 @@ uint32_t CNodeOperator::debug_color() const {
 }
 
 Err CNodeOperator::emit(Cursor& cursor) {
-  return cursor.emit_default(this);
+  Err err = cursor.check_at(this);
+  err << cursor.emit_default(this);
+  return err << cursor.check_done(this);
 }
 
 Err CNodeOperator::trace(CCall* call) {

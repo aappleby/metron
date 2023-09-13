@@ -105,6 +105,7 @@ struct CNodeReturn : public CNodeStatement {
 
 struct CNodeSwitch : public CNodeStatement {
   CHECK_RETURN Err trace(CCall* call) override;
+  CHECK_RETURN Err emit(Cursor& cursor) override;
 };
 
 struct CNodeCase : public CNodeStatement {

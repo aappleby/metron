@@ -200,6 +200,37 @@ CHECK_RETURN Err CNodeSwitch::trace(CCall* call) {
   return err;
 }
 
+CHECK_RETURN Err CNodeSwitch::emit(Cursor& cursor) {
+  Err err = cursor.check_at(this);
+
+  //dump_debug();
+
+  auto node_switch = child("switch");
+  auto node_cond   = child("condition");
+  auto node_body   = child("body");
+
+  err << cursor.emit_replacement(node_switch, "case");
+  err << cursor.emit_gap();
+  err << cursor.emit(node_cond);
+  err << cursor.emit_gap();
+
+  for (auto child : node_body) {
+    if (child->tag_is("ldelim")) {
+      err << cursor.skip_over(child);
+    }
+    else if (child->tag_is("rdelim")) {
+      err << cursor.emit_replacement(child, "endcase");
+    }
+    else {
+      err << cursor.emit(child);
+    }
+
+    if (child->node_next) err << cursor.emit_gap();
+  }
+
+  return err << cursor.check_done(this);
+}
+
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err CNodeCase::trace(CCall* call) {

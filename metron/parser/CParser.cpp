@@ -233,7 +233,7 @@ TokenSpan match_qualified_identifier(CContext& ctx, TokenSpan body) {
     Some<
       Seq<
         Tag<"scope_path", cap_identifier>,
-        cap_punct<"::">
+        Tag<"colon", cap_punct<"::">>
       >
     >,
     Tag<"identifier", cap_identifier>
@@ -1279,12 +1279,19 @@ TokenSpan match_switch(CContext& ctx, TokenSpan body) {
   Seq<
     Tag<"switch",     cap_keyword<"switch">>,
     Tag<"condition",  Ref<cap_expression>>,
-    Tag<"ldelim",     cap_punct<"{">>,
-    Any<
-      Tag<"case", cap_case>,
-      Tag<"default", cap_default>
-    >,
-    Tag<"rdelim",     cap_punct<"}">>
+    Tag<"body",
+      CaptureAnon<
+        Seq<
+          Tag<"ldelim",     cap_punct<"{">>,
+          Any<
+            Tag<"case", cap_case>,
+            Tag<"default", cap_default>
+          >,
+          Tag<"rdelim",     cap_punct<"}">>
+        >,
+        CNode
+      >
+    >
   >;
   // clang-format on
   return pattern::match(ctx, body);

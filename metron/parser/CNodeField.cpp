@@ -151,6 +151,11 @@ CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
 Err CNodeField::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
+  // Ports don't go in the class body.
+  if (_public) {
+    return err << cursor.skip_over(this);
+  }
+
   bool in_namespace = ancestor<CNodeNamespace>() != nullptr;
 
   if (is_const_char()) {

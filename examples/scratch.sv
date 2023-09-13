@@ -1,23 +1,14 @@
 `include "metron/tools/metron_tools.sv"
 
-// Public register member variables get moved to the output port list.
+// Zero-initializing structs should work for convenience.
 
 module Module (
-  // global clock
-  input logic clock,
-  // output registers
-  logic my_reg
+  // output signals
+  output int my_struct1
 );
 /*public:*/
 
-  always_ff @(posedge clock) begin : tick
-    if (1) begin
-      my_reg <= my_reg + 2;
-    end
-    else begin
-      my_reg <= my_reg + 1;
-    end
+  always_comb begin : tock
+    my_struct1 = 0;
   end
-
-  logic my_reg;
 endmodule

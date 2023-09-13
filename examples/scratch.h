@@ -1,18 +1,12 @@
 #include "metron/tools/metron_tools.h"
 
-// Public register member variables get moved to the output port list.
+// Zero-initializing structs should work for convenience.
 
 class Module {
 public:
 
-  void tick() {
-    if (1) {
-      my_reg = my_reg + 2;
-    }
-    else {
-      my_reg = my_reg + 1;
-    }
+  int my_struct1;
+  void tock() {
+    my_struct1 = 0;
   }
-
-  logic<1> my_reg;
 };

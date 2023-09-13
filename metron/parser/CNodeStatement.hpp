@@ -124,6 +124,7 @@ struct CNodeWhile : public CNodeStatement {
 };
 
 struct CNodeCompound : public CNodeStatement {
+  CHECK_RETURN Err emit(Cursor& cursor) override;
   CHECK_RETURN Err emit_block(Cursor& cursor, std::string ldelim, std::string rdelim);
   CHECK_RETURN Err emit_hoisted_decls(Cursor& cursor);
   CHECK_RETURN Err emit_call_arg_bindings(CNode* child, Cursor& cursor);

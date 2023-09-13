@@ -104,6 +104,7 @@ struct Cursor {
       err << emit_replacement_step(text, args...);
     }
     tok_cursor = n->tok_end();
+    gap_emitted = false;
     return err;
   }
 
@@ -113,11 +114,6 @@ struct Cursor {
   CHECK_RETURN Err emit_everything();
 
   CHECK_RETURN Err emit_trailing_whitespace();
-
-  //----------------------------------------
-
-  void push_cursor(const CToken* new_cursor);
-  void pop_cursor();
 
   //----------------------------------------
 
@@ -156,4 +152,5 @@ struct Cursor {
   bool line_dirty = false;
   bool line_elided = false;
   bool echo = false;
+  bool gap_emitted = false;
 };

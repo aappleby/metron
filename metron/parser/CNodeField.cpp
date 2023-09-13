@@ -183,14 +183,20 @@ Err CNodeField::emit(Cursor& cursor) {
     err << cursor.emit(node_decl->node_name);
     err << cursor.emit_gap();
 
-    err << cursor.emit(node_decl->node_array);
-    err << cursor.emit_gap();
+    if (node_decl->node_array) {
+      err << cursor.emit(node_decl->node_array);
+      err << cursor.emit_gap();
+    }
 
-    err << cursor.emit(node_decl->node_eq);
-    err << cursor.emit_gap();
+    if (node_decl->node_eq) {
+      err << cursor.emit(node_decl->node_eq);
+      err << cursor.emit_gap();
+    }
 
-    err << cursor.emit(node_decl->node_value);
-    err << cursor.emit_gap();
+    if (node_decl->node_value) {
+      err << cursor.emit(node_decl->node_value);
+      err << cursor.emit_gap();
+    }
 
     err << cursor.emit(node_semi);
     return err << cursor.check_done(this);
@@ -207,13 +213,20 @@ Err CNodeField::emit(Cursor& cursor) {
     err << cursor.emit(node_decl->node_name);
     err << cursor.emit_gap();
 
-    err << cursor.emit(node_decl->node_array);
-    err << cursor.emit_gap();
+    if (node_decl->node_array) {
+      err << cursor.emit(node_decl->node_array);
+      err << cursor.emit_gap();
+    }
 
-    err << cursor.emit(node_decl->node_eq);
-    err << cursor.emit_gap();
-    err << cursor.emit(node_decl->node_value);
-    err << cursor.emit_gap();
+    if (node_decl->node_eq) {
+      err << cursor.emit(node_decl->node_eq);
+      err << cursor.emit_gap();
+    }
+
+    if (node_decl->node_value) {
+      err << cursor.emit(node_decl->node_value);
+      err << cursor.emit_gap();
+    }
 
     err << cursor.emit(node_semi);
 
@@ -228,13 +241,20 @@ Err CNodeField::emit(Cursor& cursor) {
     err << cursor.emit(node_decl->node_name);
     err << cursor.emit_gap();
 
-    err << cursor.emit(node_decl->node_array);
-    err << cursor.emit_gap();
+    if (node_decl->node_array) {
+      err << cursor.emit(node_decl->node_array);
+      err << cursor.emit_gap();
+    }
 
-    err << cursor.emit(node_decl->node_eq);
-    err << cursor.emit_gap();
-    err << cursor.emit(node_decl->node_value);
-    err << cursor.emit_gap();
+    if (node_decl->node_eq) {
+      err << cursor.emit(node_decl->node_eq);
+      err << cursor.emit_gap();
+    }
+
+    if (node_decl->node_value) {
+      err << cursor.emit(node_decl->node_value);
+      err << cursor.emit_gap();
+    }
 
     err << cursor.emit(node_semi);
     return err << cursor.check_done(this);

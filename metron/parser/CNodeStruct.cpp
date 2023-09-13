@@ -63,7 +63,6 @@ Err CNodeStruct::emit(Cursor& cursor) {
   err << cursor.emit_default(node_body);
   err << cursor.emit_print(" ");
   err << cursor.emit_splice(node_name);
-  err << cursor.emit_gap();
 
   return err << cursor.check_done(this);
 }

@@ -2,20 +2,22 @@
 
 // Public register member variables get moved to the output port list.
 
-moduleModule (
+module Module (
   // global clock
   input logic clock,
   // output registers
   logic my_reg
 );
 /*public:*/
-  always_comb begin : tock
-    /*tick()*/;
-  end
-  logic my_reg;
 
-/*private:*/
   always_ff @(posedge clock) begin : tick
-    my_reg <= my_reg + 1;
+    if (1) begin
+      my_reg <= my_reg + 2;
+    end
+    else begin
+      my_reg <= my_reg + 1;
+    end
   end
+
+  logic my_reg;
 endmodule

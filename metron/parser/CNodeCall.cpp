@@ -307,24 +307,18 @@ Err CNodeCall::emit(Cursor& cursor) {
     // Convert "dup<15>(x)" to "{15 {x}}"
 
     if (func_name == "dup") {
-      assert(false);
+      auto node_val = child("func_targs")->child("arg");
+      auto node_exp = child("func_args")->child("exp");
 
-      /*
-      // printf("{%d {%s}}", call.func.args[0], call.args[0]); ???
+      err << cursor.skip_over(this);
 
-      if (args.named_child_count() != 1) return err << ERR("dup() had too many children\n");
+      err << cursor.emit_print("{");
+      err << cursor.emit_splice(node_val);
+      err << cursor.emit_print(" {");
+      err << cursor.emit_splice(node_exp);
+      err << cursor.emit_print("}}");
 
-      err << skip_over(func);
-
-      auto template_arg = func.get_field(field_arguments).named_child(0);
-      int dup_count = atoi(template_arg.start());
-      auto func_arg = args.named_child(0);
-      err << emit_print("{%d {", dup_count);
-      err << emit_splice(func_arg);
-      err << emit_print("}}");
-      cursor = n.end();
-      return err << check_done(n);
-      */
+      return err;
     }
 
     //----------
@@ -346,7 +340,6 @@ Err CNodeCall::emit(Cursor& cursor) {
 
     if (src_mtype == MT_TOCK && (dst_mtype == MT_TOCK || dst_mtype == MT_TICK)) {
       err << cursor.comment_out(this);
-      err << cursor.skip_gap();
 
       auto param = dst_params->child_head;
       auto arg = node_args->child_head;

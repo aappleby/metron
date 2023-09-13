@@ -291,7 +291,6 @@ Err CNodeFieldExpression::emit(Cursor& cursor) {
   else {
     err << cursor.emit_default(this);
   }
-  err << cursor.emit_gap();
 
   return err << cursor.check_done(this);
 }
@@ -417,11 +416,16 @@ std::string_view CNodeKeyword::get_name() const {
 }
 
 Err CNodeKeyword::emit(Cursor& cursor) {
-  if (get_text() == "static" || get_text() == "const") {
+  auto text = get_text();
+
+  if (text == "static" || text == "const") {
     return cursor.comment_out(this);
   }
-  if (get_text() == "nullptr") {
+  if (text == "nullptr") {
     return cursor.emit_replacement(this, "\"\"");
+  }
+  if (text == "if" || text == "else") {
+    return cursor.emit_raw(this);
   }
   NODE_ERR("FIXME");
   return Err();

@@ -58,7 +58,6 @@ Err CNodeAssignment::emit(Cursor& cursor) {
   auto node_lhs  = child("lhs");
   auto node_op   = child("op");
   auto node_rhs  = child("rhs");
-  auto node_semi = child("semi");
 
   err << cursor.emit(node_lhs);
   err << cursor.emit_gap();
@@ -82,10 +81,6 @@ Err CNodeAssignment::emit(Cursor& cursor) {
   }
 
   err << cursor.emit(node_rhs);
-  err << cursor.emit_gap();
-
-  err << cursor.emit(node_semi);
-  err << cursor.emit_gap();
 
   return err << cursor.check_done(this);
 }
@@ -106,13 +101,11 @@ CHECK_RETURN Err CNodeFor::trace(CCall* call) {
 void CNodeIf::init(const char* match_tag, SpanType span, uint64_t flags) {
   CNode::init(match_tag, span, flags);
 
-  /*
   node_if    = child("if")->req<CNodeKeyword>();
   node_cond  = child("condition")->req<CNodeList>();
   node_true  = child("body_true")->req<CNodeStatement>();
   node_else  = child("else")->as<CNodeKeyword>();
   node_false = child("body_false")->as<CNodeStatement>();
-  */
 }
 
 //----------------------------------------
@@ -137,17 +130,9 @@ CHECK_RETURN Err CNodeIf::trace(CCall* call) {
 
 CHECK_RETURN Err CNodeIf::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
-  err << CNode::emit(cursor);
-  #if 0
-CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnNode n) {
-  Err err = check_at(sym_if_statement, n);
 
-  auto node_if   = n.child_by_sym(anon_sym_if);
-  auto node_cond = n.get_field(field_condition);
-  auto node_then = n.get_field(field_consequence);
-  auto node_else = n.child_by_sym(anon_sym_else);
-  auto node_alt  = n.get_field(field_alternative);
-
+  /*
+  // FIXME sanity checks
   if (node_then.sym == sym_expression_statement && branch_contains_component_call(node_then)) {
     return err << ERR("If branches that contain component calls must use {}.\n");
   }
@@ -155,23 +140,26 @@ CHECK_RETURN Err MtCursor::emit_sym_if_statement(MnNode n) {
   if (node_alt && node_alt.sym == sym_expression_statement && branch_contains_component_call(node_alt)) {
     return err << ERR("Else branches that contain component calls must use {}.\n");
   }
+  */
 
-  err << emit_dispatch(node_if);
-  err << emit_gap(node_if, node_cond);
-  err << emit_dispatch(node_cond);
-  err << emit_gap(node_cond, node_then);
-  err << emit_block(node_then, "begin", "end");
+  err << cursor.emit(node_if);
+  err << cursor.emit_gap();
+
+  err << cursor.emit(node_cond);
+  err << cursor.emit_gap();
+
+  err << cursor.emit(node_true);
 
   if (node_else) {
-    err << emit_gap(node_then, node_else);
-    err << emit_dispatch(node_else);
-    err << emit_gap(node_else, node_alt);
-    err << emit_block(node_alt, "begin", "end");
+    err << cursor.emit_gap();
+    err << cursor.emit(node_else);
   }
 
-  return err << check_done(n);
-}
-  #endif
+  if (node_false) {
+    err << cursor.emit_gap();
+    err << cursor.emit(node_false);
+  }
+
   return err << cursor.check_done(this);
 }
 
@@ -230,6 +218,12 @@ Err CNodeCompound::trace(CCall* call) {
   Err err;
   for (auto c : this) err << c->trace(call);
   return err;
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err CNodeCompound::emit(Cursor& cursor) {
+  return emit_block(cursor, "begin", "end");
 }
 
 //----------------------------------------
@@ -348,7 +342,8 @@ Err CNodeCompound::emit_block(Cursor& cursor, std::string ldelim, std::string rd
       }
       err << cursor.emit(child);
     }
-    err << cursor.emit_gap();
+
+    if (child->node_next) err << cursor.emit_gap();
   }
 
   return err;
@@ -422,7 +417,6 @@ Err CNodeReturn::emit(Cursor& cursor) {
   err << cursor.emit_gap();
 
   err << cursor.emit(node_semi);
-  err << cursor.emit_gap();
 
   return err << cursor.check_done(this);
 }

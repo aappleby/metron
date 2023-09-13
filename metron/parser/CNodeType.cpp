@@ -146,7 +146,6 @@ Err CNodeType::emit(Cursor& cursor) {
       if (width == 1) {
         // logic<1> -> logic
         err << cursor.skip_over(node_targs);
-        err << cursor.emit_gap();
       }
       else {
         // logic<N> -> logic[N-1:0]
@@ -156,7 +155,6 @@ Err CNodeType::emit(Cursor& cursor) {
         err << cursor.emit_gap();
         err << cursor.emit_print("%d:0", width - 1);
         err << cursor.emit_replacement(node_rdelim, "]");
-        err << cursor.emit_gap();
       }
     }
     else {

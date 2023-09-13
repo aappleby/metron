@@ -25,13 +25,13 @@ Err CNodeTranslationUnit::emit(Cursor& cursor) {
     // Skip semicolons after classes
     if (c->get_text() == ";" && c->node_prev && c->node_prev->as<CNodeClass>()) {
       err << cursor.skip_over(c);
-      err << cursor.emit_gap_after(c);
+      err << cursor.emit_gap();
       continue;
     }
 
     err << cursor.emit(c);
     if (c->node_next) {
-      err << cursor.emit_gap(c, c->node_next);
+      err << cursor.emit_gap();
     }
   }
 
@@ -81,26 +81,26 @@ Err CNodeNamespace::emit(Cursor& cursor) {
   auto node_semi      = child("semi");
 
   err << cursor.emit_replacement(node_namespace, "package");
-  err << cursor.emit_gap_after(node_namespace);
+  err << cursor.emit_gap();
 
   err << cursor.emit_raw(node_name);
   err << cursor.emit_print(";");
-  err << cursor.emit_gap_after(node_name);
+  err << cursor.emit_gap();
 
   for (auto f : node_fields) {
     if (f->tag_is("ldelim")) {
       err << cursor.skip_over(f);
-      err << cursor.emit_gap_after(f);
+      err << cursor.emit_gap();
       continue;
     }
     else if (f->tag_is("rdelim")) {
       err << cursor.emit_replacement(f, "endpackage");
-      err << cursor.emit_gap_after(f);
+      err << cursor.emit_gap();
       continue;
     }
     else {
       err << f->emit(cursor);
-      err << cursor.emit_gap_after(f);
+      err << cursor.emit_gap();
       continue;
     }
   }
@@ -291,7 +291,7 @@ Err CNodeFieldExpression::emit(Cursor& cursor) {
   else {
     err << cursor.emit_default(this);
   }
-  err << cursor.emit_gap_after(this);
+  err << cursor.emit_gap();
 
   return err << cursor.check_done(this);
 }

@@ -32,10 +32,10 @@ Err CNodeTemplate::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
   err << cursor.skip_over(node_template);
-  err << cursor.skip_gap_after(node_template);
+  err << cursor.skip_gap();
 
   err << cursor.skip_over(node_params);
-  err << cursor.skip_gap_after(node_params);
+  err << cursor.skip_gap();
 
   err << cursor.emit(node_class);
 
@@ -235,10 +235,9 @@ Err CNodeClass::emit(Cursor& cursor) {
   auto n_body  = child("body");
 
   err << cursor.emit_replacements(n_class, "class", "module");
-  err << cursor.emit_gap(n_class, n_name);
-
+  err << cursor.emit_gap();
   err << cursor.emit(n_name);
-  err << cursor.emit_gap(n_name, n_body);
+  err << cursor.emit_gap();
 
   err << cursor.emit_print("(");
   cursor.indent_level++;
@@ -260,6 +259,7 @@ Err CNodeClass::emit(Cursor& cursor) {
     else {
       err << cursor.emit(child);
     }
+    if (child->node_next) err << cursor.emit_gap();
   }
 
   return err << cursor.check_done(this);

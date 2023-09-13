@@ -34,6 +34,39 @@ Cursor::Cursor(CSourceRepo* repo, CSourceFile* source, std::string* str_out) {
 
 //------------------------------------------------------------------------------
 
+CHECK_RETURN Err Cursor::emit_gap() {
+  Err err;
+
+  if (tok_cursor->lex_type() == LEX_EOF) return err;
+
+  auto ta = tok_cursor - 1;
+  auto tb = tok_cursor;
+
+  for (auto c = ta->text_end(); c < tb->text_begin(); c++) {
+    err << emit_char(*c);
+  }
+  return err;
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err Cursor::skip_gap() {
+  Err err;
+
+  if (tok_cursor->lex_type() == LEX_EOF) return err;
+
+  auto ta = tok_cursor - 1;
+  auto tb = tok_cursor;
+
+  for (auto c = ta->text_end(); c < tb->text_begin(); c++) {
+    err << skip_char(*c);
+  }
+  line_elided = true;
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
 CHECK_RETURN Err Cursor::emit(CNode* n) {
   if (n == nullptr) return Err();
   Err err = check_at(n);
@@ -95,7 +128,7 @@ CHECK_RETURN Err Cursor::emit_children(CNode* n) {
   Err err;
   for (auto c = n->child_head; c; c = c->node_next) {
     err << emit(c);
-    if (c->node_next) err << emit_gap(c, c->node_next);
+    if (c->node_next) err << emit_gap();
   }
   return err;
 }
@@ -108,14 +141,15 @@ CHECK_RETURN Err Cursor::emit_rest(CNode* n) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Cursor::emit_gap_after(CNode* n) {
+#if 0
+CHECK_RETURN Err Cursor::emit_gap() {
   if (n == nullptr) return Err();
   Err err;
   if (n->node_next) err << emit_gap(n, n->node_next);
   return err;
 }
 
-CHECK_RETURN Err Cursor::skip_gap_after(CNode* n) {
+CHECK_RETURN Err Cursor::skip_gap() {
   if (!n->node_next) return Err();
   auto begin = n->text_end();
   auto end   = n->node_next->text_begin();
@@ -128,6 +162,7 @@ CHECK_RETURN Err Cursor::skip_gap_after(CNode* n) {
   line_elided = true;
   return err;
 }
+#endif
 
 //------------------------------------------------------------------------------
 
@@ -447,6 +482,7 @@ CHECK_RETURN Err Cursor::emit_everything() {
 //------------------------------------------------------------------------------
 // Emit all whitespace and comments between node A and B.
 
+#if 0
 CHECK_RETURN Err Cursor::emit_gap(CNode* ta, CNode* tb) {
   Err err;
   if (tok_cursor != ta->tok_end()) {
@@ -481,6 +517,7 @@ CHECK_RETURN Err Cursor::skip_gap(CNode* a, CNode* b) {
 
   return err;
 }
+#endif
 
 //------------------------------------------------------------------------------
 

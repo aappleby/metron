@@ -50,11 +50,11 @@ Err CNodeDeclaration::emit(Cursor& cursor) {
     for (auto c = child_head; c; c = c->node_next) {
       if (c->as<CNodeType>()) {
         err << cursor.skip_over(c);
-        if (c->node_next) err << cursor.skip_gap(c, c->node_next);
+        if (c->node_next) err << cursor.skip_gap();
       }
       else {
         err << cursor.emit(c);
-        if (c->node_next) err << cursor.emit_gap(c, c->node_next);
+        if (c->node_next) err << cursor.emit_gap();
       }
     }
 

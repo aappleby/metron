@@ -346,7 +346,7 @@ Err CNodeCall::emit(Cursor& cursor) {
 
     if (src_mtype == MT_TOCK && (dst_mtype == MT_TOCK || dst_mtype == MT_TICK)) {
       err << cursor.comment_out(this);
-      err << cursor.skip_gap_after(this);
+      err << cursor.skip_gap();
 
       auto param = dst_params->child_head;
       auto arg = node_args->child_head;

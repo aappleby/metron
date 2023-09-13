@@ -57,13 +57,13 @@ Err CNodeStruct::emit(Cursor& cursor) {
   auto node_body   = child("body");
 
   err << cursor.emit_replacement(node_struct, "typedef struct packed");
-  err << cursor.emit_gap_after(node_struct);
+  err << cursor.emit_gap();
   err << cursor.skip_over(node_name);
-  err << cursor.skip_gap_after(node_name);
+  err << cursor.skip_gap();
   err << cursor.emit_default(node_body);
   err << cursor.emit_print(" ");
   err << cursor.emit_splice(node_name);
-  err << cursor.emit_gap_after(node_body);
+  err << cursor.emit_gap();
 
   return err << cursor.check_done(this);
 }

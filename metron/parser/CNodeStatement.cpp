@@ -61,7 +61,7 @@ Err CNodeAssignment::emit(Cursor& cursor) {
   auto node_semi = child("semi");
 
   err << cursor.emit(node_lhs);
-  err << cursor.emit_gap_after(node_lhs);
+  err << cursor.emit_gap();
 
   // If we're in a tick, emit < to turn = into <=
   if (func->method_type == MT_TICK) {
@@ -70,22 +70,22 @@ Err CNodeAssignment::emit(Cursor& cursor) {
 
   if (node_op->get_text() == "=") {
     err << cursor.emit(node_op);
-    err << cursor.emit_gap_after(node_op);
+    err << cursor.emit_gap();
   }
   else {
     auto lhs_text = node_lhs->get_text();
 
     err << cursor.skip_over(node_op);
     err << cursor.emit_print("=");
-    err << cursor.emit_gap_after(node_op);
+    err << cursor.emit_gap();
     err << cursor.emit_print("%.*s %c ", lhs_text.size(), lhs_text.data(), node_op->get_text()[1]);
   }
 
   err << cursor.emit(node_rhs);
-  err << cursor.emit_gap_after(node_rhs);
+  err << cursor.emit_gap();
 
   err << cursor.emit(node_semi);
-  err << cursor.emit_gap_after(node_semi);
+  err << cursor.emit_gap();
 
   return err << cursor.check_done(this);
 }
@@ -348,7 +348,7 @@ Err CNodeCompound::emit_block(Cursor& cursor, std::string ldelim, std::string rd
       }
       err << cursor.emit(child);
     }
-    err << cursor.emit_gap_after(child);
+    err << cursor.emit_gap();
   }
 
   return err;
@@ -414,15 +414,15 @@ Err CNodeReturn::emit(Cursor& cursor) {
   assert(node_val);
 
   err << cursor.skip_over(node_ret);
-  err << cursor.skip_gap_after(node_ret);
+  err << cursor.skip_gap();
 
   err << cursor.emit_print("%s_ret = ", fname.c_str());
 
   err << cursor.emit(node_val);
-  err << cursor.emit_gap_after(node_val);
+  err << cursor.emit_gap();
 
   err << cursor.emit(node_semi);
-  err << cursor.emit_gap_after(node_semi);
+  err << cursor.emit_gap();
 
   return err << cursor.check_done(this);
 }

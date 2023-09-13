@@ -29,6 +29,9 @@ struct Cursor {
   //void push_indent(MnNode n);
   //void pop_indent(MnNode n);
 
+  CHECK_RETURN Err emit_gap();
+  CHECK_RETURN Err skip_gap();
+
   // Node-level emit()
   CHECK_RETURN Err emit(CNode* n);
   CHECK_RETURN Err skip_over(CNode* n);
@@ -37,8 +40,6 @@ struct Cursor {
   CHECK_RETURN Err emit_default(CNode* n);
   CHECK_RETURN Err emit_children(CNode* n);
   CHECK_RETURN Err emit_rest(CNode* n);
-  CHECK_RETURN Err emit_gap_after(CNode* n);
-  CHECK_RETURN Err skip_gap_after(CNode* n);
   CHECK_RETURN Err emit_replacement(CNode* n, const std::string& s);
   CHECK_RETURN Err emit_replacement(CNode* n, const char* fmt, ...);
   CHECK_RETURN Err emit_splice(CNode* n);
@@ -110,9 +111,6 @@ struct Cursor {
   // Top-level emit function
 
   CHECK_RETURN Err emit_everything();
-
-  CHECK_RETURN Err emit_gap(CNode* a, CNode* b);
-  CHECK_RETURN Err skip_gap(CNode* a, CNode* b);
 
   CHECK_RETURN Err emit_trailing_whitespace();
 

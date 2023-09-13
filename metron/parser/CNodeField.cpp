@@ -157,15 +157,15 @@ Err CNodeField::emit(Cursor& cursor) {
     err << cursor.emit_print("localparam string ");
     err << cursor.skip_to(node_decl->node_name);
     err << cursor.emit(node_decl->node_name);
-    err << cursor.emit_gap(node_decl->node_name, node_decl->node_array);
+    err << cursor.emit_gap();
 
     err << cursor.emit(node_decl->node_array);
-    err << cursor.emit_gap(node_decl->node_array, node_decl->node_eq);
+    err << cursor.emit_gap();
 
     err << cursor.emit(node_decl->node_eq);
-    err << cursor.emit_gap(node_decl->node_eq, node_decl->node_value);
+    err << cursor.emit_gap();
     err << cursor.emit(node_decl->node_value);
-    err << cursor.emit_gap(node_decl->node_value, node_semi);
+    err << cursor.emit_gap();
 
      err << cursor.emit(node_semi);
 
@@ -178,19 +178,19 @@ Err CNodeField::emit(Cursor& cursor) {
 
     err << cursor.skip_to(node_decl->node_type);
     err << cursor.emit(node_decl->node_type);
-    err << cursor.emit_gap_after(node_decl->node_type);
+    err << cursor.emit_gap();
 
     err << cursor.emit(node_decl->node_name);
-    err << cursor.emit_gap_after(node_decl->node_name);
+    err << cursor.emit_gap();
 
     err << cursor.emit(node_decl->node_array);
-    err << cursor.emit_gap_after(node_decl->node_array);
+    err << cursor.emit_gap();
 
     err << cursor.emit(node_decl->node_eq);
-    err << cursor.emit_gap_after(node_decl->node_eq);
+    err << cursor.emit_gap();
 
     err << cursor.emit(node_decl->node_value);
-    err << cursor.emit_gap_after(node_decl->node_value);
+    err << cursor.emit_gap();
 
     err << cursor.emit(node_semi);
     return err << cursor.check_done(this);
@@ -202,18 +202,18 @@ Err CNodeField::emit(Cursor& cursor) {
   if (node_builtin && node_targs) {
     err << cursor.skip_to(node_decl->node_type);
     err << cursor.emit(node_decl->node_type);
-    err << cursor.emit_gap_after(node_decl->node_type);
+    err << cursor.emit_gap();
 
     err << cursor.emit(node_decl->node_name);
-    err << cursor.emit_gap_after(node_decl->node_name);
+    err << cursor.emit_gap();
 
     err << cursor.emit(node_decl->node_array);
-    err << cursor.emit_gap_after(node_decl->node_array);
+    err << cursor.emit_gap();
 
     err << cursor.emit(node_decl->node_eq);
-    err << cursor.emit_gap_after(node_decl->node_eq);
+    err << cursor.emit_gap();
     err << cursor.emit(node_decl->node_value);
-    err << cursor.emit_gap_after(node_decl->node_value);
+    err << cursor.emit_gap();
 
     err << cursor.emit(node_semi);
 
@@ -223,18 +223,18 @@ Err CNodeField::emit(Cursor& cursor) {
   if (node_builtin) {
     err << cursor.skip_to(node_decl->node_type);
     err << cursor.emit(node_decl->node_type);
-    err << cursor.emit_gap_after(node_decl->node_type);
+    err << cursor.emit_gap();
 
     err << cursor.emit(node_decl->node_name);
-    err << cursor.emit_gap_after(node_decl->node_name);
+    err << cursor.emit_gap();
 
     err << cursor.emit(node_decl->node_array);
-    err << cursor.emit_gap_after(node_decl->node_array);
+    err << cursor.emit_gap();
 
     err << cursor.emit(node_decl->node_eq);
-    err << cursor.emit_gap_after(node_decl->node_eq);
+    err << cursor.emit_gap();
     err << cursor.emit(node_decl->node_value);
-    err << cursor.emit_gap_after(node_decl->node_value);
+    err << cursor.emit_gap();
 
     err << cursor.emit(node_semi);
     return err << cursor.check_done(this);
@@ -363,9 +363,9 @@ Err CNodeField::emit_component(Cursor& cursor) {
 
   err << cursor.skip_to(node_decl->node_type);
   err << cursor.emit(node_decl->node_type);
-  err << cursor.emit_gap_after(node_decl->node_type);
+  err << cursor.emit_gap();
   err << cursor.emit(node_decl->node_name);
-  err << cursor.emit_gap_after(node_decl->node_name);
+  err << cursor.emit_gap();
 
   auto src_class = ancestor<CNodeClass>();
   auto repo = src_class->repo;

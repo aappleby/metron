@@ -117,14 +117,6 @@ struct TraceToken {
 //using Cap = Capture<match_tag, pattern, node_type>;
 
 //------------------------------------------------------------------------------
-
-template <typename P>
-using comma_separated = Seq<P, Any<Seq<Atom<','>, P>>, Opt<Atom<','>>>;
-
-template <typename P>
-using opt_comma_separated = Opt<comma_separated<P>>;
-
-//------------------------------------------------------------------------------
 // Matches string literals as if they were atoms. Does ___NOT___ match the
 // trailing null.
 // You'll need to define atom_cmp(CContext& ctx, atom& a, StringParam<N>& b) to use
@@ -179,8 +171,28 @@ inline TokenSpan match_punct(CContext& ctx, TokenSpan body) {
   return body;
 }
 
+//------------------------------------------------------------------------------
+
 template<StringParam p>
 using cap_punct = CaptureAnon<Ref<match_punct<p>>, CNodePunct>;
+
+template <typename P>
+using comma_separated =
+Seq<
+  P,
+  Any<
+    Seq<
+      Tag<"comma", cap_punct<",">>,
+      P
+    >
+  >,
+  Opt<
+    Tag<"comma", cap_punct<",">>
+  >
+>;
+
+template <typename P>
+using opt_comma_separated = Opt<comma_separated<P>>;
 
 //------------------------------------------------------------------------------
 // Excluding builtins and typedefs from being identifiers changes the total

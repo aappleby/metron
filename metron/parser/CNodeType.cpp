@@ -139,33 +139,33 @@ Err CNodeType::emit(Cursor& cursor) {
     auto node_rdelim = node_targs->child("rdelim");
 
     err << cursor.emit_raw(node_name);
-    err << cursor.emit_gap_after(node_name);
+    err << cursor.emit_gap();
 
     if (auto node_const_int = node_exp->as<CNodeConstInt>()) {
       auto width = atoi(node_exp->text_begin());
       if (width == 1) {
         // logic<1> -> logic
         err << cursor.skip_over(node_targs);
-        err << cursor.emit_gap_after(node_targs);
+        err << cursor.emit_gap();
       }
       else {
         // logic<N> -> logic[N-1:0]
         err << cursor.emit_replacement(node_ldelim, "[");
-        err << cursor.emit_gap_after(node_ldelim);
+        err << cursor.emit_gap();
         err << cursor.skip_over(node_exp);
-        err << cursor.emit_gap_after(node_exp);
+        err << cursor.emit_gap();
         err << cursor.emit_print("%d:0", width - 1);
         err << cursor.emit_replacement(node_rdelim, "]");
-        err << cursor.emit_gap_after(node_rdelim);
+        err << cursor.emit_gap();
       }
     }
     else {
       // logic<exp> -> logic[(exp)-1:0]
       err << cursor.emit_replacement(node_ldelim, "[");
-      err << cursor.emit_gap_after(node_ldelim);
+      err << cursor.emit_gap();
       err << cursor.emit_print("(");
       err << cursor.emit(node_exp);
-      err << cursor.emit_gap_after(node_exp);
+      err << cursor.emit_gap();
       err << cursor.emit_print(")-1:0");
       err << cursor.emit_replacement(node_rdelim, "]");
     }

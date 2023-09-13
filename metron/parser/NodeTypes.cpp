@@ -453,7 +453,7 @@ Err CNodeKeyword::emit(Cursor& cursor) {
   if (text == "break") {
     return cursor.comment_out(this);
   }
-  if (text == "default") {
+  if (text == "default" || text == "for") {
     return cursor.emit_raw(this);
   }
   NODE_ERR("FIXME");

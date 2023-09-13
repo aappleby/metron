@@ -78,6 +78,33 @@ Err CNodeSuffixExp::trace(CCall* call) {
   return err;
 }
 
+Err CNodeSuffixExp::emit(Cursor& cursor) {
+  Err err = cursor.check_at(this);
+
+  auto node_lhs = child("lhs");
+  auto node_op  = child("suffix");
+
+  auto op = node_op->get_text();
+
+  if (op == "++" || op == "--") {
+    err << cursor.skip_over(this);
+    err << cursor.emit_splice(node_lhs);
+    err << cursor.emit_print(" = ");
+    err << cursor.emit_splice(node_lhs);
+    if (op == "++") {
+      err << cursor.emit_print(" + 1");
+    }
+    else {
+      err << cursor.emit_print(" - 1");
+    }
+  }
+  else {
+    err << cursor.emit_default(this);
+  }
+
+  return err << cursor.check_done(this);
+}
+
 //------------------------------------------------------------------------------
 
 Err CNodeAssignExp::trace(CCall* call) {

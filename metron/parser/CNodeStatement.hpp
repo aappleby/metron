@@ -78,6 +78,7 @@ struct CNodeAssignment : public CNodeStatement {
 
 struct CNodeFor : public CNodeStatement {
   CHECK_RETURN Err trace(CCall* call) override;
+  CHECK_RETURN Err emit(Cursor& cursor) override;
 };
 
 //------------------------------------------------------------------------------

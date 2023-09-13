@@ -96,6 +96,15 @@ CHECK_RETURN Err CNodeFor::trace(CCall* call) {
   return err;
 }
 
+CHECK_RETURN Err CNodeFor::emit(Cursor& cursor) {
+  Err err = cursor.check_at(this);
+
+  //dump_debug();
+  err << cursor.emit_default(this);
+
+  return err << cursor.check_done(this);
+}
+
 //------------------------------------------------------------------------------
 
 void CNodeIf::init(const char* match_tag, SpanType span, uint64_t flags) {

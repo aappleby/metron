@@ -266,6 +266,7 @@ Err CNodeField::emit(Cursor& cursor) {
   }
 
   if (is_struct()) {
+    return cursor.emit_raw(this);
   }
 
 

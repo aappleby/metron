@@ -206,6 +206,7 @@ CHECK_RETURN Err Cursor::emit_span(const CToken* a, const CToken* b) {
   assert(a != b);
   for (auto c = a; c < b; c++) {
     err << emit_token(c);
+    if (c < b - 1) err << emit_gap();
   }
   tok_cursor = b;
   gap_emitted = false;

@@ -208,6 +208,7 @@ void CInstStruct::commit_state() {
     pair.second->commit_state();
     merged_state = merge_branch(merged_state, pair.second->state_stack.back());
   }
+  state_stack.back() = merged_state;
   node_field->field_type = trace_state_to_field_type(merged_state);
 }
 

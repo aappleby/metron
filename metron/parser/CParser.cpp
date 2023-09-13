@@ -32,7 +32,7 @@ TokenSpan match_tdecl_list  (CContext& ctx, TokenSpan body);
 TokenSpan match_decl_list   (CContext& ctx, TokenSpan body);
 TokenSpan match_exp_list    (CContext& ctx, TokenSpan body);
 TokenSpan match_index_list  (CContext& ctx, TokenSpan body);
-TokenSpan cap_expression  (CContext& ctx, TokenSpan body);
+TokenSpan cap_expression    (CContext& ctx, TokenSpan body);
 TokenSpan match_declaration (CContext& ctx, TokenSpan body);
 TokenSpan match_constructor (CContext& ctx, TokenSpan body);
 TokenSpan match_function    (CContext& ctx, TokenSpan body);
@@ -51,7 +51,7 @@ using cap_enum =  CaptureAnon<Ref<match_enum>, CNodeEnum>;
 TokenSpan cap_type(CContext& ctx, TokenSpan body);
 
 using cap_targ_list    = CaptureAnon<Ref<match_targ_list>,   CNodeList>;
-using cap_statement    = CaptureAnon<Ref<match_statement>,   CNodeList>;
+using cap_statement    = Ref<match_statement>;
 using cap_exp_list     = CaptureAnon<Ref<match_exp_list>,    CNodeList>;
 
 using cap_access       = CaptureAnon<Ref<match_access>,      CNodeAccess>;
@@ -507,13 +507,6 @@ TokenSpan cap_exp_unit(CContext& ctx, TokenSpan body) {
 // FIXME need to cap the then
 
 TokenSpan match_ternary_op(CContext& ctx, TokenSpan body) {
-  /*
-  NodeTernaryOp() {
-    precedence = 16;
-    assoc = -1;
-  }
-  */
-
   using pattern =
   Seq<
     Ref<match_binary_op<"?">>,
@@ -1304,7 +1297,8 @@ TokenSpan match_do_while(CContext& ctx, TokenSpan body) {
     Tag<"do",    cap_keyword<"do">>,
     Tag<"body",  cap_statement>,
     Tag<"while", cap_keyword<"while">>,
-    Tag<"cond",  cap_exp_list>
+    Tag<"cond",  cap_exp_list>,
+    Tag<"semi",  cap_punct<";">>
   >;
   // clang-format on
   return pattern::match(ctx, body);
@@ -1417,62 +1411,14 @@ TokenSpan cap_assignment(CContext& ctx, TokenSpan body) {
     Seq<
       Tag<"lhs",  cap_any_identifier>,
       Tag<"op",   cap_assignment_op>,
-      Tag<"rhs",  Ref<cap_expression>>//,
-      //Tag<"semi", cap_punct<";">>
+      Tag<"rhs",  Ref<cap_expression>>
     >,
     CNodeAssignment
   >;
   return pattern::match(ctx, body);
 }
 
-
-TokenSpan cap_assign_stmt(CContext& ctx, TokenSpan body) {
-  using pattern =
-  CaptureAnon<
-    Seq<
-      Tag<"exp", Ref<cap_assignment>>,
-      Tag<"semi", cap_punct<";">>
-    >,
-    CNodeExpStatement
-  >;
-  return pattern::match(ctx, body);
-}
-
-TokenSpan cap_break_stmt(CContext& ctx, TokenSpan body) {
-  using pattern =
-  CaptureAnon<
-    Seq<
-      Tag<"exp",  cap_keyword<"break">>,
-      Tag<"semi", cap_punct<";">>
-    >,
-    CNodeExpStatement
-  >;
-  return pattern::match(ctx, body);
-}
-
-TokenSpan cap_continue_stmt(CContext& ctx, TokenSpan body) {
-  using pattern =
-  CaptureAnon<
-    Seq<
-      Tag<"exp",  cap_keyword<"continue">>,
-      Tag<"semi", cap_punct<";">>
-    >,
-    CNodeExpStatement
-  >;
-  return pattern::match(ctx, body);
-}
-
-TokenSpan cap_decl_stmt(CContext& ctx, TokenSpan body) {
-  using pattern =
-  CaptureAnon<
-    Seq<
-      Tag<"exp",  cap_declaration>,
-      Tag<"semi", cap_punct<";">>
-    >,
-    CNodeExpStatement
-  >;
-  return pattern::match(ctx, body);
-}
+//------------------------------------------------------------------------------
 
 template<typename P>
 using statement_wrapper =
@@ -1484,17 +1430,7 @@ CaptureAnon<
   CNodeExpStatement
 >;
 
-using cap_expstatement =
-CaptureAnon<
-  Seq<
-    Tag<"exp", Ref<cap_expression>>,
-    Tag<"semi", cap_punct<";">>
-  >,
-  CNodeExpStatement
->;
-
-
-//------------------------------------------------------------------------------
+//----------
 
 TokenSpan match_statement(CContext& ctx, TokenSpan body) {
   // clang-format off
@@ -1505,20 +1441,25 @@ TokenSpan match_statement(CContext& ctx, TokenSpan body) {
     cap_switch,
     cap_while,
     cap_compound,
-
-    // FIXME semis need to go back in the statement captures...
-
-    Seq<cap_do_while,            cap_punct<";">>,
+    cap_do_while,
     cap_return,
-    Ref<cap_break_stmt>,
-    Ref<cap_continue_stmt>,
-    Ref<cap_assign_stmt>,
-    cap_expstatement,
-    Seq<cap_declaration,         cap_punct<";">>,
-    cap_punct<";">
+
+    statement_wrapper<cap_keyword<"break">>,
+    statement_wrapper<cap_keyword<"continue">>,
+    statement_wrapper<Ref<cap_assignment>>,
+    statement_wrapper<Ref<cap_expression>>,
+    statement_wrapper<cap_declaration>
+
+    // FIXME disallowing empty statements for now
+    //,
+    //cap_punct<";">
   >;
   // clang-format on
-  return pattern::match(ctx, body);
+  auto result = pattern::match(ctx, body);
+  if (result.is_valid()) {
+    assert(ctx.top_tail->as<CNodeStatement>());
+  }
+  return result;
 }
 
 //------------------------------------------------------------------------------

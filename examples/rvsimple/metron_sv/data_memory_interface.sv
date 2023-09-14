@@ -26,14 +26,14 @@ module data_memory_interface (
   output logic bus_read_enable,
   output logic bus_write_enable
 );
- /*public*/
+ /*public:*/
 
 
- /*private*/
+ /*private:*/
   logic[31:0] position_fix;
   logic[31:0] sign_fix;
 
- /*public*/
+ /*public:*/
   always_comb begin : tock_bus
     bus_address = address;
     bus_write_enable = write_enable;

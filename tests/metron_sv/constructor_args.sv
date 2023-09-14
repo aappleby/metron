@@ -13,7 +13,7 @@ module Module (
   parameter data_len = 1024;
   parameter blarp = 7;
 
-/*public*/
+/*public:*/
 
   parameter /*const*/ filename = "examples/uart/message.hex";
   initial begin
@@ -32,7 +32,7 @@ module Module (
     get_data_ret = out;
   end
 
-/*private*/
+/*private:*/
   logic[9:0] addr;
   logic[7:0] data[data_len];
   logic[7:0] out;

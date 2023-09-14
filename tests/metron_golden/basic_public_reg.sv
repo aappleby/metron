@@ -8,11 +8,11 @@ module Module (
   // output registers
   output logic my_reg
 );
-/*public*/
+/*public:*/
   always_comb begin : tock
   end
 
-/*private*/
+/*private:*/
   always_ff @(posedge clock) begin : tick
     my_reg <= my_reg + 1;
   end

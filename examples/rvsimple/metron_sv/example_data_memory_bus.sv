@@ -23,7 +23,7 @@ module example_data_memory_bus (
   // output signals
   output logic[31:0] read_data
 );
- /*public*/
+ /*public:*/
        // in
      // out
     // in
@@ -36,7 +36,7 @@ module example_data_memory_bus (
   begin
   end
 
- /*private*/
+ /*private:*/
   example_data_memory #(
     // Constructor Parameters
     .filename(filename)
@@ -57,7 +57,7 @@ module example_data_memory_bus (
   logic[31:0] data_memory_data;
   logic[31:0] data_memory_q;
 
- /*public*/
+ /*public:*/
   always_comb begin : tock
     logic is_data_memory;
     logic[31:0] fetched;

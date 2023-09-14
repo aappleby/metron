@@ -7,7 +7,7 @@ module Module (
   output logic[5:0] sig1,
   output logic[5:0] sig2
 );
-/*public*/
+/*public:*/
 
   initial begin
     $write("Hello World?\n");

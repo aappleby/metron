@@ -17,7 +17,7 @@ module control_transfer (
   // output signals
   output logic take_branch
 );
- /*public*/
+ /*public:*/
 
   always_comb begin : tock_take_branch
     import rv_constants::*;

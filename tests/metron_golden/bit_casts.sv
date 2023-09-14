@@ -14,7 +14,7 @@ module Module (
   // test2() ports
   output int test2_ret
 );
-/*public*/
+/*public:*/
 
   always_comb begin : test_bN
     logic[63:0] src;

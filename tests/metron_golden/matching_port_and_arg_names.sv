@@ -12,7 +12,7 @@ module Module (
   // tock2() ports
   input int tock2_input_val
 );
-/*public*/
+/*public:*/
 
 
   always_comb begin : tock1

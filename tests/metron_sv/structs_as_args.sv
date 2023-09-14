@@ -20,7 +20,7 @@ module block_ram (
   // tick() ports
   input tilelink_a tick_tla
 );
-/*public*/
+/*public:*/
 
   always_comb begin : unshell
     unshell_ret = unshell_tla.a_data;

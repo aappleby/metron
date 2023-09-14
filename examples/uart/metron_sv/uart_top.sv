@@ -27,7 +27,7 @@ module uart_top (
   parameter cycles_per_bit = 3;
   parameter repeat_msg = 0;
 
-/*public*/
+/*public:*/
 
   // The actual bit of data currently on the transmitter's output
   always_comb begin : get_serial
@@ -81,7 +81,7 @@ module uart_top (
   end
 
   //----------------------------------------
-/*private*/
+/*private:*/
   // Our UART client that transmits our "hello world" test message
   uart_hello #(
     // Template Parameters

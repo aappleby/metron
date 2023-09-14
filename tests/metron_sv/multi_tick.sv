@@ -8,7 +8,7 @@ module Module (
   // tock() ports
   output logic[7:0] tock_ret
 );
-/*public*/
+/*public:*/
 
   always_comb begin : tock
     logic[7:0] result;
@@ -16,7 +16,7 @@ module Module (
     tock_ret = result;
   end
 
-/*private*/
+/*private:*/
 
   always_ff @(posedge clock) begin : tick1
     my_reg1 <= 0;

@@ -10,7 +10,7 @@ module Module (
   // output signals
   output MyStruct1 my_struct1
 );
-/*public*/
+/*public:*/
 
   always_comb begin : tock
     // FIXME fix this later glarghbh

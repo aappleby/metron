@@ -8,11 +8,11 @@ module Submod (
   // tock() ports
   input logic[7:0] tock_arg
 );
-/*public*/
+/*public:*/
   always_comb begin : tock
     tick_arg = tock_arg;
   end
-/*private*/
+/*private:*/
   always_ff @(posedge clock) begin : tick
     my_reg <= my_reg + tick_arg;
   end
@@ -26,7 +26,7 @@ module Module (
   // global clock
   input logic clock
 );
-/*public*/
+/*public:*/
 
   always_comb begin : tock
     if (1) begin

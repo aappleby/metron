@@ -6,12 +6,12 @@ module Module (
   // global clock
   input logic clock
 );
-/*public*/
+/*public:*/
 
   always_comb begin : tock
   end
 
-/*private*/
+/*private:*/
 
   localparam /*static*/ /*const*/ int my_val = 7;
 

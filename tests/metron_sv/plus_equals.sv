@@ -8,7 +8,7 @@ module Metron (
   output int my_reg2,
   output int my_reg3
 );
-/*public*/
+/*public:*/
 
 
   // Divide and mod work, but make Yosys extremely slow to synth

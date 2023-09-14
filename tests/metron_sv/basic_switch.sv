@@ -8,13 +8,13 @@ module Module (
   // tock() ports
   input logic[1:0] tock_selector
 );
-/*public*/
+/*public:*/
 
   always_comb begin : tock
     tick_selector = tock_selector;
   end
 
-/*private*/
+/*private:*/
 
   always_ff @(posedge clock) begin : tick
     case(tick_selector)

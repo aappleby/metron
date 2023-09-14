@@ -9,7 +9,7 @@ module Module (
   // test2() ports
   output int test2_ret
 );
-/*public*/
+/*public:*/
 
   always_comb begin : test1
     logic[31:0] a;

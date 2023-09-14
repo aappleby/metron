@@ -8,13 +8,13 @@ module Submod (
   // tock() ports
   input int tock_x
 );
-/*public*/
+/*public:*/
 
   always_comb begin : tock
     tick_x = tock_x;
   end
 
-/*private*/
+/*private:*/
 
   always_ff @(posedge clock) begin : tick
     sub_reg <= sub_reg + tick_x;
@@ -30,7 +30,7 @@ module Module (
   // tock() ports
   input int tock_x
 );
-/*public*/
+/*public:*/
 
   always_comb begin : tock
     submod_tock_x = tock_x;

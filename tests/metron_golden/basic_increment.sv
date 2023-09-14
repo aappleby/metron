@@ -7,12 +7,12 @@ module Module (
   // global clock
   input logic clock
 );
-/*public*/
+/*public:*/
 
   always_comb begin : tock
   end
 
-/*private*/
+/*private:*/
 
   always_ff @(posedge clock) begin : tick
     my_reg1 <= my_reg1 + 1;

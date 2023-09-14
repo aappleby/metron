@@ -28,7 +28,7 @@ module Module (
   // test1() ports
   output int test1_ret
 );
- /*public*/
+ /*public:*/
   typedef enum { A1, /* random comment */ B1, C1 } simple_enum1;
   typedef enum { A2 = 32'b01, B2 = 32'h02, C2 = 32'd3 } simple_enum2;
 

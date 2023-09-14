@@ -15,7 +15,7 @@ module Module (
   parameter data_len = 1024;
   parameter blarp = 0;
 
-/*public*/
+/*public:*/
 
   parameter /*const*/ filename = "";
   initial begin
@@ -34,7 +34,7 @@ module Module (
     get_data_ret = out;
   end
 
-/*private*/
+/*private:*/
   logic[9:0] addr;
   logic[7:0] data[data_len];
   logic[7:0] out;
@@ -48,7 +48,7 @@ module Top (
   // tock() ports
   input logic[9:0] tock_addr
 );
-/*public*/
+/*public:*/
   initial begin
   end
 

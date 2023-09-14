@@ -42,12 +42,12 @@ module singlecycle_datapath (
   output logic[6:0] inst_funct7,
   output logic alu_result_equal_zero
 );
- /*public*/
+ /*public:*/
 
 
   // control signals
 
- /*private*/
+ /*private:*/
   logic[31:0] rs1_data;
   logic[31:0] rs2_data;
 
@@ -55,7 +55,7 @@ module singlecycle_datapath (
   logic[4:0] inst_rs1;
   logic[4:0] inst_rs2;
 
- /*public*/
+ /*public:*/
   //----------------------------------------
 
   always_comb begin : tock_pc  pc = program_counter_value; end
@@ -156,7 +156,7 @@ module singlecycle_datapath (
 
   //----------------------------------------
 
- /*private*/
+ /*private:*/
   adder #(
     // Template Parameters
     .WIDTH(32)

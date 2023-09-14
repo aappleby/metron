@@ -16,7 +16,7 @@ module example_text_memory (
   // output signals
   output logic[31:0] q
 );
- /*public*/
+ /*public:*/
   parameter /*const*/ filename = "";
   initial begin
     if (filename) $readmemh(filename, mem);
@@ -24,7 +24,7 @@ module example_text_memory (
 
   always_comb begin : tock_q  q = mem[address]; end
 
- /*private*/
+ /*private:*/
   logic[31:0] mem[2**(rv_config::TEXT_BITS - 2)];
 endmodule
 

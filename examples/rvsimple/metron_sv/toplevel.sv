@@ -30,7 +30,7 @@ module toplevel (
   // tock() ports
   input int tock_bogus_param
 );
- /*public*/
+ /*public:*/
 
 
   parameter /*const*/ text_filename = "";
@@ -70,7 +70,7 @@ module toplevel (
 
   //----------------------------------------
 
- /*private*/
+ /*private:*/
   riscv_core core(
     // Global clock
     .clock(clock),

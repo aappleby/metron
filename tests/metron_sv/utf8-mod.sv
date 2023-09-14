@@ -18,7 +18,7 @@ module Module (
   // get_reg() ports
   output logic[7:0] get_reg_ret
 );
-/*public*/
+/*public:*/
 
   initial begin
     my_reg = 7;
@@ -28,7 +28,7 @@ module Module (
     get_reg_ret = my_reg;
   end
 
-/*private*/
+/*private:*/
 
   logic[7:0] my_reg;
 endmodule

@@ -10,7 +10,7 @@ module Module (
   // test() ports
   output logic[7:0] test_ret
 );
-/*public*/
+/*public:*/
 
   always_comb begin : test
 logic[7:0] a; a = 1; a = a + 7; test_ret = a; end

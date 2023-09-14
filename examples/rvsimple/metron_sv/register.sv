@@ -23,13 +23,13 @@ module single_register (
   parameter WIDTH = 32;
   parameter INITIAL = 0;
 
- /*public*/
+ /*public:*/
 
   initial begin value = INITIAL; end
 
   always_comb begin : tock   end
 
- /*private*/
+ /*private:*/
   always_ff @(posedge clock) begin : tick
     if (reset)
       value <= INITIAL;

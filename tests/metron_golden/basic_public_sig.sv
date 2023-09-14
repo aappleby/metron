@@ -6,7 +6,7 @@ module Module (
   // output signals
   output logic my_sig
 );
-/*public*/
+/*public:*/
 
   always_comb begin : tock
     my_sig = 1;

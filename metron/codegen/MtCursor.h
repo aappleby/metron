@@ -118,6 +118,7 @@ struct MtCursor {
 
   // Per-symbol emit()s.
   // clang-format off
+  CHECK_RETURN Err emit_sym_access_specifier(MnNode n);
   CHECK_RETURN Err emit_sym_assignment_expression(MnNode n);
   CHECK_RETURN Err emit_sym_call_expression(MnNode n);
   CHECK_RETURN Err emit_sym_case_statement(MnNode n);

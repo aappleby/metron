@@ -20,7 +20,7 @@ module uart_rx (
 );
   parameter cycles_per_bit = 4;
 
-/*public*/
+/*public:*/
 
   // Our output is valid once we've received 8 bits.
   always_comb begin : get_valid
@@ -80,7 +80,7 @@ module uart_rx (
     end
   end
 
- /*private*/
+ /*private:*/
   // We wait for cycles_per_bit cycles
   localparam /*static*/ /*const*/ int bit_delay_width = $clog2(cycles_per_bit);
   localparam /*static*/ /*const*/ int bit_delay_max = cycles_per_bit - 1;

@@ -9,13 +9,13 @@ module Module (
   // tock() ports
   input logic[7:0] tock_val
 );
-/*public*/
+/*public:*/
 
   always_comb begin : tock
     tick_val = tock_val;
   end
 
-/*private*/
+/*private:*/
 
   always_ff @(posedge clock) begin : tick
     my_reg <= my_reg + tick_val;

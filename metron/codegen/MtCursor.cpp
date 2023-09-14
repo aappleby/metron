@@ -17,7 +17,7 @@ emit_map emit_sym_map = {
   { alias_sym_field_identifier,         &MtCursor::emit_text },
   { alias_sym_namespace_identifier,     &MtCursor::emit_text },
   { alias_sym_type_identifier,          &MtCursor::emit_sym_type_identifier },
-  { sym_access_specifier,               &MtCursor::comment_out },
+  { sym_access_specifier,               &MtCursor::emit_sym_access_specifier },
   { sym_argument_list,                  &MtCursor::emit_children },
   { sym_array_declarator,               &MtCursor::emit_children },
   { sym_assignment_expression,          &MtCursor::emit_sym_assignment_expression },
@@ -772,6 +772,19 @@ CHECK_RETURN Err MtCursor::emit_replacement(MnNode n, const char* fmt, ...) {
   cursor = n.end();
   return err << check_done(n);
 }
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err MtCursor::emit_sym_access_specifier(MnNode node) {
+  Err err = check_at(sym_access_specifier, node);
+
+  err << emit_print("/*");
+  err << emit_text(node);
+  err << emit_print(":*/");
+
+  return err << check_done(node);
+}
+
 
 //------------------------------------------------------------------------------
 // FIXME we don't seem to be exercising this...

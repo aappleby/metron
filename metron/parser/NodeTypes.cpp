@@ -22,24 +22,16 @@ Err CNodeTranslationUnit::emit(Cursor& cursor) {
   }
 
   for (auto c = child_head; c; c = c->node_next) {
-    // Skip semicolons after classes
-    if (c->get_text() == ";" && c->node_prev && c->node_prev->as<CNodeClass>()) {
-      err << cursor.skip_over(c);
-      err << cursor.emit_gap();
-      continue;
-    }
-
     err << cursor.emit(c);
-    if (c->node_next) {
-      err << cursor.emit_gap();
-    }
+    err << cursor.emit_gap();
   }
 
   if (child_tail->tok_end() != tok_end()) {
     err << cursor.emit_span(child_tail->tok_end(), tok_end());
   }
 
-  return err << cursor.check_done(this);
+  //return err << cursor.check_done(this);
+  return err;
 }
 
 Err CNodeTranslationUnit::trace(CCall* call) {

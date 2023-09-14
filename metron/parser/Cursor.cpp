@@ -42,7 +42,7 @@ CHECK_RETURN Err Cursor::emit_gap() {
   Err err;
   assert(!gap_emitted);
 
-  if (tok_cursor->lex_type() == LEX_EOF) return err;
+  //if (tok_cursor->lex_type() == LEX_EOF) return err;
 
   auto ta = tok_cursor - 1;
   auto tb = tok_cursor;

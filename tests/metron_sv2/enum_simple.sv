@@ -54,3 +54,4 @@ module Module (
     test1_ret = 1;
   end
 endmodule
+// clang-format on

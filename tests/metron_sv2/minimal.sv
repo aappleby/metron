@@ -5,3 +5,5 @@
 module Module (
 );
 endmodule
+
+// Comments at end of file should be preserved

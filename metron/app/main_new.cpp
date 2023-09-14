@@ -496,7 +496,8 @@ int main_new(Options opts) {
 
   if (opts.echo) LOG_G("\n----------------------------------------\n");
   err << cursor.emit_everything();
-  err << cursor.emit_trailing_whitespace();
+  //err << cursor.emit_trailing_whitespace();
+  //err << cursor.emit_gap();
   if (opts.echo) LOG_G("----------------------------------------\n\n");
 
   if (err.has_err()) {

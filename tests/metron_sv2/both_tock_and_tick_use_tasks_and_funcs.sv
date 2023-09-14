@@ -30,7 +30,7 @@ module Module (
   end
 
   function logic[7:0] public_func(x);
-    public_func_ret = my_reg1 + private_func(x);
+    public_func = my_reg1 + private_func(x);
   endfunction
 
 /*private:*/
@@ -46,7 +46,7 @@ module Module (
   endtask
 
   function logic[7:0] private_func(y);
-    private_func_ret = my_reg1 + y;
+    private_func = my_reg1 + y;
   endfunction
 
   logic[7:0] my_reg1;

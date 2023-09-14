@@ -16,7 +16,7 @@ module Module (
   end
 
   function logic[7:0] get_number(); /*const*/
-    get_number_ret = 7;
+    get_number = 7;
   endfunction
 
   always_comb begin : set_signal

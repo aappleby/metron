@@ -19,7 +19,7 @@ module Module (
   end
 
   function logic[7:0] some_func(); /*const*/
-    some_func_ret = 3;
+    some_func = 3;
   endfunction
 
   logic[7:0] my_reg;

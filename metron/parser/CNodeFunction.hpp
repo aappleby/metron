@@ -37,6 +37,9 @@ struct CNodeFunction : public CNode {
   Err emit_func(Cursor& cursor);
   Err emit_task(Cursor& cursor);
 
+  bool emit_as_task();
+  bool emit_as_func();
+
 #if 0
   needs_ports = is_public_ && internal_callers.empty();
 #endif

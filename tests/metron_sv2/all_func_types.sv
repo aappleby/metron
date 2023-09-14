@@ -83,7 +83,7 @@ module Module (
 
 /*private:*/
   function int my_func5(x);
-    my_func5_ret = x + 1;
+    my_func5 = x + 1;
   endfunction
 /*public:*/
 
@@ -118,7 +118,7 @@ module Module (
 
 /*private:*/
   function int func_called_by_tick(x);
-    func_called_by_tick_ret = x + 7;
+    func_called_by_tick = x + 7;
   endfunction
 /*public:*/
 

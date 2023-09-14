@@ -17,7 +17,7 @@ module Module (
 /*private:*/
 
   function int my_getter(); /*const*/
-    my_getter_ret = 12;
+    my_getter = 12;
   endfunction
 
 endmodule

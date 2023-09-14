@@ -505,7 +505,12 @@ Err CNodeReturn::emit(Cursor& cursor) {
   err << cursor.skip_over(node_ret);
   err << cursor.skip_gap();
 
-  err << cursor.emit_print("%s_ret = ", fname.c_str());
+  if (func->emit_as_task() || func->emit_as_func()) {
+    err << cursor.emit_print("%s = ", fname.c_str());
+  }
+  else {
+    err << cursor.emit_print("%s_ret = ", fname.c_str());
+  }
 
   err << cursor.emit(node_val);
   err << cursor.emit_gap();

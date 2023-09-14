@@ -27,7 +27,7 @@ module single_register (
 
   initial begin value = INITIAL; end
 
-  always_comb begin : tock   end
+  always_comb begin : tock  /*tick();*/ end
 
  /*private:*/
   always_ff @(posedge clock) begin : tick

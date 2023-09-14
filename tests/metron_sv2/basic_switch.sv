@@ -33,4 +33,4 @@ module Module (
   end
 
   logic[7:0] my_reg;
-endmodule
+endmodule;

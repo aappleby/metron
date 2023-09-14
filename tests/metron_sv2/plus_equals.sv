@@ -31,4 +31,4 @@ module Metron (
     //my_reg4 /= 22;
     //my_reg5 %= 22;
   end
-endmodule
+endmodule;

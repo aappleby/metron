@@ -13,6 +13,7 @@ module Module (
 
   always_comb begin : tock
     tick_val = tock_val;
+    /*tick(val);*/
   end
 
 /*private:*/

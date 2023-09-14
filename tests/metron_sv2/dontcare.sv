@@ -24,4 +24,4 @@ module Module (
   always_comb begin : test3
     test3_ret = (8)'(DONTCARE);
   end
-endmodule
+endmodule;

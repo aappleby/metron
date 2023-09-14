@@ -365,7 +365,6 @@ CHECK_RETURN Err CNodeCompound::emit_call_arg_bindings(CNode* child, Cursor& cur
   }
 
   if (auto func_id = call->node_name->as<CNodeIdentifier>()) {
-    func_id->dump_tree();
     auto func_name = func_id->get_text();
 
     auto src_class = ancestor<CNodeClass>();

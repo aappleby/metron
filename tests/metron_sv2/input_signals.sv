@@ -26,7 +26,7 @@ module Submod (
   always_ff @(posedge clock) begin : tick
     o_reg <= o_reg + o_signal;
   end
-endmodule
+endmodule;
 
 module Module (
   // global clock
@@ -54,4 +54,4 @@ module Module (
   logic[7:0] my_sig;
 
   Submod submod;
-endmodule
+endmodule;

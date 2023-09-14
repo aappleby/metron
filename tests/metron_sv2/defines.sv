@@ -17,4 +17,4 @@ module Module (
     test_ret = MY_OTHER_CONSTANT;
   end
 
-endmodule
+endmodule;

@@ -124,6 +124,9 @@ struct Cursor {
 
   std::stack<const CToken*> cursor_stack;
 
+  const Lexeme* lex_begin = nullptr;
+  const Lexeme* lex_end = nullptr;
+
   const CToken* tok_begin = nullptr;
   const CToken* tok_end = nullptr;
   const CToken* tok_cursor = nullptr;

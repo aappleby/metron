@@ -4,4 +4,4 @@
 
 module Module (
 );
-endmodule
+endmodule;

@@ -32,4 +32,4 @@ module Module (
     /*submod.tock()*/;
   end
 
-endmodule
+endmodule;

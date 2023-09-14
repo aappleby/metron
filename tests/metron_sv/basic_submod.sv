@@ -12,6 +12,7 @@ module Submod (
 
   always_comb begin : tock
     tick_x = tock_x;
+    /*tick(x);*/
   end
 
 /*private:*/
@@ -34,6 +35,7 @@ module Module (
 
   always_comb begin : tock
     submod_tock_x = tock_x;
+    /*submod.tock(x);*/
   end
 
   Submod submod(

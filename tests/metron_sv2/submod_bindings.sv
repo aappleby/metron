@@ -17,7 +17,7 @@ module Submod (
 
   always_comb begin : sum_a /*const*/  sum_a_ret = sum_a_a1 + sum_a_a2; end
   always_comb begin : sum_b /*const*/  sum_b_ret = sum_b_b1 + sum_b_b2; end
-endmodule
+endmodule;
 
 module Module (
   // tock_bindings() ports
@@ -50,4 +50,4 @@ module Module (
     tock_bindings_ret = result;
   end
 
-endmodule
+endmodule;

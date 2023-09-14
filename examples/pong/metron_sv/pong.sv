@@ -82,6 +82,7 @@ module Pong (
   always_comb begin : tock_game
     tick_in_quad_a = tock_game_in_quad_a;
     tick_in_quad_b = tock_game_in_quad_b;
+    /*tick(in_quad_a, in_quad_b);*/
   end
 
   //----------------------------------------

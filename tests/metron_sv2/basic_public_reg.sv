@@ -17,4 +17,4 @@ module Module (
   always_ff @(posedge clock) begin : tick
     my_reg <= my_reg + 1;
   end
-endmodule
+endmodule;

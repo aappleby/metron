@@ -15,6 +15,7 @@ module Module (
   end
 
   always_comb begin : tock
+    /*tick();*/
   end
 
 

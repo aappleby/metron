@@ -13,6 +13,8 @@ module Module (
   always_comb begin : tock
     logic[7:0] result;
     result = my_reg1 + my_reg2;
+    /*tick1();*/
+    /*tick2();*/
     tock_ret = result;
   end
 

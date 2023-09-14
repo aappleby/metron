@@ -230,13 +230,14 @@ bool CNodeClass::needs_tock() {
 Err CNodeClass::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
-  auto n_class = child<CNodeKeyword>();
-  auto n_name  = child("name");
-  auto n_body  = child("body");
+  auto node_class = child<CNodeKeyword>();
+  auto node_name  = child("name");
+  auto node_body  = child("body");
+  auto node_semi  = child("semi");
 
-  err << cursor.emit_replacements(n_class, "class", "module");
+  err << cursor.emit_replacements(node_class, "class", "module");
   err << cursor.emit_gap();
-  err << cursor.emit(n_name);
+  err << cursor.emit(node_name);
   err << cursor.emit_gap();
 
   err << cursor.emit_print("(");
@@ -246,7 +247,7 @@ Err CNodeClass::emit(Cursor& cursor) {
   err << cursor.start_line();
   err << cursor.emit_print(");");
 
-  for (auto child : n_body) {
+  for (auto child : node_body) {
     if (child->get_text() == "{") {
       cursor.indent_level++;
       err << cursor.skip_over(child);
@@ -261,6 +262,9 @@ Err CNodeClass::emit(Cursor& cursor) {
     }
     if (child->node_next) err << cursor.emit_gap();
   }
+
+  err << cursor.emit_gap();
+  err << cursor.emit(node_semi);
 
   return err << cursor.check_done(this);
 }

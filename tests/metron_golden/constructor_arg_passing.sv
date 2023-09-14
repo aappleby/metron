@@ -24,6 +24,7 @@ module Module (
 
   always_comb begin : tock
     addr = tock_new_addr;
+    /*tick();*/
   end
 
   always_ff @(posedge clock) begin : tick
@@ -54,6 +55,7 @@ module Top (
 
   always_comb begin : tock
     mod_tock_new_addr = tock_addr;
+    /*mod.tock(addr);*/
   end
 
   always_ff @(posedge clock) begin : tick

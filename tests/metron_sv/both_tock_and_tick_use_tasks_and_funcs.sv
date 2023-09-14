@@ -21,6 +21,7 @@ module Module (
     public_task_x = public_func(tock_z);
     dummy = public_task_ret;
     tick_w = tock_z;
+    /*tick(z);*/
   end
 
   always_comb begin : public_task

@@ -11,6 +11,7 @@ module Submod (
 /*public:*/
 
   always_comb begin : tock
+    /*tick();*/
   end
 
 /*private:*/
@@ -29,6 +30,7 @@ module Module (
 /*public:*/
 
   always_comb begin : tock
+    /*submod.tock();*/
   end
 
   Submod #(

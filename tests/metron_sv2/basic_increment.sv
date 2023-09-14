@@ -26,4 +26,4 @@ module Module (
   int my_reg2;
   int my_reg3;
   int my_reg4;
-endmodule
+endmodule;

@@ -12,4 +12,4 @@ module Module (
     my_sig = 1;
   end
 
-endmodule
+endmodule;

@@ -9,6 +9,7 @@ module Module (
 /*public:*/
 
   always_comb begin : tock
+    /*tick();*/
   end
 
 /*private:*/

@@ -26,4 +26,4 @@ module Module (
   always_ff @(posedge clock) begin : tick
     my_reg <= my_reg + MyPackage::foo;
   end
-endmodule
+endmodule;

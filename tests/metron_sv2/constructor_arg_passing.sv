@@ -61,4 +61,4 @@ module Top (
     //mod.tick();
   end
 
-endmodule
+endmodule;

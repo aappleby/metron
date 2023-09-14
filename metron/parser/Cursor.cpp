@@ -9,6 +9,9 @@ Cursor::Cursor(CSourceRepo* repo, CSourceFile* source, std::string* str_out) {
   this->source_file = source;
   this->str_out = str_out;
 
+  this->lex_begin = source->context.lexemes.data();
+  this->lex_end = this->lex_begin + source->context.lexemes.size();
+
   this->tok_begin  = source->context.tokens.data();
   this->tok_end    = this->tok_begin + source->context.tokens.size();
 

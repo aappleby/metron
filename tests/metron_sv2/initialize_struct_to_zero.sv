@@ -17,4 +17,4 @@ module Module (
     //my_struct1 = {0};
     my_struct1_field = 0;
   end
-endmodule
+endmodule;

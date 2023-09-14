@@ -97,6 +97,7 @@ module Module (
   always_comb begin : tock_calls_tock
     my_sig6a = 12;
     tock_called_by_tock_x = my_sig6a;
+    /*tock_called_by_tock(my_sig6a);*/
     tock_calls_tock_ret = 0;
   end
 
@@ -131,6 +132,7 @@ module Module (
 
   always_comb begin : only_calls_private_tick
     private_tick_x = 17;
+    /*private_tick(17);*/
   end
 
 /*private:*/

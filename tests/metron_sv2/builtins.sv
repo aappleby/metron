@@ -19,4 +19,4 @@ module Module (
     sig = 1;
   end
 
-endmodule
+endmodule;

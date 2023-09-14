@@ -2356,7 +2356,7 @@ CHECK_RETURN Err MtCursor::emit_sym_expression_statement(MnNode node) {
   // requires bindings.
 
   if (node.child(0).sym == sym_call_expression && can_omit_call(node.child(0))) {
-    err << skip_over(node);
+    err << comment_out(node);
     return err;
   }
   else {

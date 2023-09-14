@@ -58,4 +58,4 @@ module Module (
     reg5 = 5;
   endtask
 
-endmodule
+endmodule;

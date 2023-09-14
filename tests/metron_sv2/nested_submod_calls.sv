@@ -11,7 +11,7 @@ module Submod1 (
   always_comb begin : add_one /*const*/
     add_one_ret = add_one_a + 1;
   end
-endmodule
+endmodule;
 
 module Submod2 (
   // add_two() ports
@@ -22,7 +22,7 @@ module Submod2 (
   always_comb begin : add_two /*const*/
     add_two_ret = add_two_a + 1;
   end
-endmodule
+endmodule;
 
 module Module (
   // tock() ports
@@ -43,4 +43,4 @@ module Module (
 
   Submod1 submod1;
   Submod2 submod2;
-endmodule
+endmodule;

@@ -36,4 +36,4 @@ module Module (
     s_z_b = 8;
     s_z_c = 9;
   end
-endmodule
+endmodule;

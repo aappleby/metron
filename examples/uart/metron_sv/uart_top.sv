@@ -73,11 +73,14 @@ module uart_top (
     hello_tick_reset = tock_reset;
     hello_tick_clear_to_send = clear_to_send;
     hello_tick_idle = idle;
+    /*hello.tick(reset, clear_to_send, idle);*/
     tx_tick_reset = tock_reset;
     tx_tick_send_data = data;
     tx_tick_send_request = request;
+    /*tx.tick(reset, data, request);*/
     rx_tick_reset = tock_reset;
     rx_tick_serial = serial;
+    /*rx.tick(reset, serial);*/
   end
 
   //----------------------------------------

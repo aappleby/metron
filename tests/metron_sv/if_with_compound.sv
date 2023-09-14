@@ -11,6 +11,7 @@ module Submod (
 /*public:*/
   always_comb begin : tock
     tick_arg = tock_arg;
+    /*tick(arg);*/
   end
 /*private:*/
   always_ff @(posedge clock) begin : tick
@@ -31,9 +32,11 @@ module Module (
   always_comb begin : tock
     if (1) begin
       submod_tock_arg = 72;
+      /*submod.tock(72);*/
     end
     else begin
       submod_tock_arg = 36;
+      /*submod.tock(36);*/
     end
   end
 

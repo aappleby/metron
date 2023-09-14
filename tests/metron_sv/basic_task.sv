@@ -11,6 +11,7 @@ module Module (
 /*public:*/
 
   always_comb begin : tock
+    /*tick();*/
     tock_ret = 0;
   end
 

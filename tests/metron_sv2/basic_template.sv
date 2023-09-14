@@ -31,4 +31,4 @@ module Module (
     tock_ret = submodule_my_width + submodule_my_height;
   end
 
-endmodule
+endmodule;

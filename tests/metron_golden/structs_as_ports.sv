@@ -130,10 +130,14 @@ module Top (
 );
 /*public:*/
   always_comb begin : tock
+    /*cpu.tock();*/
+    /*dev.tock();*/
 
     cpu_tld = dev_tld;
     dev_tla = cpu_tla;
 
+    /*cpu.tick();*/
+    /*dev.tick();*/
   end
 
   TilelinkCPU cpu(

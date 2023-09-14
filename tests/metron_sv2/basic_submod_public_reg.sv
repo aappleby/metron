@@ -21,7 +21,7 @@ module Submod (
     sub_reg <= sub_reg + 1;
   end
 
-endmodule
+endmodule;
 
 module Module (
   // global clock
@@ -39,4 +39,4 @@ module Module (
     /*submod.tock()*/;
   end
 
-endmodule
+endmodule;

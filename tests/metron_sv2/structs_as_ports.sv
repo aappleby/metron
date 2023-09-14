@@ -66,7 +66,7 @@ module TilelinkDevice (
 /*private:*/
   logic[31:0] test_reg;
   logic  oe;
-endmodule
+endmodule;
 
 //------------------------------------------------------------------------------
 
@@ -107,7 +107,7 @@ module TilelinkCPU (
 /*private:*/
   logic[31:0] addr;
   logic[31:0] data;
-endmodule
+endmodule;
 
 //------------------------------------------------------------------------------
 
@@ -127,4 +127,4 @@ module Top (
     /*dev.tick()*/;
   end
 
-endmodule
+endmodule;

@@ -17,4 +17,4 @@ module Module (
   always_ff @(posedge clock) begin : tick  if (my_reg & 1) my_reg <= my_reg - 7; end
 
 
-endmodule
+endmodule;

@@ -505,6 +505,8 @@ int main_new(Options opts) {
     return -1;
   }
 
+  //----------------------------------------
+
   // Save translated source to output directory, if there is one.
   if (opts.dst_name.size()) {
     LOG_G("Saving %s\n", opts.dst_name.c_str());

@@ -25,6 +25,7 @@ module Module (
         result = 30;
     endcase
 
+    /*tick();*/
     tock_ret = result;
   end
 

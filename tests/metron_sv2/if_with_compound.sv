@@ -20,7 +20,7 @@ module Submod (
   end
 
   logic[7:0] my_reg;
-endmodule
+endmodule;
 
 
 module Module (
@@ -40,4 +40,4 @@ module Module (
     end
   end
 
-endmodule
+endmodule;

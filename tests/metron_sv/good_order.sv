@@ -11,6 +11,7 @@ module Module (
 
   always_comb begin : tock
     my_sig = my_reg;
+    /*tick();*/
   end
 
 /*private:*/

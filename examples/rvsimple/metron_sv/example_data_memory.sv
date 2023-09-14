@@ -30,6 +30,7 @@ module example_data_memory (
  /*public:*/
   always_comb begin : tock
     q = mem[address];
+    /*tick();*/
   end
 
  /*private:*/

@@ -12,6 +12,7 @@ module Module (
 
   always_comb begin : tock
     tick_selector = tock_selector;
+    /*tick(selector);*/
   end
 
 /*private:*/

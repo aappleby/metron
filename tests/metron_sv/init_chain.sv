@@ -14,6 +14,7 @@ module Module (
   end
 
   always_comb begin : tock
+    /*tick();*/
     tock_ret = 0;
   end
 

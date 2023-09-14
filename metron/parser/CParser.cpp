@@ -33,7 +33,8 @@ TokenSpan match_decl_list   (CContext& ctx, TokenSpan body);
 TokenSpan match_exp_list    (CContext& ctx, TokenSpan body);
 TokenSpan match_index_list  (CContext& ctx, TokenSpan body);
 TokenSpan cap_expression    (CContext& ctx, TokenSpan body);
-TokenSpan match_declaration (CContext& ctx, TokenSpan body);
+TokenSpan match_declaration_exp (CContext& ctx, TokenSpan body);
+TokenSpan match_declaration_stmt (CContext& ctx, TokenSpan body);
 TokenSpan match_constructor (CContext& ctx, TokenSpan body);
 TokenSpan match_function    (CContext& ctx, TokenSpan body);
 TokenSpan match_struct      (CContext& ctx, TokenSpan body);
@@ -63,7 +64,7 @@ using cap_function     = CaptureAnon<Ref<match_function>,    CNodeFunction>;
 //using cap_typedef      = CaptureAnon<Ref<match_typedef>,     CNodeTypedef;
 using cap_union        = CaptureAnon<Ref<match_union>,       CNodeUnion>;
 using cap_constructor  = CaptureAnon<Ref<match_constructor>, CNodeConstructor>;
-using cap_declaration  = CaptureAnon<Ref<match_declaration>, CNodeDeclaration>;
+//using cap_declaration  = CaptureAnon<Ref<match_declaration_exp>, CNodeDeclaration>;
 
 //------------------------------------------------------------------------------
 
@@ -723,7 +724,7 @@ TokenSpan match_decl_list(CContext& ctx, TokenSpan body) {
   using pattern =
   DelimitedList<
     Tag<"ldelim", cap_punct<"(">>,
-    Tag<"decl",   cap_declaration>,
+    Tag<"decl",   CaptureAnon<Ref<match_declaration_exp>, CNodeDeclaration>>,
     cap_punct<",">,
     Tag<"rdelim", cap_punct<")">>
   >;
@@ -798,7 +799,17 @@ TokenSpan match_tdecl_list(CContext& ctx, TokenSpan body) {
 
   auto tight_span = get_template_span(body);
   if (!tight_span.is_valid()) return body.fail();
-  auto tail2 = comma_separated<Tag<"decl", cap_declaration>>::match(ctx, tight_span);
+
+  using pattern =
+  comma_separated<
+    Tag<
+      "decl",
+      CaptureAnon<Ref<match_declaration_exp>, CNodeDeclaration>
+    >
+  >;
+
+  auto tail2 = pattern::match(ctx, tight_span);
+
   if (!tail2.is_valid() || !tail2.is_empty()) return body.fail();
 
   auto tail3 = Tag<"rdelim", cap_punct<">">>::match(ctx, TokenSpan(tail2.end, body.end));
@@ -853,7 +864,7 @@ TokenSpan cap_type(CContext& ctx, TokenSpan body) {
 
 //------------------------------------------------------------------------------
 
-TokenSpan match_declaration(CContext& ctx, TokenSpan body) {
+TokenSpan match_declaration_exp(CContext& ctx, TokenSpan body) {
   using pattern =
   Seq<
     Any<
@@ -871,12 +882,31 @@ TokenSpan match_declaration(CContext& ctx, TokenSpan body) {
   return pattern::match(ctx, body);
 }
 
+TokenSpan match_declaration_stmt(CContext& ctx, TokenSpan body) {
+  using pattern =
+  Seq<
+    Any<
+      Tag<"static", cap_keyword<"static">>,
+      Tag<"const",  cap_keyword<"const">>
+    >,
+    Tag<"type",      Ref<cap_type>>,
+    Tag<"name",      cap_identifier>,
+    Any<Tag<"array", cap_index_list>>,
+    Opt<Seq<
+      Tag<"eq", cap_punct<"=">>,
+      Tag<"value",   Ref<cap_expression>>
+    >>,
+    Tag<"semi", cap_punct<";">>
+  >;
+  return pattern::match(ctx, body);
+}
+
 //------------------------------------------------------------------------------
 
 using cap_field =
 CaptureAnon<
   Seq<
-    Tag<"decl", cap_declaration>,
+    Tag<"decl", CaptureAnon<Ref<match_declaration_exp>, CNodeDeclaration>>,
     Tag<"semi", cap_punct<";">>
   >,
   CNodeField
@@ -921,8 +951,9 @@ TokenSpan match_struct(CContext& ctx, TokenSpan body) {
   using pattern =
   Seq<
     Tag<"struct", cap_keyword<"struct">>,
-    Tag<"name", Dispatch<cap_identifier, Ref<&CContext::add_struct2>>>,
-    Tag<"body", cap_field_list>
+    Tag<"name",   Dispatch<cap_identifier, Ref<&CContext::add_struct2>>>,
+    Tag<"body",   cap_field_list>,
+    Tag<"semi",   cap_punct<";">>
   >;
   // clang-format on
   return pattern::match(ctx, body);
@@ -954,9 +985,10 @@ TokenSpan match_union(CContext& ctx, TokenSpan body) {
   // clang-format off
   using pattern =
   Seq<
-    cap_keyword<"union">,
+    Tag<"union", cap_keyword<"union">>,
     Tag<"name",  cap_union_type_name>,
-    Tag<"body",  cap_field_list>
+    Tag<"body",  cap_field_list>,
+    Tag<"semi",  cap_punct<";">>
   >;
   // clang-format on
   return pattern::match(ctx, body);
@@ -989,7 +1021,8 @@ TokenSpan match_class(CContext& ctx, TokenSpan body) {
   Seq<
     Tag<"class", cap_keyword<"class">>,
     Tag<"name",  cap_class_type_name>,
-    Tag<"body",  cap_field_list>
+    Tag<"body",  cap_field_list>,
+    Tag<"semi",  cap_punct<";">>
   >;
   // clang-format on
   return pattern::match(ctx, body);
@@ -1166,7 +1199,7 @@ TokenSpan match_for(CContext& ctx, TokenSpan body) {
   Oneof<
     Ref<cap_assignment>,
     Ref<cap_expression>,
-    Ref<match_declaration>
+    Ref<match_declaration_exp>
   >;
 
   using pattern =
@@ -1474,7 +1507,7 @@ TokenSpan match_statement(CContext& ctx, TokenSpan body) {
     statement_wrapper<cap_keyword<"continue">>,
     statement_wrapper<Ref<cap_assignment>>,
     statement_wrapper<Ref<cap_expression>>,
-    statement_wrapper<cap_declaration>
+    statement_wrapper<CaptureAnon<Ref<match_declaration_exp>, CNodeDeclaration>>
 
     // FIXME disallowing empty statements for now
     //,
@@ -1497,12 +1530,12 @@ TokenSpan match_translation_unit(CContext& ctx, TokenSpan body) {
     cap_preproc,
     cap_function,
     cap_namespace,
-    Seq<cap_class,       cap_punct<";">>,
-    Seq<cap_struct,      cap_punct<";">>,
-    Seq<cap_union,       cap_punct<";">>,
+    cap_class,
+    cap_struct,
+    cap_union,
     cap_enum,
-    Seq<cap_template,    cap_punct<";">>,
-    Seq<cap_declaration, cap_punct<";">>
+    cap_template,
+    statement_wrapper<CaptureAnon<Ref<match_declaration_exp>, CNodeDeclaration>>
 
     //cap_typedef FIXME
   >;

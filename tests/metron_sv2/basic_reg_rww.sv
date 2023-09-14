@@ -21,4 +21,4 @@ module Module (
   end
 
   logic my_reg;
-endmodule
+endmodule;

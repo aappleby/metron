@@ -3,6 +3,7 @@
 
 #pragma once
 #include <stdint.h>
+#include <string_view>
 
 #include "CConstants.hpp"
 #include "matcheroni/Matcheroni.hpp"
@@ -50,6 +51,8 @@ struct Lexeme {
   const char* type_to_str() const;
   uint32_t type_to_color() const;
   void dump_lexeme() const;
+
+  std::string_view get_text() const { return std::string_view(text_begin, text_end); }
 
   LexemeType type;
   const char* text_begin;

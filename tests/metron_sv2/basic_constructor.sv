@@ -21,7 +21,7 @@ module Module (
   logic[7:0] my_reg;
 endmodule
 
-/*#
+
 `ifdef IVERILOG
 module Test;
   logic clock;
@@ -32,4 +32,4 @@ module Test;
   end
 endmodule
 `endif
-#*/
+

@@ -47,13 +47,27 @@ CHECK_RETURN Err Cursor::emit_gap() {
   Err err;
   assert(!gap_emitted);
 
-  //if (tok_cursor->lex_type() == LEX_EOF) return err;
-
   auto ta = tok_cursor - 1;
   auto tb = tok_cursor;
 
-  for (auto c = ta->text_end(); c < tb->text_begin(); c++) {
-    err << emit_char(*c);
+  auto la = ta->lex + 1;
+  auto lb = tb->lex - 1;
+
+  for(auto l = la; l <= lb; l++) {
+    auto c_begin = l->text_begin;
+    auto c_end = l->text_end;
+
+    // Unwrap magic /*#foo#*/ comments to pass arbitrary text to Verilog.
+    if (l->type == LEX_COMMENT) {
+      if (l->get_text().starts_with("/*#") && l->get_text().ends_with("#*/")) {
+        c_begin += 3;
+        c_end -= 3;
+      }
+    }
+
+    for (auto c = c_begin; c < c_end; c++) {
+      err << emit_char(*c);
+    }
   }
 
   gap_emitted = true;

@@ -15,10 +15,10 @@ module Module (
     my_reg <= my_reg + 1;
   end
 
-/*#
+
   always @(posedge clock) begin
     //$display("Hello World!\n");
   end
-#*/
+
 
 endmodule

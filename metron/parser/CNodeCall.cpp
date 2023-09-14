@@ -330,6 +330,11 @@ Err CNodeCall::emit(Cursor& cursor) {
     auto src_mtype = src_func->method_type;
     auto dst_mtype = dst_func->method_type;
 
+    if (dst_mtype == MT_INIT) {
+      assert(src_mtype == MT_INIT);
+      return cursor.emit_default(this);
+    }
+
     if (dst_mtype == MT_FUNC) {
       return cursor.emit_default(this);
     }

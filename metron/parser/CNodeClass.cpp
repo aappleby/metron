@@ -53,7 +53,7 @@ void CNodeClass::init(const char* match_tag, SpanType span, uint64_t flags) {
 
   for (auto child : node_body->items) {
     if (auto node_enum = child->as<CNodeEnum>()) {
-      all_enums.push_back(node_enum);
+      all_enums2.push_back(node_enum);
     }
   }
 }
@@ -82,7 +82,7 @@ CNodeDeclaration* CNodeClass::get_modparam(std::string_view name) {
 }
 
 CNodeEnum* CNodeClass::get_enum(std::string_view name) {
-  for (auto e : all_enums) if (e->get_name() == name) return e;
+  for (auto e : all_enums2) if (e->get_name() == name) return e;
   return nullptr;
 }
 
@@ -437,10 +437,10 @@ void CNodeClass::dump() {
     for (auto f : all_fields) f->dump();
   }
 
-  if (all_enums.size()) {
+  if (all_enums2.size()) {
     LOG_G("Enums\n");
     LOG_INDENT_SCOPE();
-    for (auto e : all_enums) e->dump();
+    for (auto e : all_enums2) e->dump();
   }
 }
 

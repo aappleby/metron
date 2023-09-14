@@ -66,7 +66,7 @@ Err CNodeDeclaration::emit(Cursor& cursor) {
       err << cursor.skip_over(child);
     }
     else {
-      err << cursor.emit_default(child);
+      err << cursor.emit(child);
     }
   }
 

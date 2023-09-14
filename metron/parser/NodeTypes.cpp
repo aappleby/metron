@@ -365,7 +365,14 @@ Err CNodeQualifiedIdentifier::emit(Cursor& cursor) {
   if (node_scope->get_text() == "std") elide_scope = true;
 
   // FIXME what was this for?
+  // Verilog doesn't like the scope on the enums
   //if (current_mod.top()->get_enum(node_scope.text())) elide_scope = true;
+
+  auto node_class = ancestor<CNodeClass>();
+
+  if (node_class && node_class->get_enum(node_scope->get_text())) {
+    elide_scope = true;
+  }
 
   if (elide_scope) {
     err << cursor.skip_to(node_name);
@@ -454,6 +461,9 @@ Err CNodeKeyword::emit(Cursor& cursor) {
     return cursor.comment_out(this);
   }
   if (text == "default" || text == "for") {
+    return cursor.emit_raw(this);
+  }
+  if (text == "enum") {
     return cursor.emit_raw(this);
   }
   NODE_ERR("FIXME");

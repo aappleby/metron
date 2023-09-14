@@ -146,8 +146,8 @@ int main_new(Options opts) {
       }
       else if (auto node_enum = n->as<CNodeEnum>()) {
         //LOG_G("top level enum!!!!\n");
-        node_enum->repo = &repo;
-        node_enum->file = file;
+        //node_enum->repo = &repo;
+        //node_enum->file = file;
 
         repo.all_enums.push_back(node_enum);
       }

@@ -85,7 +85,7 @@ struct CNodeClass : public CNode {
   std::vector<CNodeField*>       all_fields;
   std::vector<CNodeDeclaration*> all_modparams;
   std::vector<CNodeField*>       all_localparams;
-  std::vector<CNodeEnum*>        all_enums;
+  std::vector<CNodeEnum*>        all_enums2;
 
   std::vector<CNodeField*> input_signals;
   std::vector<CNodeField*> output_signals;

@@ -125,6 +125,15 @@ CHECK_RETURN Err MtCursor::emit_sym_sized_type_specifier(MnNode n) {
 [000.005]  ┃       ┗━━╸▆ CNodePunct = ">"
 [000.005]  ┗━━╸▆ name : CNodeIdentifier = "x"
 
+[001.872]  ▆ base_type : CNodeBuiltinType =
+[007.000]  ┣━━╸▆ name : CNodeIdentifier = "logic"
+[007.000]  ┣━━╸▆ template_args : CNodeList =
+[007.000]  ┃   ┣━━╸▆ ldelim : CNodePunct = "<"
+[007.000]  ┃   ┣━━╸▆ arg : CNodeConstInt = "8"
+[007.000]  ┃   ┗━━╸▆ rdelim : CNodePunct = ">"
+[007.000]  ┣━━╸▆ CNodePunct = "::"
+[007.000]  ┗━━╸▆ CNodeIdentifier = "BASE"
+
 */
 
 Err CNodeType::emit(Cursor& cursor) {
@@ -132,6 +141,7 @@ Err CNodeType::emit(Cursor& cursor) {
 
   auto node_name  = child("name");
   auto node_targs = child("template_args");
+  auto node_scope = child("scope");
 
   if (as<CNodeBuiltinType>() && node_targs) {
     auto node_ldelim = node_targs->child("ldelim");
@@ -166,6 +176,11 @@ Err CNodeType::emit(Cursor& cursor) {
       err << cursor.emit_gap();
       err << cursor.emit_print(")-1:0");
       err << cursor.emit_replacement(node_rdelim, "]");
+    }
+
+    if (node_scope) {
+      err << cursor.skip_gap();
+      err << cursor.skip_over(node_scope);
     }
   }
   else if (as<CNodeBuiltinType>()) {

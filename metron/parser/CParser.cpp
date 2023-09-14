@@ -825,10 +825,12 @@ CaptureAnon<
     Opt<Tag<"template_args", cap_targ_list>>,
 
     // FIXME this is bleh
-    Opt<Seq<
-      cap_punct<"::">,
-      cap_identifier
-    >>,
+    Opt<
+      Tag<
+        "scope",
+        CaptureAnon< Seq<cap_punct<"::">, cap_identifier>, CNode>
+      >
+    >,
 
     Any<Tag<"star", cap_punct<"*">>>
   >,
@@ -887,7 +889,7 @@ TokenSpan match_field_list(CContext& ctx, TokenSpan body) {
       cap_access,
       cap_constructor,
       cap_function,
-      Seq<cap_enum,  cap_punct<";">>,
+      cap_enum,
       cap_field
     >,
     Tag<"rdelim", cap_punct<"}">>
@@ -1038,14 +1040,14 @@ TokenSpan match_enumerator(CContext& ctx, TokenSpan body) {
   return pattern::match(ctx, body);
 }
 
-using cap_enumerator_name = CaptureAnon<Ref<match_enumerator>, CNodeText>;
+using cap_enumerator_name = CaptureAnon<Ref<match_enumerator>, CNodeEnumerator>;
 
 TokenSpan match_enumerator_list(CContext& ctx, TokenSpan body) {
   using pattern =
   DelimitedList<
     Tag<"ldelim", cap_punct<"{">>,
-    cap_enumerator_name,
-    cap_punct<",">,
+    Tag<"enumerator", cap_enumerator_name>,
+    Tag<"comma", cap_punct<",">>,
     Tag<"rdelim", cap_punct<"}">>
   >;
   return pattern::match(ctx, body);
@@ -1054,23 +1056,20 @@ TokenSpan match_enumerator_list(CContext& ctx, TokenSpan body) {
 TokenSpan match_enum(CContext& ctx, TokenSpan body) {
   using pattern =
   Seq<
-    cap_keyword<"enum">,
+    Tag<"enum", cap_keyword<"enum">>,
     Opt<
-      cap_keyword<"class">
+      Tag<"class", cap_keyword<"class">>
     >,
     Opt<
       Tag<"name", cap_enum_type_name>
     >,
     Opt<Seq<
-      cap_punct<":">,
+      Tag<"colon", cap_punct<":">>,
       Tag<"base_type", Ref<cap_type>>
     >>,
     Tag<"body", CaptureAnon<Ref<match_enumerator_list>, CNodeList>>,
-    Opt<
-      comma_separated<
-        Tag<"decl", Ref<cap_expression>>
-      >
-    >
+    Opt<comma_separated<Tag<"decl", Ref<cap_expression>>>>,
+    Tag<"semi", cap_punct<";">>
   >;
   return pattern::match(ctx, body);
 }
@@ -1501,7 +1500,7 @@ TokenSpan match_translation_unit(CContext& ctx, TokenSpan body) {
     Seq<cap_class,       cap_punct<";">>,
     Seq<cap_struct,      cap_punct<";">>,
     Seq<cap_union,       cap_punct<";">>,
-    Seq<cap_enum,        cap_punct<";">>,
+    cap_enum,
     Seq<cap_template,    cap_punct<";">>,
     Seq<cap_declaration, cap_punct<";">>
 

@@ -1,3 +1,5 @@
+// Comments at start of file should be preserved
+
 `include "metron/tools/metron_tools.sv"
 
 // Empty module should pass.

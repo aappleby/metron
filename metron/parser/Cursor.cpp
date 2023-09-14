@@ -12,11 +12,16 @@ Cursor::Cursor(CSourceRepo* repo, CSourceFile* source, std::string* str_out) {
   this->lex_begin = source->context.lexemes.data();
   this->lex_end = this->lex_begin + source->context.lexemes.size();
 
-  this->tok_begin  = source->context.tokens.data();
-  this->tok_end    = this->tok_begin + source->context.tokens.size();
+  const CToken* actual_tok_begin = source->context.root_node->span.begin;
+  const CToken* actual_tok_end   = source->context.root_node->span.end;
+
+  //this->tok_begin  = source->context.tokens.data();
+  //this->tok_end    = this->tok_begin + source->context.tokens.size();
+  this->tok_begin = actual_tok_begin;
+  this->tok_end = actual_tok_end;
 
   // Skip LEX_BOF
-  this->tok_cursor = this->tok_begin + 1;
+  this->tok_cursor = this->tok_begin;
   this->gap_emitted = false;
 
   id_map.push({
@@ -432,7 +437,22 @@ CHECK_RETURN Err Cursor::emit_raw(CNode* n) {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err Cursor::emit_everything() {
-  return source_file->context.root_node->emit(*this);
+  Err err;
+
+  // Emit header
+
+  for (auto lex_cursor = lex_begin; lex_cursor < tok_begin->lex; lex_cursor++) {
+    for (auto c = lex_cursor->text_begin; c < lex_cursor->text_end; c++) {
+      err << emit_char(*c);
+    }
+  }
+
+  err << source_file->context.root_node->emit(*this);
+
+  // Emit footer (everything in the gap after the translation unit)
+  err << emit_gap();
+
+  return err;
 }
 
 //------------------------------------------------------------------------------

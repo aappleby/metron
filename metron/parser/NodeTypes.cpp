@@ -17,21 +17,24 @@ std::string_view CNodeTranslationUnit::get_name() const {
 Err CNodeTranslationUnit::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
+  /*
   if (tok_begin() != child_head->tok_begin()) {
     err << cursor.emit_span(tok_begin(), child_head->tok_begin());
   }
+  */
 
   for (auto c = child_head; c; c = c->node_next) {
     err << cursor.emit(c);
-    err << cursor.emit_gap();
+    if (c->node_next) err << cursor.emit_gap();
   }
 
+  /*
   if (child_tail->tok_end() != tok_end()) {
     err << cursor.emit_span(child_tail->tok_end(), tok_end());
   }
+  */
 
-  //return err << cursor.check_done(this);
-  return err;
+  return err << cursor.check_done(this);
 }
 
 Err CNodeTranslationUnit::trace(CCall* call) {

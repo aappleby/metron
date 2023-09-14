@@ -40,4 +40,4 @@ module Module (
     b8={4 {a8}};
     test_dup4_ret = 0;
   end
-endmodule;
+endmodule

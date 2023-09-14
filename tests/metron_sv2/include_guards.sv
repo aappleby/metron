@@ -9,6 +9,6 @@ module Module (
   always_comb begin : blah
     blah_ret = 7;
   end
-endmodule;
+endmodule
 
 `endif

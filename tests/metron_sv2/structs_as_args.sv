@@ -30,4 +30,4 @@ module block_ram (
     data <= tick_tla.a_data;
   end
 
-endmodule;
+endmodule

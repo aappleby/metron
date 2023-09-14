@@ -10,7 +10,7 @@ module Module (
 /*public:*/
 
   always_comb begin : tock
-    /*tick()*/;
+    /*tick();*/
   end
 
 /*private:*/
@@ -26,4 +26,4 @@ module Module (
   int my_reg2;
   int my_reg3;
   int my_reg4;
-endmodule;
+endmodule

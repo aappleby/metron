@@ -66,7 +66,7 @@ module TilelinkDevice (
 /*private:*/
   logic[31:0] test_reg;
   logic  oe;
-endmodule;
+endmodule
 
 //------------------------------------------------------------------------------
 
@@ -107,7 +107,7 @@ module TilelinkCPU (
 /*private:*/
   logic[31:0] addr;
   logic[31:0] data;
-endmodule;
+endmodule
 
 //------------------------------------------------------------------------------
 
@@ -117,14 +117,14 @@ module Top (
 );
 /*public:*/
   always_comb begin : tock
-    /*cpu.tock()*/;
-    /*dev.tock()*/;
+    /*cpu.tock();*/
+    /*dev.tock();*/
 
     cpu_tld = dev_tld;
     dev_tla = cpu_tla;
 
-    /*cpu.tick()*/;
-    /*dev.tick()*/;
+    /*cpu.tick();*/
+    /*dev.tick();*/
   end
 
-endmodule;
+endmodule

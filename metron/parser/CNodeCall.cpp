@@ -408,3 +408,24 @@ Err CNodeCall::emit(Cursor& cursor) {
 }
 
 //------------------------------------------------------------------------------
+// Call expressions turn into either Verilog calls, or are replaced with binding
+// statements.
+
+bool CNodeCall::can_omit_call() {
+
+  // Calls into submodules always turn into bindings.
+  if (auto func_path = node_name->as<CNodeFieldExpression>()) {
+    return true;
+  }
+
+// Calls into methods in the same module turn into bindings if needed.
+  auto src_class = ancestor<CNodeClass>();
+  auto dst_func = src_class->get_function(node_name->get_text());
+  if (dst_func && dst_func->needs_binding()) {
+    return true;
+  }
+
+  return false;
+}
+
+//------------------------------------------------------------------------------

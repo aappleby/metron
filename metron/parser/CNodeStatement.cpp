@@ -21,7 +21,19 @@ Err CNodeExpStatement::trace(CCall* call) {
 
 Err CNodeExpStatement::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
-  err << cursor.emit_default(this);
+
+  CNode* node_exp = child("exp");
+  CNode* node_semi = child("semi");
+
+  auto call = node_exp->as<CNodeCall>();
+
+  if (call && call->can_omit_call()) {
+    err << cursor.comment_out(this);
+  }
+  else {
+    err << cursor.emit_default(this);
+  }
+
   return err << cursor.check_done(this);
 }
 
@@ -373,11 +385,7 @@ CHECK_RETURN Err CNodeCompound::emit_call_arg_bindings(CNode* child, Cursor& cur
     // FIXME we should have an is_builtin or something here...
 
     if (dst_func) {
-      bool needs_binding = false;
-      needs_binding |= dst_func->method_type == MT_TICK && dst_func->called_by_tock();
-      needs_binding |= dst_func->method_type == MT_TOCK && !dst_func->internal_callers.empty();
-
-      if (needs_binding) {
+      if (dst_func->needs_binding()) {
         int arg_count = call->node_args->items.size();
         int param_count = dst_func->params.size();
         assert(arg_count == param_count);

@@ -17,7 +17,7 @@ module Submod (
 
   always_comb begin : tock
     o_signal = i_signal + tock_i_param;
-    /*tick()*/;
+    /*tick();*/
     tock_ret = o_signal + 7;
   end
 
@@ -26,7 +26,7 @@ module Submod (
   always_ff @(posedge clock) begin : tick
     o_reg <= o_reg + o_signal;
   end
-endmodule;
+endmodule
 
 module Module (
   // global clock
@@ -41,7 +41,7 @@ module Module (
     submod_tock_i_param = 13;
     submod_return=submod_tock_ret;
     my_sig = submod_return + 3;
-    /*tick()*/;
+    /*tick();*/
   end
 
 
@@ -54,4 +54,4 @@ module Module (
   logic[7:0] my_sig;
 
   Submod submod;
-endmodule;
+endmodule

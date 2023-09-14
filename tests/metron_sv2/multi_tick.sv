@@ -12,8 +12,8 @@ module Module (
 
   always_comb begin : tock
     result=my_reg1 + my_reg2;
-    /*tick1()*/;
-    /*tick2()*/;
+    /*tick1();*/
+    /*tick2();*/
     tock_ret = result;
   end
 
@@ -29,4 +29,4 @@ module Module (
 
   logic[7:0] my_reg1;
   logic[7:0] my_reg2;
-endmodule;
+endmodule

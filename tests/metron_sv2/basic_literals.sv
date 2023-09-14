@@ -35,4 +35,4 @@ module Module (
     test2_ret = 0;
   end
 
-endmodule;
+endmodule

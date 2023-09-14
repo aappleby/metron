@@ -35,4 +35,4 @@ module Module (
   logic[9:0] addr;
   logic[7:0] data[data_len];
   logic[7:0] out;
-endmodule;
+endmodule

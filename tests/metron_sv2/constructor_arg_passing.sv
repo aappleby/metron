@@ -23,7 +23,7 @@ module Module (
 
   always_comb begin : tock
     addr = tock_new_addr;
-    /*tick()*/;
+    /*tick();*/
   end
 
   always_ff @(posedge clock) begin : tick
@@ -38,7 +38,7 @@ module Module (
   logic[9:0] addr;
   logic[7:0] data[data_len];
   logic[7:0] out;
-endmodule;
+endmodule
 
 //----------------------------------------
 
@@ -54,11 +54,11 @@ module Top (
 
   always_comb begin : tock
     mod_tock_new_addr = tock_addr;
-    /*mod.tock(addr)*/;
+    /*mod.tock(addr);*/
   end
 
   always_ff @(posedge clock) begin : tick
     //mod.tick();
   end
 
-endmodule;
+endmodule

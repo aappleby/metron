@@ -15,7 +15,7 @@ module Module (
   end
 
   always_comb begin : tock
-    /*tick()*/;
+    /*tick();*/
   end
 
 
@@ -26,4 +26,4 @@ module Module (
   end
 
   logic[6:0] my_reg;
-endmodule;
+endmodule

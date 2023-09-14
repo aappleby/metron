@@ -22,4 +22,4 @@ module Module (
   always_comb begin : tock2
     output2 = tock2_input_val + 8;
   end
-endmodule;
+endmodule

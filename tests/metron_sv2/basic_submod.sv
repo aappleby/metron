@@ -12,8 +12,7 @@ module Submod (
 
   always_comb begin : tock
     tick_x = tock_x;
-    /*tick(x)*/
-    tick_x = x;
+    /*tick(x);*/
   end
 
 /*private:*/
@@ -23,7 +22,7 @@ module Submod (
   end
 
   logic[7:0] sub_reg;
-endmodule;
+endmodule
 
 module Module (
   // global clock
@@ -35,7 +34,7 @@ module Module (
 
   always_comb begin : tock
     submod_tock_x = tock_x;
-    /*submod.tock(x)*/;
+    /*submod.tock(x);*/
   end
 
-endmodule;
+endmodule

@@ -12,4 +12,4 @@ module Module (
     func_ret = thing1 + thing2;
   end
 
-endmodule;
+endmodule

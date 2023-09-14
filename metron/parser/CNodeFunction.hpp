@@ -98,6 +98,14 @@ struct CNodeFunction : public CNode {
     }
   }
 
+  bool needs_binding() {
+    bool needs_binding = false;
+    needs_binding |= method_type == MT_TICK && called_by_tock();
+    needs_binding |= method_type == MT_TOCK && !internal_callers.empty();
+    return needs_binding;
+  }
+
+
   //----------------------------------------
 
   bool called_by_init() {

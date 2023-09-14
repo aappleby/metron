@@ -16,7 +16,7 @@ module Submod (
     my_height = (HEIGHT)'(200) + tock_dy;
   end
 
-endmodule;
+endmodule
 
 module Module (
   // tock() ports
@@ -27,8 +27,8 @@ module Module (
   always_comb begin : tock
     submodule_tock_dx = 1;
     submodule_tock_dy = 2;
-    /*submodule.tock(1, 2)*/;
+    /*submodule.tock(1, 2);*/
     tock_ret = submodule_my_width + submodule_my_height;
   end
 
-endmodule;
+endmodule

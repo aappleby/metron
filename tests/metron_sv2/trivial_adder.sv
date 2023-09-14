@@ -14,4 +14,4 @@ module Adder (
     add_ret = add_a + add_b;
   end
 
-endmodule;
+endmodule

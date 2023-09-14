@@ -13,8 +13,7 @@ module Module (
 
   always_comb begin : tock
     tick_val = tock_val;
-    /*tick(val)*/
-    tick_val = val;
+    /*tick(val);*/
   end
 
 /*private:*/
@@ -25,4 +24,4 @@ module Module (
 
   logic[7:0] my_reg;
 
-endmodule;
+endmodule

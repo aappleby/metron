@@ -28,7 +28,7 @@ module Module (
         /*break*/;
     endcase
 
-    /*tick()*/;
+    /*tick();*/
     tock_ret = result;
   end
 
@@ -39,4 +39,4 @@ module Module (
   end
 
   logic[7:0] my_reg;
-endmodule;
+endmodule

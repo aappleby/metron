@@ -21,8 +21,7 @@ module Module (
     dummy=/*public_task(public_func(z))*/
     public_task_x = public_func(z);
     tick_w = tock_z;
-    /*tick(z)*/
-    tick_w = z;
+    /*tick(z);*/
   end
 
   always_comb begin : public_task
@@ -38,7 +37,7 @@ module Module (
 
   always_ff @(posedge clock) begin : tick
     private_task_x = private_func(tick_w);
-    private_task(private_func(tick_w));
+    /*private_task(private_func(w));*/
     my_reg2 <= my_reg2 + 1;
   end
 
@@ -52,4 +51,4 @@ module Module (
 
   logic[7:0] my_reg1;
   logic[7:0] my_reg2;
-endmodule;
+endmodule

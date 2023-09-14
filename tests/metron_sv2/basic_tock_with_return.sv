@@ -13,4 +13,4 @@ module Module (
     my_sig = 7;
     tock_ret = my_sig;
   end
-endmodule;
+endmodule

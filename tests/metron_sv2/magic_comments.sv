@@ -21,4 +21,4 @@ module Module (
   end
 #*/
 
-endmodule;
+endmodule

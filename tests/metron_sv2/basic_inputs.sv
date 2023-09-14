@@ -13,8 +13,7 @@ module Module (
 
   always_comb begin : tock
     tick_my_input = tock_my_input;
-    /*tick(my_input)*/
-    tick_my_input = my_input;
+    /*tick(my_input);*/
   end
 
  /*private:*/
@@ -24,4 +23,4 @@ module Module (
   end
 
   logic[6:0] my_reg;
-endmodule;
+endmodule

@@ -263,8 +263,8 @@ Err CNodeClass::emit(Cursor& cursor) {
     if (child->node_next) err << cursor.emit_gap();
   }
 
-  err << cursor.emit_gap();
-  err << cursor.emit(node_semi);
+  err << cursor.skip_gap();
+  err << cursor.skip_over(node_semi);
 
   return err << cursor.check_done(this);
 }

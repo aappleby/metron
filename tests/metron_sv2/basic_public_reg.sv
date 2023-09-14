@@ -10,11 +10,11 @@ module Module (
 );
 /*public:*/
   always_comb begin : tock
-    /*tick()*/;
+    /*tick();*/
   end
 
 /*private:*/
   always_ff @(posedge clock) begin : tick
     my_reg <= my_reg + 1;
   end
-endmodule;
+endmodule

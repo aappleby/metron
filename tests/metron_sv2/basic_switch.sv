@@ -12,8 +12,7 @@ module Module (
 
   always_comb begin : tock
     tick_selector = tock_selector;
-    /*tick(selector)*/
-    tick_selector = selector;
+    /*tick(selector);*/
   end
 
 /*private:*/
@@ -33,4 +32,4 @@ module Module (
   end
 
   logic[7:0] my_reg;
-endmodule;
+endmodule

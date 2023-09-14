@@ -20,4 +20,4 @@ module Module (
     my_getter_ret = 12;
   endfunction
 
-endmodule;
+endmodule

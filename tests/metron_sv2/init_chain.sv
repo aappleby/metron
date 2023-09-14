@@ -14,7 +14,7 @@ module Module (
   end
 
   always_comb begin : tock
-    /*tick()*/;
+    /*tick();*/
     tock_ret = 0;
   end
 
@@ -58,4 +58,4 @@ module Module (
     reg5 = 5;
   endtask
 
-endmodule;
+endmodule

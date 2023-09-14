@@ -16,6 +16,9 @@ struct CNodeCall : public CNode {
   CHECK_RETURN Err emit(Cursor& cursor) override;
   CHECK_RETURN Err trace(CCall* call) override;
 
+  bool can_omit_call();
+
+
   CNode*     node_name  = nullptr;
   CNodeList* node_targs = nullptr;
   CNodeList* node_args  = nullptr;

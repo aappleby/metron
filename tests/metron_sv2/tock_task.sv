@@ -24,4 +24,4 @@ module Module (
     set_signal_ret = my_signal;
   end
 
-endmodule;
+endmodule

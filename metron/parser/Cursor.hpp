@@ -26,6 +26,8 @@ struct Cursor {
 
   //----------------------------------------
 
+  bool can_omit_call(CNodeCall* n);
+
   //void push_indent(MnNode n);
   //void pop_indent(MnNode n);
 

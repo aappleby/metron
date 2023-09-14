@@ -19,4 +19,4 @@ module Module (
     my_struct1_a = 1;
     tock_ret = 17;
   end
-endmodule;
+endmodule

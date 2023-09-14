@@ -11,7 +11,7 @@ module Module (
 /*public:*/
 
   always_comb begin : tock
-    /*tick()*/;
+    /*tick();*/
     tock_ret = 0;
   end
 
@@ -19,7 +19,7 @@ module Module (
 
   always_ff @(posedge clock) begin : tick
     my_reg <= my_reg + my_reg2 + 3;
-    some_task2();
+    /*some_task2();*/
   end
 
   task automatic some_task2();
@@ -28,4 +28,4 @@ module Module (
 
   logic[7:0] my_reg;
   logic[7:0] my_reg2;
-endmodule;
+endmodule

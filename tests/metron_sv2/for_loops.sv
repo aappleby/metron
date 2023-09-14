@@ -26,4 +26,4 @@ module Module (
     end
     loop2_ret = x;
   end
-endmodule;
+endmodule

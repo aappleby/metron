@@ -10,7 +10,7 @@ module Submod (
 /*public:*/
 
   always_comb begin : tock
-    /*tick()*/;
+    /*tick();*/
   end
 
 /*private:*/
@@ -20,7 +20,7 @@ module Submod (
   end
 
   logic[7:0] sub_reg;
-endmodule;
+endmodule
 
 module Module (
   // global clock
@@ -29,7 +29,7 @@ module Module (
 /*public:*/
 
   always_comb begin : tock
-    /*submod.tock()*/;
+    /*submod.tock();*/
   end
 
-endmodule;
+endmodule

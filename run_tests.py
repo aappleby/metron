@@ -89,7 +89,7 @@ def main():
     print_g("Checking new parser on all test cases in metron_good")
     #"args" : ["-p", "-d", "-v", "-e", "-c", "examples/scratch.h", "-o", "examples/scratch.sv"],
     errors += check_commands_good([
-        f"bin/metron -p -c {filename}"
+        f"bin/metron -p -c {filename} -o {filename.replace('_good', '_sv2').replace('.h', '.sv')}"
         for filename in metron_good
     ])
     print()

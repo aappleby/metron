@@ -12,6 +12,7 @@ module Module (
 /*public:*/
 
   always_comb begin : tock
+    logic[7:0] result;
     result;
     case(my_reg)
       0, // can we stick comments in here?

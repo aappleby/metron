@@ -452,22 +452,25 @@ Err CNodeCompound::emit_hoisted_decls(Cursor& cursor) {
   cursor.elide_value.push(true);
 
   for (auto child : this) {
-    if (auto decl = child->as<CNodeDeclaration>()) {
-      // Don't emit decls for localparams
-      if (decl->child("const")) continue;
+    auto exp = child->as<CNodeExpStatement>();
+    if (!exp) continue;
+    auto decl = exp->child("exp")->as<CNodeDeclaration>();
+    if (!decl) continue;
 
-      auto name = decl->get_namestr();
+    // Don't emit decls for localparams
+    if (decl->child("const")) continue;
 
-      auto decl_type = decl->child("type");
-      auto decl_name = decl->child("name");
+    auto name = decl->get_namestr();
 
-      err << cursor.start_line();
-      //err << cursor.emit_print("DECL %s", name.c_str());
-      err << cursor.emit_splice(decl_type);
-      err << cursor.emit_print(" ");
-      err << cursor.emit_splice(decl_name);
-      err << cursor.emit_print(";");
-    }
+    auto decl_type = decl->child("type");
+    auto decl_name = decl->child("name");
+
+    err << cursor.start_line();
+    //err << cursor.emit_print("DECL %s", name.c_str());
+    err << cursor.emit_splice(decl_type);
+    err << cursor.emit_print(" ");
+    err << cursor.emit_splice(decl_name);
+    err << cursor.emit_print(";");
   }
 
   cursor.elide_type.pop();

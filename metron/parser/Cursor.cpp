@@ -39,6 +39,9 @@ Cursor::Cursor(CSourceRepo* repo, CSourceFile* source, std::string* str_out) {
   block_prefix.push("begin");
   block_suffix.push("end");
   override_size.push(0);
+
+  elide_type.push(false);
+  elide_value.push(false);
 }
 
 //------------------------------------------------------------------------------
@@ -403,6 +406,16 @@ CHECK_RETURN Err Cursor::emit_string(const std::string_view& s) {
   Err err;
   for (auto c : s) {
     err << emit_char(c, 0x80FF80);
+  }
+  return err;
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err Cursor::emit_span(const char* a, const char* b) {
+  Err err;
+  for (auto c = a; c < b; c++) {
+    err << emit_char(*c);
   }
   return err;
 }

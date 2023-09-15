@@ -12,26 +12,42 @@ module Module (
 /*public:*/
 
   always_comb begin : test1
-    a=0b0;
-    b=0b00;
-    c=0b000;
-    d=0b0000;
-    e=0b00000;
-    f=0b000000;
-    g=0b0000000;
-    h=0b00000000;
+    logic[31:0] a;
+    logic[31:0] b;
+    logic[31:0] c;
+    logic[31:0] d;
+    logic[31:0] e;
+    logic[31:0] f;
+    logic[31:0] g;
+    logic[31:0] h;
+    a = 1'b0;
+    b = 2'b00;
+    c = 3'b000;
+    d = 4'b0000;
+    e = 5'b00000;
+    f = 6'b000000;
+    g = 7'b0000000;
+    h = 8'b00000000;
     test1_ret = 0;
   end
 
   always_comb begin : test2
-    a=0b0;
-    b=0b0'0;
-    c=0b0'00;
-    d=0b00'00;
-    e=0b00'000;
-    f=0b0'000'00;
-    g=0b000'0000;
-    h=0b0'0'0'0'0'0'0'0;
+    logic[31:0] a;
+    logic[31:0] b;
+    logic[31:0] c;
+    logic[31:0] d;
+    logic[31:0] e;
+    logic[31:0] f;
+    logic[31:0] g;
+    logic[31:0] h;
+    a = 1'b0;
+    b = 2'b0_0;
+    c = 3'b0_00;
+    d = 4'b00_00;
+    e = 5'b00_000;
+    f = 6'b0_000_00;
+    g = 7'b000_0000;
+    h = 8'b0_0_0_0_0_0_0_0;
     test2_ret = 0;
   end
 

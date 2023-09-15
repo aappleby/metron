@@ -54,8 +54,9 @@ module Module (
   end
 
   always_comb begin : tock_no_params_no_return
+    int x;
     my_sig1 = 12;
-    x=my_sig1;
+    x = my_sig1;
   end
 
   always_comb begin : tock_no_params_return
@@ -64,8 +65,9 @@ module Module (
   end
 
   always_comb begin : tock_params_no_return
+    int y;
     my_sig3 = 12 + tock_params_no_return_x;
-    y=my_sig3;
+    y = my_sig3;
   end
 
   always_comb begin : tock_params_return

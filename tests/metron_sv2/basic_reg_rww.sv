@@ -15,7 +15,8 @@ module Module (
 /*private:*/
 
   always_ff @(posedge clock) begin : tick
-    temp=my_reg;
+    logic temp;
+    temp = my_reg;
     my_reg <= 0;
     my_reg <= 1;
   end

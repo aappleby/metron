@@ -37,9 +37,10 @@ module Module (
 /*public:*/
 
   always_comb begin : tock
+    logic[7:0] submod_return;
     submod_i_signal = 12;
     submod_tock_i_param = 13;
-    submod_return=submod_tock_ret;
+    submod_return = submod_tock_ret;
     my_sig = submod_return + 3;
     /*tick();*/
   end

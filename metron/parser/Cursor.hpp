@@ -64,6 +64,7 @@ struct Cursor {
   CHECK_RETURN Err emit_vprint(const char* fmt, va_list args);
   CHECK_RETURN Err emit_print(const char* fmt, ...);
   CHECK_RETURN Err emit_string(const std::string_view& s);
+  CHECK_RETURN Err emit_span(const char* a, const char* b);
 
 
   //----------------------------------------

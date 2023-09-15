@@ -62,12 +62,16 @@ Err CNodeDeclaration::emit(Cursor& cursor) {
   }
 
   for (auto child : this) {
-    if (child->as<CNodeType>()) {
-      err << cursor.skip_over(child);
+    /*if (cursor.elide_type.top())*/ {
+      if (child->as<CNodeType>()) {
+        err << cursor.skip_over(child);
+        if (child->node_next) err << cursor.skip_gap();
+        continue;
+      }
     }
-    else {
-      err << cursor.emit(child);
-    }
+
+    err << cursor.emit(child);
+    if (child->node_next) err << cursor.emit_gap();
   }
 
   return err << cursor.check_done(this);

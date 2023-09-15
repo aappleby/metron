@@ -53,9 +53,10 @@ module TilelinkDevice (
   end
 
   always_ff @(posedge clock) begin : tick
-    if (tla_a_address == 0x1234) begin
+    if (tla_a_address == 16'h1234) begin
       if (tla_a_opcode == TL::PutFullData && tla_a_valid) begin
-        mask={{8 {tla_a_mask[0]}},{8 {tla_a_mask[1]}},{8 {tla_a_mask[2]}},{8 {tla_a_mask[3]}}};
+        logic[31:0] mask;
+        mask = {{8 {tla_a_mask[0]}},{8 {tla_a_mask[1]}},{8 {tla_a_mask[2]}},{8 {tla_a_mask[3]}}};
         test_reg <= (test_reg & ~mask) | (tla_a_data & mask);
       end else if (tla_a_opcode == TL::Get) begin
         oe <= 1;
@@ -78,22 +79,22 @@ module TilelinkCPU (
 
 
   initial begin
-    addr = 0x1234;
-    data = 0x4321;
+    addr = 16'h1234;
+    data = 16'h4321;
   end
 
   always_comb begin : tock
     if (data & 1) begin
       tla_a_opcode  = TL::Get;
       tla_a_address = addr;
-      tla_a_mask    = 0b1111;
+      tla_a_mask    = 4'b1111;
       tla_a_data    = DONTCARE;
       tla_a_valid   = 1;
     end else begin
       tla_a_opcode  = TL::PutFullData;
       tla_a_address = addr;
-      tla_a_mask    = 0b1111;
-      tla_a_data    = 0xDEADBEEF;
+      tla_a_mask    = 4'b1111;
+      tla_a_data    = 32'hDEADBEEF;
       tla_a_valid   = 1;
     end
   end

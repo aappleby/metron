@@ -26,6 +26,7 @@ module Module (
 /*public:*/
 
   always_comb begin : tock_bindings /*const*/
+    logic[7:0] result;
     result;
     // Submod bindings should _not_ end up here.
 

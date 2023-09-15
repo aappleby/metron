@@ -10,7 +10,8 @@ module Module (
 
   // decl in for
   always_comb begin : loop1
-    x=0;
+    int x;
+    x = 0;
     for (int i = 0; i < 10; i = i + 1) begin
       x = x + i;
     end
@@ -19,7 +20,9 @@ module Module (
 
   // decl outside of for
   always_comb begin : loop2
-    x=0;
+    int x;
+    int i;
+    x = 0;
     i;
     for (i = 0; i < 10; i = i + 1) begin
       x = x + i;

@@ -14,7 +14,8 @@ module Metron (
   // Divide and mod work, but make Yosys extremely slow to synth
 
   always_comb begin : tock
-    x=7;
+    int x;
+    x = 7;
     x = x = 13;
     x = x = 13;
     x = x = 13;

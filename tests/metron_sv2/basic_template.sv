@@ -31,4 +31,9 @@ module Module (
     tock_ret = submodule_my_width + submodule_my_height;
   end
 
+  Submod<10,11> submodule #(
+    // Template Parameters
+    .WIDTH(10),
+    .HEIGHT(11)
+  );
 endmodule

@@ -152,7 +152,7 @@ Err CNodeField::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
   // Ports don't go in the class body.
-  if (_public) {
+  if (_public && !is_component()) {
     return err << cursor.skip_over(this);
   }
 
@@ -482,6 +482,53 @@ Err CNodeField::emit_component(Cursor& cursor) {
 
   return err << cursor.check_done(this);
 }
+
+//------------------------------------------------------------------------------
+
+/*
+CHECK_RETURN Err MtCursor::emit_module_ports(MnNode class_body) {
+  Err err;
+
+  if (current_mod.top()->needs_tick()) {
+    err << emit_line("// global clock");
+    err << emit_line("input logic clock,");
+  }
+
+  if (current_mod.top()->input_signals.size()) {
+    err << emit_line("// input signals");
+    for (auto f : current_mod.top()->input_signals) {
+      err << emit_field_port(f);
+    }
+  }
+
+  if (current_mod.top()->output_signals.size()) {
+    err << emit_line("// output signals");
+    for (auto f : current_mod.top()->output_signals) {
+      err << emit_field_port(f);
+    }
+  }
+
+  if (current_mod.top()->output_registers.size()) {
+    err << emit_line("// output registers");
+    for (auto f : current_mod.top()->output_registers) {
+      err << emit_field_port(f);
+    }
+  }
+
+  for (auto m : current_mod.top()->all_methods) {
+    if (!m->is_init_ && m->is_public() && m->internal_callers.empty()) {
+      err << emit_method_ports(m);
+    }
+  }
+
+  // Remove trailing comma from port list
+  if (at_comma) {
+    err << emit_backspace();
+  }
+
+  return err;
+}
+*/
 
 //------------------------------------------------------------------------------
 

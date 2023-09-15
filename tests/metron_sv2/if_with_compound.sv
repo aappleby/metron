@@ -40,4 +40,5 @@ module Module (
     end
   end
 
+  Submod submod;
 endmodule

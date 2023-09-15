@@ -32,4 +32,8 @@ module Module (
     /*submod.tock();*/
   end
 
+  Submod<99> submod #(
+    // Template Parameters
+    .SOME_CONSTANT(99)
+  );
 endmodule

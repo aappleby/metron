@@ -128,6 +128,8 @@ module Top (
     /*dev.tick();*/
   end
 
+  TilelinkCPU cpu;
+  TilelinkDevice dev;
 endmodule
 
 //------------------------------------------------------------------------------

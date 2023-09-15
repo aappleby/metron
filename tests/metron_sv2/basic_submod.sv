@@ -38,4 +38,5 @@ module Module (
     /*submod.tock(x);*/
   end
 
+  Submod submod;
 endmodule

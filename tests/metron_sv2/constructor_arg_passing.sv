@@ -61,6 +61,13 @@ module Top (
     //mod.tick();
   end
 
+  Module<7777, 8383> mod #(
+    // Template Parameters
+    .data_len(7777),
+    .blarp(8383),
+    // Constructor Parameters
+    .filename("examples/uart/message.hex")
+  );
 endmodule
 
 //----------------------------------------

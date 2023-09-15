@@ -51,4 +51,5 @@ module Module (
     tock_bindings_ret = result;
   end
 
+  Submod submod;
 endmodule

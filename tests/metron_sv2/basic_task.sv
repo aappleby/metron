@@ -19,7 +19,7 @@ module Module (
 
   always_ff @(posedge clock) begin : tick
     my_reg <= my_reg + my_reg2 + 3;
-    /*some_task2();*/
+    some_task2();
   end
 
   task automatic some_task2();

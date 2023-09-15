@@ -39,8 +39,7 @@ module Module (
 /*private:*/
 
   always_ff @(posedge clock) begin : tick
-    private_task_x = private_func(tick_w);
-    /*private_task(private_func(w));*/
+    private_task(private_func(tick_w));
     my_reg2 <= my_reg2 + 1;
   end
   int tick_w;
@@ -48,7 +47,6 @@ module Module (
   task automatic private_task(logic[7:0] x);
     my_reg1 <= my_reg1 + private_func(x);
   endtask
-  logic[7:0] private_task_x;
 
   function logic[7:0] private_func(logic[7:0] y);
     private_func = my_reg1 + y;

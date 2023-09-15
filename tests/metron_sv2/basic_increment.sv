@@ -16,10 +16,10 @@ module Module (
 /*private:*/
 
   always_ff @(posedge clock) begin : tick
-    my_reg1 = my_reg1 + 1;
-    ++my_reg2;
-    my_reg3 = my_reg3 - 1;
-    --my_reg4;
+    my_reg1 <= my_reg1 + 1;
+    my_reg2 <= my_reg2 + 1;
+    my_reg3 <= my_reg3 - 1;
+    my_reg4 <= my_reg4 - 1;
   end
 
   int my_reg1;

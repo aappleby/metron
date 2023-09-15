@@ -18,7 +18,7 @@ module Module (
     my_reg <= my_reg + some_func();
   end
 
-  function logic[7:0] some_func(); /*const*/
+  function logic[7:0] some_func() /*const*/;
     some_func = 3;
   endfunction
 

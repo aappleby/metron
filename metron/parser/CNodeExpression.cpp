@@ -58,6 +58,42 @@ Err CNodePrefixExp::trace(CCall* call) {
   return err;
 }
 
+//----------------------------------------
+
+Err CNodePrefixExp::emit(Cursor& cursor) {
+  Err err = cursor.check_at(this);
+
+  auto func = ancestor<CNodeFunction>();
+
+  auto node_op  = child("prefix");
+  auto node_rhs = child("rhs");
+
+  auto op = node_op->get_text();
+
+  if (op == "++" || op == "--") {
+    err << cursor.skip_over(this);
+    err << cursor.emit_splice(node_rhs);
+    if (func->method_type == MT_TICK) {
+      err << cursor.emit_print(" <= ");
+    }
+    else {
+      err << cursor.emit_print(" = ");
+    }
+    err << cursor.emit_splice(node_rhs);
+    if (op == "++") {
+      err << cursor.emit_print(" + 1");
+    }
+    else {
+      err << cursor.emit_print(" - 1");
+    }
+  }
+  else {
+    err << cursor.emit_default(this);
+  }
+
+  return err << cursor.check_done(this);
+}
+
 //------------------------------------------------------------------------------
 
 Err CNodeSuffixExp::trace(CCall* call) {
@@ -78,8 +114,12 @@ Err CNodeSuffixExp::trace(CCall* call) {
   return err;
 }
 
+//----------------------------------------
+
 Err CNodeSuffixExp::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
+
+  auto func = ancestor<CNodeFunction>();
 
   auto node_lhs = child("lhs");
   auto node_op  = child("suffix");
@@ -89,7 +129,12 @@ Err CNodeSuffixExp::emit(Cursor& cursor) {
   if (op == "++" || op == "--") {
     err << cursor.skip_over(this);
     err << cursor.emit_splice(node_lhs);
-    err << cursor.emit_print(" = ");
+    if (func->method_type == MT_TICK) {
+      err << cursor.emit_print(" <= ");
+    }
+    else {
+      err << cursor.emit_print(" = ");
+    }
     err << cursor.emit_splice(node_lhs);
     if (op == "++") {
       err << cursor.emit_print(" + 1");

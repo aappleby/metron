@@ -15,7 +15,7 @@ module Module (
     set_signal_number = get_number();
   end
 
-  function logic[7:0] get_number(); /*const*/
+  function logic[7:0] get_number() /*const*/;
     get_number = 7;
   endfunction
 

@@ -40,6 +40,7 @@ struct CNodeBinaryExp : public CNodeExpression {
 
 struct CNodePrefixExp : public CNodeExpression {
   CHECK_RETURN Err trace(CCall* call) override;
+  CHECK_RETURN Err emit(Cursor& cursor) override;
 };
 
 struct CNodeSuffixExp : public CNodeExpression {

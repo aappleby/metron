@@ -216,13 +216,14 @@ Err CNodeFunction::emit_func(Cursor& cursor) {
   err << cursor.emit_gap();
 
   err << cursor.emit(node_params);
-  err << cursor.emit_print(";");
-  err << cursor.emit_gap();
 
   if (node_const) {
-    err << cursor.comment_out(node_const);
     err << cursor.emit_gap();
+    err << cursor.comment_out(node_const);
   }
+
+  err << cursor.emit_print(";");
+  err << cursor.emit_gap();
 
   err << node_body->emit_block(cursor, "", "endfunction");
 

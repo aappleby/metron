@@ -33,7 +33,8 @@ Cursor::Cursor(CSourceRepo* repo, CSourceFile* source, std::string* str_out) {
     {"value_plusargs", "$value$plusargs" },
     {"write",          "$write" },
     {"sign_extend",    "$signed" },
-    {"zero_extend",    "$unsigned" }
+    {"zero_extend",    "$unsigned" },
+    {"DONTCARE",       "'x" },
   });
 
   block_prefix.push("begin");

@@ -14,14 +14,14 @@ module Module (
 /*public:*/
 
   always_comb begin : test1
-    test1_ret = DONTCARE;
+    test1_ret = 'x;
   end
 
   always_comb begin : test2
-    test2_ret = 8'(DONTCARE);
+    test2_ret = 8'('x);
   end
 
   always_comb begin : test3
-    test3_ret = (8)'(DONTCARE);
+    test3_ret = (8)'('x);
   end
 endmodule

@@ -7,6 +7,13 @@ public:
 
   int my_struct1;
   void tock() {
-    my_struct1 = 0;
+    my_struct1 = func(2);
   }
+
+private:
+
+  int func(int x) {
+    return x + 1;
+  }
+
 };

@@ -32,7 +32,7 @@ module Module (
   logic[7:0] public_task_x;
   logic[7:0] public_task_ret;
 
-  function logic[7:0] public_func(x);
+  function logic[7:0] public_func(logic[7:0] x);
     public_func = my_reg1 + private_func(x);
   endfunction
 
@@ -45,12 +45,12 @@ module Module (
   end
   int tick_w;
 
-  task automatic private_task(x);
+  task automatic private_task(logic[7:0] x);
     my_reg1 <= my_reg1 + private_func(x);
   endtask
   logic[7:0] private_task_x;
 
-  function logic[7:0] private_func(y);
+  function logic[7:0] private_func(logic[7:0] y);
     private_func = my_reg1 + y;
   endfunction
 

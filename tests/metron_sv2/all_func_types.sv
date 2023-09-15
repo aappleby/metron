@@ -84,7 +84,7 @@ module Module (
   end
 
 /*private:*/
-  function int my_func5(x);
+  function int my_func5(int x);
     my_func5 = x + 1;
   endfunction
 /*public:*/
@@ -115,12 +115,12 @@ module Module (
     my_reg2 <= my_reg2 + tick_params_x;
   end
 
-  task automatic tick_called_by_tick(x);
+  task automatic tick_called_by_tick(int x);
     my_reg3 <= my_reg3 + x;
   endtask
 
 /*private:*/
-  function int func_called_by_tick(x);
+  function int func_called_by_tick(int x);
     func_called_by_tick = x + 7;
   endfunction
 /*public:*/

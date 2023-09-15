@@ -181,7 +181,12 @@ Err CNodeField::emit(Cursor& cursor) {
     // Localparam
     err << cursor.emit_print(in_namespace ? "parameter " : "localparam ");
 
-    err << cursor.skip_to(node_decl->node_type);
+    err << cursor.comment_out(node_decl->node_static);
+    err << cursor.emit_gap();
+
+    err << cursor.comment_out(node_decl->node_const);
+    err << cursor.emit_gap();
+
     err << cursor.emit(node_decl->node_type);
     err << cursor.emit_gap();
 

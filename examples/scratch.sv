@@ -9,6 +9,13 @@ module Module (
 /*public:*/
 
   always_comb begin : tock
-    my_struct1 = 0;
+    my_struct1 = func(2);
   end
+
+/*private:*/
+
+  function int func(int x);
+    func = x + 1;
+  endfunction
+
 endmodule

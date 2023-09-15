@@ -4,7 +4,7 @@
 // "using" doesn't work in methods right now :/
 
 package MyPackage;
-  parameter int foo = 3;
+  parameter /*static*/ /*const*/ int foo = 3;
 endpackage;
 
 module Module (

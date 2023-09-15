@@ -417,11 +417,18 @@ CHECK_RETURN Err CNodeCompound::emit_call_arg_bindings(CNode* child, Cursor& cur
 Err CNodeCompound::emit_block(Cursor& cursor, std::string ldelim, std::string rdelim) {
   Err err;
 
+  cursor.elide_type.push(true);
+  cursor.elide_value.push(false);
+
   for (auto child : this) {
     if (child->tag_is("ldelim")) {
       err << cursor.emit_replacement(child, "%s", ldelim.c_str());
       cursor.indent_level++;
+      cursor.elide_type.push(false);
+      cursor.elide_value.push(true);
       err << emit_hoisted_decls(cursor);
+      cursor.elide_type.pop();
+      cursor.elide_value.pop();
     }
     else if (child->tag_is("rdelim")) {
       cursor.indent_level--;
@@ -439,6 +446,9 @@ Err CNodeCompound::emit_block(Cursor& cursor, std::string ldelim, std::string rd
 
     if (child->node_next) err << cursor.emit_gap();
   }
+
+  cursor.elide_type.pop();
+  cursor.elide_value.pop();
 
   return err;
 }

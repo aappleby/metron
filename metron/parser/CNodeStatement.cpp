@@ -473,6 +473,8 @@ Err CNodeCompound::emit_block(Cursor& cursor, std::string ldelim, std::string rd
 Err CNodeCompound::emit_hoisted_decls(Cursor& cursor) {
   Err err;
 
+  auto old_cursor = cursor.tok_cursor;
+
   cursor.elide_type.push(false);
   cursor.elide_value.push(true);
 
@@ -491,15 +493,21 @@ Err CNodeCompound::emit_hoisted_decls(Cursor& cursor) {
     auto decl_name = decl->child("name");
 
     err << cursor.start_line();
+
     //err << cursor.emit_print("DECL %s", name.c_str());
-    err << cursor.emit_splice(decl_type);
-    err << cursor.emit_print(" ");
-    err << cursor.emit_splice(decl_name);
+
+    cursor.tok_cursor = decl_type->tok_begin();
+
+    err << cursor.emit(decl_type);
+    err << cursor.emit_gap();
+    err << cursor.emit(decl_name);
     err << cursor.emit_print(";");
   }
 
   cursor.elide_type.pop();
   cursor.elide_value.pop();
+
+  cursor.tok_cursor = old_cursor;
 
   return err;
 }

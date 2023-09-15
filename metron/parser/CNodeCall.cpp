@@ -298,6 +298,7 @@ Err CNodeCall::emit(Cursor& cursor) {
         }
         else {
           err << cursor.emit(child);
+          if (child->node_next) err << cursor.emit_gap();
         }
       }
       return err << cursor.check_done(this);

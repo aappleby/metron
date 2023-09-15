@@ -17,21 +17,21 @@ module Module (
   end
 
   always_comb begin : test_dup4
-    logic a1;
-    logic[3:0] b1;
-    logic[1:0] a2;
-    logic[7:0] b2;
-    logic[2:0] a3;
+    logic  a1;
+    logic[3:0]  b1;
+    logic[1:0]  a2;
+    logic[7:0]  b2;
+    logic[2:0]  a3;
     logic[11:0] b3;
-    logic[3:0] a4;
+    logic[3:0]  a4;
     logic[15:0] b4;
-    logic[4:0] a5;
+    logic[4:0]  a5;
     logic[19:0] b5;
-    logic[5:0] a6;
+    logic[5:0]  a6;
     logic[23:0] b6;
-    logic[6:0] a7;
+    logic[6:0]  a7;
     logic[27:0] b7;
-    logic[7:0] a8;
+    logic[7:0]  a8;
     logic[31:0] b8;
     a1 = 1'b1;
     b1 = {4 {a1}};

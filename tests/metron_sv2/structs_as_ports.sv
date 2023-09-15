@@ -59,7 +59,10 @@ module TilelinkDevice (
     if (tla_a_address == 16'h1234) begin
       if (tla_a_opcode == TL::PutFullData && tla_a_valid) begin
         logic[31:0] mask;
-        mask = {{8 {tla_a_mask[0]}},{8 {tla_a_mask[1]}},{8 {tla_a_mask[2]}},{8 {tla_a_mask[3]}}};
+        mask = {{8 {tla_a_mask[0]}},
+          {8 {tla_a_mask[1]}},
+          {8 {tla_a_mask[2]}},
+          {8 {tla_a_mask[3]}}};
         test_reg <= (test_reg & ~mask) | (tla_a_data & mask);
       end else if (tla_a_opcode == TL::Get) begin
         oe <= 1;

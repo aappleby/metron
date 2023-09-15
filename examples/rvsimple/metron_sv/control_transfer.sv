@@ -23,13 +23,13 @@ module control_transfer (
     import rv_constants::*;
     // clang-format off
     case (inst_funct3)
-      FUNCT3_BRANCH_EQ:  take_branch = !result_equal_zero;
-      FUNCT3_BRANCH_NE:  take_branch = result_equal_zero;
-      FUNCT3_BRANCH_LT:  take_branch = !result_equal_zero;
-      FUNCT3_BRANCH_GE:  take_branch = result_equal_zero;
-      FUNCT3_BRANCH_LTU: take_branch = !result_equal_zero;
-      FUNCT3_BRANCH_GEU: take_branch = result_equal_zero;
-      default:                take_branch = 'x;
+      FUNCT3_BRANCH_EQ:  take_branch = !result_equal_zero; /*break;*/
+      FUNCT3_BRANCH_NE:  take_branch = result_equal_zero; /*break;*/
+      FUNCT3_BRANCH_LT:  take_branch = !result_equal_zero; /*break;*/
+      FUNCT3_BRANCH_GE:  take_branch = result_equal_zero; /*break;*/
+      FUNCT3_BRANCH_LTU: take_branch = !result_equal_zero; /*break;*/
+      FUNCT3_BRANCH_GEU: take_branch = result_equal_zero; /*break;*/
+      default:                take_branch = 'x; /*break;*/
     endcase
     // clang-format on
   end

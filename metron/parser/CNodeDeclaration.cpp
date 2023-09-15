@@ -61,6 +61,8 @@ Err CNodeDeclaration::emit(Cursor& cursor) {
     return err << cursor.check_done(this);
   }
 
+
+
   for (auto child : this) {
     if (cursor.elide_type.top()) {
       if (child->as<CNodeType>()) {

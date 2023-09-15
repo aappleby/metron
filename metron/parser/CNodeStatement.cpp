@@ -25,15 +25,30 @@ Err CNodeExpStatement::emit(Cursor& cursor) {
   CNode* node_exp = child("exp");
   CNode* node_semi = child("semi");
 
-  auto call = node_exp->as<CNodeCall>();
-
-  if (call && call->can_omit_call()) {
-    err << cursor.comment_out(this);
-  }
-  else {
-    err << cursor.emit_default(this);
+  if (auto call = node_exp->as<CNodeCall>()) {
+    if (call->can_omit_call()) {
+      err << cursor.comment_out(this);
+      return err << cursor.check_done(this);
+    }
   }
 
+  if (auto keyword = node_exp->as<CNodeKeyword>()) {
+    if (keyword->get_text() == "break") {
+      err << cursor.comment_out(this);
+      return err << cursor.check_done(this);
+    }
+  }
+
+  if (auto decl = node_exp->as<CNodeDeclaration>()) {
+    if (cursor.elide_type.top()) {
+      if (decl->node_value == nullptr) {
+        err << cursor.skip_over(this);
+        return err << cursor.check_done(this);
+      }
+    }
+  }
+
+  err << cursor.emit_default(this);
   return err << cursor.check_done(this);
 }
 

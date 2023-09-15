@@ -13,20 +13,19 @@ module Module (
 
   always_comb begin : tock
     logic[7:0] result;
-    result;
     case(my_reg)
       0, // can we stick comments in here?
       1,
       2:
         result = 10;
-        /*break*/;
+        /*break;*/
       3: begin
         result = 20;
-        /*break*/;
+        /*break;*/
       end
       default:
         result = 30;
-        /*break*/;
+        /*break;*/
     endcase
 
     /*tick();*/

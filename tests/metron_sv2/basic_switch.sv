@@ -20,14 +20,14 @@ module Module (
   always_ff @(posedge clock) begin : tick
     case(tick_selector)
       0: // comment
-        my_reg <= 17; /*break*/;
+        my_reg <= 17; /*break;*/
       1:  // comment
-        my_reg <= 22; /*break*/;
-      2: my_reg <= 30; /*break*/;
+        my_reg <= 22; /*break;*/
+      2: my_reg <= 30; /*break;*/
       3, // fallthrough
       4,
       5,
-      6: my_reg <= 72; /*break*/;
+      6: my_reg <= 72; /*break;*/
     endcase
   end
   logic[1:0] tick_selector;

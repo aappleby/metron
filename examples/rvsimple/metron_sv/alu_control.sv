@@ -33,21 +33,21 @@ module alu_control (
     import rv_constants::*;
 
     case (inst_funct3)
-      FUNCT3_ALU_ADD_SUB: default_funct = ALU_ADD;
-      FUNCT3_ALU_SLL:     default_funct = ALU_SLL;
-      FUNCT3_ALU_SLT:     default_funct = ALU_SLT;
-      FUNCT3_ALU_SLTU:    default_funct = ALU_SLTU;
-      FUNCT3_ALU_XOR:     default_funct = ALU_XOR;
-      FUNCT3_ALU_SHIFTR:  default_funct = ALU_SRL;
-      FUNCT3_ALU_OR:      default_funct = ALU_OR;
-      FUNCT3_ALU_AND:     default_funct = ALU_AND;
-      default:                 default_funct = 'x;
+      FUNCT3_ALU_ADD_SUB: default_funct = ALU_ADD; /*break;*/
+      FUNCT3_ALU_SLL:     default_funct = ALU_SLL; /*break;*/
+      FUNCT3_ALU_SLT:     default_funct = ALU_SLT; /*break;*/
+      FUNCT3_ALU_SLTU:    default_funct = ALU_SLTU; /*break;*/
+      FUNCT3_ALU_XOR:     default_funct = ALU_XOR; /*break;*/
+      FUNCT3_ALU_SHIFTR:  default_funct = ALU_SRL; /*break;*/
+      FUNCT3_ALU_OR:      default_funct = ALU_OR; /*break;*/
+      FUNCT3_ALU_AND:     default_funct = ALU_AND; /*break;*/
+      default:                 default_funct = 'x; /*break;*/
     endcase
 
     case (inst_funct3)
-      FUNCT3_ALU_ADD_SUB: secondary_funct = ALU_SUB;
-      FUNCT3_ALU_SHIFTR:  secondary_funct = ALU_SRA;
-      default:                 secondary_funct = 'x;
+      FUNCT3_ALU_ADD_SUB: secondary_funct = ALU_SUB; /*break;*/
+      FUNCT3_ALU_SHIFTR:  secondary_funct = ALU_SRA; /*break;*/
+      default:                 secondary_funct = 'x; /*break;*/
     endcase
 
     if (inst_funct7[5])
@@ -61,21 +61,21 @@ module alu_control (
       op_imm_funct = default_funct;
 
     case (inst_funct3)
-      FUNCT3_BRANCH_EQ:  branch_funct = ALU_SEQ;
-      FUNCT3_BRANCH_NE:  branch_funct = ALU_SEQ;
-      FUNCT3_BRANCH_LT:  branch_funct = ALU_SLT;
-      FUNCT3_BRANCH_GE:  branch_funct = ALU_SLT;
-      FUNCT3_BRANCH_LTU: branch_funct = ALU_SLTU;
-      FUNCT3_BRANCH_GEU: branch_funct = ALU_SLTU;
-      default:                branch_funct = 'x;
+      FUNCT3_BRANCH_EQ:  branch_funct = ALU_SEQ; /*break;*/
+      FUNCT3_BRANCH_NE:  branch_funct = ALU_SEQ; /*break;*/
+      FUNCT3_BRANCH_LT:  branch_funct = ALU_SLT; /*break;*/
+      FUNCT3_BRANCH_GE:  branch_funct = ALU_SLT; /*break;*/
+      FUNCT3_BRANCH_LTU: branch_funct = ALU_SLTU; /*break;*/
+      FUNCT3_BRANCH_GEU: branch_funct = ALU_SLTU; /*break;*/
+      default:                branch_funct = 'x; /*break;*/
     endcase
 
     case (alu_op_type)
-      CTL_ALU_ADD:    alu_function = ALU_ADD;
-      CTL_ALU_OP:     alu_function = op_funct;
-      CTL_ALU_OP_IMM: alu_function = op_imm_funct;
-      default:             alu_function = 'x;
-      CTL_ALU_BRANCH: alu_function = branch_funct;
+      CTL_ALU_ADD:    alu_function = ALU_ADD; /*break;*/
+      CTL_ALU_OP:     alu_function = op_funct; /*break;*/
+      CTL_ALU_OP_IMM: alu_function = op_imm_funct; /*break;*/
+      default:             alu_function = 'x; /*break;*/
+      CTL_ALU_BRANCH: alu_function = branch_funct; /*break;*/
     endcase
   end
   // clang-format on

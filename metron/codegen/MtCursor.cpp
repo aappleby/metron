@@ -22,7 +22,7 @@ emit_map emit_sym_map = {
   { sym_array_declarator,               &MtCursor::emit_children },
   { sym_assignment_expression,          &MtCursor::emit_sym_assignment_expression },
   { sym_binary_expression,              &MtCursor::emit_children },
-  { sym_break_statement,                &MtCursor::skip_over }, // Verilog doesn't use "break"
+  { sym_break_statement,                &MtCursor::comment_out }, // Verilog doesn't use "break"
   { sym_call_expression,                &MtCursor::emit_sym_call_expression },
   { sym_case_statement,                 &MtCursor::emit_sym_case_statement },
   { sym_char_literal,                   &MtCursor::emit_text },
@@ -2803,7 +2803,7 @@ CHECK_RETURN Err MtCursor::emit_sym_case_statement(MnNode n) {
 
     switch (c.sym) {
       case sym_break_statement:
-        err << skip_over(c);
+        err << comment_out(c);
         err << skip_ws_inside(n);
         break;
       case anon_sym_case:

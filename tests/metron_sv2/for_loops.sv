@@ -23,7 +23,6 @@ module Module (
     int x;
     int i;
     x = 0;
-    i;
     for (i = 0; i < 10; i = i + 1) begin
       x = x + i;
     end

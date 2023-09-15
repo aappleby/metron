@@ -18,11 +18,14 @@ module Module (
       1,
       2:
         result = 10;
+        /*break;*/
       3: begin
         result = 20;
+        /*break;*/
       end
       default:
         result = 30;
+        /*break;*/
     endcase
 
     /*tick();*/

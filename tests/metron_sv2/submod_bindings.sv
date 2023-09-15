@@ -27,7 +27,6 @@ module Module (
 
   always_comb begin : tock_bindings
     logic[7:0] result;
-    result;
     // Submod bindings should _not_ end up here.
 
     begin

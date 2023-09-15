@@ -26,10 +26,13 @@ module multiplexer2 (
     case (sel)
       0:
         out = in0;
+        /*break;*/
       1:
         out = in1;
+        /*break;*/
       default:
         out = 'x;
+        /*break;*/
     endcase
   end
 endmodule

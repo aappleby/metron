@@ -31,15 +31,15 @@ module multiplexer8 (
   always_comb begin : tock
     // clang-format off
     case (sel)
-      0:  out = in0;
-      1:  out = in1;
-      2:  out = in2;
-      3:  out = in3;
-      4:  out = in4;
-      5:  out = in5;
-      6:  out = in6;
-      7:  out = in7;
-      default: out = 'x;
+      0:  out = in0; /*break;*/
+      1:  out = in1; /*break;*/
+      2:  out = in2; /*break;*/
+      3:  out = in3; /*break;*/
+      4:  out = in4; /*break;*/
+      5:  out = in5; /*break;*/
+      6:  out = in6; /*break;*/
+      7:  out = in7; /*break;*/
+      default: out = 'x; /*break;*/
     endcase
     // clang-format on
   end

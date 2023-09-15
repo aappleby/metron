@@ -251,7 +251,20 @@ Err CNodeCall::emit(Cursor& cursor) {
     auto func_name = func_id->get_textstr();
 
     if (cursor.id_map.top().contains(func_name)) {
-      return cursor.emit_default(this);
+      auto replacement = cursor.id_map.top()[func_name];
+
+      err << cursor.emit_replacement(node_name, "%s", replacement.c_str());
+      err << cursor.emit_gap();
+
+      if (node_targs) {
+        err << cursor.skip_over(node_targs);
+        err << cursor.skip_gap();
+      }
+
+      err << cursor.emit(node_args);
+
+      return err << cursor.check_done(this);
+      //return cursor.emit_default(this);
     }
 
     if (func_name == "bx") {

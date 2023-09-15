@@ -10,7 +10,7 @@
       "cwd": "${workspaceFolder}",
       //"args" : [      "-d", "-v", "-e", "-c", "examples/scratch.h", "-o", "examples/scratch.sv"],
       //"args" : ["-p", "-d", "-v", "-e", "-c", "examples/scratch.h", "-o", "examples/scratch.sv"],
-      "args" : ["-p", "-d", "-v", "-e", "-c", "tests/metron_good/constructor_arg_passing.h"],
+      "args" : ["-p", "-d", "-v", "-e", "-c", "tests/metron_good/builtins.h"],
       //"args" : ["-d", "-v", "-e", "-c", "tests/metron_good/basic_public_reg.h"],
       "setupCommands": [
         { // Display content in STL containers pretty

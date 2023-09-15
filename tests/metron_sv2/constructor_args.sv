@@ -15,7 +15,7 @@ module Module (
 
 /*public:*/
 
-  parameter filename = "examples/uart/message.hex";
+  parameter /*const*/ filename = "examples/uart/message.hex";
   initial begin
     $readmemh(filename, data);
   end

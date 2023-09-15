@@ -17,7 +17,7 @@ module Module (
 
 /*public:*/
 
-  parameter filename = "";
+  parameter /*const*/ filename = "";
   initial begin
     if (filename) $readmemh(filename, data);
   end

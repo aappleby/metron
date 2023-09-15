@@ -107,19 +107,49 @@ Err CNodeFunction::emit_init(Cursor& cursor) {
   for (auto param : node_params) {
     auto decl = param->as<CNodeDeclaration>();
     if (!decl) continue;
-    err << cursor.start_line();
-    err << cursor.emit_print("parameter ");
-    err << cursor.emit_splice(decl->child("name"));
-    err << cursor.emit_print(" = ");
 
-    auto constructor_param_value = decl->child("value");
-    if (!constructor_param_value) {
-      LOG_R("All constructor params must have default values\n");
-      assert(false);
+    //decl->dump_debug();
+
+    auto decl_const = decl->child("const");
+    auto decl_type  = decl->child("type");
+    auto decl_name  = decl->child("name");
+    auto decl_eq    = decl->child("eq");
+    auto decl_value = decl->child("value");
+
+    assert(decl_type);
+    assert(decl_name);
+    assert(decl_eq);
+    assert(decl_value);
+
+    auto old_cursor = cursor.tok_cursor;
+    if (decl_const) {
+      cursor.tok_cursor = decl_const->tok_begin();
+    }
+    else {
+      cursor.tok_cursor = decl_type->tok_begin();
     }
 
-    err << cursor.emit_splice(constructor_param_value);
+    err << cursor.start_line();
+    err << cursor.emit_print("parameter ");
+
+    if (decl_const) {
+      err << cursor.emit(decl_const);
+      err << cursor.emit_gap();
+    }
+
+    err << cursor.skip_over(decl_type);
+    err << cursor.skip_gap();
+
+    err << cursor.emit(decl_name);
+    err << cursor.emit_gap();
+
+    err << cursor.emit(decl_eq);
+    err << cursor.emit_gap();
+
+    err << cursor.emit(decl_value);
     err << cursor.emit_print(";");
+
+    cursor.tok_cursor = old_cursor;
   }
 
   err << cursor.start_line();

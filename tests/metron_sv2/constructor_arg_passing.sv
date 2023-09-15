@@ -46,6 +46,8 @@ endmodule
 module Top (
   // global clock
   input logic clock,
+  // output signals
+  output logic[9:0] derp,
   // tock() ports
   input logic[9:0] tock_addr
 );

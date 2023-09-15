@@ -4,8 +4,13 @@ module Module (
   // global clock
   input logic clock,
   // output signals
+  output int my_sig1,
+  output int my_sig2,
+  output int my_sig3,
+  output int my_sig4,
   output int my_sig5a,
   output int my_sig5b,
+  output int my_sig6a,
   // output registers
   output int my_reg1,
   output int my_reg2,

@@ -290,7 +290,7 @@ int main_new(Options opts) {
         LOG_G("input signal %s\n", fname.c_str());
         c->input_signals.push_back(f);
       }
-      else if (f->field_type == FT_OUTPUT) {
+      else if (f->field_type == FT_OUTPUT || f->field_type == FT_SIGNAL) {
         LOG_G("output signal %s\n", fname.c_str());
         c->output_signals.push_back(f);
       }

@@ -6,6 +6,9 @@
 module Submod (
   // global clock
   input logic clock,
+  // output signals
+  output logic[7:0] i_signal,
+  output logic[7:0] o_signal,
   // output registers
   output logic[7:0] o_reg,
   // tock() ports

@@ -29,7 +29,10 @@ typedef struct packed {
 
 module TilelinkDevice (
   // global clock
-  input logic clock
+  input logic clock,
+  // output signals
+  output tilelink_d tld,
+  output tilelink_a tla
 );
 /*public:*/
 
@@ -73,7 +76,10 @@ endmodule
 
 module TilelinkCPU (
   // global clock
-  input logic clock
+  input logic clock,
+  // output signals
+  output tilelink_a tla,
+  output tilelink_d tld
 );
 /*public:*/
 

@@ -3,6 +3,9 @@
 // Templates can be used for module parameters
 
 module Submod (
+  // output signals
+  output logic[(WIDTH)-1:0] my_width,
+  output logic[(HEIGHT)-1:0] my_height,
   // tock() ports
   input logic[(WIDTH)-1:0] tock_dx,
   input logic[(HEIGHT)-1:0] tock_dy

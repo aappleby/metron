@@ -8,7 +8,7 @@ module Submod1 (
   output logic[7:0] add_one_ret
 );
 /*public:*/
-  always_comb begin : add_one /*const*/
+  always_comb begin : add_one
     add_one_ret = add_one_a + 1;
   end
 endmodule
@@ -19,7 +19,7 @@ module Submod2 (
   output logic[7:0] add_two_ret
 );
 /*public:*/
-  always_comb begin : add_two /*const*/
+  always_comb begin : add_two
     add_two_ret = add_two_a + 1;
   end
 endmodule

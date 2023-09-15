@@ -155,8 +155,8 @@ Err CNodeFunction::emit_always_comb(Cursor& cursor) {
   err << cursor.emit_gap();
 
   if (node_const) {
-    err << cursor.comment_out(node_const);
-    err << cursor.emit_gap();
+    err << cursor.skip_over(node_const);
+    err << cursor.skip_gap();
   }
 
   err << node_body->emit_block(cursor, "", "end");
@@ -191,8 +191,8 @@ Err CNodeFunction::emit_always_ff(Cursor& cursor) {
   err << cursor.emit_gap();
 
   if (node_const) {
-    err << cursor.comment_out(node_const);
-    err << cursor.emit_gap();
+    err << cursor.skip_over(node_const);
+    err << cursor.skip_gap();
   }
 
   err << node_body->emit_block(cursor, "", "end");

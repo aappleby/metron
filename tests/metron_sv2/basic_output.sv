@@ -10,7 +10,7 @@ module Module (
 );
 /*public:*/
 
-  always_comb begin : get_reg /*const*/
+  always_comb begin : get_reg
     get_reg_ret = my_reg;
   end
 

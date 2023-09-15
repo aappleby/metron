@@ -31,7 +31,7 @@ module Module (
 );
 /*public:*/
 
-  always_comb begin : get_submod_reg /*const*/
+  always_comb begin : get_submod_reg
     get_submod_reg_ret = submod_sub_reg;
   end
 

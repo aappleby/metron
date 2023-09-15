@@ -15,8 +15,8 @@ module Submod (
 );
 /*public:*/
 
-  always_comb begin : sum_a /*const*/  sum_a_ret = sum_a_a1 + sum_a_a2; end
-  always_comb begin : sum_b /*const*/  sum_b_ret = sum_b_b1 + sum_b_b2; end
+  always_comb begin : sum_a  sum_a_ret = sum_a_a1 + sum_a_a2; end
+  always_comb begin : sum_b  sum_b_ret = sum_b_b1 + sum_b_b2; end
 endmodule
 
 module Module (
@@ -25,7 +25,7 @@ module Module (
 );
 /*public:*/
 
-  always_comb begin : tock_bindings /*const*/
+  always_comb begin : tock_bindings
     logic[7:0] result;
     result;
     // Submod bindings should _not_ end up here.

@@ -21,6 +21,7 @@ module Module (
   always_ff @(posedge clock) begin : tick
     my_reg <= my_reg + tick_val;
   end
+  logic[7:0] tick_val;
 
   logic[7:0] my_reg;
 

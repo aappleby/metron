@@ -23,5 +23,7 @@ module Module (
     my_signal = set_signal_number;
     set_signal_ret = my_signal;
   end
+  logic[7:0] set_signal_number;
+  int set_signal_ret;
 
 endmodule

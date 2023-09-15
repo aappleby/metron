@@ -17,6 +17,7 @@ module Submod (
   always_ff @(posedge clock) begin : tick
     my_reg <= my_reg + tick_arg;
   end
+  logic[7:0] tick_arg;
 
   logic[7:0] my_reg;
 endmodule

@@ -70,22 +70,31 @@ Err CNodeFunction::emit(Cursor& cursor) {
   //----------
 
   if (method_type == MT_INIT) {
-    return as<CNodeConstructor>() ? emit_init(cursor) : emit_task(cursor);
+    err << (as<CNodeConstructor>() ? emit_init(cursor) : emit_task(cursor));
   }
   else if (method_type == MT_TOCK) {
-    return emit_always_comb(cursor);
+    err << emit_always_comb(cursor);
   }
   else if (method_type == MT_TICK) {
-    return called_by_tick ? emit_task(cursor) : emit_always_ff(cursor);
+    err << (called_by_tick ? emit_task(cursor) : emit_always_ff(cursor));
   }
   else if (method_type == MT_FUNC) {
-    return internal_callers.size() ? emit_func(cursor) : emit_always_comb(cursor);
+    err << (internal_callers.size() ? emit_func(cursor) : emit_always_comb(cursor));
   }
   else {
     dump_tree();
     assert(false);
-    return CNode::emit(cursor);
+    err << CNode::emit(cursor);
   }
+
+
+  //----------
+
+  if (needs_binding()) {
+    err << emit_func_binding_vars(cursor);
+  }
+
+  return err;
 }
 
 //----------------------------------------
@@ -245,6 +254,34 @@ Err CNodeFunction::emit_task(Cursor& cursor) {
   err << node_body->emit_block(cursor, "", "endtask");
 
   return err << cursor.check_done(this);
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err CNodeFunction::emit_func_binding_vars(Cursor& cursor) {
+  Err err;
+
+  auto func_name = node_name->get_text();
+
+  for (auto& param : params) {
+
+    auto param_type = param->child("type")->as<CNodeType>();
+    auto param_name = param->child("name")->as<CNodeIdentifier>();
+
+    err << cursor.start_line();
+    err << cursor.emit_splice(param_type);
+    err << cursor.emit_print(" %.*s_", func_name.size(), func_name.data());
+    err << cursor.emit_splice(param_name);
+    err << cursor.emit_print(";");
+  }
+
+  if (node_type->get_text() != "void") {
+    err << cursor.start_line();
+    err << cursor.emit_splice(node_type);
+    err << cursor.emit_print(" %.*s_ret;", func_name.size(), func_name.data());
+  }
+
+  return err;
 }
 
 //------------------------------------------------------------------------------

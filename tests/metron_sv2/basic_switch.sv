@@ -30,6 +30,7 @@ module Module (
       6: my_reg <= 72; /*break*/;
     endcase
   end
+  logic[1:0] tick_selector;
 
   logic[7:0] my_reg;
 endmodule

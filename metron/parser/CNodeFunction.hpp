@@ -37,6 +37,8 @@ struct CNodeFunction : public CNode {
   Err emit_func(Cursor& cursor);
   Err emit_task(Cursor& cursor);
 
+  Err emit_func_binding_vars(Cursor& cursor);
+
   bool emit_as_task();
   bool emit_as_func();
 

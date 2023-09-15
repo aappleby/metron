@@ -99,6 +99,7 @@ module Module (
   always_comb begin : tock_called_by_tock
     my_sig6b = tock_called_by_tock_x;
   end
+  int tock_called_by_tock_x;
 /*public:*/
 
   //----------
@@ -132,6 +133,7 @@ module Module (
   always_ff @(posedge clock) begin : private_tick
     my_reg4 <= my_reg4 + private_tick_x;
   end
+  int private_tick_x;
 
 
 endmodule

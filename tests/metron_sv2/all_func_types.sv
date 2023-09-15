@@ -7,9 +7,9 @@ module Module (
   output int my_sig5a,
   output int my_sig5b,
   // output registers
-  int my_reg1,
-  int my_reg2,
-  int my_reg3,
+  output int my_reg1,
+  output int my_reg2,
+  output int my_reg3,
   // func_no_params_return() ports
   output int func_no_params_return_ret,
   // func_params_return() ports

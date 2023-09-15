@@ -7,7 +7,7 @@ module Submod (
   // global clock
   input logic clock,
   // output registers
-  logic[7:0] o_reg,
+  output logic[7:0] o_reg,
   // tock() ports
   input logic[7:0] tock_i_param,
   output logic[7:0] tock_ret
@@ -32,7 +32,7 @@ module Module (
   // global clock
   input logic clock,
   // output registers
-  logic[7:0] my_reg
+  output logic[7:0] my_reg
 );
 /*public:*/
 

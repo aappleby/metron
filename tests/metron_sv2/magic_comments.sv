@@ -7,7 +7,7 @@ module Module (
   // global clock
   input logic clock,
   // output registers
-  int my_reg
+  output int my_reg
 );
 /*public:*/
 

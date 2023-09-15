@@ -11,7 +11,7 @@ module Module (
   // global clock
   input logic clock,
   // output registers
-  int my_reg,
+  output int my_reg,
   // tock() ports
   output int tock_ret
 );

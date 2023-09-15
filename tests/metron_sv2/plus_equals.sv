@@ -4,9 +4,9 @@ module Metron (
   // output signals
   output int my_sig,
   // output registers
-  int my_reg1,
-  int my_reg2,
-  int my_reg3
+  output int my_reg1,
+  output int my_reg2,
+  output int my_reg3
 );
 /*public:*/
 

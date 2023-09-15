@@ -285,7 +285,7 @@ Err CNodeClass::emit_module_ports(Cursor& cursor) {
     err << cursor.start_line();
     err << cursor.emit_print("// input signals");
     for (auto f : input_signals) {
-      err << emit_field_ports(f, cursor);
+      err << emit_field_ports(f, false, cursor);
     }
   }
 
@@ -293,7 +293,7 @@ Err CNodeClass::emit_module_ports(Cursor& cursor) {
     err << cursor.start_line();
     err << cursor.emit_print("// output signals");
     for (auto f : output_signals) {
-      err << emit_field_ports(f, cursor);
+      err << emit_field_ports(f, true, cursor);
     }
   }
 
@@ -301,7 +301,7 @@ Err CNodeClass::emit_module_ports(Cursor& cursor) {
     err << cursor.start_line();
     err << cursor.emit_print("// output registers");
     for (auto f : output_registers) {
-      err << emit_field_ports(f, cursor);
+      err << emit_field_ports(f, true, cursor);
     }
   }
 
@@ -356,17 +356,17 @@ Err CNodeClass::emit_function_ports(CNodeFunction* f, Cursor& cursor) {
 
 //----------------------------------------
 
-Err CNodeClass::emit_field_ports(CNodeField* f, Cursor& cursor) {
+Err CNodeClass::emit_field_ports(CNodeField* f, bool is_output, Cursor& cursor) {
   Err err;
 
   auto fname = f->get_namestr();
 
   err << cursor.start_line();
-  if (f->field_type == FT_INPUT) {
-    err << cursor.emit_print("input ");
-  }
-  else if (f->field_type == FT_OUTPUT) {
+  if (is_output) {
     err << cursor.emit_print("output ");
+  }
+  else {
+    err << cursor.emit_print("input ");
   }
 
   err << cursor.emit_splice(f->node_decl->child("type"));

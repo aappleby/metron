@@ -10,8 +10,8 @@
       "cwd": "${workspaceFolder}",
       //"args" : [      "-d", "-v", "-e", "-c", "examples/scratch.h", "-o", "examples/scratch.sv"],
       //"args" : ["-p", "-d", "-v", "-e", "-c", "examples/scratch.h", "-o", "examples/scratch.sv"],
-      "args" : ["-p", "-d", "-v", "-e", "-c", "tests/metron_good/basic_param.h"],
-      //"args" : ["-d", "-v", "-e", "-c", "tests/metron_good/basic_param.h"],
+      "args" : ["-p", "-d", "-v", "-e", "-c", "tests/metron_good/basic_public_reg.h"],
+      //"args" : ["-d", "-v", "-e", "-c", "tests/metron_good/basic_public_reg.h"],
       "setupCommands": [
         { // Display content in STL containers pretty
           "description": "Enable pretty-printing for gdb",

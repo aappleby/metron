@@ -6,7 +6,7 @@ module Submod (
   // global clock
   input logic clock,
   // output registers
-  logic[7:0] sub_reg
+  output logic[7:0] sub_reg
 );
 /*public:*/
 

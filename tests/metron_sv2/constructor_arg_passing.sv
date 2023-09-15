@@ -12,8 +12,9 @@ module Module (
   // get_data() ports
   output logic[7:0] get_data_ret
 );
-  parameter data_len 1024;
-  parameter blarp 0;
+  parameter data_len = 1024;
+  parameter blarp = 0;
+
 /*public:*/
 
   parameter filename = "";

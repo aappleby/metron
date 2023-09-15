@@ -7,8 +7,9 @@ module Submod (
   input logic[(WIDTH)-1:0] tock_dx,
   input logic[(HEIGHT)-1:0] tock_dy
 );
-  parameter WIDTH 123;
-  parameter HEIGHT 456;
+  parameter WIDTH = 123;
+  parameter HEIGHT = 456;
+
 /*public:*/
 
   always_comb begin : tock

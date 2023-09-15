@@ -383,20 +383,51 @@ Err CNodeClass::emit_template_parameter_list(Cursor& cursor) {
   auto node_template = ancestor<CNodeTemplate>();
   if (!node_template) return err;
 
-  err << cursor.emit_char('\n');
-  err << cursor.emit_indent();
+  node_template->dump_debug();
+
+  auto old_cursor = cursor.tok_cursor;
+
+  //err << cursor.emit_char('\n');
+  //err << cursor.emit_indent();
+
   for (auto param : node_template->params) {
     err << cursor.start_line();
     err << cursor.emit_print("parameter ");
-    err << cursor.emit_splice(param->node_name);
+
+    //CNodeIdentifier* node_name = nullptr;
+    //CNodeList*       node_array = nullptr;
+    //CNodePunct*      node_eq = nullptr;
+    //CNode*           node_value = nullptr;
+
+    cursor.tok_cursor = param->node_name->tok_begin();
+    err << cursor.emit(param->node_name);
+    err << cursor.emit_gap();
+
+    if (param->node_array) {
+      err << cursor.emit(param->node_array);
+      err << cursor.emit_gap();
+    }
+
+    err << cursor.emit(param->node_eq);
+    err << cursor.emit_gap();
+
+    err << cursor.emit(param->node_value);
+
+    /*
     err << cursor.emit_print(" ");
     if (param->node_array) {
       err << cursor.emit_splice(param->node_array);
       err << cursor.emit_print(" ");
     }
     err << cursor.emit_splice(param->node_value);
+    */
+
     err << cursor.emit_print(";");
   }
+
+  err << cursor.emit_print("\n");
+
+  cursor.tok_cursor = old_cursor;
 
   return err;
 }

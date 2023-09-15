@@ -6,7 +6,8 @@ module Module (
   // global clock
   input logic clock
 );
-  parameter SOME_CONSTANT 7;
+  parameter SOME_CONSTANT = 7;
+
 /*public:*/
 
   always_comb begin : tock

@@ -323,18 +323,18 @@ module Module (
 
 
   always_comb begin : test_bx_param
-    logic[(some_size1)-1:0] a;
-    logic[(some_size2)-1:0] b;
-    logic[(some_size2)-1:0] b0;
-    logic[(some_size2)-1:0] b1;
-    logic[(some_size2)-1:0] b2;
-    logic[(some_size2)-1:0] b3;
-    logic[(some_size2)-1:0] b4;
-    logic[(some_size2)-1:0] b5;
-    logic[(some_size2)-1:0] b6;
-    logic[(some_size2)-1:0] b7;
-    logic[(some_size2)-1:0] b8;
-    logic[(some_size2)-1:0] b9;
+    logic[some_size1-1:0] a;
+    logic[some_size2-1:0] b;
+    logic[some_size2-1:0] b0;
+    logic[some_size2-1:0] b1;
+    logic[some_size2-1:0] b2;
+    logic[some_size2-1:0] b3;
+    logic[some_size2-1:0] b4;
+    logic[some_size2-1:0] b5;
+    logic[some_size2-1:0] b6;
+    logic[some_size2-1:0] b7;
+    logic[some_size2-1:0] b8;
+    logic[some_size2-1:0] b9;
     a = 10;
     b = (some_size2)'(a);
 

@@ -167,6 +167,15 @@ Err CNodeType::emit(Cursor& cursor) {
         err << cursor.emit_replacement(node_rdelim, "]");
       }
     }
+    else if (auto node_identifier = node_exp->as<CNodeIdentifier>()) {
+        // logic<CONSTANT> -> logic[CONSTANT-1:0]
+        err << cursor.emit_replacement(node_ldelim, "[");
+        err << cursor.emit_gap();
+        err << cursor.skip_over(node_exp);
+        err << cursor.emit_gap();
+        err << cursor.emit_print("%.*s-1:0", node_identifier->get_text().size(), node_identifier->get_text().data());
+        err << cursor.emit_replacement(node_rdelim, "]");
+    }
     else {
       // logic<exp> -> logic[(exp)-1:0]
       err << cursor.emit_replacement(node_ldelim, "[");

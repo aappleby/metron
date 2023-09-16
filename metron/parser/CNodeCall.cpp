@@ -217,8 +217,6 @@ CHECK_RETURN Err MtCursor::emit_sym_call_expression(MnNode n) {
 Err CNodeCall::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
-  dump_debug();
-
   auto src_class = ancestor<CNodeClass>();
   auto src_func = ancestor<CNodeFunction>();
 

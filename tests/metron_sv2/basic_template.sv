@@ -4,11 +4,11 @@
 
 module Submod (
   // output signals
-  output logic[(WIDTH)-1:0] my_width,
-  output logic[(HEIGHT)-1:0] my_height,
+  output logic[WIDTH-1:0] my_width,
+  output logic[HEIGHT-1:0] my_height,
   // tock() ports
-  input logic[(WIDTH)-1:0] tock_dx,
-  input logic[(HEIGHT)-1:0] tock_dy
+  input logic[WIDTH-1:0] tock_dx,
+  input logic[HEIGHT-1:0] tock_dy
 );
   parameter WIDTH = 123;
   parameter HEIGHT = 456;

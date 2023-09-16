@@ -99,7 +99,6 @@ CHECK_RETURN Err CNodeCall::emit_bit_extract(Cursor& cursor) {
 
   int    width      = 0;
   CNode* node_width = nullptr;
-  bool   bare_width = (node_width->as<CNodeIdentifier>() != nullptr);
 
   if (func_name == "bx") {
     auto& targs = node_targs->items;
@@ -115,12 +114,12 @@ CHECK_RETURN Err CNodeCall::emit_bit_extract(Cursor& cursor) {
   else {
     width = atoi(&func_name[1]);
   }
+  bool   bare_width = (node_width->as<CNodeIdentifier>() != nullptr);
 
   //----------
 
   int    offset = 0;
   CNode* node_offset = nullptr;
-  bool   bare_offset = (node_offset->as<CNodeIdentifier>() != nullptr);
 
   if (args.size() == 2) {
     if (auto const_offset = args[1]->as<CNodeConstInt>()) {
@@ -130,6 +129,7 @@ CHECK_RETURN Err CNodeCall::emit_bit_extract(Cursor& cursor) {
       node_offset = args[1];
     }
   }
+  bool   bare_offset = (node_offset->as<CNodeIdentifier>() != nullptr);
 
   //----------------------------------------
   // Expression
@@ -141,71 +141,87 @@ CHECK_RETURN Err CNodeCall::emit_bit_extract(Cursor& cursor) {
   if (!bare_exp) err << cursor.emit_print(")");
 
   //----------
-  // LDelim
-
-  err << cursor.emit_print("[");
+  // Single bit extract
 
   if (width == 1) {
-  }
-
-
-  if (node_width || width != 1) {
-
-    //----------
-    // LHS, "width+offset-1"
-
-    if (node_width) {
-      // Non-numeric width
-      if (!bare_width) err << cursor.emit_print("(");
-      err << cursor.emit_splice(node_width);
-      if (!bare_width) err << cursor.emit_print(")");
-    }
-    else if (width) {
-      // Numeric width
-      err << cursor.emit_print("%d", width);
-    }
-
+    err << cursor.emit_print("[");
     if (node_offset) {
-      // Non-numeric offset
-      err << cursor.emit_print("+");
-      if (!bare_offset) err << cursor.emit_print("(");
       err << cursor.emit_splice(node_offset);
-      if (!bare_offset) err << cursor.emit_print(")");
     }
-    else if (offset) {
-      // Numeric offset
-      err << cursor.emit_print("+");
+    else {
       err << cursor.emit_print("%d", offset);
     }
-
-    err << cursor.emit_print("-1");
-
-    //----------
-    // Colon
-
-    err << cursor.emit_print(":");
+    err << cursor.emit_print("]");
+    return err;
   }
 
   //----------
-  // RHS - "offset" or "0"
 
-  if (node_offset) {
-    // Non-numeric offset
+  if (node_width && node_offset) {
+    err << cursor.emit_print("[");
+    if (!bare_width) err << cursor.emit_print("(");
+    err << cursor.emit_splice(node_width);
+    if (!bare_width) err << cursor.emit_print(")");
+    err << cursor.emit_print("+");
     if (!bare_offset) err << cursor.emit_print("(");
     err << cursor.emit_splice(node_offset);
     if (!bare_offset) err << cursor.emit_print(")");
-  }
-  else {
-    // Numeric offset
-    err << cursor.emit_print("%d", offset);
+    err << cursor.emit_print("-1");
+    err << cursor.emit_print(":");
+    if (!bare_offset) err << cursor.emit_print("(");
+    err << cursor.emit_splice(node_offset);
+    if (!bare_offset) err << cursor.emit_print(")");
+    err << cursor.emit_print("]");
+    return err;
   }
 
   //----------
-  // RDelim
 
-  err << cursor.emit_print("]");
+  else if (node_width) {
+    err << cursor.emit_print("[");
+    if (!bare_width) err << cursor.emit_print("(");
+    err << cursor.emit_splice(node_width);
+    if (!bare_width) err << cursor.emit_print(")");
 
-  return err;
+    if (offset == 0) {
+      err << cursor.emit_print("-1");
+    }
+    else if (offset == 1) {
+    }
+    else {
+      err << cursor.emit_print("+");
+      err << cursor.emit_print("%d", offset-1);
+    }
+
+    err << cursor.emit_print(":");
+    err << cursor.emit_print("%d", offset);
+    err << cursor.emit_print("]");
+    return err;
+  }
+
+  //----------
+
+  else if (node_offset) {
+    err << cursor.emit_print("[");
+    err << cursor.emit_print("%d", width - 1);
+    err << cursor.emit_print("+");
+    if (!bare_offset) err << cursor.emit_print("(");
+    err << cursor.emit_splice(node_offset);
+    if (!bare_offset) err << cursor.emit_print(")");
+    err << cursor.emit_print(":");
+    if (!bare_offset) err << cursor.emit_print("(");
+    err << cursor.emit_splice(node_offset);
+    if (!bare_offset) err << cursor.emit_print(")");
+    err << cursor.emit_print("]");
+    return err;
+  }
+
+  //----------
+
+  else {
+    err << cursor.emit_print("[%d:%d]", width+offset-1, offset);
+    return err;
+  }
 }
 
 //------------------------------------------------------------------------------

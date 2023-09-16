@@ -22,6 +22,10 @@ struct CNodeDeclaration : public CNode {
   std::string_view get_type_name() const;
   bool is_array() const;
 
+  bool is_localparam() const {
+    return child("static") != nullptr && child("const") != nullptr;
+  }
+
   /*
   TokenSpan match_declaration(CContext& ctx, TokenSpan body) {
     using pattern =

@@ -152,7 +152,7 @@ Err CNodeField::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
   // Ports don't go in the class body.
-  if (_public && !is_component()) {
+  if (_public && !is_component() && !node_decl->is_localparam()) {
     return err << cursor.skip_over(this);
   }
 

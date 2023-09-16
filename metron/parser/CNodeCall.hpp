@@ -18,6 +18,9 @@ struct CNodeCall : public CNode {
 
   bool can_omit_call();
 
+  bool is_bit_extract();
+  CHECK_RETURN Err emit_bit_extract(Cursor& cursor);
+
 
   CNode*     node_name  = nullptr;
   CNodeList* node_targs = nullptr;

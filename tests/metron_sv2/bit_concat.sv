@@ -33,6 +33,6 @@ module Module (
     b = 2;
     c = 3;
 
-    sig2 = {1'(a), 2'(b), 3'(c)};
+    sig2 = {a[0], b[2-1:0], c[3-1:0]};
   end
 endmodule

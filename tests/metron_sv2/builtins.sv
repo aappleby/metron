@@ -19,7 +19,7 @@ module Module (
     src = 100;
     a = $signed(src);
     b = $unsigned(src);
-    e = $signed(2'(src));
+    e = $signed(src[2-1:0]);
     c = $clog2(100);
     d = 2**(4);
     sig = 1;

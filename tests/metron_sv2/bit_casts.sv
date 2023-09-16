@@ -83,76 +83,76 @@ module Module (
     logic[1:0] dst2;
     logic dst1;
     src = 64'h1234567812345678;
-    dst64 = 64'(src);
-    dst63 = 63'(src);
-    dst62 = 62'(src);
-    dst61 = 61'(src);
-    dst60 = 60'(src);
+    dst64 = src[64-1:0];
+    dst63 = src[63-1:0];
+    dst62 = src[62-1:0];
+    dst61 = src[61-1:0];
+    dst60 = src[60-1:0];
 
-    dst59 = 59'(src);
-    dst58 = 58'(src);
-    dst57 = 57'(src);
-    dst56 = 56'(src);
-    dst55 = 55'(src);
-    dst54 = 54'(src);
-    dst53 = 53'(src);
-    dst52 = 52'(src);
-    dst51 = 51'(src);
-    dst50 = 50'(src);
+    dst59 = src[59-1:0];
+    dst58 = src[58-1:0];
+    dst57 = src[57-1:0];
+    dst56 = src[56-1:0];
+    dst55 = src[55-1:0];
+    dst54 = src[54-1:0];
+    dst53 = src[53-1:0];
+    dst52 = src[52-1:0];
+    dst51 = src[51-1:0];
+    dst50 = src[50-1:0];
 
-    dst49 = 49'(src);
-    dst48 = 48'(src);
-    dst47 = 47'(src);
-    dst46 = 46'(src);
-    dst45 = 45'(src);
-    dst44 = 44'(src);
-    dst43 = 43'(src);
-    dst42 = 42'(src);
-    dst41 = 41'(src);
-    dst40 = 40'(src);
+    dst49 = src[49-1:0];
+    dst48 = src[48-1:0];
+    dst47 = src[47-1:0];
+    dst46 = src[46-1:0];
+    dst45 = src[45-1:0];
+    dst44 = src[44-1:0];
+    dst43 = src[43-1:0];
+    dst42 = src[42-1:0];
+    dst41 = src[41-1:0];
+    dst40 = src[40-1:0];
 
-    dst39 = 39'(src);
-    dst38 = 38'(src);
-    dst37 = 37'(src);
-    dst36 = 36'(src);
-    dst35 = 35'(src);
-    dst34 = 34'(src);
-    dst33 = 33'(src);
-    dst32 = 32'(src);
-    dst31 = 31'(src);
-    dst30 = 30'(src);
+    dst39 = src[39-1:0];
+    dst38 = src[38-1:0];
+    dst37 = src[37-1:0];
+    dst36 = src[36-1:0];
+    dst35 = src[35-1:0];
+    dst34 = src[34-1:0];
+    dst33 = src[33-1:0];
+    dst32 = src[32-1:0];
+    dst31 = src[31-1:0];
+    dst30 = src[30-1:0];
 
-    dst29 = 29'(src);
-    dst28 = 28'(src);
-    dst27 = 27'(src);
-    dst26 = 26'(src);
-    dst25 = 25'(src);
-    dst24 = 24'(src);
-    dst23 = 23'(src);
-    dst22 = 22'(src);
-    dst21 = 21'(src);
-    dst20 = 20'(src);
+    dst29 = src[29-1:0];
+    dst28 = src[28-1:0];
+    dst27 = src[27-1:0];
+    dst26 = src[26-1:0];
+    dst25 = src[25-1:0];
+    dst24 = src[24-1:0];
+    dst23 = src[23-1:0];
+    dst22 = src[22-1:0];
+    dst21 = src[21-1:0];
+    dst20 = src[20-1:0];
 
-    dst19 = 19'(src);
-    dst18 = 18'(src);
-    dst17 = 17'(src);
-    dst16 = 16'(src);
-    dst15 = 15'(src);
-    dst14 = 14'(src);
-    dst13 = 13'(src);
-    dst12 = 12'(src);
-    dst11 = 11'(src);
-    dst10 = 10'(src);
+    dst19 = src[19-1:0];
+    dst18 = src[18-1:0];
+    dst17 = src[17-1:0];
+    dst16 = src[16-1:0];
+    dst15 = src[15-1:0];
+    dst14 = src[14-1:0];
+    dst13 = src[13-1:0];
+    dst12 = src[12-1:0];
+    dst11 = src[11-1:0];
+    dst10 = src[10-1:0];
 
-    dst9 = 9'(src);
-    dst8 = 8'(src);
-    dst7 = 7'(src);
-    dst6 = 6'(src);
-    dst5 = 5'(src);
-    dst4 = 4'(src);
-    dst3 = 3'(src);
-    dst2 = 2'(src);
-    dst1 = 1'(src);
+    dst9 = src[9-1:0];
+    dst8 = src[8-1:0];
+    dst7 = src[7-1:0];
+    dst6 = src[6-1:0];
+    dst5 = src[5-1:0];
+    dst4 = src[4-1:0];
+    dst3 = src[3-1:0];
+    dst2 = src[2-1:0];
+    dst1 = src[0];
     test_bN_ret = 0;
   end
 
@@ -222,75 +222,75 @@ module Module (
     logic[1:0] dst2;
     logic dst1;
     src = 64'h1234567812345678;
-    dst63 = (63)'(src);
-    dst62 = (62)'(src);
-    dst61 = (61)'(src);
-    dst60 = (60)'(src);
+    dst63 = src[63-1:0];
+    dst62 = src[62-1:0];
+    dst61 = src[61-1:0];
+    dst60 = src[60-1:0];
 
-    dst59 = (59)'(src);
-    dst58 = (58)'(src);
-    dst57 = (57)'(src);
-    dst56 = (56)'(src);
-    dst55 = (55)'(src);
-    dst54 = (54)'(src);
-    dst53 = (53)'(src);
-    dst52 = (52)'(src);
-    dst51 = (51)'(src);
-    dst50 = (50)'(src);
+    dst59 = src[59-1:0];
+    dst58 = src[58-1:0];
+    dst57 = src[57-1:0];
+    dst56 = src[56-1:0];
+    dst55 = src[55-1:0];
+    dst54 = src[54-1:0];
+    dst53 = src[53-1:0];
+    dst52 = src[52-1:0];
+    dst51 = src[51-1:0];
+    dst50 = src[50-1:0];
 
-    dst49 = (49)'(src);
-    dst48 = (48)'(src);
-    dst47 = (47)'(src);
-    dst46 = (46)'(src);
-    dst45 = (45)'(src);
-    dst44 = (44)'(src);
-    dst43 = (43)'(src);
-    dst42 = (42)'(src);
-    dst41 = (41)'(src);
-    dst40 = (40)'(src);
+    dst49 = src[49-1:0];
+    dst48 = src[48-1:0];
+    dst47 = src[47-1:0];
+    dst46 = src[46-1:0];
+    dst45 = src[45-1:0];
+    dst44 = src[44-1:0];
+    dst43 = src[43-1:0];
+    dst42 = src[42-1:0];
+    dst41 = src[41-1:0];
+    dst40 = src[40-1:0];
 
-    dst39 = (39)'(src);
-    dst38 = (38)'(src);
-    dst37 = (37)'(src);
-    dst36 = (36)'(src);
-    dst35 = (35)'(src);
-    dst34 = (34)'(src);
-    dst33 = (33)'(src);
-    dst32 = (32)'(src);
-    dst31 = (31)'(src);
-    dst30 = (30)'(src);
+    dst39 = src[39-1:0];
+    dst38 = src[38-1:0];
+    dst37 = src[37-1:0];
+    dst36 = src[36-1:0];
+    dst35 = src[35-1:0];
+    dst34 = src[34-1:0];
+    dst33 = src[33-1:0];
+    dst32 = src[32-1:0];
+    dst31 = src[31-1:0];
+    dst30 = src[30-1:0];
 
-    dst29 = (29)'(src);
-    dst28 = (28)'(src);
-    dst27 = (27)'(src);
-    dst26 = (26)'(src);
-    dst25 = (25)'(src);
-    dst24 = (24)'(src);
-    dst23 = (23)'(src);
-    dst22 = (22)'(src);
-    dst21 = (21)'(src);
-    dst20 = (20)'(src);
+    dst29 = src[29-1:0];
+    dst28 = src[28-1:0];
+    dst27 = src[27-1:0];
+    dst26 = src[26-1:0];
+    dst25 = src[25-1:0];
+    dst24 = src[24-1:0];
+    dst23 = src[23-1:0];
+    dst22 = src[22-1:0];
+    dst21 = src[21-1:0];
+    dst20 = src[20-1:0];
 
-    dst19 = (19)'(src);
-    dst18 = (18)'(src);
-    dst17 = (17)'(src);
-    dst16 = (16)'(src);
-    dst15 = (15)'(src);
-    dst14 = (14)'(src);
-    dst13 = (13)'(src);
-    dst12 = (12)'(src);
-    dst11 = (11)'(src);
-    dst10 = (10)'(src);
+    dst19 = src[19-1:0];
+    dst18 = src[18-1:0];
+    dst17 = src[17-1:0];
+    dst16 = src[16-1:0];
+    dst15 = src[15-1:0];
+    dst14 = src[14-1:0];
+    dst13 = src[13-1:0];
+    dst12 = src[12-1:0];
+    dst11 = src[11-1:0];
+    dst10 = src[10-1:0];
 
-    dst9 = (9)'(src);
-    dst8 = (8)'(src);
-    dst7 = (7)'(src);
-    dst6 = (6)'(src);
-    dst5 = (5)'(src);
-    dst4 = (4)'(src);
-    dst3 = (3)'(src);
-    dst2 = (2)'(src);
-    dst1 = (1)'(src);
+    dst9 = src[9-1:0];
+    dst8 = src[8-1:0];
+    dst7 = src[7-1:0];
+    dst6 = src[6-1:0];
+    dst5 = src[5-1:0];
+    dst4 = src[4-1:0];
+    dst3 = src[3-1:0];
+    dst2 = src[2-1:0];
+    dst1 = src[0];
     test_bx_const_ret = 0;
   end
 
@@ -308,16 +308,16 @@ module Module (
     logic[7:0] dst9;
     src = 64'h1234567812345678;
 
-    dst0 = 8'(src, 0);
-    dst1 = 8'(src, 1);
-    dst2 = 8'(src, 2);
-    dst3 = 8'(src, 3);
-    dst4 = 8'(src, 4);
-    dst5 = 8'(src, 5);
-    dst6 = 8'(src, 6);
-    dst7 = 8'(src, 7);
-    dst8 = 8'(src, 8);
-    dst9 = 8'(src, 9);
+    dst0 = src[8+0-1:0];
+    dst1 = src[8+1-1:1];
+    dst2 = src[8+2-1:2];
+    dst3 = src[8+3-1:3];
+    dst4 = src[8+4-1:4];
+    dst5 = src[8+5-1:5];
+    dst6 = src[8+6-1:6];
+    dst7 = src[8+7-1:7];
+    dst8 = src[8+8-1:8];
+    dst9 = src[8+9-1:9];
     test_bN_offset_ret = 0;
   end
 
@@ -336,18 +336,18 @@ module Module (
     logic[some_size2-1:0] b8;
     logic[some_size2-1:0] b9;
     a = 10;
-    b = (some_size2)'(a);
+    b = a[some_size2-1:0];
 
-    b0 = (some_size2)'(a, 0);
-    b1 = (some_size2)'(a, 1);
-    b2 = (some_size2)'(a, 2);
-    b3 = (some_size2)'(a, 3);
-    b4 = (some_size2)'(a, 4);
-    b5 = (some_size2)'(a, 5);
-    b6 = (some_size2)'(a, 6);
-    b7 = (some_size2)'(a, 7);
-    b8 = (some_size2)'(a, 8);
-    b9 = (some_size2)'(a, 9);
+    b0 = a[some_size2+0-1:0];
+    b1 = a[some_size2+1-1:1];
+    b2 = a[some_size2+2-1:2];
+    b3 = a[some_size2+3-1:3];
+    b4 = a[some_size2+4-1:4];
+    b5 = a[some_size2+5-1:5];
+    b6 = a[some_size2+6-1:6];
+    b7 = a[some_size2+7-1:7];
+    b8 = a[some_size2+8-1:8];
+    b9 = a[some_size2+9-1:9];
 
     test_bx_param_ret = 0;
   end
@@ -361,11 +361,11 @@ module Module (
     logic[6:0] f;
     a = 32'hDEADBEEF;
 
-    b = 1'(a, 3); //static bit extract with literal offset, width 1
-    c = 7'(a, 3); //static bit extract with literal offset, width N
+    b = a[3]; //static bit extract with literal offset, width 1
+    c = a[7+3-1:3]; //static bit extract with literal offset, width N
 
-    e = 1'(a, some_size1); //static bit extract with variable offset, width 1
-    f = 7'(a, some_size2); //static bit extract with variable offset, width N
+    e = a[some_size1]; //static bit extract with variable offset, width 1
+    f = a[7+some_size2-1:some_size2]; //static bit extract with variable offset, width N
 
     test2_ret = 0;
   end

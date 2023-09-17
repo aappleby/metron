@@ -36,22 +36,6 @@ void CNodeFunction::init(const char* match_tag, SpanType span, uint64_t flags) {
 
 //------------------------------------------------------------------------------
 
-bool CNodeFunction::emit_as_task() {
-  bool called_by_tick = false;
-
-  visit_internal_callers([&](CNodeFunction* f) {
-    if (f->method_type == MT_TICK) called_by_tick = true;
-  });
-
-  return method_type == MT_TICK && called_by_tick;
-}
-
-bool CNodeFunction::emit_as_func() {
-  return method_type == MT_FUNC && internal_callers.size();
-}
-
-//------------------------------------------------------------------------------
-
 Err CNodeFunction::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
@@ -168,7 +152,7 @@ Err CNodeFunction::emit_always_comb(Cursor& cursor) {
   auto func_name = get_namestr();
 
   cursor.id_map.push(cursor.id_map.top());
-  for (auto node_param : node_params) {
+  for (auto node_param : node_params->items) {
     auto param = node_param->as<CNodeDeclaration>();
     if (!param) continue;
 
@@ -230,6 +214,24 @@ Err CNodeFunction::emit_always_ff(Cursor& cursor) {
   cursor.id_map.pop();
 
   return err << cursor.check_done(this);
+}
+
+//----------------------------------------
+
+bool CNodeFunction::emit_as_task() {
+  bool called_by_tick = false;
+
+  visit_internal_callers([&](CNodeFunction* f) {
+    if (f->method_type == MT_TICK) called_by_tick = true;
+  });
+
+  return method_type == MT_TICK && called_by_tick;
+}
+
+//----------------------------------------
+
+bool CNodeFunction::emit_as_func() {
+  return method_type == MT_FUNC && internal_callers.size();
 }
 
 //----------------------------------------

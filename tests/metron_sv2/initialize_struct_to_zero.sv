@@ -15,6 +15,6 @@ module Module (
   always_comb begin : tock
     // FIXME fix this later glarghbh
     //my_struct1 = {0};
-    my_struct1_field = 0;
+    my_struct1.field = 0;
   end
 endmodule

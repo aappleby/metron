@@ -274,6 +274,11 @@ Err CNodeFieldExpression::emit(Cursor& cursor) {
 
   auto field = node_class->get_field(node_path->get_text());
 
+  if (field && field->node_decl->_type_struct) {
+    err << cursor.emit_default(this);
+    return err;
+  }
+
   // FIXME this needs the submod_ prefix for submod ports
 
   if (field) {

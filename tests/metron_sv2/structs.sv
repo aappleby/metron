@@ -16,7 +16,7 @@ module Module (
 
 
   always_comb begin : tock
-    my_struct1_a = 1;
+    my_struct1.a = 1;
     tock_ret = 17;
   end
 endmodule

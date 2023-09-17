@@ -44,27 +44,27 @@ module TilelinkDevice (
 
   always_comb begin : tock
     if (oe) begin
-      tld_d_opcode = TL::AccessAckData;
-      tld_d_data   = test_reg;
-      tld_d_valid  = 1;
+      tld.d_opcode = TL::AccessAckData;
+      tld.d_data   = test_reg;
+      tld.d_valid  = 1;
     end
     else begin
-      tld_d_opcode = TL::AccessAckData;
-      tld_d_data   = 'x;
-      tld_d_valid  = 0;
+      tld.d_opcode = TL::AccessAckData;
+      tld.d_data   = 'x;
+      tld.d_valid  = 0;
     end
   end
 
   always_ff @(posedge clock) begin : tick
-    if (tla_a_address == 16'h1234) begin
-      if (tla_a_opcode == TL::PutFullData && tla_a_valid) begin
+    if (tla.a_address == 16'h1234) begin
+      if (tla.a_opcode == TL::PutFullData && tla.a_valid) begin
         logic[31:0] mask;
-        mask = {{8 {tla_a_mask[0]}},
-          {8 {tla_a_mask[1]}},
-          {8 {tla_a_mask[2]}},
-          {8 {tla_a_mask[3]}}};
-        test_reg <= (test_reg & ~mask) | (tla_a_data & mask);
-      end else if (tla_a_opcode == TL::Get) begin
+        mask = {{8 {tla.a_mask[0]}},
+          {8 {tla.a_mask[1]}},
+          {8 {tla.a_mask[2]}},
+          {8 {tla.a_mask[3]}}};
+        test_reg <= (test_reg & ~mask) | (tla.a_data & mask);
+      end else if (tla.a_opcode == TL::Get) begin
         oe <= 1;
       end
     end
@@ -94,23 +94,23 @@ module TilelinkCPU (
 
   always_comb begin : tock
     if (data & 1) begin
-      tla_a_opcode  = TL::Get;
-      tla_a_address = addr;
-      tla_a_mask    = 4'b1111;
-      tla_a_data    = 'x;
-      tla_a_valid   = 1;
+      tla.a_opcode  = TL::Get;
+      tla.a_address = addr;
+      tla.a_mask    = 4'b1111;
+      tla.a_data    = 'x;
+      tla.a_valid   = 1;
     end else begin
-      tla_a_opcode  = TL::PutFullData;
-      tla_a_address = addr;
-      tla_a_mask    = 4'b1111;
-      tla_a_data    = 32'hDEADBEEF;
-      tla_a_valid   = 1;
+      tla.a_opcode  = TL::PutFullData;
+      tla.a_address = addr;
+      tla.a_mask    = 4'b1111;
+      tla.a_data    = 32'hDEADBEEF;
+      tla.a_valid   = 1;
     end
   end
 
   always_ff @(posedge clock) begin : tick
-    if (tld_d_opcode == TL::AccessAckData && tld_d_valid) begin
-      data <= tld_d_data;
+    if (tld.d_opcode == TL::AccessAckData && tld.d_valid) begin
+      data <= tld.d_data;
     end
   end
 

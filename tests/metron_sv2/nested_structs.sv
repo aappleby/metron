@@ -20,20 +20,20 @@ module Module (
 
 
   always_comb begin : func1
-    s_x_a = 1;
-    s_x_b = 2;
-    s_x_c = 3;
+    s.x.a = 1;
+    s.x.b = 2;
+    s.x.c = 3;
   end
 
   always_comb begin : func2
-    s_y_a = 4;
-    s_y_b = 5;
-    s_y_c = 6;
+    s.y.a = 4;
+    s.y.b = 5;
+    s.y.c = 6;
   end
 
   always_comb begin : func3
-    s_z_a = 7;
-    s_z_b = 8;
-    s_z_c = 9;
+    s.z.a = 7;
+    s.z.b = 8;
+    s.z.c = 9;
   end
 endmodule

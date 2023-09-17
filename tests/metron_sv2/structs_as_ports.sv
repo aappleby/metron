@@ -9,7 +9,7 @@ package TL;
   int Get = 4;
   int AccessAck = 0;
   int AccessAckData = 1;
-endpackage;
+endpackage
 
 typedef struct packed {
   logic[2:0]  a_opcode;

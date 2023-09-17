@@ -5,7 +5,7 @@
 
 package MyPackage;
   parameter /*static*/ /*const*/ int foo = 3;
-endpackage;
+endpackage
 
 module Module (
   // global clock

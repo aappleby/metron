@@ -100,7 +100,8 @@ Err CNodeNamespace::emit(Cursor& cursor) {
     }
   }
 
-  err << cursor.emit(node_semi);
+  // Don't need semi after namespace in Verilog
+  err << cursor.skip_over(node_semi);
 
   return err << cursor.check_done(this);
 }

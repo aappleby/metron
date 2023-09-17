@@ -8,7 +8,7 @@
 
 FieldType trace_state_to_field_type(TraceState s) {
   switch(s) {
-    case TS_NONE:     return FT_SIGNAL;
+    case TS_NONE:     return FT_INVALID;
     case TS_INPUT:    return FT_INPUT;
     case TS_OUTPUT:   return FT_OUTPUT;
     case TS_MAYBE:    return FT_REGISTER;

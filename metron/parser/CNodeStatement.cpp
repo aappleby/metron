@@ -104,7 +104,7 @@ Err CNodeAssignment::emit(Cursor& cursor) {
     err << cursor.skip_over(node_op);
     err << cursor.emit_print("=");
     err << cursor.emit_gap();
-    err << cursor.emit_print("%.*s %c ", lhs_text.size(), lhs_text.data(), node_op->get_text()[1]);
+    err << cursor.emit_print("%.*s %c ", lhs_text.size(), lhs_text.data(), node_op->get_text()[0]);
   }
 
   err << cursor.emit(node_rhs);

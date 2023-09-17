@@ -221,7 +221,8 @@ CInstPrim::CInstPrim(CInstance* inst_parent, CNodeField* node_field)
 //----------------------------------------
 
 void CInstPrim::dump_tree() const {
-  auto prim_type = node_field->child("type")->get_text();
+  //node_field->dump_debug();
+  auto prim_type = node_field->child("decl")->child("type")->get_text();
   LOG_G("Primitive %.*s :", int(prim_type.size()), prim_type.data());
 
   for (auto state : state_stack) LOG_G(" %s", to_string(state));

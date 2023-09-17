@@ -35,9 +35,9 @@ module Module (
     tock_ret = submodule_my_width + submodule_my_height;
   end
 
-  Submod<10,11> submodule #(
+  Submod  #(
     // Template Parameters
     .WIDTH(10),
     .HEIGHT(11)
-  );
+  ) submodule(module ports go here)(submod binding fields go here);
 endmodule

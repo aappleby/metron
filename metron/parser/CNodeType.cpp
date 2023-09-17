@@ -205,7 +205,16 @@ Err CNodeType::emit(Cursor& cursor) {
     err << cursor.emit_default(this);
   }
   else if (auto node_class_type = as<CNodeClassType>()) {
-    err << cursor.emit_default(this);
+    auto targs = child("template_args");
+
+    if (targs) {
+      err << cursor.emit(child("name"));
+      err << cursor.emit_gap();
+      err << cursor.skip_over(targs);
+    }
+    else {
+      err << cursor.emit_default(this);
+    }
   }
   else {
     NODE_ERR("Don't know how to handle this type\n");

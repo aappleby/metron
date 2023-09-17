@@ -50,5 +50,5 @@ module Module (
     tock_bindings_ret = result;
   end
 
-  Submod submod;
+  Submod  submod(module ports go here)(submod binding fields go here);
 endmodule

@@ -57,5 +57,5 @@ module Module (
 
   logic[7:0] my_sig;
 
-  Submod submod;
+  Submod  submod(module ports go here)(submod binding fields go here);
 endmodule

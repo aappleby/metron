@@ -38,5 +38,5 @@ module Module (
     /*submod.tock(x);*/
   end
 
-  Submod submod;
+  Submod  submod(module ports go here)(submod binding fields go here);
 endmodule

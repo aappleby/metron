@@ -287,9 +287,6 @@ Err CNodeField::emit(Cursor& cursor) {
 }
 
 //------------------------------------------------------------------------------
-
-#if 0
-//------------------------------------------------------------------------------
 // Emits the fields that come after a submod declaration
 
 // module my_mod(
@@ -297,9 +294,12 @@ Err CNodeField::emit(Cursor& cursor) {
 // );
 // logic my_mod_foo; <-- this part
 
-CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode n) {
+CHECK_RETURN Err CNodeField::emit_submod_binding_fields(Cursor& cursor) {
   Err err;
 
+  err << cursor.emit_print("(submod binding fields go here)");
+
+#if 0
   if (current_mod.top()->components.empty()) {
     return err;
   }
@@ -376,10 +376,10 @@ CHECK_RETURN Err MtCursor::emit_submod_binding_fields(MnNode n) {
   current_source.pop();
   current_mod.pop();
   id_map.pop();
+#endif
 
   return err;
 }
-#endif
 
 /*
 [000.029] __ ▆ CNodeField =
@@ -395,8 +395,8 @@ Err CNodeField::emit_component(Cursor& cursor) {
   err << cursor.skip_to(node_decl->node_type);
   err << cursor.emit(node_decl->node_type);
   err << cursor.emit_gap();
-  err << cursor.emit(node_decl->node_name);
-  err << cursor.emit_gap();
+  err << cursor.skip_over(node_decl->node_name);
+  err << cursor.skip_gap();
 
   auto src_class = ancestor<CNodeClass>();
   auto repo = src_class->repo;
@@ -481,7 +481,11 @@ Err CNodeField::emit_component(Cursor& cursor) {
     err << cursor.emit_print(")");
   }
 
-  //err << emit_submod_binding_fields(n);
+
+  err << cursor.emit_print(" ");
+  err << cursor.emit_splice(node_decl->node_name);
+  err << emit_module_ports(cursor);
+  err << emit_submod_binding_fields(cursor);
 
   err << cursor.emit(node_semi);
 
@@ -490,10 +494,12 @@ Err CNodeField::emit_component(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-/*
-CHECK_RETURN Err MtCursor::emit_module_ports(MnNode class_body) {
+CHECK_RETURN Err CNodeField::emit_module_ports(Cursor& cursor) {
   Err err;
 
+  err << cursor.emit_print("(module ports go here)");
+
+  /*
   if (current_mod.top()->needs_tick()) {
     err << emit_line("// global clock");
     err << emit_line("input logic clock,");
@@ -530,10 +536,10 @@ CHECK_RETURN Err MtCursor::emit_module_ports(MnNode class_body) {
   if (at_comma) {
     err << emit_backspace();
   }
+*/
 
   return err;
 }
-*/
 
 //------------------------------------------------------------------------------
 

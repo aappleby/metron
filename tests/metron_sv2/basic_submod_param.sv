@@ -33,8 +33,8 @@ module Module (
     /*submod.tock();*/
   end
 
-  Submod<99> submod #(
+  Submod  #(
     // Template Parameters
     .SOME_CONSTANT(99)
-  );
+  ) submod(module ports go here)(submod binding fields go here);
 endmodule

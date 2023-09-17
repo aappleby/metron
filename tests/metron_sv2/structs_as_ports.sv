@@ -137,8 +137,8 @@ module Top (
     /*dev.tick();*/
   end
 
-  TilelinkCPU cpu;
-  TilelinkDevice dev;
+  TilelinkCPU  cpu(module ports go here)(submod binding fields go here);
+  TilelinkDevice  dev(module ports go here)(submod binding fields go here);
 endmodule
 
 //------------------------------------------------------------------------------

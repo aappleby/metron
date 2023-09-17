@@ -42,6 +42,6 @@ module Module (
 
 /*private:*/
 
-  Submod1 submod1;
-  Submod2 submod2;
+  Submod1  submod1(module ports go here)(submod binding fields go here);
+  Submod2  submod2(module ports go here)(submod binding fields go here);
 endmodule

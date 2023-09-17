@@ -19,6 +19,8 @@ struct CNodeField : public CNode {
   //----------------------------------------
 
   Err emit_component(Cursor& cursor);
+  Err emit_module_ports(Cursor& cursor);
+  Err emit_submod_binding_fields(Cursor& cursor);
 
   std::string_view get_type_name() const;
 

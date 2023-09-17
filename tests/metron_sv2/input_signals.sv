@@ -57,5 +57,9 @@ module Module (
 
   logic[7:0] my_sig;
 
-  Submod  submod(module ports go here)(submod binding fields go here);
+  Submod  submod(
+    // global clock
+    input logic clock,
+  );
+  (submod binding fields go here);
 endmodule

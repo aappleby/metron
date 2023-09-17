@@ -2116,12 +2116,7 @@ CHECK_RETURN Err MtCursor::emit_field_port(MtField* f) {
   if (!f->is_public()) return ERR("Can't emit port for private field");
   if (f->is_component()) return ERR("Can't emit port for component field");
 
-  if (f->is_input()) {
-    err << emit_line("input ");
-  } else {
-    err << emit_line("output ");
-  }
-
+  err << emit_line(f->is_input() ? "input " : "output ");
   err << emit_splice(f->get_type_node());
   err << emit_print(" ");
   err << emit_splice(f->get_decl_node());

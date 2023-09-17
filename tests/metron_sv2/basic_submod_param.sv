@@ -36,5 +36,9 @@ module Module (
   Submod  #(
     // Template Parameters
     .SOME_CONSTANT(99)
-  ) submod(module ports go here)(submod binding fields go here);
+  ) submod(
+    // global clock
+    input logic clock,
+  );
+  (submod binding fields go here);
 endmodule

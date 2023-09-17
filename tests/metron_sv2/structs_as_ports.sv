@@ -137,8 +137,16 @@ module Top (
     /*dev.tick();*/
   end
 
-  TilelinkCPU  cpu(module ports go here)(submod binding fields go here);
-  TilelinkDevice  dev(module ports go here)(submod binding fields go here);
+  TilelinkCPU  cpu(
+    // global clock
+    input logic clock,
+  );
+  (submod binding fields go here);
+  TilelinkDevice  dev(
+    // global clock
+    input logic clock,
+  );
+  (submod binding fields go here);
 endmodule
 
 //------------------------------------------------------------------------------

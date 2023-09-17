@@ -68,7 +68,11 @@ module Top (
     .blarp(8383),
     // Constructor Parameters
     .filename("examples/uart/message.hex")
-  ) mod(module ports go here)(submod binding fields go here);
+  ) mod(
+    // global clock
+    input logic clock,
+  );
+  (submod binding fields go here);
 endmodule
 
 //----------------------------------------

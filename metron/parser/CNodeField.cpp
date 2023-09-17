@@ -297,6 +297,7 @@ Err CNodeField::emit(Cursor& cursor) {
 CHECK_RETURN Err CNodeField::emit_submod_binding_fields(Cursor& cursor) {
   Err err;
 
+  err << cursor.start_line();
   err << cursor.emit_print("(submod binding fields go here)");
 
 #if 0
@@ -484,7 +485,7 @@ Err CNodeField::emit_component(Cursor& cursor) {
 
   err << cursor.emit_print(" ");
   err << cursor.emit_splice(node_decl->node_name);
-  err << emit_module_ports(cursor);
+  err << emit_module_ports(dst_class, cursor);
   err << emit_submod_binding_fields(cursor);
 
   err << cursor.emit(node_semi);
@@ -494,39 +495,50 @@ Err CNodeField::emit_component(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err CNodeField::emit_module_ports(Cursor& cursor) {
+CHECK_RETURN Err CNodeField::emit_module_ports(CNodeClass* field_class, Cursor& cursor) {
   Err err;
 
-  err << cursor.emit_print("(module ports go here)");
+  err << cursor.emit_print("(");
+  cursor.indent_level++;
+  //err << cursor.emit_print("(module ports go here)");
 
-  /*
-  if (current_mod.top()->needs_tick()) {
-    err << emit_line("// global clock");
-    err << emit_line("input logic clock,");
+  if (field_class->needs_tick()) {
+    err << cursor.start_line();
+    err << cursor.emit_print("// global clock");
+    err << cursor.start_line();
+    err << cursor.emit_print("input logic clock,");
   }
 
-  if (current_mod.top()->input_signals.size()) {
-    err << emit_line("// input signals");
-    for (auto f : current_mod.top()->input_signals) {
-      err << emit_field_port(f);
+  if (field_class->input_signals.size()) {
+    err << cursor.start_line();
+    err << cursor.emit_print("// input signals");
+    for (auto f : field_class->input_signals) {
+      err << cursor.start_line();
+      err << cursor.emit_print((f->field_type == FT_INPUT) ? "input " : "output ");
+      //err << cursor.emit_splice(f->get_type_node());
+      //err << cursor.emit_print(" ");
+      //err << cursor.emit_splice(f->get_decl_node());
+      //err << cursor.emit_print(",");
+
     }
   }
 
-  if (current_mod.top()->output_signals.size()) {
+  /*
+  if (field_class->output_signals.size()) {
     err << emit_line("// output signals");
     for (auto f : current_mod.top()->output_signals) {
       err << emit_field_port(f);
     }
   }
 
-  if (current_mod.top()->output_registers.size()) {
+  if (field_class->output_registers.size()) {
     err << emit_line("// output registers");
     for (auto f : current_mod.top()->output_registers) {
       err << emit_field_port(f);
     }
   }
 
-  for (auto m : current_mod.top()->all_methods) {
+  for (auto m : field_class->all_methods) {
     if (!m->is_init_ && m->is_public() && m->internal_callers.empty()) {
       err << emit_method_ports(m);
     }
@@ -538,6 +550,9 @@ CHECK_RETURN Err CNodeField::emit_module_ports(Cursor& cursor) {
   }
 */
 
+  cursor.indent_level--;
+  err << cursor.start_line();
+  err << cursor.emit_print(");");
   return err;
 }
 

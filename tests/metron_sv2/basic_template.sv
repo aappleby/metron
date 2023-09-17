@@ -39,5 +39,7 @@ module Module (
     // Template Parameters
     .WIDTH(10),
     .HEIGHT(11)
-  ) submodule(module ports go here)(submod binding fields go here);
+  ) submodule(
+  );
+  (submod binding fields go here);
 endmodule

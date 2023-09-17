@@ -13,8 +13,7 @@ module Module (
 
   always_comb begin : tock
     set_signal_number = get_number();
-    tock_ret = /*set_signal(get_number())*/
-    set_signal_number = get_number();
+    tock_ret = set_signal_ret;
   end
 
   function logic[7:0] get_number() /*const*/;

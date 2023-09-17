@@ -322,6 +322,15 @@ Err CNodeCall::emit(Cursor& cursor) {
     auto dst_func = src_class->get_function(func_id->get_text());
     auto dst_params = dst_func->child("params");
 
+    // Replace call with return binding variable if the callee is a tock
+
+    if (dst_func->method_type == MT_TOCK) {
+      auto dst_name = dst_func->get_namestr();
+      err << cursor.skip_over(this);
+      err << cursor.emit_print("%s_ret", dst_name.c_str());
+      return err;
+    }
+
     auto src_mtype = src_func->method_type;
     auto dst_mtype = dst_func->method_type;
 

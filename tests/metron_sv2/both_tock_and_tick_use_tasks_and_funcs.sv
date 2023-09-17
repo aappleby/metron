@@ -19,8 +19,7 @@ module Module (
   always_comb begin : tock
     logic[7:0] dummy;
     public_task_x = public_func(tock_z);
-    dummy = /*public_task(public_func(z))*/
-    public_task_x = public_func(z);
+    dummy = public_task_ret;
     tick_w = tock_z;
     /*tick(z);*/
   end

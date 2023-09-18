@@ -3,6 +3,9 @@
 // Public fields that are read by the module but never written become input
 // ports.
 
+// this is broken in the new parser because we're not distinguishing
+// between input and output signals in submodules...
+
 class Submod {
 public:
 

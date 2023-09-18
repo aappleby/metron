@@ -33,12 +33,11 @@ module Module (
     /*submod.tock();*/
   end
 
-  Submod  #(
+  Submod #(
     // Template Parameters
     .SOME_CONSTANT(99)
   ) submod(
-    // global clock
-    input logic clock,
+    // Global clock
+    .clock(clock)
   );
-  (submod binding fields go here);
 endmodule

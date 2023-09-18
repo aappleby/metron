@@ -40,9 +40,11 @@ module Module (
     end
   end
 
-  Submod  submod(
-    // global clock
-    input logic clock,
+  Submod submod(
+    // Global clock
+    .clock(clock),
+    // tock() ports
+    .tock_arg(submod_tock_arg)
   );
-  (submod binding fields go here);
+  logic[7:0] submod_tock_arg;
 endmodule

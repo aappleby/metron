@@ -57,9 +57,22 @@ module Module (
 
   logic[7:0] my_sig;
 
-  Submod  submod(
-    // global clock
-    input logic clock,
+  Submod submod(
+    // Global clock
+    .clock(clock),
+    // Output signals
+    .i_signal(submod_i_signal),
+    .o_signal(submod_o_signal),
+    // Output registers
+    .o_reg(submod_o_reg),
+    // tock() ports
+    .tock_i_param(submod_tock_i_param),
+    .tock_ret(submod_tock_ret)
   );
-  (submod binding fields go here);
+  logic[7:0] submod_i_signal;
+  logic[7:0] submod_o_signal;
+  submod_i_signal;
+  submod_o_signal;
+  logic[7:0] submod_tock_i_param;
+  logic[7:0] submod_tock_ret;
 endmodule

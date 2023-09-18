@@ -399,20 +399,19 @@ Err CNodeField::emit_component(Cursor& cursor) {
   err << cursor.skip_over(node_decl->node_name);
   err << cursor.skip_gap();
 
-  auto src_class = ancestor<CNodeClass>();
-  auto repo = src_class->repo;
-  auto dst_class = repo->get_class(node_decl->node_type->get_name());
-
-  auto dst_template = dst_class->node_parent->as<CNodeTemplate>();
+  auto parent_class = ancestor<CNodeClass>();
+  auto repo = parent_class->repo;
+  auto component_class = repo->get_class(node_decl->node_type->get_name());
+  auto component_template = component_class->node_parent->as<CNodeTemplate>();
 
   //----------------------------------------
   // Component modparams
 
-  bool has_constructor_params = dst_class->constructor && dst_class->constructor->params.size();
-  bool has_template_params = dst_template != nullptr;
+  bool has_constructor_params = component_class->constructor && component_class->constructor->params.size();
+  bool has_template_params = component_template != nullptr;
 
   if (has_template_params || has_constructor_params) {
-    err << cursor.emit_print(" #(");
+    err << cursor.emit_print("#(");
     cursor.indent_level++;
 
     // Emit template arguments as module parameters
@@ -422,12 +421,12 @@ Err CNodeField::emit_component(Cursor& cursor) {
 
       auto args = node_decl->node_type->child("template_args")->as<CNodeList>();
 
-      int param_count = dst_template->params.size();
+      int param_count = component_template->params.size();
       int arg_count = args->items.size();
       assert(param_count == arg_count);
 
       for (int i = 0; i < param_count; i++) {
-        auto param = dst_template->params[i];
+        auto param = component_template->params[i];
         auto arg = args->items[i];
 
         auto param_name = param->get_name();
@@ -444,15 +443,16 @@ Err CNodeField::emit_component(Cursor& cursor) {
       err << cursor.start_line();
       err << cursor.emit_print("// Constructor Parameters");
 
-      auto params = dst_class->constructor->params;
+      auto params = component_class->constructor->params;
 
       //for (auto param: dst_class->constructor->params) {
       //}
 
-      // Find the initializer node for the component and extract arguments
-      assert(src_class->constructor->node_init);
+      // Find the initializer node IN THE PARENT INIT LIST for the component
+      // and extract arguments
+      assert(parent_class->constructor->node_init);
       CNodeList* args = nullptr;
-      for (auto init : src_class->constructor->node_init->items) {
+      for (auto init : parent_class->constructor->node_init->items) {
         if (init->child("name")->get_text() == node_decl->node_name->get_text()) {
           args = init->child("value")->as<CNodeList>();
         }
@@ -479,81 +479,180 @@ Err CNodeField::emit_component(Cursor& cursor) {
 
     cursor.indent_level--;
     err << cursor.start_line();
-    err << cursor.emit_print(")");
+    err << cursor.emit_print(") ");
   }
 
+  //----------------------------------------
+  // Component name
 
-  err << cursor.emit_print(" ");
+  //err << cursor.emit_print(" ");
   err << cursor.emit_splice(node_decl->node_name);
-  err << emit_module_ports(dst_class, cursor);
-  err << emit_submod_binding_fields(cursor);
 
-  err << cursor.emit(node_semi);
-
-  return err << cursor.check_done(this);
-}
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err CNodeField::emit_module_ports(CNodeClass* field_class, Cursor& cursor) {
-  Err err;
+  //----------------------------------------
+  // Port list
 
   err << cursor.emit_print("(");
   cursor.indent_level++;
-  //err << cursor.emit_print("(module ports go here)");
 
-  if (field_class->needs_tick()) {
+  auto field_name = get_namestr();
+
+  if (component_class->needs_tick()) {
     err << cursor.start_line();
-    err << cursor.emit_print("// global clock");
+    err << cursor.emit_print("// Global clock");
     err << cursor.start_line();
-    err << cursor.emit_print("input logic clock,");
+    err << cursor.emit_print(".clock(clock),");
   }
 
-  if (field_class->input_signals.size()) {
+  if (component_class->input_signals.size()) {
     err << cursor.start_line();
-    err << cursor.emit_print("// input signals");
-    for (auto f : field_class->input_signals) {
+    err << cursor.emit_print("// Input signals");
+    for (auto f : component_class->input_signals) {
+      auto port_name = f->get_namestr();
+
       err << cursor.start_line();
-      err << cursor.emit_print((f->field_type == FT_INPUT) ? "input " : "output ");
-      //err << cursor.emit_splice(f->get_type_node());
-      //err << cursor.emit_print(" ");
-      //err << cursor.emit_splice(f->get_decl_node());
-      //err << cursor.emit_print(",");
-
+      err << cursor.emit_print(".%s", port_name.c_str());
+      err << cursor.emit_print("(");
+      err << cursor.emit_print("%s_%s", field_name.c_str(), port_name.c_str());
+      err << cursor.emit_print("),");
     }
   }
 
-  /*
-  if (field_class->output_signals.size()) {
-    err << emit_line("// output signals");
-    for (auto f : current_mod.top()->output_signals) {
-      err << emit_field_port(f);
+  if (component_class->output_signals.size()) {
+    err << cursor.start_line();
+    err << cursor.emit_print("// Output signals");
+    for (auto f : component_class->output_signals) {
+      auto port_name = f->get_namestr();
+      err << cursor.start_line();
+      err << cursor.emit_print(".%s(%s_%s),", port_name.c_str(), field_name.c_str(), port_name.c_str());
     }
   }
 
-  if (field_class->output_registers.size()) {
-    err << emit_line("// output registers");
-    for (auto f : current_mod.top()->output_registers) {
-      err << emit_field_port(f);
+  if (component_class->output_registers.size()) {
+    err << cursor.start_line();
+    err << cursor.emit_print("// Output registers");
+    for (auto f : component_class->output_registers) {
+      auto port_name = f->get_namestr();
+      err << cursor.start_line();
+      err << cursor.emit_print(".%s(%s_%s),", port_name.c_str(), field_name.c_str(), port_name.c_str());
     }
   }
 
-  for (auto m : field_class->all_methods) {
-    if (!m->is_init_ && m->is_public() && m->internal_callers.empty()) {
-      err << emit_method_ports(m);
+  for (auto m : component_class->all_functions) {
+    //if (m->is_constructor()) continue;
+    if (!m->is_public_) continue;
+    if (m->method_type == MT_INIT) continue;
+    if (m->internal_callers.size()) continue;
+    if (m->params.empty() && !m->has_return()) continue;
+
+    auto func_name = m->get_namestr();
+
+    err << cursor.start_line();
+    err << cursor.emit_print("// %s() ports", func_name.c_str());
+
+    for (auto param : m->params) {
+      //auto node_type = param.get_field(field_type);
+      //auto node_decl = param.get_field(field_declarator);
+
+      param->dump_debug();
+      auto param_name = param->get_namestr();
+
+      err << cursor.start_line();
+      err << cursor.emit_print(".%s_%s(%s_%s_%s),",
+        func_name.c_str(), param_name.c_str(),
+        field_name.c_str(), func_name.c_str(), param_name.c_str());
+    }
+
+    if (m->has_return()) {
+      err << cursor.start_line();
+      err << cursor.emit_print(".%s_ret(%s_%s_ret),",
+        func_name.c_str(),
+        field_name.c_str(), func_name.c_str());
     }
   }
 
   // Remove trailing comma from port list
-  if (at_comma) {
-    err << emit_backspace();
+  if (cursor.at_comma) {
+    err << cursor.emit_backspace();
   }
-*/
 
   cursor.indent_level--;
   err << cursor.start_line();
-  err << cursor.emit_print(");");
-  return err;
+  err << cursor.emit_print(")");
+  err << cursor.emit(node_semi);
+
+  //----------------------------------------
+  // Binding variables
+
+  //err << emit_submod_binding_fields(cursor);
+
+  if (component_class->input_signals.size()) {
+    //err << cursor.start_line();
+    //err << cursor.emit_print("// Input signals");
+    for (auto f : component_class->input_signals) {
+      auto port_name = f->get_namestr();
+      err << cursor.start_line();
+      err << cursor.emit_splice(f->child("decl")->child("type"));
+      err << cursor.emit_print(" ");
+      err << cursor.emit_print("%s_%s;", field_name.c_str(), port_name.c_str());
+    }
+  }
+
+  if (component_class->output_signals.size()) {
+    //err << cursor.start_line();
+    //err << cursor.emit_print("// Output signals");
+    for (auto f : component_class->output_signals) {
+      auto port_name = f->get_namestr();
+      err << cursor.start_line();
+      err << cursor.emit_splice(f->child("decl")->child("type"));
+      err << cursor.emit_print(" ");
+      err << cursor.emit_print("%s_%s;", field_name.c_str(), port_name.c_str());
+    }
+  }
+
+  if (component_class->output_registers.size()) {
+    //err << cursor.start_line();
+    //err << cursor.emit_print("// Output registers");
+    for (auto f : component_class->output_signals) {
+      auto port_name = f->get_namestr();
+      err << cursor.start_line();
+      err << cursor.emit_print("%s_%s;", field_name.c_str(), port_name.c_str());
+    }
+  }
+
+  for (auto m : component_class->all_functions) {
+    //if (m->is_constructor()) continue;
+    if (!m->is_public_) continue;
+    if (m->method_type == MT_INIT) continue;
+    if (m->internal_callers.size()) continue;
+    if (m->params.empty() && !m->has_return()) continue;
+
+    auto func_name = m->get_namestr();
+
+    //err << cursor.start_line();
+    //err << cursor.emit_print("// %s() ports", func_name.c_str());
+
+    for (auto param : m->params) {
+      auto param_name = param->get_namestr();
+      err << cursor.start_line();
+      err << cursor.emit_splice(param->child("type"));
+      err << cursor.emit_print(" ");
+      err << cursor.emit_print("%s_%s_%s;",
+        field_name.c_str(), func_name.c_str(), param_name.c_str());
+    }
+
+    if (m->has_return()) {
+      err << cursor.start_line();
+      err << cursor.emit_splice(m->child("return_type"));
+      err << cursor.emit_print(" ");
+      err << cursor.emit_print("%s_%s_ret;",
+        field_name.c_str(), func_name.c_str());
+    }
+  }
+
+  //----------------------------------------
+  // Done
+
+  return err << cursor.check_done(this);
 }
 
 //------------------------------------------------------------------------------

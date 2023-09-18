@@ -137,16 +137,24 @@ module Top (
     /*dev.tick();*/
   end
 
-  TilelinkCPU  cpu(
-    // global clock
-    input logic clock,
+  TilelinkCPU cpu(
+    // Global clock
+    .clock(clock),
+    // Output signals
+    .tla(cpu_tla),
+    .tld(cpu_tld)
   );
-  (submod binding fields go here);
-  TilelinkDevice  dev(
-    // global clock
-    input logic clock,
+  tilelink_a cpu_tla;
+  tilelink_d cpu_tld;
+  TilelinkDevice dev(
+    // Global clock
+    .clock(clock),
+    // Output signals
+    .tld(dev_tld),
+    .tla(dev_tla)
   );
-  (submod binding fields go here);
+  tilelink_d dev_tld;
+  tilelink_a dev_tla;
 endmodule
 
 //------------------------------------------------------------------------------

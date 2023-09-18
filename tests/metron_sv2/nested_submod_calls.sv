@@ -42,10 +42,18 @@ module Module (
 
 /*private:*/
 
-  Submod1  submod1(
+  Submod1 submod1(
+    // add_one() ports
+    .add_one_a(submod1_add_one_a),
+    .add_one_ret(submod1_add_one_ret)
   );
-  (submod binding fields go here);
-  Submod2  submod2(
+  logic[7:0] submod1_add_one_a;
+  logic[7:0] submod1_add_one_ret;
+  Submod2 submod2(
+    // add_two() ports
+    .add_two_a(submod2_add_two_a),
+    .add_two_ret(submod2_add_two_ret)
   );
-  (submod binding fields go here);
+  logic[7:0] submod2_add_two_a;
+  logic[7:0] submod2_add_two_ret;
 endmodule

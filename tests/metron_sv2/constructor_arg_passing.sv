@@ -62,17 +62,22 @@ module Top (
     //mod.tick();
   end
 
-  Module  #(
+  Module #(
     // Template Parameters
     .data_len(7777),
     .blarp(8383),
     // Constructor Parameters
     .filename("examples/uart/message.hex")
   ) mod(
-    // global clock
-    input logic clock,
+    // Global clock
+    .clock(clock),
+    // tock() ports
+    .tock_new_addr(mod_tock_new_addr),
+    // get_data() ports
+    .get_data_ret(mod_get_data_ret)
   );
-  (submod binding fields go here);
+  logic[9:0] mod_tock_new_addr;
+  logic[7:0] mod_get_data_ret;
 endmodule
 
 //----------------------------------------

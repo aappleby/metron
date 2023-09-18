@@ -458,3 +458,7 @@ void CNodeConstructor::init(const char* match_tag, SpanType span, uint64_t flags
 }
 
 //------------------------------------------------------------------------------
+
+bool CNodeFunction::has_return() {
+  return node_type->get_text() != "void";
+}

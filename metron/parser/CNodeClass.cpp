@@ -383,8 +383,6 @@ Err CNodeClass::emit_template_parameter_list(Cursor& cursor) {
   auto node_template = ancestor<CNodeTemplate>();
   if (!node_template) return err;
 
-  node_template->dump_debug();
-
   auto old_cursor = cursor.tok_cursor;
 
   //err << cursor.emit_char('\n');

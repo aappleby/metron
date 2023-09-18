@@ -35,11 +35,20 @@ module Module (
     tock_ret = submodule_my_width + submodule_my_height;
   end
 
-  Submod  #(
+  Submod #(
     // Template Parameters
     .WIDTH(10),
     .HEIGHT(11)
   ) submodule(
+    // Output signals
+    .my_width(submodule_my_width),
+    .my_height(submodule_my_height),
+    // tock() ports
+    .tock_dx(submodule_tock_dx),
+    .tock_dy(submodule_tock_dy)
   );
-  (submod binding fields go here);
+  logic[WIDTH-1:0] submodule_my_width;
+  logic[HEIGHT-1:0] submodule_my_height;
+  logic[WIDTH-1:0] submodule_tock_dx;
+  logic[HEIGHT-1:0] submodule_tock_dy;
 endmodule

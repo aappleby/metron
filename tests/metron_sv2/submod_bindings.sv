@@ -50,7 +50,20 @@ module Module (
     tock_bindings_ret = result;
   end
 
-  Submod  submod(
+  Submod submod(
+    // sum_a() ports
+    .sum_a_a1(submod_sum_a_a1),
+    .sum_a_a2(submod_sum_a_a2),
+    .sum_a_ret(submod_sum_a_ret),
+    // sum_b() ports
+    .sum_b_b1(submod_sum_b_b1),
+    .sum_b_b2(submod_sum_b_b2),
+    .sum_b_ret(submod_sum_b_ret)
   );
-  (submod binding fields go here);
+  logic[7:0] submod_sum_a_a1;
+  logic[7:0] submod_sum_a_a2;
+  logic[7:0] submod_sum_a_ret;
+  logic[7:0] submod_sum_b_b1;
+  logic[7:0] submod_sum_b_b2;
+  logic[7:0] submod_sum_b_ret;
 endmodule

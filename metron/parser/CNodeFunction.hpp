@@ -115,6 +115,7 @@ struct CNodeFunction : public CNode {
     return needs_binding;
   }
 
+  bool has_return();
 
   //----------------------------------------
 

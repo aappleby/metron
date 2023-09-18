@@ -39,9 +39,10 @@ module Module (
     /*submod.tock();*/
   end
 
-  Submod  submod(
-    // global clock
-    input logic clock,
+  Submod submod(
+    // Global clock
+    .clock(clock),
+    // Output registers
+    .sub_reg(submod_sub_reg)
   );
-  (submod binding fields go here);
 endmodule

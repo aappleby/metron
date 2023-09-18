@@ -17,6 +17,9 @@ struct CNodeStruct : public CNode {
 
   CHECK_RETURN Err emit(Cursor& cursor) override;
 
+  virtual void wipe_field_types() {
+  }
+
   void dump();
 
   CSourceRepo* repo = nullptr;

@@ -13,8 +13,6 @@ typedef struct packed {
 } OuterStruct;
 
 module Module (
-  // output signals
-  output OuterStruct s
 );
 /*public:*/
 

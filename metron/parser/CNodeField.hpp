@@ -35,10 +35,10 @@ struct CNodeField : public CNode {
 
   FieldType field_type = FT_UNKNOWN;
 
-  CNodeClass*  _parent_class;
-  CNodeStruct* _parent_struct;
+  CNodeClass*  parent_class;
+  CNodeStruct* parent_struct;
 
-  bool _public = false;
+  bool is_public = false;
   //bool _enum = false;
 };
 

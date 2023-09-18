@@ -101,10 +101,10 @@ Err CNodeClass::collect_fields_and_methods() {
     }
 
     if (auto n = child->as<CNodeField>()) {
-      n->_public = is_public;
+      n->is_public = is_public;
 
-      n->_parent_class  = n->ancestor<CNodeClass>();
-      n->_parent_struct = n->ancestor<CNodeStruct>();
+      n->parent_class  = n->ancestor<CNodeClass>();
+      n->parent_struct = n->ancestor<CNodeStruct>();
       n->node_decl->_type_class    = repo->get_class(n->get_type_name());
       n->node_decl->_type_struct   = repo->get_struct(n->get_type_name());
 

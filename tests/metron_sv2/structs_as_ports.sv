@@ -30,9 +30,10 @@ typedef struct packed {
 module TilelinkDevice (
   // global clock
   input logic clock,
+  // input signals
+  input tilelink_a tla,
   // output signals
-  output tilelink_d tld,
-  output tilelink_a tla
+  output tilelink_d tld
 );
 /*public:*/
 
@@ -80,9 +81,10 @@ endmodule
 module TilelinkCPU (
   // global clock
   input logic clock,
+  // input signals
+  input tilelink_d tld,
   // output signals
-  output tilelink_a tla,
-  output tilelink_d tld
+  output tilelink_a tla
 );
 /*public:*/
 
@@ -140,21 +142,23 @@ module Top (
   TilelinkCPU cpu(
     // Global clock
     .clock(clock),
+    // Input signals
+    .tld(cpu_tld),
     // Output signals
-    .tla(cpu_tla),
-    .tld(cpu_tld)
+    .tla(cpu_tla)
   );
-  tilelink_a cpu_tla;
   tilelink_d cpu_tld;
+  tilelink_a cpu_tla;
   TilelinkDevice dev(
     // Global clock
     .clock(clock),
+    // Input signals
+    .tla(dev_tla),
     // Output signals
-    .tld(dev_tld),
-    .tla(dev_tla)
+    .tld(dev_tld)
   );
-  tilelink_d dev_tld;
   tilelink_a dev_tla;
+  tilelink_d dev_tld;
 endmodule
 
 //------------------------------------------------------------------------------

@@ -186,10 +186,12 @@ int main_new(Options opts) {
 
     for (auto node_class : repo.all_classes) {
       auto name = node_class->get_name();
+      /*
       if (node_class->refcount) {
         LOG_G("Skipping %.*s because it's not a top module\n", int(name.size()), name.data());
         continue;
       }
+      */
 
       LOG_G("Tracing top methods in %.*s\n", int(name.size()), name.data());
       auto top_inst = new CInstClass(nullptr, nullptr, node_class);
@@ -214,9 +216,13 @@ int main_new(Options opts) {
       }
 
       LOG_G("Tracing done for %.*s\n", int(name.size()), name.data());
+      top_inst->commit_state();
       top_inst->dump_tree();
 
-      top_inst->commit_state();
+      for (auto node_struct : repo.all_structs) {
+        node_struct->wipe_field_types();
+      }
+
       delete top_inst;
     }
   }
@@ -287,7 +293,7 @@ int main_new(Options opts) {
     for (auto f : c->all_fields) {
       auto fname = f->get_namestr();
 
-      if (!f->_public) continue;
+      if (!f->is_public) continue;
 
       if (f->field_type == FT_INPUT) {
         LOG_G("input signal %s\n", fname.c_str());

@@ -48,12 +48,8 @@ struct CInstance {
   //----------
 
   virtual void dump_tree() const = 0;
-
   virtual CHECK_RETURN Err log_action(CNode* node, TraceAction action);
-
-  virtual void commit_state() {
-    assert(false);
-  }
+  virtual void commit_state() { assert(false); }
 
   //----------
 
@@ -77,19 +73,9 @@ struct CInstance {
 struct CInstClass : public CInstance {
   CInstClass(CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class);
 
-  //----------
-
   void dump_tree() const override;
-
-  CHECK_RETURN Err log_action(CNode* node, TraceAction action) override {
-    Err err;
-    for (auto pair : inst_map) err << pair.second->log_action(node, action);
-    return err;
-  }
-
-  void commit_state() override {
-    for (auto pair : inst_map) pair.second->commit_state();
-  }
+  CHECK_RETURN Err log_action(CNode* node, TraceAction action) override;
+  void commit_state() override;
 
   //----------
 
@@ -102,16 +88,8 @@ struct CInstClass : public CInstance {
 struct CInstStruct : public CInstance {
   CInstStruct(CInstance* inst_parent, CNodeField* node_field, CNodeStruct* node_struct);
 
-  //----------
-
   void dump_tree() const override;
-
-  CHECK_RETURN Err log_action(CNode* node, TraceAction action) override {
-    Err err;
-    for (auto pair : inst_map) err << pair.second->log_action(node, action);
-    return err;
-  }
-
+  CHECK_RETURN Err log_action(CNode* node, TraceAction action) override;
   void commit_state() override;
 
   //----------
@@ -124,18 +102,9 @@ struct CInstStruct : public CInstance {
 struct CInstPrim : public CInstance {
   CInstPrim(CInstance* inst_parent, CNodeField* node_field);
 
-  //----------
-
   void dump_tree() const override;
-
-  CHECK_RETURN Err log_action(CNode* node, TraceAction action) override {
-    return CInstance::log_action(node, action);
-  }
-
+  CHECK_RETURN Err log_action(CNode* node, TraceAction action) override;
   void commit_state() override;
-
-  //----------
-
 };
 
 //------------------------------------------------------------------------------

@@ -152,7 +152,7 @@ Err CNodeField::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
   // Ports don't go in the class body.
-  if (_public && !is_component() && !node_decl->is_localparam()) {
+  if (is_public && !is_component() && !node_decl->is_localparam()) {
     return err << cursor.skip_over(this);
   }
 
@@ -671,17 +671,17 @@ void CNodeField::dump() {
 
   if (child("static")) LOG_A("static ");
   if (child("const"))  LOG_A("const ");
-  if (_public)    LOG_A("public ");
+  if (is_public)    LOG_A("public ");
   if (node_decl->is_array()) LOG_A("array ");
   //if (_enum)      LOG_A("enum ");
 
-  if (_parent_class) {
-    auto name = _parent_class->get_name();
+  if (parent_class) {
+    auto name = parent_class->get_name();
     LOG_A("parent class %.*s ", int(name.size()), name.data());
   }
 
-  if (_parent_struct) {
-    auto name = _parent_struct->get_name();
+  if (parent_struct) {
+    auto name = parent_struct->get_name();
     LOG_A("parent struct %.*s ", int(name.size()), name.data());
   }
 

@@ -3,11 +3,15 @@
 // Public fields that are read by the module but never written become input
 // ports.
 
+// this is broken in the new parser because we're not distinguishing
+// between input and output signals in submodules...
+
 module Submod (
   // global clock
   input logic clock,
+  // input signals
+  input logic[7:0] i_signal,
   // output signals
-  output logic[7:0] i_signal,
   output logic[7:0] o_signal,
   // output registers
   output logic[7:0] o_reg,
@@ -60,8 +64,9 @@ module Module (
   Submod submod(
     // Global clock
     .clock(clock),
-    // Output signals
+    // Input signals
     .i_signal(submod_i_signal),
+    // Output signals
     .o_signal(submod_o_signal),
     // Output registers
     .o_reg(submod_o_reg),
@@ -71,7 +76,6 @@ module Module (
   );
   logic[7:0] submod_i_signal;
   logic[7:0] submod_o_signal;
-  submod_i_signal;
   submod_o_signal;
   logic[7:0] submod_tock_i_param;
   logic[7:0] submod_tock_ret;

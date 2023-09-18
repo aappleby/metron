@@ -155,6 +155,24 @@ CInstClass::CInstClass(CInstance* inst_parent, CNodeField* node_field,
 
 //----------------------------------------
 
+CHECK_RETURN Err CInstClass::log_action(CNode* node, TraceAction action) {
+  Err err;
+  for (auto pair : inst_map) err << pair.second->log_action(node, action);
+  return err;
+}
+
+//----------------------------------------
+
+void CInstClass::commit_state() {
+  for (auto pair : inst_map) {
+    if (!pair.second->as<CInstClass>()) {
+      pair.second->commit_state();
+    }
+  }
+}
+
+//----------------------------------------
+
 void CInstClass::dump_tree() const {
   auto name = node_class->get_name();
   LOG_G("Class %.*s\n", int(name.size()), name.data());
@@ -193,7 +211,9 @@ CInstStruct::CInstStruct(CInstance* inst_parent, CNodeField* node_field,
 
 void CInstStruct::dump_tree() const {
   auto name = node_struct->get_name();
-  LOG_G("Struct %.*s\n", int(name.size()), name.data());
+  LOG_G("Struct %.*s :", int(name.size()), name.data());
+  for (auto state : state_stack) LOG_G(" %s", to_string(state));
+  LOG_G("\n");
 
   LOG_INDENT_SCOPE();
   for (auto pair : inst_map) {
@@ -202,10 +222,16 @@ void CInstStruct::dump_tree() const {
   }
 }
 
+CHECK_RETURN Err CInstStruct::log_action(CNode* node, TraceAction action) {
+  Err err;
+  for (auto pair : inst_map) err << pair.second->log_action(node, action);
+  return err;
+}
+
 void CInstStruct::commit_state() {
   auto merged_state = TS_PENDING;
   for (auto pair : inst_map) {
-    pair.second->commit_state();
+    //pair.second->commit_state();
     merged_state = merge_branch(merged_state, pair.second->state_stack.back());
   }
   state_stack.back() = merged_state;
@@ -231,6 +257,12 @@ void CInstPrim::dump_tree() const {
 
 //----------------------------------------
 
+CHECK_RETURN Err CInstPrim::log_action(CNode* node, TraceAction action) {
+  return CInstance::log_action(node, action);
+}
+
+//----------------------------------------
+
 void CInstPrim::commit_state() {
   assert(node_field);
 
@@ -239,6 +271,9 @@ void CInstPrim::commit_state() {
   if (node_field->field_type == FT_UNKNOWN) {
     node_field->field_type = new_type;
   }
+
+  //node_field->dump_debug();
+
   assert(node_field->field_type == new_type);
 }
 

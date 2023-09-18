@@ -70,10 +70,10 @@ CHECK_RETURN Err CInstance::log_action(CNode* node, TraceAction action) {
   assert(func);
 
   if (action == ACT_READ) {
-    func->self_reads.insert(node_field);
+    func->self_reads.insert(this);
   }
   else if (action == ACT_WRITE) {
-    func->self_writes.insert(node_field);
+    func->self_writes.insert(this);
   }
 
   auto old_state = state_stack.back();
@@ -141,8 +141,8 @@ CInstClass::CInstClass(CInstance* inst_parent, CNodeField* node_field,
     auto field_name = node_field->get_name();
 
     if (node_field->node_decl->_type_class) {
-      auto inst = new CInstClass(this, node_field, node_field->node_decl->_type_class);
-      inst_map[field_name] = inst;
+      //auto inst = new CInstClass(this, node_field, node_field->node_decl->_type_class);
+      //inst_map[field_name] = inst;
     } else if (node_field->node_decl->_type_struct) {
       auto inst = new CInstStruct(this, node_field, node_field->node_decl->_type_struct);
       inst_map[field_name] = inst;
@@ -163,6 +163,7 @@ CHECK_RETURN Err CInstClass::log_action(CNode* node, TraceAction action) {
 
 //----------------------------------------
 
+#if 0
 void CInstClass::commit_state() {
   for (auto pair : inst_map) {
     if (!pair.second->as<CInstClass>()) {
@@ -170,6 +171,7 @@ void CInstClass::commit_state() {
     }
   }
 }
+#endif
 
 //----------------------------------------
 
@@ -228,6 +230,7 @@ CHECK_RETURN Err CInstStruct::log_action(CNode* node, TraceAction action) {
   return err;
 }
 
+#if 0
 void CInstStruct::commit_state() {
   auto merged_state = TS_PENDING;
   for (auto pair : inst_map) {
@@ -237,6 +240,7 @@ void CInstStruct::commit_state() {
   state_stack.back() = merged_state;
   node_field->field_type = trace_state_to_field_type(merged_state);
 }
+#endif
 
 
 //------------------------------------------------------------------------------
@@ -263,6 +267,7 @@ CHECK_RETURN Err CInstPrim::log_action(CNode* node, TraceAction action) {
 
 //----------------------------------------
 
+#if 0
 void CInstPrim::commit_state() {
   assert(node_field);
 
@@ -276,6 +281,7 @@ void CInstPrim::commit_state() {
 
   assert(node_field->field_type == new_type);
 }
+#endif
 
 //------------------------------------------------------------------------------
 

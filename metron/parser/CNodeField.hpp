@@ -33,7 +33,7 @@ struct CNodeField : public CNode {
   CNodeDeclaration* node_decl;
   CNodePunct*       node_semi;
 
-  FieldType field_type = FT_UNKNOWN;
+  //FieldType field_type = FT_UNKNOWN;
 
   CNodeClass*  parent_class;
   CNodeStruct* parent_struct;

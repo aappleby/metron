@@ -9,6 +9,8 @@ struct CSourceRepo;
 
 //------------------------------------------------------------------------------
 
+// TODO - look into Verilog "interface" support
+
 struct CNodeStruct : public CNode {
   uint32_t debug_color() const override;
   std::string_view get_name() const override;

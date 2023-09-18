@@ -164,11 +164,17 @@ struct CNodeFunction : public CNode {
 
   bool is_public_ = false;
 
-  std::set<CNodeField*> self_reads;
-  std::set<CNodeField*> self_writes;
+  //std::set<CNodeField*> self_reads;
+  //std::set<CNodeField*> self_writes;
 
-  std::set<CNodeField*> all_reads;
-  std::set<CNodeField*> all_writes;
+  //std::set<CNodeField*> all_reads;
+  //std::set<CNodeField*> all_writes;
+
+  std::set<CInstance*> self_reads;
+  std::set<CInstance*> self_writes;
+
+  std::set<CInstance*> all_reads;
+  std::set<CInstance*> all_writes;
 
   std::vector<CNodeDeclaration*> params;
 

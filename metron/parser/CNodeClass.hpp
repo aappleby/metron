@@ -9,6 +9,8 @@
 
 struct CSourceRepo;
 struct CSourceFile;
+struct CInstance;
+struct CInstClass;
 
 //------------------------------------------------------------------------------
 
@@ -95,6 +97,8 @@ struct CNodeClass : public CNode {
   std::vector<CNodeField*> private_signals;
   std::vector<CNodeField*> private_registers;
   std::vector<CNodeField*> dead_fields;
+
+  CInstClass* instance = nullptr;
 
   /*
   std::vector<MtFuncParam*> input_method_params;

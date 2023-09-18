@@ -364,6 +364,7 @@ void CNodeFunction::dump() {
     }
   }
 
+#if 0
   if (self_reads.size()) {
     LOG_INDENT_SCOPE();
     for (auto r : self_reads) {
@@ -397,6 +398,7 @@ void CNodeFunction::dump() {
       LOG_G("Indirectly writes %.*s : %s\n", name.size(), name.data(), to_string(w->field_type));
     }
   }
+#endif
 
 #if 0
   if (internal_callers.size()) {

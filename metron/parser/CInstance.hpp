@@ -49,7 +49,7 @@ struct CInstance {
 
   virtual void dump_tree() const = 0;
   virtual CHECK_RETURN Err log_action(CNode* node, TraceAction action);
-  virtual void commit_state() { assert(false); }
+  //virtual void commit_state() { assert(false); }
 
   //----------
 
@@ -61,6 +61,7 @@ struct CInstance {
   void swap_state();
   void merge_state();
 
+  std::string name;
   CInstance* inst_parent = nullptr;
   std::map<std::string_view, CInstance*> inst_map;
 
@@ -75,7 +76,7 @@ struct CInstClass : public CInstance {
 
   void dump_tree() const override;
   CHECK_RETURN Err log_action(CNode* node, TraceAction action) override;
-  void commit_state() override;
+  //void commit_state() override;
 
   //----------
 
@@ -90,7 +91,7 @@ struct CInstStruct : public CInstance {
 
   void dump_tree() const override;
   CHECK_RETURN Err log_action(CNode* node, TraceAction action) override;
-  void commit_state() override;
+  //void commit_state() override;
 
   //----------
 
@@ -104,7 +105,7 @@ struct CInstPrim : public CInstance {
 
   void dump_tree() const override;
   CHECK_RETURN Err log_action(CNode* node, TraceAction action) override;
-  void commit_state() override;
+  //void commit_state() override;
 };
 
 //------------------------------------------------------------------------------

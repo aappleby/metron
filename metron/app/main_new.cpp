@@ -194,7 +194,7 @@ int main_new(Options opts) {
       */
 
       LOG_G("Tracing top methods in %.*s\n", int(name.size()), name.data());
-      auto top_inst = new CInstClass(nullptr, nullptr, node_class);
+      auto class_inst = new CInstClass(nullptr, nullptr, node_class);
 
       for (auto node_func : node_class->all_functions) {
 
@@ -209,21 +209,24 @@ int main_new(Options opts) {
         else {
           LOG_B("Tracing %.*s\n", int(func_name.size()), func_name.data());
 
-          auto top_call = new CCall(top_inst, nullptr, node_func);
-          top_inst->entry_points.push_back(top_call);
+          auto top_call = new CCall(class_inst, nullptr, node_func);
+          class_inst->entry_points.push_back(top_call);
           err << node_func->trace(top_call);
         }
       }
 
       LOG_G("Tracing done for %.*s\n", int(name.size()), name.data());
-      top_inst->commit_state();
-      top_inst->dump_tree();
+      //top_inst->commit_state();
+      class_inst->dump_tree();
 
-      for (auto node_struct : repo.all_structs) {
-        node_struct->wipe_field_types();
-      }
+      //for (auto node_struct : repo.all_structs) {
+      //  node_struct->wipe_field_types();
+      //}
 
-      delete top_inst;
+      //delete top_inst;
+
+      node_class->instance = class_inst;
+
     }
   }
 
@@ -232,6 +235,9 @@ int main_new(Options opts) {
       f->propagate_rw();
     }
   }
+
+  LOG_R("early exit\n");
+  exit(0);
 
   //----------------------------------------
 
@@ -285,6 +291,8 @@ int main_new(Options opts) {
 
 
 
+#if 0
+
   for (auto c : repo.all_classes) {
     LOG_INDENT_SCOPE();
     auto name = c->get_name();
@@ -331,6 +339,8 @@ int main_new(Options opts) {
       }
     }
   }
+
+#endif
 
   //========================================
 
@@ -384,21 +394,25 @@ int main_new(Options opts) {
   //----------------------------------------
   // Methods that directly read or write arrays _must_ be ticks.
 
+#if 0
   for (auto c : repo.all_classes) {
     for (auto f : c->all_functions) {
       for (auto r : f->self_reads)  if (r->is_array()) f->set_type(MT_TICK);
       for (auto w : f->self_writes) if (w->is_array()) f->set_type(MT_TICK);
     }
   }
+#endif
 
   //----------------------------------------
   // Methods that directly write registers _must_ be ticks.
 
+#if 0
   for (auto c : repo.all_classes) {
     for (auto f : c->all_functions) {
       for (auto w : f->self_writes) if (w->field_type == FT_REGISTER) f->set_type(MT_TICK);
     }
   }
+#endif
 
   //----------------------------------------
   // Everything else that's unassigned can be a tock? Sure?
@@ -466,6 +480,7 @@ int main_new(Options opts) {
   // Done!
   //----------------------------------------
 
+#if 0
   for (auto c : repo.all_classes) {
     for (auto f : c->all_fields) {
       assert(f->field_type != FT_UNKNOWN);
@@ -478,6 +493,7 @@ int main_new(Options opts) {
       assert(f->method_type != MT_UNKNOWN);
     }
   }
+#endif
 
   //----------------------------------------
 

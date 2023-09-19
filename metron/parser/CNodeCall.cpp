@@ -25,12 +25,14 @@ uint32_t CNodeCall::debug_color() const {
 //------------------------------------------------------------------------------
 // FIXME not dealing with nested submod paths right now
 
-Err CNodeCall::trace(CCall* call) {
+Err CNodeCall::trace(CInstance* inst) {
   Err err;
-  auto src_inst  = call->inst_class;
-  auto src_class = src_inst->node_class;
 
-  err << node_args->trace(call);
+  auto src_class = ancestor<CNodeClass>();
+  //auto src_inst  = call->inst_parent;
+  //auto src_class = src_inst->node_class;
+
+  err << node_args->trace(inst);
 
   auto dst_name = node_name;
 
@@ -38,6 +40,8 @@ Err CNodeCall::trace(CCall* call) {
     auto submod_name = field_exp->child("field_path")->get_textstr();
 
     auto submod_field = src_class->get_field(submod_name);
+
+    assert(false);
 
     //auto dst_inst  = src_inst->inst_map[submod_name]->as<CInstClass>();
     //auto dst_class = dst_inst->node_class;
@@ -50,9 +54,9 @@ Err CNodeCall::trace(CCall* call) {
   else {
     auto dst_func = src_class->get_function(dst_name->get_text());
     if (dst_func) {
-      auto dst_call = new CCall(src_inst, this, dst_func);
-      call->call_map[this] = dst_call;
-      err << dst_func->trace(dst_call);
+      //auto dst_call = new CInstCall(src_inst, this, dst_func);
+      //call->call_map[this] = dst_call;
+      err << dst_func->trace(inst);
     }
   }
 

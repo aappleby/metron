@@ -19,7 +19,7 @@
 struct Cursor;
 struct CSourceRepo;
 
-struct CCall;
+struct CInstCall;
 struct CInstance;
 struct CInstClass;
 
@@ -43,7 +43,7 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   virtual uint32_t debug_color() const;
   virtual std::string_view get_name() const;
   virtual CHECK_RETURN Err emit(Cursor& cursor);
-  virtual CHECK_RETURN Err trace(CCall* call);
+  virtual CHECK_RETURN Err trace(CInstance* inst);
 
   virtual CSourceRepo* get_repo() {
     return node_parent->get_repo();
@@ -84,7 +84,7 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
 
   void dump_tree(int max_depth = 0) const;
 
-  void dump_debug(int max_depth = 0) const { return dump_tree(max_depth); }
+  void dump_parse_tree(int max_depth = 0) const { return dump_tree(max_depth); }
 
   //----------------------------------------
 

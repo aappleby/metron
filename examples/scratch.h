@@ -1,19 +1,24 @@
 #include "metron/tools/metron_tools.h"
 
-// Zero-initializing structs should work for convenience.
+struct Flep {
+  int x;
+  int y;
+  int z;
+};
 
 class Module {
 public:
 
-  int my_struct1;
-  void tock() {
-    my_struct1 = func(2);
+  Flep tock(Flep x) {
+    Flep newFlep;
+    newFlep.y = x.y + 1;
+    return newFlep;
+  }
+
+  void tick() {
+    foo = foo + 1;
   }
 
 private:
-
-  int func(int x) {
-    return x + 1;
-  }
-
+  int foo;
 };

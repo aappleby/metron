@@ -92,8 +92,6 @@ Err CNodeFunction::emit_init(Cursor& cursor) {
     auto decl = param->as<CNodeDeclaration>();
     if (!decl) continue;
 
-    //decl->dump_debug();
-
     auto decl_const = decl->child("const");
     auto decl_type  = decl->child("type");
     auto decl_name  = decl->child("name");
@@ -319,8 +317,8 @@ CHECK_RETURN Err CNodeFunction::emit_func_binding_vars(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-Err CNodeFunction::trace(CCall* call) {
-  return child("body")->trace(call);
+Err CNodeFunction::trace(CInstance* inst) {
+  return child("body")->trace(inst);
 }
 
 //------------------------------------------------------------------------------
@@ -344,8 +342,8 @@ void CNodeFunction::dump() {
 
   LOG_S("Method \"%.*s\" ", name.size(), name.data());
 
-  if (is_public_)  LOG_G("public ");
-  if (!is_public_) LOG_G("private ");
+  if (is_public)  LOG_G("public ");
+  if (!is_public) LOG_G("private ");
   LOG_G("%s ", to_string(method_type));
   LOG_G("\n");
 

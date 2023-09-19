@@ -53,6 +53,9 @@ struct CNodeEnum : public CNode {
     LOG_G("Enum %.*s\n", name.size(), name.data());
   }
 
+  CSourceRepo* repo = nullptr;
+  CSourceFile* file = nullptr;
+
   CNodeKeyword*    node_enum = nullptr;
   CNodeKeyword*    node_class = nullptr;
   CNodeIdentifier* node_name = nullptr;

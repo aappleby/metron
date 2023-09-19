@@ -539,7 +539,7 @@ Err CNodeField::emit_component(Cursor& cursor) {
 
   for (auto m : component_class->all_functions) {
     //if (m->is_constructor()) continue;
-    if (!m->is_public_) continue;
+    if (!m->is_public) continue;
     if (m->method_type == MT_INIT) continue;
     if (m->internal_callers.size()) continue;
     if (m->params.empty() && !m->has_return()) continue;
@@ -553,7 +553,6 @@ Err CNodeField::emit_component(Cursor& cursor) {
       //auto node_type = param.get_field(field_type);
       //auto node_decl = param.get_field(field_declarator);
 
-      param->dump_debug();
       auto param_name = param->get_namestr();
 
       err << cursor.start_line();
@@ -621,7 +620,7 @@ Err CNodeField::emit_component(Cursor& cursor) {
 
   for (auto m : component_class->all_functions) {
     //if (m->is_constructor()) continue;
-    if (!m->is_public_) continue;
+    if (!m->is_public) continue;
     if (m->method_type == MT_INIT) continue;
     if (m->internal_callers.size()) continue;
     if (m->params.empty() && !m->has_return()) continue;
@@ -657,8 +656,8 @@ Err CNodeField::emit_component(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err CNodeField::trace(CCall* call) {
-  return node_decl->child("value")->trace(call);
+CHECK_RETURN Err CNodeField::trace(CInstance* inst) {
+  return node_decl->child("value")->trace(inst);
 }
 
 //------------------------------------------------------------------------------

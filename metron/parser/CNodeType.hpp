@@ -18,7 +18,7 @@ struct CNodeBuiltinType : public CNodeType {
     return get_text();
   }
 
-  Err trace(CCall* call) override {
+  Err trace(CInstance* inst) override {
     return Err();
   }
 

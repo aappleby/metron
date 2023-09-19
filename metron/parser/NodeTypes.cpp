@@ -37,7 +37,7 @@ Err CNodeTranslationUnit::emit(Cursor& cursor) {
   return err << cursor.check_done(this);
 }
 
-Err CNodeTranslationUnit::trace(CCall* call) {
+Err CNodeTranslationUnit::trace(CInstance* inst) {
   NODE_ERR("FIXME");
   return Err();
 }
@@ -106,7 +106,7 @@ Err CNodeNamespace::emit(Cursor& cursor) {
   return err << cursor.check_done(this);
 }
 
-Err CNodeNamespace::trace(CCall* call) {
+Err CNodeNamespace::trace(CInstance* inst) {
   NODE_ERR("FIXME");
   return Err();
 }
@@ -162,7 +162,7 @@ Err CNodePreproc::emit(Cursor& cursor) {
   return err << cursor.check_done(this);
 }
 
-Err CNodePreproc::trace(CCall* call) {
+Err CNodePreproc::trace(CInstance* inst) {
   NODE_ERR("FIXME");
   return Err();
 }
@@ -197,8 +197,8 @@ Err CNodeIdentifier::emit(Cursor& cursor) {
   //
 }
 
-Err CNodeIdentifier::trace(CCall* call) {
-  if (auto inst_field = call->inst_class->resolve(this)) {
+Err CNodeIdentifier::trace(CInstance* inst) {
+  if (auto inst_field = inst->resolve(this)) {
     return inst_field->log_action(this, ACT_READ);
   }
   return Err();
@@ -219,7 +219,7 @@ Err CNodePunct::emit(Cursor& cursor) {
   return err << cursor.check_done(this);
 }
 
-Err CNodePunct::trace(CCall* call) {
+Err CNodePunct::trace(CInstance* inst) {
   return Err();
 }
 
@@ -244,13 +244,12 @@ std::string_view CNodeFieldExpression::get_name() const {
 
 //----------------------------------------
 
-Err CNodeFieldExpression::trace(CCall* call) {
+Err CNodeFieldExpression::trace(CInstance* inst) {
   Err err;
 
-  auto inst = call->inst_class->resolve(this);
-  if (inst) {
-    err << inst->log_action(this, ACT_READ);
-  }
+  auto inst_dst = inst->resolve(this);
+
+  err << inst_dst->log_action(this, ACT_READ);
 
   return err;
 }
@@ -392,7 +391,7 @@ Err CNodeQualifiedIdentifier::emit(Cursor& cursor) {
 
 //----------------------------------------
 
-Err CNodeQualifiedIdentifier::trace(CCall* call) {
+Err CNodeQualifiedIdentifier::trace(CInstance* inst) {
   Err err;
 
   auto scope = child("scope_path")->get_name();
@@ -400,7 +399,7 @@ Err CNodeQualifiedIdentifier::trace(CCall* call) {
 
   if (auto node_namespace = get_repo()->get_namespace(scope)) {
     LOG_R("namespace!\n");
-    return node_namespace->get_field(field)->trace(call);
+    return node_namespace->get_field(field)->trace(inst);
   }
 
   if (auto node_enum = get_repo()->get_enum(scope)) {
@@ -432,7 +431,7 @@ Err CNodeText::emit(Cursor& cursor) {
   return Err();
 }
 
-Err CNodeText::trace(CCall* call) {
+Err CNodeText::trace(CInstance* inst) {
   NODE_ERR("FIXME");
   return Err();
 }
@@ -471,7 +470,7 @@ Err CNodeKeyword::emit(Cursor& cursor) {
   return Err();
 }
 
-Err CNodeKeyword::trace(CCall* call) {
+Err CNodeKeyword::trace(CInstance* inst) {
   return Err();
 }
 
@@ -489,7 +488,7 @@ Err CNodeTypedef::emit(Cursor& cursor) {
   return Err();
 }
 
-Err CNodeTypedef::trace(CCall* call) {
+Err CNodeTypedef::trace(CInstance* inst) {
   NODE_ERR("FIXME");
   return Err();
 }
@@ -516,10 +515,10 @@ Err CNodeList::emit(Cursor& cursor) {
   return err << cursor.check_done(this);
 }
 
-Err CNodeList::trace(CCall* call) {
+Err CNodeList::trace(CInstance* inst) {
   Err err;
   for (auto child : this) {
-    err << child->trace(call);
+    err << child->trace(inst);
   }
   return err;
 }

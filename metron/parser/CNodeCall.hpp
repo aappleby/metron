@@ -14,7 +14,7 @@ struct CNodeCall : public CNode {
   std::string_view get_name() const override;
   uint32_t debug_color() const override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
-  CHECK_RETURN Err trace(CCall* call) override;
+  CHECK_RETURN Err trace(CInstance* inst) override;
 
   bool can_omit_call();
 

@@ -30,7 +30,7 @@ struct CLogEntry {
 //------------------------------------------------------------------------------
 
 struct CInstance {
-  CInstance(CInstance* inst_parent, CNodeField* node_field);
+  CInstance(std::string name, bool is_public, CInstance* inst_parent);
   virtual ~CInstance();
 
   template<typename T>
@@ -45,6 +45,11 @@ struct CInstance {
     return nullptr;
   }
 
+
+  CInstance* get_root() {
+    return inst_parent ? inst_parent->get_root() : this;
+  }
+
   //----------
 
   virtual void dump_tree() const = 0;
@@ -54,7 +59,9 @@ struct CInstance {
   //----------
 
   std::string_view get_name() const;
+  std::string get_path() const;
   CInstance* resolve(CNode* node);
+  CInstance* resolve(std::string name);
 
   void push_state();
   void pop_state();
@@ -62,17 +69,16 @@ struct CInstance {
   void merge_state();
 
   std::string name;
+  bool is_public;
   CInstance* inst_parent = nullptr;
-  std::map<std::string_view, CInstance*> inst_map;
-
-  CNodeField* node_field = nullptr;
+  std::vector<CInstance*> children;
   std::vector<TraceState> state_stack;
 };
 
 //------------------------------------------------------------------------------
 
 struct CInstClass : public CInstance {
-  CInstClass(CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class);
+  CInstClass(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class);
 
   void dump_tree() const override;
   CHECK_RETURN Err log_action(CNode* node, TraceAction action) override;
@@ -80,14 +86,16 @@ struct CInstClass : public CInstance {
 
   //----------
 
+  CNodeField* node_field = nullptr;
   CNodeClass* node_class = nullptr;
-  std::vector<CCall*> entry_points;
+
+  //std::vector<CInstCall*> entry_points;
 };
 
 //------------------------------------------------------------------------------
 
 struct CInstStruct : public CInstance {
-  CInstStruct(CInstance* inst_parent, CNodeField* node_field, CNodeStruct* node_struct);
+  CInstStruct(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeStruct* node_struct);
 
   void dump_tree() const override;
   CHECK_RETURN Err log_action(CNode* node, TraceAction action) override;
@@ -95,31 +103,40 @@ struct CInstStruct : public CInstance {
 
   //----------
 
+  CNodeField*  node_field = nullptr;
   CNodeStruct* node_struct = nullptr;
 };
 
 //------------------------------------------------------------------------------
 
 struct CInstPrim : public CInstance {
-  CInstPrim(CInstance* inst_parent, CNodeField* node_field);
+  CInstPrim(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field);
 
   void dump_tree() const override;
   CHECK_RETURN Err log_action(CNode* node, TraceAction action) override;
   //void commit_state() override;
+
+  CNodeField* node_field = nullptr;
 };
 
 //------------------------------------------------------------------------------
 
-struct CCall {
-  CCall(CInstClass* inst_class, CNodeCall* node_call, CNodeFunction* node_func);
+struct CInstFunc : public CInstance {
+  CInstFunc(std::string name, bool is_public, CInstance* inst_parent, CNodeFunction* node_func);
 
-  void dump_tree();
-
-  CInstClass*    inst_class = nullptr;
-  CNodeCall*     node_call  = nullptr;
-  CNodeFunction* node_func  = nullptr;
-
-  std::map<CNodeCall*, CCall*> call_map;
+  void dump_tree() const override;
+  CNodeFunction* node_func = nullptr;
 };
+
+//------------------------------------------------------------------------------
+#if 0
+struct CInstCall : public CInstance {
+  CInstCall(std::string name, CInstClass* parent, CNodeCall* node_call, CNodeFunction* node_func);
+
+  void dump_tree() const override;
+
+  CNodeCall* node_call = nullptr;
+};
+#endif
 
 //------------------------------------------------------------------------------

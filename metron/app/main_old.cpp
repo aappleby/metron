@@ -15,50 +15,6 @@
 
 //------------------------------------------------------------------------------
 
-static std::vector<std::string> split_path(const std::string& input) {
-  std::vector<std::string> result;
-  std::string temp;
-
-  const char* c = input.c_str();
-
-  do {
-    if (*c == '/' || *c == '\\' || *c == 0) {
-      if (temp.size()) result.push_back(temp);
-      temp.clear();
-    } else {
-      temp.push_back(*c);
-    }
-  } while (*c++ != 0);
-
-  return result;
-}
-
-//------------------------------------------------------------------------------
-
-static std::string join_path(std::vector<std::string>& path) {
-  std::string result;
-  for (auto& s : path) {
-    if (result.size()) result += "/";
-    result += s;
-  }
-  return result;
-}
-
-//------------------------------------------------------------------------------
-
-static void mkdir_all(const std::vector<std::string>& full_path) {
-  std::string temp;
-  for (size_t i = 0; i < full_path.size(); i++) {
-    if (temp.size()) temp += "/";
-    temp += full_path[i];
-    //printf("making dir %s\n", temp.c_str());
-    int result = plat_mkdir(temp.c_str());
-    //printf("mkdir result %d\n", result);
-  }
-}
-
-//------------------------------------------------------------------------------
-
 int main_old(Options opts) {
 
   //----------

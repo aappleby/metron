@@ -38,6 +38,7 @@ class CSourceRepo /* : public IContext maybe? */ {
   std::vector<CNodeStruct*>    all_structs;
   std::vector<CNodeNamespace*> all_namespaces;
   std::vector<CNodeEnum*>      all_enums;
+  std::vector<CInstClass*>     all_instances;
 
   CNodeClass* top = nullptr;
 };

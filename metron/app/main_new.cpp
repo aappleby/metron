@@ -20,50 +20,6 @@ using namespace matcheroni;
 
 //------------------------------------------------------------------------------
 
-static std::vector<std::string> split_path(const std::string& input) {
-  std::vector<std::string> result;
-  std::string temp;
-
-  const char* c = input.c_str();
-
-  do {
-    if (*c == '/' || *c == '\\' || *c == 0) {
-      if (temp.size()) result.push_back(temp);
-      temp.clear();
-    } else {
-      temp.push_back(*c);
-    }
-  } while (*c++ != 0);
-
-  return result;
-}
-
-//------------------------------------------------------------------------------
-
-static std::string join_path(std::vector<std::string>& path) {
-  std::string result;
-  for (auto& s : path) {
-    if (result.size()) result += "/";
-    result += s;
-  }
-  return result;
-}
-
-//------------------------------------------------------------------------------
-
-static void mkdir_all(const std::vector<std::string>& full_path) {
-  std::string temp;
-  for (size_t i = 0; i < full_path.size(); i++) {
-    if (temp.size()) temp += "/";
-    temp += full_path[i];
-    //printf("making dir %s\n", temp.c_str());
-    int result = plat_mkdir(temp.c_str());
-    //printf("mkdir result %d\n", result);
-  }
-}
-
-//------------------------------------------------------------------------------
-
 int main_new(Options opts) {
   LOG_G("New parser!\n");
 
@@ -78,9 +34,14 @@ int main_new(Options opts) {
     return -1;
   }
 
+  //----------------------------------------
+  // Sanity check parse tree
+
   for (auto pair : repo.source_map) {
     CSourceFile* file = pair.second;
 
+    // Sanity check that all node spans in the repo tightly contain their
+    // children
     node_visitor check_span = [](CNode* n) {
       if (n->child_head) {
         auto text = n->get_text();
@@ -98,6 +59,10 @@ int main_new(Options opts) {
     visit_children(file->context.root_node, check_span);
   }
 
+  for (auto pair : repo.source_map) {
+    CSourceFile* file = pair.second;
+    file->context.top_head->dump_parse_tree();
+  }
 
   //----------------------------------------
   // All modules are now in the library, we can resolve references to other
@@ -105,6 +70,42 @@ int main_new(Options opts) {
 
   LOG_B("//----------------------------------------\n");
   LOG_B("Processing source files\n");
+
+  LOG_B("gather toplevel template/class/struct/namespace/enum\n");
+
+  for (auto pair : repo.source_map) {
+    CSourceFile* file = pair.second;
+
+    for (auto n : file->context.root_node) {
+      if (auto node_template = n->as<CNodeTemplate>()) {
+        auto node_class = node_template->child<CNodeClass>();
+        node_class->repo = &repo;
+        node_class->file = file;
+        repo.all_classes.push_back(node_class);
+      }
+      else if (auto node_class = n->as<CNodeClass>()) {
+        node_class->repo = &repo;
+        node_class->file = file;
+        repo.all_classes.push_back(node_class);
+      }
+      else if (auto node_struct = n->as<CNodeStruct>()) {
+        node_struct->repo = &repo;
+        node_struct->file = file;
+        repo.all_structs.push_back(node_struct);
+      }
+      else if (auto node_namespace = n->as<CNodeNamespace>()) {
+        node_namespace->repo = &repo;
+        node_namespace->file = file;
+        repo.all_namespaces.push_back(node_namespace);
+      }
+      else if (auto node_enum = n->as<CNodeEnum>()) {
+        node_enum->repo = &repo;
+        node_enum->file = file;
+        repo.all_enums.push_back(node_enum);
+      }
+
+    }
+  }
 
   LOG_B("collect_fields_and_methods\n");
 
@@ -115,41 +116,19 @@ int main_new(Options opts) {
 
       if (auto node_template = n->as<CNodeTemplate>()) {
         auto node_class = node_template->child<CNodeClass>();
-
-        node_class->repo = &repo;
-        node_class->file = file;
-
-        repo.all_classes.push_back(node_class);
         node_class->collect_fields_and_methods();
       }
       else if (auto node_class = n->as<CNodeClass>()) {
-
-        node_class->repo = &repo;
-        node_class->file = file;
-
-        repo.all_classes.push_back(node_class);
         node_class->collect_fields_and_methods();
       }
       else if (auto node_struct = n->as<CNodeStruct>()) {
-        node_struct->repo = &repo;
-        node_struct->file = file;
-
-        repo.all_structs.push_back(node_struct);
         node_struct->collect_fields_and_methods();
       }
       else if (auto node_namespace = n->as<CNodeNamespace>()) {
-        node_namespace->repo = &repo;
-        node_namespace->file = file;
-
-        repo.all_namespaces.push_back(node_namespace);
         node_namespace->collect_fields_and_methods();
       }
       else if (auto node_enum = n->as<CNodeEnum>()) {
         //LOG_G("top level enum!!!!\n");
-        //node_enum->repo = &repo;
-        //node_enum->file = file;
-
-        repo.all_enums.push_back(node_enum);
       }
 
     }
@@ -164,16 +143,31 @@ int main_new(Options opts) {
     }
   }
 
-  for (auto pair : repo.source_map) {
-    CSourceFile* file = pair.second;
-    file->context.top_head->dump_debug();
+  //----------------------------------------
+
+  LOG_B("Building call graph\n");
+  for (auto mod : repo.all_classes) {
+    err << mod->build_call_graph(&repo);
   }
 
   //----------------------------------------
 
-  LOG_B("build_call_graphs\n");
-  for (auto mod : repo.all_classes) {
-    err << mod->build_call_graph(&repo);
+  LOG_B("Instantiating modules\n");
+  for (auto node_class : repo.all_classes) {
+    auto instance = new CInstClass(node_class->get_namestr(), true, nullptr, nullptr, node_class);
+
+    repo.all_instances.push_back(instance);
+
+    LOG_INDENT_SCOPE();
+    instance->dump_tree();
+    LOG("\n");
+  }
+
+  {
+    for (auto c : repo.all_classes) {
+      c->dump();
+      LOG("\n");
+    }
   }
 
   //----------------------------------------
@@ -181,25 +175,29 @@ int main_new(Options opts) {
 
   {
     LOG_B("//----------------------------------------\n");
-    LOG_B("Tracing top methods\n");
+    LOG_B("Tracing classes\n");
     LOG_INDENT_SCOPE();
 
-    for (auto node_class : repo.all_classes) {
+    for (auto inst_class : repo.all_instances) {
+      auto node_class = inst_class->node_class;
       auto name = node_class->get_name();
-      /*
-      if (node_class->refcount) {
-        LOG_G("Skipping %.*s because it's not a top module\n", int(name.size()), name.data());
-        continue;
-      }
-      */
-
-      LOG_G("Tracing top methods in %.*s\n", int(name.size()), name.data());
-      auto class_inst = new CInstClass(nullptr, nullptr, node_class);
+      LOG_G("Tracing public methods in %.*s\n", int(name.size()), name.data());
 
       for (auto node_func : node_class->all_functions) {
-
         LOG_INDENT_SCOPE();
-        auto func_name = node_func->get_name();
+        auto func_name = node_func->get_namestr();
+
+        if (!node_func->is_public) {
+          LOG_B("Skipping %s because it's not public\n", func_name.c_str());
+        }
+        else {
+          LOG_B("Tracing %s\n", func_name.c_str());
+          //node_func->dump_parse_tree();
+          auto inst_func = inst_class->resolve(func_name);
+          err << node_func->trace(inst_func);
+        }
+#if 0
+
         if (node_func->internal_callers.size()) {
           LOG_B("Skipping %.*s because it's not toplevel\n", int(func_name.size()), func_name.data());
         }
@@ -209,34 +207,35 @@ int main_new(Options opts) {
         else {
           LOG_B("Tracing %.*s\n", int(func_name.size()), func_name.data());
 
-          auto top_call = new CCall(class_inst, nullptr, node_func);
+          auto top_call = new CInstCall(class_inst, nullptr, node_func);
           class_inst->entry_points.push_back(top_call);
           err << node_func->trace(top_call);
         }
+#endif
       }
 
       LOG_G("Tracing done for %.*s\n", int(name.size()), name.data());
-      //top_inst->commit_state();
-      class_inst->dump_tree();
-
-      //for (auto node_struct : repo.all_structs) {
-      //  node_struct->wipe_field_types();
-      //}
-
-      //delete top_inst;
-
-      node_class->instance = class_inst;
-
     }
+    LOG_B("All tracing done\n");
   }
 
+  LOG_G("Trace result\n");
+  for (auto inst_class : repo.all_instances) {
+    LOG_INDENT_SCOPE();
+    inst_class->dump_tree();
+    LOG("\n");
+  }
+
+  /*
   for (auto c : repo.all_classes) {
     for (auto f : c->all_functions) {
       f->propagate_rw();
     }
   }
+  */
 
   LOG_R("early exit\n");
+  LOG("");
   exit(0);
 
   //----------------------------------------

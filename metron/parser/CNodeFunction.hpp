@@ -12,6 +12,8 @@
 
 #include "NodeTypes.hpp"
 
+struct CInstFunc;
+
 //------------------------------------------------------------------------------
 
 struct CNodeFunction : public CNode {
@@ -24,7 +26,7 @@ struct CNodeFunction : public CNode {
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
-  CHECK_RETURN Err trace(CCall* call) override;
+  CHECK_RETURN Err trace(CInstance* inst) override;
 
   //----------------------------------------
 
@@ -162,7 +164,9 @@ struct CNodeFunction : public CNode {
 
   MethodType method_type = MT_UNKNOWN;
 
-  bool is_public_ = false;
+  bool is_public = false;
+
+  CInstFunc* instance = nullptr;
 
   //std::set<CNodeField*> self_reads;
   //std::set<CNodeField*> self_writes;

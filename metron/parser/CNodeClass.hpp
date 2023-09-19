@@ -80,7 +80,10 @@ struct CNodeClass : public CNode {
   CSourceFile* file = nullptr;
   int refcount = 0;
 
+  std::vector<CNode*> ports;
+
   std::vector<CNodeFunction*>    top_functions;
+
 
   CNodeConstructor* constructor = nullptr;
   std::vector<CNodeFunction*>    all_functions;
@@ -97,8 +100,6 @@ struct CNodeClass : public CNode {
   std::vector<CNodeField*> private_signals;
   std::vector<CNodeField*> private_registers;
   std::vector<CNodeField*> dead_fields;
-
-  CInstClass* instance = nullptr;
 
   /*
   std::vector<MtFuncParam*> input_method_params;

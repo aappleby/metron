@@ -11,9 +11,9 @@ uint32_t CNodeStatement::debug_color() const {
 
 //------------------------------------------------------------------------------
 
-Err CNodeExpStatement::trace(CCall* call) {
+Err CNodeExpStatement::trace(CInstance* inst) {
   Err err;
-  for (auto c : this) err << c->trace(call);
+  for (auto c : this) err << c->trace(inst);
   return err;
 }
 
@@ -54,14 +54,14 @@ Err CNodeExpStatement::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-Err CNodeAssignment::trace(CCall* call) {
+Err CNodeAssignment::trace(CInstance* inst) {
   Err err;
 
   auto rhs = child("rhs");
-  err << rhs->trace(call);
+  err << rhs->trace(inst);
 
   auto lhs = child("lhs");
-  auto inst_lhs = call->inst_class->resolve(lhs);
+  auto inst_lhs = inst->resolve(lhs);
 
   if (inst_lhs) {
     auto op_text = child("op")->get_text();
@@ -114,19 +114,18 @@ Err CNodeAssignment::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err CNodeFor::trace(CCall* call) {
+CHECK_RETURN Err CNodeFor::trace(CInstance* inst) {
   Err err;
-  err << child("init")->trace(call);
-  err << child("condition")->trace(call);
-  err << child("body")->trace(call);
-  err << child("step")->trace(call);
+  err << child("init")->trace(inst);
+  err << child("condition")->trace(inst);
+  err << child("body")->trace(inst);
+  err << child("step")->trace(inst);
   return err;
 }
 
 CHECK_RETURN Err CNodeFor::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
-  //dump_debug();
   err << cursor.emit_default(this);
 
   return err << cursor.check_done(this);
@@ -146,18 +145,18 @@ void CNodeIf::init(const char* match_tag, SpanType span, uint64_t flags) {
 
 //----------------------------------------
 
-CHECK_RETURN Err CNodeIf::trace(CCall* call) {
+CHECK_RETURN Err CNodeIf::trace(CInstance* inst) {
   Err err;
 
-  err << child("condition")->trace(call);
+  err << child("condition")->trace(inst);
 
-  auto inst = call->inst_class;
+  auto root_inst = inst->get_root();
 
-  inst->push_state();
-  if (auto body_true = child("body_true")) err << body_true->trace(call);
-  inst->swap_state();
-  if (auto body_false = child("body_false")) err << body_false->trace(call);
-  inst->merge_state();
+  root_inst->push_state();
+  if (auto body_true = child("body_true")) err << body_true->trace(inst);
+  root_inst->swap_state();
+  if (auto body_false = child("body_false")) err << body_false->trace(inst);
+  root_inst->merge_state();
 
   return err;
 }
@@ -202,12 +201,12 @@ CHECK_RETURN Err CNodeIf::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err CNodeSwitch::trace(CCall* call) {
+CHECK_RETURN Err CNodeSwitch::trace(CInstance* inst) {
   Err err;
 
-  err << child("condition")->trace(call);
+  err << child("condition")->trace(inst);
 
-  auto inst = call->inst_class;
+  auto root_inst = inst->get_root();
 
   int case_count = 0;
   bool has_default = false;
@@ -218,28 +217,28 @@ CHECK_RETURN Err CNodeSwitch::trace(CCall* call) {
     // Skip cases without bodies
     if (!cursor->child("body")) continue;
 
-    inst->push_state();
+    root_inst->push_state();
     case_count++;
-    err << cursor->trace(call);
-    inst->swap_state();
+    err << cursor->trace(inst);
+    root_inst->swap_state();
   }
 
   if (has_default) {
-    inst->pop_state();
+    root_inst->pop_state();
     case_count--;
   }
 
   for (int i = 0; i < case_count; i++) {
-    inst->merge_state();
+    root_inst->merge_state();
   }
 
   return err;
 }
 
+//----------------------------------------
+
 CHECK_RETURN Err CNodeSwitch::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
-
-  //dump_debug();
 
   auto node_switch = child("switch");
   auto node_cond   = child("condition");
@@ -269,8 +268,8 @@ CHECK_RETURN Err CNodeSwitch::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err CNodeCase::trace(CCall* call) {
-  return child("body")->trace(call);
+CHECK_RETURN Err CNodeCase::trace(CInstance* inst) {
+  return child("body")->trace(inst);
 }
 
 CHECK_RETURN Err CNodeCase::emit(Cursor& cursor) {
@@ -300,8 +299,8 @@ CHECK_RETURN Err CNodeCase::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err CNodeDefault::trace(CCall* call) {
-  return child("body")->trace(call);
+CHECK_RETURN Err CNodeDefault::trace(CInstance* inst) {
+  return child("body")->trace(inst);
 }
 
 CHECK_RETURN Err CNodeDefault::emit(Cursor& cursor) {
@@ -328,9 +327,9 @@ CHECK_RETURN Err CNodeDefault::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-Err CNodeCompound::trace(CCall* call) {
+Err CNodeCompound::trace(CInstance* inst) {
   Err err;
-  for (auto c : this) err << c->trace(call);
+  for (auto c : this) err << c->trace(inst);
   return err;
 }
 
@@ -514,12 +513,16 @@ Err CNodeCompound::emit_hoisted_decls(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-Err CNodeReturn::trace(CCall* call) {
+Err CNodeReturn::trace(CInstance* inst) {
   Err err;
 
   if (auto node_value = child("value")) {
-    err << node_value->trace(call);
+    err << node_value->trace(inst);
   }
+
+  auto inst_return = inst->resolve("return");
+  assert(inst_return);
+  err << inst_return->log_action(this, ACT_WRITE);
 
   return err;
 }

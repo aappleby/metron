@@ -35,33 +35,33 @@ protected:
 //------------------------------------------------------------------------------
 
 struct CNodeBinaryExp : public CNodeExpression {
-  CHECK_RETURN Err trace(CCall* call) override;
+  CHECK_RETURN Err trace(CInstance* inst) override;
 };
 
 struct CNodePrefixExp : public CNodeExpression {
-  CHECK_RETURN Err trace(CCall* call) override;
+  CHECK_RETURN Err trace(CInstance* inst) override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
 };
 
 struct CNodeSuffixExp : public CNodeExpression {
-  CHECK_RETURN Err trace(CCall* call) override;
+  CHECK_RETURN Err trace(CInstance* inst) override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
 };
 
 struct CNodeAssignExp : public CNodeExpression {
-  CHECK_RETURN Err trace(CCall* call) override;
+  CHECK_RETURN Err trace(CInstance* inst) override;
 };
 
 struct CNodeIdentifierExp : public CNodeExpression {
   std::string_view get_name() const override;
-  CHECK_RETURN Err trace(CCall* call) override;
+  CHECK_RETURN Err trace(CInstance* inst) override;
 };
 
 //------------------------------------------------------------------------------
 
 struct CNodeConstant : public CNodeExpression {
   CHECK_RETURN Err emit(Cursor& cursor) override;
-  CHECK_RETURN Err trace(CCall* call) override;
+  CHECK_RETURN Err trace(CInstance* inst) override;
 
 protected:
   CNodeConstant() {}
@@ -77,7 +77,7 @@ struct CNodeConstString : public CNodeConstant {};
 struct CNodeOperator : public CNode {
   uint32_t debug_color() const override;
   Err emit(Cursor& cursor) override;
-  Err trace(CCall* call) override;
+  Err trace(CInstance* inst) override;
 };
 
 //----------------------------------------

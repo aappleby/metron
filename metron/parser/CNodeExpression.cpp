@@ -30,25 +30,25 @@ bool CNodeExpression::is_integer_constant() {
 
 //------------------------------------------------------------------------------
 
-Err CNodeBinaryExp::trace(CCall* call) {
+Err CNodeBinaryExp::trace(CInstance* inst) {
   Err err;
 
-  err << child("lhs")->trace(call);
-  err << child("rhs")->trace(call);
+  err << child("lhs")->trace(inst);
+  err << child("rhs")->trace(inst);
   return Err();
 }
 
 //------------------------------------------------------------------------------
 
-Err CNodePrefixExp::trace(CCall* call) {
+Err CNodePrefixExp::trace(CInstance* inst) {
   Err err;
 
   auto rhs = child("rhs");
-  err << rhs->trace(call);
+  err << rhs->trace(inst);
 
   auto op  = child("prefix")->get_text();
   if (op == "++" || op == "--") {
-    auto inst_rhs = call->inst_class->resolve(rhs);
+    auto inst_rhs = inst->resolve(rhs);
     if (inst_rhs) {
       err << inst_rhs->log_action(this, ACT_READ);
       err << inst_rhs->log_action(this, ACT_WRITE);
@@ -96,15 +96,15 @@ Err CNodePrefixExp::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-Err CNodeSuffixExp::trace(CCall* call) {
+Err CNodeSuffixExp::trace(CInstance* inst) {
   Err err;
 
   auto lhs = child("lhs");
   auto op  = child("suffix")->get_text();
-  err << lhs->trace(call);
+  err << lhs->trace(inst);
 
   if (op == "++" || op == "--") {
-    auto inst_lhs = call->inst_class->resolve(lhs);
+    auto inst_lhs = inst->resolve(lhs);
     if (inst_lhs) {
       err << inst_lhs->log_action(this, ACT_READ);
       err << inst_lhs->log_action(this, ACT_WRITE);
@@ -152,7 +152,7 @@ Err CNodeSuffixExp::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-Err CNodeAssignExp::trace(CCall* call) {
+Err CNodeAssignExp::trace(CInstance* inst) {
   NODE_ERR("fixme");
   return Err();
 }
@@ -163,8 +163,11 @@ std::string_view CNodeIdentifierExp::get_name() const {
   return get_text();
 }
 
-Err CNodeIdentifierExp::trace(CCall* call) {
-  if (auto inst_field = call->inst_class->resolve(this)) {
+//----------------------------------------
+
+Err CNodeIdentifierExp::trace(CInstance* inst) {
+
+  if (auto inst_field = inst->resolve(this)) {
     return inst_field->log_action(this, ACT_READ);
   }
   /*
@@ -177,7 +180,7 @@ Err CNodeIdentifierExp::trace(CCall* call) {
 
 //------------------------------------------------------------------------------
 
-Err CNodeConstant::trace(CCall* call) {
+Err CNodeConstant::trace(CInstance* inst) {
   return Err();
 }
 
@@ -237,7 +240,7 @@ Err CNodeOperator::emit(Cursor& cursor) {
   return err << cursor.check_done(this);
 }
 
-Err CNodeOperator::trace(CCall* call) {
+Err CNodeOperator::trace(CInstance* inst) {
   return Err();
 }
 

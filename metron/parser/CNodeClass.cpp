@@ -92,9 +92,29 @@ CNodeEnum* CNodeClass::get_enum(std::string_view name) {
 Err CNodeClass::collect_fields_and_methods() {
   Err err;
 
+#if 0
+  {
+    bool is_public = false;
+    for (auto child : node_body->items) {
+      if (auto access = child->as<CNodeAccess>()) {
+        is_public = child->get_text() == "public:";
+        continue;
+      }
+      if (!is_public) continue;
+      if (auto field = child->as<CNodeField>()) {
+        ports.push_back(field);
+      }
+      else if (auto func = child->as<CNodeFunction>()) {
+        func->dump_parse_tree();
+      }
+    }
+  }
+#endif
+
   bool is_public = false;
 
   for (auto child : node_body->items) {
+
     if (auto access = child->as<CNodeAccess>()) {
       is_public = child->get_text() == "public:";
       continue;
@@ -103,8 +123,8 @@ Err CNodeClass::collect_fields_and_methods() {
     if (auto n = child->as<CNodeField>()) {
       n->is_public = is_public;
 
-      n->parent_class  = n->ancestor<CNodeClass>();
-      n->parent_struct = n->ancestor<CNodeStruct>();
+      n->parent_class  = this;
+      n->parent_struct = nullptr;
       n->node_decl->_type_class    = repo->get_class(n->get_type_name());
       n->node_decl->_type_struct   = repo->get_struct(n->get_type_name());
 
@@ -119,7 +139,7 @@ Err CNodeClass::collect_fields_and_methods() {
     }
 
     if (auto n = child->as<CNodeFunction>()) {
-      n->is_public_ = is_public;
+      n->is_public = is_public;
 
       if (auto constructor = child->as<CNodeConstructor>()) {
         assert(this->constructor == nullptr);
@@ -140,10 +160,8 @@ Err CNodeClass::collect_fields_and_methods() {
   }
 
   if (auto parent = node_parent->as<CNodeTemplate>()) {
-    //LOG_B("CNodeClass has template parent\n");
     for (CNode*  param : parent->node_params->items) {
       if (param->as<CNodeDeclaration>()) {
-        //param->dump_tree(3);
         all_modparams.push_back(param->as<CNodeDeclaration>());
       }
     }
@@ -325,7 +343,7 @@ Err CNodeClass::emit_function_ports(CNodeFunction* f, Cursor& cursor) {
   auto fname = f->get_namestr();
   auto rtype = f->child("return_type");
 
-  if (!f->is_public_) return err;
+  if (!f->is_public) return err;
   if (f->internal_callers.size()) return err;
   if (!f->params.size() && rtype->get_text() == "void") return err;
 

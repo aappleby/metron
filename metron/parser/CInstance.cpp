@@ -73,7 +73,7 @@ CInstance* CInstance::resolve(std::string name) {
   for (auto child : children) {
     if (child->name == name) return child;
   }
-  return nullptr;
+  return inst_parent ? inst_parent->resolve(name) : nullptr;
 }
 
 //----------------------------------------
@@ -189,7 +189,7 @@ CInstClass::CInstClass(std::string name, bool is_public, CInstance* inst_parent,
       }
     }
 
-    if (child_is_public) {
+    /*if (child_is_public)*/ {
       if (auto node_constructor = child->as<CNodeConstructor>()) {
         // Do nothing with constructors
       }

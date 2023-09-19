@@ -197,6 +197,9 @@ int main_new(Options opts) {
           inst_class->dump_tree();
 
           auto inst_func = inst_class->resolve(func_name);
+
+          inst_func->dump_tree();
+
           err << node_func->trace(inst_func);
         }
 #if 0

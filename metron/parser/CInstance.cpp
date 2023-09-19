@@ -30,10 +30,10 @@ std::string CInstance::get_path() const {
 
 CInstance* CInstance::resolve(CNode* node) {
 
-  LOG_R("----------\n");
-  LOG_R("text %s\n", node->get_textstr().c_str());
-  dump_tree();
-  LOG_R("----------\n");
+  //LOG_R("----------\n");
+  //LOG_R("text %s\n", node->get_textstr().c_str());
+  //dump_tree();
+  //LOG_R("----------\n");
 
   if (node->as<CNodeFieldExpression>()) {
     auto cursor = node->child_head;

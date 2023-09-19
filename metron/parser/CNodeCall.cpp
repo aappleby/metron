@@ -37,19 +37,26 @@ Err CNodeCall::trace(CInstance* inst) {
   auto dst_name = node_name;
 
   if (auto field_exp = dst_name->as<CNodeFieldExpression>()) {
+    //field_exp->dump_parse_tree();
+
+    //inst->dump_tree();
+
     auto submod_name = field_exp->child("field_path")->get_textstr();
 
     auto submod_field = src_class->get_field(submod_name);
 
-    assert(false);
+    auto func_inst = inst->resolve(field_exp)->as<CInstFunc>();
 
-    //auto dst_inst  = src_inst->inst_map[submod_name]->as<CInstClass>();
-    //auto dst_class = dst_inst->node_class;
-    //auto dst_func  = dst_class->get_function(field_exp->child("identifier")->get_text());
+    //func_inst->dump_tree();
 
-    //auto dst_call  = new CCall(dst_inst, this, dst_func);
-    //call->call_map[this] = dst_call;
-    //err << dst_func->trace(dst_call);
+    for (auto child : func_inst->children) {
+      if (child->name == "return") {
+        err << child->log_action(this, ACT_READ);
+      }
+      else {
+        err << child->log_action(this, ACT_WRITE);
+      }
+    }
   }
   else {
     auto dst_func = src_class->get_function(dst_name->get_text());

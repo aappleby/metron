@@ -193,6 +193,9 @@ int main_new(Options opts) {
         else {
           LOG_B("Tracing %s\n", func_name.c_str());
           //node_func->dump_parse_tree();
+
+          inst_class->dump_tree();
+
           auto inst_func = inst_class->resolve(func_name);
           err << node_func->trace(inst_func);
         }

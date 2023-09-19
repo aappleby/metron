@@ -190,7 +190,10 @@ CInstClass::CInstClass(std::string name, bool is_public, CInstance* inst_parent,
     }
 
     if (child_is_public) {
-      if (auto node_func = child->as<CNodeFunction>()) {
+      if (auto node_constructor = child->as<CNodeConstructor>()) {
+        // Do nothing with constructors
+      }
+      else if (auto node_func = child->as<CNodeFunction>()) {
         auto func_name = node_func->get_namestr();
 
         auto inst_func = new CInstFunc(func_name, child_is_public, this, node_func);
@@ -400,7 +403,7 @@ CInstFunc::CInstFunc(std::string name, bool is_public, CInstance* inst_parent, C
   }
 
   auto ret_type = node_func->child("return_type");
-  if (ret_type->get_text() != "void") {
+  if (ret_type && ret_type->get_text() != "void") {
     if (auto struct_type = ret_type->as<CNodeStructType>()) {
       auto node_struct = repo->get_struct(struct_type->get_text());
       auto inst = new CInstStruct("@return", is_public, this, nullptr, node_struct);

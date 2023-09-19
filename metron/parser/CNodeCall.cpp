@@ -29,25 +29,15 @@ Err CNodeCall::trace(CInstance* inst) {
   Err err;
 
   auto src_class = ancestor<CNodeClass>();
-  //auto src_inst  = call->inst_parent;
-  //auto src_class = src_inst->node_class;
 
   err << node_args->trace(inst);
 
   auto dst_name = node_name;
 
   if (auto field_exp = dst_name->as<CNodeFieldExpression>()) {
-    //field_exp->dump_parse_tree();
-
-    //inst->dump_tree();
-
     auto submod_name = field_exp->child("field_path")->get_textstr();
-
     auto submod_field = src_class->get_field(submod_name);
-
     auto func_inst = inst->resolve(field_exp)->as<CInstFunc>();
-
-    //func_inst->dump_tree();
 
     for (auto child : func_inst->children) {
       if (child->name == "return") {

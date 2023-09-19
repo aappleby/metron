@@ -520,7 +520,7 @@ Err CNodeReturn::trace(CInstance* inst) {
     err << node_value->trace(inst);
   }
 
-  auto inst_return = inst->resolve("return");
+  auto inst_return = inst->resolve("@return");
   assert(inst_return);
   err << inst_return->log_action(this, ACT_WRITE);
 

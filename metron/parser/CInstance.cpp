@@ -403,11 +403,11 @@ CInstFunc::CInstFunc(std::string name, bool is_public, CInstance* inst_parent, C
   if (ret_type->get_text() != "void") {
     if (auto struct_type = ret_type->as<CNodeStructType>()) {
       auto node_struct = repo->get_struct(struct_type->get_text());
-      auto inst = new CInstStruct("return", is_public, this, nullptr, node_struct);
+      auto inst = new CInstStruct("@return", is_public, this, nullptr, node_struct);
       children.push_back(inst);
     }
     else if (auto builtin_type = ret_type->as<CNodeBuiltinType>()) {
-      auto inst = new CInstPrim("return", is_public, this, nullptr);
+      auto inst = new CInstPrim("@return", is_public, this, nullptr);
       children.push_back(inst);
     }
     else {

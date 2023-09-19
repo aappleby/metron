@@ -49,11 +49,15 @@ Err CNodeCall::trace(CInstance* inst) {
     }
   }
   else {
-    auto dst_func = src_class->get_function(dst_name->get_text());
+    auto func_name = dst_name->get_textstr();
+    auto dst_func = src_class->get_function(func_name);
+
+    auto func_inst = inst->resolve(func_name)->as<CInstFunc>();
+
     if (dst_func) {
       //auto dst_call = new CInstCall(src_inst, this, dst_func);
       //call->call_map[this] = dst_call;
-      err << dst_func->trace(inst);
+      err << dst_func->trace(func_inst);
     }
   }
 

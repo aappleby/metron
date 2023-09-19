@@ -6,22 +6,8 @@
 // this is broken in the new parser because we're not distinguishing
 // between input and output signals in submodules...
 
-struct Foo1 {
-  int x;
-  int y;
-  int z;
-};
-
-struct Foo2 {
-  Foo1 x;
-  Foo1 y;
-  Foo1 z;
-};
-
 class Submod {
 public:
-
-  //Foo2 foo2;
 
   logic<8> i_signal;
   logic<8> o_signal;

@@ -62,6 +62,7 @@ struct CNodeClass : public CNode {
 
   Err collect_fields_and_methods();
   Err build_call_graph(CSourceRepo* repo);
+  void dump_call_graph();
 
   Err emit_module_ports(Cursor& cursor);
   Err emit_template_parameter_list(Cursor& cursor);
@@ -71,6 +72,8 @@ struct CNodeClass : public CNode {
   void dump_fields();
 
   //----------------------------------------
+
+  std::string name;
 
   CNodeKeyword*    node_class = nullptr;
   CNodeIdentifier* node_name = nullptr;

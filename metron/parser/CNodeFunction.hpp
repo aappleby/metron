@@ -49,6 +49,7 @@ struct CNodeFunction : public CNode {
 #endif
 
   void dump();
+  void dump_call_graph();
 
   using func_visitor = std::function<void(CNodeFunction*)>;
 
@@ -153,7 +154,73 @@ struct CNodeFunction : public CNode {
     return called;
   }
 
+  MethodType get_method_type() {
+    if (name.starts_with("tick")) return MT_TICK;
+    if (name.starts_with("tock")) return MT_TOCK;
+
+    auto result = MT_UNKNOWN;
+
+    for (auto c : internal_callers) {
+      auto new_result = c->get_method_type();
+      if (new_result == MT_UNKNOWN) {
+        LOG_R("%s: get_method_type returned MT_UNKNOWN\n", name.c_str());
+        assert(false);
+      }
+
+      if (result == MT_UNKNOWN) {
+        result = new_result;
+      }
+      else if (result != new_result) {
+        LOG_R("%s: get_method_type inconsistent\n", name.c_str());
+        assert(false);
+      }
+    }
+
+    if (self_writes.size()) {
+      if (result != MT_TICK && result != MT_TOCK) {
+        LOG_R("%s: Writes found in a non-tick/tock\n", name.c_str());
+        assert(false);
+      }
+    }
+    else {
+      LOG_R("Don't know how to classify %s %s\n", name.c_str(), to_string(result));
+      assert(result == MT_UNKNOWN);
+      result = MT_FUNC;
+    }
+
+    return result;
+  }
+
+  /*
+
+  called_by_tick2() {
+    if (name.starts_with("tick")) return true;
+    if (name.starts_with("tock")) return false;
+
+    for (auto c : internal_callers) {
+    }
+    bool called = false;
+    visit_internal_callers([&](CNodeFunction* f) {
+      called |= if (f->name.starts_with("tick")) {
+         true;
+      }
+    });
+    return called;
+  }
+
+  bool called_by_tock2() {
+    bool called = false;
+    visit_internal_callers([&](CNodeFunction* f) {
+
+    });
+    return called;
+  }
+  */
+
+
   //----------------------------------------
+
+  std::string name;
 
   CNodeType*       node_type   = nullptr;
   CNode*           node_name   = nullptr;

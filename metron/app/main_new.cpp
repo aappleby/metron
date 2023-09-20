@@ -148,8 +148,14 @@ int main_new(Options opts) {
   //----------------------------------------
 
   LOG_B("Building call graph\n");
-  for (auto mod : repo.all_classes) {
-    err << mod->build_call_graph(&repo);
+  for (auto node_class : repo.all_classes) {
+    err << node_class->build_call_graph(&repo);
+  }
+
+
+
+  for (auto node_class : repo.all_classes) {
+    node_class->dump_call_graph();
   }
 
   //----------------------------------------
@@ -194,6 +200,25 @@ int main_new(Options opts) {
     LOG_B("\n");
   }
 
+  //----------------------------------------
+
+  for (auto c : repo.all_classes) {
+    for (auto f : c->all_functions) {
+      f->propagate_rw();
+    }
+  }
+
+  for (auto node_class : repo.all_classes) {
+    for (auto f : node_class->all_functions) {
+      f->get_method_type();
+    }
+    LOG_G("get_method_type OK\n");
+  }
+
+
+  LOG_R("early exit 2!\n");
+  exit(0);
+
   /*
   LOG_B("//----------------------------------------\n");
   LOG_B("// Trace result\n");
@@ -236,14 +261,6 @@ int main_new(Options opts) {
 
     LOG_DEDENT();
     LOG("\n");
-  }
-
-  //----------------------------------------
-
-  for (auto c : repo.all_classes) {
-    for (auto f : c->all_functions) {
-      f->propagate_rw();
-    }
   }
 
   //----------------------------------------
@@ -309,7 +326,7 @@ int main_new(Options opts) {
 
       if (!f->is_public) continue;
 
-#if 1
+#if 0
       if (f->field_type == FT_INPUT) {
         LOG_G("input signal %s\n", fname.c_str());
         node_class->input_signals.push_back(f);

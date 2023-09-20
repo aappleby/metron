@@ -27,6 +27,8 @@ void CNodeFunction::init(const char* match_tag, SpanType span, uint64_t flags) {
   node_const  = child("const")->opt<CNodeKeyword>();
   node_body   = child("body")->req<CNodeCompound>();
 
+  name = node_name->get_textstr();
+
   for (auto c : child("params")) {
     if (auto param = c->as<CNodeDeclaration>()) {
       params.push_back(param);
@@ -292,8 +294,6 @@ Err CNodeFunction::emit_task(Cursor& cursor) {
 CHECK_RETURN Err CNodeFunction::emit_func_binding_vars(Cursor& cursor) {
   Err err;
 
-  auto func_name = node_name->get_text();
-
   for (auto& param : params) {
 
     auto param_type = param->child("type")->as<CNodeType>();
@@ -301,7 +301,7 @@ CHECK_RETURN Err CNodeFunction::emit_func_binding_vars(Cursor& cursor) {
 
     err << cursor.start_line();
     err << cursor.emit_splice(param_type);
-    err << cursor.emit_print(" %.*s_", func_name.size(), func_name.data());
+    err << cursor.emit_print(" %s_", name.c_str());
     err << cursor.emit_splice(param_name);
     err << cursor.emit_print(";");
   }
@@ -309,7 +309,7 @@ CHECK_RETURN Err CNodeFunction::emit_func_binding_vars(Cursor& cursor) {
   if (node_type->get_text() != "void") {
     err << cursor.start_line();
     err << cursor.emit_splice(node_type);
-    err << cursor.emit_print(" %.*s_ret;", func_name.size(), func_name.data());
+    err << cursor.emit_print(" %s_ret;", name.c_str());
   }
 
   return err;
@@ -429,6 +429,32 @@ void CNodeFunction::dump() {
       auto func_name = c->get_name();
       auto class_name = c->get_parent_class()->get_name();
       LOG_T("Calls %.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+
+void CNodeFunction::dump_call_graph() {
+  if (internal_callees.size()) {
+    for (auto c : internal_callees) {
+      auto func_name = c->get_name();
+      auto class_name = c->get_parent_class()->get_name();
+      LOG_T("%.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
+      LOG_INDENT();
+      c->dump_call_graph();
+      LOG_DEDENT();
+    }
+  }
+
+  if (external_callees.size()) {
+    for (auto c : external_callees) {
+      auto func_name = c->get_name();
+      auto class_name = c->get_parent_class()->get_name();
+      LOG_T("%.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
+      LOG_INDENT();
+      c->dump_call_graph();
+      LOG_DEDENT();
     }
   }
 }

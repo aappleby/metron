@@ -51,6 +51,8 @@ void CNodeClass::init(const char* match_tag, SpanType span, uint64_t flags) {
   node_name  = child("name")->as<CNodeIdentifier>();
   node_body  = child("body")->as<CNodeList>();
 
+  name = node_name->get_namestr();
+
   for (auto child : node_body->items) {
     if (auto node_enum = child->as<CNodeEnum>()) {
       all_enums2.push_back(node_enum);
@@ -63,7 +65,7 @@ uint32_t CNodeClass::debug_color() const {
 }
 
 std::string_view CNodeClass::get_name() const {
-  return node_name->get_name();
+  return name;
 }
 
 CNodeField* CNodeClass::get_field(std::string_view name) {
@@ -212,6 +214,26 @@ Err CNodeClass::build_call_graph(CSourceRepo* repo) {
   }
 
   return err;
+}
+
+//------------------------------------------------------------------------------
+
+void CNodeClass::dump_call_graph() {
+  LOG_G("Class %s\n", name.c_str());
+
+  LOG_INDENT();
+  for (auto node_func : all_functions) {
+    if (node_func->internal_callers.size()) {
+      continue;
+    }
+    else {
+      LOG("Func %s\n", node_func->name.c_str());
+      LOG_INDENT();
+      node_func->dump_call_graph();
+      LOG_DEDENT();
+    }
+  }
+  LOG_DEDENT();
 }
 
 

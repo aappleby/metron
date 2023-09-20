@@ -362,20 +362,18 @@ void CNodeFunction::dump() {
     }
   }
 
-#if 0
+#if 1
   if (self_reads.size()) {
     LOG_INDENT_SCOPE();
     for (auto r : self_reads) {
-      auto name = r->get_name();
-      LOG_G("Directly reads  %.*s : %s\n", name.size(), name.data(), to_string(r->field_type));
+      LOG_G("Directly reads  %s : %s\n", r->get_path().c_str(), to_string(r->state_stack.back()));
     }
   }
 
   if (self_writes.size()) {
     LOG_INDENT_SCOPE();
     for (auto w : self_writes) {
-      auto name = w->get_name();
-      LOG_G("Directly writes %.*s : %s\n", name.size(), name.data(), to_string(w->field_type));
+      LOG_G("Directly writes %s : %s\n", w->get_path().c_str(), to_string(w->state_stack.back()));
     }
   }
 
@@ -383,8 +381,7 @@ void CNodeFunction::dump() {
     LOG_INDENT_SCOPE();
     for (auto r : all_reads) {
       if (self_reads.contains(r)) continue;
-      auto name = r->get_name();
-      LOG_G("Indirectly reads  %.*s : %s\n", name.size(), name.data(), to_string(r->field_type));
+      LOG_G("Indirectly reads  %s : %s\n", r->get_path().c_str(), to_string(r->state_stack.back()));
     }
   }
 
@@ -392,13 +389,12 @@ void CNodeFunction::dump() {
     LOG_INDENT_SCOPE();
     for (auto w : all_writes) {
       if (self_writes.contains(w)) continue;
-      auto name = w->get_name();
-      LOG_G("Indirectly writes %.*s : %s\n", name.size(), name.data(), to_string(w->field_type));
+      LOG_G("Indirectly writes %s : %s\n", w->get_path().c_str(), to_string(w->state_stack.back()));
     }
   }
 #endif
 
-#if 0
+#if 1
   if (internal_callers.size()) {
     LOG_INDENT_SCOPE();
     for (auto c : internal_callers) {

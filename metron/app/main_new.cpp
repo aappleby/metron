@@ -58,20 +58,22 @@ int main_new(Options opts) {
 
     visit_children(file->context.root_node, check_span);
   }
+  LOG("\n");
+
+  //----------------------------------------
 
   for (auto pair : repo.source_map) {
     CSourceFile* file = pair.second;
     file->context.top_head->dump_parse_tree();
   }
+  LOG("\n");
 
   //----------------------------------------
   // All modules are now in the library, we can resolve references to other
   // modules when we're collecting fields.
 
   LOG_B("//----------------------------------------\n");
-  LOG_B("Processing source files\n");
-
-  LOG_B("gather toplevel template/class/struct/namespace/enum\n");
+  LOG_B("// Processing source files\n");
 
   for (auto pair : repo.source_map) {
     CSourceFile* file = pair.second;
@@ -157,13 +159,14 @@ int main_new(Options opts) {
     auto instance = new CInstClass(node_class->get_namestr(), true, nullptr, nullptr, node_class);
     repo.all_instances.push_back(instance);
   }
+  LOG_B("\n");
 
   //----------------------------------------
   // Trace
 
   {
     LOG_B("//----------------------------------------\n");
-    LOG_B("Tracing classes\n");
+    LOG_B("// Tracing classes\n");
     LOG_INDENT_SCOPE();
 
     for (auto inst_class : repo.all_instances) {
@@ -191,11 +194,22 @@ int main_new(Options opts) {
     LOG_B("\n");
   }
 
+  /*
+  LOG_B("//----------------------------------------\n");
+  LOG_B("// Trace result\n");
+  for (auto inst_class : repo.all_instances) {
+    LOG_INDENT_SCOPE();
+    inst_class->dump_tree();
+    LOG("\n");
+  }
+  */
+
   //----------------------------------------
 
   {
-    LOG_G("Checking port compatibility\n");
-    LOG_INDENT_SCOPE();
+    LOG_B("//----------------------------------------\n");
+    LOG_B("// Checking port compatibility\n");
+    LOG_INDENT();
 
     for (auto inst : repo.all_instances) {
       LOG("Module %s\n", inst->name.c_str());
@@ -220,36 +234,17 @@ int main_new(Options opts) {
       }
     }
 
+    LOG_DEDENT();
     LOG("\n");
   }
 
   //----------------------------------------
-
-
-  LOG_G("Trace result\n");
-  for (auto inst_class : repo.all_instances) {
-    LOG_INDENT_SCOPE();
-    inst_class->dump_tree();
-    LOG("\n");
-  }
-
-  /*
-  for (auto c : repo.all_classes) {
-    c->dump();
-    LOG("\n");
-  }
-
 
   for (auto c : repo.all_classes) {
     for (auto f : c->all_functions) {
       f->propagate_rw();
     }
   }
-  */
-
-  LOG_R("early exit\n");
-  LOG("");
-  exit(0);
 
   //----------------------------------------
 
@@ -303,36 +298,36 @@ int main_new(Options opts) {
 
 
 
-#if 0
+  for (auto node_class : repo.all_classes) {
 
-  for (auto c : repo.all_classes) {
     LOG_INDENT_SCOPE();
-    auto name = c->get_name();
-    LOG_G("Categorizing %.*s\n", name.size(), name.data());
+    auto name = node_class->get_namestr();
+    LOG_G("Categorizing %s\n", name.c_str());
 
-    for (auto f : c->all_fields) {
+    for (auto f : node_class->all_fields) {
       auto fname = f->get_namestr();
 
       if (!f->is_public) continue;
 
+#if 1
       if (f->field_type == FT_INPUT) {
         LOG_G("input signal %s\n", fname.c_str());
-        c->input_signals.push_back(f);
+        node_class->input_signals.push_back(f);
       }
       else if (f->field_type == FT_OUTPUT || f->field_type == FT_SIGNAL) {
         LOG_G("output signal %s\n", fname.c_str());
-        c->output_signals.push_back(f);
+        node_class->output_signals.push_back(f);
       }
       else if (f->field_type == FT_REGISTER) {
         LOG_G("output register f%s\n", fname.c_str());
-        c->output_registers.push_back(f);
+        node_class->output_registers.push_back(f);
       }
+#endif
     }
   }
 
 
-
-
+#if 0
   for (auto c : repo.all_classes) {
     for (auto f : c->all_fields) {
       if (f->node_decl->_type_class) {
@@ -353,6 +348,25 @@ int main_new(Options opts) {
   }
 
 #endif
+
+
+
+
+
+
+  LOG_B("//----------------------------------------\n");
+  LOG_B("// Class dump\n");
+
+  for (auto c : repo.all_classes) {
+    c->dump();
+    LOG("\n");
+  }
+
+
+  LOG_R("early exit\n");
+  LOG("");
+  exit(0);
+
 
   //========================================
 

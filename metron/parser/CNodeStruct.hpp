@@ -22,7 +22,7 @@ struct CNodeStruct : public CNode {
   virtual void wipe_field_types() {
   }
 
-  void dump();
+  void dump() const override ;
 
   CSourceRepo* repo = nullptr;
   CSourceFile* file = nullptr;
@@ -43,15 +43,8 @@ struct CNodeEnum : public CNode {
   void init(const char* match_tag, SpanType span, uint64_t flags);
   CHECK_RETURN Err emit(Cursor& cursor) override;
 
-  std::string_view get_name() const override {
-    auto n = child("name");
-    return n ? n->get_text() : "<unnamed>";
-  }
-
-  void dump() {
-    auto name = get_name();
-    LOG_G("Enum %.*s\n", name.size(), name.data());
-  }
+  std::string_view get_name() const override;
+  void dump() const override;
 
   CSourceRepo* repo = nullptr;
   CSourceFile* file = nullptr;

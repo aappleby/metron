@@ -83,71 +83,6 @@ bool CNodeField::is_const_char() const {
 
 //------------------------------------------------------------------------------
 
-#if 0
-//------------------------------------------------------------------------------
-// Emit field declarations. For components, also emit glue declarations and
-// append the glue parameter list to the field.
-
-// + field_declaration (259) =
-// |--# type: type_identifier (444) = "example_data_memory"
-// |--# declarator: field_identifier (440) = "data_memory"
-// |--# lit (39) = ";"
-
-CHECK_RETURN Err MtCursor::emit_sym_field_declaration(MnNode n) {
-  Err err = check_at(n);
-  assert(n.sym == sym_field_declaration);
-
-  // Struct outside of class
-  if (current_mod.top() == nullptr) {
-    // sym_field_declaration
-    //   field_type : sym_template_type
-    //   field_declarator : sym_field_identifier
-    //   lit ;
-
-    return err << emit_children(n);
-  }
-
-  // Const local variable
-  if (n.is_const()) {
-    err << emit_ws_to(n);
-    err << emit_print("localparam ");
-    err << emit_children(n);
-    return err << check_done(n);
-  }
-
-  // Enum
-  if (n.get_field(field_type).sym == sym_enum_specifier) {
-    return emit_children(n);
-  }
-
-  //----------
-  // Actual fields
-
-  auto field = current_mod.top()->get_field(n.name4());
-  assert(field);
-
-  if (field->is_component()) {
-    // Component
-    err << emit_component(n);
-    err << emit_submod_binding_fields(n);
-  }
-  else if (field->is_port()) {
-    // Ports don't go in the class body.
-    err << skip_over(n);
-  }
-  else if (field->is_dead()) {
-    err << comment_out(n);
-  }
-  else {
-    err << emit_children(n);
-  }
-
-  return err << check_done(n);
-}
-
-#endif
-
-
 Err CNodeField::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
@@ -550,9 +485,6 @@ Err CNodeField::emit_component(Cursor& cursor) {
     err << cursor.emit_print("// %s() ports", func_name.c_str());
 
     for (auto param : m->params) {
-      //auto node_type = param.get_field(field_type);
-      //auto node_decl = param.get_field(field_declarator);
-
       auto param_name = param->get_namestr();
 
       err << cursor.start_line();
@@ -662,7 +594,7 @@ CHECK_RETURN Err CNodeField::trace(CInstance* inst, call_stack& stack) {
 
 //------------------------------------------------------------------------------
 
-void CNodeField::dump() {
+void CNodeField::dump() const {
   //dump_tree();
 
   auto name = get_name();
@@ -694,7 +626,7 @@ void CNodeField::dump() {
     LOG_A("type struct %.*s ", int(name.size()), name.data());
   }
 
-  //LOG_A("%s", to_string(field_type));
+  LOG_A("%s", to_string(field_type));
 
   LOG_A("\n");
 }

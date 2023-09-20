@@ -128,7 +128,7 @@ CNodeField* CNodeNamespace::get_field(std::string_view name) {
   return nullptr;
 }
 
-void CNodeNamespace::dump() {
+void CNodeNamespace::dump() const {
   LOG_G("Fields:\n");
   LOG_INDENT_SCOPE();
   for (auto n : all_fields) n->dump();

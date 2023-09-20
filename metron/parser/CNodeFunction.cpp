@@ -335,7 +335,7 @@ std::string_view CNodeFunction::get_return_type_name() const {
 
 // FIXME constructor needs to be in internal_callers
 
-void CNodeFunction::dump() {
+void CNodeFunction::dump() const {
   //dump_tree();
 
   auto name = get_name();

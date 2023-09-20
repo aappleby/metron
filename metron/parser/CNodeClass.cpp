@@ -480,26 +480,29 @@ Err CNodeClass::emit_template_parameter_list(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-void CNodeClass::dump() {
-  auto name = get_name();
-  LOG_B("Class %.*s @ %p\n", name.size(), name.data(), this);
-  LOG_INDENT_SCOPE();
+void CNodeClass::dump() const {
+  LOG_B("Class %s @ %s, refcount %d\n", name.c_str(), file->filename.c_str(), refcount);
+  LOG_INDENT();
+  {
+    if (all_modparams.size()) {
+      LOG_G("Modparams\n");
+      LOG_INDENT_SCOPE();
+      for (auto f : all_modparams) f->dump();
+    }
 
-  LOG_G("File %s\n", file->filename.c_str());
-  LOG_G("Refcount %d\n", refcount);
+    if (all_localparams.size()) {
+      LOG_G("Localparams\n");
+      LOG_INDENT_SCOPE();
+      for (auto f : all_localparams) f->dump();
+    }
 
-  if (all_modparams.size()) {
-    LOG_G("Modparams\n");
-    LOG_INDENT_SCOPE();
-    for (auto f : all_modparams) f->dump();
+    for (auto child : node_body) {
+      child->dump();
+    }
   }
+  LOG_DEDENT();
 
-  if (all_localparams.size()) {
-    LOG_G("Localparams\n");
-    LOG_INDENT_SCOPE();
-    for (auto f : all_localparams) f->dump();
-  }
-
+  /*
   if (constructor) {
     LOG_G("Constructor\n");
     LOG_INDENT_SCOPE();
@@ -523,6 +526,7 @@ void CNodeClass::dump() {
     LOG_INDENT_SCOPE();
     for (auto e : all_enums2) e->dump();
   }
+  */
 }
 
 //------------------------------------------------------------------------------

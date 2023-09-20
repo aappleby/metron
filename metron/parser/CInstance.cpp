@@ -283,15 +283,14 @@ CHECK_RETURN Err CInstClass::log_action(CNode* node, TraceAction action, call_st
 
 //----------------------------------------
 
-#if 0
 void CInstClass::commit_state() {
-  for (auto pair : inst_map) {
-    if (!pair.second->as<CInstClass>()) {
-      pair.second->commit_state();
+  for (auto child : children) {
+    // Don't cross module boundaries when committing traced state
+    if (!child->as<CInstClass>()) {
+      child->commit_state();
     }
   }
 }
-#endif
 
 //----------------------------------------
 
@@ -381,23 +380,20 @@ CHECK_RETURN Err CInstStruct::log_action(CNode* node, TraceAction action, call_s
   return err;
 }
 
-#if 0
 void CInstStruct::commit_state() {
   auto merged_state = TS_PENDING;
-  for (auto pair : inst_map) {
-    //pair.second->commit_state();
-    merged_state = merge_branch(merged_state, pair.second->state_stack.back());
+  for (auto child : children) {
+    merged_state = merge_branch(merged_state, child->state_stack.back());
   }
   state_stack.back() = merged_state;
   node_field->field_type = trace_state_to_field_type(merged_state);
 }
-#endif
 
 
 //------------------------------------------------------------------------------
 
 CInstPrim::CInstPrim(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field)
-    : CInstance(name, is_public, inst_parent) {}
+    : CInstance(name, is_public, inst_parent), node_field(node_field) {}
 
 //----------------------------------------
 
@@ -427,7 +423,6 @@ CHECK_RETURN Err CInstPrim::log_action(CNode* node, TraceAction action, call_sta
 
 //----------------------------------------
 
-#if 0
 void CInstPrim::commit_state() {
   assert(node_field);
 
@@ -439,7 +434,6 @@ void CInstPrim::commit_state() {
 
   assert(node_field->field_type == new_type);
 }
-#endif
 
 //------------------------------------------------------------------------------
 

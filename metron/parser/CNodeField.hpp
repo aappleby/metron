@@ -15,6 +15,7 @@ struct CNodeField : public CNode {
   std::string_view get_name() const override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
   CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
+  void dump() const override;
 
   //----------------------------------------
 
@@ -28,12 +29,11 @@ struct CNodeField : public CNode {
   bool is_array() const;
   bool is_const_char() const;
 
-  void dump();
 
   CNodeDeclaration* node_decl;
   CNodePunct*       node_semi;
 
-  //FieldType field_type = FT_UNKNOWN;
+  FieldType field_type = FT_UNKNOWN;
 
   CNodeClass*  parent_class;
   CNodeStruct* parent_struct;

@@ -48,7 +48,7 @@ struct CNodeFunction : public CNode {
   needs_ports = is_public_ && internal_callers.empty();
 #endif
 
-  void dump();
+  void dump() const override;
   void dump_call_graph();
 
   using func_visitor = std::function<void(CNodeFunction*)>;
@@ -123,40 +123,6 @@ struct CNodeFunction : public CNode {
   //----------------------------------------
 
   bool called_by_init();
-
-#if 0
-  bool called_by_init() {
-    bool called = false;
-    visit_internal_callers([&](CNodeFunction* f) {
-      called |= f->method_type == MT_INIT;
-    });
-    return called;
-  }
-
-  bool called_by_tick() {
-    bool called = false;
-    visit_internal_callers([&](CNodeFunction* f) {
-      called |= f->method_type == MT_TICK;
-    });
-    return called;
-  }
-
-  bool called_by_tock() {
-    bool called = false;
-    visit_internal_callers([&](CNodeFunction* f) {
-      called |= f->method_type == MT_TOCK;
-    });
-    return called;
-  }
-
-  bool called_by_func() {
-    bool called = false;
-    visit_internal_callers([&](CNodeFunction* f) {
-      called |= f->method_type == MT_FUNC;
-    });
-    return called;
-  }
-#endif
 
   MethodType get_method_type();
 

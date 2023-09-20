@@ -205,18 +205,30 @@ int main_new(Options opts) {
       for (auto node_func : node_class->all_functions) {
         LOG_INDENT_SCOPE();
         auto func_name = node_func->get_namestr();
+        if (!func_name.starts_with("tock")) continue;
+        if (!node_func->is_public) continue;
 
-        if (!node_func->is_public) {
-          LOG_B("Skipping %s because it's not public\n", func_name.c_str());
-        }
-        else {
-          LOG_B("Tracing %s\n", func_name.c_str());
-          auto inst_func = inst_class->resolve(func_name);
-          call_stack stack;
-          stack.push_back(node_func);
-          err << node_func->trace(inst_func, stack);
-        }
+        LOG_B("Tracing %s\n", func_name.c_str());
+        auto inst_func = inst_class->resolve(func_name);
+        call_stack stack;
+        stack.push_back(node_func);
+        err << node_func->trace(inst_func, stack);
       }
+
+      for (auto node_func : node_class->all_functions) {
+        LOG_INDENT_SCOPE();
+        auto func_name = node_func->get_namestr();
+        if (!func_name.starts_with("tick")) continue;
+        if (!node_func->is_public) continue;
+
+        LOG_B("Tracing %s\n", func_name.c_str());
+        auto inst_func = inst_class->resolve(func_name);
+        call_stack stack;
+        stack.push_back(node_func);
+        err << node_func->trace(inst_func, stack);
+      }
+
+      inst_class->commit_state();
 
       LOG_G("Tracing done for %.*s\n", int(name.size()), name.data());
     }
@@ -238,7 +250,6 @@ int main_new(Options opts) {
 
   for (auto node_class : repo.all_classes) {
     for (auto f : node_class->all_functions) {
-      LOG_R("### %s\n", f->name.c_str());
       auto method_type = f->get_method_type();
 
       if (method_type != MT_FUNC &&
@@ -273,8 +284,11 @@ int main_new(Options opts) {
           if (inst_submod && inst_b) {
             bool ports_ok = inst_submod->check_port_directions(inst_b);
             if (!ports_ok) {
+              LOG_R("-----\n");
               inst_submod->dump_tree();
+              LOG_R("-----\n");
               inst_b->dump_tree();
+              LOG_R("-----\n");
               err << ERR("Bad ports!\n");
               exit(-1);
             }

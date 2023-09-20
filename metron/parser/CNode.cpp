@@ -147,6 +147,12 @@ struct NodeDumper {
 
 //------------------------------------------------------------------------------
 
+void CNode::dump() const {
+  LOG_R("CNode::dump() : %s\n", typeid(*this).name());
+}
+
+//------------------------------------------------------------------------------
+
 void CNode::dump_tree(int max_depth) const {
   //LOG("\n");
   //LOG("========== tree dump begin\n");

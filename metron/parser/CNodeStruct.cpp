@@ -37,18 +37,6 @@ Err CNodeStruct::collect_fields_and_methods() {
 
 //------------------------------------------------------------------------------
 
-/*
-  // Struct outside of class
-  if (current_mod.top() == nullptr) {
-    // sym_field_declaration
-    //   field_type : sym_template_type
-    //   field_declarator : sym_field_identifier
-    //   lit ;
-
-    return err << emit_children(n);
-  }
-*/
-
 Err CNodeStruct::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
@@ -72,7 +60,7 @@ Err CNodeStruct::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-void CNodeStruct::dump() {
+void CNodeStruct::dump() const {
   auto name = get_name();
   LOG_B("Struct %.*s @ %p\n", name.size(), name.data(), this);
   LOG_INDENT();
@@ -143,6 +131,16 @@ CHECK_RETURN Err CNodeEnum::emit(Cursor& cursor) {
   err << cursor.emit(node_semi);
 
   return err << cursor.check_done(this);
+}
+
+std::string_view CNodeEnum::get_name() const {
+  auto n = child("name");
+  return n ? n->get_text() : "<unnamed>";
+}
+
+void CNodeEnum::dump() const {
+  auto name = get_name();
+  LOG_G("Enum %.*s\n", name.size(), name.data());
 }
 
 //------------------------------------------------------------------------------

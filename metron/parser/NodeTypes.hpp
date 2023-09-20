@@ -62,7 +62,7 @@ struct CNodeNamespace : public CNode {
 
   CNodeField* get_field(std::string_view name);
 
-  void dump();
+  void dump() const override;
 
   CSourceRepo* repo = nullptr;
   CSourceFile* file = nullptr;
@@ -96,6 +96,10 @@ struct CNodePunct : public CNode {
   std::string_view get_name() const override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
   CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
+  void dump() const override {
+    auto text = get_text();
+    LOG_B("CNodePunct \"%.*s\"\n", text.size(), text.data());
+  }
 };
 
 //------------------------------------------------------------------------------

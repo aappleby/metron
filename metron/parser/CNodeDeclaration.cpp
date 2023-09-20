@@ -91,7 +91,7 @@ CHECK_RETURN Err CNodeDeclaration::trace(CInstance* inst, call_stack& stack) {
 
 //------------------------------------------------------------------------------
 
-void CNodeDeclaration::dump() {
+void CNodeDeclaration::dump() const {
   auto text = get_text();
   LOG_G("Declaration `%.*s`\n", text.size(), text.data());
 }

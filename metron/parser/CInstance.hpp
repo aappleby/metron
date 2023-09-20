@@ -62,7 +62,7 @@ struct CInstance {
 
   virtual void dump_tree() const = 0;
   virtual CHECK_RETURN Err log_action(CNode* node, TraceAction action, call_stack& stack);
-  //virtual void commit_state() { assert(false); }
+  virtual void commit_state() { assert(false); }
   bool check_port_directions(CInstance* b);
 
   //----------
@@ -82,14 +82,12 @@ struct CInstClass : public CInstance {
 
   void dump_tree() const override;
   CHECK_RETURN Err log_action(CNode* node, TraceAction action, call_stack& stack) override;
-  //void commit_state() override;
+  void commit_state() override;
 
   //----------
 
   CNodeField* node_field = nullptr;
   CNodeClass* node_class = nullptr;
-
-  //std::vector<CInstCall*> entry_points;
 };
 
 //------------------------------------------------------------------------------
@@ -99,7 +97,7 @@ struct CInstStruct : public CInstance {
 
   void dump_tree() const override;
   CHECK_RETURN Err log_action(CNode* node, TraceAction action, call_stack& stack) override;
-  //void commit_state() override;
+  void commit_state() override;
 
   //----------
 
@@ -114,7 +112,7 @@ struct CInstPrim : public CInstance {
 
   void dump_tree() const override;
   CHECK_RETURN Err log_action(CNode* node, TraceAction action, call_stack& stack) override;
-  //void commit_state() override;
+  void commit_state() override;
 
   CNodeField* node_field = nullptr;
 };
@@ -124,19 +122,9 @@ struct CInstPrim : public CInstance {
 struct CInstFunc : public CInstance {
   CInstFunc(std::string name, bool is_public, CInstance* inst_parent, CNodeFunction* node_func);
 
+  void commit_state() override {}
   void dump_tree() const override;
   CNodeFunction* node_func = nullptr;
 };
-
-//------------------------------------------------------------------------------
-#if 0
-struct CInstCall : public CInstance {
-  CInstCall(std::string name, CInstClass* parent, CNodeCall* node_call, CNodeFunction* node_func);
-
-  void dump_tree() const override;
-
-  CNodeCall* node_call = nullptr;
-};
-#endif
 
 //------------------------------------------------------------------------------

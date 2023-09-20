@@ -17,6 +17,12 @@ struct CInstClass;
 struct CNodeAccess : public CNode {
   uint32_t debug_color() const override { return COL_VIOLET; }
   CHECK_RETURN Err emit(Cursor& cursor) override;
+
+  void dump() const override {
+    auto text = get_text();
+    LOG_B("CNodeAccess \"%.*s\"\n", text.size(), text.data());
+  }
+
 };
 
 //------------------------------------------------------------------------------
@@ -44,7 +50,7 @@ struct CNodeClass : public CNode {
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
-  virtual void dump();
+  virtual void dump() const override;
 
   CSourceRepo* get_repo() override {
     return repo;

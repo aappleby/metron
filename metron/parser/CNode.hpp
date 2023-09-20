@@ -87,6 +87,8 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
 
   //----------------------------------------
 
+  virtual void dump() const;
+
   void dump_tree(int max_depth = 0) const;
 
   void dump_parse_tree(int max_depth = 0) const { return dump_tree(max_depth); }

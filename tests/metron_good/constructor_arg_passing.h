@@ -17,15 +17,15 @@ public:
     tick();
   }
 
-  void tick() {
-    out = data[addr];
-  }
-
   logic<8> get_data() {
     return out;
   }
 
 private:
+  void tick() {
+    out = data[addr];
+  }
+
   logic<10> addr;
   logic<8> data[data_len];
   logic<8> out;

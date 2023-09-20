@@ -5387,15 +5387,16 @@ public:
     my_reg2 = my_reg2 + x;
   }
 
+private:
   int my_reg3;
   void tick_called_by_tick(int x) {
     my_reg3 = my_reg3 + x;
   }
 
-private:
   int func_called_by_tick(int x) {
     return x + 7;
   }
+
 public:
 
   void tock_only_calls_private_tick() {
@@ -6158,6 +6159,10 @@ public:
     tick(z);
   }
 
+private:
+
+  // FIXME ok these aren't actually public anymore...
+
   logic<8> public_task(logic<8> x) {
     my_sig = x + 7;
     return 0;
@@ -6166,8 +6171,6 @@ public:
   logic<8> public_func(logic<8> x) {
     return my_reg1 + private_func(x);
   }
-
-private:
 
   void tick(int w) {
     private_task(private_func(w));
@@ -6282,15 +6285,15 @@ public:
     tick();
   }
 
-  void tick() {
-    out = data[addr];
-  }
-
   logic<8> get_data() {
     return out;
   }
 
 private:
+  void tick() {
+    out = data[addr];
+  }
+
   logic<10> addr;
   logic<8> data[data_len];
   logic<8> out;
@@ -7124,6 +7127,8 @@ public:
   int tock() {
     return set_signal(get_number());
   }
+
+private:
 
   logic<8> get_number() const {
     return 7;

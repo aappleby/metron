@@ -154,6 +154,16 @@ int main_new(Options opts) {
     err << node_class->build_call_graph(&repo);
   }
 
+  for (auto node_class : repo.all_classes) {
+    for (auto node_func : node_class->all_functions) {
+      if (node_func->is_public && node_func->internal_callers.size()) {
+        LOG_R("Function %s is public and has internal callers\n", node_func->name.c_str());
+        assert(false);
+      }
+      //err << node_class->build_call_graph(&repo);
+    }
+  }
+
   //----------------------------------------
 
   LOG_B("Instantiating modules\n");

@@ -14,7 +14,6 @@ module Module (
   // output registers
   output int my_reg1,
   output int my_reg2,
-  output int my_reg3,
   // func_no_params_return() ports
   output int func_no_params_return_ret,
   // func_params_return() ports
@@ -120,14 +119,16 @@ module Module (
     my_reg2 <= my_reg2 + tick_params_x;
   end
 
+/*private:*/
+  int my_reg3;
   task automatic tick_called_by_tick(int x);
     my_reg3 <= my_reg3 + x;
   endtask
 
-/*private:*/
   function int func_called_by_tick(int x);
     func_called_by_tick = x + 7;
   endfunction
+
 /*public:*/
 
   always_comb begin : tock_only_calls_private_tick

@@ -27,15 +27,15 @@ module Module (
     /*tick();*/
   end
 
-  always_ff @(posedge clock) begin : tick
-    out <= data[addr];
-  end
-
   always_comb begin : get_data
     get_data_ret = out;
   end
 
 /*private:*/
+  always_ff @(posedge clock) begin : tick
+    out <= data[addr];
+  end
+
   logic[9:0] addr;
   logic[7:0] data[data_len];
   logic[7:0] out;

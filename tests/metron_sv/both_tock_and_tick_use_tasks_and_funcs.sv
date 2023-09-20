@@ -24,6 +24,10 @@ module Module (
     /*tick(z);*/
   end
 
+/*private:*/
+
+  // FIXME ok these aren't actually public anymore...
+
   always_comb begin : public_task
     my_sig = public_task_x + 7;
     public_task_ret = 0;
@@ -34,8 +38,6 @@ module Module (
   function logic[7:0] public_func(logic[7:0] x);
     public_func = my_reg1 + private_func(x);
   endfunction
-
-/*private:*/
 
   always_ff @(posedge clock) begin : tick
     private_task(private_func(tick_w));

@@ -89,15 +89,16 @@ public:
     my_reg2 = my_reg2 + x;
   }
 
+private:
   int my_reg3;
   void tick_called_by_tick(int x) {
     my_reg3 = my_reg3 + x;
   }
 
-private:
   int func_called_by_tick(int x) {
     return x + 7;
   }
+
 public:
 
   void tock_only_calls_private_tick() {

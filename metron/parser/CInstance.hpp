@@ -61,7 +61,7 @@ struct CInstance {
   void merge_state();
 
   virtual void dump_tree() const = 0;
-  virtual CHECK_RETURN Err log_action(CNode* node, TraceAction action);
+  virtual CHECK_RETURN Err log_action(CNode* node, TraceAction action, call_stack& stack);
   //virtual void commit_state() { assert(false); }
   bool check_port_directions(CInstance* b);
 
@@ -69,6 +69,7 @@ struct CInstance {
 
   std::string name;
   bool is_public;
+  bool is_constructor = false;
   CInstance* inst_parent = nullptr;
   std::vector<CInstance*> children;
   std::vector<TraceState> state_stack;
@@ -80,7 +81,7 @@ struct CInstClass : public CInstance {
   CInstClass(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class);
 
   void dump_tree() const override;
-  CHECK_RETURN Err log_action(CNode* node, TraceAction action) override;
+  CHECK_RETURN Err log_action(CNode* node, TraceAction action, call_stack& stack) override;
   //void commit_state() override;
 
   //----------
@@ -97,7 +98,7 @@ struct CInstStruct : public CInstance {
   CInstStruct(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeStruct* node_struct);
 
   void dump_tree() const override;
-  CHECK_RETURN Err log_action(CNode* node, TraceAction action) override;
+  CHECK_RETURN Err log_action(CNode* node, TraceAction action, call_stack& stack) override;
   //void commit_state() override;
 
   //----------
@@ -112,7 +113,7 @@ struct CInstPrim : public CInstance {
   CInstPrim(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field);
 
   void dump_tree() const override;
-  CHECK_RETURN Err log_action(CNode* node, TraceAction action) override;
+  CHECK_RETURN Err log_action(CNode* node, TraceAction action, call_stack& stack) override;
   //void commit_state() override;
 
   CNodeField* node_field = nullptr;

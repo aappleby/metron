@@ -30,28 +30,28 @@ bool CNodeExpression::is_integer_constant() {
 
 //------------------------------------------------------------------------------
 
-Err CNodeBinaryExp::trace(CInstance* inst) {
+Err CNodeBinaryExp::trace(CInstance* inst, call_stack& stack) {
   Err err;
 
-  err << child("lhs")->trace(inst);
-  err << child("rhs")->trace(inst);
+  err << child("lhs")->trace(inst, stack);
+  err << child("rhs")->trace(inst, stack);
   return Err();
 }
 
 //------------------------------------------------------------------------------
 
-Err CNodePrefixExp::trace(CInstance* inst) {
+Err CNodePrefixExp::trace(CInstance* inst, call_stack& stack) {
   Err err;
 
   auto rhs = child("rhs");
-  err << rhs->trace(inst);
+  err << rhs->trace(inst, stack);
 
   auto op  = child("prefix")->get_text();
   if (op == "++" || op == "--") {
     auto inst_rhs = inst->resolve(rhs);
     if (inst_rhs) {
-      err << inst_rhs->log_action(this, ACT_READ);
-      err << inst_rhs->log_action(this, ACT_WRITE);
+      err << inst_rhs->log_action(this, ACT_READ, stack);
+      err << inst_rhs->log_action(this, ACT_WRITE, stack);
     }
   }
 
@@ -96,18 +96,18 @@ Err CNodePrefixExp::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-Err CNodeSuffixExp::trace(CInstance* inst) {
+Err CNodeSuffixExp::trace(CInstance* inst, call_stack& stack) {
   Err err;
 
   auto lhs = child("lhs");
   auto op  = child("suffix")->get_text();
-  err << lhs->trace(inst);
+  err << lhs->trace(inst, stack);
 
   if (op == "++" || op == "--") {
     auto inst_lhs = inst->resolve(lhs);
     if (inst_lhs) {
-      err << inst_lhs->log_action(this, ACT_READ);
-      err << inst_lhs->log_action(this, ACT_WRITE);
+      err << inst_lhs->log_action(this, ACT_READ, stack);
+      err << inst_lhs->log_action(this, ACT_WRITE, stack);
     }
   }
 
@@ -152,7 +152,7 @@ Err CNodeSuffixExp::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-Err CNodeAssignExp::trace(CInstance* inst) {
+Err CNodeAssignExp::trace(CInstance* inst, call_stack& stack) {
   NODE_ERR("fixme");
   return Err();
 }
@@ -165,14 +165,14 @@ std::string_view CNodeIdentifierExp::get_name() const {
 
 //----------------------------------------
 
-Err CNodeIdentifierExp::trace(CInstance* inst) {
+Err CNodeIdentifierExp::trace(CInstance* inst, call_stack& stack) {
 
   if (auto inst_field = inst->resolve(this)) {
-    return inst_field->log_action(this, ACT_READ);
+    return inst_field->log_action(this, ACT_READ, stack);
   }
   /*
   if (auto inst_arg = call->resolve(this)) {
-    return inst_arg->log_action(this, ACT_READ);
+    return inst_arg->log_action(this, ACT_READ, stack);
   }
   */
   return Err();
@@ -180,7 +180,7 @@ Err CNodeIdentifierExp::trace(CInstance* inst) {
 
 //------------------------------------------------------------------------------
 
-Err CNodeConstant::trace(CInstance* inst) {
+Err CNodeConstant::trace(CInstance* inst, call_stack& stack) {
   return Err();
 }
 
@@ -240,7 +240,7 @@ Err CNodeOperator::emit(Cursor& cursor) {
   return err << cursor.check_done(this);
 }
 
-Err CNodeOperator::trace(CInstance* inst) {
+Err CNodeOperator::trace(CInstance* inst, call_stack& stack) {
   return Err();
 }
 

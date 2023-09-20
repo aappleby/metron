@@ -317,8 +317,8 @@ CHECK_RETURN Err CNodeFunction::emit_func_binding_vars(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-Err CNodeFunction::trace(CInstance* inst) {
-  return child("body")->trace(inst);
+Err CNodeFunction::trace(CInstance* inst, call_stack& stack) {
+  return child("body")->trace(inst, stack);
 }
 
 //------------------------------------------------------------------------------
@@ -469,7 +469,17 @@ void CNodeFunction::dump_call_graph() {
 
 //------------------------------------------------------------------------------
 
+bool CNodeFunction::called_by_init() {
+  for (auto c : internal_callers) {
+    if (c->called_by_init()) return true;
+  }
+  return as<CNodeConstructor>() != nullptr;
+}
+
+//------------------------------------------------------------------------------
+
 MethodType CNodeFunction::get_method_type() {
+  if (called_by_init()) return MT_INIT;
   if (name.starts_with("tick")) return MT_TICK;
   if (name.starts_with("tock")) return MT_TOCK;
 

@@ -656,8 +656,8 @@ Err CNodeField::emit_component(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err CNodeField::trace(CInstance* inst) {
-  return node_decl->child("value")->trace(inst);
+CHECK_RETURN Err CNodeField::trace(CInstance* inst, call_stack& stack) {
+  return node_decl->child("value")->trace(inst, stack);
 }
 
 //------------------------------------------------------------------------------

@@ -176,6 +176,22 @@ int main_new(Options opts) {
       auto name = node_class->get_name();
       LOG_G("Tracing public methods in %.*s\n", int(name.size()), name.data());
 
+      if (auto node_func = node_class->constructor) {
+        LOG_INDENT_SCOPE();
+        auto func_name = node_func->get_namestr();
+
+        if (!node_func->is_public) {
+          LOG_B("Skipping %s because it's not public\n", func_name.c_str());
+        }
+        else {
+          LOG_B("Tracing %s\n", func_name.c_str());
+          auto inst_func = inst_class->resolve(func_name);
+          call_stack stack;
+          stack.push_back(node_func);
+          err << node_func->trace(inst_func, stack);
+        }
+      }
+
       for (auto node_func : node_class->all_functions) {
         LOG_INDENT_SCOPE();
         auto func_name = node_func->get_namestr();
@@ -186,7 +202,9 @@ int main_new(Options opts) {
         else {
           LOG_B("Tracing %s\n", func_name.c_str());
           auto inst_func = inst_class->resolve(func_name);
-          err << node_func->trace(inst_func);
+          call_stack stack;
+          stack.push_back(node_func);
+          err << node_func->trace(inst_func, stack);
         }
       }
 
@@ -194,6 +212,9 @@ int main_new(Options opts) {
     }
 
     for (auto c : repo.all_classes) {
+      if (c->constructor) {
+        c->constructor->propagate_rw();
+      }
       for (auto f : c->all_functions) {
         f->propagate_rw();
       }
@@ -203,45 +224,24 @@ int main_new(Options opts) {
     LOG_B("\n");
   }
 
-
-  //----------------------------------------
-
-  LOG_R("//----------------------------------------\n");
-  LOG_R("// Call graph\n");
-  LOG("\n");
-
-  for (auto node_class : repo.all_classes) {
-    node_class->dump_call_graph();
-    LOG("\n");
-    node_class->dump();
-    LOG("\n");
-  }
-
-  LOG_R("//----------------------------------------\n");
-  LOG("\n");
-
   //----------------------------------------
 
   for (auto node_class : repo.all_classes) {
     for (auto f : node_class->all_functions) {
-      f->get_method_type();
+      LOG_R("### %s\n", f->name.c_str());
+      auto method_type = f->get_method_type();
+
+      if (method_type != MT_FUNC &&
+          method_type != MT_TICK &&
+          method_type != MT_TOCK &&
+          method_type != MT_INIT) {
+        assert(false);
+      }
+
+      f->method_type = method_type;
     }
     LOG_G("get_method_type OK\n");
   }
-
-
-  LOG_R("early exit 2!\n");
-  exit(0);
-
-  /*
-  LOG_B("//----------------------------------------\n");
-  LOG_B("// Trace result\n");
-  for (auto inst_class : repo.all_instances) {
-    LOG_INDENT_SCOPE();
-    inst_class->dump_tree();
-    LOG("\n");
-  }
-  */
 
   //----------------------------------------
 
@@ -276,6 +276,25 @@ int main_new(Options opts) {
     LOG_DEDENT();
     LOG("\n");
   }
+
+  //----------------------------------------
+
+  LOG_R("//----------------------------------------\n");
+  LOG_R("// Call graph\n");
+  LOG("\n");
+
+  for (auto node_class : repo.all_classes) {
+    node_class->dump_call_graph();
+    LOG("\n");
+    node_class->dump();
+    LOG("\n");
+  }
+
+  LOG_R("//----------------------------------------\n");
+  LOG("\n");
+
+  LOG_R("early exit 2!\n");
+  exit(0);
 
   //----------------------------------------
 

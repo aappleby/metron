@@ -37,7 +37,7 @@ Err CNodeTranslationUnit::emit(Cursor& cursor) {
   return err << cursor.check_done(this);
 }
 
-Err CNodeTranslationUnit::trace(CInstance* inst) {
+Err CNodeTranslationUnit::trace(CInstance* inst, call_stack& stack) {
   NODE_ERR("FIXME");
   return Err();
 }
@@ -106,7 +106,7 @@ Err CNodeNamespace::emit(Cursor& cursor) {
   return err << cursor.check_done(this);
 }
 
-Err CNodeNamespace::trace(CInstance* inst) {
+Err CNodeNamespace::trace(CInstance* inst, call_stack& stack) {
   NODE_ERR("FIXME");
   return Err();
 }
@@ -162,7 +162,7 @@ Err CNodePreproc::emit(Cursor& cursor) {
   return err << cursor.check_done(this);
 }
 
-Err CNodePreproc::trace(CInstance* inst) {
+Err CNodePreproc::trace(CInstance* inst, call_stack& stack) {
   NODE_ERR("FIXME");
   return Err();
 }
@@ -197,9 +197,9 @@ Err CNodeIdentifier::emit(Cursor& cursor) {
   //
 }
 
-Err CNodeIdentifier::trace(CInstance* inst) {
+Err CNodeIdentifier::trace(CInstance* inst, call_stack& stack) {
   if (auto inst_field = inst->resolve(this)) {
-    return inst_field->log_action(this, ACT_READ);
+    return inst_field->log_action(this, ACT_READ, stack);
   }
   return Err();
 }
@@ -219,7 +219,7 @@ Err CNodePunct::emit(Cursor& cursor) {
   return err << cursor.check_done(this);
 }
 
-Err CNodePunct::trace(CInstance* inst) {
+Err CNodePunct::trace(CInstance* inst, call_stack& stack) {
   return Err();
 }
 
@@ -244,12 +244,12 @@ std::string_view CNodeFieldExpression::get_name() const {
 
 //----------------------------------------
 
-Err CNodeFieldExpression::trace(CInstance* inst) {
+Err CNodeFieldExpression::trace(CInstance* inst, call_stack& stack) {
   Err err;
 
   auto inst_dst = inst->resolve(this);
 
-  err << inst_dst->log_action(this, ACT_READ);
+  err << inst_dst->log_action(this, ACT_READ, stack);
 
   return err;
 }
@@ -391,7 +391,7 @@ Err CNodeQualifiedIdentifier::emit(Cursor& cursor) {
 
 //----------------------------------------
 
-Err CNodeQualifiedIdentifier::trace(CInstance* inst) {
+Err CNodeQualifiedIdentifier::trace(CInstance* inst, call_stack& stack) {
   Err err;
 
   auto scope = child("scope_path")->get_name();
@@ -399,7 +399,7 @@ Err CNodeQualifiedIdentifier::trace(CInstance* inst) {
 
   if (auto node_namespace = get_repo()->get_namespace(scope)) {
     LOG_R("namespace!\n");
-    return node_namespace->get_field(field)->trace(inst);
+    return node_namespace->get_field(field)->trace(inst, stack);
   }
 
   if (auto node_enum = get_repo()->get_enum(scope)) {
@@ -431,7 +431,7 @@ Err CNodeText::emit(Cursor& cursor) {
   return Err();
 }
 
-Err CNodeText::trace(CInstance* inst) {
+Err CNodeText::trace(CInstance* inst, call_stack& stack) {
   NODE_ERR("FIXME");
   return Err();
 }
@@ -470,7 +470,7 @@ Err CNodeKeyword::emit(Cursor& cursor) {
   return Err();
 }
 
-Err CNodeKeyword::trace(CInstance* inst) {
+Err CNodeKeyword::trace(CInstance* inst, call_stack& stack) {
   return Err();
 }
 
@@ -488,7 +488,7 @@ Err CNodeTypedef::emit(Cursor& cursor) {
   return Err();
 }
 
-Err CNodeTypedef::trace(CInstance* inst) {
+Err CNodeTypedef::trace(CInstance* inst, call_stack& stack) {
   NODE_ERR("FIXME");
   return Err();
 }
@@ -515,10 +515,10 @@ Err CNodeList::emit(Cursor& cursor) {
   return err << cursor.check_done(this);
 }
 
-Err CNodeList::trace(CInstance* inst) {
+Err CNodeList::trace(CInstance* inst, call_stack& stack) {
   Err err;
   for (auto child : this) {
-    err << child->trace(inst);
+    err << child->trace(inst, stack);
   }
   return err;
 }

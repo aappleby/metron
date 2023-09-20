@@ -26,7 +26,7 @@ struct CNodeFunction : public CNode {
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
-  CHECK_RETURN Err trace(CInstance* inst) override;
+  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
 
   //----------------------------------------
 
@@ -121,6 +121,8 @@ struct CNodeFunction : public CNode {
   bool has_return();
 
   //----------------------------------------
+
+  bool called_by_init();
 
 #if 0
   bool called_by_init() {

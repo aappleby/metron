@@ -47,7 +47,7 @@ struct CNodeTranslationUnit : public CNode {
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
-  CHECK_RETURN Err trace(CInstance* inst) override;
+  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
 };
 
 //------------------------------------------------------------------------------
@@ -56,7 +56,7 @@ struct CNodeNamespace : public CNode {
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
-  CHECK_RETURN Err trace(CInstance* inst) override;
+  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
 
   Err collect_fields_and_methods();
 
@@ -77,7 +77,7 @@ struct CNodePreproc : public CNode {
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
-  CHECK_RETURN Err trace(CInstance* inst) override;
+  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
 };
 
 //------------------------------------------------------------------------------
@@ -86,7 +86,7 @@ struct CNodeIdentifier : public CNode {
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
-  CHECK_RETURN Err trace(CInstance* inst) override;
+  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
 };
 
 //------------------------------------------------------------------------------
@@ -95,7 +95,7 @@ struct CNodePunct : public CNode {
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
-  CHECK_RETURN Err trace(CInstance* inst) override;
+  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
 };
 
 //------------------------------------------------------------------------------
@@ -106,7 +106,7 @@ struct CNodeFieldExpression : public CNode {
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
-  CHECK_RETURN Err trace(CInstance* inst) override;
+  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
 
   CNodeIdentifier* node_path = nullptr;
   CNodeIdentifier* node_name = nullptr;
@@ -118,7 +118,7 @@ struct CNodeQualifiedIdentifier : public CNode {
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
-  CHECK_RETURN Err trace(CInstance* inst) override;
+  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
 };
 
 //------------------------------------------------------------------------------
@@ -127,7 +127,7 @@ struct CNodeText : public CNode {
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
-  CHECK_RETURN Err trace(CInstance* inst) override;
+  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
 };
 
 //------------------------------------------------------------------------------
@@ -136,7 +136,7 @@ struct CNodeKeyword : public CNode {
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
-  CHECK_RETURN Err trace(CInstance* inst) override;
+  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
 };
 
 //------------------------------------------------------------------------------
@@ -145,7 +145,7 @@ struct CNodeTypedef : public CNode {
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
-  CHECK_RETURN Err trace(CInstance* inst) override;
+  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
 };
 
 //------------------------------------------------------------------------------
@@ -156,7 +156,7 @@ struct CNodeList : public CNode {
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
-  CHECK_RETURN Err trace(CInstance* inst) override;
+  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
 
   std::vector<CNode*> items;
 };

@@ -18,6 +18,7 @@
 
 struct Cursor;
 struct CSourceRepo;
+struct CNode;
 
 struct CInstCall;
 struct CInstance;
@@ -26,6 +27,10 @@ struct CInstClass;
 typedef matcheroni::Span<CToken> TokenSpan;
 
 #define NODE_ERR(A) { dump_tree(); LOG_R("bad bad %s : %s\n", typeid(*this).name(), A); assert(false); exit(-1); }
+
+//------------------------------------------------------------------------------
+
+typedef std::vector<CNode*> call_stack;
 
 //------------------------------------------------------------------------------
 
@@ -43,7 +48,7 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   virtual uint32_t debug_color() const;
   virtual std::string_view get_name() const;
   virtual CHECK_RETURN Err emit(Cursor& cursor);
-  virtual CHECK_RETURN Err trace(CInstance* inst);
+  virtual CHECK_RETURN Err trace(CInstance* inst, call_stack& stack);
 
   virtual CSourceRepo* get_repo() {
     return node_parent->get_repo();

@@ -78,7 +78,7 @@ CInstance* CInstance::resolve(std::string name) {
 
 //----------------------------------------
 
-CHECK_RETURN Err CInstance::log_action(CNode* node, TraceAction action) {
+CHECK_RETURN Err CInstance::log_action(CNode* node, TraceAction action, call_stack& stack) {
   Err err;
 
   if (name == "@return") {
@@ -88,6 +88,8 @@ CHECK_RETURN Err CInstance::log_action(CNode* node, TraceAction action) {
 
   assert(action == ACT_READ || action == ACT_WRITE);
 
+  //auto constructor = node->ancestor<CNodeConstructor>();
+
   auto func = node->ancestor<CNodeFunction>();
   assert(func);
 
@@ -96,6 +98,11 @@ CHECK_RETURN Err CInstance::log_action(CNode* node, TraceAction action) {
   }
   else if (action == ACT_WRITE) {
     func->self_writes.insert(this);
+  }
+
+  if (auto constructor = stack[0]->as<CNodeConstructor>()) {
+    LOG_R("not recording action because we're inside init()\n");
+    return err;
   }
 
   auto old_state = state_stack.back();
@@ -238,13 +245,15 @@ CInstClass::CInstClass(std::string name, bool is_public, CInstance* inst_parent,
     }
 
     /*if (child_is_public)*/ {
-      if (auto node_constructor = child->as<CNodeConstructor>()) {
-        // Do nothing with constructors
-      }
-      else if (auto node_func = child->as<CNodeFunction>()) {
+      if (auto node_func = child->as<CNodeFunction>()) {
         auto func_name = node_func->get_namestr();
 
         auto inst_func = new CInstFunc(func_name, child_is_public, this, node_func);
+
+        if (auto node_constructor = child->as<CNodeConstructor>()) {
+          inst_func->is_constructor = true;
+        }
+
         children.push_back(inst_func);
 
         //node_func->dump_parse_tree();
@@ -266,7 +275,7 @@ CInstClass::CInstClass(std::string name, bool is_public, CInstance* inst_parent,
 
 //----------------------------------------
 
-CHECK_RETURN Err CInstClass::log_action(CNode* node, TraceAction action) {
+CHECK_RETURN Err CInstClass::log_action(CNode* node, TraceAction action, call_stack& stack) {
   Err err;
   //for (auto pair : inst_map) err << pair.second->log_action(node, action);
   return err;
@@ -365,10 +374,10 @@ void CInstStruct::dump_tree() const {
   ///}
 }
 
-CHECK_RETURN Err CInstStruct::log_action(CNode* node, TraceAction action) {
+CHECK_RETURN Err CInstStruct::log_action(CNode* node, TraceAction action, call_stack& stack) {
   Err err;
   //for (auto pair : inst_map) err << pair.second->log_action(node, action);
-  for (auto child : children) err << child->log_action(node, action);
+  for (auto child : children) err << child->log_action(node, action, stack);
   return err;
 }
 
@@ -412,8 +421,8 @@ void CInstPrim::dump_tree() const {
 
 //----------------------------------------
 
-CHECK_RETURN Err CInstPrim::log_action(CNode* node, TraceAction action) {
-  return CInstance::log_action(node, action);
+CHECK_RETURN Err CInstPrim::log_action(CNode* node, TraceAction action, call_stack& stack) {
+  return CInstance::log_action(node, action, stack);
 }
 
 //----------------------------------------

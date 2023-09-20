@@ -81,10 +81,10 @@ Err CNodeDeclaration::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err CNodeDeclaration::trace(CInstance* inst) {
+CHECK_RETURN Err CNodeDeclaration::trace(CInstance* inst, call_stack& stack) {
   Err err;
   if (node_value) {
-    err << node_value->trace(inst);
+    err << node_value->trace(inst, stack);
   }
   return err;
 }

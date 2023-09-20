@@ -66,18 +66,18 @@ protected:
 
 struct CNodeExpStatement : public CNodeStatement {
   CHECK_RETURN Err emit(Cursor& cursor) override;
-  CHECK_RETURN Err trace(CInstance* inst) override;
+  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
 };
 
 struct CNodeAssignment : public CNodeStatement {
-  CHECK_RETURN Err trace(CInstance* inst) override;
+  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
 };
 
 //------------------------------------------------------------------------------
 
 struct CNodeFor : public CNodeStatement {
-  CHECK_RETURN Err trace(CInstance* inst) override;
+  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
 };
 
@@ -85,7 +85,7 @@ struct CNodeFor : public CNodeStatement {
 
 struct CNodeIf : public CNodeStatement {
   void init(const char* match_tag, SpanType span, uint64_t flags);
-  CHECK_RETURN Err trace(CInstance* inst) override;
+  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
 
   CNodeKeyword*   node_if = nullptr;
@@ -98,24 +98,24 @@ struct CNodeIf : public CNodeStatement {
 //------------------------------------------------------------------------------
 
 struct CNodeReturn : public CNodeStatement {
-  CHECK_RETURN Err trace(CInstance* inst) override;
+  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
 };
 
 //------------------------------------------------------------------------------
 
 struct CNodeSwitch : public CNodeStatement {
-  CHECK_RETURN Err trace(CInstance* inst) override;
+  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
 };
 
 struct CNodeCase : public CNodeStatement {
-  CHECK_RETURN Err trace(CInstance* inst) override;
+  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
 };
 
 struct CNodeDefault : public CNodeStatement {
-  CHECK_RETURN Err trace(CInstance* inst) override;
+  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
 };
 
@@ -133,7 +133,7 @@ struct CNodeCompound : public CNodeStatement {
   CHECK_RETURN Err emit_hoisted_decls(Cursor& cursor);
   CHECK_RETURN Err emit_call_arg_bindings(CNode* child, Cursor& cursor);
 
-  CHECK_RETURN Err trace(CInstance* inst) override;
+  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
 };
 
 //------------------------------------------------------------------------------

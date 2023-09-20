@@ -29,7 +29,7 @@ Err CNode::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-Err CNode::trace(CInstance* inst) {
+Err CNode::trace(CInstance* inst, call_stack& stack) {
   NODE_ERR("Can't trace CNode base class");
   return Err();
 }

@@ -222,6 +222,14 @@ void CNodeClass::dump_call_graph() {
   LOG_G("Class %s\n", name.c_str());
 
   LOG_INDENT();
+
+  if (constructor) {
+    LOG("Constructor\n");
+    LOG_INDENT();
+    constructor->dump_call_graph();
+    LOG_DEDENT();
+  }
+
   for (auto node_func : all_functions) {
     if (node_func->internal_callers.size()) {
       continue;

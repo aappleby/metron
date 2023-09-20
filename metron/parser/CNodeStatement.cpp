@@ -11,9 +11,9 @@ uint32_t CNodeStatement::debug_color() const {
 
 //------------------------------------------------------------------------------
 
-Err CNodeExpStatement::trace(CInstance* inst) {
+Err CNodeExpStatement::trace(CInstance* inst, call_stack& stack) {
   Err err;
-  for (auto c : this) err << c->trace(inst);
+  for (auto c : this) err << c->trace(inst, stack);
   return err;
 }
 
@@ -54,19 +54,19 @@ Err CNodeExpStatement::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-Err CNodeAssignment::trace(CInstance* inst) {
+Err CNodeAssignment::trace(CInstance* inst, call_stack& stack) {
   Err err;
 
   auto rhs = child("rhs");
-  err << rhs->trace(inst);
+  err << rhs->trace(inst, stack);
 
   auto lhs = child("lhs");
   auto inst_lhs = inst->resolve(lhs);
 
   if (inst_lhs) {
     auto op_text = child("op")->get_text();
-    if (op_text != "=") err << inst_lhs->log_action(this, ACT_READ);
-    err << inst_lhs->log_action(this, ACT_WRITE);
+    if (op_text != "=") err << inst_lhs->log_action(this, ACT_READ, stack);
+    err << inst_lhs->log_action(this, ACT_WRITE, stack);
   }
 
   return Err();
@@ -114,12 +114,12 @@ Err CNodeAssignment::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err CNodeFor::trace(CInstance* inst) {
+CHECK_RETURN Err CNodeFor::trace(CInstance* inst, call_stack& stack) {
   Err err;
-  err << child("init")->trace(inst);
-  err << child("condition")->trace(inst);
-  err << child("body")->trace(inst);
-  err << child("step")->trace(inst);
+  err << child("init")->trace(inst, stack);
+  err << child("condition")->trace(inst, stack);
+  err << child("body")->trace(inst, stack);
+  err << child("step")->trace(inst, stack);
   return err;
 }
 
@@ -145,17 +145,17 @@ void CNodeIf::init(const char* match_tag, SpanType span, uint64_t flags) {
 
 //----------------------------------------
 
-CHECK_RETURN Err CNodeIf::trace(CInstance* inst) {
+CHECK_RETURN Err CNodeIf::trace(CInstance* inst, call_stack& stack) {
   Err err;
 
-  err << child("condition")->trace(inst);
+  err << child("condition")->trace(inst, stack);
 
   auto root_inst = inst->get_root();
 
   root_inst->push_state();
-  if (auto body_true = child("body_true")) err << body_true->trace(inst);
+  if (auto body_true = child("body_true")) err << body_true->trace(inst, stack);
   root_inst->swap_state();
-  if (auto body_false = child("body_false")) err << body_false->trace(inst);
+  if (auto body_false = child("body_false")) err << body_false->trace(inst, stack);
   root_inst->merge_state();
 
   return err;
@@ -201,10 +201,10 @@ CHECK_RETURN Err CNodeIf::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err CNodeSwitch::trace(CInstance* inst) {
+CHECK_RETURN Err CNodeSwitch::trace(CInstance* inst, call_stack& stack) {
   Err err;
 
-  err << child("condition")->trace(inst);
+  err << child("condition")->trace(inst, stack);
 
   auto root_inst = inst->get_root();
 
@@ -219,7 +219,7 @@ CHECK_RETURN Err CNodeSwitch::trace(CInstance* inst) {
 
     root_inst->push_state();
     case_count++;
-    err << cursor->trace(inst);
+    err << cursor->trace(inst, stack);
     root_inst->swap_state();
   }
 
@@ -268,8 +268,8 @@ CHECK_RETURN Err CNodeSwitch::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err CNodeCase::trace(CInstance* inst) {
-  return child("body")->trace(inst);
+CHECK_RETURN Err CNodeCase::trace(CInstance* inst, call_stack& stack) {
+  return child("body")->trace(inst, stack);
 }
 
 CHECK_RETURN Err CNodeCase::emit(Cursor& cursor) {
@@ -299,8 +299,8 @@ CHECK_RETURN Err CNodeCase::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err CNodeDefault::trace(CInstance* inst) {
-  return child("body")->trace(inst);
+CHECK_RETURN Err CNodeDefault::trace(CInstance* inst, call_stack& stack) {
+  return child("body")->trace(inst, stack);
 }
 
 CHECK_RETURN Err CNodeDefault::emit(Cursor& cursor) {
@@ -327,9 +327,9 @@ CHECK_RETURN Err CNodeDefault::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-Err CNodeCompound::trace(CInstance* inst) {
+Err CNodeCompound::trace(CInstance* inst, call_stack& stack) {
   Err err;
-  for (auto c : this) err << c->trace(inst);
+  for (auto c : this) err << c->trace(inst, stack);
   return err;
 }
 
@@ -513,16 +513,16 @@ Err CNodeCompound::emit_hoisted_decls(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-Err CNodeReturn::trace(CInstance* inst) {
+Err CNodeReturn::trace(CInstance* inst, call_stack& stack) {
   Err err;
 
   if (auto node_value = child("value")) {
-    err << node_value->trace(inst);
+    err << node_value->trace(inst, stack);
   }
 
   auto inst_return = inst->resolve("@return");
   assert(inst_return);
-  err << inst_return->log_action(this, ACT_WRITE);
+  err << inst_return->log_action(this, ACT_WRITE, stack);
 
   return err;
 }

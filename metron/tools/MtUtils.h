@@ -182,23 +182,23 @@ inline const char* to_string(ContextType c) {
 inline const char* to_string(TraceState f) {
   switch (f) {
     case TS_NONE:
-      return "CTX_NONE";
+      return "TS_NONE";
     case TS_INPUT:
-      return "CTX_INPUT";
+      return "TS_INPUT";
     case TS_OUTPUT:
-      return "CTX_OUTPUT";
+      return "TS_OUTPUT";
     case TS_MAYBE:
-      return "CTX_MAYBE";
+      return "TS_MAYBE";
     case TS_SIGNAL:
-      return "CTX_SIGNAL";
+      return "TS_SIGNAL";
     case TS_REGISTER:
-      return "CTX_REGISTER";
+      return "TS_REGISTER";
     case TS_INVALID:
-      return "CTX_INVALID";
+      return "TS_INVALID";
     case TS_PENDING:
-      return "CTX_PENDING";
+      return "TS_PENDING";
     default:
-      return "CTX_?????";
+      return "TS_?????";
   }
 }
 // KCOV_ON

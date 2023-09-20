@@ -81,6 +81,10 @@ CInstance* CInstance::resolve(std::string name) {
 CHECK_RETURN Err CInstance::log_action(CNode* node, TraceAction action) {
   Err err;
 
+  if (name == "@return") {
+    LOG("wat going on %d\n", action);
+  }
+
   assert(action == ACT_READ || action == ACT_WRITE);
 
   auto func = node->ancestor<CNodeFunction>();
@@ -157,6 +161,49 @@ void CInstance::merge_state() {
   state_stack.pop_back();
   //for (auto pair : inst_map) pair.second->merge_state();
   for (auto child : children) child->merge_state();
+}
+
+//----------------------------------------
+
+bool CInstance::check_port_directions(CInstance* b) {
+  auto a = this;
+  auto sa = a->state_stack.back();
+  auto sb = b->state_stack.back();
+
+  LOG("Checking %s:%s vs %s:%s\n",
+    a->name.c_str(), to_string(sa),
+    b->name.c_str(), to_string(sb)
+  );
+
+  assert(sa >= TS_NONE || sa <= TS_REGISTER);
+  assert(sa >= TS_NONE || sb <= TS_REGISTER);
+
+  bool a_drives = (sa != TS_NONE) && (sa != TS_INPUT);
+  bool b_drives = (sb != TS_NONE) && (sb != TS_INPUT);
+
+  // Floating inputs are invalid.
+  if (!a_drives && sb == TS_INPUT) return false;
+  if (!b_drives && sa == TS_INPUT) return false;
+
+  // Port collisions are invalid.
+  if (a_drives && b_drives) return false;
+
+  // Mismatched port sizes (how?) are invalid.
+  assert(a->children.size() == b->children.size());
+  if (a->children.size() != b->children.size()) return false;
+
+  // All child port directions must match as well.
+  for (int i = 0; i < a->children.size(); i++) {
+    auto ca = a->children[i];
+    auto cb = b->children[i];
+
+    assert(ca->is_public == cb->is_public);
+    if (ca->is_public) {
+      if (!ca->check_port_directions(cb)) return false;
+    }
+  }
+
+  return true;
 }
 
 //------------------------------------------------------------------------------

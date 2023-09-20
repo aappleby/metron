@@ -155,19 +155,7 @@ int main_new(Options opts) {
   LOG_B("Instantiating modules\n");
   for (auto node_class : repo.all_classes) {
     auto instance = new CInstClass(node_class->get_namestr(), true, nullptr, nullptr, node_class);
-
     repo.all_instances.push_back(instance);
-
-    LOG_INDENT_SCOPE();
-    instance->dump_tree();
-    LOG("\n");
-  }
-
-  {
-    for (auto c : repo.all_classes) {
-      c->dump();
-      LOG("\n");
-    }
   }
 
   //----------------------------------------
@@ -192,38 +180,51 @@ int main_new(Options opts) {
         }
         else {
           LOG_B("Tracing %s\n", func_name.c_str());
-          //node_func->dump_parse_tree();
-
-          inst_class->dump_tree();
-
           auto inst_func = inst_class->resolve(func_name);
-
-          inst_func->dump_tree();
-
           err << node_func->trace(inst_func);
         }
-#if 0
-
-        if (node_func->internal_callers.size()) {
-          LOG_B("Skipping %.*s because it's not toplevel\n", int(func_name.size()), func_name.data());
-        }
-        else if (node_func->method_type == MT_INIT) {
-          LOG_B("Skipping %.*s because it's an initializer\n", int(func_name.size()), func_name.data());
-        }
-        else {
-          LOG_B("Tracing %.*s\n", int(func_name.size()), func_name.data());
-
-          auto top_call = new CInstCall(class_inst, nullptr, node_func);
-          class_inst->entry_points.push_back(top_call);
-          err << node_func->trace(top_call);
-        }
-#endif
       }
 
       LOG_G("Tracing done for %.*s\n", int(name.size()), name.data());
     }
     LOG_B("All tracing done\n");
+    LOG_B("\n");
   }
+
+  //----------------------------------------
+
+  {
+    LOG_G("Checking port compatibility\n");
+    LOG_INDENT_SCOPE();
+
+    for (auto inst : repo.all_instances) {
+      LOG("Module %s\n", inst->name.c_str());
+      LOG_INDENT_SCOPE();
+      for (auto child : inst->children) {
+        if (auto inst_submod = child->as<CInstClass>()) {
+          //LOG("Submod %s\n", inst_submod->name.c_str());
+          //LOG("Submod class %s\n", inst_submod->node_class->get_namestr().c_str());
+          auto inst_b = repo.get_instance(inst_submod->node_class->get_namestr());
+          //LOG("Submod instance %p\n", inst_b);
+
+          if (inst_submod && inst_b) {
+            bool ports_ok = inst_submod->check_port_directions(inst_b);
+            if (!ports_ok) {
+              inst_submod->dump_tree();
+              inst_b->dump_tree();
+              err << ERR("Bad ports!\n");
+              exit(-1);
+            }
+          }
+        }
+      }
+    }
+
+    LOG("\n");
+  }
+
+  //----------------------------------------
+
 
   LOG_G("Trace result\n");
   for (auto inst_class : repo.all_instances) {
@@ -233,6 +234,12 @@ int main_new(Options opts) {
   }
 
   /*
+  for (auto c : repo.all_classes) {
+    c->dump();
+    LOG("\n");
+  }
+
+
   for (auto c : repo.all_classes) {
     for (auto f : c->all_functions) {
       f->propagate_rw();

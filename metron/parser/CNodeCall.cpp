@@ -40,7 +40,7 @@ Err CNodeCall::trace(CInstance* inst) {
     auto func_inst = inst->resolve(field_exp)->as<CInstFunc>();
 
     for (auto child : func_inst->children) {
-      if (child->name == "return") {
+      if (child->name == "@return") {
         err << child->log_action(this, ACT_READ);
       }
       else {

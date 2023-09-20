@@ -43,6 +43,13 @@ CNodeEnum* CSourceRepo::get_enum(std::string_view name) {
   return nullptr;
 }
 
+CInstance* CSourceRepo::get_instance(std::string name) {
+  for (auto i : all_instances) {
+    if (i->name == name) return i;
+  }
+  return nullptr;
+}
+
 //------------------------------------------------------------------------------
 
 std::string CSourceRepo::resolve_filename(const std::string& filename) {

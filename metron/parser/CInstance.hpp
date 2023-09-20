@@ -50,14 +50,6 @@ struct CInstance {
     return inst_parent ? inst_parent->get_root() : this;
   }
 
-  //----------
-
-  virtual void dump_tree() const = 0;
-  virtual CHECK_RETURN Err log_action(CNode* node, TraceAction action);
-  //virtual void commit_state() { assert(false); }
-
-  //----------
-
   std::string_view get_name() const;
   std::string get_path() const;
   CInstance* resolve(CNode* node);
@@ -67,6 +59,13 @@ struct CInstance {
   void pop_state();
   void swap_state();
   void merge_state();
+
+  virtual void dump_tree() const = 0;
+  virtual CHECK_RETURN Err log_action(CNode* node, TraceAction action);
+  //virtual void commit_state() { assert(false); }
+  bool check_port_directions(CInstance* b);
+
+  //----------
 
   std::string name;
   bool is_public;

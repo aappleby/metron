@@ -62,11 +62,13 @@ int main_new(Options opts) {
 
   //----------------------------------------
 
+  /*
   for (auto pair : repo.source_map) {
     CSourceFile* file = pair.second;
     file->context.top_head->dump_parse_tree();
   }
   LOG("\n");
+  */
 
   //----------------------------------------
   // All modules are now in the library, we can resolve references to other
@@ -152,12 +154,6 @@ int main_new(Options opts) {
     err << node_class->build_call_graph(&repo);
   }
 
-
-
-  for (auto node_class : repo.all_classes) {
-    node_class->dump_call_graph();
-  }
-
   //----------------------------------------
 
   LOG_B("Instantiating modules\n");
@@ -196,17 +192,35 @@ int main_new(Options opts) {
 
       LOG_G("Tracing done for %.*s\n", int(name.size()), name.data());
     }
+
+    for (auto c : repo.all_classes) {
+      for (auto f : c->all_functions) {
+        f->propagate_rw();
+      }
+    }
+
     LOG_B("All tracing done\n");
     LOG_B("\n");
   }
 
+
   //----------------------------------------
 
-  for (auto c : repo.all_classes) {
-    for (auto f : c->all_functions) {
-      f->propagate_rw();
-    }
+  LOG_R("//----------------------------------------\n");
+  LOG_R("// Call graph\n");
+  LOG("\n");
+
+  for (auto node_class : repo.all_classes) {
+    node_class->dump_call_graph();
+    LOG("\n");
+    node_class->dump();
+    LOG("\n");
   }
+
+  LOG_R("//----------------------------------------\n");
+  LOG("\n");
+
+  //----------------------------------------
 
   for (auto node_class : repo.all_classes) {
     for (auto f : node_class->all_functions) {

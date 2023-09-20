@@ -17,19 +17,19 @@ public:
 
   OuterStruct s;
 
-  void func1() {
+  void tock_func1() {
     s.x.a = 1;
     s.x.b = 2;
     s.x.c = 3;
   }
 
-  void func2() {
+  void tick_func2() {
     s.y.a = 4;
     s.y.b = 5;
     s.y.c = 6;
   }
 
-  void func3() {
+  void tick_func3() {
     s.z.a = 7;
     s.z.b = 8;
     s.z.c = 9;

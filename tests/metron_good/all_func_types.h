@@ -100,7 +100,7 @@ private:
   }
 public:
 
-  void only_calls_private_tick() {
+  void tock_only_calls_private_tick() {
     private_tick(17);
   }
 

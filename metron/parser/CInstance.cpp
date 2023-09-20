@@ -83,6 +83,7 @@ CHECK_RETURN Err CInstance::log_action(CNode* node, TraceAction action) {
 
   if (name == "@return") {
     LOG("wat going on %d\n", action);
+    return err;
   }
 
   assert(action == ACT_READ || action == ACT_WRITE);

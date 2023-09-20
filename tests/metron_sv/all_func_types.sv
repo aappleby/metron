@@ -130,7 +130,7 @@ module Module (
   endfunction
 /*public:*/
 
-  always_comb begin : only_calls_private_tick
+  always_comb begin : tock_only_calls_private_tick
     private_tick_x = 17;
     /*private_tick(17);*/
   end

@@ -436,6 +436,14 @@ void CNodeFunction::dump() {
 //------------------------------------------------------------------------------
 
 void CNodeFunction::dump_call_graph() {
+
+  for (auto r : self_reads) {
+    LOG("Reads %s\n", r->name.c_str());
+  }
+  for (auto w : self_writes) {
+    LOG("Writes %s\n", w->name.c_str());
+  }
+
   if (internal_callees.size()) {
     for (auto c : internal_callees) {
       auto func_name = c->get_name();
@@ -457,6 +465,60 @@ void CNodeFunction::dump_call_graph() {
       LOG_DEDENT();
     }
   }
+}
+
+//------------------------------------------------------------------------------
+
+MethodType CNodeFunction::get_method_type() {
+  if (name.starts_with("tick")) return MT_TICK;
+  if (name.starts_with("tock")) return MT_TOCK;
+
+  auto result = MT_UNKNOWN;
+
+  if (all_writes.empty()) {
+    return MT_FUNC;
+  }
+
+  for (auto c : internal_callers) {
+    auto new_result = c->get_method_type();
+    if (new_result == MT_UNKNOWN) {
+      LOG_R("%s: get_method_type returned MT_UNKNOWN\n", name.c_str());
+      assert(false);
+    }
+
+    if (result == MT_UNKNOWN) {
+      result = new_result;
+    }
+    else if (result != new_result) {
+      LOG_R("%s: get_method_type inconsistent\n", name.c_str());
+      assert(false);
+    }
+  }
+
+  if (result != MT_UNKNOWN) return result;
+
+  // Function was not a tick or tock, and was not called by a tick or tock.
+
+  if (self_writes.size()) {
+    LOG_R("Function %s writes stuff but is not tick or tock\n", name.c_str());
+    assert(false);
+  }
+
+  /*
+  if (self_writes.size()) {
+    if (result != MT_TICK && result != MT_TOCK) {
+      LOG_R("%s: Writes found in a non-tick/tock\n", name.c_str());
+      assert(false);
+    }
+  }
+  else {
+    LOG_R("Don't know how to classify %s %s\n", name.c_str(), to_string(result));
+    //assert(result == MT_UNKNOWN);
+    result = MT_FUNC;
+  }
+  */
+
+  return result;
 }
 
 //------------------------------------------------------------------------------

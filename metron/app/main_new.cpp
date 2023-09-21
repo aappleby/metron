@@ -306,6 +306,47 @@ int main_new(Options opts) {
 
   LOG_B("Categorizing fields\n");
 
+  for (auto inst : repo.all_instances) {
+    auto inst_class = inst->as<CInstClass>();
+    auto node_class = inst_class->node_class;
+    assert(inst_class);
+
+    for (auto inst_child : inst_class->children) {
+
+      if (auto inst_prim = inst_child->as<CInstPrim>()) {
+        auto field = inst_prim->node_field;
+        auto state = inst_prim->state_stack.back();
+
+        switch(state) {
+          case TS_NONE:     assert(false); break;
+          case TS_INPUT:    node_class->input_signals.push_back(field);    break;
+          case TS_OUTPUT:   node_class->output_signals.push_back(field);   break;
+          case TS_MAYBE:    node_class->output_registers.push_back(field); break;
+          case TS_SIGNAL:   node_class->output_signals.push_back(field);   break;
+          case TS_REGISTER: node_class->output_registers.push_back(field); break;
+          case TS_INVALID:  assert(false); break;
+          case TS_PENDING:  assert(false); break;
+        }
+      }
+
+      if (auto inst_struct = inst_child->as<CInstStruct>()) {
+        auto field = inst_struct->node_field;
+        auto state = inst_struct->state_stack.back();
+
+        switch(state) {
+          case TS_NONE:     assert(false); break;
+          case TS_INPUT:    node_class->input_signals.push_back(field);    break;
+          case TS_OUTPUT:   node_class->output_signals.push_back(field);   break;
+          case TS_MAYBE:    node_class->output_registers.push_back(field); break;
+          case TS_SIGNAL:   node_class->output_signals.push_back(field);   break;
+          case TS_REGISTER: node_class->output_registers.push_back(field); break;
+          case TS_INVALID:  assert(false); break;
+          case TS_PENDING:  assert(false); break;
+        }
+      }
+    }
+  }
+
 #if 0
   for (auto node_class : repo.all_classes) {
 
@@ -495,24 +536,6 @@ int main_new(Options opts) {
 
   //----------------------------------------
   // Done!
-  //----------------------------------------
-
-#if 0
-  for (auto c : repo.all_classes) {
-    for (auto f : c->all_fields) {
-      assert(f->field_type != FT_UNKNOWN);
-    }
-    for (auto f : c->all_functions) {
-      if (f->method_type == MT_UNKNOWN) {
-        auto name = f->get_name();
-        LOG_R("%.*s did not get a type\n", name.size(), name.data());
-      }
-      assert(f->method_type != MT_UNKNOWN);
-    }
-  }
-#endif
-
-  //----------------------------------------
 
   LOG_B("\n");
   LOG_B("//----------------------------------------\n");
@@ -520,6 +543,10 @@ int main_new(Options opts) {
   LOG_INDENT();
   repo.dump();
   LOG_DEDENT();
+  LOG_B("//----------------------------------------\n");
+  for (auto i : repo.all_instances) {
+    i->dump_tree();
+  }
   LOG_B("//----------------------------------------\n");
   LOG_B("\n");
 
@@ -540,9 +567,6 @@ int main_new(Options opts) {
   LOG_R("//----------------------------------------\n");
   LOG("\n");
 
-  for (auto i : repo.all_instances) {
-    i->dump_tree();
-  }
 
   LOG_R("//----------------------------------------\n");
   LOG("\n");

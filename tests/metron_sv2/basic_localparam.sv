@@ -4,7 +4,11 @@
 
 module Module (
   // global clock
-  input logic clock
+  input logic clock,
+  // input signals
+  input int my_val,
+  // output registers
+  output logic[6:0] my_reg
 );
 /*public:*/
 

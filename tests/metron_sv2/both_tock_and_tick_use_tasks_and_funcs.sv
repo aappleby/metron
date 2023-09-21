@@ -10,6 +10,9 @@ module Module (
   input logic clock,
   // output signals
   output logic[7:0] my_sig,
+  // output registers
+  output logic[7:0] my_reg1,
+  output logic[7:0] my_reg2,
   // tock() ports
   input int tock_z
 );
@@ -24,6 +27,10 @@ module Module (
     /*tick(z);*/
   end
 
+/*private:*/
+
+  // FIXME ok these aren't actually public anymore...
+
   always_comb begin : public_task
     my_sig = public_task_x + 7;
     public_task_ret = 0;
@@ -34,8 +41,6 @@ module Module (
   function logic[7:0] public_func(logic[7:0] x);
     public_func = my_reg1 + private_func(x);
   endfunction
-
-/*private:*/
 
   always_ff @(posedge clock) begin : tick
     private_task(private_func(tick_w));

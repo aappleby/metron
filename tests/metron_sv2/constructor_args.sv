@@ -5,6 +5,11 @@
 module Module (
   // global clock
   input logic clock,
+  // input signals
+  input logic[7:0] data,
+  // output signals
+  output logic[9:0] addr,
+  output logic[7:0] out,
   // tock() ports
   input logic[9:0] tock_addr_,
   // get_data() ports

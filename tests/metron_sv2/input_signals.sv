@@ -38,6 +38,8 @@ endmodule
 module Module (
   // global clock
   input logic clock,
+  // output signals
+  output logic[7:0] my_sig,
   // output registers
   output logic[7:0] my_reg
 );

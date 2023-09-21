@@ -4,7 +4,9 @@
 
 module Submod (
   // global clock
-  input logic clock
+  input logic clock,
+  // output registers
+  output logic[7:0] sub_reg
 );
   parameter SOME_CONSTANT = 6;
 
@@ -38,6 +40,8 @@ module Module (
     .SOME_CONSTANT(99)
   ) submod(
     // Global clock
-    .clock(clock)
+    .clock(clock),
+    // Output registers
+    .sub_reg(submod_sub_reg)
   );
 endmodule

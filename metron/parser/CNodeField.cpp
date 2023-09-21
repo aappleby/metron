@@ -626,7 +626,7 @@ void CNodeField::dump() const {
     LOG_A("type struct %.*s ", int(name.size()), name.data());
   }
 
-  LOG_A("%s", to_string(field_type));
+  //LOG_A("%s", to_string(field_type));
 
   LOG_A("\n");
 }

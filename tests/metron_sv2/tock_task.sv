@@ -16,6 +16,8 @@ module Module (
     tock_ret = set_signal_ret;
   end
 
+/*private:*/
+
   function logic[7:0] get_number() /*const*/;
     get_number = 7;
   endfunction

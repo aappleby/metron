@@ -5,6 +5,8 @@
 module Submod (
   // global clock
   input logic clock,
+  // output registers
+  output logic[7:0] my_reg,
   // tock() ports
   input logic[7:0] tock_arg
 );
@@ -43,6 +45,8 @@ module Module (
   Submod submod(
     // Global clock
     .clock(clock),
+    // Output registers
+    .my_reg(submod_my_reg),
     // tock() ports
     .tock_arg(submod_tock_arg)
   );

@@ -18,10 +18,10 @@ module Module (
   end
 
   always_comb begin : test2
-    test2_ret = 'x[7:0];
+    test2_ret = 8'bx;
   end
 
   always_comb begin : test3
-    test3_ret = 'x[7:0];
+    test3_ret = 8'bx;
   end
 endmodule

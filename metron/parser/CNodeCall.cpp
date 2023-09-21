@@ -98,6 +98,8 @@ bool CNodeCall::is_bit_extract() {
 CHECK_RETURN Err CNodeCall::emit_bit_extract(Cursor& cursor) {
   Err err;
 
+  dump_parse_tree();
+
   auto func_name = node_name->get_textstr();
 
   auto& args = node_args->items;
@@ -143,6 +145,25 @@ CHECK_RETURN Err CNodeCall::emit_bit_extract(Cursor& cursor) {
     }
   }
   bool   bare_offset = (node_offset->as<CNodeIdentifier>() != nullptr);
+
+  //----------------------------------------
+  // Handle casting DONTCARE
+
+  if (node_exp->get_text() == "DONTCARE") {
+    err << cursor.skip_over(this);
+
+    if (node_width) {
+      if (!bare_width) err << cursor.emit_print("(");
+      err << cursor.emit_splice(node_width);
+      if (!bare_width) err << cursor.emit_print(")");
+      err << cursor.emit_print("'('x)");
+    }
+    else {
+      err << cursor.emit_print("%d'bx", width);
+    }
+
+    return err;
+  }
 
   //----------------------------------------
   // Expression

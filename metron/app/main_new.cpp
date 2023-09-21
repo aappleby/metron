@@ -179,6 +179,7 @@ int main_new(Options opts) {
   {
     LOG_B("//----------------------------------------\n");
     LOG_B("// Tracing classes\n");
+    LOG_B("\n");
     LOG_INDENT_SCOPE();
 
     for (auto inst_class : repo.all_instances) {
@@ -263,13 +264,14 @@ int main_new(Options opts) {
     }
     LOG_G("get_method_type OK\n");
   }
+  LOG("\n");
 
   //----------------------------------------
 
   {
     LOG_B("//----------------------------------------\n");
     LOG_B("// Checking port compatibility\n");
-    LOG_INDENT();
+    LOG_B("\n");
 
     for (auto inst : repo.all_instances) {
       LOG("Module %s\n", inst->name.c_str());
@@ -297,7 +299,6 @@ int main_new(Options opts) {
       }
     }
 
-    LOG_DEDENT();
     LOG("\n");
   }
 
@@ -312,6 +313,13 @@ int main_new(Options opts) {
     LOG("\n");
     node_class->dump();
     LOG("\n");
+  }
+
+  LOG_R("//----------------------------------------\n");
+  LOG("\n");
+
+  for (auto i : repo.all_instances) {
+    i->dump_tree();
   }
 
   LOG_R("//----------------------------------------\n");

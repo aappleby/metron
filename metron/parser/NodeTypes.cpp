@@ -398,7 +398,6 @@ Err CNodeQualifiedIdentifier::trace(CInstance* inst, call_stack& stack) {
   auto field = child("identifier")->get_name();
 
   if (auto node_namespace = get_repo()->get_namespace(scope)) {
-    LOG_R("namespace!\n");
     return node_namespace->get_field(field)->trace(inst, stack);
   }
 

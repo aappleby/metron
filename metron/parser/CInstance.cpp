@@ -101,7 +101,7 @@ CHECK_RETURN Err CInstance::log_action(CNode* node, TraceAction action, call_sta
   }
 
   if (auto constructor = stack[0]->as<CNodeConstructor>()) {
-    LOG_R("not recording action because we're inside init()\n");
+    //LOG_R("not recording action because we're inside init()\n");
     return err;
   }
 
@@ -179,8 +179,8 @@ bool CInstance::check_port_directions(CInstance* b) {
   auto sb = b->state_stack.back();
 
   LOG("Checking %s:%s vs %s:%s\n",
-    a->name.c_str(), to_string(sa),
-    b->name.c_str(), to_string(sb)
+    a->get_path().c_str(), to_string(sa),
+    b->get_path().c_str(), to_string(sb)
   );
 
   assert(sa >= TS_NONE || sa <= TS_REGISTER);
@@ -286,9 +286,9 @@ CHECK_RETURN Err CInstClass::log_action(CNode* node, TraceAction action, call_st
 void CInstClass::commit_state() {
   for (auto child : children) {
     // Don't cross module boundaries when committing traced state
-    if (!child->as<CInstClass>()) {
+    //if (!child->as<CInstClass>()) {
       child->commit_state();
-    }
+    //}
   }
 }
 
@@ -426,6 +426,7 @@ CHECK_RETURN Err CInstPrim::log_action(CNode* node, TraceAction action, call_sta
 void CInstPrim::commit_state() {
   assert(node_field);
 
+  /*
   auto new_type = trace_state_to_field_type(state_stack.back());
 
   if (node_field->field_type == FT_UNKNOWN) {
@@ -433,6 +434,7 @@ void CInstPrim::commit_state() {
   }
 
   assert(node_field->field_type == new_type);
+  */
 }
 
 //------------------------------------------------------------------------------

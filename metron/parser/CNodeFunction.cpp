@@ -438,10 +438,10 @@ void CNodeFunction::dump() const {
 void CNodeFunction::dump_call_graph() {
 
   for (auto r : self_reads) {
-    LOG("Reads %s\n", r->name.c_str());
+    LOG("Reads %s\n", r->get_path().c_str());
   }
   for (auto w : self_writes) {
-    LOG("Writes %s\n", w->name.c_str());
+    LOG("Writes %s\n", w->get_path().c_str());
   }
 
   if (internal_callees.size()) {

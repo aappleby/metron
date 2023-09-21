@@ -304,82 +304,9 @@ int main_new(Options opts) {
 
   //----------------------------------------
 
-  LOG_R("//----------------------------------------\n");
-  LOG_R("// Call graph\n");
-  LOG("\n");
-
-  for (auto node_class : repo.all_classes) {
-    node_class->dump_call_graph();
-    LOG("\n");
-    node_class->dump();
-    LOG("\n");
-  }
-
-  LOG_R("//----------------------------------------\n");
-  LOG("\n");
-
-  for (auto i : repo.all_instances) {
-    i->dump_tree();
-  }
-
-  LOG_R("//----------------------------------------\n");
-  LOG("\n");
-
-  LOG_R("early exit 2!\n");
-  exit(0);
-
-  //----------------------------------------
-
   LOG_B("Categorizing fields\n");
 
-  /*
-  Err err;
-
-  if (verbose) {
-    LOG_G("Categorizing %s\n", name().c_str());
-  }
-
-  for (auto f : all_fields) {
-    if (f->is_param()) {
-      continue;
-    }
-
-    if (f->is_component()) {
-      components.push_back(f);
-    }
-    else if (f->is_public() && f->is_input()) {
-      input_signals.push_back(f);
-    }
-    else if (f->is_public() && f->is_signal()) {
-      output_signals.push_back(f);
-    }
-    else if (f->is_public() && f->is_register()) {
-      output_registers.push_back(f);
-    }
-    else if (f->is_private() && f->is_register()) {
-      private_registers.push_back(f);
-    }
-    else if (f->is_private() && f->is_signal()) {
-      private_signals.push_back(f);
-    }
-    else if (!f->is_public() && f->is_input()) {
-      private_registers.push_back(f);
-    }
-    else if (f->is_enum()) {
-    }
-    else if (f->is_dead()) {
-      dead_fields.push_back(f);
-    }
-    else {
-      err << ERR("Don't know how to categorize %s = %s\n", f->cname(),
-                 to_string(f->_state));
-      f->error();
-    }
-  }
-  */
-
-
-
+#if 0
   for (auto node_class : repo.all_classes) {
 
     LOG_INDENT_SCOPE();
@@ -391,7 +318,6 @@ int main_new(Options opts) {
 
       if (!f->is_public) continue;
 
-#if 0
       if (f->field_type == FT_INPUT) {
         LOG_G("input signal %s\n", fname.c_str());
         node_class->input_signals.push_back(f);
@@ -404,9 +330,9 @@ int main_new(Options opts) {
         LOG_G("output register f%s\n", fname.c_str());
         node_class->output_registers.push_back(f);
       }
-#endif
     }
   }
+#endif
 
 
 #if 0
@@ -431,29 +357,11 @@ int main_new(Options opts) {
 
 #endif
 
-
-
-
-
-
-  LOG_B("//----------------------------------------\n");
-  LOG_B("// Class dump\n");
-
-  for (auto c : repo.all_classes) {
-    c->dump();
-    LOG("\n");
-  }
-
-
-  LOG_R("early exit\n");
-  LOG("");
-  exit(0);
-
-
   //========================================
 
   LOG_B("Categorizing methods\n");
 
+#if 0
   //----------------------------------------
   // Everything called by a constructor is init.
 
@@ -571,6 +479,7 @@ int main_new(Options opts) {
     }
   }
 #endif
+#endif
 
   //----------------------------------------
   // Methods categorized, we can assign emit types
@@ -605,15 +514,40 @@ int main_new(Options opts) {
 
   //----------------------------------------
 
-  /*if (opts.verbose)*/ {
-    LOG_B("\n");
-    LOG_B("//----------------------------------------\n");
-    LOG_B("// Repo dump\n\n");
-    LOG_INDENT_SCOPE();
-    repo.dump();
-    LOG_B("//----------------------------------------\n");
-    LOG_B("\n");
+  LOG_B("\n");
+  LOG_B("//----------------------------------------\n");
+  LOG_B("// Repo dump\n\n");
+  LOG_INDENT();
+  repo.dump();
+  LOG_DEDENT();
+  LOG_B("//----------------------------------------\n");
+  LOG_B("\n");
+
+#if 0
+  //----------------------------------------
+
+  LOG_R("//----------------------------------------\n");
+  LOG_R("// Call graph\n");
+  LOG("\n");
+
+  for (auto node_class : repo.all_classes) {
+    node_class->dump_call_graph();
+    LOG("\n");
+    node_class->dump();
+    LOG("\n");
   }
+
+  LOG_R("//----------------------------------------\n");
+  LOG("\n");
+
+  for (auto i : repo.all_instances) {
+    i->dump_tree();
+  }
+
+  LOG_R("//----------------------------------------\n");
+  LOG("\n");
+
+#endif
 
   //exit(0);
 

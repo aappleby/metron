@@ -146,6 +146,7 @@ Err CNodeClass::collect_fields_and_methods() {
       if (auto constructor = child->as<CNodeConstructor>()) {
         assert(this->constructor == nullptr);
         this->constructor = constructor;
+        constructor->method_type = MT_INIT;
       }
       else {
         all_functions.push_back(n);

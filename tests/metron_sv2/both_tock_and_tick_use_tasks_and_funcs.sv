@@ -10,9 +10,6 @@ module Module (
   input logic clock,
   // output signals
   output logic[7:0] my_sig,
-  // output registers
-  output logic[7:0] my_reg1,
-  output logic[7:0] my_reg2,
   // tock() ports
   input int tock_z
 );

@@ -132,16 +132,16 @@ module Module (
 /*public:*/
 
   always_comb begin : tock_only_calls_private_tick
-    private_tick_x = 17;
-    /*private_tick(17);*/
+    tick_private_x = 17;
+    /*tick_private(17);*/
   end
 
 /*private:*/
   int my_reg4;
-  always_ff @(posedge clock) begin : private_tick
-    my_reg4 <= my_reg4 + private_tick_x;
+  always_ff @(posedge clock) begin : tick_private
+    my_reg4 <= my_reg4 + tick_private_x;
   end
-  int private_tick_x;
+  int tick_private_x;
 
 
 endmodule

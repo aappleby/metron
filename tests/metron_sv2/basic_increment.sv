@@ -5,12 +5,7 @@
 
 module Module (
   // global clock
-  input logic clock,
-  // output registers
-  output int my_reg1,
-  output int my_reg2,
-  output int my_reg3,
-  output int my_reg4
+  input logic clock
 );
 /*public:*/
 

@@ -11,12 +11,9 @@ module Module (
   output int my_sig5a,
   output int my_sig5b,
   output int my_sig6a,
-  output int my_sig6b,
   // output registers
   output int my_reg1,
   output int my_reg2,
-  output int my_reg3,
-  output int my_reg4,
   // func_no_params_return() ports
   output int func_no_params_return_ret,
   // func_params_return() ports
@@ -135,16 +132,16 @@ module Module (
 /*public:*/
 
   always_comb begin : tock_only_calls_private_tick
-    private_tick_x = 17;
-    /*private_tick(17);*/
+    tick_private_x = 17;
+    /*tick_private(17);*/
   end
 
 /*private:*/
   int my_reg4;
-  always_comb begin : private_tick
-    my_reg4 = my_reg4 + private_tick_x;
+  always_ff @(posedge clock) begin : tick_private
+    my_reg4 <= my_reg4 + tick_private_x;
   end
-  int private_tick_x;
+  int tick_private_x;
 
 
 endmodule

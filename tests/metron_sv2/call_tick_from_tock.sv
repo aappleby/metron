@@ -6,8 +6,6 @@
 module Module (
   // global clock
   input logic clock,
-  // output registers
-  output logic[7:0] my_reg,
   // tock() ports
   input logic[7:0] tock_val
 );

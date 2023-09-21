@@ -5,12 +5,6 @@
 module Module (
   // global clock
   input logic clock,
-  // output registers
-  output logic[7:0] reg1,
-  output logic[7:0] reg2,
-  output logic[7:0] reg3,
-  output logic[7:0] reg4,
-  output logic[7:0] reg5,
   // tock() ports
   output int tock_ret
 );

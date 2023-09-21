@@ -102,12 +102,12 @@ private:
 public:
 
   void tock_only_calls_private_tick() {
-    private_tick(17);
+    tick_private(17);
   }
 
 private:
   int my_reg4;
-  void private_tick(int x) {
+  void tick_private(int x) {
     my_reg4 = my_reg4 + x;
   }
 

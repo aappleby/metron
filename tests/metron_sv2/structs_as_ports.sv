@@ -33,10 +33,7 @@ module TilelinkDevice (
   // input signals
   input tilelink_a tla,
   // output signals
-  output tilelink_d tld,
-  // output registers
-  output logic[31:0] test_reg,
-  output logic oe
+  output tilelink_d tld
 );
 /*public:*/
 
@@ -86,11 +83,8 @@ module TilelinkCPU (
   input logic clock,
   // input signals
   input tilelink_d tld,
-  input logic[31:0] addr,
   // output signals
-  output tilelink_a tla,
-  // output registers
-  output logic[31:0] data
+  output tilelink_a tla
 );
 /*public:*/
 
@@ -150,30 +144,21 @@ module Top (
     .clock(clock),
     // Input signals
     .tld(cpu_tld),
-    .addr(cpu_addr),
     // Output signals
-    .tla(cpu_tla),
-    // Output registers
-    .data(cpu_data)
+    .tla(cpu_tla)
   );
   tilelink_d cpu_tld;
-  logic[31:0] cpu_addr;
   tilelink_a cpu_tla;
-  cpu_tla;
   TilelinkDevice dev(
     // Global clock
     .clock(clock),
     // Input signals
     .tla(dev_tla),
     // Output signals
-    .tld(dev_tld),
-    // Output registers
-    .test_reg(dev_test_reg),
-    .oe(dev_oe)
+    .tld(dev_tld)
   );
   tilelink_a dev_tla;
   tilelink_d dev_tld;
-  dev_tld;
 endmodule
 
 //------------------------------------------------------------------------------

@@ -315,10 +315,10 @@ int main_new(Options opts) {
 
       if (auto inst_prim = inst_child->as<CInstPrim>()) {
         auto field = inst_prim->node_field;
-        auto state = inst_prim->state_stack.back();
+        if (!field->is_public) continue;
 
-        switch(state) {
-          case TS_NONE:     assert(false); break;
+        switch(inst_prim->state_stack.back()) {
+          case TS_NONE:     break;
           case TS_INPUT:    node_class->input_signals.push_back(field);    break;
           case TS_OUTPUT:   node_class->output_signals.push_back(field);   break;
           case TS_MAYBE:    node_class->output_registers.push_back(field); break;
@@ -331,10 +331,10 @@ int main_new(Options opts) {
 
       if (auto inst_struct = inst_child->as<CInstStruct>()) {
         auto field = inst_struct->node_field;
-        auto state = inst_struct->state_stack.back();
+        if (!field->is_public) continue;
 
-        switch(state) {
-          case TS_NONE:     assert(false); break;
+        switch(inst_struct->state_stack.back()) {
+          case TS_NONE:     break;
           case TS_INPUT:    node_class->input_signals.push_back(field);    break;
           case TS_OUTPUT:   node_class->output_signals.push_back(field);   break;
           case TS_MAYBE:    node_class->output_registers.push_back(field); break;

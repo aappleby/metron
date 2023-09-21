@@ -1199,14 +1199,15 @@ TokenSpan match_for(CContext& ctx, TokenSpan body) {
   Oneof<
     Ref<cap_assignment>,
     Ref<cap_expression>,
-    Ref<match_declaration_exp>
+    //Ref<match_declaration_exp>
+    CaptureAnon<Ref<match_declaration_exp>, CNodeDeclaration>
   >;
 
   using pattern =
   Seq<
     Tag<"for",       cap_keyword<"for">>,
     Tag<"ldelim",    cap_punct<"(">>,
-    Tag<"init",      CaptureAnon<Opt<exp_or_decl>, CNodeList>>,
+    Tag<"init",      Opt<exp_or_decl>>,
     cap_punct<";">,
     Tag<"condition", Opt<Ref<cap_expression>>>,
     cap_punct<";">,

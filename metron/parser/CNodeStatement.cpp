@@ -478,29 +478,62 @@ Err CNodeCompound::emit_hoisted_decls(Cursor& cursor) {
   cursor.elide_value.push(true);
 
   for (auto child : this) {
-    auto exp = child->as<CNodeExpStatement>();
-    if (!exp) continue;
-    auto decl = exp->child("exp")->as<CNodeDeclaration>();
-    if (!decl) continue;
+    if (auto exp = child->as<CNodeExpStatement>()) {
+      if (auto decl = exp->child("exp")->as<CNodeDeclaration>()) {
 
-    // Don't emit decls for localparams
-    if (decl->child("const")) continue;
+        // Don't emit decls for localparams
+        if (decl->child("const")) continue;
 
-    auto name = decl->get_namestr();
+        auto name = decl->get_namestr();
+        auto decl_type = decl->child("type");
+        auto decl_name = decl->child("name");
 
-    auto decl_type = decl->child("type");
-    auto decl_name = decl->child("name");
+        err << cursor.start_line();
 
-    err << cursor.start_line();
+        //err << cursor.emit_print("DECL %s", name.c_str());
 
-    //err << cursor.emit_print("DECL %s", name.c_str());
+        cursor.tok_cursor = decl_type->tok_begin();
 
-    cursor.tok_cursor = decl_type->tok_begin();
+        err << cursor.emit(decl_type);
+        err << cursor.emit_gap();
+        err << cursor.emit(decl_name);
+        err << cursor.emit_print(";");
+      }
+    }
 
-    err << cursor.emit(decl_type);
-    err << cursor.emit_gap();
-    err << cursor.emit(decl_name);
-    err << cursor.emit_print(";");
+    if (auto node_for = child->as<CNodeFor>()) {
+      if (auto node_decl = node_for->child("init")->as<CNodeDeclaration>()) {
+        //node_decl->dump_parse_tree();
+        /*
+        if (c.sym == sym_for_statement) {
+          auto init = c.get_field(field_initializer);
+          if (init.sym == sym_declaration) {
+            err << start_line();
+            err << emit_splice(init);
+          }
+        }
+        */
+        //err << cursor.start_line();
+        //err << cursor.emit_print("laksjdlfkajsdf");
+
+        auto name = node_decl->get_namestr();
+        auto decl_type = node_decl->child("type");
+        auto decl_name = node_decl->child("name");
+
+        err << cursor.start_line();
+
+        //err << cursor.emit_print("DECL %s", name.c_str());
+
+        cursor.tok_cursor = decl_type->tok_begin();
+
+        err << cursor.emit(decl_type);
+        err << cursor.emit_gap();
+        err << cursor.emit(decl_name);
+        err << cursor.emit_print(";");
+
+      }
+    }
+
   }
 
   cursor.elide_type.pop();

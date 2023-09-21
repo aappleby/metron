@@ -112,15 +112,20 @@ Err CNodeField::emit(Cursor& cursor) {
     return err << cursor.check_done(this);
   }
 
-  if (node_decl->node_static && node_decl->node_const) {
+  //if (node_decl->node_static && node_decl->node_const) {
+  if (node_decl->node_const) {
     // Localparam
     err << cursor.emit_print(in_namespace ? "parameter " : "localparam ");
 
-    err << cursor.comment_out(node_decl->node_static);
-    err << cursor.emit_gap();
+    if (node_decl->node_static) {
+      err << cursor.comment_out(node_decl->node_static);
+      err << cursor.emit_gap();
+    }
 
-    err << cursor.comment_out(node_decl->node_const);
-    err << cursor.emit_gap();
+    if (node_decl->node_const) {
+      err << cursor.comment_out(node_decl->node_const);
+      err << cursor.emit_gap();
+    }
 
     err << cursor.emit(node_decl->node_type);
     err << cursor.emit_gap();
@@ -543,9 +548,11 @@ Err CNodeField::emit_component(Cursor& cursor) {
   if (component_class->output_registers.size()) {
     //err << cursor.start_line();
     //err << cursor.emit_print("// Output registers");
-    for (auto f : component_class->output_signals) {
+    for (auto f : component_class->output_registers) {
       auto port_name = f->get_namestr();
       err << cursor.start_line();
+      err << cursor.emit_splice(f->child("decl")->child("type"));
+      err << cursor.emit_print(" ");
       err << cursor.emit_print("%s_%s;", field_name.c_str(), port_name.c_str());
     }
   }

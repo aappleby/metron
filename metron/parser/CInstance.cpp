@@ -381,6 +381,10 @@ CHECK_RETURN Err CInstStruct::log_action(CNode* node, TraceAction action, call_s
 }
 
 void CInstStruct::commit_state() {
+  for (auto child : children) {
+    child->commit_state();
+  }
+
   auto merged_state = TS_PENDING;
   for (auto child : children) {
     merged_state = merge_branch(merged_state, child->state_stack.back());

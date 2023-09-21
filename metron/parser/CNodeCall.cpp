@@ -299,6 +299,7 @@ Err CNodeCall::emit(Cursor& cursor) {
       for (auto child : node_args) {
         if (child->tag_is("ldelim")) {
           err << cursor.emit_replacement(child, "{");
+          err << cursor.emit_gap();
         }
         else if (child->tag_is("rdelim")) {
           err << cursor.emit_replacement(child, "}");

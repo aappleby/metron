@@ -11,8 +11,9 @@ module Module (
   // decl in for
   always_comb begin : loop1
     int x;
+    int i;
     x = 0;
-    for (int i = 0; i < 10; i = i + 1) begin
+    for (i = 0; i < 10; i = i + 1) begin
       x = x + i;
     end
     loop1_ret = x;

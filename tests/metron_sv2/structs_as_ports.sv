@@ -4,11 +4,11 @@
 // ...but they have to be public member variables because Yosys...
 
 package TL;
-  int PutFullData = 0;
-  int PutPartialData = 1;
-  int Get = 4;
-  int AccessAck = 0;
-  int AccessAckData = 1;
+  parameter /*const*/ int PutFullData = 0;
+  parameter /*const*/ int PutPartialData = 1;
+  parameter /*const*/ int Get = 4;
+  parameter /*const*/ int AccessAck = 0;
+  parameter /*const*/ int AccessAckData = 1;
 endpackage
 
 typedef struct packed {
@@ -60,7 +60,8 @@ module TilelinkDevice (
     if (tla.a_address == 16'h1234) begin
       if (tla.a_opcode == TL::PutFullData && tla.a_valid) begin
         logic[31:0] mask;
-        mask = {{8 {tla.a_mask[0]}},
+        mask = {
+          {8 {tla.a_mask[0]}},
           {8 {tla.a_mask[1]}},
           {8 {tla.a_mask[2]}},
           {8 {tla.a_mask[3]}}};

@@ -90,6 +90,16 @@ void CNodeEnum::init(const char* match_tag, SpanType span, uint64_t flags) {
 CHECK_RETURN Err CNodeEnum::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
+  dump_parse_tree();
+
+  // Extract enum bit width, if present.
+  cursor.override_size.push(32);
+  if (node_type) {
+    if (auto targs = node_type->child("template_args")->as<CNodeList>()) {
+      cursor.override_size.top() = atoi(targs->items[0]->text_begin());
+    }
+  }
+
   if (!node_decl) {
     err << cursor.emit_print("typedef ");
   }
@@ -129,6 +139,8 @@ CHECK_RETURN Err CNodeEnum::emit(Cursor& cursor) {
   }
 
   err << cursor.emit(node_semi);
+
+  cursor.override_size.pop();
 
   return err << cursor.check_done(this);
 }

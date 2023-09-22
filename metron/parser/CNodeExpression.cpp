@@ -193,8 +193,9 @@ Err CNodeConstant::emit(Cursor& cursor) {
   std::string body = get_textstr();
 
   // FIXME what was this for?
-  //int size_cast = override_size.top();
-  int size_cast = 0;
+  // This was for forcing enum constants to the size of the enum type
+  int size_cast = cursor.override_size.top();
+  //int size_cast = 0;
 
   // Count how many 's are in the number
   int spacer_count = 0;

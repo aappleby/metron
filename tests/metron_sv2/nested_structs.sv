@@ -15,16 +15,17 @@ typedef struct packed {
 module Module (
   // global clock
   input logic clock,
-  // output signals
+  // output registers
+  output OuterStruct r,
   output OuterStruct s
 );
 /*public:*/
 
 
   always_comb begin : tock_func1
-    s.x.a = 1;
-    s.x.b = 2;
-    s.x.c = 3;
+    r.x.a = 1;
+    r.x.b = 2;
+    r.x.c = 3;
   end
 
   always_ff @(posedge clock) begin : tick_func2

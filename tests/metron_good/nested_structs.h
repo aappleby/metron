@@ -15,12 +15,13 @@ struct OuterStruct {
 class Module {
 public:
 
+  OuterStruct r;
   OuterStruct s;
 
   void tock_func1() {
-    s.x.a = 1;
-    s.x.b = 2;
-    s.x.c = 3;
+    r.x.a = 1;
+    r.x.b = 2;
+    r.x.c = 3;
   }
 
   void tick_func2() {

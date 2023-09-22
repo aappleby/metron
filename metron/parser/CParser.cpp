@@ -957,6 +957,19 @@ using cap_namespace = CaptureAnon<Ref<match_namespace>, CNodeNamespace>;
 
 //------------------------------------------------------------------------------
 
+using cap_using =
+CaptureAnon<
+  Seq<
+    Tag<"using",     cap_keyword<"using">>,
+    Tag<"namespace", cap_keyword<"namespace">>,
+    Tag<"name",      cap_identifier>,
+    Tag<"semi",      cap_punct<";">>
+  >,
+  CNodeUsing
+>;
+
+//------------------------------------------------------------------------------
+
 TokenSpan match_struct(CContext& ctx, TokenSpan body) {
   // clang-format off
   using pattern =
@@ -1514,6 +1527,7 @@ TokenSpan match_statement(CContext& ctx, TokenSpan body) {
     cap_compound,
     cap_do_while,
     cap_return,
+    cap_using,
 
     statement_wrapper<cap_keyword<"break">>,
     statement_wrapper<cap_keyword<"continue">>,
@@ -1547,6 +1561,7 @@ TokenSpan match_translation_unit(CContext& ctx, TokenSpan body) {
     cap_union,
     cap_enum,
     cap_template,
+    cap_using,
     statement_wrapper<CaptureAnon<Ref<match_declaration_exp>, CNodeDeclaration>>
 
     //cap_typedef FIXME

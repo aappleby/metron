@@ -51,6 +51,7 @@ constexpr std::array c_keywords = {
 "typedef",
 "union",
 //"unsigned",
+"using",
 "void",
 "while",
 };

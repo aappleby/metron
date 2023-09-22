@@ -36,6 +36,9 @@ int main(int argc, char** argv) {
 
   CLI11_PARSE(app, argc, argv);
 
+  // Force everything to use the new parser. FIXME - still broken
+  //opts.parse = true;
+
   if (opts.quiet) TinyLog::get().mute();
   if (opts.monochrome) TinyLog::get().mono();
 

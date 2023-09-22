@@ -538,10 +538,13 @@ TextSpan match_preproc(TextMatchContext& ctx, TextSpan body) {
   // clang-format off
   using pattern = Seq<
     Atom<'#'>,
+    Some<Range<'a','z','A','Z'>>
+    /*
     Any<
       Ref<match_splice>,
       NotAtom<'\n'>
     >
+    */
   >;
   // clang-format on
   return pattern::match(ctx, body);

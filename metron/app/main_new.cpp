@@ -34,6 +34,13 @@ int main_new(Options opts) {
     return -1;
   }
 
+  for (auto pair : repo.source_map)
+  {
+    CSourceFile* file = pair.second;
+    file->context.top_head->dump_parse_tree();
+  }
+  LOG("\n");
+
   //----------------------------------------
   // Sanity check parse tree
 
@@ -59,16 +66,6 @@ int main_new(Options opts) {
     visit_children(file->context.root_node, check_span);
   }
   LOG("\n");
-
-  //----------------------------------------
-
-  /*
-  for (auto pair : repo.source_map) {
-    CSourceFile* file = pair.second;
-    file->context.top_head->dump_parse_tree();
-  }
-  LOG("\n");
-  */
 
   //----------------------------------------
   // All modules are now in the library, we can resolve references to other

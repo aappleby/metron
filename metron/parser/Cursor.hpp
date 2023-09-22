@@ -142,11 +142,13 @@ struct Cursor {
   std::stack<std::string> block_prefix;
   std::stack<std::string> block_suffix;
   std::stack<int> override_size;
-  std::stack<string_to_node> preproc_vars;
+  //std::stack<string_to_node> preproc_vars;
   std::stack<string_to_string> id_map;
   std::stack<string_to_string> token_map;
   std::stack<bool> elide_type;
   std::stack<bool> elide_value;
+
+  std::set<std::string> preproc_vars;
 
   //----------------------------------------
   // Output state

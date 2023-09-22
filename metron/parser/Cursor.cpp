@@ -35,6 +35,10 @@ Cursor::Cursor(CSourceRepo* repo, CSourceFile* source, std::string* str_out) {
     {"sign_extend",    "$signed" },
     {"zero_extend",    "$unsigned" },
     {"DONTCARE",       "'x" },
+    {"#include",       "`include"},
+    {"#define",        "`define"},
+    {"#ifndef",        "`ifndef"},
+    {"#endif",         "`endif"},
   });
 
   block_prefix.push("begin");

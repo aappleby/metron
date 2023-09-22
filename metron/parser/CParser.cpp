@@ -244,64 +244,75 @@ TokenSpan match_qualified_identifier(CContext& ctx, TokenSpan body) {
 
 //------------------------------------------------------------------------------
 
-TextSpan CContext::handle_include(TextSpan body) {
-  if (body.begin[0] == '<') return body.fail();
+template<StringParam lit>
+using cap_literal = CaptureAnon<Ref<match_literal<lit>>, CNodeIdentifier>;
+using cap_string = CaptureAnon<Atom<LEX_STRING>, CNodeConstString>;
 
-  std::string path(body.begin + 1, body.end - 1);
+TokenSpan cap_preproc(CContext& ctx, TokenSpan body) {
 
-  if (path.find("metron_tools.h") != std::string::npos) {
-    return body.fail();
-  }
+  using include_pattern =
+  Tag<
+    "preproc_include",
+    CaptureAnon<
+      Seq<
+        Tag<"include", cap_literal<"#include">>,
+        Tag<"path",    cap_string>
+      >,
+      CNodePreproc
+    >
+  >;
 
-  CSourceFile* include_file = nullptr;
-  Err err = repo->load_source(path, &include_file);
+  using define_pattern =
+  Tag<
+    "preproc_define",
+    CaptureAnon<
+      Seq<
+        Tag<"define",  cap_literal<"#define">>,
+        Tag<"name",    cap_identifier>,
+        Tag<"exp",     Opt<Ref<cap_expression>>>
+      >,
+      CNodePreproc
+    >
+  >;
 
-  if (!err) {
-    type_scope->merge(include_file->context.type_scope);
-  }
+  using ifndef_pattern =
+  Tag<
+    "preproc_ifndef",
+    CaptureAnon<
+      Seq<
+        Tag<"ifndef",  cap_literal<"#ifndef">>,
+        Tag<"name",    cap_identifier>
+      >,
+      CNodePreproc
+    >
+  >;
 
-  return body.consume();
+  using endif_pattern =
+  Tag<
+    "preproc_endif",
+    CaptureAnon<
+      Tag<"endif",  cap_literal<"#endif">>,
+      CNodePreproc
+    >
+  >;
+
+  // Tag<"name",   Dispatch<cap_identifier, Ref<&CContext::add_struct2>>>,
+
+  using pattern =
+  Dispatch<
+    Oneof<
+      include_pattern,
+      define_pattern,
+      ifndef_pattern,
+      endif_pattern
+    >,
+    Ref<&CContext::handle_preproc>
+  >;
+
+  auto tail = pattern::match(ctx, body);
+
+  return tail;
 }
-
-//------------------------------------------------------------------------------
-
-TokenSpan match_preproc(CContext& ctx, TokenSpan body) {
-  if (body.begin->lex_type() != LEX_PREPROC) return body.fail();
-
-  std::string s(body.begin->text_begin(), body.begin->text_end());
-
-  if (s.find("stdio") != std::string::npos) {
-    for (auto t : stdio_typedefs) {
-      ctx.type_scope->add_typedef(t);
-    }
-    return body.advance(1);
-  }
-
-  if (s.find("stdint") != std::string::npos) {
-    for (auto t : stdint_typedefs) {
-      ctx.type_scope->add_typedef(t);
-    }
-    return body.advance(1);
-  }
-
-  if (s.find("stddef") != std::string::npos) {
-    for (auto t : stddef_typedefs) {
-      ctx.type_scope->add_typedef(t);
-    }
-    return body.advance(1);
-  }
-
-  using namespace cookbook;
-
-  {
-    c_include_line<Ref<&CContext::handle_include>>::match(ctx, body.begin->as_text_span());
-  }
-
-  return body.advance(1);
-};
-
-using cap_preproc = CaptureAnon<Ref<match_preproc>, CNodePreproc>;
-
 
 //------------------------------------------------------------------------------
 
@@ -1528,7 +1539,7 @@ TokenSpan match_translation_unit(CContext& ctx, TokenSpan body) {
   // clang-format off
   using pattern =
   Any<
-    cap_preproc,
+    Ref<cap_preproc>,
     cap_function,
     cap_namespace,
     cap_class,

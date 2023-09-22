@@ -8,6 +8,8 @@
 
 #include "metrolib/core/Log.h"
 #include "matcheroni/Matcheroni.hpp"
+#include "CSourceFile.hpp"
+#include "CSourceRepo.hpp"
 
 using namespace matcheroni;
 
@@ -153,6 +155,69 @@ TokenSpan CContext::match_builtin_type_suffix(TokenSpan body) {
   else {
     return body.fail();
   }
+}
+
+//------------------------------------------------------------------------------
+
+TextSpan CContext::handle_include(TextSpan body) {
+  if (body.begin[0] == '<') return body.fail();
+
+  std::string path(body.begin + 1, body.end - 1);
+
+  if (path.find("metron_tools.h") != std::string::npos) {
+    return body.consume();
+  }
+
+  CSourceFile* include_file = nullptr;
+  Err err = repo->load_source(path, &include_file);
+
+  if (!err) {
+    type_scope->merge(include_file->context.type_scope);
+  }
+
+  return body.consume();
+}
+
+//------------------------------------------------------------------------------
+
+TokenSpan CContext::handle_preproc(TokenSpan body) {
+  auto node_preproc = top_tail->as<CNodePreproc>();
+
+  if (node_preproc->tag_is("preproc_include")) {
+    std::string path = node_preproc->child("path")->get_textstr();
+
+    if (path.find("metron_tools.h") != std::string::npos) {
+    }
+    else if (path.find("stdio") != std::string::npos) {
+      for (auto t : stdio_typedefs) {
+        type_scope->add_typedef(t);
+      }
+    }
+    else if (path.find("stdint") != std::string::npos) {
+      for (auto t : stdint_typedefs) {
+        type_scope->add_typedef(t);
+      }
+    }
+    else if (path.find("stddef") != std::string::npos) {
+      for (auto t : stddef_typedefs) {
+        type_scope->add_typedef(t);
+      }
+    }
+    else {
+      CSourceFile* include_file = nullptr;
+      Err err = repo->load_source(path, &include_file);
+
+      if (!err) {
+        type_scope->merge(include_file->context.type_scope);
+      }
+    }
+  }
+  else if (node_preproc->tag_is("preproc_define")) {
+    auto name = node_preproc->child("name")->get_textstr();
+    define_names.insert(name);
+  }
+
+  return body.consume();
 }
 
 //------------------------------------------------------------------------------

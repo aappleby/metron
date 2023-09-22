@@ -95,6 +95,8 @@ class CContext : public parseroni::NodeContext<CNode> {
 
   matcheroni::TextSpan handle_include(matcheroni::TextSpan body);
 
+  TokenSpan handle_preproc(TokenSpan body);
+
   //----------------------------------------
 
   CSourceRepo* repo;
@@ -102,6 +104,8 @@ class CContext : public parseroni::NodeContext<CNode> {
   std::string source;
   std::vector<Lexeme> lexemes;
   std::vector<CToken> tokens;
+
+  std::set<std::string> define_names;
 
   CScope* type_scope;
 

@@ -5,7 +5,7 @@
 
 `define MY_CONSTANT1 10
 `define MY_CONSTANT2 20
-`define MY_OTHER_CONSTANT (MY_CONSTANT1 + MY_CONSTANT2 + 7)
+`define MY_OTHER_CONSTANT (`MY_CONSTANT1 + `MY_CONSTANT2 + 7)
 
 module Module (
   // test() ports
@@ -14,7 +14,7 @@ module Module (
 /*public:*/
 
   always_comb begin : test
-    test_ret = MY_OTHER_CONSTANT;
+    test_ret = `MY_OTHER_CONSTANT;
   end
 
 endmodule

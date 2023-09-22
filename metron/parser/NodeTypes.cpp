@@ -145,6 +145,23 @@ std::string_view CNodePreproc::get_name() const {
 
 Err CNodePreproc::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
+
+
+  if (tag_is("preproc_define")) {
+    err << cursor.emit_default(this);
+    auto name = child("name")->get_textstr();
+    cursor.preproc_vars.insert(name);
+  }
+
+  else if (tag_is("preproc_include")) {
+    err << cursor.emit_replacements(this, "#include", "`include", ".h", ".sv");
+  }
+
+  else {
+    err << cursor.emit_default(this);
+  }
+
+  /*
   auto v = get_text();
 
   if (v.starts_with("#include")) {
@@ -158,6 +175,7 @@ Err CNodePreproc::emit(Cursor& cursor) {
   } else {
     return ERR("Don't know how to handle this preproc");
   }
+  */
 
   return err << cursor.check_done(this);
 }
@@ -185,6 +203,10 @@ Err CNodeIdentifier::emit(Cursor& cursor) {
   if (found != id_map.end()) {
     auto replacement = (*found).second;
     err << cursor.emit_replacement(this, "%s", replacement.c_str());
+  }
+  else if (cursor.preproc_vars.contains(text)) {
+    err << cursor.emit_print("`");
+    err << cursor.emit_default(this);
   }
   else {
     err << cursor.emit_default(this);

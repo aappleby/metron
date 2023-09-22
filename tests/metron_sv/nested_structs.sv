@@ -28,14 +28,14 @@ module Module (
   end
 
   always_ff @(posedge clock) begin : tick_func2
-    s.y.a = 4;
-    s.y.b = 5;
-    s.y.c = 6;
+    s.y.a <= 4;
+    s.y.b <= 5;
+    s.y.c <= 6;
   end
 
   always_ff @(posedge clock) begin : tick_func3
-    s.z.a = 7;
-    s.z.b = 8;
-    s.z.c = 9;
+    s.z.a <= 7;
+    s.z.b <= 8;
+    s.z.c <= 9;
   end
 endmodule

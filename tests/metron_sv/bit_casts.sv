@@ -83,76 +83,76 @@ module Module (
     logic[1:0] dst2;
     logic dst1;
     src = 64'h1234567812345678;
-    dst64 = 64'(src);
-    dst63 = 63'(src);
-    dst62 = 62'(src);
-    dst61 = 61'(src);
-    dst60 = 60'(src);
+    dst64 = (64)'(src);
+    dst63 = (63)'(src);
+    dst62 = (62)'(src);
+    dst61 = (61)'(src);
+    dst60 = (60)'(src);
 
-    dst59 = 59'(src);
-    dst58 = 58'(src);
-    dst57 = 57'(src);
-    dst56 = 56'(src);
-    dst55 = 55'(src);
-    dst54 = 54'(src);
-    dst53 = 53'(src);
-    dst52 = 52'(src);
-    dst51 = 51'(src);
-    dst50 = 50'(src);
+    dst59 = (59)'(src);
+    dst58 = (58)'(src);
+    dst57 = (57)'(src);
+    dst56 = (56)'(src);
+    dst55 = (55)'(src);
+    dst54 = (54)'(src);
+    dst53 = (53)'(src);
+    dst52 = (52)'(src);
+    dst51 = (51)'(src);
+    dst50 = (50)'(src);
 
-    dst49 = 49'(src);
-    dst48 = 48'(src);
-    dst47 = 47'(src);
-    dst46 = 46'(src);
-    dst45 = 45'(src);
-    dst44 = 44'(src);
-    dst43 = 43'(src);
-    dst42 = 42'(src);
-    dst41 = 41'(src);
-    dst40 = 40'(src);
+    dst49 = (49)'(src);
+    dst48 = (48)'(src);
+    dst47 = (47)'(src);
+    dst46 = (46)'(src);
+    dst45 = (45)'(src);
+    dst44 = (44)'(src);
+    dst43 = (43)'(src);
+    dst42 = (42)'(src);
+    dst41 = (41)'(src);
+    dst40 = (40)'(src);
 
-    dst39 = 39'(src);
-    dst38 = 38'(src);
-    dst37 = 37'(src);
-    dst36 = 36'(src);
-    dst35 = 35'(src);
-    dst34 = 34'(src);
-    dst33 = 33'(src);
-    dst32 = 32'(src);
-    dst31 = 31'(src);
-    dst30 = 30'(src);
+    dst39 = (39)'(src);
+    dst38 = (38)'(src);
+    dst37 = (37)'(src);
+    dst36 = (36)'(src);
+    dst35 = (35)'(src);
+    dst34 = (34)'(src);
+    dst33 = (33)'(src);
+    dst32 = (32)'(src);
+    dst31 = (31)'(src);
+    dst30 = (30)'(src);
 
-    dst29 = 29'(src);
-    dst28 = 28'(src);
-    dst27 = 27'(src);
-    dst26 = 26'(src);
-    dst25 = 25'(src);
-    dst24 = 24'(src);
-    dst23 = 23'(src);
-    dst22 = 22'(src);
-    dst21 = 21'(src);
-    dst20 = 20'(src);
+    dst29 = (29)'(src);
+    dst28 = (28)'(src);
+    dst27 = (27)'(src);
+    dst26 = (26)'(src);
+    dst25 = (25)'(src);
+    dst24 = (24)'(src);
+    dst23 = (23)'(src);
+    dst22 = (22)'(src);
+    dst21 = (21)'(src);
+    dst20 = (20)'(src);
 
-    dst19 = 19'(src);
-    dst18 = 18'(src);
-    dst17 = 17'(src);
-    dst16 = 16'(src);
-    dst15 = 15'(src);
-    dst14 = 14'(src);
-    dst13 = 13'(src);
-    dst12 = 12'(src);
-    dst11 = 11'(src);
-    dst10 = 10'(src);
+    dst19 = (19)'(src);
+    dst18 = (18)'(src);
+    dst17 = (17)'(src);
+    dst16 = (16)'(src);
+    dst15 = (15)'(src);
+    dst14 = (14)'(src);
+    dst13 = (13)'(src);
+    dst12 = (12)'(src);
+    dst11 = (11)'(src);
+    dst10 = (10)'(src);
 
-    dst9 = 9'(src);
-    dst8 = 8'(src);
-    dst7 = 7'(src);
-    dst6 = 6'(src);
-    dst5 = 5'(src);
-    dst4 = 4'(src);
-    dst3 = 3'(src);
-    dst2 = 2'(src);
-    dst1 = 1'(src);
+    dst9 = (9)'(src);
+    dst8 = (8)'(src);
+    dst7 = (7)'(src);
+    dst6 = (6)'(src);
+    dst5 = (5)'(src);
+    dst4 = (4)'(src);
+    dst3 = (3)'(src);
+    dst2 = (2)'(src);
+    dst1 = (1)'(src);
     test_bN_ret = 0;
   end
 
@@ -308,7 +308,7 @@ module Module (
     logic[7:0] dst9;
     src = 64'h1234567812345678;
 
-    dst0 = src[7:0];
+    dst0 = (8)'(src);
     dst1 = src[8:1];
     dst2 = src[9:2];
     dst3 = src[10:3];
@@ -338,10 +338,10 @@ module Module (
     logic[some_size2-1:0] b8;
     logic[some_size2-1:0] b9;
     a = 10;
-    b = (some_size2)'(a);
+    b = some_size2'(a);
 
-    b0 = a[some_size2+-1:0];
-    b1 = a[some_size2+0:1];
+    b0 = some_size2'(a);
+    b1 = a[some_size2:1];
     b2 = a[some_size2+1:2];
     b3 = a[some_size2+2:3];
     b4 = a[some_size2+3:4];
@@ -367,7 +367,7 @@ module Module (
     c = a[9:3]; //static bit extract with literal offset, width N
 
     e = a[some_size1]; //static bit extract with variable offset, width 1
-    f = a[6 + some_size2 : some_size2]; //static bit extract with variable offset, width N
+    f = a[6+some_size2:some_size2]; //static bit extract with variable offset, width N
 
     test2_ret = 0;
   end

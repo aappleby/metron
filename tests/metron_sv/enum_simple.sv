@@ -30,17 +30,17 @@ module Module (
 );
  /*public:*/
   typedef enum { A1, /* random comment */ B1, C1 } simple_enum1;
-  typedef enum { A2 = 32'b01, B2 = 32'h02, C2 = 32'd3 } simple_enum2;
+  typedef enum { A2 = 2'b01, B2 = 8'h02, C2 = 3 } simple_enum2;
 
   enum { A3, B3, C3 } anon_enum_field1;
-  enum { A4 = 32'b01, B4 = 32'h02, C4 = 32'd3 } anon_enum_field2;
+  enum { A4 = 2'b01, B4 = 8'h02, C4 = 3 } anon_enum_field2;
 
   typedef enum { A5, B5, C5 } enum_class1;
-  typedef enum { A6 = 32'b01, B6 = 32'h02, C6 = 32'd3 } enum_class2;
+  typedef enum { A6 = 2'b01, B6 = 8'h02, C6 = 3 } enum_class2;
 
   // These should work in TreeSitter now
-  typedef enum int { A7 = 32'b01, B7 = 32'h02, C7 = 32'd3 } typed_enum;
-  typedef enum logic[7:0] { A8 = 8'b01, B8 = 8'h02, C8 = 8'd3 } sized_enum;
+  typedef enum int { A7 = 2'b01, B7 = 8'h02, C7 = 3 } typed_enum;
+  typedef enum logic[7:0] { A8 = 2'b01, B8 = 8'h02, C8 = 3 } sized_enum;
 
   always_comb begin : test1
     simple_enum1 e1;

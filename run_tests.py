@@ -81,7 +81,7 @@ def main():
 
     print_b("Checking that all test cases in metron_good convert to SV cleanly")
     errors += check_commands_good([
-        f"bin/metron -c {filename} -o {filename.replace('_good', '_sv').replace('.h', '.sv')}"
+        f"bin/metron -p -c {filename} -o {filename.replace('_good', '_sv').replace('.h', '.sv')}"
         for filename in metron_good
     ])
     print()

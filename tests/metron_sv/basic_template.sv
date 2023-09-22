@@ -16,8 +16,8 @@ module Submod (
 /*public:*/
 
   always_comb begin : tock
-    my_width = (WIDTH)'(100) + tock_dx;
-    my_height = (HEIGHT)'(200) + tock_dy;
+    my_width = WIDTH'(100) + tock_dx;
+    my_height = HEIGHT'(200) + tock_dy;
   end
 
 endmodule

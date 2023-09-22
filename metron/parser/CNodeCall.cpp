@@ -108,7 +108,9 @@ CHECK_RETURN Err CNodeCall::emit_bit_extract(Cursor& cursor) {
   //----------------------------------------
 
   CNode* node_exp = args[0];
-  bool   bare_exp = (node_exp->as<CNodeIdentifier>() != nullptr);
+  bool bare_exp = false;
+  bare_exp |= (node_exp->as<CNodeIdentifier>() != nullptr);
+  bare_exp |= (node_exp->as<CNodeConstInt>() != nullptr);
 
   //----------
 
@@ -129,7 +131,10 @@ CHECK_RETURN Err CNodeCall::emit_bit_extract(Cursor& cursor) {
   else {
     width = atoi(&func_name[1]);
   }
-  bool   bare_width = (node_width->as<CNodeIdentifier>() != nullptr);
+
+  bool bare_width = false;
+  bare_width |= (node_width->as<CNodeIdentifier>() != nullptr);
+  bare_width |= (node_width->as<CNodeConstInt>() != nullptr);
 
   //----------
 
@@ -144,13 +149,19 @@ CHECK_RETURN Err CNodeCall::emit_bit_extract(Cursor& cursor) {
       node_offset = args[1];
     }
   }
-  bool   bare_offset = (node_offset->as<CNodeIdentifier>() != nullptr);
+  bool bare_offset = false;
+  bare_offset |= (node_offset->as<CNodeIdentifier>() != nullptr);
+  bare_offset |= (node_offset->as<CNodeConstInt>() != nullptr);
+
+  //----------------------------------------
+
+  err << cursor.skip_over(this);
 
   //----------------------------------------
   // Handle casting DONTCARE
 
   if (node_exp->get_text() == "DONTCARE") {
-    err << cursor.skip_over(this);
+    //err << cursor.skip_over(this);
 
     if (node_width) {
       if (!bare_width) err << cursor.emit_print("(");
@@ -166,9 +177,25 @@ CHECK_RETURN Err CNodeCall::emit_bit_extract(Cursor& cursor) {
   }
 
   //----------------------------------------
-  // Expression
+  // Size cast with no offsets
 
-  err << cursor.skip_over(this);
+  if (offset == 0 && node_offset == nullptr) {
+
+    if (!bare_width) err << cursor.emit_print("(");
+    if (node_width)  err << cursor.emit_splice(node_width);
+    else             err << cursor.emit_print("%d", width);
+    if (!bare_width) err << cursor.emit_print(")");
+
+    err<< cursor.emit_print("'");
+    err << cursor.emit_print("(");
+    err << cursor.emit_splice(node_exp);
+    err << cursor.emit_print(")");
+
+    return err;
+  }
+
+  //----------------------------------------
+  // Expression
 
   if (!bare_exp) err << cursor.emit_print("(");
   err << cursor.emit_splice(node_exp);

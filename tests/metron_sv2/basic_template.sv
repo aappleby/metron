@@ -47,8 +47,8 @@ module Module (
     .tock_dx(submodule_tock_dx),
     .tock_dy(submodule_tock_dy)
   );
-  logic[WIDTH-1:0] submodule_my_width;
-  logic[HEIGHT-1:0] submodule_my_height;
-  logic[WIDTH-1:0] submodule_tock_dx;
-  logic[HEIGHT-1:0] submodule_tock_dy;
+  logic[10-1:0] submodule_tock_dx;
+  logic[11-1:0] submodule_tock_dy;
+  logic[10-1:0] submodule_my_width;
+  logic[11-1:0] submodule_my_height;
 endmodule

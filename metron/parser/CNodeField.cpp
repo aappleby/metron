@@ -521,6 +521,77 @@ Err CNodeField::emit_component(Cursor& cursor) {
 
   //err << emit_submod_binding_fields(cursor);
 
+  // Swap template arguments with the values from the template
+  // instantiation.
+  std::map<std::string, std::string> replacements;
+  cursor.id_map.push(cursor.id_map.top());
+
+  if (has_template_params) {
+    auto args = node_decl->node_type->child("template_args")->as<CNodeList>();
+
+    int param_count = component_template->params.size();
+    int arg_count = args->items.size();
+    assert(param_count == arg_count);
+
+    for (int i = 0; i < param_count; i++) {
+      auto param = component_template->params[i];
+      auto arg = args->items[i];
+
+      auto param_name = param->get_namestr();
+
+      //err << cursor.start_line();
+      //err << cursor.emit_print(".%.*s(", param_name.size(), param_name.data());
+      //err << cursor.emit_splice(arg);
+      //err << cursor.emit_print("),");
+
+      cursor.id_map.top()[param_name] = arg->get_textstr();
+    }
+
+  }
+
+
+  /*
+  auto args = node_type.get_field(field_arguments);
+  if (args) {
+    int arg_count = args.named_child_count();
+    for (int i = 0; i < arg_count; i++) {
+      auto key = component_mod->all_modparams[i]->name();
+      auto val = args.named_child(i).text();
+      replacements[key] = val;
+    }
+  }
+  */
+
+  for (auto m : component_class->all_functions) {
+    //if (m->is_constructor()) continue;
+    if (!m->is_public) continue;
+    if (m->method_type == MT_INIT) continue;
+    if (m->internal_callers.size()) continue;
+    if (m->params.empty() && !m->has_return()) continue;
+
+    auto func_name = m->get_namestr();
+
+    //err << cursor.start_line();
+    //err << cursor.emit_print("// %s() ports", func_name.c_str());
+
+    for (auto param : m->params) {
+      auto param_name = param->get_namestr();
+      err << cursor.start_line();
+      err << cursor.emit_splice(param->child("type"));
+      err << cursor.emit_print(" ");
+      err << cursor.emit_print("%s_%s_%s;",
+        field_name.c_str(), func_name.c_str(), param_name.c_str());
+    }
+
+    if (m->has_return()) {
+      err << cursor.start_line();
+      err << cursor.emit_splice(m->child("return_type"));
+      err << cursor.emit_print(" ");
+      err << cursor.emit_print("%s_%s_ret;",
+        field_name.c_str(), func_name.c_str());
+    }
+  }
+
   if (component_class->input_signals.size()) {
     //err << cursor.start_line();
     //err << cursor.emit_print("// Input signals");
@@ -557,38 +628,10 @@ Err CNodeField::emit_component(Cursor& cursor) {
     }
   }
 
-  for (auto m : component_class->all_functions) {
-    //if (m->is_constructor()) continue;
-    if (!m->is_public) continue;
-    if (m->method_type == MT_INIT) continue;
-    if (m->internal_callers.size()) continue;
-    if (m->params.empty() && !m->has_return()) continue;
-
-    auto func_name = m->get_namestr();
-
-    //err << cursor.start_line();
-    //err << cursor.emit_print("// %s() ports", func_name.c_str());
-
-    for (auto param : m->params) {
-      auto param_name = param->get_namestr();
-      err << cursor.start_line();
-      err << cursor.emit_splice(param->child("type"));
-      err << cursor.emit_print(" ");
-      err << cursor.emit_print("%s_%s_%s;",
-        field_name.c_str(), func_name.c_str(), param_name.c_str());
-    }
-
-    if (m->has_return()) {
-      err << cursor.start_line();
-      err << cursor.emit_splice(m->child("return_type"));
-      err << cursor.emit_print(" ");
-      err << cursor.emit_print("%s_%s_ret;",
-        field_name.c_str(), func_name.c_str());
-    }
-  }
-
   //----------------------------------------
   // Done
+
+  cursor.id_map.pop();
 
   return err << cursor.check_done(this);
 }

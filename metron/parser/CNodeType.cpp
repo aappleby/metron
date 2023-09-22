@@ -48,7 +48,8 @@ Err CNodeType::emit(Cursor& cursor) {
         err << cursor.emit_gap();
         err << cursor.skip_over(node_exp);
         err << cursor.emit_gap();
-        err << cursor.emit_print("%.*s-1:0", node_identifier->get_text().size(), node_identifier->get_text().data());
+        err << cursor.emit_splice(node_identifier);
+        err << cursor.emit_print("-1:0");
         err << cursor.emit_replacement(node_rdelim, "]");
     }
     else {

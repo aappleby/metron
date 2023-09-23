@@ -9,7 +9,8 @@
  * Baugh-Wooley multiplier and Long Division
  */
 
-#pragma once
+#ifndef IBEX_MULTDIV_SLOW_H
+#define IBEX_MULTDIV_SLOW_H
 #include "metron/tools/metron_tools.h"
 #include "ibex_pkg.h"
 
@@ -420,3 +421,5 @@ struct ibex_multdiv_slow {
 `endif
  */
 };
+
+#endif // IBEX_MULTDIV_SLOW_H

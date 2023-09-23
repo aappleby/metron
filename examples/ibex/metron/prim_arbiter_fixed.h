@@ -11,7 +11,8 @@
 //
 // See also: prim_arbiter_ppc, prim_arbiter_tree
 
-#pragma once
+#ifndef PRIM_ARBITER_FIXED_H
+#define PRIM_ARBITER_FIXED_H
 #include "metron/tools/metron_tools.h"
 
 template<
@@ -87,3 +88,5 @@ struct prim_arbiter_fixed {
   }
 
 };
+
+#endif // PRIM_ARBITER_FIXED_H

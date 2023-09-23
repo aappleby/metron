@@ -11,7 +11,8 @@
  * assertions only.
  */
 
-#pragma once
+#ifndef IBEX_COMPRESSED_DECODER_H
+#define IBEX_COMPRESSED_DECODER_H
 #include "metron/tools/metron_tools.h"
 #include "ibex_pkg.h"
 
@@ -332,3 +333,5 @@ struct ibex_compressed_decoder {
       !$isunknown(instr_i[15:13]))
    #*/
 };
+
+#endif // IBEX_COMPRESSED_DECODER_H

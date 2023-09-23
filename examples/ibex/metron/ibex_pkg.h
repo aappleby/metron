@@ -3,7 +3,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#pragma once
+#ifndef IBEX_PKG_H
+#define IBEX_PKG_H
 #include "metron/tools/metron_tools.h"
 
 /**
@@ -608,3 +609,5 @@ namespace ibex_pkg {
   //parameter logic [SCRAMBLE_KEY_W-1:0]   RndCnstIbexKeyDefault = 128'h14e8cecae3040d5e12286bb3cc113298;
   //parameter logic [SCRAMBLE_NONCE_W-1:0] RndCnstIbexNonceDefault = 64'hf79780bc735f3843;
 }
+
+#endif // IBEX_PKG_H

@@ -554,26 +554,11 @@ Err CNodeCompound::emit_hoisted_decls(Cursor& cursor) {
 
     if (auto node_for = child->as<CNodeFor>()) {
       if (auto node_decl = node_for->child("init")->as<CNodeDeclaration>()) {
-        //node_decl->dump_parse_tree();
-        /*
-        if (c.sym == sym_for_statement) {
-          auto init = c.get_field(field_initializer);
-          if (init.sym == sym_declaration) {
-            err << start_line();
-            err << emit_splice(init);
-          }
-        }
-        */
-        //err << cursor.start_line();
-        //err << cursor.emit_print("laksjdlfkajsdf");
-
         auto name = node_decl->get_namestr();
         auto decl_type = node_decl->child("type");
         auto decl_name = node_decl->child("name");
 
         err << cursor.start_line();
-
-        //err << cursor.emit_print("DECL %s", name.c_str());
 
         cursor.tok_cursor = decl_type->tok_begin();
 

@@ -98,8 +98,6 @@ bool CNodeCall::is_bit_extract() {
 CHECK_RETURN Err CNodeCall::emit_bit_extract(Cursor& cursor) {
   Err err;
 
-  dump_parse_tree();
-
   auto func_name = node_name->get_textstr();
 
   auto& args = node_args->items;
@@ -377,6 +375,24 @@ Err CNodeCall::emit(Cursor& cursor) {
 
       return err;
     }
+
+
+    if (func_name == "sra") {
+      auto args = child("func_args")->as<CNodeList>();
+      auto lhs  = args->items[0];
+      auto rhs  = args->items[1];
+
+      err << cursor.skip_over(this);
+
+      err << cursor.emit_print("($signed(");
+      err << cursor.emit_splice(lhs);
+      err << cursor.emit_print(") >>> ");
+      err << cursor.emit_splice(rhs);
+      err << cursor.emit_print(")");
+
+      return err;
+    }
+
 
     //----------
     // Not a special builtin call

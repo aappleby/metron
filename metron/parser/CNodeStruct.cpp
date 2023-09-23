@@ -90,8 +90,6 @@ void CNodeEnum::init(const char* match_tag, SpanType span, uint64_t flags) {
 CHECK_RETURN Err CNodeEnum::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
-  dump_parse_tree();
-
   // Extract enum bit width, if present.
   cursor.override_size.push(32);
   if (node_type) {

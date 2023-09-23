@@ -259,19 +259,6 @@ CInstClass::CInstClass(std::string name, bool is_public, CInstance* inst_parent,
         }
 
         children.push_back(inst_func);
-
-        //node_func->dump_parse_tree();
-
-        /*
-        node_visitor visit = [&](CNode* node) {
-          if (auto call = node->as<CNodeCall>()) {
-            if (auto field = call->child("func_name")->as<CNodeFieldExpression>()) {
-              //printf("Submod call!\n");
-            }
-          }
-        };
-        visit_children(node_func, visit);
-        */
       }
     }
   }

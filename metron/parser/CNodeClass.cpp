@@ -94,25 +94,6 @@ CNodeEnum* CNodeClass::get_enum(std::string_view name) {
 Err CNodeClass::collect_fields_and_methods() {
   Err err;
 
-#if 0
-  {
-    bool is_public = false;
-    for (auto child : node_body->items) {
-      if (auto access = child->as<CNodeAccess>()) {
-        is_public = child->get_text() == "public:";
-        continue;
-      }
-      if (!is_public) continue;
-      if (auto field = child->as<CNodeField>()) {
-        ports.push_back(field);
-      }
-      else if (auto func = child->as<CNodeFunction>()) {
-        func->dump_parse_tree();
-      }
-    }
-  }
-#endif
-
   bool is_public = false;
 
   for (auto child : node_body->items) {

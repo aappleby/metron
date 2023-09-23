@@ -533,9 +533,9 @@ TokenSpan cap_exp_unit(CContext& ctx, TokenSpan body) {
 TokenSpan match_ternary_op(CContext& ctx, TokenSpan body) {
   using pattern =
   Seq<
-    Ref<match_binary_op<"?">>,
+    CaptureAnon<Ref<match_binary_op<"?">>, CNodeBinaryOp>,
     Opt<comma_separated<Ref<cap_expression>>>,
-    Ref<match_binary_op<":">>
+    CaptureAnon<Ref<match_binary_op<":">>, CNodeBinaryOp>
   >;
   return pattern::match(ctx, body);
 }

@@ -61,15 +61,15 @@ Err CNodeAssignment::trace(CInstance* inst, call_stack& stack) {
   err << rhs->trace(inst, stack);
 
   auto lhs = child("lhs");
-  auto inst_lhs = inst->resolve(lhs);
+  //err << lhs->trace(inst, stack);
 
-  if (inst_lhs) {
+  if (auto inst_lhs = inst->resolve(lhs)) {
     auto op_text = child("op")->get_text();
     if (op_text != "=") err << inst_lhs->log_action(this, ACT_READ, stack);
     err << inst_lhs->log_action(this, ACT_WRITE, stack);
   }
 
-  return Err();
+  return err;
 }
 
 //----------------------------------------
@@ -110,6 +110,20 @@ Err CNodeAssignment::emit(Cursor& cursor) {
   err << cursor.emit(node_rhs);
 
   return err << cursor.check_done(this);
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err CNodeLValue::trace(CInstance* inst, call_stack& stack) {
+  Err err;
+  for (auto c : this) {
+    err << c->trace(inst, stack);
+  }
+  return err;
+}
+
+CHECK_RETURN Err CNodeLValue::emit(Cursor& cursor) {
+  return cursor.emit_default(this);
 }
 
 //------------------------------------------------------------------------------

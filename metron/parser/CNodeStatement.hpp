@@ -76,6 +76,13 @@ struct CNodeAssignment : public CNodeStatement {
 
 //------------------------------------------------------------------------------
 
+struct CNodeLValue : public CNode {
+  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
+  CHECK_RETURN Err emit(Cursor& cursor) override;
+};
+
+//------------------------------------------------------------------------------
+
 struct CNodeUsing : public CNodeStatement {
   uint32_t debug_color() const override;
   std::string_view get_name() const override;

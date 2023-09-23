@@ -1490,10 +1490,20 @@ TokenSpan match_typedef(CContext& ctx, TokenSpan body) {
 //------------------------------------------------------------------------------
 
 TokenSpan cap_assignment(CContext& ctx, TokenSpan body) {
+
+  using lvalue =
+  CaptureAnon<
+    Seq<
+      Tag<"name",       cap_any_identifier>,
+      Opt<Tag<"suffix", cap_index_list>>
+    >,
+    CNodeLValue
+  >;
+
   using pattern =
   CaptureAnon<
     Seq<
-      Tag<"lhs",  cap_any_identifier>,
+      Tag<"lhs",  lvalue>,
       Tag<"op",   cap_assignment_op>,
       Tag<"rhs",  Ref<cap_expression>>
     >,

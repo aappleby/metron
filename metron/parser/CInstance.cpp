@@ -35,6 +35,10 @@ CInstance* CInstance::resolve(CNode* node) {
   //dump_tree();
   //LOG_R("----------\n");
 
+  if (node->as<CNodeLValue>()) {
+    return resolve(node->child("name"));
+  }
+
   if (node->as<CNodeFieldExpression>()) {
     auto cursor = node->child_head;
     CInstance* inst = this;

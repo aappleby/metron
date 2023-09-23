@@ -250,6 +250,18 @@ using cap_string = CaptureAnon<Atom<LEX_STRING>, CNodeConstString>;
 
 TokenSpan cap_preproc(CContext& ctx, TokenSpan body) {
 
+  using pragma_pattern =
+  Tag<
+    "preproc_pragma",
+    CaptureAnon<
+      Seq<
+        Tag<"pragma", cap_literal<"#pragma">>,
+        Tag<"exp",    Ref<cap_expression>>
+      >,
+      CNodePreproc
+    >
+  >;
+
   using include_pattern =
   Tag<
     "preproc_include",
@@ -301,6 +313,7 @@ TokenSpan cap_preproc(CContext& ctx, TokenSpan body) {
   using pattern =
   Dispatch<
     Oneof<
+      pragma_pattern,
       include_pattern,
       define_pattern,
       ifndef_pattern,

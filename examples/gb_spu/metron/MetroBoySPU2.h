@@ -1,4 +1,5 @@
-#pragma once
+#ifndef METRO_BOY_SPU2_H
+#define METRO_BOY_SPU2_H
 #include "metron/tools/metron_tools.h"
 
 //------------------------------------------------------------------------------
@@ -775,3 +776,5 @@ private:
   /*NR52*/ logic<1>  spu_power;
 
 };
+
+#endif // METRO_BOY_SPU2_H

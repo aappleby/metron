@@ -1,3 +1,5 @@
+`ifndef METRO_BOY_SPU2_H
+`define METRO_BOY_SPU2_H
 `include "metron/tools/metron_tools.sv"
 
 //------------------------------------------------------------------------------
@@ -804,3 +806,5 @@ module MetroBoySPU2 (
   /*NR52*/ logic  spu_power;
 
 endmodule
+
+`endif // METRO_BOY_SPU2_H

@@ -22,6 +22,6 @@ module Module (
   end
 
   always_comb begin : test3
-    test3_ret = 8'('x);
+    test3_ret = 8'bx;
   end
 endmodule

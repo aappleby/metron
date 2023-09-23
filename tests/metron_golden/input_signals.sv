@@ -74,9 +74,9 @@ module Module (
     .tock_i_param(submod_tock_i_param),
     .tock_ret(submod_tock_ret)
   );
-  logic[7:0] submod_i_signal;
   logic[7:0] submod_tock_i_param;
+  logic[7:0] submod_tock_ret;
+  logic[7:0] submod_i_signal;
   logic[7:0] submod_o_signal;
   logic[7:0] submod_o_reg;
-  logic[7:0] submod_tock_ret;
 endmodule

@@ -240,6 +240,11 @@ int main_new(Options opts) {
       }
     }
 
+    if (err.has_err()) {
+      LOG_R("Error during tracing\n");
+      return -1;
+    }
+
     LOG_B("All tracing done\n");
     LOG_B("\n");
   }

@@ -69,7 +69,7 @@ Err CNodeType::emit(Cursor& cursor) {
     }
   }
   else if (as<CNodeBuiltinType>()) {
-    err << cursor.emit_raw(this);
+    err << cursor.emit_default(this);
   }
   else if (auto node_struct = child("struct_name")) {
     err << CNode::emit(cursor);

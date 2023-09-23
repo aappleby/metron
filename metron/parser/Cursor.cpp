@@ -39,6 +39,7 @@ Cursor::Cursor(CSourceRepo* repo, CSourceFile* source, std::string* str_out) {
     {"#define",        "`define"},
     {"#ifndef",        "`ifndef"},
     {"#endif",         "`endif"},
+    {"unsigned int",   "int unsigned"},
   });
 
   block_prefix.push("begin");

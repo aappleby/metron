@@ -125,6 +125,11 @@ void CContext::pop_scope() {
 
 TokenSpan CContext::match_builtin_type_base(TokenSpan body) {
   if (!body.is_valid() || body.is_empty()) return body.fail();
+
+  if (SST<builtin_type_prefix>::match(body.begin->lex->text_begin, body.begin->lex->text_end)) {
+    body = body.advance(1);
+  }
+
   if (SST<builtin_type_base>::match(body.begin->lex->text_begin, body.begin->lex->text_end)) {
     return body.advance(1);
   }
@@ -136,8 +141,7 @@ TokenSpan CContext::match_builtin_type_base(TokenSpan body) {
 TokenSpan CContext::match_builtin_type_prefix(TokenSpan body) {
   if (!body.is_valid() || body.is_empty()) return body.fail();
 
-  auto lex = body.begin->lex;
-  if (SST<builtin_type_prefix>::match(lex->text_begin, lex->text_end)) {
+  if (SST<builtin_type_prefix>::match(body.begin->lex->text_begin, body.begin->lex->text_end)) {
     return body.advance(1);
   }
   else {

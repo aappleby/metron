@@ -161,4 +161,6 @@ struct Cursor {
   bool line_elided = false;
   bool echo = false;
   bool gap_emitted = false;
+
+  bool force_emit_eq = false;
 };

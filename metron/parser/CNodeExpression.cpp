@@ -129,7 +129,7 @@ Err CNodeSuffixExp::emit(Cursor& cursor) {
   if (op == "++" || op == "--") {
     err << cursor.skip_over(this);
     err << cursor.emit_splice(node_lhs);
-    if (func->method_type == MT_TICK) {
+    if (func->method_type == MT_TICK && !cursor.force_emit_eq) {
       err << cursor.emit_print(" <= ");
     }
     else {

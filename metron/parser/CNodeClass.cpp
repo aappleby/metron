@@ -68,6 +68,29 @@ std::string_view CNodeClass::get_name() const {
   return name;
 }
 
+CNodeField* CNodeClass::get_field(CNode* node_name) {
+  if (node_name == nullptr) return nullptr;
+
+  if (node_name->as<CNodeLValue>()) {
+    return get_field(node_name->child("name"));
+  }
+
+  if (auto node_id = node_name->as<CNodeIdentifier>()) {
+    return get_field(node_id->get_text());
+  }
+
+  if (auto node_field = node_name->as<CNodeFieldExpression>()) {
+    return get_field(node_field->child("field_path"));
+  }
+
+  LOG_R("----------------------------------------\n");
+  node_name->dump_parse_tree();
+  LOG_R("----------------------------------------\n");
+
+  assert(false);
+  return nullptr;
+}
+
 CNodeField* CNodeClass::get_field(std::string_view name) {
   for (auto f : all_fields) if (f->get_name() == name) return f;
   return nullptr;

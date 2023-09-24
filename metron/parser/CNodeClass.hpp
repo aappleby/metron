@@ -58,6 +58,7 @@ struct CNodeClass : public CNode {
 
   //----------
 
+  CNodeField*       get_field(CNode* node_name);
   CNodeField*       get_field(std::string_view name);
   CNodeFunction*    get_function(std::string_view name);
   CNodeDeclaration* get_modparam(std::string_view name);

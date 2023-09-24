@@ -97,6 +97,9 @@ Err CNodeAssignment::emit(Cursor& cursor) {
   auto node_op   = child("op");
   auto node_rhs  = child("rhs");
 
+  auto node_class = ancestor<CNodeClass>();
+  auto node_field = node_class->get_field(node_lhs);
+
   err << cursor.emit(node_lhs);
   err << cursor.emit_gap();
 

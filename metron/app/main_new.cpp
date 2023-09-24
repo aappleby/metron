@@ -34,14 +34,17 @@ int main_new(Options opts) {
     return -1;
   }
 
+#if 1
   /*
   for (auto pair : repo.source_map)
   {
     CSourceFile* file = pair.second;
     file->context.top_head->dump_parse_tree();
   }
-  LOG("\n");
   */
+  root_file->context.top_head->dump_parse_tree();
+  LOG("\n");
+#endif
 
   //----------------------------------------
   // Sanity check parse tree

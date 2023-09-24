@@ -252,25 +252,39 @@ CHECK_RETURN Err CNodeIf::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
+void CNodeSwitch::init(const char* match_tag, SpanType span, uint64_t flags) {
+  node_condition = child("condition")->req<CNodeList>();
+  node_body = child("body")->req<CNode>();
+
+  assert(node_condition);
+  assert(node_body);
+}
+
+//----------------------------------------
+
 CHECK_RETURN Err CNodeSwitch::trace(CInstance* inst, call_stack& stack) {
   Err err;
 
-  err << child("condition")->trace(inst, stack);
+  err << node_condition->trace(inst, stack);
 
   auto root_inst = inst->get_root();
 
   int case_count = 0;
   bool has_default = false;
 
-  for (auto cursor = child("ldelim"); cursor; cursor = cursor->node_next) {
-    if (cursor->tag_is("default")) has_default = true;
-
+  for (auto node_child : node_body) {
     // Skip cases without bodies
-    if (!cursor->child("body")) continue;
+    if (!node_child->child("body")) continue;
+
+    auto node_case = node_child->as<CNodeCase>();
+    auto node_default = node_child->as<CNodeDefault>();
+    if (!node_case && !node_default) continue;
+
+    if (node_default) has_default = true;
 
     root_inst->push_state();
     case_count++;
-    err << cursor->trace(inst, stack);
+    err << node_child->trace(inst, stack);
     root_inst->swap_state();
   }
 

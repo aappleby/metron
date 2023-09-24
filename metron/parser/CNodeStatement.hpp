@@ -121,8 +121,12 @@ struct CNodeReturn : public CNodeStatement {
 //------------------------------------------------------------------------------
 
 struct CNodeSwitch : public CNodeStatement {
+  void init(const char* match_tag, SpanType span, uint64_t flags);
   CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
+
+  CNodeList* node_condition = nullptr;
+  CNode*     node_body = nullptr;
 };
 
 struct CNodeCase : public CNodeStatement {

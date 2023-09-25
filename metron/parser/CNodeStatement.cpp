@@ -176,38 +176,11 @@ CHECK_RETURN Err CNodeFor::trace(CInstance* inst, call_stack& stack) {
 }
 
 CHECK_RETURN Err CNodeFor::emit(Cursor& cursor) {
-  dump_parse_tree();
-
   Err err = cursor.check_at(this);
 
-  /*
-    Tag<"for",       cap_keyword<"for">>,
-    Tag<"ldelim",    cap_punct<"(">>,
-    Tag<"init",      Opt<exp_or_decl>>,
-    cap_punct<";">,
-    Tag<"condition", Opt<Ref<cap_expression>>>,
-    cap_punct<";">,
-    Tag<"step",      Opt<Ref<cap_expression>>>,
-    Tag<"rdelim",    cap_punct<")">>,
-    Tag<"body",      cap_statement>
-  */
-
-  //err << cursor.emit_default(this);
-
-  // FIXME this is a dirty hack
-
   for (auto child : this) {
-    if (child->tag_is("step")) {
-      auto old_force_emit_eq = cursor.force_emit_eq;
-      cursor.force_emit_eq = true;
-      err << cursor.emit(child);
-      cursor.force_emit_eq = old_force_emit_eq;
-    }
-    else {
-      err << cursor.emit(child);
-    }
+    err << cursor.emit(child);
     if (child->node_next) err << cursor.emit_gap();
-
   }
 
   return err << cursor.check_done(this);

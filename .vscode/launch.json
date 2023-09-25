@@ -16,9 +16,9 @@
         "-v",
         "-e",
         "-c",
-        "examples/rvsimple/metron/alu.h",
+        "examples/pong/metron/pong.h",
         "-o",
-        "examples/rvsimple/metron_sv2/alu.sv"
+        "examples/pong/metron_sv2/pong.sv"
       ],
       "setupCommands": [
         { // Display content in STL containers pretty

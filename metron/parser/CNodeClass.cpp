@@ -83,6 +83,14 @@ CNodeField* CNodeClass::get_field(CNode* node_name) {
     return get_field(node_field->child("field_path"));
   }
 
+  if (auto node_prefix = node_name->as<CNodeSuffixExp>()) {
+    return get_field(node_prefix->child("rhs"));
+  }
+
+  if (auto node_suffix = node_name->as<CNodeSuffixExp>()) {
+    return get_field(node_suffix->child("lhs"));
+  }
+
   LOG_R("----------------------------------------\n");
   node_name->dump_parse_tree();
   LOG_R("----------------------------------------\n");

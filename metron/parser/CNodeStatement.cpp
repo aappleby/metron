@@ -91,20 +91,18 @@ Err CNodeAssignment::trace(CInstance* inst, call_stack& stack) {
 Err CNodeAssignment::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
-  auto func = ancestor<CNodeFunction>();
-
-  auto node_lhs  = child("lhs")->req<CNodeLValue>();
-  auto node_op   = child("op");
-  auto node_rhs  = child("rhs");
-
   auto node_class = ancestor<CNodeClass>();
+  auto node_func  = ancestor<CNodeFunction>();
+  auto node_lhs   = child("lhs")->req<CNodeLValue>();
+  auto node_op    = child("op");
+  auto node_rhs   = child("rhs");
   auto node_field = node_class->get_field(node_lhs);
 
   err << cursor.emit(node_lhs);
   err << cursor.emit_gap();
 
   // If we're in a tick, emit < to turn = into <=
-  if (func->method_type == MT_TICK && !cursor.force_emit_eq) {
+  if (node_func->method_type == MT_TICK && node_field) {
     err << cursor.emit_print("<");
   }
 

@@ -1,21 +1,18 @@
 `include "metron/tools/metron_tools.sv"
 
-// Zero-initializing structs should work for convenience.
-
 module Module (
-  // output signals
-  output int my_struct1
+  // global clock
+  input logic clock
 );
 /*public:*/
 
-  always_comb begin : tock
-    my_struct1 = func(2);
+  always_ff @(posedge clock) begin : tick
+    int bar;
+    bar = 5;
+    foo <= foo + 1;
+    bar = bar + 1;
   end
 
 /*private:*/
-
-  function int func(int x);
-    func = x + 1;
-  endfunction
-
+  int foo;
 endmodule

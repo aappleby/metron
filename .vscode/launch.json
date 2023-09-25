@@ -9,8 +9,19 @@
       "program": "${workspaceFolder}/bin/metron",
       "cwd": "${workspaceFolder}",
       //"args" : [      "-d", "-v", "-e", "-c", "examples/scratch.h", "-o", "examples/scratch.sv"],
-      //"args" : ["-p", "-d", "-v", "-e", "-c", "examples/scratch.h", "-o", "examples/scratch.sv"],
-      "args" : ["-p", "-d", "-v", "-e", "-c", "tests/metron_good/input_signals.h"],
+      "args" : ["-p", "-d", "-v", "-e", "-c", "examples/scratch.h", "-o", "examples/scratch.sv"],
+      /*
+      "args" : [
+        "-p",
+        "-d",
+        "-v",
+        "-e",
+        "-c",
+        "examples/gb_spu/metron/MetroBoySPU2.h",
+        "-o",
+        "examples/gb_spu/metron_sv2/MetroBoySPU2.sv"
+      ],
+      */
       "setupCommands": [
         { // Display content in STL containers pretty
           "description": "Enable pretty-printing for gdb",

@@ -1,0 +1,61 @@
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   .vscode/launch.json
+        modified:   docs/app/metron.wasm
+        modified:   examples/gb_spu/metron_sv/MetroBoySPU2.sv
+        modified:   examples/rvsimple/metron_sv/example_data_memory.sv
+        modified:   examples/rvsimple/metron_sv/example_data_memory_bus.sv
+        modified:   examples/rvsimple/metron_sv/example_text_memory.sv
+        modified:   examples/rvsimple/metron_sv/example_text_memory_bus.sv
+        modified:   examples/rvsimple/metron_sv/instruction_decoder.sv
+        modified:   examples/rvsimple/metron_sv/toplevel.sv
+        modified:   examples/uart/metron_sv/uart_top.sv
+        modified:   metron/app/main_new.cpp
+        modified:   metron/parser/CNodeExpression.cpp
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        examples/pong/metron_sv2/
+        examples/rvsimple/metron_sv2/
+        tests/metron_sv/case_without_break.sv
+        tests/metron_sv/func_writes_sig_and_reg.sv
+        tests/metron_sv/if_with_no_compound.sv
+        tests/metron_sv/mid_block_break.sv
+        tests/metron_sv/mid_block_return.sv
+        tests/metron_sv/multiple_submod_function_bindings.sv
+        tests/metron_sv/multiple_tock_returns.sv
+        tests/metron_sv/tick_with_return_value.sv
+        tests/metron_sv/too_many_breaks.sv
+
+
+Command failed: diff tests/metron_sv/func_writes_sig_and_reg.sv tests/metron_golden/func_writes_sig_and_reg.sv
+Command failed: bin/metron -q -c tests/metron_lockstep/funcs_and_tasks.h -o gen/tests/metron_lockstep/metron_sv/funcs_and_tasks.sv
+Command failed: diff tests/metron_sv/case_without_break.sv tests/metron_golden/case_without_break.sv
+Command failed: diff tests/metron_sv/if_with_no_compound.sv tests/metron_golden/if_with_no_compound.sv
+Command failed: diff tests/metron_sv/mid_block_break.sv tests/metron_golden/mid_block_break.sv
+Command failed: diff tests/metron_sv/mid_block_return.sv tests/metron_golden/mid_block_return.sv
+Command failed: diff tests/metron_sv/multiple_submod_function_bindings.sv tests/metron_golden/multiple_submod_function_bindings.sv
+Command failed: diff tests/metron_sv/multiple_tock_returns.sv tests/metron_golden/multiple_tock_returns.sv
+Command failed: diff tests/metron_sv/tick_with_return_value.sv tests/metron_golden/tick_with_return_value.sv
+Command failed: diff tests/metron_sv/too_many_breaks.sv tests/metron_golden/too_many_breaks.sv
+Command failed: iverilog -g2012 -Wall -I. -o /dev/null tests/metron_sv/func_writes_sig_and_reg.sv
+Command failed: iverilog -g2012 -Wall -I. -o /dev/null tests/metron_sv/if_with_no_compound.sv
+Command failed: iverilog -g2012 -Wall -I. -o /dev/null tests/metron_sv/too_many_breaks.sv
+Command failed: verilator -I. --lint-only tests/metron_sv/func_writes_sig_and_reg.sv
+Command failed: verilator -I. --lint-only tests/metron_sv/if_with_no_compound.sv
+Command failed: verilator -I. --lint-only tests/metron_sv/multiple_submod_function_bindings.sv
+Command failed: verilator -I. --lint-only tests/metron_sv/too_many_breaks.sv
+Command failed: yosys -q -p 'read_verilog -I. -sv tests/metron_sv/func_writes_sig_and_reg.sv;'
+Command failed: yosys -q -p 'read_verilog -I. -sv tests/metron_sv/if_with_no_compound.sv;'
+Command failed: yosys -q -p 'read_verilog -I. -sv tests/metron_sv/too_many_breaks.sv;'
+
+Command passed: bin/metron -c tests/metron_bad/case_without_break.h -o tests/metron_sv/case_without_break.sv
+Command passed: bin/metron -c tests/metron_bad/func_writes_sig_and_reg.h -o tests/metron_sv/func_writes_sig_and_reg.sv
+Command passed: bin/metron -c tests/metron_bad/if_with_no_compound.h -o tests/metron_sv/if_with_no_compound.sv
+Command passed: bin/metron -c tests/metron_bad/mid_block_break.h -o tests/metron_sv/mid_block_break.sv
+Command passed: bin/metron -c tests/metron_bad/mid_block_return.h -o tests/metron_sv/mid_block_return.sv
+Command passed: bin/metron -c tests/metron_bad/multiple_submod_function_bindings.h -o tests/metron_sv/multiple_submod_function_bindings.sv
+Command passed: bin/metron -c tests/metron_bad/multiple_tock_returns.h -o tests/metron_sv/multiple_tock_returns.sv
+Command passed: bin/metron -c tests/metron_bad/tick_with_return_value.h -o tests/metron_sv/tick_with_return_value.sv
+Command passed: bin/metron -c tests/metron_bad/too_many_breaks.h -o tests/metron_sv/too_many_breaks.sv

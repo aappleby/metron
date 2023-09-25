@@ -4694,7 +4694,13 @@ A simple UART-based testbench for Metron that exercises translation to
 SystemVerilog, simulation via Icarus, translation back to C via Verilator,
 synthesis via Yosys, place+route via NextPNR, and uploading to a Lattice ICE40
 fpga via Icestorm.
-#ifndef UART_HELLO_H
+A field-programmable gate array (FPGA) is an integrated circuit designed to be
+configured by a customer or a designer after manufacturing, hence the term
+field-programmable. The FPGA configuration is generally specified using a
+hardware description language (HDL), similar to that used for an application-
+specific integrated circuit (ASIC). Circuit diagrams were previously used to
+specify the configuration, but this is increasingly rare due to the advent of
+electronic design automation tools. 012345678901234#ifndef UART_HELLO_H
 #define UART_HELLO_H
 
 #include "metron/tools/metron_tools.h"

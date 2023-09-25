@@ -99,10 +99,17 @@ Err CNodePrefixExp::emit(Cursor& cursor) {
 Err CNodeSuffixExp::trace(CInstance* inst, call_stack& stack) {
   Err err;
 
-  auto lhs = child("lhs");
-  auto op  = child("suffix")->get_text();
+  auto lhs    = child("lhs");
+  auto suffix = child("suffix");
+
   err << lhs->trace(inst, stack);
 
+  if (auto array_suffix = suffix->as<CNodeList>()) {
+    err << suffix->trace(inst, stack);
+    return err;
+  }
+
+  auto op  = child("suffix")->get_text();
   if (op == "++" || op == "--") {
     auto inst_lhs = inst->resolve(lhs);
     if (inst_lhs) {

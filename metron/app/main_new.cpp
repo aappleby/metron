@@ -234,6 +234,8 @@ int main_new(Options opts) {
       inst_class->commit_state();
 
       LOG_G("Tracing done for %.*s\n", int(name.size()), name.data());
+
+      inst_class->dump_tree();
     }
 
     for (auto c : repo.all_classes) {

@@ -38,20 +38,6 @@ void CNodeField::init(const char* match_tag, SpanType span, uint64_t flags) {
 
 std::string_view CNodeField::get_type_name() const {
   return node_decl->get_type_name();
-
-  /*
-  auto decl_type = child("type");
-  if (auto name = decl_type->child("type_name")) {
-    return name->get_text();
-  }
-
-  if (auto builtin = decl_type->child("builtin_name")) {
-    return builtin->get_text();
-  }
-
-  assert(false);
-  return "<could not get type of field>";
-  */
 }
 
 
@@ -72,7 +58,7 @@ bool CNodeField::is_array() const {
 
 bool CNodeField::is_const_char() const {
   if (node_decl->node_static && node_decl->node_const) {
-    auto builtin = node_decl->node_type->child("builtin_name");
+    auto builtin = node_decl->node_type->child("name");
     auto star    = node_decl->node_type->child("star");
     if (builtin && star && builtin->get_text() == "char") {
       return true;
@@ -99,8 +85,10 @@ Err CNodeField::emit(Cursor& cursor) {
     err << cursor.emit(node_decl->node_name);
     err << cursor.emit_gap();
 
-    err << cursor.emit(node_decl->node_array);
-    err << cursor.emit_gap();
+    if (node_decl->node_array) {
+      err << cursor.emit(node_decl->node_array);
+      err << cursor.emit_gap();
+    }
 
     err << cursor.emit(node_decl->node_eq);
     err << cursor.emit_gap();

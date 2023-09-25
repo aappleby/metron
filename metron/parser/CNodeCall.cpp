@@ -109,6 +109,7 @@ CHECK_RETURN Err CNodeCall::emit_bit_extract(Cursor& cursor) {
   bool bare_exp = false;
   bare_exp |= (node_exp->as<CNodeIdentifier>() != nullptr);
   bare_exp |= (node_exp->as<CNodeConstInt>() != nullptr);
+  bare_exp |= (node_exp->as<CNodeFieldExpression>() != nullptr);
 
   //----------
 

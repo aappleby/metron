@@ -114,6 +114,7 @@ CHECK_RETURN Err CNodeCall::emit_bit_extract(Cursor& cursor) {
 
   int    width      = 0;
   CNode* node_width = nullptr;
+  bool   bare_width = false;
 
   if (func_name == "bx") {
     auto& targs = node_targs->items;
@@ -128,9 +129,9 @@ CHECK_RETURN Err CNodeCall::emit_bit_extract(Cursor& cursor) {
   }
   else {
     width = atoi(&func_name[1]);
+    bare_width = true;
   }
 
-  bool bare_width = false;
   bare_width |= (node_width->as<CNodeIdentifier>() != nullptr);
   bare_width |= (node_width->as<CNodeConstInt>() != nullptr);
 
@@ -178,6 +179,16 @@ CHECK_RETURN Err CNodeCall::emit_bit_extract(Cursor& cursor) {
   // Size cast with no offsets
 
   if (offset == 0 && node_offset == nullptr) {
+
+    if (bare_width && bare_exp && !node_width) {
+      if (node_exp->as<CNodeConstInt>()) {
+        cursor.override_size.push(width);
+        err << cursor.emit_splice(node_exp);
+        cursor.override_size.pop();
+        return err;
+      }
+    }
+
 
     if (!bare_width) err << cursor.emit_print("(");
     if (node_width)  err << cursor.emit_splice(node_width);

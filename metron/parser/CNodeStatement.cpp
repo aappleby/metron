@@ -11,6 +11,12 @@ uint32_t CNodeStatement::debug_color() const {
 
 //------------------------------------------------------------------------------
 
+void CNodeExpStatement::init(const char* match_tag, SpanType span, uint64_t flags) {
+  CNode::init(match_tag, span, flags);
+  node_exp = child("exp")->req<CNode>();
+}
+
+
 Err CNodeExpStatement::trace(CInstance* inst, call_stack& stack) {
   Err err;
   for (auto c : this) err << c->trace(inst, stack);
@@ -203,14 +209,36 @@ void CNodeIf::init(const char* match_tag, SpanType span, uint64_t flags) {
 CHECK_RETURN Err CNodeIf::trace(CInstance* inst, call_stack& stack) {
   Err err;
 
+  auto body_true = child("body_true");
+
+  auto body_false = child("body_false");
+
+  if (auto exp_true = body_true->as<CNodeExpStatement>()) {
+    if (auto node_call = exp_true->node_exp->as<CNodeCall>()) {
+      auto node_name = node_call->child("func_name");
+      if (auto node_field = node_name->as<CNodeFieldExpression>()) {
+        return ERR("If branches that contain component calls must use {}.\n");
+      }
+    }
+  }
+
+  if (auto exp_false = body_false->as<CNodeExpStatement>()) {
+    if (auto node_call = exp_false->node_exp->as<CNodeCall>()) {
+      auto node_name = node_call->child("func_name");
+      if (auto node_field = node_name->as<CNodeFieldExpression>()) {
+        return ERR("Else branches that contain component calls must use {}.\n");
+      }
+    }
+  }
+
   err << child("condition")->trace(inst, stack);
 
   auto root_inst = inst->get_root();
 
   root_inst->push_state();
-  if (auto body_true = child("body_true")) err << body_true->trace(inst, stack);
+  if (body_true) err << body_true->trace(inst, stack);
   root_inst->swap_state();
-  if (auto body_false = child("body_false")) err << body_false->trace(inst, stack);
+  if (body_false) err << body_false->trace(inst, stack);
   root_inst->merge_state();
 
   return err;
@@ -220,17 +248,6 @@ CHECK_RETURN Err CNodeIf::trace(CInstance* inst, call_stack& stack) {
 
 CHECK_RETURN Err CNodeIf::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
-
-  /*
-  // FIXME sanity checks
-  if (node_then.sym == sym_expression_statement && branch_contains_component_call(node_then)) {
-    return err << ERR("If branches that contain component calls must use {}.\n");
-  }
-
-  if (node_alt && node_alt.sym == sym_expression_statement && branch_contains_component_call(node_alt)) {
-    return err << ERR("Else branches that contain component calls must use {}.\n");
-  }
-  */
 
   err << cursor.emit(node_if);
   err << cursor.emit_gap();
@@ -337,17 +354,59 @@ CHECK_RETURN Err CNodeSwitch::emit(Cursor& cursor) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err CNodeCase::trace(CInstance* inst, call_stack& stack) {
-  return child("body")->trace(inst, stack);
+void CNodeCase::init(const char* match_tag, SpanType span, uint64_t flags) {
+  CNode::init(match_tag, span, flags);
+
+  node_case  = child("case")->req<CNode>();
+  node_cond  = child("condition")->req<CNode>();
+  node_colon = child("colon");
+  node_body  = child("body");
 }
+
+//----------------------------------------
+
+bool ends_with_break(CNode* node) {
+  if (!node) return false;
+  if (node->get_text() == "break") return true;
+
+  if (auto node_compound = node->as<CNodeCompound>()) {
+    assert(node_compound->child_tail->tag_is("rdelim"));
+    return ends_with_break(node_compound->child_tail->node_prev);
+  }
+
+  if (auto node_if = node->as<CNodeIf>()) {
+    if (node_if->node_false == nullptr) return false;
+    return ends_with_break(node_if->node_true) && ends_with_break(node_if->node_false);
+  }
+
+  if (auto node_list = node->as<CNodeList>()) {
+    return ends_with_break(node_list->child_tail);
+  }
+
+  if (auto node_expstatement = node->as<CNodeExpStatement>()) {
+    return ends_with_break(node_expstatement->node_exp);
+  }
+
+  //node->dump_parse_tree();
+  //assert(false);
+
+  return false;
+}
+
+//----------------------------------------
+
+CHECK_RETURN Err CNodeCase::trace(CInstance* inst, call_stack& stack) {
+  if (node_body && !ends_with_break(node_body)) {
+    return ERR("All non-empty case statements must end with break (no fallthroughs)");
+  }
+
+  return node_body->trace(inst, stack);
+}
+
+//----------------------------------------
 
 CHECK_RETURN Err CNodeCase::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
-
-  auto node_case  = child("case");
-  auto node_cond  = child("condition");
-  auto node_colon = child("colon");
-  auto node_body  = child("body");
 
   err << cursor.skip_over(node_case);
   err << cursor.skip_gap();

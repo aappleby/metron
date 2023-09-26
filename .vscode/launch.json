@@ -9,7 +9,17 @@
       "program": "${workspaceFolder}/bin/metron",
       "cwd": "${workspaceFolder}",
       //"args" : [      "-d", "-v", "-e", "-c", "examples/scratch.h", "-o", "examples/scratch.sv"],
-      //"args" : ["-p", "-d", "-v", "-e", "-c", "examples/scratch.h", "-o", "examples/scratch.sv"],
+      "args" : [
+        "-p",
+        "-d",
+        "-v",
+        "-e",
+        "-c",
+        "tests/metron_bad/case_without_break.h",
+        "-o",
+        "tests/metron_sv2/case_without_break.sv"
+      ],
+      /*
       "args" : [
         "-p",
         "-d",
@@ -20,6 +30,7 @@
         "-o",
         "examples/rvsimple/metron_sv2/regfile.sv"
       ],
+      */
       "setupCommands": [
         { // Display content in STL containers pretty
           "description": "Enable pretty-printing for gdb",

@@ -209,4 +209,11 @@ inline void visit_children(CNode* n, node_visitor visit) {
   }
 }
 
+inline void visit(CNode* n, node_visitor visit_cb) {
+  visit_cb(n);
+  for (auto child = n->child_head; child; child = child->node_next) {
+    visit(child, visit_cb);
+  }
+}
+
 //------------------------------------------------------------------------------

@@ -65,8 +65,11 @@ protected:
 //------------------------------------------------------------------------------
 
 struct CNodeExpStatement : public CNodeStatement {
+  void init(const char* match_tag, SpanType span, uint64_t flags);
   CHECK_RETURN Err emit(Cursor& cursor) override;
   CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
+
+  CNode* node_exp = nullptr;
 };
 
 struct CNodeAssignment : public CNodeStatement {
@@ -130,8 +133,15 @@ struct CNodeSwitch : public CNodeStatement {
 };
 
 struct CNodeCase : public CNodeStatement {
+  void init(const char* match_tag, SpanType span, uint64_t flags);
+
   CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
+
+  CNode* node_case  = nullptr;
+  CNode* node_cond  = nullptr;
+  CNode* node_colon = nullptr;
+  CNode* node_body  = nullptr;
 };
 
 struct CNodeDefault : public CNodeStatement {

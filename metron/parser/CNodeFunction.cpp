@@ -442,8 +442,9 @@ void CNodeFunction::dump() const {
   if (params.size()) {
     LOG_INDENT_SCOPE();
     for (auto p : params) {
-      auto text = p->child("type")->get_text();
-      LOG_G("Param %.*s : %.*s", name.size(), name.data(), text.size(), text.data());
+      auto param_name = p->child("name")->get_textstr();
+      auto param_type = p->child("type")->get_textstr();
+      LOG_G("Param %s : %s", param_name.c_str(), param_type.c_str());
 
       if (auto val = p->child("value")) {
         auto text = val->get_text();

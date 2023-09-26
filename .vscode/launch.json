@@ -15,9 +15,9 @@
         "-v",
         "-e",
         "-c",
-        "tests/metron_bad/multiple_tock_returns.h",
+        "tests/metron_good/basic_output.h",
         "-o",
-        "tests/metron_sv2/multiple_tock_returns.sv"
+        "tests/metron_sv2/basic_output.sv"
       ],
       /*
       "args" : [

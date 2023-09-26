@@ -5,7 +5,7 @@
 class Module {
  public:
 
-  void update(logic<1> in) {
+  void update(logic<1> in, int lksjf) {
     sig = reg + in;
     reg = sig + in;
   }

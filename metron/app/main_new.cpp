@@ -190,21 +190,51 @@ int main_new(Options opts) {
       auto name = node_class->get_name();
       LOG_G("Tracing public methods in %.*s\n", int(name.size()), name.data());
 
+      //bool traced_tock = false;
+      //bool traced_tick = false;
+
       if (auto node_func = node_class->constructor) {
         LOG_INDENT_SCOPE();
         auto func_name = node_func->get_namestr();
-
-        if (!node_func->is_public) {
-          LOG_B("Skipping %s because it's not public\n", func_name.c_str());
-        }
-        else {
-          LOG_B("Tracing %s\n", func_name.c_str());
-          auto inst_func = inst_class->resolve(func_name);
-          call_stack stack;
-          stack.push_back(node_func);
-          err << node_func->trace(inst_func, stack);
-        }
+        if (!node_func->is_public) continue;
+        LOG_B("Tracing %s\n", func_name.c_str());
+        auto inst_func = inst_class->resolve(func_name);
+        call_stack stack;
+        stack.push_back(node_func);
+        err << node_func->trace(inst_func, stack);
       }
+
+      /*
+      for (auto node_func : node_class->all_functions) {
+        LOG_INDENT_SCOPE();
+        auto func_name = node_func->get_namestr();
+        //if (!func_name.starts_with("tock")) continue;
+        if (!node_func->is_public) continue;
+
+        LOG_B("Tracing %s\n", func_name.c_str());
+        //traced_tock = true;
+        auto inst_func = inst_class->resolve(func_name);
+        call_stack stack;
+        stack.push_back(node_func);
+        err << node_func->trace(inst_func, stack);
+      }
+      */
+
+      /*
+      for (auto node_func : node_class->all_functions) {
+        LOG_INDENT_SCOPE();
+        auto func_name = node_func->get_namestr();
+        if (func_name.starts_with("tick")) continue;
+        if (func_name.starts_with("tock")) continue;
+        if (!node_func->is_public) continue;
+
+        LOG_B("Tracing %s\n", func_name.c_str());
+        auto inst_func = inst_class->resolve(func_name);
+        call_stack stack;
+        stack.push_back(node_func);
+        err << node_func->trace(inst_func, stack);
+      }
+      */
 
       for (auto node_func : node_class->all_functions) {
         LOG_INDENT_SCOPE();
@@ -213,6 +243,7 @@ int main_new(Options opts) {
         if (!node_func->is_public) continue;
 
         LOG_B("Tracing %s\n", func_name.c_str());
+        //traced_tock = true;
         auto inst_func = inst_class->resolve(func_name);
         call_stack stack;
         stack.push_back(node_func);
@@ -226,6 +257,7 @@ int main_new(Options opts) {
         if (!node_func->is_public) continue;
 
         LOG_B("Tracing %s\n", func_name.c_str());
+        //traced_tick = true;
         auto inst_func = inst_class->resolve(func_name);
         call_stack stack;
         stack.push_back(node_func);
@@ -233,6 +265,12 @@ int main_new(Options opts) {
       }
 
       inst_class->commit_state();
+
+      /*
+      if (!traced_tock && !traced_tick) {
+        err << ERR("Module had no tocks or ticks\n");
+      }
+      */
 
       LOG_G("Tracing done for %.*s\n", int(name.size()), name.data());
 

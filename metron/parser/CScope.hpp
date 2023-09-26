@@ -4,6 +4,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include <set>
 #include "matcheroni/Matcheroni.hpp"
 
 struct CToken;
@@ -44,6 +45,9 @@ struct CScope {
   token_list union_types;
   token_list enum_types;
   token_list typedef_types;
+
+  std::set<std::string> local_names;
+  std::set<std::string> param_names;
 };
 
 //------------------------------------------------------------------------------

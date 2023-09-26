@@ -204,7 +204,6 @@ int main_new(Options opts) {
         err << node_func->trace(inst_func, stack);
       }
 
-      /*
       for (auto node_func : node_class->all_functions) {
         LOG_INDENT_SCOPE();
         auto func_name = node_func->get_namestr();
@@ -218,7 +217,6 @@ int main_new(Options opts) {
         stack.push_back(node_func);
         err << node_func->trace(inst_func, stack);
       }
-      */
 
       /*
       for (auto node_func : node_class->all_functions) {
@@ -236,6 +234,7 @@ int main_new(Options opts) {
       }
       */
 
+      /*
       for (auto node_func : node_class->all_functions) {
         LOG_INDENT_SCOPE();
         auto func_name = node_func->get_namestr();
@@ -263,6 +262,7 @@ int main_new(Options opts) {
         stack.push_back(node_func);
         err << node_func->trace(inst_func, stack);
       }
+      */
 
       inst_class->commit_state();
 
@@ -364,6 +364,7 @@ int main_new(Options opts) {
       if (auto inst_prim = inst_child->as<CInstPrim>()) {
         auto field = inst_prim->node_field;
         if (!field->is_public) continue;
+        if (field->node_decl->node_static && field->node_decl->node_const) continue;
 
         switch(inst_prim->state_stack.back()) {
           case TS_NONE:     break;
@@ -380,6 +381,7 @@ int main_new(Options opts) {
       if (auto inst_struct = inst_child->as<CInstStruct>()) {
         auto field = inst_struct->node_field;
         if (!field->is_public) continue;
+        if (field->node_decl->node_static && field->node_decl->node_const) continue;
 
         switch(inst_struct->state_stack.back()) {
           case TS_NONE:     break;

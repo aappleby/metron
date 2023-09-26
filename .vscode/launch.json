@@ -15,9 +15,9 @@
         "-v",
         "-e",
         "-c",
-        "tests/metron_good/basic_output.h",
+        "examples/scratch.h",
         "-o",
-        "tests/metron_sv2/basic_output.sv"
+        "examples/scratch.sv"
       ],
       /*
       "args" : [

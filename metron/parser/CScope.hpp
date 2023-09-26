@@ -39,7 +39,7 @@ struct CScope {
 
   void dump();
 
-  CScope* parent;
+  CScope* parent2;
   token_list class_types;
   token_list struct_types;
   token_list union_types;

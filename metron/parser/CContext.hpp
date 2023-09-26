@@ -80,34 +80,41 @@ class CContext : public parseroni::NodeContext<CNode> {
   void add_typedef(const CToken* a);
 
   TokenSpan add_struct2(TokenSpan body) {
-    type_scope->add_struct(*this, body.begin);
+    top_scope->add_struct(*this, body.begin);
     return body;
   }
 
 
-  void push_scope();
-  void pop_scope();
+  //void push_scope();
+  //void pop_scope();
+
+  void push_scope2(CScope* new_top) {
+    new_top->parent2 = top_scope;
+    top_scope = new_top;
+  }
+
+  void pop_scope2() {
+    top_scope = top_scope->parent2;
+  }
 
   void append_node(CNode* node);
   void enclose_nodes(CNode* start, CNode* node);
 
   //----------------------------------------
 
-  matcheroni::TextSpan handle_include(matcheroni::TextSpan body);
-
   TokenSpan handle_preproc(TokenSpan body);
 
   //----------------------------------------
 
   CSourceRepo* repo;
+  CScope global_scope;
+  CScope* top_scope = &global_scope;
 
   std::string source;
   std::vector<Lexeme> lexemes;
   std::vector<CToken> tokens;
 
   std::set<std::string> define_names;
-
-  CScope* type_scope;
 
   CNode* root_node = nullptr;
 };

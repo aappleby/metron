@@ -39,7 +39,6 @@ TokenSpan match_constructor (CContext& ctx, TokenSpan body);
 TokenSpan match_function    (CContext& ctx, TokenSpan body);
 TokenSpan match_struct      (CContext& ctx, TokenSpan body);
 TokenSpan match_class       (CContext& ctx, TokenSpan body);
-TokenSpan match_compound    (CContext& ctx, TokenSpan body);
 TokenSpan match_union       (CContext& ctx, TokenSpan body);
 TokenSpan match_template    (CContext& ctx, TokenSpan body);
 TokenSpan match_enum        (CContext& ctx, TokenSpan body);
@@ -47,9 +46,11 @@ TokenSpan match_access      (CContext& ctx, TokenSpan body);
 TokenSpan match_type        (CContext& ctx, TokenSpan body);
 TokenSpan match_call        (CContext& ctx, TokenSpan body);
 
+TokenSpan cap_compound(CContext& ctx, TokenSpan body);
+TokenSpan cap_type    (CContext& ctx, TokenSpan body);
+
 using cap_enum =  CaptureAnon<Ref<match_enum>, CNodeEnum>;
 
-TokenSpan cap_type(CContext& ctx, TokenSpan body);
 
 using cap_targ_list    = CaptureAnon<Ref<match_targ_list>,   CNodeList>;
 using cap_statement    = Ref<match_statement>;
@@ -59,7 +60,6 @@ using cap_access       = CaptureAnon<Ref<match_access>,      CNodeAccess>;
 using cap_call         = CaptureAnon<Ref<match_call>,        CNodeCall>;
 using cap_decl_list    = CaptureAnon<Ref<match_decl_list>,   CNodeList>;
 using cap_index_list   = CaptureAnon<Ref<match_index_list>,  CNodeList>;
-using cap_compound     = CaptureAnon<Ref<match_compound>,    CNodeCompound>;
 using cap_function     = CaptureAnon<Ref<match_function>,    CNodeFunction>;
 //using cap_typedef      = CaptureAnon<Ref<match_typedef>,     CNodeTypedef;
 using cap_union        = CaptureAnon<Ref<match_union>,       CNodeUnion>;
@@ -1155,7 +1155,7 @@ TokenSpan match_function(CContext& ctx, TokenSpan body) {
     Tag<"name",        cap_identifier>,
     Tag<"params",      cap_decl_list>,
     Opt<Tag<"const",   cap_keyword<"const">>>,
-    Tag<"body",        cap_compound>
+    Tag<"body",        Ref<cap_compound>>
   >;
   // clang-format on
   return pattern::match(ctx, body);
@@ -1196,13 +1196,17 @@ TokenSpan match_constructor(CContext& ctx, TokenSpan body) {
     Tag<"params", cap_decl_list>,
     Opt<initializers>,
     //Opt<Tag<"init", initializers>>,
-    Tag<"body",   cap_compound>
+    Tag<"body",   Ref<cap_compound>>
   >;
   // clang-format om
   return pattern::match(ctx, body);
 }
 
 //------------------------------------------------------------------------------
+
+
+/*
+TokenSpan match_compound    (CContext& ctx, TokenSpan body);
 
 template <typename P>
 TokenSpan change_scope(CContext& ctx, TokenSpan body) {
@@ -1223,6 +1227,41 @@ TokenSpan match_compound(CContext& ctx, TokenSpan body) {
   >>;
   return pattern::match(ctx, body);
 };
+*/
+
+TokenSpan cap_compound(CContext& ctx, TokenSpan body) {
+
+  auto old_tail = ctx.top_tail;
+
+  auto span = body;
+
+  span = Tag<"ldelim", cap_punct<"{">>::match(ctx, span);
+  if (!span) return span;
+
+  auto new_node = ctx.create_node<CNodeCompound>();
+  ctx.push_scope2(&new_node->scope);
+
+  span = Any<Ref<match_statement>>::match(ctx, span);
+  if (!span) {
+    ctx.pop_scope2();
+    return span;
+  }
+
+  span = Tag<"rdelim", cap_punct<"}">>::match(ctx, span);
+  if (!span) {
+    ctx.pop_scope2();
+    return span;
+  }
+
+  if (span) {
+    ctx.merge_node(new_node, old_tail);
+    TokenSpan node_span = {body.begin, span.begin};
+    new_node->init(nullptr, node_span, 0);
+  }
+
+  ctx.pop_scope2();
+  return span;
+}
 
 //------------------------------------------------------------------------------
 // FIXME we should cap the condition/step differently or something
@@ -1547,7 +1586,7 @@ TokenSpan match_statement(CContext& ctx, TokenSpan body) {
     cap_if,
     cap_switch,
     cap_while,
-    cap_compound,
+    Ref<cap_compound>,
     cap_do_while,
     cap_return,
     cap_using,

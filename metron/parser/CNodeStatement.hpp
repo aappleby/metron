@@ -2,6 +2,7 @@
 
 #include "CNode.hpp"
 #include "Cursor.hpp"
+#include "CScope.hpp"
 #include "metron/tools/MtUtils.h"
 
 //==============================================================================
@@ -174,6 +175,7 @@ struct CNodeCompound : public CNodeStatement {
   CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
 
   std::vector<CNode*> statements;
+  CScope scope;
 };
 
 //------------------------------------------------------------------------------

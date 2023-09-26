@@ -28,7 +28,6 @@ TokenSpan match_translation_unit(CContext& ctx, TokenSpan body);
 //------------------------------------------------------------------------------
 
 CContext::CContext() {
-  type_scope = new CScope();
   tokens.reserve(65536);
 }
 
@@ -40,8 +39,7 @@ void CContext::reset() {
   source.clear();
   lexemes.clear();
   tokens.clear();
-  while (type_scope->parent) pop_scope();
-  type_scope->clear();
+  global_scope.clear();
   root_node = nullptr;
 }
 
@@ -68,23 +66,23 @@ TokenSpan CContext::parse() {
 //------------------------------------------------------------------------------
 
 TokenSpan CContext::match_class_name(TokenSpan body) {
-  return type_scope->has_class(*this, body) ? body.advance(1) : body.fail();
+  return top_scope->has_class(*this, body) ? body.advance(1) : body.fail();
 }
 
 TokenSpan CContext::match_struct_name(TokenSpan body) {
-  return type_scope->has_struct(*this, body) ? body.advance(1) : body.fail();
+  return top_scope->has_struct(*this, body) ? body.advance(1) : body.fail();
 }
 
 TokenSpan CContext::match_union_name(TokenSpan body) {
-  return type_scope->has_union(*this, body) ? body.advance(1) : body.fail();
+  return top_scope->has_union(*this, body) ? body.advance(1) : body.fail();
 }
 
 TokenSpan CContext::match_enum_name(TokenSpan body) {
-  return type_scope->has_enum(*this, body) ? body.advance(1) : body.fail();
+  return top_scope->has_enum(*this, body) ? body.advance(1) : body.fail();
 }
 
 TokenSpan CContext::match_typedef_name(TokenSpan body) {
-  return type_scope->has_typedef(*this, body) ? body.advance(1) : body.fail();
+  return top_scope->has_typedef(*this, body) ? body.advance(1) : body.fail();
 }
 
 TokenSpan CContext::match_type(TokenSpan body) {
@@ -99,14 +97,15 @@ TokenSpan CContext::match_type(TokenSpan body) {
 }
 
 
-void CContext::add_class  (const CToken* a) { type_scope->add_class(*this, a); }
-void CContext::add_struct (const CToken* a) { type_scope->add_struct(*this, a); }
-void CContext::add_union  (const CToken* a) { type_scope->add_union(*this, a); }
-void CContext::add_enum   (const CToken* a) { type_scope->add_enum(*this, a); }
-void CContext::add_typedef(const CToken* a) { type_scope->add_typedef(*this, a); }
+void CContext::add_class  (const CToken* a) { top_scope->add_class(*this, a); }
+void CContext::add_struct (const CToken* a) { top_scope->add_struct(*this, a); }
+void CContext::add_union  (const CToken* a) { top_scope->add_union(*this, a); }
+void CContext::add_enum   (const CToken* a) { top_scope->add_enum(*this, a); }
+void CContext::add_typedef(const CToken* a) { top_scope->add_typedef(*this, a); }
 
 //----------------------------------------------------------------------------
 
+/*
 void CContext::push_scope() {
   CScope* new_scope = new CScope();
   new_scope->parent = type_scope;
@@ -120,6 +119,7 @@ void CContext::pop_scope() {
     type_scope = old_scope;
   }
 }
+*/
 
 //----------------------------------------------------------------------------
 
@@ -163,27 +163,6 @@ TokenSpan CContext::match_builtin_type_suffix(TokenSpan body) {
 
 //------------------------------------------------------------------------------
 
-TextSpan CContext::handle_include(TextSpan body) {
-  if (body.begin[0] == '<') return body.fail();
-
-  std::string path(body.begin + 1, body.end - 1);
-
-  if (path.find("metron_tools.h") != std::string::npos) {
-    return body.consume();
-  }
-
-  CSourceFile* include_file = nullptr;
-  Err err = repo->load_source(path, &include_file);
-
-  if (!err) {
-    type_scope->merge(include_file->context.type_scope);
-  }
-
-  return body.consume();
-}
-
-//------------------------------------------------------------------------------
-
 TokenSpan CContext::handle_preproc(TokenSpan body) {
   auto node_preproc = top_tail->as<CNodePreproc>();
 
@@ -195,17 +174,17 @@ TokenSpan CContext::handle_preproc(TokenSpan body) {
     }
     else if (path.find("stdio") != std::string::npos) {
       for (auto t : stdio_typedefs) {
-        type_scope->add_typedef(t);
+        global_scope.add_typedef(t);
       }
     }
     else if (path.find("stdint") != std::string::npos) {
       for (auto t : stdint_typedefs) {
-        type_scope->add_typedef(t);
+        global_scope.add_typedef(t);
       }
     }
     else if (path.find("stddef") != std::string::npos) {
       for (auto t : stddef_typedefs) {
-        type_scope->add_typedef(t);
+        global_scope.add_typedef(t);
       }
     }
     else {
@@ -213,7 +192,7 @@ TokenSpan CContext::handle_preproc(TokenSpan body) {
       Err err = repo->load_source(path, &include_file);
 
       if (!err) {
-        type_scope->merge(include_file->context.type_scope);
+        global_scope.merge(&(include_file->context.global_scope));
       }
     }
   }

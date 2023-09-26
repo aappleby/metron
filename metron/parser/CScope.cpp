@@ -78,11 +78,11 @@ void CScope::add_typedef(const char* t) {
 
 //----------------------------------------
 
-bool CScope::has_class  (CContext& ctx, TokenSpan body) { if (has_type(ctx, body, class_types  )) return true; if (parent) return parent->has_class  (ctx, body); else return false; }
-bool CScope::has_struct (CContext& ctx, TokenSpan body) { if (has_type(ctx, body, struct_types )) return true; if (parent) return parent->has_struct (ctx, body); else return false; }
-bool CScope::has_union  (CContext& ctx, TokenSpan body) { if (has_type(ctx, body, union_types  )) return true; if (parent) return parent->has_union  (ctx, body); else return false; }
-bool CScope::has_enum   (CContext& ctx, TokenSpan body) { if (has_type(ctx, body, enum_types   )) return true; if (parent) return parent->has_enum   (ctx, body); else return false; }
-bool CScope::has_typedef(CContext& ctx, TokenSpan body) { if (has_type(ctx, body, typedef_types)) return true; if (parent) return parent->has_typedef(ctx, body); else return false; }
+bool CScope::has_class  (CContext& ctx, TokenSpan body) { if (has_type(ctx, body, class_types  )) return true; if (parent2) return parent2->has_class  (ctx, body); else return false; }
+bool CScope::has_struct (CContext& ctx, TokenSpan body) { if (has_type(ctx, body, struct_types )) return true; if (parent2) return parent2->has_struct (ctx, body); else return false; }
+bool CScope::has_union  (CContext& ctx, TokenSpan body) { if (has_type(ctx, body, union_types  )) return true; if (parent2) return parent2->has_union  (ctx, body); else return false; }
+bool CScope::has_enum   (CContext& ctx, TokenSpan body) { if (has_type(ctx, body, enum_types   )) return true; if (parent2) return parent2->has_enum   (ctx, body); else return false; }
+bool CScope::has_typedef(CContext& ctx, TokenSpan body) { if (has_type(ctx, body, typedef_types)) return true; if (parent2) return parent2->has_typedef(ctx, body); else return false; }
 
 void CScope::add_class  (CContext& ctx, const CToken* a) { return add_type(ctx, a, class_types  ); }
 void CScope::add_struct (CContext& ctx, const CToken* a) { return add_type(ctx, a, struct_types ); }

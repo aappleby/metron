@@ -107,11 +107,11 @@ struct CNodeIf : public CNodeStatement {
   CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
 
-  CNodeKeyword*   node_if = nullptr;
+  CNodeKeyword*   node_kw_if = nullptr;
   CNodeList*      node_cond = nullptr;
-  CNodeStatement* node_true = nullptr;
-  CNodeKeyword*   node_else = nullptr;
-  CNodeStatement* node_false = nullptr;
+  CNodeStatement* node_then = nullptr;
+  CNodeKeyword*   node_kw_else = nullptr;
+  CNodeStatement* node_else = nullptr;
 };
 
 //------------------------------------------------------------------------------

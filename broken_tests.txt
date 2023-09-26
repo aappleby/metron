@@ -1,23 +1,16 @@
 Command failed: diff tests/metron_sv/func_writes_sig_and_reg.sv tests/metron_golden/func_writes_sig_and_reg.sv
-Command failed: diff tests/metron_sv/mid_block_break.sv tests/metron_golden/mid_block_break.sv
 Command failed: diff tests/metron_sv/mid_block_return.sv tests/metron_golden/mid_block_return.sv
 Command failed: diff tests/metron_sv/multiple_submod_function_bindings.sv tests/metron_golden/multiple_submod_function_bindings.sv
 Command failed: diff tests/metron_sv/multiple_tock_returns.sv tests/metron_golden/multiple_tock_returns.sv
 Command failed: diff tests/metron_sv/tick_with_return_value.sv tests/metron_golden/tick_with_return_value.sv
-Command failed: diff tests/metron_sv/too_many_breaks.sv tests/metron_golden/too_many_breaks.sv
 
 Command failed: iverilog -g2012 -Wall -I. -o /dev/null tests/metron_sv/func_writes_sig_and_reg.sv
-Command failed: iverilog -g2012 -Wall -I. -o /dev/null tests/metron_sv/too_many_breaks.sv
 Command failed: verilator -I. --lint-only tests/metron_sv/func_writes_sig_and_reg.sv
 Command failed: verilator -I. --lint-only tests/metron_sv/multiple_submod_function_bindings.sv
-Command failed: verilator -I. --lint-only tests/metron_sv/too_many_breaks.sv
 Command failed: yosys -q -p 'read_verilog -I. -sv tests/metron_sv/func_writes_sig_and_reg.sv;'
-Command failed: yosys -q -p 'read_verilog -I. -sv tests/metron_sv/too_many_breaks.sv;'
 
 Command passed: bin/metron -c tests/metron_bad/func_writes_sig_and_reg.h -o tests/metron_sv/func_writes_sig_and_reg.sv
-Command passed: bin/metron -c tests/metron_bad/mid_block_break.h -o tests/metron_sv/mid_block_break.sv
 Command passed: bin/metron -c tests/metron_bad/mid_block_return.h -o tests/metron_sv/mid_block_return.sv
 Command passed: bin/metron -c tests/metron_bad/multiple_submod_function_bindings.h -o tests/metron_sv/multiple_submod_function_bindings.sv
 Command passed: bin/metron -c tests/metron_bad/multiple_tock_returns.h -o tests/metron_sv/multiple_tock_returns.sv
 Command passed: bin/metron -c tests/metron_bad/tick_with_return_value.h -o tests/metron_sv/tick_with_return_value.sv
-Command passed: bin/metron -c tests/metron_bad/too_many_breaks.h -o tests/metron_sv/too_many_breaks.sv

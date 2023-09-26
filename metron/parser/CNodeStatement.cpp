@@ -197,11 +197,11 @@ CHECK_RETURN Err CNodeFor::emit(Cursor& cursor) {
 void CNodeIf::init(const char* match_tag, SpanType span, uint64_t flags) {
   CNode::init(match_tag, span, flags);
 
-  node_if    = child("if")->req<CNodeKeyword>();
+  node_kw_if    = child("if")->req<CNodeKeyword>();
   node_cond  = child("condition")->req<CNodeList>();
-  node_true  = child("body_true")->req<CNodeStatement>();
-  node_else  = child("else")->as<CNodeKeyword>();
-  node_false = child("body_false")->as<CNodeStatement>();
+  node_then  = child("body_true")->req<CNodeStatement>();
+  node_kw_else  = child("else")->as<CNodeKeyword>();
+  node_else = child("body_false")->as<CNodeStatement>();
 }
 
 //----------------------------------------
@@ -249,22 +249,22 @@ CHECK_RETURN Err CNodeIf::trace(CInstance* inst, call_stack& stack) {
 CHECK_RETURN Err CNodeIf::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
-  err << cursor.emit(node_if);
+  err << cursor.emit(node_kw_if);
   err << cursor.emit_gap();
 
   err << cursor.emit(node_cond);
   err << cursor.emit_gap();
 
-  err << cursor.emit(node_true);
+  err << cursor.emit(node_then);
+
+  if (node_kw_else) {
+    err << cursor.emit_gap();
+    err << cursor.emit(node_kw_else);
+  }
 
   if (node_else) {
     err << cursor.emit_gap();
     err << cursor.emit(node_else);
-  }
-
-  if (node_false) {
-    err << cursor.emit_gap();
-    err << cursor.emit(node_false);
   }
 
   return err << cursor.check_done(this);
@@ -377,20 +377,21 @@ bool ends_with_break(CNode* node) {
   }
 
   if (auto node_if = node->as<CNodeIf>()) {
-    if (node_if->node_false == nullptr) return false;
-    return ends_with_break(node_if->node_true) && ends_with_break(node_if->node_false);
+    if (node_if->node_else == nullptr) return false;
+    return ends_with_break(node_if->node_then) && ends_with_break(node_if->node_else);
   }
 
   if (auto node_list = node->as<CNodeList>()) {
-    return ends_with_break(node_list->child_tail);
+
+    for (auto i = 0; i < node_list->items.size() - 1; i++) {
+      if (ends_with_break(node_list->items[i])) return false;
+    }
+    return ends_with_break(node_list->items.back());
   }
 
   if (auto node_expstatement = node->as<CNodeExpStatement>()) {
     return ends_with_break(node_expstatement->node_exp);
   }
-
-  //node->dump_parse_tree();
-  //assert(false);
 
   return false;
 }
@@ -670,6 +671,38 @@ Err CNodeCompound::emit_hoisted_decls(Cursor& cursor) {
 }
 
 //------------------------------------------------------------------------------
+
+bool ends_with_return(CNode* node) {
+  if (!node) return false;
+  if (node->as<CNodeKeyword>() && node->get_text() == "break") return true;
+
+  if (auto node_compound = node->as<CNodeCompound>()) {
+    for (auto i = 0; i < node_compound->statements.size() - 1; i++) {
+      if (ends_with_return(node_compound->statements[i])) return false;
+    }
+    return ends_with_return(node_compound->statements.back());
+  }
+
+  if (auto node_if = node->as<CNodeIf>()) {
+    if (node_if->node_else == nullptr) return false;
+    return ends_with_return(node_if->node_then) && ends_with_return(node_if->node_else);
+  }
+
+  if (auto node_list = node->as<CNodeList>()) {
+    return ends_with_return(node_list->child_tail);
+  }
+
+  if (auto node_expstatement = node->as<CNodeExpStatement>()) {
+    return ends_with_return(node_expstatement->node_exp);
+  }
+
+  //node->dump_parse_tree();
+  //assert(false);
+
+  return false;
+}
+
+//----------------------------------------
 
 Err CNodeReturn::trace(CInstance* inst, call_stack& stack) {
   Err err;

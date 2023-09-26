@@ -15,9 +15,9 @@
         "-v",
         "-e",
         "-c",
-        "tests/metron_bad/mid_block_break.h",
+        "tests/metron_bad/too_many_breaks.h",
         "-o",
-        "tests/metron_sv2/mid_block_break.sv"
+        "tests/metron_sv2/too_many_breaks.sv"
       ],
       /*
       "args" : [

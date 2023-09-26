@@ -367,11 +367,13 @@ void CNodeCase::init(const char* match_tag, SpanType span, uint64_t flags) {
 
 bool ends_with_break(CNode* node) {
   if (!node) return false;
-  if (node->get_text() == "break") return true;
+  if (node->as<CNodeKeyword>() && node->get_text() == "break") return true;
 
   if (auto node_compound = node->as<CNodeCompound>()) {
-    assert(node_compound->child_tail->tag_is("rdelim"));
-    return ends_with_break(node_compound->child_tail->node_prev);
+    for (auto i = 0; i < node_compound->statements.size() - 1; i++) {
+      if (ends_with_break(node_compound->statements[i])) return false;
+    }
+    return ends_with_break(node_compound->statements.back());
   }
 
   if (auto node_if = node->as<CNodeIf>()) {
@@ -454,6 +456,16 @@ CHECK_RETURN Err CNodeDefault::emit(Cursor& cursor) {
 }
 
 //------------------------------------------------------------------------------
+
+void CNodeCompound::init(const char* match_tag, SpanType span, uint64_t flags) {
+  CNode::init(match_tag, span, flags);
+
+  for (auto child : this) {
+    if (!child->tag_is("ldelim") && !child->tag_is("rdelim")) {
+      statements.push_back(child);
+    }
+  }
+}
 
 Err CNodeCompound::trace(CInstance* inst, call_stack& stack) {
   Err err;

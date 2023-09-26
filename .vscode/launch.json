@@ -15,9 +15,9 @@
         "-v",
         "-e",
         "-c",
-        "tests/metron_bad/case_without_break.h",
+        "tests/metron_bad/mid_block_break.h",
         "-o",
-        "tests/metron_sv2/case_without_break.sv"
+        "tests/metron_sv2/mid_block_break.sv"
       ],
       /*
       "args" : [

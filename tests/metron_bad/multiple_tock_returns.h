@@ -6,7 +6,7 @@
 
 class Module {
  public:
-  logic<8> tock(logic<8> data) {
+  int tock(int data) {
     if (data > 10) {
       return 12;
     }

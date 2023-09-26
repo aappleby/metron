@@ -1359,7 +1359,7 @@ TokenSpan match_switch(CContext& ctx, TokenSpan body) {
           >,
           Tag<"rdelim",     cap_punct<"}">>
         >,
-        CNode
+        CNodeList
       >
     >
   >;

@@ -15,9 +15,9 @@
         "-v",
         "-e",
         "-c",
-        "tests/metron_bad/too_many_breaks.h",
+        "tests/metron_bad/multiple_tock_returns.h",
         "-o",
-        "tests/metron_sv2/too_many_breaks.sv"
+        "tests/metron_sv2/multiple_tock_returns.sv"
       ],
       /*
       "args" : [

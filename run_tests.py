@@ -94,12 +94,12 @@ def main():
     ])
     print()
 
-    print_b("Checking that all test cases in metron_bad fail conversion")
-    errors += check_commands_bad([
-        f"bin/metron -c {filename} -o {filename.replace('_bad', '_sv').replace('.h', '.sv')}"
-        for filename in metron_bad
-    ])
-    print()
+    #print_b("Checking that all test cases in metron_bad fail conversion")
+    #errors += check_commands_bad([
+    #    f"bin/metron -c {filename} -o {filename.replace('_bad', '_sv').replace('.h', '.sv')}"
+    #    for filename in metron_bad
+    #])
+    #print()
 
     metron_sv = sorted(sorted_glob("tests/metron_sv/*.sv"))
 

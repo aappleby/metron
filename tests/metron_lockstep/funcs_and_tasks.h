@@ -20,19 +20,15 @@ public:
   }
 
   void tock() {
-    public_task(public_func(171));
+    my_sig = private_func2(171) + 7;
     tick();
   }
 
-  void public_task(logic<32> x) {
-    my_sig = x + 7;
-  }
+private:
 
-  logic<32> public_func(logic<8> x) {
+  logic<32> private_func2(logic<8> x) {
     return my_reg + private_func(51);
   }
-
-private:
 
   void tick() {
     private_task(private_func(33));

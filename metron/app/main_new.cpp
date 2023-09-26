@@ -158,7 +158,8 @@ int main_new(Options opts) {
 
   for (auto node_class : repo.all_classes) {
     for (auto node_func : node_class->all_functions) {
-      if (node_func->is_public && node_func->internal_callers.size()) {
+
+      if (node_func->method_type != MT_FUNC && node_func->is_public && node_func->internal_callers.size()) {
         LOG_R("Function %s is public and has internal callers\n", node_func->name.c_str());
         assert(false);
       }

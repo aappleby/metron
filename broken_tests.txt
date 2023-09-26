@@ -30,7 +30,6 @@ Untracked files:
 
 
 Command failed: diff tests/metron_sv/func_writes_sig_and_reg.sv tests/metron_golden/func_writes_sig_and_reg.sv
-Command failed: bin/metron -q -c tests/metron_lockstep/funcs_and_tasks.h -o gen/tests/metron_lockstep/metron_sv/funcs_and_tasks.sv
 Command failed: diff tests/metron_sv/case_without_break.sv tests/metron_golden/case_without_break.sv
 Command failed: diff tests/metron_sv/if_with_no_compound.sv tests/metron_golden/if_with_no_compound.sv
 Command failed: diff tests/metron_sv/mid_block_break.sv tests/metron_golden/mid_block_break.sv
@@ -39,6 +38,7 @@ Command failed: diff tests/metron_sv/multiple_submod_function_bindings.sv tests/
 Command failed: diff tests/metron_sv/multiple_tock_returns.sv tests/metron_golden/multiple_tock_returns.sv
 Command failed: diff tests/metron_sv/tick_with_return_value.sv tests/metron_golden/tick_with_return_value.sv
 Command failed: diff tests/metron_sv/too_many_breaks.sv tests/metron_golden/too_many_breaks.sv
+
 Command failed: iverilog -g2012 -Wall -I. -o /dev/null tests/metron_sv/func_writes_sig_and_reg.sv
 Command failed: iverilog -g2012 -Wall -I. -o /dev/null tests/metron_sv/if_with_no_compound.sv
 Command failed: iverilog -g2012 -Wall -I. -o /dev/null tests/metron_sv/too_many_breaks.sv

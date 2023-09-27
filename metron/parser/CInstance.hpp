@@ -45,7 +45,6 @@ struct CInstance {
     return nullptr;
   }
 
-
   CInstance* get_root() {
     return inst_parent ? inst_parent->get_root() : this;
   }
@@ -53,38 +52,51 @@ struct CInstance {
   std::string_view get_name() const;
   std::string get_path() const;
   CInstance* resolve(CNode* node);
-  CInstance* resolve(std::string name);
 
-  void push_state();
-  void pop_state();
-  void swap_state();
-  void merge_state();
+  //----------
+  // CInstance interface
 
+  virtual TraceState get_state() const = 0;
+  virtual CInstance* resolve(std::string name) = 0;
   virtual void dump_tree() const = 0;
-  virtual CHECK_RETURN Err log_action(CNode* node, TraceAction action, call_stack& stack);
-  virtual void commit_state() { assert(false); }
-  bool check_port_directions(CInstance* b);
+  virtual Err  log_action(CNode* node, TraceAction action, call_stack& stack) = 0;
+
+  virtual void push_state() = 0;
+  virtual void pop_state() = 0;
+  virtual void swap_state() = 0;
+  virtual void merge_state() = 0;
 
   //----------
 
-  std::string name;
-  bool is_public;
+  std::string name = "<invalid>";
+  bool is_public = false;
   bool is_constructor = false;
   CInstance* inst_parent = nullptr;
-  std::vector<CInstance*> children;
-  std::vector<TraceState> state_stack;
 };
 
 //------------------------------------------------------------------------------
 
 CInstClass* instantiate_class(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class, int depth);
 
+//------------------------------------------------------------------------------
+
 struct CInstClass : public CInstance {
   CInstClass(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class);
 
+  bool check_port_directions(CInstClass* b);
+
+  //----------
+  // CInstance interface
+
+  TraceState get_state() const override;
+  CInstance* resolve(std::string name) override;
   void dump_tree() const override;
   CHECK_RETURN Err log_action(CNode* node, TraceAction action, call_stack& stack) override;
-  void commit_state() override;
+
+  void push_state() override;
+  void pop_state() override;
+  void swap_state() override;
+  void merge_state() override;
 
   //----------
 
@@ -100,12 +112,22 @@ struct CInstClass : public CInstance {
 struct CInstStruct : public CInstance {
   CInstStruct(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeStruct* node_struct);
 
+  //----------
+  // CInstance interface
+
+  TraceState get_state() const override;
+  CInstance* resolve(std::string name) override;
   void dump_tree() const override;
   CHECK_RETURN Err log_action(CNode* node, TraceAction action, call_stack& stack) override;
-  void commit_state() override;
+
+  void push_state() override;
+  void pop_state() override;
+  void swap_state() override;
+  void merge_state() override;
 
   //----------
 
+  std::vector<CInstance*> parts;
   CNodeField*  node_field = nullptr;
   CNodeStruct* node_struct = nullptr;
 };
@@ -115,11 +137,23 @@ struct CInstStruct : public CInstance {
 struct CInstPrim : public CInstance {
   CInstPrim(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field);
 
+  //----------
+  // CInstance interface
+
+  TraceState get_state() const override;
+  CInstance* resolve(std::string name) override;
   void dump_tree() const override;
   CHECK_RETURN Err log_action(CNode* node, TraceAction action, call_stack& stack) override;
-  void commit_state() override;
+
+  void push_state() override;
+  void pop_state() override;
+  void swap_state() override;
+  void merge_state() override;
+
+  //----------
 
   CNodeField* node_field = nullptr;
+  std::vector<TraceState> state_stack;
 };
 
 //------------------------------------------------------------------------------
@@ -127,8 +161,24 @@ struct CInstPrim : public CInstance {
 struct CInstFunc : public CInstance {
   CInstFunc(std::string name, bool is_public, CInstance* inst_parent, CNodeFunction* node_func);
 
-  void commit_state() override {}
+  //----------
+  // CInstance interface
+
+  TraceState get_state() const override;
+  CInstance* resolve(std::string name) override;
   void dump_tree() const override;
+  Err log_action(CNode* node, TraceAction action, call_stack& stack) override;
+
+  void push_state() override;
+  void pop_state() override;
+  void swap_state() override;
+  void merge_state() override;
+
+  //----------
+
+  std::vector<CInstance*> params;
+  CInstance* inst_return;
+
   CNodeFunction* node_func = nullptr;
 };
 

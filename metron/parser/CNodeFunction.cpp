@@ -459,14 +459,14 @@ void CNodeFunction::dump() const {
   if (self_reads.size()) {
     LOG_INDENT_SCOPE();
     for (auto r : self_reads) {
-      LOG_G("Directly reads  %s : %s\n", r->get_path().c_str(), to_string(r->state_stack.back()));
+      LOG_G("Directly reads  %s : %s\n", r->get_path().c_str(), to_string(r->get_state()));
     }
   }
 
   if (self_writes.size()) {
     LOG_INDENT_SCOPE();
     for (auto w : self_writes) {
-      LOG_G("Directly writes %s : %s\n", w->get_path().c_str(), to_string(w->state_stack.back()));
+      LOG_G("Directly writes %s : %s\n", w->get_path().c_str(), to_string(w->get_state()));
     }
   }
 
@@ -474,7 +474,7 @@ void CNodeFunction::dump() const {
     LOG_INDENT_SCOPE();
     for (auto r : all_reads) {
       if (self_reads.contains(r)) continue;
-      LOG_G("Indirectly reads  %s : %s\n", r->get_path().c_str(), to_string(r->state_stack.back()));
+      LOG_G("Indirectly reads  %s : %s\n", r->get_path().c_str(), to_string(r->get_state()));
     }
   }
 
@@ -482,7 +482,7 @@ void CNodeFunction::dump() const {
     LOG_INDENT_SCOPE();
     for (auto w : all_writes) {
       if (self_writes.contains(w)) continue;
-      LOG_G("Indirectly writes %s : %s\n", w->get_path().c_str(), to_string(w->state_stack.back()));
+      LOG_G("Indirectly writes %s : %s\n", w->get_path().c_str(), to_string(w->get_state()));
     }
   }
 #endif

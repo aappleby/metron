@@ -2,11 +2,11 @@
 
 #include "NodeTypes.hpp"
 
-//------------------------------------------------------------------------------
+//##############################################################################
+//##############################################################################
 
 CInstance::CInstance(std::string name, bool is_public, CInstance* inst_parent)
     : name(name), is_public(is_public), inst_parent(inst_parent) {
-  state_stack.push_back(TS_NONE);
 }
 
 CInstance::~CInstance() {}
@@ -29,11 +29,6 @@ std::string CInstance::get_path() const {
 //----------------------------------------
 
 CInstance* CInstance::resolve(CNode* node) {
-
-  //LOG_R("----------\n");
-  //LOG_R("text %s\n", node->get_textstr().c_str());
-  //dump_tree();
-  //LOG_R("----------\n");
 
   if (node->as<CNodeLValue>()) {
     return resolve(node->child("name"));
@@ -66,126 +61,128 @@ CInstance* CInstance::resolve(CNode* node) {
 
   auto text = node->get_text();
   LOG_R("Could not resolve %.*s\n", text.size(), text.data());
-  //assert(false);
 
   return nullptr;
 }
 
-//----------------------------------------
+//##############################################################################
+//##############################################################################
 
-CInstance* CInstance::resolve(std::string name) {
-  for (auto child : children) {
-    if (child->name == name) return child;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//##############################################################################
+//##############################################################################
+
+CInstClass* instantiate_class(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class, int depth) {
+  auto inst_class = new CInstClass(name, is_public, inst_parent, node_field, node_class);
+
+  bool child_is_public = false;
+
+  for (auto child : node_class->child("body")) {
+    if (auto access = child->as<CNodeAccess>()) {
+      child_is_public = child->get_text() == "public:";
+      continue;
+    }
+
+    if (auto node_field = child->as<CNodeField>()) {
+      auto field_name = node_field->get_namestr();
+
+      if (node_field->node_decl->_type_class) {
+        auto inst = instantiate_class(field_name, child_is_public, inst_class, node_field, node_field->node_decl->_type_class, depth);
+        //inst_class->children.push_back(inst);
+        inst_class->parts.push_back(inst);
+      } else if (node_field->node_decl->_type_struct) {
+        auto inst = new CInstStruct(field_name, child_is_public, inst_class, node_field, node_field->node_decl->_type_struct);
+        //inst_class->children.push_back(inst);
+
+        if (child_is_public) {
+          inst_class->ports.push_back(inst);
+        }
+        else {
+          inst_class->parts.push_back(inst);
+        }
+
+      } else {
+        auto inst = new CInstPrim(field_name, child_is_public, inst_class, node_field);
+        //inst_class->children.push_back(inst);
+
+        if (child_is_public) {
+          inst_class->ports.push_back(inst);
+        }
+        else {
+          inst_class->parts.push_back(inst);
+        }
+      }
+    }
+
+    if (auto node_func = child->as<CNodeFunction>()) {
+      auto func_name = node_func->get_namestr();
+
+      auto inst_func = new CInstFunc(func_name, child_is_public, inst_class, node_func);
+
+      if (auto node_constructor = child->as<CNodeConstructor>()) {
+        inst_func->is_constructor = true;
+      }
+
+      //inst_class->children.push_back(inst_func);
+
+      if (child_is_public) {
+        inst_class->ports.push_back(inst_func);
+      }
+      else {
+        inst_class->parts.push_back(inst_func);
+      }
+    }
   }
-  return inst_parent ? inst_parent->resolve(name) : nullptr;
+
+  return inst_class;
 }
 
-//----------------------------------------
+//------------------------------------------------------------------------------
 
-CHECK_RETURN Err CInstance::log_action(CNode* node, TraceAction action, call_stack& stack) {
-  Err err;
-
-  if (name == "@return") {
-    LOG("wat going on %d\n", action);
-    return err;
-  }
-
-  assert(action == ACT_READ || action == ACT_WRITE);
-
-  //auto constructor = node->ancestor<CNodeConstructor>();
-
-  auto func = node->ancestor<CNodeFunction>();
-  assert(func);
-
-  if (action == ACT_READ) {
-    func->self_reads.insert(this);
-  }
-  else if (action == ACT_WRITE) {
-    func->self_writes.insert(this);
-  }
-
-  if (auto constructor = stack[0]->as<CNodeConstructor>()) {
-    //LOG_R("not recording action because we're inside init()\n");
-    return err;
-  }
-
-  auto old_state = state_stack.back();
-  auto new_state = merge_action(old_state, action);
-
-  // LOG_R("%s %s %s\n", to_string(action), to_string(old_state),
-  // to_string(new_state));
-
-  auto t = typeid(*this).name();
-
-  state_stack.back() = new_state;
-
-  if (new_state == TS_INVALID) {
-    LOG_R("Trace error: state went from %s to %s\n", to_string(old_state),
-          to_string(new_state));
-    err << ERR("Invalid context state\n");
-  }
-
-  return err;
+CInstClass::CInstClass(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class)
+: CInstance(name, is_public, inst_parent), node_field(node_field), node_class(node_class)
+{
 }
 
-//----------------------------------------
+//------------------------------------------------------------------------------
 
-void CInstance::push_state() {
-  assert(state_stack.size() > 0);
-  state_stack.push_back(state_stack.back());
-  //for (auto pair : inst_map) pair.second->push_state();
-  for (auto child : children) child->push_state();
-}
-
-//----------------------------------------
-
-void CInstance::pop_state() {
-  assert(state_stack.size() > 0);
-  state_stack.pop_back();
-  //for (auto pair : inst_map) pair.second->pop_state();
-  for (auto child : children) child->pop_state();
-}
-
-//----------------------------------------
-
-void CInstance::swap_state() {
-  assert(state_stack.size() >= 2);
-
-  auto s = state_stack.size();
-  auto a = state_stack[s-2];
-  auto b = state_stack[s-1];
-
-  state_stack[s-2] = b;
-  state_stack[s-1] = a;
-  //for (auto pair : inst_map) pair.second->swap_state();
-  for (auto child : children) child->swap_state();
-}
-
-//----------------------------------------
-
-void CInstance::merge_state() {
-  assert(state_stack.size() >= 2);
-  auto s = state_stack.size();
-  auto a = state_stack[s-2];
-  auto b = state_stack[s-1];
-
-  state_stack[s-2] = merge_branch(a, b);
-  state_stack.pop_back();
-  //for (auto pair : inst_map) pair.second->merge_state();
-  for (auto child : children) child->merge_state();
-}
-
-//----------------------------------------
-
-bool CInstance::check_port_directions(CInstance* b) {
+bool CInstClass::check_port_directions(CInstClass* b) {
   auto a = this;
+  LOG("Checking %s vs %s\n", a->get_path().c_str(), b->get_path().c_str());
+  assert(false);
+
+  // Mismatched port sizes (how?) are invalid.
+  assert(a->ports.size() == b->ports.size());
+  if (a->ports.size() != b->ports.size()) return false;
+
+
+#if 0
   auto sa = a->state_stack.back();
   auto sb = b->state_stack.back();
-
-  LOG("Checking %s:%s vs %s:%s\n",
-    a->get_path().c_str(), to_string(sa),
-    b->get_path().c_str(), to_string(sb)
-  );
 
   assert(sa >= TS_NONE || sa <= TS_REGISTER);
   assert(sa >= TS_NONE || sb <= TS_REGISTER);
@@ -214,115 +211,30 @@ bool CInstance::check_port_directions(CInstance* b) {
       if (!ca->check_port_directions(cb)) return false;
     }
   }
+#endif
 
   return true;
 }
 
 //------------------------------------------------------------------------------
 
-CInstClass* instantiate_class(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class, int depth) {
-  auto inst_class = new CInstClass(name, is_public, inst_parent, node_field, node_class);
-
-  bool child_is_public = false;
-
-  for (auto child : node_class->child("body")) {
-    if (auto access = child->as<CNodeAccess>()) {
-      child_is_public = child->get_text() == "public:";
-      continue;
-    }
-
-    if (auto node_field = child->as<CNodeField>()) {
-      auto field_name = node_field->get_namestr();
-
-      if (node_field->node_decl->_type_class) {
-        auto inst = instantiate_class(field_name, child_is_public, inst_class, node_field, node_field->node_decl->_type_class, depth);
-        inst_class->children.push_back(inst);
-        inst_class->parts.push_back(inst);
-      } else if (node_field->node_decl->_type_struct) {
-        auto inst = new CInstStruct(field_name, child_is_public, inst_class, node_field, node_field->node_decl->_type_struct);
-        inst_class->children.push_back(inst);
-
-        if (child_is_public) {
-          inst_class->ports.push_back(inst);
-        }
-        else {
-          inst_class->parts.push_back(inst);
-        }
-
-      } else {
-        auto inst = new CInstPrim(field_name, child_is_public, inst_class, node_field);
-        inst_class->children.push_back(inst);
-
-        if (child_is_public) {
-          inst_class->ports.push_back(inst);
-        }
-        else {
-          inst_class->parts.push_back(inst);
-        }
-      }
-    }
-
-    if (auto node_func = child->as<CNodeFunction>()) {
-      auto func_name = node_func->get_namestr();
-
-      auto inst_func = new CInstFunc(func_name, child_is_public, inst_class, node_func);
-
-      if (auto node_constructor = child->as<CNodeConstructor>()) {
-        inst_func->is_constructor = true;
-      }
-
-      inst_class->children.push_back(inst_func);
-
-      if (child_is_public) {
-        inst_class->ports.push_back(inst_func);
-      }
-      else {
-        inst_class->parts.push_back(inst_func);
-      }
-    }
-  }
-
-  return inst_class;
+TraceState CInstClass::get_state() const {
+  assert(false);
+  return TS_INVALID;
 }
 
 //----------------------------------------
 
-CInstClass::CInstClass(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class)
-: CInstance(name, is_public, inst_parent), node_field(node_field), node_class(node_class)
-{
-}
-
-//----------------------------------------
-
-CHECK_RETURN Err CInstClass::log_action(CNode* node, TraceAction action, call_stack& stack) {
-  Err err;
-  //for (auto pair : inst_map) err << pair.second->log_action(node, action);
-  return err;
-}
-
-//----------------------------------------
-
-void CInstClass::commit_state() {
-  for (auto child : children) {
-    // Don't cross module boundaries when committing traced state
-    //if (!child->as<CInstClass>()) {
-      child->commit_state();
-    //}
-  }
+CInstance* CInstClass::resolve(std::string name) {
+  for (auto child : ports) if (child->name == name) return child;
+  for (auto child : parts) if (child->name == name) return child;
+  return inst_parent ? inst_parent->resolve(name) : nullptr;
 }
 
 //----------------------------------------
 
 void CInstClass::dump_tree() const {
-  if (is_public) {
-    LOG_G("Class %s", get_path().c_str());
-  }
-  else {
-    LOG_R("Class %s", get_path().c_str());
-  }
-
-  for (auto state : state_stack) LOG(" %s", to_string(state));
-  LOG("\n");
+  LOG_G("Class %s\n", get_path().c_str());
 
   {
     LOG_INDENT_SCOPE();
@@ -332,108 +244,230 @@ void CInstClass::dump_tree() const {
   }
   {
     LOG_INDENT_SCOPE();
-    LOG_G("Parts:\n");
+    LOG_R("Parts:\n");
     LOG_INDENT_SCOPE();
     for (auto child : parts) child->dump_tree();
   }
-
-  {
-    LOG_INDENT_SCOPE();
-    LOG_G("BLah:\n");
-    LOG_INDENT_SCOPE();
-    for (auto child : children) child->dump_tree();
-  }
-
-  //auto name = node_class->get_name();
-  //LOG_G("Class %.*s\n", int(name.size()), name.data());
-
-  //LOG_INDENT_SCOPE();
-  //for (auto pair : inst_map) {
-  //  LOG_G("Field %.*s : ", int(pair.first.size()), pair.first.data());
-  //  pair.second->dump_tree();
-  //}
-
-  //for (auto call : entry_points) {
-  //  LOG_G("Entry point ");
-  //  call->dump_tree();
-  //}
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------
 
-//
+Err CInstClass::log_action(CNode* node, TraceAction action, call_stack& stack) {
+  assert(false);
+  return Err();
+}
+
+//----------------------------------------
+
+void CInstClass::push_state() {
+  for (auto child : ports) child->push_state();
+  for (auto child : parts) child->push_state();
+}
+
+void CInstClass::pop_state() {
+  for (auto child : ports) child->pop_state();
+  for (auto child : parts) child->pop_state();
+}
+
+void CInstClass::swap_state() {
+  for (auto child : ports) child->swap_state();
+  for (auto child : parts) child->swap_state();
+}
+
+void CInstClass::merge_state() {
+  for (auto child : ports) child->merge_state();
+  for (auto child : parts) child->merge_state();
+}
+
+//##############################################################################
+//##############################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//##############################################################################
+//##############################################################################
 
 CInstStruct::CInstStruct(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeStruct* node_struct)
     : CInstance(name, is_public, inst_parent), node_field(node_field), node_struct(node_struct) {
   assert(node_struct);
-  //assert(node_field);
-  //node_struct = node_field->node_decl->_type_struct;
 
   for (auto struct_field : node_struct->all_fields) {
     auto field_name = struct_field->get_namestr();
 
     if (struct_field->node_decl->_type_struct) {
       auto inst_field = new CInstStruct(field_name, is_public, this, struct_field, struct_field->node_decl->_type_struct);
-      children.push_back(inst_field);
+      parts.push_back(inst_field);
     } else {
       auto inst_field = new CInstPrim(field_name, is_public, this, struct_field);
-      children.push_back(inst_field);
+      parts.push_back(inst_field);
     }
   }
+}
+
+//------------------------------------------------------------------------------
+
+TraceState CInstStruct::get_state() const {
+  auto merged_state = TS_PENDING;
+  for (auto child : parts) {
+    merged_state = merge_branch(merged_state, child->get_state());
+  }
+  return merged_state;
+}
+
+//----------------------------------------
+
+CInstance* CInstStruct::resolve(std::string name) {
+  for (auto child : parts) if (child->name == name) return child;
+  return inst_parent ? inst_parent->resolve(name) : nullptr;
 }
 
 //----------------------------------------
 
 void CInstStruct::dump_tree() const {
-  if (is_public) {
-    LOG_G("Struct %s", get_path().c_str());
+  LOG_G("Struct %s\n", get_path().c_str());
+
+  {
+    LOG_INDENT_SCOPE();
+    LOG_G("Parts:\n");
+    LOG_INDENT_SCOPE();
+    for (auto child : parts) child->dump_tree();
   }
-  else {
-    LOG_R("Struct %s", get_path().c_str());
-  }
-
-  for (auto state : state_stack) LOG(" %s", to_string(state));
-  LOG("\n");
-
-  LOG_INDENT_SCOPE();
-  for (auto child : children) child->dump_tree();
-
-  ///auto name = node_struct->get_name();
-  ///LOG_G("Struct %.*s :", int(name.size()), name.data());
-  ///LOG_G("\n");
-
-  ///LOG_INDENT_SCOPE();
-  ///for (auto pair : inst_map) {
-  ///  LOG_G("Field %.*s : ", int(pair.first.size()), pair.first.data());
-  ///  pair.second->dump_tree();
-  ///}
 }
 
-CHECK_RETURN Err CInstStruct::log_action(CNode* node, TraceAction action, call_stack& stack) {
+//----------------------------------------
+
+Err CInstStruct::log_action(CNode* node, TraceAction action, call_stack& stack) {
   Err err;
   //for (auto pair : inst_map) err << pair.second->log_action(node, action);
-  for (auto child : children) err << child->log_action(node, action, stack);
+  for (auto child : parts) err << child->log_action(node, action, stack);
   return err;
 }
 
-void CInstStruct::commit_state() {
-  for (auto child : children) {
-    child->commit_state();
-  }
+//----------------------------------------
 
-  auto merged_state = TS_PENDING;
-  for (auto child : children) {
-    merged_state = merge_branch(merged_state, child->state_stack.back());
-  }
-  state_stack.back() = merged_state;
-  //node_field->field_type = trace_state_to_field_type(merged_state);
+void CInstStruct::push_state() {
+  for (auto child : parts) child->push_state();
 }
 
+void CInstStruct::pop_state() {
+  for (auto child : parts) child->pop_state();
+}
 
-//------------------------------------------------------------------------------
+void CInstStruct::swap_state() {
+  for (auto child : parts) child->swap_state();
+}
+
+void CInstStruct::merge_state() {
+  for (auto child : parts) child->merge_state();
+}
+
+//##############################################################################
+//##############################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//##############################################################################
+//##############################################################################
 
 CInstPrim::CInstPrim(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field)
-    : CInstance(name, is_public, inst_parent), node_field(node_field) {}
+    : CInstance(name, is_public, inst_parent), node_field(node_field) {
+  state_stack.push_back(TS_NONE);
+}
+
+//----------------------------------------
+
+TraceState CInstPrim::get_state() const {
+  return state_stack.back();
+}
+
+//----------------------------------------
+
+CInstance* CInstPrim::resolve(std::string name) {
+  assert(false);
+  return nullptr;
+}
 
 //----------------------------------------
 
@@ -447,37 +481,122 @@ void CInstPrim::dump_tree() const {
 
   for (auto state : state_stack) LOG(" %s", to_string(state));
   LOG("\n");
-
-  //auto prim_type = node_field->child("decl")->child("type")->get_text();
-  //LOG_G("Primitive %.*s :", int(prim_type.size()), prim_type.data());
-
-  //for (auto state : state_stack) LOG(" %s", to_string(state));
-  //LOG_G("\n");
 }
 
 //----------------------------------------
 
-CHECK_RETURN Err CInstPrim::log_action(CNode* node, TraceAction action, call_stack& stack) {
-  return CInstance::log_action(node, action, stack);
-}
+Err CInstPrim::log_action(CNode* node, TraceAction action, call_stack& stack) {
+  Err err;
 
-//----------------------------------------
-
-void CInstPrim::commit_state() {
-  assert(node_field);
-
-  /*
-  auto new_type = trace_state_to_field_type(state_stack.back());
-
-  if (node_field->field_type == FT_UNKNOWN) {
-    node_field->field_type = new_type;
+  if (name == "@return") {
+    LOG("wat going on %d\n", action);
+    return err;
   }
 
-  assert(node_field->field_type == new_type);
-  */
+  assert(action == ACT_READ || action == ACT_WRITE);
+
+  auto func = node->ancestor<CNodeFunction>();
+  assert(func);
+
+  if (action == ACT_READ) {
+    func->self_reads.insert(this);
+  }
+  else if (action == ACT_WRITE) {
+    func->self_writes.insert(this);
+  }
+
+  if (auto constructor = stack[0]->as<CNodeConstructor>()) {
+    //LOG_R("not recording action because we're inside init()\n");
+    return err;
+  }
+
+  auto old_state = state_stack.back();
+  auto new_state = merge_action(old_state, action);
+
+  state_stack.back() = new_state;
+
+  if (new_state == TS_INVALID) {
+    LOG_R("Trace error: state went from %s to %s\n", to_string(old_state),
+          to_string(new_state));
+    err << ERR("Invalid context state\n");
+  }
+
+  return err;
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------
+
+void CInstPrim::push_state() {
+  assert(state_stack.size() > 0);
+  state_stack.push_back(state_stack.back());
+}
+
+//----------------------------------------
+
+void CInstPrim::pop_state() {
+  assert(state_stack.size() > 0);
+  state_stack.pop_back();
+}
+
+//----------------------------------------
+
+void CInstPrim::swap_state() {
+  assert(state_stack.size() >= 2);
+
+  auto s = state_stack.size();
+  auto a = state_stack[s-2];
+  auto b = state_stack[s-1];
+
+  state_stack[s-2] = b;
+  state_stack[s-1] = a;
+}
+
+//----------------------------------------
+
+void CInstPrim::merge_state() {
+  assert(state_stack.size() >= 2);
+  auto s = state_stack.size();
+  auto a = state_stack[s-2];
+  auto b = state_stack[s-1];
+
+  state_stack[s-2] = merge_branch(a, b);
+  state_stack.pop_back();
+}
+
+//##############################################################################
+//##############################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//##############################################################################
+//##############################################################################
 
 CInstFunc::CInstFunc(std::string name, bool is_public, CInstance* inst_parent, CNodeFunction* node_func)
 : CInstance(name, is_public, inst_parent), node_func(node_func) {
@@ -488,10 +607,10 @@ CInstFunc::CInstFunc(std::string name, bool is_public, CInstance* inst_parent, C
     auto param_name = param->get_namestr();
     if (param->_type_struct) {
       auto inst_field = new CInstStruct(param_name, is_public, this, nullptr, param->_type_struct);
-      children.push_back(inst_field);
+      params.push_back(inst_field);
     } else {
       auto inst_field = new CInstPrim(param_name, is_public, this, nullptr);
-      children.push_back(inst_field);
+      params.push_back(inst_field);
     }
   }
 
@@ -500,11 +619,11 @@ CInstFunc::CInstFunc(std::string name, bool is_public, CInstance* inst_parent, C
     if (auto struct_type = ret_type->as<CNodeStructType>()) {
       auto node_struct = repo->get_struct(struct_type->get_text());
       auto inst = new CInstStruct("@return", is_public, this, nullptr, node_struct);
-      children.push_back(inst);
+      inst_return = inst;
     }
     else if (auto builtin_type = ret_type->as<CNodeBuiltinType>()) {
       auto inst = new CInstPrim("@return", is_public, this, nullptr);
-      children.push_back(inst);
+      inst_return = inst;
     }
     else {
       assert(false);
@@ -514,39 +633,64 @@ CInstFunc::CInstFunc(std::string name, bool is_public, CInstance* inst_parent, C
 
 //----------------------------------------
 
-void CInstFunc::dump_tree() const {
-  if (is_public) {
-    LOG_G("Func %s", get_path().c_str());
-  }
-  else {
-    LOG_R("Func %s", get_path().c_str());
-  }
-
-  for (auto state : state_stack) LOG(" %s", to_string(state));
-  LOG("\n");
-
-  LOG_INDENT_SCOPE();
-  for (auto child : children) child->dump_tree();
-}
-
-//------------------------------------------------------------------------------
-#if 0
-CInstCall::CInstCall(std::string name, CInstClass* inst_parent, CNodeCall* node_call, CNodeFunction* node_func)
-    : CInstance(name, inst_parent, node_func), node_call(node_call) {
+TraceState CInstFunc::get_state() const {
+  assert(false);
+  return TS_INVALID;
 }
 
 //----------------------------------------
 
-void CInstCall::dump_tree() const {
-  LOG_G("Call %s\n", name.c_str());
-
-  //auto func_name = node_func->get_name();
-  //auto class_name = inst_parent->get_name();
-  //LOG_G("Call %.*s::%.*s\n", int(class_name.size()), class_name.data(), int(func_name.size()), func_name.data());
-
-  //LOG_INDENT_SCOPE();
-  //for (auto pair : call_map) pair.second->dump_tree();
+CInstance* CInstFunc::resolve(std::string name) {
+  for (auto param : params) if (param->name == name) return param;
+  if (inst_return->name == name) return inst_return;
+  return nullptr;
 }
-#endif
 
-//------------------------------------------------------------------------------
+//----------------------------------------
+
+void CInstFunc::dump_tree() const {
+  LOG_G("Func %s", get_path().c_str());
+
+  LOG_INDENT();
+  LOG_G("Params:\n");
+  LOG_INDENT();
+  for (auto p : params) p->dump_tree();
+  LOG_DEDENT();
+  LOG_G("Return:\n");
+  LOG_INDENT();
+  inst_return->dump_tree();
+  LOG_DEDENT();
+  LOG_DEDENT();
+}
+
+//----------------------------------------
+
+Err CInstFunc::log_action(CNode* node, TraceAction action, call_stack& stack) {
+  assert(false);
+  return Err();
+}
+
+//----------------------------------------
+
+void CInstFunc::push_state() {
+  for (auto p : params) p->push_state();
+  inst_return->push_state();
+}
+
+void CInstFunc::pop_state() {
+  for (auto p : params) p->pop_state();
+  inst_return->pop_state();
+}
+
+void CInstFunc::swap_state() {
+  for (auto p : params) p->swap_state();
+  inst_return->swap_state();
+}
+
+void CInstFunc::merge_state() {
+  for (auto p : params) p->merge_state();
+  inst_return->merge_state();
+}
+
+//##############################################################################
+//##############################################################################

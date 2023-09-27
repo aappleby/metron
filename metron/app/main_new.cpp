@@ -239,8 +239,6 @@ int main_new(Options opts) {
       err << node_func->trace(inst_func, stack);
     }
     */
-
-    inst_class->commit_state();
   }
 
   for (auto c : repo.all_classes) {
@@ -281,13 +279,13 @@ int main_new(Options opts) {
       }
       else if (method_type == MT_TOCK) {
         for (auto inst : f->self_writes) {
-          auto state = inst->state_stack.back();
+          auto state = inst->get_state();
           assert(state == TS_SIGNAL || state == TS_OUTPUT);
         }
       }
       else if (method_type == MT_TICK) {
         for (auto inst : f->self_writes) {
-          auto state = inst->state_stack.back();
+          auto state = inst->get_state();
           assert(state == TS_REGISTER || state == TS_MAYBE || state == TS_OUTPUT);
         }
       }
@@ -296,27 +294,26 @@ int main_new(Options opts) {
 
   //----------------------------------------
 
+  assert(false);
   LOG_B("Checking port compatibility\n");
   LOG_INDENT();
 
   for (auto inst : repo.all_instances) {
     LOG("Module %s\n", inst->name.c_str());
     LOG_INDENT_SCOPE();
-    for (auto child : inst->children) {
-      if (auto inst_submod = child->as<CInstClass>()) {
-        auto inst_b = repo.get_instance(inst_submod->node_class->get_namestr());
-
-        if (inst_submod && inst_b) {
-          bool ports_ok = inst_submod->check_port_directions(inst_b);
-          if (!ports_ok) {
-            LOG_R("-----\n");
-            inst_submod->dump_tree();
-            LOG_R("-----\n");
-            inst_b->dump_tree();
-            LOG_R("-----\n");
-            err << ERR("Bad ports!\n");
-            exit(-1);
-          }
+    for (auto child : inst->parts) {
+      if (auto inst_a = child->as<CInstClass>()) {
+        auto inst_b = repo.get_instance(inst_a->node_class->get_namestr());
+        assert(inst_b);
+        bool ports_ok = inst_a->check_port_directions(inst_b);
+        if (!ports_ok) {
+          LOG_R("-----\n");
+          inst_a->dump_tree();
+          LOG_R("-----\n");
+          inst_b->dump_tree();
+          LOG_R("-----\n");
+          err << ERR("Bad ports!\n");
+          exit(-1);
         }
       }
     }
@@ -332,14 +329,14 @@ int main_new(Options opts) {
     auto node_class = inst_class->node_class;
     assert(inst_class);
 
-    for (auto inst_child : inst_class->children) {
+    for (auto inst_child : inst_class->ports) {
 
       if (auto inst_prim = inst_child->as<CInstPrim>()) {
         auto field = inst_prim->node_field;
         if (!field->is_public) continue;
         if (field->node_decl->node_static && field->node_decl->node_const) continue;
 
-        switch(inst_prim->state_stack.back()) {
+        switch(inst_prim->get_state()) {
           case TS_NONE:     break;
           case TS_INPUT:    node_class->input_signals.push_back(field);    break;
           case TS_OUTPUT:   node_class->output_signals.push_back(field);   break;
@@ -356,7 +353,7 @@ int main_new(Options opts) {
         if (!field->is_public) continue;
         if (field->node_decl->node_static && field->node_decl->node_const) continue;
 
-        switch(inst_struct->state_stack.back()) {
+        switch(inst_struct->get_state()) {
           case TS_NONE:     break;
           case TS_INPUT:    node_class->input_signals.push_back(field);    break;
           case TS_OUTPUT:   node_class->output_signals.push_back(field);   break;

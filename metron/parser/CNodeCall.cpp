@@ -40,14 +40,10 @@ Err CNodeCall::trace(CInstance* inst, call_stack& stack) {
     auto func_inst = inst->resolve(field_exp)->as<CInstFunc>();
 
     stack.push_back(func_inst->node_func);
-    for (auto child : func_inst->children) {
-      if (child->name == "@return") {
-        err << child->log_action(this, ACT_READ, stack);
-      }
-      else {
-        err << child->log_action(this, ACT_WRITE, stack);
-      }
+    for (auto child : func_inst->params) {
+      err << child->log_action(this, ACT_WRITE, stack);
     }
+    err << func_inst->inst_return->log_action(this, ACT_READ, stack);
     stack.pop_back();
   }
   else {

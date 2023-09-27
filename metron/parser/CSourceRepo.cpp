@@ -119,31 +119,40 @@ void CSourceRepo::dump() {
     LOG_G("Classes:\n");
     LOG_INDENT_SCOPE();
     for (auto n : all_classes) {
-      LOG("\n");
       n->dump();
+      LOG("\n");
     }
-    LOG("\n");
+    if (all_classes.empty()) LOG("\n");
   }
 
   {
     LOG_G("Structs:\n");
     LOG_INDENT_SCOPE();
-    for (auto n : all_structs) n->dump();
-    LOG("\n");
+    for (auto n : all_structs) {
+      n->dump();
+      LOG("\n");
+    }
+    if (all_structs.empty()) LOG("\n");
   }
 
   {
     LOG_G("Namespaces:\n");
     LOG_INDENT_SCOPE();
-    for (auto n : all_namespaces) n->dump();
-    LOG("\n");
+    for (auto n : all_namespaces) {
+      n->dump();
+      LOG("\n");
+    }
+    if (all_namespaces.empty()) LOG("\n");
   }
 
   {
     LOG_G("Enums:\n");
     LOG_INDENT_SCOPE();
-    for (auto n : all_enums) n->dump();
-    LOG("\n");
+    for (auto n : all_enums) {
+      n->dump();
+      LOG("\n");
+    }
+    if (all_enums.empty()) LOG("\n");
   }
 }
 

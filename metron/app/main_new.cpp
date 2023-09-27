@@ -34,17 +34,8 @@ int main_new(Options opts) {
     return -1;
   }
 
-#if 1
-  /*
-  for (auto pair : repo.source_map)
-  {
-    CSourceFile* file = pair.second;
-    file->context.top_head->dump_parse_tree();
-  }
-  */
   root_file->context.top_head->dump_parse_tree();
   LOG("\n");
-#endif
 
   //----------------------------------------
   // Sanity check parse tree
@@ -76,8 +67,7 @@ int main_new(Options opts) {
   // All modules are now in the library, we can resolve references to other
   // modules when we're collecting fields.
 
-  LOG_B("//----------------------------------------\n");
-  LOG_B("// Processing source files\n");
+  LOG_B("Processing source files\n");
 
   for (auto pair : repo.source_map) {
     CSourceFile* file = pair.second;
@@ -113,7 +103,7 @@ int main_new(Options opts) {
     }
   }
 
-  LOG_B("collect_fields_and_methods\n");
+  LOG_B("Collecting fields and methods\n");
 
   for (auto pair : repo.source_map) {
     CSourceFile* file = pair.second;
@@ -140,7 +130,7 @@ int main_new(Options opts) {
     }
   }
 
-  //----------------------------------------
+
   // Count module instances so we can find top modules.
 
   for (auto c : repo.all_classes) {
@@ -148,8 +138,6 @@ int main_new(Options opts) {
       if (f->node_decl->_type_class) f->node_decl->_type_class->refcount++;
     }
   }
-
-  //----------------------------------------
 
   LOG_B("Building call graph\n");
   for (auto node_class : repo.all_classes) {
@@ -174,112 +162,100 @@ int main_new(Options opts) {
     auto instance = new CInstClass(node_class->get_namestr(), true, nullptr, nullptr, node_class);
     repo.all_instances.push_back(instance);
   }
-  LOG_B("\n");
 
   //----------------------------------------
   // Trace
 
-  {
-    LOG_B("//----------------------------------------\n");
-    LOG_B("// Tracing classes\n");
-    LOG_INDENT_SCOPE();
+  LOG_B("Tracing classes\n");
+  LOG_INDENT();
 
-    for (auto inst_class : repo.all_instances) {
-      auto node_class = inst_class->node_class;
-      auto name = node_class->get_name();
-      LOG_B("\n");
-      LOG_B("Tracing public methods in %.*s\n", int(name.size()), name.data());
+  for (auto inst_class : repo.all_instances) {
+    auto node_class = inst_class->node_class;
+    auto name = node_class->get_name();
+    LOG_B("Tracing public methods in %.*s\n", int(name.size()), name.data());
 
-      // Trace constructors first
-      if (auto node_func = node_class->constructor) {
-        LOG_INDENT_SCOPE();
-        auto func_name = node_func->get_namestr();
-        if (!node_func->is_public) continue;
+    // Trace constructors first
+    if (auto node_func = node_class->constructor) {
+      LOG_INDENT_SCOPE();
+      auto func_name = node_func->get_namestr();
+      if (!node_func->is_public) continue;
 
-        LOG_B("Tracing %s\n", func_name.c_str());
-        auto inst_func = inst_class->resolve(func_name);
-        call_stack stack;
-        stack.push_back(node_func);
-        err << node_func->trace(inst_func, stack);
-      }
-
-      // Trace tocks
-      for (auto node_func : node_class->all_functions) {
-        LOG_INDENT_SCOPE();
-        auto func_name = node_func->get_namestr();
-        if (!func_name.starts_with("tock")) continue;
-        if (!node_func->is_public) continue;
-
-        LOG_B("Tracing %s\n", func_name.c_str());
-        auto inst_func = inst_class->resolve(func_name);
-        call_stack stack;
-        stack.push_back(node_func);
-        err << node_func->trace(inst_func, stack);
-      }
-
-      // Trace ticks
-      for (auto node_func : node_class->all_functions) {
-        LOG_INDENT_SCOPE();
-        auto func_name = node_func->get_namestr();
-        if (!func_name.starts_with("tick")) continue;
-        if (!node_func->is_public) continue;
-
-        LOG_B("Tracing %s\n", func_name.c_str());
-        auto inst_func = inst_class->resolve(func_name);
-        call_stack stack;
-        stack.push_back(node_func);
-        err << node_func->trace(inst_func, stack);
-      }
-
-      // Trace funcs
-      /*
-      for (auto node_func : node_class->all_functions) {
-        LOG_INDENT_SCOPE();
-        auto func_name = node_func->get_namestr();
-        if (func_name.starts_with("tock") || func_name.starts_with("tick")) continue;
-        if (!node_func->is_public) continue;
-
-        LOG_B("Tracing %s\n", func_name.c_str());
-        auto inst_func = inst_class->resolve(func_name);
-        call_stack stack;
-        stack.push_back(node_func);
-        err << node_func->trace(inst_func, stack);
-      }
-      */
-
-      inst_class->commit_state();
-
-      LOG_B("Tracing done for %.*s\n", int(name.size()), name.data());
-
-      LOG_INDENT();
-      inst_class->dump_tree();
-      LOG_DEDENT();
+      LOG_B("Tracing %s\n", func_name.c_str());
+      auto inst_func = inst_class->resolve(func_name);
+      call_stack stack;
+      stack.push_back(node_func);
+      err << node_func->trace(inst_func, stack);
     }
 
-    for (auto c : repo.all_classes) {
-      if (c->constructor) {
-        c->constructor->propagate_rw();
-      }
-      for (auto f : c->all_functions) {
-        f->propagate_rw();
-      }
+    // Trace tocks
+    for (auto node_func : node_class->all_functions) {
+      LOG_INDENT_SCOPE();
+      auto func_name = node_func->get_namestr();
+      if (!func_name.starts_with("tock")) continue;
+      if (!node_func->is_public) continue;
+
+      LOG_B("Tracing %s\n", func_name.c_str());
+      auto inst_func = inst_class->resolve(func_name);
+      call_stack stack;
+      stack.push_back(node_func);
+      err << node_func->trace(inst_func, stack);
     }
 
-    if (err.has_err()) {
-      LOG_R("Error during tracing\n");
-      return -1;
+    // Trace ticks
+    for (auto node_func : node_class->all_functions) {
+      LOG_INDENT_SCOPE();
+      auto func_name = node_func->get_namestr();
+      if (!func_name.starts_with("tick")) continue;
+      if (!node_func->is_public) continue;
+
+      LOG_B("Tracing %s\n", func_name.c_str());
+      auto inst_func = inst_class->resolve(func_name);
+      call_stack stack;
+      stack.push_back(node_func);
+      err << node_func->trace(inst_func, stack);
     }
 
-    LOG_B("All tracing done\n");
-    LOG_B("\n");
+    // Trace funcs
+    /*
+    for (auto node_func : node_class->all_functions) {
+      LOG_INDENT_SCOPE();
+      auto func_name = node_func->get_namestr();
+      if (func_name.starts_with("tock") || func_name.starts_with("tick")) continue;
+      if (!node_func->is_public) continue;
+
+      LOG_B("Tracing %s\n", func_name.c_str());
+      auto inst_func = inst_class->resolve(func_name);
+      call_stack stack;
+      stack.push_back(node_func);
+      err << node_func->trace(inst_func, stack);
+    }
+    */
+
+    inst_class->commit_state();
   }
+
+  for (auto c : repo.all_classes) {
+    if (c->constructor) {
+      c->constructor->propagate_rw();
+    }
+    for (auto f : c->all_functions) {
+      f->propagate_rw();
+    }
+  }
+
+  if (err.has_err()) {
+    LOG_R("Error during tracing\n");
+    return -1;
+  }
+
+  LOG_B("All tracing done\n");
+  LOG_DEDENT();
 
   //----------------------------------------
 
   for (auto node_class : repo.all_classes) {
     for (auto f : node_class->all_functions) {
 
-      f->dump_parse_tree();
       auto method_type = f->get_method_type();
 
       if (method_type != MT_FUNC &&
@@ -307,45 +283,36 @@ int main_new(Options opts) {
         }
       }
     }
-    LOG_G("get_method_type OK\n");
   }
-  LOG("\n");
 
   //----------------------------------------
 
-  {
-    LOG_B("//----------------------------------------\n");
-    LOG_B("// Checking port compatibility\n");
-    LOG_B("\n");
+  LOG_B("Checking port compatibility\n");
+  LOG_INDENT();
 
-    for (auto inst : repo.all_instances) {
-      LOG("Module %s\n", inst->name.c_str());
-      LOG_INDENT_SCOPE();
-      for (auto child : inst->children) {
-        if (auto inst_submod = child->as<CInstClass>()) {
-          //LOG("Submod %s\n", inst_submod->name.c_str());
-          //LOG("Submod class %s\n", inst_submod->node_class->get_namestr().c_str());
-          auto inst_b = repo.get_instance(inst_submod->node_class->get_namestr());
-          //LOG("Submod instance %p\n", inst_b);
+  for (auto inst : repo.all_instances) {
+    LOG("Module %s\n", inst->name.c_str());
+    LOG_INDENT_SCOPE();
+    for (auto child : inst->children) {
+      if (auto inst_submod = child->as<CInstClass>()) {
+        auto inst_b = repo.get_instance(inst_submod->node_class->get_namestr());
 
-          if (inst_submod && inst_b) {
-            bool ports_ok = inst_submod->check_port_directions(inst_b);
-            if (!ports_ok) {
-              LOG_R("-----\n");
-              inst_submod->dump_tree();
-              LOG_R("-----\n");
-              inst_b->dump_tree();
-              LOG_R("-----\n");
-              err << ERR("Bad ports!\n");
-              exit(-1);
-            }
+        if (inst_submod && inst_b) {
+          bool ports_ok = inst_submod->check_port_directions(inst_b);
+          if (!ports_ok) {
+            LOG_R("-----\n");
+            inst_submod->dump_tree();
+            LOG_R("-----\n");
+            inst_b->dump_tree();
+            LOG_R("-----\n");
+            err << ERR("Bad ports!\n");
+            exit(-1);
           }
         }
       }
     }
-
-    LOG("\n");
   }
+  LOG_DEDENT();
 
   //----------------------------------------
 
@@ -585,58 +552,38 @@ int main_new(Options opts) {
   // Done!
 
   LOG_B("\n");
-  LOG_B("//----------------------------------------\n");
-  LOG_B("// Repo dump\n\n");
-  LOG_INDENT();
+  LOG_B("================================================================================\n");
+  LOG_B("Repo dump\n\n");
+
   repo.dump();
-  LOG_DEDENT();
-  LOG_B("//----------------------------------------\n");
-  for (auto i : repo.all_instances) {
-    i->dump_tree();
+
+  for (auto inst_class : repo.all_instances) {
+    LOG_B("Instance tree for %s\n", inst_class->node_class->get_namestr().c_str());
+    LOG_INDENT();
+    inst_class->dump_tree();
+    LOG_DEDENT();
+    LOG_B("\n");
   }
-  LOG_B("//----------------------------------------\n");
-  LOG_B("\n");
-
-#if 0
-  //----------------------------------------
-
-  LOG_R("//----------------------------------------\n");
-  LOG_R("// Call graph\n");
-  LOG("\n");
 
   for (auto node_class : repo.all_classes) {
+    LOG_B("Call graph for %s\n", node_class->get_namestr().c_str());
+    LOG_INDENT();
     node_class->dump_call_graph();
-    LOG("\n");
-    node_class->dump();
+    LOG_DEDENT();
     LOG("\n");
   }
 
-  LOG_R("//----------------------------------------\n");
-  LOG("\n");
 
-
-  LOG_R("//----------------------------------------\n");
-  LOG("\n");
-
-#endif
-
-  //exit(0);
-
-
-  //----------------------------------------
-  // Emit all modules.
-
-  LOG_G("Converting %s to SystemVerilog\n", opts.src_name.c_str());
+  LOG_B("================================================================================\n");
+  LOG_B("Converting %s to SystemVerilog\n\n", opts.src_name.c_str());
 
   std::string out_string;
   Cursor cursor(&repo, root_file, &out_string);
   cursor.echo = opts.echo && !opts.quiet;
 
-  if (opts.echo) LOG_G("\n----------------------------------------\n");
   err << cursor.emit_everything();
   //err << cursor.emit_trailing_whitespace();
   //err << cursor.emit_gap();
-  if (opts.echo) LOG_G("----------------------------------------\n\n");
 
   if (err.has_err()) {
     LOG_R("Error during code generation\n");
@@ -644,11 +591,8 @@ int main_new(Options opts) {
     return -1;
   }
 
-  //----------------------------------------
-
   // Save translated source to output directory, if there is one.
   if (opts.dst_name.size()) {
-    LOG_G("Saving %s\n", opts.dst_name.c_str());
 
     auto dst_path = split_path(opts.dst_name);
     dst_path.pop_back();
@@ -668,11 +612,14 @@ int main_new(Options opts) {
       fclose(out_file);
     }
   }
+  LOG("\n");
 
-  LOG_B("================================================================================\n\n");
+  LOG_B("================================================================================\n");
+  LOG_B("Output:\n\n");
+
   LOG_G("%s\n", out_string.c_str());
 
-  //----------------------------------------
+  LOG_B("================================================================================\n");
 
   LOG("Done!\n");
 

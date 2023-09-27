@@ -92,7 +92,7 @@ CNodeField* CNodeClass::get_field(CNode* node_name) {
   }
 
   LOG_R("----------------------------------------\n");
-  node_name->dump_parse_tree();
+  node_name->dump_tree();
   LOG_R("----------------------------------------\n");
 
   assert(false);

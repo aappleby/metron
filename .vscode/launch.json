@@ -15,7 +15,7 @@
         "-v",
         "-e",
         "-c",
-        "tests/metron_good/constructor_arg_passing.h",
+        "examples/scratch.h",
         "-o",
         "examples/scratch.sv"
       ],

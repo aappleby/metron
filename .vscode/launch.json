@@ -15,7 +15,8 @@
         "-v",
         "-e",
         "-c",
-        "examples/scratch.h",
+        //"examples/scratch.h",
+        "tests/metron_good/basic_public_reg.h",
         "-o",
         "examples/scratch.sv"
       ],

@@ -294,7 +294,6 @@ int main_new(Options opts) {
 
   //----------------------------------------
 
-  assert(false);
   LOG_B("Checking port compatibility\n");
   LOG_INDENT();
 

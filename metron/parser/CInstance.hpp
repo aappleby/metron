@@ -161,6 +161,8 @@ struct CInstPrim : public CInstance {
 struct CInstFunc : public CInstance {
   CInstFunc(std::string name, bool is_public, CInstance* inst_parent, CNodeFunction* node_func);
 
+  bool check_port_directions(CInstFunc* b);
+
   //----------
   // CInstance interface
 
@@ -177,7 +179,7 @@ struct CInstFunc : public CInstance {
   //----------
 
   std::vector<CInstance*> params;
-  CInstance* inst_return;
+  CInstance* inst_return = nullptr;
 
   CNodeFunction* node_func = nullptr;
 };

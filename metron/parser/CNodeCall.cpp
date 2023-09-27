@@ -43,7 +43,9 @@ Err CNodeCall::trace(CInstance* inst, call_stack& stack) {
     for (auto child : func_inst->params) {
       err << child->log_action(this, ACT_WRITE, stack);
     }
-    err << func_inst->inst_return->log_action(this, ACT_READ, stack);
+    if (func_inst->inst_return) {
+      err << func_inst->inst_return->log_action(this, ACT_READ, stack);
+    }
     stack.pop_back();
   }
   else {

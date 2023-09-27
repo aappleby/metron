@@ -2,6 +2,23 @@
 
 #include "NodeTypes.hpp"
 
+bool check_port_directions(TraceState sa, TraceState sb) {
+  assert(sa >= TS_NONE || sa <= TS_REGISTER);
+  assert(sa >= TS_NONE || sb <= TS_REGISTER);
+
+  bool a_drives = (sa != TS_NONE) && (sa != TS_INPUT);
+  bool b_drives = (sb != TS_NONE) && (sb != TS_INPUT);
+
+  // Floating inputs are invalid.
+  if (!a_drives && sb == TS_INPUT) return false;
+  if (!b_drives && sa == TS_INPUT) return false;
+
+  // Port collisions are invalid.
+  if (a_drives && b_drives) return false;
+
+  return true;
+}
+
 //##############################################################################
 //##############################################################################
 
@@ -173,12 +190,23 @@ CInstClass::CInstClass(std::string name, bool is_public, CInstance* inst_parent,
 bool CInstClass::check_port_directions(CInstClass* b) {
   auto a = this;
   LOG("Checking %s vs %s\n", a->get_path().c_str(), b->get_path().c_str());
-  assert(false);
 
   // Mismatched port sizes (how?) are invalid.
   assert(a->ports.size() == b->ports.size());
   if (a->ports.size() != b->ports.size()) return false;
 
+  for (int i = 0; i < a->ports.size(); i++) {
+    auto pa = a->ports[i];
+    auto pb = b->ports[i];
+
+    if (auto fa = pa->as<CInstFunc>()) {
+      auto fb = pb->as<CInstFunc>();
+      if (!fa->check_port_directions(fb)) return false;
+      continue;
+    }
+
+    if (!::check_port_directions(pa->get_state(), pb->get_state())) return false;
+  }
 
 #if 0
   auto sa = a->state_stack.back();
@@ -633,6 +661,25 @@ CInstFunc::CInstFunc(std::string name, bool is_public, CInstance* inst_parent, C
 
 //----------------------------------------
 
+bool CInstFunc::check_port_directions(CInstFunc* b) {
+  auto a = this;
+  assert(a->params.size() == b->params.size());
+
+  bool ok = true;
+
+  if (a->inst_return) {
+    ok &= ::check_port_directions(a->inst_return->get_state(), b->inst_return->get_state());
+  }
+
+  for (int i = 0; i < a->params.size(); i++) {
+    ok &= ::check_port_directions(a->params[i]->get_state(), b->params[i]->get_state());
+  }
+
+  return ok;
+}
+
+//----------------------------------------
+
 TraceState CInstFunc::get_state() const {
   assert(false);
   return TS_INVALID;
@@ -642,24 +689,31 @@ TraceState CInstFunc::get_state() const {
 
 CInstance* CInstFunc::resolve(std::string name) {
   for (auto param : params) if (param->name == name) return param;
-  if (inst_return->name == name) return inst_return;
-  return nullptr;
+  if (inst_return && inst_return->name == name) return inst_return;
+  return inst_parent->resolve(name);
 }
 
 //----------------------------------------
 
 void CInstFunc::dump_tree() const {
-  LOG_G("Func %s", get_path().c_str());
+  LOG_G("Func %s\n", get_path().c_str());
 
   LOG_INDENT();
-  LOG_G("Params:\n");
-  LOG_INDENT();
-  for (auto p : params) p->dump_tree();
-  LOG_DEDENT();
-  LOG_G("Return:\n");
-  LOG_INDENT();
-  inst_return->dump_tree();
-  LOG_DEDENT();
+
+  if (params.size()) {
+    LOG_G("Params:\n");
+    LOG_INDENT();
+    for (auto p : params) p->dump_tree();
+    LOG_DEDENT();
+  }
+
+  if (inst_return) {
+    LOG_G("Return:\n");
+    LOG_INDENT();
+    inst_return->dump_tree();
+    LOG_DEDENT();
+  }
+
   LOG_DEDENT();
 }
 
@@ -674,22 +728,22 @@ Err CInstFunc::log_action(CNode* node, TraceAction action, call_stack& stack) {
 
 void CInstFunc::push_state() {
   for (auto p : params) p->push_state();
-  inst_return->push_state();
+  if (inst_return) inst_return->push_state();
 }
 
 void CInstFunc::pop_state() {
   for (auto p : params) p->pop_state();
-  inst_return->pop_state();
+  if (inst_return) inst_return->pop_state();
 }
 
 void CInstFunc::swap_state() {
   for (auto p : params) p->swap_state();
-  inst_return->swap_state();
+  if (inst_return) inst_return->swap_state();
 }
 
 void CInstFunc::merge_state() {
   for (auto p : params) p->merge_state();
-  inst_return->merge_state();
+  if (inst_return) inst_return->merge_state();
 }
 
 //##############################################################################

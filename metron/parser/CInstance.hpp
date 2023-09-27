@@ -77,6 +77,8 @@ struct CInstance {
 
 //------------------------------------------------------------------------------
 
+CInstClass* instantiate_class(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class);
+
 struct CInstClass : public CInstance {
   CInstClass(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class);
 

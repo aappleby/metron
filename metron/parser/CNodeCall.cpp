@@ -56,7 +56,7 @@ Err CNodeCall::trace(CInstance* inst, call_stack& stack) {
 
     auto func_inst = inst->resolve(func_name)->as<CInstFunc>();
 
-    if (dst_func) {
+    if (dst_func && func_inst) {
       //auto dst_call = new CInstCall(src_inst, this, dst_func);
       //call->call_map[this] = dst_call;
       stack.push_back(dst_func);

@@ -159,7 +159,7 @@ int main_new(Options opts) {
 
   LOG_B("Instantiating modules\n");
   for (auto node_class : repo.all_classes) {
-    auto instance = new CInstClass(node_class->get_namestr(), true, nullptr, nullptr, node_class);
+    auto instance = instantiate_class(node_class->get_namestr(), true, nullptr, nullptr, node_class);
     repo.all_instances.push_back(instance);
   }
 

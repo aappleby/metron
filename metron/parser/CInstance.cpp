@@ -220,6 +220,10 @@ bool CInstance::check_port_directions(CInstance* b) {
 
 //------------------------------------------------------------------------------
 
+CInstClass* instantiate_class(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class) {
+  return new CInstClass(name, is_public, inst_parent, node_field, node_class);
+}
+
 CInstClass::CInstClass(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class)
 : CInstance(name, is_public, inst_parent), node_field(node_field), node_class(node_class)
 {
@@ -236,8 +240,9 @@ CInstClass::CInstClass(std::string name, bool is_public, CInstance* inst_parent,
       auto field_name = node_field->get_namestr();
 
       if (node_field->node_decl->_type_class) {
-        // FIXME add binding fields here
-        auto inst = new CInstClass(field_name, child_is_public, this, node_field, node_field->node_decl->_type_class);
+        auto inst = instantiate_class(field_name, child_is_public, this, node_field, node_field->node_decl->_type_class);
+
+
         children.push_back(inst);
       } else if (node_field->node_decl->_type_struct) {
         auto inst = new CInstStruct(field_name, child_is_public, this, node_field, node_field->node_decl->_type_struct);
@@ -248,18 +253,16 @@ CInstClass::CInstClass(std::string name, bool is_public, CInstance* inst_parent,
       }
     }
 
-    /*if (child_is_public)*/ {
-      if (auto node_func = child->as<CNodeFunction>()) {
-        auto func_name = node_func->get_namestr();
+    if (auto node_func = child->as<CNodeFunction>()) {
+      auto func_name = node_func->get_namestr();
 
-        auto inst_func = new CInstFunc(func_name, child_is_public, this, node_func);
+      auto inst_func = new CInstFunc(func_name, child_is_public, this, node_func);
 
-        if (auto node_constructor = child->as<CNodeConstructor>()) {
-          inst_func->is_constructor = true;
-        }
-
-        children.push_back(inst_func);
+      if (auto node_constructor = child->as<CNodeConstructor>()) {
+        inst_func->is_constructor = true;
       }
+
+      children.push_back(inst_func);
     }
   }
 }

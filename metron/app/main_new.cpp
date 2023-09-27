@@ -139,6 +139,15 @@ int main_new(Options opts) {
     }
   }
 
+  CNodeClass* top = nullptr;
+
+  for (auto c : repo.all_classes) {
+    if (c->refcount == 0) {
+      assert(top == nullptr);
+      top = c;
+    }
+  }
+
   LOG_B("Building call graph\n");
   for (auto node_class : repo.all_classes) {
     err << node_class->build_call_graph(&repo);
@@ -159,7 +168,16 @@ int main_new(Options opts) {
 
   LOG_B("Instantiating modules\n");
   for (auto node_class : repo.all_classes) {
-    auto instance = instantiate_class(node_class->get_namestr(), true, nullptr, nullptr, node_class);
+
+
+    {
+      auto instance = instantiate_class2(node_class->get_namestr(), true, nullptr, nullptr, node_class);
+      instance->dump_tree();
+      delete instance;
+    }
+
+    auto instance = instantiate_class(node_class->get_namestr(), true, nullptr, nullptr, node_class, 1000);
+
     repo.all_instances.push_back(instance);
   }
 

@@ -220,7 +220,7 @@ bool CInstance::check_port_directions(CInstance* b) {
 
 //------------------------------------------------------------------------------
 
-CInstClass* instantiate_class(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class) {
+CInstClass* instantiate_class(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class, int depth) {
   auto inst_class = new CInstClass(name, is_public, inst_parent, node_field, node_class);
 
   bool child_is_public = false;
@@ -235,9 +235,7 @@ CInstClass* instantiate_class(std::string name, bool is_public, CInstance* inst_
       auto field_name = node_field->get_namestr();
 
       if (node_field->node_decl->_type_class) {
-        auto inst = instantiate_class(field_name, child_is_public, inst_class, node_field, node_field->node_decl->_type_class);
-
-
+        auto inst = instantiate_class(field_name, child_is_public, inst_class, node_field, node_field->node_decl->_type_class, depth);
         inst_class->children.push_back(inst);
       } else if (node_field->node_decl->_type_struct) {
         auto inst = new CInstStruct(field_name, child_is_public, inst_class, node_field, node_field->node_decl->_type_struct);
@@ -258,6 +256,90 @@ CInstClass* instantiate_class(std::string name, bool is_public, CInstance* inst_
       }
 
       inst_class->children.push_back(inst_func);
+    }
+  }
+
+  return inst_class;
+}
+
+//----------------------------------------
+
+CInstClass* instantiate_class2(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class) {
+  auto inst_class = new CInstClass(name, is_public, inst_parent, node_field, node_class);
+
+  bool child_is_public = false;
+
+  for (auto child : node_class->child("body")) {
+    if (auto access = child->as<CNodeAccess>()) {
+      child_is_public = child->get_text() == "public:";
+      continue;
+    }
+
+    if (auto node_field = child->as<CNodeField>()) {
+      auto field_name = node_field->get_namestr();
+
+      if (node_field->node_decl->_type_class) {
+        auto inst = instantiate_class_public(field_name, child_is_public, inst_class, node_field, node_field->node_decl->_type_class);
+        inst_class->children.push_back(inst);
+      } else if (node_field->node_decl->_type_struct) {
+        auto inst = new CInstStruct(field_name, child_is_public, inst_class, node_field, node_field->node_decl->_type_struct);
+        inst_class->children.push_back(inst);
+      } else {
+        auto inst = new CInstPrim(field_name, child_is_public, inst_class, node_field);
+        inst_class->children.push_back(inst);
+      }
+    }
+
+    if (auto node_func = child->as<CNodeFunction>()) {
+      auto func_name = node_func->get_namestr();
+
+      auto inst_func = new CInstFunc(func_name, child_is_public, inst_class, node_func);
+
+      if (auto node_constructor = child->as<CNodeConstructor>()) {
+        inst_func->is_constructor = true;
+      }
+
+      inst_class->children.push_back(inst_func);
+    }
+  }
+
+  return inst_class;
+}
+
+//----------------------------------------
+
+CInstClass* instantiate_class_public(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class) {
+  auto inst_class = new CInstClass(name, is_public, inst_parent, node_field, node_class);
+
+  bool child_is_public = false;
+
+  for (auto child : node_class->child("body")) {
+    if (auto access = child->as<CNodeAccess>()) {
+      child_is_public = child->get_text() == "public:";
+      continue;
+    }
+    if (!child_is_public) continue;
+
+    if (auto node_field = child->as<CNodeField>()) {
+      auto field_name = node_field->get_namestr();
+
+      if (node_field->node_decl->_type_class) {
+        // nothing
+      } else if (node_field->node_decl->_type_struct) {
+        auto inst = new CInstStruct(field_name, child_is_public, inst_class, node_field, node_field->node_decl->_type_struct);
+        inst_class->children.push_back(inst);
+      } else {
+        auto inst = new CInstPrim(field_name, child_is_public, inst_class, node_field);
+        inst_class->children.push_back(inst);
+      }
+    }
+
+    if (auto node_func = child->as<CNodeFunction>()) {
+      auto func_name = node_func->get_namestr();
+      if (!child->as<CNodeConstructor>()) {
+        auto inst_func = new CInstFunc(func_name, child_is_public, inst_class, node_func);
+        inst_class->children.push_back(inst_func);
+      }
     }
   }
 

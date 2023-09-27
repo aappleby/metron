@@ -78,8 +78,6 @@ struct CInstance {
 //------------------------------------------------------------------------------
 
 CInstClass* instantiate_class(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class, int depth);
-CInstClass* instantiate_class_public(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class);
-CInstClass* instantiate_class2(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class);
 
 struct CInstClass : public CInstance {
   CInstClass(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class);
@@ -89,6 +87,9 @@ struct CInstClass : public CInstance {
   void commit_state() override;
 
   //----------
+
+  std::vector<CInstance*> ports;
+  std::vector<CInstance*> parts;
 
   CNodeField* node_field = nullptr;
   CNodeClass* node_class = nullptr;

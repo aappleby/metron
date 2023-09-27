@@ -220,6 +220,8 @@ Err CNodeIdentifier::emit(Cursor& cursor) {
 }
 
 Err CNodeIdentifier::trace(CInstance* inst, call_stack& stack) {
+  auto scope = ancestor<CNodeCompound>();
+
   if (auto inst_field = inst->resolve(this)) {
     return inst_field->log_action(this, ACT_READ, stack);
   }

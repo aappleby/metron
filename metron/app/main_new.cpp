@@ -182,49 +182,19 @@ int main_new(Options opts) {
   {
     LOG_B("//----------------------------------------\n");
     LOG_B("// Tracing classes\n");
-    LOG_B("\n");
     LOG_INDENT_SCOPE();
 
     for (auto inst_class : repo.all_instances) {
       auto node_class = inst_class->node_class;
       auto name = node_class->get_name();
-      LOG_G("Tracing public methods in %.*s\n", int(name.size()), name.data());
+      LOG_B("\n");
+      LOG_B("Tracing public methods in %.*s\n", int(name.size()), name.data());
 
-      //bool traced_tock = false;
-      //bool traced_tick = false;
-
+      // Trace constructors first
       if (auto node_func = node_class->constructor) {
         LOG_INDENT_SCOPE();
         auto func_name = node_func->get_namestr();
         if (!node_func->is_public) continue;
-        LOG_B("Tracing %s\n", func_name.c_str());
-        auto inst_func = inst_class->resolve(func_name);
-        call_stack stack;
-        stack.push_back(node_func);
-        err << node_func->trace(inst_func, stack);
-      }
-
-      for (auto node_func : node_class->all_functions) {
-        LOG_INDENT_SCOPE();
-        auto func_name = node_func->get_namestr();
-        //if (!func_name.starts_with("tock")) continue;
-        if (!node_func->is_public) continue;
-
-        LOG_B("Tracing %s\n", func_name.c_str());
-        //traced_tock = true;
-        auto inst_func = inst_class->resolve(func_name);
-        call_stack stack;
-        stack.push_back(node_func);
-        err << node_func->trace(inst_func, stack);
-      }
-
-      /*
-      for (auto node_func : node_class->all_functions) {
-        LOG_INDENT_SCOPE();
-        auto func_name = node_func->get_namestr();
-        if (func_name.starts_with("tick")) continue;
-        if (func_name.starts_with("tock")) continue;
-        if (!node_func->is_public) continue;
 
         LOG_B("Tracing %s\n", func_name.c_str());
         auto inst_func = inst_class->resolve(func_name);
@@ -232,9 +202,8 @@ int main_new(Options opts) {
         stack.push_back(node_func);
         err << node_func->trace(inst_func, stack);
       }
-      */
 
-      /*
+      // Trace tocks
       for (auto node_func : node_class->all_functions) {
         LOG_INDENT_SCOPE();
         auto func_name = node_func->get_namestr();
@@ -242,13 +211,13 @@ int main_new(Options opts) {
         if (!node_func->is_public) continue;
 
         LOG_B("Tracing %s\n", func_name.c_str());
-        //traced_tock = true;
         auto inst_func = inst_class->resolve(func_name);
         call_stack stack;
         stack.push_back(node_func);
         err << node_func->trace(inst_func, stack);
       }
 
+      // Trace ticks
       for (auto node_func : node_class->all_functions) {
         LOG_INDENT_SCOPE();
         auto func_name = node_func->get_namestr();
@@ -256,7 +225,21 @@ int main_new(Options opts) {
         if (!node_func->is_public) continue;
 
         LOG_B("Tracing %s\n", func_name.c_str());
-        //traced_tick = true;
+        auto inst_func = inst_class->resolve(func_name);
+        call_stack stack;
+        stack.push_back(node_func);
+        err << node_func->trace(inst_func, stack);
+      }
+
+      // Trace funcs
+      /*
+      for (auto node_func : node_class->all_functions) {
+        LOG_INDENT_SCOPE();
+        auto func_name = node_func->get_namestr();
+        if (func_name.starts_with("tock") || func_name.starts_with("tick")) continue;
+        if (!node_func->is_public) continue;
+
+        LOG_B("Tracing %s\n", func_name.c_str());
         auto inst_func = inst_class->resolve(func_name);
         call_stack stack;
         stack.push_back(node_func);
@@ -266,15 +249,11 @@ int main_new(Options opts) {
 
       inst_class->commit_state();
 
-      /*
-      if (!traced_tock && !traced_tick) {
-        err << ERR("Module had no tocks or ticks\n");
-      }
-      */
+      LOG_B("Tracing done for %.*s\n", int(name.size()), name.data());
 
-      LOG_G("Tracing done for %.*s\n", int(name.size()), name.data());
-
+      LOG_INDENT();
       inst_class->dump_tree();
+      LOG_DEDENT();
     }
 
     for (auto c : repo.all_classes) {
@@ -299,6 +278,8 @@ int main_new(Options opts) {
 
   for (auto node_class : repo.all_classes) {
     for (auto f : node_class->all_functions) {
+
+      f->dump_parse_tree();
       auto method_type = f->get_method_type();
 
       if (method_type != MT_FUNC &&
@@ -309,6 +290,22 @@ int main_new(Options opts) {
       }
 
       f->method_type = method_type;
+
+      if (method_type == MT_FUNC) {
+        assert(f->all_writes.empty());
+      }
+      else if (method_type == MT_TOCK) {
+        for (auto inst : f->self_writes) {
+          auto state = inst->state_stack.back();
+          assert(state == TS_SIGNAL || state == TS_OUTPUT);
+        }
+      }
+      else if (method_type == MT_TICK) {
+        for (auto inst : f->self_writes) {
+          auto state = inst->state_stack.back();
+          assert(state == TS_REGISTER || state == TS_MAYBE || state == TS_OUTPUT);
+        }
+      }
     }
     LOG_G("get_method_type OK\n");
   }

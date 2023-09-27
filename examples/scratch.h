@@ -3,12 +3,12 @@
 class Module {
 public:
 
-  void tick() {
-    int bar = 5;
-    foo++;
-    bar++;
+  void tock() {
+    foo = bar + 1;
+    bar = foo + 1;
   }
 
 private:
   int foo;
+  int bar;
 };

@@ -105,24 +105,6 @@ void CContext::add_typedef(const CToken* a) { top_scope->add_typedef(*this, a); 
 
 //----------------------------------------------------------------------------
 
-/*
-void CContext::push_scope() {
-  CScope* new_scope = new CScope();
-  new_scope->parent = type_scope;
-  type_scope = new_scope;
-}
-
-void CContext::pop_scope() {
-  CScope* old_scope = type_scope->parent;
-  if (old_scope) {
-    delete type_scope;
-    type_scope = old_scope;
-  }
-}
-*/
-
-//----------------------------------------------------------------------------
-
 TokenSpan CContext::match_builtin_type_base(TokenSpan body) {
   if (!body.is_valid() || body.is_empty()) return body.fail();
 

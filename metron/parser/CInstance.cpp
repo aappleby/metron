@@ -64,14 +64,14 @@ CInstance* CInstance::resolve(CNode* node) {
     return inst_parent->resolve(node);
   }
 
-
-
   auto text = node->get_text();
   LOG_R("Could not resolve %.*s\n", text.size(), text.data());
   //assert(false);
 
   return nullptr;
 }
+
+//----------------------------------------
 
 CInstance* CInstance::resolve(std::string name) {
   for (auto child : children) {

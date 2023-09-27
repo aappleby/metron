@@ -308,8 +308,6 @@ TokenSpan cap_preproc(CContext& ctx, TokenSpan body) {
     >
   >;
 
-  // Tag<"name",   Dispatch<cap_identifier, Ref<&CContext::add_struct2>>>,
-
   using pattern =
   Dispatch<
     Oneof<
@@ -1203,31 +1201,6 @@ TokenSpan match_constructor(CContext& ctx, TokenSpan body) {
 }
 
 //------------------------------------------------------------------------------
-
-
-/*
-TokenSpan match_compound    (CContext& ctx, TokenSpan body);
-
-template <typename P>
-TokenSpan change_scope(CContext& ctx, TokenSpan body) {
-  ctx.push_scope();
-  auto tail = P::match(ctx, body);
-  ctx.pop_scope();
-  return tail;
-}
-
-TokenSpan match_compound(CContext& ctx, TokenSpan body) {
-  using pattern =
-  Ref<change_scope<
-    DelimitedBlock<
-      Tag<"ldelim", cap_punct<"{">>,
-      Ref<match_statement>,
-      Tag<"rdelim", cap_punct<"}">>
-    >
-  >>;
-  return pattern::match(ctx, body);
-};
-*/
 
 TokenSpan cap_compound(CContext& ctx, TokenSpan body) {
 

@@ -15,22 +15,10 @@
         "-v",
         "-e",
         "-c",
-        "examples/scratch.h",
+        "tests/metron_good/constructor_arg_passing.h",
         "-o",
         "examples/scratch.sv"
       ],
-      /*
-      "args" : [
-        "-p",
-        "-d",
-        "-v",
-        "-e",
-        "-c",
-        "examples/rvsimple/metron/regfile.h",
-        "-o",
-        "examples/rvsimple/metron_sv2/regfile.sv"
-      ],
-      */
       "setupCommands": [
         { // Display content in STL containers pretty
           "description": "Enable pretty-printing for gdb",

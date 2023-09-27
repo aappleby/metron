@@ -479,7 +479,9 @@ void CNodeCompound::init(const char* match_tag, SpanType span, uint64_t flags) {
 
 Err CNodeCompound::trace(CInstance* inst, call_stack& stack) {
   Err err;
-  for (auto c : this) err << c->trace(inst, stack);
+  for (auto statement : statements) {
+    err << statement->trace(inst, stack);
+  }
   return err;
 }
 

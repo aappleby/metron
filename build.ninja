@@ -77,8 +77,9 @@ build docs/demo/examples.data docs/demo/examples.js: command $
     tests/metron_bad/multiple_submod_function_bindings.h $
     tests/metron_bad/multiple_tock_returns.h $
     tests/metron_bad/tick_with_return_value.h $
-    tests/metron_bad/too_many_breaks.h tests/metron_broken/bad_increment.h $
-    tests/metron_good/all_func_types.h $
+    tests/metron_bad/too_many_breaks.h $
+    tests/metron_bad/wrong_submod_call_order.h $
+    tests/metron_broken/bad_increment.h tests/metron_good/all_func_types.h $
     tests/metron_good/basic_constructor.h $
     tests/metron_good/basic_function.h tests/metron_good/basic_increment.h $
     tests/metron_good/basic_inputs.h tests/metron_good/basic_literals.h $

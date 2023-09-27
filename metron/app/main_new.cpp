@@ -18,6 +18,8 @@
 
 using namespace matcheroni;
 
+bool deep_trace = false;
+
 //------------------------------------------------------------------------------
 
 int main_new(Options opts) {
@@ -139,15 +141,6 @@ int main_new(Options opts) {
     }
   }
 
-  CNodeClass* top = nullptr;
-
-  for (auto c : repo.all_classes) {
-    if (c->refcount == 0) {
-      assert(top == nullptr);
-      top = c;
-    }
-  }
-
   LOG_B("Building call graph\n");
   for (auto node_class : repo.all_classes) {
     err << node_class->build_call_graph(&repo);
@@ -187,7 +180,7 @@ int main_new(Options opts) {
     if (auto node_func = node_class->constructor) {
       LOG_INDENT_SCOPE();
       auto func_name = node_func->get_namestr();
-      if (!node_func->is_public) continue;
+      //if (!node_func->is_public) continue;
 
       LOG_B("Tracing %s\n", func_name.c_str());
       auto inst_func = inst_class->resolve(func_name);
@@ -223,22 +216,6 @@ int main_new(Options opts) {
       stack.push_back(node_func);
       err << node_func->trace(inst_func, stack);
     }
-
-    // Trace funcs
-    /*
-    for (auto node_func : node_class->all_functions) {
-      LOG_INDENT_SCOPE();
-      auto func_name = node_func->get_namestr();
-      if (func_name.starts_with("tock") || func_name.starts_with("tick")) continue;
-      if (!node_func->is_public) continue;
-
-      LOG_B("Tracing %s\n", func_name.c_str());
-      auto inst_func = inst_class->resolve(func_name);
-      call_stack stack;
-      stack.push_back(node_func);
-      err << node_func->trace(inst_func, stack);
-    }
-    */
   }
 
   for (auto c : repo.all_classes) {
@@ -255,8 +232,82 @@ int main_new(Options opts) {
     return -1;
   }
 
-  LOG_B("All tracing done\n");
   LOG_DEDENT();
+
+  //----------------------------------------
+
+  LOG_B("Tracing top module\n");
+  LOG_INDENT();
+
+  deep_trace = true;
+
+//#if 0
+  {
+    CNodeClass* top = nullptr;
+    for (auto c : repo.all_classes) {
+      if (c->refcount == 0) {
+        assert(top == nullptr);
+        top = c;
+      }
+    }
+    assert(top);
+
+    auto top_inst = instantiate_class(top->get_namestr(), true, nullptr, nullptr, top, 1000);
+
+    // Trace constructors first
+    if (auto node_func = top->constructor) {
+      LOG_INDENT_SCOPE();
+      auto func_name = node_func->get_namestr();
+
+      LOG_B("Tracing %s\n", func_name.c_str());
+      auto inst_func = top_inst->resolve(func_name);
+      call_stack stack;
+      stack.push_back(node_func);
+      err << node_func->trace(inst_func, stack);
+    }
+
+    // Trace tocks
+    for (auto node_func : top->all_functions) {
+      LOG_INDENT_SCOPE();
+      auto func_name = node_func->get_namestr();
+      if (!func_name.starts_with("tock")) continue;
+      if (!node_func->is_public) continue;
+
+      LOG_B("Tracing %s\n", func_name.c_str());
+      auto inst_func = top_inst->resolve(func_name);
+      call_stack stack;
+      stack.push_back(node_func);
+      err << node_func->trace(inst_func, stack);
+    }
+
+    // Trace ticks
+    for (auto node_func : top->all_functions) {
+      LOG_INDENT_SCOPE();
+      auto func_name = node_func->get_namestr();
+      if (!func_name.starts_with("tick")) continue;
+      if (!node_func->is_public) continue;
+
+      LOG_B("Tracing %s\n", func_name.c_str());
+      auto inst_func = top_inst->resolve(func_name);
+      call_stack stack;
+      stack.push_back(node_func);
+      err << node_func->trace(inst_func, stack);
+    }
+
+    delete top_inst;
+
+  }
+//#endif
+
+  deep_trace = false;
+
+  if (err.has_err()) {
+    LOG_R("Error during tracing\n");
+    return -1;
+  }
+  LOG_DEDENT();
+
+  LOG_B("All tracing done\n");
 
   //----------------------------------------
 

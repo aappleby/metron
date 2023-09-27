@@ -2,6 +2,8 @@
 
 #include "NodeTypes.hpp"
 
+extern bool deep_trace;
+
 bool check_port_directions(TraceState sa, TraceState sb) {
   assert(sa >= TS_NONE || sa <= TS_REGISTER);
   assert(sa >= TS_NONE || sb <= TS_REGISTER);
@@ -526,11 +528,13 @@ Err CInstPrim::log_action(CNode* node, TraceAction action, call_stack& stack) {
   auto func = node->ancestor<CNodeFunction>();
   assert(func);
 
-  if (action == ACT_READ) {
-    func->self_reads.insert(this);
-  }
-  else if (action == ACT_WRITE) {
-    func->self_writes.insert(this);
+  if (!deep_trace) {
+    if (action == ACT_READ) {
+      func->self_reads.insert(this);
+    }
+    else if (action == ACT_WRITE) {
+      func->self_writes.insert(this);
+    }
   }
 
   if (auto constructor = stack[0]->as<CNodeConstructor>()) {

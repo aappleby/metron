@@ -58,7 +58,7 @@ module MetroBoySPU2 (
       logic[7:0] s3_sample;
       logic[3:0] s3_out;
       s3_sample = s3_wave[s3_phase >> 1];
-      s3_out = (s3_phase & 1) ? s3_sample[3:0] : s3_sample[7:4];
+      s3_out = (s3_phase & 1) ? 4'(s3_sample) : s3_sample[7:4];
       s3_out = s3_out >> s3_volume_shift;
       if (mix_l3) l = l + s3_out;
       if (mix_r3) r = r + s3_out;
@@ -193,14 +193,14 @@ module MetroBoySPU2 (
           16'hFF10: data_out <= {1'd1, s1_sweep_timer_init, s1_sweep_dir, s1_sweep_shift}; /*break;*/
           16'hFF11: data_out <= {s1_duty, s1_len_timer_init}; /*break;*/
           16'hFF12: data_out <= {s1_env_vol_init, s1_env_add, s1_env_timer_init}; /*break;*/
-          16'hFF13: data_out <= s1_freq_timer_init[7:0]; /*break;*/
+          16'hFF13: data_out <= 8'(s1_freq_timer_init); /*break;*/
           16'hFF14: data_out <= {s1_trig, s1_len_en, 3'b111, s1_freq_timer_init[10:8]}; /*break;*/
 
             //----------
 
           16'hFF16: data_out <= {s2_duty, s2_len_timer_init}; /*break;*/
           16'hFF17: data_out <= {s2_env_vol_init, s2_env_add, s2_env_timer_init}; /*break;*/
-          16'hFF18: data_out <= s2_freq_timer_init[7:0]; /*break;*/
+          16'hFF18: data_out <= 8'(s2_freq_timer_init); /*break;*/
           16'hFF19: data_out <= {s2_trig, s2_len_en, 3'b111, s2_freq_timer_init[10:8]}; /*break;*/
 
             //----------
@@ -218,7 +218,7 @@ module MetroBoySPU2 (
             endcase
             /*break;*/
           end
-          16'hFF1D: data_out <= s3_freq_timer_init[7:0]; /*break;*/
+          16'hFF1D: data_out <= 8'(s3_freq_timer_init); /*break;*/
           16'hFF1E: data_out <= {s3_trig, s3_len_en, 3'b111, s3_freq_timer_init[10:8]}; /*break;*/
 
             //----------
@@ -415,7 +415,7 @@ module MetroBoySPU2 (
           s4_lfsr <= {
             s4_lfsr[14:9],
             s4_mode ? new_bit : s4_lfsr[8],
-            s4_lfsr[7:0],
+            8'(s4_lfsr),
             new_bit};
           s4_freq_timer <= s4_freq_timer_init;
         end
@@ -497,18 +497,18 @@ module MetroBoySPU2 (
       if (tick_write && tick_addr >= 16'hFF10 && tick_addr <= 16'hFF26) begin
         case (tick_addr)
           16'hFF10: begin
-            s1_sweep_shift      <= tick_data_in[2:0];
+            s1_sweep_shift      <= 3'(tick_data_in);
             s1_sweep_dir        <= tick_data_in[3];
             s1_sweep_timer_init <= tick_data_in[6:4];
             /*break;*/
           end
           16'hFF11: begin
-            s1_len_timer_init <= tick_data_in[5:0];
+            s1_len_timer_init <= 6'(tick_data_in);
             s1_duty           <= tick_data_in[7:6];
             /*break;*/
           end
           16'hFF12: begin
-            s1_env_timer_init <= tick_data_in[2:0];
+            s1_env_timer_init <= 3'(tick_data_in);
             s1_env_add        <= tick_data_in[3];
             s1_env_vol_init   <= tick_data_in[7:4];
             /*break;*/
@@ -518,7 +518,7 @@ module MetroBoySPU2 (
             /*break;*/
           end
           16'hFF14: begin
-            s1_freq_timer_init <= {tick_data_in[2:0], s1_freq_timer_init[7:0]};
+            s1_freq_timer_init <= {3'(tick_data_in), 8'(s1_freq_timer_init)};
             s1_len_en          <= tick_data_in[6];
             s1_trig            <= tick_data_in[7];
             /*break;*/
@@ -527,12 +527,12 @@ module MetroBoySPU2 (
           //----------
 
           16'hFF16: begin
-            s2_len_timer_init <= tick_data_in[5:0];
+            s2_len_timer_init <= 6'(tick_data_in);
             s2_duty           <= tick_data_in[7:6];
             /*break;*/
           end
           16'hFF17: begin
-            s2_env_timer_init <= tick_data_in[2:0];
+            s2_env_timer_init <= 3'(tick_data_in);
             s2_env_add        <= tick_data_in[3];
             s2_env_vol_init   <= tick_data_in[7:4];
             /*break;*/
@@ -542,7 +542,7 @@ module MetroBoySPU2 (
             /*break;*/
           end
           16'hFF19: begin
-            s2_freq_timer_init <= {tick_data_in[2:0], s2_freq_timer_init[7:0]};
+            s2_freq_timer_init <= {3'(tick_data_in), 8'(s2_freq_timer_init)};
             s2_len_en          <= tick_data_in[6];
             s2_trig            <= tick_data_in[7];
             /*break;*/
@@ -555,7 +555,7 @@ module MetroBoySPU2 (
             /*break;*/
           end
           16'hFF1B: begin
-            s3_len_timer_init <= tick_data_in[7:0];
+            s3_len_timer_init <= 8'(tick_data_in);
             /*break;*/
           end
           16'hFF1C: begin
@@ -572,7 +572,7 @@ module MetroBoySPU2 (
             /*break;*/
           end
           16'hFF1E: begin
-            s3_freq_timer_init <= {tick_data_in[2:0], s3_freq_timer_init[7:0]};
+            s3_freq_timer_init <= {3'(tick_data_in), 8'(s3_freq_timer_init)};
             s3_len_en          <= tick_data_in[6];
             s3_trig            <= tick_data_in[7];
             /*break;*/
@@ -581,17 +581,17 @@ module MetroBoySPU2 (
           //----------
 
           16'hFF20: begin
-            s4_len_timer_init <= tick_data_in[5:0];
+            s4_len_timer_init <= 6'(tick_data_in);
             /*break;*/
           end
           16'hFF21: begin
-            s4_env_timer_init <= tick_data_in[2:0];
+            s4_env_timer_init <= 3'(tick_data_in);
             s4_env_add        <= tick_data_in[3];
             s4_env_vol_init   <= tick_data_in[7:4];
             /*break;*/
           end
           16'hFF22: begin
-            s4_freq_timer_init <= tick_data_in[2:0];
+            s4_freq_timer_init <= 3'(tick_data_in);
             s4_mode            <= tick_data_in[3];
             s4_shift           <= tick_data_in[7:4];
             /*break;*/
@@ -605,12 +605,12 @@ module MetroBoySPU2 (
           //----------
 
           16'hFF24: begin
-            volume_r <= tick_data_in[2:0] + 1;
+            volume_r <= 3'(tick_data_in) + 1;
             volume_l <= tick_data_in[6:4] + 1;
             /*break;*/
           end
           16'hFF25: begin
-            mix_r1 <= tick_data_in[0];
+            mix_r1 <= 1'(tick_data_in);
             mix_r2 <= tick_data_in[1];
             mix_r3 <= tick_data_in[2];
             mix_r4 <= tick_data_in[3];

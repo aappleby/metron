@@ -86,10 +86,10 @@ module uart_top (
   //----------------------------------------
 /*private:*/
   // Our UART client that transmits our "hello world" test message
-  uart_hello #(
+  uart_hello  #(
     // Template Parameters
     .repeat_msg(repeat_msg)
-  )  hello(
+  ) hello(
     // Global clock
     .clock(clock),
     // get_data() ports
@@ -103,12 +103,12 @@ module uart_top (
     .tick_clear_to_send(hello_tick_clear_to_send),
     .tick_idle(hello_tick_idle)
   );
-  logic hello_tick_reset;
-  logic hello_tick_clear_to_send;
-  logic hello_tick_idle;
   logic[7:0] hello_get_data_ret;
   logic hello_get_request_ret;
   logic hello_get_done_ret;
+  logic hello_tick_reset;
+  logic hello_tick_clear_to_send;
+  logic hello_tick_idle;
   // The UART transmitter
   uart_tx #(
     // Template Parameters
@@ -127,12 +127,12 @@ module uart_top (
     .tick_send_data(tx_tick_send_data),
     .tick_send_request(tx_tick_send_request)
   );
-  logic tx_tick_reset;
-  logic[7:0] tx_tick_send_data;
-  logic tx_tick_send_request;
   logic tx_get_serial_ret;
   logic tx_get_clear_to_send_ret;
   logic tx_get_idle_ret;
+  logic tx_tick_reset;
+  logic[7:0] tx_tick_send_data;
+  logic tx_tick_send_request;
   // The UART receiver
   uart_rx #(
     // Template Parameters
@@ -150,11 +150,11 @@ module uart_top (
     .tick_reset(rx_tick_reset),
     .tick_serial(rx_tick_serial)
   );
-  logic rx_tick_reset;
-  logic rx_tick_serial;
   logic rx_get_valid_ret;
   logic[7:0] rx_get_data_out_ret;
   logic[31:0] rx_get_checksum_ret;
+  logic rx_tick_reset;
+  logic rx_tick_serial;
 endmodule
 
 //==============================================================================

@@ -20,8 +20,7 @@ module example_text_memory_bus (
  /*public:*/
 
   parameter /*const*/ filename = "";
-  initial
-  begin
+  initial begin
   end
 
  /*private:*/
@@ -34,13 +33,13 @@ module example_text_memory_bus (
     // Output signals
     .q(text_memory_q)
   );
-  logic[rv_config::TEXT_BITS - 2-1:0] text_memory_address;
+  logic[(rv_config::TEXT_BITS - 2)-1:0] text_memory_address;
   logic[31:0] text_memory_q;
 
  /*public:*/
   always_comb begin : tock_read_data
     logic[31:0] fetched;
-    text_memory_address = address[rv_config::TEXT_BITS - 2+1:2];
+    text_memory_address = address[(rv_config::TEXT_BITS - 2)+1:2];
     /*text_memory.tock_q();*/
     fetched = text_memory_q;
     read_data =

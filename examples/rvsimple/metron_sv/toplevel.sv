@@ -35,8 +35,7 @@ module toplevel (
 
   parameter /*const*/ text_filename = "";
   parameter /*const*/ data_filename = "";
-  initial
-  begin
+  initial begin
   end
 
   //----------------------------------------

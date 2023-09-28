@@ -17,7 +17,7 @@
         "-c",
         //"examples/scratch.h",
         //"tests/metron_good/basic_output.h",
-        "tests/metron_bad/tick_with_return_value.h",
+        "examples/rvsimple/metron/config.h",
         "-o",
         "examples/scratch.sv"
       ],

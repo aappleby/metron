@@ -24,7 +24,7 @@ module instruction_decoder (
  /*public:*/
 
   always_comb begin : tock
-    inst_opcode = inst[6:0];
+    inst_opcode = 7'(inst);
     inst_funct3 = inst[14:12];
     inst_funct7 = inst[31:25];
     inst_rd = inst[11:7];

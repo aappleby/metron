@@ -53,14 +53,12 @@ def main():
 
     print_b("Wiping tests/metron_sv/*")
     os.system("rm tests/metron_sv/*")
-    print_b("Wiping tests/metron_sv2/*")
-    os.system("rm tests/metron_sv2/*")
 
     print_b("Checking that examples convert to SV cleanly")
     errors += check_commands_good([
-        f"bin/metron -c examples/uart/metron/uart_top.h",
-        f"bin/metron -c examples/rvsimple/metron/toplevel.h",
-        f"bin/metron -c examples/pong/metron/pong.h",
+        f"bin/metron -p -c examples/uart/metron/uart_top.h",
+        f"bin/metron -p -c examples/rvsimple/metron/toplevel.h",
+        f"bin/metron -p -c examples/pong/metron/pong.h",
     ])
     print()
 
@@ -88,24 +86,9 @@ def main():
     ])
     print()
 
-    print_g("Checking new parser on all test cases in metron_good")
-    #"args" : ["-p", "-d", "-v", "-e", "-c", "examples/scratch.h", "-o", "examples/scratch.sv"],
-    errors += check_commands_good([
-        f"bin/metron -p -c {filename} -o {filename.replace('_good', '_sv2').replace('.h', '.sv')}"
-        for filename in metron_good
-    ])
-    print()
-
     print_b("Checking that all test cases in metron_bad fail conversion")
     errors += check_commands_bad([
-        f"bin/metron -c {filename} -o {filename.replace('_bad', '_sv').replace('.h', '.sv')}"
-        for filename in metron_bad
-    ])
-    print()
-
-    print_g("Checking that all test cases in metron_bad fail conversion with new parser")
-    errors += check_commands_bad([
-        f"bin/metron -p -c {filename} -o {filename.replace('_bad', '_sv2').replace('.h', '.sv')}"
+        f"bin/metron -p -c {filename} -o {filename.replace('_bad', '_sv').replace('.h', '.sv')}"
         for filename in metron_bad
     ])
     print()
@@ -153,8 +136,8 @@ def main():
 
         print_b("Running misc bad commands")
         errors += check_commands_bad([
-            f"bin/metron skjdlsfjkhdfsjhdf.h",
-            f"bin/metron -c skjdlsfjkhdfsjhdf.h",
+            f"bin/metron -p skjdlsfjkhdfsjhdf.h",
+            f"bin/metron -p -c skjdlsfjkhdfsjhdf.h",
         ])
         print()
 
@@ -387,7 +370,7 @@ def check_icarus_bad(filenames):
 def check_bad_expected_errors(filename):
     lines = open(filename).readlines()
     expected_errors = [line[4:].strip() for line in lines if line.startswith("// X ")]
-    cmd = f"bin/metron -c {filename} -o {filename.replace('_good', '_sv').replace('.h', '.sv')}"
+    cmd = f"bin/metron -p -c {filename} -o {filename.replace('_good', '_sv').replace('.h', '.sv')}"
     return check_cmd_bad(cmd, expected_errors, [])
 
 
@@ -420,7 +403,7 @@ def build_lockstep(filename):
 
     errors = 0
 
-    cmd = f"bin/metron -q -c {mt_root}/{test_name}.h -o {sv_root}/{test_name}.sv"
+    cmd = f"bin/metron -p -q -c {mt_root}/{test_name}.h -o {sv_root}/{test_name}.sv"
     errors += check_cmd_good(cmd)
 
     cmd = f"verilator {includes} --cc {test_name}.sv -Mdir {vl_root}"

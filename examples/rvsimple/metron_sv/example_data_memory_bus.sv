@@ -32,8 +32,7 @@ module example_data_memory_bus (
    // in
 
   parameter /*const*/ filename = "";
-  initial
-  begin
+  initial begin
   end
 
  /*private:*/
@@ -51,7 +50,7 @@ module example_data_memory_bus (
     // Output signals
     .q(data_memory_q)
   );
-  logic[rv_config::DATA_BITS - 2-1:0] data_memory_address;
+  logic[(rv_config::DATA_BITS - 2)-1:0] data_memory_address;
   logic data_memory_wren;
   logic[3:0] data_memory_byteena;
   logic[31:0] data_memory_data;
@@ -64,7 +63,7 @@ module example_data_memory_bus (
     is_data_memory =
         address >= rv_config::DATA_BEGIN && rv_config::DATA_END >= address;
 
-    data_memory_address = address[rv_config::DATA_BITS - 2+1:2];
+    data_memory_address = address[(rv_config::DATA_BITS - 2)+1:2];
     data_memory_byteena = byte_enable;
     data_memory_data = write_data;
     data_memory_wren = write_enable & is_data_memory;

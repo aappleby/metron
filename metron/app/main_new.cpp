@@ -148,13 +148,16 @@ int main_new(Options opts) {
       top = c;
     }
   }
-  assert(top);
+  //assert(top);
 
-  auto top_inst = instantiate_class(top->get_namestr(), true, nullptr, nullptr, top, 1000);
+  CInstClass* top_inst = nullptr;
 
-  LOG_INDENT();
-  LOG_G("Top instance is %s\n", top->get_namestr().c_str());
-  LOG_DEDENT();
+  if (top) {
+    top_inst = instantiate_class(top->get_namestr(), true, nullptr, nullptr, top, 1000);
+    LOG_INDENT();
+    LOG_G("Top instance is %s\n", top->get_namestr().c_str());
+    LOG_DEDENT();
+  }
 
   //----------------------------------------
 
@@ -367,7 +370,7 @@ int main_new(Options opts) {
 
   deep_trace = true;
 
-  {
+  if (top_inst) {
     // Trace constructors first
     if (auto node_func = top->constructor) {
       LOG_INDENT_SCOPE();
@@ -411,7 +414,9 @@ int main_new(Options opts) {
 
   deep_trace = false;
 
-  top_inst->dump_tree();
+  if (top_inst) {
+    top_inst->dump_tree();
+  }
 
   if (err.has_err()) {
     LOG_R("Error during tracing\n");

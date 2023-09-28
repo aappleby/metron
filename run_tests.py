@@ -53,6 +53,8 @@ def main():
 
     print_b("Wiping tests/metron_sv/*")
     os.system("rm tests/metron_sv/*")
+    print_b("Wiping tests/metron_sv2/*")
+    os.system("rm tests/metron_sv2/*")
 
     print_b("Checking that examples convert to SV cleanly")
     errors += check_commands_good([

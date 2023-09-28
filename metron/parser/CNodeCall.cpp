@@ -2,6 +2,8 @@
 
 #include "NodeTypes.hpp"
 
+extern bool deep_trace;
+
 //------------------------------------------------------------------------------
 
 void CNodeCall::init(const char* match_tag, SpanType span, uint64_t flags) {
@@ -38,11 +40,18 @@ Err CNodeCall::trace(CInstance* inst, call_stack& stack) {
     auto submod_name = field_exp->child("field_path")->get_textstr();
     auto submod_field = src_class->get_field(submod_name);
     auto func_inst = inst->resolve(field_exp)->as<CInstFunc>();
+    auto node_func = func_inst->node_func;
 
     stack.push_back(func_inst->node_func);
     for (auto child : func_inst->params) {
       err << child->log_action(this, ACT_WRITE, stack);
     }
+
+    if (deep_trace) {
+      err << node_func->trace(func_inst, stack);
+    }
+
+
     if (func_inst->inst_return) {
       err << func_inst->inst_return->log_action(this, ACT_READ, stack);
     }

@@ -294,6 +294,8 @@ int main_new(Options opts) {
       err << node_func->trace(inst_func, stack);
     }
 
+    top_inst->dump_tree();
+
     delete top_inst;
 
   }
@@ -308,6 +310,9 @@ int main_new(Options opts) {
   LOG_DEDENT();
 
   LOG_B("All tracing done\n");
+
+  //LOG("");
+  //exit(0);
 
   //----------------------------------------
 

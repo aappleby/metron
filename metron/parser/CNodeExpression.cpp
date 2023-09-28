@@ -32,10 +32,9 @@ bool CNodeExpression::is_integer_constant() {
 
 Err CNodeBinaryExp::trace(CInstance* inst, call_stack& stack) {
   Err err;
-
   err << child("lhs")->trace(inst, stack);
   err << child("rhs")->trace(inst, stack);
-  return Err();
+  return err;
 }
 
 //------------------------------------------------------------------------------

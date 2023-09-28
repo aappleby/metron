@@ -1,20 +1,39 @@
 `include "metron/tools/metron_tools.sv"
 
-// Public register member variables get moved to the output port list.
+// If a module calls a submod's functions in the "wrong" order, we should catch
+// it.
+
+`include "metron/tools/metron_tools.sv"
+
+module Submod (
+  // global clock
+  input logic clock
+);
+/*public:*/
+
+  always_ff @(posedge clock) begin : tick1  y <= y + z; end
+  always_ff @(posedge clock) begin : tick2  z <= z + 1; end
+
+/*private:*/
+  int y;
+  int z;
+endmodule
 
 module Module (
   // global clock
-  input logic clock,
-  // output registers
-  output logic my_reg
+  input logic clock
 );
 /*public:*/
+
   always_comb begin : tock
-    /*tick();*/
+    /*x.tick1();*/
+    /*x.tick2();*/
   end
 
 /*private:*/
-  always_ff @(posedge clock) begin : tick
-    my_reg <= my_reg + 1;
-  end
+
+  Submod x(
+    // Global clock
+    .clock(clock)
+  );
 endmodule

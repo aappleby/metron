@@ -16,7 +16,7 @@
         "-e",
         "-c",
         //"examples/scratch.h",
-        "tests/metron_good/basic_public_reg.h",
+        "tests/metron_bad/wrong_submod_call_order.h",
         "-o",
         "examples/scratch.sv"
       ],

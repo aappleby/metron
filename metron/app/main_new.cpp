@@ -19,6 +19,7 @@
 using namespace matcheroni;
 
 bool deep_trace = false;
+bool writes_are_bad = false;
 
 //------------------------------------------------------------------------------
 
@@ -132,7 +133,6 @@ int main_new(Options opts) {
     }
   }
 
-
   // Count module instances so we can find top modules.
 
   for (auto c : repo.all_classes) {
@@ -140,6 +140,23 @@ int main_new(Options opts) {
       if (f->node_decl->_type_class) f->node_decl->_type_class->refcount++;
     }
   }
+
+  CNodeClass* top = nullptr;
+  for (auto c : repo.all_classes) {
+    if (c->refcount == 0) {
+      assert(top == nullptr);
+      top = c;
+    }
+  }
+  assert(top);
+
+  auto top_inst = instantiate_class(top->get_namestr(), true, nullptr, nullptr, top, 1000);
+
+  LOG_INDENT();
+  LOG_G("Top instance is %s\n", top->get_namestr().c_str());
+  LOG_DEDENT();
+
+  //----------------------------------------
 
   LOG_B("Building call graph\n");
   for (auto node_class : repo.all_classes) {
@@ -163,6 +180,52 @@ int main_new(Options opts) {
   for (auto node_class : repo.all_classes) {
     auto instance = instantiate_class(node_class->get_namestr(), true, nullptr, nullptr, node_class, 1000);
     repo.all_instances.push_back(instance);
+  }
+
+  //----------------------------------------
+  // Top methods that are not ticks or tocks must not write anything
+
+  // Collect all the writes for all functions but without tracing :/
+  {
+    bool any_writes = false;
+    CNode* written_field = nullptr;
+    CNodeFunction* current_func = nullptr;
+
+    node_visitor gather_writes = [&](CNode* node) {
+      if (any_writes) return;
+      if (auto node_assignment = node->as<CNodeAssignment>()) {
+          auto lhs = node_assignment->child("lhs")->req<CNodeLValue>();
+          auto field = node->ancestor<CNodeClass>()->get_field(lhs);
+          if (field) {
+            current_func->self_writes2.insert(field);
+          }
+      }
+    };
+
+    for (auto node_class : repo.all_classes) {
+      for (auto node_func : node_class->all_functions) {
+        current_func = node_func;
+        visit(node_func, gather_writes);
+      }
+    }
+
+    for (auto node_class : repo.all_classes) {
+      for (auto node_func : node_class->all_functions) {
+        LOG_R("Func %s\n", node_func->get_namestr().c_str());
+        LOG_INDENT();
+        for (auto node_field : node_func->self_writes2) {
+          LOG_R("Writes %s\n", node_field->get_namestr().c_str());
+        }
+        for (auto node_callee : node_func->internal_callees) {
+          LOG_R("Calls internal %s\n", node_callee->get_namestr().c_str());
+        }
+        for (auto node_callee : node_func->external_callees) {
+          LOG_R("Calls external %s\n", node_callee->get_namestr().c_str());
+        }
+
+        LOG_DEDENT();
+      }
+    }
   }
 
   //----------------------------------------
@@ -216,6 +279,26 @@ int main_new(Options opts) {
       stack.push_back(node_func);
       err << node_func->trace(inst_func, stack);
     }
+
+    // Trace top functions
+    /*
+    for (auto node_func : node_class->all_functions) {
+      LOG_INDENT_SCOPE();
+      auto func_name = node_func->get_namestr();
+      if (func_name.starts_with("tick")) continue;
+      if (func_name.starts_with("tock")) continue;
+      if (!node_func->is_public) continue;
+
+      LOG_B("Tracing %s\n", func_name.c_str());
+      auto inst_func = inst_class->resolve(func_name);
+      call_stack stack;
+      stack.push_back(node_func);
+
+      writes_are_bad = true;
+      err << node_func->trace(inst_func, stack);
+      writes_are_bad = false;
+    }
+    */
   }
 
   for (auto c : repo.all_classes) {
@@ -241,19 +324,7 @@ int main_new(Options opts) {
 
   deep_trace = true;
 
-//#if 0
   {
-    CNodeClass* top = nullptr;
-    for (auto c : repo.all_classes) {
-      if (c->refcount == 0) {
-        assert(top == nullptr);
-        top = c;
-      }
-    }
-    assert(top);
-
-    auto top_inst = instantiate_class(top->get_namestr(), true, nullptr, nullptr, top, 1000);
-
     // Trace constructors first
     if (auto node_func = top->constructor) {
       LOG_INDENT_SCOPE();
@@ -293,26 +364,17 @@ int main_new(Options opts) {
       stack.push_back(node_func);
       err << node_func->trace(inst_func, stack);
     }
-
-    top_inst->dump_tree();
-
-    delete top_inst;
-
   }
-//#endif
 
   deep_trace = false;
+
+  top_inst->dump_tree();
 
   if (err.has_err()) {
     LOG_R("Error during tracing\n");
     return -1;
   }
   LOG_DEDENT();
-
-  LOG_B("All tracing done\n");
-
-  //LOG("");
-  //exit(0);
 
   //----------------------------------------
 
@@ -336,13 +398,25 @@ int main_new(Options opts) {
       else if (method_type == MT_TOCK) {
         for (auto inst : f->self_writes) {
           auto state = inst->get_state();
-          assert(state == TS_SIGNAL || state == TS_OUTPUT);
+          if (state == TS_SIGNAL || state == TS_OUTPUT) {
+          }
+          else {
+            LOG_R("Tock writes a non-signal\n");
+            LOG("");
+            exit(-1);
+          }
         }
       }
       else if (method_type == MT_TICK) {
         for (auto inst : f->self_writes) {
           auto state = inst->get_state();
-          assert(state == TS_REGISTER || state == TS_MAYBE || state == TS_OUTPUT);
+          if (state == TS_REGISTER || state == TS_MAYBE || state == TS_OUTPUT) {
+          }
+          else {
+            LOG_R("Tick writes a non-register\n");
+            LOG("");
+            exit(-1);
+          }
         }
       }
     }

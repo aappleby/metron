@@ -155,6 +155,9 @@ struct CNodeFunction : public CNode {
   std::set<CInstance*> all_reads;
   std::set<CInstance*> all_writes;
 
+  std::set<CNodeField*> self_writes2;
+  std::set<CNodeField*> all_writes2;
+
   std::vector<CNodeDeclaration*> params;
 
   std::set<CNodeFunction*> internal_callers;

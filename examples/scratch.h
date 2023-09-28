@@ -3,23 +3,24 @@
 class Submod {
 public:
 
-  void tick1() { y = y + z; }
-  void tick2() { z = z + 1; }
+  void tick() {
+    y = y + 1;
+  }
 
 private:
+
   int y;
-  int z;
 };
 
 class Module {
 public:
 
   void tock() {
-    x.tick2();
-    x.tick1();
+    x = 1;
+    s.tick();
   }
 
 private:
-
-  Submod x;
+  int x;
+  Submod s;
 };

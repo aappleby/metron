@@ -126,6 +126,18 @@ struct CNodeFunction : public CNode {
 
   MethodType get_method_type();
 
+  void collect_writes2() {
+    all_writes2.insert(self_writes2.begin(), self_writes2.end());
+    for (auto f : internal_callees) {
+      f->collect_writes2();
+      all_writes2.insert(f->self_writes2.begin(), f->self_writes2.end());
+    }
+    for (auto f : external_callees) {
+      f->collect_writes2();
+      all_writes2.insert(f->self_writes2.begin(), f->self_writes2.end());
+    }
+  }
+
   //----------------------------------------
 
   std::string name;

@@ -15,8 +15,9 @@
         "-v",
         "-e",
         "-c",
-        "examples/scratch.h",
+        //"examples/scratch.h",
         //"tests/metron_good/basic_output.h",
+        "tests/metron_bad/tick_with_return_value.h",
         "-o",
         "examples/scratch.sv"
       ],

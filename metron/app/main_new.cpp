@@ -211,10 +211,24 @@ int main_new(Options opts) {
 
     for (auto node_class : repo.all_classes) {
       for (auto node_func : node_class->all_functions) {
+        node_func->collect_writes2();
+      }
+    }
+
+
+    for (auto node_class : repo.all_classes) {
+      for (auto node_func : node_class->all_functions) {
         LOG_R("Func %s\n", node_func->get_namestr().c_str());
         LOG_INDENT();
         for (auto node_field : node_func->self_writes2) {
-          LOG_R("Writes %s\n", node_field->get_namestr().c_str());
+          LOG_R("Writes direct %s\n", node_field->get_namestr().c_str());
+        }
+        for (auto node_field : node_func->all_writes2) {
+          if (node_func->self_writes2.contains(node_field)) {
+          }
+          else {
+            LOG_R("Writes indirect %s\n", node_field->get_namestr().c_str());
+          }
         }
         for (auto node_callee : node_func->internal_callees) {
           LOG_R("Calls internal %s\n", node_callee->get_namestr().c_str());
@@ -224,6 +238,35 @@ int main_new(Options opts) {
         }
 
         LOG_DEDENT();
+      }
+    }
+
+    for (auto node_class : repo.all_classes) {
+      for (auto node_func : node_class->all_functions) {
+        auto func_name = node_func->get_namestr();
+        if (!node_func->is_public) continue;
+        if (func_name.starts_with("tick")) continue;
+        if (func_name.starts_with("tock")) continue;
+
+        if (node_func->all_writes2.size()) {
+          LOG_R("Top-level func %s writes stuff and it shouldn't\n", func_name.c_str());
+          exit(-1);
+        }
+      }
+    }
+  }
+
+  //----------------------------------------
+  // Check for ticks with return values
+
+  for (auto node_class : repo.all_classes) {
+    for (auto node_func : node_class->all_functions) {
+      auto func_name = node_func->get_namestr();
+      if (func_name.starts_with("tick")) {
+        if (node_func->has_return()) {
+          LOG_R("Tick %s has a return value and it shouldn't\n", func_name.c_str());
+          exit(-1);
+        }
       }
     }
   }

@@ -1,35 +1,17 @@
 `include "metron/tools/metron_tools.sv"
 
-module Submod (
-  // global clock
-  input logic clock
-);
-/*public:*/
-
-  always_ff @(posedge clock) begin : tick
-    y <= y + 1;
-  end
-
-/*private:*/
-
-  int y;
-endmodule
+// A method that writes both a signal and a register should fail
 
 module Module (
-  // global clock
-  input logic clock
+  // update() ports
+  input logic update_in,
+  input int update_lksjf
 );
-/*public:*/
+ /*public:*/
 
-  always_comb begin : tock
-    x = 1;
-    /*s.tick();*/
+  always_comb begin : update
+    sig = reg + update_in;
+    reg = sig + update_in;
   end
 
-/*private:*/
-  int x;
-  Submod s(
-    // Global clock
-    .clock(clock)
-  );
 endmodule

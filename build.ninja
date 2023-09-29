@@ -212,7 +212,8 @@ build wasm/obj/metron/CNodeExpression.o: compile_cpp_ems $
     metron/CNodeExpression.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/CNodeField.o: compile_cpp_ems metron/CNodeField.cpp
+build wasm/obj/metron/nodes/CNodeField.o: compile_cpp_ems $
+    metron/nodes/CNodeField.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
 build wasm/obj/metron/CNodeFunction.o: compile_cpp_ems $
@@ -273,7 +274,7 @@ build docs/app/metron.js: link_ems wasm/obj/metron/main_new.o $
     wasm/obj/metron/CInstance.o wasm/obj/metron/CLexer.o $
     wasm/obj/metron/CNode.o wasm/obj/metron/CNodeCall.o $
     wasm/obj/metron/CNodeClass.o wasm/obj/metron/CNodeDeclaration.o $
-    wasm/obj/metron/CNodeExpression.o wasm/obj/metron/CNodeField.o $
+    wasm/obj/metron/CNodeExpression.o wasm/obj/metron/nodes/CNodeField.o $
     wasm/obj/metron/CNodeFunction.o wasm/obj/metron/CNodeStatement.o $
     wasm/obj/metron/CNodeStruct.o wasm/obj/metron/CNodeType.o $
     wasm/obj/metron/CParser.o wasm/obj/metron/CScope.o $
@@ -338,7 +339,7 @@ build obj/metron/CNodeDeclaration.o: compile_cpp metron/CNodeDeclaration.cpp
 build obj/metron/CNodeExpression.o: compile_cpp metron/CNodeExpression.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/CNodeField.o: compile_cpp metron/CNodeField.cpp
+build obj/metron/nodes/CNodeField.o: compile_cpp metron/nodes/CNodeField.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
 build obj/metron/CNodeFunction.o: compile_cpp metron/CNodeFunction.cpp
@@ -382,7 +383,7 @@ build bin/libmetron.a: static_lib obj/symlinks/metrolib/core/Platform.o $
     obj/metron/MtUtils.o obj/metron/CContext.o obj/metron/CInstance.o $
     obj/metron/CLexer.o obj/metron/CNode.o obj/metron/CNodeCall.o $
     obj/metron/CNodeClass.o obj/metron/CNodeDeclaration.o $
-    obj/metron/CNodeExpression.o obj/metron/CNodeField.o $
+    obj/metron/CNodeExpression.o obj/metron/nodes/CNodeField.o $
     obj/metron/CNodeFunction.o obj/metron/CNodeStatement.o $
     obj/metron/CNodeStruct.o obj/metron/CNodeType.o obj/metron/CParser.o $
     obj/metron/CScope.o obj/metron/CSourceFile.o obj/metron/CSourceRepo.o $

@@ -21,7 +21,6 @@ struct CNodePunct;
 struct CNodeQualifiedIdentifier;
 struct CNodeStatement;
 struct CNodeStruct;
-struct CNodeText;
 struct CNodeTranslationUnit;
 struct CNodeType;
 struct CNodeTypedef;
@@ -32,7 +31,7 @@ struct Cursor;
 #include "CNodeClass.hpp"
 #include "CNodeDeclaration.hpp"
 #include "CNodeExpression.hpp"
-#include "CNodeField.hpp"
+#include "nodes/CNodeField.hpp"
 #include "CNodeFunction.hpp"
 #include "CNodeStatement.hpp"
 #include "CNodeStruct.hpp"
@@ -119,15 +118,6 @@ struct CNodeFieldExpression : public CNode {
 //------------------------------------------------------------------------------
 
 struct CNodeQualifiedIdentifier : public CNode {
-  uint32_t debug_color() const override;
-  std::string_view get_name() const override;
-  CHECK_RETURN Err emit(Cursor& cursor) override;
-  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
-};
-
-//------------------------------------------------------------------------------
-
-struct CNodeText : public CNode {
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
   CHECK_RETURN Err emit(Cursor& cursor) override;

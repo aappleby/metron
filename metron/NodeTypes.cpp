@@ -1,6 +1,7 @@
 #include "NodeTypes.hpp"
 
 #include "CInstance.hpp"
+#include <typeinfo>
 
 using namespace matcheroni;
 using namespace parseroni;
@@ -17,22 +18,10 @@ std::string_view CNodeTranslationUnit::get_name() const {
 Err CNodeTranslationUnit::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
-  /*
-  if (tok_begin() != child_head->tok_begin()) {
-    err << cursor.emit_span(tok_begin(), child_head->tok_begin());
-  }
-  */
-
   for (auto c = child_head; c; c = c->node_next) {
     err << cursor.emit(c);
     if (c->node_next) err << cursor.emit_gap();
   }
-
-  /*
-  if (child_tail->tok_end() != tok_end()) {
-    err << cursor.emit_span(child_tail->tok_end(), tok_end());
-  }
-  */
 
   return err << cursor.check_done(this);
 }
@@ -42,25 +31,30 @@ Err CNodeTranslationUnit::trace(CInstance* inst, call_stack& stack) {
   return Err();
 }
 
-//------------------------------------------------------------------------------
+//==============================================================================
+//==============================================================================
 
-/*
-[000.001]  ┣━━╸▆ CNodeNamespace =
-[000.001]  ┃   ┣━━╸▆ namespace : CNodeKeyword = "namespace"
-[000.001]  ┃   ┣━━╸▆ name : CNodeIdentifier = "MyPackage"
-[000.001]  ┃   ┗━━╸▆ fields : CNodeList =
-[000.001]  ┃       ┣━━╸▆ ldelim : CNodePunct = "{"
-[000.001]  ┃       ┣━━╸▆ CNodeField =
-[000.001]  ┃       ┃   ┣━━╸▆ CNodeKeyword = "static"
-[000.001]  ┃       ┃   ┣━━╸▆ CNodeKeyword = "const"
-[000.001]  ┃       ┃   ┣━━╸▆ type : CNodeBuiltinType =
-[000.002]  ┃       ┃   ┃   ┗━━╸▆ name : CNodeIdentifier = "int"
-[000.002]  ┃       ┃   ┣━━╸▆ name : CNodeIdentifier = "foo"
-[000.002]  ┃       ┃   ┣━━╸▆ CNodePunct = "="
-[000.002]  ┃       ┃   ┗━━╸▆ value : CNodeConstInt = "3"
-[000.002]  ┃       ┣━━╸▆ CNodePunct = ";"
-[000.002]  ┃       ┗━━╸▆ rdelim : CNodePunct = "}"
-*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//==============================================================================
+//==============================================================================
 
 uint32_t CNodeNamespace::debug_color() const { return 0xFFFFFF; }
 
@@ -134,7 +128,30 @@ void CNodeNamespace::dump() const {
   for (auto n : all_fields) n->dump();
 }
 
-//------------------------------------------------------------------------------
+//==============================================================================
+//==============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//==============================================================================
+//==============================================================================
 
 uint32_t CNodePreproc::debug_color() const { return 0x00BBBB; }
 
@@ -161,22 +178,6 @@ Err CNodePreproc::emit(Cursor& cursor) {
     err << cursor.emit_default(this);
   }
 
-  /*
-  auto v = get_text();
-
-  if (v.starts_with("#include")) {
-    err << cursor.emit_replacements(this, "#include", "`include", ".h", ".sv");
-  } else if (v.starts_with("#ifndef")) {
-    err << cursor.emit_replacements(this, "#ifndef", "`ifndef");
-  } else if (v.starts_with("#define")) {
-    err << cursor.emit_replacements(this, "#define", "`define");
-  } else if (v.starts_with("#endif")) {
-    err << cursor.emit_replacements(this, "#endif", "`endif");
-  } else {
-    return ERR("Don't know how to handle this preproc");
-  }
-  */
-
   return err << cursor.check_done(this);
 }
 
@@ -185,7 +186,30 @@ Err CNodePreproc::trace(CInstance* inst, call_stack& stack) {
   return Err();
 }
 
-//------------------------------------------------------------------------------
+//==============================================================================
+//==============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//==============================================================================
+//==============================================================================
 
 uint32_t CNodeIdentifier::debug_color() const { return 0x80FF80; }
 
@@ -228,7 +252,30 @@ Err CNodeIdentifier::trace(CInstance* inst, call_stack& stack) {
   return Err();
 }
 
-//------------------------------------------------------------------------------
+//==============================================================================
+//==============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//==============================================================================
+//==============================================================================
 
 uint32_t CNodePunct::debug_color() const { return 0x88FF88; }
 
@@ -247,7 +294,30 @@ Err CNodePunct::trace(CInstance* inst, call_stack& stack) {
   return Err();
 }
 
-//------------------------------------------------------------------------------
+//==============================================================================
+//==============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//==============================================================================
+//==============================================================================
 
 void CNodeFieldExpression::init(const char* match_tag, SpanType span, uint64_t flags) {
   CNode::init(match_tag, span, flags);
@@ -319,51 +389,29 @@ Err CNodeFieldExpression::emit(Cursor& cursor) {
   return err << cursor.check_done(this);
 }
 
+//==============================================================================
+//==============================================================================
 
-/*
-CHECK_RETURN Err MtCursor::emit_sym_field_expression(MnNode n) {
-  Err err = check_at(sym_field_expression, n);
 
-  auto method = current_method.top();
-  auto component_name = n.get_field(field_argument).text();
-  auto component_field = n.get_field(field_field).text();
 
-  auto component = current_mod.top()->get_component(component_name);
 
-  bool is_port = component && component->_type_mod->is_port(component_field);
 
-  is_port = component && component->_type_mod->is_port(component_field);
-  // FIXME needs to be || is_argument
 
-  bool is_port_arg = false;
-  if (method && (method->emit_as_always_comb || method->emit_as_always_ff)) {
-    for (auto c : method->param_nodes) {
-      if (c.get_field(field_declarator).text() == component_name) {
-        is_port_arg = true;
-        break;
-      }
-    }
-  }
 
-  if (component && is_port) {
-    auto field = n.text();
-    for (auto& c : field) {
-      if (c == '.') c = '_';
-    }
-    err << emit_replacement(n, field.c_str());
-  } else if (is_port_arg) {
-    err << emit_print("%s_", method->name().c_str());
-    err << emit_text(n);
-  }
-  else {
-    // Local struct reference
-    err << emit_text(n);
-  }
 
-  return err << check_done(n);
-}
-*/
 
+
+
+
+
+
+
+
+
+
+
+
+//==============================================================================
 //==============================================================================
 
 uint32_t CNodeQualifiedIdentifier::debug_color() const { return 0x80FF80; }
@@ -441,25 +489,29 @@ Err CNodeQualifiedIdentifier::trace(CInstance* inst, call_stack& stack) {
 }
 
 //==============================================================================
+//==============================================================================
 
-uint32_t CNodeText::debug_color() const { return 0x888888; }
 
-std::string_view CNodeText::get_name() const {
-  NODE_ERR("FIXME");
-  return "";
-}
 
-Err CNodeText::emit(Cursor& cursor) {
-  NODE_ERR("FIXME");
-  return Err();
-}
 
-Err CNodeText::trace(CInstance* inst, call_stack& stack) {
-  NODE_ERR("FIXME");
-  return Err();
-}
 
-//------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//==============================================================================
+//==============================================================================
 
 uint32_t CNodeKeyword::debug_color() const { return 0xFFFF88; }
 
@@ -471,24 +523,18 @@ std::string_view CNodeKeyword::get_name() const {
 Err CNodeKeyword::emit(Cursor& cursor) {
   auto text = get_text();
 
-  if (text == "static" || text == "const") {
+  if (text == "static" || text == "const" || text == "break") {
     return cursor.comment_out(this);
   }
+
   if (text == "nullptr") {
     return cursor.emit_replacement(this, "\"\"");
   }
-  if (text == "if" || text == "else") {
+
+  if (text == "if" || text == "else" || text == "default" || text == "for" || "enum") {
     return cursor.emit_raw(this);
   }
-  if (text == "break") {
-    return cursor.comment_out(this);
-  }
-  if (text == "default" || text == "for") {
-    return cursor.emit_raw(this);
-  }
-  if (text == "enum") {
-    return cursor.emit_raw(this);
-  }
+
   NODE_ERR("FIXME");
   return Err();
 }
@@ -497,7 +543,30 @@ Err CNodeKeyword::trace(CInstance* inst, call_stack& stack) {
   return Err();
 }
 
-//------------------------------------------------------------------------------
+//==============================================================================
+//==============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//==============================================================================
+//==============================================================================
 
 uint32_t CNodeTypedef::debug_color() const { return 0xFFFF88; }
 
@@ -516,7 +585,30 @@ Err CNodeTypedef::trace(CInstance* inst, call_stack& stack) {
   return Err();
 }
 
-//------------------------------------------------------------------------------
+//==============================================================================
+//==============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//==============================================================================
+//==============================================================================
 
 void CNodeList::init(const char* match_tag, SpanType span, uint64_t flags) {
   CNode::init(match_tag, span, flags);

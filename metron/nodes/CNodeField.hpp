@@ -1,9 +1,9 @@
 #pragma once
 
-#include "CNode.hpp"
-#include "Cursor.hpp"
+#include "metron/CNode.hpp"
+#include "metron/Cursor.hpp"
 #include "metron/MtUtils.h"
-#include "NodeTypes.hpp"
+#include "metron/NodeTypes.hpp"
 
 //------------------------------------------------------------------------------
 

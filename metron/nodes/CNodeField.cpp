@@ -1,7 +1,7 @@
 #include "CNodeField.hpp"
 
-#include "NodeTypes.hpp"
-#include "CInstance.hpp"
+#include "metron/NodeTypes.hpp"
+#include "metron/CInstance.hpp"
 
 #include "metrolib/core/Log.h"
 

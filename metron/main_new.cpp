@@ -5,7 +5,7 @@
 #include "metrolib/core/Platform.h"
 #include "metron/CInstance.hpp"
 #include "metron/CNodeClass.hpp"
-#include "metron/CNodeField.hpp"
+#include "metron/nodes/CNodeField.hpp"
 #include "metron/CNodeFunction.hpp"
 #include "metron/CNodeStruct.hpp"
 #include "metron/CParser.hpp"

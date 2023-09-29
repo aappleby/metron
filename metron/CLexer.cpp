@@ -172,7 +172,7 @@ TextSpan match_int(TextMatchContext& ctx, TextSpan body) {
   using long_long_suffix       = Oneof<Lit<"ll">, Lit<"LL">>;
   using bit_precise_int_suffix = Oneof<Lit<"wb">, Lit<"WB">>;
 
-  // This is begin little odd because we have to match in longest-suffix-first order
+  // This is a little odd because we have to match in longest-suffix-first order
   // to ensure we capture the entire suffix
   using integer_suffix = Oneof<
     Seq<unsigned_suffix,  long_long_suffix>,
@@ -278,11 +278,11 @@ TextSpan match_identifier(TextMatchContext& ctx, TextSpan body) {
 }
 
 //------------------------------------------------------------------------------
-// 6.4.4.2 Floating constants
+// 6.4.4.2 Float constants
 
 TextSpan match_float(TextMatchContext& ctx, TextSpan body) {
   // clang-format off
-  using floating_suffix = Oneof<
+  using float_suffix = Oneof<
     Atom<'f'>, Atom<'l'>, Atom<'F'>, Atom<'L'>,
     // Decimal floats, GCC thing
     Lit<"df">, Lit<"dd">, Lit<"dl">,
@@ -313,29 +313,29 @@ TextSpan match_float(TextMatchContext& ctx, TextSpan body) {
   // GCC allows i or j in addition to the normal suffixes for complex-ified types :/...
   using complex_suffix = Atom<'i', 'j'>;
 
-  using decimal_floating_constant = Oneof<
-    Seq< fractional_constant, Opt<exponent_part>, Opt<complex_suffix>, Opt<floating_suffix>, Opt<complex_suffix> >,
-    Seq< digit_sequence, exponent_part,           Opt<complex_suffix>, Opt<floating_suffix>, Opt<complex_suffix> >
+  using decimal_float_constant = Oneof<
+    Seq< fractional_constant, Opt<exponent_part>, Opt<complex_suffix>, Opt<float_suffix>, Opt<complex_suffix> >,
+    Seq< digit_sequence, exponent_part,           Opt<complex_suffix>, Opt<float_suffix>, Opt<complex_suffix> >
   >;
 
   using hexadecimal_prefix         = Oneof<Lit<"0x">, Lit<"0X">>;
 
-  using hexadecimal_floating_constant = Seq<
+  using hexadecimal_float_constant = Seq<
     hexadecimal_prefix,
     Oneof<hexadecimal_fractional_constant, hexadecimal_digit_sequence>,
     binary_exponent_part,
     Opt<complex_suffix>,
-    Opt<floating_suffix>,
+    Opt<float_suffix>,
     Opt<complex_suffix>
   >;
 
-  using floating_constant = Oneof<
-    decimal_floating_constant,
-    hexadecimal_floating_constant
+  using float_constant = Oneof<
+    decimal_float_constant,
+    hexadecimal_float_constant
   >;
   // clang-format on
 
-  return floating_constant::match(ctx, body);
+  return float_constant::match(ctx, body);
 }
 
 //------------------------------------------------------------------------------
@@ -390,7 +390,7 @@ TextSpan match_char(TextMatchContext& ctx, TextSpan body) {
   // The spec disallows empty character constants, but...
   //using character_constant = Seq< Opt<encoding_prefix>, Atom<'\''>, c_char_sequence, Atom<'\''> >;
 
-  // ...in GCC they're only begin warning.
+  // ...in GCC they're only a warning.
   using character_constant = Seq< Opt<encoding_prefix>, Atom<'\''>, Any<c_char>, Atom<'\''> >;
   // clang-format on
 
@@ -470,16 +470,10 @@ TextSpan match_string(TextMatchContext& ctx, TextSpan body) {
 // 6.4.6 Punctuators
 
 TextSpan match_punct(TextMatchContext& ctx, TextSpan body) {
-  // We're just gonna match these one punct at begin time
+  // We're just gonna match these one punct at a time
   using punctuator = Charset<"-,;:!?.()[]{}*/&#%^+<=>|~">;
   return punctuator::match(ctx, body);
 }
-
-// Yeaaaah, not gonna try to support trigraphs, they're obsolete and have been
-// removed from the latest C spec. Also we have to declare them funny to get
-// them through the preprocessor...
-// using trigraphs = Trigraphs<R"(??=)" R"(??()" R"(??/)" R"(??))" R"(??')"
-// R"(??<)" R"(??!)" R"(??>)" R"(??-)">;
 
 //------------------------------------------------------------------------------
 // 6.4.9 Comments
@@ -511,12 +505,12 @@ TextSpan match_comment(TextMatchContext& ctx, TextSpan body) {
 }
 
 //------------------------------------------------------------------------------
-// 5.1.1.2 : Lines ending in begin backslash and begin newline get spliced together
+// 5.1.1.2 : Lines ending in a backslash and a newline get spliced together
 // with the following line.
 
 TextSpan match_splice(TextMatchContext& ctx, TextSpan body) {
 
-  // According to GCC it's only begin warning to have whitespace between the
+  // According to GCC it's only a warning to have whitespace between the
   // backslash and the newline... and apparently \r\n is ok too?
 
   // clang-format off
@@ -539,12 +533,6 @@ TextSpan match_preproc(TextMatchContext& ctx, TextSpan body) {
   using pattern = Seq<
     Atom<'#'>,
     Some<Range<'a','z','A','Z'>>
-    /*
-    Any<
-      Ref<match_splice>,
-      NotAtom<'\n'>
-    >
-    */
   >;
   // clang-format on
   return pattern::match(ctx, body);

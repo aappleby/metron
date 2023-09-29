@@ -21,10 +21,8 @@ std::string_view CNode::get_name() const {
 }
 
 Err CNode::emit(Cursor& cursor) {
-  assert(false);
-  Err err = cursor.check_at(this);
-  err << cursor.emit_replacement(this, "{{%s}}", typeid(*this).name());
-  return err << cursor.check_done(this);
+  NODE_ERR("Unimplemented CNode::emit type");
+  return Err();
 }
 
 //------------------------------------------------------------------------------

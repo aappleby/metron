@@ -26,26 +26,6 @@ struct CNodeDeclaration : public CNode {
     return child("static") != nullptr && child("const") != nullptr;
   }
 
-  /*
-  TokenSpan match_declaration(CContext& ctx, TokenSpan body) {
-    using pattern =
-    Seq<
-      Any<
-        Tag<"static", cap_keyword<"static">>,
-        Tag<"const",  cap_keyword<"const">>
-      >,
-      Tag<"type",      Ref<cap_type>>,
-      Tag<"name",      cap_identifier>,
-      Any<Tag<"array", cap_index_list>>,
-      Opt<Seq<
-        Tag<"eq", cap_punct<"=">>,
-        Tag<"value",   cap_expression>
-      >>
-    >;
-    return pattern::match(ctx, body);
-  }
-  */
-
   CNodeKeyword*    node_static = nullptr;
   CNodeKeyword*    node_const = nullptr;
   CNodeType*       node_type = nullptr;

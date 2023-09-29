@@ -501,8 +501,7 @@ Err CNodeCall::emit(Cursor& cursor) {
     return err << cursor.check_done(this);
   }
 
-
-  err << CNode::emit(cursor);
+  assert(false);
   return err << cursor.check_done(this);
 }
 

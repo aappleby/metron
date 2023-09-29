@@ -12,13 +12,37 @@ uint32_t CNodeType::debug_color() const {
 //------------------------------------------------------------------------------
 
 Err CNodeType::emit(Cursor& cursor) {
+  NODE_ERR("Don't know how to handle this type\n");
+  return Err();
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err CNodeClassType::emit(Cursor& cursor) {
+  Err err;
+  auto targs = child("template_args");
+
+  if (targs) {
+    err << cursor.emit(child("name"));
+    err << cursor.emit_gap();
+    err << cursor.skip_over(targs);
+  }
+  else {
+    err << cursor.emit_default(this);
+  }
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err CNodeBuiltinType::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
   auto node_name  = child("name");
   auto node_targs = child("template_args");
   auto node_scope = child("scope");
 
-  if (as<CNodeBuiltinType>() && node_targs) {
+  if (node_targs) {
     auto node_ldelim = node_targs->child("ldelim");
     auto node_exp    = node_targs->child("arg");
     auto node_rdelim = node_targs->child("rdelim");
@@ -68,35 +92,17 @@ Err CNodeType::emit(Cursor& cursor) {
       err << cursor.skip_over(node_scope);
     }
   }
-  else if (as<CNodeBuiltinType>()) {
-    err << cursor.emit_default(this);
-  }
-  else if (auto node_struct = child("struct_name")) {
-    err << CNode::emit(cursor);
-  }
-  else if (auto node_class = child("class_name")) {
-    err << CNode::emit(cursor);
-  }
-  else if (auto node_enum = as<CNodeEnumType>()) {
-    err << cursor.emit_default(this);
-  }
-  else if (auto node_class_type = as<CNodeClassType>()) {
-    auto targs = child("template_args");
-
-    if (targs) {
-      err << cursor.emit(child("name"));
-      err << cursor.emit_gap();
-      err << cursor.skip_over(targs);
-    }
-    else {
-      err << cursor.emit_default(this);
-    }
-  }
   else {
-    NODE_ERR("Don't know how to handle this type\n");
+    err << cursor.emit_default(this);
   }
 
   return err << cursor.check_done(this);
+}
+
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err CNodeEnumType::emit(Cursor& cursor) {
+  return cursor.emit_default(this);
 }
 
 //------------------------------------------------------------------------------

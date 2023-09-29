@@ -44,10 +44,6 @@ struct CNodeFunction : public CNode {
   bool emit_as_task();
   bool emit_as_func();
 
-#if 0
-  needs_ports = is_public_ && internal_callers.empty();
-#endif
-
   void dump() const override;
   void dump_call_graph();
 
@@ -154,12 +150,6 @@ struct CNodeFunction : public CNode {
 
   CInstFunc* instance = nullptr;
 
-  //std::set<CNodeField*> self_reads;
-  //std::set<CNodeField*> self_writes;
-
-  //std::set<CNodeField*> all_reads;
-  //std::set<CNodeField*> all_writes;
-
   std::set<CInstance*> self_reads;
   std::set<CInstance*> self_writes;
 
@@ -175,12 +165,6 @@ struct CNodeFunction : public CNode {
   std::set<CNodeFunction*> internal_callees;
   std::set<CNodeFunction*> external_callers;
   std::set<CNodeFunction*> external_callees;
-
-  // These are available after categorize_methods
-  //std::set<CNodeFunction*> tick_callers;
-  //std::set<CNodeFunction*> tock_callers;
-  //std::set<CNodeFunction*> func_callers;
-
 };
 
 //------------------------------------------------------------------------------

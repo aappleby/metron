@@ -206,7 +206,7 @@ Err CNodeField::emit(Cursor& cursor) {
 
   //----------------------------------------
 
-  err << CNode::emit(cursor);
+  assert(false);
   return err << cursor.check_done(this);
 }
 
@@ -488,7 +488,7 @@ Err CNodeField::emit_component(Cursor& cursor) {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err CNodeField::trace(CInstance* inst, call_stack& stack) {
-  return node_decl->child("value")->trace(inst, stack);
+  return node_decl->trace(inst, stack);
 }
 
 //------------------------------------------------------------------------------

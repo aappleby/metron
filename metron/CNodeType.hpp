@@ -21,7 +21,7 @@ struct CNodeBuiltinType : public CNodeType {
   Err trace(CInstance* inst, call_stack& stack) override {
     return Err();
   }
-
+  CHECK_RETURN Err emit(Cursor& cursor) override;
 };
 
 struct CNodeStructType : public CNodeType {
@@ -35,6 +35,7 @@ struct CNodeClassType : public CNodeType {
   std::string_view get_name() const override {
     return child("name")->get_text();
   }
+  CHECK_RETURN Err emit(Cursor& cursor) override;
 };
 
 struct CNodeUnionType : public CNodeType {
@@ -47,6 +48,7 @@ struct CNodeEnumType : public CNodeType {
   std::string_view get_name() const override {
     return child("name")->get_text();
   }
+  CHECK_RETURN Err emit(Cursor& cursor) override;
 };
 
 struct CNodeTypedefType : public CNodeType {
@@ -54,11 +56,5 @@ struct CNodeTypedefType : public CNodeType {
     return child("name")->get_text();
   }
 };
-
-/*
-struct CNodeTypeName : public CNode {
-  virtual uint32_t debug_color() const { return COL_ORANGE; }
-};
-*/
 
 //------------------------------------------------------------------------------

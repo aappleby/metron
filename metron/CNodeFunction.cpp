@@ -7,15 +7,9 @@
 
 using namespace matcheroni;
 
+typedef std::function<void(CNodeStatement*)> statement_visitor;
+
 //------------------------------------------------------------------------------
-
-uint32_t CNodeFunction::debug_color() const {
-  return COL_ORANGE;
-}
-
-std::string_view CNodeFunction::get_name() const {
-  return child("name")->get_name();
-}
 
 void CNodeFunction::init(const char* match_tag, SpanType span, uint64_t flags) {
   CNode::init(match_tag, span, flags);
@@ -34,6 +28,16 @@ void CNodeFunction::init(const char* match_tag, SpanType span, uint64_t flags) {
       params.push_back(param);
     }
   }
+}
+
+//------------------------------------------------------------------------------
+
+uint32_t CNodeFunction::debug_color() const {
+  return COL_ORANGE;
+}
+
+std::string_view CNodeFunction::get_name() const {
+  return child("name")->get_name();
 }
 
 //------------------------------------------------------------------------------
@@ -70,7 +74,6 @@ Err CNodeFunction::emit(Cursor& cursor) {
   else {
     dump_tree();
     assert(false);
-    err << CNode::emit(cursor);
   }
 
 
@@ -83,7 +86,7 @@ Err CNodeFunction::emit(Cursor& cursor) {
   return err;
 }
 
-//----------------------------------------
+//------------------------------------------------------------------------------
 
 Err CNodeFunction::emit_init(Cursor& cursor) {
   Err err;
@@ -144,7 +147,7 @@ Err CNodeFunction::emit_init(Cursor& cursor) {
   return err << cursor.check_done(this);
 }
 
-//----------------------------------------
+//------------------------------------------------------------------------------
 
 Err CNodeFunction::emit_always_comb(Cursor& cursor) {
   Err err;
@@ -180,7 +183,7 @@ Err CNodeFunction::emit_always_comb(Cursor& cursor) {
   return err << cursor.check_done(this);
 }
 
-//----------------------------------------
+//------------------------------------------------------------------------------
 
 Err CNodeFunction::emit_always_ff(Cursor& cursor) {
   Err err;
@@ -216,7 +219,7 @@ Err CNodeFunction::emit_always_ff(Cursor& cursor) {
   return err << cursor.check_done(this);
 }
 
-//----------------------------------------
+//------------------------------------------------------------------------------
 
 bool CNodeFunction::emit_as_task() {
   bool called_by_tick = false;
@@ -228,13 +231,13 @@ bool CNodeFunction::emit_as_task() {
   return method_type == MT_TICK && called_by_tick;
 }
 
-//----------------------------------------
+//------------------------------------------------------------------------------
 
 bool CNodeFunction::emit_as_func() {
   return method_type == MT_FUNC && internal_callers.size();
 }
 
-//----------------------------------------
+//------------------------------------------------------------------------------
 
 Err CNodeFunction::emit_func(Cursor& cursor) {
   Err err;
@@ -262,7 +265,7 @@ Err CNodeFunction::emit_func(Cursor& cursor) {
   return err << cursor.check_done(this);
 }
 
-//----------------------------------------
+//------------------------------------------------------------------------------
 
 Err CNodeFunction::emit_task(Cursor& cursor) {
   Err err;
@@ -316,24 +319,6 @@ CHECK_RETURN Err CNodeFunction::emit_func_binding_vars(Cursor& cursor) {
 }
 
 //------------------------------------------------------------------------------
-
-typedef std::function<void(CNodeStatement*)> statement_visitor;
-
-// struct CNodeExpStatement : public CNodeStatement {
-// struct CNodeAssignment : public CNodeStatement {
-// struct CNodeUsing : public CNodeStatement {
-// struct CNodeReturn : public CNodeStatement {
-
-// struct CNodeCompound : public CNodeStatement {
-
-// struct CNodeIf : public CNodeStatement {
-// struct CNodeFor : public CNodeStatement {
-// struct CNodeWhile : public CNodeStatement {
-// struct CNodeDoWhile : public CNodeStatement {
-
-// struct CNodeSwitch : public CNodeStatement {
-// struct CNodeCase : public CNodeStatement {
-// struct CNodeDefault : public CNodeStatement {
 
 inline void visit_statements(CNode* node, statement_visitor visit_cb) {
   assert(node);
@@ -403,7 +388,7 @@ bool has_non_terminal_return(CNodeCompound* node_compound) {
   return bad_return;
 }
 
-//----------------------------------------
+//------------------------------------------------------------------------------
 
 Err CNodeFunction::trace(CInstance* inst, call_stack& stack) {
   if (has_non_terminal_return(node_body)) {
@@ -455,7 +440,6 @@ void CNodeFunction::dump() const {
     }
   }
 
-#if 1
   if (self_reads.size()) {
     LOG_INDENT_SCOPE();
     for (auto r : self_reads) {
@@ -485,9 +469,7 @@ void CNodeFunction::dump() const {
       LOG_G("Indirectly writes %s : %s\n", w->get_path().c_str(), to_string(w->get_state()));
     }
   }
-#endif
 
-#if 1
   if (internal_callers.size()) {
     LOG_INDENT_SCOPE();
     for (auto c : internal_callers) {
@@ -505,7 +487,6 @@ void CNodeFunction::dump() const {
       LOG_V("Called by %.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
     }
   }
-#endif
 
   if (internal_callees.size()) {
     LOG_INDENT_SCOPE();
@@ -607,22 +588,35 @@ MethodType CNodeFunction::get_method_type() {
     assert(false);
   }
 
-  /*
-  if (self_writes.size()) {
-    if (result != MT_TICK && result != MT_TOCK) {
-      LOG_R("%s: Writes found in a non-tick/tock\n", name.c_str());
-      assert(false);
-    }
-  }
-  else {
-    LOG_R("Don't know how to classify %s %s\n", name.c_str(), to_string(result));
-    //assert(result == MT_UNKNOWN);
-    result = MT_FUNC;
-  }
-  */
-
   return result;
 }
+
+//------------------------------------------------------------------------------
+
+bool CNodeFunction::has_return() {
+  return node_type->get_text() != "void";
+}
+
+//------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //------------------------------------------------------------------------------
 
@@ -645,7 +639,3 @@ void CNodeConstructor::init(const char* match_tag, SpanType span, uint64_t flags
 }
 
 //------------------------------------------------------------------------------
-
-bool CNodeFunction::has_return() {
-  return node_type->get_text() != "void";
-}

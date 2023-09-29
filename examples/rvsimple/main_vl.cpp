@@ -7,7 +7,7 @@
 #include "CLI11/include/CLI/App.hpp"
 #include "CLI11/include/CLI/Config.hpp"
 #include "CLI11/include/CLI/Formatter.hpp"
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 //------------------------------------------------------------------------------
 

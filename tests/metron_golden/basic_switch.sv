@@ -1,4 +1,4 @@
-`include "metron/tools/metron_tools.sv"
+`include "metron/metron_tools.sv"
 
 // Simple switch statements are OK.
 

@@ -56,12 +56,6 @@ int main(int argc, char** argv) {
   LOG_B("Parse      %d\n", opts.parse);
   LOG_B("\n");
 
-  if (opts.parse) {
-    auto result_new = main_new(opts);
-    return result_new;
-  }
-  else {
-    auto result_old = main_old(opts);
-    return result_old;
-  }
+  auto result_new = main_new(opts);
+  return result_new;
 }

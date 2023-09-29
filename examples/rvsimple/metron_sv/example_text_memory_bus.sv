@@ -9,7 +9,7 @@
 `include "config.sv"
 `include "constants.sv"
 `include "example_text_memory.sv"
-`include "metron/tools/metron_tools.sv"
+`include "metron/metron_tools.sv"
 
 module example_text_memory_bus (
   // input signals

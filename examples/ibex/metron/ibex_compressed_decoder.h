@@ -13,7 +13,7 @@
 
 #ifndef IBEX_COMPRESSED_DECODER_H
 #define IBEX_COMPRESSED_DECODER_H
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 #include "ibex_pkg.h"
 
 struct ibex_compressed_decoder {

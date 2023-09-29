@@ -1,6 +1,6 @@
 // Comments at start of file should be preserved
 
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Empty module should pass.
 

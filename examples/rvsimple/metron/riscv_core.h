@@ -9,7 +9,7 @@
 #include "config.h"
 #include "constants.h"
 #include "data_memory_interface.h"
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 #include "singlecycle_ctlpath.h"
 #include "singlecycle_datapath.h"
 

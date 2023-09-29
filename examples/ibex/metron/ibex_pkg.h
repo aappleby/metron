@@ -5,7 +5,7 @@
 
 #ifndef IBEX_PKG_H
 #define IBEX_PKG_H
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 /**
  * Package with constants used by Ibex

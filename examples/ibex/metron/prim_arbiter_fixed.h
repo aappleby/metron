@@ -13,7 +13,7 @@
 
 #ifndef PRIM_ARBITER_FIXED_H
 #define PRIM_ARBITER_FIXED_H
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 template<
   int N = 8,

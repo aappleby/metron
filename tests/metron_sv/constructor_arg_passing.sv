@@ -1,4 +1,4 @@
-`include "metron/tools/metron_tools.sv"
+`include "metron/metron_tools.sv"
 
 // We should be able to pass constructor arguments to submodules.
 

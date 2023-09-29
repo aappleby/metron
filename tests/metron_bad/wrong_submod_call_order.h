@@ -1,9 +1,9 @@
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // If a module calls a submod's functions in the "wrong" order, we should catch
 // it.
 
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 class Submod {
 public:

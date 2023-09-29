@@ -15,8 +15,6 @@ base_includes = [
     "-I.",
     "-I/usr/local/share/verilator/include",
     "-Isymlinks",
-    "-Isymlinks/tree-sitter/lib/include",
-    "-Isymlinks/tree-sitter/lib/src",
     "-Isymlinks/CLI11/include",
     "-Itests",
 ]
@@ -31,8 +29,6 @@ def main():
     global outfile
     print("Regenerating build.ninja...")
     build_verilator()
-    build_treesitter()
-    build_parser()
     build_metron_lib()
     build_metron_app()
     build_metron_test()
@@ -270,36 +266,16 @@ def build_verilator():
                 outputs="obj/verilated_threads.o")
 
 # ------------------------------------------------------------------------------
+# Build Metron itself
 
-
-treesitter_objs = []
-
-
-def build_treesitter():
-    divider("TreeSitter libraries")
-
-    treesitter_srcs = [
-        "symlinks/tree-sitter/lib/src/lib.c",
-        "symlinks/tree-sitter-cpp/src/parser.c",
-        "symlinks/tree-sitter-cpp/src/scanner.cc",
-    ]
-
-    for n in treesitter_srcs:
-        o = path.join(obj_dir, swap_ext(n, ".o"))
-        ninja.build(
-            o,
-            "compile_c",
-            n,
-            includes=base_includes
-        )
-        treesitter_objs.append(o)
-
-# ------------------------------------------------------------------------------
-
-def build_parser():
+def build_metron_lib():
     cpp_library(
-        lib_name="bin/libparser.a",
+        lib_name="bin/libmetron.a",
         src_files=[
+            "symlinks/metrolib/core/Platform.cpp",
+            "symlinks/metrolib/core/Utils.cpp",
+            "symlinks/metrolib/core/Err.cpp",
+            "metron/MtUtils.cpp",
             "metron/parser/CContext.cpp",
             "metron/parser/CInstance.cpp",
             "metron/parser/CLexer.cpp",
@@ -323,38 +299,8 @@ def build_parser():
             "metron/parser/NodeTypes.cpp",
             "metron/parser/Tracer.cpp",
         ],
-        includes=base_includes
-    )
-
-# ------------------------------------------------------------------------------
-# Build Metron itself
-
-def build_metron_lib():
-    cpp_library(
-        lib_name="bin/libmetron.a",
-        src_files=[
-            "symlinks/metrolib/core/Platform.cpp",
-            "symlinks/metrolib/core/Utils.cpp",
-            "symlinks/metrolib/core/Err.cpp",
-            "metron/app/MtModLibrary.cpp",
-            "metron/app/MtSourceFile.cpp",
-            "metron/codegen/MtCursor.cpp",
-            "metron/nodes/MtField.cpp",
-            "metron/nodes/MtFuncParam.cpp",
-            "metron/nodes/MtMethod.cpp",
-            "metron/nodes/MtModParam.cpp",
-            "metron/nodes/MtModule.cpp",
-            "metron/nodes/MtNode.cpp",
-            "metron/nodes/MtStruct.cpp",
-            "metron/tools/MtUtils.cpp",
-            "metron/tracer/MtChecker.cpp",
-            "metron/tracer/MtContext.cpp",
-            "metron/tracer/MtInstance.cpp",
-            "metron/tracer/MtTracer.cpp",
-            "metron/tracer/MtTracer2.cpp",
-        ],
         includes=base_includes,
-        src_objs=treesitter_objs,
+        src_objs=[],
     )
 
 # ------------------------------------------------------------------------------
@@ -365,11 +311,10 @@ def build_metron_app():
         bin_name="bin/metron",
         src_files=[
             "metron/app/main_new.cpp",
-            "metron/app/main_old.cpp",
             "metron/app/main.cpp",
         ],
         includes=base_includes,
-        link_deps=["bin/libmetron.a", "bin/libparser.a"],
+        link_deps=["bin/libmetron.a"],
     )
 
 # ------------------------------------------------------------------------------
@@ -413,29 +358,6 @@ ninja.build(outputs = [
             inputs=sorted_glob("examples/tutorial/*.h"),
             command="python3 $$EMSDK/upstream/emscripten/tools/file_packager.py docs/tutorial/tutorial_src.data --no-node --js-output=docs/tutorial/tutorial_src.js --preload examples/tutorial examples/uart/metron");
 
-treesitter_objs_wasi = [];
-
-def build_treesitter_ems():
-    divider("TreeSitter libraries emscripten")
-
-    treesitter_srcs = [
-        "symlinks/tree-sitter/lib/src/lib.c",
-        "symlinks/tree-sitter-cpp/src/parser.c",
-        "symlinks/tree-sitter-cpp/src/scanner.cc",
-    ]
-
-    for n in treesitter_srcs:
-        o = path.join("wasm/obj", swap_ext(n, ".o"))
-        ninja.build(
-            o,
-            "compile_c_ems",
-            n,
-            includes=base_includes
-        )
-        treesitter_objs_wasi.append(o)
-
-build_treesitter_ems()
-
 def cpp_binary2(bin_name, rule_compile, rule_link, src_files, src_objs, obj_dir, deps=None, link_deps=None, **kwargs):
     if src_objs is None:
         src_objs = []
@@ -465,18 +387,7 @@ cpp_binary2(
     rule_link="link_ems",
     src_files=[
         "metron/app/main_new.cpp",
-        "metron/app/main_old.cpp",
         "metron/app/main.cpp",
-        "metron/app/MtModLibrary.cpp",
-        "metron/app/MtSourceFile.cpp",
-        "metron/codegen/MtCursor.cpp",
-        "metron/nodes/MtField.cpp",
-        "metron/nodes/MtFuncParam.cpp",
-        "metron/nodes/MtMethod.cpp",
-        "metron/nodes/MtModParam.cpp",
-        "metron/nodes/MtModule.cpp",
-        "metron/nodes/MtNode.cpp",
-        "metron/nodes/MtStruct.cpp",
         "metron/parser/CContext.cpp",
         "metron/parser/CInstance.cpp",
         "metron/parser/CLexer.cpp",
@@ -499,17 +410,12 @@ cpp_binary2(
         "metron/parser/Instance.cpp",
         "metron/parser/NodeTypes.cpp",
         "metron/parser/Tracer.cpp",
-        "metron/tools/MtUtils.cpp",
-        "metron/tracer/MtChecker.cpp",
-        "metron/tracer/MtContext.cpp",
-        "metron/tracer/MtInstance.cpp",
-        "metron/tracer/MtTracer.cpp",
-        "metron/tracer/MtTracer2.cpp",
+        "metron/MtUtils.cpp",
         "symlinks/metrolib/core/Err.cpp",
         "symlinks/metrolib/core/Platform.cpp",
         "symlinks/metrolib/core/Utils.cpp",
     ],
-    src_objs=treesitter_objs_wasi,
+    src_objs=[],
     obj_dir = "wasm/obj",
     includes=base_includes
 )

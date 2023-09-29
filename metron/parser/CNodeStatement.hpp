@@ -3,7 +3,7 @@
 #include "CNode.hpp"
 #include "Cursor.hpp"
 #include "CScope.hpp"
-#include "metron/tools/MtUtils.h"
+#include "metron/MtUtils.h"
 
 //==============================================================================
 

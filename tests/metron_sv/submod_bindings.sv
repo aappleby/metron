@@ -1,4 +1,4 @@
-`include "metron/tools/metron_tools.sv"
+`include "metron/metron_tools.sv"
 
 // Submodule bindings should be placed immediately before the statement
 // containing the call

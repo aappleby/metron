@@ -39,7 +39,7 @@ struct Cursor;
 #include "CNodeType.hpp"
 
 #include "metrolib/core/Log.h"
-#include "metron/tools/MtUtils.h"
+#include "metron/MtUtils.h"
 
 //------------------------------------------------------------------------------
 

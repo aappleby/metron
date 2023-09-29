@@ -1,4 +1,4 @@
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Public register member variables get moved to the output port list.
 

@@ -1,4 +1,4 @@
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Declaration order _matters_ - a tock() that reads a reg before the tick()
 // that writes it is OK.

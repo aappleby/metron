@@ -1,4 +1,4 @@
-`include "metron/tools/metron_tools.sv"
+`include "metron/metron_tools.sv"
 
 // Structs can be used as input/output ports to submodules.
 // ...but they have to be public member variables because Yosys...

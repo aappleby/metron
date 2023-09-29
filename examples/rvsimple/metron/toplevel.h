@@ -10,7 +10,7 @@
 #include "constants.h"
 #include "example_data_memory_bus.h"
 #include "example_text_memory_bus.h"
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 #include "riscv_core.h"
 
 class toplevel {

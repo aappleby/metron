@@ -1,4 +1,4 @@
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Passing structs to functions that turn into always_comb or always_ff
 // should prepend the function name to the struct name.

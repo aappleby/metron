@@ -1,6 +1,6 @@
 #ifndef METRO_BOY_SPU2_H
 #define METRO_BOY_SPU2_H
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 //------------------------------------------------------------------------------
 

@@ -1,6 +1,6 @@
 #ifndef METRO_BOY_SPU2_H
 #define METRO_BOY_SPU2_H
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 //------------------------------------------------------------------------------
 
@@ -786,7 +786,7 @@ Unfinished port of the Ibex RISC-V core to Metron.
 
 #ifndef IBEX_ALU_H
 #define IBEX_ALU_H
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 #include "ibex_pkg.h"
 
 /**
@@ -875,7 +875,7 @@ public:
 
 #ifndef IBEX_COMPRESSED_DECODER_H
 #define IBEX_COMPRESSED_DECODER_H
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 #include "ibex_pkg.h"
 
 struct ibex_compressed_decoder {
@@ -1210,7 +1210,7 @@ struct ibex_compressed_decoder {
 
 #ifndef IBEX_MULTDIV_SLOW_H
 #define IBEX_MULTDIV_SLOW_H
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 #include "ibex_pkg.h"
 
 struct ibex_multdiv_slow {
@@ -1629,7 +1629,7 @@ struct ibex_multdiv_slow {
 
 #ifndef IBEX_PKG_H
 #define IBEX_PKG_H
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 /**
  * Package with constants used by Ibex
@@ -2250,7 +2250,7 @@ namespace ibex_pkg {
 
 #ifndef PRIM_ARBITER_FIXED_H
 #define PRIM_ARBITER_FIXED_H
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 template<
   int N = 8,
@@ -2327,7 +2327,7 @@ struct prim_arbiter_fixed {
 };
 
 #endif // PRIM_ARBITER_FIXED_H
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 class DPRam {
 public:
@@ -2355,7 +2355,7 @@ public:
 private:
   logic<16> ram[65536];
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 #include "dpram.h"
 
 class J1 {
@@ -2530,7 +2530,7 @@ private:
 Verilated version of https://www.fpga4fun.com/PongGame.html
 #ifndef PONG_H
 #define PONG_H
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 //------------------------------------------------------------------------------
 
@@ -2726,7 +2726,7 @@ A port of riscv-simple-sv (https://github.com/tilk/riscv-simple-sv) to Metron.
 
 #include "config.h"
 #include "constants.h"
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 template <int WIDTH = 32>
 class adder {
@@ -2749,7 +2749,7 @@ class adder {
 
 #include "config.h"
 #include "constants.h"
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 class alu {
  public:
@@ -2794,7 +2794,7 @@ class alu {
 
 #include "config.h"
 #include "constants.h"
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 class alu_control {
  public:
@@ -2873,7 +2873,7 @@ class alu_control {
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 namespace rv_config {
 
@@ -2913,7 +2913,7 @@ static const char* DATA_HEX = "add.data.vh";
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 namespace rv_constants {
 
@@ -3077,7 +3077,7 @@ static const int MC_CTL_ALU_B_4 = 0b10;
 
 #include "config.h"
 #include "constants.h"
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 class control_transfer {
  public:
@@ -3112,7 +3112,7 @@ class control_transfer {
 
 #include "config.h"
 #include "constants.h"
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 class data_memory_interface {
  public:
@@ -3181,7 +3181,7 @@ class data_memory_interface {
 
 #include "config.h"
 #include "constants.h"
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 class example_data_memory {
  public:
@@ -3233,7 +3233,7 @@ class example_data_memory {
 #include "config.h"
 #include "constants.h"
 #include "example_data_memory.h"
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 class example_data_memory_bus {
  public:
@@ -3278,7 +3278,7 @@ class example_data_memory_bus {
 
 #include "config.h"
 #include "constants.h"
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 class example_text_memory {
  public:
@@ -3306,7 +3306,7 @@ class example_text_memory {
 #include "config.h"
 #include "constants.h"
 #include "example_text_memory.h"
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 class example_text_memory_bus {
  public:
@@ -3343,7 +3343,7 @@ class example_text_memory_bus {
 
 #include "config.h"
 #include "constants.h"
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 class immediate_generator {
  public:
@@ -3397,7 +3397,7 @@ class immediate_generator {
 
 #include "config.h"
 #include "constants.h"
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 class instruction_decoder {
  public:
@@ -3430,7 +3430,7 @@ class instruction_decoder {
 
 #include "config.h"
 #include "constants.h"
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 template <int WIDTH = 32>
 class multiplexer2 {
@@ -3466,7 +3466,7 @@ class multiplexer2 {
 
 #include "config.h"
 #include "constants.h"
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 template <int WIDTH = 32>
 class multiplexer4 {
@@ -3510,7 +3510,7 @@ class multiplexer4 {
 
 #include "config.h"
 #include "constants.h"
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 template <int WIDTH = 32>
 class multiplexer8 {
@@ -3554,7 +3554,7 @@ class multiplexer8 {
 
 #include "config.h"
 #include "constants.h"
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 class regfile {
  public:
@@ -3601,7 +3601,7 @@ class regfile {
 
 #include "config.h"
 #include "constants.h"
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 template <int WIDTH = 32, int INITIAL = 0>
 class single_register {
@@ -3636,7 +3636,7 @@ class single_register {
 #include "config.h"
 #include "constants.h"
 #include "data_memory_interface.h"
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 #include "singlecycle_ctlpath.h"
 #include "singlecycle_datapath.h"
 
@@ -3743,7 +3743,7 @@ class riscv_core {
 
 #include "config.h"
 #include "constants.h"
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 class singlecycle_control {
  public:
@@ -3895,7 +3895,7 @@ class singlecycle_control {
 #include "config.h"
 #include "constants.h"
 #include "control_transfer.h"
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 #include "singlecycle_control.h"
 
 class singlecycle_ctlpath {
@@ -3986,7 +3986,7 @@ class singlecycle_ctlpath {
 #include "constants.h"
 #include "immediate_generator.h"
 #include "instruction_decoder.h"
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 #include "multiplexer2.h"
 #include "multiplexer4.h"
 #include "multiplexer8.h"
@@ -4164,7 +4164,7 @@ class singlecycle_datapath {
 #include "constants.h"
 #include "example_data_memory_bus.h"
 #include "example_text_memory_bus.h"
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 #include "riscv_core.h"
 
 class toplevel {
@@ -4230,7 +4230,7 @@ class toplevel {
 };
 
 #endif // TOPLEVEL_H
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 class Submod {
 public:
@@ -4275,7 +4275,7 @@ public:
     sum = a + b;
   }
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 class Module {
   // Private only so we don't spam our port list for this example
@@ -4306,7 +4306,7 @@ private:
     return dup<3>(a);
   }
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 //------------------------------------------------------------------------------
 
@@ -4334,7 +4334,7 @@ private:
   logic<8> memory[256];
   logic<8> data_out;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 #include "blockram.h"
 
 //------------------------------------------------------------------------------
@@ -4587,7 +4587,7 @@ private:
   Adder my_adder;
   Counter my_counter;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 namespace MyPackage {
   static const int ADDER_WIDTH = 17;
@@ -4633,7 +4633,7 @@ public:
 class Module {
 public:
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 /*
 640x480x60
@@ -4706,16 +4706,10 @@ A simple UART-based testbench for Metron that exercises translation to
 SystemVerilog, simulation via Icarus, translation back to C via Verilator,
 synthesis via Yosys, place+route via NextPNR, and uploading to a Lattice ICE40
 fpga via Icestorm.
-A field-programmable gate array (FPGA) is an integrated circuit designed to be
-configured by a customer or a designer after manufacturing, hence the term
-field-programmable. The FPGA configuration is generally specified using a
-hardware description language (HDL), similar to that used for an application-
-specific integrated circuit (ASIC). Circuit diagrams were previously used to
-specify the configuration, but this is increasingly rare due to the advent of
-electronic design automation tools. 012345678901234#ifndef UART_HELLO_H
+#ifndef UART_HELLO_H
 #define UART_HELLO_H
 
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 //==============================================================================
 
@@ -4805,7 +4799,7 @@ private:
 #ifndef UART_RX_H
 #define UART_RX_H
 
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 //==============================================================================
 
@@ -4898,7 +4892,7 @@ public:
 #ifndef UART_TOP_H
 #define UART_TOP_H
 
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 #include "uart_hello.h"
 #include "uart_rx.h"
 #include "uart_tx.h"
@@ -4966,7 +4960,7 @@ private:
 #ifndef UART_TX_H
 #define UART_TX_H
 
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 //==============================================================================
 
@@ -5063,7 +5057,7 @@ private:
 All the header files in this directory should _not_ be convertible to
 SystemVerilog. They should fail for one or more reasons, and the reason texts
 are stored in the header file tagged with "//X".
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Registers that are read after they're written should fail.
 
@@ -5082,7 +5076,7 @@ class Module {
 
   logic<1> reg;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Signals that are written after they're read should fail.
 
@@ -5098,7 +5092,7 @@ class Module {
 
   logic<1> sig;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // X Context sig1 had invalid state after trace
 
@@ -5114,7 +5108,7 @@ class Module {
   logic<8> sig1;
   logic<8> sig2;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // The tracer should catch it if we forget a break.
 // X Case statement in tock does not end with break
@@ -5147,7 +5141,7 @@ class Module {
 
   logic<8> my_reg;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // A method that writes both a signal and a register should fail
 
@@ -5162,7 +5156,7 @@ class Module {
   logic<1> sig;
   logic<1> reg;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // If statements whose sub-blocks contain submodule calls _must_ use {}.
 
@@ -5191,7 +5185,7 @@ class Module {
 
   Submod submod;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // The tracer should catch it if we add a redundant break and it's in a block.
 
@@ -5222,7 +5216,7 @@ class Module {
 
   logic<8> my_reg;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // If for some reason you put a return in the middle of a block, we should catch
 // it.
@@ -5241,7 +5235,7 @@ class Module {
     c = b + b;
   }
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // A submod function can only produce one value per tock(). Trying to use it
 // twice should be an error.
@@ -5265,7 +5259,7 @@ class Module {
   logic<8> c;
   Submod submod;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Tock functions can't have more than a single return at the end.
 
@@ -5280,7 +5274,7 @@ class Module {
     return 11;
   }
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Tick methods are not allowed to have a return value.
 // X Tick method Module.tick is not allowed to have a return value.
@@ -5295,7 +5289,7 @@ class Module {
  private:
   logic<2> my_reg;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // The tracer should catch it if we add a redundant break.
 
@@ -5324,12 +5318,12 @@ class Module {
 
   logic<8> my_reg;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // If a module calls a submod's functions in the "wrong" order, we should catch
 // it.
 
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 class Submod {
 public:
@@ -5355,7 +5349,7 @@ private:
   Submod x;
 };
 All the header files in this directory _should_ be convertible to SystemVerilog.
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 class Module {
 public:
@@ -5470,7 +5464,7 @@ private:
 
 
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Modules can use constructors to initialize state
 
@@ -5502,7 +5496,7 @@ module Test;
 endmodule
 `endif
 #*/
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Private const methods should turn into SV functions.
 
@@ -5525,7 +5519,7 @@ private:
 
   logic<8> my_reg;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Increment/decrement should be translated into equivalent Verilog, but they
 // do _not_ return the old/new value.
@@ -5551,7 +5545,7 @@ private:
   int my_reg3;
   int my_reg4;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Tick inputs should become input ports.
 
@@ -5572,7 +5566,7 @@ class Module {
   logic<7> my_reg;
 };
 // clang-format on
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Number literals
 // don't forget the ' spacers
@@ -5605,7 +5599,7 @@ public:
   }
 
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Static const members become SV localparams
 
@@ -5626,7 +5620,7 @@ private:
 
   logic<7> my_reg;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Getter methods should turn into outputs.
 
@@ -5650,7 +5644,7 @@ private:
 
   logic<7> my_reg;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Template parameters become SV module parameters.
 
@@ -5670,7 +5664,7 @@ private:
 
   logic<7> my_reg;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Public register member variables get moved to the output port list.
 
@@ -5686,7 +5680,7 @@ private:
     my_reg = my_reg + 1;
   }
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Public signal member variables get moved to the output port list.
 
@@ -5699,7 +5693,7 @@ public:
 
   logic<1> my_sig;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Writing a register multiple times in the same function is OK.
 
@@ -5720,7 +5714,7 @@ private:
 
   logic<1> my_reg;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Writing a register multiple times in the same function is OK.
 
@@ -5735,7 +5729,7 @@ public:
 
   logic<1> my_sig;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Modules can contain other modules.
 
@@ -5764,7 +5758,7 @@ public:
 
   Submod submod;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // We can instantiated templated classes as submodules.
 
@@ -5794,7 +5788,7 @@ public:
 
   Submod<99> submod;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // We can instantiated templated classes as submodules.
 
@@ -5828,7 +5822,7 @@ public:
 
   Submod submod;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Simple switch statements are OK.
 
@@ -5857,7 +5851,7 @@ private:
 
   logic<8> my_reg;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Private non-const methods should turn into SV tasks.
 
@@ -5883,7 +5877,7 @@ private:
   logic<8> my_reg;
   logic<8> my_reg2;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Templates can be used for module parameters
 
@@ -5910,7 +5904,7 @@ public:
 
   Submod<10,11> submodule;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Tock methods can return values.
 
@@ -5924,7 +5918,7 @@ public:
     return my_sig;
   }
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Logics can be casted to various sizes via bN() or bx<N>()
 
@@ -6133,7 +6127,7 @@ public:
 
 
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Concatenating logics should produce logics with correct <N>
 
@@ -6163,7 +6157,7 @@ public:
     sig2 = cat(b1(a), b2(b), b3(c));
   }
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 class Module {
 public:
@@ -6201,7 +6195,7 @@ public:
     return 0;
   }
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // All the combos of tasks/funcs should work from ticks and tocks.
 
@@ -6247,7 +6241,7 @@ private:
   logic<8> my_reg1;
   logic<8> my_reg2;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Make sure our built-in functions translate.
 
@@ -6267,7 +6261,7 @@ public:
   }
 
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Calling tick() from tock() in the same module should work and should
 // generate bindings for the tick() call.
@@ -6288,7 +6282,7 @@ private:
   logic<8> my_reg;
 
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Case statements are allowed to have fallthrough, though the SV syntax is
 // a bit different.
@@ -6325,7 +6319,7 @@ private:
 
   logic<8> my_reg;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // We should be able to pass constructor arguments to submodules.
 
@@ -6378,7 +6372,7 @@ public:
 };
 
 //----------------------------------------
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // We should be able to handle constructor args.
 
@@ -6407,7 +6401,7 @@ private:
   logic<8> data[data_len];
   logic<8> out;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Basic #defines should work as long as their contents are simultaneously
 // valid C++ and SV
@@ -6424,7 +6418,7 @@ public:
   }
 
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // DONTCARE gets translated to 'x
 // bN(DONTCARE) gets translated to N'bx
@@ -6444,7 +6438,7 @@ public:
     return bx<8>(DONTCARE);
   }
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Most kinds of C++ enum declarations should work.
 
@@ -6481,7 +6475,6 @@ class Module {
   enum class enum_class1 { A5, B5, C5 };
   enum class enum_class2 { A6 = 0b01, B6 = 0x02, C6 = 3 };
 
-  // These should work in TreeSitter now
   enum class typed_enum : int { A7 = 0b01, B7 = 0x02, C7 = 3 };
   enum class sized_enum : logic<8>::BASE { A8 = 0b01, B8 = 0x02, C8 = 3 };
 
@@ -6498,7 +6491,7 @@ class Module {
   }
 };
 // clang-format on
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 class Module {
   public:
@@ -6522,7 +6515,7 @@ class Module {
     return x;
   }
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Declaration order _matters_ - a tock() that reads a reg before the tick()
 // that writes it is OK.
@@ -6544,7 +6537,7 @@ private:
   logic<1> my_sig;
   logic<1> my_reg;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // If statements whose sub-blocks contain submodule calls _must_ use {}.
 
@@ -6589,7 +6582,7 @@ public:
 };
 
 #endif
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // I don't know why you would want to do this, but it should work.
 
@@ -6645,7 +6638,7 @@ private:
   }
 
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Zero-initializing structs should work for convenience.
 
@@ -6663,7 +6656,7 @@ public:
     my_struct1.field = 0;
   }
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Public fields that are read by the module but never written become input
 // ports.
@@ -6713,7 +6706,7 @@ private:
 
   Submod submod;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 class Module {
 public:
@@ -6725,7 +6718,7 @@ public:
   }
 
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Comments surrounded by / * # <something # * / get unwrapped and dropped
 // directly in the output file.
@@ -6745,7 +6738,7 @@ public:
 
   int my_reg;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Port and function arg names can collide, the latter is disambiguated by its
 // function name.
@@ -6767,7 +6760,7 @@ public:
 };
 // Comments at start of file should be preserved
 
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Empty module should pass.
 
@@ -6775,7 +6768,7 @@ class Module {
 };
 
 // Comments at end of file should be preserved
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Multiple tick methods are OK as long as they're all called by tock()
 
@@ -6802,7 +6795,7 @@ private:
   logic<8> my_reg1;
   logic<8> my_reg2;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Namespaces turn into packages.
 // "using" doesn't work in methods right now :/
@@ -6826,7 +6819,7 @@ public:
     my_reg = my_reg + MyPackage::foo;
   }
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 struct InnerStruct {
   logic<8> a;
@@ -6864,7 +6857,7 @@ public:
     s.z.c = 9;
   }
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Nesting submod calls should put all the nested input bindings above the call.
 
@@ -6896,7 +6889,7 @@ private:
   Submod1 submod1;
   Submod2 submod2;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Cramming various statements into one line should not break anything.
 
@@ -6941,7 +6934,7 @@ public:
     //my_reg5 %= 22;
   }
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Private getter methods are OK
 
@@ -6962,7 +6955,7 @@ private:
   }
 
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Structs exist in both C++ and Verilog
 
@@ -6980,7 +6973,7 @@ public:
     return 17;
   }
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Passing structs to functions that turn into always_comb or always_ff
 // should prepend the function name to the struct name.
@@ -7006,7 +6999,7 @@ public:
 };
 
 //------------------------------------------------------------------------------
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Structs can be used as input/output ports to submodules.
 // ...but they have to be public member variables because Yosys...
@@ -7139,7 +7132,7 @@ public:
 };
 
 //------------------------------------------------------------------------------
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Submodule bindings should be placed immediately before the statement
 // containing the call
@@ -7175,7 +7168,7 @@ public:
 
   Submod submod;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Tocks should be able to call private tasks and functions
 
@@ -7200,7 +7193,7 @@ private:
   }
 
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Trivial adder just for example.
 
@@ -7212,7 +7205,7 @@ public:
   }
 
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // UTF-8 text files with a byte order mark should be supported.
 
@@ -7243,7 +7236,7 @@ private:
 
   logic<8> my_reg;
 };
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // UTF-8 text files with a byte order mark should be supported.
 

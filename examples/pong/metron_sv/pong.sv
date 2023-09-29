@@ -1,6 +1,6 @@
 `ifndef PONG_H
 `define PONG_H
-`include "metron/tools/metron_tools.sv"
+`include "metron/metron_tools.sv"
 
 //------------------------------------------------------------------------------
 

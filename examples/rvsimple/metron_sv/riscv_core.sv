@@ -9,7 +9,7 @@
 `include "config.sv"
 `include "constants.sv"
 `include "data_memory_interface.sv"
-`include "metron/tools/metron_tools.sv"
+`include "metron/metron_tools.sv"
 `include "singlecycle_ctlpath.sv"
 `include "singlecycle_datapath.sv"
 

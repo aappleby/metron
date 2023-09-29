@@ -9,7 +9,7 @@
 #include "config.h"
 #include "constants.h"
 #include "example_text_memory.h"
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 class example_text_memory_bus {
  public:

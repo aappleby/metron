@@ -1,4 +1,4 @@
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Multiple tick methods are OK as long as they're all called by tock()
 

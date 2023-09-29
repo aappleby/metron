@@ -6,7 +6,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 namespace rv_constants {
 

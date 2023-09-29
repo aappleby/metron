@@ -1,8 +1,4 @@
-"+=" doesn't translate right, it's going to <=
-
 throw error if a non-const member is read-only but not marked const
-
-nested structs
 
 https://github.com/hughperkins/VeriGPU
 
@@ -10,13 +6,7 @@ the error checking should really be independent passes between stages
 
 may need a "hoist members" step for some SV tools
 
-void func() {
-  static const int local_constant = N;
-}
-
 packed structs are going to behave differently if bitsliced, not sure how to
 deal with that... but if you can't express it in c do we care?
 
 do a preproc if else test
-
-----------

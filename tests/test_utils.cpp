@@ -1,8 +1,5 @@
 #include "test_utils.h"
-
-#include "metron/app/MtModLibrary.h"
-#include "metron/nodes/MtModule.h"
-#include "metron/app/MtSourceFile.h"
+#include "metrolib/core/Err.h"
 
 //------------------------------------------------------------------------------
 
@@ -67,7 +64,7 @@ TestResults test_translate_simple() {
 
   std::string source = R"(
 
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 class Module {
 public:

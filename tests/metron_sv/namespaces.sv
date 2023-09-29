@@ -1,4 +1,4 @@
-`include "metron/tools/metron_tools.sv"
+`include "metron/metron_tools.sv"
 
 // Namespaces turn into packages.
 // "using" doesn't work in methods right now :/

@@ -1,4 +1,4 @@
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Logics can be casted to various sizes via bN() or bx<N>()
 

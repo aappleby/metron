@@ -1,4 +1,4 @@
-#include "metron/tools/MtUtils.h"
+#include "metron/MtUtils.h"
 
 #include <assert.h>
 #include <stdarg.h>

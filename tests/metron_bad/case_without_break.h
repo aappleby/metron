@@ -1,4 +1,4 @@
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // The tracer should catch it if we forget a break.
 // X Case statement in tock does not end with break

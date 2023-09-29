@@ -10,7 +10,7 @@
 #include "config.h"
 #include "constants.h"
 #include "control_transfer.h"
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 #include "singlecycle_control.h"
 
 class singlecycle_ctlpath {

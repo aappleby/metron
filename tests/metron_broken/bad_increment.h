@@ -1,4 +1,4 @@
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Trying to use the return value from increment/decrement should be caught by
 // the compiler.

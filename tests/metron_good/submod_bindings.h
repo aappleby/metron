@@ -1,4 +1,4 @@
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Submodule bindings should be placed immediately before the statement
 // containing the call

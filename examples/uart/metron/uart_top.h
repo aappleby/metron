@@ -1,7 +1,7 @@
 #ifndef UART_TOP_H
 #define UART_TOP_H
 
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 #include "uart_hello.h"
 #include "uart_rx.h"
 #include "uart_tx.h"

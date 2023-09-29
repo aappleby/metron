@@ -1,4 +1,4 @@
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 
 // Force a mismatch between the Metron and Verilator sims so we can ensure that
 // we catch them.

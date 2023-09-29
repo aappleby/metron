@@ -1,4 +1,4 @@
-`include "metron/tools/metron_tools.sv"
+`include "metron/metron_tools.sv"
 
 // Comments surrounded by / * # <something # * / get unwrapped and dropped
 // directly in the output file.

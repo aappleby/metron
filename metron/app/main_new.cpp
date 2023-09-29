@@ -14,7 +14,7 @@
 #include "metron/parser/Cursor.hpp"
 #include "metron/parser/NodeTypes.hpp"
 #include "metron/parser/Tracer.hpp"
-#include "metron/tools/MtUtils.h"
+#include "metron/MtUtils.h"
 
 using namespace matcheroni;
 

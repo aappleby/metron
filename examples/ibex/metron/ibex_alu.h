@@ -5,7 +5,7 @@
 
 #ifndef IBEX_ALU_H
 #define IBEX_ALU_H
-#include "metron/tools/metron_tools.h"
+#include "metron/metron_tools.h"
 #include "ibex_pkg.h"
 
 /**

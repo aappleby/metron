@@ -17,6 +17,5 @@ struct Options {
 
 //------------------------------------------------------------------------------
 
-int main_old(Options opts);
 int main_new(Options opts);
 int main(int argc, char** argv);

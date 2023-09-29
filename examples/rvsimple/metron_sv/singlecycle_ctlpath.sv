@@ -10,7 +10,7 @@
 `include "config.sv"
 `include "constants.sv"
 `include "control_transfer.sv"
-`include "metron/tools/metron_tools.sv"
+`include "metron/metron_tools.sv"
 `include "singlecycle_control.sv"
 
 module singlecycle_ctlpath (

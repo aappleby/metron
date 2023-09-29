@@ -186,91 +186,74 @@ build wasm/obj/metron/main_new.o: compile_cpp_ems metron/main_new.cpp
 build wasm/obj/metron/main.o: compile_cpp_ems metron/main.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/parser/CContext.o: compile_cpp_ems $
-    metron/parser/CContext.cpp
+build wasm/obj/metron/CContext.o: compile_cpp_ems metron/CContext.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/parser/CInstance.o: compile_cpp_ems $
-    metron/parser/CInstance.cpp
+build wasm/obj/metron/CInstance.o: compile_cpp_ems metron/CInstance.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/parser/CLexer.o: compile_cpp_ems $
-    metron/parser/CLexer.cpp
+build wasm/obj/metron/CLexer.o: compile_cpp_ems metron/CLexer.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/parser/CNode.o: compile_cpp_ems metron/parser/CNode.cpp
+build wasm/obj/metron/CNode.o: compile_cpp_ems metron/CNode.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/parser/CNodeCall.o: compile_cpp_ems $
-    metron/parser/CNodeCall.cpp
+build wasm/obj/metron/CNodeCall.o: compile_cpp_ems metron/CNodeCall.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/parser/CNodeClass.o: compile_cpp_ems $
-    metron/parser/CNodeClass.cpp
+build wasm/obj/metron/CNodeClass.o: compile_cpp_ems metron/CNodeClass.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/parser/CNodeDeclaration.o: compile_cpp_ems $
-    metron/parser/CNodeDeclaration.cpp
+build wasm/obj/metron/CNodeDeclaration.o: compile_cpp_ems $
+    metron/CNodeDeclaration.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/parser/CNodeExpression.o: compile_cpp_ems $
-    metron/parser/CNodeExpression.cpp
+build wasm/obj/metron/CNodeExpression.o: compile_cpp_ems $
+    metron/CNodeExpression.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/parser/CNodeField.o: compile_cpp_ems $
-    metron/parser/CNodeField.cpp
+build wasm/obj/metron/CNodeField.o: compile_cpp_ems metron/CNodeField.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/parser/CNodeFunction.o: compile_cpp_ems $
-    metron/parser/CNodeFunction.cpp
+build wasm/obj/metron/CNodeFunction.o: compile_cpp_ems $
+    metron/CNodeFunction.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/parser/CNodeStatement.o: compile_cpp_ems $
-    metron/parser/CNodeStatement.cpp
+build wasm/obj/metron/CNodeStatement.o: compile_cpp_ems $
+    metron/CNodeStatement.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/parser/CNodeStruct.o: compile_cpp_ems $
-    metron/parser/CNodeStruct.cpp
+build wasm/obj/metron/CNodeStruct.o: compile_cpp_ems metron/CNodeStruct.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/parser/CNodeType.o: compile_cpp_ems $
-    metron/parser/CNodeType.cpp
+build wasm/obj/metron/CNodeType.o: compile_cpp_ems metron/CNodeType.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/parser/CParser.o: compile_cpp_ems $
-    metron/parser/CParser.cpp
+build wasm/obj/metron/CParser.o: compile_cpp_ems metron/CParser.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/parser/CScope.o: compile_cpp_ems $
-    metron/parser/CScope.cpp
+build wasm/obj/metron/CScope.o: compile_cpp_ems metron/CScope.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/parser/CSourceFile.o: compile_cpp_ems $
-    metron/parser/CSourceFile.cpp
+build wasm/obj/metron/CSourceFile.o: compile_cpp_ems metron/CSourceFile.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/parser/CSourceRepo.o: compile_cpp_ems $
-    metron/parser/CSourceRepo.cpp
+build wasm/obj/metron/CSourceRepo.o: compile_cpp_ems metron/CSourceRepo.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/parser/CToken.o: compile_cpp_ems $
-    metron/parser/CToken.cpp
+build wasm/obj/metron/CToken.o: compile_cpp_ems metron/CToken.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/parser/Cursor.o: compile_cpp_ems $
-    metron/parser/Cursor.cpp
+build wasm/obj/metron/Cursor.o: compile_cpp_ems metron/Cursor.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/parser/Instance.o: compile_cpp_ems $
-    metron/parser/Instance.cpp
+build wasm/obj/metron/Instance.o: compile_cpp_ems metron/Instance.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/parser/NodeTypes.o: compile_cpp_ems $
-    metron/parser/NodeTypes.cpp
+build wasm/obj/metron/NodeTypes.o: compile_cpp_ems metron/NodeTypes.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/parser/Tracer.o: compile_cpp_ems $
-    metron/parser/Tracer.cpp
+build wasm/obj/metron/Tracer.o: compile_cpp_ems metron/Tracer.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
 build wasm/obj/metron/MtUtils.o: compile_cpp_ems metron/MtUtils.cpp
@@ -289,22 +272,19 @@ build wasm/obj/symlinks/metrolib/core/Utils.o: compile_cpp_ems $
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
 build docs/app/metron.js: link_ems wasm/obj/metron/main_new.o $
-    wasm/obj/metron/main.o wasm/obj/metron/parser/CContext.o $
-    wasm/obj/metron/parser/CInstance.o wasm/obj/metron/parser/CLexer.o $
-    wasm/obj/metron/parser/CNode.o wasm/obj/metron/parser/CNodeCall.o $
-    wasm/obj/metron/parser/CNodeClass.o $
-    wasm/obj/metron/parser/CNodeDeclaration.o $
-    wasm/obj/metron/parser/CNodeExpression.o $
-    wasm/obj/metron/parser/CNodeField.o $
-    wasm/obj/metron/parser/CNodeFunction.o $
-    wasm/obj/metron/parser/CNodeStatement.o $
-    wasm/obj/metron/parser/CNodeStruct.o wasm/obj/metron/parser/CNodeType.o $
-    wasm/obj/metron/parser/CParser.o wasm/obj/metron/parser/CScope.o $
-    wasm/obj/metron/parser/CSourceFile.o $
-    wasm/obj/metron/parser/CSourceRepo.o wasm/obj/metron/parser/CToken.o $
-    wasm/obj/metron/parser/Cursor.o wasm/obj/metron/parser/Instance.o $
-    wasm/obj/metron/parser/NodeTypes.o wasm/obj/metron/parser/Tracer.o $
-    wasm/obj/metron/MtUtils.o wasm/obj/symlinks/metrolib/core/Err.o $
+    wasm/obj/metron/main.o wasm/obj/metron/CContext.o $
+    wasm/obj/metron/CInstance.o wasm/obj/metron/CLexer.o $
+    wasm/obj/metron/CNode.o wasm/obj/metron/CNodeCall.o $
+    wasm/obj/metron/CNodeClass.o wasm/obj/metron/CNodeDeclaration.o $
+    wasm/obj/metron/CNodeExpression.o wasm/obj/metron/CNodeField.o $
+    wasm/obj/metron/CNodeFunction.o wasm/obj/metron/CNodeStatement.o $
+    wasm/obj/metron/CNodeStruct.o wasm/obj/metron/CNodeType.o $
+    wasm/obj/metron/CParser.o wasm/obj/metron/CScope.o $
+    wasm/obj/metron/CSourceFile.o wasm/obj/metron/CSourceRepo.o $
+    wasm/obj/metron/CToken.o wasm/obj/metron/Cursor.o $
+    wasm/obj/metron/Instance.o wasm/obj/metron/NodeTypes.o $
+    wasm/obj/metron/Tracer.o wasm/obj/metron/MtUtils.o $
+    wasm/obj/symlinks/metrolib/core/Err.o $
     wasm/obj/symlinks/metrolib/core/Platform.o $
     wasm/obj/symlinks/metrolib/core/Utils.o
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
@@ -338,93 +318,83 @@ build obj/symlinks/metrolib/core/Err.o: compile_cpp $
 build obj/metron/MtUtils.o: compile_cpp metron/MtUtils.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/parser/CContext.o: compile_cpp metron/parser/CContext.cpp
+build obj/metron/CContext.o: compile_cpp metron/CContext.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/parser/CInstance.o: compile_cpp metron/parser/CInstance.cpp
+build obj/metron/CInstance.o: compile_cpp metron/CInstance.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/parser/CLexer.o: compile_cpp metron/parser/CLexer.cpp
+build obj/metron/CLexer.o: compile_cpp metron/CLexer.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/parser/CNode.o: compile_cpp metron/parser/CNode.cpp
+build obj/metron/CNode.o: compile_cpp metron/CNode.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/parser/CNodeCall.o: compile_cpp metron/parser/CNodeCall.cpp
+build obj/metron/CNodeCall.o: compile_cpp metron/CNodeCall.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/parser/CNodeClass.o: compile_cpp metron/parser/CNodeClass.cpp
+build obj/metron/CNodeClass.o: compile_cpp metron/CNodeClass.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/parser/CNodeDeclaration.o: compile_cpp $
-    metron/parser/CNodeDeclaration.cpp
+build obj/metron/CNodeDeclaration.o: compile_cpp metron/CNodeDeclaration.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/parser/CNodeExpression.o: compile_cpp $
-    metron/parser/CNodeExpression.cpp
+build obj/metron/CNodeExpression.o: compile_cpp metron/CNodeExpression.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/parser/CNodeField.o: compile_cpp metron/parser/CNodeField.cpp
+build obj/metron/CNodeField.o: compile_cpp metron/CNodeField.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/parser/CNodeFunction.o: compile_cpp $
-    metron/parser/CNodeFunction.cpp
+build obj/metron/CNodeFunction.o: compile_cpp metron/CNodeFunction.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/parser/CNodeStatement.o: compile_cpp $
-    metron/parser/CNodeStatement.cpp
+build obj/metron/CNodeStatement.o: compile_cpp metron/CNodeStatement.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/parser/CNodeStruct.o: compile_cpp $
-    metron/parser/CNodeStruct.cpp
+build obj/metron/CNodeStruct.o: compile_cpp metron/CNodeStruct.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/parser/CNodeType.o: compile_cpp metron/parser/CNodeType.cpp
+build obj/metron/CNodeType.o: compile_cpp metron/CNodeType.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/parser/CParser.o: compile_cpp metron/parser/CParser.cpp
+build obj/metron/CParser.o: compile_cpp metron/CParser.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/parser/CScope.o: compile_cpp metron/parser/CScope.cpp
+build obj/metron/CScope.o: compile_cpp metron/CScope.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/parser/CSourceFile.o: compile_cpp $
-    metron/parser/CSourceFile.cpp
+build obj/metron/CSourceFile.o: compile_cpp metron/CSourceFile.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/parser/CSourceRepo.o: compile_cpp $
-    metron/parser/CSourceRepo.cpp
+build obj/metron/CSourceRepo.o: compile_cpp metron/CSourceRepo.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/parser/CToken.o: compile_cpp metron/parser/CToken.cpp
+build obj/metron/CToken.o: compile_cpp metron/CToken.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/parser/Cursor.o: compile_cpp metron/parser/Cursor.cpp
+build obj/metron/Cursor.o: compile_cpp metron/Cursor.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/parser/Instance.o: compile_cpp metron/parser/Instance.cpp
+build obj/metron/Instance.o: compile_cpp metron/Instance.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/parser/NodeTypes.o: compile_cpp metron/parser/NodeTypes.cpp
+build obj/metron/NodeTypes.o: compile_cpp metron/NodeTypes.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/parser/Tracer.o: compile_cpp metron/parser/Tracer.cpp
+build obj/metron/Tracer.o: compile_cpp metron/Tracer.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
 build bin/libmetron.a: static_lib obj/symlinks/metrolib/core/Platform.o $
     obj/symlinks/metrolib/core/Utils.o obj/symlinks/metrolib/core/Err.o $
-    obj/metron/MtUtils.o obj/metron/parser/CContext.o $
-    obj/metron/parser/CInstance.o obj/metron/parser/CLexer.o $
-    obj/metron/parser/CNode.o obj/metron/parser/CNodeCall.o $
-    obj/metron/parser/CNodeClass.o obj/metron/parser/CNodeDeclaration.o $
-    obj/metron/parser/CNodeExpression.o obj/metron/parser/CNodeField.o $
-    obj/metron/parser/CNodeFunction.o obj/metron/parser/CNodeStatement.o $
-    obj/metron/parser/CNodeStruct.o obj/metron/parser/CNodeType.o $
-    obj/metron/parser/CParser.o obj/metron/parser/CScope.o $
-    obj/metron/parser/CSourceFile.o obj/metron/parser/CSourceRepo.o $
-    obj/metron/parser/CToken.o obj/metron/parser/Cursor.o $
-    obj/metron/parser/Instance.o obj/metron/parser/NodeTypes.o $
-    obj/metron/parser/Tracer.o
+    obj/metron/MtUtils.o obj/metron/CContext.o obj/metron/CInstance.o $
+    obj/metron/CLexer.o obj/metron/CNode.o obj/metron/CNodeCall.o $
+    obj/metron/CNodeClass.o obj/metron/CNodeDeclaration.o $
+    obj/metron/CNodeExpression.o obj/metron/CNodeField.o $
+    obj/metron/CNodeFunction.o obj/metron/CNodeStatement.o $
+    obj/metron/CNodeStruct.o obj/metron/CNodeType.o obj/metron/CParser.o $
+    obj/metron/CScope.o obj/metron/CSourceFile.o obj/metron/CSourceRepo.o $
+    obj/metron/CToken.o obj/metron/Cursor.o obj/metron/Instance.o $
+    obj/metron/NodeTypes.o obj/metron/Tracer.o
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
 

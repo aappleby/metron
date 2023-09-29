@@ -310,8 +310,8 @@ def build_metron_app():
     cpp_binary(
         bin_name="bin/metron",
         src_files=[
-            "metron/app/main_new.cpp",
-            "metron/app/main.cpp",
+            "metron/main_new.cpp",
+            "metron/main.cpp",
         ],
         includes=base_includes,
         link_deps=["bin/libmetron.a"],
@@ -386,8 +386,8 @@ cpp_binary2(
     rule_compile="compile_cpp_ems",
     rule_link="link_ems",
     src_files=[
-        "metron/app/main_new.cpp",
-        "metron/app/main.cpp",
+        "metron/main_new.cpp",
+        "metron/main.cpp",
         "metron/parser/CContext.cpp",
         "metron/parser/CInstance.cpp",
         "metron/parser/CLexer.cpp",

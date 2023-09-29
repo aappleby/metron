@@ -180,10 +180,10 @@ build docs/tutorial/tutorial_src.data docs/tutorial/tutorial_src.js: $
 ################################################################################
 # Compile docs/app/metron.js using compile_cpp_ems and link_ems
 
-build wasm/obj/metron/app/main_new.o: compile_cpp_ems metron/app/main_new.cpp
+build wasm/obj/metron/main_new.o: compile_cpp_ems metron/main_new.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/app/main.o: compile_cpp_ems metron/app/main.cpp
+build wasm/obj/metron/main.o: compile_cpp_ems metron/main.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
 build wasm/obj/metron/parser/CContext.o: compile_cpp_ems $
@@ -288,8 +288,8 @@ build wasm/obj/symlinks/metrolib/core/Utils.o: compile_cpp_ems $
     symlinks/metrolib/core/Utils.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build docs/app/metron.js: link_ems wasm/obj/metron/app/main_new.o $
-    wasm/obj/metron/app/main.o wasm/obj/metron/parser/CContext.o $
+build docs/app/metron.js: link_ems wasm/obj/metron/main_new.o $
+    wasm/obj/metron/main.o wasm/obj/metron/parser/CContext.o $
     wasm/obj/metron/parser/CInstance.o wasm/obj/metron/parser/CLexer.o $
     wasm/obj/metron/parser/CNode.o wasm/obj/metron/parser/CNodeCall.o $
     wasm/obj/metron/parser/CNodeClass.o $
@@ -432,14 +432,13 @@ build bin/libmetron.a: static_lib obj/symlinks/metrolib/core/Platform.o $
 ################################################################################
 # Compile bin/metron
 
-build obj/metron/app/main_new.o: compile_cpp metron/app/main_new.cpp
+build obj/metron/main_new.o: compile_cpp metron/main_new.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/app/main.o: compile_cpp metron/app/main.cpp
+build obj/metron/main.o: compile_cpp metron/main.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build bin/metron: link obj/metron/app/main_new.o obj/metron/app/main.o $
-    bin/libmetron.a
+build bin/metron: link obj/metron/main_new.o obj/metron/main.o bin/libmetron.a
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
 

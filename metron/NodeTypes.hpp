@@ -27,15 +27,15 @@ struct CNodeTypedef;
 
 struct Cursor;
 
-#include "metron/CNodeCall.hpp"
-#include "metron/CNodeClass.hpp"
-#include "metron/CNodeDeclaration.hpp"
-#include "metron/CNodeExpression.hpp"
+#include "metron/nodes/CNodeCall.hpp"
+#include "metron/nodes/CNodeClass.hpp"
+#include "metron/nodes/CNodeDeclaration.hpp"
+#include "metron/nodes/CNodeExpression.hpp"
 #include "nodes/CNodeField.hpp"
-#include "metron/CNodeFunction.hpp"
-#include "metron/CNodeStatement.hpp"
-#include "metron/CNodeStruct.hpp"
-#include "metron/CNodeType.hpp"
+#include "metron/nodes/CNodeFunction.hpp"
+#include "metron/nodes/CNodeStatement.hpp"
+#include "metron/nodes/CNodeStruct.hpp"
+#include "metron/nodes/CNodeType.hpp"
 
 #include "metrolib/core/Log.h"
 #include "metron/MtUtils.h"

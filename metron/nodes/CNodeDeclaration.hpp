@@ -5,8 +5,6 @@
 #include "metron/NodeTypes.hpp"
 
 //==============================================================================
-//
-//==============================================================================
 
 struct CNodeDeclaration : public CNode {
   void init(const char* match_tag, SpanType span, uint64_t flags);
@@ -36,3 +34,5 @@ struct CNodeDeclaration : public CNode {
   CNodeClass*  _type_class = nullptr;
   CNodeStruct* _type_struct = nullptr;
 };
+
+//==============================================================================

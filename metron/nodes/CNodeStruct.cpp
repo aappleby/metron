@@ -1,4 +1,4 @@
-#include "metron/CNodeStruct.hpp"
+#include "metron/nodes/CNodeStruct.hpp"
 
 #include "metron/NodeTypes.hpp"
 #include "metrolib/core/Log.h"

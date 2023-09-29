@@ -1,4 +1,4 @@
-#include "metron/CNodeFunction.hpp"
+#include "metron/nodes/CNodeFunction.hpp"
 
 #include "metron/NodeTypes.hpp"
 

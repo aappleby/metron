@@ -1,4 +1,4 @@
-#include "metron/CNodeExpression.hpp"
+#include "CNodeExpression.hpp"
 
 #include "metrolib/core/Log.h"
 #include "metron/CInstance.hpp"

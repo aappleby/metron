@@ -113,10 +113,6 @@ struct TraceToken {
   }
 };
 
-//template <StringParam match_tag, typename pattern, typename node_type>
-//using Cap = TraceToken<match_tag, Capture<match_tag, pattern, node_type>>;
-//using Cap = Capture<match_tag, pattern, node_type>;
-
 //------------------------------------------------------------------------------
 // Matches string literals as if they were atoms. Does ___NOT___ match the
 // trailing null.
@@ -342,13 +338,6 @@ Oneof<
 
 template <StringParam lit>
 TokenSpan match_prefix_op(CContext& ctx, TokenSpan body) {
-  /*
-  NodePrefixOp() {
-    precedence = prefix_precedence(lit.str_val);
-    assoc = prefix_assoc(lit.str_val);
-  }
-  */
-
   using pattern = Ref<match_punct<lit>>;
   return pattern::match(ctx, body);
 }
@@ -357,13 +346,6 @@ TokenSpan match_prefix_op(CContext& ctx, TokenSpan body) {
 
 template <StringParam lit>
 TokenSpan match_binary_op(CContext& ctx, TokenSpan body) {
-  /*
-  NodeBinaryOp() {
-    precedence = binary_precedence(lit.str_val);
-    assoc = binary_assoc(lit.str_val);
-  }
-  */
-
   using pattern = Ref<match_punct<lit>>;
   return pattern::match(ctx, body);
 }
@@ -372,13 +354,6 @@ TokenSpan match_binary_op(CContext& ctx, TokenSpan body) {
 
 template <StringParam lit>
 TokenSpan match_suffix_op(CContext& ctx, TokenSpan body) {
-  /*
-  NodeSuffixOp() {
-    precedence = suffix_precedence(lit.str_val);
-    assoc = suffix_assoc(lit.str_val);
-  }
-  */
-
   using pattern = Ref<match_punct<lit>>;
   return pattern::match(ctx, body);
 }
@@ -414,13 +389,6 @@ TokenSpan match_access(CContext& ctx, TokenSpan body) {
 };
 
 //------------------------------------------------------------------------------
-
-/*
-NodePrefixCast() {
-  precedence = 3;
-  assoc = -2;
-}
-*/
 
 using cap_cast =
 CaptureAnon<
@@ -478,7 +446,6 @@ using cap_exp_core =
 Oneof<
   cap_call,
   cap_exp_list,
-  //CaptureAnon<cap_any_identifier, CNodeIdentifierExp>,
   cap_any_identifier,
   cap_constant
 >;
@@ -492,7 +459,6 @@ using cap_suffix_op = CaptureAnon<Ref<match_punct<p>>, CNodeSuffixOp>;
 // clang-format off
 using cap_exp_suffix =
 Oneof<
-  //cap_exp_list,
   cap_index_list,
   cap_suffix_op<"++">,
   cap_suffix_op<"--">
@@ -723,22 +689,6 @@ TokenSpan cap_expression(CContext& ctx, TokenSpan body) {
 
   return body;
 }
-
-//------------------------------------------------------------------------------
-
-/*
-TokenSpan match_lvalue(CContext& ctx, TokenSpan body) {
-  using pattern = Oneof<
-    cap_any_identifier
-  >;
-
-
-}
-
-TokenSpan match_assignment(CContext& ctx, TokenSpan body) {
-  using pattern = Seq<
-}
-*/
 
 //------------------------------------------------------------------------------
 
@@ -1162,8 +1112,6 @@ TokenSpan match_function(CContext& ctx, TokenSpan body) {
 //------------------------------------------------------------------------------
 
 TokenSpan match_constructor(CContext& ctx, TokenSpan body) {
-  // clang-format off
-
   using initializers = Seq<
     cap_punct<":">,
     Tag<
@@ -1248,7 +1196,6 @@ TokenSpan match_for(CContext& ctx, TokenSpan body) {
   Oneof<
     Ref<cap_assignment>,
     Ref<cap_expression>,
-    //Ref<match_declaration_exp>
     CaptureAnon<Ref<match_declaration_exp>, CNodeDeclaration>
   >;
 

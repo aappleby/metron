@@ -16,15 +16,11 @@ using matcheroni::TextSpan;
 using std::string_view;
 
 void CScope::merge(CScope* other) {
-  //LOG_G("CScope::merge()\n");
-
   class_types.insert(class_types.begin(), other->class_types.begin(), other->class_types.end());
   struct_types.insert(struct_types.begin(), other->struct_types.begin(), other->struct_types.end());
   union_types.insert(union_types.begin(), other->union_types.begin(), other->union_types.end());
   enum_types.insert(enum_types.begin(), other->enum_types.begin(), other->enum_types.end());
   typedef_types.insert(typedef_types.begin(), other->typedef_types.begin(), other->typedef_types.end());
-
-  //dump();
 }
 
 void CScope::clear() {
@@ -50,10 +46,6 @@ bool CScope::has_type(CContext& ctx, TokenSpan body, token_list& types) {
 
 void CScope::add_type(CContext& ctx, const CToken* a, token_list& types) {
   matcheroni_assert(ctx.atom_cmp(*a, LEX_IDENTIFIER) == 0);
-
-  //LOG_G("add_type ");
-  //LOG_SPAN(a->text);
-  //LOG_G("\n");
 
   auto span = a->as_text_span();
 

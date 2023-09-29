@@ -1,18 +1,15 @@
 #include "CSourceFile.hpp"
 
 #include "CSourceRepo.hpp"
-
 #include "metrolib/core/Log.h"
 
 namespace fs = std::filesystem;
 
 //------------------------------------------------------------------------------
 
-[[nodiscard]] Err CSourceFile::init(CSourceRepo* _repo,
-                                    const std::string& _filename,
-                                    const std::string& _filepath,
-                                    const std::string& _source_code,
-                                    bool _use_utf8_bom) {
+Err CSourceFile::init(CSourceRepo* _repo, const std::string& _filename,
+                      const std::string& _filepath,
+                      const std::string& _source_code, bool _use_utf8_bom) {
   this->repo = _repo;
   this->filename = _filename;
   this->filepath = _filepath;
@@ -31,30 +28,21 @@ namespace fs = std::filesystem;
       context.tokens.push_back(CToken(&t));
     }
   }
-  //printf("Token count %d\n", int(context.tokens.size()));
 
   LOG("Parsing %s\n", filepath.c_str());
-
   LOG_INDENT();
   auto tail = context.parse();
   LOG_DEDENT();
 
   if (tail.is_valid() && tail.is_empty() && context.root_node) {
     LOG("Parse OK\n");
-  }
-  else {
+  } else {
     LOG_R("could not parse %s\n", filepath.c_str());
     return ERR("Could not parse file");
   }
 
   repo->source_map[filename] = this;
 
-  return Err();
-}
-
-//------------------------------------------------------------------------------
-
-[[nodiscard]] Err CSourceFile::collect_modules_and_structs() {
   return Err();
 }
 

@@ -6,7 +6,7 @@
 #include "metron/CConstants.hpp"
 #include "metron/CContext.hpp"
 
-#include "metron/NodeTypes.hpp"
+#include "metron/nodes/NodeTypes.hpp"
 
 #include "metron/CSourceFile.hpp"
 #include "metron/CSourceRepo.hpp"
@@ -17,7 +17,7 @@
 #include "matcheroni/Parseroni.hpp"
 #include "matcheroni/Utilities.hpp"
 #include "metrolib/core/Log.h"
-#include "metron/NodeTypes.hpp"
+#include "metron/nodes/NodeTypes.hpp"
 #include "metron/SST.hpp"
 #include <assert.h>
 

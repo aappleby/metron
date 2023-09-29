@@ -6,10 +6,12 @@ import sys
 import os
 from os import path
 
-
 obj_dir = "obj"
 outfile = open("build.ninja", "w+")
 ninja = ninja_syntax.Writer(outfile)
+
+def sorted_glob(*args, **kwargs):
+    return sorted(glob.glob(*args, **kwargs))
 
 base_includes = [
     "-I.",
@@ -19,8 +21,15 @@ base_includes = [
     "-Itests",
 ]
 
-def sorted_glob(*args, **kwargs):
-    return sorted(glob.glob(*args, **kwargs))
+metrolib_src = [
+    "symlinks/metrolib/core/Platform.cpp",
+    "symlinks/metrolib/core/Utils.cpp",
+    "symlinks/metrolib/core/Err.cpp",
+]
+
+metron_src_lib   = sorted_glob("metron/*.cpp")
+metron_src_nodes = sorted_glob("metron/nodes/*.cpp")
+metron_src_main  = sorted_glob("metron/app/*.cpp")
 
 # ------------------------------------------------------------------------------
 
@@ -254,7 +263,6 @@ def iverilog_binary(bin_name, src_top, src_files, includes):
 
 # ------------------------------------------------------------------------------
 
-
 def build_verilator():
     divider("Verilator libraries")
 
@@ -271,47 +279,17 @@ def build_verilator():
 def build_metron_lib():
     cpp_library(
         lib_name="bin/libmetron.a",
-        src_files=[
-            "symlinks/metrolib/core/Platform.cpp",
-            "symlinks/metrolib/core/Utils.cpp",
-            "symlinks/metrolib/core/Err.cpp",
-            "metron/MtUtils.cpp",
-            "metron/CContext.cpp",
-            "metron/CInstance.cpp",
-            "metron/CLexer.cpp",
-            "metron/CNode.cpp",
-            "metron/nodes/CNodeCall.cpp",
-            "metron/nodes/CNodeClass.cpp",
-            "metron/nodes/CNodeDeclaration.cpp",
-            "metron/nodes/CNodeExpression.cpp",
-            "metron/nodes/CNodeField.cpp",
-            "metron/nodes/CNodeFunction.cpp",
-            "metron/nodes/CNodeStatement.cpp",
-            "metron/nodes/CNodeStruct.cpp",
-            "metron/nodes/CNodeType.cpp",
-            "metron/CParser.cpp",
-            "metron/CScope.cpp",
-            "metron/CSourceFile.cpp",
-            "metron/CSourceRepo.cpp",
-            "metron/CToken.cpp",
-            "metron/Cursor.cpp",
-            "metron/NodeTypes.cpp",
-            "metron/Tracer.cpp",
-        ],
+        src_files = metron_src_lib + metron_src_nodes + metrolib_src,
         includes=base_includes,
         src_objs=[],
     )
 
 # ------------------------------------------------------------------------------
 
-
 def build_metron_app():
     cpp_binary(
         bin_name="bin/metron",
-        src_files=[
-            "metron/main_new.cpp",
-            "metron/main.cpp",
-        ],
+        src_files = metron_src_main,
         includes=base_includes,
         link_deps=["bin/libmetron.a"],
     )
@@ -384,35 +362,7 @@ cpp_binary2(
     bin_name="docs/app/metron.js",
     rule_compile="compile_cpp_ems",
     rule_link="link_ems",
-    src_files=[
-        "metron/main_new.cpp",
-        "metron/main.cpp",
-        "metron/CContext.cpp",
-        "metron/CInstance.cpp",
-        "metron/CLexer.cpp",
-        "metron/CNode.cpp",
-        "metron/nodes/CNodeCall.cpp",
-        "metron/nodes/CNodeClass.cpp",
-        "metron/nodes/CNodeDeclaration.cpp",
-        "metron/nodes/CNodeExpression.cpp",
-        "metron/nodes/CNodeField.cpp",
-        "metron/nodes/CNodeFunction.cpp",
-        "metron/nodes/CNodeStatement.cpp",
-        "metron/nodes/CNodeStruct.cpp",
-        "metron/nodes/CNodeType.cpp",
-        "metron/CParser.cpp",
-        "metron/CScope.cpp",
-        "metron/CSourceFile.cpp",
-        "metron/CSourceRepo.cpp",
-        "metron/CToken.cpp",
-        "metron/Cursor.cpp",
-        "metron/NodeTypes.cpp",
-        "metron/Tracer.cpp",
-        "metron/MtUtils.cpp",
-        "symlinks/metrolib/core/Err.cpp",
-        "symlinks/metrolib/core/Platform.cpp",
-        "symlinks/metrolib/core/Utils.cpp",
-    ],
+    src_files= metron_src_main + metron_src_lib + metron_src_nodes + metrolib_src,
     src_objs=[],
     obj_dir = "wasm/obj",
     includes=base_includes
@@ -537,7 +487,6 @@ def build_uart():
 # ------------------------------------------------------------------------------
 # Test binaries for the RISC-V cores.
 
-
 def build_rvtests():
     src_files = sorted_glob("tests/rv_tests/*.S")
     dst_text = [swap_ext(f, ".text.vh") for f in src_files]
@@ -552,7 +501,6 @@ def build_rvtests():
 
 # ------------------------------------------------------------------------------
 # RVSimple
-
 
 def build_rvsimple():
     mt_root = "examples/rvsimple/metron"

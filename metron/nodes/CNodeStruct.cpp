@@ -1,6 +1,6 @@
 #include "metron/nodes/CNodeStruct.hpp"
 
-#include "metron/NodeTypes.hpp"
+#include "metron/nodes/NodeTypes.hpp"
 #include "metrolib/core/Log.h"
 
 struct CSourceRepo;

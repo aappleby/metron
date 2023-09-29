@@ -2,7 +2,7 @@
 
 #include "metron/CContext.hpp"
 #include "metron/CNode.hpp"
-#include "metron/NodeTypes.hpp"
+#include "metron/nodes/NodeTypes.hpp"
 
 struct CSourceFile;
 struct CSourceRepo;

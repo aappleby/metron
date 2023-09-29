@@ -11,7 +11,7 @@
 #include "metrolib/core/Log.h"
 #include "metrolib/core/Platform.h"
 #include "metron/MtUtils.h"
-#include "metron/NodeTypes.hpp"
+#include "metron/nodes/NodeTypes.hpp"
 
 struct CInstance;
 struct CInstClass;

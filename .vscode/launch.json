@@ -16,8 +16,8 @@
         "-e",
         "-c",
         //"examples/scratch.h",
-        //"tests/metron_good/basic_output.h",
-        "examples/rvsimple/metron/config.h",
+        "tests/metron_good/basic_output.h",
+        //"examples/rvsimple/metron/config.h",
         "-o",
         "examples/scratch.sv"
       ],

@@ -1,6 +1,6 @@
 #include "CNodeCall.hpp"
 
-#include "metron/NodeTypes.hpp"
+#include "metron/nodes/NodeTypes.hpp"
 
 extern bool deep_trace;
 

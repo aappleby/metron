@@ -252,7 +252,8 @@ build wasm/obj/metron/CToken.o: compile_cpp_ems metron/CToken.cpp
 build wasm/obj/metron/Cursor.o: compile_cpp_ems metron/Cursor.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/NodeTypes.o: compile_cpp_ems metron/NodeTypes.cpp
+build wasm/obj/metron/nodes/NodeTypes.o: compile_cpp_ems $
+    metron/nodes/NodeTypes.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
 build wasm/obj/metron/Tracer.o: compile_cpp_ems metron/Tracer.cpp
@@ -287,7 +288,7 @@ build docs/app/metron.js: link_ems wasm/obj/metron/main_new.o $
     wasm/obj/metron/CParser.o wasm/obj/metron/CScope.o $
     wasm/obj/metron/CSourceFile.o wasm/obj/metron/CSourceRepo.o $
     wasm/obj/metron/CToken.o wasm/obj/metron/Cursor.o $
-    wasm/obj/metron/NodeTypes.o wasm/obj/metron/Tracer.o $
+    wasm/obj/metron/nodes/NodeTypes.o wasm/obj/metron/Tracer.o $
     wasm/obj/metron/MtUtils.o wasm/obj/symlinks/metrolib/core/Err.o $
     wasm/obj/symlinks/metrolib/core/Platform.o $
     wasm/obj/symlinks/metrolib/core/Utils.o
@@ -383,7 +384,7 @@ build obj/metron/CToken.o: compile_cpp metron/CToken.cpp
 build obj/metron/Cursor.o: compile_cpp metron/Cursor.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/NodeTypes.o: compile_cpp metron/NodeTypes.cpp
+build obj/metron/nodes/NodeTypes.o: compile_cpp metron/nodes/NodeTypes.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
 build obj/metron/Tracer.o: compile_cpp metron/Tracer.cpp
@@ -399,7 +400,7 @@ build bin/libmetron.a: static_lib obj/symlinks/metrolib/core/Platform.o $
     obj/metron/nodes/CNodeStruct.o obj/metron/nodes/CNodeType.o $
     obj/metron/CParser.o obj/metron/CScope.o obj/metron/CSourceFile.o $
     obj/metron/CSourceRepo.o obj/metron/CToken.o obj/metron/Cursor.o $
-    obj/metron/NodeTypes.o obj/metron/Tracer.o
+    obj/metron/nodes/NodeTypes.o obj/metron/Tracer.o
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
 

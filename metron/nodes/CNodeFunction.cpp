@@ -1,6 +1,6 @@
 #include "metron/nodes/CNodeFunction.hpp"
 
-#include "metron/NodeTypes.hpp"
+#include "metron/nodes/NodeTypes.hpp"
 
 #include "metrolib/core/Log.h"
 #include "matcheroni/Utilities.hpp"
@@ -595,47 +595,6 @@ MethodType CNodeFunction::get_method_type() {
 
 bool CNodeFunction::has_return() {
   return node_type->get_text() != "void";
-}
-
-//------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//------------------------------------------------------------------------------
-
-void CNodeConstructor::init(const char* match_tag, SpanType span, uint64_t flags) {
-  CNode::init(match_tag, span, flags);
-
-  //node_type   = child("return_type")->req<CNodeType>();
-  node_type   = nullptr;
-  node_name   = child("name")->req<CNodeIdentifier>();
-  node_params = child("params")->req<CNodeList>();
-  node_init   = child("init")->opt<CNodeList>();
-  node_const  = child("const")->opt<CNodeKeyword>();
-  node_body   = child("body")->req<CNodeCompound>();
-
-  for (auto c : child("params")) {
-    if (auto param = c->as<CNodeDeclaration>()) {
-      params.push_back(param);
-    }
-  }
 }
 
 //------------------------------------------------------------------------------

@@ -3,7 +3,7 @@
 #include "metron/MtUtils.h"
 #include "metrolib/core/Err.h"
 #include "metrolib/core/Platform.h"
-#include "metron/NodeTypes.hpp"
+#include "metron/nodes/NodeTypes.hpp"
 #include "metron/CInstance.hpp"
 
 

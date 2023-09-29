@@ -12,7 +12,7 @@
 #include "metron/CSourceFile.hpp"
 #include "metron/CSourceRepo.hpp"
 #include "metron/Cursor.hpp"
-#include "metron/NodeTypes.hpp"
+#include "metron/nodes/NodeTypes.hpp"
 #include "metron/Tracer.hpp"
 #include "metron/MtUtils.h"
 

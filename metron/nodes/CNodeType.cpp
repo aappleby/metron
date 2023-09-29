@@ -1,7 +1,7 @@
 #include "metron/nodes/CNodeType.hpp"
 
 #include "metrolib/core/Log.h"
-#include "metron/NodeTypes.hpp"
+#include "metron/nodes/NodeTypes.hpp"
 
 //------------------------------------------------------------------------------
 

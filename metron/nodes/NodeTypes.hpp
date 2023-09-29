@@ -31,7 +31,7 @@ struct Cursor;
 #include "metron/nodes/CNodeClass.hpp"
 #include "metron/nodes/CNodeDeclaration.hpp"
 #include "metron/nodes/CNodeExpression.hpp"
-#include "nodes/CNodeField.hpp"
+#include "metron/nodes/CNodeField.hpp"
 #include "metron/nodes/CNodeFunction.hpp"
 #include "metron/nodes/CNodeStatement.hpp"
 #include "metron/nodes/CNodeStruct.hpp"

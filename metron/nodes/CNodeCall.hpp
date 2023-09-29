@@ -3,7 +3,7 @@
 #include "metrolib/core/Log.h"
 #include "metron/CNode.hpp"
 #include "metron/Cursor.hpp"
-#include "metron/NodeTypes.hpp"
+#include "metron/nodes/NodeTypes.hpp"
 
 //------------------------------------------------------------------------------
 

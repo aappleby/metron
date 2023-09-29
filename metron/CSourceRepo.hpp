@@ -8,7 +8,7 @@
 
 #include "metrolib/core/Err.h"
 #include "metron/CInstance.hpp"
-#include "metron/NodeTypes.hpp"
+#include "metron/nodes/NodeTypes.hpp"
 
 class CSourceFile;
 struct CNode;

@@ -3,4 +3,4 @@
 #include "metron/CSourceRepo.hpp"
 #include "metron/CInstance.hpp"
 
-#include "metron/NodeTypes.hpp"
+#include "metron/nodes/NodeTypes.hpp"

@@ -10,7 +10,7 @@
 #include <set>
 #include <functional>
 
-#include "metron/NodeTypes.hpp"
+#include "metron/nodes/NodeTypes.hpp"
 
 struct CInstFunc;
 
@@ -165,12 +165,6 @@ struct CNodeFunction : public CNode {
   std::set<CNodeFunction*> internal_callees;
   std::set<CNodeFunction*> external_callers;
   std::set<CNodeFunction*> external_callees;
-};
-
-//------------------------------------------------------------------------------
-
-struct CNodeConstructor : public CNodeFunction {
-  void init(const char* match_tag, SpanType span, uint64_t flags);
 };
 
 //------------------------------------------------------------------------------

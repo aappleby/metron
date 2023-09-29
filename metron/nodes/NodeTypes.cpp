@@ -1,7 +1,8 @@
-#include "metron/NodeTypes.hpp"
+#include "NodeTypes.hpp"
+
+#include <typeinfo>
 
 #include "metron/CInstance.hpp"
-#include <typeinfo>
 
 using namespace matcheroni;
 using namespace parseroni;

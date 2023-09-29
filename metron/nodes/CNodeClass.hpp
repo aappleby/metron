@@ -6,40 +6,13 @@
 
 #include "metron/CNode.hpp"
 #include "metron/Cursor.hpp"
-#include "metron/NodeTypes.hpp"
+#include "metron/nodes/NodeTypes.hpp"
+#include "metron/nodes/CNodeAccess.hpp"
 
 struct CSourceRepo;
 struct CSourceFile;
 struct CInstance;
 struct CInstClass;
-
-//------------------------------------------------------------------------------
-
-struct CNodeAccess : public CNode {
-  uint32_t debug_color() const override { return COL_VIOLET; }
-  CHECK_RETURN Err emit(Cursor& cursor) override;
-
-  void dump() const override {
-    auto text = get_text();
-    LOG_B("CNodeAccess \"%.*s\"\n", text.size(), text.data());
-  }
-
-};
-
-//------------------------------------------------------------------------------
-
-struct CNodeTemplate : public CNode {
-  void init(const char* match_tag, SpanType span, uint64_t flags);
-
-  uint32_t debug_color() const override { return 0x00FFFF; }
-  CHECK_RETURN Err emit(Cursor& cursor) override;
-
-  CNodeKeyword* node_template = nullptr;
-  CNodeList*    node_params = nullptr;
-  CNodeClass*   node_class = nullptr;
-
-  std::vector<CNodeDeclaration*> params;
-};
 
 //------------------------------------------------------------------------------
 
@@ -111,13 +84,6 @@ struct CNodeClass : public CNode {
   std::vector<CNodeField*> private_signals;
   std::vector<CNodeField*> private_registers;
   std::vector<CNodeField*> dead_fields;
-
-  /*
-  std::vector<MtFuncParam*> input_method_params;
-  std::vector<MtMethod*>    output_method_returns;
-  */
-
-
 };
 
 //------------------------------------------------------------------------------

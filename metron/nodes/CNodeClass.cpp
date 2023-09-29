@@ -1,46 +1,6 @@
 #include "CNodeClass.hpp"
 
-#include "metrolib/core/Log.h"
-#include "metron/NodeTypes.hpp"
-
-//------------------------------------------------------------------------------
-
-Err CNodeAccess::emit(Cursor& cursor) {
-  Err err = cursor.check_at(this);
-  err << cursor.comment_out(this);
-  return err << cursor.check_done(this);
-}
-
-//------------------------------------------------------------------------------
-
-void CNodeTemplate::init(const char* match_tag, SpanType span, uint64_t flags) {
-  CNode::init(match_tag, span, flags);
-  node_template = child("template")->as<CNodeKeyword>();
-  node_params   = child("params")->as<CNodeList>();
-  node_class    = child("class")->as<CNodeClass>();
-
-  for (auto child : node_params->items) {
-    auto decl = child->as<CNodeDeclaration>();
-    assert(decl);
-    params.push_back(decl);
-  }
-}
-
-//----------------------------------------
-
-Err CNodeTemplate::emit(Cursor& cursor) {
-  Err err = cursor.check_at(this);
-
-  err << cursor.skip_over(node_template);
-  err << cursor.skip_gap();
-
-  err << cursor.skip_over(node_params);
-  err << cursor.skip_gap();
-
-  err << cursor.emit(node_class);
-
-  return err << cursor.check_done(this);
-}
+#include "metron/nodes/CNodeTemplate.hpp"
 
 //------------------------------------------------------------------------------
 
@@ -446,17 +406,9 @@ Err CNodeClass::emit_template_parameter_list(Cursor& cursor) {
 
   auto old_cursor = cursor.tok_cursor;
 
-  //err << cursor.emit_char('\n');
-  //err << cursor.emit_indent();
-
   for (auto param : node_template->params) {
     err << cursor.start_line();
     err << cursor.emit_print("parameter ");
-
-    //CNodeIdentifier* node_name = nullptr;
-    //CNodeList*       node_array = nullptr;
-    //CNodePunct*      node_eq = nullptr;
-    //CNode*           node_value = nullptr;
 
     cursor.tok_cursor = param->node_name->tok_begin();
     err << cursor.emit(param->node_name);
@@ -471,15 +423,6 @@ Err CNodeClass::emit_template_parameter_list(Cursor& cursor) {
     err << cursor.emit_gap();
 
     err << cursor.emit(param->node_value);
-
-    /*
-    err << cursor.emit_print(" ");
-    if (param->node_array) {
-      err << cursor.emit_splice(param->node_array);
-      err << cursor.emit_print(" ");
-    }
-    err << cursor.emit_splice(param->node_value);
-    */
 
     err << cursor.emit_print(";");
   }
@@ -514,32 +457,6 @@ void CNodeClass::dump() const {
     }
   }
   LOG_DEDENT();
-
-  /*
-  if (constructor) {
-    LOG_G("Constructor\n");
-    LOG_INDENT_SCOPE();
-    constructor->dump();
-  }
-
-  if (all_functions.size()) {
-    LOG_G("Functions\n");
-    LOG_INDENT_SCOPE();
-    for (auto m : all_functions) m->dump();
-  }
-
-  if (all_fields.size()) {
-    LOG_G("Fields\n");
-    LOG_INDENT_SCOPE();
-    for (auto f : all_fields) f->dump();
-  }
-
-  if (all_enums2.size()) {
-    LOG_G("Enums\n");
-    LOG_INDENT_SCOPE();
-    for (auto e : all_enums2) e->dump();
-  }
-  */
 }
 
 //------------------------------------------------------------------------------

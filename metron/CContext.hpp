@@ -40,6 +40,8 @@ class CContext : public parseroni::NodeContext<CNode> {
 
   CContext();
 
+  //----------------------------------------
+
   static int atom_cmp(char a, int b) {
     return (unsigned char)a - b;
   }
@@ -56,6 +58,8 @@ class CContext : public parseroni::NodeContext<CNode> {
   static int atom_cmp(const CToken& a, const matcheroni::TextSpan& b) {
     return strcmp_span(matcheroni::TextSpan(a.lex->text_begin, a.lex->text_end), b);
   }
+
+  //----------------------------------------
 
   void reset();
   TokenSpan parse();
@@ -84,10 +88,6 @@ class CContext : public parseroni::NodeContext<CNode> {
     return body;
   }
 
-
-  //void push_scope();
-  //void pop_scope();
-
   void push_scope2(CScope* new_top) {
     new_top->parent2 = top_scope;
     top_scope = new_top;
@@ -96,9 +96,6 @@ class CContext : public parseroni::NodeContext<CNode> {
   void pop_scope2() {
     top_scope = top_scope->parent2;
   }
-
-  void append_node(CNode* node);
-  void enclose_nodes(CNode* start, CNode* node);
 
   //----------------------------------------
 
@@ -110,13 +107,13 @@ class CContext : public parseroni::NodeContext<CNode> {
   CScope global_scope;
   CScope* top_scope = &global_scope;
 
+  CNode* root_node = nullptr;
+
   std::string source;
   std::vector<Lexeme> lexemes;
   std::vector<CToken> tokens;
 
   std::set<std::string> define_names;
-
-  CNode* root_node = nullptr;
 };
 
 //------------------------------------------------------------------------------

@@ -20,17 +20,8 @@ struct CInstPrim;
 
 //------------------------------------------------------------------------------
 
-struct CLogEntry {
-  TraceState  old_state;
-  TraceState  new_state;
-  TraceAction action;
-  CNode*      cause;
-};
-
-//------------------------------------------------------------------------------
-
 struct CInstance {
-  CInstance(std::string name, bool is_public, CInstance* inst_parent);
+  CInstance(std::string name, CInstance* inst_parent);
   virtual ~CInstance();
 
   template<typename T>
@@ -69,19 +60,17 @@ struct CInstance {
   //----------
 
   std::string name = "<invalid>";
-  bool is_public = false;
-  bool is_constructor = false;
   CInstance* inst_parent = nullptr;
 };
 
 //------------------------------------------------------------------------------
 
-CInstClass* instantiate_class(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class, int depth);
+CInstClass* instantiate_class(std::string name, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class, int depth);
 
 //------------------------------------------------------------------------------
 
 struct CInstClass : public CInstance {
-  CInstClass(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class);
+  CInstClass(std::string name, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class);
 
   bool check_port_directions(CInstClass* b);
 
@@ -110,7 +99,7 @@ struct CInstClass : public CInstance {
 //------------------------------------------------------------------------------
 
 struct CInstStruct : public CInstance {
-  CInstStruct(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeStruct* node_struct);
+  CInstStruct(std::string name, CInstance* inst_parent, CNodeField* node_field, CNodeStruct* node_struct);
 
   //----------
   // CInstance interface
@@ -135,7 +124,7 @@ struct CInstStruct : public CInstance {
 //------------------------------------------------------------------------------
 
 struct CInstPrim : public CInstance {
-  CInstPrim(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field);
+  CInstPrim(std::string name, CInstance* inst_parent, CNodeField* node_field);
 
   //----------
   // CInstance interface
@@ -159,7 +148,7 @@ struct CInstPrim : public CInstance {
 //------------------------------------------------------------------------------
 
 struct CInstFunc : public CInstance {
-  CInstFunc(std::string name, bool is_public, CInstance* inst_parent, CNodeFunction* node_func);
+  CInstFunc(std::string name, CInstance* inst_parent, CNodeFunction* node_func);
 
   bool check_port_directions(CInstFunc* b);
 

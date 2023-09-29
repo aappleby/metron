@@ -153,7 +153,7 @@ int main_new(Options opts) {
   CInstClass* top_inst = nullptr;
 
   if (top) {
-    top_inst = instantiate_class(top->get_namestr(), true, nullptr, nullptr, top, 1000);
+    top_inst = instantiate_class(top->get_namestr(), nullptr, nullptr, top, 1000);
     LOG_INDENT();
     LOG_G("Top instance is %s\n", top->get_namestr().c_str());
     LOG_DEDENT();
@@ -181,7 +181,7 @@ int main_new(Options opts) {
 
   LOG_B("Instantiating modules\n");
   for (auto node_class : repo.all_classes) {
-    auto instance = instantiate_class(node_class->get_namestr(), true, nullptr, nullptr, node_class, 1000);
+    auto instance = instantiate_class(node_class->get_namestr(), nullptr, nullptr, node_class, 1000);
     repo.all_instances.push_back(instance);
   }
 

@@ -24,8 +24,8 @@ bool check_port_directions(TraceState sa, TraceState sb) {
 //##############################################################################
 //##############################################################################
 
-CInstance::CInstance(std::string name, bool is_public, CInstance* inst_parent)
-    : name(name), is_public(is_public), inst_parent(inst_parent) {
+CInstance::CInstance(std::string name, CInstance* inst_parent)
+    : name(name), inst_parent(inst_parent) {
 }
 
 CInstance::~CInstance() {}
@@ -115,8 +115,8 @@ CInstance* CInstance::resolve(CNode* node) {
 //##############################################################################
 //##############################################################################
 
-CInstClass* instantiate_class(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class, int depth) {
-  auto inst_class = new CInstClass(name, is_public, inst_parent, node_field, node_class);
+CInstClass* instantiate_class(std::string name, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class, int depth) {
+  auto inst_class = new CInstClass(name, inst_parent, node_field, node_class);
 
   bool child_is_public = false;
 
@@ -130,11 +130,11 @@ CInstClass* instantiate_class(std::string name, bool is_public, CInstance* inst_
       auto field_name = node_field->get_namestr();
 
       if (node_field->node_decl->_type_class) {
-        auto inst = instantiate_class(field_name, child_is_public, inst_class, node_field, node_field->node_decl->_type_class, depth);
+        auto inst = instantiate_class(field_name, inst_class, node_field, node_field->node_decl->_type_class, depth);
         //inst_class->children.push_back(inst);
         inst_class->parts.push_back(inst);
       } else if (node_field->node_decl->_type_struct) {
-        auto inst = new CInstStruct(field_name, child_is_public, inst_class, node_field, node_field->node_decl->_type_struct);
+        auto inst = new CInstStruct(field_name, inst_class, node_field, node_field->node_decl->_type_struct);
         //inst_class->children.push_back(inst);
 
         if (child_is_public) {
@@ -145,7 +145,7 @@ CInstClass* instantiate_class(std::string name, bool is_public, CInstance* inst_
         }
 
       } else {
-        auto inst = new CInstPrim(field_name, child_is_public, inst_class, node_field);
+        auto inst = new CInstPrim(field_name, inst_class, node_field);
         //inst_class->children.push_back(inst);
 
         if (child_is_public) {
@@ -160,13 +160,7 @@ CInstClass* instantiate_class(std::string name, bool is_public, CInstance* inst_
     if (auto node_func = child->as<CNodeFunction>()) {
       auto func_name = node_func->get_namestr();
 
-      auto inst_func = new CInstFunc(func_name, child_is_public, inst_class, node_func);
-
-      if (auto node_constructor = child->as<CNodeConstructor>()) {
-        inst_func->is_constructor = true;
-      }
-
-      //inst_class->children.push_back(inst_func);
+      auto inst_func = new CInstFunc(func_name, inst_class, node_func);
 
       if (child_is_public) {
         inst_class->ports.push_back(inst_func);
@@ -182,8 +176,8 @@ CInstClass* instantiate_class(std::string name, bool is_public, CInstance* inst_
 
 //------------------------------------------------------------------------------
 
-CInstClass::CInstClass(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class)
-: CInstance(name, is_public, inst_parent), node_field(node_field), node_class(node_class)
+CInstClass::CInstClass(std::string name, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class)
+: CInstance(name, inst_parent), node_field(node_field), node_class(node_class)
 {
 }
 
@@ -209,39 +203,6 @@ bool CInstClass::check_port_directions(CInstClass* b) {
 
     if (!::check_port_directions(pa->get_state(), pb->get_state())) return false;
   }
-
-#if 0
-  auto sa = a->state_stack.back();
-  auto sb = b->state_stack.back();
-
-  assert(sa >= TS_NONE || sa <= TS_REGISTER);
-  assert(sa >= TS_NONE || sb <= TS_REGISTER);
-
-  bool a_drives = (sa != TS_NONE) && (sa != TS_INPUT);
-  bool b_drives = (sb != TS_NONE) && (sb != TS_INPUT);
-
-  // Floating inputs are invalid.
-  if (!a_drives && sb == TS_INPUT) return false;
-  if (!b_drives && sa == TS_INPUT) return false;
-
-  // Port collisions are invalid.
-  if (a_drives && b_drives) return false;
-
-  // Mismatched port sizes (how?) are invalid.
-  assert(a->children.size() == b->children.size());
-  if (a->children.size() != b->children.size()) return false;
-
-  // All child port directions must match as well.
-  for (int i = 0; i < a->children.size(); i++) {
-    auto ca = a->children[i];
-    auto cb = b->children[i];
-
-    assert(ca->is_public == cb->is_public);
-    if (ca->is_public) {
-      if (!ca->check_port_directions(cb)) return false;
-    }
-  }
-#endif
 
   return true;
 }
@@ -359,18 +320,18 @@ void CInstClass::merge_state() {
 //##############################################################################
 //##############################################################################
 
-CInstStruct::CInstStruct(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field, CNodeStruct* node_struct)
-    : CInstance(name, is_public, inst_parent), node_field(node_field), node_struct(node_struct) {
+CInstStruct::CInstStruct(std::string name, CInstance* inst_parent, CNodeField* node_field, CNodeStruct* node_struct)
+    : CInstance(name, inst_parent), node_field(node_field), node_struct(node_struct) {
   assert(node_struct);
 
   for (auto struct_field : node_struct->all_fields) {
     auto field_name = struct_field->get_namestr();
 
     if (struct_field->node_decl->_type_struct) {
-      auto inst_field = new CInstStruct(field_name, is_public, this, struct_field, struct_field->node_decl->_type_struct);
+      auto inst_field = new CInstStruct(field_name, this, struct_field, struct_field->node_decl->_type_struct);
       parts.push_back(inst_field);
     } else {
-      auto inst_field = new CInstPrim(field_name, is_public, this, struct_field);
+      auto inst_field = new CInstPrim(field_name, this, struct_field);
       parts.push_back(inst_field);
     }
   }
@@ -481,8 +442,8 @@ void CInstStruct::merge_state() {
 //##############################################################################
 //##############################################################################
 
-CInstPrim::CInstPrim(std::string name, bool is_public, CInstance* inst_parent, CNodeField* node_field)
-    : CInstance(name, is_public, inst_parent), node_field(node_field) {
+CInstPrim::CInstPrim(std::string name, CInstance* inst_parent, CNodeField* node_field)
+    : CInstance(name, inst_parent), node_field(node_field) {
   state_stack.push_back(TS_NONE);
 }
 
@@ -502,7 +463,7 @@ CInstance* CInstPrim::resolve(std::string name) {
 //----------------------------------------
 
 void CInstPrim::dump_tree() const {
-  if (is_public) {
+  if (node_field && node_field->is_public) {
     LOG_G("Prim %s", get_path().c_str());
   }
   else {
@@ -630,18 +591,18 @@ void CInstPrim::merge_state() {
 //##############################################################################
 //##############################################################################
 
-CInstFunc::CInstFunc(std::string name, bool is_public, CInstance* inst_parent, CNodeFunction* node_func)
-: CInstance(name, is_public, inst_parent), node_func(node_func) {
+CInstFunc::CInstFunc(std::string name, CInstance* inst_parent, CNodeFunction* node_func)
+: CInstance(name, inst_parent), node_func(node_func) {
 
   auto repo = node_func->ancestor<CNodeClass>()->repo;
 
   for (auto param : node_func->params) {
     auto param_name = param->get_namestr();
     if (param->_type_struct) {
-      auto inst_field = new CInstStruct(param_name, is_public, this, nullptr, param->_type_struct);
+      auto inst_field = new CInstStruct(param_name, this, nullptr, param->_type_struct);
       params.push_back(inst_field);
     } else {
-      auto inst_field = new CInstPrim(param_name, is_public, this, nullptr);
+      auto inst_field = new CInstPrim(param_name, this, nullptr);
       params.push_back(inst_field);
     }
   }
@@ -650,11 +611,11 @@ CInstFunc::CInstFunc(std::string name, bool is_public, CInstance* inst_parent, C
   if (ret_type && ret_type->get_text() != "void") {
     if (auto struct_type = ret_type->as<CNodeStructType>()) {
       auto node_struct = repo->get_struct(struct_type->get_text());
-      auto inst = new CInstStruct("@return", is_public, this, nullptr, node_struct);
+      auto inst = new CInstStruct("@return", this, nullptr, node_struct);
       inst_return = inst;
     }
     else if (auto builtin_type = ret_type->as<CNodeBuiltinType>()) {
-      auto inst = new CInstPrim("@return", is_public, this, nullptr);
+      auto inst = new CInstPrim("@return",  this, nullptr);
       inst_return = inst;
     }
     else {

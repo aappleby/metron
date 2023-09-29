@@ -18,6 +18,8 @@ struct CInstClass;
 struct CInstStruct;
 struct CInstPrim;
 
+CInstClass* instantiate_class(std::string name, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class, int depth);
+
 //------------------------------------------------------------------------------
 
 struct CInstance {
@@ -64,10 +66,6 @@ struct CInstance {
 
   CInstance* inst_parent = nullptr;
 };
-
-//------------------------------------------------------------------------------
-
-CInstClass* instantiate_class(std::string name, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class, int depth);
 
 //------------------------------------------------------------------------------
 

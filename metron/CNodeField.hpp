@@ -20,7 +20,6 @@ struct CNodeField : public CNode {
   //----------------------------------------
 
   Err emit_component(Cursor& cursor);
-  Err emit_submod_binding_fields(Cursor& cursor);
 
   std::string_view get_type_name() const;
 
@@ -33,13 +32,10 @@ struct CNodeField : public CNode {
   CNodeDeclaration* node_decl;
   CNodePunct*       node_semi;
 
-  //FieldType field_type = FT_UNKNOWN;
-
   CNodeClass*  parent_class;
   CNodeStruct* parent_struct;
 
   bool is_public = false;
-  //bool _enum = false;
 };
 
 //------------------------------------------------------------------------------

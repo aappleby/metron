@@ -7,6 +7,14 @@
 
 //------------------------------------------------------------------------------
 
+void CNodeField::init(const char* match_tag, SpanType span, uint64_t flags) {
+  CNode::init(match_tag, span, flags);
+  node_decl = child("decl")->req<CNodeDeclaration>();
+  node_semi = child("semi")->req<CNodePunct>();
+}
+
+//------------------------------------------------------------------------------
+
 uint32_t CNodeField::debug_color() const {
   return COL_PINK;
 }
@@ -15,32 +23,9 @@ std::string_view CNodeField::get_name() const {
   return node_decl->get_name();
 }
 
-//------------------------------------------------------------------------------
-
-void CNodeField::init(const char* match_tag, SpanType span, uint64_t flags) {
-  CNode::init(match_tag, span, flags);
-
-  node_decl = child("decl")->req<CNodeDeclaration>();
-  node_semi = child("semi")->req<CNodePunct>();
-
-  /*
-  auto node_static = node_decl->child("static")->as<CNodeKeyword>();
-  auto node_const  = node_decl->child("const")->as<CNodeKeyword>();
-  auto node_type   = node_decl->child("type")->as<CNodeType>();
-  auto node_name   = node_decl->child("name")->as<CNodeIdentifier>();
-  auto node_array  = node_decl->child("array")->as<CNodeList>();
-  auto node_eq     = node_decl->child("eq")->as<CNodePunct>();
-  auto node_value  = node_decl->child("value")->as<CNodeExpression>();
-  */
-}
-
-//------------------------------------------------------------------------------
-
 std::string_view CNodeField::get_type_name() const {
   return node_decl->get_type_name();
 }
-
-
 
 //------------------------------------------------------------------------------
 
@@ -215,108 +200,6 @@ Err CNodeField::emit(Cursor& cursor) {
 }
 
 //------------------------------------------------------------------------------
-// Emits the fields that come after a submod declaration
-
-// module my_mod(
-//   .foo(my_mod_foo)
-// );
-// logic my_mod_foo; <-- this part
-
-CHECK_RETURN Err CNodeField::emit_submod_binding_fields(Cursor& cursor) {
-  Err err;
-
-  err << cursor.start_line();
-  err << cursor.emit_print("(submod binding fields go here)");
-
-#if 0
-  if (current_mod.top()->components.empty()) {
-    return err;
-  }
-
-  auto node_type = n.get_field(field_type);
-  auto node_decl = n.get_field(field_declarator);
-
-  auto component_name = node_decl.text();
-  auto component_cname = component_name.c_str();
-
-  std::string type_name = node_type.type5();
-  auto component_mod = lib->get_module(type_name);
-
-  // Swap template arguments with the values from the template
-  // instantiation.
-  std::map<std::string, std::string> replacements;
-
-  auto args = node_type.get_field(field_arguments);
-  if (args) {
-    int arg_count = args.named_child_count();
-    for (int i = 0; i < arg_count; i++) {
-      auto key = component_mod->all_modparams[i]->name();
-      auto val = args.named_child(i).text();
-      replacements[key] = val;
-    }
-  }
-
-  // FIXME clean this mess up
-
-  current_source.push(component_mod->source_file);
-  current_mod.push(component_mod);
-  id_map.push(replacements);
-
-  for (auto field : component_mod->input_signals) {
-    err << start_line();
-    err << emit_splice(field->get_type_node());
-    err << emit_print(" %s_", component_cname);
-    err << emit_splice(field->get_decl_node());
-    err << emit_print(";");
-  }
-
-  for (auto param : component_mod->input_method_params) {
-    err << start_line();
-    err << emit_splice(param->get_type_node());
-    err << emit_print(" %s_%s_", component_cname, param->func_name.c_str());
-    err << emit_splice(param->get_decl_node());
-    err << emit_print(";");
-  }
-
-  for (auto field : component_mod->output_signals) {
-    err << start_line();
-    err << emit_splice(field->get_type_node());
-    err << emit_print(" %s_", component_cname);
-    err << emit_splice(field->get_decl_node());
-    err << emit_print(";");
-  }
-
-  for (auto field : component_mod->output_registers) {
-    err << start_line();
-    err << emit_splice(field->get_type_node());
-    err << emit_print(" %s_", component_cname);
-    err << emit_splice(field->get_decl_node());
-    err << emit_print(";");
-  }
-
-  for (auto method : component_mod->output_method_returns) {
-    err << start_line();
-    err << emit_splice(method->_node.get_field(field_type));
-    err << emit_print(" %s_", component_cname);
-    err << emit_splice(method->_node.get_field(field_declarator).get_field(field_declarator));
-    err << emit_print("_ret;");
-  }
-
-  current_source.pop();
-  current_mod.pop();
-  id_map.pop();
-#endif
-
-  return err;
-}
-
-/*
-[000.029] __ ▆ CNodeField =
-[000.029]  ┣━━╸▆ type : CNodeClassType =
-[000.029]  ┃   ┗━━╸▆ name : CNodeIdentifier = "Submod"
-[000.029]  ┗━━╸▆ name : CNodeIdentifier = "submod"
-[000.029] {{10CNodeField}};\n
-*/
 
 Err CNodeField::emit_component(Cursor& cursor) {
   Err err;
@@ -507,8 +390,6 @@ Err CNodeField::emit_component(Cursor& cursor) {
   //----------------------------------------
   // Binding variables
 
-  //err << emit_submod_binding_fields(cursor);
-
   // Swap template arguments with the values from the template
   // instantiation.
   std::map<std::string, std::string> replacements;
@@ -526,29 +407,10 @@ Err CNodeField::emit_component(Cursor& cursor) {
       auto arg = args->items[i];
 
       auto param_name = param->get_namestr();
-
-      //err << cursor.start_line();
-      //err << cursor.emit_print(".%.*s(", param_name.size(), param_name.data());
-      //err << cursor.emit_splice(arg);
-      //err << cursor.emit_print("),");
-
       cursor.id_map.top()[param_name] = arg->get_textstr();
     }
 
   }
-
-
-  /*
-  auto args = node_type.get_field(field_arguments);
-  if (args) {
-    int arg_count = args.named_child_count();
-    for (int i = 0; i < arg_count; i++) {
-      auto key = component_mod->all_modparams[i]->name();
-      auto val = args.named_child(i).text();
-      replacements[key] = val;
-    }
-  }
-  */
 
   for (auto m : component_class->all_functions) {
     //if (m->is_constructor()) continue;
@@ -558,9 +420,6 @@ Err CNodeField::emit_component(Cursor& cursor) {
     if (m->params.empty() && !m->has_return()) continue;
 
     auto func_name = m->get_namestr();
-
-    //err << cursor.start_line();
-    //err << cursor.emit_print("// %s() ports", func_name.c_str());
 
     for (auto param : m->params) {
       auto param_name = param->get_namestr();
@@ -581,8 +440,6 @@ Err CNodeField::emit_component(Cursor& cursor) {
   }
 
   if (component_class->input_signals.size()) {
-    //err << cursor.start_line();
-    //err << cursor.emit_print("// Input signals");
     for (auto f : component_class->input_signals) {
       auto port_name = f->get_namestr();
       err << cursor.start_line();
@@ -593,8 +450,6 @@ Err CNodeField::emit_component(Cursor& cursor) {
   }
 
   if (component_class->output_signals.size()) {
-    //err << cursor.start_line();
-    //err << cursor.emit_print("// Output signals");
     for (auto f : component_class->output_signals) {
       auto port_name = f->get_namestr();
       err << cursor.start_line();
@@ -605,8 +460,6 @@ Err CNodeField::emit_component(Cursor& cursor) {
   }
 
   if (component_class->output_registers.size()) {
-    //err << cursor.start_line();
-    //err << cursor.emit_print("// Output registers");
     for (auto f : component_class->output_registers) {
       auto port_name = f->get_namestr();
       err << cursor.start_line();
@@ -633,38 +486,29 @@ CHECK_RETURN Err CNodeField::trace(CInstance* inst, call_stack& stack) {
 //------------------------------------------------------------------------------
 
 void CNodeField::dump() const {
-  //dump_tree();
-
   auto name = get_name();
   LOG_A("Field %.*s : ", name.size(), name.data());
 
-  if (child("static")) LOG_A("static ");
-  if (child("const"))  LOG_A("const ");
-  if (is_public)    LOG_A("public ");
-  if (node_decl->is_array()) LOG_A("array ");
-  //if (_enum)      LOG_A("enum ");
+  if (node_decl->node_static) LOG_A("static ");
+  if (node_decl->node_const)  LOG_A("const ");
+  if (is_public)              LOG_A("public ");
+  if (node_decl->is_array())  LOG_A("array ");
 
   if (parent_class) {
-    auto name = parent_class->get_name();
-    LOG_A("parent class %.*s ", int(name.size()), name.data());
+    LOG_A("parent class %s ", parent_class->get_namestr().c_str());
   }
 
   if (parent_struct) {
-    auto name = parent_struct->get_name();
-    LOG_A("parent struct %.*s ", int(name.size()), name.data());
+    LOG_A("parent struct %s ", parent_struct->get_namestr().c_str());
   }
 
   if (node_decl->_type_class) {
-    auto name = node_decl->_type_class->get_name();
-    LOG_A("type class %.*s ", int(name.size()), name.data());
+    LOG_A("type class %s ", node_decl->_type_class->get_namestr().c_str());
   }
 
   if (node_decl->_type_struct) {
-    auto name = node_decl->_type_struct->get_name();
-    LOG_A("type struct %.*s ", int(name.size()), name.data());
+    LOG_A("type struct %s ", node_decl->_type_struct->get_namestr().c_str());
   }
-
-  //LOG_A("%s", to_string(field_type));
 
   LOG_A("\n");
 }

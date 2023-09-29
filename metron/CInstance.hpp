@@ -40,8 +40,8 @@ struct CInstance {
     return inst_parent ? inst_parent->get_root() : this;
   }
 
-  std::string_view get_name() const;
-  std::string get_path() const;
+  const std::string& get_name() const;
+  const std::string& get_path() const;
   CInstance* resolve(CNode* node);
 
   //----------
@@ -60,6 +60,8 @@ struct CInstance {
   //----------
 
   std::string name = "<invalid>";
+  std::string path = "<invalid>";
+
   CInstance* inst_parent = nullptr;
 };
 

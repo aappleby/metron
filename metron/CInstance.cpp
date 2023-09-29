@@ -26,23 +26,20 @@ bool check_port_directions(TraceState sa, TraceState sb) {
 
 CInstance::CInstance(std::string name, CInstance* inst_parent)
     : name(name), inst_parent(inst_parent) {
+
+  path = inst_parent ? inst_parent->name + "." + name : name;
 }
 
 CInstance::~CInstance() {}
 
 //----------------------------------------
 
-std::string_view CInstance::get_name() const {
+const std::string& CInstance::get_name() const {
   return name;
 }
 
-std::string CInstance::get_path() const {
-  if (inst_parent) {
-    return inst_parent->get_path() + "." + name;
-  }
-  else {
-    return name;
-  }
+const std::string& CInstance::get_path() const {
+  return path;
 }
 
 //----------------------------------------

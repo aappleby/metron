@@ -133,6 +133,8 @@ struct CNodeSwitch : public CNodeStatement {
   CNodeList* node_body = nullptr;
 };
 
+//------------------------------------------------------------------------------
+
 struct CNodeCase : public CNodeStatement {
   void init(const char* match_tag, SpanType span, uint64_t flags);
 
@@ -144,6 +146,8 @@ struct CNodeCase : public CNodeStatement {
   CNodePunct*   node_colon = nullptr;
   CNodeList*    node_body  = nullptr;
 };
+
+//------------------------------------------------------------------------------
 
 struct CNodeDefault : public CNodeStatement {
   void init(const char* match_tag, SpanType span, uint64_t flags);
@@ -161,8 +165,12 @@ struct CNodeDefault : public CNodeStatement {
 struct CNodeDoWhile : public CNodeStatement {
 };
 
+//------------------------------------------------------------------------------
+
 struct CNodeWhile : public CNodeStatement {
 };
+
+//------------------------------------------------------------------------------
 
 struct CNodeCompound : public CNodeStatement {
   void init(const char* match_tag, SpanType span, uint64_t flags);

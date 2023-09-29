@@ -3,30 +3,11 @@
 #include "CNode.hpp"
 #include "Cursor.hpp"
 
-// CNodeExpression
-//   CNodeConstant
-//     CNodeConstInt
-//     CNodeConstFloat
-//     CNodeConstChar
-//     CNodeConstString
-//   CNodeBinaryExp
-//   CNodePrefixExp
-//   CNodeSuffixExp
-//   CNodeAssignExp
-
-// CNodeOperator
-//   CNodeBinaryOp
-//   CNodePrefixOp
-//   CNodeSuffixOp
-//   CNodeCast
-
 //------------------------------------------------------------------------------
 
 struct CNodeExpression : public CNode {
   uint32_t debug_color() const override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
-
-  bool is_integer_constant();
 
 protected:
   CNodeExpression() {}

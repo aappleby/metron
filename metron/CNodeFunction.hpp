@@ -109,7 +109,6 @@ struct CNodeFunction : public CNode {
   bool needs_binding() {
     bool needs_binding = false;
 
-    //needs_binding |= method_type == MT_TICK && called_by_tock();
     for (auto caller : internal_callers) {
       needs_binding |= method_type == MT_TICK && caller->method_type == MT_TOCK;
     }

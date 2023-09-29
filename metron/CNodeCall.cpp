@@ -517,7 +517,7 @@ bool CNodeCall::can_omit_call() {
     return true;
   }
 
-// Calls into methods in the same module turn into bindings if needed.
+  // Calls into methods in the same module turn into bindings if needed.
   auto src_class = ancestor<CNodeClass>();
   auto dst_func = src_class->get_function(node_name->get_text());
   if (dst_func && dst_func->needs_binding()) {

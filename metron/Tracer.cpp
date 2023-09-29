@@ -1,6 +1,6 @@
 #include "Tracer.hpp"
 
-#include "CSourceRepo.hpp"
-#include "CInstance.hpp"
+#include "metron/CSourceRepo.hpp"
+#include "metron/CInstance.hpp"
 
-#include "NodeTypes.hpp"
+#include "metron/NodeTypes.hpp"

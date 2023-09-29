@@ -1,7 +1,7 @@
 #pragma once
 
-#include "CNode.hpp"
-#include "Cursor.hpp"
+#include "metron/CNode.hpp"
+#include "metron/Cursor.hpp"
 
 #include "metrolib/core/Log.h"
 
@@ -10,7 +10,7 @@
 #include <set>
 #include <functional>
 
-#include "NodeTypes.hpp"
+#include "metron/NodeTypes.hpp"
 
 struct CInstFunc;
 

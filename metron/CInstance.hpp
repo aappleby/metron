@@ -1,24 +1,26 @@
 #pragma once
 
-#include "metron/MtUtils.h"
-#include "metrolib/core/Log.h"
-#include "metrolib/core/Platform.h"
-#include "metrolib/core/Err.h"
-
-#include "NodeTypes.hpp"
+#include <assert.h>
 
 #include <map>
-#include <vector>
 #include <string_view>
-#include <assert.h>
 #include <typeinfo>
+#include <vector>
+
+#include "metrolib/core/Err.h"
+#include "metrolib/core/Log.h"
+#include "metrolib/core/Platform.h"
+#include "metron/MtUtils.h"
+#include "metron/NodeTypes.hpp"
 
 struct CInstance;
 struct CInstClass;
 struct CInstStruct;
 struct CInstPrim;
 
-CInstClass* instantiate_class(std::string name, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class, int depth);
+CInstClass* instantiate_class(std::string name, CInstance* inst_parent,
+                              CNodeField* node_field, CNodeClass* node_class,
+                              int depth);
 
 //------------------------------------------------------------------------------
 
@@ -26,21 +28,19 @@ struct CInstance {
   CInstance(std::string name, CInstance* inst_parent);
   virtual ~CInstance();
 
-  template<typename T>
+  template <typename T>
   T* as() {
     return dynamic_cast<T*>(this);
   }
 
-  template<typename T>
+  template <typename T>
   T* ancestor() {
     if (auto self = as<T>()) return self;
     if (inst_parent) return inst_parent->ancestor<T>();
     return nullptr;
   }
 
-  CInstance* get_root() {
-    return inst_parent ? inst_parent->get_root() : this;
-  }
+  CInstance* get_root() { return inst_parent ? inst_parent->get_root() : this; }
 
   const std::string& get_name() const;
   const std::string& get_path() const;
@@ -52,7 +52,8 @@ struct CInstance {
   virtual TraceState get_state() const = 0;
   virtual CInstance* resolve(std::string name) = 0;
   virtual void dump_tree() const = 0;
-  virtual Err  log_action(CNode* node, TraceAction action, call_stack& stack) = 0;
+  virtual Err log_action(CNode* node, TraceAction action,
+                         call_stack& stack) = 0;
 
   virtual void push_state() = 0;
   virtual void pop_state() = 0;
@@ -70,7 +71,8 @@ struct CInstance {
 //------------------------------------------------------------------------------
 
 struct CInstClass : public CInstance {
-  CInstClass(std::string name, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class);
+  CInstClass(std::string name, CInstance* inst_parent, CNodeField* node_field,
+             CNodeClass* node_class);
 
   bool check_port_directions(CInstClass* b);
 
@@ -80,7 +82,8 @@ struct CInstClass : public CInstance {
   TraceState get_state() const override;
   CInstance* resolve(std::string name) override;
   void dump_tree() const override;
-  CHECK_RETURN Err log_action(CNode* node, TraceAction action, call_stack& stack) override;
+  CHECK_RETURN Err log_action(CNode* node, TraceAction action,
+                              call_stack& stack) override;
 
   void push_state() override;
   void pop_state() override;
@@ -99,7 +102,8 @@ struct CInstClass : public CInstance {
 //------------------------------------------------------------------------------
 
 struct CInstStruct : public CInstance {
-  CInstStruct(std::string name, CInstance* inst_parent, CNodeField* node_field, CNodeStruct* node_struct);
+  CInstStruct(std::string name, CInstance* inst_parent, CNodeField* node_field,
+              CNodeStruct* node_struct);
 
   //----------
   // CInstance interface
@@ -107,7 +111,8 @@ struct CInstStruct : public CInstance {
   TraceState get_state() const override;
   CInstance* resolve(std::string name) override;
   void dump_tree() const override;
-  CHECK_RETURN Err log_action(CNode* node, TraceAction action, call_stack& stack) override;
+  CHECK_RETURN Err log_action(CNode* node, TraceAction action,
+                              call_stack& stack) override;
 
   void push_state() override;
   void pop_state() override;
@@ -117,7 +122,7 @@ struct CInstStruct : public CInstance {
   //----------
 
   std::vector<CInstance*> parts;
-  CNodeField*  node_field = nullptr;
+  CNodeField* node_field = nullptr;
   CNodeStruct* node_struct = nullptr;
 };
 
@@ -132,7 +137,8 @@ struct CInstPrim : public CInstance {
   TraceState get_state() const override;
   CInstance* resolve(std::string name) override;
   void dump_tree() const override;
-  CHECK_RETURN Err log_action(CNode* node, TraceAction action, call_stack& stack) override;
+  CHECK_RETURN Err log_action(CNode* node, TraceAction action,
+                              call_stack& stack) override;
 
   void push_state() override;
   void pop_state() override;

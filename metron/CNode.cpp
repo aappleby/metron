@@ -3,9 +3,10 @@
 
 #include "CNode.hpp"
 
-#include "Cursor.hpp"
-#include "metrolib/core/Log.h"
 #include <ctype.h>
+
+#include "metrolib/core/Log.h"
+#include "metron/Cursor.hpp"
 
 using namespace matcheroni;
 

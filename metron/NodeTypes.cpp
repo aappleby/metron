@@ -1,6 +1,6 @@
-#include "NodeTypes.hpp"
+#include "metron/NodeTypes.hpp"
 
-#include "CInstance.hpp"
+#include "metron/CInstance.hpp"
 #include <typeinfo>
 
 using namespace matcheroni;

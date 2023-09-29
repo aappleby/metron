@@ -3,18 +3,17 @@
 
 #pragma once
 
-#include "metrolib/core/Log.h"
-#include "CToken.hpp"
+#include <functional>
+#include <string>
+#include <string_view>
+#include <typeinfo>
 
 #include "matcheroni/Parseroni.hpp"
 #include "metrolib/core/Err.h"
+#include "metrolib/core/Log.h"
 #include "metrolib/core/Platform.h"
+#include "metron/CToken.hpp"
 #include "metron/MtUtils.h"
-
-#include <string>
-#include <typeinfo>
-#include <string_view>
-#include <functional>
 
 struct Cursor;
 struct CSourceRepo;

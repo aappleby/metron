@@ -7,8 +7,8 @@
 #include <string>
 #include <string_view>
 
-#include "CSourceRepo.hpp"
-#include "CSourceFile.hpp"
+#include "metron/CSourceRepo.hpp"
+#include "metron/CSourceFile.hpp"
 
 #include "metrolib/core/Platform.h"
 #include "metrolib/core/Err.h"

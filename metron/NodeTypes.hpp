@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CNode.hpp"
+#include "metron/CNode.hpp"
 
 struct CNodeCall;
 struct CNodeClass;
@@ -27,15 +27,15 @@ struct CNodeTypedef;
 
 struct Cursor;
 
-#include "CNodeCall.hpp"
-#include "CNodeClass.hpp"
-#include "CNodeDeclaration.hpp"
-#include "CNodeExpression.hpp"
+#include "metron/CNodeCall.hpp"
+#include "metron/CNodeClass.hpp"
+#include "metron/CNodeDeclaration.hpp"
+#include "metron/CNodeExpression.hpp"
 #include "nodes/CNodeField.hpp"
-#include "CNodeFunction.hpp"
-#include "CNodeStatement.hpp"
-#include "CNodeStruct.hpp"
-#include "CNodeType.hpp"
+#include "metron/CNodeFunction.hpp"
+#include "metron/CNodeStatement.hpp"
+#include "metron/CNodeStruct.hpp"
+#include "metron/CNodeType.hpp"
 
 #include "metrolib/core/Log.h"
 #include "metron/MtUtils.h"

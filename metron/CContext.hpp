@@ -7,12 +7,12 @@
 #include "matcheroni/Parseroni.hpp"
 #include "matcheroni/Utilities.hpp"
 
-#include "CConstants.hpp"
-#include "CToken.hpp"
-#include "CLexer.hpp"
-#include "CNode.hpp"
-#include "CScope.hpp"
-#include "SST.hpp"
+#include "metron/CConstants.hpp"
+#include "metron/CToken.hpp"
+#include "metron/CLexer.hpp"
+#include "metron/CNode.hpp"
+#include "metron/CScope.hpp"
+#include "metron/SST.hpp"
 
 #include <array>
 #include <stdio.h>

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "CNode.hpp"
-#include "Cursor.hpp"
-#include "CScope.hpp"
+#include "metron/CNode.hpp"
+#include "metron/Cursor.hpp"
+#include "metron/CScope.hpp"
 #include "metron/MtUtils.h"
 
 //==============================================================================

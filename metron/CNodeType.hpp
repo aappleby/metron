@@ -1,7 +1,7 @@
 #pragma once
 
-#include "CNode.hpp"
-#include "Cursor.hpp"
+#include "metron/CNode.hpp"
+#include "metron/Cursor.hpp"
 
 //------------------------------------------------------------------------------
 

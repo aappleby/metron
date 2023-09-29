@@ -2,8 +2,8 @@
 
 #include <string>
 
-#include "CContext.hpp"
-#include "CLexer.hpp"
+#include "metron/CContext.hpp"
+#include "metron/CLexer.hpp"
 #include "metrolib/core/Err.h"
 
 struct CSourceRepo;

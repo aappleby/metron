@@ -3,8 +3,8 @@
 #include "metron/MtUtils.h"
 #include "metrolib/core/Err.h"
 #include "metrolib/core/Platform.h"
-#include "NodeTypes.hpp"
-#include "CInstance.hpp"
+#include "metron/NodeTypes.hpp"
+#include "metron/CInstance.hpp"
 
 
 struct Tracer {

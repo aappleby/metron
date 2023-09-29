@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <string_view>
 
-#include "CConstants.hpp"
+#include "metron/CConstants.hpp"
 #include "matcheroni/Matcheroni.hpp"
 
 //------------------------------------------------------------------------------

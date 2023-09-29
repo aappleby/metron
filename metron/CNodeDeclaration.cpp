@@ -1,6 +1,6 @@
 #include "CNodeDeclaration.hpp"
 
-#include "NodeTypes.hpp"
+#include "metron/NodeTypes.hpp"
 
 //------------------------------------------------------------------------------
 

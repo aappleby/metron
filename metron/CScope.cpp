@@ -1,13 +1,13 @@
 // SPDX-FileCopyrightText:  2023 Austin Appleby <aappleby@gmail.com>
 // SPDX-License-Identifier: MIT License
 
-#include "CScope.hpp"
+#include "metron/CScope.hpp"
 
 #include "metrolib/core/Log.h"
 
-#include "CConstants.hpp"
-#include "CContext.hpp"
-#include "CToken.hpp"
+#include "metron/CConstants.hpp"
+#include "metron/CContext.hpp"
+#include "metron/CToken.hpp"
 #include "metrolib/core/Log.h"
 #include <string_view>
 

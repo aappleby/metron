@@ -1,11 +1,12 @@
 #pragma once
-#include "CNode.hpp"
-#include "Cursor.hpp"
 
 #include <assert.h>
+
 #include <vector>
 
-#include "NodeTypes.hpp"
+#include "metron/CNode.hpp"
+#include "metron/Cursor.hpp"
+#include "metron/NodeTypes.hpp"
 
 struct CSourceRepo;
 struct CSourceFile;

@@ -1,6 +1,6 @@
-#include "CInstance.hpp"
+#include "metron/CInstance.hpp"
 
-#include "NodeTypes.hpp"
+#include "metron/NodeTypes.hpp"
 
 extern bool deep_trace;
 

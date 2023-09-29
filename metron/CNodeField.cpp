@@ -57,12 +57,15 @@ bool CNodeField::is_const_char() const {
 Err CNodeField::emit(Cursor& cursor) {
   Err err = cursor.check_at(this);
 
+  //----------------------------------------
   // Ports don't go in the class body.
+  // FIXME should we disallow public components?
+
   if (is_public && !is_component() && !node_decl->is_localparam()) {
     return err << cursor.skip_over(this);
   }
 
-  bool in_namespace = ancestor<CNodeNamespace>() != nullptr;
+  //----------------------------------------
 
   if (is_const_char()) {
     err << cursor.emit_print("localparam string ");
@@ -85,9 +88,11 @@ Err CNodeField::emit(Cursor& cursor) {
     return err << cursor.check_done(this);
   }
 
-  //if (node_decl->node_static && node_decl->node_const) {
+  //----------------------------------------
+
   if (node_decl->node_const) {
     // Localparam
+    bool in_namespace = ancestor<CNodeNamespace>() != nullptr;
     err << cursor.emit_print(in_namespace ? "parameter " : "localparam ");
 
     if (node_decl->node_static) {
@@ -125,6 +130,8 @@ Err CNodeField::emit(Cursor& cursor) {
     return err << cursor.check_done(this);
   }
 
+  //----------------------------------------
+
   auto node_builtin = node_decl->node_type->as<CNodeBuiltinType>();
   auto node_targs   = node_decl->node_type->child("template_args");
 
@@ -156,6 +163,8 @@ Err CNodeField::emit(Cursor& cursor) {
     return err << cursor.check_done(this);
   }
 
+  //----------------------------------------
+
   if (node_builtin) {
     err << cursor.skip_to(node_decl->node_type);
     err << cursor.emit(node_decl->node_type);
@@ -183,19 +192,21 @@ Err CNodeField::emit(Cursor& cursor) {
     return err << cursor.check_done(this);
   }
 
+  //----------------------------------------
+
   if (is_struct()) {
     return cursor.emit_raw(this);
   }
 
+  //----------------------------------------
 
   if (is_component()) {
     return emit_component(cursor);
   }
 
-  //err << cursor.emit_default(this);
+  //----------------------------------------
+
   err << CNode::emit(cursor);
-
-
   return err << cursor.check_done(this);
 }
 
@@ -255,9 +266,6 @@ Err CNodeField::emit_component(Cursor& cursor) {
       err << cursor.emit_print("// Constructor Parameters");
 
       auto params = component_class->constructor->params;
-
-      //for (auto param: dst_class->constructor->params) {
-      //}
 
       // Find the initializer node IN THE PARENT INIT LIST for the component
       // and extract arguments

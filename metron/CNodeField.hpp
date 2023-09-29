@@ -11,6 +11,8 @@ struct CNodeField : public CNode {
 
   void init(const char* match_tag, SpanType span, uint64_t flags);
 
+  //----------------------------------------
+
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
   CHECK_RETURN Err emit(Cursor& cursor) override;
@@ -28,14 +30,15 @@ struct CNodeField : public CNode {
   bool is_array() const;
   bool is_const_char() const;
 
+  //----------------------------------------
+
+  bool is_public = false;
 
   CNodeDeclaration* node_decl;
   CNodePunct*       node_semi;
 
   CNodeClass*  parent_class;
   CNodeStruct* parent_struct;
-
-  bool is_public = false;
 };
 
 //------------------------------------------------------------------------------

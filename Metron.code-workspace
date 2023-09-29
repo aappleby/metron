@@ -10,6 +10,7 @@
 			"vs": true,
 			"bin": true,
 			"obj": true,
+			"gen": true,
 			"__pycache__": true,
 			".ninja_deps": true,
 			".ninja_log": true,

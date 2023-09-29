@@ -1,0 +1,22 @@
+Write out all the rules that Metron enforces on client code.
+
+
+Public methods in a class must not be called elsewhere in the class.
+Public methods are "roots" of call trees.
+All call trees must be "tick", "tock", or "func" type.
+Tick call trees only write registers.
+Tock call trees only write signals.
+Func call trees don't write anything.
+
+Top-level methods will be traced in all-tocks, all-ticks order.
+Funcs are not traced from top level, only into submodule funcs.
+
+Tracing is done at two levels - per-class, and whole-system.
+Per-class verifies that the class is internally consistent.
+Whole-system verifies that all calls into submodules are in the correct order to ensure that evaluation in C matches Verilog semantics.
+
+Only tocks can pass data to submodules.
+
+All public functions and variables in a submodule create "binding variables" in the parent module.
+
+Binding variables must obey sig/reg rules - parent modules cannot call methods in child modules multiple times (unless the method is a pure function with no arguments, in which case all callers can share the same return binding variable).

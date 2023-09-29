@@ -1,4 +1,4 @@
-#include "MetronApp.h"
+#include "main.h"
 
 #include "matcheroni/Utilities.hpp"
 #include "metrolib/core/Log.h"

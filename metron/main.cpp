@@ -1,4 +1,4 @@
-#include "MetronApp.h"
+#include "main.h"
 
 #include "metrolib/core/Log.h"
 

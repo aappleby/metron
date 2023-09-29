@@ -84,13 +84,10 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
     return std::string(text_begin(), text_end());
   }
 
-
   //----------------------------------------
 
   virtual void dump() const;
-
   void dump_tree(int max_depth = 0) const;
-
   void dump_parse_tree(int max_depth = 0) const { return dump_tree(max_depth); }
 
   //----------------------------------------
@@ -119,6 +116,14 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
 
   //----------------------------------------
 
+  template<typename P>
+  P* ancestor() {
+    if (auto p = dynamic_cast<P*>(this)) return p;
+    return node_parent ? node_parent->ancestor<P>() : nullptr;
+  }
+
+  //----------------------------------------
+
   CNode* child(const char* tag) {
     for (auto cursor = child_head; cursor; cursor = cursor->node_next) {
       if (cursor->tag_is(tag)) return cursor;
@@ -131,12 +136,6 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
       if (cursor->tag_is(tag)) return cursor;
     }
     return nullptr;
-  }
-
-  template<typename P>
-  P* ancestor() {
-    if (auto p = dynamic_cast<P*>(this)) return p;
-    return node_parent ? node_parent->ancestor<P>() : nullptr;
   }
 
   template<typename P>
@@ -164,12 +163,6 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
     }
     return nullptr;
   }
-
-  //----------------------------------------
-
-  // -2 = prefix, -1 = right-to-left, 0 = none, 1 = left-to-right, 2 = suffix
-  int assoc = 0;
-  int precedence = 0;
 };
 
 //------------------------------------------------------------------------------

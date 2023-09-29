@@ -93,6 +93,10 @@ struct CNodeBinaryOp : public CNodeOperator {
     assoc = binary_assoc(buf);
   }
 
+
+  //----------------------------------------
+  // -2 = prefix, -1 = right-to-left, 0 = none, 1 = left-to-right, 2 = suffix
+  int assoc = 0;
   int precedence = -1;
 };
 

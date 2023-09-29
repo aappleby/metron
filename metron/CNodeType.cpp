@@ -108,9 +108,7 @@ CHECK_RETURN Err CNodeEnumType::emit(Cursor& cursor) {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err CNodeStructType::emit(Cursor& cursor) {
-  Err err = cursor.check_at(this);
-  err << cursor.emit_raw(this);
-  return err << cursor.check_done(this);
+  return cursor.emit_default(this);
 }
 
 //------------------------------------------------------------------------------

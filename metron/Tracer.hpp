@@ -3,9 +3,9 @@
 #include "metron/MtUtils.h"
 #include "metrolib/core/Err.h"
 #include "metrolib/core/Platform.h"
-#include "metron/nodes/NodeTypes.hpp"
 #include "metron/CInstance.hpp"
-
+#include "metron/nodes/CNodeCompound.hpp"
+#include "metron/nodes/CNodeIdentifier.hpp"
 
 struct Tracer {
 

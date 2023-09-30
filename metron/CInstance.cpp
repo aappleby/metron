@@ -1,6 +1,18 @@
 #include "metron/CInstance.hpp"
 
-#include "metron/nodes/NodeTypes.hpp"
+#include "metron/nodes/CNodeAccess.hpp"
+#include "metron/nodes/CNodeBuiltinType.hpp"
+#include "metron/nodes/CNodeClass.hpp"
+#include "metron/nodes/CNodeConstructor.hpp"
+#include "metron/nodes/CNodeDeclaration.hpp"
+#include "metron/nodes/CNodeExpression.hpp"
+#include "metron/nodes/CNodeField.hpp"
+#include "metron/nodes/CNodeFieldExpression.hpp"
+#include "metron/nodes/CNodeFunction.hpp"
+#include "metron/nodes/CNodeIdentifier.hpp"
+#include "metron/nodes/CNodeLValue.hpp"
+#include "metron/nodes/CNodePunct.hpp"
+#include "metron/nodes/CNodeStruct.hpp"
 
 extern bool deep_trace;
 
@@ -21,12 +33,11 @@ bool check_port_directions(TraceState sa, TraceState sb) {
   return true;
 }
 
-//##############################################################################
-//##############################################################################
+// #############################################################################
+// #############################################################################
 
 CInstance::CInstance(std::string name, CInstance* inst_parent)
     : name(name), inst_parent(inst_parent) {
-
   path = inst_parent ? inst_parent->name + "." + name : name;
 }
 
@@ -34,18 +45,13 @@ CInstance::~CInstance() {}
 
 //----------------------------------------
 
-const std::string& CInstance::get_name() const {
-  return name;
-}
+const std::string& CInstance::get_name() const { return name; }
 
-const std::string& CInstance::get_path() const {
-  return path;
-}
+const std::string& CInstance::get_path() const { return path; }
 
 //----------------------------------------
 
 CInstance* CInstance::resolve(CNode* node) {
-
   if (node->as<CNodeLValue>()) {
     return resolve(node->child("name"));
   }
@@ -53,7 +59,7 @@ CInstance* CInstance::resolve(CNode* node) {
   if (node->as<CNodeFieldExpression>()) {
     auto cursor = node->child_head;
     CInstance* inst = this;
-    while(cursor) {
+    while (cursor) {
       if (cursor->as<CNodePunct>()) cursor = cursor->node_next;
       inst = inst->resolve(cursor);
       if (!inst) return inst;
@@ -81,38 +87,15 @@ CInstance* CInstance::resolve(CNode* node) {
   return nullptr;
 }
 
-//##############################################################################
-//##############################################################################
+// ##############################################################################
+// ##############################################################################
 
+// ##############################################################################
+// ##############################################################################
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//##############################################################################
-//##############################################################################
-
-CInstClass* instantiate_class(std::string name, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class, int depth) {
+CInstClass* instantiate_class(std::string name, CInstance* inst_parent,
+                              CNodeField* node_field, CNodeClass* node_class,
+                              int depth) {
   auto inst_class = new CInstClass(name, inst_parent, node_field, node_class);
 
   bool child_is_public = false;
@@ -127,28 +110,29 @@ CInstClass* instantiate_class(std::string name, CInstance* inst_parent, CNodeFie
       auto field_name = node_field->get_namestr();
 
       if (node_field->node_decl->_type_class) {
-        auto inst = instantiate_class(field_name, inst_class, node_field, node_field->node_decl->_type_class, depth);
-        //inst_class->children.push_back(inst);
+        auto inst =
+            instantiate_class(field_name, inst_class, node_field,
+                              node_field->node_decl->_type_class, depth);
+        // inst_class->children.push_back(inst);
         inst_class->parts.push_back(inst);
       } else if (node_field->node_decl->_type_struct) {
-        auto inst = new CInstStruct(field_name, inst_class, node_field, node_field->node_decl->_type_struct);
-        //inst_class->children.push_back(inst);
+        auto inst = new CInstStruct(field_name, inst_class, node_field,
+                                    node_field->node_decl->_type_struct);
+        // inst_class->children.push_back(inst);
 
         if (child_is_public) {
           inst_class->ports.push_back(inst);
-        }
-        else {
+        } else {
           inst_class->parts.push_back(inst);
         }
 
       } else {
         auto inst = new CInstPrim(field_name, inst_class, node_field);
-        //inst_class->children.push_back(inst);
+        // inst_class->children.push_back(inst);
 
         if (child_is_public) {
           inst_class->ports.push_back(inst);
-        }
-        else {
+        } else {
           inst_class->parts.push_back(inst);
         }
       }
@@ -161,8 +145,7 @@ CInstClass* instantiate_class(std::string name, CInstance* inst_parent, CNodeFie
 
       if (child_is_public) {
         inst_class->ports.push_back(inst_func);
-      }
-      else {
+      } else {
         inst_class->parts.push_back(inst_func);
       }
     }
@@ -173,10 +156,11 @@ CInstClass* instantiate_class(std::string name, CInstance* inst_parent, CNodeFie
 
 //------------------------------------------------------------------------------
 
-CInstClass::CInstClass(std::string name, CInstance* inst_parent, CNodeField* node_field, CNodeClass* node_class)
-: CInstance(name, inst_parent), node_field(node_field), node_class(node_class)
-{
-}
+CInstClass::CInstClass(std::string name, CInstance* inst_parent,
+                       CNodeField* node_field, CNodeClass* node_class)
+    : CInstance(name, inst_parent),
+      node_field(node_field),
+      node_class(node_class) {}
 
 //------------------------------------------------------------------------------
 
@@ -198,7 +182,8 @@ bool CInstClass::check_port_directions(CInstClass* b) {
       continue;
     }
 
-    if (!::check_port_directions(pa->get_state(), pb->get_state())) return false;
+    if (!::check_port_directions(pa->get_state(), pb->get_state()))
+      return false;
   }
 
   return true;
@@ -214,8 +199,10 @@ TraceState CInstClass::get_state() const {
 //----------------------------------------
 
 CInstance* CInstClass::resolve(std::string name) {
-  for (auto child : ports) if (child->name == name) return child;
-  for (auto child : parts) if (child->name == name) return child;
+  for (auto child : ports)
+    if (child->name == name) return child;
+  for (auto child : parts)
+    if (child->name == name) return child;
   return inst_parent ? inst_parent->resolve(name) : nullptr;
 }
 
@@ -267,65 +254,25 @@ void CInstClass::merge_state() {
   for (auto child : parts) child->merge_state();
 }
 
-//##############################################################################
-//##############################################################################
+// ##############################################################################
+// ##############################################################################
 
+// ##############################################################################
+// ##############################################################################
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//##############################################################################
-//##############################################################################
-
-CInstStruct::CInstStruct(std::string name, CInstance* inst_parent, CNodeField* node_field, CNodeStruct* node_struct)
-    : CInstance(name, inst_parent), node_field(node_field), node_struct(node_struct) {
+CInstStruct::CInstStruct(std::string name, CInstance* inst_parent,
+                         CNodeField* node_field, CNodeStruct* node_struct)
+    : CInstance(name, inst_parent),
+      node_field(node_field),
+      node_struct(node_struct) {
   assert(node_struct);
 
   for (auto struct_field : node_struct->all_fields) {
     auto field_name = struct_field->get_namestr();
 
     if (struct_field->node_decl->_type_struct) {
-      auto inst_field = new CInstStruct(field_name, this, struct_field, struct_field->node_decl->_type_struct);
+      auto inst_field = new CInstStruct(field_name, this, struct_field,
+                                        struct_field->node_decl->_type_struct);
       parts.push_back(inst_field);
     } else {
       auto inst_field = new CInstPrim(field_name, this, struct_field);
@@ -347,7 +294,8 @@ TraceState CInstStruct::get_state() const {
 //----------------------------------------
 
 CInstance* CInstStruct::resolve(std::string name) {
-  for (auto child : parts) if (child->name == name) return child;
+  for (auto child : parts)
+    if (child->name == name) return child;
   return inst_parent ? inst_parent->resolve(name) : nullptr;
 }
 
@@ -366,9 +314,10 @@ void CInstStruct::dump_tree() const {
 
 //----------------------------------------
 
-Err CInstStruct::log_action(CNode* node, TraceAction action, call_stack& stack) {
+Err CInstStruct::log_action(CNode* node, TraceAction action,
+                            call_stack& stack) {
   Err err;
-  //for (auto pair : inst_map) err << pair.second->log_action(node, action);
+  // for (auto pair : inst_map) err << pair.second->log_action(node, action);
   for (auto child : parts) err << child->log_action(node, action, stack);
   return err;
 }
@@ -391,64 +340,21 @@ void CInstStruct::merge_state() {
   for (auto child : parts) child->merge_state();
 }
 
-//##############################################################################
-//##############################################################################
+// ##############################################################################
+// ##############################################################################
 
+// ##############################################################################
+// ##############################################################################
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//##############################################################################
-//##############################################################################
-
-CInstPrim::CInstPrim(std::string name, CInstance* inst_parent, CNodeField* node_field)
+CInstPrim::CInstPrim(std::string name, CInstance* inst_parent,
+                     CNodeField* node_field)
     : CInstance(name, inst_parent), node_field(node_field) {
   state_stack.push_back(TS_NONE);
 }
 
 //----------------------------------------
 
-TraceState CInstPrim::get_state() const {
-  return state_stack.back();
-}
+TraceState CInstPrim::get_state() const { return state_stack.back(); }
 
 //----------------------------------------
 
@@ -462,8 +368,7 @@ CInstance* CInstPrim::resolve(std::string name) {
 void CInstPrim::dump_tree() const {
   if (node_field && node_field->is_public) {
     LOG_G("Prim %s", get_path().c_str());
-  }
-  else {
+  } else {
     LOG_R("Prim %s", get_path().c_str());
   }
 
@@ -489,14 +394,13 @@ Err CInstPrim::log_action(CNode* node, TraceAction action, call_stack& stack) {
   if (!deep_trace) {
     if (action == ACT_READ) {
       func->self_reads.insert(this);
-    }
-    else if (action == ACT_WRITE) {
+    } else if (action == ACT_WRITE) {
       func->self_writes.insert(this);
     }
   }
 
   if (auto constructor = stack[0]->as<CNodeConstructor>()) {
-    //LOG_R("not recording action because we're inside init()\n");
+    // LOG_R("not recording action because we're inside init()\n");
     return err;
   }
 
@@ -534,11 +438,11 @@ void CInstPrim::swap_state() {
   assert(state_stack.size() >= 2);
 
   auto s = state_stack.size();
-  auto a = state_stack[s-2];
-  auto b = state_stack[s-1];
+  auto a = state_stack[s - 2];
+  auto b = state_stack[s - 1];
 
-  state_stack[s-2] = b;
-  state_stack[s-1] = a;
+  state_stack[s - 2] = b;
+  state_stack[s - 1] = a;
 }
 
 //----------------------------------------
@@ -546,57 +450,29 @@ void CInstPrim::swap_state() {
 void CInstPrim::merge_state() {
   assert(state_stack.size() >= 2);
   auto s = state_stack.size();
-  auto a = state_stack[s-2];
-  auto b = state_stack[s-1];
+  auto a = state_stack[s - 2];
+  auto b = state_stack[s - 1];
 
-  state_stack[s-2] = merge_branch(a, b);
+  state_stack[s - 2] = merge_branch(a, b);
   state_stack.pop_back();
 }
 
-//##############################################################################
-//##############################################################################
+// ##############################################################################
+// ##############################################################################
 
+// ##############################################################################
+// ##############################################################################
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//##############################################################################
-//##############################################################################
-
-CInstFunc::CInstFunc(std::string name, CInstance* inst_parent, CNodeFunction* node_func)
-: CInstance(name, inst_parent), node_func(node_func) {
-
+CInstFunc::CInstFunc(std::string name, CInstance* inst_parent,
+                     CNodeFunction* node_func)
+    : CInstance(name, inst_parent), node_func(node_func) {
   auto repo = node_func->ancestor<CNodeClass>()->repo;
 
   for (auto param : node_func->params) {
     auto param_name = param->get_namestr();
     if (param->_type_struct) {
-      auto inst_field = new CInstStruct(param_name, this, nullptr, param->_type_struct);
+      auto inst_field =
+          new CInstStruct(param_name, this, nullptr, param->_type_struct);
       params.push_back(inst_field);
     } else {
       auto inst_field = new CInstPrim(param_name, this, nullptr);
@@ -610,12 +486,10 @@ CInstFunc::CInstFunc(std::string name, CInstance* inst_parent, CNodeFunction* no
       auto node_struct = repo->get_struct(struct_type->get_text());
       auto inst = new CInstStruct("@return", this, nullptr, node_struct);
       inst_return = inst;
-    }
-    else if (auto builtin_type = ret_type->as<CNodeBuiltinType>()) {
-      auto inst = new CInstPrim("@return",  this, nullptr);
+    } else if (auto builtin_type = ret_type->as<CNodeBuiltinType>()) {
+      auto inst = new CInstPrim("@return", this, nullptr);
       inst_return = inst;
-    }
-    else {
+    } else {
       assert(false);
     }
   }
@@ -630,11 +504,13 @@ bool CInstFunc::check_port_directions(CInstFunc* b) {
   bool ok = true;
 
   if (a->inst_return) {
-    ok &= ::check_port_directions(a->inst_return->get_state(), b->inst_return->get_state());
+    ok &= ::check_port_directions(a->inst_return->get_state(),
+                                  b->inst_return->get_state());
   }
 
   for (int i = 0; i < a->params.size(); i++) {
-    ok &= ::check_port_directions(a->params[i]->get_state(), b->params[i]->get_state());
+    ok &= ::check_port_directions(a->params[i]->get_state(),
+                                  b->params[i]->get_state());
   }
 
   return ok;
@@ -650,7 +526,8 @@ TraceState CInstFunc::get_state() const {
 //----------------------------------------
 
 CInstance* CInstFunc::resolve(std::string name) {
-  for (auto param : params) if (param->name == name) return param;
+  for (auto param : params)
+    if (param->name == name) return param;
   if (inst_return && inst_return->name == name) return inst_return;
   return inst_parent->resolve(name);
 }
@@ -708,5 +585,5 @@ void CInstFunc::merge_state() {
   if (inst_return) inst_return->merge_state();
 }
 
-//##############################################################################
-//##############################################################################
+// ##############################################################################
+// ##############################################################################

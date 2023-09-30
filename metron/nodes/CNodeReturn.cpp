@@ -1,5 +1,9 @@
 #include "CNodeReturn.hpp"
 
+#include "metron/CInstance.hpp"
+#include "metron/Cursor.hpp"
+#include "metron/nodes/CNodeFunction.hpp"
+
 //==============================================================================
 
 Err CNodeReturn::trace(CInstance* inst, call_stack& stack) {

@@ -1,14 +1,20 @@
 #include "CNodeIf.hpp"
 
+#include "metron/nodes/CNodeCall.hpp"
+#include "metron/nodes/CNodeExpStatement.hpp"
+#include "metron/nodes/CNodeFieldExpression.hpp"
+#include "metron/nodes/CNodeKeyword.hpp"
+#include "metron/nodes/CNodeList.hpp"
+
 //==============================================================================
 
 void CNodeIf::init(const char* match_tag, SpanType span, uint64_t flags) {
   CNode::init(match_tag, span, flags);
 
-  node_kw_if    = child("if")->req<CNodeKeyword>();
-  node_cond  = child("condition")->req<CNodeList>();
-  node_then  = child("body_true")->req<CNodeStatement>();
-  node_kw_else  = child("else")->as<CNodeKeyword>();
+  node_kw_if = child("if")->req<CNodeKeyword>();
+  node_cond = child("condition")->req<CNodeList>();
+  node_then = child("body_true")->req<CNodeStatement>();
+  node_kw_else = child("else")->as<CNodeKeyword>();
   node_else = child("body_false")->as<CNodeStatement>();
 }
 

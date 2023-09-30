@@ -10,9 +10,14 @@
 #include <set>
 #include <functional>
 
-#include "metron/nodes/NodeTypes.hpp"
-
 struct CInstFunc;
+struct CNodeType;
+struct CNode;
+struct CNodeList;
+struct CNodeList;
+struct CNodeKeyword;
+struct CNodeCompound;
+struct CNodeDeclaration;
 
 //------------------------------------------------------------------------------
 

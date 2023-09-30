@@ -3,7 +3,10 @@
 #include <functional>
 
 #include "metron/CSourceFile.hpp"
-#include "metron/nodes/NodeTypes.hpp"
+#include "metron/nodes/CNodeClass.hpp"
+#include "metron/nodes/CNodeStruct.hpp"
+#include "metron/nodes/CNodeNamespace.hpp"
+#include "metron/nodes/CNodeEnum.hpp"
 #include "matcheroni/Utilities.hpp"
 #include "metrolib/core/Log.h"
 

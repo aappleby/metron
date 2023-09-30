@@ -8,6 +8,7 @@
 #include "metron/CParser.hpp"
 #include "metron/CSourceFile.hpp"
 #include "metron/CSourceRepo.hpp"
+#include "metron/nodes/CNodePreproc.hpp"
 
 #include <assert.h>
 

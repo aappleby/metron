@@ -2,7 +2,18 @@
 
 #include "metrolib/core/Log.h"
 #include "metron/CInstance.hpp"
-#include "metron/nodes/NodeTypes.hpp"
+#include "metron/nodes/CNodeBuiltinType.hpp"
+#include "metron/nodes/CNodeClass.hpp"
+#include "metron/nodes/CNodeConstructor.hpp"
+#include "metron/nodes/CNodeDeclaration.hpp"
+#include "metron/nodes/CNodeIdentifier.hpp"
+#include "metron/nodes/CNodeKeyword.hpp"
+#include "metron/nodes/CNodeList.hpp"
+#include "metron/nodes/CNodeNamespace.hpp"
+#include "metron/nodes/CNodePunct.hpp"
+#include "metron/nodes/CNodeStruct.hpp"
+#include "metron/nodes/CNodeTemplate.hpp"
+#include "metron/nodes/CNodeType.hpp"
 
 //------------------------------------------------------------------------------
 

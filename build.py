@@ -29,7 +29,7 @@ metrolib_src = [
 
 metron_src_lib   = sorted_glob("metron/*.cpp")
 metron_src_nodes = sorted_glob("metron/nodes/*.cpp")
-metron_src_main  = sorted_glob("metron/app/*.cpp")
+metron_src_main  = sorted_glob("metron/main/*.cpp")
 
 # ------------------------------------------------------------------------------
 

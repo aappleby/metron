@@ -1,5 +1,11 @@
 #include "CNodeConstructor.hpp"
 
+#include "metron/nodes/CNodeIdentifier.hpp"
+#include "metron/nodes/CNodeList.hpp"
+#include "metron/nodes/CNodeKeyword.hpp"
+#include "metron/nodes/CNodeCompound.hpp"
+#include "metron/nodes/CNodeDeclaration.hpp"
+
 //------------------------------------------------------------------------------
 
 void CNodeConstructor::init(const char* match_tag, SpanType span, uint64_t flags) {

@@ -1,8 +1,22 @@
 #include "CNodeClass.hpp"
 
+#include "metron/nodes/CNodeAccess.hpp"
+#include "metron/nodes/CNodeCall.hpp"
+#include "metron/nodes/CNodeConstructor.hpp"
+#include "metron/nodes/CNodeDeclaration.hpp"
+#include "metron/nodes/CNodeEnum.hpp"
+#include "metron/nodes/CNodeExpression.hpp"
+#include "metron/nodes/CNodeField.hpp"
+#include "metron/nodes/CNodeFieldExpression.hpp"
+#include "metron/nodes/CNodeFunction.hpp"
+#include "metron/nodes/CNodeIdentifier.hpp"
+#include "metron/nodes/CNodeKeyword.hpp"
+#include "metron/nodes/CNodeLValue.hpp"
+#include "metron/nodes/CNodeList.hpp"
 #include "metron/nodes/CNodeTemplate.hpp"
+#include "metron/nodes/CNodePunct.hpp"
 
-//------------------------------------------------------------------------------
+//==============================================================================
 
 void CNodeClass::init(const char* match_tag, SpanType span, uint64_t flags) {
   CNode::init(match_tag, span, flags);
@@ -459,4 +473,21 @@ void CNodeClass::dump() const {
   LOG_DEDENT();
 }
 
-//------------------------------------------------------------------------------
+//==============================================================================
+
+CHECK_RETURN Err CNodeClassType::emit(Cursor& cursor) {
+  Err err;
+  auto targs = child("template_args");
+
+  if (targs) {
+    err << cursor.emit(child("name"));
+    err << cursor.emit_gap();
+    err << cursor.skip_over(targs);
+  }
+  else {
+    err << cursor.emit_default(this);
+  }
+  return err;
+}
+
+//==============================================================================

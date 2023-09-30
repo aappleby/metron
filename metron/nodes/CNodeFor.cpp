@@ -1,5 +1,7 @@
 #include "CNodeFor.hpp"
 
+#include "metron/Cursor.hpp"
+
 //==============================================================================
 
 CHECK_RETURN Err CNodeFor::trace(CInstance* inst, call_stack& stack) {

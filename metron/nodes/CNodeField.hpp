@@ -3,7 +3,9 @@
 #include "metron/CNode.hpp"
 #include "metron/Cursor.hpp"
 #include "metron/MtUtils.h"
-#include "metron/nodes/NodeTypes.hpp"
+
+struct CNodeDeclaration;
+struct CNodePunct;
 
 //------------------------------------------------------------------------------
 

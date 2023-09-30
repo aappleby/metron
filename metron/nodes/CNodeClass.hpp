@@ -6,15 +6,22 @@
 
 #include "metron/CNode.hpp"
 #include "metron/Cursor.hpp"
-#include "metron/nodes/NodeTypes.hpp"
-#include "metron/nodes/CNodeAccess.hpp"
+#include "metron/nodes/CNodeType.hpp"
 
 struct CSourceRepo;
 struct CSourceFile;
 struct CInstance;
 struct CInstClass;
+struct CNodeField;
+struct CNodeFunction;
+struct CNodeDeclaration;
+struct CNodeEnum;
+struct CNodeKeyword;
+struct CNodeIdentifier;
+struct CNodeList;
+struct CNodeConstructor;
 
-//------------------------------------------------------------------------------
+//==============================================================================
 
 struct CNodeClass : public CNode {
   void init(const char* match_tag, SpanType span, uint64_t flags);
@@ -86,4 +93,13 @@ struct CNodeClass : public CNode {
   std::vector<CNodeField*> dead_fields;
 };
 
-//------------------------------------------------------------------------------
+//==============================================================================
+
+struct CNodeClassType : public CNodeType {
+  std::string_view get_name() const override {
+    return child("name")->get_text();
+  }
+  CHECK_RETURN Err emit(Cursor& cursor) override;
+};
+
+//==============================================================================

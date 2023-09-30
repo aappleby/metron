@@ -2,7 +2,12 @@
 
 #include "metron/Cursor.hpp"
 #include "metron/CNode.hpp"
-#include "metron/nodes/NodeTypes.hpp"
+
+struct CNodeKeyword;
+struct CNodeType;
+struct CNodeIdentifier;
+struct CNodeList;
+struct CNodePunct;
 
 //==============================================================================
 

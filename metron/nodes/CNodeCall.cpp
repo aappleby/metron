@@ -1,6 +1,14 @@
 #include "CNodeCall.hpp"
 
-#include "metron/nodes/NodeTypes.hpp"
+#include "metron/nodes/CNodePunct.hpp"
+#include "metron/nodes/CNodeList.hpp"
+#include "metron/nodes/CNodeClass.hpp"
+#include "metron/nodes/CNodeDeclaration.hpp"
+#include "metron/nodes/CNodeFunction.hpp"
+#include "metron/nodes/CNodeField.hpp"
+#include "metron/nodes/CNodeIdentifier.hpp"
+#include "metron/nodes/CNodeConstant.hpp"
+#include "metron/nodes/CNodeFieldExpression.hpp"
 
 extern bool deep_trace;
 

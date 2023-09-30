@@ -1,5 +1,10 @@
 #include "CNodeAssignment.hpp"
 
+#include "metron/Cursor.hpp"
+#include "metron/nodes/CNodeClass.hpp"
+#include "metron/nodes/CNodeFunction.hpp"
+#include "metron/nodes/CNodeLValue.hpp"
+
 //==============================================================================
 // For "x[y] = z;", we don't want to allow two writes to x as that would imply
 // two write ports on a block mem. So we log a read on x before the write if

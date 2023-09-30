@@ -1,9 +1,24 @@
 #include "metron/nodes/CNodeFunction.hpp"
 
-#include "metron/nodes/NodeTypes.hpp"
-
 #include "metrolib/core/Log.h"
 #include "matcheroni/Utilities.hpp"
+#include "metron/Cursor.hpp"
+#include "metron/nodes/CNodeStatement.hpp"
+#include "metron/nodes/CNodeIdentifier.hpp"
+#include "metron/nodes/CNodeConstructor.hpp"
+#include "metron/nodes/CNodeDeclaration.hpp"
+#include "metron/nodes/CNodeType.hpp"
+#include "metron/nodes/CNodeClass.hpp"
+#include "metron/nodes/CNodeList.hpp"
+#include "metron/nodes/CNodeKeyword.hpp"
+#include "metron/nodes/CNodeCompound.hpp"
+#include "metron/nodes/CNodeIf.hpp"
+#include "metron/nodes/CNodeFor.hpp"
+#include "metron/nodes/CNodeWhile.hpp"
+#include "metron/nodes/CNodeDoWhile.hpp"
+#include "metron/nodes/CNodeCompound.hpp"
+#include "metron/nodes/CNodeSwitch.hpp"
+#include "metron/nodes/CNodeReturn.hpp"
 
 using namespace matcheroni;
 

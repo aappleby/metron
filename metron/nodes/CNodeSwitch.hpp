@@ -2,6 +2,10 @@
 
 #include "metron/nodes/CNodeStatement.hpp"
 
+struct CNodeList;
+struct CNodeKeyword;
+struct CNodePunct;
+
 //==============================================================================
 
 struct CNodeSwitch : public CNodeStatement {

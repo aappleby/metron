@@ -2,6 +2,9 @@
 
 #include "metron/nodes/CNodeStatement.hpp"
 
+struct CNodeKeyword;
+struct CNodeList;
+
 //==============================================================================
 
 struct CNodeIf : public CNodeStatement {

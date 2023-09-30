@@ -1,6 +1,15 @@
 #include "CNodeSwitch.hpp"
 
-//==============================================================================
+#include "metron/Cursor.hpp"
+#include "metron/CInstance.hpp"
+#include "metron/nodes/CNodeList.hpp"
+#include "metron/nodes/CNodeCompound.hpp"
+#include "metron/nodes/CNodeKeyword.hpp"
+#include "metron/nodes/CNodePunct.hpp"
+#include "metron/nodes/CNodeList.hpp"
+#include "metron/nodes/CNodeIf.hpp"
+#include "metron/nodes/CNodeExpStatement.hpp"
+
 //==============================================================================
 
 void CNodeSwitch::init(const char* match_tag, SpanType span, uint64_t flags) {
@@ -242,5 +251,4 @@ CHECK_RETURN Err CNodeDefault::emit(Cursor& cursor) {
   return err << cursor.check_done(this);
 }
 
-//==============================================================================
 //==============================================================================

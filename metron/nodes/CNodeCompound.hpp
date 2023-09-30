@@ -1,6 +1,7 @@
 #pragma once
 
 #include "metron/nodes/CNodeStatement.hpp"
+#include "metron/CScope.hpp"
 
 //==============================================================================
 

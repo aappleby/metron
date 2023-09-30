@@ -1,5 +1,10 @@
 #include "CNodeExpStatement.hpp"
 
+#include "metron/Cursor.hpp"
+#include "metron/nodes/CNodeCall.hpp"
+#include "metron/nodes/CNodeKeyword.hpp"
+#include "metron/nodes/CNodeDeclaration.hpp"
+
 //==============================================================================
 
 void CNodeExpStatement::init(const char* match_tag, SpanType span, uint64_t flags) {

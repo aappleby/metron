@@ -1,5 +1,7 @@
 #include "CNodeLValue.hpp"
 
+#include "metron/Cursor.hpp"
+
 //==============================================================================
 
 CHECK_RETURN Err CNodeLValue::trace(CInstance* inst, call_stack& stack) {

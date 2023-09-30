@@ -14,6 +14,7 @@
 #include "metrolib/core/Err.h"
 
 struct CNode;
+struct CNodeCall;
 
 struct Cursor {
 

@@ -1,6 +1,11 @@
 #include "CNodeDeclaration.hpp"
 
-#include "metron/nodes/NodeTypes.hpp"
+#include "metron/nodes/CNodeIdentifier.hpp"
+#include "metron/nodes/CNodeType.hpp"
+#include "metron/nodes/CNodeKeyword.hpp"
+#include "metron/nodes/CNodeList.hpp"
+#include "metron/nodes/CNodePunct.hpp"
+#include "metron/Cursor.hpp"
 
 //------------------------------------------------------------------------------
 

@@ -1,5 +1,7 @@
 #include "CNodeUsing.hpp"
 
+#include "metron/Cursor.hpp"
+
 //==============================================================================
 
 uint32_t CNodeUsing::debug_color() const {

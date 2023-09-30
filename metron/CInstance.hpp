@@ -10,13 +10,21 @@
 #include "metrolib/core/Err.h"
 #include "metrolib/core/Log.h"
 #include "metrolib/core/Platform.h"
+#include "metron/CNode.hpp"
 #include "metron/MtUtils.h"
-#include "metron/nodes/NodeTypes.hpp"
 
 struct CInstance;
 struct CInstClass;
 struct CInstStruct;
 struct CInstPrim;
+struct CInstance;
+struct CNodeField;
+struct CNodeClass;
+struct CNodeStruct;
+struct CNodeFunction;
+
+// FIXME - we need a call stack that stores (inst,func) tuples instead of just
+// func
 
 CInstClass* instantiate_class(std::string name, CInstance* inst_parent,
                               CNodeField* node_field, CNodeClass* node_class,

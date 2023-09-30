@@ -383,15 +383,15 @@ Err Emitter::emit(CNodeCall* node) {
   }
 
   if (auto func_path = node->node_name->as<CNodeFieldExpression>()) {
-    auto field_name = func_path->child("field_path")->get_text();
-    auto func_name = func_path->child("identifier")->get_text();
+    auto field_name = func_path->node_path->get_text();
+    auto func_name = func_path->node_name->get_text();
 
     auto src_class = node->ancestor<CNodeClass>();
     auto field = src_class->get_field(field_name);
     auto dst_class = field->node_decl->_type_class;
     auto dst_func = dst_class->get_function(func_name);
 
-    if (dst_func->child("return_type")->get_text() == "void") {
+    if (dst_func->node_type->get_text() == "void") {
       err << cursor.comment_out(node);
     } else {
       err << cursor.skip_over(node);
@@ -453,12 +453,11 @@ Err Emitter::emit(CNodeClass* node) {
 
 Err Emitter::emit(CNodeClassType* node) {
   Err err;
-  auto targs = node->child("template_args");
 
-  if (targs) {
+  if (node->node_targs) {
     err << emit_dispatch(node->child("name"));
     err << cursor.emit_gap();
-    err << cursor.skip_over(targs);
+    err << cursor.skip_over(node->node_targs);
   } else {
     err << emit_default(node);
   }

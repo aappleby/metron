@@ -7,6 +7,7 @@
 #include "metron/CNode.hpp"
 #include "metron/Cursor.hpp"
 #include "metron/nodes/CNodeType.hpp"
+#include "metron/nodes/CNodeList.hpp"
 
 struct CSourceRepo;
 struct CSourceFile;
@@ -90,9 +91,16 @@ struct CNodeClass : public CNode {
 //==============================================================================
 
 struct CNodeClassType : public CNodeType {
+  void init(const char* match_tag, SpanType span, uint64_t flags) {
+    CNode::init(match_tag, span, flags);
+    node_targs = child("template_args")->as<CNodeList>();
+  }
+
   std::string_view get_name() const override {
     return child("name")->get_text();
   }
+
+  CNodeList* node_targs = nullptr;
 };
 
 //==============================================================================

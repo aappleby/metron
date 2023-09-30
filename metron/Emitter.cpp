@@ -492,4 +492,120 @@ Err Emitter::emit(CNodeDeclaration* node) {
   return err << cursor.check_done(node);
 }
 
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeDoWhile* node) {
+  assert(false);
+  return Err();
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeEnum* node) {
+  Err err = cursor.check_at(node);
+
+  // Extract enum bit width, if present.
+  cursor.override_size.push(32);
+  if (node->node_type) {
+    if (auto targs = node->node_type->child("template_args")->as<CNodeList>()) {
+      cursor.override_size.top() = atoi(targs->items[0]->text_begin());
+    }
+  }
+
+  if (!node->node_decl) {
+    err << cursor.emit_print("typedef ");
+  }
+
+  err << cursor.emit(node->node_enum);
+  err << cursor.emit_gap();
+
+  if (node->node_class) {
+    err << cursor.skip_over(node->node_class);
+    err << cursor.skip_gap();
+  }
+
+  if (node->node_name) {
+    err << cursor.skip_over(node->node_name);
+    err << cursor.skip_gap();
+  }
+
+  if (node->node_colon) {
+    err << cursor.skip_over(node->node_colon);
+    err << cursor.skip_gap();
+    err << cursor.emit(node->node_type);
+    err << cursor.emit_gap();
+  }
+
+  err << cursor.emit(node->node_body);
+  err << cursor.emit_gap();
+
+  if (node->node_decl) {
+    err << cursor.emit(node->node_decl);
+    err << cursor.emit_gap();
+  }
+
+  if (node->node_name) {
+    err << cursor.emit_print(" ");
+    err << cursor.emit_splice(node->node_name);
+  }
+
+  err << cursor.emit(node->node_semi);
+
+  cursor.override_size.pop();
+
+  return err << cursor.check_done(node);
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeEnumerator* node) {
+  return cursor.emit_default(node);
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeEnumType* node) { return cursor.emit_default(node); }
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeExpression* node) {
+  return cursor.emit_default(node);
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodePrefixExp* node) {
+  Err err = cursor.check_at(node);
+
+  auto node_op    = node->child("prefix");
+  auto op = node_op->get_text();
+
+  if (op != "++" && op != "--") {
+    return cursor.emit_default(node);
+  }
+
+  auto node_class = node->ancestor<CNodeClass>();
+  auto node_func  = node->ancestor<CNodeFunction>();
+  auto node_rhs   = node->child("rhs");
+  auto node_field = node_class->get_field(node_rhs);
+
+  err << cursor.skip_over(node);
+  err << cursor.emit_splice(node_rhs);
+  if (node_func->method_type == MT_TICK && node_field) {
+    err << cursor.emit_print(" <= ");
+  }
+  else {
+    err << cursor.emit_print(" = ");
+  }
+  err << cursor.emit_splice(node_rhs);
+  if (op == "++") {
+    err << cursor.emit_print(" + 1");
+  }
+  else {
+    err << cursor.emit_print(" - 1");
+  }
+
+  return err << cursor.check_done(node);
+}
+
 //==============================================================================

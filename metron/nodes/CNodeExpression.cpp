@@ -2,7 +2,7 @@
 
 #include "metrolib/core/Log.h"
 #include "metron/CInstance.hpp"
-#include "metron/Cursor.hpp"
+#include "metron/Emitter.hpp"
 
 #include "metron/nodes/CNodeClass.hpp"
 #include "metron/nodes/CNodeFunction.hpp"
@@ -15,9 +15,7 @@ uint32_t CNodeExpression::debug_color() const {
 }
 
 Err CNodeExpression::emit(Cursor& cursor) {
-  Err err = cursor.check_at(this);
-  err << cursor.emit_default(this);
-  return err << cursor.check_done(this);
+  return Emitter(cursor).emit(this);
 }
 
 //==============================================================================
@@ -98,37 +96,7 @@ Err CNodePrefixExp::trace(CInstance* inst, call_stack& stack) {
 //----------------------------------------
 
 Err CNodePrefixExp::emit(Cursor& cursor) {
-  Err err = cursor.check_at(this);
-
-  auto node_op    = child("prefix");
-  auto op = node_op->get_text();
-
-  if (op != "++" && op != "--") {
-    return cursor.emit_default(this);
-  }
-
-  auto node_class = ancestor<CNodeClass>();
-  auto node_func  = ancestor<CNodeFunction>();
-  auto node_rhs   = child("rhs");
-  auto node_field = node_class->get_field(node_rhs);
-
-  err << cursor.skip_over(this);
-  err << cursor.emit_splice(node_rhs);
-  if (node_func->method_type == MT_TICK && node_field) {
-    err << cursor.emit_print(" <= ");
-  }
-  else {
-    err << cursor.emit_print(" = ");
-  }
-  err << cursor.emit_splice(node_rhs);
-  if (op == "++") {
-    err << cursor.emit_print(" + 1");
-  }
-  else {
-    err << cursor.emit_print(" - 1");
-  }
-
-  return err << cursor.check_done(this);
+  return Emitter(cursor).emit(this);
 }
 
 //==============================================================================

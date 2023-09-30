@@ -13,6 +13,12 @@ struct CNodeCompound;
 struct CNodeConstant;
 struct CNodeConstructor;
 struct CNodeDeclaration;
+struct CNodeDoWhile;
+struct CNodeEnum;
+struct CNodeEnumerator;
+struct CNodeEnumType;
+struct CNodeExpression;
+struct CNodePrefixExp;
 
 //==============================================================================
 
@@ -29,6 +35,12 @@ struct Emitter {
   Err emit(CNodeConstant* node);
   Err emit(CNodeConstructor* node);
   Err emit(CNodeDeclaration* node);
+  Err emit(CNodeDoWhile* node);
+  Err emit(CNodeEnum* node);
+  Err emit(CNodeEnumerator* node);
+  Err emit(CNodeEnumType* node);
+  Err emit(CNodeExpression* node);
+  Err emit(CNodePrefixExp* node);
 
   Cursor& cursor;
 };

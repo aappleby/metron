@@ -283,8 +283,8 @@ Err Emitter::emit(CNodeCall* node) {
     // Convert "dup<15>(x)" to "{15 {x}}"
 
     if (func_name == "dup") {
-      auto node_val = node->child("func_targs")->child("arg");
-      auto node_exp = node->child("func_args")->child("exp");
+      auto node_val = node->node_targs->child("arg");
+      auto node_exp = node->node_args->child("exp");
 
       err << cursor.skip_over(node);
 
@@ -298,7 +298,7 @@ Err Emitter::emit(CNodeCall* node) {
     }
 
     if (func_name == "sra") {
-      auto args = node->child("func_args")->as<CNodeList>();
+      auto args = node->node_args->as<CNodeList>();
       auto lhs = args->items[0];
       auto rhs = args->items[1];
 
@@ -317,7 +317,7 @@ Err Emitter::emit(CNodeCall* node) {
     // Not a special builtin call
 
     auto dst_func = src_class->get_function(func_id->get_text());
-    auto dst_params = dst_func->child("params");
+    auto dst_params = dst_func->node_params;
 
     // Replace call with return binding variable if the callee is a tock
 

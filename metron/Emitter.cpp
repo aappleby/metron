@@ -34,6 +34,7 @@
 #include "metron/nodes/CNodeWhile.hpp"
 #include "metron/nodes/CNodePreproc.hpp"
 #include "metron/nodes/CNodeQualifiedIdentifier.hpp"
+#include "metron/nodes/CNodeTranslationUnit.hpp"
 
 //==============================================================================
 
@@ -1259,6 +1260,28 @@ Err Emitter::emit(CNodeDefault* node) {
   }
 
   return err << cursor.check_done(node);
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeTemplate* node) {
+  Err err = cursor.check_at(node);
+
+  err << cursor.skip_over(node->node_template);
+  err << cursor.skip_gap();
+
+  err << cursor.skip_over(node->node_params);
+  err << cursor.skip_gap();
+
+  err << cursor.emit(node->node_class);
+
+  return err << cursor.check_done(node);
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeTranslationUnit* node) {
+  return cursor.emit_default(node);
 }
 
 /*

@@ -1,6 +1,6 @@
 #include "CNodeTemplate.hpp"
 
-#include "metron/Cursor.hpp"
+#include "metron/Emitter.hpp"
 #include "metron/nodes/CNodeDeclaration.hpp"
 #include "metron/nodes/CNodeList.hpp"
 #include "metron/nodes/CNodeClass.hpp"
@@ -24,17 +24,7 @@ void CNodeTemplate::init(const char* match_tag, SpanType span, uint64_t flags) {
 //----------------------------------------
 
 Err CNodeTemplate::emit(Cursor& cursor) {
-  Err err = cursor.check_at(this);
-
-  err << cursor.skip_over(node_template);
-  err << cursor.skip_gap();
-
-  err << cursor.skip_over(node_params);
-  err << cursor.skip_gap();
-
-  err << cursor.emit(node_class);
-
-  return err << cursor.check_done(this);
+  return Emitter(cursor).emit(this);
 }
 
 //------------------------------------------------------------------------------

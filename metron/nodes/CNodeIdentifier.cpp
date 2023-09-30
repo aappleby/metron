@@ -1,6 +1,6 @@
 #include "CNodeIdentifier.hpp"
 
-#include "metron/Cursor.hpp"
+#include "metron/Emitter.hpp"
 #include "metron/CInstance.hpp"
 #include "metron/nodes/CNodeCompound.hpp"
 
@@ -17,29 +17,7 @@ std::string_view CNodeIdentifier::get_name() const {
 //------------------------------------------------------------------------------
 
 Err CNodeIdentifier::emit(Cursor& cursor) {
-  Err err = cursor.check_at(this);
-  auto text = get_textstr();
-
-  auto& id_map = cursor.id_map.top();
-  auto found = id_map.find(text);
-
-  if (found != id_map.end()) {
-    auto replacement = (*found).second;
-    err << cursor.emit_replacement(this, "%s", replacement.c_str());
-  }
-  else if (cursor.preproc_vars.contains(text)) {
-    err << cursor.emit_print("`");
-    err << cursor.emit_default(this);
-  }
-  else {
-    err << cursor.emit_default(this);
-  }
-
-  //err << emit_span(n->tok_begin(), n->tok_end());
-
-  return err << cursor.check_done(this);
-
-  //
+  return Emitter(cursor).emit(this);
 }
 
 //------------------------------------------------------------------------------

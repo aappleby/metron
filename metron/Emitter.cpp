@@ -940,6 +940,30 @@ Err Emitter::emit(CNodeFunction* node) {
 
 //------------------------------------------------------------------------------
 
+Err Emitter::emit(CNodeIdentifier* node) {
+  Err err = cursor.check_at(node);
+  auto text = node->get_textstr();
+
+  auto& id_map = cursor.id_map.top();
+  auto found = id_map.find(text);
+
+  if (found != id_map.end()) {
+    auto replacement = (*found).second;
+    err << cursor.emit_replacement(node, "%s", replacement.c_str());
+  }
+  else if (cursor.preproc_vars.contains(text)) {
+    err << cursor.emit_print("`");
+    err << cursor.emit_default(node);
+  }
+  else {
+    err << cursor.emit_default(node);
+  }
+
+  return err << cursor.check_done(node);
+}
+
+//------------------------------------------------------------------------------
+
 /*
 Err Emitter::emit(CNodeFor* node) {
 }

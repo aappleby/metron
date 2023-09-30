@@ -26,6 +26,7 @@ struct CNodeField;
 struct CNodeFieldExpression;
 struct CNodeFor;
 struct CNodeFunction;
+struct CNodeIdentifier;
 
 //==============================================================================
 
@@ -55,6 +56,7 @@ struct Emitter {
   Err emit(CNodeFieldExpression* node);
   Err emit(CNodeFor* node);
   Err emit(CNodeFunction* node);
+  Err emit(CNodeIdentifier* node);
 
   Cursor& cursor;
 };

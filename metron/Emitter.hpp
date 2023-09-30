@@ -44,7 +44,7 @@ struct CNodeTemplate;
 struct CNodeTranslationUnit;
 struct CNodeType;
 struct CNodeTypedef;
-
+struct CNodeUsing;
 
 //==============================================================================
 
@@ -92,7 +92,7 @@ struct Emitter {
   Err emit(CNodeTranslationUnit* node);
   Err emit(CNodeType* node);
   Err emit(CNodeTypedef* node);
-
+  Err emit(CNodeUsing* node);
 
   Cursor& cursor;
 };

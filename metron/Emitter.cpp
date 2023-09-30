@@ -35,6 +35,7 @@
 #include "metron/nodes/CNodePreproc.hpp"
 #include "metron/nodes/CNodeQualifiedIdentifier.hpp"
 #include "metron/nodes/CNodeTranslationUnit.hpp"
+#include "metron/nodes/CNodeUsing.hpp"
 
 //==============================================================================
 
@@ -1294,6 +1295,20 @@ Err Emitter::emit(CNodeType* node) {
 
 Err Emitter::emit(CNodeTypedef* node) {
   return ERR("Don't know how to handle this type\n");
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeUsing* node) {
+  Err err = cursor.check_at(node);
+
+  err << cursor.skip_over(node);
+
+  err << cursor.emit_print("import ");
+  err << cursor.emit_splice(node->child("name"));
+  err << cursor.emit_print("::*;");
+
+  return err << cursor.check_done(node);
 }
 
 /*

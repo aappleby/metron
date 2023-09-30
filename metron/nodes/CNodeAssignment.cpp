@@ -1,6 +1,7 @@
 #include "CNodeAssignment.hpp"
 
 #include "metron/Cursor.hpp"
+#include "metron/Emitter.hpp"
 #include "metron/nodes/CNodeClass.hpp"
 #include "metron/nodes/CNodeFunction.hpp"
 #include "metron/nodes/CNodeLValue.hpp"
@@ -38,43 +39,8 @@ Err CNodeAssignment::trace(CInstance* inst, call_stack& stack) {
 
 //----------------------------------------
 
-// Change '=' to '<=' if lhs is a field and we're inside a sequential block.
-// Change "a += b" to "a = a + b", etc.
-
 Err CNodeAssignment::emit(Cursor& cursor) {
-  Err err = cursor.check_at(this);
-
-  auto node_class = ancestor<CNodeClass>();
-  auto node_func  = ancestor<CNodeFunction>();
-  auto node_lhs   = child("lhs")->req<CNodeLValue>();
-  auto node_op    = child("op");
-  auto node_rhs   = child("rhs");
-  auto node_field = node_class->get_field(node_lhs);
-
-  err << cursor.emit(node_lhs);
-  err << cursor.emit_gap();
-
-  // If we're in a tick, emit < to turn = into <=
-  if (node_func->method_type == MT_TICK && node_field) {
-    err << cursor.emit_print("<");
-  }
-
-  if (node_op->get_text() == "=") {
-    err << cursor.emit(node_op);
-    err << cursor.emit_gap();
-  }
-  else {
-    auto lhs_text = node_lhs->get_text();
-
-    err << cursor.skip_over(node_op);
-    err << cursor.emit_print("=");
-    err << cursor.emit_gap();
-    err << cursor.emit_print("%.*s %c ", lhs_text.size(), lhs_text.data(), node_op->get_text()[0]);
-  }
-
-  err << cursor.emit(node_rhs);
-
-  return err << cursor.check_done(this);
+  return Emitter(cursor).emit(this);
 }
 
 //==============================================================================

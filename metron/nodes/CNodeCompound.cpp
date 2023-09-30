@@ -125,47 +125,6 @@ CHECK_RETURN Err CNodeCompound::emit_call_arg_bindings(CNode* child, Cursor& cur
 
 //------------------------------------------------------------------------------
 
-Err CNodeCompound::emit_block(Cursor& cursor, std::string ldelim, std::string rdelim) {
-  Err err;
-
-  cursor.elide_type.push(true);
-  cursor.elide_value.push(false);
-
-  if (auto child = this->child("ldelim")) {
-    err << cursor.emit_replacement(child, "%s", ldelim.c_str());
-    cursor.indent_level++;
-    cursor.elide_type.push(false);
-    cursor.elide_value.push(true);
-    err << emit_hoisted_decls(cursor);
-    cursor.elide_type.pop();
-    cursor.elide_value.pop();
-    err << cursor.emit_gap();
-  }
-
-  for (auto child : statements) {
-    // We may need to insert input port bindings before any statement that
-    // could include a call expression. We search the tree for calls and emit
-    // those bindings here.
-    if (!child->as<CNodeCompound>()) {
-      err << emit_call_arg_bindings(child, cursor);
-    }
-    err << Emitter(cursor).emit_dispatch(child);
-    err << cursor.emit_gap();
-  }
-
-  if (auto child = this->child("rdelim")) {
-    cursor.indent_level--;
-    err << cursor.emit_replacement(child, "%s", rdelim.c_str());
-  }
-
-  cursor.elide_type.pop();
-  cursor.elide_value.pop();
-
-  return err;
-}
-
-//------------------------------------------------------------------------------
-
 Err CNodeCompound::emit_hoisted_decls(Cursor& cursor) {
   Err err;
   Emitter emitter(cursor);

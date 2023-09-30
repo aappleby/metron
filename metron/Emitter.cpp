@@ -474,7 +474,7 @@ Err Emitter::emit(CNodeClassType* node) {
 //------------------------------------------------------------------------------
 
 Err Emitter::emit(CNodeCompound* node) {
-  return node->emit_block(cursor, "begin", "end");
+  return emit_block(node, "begin", "end");
 }
 
 //------------------------------------------------------------------------------
@@ -1364,6 +1364,47 @@ Err Emitter::emit_template_parameter_list(CNodeClass* node) {
   err << cursor.emit_print("\n");
 
   cursor.tok_cursor = old_cursor;
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit_block(CNodeCompound* node, std::string ldelim, std::string rdelim) {
+  Err err;
+
+  cursor.elide_type.push(true);
+  cursor.elide_value.push(false);
+
+  if (auto child = node->child("ldelim")) {
+    err << cursor.emit_replacement(child, "%s", ldelim.c_str());
+    cursor.indent_level++;
+    cursor.elide_type.push(false);
+    cursor.elide_value.push(true);
+    err << node->emit_hoisted_decls(cursor);
+    cursor.elide_type.pop();
+    cursor.elide_value.pop();
+    err << cursor.emit_gap();
+  }
+
+  for (auto child : node->statements) {
+    // We may need to insert input port bindings before any statement that
+    // could include a call expression. We search the tree for calls and emit
+    // those bindings here.
+    if (!child->as<CNodeCompound>()) {
+      err << node->emit_call_arg_bindings(child, cursor);
+    }
+    err << Emitter(cursor).emit_dispatch(child);
+    err << cursor.emit_gap();
+  }
+
+  if (auto child = node->child("rdelim")) {
+    cursor.indent_level--;
+    err << cursor.emit_replacement(child, "%s", rdelim.c_str());
+  }
+
+  cursor.elide_type.pop();
+  cursor.elide_value.pop();
 
   return err;
 }

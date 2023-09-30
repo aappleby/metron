@@ -113,7 +113,7 @@ Err CNodeFunction::emit_init(Cursor& cursor) {
   err << cursor.start_line();
   err << cursor.emit_print("initial ");
   err << cursor.skip_to(node_body);
-  err << node_body->emit_block(cursor, "begin", "end");
+  err << emitter.emit_block(node_body, "begin", "end");
 
   return err << cursor.check_done(this);
 }
@@ -148,7 +148,7 @@ Err CNodeFunction::emit_always_comb(Cursor& cursor) {
     err << cursor.skip_gap();
   }
 
-  err << node_body->emit_block(cursor, "", "end");
+  err << emitter.emit_block(node_body, "", "end");
 
   cursor.id_map.pop();
 
@@ -185,7 +185,7 @@ Err CNodeFunction::emit_always_ff(Cursor& cursor) {
     err << cursor.skip_gap();
   }
 
-  err << node_body->emit_block(cursor, "", "end");
+  err << emitter.emit_block(node_body, "", "end");
 
   cursor.id_map.pop();
 
@@ -234,7 +234,7 @@ Err CNodeFunction::emit_func(Cursor& cursor) {
   err << cursor.emit_print(";");
   err << cursor.emit_gap();
 
-  err << node_body->emit_block(cursor, "", "endfunction");
+  err << emitter.emit_block(node_body, "", "endfunction");
 
   return err << cursor.check_done(this);
 }
@@ -262,7 +262,7 @@ Err CNodeFunction::emit_task(Cursor& cursor) {
     err << cursor.emit_gap();
   }
 
-  err << node_body->emit_block(cursor, "", "endtask");
+  err << emitter.emit_block(node_body, "", "endtask");
 
   return err << cursor.check_done(this);
 }

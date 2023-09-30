@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include "metrolib/core/Err.h"
 
 struct CNode;
@@ -81,6 +82,7 @@ struct Emitter {
   Err emit(CNodeUsing* node);
 
   Err emit_template_parameter_list(CNodeClass* node);
+  Err emit_block(CNodeCompound* node, std::string ldelim, std::string rdelim);
 
   Cursor& cursor;
 };

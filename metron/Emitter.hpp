@@ -19,6 +19,7 @@ struct CNodeEnumerator;
 struct CNodeEnumType;
 struct CNodeExpression;
 struct CNodePrefixExp;
+struct CNodeSuffixExp;
 
 //==============================================================================
 
@@ -41,6 +42,7 @@ struct Emitter {
   Err emit(CNodeEnumType* node);
   Err emit(CNodeExpression* node);
   Err emit(CNodePrefixExp* node);
+  Err emit(CNodeSuffixExp* node);
 
   Cursor& cursor;
 };

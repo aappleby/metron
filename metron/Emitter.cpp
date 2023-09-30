@@ -608,4 +608,41 @@ Err Emitter::emit(CNodePrefixExp* node) {
   return err << cursor.check_done(node);
 }
 
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeSuffixExp* node) {
+  Err err = cursor.check_at(node);
+
+  auto node_class = node->ancestor<CNodeClass>();
+  auto node_func  = node->ancestor<CNodeFunction>();
+  auto node_op    = node->child("suffix");
+  auto node_lhs   = node->child("lhs");
+  auto node_field = node_class->get_field(node_lhs);
+
+  auto op = node_op->get_text();
+
+  if (op == "++" || op == "--") {
+    err << cursor.skip_over(node);
+    err << cursor.emit_splice(node_lhs);
+    if (node_func->method_type == MT_TICK && node_field) {
+      err << cursor.emit_print(" <= ");
+    }
+    else {
+      err << cursor.emit_print(" = ");
+    }
+    err << cursor.emit_splice(node_lhs);
+    if (op == "++") {
+      err << cursor.emit_print(" + 1");
+    }
+    else {
+      err << cursor.emit_print(" - 1");
+    }
+  }
+  else {
+    err << cursor.emit_default(node);
+  }
+
+  return err << cursor.check_done(node);
+}
+
 //==============================================================================

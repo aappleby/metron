@@ -1,6 +1,6 @@
 #include "CNodeSwitch.hpp"
 
-#include "metron/Cursor.hpp"
+#include "metron/Emitter.hpp"
 #include "metron/CInstance.hpp"
 #include "metron/nodes/CNodeList.hpp"
 #include "metron/nodes/CNodeCompound.hpp"
@@ -63,32 +63,7 @@ CHECK_RETURN Err CNodeSwitch::trace(CInstance* inst, call_stack& stack) {
 //----------------------------------------
 
 CHECK_RETURN Err CNodeSwitch::emit(Cursor& cursor) {
-  Err err = cursor.check_at(this);
-
-  auto node_switch = child("switch");
-  auto node_cond   = child("condition");
-  auto node_body   = child("body");
-
-  err << cursor.emit_replacement(node_switch, "case");
-  err << cursor.emit_gap();
-  err << cursor.emit(node_cond);
-  err << cursor.emit_gap();
-
-  for (auto child : node_body) {
-    if (child->tag_is("ldelim")) {
-      err << cursor.skip_over(child);
-    }
-    else if (child->tag_is("rdelim")) {
-      err << cursor.emit_replacement(child, "endcase");
-    }
-    else {
-      err << cursor.emit(child);
-    }
-
-    if (child->node_next) err << cursor.emit_gap();
-  }
-
-  return err << cursor.check_done(this);
+  return Emitter(cursor).emit(this);
 }
 
 //==============================================================================
@@ -171,23 +146,7 @@ CHECK_RETURN Err CNodeCase::trace(CInstance* inst, call_stack& stack) {
 //----------------------------------------
 
 CHECK_RETURN Err CNodeCase::emit(Cursor& cursor) {
-  Err err = cursor.check_at(this);
-
-  err << cursor.skip_over(node_case);
-  err << cursor.skip_gap();
-  err << cursor.emit(node_cond);
-  err << cursor.emit_gap();
-
-  if (node_body) {
-    err << cursor.emit(node_colon);
-    err << cursor.emit_gap();
-    err << cursor.emit(node_body);
-  }
-  else {
-    err << cursor.emit_replacement(node_colon, ",");
-  }
-
-  return err << cursor.check_done(this);
+  return Emitter(cursor).emit(this);
 }
 
 //==============================================================================
@@ -230,25 +189,7 @@ CHECK_RETURN Err CNodeDefault::trace(CInstance* inst, call_stack& stack) {
 }
 
 CHECK_RETURN Err CNodeDefault::emit(Cursor& cursor) {
-  Err err = cursor.check_at(this);
-
-  auto node_default = child("default");
-  auto node_colon   = child("colon");
-  auto node_body    = child("body");
-
-  err << cursor.emit(node_default);
-  err << cursor.emit_gap();
-
-  if (node_body) {
-    err << cursor.emit(node_colon);
-    err << cursor.emit_gap();
-    err << cursor.emit(node_body);
-  }
-  else {
-    err << cursor.emit_replacement(node_colon, ",");
-  }
-
-  return err << cursor.check_done(this);
+  return Emitter(cursor).emit(this);
 }
 
 //==============================================================================

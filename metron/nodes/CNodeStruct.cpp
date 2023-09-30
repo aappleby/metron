@@ -1,6 +1,6 @@
 #include "metron/nodes/CNodeStruct.hpp"
 
-#include "metron/Cursor.hpp"
+#include "metron/Emitter.hpp"
 #include "metron/nodes/CNodeField.hpp"
 #include "metron/nodes/CNodeDeclaration.hpp"
 
@@ -36,24 +36,7 @@ Err CNodeStruct::collect_fields_and_methods() {
 //------------------------------------------------------------------------------
 
 Err CNodeStruct::emit(Cursor& cursor) {
-  Err err = cursor.check_at(this);
-
-  auto node_struct = child("struct");
-  auto node_name   = child("name");
-  auto node_body   = child("body");
-  auto node_semi   = child("semi");
-
-  err << cursor.emit_replacement(node_struct, "typedef struct packed");
-  err << cursor.emit_gap();
-  err << cursor.skip_over(node_name);
-  err << cursor.skip_gap();
-  err << cursor.emit_default(node_body);
-  err << cursor.emit_print(" ");
-  err << cursor.emit_splice(node_name);
-  err << cursor.emit_gap();
-  err << cursor.emit(node_semi);
-
-  return err << cursor.check_done(this);
+  return Emitter(cursor).emit(this);
 }
 
 //------------------------------------------------------------------------------

@@ -1160,6 +1160,107 @@ Err Emitter::emit(CNodeReturn* node) {
   return err << cursor.check_done(node);
 }
 
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeStruct* node) {
+  Err err = cursor.check_at(node);
+
+  auto node_struct = node->child("struct");
+  auto node_name   = node->child("name");
+  auto node_body   = node->child("body");
+  auto node_semi   = node->child("semi");
+
+  err << cursor.emit_replacement(node_struct, "typedef struct packed");
+  err << cursor.emit_gap();
+  err << cursor.skip_over(node_name);
+  err << cursor.skip_gap();
+  err << cursor.emit_default(node_body);
+  err << cursor.emit_print(" ");
+  err << cursor.emit_splice(node_name);
+  err << cursor.emit_gap();
+  err << cursor.emit(node_semi);
+
+  return err << cursor.check_done(node);
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeSwitch* node) {
+  Err err = cursor.check_at(node);
+
+  auto node_switch = node->child("switch");
+  auto node_cond   = node->child("condition");
+  auto node_body   = node->child("body");
+
+  err << cursor.emit_replacement(node_switch, "case");
+  err << cursor.emit_gap();
+  err << cursor.emit(node_cond);
+  err << cursor.emit_gap();
+
+  for (auto child : node_body) {
+    if (child->tag_is("ldelim")) {
+      err << cursor.skip_over(child);
+    }
+    else if (child->tag_is("rdelim")) {
+      err << cursor.emit_replacement(child, "endcase");
+    }
+    else {
+      err << cursor.emit(child);
+    }
+
+    if (child->node_next) err << cursor.emit_gap();
+  }
+
+  return err << cursor.check_done(node);
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeCase* node) {
+  Err err = cursor.check_at(node);
+
+  err << cursor.skip_over(node->node_case);
+  err << cursor.skip_gap();
+  err << cursor.emit(node->node_cond);
+  err << cursor.emit_gap();
+
+  if (node->node_body) {
+    err << cursor.emit(node->node_colon);
+    err << cursor.emit_gap();
+    err << cursor.emit(node->node_body);
+  }
+  else {
+    err << cursor.emit_replacement(node->node_colon, ",");
+  }
+
+  return err << cursor.check_done(node);
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeDefault* node) {
+
+  Err err = cursor.check_at(node);
+
+  auto node_default = node->child("default");
+  auto node_colon   = node->child("colon");
+  auto node_body    = node->child("body");
+
+  err << cursor.emit(node_default);
+  err << cursor.emit_gap();
+
+  if (node_body) {
+    err << cursor.emit(node_colon);
+    err << cursor.emit_gap();
+    err << cursor.emit(node_body);
+  }
+  else {
+    err << cursor.emit_replacement(node_colon, ",");
+  }
+
+  return err << cursor.check_done(node);
+}
+
 /*
 //------------------------------------------------------------------------------
 

@@ -36,6 +36,10 @@ struct CNodePunct;
 struct CNodeSuffixExp;
 struct CNodeQualifiedIdentifier;
 struct CNodeReturn;
+struct CNodeStruct;
+struct CNodeSwitch;
+struct CNodeCase;
+struct CNodeDefault;
 
 //==============================================================================
 
@@ -75,6 +79,10 @@ struct Emitter {
   Err emit(CNodePunct* node);
   Err emit(CNodeQualifiedIdentifier* node);
   Err emit(CNodeReturn* node);
+  Err emit(CNodeStruct* node);
+  Err emit(CNodeSwitch* node);
+  Err emit(CNodeCase* node);
+  Err emit(CNodeDefault* node);
 
   Cursor& cursor;
 };

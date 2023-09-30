@@ -84,6 +84,11 @@ struct Emitter {
   Err emit_template_parameter_list(CNodeClass* node);
   Err emit_block(CNodeCompound* node, std::string ldelim, std::string rdelim);
   Err emit_bit_extract(CNodeCall* node);
+  Err emit_hoisted_decls(CNodeCompound* node);
+  Err emit_call_arg_bindings(CNodeCompound* node, CNode* child);
+  Err emit_component(CNodeField* node);
+
+
 
   Cursor& cursor;
 };

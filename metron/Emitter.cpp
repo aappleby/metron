@@ -903,7 +903,7 @@ Err Emitter::emit(CNodeField* node) {
   //----------------------------------------
 
   if (node->is_component()) {
-    return node->emit_component(cursor);
+    return emit_component(node);
   }
 
   //----------------------------------------
@@ -1381,7 +1381,7 @@ Err Emitter::emit_block(CNodeCompound* node, std::string ldelim, std::string rde
     cursor.indent_level++;
     cursor.elide_type.push(false);
     cursor.elide_value.push(true);
-    err << node->emit_hoisted_decls(cursor);
+    err << emit_hoisted_decls(node);
     cursor.elide_type.pop();
     cursor.elide_value.pop();
     err << cursor.emit_gap();
@@ -1392,7 +1392,7 @@ Err Emitter::emit_block(CNodeCompound* node, std::string ldelim, std::string rde
     // could include a call expression. We search the tree for calls and emit
     // those bindings here.
     if (!child->as<CNodeCompound>()) {
-      err << node->emit_call_arg_bindings(child, cursor);
+      err << emit_call_arg_bindings(node, child);
     }
     err << Emitter(cursor).emit_dispatch(child);
     err << cursor.emit_gap();
@@ -1609,6 +1609,432 @@ Err Emitter::emit_bit_extract(CNodeCall* node) {
     err << cursor.emit_print("[%d:%d]", width+offset-1, offset);
     return err;
   }
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit_call_arg_bindings(CNodeCompound* node, CNode* child) {
+  Err err;
+
+  // Emit bindings for child nodes first, but do _not_ recurse into compound
+  // blocks.
+
+  for (auto gc : child) {
+    if (!gc->as<CNodeCompound>()) {
+      err << emit_call_arg_bindings(node, gc);
+    }
+  }
+
+  // OK, now we can emit bindings for the statement we're at.
+
+  bool any_bindings = false;
+
+  auto call = child->as<CNodeCall>();
+  if (!call) return err;
+
+  if (call->node_args->items.empty()) return err;
+
+  if (auto func_path = call->node_name->as<CNodeFieldExpression>()) {
+    auto field_name = func_path->node_path->get_text();
+    auto func_name  = func_path->node_name->get_text();
+
+    auto src_class = node->ancestor<CNodeClass>();
+    auto field = src_class->get_field(field_name);
+    auto dst_class = field->node_decl->_type_class;
+    auto dst_func = dst_class->get_function(func_name);
+
+    int arg_count = call->node_args->items.size();
+    int param_count = dst_func->params.size();
+    assert(arg_count == param_count);
+
+    for (int i = 0; i < arg_count; i++) {
+      auto param_name = dst_func->params[i]->child("name")->get_text();
+
+      err << cursor.start_line();
+      err << cursor.emit_print("%.*s_%.*s_%.*s = ",
+        field_name.size(), field_name.data(),
+        func_name.size(), func_name.data(),
+        param_name.size(), param_name.data());
+      err << cursor.emit_splice(call->node_args->items[i]);
+      err << cursor.emit_print(";");
+
+      any_bindings = true;
+    }
+  }
+
+  if (auto func_id = call->node_name->as<CNodeIdentifier>()) {
+    auto func_name = func_id->get_text();
+
+    auto src_class = node->ancestor<CNodeClass>();
+    auto dst_func = src_class->get_function(func_id->get_text());
+
+    // FIXME we should have an is_builtin or something here...
+
+    if (dst_func) {
+      if (dst_func->needs_binding()) {
+        int arg_count = call->node_args->items.size();
+        int param_count = dst_func->params.size();
+        assert(arg_count == param_count);
+
+        for (int i = 0; i < arg_count; i++) {
+          auto param_name = dst_func->params[i]->child("name")->get_text();
+          err << cursor.start_line();
+          err << cursor.emit_print("%.*s_%.*s = ",
+            func_name.size(), func_name.data(),
+            param_name.size(), param_name.data());
+          err << cursor.emit_splice(call->node_args->items[i]);
+          err << cursor.emit_print(";");
+
+          any_bindings = true;
+        }
+      }
+    }
+  }
+
+  if (any_bindings) {
+    err << cursor.start_line();
+  }
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit_hoisted_decls(CNodeCompound* node) {
+  Err err;
+  Emitter emitter(cursor);
+
+  auto old_cursor = cursor.tok_cursor;
+
+  cursor.elide_type.push(false);
+  cursor.elide_value.push(true);
+
+  for (auto child : node) {
+    if (auto exp = child->as<CNodeExpStatement>()) {
+      if (auto decl = exp->child("exp")->as<CNodeDeclaration>()) {
+
+        // Don't emit decls for localparams
+        if (decl->child("const")) continue;
+
+        auto name = decl->get_namestr();
+        auto decl_type = decl->child("type");
+        auto decl_name = decl->child("name");
+
+        err << cursor.start_line();
+
+        //err << cursor.emit_print("DECL %s", name.c_str());
+
+        cursor.tok_cursor = decl_type->tok_begin();
+
+        err << emitter.emit_dispatch(decl_type);
+        err << cursor.emit_gap();
+        err << emitter.emit_dispatch(decl_name);
+        err << cursor.emit_print(";");
+      }
+    }
+
+    if (auto node_for = child->as<CNodeFor>()) {
+      if (auto node_decl = node_for->child("init")->as<CNodeDeclaration>()) {
+        auto name = node_decl->get_namestr();
+        auto decl_type = node_decl->child("type");
+        auto decl_name = node_decl->child("name");
+
+        err << cursor.start_line();
+
+        cursor.tok_cursor = decl_type->tok_begin();
+
+        err << emitter.emit_dispatch(decl_type);
+        err << cursor.emit_gap();
+        err << emitter.emit_dispatch(decl_name);
+        err << cursor.emit_print(";");
+
+      }
+    }
+
+  }
+
+  cursor.elide_type.pop();
+  cursor.elide_value.pop();
+
+  cursor.tok_cursor = old_cursor;
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit_component(CNodeField* node) {
+  Err err;
+  Emitter emitter(cursor);
+
+  err << cursor.skip_to(node->node_decl->node_type);
+  err << emitter.emit_dispatch(node->node_decl->node_type);
+  err << cursor.emit_gap();
+  err << cursor.skip_over(node->node_decl->node_name);
+  err << cursor.skip_gap();
+
+  auto parent_class = node->ancestor<CNodeClass>();
+  auto repo = parent_class->repo;
+  auto component_class = repo->get_class(node->node_decl->node_type->get_name());
+  auto component_template = component_class->node_parent->as<CNodeTemplate>();
+
+  //----------------------------------------
+  // Component modparams
+
+  bool has_constructor_params = component_class->constructor && component_class->constructor->params.size();
+  bool has_template_params = component_template != nullptr;
+
+  if (has_template_params || has_constructor_params) {
+    err << cursor.emit_print("#(");
+    cursor.indent_level++;
+
+    // Emit template arguments as module parameters
+    if (has_template_params) {
+      err << cursor.start_line();
+      err << cursor.emit_print("// Template Parameters");
+
+      auto args = node->node_decl->node_type->child("template_args")->as<CNodeList>();
+
+      int param_count = component_template->params.size();
+      int arg_count = args->items.size();
+      assert(param_count == arg_count);
+
+      for (int i = 0; i < param_count; i++) {
+        auto param = component_template->params[i];
+        auto arg = args->items[i];
+
+        auto param_name = param->get_name();
+
+        err << cursor.start_line();
+        err << cursor.emit_print(".%.*s(", param_name.size(), param_name.data());
+        err << cursor.emit_splice(arg);
+        err << cursor.emit_print("),");
+      }
+    }
+
+    // Emit constructor arguments as module parameters
+    if (has_constructor_params) {
+      err << cursor.start_line();
+      err << cursor.emit_print("// Constructor Parameters");
+
+      auto params = component_class->constructor->params;
+
+      // Find the initializer node IN THE PARENT INIT LIST for the component
+      // and extract arguments
+      assert(parent_class->constructor->node_init);
+      CNodeList* args = nullptr;
+      for (auto init : parent_class->constructor->node_init->items) {
+        if (init->child("name")->get_text() == node->node_decl->node_name->get_text()) {
+          args = init->child("value")->as<CNodeList>();
+        }
+      }
+
+      assert(params.size() == args->items.size());
+
+      for (auto i = 0; i < params.size(); i++) {
+        auto param = params[i];
+        auto arg = args->items[i];
+        auto param_name = param->get_name();
+
+        err << cursor.start_line();
+        err << cursor.emit_print(".%.*s(", param_name.size(), param_name.data());
+        err << cursor.emit_splice(arg);
+        err << cursor.emit_print("),");
+      }
+    }
+
+    // Remove trailing comma from port list
+    if (cursor.at_comma) {
+      err << cursor.emit_backspace();
+    }
+
+    cursor.indent_level--;
+    err << cursor.start_line();
+    err << cursor.emit_print(") ");
+  }
+
+  //----------------------------------------
+  // Component name
+
+  //err << cursor.emit_print(" ");
+  err << cursor.emit_splice(node->node_decl->node_name);
+
+  //----------------------------------------
+  // Port list
+
+  err << cursor.emit_print("(");
+  cursor.indent_level++;
+
+  auto field_name = node->get_namestr();
+
+  if (component_class->needs_tick()) {
+    err << cursor.start_line();
+    err << cursor.emit_print("// Global clock");
+    err << cursor.start_line();
+    err << cursor.emit_print(".clock(clock),");
+  }
+
+  if (component_class->input_signals.size()) {
+    err << cursor.start_line();
+    err << cursor.emit_print("// Input signals");
+    for (auto f : component_class->input_signals) {
+      auto port_name = f->get_namestr();
+
+      err << cursor.start_line();
+      err << cursor.emit_print(".%s", port_name.c_str());
+      err << cursor.emit_print("(");
+      err << cursor.emit_print("%s_%s", field_name.c_str(), port_name.c_str());
+      err << cursor.emit_print("),");
+    }
+  }
+
+  if (component_class->output_signals.size()) {
+    err << cursor.start_line();
+    err << cursor.emit_print("// Output signals");
+    for (auto f : component_class->output_signals) {
+      auto port_name = f->get_namestr();
+      err << cursor.start_line();
+      err << cursor.emit_print(".%s(%s_%s),", port_name.c_str(), field_name.c_str(), port_name.c_str());
+    }
+  }
+
+  if (component_class->output_registers.size()) {
+    err << cursor.start_line();
+    err << cursor.emit_print("// Output registers");
+    for (auto f : component_class->output_registers) {
+      auto port_name = f->get_namestr();
+      err << cursor.start_line();
+      err << cursor.emit_print(".%s(%s_%s),", port_name.c_str(), field_name.c_str(), port_name.c_str());
+    }
+  }
+
+  for (auto m : component_class->all_functions) {
+    //if (m->is_constructor()) continue;
+    if (!m->is_public) continue;
+    if (m->method_type == MT_INIT) continue;
+    if (m->internal_callers.size()) continue;
+    if (m->params.empty() && !m->has_return()) continue;
+
+    auto func_name = m->get_namestr();
+
+    err << cursor.start_line();
+    err << cursor.emit_print("// %s() ports", func_name.c_str());
+
+    for (auto param : m->params) {
+      auto param_name = param->get_namestr();
+
+      err << cursor.start_line();
+      err << cursor.emit_print(".%s_%s(%s_%s_%s),",
+        func_name.c_str(), param_name.c_str(),
+        field_name.c_str(), func_name.c_str(), param_name.c_str());
+    }
+
+    if (m->has_return()) {
+      err << cursor.start_line();
+      err << cursor.emit_print(".%s_ret(%s_%s_ret),",
+        func_name.c_str(),
+        field_name.c_str(), func_name.c_str());
+    }
+  }
+
+  // Remove trailing comma from port list
+  if (cursor.at_comma) {
+    err << cursor.emit_backspace();
+  }
+
+  cursor.indent_level--;
+  err << cursor.start_line();
+  err << cursor.emit_print(")");
+  err << emitter.emit_dispatch(node->node_semi);
+
+  //----------------------------------------
+  // Binding variables
+
+  // Swap template arguments with the values from the template
+  // instantiation.
+  std::map<std::string, std::string> replacements;
+  cursor.id_map.push(cursor.id_map.top());
+
+  if (has_template_params) {
+    auto args = node->node_decl->node_type->child("template_args")->as<CNodeList>();
+
+    int param_count = component_template->params.size();
+    int arg_count = args->items.size();
+    assert(param_count == arg_count);
+
+    for (int i = 0; i < param_count; i++) {
+      auto param = component_template->params[i];
+      auto arg = args->items[i];
+
+      auto param_name = param->get_namestr();
+      cursor.id_map.top()[param_name] = arg->get_textstr();
+    }
+
+  }
+
+  for (auto m : component_class->all_functions) {
+    //if (m->is_constructor()) continue;
+    if (!m->is_public) continue;
+    if (m->method_type == MT_INIT) continue;
+    if (m->internal_callers.size()) continue;
+    if (m->params.empty() && !m->has_return()) continue;
+
+    auto func_name = m->get_namestr();
+
+    for (auto param : m->params) {
+      auto param_name = param->get_namestr();
+      err << cursor.start_line();
+      err << cursor.emit_splice(param->child("type"));
+      err << cursor.emit_print(" ");
+      err << cursor.emit_print("%s_%s_%s;",
+        field_name.c_str(), func_name.c_str(), param_name.c_str());
+    }
+
+    if (m->has_return()) {
+      err << cursor.start_line();
+      err << cursor.emit_splice(m->child("return_type"));
+      err << cursor.emit_print(" ");
+      err << cursor.emit_print("%s_%s_ret;",
+        field_name.c_str(), func_name.c_str());
+    }
+  }
+
+  if (component_class->input_signals.size()) {
+    for (auto f : component_class->input_signals) {
+      auto port_name = f->get_namestr();
+      err << cursor.start_line();
+      err << cursor.emit_splice(f->child("decl")->child("type"));
+      err << cursor.emit_print(" ");
+      err << cursor.emit_print("%s_%s;", field_name.c_str(), port_name.c_str());
+    }
+  }
+
+  if (component_class->output_signals.size()) {
+    for (auto f : component_class->output_signals) {
+      auto port_name = f->get_namestr();
+      err << cursor.start_line();
+      err << cursor.emit_splice(f->child("decl")->child("type"));
+      err << cursor.emit_print(" ");
+      err << cursor.emit_print("%s_%s;", field_name.c_str(), port_name.c_str());
+    }
+  }
+
+  if (component_class->output_registers.size()) {
+    for (auto f : component_class->output_registers) {
+      auto port_name = f->get_namestr();
+      err << cursor.start_line();
+      err << cursor.emit_splice(f->child("decl")->child("type"));
+      err << cursor.emit_print(" ");
+      err << cursor.emit_print("%s_%s;", field_name.c_str(), port_name.c_str());
+    }
+  }
+
+  //----------------------------------------
+  // Done
+
+  cursor.id_map.pop();
+
+  return err << cursor.check_done(node);
 }
 
 //==============================================================================

@@ -27,19 +27,13 @@ struct Cursor {
 
   //----------------------------------------
 
-  //void push_indent(MnNode n);
-  //void pop_indent(MnNode n);
-
   CHECK_RETURN Err emit_gap();
   CHECK_RETURN Err skip_gap();
 
   // Node-level emit()
-  //CHECK_RETURN Err emit(CNode* n);
   CHECK_RETURN Err skip_over(CNode* n);
   CHECK_RETURN Err skip_to(CNode* n);
   CHECK_RETURN Err comment_out(CNode* n);
-  //CHECK_RETURN Err emit_default(CNode* n);
-  //CHECK_RETURN Err emit_children(CNode* n);
   CHECK_RETURN Err emit_rest(CNode* n);
   CHECK_RETURN Err emit_replacement(CNode* n, const std::string& s);
   CHECK_RETURN Err emit_replacement(CNode* n, const char* fmt, ...);

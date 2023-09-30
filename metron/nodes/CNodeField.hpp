@@ -22,8 +22,6 @@ struct CNodeField : public CNode {
 
   //----------------------------------------
 
-  Err emit_component(Cursor& cursor);
-
   std::string_view get_type_name() const;
 
   bool is_component() const;

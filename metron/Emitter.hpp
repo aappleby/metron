@@ -60,7 +60,6 @@ struct Emitter {
   Err emit(CNodeConstructor* node);
   Err emit(CNodeDeclaration* node);
   Err emit(CNodeDefault* node);
-  Err emit(CNodeDoWhile* node);
   Err emit(CNodeEnum* node);
   Err emit(CNodeExpStatement* node);
   Err emit(CNodeField* node);
@@ -78,7 +77,6 @@ struct Emitter {
   Err emit(CNodeSuffixExp* node);
   Err emit(CNodeSwitch* node);
   Err emit(CNodeTemplate* node);
-  Err emit(CNodeTypedef* node);
   Err emit(CNodeUsing* node);
 
   Err emit_template_parameter_list(CNodeClass* node);
@@ -90,9 +88,12 @@ struct Emitter {
   Err emit_module_ports(CNodeClass* node);
   Err emit_function_ports(CNodeFunction* f);
   Err emit_field_ports(CNodeField* f, bool is_output);
-
-
-
+  Err emit_init(CNodeFunction* node);
+  Err emit_always_comb(CNodeFunction* node);
+  Err emit_always_ff(CNodeFunction* node);
+  Err emit_func(CNodeFunction* node);
+  Err emit_task(CNodeFunction* node);
+  Err emit_func_binding_vars(CNodeFunction* node);
 
   Cursor& cursor;
 };

@@ -48,7 +48,6 @@ struct Cursor {
   CHECK_RETURN Err emit_to(const CToken* b);
   CHECK_RETURN Err skip_current_token();
 
-
   // Char-level emit()
   CHECK_RETURN Err start_line();
   CHECK_RETURN Err emit_backspace();
@@ -58,7 +57,6 @@ struct Cursor {
   CHECK_RETURN Err emit_print(const char* fmt, ...);
   CHECK_RETURN Err emit_string(const std::string_view& s);
   CHECK_RETURN Err emit_span(const char* a, const char* b);
-
 
   //----------------------------------------
 

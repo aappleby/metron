@@ -3,8 +3,19 @@
 #include "metron/Emitter.hpp"
 #include "metron/nodes/CNodeField.hpp"
 #include "metron/nodes/CNodeDeclaration.hpp"
+#include "metron/nodes/CNodeKeyword.hpp"
+#include "metron/nodes/CNodeList.hpp"
+#include "metron/nodes/CNodePunct.hpp"
 
 //==============================================================================
+
+void CNodeStruct::init(const char* match_tag, SpanType span, uint64_t flags) {
+  CNode::init(match_tag, span, flags);
+  node_struct = child("struct")->req<CNodeKeyword>();
+  node_name   = child("name");
+  node_body   = child("body")->req<CNodeList>();
+  node_semi   = child("semi")->req<CNodePunct>();
+}
 
 uint32_t CNodeStruct::debug_color() const {
   return 0xFFAAAA;

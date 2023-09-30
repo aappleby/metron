@@ -12,8 +12,9 @@ struct CNodeSwitch : public CNodeStatement {
   void init(const char* match_tag, SpanType span, uint64_t flags);
   CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
 
-  CNodeList* node_condition = nullptr;
-  CNodeList* node_body = nullptr;
+  CNodeKeyword* node_switch = nullptr;
+  CNodeList*    node_cond   = nullptr;
+  CNodeList*    node_body   = nullptr;
 };
 
 //------------------------------------------------------------------------------

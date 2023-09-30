@@ -37,14 +37,6 @@ struct CNodeFunction : public CNode {
   CNodeClass* get_parent_class();
   std::string_view get_return_type_name() const;
 
-  Err emit_init(Cursor& cursor);
-  Err emit_always_comb(Cursor& cursor);
-  Err emit_always_ff(Cursor& cursor);
-  Err emit_func(Cursor& cursor);
-  Err emit_task(Cursor& cursor);
-
-  Err emit_func_binding_vars(Cursor& cursor);
-
   bool emit_as_task();
   bool emit_as_func();
 

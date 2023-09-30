@@ -13,11 +13,9 @@
 //==============================================================================
 
 void CNodeSwitch::init(const char* match_tag, SpanType span, uint64_t flags) {
-  node_condition = child("condition")->req<CNodeList>();
-  node_body = child("body")->req<CNodeList>();
-
-  assert(node_condition);
-  assert(node_body);
+  node_switch = child("switch")->req<CNodeKeyword>();
+  node_cond   = child("condition")->req<CNodeList>();
+  node_body   = child("body")->req<CNodeList>();
 }
 
 //----------------------------------------
@@ -25,7 +23,7 @@ void CNodeSwitch::init(const char* match_tag, SpanType span, uint64_t flags) {
 CHECK_RETURN Err CNodeSwitch::trace(CInstance* inst, call_stack& stack) {
   Err err;
 
-  err << node_condition->trace(inst, stack);
+  err << node_cond->trace(inst, stack);
 
   auto root_inst = inst->get_root();
 

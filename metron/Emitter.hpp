@@ -42,6 +42,9 @@ struct CNodeCase;
 struct CNodeDefault;
 struct CNodeTemplate;
 struct CNodeTranslationUnit;
+struct CNodeType;
+struct CNodeTypedef;
+
 
 //==============================================================================
 
@@ -87,6 +90,9 @@ struct Emitter {
   Err emit(CNodeDefault* node);
   Err emit(CNodeTemplate* node);
   Err emit(CNodeTranslationUnit* node);
+  Err emit(CNodeType* node);
+  Err emit(CNodeTypedef* node);
+
 
   Cursor& cursor;
 };

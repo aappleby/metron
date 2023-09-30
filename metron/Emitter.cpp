@@ -1284,6 +1284,18 @@ Err Emitter::emit(CNodeTranslationUnit* node) {
   return cursor.emit_default(node);
 }
 
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeType* node) {
+  return ERR("Don't know how to handle this type\n");
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeTypedef* node) {
+  return ERR("Don't know how to handle this type\n");
+}
+
 /*
 //------------------------------------------------------------------------------
 

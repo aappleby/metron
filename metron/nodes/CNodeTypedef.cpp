@@ -1,6 +1,6 @@
 #include "CNodeTypedef.hpp"
 
-#include "metron/Cursor.hpp"
+#include "metron/Emitter.hpp"
 
 //==============================================================================
 
@@ -12,8 +12,7 @@ std::string_view CNodeTypedef::get_name() const {
 }
 
 Err CNodeTypedef::emit(Cursor& cursor) {
-  NODE_ERR("FIXME");
-  return Err();
+  return Emitter(cursor).emit(this);
 }
 
 Err CNodeTypedef::trace(CInstance* inst, call_stack& stack) {

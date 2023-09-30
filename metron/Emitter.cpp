@@ -118,13 +118,10 @@ Err Emitter::emit(CNodeAssignment* node) {
   Err err = cursor.check_at(node);
 
   auto node_class = node->ancestor<CNodeClass>();
-  auto node_func = node->ancestor<CNodeFunction>();
-  auto node_lhs = node->child("lhs")->req<CNodeLValue>();
-  auto node_op = node->child("op");
-  auto node_rhs = node->child("rhs");
-  auto node_field = node_class->get_field(node_lhs);
+  auto node_func  = node->ancestor<CNodeFunction>();
+  auto node_field = node_class->get_field(node->node_lhs);
 
-  err << emit_dispatch(node_lhs);
+  err << emit_dispatch(node->node_lhs);
   err << cursor.emit_gap();
 
   // If we're in a tick, emit < to turn = into <=
@@ -132,20 +129,20 @@ Err Emitter::emit(CNodeAssignment* node) {
     err << cursor.emit_print("<");
   }
 
-  if (node_op->get_text() == "=") {
-    err << emit_dispatch(node_op);
+  if (node->node_op->get_text() == "=") {
+    err << emit_dispatch(node->node_op);
     err << cursor.emit_gap();
   } else {
-    auto lhs_text = node_lhs->get_text();
+    auto lhs_text = node->node_lhs->get_text();
 
-    err << cursor.skip_over(node_op);
+    err << cursor.skip_over(node->node_op);
     err << cursor.emit_print("=");
     err << cursor.emit_gap();
     err << cursor.emit_print("%.*s %c ", lhs_text.size(), lhs_text.data(),
-                             node_op->get_text()[0]);
+                             node->node_op->get_text()[0]);
   }
 
-  err << emit_dispatch(node_rhs);
+  err << emit_dispatch(node->node_rhs);
 
   return err << cursor.check_done(node);
 }

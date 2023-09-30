@@ -7,6 +7,15 @@
 #include "metron/nodes/CNodeLValue.hpp"
 
 //==============================================================================
+
+void CNodeAssignment::init(const char* match_tag, SpanType span, uint64_t flags) {
+  CNode::init(match_tag, span, flags);
+
+  node_lhs   = child("lhs")->req<CNodeLValue>();
+  node_op    = child("op");
+  node_rhs   = child("rhs");
+}
+
 // For "x[y] = z;", we don't want to allow two writes to x as that would imply
 // two write ports on a block mem. So we log a read on x before the write if
 // there's an array suffix.

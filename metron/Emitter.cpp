@@ -5,13 +5,16 @@
 #include "metron/nodes/CNodeBuiltinType.hpp"
 #include "metron/nodes/CNodeCall.hpp"
 #include "metron/nodes/CNodeClass.hpp"
+#include "metron/nodes/CNodeCompound.hpp"
 #include "metron/nodes/CNodeConstant.hpp"
 #include "metron/nodes/CNodeConstructor.hpp"
 #include "metron/nodes/CNodeDeclaration.hpp"
 #include "metron/nodes/CNodeEnum.hpp"
+#include "metron/nodes/CNodeExpStatement.hpp"
 #include "metron/nodes/CNodeExpression.hpp"
 #include "metron/nodes/CNodeField.hpp"
 #include "metron/nodes/CNodeFieldExpression.hpp"
+#include "metron/nodes/CNodeFor.hpp"
 #include "metron/nodes/CNodeFunction.hpp"
 #include "metron/nodes/CNodeIdentifier.hpp"
 #include "metron/nodes/CNodeKeyword.hpp"
@@ -19,6 +22,7 @@
 #include "metron/nodes/CNodeList.hpp"
 #include "metron/nodes/CNodePunct.hpp"
 #include "metron/nodes/CNodeTemplate.hpp"
+#include "metron/nodes/CNodeType.hpp"
 
 //==============================================================================
 
@@ -36,10 +40,10 @@ Err Emitter::emit(CNodeAssignment* node) {
   Err err = cursor.check_at(node);
 
   auto node_class = node->ancestor<CNodeClass>();
-  auto node_func  = node->ancestor<CNodeFunction>();
-  auto node_lhs   = node->child("lhs")->req<CNodeLValue>();
-  auto node_op    = node->child("op");
-  auto node_rhs   = node->child("rhs");
+  auto node_func = node->ancestor<CNodeFunction>();
+  auto node_lhs = node->child("lhs")->req<CNodeLValue>();
+  auto node_op = node->child("op");
+  auto node_rhs = node->child("rhs");
   auto node_field = node_class->get_field(node_lhs);
 
   err << cursor.emit(node_lhs);
@@ -53,14 +57,14 @@ Err Emitter::emit(CNodeAssignment* node) {
   if (node_op->get_text() == "=") {
     err << cursor.emit(node_op);
     err << cursor.emit_gap();
-  }
-  else {
+  } else {
     auto lhs_text = node_lhs->get_text();
 
     err << cursor.skip_over(node_op);
     err << cursor.emit_print("=");
     err << cursor.emit_gap();
-    err << cursor.emit_print("%.*s %c ", lhs_text.size(), lhs_text.data(), node_op->get_text()[0]);
+    err << cursor.emit_print("%.*s %c ", lhs_text.size(), lhs_text.data(),
+                             node_op->get_text()[0]);
   }
 
   err << cursor.emit(node_rhs);
@@ -73,7 +77,7 @@ Err Emitter::emit(CNodeAssignment* node) {
 Err Emitter::emit(CNodeBuiltinType* node) {
   Err err = cursor.check_at(node);
 
-  auto node_name  = node->child("name");
+  auto node_name = node->child("name");
   auto node_targs = node->child("template_args");
   auto node_scope = node->child("scope");
 
@@ -145,27 +149,24 @@ Err Emitter::emit(CNodeCall* node) {
     // call out.
 
     auto field_name = func_path->node_path->get_text();
-    auto func_name  = func_path->node_name->get_text();
+    auto func_name = func_path->node_name->get_text();
 
     auto src_field = src_class->get_field(field_name);
     auto dst_class = src_class->repo->get_class(src_field->get_type_name());
-    auto dst_func  = dst_class->get_function(func_name);
+    auto dst_func = dst_class->get_function(func_name);
 
     auto rtype = dst_func->child("return_type");
 
     if (rtype->get_text() == "void") {
       err << cursor.comment_out(node);
       return err << cursor.check_done(node);
-    }
-    else {
-      err << cursor.emit_replacement(node,
-        "%.*s_%.*s_ret",
-        field_name.size(), field_name.data(),
-        func_name.size(), func_name.data());
+    } else {
+      err << cursor.emit_replacement(node, "%.*s_%.*s_ret", field_name.size(),
+                                     field_name.data(), func_name.size(),
+                                     func_name.data());
       return err << cursor.check_done(node);
     }
   }
-
 
   if (auto func_id = node->node_name->as<CNodeIdentifier>()) {
     auto func_name = func_id->get_textstr();
@@ -173,7 +174,8 @@ Err Emitter::emit(CNodeCall* node) {
     if (cursor.id_map.top().contains(func_name)) {
       auto replacement = cursor.id_map.top()[func_name];
 
-      err << cursor.emit_replacement(node->node_name, "%s", replacement.c_str());
+      err << cursor.emit_replacement(node->node_name, "%s",
+                                     replacement.c_str());
       err << cursor.emit_gap();
 
       if (node->node_targs) {
@@ -184,7 +186,7 @@ Err Emitter::emit(CNodeCall* node) {
       err << cursor.emit(node->node_args);
 
       return err << cursor.check_done(node);
-      //return cursor.emit_default(this);
+      // return cursor.emit_default(this);
     }
 
     if (func_name == "cat") {
@@ -193,11 +195,9 @@ Err Emitter::emit(CNodeCall* node) {
         if (child->tag_is("ldelim")) {
           err << cursor.emit_replacement(child, "{");
           err << cursor.emit_gap();
-        }
-        else if (child->tag_is("rdelim")) {
+        } else if (child->tag_is("rdelim")) {
           err << cursor.emit_replacement(child, "}");
-        }
-        else {
+        } else {
           err << cursor.emit(child);
           if (child->node_next) err << cursor.emit_gap();
         }
@@ -223,11 +223,10 @@ Err Emitter::emit(CNodeCall* node) {
       return err;
     }
 
-
     if (func_name == "sra") {
       auto args = node->child("func_args")->as<CNodeList>();
-      auto lhs  = args->items[0];
-      auto rhs  = args->items[1];
+      auto lhs = args->items[0];
+      auto rhs = args->items[1];
 
       err << cursor.skip_over(node);
 
@@ -239,7 +238,6 @@ Err Emitter::emit(CNodeCall* node) {
 
       return err;
     }
-
 
     //----------
     // Not a special builtin call
@@ -272,7 +270,8 @@ Err Emitter::emit(CNodeCall* node) {
       return cursor.emit_default(node);
     }
 
-    if (src_mtype == MT_TOCK && (dst_mtype == MT_TOCK || dst_mtype == MT_TICK)) {
+    if (src_mtype == MT_TOCK &&
+        (dst_mtype == MT_TOCK || dst_mtype == MT_TICK)) {
       err << cursor.comment_out(node);
 
       auto param = dst_params->child_head;
@@ -281,7 +280,6 @@ Err Emitter::emit(CNodeCall* node) {
       bool first_arg = true;
 
       while (param && arg) {
-
         auto punct_a = param->as<CNodePunct>() != nullptr;
         auto punct_b = arg->as<CNodePunct>() != nullptr;
         assert(punct_a == punct_b);
@@ -294,10 +292,9 @@ Err Emitter::emit(CNodeCall* node) {
         if (!first_arg) err << cursor.emit_print(";");
 
         err << cursor.start_line();
-        err << cursor.emit_print("%s_%s = %s",
-          dst_func->get_namestr().c_str(),
-          param->child("name")->get_textstr().c_str(),
-          arg->get_textstr().c_str());
+        err << cursor.emit_print("%s_%s = %s", dst_func->get_namestr().c_str(),
+                                 param->child("name")->get_textstr().c_str(),
+                                 arg->get_textstr().c_str());
 
         first_arg = false;
 
@@ -313,7 +310,7 @@ Err Emitter::emit(CNodeCall* node) {
 
   if (auto func_path = node->node_name->as<CNodeFieldExpression>()) {
     auto field_name = func_path->child("field_path")->get_text();
-    auto func_name  = func_path->child("identifier")->get_text();
+    auto func_name = func_path->child("identifier")->get_text();
 
     auto src_class = node->ancestor<CNodeClass>();
     auto field = src_class->get_field(field_name);
@@ -322,10 +319,11 @@ Err Emitter::emit(CNodeCall* node) {
 
     if (dst_func->child("return_type")->get_text() == "void") {
       err << cursor.comment_out(node);
-    }
-    else {
+    } else {
       err << cursor.skip_over(node);
-      err << cursor.emit_print("%.*s_%.*s_ret", field_name.size(), field_name.data(), func_name.size(), func_name.data());
+      err << cursor.emit_print("%.*s_%.*s_ret", field_name.size(),
+                               field_name.data(), func_name.size(),
+                               func_name.data());
     }
 
     return err << cursor.check_done(node);
@@ -341,9 +339,9 @@ Err Emitter::emit(CNodeClass* node) {
   Err err = cursor.check_at(node);
 
   auto node_class = node->child<CNodeKeyword>();
-  auto node_name  = node->child("name");
-  auto node_body  = node->child("body");
-  auto node_semi  = node->child("semi");
+  auto node_name = node->child("name");
+  auto node_body = node->child("body");
+  auto node_semi = node->child("semi");
 
   err << cursor.emit_replacements(node_class, "class", "module");
   err << cursor.emit_gap();
@@ -362,12 +360,10 @@ Err Emitter::emit(CNodeClass* node) {
       cursor.indent_level++;
       err << cursor.skip_over(child);
       err << node->emit_template_parameter_list(cursor);
-    }
-    else if (child->get_text() == "}") {
+    } else if (child->get_text() == "}") {
       cursor.indent_level--;
       err << cursor.emit_replacement(child, "endmodule");
-    }
-    else {
+    } else {
       err << cursor.emit(child);
     }
     if (child->node_next) err << cursor.emit_gap();
@@ -389,11 +385,111 @@ Err Emitter::emit(CNodeClassType* node) {
     err << cursor.emit(node->child("name"));
     err << cursor.emit_gap();
     err << cursor.skip_over(targs);
-  }
-  else {
+  } else {
     err << cursor.emit_default(node);
   }
   return err;
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeCompound* node) {
+  return node->emit_block(cursor, "begin", "end");
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeConstant* node) {
+  Err err = cursor.check_at(node);
+
+  std::string body = node->get_textstr();
+
+  // FIXME what was this for?
+  // This was for forcing enum constants to the size of the enum type
+  int size_cast = cursor.override_size.top();
+  // int size_cast = 0;
+
+  // Count how many 's are in the number
+  int spacer_count = 0;
+  int prefix_count = 0;
+
+  for (auto& c : body)
+    if (c == '\'') {
+      c = '_';
+      spacer_count++;
+    }
+
+  if (body.starts_with("0x")) {
+    prefix_count = 2;
+    if (!size_cast) size_cast = ((int)body.size() - 2 - spacer_count) * 4;
+    err << cursor.emit_print("%d'h", size_cast);
+  } else if (body.starts_with("0b")) {
+    prefix_count = 2;
+    if (!size_cast) size_cast = (int)body.size() - 2 - spacer_count;
+    err << cursor.emit_print("%d'b", size_cast);
+  } else {
+    if (size_cast) {
+      err << cursor.emit_print("%d'd", size_cast);
+    }
+  }
+
+  err << cursor.emit_print("%s", body.c_str() + prefix_count);
+
+  cursor.gap_emitted = false;
+  cursor.tok_cursor = node->tok_end();
+
+  return err << cursor.check_done(node);
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeConstructor* node) {
+  assert(false);
+  return Err();
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeDeclaration* node) {
+  Err err = cursor.check_at(node);
+
+  // Check for const char*
+  if (node->node_const) {
+    if (node->node_type->child("name")->get_text() == "char") {
+      if (node->node_type->child("star")) {
+        return cursor.emit_replacement(node, "{{const char*}}");
+      }
+    }
+
+    err << cursor.emit_print("parameter ");
+
+    for (auto c = node->child_head; c; c = c->node_next) {
+      if (c->as<CNodeType>()) {
+        err << cursor.skip_over(c);
+        if (c->node_next) err << cursor.skip_gap();
+      } else {
+        err << cursor.emit(c);
+        if (c->node_next) err << cursor.emit_gap();
+      }
+    }
+
+    return err << cursor.check_done(node);
+  }
+
+  for (auto child : node) {
+    if (cursor.elide_type.top()) {
+      if (child->as<CNodeType>()) {
+        err << cursor.skip_over(child);
+        if (child->node_next) err << cursor.skip_gap();
+        continue;
+      }
+    }
+
+    err << cursor.emit(child);
+    if (child->node_next) err << cursor.emit_gap();
+  }
+
+  return err << cursor.check_done(node);
 }
 
 //==============================================================================

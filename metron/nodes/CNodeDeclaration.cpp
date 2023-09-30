@@ -1,11 +1,11 @@
 #include "CNodeDeclaration.hpp"
 
+#include "metron/Emitter.hpp"
 #include "metron/nodes/CNodeIdentifier.hpp"
 #include "metron/nodes/CNodeType.hpp"
 #include "metron/nodes/CNodeKeyword.hpp"
 #include "metron/nodes/CNodeList.hpp"
 #include "metron/nodes/CNodePunct.hpp"
-#include "metron/Cursor.hpp"
 
 //------------------------------------------------------------------------------
 
@@ -40,48 +40,7 @@ bool CNodeDeclaration::is_array() const {
 //------------------------------------------------------------------------------
 
 Err CNodeDeclaration::emit(Cursor& cursor) {
-  Err err = cursor.check_at(this);
-
-  // Check for const char*
-  if (node_const) {
-    if (node_type->child("name")->get_text() == "char") {
-      if (node_type->child("star")) {
-        return cursor.emit_replacement(this, "{{const char*}}");
-      }
-    }
-
-    err << cursor.emit_print("parameter ");
-
-    for (auto c = child_head; c; c = c->node_next) {
-      if (c->as<CNodeType>()) {
-        err << cursor.skip_over(c);
-        if (c->node_next) err << cursor.skip_gap();
-      }
-      else {
-        err << cursor.emit(c);
-        if (c->node_next) err << cursor.emit_gap();
-      }
-    }
-
-    return err << cursor.check_done(this);
-  }
-
-
-
-  for (auto child : this) {
-    if (cursor.elide_type.top()) {
-      if (child->as<CNodeType>()) {
-        err << cursor.skip_over(child);
-        if (child->node_next) err << cursor.skip_gap();
-        continue;
-      }
-    }
-
-    err << cursor.emit(child);
-    if (child->node_next) err << cursor.emit_gap();
-  }
-
-  return err << cursor.check_done(this);
+  return Emitter(cursor).emit(this);
 }
 
 //------------------------------------------------------------------------------

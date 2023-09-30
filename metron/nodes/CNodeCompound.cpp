@@ -1,6 +1,6 @@
 #include "CNodeCompound.hpp"
 
-#include "metron/Cursor.hpp"
+#include "metron/Emitter.hpp"
 #include "metron/nodes/CNodeCall.hpp"
 #include "metron/nodes/CNodeField.hpp"
 #include "metron/nodes/CNodeFieldExpression.hpp"
@@ -39,7 +39,7 @@ Err CNodeCompound::trace(CInstance* inst, call_stack& stack) {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err CNodeCompound::emit(Cursor& cursor) {
-  return emit_block(cursor, "begin", "end");
+  return Emitter(cursor).emit(this);
 }
 
 //------------------------------------------------------------------------------

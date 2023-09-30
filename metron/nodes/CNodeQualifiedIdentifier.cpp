@@ -4,8 +4,17 @@
 #include "metron/nodes/CNodeClass.hpp"
 #include "metron/nodes/CNodeNamespace.hpp"
 #include "metron/nodes/CNodeField.hpp"
+#include "metron/nodes/CNodePunct.hpp"
 
 //==============================================================================
+
+void CNodeQualifiedIdentifier::init(const char* match_tag, SpanType span, uint64_t flags) {
+  CNode::init(match_tag, span, flags);
+
+  node_scope = child("scope_path");
+  node_colon = child("colon")->req<CNodePunct>();
+  node_name  = child("identifier");
+}
 
 uint32_t CNodeQualifiedIdentifier::debug_color() const { return 0x80FF80; }
 

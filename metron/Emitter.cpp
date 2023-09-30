@@ -1119,31 +1119,27 @@ Err Emitter::emit(CNodePreproc* node) {
 Err Emitter::emit(CNodeQualifiedIdentifier* node) {
   Err err = cursor.check_at(node);
 
-  auto node_scope = node->child("scope_path");
-  auto node_colon = node->child("colon");
-  auto node_name  = node->child("identifier");
-
   bool elide_scope = false;
 
-  if (node_scope->get_text() == "std") elide_scope = true;
+  if (node->node_scope->get_text() == "std") elide_scope = true;
 
   auto node_class = node->ancestor<CNodeClass>();
 
   // Verilog doesn't like the scope on the enums
-  if (node_class && node_class->get_enum(node_scope->get_text())) {
+  if (node_class && node_class->get_enum(node->node_scope->get_text())) {
     elide_scope = true;
   }
 
   if (elide_scope) {
-    err << cursor.skip_to(node_name);
-    err << emit_dispatch(node_name);
+    err << cursor.skip_to(node->node_name);
+    err << emit_dispatch(node->node_name);
   }
   else {
-    err << emit_dispatch(node_scope);
+    err << emit_dispatch(node->node_scope);
     err << cursor.emit_gap();
-    err << emit_dispatch(node_colon);
+    err << emit_dispatch(node->node_colon);
     err << cursor.emit_gap();
-    err << emit_dispatch(node_name);
+    err << emit_dispatch(node->node_name);
   }
 
   return err << cursor.check_done(node);

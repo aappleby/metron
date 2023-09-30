@@ -51,10 +51,6 @@ struct CNodeClass : public CNode {
   Err build_call_graph(CSourceRepo* repo);
   void dump_call_graph();
 
-  Err emit_module_ports(Cursor& cursor);
-  Err emit_function_ports(CNodeFunction* f, Cursor& cursor);
-  Err emit_field_ports(CNodeField* f, bool is_output, Cursor& cursor);
-
   void dump_fields();
 
   //----------------------------------------

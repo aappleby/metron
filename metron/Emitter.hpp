@@ -87,6 +87,10 @@ struct Emitter {
   Err emit_hoisted_decls(CNodeCompound* node);
   Err emit_call_arg_bindings(CNodeCompound* node, CNode* child);
   Err emit_component(CNodeField* node);
+  Err emit_module_ports(CNodeClass* node);
+  Err emit_function_ports(CNodeFunction* f);
+  Err emit_field_ports(CNodeField* f, bool is_output);
+
 
 
 

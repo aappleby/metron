@@ -217,6 +217,9 @@ build wasm/obj/metron/CToken.o: compile_cpp_ems metron/CToken.cpp
 build wasm/obj/metron/Cursor.o: compile_cpp_ems metron/Cursor.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
+build wasm/obj/metron/Emitter.o: compile_cpp_ems metron/Emitter.cpp
+  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
+      -Isymlinks/CLI11/include -Itests
 build wasm/obj/metron/MtUtils.o: compile_cpp_ems metron/MtUtils.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
@@ -384,9 +387,9 @@ build docs/app/metron.js: link_ems wasm/obj/metron/main/main.o $
     wasm/obj/metron/CNode.o wasm/obj/metron/CParser.o $
     wasm/obj/metron/CScope.o wasm/obj/metron/CSourceFile.o $
     wasm/obj/metron/CSourceRepo.o wasm/obj/metron/CToken.o $
-    wasm/obj/metron/Cursor.o wasm/obj/metron/MtUtils.o $
-    wasm/obj/metron/Tracer.o wasm/obj/metron/metron_tools.o $
-    wasm/obj/metron/nodes/CNodeAccess.o $
+    wasm/obj/metron/Cursor.o wasm/obj/metron/Emitter.o $
+    wasm/obj/metron/MtUtils.o wasm/obj/metron/Tracer.o $
+    wasm/obj/metron/metron_tools.o wasm/obj/metron/nodes/CNodeAccess.o $
     wasm/obj/metron/nodes/CNodeAssignment.o $
     wasm/obj/metron/nodes/CNodeBuiltinType.o $
     wasm/obj/metron/nodes/CNodeCall.o wasm/obj/metron/nodes/CNodeClass.o $
@@ -460,6 +463,9 @@ build obj/metron/CToken.o: compile_cpp metron/CToken.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
 build obj/metron/Cursor.o: compile_cpp metron/Cursor.cpp
+  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
+      -Isymlinks/CLI11/include -Itests
+build obj/metron/Emitter.o: compile_cpp metron/Emitter.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
 build obj/metron/MtUtils.o: compile_cpp metron/MtUtils.cpp
@@ -611,19 +617,20 @@ build bin/libmetron.a: static_lib obj/metron/CContext.o $
     obj/metron/CInstance.o obj/metron/CLexer.o obj/metron/CNode.o $
     obj/metron/CParser.o obj/metron/CScope.o obj/metron/CSourceFile.o $
     obj/metron/CSourceRepo.o obj/metron/CToken.o obj/metron/Cursor.o $
-    obj/metron/MtUtils.o obj/metron/Tracer.o obj/metron/metron_tools.o $
-    obj/metron/nodes/CNodeAccess.o obj/metron/nodes/CNodeAssignment.o $
-    obj/metron/nodes/CNodeBuiltinType.o obj/metron/nodes/CNodeCall.o $
-    obj/metron/nodes/CNodeClass.o obj/metron/nodes/CNodeCompound.o $
-    obj/metron/nodes/CNodeConstant.o obj/metron/nodes/CNodeConstructor.o $
-    obj/metron/nodes/CNodeDeclaration.o obj/metron/nodes/CNodeEnum.o $
-    obj/metron/nodes/CNodeExpStatement.o obj/metron/nodes/CNodeExpression.o $
-    obj/metron/nodes/CNodeField.o obj/metron/nodes/CNodeFieldExpression.o $
-    obj/metron/nodes/CNodeFor.o obj/metron/nodes/CNodeFunction.o $
-    obj/metron/nodes/CNodeIdentifier.o obj/metron/nodes/CNodeIf.o $
-    obj/metron/nodes/CNodeKeyword.o obj/metron/nodes/CNodeLValue.o $
-    obj/metron/nodes/CNodeList.o obj/metron/nodes/CNodeNamespace.o $
-    obj/metron/nodes/CNodePreproc.o obj/metron/nodes/CNodePunct.o $
+    obj/metron/Emitter.o obj/metron/MtUtils.o obj/metron/Tracer.o $
+    obj/metron/metron_tools.o obj/metron/nodes/CNodeAccess.o $
+    obj/metron/nodes/CNodeAssignment.o obj/metron/nodes/CNodeBuiltinType.o $
+    obj/metron/nodes/CNodeCall.o obj/metron/nodes/CNodeClass.o $
+    obj/metron/nodes/CNodeCompound.o obj/metron/nodes/CNodeConstant.o $
+    obj/metron/nodes/CNodeConstructor.o obj/metron/nodes/CNodeDeclaration.o $
+    obj/metron/nodes/CNodeEnum.o obj/metron/nodes/CNodeExpStatement.o $
+    obj/metron/nodes/CNodeExpression.o obj/metron/nodes/CNodeField.o $
+    obj/metron/nodes/CNodeFieldExpression.o obj/metron/nodes/CNodeFor.o $
+    obj/metron/nodes/CNodeFunction.o obj/metron/nodes/CNodeIdentifier.o $
+    obj/metron/nodes/CNodeIf.o obj/metron/nodes/CNodeKeyword.o $
+    obj/metron/nodes/CNodeLValue.o obj/metron/nodes/CNodeList.o $
+    obj/metron/nodes/CNodeNamespace.o obj/metron/nodes/CNodePreproc.o $
+    obj/metron/nodes/CNodePunct.o $
     obj/metron/nodes/CNodeQualifiedIdentifier.o $
     obj/metron/nodes/CNodeReturn.o obj/metron/nodes/CNodeStatement.o $
     obj/metron/nodes/CNodeStruct.o obj/metron/nodes/CNodeSwitch.o $

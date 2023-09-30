@@ -558,9 +558,7 @@ Err Emitter::emit(CNodeEnum* node) {
 
 //------------------------------------------------------------------------------
 
-Err Emitter::emit(CNodeEnumerator* node) {
-  return cursor.emit_default(node);
-}
+Err Emitter::emit(CNodeEnumerator* node) { return cursor.emit_default(node); }
 
 //------------------------------------------------------------------------------
 
@@ -568,16 +566,14 @@ Err Emitter::emit(CNodeEnumType* node) { return cursor.emit_default(node); }
 
 //------------------------------------------------------------------------------
 
-Err Emitter::emit(CNodeExpression* node) {
-  return cursor.emit_default(node);
-}
+Err Emitter::emit(CNodeExpression* node) { return cursor.emit_default(node); }
 
 //------------------------------------------------------------------------------
 
 Err Emitter::emit(CNodePrefixExp* node) {
   Err err = cursor.check_at(node);
 
-  auto node_op    = node->child("prefix");
+  auto node_op = node->child("prefix");
   auto op = node_op->get_text();
 
   if (op != "++" && op != "--") {
@@ -585,23 +581,21 @@ Err Emitter::emit(CNodePrefixExp* node) {
   }
 
   auto node_class = node->ancestor<CNodeClass>();
-  auto node_func  = node->ancestor<CNodeFunction>();
-  auto node_rhs   = node->child("rhs");
+  auto node_func = node->ancestor<CNodeFunction>();
+  auto node_rhs = node->child("rhs");
   auto node_field = node_class->get_field(node_rhs);
 
   err << cursor.skip_over(node);
   err << cursor.emit_splice(node_rhs);
   if (node_func->method_type == MT_TICK && node_field) {
     err << cursor.emit_print(" <= ");
-  }
-  else {
+  } else {
     err << cursor.emit_print(" = ");
   }
   err << cursor.emit_splice(node_rhs);
   if (op == "++") {
     err << cursor.emit_print(" + 1");
-  }
-  else {
+  } else {
     err << cursor.emit_print(" - 1");
   }
 
@@ -614,9 +608,9 @@ Err Emitter::emit(CNodeSuffixExp* node) {
   Err err = cursor.check_at(node);
 
   auto node_class = node->ancestor<CNodeClass>();
-  auto node_func  = node->ancestor<CNodeFunction>();
-  auto node_op    = node->child("suffix");
-  auto node_lhs   = node->child("lhs");
+  auto node_func = node->ancestor<CNodeFunction>();
+  auto node_op = node->child("suffix");
+  auto node_lhs = node->child("lhs");
   auto node_field = node_class->get_field(node_lhs);
 
   auto op = node_op->get_text();
@@ -626,22 +620,73 @@ Err Emitter::emit(CNodeSuffixExp* node) {
     err << cursor.emit_splice(node_lhs);
     if (node_func->method_type == MT_TICK && node_field) {
       err << cursor.emit_print(" <= ");
-    }
-    else {
+    } else {
       err << cursor.emit_print(" = ");
     }
     err << cursor.emit_splice(node_lhs);
     if (op == "++") {
       err << cursor.emit_print(" + 1");
-    }
-    else {
+    } else {
       err << cursor.emit_print(" - 1");
     }
-  }
-  else {
+  } else {
     err << cursor.emit_default(node);
   }
 
+  return err << cursor.check_done(node);
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeOperator* node) { return cursor.emit_default(node); }
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeExpStatement* node) {
+  Err err = cursor.check_at(node);
+
+  CNode* node_exp = node->child("exp");
+  CNode* node_semi = node->child("semi");
+
+  // Call expressions turn into either Verilog calls, or are replaced with
+  // binding statements.
+  if (auto call = node_exp->as<CNodeCall>()) {
+    bool can_omit_call = false;
+    // Calls into submodules always turn into bindings.
+    if (auto func_path = call->node_name->as<CNodeFieldExpression>()) {
+      can_omit_call = true;
+    }
+
+    // Calls into methods in the same module turn into bindings if needed.
+    auto src_class = call->ancestor<CNodeClass>();
+    auto dst_func = src_class->get_function(call->node_name->get_text());
+    if (dst_func && dst_func->needs_binding()) {
+      can_omit_call = true;
+    }
+
+    if (can_omit_call) {
+      err << cursor.comment_out(node);
+      return err << cursor.check_done(node);
+    }
+  }
+
+  if (auto keyword = node_exp->as<CNodeKeyword>()) {
+    if (keyword->get_text() == "break") {
+      err << cursor.comment_out(node);
+      return err << cursor.check_done(node);
+    }
+  }
+
+  if (auto decl = node_exp->as<CNodeDeclaration>()) {
+    if (cursor.elide_type.top()) {
+      if (decl->node_value == nullptr) {
+        err << cursor.skip_over(node);
+        return err << cursor.check_done(node);
+      }
+    }
+  }
+
+  err << cursor.emit_default(node);
   return err << cursor.check_done(node);
 }
 

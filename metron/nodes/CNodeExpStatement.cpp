@@ -4,6 +4,9 @@
 #include "metron/nodes/CNodeCall.hpp"
 #include "metron/nodes/CNodeKeyword.hpp"
 #include "metron/nodes/CNodeDeclaration.hpp"
+#include "metron/nodes/CNodeFieldExpression.hpp"
+#include "metron/nodes/CNodeClass.hpp"
+#include "metron/nodes/CNodeFunction.hpp"
 
 //==============================================================================
 
@@ -27,8 +30,23 @@ Err CNodeExpStatement::emit(Cursor& cursor) {
   CNode* node_exp = child("exp");
   CNode* node_semi = child("semi");
 
+  // Call expressions turn into either Verilog calls, or are replaced with
+  // binding statements.
   if (auto call = node_exp->as<CNodeCall>()) {
-    if (call->can_omit_call()) {
+    bool can_omit_call = false;
+    // Calls into submodules always turn into bindings.
+    if (auto func_path = call->node_name->as<CNodeFieldExpression>()) {
+      can_omit_call = true;
+    }
+
+    // Calls into methods in the same module turn into bindings if needed.
+    auto src_class = call->ancestor<CNodeClass>();
+    auto dst_func = src_class->get_function(call->node_name->get_text());
+    if (dst_func && dst_func->needs_binding()) {
+      can_omit_call = true;
+    }
+
+    if (can_omit_call) {
       err << cursor.comment_out(this);
       return err << cursor.check_done(this);
     }

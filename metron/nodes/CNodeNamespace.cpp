@@ -1,6 +1,6 @@
 #include "CNodeNamespace.hpp"
 
-#include "metron/Cursor.hpp"
+#include "metron/Emitter.hpp"
 #include "metron/nodes/CNodeField.hpp"
 
 //==============================================================================
@@ -16,41 +16,7 @@ std::string_view CNodeNamespace::get_name() const {
 //------------------------------------------------------------------------------
 
 Err CNodeNamespace::emit(Cursor& cursor) {
-  Err err = cursor.check_at(this);
-  auto node_namespace = child("namespace");
-  auto node_name      = child("name");
-  auto node_fields    = child("fields");
-  auto node_semi      = child("semi");
-
-  err << cursor.emit_replacement(node_namespace, "package");
-  err << cursor.emit_gap();
-
-  err << cursor.emit_raw(node_name);
-  err << cursor.emit_print(";");
-  err << cursor.emit_gap();
-
-  for (auto f : node_fields) {
-    if (f->tag_is("ldelim")) {
-      err << cursor.skip_over(f);
-      err << cursor.emit_gap();
-      continue;
-    }
-    else if (f->tag_is("rdelim")) {
-      err << cursor.emit_replacement(f, "endpackage");
-      err << cursor.emit_gap();
-      continue;
-    }
-    else {
-      err << f->emit(cursor);
-      err << cursor.emit_gap();
-      continue;
-    }
-  }
-
-  // Don't need semi after namespace in Verilog
-  err << cursor.skip_over(node_semi);
-
-  return err << cursor.check_done(this);
+  return Emitter(cursor).emit(this);
 }
 
 //------------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 #include "CNodeLValue.hpp"
 
-#include "metron/Cursor.hpp"
+#include "metron/Emitter.hpp"
 
 //==============================================================================
 
@@ -13,7 +13,7 @@ CHECK_RETURN Err CNodeLValue::trace(CInstance* inst, call_stack& stack) {
 }
 
 CHECK_RETURN Err CNodeLValue::emit(Cursor& cursor) {
-  return cursor.emit_default(this);
+  return Emitter(cursor).emit(this);
 }
 
 //==============================================================================

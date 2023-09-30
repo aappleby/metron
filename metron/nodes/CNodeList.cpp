@@ -1,6 +1,6 @@
 #include "CNodeList.hpp"
 
-#include "metron/Cursor.hpp"
+#include "metron/Emitter.hpp"
 #include "metron/nodes/CNodePunct.hpp"
 
 //==============================================================================
@@ -20,9 +20,7 @@ std::string_view CNodeList::get_name() const {
 }
 
 Err CNodeList::emit(Cursor& cursor) {
-  Err err = cursor.check_at(this);
-  err << cursor.emit_default(this);
-  return err << cursor.check_done(this);
+  return Emitter(cursor).emit(this);
 }
 
 Err CNodeList::trace(CInstance* inst, call_stack& stack) {

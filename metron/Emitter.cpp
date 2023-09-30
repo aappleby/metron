@@ -31,6 +31,7 @@
 #include "metron/nodes/CNodeTemplate.hpp"
 #include "metron/nodes/CNodeType.hpp"
 #include "metron/nodes/CNodeWhile.hpp"
+#include "metron/nodes/CNodePreproc.hpp"
 
 //==============================================================================
 
@@ -964,7 +965,128 @@ Err Emitter::emit(CNodeIdentifier* node) {
 
 //------------------------------------------------------------------------------
 
+Err Emitter::emit(CNodeIf* node) {
+  Err err = cursor.check_at(node);
+
+  err << cursor.emit(node->node_kw_if);
+  err << cursor.emit_gap();
+
+  err << cursor.emit(node->node_cond);
+  err << cursor.emit_gap();
+
+  err << cursor.emit(node->node_then);
+
+  if (node->node_kw_else) {
+    err << cursor.emit_gap();
+    err << cursor.emit(node->node_kw_else);
+  }
+
+  if (node->node_else) {
+    err << cursor.emit_gap();
+    err << cursor.emit(node->node_else);
+  }
+
+  return err << cursor.check_done(node);
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeKeyword* node) {
+  auto text = node->get_text();
+
+  if (text == "static" || text == "const" || text == "break") {
+    return cursor.comment_out(node);
+  }
+
+  if (text == "nullptr") {
+    return cursor.emit_replacement(node, "\"\"");
+  }
+
+  if (text == "if" || text == "else" || text == "default" || text == "for" || "enum") {
+    return cursor.emit_raw(node);
+  }
+
+  assert(false);
+  return ERR("Don't know how to handle this keyword - %s\n", node->get_textstr().c_str());
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeList* node) {
+  return cursor.emit_default(node);
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeLValue* node) {
+  return cursor.emit_default(node);
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeNamespace* node) {
+  Err err = cursor.check_at(node);
+  auto node_namespace = node->child("namespace");
+  auto node_name      = node->child("name");
+  auto node_fields    = node->child("fields");
+  auto node_semi      = node->child("semi");
+
+  err << cursor.emit_replacement(node_namespace, "package");
+  err << cursor.emit_gap();
+
+  err << cursor.emit_raw(node_name);
+  err << cursor.emit_print(";");
+  err << cursor.emit_gap();
+
+  for (auto f : node_fields) {
+    if (f->tag_is("ldelim")) {
+      err << cursor.skip_over(f);
+      err << cursor.emit_gap();
+      continue;
+    }
+    else if (f->tag_is("rdelim")) {
+      err << cursor.emit_replacement(f, "endpackage");
+      err << cursor.emit_gap();
+      continue;
+    }
+    else {
+      err << f->emit(cursor);
+      err << cursor.emit_gap();
+      continue;
+    }
+  }
+
+  // Don't need semi after namespace in Verilog
+  err << cursor.skip_over(node_semi);
+
+  return err << cursor.check_done(node);
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodePreproc* node) {
+  Err err = cursor.check_at(node);
+
+  if (node->tag_is("preproc_define")) {
+    err << cursor.emit_default(node);
+    auto name = node->child("name")->get_textstr();
+    cursor.preproc_vars.insert(name);
+  }
+
+  else if (node->tag_is("preproc_include")) {
+    err << cursor.emit_replacements(node, "#include", "`include", ".h", ".sv");
+  }
+
+  else {
+    err << cursor.emit_default(node);
+  }
+
+  return err << cursor.check_done(node);
+}
+
 /*
+//------------------------------------------------------------------------------
+
 Err Emitter::emit(CNodeFor* node) {
 }
 */

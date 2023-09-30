@@ -1,5 +1,6 @@
 #include "CNodeIf.hpp"
 
+#include "metron/Emitter.hpp"
 #include "metron/nodes/CNodeCall.hpp"
 #include "metron/nodes/CNodeExpStatement.hpp"
 #include "metron/nodes/CNodeFieldExpression.hpp"
@@ -61,27 +62,7 @@ CHECK_RETURN Err CNodeIf::trace(CInstance* inst, call_stack& stack) {
 //----------------------------------------
 
 CHECK_RETURN Err CNodeIf::emit(Cursor& cursor) {
-  Err err = cursor.check_at(this);
-
-  err << cursor.emit(node_kw_if);
-  err << cursor.emit_gap();
-
-  err << cursor.emit(node_cond);
-  err << cursor.emit_gap();
-
-  err << cursor.emit(node_then);
-
-  if (node_kw_else) {
-    err << cursor.emit_gap();
-    err << cursor.emit(node_kw_else);
-  }
-
-  if (node_else) {
-    err << cursor.emit_gap();
-    err << cursor.emit(node_else);
-  }
-
-  return err << cursor.check_done(this);
+  return Emitter(cursor).emit(this);
 }
 
 //==============================================================================

@@ -27,6 +27,12 @@ struct CNodeFieldExpression;
 struct CNodeFor;
 struct CNodeFunction;
 struct CNodeIdentifier;
+struct CNodeIf;
+struct CNodeKeyword;
+struct CNodeList;
+struct CNodeLValue;
+struct CNodeNamespace;
+struct CNodePreproc;
 
 //==============================================================================
 
@@ -57,6 +63,12 @@ struct Emitter {
   Err emit(CNodeFor* node);
   Err emit(CNodeFunction* node);
   Err emit(CNodeIdentifier* node);
+  Err emit(CNodeIf* node);
+  Err emit(CNodeKeyword* node);
+  Err emit(CNodeList* node);
+  Err emit(CNodeLValue* node);
+  Err emit(CNodeNamespace* node);
+  Err emit(CNodePreproc* node);
 
   Cursor& cursor;
 };

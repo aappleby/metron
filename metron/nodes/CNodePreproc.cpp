@@ -1,6 +1,6 @@
 #include "CNodePreproc.hpp"
 
-#include "metron/Cursor.hpp"
+#include "metron/Emitter.hpp"
 
 //==============================================================================
 
@@ -16,23 +16,7 @@ std::string_view CNodePreproc::get_name() const {
 //------------------------------------------------------------------------------
 
 Err CNodePreproc::emit(Cursor& cursor) {
-  Err err = cursor.check_at(this);
-
-  if (tag_is("preproc_define")) {
-    err << cursor.emit_default(this);
-    auto name = child("name")->get_textstr();
-    cursor.preproc_vars.insert(name);
-  }
-
-  else if (tag_is("preproc_include")) {
-    err << cursor.emit_replacements(this, "#include", "`include", ".h", ".sv");
-  }
-
-  else {
-    err << cursor.emit_default(this);
-  }
-
-  return err << cursor.check_done(this);
+  return Emitter(cursor).emit(this);
 }
 
 //------------------------------------------------------------------------------

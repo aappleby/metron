@@ -1,6 +1,6 @@
 #include "CNodeFor.hpp"
 
-#include "metron/Cursor.hpp"
+#include "metron/Emitter.hpp"
 
 //==============================================================================
 
@@ -14,14 +14,7 @@ CHECK_RETURN Err CNodeFor::trace(CInstance* inst, call_stack& stack) {
 }
 
 CHECK_RETURN Err CNodeFor::emit(Cursor& cursor) {
-  Err err = cursor.check_at(this);
-
-  for (auto child : this) {
-    err << cursor.emit(child);
-    if (child->node_next) err << cursor.emit_gap();
-  }
-
-  return err << cursor.check_done(this);
+  return Emitter(cursor).emit(this);
 }
 
 //==============================================================================

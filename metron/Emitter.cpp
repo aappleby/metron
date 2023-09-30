@@ -9,6 +9,7 @@
 #include "metron/nodes/CNodeConstant.hpp"
 #include "metron/nodes/CNodeConstructor.hpp"
 #include "metron/nodes/CNodeDeclaration.hpp"
+#include "metron/nodes/CNodeDoWhile.hpp"
 #include "metron/nodes/CNodeEnum.hpp"
 #include "metron/nodes/CNodeExpStatement.hpp"
 #include "metron/nodes/CNodeExpression.hpp"
@@ -17,12 +18,19 @@
 #include "metron/nodes/CNodeFor.hpp"
 #include "metron/nodes/CNodeFunction.hpp"
 #include "metron/nodes/CNodeIdentifier.hpp"
+#include "metron/nodes/CNodeIf.hpp"
 #include "metron/nodes/CNodeKeyword.hpp"
 #include "metron/nodes/CNodeLValue.hpp"
 #include "metron/nodes/CNodeList.hpp"
+#include "metron/nodes/CNodeNamespace.hpp"
 #include "metron/nodes/CNodePunct.hpp"
+#include "metron/nodes/CNodeReturn.hpp"
+#include "metron/nodes/CNodeStatement.hpp"
+#include "metron/nodes/CNodeStruct.hpp"
+#include "metron/nodes/CNodeSwitch.hpp"
 #include "metron/nodes/CNodeTemplate.hpp"
 #include "metron/nodes/CNodeType.hpp"
+#include "metron/nodes/CNodeWhile.hpp"
 
 //==============================================================================
 
@@ -689,5 +697,252 @@ Err Emitter::emit(CNodeExpStatement* node) {
   err << cursor.emit_default(node);
   return err << cursor.check_done(node);
 }
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeField* node) {
+  Err err = cursor.check_at(node);
+
+  //----------------------------------------
+  // Ports don't go in the class body.
+  // FIXME should we disallow public components?
+
+  if (node->is_public && !node->is_component() &&
+      !node->node_decl->is_localparam()) {
+    return err << cursor.skip_over(node);
+  }
+
+  //----------------------------------------
+
+  if (node->is_const_char()) {
+    err << cursor.emit_print("localparam string ");
+    err << cursor.skip_to(node->node_decl->node_name);
+    err << cursor.emit(node->node_decl->node_name);
+    err << cursor.emit_gap();
+
+    if (node->node_decl->node_array) {
+      err << cursor.emit(node->node_decl->node_array);
+      err << cursor.emit_gap();
+    }
+
+    err << cursor.emit(node->node_decl->node_eq);
+    err << cursor.emit_gap();
+    err << cursor.emit(node->node_decl->node_value);
+    err << cursor.emit_gap();
+
+    err << cursor.emit(node->node_semi);
+
+    return err << cursor.check_done(node);
+  }
+
+  //----------------------------------------
+
+  if (node->node_decl->node_const) {
+    // Localparam
+    bool in_namespace = node->ancestor<CNodeNamespace>() != nullptr;
+    err << cursor.emit_print(in_namespace ? "parameter " : "localparam ");
+
+    if (node->node_decl->node_static) {
+      err << cursor.comment_out(node->node_decl->node_static);
+      err << cursor.emit_gap();
+    }
+
+    if (node->node_decl->node_const) {
+      err << cursor.comment_out(node->node_decl->node_const);
+      err << cursor.emit_gap();
+    }
+
+    err << cursor.emit(node->node_decl->node_type);
+    err << cursor.emit_gap();
+
+    err << cursor.emit(node->node_decl->node_name);
+    err << cursor.emit_gap();
+
+    if (node->node_decl->node_array) {
+      err << cursor.emit(node->node_decl->node_array);
+      err << cursor.emit_gap();
+    }
+
+    if (node->node_decl->node_eq) {
+      err << cursor.emit(node->node_decl->node_eq);
+      err << cursor.emit_gap();
+    }
+
+    if (node->node_decl->node_value) {
+      err << cursor.emit(node->node_decl->node_value);
+      err << cursor.emit_gap();
+    }
+
+    err << cursor.emit(node->node_semi);
+    return err << cursor.check_done(node);
+  }
+
+  //----------------------------------------
+
+  auto node_builtin = node->node_decl->node_type->as<CNodeBuiltinType>();
+  auto node_targs = node->node_decl->node_type->child("template_args");
+
+  if (node_builtin && node_targs) {
+    err << cursor.skip_to(node->node_decl->node_type);
+    err << cursor.emit(node->node_decl->node_type);
+    err << cursor.emit_gap();
+
+    err << cursor.emit(node->node_decl->node_name);
+    err << cursor.emit_gap();
+
+    if (node->node_decl->node_array) {
+      err << cursor.emit(node->node_decl->node_array);
+      err << cursor.emit_gap();
+    }
+
+    if (node->node_decl->node_eq) {
+      err << cursor.emit(node->node_decl->node_eq);
+      err << cursor.emit_gap();
+    }
+
+    if (node->node_decl->node_value) {
+      err << cursor.emit(node->node_decl->node_value);
+      err << cursor.emit_gap();
+    }
+
+    err << cursor.emit(node->node_semi);
+
+    return err << cursor.check_done(node);
+  }
+
+  //----------------------------------------
+
+  if (node_builtin) {
+    err << cursor.skip_to(node->node_decl->node_type);
+    err << cursor.emit(node->node_decl->node_type);
+    err << cursor.emit_gap();
+
+    err << cursor.emit(node->node_decl->node_name);
+    err << cursor.emit_gap();
+
+    if (node->node_decl->node_array) {
+      err << cursor.emit(node->node_decl->node_array);
+      err << cursor.emit_gap();
+    }
+
+    if (node->node_decl->node_eq) {
+      err << cursor.emit(node->node_decl->node_eq);
+      err << cursor.emit_gap();
+    }
+
+    if (node->node_decl->node_value) {
+      err << cursor.emit(node->node_decl->node_value);
+      err << cursor.emit_gap();
+    }
+
+    err << cursor.emit(node->node_semi);
+    return err << cursor.check_done(node);
+  }
+
+  //----------------------------------------
+
+  if (node->is_struct()) {
+    return cursor.emit_raw(node);
+  }
+
+  //----------------------------------------
+
+  if (node->is_component()) {
+    return node->emit_component(cursor);
+  }
+
+  //----------------------------------------
+
+  assert(false);
+  return err << cursor.check_done(node);
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeFieldExpression* node) {
+  Err err = cursor.check_at(node);
+
+  auto node_func = node->ancestor<CNodeFunction>();
+  auto node_class = node->ancestor<CNodeClass>();
+  auto node_path = node->child("field_path");
+  auto node_name = node->child("identifier");
+
+  auto field = node_class->get_field(node_path->get_text());
+
+  if (field && field->node_decl->_type_struct) {
+    err << cursor.emit_default(node);
+    return err;
+  }
+
+  // FIXME this needs the submod_ prefix for submod ports
+
+  if (field) {
+    auto field = node->get_textstr();
+    for (auto& c : field) {
+      if (c == '.') c = '_';
+    }
+    err << cursor.emit_replacement(node, field.c_str());
+  } else {
+    err << cursor.emit_default(node);
+  }
+
+  return err << cursor.check_done(node);
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeFor* node) { return cursor.emit_default(node); }
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeFunction* node) {
+  Err err = cursor.check_at(node);
+
+  // FIXME this should happen somewhere else
+  bool called_by_init = false;
+  bool called_by_tick = false;
+  bool called_by_tock = false;
+  bool called_by_func = false;
+
+  node->visit_internal_callers([&](CNodeFunction* f) {
+    if (f->method_type == MT_INIT) called_by_init = true;
+    if (f->method_type == MT_TICK) called_by_tick = true;
+    if (f->method_type == MT_TOCK) called_by_tock = true;
+    if (f->method_type == MT_FUNC) called_by_func = true;
+  });
+
+  //----------
+
+  if (node->method_type == MT_INIT) {
+    err << (node->as<CNodeConstructor>() ? node->emit_init(cursor)
+                                         : node->emit_task(cursor));
+  } else if (node->method_type == MT_TOCK) {
+    err << node->emit_always_comb(cursor);
+  } else if (node->method_type == MT_TICK) {
+    err << (called_by_tick ? node->emit_task(cursor)
+                           : node->emit_always_ff(cursor));
+  } else if (node->method_type == MT_FUNC) {
+    err << (node->internal_callers.size() ? node->emit_func(cursor)
+                                          : node->emit_always_comb(cursor));
+  } else {
+    node->dump_tree();
+    assert(false);
+  }
+
+  //----------
+
+  if (node->needs_binding()) {
+    err << node->emit_func_binding_vars(cursor);
+  }
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+/*
+Err Emitter::emit(CNodeFor* node) {
+}
+*/
 
 //==============================================================================

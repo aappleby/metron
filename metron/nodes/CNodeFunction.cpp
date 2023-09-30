@@ -2,7 +2,7 @@
 
 #include "metrolib/core/Log.h"
 #include "matcheroni/Utilities.hpp"
-#include "metron/Cursor.hpp"
+#include "metron/Emitter.hpp"
 #include "metron/nodes/CNodeStatement.hpp"
 #include "metron/nodes/CNodeIdentifier.hpp"
 #include "metron/nodes/CNodeConstructor.hpp"
@@ -58,47 +58,7 @@ std::string_view CNodeFunction::get_name() const {
 //------------------------------------------------------------------------------
 
 Err CNodeFunction::emit(Cursor& cursor) {
-  Err err = cursor.check_at(this);
-
-  bool called_by_init = false;
-  bool called_by_tick = false;
-  bool called_by_tock = false;
-  bool called_by_func = false;
-
-  visit_internal_callers([&](CNodeFunction* f) {
-    if (f->method_type == MT_INIT) called_by_init = true;
-    if (f->method_type == MT_TICK) called_by_tick = true;
-    if (f->method_type == MT_TOCK) called_by_tock = true;
-    if (f->method_type == MT_FUNC) called_by_func = true;
-  });
-
-  //----------
-
-  if (method_type == MT_INIT) {
-    err << (as<CNodeConstructor>() ? emit_init(cursor) : emit_task(cursor));
-  }
-  else if (method_type == MT_TOCK) {
-    err << emit_always_comb(cursor);
-  }
-  else if (method_type == MT_TICK) {
-    err << (called_by_tick ? emit_task(cursor) : emit_always_ff(cursor));
-  }
-  else if (method_type == MT_FUNC) {
-    err << (internal_callers.size() ? emit_func(cursor) : emit_always_comb(cursor));
-  }
-  else {
-    dump_tree();
-    assert(false);
-  }
-
-
-  //----------
-
-  if (needs_binding()) {
-    err << emit_func_binding_vars(cursor);
-  }
-
-  return err;
+  return Emitter(cursor).emit(this);
 }
 
 //------------------------------------------------------------------------------

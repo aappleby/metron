@@ -22,6 +22,10 @@ struct CNodePrefixExp;
 struct CNodeSuffixExp;
 struct CNodeOperator;
 struct CNodeExpStatement;
+struct CNodeField;
+struct CNodeFieldExpression;
+struct CNodeFor;
+struct CNodeFunction;
 
 //==============================================================================
 
@@ -47,6 +51,10 @@ struct Emitter {
   Err emit(CNodeSuffixExp* node);
   Err emit(CNodeOperator* node);
   Err emit(CNodeExpStatement* node);
+  Err emit(CNodeField* node);
+  Err emit(CNodeFieldExpression* node);
+  Err emit(CNodeFor* node);
+  Err emit(CNodeFunction* node);
 
   Cursor& cursor;
 };

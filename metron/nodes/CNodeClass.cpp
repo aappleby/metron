@@ -370,45 +370,6 @@ Err CNodeClass::emit_field_ports(CNodeField* f, bool is_output, Cursor& cursor) 
 
 //------------------------------------------------------------------------------
 
-Err CNodeClass::emit_template_parameter_list(Cursor& cursor) {
-  Err err;
-  Emitter emitter(cursor);
-
-  auto node_template = ancestor<CNodeTemplate>();
-  if (!node_template) return err;
-
-  auto old_cursor = cursor.tok_cursor;
-
-  for (auto param : node_template->params) {
-    err << cursor.start_line();
-    err << cursor.emit_print("parameter ");
-
-    cursor.tok_cursor = param->node_name->tok_begin();
-    err << emitter.emit(param->node_name);
-    err << cursor.emit_gap();
-
-    if (param->node_array) {
-      err << emitter.emit_dispatch(param->node_array);
-      err << cursor.emit_gap();
-    }
-
-    err << Emitter(cursor).emit_dispatch(param->node_eq);
-    err << cursor.emit_gap();
-
-    err << emitter.emit_dispatch(param->node_value);
-
-    err << cursor.emit_print(";");
-  }
-
-  err << cursor.emit_print("\n");
-
-  cursor.tok_cursor = old_cursor;
-
-  return err;
-}
-
-//------------------------------------------------------------------------------
-
 void CNodeClass::dump() const {
   LOG_B("Class %s @ %s, refcount %d\n", name.c_str(), file->filename.c_str(), refcount);
   LOG_INDENT();

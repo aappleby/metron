@@ -80,6 +80,8 @@ struct Emitter {
   Err emit(CNodeTypedef* node);
   Err emit(CNodeUsing* node);
 
+  Err emit_template_parameter_list(CNodeClass* node);
+
   Cursor& cursor;
 };
 

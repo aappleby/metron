@@ -52,7 +52,6 @@ struct CNodeClass : public CNode {
   void dump_call_graph();
 
   Err emit_module_ports(Cursor& cursor);
-  Err emit_template_parameter_list(Cursor& cursor);
   Err emit_function_ports(CNodeFunction* f, Cursor& cursor);
   Err emit_field_ports(CNodeField* f, bool is_output, Cursor& cursor);
 

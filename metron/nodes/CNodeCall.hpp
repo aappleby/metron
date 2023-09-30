@@ -15,7 +15,6 @@ struct CNodeCall : public CNode {
   CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
 
   bool is_bit_extract();
-  CHECK_RETURN Err emit_bit_extract(Cursor& cursor);
 
   CNode* node_name = nullptr;
   CNodeList* node_targs = nullptr;

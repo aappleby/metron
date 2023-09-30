@@ -220,7 +220,7 @@ Err Emitter::emit(CNodeBuiltinType* node) {
 Err Emitter::emit(CNodeCall* node) {
   Err err = cursor.check_at(node);
 
-  if (node->is_bit_extract()) return node->emit_bit_extract(cursor);
+  if (node->is_bit_extract()) return emit_bit_extract(node);
 
   auto src_class = node->ancestor<CNodeClass>();
   auto src_func = node->ancestor<CNodeFunction>();
@@ -1407,6 +1407,208 @@ Err Emitter::emit_block(CNodeCompound* node, std::string ldelim, std::string rde
   cursor.elide_value.pop();
 
   return err;
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit_bit_extract(CNodeCall* node) {
+  Err err;
+
+  auto func_name = node->node_name->get_textstr();
+
+  auto& args = node->node_args->items;
+  assert(args.size() == 1 || args.size() == 2);
+
+  //----------------------------------------
+
+  CNode* node_exp = args[0];
+  bool bare_exp = false;
+  bare_exp |= (node_exp->as<CNodeIdentifier>() != nullptr);
+  bare_exp |= (node_exp->as<CNodeConstInt>() != nullptr);
+  bare_exp |= (node_exp->as<CNodeFieldExpression>() != nullptr);
+
+  //----------
+
+  int    width      = 0;
+  CNode* node_width = nullptr;
+  bool   bare_width = false;
+
+  if (func_name == "bx") {
+    auto& targs = node->node_targs->items;
+    assert(targs.size() == 1);
+
+    if (auto const_width = targs[0]->as<CNodeConstInt>()) {
+      width = atoi(const_width->get_textstr().c_str());
+    }
+    else {
+      node_width = targs[0];
+    }
+  }
+  else {
+    width = atoi(&func_name[1]);
+    bare_width = true;
+  }
+
+  bare_width |= (node_width->as<CNodeIdentifier>() != nullptr);
+  bare_width |= (node_width->as<CNodeConstInt>() != nullptr);
+
+  //----------
+
+  int    offset = 0;
+  CNode* node_offset = nullptr;
+
+  if (args.size() == 2) {
+    if (auto const_offset = args[1]->as<CNodeConstInt>()) {
+      offset = atoi(const_offset->get_textstr().c_str());
+    }
+    else {
+      node_offset = args[1];
+    }
+  }
+  bool bare_offset = false;
+  bare_offset |= (node_offset->as<CNodeIdentifier>() != nullptr);
+  bare_offset |= (node_offset->as<CNodeConstInt>() != nullptr);
+
+  //----------------------------------------
+
+  err << cursor.skip_over(node);
+
+  //----------------------------------------
+  // Handle casting DONTCARE
+
+  if (node_exp->get_text() == "DONTCARE") {
+    //err << cursor.skip_over(node);
+
+    if (node_width) {
+      if (!bare_width) err << cursor.emit_print("(");
+      err << cursor.emit_splice(node_width);
+      if (!bare_width) err << cursor.emit_print(")");
+      err << cursor.emit_print("'('x)");
+    }
+    else {
+      err << cursor.emit_print("%d'bx", width);
+    }
+
+    return err;
+  }
+
+  //----------------------------------------
+  // Size cast with no offsets
+
+  if (offset == 0 && node_offset == nullptr) {
+
+    if (bare_width && bare_exp && !node_width) {
+      if (node_exp->as<CNodeConstInt>()) {
+        cursor.override_size.push(width);
+        err << cursor.emit_splice(node_exp);
+        cursor.override_size.pop();
+        return err;
+      }
+    }
+
+
+    if (!bare_width) err << cursor.emit_print("(");
+    if (node_width)  err << cursor.emit_splice(node_width);
+    else             err << cursor.emit_print("%d", width);
+    if (!bare_width) err << cursor.emit_print(")");
+
+    err<< cursor.emit_print("'");
+    err << cursor.emit_print("(");
+    err << cursor.emit_splice(node_exp);
+    err << cursor.emit_print(")");
+
+    return err;
+  }
+
+  //----------------------------------------
+  // Expression
+
+  if (!bare_exp) err << cursor.emit_print("(");
+  err << cursor.emit_splice(node_exp);
+  if (!bare_exp) err << cursor.emit_print(")");
+
+  //----------
+  // Single bit extract
+
+  if (width == 1) {
+    err << cursor.emit_print("[");
+    if (node_offset) {
+      err << cursor.emit_splice(node_offset);
+    }
+    else {
+      err << cursor.emit_print("%d", offset);
+    }
+    err << cursor.emit_print("]");
+    return err;
+  }
+
+  //----------
+
+  if (node_width && node_offset) {
+    err << cursor.emit_print("[");
+    if (!bare_width) err << cursor.emit_print("(");
+    err << cursor.emit_splice(node_width);
+    if (!bare_width) err << cursor.emit_print(")");
+    err << cursor.emit_print("+");
+    if (!bare_offset) err << cursor.emit_print("(");
+    err << cursor.emit_splice(node_offset);
+    if (!bare_offset) err << cursor.emit_print(")");
+    err << cursor.emit_print("-1");
+    err << cursor.emit_print(":");
+    if (!bare_offset) err << cursor.emit_print("(");
+    err << cursor.emit_splice(node_offset);
+    if (!bare_offset) err << cursor.emit_print(")");
+    err << cursor.emit_print("]");
+    return err;
+  }
+
+  //----------
+
+  else if (node_width) {
+    err << cursor.emit_print("[");
+    if (!bare_width) err << cursor.emit_print("(");
+    err << cursor.emit_splice(node_width);
+    if (!bare_width) err << cursor.emit_print(")");
+
+    if (offset == 0) {
+      err << cursor.emit_print("-1");
+    }
+    else if (offset == 1) {
+    }
+    else {
+      err << cursor.emit_print("+");
+      err << cursor.emit_print("%d", offset-1);
+    }
+
+    err << cursor.emit_print(":");
+    err << cursor.emit_print("%d", offset);
+    err << cursor.emit_print("]");
+    return err;
+  }
+
+  //----------
+
+  else if (node_offset) {
+    err << cursor.emit_print("[");
+    err << cursor.emit_print("%d", width - 1);
+    err << cursor.emit_print("+");
+    if (!bare_offset) err << cursor.emit_print("(");
+    err << cursor.emit_splice(node_offset);
+    if (!bare_offset) err << cursor.emit_print(")");
+    err << cursor.emit_print(":");
+    if (!bare_offset) err << cursor.emit_print("(");
+    err << cursor.emit_splice(node_offset);
+    if (!bare_offset) err << cursor.emit_print(")");
+    err << cursor.emit_print("]");
+    return err;
+  }
+
+  //----------
+
+  else {
+    err << cursor.emit_print("[%d:%d]", width+offset-1, offset);
+    return err;
+  }
 }
 
 //==============================================================================

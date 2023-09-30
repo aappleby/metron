@@ -1157,13 +1157,9 @@ Err Emitter::emit(CNodeReturn* node) {
   auto func = node->ancestor<CNodeFunction>();
   auto fname = func->get_namestr();
 
-  auto node_ret  = node->child("return");
-  auto node_val  = node->child("value");
-  auto node_semi = node->child("semi");
+  assert(node->node_val);
 
-  assert(node_val);
-
-  err << cursor.skip_over(node_ret);
+  err << cursor.skip_over(node->node_ret);
   err << cursor.skip_gap();
 
   if (func->emit_as_task() || func->emit_as_func()) {
@@ -1173,10 +1169,10 @@ Err Emitter::emit(CNodeReturn* node) {
     err << cursor.emit_print("%s_ret = ", fname.c_str());
   }
 
-  err << emit_dispatch(node_val);
+  err << emit_dispatch(node->node_val);
   err << cursor.emit_gap();
 
-  err << emit_dispatch(node_semi);
+  err << emit_dispatch(node->node_semi);
 
   return err << cursor.check_done(node);
 }

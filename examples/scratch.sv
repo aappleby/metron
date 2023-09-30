@@ -1,29 +1,20 @@
 `include "metron/metron_tools.sv"
 
-// Getter methods should turn into outputs.
+// Zero-initializing structs should work for convenience.
+
+typedef struct packed {
+  logic[7:0] field;
+} MyStruct1;
 
 module Module (
-  // global clock
-  input logic clock,
-  // get_reg() ports
-  output logic[6:0] get_reg_ret
+  // output signals
+  output MyStruct1 my_struct1
 );
 /*public:*/
 
-  always_comb begin : get_reg
-    get_reg_ret = my_reg;
-  end
-
   always_comb begin : tock
-    /*tick();*/
+    // FIXME fix this later glarghbh
+    //my_struct1 = {0};
+    my_struct1.field = 0;
   end
-
-
-/*private:*/
-
-  always_ff @(posedge clock) begin : tick
-    my_reg <= my_reg + 1;
-  end
-
-  logic[6:0] my_reg;
 endmodule

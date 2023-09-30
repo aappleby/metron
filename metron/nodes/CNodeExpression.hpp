@@ -7,7 +7,6 @@
 
 struct CNodeExpression : public CNode {
   uint32_t debug_color() const override;
-  CHECK_RETURN Err emit(Cursor& cursor) override;
 
 protected:
   CNodeExpression() {}
@@ -21,12 +20,10 @@ struct CNodeBinaryExp : public CNodeExpression {
 
 struct CNodePrefixExp : public CNodeExpression {
   CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
-  CHECK_RETURN Err emit(Cursor& cursor) override;
 };
 
 struct CNodeSuffixExp : public CNodeExpression {
   CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
-  CHECK_RETURN Err emit(Cursor& cursor) override;
 };
 
 struct CNodeAssignExp : public CNodeExpression {
@@ -42,7 +39,6 @@ struct CNodeIdentifierExp : public CNodeExpression {
 
 struct CNodeOperator : public CNode {
   uint32_t debug_color() const override;
-  Err emit(Cursor& cursor) override;
   Err trace(CInstance* inst, call_stack& stack) override;
 };
 

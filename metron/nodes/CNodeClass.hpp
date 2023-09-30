@@ -30,7 +30,6 @@ struct CNodeClass : public CNode {
 
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
-  CHECK_RETURN Err emit(Cursor& cursor) override;
   virtual void dump() const override;
 
   CSourceRepo* get_repo() override {
@@ -99,7 +98,6 @@ struct CNodeClassType : public CNodeType {
   std::string_view get_name() const override {
     return child("name")->get_text();
   }
-  CHECK_RETURN Err emit(Cursor& cursor) override;
 };
 
 //==============================================================================

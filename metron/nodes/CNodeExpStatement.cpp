@@ -22,10 +22,4 @@ Err CNodeExpStatement::trace(CInstance* inst, call_stack& stack) {
   return err;
 }
 
-//----------------------------------------
-
-Err CNodeExpStatement::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
 //==============================================================================

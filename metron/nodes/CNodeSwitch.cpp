@@ -60,12 +60,6 @@ CHECK_RETURN Err CNodeSwitch::trace(CInstance* inst, call_stack& stack) {
   return err;
 }
 
-//----------------------------------------
-
-CHECK_RETURN Err CNodeSwitch::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
 //==============================================================================
 //==============================================================================
 
@@ -143,12 +137,6 @@ CHECK_RETURN Err CNodeCase::trace(CInstance* inst, call_stack& stack) {
   return node_body->trace(inst, stack);
 }
 
-//----------------------------------------
-
-CHECK_RETURN Err CNodeCase::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
 //==============================================================================
 //==============================================================================
 
@@ -186,10 +174,6 @@ void CNodeDefault::init(const char* match_tag, SpanType span, uint64_t flags) {
 
 CHECK_RETURN Err CNodeDefault::trace(CInstance* inst, call_stack& stack) {
   return child("body")->trace(inst, stack);
-}
-
-CHECK_RETURN Err CNodeDefault::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
 }
 
 //==============================================================================

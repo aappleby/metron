@@ -264,12 +264,6 @@ bool CNodeClass::needs_tock() {
 
 //------------------------------------------------------------------------------
 
-Err CNodeClass::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
-//------------------------------------------------------------------------------
-
 Err CNodeClass::emit_module_ports(Cursor& cursor) {
   Err err;
 
@@ -378,6 +372,7 @@ Err CNodeClass::emit_field_ports(CNodeField* f, bool is_output, Cursor& cursor) 
 
 Err CNodeClass::emit_template_parameter_list(Cursor& cursor) {
   Err err;
+  Emitter emitter(cursor);
 
   auto node_template = ancestor<CNodeTemplate>();
   if (!node_template) return err;
@@ -389,18 +384,18 @@ Err CNodeClass::emit_template_parameter_list(Cursor& cursor) {
     err << cursor.emit_print("parameter ");
 
     cursor.tok_cursor = param->node_name->tok_begin();
-    err << cursor.emit(param->node_name);
+    err << emitter.emit(param->node_name);
     err << cursor.emit_gap();
 
     if (param->node_array) {
-      err << cursor.emit(param->node_array);
+      err << emitter.emit_dispatch(param->node_array);
       err << cursor.emit_gap();
     }
 
-    err << cursor.emit(param->node_eq);
+    err << Emitter(cursor).emit_dispatch(param->node_eq);
     err << cursor.emit_gap();
 
-    err << cursor.emit(param->node_value);
+    err << emitter.emit_dispatch(param->node_value);
 
     err << cursor.emit_print(";");
   }
@@ -435,12 +430,6 @@ void CNodeClass::dump() const {
     }
   }
   LOG_DEDENT();
-}
-
-//==============================================================================
-
-CHECK_RETURN Err CNodeClassType::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
 }
 
 //==============================================================================

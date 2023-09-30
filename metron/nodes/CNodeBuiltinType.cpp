@@ -13,10 +13,4 @@ Err CNodeBuiltinType::trace(CInstance* inst, call_stack& stack) {
   return Err();
 }
 
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err CNodeBuiltinType::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
 //==============================================================================

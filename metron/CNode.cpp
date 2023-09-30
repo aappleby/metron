@@ -21,11 +21,6 @@ std::string_view CNode::get_name() const {
   return "<CNode>";
 }
 
-Err CNode::emit(Cursor& cursor) {
-  NODE_ERR("Unimplemented CNode::emit type");
-  return Err();
-}
-
 //------------------------------------------------------------------------------
 
 Err CNode::trace(CInstance* inst, call_stack& stack) {

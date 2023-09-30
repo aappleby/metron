@@ -13,7 +13,6 @@ struct CSourceRepo;
 struct CNodeStruct : public CNode {
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
-  CHECK_RETURN Err emit(Cursor& cursor) override;
   void dump() const override ;
 
   //----------------------------------------
@@ -33,7 +32,6 @@ struct CNodeStruct : public CNode {
 
 struct CNodeStructType : public CNodeType {
   std::string_view get_name() const override;
-  CHECK_RETURN Err emit(Cursor& cursor) override;
 };
 
 //==============================================================================

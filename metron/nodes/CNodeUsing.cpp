@@ -12,10 +12,6 @@ std::string_view CNodeUsing::get_name() const {
   return child("name")->get_text();
 }
 
-CHECK_RETURN Err CNodeUsing::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
 CHECK_RETURN Err CNodeUsing::trace(CInstance* inst, call_stack& stack) {
   return Err();
 };

@@ -11,10 +11,6 @@ std::string_view CNodeTranslationUnit::get_name() const {
   return "";
 }
 
-Err CNodeTranslationUnit::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
 Err CNodeTranslationUnit::trace(CInstance* inst, call_stack& stack) {
   NODE_ERR("FIXME");
   return Err();

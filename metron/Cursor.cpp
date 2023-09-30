@@ -1,6 +1,7 @@
 #include "metron/Cursor.hpp"
 
 #include "metrolib/core/Log.h"
+#include "metron/Emitter.hpp"
 
 //------------------------------------------------------------------------------
 
@@ -104,6 +105,7 @@ CHECK_RETURN Err Cursor::skip_gap() {
 
 //------------------------------------------------------------------------------
 
+/*
 CHECK_RETURN Err Cursor::emit(CNode* n) {
   //if (n == nullptr) return Err();
   assert(n);
@@ -112,6 +114,7 @@ CHECK_RETURN Err Cursor::emit(CNode* n) {
   err << n->emit(*this);
   return err << check_done(n);
 }
+*/
 
 CHECK_RETURN Err Cursor::skip_over(CNode* n) {
   //if (n == nullptr) return Err();
@@ -147,34 +150,6 @@ CHECK_RETURN Err Cursor::comment_out(CNode* n) {
   err << emit_span(n->tok_begin(), n->tok_end());
   err << emit_print("*/");
   return err << check_done(n);
-}
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err Cursor::emit_default(CNode* n) {
-  //if (n == nullptr) return Err();
-  assert(n);
-  Err err = check_at(n);
-
-  if (n->child_head) {
-    err << emit_children(n);
-  }
-  else {
-    err << emit_span(n->tok_begin(), n->tok_end());
-  }
-
-  return err << check_done(n);
-}
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err Cursor::emit_children(CNode* n) {
-  Err err;
-  for (auto c = n->child_head; c; c = c->node_next) {
-    err << emit(c);
-    if (c->node_next) err << emit_gap();
-  }
-  return err;
 }
 
 //------------------------------------------------------------------------------
@@ -454,9 +429,11 @@ CHECK_RETURN Err Cursor::emit_replacement(CNode* n, const char* fmt, ...) {
 
 CHECK_RETURN Err Cursor::emit_splice(CNode* n) {
   Err err;
+  Emitter emitter(*this);
+
   auto old_cursor = tok_cursor;
   tok_cursor = n->tok_begin();
-  err << emit(n);
+  err << emitter.emit_dispatch(n);
   tok_cursor = old_cursor;
   return err;
 }
@@ -480,7 +457,9 @@ CHECK_RETURN Err Cursor::emit_everything() {
     }
   }
 
-  err << source_file->context.root_node->emit(*this);
+  //err << source_file->context.root_node->emit(*this);
+
+  err << Emitter(*this).emit_dispatch(source_file->context.root_node);
 
   // Emit footer (everything in the gap after the translation unit)
   err << emit_gap();

@@ -312,9 +312,3 @@ CHECK_RETURN Err CNodeCall::emit_bit_extract(Cursor& cursor) {
 }
 
 //------------------------------------------------------------------------------
-
-Err CNodeCall::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
-//------------------------------------------------------------------------------

@@ -38,12 +38,6 @@ Err CNodeCompound::trace(CInstance* inst, call_stack& stack) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err CNodeCompound::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
-//------------------------------------------------------------------------------
-
 CHECK_RETURN Err CNodeCompound::emit_call_arg_bindings(CNode* child, Cursor& cursor) {
   Err err;
 
@@ -155,7 +149,7 @@ Err CNodeCompound::emit_block(Cursor& cursor, std::string ldelim, std::string rd
     if (!child->as<CNodeCompound>()) {
       err << emit_call_arg_bindings(child, cursor);
     }
-    err << cursor.emit(child);
+    err << Emitter(cursor).emit_dispatch(child);
     err << cursor.emit_gap();
   }
 
@@ -174,6 +168,7 @@ Err CNodeCompound::emit_block(Cursor& cursor, std::string ldelim, std::string rd
 
 Err CNodeCompound::emit_hoisted_decls(Cursor& cursor) {
   Err err;
+  Emitter emitter(cursor);
 
   auto old_cursor = cursor.tok_cursor;
 
@@ -197,9 +192,9 @@ Err CNodeCompound::emit_hoisted_decls(Cursor& cursor) {
 
         cursor.tok_cursor = decl_type->tok_begin();
 
-        err << cursor.emit(decl_type);
+        err << emitter.emit_dispatch(decl_type);
         err << cursor.emit_gap();
-        err << cursor.emit(decl_name);
+        err << emitter.emit_dispatch(decl_name);
         err << cursor.emit_print(";");
       }
     }
@@ -214,9 +209,9 @@ Err CNodeCompound::emit_hoisted_decls(Cursor& cursor) {
 
         cursor.tok_cursor = decl_type->tok_begin();
 
-        err << cursor.emit(decl_type);
+        err << emitter.emit_dispatch(decl_type);
         err << cursor.emit_gap();
-        err << cursor.emit(decl_name);
+        err << emitter.emit_dispatch(decl_name);
         err << cursor.emit_print(";");
 
       }

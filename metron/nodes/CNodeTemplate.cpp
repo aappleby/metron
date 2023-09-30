@@ -21,10 +21,4 @@ void CNodeTemplate::init(const char* match_tag, SpanType span, uint64_t flags) {
   }
 }
 
-//----------------------------------------
-
-Err CNodeTemplate::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
 //------------------------------------------------------------------------------

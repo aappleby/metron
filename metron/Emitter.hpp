@@ -1,48 +1,40 @@
 #pragma once
 
 #include "metrolib/core/Err.h"
-#include "metron/Cursor.hpp"
+
+struct CNode;
+struct Cursor;
 
 struct CNodeAccess;
 struct CNodeAssignment;
 struct CNodeBuiltinType;
 struct CNodeCall;
+struct CNodeCase;
 struct CNodeClass;
 struct CNodeClassType;
 struct CNodeCompound;
 struct CNodeConstant;
 struct CNodeConstructor;
 struct CNodeDeclaration;
+struct CNodeDefault;
 struct CNodeDoWhile;
 struct CNodeEnum;
-struct CNodeEnumerator;
-struct CNodeEnumType;
-struct CNodeExpression;
 struct CNodeExpStatement;
 struct CNodeField;
 struct CNodeFieldExpression;
-struct CNodeFor;
 struct CNodeFunction;
 struct CNodeIdentifier;
 struct CNodeIf;
 struct CNodeKeyword;
-struct CNodeList;
-struct CNodeLValue;
 struct CNodeNamespace;
-struct CNodeOperator;
 struct CNodePrefixExp;
 struct CNodePreproc;
-struct CNodePunct;
-struct CNodeSuffixExp;
 struct CNodeQualifiedIdentifier;
 struct CNodeReturn;
 struct CNodeStruct;
+struct CNodeSuffixExp;
 struct CNodeSwitch;
-struct CNodeCase;
-struct CNodeDefault;
 struct CNodeTemplate;
-struct CNodeTranslationUnit;
-struct CNodeType;
 struct CNodeTypedef;
 struct CNodeUsing;
 
@@ -51,46 +43,40 @@ struct CNodeUsing;
 struct Emitter {
   Emitter(Cursor& c) : cursor(c) {}
 
+  Err emit_default(CNode* node);
+  Err emit_children(CNode* node);
+  Err emit_dispatch(CNode* node);
+
   Err emit(CNodeAccess* node);
   Err emit(CNodeAssignment* node);
   Err emit(CNodeBuiltinType* node);
   Err emit(CNodeCall* node);
+  Err emit(CNodeCase* node);
   Err emit(CNodeClass* node);
   Err emit(CNodeClassType* node);
   Err emit(CNodeCompound* node);
   Err emit(CNodeConstant* node);
   Err emit(CNodeConstructor* node);
   Err emit(CNodeDeclaration* node);
+  Err emit(CNodeDefault* node);
   Err emit(CNodeDoWhile* node);
   Err emit(CNodeEnum* node);
-  Err emit(CNodeEnumerator* node);
-  Err emit(CNodeEnumType* node);
-  Err emit(CNodeExpression* node);
-  Err emit(CNodePrefixExp* node);
-  Err emit(CNodeSuffixExp* node);
-  Err emit(CNodeOperator* node);
   Err emit(CNodeExpStatement* node);
   Err emit(CNodeField* node);
   Err emit(CNodeFieldExpression* node);
-  Err emit(CNodeFor* node);
   Err emit(CNodeFunction* node);
   Err emit(CNodeIdentifier* node);
   Err emit(CNodeIf* node);
   Err emit(CNodeKeyword* node);
-  Err emit(CNodeList* node);
-  Err emit(CNodeLValue* node);
   Err emit(CNodeNamespace* node);
+  Err emit(CNodePrefixExp* node);
   Err emit(CNodePreproc* node);
-  Err emit(CNodePunct* node);
   Err emit(CNodeQualifiedIdentifier* node);
   Err emit(CNodeReturn* node);
   Err emit(CNodeStruct* node);
+  Err emit(CNodeSuffixExp* node);
   Err emit(CNodeSwitch* node);
-  Err emit(CNodeCase* node);
-  Err emit(CNodeDefault* node);
   Err emit(CNodeTemplate* node);
-  Err emit(CNodeTranslationUnit* node);
-  Err emit(CNodeType* node);
   Err emit(CNodeTypedef* node);
   Err emit(CNodeUsing* node);
 

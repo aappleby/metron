@@ -5,7 +5,6 @@
 //==============================================================================
 
 struct CNodeConstant : public CNodeExpression {
-  CHECK_RETURN Err emit(Cursor& cursor) override;
   CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
 
 protected:

@@ -15,12 +15,6 @@ std::string_view CNodePreproc::get_name() const {
 
 //------------------------------------------------------------------------------
 
-Err CNodePreproc::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
-//------------------------------------------------------------------------------
-
 Err CNodePreproc::trace(CInstance* inst, call_stack& stack) {
   NODE_ERR("FIXME");
   return Err();

@@ -57,14 +57,10 @@ std::string_view CNodeFunction::get_name() const {
 
 //------------------------------------------------------------------------------
 
-Err CNodeFunction::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
-//------------------------------------------------------------------------------
-
 Err CNodeFunction::emit_init(Cursor& cursor) {
   Err err;
+
+  Emitter emitter(cursor);
 
   // FIXME not using node_init yet
 
@@ -95,20 +91,20 @@ Err CNodeFunction::emit_init(Cursor& cursor) {
     err << cursor.emit_print("parameter ");
 
     if (decl_const) {
-      err << cursor.emit(decl_const);
+      err << emitter.emit_dispatch(decl_const);
       err << cursor.emit_gap();
     }
 
     err << cursor.skip_over(decl_type);
     err << cursor.skip_gap();
 
-    err << cursor.emit(decl_name);
+    err << emitter.emit_dispatch(decl_name);
     err << cursor.emit_gap();
 
-    err << cursor.emit(decl_eq);
+    err << emitter.emit_dispatch(decl_eq);
     err << cursor.emit_gap();
 
-    err << cursor.emit(decl_value);
+    err << emitter.emit_dispatch(decl_value);
     err << cursor.emit_print(";");
 
     cursor.tok_cursor = old_cursor;
@@ -126,6 +122,7 @@ Err CNodeFunction::emit_init(Cursor& cursor) {
 
 Err CNodeFunction::emit_always_comb(Cursor& cursor) {
   Err err;
+  Emitter emitter(cursor);
 
   auto func_name = get_namestr();
 
@@ -140,7 +137,7 @@ Err CNodeFunction::emit_always_comb(Cursor& cursor) {
 
   err << cursor.emit_replacement(node_type, "always_comb begin :");
   err << cursor.emit_gap();
-  err << cursor.emit(node_name);
+  err << emitter.emit_dispatch(node_name);
   err << cursor.emit_gap();
 
   err << cursor.skip_over(node_params);
@@ -162,6 +159,7 @@ Err CNodeFunction::emit_always_comb(Cursor& cursor) {
 
 Err CNodeFunction::emit_always_ff(Cursor& cursor) {
   Err err;
+  Emitter emitter(cursor);
 
   auto func_name = get_namestr();
 
@@ -176,7 +174,7 @@ Err CNodeFunction::emit_always_ff(Cursor& cursor) {
 
   err << cursor.emit_replacement(node_type, "always_ff @(posedge clock) begin :");
   err << cursor.emit_gap();
-  err << cursor.emit(node_name);
+  err << emitter.emit_dispatch(node_name);
   err << cursor.emit_gap();
 
   err << cursor.skip_over(node_params);
@@ -216,16 +214,17 @@ bool CNodeFunction::emit_as_func() {
 
 Err CNodeFunction::emit_func(Cursor& cursor) {
   Err err;
+  Emitter emitter(cursor);
 
   err << cursor.emit_print("function ");
 
-  err << cursor.emit(node_type);
+  err << emitter.emit_dispatch(node_type);
   err << cursor.emit_gap();
 
-  err << cursor.emit(node_name);
+  err << emitter.emit_dispatch(node_name);
   err << cursor.emit_gap();
 
-  err << cursor.emit(node_params);
+  err << emitter.emit_dispatch(node_params);
 
   if (node_const) {
     err << cursor.emit_gap();
@@ -244,16 +243,17 @@ Err CNodeFunction::emit_func(Cursor& cursor) {
 
 Err CNodeFunction::emit_task(Cursor& cursor) {
   Err err;
+  Emitter emitter(cursor);
 
   err << cursor.emit_print("task automatic ");
 
   err << cursor.skip_over(node_type);
   err << cursor.skip_gap();
 
-  err << cursor.emit(node_name);
+  err << emitter.emit_dispatch(node_name);
   err << cursor.emit_gap();
 
-  err << cursor.emit(node_params);
+  err << emitter.emit_dispatch(node_params);
   err << cursor.emit_print(";");
   err << cursor.emit_gap();
 

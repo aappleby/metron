@@ -65,17 +65,12 @@ bool CNodeField::is_const_char() const {
 
 //------------------------------------------------------------------------------
 
-Err CNodeField::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
-//------------------------------------------------------------------------------
-
 Err CNodeField::emit_component(Cursor& cursor) {
   Err err;
+  Emitter emitter(cursor);
 
   err << cursor.skip_to(node_decl->node_type);
-  err << cursor.emit(node_decl->node_type);
+  err << emitter.emit_dispatch(node_decl->node_type);
   err << cursor.emit_gap();
   err << cursor.skip_over(node_decl->node_name);
   err << cursor.skip_gap();
@@ -252,7 +247,7 @@ Err CNodeField::emit_component(Cursor& cursor) {
   cursor.indent_level--;
   err << cursor.start_line();
   err << cursor.emit_print(")");
-  err << cursor.emit(node_semi);
+  err << emitter.emit_dispatch(node_semi);
 
   //----------------------------------------
   // Binding variables

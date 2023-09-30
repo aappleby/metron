@@ -39,12 +39,6 @@ bool CNodeDeclaration::is_array() const {
 
 //------------------------------------------------------------------------------
 
-Err CNodeDeclaration::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
-//------------------------------------------------------------------------------
-
 CHECK_RETURN Err CNodeDeclaration::trace(CInstance* inst, call_stack& stack) {
   Err err;
   if (node_value) {

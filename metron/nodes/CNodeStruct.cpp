@@ -35,12 +35,6 @@ Err CNodeStruct::collect_fields_and_methods() {
 
 //------------------------------------------------------------------------------
 
-Err CNodeStruct::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
-//------------------------------------------------------------------------------
-
 void CNodeStruct::dump() const {
   auto name = get_name();
   LOG_B("Struct %.*s @ %p\n", name.size(), name.data(), this);
@@ -57,10 +51,6 @@ void CNodeStruct::dump() const {
 
 std::string_view CNodeStructType::get_name() const {
   return child("name")->get_text();
-}
-
-CHECK_RETURN Err CNodeStructType::emit(Cursor& cursor) {
-  return cursor.emit_default(this);
 }
 
 //==============================================================================

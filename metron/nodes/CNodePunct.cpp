@@ -11,10 +11,6 @@ std::string_view CNodePunct::get_name() const {
   return "";
 }
 
-Err CNodePunct::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
 Err CNodePunct::trace(CInstance* inst, call_stack& stack) {
   return Err();
 }

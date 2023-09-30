@@ -15,10 +15,6 @@ uint32_t CNodeExpression::debug_color() const {
   return COL_AQUA;
 }
 
-Err CNodeExpression::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
 //==============================================================================
 //==============================================================================
 
@@ -50,12 +46,6 @@ Err CNodePrefixExp::trace(CInstance* inst, call_stack& stack) {
   return err;
 }
 
-//----------------------------------------
-
-Err CNodePrefixExp::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
 //==============================================================================
 //==============================================================================
 
@@ -82,12 +72,6 @@ Err CNodeSuffixExp::trace(CInstance* inst, call_stack& stack) {
   }
 
   return err;
-}
-
-//----------------------------------------
-
-Err CNodeSuffixExp::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
 }
 
 //==============================================================================
@@ -119,10 +103,6 @@ Err CNodeIdentifierExp::trace(CInstance* inst, call_stack& stack) {
 
 uint32_t CNodeOperator::debug_color() const {
   return COL_SKY;
-}
-
-Err CNodeOperator::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
 }
 
 Err CNodeOperator::trace(CInstance* inst, call_stack& stack) {

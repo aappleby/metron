@@ -15,12 +15,6 @@ std::string_view CNodeNamespace::get_name() const {
 
 //------------------------------------------------------------------------------
 
-Err CNodeNamespace::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
-//------------------------------------------------------------------------------
-
 Err CNodeNamespace::trace(CInstance* inst, call_stack& stack) {
   NODE_ERR("FIXME");
   return Err();

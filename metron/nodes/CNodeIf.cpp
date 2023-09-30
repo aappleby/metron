@@ -59,10 +59,4 @@ CHECK_RETURN Err CNodeIf::trace(CInstance* inst, call_stack& stack) {
   return err;
 }
 
-//----------------------------------------
-
-CHECK_RETURN Err CNodeIf::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
 //==============================================================================

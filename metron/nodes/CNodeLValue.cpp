@@ -12,8 +12,4 @@ CHECK_RETURN Err CNodeLValue::trace(CInstance* inst, call_stack& stack) {
   return err;
 }
 
-CHECK_RETURN Err CNodeLValue::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
 //==============================================================================

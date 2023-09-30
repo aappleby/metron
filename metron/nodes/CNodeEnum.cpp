@@ -26,12 +26,6 @@ void CNodeEnum::init(const char* match_tag, SpanType span, uint64_t flags) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err CNodeEnum::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
-//------------------------------------------------------------------------------
-
 std::string_view CNodeEnum::get_name() const {
   auto n = child("name");
   return n ? n->get_text() : "<unnamed>";
@@ -49,16 +43,6 @@ void CNodeEnum::dump() const {
 void CNodeEnumerator::init(const char* match_tag, SpanType span,
                            uint64_t flags) {
   CNode::init(match_tag, span, flags);
-}
-
-CHECK_RETURN Err CNodeEnumerator::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
-//==============================================================================
-
-CHECK_RETURN Err CNodeEnumType::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
 }
 
 //==============================================================================

@@ -40,12 +40,4 @@ Err CNodeFieldExpression::trace(CInstance* inst, call_stack& stack) {
   return err;
 }
 
-//------------------------------------------------------------------------------
-// Replace foo.bar.baz with foo_bar_baz if the field refers to a submodule port,
-// so that it instead refers to a glue expression.
-
-Err CNodeFieldExpression::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
 //==============================================================================

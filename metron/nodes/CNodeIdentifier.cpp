@@ -16,12 +16,6 @@ std::string_view CNodeIdentifier::get_name() const {
 
 //------------------------------------------------------------------------------
 
-Err CNodeIdentifier::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
-//------------------------------------------------------------------------------
-
 Err CNodeIdentifier::trace(CInstance* inst, call_stack& stack) {
   auto scope = ancestor<CNodeCompound>();
 

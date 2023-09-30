@@ -19,10 +19,6 @@ std::string_view CNodeList::get_name() const {
   return "";
 }
 
-Err CNodeList::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
 Err CNodeList::trace(CInstance* inst, call_stack& stack) {
   Err err;
   for (auto child : this) {

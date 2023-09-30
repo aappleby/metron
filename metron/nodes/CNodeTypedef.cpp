@@ -11,10 +11,6 @@ std::string_view CNodeTypedef::get_name() const {
   return "";
 }
 
-Err CNodeTypedef::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
 Err CNodeTypedef::trace(CInstance* inst, call_stack& stack) {
   NODE_ERR("FIXME");
   return Err();

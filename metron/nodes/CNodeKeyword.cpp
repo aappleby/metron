@@ -11,10 +11,6 @@ std::string_view CNodeKeyword::get_name() const {
   return "";
 }
 
-Err CNodeKeyword::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
 Err CNodeKeyword::trace(CInstance* inst, call_stack& stack) {
   return Err();
 }

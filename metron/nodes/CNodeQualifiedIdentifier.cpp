@@ -18,12 +18,6 @@ std::string_view CNodeQualifiedIdentifier::get_name() const {
 
 //------------------------------------------------------------------------------
 
-Err CNodeQualifiedIdentifier::emit(Cursor& cursor) {
-  return Emitter(cursor).emit(this);
-}
-
-//------------------------------------------------------------------------------
-
 Err CNodeQualifiedIdentifier::trace(CInstance* inst, call_stack& stack) {
   Err err;
 

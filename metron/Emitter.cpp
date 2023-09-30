@@ -3,17 +3,22 @@
 #include "metron/nodes/CNodeAccess.hpp"
 #include "metron/nodes/CNodeAssignment.hpp"
 #include "metron/nodes/CNodeBuiltinType.hpp"
-#include "metron/nodes/CNodeClass.hpp"
 #include "metron/nodes/CNodeCall.hpp"
-#include "metron/nodes/CNodeList.hpp"
-#include "metron/nodes/CNodeField.hpp"
-#include "metron/nodes/CNodeDeclaration.hpp"
+#include "metron/nodes/CNodeClass.hpp"
 #include "metron/nodes/CNodeConstant.hpp"
-#include "metron/nodes/CNodePunct.hpp"
+#include "metron/nodes/CNodeConstructor.hpp"
+#include "metron/nodes/CNodeDeclaration.hpp"
+#include "metron/nodes/CNodeEnum.hpp"
+#include "metron/nodes/CNodeExpression.hpp"
+#include "metron/nodes/CNodeField.hpp"
 #include "metron/nodes/CNodeFieldExpression.hpp"
 #include "metron/nodes/CNodeFunction.hpp"
 #include "metron/nodes/CNodeIdentifier.hpp"
+#include "metron/nodes/CNodeKeyword.hpp"
 #include "metron/nodes/CNodeLValue.hpp"
+#include "metron/nodes/CNodeList.hpp"
+#include "metron/nodes/CNodePunct.hpp"
+#include "metron/nodes/CNodeTemplate.hpp"
 
 //==============================================================================
 
@@ -328,6 +333,67 @@ Err Emitter::emit(CNodeCall* node) {
 
   assert(false);
   return err << cursor.check_done(node);
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeClass* node) {
+  Err err = cursor.check_at(node);
+
+  auto node_class = node->child<CNodeKeyword>();
+  auto node_name  = node->child("name");
+  auto node_body  = node->child("body");
+  auto node_semi  = node->child("semi");
+
+  err << cursor.emit_replacements(node_class, "class", "module");
+  err << cursor.emit_gap();
+  err << cursor.emit(node_name);
+  err << cursor.emit_gap();
+
+  err << cursor.emit_print("(");
+  cursor.indent_level++;
+  err << node->emit_module_ports(cursor);
+  cursor.indent_level--;
+  err << cursor.start_line();
+  err << cursor.emit_print(");");
+
+  for (auto child : node_body) {
+    if (child->get_text() == "{") {
+      cursor.indent_level++;
+      err << cursor.skip_over(child);
+      err << node->emit_template_parameter_list(cursor);
+    }
+    else if (child->get_text() == "}") {
+      cursor.indent_level--;
+      err << cursor.emit_replacement(child, "endmodule");
+    }
+    else {
+      err << cursor.emit(child);
+    }
+    if (child->node_next) err << cursor.emit_gap();
+  }
+
+  err << cursor.skip_gap();
+  err << cursor.skip_over(node_semi);
+
+  return err << cursor.check_done(node);
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeClassType* node) {
+  Err err;
+  auto targs = node->child("template_args");
+
+  if (targs) {
+    err << cursor.emit(node->child("name"));
+    err << cursor.emit_gap();
+    err << cursor.skip_over(targs);
+  }
+  else {
+    err << cursor.emit_default(node);
+  }
+  return err;
 }
 
 //==============================================================================

@@ -1,5 +1,7 @@
 #include "CNodeClass.hpp"
 
+#include "metron/Emitter.hpp"
+
 #include "metron/nodes/CNodeAccess.hpp"
 #include "metron/nodes/CNodeCall.hpp"
 #include "metron/nodes/CNodeConstructor.hpp"
@@ -263,45 +265,7 @@ bool CNodeClass::needs_tock() {
 //------------------------------------------------------------------------------
 
 Err CNodeClass::emit(Cursor& cursor) {
-  Err err = cursor.check_at(this);
-
-  auto node_class = child<CNodeKeyword>();
-  auto node_name  = child("name");
-  auto node_body  = child("body");
-  auto node_semi  = child("semi");
-
-  err << cursor.emit_replacements(node_class, "class", "module");
-  err << cursor.emit_gap();
-  err << cursor.emit(node_name);
-  err << cursor.emit_gap();
-
-  err << cursor.emit_print("(");
-  cursor.indent_level++;
-  err << emit_module_ports(cursor);
-  cursor.indent_level--;
-  err << cursor.start_line();
-  err << cursor.emit_print(");");
-
-  for (auto child : node_body) {
-    if (child->get_text() == "{") {
-      cursor.indent_level++;
-      err << cursor.skip_over(child);
-      err << emit_template_parameter_list(cursor);
-    }
-    else if (child->get_text() == "}") {
-      cursor.indent_level--;
-      err << cursor.emit_replacement(child, "endmodule");
-    }
-    else {
-      err << cursor.emit(child);
-    }
-    if (child->node_next) err << cursor.emit_gap();
-  }
-
-  err << cursor.skip_gap();
-  err << cursor.skip_over(node_semi);
-
-  return err << cursor.check_done(this);
+  return Emitter(cursor).emit(this);
 }
 
 //------------------------------------------------------------------------------
@@ -476,18 +440,7 @@ void CNodeClass::dump() const {
 //==============================================================================
 
 CHECK_RETURN Err CNodeClassType::emit(Cursor& cursor) {
-  Err err;
-  auto targs = child("template_args");
-
-  if (targs) {
-    err << cursor.emit(child("name"));
-    err << cursor.emit_gap();
-    err << cursor.skip_over(targs);
-  }
-  else {
-    err << cursor.emit_default(this);
-  }
-  return err;
+  return Emitter(cursor).emit(this);
 }
 
 //==============================================================================

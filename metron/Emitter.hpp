@@ -6,6 +6,7 @@
 struct CNodeAccess;
 struct CNodeAssignment;
 struct CNodeBuiltinType;
+struct CNodeCall;
 
 //==============================================================================
 
@@ -15,6 +16,7 @@ struct Emitter {
   Err emit(CNodeAccess* node);
   Err emit(CNodeAssignment* node);
   Err emit(CNodeBuiltinType* node);
+  Err emit(CNodeCall* node);
 
   Cursor& cursor;
 };

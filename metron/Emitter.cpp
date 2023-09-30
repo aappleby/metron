@@ -1,5 +1,6 @@
 #include "Emitter.hpp"
 
+#include "metron/nodes/CNodeReturn.hpp"
 #include "metron/nodes/CNodeAccess.hpp"
 #include "metron/nodes/CNodeAssignment.hpp"
 #include "metron/nodes/CNodeBuiltinType.hpp"
@@ -32,6 +33,7 @@
 #include "metron/nodes/CNodeType.hpp"
 #include "metron/nodes/CNodeWhile.hpp"
 #include "metron/nodes/CNodePreproc.hpp"
+#include "metron/nodes/CNodeQualifiedIdentifier.hpp"
 
 //==============================================================================
 
@@ -1080,6 +1082,80 @@ Err Emitter::emit(CNodePreproc* node) {
   else {
     err << cursor.emit_default(node);
   }
+
+  return err << cursor.check_done(node);
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodePunct* node) {
+  return cursor.emit_default(node);
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeQualifiedIdentifier* node) {
+  Err err = cursor.check_at(node);
+
+  auto node_scope = node->child("scope_path");
+  auto node_colon = node->child("colon");
+  auto node_name  = node->child("identifier");
+
+  bool elide_scope = false;
+
+  if (node_scope->get_text() == "std") elide_scope = true;
+
+  auto node_class = node->ancestor<CNodeClass>();
+
+  // Verilog doesn't like the scope on the enums
+  if (node_class && node_class->get_enum(node_scope->get_text())) {
+    elide_scope = true;
+  }
+
+  if (elide_scope) {
+    err << cursor.skip_to(node_name);
+    err << cursor.emit(node_name);
+  }
+  else {
+    err << cursor.emit(node_scope);
+    err << cursor.emit_gap();
+    err << cursor.emit(node_colon);
+    err << cursor.emit_gap();
+    err << cursor.emit(node_name);
+  }
+
+  return err << cursor.check_done(node);
+}
+
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit(CNodeReturn* node) {
+  Err err = cursor.check_at(node);
+
+  auto func = node->ancestor<CNodeFunction>();
+  auto fname = func->get_namestr();
+
+  auto node_ret  = node->child("return");
+  auto node_val  = node->child("value");
+  auto node_semi = node->child("semi");
+
+  assert(node_val);
+
+  err << cursor.skip_over(node_ret);
+  err << cursor.skip_gap();
+
+  if (func->emit_as_task() || func->emit_as_func()) {
+    err << cursor.emit_print("%s = ", fname.c_str());
+  }
+  else {
+    err << cursor.emit_print("%s_ret = ", fname.c_str());
+  }
+
+  err << cursor.emit(node_val);
+  err << cursor.emit_gap();
+
+  err << cursor.emit(node_semi);
 
   return err << cursor.check_done(node);
 }

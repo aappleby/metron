@@ -18,9 +18,6 @@ struct CNodeEnum;
 struct CNodeEnumerator;
 struct CNodeEnumType;
 struct CNodeExpression;
-struct CNodePrefixExp;
-struct CNodeSuffixExp;
-struct CNodeOperator;
 struct CNodeExpStatement;
 struct CNodeField;
 struct CNodeFieldExpression;
@@ -32,7 +29,13 @@ struct CNodeKeyword;
 struct CNodeList;
 struct CNodeLValue;
 struct CNodeNamespace;
+struct CNodeOperator;
+struct CNodePrefixExp;
 struct CNodePreproc;
+struct CNodePunct;
+struct CNodeSuffixExp;
+struct CNodeQualifiedIdentifier;
+struct CNodeReturn;
 
 //==============================================================================
 
@@ -69,6 +72,9 @@ struct Emitter {
   Err emit(CNodeLValue* node);
   Err emit(CNodeNamespace* node);
   Err emit(CNodePreproc* node);
+  Err emit(CNodePunct* node);
+  Err emit(CNodeQualifiedIdentifier* node);
+  Err emit(CNodeReturn* node);
 
   Cursor& cursor;
 };

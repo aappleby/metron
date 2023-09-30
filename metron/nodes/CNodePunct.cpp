@@ -1,6 +1,6 @@
 #include "CNodePunct.hpp"
 
-#include "metron/Cursor.hpp"
+#include "metron/Emitter.hpp"
 
 //==============================================================================
 
@@ -12,9 +12,7 @@ std::string_view CNodePunct::get_name() const {
 }
 
 Err CNodePunct::emit(Cursor& cursor) {
-  Err err = cursor.check_at(this);
-  err << cursor.emit_default(this);
-  return err << cursor.check_done(this);
+  return Emitter(cursor).emit(this);
 }
 
 Err CNodePunct::trace(CInstance* inst, call_stack& stack) {

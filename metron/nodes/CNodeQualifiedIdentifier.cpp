@@ -1,6 +1,6 @@
 #include "CNodeQualifiedIdentifier.hpp"
 
-#include "metron/Cursor.hpp"
+#include "metron/Emitter.hpp"
 #include "metron/nodes/CNodeClass.hpp"
 #include "metron/nodes/CNodeNamespace.hpp"
 #include "metron/nodes/CNodeField.hpp"
@@ -19,36 +19,7 @@ std::string_view CNodeQualifiedIdentifier::get_name() const {
 //------------------------------------------------------------------------------
 
 Err CNodeQualifiedIdentifier::emit(Cursor& cursor) {
-  Err err = cursor.check_at(this);
-
-  auto node_scope = child("scope_path");
-  auto node_colon = child("colon");
-  auto node_name  = child("identifier");
-
-  bool elide_scope = false;
-
-  if (node_scope->get_text() == "std") elide_scope = true;
-
-  auto node_class = ancestor<CNodeClass>();
-
-  // Verilog doesn't like the scope on the enums
-  if (node_class && node_class->get_enum(node_scope->get_text())) {
-    elide_scope = true;
-  }
-
-  if (elide_scope) {
-    err << cursor.skip_to(node_name);
-    err << cursor.emit(node_name);
-  }
-  else {
-    err << cursor.emit(node_scope);
-    err << cursor.emit_gap();
-    err << cursor.emit(node_colon);
-    err << cursor.emit_gap();
-    err << cursor.emit(node_name);
-  }
-
-  return err << cursor.check_done(this);
+  return Emitter(cursor).emit(this);
 }
 
 //------------------------------------------------------------------------------

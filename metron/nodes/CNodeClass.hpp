@@ -47,9 +47,6 @@ struct CNodeClass : public CNode {
   bool needs_tick();
   bool needs_tock();
 
-  Err collect_fields_and_methods();
-  Err build_call_graph(CSourceRepo* repo);
-
   //----------------------------------------
 
   std::string name;

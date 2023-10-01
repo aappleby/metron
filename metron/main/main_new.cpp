@@ -7,22 +7,126 @@
 #include "metron/CSourceFile.hpp"
 #include "metron/CSourceRepo.hpp"
 #include "metron/Cursor.hpp"
+#include "metron/Dumper.hpp"
 #include "metron/MtUtils.h"
 #include "metron/Tracer.hpp"
-#include "metron/Dumper.hpp"
+#include "metron/nodes/CNodeAccess.hpp"
+#include "metron/nodes/CNodeAssignment.hpp"
+#include "metron/nodes/CNodeCall.hpp"
 #include "metron/nodes/CNodeClass.hpp"
+#include "metron/nodes/CNodeConstructor.hpp"
+#include "metron/nodes/CNodeDeclaration.hpp"
+#include "metron/nodes/CNodeEnum.hpp"
 #include "metron/nodes/CNodeField.hpp"
+#include "metron/nodes/CNodeFieldExpression.hpp"
 #include "metron/nodes/CNodeFunction.hpp"
+#include "metron/nodes/CNodeLValue.hpp"
+#include "metron/nodes/CNodeNamespace.hpp"
 #include "metron/nodes/CNodeStruct.hpp"
 #include "metron/nodes/CNodeTemplate.hpp"
-#include "metron/nodes/CNodeNamespace.hpp"
-#include "metron/nodes/CNodeEnum.hpp"
-#include "metron/nodes/CNodeDeclaration.hpp"
-#include "metron/nodes/CNodeConstructor.hpp"
-#include "metron/nodes/CNodeAssignment.hpp"
-#include "metron/nodes/CNodeLValue.hpp"
 
 using namespace matcheroni;
+
+Err collect_fields_and_methods(CNodeClass* node, CSourceRepo* repo) {
+  Err err;
+
+  bool is_public = false;
+
+  for (auto child : node->node_body->items) {
+    if (auto access = child->as<CNodeAccess>()) {
+      is_public = child->get_text() == "public:";
+      continue;
+    }
+
+    if (auto n = child->as<CNodeField>()) {
+      n->is_public = is_public;
+
+      n->parent_class = node;
+      n->parent_struct = nullptr;
+      n->node_decl->_type_class = repo->get_class(n->get_type_name());
+      n->node_decl->_type_struct = repo->get_struct(n->get_type_name());
+
+      if (n->node_decl->node_static && n->node_decl->node_const) {
+        node->all_localparams.push_back(n);
+      } else {
+        node->all_fields.push_back(n);
+      }
+
+      continue;
+    }
+
+    if (auto n = child->as<CNodeFunction>()) {
+      n->is_public = is_public;
+
+      if (auto constructor = child->as<CNodeConstructor>()) {
+        assert(node->constructor == nullptr);
+        node->constructor = constructor;
+        constructor->method_type = MT_INIT;
+      } else {
+        node->all_functions.push_back(n);
+      }
+
+      // Hook up _type_struct on all struct params
+      for (auto decl : n->params) {
+        decl->_type_class = repo->get_class(decl->get_type_name());
+        decl->_type_struct = repo->get_struct(decl->get_type_name());
+      }
+      continue;
+    }
+  }
+
+  if (auto parent = node->node_parent->as<CNodeTemplate>()) {
+    for (CNode* param : parent->node_params->items) {
+      if (param->as<CNodeDeclaration>()) {
+        node->all_modparams.push_back(param->as<CNodeDeclaration>());
+      }
+    }
+  }
+
+  return err;
+}
+
+Err build_call_graph(CNodeClass* node, CSourceRepo* repo) {
+  Err err;
+
+  node_visitor link_callers = [&](CNode* child) {
+    auto call = child->as<CNodeCall>();
+    if (!call) return;
+
+    auto src_method = call->ancestor<CNodeFunction>();
+
+    auto func_name = call->child("func_name");
+
+    if (auto submod_path = func_name->as<CNodeFieldExpression>()) {
+      auto submod_field =
+          node->get_field(submod_path->child("field_path")->get_text());
+      auto submod_class = repo->get_class(submod_field->get_type_name());
+      auto submod_func = submod_class->get_function(
+          submod_path->child("identifier")->get_text());
+
+      src_method->external_callees.insert(submod_func);
+      submod_func->external_callers.insert(src_method);
+    } else if (auto func_id = func_name->as<CNodeIdentifier>()) {
+      auto dst_method = node->get_function(func_id->get_text());
+      if (dst_method) {
+        src_method->internal_callees.insert(dst_method);
+        dst_method->internal_callers.insert(src_method);
+      }
+    } else {
+      assert(false);
+    }
+  };
+
+  if (node->constructor) {
+    visit_children(node->constructor, link_callers);
+  }
+
+  for (auto src_method : node->all_functions) {
+    visit_children(src_method, link_callers);
+  }
+
+  return err;
+}
 
 //------------------------------------------------------------------------------
 
@@ -84,26 +188,21 @@ int main_new(Options opts) {
         node_class->repo = &repo;
         node_class->file = file;
         repo.all_classes.push_back(node_class);
-      }
-      else if (auto node_class = n->as<CNodeClass>()) {
+      } else if (auto node_class = n->as<CNodeClass>()) {
         node_class->repo = &repo;
         node_class->file = file;
         repo.all_classes.push_back(node_class);
-      }
-      else if (auto node_struct = n->as<CNodeStruct>()) {
+      } else if (auto node_struct = n->as<CNodeStruct>()) {
         repo.all_structs.push_back(node_struct);
-      }
-      else if (auto node_namespace = n->as<CNodeNamespace>()) {
+      } else if (auto node_namespace = n->as<CNodeNamespace>()) {
         node_namespace->repo = &repo;
         node_namespace->file = file;
         repo.all_namespaces.push_back(node_namespace);
-      }
-      else if (auto node_enum = n->as<CNodeEnum>()) {
+      } else if (auto node_enum = n->as<CNodeEnum>()) {
         node_enum->repo = &repo;
         node_enum->file = file;
         repo.all_enums.push_back(node_enum);
       }
-
     }
   }
 
@@ -113,24 +212,18 @@ int main_new(Options opts) {
     CSourceFile* file = pair.second;
 
     for (auto n : file->context.root_node) {
-
       if (auto node_template = n->as<CNodeTemplate>()) {
         auto node_class = node_template->child<CNodeClass>();
-        node_class->collect_fields_and_methods();
-      }
-      else if (auto node_class = n->as<CNodeClass>()) {
-        node_class->collect_fields_and_methods();
-      }
-      else if (auto node_struct = n->as<CNodeStruct>()) {
+        collect_fields_and_methods(node_class, &repo);
+      } else if (auto node_class = n->as<CNodeClass>()) {
+        collect_fields_and_methods(node_class, &repo);
+      } else if (auto node_struct = n->as<CNodeStruct>()) {
         node_struct->collect_fields_and_methods(&repo);
-      }
-      else if (auto node_namespace = n->as<CNodeNamespace>()) {
+      } else if (auto node_namespace = n->as<CNodeNamespace>()) {
         node_namespace->collect_fields_and_methods();
+      } else if (auto node_enum = n->as<CNodeEnum>()) {
+        // LOG_G("top level enum!!!!\n");
       }
-      else if (auto node_enum = n->as<CNodeEnum>()) {
-        //LOG_G("top level enum!!!!\n");
-      }
-
     }
   }
 
@@ -149,23 +242,24 @@ int main_new(Options opts) {
       top = c;
     }
   }
-  //assert(top);
+  // assert(top);
 
   //----------------------------------------
 
   LOG_B("Building call graph\n");
   for (auto node_class : repo.all_classes) {
-    err << node_class->build_call_graph(&repo);
+    err << build_call_graph(node_class, &repo);
   }
 
   for (auto node_class : repo.all_classes) {
     for (auto node_func : node_class->all_functions) {
-
-      if (node_func->method_type != MT_FUNC && node_func->is_public && node_func->internal_callers.size()) {
-        LOG_R("Function %s is public and has internal callers\n", node_func->name.c_str());
+      if (node_func->method_type != MT_FUNC && node_func->is_public &&
+          node_func->internal_callers.size()) {
+        LOG_R("Function %s is public and has internal callers\n",
+              node_func->name.c_str());
         assert(false);
       }
-      //err << node_class->build_call_graph(&repo);
+      // err << node_class->build_call_graph(&repo);
     }
   }
 
@@ -173,7 +267,8 @@ int main_new(Options opts) {
 
   LOG_B("Instantiating modules\n");
   for (auto node_class : repo.all_classes) {
-    auto instance = instantiate_class(node_class->get_namestr(), nullptr, nullptr, node_class, 1000);
+    auto instance = instantiate_class(node_class->get_namestr(), nullptr,
+                                      nullptr, node_class, 1000);
     repo.all_instances.push_back(instance);
   }
 
@@ -189,11 +284,11 @@ int main_new(Options opts) {
     node_visitor gather_writes = [&](CNode* node) {
       if (any_writes) return;
       if (auto node_assignment = node->as<CNodeAssignment>()) {
-          auto lhs = node_assignment->child("lhs")->req<CNodeLValue>();
-          auto field = node->ancestor<CNodeClass>()->get_field(lhs);
-          if (field) {
-            current_func->self_writes2.insert(field);
-          }
+        auto lhs = node_assignment->child("lhs")->req<CNodeLValue>();
+        auto field = node->ancestor<CNodeClass>()->get_field(lhs);
+        if (field) {
+          current_func->self_writes2.insert(field);
+        }
       }
     };
 
@@ -210,7 +305,6 @@ int main_new(Options opts) {
       }
     }
 
-
     for (auto node_class : repo.all_classes) {
       for (auto node_func : node_class->all_functions) {
         LOG_R("Func %s\n", node_func->get_namestr().c_str());
@@ -220,8 +314,7 @@ int main_new(Options opts) {
         }
         for (auto node_field : node_func->all_writes2) {
           if (node_func->self_writes2.contains(node_field)) {
-          }
-          else {
+          } else {
             LOG_R("Writes indirect %s\n", node_field->get_namestr().c_str());
           }
         }
@@ -244,7 +337,8 @@ int main_new(Options opts) {
         if (func_name.starts_with("tock")) continue;
 
         if (node_func->all_writes2.size()) {
-          LOG_R("Top-level func %s writes stuff and it shouldn't\n", func_name.c_str());
+          LOG_R("Top-level func %s writes stuff and it shouldn't\n",
+                func_name.c_str());
           exit(-1);
         }
       }
@@ -259,7 +353,8 @@ int main_new(Options opts) {
       auto func_name = node_func->get_namestr();
       if (func_name.starts_with("tick")) {
         if (node_func->has_return()) {
-          LOG_R("Tick %s has a return value and it shouldn't\n", func_name.c_str());
+          LOG_R("Tick %s has a return value and it shouldn't\n",
+                func_name.c_str());
           exit(-1);
         }
       }
@@ -285,7 +380,7 @@ int main_new(Options opts) {
     if (auto node_func = node_class->constructor) {
       LOG_INDENT_SCOPE();
       auto func_name = node_func->get_namestr();
-      //if (!node_func->is_public) continue;
+      // if (!node_func->is_public) continue;
 
       LOG_B("Tracing %s\n", func_name.c_str());
       auto inst_func = inst_class->resolve(func_name);
@@ -364,7 +459,8 @@ int main_new(Options opts) {
   CInstClass* top_inst = nullptr;
 
   if (top) {
-    top_inst = instantiate_class(top->get_namestr(), nullptr, nullptr, top, 1000);
+    top_inst =
+        instantiate_class(top->get_namestr(), nullptr, nullptr, top, 1000);
     LOG_INDENT();
     LOG_G("Top instance is %s\n", top->get_namestr().c_str());
     LOG_DEDENT();
@@ -424,13 +520,10 @@ int main_new(Options opts) {
 
   for (auto node_class : repo.all_classes) {
     for (auto f : node_class->all_functions) {
-
       auto method_type = f->get_method_type();
 
-      if (method_type != MT_FUNC &&
-          method_type != MT_TICK &&
-          method_type != MT_TOCK &&
-          method_type != MT_INIT) {
+      if (method_type != MT_FUNC && method_type != MT_TICK &&
+          method_type != MT_TOCK && method_type != MT_INIT) {
         assert(false);
       }
 
@@ -438,25 +531,21 @@ int main_new(Options opts) {
 
       if (method_type == MT_FUNC) {
         assert(f->all_writes.empty());
-      }
-      else if (method_type == MT_TOCK) {
+      } else if (method_type == MT_TOCK) {
         for (auto inst : f->self_writes) {
           auto state = inst->get_state();
           if (state == TS_SIGNAL || state == TS_OUTPUT) {
-          }
-          else {
+          } else {
             LOG_R("Tock writes a non-signal\n");
             LOG("");
             exit(-1);
           }
         }
-      }
-      else if (method_type == MT_TICK) {
+      } else if (method_type == MT_TICK) {
         for (auto inst : f->self_writes) {
           auto state = inst->get_state();
           if (state == TS_REGISTER || state == TS_MAYBE || state == TS_OUTPUT) {
-          }
-          else {
+          } else {
             LOG_R("Tick writes a non-register\n");
             LOG("");
             exit(-1);
@@ -503,38 +592,69 @@ int main_new(Options opts) {
     assert(inst_class);
 
     for (auto inst_child : inst_class->ports) {
-
       if (auto inst_prim = inst_child->as<CInstPrim>()) {
         auto field = inst_prim->node_field;
         if (!field->is_public) continue;
-        if (field->node_decl->node_static && field->node_decl->node_const) continue;
+        if (field->node_decl->node_static && field->node_decl->node_const)
+          continue;
 
-        switch(inst_prim->get_state()) {
-          case TS_NONE:     break;
-          case TS_INPUT:    node_class->input_signals.push_back(field);    break;
-          case TS_OUTPUT:   node_class->output_signals.push_back(field);   break;
-          case TS_MAYBE:    node_class->output_registers.push_back(field); break;
-          case TS_SIGNAL:   node_class->output_signals.push_back(field);   break;
-          case TS_REGISTER: node_class->output_registers.push_back(field); break;
-          case TS_INVALID:  assert(false); break;
-          case TS_PENDING:  assert(false); break;
+        switch (inst_prim->get_state()) {
+          case TS_NONE:
+            break;
+          case TS_INPUT:
+            node_class->input_signals.push_back(field);
+            break;
+          case TS_OUTPUT:
+            node_class->output_signals.push_back(field);
+            break;
+          case TS_MAYBE:
+            node_class->output_registers.push_back(field);
+            break;
+          case TS_SIGNAL:
+            node_class->output_signals.push_back(field);
+            break;
+          case TS_REGISTER:
+            node_class->output_registers.push_back(field);
+            break;
+          case TS_INVALID:
+            assert(false);
+            break;
+          case TS_PENDING:
+            assert(false);
+            break;
         }
       }
 
       if (auto inst_struct = inst_child->as<CInstStruct>()) {
         auto field = inst_struct->node_field;
         if (!field->is_public) continue;
-        if (field->node_decl->node_static && field->node_decl->node_const) continue;
+        if (field->node_decl->node_static && field->node_decl->node_const)
+          continue;
 
-        switch(inst_struct->get_state()) {
-          case TS_NONE:     break;
-          case TS_INPUT:    node_class->input_signals.push_back(field);    break;
-          case TS_OUTPUT:   node_class->output_signals.push_back(field);   break;
-          case TS_MAYBE:    node_class->output_registers.push_back(field); break;
-          case TS_SIGNAL:   node_class->output_signals.push_back(field);   break;
-          case TS_REGISTER: node_class->output_registers.push_back(field); break;
-          case TS_INVALID:  assert(false); break;
-          case TS_PENDING:  assert(false); break;
+        switch (inst_struct->get_state()) {
+          case TS_NONE:
+            break;
+          case TS_INPUT:
+            node_class->input_signals.push_back(field);
+            break;
+          case TS_OUTPUT:
+            node_class->output_signals.push_back(field);
+            break;
+          case TS_MAYBE:
+            node_class->output_registers.push_back(field);
+            break;
+          case TS_SIGNAL:
+            node_class->output_signals.push_back(field);
+            break;
+          case TS_REGISTER:
+            node_class->output_registers.push_back(field);
+            break;
+          case TS_INVALID:
+            assert(false);
+            break;
+          case TS_PENDING:
+            assert(false);
+            break;
         }
       }
     }
@@ -567,7 +687,6 @@ int main_new(Options opts) {
     }
   }
 #endif
-
 
 #if 0
   for (auto c : repo.all_classes) {
@@ -731,13 +850,16 @@ int main_new(Options opts) {
   // Done!
 
   LOG_B("\n");
-  LOG_B("================================================================================\n");
+  LOG_B(
+      "========================================================================"
+      "========\n");
   LOG_B("Repo dump\n\n");
 
-  //repo.dump();
+  // repo.dump();
 
   for (auto inst_class : repo.all_instances) {
-    LOG_B("Instance tree for %s\n", inst_class->node_class->get_namestr().c_str());
+    LOG_B("Instance tree for %s\n",
+          inst_class->node_class->get_namestr().c_str());
     LOG_INDENT();
     dump_inst_tree(inst_class);
     LOG_DEDENT();
@@ -752,8 +874,9 @@ int main_new(Options opts) {
     LOG("\n");
   }
 
-
-  LOG_B("================================================================================\n");
+  LOG_B(
+      "========================================================================"
+      "========\n");
   LOG_B("Converting %s to SystemVerilog\n\n", opts.src_name.c_str());
 
   std::string out_string;
@@ -761,18 +884,17 @@ int main_new(Options opts) {
   cursor.echo = opts.echo && !opts.quiet;
 
   err << cursor.emit_everything();
-  //err << cursor.emit_trailing_whitespace();
-  //err << cursor.emit_gap();
+  // err << cursor.emit_trailing_whitespace();
+  // err << cursor.emit_gap();
 
   if (err.has_err()) {
     LOG_R("Error during code generation\n");
-    //lib.teardown();
+    // lib.teardown();
     return -1;
   }
 
   // Save translated source to output directory, if there is one.
   if (opts.dst_name.size()) {
-
     auto dst_path = split_path(opts.dst_name);
     dst_path.pop_back();
     mkdir_all(dst_path);
@@ -793,12 +915,16 @@ int main_new(Options opts) {
   }
   LOG("\n");
 
-  LOG_B("================================================================================\n");
+  LOG_B(
+      "========================================================================"
+      "========\n");
   LOG_B("Output:\n\n");
 
   LOG_G("%s\n", out_string.c_str());
 
-  LOG_B("================================================================================\n");
+  LOG_B(
+      "========================================================================"
+      "========\n");
 
   LOG("Done!\n");
 

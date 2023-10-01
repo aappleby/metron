@@ -150,12 +150,14 @@ bool ends_with_break(CNode* node) {
 //------------------------------------------------------------------------------
 
 Err Tracer::trace_dispatch(CNode* node) {
+  if (node == nullptr) return Err();
 
   if (auto n = node->as<CNodeBuiltinType>()) return Err();
   if (auto n = node->as<CNodeConstInt>()) return Err();
   if (auto n = node->as<CNodeConstString>()) return Err();
   if (auto n = node->as<CNodePunct>()) return Err();
   if (auto n = node->as<CNodeUsing>()) return Err();
+  if (auto n = node->as<CNodeKeyword>()) return Err();
 
   if (auto n = node->as<CNodeAssignment>()) return trace(n);
   if (auto n = node->as<CNodeBinaryExp>()) return trace(n);
@@ -172,7 +174,6 @@ Err Tracer::trace_dispatch(CNode* node) {
   if (auto n = node->as<CNodeIdentifier>()) return trace(n);
   if (auto n = node->as<CNodeIdentifierExp>()) return trace(n);
   if (auto n = node->as<CNodeIf>()) return trace(n);
-  if (auto n = node->as<CNodeKeyword>()) return trace(n);
   if (auto n = node->as<CNodeList>()) return trace(n);
   if (auto n = node->as<CNodeLValue>()) return trace(n);
   if (auto n = node->as<CNodePrefixExp>()) return trace(n);
@@ -184,6 +185,16 @@ Err Tracer::trace_dispatch(CNode* node) {
   node->dump_parse_tree();
   assert(false);
   return ERR("Don't know how to trace this node\n");
+}
+
+//------------------------------------------------------------------------------
+
+Err Tracer::trace_children(CNode* node) {
+  Err err;
+  for (auto child : node) {
+    err << trace_dispatch(child);
+  }
+  return err;
 }
 
 //------------------------------------------------------------------------------
@@ -277,21 +288,13 @@ Err Tracer::trace(CNodeCall* node) {
 //------------------------------------------------------------------------------
 
 Err Tracer::trace(CNodeCompound* node) {
-  Err err;
-  for (auto statement : node->statements) {
-    err << trace_dispatch(statement);
-  }
-  return err;
+  return trace_children(node);
 }
 
 //------------------------------------------------------------------------------
 
 Err Tracer::trace(CNodeDeclaration* node) {
-  Err err;
-  if (node->node_value) {
-    err << trace_dispatch(node->node_value);
-  }
-  return err;
+  return trace_dispatch(node->node_value);
 }
 
 //------------------------------------------------------------------------------
@@ -362,9 +365,7 @@ Err Tracer::trace(CNodeIdentifierExp* node) {
 //------------------------------------------------------------------------------
 
 Err Tracer::trace(CNodeExpStatement* node) {
-  Err err;
-  for (auto c : node) err << trace_dispatch(c);
-  return err;
+  return trace_children(node);
 }
 
 //------------------------------------------------------------------------------
@@ -452,26 +453,14 @@ Err Tracer::trace(CNodeIf* node) {
 
 //------------------------------------------------------------------------------
 
-Err Tracer::trace(CNodeKeyword* node) { return Err(); }
-
-//------------------------------------------------------------------------------
-
 Err Tracer::trace(CNodeList* node) {
-  Err err;
-  for (auto child : node) {
-    err << trace_dispatch(child);
-  }
-  return err;
+  return trace_children(node);
 }
 
 //------------------------------------------------------------------------------
 
 Err Tracer::trace(CNodeLValue* node) {
-  Err err;
-  for (auto child : node) {
-    err << trace_dispatch(child);
-  }
-  return err;
+  return trace_children(node);
 }
 
 //------------------------------------------------------------------------------

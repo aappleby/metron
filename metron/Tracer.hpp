@@ -67,6 +67,7 @@ struct Tracer {
   }
 
   Err trace_dispatch(CNode* node);
+  Err trace_children(CNode* node);
 
   Err trace(CNodeAssignment* node);
   Err trace(CNodeBinaryExp* node);
@@ -86,7 +87,6 @@ struct Tracer {
   Err trace(CNodeIf* node);
   Err trace(CNodeList* node);
   Err trace(CNodeLValue* node);
-  Err trace(CNodeKeyword* node);
   Err trace(CNodeNamespace* node);
   Err trace(CNodePrefixExp* node);
   Err trace(CNodePreproc* node);

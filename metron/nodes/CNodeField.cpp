@@ -65,12 +65,6 @@ bool CNodeField::is_const_char() const {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err CNodeField::trace(CInstance* inst, call_stack& stack) {
-  return node_decl->trace(inst, stack);
-}
-
-//------------------------------------------------------------------------------
-
 void CNodeField::dump() const {
   auto name = get_name();
   LOG_A("Field %.*s : ", name.size(), name.data());

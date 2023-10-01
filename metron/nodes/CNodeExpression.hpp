@@ -6,7 +6,9 @@
 //------------------------------------------------------------------------------
 
 struct CNodeExpression : public CNode {
-  uint32_t debug_color() const override;
+  uint32_t debug_color() const override {
+    return COL_AQUA;
+  }
 
 protected:
   CNodeExpression() {}
@@ -15,31 +17,30 @@ protected:
 //------------------------------------------------------------------------------
 
 struct CNodeBinaryExp : public CNodeExpression {
-  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
 };
 
 struct CNodePrefixExp : public CNodeExpression {
-  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
 };
 
 struct CNodeSuffixExp : public CNodeExpression {
-  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
 };
 
 struct CNodeAssignExp : public CNodeExpression {
-  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
 };
 
 struct CNodeIdentifierExp : public CNodeExpression {
-  std::string_view get_name() const override;
-  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
+  std::string_view get_name() const override {
+    return get_text();
+  }
+
 };
 
 //------------------------------------------------------------------------------
 
 struct CNodeOperator : public CNode {
-  uint32_t debug_color() const override;
-  Err trace(CInstance* inst, call_stack& stack) override;
+  uint32_t debug_color() const override {
+    return COL_SKY;
+  }
 };
 
 //----------------------------------------

@@ -39,6 +39,34 @@
 #include "metron/nodes/CNodeTranslationUnit.hpp"
 #include "metron/nodes/CNodeUsing.hpp"
 
+
+//------------------------------------------------------------------------------
+
+bool is_bit_extract(CNodeCall* node) {
+  if (auto func_id = node->node_name->as<CNodeIdentifier>()) {
+    auto func_name = func_id->get_textstr();
+
+    auto args = node->node_args->items.size();
+
+    if (func_name.size() == 2) {
+      if (func_name == "bx") {
+        return true;
+      }
+      else if (func_name[0] == 'b' && isdigit(func_name[1])) {
+        return true;
+      }
+    }
+    else if (func_name.size() == 3) {
+      if (func_name[0] == 'b' && isdigit(func_name[1]) && isdigit(func_name[2])) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+
+
 //==============================================================================
 
 Err Emitter::emit_default(CNode* node) {
@@ -214,7 +242,7 @@ Err Emitter::emit(CNodeBuiltinType* node) {
 Err Emitter::emit(CNodeCall* node) {
   Err err = cursor.check_at(node);
 
-  if (node->is_bit_extract()) return emit_bit_extract(node);
+  if (is_bit_extract(node)) return emit_bit_extract(node);
 
   auto src_class = node->ancestor<CNodeClass>();
   auto src_func = node->ancestor<CNodeFunction>();

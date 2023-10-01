@@ -1,20 +1,48 @@
+// RISC-V SiMPLE SV -- ALU module
+// BSD 3-Clause License
+// (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
+//                Marek Materzok, University of Wrocław
+
+`ifndef ALU_H
+`define ALU_H
+
+`include "config.sv"
+`include "constants.sv"
 `include "metron/metron_tools.sv"
 
-// Zero-initializing structs should work for convenience.
-
-typedef struct packed {
-  logic[7:0] field;
-} MyStruct1;
-
-module Module (
+module alu (
+  // input signals
+  input logic[4:0] alu_function,
+  input logic[31:0] operand_a,
+  input logic[31:0] operand_b,
   // output signals
-  output MyStruct1 my_struct1
+  output logic[31:0] result,
+  output logic result_equal_zero
 );
-/*public:*/
+ /*public:*/
 
   always_comb begin : tock
-    // FIXME fix this later glarghbh
-    //my_struct1 = {0};
-    my_struct1.field = 0;
+    import rv_constants::*;
+
+    // clang-format off
+    case (alu_function)
+      ALU_ADD:  result = operand_a + operand_b; /*break;*/
+      ALU_SUB:  result = operand_a - operand_b; /*break;*/
+      ALU_SLL:  result = operand_a << 5'(operand_b); /*break;*/
+      ALU_SRL:  result = operand_a >> 5'(operand_b); /*break;*/
+      ALU_SRA:  result = ($signed(operand_a) >>> 5'(operand_b)); /*break;*/
+      ALU_SEQ:  result = {31'b0, 1'(operand_a == operand_b)}; /*break;*/
+      ALU_SLT:  result = {31'b0, 1'($signed(operand_a) < $signed(operand_b))}; /*break;*/
+      ALU_SLTU: result = {31'b0, 1'($unsigned(operand_a) < $unsigned(operand_b))}; /*break;*/
+      ALU_XOR:  result = operand_a ^ operand_b; /*break;*/
+      ALU_OR:   result = operand_a | operand_b; /*break;*/
+      ALU_AND:  result = operand_a & operand_b; /*break;*/
+      default:       result = 32'(ZERO); /*break;*/
+    endcase
+    // clang-format on
+
+    result_equal_zero = (result == 32'd0);
   end
 endmodule
+
+`endif // ALU_H

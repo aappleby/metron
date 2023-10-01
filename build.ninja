@@ -229,144 +229,20 @@ build wasm/obj/metron/Tracer.o: compile_cpp_ems metron/Tracer.cpp
 build wasm/obj/metron/metron_tools.o: compile_cpp_ems metron/metron_tools.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeAccess.o: compile_cpp_ems $
-    metron/nodes/CNodeAccess.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeAssignment.o: compile_cpp_ems $
-    metron/nodes/CNodeAssignment.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeBuiltinType.o: compile_cpp_ems $
-    metron/nodes/CNodeBuiltinType.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeCall.o: compile_cpp_ems $
-    metron/nodes/CNodeCall.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
 build wasm/obj/metron/nodes/CNodeClass.o: compile_cpp_ems $
     metron/nodes/CNodeClass.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeCompound.o: compile_cpp_ems $
-    metron/nodes/CNodeCompound.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeConstant.o: compile_cpp_ems $
-    metron/nodes/CNodeConstant.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeConstructor.o: compile_cpp_ems $
-    metron/nodes/CNodeConstructor.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeDeclaration.o: compile_cpp_ems $
-    metron/nodes/CNodeDeclaration.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeEnum.o: compile_cpp_ems $
-    metron/nodes/CNodeEnum.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeExpStatement.o: compile_cpp_ems $
-    metron/nodes/CNodeExpStatement.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeExpression.o: compile_cpp_ems $
-    metron/nodes/CNodeExpression.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
 build wasm/obj/metron/nodes/CNodeField.o: compile_cpp_ems $
     metron/nodes/CNodeField.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeFieldExpression.o: compile_cpp_ems $
-    metron/nodes/CNodeFieldExpression.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeFor.o: compile_cpp_ems $
-    metron/nodes/CNodeFor.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
 build wasm/obj/metron/nodes/CNodeFunction.o: compile_cpp_ems $
     metron/nodes/CNodeFunction.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeIdentifier.o: compile_cpp_ems $
-    metron/nodes/CNodeIdentifier.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeIf.o: compile_cpp_ems $
-    metron/nodes/CNodeIf.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeKeyword.o: compile_cpp_ems $
-    metron/nodes/CNodeKeyword.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeLValue.o: compile_cpp_ems $
-    metron/nodes/CNodeLValue.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeList.o: compile_cpp_ems $
-    metron/nodes/CNodeList.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeNamespace.o: compile_cpp_ems $
-    metron/nodes/CNodeNamespace.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodePreproc.o: compile_cpp_ems $
-    metron/nodes/CNodePreproc.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodePunct.o: compile_cpp_ems $
-    metron/nodes/CNodePunct.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeQualifiedIdentifier.o: compile_cpp_ems $
-    metron/nodes/CNodeQualifiedIdentifier.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeReturn.o: compile_cpp_ems $
-    metron/nodes/CNodeReturn.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeStatement.o: compile_cpp_ems $
-    metron/nodes/CNodeStatement.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
 build wasm/obj/metron/nodes/CNodeStruct.o: compile_cpp_ems $
     metron/nodes/CNodeStruct.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeSwitch.o: compile_cpp_ems $
-    metron/nodes/CNodeSwitch.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeTemplate.o: compile_cpp_ems $
-    metron/nodes/CNodeTemplate.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeTranslationUnit.o: compile_cpp_ems $
-    metron/nodes/CNodeTranslationUnit.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeType.o: compile_cpp_ems $
-    metron/nodes/CNodeType.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeTypedef.o: compile_cpp_ems $
-    metron/nodes/CNodeTypedef.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeUsing.o: compile_cpp_ems $
-    metron/nodes/CNodeUsing.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/NodeTypes.o: compile_cpp_ems $
-    metron/nodes/NodeTypes.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
 build wasm/obj/symlinks/metrolib/core/Platform.o: compile_cpp_ems $
@@ -389,33 +265,10 @@ build docs/app/metron.js: link_ems wasm/obj/metron/main/main.o $
     wasm/obj/metron/CSourceRepo.o wasm/obj/metron/CToken.o $
     wasm/obj/metron/Cursor.o wasm/obj/metron/Emitter.o $
     wasm/obj/metron/MtUtils.o wasm/obj/metron/Tracer.o $
-    wasm/obj/metron/metron_tools.o wasm/obj/metron/nodes/CNodeAccess.o $
-    wasm/obj/metron/nodes/CNodeAssignment.o $
-    wasm/obj/metron/nodes/CNodeBuiltinType.o $
-    wasm/obj/metron/nodes/CNodeCall.o wasm/obj/metron/nodes/CNodeClass.o $
-    wasm/obj/metron/nodes/CNodeCompound.o $
-    wasm/obj/metron/nodes/CNodeConstant.o $
-    wasm/obj/metron/nodes/CNodeConstructor.o $
-    wasm/obj/metron/nodes/CNodeDeclaration.o $
-    wasm/obj/metron/nodes/CNodeEnum.o $
-    wasm/obj/metron/nodes/CNodeExpStatement.o $
-    wasm/obj/metron/nodes/CNodeExpression.o $
+    wasm/obj/metron/metron_tools.o wasm/obj/metron/nodes/CNodeClass.o $
     wasm/obj/metron/nodes/CNodeField.o $
-    wasm/obj/metron/nodes/CNodeFieldExpression.o $
-    wasm/obj/metron/nodes/CNodeFor.o wasm/obj/metron/nodes/CNodeFunction.o $
-    wasm/obj/metron/nodes/CNodeIdentifier.o wasm/obj/metron/nodes/CNodeIf.o $
-    wasm/obj/metron/nodes/CNodeKeyword.o $
-    wasm/obj/metron/nodes/CNodeLValue.o wasm/obj/metron/nodes/CNodeList.o $
-    wasm/obj/metron/nodes/CNodeNamespace.o $
-    wasm/obj/metron/nodes/CNodePreproc.o wasm/obj/metron/nodes/CNodePunct.o $
-    wasm/obj/metron/nodes/CNodeQualifiedIdentifier.o $
-    wasm/obj/metron/nodes/CNodeReturn.o $
-    wasm/obj/metron/nodes/CNodeStatement.o $
-    wasm/obj/metron/nodes/CNodeStruct.o wasm/obj/metron/nodes/CNodeSwitch.o $
-    wasm/obj/metron/nodes/CNodeTemplate.o $
-    wasm/obj/metron/nodes/CNodeTranslationUnit.o $
-    wasm/obj/metron/nodes/CNodeType.o wasm/obj/metron/nodes/CNodeTypedef.o $
-    wasm/obj/metron/nodes/CNodeUsing.o wasm/obj/metron/nodes/NodeTypes.o $
+    wasm/obj/metron/nodes/CNodeFunction.o $
+    wasm/obj/metron/nodes/CNodeStruct.o $
     wasm/obj/symlinks/metrolib/core/Platform.o $
     wasm/obj/symlinks/metrolib/core/Utils.o $
     wasm/obj/symlinks/metrolib/core/Err.o
@@ -477,128 +330,17 @@ build obj/metron/Tracer.o: compile_cpp metron/Tracer.cpp
 build obj/metron/metron_tools.o: compile_cpp metron/metron_tools.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeAccess.o: compile_cpp metron/nodes/CNodeAccess.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeAssignment.o: compile_cpp $
-    metron/nodes/CNodeAssignment.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeBuiltinType.o: compile_cpp $
-    metron/nodes/CNodeBuiltinType.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeCall.o: compile_cpp metron/nodes/CNodeCall.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
 build obj/metron/nodes/CNodeClass.o: compile_cpp metron/nodes/CNodeClass.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeCompound.o: compile_cpp $
-    metron/nodes/CNodeCompound.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeConstant.o: compile_cpp $
-    metron/nodes/CNodeConstant.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeConstructor.o: compile_cpp $
-    metron/nodes/CNodeConstructor.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeDeclaration.o: compile_cpp $
-    metron/nodes/CNodeDeclaration.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeEnum.o: compile_cpp metron/nodes/CNodeEnum.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeExpStatement.o: compile_cpp $
-    metron/nodes/CNodeExpStatement.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeExpression.o: compile_cpp $
-    metron/nodes/CNodeExpression.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
 build obj/metron/nodes/CNodeField.o: compile_cpp metron/nodes/CNodeField.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeFieldExpression.o: compile_cpp $
-    metron/nodes/CNodeFieldExpression.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeFor.o: compile_cpp metron/nodes/CNodeFor.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
 build obj/metron/nodes/CNodeFunction.o: compile_cpp $
     metron/nodes/CNodeFunction.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeIdentifier.o: compile_cpp $
-    metron/nodes/CNodeIdentifier.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeIf.o: compile_cpp metron/nodes/CNodeIf.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeKeyword.o: compile_cpp $
-    metron/nodes/CNodeKeyword.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeLValue.o: compile_cpp metron/nodes/CNodeLValue.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeList.o: compile_cpp metron/nodes/CNodeList.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeNamespace.o: compile_cpp $
-    metron/nodes/CNodeNamespace.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodePreproc.o: compile_cpp $
-    metron/nodes/CNodePreproc.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodePunct.o: compile_cpp metron/nodes/CNodePunct.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeQualifiedIdentifier.o: compile_cpp $
-    metron/nodes/CNodeQualifiedIdentifier.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeReturn.o: compile_cpp metron/nodes/CNodeReturn.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeStatement.o: compile_cpp $
-    metron/nodes/CNodeStatement.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
 build obj/metron/nodes/CNodeStruct.o: compile_cpp metron/nodes/CNodeStruct.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeSwitch.o: compile_cpp metron/nodes/CNodeSwitch.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeTemplate.o: compile_cpp $
-    metron/nodes/CNodeTemplate.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeTranslationUnit.o: compile_cpp $
-    metron/nodes/CNodeTranslationUnit.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeType.o: compile_cpp metron/nodes/CNodeType.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeTypedef.o: compile_cpp $
-    metron/nodes/CNodeTypedef.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeUsing.o: compile_cpp metron/nodes/CNodeUsing.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/NodeTypes.o: compile_cpp metron/nodes/NodeTypes.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
 build obj/symlinks/metrolib/core/Platform.o: compile_cpp $
@@ -618,26 +360,9 @@ build bin/libmetron.a: static_lib obj/metron/CContext.o $
     obj/metron/CParser.o obj/metron/CScope.o obj/metron/CSourceFile.o $
     obj/metron/CSourceRepo.o obj/metron/CToken.o obj/metron/Cursor.o $
     obj/metron/Emitter.o obj/metron/MtUtils.o obj/metron/Tracer.o $
-    obj/metron/metron_tools.o obj/metron/nodes/CNodeAccess.o $
-    obj/metron/nodes/CNodeAssignment.o obj/metron/nodes/CNodeBuiltinType.o $
-    obj/metron/nodes/CNodeCall.o obj/metron/nodes/CNodeClass.o $
-    obj/metron/nodes/CNodeCompound.o obj/metron/nodes/CNodeConstant.o $
-    obj/metron/nodes/CNodeConstructor.o obj/metron/nodes/CNodeDeclaration.o $
-    obj/metron/nodes/CNodeEnum.o obj/metron/nodes/CNodeExpStatement.o $
-    obj/metron/nodes/CNodeExpression.o obj/metron/nodes/CNodeField.o $
-    obj/metron/nodes/CNodeFieldExpression.o obj/metron/nodes/CNodeFor.o $
-    obj/metron/nodes/CNodeFunction.o obj/metron/nodes/CNodeIdentifier.o $
-    obj/metron/nodes/CNodeIf.o obj/metron/nodes/CNodeKeyword.o $
-    obj/metron/nodes/CNodeLValue.o obj/metron/nodes/CNodeList.o $
-    obj/metron/nodes/CNodeNamespace.o obj/metron/nodes/CNodePreproc.o $
-    obj/metron/nodes/CNodePunct.o $
-    obj/metron/nodes/CNodeQualifiedIdentifier.o $
-    obj/metron/nodes/CNodeReturn.o obj/metron/nodes/CNodeStatement.o $
-    obj/metron/nodes/CNodeStruct.o obj/metron/nodes/CNodeSwitch.o $
-    obj/metron/nodes/CNodeTemplate.o $
-    obj/metron/nodes/CNodeTranslationUnit.o obj/metron/nodes/CNodeType.o $
-    obj/metron/nodes/CNodeTypedef.o obj/metron/nodes/CNodeUsing.o $
-    obj/metron/nodes/NodeTypes.o obj/symlinks/metrolib/core/Platform.o $
+    obj/metron/metron_tools.o obj/metron/nodes/CNodeClass.o $
+    obj/metron/nodes/CNodeField.o obj/metron/nodes/CNodeFunction.o $
+    obj/metron/nodes/CNodeStruct.o obj/symlinks/metrolib/core/Platform.o $
     obj/symlinks/metrolib/core/Utils.o obj/symlinks/metrolib/core/Err.o
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests

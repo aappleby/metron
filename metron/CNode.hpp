@@ -29,10 +29,6 @@ typedef matcheroni::Span<CToken> TokenSpan;
 
 //------------------------------------------------------------------------------
 
-typedef std::vector<CNode*> call_stack;
-
-//------------------------------------------------------------------------------
-
 struct CNode : public parseroni::NodeBase<CNode, CToken> {
 
   using AtomType = CToken;
@@ -46,7 +42,6 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
 
   virtual uint32_t debug_color() const;
   virtual std::string_view get_name() const;
-  virtual CHECK_RETURN Err trace(CInstance* inst, call_stack& stack);
 
   virtual CSourceRepo* get_repo() {
     return node_parent->get_repo();

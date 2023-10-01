@@ -5,9 +5,13 @@
 //==============================================================================
 
 struct CNodeUsing : public CNodeStatement {
-  uint32_t debug_color() const override;
-  std::string_view get_name() const override;
-  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
+  uint32_t debug_color() const override {
+    return 0x00DFFF;
+  }
+
+  std::string_view get_name() const override {
+    return child("name")->get_text();
+  }
 };
 
 //==============================================================================

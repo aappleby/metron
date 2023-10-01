@@ -5,9 +5,9 @@
 //==============================================================================
 
 struct CNodeStatement : public CNode {
-  uint32_t debug_color() const override;
-protected:
-  CNodeStatement() {}
+  uint32_t debug_color() const override {
+    return COL_TEAL;
+  }
 };
 
 //==============================================================================

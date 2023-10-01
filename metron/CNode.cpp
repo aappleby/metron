@@ -22,13 +22,6 @@ std::string_view CNode::get_name() const {
 }
 
 //------------------------------------------------------------------------------
-
-Err CNode::trace(CInstance* inst, call_stack& stack) {
-  NODE_ERR("Can't trace CNode base class");
-  return Err();
-}
-
-//------------------------------------------------------------------------------
 // Node debugging
 
 static std::string escape(const char* a, const char* b) {

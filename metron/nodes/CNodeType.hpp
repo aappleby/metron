@@ -6,10 +6,9 @@
 //==============================================================================
 
 struct CNodeType : public CNode {
-  uint32_t debug_color() const override;
-
-protected:
-  CNodeType() {}
+  uint32_t debug_color() const override {
+    return COL_VIOLET;
+  }
 };
 
 //==============================================================================

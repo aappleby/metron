@@ -23,9 +23,6 @@
 
 using namespace matcheroni;
 
-bool deep_trace = false;
-bool writes_are_bad = false;
-
 //------------------------------------------------------------------------------
 
 int main_new(Options opts) {
@@ -155,15 +152,6 @@ int main_new(Options opts) {
   }
   //assert(top);
 
-  CInstClass* top_inst = nullptr;
-
-  if (top) {
-    top_inst = instantiate_class(top->get_namestr(), nullptr, nullptr, top, 1000);
-    LOG_INDENT();
-    LOG_G("Top instance is %s\n", top->get_namestr().c_str());
-    LOG_DEDENT();
-  }
-
   //----------------------------------------
 
   LOG_B("Building call graph\n");
@@ -285,7 +273,11 @@ int main_new(Options opts) {
   LOG_B("Tracing classes\n");
   LOG_INDENT();
 
+  Tracer tracer;
+  tracer.repo = &repo;
+
   for (auto inst_class : repo.all_instances) {
+    tracer.root_inst = inst_class;
     auto node_class = inst_class->node_class;
     auto name = node_class->get_name();
     LOG_B("Tracing public methods in %.*s\n", int(name.size()), name.data());
@@ -298,9 +290,8 @@ int main_new(Options opts) {
 
       LOG_B("Tracing %s\n", func_name.c_str());
       auto inst_func = inst_class->resolve(func_name);
-      call_stack stack;
-      stack.push_back(node_func);
-      err << node_func->trace(inst_func, stack);
+
+      err << tracer.start_trace(inst_func, node_func);
     }
 
     // Trace tocks
@@ -312,9 +303,8 @@ int main_new(Options opts) {
 
       LOG_B("Tracing %s\n", func_name.c_str());
       auto inst_func = inst_class->resolve(func_name);
-      call_stack stack;
-      stack.push_back(node_func);
-      err << node_func->trace(inst_func, stack);
+
+      err << tracer.start_trace(inst_func, node_func);
     }
 
     // Trace ticks
@@ -326,9 +316,8 @@ int main_new(Options opts) {
 
       LOG_B("Tracing %s\n", func_name.c_str());
       auto inst_func = inst_class->resolve(func_name);
-      call_stack stack;
-      stack.push_back(node_func);
-      err << node_func->trace(inst_func, stack);
+
+      err << tracer.start_trace(inst_func, node_func);
     }
 
     // Trace top functions
@@ -373,7 +362,17 @@ int main_new(Options opts) {
   LOG_B("Tracing top module\n");
   LOG_INDENT();
 
-  deep_trace = true;
+  CInstClass* top_inst = nullptr;
+
+  if (top) {
+    top_inst = instantiate_class(top->get_namestr(), nullptr, nullptr, top, 1000);
+    LOG_INDENT();
+    LOG_G("Top instance is %s\n", top->get_namestr().c_str());
+    LOG_DEDENT();
+  }
+
+  tracer.root_inst = top_inst;
+  tracer.deep_trace = true;
 
   if (top_inst) {
     // Trace constructors first
@@ -383,9 +382,8 @@ int main_new(Options opts) {
 
       LOG_B("Tracing %s\n", func_name.c_str());
       auto inst_func = top_inst->resolve(func_name);
-      call_stack stack;
-      stack.push_back(node_func);
-      err << node_func->trace(inst_func, stack);
+
+      err << tracer.start_trace(inst_func, node_func);
     }
 
     // Trace tocks
@@ -397,9 +395,8 @@ int main_new(Options opts) {
 
       LOG_B("Tracing %s\n", func_name.c_str());
       auto inst_func = top_inst->resolve(func_name);
-      call_stack stack;
-      stack.push_back(node_func);
-      err << node_func->trace(inst_func, stack);
+
+      err << tracer.start_trace(inst_func, node_func);
     }
 
     // Trace ticks
@@ -411,13 +408,12 @@ int main_new(Options opts) {
 
       LOG_B("Tracing %s\n", func_name.c_str());
       auto inst_func = top_inst->resolve(func_name);
-      call_stack stack;
-      stack.push_back(node_func);
-      err << node_func->trace(inst_func, stack);
+
+      err << tracer.start_trace(inst_func, node_func);
     }
   }
 
-  deep_trace = false;
+  tracer.deep_trace = false;
 
   if (top_inst) {
     top_inst->dump_tree();

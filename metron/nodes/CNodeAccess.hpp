@@ -5,8 +5,12 @@
 //==============================================================================
 
 struct CNodeAccess : public CNode {
-  uint32_t debug_color() const override;
-  void dump() const override;
+  uint32_t debug_color() const override { return COL_VIOLET; }
+
+  void dump() const override {
+    auto text = get_text();
+    LOG_B("CNodeAccess \"%.*s\"\n", text.size(), text.data());
+  }
 };
 
 //==============================================================================

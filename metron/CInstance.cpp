@@ -14,8 +14,6 @@
 #include "metron/nodes/CNodePunct.hpp"
 #include "metron/nodes/CNodeStruct.hpp"
 
-extern bool deep_trace;
-
 bool check_port_directions(TraceState sa, TraceState sb) {
   assert(sa >= TS_NONE || sa <= TS_REGISTER);
   assert(sa >= TS_NONE || sb <= TS_REGISTER);
@@ -227,13 +225,6 @@ void CInstClass::dump_tree() const {
 
 //----------------------------------------
 
-Err CInstClass::log_action(CNode* node, TraceAction action, call_stack& stack) {
-  assert(false);
-  return Err();
-}
-
-//----------------------------------------
-
 void CInstClass::push_state() {
   for (auto child : ports) child->push_state();
   for (auto child : parts) child->push_state();
@@ -314,16 +305,6 @@ void CInstStruct::dump_tree() const {
 
 //----------------------------------------
 
-Err CInstStruct::log_action(CNode* node, TraceAction action,
-                            call_stack& stack) {
-  Err err;
-  // for (auto pair : inst_map) err << pair.second->log_action(node, action);
-  for (auto child : parts) err << child->log_action(node, action, stack);
-  return err;
-}
-
-//----------------------------------------
-
 void CInstStruct::push_state() {
   for (auto child : parts) child->push_state();
 }
@@ -378,48 +359,6 @@ void CInstPrim::dump_tree() const {
 
 //----------------------------------------
 
-Err CInstPrim::log_action(CNode* node, TraceAction action, call_stack& stack) {
-  Err err;
-
-  if (name == "@return") {
-    LOG("wat going on %d\n", action);
-    return err;
-  }
-
-  assert(action == ACT_READ || action == ACT_WRITE);
-
-  auto func = node->ancestor<CNodeFunction>();
-  assert(func);
-
-  if (!deep_trace) {
-    if (action == ACT_READ) {
-      func->self_reads.insert(this);
-    } else if (action == ACT_WRITE) {
-      func->self_writes.insert(this);
-    }
-  }
-
-  if (auto constructor = stack[0]->as<CNodeConstructor>()) {
-    // LOG_R("not recording action because we're inside init()\n");
-    return err;
-  }
-
-  auto old_state = state_stack.back();
-  auto new_state = merge_action(old_state, action);
-
-  state_stack.back() = new_state;
-
-  if (new_state == TS_INVALID) {
-    LOG_R("Trace error: state went from %s to %s\n", to_string(old_state),
-          to_string(new_state));
-    err << ERR("Invalid context state\n");
-  }
-
-  return err;
-}
-
-//----------------------------------------
-
 void CInstPrim::push_state() {
   assert(state_stack.size() > 0);
   state_stack.push_back(state_stack.back());
@@ -459,6 +398,16 @@ void CInstPrim::merge_state() {
 
 // ##############################################################################
 // ##############################################################################
+
+
+
+
+
+
+
+
+
+
 
 // ##############################################################################
 // ##############################################################################
@@ -554,13 +503,6 @@ void CInstFunc::dump_tree() const {
   }
 
   LOG_DEDENT();
-}
-
-//----------------------------------------
-
-Err CInstFunc::log_action(CNode* node, TraceAction action, call_stack& stack) {
-  assert(false);
-  return Err();
 }
 
 //----------------------------------------

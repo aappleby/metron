@@ -5,10 +5,6 @@
 //==============================================================================
 
 struct CNodeConstant : public CNodeExpression {
-  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
-
-protected:
-  CNodeConstant() {}
 };
 
 struct CNodeConstInt    : public CNodeConstant {};

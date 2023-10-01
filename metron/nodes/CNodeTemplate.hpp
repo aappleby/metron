@@ -2,6 +2,10 @@
 
 #include <vector>
 #include "metron/CNode.hpp"
+#include "metron/nodes/CNodeDeclaration.hpp"
+#include "metron/nodes/CNodeList.hpp"
+#include "metron/nodes/CNodeClass.hpp"
+#include "metron/nodes/CNodeKeyword.hpp"
 
 struct CNodeKeyword;
 struct CNodeList;
@@ -11,7 +15,18 @@ struct CNodeDeclaration;
 //------------------------------------------------------------------------------
 
 struct CNodeTemplate : public CNode {
-  void init(const char* match_tag, SpanType span, uint64_t flags);
+  void init(const char* match_tag, SpanType span, uint64_t flags) {
+    CNode::init(match_tag, span, flags);
+    node_template = child("template")->as<CNodeKeyword>();
+    node_params   = child("params")->as<CNodeList>();
+    node_class    = child("class")->as<CNodeClass>();
+
+    for (auto child : node_params->items) {
+      auto decl = child->as<CNodeDeclaration>();
+      assert(decl);
+      params.push_back(decl);
+    }
+  }
 
   uint32_t debug_color() const override { return 0x00FFFF; }
 

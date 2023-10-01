@@ -1,20 +1,24 @@
 #pragma once
 
-#include "metrolib/core/Log.h"
 #include "metron/CNode.hpp"
-#include "metron/Cursor.hpp"
-
-struct CNodeList;
+#include "metron/nodes/CNodeList.hpp"
 
 //------------------------------------------------------------------------------
 
 struct CNodeCall : public CNode {
-  void init(const char* match_tag, SpanType span, uint64_t flags);
-  std::string_view get_name() const override;
-  uint32_t debug_color() const override;
-  CHECK_RETURN Err trace(CInstance* inst, call_stack& stack) override;
+  void init(const char* match_tag, SpanType span, uint64_t flags) {
+    node_name  = child("func_name")->req<CNode>();
+    node_targs = child("func_targs")->opt<CNodeList>();
+    node_args  = child("func_args")->req<CNodeList>();
+  }
 
-  bool is_bit_extract();
+  std::string_view get_name() const override {
+    return child("func_name")->get_text();
+  }
+
+  uint32_t debug_color() const override {
+    return COL_SKY;
+  }
 
   CNode* node_name = nullptr;
   CNodeList* node_targs = nullptr;

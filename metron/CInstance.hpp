@@ -60,8 +60,6 @@ struct CInstance {
   virtual TraceState get_state() const = 0;
   virtual CInstance* resolve(std::string name) = 0;
   virtual void dump_tree() const = 0;
-  virtual Err log_action(CNode* node, TraceAction action,
-                         call_stack& stack) = 0;
 
   virtual void push_state() = 0;
   virtual void pop_state() = 0;
@@ -90,8 +88,6 @@ struct CInstClass : public CInstance {
   TraceState get_state() const override;
   CInstance* resolve(std::string name) override;
   void dump_tree() const override;
-  CHECK_RETURN Err log_action(CNode* node, TraceAction action,
-                              call_stack& stack) override;
 
   void push_state() override;
   void pop_state() override;
@@ -119,8 +115,6 @@ struct CInstStruct : public CInstance {
   TraceState get_state() const override;
   CInstance* resolve(std::string name) override;
   void dump_tree() const override;
-  CHECK_RETURN Err log_action(CNode* node, TraceAction action,
-                              call_stack& stack) override;
 
   void push_state() override;
   void pop_state() override;
@@ -145,8 +139,6 @@ struct CInstPrim : public CInstance {
   TraceState get_state() const override;
   CInstance* resolve(std::string name) override;
   void dump_tree() const override;
-  CHECK_RETURN Err log_action(CNode* node, TraceAction action,
-                              call_stack& stack) override;
 
   void push_state() override;
   void pop_state() override;
@@ -172,7 +164,6 @@ struct CInstFunc : public CInstance {
   TraceState get_state() const override;
   CInstance* resolve(std::string name) override;
   void dump_tree() const override;
-  Err log_action(CNode* node, TraceAction action, call_stack& stack) override;
 
   void push_state() override;
   void pop_state() override;

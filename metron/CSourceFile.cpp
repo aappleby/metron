@@ -47,10 +47,3 @@ Err CSourceFile::init(CSourceRepo* _repo, const std::string& _filename,
 }
 
 //------------------------------------------------------------------------------
-
-void CSourceFile::dump() {
-  auto source_span = matcheroni::utils::to_span(context.source);
-  matcheroni::utils::print_trees(context, source_span, 50, 2);
-}
-
-//------------------------------------------------------------------------------

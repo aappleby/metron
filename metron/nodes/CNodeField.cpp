@@ -64,33 +64,3 @@ bool CNodeField::is_const_char() const {
 }
 
 //------------------------------------------------------------------------------
-
-void CNodeField::dump() const {
-  auto name = get_name();
-  LOG_A("Field %.*s : ", name.size(), name.data());
-
-  if (node_decl->node_static) LOG_A("static ");
-  if (node_decl->node_const)  LOG_A("const ");
-  if (is_public)              LOG_A("public ");
-  if (node_decl->is_array())  LOG_A("array ");
-
-  if (parent_class) {
-    LOG_A("parent class %s ", parent_class->get_namestr().c_str());
-  }
-
-  if (parent_struct) {
-    LOG_A("parent struct %s ", parent_struct->get_namestr().c_str());
-  }
-
-  if (node_decl->_type_class) {
-    LOG_A("type class %s ", node_decl->_type_class->get_namestr().c_str());
-  }
-
-  if (node_decl->_type_struct) {
-    LOG_A("type struct %s ", node_decl->_type_struct->get_namestr().c_str());
-  }
-
-  LOG_A("\n");
-}
-
-//------------------------------------------------------------------------------

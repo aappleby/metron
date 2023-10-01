@@ -82,36 +82,3 @@ uint32_t Lexeme::type_to_color() const {
 }
 
 //----------------------------------------------------------------------------
-
-void Lexeme::dump_lexeme() const {
-  const int span_len = 20;
-  std::string dump = "";
-
-  if (type == LEX_BOF) dump = "<bof>";
-  if (type == LEX_EOF) dump = "<eof>";
-
-  for (auto c = text_begin; c < text_end; c++) {
-    if      (*c == '\n') dump += "\\n";
-    else if (*c == '\t') dump += "\\t";
-    else if (*c == '\r') dump += "\\r";
-    else                 dump += *c;
-    if (dump.size() >= span_len) break;
-  }
-
-  dump = '`' + dump + '`';
-  if (dump.size() > span_len) {
-    dump.resize(span_len - 4);
-    dump = dump + "...`";
-  }
-  while (dump.size() < span_len) dump += " ";
-
-  printf("r%04d c%02d i%02d ", row, col, indent);
-
-  utils::set_color(type_to_color());
-  printf("%-14.14s ", type_to_str());
-  utils::set_color(0);
-  printf("%s", dump.c_str());
-  utils::set_color(0);
-}
-
-//----------------------------------------------------------------------------

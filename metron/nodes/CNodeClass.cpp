@@ -68,7 +68,7 @@ CNodeField* CNodeClass::get_field(CNode* node_name) {
   }
 
   LOG_R("----------------------------------------\n");
-  node_name->dump_tree();
+  LOG_R("Don't know how to get field for %s\n", node_name->get_textstr().c_str());
   LOG_R("----------------------------------------\n");
 
   assert(false);
@@ -207,35 +207,6 @@ Err CNodeClass::build_call_graph(CSourceRepo* repo) {
 
 //------------------------------------------------------------------------------
 
-void CNodeClass::dump_call_graph() {
-  LOG_G("Class %s\n", name.c_str());
-
-  LOG_INDENT();
-
-  if (constructor) {
-    LOG("Constructor\n");
-    LOG_INDENT();
-    constructor->dump_call_graph();
-    LOG_DEDENT();
-  }
-
-  for (auto node_func : all_functions) {
-    if (node_func->internal_callers.size()) {
-      continue;
-    }
-    else {
-      LOG("Func %s\n", node_func->name.c_str());
-      LOG_INDENT();
-      node_func->dump_call_graph();
-      LOG_DEDENT();
-    }
-  }
-  LOG_DEDENT();
-}
-
-
-//------------------------------------------------------------------------------
-
 bool CNodeClass::needs_tick() {
   for (auto f : all_functions) {
     if (f->method_type == MT_TICK) return true;
@@ -260,32 +231,6 @@ bool CNodeClass::needs_tock() {
   }
 
   return false;
-}
-
-
-//------------------------------------------------------------------------------
-
-void CNodeClass::dump() const {
-  LOG_B("Class %s @ %s, refcount %d\n", name.c_str(), file->filename.c_str(), refcount);
-  LOG_INDENT();
-  {
-    if (all_modparams.size()) {
-      LOG_G("Modparams\n");
-      LOG_INDENT_SCOPE();
-      for (auto f : all_modparams) f->dump();
-    }
-
-    if (all_localparams.size()) {
-      LOG_G("Localparams\n");
-      LOG_INDENT_SCOPE();
-      for (auto f : all_localparams) f->dump();
-    }
-
-    for (auto child : node_body) {
-      child->dump();
-    }
-  }
-  LOG_DEDENT();
 }
 
 //==============================================================================

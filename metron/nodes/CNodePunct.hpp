@@ -11,11 +11,6 @@ struct CNodePunct : public CNode {
     NODE_ERR("FIXME");
     return "";
   }
-
-  void dump() const override {
-    auto text = get_text();
-    LOG_B("CNodePunct \"%.*s\"\n", text.size(), text.data());
-  }
 };
 
 //==============================================================================

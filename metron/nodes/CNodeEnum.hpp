@@ -33,11 +33,6 @@ struct CNodeEnum : public CNode {
     return n ? n->get_text() : "<unnamed>";
   }
 
-  void dump() const override {
-    auto name = get_name();
-    LOG_G("Enum %.*s\n", name.size(), name.data());
-  }
-
   CSourceRepo* repo = nullptr;
   CSourceFile* file = nullptr;
 

@@ -36,11 +36,6 @@ struct CNodeDeclaration : public CNode {
     return node_array != nullptr;
   }
 
-  void dump() const override {
-    auto text = get_text();
-    LOG_G("Declaration `%.*s`\n", text.size(), text.data());
-  }
-
   bool is_localparam() const {
     return child("static") != nullptr && child("const") != nullptr;
   }

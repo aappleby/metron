@@ -206,25 +206,6 @@ CInstance* CInstClass::resolve(std::string name) {
 
 //----------------------------------------
 
-void CInstClass::dump_tree() const {
-  LOG_G("Class %s\n", get_path().c_str());
-
-  {
-    LOG_INDENT_SCOPE();
-    LOG_G("Ports:\n");
-    LOG_INDENT_SCOPE();
-    for (auto child : ports) child->dump_tree();
-  }
-  {
-    LOG_INDENT_SCOPE();
-    LOG_R("Parts:\n");
-    LOG_INDENT_SCOPE();
-    for (auto child : parts) child->dump_tree();
-  }
-}
-
-//----------------------------------------
-
 void CInstClass::push_state() {
   for (auto child : ports) child->push_state();
   for (auto child : parts) child->push_state();
@@ -292,19 +273,6 @@ CInstance* CInstStruct::resolve(std::string name) {
 
 //----------------------------------------
 
-void CInstStruct::dump_tree() const {
-  LOG_G("Struct %s\n", get_path().c_str());
-
-  {
-    LOG_INDENT_SCOPE();
-    LOG_G("Parts:\n");
-    LOG_INDENT_SCOPE();
-    for (auto child : parts) child->dump_tree();
-  }
-}
-
-//----------------------------------------
-
 void CInstStruct::push_state() {
   for (auto child : parts) child->push_state();
 }
@@ -342,19 +310,6 @@ TraceState CInstPrim::get_state() const { return state_stack.back(); }
 CInstance* CInstPrim::resolve(std::string name) {
   assert(false);
   return nullptr;
-}
-
-//----------------------------------------
-
-void CInstPrim::dump_tree() const {
-  if (node_field && node_field->is_public) {
-    LOG_G("Prim %s", get_path().c_str());
-  } else {
-    LOG_R("Prim %s", get_path().c_str());
-  }
-
-  for (auto state : state_stack) LOG(" %s", to_string(state));
-  LOG("\n");
 }
 
 //----------------------------------------
@@ -479,30 +434,6 @@ CInstance* CInstFunc::resolve(std::string name) {
     if (param->name == name) return param;
   if (inst_return && inst_return->name == name) return inst_return;
   return inst_parent->resolve(name);
-}
-
-//----------------------------------------
-
-void CInstFunc::dump_tree() const {
-  LOG_G("Func %s\n", get_path().c_str());
-
-  LOG_INDENT();
-
-  if (params.size()) {
-    LOG_G("Params:\n");
-    LOG_INDENT();
-    for (auto p : params) p->dump_tree();
-    LOG_DEDENT();
-  }
-
-  if (inst_return) {
-    LOG_G("Return:\n");
-    LOG_INDENT();
-    inst_return->dump_tree();
-    LOG_DEDENT();
-  }
-
-  LOG_DEDENT();
 }
 
 //----------------------------------------

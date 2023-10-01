@@ -40,7 +40,7 @@
 #include "metron/nodes/CNodeUsing.hpp"
 #include "metron/nodes/CNodeWhile.hpp"
 
-#define TRACE_ERR(A) { node->dump_tree(); LOG_R("bad bad %s : %s\n", typeid(*node).name(), A); assert(false); exit(-1); }
+#define TRACE_ERR(A) { LOG_R("bad bad %s : %s\n", typeid(*node).name(), A); assert(false); exit(-1); }
 
 //------------------------------------------------------------------------------
 
@@ -182,9 +182,9 @@ Err Tracer::trace_dispatch(CNode* node) {
   if (auto n = node->as<CNodeSuffixExp>()) return trace(n);
   if (auto n = node->as<CNodeSwitch>()) return trace(n);
 
-  node->dump_parse_tree();
+  LOG_R("Don't know how to trace a %s\n", typeid(*node).name());
   assert(false);
-  return ERR("Don't know how to trace this node\n");
+  return ERR("Don't know how to trace a %s\n", typeid(*node).name());
 }
 
 //------------------------------------------------------------------------------
@@ -558,7 +558,12 @@ Err Tracer::trace(CNodeCase* node) {
 //------------------------------------------------------------------------------
 
 Err Tracer::trace(CNodeDefault* node) {
-  return trace_dispatch(node->node_body);
+  if (node->node_body && !ends_with_break(node->node_body)) {
+    return ERR(
+        "All non-empty case statements must end with break (no fallthroughs)");
+  }
+
+  return trace(node->node_body);
 }
 
 //------------------------------------------------------------------------------

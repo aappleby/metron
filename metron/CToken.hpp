@@ -50,7 +50,6 @@ struct Lexeme {
 
   const char* type_to_str() const;
   uint32_t type_to_color() const;
-  void dump_lexeme() const;
 
   std::string_view get_text() const { return std::string_view(text_begin, text_end); }
 
@@ -71,10 +70,6 @@ struct CToken {
 
   const char* text_begin() const { return lex->text_begin; }
   const char* text_end() const   { return lex->text_end; }
-
-  void dump_lexeme() {
-    lex->dump_lexeme();
-  }
 
   matcheroni::TextSpan as_text_span() const {
     return matcheroni::TextSpan(lex->text_begin, lex->text_end);

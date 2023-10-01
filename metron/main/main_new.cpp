@@ -39,7 +39,7 @@ int main_new(Options opts) {
     return -1;
   }
 
-  root_file->context.top_head->dump_parse_tree();
+  //root_file->context.top_head->dump_parse_tree();
   LOG("\n");
 
   //----------------------------------------
@@ -416,7 +416,7 @@ int main_new(Options opts) {
   tracer.deep_trace = false;
 
   if (top_inst) {
-    top_inst->dump_tree();
+    //top_inst->dump_tree();
   }
 
   if (err.has_err()) {
@@ -486,9 +486,9 @@ int main_new(Options opts) {
         bool ports_ok = inst_a->check_port_directions(inst_b);
         if (!ports_ok) {
           LOG_R("-----\n");
-          inst_a->dump_tree();
+          //inst_a->dump_tree();
           LOG_R("-----\n");
-          inst_b->dump_tree();
+          //inst_b->dump_tree();
           LOG_R("-----\n");
           err << ERR("Bad ports!\n");
           exit(-1);
@@ -739,12 +739,12 @@ int main_new(Options opts) {
   LOG_B("================================================================================\n");
   LOG_B("Repo dump\n\n");
 
-  repo.dump();
+  //repo.dump();
 
   for (auto inst_class : repo.all_instances) {
     LOG_B("Instance tree for %s\n", inst_class->node_class->get_namestr().c_str());
     LOG_INDENT();
-    inst_class->dump_tree();
+    //inst_class->dump_tree();
     LOG_DEDENT();
     LOG_B("\n");
   }
@@ -752,7 +752,7 @@ int main_new(Options opts) {
   for (auto node_class : repo.all_classes) {
     LOG_B("Call graph for %s\n", node_class->get_namestr().c_str());
     LOG_INDENT();
-    node_class->dump_call_graph();
+    //node_class->dump_call_graph();
     LOG_DEDENT();
     LOG("\n");
   }

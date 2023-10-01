@@ -25,7 +25,7 @@ struct CInstClass;
 
 typedef matcheroni::Span<CToken> TokenSpan;
 
-#define NODE_ERR(A) { dump_tree(); LOG_R("bad bad %s : %s\n", typeid(*this).name(), A); assert(false); exit(-1); }
+#define NODE_ERR(A) { LOG_R("bad bad %s : %s\n", typeid(*this).name(), A); assert(false); exit(-1); }
 
 //------------------------------------------------------------------------------
 
@@ -76,12 +76,6 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   const std::string get_string() const {
     return std::string(text_begin(), text_end());
   }
-
-  //----------------------------------------
-
-  virtual void dump() const;
-  void dump_tree(int max_depth = 0) const;
-  void dump_parse_tree(int max_depth = 0) const { return dump_tree(max_depth); }
 
   //----------------------------------------
 

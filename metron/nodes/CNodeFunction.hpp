@@ -39,9 +39,6 @@ struct CNodeFunction : public CNode {
   bool emit_as_task();
   bool emit_as_func();
 
-  void dump() const override;
-  void dump_call_graph();
-
   using func_visitor = std::function<void(CNodeFunction*)>;
 
   inline void visit_internal_callees(func_visitor v) {

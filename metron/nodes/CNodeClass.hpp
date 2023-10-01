@@ -31,7 +31,6 @@ struct CNodeClass : public CNode {
 
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
-  virtual void dump() const override;
 
   CSourceRepo* get_repo() override {
     return repo;
@@ -50,9 +49,6 @@ struct CNodeClass : public CNode {
 
   Err collect_fields_and_methods();
   Err build_call_graph(CSourceRepo* repo);
-  void dump_call_graph();
-
-  void dump_fields();
 
   //----------------------------------------
 

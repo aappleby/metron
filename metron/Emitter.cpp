@@ -992,7 +992,6 @@ Err Emitter::emit(CNodeFunction* node) {
     err << (node->internal_callers.size() ? emit_func(node)
                                           : emit_always_comb(node));
   } else {
-    node->dump_tree();
     assert(false);
   }
 

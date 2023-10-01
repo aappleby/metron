@@ -17,7 +17,6 @@ struct CNodeStruct : public CNode {
   void init(const char* match_tag, SpanType span, uint64_t flags);
   uint32_t debug_color() const override;
   std::string_view get_name() const override;
-  void dump() const override ;
 
   //----------------------------------------
 

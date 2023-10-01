@@ -28,11 +28,6 @@ class CSourceRepo /* : public IContext maybe? */ {
   std::string resolve_filename(const std::string& filename);
   Err load_source(std::string filename, CSourceFile** out_source = nullptr);
 
-  void dump();
-
-  //CNode* resolve(CNodeClass* parent, CNode* path);
-
-
   std::vector<std::string> search_paths = {""};
   std::map<std::string, CSourceFile*> source_map;
 

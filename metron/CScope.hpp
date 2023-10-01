@@ -37,8 +37,6 @@ struct CScope {
 
   void add_typedef(const char* t);
 
-  void dump();
-
   CScope* parent2;
   token_list class_types;
   token_list struct_types;

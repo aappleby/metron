@@ -44,20 +44,6 @@ Err CNodeStruct::collect_fields_and_methods() {
   return err;
 }
 
-//------------------------------------------------------------------------------
-
-void CNodeStruct::dump() const {
-  auto name = get_name();
-  LOG_B("Struct %.*s @ %p\n", name.size(), name.data(), this);
-  LOG_INDENT();
-
-  if (all_fields.size()) {
-    for (auto f : all_fields) f->dump();
-  }
-
-  LOG_DEDENT();
-}
-
 //==============================================================================
 
 std::string_view CNodeStructType::get_name() const {

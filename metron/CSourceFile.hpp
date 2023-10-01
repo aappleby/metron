@@ -16,8 +16,6 @@ class CSourceFile {
                          const std::string& _filepath,
                          const std::string& _source_code, bool _use_utf8_bom);
 
-  void dump();
-
   CSourceRepo* repo;
   std::string filename;
   std::string filepath;

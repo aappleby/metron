@@ -94,12 +94,12 @@ CNodeEnum* CNodeClass::get_enum(std::string_view name) {
 //------------------------------------------------------------------------------
 // FIXME move this to init()
 
-Err CNodeClass::collect_fields_and_methods() {
+Err collect_fields_and_methods(CNodeClass* node, CSourceRepo* repo) {
   Err err;
 
   bool is_public = false;
 
-  for (auto child : node_body->items) {
+  for (auto child : node->node_body->items) {
 
     if (auto access = child->as<CNodeAccess>()) {
       is_public = child->get_text() == "public:";
@@ -109,16 +109,16 @@ Err CNodeClass::collect_fields_and_methods() {
     if (auto n = child->as<CNodeField>()) {
       n->is_public = is_public;
 
-      n->parent_class  = this;
+      n->parent_class  = node;
       n->parent_struct = nullptr;
       n->node_decl->_type_class    = repo->get_class(n->get_type_name());
       n->node_decl->_type_struct   = repo->get_struct(n->get_type_name());
 
       if (n->node_decl->node_static && n->node_decl->node_const) {
-        all_localparams.push_back(n);
+        node->all_localparams.push_back(n);
       }
       else {
-        all_fields.push_back(n);
+        node->all_fields.push_back(n);
       }
 
       continue;
@@ -128,12 +128,12 @@ Err CNodeClass::collect_fields_and_methods() {
       n->is_public = is_public;
 
       if (auto constructor = child->as<CNodeConstructor>()) {
-        assert(this->constructor == nullptr);
-        this->constructor = constructor;
+        assert(node->constructor == nullptr);
+        node->constructor = constructor;
         constructor->method_type = MT_INIT;
       }
       else {
-        all_functions.push_back(n);
+        node->all_functions.push_back(n);
       }
 
       // Hook up _type_struct on all struct params
@@ -146,10 +146,10 @@ Err CNodeClass::collect_fields_and_methods() {
 
   }
 
-  if (auto parent = node_parent->as<CNodeTemplate>()) {
+  if (auto parent = node->node_parent->as<CNodeTemplate>()) {
     for (CNode*  param : parent->node_params->items) {
       if (param->as<CNodeDeclaration>()) {
-        all_modparams.push_back(param->as<CNodeDeclaration>());
+        node->all_modparams.push_back(param->as<CNodeDeclaration>());
       }
     }
   }
@@ -157,9 +157,13 @@ Err CNodeClass::collect_fields_and_methods() {
   return err;
 }
 
+Err CNodeClass::collect_fields_and_methods() {
+  return ::collect_fields_and_methods(this, repo);
+}
+
 //------------------------------------------------------------------------------
 
-Err CNodeClass::build_call_graph(CSourceRepo* repo) {
+Err build_call_graph(CNodeClass* node, CSourceRepo* repo) {
   Err err;
 
   node_visitor link_callers = [&](CNode* child) {
@@ -171,7 +175,7 @@ Err CNodeClass::build_call_graph(CSourceRepo* repo) {
     auto func_name = call->child("func_name");
 
     if (auto submod_path = func_name->as<CNodeFieldExpression>()) {
-      auto submod_field = get_field(submod_path->child("field_path")->get_text());
+      auto submod_field = node->get_field(submod_path->child("field_path")->get_text());
       auto submod_class = repo->get_class(submod_field->get_type_name());
       auto submod_func  = submod_class->get_function(submod_path->child("identifier")->get_text());
 
@@ -179,7 +183,7 @@ Err CNodeClass::build_call_graph(CSourceRepo* repo) {
       submod_func->external_callers.insert(src_method);
     }
     else if (auto func_id = func_name->as<CNodeIdentifier>()) {
-      auto dst_method = get_function(func_id->get_text());
+      auto dst_method = node->get_function(func_id->get_text());
       if (dst_method) {
         src_method->internal_callees.insert(dst_method);
         dst_method->internal_callers.insert(src_method);
@@ -190,15 +194,21 @@ Err CNodeClass::build_call_graph(CSourceRepo* repo) {
     }
   };
 
-  if (constructor) {
-    visit_children(constructor, link_callers);
+  if (node->constructor) {
+    visit_children(node->constructor, link_callers);
   }
 
-  for (auto src_method : all_functions) {
+  for (auto src_method : node->all_functions) {
     visit_children(src_method, link_callers);
   }
 
   return err;
+}
+
+//------------------------------------------------------------------------------
+
+Err CNodeClass::build_call_graph(CSourceRepo* repo) {
+  return ::build_call_graph(this, repo);
 }
 
 //------------------------------------------------------------------------------

@@ -33,11 +33,8 @@ struct CNodeFunction : public CNode {
 
   //----------------------------------------
 
-  CNodeClass* get_parent_class();
-  std::string_view get_return_type_name() const;
-
-  bool emit_as_task();
-  bool emit_as_func();
+  bool should_emit_as_task();
+  bool should_emit_as_func();
 
   using func_visitor = std::function<void(CNodeFunction*)>;
 

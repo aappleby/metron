@@ -1181,7 +1181,7 @@ Err Emitter::emit(CNodeReturn* node) {
   err << cursor.skip_over(node->node_ret);
   err << cursor.skip_gap();
 
-  if (func->emit_as_task() || func->emit_as_func()) {
+  if (func->should_emit_as_task() || func->should_emit_as_func()) {
     err << cursor.emit_print("%s = ", fname.c_str());
   }
   else {

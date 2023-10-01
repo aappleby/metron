@@ -3,56 +3,13 @@
 #include <string>
 #include <vector>
 
-#include "metron/CNode.hpp"
 #include "metrolib/core/Log.h"
-
-#if 0
-
-void CNodePunct::dump() const override {
-  auto text = get_text();
-  LOG_B("CNodePunct \"%.*s\"\n", text.size(), text.data());
-}
-
-void CNodeNamespace::dump() const override {
-  LOG_G("Fields:\n");
-  LOG_INDENT_SCOPE();
-  for (auto n : all_fields) n->dump();
-}
-
-
-void CNodeEnum::dump() const override {
-  auto name = get_name();
-  LOG_G("Enum %.*s\n", name.size(), name.data());
-}
-
-
-void CNodeDeclaration::dump() const override {
-  auto text = get_text();
-  LOG_G("Declaration `%.*s`\n", text.size(), text.data());
-}
-
-
-
-void CNodeAccess::dump() const override {
-  auto text = get_text();
-  LOG_B("CNodeAccess \"%.*s\"\n", text.size(), text.data());
-}
-#endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#include "metron/CInstance.hpp"
+#include "metron/CNode.hpp"
+#include "metron/nodes/CNodeClass.hpp"
+#include "metron/nodes/CNodeField.hpp"
+#include "metron/nodes/CNodeFunction.hpp"
+#include "metron/nodes/CNodeConstructor.hpp"
 
 //------------------------------------------------------------------------------
 // Node debugging
@@ -62,12 +19,24 @@ static std::string escape(const char* a, const char* b) {
   result.push_back('"');
   for (; a < b; a++) {
     switch (*a) {
-      case '\n': result.append("\\n");  break;
-      case '\r': result.append("\\r");  break;
-      case '\t': result.append("\\t");  break;
-      case '"':  result.append("\\\""); break;
-      case '\\': result.append("\\\\"); break;
-      default:   result.push_back(*a);  break;
+      case '\n':
+        result.append("\\n");
+        break;
+      case '\r':
+        result.append("\\r");
+        break;
+      case '\t':
+        result.append("\\t");
+        break;
+      case '"':
+        result.append("\\\"");
+        break;
+      case '\\':
+        result.append("\\\\");
+        break;
+      default:
+        result.push_back(*a);
+        break;
     }
   }
   result.push_back('"');
@@ -76,17 +45,16 @@ static std::string escape(const char* a, const char* b) {
 
 //------------------------------------------------------------------------------
 
-template<typename T>
+template <typename T>
 const char* class_name(const T& t) {
   const char* name = typeid(t).name();
-  while(*name && isdigit(*name)) name++;
+  while (*name && isdigit(*name)) name++;
   return name;
 }
 
 //------------------------------------------------------------------------------
 
 struct NodeDumper {
-
   //----------------------------------------
 
   void dump_tree_recurse(const CNode& n, int depth, int max_depth) {
@@ -118,16 +86,20 @@ struct NodeDumper {
     const char* trellis_2 = "┃   ";
     const char* trellis_3 = "┣━━╸";
     const char* trellis_4 = "┗━━╸";
-    const char* dot_1     = "▆ ";
-    const char* dot_2     = "▆ ";
+    const char* dot_1 = "▆ ";
+    const char* dot_2 = "▆ ";
 
     for (int i = 0; i < color_stack.size() - 1; i++) {
       bool stack_top = i == color_stack.size() - 2;
       uint32_t color = color_stack[i];
-      if      (color == -1)  LOG_C(0x000000, trellis_1);
-      else if (!stack_top)   LOG_C(color,    trellis_2);
-      else if (n.node_next)  LOG_C(color,    trellis_3);
-      else                   LOG_C(color,    trellis_4);
+      if (color == -1)
+        LOG_C(0x000000, trellis_1);
+      else if (!stack_top)
+        LOG_C(color, trellis_2);
+      else if (n.node_next)
+        LOG_C(color, trellis_3);
+      else
+        LOG_C(color, trellis_4);
     }
 
     auto color = color_stack.back();
@@ -168,100 +140,102 @@ void dump_parse_tree(CNode* node) {
 
 //------------------------------------------------------------------------------
 
+void dump_inst_tree(CInstance* inst) {
+  if (auto inst_class = inst->as<CInstClass>()) {
+    LOG_G("Class %s\n", inst_class->get_path().c_str());
 
+    {
+      LOG_INDENT_SCOPE();
+      LOG_G("Ports:\n");
+      LOG_INDENT_SCOPE();
+      for (auto child : inst_class->ports) dump_inst_tree(child);
+    }
+    {
+      LOG_INDENT_SCOPE();
+      LOG_R("Parts:\n");
+      LOG_INDENT_SCOPE();
+      for (auto child : inst_class->parts) dump_inst_tree(child);
+    }
+  }
 
+  if (auto inst_struct = inst->as<CInstStruct>()) {
+    LOG_G("Struct %s\n", inst_struct->get_path().c_str());
 
+    {
+      LOG_INDENT_SCOPE();
+      LOG_G("Parts:\n");
+      LOG_INDENT_SCOPE();
+      for (auto child : inst_struct->parts) dump_inst_tree(child);
+    }
+  }
 
+  if (auto inst_prim = inst->as<CInstPrim>()) {
+    if (inst_prim->node_field && inst_prim->node_field->is_public) {
+      LOG_G("Prim %s", inst_prim->get_path().c_str());
+    } else {
+      LOG_R("Prim %s", inst_prim->get_path().c_str());
+    }
 
+    for (auto state : inst_prim->state_stack) LOG(" %s", to_string(state));
+    LOG("\n");
+  }
 
+  if (auto inst_func = inst->as<CInstFunc>()) {
+    LOG_G("Func %s\n", inst_func->get_path().c_str());
 
+    LOG_INDENT();
 
+    if (inst_func->params.size()) {
+      LOG_G("Params:\n");
+      LOG_INDENT();
+      for (auto p : inst_func->params) dump_inst_tree(p);
+      LOG_DEDENT();
+    }
 
+    if (inst_func->inst_return) {
+      LOG_G("Return:\n");
+      LOG_INDENT();
+      dump_inst_tree(inst_func->inst_return);
+      LOG_DEDENT();
+    }
 
-
-
-
-
-
-
-
-
-
+    LOG_DEDENT();
+  }
+}
 
 #if 0
-//----------------------------------------
-
-void CInstClass::dump_tree() const {
-  LOG_G("Class %s\n", get_path().c_str());
-
-  {
-    LOG_INDENT_SCOPE();
-    LOG_G("Ports:\n");
-    LOG_INDENT_SCOPE();
-    for (auto child : ports) child->dump_tree();
-  }
-  {
-    LOG_INDENT_SCOPE();
-    LOG_R("Parts:\n");
-    LOG_INDENT_SCOPE();
-    for (auto child : parts) child->dump_tree();
-  }
-}
-
-//----------------------------------------
-
-void CInstStruct::dump_tree() const {
-  LOG_G("Struct %s\n", get_path().c_str());
-
-  {
-    LOG_INDENT_SCOPE();
-    LOG_G("Parts:\n");
-    LOG_INDENT_SCOPE();
-    for (auto child : parts) child->dump_tree();
-  }
-}
-
-//----------------------------------------
-
-void CInstPrim::dump_tree() const {
-  if (node_field && node_field->is_public) {
-    LOG_G("Prim %s", get_path().c_str());
-  } else {
-    LOG_R("Prim %s", get_path().c_str());
-  }
-
-  for (auto state : state_stack) LOG(" %s", to_string(state));
-  LOG("\n");
-}
-
-//----------------------------------------
-
-void CInstFunc::dump_tree() const {
-  LOG_G("Func %s\n", get_path().c_str());
-
-  LOG_INDENT();
-
-  if (params.size()) {
-    LOG_G("Params:\n");
-    LOG_INDENT();
-    for (auto p : params) p->dump_tree();
-    LOG_DEDENT();
-  }
-
-  if (inst_return) {
-    LOG_G("Return:\n");
-    LOG_INDENT();
-    inst_return->dump_tree();
-    LOG_DEDENT();
-  }
-
-  LOG_DEDENT();
-}
-
 //------------------------------------------------------------------------------
 
 void CNode::dump() const {
   LOG_R("CNode::dump() : %s\n", typeid(*this).name());
+}
+
+void CNodePunct::dump() const override {
+  auto text = get_text();
+  LOG_B("CNodePunct \"%.*s\"\n", text.size(), text.data());
+}
+
+void CNodeNamespace::dump() const override {
+  LOG_G("Fields:\n");
+  LOG_INDENT_SCOPE();
+  for (auto n : all_fields) n->dump();
+}
+
+
+void CNodeEnum::dump() const override {
+  auto name = get_name();
+  LOG_G("Enum %.*s\n", name.size(), name.data());
+}
+
+
+void CNodeDeclaration::dump() const override {
+  auto text = get_text();
+  LOG_G("Declaration `%.*s`\n", text.size(), text.data());
+}
+
+void CNodeAccess::dump() const override {
+  auto text = get_text();
+  LOG_B("CNodeAccess \"%.*s\"\n", text.size(), text.data());
 }
 
 //------------------------------------------------------------------------------
@@ -436,32 +410,6 @@ void CNodeClass::dump() const {
 
 //------------------------------------------------------------------------------
 
-void CNodeClass::dump_call_graph() {
-  LOG_G("Class %s\n", name.c_str());
-
-  LOG_INDENT();
-
-  if (constructor) {
-    LOG("Constructor\n");
-    LOG_INDENT();
-    constructor->dump_call_graph();
-    LOG_DEDENT();
-  }
-
-  for (auto node_func : all_functions) {
-    if (node_func->internal_callers.size()) {
-      continue;
-    }
-    else {
-      LOG("Func %s\n", node_func->name.c_str());
-      LOG_INDENT();
-      node_func->dump_call_graph();
-      LOG_DEDENT();
-    }
-  }
-  LOG_DEDENT();
-}
-
 //------------------------------------------------------------------------------
 
 void CNodeField::dump() const {
@@ -497,8 +445,6 @@ void CNodeField::dump() const {
 // FIXME constructor needs to be in internal_callers
 
 void CNodeFunction::dump() const {
-  //dump_tree();
-
   auto name = get_name();
 
   LOG_S("Method \"%.*s\" ", name.size(), name.data());
@@ -558,7 +504,7 @@ void CNodeFunction::dump() const {
     LOG_INDENT_SCOPE();
     for (auto c : internal_callers) {
       auto func_name = c->get_name();
-      auto class_name = c->get_parent_class()->get_name();
+      auto class_name = c->ancestor<CNodeClass>()->get_name();
       LOG_V("Called by %.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
     }
   }
@@ -567,7 +513,7 @@ void CNodeFunction::dump() const {
     LOG_INDENT_SCOPE();
     for (auto c : external_callers) {
       auto func_name = c->get_name();
-      auto class_name = c->get_parent_class()->get_name();
+      auto class_name = c->ancestor<CNodeClass>()->get_name();
       LOG_V("Called by %.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
     }
   }
@@ -576,7 +522,7 @@ void CNodeFunction::dump() const {
     LOG_INDENT_SCOPE();
     for (auto c : internal_callees) {
       auto func_name = c->get_name();
-      auto class_name = c->get_parent_class()->get_name();
+      auto class_name = c->ancestor<CNodeClass>()->get_name();
       LOG_T("Calls %.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
     }
   }
@@ -585,48 +531,79 @@ void CNodeFunction::dump() const {
     LOG_INDENT_SCOPE();
     for (auto c : external_callees) {
       auto func_name = c->get_name();
-      auto class_name = c->get_parent_class()->get_name();
+      auto class_name = c->ancestor<CNodeClass>()->get_name();
       LOG_T("Calls %.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
     }
   }
 }
+#endif
 
 //------------------------------------------------------------------------------
 
-void CNodeFunction::dump_call_graph() {
+void dump_call_graph(CNodeClass* node_class) {
+  LOG_G("Class %s\n", node_class->name.c_str());
 
-  for (auto r : self_reads) {
+  LOG_INDENT();
+
+  if (node_class->constructor) {
+    LOG("Constructor\n");
+    LOG_INDENT();
+    dump_call_graph(node_class->constructor);
+    LOG_DEDENT();
+  }
+
+  for (auto node_func : node_class->all_functions) {
+    if (node_func->internal_callers.size()) {
+      continue;
+    }
+    else {
+      LOG("Func %s\n", node_func->name.c_str());
+      LOG_INDENT();
+      dump_call_graph(node_func);
+      LOG_DEDENT();
+    }
+  }
+  LOG_DEDENT();
+}
+
+
+void dump_call_graph(CNodeFunction* node_func) {
+  for (auto r : node_func->self_reads) {
     LOG("Reads %s\n", r->get_path().c_str());
   }
-  for (auto w : self_writes) {
+  for (auto w : node_func->self_writes) {
     LOG("Writes %s\n", w->get_path().c_str());
   }
 
-  if (internal_callees.size()) {
-    for (auto c : internal_callees) {
+  if (node_func->internal_callees.size()) {
+    for (auto c : node_func->internal_callees) {
       auto func_name = c->get_name();
-      auto class_name = c->get_parent_class()->get_name();
-      LOG_T("%.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
+      auto class_name = c->ancestor<CNodeClass>()->get_name();
+      LOG_T("%.*s::%.*s\n", class_name.size(), class_name.data(),
+            func_name.size(), func_name.data());
       LOG_INDENT();
-      c->dump_call_graph();
+      dump_call_graph(c);
       LOG_DEDENT();
     }
   }
 
-  if (external_callees.size()) {
-    for (auto c : external_callees) {
+  if (node_func->external_callees.size()) {
+    for (auto c : node_func->external_callees) {
       auto func_name = c->get_name();
-      auto class_name = c->get_parent_class()->get_name();
-      LOG_T("%.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
+      auto class_name = c->ancestor<CNodeClass>()->get_name();
+      LOG_T("%.*s::%.*s\n", class_name.size(), class_name.data(),
+            func_name.size(), func_name.data());
       LOG_INDENT();
-      c->dump_call_graph();
+      dump_call_graph(c);
       LOG_DEDENT();
     }
   }
 }
 
+
 //------------------------------------------------------------------------------
 
+/*
 void CNodeStruct::dump() const {
   auto name = get_name();
   LOG_B("Struct %.*s @ %p\n", name.size(), name.data(), this);
@@ -638,5 +615,4 @@ void CNodeStruct::dump() const {
 
   LOG_DEDENT();
 }
-
-#endif
+*/

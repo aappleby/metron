@@ -1,11 +1,11 @@
 #include "CNodeField.hpp"
 
-#include <string>  // for char_traits
+#include <string>
 
-#include "metrolib/core/Log.h"                // for COL_PINK
-#include "metron/nodes/CNodeDeclaration.hpp"  // for CNodeDeclaration
-#include "metron/nodes/CNodePunct.hpp"        // for CNodePunct
-#include "metron/nodes/CNodeType.hpp"         // for CNodeType
+#include "metrolib/core/Log.h"
+#include "metron/nodes/CNodeDeclaration.hpp"
+#include "metron/nodes/CNodePunct.hpp"
+#include "metron/nodes/CNodeType.hpp"
 
 //------------------------------------------------------------------------------
 

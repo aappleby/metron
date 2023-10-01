@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+#iwyu -std=c++20 -I. -Isymlinks metron/nodes/CNodeField.cpp
+
 import glob
 import ninja_syntax
 import sys

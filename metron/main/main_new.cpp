@@ -91,8 +91,6 @@ int main_new(Options opts) {
         repo.all_classes.push_back(node_class);
       }
       else if (auto node_struct = n->as<CNodeStruct>()) {
-        node_struct->repo = &repo;
-        node_struct->file = file;
         repo.all_structs.push_back(node_struct);
       }
       else if (auto node_namespace = n->as<CNodeNamespace>()) {
@@ -124,7 +122,7 @@ int main_new(Options opts) {
         node_class->collect_fields_and_methods();
       }
       else if (auto node_struct = n->as<CNodeStruct>()) {
-        node_struct->collect_fields_and_methods();
+        node_struct->collect_fields_and_methods(&repo);
       }
       else if (auto node_namespace = n->as<CNodeNamespace>()) {
         node_namespace->collect_fields_and_methods();
@@ -416,10 +414,6 @@ int main_new(Options opts) {
 
   tracer.deep_trace = false;
 
-  if (top_inst) {
-    //top_inst->dump_tree();
-  }
-
   if (err.has_err()) {
     LOG_R("Error during tracing\n");
     return -1;
@@ -487,9 +481,9 @@ int main_new(Options opts) {
         bool ports_ok = inst_a->check_port_directions(inst_b);
         if (!ports_ok) {
           LOG_R("-----\n");
-          //inst_a->dump_tree();
+          dump_inst_tree(inst_a);
           LOG_R("-----\n");
-          //inst_b->dump_tree();
+          dump_inst_tree(inst_b);
           LOG_R("-----\n");
           err << ERR("Bad ports!\n");
           exit(-1);
@@ -745,7 +739,7 @@ int main_new(Options opts) {
   for (auto inst_class : repo.all_instances) {
     LOG_B("Instance tree for %s\n", inst_class->node_class->get_namestr().c_str());
     LOG_INDENT();
-    //inst_class->dump_tree();
+    dump_inst_tree(inst_class);
     LOG_DEDENT();
     LOG_B("\n");
   }
@@ -753,7 +747,7 @@ int main_new(Options opts) {
   for (auto node_class : repo.all_classes) {
     LOG_B("Call graph for %s\n", node_class->get_namestr().c_str());
     LOG_INDENT();
-    //node_class->dump_call_graph();
+    dump_call_graph(node_class);
     LOG_DEDENT();
     LOG("\n");
   }

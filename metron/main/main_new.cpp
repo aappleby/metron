@@ -9,6 +9,7 @@
 #include "metron/Cursor.hpp"
 #include "metron/MtUtils.h"
 #include "metron/Tracer.hpp"
+#include "metron/Dumper.hpp"
 #include "metron/nodes/CNodeClass.hpp"
 #include "metron/nodes/CNodeField.hpp"
 #include "metron/nodes/CNodeFunction.hpp"
@@ -39,7 +40,7 @@ int main_new(Options opts) {
     return -1;
   }
 
-  //root_file->context.top_head->dump_parse_tree();
+  dump_parse_tree(root_file->context.top_head);
   LOG("\n");
 
   //----------------------------------------

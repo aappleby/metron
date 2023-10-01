@@ -37,6 +37,22 @@ void CNodeAccess::dump() const override {
   auto text = get_text();
   LOG_B("CNodeAccess \"%.*s\"\n", text.size(), text.data());
 }
+#endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //------------------------------------------------------------------------------
 // Node debugging
@@ -145,7 +161,34 @@ struct NodeDumper {
   std::vector<uint32_t> color_stack;
 };
 
+void dump_parse_tree(CNode* node) {
+  NodeDumper d;
+  d.dump_tree_recurse(*node, 0, 1000);
+}
 
+//------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0
 //----------------------------------------
 
 void CInstClass::dump_tree() const {

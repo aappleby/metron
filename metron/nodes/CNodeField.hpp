@@ -1,16 +1,19 @@
 #pragma once
 
-#include "metron/CNode.hpp"
-#include "metron/Cursor.hpp"
-#include "metron/MtUtils.h"
+#include <stdint.h>  // for uint32_t, uint64_t
 
+#include <string_view>  // for string_view
+
+#include "metron/CNode.hpp"  // for CNode, CNode::SpanType
+
+struct CNodeClass;
 struct CNodeDeclaration;
 struct CNodePunct;
+struct CNodeStruct;
 
 //------------------------------------------------------------------------------
 
 struct CNodeField : public CNode {
-
   void init(const char* match_tag, SpanType span, uint64_t flags);
 
   //----------------------------------------
@@ -32,9 +35,9 @@ struct CNodeField : public CNode {
   bool is_public = false;
 
   CNodeDeclaration* node_decl;
-  CNodePunct*       node_semi;
+  CNodePunct* node_semi;
 
-  CNodeClass*  parent_class;
+  CNodeClass* parent_class;
   CNodeStruct* parent_struct;
 };
 

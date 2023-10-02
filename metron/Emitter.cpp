@@ -1,5 +1,8 @@
 #include "Emitter.hpp"
 
+#include <stdio.h>
+#include <stdarg.h>
+
 #include "metron/Cursor.hpp"
 #include "metron/nodes/CNodeReturn.hpp"
 #include "metron/nodes/CNodeAccess.hpp"
@@ -294,6 +297,34 @@ Err Emitter::emit(CNodeBuiltinType* node) {
 
 //------------------------------------------------------------------------------
 
+Err Emitter::e(const char* fmt, ...) {
+  Err err;
+  va_list args;
+  va_start(args, fmt);
+
+  const char* f = fmt;
+
+  while(*f) {
+    switch(*f) {
+      case '@': {
+        CNode* node = va_arg(args, CNode*);
+        err << cursor.emit_splice(node);
+        f++;
+        break;
+      }
+      default: {
+        err << cursor.emit_print("%c", *f);
+        f++;
+        break;
+      }
+    }
+  }
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
 Err Emitter::emit(CNodeCall* node) {
   Err err = cursor.check_at(node);
 
@@ -318,10 +349,12 @@ Err Emitter::emit(CNodeCall* node) {
     if (rtype->name == "void") {
       err << cursor.comment_out(node);
     } else {
-      err << cursor.emit_splice(func_path->node_path);
-      err << cursor.emit_print("_");
-      err << cursor.emit_splice(func_path->node_name);
-      err << cursor.emit_print("_ret");
+      err << e("@_@_ret", func_path->node_path, func_path->node_name);
+
+      //err << cursor.emit_splice(func_path->node_path);
+      //err << cursor.emit_print("_");
+      //err << cursor.emit_splice(func_path->node_name);
+      //err << cursor.emit_print("_ret");
       //err << cursor.emit_replacement(node, "%s_%s_ret", field_name.c_str(), func_name.c_str());
       err << cursor.skip_over(node);
     }

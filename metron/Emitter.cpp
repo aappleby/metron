@@ -163,15 +163,13 @@ Err Emitter::emit_everything() {
   Err err;
 
   // Emit header
-
   for (auto lex_cursor = cursor.lex_begin; lex_cursor < cursor.tok_begin->lex; lex_cursor++) {
     for (auto c = lex_cursor->text_begin; c < lex_cursor->text_end; c++) {
       err << cursor.emit_char(*c);
     }
   }
 
-  //err << source_file->context.root_node->emit(*this);
-
+  // Emit body
   err << emit_dispatch(cursor.source_file->context.root_node);
 
   // Emit footer (everything in the gap after the translation unit)
@@ -185,7 +183,8 @@ Err Emitter::emit_everything() {
 Err Emitter::emit_dispatch(CNode* node) {
   Err err = cursor.check_at(node);
 
-  if (auto n = node->as<CNodeAccess>()) return emit(n);
+  if (auto n = node->as<CNodeAccess>()) return cursor.comment_out(node);
+
   if (auto n = node->as<CNodeAssignment>()) return emit(n);
   if (auto n = node->as<CNodeBuiltinType>()) return emit(n);
   if (auto n = node->as<CNodeCall>()) return emit(n);
@@ -217,12 +216,6 @@ Err Emitter::emit_dispatch(CNode* node) {
   if (auto n = node->as<CNodeUsing>()) return emit(n);
 
   return emit_default(node);
-}
-
-//------------------------------------------------------------------------------
-
-Err Emitter::emit(CNodeAccess* node) {
-  return cursor.comment_out(node);
 }
 
 //------------------------------------------------------------------------------
@@ -428,17 +421,8 @@ Err Emitter::emit(CNodeCall* node) {
     if (func_name == "dup") {
       auto node_val = node->node_targs->child("arg");
       auto node_exp = node->node_args->child("exp");
-
+      err << emit("{@ {@}}", node_val, node_exp);
       err << cursor.skip_over(node);
-
-      // "\{{node_val} \{{node_exp}\}\}"
-
-      err << cursor.emit_print("{");
-      err << emit_splice(node_val);
-      err << cursor.emit_print(" {");
-      err << emit_splice(node_exp);
-      err << cursor.emit_print("}}");
-
       return err;
     }
 
@@ -447,14 +431,8 @@ Err Emitter::emit(CNodeCall* node) {
       auto lhs = args->items[0];
       auto rhs = args->items[1];
 
+      err << emit("($signed(@) >>> @)", lhs, rhs);
       err << cursor.skip_over(node);
-
-      // "($signed({lhs}) >>> {rhs})"
-      err << cursor.emit_print("($signed(");
-      err << emit_splice(lhs);
-      err << cursor.emit_print(") >>> ");
-      err << emit_splice(rhs);
-      err << cursor.emit_print(")");
 
       return err;
     }
@@ -540,10 +518,8 @@ Err Emitter::emit(CNodeCall* node) {
     if (dst_func->node_type->get_text() == "void") {
       err << cursor.comment_out(node);
     } else {
+      err << emit("@_@_ret", func_path->node_path, func_path->node_name);
       err << cursor.skip_over(node);
-      err << cursor.emit_print("%.*s_%.*s_ret", field_name.size(),
-                               field_name.data(), func_name.size(),
-                               func_name.data());
     }
 
     return err << cursor.check_done(node);

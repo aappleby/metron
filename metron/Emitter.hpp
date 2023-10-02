@@ -49,7 +49,6 @@ struct Emitter {
   Err emit_children(CNode* node);
   Err emit_dispatch(CNode* node);
 
-  Err emit(CNodeAccess* node);
   Err emit(CNodeAssignment* node);
   Err emit(CNodeBuiltinType* node);
   Err emit(CNodeCall* node);

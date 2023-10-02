@@ -625,12 +625,6 @@ Err Emitter::emit(CNodeConstant* node) {
 
 //------------------------------------------------------------------------------
 
-Err Emitter::emit(CNodeConstructor* node) {
-  return emit((CNodeFunction*)node);
-}
-
-//------------------------------------------------------------------------------
-
 Err Emitter::emit(CNodeDeclaration* node) {
   Err err = cursor.check_at(node);
 
@@ -2369,22 +2363,22 @@ Err Emitter::emit_func(CNodeFunction* node) {
   Err err;
 
   err << cursor.emit_print("function ");
-
-  err << emit_dispatch(node->node_type);
-  err << cursor.emit_gap();
-
-  err << emit_dispatch(node->node_name);
-  err << cursor.emit_gap();
-
-  err << emit_dispatch(node->node_params);
+  err << emit_dispatch2(node->node_type);
+  err << emit_dispatch2(node->node_name);
 
   if (node->node_const) {
+    err << emit_dispatch(node->node_params);
     err << cursor.emit_gap();
     err << cursor.comment_out(node->node_const);
+    err << cursor.emit_print(";");
+    err << cursor.emit_gap();
+  }
+  else {
+    err << emit_dispatch(node->node_params);
+    err << cursor.emit_print(";");
+    err << cursor.emit_gap();
   }
 
-  err << cursor.emit_print(";");
-  err << cursor.emit_gap();
 
   err << emit_block(node->node_body, "", "endfunction");
 
@@ -2398,20 +2392,15 @@ Err Emitter::emit_task(CNodeFunction* node) {
 
   err << cursor.emit_print("task automatic ");
 
-  err << cursor.skip_over(node->node_type);
-  err << cursor.skip_gap();
+  err << cursor.skip_over2(node->node_type);
 
-  err << emit_dispatch(node->node_name);
-  err << cursor.emit_gap();
+  err << emit_dispatch2(node->node_name);
 
   err << emit_dispatch(node->node_params);
   err << cursor.emit_print(";");
   err << cursor.emit_gap();
 
-  if (node->node_const) {
-    err << cursor.comment_out(node->node_const);
-    err << cursor.emit_gap();
-  }
+  err << cursor.comment_out2(node->node_const);
 
   err << emit_block(node->node_body, "", "endtask");
 

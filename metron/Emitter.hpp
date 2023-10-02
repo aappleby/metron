@@ -58,7 +58,6 @@ struct Emitter {
   Err emit(CNodeClassType* node);
   Err emit(CNodeCompound* node);
   Err emit(CNodeConstant* node);
-  Err emit(CNodeConstructor* node);
   Err emit(CNodeDeclaration* node);
   Err emit(CNodeDefault* node);
   Err emit(CNodeEnum* node);

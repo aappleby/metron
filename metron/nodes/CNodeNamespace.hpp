@@ -10,7 +10,11 @@ struct CSourceFile;
 
 struct CNodeNamespace : public CNode {
   void init() {
-    name = child("name")->name;
+    node_namespace = child("namespace");
+    node_name      = child("name");
+    node_fields    = child("fields");
+    node_semi      = child("semi");
+    name = node_name->name;
   }
 
   Err collect_fields_and_methods() {
@@ -29,6 +33,11 @@ struct CNodeNamespace : public CNode {
     }
     return nullptr;
   }
+
+  CNode* node_namespace = nullptr;
+  CNode* node_name      = nullptr;
+  CNode* node_fields    = nullptr;
+  CNode* node_semi      = nullptr;
 
   std::vector<CNodeField*> all_fields;
 };

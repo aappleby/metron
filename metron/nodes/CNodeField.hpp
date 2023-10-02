@@ -1,29 +1,45 @@
 #pragma once
 
-#include <stdint.h>  // for uint32_t, uint64_t
-
-#include <string_view>  // for string_view
-
-#include "metron/CNode.hpp"  // for CNode, CNode::SpanType
+#include "metron/CNode.hpp"
+#include "metron/nodes/CNodeDeclaration.hpp"
+#include "metron/nodes/CNodePunct.hpp"
 
 struct CNodeClass;
-struct CNodeDeclaration;
-struct CNodePunct;
 struct CNodeStruct;
 
 //------------------------------------------------------------------------------
 
 struct CNodeField : public CNode {
-  void init();
+  void init() {
+    node_decl = child("decl")->req<CNodeDeclaration>();
+    node_semi = child("semi")->req<CNodePunct>();
+    name = node_decl->name;
+  }
 
-  //----------------------------------------
+  std::string_view get_type_name() const {
+    return node_decl->get_type_name();
+  }
 
-  std::string_view get_type_name() const;
+  bool is_component() const {
+    return node_decl->_type_class != nullptr;
+  }
 
-  bool is_component() const;
-  bool is_struct() const;
-  bool is_array() const;
-  bool is_const_char() const;
+  bool is_struct() const {
+    return node_decl->_type_struct != nullptr;
+  }
+
+  bool is_array() const { return node_decl->node_array != nullptr; }
+
+  bool is_const_char() const {
+    if (node_decl->node_static && node_decl->node_const) {
+      auto builtin = node_decl->node_type->child("name");
+      auto star = node_decl->node_type->child("star");
+      if (builtin && star && builtin->get_text() == "char") {
+        return true;
+      }
+    }
+    return false;
+  }
 
   //----------------------------------------
 

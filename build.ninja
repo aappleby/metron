@@ -232,14 +232,6 @@ build wasm/obj/metron/Tracer.o: compile_cpp_ems metron/Tracer.cpp
 build wasm/obj/metron/metron_tools.o: compile_cpp_ems metron/metron_tools.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeClass.o: compile_cpp_ems $
-    metron/nodes/CNodeClass.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build wasm/obj/metron/nodes/CNodeField.o: compile_cpp_ems $
-    metron/nodes/CNodeField.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
 build wasm/obj/symlinks/metrolib/core/Platform.o: compile_cpp_ems $
     symlinks/metrolib/core/Platform.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
@@ -261,7 +253,6 @@ build docs/app/metron.js: link_ems wasm/obj/metron/main/main.o $
     wasm/obj/metron/Cursor.o wasm/obj/metron/Dumper.o $
     wasm/obj/metron/Emitter.o wasm/obj/metron/MtUtils.o $
     wasm/obj/metron/Tracer.o wasm/obj/metron/metron_tools.o $
-    wasm/obj/metron/nodes/CNodeClass.o wasm/obj/metron/nodes/CNodeField.o $
     wasm/obj/symlinks/metrolib/core/Platform.o $
     wasm/obj/symlinks/metrolib/core/Utils.o $
     wasm/obj/symlinks/metrolib/core/Err.o
@@ -326,12 +317,6 @@ build obj/metron/Tracer.o: compile_cpp metron/Tracer.cpp
 build obj/metron/metron_tools.o: compile_cpp metron/metron_tools.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
       -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeClass.o: compile_cpp metron/nodes/CNodeClass.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
-build obj/metron/nodes/CNodeField.o: compile_cpp metron/nodes/CNodeField.cpp
-  includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
-      -Isymlinks/CLI11/include -Itests
 build obj/symlinks/metrolib/core/Platform.o: compile_cpp $
     symlinks/metrolib/core/Platform.cpp
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $
@@ -350,7 +335,6 @@ build bin/libmetron.a: static_lib obj/metron/CContext.o $
     obj/metron/CSourceRepo.o obj/metron/CToken.o obj/metron/Cursor.o $
     obj/metron/Dumper.o obj/metron/Emitter.o obj/metron/MtUtils.o $
     obj/metron/Tracer.o obj/metron/metron_tools.o $
-    obj/metron/nodes/CNodeClass.o obj/metron/nodes/CNodeField.o $
     obj/symlinks/metrolib/core/Platform.o $
     obj/symlinks/metrolib/core/Utils.o obj/symlinks/metrolib/core/Err.o
   includes = -I. -I/usr/local/share/verilator/include -Isymlinks $

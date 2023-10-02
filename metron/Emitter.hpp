@@ -44,6 +44,7 @@ struct CNodeUsing;
 struct Emitter {
   Emitter(Cursor& c) : cursor(c) {}
 
+  Err emit_everything();
   Err emit_default(CNode* node);
   Err emit_children(CNode* node);
   Err emit_dispatch(CNode* node);

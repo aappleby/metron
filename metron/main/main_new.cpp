@@ -7,6 +7,7 @@
 #include "metron/CSourceFile.hpp"
 #include "metron/CSourceRepo.hpp"
 #include "metron/Cursor.hpp"
+#include "metron/Emitter.hpp"
 #include "metron/Dumper.hpp"
 #include "metron/MtUtils.h"
 #include "metron/Tracer.hpp"
@@ -939,7 +940,8 @@ int main_new(Options opts) {
   Cursor cursor(&repo, root_file, &out_string);
   cursor.echo = opts.echo && !opts.quiet;
 
-  err << cursor.emit_everything();
+  Emitter emitter(cursor);
+  err << emitter.emit_everything();
   // err << cursor.emit_trailing_whitespace();
   // err << cursor.emit_gap();
 

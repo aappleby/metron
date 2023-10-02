@@ -43,7 +43,8 @@ Err translate_simple(std::string src, std::string& out) {
   */
 
   MtCursor cursor(&library, source_file, nullptr, &out);
-  err << cursor.emit_everything();
+  Emitter emitter(cursor);
+  err << emitter.emit_everything();
   err << cursor.emit_print("\n");
 
   for (auto c : out) {

@@ -1,7 +1,6 @@
 #include "metron/Cursor.hpp"
 
 #include "metrolib/core/Log.h"
-#include "metron/Emitter.hpp"
 
 //------------------------------------------------------------------------------
 
@@ -446,29 +445,6 @@ CHECK_RETURN Err Cursor::emit_replacement(CNode* n, const char* fmt, ...) {
 CHECK_RETURN Err Cursor::emit_raw(CNode* n) {
   Err err;
   err << emit_span(n->tok_begin(), n->tok_end());
-  return err;
-}
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err Cursor::emit_everything() {
-  Err err;
-
-  // Emit header
-
-  for (auto lex_cursor = lex_begin; lex_cursor < tok_begin->lex; lex_cursor++) {
-    for (auto c = lex_cursor->text_begin; c < lex_cursor->text_end; c++) {
-      err << emit_char(*c);
-    }
-  }
-
-  //err << source_file->context.root_node->emit(*this);
-
-  err << Emitter(*this).emit_dispatch(source_file->context.root_node);
-
-  // Emit footer (everything in the gap after the translation unit)
-  err << emit_gap();
-
   return err;
 }
 

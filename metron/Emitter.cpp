@@ -159,6 +159,29 @@ Err Emitter::emit_children(CNode* n) {
 
 //------------------------------------------------------------------------------
 
+Err Emitter::emit_everything() {
+  Err err;
+
+  // Emit header
+
+  for (auto lex_cursor = cursor.lex_begin; lex_cursor < cursor.tok_begin->lex; lex_cursor++) {
+    for (auto c = lex_cursor->text_begin; c < lex_cursor->text_end; c++) {
+      err << cursor.emit_char(*c);
+    }
+  }
+
+  //err << source_file->context.root_node->emit(*this);
+
+  err << emit_dispatch(cursor.source_file->context.root_node);
+
+  // Emit footer (everything in the gap after the translation unit)
+  err << cursor.emit_gap();
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
 Err Emitter::emit_dispatch(CNode* node) {
   Err err = cursor.check_at(node);
 
@@ -1417,7 +1440,6 @@ Err Emitter::emit(CNodeUsing* node) {
 
 Err Emitter::emit_template_parameter_list(CNodeClass* node) {
   Err err;
-  Emitter emitter(cursor);
 
   auto node_template = node->ancestor<CNodeTemplate>();
   if (!node_template) return err;
@@ -1429,18 +1451,18 @@ Err Emitter::emit_template_parameter_list(CNodeClass* node) {
     err << cursor.emit_print("parameter ");
 
     cursor.tok_cursor = param->node_name->tok_begin();
-    err << emitter.emit(param->node_name);
+    err << emit(param->node_name);
     err << cursor.emit_gap();
 
     if (param->node_array) {
-      err << emitter.emit_dispatch(param->node_array);
+      err << emit_dispatch(param->node_array);
       err << cursor.emit_gap();
     }
 
     err << Emitter(cursor).emit_dispatch(param->node_eq);
     err << cursor.emit_gap();
 
-    err << emitter.emit_dispatch(param->node_value);
+    err << emit_dispatch(param->node_value);
 
     err << cursor.emit_print(";");
   }
@@ -1786,7 +1808,6 @@ Err Emitter::emit_call_arg_bindings(CNodeCompound* node, CNode* child) {
 
 Err Emitter::emit_hoisted_decls(CNodeCompound* node) {
   Err err;
-  Emitter emitter(cursor);
 
   auto old_cursor = cursor.tok_cursor;
 
@@ -1810,9 +1831,9 @@ Err Emitter::emit_hoisted_decls(CNodeCompound* node) {
 
         cursor.tok_cursor = decl_type->tok_begin();
 
-        err << emitter.emit_dispatch(decl_type);
+        err << emit_dispatch(decl_type);
         err << cursor.emit_gap();
-        err << emitter.emit_dispatch(decl_name);
+        err << emit_dispatch(decl_name);
         err << cursor.emit_print(";");
       }
     }
@@ -1827,9 +1848,9 @@ Err Emitter::emit_hoisted_decls(CNodeCompound* node) {
 
         cursor.tok_cursor = decl_type->tok_begin();
 
-        err << emitter.emit_dispatch(decl_type);
+        err << emit_dispatch(decl_type);
         err << cursor.emit_gap();
-        err << emitter.emit_dispatch(decl_name);
+        err << emit_dispatch(decl_name);
         err << cursor.emit_print(";");
 
       }
@@ -1849,10 +1870,9 @@ Err Emitter::emit_hoisted_decls(CNodeCompound* node) {
 
 Err Emitter::emit_component(CNodeField* node) {
   Err err;
-  Emitter emitter(cursor);
 
   err << cursor.skip_to(node->node_decl->node_type);
-  err << emitter.emit_dispatch(node->node_decl->node_type);
+  err << emit_dispatch(node->node_decl->node_type);
   err << cursor.emit_gap();
   err << cursor.skip_over(node->node_decl->node_name);
   err << cursor.skip_gap();
@@ -2029,7 +2049,7 @@ Err Emitter::emit_component(CNodeField* node) {
   cursor.indent_level--;
   err << cursor.start_line();
   err << cursor.emit_print(")");
-  err << emitter.emit_dispatch(node->node_semi);
+  err << emit_dispatch(node->node_semi);
 
   //----------------------------------------
   // Binding variables

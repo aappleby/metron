@@ -700,30 +700,18 @@ Err Emitter::emit(CNodeEnum* node) {
   err << emit(node->node_enum);
   err << cursor.emit_gap();
 
-  if (node->node_class) {
-    err << cursor.skip_over(node->node_class);
-    err << cursor.skip_gap();
-  }
+  err << cursor.skip_over2(node->node_class);
 
-  if (node->node_name) {
-    err << cursor.skip_over(node->node_name);
-    err << cursor.skip_gap();
-  }
+  err << cursor.skip_over2(node->node_name);
 
   if (node->node_colon) {
-    err << cursor.skip_over(node->node_colon);
-    err << cursor.skip_gap();
-    err << emit_dispatch(node->node_type);
-    err << cursor.emit_gap();
+    err << cursor.skip_over2(node->node_colon);
+    err << emit_dispatch2(node->node_type);
   }
 
-  err << emit_dispatch(node->node_body);
-  err << cursor.emit_gap();
+  err << emit_dispatch2(node->node_body);
 
-  if (node->node_decl) {
-    err << emit_dispatch(node->node_decl);
-    err << cursor.emit_gap();
-  }
+  err << emit_dispatch2(node->node_decl);
 
   if (node->node_name) {
     err << cursor.emit_print(" ");

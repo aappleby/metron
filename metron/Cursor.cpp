@@ -143,6 +143,7 @@ CHECK_RETURN Err Cursor::skip_over(CNode* n) {
 
 CHECK_RETURN Err Cursor::skip_over2(CNode* n) {
   Err err;
+  if (n == nullptr) return err;
   err << skip_over(n);
   err << skip_gap();
   return err;

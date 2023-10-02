@@ -176,6 +176,14 @@ CHECK_RETURN Err Cursor::comment_out(CNode* n) {
   return err << check_done(n);
 }
 
+CHECK_RETURN Err Cursor::comment_out2(CNode* n) {
+  Err err;
+  if (n == nullptr) return err;
+  err << comment_out(n);
+  err << emit_gap(n);
+  return err;
+}
+
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err Cursor::emit_rest(CNode* n) {
@@ -447,6 +455,18 @@ CHECK_RETURN Err Cursor::emit_replacement(CNode* n, const char* fmt, ...) {
   tok_cursor = n->tok_end();
   gap_emitted = false;
   return err << check_done(n);
+}
+
+CHECK_RETURN Err Cursor::emit_replacement2(CNode* n, const char* fmt, ...) {
+  Err err = check_at(n);
+  va_list args;
+  va_start(args, fmt);
+  err << emit_vprint(fmt, args);
+  tok_cursor = n->tok_end();
+  gap_emitted = false;
+  err << check_done(n);
+  err << emit_gap(n);
+  return err;
 }
 
 //----------------------------------------

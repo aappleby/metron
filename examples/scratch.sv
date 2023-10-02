@@ -1,162 +1,101 @@
-`ifndef UART_TOP_H
-`define UART_TOP_H
+`ifndef UART_HELLO_H
+`define UART_HELLO_H
 
 `include "metron/metron_tools.sv"
-`include "uart_hello.sv"
-`include "uart_rx.sv"
-`include "uart_tx.sv"
 
 //==============================================================================
 
-module uart_top (
+module uart_hello (
   // global clock
   input logic clock,
-  // get_serial() ports
-  output logic get_serial_ret,
-  // get_valid() ports
-  output logic get_valid_ret,
-  // get_data_out() ports
-  output logic[7:0] get_data_out_ret,
+  // get_data() ports
+  output logic[7:0] get_data_ret,
+  // get_request() ports
+  output logic get_request_ret,
   // get_done() ports
   output logic get_done_ret,
-  // get_checksum() ports
-  output logic[31:0] get_checksum_ret,
-  // tock() ports
-  input logic tock_reset
+  // tick() ports
+  input logic tick_reset,
+  input logic tick_clear_to_send,
+  input logic tick_idle
 );
-  parameter cycles_per_bit = 3;
   parameter repeat_msg = 0;
 
 /*public:*/
-
-  // The actual bit of data currently on the transmitter's output
-  always_comb begin : get_serial
-    get_serial_ret = tx_get_serial_ret;
+  initial begin
+    $readmemh("examples/uart/message.hex", memory, 0, 511);
   end
 
-  // Returns true if the receiver has a byte in its buffer
-  always_comb begin : get_valid
-    get_valid_ret = rx_get_valid_ret;
+  // The byte of data we want transmitted is always the one at the cursor.
+  always_comb begin : get_data
+    get_data_ret = memory[cursor];
   end
 
-  // The next byte of data from the receiver
-  always_comb begin : get_data_out
-    get_data_out_ret = rx_get_data_out_ret;
+  // True if we want to transmit a byte
+  always_comb begin : get_request
+    get_request_ret = state == SEND;
   end
 
-  // True if the client has sent its message and the transmitter has finished
-  // transmitting it.
+  // True if we've transmitted the whole message.
   always_comb begin : get_done
-    get_done_ret = hello_get_done_ret && tx_get_idle_ret;
+    get_done_ret = state == DONE;
   end
 
-  // Checksum of all the bytes received
-  always_comb begin : get_checksum
-    get_checksum_ret = rx_get_checksum_ret;
+  always_ff @(posedge clock) begin : tick           // True if the transmitter is idle
+
+    // In reset we're always in WAIT state with the message cursor set to
+    // the start of the message buffer.
+    if (tick_reset) begin
+      state <= WAIT;
+      cursor <= 0;
+    end
+
+    else begin
+
+      // If we're waiting for the transmitter to be free and it's told us that
+      // it's idle, go to SEND state.
+      if (state == WAIT && tick_idle) begin
+        state <= SEND;
+      end
+
+      // If we're currently sending a message and the transmitter is ready to
+      // accept another byte,
+      else if (state == SEND && tick_clear_to_send) begin
+        // either go to DONE state if we're about to send the last character of
+        // the message
+        if (cursor == message_len - 1) begin
+          state <= DONE;
+        end
+
+        // or just advance the message cursor.
+        else begin
+          cursor <= cursor + 1;
+        end
+      end
+
+      // If we've finished transmitting, reset the message cursor and either go
+      // back to WAIT state if we want to re-transmit or just stay in DONE
+      // otherwise.
+      else if (state == DONE) begin
+        cursor <= 0;
+        if (repeat_msg) state <= WAIT;
+      end
+    end
   end
 
-  always_comb begin : tock
-    logic[7:0] data;
-    logic request;
-    logic serial;
-    logic clear_to_send;
-    logic idle;
-    // Grab signals from our submodules before we tick them.
-    data = hello_get_data_ret;
-    request = hello_get_request_ret;
-
-    serial = tx_get_serial_ret;
-    clear_to_send = tx_get_clear_to_send_ret;
-    idle = tx_get_idle_ret;
-
-    // Tick all submodules.
-    hello_tick_reset = tock_reset;
-    hello_tick_clear_to_send = clear_to_send;
-    hello_tick_idle = idle;
-    /*hello.tick(reset, clear_to_send, idle);*/
-    tx_tick_reset = tock_reset;
-    tx_tick_send_data = data;
-    tx_tick_send_request = request;
-    /*tx.tick(reset, data, request);*/
-    rx_tick_reset = tock_reset;
-    rx_tick_serial = serial;
-    /*rx.tick(reset, serial);*/
-  end
-
-  //----------------------------------------
 /*private:*/
-  // Our UART client that transmits our "hello world" test message
-  uart_hello  #(
-    // Template Parameters
-    .repeat_msg(repeat_msg)
-  ) hello(
-    // Global clock
-    .clock(clock),
-    // get_data() ports
-    .get_data_ret(hello_get_data_ret),
-    // get_request() ports
-    .get_request_ret(hello_get_request_ret),
-    // get_done() ports
-    .get_done_ret(hello_get_done_ret),
-    // tick() ports
-    .tick_reset(hello_tick_reset),
-    .tick_clear_to_send(hello_tick_clear_to_send),
-    .tick_idle(hello_tick_idle)
-  );
-  logic[7:0] hello_get_data_ret;
-  logic hello_get_request_ret;
-  logic hello_get_done_ret;
-  logic hello_tick_reset;
-  logic hello_tick_clear_to_send;
-  logic hello_tick_idle;
-  // The UART transmitter
-  uart_tx #(
-    // Template Parameters
-    .cycles_per_bit(cycles_per_bit)
-  ) tx(
-    // Global clock
-    .clock(clock),
-    // get_serial() ports
-    .get_serial_ret(tx_get_serial_ret),
-    // get_clear_to_send() ports
-    .get_clear_to_send_ret(tx_get_clear_to_send_ret),
-    // get_idle() ports
-    .get_idle_ret(tx_get_idle_ret),
-    // tick() ports
-    .tick_reset(tx_tick_reset),
-    .tick_send_data(tx_tick_send_data),
-    .tick_send_request(tx_tick_send_request)
-  );
-  logic tx_get_serial_ret;
-  logic tx_get_clear_to_send_ret;
-  logic tx_get_idle_ret;
-  logic tx_tick_reset;
-  logic[7:0] tx_tick_send_data;
-  logic tx_tick_send_request;
-  // The UART receiver
-  uart_rx #(
-    // Template Parameters
-    .cycles_per_bit(cycles_per_bit)
-  ) rx(
-    // Global clock
-    .clock(clock),
-    // get_valid() ports
-    .get_valid_ret(rx_get_valid_ret),
-    // get_data_out() ports
-    .get_data_out_ret(rx_get_data_out_ret),
-    // get_checksum() ports
-    .get_checksum_ret(rx_get_checksum_ret),
-    // tick() ports
-    .tick_reset(rx_tick_reset),
-    .tick_serial(rx_tick_serial)
-  );
-  logic rx_get_valid_ret;
-  logic[7:0] rx_get_data_out_ret;
-  logic[31:0] rx_get_checksum_ret;
-  logic rx_tick_reset;
-  logic rx_tick_serial;
+  localparam /*static*/ /*const*/ int message_len = 512;
+  localparam /*static*/ /*const*/ int cursor_bits = $clog2(message_len);
+
+  localparam /*static*/ /*const*/ int WAIT = 0; // Waiting for the transmitter to be free
+  localparam /*static*/ /*const*/ int SEND = 1; // Sending the message buffer
+  localparam /*static*/ /*const*/ int DONE = 2; // Message buffer sent
+  logic[1:0] state;            // One of the above states
+
+  logic[7:0] memory[512];      // The buffer preloaded with our message
+  logic[cursor_bits-1:0] cursor; // Index into the message buffer of the _next_ character to transmit
 endmodule
 
 //==============================================================================
 
-`endif // UART_TOP_H
+`endif // UART_HELLO_H

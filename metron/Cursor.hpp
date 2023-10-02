@@ -38,9 +38,11 @@ struct Cursor {
   CHECK_RETURN Err skip_over2(CNode* n);
   CHECK_RETURN Err skip_to(CNode* n);
   CHECK_RETURN Err comment_out(CNode* n);
+  CHECK_RETURN Err comment_out2(CNode* n);
   CHECK_RETURN Err emit_rest(CNode* n);
   CHECK_RETURN Err emit_replacement(CNode* n, const std::string& s);
   CHECK_RETURN Err emit_replacement(CNode* n, const char* fmt, ...);
+  CHECK_RETURN Err emit_replacement2(CNode* n, const char* fmt, ...);
   CHECK_RETURN Err emit_raw(CNode* n);
   CHECK_RETURN Err emit_indent();
 

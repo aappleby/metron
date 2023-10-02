@@ -31,37 +31,6 @@ void CNodeClass::init() {
   }
 }
 
-CNodeField* CNodeClass::get_field(CNode* node_name) {
-  if (node_name == nullptr) return nullptr;
-
-  if (node_name->as<CNodeLValue>()) {
-    return get_field(node_name->child("name"));
-  }
-
-  if (auto node_id = node_name->as<CNodeIdentifier>()) {
-    return get_field(node_id->get_text());
-  }
-
-  if (auto node_field = node_name->as<CNodeFieldExpression>()) {
-    return get_field(node_field->child("field_path"));
-  }
-
-  if (auto node_prefix = node_name->as<CNodeSuffixExp>()) {
-    return get_field(node_prefix->child("rhs"));
-  }
-
-  if (auto node_suffix = node_name->as<CNodeSuffixExp>()) {
-    return get_field(node_suffix->child("lhs"));
-  }
-
-  LOG_R("----------------------------------------\n");
-  LOG_R("Don't know how to get field for %s\n", node_name->get_textstr().c_str());
-  LOG_R("----------------------------------------\n");
-
-  assert(false);
-  return nullptr;
-}
-
 CNodeField* CNodeClass::get_field(std::string_view name) {
   for (auto f : all_fields) if (f->name == name) return f;
   return nullptr;
@@ -80,34 +49,6 @@ CNodeDeclaration* CNodeClass::get_modparam(std::string_view name) {
 CNodeEnum* CNodeClass::get_enum(std::string_view name) {
   for (auto e : all_enums2) if (e->name == name) return e;
   return nullptr;
-}
-
-//------------------------------------------------------------------------------
-
-bool CNodeClass::needs_tick() {
-  for (auto f : all_functions) {
-    if (f->method_type == MT_TICK) return true;
-  }
-
-  for (auto f : all_fields) {
-    if (f->node_decl->_type_class && f->node_decl->_type_class->needs_tick()) return true;
-  }
-
-  return false;
-}
-
-//----------------------------------------
-
-bool CNodeClass::needs_tock() {
-  for (auto f : all_functions) {
-    if (f->method_type == MT_TOCK) return true;
-  }
-
-  for (auto f : all_fields) {
-    if (f->node_decl->_type_class && f->node_decl->_type_class->needs_tock()) return true;
-  }
-
-  return false;
 }
 
 //==============================================================================

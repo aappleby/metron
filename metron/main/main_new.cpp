@@ -27,6 +27,8 @@
 
 using namespace matcheroni;
 
+CNodeField* resolve_field(CNodeClass* node_class, CNode* node_name);
+
 bool CNodeFunction::called_by_init() {
   for (auto c : internal_callers) {
     if (c->called_by_init()) return true;
@@ -339,7 +341,7 @@ int main_new(Options opts) {
       if (any_writes) return;
       if (auto node_assignment = node->as<CNodeAssignment>()) {
         auto lhs = node_assignment->child("lhs")->req<CNodeLValue>();
-        auto field = node->ancestor<CNodeClass>()->get_field(lhs);
+        auto field = resolve_field(node->ancestor<CNodeClass>(), lhs);
         if (field) {
           current_func->self_writes2.insert(field);
         }

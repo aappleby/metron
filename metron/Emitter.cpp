@@ -42,6 +42,67 @@
 
 //------------------------------------------------------------------------------
 
+bool class_needs_tick(CNodeClass* node_class) {
+  for (auto f : node_class->all_functions) {
+    if (f->method_type == MT_TICK) return true;
+  }
+
+  for (auto f : node_class->all_fields) {
+    if (f->node_decl->_type_class && class_needs_tick(f->node_decl->_type_class)) return true;
+  }
+
+  return false;
+}
+
+//----------------------------------------
+
+bool class_needs_tock(CNodeClass* node_class) {
+  for (auto f : node_class->all_functions) {
+    if (f->method_type == MT_TOCK) return true;
+  }
+
+  for (auto f : node_class->all_fields) {
+    if (f->node_decl->_type_class && class_needs_tock(f->node_decl->_type_class)) return true;
+  }
+
+  return false;
+}
+
+//------------------------------------------------------------------------------
+
+CNodeField* resolve_field(CNodeClass* node_class, CNode* node_name) {
+  if (node_name == nullptr) return nullptr;
+
+  if (auto node_id = node_name->as<CNodeIdentifier>()) {
+    return node_class->get_field(node_id->get_text());
+  }
+
+  if (node_name->as<CNodeLValue>()) {
+    return resolve_field(node_class, node_name->child("name"));
+  }
+
+  if (auto node_field = node_name->as<CNodeFieldExpression>()) {
+    return resolve_field(node_class, node_field->child("field_path"));
+  }
+
+  if (auto node_prefix = node_name->as<CNodeSuffixExp>()) {
+    return resolve_field(node_class, node_prefix->child("rhs"));
+  }
+
+  if (auto node_suffix = node_name->as<CNodeSuffixExp>()) {
+    return resolve_field(node_class, node_suffix->child("lhs"));
+  }
+
+  LOG_R("----------------------------------------\n");
+  LOG_R("Don't know how to get field for %s\n", node_name->get_textstr().c_str());
+  LOG_R("----------------------------------------\n");
+
+  assert(false);
+  return nullptr;
+}
+
+//------------------------------------------------------------------------------
+
 bool is_bit_extract(CNodeCall* node) {
   if (auto func_id = node->node_name->as<CNodeIdentifier>()) {
     auto func_name = func_id->get_textstr();
@@ -147,7 +208,7 @@ Err Emitter::emit(CNodeAssignment* node) {
 
   auto node_class = node->ancestor<CNodeClass>();
   auto node_func  = node->ancestor<CNodeFunction>();
-  auto node_field = node_class->get_field(node->node_lhs);
+  auto node_field = resolve_field(node_class, node->node_lhs);
 
   err << emit_dispatch(node->node_lhs);
   err << cursor.emit_gap();
@@ -664,7 +725,7 @@ Err Emitter::emit(CNodePrefixExp* node) {
   auto node_class = node->ancestor<CNodeClass>();
   auto node_func = node->ancestor<CNodeFunction>();
   auto node_rhs = node->child("rhs");
-  auto node_field = node_class->get_field(node_rhs);
+  auto node_field = resolve_field(node_class, node_rhs);
 
   err << cursor.skip_over(node);
   err << cursor.emit_splice(node_rhs);
@@ -692,7 +753,7 @@ Err Emitter::emit(CNodeSuffixExp* node) {
   auto node_func = node->ancestor<CNodeFunction>();
   auto node_op = node->child("suffix");
   auto node_lhs = node->child("lhs");
-  auto node_field = node_class->get_field(node_lhs);
+  auto node_field = resolve_field(node_class, node_lhs);
 
   auto op = node_op->get_text();
 
@@ -1856,7 +1917,7 @@ Err Emitter::emit_component(CNodeField* node) {
 
   auto field_name = node->get_namestr();
 
-  if (component_class->needs_tick()) {
+  if (class_needs_tick(component_class)) {
     err << cursor.start_line();
     err << cursor.emit_print("// Global clock");
     err << cursor.start_line();
@@ -2031,7 +2092,7 @@ Err Emitter::emit_component(CNodeField* node) {
 Err Emitter::emit_module_ports(CNodeClass* node) {
   Err err;
 
-  if (node->needs_tick()) {
+  if (class_needs_tick(node)) {
     err << cursor.start_line();
     err << cursor.emit_print("// global clock");
     err << cursor.start_line();

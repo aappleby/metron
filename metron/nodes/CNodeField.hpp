@@ -16,17 +16,9 @@ struct CNodeField : public CNode {
     name = node_decl->name;
   }
 
-  std::string_view get_type_name() const {
-    return node_decl->get_type_name();
-  }
+  bool is_component() const { return node_decl->_type_class != nullptr; }
 
-  bool is_component() const {
-    return node_decl->_type_class != nullptr;
-  }
-
-  bool is_struct() const {
-    return node_decl->_type_struct != nullptr;
-  }
+  bool is_struct() const { return node_decl->_type_struct != nullptr; }
 
   bool is_array() const { return node_decl->node_array != nullptr; }
 

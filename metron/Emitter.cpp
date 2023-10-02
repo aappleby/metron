@@ -211,7 +211,7 @@ Err Emitter::emit(CNodeAssignment* node) {
   auto node_field = resolve_field(node_class, node->node_lhs);
 
   err << emit_dispatch(node->node_lhs);
-  err << cursor.emit_gap();
+  err << cursor.emit_gap(node->node_lhs);
 
   // If we're in a tick, emit < to turn = into <=
   if (node_func->method_type == MT_TICK && node_field) {
@@ -220,15 +220,11 @@ Err Emitter::emit(CNodeAssignment* node) {
 
   if (node->node_op->get_text() == "=") {
     err << emit_dispatch(node->node_op);
-    err << cursor.emit_gap();
+    err << cursor.emit_gap(node->node_op);
   } else {
-    auto lhs_text = node->node_lhs->get_text();
-
-    err << cursor.skip_over(node->node_op);
-    err << cursor.emit_print("=");
-    err << cursor.emit_gap();
-    err << cursor.emit_print("%.*s %c ", lhs_text.size(), lhs_text.data(),
-                             node->node_op->get_text()[0]);
+    auto lhs_text = node->node_lhs->get_textstr();
+    err << cursor.skip_over2(node->node_op);
+    err << cursor.emit_print("= %s %c ", lhs_text.c_str(), node->node_op->get_text()[0]);
   }
 
   err << emit_dispatch(node->node_rhs);
@@ -241,7 +237,7 @@ Err Emitter::emit(CNodeAssignment* node) {
 Err Emitter::emit(CNodeBuiltinType* node) {
   Err err = cursor.check_at(node);
 
-  auto node_name = node->child("name");
+  auto node_name  = node->child("name");
   auto node_targs = node->child("template_args");
   auto node_scope = node->child("scope");
 
@@ -262,8 +258,7 @@ Err Emitter::emit(CNodeBuiltinType* node) {
         // logic<N> -> logic[N-1:0]
         err << cursor.emit_replacement(node_ldelim, "[");
         err << cursor.emit_gap();
-        err << cursor.skip_over(node_exp);
-        err << cursor.emit_gap();
+        err << cursor.skip_over2(node_exp);
         err << cursor.emit_print("%d:0", width - 1);
         err << cursor.emit_replacement(node_rdelim, "]");
       }
@@ -271,8 +266,7 @@ Err Emitter::emit(CNodeBuiltinType* node) {
       // logic<CONSTANT> -> logic[CONSTANT-1:0]
       err << cursor.emit_replacement(node_ldelim, "[");
       err << cursor.emit_gap();
-      err << cursor.skip_over(node_exp);
-      err << cursor.emit_gap();
+      err << cursor.skip_over2(node_exp);
       err << cursor.emit_splice(node_identifier);
       err << cursor.emit_print("-1:0");
       err << cursor.emit_replacement(node_rdelim, "]");
@@ -316,7 +310,7 @@ Err Emitter::emit(CNodeCall* node) {
     auto func_name = func_path->node_name->get_text();
 
     auto src_field = src_class->get_field(field_name);
-    auto dst_class = src_class->repo->get_class(src_field->get_type_name());
+    auto dst_class = src_class->repo->get_class(src_field->node_decl->node_type->name);
     auto dst_func = dst_class->get_function(func_name);
 
     auto rtype = dst_func->child("return_type");
@@ -362,7 +356,7 @@ Err Emitter::emit(CNodeCall* node) {
           err << cursor.emit_replacement(child, "}");
         } else {
           err << emit_dispatch(child);
-          if (child->node_next) err << cursor.emit_gap();
+          err << cursor.emit_gap(child);
         }
       }
       return err << cursor.check_done(node);
@@ -376,6 +370,8 @@ Err Emitter::emit(CNodeCall* node) {
       auto node_exp = node->node_args->child("exp");
 
       err << cursor.skip_over(node);
+
+      // "\{{node_val} \{{node_exp}\}\}"
 
       err << cursor.emit_print("{");
       err << cursor.emit_splice(node_val);
@@ -393,6 +389,7 @@ Err Emitter::emit(CNodeCall* node) {
 
       err << cursor.skip_over(node);
 
+      // "($signed({lhs}) >>> {rhs})"
       err << cursor.emit_print("($signed(");
       err << cursor.emit_splice(lhs);
       err << cursor.emit_print(") >>> ");

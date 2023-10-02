@@ -84,6 +84,15 @@ CHECK_RETURN Err Cursor::emit_gap() {
   return err;
 }
 
+CHECK_RETURN Err Cursor::emit_gap(CNode* n) {
+  if (n && n->node_next) {
+    return emit_gap();
+  }
+  else {
+    return Err();
+  }
+}
+
 //----------------------------------------
 
 CHECK_RETURN Err Cursor::skip_gap() {
@@ -122,6 +131,13 @@ CHECK_RETURN Err Cursor::skip_over(CNode* n) {
   Err err = check_at(n);
   err << skip_span(n->tok_begin(), n->tok_end());
   return err << check_done(n);
+}
+
+CHECK_RETURN Err Cursor::skip_over2(CNode* n) {
+  Err err;
+  err << skip_over(n);
+  err << skip_gap();
+  return err;
 }
 
 CHECK_RETURN Err Cursor::skip_to(CNode* n) {

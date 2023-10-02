@@ -95,8 +95,8 @@ Err collect_fields_and_methods(CNodeClass* node, CSourceRepo* repo) {
 
       n->parent_class = node;
       n->parent_struct = nullptr;
-      n->node_decl->_type_class = repo->get_class(n->get_type_name());
-      n->node_decl->_type_struct = repo->get_struct(n->get_type_name());
+      n->node_decl->_type_class = repo->get_class(n->node_decl->node_type->name);
+      n->node_decl->_type_struct = repo->get_struct(n->node_decl->node_type->name);
 
       if (n->node_decl->node_static && n->node_decl->node_const) {
         node->all_localparams.push_back(n);
@@ -120,8 +120,8 @@ Err collect_fields_and_methods(CNodeClass* node, CSourceRepo* repo) {
 
       // Hook up _type_struct on all struct params
       for (auto decl : n->params) {
-        decl->_type_class = repo->get_class(decl->get_type_name());
-        decl->_type_struct = repo->get_struct(decl->get_type_name());
+        decl->_type_class = repo->get_class(decl->node_type->name);
+        decl->_type_struct = repo->get_struct(decl->node_type->name);
       }
       continue;
     }
@@ -154,7 +154,7 @@ Err build_call_graph(CNodeClass* node, CSourceRepo* repo) {
     if (auto submod_path = func_name->as<CNodeFieldExpression>()) {
       auto submod_field =
           node->get_field(submod_path->child("field_path")->get_text());
-      auto submod_class = repo->get_class(submod_field->get_type_name());
+      auto submod_class = repo->get_class(submod_field->node_decl->node_type->name);
       auto submod_func = submod_class->get_function(
           submod_path->child("identifier")->get_text());
 

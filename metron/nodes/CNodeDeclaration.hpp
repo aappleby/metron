@@ -22,10 +22,6 @@ struct CNodeDeclaration : public CNode {
     name = node_name->name;
   }
 
-  std::string_view get_type_name() const {
-    return node_type->child_head->get_text();
-  }
-
   bool is_array() const {
     return node_array != nullptr;
   }

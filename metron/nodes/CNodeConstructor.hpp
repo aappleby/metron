@@ -9,23 +9,5 @@
 
 //------------------------------------------------------------------------------
 
-struct CNodeConstructor : public CNodeFunction {
-  void init() {
-    node_type   = nullptr;
-    node_name   = child("name")->req<CNodeIdentifier>();
-    node_params = child("params")->req<CNodeList>();
-    node_init   = child("init")->opt<CNodeList>();
-    node_const  = child("const")->opt<CNodeKeyword>();
-    node_body   = child("body")->req<CNodeCompound>();
-
-    for (auto c : child("params")) {
-      if (auto param = c->as<CNodeDeclaration>()) {
-        params.push_back(param);
-      }
-    }
-
-    name = node_name->name;
-  }
-};
 
 //------------------------------------------------------------------------------

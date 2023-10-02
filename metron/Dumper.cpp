@@ -10,7 +10,6 @@
 #include "metron/nodes/CNodeClass.hpp"
 #include "metron/nodes/CNodeField.hpp"
 #include "metron/nodes/CNodeFunction.hpp"
-#include "metron/nodes/CNodeConstructor.hpp"
 
 //------------------------------------------------------------------------------
 // Node debugging

@@ -31,7 +31,7 @@ struct CNodeDeclaration;
 struct CNodeFunction : public CNode {
 
   void init() {
-    node_type   = child("return_type")->req<CNodeType>();
+    node_type   = child("return_type")->opt<CNodeType>();
     node_name   = child("name")->req<CNodeIdentifier>();
     node_params = child("params")->req<CNodeList>();
     node_init   = child("init")->opt<CNodeList>();
@@ -181,5 +181,7 @@ struct CNodeFunction : public CNode {
   std::set<CNodeFunction*> external_callers;
   std::set<CNodeFunction*> external_callees;
 };
+
+struct CNodeConstructor : public CNodeFunction {};
 
 //------------------------------------------------------------------------------

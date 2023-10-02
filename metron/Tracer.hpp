@@ -7,7 +7,7 @@
 
 #include "metrolib/core/Err.h"
 #include "metron/MtUtils.h"
-#include "metron/nodes/CNodeConstructor.hpp"
+#include "metron/nodes/CNodeFunction.hpp"
 
 struct CInstance;
 struct CNode;

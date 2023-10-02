@@ -3,7 +3,6 @@
 #include "metron/nodes/CNodeAccess.hpp"
 #include "metron/nodes/CNodeType.hpp"
 #include "metron/nodes/CNodeClass.hpp"
-#include "metron/nodes/CNodeConstructor.hpp"
 #include "metron/nodes/CNodeDeclaration.hpp"
 #include "metron/nodes/CNodeExpression.hpp"
 #include "metron/nodes/CNodeField.hpp"

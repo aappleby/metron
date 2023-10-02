@@ -11,7 +11,6 @@
 #include "metron/nodes/CNodeCall.hpp"
 #include "metron/nodes/CNodeClass.hpp"
 #include "metron/nodes/CNodeCompound.hpp"
-#include "metron/nodes/CNodeConstructor.hpp"
 #include "metron/nodes/CNodeDeclaration.hpp"
 #include "metron/nodes/CNodeDoWhile.hpp"
 #include "metron/nodes/CNodeEnum.hpp"

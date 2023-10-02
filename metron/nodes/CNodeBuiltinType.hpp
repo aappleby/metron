@@ -5,7 +5,7 @@
 //==============================================================================
 
 struct CNodeBuiltinType : public CNodeType {
-  void init() {
+  void init() override {
     name = get_text();
   }
 };

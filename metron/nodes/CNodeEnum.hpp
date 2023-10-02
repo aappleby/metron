@@ -52,7 +52,7 @@ struct CNodeEnumerator : public CNode {
 //==============================================================================
 
 struct CNodeEnumType : public CNodeType {
-  void init() {
+  void init() override {
     name = child("name")->get_text();
   }
 };

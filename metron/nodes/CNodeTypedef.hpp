@@ -14,7 +14,7 @@ struct CNodeTypedef : public CNode {
 //==============================================================================
 
 struct CNodeTypedefType : public CNodeType {
-  void init() {
+  void init() override {
     name = child("name")->name;
   }
 };

@@ -10,7 +10,7 @@ struct CNodeUnion : public CNode {
 //==============================================================================
 
 struct CNodeUnionType : public CNodeType {
-  void init() {
+  void init() override {
     name = child("name")->name;
   }
 };

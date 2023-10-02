@@ -101,7 +101,7 @@ struct CNodeClass : public CNode {
 //==============================================================================
 
 struct CNodeClassType : public CNodeType {
-  void init() {
+  void init() override {
     node_targs = child("template_args")->as<CNodeList>();
     name = child("name")->get_text();
   }

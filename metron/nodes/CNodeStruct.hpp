@@ -52,7 +52,7 @@ struct CNodeStruct : public CNode {
 //==============================================================================
 
 struct CNodeStructType : public CNodeType {
-  void init() {
+  void init() override {
     name = child("name")->name;
   }
 };

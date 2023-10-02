@@ -7,7 +7,7 @@
 //==============================================================================
 
 struct CNodeType : public CNode {
-  void init() {
+  virtual void init() {
     node_targs = child("template_args")->as<CNodeList>();
   }
 

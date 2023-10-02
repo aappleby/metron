@@ -8,11 +8,16 @@
 
 struct CNodeType : public CNode {
   virtual void init() {
-    name = child("name")->name;
+    node_name = child("name");
     node_targs = child("template_args")->as<CNodeList>();
+    node_scope = child("scope");
+
+    name = node_name->name;
   }
 
+  CNode* node_name;
   CNodeList* node_targs;
+  CNode* node_scope;
 };
 
 struct CNodeBuiltinType : public CNodeType {};

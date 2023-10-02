@@ -262,14 +262,14 @@ Err Emitter::emit(CNodeAssignment* node) {
 Err Emitter::emit(CNodeBuiltinType* node) {
   Err err = cursor.check_at(node);
 
-  auto node_name  = node->child("name");
+  auto node_name  = node->node_name;
   auto node_targs = node->node_targs;
-  auto node_scope = node->child("scope");
+  auto node_scope = node->node_scope;
 
   if (node_targs) {
-    auto node_ldelim = node_targs->child("ldelim");
-    auto node_exp = node_targs->child("arg");
-    auto node_rdelim = node_targs->child("rdelim");
+    auto node_ldelim = node_targs->node_ldelim;
+    auto node_exp = node_targs->items[0];
+    auto node_rdelim = node_targs->node_rdelim;
 
     err << cursor.emit_raw(node_name);
     err << cursor.emit_gap();

@@ -29,8 +29,6 @@ struct CNodeClass : public CNode {
 
   //----------
 
-  std::string_view get_name() const override;
-
   CSourceRepo* get_repo() override {
     return repo;
   }
@@ -84,10 +82,7 @@ struct CNodeClassType : public CNodeType {
   void init(const char* match_tag, SpanType span, uint64_t flags) {
     CNode::init(match_tag, span, flags);
     node_targs = child("template_args")->as<CNodeList>();
-  }
-
-  std::string_view get_name() const override {
-    return child("name")->get_text();
+    name = child("name")->get_text();
   }
 
   CNodeList* node_targs = nullptr;

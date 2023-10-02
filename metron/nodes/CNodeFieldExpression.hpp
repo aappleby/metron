@@ -12,11 +12,7 @@ struct CNodeFieldExpression : public CNode {
     node_path = child("field_path")->as<CNodeIdentifier>();
     node_name = child("identifier")->as<CNodeIdentifier>();
     color = 0x80FF80;
-  }
-
-  std::string_view get_name() const override {
-    NODE_ERR("FIXME");
-    return "";
+    name = node_name->name;
   }
 
   CNodeIdentifier* node_path = nullptr;

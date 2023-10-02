@@ -5,8 +5,9 @@
 //==============================================================================
 
 struct CNodeBuiltinType : public CNodeType {
-  std::string_view get_name() const override {
-    return get_text();
+  void init(const char* match_tag, SpanType span, uint64_t flags) {
+    CNode::init(match_tag, span, flags);
+    name = get_textstr();
   }
 };
 

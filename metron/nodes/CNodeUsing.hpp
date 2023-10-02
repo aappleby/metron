@@ -5,12 +5,10 @@
 //==============================================================================
 
 struct CNodeUsing : public CNodeStatement {
-  CNodeUsing() {
+  void init(const char* match_tag, SpanType span, uint64_t flags) {
+    CNode::init(match_tag, span, flags);
     color = 0x00DFFF;
-  }
-
-  std::string_view get_name() const override {
-    return child("name")->get_text();
+    name = child("name")->name;
   }
 };
 

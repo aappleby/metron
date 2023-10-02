@@ -22,10 +22,8 @@ struct CNodeDeclaration : public CNode {
     node_array  = child("array")->as<CNodeList>();
     node_eq     = child("eq")->as<CNodePunct>();
     node_value  = child("value")->as<CNode>();
-  }
 
-  std::string_view get_name() const override {
-    return node_name->get_name();
+    name = node_name->name;
   }
 
   std::string_view get_type_name() const {

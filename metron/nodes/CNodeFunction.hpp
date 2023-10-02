@@ -40,7 +40,7 @@ struct CNodeFunction : public CNode {
     node_const  = child("const")->opt<CNodeKeyword>();
     node_body   = child("body")->req<CNodeCompound>();
 
-    name = node_name->get_textstr();
+    name = node_name->name;
 
     for (auto c : child("params")) {
       if (auto param = c->as<CNodeDeclaration>()) {
@@ -48,12 +48,6 @@ struct CNodeFunction : public CNode {
       }
     }
     color = COL_ORANGE;
-  }
-
-  //------------------------------------------------------------------------------
-
-  std::string_view get_name() const override {
-    return child("name")->get_name();
   }
 
   //------------------------------------------------------------------------------
@@ -115,7 +109,6 @@ struct CNodeFunction : public CNode {
   }
 
   void set_type(MethodType new_type) {
-    auto name = get_name();
     assert(method_type == MT_UNKNOWN || method_type == new_type);
     method_type = new_type;
   }
@@ -126,8 +119,6 @@ struct CNodeFunction : public CNode {
 
     all_reads = self_reads;
     all_writes = self_writes;
-
-    auto name = get_name();
 
     for (auto c : internal_callees) {
       all_reads.insert(c->all_reads.begin(), c->all_reads.end());

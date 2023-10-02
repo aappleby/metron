@@ -5,13 +5,10 @@
 //==============================================================================
 
 struct CNodeKeyword : public CNode {
-  CNodeKeyword() {
+  void init(const char* match_tag, SpanType span, uint64_t flags) {
+    CNode::init(match_tag, span, flags);
     color = 0xFFFF88;
-  }
-
-  std::string_view get_name() const override {
-    NODE_ERR("FIXME");
-    return "";
+    name = get_text();
   }
 };
 

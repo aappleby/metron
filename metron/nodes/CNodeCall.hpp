@@ -7,14 +7,12 @@
 
 struct CNodeCall : public CNode {
   void init(const char* match_tag, SpanType span, uint64_t flags) {
+    CNode::init(match_tag, span, flags);
     node_name  = child("func_name")->req<CNode>();
     node_targs = child("func_targs")->opt<CNodeList>();
     node_args  = child("func_args")->req<CNodeList>();
+    name = child("func_name")->get_text();
     color = COL_SKY;
-  }
-
-  std::string_view get_name() const override {
-    return child("func_name")->get_text();
   }
 
   CNode* node_name = nullptr;
@@ -25,7 +23,11 @@ struct CNodeCall : public CNode {
 //------------------------------------------------------------------------------
 
 struct CNodeArgument : public CNode {
-  std::string_view get_name() const override { return "arg"; }
+  void init(const char* match_tag, SpanType span, uint64_t flags) {
+    CNode::init(match_tag, span, flags);
+    // FIXME
+    name = "arg";
+  }
 };
 
 //------------------------------------------------------------------------------

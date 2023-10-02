@@ -18,10 +18,6 @@ struct CNodeField : public CNode {
 
   //----------------------------------------
 
-  std::string_view get_name() const override;
-
-  //----------------------------------------
-
   std::string_view get_type_name() const;
 
   bool is_component() const;

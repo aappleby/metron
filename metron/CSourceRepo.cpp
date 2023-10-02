@@ -16,28 +16,28 @@ namespace fs = std::filesystem;
 
 CNodeClass* CSourceRepo::get_class(std::string_view name) {
   for (auto c : all_classes) {
-    if (c->get_name() == name) return c;
+    if (c->name == name) return c;
   }
   return nullptr;
 }
 
 CNodeStruct* CSourceRepo::get_struct(std::string_view name) {
   for (auto c : all_structs) {
-    if (c->get_name() == name) return c;
+    if (c->name == name) return c;
   }
   return nullptr;
 }
 
 CNodeNamespace* CSourceRepo::get_namespace(std::string_view name) {
   for (auto c : all_namespaces) {
-    if (c->get_name() == name) return c;
+    if (c->name == name) return c;
   }
   return nullptr;
 }
 
 CNodeEnum* CSourceRepo::get_enum(std::string_view name) {
   for (auto c : all_enums) {
-    if (c->get_name() == name) return c;
+    if (c->name == name) return c;
   }
   return nullptr;
 }

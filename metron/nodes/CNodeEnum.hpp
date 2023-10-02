@@ -26,11 +26,8 @@ struct CNodeEnum : public CNode {
     node_body = child("body")->as<CNodeList>();
     node_decl = child("decl");
     node_semi = child("semi")->as<CNodePunct>();
-  }
 
-  std::string_view get_name() const override {
-    auto n = child("name");
-    return n ? n->get_text() : "<unnamed>";
+    name = node_name ? node_name->name : "<unnamed>";
   }
 
   CSourceRepo* repo = nullptr;
@@ -50,6 +47,7 @@ struct CNodeEnum : public CNode {
 
 struct CNodeEnumerator : public CNode {
   void init(const char* match_tag, SpanType span, uint64_t flags) {
+    // FIXME name
     CNode::init(match_tag, span, flags);
   }
 };
@@ -57,8 +55,9 @@ struct CNodeEnumerator : public CNode {
 //==============================================================================
 
 struct CNodeEnumType : public CNodeType {
-  std::string_view get_name() const override {
-    return child("name")->get_text();
+  void init(const char* match_tag, SpanType span, uint64_t flags) {
+    CNode::init(match_tag, span, flags);
+    name = child("name")->get_text();
   }
 };
 

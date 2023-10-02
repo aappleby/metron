@@ -468,8 +468,8 @@ Err Tracer::trace(CNodeLValue* node) {
 Err Tracer::trace(CNodeQualifiedIdentifier* node) {
   Err err;
 
-  auto scope = node->child("scope_path")->get_name();
-  auto field = node->child("identifier")->get_name();
+  auto scope = node->child("scope_path")->name;
+  auto field = node->child("identifier")->name;
 
   if (auto node_namespace = repo->get_namespace(scope)) {
     return trace(node_namespace->get_field(field));

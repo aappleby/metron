@@ -49,9 +49,6 @@ struct CInstance {
   }
 
   CInstance* get_root() { return inst_parent ? inst_parent->get_root() : this; }
-
-  const std::string& get_name() const;
-  const std::string& get_path() const;
   CInstance* resolve(CNode* node);
 
   //----------

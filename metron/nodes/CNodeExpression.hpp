@@ -26,10 +26,9 @@ struct CNodeAssignExp : public CNodeExpression {
 };
 
 struct CNodeIdentifierExp : public CNodeExpression {
-  std::string_view get_name() const override {
-    return get_text();
+  void init(const char* match_tag, SpanType span, uint64_t flags) {
+    name = get_text();
   }
-
 };
 
 //------------------------------------------------------------------------------

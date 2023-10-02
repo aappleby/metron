@@ -12,11 +12,7 @@ struct CNodeList : public CNode {
       if (!child->as<CNodePunct>()) items.push_back(child);
     }
     color = 0xCCCCCC;
-  }
-
-  std::string_view get_name() const override {
-    NODE_ERR("FIXME");
-    return "";
+    name = "<CNodeList>";
   }
 
   std::vector<CNode*> items;

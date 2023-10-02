@@ -427,7 +427,7 @@ int main_new(Options opts) {
   for (auto inst_class : repo.all_instances) {
     tracer.root_inst = inst_class;
     auto node_class = inst_class->node_class;
-    auto name = node_class->get_name();
+    auto name = node_class->name;
     LOG_B("Tracing public methods in %.*s\n", int(name.size()), name.data());
 
     // Trace constructors first
@@ -752,9 +752,9 @@ int main_new(Options opts) {
   }
 
   for (auto c : repo.all_classes) {
-    auto cname = c->get_name();
+    auto cname = c->name;
     for (auto f : c->all_fields) {
-      auto fname = f->get_name();
+      auto fname = f->name;
       if (f->field_type == FT_UNKNOWN) {
         LOG_R("Field %.*s::%.*s has no type\n", cname.size(), cname.data(), fname.size(), fname.data());
         assert(false);
@@ -786,8 +786,8 @@ int main_new(Options opts) {
 
   for (auto c : repo.all_classes) {
     for (auto f : c->all_functions) {
-      if (f->get_name().starts_with("tick")) f->set_type(MT_TICK);
-      if (f->get_name().starts_with("tock")) f->set_type(MT_TOCK);
+      if (f->name.starts_with("tick")) f->set_type(MT_TICK);
+      if (f->name.starts_with("tock")) f->set_type(MT_TOCK);
     }
   }
 

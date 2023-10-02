@@ -21,12 +21,7 @@ struct CNodeStruct : public CNode {
     node_body   = child("body")->req<CNodeList>();
     node_semi   = child("semi")->req<CNodePunct>();
     color = 0xFFAAAA;
-  }
-
-  //----------------------------------------
-
-  std::string_view get_name() const override {
-    return child("name")->get_name();
+    name = node_name->name;
   }
 
   //----------------------------------------
@@ -59,8 +54,9 @@ struct CNodeStruct : public CNode {
 //==============================================================================
 
 struct CNodeStructType : public CNodeType {
-  std::string_view get_name() const override {
-    return child("name")->get_text();
+  void init(const char* match_tag, SpanType span, uint64_t flags) {
+    CNode::init(match_tag, span, flags);
+    name = child("name")->name;
   }
 };
 

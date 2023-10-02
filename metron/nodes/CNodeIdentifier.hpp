@@ -5,12 +5,10 @@
 //==============================================================================
 
 struct CNodeIdentifier : public CNode {
-  CNodeIdentifier() {
+  void init(const char* match_tag, SpanType span, uint64_t flags) {
+    CNode::init(match_tag, span, flags);
     color = 0x80FF80;
-  }
-
-  std::string_view get_name() const override {
-    return get_text();
+    name = get_text();
   }
 };
 

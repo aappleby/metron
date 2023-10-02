@@ -43,12 +43,6 @@ CInstance::~CInstance() {}
 
 //----------------------------------------
 
-const std::string& CInstance::get_name() const { return name; }
-
-const std::string& CInstance::get_path() const { return path; }
-
-//----------------------------------------
-
 CInstance* CInstance::resolve(CNode* node) {
   if (node->as<CNodeLValue>()) {
     return resolve(node->child("name"));
@@ -164,7 +158,7 @@ CInstClass::CInstClass(std::string name, CInstance* inst_parent,
 
 bool CInstClass::check_port_directions(CInstClass* b) {
   auto a = this;
-  LOG("Checking %s vs %s\n", a->get_path().c_str(), b->get_path().c_str());
+  LOG("Checking %s vs %s\n", a->path.c_str(), b->path.c_str());
 
   // Mismatched port sizes (how?) are invalid.
   assert(a->ports.size() == b->ports.size());

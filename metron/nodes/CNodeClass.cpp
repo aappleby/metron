@@ -33,10 +33,6 @@ void CNodeClass::init(const char* match_tag, SpanType span, uint64_t flags) {
   }
 }
 
-std::string_view CNodeClass::get_name() const {
-  return name;
-}
-
 CNodeField* CNodeClass::get_field(CNode* node_name) {
   if (node_name == nullptr) return nullptr;
 
@@ -69,22 +65,22 @@ CNodeField* CNodeClass::get_field(CNode* node_name) {
 }
 
 CNodeField* CNodeClass::get_field(std::string_view name) {
-  for (auto f : all_fields) if (f->get_name() == name) return f;
+  for (auto f : all_fields) if (f->name == name) return f;
   return nullptr;
 }
 
 CNodeFunction* CNodeClass::get_function(std::string_view name) {
-  for (auto m : all_functions) if (m->get_name() == name) return m;
+  for (auto m : all_functions) if (m->name == name) return m;
   return nullptr;
 }
 
 CNodeDeclaration* CNodeClass::get_modparam(std::string_view name) {
-  for (auto p : all_modparams) if (p->get_name() == name) return p;
+  for (auto p : all_modparams) if (p->name == name) return p;
   return nullptr;
 }
 
 CNodeEnum* CNodeClass::get_enum(std::string_view name) {
-  for (auto e : all_enums2) if (e->get_name() == name) return e;
+  for (auto e : all_enums2) if (e->name == name) return e;
   return nullptr;
 }
 

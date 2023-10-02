@@ -13,11 +13,7 @@ struct CNodeQualifiedIdentifier : public CNode {
     node_colon = child("colon")->req<CNodePunct>();
     node_name  = child("identifier");
     color = 0x80FF80;
-  }
-
-  std::string_view get_name() const override {
-    NODE_ERR("FIXME");
-    return "";
+    name = get_text();
   }
 
   CNode* node_scope = nullptr;

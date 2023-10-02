@@ -6,21 +6,19 @@
 //==============================================================================
 
 struct CNodeTypedef : public CNode {
-  CNodeTypedef() {
+  void init(const char* match_tag, SpanType span, uint64_t flags) {
+    CNode::init(match_tag, span, flags);
     color = 0xFFFF88;
-  }
-
-  std::string_view get_name() const override {
-    NODE_ERR("FIXME");
-    return "";
+    name = child("name")->name;
   }
 };
 
 //==============================================================================
 
 struct CNodeTypedefType : public CNodeType {
-  std::string_view get_name() const override {
-    return child("name")->get_text();
+  void init(const char* match_tag, SpanType span, uint64_t flags) {
+    CNode::init(match_tag, span, flags);
+    name = child("name")->name;
   }
 };
 

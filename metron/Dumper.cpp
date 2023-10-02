@@ -142,7 +142,7 @@ void dump_parse_tree(CNode* node) {
 
 void dump_inst_tree(CInstance* inst) {
   if (auto inst_class = inst->as<CInstClass>()) {
-    LOG_G("Class %s\n", inst_class->get_path().c_str());
+    LOG_G("Class %s\n", inst_class->path.c_str());
 
     {
       LOG_INDENT_SCOPE();
@@ -159,7 +159,7 @@ void dump_inst_tree(CInstance* inst) {
   }
 
   if (auto inst_struct = inst->as<CInstStruct>()) {
-    LOG_G("Struct %s\n", inst_struct->get_path().c_str());
+    LOG_G("Struct %s\n", inst_struct->path.c_str());
 
     {
       LOG_INDENT_SCOPE();
@@ -171,9 +171,9 @@ void dump_inst_tree(CInstance* inst) {
 
   if (auto inst_prim = inst->as<CInstPrim>()) {
     if (inst_prim->node_field && inst_prim->node_field->is_public) {
-      LOG_G("Prim %s", inst_prim->get_path().c_str());
+      LOG_G("Prim %s", inst_prim->path.c_str());
     } else {
-      LOG_R("Prim %s", inst_prim->get_path().c_str());
+      LOG_R("Prim %s", inst_prim->path.c_str());
     }
 
     for (auto state : inst_prim->state_stack) LOG(" %s", to_string(state));
@@ -181,7 +181,7 @@ void dump_inst_tree(CInstance* inst) {
   }
 
   if (auto inst_func = inst->as<CInstFunc>()) {
-    LOG_G("Func %s\n", inst_func->get_path().c_str());
+    LOG_G("Func %s\n", inst_func->path.c_str());
 
     LOG_INDENT();
 
@@ -223,7 +223,6 @@ void CNodeNamespace::dump() const override {
 
 
 void CNodeEnum::dump() const override {
-  auto name = get_name();
   LOG_G("Enum %.*s\n", name.size(), name.data());
 }
 
@@ -413,7 +412,6 @@ void CNodeClass::dump() const {
 //------------------------------------------------------------------------------
 
 void CNodeField::dump() const {
-  auto name = get_name();
   LOG_A("Field %.*s : ", name.size(), name.data());
 
   if (node_decl->node_static) LOG_A("static ");
@@ -445,8 +443,6 @@ void CNodeField::dump() const {
 // FIXME constructor needs to be in internal_callers
 
 void CNodeFunction::dump() const {
-  auto name = get_name();
-
   LOG_S("Method \"%.*s\" ", name.size(), name.data());
 
   if (is_public)  LOG_G("public ");
@@ -473,14 +469,14 @@ void CNodeFunction::dump() const {
   if (self_reads.size()) {
     LOG_INDENT_SCOPE();
     for (auto r : self_reads) {
-      LOG_G("Directly reads  %s : %s\n", r->get_path().c_str(), to_string(r->get_state()));
+      LOG_G("Directly reads  %s : %s\n", r->path.c_str(), to_string(r->get_state()));
     }
   }
 
   if (self_writes.size()) {
     LOG_INDENT_SCOPE();
     for (auto w : self_writes) {
-      LOG_G("Directly writes %s : %s\n", w->get_path().c_str(), to_string(w->get_state()));
+      LOG_G("Directly writes %s : %s\n", w->path.c_str(), to_string(w->get_state()));
     }
   }
 
@@ -488,7 +484,7 @@ void CNodeFunction::dump() const {
     LOG_INDENT_SCOPE();
     for (auto r : all_reads) {
       if (self_reads.contains(r)) continue;
-      LOG_G("Indirectly reads  %s : %s\n", r->get_path().c_str(), to_string(r->get_state()));
+      LOG_G("Indirectly reads  %s : %s\n", r->path.c_str(), to_string(r->get_state()));
     }
   }
 
@@ -496,15 +492,15 @@ void CNodeFunction::dump() const {
     LOG_INDENT_SCOPE();
     for (auto w : all_writes) {
       if (self_writes.contains(w)) continue;
-      LOG_G("Indirectly writes %s : %s\n", w->get_path().c_str(), to_string(w->get_state()));
+      LOG_G("Indirectly writes %s : %s\n", w->path.c_str(), to_string(w->get_state()));
     }
   }
 
   if (internal_callers.size()) {
     LOG_INDENT_SCOPE();
     for (auto c : internal_callers) {
-      auto func_name = c->get_name();
-      auto class_name = c->ancestor<CNodeClass>()->get_name();
+      auto func_name = c->name;
+      auto class_name = c->ancestor<CNodeClass>()->name;
       LOG_V("Called by %.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
     }
   }
@@ -512,8 +508,8 @@ void CNodeFunction::dump() const {
   if (external_callers.size()) {
     LOG_INDENT_SCOPE();
     for (auto c : external_callers) {
-      auto func_name = c->get_name();
-      auto class_name = c->ancestor<CNodeClass>()->get_name();
+      auto func_name = c->name;
+      auto class_name = c->ancestor<CNodeClass>()->name;
       LOG_V("Called by %.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
     }
   }
@@ -521,8 +517,8 @@ void CNodeFunction::dump() const {
   if (internal_callees.size()) {
     LOG_INDENT_SCOPE();
     for (auto c : internal_callees) {
-      auto func_name = c->get_name();
-      auto class_name = c->ancestor<CNodeClass>()->get_name();
+      auto func_name = c->name;
+      auto class_name = c->ancestor<CNodeClass>()->name;
       LOG_T("Calls %.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
     }
   }
@@ -530,8 +526,8 @@ void CNodeFunction::dump() const {
   if (external_callees.size()) {
     LOG_INDENT_SCOPE();
     for (auto c : external_callees) {
-      auto func_name = c->get_name();
-      auto class_name = c->ancestor<CNodeClass>()->get_name();
+      auto func_name = c->name;
+      auto class_name = c->ancestor<CNodeClass>()->name;
       LOG_T("Calls %.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
     }
   }
@@ -569,16 +565,16 @@ void dump_call_graph(CNodeClass* node_class) {
 
 void dump_call_graph(CNodeFunction* node_func) {
   for (auto r : node_func->self_reads) {
-    LOG("Reads %s\n", r->get_path().c_str());
+    LOG("Reads %s\n", r->path.c_str());
   }
   for (auto w : node_func->self_writes) {
-    LOG("Writes %s\n", w->get_path().c_str());
+    LOG("Writes %s\n", w->path.c_str());
   }
 
   if (node_func->internal_callees.size()) {
     for (auto c : node_func->internal_callees) {
-      auto func_name = c->get_name();
-      auto class_name = c->ancestor<CNodeClass>()->get_name();
+      auto func_name = c->name;
+      auto class_name = c->ancestor<CNodeClass>()->name;
       LOG_T("%.*s::%.*s\n", class_name.size(), class_name.data(),
             func_name.size(), func_name.data());
       LOG_INDENT();
@@ -589,8 +585,8 @@ void dump_call_graph(CNodeFunction* node_func) {
 
   if (node_func->external_callees.size()) {
     for (auto c : node_func->external_callees) {
-      auto func_name = c->get_name();
-      auto class_name = c->ancestor<CNodeClass>()->get_name();
+      auto func_name = c->name;
+      auto class_name = c->ancestor<CNodeClass>()->name;
       LOG_T("%.*s::%.*s\n", class_name.size(), class_name.data(),
             func_name.size(), func_name.data());
       LOG_INDENT();
@@ -605,7 +601,6 @@ void dump_call_graph(CNodeFunction* node_func) {
 
 /*
 void CNodeStruct::dump() const {
-  auto name = get_name();
   LOG_B("Struct %.*s @ %p\n", name.size(), name.data(), this);
   LOG_INDENT();
 

@@ -9,11 +9,11 @@ struct CSourceFile;
 //==============================================================================
 
 struct CNodeNamespace : public CNode {
-  CNodeNamespace() {
+  void init(const char* match_tag, SpanType span, uint64_t flags) {
+    CNode::init(match_tag, span, flags);
     color = 0x00FFFFFF;
+    name = child("name")->name;
   }
-
-  std::string_view get_name() const override { return child("name")->get_text(); }
 
   Err collect_fields_and_methods() {
     for (auto c : child("fields")) {
@@ -27,7 +27,7 @@ struct CNodeNamespace : public CNode {
 
   CNodeField* get_field(std::string_view name) {
     for (auto f : all_fields) {
-      if (f->get_name() == name) return f;
+      if (f->name == name) return f;
     }
     return nullptr;
   }

@@ -1764,7 +1764,7 @@ Err Emitter::emit_component(CNodeField* node) {
 
   auto parent_class = node->ancestor<CNodeClass>();
   auto repo = parent_class->repo;
-  auto component_class = repo->get_class(node->node_decl->node_type->get_name());
+  auto component_class = repo->get_class(node->node_decl->node_type->name);
   auto component_template = component_class->node_parent->as<CNodeTemplate>();
 
   //----------------------------------------
@@ -1792,7 +1792,7 @@ Err Emitter::emit_component(CNodeField* node) {
         auto param = component_template->params[i];
         auto arg = args->items[i];
 
-        auto param_name = param->get_name();
+        auto param_name = param->name;
 
         err << cursor.start_line();
         err << cursor.emit_print(".%.*s(", param_name.size(), param_name.data());
@@ -1823,7 +1823,7 @@ Err Emitter::emit_component(CNodeField* node) {
       for (auto i = 0; i < params.size(); i++) {
         auto param = params[i];
         auto arg = args->items[i];
-        auto param_name = param->get_name();
+        auto param_name = param->name;
 
         err << cursor.start_line();
         err << cursor.emit_print(".%.*s(", param_name.size(), param_name.data());

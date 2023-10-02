@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 #include "metrolib/core/Log.h"
 #include "metron/CInstance.hpp"
@@ -54,11 +55,62 @@ const char* class_name(const T& t) {
 
 //------------------------------------------------------------------------------
 
+/*
+cnode uint32_t color = 0x222244;
+cnodeaccess     color = COL_VIOLET;
+cnodecall SKY
+declaration 0xFF00FF
+field pink
+fieldexp     color = 0x80FF80;
+function     color = COL_ORANGE;
+keyword     color = 0xFFFF88;
+list     color = 0xCCCCCC;
+namespace     color = 0x00FFFFFF;
+preproc     color = 0x00BBBB;
+qual     color = 0x80FF80;
+statement     color = COL_TEAL;
+struct     color = 0xFFAAAA;
+template     color = 0x00FFFF;
+translation unit     color = 0xFFFF00;
+type     color = COL_VIOLET;
+typedef     color = 0xFFFF88;
+*/
+
+std::map<std::string, uint32_t> color_map1 = {
+  {"include", 0x00BBBB},
+  {"define",  0x00BBBB},
+
+  {"class",  0x00FF00},
+  {"params", 0xCCCCCC},
+  {"body",   0xCCCCCC},
+
+  {"template", 0x00FFFF},
+};
+
+std::map<std::string, uint32_t> color_map2 = {
+  {"CNodePreproc",       0x00BBBB},
+  {"CNodeExpStatement",  COL_TEAL},
+  {"CNodeExpression",    COL_AQUA},
+  {"CNodeOperator",      COL_SKY},
+  {"CNodeUsing",         0x00DFFF},
+  {"CNodePunct",         0x88CC88},
+  {"CNodeIdentifier",    0x80FF80},
+  {"CNodeClass",         0x00FF00},
+};
+
 struct NodeDumper {
   //----------------------------------------
 
   void dump_tree_recurse(const CNode& n, int depth, int max_depth) {
-    color_stack.push_back(n.color);
+    if (n.match_tag && color_map1.contains(n.match_tag)) {
+      color_stack.push_back(color_map1[n.match_tag]);
+    }
+    else if (color_map2.contains(class_name(n))) {
+      color_stack.push_back(color_map2[class_name(n)]);
+    }
+    else {
+      color_stack.push_back(0xA0A0A0);
+    }
     dump_node(n, depth);
     if (!max_depth || depth < max_depth) {
       for (auto child = n.child_head; child; child = child->node_next) {

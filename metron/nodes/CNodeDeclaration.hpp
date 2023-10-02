@@ -11,8 +11,6 @@
 
 struct CNodeDeclaration : public CNode {
   void init() {
-    color = 0xFF00FF;
-
     node_static = child("static")->as<CNodeKeyword>();
     node_const  = child("const")->as<CNodeKeyword>();
     node_type   = child("type")->as<CNodeType>();

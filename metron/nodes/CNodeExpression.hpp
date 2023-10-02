@@ -6,9 +6,6 @@
 //------------------------------------------------------------------------------
 
 struct CNodeExpression : public CNode {
-  void init() {
-    color = COL_AQUA;
-  }
 };
 
 //------------------------------------------------------------------------------
@@ -34,9 +31,6 @@ struct CNodeIdentifierExp : public CNodeExpression {
 //------------------------------------------------------------------------------
 
 struct CNodeOperator : public CNode {
-  void init() {
-    color = COL_SKY;
-  }
 };
 
 //----------------------------------------

@@ -7,7 +7,6 @@
 
 struct CNodeTypedef : public CNode {
   void init() {
-    color = 0xFFFF88;
     name = child("name")->name;
   }
 };

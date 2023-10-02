@@ -13,7 +13,6 @@ void CNodeField::init() {
   node_decl = child("decl")->req<CNodeDeclaration>();
   node_semi = child("semi")->req<CNodePunct>();
   name = node_decl->name;
-  color = COL_PINK;
 }
 
 //------------------------------------------------------------------------------

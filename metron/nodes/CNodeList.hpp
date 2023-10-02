@@ -10,7 +10,6 @@ struct CNodeList : public CNode {
     for (auto child : this) {
       if (!child->as<CNodePunct>()) items.push_back(child);
     }
-    color = 0xCCCCCC;
     name = "<CNodeList>";
   }
 

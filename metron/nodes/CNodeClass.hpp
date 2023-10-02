@@ -38,7 +38,6 @@ struct CNodeClass : public CNode {
     node_body  = child("body")->as<CNodeList>();
 
     name = node_name->name;
-    color = 0x00FF00;
 
     for (auto child : node_body->items) {
       if (auto node_enum = child->as<CNodeEnum>()) {

@@ -25,7 +25,6 @@ struct CNodeTemplate : public CNode {
       assert(decl);
       params.push_back(decl);
     }
-    color = 0x00FFFF;
   }
 
   CNodeKeyword* node_template = nullptr;

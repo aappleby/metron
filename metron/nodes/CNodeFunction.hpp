@@ -45,7 +45,6 @@ struct CNodeFunction : public CNode {
         params.push_back(param);
       }
     }
-    color = COL_ORANGE;
   }
 
   //------------------------------------------------------------------------------

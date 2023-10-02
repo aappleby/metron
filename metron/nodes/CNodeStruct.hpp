@@ -19,7 +19,6 @@ struct CNodeStruct : public CNode {
     node_name   = child("name");
     node_body   = child("body")->req<CNodeList>();
     node_semi   = child("semi")->req<CNodePunct>();
-    color = 0xFFAAAA;
     name = node_name->name;
   }
 

@@ -12,7 +12,6 @@ struct CNodeCall : public CNode {
     node_args  = child("func_args")->req<CNodeList>();
 
     name  = node_name->name;
-    color = COL_SKY;
   }
 
   CNode* node_name = nullptr;

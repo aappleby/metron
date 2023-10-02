@@ -10,7 +10,6 @@ struct CSourceFile;
 
 struct CNodeNamespace : public CNode {
   void init() {
-    color = 0x00FFFFFF;
     name = child("name")->name;
   }
 

@@ -31,9 +31,6 @@ typedef matcheroni::Span<CToken> TokenSpan;
 
 struct CNode : public parseroni::NodeBase<CNode, CToken> {
 
-  using AtomType = CToken;
-  using SpanType = matcheroni::Span<CToken>;
-
   CNode() {}
   virtual ~CNode() {}
 
@@ -56,10 +53,6 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
 
   const std::string_view get_text() const {
     return std::string_view(text_begin(), text_end());
-  }
-
-  const std::string get_string() const {
-    return std::string(text_begin(), text_end());
   }
 
   //----------------------------------------
@@ -111,16 +104,6 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   }
 
   template<typename P>
-  P* child_as(const char* tag) {
-    return child(tag)->as<P>();
-  }
-
-  template<typename P>
-  P* child_is(const char* tag) {
-    return child(tag)->as<P>();
-  }
-
-  template<typename P>
   P* child() {
     for (auto cursor = child_head; cursor; cursor = cursor->node_next) {
       if (auto result = dynamic_cast<P*>(cursor)) return result;
@@ -136,8 +119,9 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
     return nullptr;
   }
 
+  //----------------------------------------
+
   std::string name = "<CNode>";
-  uint32_t color = 0x222244;
 };
 
 //------------------------------------------------------------------------------

@@ -5,7 +5,9 @@
 //==============================================================================
 
 struct CNodeAccess : public CNode {
-  uint32_t debug_color() const override { return COL_VIOLET; }
+  CNodeAccess() {
+    color = COL_VIOLET;
+  }
 };
 
 //==============================================================================

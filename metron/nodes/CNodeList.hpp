@@ -11,9 +11,8 @@ struct CNodeList : public CNode {
     for (auto child : this) {
       if (!child->as<CNodePunct>()) items.push_back(child);
     }
+    color = 0xCCCCCC;
   }
-
-  uint32_t debug_color() const override { return 0xCCCCCC; }
 
   std::string_view get_name() const override {
     NODE_ERR("FIXME");

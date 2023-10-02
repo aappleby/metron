@@ -6,12 +6,9 @@
 //------------------------------------------------------------------------------
 
 struct CNodeExpression : public CNode {
-  uint32_t debug_color() const override {
-    return COL_AQUA;
+  CNodeExpression() {
+    color = COL_AQUA;
   }
-
-protected:
-  CNodeExpression() {}
 };
 
 //------------------------------------------------------------------------------
@@ -38,8 +35,8 @@ struct CNodeIdentifierExp : public CNodeExpression {
 //------------------------------------------------------------------------------
 
 struct CNodeOperator : public CNode {
-  uint32_t debug_color() const override {
-    return COL_SKY;
+  CNodeOperator() {
+    color = COL_SKY;
   }
 };
 

@@ -20,12 +20,7 @@ struct CNodeStruct : public CNode {
     node_name   = child("name");
     node_body   = child("body")->req<CNodeList>();
     node_semi   = child("semi")->req<CNodePunct>();
-  }
-
-  //----------------------------------------
-
-  uint32_t debug_color() const override {
-    return 0xFFAAAA;
+    color = 0xFFAAAA;
   }
 
   //----------------------------------------

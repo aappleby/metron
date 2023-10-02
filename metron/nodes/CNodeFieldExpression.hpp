@@ -11,9 +11,8 @@ struct CNodeFieldExpression : public CNode {
     CNode::init(match_tag, span, flags);
     node_path = child("field_path")->as<CNodeIdentifier>();
     node_name = child("identifier")->as<CNodeIdentifier>();
+    color = 0x80FF80;
   }
-
-  uint32_t debug_color() const override { return 0x80FF80; }
 
   std::string_view get_name() const override {
     NODE_ERR("FIXME");

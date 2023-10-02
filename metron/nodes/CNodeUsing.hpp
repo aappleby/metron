@@ -5,8 +5,8 @@
 //==============================================================================
 
 struct CNodeUsing : public CNodeStatement {
-  uint32_t debug_color() const override {
-    return 0x00DFFF;
+  CNodeUsing() {
+    color = 0x00DFFF;
   }
 
   std::string_view get_name() const override {

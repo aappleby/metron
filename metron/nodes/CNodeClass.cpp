@@ -24,16 +24,13 @@ void CNodeClass::init(const char* match_tag, SpanType span, uint64_t flags) {
   node_body  = child("body")->as<CNodeList>();
 
   name = node_name->get_namestr();
+  color = 0x00FF00;
 
   for (auto child : node_body->items) {
     if (auto node_enum = child->as<CNodeEnum>()) {
       all_enums2.push_back(node_enum);
     }
   }
-}
-
-uint32_t CNodeClass::debug_color() const {
-  return 0x00FF00;
 }
 
 std::string_view CNodeClass::get_name() const {

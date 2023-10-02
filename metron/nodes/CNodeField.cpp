@@ -13,11 +13,10 @@ void CNodeField::init(const char* match_tag, SpanType span, uint64_t flags) {
   CNode::init(match_tag, span, flags);
   node_decl = child("decl")->req<CNodeDeclaration>();
   node_semi = child("semi")->req<CNodePunct>();
+  color = COL_PINK;
 }
 
 //------------------------------------------------------------------------------
-
-uint32_t CNodeField::debug_color() const { return COL_PINK; }
 
 std::string_view CNodeField::get_name() const { return node_decl->get_name(); }
 

@@ -13,6 +13,8 @@ struct CNodeDeclaration : public CNode {
   void init(const char* match_tag, SpanType span, uint64_t flags) {
     CNode::init(match_tag, span, flags);
 
+    color = 0xFF00FF;
+
     node_static = child("static")->as<CNodeKeyword>();
     node_const  = child("const")->as<CNodeKeyword>();
     node_type   = child("type")->as<CNodeType>();
@@ -21,8 +23,6 @@ struct CNodeDeclaration : public CNode {
     node_eq     = child("eq")->as<CNodePunct>();
     node_value  = child("value")->as<CNode>();
   }
-
-  uint32_t debug_color() const override { return 0xFF00FF; }
 
   std::string_view get_name() const override {
     return node_name->get_name();

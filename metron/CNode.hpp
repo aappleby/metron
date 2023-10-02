@@ -40,7 +40,6 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   //----------------------------------------
   // Methods to be implemented by subclasses.
 
-  virtual uint32_t debug_color() const;
   virtual std::string_view get_name() const;
 
   virtual CSourceRepo* get_repo() {
@@ -150,6 +149,8 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
     }
     return nullptr;
   }
+
+  uint32_t color = 0x222244;
 };
 
 //------------------------------------------------------------------------------

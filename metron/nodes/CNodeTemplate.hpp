@@ -26,9 +26,8 @@ struct CNodeTemplate : public CNode {
       assert(decl);
       params.push_back(decl);
     }
+    color = 0x00FFFF;
   }
-
-  uint32_t debug_color() const override { return 0x00FFFF; }
 
   CNodeKeyword* node_template = nullptr;
   CNodeList*    node_params = nullptr;

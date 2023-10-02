@@ -29,7 +29,6 @@ struct CNodeClass : public CNode {
 
   //----------
 
-  uint32_t debug_color() const override;
   std::string_view get_name() const override;
 
   CSourceRepo* get_repo() override {

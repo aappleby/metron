@@ -58,7 +58,7 @@ struct NodeDumper {
   //----------------------------------------
 
   void dump_tree_recurse(const CNode& n, int depth, int max_depth) {
-    color_stack.push_back(n.debug_color());
+    color_stack.push_back(n.color);
     dump_node(n, depth);
     if (!max_depth || depth < max_depth) {
       for (auto child = n.child_head; child; child = child->node_next) {

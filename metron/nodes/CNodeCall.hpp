@@ -10,14 +10,11 @@ struct CNodeCall : public CNode {
     node_name  = child("func_name")->req<CNode>();
     node_targs = child("func_targs")->opt<CNodeList>();
     node_args  = child("func_args")->req<CNodeList>();
+    color = COL_SKY;
   }
 
   std::string_view get_name() const override {
     return child("func_name")->get_text();
-  }
-
-  uint32_t debug_color() const override {
-    return COL_SKY;
   }
 
   CNode* node_name = nullptr;

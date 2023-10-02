@@ -5,7 +5,9 @@
 //==============================================================================
 
 struct CNodePunct : public CNode {
-  uint32_t debug_color() const override { return 0x88FF88; }
+  CNodePunct() {
+    color = 0x88FF88;
+  }
 
   std::string_view get_name() const override {
     NODE_ERR("FIXME");

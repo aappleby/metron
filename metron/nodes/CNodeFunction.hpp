@@ -47,13 +47,10 @@ struct CNodeFunction : public CNode {
         params.push_back(param);
       }
     }
+    color = COL_ORANGE;
   }
 
   //------------------------------------------------------------------------------
-
-  uint32_t debug_color() const override {
-    return COL_ORANGE;
-  }
 
   std::string_view get_name() const override {
     return child("name")->get_name();

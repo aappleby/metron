@@ -6,8 +6,8 @@
 //==============================================================================
 
 struct CNodeType : public CNode {
-  uint32_t debug_color() const override {
-    return COL_VIOLET;
+  CNodeType() {
+    color = COL_VIOLET;
   }
 };
 

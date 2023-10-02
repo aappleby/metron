@@ -9,7 +9,9 @@ struct CSourceFile;
 //==============================================================================
 
 struct CNodeNamespace : public CNode {
-  uint32_t debug_color() const override { return 0xFFFFFF; }
+  CNodeNamespace() {
+    color = 0x00FFFFFF;
+  }
 
   std::string_view get_name() const override { return child("name")->get_text(); }
 

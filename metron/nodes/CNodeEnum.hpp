@@ -8,9 +8,9 @@
 #include "metron/nodes/CNodeList.hpp"
 #include "metron/nodes/CNodePunct.hpp"
 #include "metron/nodes/CNodeType.hpp"
+#include "metron/nodes/CNodeExpression.hpp"
 
-struct CSourceRepo;
-struct CSourceFile;
+void dump_parse_tree(CNode* node);
 
 //==============================================================================
 
@@ -28,9 +28,6 @@ struct CNodeEnum : public CNode {
     name = node_name ? node_name->name : "<unnamed>";
   }
 
-  CSourceRepo* repo = nullptr;
-  CSourceFile* file = nullptr;
-
   CNodeKeyword* node_enum = nullptr;
   CNodeKeyword* node_class = nullptr;
   CNodeIdentifier* node_name = nullptr;
@@ -45,8 +42,15 @@ struct CNodeEnum : public CNode {
 
 struct CNodeEnumerator : public CNode {
   void init() {
-    // FIXME name
+    node_name = child("name")->as<CNodeIdentifier>();
+    node_eq = child("eq")->opt<CNodePunct>();
+    node_value = child("value")->opt<CNodeConstInt>();
+    name = node_name->name;
   }
+
+  CNodeIdentifier* node_name = nullptr;
+  CNodePunct* node_eq = nullptr;
+  CNodeConstInt* node_value = nullptr;
 };
 
 //==============================================================================

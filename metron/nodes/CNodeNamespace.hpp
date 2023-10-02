@@ -30,10 +30,6 @@ struct CNodeNamespace : public CNode {
     return nullptr;
   }
 
-  CSourceRepo* repo = nullptr;
-  CSourceFile* file = nullptr;
-  int refcount = 0;
-
   std::vector<CNodeField*> all_fields;
 };
 

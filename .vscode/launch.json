@@ -16,9 +16,9 @@
         "-e",
         "-c",
         //"examples/scratch.h",
-        //"tests/metron_good/initialize_struct_to_zero.h",
+        "tests/metron_good/enum_simple.h",
         //"examples/uart/metron/uart_hello.h",
-        "examples/rvsimple/metron/control_transfer.h",
+        //"examples/rvsimple/metron/control_transfer.h",
         "-o",
         "examples/scratch.sv"
       ],

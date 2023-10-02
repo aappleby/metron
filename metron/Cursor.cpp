@@ -478,6 +478,14 @@ CHECK_RETURN Err Cursor::emit_raw(CNode* n) {
   return err;
 }
 
+CHECK_RETURN Err Cursor::emit_raw2(CNode* n) {
+  Err err;
+  if (n == nullptr) return err;
+  err << emit_raw(n);
+  err << emit_gap(n);
+  return err;
+}
+
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err Cursor::emit_trailing_whitespace() {

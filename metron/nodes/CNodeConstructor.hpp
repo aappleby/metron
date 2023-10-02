@@ -23,6 +23,8 @@ struct CNodeConstructor : public CNodeFunction {
         params.push_back(param);
       }
     }
+
+    name = node_name->name;
   }
 };
 

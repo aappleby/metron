@@ -44,6 +44,7 @@ struct Cursor {
   CHECK_RETURN Err emit_replacement(CNode* n, const char* fmt, ...);
   CHECK_RETURN Err emit_replacement2(CNode* n, const char* fmt, ...);
   CHECK_RETURN Err emit_raw(CNode* n);
+  CHECK_RETURN Err emit_raw2(CNode* n);
   CHECK_RETURN Err emit_indent();
 
   // Token-level emit()

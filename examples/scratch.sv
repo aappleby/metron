@@ -1,101 +1,62 @@
-`ifndef UART_HELLO_H
-`define UART_HELLO_H
-
 `include "metron/metron_tools.sv"
 
-//==============================================================================
+// Most kinds of C++ enum declarations should work.
 
-module uart_hello (
-  // global clock
-  input logic clock,
-  // get_data() ports
-  output logic[7:0] get_data_ret,
-  // get_request() ports
-  output logic get_request_ret,
-  // get_done() ports
-  output logic get_done_ret,
-  // tick() ports
-  input logic tick_reset,
-  input logic tick_clear_to_send,
-  input logic tick_idle
+// bad
+// enum { FOO, BAR, BAZ };
+// typedef enum logic[1:0] { FOO=70, BAR=71, BAZ=72 } blem;
+// typedef enum { FOO, BAR=0, BAZ=1 } blem;
+
+// good
+// OK enum { FOO, BAR, BAZ } blem;
+// enum { FOO=0, BAR=1, BAZ=2 } blem;
+// typedef enum { FOO, BAR, BAZ } blem;
+// typedef enum { FOO=0, BAR=1, BAZ=2 } blem;
+// typedef enum logic[1:0] { FOO, BAR, BAZ } blem;
+// typedef enum logic[1:0] { FOO=0, BAR=1, BAZ=2 } blem;
+
+// enum struct {} ? same as enum class
+
+typedef enum {
+  A0,
+  B0,
+  C0
+} top_level_enum;
+
+// clang-format off
+module Module (
+  // test1() ports
+  output int test1_ret
 );
-  parameter repeat_msg = 0;
+ /*public:*/
+  typedef enum { A1, /* random comment */ B1, C1 } simple_enum1;
+  typedef enum { A2 = 32'b01, B2 = 32'h02, C2 = 32'd3 } simple_enum2;
 
-/*public:*/
-  initial begin
-    $readmemh("examples/uart/message.hex", memory, 0, 511);
+  enum { A3, B3, C3 } anon_enum_field1;
+  enum { A4 = 32'b01, B4 = 32'h02, C4 = 32'd3 } anon_enum_field2;
+
+  typedef enum { A5, B5, C5 } enum_class1;
+  typedef enum { A6 = 32'b01, B6 = 32'h02, C6 = 32'd3 } enum_class2;
+
+  typedef enum int { A7 = 32'b01, B7 = 32'h02, C7 = 32'd3 } typed_enum;
+  typedef enum logic[7:0] { A8 = 8'b01, B8 = 8'h02, C8 = 8'd3 } sized_enum;
+
+  always_comb begin : test1
+    simple_enum1 e1;
+    simple_enum2 e2;
+    enum_class1 ec1;
+    enum_class2 ec2;
+    typed_enum te1;
+    sized_enum se1;
+    e1 = A1;
+    e2 = B2;
+    anon_enum_field1 = C3;
+    anon_enum_field2 = A4;
+    ec1 = B5;
+    ec2 = C6;
+    te1 = A7;
+    se1 = B8;
+    test1_ret = 1;
   end
-
-  // The byte of data we want transmitted is always the one at the cursor.
-  always_comb begin : get_data
-    get_data_ret = memory[cursor];
-  end
-
-  // True if we want to transmit a byte
-  always_comb begin : get_request
-    get_request_ret = state == SEND;
-  end
-
-  // True if we've transmitted the whole message.
-  always_comb begin : get_done
-    get_done_ret = state == DONE;
-  end
-
-  always_ff @(posedge clock) begin : tick           // True if the transmitter is idle
-
-    // In reset we're always in WAIT state with the message cursor set to
-    // the start of the message buffer.
-    if (tick_reset) begin
-      state <= WAIT;
-      cursor <= 0;
-    end
-
-    else begin
-
-      // If we're waiting for the transmitter to be free and it's told us that
-      // it's idle, go to SEND state.
-      if (state == WAIT && tick_idle) begin
-        state <= SEND;
-      end
-
-      // If we're currently sending a message and the transmitter is ready to
-      // accept another byte,
-      else if (state == SEND && tick_clear_to_send) begin
-        // either go to DONE state if we're about to send the last character of
-        // the message
-        if (cursor == message_len - 1) begin
-          state <= DONE;
-        end
-
-        // or just advance the message cursor.
-        else begin
-          cursor <= cursor + 1;
-        end
-      end
-
-      // If we've finished transmitting, reset the message cursor and either go
-      // back to WAIT state if we want to re-transmit or just stay in DONE
-      // otherwise.
-      else if (state == DONE) begin
-        cursor <= 0;
-        if (repeat_msg) state <= WAIT;
-      end
-    end
-  end
-
-/*private:*/
-  localparam /*static*/ /*const*/ int message_len = 512;
-  localparam /*static*/ /*const*/ int cursor_bits = $clog2(message_len);
-
-  localparam /*static*/ /*const*/ int WAIT = 0; // Waiting for the transmitter to be free
-  localparam /*static*/ /*const*/ int SEND = 1; // Sending the message buffer
-  localparam /*static*/ /*const*/ int DONE = 2; // Message buffer sent
-  logic[1:0] state;            // One of the above states
-
-  logic[7:0] memory[512];      // The buffer preloaded with our message
-  logic[cursor_bits-1:0] cursor; // Index into the message buffer of the _next_ character to transmit
 endmodule
-
-//==============================================================================
-
-`endif // UART_HELLO_H
+// clang-format on

@@ -11,7 +11,6 @@
 #include "metron/nodes/CNodeCall.hpp"
 #include "metron/nodes/CNodeClass.hpp"
 #include "metron/nodes/CNodeCompound.hpp"
-#include "metron/nodes/CNodeConstant.hpp"
 #include "metron/nodes/CNodeConstructor.hpp"
 #include "metron/nodes/CNodeDeclaration.hpp"
 #include "metron/nodes/CNodeDoWhile.hpp"
@@ -42,6 +41,43 @@
 #include "metron/nodes/CNodeTranslationUnit.hpp"
 #include "metron/nodes/CNodeUsing.hpp"
 
+//------------------------------------------------------------------------------
+
+CHECK_RETURN Err Emitter::emit_splice(CNode* n) {
+  Err err;
+  auto old_cursor = cursor.tok_cursor;
+  cursor.tok_cursor = n->tok_begin();
+  err << emit_dispatch(n);
+  cursor.tok_cursor = old_cursor;
+  return err;
+}
+
+
+Err Emitter::emit(const char* fmt, ...) {
+  Err err;
+  va_list args;
+  va_start(args, fmt);
+
+  const char* f = fmt;
+
+  while(*f) {
+    switch(*f) {
+      case '@': {
+        CNode* node = va_arg(args, CNode*);
+        err << emit_splice(node);
+        f++;
+        break;
+      }
+      default: {
+        err << cursor.emit_print("%c", *f);
+        f++;
+        break;
+      }
+    }
+  }
+
+  return err;
+}
 
 //------------------------------------------------------------------------------
 
@@ -262,93 +298,48 @@ Err Emitter::emit(CNodeAssignment* node) {
 Err Emitter::emit(CNodeBuiltinType* node) {
   Err err = cursor.check_at(node);
 
-  auto node_name  = node->node_name;
-  auto node_targs = node->node_targs;
-  auto node_scope = node->node_scope;
+  if (!node->node_targs) {
+    return emit_default(node);
+  }
 
-  if (node_targs) {
-    auto node_ldelim = node_targs->node_ldelim;
-    auto node_exp = node_targs->items[0];
-    auto node_rdelim = node_targs->node_rdelim;
+  auto node_name   = node->node_name;
+  auto node_targs  = node->node_targs;
+  auto node_scope  = node->node_scope;
+  auto node_ldelim = node_targs->node_ldelim;
+  auto node_exp    = node_targs->items[0];
+  auto node_rdelim = node_targs->node_rdelim;
 
-    err << cursor.emit_raw(node_name);
-    err << cursor.emit_gap();
-
-    if (auto node_const_int = node_exp->as<CNodeConstInt>()) {
-      auto width = atoi(node_exp->text_begin());
-      if (width == 1) {
-        // logic<1> -> logic
-        err << cursor.skip_over(node_targs);
-      } else {
-        // logic<N> -> logic[N-1:0]
-        err << cursor.emit_replacement2(node_ldelim, "[");
-        err << cursor.skip_over2(node_exp);
-        err << cursor.emit_print("%d:0", width - 1);
-        err << cursor.emit_replacement(node_rdelim, "]");
-      }
-    } else if (auto node_identifier = node_exp->as<CNodeIdentifier>()) {
-      // logic<CONSTANT> -> logic[CONSTANT-1:0]
+  if (auto node_const_int = node_exp->as<CNodeConstInt>()) {
+    auto width = atoi(node_exp->text_begin());
+    if (width == 1) {
+      // logic<1> -> logic
+      err << cursor.emit_raw2(node_name);
+      err << cursor.skip_over(node_targs);
+    } else {
+      // logic<N> -> logic[N-1:0]
+      err << cursor.emit_raw2(node_name);
       err << cursor.emit_replacement2(node_ldelim, "[");
       err << cursor.skip_over2(node_exp);
-      err << emit_splice(node_identifier);
-      err << cursor.emit_print("-1:0");
-      err << cursor.emit_replacement2(node_rdelim, "]");
-    } else {
-      // logic<exp> -> logic[(exp)-1:0]
-      err << cursor.emit_replacement2(node_ldelim, "[");
-      err << cursor.emit_print("(");
-      err << emit_dispatch2(node_exp);
-      err << cursor.emit_print(")-1:0");
-      err << cursor.emit_replacement2(node_rdelim, "]");
+      err << cursor.emit_print("%d:0", width - 1);
+      err << cursor.emit_replacement(node_rdelim, "]");
     }
+  } else if (auto node_identifier = node_exp->as<CNodeIdentifier>()) {
+    // logic<CONSTANT> -> logic[CONSTANT-1:0]
+    err << emit("@[@-1:0]", node_name, node_exp);
+    err << cursor.skip_over(node);
 
-    if (node_scope) {
-      err << cursor.skip_gap();
-      err << cursor.skip_over(node_scope);
-    }
   } else {
-    err << emit_default(node);
+    // logic<exp> -> logic[(exp)-1:0]
+    err << emit("@[(@)-1:0]", node_name, node_exp);
+    err << cursor.skip_over(node);
+  }
+
+  if (node_scope) {
+    err << cursor.skip_gap();
+    err << cursor.skip_over(node_scope);
   }
 
   return err << cursor.check_done(node);
-}
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err Emitter::emit_splice(CNode* n) {
-  Err err;
-  auto old_cursor = cursor.tok_cursor;
-  cursor.tok_cursor = n->tok_begin();
-  err << emit_dispatch(n);
-  cursor.tok_cursor = old_cursor;
-  return err;
-}
-
-
-Err Emitter::emit(const char* fmt, ...) {
-  Err err;
-  va_list args;
-  va_start(args, fmt);
-
-  const char* f = fmt;
-
-  while(*f) {
-    switch(*f) {
-      case '@': {
-        CNode* node = va_arg(args, CNode*);
-        err << emit_splice(node);
-        f++;
-        break;
-      }
-      default: {
-        err << cursor.emit_print("%c", *f);
-        f++;
-        break;
-      }
-    }
-  }
-
-  return err;
 }
 
 //------------------------------------------------------------------------------
@@ -1535,13 +1526,13 @@ Err Emitter::emit_bit_extract(CNodeCall* node) {
   // Handle casting DONTCARE
 
   if (node_exp->get_text() == "DONTCARE") {
-    //err << cursor.skip_over(node);
-
     if (node_width) {
-      if (!bare_width) err << cursor.emit_print("(");
-      err << emit_splice(node_width);
-      if (!bare_width) err << cursor.emit_print(")");
-      err << cursor.emit_print("'('x)");
+      if (bare_width) {
+        err << emit("@'('x)", node_width);
+      }
+      else {
+        err << emit("(@)'('x)", node_width);
+      }
     }
     else {
       err << cursor.emit_print("%d'bx", width);

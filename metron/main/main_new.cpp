@@ -252,12 +252,8 @@ int main_new(Options opts) {
       } else if (auto node_struct = n->as<CNodeStruct>()) {
         repo.all_structs.push_back(node_struct);
       } else if (auto node_namespace = n->as<CNodeNamespace>()) {
-        node_namespace->repo = &repo;
-        node_namespace->file = file;
         repo.all_namespaces.push_back(node_namespace);
       } else if (auto node_enum = n->as<CNodeEnum>()) {
-        node_enum->repo = &repo;
-        node_enum->file = file;
         repo.all_enums.push_back(node_enum);
       }
     }

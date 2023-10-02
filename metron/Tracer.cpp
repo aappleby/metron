@@ -5,7 +5,7 @@
 #include "metron/Cursor.hpp"
 #include "metron/nodes/CNodeAccess.hpp"
 #include "metron/nodes/CNodeAssignment.hpp"
-#include "metron/nodes/CNodeBuiltinType.hpp"
+#include "metron/nodes/CNodeType.hpp"
 #include "metron/nodes/CNodeCall.hpp"
 #include "metron/nodes/CNodeClass.hpp"
 #include "metron/nodes/CNodeCompound.hpp"

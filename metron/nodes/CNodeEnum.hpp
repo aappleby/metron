@@ -50,11 +50,3 @@ struct CNodeEnumerator : public CNode {
 };
 
 //==============================================================================
-
-struct CNodeEnumType : public CNodeType {
-  void init() override {
-    name = child("name")->get_text();
-  }
-};
-
-//==============================================================================

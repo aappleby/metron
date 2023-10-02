@@ -99,14 +99,3 @@ struct CNodeClass : public CNode {
 };
 
 //==============================================================================
-
-struct CNodeClassType : public CNodeType {
-  void init() override {
-    node_targs = child("template_args")->as<CNodeList>();
-    name = child("name")->get_text();
-  }
-
-  CNodeList* node_targs = nullptr;
-};
-
-//==============================================================================

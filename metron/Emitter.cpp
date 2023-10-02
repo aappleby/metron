@@ -7,7 +7,7 @@
 #include "metron/nodes/CNodeReturn.hpp"
 #include "metron/nodes/CNodeAccess.hpp"
 #include "metron/nodes/CNodeAssignment.hpp"
-#include "metron/nodes/CNodeBuiltinType.hpp"
+#include "metron/nodes/CNodeType.hpp"
 #include "metron/nodes/CNodeCall.hpp"
 #include "metron/nodes/CNodeClass.hpp"
 #include "metron/nodes/CNodeCompound.hpp"
@@ -263,7 +263,7 @@ Err Emitter::emit(CNodeBuiltinType* node) {
   Err err = cursor.check_at(node);
 
   auto node_name  = node->child("name");
-  auto node_targs = node->child("template_args");
+  auto node_targs = node->node_targs;
   auto node_scope = node->child("scope");
 
   if (node_targs) {
@@ -688,7 +688,7 @@ Err Emitter::emit(CNodeEnum* node) {
   // Extract enum bit width, if present.
   cursor.override_size.push(32);
   if (node->node_type) {
-    if (auto targs = node->node_type->child("template_args")->as<CNodeList>()) {
+    if (auto targs = node->node_type->node_targs->as<CNodeList>()) {
       cursor.override_size.top() = atoi(targs->items[0]->text_begin());
     }
   }
@@ -919,7 +919,7 @@ Err Emitter::emit(CNodeField* node) {
   //----------------------------------------
 
   auto node_builtin = node->node_decl->node_type->as<CNodeBuiltinType>();
-  auto node_targs = node->node_decl->node_type->child("template_args");
+  auto node_targs = node->node_decl->node_type->node_targs;
 
   if (node_builtin && node_targs) {
     err << cursor.skip_to(node->node_decl->node_type);
@@ -1849,7 +1849,7 @@ Err Emitter::emit_component(CNodeField* node) {
       err << cursor.start_line();
       err << cursor.emit_print("// Template Parameters");
 
-      auto args = node->node_decl->node_type->child("template_args")->as<CNodeList>();
+      auto args = node->node_decl->node_type->node_targs->as<CNodeList>();
 
       int param_count = component_template->params.size();
       int arg_count = args->items.size();
@@ -2012,7 +2012,7 @@ Err Emitter::emit_component(CNodeField* node) {
   cursor.id_map.push(cursor.id_map.top());
 
   if (has_template_params) {
-    auto args = node->node_decl->node_type->child("template_args")->as<CNodeList>();
+    auto args = node->node_decl->node_type->node_targs->as<CNodeList>();
 
     int param_count = component_template->params.size();
     int arg_count = args->items.size();

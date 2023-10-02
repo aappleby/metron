@@ -12,11 +12,3 @@ struct CNodeTypedef : public CNode {
 };
 
 //==============================================================================
-
-struct CNodeTypedefType : public CNodeType {
-  void init() override {
-    name = child("name")->name;
-  }
-};
-
-//==============================================================================

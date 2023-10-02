@@ -8,10 +8,18 @@
 
 struct CNodeType : public CNode {
   virtual void init() {
+    name = child("name")->name;
     node_targs = child("template_args")->as<CNodeList>();
   }
 
   CNodeList* node_targs;
 };
+
+struct CNodeBuiltinType : public CNodeType {};
+struct CNodeClassType : public CNodeType {};
+struct CNodeEnumType : public CNodeType {};
+struct CNodeStructType : public CNodeType {};
+struct CNodeTypedefType : public CNodeType {};
+struct CNodeUnionType : public CNodeType {};
 
 //==============================================================================

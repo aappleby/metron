@@ -50,11 +50,3 @@ struct CNodeStruct : public CNode {
 };
 
 //==============================================================================
-
-struct CNodeStructType : public CNodeType {
-  void init() override {
-    name = child("name")->name;
-  }
-};
-
-//==============================================================================

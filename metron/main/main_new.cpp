@@ -27,6 +27,56 @@
 
 using namespace matcheroni;
 
+bool CNodeFunction::called_by_init() {
+  for (auto c : internal_callers) {
+    if (c->called_by_init()) return true;
+  }
+  return as<CNodeConstructor>() != nullptr;
+}
+
+//------------------------------------------------------------------------------
+
+MethodType get_method_type(CNodeFunction* node) {
+  if (node->called_by_init()) return MT_INIT;
+  if (node->name.starts_with("tick")) return MT_TICK;
+  if (node->name.starts_with("tock")) return MT_TOCK;
+
+  auto result = MT_UNKNOWN;
+
+  if (node->all_writes.empty()) {
+    return MT_FUNC;
+  }
+
+  for (auto c : node->internal_callers) {
+    auto new_result = get_method_type(c);
+    if (new_result == MT_UNKNOWN) {
+      LOG_R("%s: get_method_type returned MT_UNKNOWN\n", node->name.c_str());
+      assert(false);
+    }
+
+    if (result == MT_UNKNOWN) {
+      result = new_result;
+    }
+    else if (result != new_result) {
+      LOG_R("%s: get_method_type inconsistent\n", node->name.c_str());
+      assert(false);
+    }
+  }
+
+  if (result != MT_UNKNOWN) return result;
+
+  // Function was not a tick or tock, and was not called by a tick or tock.
+
+  if (node->self_writes.size()) {
+    LOG_R("Function %s writes stuff but is not tick or tock\n", node->name.c_str());
+    assert(false);
+  }
+
+  return result;
+}
+
+//------------------------------------------------------------------------------
+
 Err collect_fields_and_methods(CNodeClass* node, CSourceRepo* repo) {
   Err err;
 
@@ -86,6 +136,8 @@ Err collect_fields_and_methods(CNodeClass* node, CSourceRepo* repo) {
   return err;
 }
 
+//------------------------------------------------------------------------------
+
 Err build_call_graph(CNodeClass* node, CSourceRepo* repo) {
   Err err;
 
@@ -130,26 +182,7 @@ Err build_call_graph(CNodeClass* node, CSourceRepo* repo) {
 
 //------------------------------------------------------------------------------
 
-int main_new(Options opts) {
-  LOG_G("New parser!\n");
-
-  Err err;
-
-  CSourceRepo repo;
-  CSourceFile* root_file = nullptr;
-  err << repo.load_source(opts.src_name, &root_file);
-
-  if (!root_file) {
-    LOG_R("Could not load %s\n", opts.src_name.c_str());
-    return -1;
-  }
-
-  dump_parse_tree(root_file->context.top_head);
-  LOG("\n");
-
-  //----------------------------------------
-  // Sanity check parse tree
-
+void sanity_check_parse_tree(CSourceRepo& repo) {
   for (auto pair : repo.source_map) {
     CSourceFile* file = pair.second;
 
@@ -171,6 +204,27 @@ int main_new(Options opts) {
 
     visit_children(file->context.root_node, check_span);
   }
+  LOG("\n");
+}
+
+//------------------------------------------------------------------------------
+
+int main_new(Options opts) {
+  LOG_G("New parser!\n");
+
+  Err err;
+
+  CSourceRepo repo;
+  CSourceFile* root_file = nullptr;
+  err << repo.load_source(opts.src_name, &root_file);
+
+  if (!root_file) {
+    LOG_R("Could not load %s\n", opts.src_name.c_str());
+    return -1;
+  }
+
+  sanity_check_parse_tree(repo);
+  dump_parse_tree(root_file->context.top_head);
   LOG("\n");
 
   //----------------------------------------
@@ -520,7 +574,7 @@ int main_new(Options opts) {
 
   for (auto node_class : repo.all_classes) {
     for (auto f : node_class->all_functions) {
-      auto method_type = f->get_method_type();
+      auto method_type = get_method_type(f);
 
       if (method_type != MT_FUNC && method_type != MT_TICK &&
           method_type != MT_TOCK && method_type != MT_INIT) {

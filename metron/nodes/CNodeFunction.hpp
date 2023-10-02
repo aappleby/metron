@@ -5,6 +5,13 @@
 
 #include "metrolib/core/Log.h"
 
+#include "metron/nodes/CNodeFunction.hpp"
+#include "metron/nodes/CNodeType.hpp"
+#include "metron/nodes/CNodeIdentifier.hpp"
+#include "metron/nodes/CNodeList.hpp"
+#include "metron/nodes/CNodeKeyword.hpp"
+#include "metron/nodes/CNodeCompound.hpp"
+
 #include <assert.h>
 #include <vector>
 #include <set>
@@ -23,18 +30,62 @@ struct CNodeDeclaration;
 
 struct CNodeFunction : public CNode {
 
-  void init(const char* match_tag, SpanType span, uint64_t flags);
+  void init(const char* match_tag, SpanType span, uint64_t flags) {
+    CNode::init(match_tag, span, flags);
 
-  //----------------------------------------
-  // Methods to be implemented by subclasses.
+    node_type   = child("return_type")->req<CNodeType>();
+    node_name   = child("name")->req<CNodeIdentifier>();
+    node_params = child("params")->req<CNodeList>();
+    node_init   = child("init")->opt<CNodeList>();
+    node_const  = child("const")->opt<CNodeKeyword>();
+    node_body   = child("body")->req<CNodeCompound>();
 
-  uint32_t debug_color() const override;
-  std::string_view get_name() const override;
+    name = node_name->get_textstr();
 
-  //----------------------------------------
+    for (auto c : child("params")) {
+      if (auto param = c->as<CNodeDeclaration>()) {
+        params.push_back(param);
+      }
+    }
+  }
 
-  bool should_emit_as_task();
-  bool should_emit_as_func();
+  //------------------------------------------------------------------------------
+
+  uint32_t debug_color() const override {
+    return COL_ORANGE;
+  }
+
+  std::string_view get_name() const override {
+    return child("name")->get_name();
+  }
+
+  //------------------------------------------------------------------------------
+
+  bool should_emit_as_task() {
+    bool called_by_tick = false;
+
+    visit_internal_callers([&](CNodeFunction* f) {
+      if (f->method_type == MT_TICK) called_by_tick = true;
+    });
+
+    return method_type == MT_TICK && called_by_tick;
+  }
+
+  //------------------------------------------------------------------------------
+
+  bool should_emit_as_func() {
+    return method_type == MT_FUNC && internal_callers.size();
+  }
+
+  //------------------------------------------------------------------------------
+
+  bool called_by_init();
+
+  //------------------------------------------------------------------------------
+
+  bool has_return() {
+    return node_type->get_text() != "void";
+  }
 
   using func_visitor = std::function<void(CNodeFunction*)>;
 
@@ -101,14 +152,6 @@ struct CNodeFunction : public CNode {
     needs_binding |= method_type == MT_TOCK && !internal_callers.empty();
     return needs_binding;
   }
-
-  bool has_return();
-
-  //----------------------------------------
-
-  bool called_by_init();
-
-  MethodType get_method_type();
 
   void collect_writes2() {
     all_writes2.insert(self_writes2.begin(), self_writes2.end());

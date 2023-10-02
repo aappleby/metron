@@ -6,8 +6,15 @@
 
 #include "metron/CNode.hpp"
 #include "metron/Cursor.hpp"
-#include "metron/nodes/CNodeType.hpp"
+
+#include "metron/nodes/CNodeKeyword.hpp"
+#include "metron/nodes/CNodeIdentifier.hpp"
 #include "metron/nodes/CNodeList.hpp"
+#include "metron/nodes/CNodeEnum.hpp"
+#include "metron/nodes/CNodeField.hpp"
+#include "metron/nodes/CNodeFunction.hpp"
+#include "metron/nodes/CNodeEnum.hpp"
+#include "metron/nodes/CNodeDeclaration.hpp"
 
 struct CSourceRepo;
 struct CSourceFile;
@@ -25,20 +32,40 @@ struct CNodeConstructor;
 //==============================================================================
 
 struct CNodeClass : public CNode {
-  void init();
+  void init() {
+    node_class = child("class")->as<CNodeKeyword>();
+    node_name  = child("name")->as<CNodeIdentifier>();
+    node_body  = child("body")->as<CNodeList>();
 
-  //----------
+    name = node_name->name;
+    color = 0x00FF00;
 
-  CSourceRepo* get_repo() override {
-    return repo;
+    for (auto child : node_body->items) {
+      if (auto node_enum = child->as<CNodeEnum>()) {
+        all_enums2.push_back(node_enum);
+      }
+    }
   }
 
-  //----------
+  CNodeField* get_field(std::string_view name) {
+    for (auto f : all_fields) if (f->name == name) return f;
+    return nullptr;
+  }
 
-  CNodeField*       get_field(std::string_view name);
-  CNodeFunction*    get_function(std::string_view name);
-  CNodeDeclaration* get_modparam(std::string_view name);
-  CNodeEnum*        get_enum(std::string_view name);
+  CNodeFunction* get_function(std::string_view name) {
+    for (auto m : all_functions) if (m->name == name) return m;
+    return nullptr;
+  }
+
+  CNodeDeclaration* get_modparam(std::string_view name) {
+    for (auto p : all_modparams) if (p->name == name) return p;
+    return nullptr;
+  }
+
+  CNodeEnum* get_enum(std::string_view name) {
+    for (auto e : all_enums2) if (e->name == name) return e;
+    return nullptr;
+  }
 
   //----------------------------------------
 

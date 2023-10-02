@@ -38,21 +38,10 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
   virtual ~CNode() {}
 
   //----------------------------------------
-  // Methods to be implemented by subclasses.
-
-  virtual CSourceRepo* get_repo() {
-    return node_parent->get_repo();
-  }
-
-  //----------------------------------------
 
   std::string get_textstr() const {
     auto n = get_text();
     return std::string(n.begin(), n.end());
-  }
-
-  std::string get_namestr() const {
-    return name;
   }
 
   const CToken* tok_begin() const { return span.begin; }

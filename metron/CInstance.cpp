@@ -99,7 +99,7 @@ CInstClass* instantiate_class(std::string name, CInstance* inst_parent,
     }
 
     if (auto node_field = child->as<CNodeField>()) {
-      auto field_name = node_field->get_namestr();
+      auto field_name = node_field->name;
 
       if (node_field->node_decl->_type_class) {
         auto inst =
@@ -131,7 +131,7 @@ CInstClass* instantiate_class(std::string name, CInstance* inst_parent,
     }
 
     if (auto node_func = child->as<CNodeFunction>()) {
-      auto func_name = node_func->get_namestr();
+      auto func_name = node_func->name;
 
       auto inst_func = new CInstFunc(func_name, inst_class, node_func);
 
@@ -234,7 +234,7 @@ CInstStruct::CInstStruct(std::string name, CInstance* inst_parent,
   assert(node_struct);
 
   for (auto struct_field : node_struct->all_fields) {
-    auto field_name = struct_field->get_namestr();
+    auto field_name = struct_field->name;
 
     if (struct_field->node_decl->_type_struct) {
       auto inst_field = new CInstStruct(field_name, this, struct_field,
@@ -367,7 +367,7 @@ CInstFunc::CInstFunc(std::string name, CInstance* inst_parent,
   auto repo = node_func->ancestor<CNodeClass>()->repo;
 
   for (auto param : node_func->params) {
-    auto param_name = param->get_namestr();
+    auto param_name = param->name;
     if (param->_type_struct) {
       auto inst_field =
           new CInstStruct(param_name, this, nullptr, param->_type_struct);

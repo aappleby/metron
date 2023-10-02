@@ -323,7 +323,7 @@ int main_new(Options opts) {
 
   LOG_B("Instantiating modules\n");
   for (auto node_class : repo.all_classes) {
-    auto instance = instantiate_class(node_class->get_namestr(), nullptr,
+    auto instance = instantiate_class(node_class->name, nullptr,
                                       nullptr, node_class, 1000);
     repo.all_instances.push_back(instance);
   }
@@ -363,22 +363,22 @@ int main_new(Options opts) {
 
     for (auto node_class : repo.all_classes) {
       for (auto node_func : node_class->all_functions) {
-        LOG_R("Func %s\n", node_func->get_namestr().c_str());
+        LOG_R("Func %s\n", node_func->name.c_str());
         LOG_INDENT();
         for (auto node_field : node_func->self_writes2) {
-          LOG_R("Writes direct %s\n", node_field->get_namestr().c_str());
+          LOG_R("Writes direct %s\n", node_field->name.c_str());
         }
         for (auto node_field : node_func->all_writes2) {
           if (node_func->self_writes2.contains(node_field)) {
           } else {
-            LOG_R("Writes indirect %s\n", node_field->get_namestr().c_str());
+            LOG_R("Writes indirect %s\n", node_field->name.c_str());
           }
         }
         for (auto node_callee : node_func->internal_callees) {
-          LOG_R("Calls internal %s\n", node_callee->get_namestr().c_str());
+          LOG_R("Calls internal %s\n", node_callee->name.c_str());
         }
         for (auto node_callee : node_func->external_callees) {
-          LOG_R("Calls external %s\n", node_callee->get_namestr().c_str());
+          LOG_R("Calls external %s\n", node_callee->name.c_str());
         }
 
         LOG_DEDENT();
@@ -387,7 +387,7 @@ int main_new(Options opts) {
 
     for (auto node_class : repo.all_classes) {
       for (auto node_func : node_class->all_functions) {
-        auto func_name = node_func->get_namestr();
+        auto func_name = node_func->name;
         if (!node_func->is_public) continue;
         if (func_name.starts_with("tick")) continue;
         if (func_name.starts_with("tock")) continue;
@@ -406,7 +406,7 @@ int main_new(Options opts) {
 
   for (auto node_class : repo.all_classes) {
     for (auto node_func : node_class->all_functions) {
-      auto func_name = node_func->get_namestr();
+      auto func_name = node_func->name;
       if (func_name.starts_with("tick")) {
         if (node_func->has_return()) {
           LOG_R("Tick %s has a return value and it shouldn't\n",
@@ -435,7 +435,7 @@ int main_new(Options opts) {
     // Trace constructors first
     if (auto node_func = node_class->constructor) {
       LOG_INDENT_SCOPE();
-      auto func_name = node_func->get_namestr();
+      auto func_name = node_func->name;
       // if (!node_func->is_public) continue;
 
       LOG_B("Tracing %s\n", func_name.c_str());
@@ -447,7 +447,7 @@ int main_new(Options opts) {
     // Trace tocks
     for (auto node_func : node_class->all_functions) {
       LOG_INDENT_SCOPE();
-      auto func_name = node_func->get_namestr();
+      auto func_name = node_func->name;
       if (!func_name.starts_with("tock")) continue;
       if (!node_func->is_public) continue;
 
@@ -460,7 +460,7 @@ int main_new(Options opts) {
     // Trace ticks
     for (auto node_func : node_class->all_functions) {
       LOG_INDENT_SCOPE();
-      auto func_name = node_func->get_namestr();
+      auto func_name = node_func->name;
       if (!func_name.starts_with("tick")) continue;
       if (!node_func->is_public) continue;
 
@@ -474,7 +474,7 @@ int main_new(Options opts) {
     /*
     for (auto node_func : node_class->all_functions) {
       LOG_INDENT_SCOPE();
-      auto func_name = node_func->get_namestr();
+      auto func_name = node_func->name;
       if (func_name.starts_with("tick")) continue;
       if (func_name.starts_with("tock")) continue;
       if (!node_func->is_public) continue;
@@ -516,9 +516,9 @@ int main_new(Options opts) {
 
   if (top) {
     top_inst =
-        instantiate_class(top->get_namestr(), nullptr, nullptr, top, 1000);
+        instantiate_class(top->name, nullptr, nullptr, top, 1000);
     LOG_INDENT();
-    LOG_G("Top instance is %s\n", top->get_namestr().c_str());
+    LOG_G("Top instance is %s\n", top->name.c_str());
     LOG_DEDENT();
   }
 
@@ -529,7 +529,7 @@ int main_new(Options opts) {
     // Trace constructors first
     if (auto node_func = top->constructor) {
       LOG_INDENT_SCOPE();
-      auto func_name = node_func->get_namestr();
+      auto func_name = node_func->name;
 
       LOG_B("Tracing %s\n", func_name.c_str());
       auto inst_func = top_inst->resolve(func_name);
@@ -540,7 +540,7 @@ int main_new(Options opts) {
     // Trace tocks
     for (auto node_func : top->all_functions) {
       LOG_INDENT_SCOPE();
-      auto func_name = node_func->get_namestr();
+      auto func_name = node_func->name;
       if (!func_name.starts_with("tock")) continue;
       if (!node_func->is_public) continue;
 
@@ -553,7 +553,7 @@ int main_new(Options opts) {
     // Trace ticks
     for (auto node_func : top->all_functions) {
       LOG_INDENT_SCOPE();
-      auto func_name = node_func->get_namestr();
+      auto func_name = node_func->name;
       if (!func_name.starts_with("tick")) continue;
       if (!node_func->is_public) continue;
 
@@ -621,7 +621,7 @@ int main_new(Options opts) {
     LOG_INDENT_SCOPE();
     for (auto child : inst->parts) {
       if (auto inst_a = child->as<CInstClass>()) {
-        auto inst_b = repo.get_instance(inst_a->node_class->get_namestr());
+        auto inst_b = repo.get_instance(inst_a->node_class->name);
         assert(inst_b);
         bool ports_ok = inst_a->check_port_directions(inst_b);
         if (!ports_ok) {
@@ -720,11 +720,11 @@ int main_new(Options opts) {
   for (auto node_class : repo.all_classes) {
 
     LOG_INDENT_SCOPE();
-    auto name = node_class->get_namestr();
+    auto name = node_class->name;
     LOG_G("Categorizing %s\n", name.c_str());
 
     for (auto f : node_class->all_fields) {
-      auto fname = f->get_namestr();
+      auto fname = f->name;
 
       if (!f->is_public) continue;
 
@@ -915,7 +915,7 @@ int main_new(Options opts) {
 
   for (auto inst_class : repo.all_instances) {
     LOG_B("Instance tree for %s\n",
-          inst_class->node_class->get_namestr().c_str());
+          inst_class->node_class->name.c_str());
     LOG_INDENT();
     dump_inst_tree(inst_class);
     LOG_DEDENT();
@@ -923,7 +923,7 @@ int main_new(Options opts) {
   }
 
   for (auto node_class : repo.all_classes) {
-    LOG_B("Call graph for %s\n", node_class->get_namestr().c_str());
+    LOG_B("Call graph for %s\n", node_class->name.c_str());
     LOG_INDENT();
     dump_call_graph(node_class);
     LOG_DEDENT();

@@ -411,7 +411,7 @@ Err Emitter::emit(CNodeCall* node) {
     // Replace call with return binding variable if the callee is a tock
 
     if (dst_func->method_type == MT_TOCK) {
-      auto dst_name = dst_func->get_namestr();
+      auto dst_name = dst_func->name;
       err << cursor.skip_over(node);
       err << cursor.emit_print("%s_ret", dst_name.c_str());
       return err;
@@ -455,8 +455,8 @@ Err Emitter::emit(CNodeCall* node) {
         if (!first_arg) err << cursor.emit_print(";");
 
         err << cursor.start_line();
-        err << cursor.emit_print("%s_%s = %s", dst_func->get_namestr().c_str(),
-                                 param->child("name")->get_textstr().c_str(),
+        err << cursor.emit_print("%s_%s = %s", dst_func->name.c_str(),
+                                 param->child("name")->name.c_str(),
                                  arg->get_textstr().c_str());
 
         first_arg = false;
@@ -1235,7 +1235,7 @@ Err Emitter::emit(CNodeReturn* node) {
   Err err = cursor.check_at(node);
 
   auto func = node->ancestor<CNodeFunction>();
-  auto fname = func->get_namestr();
+  auto fname = func->name;
 
   assert(node->node_val);
 
@@ -1766,7 +1766,7 @@ Err Emitter::emit_hoisted_decls(CNodeCompound* node) {
         // Don't emit decls for localparams
         if (decl->child("const")) continue;
 
-        auto name = decl->get_namestr();
+        auto name = decl->name;
         auto decl_type = decl->child("type");
         auto decl_name = decl->child("name");
 
@@ -1785,7 +1785,7 @@ Err Emitter::emit_hoisted_decls(CNodeCompound* node) {
 
     if (auto node_for = child->as<CNodeFor>()) {
       if (auto node_decl = node_for->child("init")->as<CNodeDeclaration>()) {
-        auto name = node_decl->get_namestr();
+        auto name = node_decl->name;
         auto decl_type = node_decl->child("type");
         auto decl_name = node_decl->child("name");
 
@@ -1915,7 +1915,7 @@ Err Emitter::emit_component(CNodeField* node) {
   err << cursor.emit_print("(");
   cursor.indent_level++;
 
-  auto field_name = node->get_namestr();
+  auto field_name = node->name;
 
   if (class_needs_tick(component_class)) {
     err << cursor.start_line();
@@ -1928,7 +1928,7 @@ Err Emitter::emit_component(CNodeField* node) {
     err << cursor.start_line();
     err << cursor.emit_print("// Input signals");
     for (auto f : component_class->input_signals) {
-      auto port_name = f->get_namestr();
+      auto port_name = f->name;
 
       err << cursor.start_line();
       err << cursor.emit_print(".%s", port_name.c_str());
@@ -1942,7 +1942,7 @@ Err Emitter::emit_component(CNodeField* node) {
     err << cursor.start_line();
     err << cursor.emit_print("// Output signals");
     for (auto f : component_class->output_signals) {
-      auto port_name = f->get_namestr();
+      auto port_name = f->name;
       err << cursor.start_line();
       err << cursor.emit_print(".%s(%s_%s),", port_name.c_str(), field_name.c_str(), port_name.c_str());
     }
@@ -1952,7 +1952,7 @@ Err Emitter::emit_component(CNodeField* node) {
     err << cursor.start_line();
     err << cursor.emit_print("// Output registers");
     for (auto f : component_class->output_registers) {
-      auto port_name = f->get_namestr();
+      auto port_name = f->name;
       err << cursor.start_line();
       err << cursor.emit_print(".%s(%s_%s),", port_name.c_str(), field_name.c_str(), port_name.c_str());
     }
@@ -1965,13 +1965,13 @@ Err Emitter::emit_component(CNodeField* node) {
     if (m->internal_callers.size()) continue;
     if (m->params.empty() && !m->has_return()) continue;
 
-    auto func_name = m->get_namestr();
+    auto func_name = m->name;
 
     err << cursor.start_line();
     err << cursor.emit_print("// %s() ports", func_name.c_str());
 
     for (auto param : m->params) {
-      auto param_name = param->get_namestr();
+      auto param_name = param->name;
 
       err << cursor.start_line();
       err << cursor.emit_print(".%s_%s(%s_%s_%s),",
@@ -2016,7 +2016,7 @@ Err Emitter::emit_component(CNodeField* node) {
       auto param = component_template->params[i];
       auto arg = args->items[i];
 
-      auto param_name = param->get_namestr();
+      auto param_name = param->name;
       cursor.id_map.top()[param_name] = arg->get_textstr();
     }
 
@@ -2029,10 +2029,10 @@ Err Emitter::emit_component(CNodeField* node) {
     if (m->internal_callers.size()) continue;
     if (m->params.empty() && !m->has_return()) continue;
 
-    auto func_name = m->get_namestr();
+    auto func_name = m->name;
 
     for (auto param : m->params) {
-      auto param_name = param->get_namestr();
+      auto param_name = param->name;
       err << cursor.start_line();
       err << cursor.emit_splice(param->child("type"));
       err << cursor.emit_print(" ");
@@ -2051,7 +2051,7 @@ Err Emitter::emit_component(CNodeField* node) {
 
   if (component_class->input_signals.size()) {
     for (auto f : component_class->input_signals) {
-      auto port_name = f->get_namestr();
+      auto port_name = f->name;
       err << cursor.start_line();
       err << cursor.emit_splice(f->child("decl")->child("type"));
       err << cursor.emit_print(" ");
@@ -2061,7 +2061,7 @@ Err Emitter::emit_component(CNodeField* node) {
 
   if (component_class->output_signals.size()) {
     for (auto f : component_class->output_signals) {
-      auto port_name = f->get_namestr();
+      auto port_name = f->name;
       err << cursor.start_line();
       err << cursor.emit_splice(f->child("decl")->child("type"));
       err << cursor.emit_print(" ");
@@ -2071,7 +2071,7 @@ Err Emitter::emit_component(CNodeField* node) {
 
   if (component_class->output_registers.size()) {
     for (auto f : component_class->output_registers) {
-      auto port_name = f->get_namestr();
+      auto port_name = f->name;
       err << cursor.start_line();
       err << cursor.emit_splice(f->child("decl")->child("type"));
       err << cursor.emit_print(" ");
@@ -2140,7 +2140,7 @@ Err Emitter::emit_module_ports(CNodeClass* node) {
 Err Emitter::emit_function_ports(CNodeFunction* f) {
   Err err;
 
-  auto fname = f->get_namestr();
+  auto fname = f->name;
   auto rtype = f->child("return_type");
 
   if (!f->is_public) return err;
@@ -2151,7 +2151,7 @@ Err Emitter::emit_function_ports(CNodeFunction* f) {
   err << cursor.emit_print("// %s() ports", fname.c_str());
 
   for (auto param : f->params) {
-    auto pname = param->get_namestr();
+    auto pname = param->name;
     auto ptype = param->child("type");
 
     err << cursor.start_line();
@@ -2177,7 +2177,7 @@ Err Emitter::emit_function_ports(CNodeFunction* f) {
 Err Emitter::emit_field_ports(CNodeField* f, bool is_output) {
   Err err;
 
-  auto fname = f->get_namestr();
+  auto fname = f->name;
 
   err << cursor.start_line();
   if (is_output) {
@@ -2300,14 +2300,14 @@ Err Emitter::emit_init(CNodeFunction* node) {
 Err Emitter::emit_always_comb(CNodeFunction* node) {
   Err err;
 
-  auto func_name = node->get_namestr();
+  auto func_name = node->name;
 
   cursor.id_map.push(cursor.id_map.top());
   for (auto node_param : node->node_params->items) {
     auto param = node_param->as<CNodeDeclaration>();
     if (!param) continue;
 
-    auto param_name = param->get_namestr();
+    auto param_name = param->name;
     cursor.id_map.top()[param_name] = func_name + "_" + param_name;
   }
 
@@ -2336,14 +2336,14 @@ Err Emitter::emit_always_comb(CNodeFunction* node) {
 Err Emitter::emit_always_ff(CNodeFunction* node) {
   Err err;
 
-  auto func_name = node->get_namestr();
+  auto func_name = node->name;
 
   cursor.id_map.push(cursor.id_map.top());
   for (auto node_param : node->node_params) {
     auto param = node_param->as<CNodeDeclaration>();
     if (!param) continue;
 
-    auto param_name = param->get_namestr();
+    auto param_name = param->name;
     cursor.id_map.top()[param_name] = func_name + "_" + param_name;
   }
 

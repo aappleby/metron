@@ -420,19 +420,19 @@ void CNodeField::dump() const {
   if (node_decl->is_array())  LOG_A("array ");
 
   if (parent_class) {
-    LOG_A("parent class %s ", parent_class->get_namestr().c_str());
+    LOG_A("parent class %s ", parent_class->name.c_str());
   }
 
   if (parent_struct) {
-    LOG_A("parent struct %s ", parent_struct->get_namestr().c_str());
+    LOG_A("parent struct %s ", parent_struct->name.c_str());
   }
 
   if (node_decl->_type_class) {
-    LOG_A("type class %s ", node_decl->_type_class->get_namestr().c_str());
+    LOG_A("type class %s ", node_decl->_type_class->name.c_str());
   }
 
   if (node_decl->_type_struct) {
-    LOG_A("type struct %s ", node_decl->_type_struct->get_namestr().c_str());
+    LOG_A("type struct %s ", node_decl->_type_struct->name.c_str());
   }
 
   LOG_A("\n");

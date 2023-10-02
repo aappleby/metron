@@ -6,7 +6,7 @@
 
 struct CNodeBuiltinType : public CNodeType {
   void init() {
-    name = get_textstr();
+    name = get_text();
   }
 };
 

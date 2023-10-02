@@ -15,8 +15,7 @@ struct CNodeDeclaration;
 //------------------------------------------------------------------------------
 
 struct CNodeTemplate : public CNode {
-  void init(const char* match_tag, SpanType span, uint64_t flags) {
-    CNode::init(match_tag, span, flags);
+  void init() {
     node_template = child("template")->as<CNodeKeyword>();
     node_params   = child("params")->as<CNodeList>();
     node_class    = child("class")->as<CNodeClass>();

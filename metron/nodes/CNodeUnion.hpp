@@ -10,8 +10,7 @@ struct CNodeUnion : public CNode {
 //==============================================================================
 
 struct CNodeUnionType : public CNodeType {
-  void init(const char* match_tag, SpanType span, uint64_t flags) {
-    CNode::init(match_tag, span, flags);
+  void init() {
     name = child("name")->name;
   }
 };

@@ -15,9 +15,7 @@ struct CSourceFile;
 //==============================================================================
 
 struct CNodeEnum : public CNode {
-  void init(const char* match_tag, SpanType span, uint64_t flags) {
-    CNode::init(match_tag, span, flags);
-
+  void init() {
     node_enum = child("enum")->as<CNodeKeyword>();
     node_class = child("class")->as<CNodeKeyword>();
     node_name = child("name")->as<CNodeIdentifier>();
@@ -46,17 +44,15 @@ struct CNodeEnum : public CNode {
 //==============================================================================
 
 struct CNodeEnumerator : public CNode {
-  void init(const char* match_tag, SpanType span, uint64_t flags) {
+  void init() {
     // FIXME name
-    CNode::init(match_tag, span, flags);
   }
 };
 
 //==============================================================================
 
 struct CNodeEnumType : public CNodeType {
-  void init(const char* match_tag, SpanType span, uint64_t flags) {
-    CNode::init(match_tag, span, flags);
+  void init() {
     name = child("name")->get_text();
   }
 };

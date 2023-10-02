@@ -6,9 +6,7 @@
 //==============================================================================
 
 struct CNodeFieldExpression : public CNode {
-  void init(const char* match_tag, SpanType span,
-                                  uint64_t flags) {
-    CNode::init(match_tag, span, flags);
+  void init() {
     node_path = child("field_path")->as<CNodeIdentifier>();
     node_name = child("identifier")->as<CNodeIdentifier>();
     color = 0x80FF80;

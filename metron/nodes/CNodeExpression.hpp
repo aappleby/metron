@@ -6,7 +6,7 @@
 //------------------------------------------------------------------------------
 
 struct CNodeExpression : public CNode {
-  CNodeExpression() {
+  void init() {
     color = COL_AQUA;
   }
 };
@@ -26,7 +26,7 @@ struct CNodeAssignExp : public CNodeExpression {
 };
 
 struct CNodeIdentifierExp : public CNodeExpression {
-  void init(const char* match_tag, SpanType span, uint64_t flags) {
+  void init() {
     name = get_text();
   }
 };
@@ -34,7 +34,7 @@ struct CNodeIdentifierExp : public CNodeExpression {
 //------------------------------------------------------------------------------
 
 struct CNodeOperator : public CNode {
-  CNodeOperator() {
+  void init() {
     color = COL_SKY;
   }
 };
@@ -42,9 +42,7 @@ struct CNodeOperator : public CNode {
 //----------------------------------------
 
 struct CNodeBinaryOp : public CNodeOperator {
-  void init(const char* match_tag, SpanType span, uint64_t flags) {
-    CNode::init(match_tag, span, flags);
-
+  void init() {
     // FIXME this is silly
     char buf[16] = {0};
     memcpy(buf, span.begin->lex->text_begin, span.begin->lex->len());

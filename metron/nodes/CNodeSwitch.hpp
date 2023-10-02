@@ -8,8 +8,7 @@
 //==============================================================================
 
 struct CNodeSwitch : public CNodeStatement {
-  void init(const char* match_tag, SpanType span, uint64_t flags) {
-    CNode::init(match_tag, span, flags);
+  void init() {
     node_switch = child("switch")->req<CNodeKeyword>();
     node_cond   = child("condition")->req<CNodeList>();
     node_body   = child("body")->req<CNodeList>();
@@ -23,8 +22,7 @@ struct CNodeSwitch : public CNodeStatement {
 //------------------------------------------------------------------------------
 
 struct CNodeCase : public CNodeStatement {
-  void init(const char* match_tag, SpanType span, uint64_t flags) {
-    CNode::init(match_tag, span, flags);
+  void init() {
     node_case  = child("case")->req<CNodeKeyword>();
     node_cond  = child("condition")->req<CNode>();
     node_colon = child("colon")->req<CNodePunct>();
@@ -40,9 +38,7 @@ struct CNodeCase : public CNodeStatement {
 //------------------------------------------------------------------------------
 
 struct CNodeDefault : public CNodeStatement {
-  void init(const char* match_tag, SpanType span, uint64_t flags) {
-    CNode::init(match_tag, span, flags);
-
+  void init() {
     node_default = child("default")->req<CNodeKeyword>();
     node_colon   = child("colon")->req<CNodePunct>();
     node_body    = child("body")->opt<CNodeList>();

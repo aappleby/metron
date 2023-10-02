@@ -5,7 +5,7 @@
 //==============================================================================
 
 struct CNodePunct : public CNode {
-  CNodePunct() {
+  void init() {
     color = 0x88FF88;
     name = "<CNodePunct>";
   }

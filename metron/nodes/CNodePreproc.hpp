@@ -5,7 +5,7 @@
 //==============================================================================
 
 struct CNodePreproc : public CNode {
-  CNodePreproc() {
+  void init() {
     color = 0x00BBBB;
     name = "<CNodePreproc>";
   }

@@ -7,9 +7,7 @@
 //==============================================================================
 
 struct CNodeReturn : public CNodeStatement {
-  void init(const char* match_tag, SpanType span, uint64_t flags) {
-    CNode::init(match_tag, span, flags);
-
+  void init() {
     node_ret  = child("return")->req<CNodeKeyword>();
     node_val  = child("value");
     node_semi = child("semi")->req<CNodePunct>();

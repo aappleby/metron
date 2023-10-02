@@ -5,7 +5,7 @@
 //==============================================================================
 
 struct CNodeAccess : public CNode {
-  CNodeAccess() {
+  void init() {
     color = COL_VIOLET;
   }
 };

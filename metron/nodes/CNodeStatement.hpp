@@ -5,7 +5,7 @@
 //==============================================================================
 
 struct CNodeStatement : public CNode {
-  CNodeStatement() {
+  void init() {
     color = COL_TEAL;
   }
 };

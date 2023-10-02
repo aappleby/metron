@@ -6,9 +6,7 @@
 //==============================================================================
 
 struct CNodeQualifiedIdentifier : public CNode {
-  void init(const char* match_tag, SpanType span, uint64_t flags) {
-    CNode::init(match_tag, span, flags);
-
+  void init() {
     node_scope = child("scope_path");
     node_colon = child("colon")->req<CNodePunct>();
     node_name  = child("identifier");

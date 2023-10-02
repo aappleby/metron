@@ -14,8 +14,7 @@
 //==============================================================================
 
 struct CNodeStruct : public CNode {
-  void init(const char* match_tag, SpanType span, uint64_t flags) {
-    CNode::init(match_tag, span, flags);
+  void init() {
     node_struct = child("struct")->req<CNodeKeyword>();
     node_name   = child("name");
     node_body   = child("body")->req<CNodeList>();
@@ -54,8 +53,7 @@ struct CNodeStruct : public CNode {
 //==============================================================================
 
 struct CNodeStructType : public CNodeType {
-  void init(const char* match_tag, SpanType span, uint64_t flags) {
-    CNode::init(match_tag, span, flags);
+  void init() {
     name = child("name")->name;
   }
 };

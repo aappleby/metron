@@ -6,8 +6,7 @@
 //==============================================================================
 
 struct CNodeList : public CNode {
-  void init(const char* match_tag, SpanType span, uint64_t flags) {
-    CNode::init(match_tag, span, flags);
+  void init() {
     for (auto child : this) {
       if (!child->as<CNodePunct>()) items.push_back(child);
     }

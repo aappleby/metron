@@ -10,9 +10,7 @@
 //==============================================================================
 
 struct CNodeDeclaration : public CNode {
-  void init(const char* match_tag, SpanType span, uint64_t flags) {
-    CNode::init(match_tag, span, flags);
-
+  void init() {
     color = 0xFF00FF;
 
     node_static = child("static")->as<CNodeKeyword>();

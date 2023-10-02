@@ -10,9 +10,7 @@
 //------------------------------------------------------------------------------
 
 struct CNodeConstructor : public CNodeFunction {
-  void init(const char* match_tag, SpanType span, uint64_t flags) {
-    CNode::init(match_tag, span, flags);
-
+  void init() {
     node_type   = nullptr;
     node_name   = child("name")->req<CNodeIdentifier>();
     node_params = child("params")->req<CNodeList>();

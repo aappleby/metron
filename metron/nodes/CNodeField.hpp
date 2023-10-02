@@ -14,7 +14,7 @@ struct CNodeStruct;
 //------------------------------------------------------------------------------
 
 struct CNodeField : public CNode {
-  void init(const char* match_tag, SpanType span, uint64_t flags);
+  void init();
 
   //----------------------------------------
 

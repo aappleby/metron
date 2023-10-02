@@ -16,9 +16,7 @@
 
 //==============================================================================
 
-void CNodeClass::init(const char* match_tag, SpanType span, uint64_t flags) {
-  CNode::init(match_tag, span, flags);
-
+void CNodeClass::init() {
   node_class = child("class")->as<CNodeKeyword>();
   node_name  = child("name")->as<CNodeIdentifier>();
   node_body  = child("body")->as<CNodeList>();

@@ -9,8 +9,7 @@ struct CSourceFile;
 //==============================================================================
 
 struct CNodeNamespace : public CNode {
-  void init(const char* match_tag, SpanType span, uint64_t flags) {
-    CNode::init(match_tag, span, flags);
+  void init() {
     color = 0x00FFFFFF;
     name = child("name")->name;
   }

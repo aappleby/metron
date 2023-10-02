@@ -13,9 +13,7 @@ struct CNodeList;
 //==============================================================================
 
 struct CNodeIf : public CNodeStatement {
-  void init(const char* match_tag, SpanType span, uint64_t flags) {
-    CNode::init(match_tag, span, flags);
-
+  void init() {
     node_kw_if = child("if")->req<CNodeKeyword>();
     node_cond = child("condition")->req<CNodeList>();
     node_then = child("body_true")->req<CNodeStatement>();

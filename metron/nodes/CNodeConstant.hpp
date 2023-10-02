@@ -4,12 +4,10 @@
 
 //==============================================================================
 
-struct CNodeConstant : public CNodeExpression {
-};
-
-struct CNodeConstInt    : public CNodeConstant {};
-struct CNodeConstFloat  : public CNodeConstant {};
-struct CNodeConstChar   : public CNodeConstant {};
+struct CNodeConstant : public CNodeExpression {};
+struct CNodeConstInt : public CNodeConstant {};
+struct CNodeConstFloat : public CNodeConstant {};
+struct CNodeConstChar : public CNodeConstant {};
 struct CNodeConstString : public CNodeConstant {};
 
 //==============================================================================

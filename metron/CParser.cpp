@@ -1208,7 +1208,10 @@ TokenSpan cap_compound(CContext& ctx, TokenSpan body) {
   if (span) {
     ctx.merge_node(new_node, old_tail);
     TokenSpan node_span = {body.begin, span.begin};
-    new_node->init(nullptr, node_span, 0);
+    new_node->match_tag = nullptr;
+    new_node->span = node_span;
+    new_node->flags = 0;
+    new_node->init();
   }
 
   ctx.pop_scope2();

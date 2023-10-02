@@ -845,22 +845,14 @@ Err Emitter::emit(CNodeField* node) {
   //----------------------------------------
 
   if (node->is_const_char()) {
-    err << cursor.emit_print("localparam string ");
     err << cursor.skip_to(node->node_decl->node_name);
-    err << emit(node->node_decl->node_name);
-    err << cursor.emit_gap();
 
-    if (node->node_decl->node_array) {
-      err << emit_dispatch(node->node_decl->node_array);
-      err << cursor.emit_gap();
-    }
-
-    err << emit_dispatch(node->node_decl->node_eq);
-    err << cursor.emit_gap();
-    err << emit_dispatch(node->node_decl->node_value);
-    err << cursor.emit_gap();
-
-    err << emit_dispatch(node->node_semi);
+    err << cursor.emit_print("localparam string ");
+    err << emit_dispatch2(node->node_decl->node_name);
+    err << emit_dispatch2(node->node_decl->node_array);
+    err << emit_dispatch2(node->node_decl->node_eq);
+    err << emit_dispatch2(node->node_decl->node_value);
+    err << emit_dispatch2(node->node_semi);
 
     return err << cursor.check_done(node);
   }
@@ -875,90 +867,29 @@ Err Emitter::emit(CNodeField* node) {
     err << cursor.comment_out2(node->node_decl->node_static);
     err << cursor.comment_out2(node->node_decl->node_const);
 
-    err << emit_dispatch(node->node_decl->node_type);
-    err << cursor.emit_gap();
+    err << emit_dispatch2(node->node_decl->node_type);
+    err << emit_dispatch2(node->node_decl->node_name);
+    err << emit_dispatch2(node->node_decl->node_array);
+    err << emit_dispatch2(node->node_decl->node_eq);
+    err << emit_dispatch2(node->node_decl->node_value);
+    err << emit_dispatch2(node->node_semi);
 
-    err << emit(node->node_decl->node_name);
-    err << cursor.emit_gap();
-
-    if (node->node_decl->node_array) {
-      err << emit_dispatch(node->node_decl->node_array);
-      err << cursor.emit_gap();
-    }
-
-    if (node->node_decl->node_eq) {
-      err << emit_dispatch(node->node_decl->node_eq);
-      err << cursor.emit_gap();
-    }
-
-    if (node->node_decl->node_value) {
-      err << emit_dispatch(node->node_decl->node_value);
-      err << cursor.emit_gap();
-    }
-
-    err << emit_dispatch(node->node_semi);
     return err << cursor.check_done(node);
   }
 
   //----------------------------------------
 
   auto node_builtin = node->node_decl->node_type->as<CNodeBuiltinType>();
-  auto node_targs = node->node_decl->node_type->node_targs;
-
-  if (node_builtin && node_targs) {
-    err << cursor.skip_to(node->node_decl->node_type);
-    err << emit_dispatch(node->node_decl->node_type);
-    err << cursor.emit_gap();
-
-    err << emit(node->node_decl->node_name);
-    err << cursor.emit_gap();
-
-    if (node->node_decl->node_array) {
-      err << emit_dispatch(node->node_decl->node_array);
-      err << cursor.emit_gap();
-    }
-
-    if (node->node_decl->node_eq) {
-      err << emit_dispatch(node->node_decl->node_eq);
-      err << cursor.emit_gap();
-    }
-
-    if (node->node_decl->node_value) {
-      err << emit_dispatch(node->node_decl->node_value);
-      err << cursor.emit_gap();
-    }
-
-    err << emit_dispatch(node->node_semi);
-
-    return err << cursor.check_done(node);
-  }
-
-  //----------------------------------------
-
   if (node_builtin) {
     err << cursor.skip_to(node->node_decl->node_type);
-    err << emit_dispatch(node->node_decl->node_type);
-    err << cursor.emit_gap();
 
-    err << emit(node->node_decl->node_name);
-    err << cursor.emit_gap();
+    err << emit_dispatch2(node->node_decl->node_type);
+    err << emit_dispatch2(node->node_decl->node_name);
+    err << emit_dispatch2(node->node_decl->node_array);
+    err << emit_dispatch2(node->node_decl->node_eq);
+    err << emit_dispatch2(node->node_decl->node_value);
+    err << emit_dispatch2(node->node_semi);
 
-    if (node->node_decl->node_array) {
-      err << emit_dispatch(node->node_decl->node_array);
-      err << cursor.emit_gap();
-    }
-
-    if (node->node_decl->node_eq) {
-      err << emit_dispatch(node->node_decl->node_eq);
-      err << cursor.emit_gap();
-    }
-
-    if (node->node_decl->node_value) {
-      err << emit_dispatch(node->node_decl->node_value);
-      err << cursor.emit_gap();
-    }
-
-    err << emit_dispatch(node->node_semi);
     return err << cursor.check_done(node);
   }
 

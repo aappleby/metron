@@ -443,17 +443,6 @@ CHECK_RETURN Err Cursor::emit_replacement(CNode* n, const char* fmt, ...) {
 
 //----------------------------------------
 
-CHECK_RETURN Err Cursor::emit_splice(CNode* n) {
-  Err err;
-  Emitter emitter(*this);
-
-  auto old_cursor = tok_cursor;
-  tok_cursor = n->tok_begin();
-  err << emitter.emit_dispatch(n);
-  tok_cursor = old_cursor;
-  return err;
-}
-
 CHECK_RETURN Err Cursor::emit_raw(CNode* n) {
   Err err;
   err << emit_span(n->tok_begin(), n->tok_end());

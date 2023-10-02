@@ -14,7 +14,7 @@ using namespace matcheroni;
 
 std::string_view CNode::get_name() const {
   NODE_ERR("Can't get name for CNode base class");
-  return "<CNode>";
+  return name;
 }
 
 //------------------------------------------------------------------------------

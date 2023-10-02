@@ -164,8 +164,6 @@ struct CNodeFunction : public CNode {
 
   //----------------------------------------
 
-  std::string name;
-
   CNodeType*       node_type   = nullptr;
   CNode*           node_name   = nullptr;
   CNodeList*       node_params = nullptr;

@@ -48,8 +48,6 @@ struct CNodeClass : public CNode {
 
   //----------------------------------------
 
-  std::string name;
-
   CNodeKeyword*    node_class = nullptr;
   CNodeIdentifier* node_name = nullptr;
   CNodeList*       node_body = nullptr;

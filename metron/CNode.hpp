@@ -150,6 +150,7 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
     return nullptr;
   }
 
+  std::string name = "<CNode>";
   uint32_t color = 0x222244;
 };
 

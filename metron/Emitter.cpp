@@ -306,8 +306,8 @@ Err Emitter::emit(CNodeCall* node) {
     // We don't actually "call" into submodules, so we can just comment this
     // call out.
 
-    auto field_name = func_path->node_path->get_text();
-    auto func_name = func_path->node_name->get_text();
+    auto field_name = func_path->node_path->get_textstr();
+    auto func_name = func_path->node_name->get_textstr();
 
     auto src_field = src_class->get_field(field_name);
     auto dst_class = src_class->repo->get_class(src_field->node_decl->node_type->name);
@@ -315,15 +315,17 @@ Err Emitter::emit(CNodeCall* node) {
 
     auto rtype = dst_func->child("return_type");
 
-    if (rtype->get_text() == "void") {
+    if (rtype->name == "void") {
       err << cursor.comment_out(node);
-      return err << cursor.check_done(node);
     } else {
-      err << cursor.emit_replacement(node, "%.*s_%.*s_ret", field_name.size(),
-                                     field_name.data(), func_name.size(),
-                                     func_name.data());
-      return err << cursor.check_done(node);
+      err << cursor.emit_splice(func_path->node_path);
+      err << cursor.emit_print("_");
+      err << cursor.emit_splice(func_path->node_name);
+      err << cursor.emit_print("_ret");
+      //err << cursor.emit_replacement(node, "%s_%s_ret", field_name.c_str(), func_name.c_str());
+      err << cursor.skip_over(node);
     }
+    return err << cursor.check_done(node);
   }
 
   if (auto func_id = node->node_name->as<CNodeIdentifier>()) {
@@ -332,13 +334,11 @@ Err Emitter::emit(CNodeCall* node) {
     if (cursor.id_map.top().contains(func_name)) {
       auto replacement = cursor.id_map.top()[func_name];
 
-      err << cursor.emit_replacement(node->node_name, "%s",
-                                     replacement.c_str());
-      err << cursor.emit_gap();
+      err << cursor.emit_replacement(node->node_name, "%s", replacement.c_str());
+      err << cursor.emit_gap(node->node_name);
 
       if (node->node_targs) {
-        err << cursor.skip_over(node->node_targs);
-        err << cursor.skip_gap();
+        err << cursor.skip_over2(node->node_targs);
       }
 
       err << emit_dispatch(node->node_args);

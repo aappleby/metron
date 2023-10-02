@@ -660,10 +660,10 @@ Err Emitter::emit(CNodeDeclaration* node) {
     for (auto c = node->child_head; c; c = c->node_next) {
       if (c->as<CNodeType>()) {
         err << cursor.skip_over(c);
-        if (c->node_next) err << cursor.skip_gap();
+        err << cursor.skip_gap(c);
       } else {
         err << emit_dispatch(c);
-        if (c->node_next) err << cursor.emit_gap();
+        err << cursor.emit_gap(c);
       }
     }
 
@@ -837,27 +837,31 @@ Err Emitter::emit(CNodeExpStatement* node) {
 
     if (can_omit_call) {
       err << cursor.comment_out(node);
-      return err << cursor.check_done(node);
+    }
+    else {
+      err << emit_default(node);
     }
   }
-
-  if (auto keyword = node_exp->as<CNodeKeyword>()) {
+  else if (auto keyword = node_exp->as<CNodeKeyword>()) {
     if (keyword->get_text() == "break") {
       err << cursor.comment_out(node);
-      return err << cursor.check_done(node);
+    }
+    else {
+      err << emit_default(node);
     }
   }
-
-  if (auto decl = node_exp->as<CNodeDeclaration>()) {
-    if (cursor.elide_type.top()) {
-      if (decl->node_value == nullptr) {
-        err << cursor.skip_over(node);
-        return err << cursor.check_done(node);
-      }
+  else if (auto decl = node_exp->as<CNodeDeclaration>()) {
+    if (cursor.elide_type.top() && decl->node_value == nullptr) {
+      err << cursor.skip_over(node);
+    }
+    else {
+      err << emit_default(node);
     }
   }
+  else {
+    err << emit_default(node);
+  }
 
-  err << emit_default(node);
   return err << cursor.check_done(node);
 }
 

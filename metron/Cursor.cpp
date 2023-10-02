@@ -111,6 +111,15 @@ CHECK_RETURN Err Cursor::skip_gap() {
   return err;
 }
 
+CHECK_RETURN Err Cursor::skip_gap(CNode* n) {
+  if (n && n->node_next) {
+    return skip_gap();
+  }
+  else {
+    return Err();
+  }
+}
+
 //------------------------------------------------------------------------------
 
 /*

@@ -31,6 +31,7 @@ struct Cursor {
   CHECK_RETURN Err skip_gap();
 
   CHECK_RETURN Err emit_gap(CNode* n);
+  CHECK_RETURN Err skip_gap(CNode* n);
 
   // Node-level emit()
   CHECK_RETURN Err skip_over(CNode* n);

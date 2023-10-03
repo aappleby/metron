@@ -141,6 +141,8 @@ struct Emitter {
   Err skip_to(CNode* n);
   Err emit_replacement(CNode* n, const std::string& s);
   Err emit_replacement(CNode* n, const char* fmt, ...);
+
+  Err emit_replacement2(CNode* n, const std::string& s);
   Err emit_replacement2(CNode* n, const char* fmt, ...);
   Err emit_raw(CNode* n);
   Err emit_raw2(CNode* n);

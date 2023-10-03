@@ -37,6 +37,8 @@ struct Cursor {
   CHECK_RETURN Err emit_print(const char* fmt, ...);
   CHECK_RETURN Err emit_span(const char* a, const char* b);
 
+  Err emit_replacement(const CToken* a, const CToken* b, const std::string& r);
+
   //----------------------------------------
 
   CSourceFile* source_file = nullptr;

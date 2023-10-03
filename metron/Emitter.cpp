@@ -4,6 +4,7 @@
 #include <stdarg.h>
 
 #include "metron/Cursor.hpp"
+#include "metron/MtUtils.h"
 #include "metron/nodes/CNodeReturn.hpp"
 #include "metron/nodes/CNodeAccess.hpp"
 #include "metron/nodes/CNodeAssignment.hpp"
@@ -440,7 +441,7 @@ Err Emitter::emit(CNodeCall* node) {
     // Some builtin functions just need to be renamed.
     if (id_map.top().contains(func_id->name)) {
       auto replacement = id_map.top()[func_id->name];
-      err << emit_replacement2(node->node_name, "%s", replacement.c_str());
+      err << emit_replacement2(node->node_name, replacement);
       err << skip_over2(node->node_targs);
       err << emit_dispatch(node->node_args);
       return err << check_done(node);
@@ -2452,6 +2453,18 @@ Err Emitter::emit_replacement2(CNode* n, const char* fmt, ...) {
   err << emit_gap(n);
   return err;
 }
+
+Err Emitter::emit_replacement2(CNode* n, const std::string& s) {
+  Err err = check_at(n);
+  for (auto c : s) {
+    err << cursor.emit_char(c, 0x80FFFF);
+  }
+  cursor.tok_cursor = n->tok_end();
+  err << check_done(n);
+  err << emit_gap(n);
+  return err;
+}
+
 
 //----------------------------------------
 

@@ -25,6 +25,9 @@ module alu (
     import rv_constants::*;
 
     // clang-format off
+
+
+    // clang-format off
     case (alu_function)
       ALU_ADD:  result = operand_a + operand_b; /*break;*/
       ALU_SUB:  result = operand_a - operand_b; /*break;*/

@@ -976,17 +976,15 @@ Err Emitter::emit(CNodeIdentifier* node) {
   auto found = id_map.top().find(text);
 
   if (found != id_map.top().end()) {
-    err << emit_replacement(node, (*found).second);
+    return emit_replacement(node, (*found).second);
   }
   else if (preproc_vars.contains(text)) {
     err << cursor.emit_print("`");
-    err << emit_default(node);
+    return emit_default(node);
   }
   else {
-    err << emit_default(node);
+    return emit_default(node);
   }
-
-  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
@@ -1046,15 +1044,12 @@ Err Emitter::emit(CNodeNamespace* node) {
     if (f->tag_is("ldelim")) {
       err << skip_over(f);
       err << cursor.emit_gap();
-      continue;
     }
     else if (f->tag_is("rdelim")) {
       err << emit_replacement2(f, "endpackage");
-      continue;
     }
     else {
       err << emit_dispatch2(f);
-      continue;
     }
   }
 
@@ -1157,7 +1152,7 @@ Err Emitter::emit(CNodeStruct* node) {
 
   err << emit_replacement2(node->node_struct, "typedef struct packed");
   err << skip_over2(node->node_name);
-  err << emit_dispatch(node->node_body);
+  err << emit_dispatch2(node->node_body);
   err << cursor.emit_print(" ");
   err << emit_splice(node->node_name);
   err << cursor.emit_gap();
@@ -1252,15 +1247,7 @@ Err Emitter::emit(CNodeTemplate* node) {
 //------------------------------------------------------------------------------
 
 Err Emitter::emit(CNodeUsing* node) {
-  Err err = check_at(node);
-
-  err << skip_over(node);
-
-  err << cursor.emit_print("import ");
-  err << emit_splice(node->child("name"));
-  err << cursor.emit_print("::*;");
-
-  return err << check_done(node);
+  return emit_replacement2(node, "import %s::*;", node->child("name")->get_textstr().c_str());
 }
 
 //------------------------------------------------------------------------------

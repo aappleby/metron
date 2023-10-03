@@ -30,6 +30,8 @@ module singlecycle_control (
   always_comb begin : tock_next_pc_select
     import rv_constants::*;
     // clang-format off
+
+    // clang-format off
     case (inst_opcode)
       OPCODE_BRANCH: next_pc_select = take_branch ? CTL_PC_PC_IMM : CTL_PC_PC4; /*break;*/
       OPCODE_JALR:   next_pc_select = CTL_PC_RS1_IMM; /*break;*/
@@ -43,6 +45,8 @@ module singlecycle_control (
 
   always_comb begin : tock_regfile_write_enable
     import rv_constants::*;
+    // clang-format off
+
     // clang-format off
     case (inst_opcode)
       OPCODE_MISC_MEM: regfile_write_enable = 0; /*break;*/
@@ -62,6 +66,9 @@ module singlecycle_control (
 
   always_comb begin : tock_alu_operand_a_select
     import rv_constants::*;
+
+    // clang-format off
+
 
     // clang-format off
     case (inst_opcode)
@@ -85,6 +92,9 @@ module singlecycle_control (
     import rv_constants::*;
 
     // clang-format off
+
+
+    // clang-format off
     case (inst_opcode)
       OPCODE_AUIPC:    alu_operand_b_select = CTL_ALU_B_IMM; /*break;*/
       OPCODE_JAL:      alu_operand_b_select = CTL_ALU_B_IMM; /*break;*/
@@ -106,6 +116,9 @@ module singlecycle_control (
     import rv_constants::*;
 
     // clang-format off
+
+
+    // clang-format off
     case (inst_opcode)
       OPCODE_AUIPC:    alu_op_type = CTL_ALU_ADD; /*break;*/
       OPCODE_JAL:      alu_op_type = CTL_ALU_ADD; /*break;*/
@@ -124,16 +137,21 @@ module singlecycle_control (
 
   always_comb begin : tock_data_mem_read_enable
     import rv_constants::*;
+
     data_mem_read_enable = inst_opcode == OPCODE_LOAD;
   end
 
   always_comb begin : tock_data_mem_write_enable
     import rv_constants::*;
+
     data_mem_write_enable = inst_opcode == OPCODE_STORE;
   end
 
   always_comb begin : tock_reg_writeback_select
     import rv_constants::*;
+
+    // clang-format off
+
 
     // clang-format off
     case (inst_opcode)

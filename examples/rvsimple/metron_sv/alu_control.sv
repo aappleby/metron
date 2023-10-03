@@ -32,6 +32,8 @@ module alu_control (
   always_comb begin : tock_alu_function
     import rv_constants::*;
 
+
+
     case (inst_funct3)
       FUNCT3_ALU_ADD_SUB: default_funct = ALU_ADD; /*break;*/
       FUNCT3_ALU_SLL:     default_funct = ALU_SLL; /*break;*/

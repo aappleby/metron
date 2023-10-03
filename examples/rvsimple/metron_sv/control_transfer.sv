@@ -22,6 +22,8 @@ module control_transfer (
   always_comb begin : tock_take_branch
     import rv_constants::*;
     // clang-format off
+
+    // clang-format off
     case (inst_funct3)
       FUNCT3_BRANCH_EQ:  take_branch = !result_equal_zero; /*break;*/
       FUNCT3_BRANCH_NE:  take_branch = result_equal_zero; /*break;*/

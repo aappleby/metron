@@ -199,9 +199,7 @@ Err Emitter::emit_everything() {
 
   // Emit header
   for (auto lex_cursor = cursor.source_file->context.lexemes.data(); lex_cursor < cursor.tok_cursor->lex; lex_cursor++) {
-    for (auto c = lex_cursor->text_begin; c < lex_cursor->text_end; c++) {
-      err << cursor.emit_char(*c);
-    }
+    err << cursor.emit_lexeme(lex_cursor);
   }
 
   // Emit body
@@ -2349,6 +2347,7 @@ Err Emitter::skip_over(CNode* n) {
   Err err = check_at(n);
 
   {
+    /*
     auto begin = n->tok_begin()->text_begin();
     auto end   = (n->tok_end()-1)->text_end();
 
@@ -2356,6 +2355,8 @@ Err Emitter::skip_over(CNode* n) {
     for (auto c = begin; c < end; c++) {
       err << cursor.skip_char(*c);
     }
+    */
+    err << cursor.skip_span(n->tok_begin(), n->tok_end());
     cursor.tok_cursor = n->tok_end();
     cursor.line_elided = true;
 
@@ -2378,12 +2379,15 @@ Err Emitter::skip_to(CNode* n) {
   if (n == nullptr) return Err();
 
   Err err;
+  err << cursor.skip_span(cursor.tok_cursor, n->tok_begin());
+  /*
   while (cursor.tok_cursor < n->tok_begin()) {
     for (auto c = cursor.tok_cursor->text_begin(); c < cursor.tok_cursor->text_end(); c++) {
       err << cursor.skip_char(*c);
     }
     cursor.tok_cursor++;
   }
+  */
 
   return err;
 }
@@ -2424,23 +2428,24 @@ Err Emitter::check_done(CNode* n) {
 //----------------------------------------
 
 Err Emitter::emit_replacement(CNode* n, const std::string& s) {
+  Err err;
+  err << cursor.emit_replacement(n->tok_begin(), n->tok_end(), s);
+  return err;
+  /*
   Err err = check_at(n);
   for (auto c : s) {
     err << cursor.emit_char(c, 0x80FFFF);
   }
   cursor.tok_cursor = n->tok_end();
   return err << check_done(n);
+  */
 }
 
 //----------------------------------------
 
 Err Emitter::emit_replacement2(CNode* n, const std::string& s) {
-  Err err = check_at(n);
-  for (auto c : s) {
-    err << cursor.emit_char(c, 0x80FFFF);
-  }
-  cursor.tok_cursor = n->tok_end();
-  err << check_done(n);
+  Err err;
+  err << cursor.emit_replacement(n->tok_begin(), n->tok_end(), s);
   err << emit_gap(n);
   return err;
 }

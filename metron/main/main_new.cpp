@@ -932,7 +932,7 @@ int main_new(Options opts) {
   LOG_B("Converting %s to SystemVerilog\n\n", opts.src_name.c_str());
 
   std::string out_string;
-  Cursor cursor(&repo, root_file, &out_string);
+  Cursor cursor(root_file, &out_string);
   cursor.echo = opts.echo && !opts.quiet;
 
   Emitter emitter(cursor);

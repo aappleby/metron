@@ -25,6 +25,7 @@ struct CNodeList;
 struct CNodeKeyword;
 struct CNodeCompound;
 struct CNodeDeclaration;
+struct CNodeField;
 
 //------------------------------------------------------------------------------
 

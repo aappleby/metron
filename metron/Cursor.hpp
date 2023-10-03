@@ -7,7 +7,6 @@
 #include <string>
 #include <string_view>
 
-#include "metron/CSourceRepo.hpp"
 #include "metron/CSourceFile.hpp"
 
 #include "metrolib/core/Platform.h"
@@ -18,7 +17,7 @@ struct CNodeCall;
 
 struct Cursor {
 
-  Cursor(CSourceRepo* repo, CSourceFile* source, std::string* out);
+  Cursor(CSourceFile* source, std::string* out);
 
   //----------------------------------------
 
@@ -103,7 +102,6 @@ struct Cursor {
 
   //----------------------------------------
 
-  CSourceRepo* repo = nullptr;
   CSourceFile* source_file = nullptr;
   const CToken* tok_cursor = nullptr;
 

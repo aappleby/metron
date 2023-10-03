@@ -4,8 +4,7 @@
 
 //------------------------------------------------------------------------------
 
-Cursor::Cursor(CSourceRepo* repo, CSourceFile* source, std::string* str_out) {
-  this->repo = repo;
+Cursor::Cursor(CSourceFile* source, std::string* str_out) {
   this->source_file = source;
   this->str_out = str_out;
 

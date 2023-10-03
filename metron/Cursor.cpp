@@ -185,8 +185,10 @@ CHECK_RETURN Err Cursor::skip_char(char c) {
 
 //----------------------------------------
 
-CHECK_RETURN Err Cursor::emit_vprint(const char* fmt, va_list args) {
+CHECK_RETURN Err Cursor::emit_print(const char* fmt, ...) {
   Err err;
+  va_list args;
+  va_start(args, fmt);
 
   va_list args2;
   va_copy(args2, args);
@@ -201,16 +203,7 @@ CHECK_RETURN Err Cursor::emit_vprint(const char* fmt, va_list args) {
     err << emit_char(buf[i]);
   }
   delete[] buf;
-  return err;
-}
 
-//----------------------------------------
-
-CHECK_RETURN Err Cursor::emit_print(const char* fmt, ...) {
-  Err err;
-  va_list args;
-  va_start(args, fmt);
-  err << emit_vprint(fmt, args);
   return err;
 }
 

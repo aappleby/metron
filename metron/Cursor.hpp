@@ -33,7 +33,6 @@ struct Cursor {
   CHECK_RETURN Err emit_backspace();
   CHECK_RETURN Err emit_char(char c, uint32_t color = 0);
   CHECK_RETURN Err skip_char(char c);
-  CHECK_RETURN Err emit_vprint(const char* fmt, va_list args);
   CHECK_RETURN Err emit_print(const char* fmt, ...);
   CHECK_RETURN Err emit_span(const char* a, const char* b);
 

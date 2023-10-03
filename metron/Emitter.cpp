@@ -934,7 +934,7 @@ Err Emitter::emit(CNodeFieldExpression* node) {
     for (auto& c : field) {
       if (c == '.') c = '_';
     }
-    err << emit_replacement(node, field.c_str());
+    err << emit_replacement(node, field);
   } else {
     err << emit_default(node);
   }
@@ -2433,26 +2433,6 @@ Err Emitter::emit_replacement(CNode* n, const std::string& s) {
 }
 
 //----------------------------------------
-
-Err Emitter::emit_replacement(CNode* n, const char* fmt, ...) {
-  Err err = check_at(n);
-  va_list args;
-  va_start(args, fmt);
-  err << cursor.emit_vprint(fmt, args);
-  cursor.tok_cursor = n->tok_end();
-  return err << check_done(n);
-}
-
-Err Emitter::emit_replacement2(CNode* n, const char* fmt, ...) {
-  Err err = check_at(n);
-  va_list args;
-  va_start(args, fmt);
-  err << cursor.emit_vprint(fmt, args);
-  cursor.tok_cursor = n->tok_end();
-  err << check_done(n);
-  err << emit_gap(n);
-  return err;
-}
 
 Err Emitter::emit_replacement2(CNode* n, const std::string& s) {
   Err err = check_at(n);

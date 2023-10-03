@@ -557,7 +557,7 @@ Err Emitter::emit(CNodeClassType* node) {
   Err err;
 
   if (node->node_targs) {
-    err << emit_dispatch2(node->child("name"));
+    err << emit_dispatch2(node->node_name);
     err << skip_over(node->node_targs);
   } else {
     err << emit_default(node);
@@ -622,7 +622,7 @@ Err Emitter::emit(CNodeDeclaration* node) {
 
   // Check for const char*
   if (node->node_const) {
-    if (node->node_type->child("name")->get_text() == "char") {
+    if (node->node_type->name == "char") {
       if (node->node_type->child("star")) {
         return emit_replacement(node, "{{const char*}}");
       }
@@ -705,12 +705,10 @@ Err Emitter::emit(CNodePrefixExp* node) {
     return emit_default(node);
   }
 
-  auto node_class = node->ancestor<CNodeClass>();
-  auto node_func = node->ancestor<CNodeFunction>();
   auto node_rhs = node->child("rhs");
-  auto node_field = resolve_field(node_class, node_rhs);
+  auto node_field = resolve_field(node_rhs);
 
-  std::string assign = node_func->method_type == MT_TICK && node_field ? " <= " : " = ";
+  std::string assign = in_tick(node) && node_field ? " <= " : " = ";
   std::string suffix = op == "++" ? " + 1" : " - 1";
 
   err << skip_over(node);
@@ -738,7 +736,7 @@ Err Emitter::emit(CNodeSuffixExp* node) {
   if (op == "++" || op == "--") {
     err << skip_over(node);
     err << emit_splice(node_lhs);
-    if (node_func->method_type == MT_TICK && node_field) {
+    if (in_tick(node) && node_field) {
       err << cursor.emit_print(" <= ");
     } else {
       err << cursor.emit_print(" = ");
@@ -777,28 +775,15 @@ Err Emitter::emit(CNodeExpStatement* node) {
       can_omit_call = true;
     }
 
-    if (can_omit_call) {
-      err << comment_out(node);
-    }
-    else {
-      err << emit_default(node);
-    }
+    err << (can_omit_call ? comment_out(node) : emit_default(node));
   }
   else if (auto keyword = node->node_exp->as<CNodeKeyword>()) {
-    if (keyword->get_text() == "break") {
-      err << comment_out(node);
-    }
-    else {
-      err << emit_default(node);
-    }
+    bool is_break = keyword->get_text() == "break";
+    err << (is_break ? comment_out(node) : emit_default(node));
   }
   else if (auto decl = node->node_exp->as<CNodeDeclaration>()) {
-    if (elide_type.top() && decl->node_value == nullptr) {
-      err << skip_over(node);
-    }
-    else {
-      err << emit_default(node);
-    }
+    bool skip_type = elide_type.top() && decl->node_value == nullptr;
+    err << (skip_type ? skip_over(node) : emit_default(node));
   }
   else {
     err << emit_default(node);
@@ -872,17 +857,8 @@ Err Emitter::emit(CNodeField* node) {
     return err << check_done(node);
   }
 
-  //----------------------------------------
-
-  if (node->is_struct()) {
-    return emit_raw(node);
-  }
-
-  //----------------------------------------
-
-  if (node->is_component()) {
-    return emit_component(node);
-  }
+  if (node->is_struct()) return emit_raw(node);
+  if (node->is_component()) return emit_component(node);
 
   //----------------------------------------
 
@@ -989,18 +965,7 @@ Err Emitter::emit(CNodeIdentifier* node) {
 //------------------------------------------------------------------------------
 
 Err Emitter::emit(CNodeIf* node) {
-  Err err = check_at(node);
-
-  err << emit_dispatch2(node->node_kw_if);
-  err << emit_dispatch2(node->node_cond);
-  err << emit_dispatch2(node->node_then);
-
-  if (node->node_kw_else) {
-    err << emit_dispatch2(node->node_kw_else);
-    err << emit_dispatch2(node->node_else);
-  }
-
-  return err << check_done(node);
+  return emit_default(node);
 }
 
 //------------------------------------------------------------------------------

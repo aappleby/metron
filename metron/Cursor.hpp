@@ -39,20 +39,15 @@ struct Cursor {
   CHECK_RETURN Err skip_to(CNode* n);
   CHECK_RETURN Err comment_out(CNode* n);
   CHECK_RETURN Err comment_out2(CNode* n);
-  CHECK_RETURN Err emit_rest(CNode* n);
   CHECK_RETURN Err emit_replacement(CNode* n, const std::string& s);
   CHECK_RETURN Err emit_replacement(CNode* n, const char* fmt, ...);
   CHECK_RETURN Err emit_replacement2(CNode* n, const char* fmt, ...);
   CHECK_RETURN Err emit_raw(CNode* n);
   CHECK_RETURN Err emit_raw2(CNode* n);
-  CHECK_RETURN Err emit_indent();
 
   // Token-level emit()
   CHECK_RETURN Err emit_token(const CToken* a);
   CHECK_RETURN Err emit_span(const CToken* a, const CToken* b);
-  CHECK_RETURN Err skip_span(const CToken* a, const CToken* b);
-  CHECK_RETURN Err emit_to(const CToken* b);
-  CHECK_RETURN Err skip_current_token();
 
   // Char-level emit()
   CHECK_RETURN Err start_line();
@@ -61,7 +56,6 @@ struct Cursor {
   CHECK_RETURN Err skip_char(char c);
   CHECK_RETURN Err emit_vprint(const char* fmt, va_list args);
   CHECK_RETURN Err emit_print(const char* fmt, ...);
-  CHECK_RETURN Err emit_string(const std::string_view& s);
   CHECK_RETURN Err emit_span(const char* a, const char* b);
 
   //----------------------------------------
@@ -116,10 +110,6 @@ struct Cursor {
 
   CSourceRepo* repo = nullptr;
   CSourceFile* source_file = nullptr;
-
-  // FIXME need to switch from text cursor to token cursor...
-
-  std::stack<const CToken*> cursor_stack;
 
   const Lexeme* lex_begin = nullptr;
   const Lexeme* lex_end = nullptr;

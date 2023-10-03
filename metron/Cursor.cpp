@@ -120,7 +120,20 @@ CHECK_RETURN Err Cursor::skip_gap(CNode* n) {
 CHECK_RETURN Err Cursor::skip_over(CNode* n) {
   if (n == nullptr) return Err();
   Err err = check_at(n);
-  err << skip_span(n->tok_begin(), n->tok_end());
+
+  {
+    auto begin = n->tok_begin()->text_begin();
+    auto end   = (n->tok_end()-1)->text_end();
+
+    Err err;
+    for (auto c = begin; c < end; c++) {
+      err << skip_char(*c);
+    }
+    tok_cursor = n->tok_end();
+    line_elided = true;
+
+  }
+
   return err << check_done(n);
 }
 
@@ -135,16 +148,12 @@ CHECK_RETURN Err Cursor::skip_over2(CNode* n) {
 CHECK_RETURN Err Cursor::skip_to(CNode* n) {
   Err err;
   if (n == nullptr) return err;
-  while (tok_cursor < n->tok_begin()) err << skip_current_token();
-  return err;
-}
-
-CHECK_RETURN Err Cursor::skip_current_token() {
-  Err err;
-  for (auto c = tok_cursor->text_begin(); c < tok_cursor->text_end(); c++) {
-    err << skip_char(*c);
+  while (tok_cursor < n->tok_begin()) {
+    for (auto c = tok_cursor->text_begin(); c < tok_cursor->text_end(); c++) {
+      err << skip_char(*c);
+    }
+    tok_cursor++;
   }
-  tok_cursor++;
   return err;
 }
 
@@ -164,12 +173,6 @@ CHECK_RETURN Err Cursor::comment_out2(CNode* n) {
   err << comment_out(n);
   err << emit_gap(n);
   return err;
-}
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err Cursor::emit_rest(CNode* n) {
-  return emit_span(tok_cursor, n->tok_end());
 }
 
 //------------------------------------------------------------------------------
@@ -237,17 +240,9 @@ CHECK_RETURN Err Cursor::start_line() {
   Err err;
   if (line_dirty) {
     err << emit_char('\n');
-    err << emit_indent();
-  }
-  return err;
-}
-
-//----------------------------------------
-
-CHECK_RETURN Err Cursor::emit_indent() {
-  Err err;
-  for (int i = 0; i < indent_level; i++) {
-    err << emit_print("  ");
+    for (int i = 0; i < indent_level; i++) {
+      err << emit_print("  ");
+    }
   }
   return err;
 }
@@ -335,32 +330,6 @@ CHECK_RETURN Err Cursor::skip_char(char c) {
 
 //----------------------------------------
 
-CHECK_RETURN Err Cursor::emit_to(const CToken* b) {
-  Err err;
-  for (auto c = tok_cursor->text_begin(); c < b->text_end(); c++) {
-    err << emit_char(*c);
-  }
-  tok_cursor = b;
-  return err;
-}
-
-//----------------------------------------
-
-CHECK_RETURN Err Cursor::skip_span(const CToken* a, const CToken* b) {
-  auto begin = a->text_begin();
-  auto end   = (b-1)->text_end();
-
-  Err err;
-  for (auto c = begin; c < end; c++) {
-    err << skip_char(*c);
-  }
-  tok_cursor = b;
-  line_elided = true;
-  return err;
-}
-
-//----------------------------------------
-
 CHECK_RETURN Err Cursor::emit_vprint(const char* fmt, va_list args) {
   Err err;
 
@@ -387,16 +356,6 @@ CHECK_RETURN Err Cursor::emit_print(const char* fmt, ...) {
   va_list args;
   va_start(args, fmt);
   err << emit_vprint(fmt, args);
-  return err;
-}
-
-//----------------------------------------
-
-CHECK_RETURN Err Cursor::emit_string(const std::string_view& s) {
-  Err err;
-  for (auto c : s) {
-    err << emit_char(c, 0x80FF80);
-  }
   return err;
 }
 

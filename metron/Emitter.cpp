@@ -285,9 +285,12 @@ Err Emitter::emit(CNodeAssignment* node) {
   if (node->node_op->get_text() == "=") {
     err << emit_replacement2(node->node_op, assign);
   } else {
-    auto lhs_text = node->node_lhs->get_textstr();
-    auto s = str_printf("%s %s %c", assign.c_str(), lhs_text.c_str(), node->node_op->get_text()[0]);
-    err << emit_replacement2(node->node_op, s);
+    err << emit_replacement2(
+      node->node_op,
+      "%s %s %c",
+      assign.c_str(),
+      node->node_lhs->get_textstr().c_str(),
+      node->node_op->get_text()[0]);
   }
 
   err << emit_dispatch(node->node_rhs);
@@ -323,7 +326,6 @@ Err Emitter::emit(CNodeBuiltinType* node) {
     // logic<CONSTANT> -> logic[CONSTANT-1:0]
     err << emit("@[@-1:0]", node->node_name, node_identifier);
     err << skip_over(node);
-
   } else {
     // logic<exp> -> logic[(exp)-1:0]
     err << emit("@[(@)-1:0]", node->node_name, node_exp);
@@ -331,8 +333,7 @@ Err Emitter::emit(CNodeBuiltinType* node) {
   }
 
   if (node->node_scope) {
-    err << cursor.skip_gap();
-    err << skip_over(node->node_scope);
+    err << skip_over2(node->node_scope);
   }
 
   return err << check_done(node);

@@ -281,8 +281,8 @@ Err Emitter::emit(CNodeAssignment* node) {
     err << emit_dispatch2(node->node_op);
   } else {
     auto lhs_text = node->node_lhs->get_textstr();
-    err << skip_over2(node->node_op);
-    err << cursor.emit_print("= %s %c ", lhs_text.c_str(), node->node_op->get_text()[0]);
+    auto s = str_printf("= %s %c", lhs_text.c_str(), node->node_op->get_text()[0]);
+    err << emit_replacement2(node->node_op, s);
   }
 
   err << emit_dispatch(node->node_rhs);

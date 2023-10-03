@@ -25,9 +25,9 @@ struct Cursor {
   CHECK_RETURN Err skip_gap();
 
   // Token-level emit()
-  CHECK_RETURN Err emit_token(const CToken* a);
   CHECK_RETURN Err emit_span(const CToken* a, const CToken* b);
 
+  CHECK_RETURN Err emit_token(const CToken* a);
   Err emit_lexeme(Lexeme* l) {
     Err err;
     for (auto c = l->text_begin; c < l->text_end; c++) {
@@ -43,9 +43,11 @@ struct Cursor {
 
   Err emit_replacement(const CToken* a, const CToken* b, const std::string& r) {
     Err err;
+
     for (auto c : r) {
       err << emit_char(c, 0x80FFFF);
     }
+
     tok_cursor = b;
     return err;
   }
@@ -66,13 +68,15 @@ struct Cursor {
 
   CSourceFile* source_file = nullptr;
   const CToken* tok_cursor = nullptr;
-
   std::string* str_out;
+
   int indent_level = 0;
   bool at_comma = false;
   bool line_dirty = false;
   bool line_elided = false;
   bool echo = false;
+
+  //----------------------------------------
 
 private:
 

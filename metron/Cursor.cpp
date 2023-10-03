@@ -148,6 +148,7 @@ CHECK_RETURN Err Cursor::emit_char(char c, uint32_t color) {
     line_dirty = false;
     line_elided = false;
   } else {
+    assert(c);
     str_out->push_back(c);
   }
 

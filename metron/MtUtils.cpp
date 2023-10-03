@@ -278,6 +278,7 @@ std::string str_printf(const char* fmt, ...) {
   vsnprintf(result.data(), size_t(size + 1), fmt, args);
   va_end(args);
   assert(result.back() == 0);
+  result.pop_back();
   return result;
 }
 

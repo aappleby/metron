@@ -1,23 +1,35 @@
-`include "metron/metron_tools.sv"
-
-// Template parameters become SV module parameters.
-
-module Module (
+module Metron (
   // global clock
-  input logic clock
+  input logic clock,
+  // output signals
+  output int my_sig,
+  // output registers
+  output int my_reg1,
+  output int my_reg2,
+  output int my_reg3
 );
-  parameter SOME_CONSTANT = 7;
 /*public:*/
 
+
+  // Divide and mod work, but make Yosys extremely slow to synth
+
   always_comb begin : tock
-    /*tick();*/
+    int x;
+    x = 7;
+    x = x +  13;
+    x = x -  13;
+    x = x *  13;
+    //x /= 13;
+    //x %= 13;
+    my_sig = x;
   end
 
-/*private:*/
 
   always_ff @(posedge clock) begin : tick
-    my_reg <= my_reg + SOME_CONSTANT;
+    my_reg1 <= my_reg1 +  22;
+    my_reg2 <= my_reg2 -  22;
+    my_reg3 <= my_reg3 *  22;
+    //my_reg4 /= 22;
+    //my_reg5 %= 22;
   end
-
-  logic[6:0] my_reg;
 endmodule

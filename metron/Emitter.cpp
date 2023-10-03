@@ -309,8 +309,7 @@ Err Emitter::emit(CNodeBuiltinType* node) {
       // logic<N> -> logic[N-1:0]
       err << emit_raw2(node->node_name);
       err << emit_replacement2(node->node_targs->node_ldelim, "[");
-      err << skip_over2(node_const_int);
-      err << cursor.emit_print("%d:0", width - 1);
+      err << emit_replacement2(node_const_int, "%d:0", width - 1);
       err << emit_replacement(node->node_targs->node_rdelim, "]");
     }
   } else if (auto node_identifier = node_exp->as<CNodeIdentifier>()) {
@@ -466,8 +465,7 @@ Err Emitter::emit(CNodeCall* node) {
     // check tock_task.h
     if (dst_mtype == MT_TOCK) {
       auto dst_name = dst_func->name;
-      err << skip_over(node);
-      err << cursor.emit_print("%s_ret", dst_name.c_str());
+      err << emit_replacement2(node, "%s_ret", dst_name.c_str());
       return err;
     }
 
@@ -524,8 +522,7 @@ Err Emitter::emit(CNodeClass* node) {
   auto node_body = node->child("body");
   auto node_semi = node->child("semi");
 
-  err << emit_replacement(node_class, "module");
-  err << cursor.emit_gap();
+  err << emit_replacement2(node_class, "module");
   err << emit_dispatch2(node_name);
 
   err << cursor.emit_print("(");
@@ -600,20 +597,21 @@ Err Emitter::emit(CNodeConstant* node) {
   if (body.starts_with("0x")) {
     prefix_count = 2;
     if (!size_cast) size_cast = ((int)body.size() - 2 - spacer_count) * 4;
-    err << cursor.emit_print("%d'h", size_cast);
+    err << emit_replacement(node, "%d'h%s", size_cast, body.c_str() + prefix_count);
   } else if (body.starts_with("0b")) {
     prefix_count = 2;
     if (!size_cast) size_cast = (int)body.size() - 2 - spacer_count;
-    err << cursor.emit_print("%d'b", size_cast);
+    err << emit_replacement(node, "%d'b%s", size_cast, body.c_str() + prefix_count);
   } else {
     if (size_cast) {
-      err << cursor.emit_print("%d'd", size_cast);
+      err << emit_replacement(node, "%d'd%s", size_cast, body.c_str() + prefix_count);
+    }
+    else {
+      err << emit_replacement(node, "%s", body.c_str() + prefix_count);
     }
   }
 
-  err << cursor.emit_print("%s", body.c_str() + prefix_count);
 
-  cursor.tok_cursor = node->tok_end();
 
   return err << check_done(node);
 }
@@ -2446,6 +2444,42 @@ Err Emitter::emit_replacement2(CNode* n, const std::string& s) {
   err << cursor.emit_replacement(n->tok_begin(), n->tok_end(), s);
   err << emit_gap(n);
   return err;
+}
+
+Err Emitter::emit_replacement(CNode* n, const char* fmt, ...) {
+  va_list args;
+
+  va_start(args, fmt);
+  int size = vsnprintf(nullptr, 0, fmt, args);
+  va_end(args);
+
+  std::string result;
+  result.resize(size + 1);
+  va_start(args, fmt);
+  vsnprintf(result.data(), size_t(size + 1), fmt, args);
+  va_end(args);
+  assert(result.back() == 0);
+  result.pop_back();
+
+  return emit_replacement(n, result);
+}
+
+Err Emitter::emit_replacement2(CNode* n, const char* fmt, ...) {
+  va_list args;
+
+  va_start(args, fmt);
+  int size = vsnprintf(nullptr, 0, fmt, args);
+  va_end(args);
+
+  std::string result;
+  result.resize(size + 1);
+  va_start(args, fmt);
+  vsnprintf(result.data(), size_t(size + 1), fmt, args);
+  va_end(args);
+  assert(result.back() == 0);
+  result.pop_back();
+
+  return emit_replacement2(n, result);
 }
 
 

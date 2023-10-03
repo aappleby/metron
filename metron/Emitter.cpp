@@ -523,22 +523,16 @@ Err Emitter::emit(CNodeCall* node) {
 Err Emitter::emit(CNodeClass* node) {
   Err err = check_at(node);
 
-  auto node_class = node->child<CNodeKeyword>();
-  auto node_name = node->child("name");
-  auto node_body = node->child("body");
-  auto node_semi = node->child("semi");
-
-  err << emit_replacement2(node_class, "module");
-  err << emit_dispatch2(node_name);
+  err << emit_replacement2(node->node_class, "module");
+  err << emit_dispatch2(node->node_name);
 
   err << cursor.emit_print("(");
   cursor.indent_level++;
   err << emit_module_ports(node);
   cursor.indent_level--;
-  err << cursor.start_line();
-  err << cursor.emit_print(");");
+  err << cursor.emit_print("\n);");
 
-  for (auto child : node_body) {
+  for (auto child : node->node_body) {
     if (child->get_text() == "{") {
       cursor.indent_level++;
       err << emit_template_parameter_list(node);
@@ -552,8 +546,7 @@ Err Emitter::emit(CNodeClass* node) {
     }
   }
 
-  err << cursor.skip_gap();
-  err << skip_over(node_semi);
+  err << skip_over2(node->node_semi);
 
   return err << check_done(node);
 }

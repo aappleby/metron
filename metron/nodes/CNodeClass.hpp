@@ -36,6 +36,7 @@ struct CNodeClass : public CNode {
     node_class = child("class")->as<CNodeKeyword>();
     node_name  = child("name")->as<CNodeIdentifier>();
     node_body  = child("body")->as<CNodeList>();
+    node_semi  = child("semi")->as<CNodePunct>();
 
     name = node_name->name;
 
@@ -71,6 +72,7 @@ struct CNodeClass : public CNode {
   CNodeKeyword*    node_class = nullptr;
   CNodeIdentifier* node_name = nullptr;
   CNodeList*       node_body = nullptr;
+  CNodePunct*      node_semi = nullptr;
 
   CSourceRepo* repo = nullptr;
   CSourceFile* file = nullptr;

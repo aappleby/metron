@@ -628,14 +628,20 @@ Err Emitter::emit(CNodeDeclaration* node) {
       }
     }
 
-    err << cursor.emit_print("parameter ");
+    bool in_namespace = node->ancestor<CNodeNamespace>() != nullptr;
+    bool in_function  = node->ancestor<CNodeFunction>() != nullptr;
+    err << cursor.emit_print(in_namespace || in_function ? "parameter " : "localparam ");
+    //err << cursor.emit_print("parameter ");
 
     for (auto c = node->child_head; c; c = c->node_next) {
+      err << emit_dispatch2(c);
+      /*
       if (c->as<CNodeType>()) {
         err << skip_over2(c);
       } else {
         err << emit_dispatch2(c);
       }
+      */
     }
 
     return err << check_done(node);
@@ -826,11 +832,13 @@ Err Emitter::emit(CNodeField* node) {
   if (node->node_decl->node_const) {
     // Localparam
     bool in_namespace = node->ancestor<CNodeNamespace>() != nullptr;
-    err << cursor.emit_print(in_namespace ? "parameter " : "localparam ");
+    bool in_function  = node->ancestor<CNodeFunction>() != nullptr;
+    //err << cursor.emit_print(in_namespace || in_function ? "parameter " : "localparam ");
 
-    err << comment_out2(node->node_decl->node_static);
-    err << comment_out2(node->node_decl->node_const);
+    return emit_default(node);
 
+    err << emit_dispatch2(node->node_decl->node_static);
+    err << emit_dispatch2(node->node_decl->node_const);
     err << emit_dispatch2(node->node_decl->node_type);
     err << emit_dispatch2(node->node_decl->node_name);
     err << emit_dispatch2(node->node_decl->node_array);

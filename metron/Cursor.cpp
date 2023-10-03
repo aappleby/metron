@@ -9,19 +9,11 @@ Cursor::Cursor(CSourceRepo* repo, CSourceFile* source, std::string* str_out) {
   this->source_file = source;
   this->str_out = str_out;
 
-  this->lex_begin = source->context.lexemes.data();
-  this->lex_end = this->lex_begin + source->context.lexemes.size();
-
   const CToken* actual_tok_begin = source->context.root_node->span.begin;
   const CToken* actual_tok_end   = source->context.root_node->span.end;
 
-  //this->tok_begin  = source->context.tokens.data();
-  //this->tok_end    = this->tok_begin + source->context.tokens.size();
-  this->tok_begin = actual_tok_begin;
-  this->tok_end = actual_tok_end;
-
   // Skip LEX_BOF
-  this->tok_cursor = this->tok_begin;
+  this->tok_cursor = actual_tok_begin;
 
   id_map.push({
     {"signed",         "$signed"},
@@ -40,10 +32,6 @@ Cursor::Cursor(CSourceRepo* repo, CSourceFile* source, std::string* str_out) {
     {"#endif",         "`endif"},
     {"unsigned int",   "int unsigned"},
   });
-
-  block_prefix.push("begin");
-  block_suffix.push("end");
-  override_size.push(0);
 
   elide_type.push(false);
   elide_value.push(false);
@@ -305,7 +293,6 @@ CHECK_RETURN Err Cursor::emit_char(char c, uint32_t color) {
     LOG_C(color, "%c", d);
   }
 
-  at_newline = c == '\n';
   at_comma = c == ',';
   return err;
 }

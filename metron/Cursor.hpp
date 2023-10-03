@@ -105,12 +105,6 @@ struct Cursor {
 
   CSourceRepo* repo = nullptr;
   CSourceFile* source_file = nullptr;
-
-  const Lexeme* lex_begin = nullptr;
-  const Lexeme* lex_end = nullptr;
-
-  const CToken* tok_begin = nullptr;
-  const CToken* tok_end = nullptr;
   const CToken* tok_cursor = nullptr;
 
   //----------------------------------------
@@ -118,27 +112,17 @@ struct Cursor {
   using string_to_node = std::map<std::string, CNode*>;
   using string_to_string = std::map<std::string, std::string>;
 
-  std::stack<std::string> block_prefix;
-  std::stack<std::string> block_suffix;
-  std::stack<int> override_size;
-  //std::stack<string_to_node> preproc_vars;
   std::stack<string_to_string> id_map;
-  std::stack<string_to_string> token_map;
   std::stack<bool> elide_type;
   std::stack<bool> elide_value;
-
-  std::set<std::string> preproc_vars;
 
   //----------------------------------------
   // Output state
 
   std::string* str_out;
   int indent_level = 0;
-  bool at_newline = true;
   bool at_comma = false;
   bool line_dirty = false;
   bool line_elided = false;
   bool echo = false;
-
-  bool force_emit_eq = false;
 };

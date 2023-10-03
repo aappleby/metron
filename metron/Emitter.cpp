@@ -197,7 +197,7 @@ Err Emitter::emit_everything() {
   Err err;
 
   // Emit header
-  for (auto lex_cursor = cursor.lex_begin; lex_cursor < cursor.tok_begin->lex; lex_cursor++) {
+  for (auto lex_cursor = cursor.source_file->context.lexemes.data(); lex_cursor < cursor.tok_cursor->lex; lex_cursor++) {
     for (auto c = lex_cursor->text_begin; c < lex_cursor->text_end; c++) {
       err << cursor.emit_char(*c);
     }
@@ -587,7 +587,7 @@ Err Emitter::emit(CNodeConstant* node) {
 
   // FIXME what was this for?
   // This was for forcing enum constants to the size of the enum type
-  int size_cast = cursor.override_size.top();
+  int size_cast = override_size.top();
   // int size_cast = 0;
 
   // Count how many 's are in the number
@@ -668,10 +668,10 @@ Err Emitter::emit(CNodeEnum* node) {
   Err err = cursor.check_at(node);
 
   // Extract enum bit width, if present.
-  cursor.override_size.push(32);
+  override_size.push(32);
   if (node->node_type) {
     if (auto targs = node->node_type->node_targs->as<CNodeList>()) {
-      cursor.override_size.top() = atoi(targs->items[0]->text_begin());
+      override_size.top() = atoi(targs->items[0]->text_begin());
     }
   }
 
@@ -702,7 +702,7 @@ Err Emitter::emit(CNodeEnum* node) {
 
   err << emit_dispatch(node->node_semi);
 
-  cursor.override_size.pop();
+  override_size.pop();
 
   return err << cursor.check_done(node);
 }
@@ -997,7 +997,7 @@ Err Emitter::emit(CNodeIdentifier* node) {
   if (found != id_map.end()) {
     err << cursor.emit_replacement(node, (*found).second);
   }
-  else if (cursor.preproc_vars.contains(text)) {
+  else if (preproc_vars.contains(text)) {
     err << cursor.emit_print("`");
     err << emit_default(node);
   }
@@ -1091,7 +1091,7 @@ Err Emitter::emit(CNodePreproc* node) {
   if (node->tag_is("preproc_define")) {
     err << emit_default(node);
     auto name = node->child("name")->get_textstr();
-    cursor.preproc_vars.insert(name);
+    preproc_vars.insert(name);
   }
 
   else if (node->tag_is("preproc_include")) {
@@ -1437,9 +1437,9 @@ Err Emitter::emit_bit_extract(CNodeCall* node) {
 
     if (bare_width && bare_exp && !node_width) {
       if (node_exp->as<CNodeConstInt>()) {
-        cursor.override_size.push(width);
+        override_size.push(width);
         err << emit_splice(node_exp);
-        cursor.override_size.pop();
+        override_size.pop();
         return err;
       }
     }

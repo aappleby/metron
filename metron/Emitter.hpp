@@ -1,6 +1,8 @@
 #pragma once
 
+#include <set>
 #include <string>
+#include <stack>
 #include "metrolib/core/Err.h"
 
 struct CNode;
@@ -42,7 +44,9 @@ struct CNodeUsing;
 //==============================================================================
 
 struct Emitter {
-  Emitter(Cursor& c) : cursor(c) {}
+  Emitter(Cursor& c) : cursor(c) {
+    override_size.push(0);
+  }
 
   Err emit_everything();
   Err emit_default(CNode* node);
@@ -105,6 +109,8 @@ struct Emitter {
   Err emit_submod_call(CNodeCall* node);
 
   Cursor& cursor;
+  std::set<std::string> preproc_vars;
+  std::stack<int> override_size;
 };
 
 //==============================================================================

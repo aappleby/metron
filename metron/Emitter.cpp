@@ -1416,6 +1416,8 @@ Err Emitter::emit_bit_extract(CNodeCall* node) {
       }
     }
 
+    // FIXME use the new emit thing here?
+
 
     if (!bare_width) err << cursor.emit_print("(");
     if (node_width)  err << emit_splice(node_width);
@@ -1545,8 +1547,8 @@ Err Emitter::emit_call_arg_bindings(CNodeCompound* node, CNode* child) {
   if (call->node_args->items.empty()) return err;
 
   if (auto func_path = call->node_name->as<CNodeFieldExpression>()) {
-    auto field_name = func_path->node_path->get_text();
-    auto func_name  = func_path->node_name->get_text();
+    auto field_name = func_path->node_path->get_textstr();
+    auto func_name  = func_path->node_name->get_textstr();
 
     auto src_class = node->ancestor<CNodeClass>();
     auto field = src_class->get_field(field_name);
@@ -1558,13 +1560,10 @@ Err Emitter::emit_call_arg_bindings(CNodeCompound* node, CNode* child) {
     assert(arg_count == param_count);
 
     for (int i = 0; i < arg_count; i++) {
-      auto param_name = dst_func->params[i]->child("name")->get_text();
+      auto param_name = dst_func->params[i]->child("name")->get_textstr();
 
       err << cursor.start_line();
-      err << cursor.emit_print("%.*s_%.*s_%.*s = ",
-        field_name.size(), field_name.data(),
-        func_name.size(), func_name.data(),
-        param_name.size(), param_name.data());
+      err << cursor.emit_print("%s_%s_%s = ", field_name.c_str(), func_name.c_str(), param_name.c_str());
       err << emit_splice(call->node_args->items[i]);
       err << cursor.emit_print(";");
 
@@ -1573,7 +1572,7 @@ Err Emitter::emit_call_arg_bindings(CNodeCompound* node, CNode* child) {
   }
 
   if (auto func_id = call->node_name->as<CNodeIdentifier>()) {
-    auto func_name = func_id->get_text();
+    auto func_name = func_id->get_textstr();
 
     auto src_class = node->ancestor<CNodeClass>();
     auto dst_func = src_class->get_function(func_id->get_text());
@@ -1587,11 +1586,9 @@ Err Emitter::emit_call_arg_bindings(CNodeCompound* node, CNode* child) {
         assert(arg_count == param_count);
 
         for (int i = 0; i < arg_count; i++) {
-          auto param_name = dst_func->params[i]->child("name")->get_text();
+          auto param_name = dst_func->params[i]->child("name")->get_textstr();
           err << cursor.start_line();
-          err << cursor.emit_print("%.*s_%.*s = ",
-            func_name.size(), func_name.data(),
-            param_name.size(), param_name.data());
+          err << cursor.emit_print("%s_%s = ", func_name.c_str(), param_name.c_str());
           err << emit_splice(call->node_args->items[i]);
           err << cursor.emit_print(";");
 

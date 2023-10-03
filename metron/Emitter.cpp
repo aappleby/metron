@@ -272,16 +272,14 @@ Err Emitter::emit(CNodeAssignment* node) {
 
   err << emit_dispatch2(node->node_lhs);
 
-  // If we're in a tick, emit < to turn = into <=
-  if (node_func->method_type == MT_TICK && node_field) {
-    err << cursor.emit_print("<");
-  }
+  // If we're in a tick, turn = into <=
+  std::string assign = node_func->method_type == MT_TICK && node_field ? "<=" : "=";
 
   if (node->node_op->get_text() == "=") {
-    err << emit_dispatch2(node->node_op);
+    err << emit_replacement2(node->node_op, assign);
   } else {
     auto lhs_text = node->node_lhs->get_textstr();
-    auto s = str_printf("= %s %c", lhs_text.c_str(), node->node_op->get_text()[0]);
+    auto s = str_printf("%s %s %c", assign.c_str(), lhs_text.c_str(), node->node_op->get_text()[0]);
     err << emit_replacement2(node->node_op, s);
   }
 

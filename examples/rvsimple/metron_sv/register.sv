@@ -22,7 +22,6 @@ module single_register (
 );
   parameter WIDTH = 32;
   parameter INITIAL = 0;
-
  /*public:*/
 
   initial begin value = INITIAL; end

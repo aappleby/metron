@@ -300,7 +300,7 @@ Err Emitter::emit(CNodeBuiltinType* node) {
     return emit_default(node);
   }
 
-  auto node_exp    = node->node_targs->items[0];
+  auto node_exp = node->node_targs->items[0];
 
   if (auto node_const_int = node_exp->as<CNodeConstInt>()) {
     auto width = atoi(node_const_int->text_begin());
@@ -541,8 +541,8 @@ Err Emitter::emit(CNodeClass* node) {
   for (auto child : node_body) {
     if (child->get_text() == "{") {
       cursor.indent_level++;
-      err << cursor.skip_over(child);
       err << emit_template_parameter_list(node);
+      err << cursor.skip_over(child);
       err << cursor.emit_gap(child);
     } else if (child->get_text() == "}") {
       cursor.indent_level--;
@@ -616,7 +616,6 @@ Err Emitter::emit(CNodeConstant* node) {
 
   err << cursor.emit_print("%s", body.c_str() + prefix_count);
 
-  cursor.gap_emitted = false;
   cursor.tok_cursor = node->tok_end();
 
   return err << cursor.check_done(node);

@@ -26,7 +26,6 @@ module uart_top (
 );
   parameter cycles_per_bit = 3;
   parameter repeat_msg = 0;
-
 /*public:*/
 
   // The actual bit of data currently on the transmitter's output

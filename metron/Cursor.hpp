@@ -104,7 +104,6 @@ struct Cursor {
       err << emit_replacement_step(text, args...);
     }
     tok_cursor = n->tok_end();
-    gap_emitted = false;
     return err;
   }
 
@@ -155,7 +154,6 @@ struct Cursor {
   bool line_dirty = false;
   bool line_elided = false;
   bool echo = false;
-  bool gap_emitted = false;
 
   bool force_emit_eq = false;
 };

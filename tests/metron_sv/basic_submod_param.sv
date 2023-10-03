@@ -7,7 +7,6 @@ module Submod (
   input logic clock
 );
   parameter SOME_CONSTANT = 6;
-
 /*public:*/
 
   always_comb begin : tock

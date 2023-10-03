@@ -14,7 +14,6 @@ module Module (
 );
   parameter data_len = 1024;
   parameter blarp = 0;
-
 /*public:*/
 
   parameter /*const*/ filename = "";

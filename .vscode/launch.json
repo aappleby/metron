@@ -16,7 +16,7 @@
         "-e",
         "-c",
         //"examples/scratch.h",
-        "tests/metron_good/enum_simple.h",
+        "tests/metron_good/basic_param.h",
         //"examples/uart/metron/uart_hello.h",
         //"examples/rvsimple/metron/control_transfer.h",
         "-o",

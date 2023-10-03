@@ -22,7 +22,6 @@ Cursor::Cursor(CSourceRepo* repo, CSourceFile* source, std::string* str_out) {
 
   // Skip LEX_BOF
   this->tok_cursor = this->tok_begin;
-  this->gap_emitted = false;
 
   id_map.push({
     {"signed",         "$signed"},
@@ -54,7 +53,6 @@ Cursor::Cursor(CSourceRepo* repo, CSourceFile* source, std::string* str_out) {
 
 CHECK_RETURN Err Cursor::emit_gap() {
   Err err;
-  if (gap_emitted) return err;
 
   auto ta = tok_cursor - 1;
   auto tb = tok_cursor;
@@ -79,7 +77,6 @@ CHECK_RETURN Err Cursor::emit_gap() {
     }
   }
 
-  gap_emitted = true;
   return err;
 }
 
@@ -96,7 +93,6 @@ CHECK_RETURN Err Cursor::emit_gap(CNode* n) {
 
 CHECK_RETURN Err Cursor::skip_gap() {
   Err err;
-  if (gap_emitted) return err;
 
   if (tok_cursor->lex_type() == LEX_EOF) return err;
 
@@ -107,7 +103,6 @@ CHECK_RETURN Err Cursor::skip_gap() {
     err << skip_char(*c);
   }
   line_elided = true;
-  gap_emitted = true;
   return err;
 }
 
@@ -150,7 +145,6 @@ CHECK_RETURN Err Cursor::skip_current_token() {
     err << skip_char(*c);
   }
   tok_cursor++;
-  this->gap_emitted = false;
   return err;
 }
 
@@ -195,7 +189,6 @@ CHECK_RETURN Err Cursor::check_at(CNode* n) {
 //------------------------------------------------------------------------------
 
 CHECK_RETURN Err Cursor::check_done(CNode* n) {
-  assert(!gap_emitted);
 
   auto tok_end = n->tok_end();
 
@@ -223,7 +216,6 @@ CHECK_RETURN Err Cursor::emit_token(const CToken* a) {
     err << emit_char(*c);
   }
   tok_cursor = a + 1;
-  gap_emitted = false;
   return err;
 }
 
@@ -235,7 +227,6 @@ CHECK_RETURN Err Cursor::emit_span(const CToken* a, const CToken* b) {
     if (c < b - 1) err << emit_gap();
   }
   tok_cursor = b;
-  gap_emitted = false;
   return err;
 }
 
@@ -350,7 +341,6 @@ CHECK_RETURN Err Cursor::emit_to(const CToken* b) {
     err << emit_char(*c);
   }
   tok_cursor = b;
-  this->gap_emitted = false;
   return err;
 }
 
@@ -365,7 +355,6 @@ CHECK_RETURN Err Cursor::skip_span(const CToken* a, const CToken* b) {
     err << skip_char(*c);
   }
   tok_cursor = b;
-  this->gap_emitted = false;
   line_elided = true;
   return err;
 }
@@ -429,7 +418,6 @@ CHECK_RETURN Err Cursor::emit_replacement(CNode* n, const std::string& s) {
     err << emit_char(c, 0x80FFFF);
   }
   tok_cursor = n->tok_end();
-  gap_emitted = false;
   return err << check_done(n);
 }
 
@@ -441,7 +429,6 @@ CHECK_RETURN Err Cursor::emit_replacement(CNode* n, const char* fmt, ...) {
   va_start(args, fmt);
   err << emit_vprint(fmt, args);
   tok_cursor = n->tok_end();
-  gap_emitted = false;
   return err << check_done(n);
 }
 
@@ -451,7 +438,6 @@ CHECK_RETURN Err Cursor::emit_replacement2(CNode* n, const char* fmt, ...) {
   va_start(args, fmt);
   err << emit_vprint(fmt, args);
   tok_cursor = n->tok_end();
-  gap_emitted = false;
   err << check_done(n);
   err << emit_gap(n);
   return err;
@@ -480,7 +466,6 @@ CHECK_RETURN Err Cursor::emit_trailing_whitespace() {
   while(tok_cursor < tok_end) {
     err << emit_token(tok_cursor);
     tok_cursor++;
-    gap_emitted = false;
   }
   return err;
 }

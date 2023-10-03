@@ -108,15 +108,6 @@ struct Cursor {
   const CToken* tok_cursor = nullptr;
 
   //----------------------------------------
-
-  using string_to_node = std::map<std::string, CNode*>;
-  using string_to_string = std::map<std::string, std::string>;
-
-  std::stack<string_to_string> id_map;
-  std::stack<bool> elide_type;
-  std::stack<bool> elide_value;
-
-  //----------------------------------------
   // Output state
 
   std::string* str_out;

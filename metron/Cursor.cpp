@@ -14,27 +14,6 @@ Cursor::Cursor(CSourceRepo* repo, CSourceFile* source, std::string* str_out) {
 
   // Skip LEX_BOF
   this->tok_cursor = actual_tok_begin;
-
-  id_map.push({
-    {"signed",         "$signed"},
-    {"unsigned",       "$unsigned"},
-    {"clog2",          "$clog2" },
-    {"pow2",           "2**" },
-    {"readmemh",       "$readmemh" },
-    {"value_plusargs", "$value$plusargs" },
-    {"write",          "$write" },
-    {"sign_extend",    "$signed" },
-    {"zero_extend",    "$unsigned" },
-    {"DONTCARE",       "'x" },
-    {"#include",       "`include"},
-    {"#define",        "`define"},
-    {"#ifndef",        "`ifndef"},
-    {"#endif",         "`endif"},
-    {"unsigned int",   "int unsigned"},
-  });
-
-  elide_type.push(false);
-  elide_value.push(false);
 }
 
 //------------------------------------------------------------------------------

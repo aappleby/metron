@@ -3,6 +3,7 @@
 #include <set>
 #include <string>
 #include <stack>
+#include <map>
 #include "metrolib/core/Err.h"
 
 struct CNode;
@@ -45,6 +46,26 @@ struct CNodeUsing;
 
 struct Emitter {
   Emitter(Cursor& c) : cursor(c) {
+    id_map.push({
+      {"signed",         "$signed"},
+      {"unsigned",       "$unsigned"},
+      {"clog2",          "$clog2" },
+      {"pow2",           "2**" },
+      {"readmemh",       "$readmemh" },
+      {"value_plusargs", "$value$plusargs" },
+      {"write",          "$write" },
+      {"sign_extend",    "$signed" },
+      {"zero_extend",    "$unsigned" },
+      {"DONTCARE",       "'x" },
+      {"#include",       "`include"},
+      {"#define",        "`define"},
+      {"#ifndef",        "`ifndef"},
+      {"#endif",         "`endif"},
+      {"unsigned int",   "int unsigned"},
+    });
+
+    elide_type.push(false);
+    elide_value.push(false);
     override_size.push(0);
   }
 
@@ -111,6 +132,10 @@ struct Emitter {
   Cursor& cursor;
   std::set<std::string> preproc_vars;
   std::stack<int> override_size;
+  using string_to_string = std::map<std::string, std::string>;
+  std::stack<string_to_string> id_map;
+  std::stack<bool> elide_type;
+  std::stack<bool> elide_value;
 };
 
 //==============================================================================

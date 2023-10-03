@@ -438,8 +438,8 @@ Err Emitter::emit(CNodeCall* node) {
   if (auto func_id = node->node_name->as<CNodeIdentifier>()) {
 
     // Some builtin functions just need to be renamed.
-    if (cursor.id_map.top().contains(func_id->name)) {
-      auto replacement = cursor.id_map.top()[func_id->name];
+    if (id_map.top().contains(func_id->name)) {
+      auto replacement = id_map.top()[func_id->name];
       err << cursor.emit_replacement2(node->node_name, "%s", replacement.c_str());
       err << cursor.skip_over2(node->node_targs);
       err << emit_dispatch(node->node_args);
@@ -648,7 +648,7 @@ Err Emitter::emit(CNodeDeclaration* node) {
   }
 
   for (auto child : node) {
-    if (cursor.elide_type.top()) {
+    if (elide_type.top()) {
       if (child->as<CNodeType>()) {
         err << cursor.skip_over(child);
         if (child->node_next) err << cursor.skip_gap();
@@ -812,7 +812,7 @@ Err Emitter::emit(CNodeExpStatement* node) {
     }
   }
   else if (auto decl = node->node_exp->as<CNodeDeclaration>()) {
-    if (cursor.elide_type.top() && decl->node_value == nullptr) {
+    if (elide_type.top() && decl->node_value == nullptr) {
       err << cursor.skip_over(node);
     }
     else {
@@ -991,10 +991,9 @@ Err Emitter::emit(CNodeIdentifier* node) {
   Err err = cursor.check_at(node);
   auto text = node->get_textstr();
 
-  auto& id_map = cursor.id_map.top();
-  auto found = id_map.find(text);
+  auto found = id_map.top().find(text);
 
-  if (found != id_map.end()) {
+  if (found != id_map.top().end()) {
     err << cursor.emit_replacement(node, (*found).second);
   }
   else if (preproc_vars.contains(text)) {
@@ -1312,17 +1311,17 @@ Err Emitter::emit_template_parameter_list(CNodeClass* node) {
 Err Emitter::emit_block(CNodeCompound* node, std::string ldelim, std::string rdelim) {
   Err err;
 
-  cursor.elide_type.push(true);
-  cursor.elide_value.push(false);
+  elide_type.push(true);
+  elide_value.push(false);
 
   if (auto child = node->child("ldelim")) {
     err << cursor.emit_replacement(child, ldelim);
     cursor.indent_level++;
-    cursor.elide_type.push(false);
-    cursor.elide_value.push(true);
+    elide_type.push(false);
+    elide_value.push(true);
     err << emit_hoisted_decls(node);
-    cursor.elide_type.pop();
-    cursor.elide_value.pop();
+    elide_type.pop();
+    elide_value.pop();
     err << cursor.emit_gap();
   }
 
@@ -1341,8 +1340,8 @@ Err Emitter::emit_block(CNodeCompound* node, std::string ldelim, std::string rde
     err << cursor.emit_replacement(child, rdelim);
   }
 
-  cursor.elide_type.pop();
-  cursor.elide_value.pop();
+  elide_type.pop();
+  elide_value.pop();
 
   return err;
 }
@@ -1643,8 +1642,8 @@ Err Emitter::emit_hoisted_decls(CNodeCompound* node) {
 
   auto old_cursor = cursor.tok_cursor;
 
-  cursor.elide_type.push(false);
-  cursor.elide_value.push(true);
+  elide_type.push(false);
+  elide_value.push(true);
 
   for (auto child : node) {
     if (auto exp = child->as<CNodeExpStatement>()) {
@@ -1688,8 +1687,8 @@ Err Emitter::emit_hoisted_decls(CNodeCompound* node) {
 
   }
 
-  cursor.elide_type.pop();
-  cursor.elide_value.pop();
+  elide_type.pop();
+  elide_value.pop();
 
   cursor.tok_cursor = old_cursor;
 
@@ -1885,7 +1884,7 @@ Err Emitter::emit_component(CNodeField* node) {
   // Swap template arguments with the values from the template
   // instantiation.
   std::map<std::string, std::string> replacements;
-  cursor.id_map.push(cursor.id_map.top());
+  id_map.push(id_map.top());
 
   if (has_template_params) {
     auto args = node->node_decl->node_type->node_targs->as<CNodeList>();
@@ -1899,7 +1898,7 @@ Err Emitter::emit_component(CNodeField* node) {
       auto arg = args->items[i];
 
       auto param_name = param->name;
-      cursor.id_map.top()[param_name] = arg->get_textstr();
+      id_map.top()[param_name] = arg->get_textstr();
     }
 
   }
@@ -1964,7 +1963,7 @@ Err Emitter::emit_component(CNodeField* node) {
   //----------------------------------------
   // Done
 
-  cursor.id_map.pop();
+  id_map.pop();
 
   return err << cursor.check_done(node);
 }
@@ -2173,13 +2172,13 @@ Err Emitter::emit_always_comb(CNodeFunction* node) {
 
   auto func_name = node->name;
 
-  cursor.id_map.push(cursor.id_map.top());
+  id_map.push(id_map.top());
   for (auto node_param : node->node_params->items) {
     auto param = node_param->as<CNodeDeclaration>();
     if (!param) continue;
 
     auto param_name = param->name;
-    cursor.id_map.top()[param_name] = func_name + "_" + param_name;
+    id_map.top()[param_name] = func_name + "_" + param_name;
   }
 
   err << cursor.emit_replacement2(node->node_type, "always_comb begin :");
@@ -2195,7 +2194,7 @@ Err Emitter::emit_always_comb(CNodeFunction* node) {
 
   err << emit_block(node->node_body, "", "end");
 
-  cursor.id_map.pop();
+  id_map.pop();
 
   return err << cursor.check_done(node);
 }
@@ -2207,13 +2206,13 @@ Err Emitter::emit_always_ff(CNodeFunction* node) {
 
   auto func_name = node->name;
 
-  cursor.id_map.push(cursor.id_map.top());
+  id_map.push(id_map.top());
   for (auto node_param : node->node_params) {
     auto param = node_param->as<CNodeDeclaration>();
     if (!param) continue;
 
     auto param_name = param->name;
-    cursor.id_map.top()[param_name] = func_name + "_" + param_name;
+    id_map.top()[param_name] = func_name + "_" + param_name;
   }
 
   err << cursor.emit_replacement2(node->node_type, "always_ff @(posedge clock) begin :");
@@ -2228,7 +2227,7 @@ Err Emitter::emit_always_ff(CNodeFunction* node) {
 
   err << emit_block(node->node_body, "", "end");
 
-  cursor.id_map.pop();
+  id_map.pop();
 
   return err << cursor.check_done(node);
 }

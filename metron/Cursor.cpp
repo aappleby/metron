@@ -14,7 +14,7 @@ Cursor::Cursor(CSourceFile* source, std::string* str_out) {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Cursor::emit_gap() {
+Err Cursor::emit_gap() {
   Err err;
 
   auto ta = tok_cursor - 1;
@@ -45,7 +45,7 @@ CHECK_RETURN Err Cursor::emit_gap() {
 
 //----------------------------------------
 
-CHECK_RETURN Err Cursor::skip_gap() {
+Err Cursor::skip_gap() {
   Err err;
 
   if (tok_cursor->lex_type() == LEX_EOF) return err;
@@ -63,7 +63,16 @@ CHECK_RETURN Err Cursor::skip_gap() {
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Cursor::emit_token(const CToken* a) {
+Err Cursor::emit_lexeme(Lexeme* l) {
+  Err err;
+  for (auto c = l->text_begin; c < l->text_end; c++) {
+    err << emit_char(*c);
+  }
+  return err;
+}
+
+
+Err Cursor::emit_token(const CToken* a) {
   auto begin = a->text_begin();
   auto end   = a->text_end();
 
@@ -75,7 +84,7 @@ CHECK_RETURN Err Cursor::emit_token(const CToken* a) {
   return err;
 }
 
-CHECK_RETURN Err Cursor::emit_span(const CToken* a, const CToken* b) {
+Err Cursor::emit_span(const CToken* a, const CToken* b) {
   Err err;
   assert(a != b);
   for (auto c = a; c < b; c++) {
@@ -88,10 +97,34 @@ CHECK_RETURN Err Cursor::emit_span(const CToken* a, const CToken* b) {
   return err;
 }
 
+Err Cursor::emit_replacement(const CToken* a, const CToken* b, const std::string& r) {
+  Err err;
+
+  for (auto c : r) {
+    err << emit_char(c, 0x80FFFF);
+  }
+
+  tok_cursor = b;
+  return err;
+}
+
+Err Cursor::skip_span(const CToken* a, const CToken* b) {
+  Err err;
+  auto begin = a->text_begin();
+  auto end   = (b-1)->text_end();
+
+  for (auto c = begin; c < end; c++) {
+    err << skip_char(*c);
+  }
+  tok_cursor = b;
+  return err;
+}
+
+
 //------------------------------------------------------------------------------
 // Generic emit() methods
 
-CHECK_RETURN Err Cursor::start_line() {
+Err Cursor::start_line() {
   Err err;
   if (line_dirty) {
     err << emit_char('\n');
@@ -104,7 +137,7 @@ CHECK_RETURN Err Cursor::start_line() {
 
 //----------------------------------------
 
-CHECK_RETURN Err Cursor::emit_backspace() {
+Err Cursor::emit_backspace() {
   Err err;
   if (echo) {
     LOG_C(0x8080FF, "^H");
@@ -115,7 +148,7 @@ CHECK_RETURN Err Cursor::emit_backspace() {
 
 //----------------------------------------
 
-CHECK_RETURN Err Cursor::emit_char(char c, uint32_t color) {
+Err Cursor::emit_char(char c, uint32_t color) {
   Err err;
   // We ditch all '\r'.
   if (c == '\r') return err;
@@ -165,7 +198,7 @@ CHECK_RETURN Err Cursor::emit_char(char c, uint32_t color) {
 
 //----------------------------------------
 
-CHECK_RETURN Err Cursor::skip_char(char c) {
+Err Cursor::skip_char(char c) {
   Err err;
   // We ditch all '\r'.
   if (c == '\r') return err;
@@ -186,10 +219,8 @@ CHECK_RETURN Err Cursor::skip_char(char c) {
 
 //----------------------------------------
 
-CHECK_RETURN Err Cursor::emit_print(const char* fmt, ...) {
+Err Cursor::emit_vprint(const char* fmt, va_list args) {
   Err err;
-  va_list args;
-  va_start(args, fmt);
 
   va_list args2;
   va_copy(args2, args);
@@ -208,9 +239,15 @@ CHECK_RETURN Err Cursor::emit_print(const char* fmt, ...) {
   return err;
 }
 
+Err Cursor::emit_print(const char* fmt, ...) {
+  va_list args;
+  va_start(args, fmt);
+  return emit_vprint(fmt, args);
+}
+
 //----------------------------------------
 
-CHECK_RETURN Err Cursor::emit_span(const char* a, const char* b) {
+Err Cursor::emit_span(const char* a, const char* b) {
   Err err;
   for (auto c = a; c < b; c++) {
     err << emit_char(*c);

@@ -148,6 +148,8 @@ struct Emitter {
   Err emit_raw2(CNode* n);
 
 
+  Err emit_format(CNode* n, const char* fmt, ...);
+
 
   Err comment_out(CNode* n) {
     if (n == nullptr) return Err();

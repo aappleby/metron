@@ -269,31 +269,100 @@ Err Emitter::emit_dispatch2(CNode* node) {
 // Change '=' to '<=' if lhs is a field and we're inside a sequential block.
 // Change "a += b" to "a = a + b", etc.
 
+// lhs_op_rhs
+// if (in_tick) "lhs _ {<= } lhs ~op _ { %c } rhs"
+
+// else         "lhs _ {= }  lhs ~op _ { %c } rhs"
+
+// int vsnprintf (char * s, size_t n, const char * format, va_list arg );
+
+Err Emitter::emit_format(CNode* node, const char* fmt, ...) {
+  Err err;
+
+  va_list args;
+  va_start(args, fmt);
+
+  const char* f = fmt;
+  char buf[256];
+
+  bool skip = false;
+
+  while(*f) {
+    // Skip next token/gap
+    if (*f == '~') {
+      skip = true;
+    }
+
+    // Emit gap
+    else if (*f == '_') {
+      err << (skip ? cursor.skip_gap() : cursor.emit_gap());
+      skip = false;
+    }
+
+    // Emit print
+    else if (*f == '{') {
+      f++;
+      char* b = buf;
+      while(*f != '}') *b++ = *f++;
+      *b = 0;
+      err << cursor.emit_vprint(buf, args);
+    }
+
+    // Emit node
+    else {
+      char* b = buf;
+      while(isalpha(*f) || *f == '_') *b++ = *f++;
+      *b = 0;
+      auto child = node->child(buf);
+      err << (skip ? skip_over(child) : emit_dispatch(child));
+      skip = false;
+    }
+  }
+
+  return err;
+}
+
+/*
+emit("lhs")
+emit_gap()
+vprint("<= ", ...)
+emit("lhs")
+skip("op")
+emit_gap()
+vprintf(" %c ", ...)
+emit("rhs")
+*/
+
+
+
 bool in_tick(CNode* node) {
   return node->ancestor<CNodeFunction>()->method_type == MT_TICK;
 }
 
 Err Emitter::emit(CNodeAssignment* node) {
   Err err = check_at(node);
-
-  err << emit_dispatch2(node->node_lhs);
+  auto node_field = resolve_field(node->node_lhs);
 
   // If we're in a tick, turn = into <=
-  auto node_field = resolve_field(node->node_lhs);
   std::string assign = in_tick(node) && node_field ? "<=" : "=";
 
   if (node->node_op->get_text() == "=") {
-    err << emit_replacement2(node->node_op, assign);
-  } else {
+    emit_dispatch2(node->node_lhs);
+    emit_replacement2(node->node_op, assign);
+    emit_dispatch(node->node_rhs);
+  }
+  else {
+    err << emit_dispatch2(node->node_lhs);
+
     err << emit_replacement2(
       node->node_op,
       "%s %s %c",
       assign.c_str(),
       node->node_lhs->get_textstr().c_str(),
       node->node_op->get_text()[0]);
-  }
 
-  err << emit_dispatch(node->node_rhs);
+    err << emit_dispatch(node->node_rhs);
+  }
 
   return err << check_done(node);
 }

@@ -21,48 +21,22 @@ struct Cursor {
 
   //----------------------------------------
 
-  CHECK_RETURN Err emit_gap();
-  CHECK_RETURN Err skip_gap();
+  Err emit_token(const CToken* a);
+  Err skip_token(const CToken* a);
 
-  // Token-level emit()
-  CHECK_RETURN Err emit_span(const CToken* a, const CToken* b);
+  Err emit_gap();
+  Err skip_gap();
 
-  CHECK_RETURN Err emit_token(const CToken* a);
-  Err emit_lexeme(Lexeme* l) {
-    Err err;
-    for (auto c = l->text_begin; c < l->text_end; c++) {
-      err << emit_char(*c);
-    }
-    return err;
-  }
+  Err emit_span(const CToken* a, const CToken* b);
+  Err skip_span(const CToken* a, const CToken* b);
 
-  // Char-level emit()
-  CHECK_RETURN Err start_line();
-  CHECK_RETURN Err emit_backspace();
-  CHECK_RETURN Err emit_print(const char* fmt, ...);
+  Err emit_lexeme(Lexeme* l);
 
-  Err emit_replacement(const CToken* a, const CToken* b, const std::string& r) {
-    Err err;
-
-    for (auto c : r) {
-      err << emit_char(c, 0x80FFFF);
-    }
-
-    tok_cursor = b;
-    return err;
-  }
-
-  Err skip_span(const CToken* a, const CToken* b) {
-    Err err;
-    auto begin = a->text_begin();
-    auto end   = (b-1)->text_end();
-
-    for (auto c = begin; c < end; c++) {
-      err << skip_char(*c);
-    }
-    tok_cursor = b;
-    return err;
-  }
+  Err start_line();
+  Err emit_backspace();
+  Err emit_vprint(const char* fmt, va_list args);
+  Err emit_print(const char* fmt, ...);
+  Err emit_replacement(const CToken* a, const CToken* b, const std::string& r);
 
   //----------------------------------------
 
@@ -80,7 +54,7 @@ struct Cursor {
 
 private:
 
-  CHECK_RETURN Err emit_char(char c, uint32_t color = 0);
-  CHECK_RETURN Err skip_char(char c);
-  CHECK_RETURN Err emit_span(const char* a, const char* b);
+  Err emit_char(char c, uint32_t color = 0);
+  Err skip_char(char c);
+  Err emit_span(const char* a, const char* b);
 };

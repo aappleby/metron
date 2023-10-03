@@ -6,8 +6,8 @@
 #include <map>
 #include "metrolib/core/Err.h"
 
-struct CNode;
-struct Cursor;
+#include "metron/CNode.hpp"
+#include "metron/Cursor.hpp"
 
 struct CNodeAccess;
 struct CNodeAssignment;
@@ -128,6 +128,50 @@ struct Emitter {
   Err emit_sra(CNodeCall* node);
   Err emit_dup(CNodeCall* node);
   Err emit_submod_call(CNodeCall* node);
+
+
+
+
+  Err check_at(CNode* n);
+  Err check_done(CNode* n);
+  Err emit_gap(CNode* n);
+  Err skip_gap(CNode* n);
+  Err skip_over(CNode* n);
+  Err skip_over2(CNode* n);
+  Err skip_to(CNode* n);
+  Err emit_replacement(CNode* n, const std::string& s);
+  Err emit_replacement(CNode* n, const char* fmt, ...);
+  Err emit_replacement2(CNode* n, const char* fmt, ...);
+  Err emit_raw(CNode* n);
+  Err emit_raw2(CNode* n);
+
+
+
+  Err comment_out(CNode* n) {
+    if (n == nullptr) return Err();
+
+    Err err = check_at(n);
+    err << cursor.emit_print("/*") << emit_raw(n) << cursor.emit_print("*/");
+
+    return err << check_done(n);
+  }
+
+  Err comment_out2(CNode* n) {
+    Err err;
+    if (n == nullptr) return err;
+    err << comment_out(n) << emit_gap(n);
+    return err;
+  }
+
+
+
+
+
+
+
+
+
+
 
   Cursor& cursor;
   std::set<std::string> preproc_vars;

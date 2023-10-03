@@ -43,15 +43,6 @@ CHECK_RETURN Err Cursor::emit_gap() {
   return err;
 }
 
-CHECK_RETURN Err Cursor::emit_gap(CNode* n) {
-  if (n && n->node_next) {
-    return emit_gap();
-  }
-  else {
-    return Err();
-  }
-}
-
 //----------------------------------------
 
 CHECK_RETURN Err Cursor::skip_gap() {
@@ -69,109 +60,6 @@ CHECK_RETURN Err Cursor::skip_gap() {
   return err;
 }
 
-CHECK_RETURN Err Cursor::skip_gap(CNode* n) {
-  if (n && n->node_next) {
-    return skip_gap();
-  }
-  else {
-    return Err();
-  }
-}
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err Cursor::skip_over(CNode* n) {
-  if (n == nullptr) return Err();
-  Err err = check_at(n);
-
-  {
-    auto begin = n->tok_begin()->text_begin();
-    auto end   = (n->tok_end()-1)->text_end();
-
-    Err err;
-    for (auto c = begin; c < end; c++) {
-      err << skip_char(*c);
-    }
-    tok_cursor = n->tok_end();
-    line_elided = true;
-
-  }
-
-  return err << check_done(n);
-}
-
-CHECK_RETURN Err Cursor::skip_over2(CNode* n) {
-  if (n == nullptr) return Err();
-
-  Err err;
-  err << skip_over(n);
-  err << skip_gap();
-
-  return err;
-}
-
-CHECK_RETURN Err Cursor::skip_to(CNode* n) {
-  if (n == nullptr) return Err();
-
-  Err err;
-  while (tok_cursor < n->tok_begin()) {
-    for (auto c = tok_cursor->text_begin(); c < tok_cursor->text_end(); c++) {
-      err << skip_char(*c);
-    }
-    tok_cursor++;
-  }
-
-  return err;
-}
-
-CHECK_RETURN Err Cursor::comment_out(CNode* n) {
-  if (n == nullptr) return Err();
-
-  Err err = check_at(n);
-  err << emit_print("/*") << emit_raw(n) << emit_print("*/");
-
-  return err << check_done(n);
-}
-
-CHECK_RETURN Err Cursor::comment_out2(CNode* n) {
-  Err err;
-  if (n == nullptr) return err;
-  err << comment_out(n) << emit_gap(n);
-  return err;
-}
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err Cursor::check_at(CNode* n) {
-
-  if (tok_cursor != n->tok_begin()) {
-    LOG_R("check_at - bad tok_cursor\n");
-    LOG_R("  want @%.10s@\n", n->text_begin());
-    LOG_R("  got  @%.10s@\n", tok_cursor->text_begin());
-    assert(false);
-  }
-
-  return Err();
-}
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err Cursor::check_done(CNode* n) {
-
-  auto tok_end = n->tok_end();
-
-  if (tok_cursor < tok_end) {
-    LOG_R("Token cursor was left inside the current node\n");
-    assert(false);
-  }
-
-  if (tok_cursor > tok_end) {
-    LOG_R("Token cursor was left past the end of the current node\n");
-    assert(false);
-  }
-
-  return Err();
-}
 
 //------------------------------------------------------------------------------
 
@@ -333,55 +221,6 @@ CHECK_RETURN Err Cursor::emit_span(const char* a, const char* b) {
   for (auto c = a; c < b; c++) {
     err << emit_char(*c);
   }
-  return err;
-}
-
-//----------------------------------------
-
-CHECK_RETURN Err Cursor::emit_replacement(CNode* n, const std::string& s) {
-  Err err = check_at(n);
-  for (auto c : s) {
-    err << emit_char(c, 0x80FFFF);
-  }
-  tok_cursor = n->tok_end();
-  return err << check_done(n);
-}
-
-//----------------------------------------
-
-CHECK_RETURN Err Cursor::emit_replacement(CNode* n, const char* fmt, ...) {
-  Err err = check_at(n);
-  va_list args;
-  va_start(args, fmt);
-  err << emit_vprint(fmt, args);
-  tok_cursor = n->tok_end();
-  return err << check_done(n);
-}
-
-CHECK_RETURN Err Cursor::emit_replacement2(CNode* n, const char* fmt, ...) {
-  Err err = check_at(n);
-  va_list args;
-  va_start(args, fmt);
-  err << emit_vprint(fmt, args);
-  tok_cursor = n->tok_end();
-  err << check_done(n);
-  err << emit_gap(n);
-  return err;
-}
-
-//----------------------------------------
-
-CHECK_RETURN Err Cursor::emit_raw(CNode* n) {
-  Err err;
-  err << emit_span(n->tok_begin(), n->tok_end());
-  return err;
-}
-
-CHECK_RETURN Err Cursor::emit_raw2(CNode* n) {
-  Err err;
-  if (n == nullptr) return err;
-  err << emit_raw(n);
-  err << emit_gap(n);
   return err;
 }
 

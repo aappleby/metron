@@ -42,7 +42,7 @@
 
 //------------------------------------------------------------------------------
 
-CHECK_RETURN Err Emitter::emit_splice(CNode* n) {
+Err Emitter::emit_splice(CNode* n) {
   Err err;
   auto old_cursor = cursor.tok_cursor;
   cursor.tok_cursor = n->tok_begin();
@@ -169,7 +169,7 @@ bool is_bit_extract(CNodeCall* node) {
 //==============================================================================
 
 Err Emitter::emit_default(CNode* node) {
-  Err err = cursor.check_at(node);
+  Err err = check_at(node);
 
   if (node->child_head) {
     err << emit_children(node);
@@ -178,7 +178,7 @@ Err Emitter::emit_default(CNode* node) {
     err << cursor.emit_span(node->tok_begin(), node->tok_end());
   }
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
@@ -215,9 +215,9 @@ Err Emitter::emit_everything() {
 //------------------------------------------------------------------------------
 
 Err Emitter::emit_dispatch(CNode* node) {
-  Err err = cursor.check_at(node);
+  Err err = check_at(node);
 
-  if (auto n = node->as<CNodeAccess>()) return cursor.comment_out(node);
+  if (auto n = node->as<CNodeAccess>()) return comment_out(node);
 
   if (auto n = node->as<CNodeAssignment>()) return emit(n);
   if (auto n = node->as<CNodeBuiltinType>()) return emit(n);
@@ -256,7 +256,7 @@ Err Emitter::emit_dispatch2(CNode* node) {
   Err err;
   if (node == nullptr) return err;
   err << emit_dispatch(node);
-  err << cursor.emit_gap(node);
+  err << emit_gap(node);
   return err;
 }
 
@@ -265,7 +265,7 @@ Err Emitter::emit_dispatch2(CNode* node) {
 // Change "a += b" to "a = a + b", etc.
 
 Err Emitter::emit(CNodeAssignment* node) {
-  Err err = cursor.check_at(node);
+  Err err = check_at(node);
 
   auto node_class = node->ancestor<CNodeClass>();
   auto node_func  = node->ancestor<CNodeFunction>();
@@ -282,19 +282,19 @@ Err Emitter::emit(CNodeAssignment* node) {
     err << emit_dispatch2(node->node_op);
   } else {
     auto lhs_text = node->node_lhs->get_textstr();
-    err << cursor.skip_over2(node->node_op);
+    err << skip_over2(node->node_op);
     err << cursor.emit_print("= %s %c ", lhs_text.c_str(), node->node_op->get_text()[0]);
   }
 
   err << emit_dispatch(node->node_rhs);
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
 
 Err Emitter::emit(CNodeBuiltinType* node) {
-  Err err = cursor.check_at(node);
+  Err err = check_at(node);
 
   if (!node->node_targs) {
     return emit_default(node);
@@ -306,33 +306,33 @@ Err Emitter::emit(CNodeBuiltinType* node) {
     auto width = atoi(node_const_int->text_begin());
     if (width == 1) {
       // logic<1> -> logic
-      err << cursor.emit_raw2(node->node_name);
-      err << cursor.skip_over(node->node_targs);
+      err << emit_raw2(node->node_name);
+      err << skip_over(node->node_targs);
     } else {
       // logic<N> -> logic[N-1:0]
-      err << cursor.emit_raw2(node->node_name);
-      err << cursor.emit_replacement2(node->node_targs->node_ldelim, "[");
-      err << cursor.skip_over2(node_const_int);
+      err << emit_raw2(node->node_name);
+      err << emit_replacement2(node->node_targs->node_ldelim, "[");
+      err << skip_over2(node_const_int);
       err << cursor.emit_print("%d:0", width - 1);
-      err << cursor.emit_replacement(node->node_targs->node_rdelim, "]");
+      err << emit_replacement(node->node_targs->node_rdelim, "]");
     }
   } else if (auto node_identifier = node_exp->as<CNodeIdentifier>()) {
     // logic<CONSTANT> -> logic[CONSTANT-1:0]
     err << emit("@[@-1:0]", node->node_name, node_identifier);
-    err << cursor.skip_over(node);
+    err << skip_over(node);
 
   } else {
     // logic<exp> -> logic[(exp)-1:0]
     err << emit("@[(@)-1:0]", node->node_name, node_exp);
-    err << cursor.skip_over(node);
+    err << skip_over(node);
   }
 
   if (node->node_scope) {
     err << cursor.skip_gap();
-    err << cursor.skip_over(node->node_scope);
+    err << skip_over(node->node_scope);
   }
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
@@ -364,17 +364,17 @@ CNodeFunction* resolve_func(CNode* node) {
 
 Err Emitter::emit_cat(CNodeCall* node) {
   Err err;
-  err << cursor.skip_to(node->node_args);
+  err << skip_to(node->node_args);
   for (auto child : node->node_args) {
     if (child->tag_is("ldelim")) {
-      err << cursor.emit_replacement2(child, "{");
+      err << emit_replacement2(child, "{");
     } else if (child->tag_is("rdelim")) {
-      err << cursor.emit_replacement2(child, "}");
+      err << emit_replacement2(child, "}");
     } else {
       err << emit_dispatch2(child);
     }
   }
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //----------------------------------------
@@ -386,7 +386,7 @@ Err Emitter::emit_sra(CNodeCall* node) {
   auto rhs = args->items[1];
 
   err << emit("($signed(@) >>> @)", lhs, rhs);
-  err << cursor.skip_over(node);
+  err << skip_over(node);
 
   return err;
 }
@@ -399,7 +399,7 @@ Err Emitter::emit_dup(CNodeCall* node) {
   auto node_val = node->node_targs->child("arg");
   auto node_exp = node->node_args->child("exp");
   err << emit("{@ {@}}", node_val, node_exp);
-  err << cursor.skip_over(node);
+  err << skip_over(node);
   return err;
 }
 
@@ -413,18 +413,18 @@ Err Emitter::emit_submod_call(CNodeCall* node) {
   auto func_path = node->node_name->as<CNodeFieldExpression>();
   auto dst_func = resolve_func(node);
   if (dst_func->child("return_type")->name == "void") {
-    err << cursor.comment_out(node);
+    err << comment_out(node);
   } else {
     err << emit("@_@_ret", func_path->node_path, func_path->node_name);
-    err << cursor.skip_over(node);
+    err << skip_over(node);
   }
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
 
 Err Emitter::emit(CNodeCall* node) {
-  Err err = cursor.check_at(node);
+  Err err = check_at(node);
 
   if (is_bit_extract(node)) return emit_bit_extract(node);
 
@@ -440,10 +440,10 @@ Err Emitter::emit(CNodeCall* node) {
     // Some builtin functions just need to be renamed.
     if (id_map.top().contains(func_id->name)) {
       auto replacement = id_map.top()[func_id->name];
-      err << cursor.emit_replacement2(node->node_name, "%s", replacement.c_str());
-      err << cursor.skip_over2(node->node_targs);
+      err << emit_replacement2(node->node_name, "%s", replacement.c_str());
+      err << skip_over2(node->node_targs);
       err << emit_dispatch(node->node_args);
-      return err << cursor.check_done(node);
+      return err << check_done(node);
     }
 
     // Some builtin functions have special representations in Verilog.
@@ -469,7 +469,7 @@ Err Emitter::emit(CNodeCall* node) {
     // check tock_task.h
     if (dst_mtype == MT_TOCK) {
       auto dst_name = dst_func->name;
-      err << cursor.skip_over(node);
+      err << skip_over(node);
       err << cursor.emit_print("%s_ret", dst_name.c_str());
       return err;
     }
@@ -477,7 +477,7 @@ Err Emitter::emit(CNodeCall* node) {
     if (src_mtype == MT_TOCK) {
 
       // Emit writes to binding variables in place of the function arguments
-      err << cursor.comment_out(node);
+      err << comment_out(node);
 
       auto param = dst_params->child_head;
       auto arg = node->node_args->child_head;
@@ -509,25 +509,25 @@ Err Emitter::emit(CNodeCall* node) {
 
       assert(param == nullptr);
       assert(arg == nullptr);
-      return err << cursor.check_done(node);
+      return err << check_done(node);
     }
   }
 
   assert(false);
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
 
 Err Emitter::emit(CNodeClass* node) {
-  Err err = cursor.check_at(node);
+  Err err = check_at(node);
 
   auto node_class = node->child<CNodeKeyword>();
   auto node_name = node->child("name");
   auto node_body = node->child("body");
   auto node_semi = node->child("semi");
 
-  err << cursor.emit_replacement(node_class, "module");
+  err << emit_replacement(node_class, "module");
   err << cursor.emit_gap();
   err << emit_dispatch2(node_name);
 
@@ -542,20 +542,20 @@ Err Emitter::emit(CNodeClass* node) {
     if (child->get_text() == "{") {
       cursor.indent_level++;
       err << emit_template_parameter_list(node);
-      err << cursor.skip_over(child);
-      err << cursor.emit_gap(child);
+      err << skip_over(child);
+      err << emit_gap(child);
     } else if (child->get_text() == "}") {
       cursor.indent_level--;
-      err << cursor.emit_replacement2(child, "endmodule");
+      err << emit_replacement2(child, "endmodule");
     } else {
       err << emit_dispatch2(child);
     }
   }
 
   err << cursor.skip_gap();
-  err << cursor.skip_over(node_semi);
+  err << skip_over(node_semi);
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
@@ -565,7 +565,7 @@ Err Emitter::emit(CNodeClassType* node) {
 
   if (node->node_targs) {
     err << emit_dispatch2(node->child("name"));
-    err << cursor.skip_over(node->node_targs);
+    err << skip_over(node->node_targs);
   } else {
     err << emit_default(node);
   }
@@ -581,7 +581,7 @@ Err Emitter::emit(CNodeCompound* node) {
 //------------------------------------------------------------------------------
 
 Err Emitter::emit(CNodeConstant* node) {
-  Err err = cursor.check_at(node);
+  Err err = check_at(node);
 
   std::string body = node->get_textstr();
 
@@ -618,19 +618,19 @@ Err Emitter::emit(CNodeConstant* node) {
 
   cursor.tok_cursor = node->tok_end();
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
 
 Err Emitter::emit(CNodeDeclaration* node) {
-  Err err = cursor.check_at(node);
+  Err err = check_at(node);
 
   // Check for const char*
   if (node->node_const) {
     if (node->node_type->child("name")->get_text() == "char") {
       if (node->node_type->child("star")) {
-        return cursor.emit_replacement(node, "{{const char*}}");
+        return emit_replacement(node, "{{const char*}}");
       }
     }
 
@@ -638,19 +638,19 @@ Err Emitter::emit(CNodeDeclaration* node) {
 
     for (auto c = node->child_head; c; c = c->node_next) {
       if (c->as<CNodeType>()) {
-        err << cursor.skip_over2(c);
+        err << skip_over2(c);
       } else {
         err << emit_dispatch2(c);
       }
     }
 
-    return err << cursor.check_done(node);
+    return err << check_done(node);
   }
 
   for (auto child : node) {
     if (elide_type.top()) {
       if (child->as<CNodeType>()) {
-        err << cursor.skip_over(child);
+        err << skip_over(child);
         if (child->node_next) err << cursor.skip_gap();
         continue;
       }
@@ -659,13 +659,13 @@ Err Emitter::emit(CNodeDeclaration* node) {
     err << emit_dispatch2(child);
   }
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
 
 Err Emitter::emit(CNodeEnum* node) {
-  Err err = cursor.check_at(node);
+  Err err = check_at(node);
 
   // Extract enum bit width, if present.
   override_size.push(32);
@@ -682,12 +682,12 @@ Err Emitter::emit(CNodeEnum* node) {
   err << emit(node->node_enum);
   err << cursor.emit_gap();
 
-  err << cursor.skip_over2(node->node_class);
+  err << skip_over2(node->node_class);
 
-  err << cursor.skip_over2(node->node_name);
+  err << skip_over2(node->node_name);
 
   if (node->node_colon) {
-    err << cursor.skip_over2(node->node_colon);
+    err << skip_over2(node->node_colon);
     err << emit_dispatch2(node->node_type);
   }
 
@@ -704,13 +704,13 @@ Err Emitter::emit(CNodeEnum* node) {
 
   override_size.pop();
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
 
 Err Emitter::emit(CNodePrefixExp* node) {
-  Err err = cursor.check_at(node);
+  Err err = check_at(node);
 
   auto node_op = node->child("prefix");
   auto op = node_op->get_text();
@@ -724,7 +724,7 @@ Err Emitter::emit(CNodePrefixExp* node) {
   auto node_rhs = node->child("rhs");
   auto node_field = resolve_field(node_class, node_rhs);
 
-  err << cursor.skip_over(node);
+  err << skip_over(node);
   err << emit_splice(node_rhs);
   if (node_func->method_type == MT_TICK && node_field) {
     err << cursor.emit_print(" <= ");
@@ -738,13 +738,13 @@ Err Emitter::emit(CNodePrefixExp* node) {
     err << cursor.emit_print(" - 1");
   }
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
 
 Err Emitter::emit(CNodeSuffixExp* node) {
-  Err err = cursor.check_at(node);
+  Err err = check_at(node);
 
   auto node_class = node->ancestor<CNodeClass>();
   auto node_func = node->ancestor<CNodeFunction>();
@@ -755,7 +755,7 @@ Err Emitter::emit(CNodeSuffixExp* node) {
   auto op = node_op->get_text();
 
   if (op == "++" || op == "--") {
-    err << cursor.skip_over(node);
+    err << skip_over(node);
     err << emit_splice(node_lhs);
     if (node_func->method_type == MT_TICK && node_field) {
       err << cursor.emit_print(" <= ");
@@ -772,13 +772,13 @@ Err Emitter::emit(CNodeSuffixExp* node) {
     err << emit_default(node);
   }
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
 
 Err Emitter::emit(CNodeExpStatement* node) {
-  Err err = cursor.check_at(node);
+  Err err = check_at(node);
 
   // Call expressions turn into either Verilog calls, or are replaced with
   // binding statements.
@@ -797,7 +797,7 @@ Err Emitter::emit(CNodeExpStatement* node) {
     }
 
     if (can_omit_call) {
-      err << cursor.comment_out(node);
+      err << comment_out(node);
     }
     else {
       err << emit_default(node);
@@ -805,7 +805,7 @@ Err Emitter::emit(CNodeExpStatement* node) {
   }
   else if (auto keyword = node->node_exp->as<CNodeKeyword>()) {
     if (keyword->get_text() == "break") {
-      err << cursor.comment_out(node);
+      err << comment_out(node);
     }
     else {
       err << emit_default(node);
@@ -813,7 +813,7 @@ Err Emitter::emit(CNodeExpStatement* node) {
   }
   else if (auto decl = node->node_exp->as<CNodeDeclaration>()) {
     if (elide_type.top() && decl->node_value == nullptr) {
-      err << cursor.skip_over(node);
+      err << skip_over(node);
     }
     else {
       err << emit_default(node);
@@ -823,13 +823,13 @@ Err Emitter::emit(CNodeExpStatement* node) {
     err << emit_default(node);
   }
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
 
 Err Emitter::emit(CNodeField* node) {
-  Err err = cursor.check_at(node);
+  Err err = check_at(node);
 
   //----------------------------------------
   // Ports don't go in the class body.
@@ -837,13 +837,13 @@ Err Emitter::emit(CNodeField* node) {
 
   if (node->is_public && !node->is_component() &&
       !node->node_decl->is_localparam()) {
-    return err << cursor.skip_over(node);
+    return err << skip_over(node);
   }
 
   //----------------------------------------
 
   if (node->is_const_char()) {
-    err << cursor.skip_to(node->node_decl->node_name);
+    err << skip_to(node->node_decl->node_name);
 
     err << cursor.emit_print("localparam string ");
     err << emit_dispatch2(node->node_decl->node_name);
@@ -852,7 +852,7 @@ Err Emitter::emit(CNodeField* node) {
     err << emit_dispatch2(node->node_decl->node_value);
     err << emit_dispatch2(node->node_semi);
 
-    return err << cursor.check_done(node);
+    return err << check_done(node);
   }
 
   //----------------------------------------
@@ -862,8 +862,8 @@ Err Emitter::emit(CNodeField* node) {
     bool in_namespace = node->ancestor<CNodeNamespace>() != nullptr;
     err << cursor.emit_print(in_namespace ? "parameter " : "localparam ");
 
-    err << cursor.comment_out2(node->node_decl->node_static);
-    err << cursor.comment_out2(node->node_decl->node_const);
+    err << comment_out2(node->node_decl->node_static);
+    err << comment_out2(node->node_decl->node_const);
 
     err << emit_dispatch2(node->node_decl->node_type);
     err << emit_dispatch2(node->node_decl->node_name);
@@ -872,14 +872,14 @@ Err Emitter::emit(CNodeField* node) {
     err << emit_dispatch2(node->node_decl->node_value);
     err << emit_dispatch2(node->node_semi);
 
-    return err << cursor.check_done(node);
+    return err << check_done(node);
   }
 
   //----------------------------------------
 
   auto node_builtin = node->node_decl->node_type->as<CNodeBuiltinType>();
   if (node_builtin) {
-    err << cursor.skip_to(node->node_decl->node_type);
+    err << skip_to(node->node_decl->node_type);
 
     err << emit_dispatch2(node->node_decl->node_type);
     err << emit_dispatch2(node->node_decl->node_name);
@@ -888,13 +888,13 @@ Err Emitter::emit(CNodeField* node) {
     err << emit_dispatch2(node->node_decl->node_value);
     err << emit_dispatch2(node->node_semi);
 
-    return err << cursor.check_done(node);
+    return err << check_done(node);
   }
 
   //----------------------------------------
 
   if (node->is_struct()) {
-    return cursor.emit_raw(node);
+    return emit_raw(node);
   }
 
   //----------------------------------------
@@ -906,7 +906,7 @@ Err Emitter::emit(CNodeField* node) {
   //----------------------------------------
 
   assert(false);
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
@@ -914,7 +914,7 @@ Err Emitter::emit(CNodeField* node) {
 // so that it instead refers to a glue expression.
 
 Err Emitter::emit(CNodeFieldExpression* node) {
-  Err err = cursor.check_at(node);
+  Err err = check_at(node);
 
   auto node_func = node->ancestor<CNodeFunction>();
   auto node_class = node->ancestor<CNodeClass>();
@@ -933,18 +933,18 @@ Err Emitter::emit(CNodeFieldExpression* node) {
     for (auto& c : field) {
       if (c == '.') c = '_';
     }
-    err << cursor.emit_replacement(node, field.c_str());
+    err << emit_replacement(node, field.c_str());
   } else {
     err << emit_default(node);
   }
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
 
 Err Emitter::emit(CNodeFunction* node) {
-  Err err = cursor.check_at(node);
+  Err err = check_at(node);
 
   // FIXME this should happen somewhere else
   bool called_by_init = false;
@@ -988,13 +988,13 @@ Err Emitter::emit(CNodeFunction* node) {
 //------------------------------------------------------------------------------
 
 Err Emitter::emit(CNodeIdentifier* node) {
-  Err err = cursor.check_at(node);
+  Err err = check_at(node);
   auto text = node->get_textstr();
 
   auto found = id_map.top().find(text);
 
   if (found != id_map.top().end()) {
-    err << cursor.emit_replacement(node, (*found).second);
+    err << emit_replacement(node, (*found).second);
   }
   else if (preproc_vars.contains(text)) {
     err << cursor.emit_print("`");
@@ -1004,13 +1004,13 @@ Err Emitter::emit(CNodeIdentifier* node) {
     err << emit_default(node);
   }
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
 
 Err Emitter::emit(CNodeIf* node) {
-  Err err = cursor.check_at(node);
+  Err err = check_at(node);
 
   err << emit_dispatch2(node->node_kw_if);
   err << emit_dispatch2(node->node_cond);
@@ -1021,7 +1021,7 @@ Err Emitter::emit(CNodeIf* node) {
     err << emit_dispatch2(node->node_else);
   }
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
@@ -1030,15 +1030,15 @@ Err Emitter::emit(CNodeKeyword* node) {
   auto text = node->get_text();
 
   if (text == "static" || text == "const" || text == "break") {
-    return cursor.comment_out(node);
+    return comment_out(node);
   }
 
   if (text == "nullptr") {
-    return cursor.emit_replacement(node, "\"\"");
+    return emit_replacement(node, "\"\"");
   }
 
   if (text == "if" || text == "else" || text == "default" || text == "for" || "enum") {
-    return cursor.emit_raw(node);
+    return emit_raw(node);
   }
 
   assert(false);
@@ -1048,26 +1048,26 @@ Err Emitter::emit(CNodeKeyword* node) {
 //------------------------------------------------------------------------------
 
 Err Emitter::emit(CNodeNamespace* node) {
-  Err err = cursor.check_at(node);
+  Err err = check_at(node);
   auto node_namespace = node->node_namespace;
   auto node_name      = node->node_name;
   auto node_fields    = node->node_fields;
   auto node_semi      = node->node_semi;
 
-  err << cursor.emit_replacement2(node_namespace, "package");
+  err << emit_replacement2(node_namespace, "package");
 
-  err << cursor.emit_raw(node_name);
+  err << emit_raw(node_name);
   err << cursor.emit_print(";");
   err << cursor.emit_gap();
 
   for (auto f : node_fields) {
     if (f->tag_is("ldelim")) {
-      err << cursor.skip_over(f);
+      err << skip_over(f);
       err << cursor.emit_gap();
       continue;
     }
     else if (f->tag_is("rdelim")) {
-      err << cursor.emit_replacement2(f, "endpackage");
+      err << emit_replacement2(f, "endpackage");
       continue;
     }
     else {
@@ -1077,9 +1077,9 @@ Err Emitter::emit(CNodeNamespace* node) {
   }
 
   // Don't need semi after namespace in Verilog
-  err << cursor.skip_over(node_semi);
+  err << skip_over(node_semi);
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
@@ -1092,7 +1092,7 @@ void replace(std::string& text, const std::string& a, const std::string& b) {
 }
 
 Err Emitter::emit(CNodePreproc* node) {
-  Err err = cursor.check_at(node);
+  Err err = check_at(node);
 
   if (node->tag_is("preproc_define")) {
     err << emit_default(node);
@@ -1104,20 +1104,20 @@ Err Emitter::emit(CNodePreproc* node) {
     auto text = node->get_textstr();
     replace(text, "#include", "`include");
     replace(text, ".h", ".sv");
-    err << cursor.emit_replacement(node, text);
+    err << emit_replacement(node, text);
   }
 
   else {
     err << emit_default(node);
   }
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
 
 Err Emitter::emit(CNodeQualifiedIdentifier* node) {
-  Err err = cursor.check_at(node);
+  Err err = check_at(node);
 
   bool elide_scope = false;
 
@@ -1131,7 +1131,7 @@ Err Emitter::emit(CNodeQualifiedIdentifier* node) {
   }
 
   if (elide_scope) {
-    err << cursor.skip_to(node->node_name);
+    err << skip_to(node->node_name);
     err << emit_dispatch2(node->node_name);
   }
   else {
@@ -1140,20 +1140,20 @@ Err Emitter::emit(CNodeQualifiedIdentifier* node) {
     err << emit_dispatch2(node->node_name);
   }
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
 
 Err Emitter::emit(CNodeReturn* node) {
-  Err err = cursor.check_at(node);
+  Err err = check_at(node);
 
   auto func = node->ancestor<CNodeFunction>();
   auto fname = func->name;
 
   assert(node->node_val);
 
-  err << cursor.skip_over2(node->node_ret);
+  err << skip_over2(node->node_ret);
 
   if (func->should_emit_as_task() || func->should_emit_as_func()) {
     err << cursor.emit_print("%s = ", fname.c_str());
@@ -1165,39 +1165,39 @@ Err Emitter::emit(CNodeReturn* node) {
   err << emit_dispatch2(node->node_val);
   err << emit_dispatch2(node->node_semi);
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
 
 Err Emitter::emit(CNodeStruct* node) {
-  Err err = cursor.check_at(node);
+  Err err = check_at(node);
 
-  err << cursor.emit_replacement2(node->node_struct, "typedef struct packed");
-  err << cursor.skip_over2(node->node_name);
+  err << emit_replacement2(node->node_struct, "typedef struct packed");
+  err << skip_over2(node->node_name);
   err << emit_dispatch(node->node_body);
   err << cursor.emit_print(" ");
   err << emit_splice(node->node_name);
   err << cursor.emit_gap();
   err << emit_dispatch2(node->node_semi);
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
 
 Err Emitter::emit(CNodeSwitch* node) {
-  Err err = cursor.check_at(node);
+  Err err = check_at(node);
 
-  err << cursor.emit_replacement2(node->node_switch, "case");
+  err << emit_replacement2(node->node_switch, "case");
   err << emit_dispatch2(node->node_cond);
 
   for (auto child : node->node_body) {
     if (child->tag_is("ldelim")) {
-      err << cursor.skip_over(child);
+      err << skip_over(child);
     }
     else if (child->tag_is("rdelim")) {
-      err << cursor.emit_replacement(child, "endcase");
+      err << emit_replacement(child, "endcase");
     }
     else {
       err << emit_dispatch(child);
@@ -1206,15 +1206,15 @@ Err Emitter::emit(CNodeSwitch* node) {
     if (child->node_next) err << cursor.emit_gap();
   }
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
 
 Err Emitter::emit(CNodeCase* node) {
-  Err err = cursor.check_at(node);
+  Err err = check_at(node);
 
-  err << cursor.skip_over2(node->node_case);
+  err << skip_over2(node->node_case);
   err << emit_dispatch2(node->node_cond);
 
   if (node->node_body) {
@@ -1222,17 +1222,17 @@ Err Emitter::emit(CNodeCase* node) {
     err << emit_dispatch2(node->node_body);
   }
   else {
-    err << cursor.emit_replacement2(node->node_colon, ",");
+    err << emit_replacement2(node->node_colon, ",");
   }
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
 
 Err Emitter::emit(CNodeDefault* node) {
 
-  Err err = cursor.check_at(node);
+  Err err = check_at(node);
 
   auto node_default = node->child("default");
   auto node_colon   = node->child("colon");
@@ -1245,40 +1245,40 @@ Err Emitter::emit(CNodeDefault* node) {
     err << emit_dispatch(node_body);
   }
   else {
-    err << cursor.emit_replacement(node_colon, ",");
+    err << emit_replacement(node_colon, ",");
   }
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
 
 Err Emitter::emit(CNodeTemplate* node) {
-  Err err = cursor.check_at(node);
+  Err err = check_at(node);
 
-  err << cursor.skip_over(node->node_template);
+  err << skip_over(node->node_template);
   err << cursor.skip_gap();
 
-  err << cursor.skip_over(node->node_params);
+  err << skip_over(node->node_params);
   err << cursor.skip_gap();
 
   err << emit(node->node_class);
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
 
 Err Emitter::emit(CNodeUsing* node) {
-  Err err = cursor.check_at(node);
+  Err err = check_at(node);
 
-  err << cursor.skip_over(node);
+  err << skip_over(node);
 
   err << cursor.emit_print("import ");
   err << emit_splice(node->child("name"));
   err << cursor.emit_print("::*;");
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
@@ -1325,7 +1325,7 @@ Err Emitter::emit_block(CNodeCompound* node, std::string ldelim, std::string rde
   elide_value.push(false);
 
   if (auto child = node->child("ldelim")) {
-    err << cursor.emit_replacement(child, ldelim);
+    err << emit_replacement(child, ldelim);
     cursor.indent_level++;
     elide_type.push(false);
     elide_value.push(true);
@@ -1347,7 +1347,7 @@ Err Emitter::emit_block(CNodeCompound* node, std::string ldelim, std::string rde
 
   if (auto child = node->child("rdelim")) {
     cursor.indent_level--;
-    err << cursor.emit_replacement(child, rdelim);
+    err << emit_replacement(child, rdelim);
   }
 
   elide_type.pop();
@@ -1418,7 +1418,7 @@ Err Emitter::emit_bit_extract(CNodeCall* node) {
 
   //----------------------------------------
 
-  err << cursor.skip_over(node);
+  err << skip_over(node);
 
   //----------------------------------------
   // Handle casting DONTCARE
@@ -1710,9 +1710,9 @@ Err Emitter::emit_hoisted_decls(CNodeCompound* node) {
 Err Emitter::emit_component(CNodeField* node) {
   Err err;
 
-  err << cursor.skip_to(node->node_decl->node_type);
+  err << skip_to(node->node_decl->node_type);
   err << emit_dispatch2(node->node_decl->node_type);
-  err << cursor.skip_over2(node->node_decl->node_name);
+  err << skip_over2(node->node_decl->node_name);
 
   auto parent_class = node->ancestor<CNodeClass>();
   auto repo = parent_class->repo;
@@ -1975,7 +1975,7 @@ Err Emitter::emit_component(CNodeField* node) {
 
   id_map.pop();
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
@@ -2158,7 +2158,7 @@ Err Emitter::emit_init(CNodeFunction* node) {
     err << cursor.start_line();
     err << cursor.emit_print("parameter ");
     err << emit_dispatch2(decl_const);
-    err << cursor.skip_over2(decl_type);
+    err << skip_over2(decl_type);
     err << emit_dispatch2(decl_name);
     err << emit_dispatch2(decl_eq);
     err << emit_dispatch2(decl_value);
@@ -2169,10 +2169,10 @@ Err Emitter::emit_init(CNodeFunction* node) {
 
   err << cursor.start_line();
   err << cursor.emit_print("initial ");
-  err << cursor.skip_to(node->node_body);
+  err << skip_to(node->node_body);
   err << emit_block(node->node_body, "begin", "end");
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
@@ -2191,14 +2191,14 @@ Err Emitter::emit_always_comb(CNodeFunction* node) {
     id_map.top()[param_name] = func_name + "_" + param_name;
   }
 
-  err << cursor.emit_replacement2(node->node_type, "always_comb begin :");
+  err << emit_replacement2(node->node_type, "always_comb begin :");
   err << emit_dispatch2(node->node_name);
 
-  err << cursor.skip_over(node->node_params);
+  err << skip_over(node->node_params);
   err << cursor.emit_gap();
 
   if (node->node_const) {
-    err << cursor.skip_over(node->node_const);
+    err << skip_over(node->node_const);
     err << cursor.skip_gap();
   }
 
@@ -2206,7 +2206,7 @@ Err Emitter::emit_always_comb(CNodeFunction* node) {
 
   id_map.pop();
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
@@ -2225,21 +2225,21 @@ Err Emitter::emit_always_ff(CNodeFunction* node) {
     id_map.top()[param_name] = func_name + "_" + param_name;
   }
 
-  err << cursor.emit_replacement2(node->node_type, "always_ff @(posedge clock) begin :");
+  err << emit_replacement2(node->node_type, "always_ff @(posedge clock) begin :");
   err << emit_dispatch2(node->node_name);
 
-  err << cursor.skip_over(node->node_params);
+  err << skip_over(node->node_params);
   err << cursor.emit_gap();
 
   if (node->node_const) {
-    err << cursor.skip_over2(node->node_const);
+    err << skip_over2(node->node_const);
   }
 
   err << emit_block(node->node_body, "", "end");
 
   id_map.pop();
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
@@ -2253,7 +2253,7 @@ Err Emitter::emit_func(CNodeFunction* node) {
 
   if (node->node_const) {
     err << emit_dispatch2(node->node_params);
-    err << cursor.comment_out(node->node_const);
+    err << comment_out(node->node_const);
     err << cursor.emit_print(";");
     err << cursor.emit_gap();
   }
@@ -2266,7 +2266,7 @@ Err Emitter::emit_func(CNodeFunction* node) {
 
   err << emit_block(node->node_body, "", "endfunction");
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
@@ -2276,7 +2276,7 @@ Err Emitter::emit_task(CNodeFunction* node) {
 
   err << cursor.emit_print("task automatic ");
 
-  err << cursor.skip_over2(node->node_type);
+  err << skip_over2(node->node_type);
 
   err << emit_dispatch2(node->node_name);
 
@@ -2284,11 +2284,11 @@ Err Emitter::emit_task(CNodeFunction* node) {
   err << cursor.emit_print(";");
   err << cursor.emit_gap();
 
-  err << cursor.comment_out2(node->node_const);
+  err << comment_out2(node->node_const);
 
   err << emit_block(node->node_body, "", "endtask");
 
-  return err << cursor.check_done(node);
+  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
@@ -2316,5 +2316,169 @@ Err Emitter::emit_func_binding_vars(CNodeFunction* node) {
 
   return err;
 }
+
+
+
+
+
+
+
+Err Emitter::emit_gap(CNode* n) {
+  if (n && n->node_next) {
+    return cursor.emit_gap();
+  }
+  else {
+    return Err();
+  }
+}
+
+Err Emitter::skip_gap(CNode* n) {
+  if (n && n->node_next) {
+    return cursor.skip_gap();
+  }
+  else {
+    return Err();
+  }
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::skip_over(CNode* n) {
+  if (n == nullptr) return Err();
+  Err err = check_at(n);
+
+  {
+    auto begin = n->tok_begin()->text_begin();
+    auto end   = (n->tok_end()-1)->text_end();
+
+    Err err;
+    for (auto c = begin; c < end; c++) {
+      err << cursor.skip_char(*c);
+    }
+    cursor.tok_cursor = n->tok_end();
+    cursor.line_elided = true;
+
+  }
+
+  return err << check_done(n);
+}
+
+Err Emitter::skip_over2(CNode* n) {
+  if (n == nullptr) return Err();
+
+  Err err;
+  err << skip_over(n);
+  err << cursor.skip_gap();
+
+  return err;
+}
+
+Err Emitter::skip_to(CNode* n) {
+  if (n == nullptr) return Err();
+
+  Err err;
+  while (cursor.tok_cursor < n->tok_begin()) {
+    for (auto c = cursor.tok_cursor->text_begin(); c < cursor.tok_cursor->text_end(); c++) {
+      err << cursor.skip_char(*c);
+    }
+    cursor.tok_cursor++;
+  }
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::check_at(CNode* n) {
+
+  if (cursor.tok_cursor != n->tok_begin()) {
+    LOG_R("check_at - bad tok_cursor\n");
+    LOG_R("  want @%.10s@\n", n->text_begin());
+    LOG_R("  got  @%.10s@\n", cursor.tok_cursor->text_begin());
+    assert(false);
+  }
+
+  return Err();
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::check_done(CNode* n) {
+
+  auto tok_end = n->tok_end();
+
+  if (cursor.tok_cursor < tok_end) {
+    LOG_R("Token cursor was left inside the current node\n");
+    assert(false);
+  }
+
+  if (cursor.tok_cursor > tok_end) {
+    LOG_R("Token cursor was left past the end of the current node\n");
+    assert(false);
+  }
+
+  return Err();
+}
+
+//----------------------------------------
+
+Err Emitter::emit_replacement(CNode* n, const std::string& s) {
+  Err err = check_at(n);
+  for (auto c : s) {
+    err << cursor.emit_char(c, 0x80FFFF);
+  }
+  cursor.tok_cursor = n->tok_end();
+  return err << check_done(n);
+}
+
+//----------------------------------------
+
+Err Emitter::emit_replacement(CNode* n, const char* fmt, ...) {
+  Err err = check_at(n);
+  va_list args;
+  va_start(args, fmt);
+  err << cursor.emit_vprint(fmt, args);
+  cursor.tok_cursor = n->tok_end();
+  return err << check_done(n);
+}
+
+Err Emitter::emit_replacement2(CNode* n, const char* fmt, ...) {
+  Err err = check_at(n);
+  va_list args;
+  va_start(args, fmt);
+  err << cursor.emit_vprint(fmt, args);
+  cursor.tok_cursor = n->tok_end();
+  err << check_done(n);
+  err << emit_gap(n);
+  return err;
+}
+
+//----------------------------------------
+
+Err Emitter::emit_raw(CNode* n) {
+  Err err;
+  err << cursor.emit_span(n->tok_begin(), n->tok_end());
+  return err;
+}
+
+Err Emitter::emit_raw2(CNode* n) {
+  Err err;
+  if (n == nullptr) return err;
+  err << emit_raw(n);
+  err << emit_gap(n);
+  return err;
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 //==============================================================================

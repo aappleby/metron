@@ -81,6 +81,7 @@ struct Emitter {
 
   Err emit(const char* fmt, ...);
   Err emit_splice(CNode* n);
+  Err emit_splice2(CNode* n);
 
   Err emit_template_parameter_list(CNodeClass* node);
   Err emit_block(CNodeCompound* node, std::string ldelim, std::string rdelim);
@@ -97,6 +98,11 @@ struct Emitter {
   Err emit_func(CNodeFunction* node);
   Err emit_task(CNodeFunction* node);
   Err emit_func_binding_vars(CNodeFunction* node);
+
+  Err emit_cat(CNodeCall* node);
+  Err emit_sra(CNodeCall* node);
+  Err emit_dup(CNodeCall* node);
+  Err emit_submod_call(CNodeCall* node);
 
   Cursor& cursor;
 };

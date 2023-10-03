@@ -54,7 +54,7 @@ Cursor::Cursor(CSourceRepo* repo, CSourceFile* source, std::string* str_out) {
 
 CHECK_RETURN Err Cursor::emit_gap() {
   Err err;
-  assert(!gap_emitted);
+  if (gap_emitted) return err;
 
   auto ta = tok_cursor - 1;
   auto tb = tok_cursor;
@@ -96,7 +96,7 @@ CHECK_RETURN Err Cursor::emit_gap(CNode* n) {
 
 CHECK_RETURN Err Cursor::skip_gap() {
   Err err;
-  assert(!gap_emitted);
+  if (gap_emitted) return err;
 
   if (tok_cursor->lex_type() == LEX_EOF) return err;
 
@@ -122,20 +122,8 @@ CHECK_RETURN Err Cursor::skip_gap(CNode* n) {
 
 //------------------------------------------------------------------------------
 
-/*
-CHECK_RETURN Err Cursor::emit(CNode* n) {
-  //if (n == nullptr) return Err();
-  assert(n);
-
-  Err err = check_at(n);
-  err << n->emit(*this);
-  return err << check_done(n);
-}
-*/
-
 CHECK_RETURN Err Cursor::skip_over(CNode* n) {
-  //if (n == nullptr) return Err();
-  assert(n);
+  if (n == nullptr) return Err();
   Err err = check_at(n);
   err << skip_span(n->tok_begin(), n->tok_end());
   return err << check_done(n);
@@ -150,9 +138,8 @@ CHECK_RETURN Err Cursor::skip_over2(CNode* n) {
 }
 
 CHECK_RETURN Err Cursor::skip_to(CNode* n) {
-  assert(n);
   Err err;
-  //if (n == nullptr) return err;
+  if (n == nullptr) return err;
   while (tok_cursor < n->tok_begin()) err << skip_current_token();
   return err;
 }

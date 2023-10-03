@@ -186,8 +186,7 @@ Err Emitter::emit_default(CNode* node) {
 Err Emitter::emit_children(CNode* n) {
   Err err;
   for (auto c = n->child_head; c; c = c->node_next) {
-    err << emit_dispatch(c);
-    if (c->node_next) err << cursor.emit_gap();
+    err << emit_dispatch2(c);
   }
   return err;
 }
@@ -304,9 +303,9 @@ Err Emitter::emit(CNodeBuiltinType* node) {
   auto node_name   = node->node_name;
   auto node_targs  = node->node_targs;
   auto node_scope  = node->node_scope;
-  auto node_ldelim = node_targs->node_ldelim;
-  auto node_exp    = node_targs->items[0];
-  auto node_rdelim = node_targs->node_rdelim;
+  auto node_ldelim = node->node_targs->node_ldelim;
+  auto node_exp    = node->node_targs->items[0];
+  auto node_rdelim = node->node_targs->node_rdelim;
 
   if (auto node_const_int = node_exp->as<CNodeConstInt>()) {
     auto width = atoi(node_exp->text_begin());
@@ -343,6 +342,92 @@ Err Emitter::emit(CNodeBuiltinType* node) {
 
 //------------------------------------------------------------------------------
 
+CNodeFunction* resolve_func(CNode* node) {
+  if (auto node_call = node->as<CNodeCall>()) {
+    auto src_class = node->ancestor<CNodeClass>();
+
+    if (auto func_path = node_call->node_name->as<CNodeFieldExpression>()) {
+      auto field_name = func_path->node_path->get_textstr();
+      auto func_name = func_path->node_name->get_textstr();
+
+      auto src_field = src_class->get_field(field_name);
+      auto dst_class = src_class->repo->get_class(src_field->node_decl->node_type->name);
+      auto dst_func = dst_class->get_function(func_name);
+      return dst_func;
+    }
+
+    if (auto func_id = node_call->node_name->as<CNodeIdentifier>()) {
+      auto dst_func = src_class->get_function(func_id->get_text());
+      return dst_func;
+    }
+  }
+
+  return nullptr;
+}
+
+//------------------------------------------------------------------------------
+
+Err Emitter::emit_cat(CNodeCall* node) {
+  Err err;
+  err << cursor.skip_to(node->node_args);
+  for (auto child : node->node_args) {
+    if (child->tag_is("ldelim")) {
+      err << cursor.emit_replacement2(child, "{");
+    } else if (child->tag_is("rdelim")) {
+      err << cursor.emit_replacement2(child, "}");
+    } else {
+      err << emit_dispatch2(child);
+    }
+  }
+  return err << cursor.check_done(node);
+}
+
+//----------------------------------------
+
+Err Emitter::emit_sra(CNodeCall* node) {
+  Err err;
+  auto args = node->node_args->as<CNodeList>();
+  auto lhs = args->items[0];
+  auto rhs = args->items[1];
+
+  err << emit("($signed(@) >>> @)", lhs, rhs);
+  err << cursor.skip_over(node);
+
+  return err;
+}
+
+//----------------------------------------
+// Convert "dup<15>(x)" to "{15 {x}}"
+
+Err Emitter::emit_dup(CNodeCall* node) {
+  Err err;
+  auto node_val = node->node_targs->child("arg");
+  auto node_exp = node->node_args->child("exp");
+  err << emit("{@ {@}}", node_val, node_exp);
+  err << cursor.skip_over(node);
+  return err;
+}
+
+//----------------------------------------
+// We don't actually "call" into submodules, so we can just comment this
+// call out and patch in the return type binding if needed.
+
+Err Emitter::emit_submod_call(CNodeCall* node) {
+  Err err;
+
+  auto func_path = node->node_name->as<CNodeFieldExpression>();
+  auto dst_func = resolve_func(node);
+  if (dst_func->child("return_type")->name == "void") {
+    err << cursor.comment_out(node);
+  } else {
+    err << emit("@_@_ret", func_path->node_path, func_path->node_name);
+    err << cursor.skip_over(node);
+  }
+  return err << cursor.check_done(node);
+}
+
+//------------------------------------------------------------------------------
+
 Err Emitter::emit(CNodeCall* node) {
   Err err = cursor.check_at(node);
 
@@ -352,79 +437,22 @@ Err Emitter::emit(CNodeCall* node) {
   auto src_func = node->ancestor<CNodeFunction>();
 
   if (auto func_path = node->node_name->as<CNodeFieldExpression>()) {
-    // We don't actually "call" into submodules, so we can just comment this
-    // call out.
-
-    auto field_name = func_path->node_path->get_textstr();
-    auto func_name = func_path->node_name->get_textstr();
-
-    auto src_field = src_class->get_field(field_name);
-    auto dst_class = src_class->repo->get_class(src_field->node_decl->node_type->name);
-    auto dst_func = dst_class->get_function(func_name);
-
-    auto rtype = dst_func->child("return_type");
-
-    if (rtype->name == "void") {
-      err << cursor.comment_out(node);
-    } else {
-      err << emit("@_@_ret", func_path->node_path, func_path->node_name);
-      err << cursor.skip_over(node);
-    }
-    return err << cursor.check_done(node);
+    return emit_submod_call(node);
   }
 
   if (auto func_id = node->node_name->as<CNodeIdentifier>()) {
-    auto func_name = func_id->get_textstr();
 
-    if (cursor.id_map.top().contains(func_name)) {
-      auto replacement = cursor.id_map.top()[func_name];
-
+    if (cursor.id_map.top().contains(func_id->name)) {
+      auto replacement = cursor.id_map.top()[func_id->name];
       err << cursor.emit_replacement2(node->node_name, "%s", replacement.c_str());
-
-      if (node->node_targs) {
-        err << cursor.skip_over2(node->node_targs);
-      }
-
+      err << cursor.skip_over2(node->node_targs);
       err << emit_dispatch(node->node_args);
-
       return err << cursor.check_done(node);
     }
 
-    if (func_name == "cat") {
-      err << cursor.skip_to(node->node_args);
-      for (auto child : node->node_args) {
-        if (child->tag_is("ldelim")) {
-          err << cursor.emit_replacement2(child, "{");
-        } else if (child->tag_is("rdelim")) {
-          err << cursor.emit_replacement2(child, "}");
-        } else {
-          err << emit_dispatch2(child);
-        }
-      }
-      return err << cursor.check_done(node);
-    }
-
-    //----------
-    // Convert "dup<15>(x)" to "{15 {x}}"
-
-    if (func_name == "dup") {
-      auto node_val = node->node_targs->child("arg");
-      auto node_exp = node->node_args->child("exp");
-      err << emit("{@ {@}}", node_val, node_exp);
-      err << cursor.skip_over(node);
-      return err;
-    }
-
-    if (func_name == "sra") {
-      auto args = node->node_args->as<CNodeList>();
-      auto lhs = args->items[0];
-      auto rhs = args->items[1];
-
-      err << emit("($signed(@) >>> @)", lhs, rhs);
-      err << cursor.skip_over(node);
-
-      return err;
-    }
+    if (func_id->name == "cat") return emit_cat(node);
+    if (func_id->name == "dup") return emit_dup(node);
+    if (func_id->name == "sra") return emit_sra(node);
 
     //----------
     // Not a special builtin call
@@ -493,25 +521,6 @@ Err Emitter::emit(CNodeCall* node) {
       assert(arg == nullptr);
       return err << cursor.check_done(node);
     }
-  }
-
-  if (auto func_path = node->node_name->as<CNodeFieldExpression>()) {
-    auto field_name = func_path->node_path->get_text();
-    auto func_name = func_path->node_name->get_text();
-
-    auto src_class = node->ancestor<CNodeClass>();
-    auto field = src_class->get_field(field_name);
-    auto dst_class = field->node_decl->_type_class;
-    auto dst_func = dst_class->get_function(func_name);
-
-    if (dst_func->node_type->get_text() == "void") {
-      err << cursor.comment_out(node);
-    } else {
-      err << emit("@_@_ret", func_path->node_path, func_path->node_name);
-      err << cursor.skip_over(node);
-    }
-
-    return err << cursor.check_done(node);
   }
 
   assert(false);

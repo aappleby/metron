@@ -300,41 +300,36 @@ Err Emitter::emit(CNodeBuiltinType* node) {
     return emit_default(node);
   }
 
-  auto node_name   = node->node_name;
-  auto node_targs  = node->node_targs;
-  auto node_scope  = node->node_scope;
-  auto node_ldelim = node->node_targs->node_ldelim;
   auto node_exp    = node->node_targs->items[0];
-  auto node_rdelim = node->node_targs->node_rdelim;
 
   if (auto node_const_int = node_exp->as<CNodeConstInt>()) {
-    auto width = atoi(node_exp->text_begin());
+    auto width = atoi(node_const_int->text_begin());
     if (width == 1) {
       // logic<1> -> logic
-      err << cursor.emit_raw2(node_name);
-      err << cursor.skip_over(node_targs);
+      err << cursor.emit_raw2(node->node_name);
+      err << cursor.skip_over(node->node_targs);
     } else {
       // logic<N> -> logic[N-1:0]
-      err << cursor.emit_raw2(node_name);
-      err << cursor.emit_replacement2(node_ldelim, "[");
-      err << cursor.skip_over2(node_exp);
+      err << cursor.emit_raw2(node->node_name);
+      err << cursor.emit_replacement2(node->node_targs->node_ldelim, "[");
+      err << cursor.skip_over2(node_const_int);
       err << cursor.emit_print("%d:0", width - 1);
-      err << cursor.emit_replacement(node_rdelim, "]");
+      err << cursor.emit_replacement(node->node_targs->node_rdelim, "]");
     }
   } else if (auto node_identifier = node_exp->as<CNodeIdentifier>()) {
     // logic<CONSTANT> -> logic[CONSTANT-1:0]
-    err << emit("@[@-1:0]", node_name, node_exp);
+    err << emit("@[@-1:0]", node->node_name, node_identifier);
     err << cursor.skip_over(node);
 
   } else {
     // logic<exp> -> logic[(exp)-1:0]
-    err << emit("@[(@)-1:0]", node_name, node_exp);
+    err << emit("@[(@)-1:0]", node->node_name, node_exp);
     err << cursor.skip_over(node);
   }
 
-  if (node_scope) {
+  if (node->node_scope) {
     err << cursor.skip_gap();
-    err << cursor.skip_over(node_scope);
+    err << cursor.skip_over(node->node_scope);
   }
 
   return err << cursor.check_done(node);
@@ -442,6 +437,7 @@ Err Emitter::emit(CNodeCall* node) {
 
   if (auto func_id = node->node_name->as<CNodeIdentifier>()) {
 
+    // Some builtin functions just need to be renamed.
     if (cursor.id_map.top().contains(func_id->name)) {
       auto replacement = cursor.id_map.top()[func_id->name];
       err << cursor.emit_replacement2(node->node_name, "%s", replacement.c_str());
@@ -450,6 +446,7 @@ Err Emitter::emit(CNodeCall* node) {
       return err << cursor.check_done(node);
     }
 
+    // Some builtin functions have special representations in Verilog.
     if (func_id->name == "cat") return emit_cat(node);
     if (func_id->name == "dup") return emit_dup(node);
     if (func_id->name == "sra") return emit_sra(node);
@@ -459,34 +456,27 @@ Err Emitter::emit(CNodeCall* node) {
 
     auto dst_func = src_class->get_function(func_id->get_text());
     auto dst_params = dst_func->node_params;
+    auto src_mtype = src_func->method_type;
+    auto dst_mtype = dst_func->method_type;
 
     // Replace call with return binding variable if the callee is a tock
 
-    if (dst_func->method_type == MT_TOCK) {
+    if (dst_mtype == MT_INIT) return emit_default(node);
+    if (dst_mtype == MT_FUNC) return emit_default(node);
+    if (src_mtype == MT_TICK && dst_mtype == MT_TICK) return emit_default(node);
+
+    // FIXME: Exiting after doing this can't be right...
+    // check tock_task.h
+    if (dst_mtype == MT_TOCK) {
       auto dst_name = dst_func->name;
       err << cursor.skip_over(node);
       err << cursor.emit_print("%s_ret", dst_name.c_str());
       return err;
     }
 
-    auto src_mtype = src_func->method_type;
-    auto dst_mtype = dst_func->method_type;
+    if (src_mtype == MT_TOCK) {
 
-    if (dst_mtype == MT_INIT) {
-      assert(src_mtype == MT_INIT);
-      return emit_default(node);
-    }
-
-    if (dst_mtype == MT_FUNC) {
-      return emit_default(node);
-    }
-
-    if (src_mtype == MT_TICK && dst_mtype == MT_TICK) {
-      return emit_default(node);
-    }
-
-    if (src_mtype == MT_TOCK &&
-        (dst_mtype == MT_TOCK || dst_mtype == MT_TICK)) {
+      // Emit writes to binding variables in place of the function arguments
       err << cursor.comment_out(node);
 
       auto param = dst_params->child_head;

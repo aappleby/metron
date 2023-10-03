@@ -1266,15 +1266,9 @@ Err Emitter::emit_template_parameter_list(CNodeClass* node) {
 
     cursor.tok_cursor = param->node_name->tok_begin();
     err << emit_dispatch2(param->node_name);
-
-    if (param->node_array) {
-      err << emit_dispatch2(param->node_array);
-    }
-
+    err << emit_dispatch2(param->node_array);
     err << emit_dispatch2(param->node_eq);
-
     err << emit_dispatch(param->node_value);
-
     err << cursor.emit_print(";");
   }
 
@@ -1428,7 +1422,7 @@ Err Emitter::emit_bit_extract(CNodeCall* node) {
     else             err << cursor.emit_print("%d", width);
     if (!bare_width) err << cursor.emit_print(")");
 
-    err<< cursor.emit_print("'");
+    err << cursor.emit_print("'");
     err << cursor.emit_print("(");
     err << emit_splice(node_exp);
     err << cursor.emit_print(")");

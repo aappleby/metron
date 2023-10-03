@@ -140,6 +140,12 @@ CNodeField* resolve_field(CNodeClass* node_class, CNode* node_name) {
   return nullptr;
 }
 
+CNodeField* resolve_field(CNode* node_name) {
+  auto node_class = node_name->ancestor<CNodeClass>();
+  auto node_field = resolve_field(node_class, node_name);
+  return node_field;
+}
+
 //------------------------------------------------------------------------------
 
 bool is_bit_extract(CNodeCall* node) {
@@ -263,17 +269,18 @@ Err Emitter::emit_dispatch2(CNode* node) {
 // Change '=' to '<=' if lhs is a field and we're inside a sequential block.
 // Change "a += b" to "a = a + b", etc.
 
+bool in_tick(CNode* node) {
+  return node->ancestor<CNodeFunction>()->method_type == MT_TICK;
+}
+
 Err Emitter::emit(CNodeAssignment* node) {
   Err err = check_at(node);
-
-  auto node_class = node->ancestor<CNodeClass>();
-  auto node_func  = node->ancestor<CNodeFunction>();
-  auto node_field = resolve_field(node_class, node->node_lhs);
 
   err << emit_dispatch2(node->node_lhs);
 
   // If we're in a tick, turn = into <=
-  std::string assign = node_func->method_type == MT_TICK && node_field ? "<=" : "=";
+  auto node_field = resolve_field(node->node_lhs);
+  std::string assign = in_tick(node) && node_field ? "<=" : "=";
 
   if (node->node_op->get_text() == "=") {
     err << emit_replacement2(node->node_op, assign);
@@ -2453,17 +2460,5 @@ Err Emitter::emit_raw2(CNode* n) {
   err << emit_gap(n);
   return err;
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 //==============================================================================

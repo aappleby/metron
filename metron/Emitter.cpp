@@ -995,8 +995,7 @@ Err Emitter::emit(CNodeIdentifier* node) {
   auto found = id_map.find(text);
 
   if (found != id_map.end()) {
-    auto replacement = (*found).second;
-    err << cursor.emit_replacement(node, "%s", replacement.c_str());
+    err << cursor.emit_replacement(node, (*found).second);
   }
   else if (cursor.preproc_vars.contains(text)) {
     err << cursor.emit_print("`");
@@ -1317,7 +1316,7 @@ Err Emitter::emit_block(CNodeCompound* node, std::string ldelim, std::string rde
   cursor.elide_value.push(false);
 
   if (auto child = node->child("ldelim")) {
-    err << cursor.emit_replacement(child, "%s", ldelim.c_str());
+    err << cursor.emit_replacement(child, ldelim);
     cursor.indent_level++;
     cursor.elide_type.push(false);
     cursor.elide_value.push(true);
@@ -1339,7 +1338,7 @@ Err Emitter::emit_block(CNodeCompound* node, std::string ldelim, std::string rde
 
   if (auto child = node->child("rdelim")) {
     cursor.indent_level--;
-    err << cursor.emit_replacement(child, "%s", rdelim.c_str());
+    err << cursor.emit_replacement(child, rdelim);
   }
 
   cursor.elide_type.pop();

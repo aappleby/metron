@@ -102,11 +102,6 @@ struct Cursor {
   }
 
   //----------------------------------------
-  // Top-level emit function
-
-  CHECK_RETURN Err emit_trailing_whitespace();
-
-  //----------------------------------------
 
   CSourceRepo* repo = nullptr;
   CSourceFile* source_file = nullptr;

@@ -937,8 +937,6 @@ int main_new(Options opts) {
 
   Emitter emitter(cursor);
   err << emitter.emit_everything();
-  // err << cursor.emit_trailing_whitespace();
-  // err << cursor.emit_gap();
 
   if (err.has_err()) {
     LOG_R("Error during code generation\n");

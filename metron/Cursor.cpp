@@ -226,7 +226,9 @@ CHECK_RETURN Err Cursor::emit_span(const CToken* a, const CToken* b) {
   Err err;
   assert(a != b);
   for (auto c = a; c < b; c++) {
+
     err << emit_token(c);
+
     if (c < b - 1) err << emit_gap();
   }
   tok_cursor = b;
@@ -415,17 +417,6 @@ CHECK_RETURN Err Cursor::emit_raw2(CNode* n) {
   if (n == nullptr) return err;
   err << emit_raw(n);
   err << emit_gap(n);
-  return err;
-}
-
-//------------------------------------------------------------------------------
-
-CHECK_RETURN Err Cursor::emit_trailing_whitespace() {
-  Err err;
-  while(tok_cursor < tok_end) {
-    err << emit_token(tok_cursor);
-    tok_cursor++;
-  }
   return err;
 }
 

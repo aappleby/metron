@@ -674,20 +674,12 @@ Err Emitter::emit(CNodeEnum* node) {
     err << cursor.emit_print("typedef ");
   }
 
-  err << emit(node->node_enum);
-  err << cursor.emit_gap();
-
+  err << emit_dispatch2(node->node_enum);
   err << skip_over2(node->node_class);
-
   err << skip_over2(node->node_name);
-
-  if (node->node_colon) {
-    err << skip_over2(node->node_colon);
-    err << emit_dispatch2(node->node_type);
-  }
-
+  err << skip_over2(node->node_colon);
+  err << emit_dispatch2(node->node_type);
   err << emit_dispatch2(node->node_body);
-
   err << emit_dispatch2(node->node_decl);
 
   if (node->node_name) {
@@ -2424,17 +2416,7 @@ Err Emitter::check_done(CNode* n) {
 //----------------------------------------
 
 Err Emitter::emit_replacement(CNode* n, const std::string& s) {
-  Err err;
-  err << cursor.emit_replacement(n->tok_begin(), n->tok_end(), s);
-  return err;
-  /*
-  Err err = check_at(n);
-  for (auto c : s) {
-    err << cursor.emit_char(c, 0x80FFFF);
-  }
-  cursor.tok_cursor = n->tok_end();
-  return err << check_done(n);
-  */
+  return cursor.emit_replacement(n->tok_begin(), n->tok_end(), s);
 }
 
 //----------------------------------------

@@ -8,11 +8,8 @@ Cursor::Cursor(CSourceFile* source, std::string* str_out) {
   this->source_file = source;
   this->str_out = str_out;
 
-  const CToken* actual_tok_begin = source->context.root_node->span.begin;
-  const CToken* actual_tok_end   = source->context.root_node->span.end;
-
   // Skip LEX_BOF
-  this->tok_cursor = actual_tok_begin;
+  this->tok_cursor = source->context.root_node->span.begin;
 }
 
 //------------------------------------------------------------------------------
@@ -104,40 +101,42 @@ CHECK_RETURN Err Cursor::skip_over(CNode* n) {
 }
 
 CHECK_RETURN Err Cursor::skip_over2(CNode* n) {
+  if (n == nullptr) return Err();
+
   Err err;
-  if (n == nullptr) return err;
   err << skip_over(n);
   err << skip_gap();
+
   return err;
 }
 
 CHECK_RETURN Err Cursor::skip_to(CNode* n) {
+  if (n == nullptr) return Err();
+
   Err err;
-  if (n == nullptr) return err;
   while (tok_cursor < n->tok_begin()) {
     for (auto c = tok_cursor->text_begin(); c < tok_cursor->text_end(); c++) {
       err << skip_char(*c);
     }
     tok_cursor++;
   }
+
   return err;
 }
 
 CHECK_RETURN Err Cursor::comment_out(CNode* n) {
-  //if (n == nullptr) return Err();
-  assert(n);
+  if (n == nullptr) return Err();
+
   Err err = check_at(n);
-  err << emit_print("/*");
-  err << emit_span(n->tok_begin(), n->tok_end());
-  err << emit_print("*/");
+  err << emit_print("/*") << emit_raw(n) << emit_print("*/");
+
   return err << check_done(n);
 }
 
 CHECK_RETURN Err Cursor::comment_out2(CNode* n) {
   Err err;
   if (n == nullptr) return err;
-  err << comment_out(n);
-  err << emit_gap(n);
+  err << comment_out(n) << emit_gap(n);
   return err;
 }
 
@@ -279,6 +278,7 @@ CHECK_RETURN Err Cursor::emit_char(char c, uint32_t color) {
 
 CHECK_RETURN Err Cursor::skip_char(char c) {
   Err err;
+  // We ditch all '\r'.
   if (c == '\r') return err;
 
   if (echo) {
@@ -310,7 +310,7 @@ CHECK_RETURN Err Cursor::emit_vprint(const char* fmt, va_list args) {
   va_end(args);
 
   for (int i = 0; i < size; i++) {
-    err << emit_char(buf[i], 0x80FF80);
+    err << emit_char(buf[i]);
   }
   delete[] buf;
   return err;

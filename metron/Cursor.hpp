@@ -59,54 +59,8 @@ struct Cursor {
 
   //----------------------------------------
 
-  CHECK_RETURN Err emit_replacement_step(std::string_view& text, std::string_view s_old, std::string_view s_new) {
-    Err err;
-    if (text.starts_with(s_old)) {
-      for (auto c : s_new) {
-        err << emit_char(c, 0x80FFFF);
-      }
-      text.remove_prefix(s_old.size());
-    }
-    else {
-      err << emit_char(text[0]);
-      text.remove_prefix(1);
-    }
-    return err;
-  }
-
-  template<typename ... Args>
-  CHECK_RETURN Err emit_replacement_step(std::string_view& text, std::string_view s_old, std::string_view s_new, Args... args) {
-    Err err;
-    if (text.starts_with(s_old)) {
-      for (auto c : s_new) {
-        err << emit_char(c, 0x80FFFF);
-      }
-      text.remove_prefix(s_old.size());
-    }
-    else {
-      err << emit_replacement_step(text, args...);
-    }
-    return err;
-  }
-
-  template<typename ... Args>
-  CHECK_RETURN Err emit_replacements(CNode* n, Args... args) {
-    Err err;
-    auto text = n->get_text();
-    while (text.size()) {
-      err << emit_replacement_step(text, args...);
-    }
-    tok_cursor = n->tok_end();
-    return err;
-  }
-
-  //----------------------------------------
-
   CSourceFile* source_file = nullptr;
   const CToken* tok_cursor = nullptr;
-
-  //----------------------------------------
-  // Output state
 
   std::string* str_out;
   int indent_level = 0;

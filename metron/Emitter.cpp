@@ -527,7 +527,7 @@ Err Emitter::emit(CNodeClass* node) {
   auto node_body = node->child("body");
   auto node_semi = node->child("semi");
 
-  err << cursor.emit_replacements(node_class, "class", "module");
+  err << cursor.emit_replacement(node_class, "module");
   err << cursor.emit_gap();
   err << emit_dispatch2(node_name);
 
@@ -1084,6 +1084,13 @@ Err Emitter::emit(CNodeNamespace* node) {
 
 //------------------------------------------------------------------------------
 
+void replace(std::string& text, const std::string& a, const std::string& b) {
+  size_t pos;
+  while ((pos = text.find(a)) != std::string::npos) {
+    text.replace(pos, a.size(), b);
+  }
+}
+
 Err Emitter::emit(CNodePreproc* node) {
   Err err = cursor.check_at(node);
 
@@ -1094,7 +1101,10 @@ Err Emitter::emit(CNodePreproc* node) {
   }
 
   else if (node->tag_is("preproc_include")) {
-    err << cursor.emit_replacements(node, "#include", "`include", ".h", ".sv");
+    auto text = node->get_textstr();
+    replace(text, "#include", "`include");
+    replace(text, ".h", ".sv");
+    err << cursor.emit_replacement(node, text);
   }
 
   else {

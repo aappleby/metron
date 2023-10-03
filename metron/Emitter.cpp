@@ -711,19 +711,14 @@ Err Emitter::emit(CNodePrefixExp* node) {
   auto node_rhs = node->child("rhs");
   auto node_field = resolve_field(node_class, node_rhs);
 
+  std::string assign = node_func->method_type == MT_TICK && node_field ? " <= " : " = ";
+  std::string suffix = op == "++" ? " + 1" : " - 1";
+
   err << skip_over(node);
   err << emit_splice(node_rhs);
-  if (node_func->method_type == MT_TICK && node_field) {
-    err << cursor.emit_print(" <= ");
-  } else {
-    err << cursor.emit_print(" = ");
-  }
+  err << cursor.emit_print(assign.c_str());
   err << emit_splice(node_rhs);
-  if (op == "++") {
-    err << cursor.emit_print(" + 1");
-  } else {
-    err << cursor.emit_print(" - 1");
-  }
+  err << cursor.emit_print(suffix.c_str());
 
   return err << check_done(node);
 }

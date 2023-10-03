@@ -332,9 +332,7 @@ Err Emitter::emit(CNodeBuiltinType* node) {
     err << skip_over(node);
   }
 
-  if (node->node_scope) {
-    err << skip_over2(node->node_scope);
-  }
+  err << skip_over2(node->node_scope);
 
   return err << check_done(node);
 }

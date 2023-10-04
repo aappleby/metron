@@ -744,6 +744,41 @@ Err Emitter::emit(CNodeDeclaration* node) {
 
 //------------------------------------------------------------------------------
 
+/*
+ ▆ CNodeEnum =
+ ┣━━╸▆ enum : CNodeKeyword = "enum"
+ ┣━━╸▆ class : CNodeKeyword = "class"
+ ┣━━╸▆ name : CNodeIdentifier = "sized_enum"
+ ┣━━╸▆ colon : CNodePunct = ":"
+ ┣━━╸▆ base_type : CNodeBuiltinType =
+ ┃   ┣━━╸▆ name : CNodeIdentifier = "logic"
+ ┃   ┣━━╸▆ template_args : CNodeList =
+ ┃   ┃   ┣━━╸▆ ldelim : CNodePunct = "<"
+ ┃   ┃   ┣━━╸▆ arg : CNodeConstInt = "8"
+ ┃   ┃   ┗━━╸▆ rdelim : CNodePunct = ">"
+ ┃   ┗━━╸▆ scope : CNode =
+ ┃       ┣━━╸▆ CNodePunct = "::"
+ ┃       ┗━━╸▆ CNodeIdentifier = "BASE"
+ ┣━━╸▆ body : CNodeList =
+ ┃   ┣━━╸▆ ldelim : CNodePunct = "{"
+ ┃   ┣━━╸▆ enumerator : CNodeEnumerator =
+ ┃   ┃   ┣━━╸▆ name : CNodeIdentifier = "A8"
+ ┃   ┃   ┣━━╸▆ eq : CNodePunct = "="
+ ┃   ┃   ┗━━╸▆ value : CNodeConstInt = "0b01"
+ ┃   ┣━━╸▆ comma : CNodePunct = ","
+ ┃   ┣━━╸▆ enumerator : CNodeEnumerator =
+ ┃   ┃   ┣━━╸▆ name : CNodeIdentifier = "B8"
+ ┃   ┃   ┣━━╸▆ eq : CNodePunct = "="
+ ┃   ┃   ┗━━╸▆ value : CNodeConstInt = "0x02"
+ ┃   ┣━━╸▆ comma : CNodePunct = ","
+ ┃   ┣━━╸▆ enumerator : CNodeEnumerator =
+ ┃   ┃   ┣━━╸▆ name : CNodeIdentifier = "C8"
+ ┃   ┃   ┣━━╸▆ eq : CNodePunct = "="
+ ┃   ┃   ┗━━╸▆ value : CNodeConstInt = "3"
+ ┃   ┗━━╸▆ rdelim : CNodePunct = "}"
+ ┗━━╸▆ semi : CNodePunct = ";"
+*/
+
 Err Emitter::emit(CNodeEnum* node) {
   Err err = check_at(node);
 
@@ -758,6 +793,8 @@ Err Emitter::emit(CNodeEnum* node) {
   if (!node->node_decl) {
     err << cursor.emit_print("typedef ");
   }
+
+  // "{typedef } enum _ ~class ~_ ~name ~_ ~colon ~_ base_type _ body _ decl _ [@name { }] semi"
 
   err << emit_dispatch2(node->node_enum);
   err << skip_over2(node->node_class);
@@ -781,8 +818,15 @@ Err Emitter::emit(CNodeEnum* node) {
 
 //------------------------------------------------------------------------------
 
+// ▆ exp : CNodePrefixExp =
+// ┣━━╸▆ prefix : CNodePrefixOp = "++"
+// ┗━━╸▆ rhs : CNodeIdentifier = "my_reg2"
+
 Err Emitter::emit(CNodePrefixExp* node) {
   Err err = check_at(node);
+
+  // "rhs { = } rhs { + 1}"
+  // "{rhs} = {rhs} + 1"
 
   auto node_op = node->child("prefix");
   auto op = node_op->get_text();

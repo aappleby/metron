@@ -1,29 +1,40 @@
+// RISC-V SiMPLE SV -- common configuration for testbench
+// BSD 3-Clause License
+// (c) 2017-2021, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
+//                Marek Materzok, University of Wrocław
+
+`ifndef CONFIG_H
+`define CONFIG_H
+
 `include "metron/metron_tools.sv"
 
-// Increment/decrement should be translated into equivalent Verilog, but they
-// do _not_ return the old/new value.
+package rv_config;
 
-module Module (
-  // global clock
-  input logic clock
-);
-/*public:*/
+// Select ISA extensions
+// `define M_MODULE    // multiplication and division
 
-  always_comb begin : tock
-    /*tick();*/
-  end
+//////////////////////////////////////////
+//              Memory config           //
+//////////////////////////////////////////
 
-/*private:*/
+// Program counter initial value
+parameter /*static*/ /*const*/ int unsigned INITIAL_PC = 32'h00400000;
 
-  always_ff @(posedge clock) begin : tick
-    my_reg1 <= my_reg1 + 1;
-    my_reg2 <= my_reg2 + 1;
-    my_reg3 <= my_reg3 - 1;
-    my_reg4 <= my_reg4 - 1;
-  end
+// Instruction memory
+parameter /*static*/ /*const*/ int unsigned TEXT_BEGIN = INITIAL_PC;
+parameter /*static*/ /*const*/ int unsigned TEXT_BITS = 16;
+parameter /*static*/ /*const*/ int unsigned TEXT_WIDTH = (1 << TEXT_BITS);
+parameter /*static*/ /*const*/ int unsigned TEXT_END = (TEXT_BEGIN + TEXT_WIDTH - 1);
 
-  int my_reg1;
-  int my_reg2;
-  int my_reg3;
-  int my_reg4;
-endmodule
+// Data memory
+parameter /*static*/ /*const*/ int unsigned DATA_BEGIN = 32'h80000000;
+parameter /*static*/ /*const*/ int unsigned DATA_BITS = 17;
+parameter /*static*/ /*const*/ int unsigned DATA_WIDTH = (1 << DATA_BITS);
+parameter /*static*/ /*const*/ int unsigned DATA_END = (DATA_BEGIN + DATA_WIDTH - 1);
+
+localparam string TEXT_HEX = "add.text.vh";
+localparam string DATA_HEX = "add.data.vh";
+
+endpackage  // namespace rv_config
+
+`endif // CONFIG_H

@@ -702,11 +702,13 @@ Err Emitter::emit(CNodeDeclaration* node) {
 
   // Check for const char*
   if (node->node_const) {
+    /*
     if (node->node_type->name == "char") {
       if (node->node_type->child("star")) {
         return emit_replacement(node, "{{const char*}}");
       }
     }
+    */
 
     bool in_namespace = node->ancestor<CNodeNamespace>() != nullptr;
     bool in_function  = node->ancestor<CNodeFunction>() != nullptr;
@@ -936,61 +938,48 @@ Err Emitter::emit(CNodeField* node) {
     return err << skip_over(node);
   }
 
-  //----------------------------------------
+  if (node->is_struct()) return emit_default(node);
+  if (node->is_component()) return emit_component(node);
 
   if (node->is_const_char()) {
-    err << skip_to(node->node_decl->node_name);
+
+    //  ▆ CNodeField =
+    //  ┣━━╸▆ decl : CNodeDeclaration =
+    //  ┃   ┣━━╸▆ static : CNodeKeyword = "static"
+    //  ┃   ┣━━╸▆ const : CNodeKeyword = "const"
+    //  ┃   ┣━━╸▆ type : CNodeBuiltinType =
+    //  ┃   ┃   ┣━━╸▆ name : CNodeIdentifier = "char"
+    //  ┃   ┃   ┗━━╸▆ star : CNodePunct = "*"
+    //  ┃   ┣━━╸▆ name : CNodeIdentifier = "TEXT_HEX"
+    //  ┃   ┣━━╸▆ eq : CNodePunct = "="
+    //  ┃   ┗━━╸▆ value : CNodeConstString = "\"add.text.vh\""
+    //  ┗━━╸▆ semi : CNodePunct = ";"
+
+    // "~decl.static ~decl.const ~decl.type decl.name decl.eq decl.value semi"
+
+    // static const char* TEXT_HEX = "add.text.vh";
+    // localparam string TEXT_HEX = "add.text.vh";
 
     err << cursor.emit_print("localparam string ");
+    err << skip_to(node->node_decl->node_name);
     err << emit_dispatch2(node->node_decl->node_name);
     err << emit_dispatch2(node->node_decl->node_array);
     err << emit_dispatch2(node->node_decl->node_eq);
     err << emit_dispatch2(node->node_decl->node_value);
+    //err << emit_dispatch2(node->node_decl);
     err << emit_dispatch2(node->node_semi);
 
     return err << check_done(node);
   }
-
-  //----------------------------------------
 
   if (node->node_decl->node_const) {
-    // Localparam
-    bool in_namespace = node->ancestor<CNodeNamespace>() != nullptr;
-    bool in_function  = node->ancestor<CNodeFunction>() != nullptr;
-    //err << cursor.emit_print(in_namespace || in_function ? "parameter " : "localparam ");
-
     return emit_default(node);
-
-    err << emit_dispatch2(node->node_decl->node_static);
-    err << emit_dispatch2(node->node_decl->node_const);
-    err << emit_dispatch2(node->node_decl->node_type);
-    err << emit_dispatch2(node->node_decl->node_name);
-    err << emit_dispatch2(node->node_decl->node_array);
-    err << emit_dispatch2(node->node_decl->node_eq);
-    err << emit_dispatch2(node->node_decl->node_value);
-    err << emit_dispatch2(node->node_semi);
-
-    return err << check_done(node);
   }
-
-  //----------------------------------------
 
   auto node_builtin = node->node_decl->node_type->as<CNodeBuiltinType>();
   if (node_builtin) {
-    err << skip_to(node->node_decl->node_type);
-
-    err << emit_dispatch2(node->node_decl->node_type);
-    err << emit_dispatch2(node->node_decl->node_name);
-    err << emit_dispatch2(node->node_decl->node_array);
-    err << emit_dispatch2(node->node_decl->node_eq);
-    err << emit_dispatch2(node->node_decl->node_value);
-    err << emit_dispatch2(node->node_semi);
-
-    return err << check_done(node);
+    return emit_default(node);
   }
-
-  if (node->is_struct()) return emit_raw(node);
-  if (node->is_component()) return emit_component(node);
 
   //----------------------------------------
 

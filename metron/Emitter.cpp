@@ -1055,6 +1055,10 @@ Err Emitter::emit(CNodeIdentifier* node) {
 Err Emitter::emit(CNodeKeyword* node) {
   auto text = node->get_text();
 
+  if (text == "struct") {
+    return emit_replacement(node, "typedef struct packed");
+  }
+
   if (text == "static" || text == "const" || text == "break") {
     return comment_out(node);
   }
@@ -1152,8 +1156,8 @@ Err Emitter::emit(CNodeQualifiedIdentifier* node) {
   }
 
   if (elide_scope) {
-    err << skip_over(node->node_scope);
-    err << skip_over(node->node_colon);
+    err << skip_over2(node->node_scope);
+    err << skip_over2(node->node_colon);
   }
   else {
     err << emit_dispatch2(node->node_scope);
@@ -1191,16 +1195,49 @@ Err Emitter::emit(CNodeReturn* node) {
 
 //------------------------------------------------------------------------------
 
+// struct MyStruct1 {
+//   logic<8> a;
+// };
+
+// typedef struct packed {
+//   logic[7:0] a;
+// } MyStruct1;
+
+
+//  ▆ CNodeStruct =
+//  ┣━━╸▆ struct : CNodeKeyword = "struct"
+//  ┣━━╸▆ name : CNodeIdentifier = "MyStruct1"
+//  ┣━━╸▆ body : CNodeList =
+//  ┃   ┣━━╸▆ ldelim : CNodePunct = "{"
+//  ┃   ┣━━╸▆ CNodeField =
+//  ┃   ┃   ┣━━╸▆ decl : CNodeDeclaration =
+//  ┃   ┃   ┃   ┣━━╸▆ type : CNodeBuiltinType =
+//  ┃   ┃   ┃   ┃   ┣━━╸▆ name : CNodeIdentifier = "logic"
+//  ┃   ┃   ┃   ┃   ┗━━╸▆ template_args : CNodeList =
+//  ┃   ┃   ┃   ┃       ┣━━╸▆ ldelim : CNodePunct = "<"
+//  ┃   ┃   ┃   ┃       ┣━━╸▆ arg : CNodeConstInt = "8"
+//  ┃   ┃   ┃   ┃       ┗━━╸▆ rdelim : CNodePunct = ">"
+//  ┃   ┃   ┃   ┗━━╸▆ name : CNodeIdentifier = "a"
+//  ┃   ┃   ┗━━╸▆ semi : CNodePunct = ";"
+//  ┃   ┗━━╸▆ rdelim : CNodePunct = "}"
+//  ┗━━╸▆ semi : CNodePunct = ";"
+
 Err Emitter::emit(CNodeStruct* node) {
   Err err = check_at(node);
 
-  err << emit_replacement2(node->node_struct, "typedef struct packed");
+  // "struct _ ~name body { } name _ semi"
+
+  /*
+  err << emit_dispatch2(node->node_struct);
   err << skip_over2(node->node_name);
   err << emit_dispatch2(node->node_body);
   err << cursor.emit_print(" ");
   err << emit_splice(node->node_name);
   err << cursor.emit_gap();
   err << emit_dispatch2(node->node_semi);
+  */
+
+  err << emit_format(node, "struct _ ~name body { } name _ semi");
 
   return err << check_done(node);
 }

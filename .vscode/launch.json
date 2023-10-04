@@ -16,9 +16,9 @@
         "-e",
         "-c",
         //"examples/scratch.h",
-        //"tests/metron_good/basic_increment.h",
+        "tests/metron_good/structs.h",
         //"examples/uart/metron/uart_hello.h",
-        "examples/rvsimple/metron/config.h",
+        //"examples/rvsimple/metron/config.h",
         "-o",
         "examples/scratch.sv"
       ],

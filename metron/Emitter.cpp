@@ -1078,10 +1078,9 @@ Err Emitter::emit(CNodeKeyword* node) {
 Err Emitter::emit(CNodeNamespace* node) {
   Err err = check_at(node);
 
-  //err << emit_replacement2(node->node_namespace, "package");
   err << emit_dispatch2(node->node_namespace);
 
-  err << emit_raw(node->node_name);
+  err << emit_dispatch(node->node_name);
   err << cursor.emit_print(";");
   err << cursor.emit_gap();
 
@@ -1153,14 +1152,14 @@ Err Emitter::emit(CNodeQualifiedIdentifier* node) {
   }
 
   if (elide_scope) {
-    err << skip_to(node->node_name);
-    err << emit_dispatch2(node->node_name);
+    err << skip_over(node->node_scope);
+    err << skip_over(node->node_colon);
   }
   else {
     err << emit_dispatch2(node->node_scope);
     err << emit_dispatch2(node->node_colon);
-    err << emit_dispatch2(node->node_name);
   }
+  err << emit_dispatch2(node->node_name);
 
   return err << check_done(node);
 }

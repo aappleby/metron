@@ -330,6 +330,8 @@ Err Emitter::emit_format(CNode* node, const char* fmt, ...) {
     }
   }
 
+  cursor.tok_cursor = node->tok_end();
+
   return err;
 }
 
@@ -442,11 +444,27 @@ Err Emitter::emit_cat(CNodeCall* node) {
 
 //----------------------------------------
 
+// [000.041]  ▆ rhs : CNodeCall =
+// [000.041]  ┣━━╸▆ func_name : CNodeIdentifier = "sra"
+// [000.041]  ┗━━╸▆ func_args : CNodeList =
+// [000.041]      ┣━━╸▆ ldelim : CNodePunct = "("
+// [000.041]      ┣━━╸▆ exp : CNodeIdentifier = "operand_a"
+// [000.041]      ┣━━╸▆ CNodePunct = ","
+// [000.041]      ┣━━╸▆ exp : CNodeCall =
+// [000.041]      ┃   ┣━━╸▆ func_name : CNodeIdentifier = "b5"
+// [000.041]      ┃   ┗━━╸▆ func_args : CNodeList =
+// [000.041]      ┃       ┣━━╸▆ ldelim : CNodePunct = "("
+// [000.041]      ┃       ┣━━╸▆ exp : CNodeIdentifier = "operand_b"
+// [000.041]      ┃       ┗━━╸▆ rdelim : CNodePunct = ")"
+// [000.041]      ┗━━╸▆ rdelim : CNodePunct = ")"
+
 Err Emitter::emit_sra(CNodeCall* node) {
   Err err;
   auto args = node->node_args->as<CNodeList>();
   auto lhs = args->items[0];
   auto rhs = args->items[1];
+
+  // "{($signed(} func_args[0] {) >>> } func_args[1] {)}" ?
 
   err << emit("($signed(@) >>> @)", lhs, rhs);
   err << skip_over(node);
@@ -478,6 +496,7 @@ Err Emitter::emit_submod_call(CNodeCall* node) {
   if (dst_func->child("return_type")->name == "void") {
     err << comment_out(node);
   } else {
+    // "node_path ~_ {_} node_name ~_ {)ret}"
     err << emit("@_@_ret", func_path->node_path, func_path->node_name);
     err << skip_over(node);
   }

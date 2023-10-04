@@ -16,9 +16,9 @@
         "-e",
         "-c",
         //"examples/scratch.h",
-        "tests/metron_good/plus_equals.h",
+        //"tests/metron_good/plus_equals.h",
         //"examples/uart/metron/uart_hello.h",
-        //"examples/rvsimple/metron/control_transfer.h",
+        "examples/rvsimple/metron/data_memory_interface.h",
         "-o",
         "examples/scratch.sv"
       ],

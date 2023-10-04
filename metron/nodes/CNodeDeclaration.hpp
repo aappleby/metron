@@ -22,12 +22,22 @@ struct CNodeDeclaration : public CNode {
     name = node_name->name;
   }
 
-  bool is_array() const {
-    return node_array != nullptr;
+  bool is_component() const { return _type_class != nullptr; }
+  bool is_struct() const { return _type_struct != nullptr; }
+  bool is_array() const { return node_array != nullptr; }
+  bool is_localparam() const {
+    return node_static != nullptr && node_const != nullptr;
   }
 
-  bool is_localparam() const {
-    return child("static") != nullptr && child("const") != nullptr;
+  bool is_const_char() const {
+    if (node_static && node_const) {
+      auto builtin = node_type->child("name");
+      auto star = node_type->child("star");
+      if (builtin && star && builtin->get_text() == "char") {
+        return true;
+      }
+    }
+    return false;
   }
 
   CNodeKeyword*    node_static = nullptr;

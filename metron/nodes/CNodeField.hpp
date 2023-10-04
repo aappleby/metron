@@ -16,22 +16,10 @@ struct CNodeField : public CNode {
     name = node_decl->name;
   }
 
-  bool is_component() const { return node_decl->_type_class != nullptr; }
-
-  bool is_struct() const { return node_decl->_type_struct != nullptr; }
-
-  bool is_array() const { return node_decl->node_array != nullptr; }
-
-  bool is_const_char() const {
-    if (node_decl->node_static && node_decl->node_const) {
-      auto builtin = node_decl->node_type->child("name");
-      auto star = node_decl->node_type->child("star");
-      if (builtin && star && builtin->get_text() == "char") {
-        return true;
-      }
-    }
-    return false;
-  }
+  bool is_component()  const { return node_decl->is_component(); }
+  bool is_struct()     const { return node_decl->is_struct(); }
+  bool is_array()      const { return node_decl->is_array(); }
+  bool is_const_char() const { return node_decl->is_const_char(); }
 
   //----------------------------------------
 

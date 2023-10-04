@@ -22,8 +22,8 @@ module Metron (
     x = x + 13;
     x  = x - 13;
     x   = x * 13;
-    x = x   + 13;
-    x = x  - 13;
+    x = x +   13;
+    x = x -  13;
     x = x * 13;
     my_sig = x;
   end
@@ -33,8 +33,8 @@ module Metron (
     my_reg1 <= my_reg1 + 22;
     my_reg2  <= my_reg2 - 22;
     my_reg3   <= my_reg3 * 22;
-    my_reg4 <= my_reg4   + 22;
-    my_reg5 <= my_reg5  - 22;
+    my_reg4 <= my_reg4 +   22;
+    my_reg5 <= my_reg5 -  22;
     my_reg6 <= my_reg6 * 22;
   end
 endmodule

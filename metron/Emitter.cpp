@@ -316,12 +316,24 @@ Err Emitter::emit_format(CNode* node, const char* fmt, ...) {
       *b = 0;
       child = node->child(buf);
 
+
+      if (skip) {
+        err << skip_over(child);
+      }
+      else {
+        err << emit_splice(child);
+      }
+      cursor.tok_cursor = child->tok_end();
+
+
+      /*
       if (cursor.tok_cursor == child->tok_begin()) {
         err << (skip ? skip_over(child) : emit_dispatch(child));
       }
-      else if (!skip) {
-        err << emit_splice(child);
+      else {
+        if (!skip) err << emit_splice(child);
       }
+      */
 
 
 
@@ -350,11 +362,11 @@ Err Emitter::emit(CNodeAssignment* node) {
   std::string assign = in_tick(node) && node_field ? "<=" : "=";
 
   if (node->node_op->get_text() == "=") {
-    err << emit_format(node, "lhs _ {%s} ~op _ rhs", assign.c_str());
+    err << emit_format(node, "lhs _ ~op{%s} _ rhs", assign.c_str());
   }
   else {
     auto op_char = node->node_op->get_text()[0];
-    err << emit_format(node, "lhs _ {%s } lhs ~op _ {%c } rhs", assign.c_str(), op_char);
+    err << emit_format(node, "lhs _ {%s } lhs { } ~op{%c} _ rhs", assign.c_str(), op_char);
   }
 
   return err << check_done(node);
@@ -1225,19 +1237,7 @@ Err Emitter::emit(CNodeReturn* node) {
 Err Emitter::emit(CNodeStruct* node) {
   Err err = check_at(node);
 
-  // "struct _ ~name body { } name _ semi"
-
-  /*
-  err << emit_dispatch2(node->node_struct);
-  err << skip_over2(node->node_name);
-  err << emit_dispatch2(node->node_body);
-  err << cursor.emit_print(" ");
-  err << emit_splice(node->node_name);
-  err << cursor.emit_gap();
-  err << emit_dispatch2(node->node_semi);
-  */
-
-  err << emit_format(node, "struct _ ~name body { } name _ semi");
+  err << emit_format(node, "struct _ body { } name semi");
 
   return err << check_done(node);
 }

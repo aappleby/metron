@@ -91,7 +91,6 @@ struct Emitter {
   Err emit(CNodeFieldExpression* node);
   Err emit(CNodeFunction* node);
   Err emit(CNodeIdentifier* node);
-  Err emit(CNodeIf* node);
   Err emit(CNodeKeyword* node);
   Err emit(CNodeNamespace* node);
   Err emit(CNodePrefixExp* node);

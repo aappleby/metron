@@ -241,7 +241,6 @@ Err Emitter::emit_dispatch(CNode* node) {
   if (auto n = node->as<CNodeFieldExpression>()) return emit(n);
   if (auto n = node->as<CNodeFunction>()) return emit(n);
   if (auto n = node->as<CNodeIdentifier>()) return emit(n);
-  if (auto n = node->as<CNodeIf>()) return emit(n);
   if (auto n = node->as<CNodeKeyword>()) return emit(n);
   if (auto n = node->as<CNodeNamespace>()) return emit(n);
   if (auto n = node->as<CNodePrefixExp>()) return emit(n);
@@ -700,6 +699,16 @@ Err Emitter::emit(CNodeConstant* node) {
 Err Emitter::emit(CNodeDeclaration* node) {
   Err err = check_at(node);
 
+  if (node->is_const_char()) {
+    err << cursor.emit_print("localparam string ");
+    err << skip_to(node->node_name);
+    err << emit_dispatch2(node->node_name);
+    err << emit_dispatch2(node->node_array);
+    err << emit_dispatch2(node->node_eq);
+    err << emit_dispatch2(node->node_value);
+    return err << check_done(node);
+  }
+
   // Check for const char*
   if (node->node_const) {
     /*
@@ -938,53 +947,11 @@ Err Emitter::emit(CNodeField* node) {
     return err << skip_over(node);
   }
 
-  if (node->is_struct()) return emit_default(node);
-  if (node->is_component()) return emit_component(node);
-
-  if (node->is_const_char()) {
-
-    //  ▆ CNodeField =
-    //  ┣━━╸▆ decl : CNodeDeclaration =
-    //  ┃   ┣━━╸▆ static : CNodeKeyword = "static"
-    //  ┃   ┣━━╸▆ const : CNodeKeyword = "const"
-    //  ┃   ┣━━╸▆ type : CNodeBuiltinType =
-    //  ┃   ┃   ┣━━╸▆ name : CNodeIdentifier = "char"
-    //  ┃   ┃   ┗━━╸▆ star : CNodePunct = "*"
-    //  ┃   ┣━━╸▆ name : CNodeIdentifier = "TEXT_HEX"
-    //  ┃   ┣━━╸▆ eq : CNodePunct = "="
-    //  ┃   ┗━━╸▆ value : CNodeConstString = "\"add.text.vh\""
-    //  ┗━━╸▆ semi : CNodePunct = ";"
-
-    // "~decl.static ~decl.const ~decl.type decl.name decl.eq decl.value semi"
-
-    // static const char* TEXT_HEX = "add.text.vh";
-    // localparam string TEXT_HEX = "add.text.vh";
-
-    err << cursor.emit_print("localparam string ");
-    err << skip_to(node->node_decl->node_name);
-    err << emit_dispatch2(node->node_decl->node_name);
-    err << emit_dispatch2(node->node_decl->node_array);
-    err << emit_dispatch2(node->node_decl->node_eq);
-    err << emit_dispatch2(node->node_decl->node_value);
-    //err << emit_dispatch2(node->node_decl);
-    err << emit_dispatch2(node->node_semi);
-
-    return err << check_done(node);
-  }
-
-  if (node->node_decl->node_const) {
+  if (node->is_component()) {
+    return emit_component(node);
+  } else {
     return emit_default(node);
   }
-
-  auto node_builtin = node->node_decl->node_type->as<CNodeBuiltinType>();
-  if (node_builtin) {
-    return emit_default(node);
-  }
-
-  //----------------------------------------
-
-  assert(false);
-  return err << check_done(node);
 }
 
 //------------------------------------------------------------------------------
@@ -1085,12 +1052,6 @@ Err Emitter::emit(CNodeIdentifier* node) {
 
 //------------------------------------------------------------------------------
 
-Err Emitter::emit(CNodeIf* node) {
-  return emit_default(node);
-}
-
-//------------------------------------------------------------------------------
-
 Err Emitter::emit(CNodeKeyword* node) {
   auto text = node->get_text();
 
@@ -1102,9 +1063,11 @@ Err Emitter::emit(CNodeKeyword* node) {
     return emit_replacement(node, "\"\"");
   }
 
-  if (text == "if" || text == "else" || text == "default" || text == "for" || "enum") {
+  if (text == "if" || text == "else" || text == "default" || text == "for" || text == "enum") {
     return emit_raw(node);
   }
+
+  if (text == "namespace") return emit_replacement(node, "package");
 
   assert(false);
   return ERR("Don't know how to handle this keyword - %s\n", node->get_textstr().c_str());
@@ -1114,18 +1077,15 @@ Err Emitter::emit(CNodeKeyword* node) {
 
 Err Emitter::emit(CNodeNamespace* node) {
   Err err = check_at(node);
-  auto node_namespace = node->node_namespace;
-  auto node_name      = node->node_name;
-  auto node_fields    = node->node_fields;
-  auto node_semi      = node->node_semi;
 
-  err << emit_replacement2(node_namespace, "package");
+  //err << emit_replacement2(node->node_namespace, "package");
+  err << emit_dispatch2(node->node_namespace);
 
-  err << emit_raw(node_name);
+  err << emit_raw(node->node_name);
   err << cursor.emit_print(";");
   err << cursor.emit_gap();
 
-  for (auto f : node_fields) {
+  for (auto f : node->node_fields) {
     if (f->tag_is("ldelim")) {
       err << skip_over(f);
       err << cursor.emit_gap();
@@ -1139,7 +1099,7 @@ Err Emitter::emit(CNodeNamespace* node) {
   }
 
   // Don't need semi after namespace in Verilog
-  err << skip_over(node_semi);
+  err << skip_over(node->node_semi);
 
   return err << check_done(node);
 }

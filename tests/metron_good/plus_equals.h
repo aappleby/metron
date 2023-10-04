@@ -8,10 +8,11 @@ public:
   void tock() {
     int x = 7;
     x += 13;
-    x -= 13;
+    x  -= 13;
+    x   *= 13;
+    x +=   13;
+    x -=  13;
     x *= 13;
-    //x /= 13;
-    //x %= 13;
     my_sig = x;
   }
 
@@ -20,12 +21,14 @@ public:
   int my_reg3;
   int my_reg4;
   int my_reg5;
+  int my_reg6;
 
   void tick() {
     my_reg1 += 22;
-    my_reg2 -= 22;
-    my_reg3 *= 22;
-    //my_reg4 /= 22;
-    //my_reg5 %= 22;
+    my_reg2  -= 22;
+    my_reg3   *= 22;
+    my_reg4 +=   22;
+    my_reg5 -=  22;
+    my_reg6 *= 22;
   }
 };

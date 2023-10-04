@@ -6,8 +6,10 @@
 #include "CLI11/include/CLI/Config.hpp"
 #include "CLI11/include/CLI/Formatter.hpp"
 
-int main(int argc, char** argv) {
+#include <stdio.h>
+#include <stdarg.h>
 
+int main(int argc, char** argv) {
   const char* banner =
       "                                                        \n"
       " ###    ### ####### ######## ######   ######  ###    ## \n"

@@ -1,3 +1,75 @@
+/*
+Metron code changes
+
+Constants
+  constants reformatted into verilog style
+  static const char* becomes parameter string
+  DONTCARE becomes x
+  nullptr becomes ""
+
+types elided from some declarations (FIXME which ones?)
+
+Enums
+  enum class changed to enum, enum class of type logic<N>::BASE becomse type logic[N-1:0]
+
+Types
+  logic<n> changed to logic[n-1:0]
+
+Expressions
+  various builtin functions renamed
+  bx(l) and b<x>(l) get turned in l[x-1:0] etc
+  prefix and postfix increment/dec turned into x = x + 1 etc.
+  cat(a,b,c) changed to {a,b,c}
+  sra(a,b) changed to ($signed(a) >>> b)
+  dup<a>(b) changed to {a {b}}
+  x = y changed to x <= y for assignments to fields in tick methods
+  x += y changed to x = x + y or x <= x + y, same for other ops
+  blocks with {} change to begin/end
+  field paths like foo.bar.baz become foo_bar_baz to match binding variables
+  submod "calls" replaced with name_func_ret if they have a return type, otherwise commented out
+  submod call args replaced with writes to binding variables
+  return x becomes func_ret = x
+  variable declarations always hoisted to top of block scope
+
+Classes
+  template parameter lists becomes list of parameters
+  public methods get ports
+  public fields get ports and are not emitted in module body
+  template parameter list becomes parameter list at top of module
+  "class {}" becomes "module...endmodule"
+  public/private commented out
+  static const fields become (local?) params
+  input port bindings are inserted before submod calls
+  submod declarations get additional parameter args, port list that connects ports to binding vars, and binding var declarations
+  Submod constructor arguments become submod parameters
+  constructors become init methods
+
+Methods
+  tick methods turn into always_ff
+  tock methods turn into always_comb
+  funcs turn into functions unless they are public, in which case they turn into always_comb
+
+Preprocessor
+  #defined identifiers turn into `X
+  #define become preproc_define
+  #include becomes preproc_include
+
+Structs
+  struct x becomes typedef struct packed {} x;
+
+Switch
+  switches become case .... endcase
+  case x: becomes x:
+  empty case x: becomes case x,
+  break commented out
+
+Namespaces
+  namesapce becomes package, no semi after namespace
+  using becomes import
+  package::identifier becomes identifier
+
+*/
+
 #include "Emitter.hpp"
 
 #include <stdio.h>
@@ -552,8 +624,6 @@ Err Emitter::emit(CNodeCall* node) {
     auto src_mtype = src_func->method_type;
     auto dst_mtype = dst_func->method_type;
 
-    // Replace call with return binding variable if the callee is a tock
-
     if (dst_mtype == MT_INIT) return emit_default(node);
     if (dst_mtype == MT_FUNC) return emit_default(node);
     if (src_mtype == MT_TICK && dst_mtype == MT_TICK) return emit_default(node);
@@ -734,17 +804,9 @@ Err Emitter::emit(CNodeDeclaration* node) {
     bool in_namespace = node->ancestor<CNodeNamespace>() != nullptr;
     bool in_function  = node->ancestor<CNodeFunction>() != nullptr;
     err << cursor.emit_print(in_namespace || in_function ? "parameter " : "localparam ");
-    //err << cursor.emit_print("parameter ");
 
     for (auto c = node->child_head; c; c = c->node_next) {
       err << emit_dispatch2(c);
-      /*
-      if (c->as<CNodeType>()) {
-        err << skip_over2(c);
-      } else {
-        err << emit_dispatch2(c);
-      }
-      */
     }
 
     return err << check_done(node);
@@ -2125,47 +2187,6 @@ Err Emitter::emit_field_ports(CNodeField* f, bool is_output) {
   return err;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //------------------------------------------------------------------------------
 
 Err Emitter::emit_init(CNodeFunction* node) {
@@ -2358,11 +2379,7 @@ Err Emitter::emit_func_binding_vars(CNodeFunction* node) {
   return err;
 }
 
-
-
-
-
-
+//------------------------------------------------------------------------------
 
 Err Emitter::emit_gap(CNode* n) {
   if (n && n->node_next) {
@@ -2389,19 +2406,9 @@ Err Emitter::skip_over(CNode* n) {
   Err err = check_at(n);
 
   {
-    /*
-    auto begin = n->tok_begin()->text_begin();
-    auto end   = (n->tok_end()-1)->text_end();
-
-    Err err;
-    for (auto c = begin; c < end; c++) {
-      err << cursor.skip_char(*c);
-    }
-    */
     err << cursor.skip_span(n->tok_begin(), n->tok_end());
     cursor.tok_cursor = n->tok_end();
     cursor.line_elided = true;
-
   }
 
   return err << check_done(n);
@@ -2422,14 +2429,6 @@ Err Emitter::skip_to(CNode* n) {
 
   Err err;
   err << cursor.skip_span(cursor.tok_cursor, n->tok_begin());
-  /*
-  while (cursor.tok_cursor < n->tok_begin()) {
-    for (auto c = cursor.tok_cursor->text_begin(); c < cursor.tok_cursor->text_end(); c++) {
-      err << cursor.skip_char(*c);
-    }
-    cursor.tok_cursor++;
-  }
-  */
 
   return err;
 }

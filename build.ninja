@@ -67,9 +67,8 @@ rule link_ems
       -sNO_DISABLE_EXCEPTION_CATCHING -sTOTAL_STACK=32MB $
       -sINITIAL_MEMORY=64MB -sFORCE_FILESYSTEM -o ${out}
 packager = $EMSDK/upstream/emscripten/tools/file_packager.py
-build docs/demo/examples.data docs/demo/examples.js: command $
-    tests/metron_bad/basic_reg_rwr.h tests/metron_bad/basic_sig_wrw.h $
-    tests/metron_bad/bowtied_signals.h $
+build docs/demo/examples.data: command tests/metron_bad/basic_reg_rwr.h $
+    tests/metron_bad/basic_sig_wrw.h tests/metron_bad/bowtied_signals.h $
     tests/metron_bad/case_without_break.h $
     tests/metron_bad/func_writes_sig_and_reg.h $
     tests/metron_bad/if_with_no_compound.h $
@@ -161,11 +160,10 @@ build docs/demo/examples.data docs/demo/examples.js: command $
       docs/demo/examples.data --no-node --js-output=docs/demo/examples.js $
       --preload examples tests/metron_good tests/metron_bad --exclude *.cpp $
       *.sv *.MD *.hex *.pcf *.v *.txt
-build docs/tutorial/tutorial_src.data docs/tutorial/tutorial_src.js: $
-    command examples/tutorial/adder.h examples/tutorial/bit_twiddling.h $
-    examples/tutorial/blockram.h examples/tutorial/checksum.h $
-    examples/tutorial/clocked_adder.h examples/tutorial/counter.h $
-    examples/tutorial/declaration_order.h $
+build docs/tutorial/tutorial_src.data: command examples/tutorial/adder.h $
+    examples/tutorial/bit_twiddling.h examples/tutorial/blockram.h $
+    examples/tutorial/checksum.h examples/tutorial/clocked_adder.h $
+    examples/tutorial/counter.h examples/tutorial/declaration_order.h $
     examples/tutorial/functions_and_tasks.h examples/tutorial/nonblocking.h $
     examples/tutorial/submodules.h examples/tutorial/templates.h $
     examples/tutorial/tutorial2.h examples/tutorial/tutorial3.h $

@@ -320,19 +320,13 @@ ninja.variable(key="packager",
 all_test_headers = sorted_glob("tests/**/*.h", recursive=True)
 all_example_headers = sorted_glob("examples/**/*.h", recursive=True)
 
-ninja.build(outputs = [
-                "docs/demo/examples.data",
-                "docs/demo/examples.js",
-            ],
+ninja.build(outputs = ["docs/demo/examples.data"],
             rule="command",
             inputs=all_test_headers + all_example_headers,
             command="python3 $$EMSDK/upstream/emscripten/tools/file_packager.py docs/demo/examples.data --no-node --js-output=docs/demo/examples.js --preload examples tests/metron_good tests/metron_bad --exclude *.cpp *.sv *.MD *.hex *.pcf *.v *.txt");
 
 
-ninja.build(outputs = [
-                "docs/tutorial/tutorial_src.data",
-                "docs/tutorial/tutorial_src.js",
-            ],
+ninja.build(outputs = ["docs/tutorial/tutorial_src.data"],
             rule="command",
             inputs=sorted_glob("examples/tutorial/*.h"),
             command="python3 $$EMSDK/upstream/emscripten/tools/file_packager.py docs/tutorial/tutorial_src.data --no-node --js-output=docs/tutorial/tutorial_src.js --preload examples/tutorial examples/uart/metron");

@@ -254,7 +254,7 @@ def print_b(*args):
 
 def prep_cmd(cmd):
     cmd = cmd.strip()
-    kcov_prefix = "kcov --exclude-region=KCOV_OFF:KCOV_ON --include-pattern=Metron --exclude-pattern=submodules --exclude-line=debugbreak coverage"
+    kcov_prefix = "kcov --exclude-region=KCOV_OFF:KCOV_ON --include-pattern=metron --exclude-pattern=submodules --exclude-line=debugbreak coverage"
     if options.coverage and cmd.startswith("bin/metron "):
         cmd = kcov_prefix + " " + cmd
     args = [arg for arg in shlex.split(cmd) if len(arg)]

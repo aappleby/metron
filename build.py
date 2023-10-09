@@ -17,16 +17,18 @@ def sorted_glob(*args, **kwargs):
 
 base_includes = [
     "-I.",
-    "-I/usr/local/share/verilator/include",
+    #"-I/usr/local/share/verilator/include",
     "-Isymlinks",
-    "-Isymlinks/CLI11/include",
-    "-Itests",
+    "-Isymlinks/metrolib",
+    "-Isymlinks/matcheroni",
+    #"-Isymlinks/CLI11/include",
+    #"-Itests",
 ]
 
 metrolib_src = [
-    "symlinks/metrolib/core/Platform.cpp",
-    "symlinks/metrolib/core/Utils.cpp",
-    "symlinks/metrolib/core/Err.cpp",
+    "symlinks/metrolib/metrolib/core/Platform.cpp",
+    "symlinks/metrolib/metrolib/core/Utils.cpp",
+    "symlinks/metrolib/metrolib/core/Err.cpp",
 ]
 
 metron_src_lib   = sorted_glob("metron/*.cpp")
@@ -35,10 +37,47 @@ metron_src_main  = sorted_glob("metron/main/*.cpp")
 
 # ------------------------------------------------------------------------------
 
+def swap_ext(name, new_ext):
+    return path.splitext(name)[0] + new_ext
+
+
+def divider(text):
+    outfile.write("\n")
+    outfile.write("\n")
+    outfile.write(
+        "################################################################################\n")
+    outfile.write(f"# {text}\n\n")
+
+# ------------------------------------------------------------------------------
 
 def main():
     global outfile
     print("Regenerating build.ninja...")
+    ninja.variable("toolchain", "x86_64-linux-gnu")
+    #ninja.include("symlinks/metrolib/ninja/rules.ninja")
+    ninja.include("rules.ninja")
+    ninja.newline()
+
+    divider("Variables")
+
+    if ("--release" in sys.argv) or ("-r" in sys.argv):
+        ninja.variable("opts_cpp", "-rdynamic -O3 -MMD -std=gnu++2a")
+        ninja.variable("opts_c",   "-rdynamic -O3 -MMD")
+        ninja.variable("opts_ld",  "-O3")
+    else:
+        ninja.variable("opts_cpp", "-rdynamic -ggdb3 -O0 -MMD -Wall -Werror -Wsuggest-override -Wno-unused-function -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -std=gnu++2a")
+        ninja.variable("opts_c",   "-rdynamic -ggdb3 -O0 -MMD -Wall -Werror -Wno-unused-function -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable")
+        ninja.variable("opts_ld",  "-O3")
+
+    ninja.variable("base_includes", base_includes)
+
+    ninja.variable("libraries", "-lgcc -lc")
+
+    ninja.newline()
+    ninja.newline()
+    ninja.newline()
+
+    build_metron_ems()
     build_verilator()
     build_metron_lib()
     build_metron_app()
@@ -55,98 +94,6 @@ def main():
     outfile.close()
     outfile = None
     #return os.system("ninja")
-
-# ------------------------------------------------------------------------------
-
-def swap_ext(name, new_ext):
-    return path.splitext(name)[0] + new_ext
-
-
-def divider(text):
-    outfile.write("\n")
-    outfile.write("\n")
-    outfile.write(
-        "################################################################################\n")
-    outfile.write(f"# {text}\n\n")
-
-
-# ------------------------------------------------------------------------------
-
-"""
-outfile.write(
-    "################################################################################\n")
-outfile.write("# Autoupdate this build.ninja from build.py.\n\n")
-
-ninja.rule(name="autoupdate",
-           command="python3 $in",
-           generator=1)
-
-ninja.build(outputs="build.ninja",
-            rule="autoupdate",
-            inputs="build.py")
-"""
-
-# ------------------------------------------------------------------------------
-
-divider("Variables")
-
-if ("--release" in sys.argv) or ("-r" in sys.argv):
-    ninja.variable("cpp_build_mode", "-rdynamic -O3")
-    ninja.variable("c_build_mode", "-rdynamic -O3")
-else:
-    ninja.variable("cpp_build_mode", "-rdynamic -ggdb3 -O0 -Wall -Werror -Wsuggest-override -Wno-unused-function -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable")
-    ninja.variable("c_build_mode", "-rdynamic -ggdb3 -O0 -Wall -Werror -Wno-unused-function -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable")
-
-# ------------------------------------------------------------------------------
-
-divider("Rules")
-
-ninja.rule(name="compile_cpp",
-           command="g++ ${cpp_build_mode} -std=gnu++2a ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
-           deps="gcc",
-           depfile="${out}.d")
-
-ninja.rule(name="compile_c",
-           command="gcc ${c_build_mode} ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
-           deps="gcc",
-           depfile="${out}.d")
-
-ninja.rule(name="static_lib",
-           command="ar rcs ${out} ${in} > /dev/null")
-
-ninja.rule(name="link",
-           command="g++ ${cpp_build_mode} ${in} -Wl,--whole-archive ${local_libs} -Wl,--no-whole-archive ${global_libs} -o ${out}")
-
-ninja.rule(name="metron", # yes, we run metron with quiet and verbose both on for test coverage
-           command="bin/metron -q -v -c ${in} -o ${out}")
-
-ninja.rule(name="verilator",
-           command="verilator --public ${includes} --cc ${src_top} -Mdir ${dst_dir}")
-
-ninja.rule(name="make",
-           command="make --quiet -C ${dst_dir} -f ${makefile} > /dev/null")
-
-ninja.rule(name="run_test",
-           command="${in} | grep \"All tests pass\" && touch ${out}")
-
-ninja.rule(name="console",
-           command="${in}",
-           pool="console")
-
-ninja.rule(name="iverilog",
-           command="iverilog -g2012 ${defines} ${includes} ${in} -o ${out}")
-
-ninja.rule(name="yosys",
-           command="yosys -q -p 'read_verilog ${includes} -sv ${in}; dump; synth_ice40 -json ${out};'")
-
-ninja.rule(name="nextpnr-ice40",
-           command="nextpnr-ice40 -q --${chip} --package ${package} --json ${in} --asc ${out} --pcf ${pcf}")
-
-ninja.rule(name="icepack",
-           command="icepack ${in} ${out}")
-
-ninja.rule(name="command",
-           command="${command}")
 
 # ------------------------------------------------------------------------------
 
@@ -188,7 +135,7 @@ def verilate_dir(src_dir, src_files, src_top, dst_dir):
     ninja.build(rule="verilator",
                 inputs=src_files,
                 outputs=[verilated_make, verilated_hdr],
-                includes=["-Isrc", f"-I{src_dir}"],
+                includes=[f"-I{src_dir}"],
                 src_top=src_top,
                 dst_dir=dst_dir)
 
@@ -224,7 +171,7 @@ def cpp_binary(bin_name, src_files, src_objs=None, deps=None, link_deps=None, **
                     variables=kwargs)
         src_objs.append(obj_name)
     ninja.build(outputs=bin_name,
-                rule="link",
+                rule="c_binary",
                 inputs=src_objs + link_deps,
                 variables=kwargs)
 
@@ -250,7 +197,7 @@ def cpp_library(lib_name, src_files, src_objs=None, deps=None, **kwargs):
                     variables=kwargs)
         src_objs.append(obj_name)
     ninja.build(outputs=lib_name,
-                rule="static_lib",
+                rule="c_library",
                 inputs=src_objs,
                 variables=kwargs)
 
@@ -282,7 +229,7 @@ def build_metron_lib():
     cpp_library(
         lib_name="bin/libmetron.a",
         src_files = metron_src_lib + metron_src_nodes + metrolib_src,
-        includes=base_includes,
+        includes=["${base_includes}"],
         src_objs=[],
     )
 
@@ -292,77 +239,67 @@ def build_metron_app():
     cpp_binary(
         bin_name="bin/metron",
         src_files = metron_src_main,
-        includes=base_includes,
+        includes=["${base_includes}", "-Isymlinks/CLI11/include"],
         link_deps=["bin/libmetron.a"],
     )
 
 # ------------------------------------------------------------------------------
 # Emscriptenization
 
-# Not including a -O2 or -Os causes Emscripten's memory use to blow up :/
+def build_metron_ems():
+    divider("Emscripten")
 
-ninja.rule(name="compile_c_ems",
-           command="emcc -sNO_DISABLE_EXCEPTION_CATCHING -O2 ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
-           deps="gcc",
-           depfile="${out}.d")
+    # Not including a -O2 or -Os causes Emscripten's memory use to blow up :/
 
-ninja.rule(name="compile_cpp_ems",
-           command="emcc -sNO_DISABLE_EXCEPTION_CATCHING -O2 -std=c++2b ${includes} -MMD -MF ${out}.d -c ${in} -o ${out}",
-           deps="gcc",
-           depfile="${out}.d")
+    ninja.variable(key="packager",
+                   value="$$EMSDK/upstream/emscripten/tools/file_packager.py")
 
-ninja.rule(name="link_ems",
-           command="emcc ${in} -sEXPORT_ES6 -sEXPORTED_RUNTIME_METHODS=['FS','callMain'] -sNO_DISABLE_EXCEPTION_CATCHING -sTOTAL_STACK=32MB -sINITIAL_MEMORY=64MB -sFORCE_FILESYSTEM -o ${out}")
+    all_test_headers = sorted_glob("tests/**/*.h", recursive=True)
+    all_example_headers = sorted_glob("examples/**/*.h", recursive=True)
 
-ninja.variable(key="packager",
-               value="$EMSDK/upstream/emscripten/tools/file_packager.py")
-
-all_test_headers = sorted_glob("tests/**/*.h", recursive=True)
-all_example_headers = sorted_glob("examples/**/*.h", recursive=True)
-
-ninja.build(outputs = ["docs/demo/examples.data"],
-            rule="command",
-            inputs=all_test_headers + all_example_headers,
-            command="python3 $$EMSDK/upstream/emscripten/tools/file_packager.py docs/demo/examples.data --no-node --js-output=docs/demo/examples.js --preload examples tests/metron_good tests/metron_bad --exclude *.cpp *.sv *.MD *.hex *.pcf *.v *.txt");
+    ninja.build(outputs = ["docs/demo/examples.data"],
+                rule="run_command",
+                inputs=all_test_headers + all_example_headers,
+                command="python3 ${packager} docs/demo/examples.data --no-node --js-output=docs/demo/examples.js --preload examples tests/metron_good tests/metron_bad --exclude *.cpp *.sv *.MD *.hex *.pcf *.v *.txt");
 
 
-ninja.build(outputs = ["docs/tutorial/tutorial_src.data"],
-            rule="command",
-            inputs=sorted_glob("examples/tutorial/*.h"),
-            command="python3 $$EMSDK/upstream/emscripten/tools/file_packager.py docs/tutorial/tutorial_src.data --no-node --js-output=docs/tutorial/tutorial_src.js --preload examples/tutorial examples/uart/metron");
+    ninja.build(outputs = ["docs/tutorial/tutorial_src.data"],
+                rule="run_command",
+                inputs=sorted_glob("examples/tutorial/*.h"),
+                command="python3 ${packager} docs/tutorial/tutorial_src.data --no-node --js-output=docs/tutorial/tutorial_src.js --preload examples/tutorial examples/uart/metron");
 
-def cpp_binary2(bin_name, rule_compile, rule_link, src_files, src_objs, obj_dir, deps=None, link_deps=None, **kwargs):
-    if src_objs is None:
-        src_objs = []
-    if deps is None:
-        deps = []
-    if link_deps is None:
-        link_deps = []
+    def cpp_binary2(bin_name, rule_compile, rule_link, src_files, src_objs, obj_dir, deps=None, link_deps=None, **kwargs):
+        if src_objs is None:
+            src_objs = []
+        if deps is None:
+            deps = []
+        if link_deps is None:
+            link_deps = []
 
-    divider(f"Compile {bin_name} using {rule_compile} and {rule_link}")
+        divider(f"Compile {bin_name} using {rule_compile} and {rule_link}")
 
-    for n in src_files:
-        obj_name = path.join(obj_dir, swap_ext(n, ".o"))
-        ninja.build(outputs=obj_name,
-                    rule=rule_compile,
-                    inputs=n,
-                    implicit=deps,
+        for n in src_files:
+            obj_name = path.join(obj_dir, swap_ext(n, ".o"))
+            ninja.build(outputs=obj_name,
+                        rule=rule_compile,
+                        inputs=n,
+                        implicit=deps,
+                        variables=kwargs)
+            src_objs.append(obj_name)
+        ninja.build(outputs=bin_name,
+                    rule=rule_link,
+                    inputs=src_objs + link_deps,
                     variables=kwargs)
-        src_objs.append(obj_name)
-    ninja.build(outputs=bin_name,
-                rule=rule_link,
-                inputs=src_objs + link_deps,
-                variables=kwargs)
 
-cpp_binary2(
-    bin_name="docs/app/metron.js",
-    rule_compile="compile_cpp_ems",
-    rule_link="link_ems",
-    src_files= metron_src_main + metron_src_lib + metron_src_nodes + metrolib_src,
-    src_objs=[],
-    obj_dir = "wasm/obj",
-    includes=base_includes
-)
+    cpp_binary2(
+        bin_name="docs/app/metron.js",
+        rule_compile="ems_compile_cpp",
+        rule_link="ems_binary",
+        src_files= metron_src_main + metron_src_lib + metron_src_nodes + metrolib_src,
+        src_objs=[],
+        obj_dir = "wasm/obj",
+        includes=["${base_includes}", "-Isymlinks/CLI11/include"],
+    )
 
 # ------------------------------------------------------------------------------
 # Low-level tests
@@ -375,7 +312,7 @@ def build_metron_test():
             "tests/test_logic.cpp",
             "tests/test_utils.cpp",
         ],
-        includes=base_includes,
+        includes=["${base_includes}"],
         link_deps=["bin/libmetron.a"],
     )
 
@@ -387,7 +324,7 @@ def build_j1():
         src_files=[
             "examples/j1/main.cpp",
         ],
-        includes=base_includes,
+        includes=["${base_includes}"],
         src_objs=[],
         link_deps=["bin/libmetron.a"],
     )
@@ -406,7 +343,7 @@ def build_gb_spu():
     cpp_binary(
         bin_name="bin/examples/gb_spu",
         src_files=["examples/gb_spu/gb_spu_main.cpp"],
-        includes=base_includes + ["-Igen/examples/gb_spu"],
+        includes=["${base_includes}", "-I/usr/local/share/verilator/include", "-Igen/examples/gb_spu"],
         src_objs=["obj/verilated.o", "obj/verilated_threads.o", gb_spu_vobj],
         deps=[gb_spu_vhdr],
         link_deps=["bin/libmetron.a"],
@@ -422,7 +359,7 @@ def build_uart():
         src_files=[
             "examples/uart/main.cpp",
         ],
-        includes=base_includes,
+        includes=["${base_includes}"],
         link_deps=["bin/libmetron.a"],
     )
 
@@ -439,7 +376,7 @@ def build_uart():
     cpp_binary(
         bin_name="bin/examples/uart_vl",
         src_files=["examples/uart/main_vl.cpp"],
-        includes=base_includes + ["-Igen/examples/uart"],
+        includes=["${base_includes}", "-I/usr/local/share/verilator/include", "-Igen/examples/uart"],
         src_objs=["obj/verilated.o", "obj/verilated_threads.o", uart_vobj],
         deps=[uart_vhdr],
         link_deps=["bin/libmetron.a"],
@@ -448,7 +385,6 @@ def build_uart():
     divider("Icarus Verilog uart testbench")
 
     uart_includes = [
-        "-Isrc",
         "-Iexamples/uart",
         "-Iexamples/uart/metron_sv"
     ]
@@ -506,7 +442,7 @@ def build_rvsimple():
     cpp_binary(
         bin_name="bin/examples/rvsimple",
         src_files=["examples/rvsimple/main.cpp"],
-        includes=base_includes,
+        includes=["${base_includes}", "-Isymlinks/CLI11/include"],
         link_deps=["bin/libmetron.a"],
     )
 
@@ -522,7 +458,7 @@ def build_rvsimple():
     cpp_binary(
         bin_name="bin/examples/rvsimple_vl",
         src_files=["examples/rvsimple/main_vl.cpp"],
-        includes=base_includes + [f"-I{vl_root}"],
+        includes=["${base_includes}", "-I/usr/local/share/verilator/include", f"-I{vl_root}", "-Isymlinks/CLI11/include"],
         src_objs=["obj/verilated.o", "obj/verilated_threads.o", vl_vobj],
         deps=[vl_vhdr],
         link_deps=["bin/libmetron.a"],
@@ -541,7 +477,7 @@ def build_rvsimple():
     cpp_binary(
         bin_name="bin/examples/rvsimple_ref",
         src_files=["examples/rvsimple/main_ref_vl.cpp"],
-        includes=base_includes + [f"-I{ref_vl_root}"],
+        includes=["${base_includes}", "-I/usr/local/share/verilator/include", f"-I{ref_vl_root}", "-Isymlinks/CLI11/include"],
         src_objs=["obj/verilated.o", "obj/verilated_threads.o", ref_vobj],
         deps=[ref_vhdr],
         link_deps=["bin/libmetron.a"],
@@ -559,7 +495,7 @@ def build_pinwheel():
     cpp_binary(
         bin_name="bin/examples/pinwheel",
         src_files=["examples/pinwheel/main.cpp"],
-        includes=base_includes + [mt_root],
+        includes=["${base_includes}", mt_root],
         link_deps=["bin/libmetron.a"],
     )
 
@@ -591,7 +527,7 @@ def build_ibex():
     cpp_binary(
         bin_name="bin/examples/ibex",
         src_files=["examples/ibex/main.cpp"],
-        includes=base_includes,
+        includes=["${base_includes}"],
     )
 
 # ------------------------------------------------------------------------------
@@ -606,8 +542,8 @@ def build_pong():
     cpp_binary(
         bin_name="bin/examples/pong",
         src_files=["examples/pong/main.cpp"],
-        includes=base_includes,
-        global_libs="-lSDL2",
+        includes=["${base_includes}"],
+        libraries="${libraries} -lSDL2",
         link_deps=["bin/libmetron.a"],
     )
 

@@ -30,7 +30,7 @@ def escape_path(word):
 
 
 class Writer(object):
-    def __init__(self, output, width=78):
+    def __init__(self, output, width=9999):
         self.output = output
         self.width = width
 

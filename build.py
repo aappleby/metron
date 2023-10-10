@@ -69,6 +69,9 @@ def main():
         ninja.variable("opts_c",   "-rdynamic -ggdb3 -O0 -MMD -Wall -Werror -Wno-unused-function -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable")
         ninja.variable("opts_ld",  "-O3")
 
+    ninja.variable("ems_opts_cpp", "-O2 -std=c++20 -MMD -sNO_DISABLE_EXCEPTION_CATCHING ")
+    ninja.variable("ems_opts_ld", "-sEXPORT_ES6 -sEXPORTED_RUNTIME_METHODS=['FS','callMain'] -sNO_DISABLE_EXCEPTION_CATCHING -sTOTAL_STACK=32MB -sINITIAL_MEMORY=64MB -sFORCE_FILESYSTEM")
+
     ninja.variable("base_includes", base_includes)
 
     ninja.variable("libraries", "-lgcc -lc")
@@ -249,25 +252,32 @@ def build_metron_app():
 def build_metron_ems():
     divider("Emscripten")
 
-    # Not including a -O2 or -Os causes Emscripten's memory use to blow up :/
+    ################################################################################
+    # Emscripten
 
-    ninja.variable(key="packager",
-                   value="$$EMSDK/upstream/emscripten/tools/file_packager.py")
+    #packager = $$EMSDK/upstream/emscripten/tools/file_packager.py
+    #build docs/demo/examples.data: run_command tests/metron_bad/basic_reg_rwr.h tests/metron_bad/basic_sig_wrw.h tests/metron_bad/bowtied_signals.h tests/metron_bad/case_without_break.h tests/metron_bad/func_writes_sig_and_reg.h tests/metron_bad/if_with_no_compound.h tests/metron_bad/mid_block_break.h tests/metron_bad/mid_block_return.h tests/metron_bad/multiple_submod_function_bindings.h tests/metron_bad/multiple_tock_returns.h tests/metron_bad/tick_with_return_value.h tests/metron_bad/too_many_breaks.h tests/metron_bad/wrong_submod_call_order.h tests/metron_broken/bad_increment.h tests/metron_good/all_func_types.h tests/metron_good/basic_constructor.h tests/metron_good/basic_function.h tests/metron_good/basic_increment.h tests/metron_good/basic_inputs.h tests/metron_good/basic_literals.h tests/metron_good/basic_localparam.h tests/metron_good/basic_output.h tests/metron_good/basic_param.h tests/metron_good/basic_public_reg.h tests/metron_good/basic_public_sig.h tests/metron_good/basic_reg_rww.h tests/metron_good/basic_sig_wwr.h tests/metron_good/basic_submod.h tests/metron_good/basic_submod_param.h tests/metron_good/basic_submod_public_reg.h tests/metron_good/basic_switch.h tests/metron_good/basic_task.h tests/metron_good/basic_template.h tests/metron_good/basic_tock_with_return.h tests/metron_good/bit_casts.h tests/metron_good/bit_concat.h tests/metron_good/bit_dup.h tests/metron_good/both_tock_and_tick_use_tasks_and_funcs.h tests/metron_good/builtins.h tests/metron_good/call_tick_from_tock.h tests/metron_good/case_with_fallthrough.h tests/metron_good/constructor_arg_passing.h tests/metron_good/constructor_args.h tests/metron_good/defines.h tests/metron_good/dontcare.h tests/metron_good/enum_simple.h tests/metron_good/for_loops.h tests/metron_good/good_order.h tests/metron_good/if_with_compound.h tests/metron_good/include_guards.h tests/metron_good/init_chain.h tests/metron_good/initialize_struct_to_zero.h tests/metron_good/input_signals.h tests/metron_good/local_localparam.h tests/metron_good/magic_comments.h tests/metron_good/matching_port_and_arg_names.h tests/metron_good/minimal.h tests/metron_good/multi_tick.h tests/metron_good/namespaces.h tests/metron_good/nested_structs.h tests/metron_good/nested_submod_calls.h tests/metron_good/oneliners.h tests/metron_good/plus_equals.h tests/metron_good/private_getter.h tests/metron_good/structs.h tests/metron_good/structs_as_args.h tests/metron_good/structs_as_ports.h tests/metron_good/submod_bindings.h tests/metron_good/tock_task.h tests/metron_good/trivial_adder.h tests/metron_good/utf8-mod.bom.h tests/metron_good/utf8-mod.h tests/metron_lockstep/counter.h tests/metron_lockstep/funcs_and_tasks.h tests/metron_lockstep/lfsr.h tests/metron_lockstep/lockstep_bad.h tests/metron_lockstep/timeout_bad.h tests/rv_tests/riscv_test.h tests/rv_tests/test_macros.h tests/test_utils.h examples/gb_spu/metron/MetroBoySPU2.h examples/ibex/metron/ibex_alu.h examples/ibex/metron/ibex_compressed_decoder.h examples/ibex/metron/ibex_multdiv_slow.h examples/ibex/metron/ibex_pkg.h examples/ibex/metron/prim_arbiter_fixed.h examples/j1/metron/dpram.h examples/j1/metron/j1.h examples/pong/metron/pong.h examples/rvsimple/metron/adder.h examples/rvsimple/metron/alu.h examples/rvsimple/metron/alu_control.h examples/rvsimple/metron/config.h examples/rvsimple/metron/constants.h examples/rvsimple/metron/control_transfer.h examples/rvsimple/metron/data_memory_interface.h examples/rvsimple/metron/example_data_memory.h examples/rvsimple/metron/example_data_memory_bus.h examples/rvsimple/metron/example_text_memory.h examples/rvsimple/metron/example_text_memory_bus.h examples/rvsimple/metron/immediate_generator.h examples/rvsimple/metron/instruction_decoder.h examples/rvsimple/metron/multiplexer2.h examples/rvsimple/metron/multiplexer4.h examples/rvsimple/metron/multiplexer8.h examples/rvsimple/metron/regfile.h examples/rvsimple/metron/register.h examples/rvsimple/metron/riscv_core.h examples/rvsimple/metron/singlecycle_control.h examples/rvsimple/metron/singlecycle_ctlpath.h examples/rvsimple/metron/singlecycle_datapath.h examples/rvsimple/metron/toplevel.h examples/scratch.h examples/tutorial/adder.h examples/tutorial/bit_twiddling.h examples/tutorial/blockram.h examples/tutorial/checksum.h examples/tutorial/clocked_adder.h examples/tutorial/counter.h examples/tutorial/declaration_order.h examples/tutorial/functions_and_tasks.h examples/tutorial/nonblocking.h examples/tutorial/submodules.h examples/tutorial/templates.h examples/tutorial/tutorial2.h examples/tutorial/tutorial3.h examples/tutorial/tutorial4.h examples/tutorial/tutorial5.h examples/tutorial/vga.h examples/uart/metron/uart_hello.h examples/uart/metron/uart_rx.h examples/uart/metron/uart_top.h examples/uart/metron/uart_tx.h
+    #command = python3 ${packager} docs/demo/examples.data --no-node --js-output=docs/demo/examples.js --preload examples tests/metron_good tests/metron_bad --exclude *.cpp *.sv *.MD *.hex *.pcf *.v *.txt
+    #build docs/tutorial/tutorial_src.data: run_command examples/tutorial/adder.h examples/tutorial/bit_twiddling.h examples/tutorial/blockram.h examples/tutorial/checksum.h examples/tutorial/clocked_adder.h examples/tutorial/counter.h examples/tutorial/declaration_order.h examples/tutorial/functions_and_tasks.h examples/tutorial/nonblocking.h examples/tutorial/submodules.h examples/tutorial/templates.h examples/tutorial/tutorial2.h examples/tutorial/tutorial3.h examples/tutorial/tutorial4.h examples/tutorial/tutorial5.h examples/tutorial/vga.h
+    #command = python3 ${packager} docs/tutorial/tutorial_src.data --no-node --js-output=docs/tutorial/tutorial_src.js --preload examples/tutorial examples/uart/metron
+
+    # Not including a -O2 or -Os causes Emscripten's memory use to blow up :/
 
     all_test_headers = sorted_glob("tests/**/*.h", recursive=True)
     all_example_headers = sorted_glob("examples/**/*.h", recursive=True)
 
-    ninja.build(outputs = ["docs/demo/examples.data"],
-                rule="run_command",
-                inputs=all_test_headers + all_example_headers,
-                command="python3 ${packager} docs/demo/examples.data --no-node --js-output=docs/demo/examples.js --preload examples tests/metron_good tests/metron_bad --exclude *.cpp *.sv *.MD *.hex *.pcf *.v *.txt");
+    #ninja.build(outputs = ["docs/demo/examples.data"],
+    #            rule="run_command",
+    #            inputs=all_test_headers + all_example_headers,
+    #            command="python3 ${packager} docs/demo/examples.data --no-node --js-output=docs/demo/examples.js --preload examples tests/metron_good tests/metron_bad --exclude *.cpp *.sv *.MD *.hex *.pcf *.v *.txt");
 
 
-    ninja.build(outputs = ["docs/tutorial/tutorial_src.data"],
-                rule="run_command",
-                inputs=sorted_glob("examples/tutorial/*.h"),
-                command="python3 ${packager} docs/tutorial/tutorial_src.data --no-node --js-output=docs/tutorial/tutorial_src.js --preload examples/tutorial examples/uart/metron");
+    #ninja.build(outputs = ["docs/tutorial/tutorial_src.data"],
+    #            rule="run_command",
+    #            inputs=sorted_glob("examples/tutorial/*.h"),
+    #            command="python3 ${packager} docs/tutorial/tutorial_src.data --no-node --js-output=docs/tutorial/tutorial_src.js --preload examples/tutorial examples/uart/metron");
 
+    """
     def cpp_binary2(bin_name, rule_compile, rule_link, src_files, src_objs, obj_dir, deps=None, link_deps=None, **kwargs):
         if src_objs is None:
             src_objs = []
@@ -290,16 +300,19 @@ def build_metron_ems():
                     rule=rule_link,
                     inputs=src_objs + link_deps,
                     variables=kwargs)
+    """
 
+    """
     cpp_binary2(
         bin_name="docs/app/metron.js",
         rule_compile="ems_compile_cpp",
-        rule_link="ems_binary",
+        rule_link="ems_js_binary",
         src_files= metron_src_main + metron_src_lib + metron_src_nodes + metrolib_src,
         src_objs=[],
         obj_dir = "wasm/obj",
         includes=["${base_includes}", "-Isymlinks/CLI11/include"],
     )
+    """
 
 # ------------------------------------------------------------------------------
 # Low-level tests

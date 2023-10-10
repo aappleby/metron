@@ -399,7 +399,7 @@ def build_lockstep(filename):
     test_obj = f"obj/{mt_root}/{test_name}.o"
     test_bin = f"bin/{mt_root}/{test_name}"
 
-    includes = f"-I. -Isymlinks -I{sv_root} -I/usr/local/share/verilator/include"
+    includes = f"-I. -Isymlinks -Isymlinks/metrolib -I{sv_root} -I/usr/local/share/verilator/include"
 
     errors = 0
 
@@ -415,7 +415,7 @@ def build_lockstep(filename):
     cmd = f"g++ -O3 -std=gnu++2a -DMT_TOP={mt_top} -DVL_TOP={vl_top} -DMT_HEADER={mt_header} -DVL_HEADER={vl_header} {includes} -c {test_src} -o {test_obj}"
     errors += check_cmd_good(cmd)
 
-    cmd = f"g++ {test_obj} {vl_obj} obj/symlinks/metrolib/core/Utils.o obj/verilated.o obj/verilated_threads.o -o {test_bin}"
+    cmd = f"g++ {test_obj} {vl_obj} symlinks/metrolib/obj/metrolib/core/Utils.o obj/verilated.o obj/verilated_threads.o -o {test_bin}"
     errors += check_cmd_good(cmd)
 
     return errors

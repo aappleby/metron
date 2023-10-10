@@ -2,26 +2,22 @@ include symlinks/metrolib/ninja/rules.ninja
 
 ################################################################################
 
-rule metron
-  command = bin/metron -q -v -c ${in} -o ${out}
-
 rule make
   command = make --quiet -C ${dst_dir} -f ${makefile} > /dev/null
 
-rule run_test
-  command = ${in} | grep "All tests pass" && touch ${out}
+#rule run_test
+#  command = ${in} | grep "All tests pass" && touch ${out}
+#
+#rule console
+#  command = ${in}
+#  pool = console
+#
+#rule ems_compile_cpp
+#  command = emcc ${ems_opts_cpp} ${includes} -c ${in} -o ${out}
+#  depfile = ${out}.d
+#  deps = gcc
+#
+#rule ems_binary
+#  command = emcc ${in} ${ems_opts_ld} -o ${out}
 
-rule console
-  command = ${in}
-  pool = console
 
-rule ems_compile_cpp
-  command = emcc -sNO_DISABLE_EXCEPTION_CATCHING -O2 -std=c++2b ${includes} -MMD -c ${in} -o ${out}
-  depfile = ${out}.d
-  deps = gcc
-
-rule ems_binary
-  command = emcc ${in} -sEXPORT_ES6 $
-      -sEXPORTED_RUNTIME_METHODS=['FS','callMain'] $
-      -sNO_DISABLE_EXCEPTION_CATCHING -sTOTAL_STACK=32MB $
-      -sINITIAL_MEMORY=64MB -sFORCE_FILESYSTEM -o ${out}

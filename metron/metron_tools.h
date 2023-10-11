@@ -460,8 +460,15 @@ inline logic<WIDTH * DUPS> dup(const logic<WIDTH>& a) {
 template <int DST_WIDTH, int SRC_WIDTH>
 inline logic<DST_WIDTH> sign_extend(const logic<SRC_WIDTH> a) {
   static_assert(DST_WIDTH >= SRC_WIDTH);
-  return cat(dup<DST_WIDTH - SRC_WIDTH + 1>(a[SRC_WIDTH - 1]),
-             bx<SRC_WIDTH - 1>(a));
+  return cat(dup<DST_WIDTH - SRC_WIDTH>(a[SRC_WIDTH - 1]), a);
+}
+
+//-----------------------------------------------------------------------------
+
+template <int DST_WIDTH, int SRC_WIDTH>
+inline logic<DST_WIDTH> zero_extend(const logic<SRC_WIDTH> a) {
+  static_assert(DST_WIDTH >= SRC_WIDTH);
+  return cat(bx<DST_WIDTH - SRC_WIDTH>(0), a);
 }
 
 //------------------------------------------------------------------------------

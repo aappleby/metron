@@ -13,7 +13,7 @@ rule make
 #  pool = console
 #
 #rule ems_compile_cpp
-#  command = emcc ${ems_opts_cpp} ${includes} -c ${in} -o ${out}
+#  command = emcc ${ems_opts_cpp} ${includes} -MD -MF ${out}.d -c ${in} -o ${out}
 #  depfile = ${out}.d
 #  deps = gcc
 #

@@ -54,22 +54,21 @@ def main():
     global outfile
     print("Regenerating build.ninja...")
     ninja.variable("toolchain", "x86_64-linux-gnu")
-    #ninja.include("symlinks/metrolib/ninja/rules.ninja")
     ninja.include("rules.ninja")
     ninja.newline()
 
     divider("Variables")
 
     if ("--release" in sys.argv) or ("-r" in sys.argv):
-        ninja.variable("opts_cpp", "-rdynamic -O3 -MMD -std=gnu++2a")
-        ninja.variable("opts_c",   "-rdynamic -O3 -MMD")
+        ninja.variable("opts_cpp", "-rdynamic -O3 -std=gnu++2a")
+        ninja.variable("opts_c",   "-rdynamic -O3")
         ninja.variable("opts_ld",  "-O3")
     else:
-        ninja.variable("opts_cpp", "-rdynamic -ggdb3 -O0 -MMD -Wall -Werror -Wsuggest-override -Wno-unused-function -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -std=gnu++2a")
-        ninja.variable("opts_c",   "-rdynamic -ggdb3 -O0 -MMD -Wall -Werror -Wno-unused-function -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable")
+        ninja.variable("opts_cpp", "-rdynamic -ggdb3 -O0 -Wall -Werror -Wsuggest-override -Wno-unused-function -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -std=gnu++2a")
+        ninja.variable("opts_c",   "-rdynamic -ggdb3 -O0 -Wall -Werror -Wno-unused-function -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable")
         ninja.variable("opts_ld",  "-O3")
 
-    ninja.variable("ems_opts_cpp", "-O2 -std=c++20 -MMD -sNO_DISABLE_EXCEPTION_CATCHING ")
+    ninja.variable("ems_opts_cpp", "-O2 -std=c++20 -sNO_DISABLE_EXCEPTION_CATCHING ")
     ninja.variable("ems_opts_ld", "-sEXPORT_ES6 -sEXPORTED_RUNTIME_METHODS=['FS','callMain'] -sNO_DISABLE_EXCEPTION_CATCHING -sTOTAL_STACK=32MB -sINITIAL_MEMORY=64MB -sFORCE_FILESYSTEM")
 
     ninja.variable("base_includes", base_includes)

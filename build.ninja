@@ -6,10 +6,10 @@ include rules.ninja
 ################################################################################
 # Variables
 
-opts_cpp = -rdynamic -ggdb3 -O0 -MMD -Wall -Werror -Wsuggest-override -Wno-unused-function -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -std=gnu++2a
-opts_c = -rdynamic -ggdb3 -O0 -MMD -Wall -Werror -Wno-unused-function -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable
+opts_cpp = -rdynamic -ggdb3 -O0 -Wall -Werror -Wsuggest-override -Wno-unused-function -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -std=gnu++2a
+opts_c = -rdynamic -ggdb3 -O0 -Wall -Werror -Wno-unused-function -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable
 opts_ld = -O3
-ems_opts_cpp = -O2 -std=c++20 -MMD -sNO_DISABLE_EXCEPTION_CATCHING 
+ems_opts_cpp = -O2 -std=c++20 -sNO_DISABLE_EXCEPTION_CATCHING 
 ems_opts_ld = -sEXPORT_ES6 -sEXPORTED_RUNTIME_METHODS=['FS','callMain'] -sNO_DISABLE_EXCEPTION_CATCHING -sTOTAL_STACK=32MB -sINITIAL_MEMORY=64MB -sFORCE_FILESYSTEM
 base_includes = -I. -Isymlinks -Isymlinks/metrolib -Isymlinks/matcheroni
 libraries = -lgcc -lc

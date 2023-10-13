@@ -108,7 +108,7 @@ def main():
     if not options.basic:
         print_b("Checking that all converted files can be parsed by Verilator")
         errors += check_commands_good([
-            f"verilator -I. --lint-only {filename}"
+            f"verilator -Wno-width -I. --lint-only {filename}"
             for filename in metron_sv
         ])
         print()
@@ -328,13 +328,13 @@ def check_commands_bad(commands):
 
 def check_verilator_good(filenames):
     return check_commands_good([
-        f"verilator -I. --lint-only {filename}"
+        f"verilator -Wno-width -I. --lint-only {filename}"
         for filename in filenames
     ])
 
 def check_verilator_bad(filenames):
     return check_commands_good([
-        f"verilator -I. --lint-only {filename}"
+        f"verilator -Wno-width -I. --lint-only {filename}"
         for filename in filenames
     ])
 
@@ -406,7 +406,7 @@ def build_lockstep(filename):
     cmd = f"bin/metron -p -q -c {mt_root}/{test_name}.h -o {sv_root}/{test_name}.sv"
     errors += check_cmd_good(cmd)
 
-    cmd = f"verilator {includes} --cc {test_name}.sv -Mdir {vl_root}"
+    cmd = f"verilator -Wno-width {includes} --cc {test_name}.sv -Mdir {vl_root}"
     errors += check_cmd_good(cmd)
 
     cmd = f"make -C {vl_root} -f V{test_name}.mk"

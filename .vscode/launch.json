@@ -16,7 +16,7 @@
         "-e",
         "-c",
         //"examples/scratch.h",
-        "tests/metron_good/structs.h",
+        "tests/metron_good/noconvert.h",
         //"examples/uart/metron/uart_hello.h",
         //"examples/rvsimple/metron/config.h",
         "-o",

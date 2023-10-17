@@ -694,6 +694,19 @@ Err Emitter::emit(CNodeClass* node) {
   err << cursor.emit_print("\n);");
 
   for (auto child : node->node_body) {
+    // fixme - insert check for metron_noconvert here
+
+    const char* a = (child->span.begin - 1)->lex->text_end;
+    const char* b = child->span.begin->lex->text_begin;
+
+    std::string_view gap(a, b);
+    if (gap.find("metron_noconvert") != std::string_view::npos) {
+      //printf("noconvert!\n");
+      err << comment_out(child);
+      err << emit_gap(child);
+      continue;
+    }
+
     if (child->get_text() == "{") {
       cursor.indent_level++;
       err << emit_template_parameter_list(node);

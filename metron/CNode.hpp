@@ -7,6 +7,7 @@
 #include <string>
 #include <string_view>
 #include <typeinfo>
+#include <assert.h>
 
 #include "matcheroni/Parseroni.hpp"
 #include "metrolib/core/Err.h"

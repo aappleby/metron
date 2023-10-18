@@ -807,7 +807,7 @@ Err Emitter::emit(CNodeDeclaration* node) {
   }
 
   // Check for const char*
-  if (node->node_type->node_const) {
+  if (node->is_param()) {
     /*
     if (node->node_type->name == "char") {
       if (node->node_type->child("star")) {

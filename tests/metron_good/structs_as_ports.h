@@ -4,11 +4,11 @@
 // ...but they have to be public member variables because Yosys...
 
 namespace TL {
-  const int PutFullData = 0;
-  const int PutPartialData = 1;
-  const int Get = 4;
-  const int AccessAck = 0;
-  const int AccessAckData = 1;
+  static const int PutFullData = 0;
+  static const int PutPartialData = 1;
+  static const int Get = 4;
+  static const int AccessAck = 0;
+  static const int AccessAckData = 1;
 };
 
 struct tilelink_a {

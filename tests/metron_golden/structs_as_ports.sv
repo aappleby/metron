@@ -4,11 +4,11 @@
 // ...but they have to be public member variables because Yosys...
 
 package TL;
-  parameter /*const*/ int PutFullData = 0;
-  parameter /*const*/ int PutPartialData = 1;
-  parameter /*const*/ int Get = 4;
-  parameter /*const*/ int AccessAck = 0;
-  parameter /*const*/ int AccessAckData = 1;
+  parameter /*static*/ /*const*/ int PutFullData = 0;
+  parameter /*static*/ /*const*/ int PutPartialData = 1;
+  parameter /*static*/ /*const*/ int Get = 4;
+  parameter /*static*/ /*const*/ int AccessAck = 0;
+  parameter /*static*/ /*const*/ int AccessAckData = 1;
 endpackage
 
 typedef struct packed {

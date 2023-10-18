@@ -7,8 +7,9 @@ module Module (
 /*public:*/
 
   always_comb begin : func
+    /*const*/ int thing2;
     parameter /*static*/ /*const*/ int thing1 = 1;
-    parameter /*const*/ int thing2 = 2;
+    thing2 = 2;
     func_ret = thing1 + thing2;
   end
 

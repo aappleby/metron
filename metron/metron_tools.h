@@ -2,6 +2,7 @@
 #include <memory.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdint.h>
 
 #include <string>
 #include <vector>

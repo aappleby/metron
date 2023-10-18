@@ -56,6 +56,22 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
     return std::string_view(text_begin(), text_end());
   }
 
+  const std::string_view get_gap_prev() const {
+    const char* a = (span.begin - 1)->lex->text_end;
+    const char* b = (span.begin - 0)->lex->text_begin;
+    return std::string_view(a, b);
+  }
+
+  const std::string_view get_gap_next() const {
+    const char* a = (span.end - 1)->lex->text_end;
+    const char* b = (span.end - 0)->lex->text_begin;
+    return std::string_view(a, b);
+  }
+
+  bool noconvert() const {
+    return get_gap_prev().find("metron_noconvert") != std::string_view::npos;
+  }
+
   //----------------------------------------
 
   template <typename P>

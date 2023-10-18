@@ -833,6 +833,7 @@ template<typename cap_name, typename node_type>
 using cap_named_type =
 CaptureAnon<
   Seq<
+    Opt<Tag<"const",  cap_keyword<"const">>>,
     Tag<"name", cap_name>,
     Opt<Tag<"template_args", cap_targ_list>>,
 
@@ -869,8 +870,7 @@ TokenSpan match_declaration_exp(CContext& ctx, TokenSpan body) {
   using pattern =
   Seq<
     Any<
-      Tag<"static", cap_keyword<"static">>,
-      Tag<"const",  cap_keyword<"const">>
+      Tag<"static", cap_keyword<"static">>
     >,
     Tag<"type",      Ref<cap_type>>,
     Tag<"name",      cap_identifier>,

@@ -98,7 +98,7 @@ Err collect_fields_and_methods(CNodeClass* node, CSourceRepo* repo) {
       n->node_decl->_type_class = repo->get_class(n->node_decl->node_type->name);
       n->node_decl->_type_struct = repo->get_struct(n->node_decl->node_type->name);
 
-      if (n->node_decl->node_static && n->node_decl->node_const) {
+      if (n->node_decl->node_static && n->node_decl->node_type->node_const) {
         node->all_localparams.push_back(n);
       } else {
         node->all_fields.push_back(n);
@@ -647,7 +647,7 @@ int main_new(Options opts) {
       if (auto inst_prim = inst_child->as<CInstPrim>()) {
         auto field = inst_prim->node_field;
         if (!field->is_public) continue;
-        if (field->node_decl->node_static && field->node_decl->node_const)
+        if (field->node_decl->node_static && field->node_decl->node_type->node_const)
           continue;
 
         switch (inst_prim->get_state()) {
@@ -680,7 +680,7 @@ int main_new(Options opts) {
       if (auto inst_struct = inst_child->as<CInstStruct>()) {
         auto field = inst_struct->node_field;
         if (!field->is_public) continue;
-        if (field->node_decl->node_static && field->node_decl->node_const)
+        if (field->node_decl->node_static && field->node_decl->node_type->node_const)
           continue;
 
         switch (inst_struct->get_state()) {

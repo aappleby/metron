@@ -386,6 +386,9 @@ CInstFunc::CInstFunc(std::string name, CInstance* inst_parent,
     } else if (auto builtin_type = ret_type->as<CNodeBuiltinType>()) {
       auto inst = new CInstPrim("@return", this, nullptr);
       inst_return = inst;
+    } else if (auto builtin_type = ret_type->as<CNodeTypedefType>()) {
+      auto inst = new CInstPrim("@return", this, nullptr);
+      inst_return = inst;
     } else {
       assert(false);
     }

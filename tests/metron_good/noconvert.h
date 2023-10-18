@@ -4,12 +4,13 @@ class Module {
   public:
 
   logic<1> foo() {
+    // metron_noconvert
+    int x;
     return 0;
   }
 
   // metron_noconvert
-  int bar() {
-    return 0xDEADBEEF;
+  void debug_dump() {
+    printf("Hello World %d\n", 1234);
   }
-
 };

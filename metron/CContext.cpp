@@ -145,6 +145,9 @@ TokenSpan CContext::handle_preproc(TokenSpan body) {
     std::string path(path_raw.begin() + 1, path_raw.end() - 1);
 
     if (path.find("metron_tools.h") != std::string::npos) {
+      for (auto t : stdint_typedefs) {
+        global_scope.add_typedef(t);
+      }
     }
     else if (path.find("stdio") != std::string::npos) {
       for (auto t : stdio_typedefs) {

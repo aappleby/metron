@@ -16,9 +16,10 @@
         "-e",
         "-c",
         //"examples/scratch.h",
-        "tests/metron_good/noconvert.h",
+        "tests/metron_good/constructor_args.h",
         //"examples/uart/metron/uart_hello.h",
         //"examples/rvsimple/metron/config.h",
+        //"../pinwheel/pinwheel/rtl/regfile.h",
         "-o",
         "examples/scratch.sv"
       ],

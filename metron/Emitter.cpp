@@ -265,6 +265,13 @@ Err Emitter::emit_default(CNode* node) {
 Err Emitter::emit_children(CNode* n) {
   Err err;
   for (auto c = n->child_head; c; c = c->node_next) {
+
+    if (c->noconvert()) {
+      err << comment_out(c);
+      err << emit_gap(c);
+      continue;
+    }
+
     err << emit_dispatch2(c);
   }
   return err;
@@ -293,6 +300,7 @@ Err Emitter::emit_everything() {
 
 Err Emitter::emit_dispatch(CNode* node) {
   Err err = check_at(node);
+  if (node->noconvert()) return comment_out(node);
 
   if (auto n = node->as<CNodeAccess>()) return comment_out(node);
 
@@ -694,14 +702,8 @@ Err Emitter::emit(CNodeClass* node) {
   err << cursor.emit_print("\n);");
 
   for (auto child : node->node_body) {
-    // fixme - insert check for metron_noconvert here
 
-    const char* a = (child->span.begin - 1)->lex->text_end;
-    const char* b = child->span.begin->lex->text_begin;
-
-    std::string_view gap(a, b);
-    if (gap.find("metron_noconvert") != std::string_view::npos) {
-      //printf("noconvert!\n");
+    if (child->noconvert()) {
       err << comment_out(child);
       err << emit_gap(child);
       continue;
@@ -805,7 +807,7 @@ Err Emitter::emit(CNodeDeclaration* node) {
   }
 
   // Check for const char*
-  if (node->node_const) {
+  if (node->node_type->node_const) {
     /*
     if (node->node_type->name == "char") {
       if (node->node_type->child("star")) {
@@ -1455,6 +1457,13 @@ Err Emitter::emit_block(CNodeCompound* node, std::string ldelim, std::string rde
   }
 
   for (auto child : node->statements) {
+
+    if (child->noconvert()) {
+      err << comment_out(child);
+      err << emit_gap(child);
+      continue;
+    }
+
     // We may need to insert input port bindings before any statement that
     // could include a call expression. We search the tree for calls and emit
     // those bindings here.
@@ -1777,6 +1786,9 @@ Err Emitter::emit_hoisted_decls(CNodeCompound* node) {
 
         // Don't emit decls for localparams
         if (decl->child("const")) continue;
+
+        // Don't emit decls if flagged metron_noconvert
+        if (decl->noconvert()) continue;
 
         auto name = decl->name;
         auto decl_type = decl->child("type");
@@ -2211,32 +2223,25 @@ Err Emitter::emit_init(CNodeFunction* node) {
     auto decl = param->as<CNodeDeclaration>();
     if (!decl) continue;
 
-    auto decl_const = decl->child("const");
-    auto decl_type  = decl->child("type");
-    auto decl_name  = decl->child("name");
-    auto decl_eq    = decl->child("eq");
-    auto decl_value = decl->child("value");
-
-    assert(decl_type);
-    assert(decl_name);
-    assert(decl_eq);
-    assert(decl_value);
+    //auto decl_const = decl->child("const");
+    //auto decl_type  = decl->child("type");
+    //auto decl_name  = decl->child("name");
+    //auto decl_eq    = decl->child("eq");
+    //auto decl_value = decl->child("value");
+    //assert(decl_type);
+    //assert(decl_name);
+    //assert(decl_eq);
+    //assert(decl_value);
 
     auto old_cursor = cursor.tok_cursor;
-    if (decl_const) {
-      cursor.tok_cursor = decl_const->tok_begin();
-    }
-    else {
-      cursor.tok_cursor = decl_type->tok_begin();
-    }
+    cursor.tok_cursor = decl->node_type->tok_begin();
 
     err << cursor.start_line();
     err << cursor.emit_print("parameter ");
-    err << emit_dispatch2(decl_const);
-    err << skip_over2(decl_type);
-    err << emit_dispatch2(decl_name);
-    err << emit_dispatch2(decl_eq);
-    err << emit_dispatch2(decl_value);
+    err << comment_out2  (decl->node_type);
+    err << emit_dispatch2(decl->node_name);
+    err << emit_dispatch2(decl->node_eq);
+    err << emit_dispatch2(decl->node_value);
     err << cursor.emit_print(";");
 
     cursor.tok_cursor = old_cursor;

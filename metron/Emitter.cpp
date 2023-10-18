@@ -1032,7 +1032,7 @@ Err Emitter::emit(CNodeField* node) {
   // FIXME should we disallow public components?
 
   if (node->is_public && !node->is_component() &&
-      !node->node_decl->is_localparam()) {
+      !node->node_decl->is_param()) {
     return err << skip_over(node);
   }
 
@@ -1785,7 +1785,7 @@ Err Emitter::emit_hoisted_decls(CNodeCompound* node) {
       if (auto decl = exp->child("exp")->as<CNodeDeclaration>()) {
 
         // Don't emit decls for localparams
-        if (decl->child("const")) continue;
+        if (decl->is_param()) continue;
 
         // Don't emit decls if flagged metron_noconvert
         if (decl->noconvert()) continue;
@@ -2222,16 +2222,6 @@ Err Emitter::emit_init(CNodeFunction* node) {
   for (auto param : node->node_params) {
     auto decl = param->as<CNodeDeclaration>();
     if (!decl) continue;
-
-    //auto decl_const = decl->child("const");
-    //auto decl_type  = decl->child("type");
-    //auto decl_name  = decl->child("name");
-    //auto decl_eq    = decl->child("eq");
-    //auto decl_value = decl->child("value");
-    //assert(decl_type);
-    //assert(decl_name);
-    //assert(decl_eq);
-    //assert(decl_value);
 
     auto old_cursor = cursor.tok_cursor;
     cursor.tok_cursor = decl->node_type->tok_begin();

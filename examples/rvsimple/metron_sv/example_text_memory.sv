@@ -17,7 +17,7 @@ module example_text_memory (
   output logic[31:0] q
 );
  /*public:*/
-  parameter /*const*/ filename = "";
+  parameter /*const char**/ filename = "";
   initial begin
     if (filename) $readmemh(filename, mem);
   end

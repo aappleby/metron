@@ -16,7 +16,7 @@ module Module (
   parameter blarp = 0;
 /*public:*/
 
-  parameter /*const*/ filename = "";
+  parameter /*const char**/ filename = "";
   initial begin
     if (filename) $readmemh(filename, data);
   end

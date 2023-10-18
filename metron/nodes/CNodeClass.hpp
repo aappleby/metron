@@ -42,7 +42,7 @@ struct CNodeClass : public CNode {
 
     for (auto child : node_body->items) {
       if (auto node_enum = child->as<CNodeEnum>()) {
-        all_enums2.push_back(node_enum);
+        all_enums.push_back(node_enum);
       }
     }
   }
@@ -63,7 +63,7 @@ struct CNodeClass : public CNode {
   }
 
   CNodeEnum* get_enum(std::string_view name) {
-    for (auto e : all_enums2) if (e->name == name) return e;
+    for (auto e : all_enums) if (e->name == name) return e;
     return nullptr;
   }
 
@@ -82,13 +82,12 @@ struct CNodeClass : public CNode {
 
   std::vector<CNodeFunction*>    top_functions;
 
-
   CNodeConstructor* constructor = nullptr;
   std::vector<CNodeFunction*>    all_functions;
   std::vector<CNodeField*>       all_fields;
   std::vector<CNodeDeclaration*> all_modparams;
-  std::vector<CNodeField*>       all_localparams;
-  std::vector<CNodeEnum*>        all_enums2;
+  std::vector<CNodeField*>       all_params;
+  std::vector<CNodeEnum*>        all_enums;
 
   std::vector<CNodeField*> input_signals;
   std::vector<CNodeField*> output_signals;

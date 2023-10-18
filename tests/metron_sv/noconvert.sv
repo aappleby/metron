@@ -2,19 +2,18 @@
 
 module Module (
   // foo() ports
-  output logic foo_ret,
-  // bar() ports
-  output int bar_ret
+  output logic foo_ret
 );
   /*public:*/
 
   always_comb begin : foo
+    // metron_noconvert
+    /*int x;*/
     foo_ret = 0;
   end
 
   // metron_noconvert
-  /*int bar() {
-    return 0xDEADBEEF;
+  /*void debug_dump() {
+    printf("Hello World %d\n", 1234);
   }*/
-
 endmodule

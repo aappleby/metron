@@ -833,6 +833,7 @@ template<typename cap_name, typename node_type>
 using cap_named_type =
 CaptureAnon<
   Seq<
+    Opt<Tag<"static", cap_keyword<"static">>>,
     Opt<Tag<"const",  cap_keyword<"const">>>,
     Tag<"name", cap_name>,
     Opt<Tag<"template_args", cap_targ_list>>,
@@ -869,9 +870,6 @@ TokenSpan cap_type(CContext& ctx, TokenSpan body) {
 TokenSpan match_declaration_exp(CContext& ctx, TokenSpan body) {
   using pattern =
   Seq<
-    Any<
-      Tag<"static", cap_keyword<"static">>
-    >,
     Tag<"type",      Ref<cap_type>>,
     Tag<"name",      cap_identifier>,
     Any<Tag<"array", cap_index_list>>,
@@ -886,10 +884,6 @@ TokenSpan match_declaration_exp(CContext& ctx, TokenSpan body) {
 TokenSpan match_declaration_stmt(CContext& ctx, TokenSpan body) {
   using pattern =
   Seq<
-    Any<
-      Tag<"static", cap_keyword<"static">>,
-      Tag<"const",  cap_keyword<"const">>
-    >,
     Tag<"type",      Ref<cap_type>>,
     Tag<"name",      cap_identifier>,
     Any<Tag<"array", cap_index_list>>,
@@ -1127,7 +1121,6 @@ TokenSpan match_function(CContext& ctx, TokenSpan body) {
   // clang-format off
   using pattern =
   Seq<
-    Opt<Tag<"static",  cap_keyword<"static">>>,
     Tag<"return_type", Ref<cap_type>>,
     Tag<"name",        cap_identifier>,
     Tag<"params",      cap_decl_list>,

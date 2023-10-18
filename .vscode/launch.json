@@ -16,7 +16,7 @@
         "-e",
         "-c",
         //"examples/scratch.h",
-        "tests/metron_good/constructor_args.h",
+        "tests/metron_good/local_localparam.h",
         //"examples/uart/metron/uart_hello.h",
         //"examples/rvsimple/metron/config.h",
         //"../pinwheel/pinwheel/rtl/regfile.h",

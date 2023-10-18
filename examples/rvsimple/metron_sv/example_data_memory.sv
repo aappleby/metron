@@ -49,7 +49,7 @@ module example_data_memory (
   end
 
  /*public:*/
-  parameter /*const*/ filename = "";
+  parameter /*const char**/ filename = "";
   initial begin
     if (filename) $readmemh(filename, mem);
   end

@@ -31,7 +31,7 @@ module example_data_memory_bus (
     // in
    // in
 
-  parameter /*const*/ filename = "";
+  parameter /*const char**/ filename = "";
   initial begin
   end
 

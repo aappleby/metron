@@ -1,20 +1,17 @@
 `include "metron/metron_tools.sv"
 
 module Module (
-  // foo() ports
-  output logic foo_ret,
-  // bar() ports
-  output int bar_ret
+  // func() ports
+  output logic[7:0] func_ret
 );
-  /*public:*/
+/*public:*/
 
-  always_comb begin : foo
-    foo_ret = 0;
+  always_comb begin : func
+    /*const*/ int thing1;
+    /*const*/ int thing2;
+    parameter /*static*/ /*const*/ int thing1 = 1;
+    parameter /*const*/ int thing2 = 2;
+    func_ret = thing1 + thing2;
   end
-
-  // metron_noconvert
-  /*int bar() {
-    return 0xDEADBEEF;
-  }*/
 
 endmodule

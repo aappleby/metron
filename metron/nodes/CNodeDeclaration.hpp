@@ -11,7 +11,6 @@
 
 struct CNodeDeclaration : public CNode {
   void init() {
-    node_static = child("static")->as<CNodeKeyword>();
     node_type   = child("type")->as<CNodeType>();
     node_name   = child("name")->as<CNodeIdentifier>();
     node_array  = child("array")->as<CNodeList>();
@@ -24,14 +23,14 @@ struct CNodeDeclaration : public CNode {
   bool is_component() const { return _type_class != nullptr; }
   bool is_struct() const { return _type_struct != nullptr; }
   bool is_array() const { return node_array != nullptr; }
-  bool is_localparam() const {
-    return node_static != nullptr && node_type->node_const != nullptr;
+  bool is_param() const {
+    return node_type->is_param();
   }
 
   bool is_const_char() const {
-    if (node_static && node_type->node_const) {
-      auto builtin = node_type->child("name");
-      auto star = node_type->child("star");
+    if (is_param()) {
+      auto builtin = node_type->node_name;
+      auto star = node_type->node_star;
       if (builtin && star && builtin->get_text() == "char") {
         return true;
       }
@@ -39,7 +38,6 @@ struct CNodeDeclaration : public CNode {
     return false;
   }
 
-  CNodeKeyword*    node_static = nullptr;
   CNodeType*       node_type = nullptr;
   CNodeIdentifier* node_name = nullptr;
   CNodeList*       node_array = nullptr;

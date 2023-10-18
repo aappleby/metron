@@ -14,7 +14,7 @@ module Module (
   parameter blarp = 7;
 /*public:*/
 
-  parameter /*const*/ filename = "examples/uart/message.hex";
+  parameter /*const char**/ filename = "examples/uart/message.hex";
   initial begin
     $readmemh(filename, data);
   end

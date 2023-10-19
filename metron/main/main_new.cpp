@@ -77,66 +77,6 @@ MethodType get_method_type(CNodeFunction* node) {
   return result;
 }
 
-//------------------------------------------------------------------------------
-
-Err collect_fields_and_methods(CNodeClass* node, CSourceRepo* repo) {
-  Err err;
-
-  bool is_public = false;
-
-  for (auto child : node->node_body->items) {
-    if (auto access = child->as<CNodeAccess>()) {
-      is_public = child->get_text() == "public:";
-      continue;
-    }
-
-    if (auto n = child->as<CNodeField>()) {
-      n->is_public = is_public;
-
-      n->parent_class = node;
-      n->parent_struct = nullptr;
-      n->node_decl->_type_class = repo->get_class(n->node_decl->node_type->name);
-      n->node_decl->_type_struct = repo->get_struct(n->node_decl->node_type->name);
-
-      if (n->node_decl->is_param()) {
-        node->all_params.push_back(n);
-      } else {
-        node->all_fields.push_back(n);
-      }
-
-      continue;
-    }
-
-    if (auto n = child->as<CNodeFunction>()) {
-      n->is_public = is_public;
-
-      if (auto constructor = child->as<CNodeConstructor>()) {
-        assert(node->constructor == nullptr);
-        node->constructor = constructor;
-        constructor->method_type = MT_INIT;
-      } else {
-        node->all_functions.push_back(n);
-      }
-
-      // Hook up _type_struct on all struct params
-      for (auto decl : n->params) {
-        decl->_type_class = repo->get_class(decl->node_type->name);
-        decl->_type_struct = repo->get_struct(decl->node_type->name);
-      }
-      continue;
-    }
-  }
-
-  if (auto parent = node->node_parent->as<CNodeTemplate>()) {
-    for (CNode* param : parent->node_params->items) {
-      if (param->as<CNodeDeclaration>()) {
-        node->all_modparams.push_back(param->as<CNodeDeclaration>());
-      }
-    }
-  }
-
-  return err;
-}
 
 //------------------------------------------------------------------------------
 
@@ -185,8 +125,7 @@ Err build_call_graph(CNodeClass* node, CSourceRepo* repo) {
 //------------------------------------------------------------------------------
 
 void sanity_check_parse_tree(CSourceRepo& repo) {
-  for (auto pair : repo.source_map) {
-    CSourceFile* file = pair.second;
+  for (auto file : repo.source_files) {
 
     // Sanity check that all node spans in the repo tightly contain their
     // children
@@ -233,65 +172,23 @@ int main_new(Options opts) {
   // All modules are now in the library, we can resolve references to other
   // modules when we're collecting fields.
 
-  LOG_B("Processing source files\n");
-
-  for (auto pair : repo.source_map) {
-    CSourceFile* file = pair.second;
-
-    for (auto n : file->context.root_node) {
-      if (auto node_template = n->as<CNodeTemplate>()) {
-        auto node_class = node_template->child<CNodeClass>();
-        node_class->repo = &repo;
-        node_class->file = file;
-        repo.all_classes.push_back(node_class);
-      } else if (auto node_class = n->as<CNodeClass>()) {
-        node_class->repo = &repo;
-        node_class->file = file;
-        repo.all_classes.push_back(node_class);
-      } else if (auto node_struct = n->as<CNodeStruct>()) {
-        repo.all_structs.push_back(node_struct);
-      } else if (auto node_namespace = n->as<CNodeNamespace>()) {
-        repo.all_namespaces.push_back(node_namespace);
-      } else if (auto node_enum = n->as<CNodeEnum>()) {
-        repo.all_enums.push_back(node_enum);
-      }
-    }
-  }
-
-  LOG_B("Collecting fields and methods\n");
-
-  for (auto pair : repo.source_map) {
-    CSourceFile* file = pair.second;
-
-    for (auto n : file->context.root_node) {
-      if (auto node_template = n->as<CNodeTemplate>()) {
-        auto node_class = node_template->child<CNodeClass>();
-        collect_fields_and_methods(node_class, &repo);
-      } else if (auto node_class = n->as<CNodeClass>()) {
-        collect_fields_and_methods(node_class, &repo);
-      } else if (auto node_struct = n->as<CNodeStruct>()) {
-        node_struct->collect_fields_and_methods(&repo);
-      } else if (auto node_namespace = n->as<CNodeNamespace>()) {
-        node_namespace->collect_fields_and_methods();
-      } else if (auto node_enum = n->as<CNodeEnum>()) {
-        // LOG_G("top level enum!!!!\n");
-      }
-    }
-  }
-
   // Count module instances so we can find top modules.
 
-  for (auto c : repo.all_classes) {
-    for (auto f : c->all_fields) {
-      if (f->node_decl->_type_class) f->node_decl->_type_class->refcount++;
+  for (auto file : repo.source_files) {
+    for (auto c : file->all_classes) {
+      for (auto f : c->all_fields) {
+        if (f->node_decl->_type_class) f->node_decl->_type_class->refcount++;
+      }
     }
   }
 
   CNodeClass* top = nullptr;
-  for (auto c : repo.all_classes) {
-    if (c->refcount == 0) {
-      assert(top == nullptr);
-      top = c;
+  for (auto file : repo.source_files) {
+    for (auto c : file->all_classes) {
+      if (c->refcount == 0) {
+        assert(top == nullptr);
+        top = c;
+      }
     }
   }
   // assert(top);
@@ -299,29 +196,35 @@ int main_new(Options opts) {
   //----------------------------------------
 
   LOG_B("Building call graph\n");
-  for (auto node_class : repo.all_classes) {
-    err << build_call_graph(node_class, &repo);
+  for (auto file : repo.source_files) {
+    for (auto node_class : file->all_classes) {
+      err << build_call_graph(node_class, &repo);
+    }
   }
 
-  for (auto node_class : repo.all_classes) {
-    for (auto node_func : node_class->all_functions) {
-      if (node_func->method_type != MT_FUNC && node_func->is_public &&
-          node_func->internal_callers.size()) {
-        LOG_R("Function %s is public and has internal callers\n",
-              node_func->name.c_str());
-        assert(false);
+  for (auto file : repo.source_files) {
+    for (auto node_class : file->all_classes) {
+      for (auto node_func : node_class->all_functions) {
+        if (node_func->method_type != MT_FUNC && node_func->is_public &&
+            node_func->internal_callers.size()) {
+          LOG_R("Function %s is public and has internal callers\n",
+                node_func->name.c_str());
+          assert(false);
+        }
+        // err << node_class->build_call_graph(&repo);
       }
-      // err << node_class->build_call_graph(&repo);
     }
   }
 
   //----------------------------------------
 
   LOG_B("Instantiating modules\n");
-  for (auto node_class : repo.all_classes) {
-    auto instance = instantiate_class(node_class->name, nullptr,
-                                      nullptr, node_class, 1000);
-    repo.all_instances.push_back(instance);
+  for (auto file : repo.source_files) {
+    for (auto node_class : file->all_classes) {
+      auto instance = instantiate_class(node_class->name, nullptr,
+                                        nullptr, node_class, 1000);
+      file->all_instances.push_back(instance);
+    }
   }
 
   //----------------------------------------
@@ -344,54 +247,62 @@ int main_new(Options opts) {
       }
     };
 
-    for (auto node_class : repo.all_classes) {
-      for (auto node_func : node_class->all_functions) {
-        current_func = node_func;
-        visit(node_func, gather_writes);
-      }
-    }
-
-    for (auto node_class : repo.all_classes) {
-      for (auto node_func : node_class->all_functions) {
-        node_func->collect_writes2();
-      }
-    }
-
-    for (auto node_class : repo.all_classes) {
-      for (auto node_func : node_class->all_functions) {
-        LOG_R("Func %s\n", node_func->name.c_str());
-        LOG_INDENT();
-        for (auto node_field : node_func->self_writes2) {
-          LOG_R("Writes direct %s\n", node_field->name.c_str());
+    for (auto file : repo.source_files) {
+      for (auto node_class : file->all_classes) {
+        for (auto node_func : node_class->all_functions) {
+          current_func = node_func;
+          visit(node_func, gather_writes);
         }
-        for (auto node_field : node_func->all_writes2) {
-          if (node_func->self_writes2.contains(node_field)) {
-          } else {
-            LOG_R("Writes indirect %s\n", node_field->name.c_str());
+      }
+    }
+
+    for (auto file : repo.source_files) {
+      for (auto node_class : file->all_classes) {
+        for (auto node_func : node_class->all_functions) {
+          node_func->collect_writes2();
+        }
+      }
+    }
+
+    for (auto file : repo.source_files) {
+      for (auto node_class : file->all_classes) {
+        for (auto node_func : node_class->all_functions) {
+          LOG_R("Func %s\n", node_func->name.c_str());
+          LOG_INDENT();
+          for (auto node_field : node_func->self_writes2) {
+            LOG_R("Writes direct %s\n", node_field->name.c_str());
           }
-        }
-        for (auto node_callee : node_func->internal_callees) {
-          LOG_R("Calls internal %s\n", node_callee->name.c_str());
-        }
-        for (auto node_callee : node_func->external_callees) {
-          LOG_R("Calls external %s\n", node_callee->name.c_str());
-        }
+          for (auto node_field : node_func->all_writes2) {
+            if (node_func->self_writes2.contains(node_field)) {
+            } else {
+              LOG_R("Writes indirect %s\n", node_field->name.c_str());
+            }
+          }
+          for (auto node_callee : node_func->internal_callees) {
+            LOG_R("Calls internal %s\n", node_callee->name.c_str());
+          }
+          for (auto node_callee : node_func->external_callees) {
+            LOG_R("Calls external %s\n", node_callee->name.c_str());
+          }
 
-        LOG_DEDENT();
+          LOG_DEDENT();
+        }
       }
     }
 
-    for (auto node_class : repo.all_classes) {
-      for (auto node_func : node_class->all_functions) {
-        auto func_name = node_func->name;
-        if (!node_func->is_public) continue;
-        if (func_name.starts_with("tick")) continue;
-        if (func_name.starts_with("tock")) continue;
+    for (auto file : repo.source_files) {
+      for (auto node_class : file->all_classes) {
+        for (auto node_func : node_class->all_functions) {
+          auto func_name = node_func->name;
+          if (!node_func->is_public) continue;
+          if (func_name.starts_with("tick")) continue;
+          if (func_name.starts_with("tock")) continue;
 
-        if (node_func->all_writes2.size()) {
-          LOG_R("Top-level func %s writes stuff and it shouldn't\n",
-                func_name.c_str());
-          exit(-1);
+          if (node_func->all_writes2.size()) {
+            LOG_R("Top-level func %s writes stuff and it shouldn't\n",
+                  func_name.c_str());
+            exit(-1);
+          }
         }
       }
     }
@@ -400,14 +311,16 @@ int main_new(Options opts) {
   //----------------------------------------
   // Check for ticks with return values
 
-  for (auto node_class : repo.all_classes) {
-    for (auto node_func : node_class->all_functions) {
-      auto func_name = node_func->name;
-      if (func_name.starts_with("tick")) {
-        if (node_func->has_return()) {
-          LOG_R("Tick %s has a return value and it shouldn't\n",
-                func_name.c_str());
-          exit(-1);
+  for (auto file : repo.source_files) {
+    for (auto node_class : file->all_classes) {
+      for (auto node_func : node_class->all_functions) {
+        auto func_name = node_func->name;
+        if (func_name.starts_with("tick")) {
+          if (node_func->has_return()) {
+            LOG_R("Tick %s has a return value and it shouldn't\n",
+                  func_name.c_str());
+            exit(-1);
+          }
         }
       }
     }
@@ -422,77 +335,81 @@ int main_new(Options opts) {
   Tracer tracer;
   tracer.repo = &repo;
 
-  for (auto inst_class : repo.all_instances) {
-    tracer.root_inst = inst_class;
-    auto node_class = inst_class->node_class;
-    auto name = node_class->name;
-    LOG_B("Tracing public methods in %.*s\n", int(name.size()), name.data());
+  for (auto file : repo.source_files) {
+    for (auto inst_class : file->all_instances) {
+      tracer.root_inst = inst_class;
+      auto node_class = inst_class->node_class;
+      auto name = node_class->name;
+      LOG_B("Tracing public methods in %.*s\n", int(name.size()), name.data());
 
-    // Trace constructors first
-    if (auto node_func = node_class->constructor) {
-      LOG_INDENT_SCOPE();
-      auto func_name = node_func->name;
-      // if (!node_func->is_public) continue;
+      // Trace constructors first
+      if (auto node_func = node_class->constructor) {
+        LOG_INDENT_SCOPE();
+        auto func_name = node_func->name;
+        // if (!node_func->is_public) continue;
 
-      LOG_B("Tracing %s\n", func_name.c_str());
-      auto inst_func = inst_class->resolve(func_name);
+        LOG_B("Tracing %s\n", func_name.c_str());
+        auto inst_func = inst_class->resolve(func_name);
 
-      err << tracer.start_trace(inst_func, node_func);
+        err << tracer.start_trace(inst_func, node_func);
+      }
+
+      // Trace tocks
+      for (auto node_func : node_class->all_functions) {
+        LOG_INDENT_SCOPE();
+        auto func_name = node_func->name;
+        if (!func_name.starts_with("tock")) continue;
+        if (!node_func->is_public) continue;
+
+        LOG_B("Tracing %s\n", func_name.c_str());
+        auto inst_func = inst_class->resolve(func_name);
+
+        err << tracer.start_trace(inst_func, node_func);
+      }
+
+      // Trace ticks
+      for (auto node_func : node_class->all_functions) {
+        LOG_INDENT_SCOPE();
+        auto func_name = node_func->name;
+        if (!func_name.starts_with("tick")) continue;
+        if (!node_func->is_public) continue;
+
+        LOG_B("Tracing %s\n", func_name.c_str());
+        auto inst_func = inst_class->resolve(func_name);
+
+        err << tracer.start_trace(inst_func, node_func);
+      }
+
+      // Trace top functions
+      /*
+      for (auto node_func : node_class->all_functions) {
+        LOG_INDENT_SCOPE();
+        auto func_name = node_func->name;
+        if (func_name.starts_with("tick")) continue;
+        if (func_name.starts_with("tock")) continue;
+        if (!node_func->is_public) continue;
+
+        LOG_B("Tracing %s\n", func_name.c_str());
+        auto inst_func = inst_class->resolve(func_name);
+        call_stack stack;
+        stack.push_back(node_func);
+
+        writes_are_bad = true;
+        err << node_func->trace(inst_func, stack);
+        writes_are_bad = false;
+      }
+      */
     }
-
-    // Trace tocks
-    for (auto node_func : node_class->all_functions) {
-      LOG_INDENT_SCOPE();
-      auto func_name = node_func->name;
-      if (!func_name.starts_with("tock")) continue;
-      if (!node_func->is_public) continue;
-
-      LOG_B("Tracing %s\n", func_name.c_str());
-      auto inst_func = inst_class->resolve(func_name);
-
-      err << tracer.start_trace(inst_func, node_func);
-    }
-
-    // Trace ticks
-    for (auto node_func : node_class->all_functions) {
-      LOG_INDENT_SCOPE();
-      auto func_name = node_func->name;
-      if (!func_name.starts_with("tick")) continue;
-      if (!node_func->is_public) continue;
-
-      LOG_B("Tracing %s\n", func_name.c_str());
-      auto inst_func = inst_class->resolve(func_name);
-
-      err << tracer.start_trace(inst_func, node_func);
-    }
-
-    // Trace top functions
-    /*
-    for (auto node_func : node_class->all_functions) {
-      LOG_INDENT_SCOPE();
-      auto func_name = node_func->name;
-      if (func_name.starts_with("tick")) continue;
-      if (func_name.starts_with("tock")) continue;
-      if (!node_func->is_public) continue;
-
-      LOG_B("Tracing %s\n", func_name.c_str());
-      auto inst_func = inst_class->resolve(func_name);
-      call_stack stack;
-      stack.push_back(node_func);
-
-      writes_are_bad = true;
-      err << node_func->trace(inst_func, stack);
-      writes_are_bad = false;
-    }
-    */
   }
 
-  for (auto c : repo.all_classes) {
-    if (c->constructor) {
-      c->constructor->propagate_rw();
-    }
-    for (auto f : c->all_functions) {
-      f->propagate_rw();
+  for (auto file : repo.source_files) {
+    for (auto c : file->all_classes) {
+      if (c->constructor) {
+        c->constructor->propagate_rw();
+      }
+      for (auto f : c->all_functions) {
+        f->propagate_rw();
+      }
     }
   }
 

@@ -19,6 +19,7 @@ struct CNodeEnum;
 class CSourceRepo /* : public IContext maybe? */ {
  public:
 
+  CSourceFile*    get_file(std::string_view absolute_path);
   CNodeClass*     get_class(std::string_view name);
   CNodeStruct*    get_struct(std::string_view name);
   CNodeNamespace* get_namespace(std::string_view name);
@@ -29,13 +30,9 @@ class CSourceRepo /* : public IContext maybe? */ {
   Err load_source(std::string filename, CSourceFile** out_source = nullptr);
 
   std::vector<std::string> search_paths = {""};
-  std::map<std::string, CSourceFile*> source_map;
 
-  std::vector<CNodeClass*>     all_classes;
-  std::vector<CNodeStruct*>    all_structs;
-  std::vector<CNodeNamespace*> all_namespaces;
-  std::vector<CNodeEnum*>      all_enums;
-  std::vector<CInstClass*>     all_instances;
+  std::vector<CSourceFile*> source_files;
+  //std::map<std::string, CSourceFile*> source_map;
 };
 
 //------------------------------------------------------------------------------

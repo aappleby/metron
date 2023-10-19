@@ -7,6 +7,11 @@
 #include "metrolib/core/Err.h"
 
 struct CSourceRepo;
+struct CNodeClass;
+struct CNodeStruct;
+struct CNodeNamespace;
+struct CNodeEnum;
+struct CInstClass;
 
 //------------------------------------------------------------------------------
 
@@ -23,6 +28,13 @@ class CSourceFile {
 
   CLexer lexer;
   CContext context;
+
+  std::vector<CNodeClass*>     all_classes;
+  std::vector<CNodeStruct*>    all_structs;
+  std::vector<CNodeNamespace*> all_namespaces;
+  std::vector<CNodeEnum*>      all_enums;
+
+  std::vector<CInstClass*>     all_instances;
 };
 
 //------------------------------------------------------------------------------

@@ -14,37 +14,54 @@ namespace fs = std::filesystem;
 
 //------------------------------------------------------------------------------
 
+CSourceFile* CSourceRepo::get_file(std::string_view absolute_path) {
+  for (auto s : source_files) {
+    if (s->filepath == absolute_path) return s;
+  }
+  return nullptr;
+}
+
 CNodeClass* CSourceRepo::get_class(std::string_view name) {
-  for (auto c : all_classes) {
-    if (c->name == name) return c;
+  for (auto s : source_files) {
+    for (auto c : s->all_classes) {
+      if (c->name == name) return c;
+    }
   }
   return nullptr;
 }
 
 CNodeStruct* CSourceRepo::get_struct(std::string_view name) {
-  for (auto c : all_structs) {
-    if (c->name == name) return c;
+  for (auto s : source_files) {
+    for (auto c : s->all_structs) {
+      if (c->name == name) return c;
+    }
   }
   return nullptr;
 }
 
 CNodeNamespace* CSourceRepo::get_namespace(std::string_view name) {
-  for (auto c : all_namespaces) {
-    if (c->name == name) return c;
+  for (auto s : source_files) {
+    for (auto c : s->all_namespaces) {
+      if (c->name == name) return c;
+    }
   }
   return nullptr;
 }
 
 CNodeEnum* CSourceRepo::get_enum(std::string_view name) {
-  for (auto c : all_enums) {
-    if (c->name == name) return c;
+  for (auto s : source_files) {
+    for (auto c : s->all_enums) {
+      if (c->name == name) return c;
+    }
   }
   return nullptr;
 }
 
 CInstClass* CSourceRepo::get_instance(std::string name) {
-  for (auto i : all_instances) {
-    if (i->name == name) return i;
+  for (auto s : source_files) {
+    for (auto i : s->all_instances) {
+      if (i->name == name) return i;
+    }
   }
   return nullptr;
 }
@@ -68,7 +85,7 @@ Err CSourceRepo::load_source(std::string filename, CSourceFile** out_source) {
 
   std::string absolute_path = resolve_filename(filename);
 
-  if (source_map.contains(absolute_path)) return Err();
+  if (get_file(absolute_path)) return Err();
 
   fs::path absolute_dir(absolute_path);
   absolute_dir.remove_filename();

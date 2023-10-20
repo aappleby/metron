@@ -140,6 +140,10 @@ TokenSpan CContext::match_builtin_type_suffix(TokenSpan body) {
 TokenSpan CContext::handle_preproc(TokenSpan body) {
   auto node_preproc = top_tail->as<CNodePreproc>();
 
+  if (node_preproc->noconvert()) {
+    return body.consume();
+  }
+
   if (node_preproc->tag_is("preproc_include")) {
     std::string path_raw = node_preproc->child("path")->get_textstr();
     std::string path(path_raw.begin() + 1, path_raw.end() - 1);

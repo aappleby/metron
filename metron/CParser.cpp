@@ -440,7 +440,12 @@ Oneof<
 
 TokenSpan match_call(CContext& ctx, TokenSpan body) {
   using pattern = Seq<
-    Tag<"func_name",    cap_any_identifier>,
+    Tag<"func_name",
+      Oneof<
+        cap_any_identifier,
+        cap_keyword<"sizeof">
+      >
+    >,
     Tag<"func_targs",   Opt<cap_targ_list>>,
     Tag<"func_args",    cap_exp_list>
   >;

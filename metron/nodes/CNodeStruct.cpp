@@ -24,7 +24,7 @@ Err CNodeStruct::collect_fields_and_methods(CSourceRepo* repo) {
   auto body = child("body");
   for (auto c : body) {
     if (auto n = c->as<CNodeField>()) {
-      n->parent_struct = n->ancestor<CNodeStruct>();
+      //n->parent_struct = n->ancestor<CNodeStruct>();
       //n->node_decl->_type_struct  = repo->get_struct(n->node_decl->node_type->name);
       all_fields.push_back(n);
     }

@@ -197,6 +197,7 @@ struct NodeDumper {
 };
 
 void dump_parse_tree(CNode* node) {
+  LOG("\n");
   NodeDumper d;
   d.dump_parse_tree_recurse(*node, 0, 1000);
 }

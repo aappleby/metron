@@ -193,7 +193,8 @@ int main_new(Options opts) {
 
   for (auto c : root_file->all_classes) {
     for (auto f : c->all_fields) {
-      if (f->node_decl->_type_class) f->node_decl->_type_class->refcount++;
+      auto type_class = f->node_decl->get_class();
+      if (type_class) type_class->refcount++;
     }
   }
 

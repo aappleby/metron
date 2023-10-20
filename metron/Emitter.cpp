@@ -160,7 +160,8 @@ bool class_needs_tick(CNodeClass* node_class) {
   }
 
   for (auto f : node_class->all_fields) {
-    if (f->node_decl->_type_class && class_needs_tick(f->node_decl->_type_class)) return true;
+    auto type_class = f->node_decl->get_class();
+    if (type_class && class_needs_tick(type_class)) return true;
   }
 
   return false;
@@ -174,7 +175,8 @@ bool class_needs_tock(CNodeClass* node_class) {
   }
 
   for (auto f : node_class->all_fields) {
-    if (f->node_decl->_type_class && class_needs_tock(f->node_decl->_type_class)) return true;
+    auto type_class = f->node_decl->get_class();
+    if (type_class && class_needs_tock(type_class)) return true;
   }
 
   return false;
@@ -1053,31 +1055,34 @@ Err Emitter::emit(CNodeField* node) {
 Err Emitter::emit(CNodeFieldExpression* node) {
   Err err = check_at(node);
 
-  auto node_func = node->ancestor<CNodeFunction>();
-  auto node_class = node->ancestor<CNodeClass>();
-  auto node_path = node->child("field_path");
-  auto node_name = node->child("identifier");
-
-  auto field = node_class->get_field(node_path->get_text());
-
+  dump_parse_tree(node);
   auto repo = node->get_repo();
-  auto type_struct = repo->get_struct(field->node_decl->node_type->name);
 
-  if (field && type_struct) {
+  auto node_class = node->ancestor<CNodeClass>();
+
+  auto field = node_class->get_field(node->node_path->name);
+
+  if (!field) {
+    // This is not a field.
     err << emit_default(node);
-    return err;
+    return err << check_done(node);
   }
 
-  if (field) {
-    auto field = node->get_textstr();
-    for (auto& c : field) {
-      if (c == '.') c = '_';
-    }
-    err << emit_replacement(node, field);
-  } else {
+  auto type_class = field->node_decl->get_class();
+
+  if (!type_class) {
+    // This is a field, but not a submodule.
     err << emit_default(node);
+    return err << check_done(node);
   }
 
+  // This is a field of a submodule, replace the node with the name of the
+  // binding variable.
+  auto field_text = node->get_textstr();
+  for (auto& c : field_text) {
+    if (c == '.') c = '_';
+  }
+  err << emit_replacement(node, field_text);
   return err << check_done(node);
 }
 
@@ -1723,7 +1728,7 @@ Err Emitter::emit_call_arg_bindings(CNodeCompound* node, CNode* child) {
 
     auto src_class = node->ancestor<CNodeClass>();
     auto field = src_class->get_field(field_name);
-    auto dst_class = field->node_decl->_type_class;
+    auto dst_class = field->node_decl->get_class();
     auto dst_func = dst_class->get_function(func_name);
 
     int arg_count = call->node_args->items.size();

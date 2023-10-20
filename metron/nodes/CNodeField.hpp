@@ -28,8 +28,8 @@ struct CNodeField : public CNode {
   CNodeDeclaration* node_decl;
   CNodePunct* node_semi;
 
-  CNodeClass* parent_class;
-  CNodeStruct* parent_struct;
+  //CNodeClass*  parent_class;
+  //CNodeStruct* parent_struct;
 };
 
 //------------------------------------------------------------------------------

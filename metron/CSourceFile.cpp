@@ -27,10 +27,9 @@ Err collect_fields_and_methods(CNodeClass* node, CSourceRepo* repo) {
     if (auto n = child->as<CNodeField>()) {
       n->is_public = is_public;
 
-      n->parent_class = node;
-      n->parent_struct = nullptr;
-      n->node_decl->_type_class  = repo->get_class(n->node_decl->node_type->name);
-      //n->node_decl->_type_struct = repo->get_struct(n->node_decl->node_type->name);
+      //n->parent_class = node;
+      //n->parent_struct = nullptr;
+      //n->node_decl->_type_class  = repo->get_class(n->node_decl->node_type->name);
 
       //printf("%s = %p\n", n->node_decl->node_type->name.c_str(), n->node_decl->_type_class);
 
@@ -55,10 +54,10 @@ Err collect_fields_and_methods(CNodeClass* node, CSourceRepo* repo) {
       }
 
       // Hook up _type_struct on all struct params
-      for (auto decl : n->params) {
-        decl->_type_class = repo->get_class(decl->node_type->name);
+      //for (auto decl : n->params) {
+        //decl->_type_class = repo->get_class(decl->node_type->name);
         //decl->_type_struct = repo->get_struct(decl->node_type->name);
-      }
+      //}
       continue;
     }
   }

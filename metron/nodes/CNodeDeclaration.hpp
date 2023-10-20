@@ -26,9 +26,6 @@ struct CNodeDeclaration : public CNode {
   CNodeList*       node_array = nullptr;
   CNodePunct*      node_eq = nullptr;
   CNode*           node_value = nullptr;
-
-  CNodeClass*  _type_class = nullptr;
-  //CNodeStruct* _type_struct = nullptr;
 };
 
 //==============================================================================

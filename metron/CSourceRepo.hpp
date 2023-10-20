@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <map>
+#include <set>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -28,9 +29,9 @@ class CSourceRepo /* : public IContext maybe? */ {
 
   std::string resolve_filename(const std::string& filename);
   Err load_source(std::string filename, CSourceFile** out_source = nullptr);
+  void dump();
 
-  std::vector<std::string> search_paths = {""};
-
+  std::set<std::string>     search_paths;
   std::vector<CSourceFile*> source_files;
   //std::map<std::string, CSourceFile*> source_map;
 };

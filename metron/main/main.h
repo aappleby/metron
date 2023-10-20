@@ -5,14 +5,14 @@
 //------------------------------------------------------------------------------
 
 struct Options {
-  std::string src_name;
-  std::string dst_name;
   bool verbose = false;
   bool quiet = false;
   bool echo = false;
   bool dump = false;
   bool monochrome = false;
-  bool parse = false;
+  std::string inc_path;
+  std::string src_name;
+  std::string dst_name;
 };
 
 //------------------------------------------------------------------------------

@@ -33,7 +33,7 @@ struct CNodeConstructor;
 
 struct CNodeClass : public CNode {
   void init() {
-    node_class = child("class")->as<CNodeKeyword>();
+    node_kwclass = child("class")->as<CNodeKeyword>();
     node_name  = child("name")->as<CNodeIdentifier>();
     node_body  = child("body")->as<CNodeList>();
     node_semi  = child("semi")->as<CNodePunct>();
@@ -69,7 +69,7 @@ struct CNodeClass : public CNode {
 
   //----------------------------------------
 
-  CNodeKeyword*    node_class = nullptr;
+  CNodeKeyword*    node_kwclass = nullptr;
   CNodeIdentifier* node_name = nullptr;
   CNodeList*       node_body = nullptr;
   CNodePunct*      node_semi = nullptr;
@@ -86,7 +86,7 @@ struct CNodeClass : public CNode {
   std::vector<CNodeFunction*>    all_functions;
   std::vector<CNodeField*>       all_fields;
   std::vector<CNodeDeclaration*> all_modparams;
-  std::vector<CNodeField*>       all_params;
+  std::vector<CNodeField*>       all_localparams;
   std::vector<CNodeEnum*>        all_enums;
 
   std::vector<CNodeField*> input_signals;

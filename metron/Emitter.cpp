@@ -692,7 +692,7 @@ Err Emitter::emit(CNodeCall* node) {
 Err Emitter::emit(CNodeClass* node) {
   Err err = check_at(node);
 
-  err << emit_replacement2(node->node_class, "module");
+  err << emit_replacement2(node->node_kwclass, "module");
   err << emit_dispatch2(node->node_name);
 
   err << cursor.emit_print("(");

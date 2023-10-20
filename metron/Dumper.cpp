@@ -8,8 +8,12 @@
 #include "metron/CInstance.hpp"
 #include "metron/CNode.hpp"
 #include "metron/nodes/CNodeClass.hpp"
+#include "metron/nodes/CNodeStruct.hpp"
+#include "metron/nodes/CNodeNamespace.hpp"
+#include "metron/nodes/CNodeEnum.hpp"
 #include "metron/nodes/CNodeField.hpp"
 #include "metron/nodes/CNodeFunction.hpp"
+#include "metron/CSourceRepo.hpp"
 
 //------------------------------------------------------------------------------
 // Node debugging
@@ -100,7 +104,7 @@ std::map<std::string, uint32_t> color_map2 = {
 struct NodeDumper {
   //----------------------------------------
 
-  void dump_tree_recurse(const CNode& n, int depth, int max_depth) {
+  void dump_parse_tree_recurse(const CNode& n, int depth, int max_depth) {
     if (n.match_tag && color_map1.contains(n.match_tag)) {
       color_stack.push_back(color_map1[n.match_tag]);
     }
@@ -110,10 +114,10 @@ struct NodeDumper {
     else {
       color_stack.push_back(0xA0A0A0);
     }
-    dump_node(n, depth);
+    dump_parse_node(n, depth);
     if (!max_depth || depth < max_depth) {
       for (auto child = n.child_head; child; child = child->node_next) {
-        dump_tree_recurse(*child, depth + 1, max_depth);
+        dump_parse_tree_recurse(*child, depth + 1, max_depth);
       }
     }
     color_stack.pop_back();
@@ -121,7 +125,7 @@ struct NodeDumper {
 
   //----------------------------------------
 
-  void dump_node(const CNode& n, int depth) {
+  void dump_parse_node(const CNode& n, int depth) {
     LOG(" ");
 
     /*
@@ -186,7 +190,7 @@ struct NodeDumper {
 
 void dump_parse_tree(CNode* node) {
   NodeDumper d;
-  d.dump_tree_recurse(*node, 0, 1000);
+  d.dump_parse_tree_recurse(*node, 0, 1000);
 }
 
 //------------------------------------------------------------------------------
@@ -292,7 +296,7 @@ void CNodeAccess::dump() const override {
 
 void CNode::dump_tree(int max_depth) const {
   NodeDumper d;
-  d.dump_tree_recurse(*this, 0, max_depth);
+  d.dump_parse_tree_recurse(*this, 0, max_depth);
 }
 
 //----------------------------------------------------------------------------
@@ -368,30 +372,235 @@ void Lexeme::dump_lexeme() const {
   utils::set_color(0);
 }
 
+#endif
+
 //------------------------------------------------------------------------------
 
-void CSourceFile::dump() {
-  auto source_span = matcheroni::utils::to_span(context.source);
-  matcheroni::utils::print_trees(context, source_span, 50, 2);
+#if 0
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+
+void CNodeField::dump() const {
+  LOG_A("Field %.*s : ", name.size(), name.data());
+
+  if (node_decl->node_static) LOG_A("static ");
+  if (node_decl->node_const)  LOG_A("const ");
+  if (is_public)              LOG_A("public ");
+  if (node_decl->is_array())  LOG_A("array ");
+
+  if (parent_class) {
+    LOG_A("parent class %s ", parent_class->name.c_str());
+  }
+
+  if (parent_struct) {
+    LOG_A("parent struct %s ", parent_struct->name.c_str());
+  }
+
+  if (node_decl->_type_class) {
+    LOG_A("type class %s ", node_decl->_type_class->name.c_str());
+  }
+
+  if (node_decl->_type_struct) {
+    LOG_A("type struct %s ", node_decl->_type_struct->name.c_str());
+  }
+
+  LOG_A("\n");
 }
 
 //------------------------------------------------------------------------------
 
-void CSourceRepo::dump() {
-  {
-    LOG_G("Search paths:\n");
+// FIXME constructor needs to be in internal_callers
+
+void CNodeFunction::dump() const {
+
+}
+#endif
+
+//------------------------------------------------------------------------------
+
+void dump_function(CNodeFunction* node) {
+  LOG_S("Method \"%s\" ", node->name.c_str());
+
+  if (node->is_public)  LOG_G("public ");
+  if (!node->is_public) LOG_G("private ");
+  LOG_G("%s ", to_string(node->method_type));
+  LOG_G("\n");
+
+  if (node->params.size()) {
     LOG_INDENT_SCOPE();
-    for (auto s : search_paths) LOG_G("`%s`\n", s.c_str());
-    LOG("\n");
+    for (auto p : node->params) {
+      auto param_name = p->child("name")->get_textstr();
+      auto param_type = p->child("type")->get_textstr();
+      LOG_G("Param %s : %s", param_name.c_str(), param_type.c_str());
+
+      if (auto val = p->child("value")) {
+        auto text = val->get_text();
+        LOG_G(" = %.*s", text.size(), text.data());
+      }
+
+      LOG_G("\n");
+    }
   }
 
-  {
-    LOG_G("Source files:\n");
+  if (node->self_reads.size()) {
     LOG_INDENT_SCOPE();
-    for (auto pair : source_map) LOG_L("`%s`\n", pair.first.c_str());
-    LOG("\n");
+    for (auto r : node->self_reads) {
+      LOG_G("Directly reads  %s : %s\n", r->path.c_str(), to_string(r->get_state()));
+    }
   }
 
+  if (node->self_writes.size()) {
+    LOG_INDENT_SCOPE();
+    for (auto w : node->self_writes) {
+      LOG_G("Directly writes %s : %s\n", w->path.c_str(), to_string(w->get_state()));
+    }
+  }
+
+  if (node->all_reads.size()) {
+    LOG_INDENT_SCOPE();
+    for (auto r : node->all_reads) {
+      if (node->self_reads.contains(r)) continue;
+      LOG_G("Indirectly reads  %s : %s\n", r->path.c_str(), to_string(r->get_state()));
+    }
+  }
+
+  if (node->all_writes.size()) {
+    LOG_INDENT_SCOPE();
+    for (auto w : node->all_writes) {
+      if (node->self_writes.contains(w)) continue;
+      LOG_G("Indirectly writes %s : %s\n", w->path.c_str(), to_string(w->get_state()));
+    }
+  }
+
+  if (node->internal_callers.size()) {
+    LOG_INDENT_SCOPE();
+    for (auto c : node->internal_callers) {
+      auto func_name = c->name;
+      auto class_name = c->ancestor<CNodeClass>()->name;
+      LOG_V("Called by %.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
+    }
+  }
+
+  if (node->external_callers.size()) {
+    LOG_INDENT_SCOPE();
+    for (auto c : node->external_callers) {
+      auto func_name = c->name;
+      auto class_name = c->ancestor<CNodeClass>()->name;
+      LOG_V("Called by %.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
+    }
+  }
+
+  if (node->internal_callees.size()) {
+    LOG_INDENT_SCOPE();
+    for (auto c : node->internal_callees) {
+      auto func_name = c->name;
+      auto class_name = c->ancestor<CNodeClass>()->name;
+      LOG_T("Calls %.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
+    }
+  }
+
+  if (node->external_callees.size()) {
+    LOG_INDENT_SCOPE();
+    for (auto c : node->external_callees) {
+      auto func_name = c->name;
+      auto class_name = c->ancestor<CNodeClass>()->name;
+      LOG_T("Calls %.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+
+void dump_class(CNodeClass* node) {
+  LOG_B("Class %s, refcount %d\n", node->name.c_str(), node->refcount);
+
+  if (node->all_modparams.size()) {
+    LOG_G("Modparams\n");
+    LOG_INDENT_SCOPE();
+    for (auto f : node->all_modparams) {
+      LOG_G("%s\n", f->name.c_str());
+    }
+  }
+
+  if (node->all_localparams.size()) {
+    LOG_G("Localparams\n");
+    LOG_INDENT_SCOPE();
+    for (auto f : node->all_localparams) {
+      LOG_G("%s\n", f->name.c_str());
+    }
+  }
+
+  if (node->constructor) {
+    dump_function(node->constructor);
+  }
+
+  if (node->all_functions.size()) {
+    for (auto func : node->all_functions) {
+      dump_function(func);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+
+void dump_struct(CNodeStruct* node) {
+  LOG_G("Struct %s\n", node->name.c_str());
+}
+
+//------------------------------------------------------------------------------
+
+void dump_namespace(CNodeNamespace* node) {
+  LOG_G("Namespace %s\n", node->name.c_str());
+}
+
+//------------------------------------------------------------------------------
+
+void dump_enum(CNodeEnum* node) {
+  LOG_G("Enum %s\n", node->name.c_str());
+}
+
+//------------------------------------------------------------------------------
+
+void dump_source_file(CSourceFile* file) {
+  LOG_L("Source file `%s`\n", file->filepath.c_str());
+
+  for (auto c : file->all_classes) {
+    LOG_INDENT_SCOPE();
+    dump_class(c);
+  }
+
+  for (auto s : file->all_structs) {
+    LOG_INDENT_SCOPE();
+    dump_struct(s);
+  }
+
+  for (auto n : file->all_namespaces) {
+    LOG_INDENT_SCOPE();
+    dump_namespace(n);
+  }
+
+  for (auto e : file->all_enums) {
+    LOG_INDENT_SCOPE();
+    dump_enum(e);
+  }
+}
+
+//------------------------------------------------------------------------------
+
+void dump_repo(CSourceRepo* repo) {
+  LOG_B("Repo dump:\n");
+  LOG_INDENT_SCOPE();
+
+  for (auto s : repo->search_paths) {
+    LOG_G("Search path `%s`\n", s.c_str());
+  }
+
+  for (auto file : repo->source_files) {
+    dump_source_file(file);
+  }
+
+  /*
   {
     LOG_G("Classes:\n");
     LOG_INDENT_SCOPE();
@@ -431,159 +640,10 @@ void CSourceRepo::dump() {
     }
     if (all_enums.empty()) LOG("\n");
   }
+  */
 }
 
-//------------------------------------------------------------------------------
 
-void CNodeClass::dump() const {
-  LOG_B("Class %s @ %s, refcount %d\n", name.c_str(), file->filename.c_str(), refcount);
-  LOG_INDENT();
-  {
-    if (all_modparams.size()) {
-      LOG_G("Modparams\n");
-      LOG_INDENT_SCOPE();
-      for (auto f : all_modparams) f->dump();
-    }
-
-    if (all_localparams.size()) {
-      LOG_G("Localparams\n");
-      LOG_INDENT_SCOPE();
-      for (auto f : all_localparams) f->dump();
-    }
-
-    for (auto child : node_body) {
-      child->dump();
-    }
-  }
-  LOG_DEDENT();
-}
-
-//------------------------------------------------------------------------------
-
-//------------------------------------------------------------------------------
-
-void CNodeField::dump() const {
-  LOG_A("Field %.*s : ", name.size(), name.data());
-
-  if (node_decl->node_static) LOG_A("static ");
-  if (node_decl->node_const)  LOG_A("const ");
-  if (is_public)              LOG_A("public ");
-  if (node_decl->is_array())  LOG_A("array ");
-
-  if (parent_class) {
-    LOG_A("parent class %s ", parent_class->name.c_str());
-  }
-
-  if (parent_struct) {
-    LOG_A("parent struct %s ", parent_struct->name.c_str());
-  }
-
-  if (node_decl->_type_class) {
-    LOG_A("type class %s ", node_decl->_type_class->name.c_str());
-  }
-
-  if (node_decl->_type_struct) {
-    LOG_A("type struct %s ", node_decl->_type_struct->name.c_str());
-  }
-
-  LOG_A("\n");
-}
-
-//------------------------------------------------------------------------------
-
-// FIXME constructor needs to be in internal_callers
-
-void CNodeFunction::dump() const {
-  LOG_S("Method \"%.*s\" ", name.size(), name.data());
-
-  if (is_public)  LOG_G("public ");
-  if (!is_public) LOG_G("private ");
-  LOG_G("%s ", to_string(method_type));
-  LOG_G("\n");
-
-  if (params.size()) {
-    LOG_INDENT_SCOPE();
-    for (auto p : params) {
-      auto param_name = p->child("name")->get_textstr();
-      auto param_type = p->child("type")->get_textstr();
-      LOG_G("Param %s : %s", param_name.c_str(), param_type.c_str());
-
-      if (auto val = p->child("value")) {
-        auto text = val->get_text();
-        LOG_G(" = %.*s", text.size(), text.data());
-      }
-
-      LOG_G("\n");
-    }
-  }
-
-  if (self_reads.size()) {
-    LOG_INDENT_SCOPE();
-    for (auto r : self_reads) {
-      LOG_G("Directly reads  %s : %s\n", r->path.c_str(), to_string(r->get_state()));
-    }
-  }
-
-  if (self_writes.size()) {
-    LOG_INDENT_SCOPE();
-    for (auto w : self_writes) {
-      LOG_G("Directly writes %s : %s\n", w->path.c_str(), to_string(w->get_state()));
-    }
-  }
-
-  if (all_reads.size()) {
-    LOG_INDENT_SCOPE();
-    for (auto r : all_reads) {
-      if (self_reads.contains(r)) continue;
-      LOG_G("Indirectly reads  %s : %s\n", r->path.c_str(), to_string(r->get_state()));
-    }
-  }
-
-  if (all_writes.size()) {
-    LOG_INDENT_SCOPE();
-    for (auto w : all_writes) {
-      if (self_writes.contains(w)) continue;
-      LOG_G("Indirectly writes %s : %s\n", w->path.c_str(), to_string(w->get_state()));
-    }
-  }
-
-  if (internal_callers.size()) {
-    LOG_INDENT_SCOPE();
-    for (auto c : internal_callers) {
-      auto func_name = c->name;
-      auto class_name = c->ancestor<CNodeClass>()->name;
-      LOG_V("Called by %.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
-    }
-  }
-
-  if (external_callers.size()) {
-    LOG_INDENT_SCOPE();
-    for (auto c : external_callers) {
-      auto func_name = c->name;
-      auto class_name = c->ancestor<CNodeClass>()->name;
-      LOG_V("Called by %.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
-    }
-  }
-
-  if (internal_callees.size()) {
-    LOG_INDENT_SCOPE();
-    for (auto c : internal_callees) {
-      auto func_name = c->name;
-      auto class_name = c->ancestor<CNodeClass>()->name;
-      LOG_T("Calls %.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
-    }
-  }
-
-  if (external_callees.size()) {
-    LOG_INDENT_SCOPE();
-    for (auto c : external_callees) {
-      auto func_name = c->name;
-      auto class_name = c->ancestor<CNodeClass>()->name;
-      LOG_T("Calls %.*s::%.*s\n", class_name.size(), class_name.data(), func_name.size(), func_name.data());
-    }
-  }
-}
-#endif
 
 //------------------------------------------------------------------------------
 

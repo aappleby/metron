@@ -28,11 +28,13 @@ Err collect_fields_and_methods(CNodeClass* node, CSourceRepo* repo) {
 
       n->parent_class = node;
       n->parent_struct = nullptr;
-      n->node_decl->_type_class = repo->get_class(n->node_decl->node_type->name);
+      n->node_decl->_type_class  = repo->get_class(n->node_decl->node_type->name);
       n->node_decl->_type_struct = repo->get_struct(n->node_decl->node_type->name);
 
+      //printf("%s = %p\n", n->node_decl->node_type->name.c_str(), n->node_decl->_type_class);
+
       if (n->node_decl->is_param()) {
-        node->all_params.push_back(n);
+        node->all_localparams.push_back(n);
       } else {
         node->all_fields.push_back(n);
       }
@@ -107,6 +109,15 @@ Err CSourceFile::init(CSourceRepo* _repo, const std::string& _filename,
     return ERR("Could not parse file");
   }
 
+  //repo->source_map[filename] = this;
+  repo->source_files.push_back(this);
+
+  return Err();
+}
+
+//------------------------------------------------------------------------------
+
+void CSourceFile::link() {
   LOG_B("Processing source file\n");
 
   for (auto n : context.root_node) {
@@ -144,11 +155,6 @@ Err CSourceFile::init(CSourceRepo* _repo, const std::string& _filename,
       // LOG_G("top level enum!!!!\n");
     }
   }
-
-  //repo->source_map[filename] = this;
-  repo->source_files.push_back(this);
-
-  return Err();
 }
 
 //------------------------------------------------------------------------------

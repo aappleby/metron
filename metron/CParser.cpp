@@ -932,7 +932,7 @@ TokenSpan match_namespace(CContext& ctx, TokenSpan body) {
     Tag<"namespace", cap_keyword<"namespace">>,
     Tag<"name",      cap_identifier>,
     Tag<"fields",    cap_field_list>,
-    Tag<"semi",      cap_punct<";">>
+    Opt<Tag<"semi",  cap_punct<";">>>
   >;
   return pattern::match(ctx, body);
 }

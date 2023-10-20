@@ -70,9 +70,9 @@ CInstClass* CSourceRepo::get_instance(std::string name) {
 
 std::string CSourceRepo::resolve_filename(const std::string& filename) {
   for (auto& path : search_paths) {
-    std::string full_path = fs::absolute(path + filename);
-    if (fs::is_regular_file(full_path)) {
-      return full_path;
+    auto joined_path = fs::path(path) / fs::path(filename);
+    if (fs::is_regular_file(joined_path)) {
+      return fs::canonical(joined_path);
     }
   }
   return "";
@@ -85,11 +85,17 @@ Err CSourceRepo::load_source(std::string filename, CSourceFile** out_source) {
 
   std::string absolute_path = resolve_filename(filename);
 
-  if (get_file(absolute_path)) return Err();
+  assert(!absolute_path.empty());
+
+  if (auto f = get_file(absolute_path)) {
+    if (out_source) *out_source = f;
+    return Err();
+  }
 
   fs::path absolute_dir(absolute_path);
   absolute_dir.remove_filename();
-  search_paths.push_back(absolute_dir);
+  std::string ads = absolute_dir;
+  search_paths.insert(ads);
 
   std::string src_blob = matcheroni::utils::read(absolute_path);
 

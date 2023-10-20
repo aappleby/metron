@@ -24,8 +24,10 @@
 #include "metron/nodes/CNodeNamespace.hpp"
 #include "metron/nodes/CNodeStruct.hpp"
 #include "metron/nodes/CNodeTemplate.hpp"
+#include <filesystem>
 
 using namespace matcheroni;
+namespace fs = std::filesystem;
 
 CNodeField* resolve_field(CNodeClass* node_class, CNode* node_name);
 
@@ -156,6 +158,12 @@ int main_new(Options opts) {
   Err err;
 
   CSourceRepo repo;
+
+  repo.search_paths.insert(fs::canonical("."));
+  if (!opts.inc_path.empty()) {
+    repo.search_paths.insert(fs::canonical(opts.inc_path));
+  }
+
   CSourceFile* root_file = nullptr;
   err << repo.load_source(opts.src_name, &root_file);
 
@@ -164,8 +172,16 @@ int main_new(Options opts) {
     return -1;
   }
 
+  for (auto file : repo.source_files) {
+    file->link();
+  }
+
+  dump_repo(&repo);
+  exit(-1);
+
   sanity_check_parse_tree(repo);
-  dump_parse_tree(root_file->context.top_head);
+  //dump_parse_tree(root_file->context.top_head);
+
   LOG("\n");
 
   //----------------------------------------
@@ -174,21 +190,17 @@ int main_new(Options opts) {
 
   // Count module instances so we can find top modules.
 
-  for (auto file : repo.source_files) {
-    for (auto c : file->all_classes) {
-      for (auto f : c->all_fields) {
-        if (f->node_decl->_type_class) f->node_decl->_type_class->refcount++;
-      }
+  for (auto c : root_file->all_classes) {
+    for (auto f : c->all_fields) {
+      if (f->node_decl->_type_class) f->node_decl->_type_class->refcount++;
     }
   }
 
   CNodeClass* top = nullptr;
-  for (auto file : repo.source_files) {
-    for (auto c : file->all_classes) {
-      if (c->refcount == 0) {
-        assert(top == nullptr);
-        top = c;
-      }
+  for (auto c : root_file->all_classes) {
+    if (c->refcount == 0) {
+      assert(top == nullptr);
+      top = c;
     }
   }
   // assert(top);
@@ -487,37 +499,39 @@ int main_new(Options opts) {
 
   //----------------------------------------
 
-  for (auto node_class : repo.all_classes) {
-    for (auto f : node_class->all_functions) {
-      auto method_type = get_method_type(f);
+  for (auto file : repo.source_files) {
+    for (auto node_class : file->all_classes) {
+      for (auto f : node_class->all_functions) {
+        auto method_type = get_method_type(f);
 
-      if (method_type != MT_FUNC && method_type != MT_TICK &&
-          method_type != MT_TOCK && method_type != MT_INIT) {
-        assert(false);
-      }
-
-      f->method_type = method_type;
-
-      if (method_type == MT_FUNC) {
-        assert(f->all_writes.empty());
-      } else if (method_type == MT_TOCK) {
-        for (auto inst : f->self_writes) {
-          auto state = inst->get_state();
-          if (state == TS_SIGNAL || state == TS_OUTPUT) {
-          } else {
-            LOG_R("Tock writes a non-signal\n");
-            LOG("");
-            exit(-1);
-          }
+        if (method_type != MT_FUNC && method_type != MT_TICK &&
+            method_type != MT_TOCK && method_type != MT_INIT) {
+          assert(false);
         }
-      } else if (method_type == MT_TICK) {
-        for (auto inst : f->self_writes) {
-          auto state = inst->get_state();
-          if (state == TS_REGISTER || state == TS_MAYBE || state == TS_OUTPUT) {
-          } else {
-            LOG_R("Tick writes a non-register\n");
-            LOG("");
-            exit(-1);
+
+        f->method_type = method_type;
+
+        if (method_type == MT_FUNC) {
+          assert(f->all_writes.empty());
+        } else if (method_type == MT_TOCK) {
+          for (auto inst : f->self_writes) {
+            auto state = inst->get_state();
+            if (state == TS_SIGNAL || state == TS_OUTPUT) {
+            } else {
+              LOG_R("Tock writes a non-signal\n");
+              LOG("");
+              exit(-1);
+            }
+          }
+        } else if (method_type == MT_TICK) {
+          for (auto inst : f->self_writes) {
+            auto state = inst->get_state();
+            if (state == TS_REGISTER || state == TS_MAYBE || state == TS_OUTPUT) {
+            } else {
+              LOG_R("Tick writes a non-register\n");
+              LOG("");
+              exit(-1);
+            }
           }
         }
       }
@@ -529,22 +543,24 @@ int main_new(Options opts) {
   LOG_B("Checking port compatibility\n");
   LOG_INDENT();
 
-  for (auto inst : repo.all_instances) {
-    LOG("Module %s\n", inst->name.c_str());
-    LOG_INDENT_SCOPE();
-    for (auto child : inst->parts) {
-      if (auto inst_a = child->as<CInstClass>()) {
-        auto inst_b = repo.get_instance(inst_a->node_class->name);
-        assert(inst_b);
-        bool ports_ok = inst_a->check_port_directions(inst_b);
-        if (!ports_ok) {
-          LOG_R("-----\n");
-          dump_inst_tree(inst_a);
-          LOG_R("-----\n");
-          dump_inst_tree(inst_b);
-          LOG_R("-----\n");
-          err << ERR("Bad ports!\n");
-          exit(-1);
+  for (auto file : repo.source_files) {
+    for (auto inst : file->all_instances) {
+      LOG("Module %s\n", inst->name.c_str());
+      LOG_INDENT_SCOPE();
+      for (auto child : inst->parts) {
+        if (auto inst_a = child->as<CInstClass>()) {
+          auto inst_b = repo.get_instance(inst_a->node_class->name);
+          assert(inst_b);
+          bool ports_ok = inst_a->check_port_directions(inst_b);
+          if (!ports_ok) {
+            LOG_R("-----\n");
+            dump_inst_tree(inst_a);
+            LOG_R("-----\n");
+            dump_inst_tree(inst_b);
+            LOG_R("-----\n");
+            err << ERR("Bad ports!\n");
+            exit(-1);
+          }
         }
       }
     }
@@ -555,75 +571,77 @@ int main_new(Options opts) {
 
   LOG_B("Categorizing fields\n");
 
-  for (auto inst : repo.all_instances) {
-    auto inst_class = inst->as<CInstClass>();
-    auto node_class = inst_class->node_class;
-    assert(inst_class);
+  for (auto file : repo.source_files) {
+    for (auto inst : file->all_instances) {
+      auto inst_class = inst->as<CInstClass>();
+      auto node_class = inst_class->node_class;
+      assert(inst_class);
 
-    for (auto inst_child : inst_class->ports) {
-      if (auto inst_prim = inst_child->as<CInstPrim>()) {
-        auto field = inst_prim->node_field;
-        if (!field->is_public) continue;
-        if (field->node_decl->is_param())
-          continue;
+      for (auto inst_child : inst_class->ports) {
+        if (auto inst_prim = inst_child->as<CInstPrim>()) {
+          auto field = inst_prim->node_field;
+          if (!field->is_public) continue;
+          if (field->node_decl->is_param())
+            continue;
 
-        switch (inst_prim->get_state()) {
-          case TS_NONE:
-            break;
-          case TS_INPUT:
-            node_class->input_signals.push_back(field);
-            break;
-          case TS_OUTPUT:
-            node_class->output_signals.push_back(field);
-            break;
-          case TS_MAYBE:
-            node_class->output_registers.push_back(field);
-            break;
-          case TS_SIGNAL:
-            node_class->output_signals.push_back(field);
-            break;
-          case TS_REGISTER:
-            node_class->output_registers.push_back(field);
-            break;
-          case TS_INVALID:
-            assert(false);
-            break;
-          case TS_PENDING:
-            assert(false);
-            break;
+          switch (inst_prim->get_state()) {
+            case TS_NONE:
+              break;
+            case TS_INPUT:
+              node_class->input_signals.push_back(field);
+              break;
+            case TS_OUTPUT:
+              node_class->output_signals.push_back(field);
+              break;
+            case TS_MAYBE:
+              node_class->output_registers.push_back(field);
+              break;
+            case TS_SIGNAL:
+              node_class->output_signals.push_back(field);
+              break;
+            case TS_REGISTER:
+              node_class->output_registers.push_back(field);
+              break;
+            case TS_INVALID:
+              assert(false);
+              break;
+            case TS_PENDING:
+              assert(false);
+              break;
+          }
         }
-      }
 
-      if (auto inst_struct = inst_child->as<CInstStruct>()) {
-        auto field = inst_struct->node_field;
-        if (!field->is_public) continue;
-        if (field->node_decl->is_param())
-          continue;
+        if (auto inst_struct = inst_child->as<CInstStruct>()) {
+          auto field = inst_struct->node_field;
+          if (!field->is_public) continue;
+          if (field->node_decl->is_param())
+            continue;
 
-        switch (inst_struct->get_state()) {
-          case TS_NONE:
-            break;
-          case TS_INPUT:
-            node_class->input_signals.push_back(field);
-            break;
-          case TS_OUTPUT:
-            node_class->output_signals.push_back(field);
-            break;
-          case TS_MAYBE:
-            node_class->output_registers.push_back(field);
-            break;
-          case TS_SIGNAL:
-            node_class->output_signals.push_back(field);
-            break;
-          case TS_REGISTER:
-            node_class->output_registers.push_back(field);
-            break;
-          case TS_INVALID:
-            assert(false);
-            break;
-          case TS_PENDING:
-            assert(false);
-            break;
+          switch (inst_struct->get_state()) {
+            case TS_NONE:
+              break;
+            case TS_INPUT:
+              node_class->input_signals.push_back(field);
+              break;
+            case TS_OUTPUT:
+              node_class->output_signals.push_back(field);
+              break;
+            case TS_MAYBE:
+              node_class->output_registers.push_back(field);
+              break;
+            case TS_SIGNAL:
+              node_class->output_signals.push_back(field);
+              break;
+            case TS_REGISTER:
+              node_class->output_registers.push_back(field);
+              break;
+            case TS_INVALID:
+              assert(false);
+              break;
+            case TS_PENDING:
+              assert(false);
+              break;
+          }
         }
       }
     }
@@ -826,21 +844,26 @@ int main_new(Options opts) {
 
   // repo.dump();
 
-  for (auto inst_class : repo.all_instances) {
-    LOG_B("Instance tree for %s\n",
-          inst_class->node_class->name.c_str());
-    LOG_INDENT();
-    dump_inst_tree(inst_class);
-    LOG_DEDENT();
-    LOG_B("\n");
+  for (auto file : repo.source_files) {
+    for (auto inst_class : file->all_instances) {
+      LOG_B("Instance tree for %s\n",
+            inst_class->node_class->name.c_str());
+      LOG_INDENT();
+      dump_inst_tree(inst_class);
+      LOG_DEDENT();
+      LOG_B("\n");
+    }
   }
 
-  for (auto node_class : repo.all_classes) {
-    LOG_B("Call graph for %s\n", node_class->name.c_str());
-    LOG_INDENT();
-    dump_call_graph(node_class);
-    LOG_DEDENT();
-    LOG("\n");
+
+  for (auto file : repo.source_files) {
+    for (auto node_class : file->all_classes) {
+      LOG_B("Call graph for %s\n", node_class->name.c_str());
+      LOG_INDENT();
+      dump_call_graph(node_class);
+      LOG_DEDENT();
+      LOG("\n");
+    }
   }
 
   LOG_B(

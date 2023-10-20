@@ -521,6 +521,7 @@ TokenSpan cap_exp_unit(CContext& ctx, TokenSpan body) {
     ctx.enclose_tail<CNodeSuffixExp>(2);
     ctx.top_tail->child_head->match_tag = "lhs";
     ctx.top_tail->child_tail->match_tag = "suffix";
+    ctx.top_tail->as<CNodeSuffixExp>()->init();
   }
 
   // Enclose all prefixes
@@ -528,6 +529,7 @@ TokenSpan cap_exp_unit(CContext& ctx, TokenSpan body) {
     ctx.enclose_tail<CNodePrefixExp>(2);
     ctx.top_tail->child_head->match_tag = "prefix";
     ctx.top_tail->child_tail->match_tag = "rhs";
+    ctx.top_tail->as<CNodePrefixExp>()->init();
   }
 
   return body;
@@ -713,6 +715,7 @@ TokenSpan cap_expression(CContext& ctx, TokenSpan body) {
     rhs->match_tag = "rhs";
 
     ctx.enclose_tail<CNodeBinaryExp>(3);
+    ctx.top_tail->init();
   }
 
 

@@ -933,14 +933,14 @@ Err Emitter::emit(CNodePrefixExp* node) {
   // "rhs { = } rhs { + 1}"
   // "{rhs} = {rhs} + 1"
 
-  auto node_op = node->child("prefix");
+  auto node_op = node->node_prefix;
   auto op = node_op->get_text();
 
   if (op != "++" && op != "--") {
     return emit_default(node);
   }
 
-  auto node_rhs = node->child("rhs");
+  auto node_rhs = node->node_rhs;
   auto node_field = resolve_field(node_rhs);
 
   std::string assign = in_tick(node) && node_field ? " <= " : " = ";
@@ -962,8 +962,8 @@ Err Emitter::emit(CNodeSuffixExp* node) {
 
   auto node_class = node->ancestor<CNodeClass>();
   auto node_func = node->ancestor<CNodeFunction>();
-  auto node_op = node->child("suffix");
-  auto node_lhs = node->child("lhs");
+  auto node_op = node->node_suffix;
+  auto node_lhs = node->node_lhs;
   auto node_field = resolve_field(node_class, node_lhs);
 
   auto op = node_op->get_text();

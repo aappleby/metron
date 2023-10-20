@@ -19,16 +19,20 @@ struct CNodeBinaryExp : public CNodeExpression {};
 
 struct CNodePrefixExp : public CNodeExpression {
   void init() {
+    node_prefix = child("prefix");
     node_rhs = child("rhs");
   }
+  CNode* node_prefix;
   CNode* node_rhs;
 };
 
 struct CNodeSuffixExp : public CNodeExpression {
   void init() {
-    node_lhs = child("rhs");
+    node_lhs = child("lhs");
+    node_suffix = child("suffix");
   }
   CNode* node_lhs;
+  CNode* node_suffix;
 };
 
 struct CNodeAssignExp : public CNodeExpression {};

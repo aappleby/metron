@@ -191,20 +191,20 @@ CNodeField* resolve_field(CNodeClass* node_class, CNode* node_name) {
     return node_class->get_field(node_id->get_text());
   }
 
-  if (node_name->as<CNodeLValue>()) {
-    return resolve_field(node_class, node_name->child("name"));
+  if (auto node_lvalue = node_name->as<CNodeLValue>()) {
+    return resolve_field(node_class, node_lvalue->node_name);
   }
 
   if (auto node_field = node_name->as<CNodeFieldExpression>()) {
-    return resolve_field(node_class, node_field->child("field_path"));
+    return resolve_field(node_class, node_field->node_path);
   }
 
-  if (auto node_prefix = node_name->as<CNodeSuffixExp>()) {
-    return resolve_field(node_class, node_prefix->child("rhs"));
+  if (auto node_prefix = node_name->as<CNodePrefixExp>()) {
+    return resolve_field(node_class, node_prefix->node_rhs);
   }
 
   if (auto node_suffix = node_name->as<CNodeSuffixExp>()) {
-    return resolve_field(node_class, node_suffix->child("lhs"));
+    return resolve_field(node_class, node_suffix->node_lhs);
   }
 
   LOG_R("----------------------------------------\n");

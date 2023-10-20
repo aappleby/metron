@@ -16,8 +16,21 @@ struct CNodeConstString : public CNodeConstant {};
 //------------------------------------------------------------------------------
 
 struct CNodeBinaryExp : public CNodeExpression {};
-struct CNodePrefixExp : public CNodeExpression {};
-struct CNodeSuffixExp : public CNodeExpression {};
+
+struct CNodePrefixExp : public CNodeExpression {
+  void init() {
+    node_rhs = child("rhs");
+  }
+  CNode* node_rhs;
+};
+
+struct CNodeSuffixExp : public CNodeExpression {
+  void init() {
+    node_lhs = child("rhs");
+  }
+  CNode* node_lhs;
+};
+
 struct CNodeAssignExp : public CNodeExpression {};
 struct CNodeIdentifierExp : public CNodeExpression {
   void init() { name = get_text(); }

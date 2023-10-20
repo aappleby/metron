@@ -45,7 +45,7 @@ CInstance::~CInstance() {}
 
 CInstance* CInstance::resolve(CNode* node) {
   if (node->as<CNodeLValue>()) {
-    return resolve(node->child("name"));
+    return resolve(node->name);
   }
 
   if (node->as<CNodeFieldExpression>()) {
@@ -61,8 +61,13 @@ CInstance* CInstance::resolve(CNode* node) {
     return inst;
   }
 
-  if (node->as<CNodePrefixExp>()) return resolve(node->child("rhs"));
-  if (node->as<CNodeSuffixExp>()) return resolve(node->child("lhs"));
+  if (auto node_prefix = node->as<CNodePrefixExp>()) {
+    return resolve(node_prefix->node_rhs);
+  }
+
+  if (auto node_suffix = node->as<CNodeSuffixExp>()) {
+    return resolve(node_suffix->node_lhs);
+  }
 
   if (auto id = node->as<CNodeIdentifier>()) {
     auto name = id->get_textstr();
@@ -97,7 +102,7 @@ CInstClass* instantiate_class(
 
   bool child_is_public = false;
 
-  for (auto child : node_class->child("body")) {
+  for (auto child : node_class->node_body) {
     if (auto access = child->as<CNodeAccess>()) {
       child_is_public = child->get_text() == "public:";
       continue;
@@ -388,7 +393,7 @@ CInstFunc::CInstFunc(std::string name, CInstance* inst_parent,
     }
   }
 
-  auto ret_type = node_func->child("return_type");
+  auto ret_type = node_func->node_type;
   if (ret_type && ret_type->get_text() != "void") {
     if (auto struct_type = ret_type->as<CNodeStructType>()) {
       auto node_struct = repo->get_struct(struct_type->get_text());

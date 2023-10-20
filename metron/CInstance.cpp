@@ -1,5 +1,6 @@
 #include "metron/CInstance.hpp"
 
+#include "metron/CSourceRepo.hpp"
 #include "metron/nodes/CNodeAccess.hpp"
 #include "metron/nodes/CNodeType.hpp"
 #include "metron/nodes/CNodeClass.hpp"
@@ -84,9 +85,14 @@ CInstance* CInstance::resolve(CNode* node) {
 // ##############################################################################
 // ##############################################################################
 
-CInstClass* instantiate_class(std::string name, CInstance* inst_parent,
-                              CNodeField* node_field, CNodeClass* node_class,
-                              int depth) {
+CInstClass* instantiate_class(
+  CSourceRepo* repo,
+  std::string name,
+  CInstance* inst_parent,
+  CNodeField* node_field,
+  CNodeClass* node_class,
+  int depth)
+{
   auto inst_class = new CInstClass(name, inst_parent, node_field, node_class);
 
   bool child_is_public = false;
@@ -100,15 +106,17 @@ CInstClass* instantiate_class(std::string name, CInstance* inst_parent,
     if (auto node_field = child->as<CNodeField>()) {
       auto field_name = node_field->name;
 
-      if (node_field->node_decl->_type_class) {
+      auto type_class = repo->get_class(node_field->node_decl->node_type->name);
+      auto type_struct = repo->get_struct(node_field->node_decl->node_type->name);
+
+      if (type_class) {
         auto inst =
-            instantiate_class(field_name, inst_class, node_field,
-                              node_field->node_decl->_type_class, depth);
+            instantiate_class(repo, field_name, inst_class, node_field, type_class, depth);
         // inst_class->children.push_back(inst);
         inst_class->parts.push_back(inst);
-      } else if (node_field->node_decl->_type_struct) {
-        auto inst = new CInstStruct(field_name, inst_class, node_field,
-                                    node_field->node_decl->_type_struct);
+      }
+      else if (type_struct) {
+        auto inst = new CInstStruct(field_name, inst_class, node_field, type_struct);
         // inst_class->children.push_back(inst);
 
         if (child_is_public) {
@@ -232,12 +240,15 @@ CInstStruct::CInstStruct(std::string name, CInstance* inst_parent,
       node_struct(node_struct) {
   assert(node_struct);
 
+  auto repo = node_struct->get_repo();
+
   for (auto struct_field : node_struct->all_fields) {
     auto field_name = struct_field->name;
 
-    if (struct_field->node_decl->_type_struct) {
-      auto inst_field = new CInstStruct(field_name, this, struct_field,
-                                        struct_field->node_decl->_type_struct);
+    auto type_struct = repo->get_struct(struct_field->node_decl->node_type->name);
+
+    if (type_struct) {
+      auto inst_field = new CInstStruct(field_name, this, struct_field, type_struct);
       parts.push_back(inst_field);
     } else {
       auto inst_field = new CInstPrim(field_name, this, struct_field);
@@ -363,16 +374,16 @@ void CInstPrim::merge_state() {
 CInstFunc::CInstFunc(std::string name, CInstance* inst_parent,
                      CNodeFunction* node_func)
     : CInstance(name, inst_parent), node_func(node_func) {
-  auto repo = node_func->ancestor<CNodeClass>()->repo;
+  auto repo = node_func->get_repo();
 
   for (auto param : node_func->params) {
-    auto param_name = param->name;
-    if (param->_type_struct) {
-      auto inst_field =
-          new CInstStruct(param_name, this, nullptr, param->_type_struct);
+    auto type_struct = repo->get_struct(param->node_type->name);
+
+    if (type_struct) {
+      auto inst_field = new CInstStruct(param->name, this, nullptr, type_struct);
       params.push_back(inst_field);
     } else {
-      auto inst_field = new CInstPrim(param_name, this, nullptr);
+      auto inst_field = new CInstPrim(param->name, this, nullptr);
       params.push_back(inst_field);
     }
   }

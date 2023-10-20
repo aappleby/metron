@@ -19,7 +19,8 @@
         //"-c", "examples/uart/metron/uart_hello.h",
         //"-c", "examples/rvsimple/metron/config.h",
         //"-c", "pinwheel/rtl/pinwheel_core.h",
-        "-c", "pinwheel/rtl/regfile.h",
+        //"-c", "pinwheel/rtl/regfile.h",
+        "-c", "examples/rvsimple/metron/config.h",
         "-o", "examples/scratch.sv"
       ],
       "setupCommands": [

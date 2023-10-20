@@ -74,12 +74,9 @@ struct CNodeClass : public CNode {
   CNodeList*       node_body = nullptr;
   CNodePunct*      node_semi = nullptr;
 
-  CSourceRepo* repo = nullptr;
-  CSourceFile* file = nullptr;
   int refcount = 0;
 
   std::vector<CNode*> ports;
-
   std::vector<CNodeFunction*>    top_functions;
 
   CNodeConstructor* constructor = nullptr;

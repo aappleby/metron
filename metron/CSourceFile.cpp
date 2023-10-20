@@ -7,6 +7,7 @@
 #include "metron/nodes/CNodeConstructor.hpp"
 #include "metron/nodes/CNodeStruct.hpp"
 #include "metron/nodes/CNodeNamespace.hpp"
+#include "metron/nodes/CNodeTranslationUnit.hpp"
 
 namespace fs = std::filesystem;
 
@@ -29,7 +30,7 @@ Err collect_fields_and_methods(CNodeClass* node, CSourceRepo* repo) {
       n->parent_class = node;
       n->parent_struct = nullptr;
       n->node_decl->_type_class  = repo->get_class(n->node_decl->node_type->name);
-      n->node_decl->_type_struct = repo->get_struct(n->node_decl->node_type->name);
+      //n->node_decl->_type_struct = repo->get_struct(n->node_decl->node_type->name);
 
       //printf("%s = %p\n", n->node_decl->node_type->name.c_str(), n->node_decl->_type_class);
 
@@ -56,7 +57,7 @@ Err collect_fields_and_methods(CNodeClass* node, CSourceRepo* repo) {
       // Hook up _type_struct on all struct params
       for (auto decl : n->params) {
         decl->_type_class = repo->get_class(decl->node_type->name);
-        decl->_type_struct = repo->get_struct(decl->node_type->name);
+        //decl->_type_struct = repo->get_struct(decl->node_type->name);
       }
       continue;
     }
@@ -102,7 +103,10 @@ Err CSourceFile::init(CSourceRepo* _repo, const std::string& _filename,
   auto tail = context.parse();
   LOG_DEDENT();
 
-  if (tail.is_valid() && tail.is_empty() && context.root_node) {
+  translation_unit = context.root_node->as<CNodeTranslationUnit>();
+  translation_unit->file = this;
+
+  if (tail.is_valid() && tail.is_empty() && translation_unit) {
     LOG("Parse OK\n");
   } else {
     LOG_R("could not parse %s\n", filepath.c_str());
@@ -120,15 +124,11 @@ Err CSourceFile::init(CSourceRepo* _repo, const std::string& _filename,
 void CSourceFile::link() {
   LOG_B("Processing source file\n");
 
-  for (auto n : context.root_node) {
+  for (auto n : translation_unit) {
     if (auto node_template = n->as<CNodeTemplate>()) {
       auto node_class = node_template->child<CNodeClass>();
-      node_class->repo = repo;
-      node_class->file = this;
       all_classes.push_back(node_class);
     } else if (auto node_class = n->as<CNodeClass>()) {
-      node_class->repo = repo;
-      node_class->file = this;
       all_classes.push_back(node_class);
     } else if (auto node_struct = n->as<CNodeStruct>()) {
       all_structs.push_back(node_struct);
@@ -141,7 +141,7 @@ void CSourceFile::link() {
 
   LOG_B("Collecting fields and methods\n");
 
-  for (auto n : context.root_node) {
+  for (auto n : translation_unit) {
     if (auto node_template = n->as<CNodeTemplate>()) {
       auto node_class = node_template->child<CNodeClass>();
       collect_fields_and_methods(node_class, repo);

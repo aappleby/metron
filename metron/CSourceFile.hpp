@@ -12,6 +12,7 @@ struct CNodeStruct;
 struct CNodeNamespace;
 struct CNodeEnum;
 struct CInstClass;
+struct CNodeTranslationUnit;
 
 //------------------------------------------------------------------------------
 
@@ -23,6 +24,10 @@ class CSourceFile {
 
   void link();
 
+  CSourceRepo* get_repo() {
+    return repo;
+  }
+
   CSourceRepo* repo;
   std::string filename;
   std::string filepath;
@@ -30,6 +35,7 @@ class CSourceFile {
 
   CLexer lexer;
   CContext context;
+  CNodeTranslationUnit* translation_unit = nullptr;
 
   std::vector<CNodeClass*>     all_classes;
   std::vector<CNodeStruct*>    all_structs;

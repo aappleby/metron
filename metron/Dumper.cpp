@@ -15,6 +15,14 @@
 #include "metron/nodes/CNodeFunction.hpp"
 #include "metron/CSourceRepo.hpp"
 
+void dump_decl(CNodeDeclaration* decl);
+
+//------------------------------------------------------------------------------
+
+void dump_dispatch(CNode* node) {
+  LOG_R("???");
+}
+
 //------------------------------------------------------------------------------
 // Node debugging
 
@@ -429,16 +437,9 @@ void dump_function(CNodeFunction* node) {
 
   if (node->params.size()) {
     LOG_INDENT_SCOPE();
-    for (auto p : node->params) {
-      auto param_name = p->child("name")->get_textstr();
-      auto param_type = p->child("type")->get_textstr();
-      LOG_G("Param %s : %s", param_name.c_str(), param_type.c_str());
-
-      if (auto val = p->child("value")) {
-        auto text = val->get_text();
-        LOG_G(" = %.*s", text.size(), text.data());
-      }
-
+    for (auto param : node->params) {
+      LOG_G("Param: ");
+      dump_decl(param);
       LOG_G("\n");
     }
   }
@@ -544,8 +545,47 @@ void dump_class(CNodeClass* node) {
 
 //------------------------------------------------------------------------------
 
+void dump_list(CNodeList* list) {
+  LOG_G("(");
+  for (auto i = 0; i < list->items.size(); i++) {
+    if (i) LOG_G(", ");
+    dump_dispatch(list->items[i]);
+  }
+  LOG_G(")");
+}
+
+//------------------------------------------------------------------------------
+
+void dump_type(CNodeType* type) {
+  LOG_G("Type %s", type->node_name->name.c_str());
+}
+
+//------------------------------------------------------------------------------
+
+void dump_decl(CNodeDeclaration* decl) {
+  LOG_G("Name %s, ", decl->node_name->name.c_str());
+  dump_type(decl->node_type);
+}
+
+//------------------------------------------------------------------------------
+
+void dump_field(CNodeField* field) {
+  LOG_G("Field: ");
+  dump_decl(field->node_decl);
+  LOG_G("\n");
+}
+
+//------------------------------------------------------------------------------
+
 void dump_struct(CNodeStruct* node) {
   LOG_G("Struct %s\n", node->name.c_str());
+  LOG_INDENT_SCOPE();
+
+  if (node->all_fields.size()) {
+    for (auto f : node->all_fields) {
+      dump_field(f);
+    }
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -709,16 +749,3 @@ void dump_call_graph(CNodeFunction* node_func) {
 
 
 //------------------------------------------------------------------------------
-
-/*
-void CNodeStruct::dump() const {
-  LOG_B("Struct %.*s @ %p\n", name.size(), name.data(), this);
-  LOG_INDENT();
-
-  if (all_fields.size()) {
-    for (auto f : all_fields) f->dump();
-  }
-
-  LOG_DEDENT();
-}
-*/

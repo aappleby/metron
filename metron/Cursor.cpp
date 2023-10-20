@@ -1,15 +1,16 @@
 #include "metron/Cursor.hpp"
 
 #include "metrolib/core/Log.h"
+#include "metron/nodes/CNodeTranslationUnit.hpp"
 
 //------------------------------------------------------------------------------
 
-Cursor::Cursor(CSourceFile* source, std::string* str_out) {
-  this->source_file = source;
+Cursor::Cursor(CSourceFile* file, std::string* str_out) {
+  this->source_file = file;
   this->str_out = str_out;
 
   // Skip LEX_BOF
-  this->tok_cursor = source->context.root_node->span.begin;
+  this->tok_cursor = file->translation_unit->span.begin;
 }
 
 //------------------------------------------------------------------------------

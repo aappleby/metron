@@ -26,9 +26,13 @@ struct CNodeFunction;
 // FIXME - we need a call stack that stores (inst,func) tuples instead of just
 // func
 
-CInstClass* instantiate_class(std::string name, CInstance* inst_parent,
-                              CNodeField* node_field, CNodeClass* node_class,
-                              int depth);
+CInstClass* instantiate_class(
+  CSourceRepo* repo,
+  std::string name,
+  CInstance* inst_parent,
+  CNodeField* node_field,
+  CNodeClass* node_class,
+  int depth);
 
 //------------------------------------------------------------------------------
 

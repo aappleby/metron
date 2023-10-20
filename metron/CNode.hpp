@@ -37,6 +37,10 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
 
   //----------------------------------------
 
+  virtual CSourceRepo* get_repo() {
+    return node_parent ? node_parent->get_repo() : nullptr;
+  }
+
   std::string get_textstr() const {
     auto n = get_text();
     return std::string(n.begin(), n.end());

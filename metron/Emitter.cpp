@@ -77,6 +77,7 @@ Namespaces
 
 #include "metron/Cursor.hpp"
 #include "metron/MtUtils.h"
+#include "metron/CSourceRepo.hpp"
 #include "metron/nodes/CNodeReturn.hpp"
 #include "metron/nodes/CNodeAccess.hpp"
 #include "metron/nodes/CNodeAssignment.hpp"
@@ -288,7 +289,7 @@ Err Emitter::emit_everything() {
   }
 
   // Emit body
-  err << emit_dispatch(cursor.source_file->context.root_node);
+  err << emit_dispatch(cursor.source_file->translation_unit);
 
   // Emit footer (everything in the gap after the translation unit)
   err << cursor.emit_gap();
@@ -494,6 +495,8 @@ Err Emitter::emit(CNodeBuiltinType* node) {
 //------------------------------------------------------------------------------
 
 CNodeFunction* resolve_func(CNode* node) {
+  auto repo = node->get_repo();
+
   if (auto node_call = node->as<CNodeCall>()) {
     auto src_class = node->ancestor<CNodeClass>();
 
@@ -502,7 +505,7 @@ CNodeFunction* resolve_func(CNode* node) {
       auto func_name = func_path->node_name->get_textstr();
 
       auto src_field = src_class->get_field(field_name);
-      auto dst_class = src_class->repo->get_class(src_field->node_decl->node_type->name);
+      auto dst_class = src_field->node_decl->get_class();
       auto dst_func = dst_class->get_function(func_name);
       return dst_func;
     }
@@ -1057,7 +1060,10 @@ Err Emitter::emit(CNodeFieldExpression* node) {
 
   auto field = node_class->get_field(node_path->get_text());
 
-  if (field && field->node_decl->_type_struct) {
+  auto repo = node->get_repo();
+  auto type_struct = repo->get_struct(field->node_decl->node_type->name);
+
+  if (field && type_struct) {
     err << emit_default(node);
     return err;
   }
@@ -1842,8 +1848,8 @@ Err Emitter::emit_component(CNodeField* node) {
   err << emit_dispatch2(node->node_decl->node_type);
   err << skip_over2(node->node_decl->node_name);
 
+  auto repo = node->get_repo();
   auto parent_class = node->ancestor<CNodeClass>();
-  auto repo = parent_class->repo;
   auto component_class = repo->get_class(node->node_decl->node_type->name);
   auto component_template = component_class->node_parent->as<CNodeTemplate>();
 

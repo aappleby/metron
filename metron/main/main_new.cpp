@@ -24,6 +24,7 @@
 #include "metron/nodes/CNodeNamespace.hpp"
 #include "metron/nodes/CNodeStruct.hpp"
 #include "metron/nodes/CNodeTemplate.hpp"
+#include "metron/nodes/CNodeTranslationUnit.hpp"
 #include <filesystem>
 
 using namespace matcheroni;
@@ -145,7 +146,7 @@ void sanity_check_parse_tree(CSourceRepo& repo) {
       }
     };
 
-    visit_children(file->context.root_node, check_span);
+    visit_children(file->translation_unit, check_span);
   }
   LOG("\n");
 }
@@ -176,8 +177,8 @@ int main_new(Options opts) {
     file->link();
   }
 
-  dump_repo(&repo);
-  exit(-1);
+  //dump_repo(&repo);
+  //exit(-1);
 
   sanity_check_parse_tree(repo);
   //dump_parse_tree(root_file->context.top_head);
@@ -233,7 +234,7 @@ int main_new(Options opts) {
   LOG_B("Instantiating modules\n");
   for (auto file : repo.source_files) {
     for (auto node_class : file->all_classes) {
-      auto instance = instantiate_class(node_class->name, nullptr,
+      auto instance = instantiate_class(&repo, node_class->name, nullptr,
                                         nullptr, node_class, 1000);
       file->all_instances.push_back(instance);
     }
@@ -441,7 +442,7 @@ int main_new(Options opts) {
 
   if (top) {
     top_inst =
-        instantiate_class(top->name, nullptr, nullptr, top, 1000);
+        instantiate_class(&repo, top->name, nullptr, nullptr, top, 1000);
     LOG_INDENT();
     LOG_G("Top instance is %s\n", top->name.c_str());
     LOG_DEDENT();

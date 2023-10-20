@@ -573,8 +573,8 @@ Err Emitter::emit_sra(CNodeCall* node) {
 
 Err Emitter::emit_dup(CNodeCall* node) {
   Err err;
-  auto node_val = node->node_targs->child("arg");
-  auto node_exp = node->node_args->child("exp");
+  auto node_val = node->node_targs->items[0];
+  auto node_exp = node->node_args->items[0];
   err << emit("{@ {@}}", node_val, node_exp);
   err << skip_over(node);
   return err;
@@ -589,7 +589,7 @@ Err Emitter::emit_submod_call(CNodeCall* node) {
 
   auto func_path = node->node_name->as<CNodeFieldExpression>();
   auto dst_func = resolve_func(node);
-  if (dst_func->child("return_type")->name == "void") {
+  if (dst_func->node_type->name == "void") {
     err << comment_out(node);
   } else {
     // "node_path ~_ {_} node_name ~_ {)ret}"

@@ -79,6 +79,9 @@ def main():
     ninja.newline()
     ninja.newline()
 
+    #verilate2_dir("examples/uart/metron_sv/uart_top.sv", "gen/uart")
+    #return
+
     build_metron_ems()
     build_verilator()
     build_metron_lib()
@@ -95,7 +98,7 @@ def main():
     print("Done!")
     outfile.close()
     outfile = None
-    #return os.system("ninja")
+    return
 
 # ------------------------------------------------------------------------------
 
@@ -142,11 +145,39 @@ def verilate_dir(src_dir, src_files, src_top, dst_dir):
                 dst_dir=dst_dir)
 
     # Compile via makefile to generate object file
-    ninja.build(rule="make",
-                inputs=verilated_make,
-                outputs=verilated_obj,
-                dst_dir=dst_dir,
-                makefile=f"V{src_top}.mk")
+    ninja.build(rule="make", inputs=verilated_make, outputs=verilated_obj)
+
+    return (verilated_hdr, verilated_obj)
+
+
+def verilate2_dir(src_top, out_dir):
+    """
+    Run Verilator on "src_top" and put the results in "out_dir".
+    Returns the full paths of "V<src_top>.h" and "V<src_top>__ALL.obj" in the
+    destination directory.
+    """
+    divider(f"Verilate2 {src_top} -> {out_dir}")
+
+    src_dir  = path.split(src_top)[0]
+    src_name = path.split(src_top)[1]
+    src_core = path.splitext(src_name)[0]
+    verilated_make = path.join(out_dir, f"V{src_core}.mk")
+    verilated_hdr  = path.join(out_dir, f"V{src_core}.h")
+    verilated_obj  = path.join(out_dir, f"V{src_core}__ALL.o")
+
+    print(src_core)
+    print(verilated_make)
+    print(verilated_hdr)
+    print(verilated_obj)
+
+    # Verilate and generate makefile + header
+    ninja.build(rule="verilator2",
+                inputs=src_top,
+                outputs=[out_dir, verilated_make],
+                includes=[f"-I{src_dir}"])
+
+    # Compile via makefile to generate object file
+    ninja.build(rule="make", inputs=verilated_make, outputs=verilated_obj)
 
     return (verilated_hdr, verilated_obj)
 
@@ -439,9 +470,7 @@ def build_rvtests():
     ninja.build(rule="make",
                 inputs="tests/rv_tests/makefile",
                 implicit=src_files,
-                outputs=dst_text + dst_data,
-                dst_dir="tests/rv_tests",
-                makefile="makefile")
+                outputs=dst_text + dst_data)
 
 # ------------------------------------------------------------------------------
 # RVSimple

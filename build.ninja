@@ -102,8 +102,6 @@ build obj/tests/test_utils.o: compile_cpp tests/test_utils.cpp
 build bin/tests/metron_test: c_binary obj/tests/test_main.o obj/tests/test_logic.o obj/tests/test_utils.o bin/libmetron.a
   includes = ${base_includes}
 build tests/rv_tests/add.text.vh tests/rv_tests/addi.text.vh tests/rv_tests/and.text.vh tests/rv_tests/andi.text.vh tests/rv_tests/auipc.text.vh tests/rv_tests/benchmark.text.vh tests/rv_tests/beq.text.vh tests/rv_tests/bge.text.vh tests/rv_tests/bgeu.text.vh tests/rv_tests/blt.text.vh tests/rv_tests/bltu.text.vh tests/rv_tests/bne.text.vh tests/rv_tests/jal.text.vh tests/rv_tests/jalr.text.vh tests/rv_tests/lb.text.vh tests/rv_tests/lbu.text.vh tests/rv_tests/lh.text.vh tests/rv_tests/lhu.text.vh tests/rv_tests/lui.text.vh tests/rv_tests/lw.text.vh tests/rv_tests/or.text.vh tests/rv_tests/ori.text.vh tests/rv_tests/sb.text.vh tests/rv_tests/sh.text.vh tests/rv_tests/simple.text.vh tests/rv_tests/sll.text.vh tests/rv_tests/slli.text.vh tests/rv_tests/slt.text.vh tests/rv_tests/slti.text.vh tests/rv_tests/sltiu.text.vh tests/rv_tests/sltu.text.vh tests/rv_tests/sra.text.vh tests/rv_tests/srai.text.vh tests/rv_tests/srl.text.vh tests/rv_tests/srli.text.vh tests/rv_tests/sub.text.vh tests/rv_tests/sw.text.vh tests/rv_tests/xor.text.vh tests/rv_tests/xori.text.vh tests/rv_tests/add.data.vh tests/rv_tests/addi.data.vh tests/rv_tests/and.data.vh tests/rv_tests/andi.data.vh tests/rv_tests/auipc.data.vh tests/rv_tests/benchmark.data.vh tests/rv_tests/beq.data.vh tests/rv_tests/bge.data.vh tests/rv_tests/bgeu.data.vh tests/rv_tests/blt.data.vh tests/rv_tests/bltu.data.vh tests/rv_tests/bne.data.vh tests/rv_tests/jal.data.vh tests/rv_tests/jalr.data.vh tests/rv_tests/lb.data.vh tests/rv_tests/lbu.data.vh tests/rv_tests/lh.data.vh tests/rv_tests/lhu.data.vh tests/rv_tests/lui.data.vh tests/rv_tests/lw.data.vh tests/rv_tests/or.data.vh tests/rv_tests/ori.data.vh tests/rv_tests/sb.data.vh tests/rv_tests/sh.data.vh tests/rv_tests/simple.data.vh tests/rv_tests/sll.data.vh tests/rv_tests/slli.data.vh tests/rv_tests/slt.data.vh tests/rv_tests/slti.data.vh tests/rv_tests/sltiu.data.vh tests/rv_tests/sltu.data.vh tests/rv_tests/sra.data.vh tests/rv_tests/srai.data.vh tests/rv_tests/srl.data.vh tests/rv_tests/srli.data.vh tests/rv_tests/sub.data.vh tests/rv_tests/sw.data.vh tests/rv_tests/xor.data.vh tests/rv_tests/xori.data.vh: make tests/rv_tests/makefile | tests/rv_tests/add.S tests/rv_tests/addi.S tests/rv_tests/and.S tests/rv_tests/andi.S tests/rv_tests/auipc.S tests/rv_tests/benchmark.S tests/rv_tests/beq.S tests/rv_tests/bge.S tests/rv_tests/bgeu.S tests/rv_tests/blt.S tests/rv_tests/bltu.S tests/rv_tests/bne.S tests/rv_tests/jal.S tests/rv_tests/jalr.S tests/rv_tests/lb.S tests/rv_tests/lbu.S tests/rv_tests/lh.S tests/rv_tests/lhu.S tests/rv_tests/lui.S tests/rv_tests/lw.S tests/rv_tests/or.S tests/rv_tests/ori.S tests/rv_tests/sb.S tests/rv_tests/sh.S tests/rv_tests/simple.S tests/rv_tests/sll.S tests/rv_tests/slli.S tests/rv_tests/slt.S tests/rv_tests/slti.S tests/rv_tests/sltiu.S tests/rv_tests/sltu.S tests/rv_tests/sra.S tests/rv_tests/srai.S tests/rv_tests/srl.S tests/rv_tests/srli.S tests/rv_tests/sub.S tests/rv_tests/sw.S tests/rv_tests/xor.S tests/rv_tests/xori.S
-  dst_dir = tests/rv_tests
-  makefile = makefile
 
 
 ################################################################################
@@ -132,8 +130,6 @@ build gen/examples/uart/metron_vl/Vuart_top.mk gen/examples/uart/metron_vl/Vuart
   src_top = uart_top
   dst_dir = gen/examples/uart/metron_vl
 build gen/examples/uart/metron_vl/Vuart_top__ALL.o: make gen/examples/uart/metron_vl/Vuart_top.mk
-  dst_dir = gen/examples/uart/metron_vl
-  makefile = Vuart_top.mk
 
 
 ################################################################################
@@ -210,8 +206,6 @@ build gen/examples/rvsimple/metron_vl/Vtoplevel.mk gen/examples/rvsimple/metron_
   src_top = toplevel
   dst_dir = gen/examples/rvsimple/metron_vl
 build gen/examples/rvsimple/metron_vl/Vtoplevel__ALL.o: make gen/examples/rvsimple/metron_vl/Vtoplevel.mk
-  dst_dir = gen/examples/rvsimple/metron_vl
-  makefile = Vtoplevel.mk
 
 
 ################################################################################
@@ -231,8 +225,6 @@ build gen/examples/rvsimple/reference_vl/Vtoplevel.mk gen/examples/rvsimple/refe
   src_top = toplevel
   dst_dir = gen/examples/rvsimple/reference_vl
 build gen/examples/rvsimple/reference_vl/Vtoplevel__ALL.o: make gen/examples/rvsimple/reference_vl/Vtoplevel.mk
-  dst_dir = gen/examples/rvsimple/reference_vl
-  makefile = Vtoplevel.mk
 
 
 ################################################################################
@@ -275,8 +267,6 @@ build gen/examples/gb_spu/metron_vl/VMetroBoySPU2.mk gen/examples/gb_spu/metron_
   src_top = MetroBoySPU2
   dst_dir = gen/examples/gb_spu/metron_vl
 build gen/examples/gb_spu/metron_vl/VMetroBoySPU2__ALL.o: make gen/examples/gb_spu/metron_vl/VMetroBoySPU2.mk
-  dst_dir = gen/examples/gb_spu/metron_vl
-  makefile = VMetroBoySPU2.mk
 
 
 ################################################################################

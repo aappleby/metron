@@ -886,6 +886,8 @@ int main_new(Options opts) {
     return -1;
   }
 
+  // FIXME - save .d deps file too
+
   // Save translated source to output directory, if there is one.
   if (opts.dst_name.size()) {
     auto dst_path = split_path(opts.dst_name);

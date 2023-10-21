@@ -123,12 +123,10 @@ build examples/uart/metron_sv/uart_tx.sv: metron examples/uart/metron/uart_tx.h 
 
 
 ################################################################################
-# Verilate uart_top@examples/uart/metron_sv -> gen/examples/uart/metron_vl
+# Verilate examples/uart/metron_sv/uart_top.sv -> gen/examples/uart/metron_vl
 
-build gen/examples/uart/metron_vl/Vuart_top.mk gen/examples/uart/metron_vl/Vuart_top.h: verilator examples/uart/metron_sv/uart_hello.sv examples/uart/metron_sv/uart_rx.sv examples/uart/metron_sv/uart_top.sv examples/uart/metron_sv/uart_tx.sv
+build gen/examples/uart/metron_vl/Vuart_top.mk gen/examples/uart/metron_vl/Vuart_top.h: verilator examples/uart/metron_sv/uart_top.sv
   includes = -Iexamples/uart/metron_sv
-  src_top = uart_top
-  dst_dir = gen/examples/uart/metron_vl
 build gen/examples/uart/metron_vl/Vuart_top__ALL.o: make gen/examples/uart/metron_vl/Vuart_top.mk
 
 
@@ -199,12 +197,10 @@ build examples/rvsimple/metron_sv/toplevel.sv: metron examples/rvsimple/metron/t
 
 
 ################################################################################
-# Verilate toplevel@examples/rvsimple/metron_sv -> gen/examples/rvsimple/metron_vl
+# Verilate examples/rvsimple/metron_sv/toplevel.sv -> gen/examples/rvsimple/metron_vl
 
-build gen/examples/rvsimple/metron_vl/Vtoplevel.mk gen/examples/rvsimple/metron_vl/Vtoplevel.h: verilator examples/rvsimple/metron_sv/adder.sv examples/rvsimple/metron_sv/alu.sv examples/rvsimple/metron_sv/alu_control.sv examples/rvsimple/metron_sv/config.sv examples/rvsimple/metron_sv/constants.sv examples/rvsimple/metron_sv/control_transfer.sv examples/rvsimple/metron_sv/data_memory_interface.sv examples/rvsimple/metron_sv/example_data_memory.sv examples/rvsimple/metron_sv/example_data_memory_bus.sv examples/rvsimple/metron_sv/example_text_memory.sv examples/rvsimple/metron_sv/example_text_memory_bus.sv examples/rvsimple/metron_sv/immediate_generator.sv examples/rvsimple/metron_sv/instruction_decoder.sv examples/rvsimple/metron_sv/multiplexer2.sv examples/rvsimple/metron_sv/multiplexer4.sv examples/rvsimple/metron_sv/multiplexer8.sv examples/rvsimple/metron_sv/regfile.sv examples/rvsimple/metron_sv/register.sv examples/rvsimple/metron_sv/riscv_core.sv examples/rvsimple/metron_sv/singlecycle_control.sv examples/rvsimple/metron_sv/singlecycle_ctlpath.sv examples/rvsimple/metron_sv/singlecycle_datapath.sv examples/rvsimple/metron_sv/toplevel.sv
+build gen/examples/rvsimple/metron_vl/Vtoplevel.mk gen/examples/rvsimple/metron_vl/Vtoplevel.h: verilator examples/rvsimple/metron_sv/toplevel.sv
   includes = -Iexamples/rvsimple/metron_sv
-  src_top = toplevel
-  dst_dir = gen/examples/rvsimple/metron_vl
 build gen/examples/rvsimple/metron_vl/Vtoplevel__ALL.o: make gen/examples/rvsimple/metron_vl/Vtoplevel.mk
 
 
@@ -218,12 +214,10 @@ build bin/examples/rvsimple_vl: c_binary obj/verilated.o obj/verilated_threads.o
 
 
 ################################################################################
-# Verilate toplevel@examples/rvsimple/reference_sv -> gen/examples/rvsimple/reference_vl
+# Verilate examples/rvsimple/reference_sv/toplevel.sv -> gen/examples/rvsimple/reference_vl
 
-build gen/examples/rvsimple/reference_vl/Vtoplevel.mk gen/examples/rvsimple/reference_vl/Vtoplevel.h: verilator examples/rvsimple/reference_sv/adder.sv examples/rvsimple/reference_sv/alu.sv examples/rvsimple/reference_sv/alu_control.sv examples/rvsimple/reference_sv/config.sv examples/rvsimple/reference_sv/constants.sv examples/rvsimple/reference_sv/control_transfer.sv examples/rvsimple/reference_sv/data_memory_interface.sv examples/rvsimple/reference_sv/example_data_memory.sv examples/rvsimple/reference_sv/example_data_memory_bus.sv examples/rvsimple/reference_sv/example_memory_bus.sv examples/rvsimple/reference_sv/example_text_memory.sv examples/rvsimple/reference_sv/example_text_memory_bus.sv examples/rvsimple/reference_sv/immediate_generator.sv examples/rvsimple/reference_sv/instruction_decoder.sv examples/rvsimple/reference_sv/multiplexer.sv examples/rvsimple/reference_sv/multiplexer2.sv examples/rvsimple/reference_sv/multiplexer4.sv examples/rvsimple/reference_sv/multiplexer8.sv examples/rvsimple/reference_sv/regfile.sv examples/rvsimple/reference_sv/register.sv examples/rvsimple/reference_sv/riscv_core.sv examples/rvsimple/reference_sv/singlecycle_control.sv examples/rvsimple/reference_sv/singlecycle_ctlpath.sv examples/rvsimple/reference_sv/singlecycle_datapath.sv examples/rvsimple/reference_sv/toplevel.sv
+build gen/examples/rvsimple/reference_vl/Vtoplevel.mk gen/examples/rvsimple/reference_vl/Vtoplevel.h: verilator examples/rvsimple/reference_sv/toplevel.sv
   includes = -Iexamples/rvsimple/reference_sv
-  src_top = toplevel
-  dst_dir = gen/examples/rvsimple/reference_vl
 build gen/examples/rvsimple/reference_vl/Vtoplevel__ALL.o: make gen/examples/rvsimple/reference_vl/Vtoplevel.mk
 
 
@@ -260,9 +254,9 @@ build examples/gb_spu/metron_sv/MetroBoySPU2.sv: metron examples/gb_spu/metron/M
 
 
 ################################################################################
-# Verilate2 examples/gb_spu/metron_sv/MetroBoySPU2.sv -> gen/examples/gb_spu/metron_vl
+# Verilate examples/gb_spu/metron_sv/MetroBoySPU2.sv -> gen/examples/gb_spu/metron_vl
 
-build gen/examples/gb_spu/metron_vl/VMetroBoySPU2.mk gen/examples/gb_spu/metron_vl/VMetroBoySPU2.h: verilator2 examples/gb_spu/metron_sv/MetroBoySPU2.sv
+build gen/examples/gb_spu/metron_vl/VMetroBoySPU2.mk gen/examples/gb_spu/metron_vl/VMetroBoySPU2.h: verilator examples/gb_spu/metron_sv/MetroBoySPU2.sv
   includes = -Iexamples/gb_spu/metron_sv
 build gen/examples/gb_spu/metron_vl/VMetroBoySPU2__ALL.o: make gen/examples/gb_spu/metron_vl/VMetroBoySPU2.mk
 

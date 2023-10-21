@@ -79,9 +79,6 @@ def main():
     ninja.newline()
     ninja.newline()
 
-    #verilate2_dir("examples/uart/metron_sv/uart_top.sv", "gen/uart")
-    #return
-
     build_metron_ems()
     build_verilator()
     build_metron_lib()
@@ -90,7 +87,6 @@ def main():
     build_rvtests()
     build_uart()
     build_rvsimple()
-    # build_pinwheel()
     # build_ibex()
     build_pong()
     #build_j1()
@@ -124,39 +120,13 @@ def metronize_dir(src_dir, src_top, dst_dir):
     return dst_paths
 
 
-def verilate_dir(src_dir, src_files, src_top, dst_dir):
-    """
-    Run Verilator on all .sv files in the source directory, using "src_top" as
-    the top module. Returns the full paths of "V<src_top>.h" and
-    "V<src_top>__ALL.obj" in the destination directory.
-    """
-    divider(f"Verilate {src_top}@{src_dir} -> {dst_dir}")
-
-    verilated_make = path.join(dst_dir, f"V{src_top}.mk")
-    verilated_hdr = path.join(dst_dir, f"V{src_top}.h")
-    verilated_obj = path.join(dst_dir, f"V{src_top}__ALL.o")
-
-    # Verilate and generate makefile + header
-    ninja.build(rule="verilator",
-                inputs=src_files,
-                outputs=[verilated_make, verilated_hdr],
-                includes=[f"-I{src_dir}"],
-                src_top=src_top,
-                dst_dir=dst_dir)
-
-    # Compile via makefile to generate object file
-    ninja.build(rule="make", inputs=verilated_make, outputs=verilated_obj)
-
-    return (verilated_hdr, verilated_obj)
-
-
-def verilate2_dir(src_top, out_dir):
+def verilate_dir(src_top, out_dir):
     """
     Run Verilator on "src_top" and put the results in "out_dir".
     Returns the full paths of "V<src_top>.h" and "V<src_top>__ALL.obj" in the
     destination directory.
     """
-    divider(f"Verilate2 {src_top} -> {out_dir}")
+    divider(f"Verilate {src_top} -> {out_dir}")
 
     src_dir  = path.split(src_top)[0]
     src_name = path.split(src_top)[1]
@@ -165,13 +135,8 @@ def verilate2_dir(src_top, out_dir):
     verilated_hdr  = path.join(out_dir, f"V{src_core}.h")
     verilated_obj  = path.join(out_dir, f"V{src_core}__ALL.o")
 
-    print(src_core)
-    print(verilated_make)
-    print(verilated_hdr)
-    print(verilated_obj)
-
     # Verilate and generate makefile + header
-    ninja.build(rule="verilator2",
+    ninja.build(rule="verilator",
                 inputs=src_top,
                 outputs=[verilated_make, verilated_hdr],
                 includes=[f"-I{src_dir}"])
@@ -377,7 +342,7 @@ def build_j1():
 
 def build_gb_spu():
     metronize_dir("examples/gb_spu/metron", "MetroBoySPU2.h", "examples/gb_spu/metron_sv")
-    gb_spu_vhdr, gb_spu_vobj = verilate2_dir("examples/gb_spu/metron_sv/MetroBoySPU2.sv", "gen/examples/gb_spu/metron_vl")
+    gb_spu_vhdr, gb_spu_vobj = verilate_dir("examples/gb_spu/metron_sv/MetroBoySPU2.sv", "gen/examples/gb_spu/metron_vl")
 
     cpp_binary(
         bin_name="bin/examples/gb_spu",
@@ -402,15 +367,8 @@ def build_uart():
         link_deps=["bin/libmetron.a"],
     )
 
-    uart_srcs = metronize_dir("examples/uart/metron", "uart_top.h",
-                              "examples/uart/metron_sv")
-
-    uart_vhdr, uart_vobj = verilate_dir(
-        src_dir="examples/uart/metron_sv",
-        src_files=uart_srcs,
-        src_top="uart_top",
-        dst_dir="gen/examples/uart/metron_vl",
-    )
+    uart_srcs = metronize_dir("examples/uart/metron", "uart_top.h", "examples/uart/metron_sv")
+    uart_vhdr, uart_vobj = verilate_dir("examples/uart/metron_sv/uart_top.sv", "gen/examples/uart/metron_vl")
 
     cpp_binary(
         bin_name="bin/examples/uart_vl",
@@ -485,12 +443,7 @@ def build_rvsimple():
 
     sv_srcs = metronize_dir(mt_root, "toplevel.h", sv_root)
 
-    vl_vhdr, vl_vobj = verilate_dir(
-        src_dir=sv_root,
-        src_files=sv_srcs,
-        src_top="toplevel",
-        dst_dir=vl_root,
-    )
+    vl_vhdr, vl_vobj = verilate_dir("examples/rvsimple/metron_sv/toplevel.sv", "gen/examples/rvsimple/metron_vl")
 
     cpp_binary(
         bin_name="bin/examples/rvsimple_vl",
@@ -501,15 +454,9 @@ def build_rvsimple():
         link_deps=["bin/libmetron.a"],
     )
 
-    ref_sv_root = "examples/rvsimple/reference_sv"
     ref_vl_root = "gen/examples/rvsimple/reference_vl"
 
-    ref_vhdr, ref_vobj = verilate_dir(
-        src_dir=ref_sv_root,
-        src_files=sorted_glob(f"{ref_sv_root}/*.sv"),
-        src_top="toplevel",
-        dst_dir=ref_vl_root
-    )
+    ref_vhdr, ref_vobj = verilate_dir("examples/rvsimple/reference_sv/toplevel.sv", "gen/examples/rvsimple/reference_vl")
 
     cpp_binary(
         bin_name="bin/examples/rvsimple_ref",
@@ -520,45 +467,8 @@ def build_rvsimple():
         link_deps=["bin/libmetron.a"],
     )
 
-
-# ------------------------------------------------------------------------------
-# Pinwheel
-
-def build_pinwheel():
-    mt_root = "examples/pinwheel/metron"
-    sv_root = "examples/pinwheel/metron_sv"
-    vl_root = "gen/examples/pinwheel/metron_vl"
-
-    cpp_binary(
-        bin_name="bin/examples/pinwheel",
-        src_files=["examples/pinwheel/main.cpp"],
-        includes=["${base_includes}", mt_root],
-        link_deps=["bin/libmetron.a"],
-    )
-
-    """
-    pinwheel_sv_srcs = metronize_dir(mt_root, "pinwheel.h", sv_root)
-
-    pinwheel_vl_vhdr, pinwheel_vl_vobj = verilate_dir(
-        src_dir=sv_root,
-        src_files=pinwheel_sv_srcs,
-        src_top="pinwheel",
-        dst_dir=vl_root
-    )
-
-    cpp_binary(
-        bin_name="bin/examples/pinwheel_vl",
-        src_files=["examples/pinwheel/main_vl.cpp"],
-        includes=base_includes + [vl_root],
-        src_objs=["obj/verilated.o", "obj/verilated_threads.o", pinwheel_vl_vobj],
-        deps=[pinwheel_vl_vhdr],
-        link_deps=["bin/libmetron.a"],
-    )
-    """
-
 # ------------------------------------------------------------------------------
 # Ibex
-
 
 def build_ibex():
     cpp_binary(

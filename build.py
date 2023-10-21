@@ -173,7 +173,7 @@ def verilate2_dir(src_top, out_dir):
     # Verilate and generate makefile + header
     ninja.build(rule="verilator2",
                 inputs=src_top,
-                outputs=[out_dir, verilated_make],
+                outputs=[verilated_make, verilated_hdr],
                 includes=[f"-I{src_dir}"])
 
     # Compile via makefile to generate object file
@@ -376,13 +376,9 @@ def build_j1():
 # ------------------------------------------------------------------------------
 
 def build_gb_spu():
-    gb_spu_srcs = metronize_dir("examples/gb_spu/metron", "MetroBoySPU2.h", "examples/gb_spu/metron_sv")
-    gb_spu_vhdr, gb_spu_vobj = verilate_dir(
-        src_dir="examples/gb_spu/metron_sv",
-        src_files=gb_spu_srcs,
-        src_top="MetroBoySPU2",
-        dst_dir="gen/examples/gb_spu/metron_vl",
-    )
+    metronize_dir("examples/gb_spu/metron", "MetroBoySPU2.h", "examples/gb_spu/metron_sv")
+    gb_spu_vhdr, gb_spu_vobj = verilate2_dir("examples/gb_spu/metron_sv/MetroBoySPU2.sv", "gen/examples/gb_spu/metron_vl")
+
     cpp_binary(
         bin_name="bin/examples/gb_spu",
         src_files=["examples/gb_spu/gb_spu_main.cpp"],

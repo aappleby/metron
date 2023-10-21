@@ -260,12 +260,10 @@ build examples/gb_spu/metron_sv/MetroBoySPU2.sv: metron examples/gb_spu/metron/M
 
 
 ################################################################################
-# Verilate MetroBoySPU2@examples/gb_spu/metron_sv -> gen/examples/gb_spu/metron_vl
+# Verilate2 examples/gb_spu/metron_sv/MetroBoySPU2.sv -> gen/examples/gb_spu/metron_vl
 
-build gen/examples/gb_spu/metron_vl/VMetroBoySPU2.mk gen/examples/gb_spu/metron_vl/VMetroBoySPU2.h: verilator examples/gb_spu/metron_sv/MetroBoySPU2.sv
+build gen/examples/gb_spu/metron_vl/VMetroBoySPU2.mk gen/examples/gb_spu/metron_vl/VMetroBoySPU2.h: verilator2 examples/gb_spu/metron_sv/MetroBoySPU2.sv
   includes = -Iexamples/gb_spu/metron_sv
-  src_top = MetroBoySPU2
-  dst_dir = gen/examples/gb_spu/metron_vl
 build gen/examples/gb_spu/metron_vl/VMetroBoySPU2__ALL.o: make gen/examples/gb_spu/metron_vl/VMetroBoySPU2.mk
 
 

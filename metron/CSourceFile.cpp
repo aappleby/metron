@@ -147,7 +147,7 @@ void CSourceFile::link() {
     } else if (auto node_class = n->as<CNodeClass>()) {
       collect_fields_and_methods(node_class, repo);
     } else if (auto node_struct = n->as<CNodeStruct>()) {
-      node_struct->collect_fields_and_methods(repo);
+      //node_struct->collect_fields_and_methods(repo);
     } else if (auto node_namespace = n->as<CNodeNamespace>()) {
       node_namespace->collect_fields_and_methods();
     } else if (auto node_enum = n->as<CNodeEnum>()) {

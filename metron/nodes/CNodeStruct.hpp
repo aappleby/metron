@@ -14,7 +14,9 @@ struct CNodeField;
 
 struct CNodeStruct : public CNode {
   void init();
-  Err collect_fields_and_methods(CSourceRepo* repo);
+  CNodeField* get_field(std::string_view name);
+
+  CNode* resolve(std::vector<CNode*> path);
 
   //----------------------------------------
 

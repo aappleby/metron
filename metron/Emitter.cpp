@@ -184,8 +184,102 @@ bool class_needs_tock(CNodeClass* node_class) {
 
 //------------------------------------------------------------------------------
 
+CNodeField* resolve_field(CNodeStruct* node_struct, CNode* node_name);
+CNodeField* resolve_field(CNodeClass* node_class, CNode* node_name);
+CNodeField* resolve_field(CNodeStruct* node_struct, std::vector<CNode*> path);
+CNodeField* resolve_field(CNodeClass* node_class, std::vector<CNode*> path);
+
+//------------------------------------------------------------------------------
+
+CNodeField* resolve_field(CNodeStruct* node_struct, std::vector<CNode*> path) {
+  auto repo = node_struct->get_repo();
+
+  auto front = path[0];
+  path.erase(path.begin());
+
+  auto f1 = resolve_field(node_struct, front);
+
+  if (path.empty()) {
+    return f1;
+  }
+
+  if (auto c1 = repo->get_class(f1->node_decl->node_type->name)) {
+    return resolve_field(c1, path);
+  }
+
+  if (auto s1 = repo->get_struct(f1->node_decl->node_type->name)) {
+    return resolve_field(s1, path);
+  }
+
+  return nullptr;
+}
+
+//------------------------------------------------------------------------------
+
+CNodeField* resolve_field(CNodeClass* node_class, std::vector<CNode*> path) {
+  auto repo = node_class->get_repo();
+
+  auto front = path[0];
+  path.erase(path.begin());
+
+  auto f1 = resolve_field(node_class, front);
+
+  if (path.empty()) {
+    return f1;
+  }
+
+  if (auto c1 = repo->get_class(f1->node_decl->node_type->name)) {
+    return resolve_field(c1, path);
+  }
+
+  if (auto s1 = repo->get_struct(f1->node_decl->node_type->name)) {
+    return resolve_field(s1, path);
+  }
+
+  return nullptr;
+}
+
+//------------------------------------------------------------------------------
+
+CNodeField* resolve_field(CNodeStruct* node_struct, CNode* node_name) {
+  if (node_name == nullptr) return nullptr;
+
+  auto repo = node_struct->get_repo();
+
+  if (auto node_id = node_name->as<CNodeIdentifier>()) {
+    return node_struct->get_field(node_id->get_text());
+  }
+
+  if (auto node_lvalue = node_name->as<CNodeLValue>()) {
+    return resolve_field(node_struct, node_lvalue->node_name);
+  }
+
+  if (auto node_field = node_name->as<CNodeFieldExpression>()) {
+    return resolve_field(node_struct, node_field->items);
+  }
+
+  if (auto node_prefix = node_name->as<CNodePrefixExp>()) {
+    return resolve_field(node_struct, node_prefix->node_rhs);
+  }
+
+  if (auto node_suffix = node_name->as<CNodeSuffixExp>()) {
+    return resolve_field(node_struct, node_suffix->node_lhs);
+  }
+
+  LOG_R("----------------------------------------\n");
+  LOG_R("Don't know how to get field for %s\n", node_name->get_textstr().c_str());
+  LOG_R("----------------------------------------\n");
+
+  assert(false);
+  return nullptr;
+}
+
+//------------------------------------------------------------------------------
+
 CNodeField* resolve_field(CNodeClass* node_class, CNode* node_name) {
   if (node_name == nullptr) return nullptr;
+
+  auto repo = node_class->get_repo();
 
   if (auto node_id = node_name->as<CNodeIdentifier>()) {
     return node_class->get_field(node_id->get_text());
@@ -196,7 +290,7 @@ CNodeField* resolve_field(CNodeClass* node_class, CNode* node_name) {
   }
 
   if (auto node_field = node_name->as<CNodeFieldExpression>()) {
-    return resolve_field(node_class, node_field->node_path);
+    return resolve_field(node_class, node_field->items);
   }
 
   if (auto node_prefix = node_name->as<CNodePrefixExp>()) {
@@ -214,6 +308,8 @@ CNodeField* resolve_field(CNodeClass* node_class, CNode* node_name) {
   assert(false);
   return nullptr;
 }
+
+//------------------------------------------------------------------------------
 
 CNodeField* resolve_field(CNode* node_name) {
   auto node_class = node_name->ancestor<CNodeClass>();
@@ -503,13 +599,8 @@ CNodeFunction* resolve_func(CNode* node) {
     auto src_class = node->ancestor<CNodeClass>();
 
     if (auto func_path = node_call->node_name->as<CNodeFieldExpression>()) {
-      auto field_name = func_path->node_path->get_textstr();
-      auto func_name = func_path->node_name->get_textstr();
-
-      auto src_field = src_class->get_field(field_name);
-      auto dst_class = src_field->node_decl->get_class();
-      auto dst_func = dst_class->get_function(func_name);
-      return dst_func;
+      auto f = src_class->resolve(func_path->items);
+      return f->req<CNodeFunction>();
     }
 
     if (auto func_id = node_call->node_name->as<CNodeIdentifier>()) {
@@ -592,8 +683,11 @@ Err Emitter::emit_submod_call(CNodeCall* node) {
   if (dst_func->node_type->name == "void") {
     err << comment_out(node);
   } else {
-    // "node_path ~_ {_} node_name ~_ {)ret}"
-    err << emit("@_@_ret", func_path->node_path, func_path->node_name);
+    for (auto p : func_path->items) {
+      err << cursor.emit_print("%s_", p->name.c_str());
+    }
+    err << cursor.emit_print("ret");
+
     err << skip_over(node);
   }
   return err << check_done(node);
@@ -1055,20 +1149,18 @@ Err Emitter::emit(CNodeField* node) {
 Err Emitter::emit(CNodeFieldExpression* node) {
   Err err = check_at(node);
 
-  dump_parse_tree(node);
-  auto repo = node->get_repo();
-
   auto node_class = node->ancestor<CNodeClass>();
 
-  auto field = node_class->get_field(node->node_path->name);
+  auto resolved = node_class->get_field(node->items[0]->name);
 
-  if (!field) {
+  if (!resolved) {
     // This is not a field.
     err << emit_default(node);
     return err << check_done(node);
   }
 
-  auto type_class = field->node_decl->get_class();
+  auto field = resolved->req<CNodeField>();
+  auto type_class = field->get_type_class();
 
   if (!type_class) {
     // This is a field, but not a submodule.
@@ -1078,11 +1170,20 @@ Err Emitter::emit(CNodeFieldExpression* node) {
 
   // This is a field of a submodule, replace the node with the name of the
   // binding variable.
-  auto field_text = node->get_textstr();
-  for (auto& c : field_text) {
-    if (c == '.') c = '_';
+  for (auto i = 0; i < node->items.size(); i++) {
+    err << cursor.emit_print("%s", node->items[i]->name.c_str());
+
+    if (i == node->items.size() - 1) break;
+
+    if (i == 0) {
+      err << cursor.emit_print("_");
+    }
+    else {
+      err << cursor.emit_print(".");
+    }
   }
-  err << emit_replacement(node, field_text);
+
+  err << skip_over(node);
   return err << check_done(node);
 }
 
@@ -1723,8 +1824,9 @@ Err Emitter::emit_call_arg_bindings(CNodeCompound* node, CNode* child) {
   if (call->node_args->items.empty()) return err;
 
   if (auto func_path = call->node_name->as<CNodeFieldExpression>()) {
-    auto field_name = func_path->node_path->get_textstr();
-    auto func_name  = func_path->node_name->get_textstr();
+    assert(func_path->items.size() == 2);
+    auto field_name = func_path->items[0]->get_textstr();
+    auto func_name  = func_path->items[1]->get_textstr();
 
     auto src_class = node->ancestor<CNodeClass>();
     auto field = src_class->get_field(field_name);
@@ -1853,7 +1955,6 @@ Err Emitter::emit_component(CNodeField* node) {
   err << emit_dispatch2(node->node_decl->node_type);
   err << skip_over2(node->node_decl->node_name);
 
-  auto repo = node->get_repo();
   auto parent_class = node->ancestor<CNodeClass>();
   auto component_class = repo->get_class(node->node_decl->node_type->name);
   auto component_template = component_class->node_parent->as<CNodeTemplate>();
@@ -1909,17 +2010,22 @@ Err Emitter::emit_component(CNodeField* node) {
         }
       }
 
-      assert(params.size() == args->items.size());
+      // The field may have constructor args, but if they're defaulted we might
+      // not actually have an initializer in the parent's init list.
 
-      for (auto i = 0; i < params.size(); i++) {
-        auto param = params[i];
-        auto arg = args->items[i];
-        auto param_name = param->name;
+      if (args) {
+        assert(params.size() == args->items.size());
 
-        err << cursor.start_line();
-        err << cursor.emit_print(".%.*s(", param_name.size(), param_name.data());
-        err << emit_splice(arg);
-        err << cursor.emit_print("),");
+        for (auto i = 0; i < params.size(); i++) {
+          auto param = params[i];
+          auto arg = args->items[i];
+          auto param_name = param->name;
+
+          err << cursor.start_line();
+          err << cursor.emit_print(".%.*s(", param_name.size(), param_name.data());
+          err << emit_splice(arg);
+          err << cursor.emit_print("),");
+        }
       }
     }
 

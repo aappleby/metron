@@ -67,6 +67,8 @@ struct CNodeClass : public CNode {
     return nullptr;
   }
 
+  CNode* resolve(std::vector<CNode*> path);
+
   //----------------------------------------
 
   CNodeKeyword*    node_kwclass = nullptr;

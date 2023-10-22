@@ -877,7 +877,7 @@ int main_new(Options opts) {
   Cursor cursor(root_file, &out_string);
   cursor.echo = opts.echo && !opts.quiet;
 
-  Emitter emitter(cursor);
+  Emitter emitter(&repo, cursor);
   err << emitter.emit_everything();
 
   if (err.has_err()) {

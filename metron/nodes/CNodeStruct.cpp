@@ -14,22 +14,38 @@ void CNodeStruct::init() {
   node_body   = child("body")->req<CNodeList>();
   node_semi   = child("semi")->req<CNodePunct>();
   name = node_name->name;
+
+  for (auto c : node_body) {
+    if (auto n = c->as<CNodeField>()) {
+      all_fields.push_back(n);
+    }
+  }
 }
 
 //----------------------------------------
 
-Err CNodeStruct::collect_fields_and_methods(CSourceRepo* repo) {
-  Err err;
+CNodeField* CNodeStruct::get_field(std::string_view name) {
+  for (auto f : all_fields) if (f->name == name) return f;
+  return nullptr;
+}
 
-  auto body = child("body");
-  for (auto c : body) {
-    if (auto n = c->as<CNodeField>()) {
-      //n->parent_struct = n->ancestor<CNodeStruct>();
-      //n->node_decl->_type_struct  = repo->get_struct(n->node_decl->node_type->name);
-      all_fields.push_back(n);
-    }
+CNode* CNodeStruct::resolve(std::vector<CNode*> path) {
+  auto front = path[0];
+  path.erase(path.begin());
+
+  if (path.empty()) {
+    if (auto f = get_field(front->name)) return f;
   }
 
-  return err;
+  if (auto f = get_field(front->name)) {
+    if (auto s = f->get_type_struct()) {
+      return s->resolve(path);
+    }
+
+    assert(false);
+  }
+
+  return nullptr;
 }
+
 //==============================================================================

@@ -188,9 +188,12 @@ Err Cursor::emit_char(char c, uint32_t color) {
 
   if (echo) {
     auto d = c;
-    //if (color && d == ' ') d = '_';
-    if (d == ' ') d = '_';
-    LOG_C(color, "%c", d);
+    if (d == ' ') {
+      LOG_C(0x010101, "_");
+    }
+    else {
+      LOG_C(color, "%c", d);
+    }
   }
 
   at_comma = c == ',';

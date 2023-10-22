@@ -45,7 +45,7 @@ struct CNodeUsing;
 //==============================================================================
 
 struct Emitter {
-  Emitter(Cursor& c) : cursor(c) {
+  Emitter(CSourceRepo* repo, Cursor& c) : repo(repo), cursor(c) {
     id_map.push({
       {"signed",         "$signed"},
       {"unsigned",       "$unsigned"},
@@ -166,16 +166,7 @@ struct Emitter {
     return err;
   }
 
-
-
-
-
-
-
-
-
-
-
+  CSourceRepo* repo = nullptr;
   Cursor& cursor;
   std::set<std::string> preproc_vars;
   std::stack<int> override_size;

@@ -21,6 +21,9 @@ struct CNodeField : public CNode {
   bool is_array()      const { return node_decl->is_array(); }
   bool is_const_char() const { return node_decl->is_const_char(); }
 
+  CNodeClass*  get_type_class();
+  CNodeStruct* get_type_struct();
+
   //----------------------------------------
 
   bool is_public = false;

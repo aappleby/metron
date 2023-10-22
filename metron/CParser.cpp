@@ -1133,7 +1133,10 @@ TokenSpan match_function(CContext& ctx, TokenSpan body) {
     Tag<"name",        cap_identifier>,
     Tag<"params",      cap_decl_list>,
     Opt<Tag<"const",   cap_keyword<"const">>>,
-    Tag<"body",        Ref<cap_compound>>
+    Oneof<
+      Tag<"body",      Ref<cap_compound>>,
+      Tag<"semi",      cap_punct<";">>
+    >
   >;
   // clang-format on
   return pattern::match(ctx, body);

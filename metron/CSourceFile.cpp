@@ -16,16 +16,18 @@ namespace fs = std::filesystem;
 Err collect_fields_and_methods(CNodeClass* node, CSourceRepo* repo) {
   Err err;
 
-  bool is_public = false;
+  bool in_public_section = false;
 
   for (auto child : node->node_body->items) {
     if (auto access = child->as<CNodeAccess>()) {
-      is_public = child->get_text() == "public:";
+      in_public_section = child->get_text() == "public:";
       continue;
     }
 
+    bool child_is_public = in_public_section && !child->tag_internal();
+
     if (auto n = child->as<CNodeField>()) {
-      n->is_public = is_public;
+      n->is_public = child_is_public;
 
       //n->parent_class = node;
       //n->parent_struct = nullptr;
@@ -43,7 +45,7 @@ Err collect_fields_and_methods(CNodeClass* node, CSourceRepo* repo) {
     }
 
     if (auto n = child->as<CNodeFunction>()) {
-      n->is_public = is_public;
+      n->is_public = child_is_public;
 
       if (auto constructor = child->as<CNodeConstructor>()) {
         assert(node->constructor == nullptr);

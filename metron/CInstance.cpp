@@ -100,13 +100,14 @@ CInstClass* instantiate_class(
 {
   auto inst_class = new CInstClass(name, inst_parent, node_field, node_class);
 
-  bool child_is_public = false;
+  bool in_public_section = false;
 
   for (auto child : node_class->node_body) {
     if (auto access = child->as<CNodeAccess>()) {
-      child_is_public = child->get_text() == "public:";
+      in_public_section = child->get_text() == "public:";
       continue;
     }
+    bool child_is_public = in_public_section && !child->tag_internal();
 
     if (auto node_field = child->as<CNodeField>()) {
       auto field_name = node_field->name;
@@ -115,15 +116,11 @@ CInstClass* instantiate_class(
       auto type_struct = repo->get_struct(node_field->node_decl->node_type->name);
 
       if (type_class) {
-        auto inst =
-            instantiate_class(repo, field_name, inst_class, node_field, type_class, depth);
-        // inst_class->children.push_back(inst);
+        auto inst = instantiate_class(repo, field_name, inst_class, node_field, type_class, depth);
         inst_class->parts.push_back(inst);
       }
       else if (type_struct) {
         auto inst = new CInstStruct(field_name, inst_class, node_field, type_struct);
-        // inst_class->children.push_back(inst);
-
         if (child_is_public) {
           inst_class->ports.push_back(inst);
         } else {
@@ -132,8 +129,6 @@ CInstClass* instantiate_class(
 
       } else {
         auto inst = new CInstPrim(field_name, inst_class, node_field);
-        // inst_class->children.push_back(inst);
-
         if (child_is_public) {
           inst_class->ports.push_back(inst);
         } else {
@@ -405,7 +400,11 @@ CInstFunc::CInstFunc(std::string name, CInstance* inst_parent,
     } else if (auto builtin_type = ret_type->as<CNodeTypedefType>()) {
       auto inst = new CInstPrim("@return", this, nullptr);
       inst_return = inst;
-    } else {
+    }
+    else if (auto class_type = ret_type->as<CNodeClassType>()) {
+      assert(node_func->tag_noconvert());
+    }
+    else {
       assert(false);
     }
   }

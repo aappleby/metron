@@ -140,7 +140,7 @@ TokenSpan CContext::match_builtin_type_suffix(TokenSpan body) {
 TokenSpan CContext::handle_preproc(TokenSpan body) {
   auto node_preproc = top_tail->as<CNodePreproc>();
 
-  if (node_preproc->noconvert()) {
+  if (node_preproc->tag_noconvert()) {
     return body.consume();
   }
 
@@ -150,6 +150,9 @@ TokenSpan CContext::handle_preproc(TokenSpan body) {
 
     if (path.find("metron_tools.h") != std::string::npos) {
       for (auto t : stdint_typedefs) {
+        global_scope.add_typedef(t);
+      }
+      for (auto t : stdio_typedefs) {
         global_scope.add_typedef(t);
       }
     }

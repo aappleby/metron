@@ -109,7 +109,12 @@ Err build_call_graph(CNodeClass* node, CSourceRepo* repo) {
         src_method->internal_callees.insert(dst_method);
         dst_method->internal_callers.insert(src_method);
       }
-    } else {
+    }
+    else if(auto func_kw = func_name->as<CNodeKeyword>()) {
+      // builtin like sizeof(), nothing to do here
+    }
+    else {
+      dump_parse_tree(func_name);
       assert(false);
     }
   };
@@ -181,7 +186,7 @@ int main_new(Options opts) {
   //exit(-1);
 
   sanity_check_parse_tree(repo);
-  //dump_parse_tree(root_file->context.top_head);
+  dump_parse_tree(root_file->context.top_head);
 
   LOG("\n");
 

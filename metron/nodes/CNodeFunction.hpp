@@ -37,7 +37,8 @@ struct CNodeFunction : public CNode {
     node_params = child("params")->req<CNodeList>();
     node_init   = child("init")->opt<CNodeList>();
     node_const  = child("const")->opt<CNodeKeyword>();
-    node_body   = child("body")->req<CNodeCompound>();
+    node_body   = child("body")->opt<CNodeCompound>();
+    node_semi   = child("semi")->opt<CNodePunct>();
 
     name = node_name->name;
 
@@ -159,6 +160,7 @@ struct CNodeFunction : public CNode {
   CNodeList*       node_init   = nullptr;
   CNodeKeyword*    node_const  = nullptr;
   CNodeCompound*   node_body   = nullptr;
+  CNodePunct*      node_semi   = nullptr;
 
   MethodType method_type = MT_UNKNOWN;
 

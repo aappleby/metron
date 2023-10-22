@@ -224,6 +224,10 @@ CNodeField* resolve_field(CNodeClass* node_class, std::vector<CNode*> path) {
 
   auto f1 = resolve_field(node_class, front);
 
+  if (!f1) {
+    return f1;
+  }
+
   if (path.empty()) {
     return f1;
   }
@@ -365,7 +369,7 @@ Err Emitter::emit_children(CNode* n) {
   Err err;
   for (auto c = n->child_head; c; c = c->node_next) {
 
-    if (c->noconvert()) {
+    if (c->tag_noconvert()) {
       err << comment_out(c);
       err << emit_gap(c);
       continue;
@@ -399,7 +403,7 @@ Err Emitter::emit_everything() {
 
 Err Emitter::emit_dispatch(CNode* node) {
   Err err = check_at(node);
-  if (node->noconvert()) return comment_out(node);
+  if (node->tag_noconvert()) return comment_out(node);
 
   if (auto n = node->as<CNodeAccess>()) return comment_out(node);
 
@@ -802,7 +806,7 @@ Err Emitter::emit(CNodeClass* node) {
 
   for (auto child : node->node_body) {
 
-    if (child->noconvert()) {
+    if (child->tag_noconvert()) {
       err << comment_out(child);
       err << emit_gap(child);
       continue;
@@ -1570,7 +1574,7 @@ Err Emitter::emit_block(CNodeCompound* node, std::string ldelim, std::string rde
 
   for (auto child : node->statements) {
 
-    if (child->noconvert()) {
+    if (child->tag_noconvert()) {
       err << comment_out(child);
       err << emit_gap(child);
       continue;
@@ -1901,7 +1905,7 @@ Err Emitter::emit_hoisted_decls(CNodeCompound* node) {
         if (decl->is_param()) continue;
 
         // Don't emit decls if flagged metron_noconvert
-        if (decl->noconvert()) continue;
+        if (decl->tag_noconvert()) continue;
 
         auto name = decl->name;
         auto decl_type = decl->child("type");
@@ -2095,6 +2099,8 @@ Err Emitter::emit_component(CNodeField* node) {
   }
 
   for (auto m : component_class->all_functions) {
+    if (m->tag_noconvert()) continue;
+
     //if (m->is_constructor()) continue;
     if (!m->is_public) continue;
     if (m->method_type == MT_INIT) continue;
@@ -2159,6 +2165,7 @@ Err Emitter::emit_component(CNodeField* node) {
   }
 
   for (auto m : component_class->all_functions) {
+    if (m->tag_noconvert()) continue;
     //if (m->is_constructor()) continue;
     if (!m->is_public) continue;
     if (m->method_type == MT_INIT) continue;
@@ -2275,6 +2282,8 @@ Err Emitter::emit_module_ports(CNodeClass* node) {
 
 Err Emitter::emit_function_ports(CNodeFunction* f) {
   Err err;
+
+  if (f->tag_noconvert()) return err;
 
   auto fname = f->name;
   auto rtype = f->child("return_type");

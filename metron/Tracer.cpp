@@ -396,6 +396,8 @@ Err Tracer::trace(CNodeFor* node) {
 //------------------------------------------------------------------------------
 
 Err Tracer::trace(CNodeFunction* node) {
+  if (node->tag_noconvert()) return Err();
+
   if (has_non_terminal_return(node->node_body)) {
     return ERR("Function has mid-block return");
   }

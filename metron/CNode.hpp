@@ -72,8 +72,12 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
     return std::string_view(a, b);
   }
 
-  bool noconvert() const {
+  bool tag_noconvert() const {
     return get_gap_prev().find("metron_noconvert") != std::string_view::npos;
+  }
+
+  bool tag_internal() const {
+    return get_gap_prev().find("metron_internal") != std::string_view::npos;
   }
 
   //----------------------------------------

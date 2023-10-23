@@ -2,7 +2,7 @@
 `define PINWHEEL_RTL_BLOCK_RAM_H
 
 `include "metron/metron_tools.sv"
-`include "pinwheel/rtl/tilelink.sv"
+`include "pinwheel/metron/tilelink.sv"
 
 //------------------------------------------------------------------------------
 // verilator lint_off unusedsignal

@@ -1967,6 +1967,22 @@ Err Emitter::emit_component(CNodeField* node) {
   // Component modparams
 
   bool has_constructor_params = component_class->constructor && component_class->constructor->params.size();
+
+  if (has_constructor_params) {
+    CNodeList* args = nullptr;
+    for (auto init : parent_class->constructor->node_init->items) {
+      if (init->child("name")->get_text() == node->node_decl->node_name->get_text()) {
+        args = init->child("value")->as<CNodeList>();
+      }
+    }
+    // The field may have constructor args, but if they're defaulted we might
+    // not actually have an initializer in the parent's init list.
+    if (!args) {
+      has_constructor_params = false;
+    }
+  }
+
+
   bool has_template_params = component_template != nullptr;
 
   if (has_template_params || has_constructor_params) {

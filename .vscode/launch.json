@@ -18,8 +18,8 @@
         //"-c", "tests/metron_good/noconvert.h",
         //"-c", "examples/uart/metron/uart_hello.h",
         //"-c", "examples/rvsimple/metron/config.h",
-        "-c", "pinwheel/rtl/block_ram.h",
-        //"-c", "pinwheel/rtl/pinwheel.h",
+        "-c", "pinwheel/metron/block_ram.h",
+        //"-c", "pinwheel/metron/pinwheel.h",
         //"-c", "examples/gb_spu/metron/MetroBoySPU2.h",
         "-o", "examples/scratch.sv"
       ],

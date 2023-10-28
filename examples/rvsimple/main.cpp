@@ -18,8 +18,8 @@ const char* instructions[38] = {
 
 //------------------------------------------------------------------------------
 
-uint64_t total_tocks = 0;
-uint64_t total_time = 0;
+double total_tocks = 0;
+double total_time = 0;
 
 TestResults test_instruction(const char* test_name, const int reps,
                              const int max_cycles) {
@@ -32,7 +32,6 @@ TestResults test_instruction(const char* test_name, const int reps,
 
   int elapsed_cycles = 0;
   int test_result = -1;
-  auto time_a = timestamp();
 
   //----------
 
@@ -41,8 +40,9 @@ TestResults test_instruction(const char* test_name, const int reps,
   for (int rep = 0; rep < reps; rep++) {
     top.reset = 1;
     top.tock(0);
-    total_tocks++;
     top.reset = 0;
+
+    auto time_a = timestamp();
     for (elapsed_cycles = 0; elapsed_cycles < max_cycles; elapsed_cycles++) {
       top.tock(0);
       total_tocks++;
@@ -51,12 +51,13 @@ TestResults test_instruction(const char* test_name, const int reps,
         break;
       }
     }
+    auto time_b = timestamp();
+    total_time += time_b - time_a;
+
   }
 
   //----------
 
-  auto time_b = timestamp();
-  total_time += time_b - time_a;
 
   EXPECT_NE(max_cycles, elapsed_cycles, "TIMEOUT");
   EXPECT_NE(0, test_result, "FAIL %d @ %d\n", test_result, time);
@@ -88,7 +89,9 @@ int main(int argc, const char** argv) {
   }
 
   double rate = double(total_tocks) / double(total_time);
-  LOG_B("Sim rate %f mhz\n", rate * 1000.0);
+  LOG_B("Total tocks %f\n",  total_tocks);
+  LOG_B("Total time %f\n",   total_time);
+  LOG_B("Sim rate %f mhz\n", rate / 1.0e6);
 
   return results.show_result();
 }

@@ -418,7 +418,7 @@ def build_uart():
 
 def build_rvtests():
     src_files = sorted_glob("tests/rv_tests/*.S")
-    dst_text = [swap_ext(f, ".text.vh") for f in src_files]
+    dst_text = [swap_ext(f, ".code.vh") for f in src_files]
     dst_data = [swap_ext(f, ".data.vh") for f in src_files]
 
     ninja.build(rule="make",

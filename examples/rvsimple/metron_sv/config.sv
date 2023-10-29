@@ -32,7 +32,7 @@ parameter /*static*/ /*const*/ int unsigned DATA_BITS = 17;
 parameter /*static*/ /*const*/ int unsigned DATA_WIDTH = (1 << DATA_BITS);
 parameter /*static*/ /*const*/ int unsigned DATA_END = (DATA_BEGIN + DATA_WIDTH - 1);
 
-localparam string TEXT_HEX = "add.text.vh";
+localparam string TEXT_HEX = "add.code.vh";
 localparam string DATA_HEX = "add.data.vh";
 
 endpackage  // namespace rv_config

@@ -28,7 +28,7 @@
 `define DATA_WIDTH      2**`DATA_BITS
 `define DATA_END        `DATA_BEGIN + `DATA_WIDTH - 1
 
-`define TEXT_HEX  text_mem_file()
+`define CODE_HEX  text_mem_file()
 `define DATA_HEX  data_mem_file()
 
 function string text_mem_file ();

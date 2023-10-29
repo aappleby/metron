@@ -16,9 +16,8 @@ module example_text_memory (
 
     assign q = mem[address];
 
-`ifdef TEXT_HEX
-    initial $readmemh(`TEXT_HEX, mem);
+`ifdef CODE_HEX
+    initial $readmemh(`CODE_HEX, mem);
 `endif
 
 endmodule
-

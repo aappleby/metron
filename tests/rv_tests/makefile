@@ -1,7 +1,7 @@
 SRCS=$(wildcard *.S)
 OBJS=$(SRCS:.S=.o)
 ELFS=$(SRCS:.S=.elf)
-BINS=$(SRCS:.S=.text.vh) $(SRCS:.S=.data.vh)
+BINS=$(SRCS:.S=.code.vh) $(SRCS:.S=.data.vh)
 
 all: ${BINS}
 
@@ -11,8 +11,8 @@ all: ${BINS}
 %.elf: %.o
 	riscv64-unknown-elf-ld -Tlink.ld -melf32lriscv $< -o $@
 
-%.text.bin: %.elf
-	riscv64-unknown-elf-objcopy -O binary $< $@ -j .text
+%.code.bin: %.elf
+	riscv64-unknown-elf-objcopy -O binary $< $@ -j .init -j .text --change-addresses -0x400000
 
 %.data.bin: %.elf
 	riscv64-unknown-elf-objcopy -O binary $< $@ -j .data

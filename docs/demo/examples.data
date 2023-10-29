@@ -2899,7 +2899,7 @@ static const unsigned int DATA_BITS = 17;
 static const unsigned int DATA_WIDTH = (1 << DATA_BITS);
 static const unsigned int DATA_END = (DATA_BEGIN + DATA_WIDTH - 1);
 
-static const char* TEXT_HEX = "add.text.vh";
+static const char* CODE_HEX = "add.code.vh";
 static const char* DATA_HEX = "add.data.vh";
 
 };  // namespace rv_config

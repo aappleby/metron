@@ -25,9 +25,9 @@ TestResults test_instruction(const char* test_name, const int reps,
                              const int max_cycles) {
   TEST_INIT("Testing op %6s, %d reps", test_name, reps);
 
-  char text_filename[256];
+  char code_filename[256];
   char data_filename[256];
-  sprintf(text_filename, "tests/rv_tests/%s.text.vh", test_name);
+  sprintf(code_filename, "tests/rv_tests/%s.code.vh", test_name);
   sprintf(data_filename, "tests/rv_tests/%s.data.vh", test_name);
 
   int elapsed_cycles = 0;
@@ -35,7 +35,7 @@ TestResults test_instruction(const char* test_name, const int reps,
 
   //----------
 
-  toplevel top(text_filename, data_filename);
+  toplevel top(code_filename, data_filename);
 
   for (int rep = 0; rep < reps; rep++) {
     top.reset = 1;

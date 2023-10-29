@@ -43,8 +43,8 @@ void benchmark() {
 
 //------------------------------------------------------------------------------
 
-TestResults test_lockstep(int argc, char** argv) {
-  TEST_INIT("Metron+Verilator lockstep simulation:");
+TestResults test_uart_verilator() {
+  TEST_INIT("Metron -> Verilator UART simulation\n");
 
   // Synchronous reset cycle.
   Vuart_top vtop;
@@ -70,15 +70,12 @@ TestResults test_lockstep(int argc, char** argv) {
     vtop.eval();
 
     if (!old_valid && vtop.get_valid_ret) LOG_B("%c", (uint8_t)vtop.get_data_out_ret);
-    if (vtop.get_done_ret) {
-      printf("vtop done!\n");
-      break;
-    }
+    if (vtop.get_done_ret) break;
   }
 
   LOG_B("\n");
   LOG_B("========================================\n");
-  LOG_B("%d\n", cycle);
+
   EXPECT_EQ(0x0000b764, vtop.get_checksum_ret, "Verilator uart checksum fail");
 
   TEST_DONE();
@@ -87,14 +84,10 @@ TestResults test_lockstep(int argc, char** argv) {
 //------------------------------------------------------------------------------
 
 int main(int argc, char** argv) {
-  printf("Running Verilated Metron uart test\n");
-
   //benchmark();
-
   TestResults results;
-  results << test_lockstep(argc, argv);
-
-  return results.show_result();
+  results << test_uart_verilator();
+    return results.show_result();
 }
 
 //------------------------------------------------------------------------------

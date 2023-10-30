@@ -1278,6 +1278,9 @@ Err Emitter::emit(CNodeKeyword* node) {
 
   if (text == "namespace") return emit_replacement(node, "package");
 
+  if (text == "true")  return emit_replacement(node, "1");
+  if (text == "false") return emit_replacement(node, "0");
+
   assert(false);
   return ERR("Don't know how to handle this keyword - %s\n", node->get_textstr().c_str());
 }

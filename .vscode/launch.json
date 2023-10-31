@@ -15,13 +15,13 @@
         "-e",
         "-i", "../pinwheel",
         //"-c", "examples/scratch.h",
-        //"-c", "tests/metron_good/noconvert.h",
+        "-c", "tests/metron_good/case_with_fallthrough.h",
         //"-c", "examples/uart/metron/uart_hello.h",
         //"-c", "examples/rvsimple/metron/config.h",
-        "-c", "pinwheel/metron/block_ram.h",
+        //"-c", "pinwheel/metron/block_ram.h",
         //"-c", "pinwheel/metron/pinwheel.h",
         //"-c", "examples/gb_spu/metron/MetroBoySPU2.h",
-        "-o", "examples/scratch.sv"
+        //"-o", "examples/scratch.sv"
       ],
       "setupCommands": [
         { // Display content in STL containers pretty

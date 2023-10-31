@@ -17,8 +17,8 @@ module Module (
       0, // can we stick comments in here?
       1,
       2:
-        result = 10;
-        /*break;*/
+         begin result = 10;
+        /*break;*/ end
       3: begin
         result = 20;
         /*break;*/

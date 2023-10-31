@@ -30,14 +30,14 @@ module multiplexer8 (
   always_comb begin : tock
     // clang-format off
     case (sel)
-      0:  out = in0; /*break;*/
-      1:  out = in1; /*break;*/
-      2:  out = in2; /*break;*/
-      3:  out = in3; /*break;*/
-      4:  out = in4; /*break;*/
-      5:  out = in5; /*break;*/
-      6:  out = in6; /*break;*/
-      7:  out = in7; /*break;*/
+      0:   begin out = in0; /*break;*/ end
+      1:   begin out = in1; /*break;*/ end
+      2:   begin out = in2; /*break;*/ end
+      3:   begin out = in3; /*break;*/ end
+      4:   begin out = in4; /*break;*/ end
+      5:   begin out = in5; /*break;*/ end
+      6:   begin out = in6; /*break;*/ end
+      7:   begin out = in7; /*break;*/ end
       default: out = 'x; /*break;*/
     endcase
     // clang-format on

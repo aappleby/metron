@@ -1471,9 +1471,19 @@ Err Emitter::emit(CNodeCase* node) {
   err << skip_over2(node->node_case);
   err << emit_dispatch2(node->node_cond);
 
-  if (node->node_body) {
+  if (auto node_list = node->node_body->opt<CNodeList>()) {
     err << emit_dispatch2(node->node_colon);
-    err << emit_dispatch2(node->node_body);
+
+    if (node_list->items.size() == 1 && node_list->items[0]->as<CNodeCompound>()) {
+      err << emit_dispatch2(node->node_body);
+    }
+    else {
+      // FIXME Yosys breaks if we assign to structs inside a case block that's
+      // not wrapped in a begin/end
+      err << cursor.emit_print(" begin ");
+      err << emit_dispatch2(node->node_body);
+      err << cursor.emit_print(" end ");
+    }
   }
   else {
     err << emit_replacement2(node->node_colon, ",");

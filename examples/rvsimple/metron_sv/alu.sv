@@ -29,17 +29,17 @@ module alu (
 
     // clang-format off
     case (alu_function)
-      ALU_ADD:  result = operand_a + operand_b; /*break;*/
-      ALU_SUB:  result = operand_a - operand_b; /*break;*/
-      ALU_SLL:  result = operand_a << 5'(operand_b); /*break;*/
-      ALU_SRL:  result = operand_a >> 5'(operand_b); /*break;*/
-      ALU_SRA:  result = ($signed(operand_a) >>> 5'(operand_b)); /*break;*/
-      ALU_SEQ:  result = {31'b0, 1'(operand_a == operand_b)}; /*break;*/
-      ALU_SLT:  result = {31'b0, 1'($signed(operand_a) < $signed(operand_b))}; /*break;*/
-      ALU_SLTU: result = {31'b0, 1'($unsigned(operand_a) < $unsigned(operand_b))}; /*break;*/
-      ALU_XOR:  result = operand_a ^ operand_b; /*break;*/
-      ALU_OR:   result = operand_a | operand_b; /*break;*/
-      ALU_AND:  result = operand_a & operand_b; /*break;*/
+      ALU_ADD:   begin result = operand_a + operand_b; /*break;*/ end
+      ALU_SUB:   begin result = operand_a - operand_b; /*break;*/ end
+      ALU_SLL:   begin result = operand_a << 5'(operand_b); /*break;*/ end
+      ALU_SRL:   begin result = operand_a >> 5'(operand_b); /*break;*/ end
+      ALU_SRA:   begin result = ($signed(operand_a) >>> 5'(operand_b)); /*break;*/ end
+      ALU_SEQ:   begin result = {31'b0, 1'(operand_a == operand_b)}; /*break;*/ end
+      ALU_SLT:   begin result = {31'b0, 1'($signed(operand_a) < $signed(operand_b))}; /*break;*/ end
+      ALU_SLTU:  begin result = {31'b0, 1'($unsigned(operand_a) < $unsigned(operand_b))}; /*break;*/ end
+      ALU_XOR:   begin result = operand_a ^ operand_b; /*break;*/ end
+      ALU_OR:    begin result = operand_a | operand_b; /*break;*/ end
+      ALU_AND:   begin result = operand_a & operand_b; /*break;*/ end
       default:       result = 32'(ZERO); /*break;*/
     endcase
     // clang-format on

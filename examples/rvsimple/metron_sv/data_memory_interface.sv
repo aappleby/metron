@@ -43,9 +43,9 @@ module data_memory_interface (
     // calculate byte enable
     // clang-format off
     case (2'(data_format))
-      2'b00: bus_byte_enable = 4'b0001 << 2'(address); /*break;*/
-      2'b01: bus_byte_enable = 4'b0011 << 2'(address); /*break;*/
-      2'b10: bus_byte_enable = 4'b1111 << 2'(address); /*break;*/
+      2'b00:  begin bus_byte_enable = 4'b0001 << 2'(address); /*break;*/ end
+      2'b01:  begin bus_byte_enable = 4'b0011 << 2'(address); /*break;*/ end
+      2'b10:  begin bus_byte_enable = 4'b1111 << 2'(address); /*break;*/ end
       default:   bus_byte_enable = 4'b0000; /*break;*/
     endcase
     // clang-format on
@@ -58,9 +58,9 @@ module data_memory_interface (
     // sign-extend if necessary
     // clang-format off
     case (2'(data_format))
-      2'b00: sign_fix = {{24 {1'(~data_format[2] & position_fix[7])}}, 8'(position_fix)}; /*break;*/
-      2'b01: sign_fix = {{16 {1'(~data_format[2] & position_fix[15])}}, 16'(position_fix)}; /*break;*/
-      2'b10: sign_fix = 32'(position_fix); /*break;*/
+      2'b00:  begin sign_fix = {{24 {1'(~data_format[2] & position_fix[7])}}, 8'(position_fix)}; /*break;*/ end
+      2'b01:  begin sign_fix = {{16 {1'(~data_format[2] & position_fix[15])}}, 16'(position_fix)}; /*break;*/ end
+      2'b10:  begin sign_fix = 32'(position_fix); /*break;*/ end
       default:   sign_fix = 'x; /*break;*/
     endcase
     // clang-format on

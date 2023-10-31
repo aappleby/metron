@@ -25,12 +25,12 @@ module control_transfer (
 
     // clang-format off
     case (inst_funct3)
-      FUNCT3_BRANCH_EQ:  take_branch = !result_equal_zero; /*break;*/
-      FUNCT3_BRANCH_NE:  take_branch = result_equal_zero; /*break;*/
-      FUNCT3_BRANCH_LT:  take_branch = !result_equal_zero; /*break;*/
-      FUNCT3_BRANCH_GE:  take_branch = result_equal_zero; /*break;*/
-      FUNCT3_BRANCH_LTU: take_branch = !result_equal_zero; /*break;*/
-      FUNCT3_BRANCH_GEU: take_branch = result_equal_zero; /*break;*/
+      FUNCT3_BRANCH_EQ:   begin take_branch = !result_equal_zero; /*break;*/ end
+      FUNCT3_BRANCH_NE:   begin take_branch = result_equal_zero; /*break;*/ end
+      FUNCT3_BRANCH_LT:   begin take_branch = !result_equal_zero; /*break;*/ end
+      FUNCT3_BRANCH_GE:   begin take_branch = result_equal_zero; /*break;*/ end
+      FUNCT3_BRANCH_LTU:  begin take_branch = !result_equal_zero; /*break;*/ end
+      FUNCT3_BRANCH_GEU:  begin take_branch = result_equal_zero; /*break;*/ end
       default:                take_branch = 'x; /*break;*/
     endcase
     // clang-format on

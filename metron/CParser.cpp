@@ -910,6 +910,10 @@ using cap_field =
 CaptureAnon<
   Seq<
     Tag<"decl", CaptureAnon<Ref<match_declaration_exp>, CNodeDeclaration>>,
+    Opt<Seq<
+      Atom<':'>,
+      Capture<"bits", Atom<LEX_INT>, CNodeConstInt>
+    >>,
     Tag<"semi", cap_punct<";">>
   >,
   CNodeField

@@ -40,6 +40,7 @@ struct CNodeSuffixExp;
 struct CNodeSwitch;
 struct CNodeTemplate;
 struct CNodeTypedef;
+struct CNodeUnion;
 struct CNodeUsing;
 
 //==============================================================================
@@ -101,6 +102,7 @@ struct Emitter {
   Err emit(CNodeSuffixExp* node);
   Err emit(CNodeSwitch* node);
   Err emit(CNodeTemplate* node);
+  Err emit(CNodeUnion* node);
   Err emit(CNodeUsing* node);
 
   Err emit(const char* fmt, ...);

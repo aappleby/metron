@@ -108,6 +108,7 @@ Namespaces
 #include "metron/nodes/CNodeTemplate.hpp"
 #include "metron/nodes/CNodeType.hpp"
 #include "metron/nodes/CNodeTypedef.hpp"
+#include "metron/nodes/CNodeUnion.hpp"
 #include "metron/nodes/CNodeWhile.hpp"
 #include "metron/nodes/CNodePreproc.hpp"
 #include "metron/nodes/CNodeQualifiedIdentifier.hpp"
@@ -431,6 +432,7 @@ Err Emitter::emit_dispatch(CNode* node) {
   if (auto n = node->as<CNodeQualifiedIdentifier>()) return emit(n);
   if (auto n = node->as<CNodeReturn>()) return emit(n);
   if (auto n = node->as<CNodeStruct>()) return emit(n);
+  if (auto n = node->as<CNodeUnion>()) return emit(n);
   if (auto n = node->as<CNodeSuffixExp>()) return emit(n);
   if (auto n = node->as<CNodeSwitch>()) return emit(n);
   if (auto n = node->as<CNodeTemplate>()) return emit(n);
@@ -1141,7 +1143,22 @@ Err Emitter::emit(CNodeField* node) {
 
   if (node->is_component()) {
     return emit_component(node);
-  } else {
+  } else if (node->node_bits) {
+    int bits = node->node_bits->value;
+
+    err << emit_replacement(node->node_decl->node_type, "logic[%d:0]", bits - 1);
+    err << emit_gap(node->node_decl->node_type);
+
+    err << emit_default(node->node_decl->node_name);
+    err << emit_gap(node->node_decl->node_name);
+
+    cursor.tok_cursor = node->node_semi->tok_begin();
+    err << emit_default(node->node_semi);
+    err << emit_gap(node->node_semi);
+
+    return err;
+  }
+  else {
     return emit_default(node);
   }
 }
@@ -1262,6 +1279,10 @@ Err Emitter::emit(CNodeKeyword* node) {
 
   if (text == "struct") {
     return emit_replacement(node, "typedef struct packed");
+  }
+
+  if (text == "union") {
+    return emit_replacement(node, "typedef union packed");
   }
 
   if (text == "static" || text == "const" || text == "break") {
@@ -1434,6 +1455,14 @@ Err Emitter::emit(CNodeStruct* node) {
   Err err = check_at(node);
 
   err << emit_format(node, "struct _ body { } name semi");
+
+  return err << check_done(node);
+}
+
+Err Emitter::emit(CNodeUnion* node) {
+  Err err = check_at(node);
+
+  err << emit_format(node, "union _ body { } name semi");
 
   return err << check_done(node);
 }

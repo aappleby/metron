@@ -188,6 +188,8 @@ int main_new(Options opts) {
   sanity_check_parse_tree(repo);
   dump_parse_tree(root_file->context.top_head);
 
+  //exit(-1);
+
   LOG("\n");
 
   //----------------------------------------

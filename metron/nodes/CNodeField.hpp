@@ -3,6 +3,7 @@
 #include "metron/CNode.hpp"
 #include "metron/nodes/CNodeDeclaration.hpp"
 #include "metron/nodes/CNodePunct.hpp"
+#include "metron/nodes/CNodeExpression.hpp"
 
 struct CNodeClass;
 struct CNodeStruct;
@@ -12,6 +13,7 @@ struct CNodeStruct;
 struct CNodeField : public CNode {
   void init() {
     node_decl = child("decl")->req<CNodeDeclaration>();
+    node_bits = child("bits")->opt<CNodeConstInt>();
     node_semi = child("semi")->req<CNodePunct>();
     name = node_decl->name;
   }
@@ -29,10 +31,8 @@ struct CNodeField : public CNode {
   bool is_public = false;
 
   CNodeDeclaration* node_decl;
+  CNodeConstInt* node_bits;
   CNodePunct* node_semi;
-
-  //CNodeClass*  parent_class;
-  //CNodeStruct* parent_struct;
 };
 
 //------------------------------------------------------------------------------

@@ -8,9 +8,23 @@
 struct CNodeExpression : public CNode {};
 
 struct CNodeConstant : public CNodeExpression {};
-struct CNodeConstInt : public CNodeConstant {};
-struct CNodeConstFloat : public CNodeConstant {};
+
+struct CNodeConstInt : public CNodeConstant {
+  void init() {
+    value = atoi(text_begin());
+  }
+  int value;
+};
+
+struct CNodeConstFloat : public CNodeConstant {
+  void init() {
+    value = atof(text_begin());
+  }
+  float value;
+};
+
 struct CNodeConstChar : public CNodeConstant {};
+
 struct CNodeConstString : public CNodeConstant {};
 
 //------------------------------------------------------------------------------

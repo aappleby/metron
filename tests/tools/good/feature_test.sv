@@ -13,6 +13,7 @@ module Derp
     func_no_params_return = 1;
   endfunction
 
+  assign bar = 0;
 
 
 

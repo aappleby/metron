@@ -1,6 +1,3 @@
-// Yosys doesn't seem to support passing structs as args or returning them from
-// functions. :/
-
 typedef struct packed {
   logic[7:0] a;
 } MyStruct1;

@@ -8,17 +8,28 @@ import shlex
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--basic',    action='store_true', help='Test only basic functionality')
-parser.add_argument('--verbose',  action='store_true', help='Print all commands tested')
-parser.add_argument('--serial',   action='store_true', help='Run only one command at a time')
-parser.add_argument('--synth',    action='store_true', help='Test Yosys synthesis (slower)')
-parser.add_argument('--coverage', action='store_true', help='Run Metron under kcov for coverage testing')
+parser.add_argument(
+    "--basic", action="store_true", help="Test only basic functionality"
+)
+parser.add_argument("--verbose", action="store_true", help="Print all commands tested")
+parser.add_argument(
+    "--serial", action="store_true", help="Run only one command at a time"
+)
+parser.add_argument(
+    "--synth", action="store_true", help="Test Yosys synthesis (slower)"
+)
+parser.add_argument(
+    "--coverage", action="store_true", help="Run Metron under kcov for coverage testing"
+)
 options = parser.parse_args()
+
 
 def sorted_glob(*args, **kwargs):
     return sorted(glob.glob(*args, **kwargs))
 
+
 ################################################################################
+
 
 def main():
     print()
@@ -29,6 +40,8 @@ def main():
     print_b(" ##      ## #######    ##    ##   ##  ######  ##   #### ")
 
     ############################################################
+
+    errors = 0
 
     print()
     print_b("Refreshing build")
@@ -49,57 +62,68 @@ def main():
 
     ############################################################
 
-    errors = 0
 
     print_b("Wiping tests/metron_sv/*")
     os.system("rm tests/metron_sv/*")
 
     print_b("Checking that examples convert to SV cleanly")
-    errors += check_commands_good([
-        f"bin/metron -c examples/uart/metron/uart_top.h",
-        f"bin/metron -c examples/rvsimple/metron/toplevel.h",
-        f"bin/metron -c examples/pong/metron/pong.h",
-    ])
+    errors += check_commands_good(
+        [
+            f"bin/metron -c examples/uart/metron/uart_top.h",
+            f"bin/metron -c examples/rvsimple/metron/toplevel.h",
+            f"bin/metron -c examples/pong/metron/pong.h",
+        ]
+    )
     print()
 
     metron_good = sorted(sorted_glob("tests/metron_good/*.h"))
     metron_bad = sorted(sorted_glob("tests/metron_bad/*.h"))
 
     print_b("Checking that all headers in tests/metron_good compile")
-    errors += check_commands_good([
-        f"g++ -I. --std=gnu++2a -fsyntax-only -c {filename}"
-        for filename in metron_good
-    ])
+    errors += check_commands_good(
+        [
+            f"g++ -I. --std=gnu++2a -fsyntax-only -c {filename}"
+            for filename in metron_good
+        ]
+    )
     print()
 
     print_b("Checking that all headers in tests/metron_bad compile")
-    errors += check_commands_good([
-        f"g++ -I. --std=gnu++2a -fsyntax-only -c {filename}"
-        for filename in metron_bad
-    ])
+    errors += check_commands_good(
+        [
+            f"g++ -I. --std=gnu++2a -fsyntax-only -c {filename}"
+            for filename in metron_bad
+        ]
+    )
     print()
 
     print_b("Checking that all test cases in metron_good convert to SV cleanly")
-    errors += check_commands_good([
-        f"bin/metron -c {filename} -o {filename.replace('_good', '_sv').replace('.h', '.sv')}"
-        for filename in metron_good
-    ])
+    errors += check_commands_good(
+        [
+            f"bin/metron -c {filename} -o {filename.replace('_good', '_sv').replace('.h', '.sv')}"
+            for filename in metron_good
+        ]
+    )
     print()
 
     print_b("Checking that all test cases in metron_bad fail conversion")
-    errors += check_commands_bad([
-        f"bin/metron -c {filename} -o {filename.replace('_bad', '_sv').replace('.h', '.sv')}"
-        for filename in metron_bad
-    ])
+    errors += check_commands_bad(
+        [
+            f"bin/metron -c {filename} -o {filename.replace('_bad', '_sv').replace('.h', '.sv')}"
+            for filename in metron_bad
+        ]
+    )
     print()
 
     metron_sv = sorted(sorted_glob("tests/metron_sv/*.sv"))
 
     print_b("Checking that all converted files match their golden version, if present")
-    errors += check_commands_good([
-        f"diff {filename} {filename.replace('_sv', '_golden')}"
-        for filename in metron_sv
-    ])
+    errors += check_commands_good(
+        [
+            f"diff {filename} {filename.replace('_sv', '_golden')}"
+            for filename in metron_sv
+        ]
+    )
     print()
 
     ################################################################################
@@ -107,50 +131,62 @@ def main():
 
     if not options.basic:
         print_b("Checking that all converted files can be parsed by Verilator")
-        errors += check_commands_good([
-            f"verilator -Wno-width -I. --lint-only {filename}"
-            for filename in metron_sv
-        ])
+        errors += check_commands_good(
+            [
+                f"verilator -Wno-width -I. --lint-only {filename}"
+                for filename in metron_sv
+            ]
+        )
         print()
 
         if options.synth:
             print_b("Checking that all converted files can be synthesized by Yosys")
-            errors += check_commands_good([
-                f"yosys -q -p 'read_verilog -I. -sv {filename}; dump; synth_ice40 -json /dev/null'"
-                for filename in metron_sv
-            ])
+            errors += check_commands_good(
+                [
+                    f"yosys -q -p 'read_verilog -I. -sv {filename}; dump; synth_ice40 -json /dev/null'"
+                    for filename in metron_sv
+                ]
+            )
         else:
             print_b("Checking that all converted files can be parsed by Yosys")
-            errors += check_commands_good([
-                f"yosys -q -p 'read_verilog -I. -sv {filename};'"
-                for filename in metron_sv
-            ])
+            errors += check_commands_good(
+                [
+                    f"yosys -q -p 'read_verilog -I. -sv {filename};'"
+                    for filename in metron_sv
+                ]
+            )
         print()
 
         print_b("Checking that all converted files can be parsed by Icarus")
-        errors += check_commands_good([
-            f"iverilog -g2012 -Wall -I. -o /dev/null {filename}"
-            for filename in metron_sv
-        ])
+        errors += check_commands_good(
+            [
+                f"iverilog -g2012 -Wall -I. -o /dev/null {filename}"
+                for filename in metron_sv
+            ]
+        )
         print()
 
         print_b("Running misc bad commands")
-        errors += check_commands_bad([
-            f"bin/metron skjdlsfjkhdfsjhdf.h",
-            f"bin/metron -c skjdlsfjkhdfsjhdf.h",
-        ])
+        errors += check_commands_bad(
+            [
+                f"bin/metron skjdlsfjkhdfsjhdf.h",
+                f"bin/metron -c skjdlsfjkhdfsjhdf.h",
+            ]
+        )
         print()
 
         print_b("Running standalone tests")
-        errors += check_commands_good([
-            "bin/tests/metron_test",
-            "bin/examples/uart",
-            "bin/examples/uart_vl",
-            "bin/examples/uart_iv",
-            "bin/examples/rvsimple",
-            "bin/examples/rvsimple_vl",
-            "bin/examples/rvsimple_ref",
-        ])
+        errors += check_commands_good(
+            [
+                "bin/tests/metron_test",
+                "bin/examples/uart",
+                "bin/examples/uart_vl",
+                "bin/examples/uart_iv",
+                "bin/examples/rvsimple",
+                "bin/examples/rvsimple_vl",
+                "bin/examples/rvsimple_ref",
+            ]
+        )
         print()
 
         # Lockstep tests are slow because compiler...
@@ -160,40 +196,24 @@ def main():
 
         # Various tests to isolate quirks/bugs in Verilator/Yosys/Icarus
 
-        verilator_good = sorted(sorted_glob("tests/tools_good/verilator*.sv"))
-        verilator_bad  = sorted(sorted_glob("tests/tools_bad/verilator*.sv"))
-
-        yosys_good = sorted(sorted_glob("tests/tools_good/yosys*.sv"))
-        yosys_bad  = sorted(sorted_glob("tests/tools_bad/yosys*.sv"))
-
-        icarus_good = sorted(sorted_glob("tests/tools_good/icarus*.sv"))
-        icarus_bad  = sorted(sorted_glob("tests/tools_bad/icarus*.sv"))
+        tools_good = sorted_glob("tests/tools/good/*.sv")
+        verilator_bad = sorted_glob("tests/tools/verilator/*.sv")
+        yosys_bad = sorted_glob("tests/tools/yosys_fail/*.sv")
+        icarus_bad = sorted_glob("tests/tools/icarus/*.sv")
 
         print_b("Checking Verilator quirks")
-        errors += check_verilator_good(verilator_good)
-        errors += check_verilator_bad (verilator_bad)
-        errors += check_verilator_good(yosys_good)
-        errors += check_verilator_good(yosys_bad)
-        errors += check_verilator_good(icarus_good)
-        errors += check_verilator_good(icarus_bad)
+        errors += check_verilator_good(tools_good)
+        errors += check_verilator_bad(verilator_bad)
         print()
 
         print_b("Checking Yosys quirks")
-        errors += check_yosys_good(verilator_good)
-        errors += check_yosys_good(verilator_bad)
-        errors += check_yosys_good(yosys_good)
-        errors += check_yosys_bad (yosys_bad)
-        errors += check_yosys_good(icarus_good)
-        errors += check_yosys_good(icarus_bad)
+        errors += check_yosys_good(tools_good)
+        errors += check_yosys_bad(yosys_bad)
         print()
 
         print_b("Checking Icarus quirks")
-        errors += check_icarus_good(verilator_good)
-        errors += check_icarus_good(verilator_bad)
-        errors += check_icarus_good(yosys_good)
-        errors += check_icarus_good(yosys_bad)
-        errors += check_icarus_good(icarus_good)
-        errors += check_icarus_bad (icarus_bad)
+        errors += check_icarus_good(tools_good)
+        errors += check_icarus_bad(icarus_bad)
         print()
 
     ############################################################
@@ -326,41 +346,75 @@ def check_commands_bad(commands):
 
 ###############################################################################
 
+
 def check_verilator_good(filenames):
-    return check_commands_good([
-        f"verilator -Wno-width -I. --lint-only {filename}"
-        for filename in filenames
-    ])
+    return check_commands_good(
+        [f"verilator -Wno-width -I. --lint-only {filename}" for filename in filenames]
+    )
+
 
 def check_verilator_bad(filenames):
-    return check_commands_good([
-        f"verilator -Wno-width -I. --lint-only {filename}"
-        for filename in filenames
-    ])
+    return check_commands_bad(
+        [f"verilator -Wno-width -I. --lint-only {filename}" for filename in filenames]
+    )
+
 
 def check_yosys_good(filenames):
-    return check_commands_good([
-        f"yosys -q -p 'read_verilog -I. -sv {filename};  dump; synth_ice40 -json /dev/null'"
-        for filename in filenames
-    ])
+    for filename in filenames:
+        cmd = f"yosys -q -p 'read_verilog -I. -sv {filename};  dump; synth_ice40 -json /dev/null'"
+        if options.verbose:
+            print(cmd)
+        else:
+            print(".", end="")
+        sys.stdout.flush()
+        cmd_result = subprocess.run(
+            prep_cmd(cmd),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding="charmap",
+        )
+        err = cmd_result.stderr.lower()
+        if "warning" in err or "error" in err:
+            print(f"Printed 'warning' or 'error' for {filename}")
+            print(cmd_result.stderr)
+            return 1
+        else:
+            return 0
+
 
 def check_yosys_bad(filenames):
-    return check_commands_bad([
-        f"yosys -q -p 'read_verilog -I. -sv {filename};  dump; synth_ice40 -json /dev/null'"
-        for filename in filenames
-    ])
+    for filename in filenames:
+        cmd = f"yosys -q -p 'read_verilog -I. -sv {filename};  dump; synth_ice40 -json /dev/null'"
+        if options.verbose:
+            print(cmd)
+        else:
+            print(".", end="")
+        sys.stdout.flush()
+        cmd_result = subprocess.run(
+            prep_cmd(cmd),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding="charmap",
+        )
+        err = cmd_result.stderr.lower()
+        if "warning" in err or "error" in err:
+            return 0
+        else:
+            print(f"Did not print 'warning' or 'error' for {filename}")
+            return 1
+
 
 def check_icarus_good(filenames):
-    return check_commands_good([
-        f"iverilog -g2012 -Wall -I. -o /dev/null {filename}"
-        for filename in filenames
-    ])
+    return check_commands_good(
+        [f"iverilog -g2012 -Wall -I. -o /dev/null {filename}" for filename in filenames]
+    )
+
 
 def check_icarus_bad(filenames):
-    return check_commands_bad([
-        f"iverilog -g2012 -Wall -I. -o /dev/null {filename}"
-        for filename in filenames
-    ])
+    return check_commands_bad(
+        [f"iverilog -g2012 -Wall -I. -o /dev/null {filename}" for filename in filenames]
+    )
+
 
 ###############################################################################
 # Make sure all lines starting with "// X " in the source text appear in the

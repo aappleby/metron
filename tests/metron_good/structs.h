@@ -11,8 +11,25 @@ public:
 
   MyStruct1 my_struct1;
 
+  MyStruct1 get_something() {
+    return my_struct1;
+  }
+
   logic<8> tock() {
     my_struct1.a = 1;
-    return 17;
+
+    // does not work in yosys
+    //return extract_field(my_struct1);
+    return 16;
   }
+
+private:
+
+  // does not work in yosys
+  /*
+  logic<8> extract_field(MyStruct1 m) {
+    return m.a;
+  }
+  */
+
 };

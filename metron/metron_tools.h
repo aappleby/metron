@@ -128,7 +128,7 @@ class logic {
   typedef typename bitsize_to_basetype<WIDTH>::unsigned_type UBASE;
   typedef typename bitsize_to_basetype<WIDTH>::signed_type SBASE;
 
-  BASE x = 0;
+  BASE x;
   static const BASE mask = BASE(~0ull) >> ((sizeof(BASE) * 8) - WIDTH);
 
   //----------

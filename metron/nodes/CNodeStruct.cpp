@@ -5,6 +5,7 @@
 #include "metron/nodes/CNodeKeyword.hpp"
 #include "metron/nodes/CNodeList.hpp"
 #include "metron/nodes/CNodePunct.hpp"
+#include "metron/nodes/CNodeUnion.hpp"
 
 //==============================================================================
 
@@ -40,6 +41,9 @@ CNode* CNodeStruct::resolve(std::vector<CNode*> path) {
   if (auto f = get_field(front->name)) {
     if (auto s = f->get_type_struct()) {
       return s->resolve(path);
+    }
+    if (auto u = f->get_type_union()) {
+      return u->resolve(path);
     }
 
     assert(false);

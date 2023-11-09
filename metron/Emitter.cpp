@@ -1132,12 +1132,13 @@ Err Emitter::emit(CNodeExpStatement* node) {
 Err Emitter::emit(CNodeField* node) {
   Err err = check_at(node);
 
+  dump_parse_tree(node);
+
   //----------------------------------------
   // Ports don't go in the class body.
   // FIXME should we disallow public components?
 
-  if (node->is_public && !node->is_component() &&
-      !node->node_decl->is_param()) {
+  if (node->is_public && !node->is_component() && !node->node_decl->is_param()) {
     return err << skip_over(node);
   }
 

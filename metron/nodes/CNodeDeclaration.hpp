@@ -7,16 +7,23 @@ struct CNodeType;
 struct CNodeIdentifier;
 struct CNodeList;
 struct CNodePunct;
+struct CNodeUnion;
 
 //==============================================================================
 
 struct CNodeDeclaration : public CNode {
   void init();
+
+  CNodeClass*  get_class();
   CNodeStruct* get_struct();
-  CNodeClass* get_class();
-  bool is_struct();
+  CNodeUnion*  get_union();
+
   bool is_component();
+
   bool is_class();
+  bool is_struct();
+  bool is_union();
+
   bool is_array() const;
   bool is_param() const;
   bool is_const_char() const;

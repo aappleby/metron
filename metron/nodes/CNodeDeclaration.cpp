@@ -19,15 +19,20 @@ void CNodeDeclaration::init() {
   name = node_name->name;
 }
 
-CNodeStruct* CNodeDeclaration::get_struct() {
-  return get_repo()->get_struct(node_type->name);
-}
-
 CNodeClass* CNodeDeclaration::get_class() {
   return get_repo()->get_class(node_type->name);
 }
 
+CNodeStruct* CNodeDeclaration::get_struct() {
+  return get_repo()->get_struct(node_type->name);
+}
+
+CNodeUnion* CNodeDeclaration::get_union() {
+  return get_repo()->get_union(node_type->name);
+}
+
 bool CNodeDeclaration::is_struct()    { return get_struct() != nullptr; }
+bool CNodeDeclaration::is_union()     { return get_union() != nullptr; }
 bool CNodeDeclaration::is_component() { return get_class() != nullptr; }
 bool CNodeDeclaration::is_class()     { return get_class() != nullptr; }
 bool CNodeDeclaration::is_array() const { return node_array != nullptr; }

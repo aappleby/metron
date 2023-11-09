@@ -6,4 +6,7 @@
 
 `default_nettype none
 
+typedef int unsigned uint32_t;
+typedef int int32_t;
+
 `endif

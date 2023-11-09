@@ -10,3 +10,7 @@ CNodeClass* CNodeField::get_type_class() {
 CNodeStruct* CNodeField::get_type_struct() {
   return get_repo()->get_struct(node_decl->node_type->name);
 }
+
+CNodeUnion* CNodeField::get_type_union() {
+  return get_repo()->get_union(node_decl->node_type->name);
+}

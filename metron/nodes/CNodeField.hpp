@@ -7,6 +7,7 @@
 
 struct CNodeClass;
 struct CNodeStruct;
+struct CNodeUnion;
 
 //------------------------------------------------------------------------------
 
@@ -20,11 +21,13 @@ struct CNodeField : public CNode {
 
   bool is_component()  const { return node_decl->is_component(); }
   bool is_struct()     const { return node_decl->is_struct(); }
+  bool is_union()      const { return node_decl->is_union(); }
   bool is_array()      const { return node_decl->is_array(); }
   bool is_const_char() const { return node_decl->is_const_char(); }
 
   CNodeClass*  get_type_class();
   CNodeStruct* get_type_struct();
+  CNodeUnion*  get_type_union();
 
   //----------------------------------------
 

@@ -13,6 +13,7 @@ struct CNodeNamespace;
 struct CNodeEnum;
 struct CInstClass;
 struct CNodeTranslationUnit;
+struct CNodeUnion;
 
 //------------------------------------------------------------------------------
 
@@ -39,6 +40,7 @@ class CSourceFile {
 
   std::vector<CNodeClass*>     all_classes;
   std::vector<CNodeStruct*>    all_structs;
+  std::vector<CNodeUnion*>     all_unions;
   std::vector<CNodeNamespace*> all_namespaces;
   std::vector<CNodeEnum*>      all_enums;
 

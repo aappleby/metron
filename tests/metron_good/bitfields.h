@@ -55,7 +55,7 @@ struct rv32_jtype {
 };
 
 union rv32_insn {
-  logic<32> raw;
+  logic<32>  raw;
   rv32_rtype r;
   rv32_itype i;
   rv32_stype s;
@@ -66,4 +66,10 @@ union rv32_insn {
 
 class Module {
   public:
+
+  void tock(uint32_t x) {
+    blah.raw = x;
+  }
+
+  rv32_insn blah;
 };

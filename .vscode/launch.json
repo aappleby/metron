@@ -15,7 +15,7 @@
         "-e",
         "-i", "../pinwheel",
         //"-c", "examples/scratch.h",
-        "-c", "tests/metron_good/bitfield_structs.h",
+        "-c", "tests/metron_good/unions.h",
         //"-c", "examples/uart/metron/uart_hello.h",
         //"-c", "examples/rvsimple/metron/config.h",
         //"-c", "pinwheel/metron/block_ram.h",

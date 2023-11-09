@@ -5,6 +5,7 @@
 #include "metron/CSourceFile.hpp"
 #include "metron/nodes/CNodeClass.hpp"
 #include "metron/nodes/CNodeStruct.hpp"
+#include "metron/nodes/CNodeUnion.hpp"
 #include "metron/nodes/CNodeNamespace.hpp"
 #include "metron/nodes/CNodeEnum.hpp"
 #include "matcheroni/Utilities.hpp"
@@ -33,6 +34,15 @@ CNodeClass* CSourceRepo::get_class(std::string_view name) {
 CNodeStruct* CSourceRepo::get_struct(std::string_view name) {
   for (auto s : source_files) {
     for (auto c : s->all_structs) {
+      if (c->name == name) return c;
+    }
+  }
+  return nullptr;
+}
+
+CNodeUnion* CSourceRepo::get_union(std::string_view name) {
+  for (auto s : source_files) {
+    for (auto c : s->all_unions) {
       if (c->name == name) return c;
     }
   }

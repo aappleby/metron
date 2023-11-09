@@ -27,6 +27,8 @@
 #include "metron/nodes/CNodeTranslationUnit.hpp"
 #include <filesystem>
 
+#include "tests/metron_good/bitfields.h"
+
 using namespace matcheroni;
 namespace fs = std::filesystem;
 
@@ -37,6 +39,10 @@ bool CNodeFunction::called_by_init() {
     if (c->called_by_init()) return true;
   }
   return as<CNodeConstructor>() != nullptr;
+}
+
+void blah() {
+  rv32_insn x;
 }
 
 //------------------------------------------------------------------------------
@@ -620,13 +626,28 @@ int main_new(Options opts) {
           }
         }
 
-        if (auto inst_struct = inst_child->as<CInstStruct>()) {
-          auto field = inst_struct->node_field;
+        auto inst_struct = inst_child->as<CInstStruct>();
+        auto inst_union  = inst_child->as<CInstUnion>();
+
+        if (inst_struct || inst_union) {
+          CNodeField* field = nullptr;
+          TraceState state = TS_INVALID;
+
+          if (inst_struct) {
+            field = inst_struct->node_field;
+            state = inst_struct->get_state();
+          }
+
+          if (inst_union) {
+            field = inst_union->node_field;
+            state = inst_union->get_state();
+          }
+
           if (!field->is_public) continue;
           if (field->node_decl->is_param())
             continue;
 
-          switch (inst_struct->get_state()) {
+          switch (state) {
             case TS_NONE:
               break;
             case TS_INPUT:

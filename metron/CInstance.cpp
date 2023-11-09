@@ -13,6 +13,7 @@
 #include "metron/nodes/CNodeLValue.hpp"
 #include "metron/nodes/CNodePunct.hpp"
 #include "metron/nodes/CNodeStruct.hpp"
+#include "metron/nodes/CNodeUnion.hpp"
 
 bool check_port_directions(TraceState sa, TraceState sb) {
   assert(sa >= TS_NONE || sa <= TS_REGISTER);
@@ -114,6 +115,7 @@ CInstClass* instantiate_class(
 
       auto type_class = repo->get_class(node_field->node_decl->node_type->name);
       auto type_struct = repo->get_struct(node_field->node_decl->node_type->name);
+      auto type_union = repo->get_union(node_field->node_decl->node_type->name);
 
       if (type_class) {
         auto inst = instantiate_class(repo, field_name, inst_class, node_field, type_class, depth);
@@ -126,7 +128,13 @@ CInstClass* instantiate_class(
         } else {
           inst_class->parts.push_back(inst);
         }
-
+      } else if (type_union) {
+        auto inst = new CInstUnion(field_name, inst_class, node_field, type_union);
+        if (child_is_public) {
+          inst_class->ports.push_back(inst);
+        } else {
+          inst_class->parts.push_back(inst);
+        }
       } else {
         auto inst = new CInstPrim(field_name, inst_class, node_field);
         if (child_is_public) {
@@ -245,12 +253,15 @@ CInstStruct::CInstStruct(std::string name, CInstance* inst_parent,
   for (auto struct_field : node_struct->all_fields) {
     auto field_name = struct_field->name;
 
-    auto type_struct = repo->get_struct(struct_field->node_decl->node_type->name);
-
-    if (type_struct) {
+    if (auto type_struct = repo->get_struct(struct_field->node_decl->node_type->name)) {
       auto inst_field = new CInstStruct(field_name, this, struct_field, type_struct);
       parts.push_back(inst_field);
-    } else {
+    }
+        else if (auto type_union = repo->get_union(struct_field->node_decl->node_type->name)) {
+      auto inst_field = new CInstUnion(field_name, this, struct_field, type_union);
+      parts.push_back(inst_field);
+    }
+    else {
       auto inst_field = new CInstPrim(field_name, this, struct_field);
       parts.push_back(inst_field);
     }
@@ -290,6 +301,75 @@ void CInstStruct::swap_state() {
 }
 
 void CInstStruct::merge_state() {
+  for (auto child : parts) child->merge_state();
+}
+
+// ##############################################################################
+// ##############################################################################
+
+// ##############################################################################
+// ##############################################################################
+
+CInstUnion::CInstUnion(std::string name, CInstance* inst_parent,
+                       CNodeField* node_field, CNodeUnion* node_union)
+    : CInstance(name, inst_parent),
+      node_field(node_field),
+      node_union(node_union) {
+  assert(node_union);
+
+  auto repo = node_union->get_repo();
+
+  for (auto union_field : node_union->all_fields) {
+    auto field_name = union_field->name;
+
+    if (auto type_struct = repo->get_struct(union_field->node_decl->node_type->name)) {
+      auto inst_field = new CInstStruct(field_name, this, union_field, type_struct);
+      parts.push_back(inst_field);
+    }
+        else if (auto type_union = repo->get_union(union_field->node_decl->node_type->name)) {
+      auto inst_field = new CInstUnion(field_name, this, union_field, type_union);
+      parts.push_back(inst_field);
+    }
+    else {
+      auto inst_field = new CInstPrim(field_name, this, union_field);
+      parts.push_back(inst_field);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+
+TraceState CInstUnion::get_state() const {
+  auto merged_state = TS_PENDING;
+  for (auto child : parts) {
+    merged_state = merge_branch(merged_state, child->get_state());
+  }
+  return merged_state;
+}
+
+//----------------------------------------
+
+CInstance* CInstUnion::resolve(std::string name) {
+  for (auto child : parts)
+    if (child->name == name) return child;
+  return inst_parent ? inst_parent->resolve(name) : nullptr;
+}
+
+//----------------------------------------
+
+void CInstUnion::push_state() {
+  for (auto child : parts) child->push_state();
+}
+
+void CInstUnion::pop_state() {
+  for (auto child : parts) child->pop_state();
+}
+
+void CInstUnion::swap_state() {
+  for (auto child : parts) child->swap_state();
+}
+
+void CInstUnion::merge_state() {
   for (auto child : parts) child->merge_state();
 }
 

@@ -22,6 +22,7 @@ struct CNodeField;
 struct CNodeClass;
 struct CNodeStruct;
 struct CNodeFunction;
+struct CNodeUnion;
 
 // FIXME - we need a call stack that stores (inst,func) tuples instead of just
 // func
@@ -124,6 +125,30 @@ struct CInstStruct : public CInstance {
   std::vector<CInstance*> parts;
   CNodeField* node_field = nullptr;
   CNodeStruct* node_struct = nullptr;
+};
+
+//------------------------------------------------------------------------------
+
+struct CInstUnion : public CInstance {
+  CInstUnion(std::string name, CInstance* inst_parent, CNodeField* node_field,
+             CNodeUnion* node_union);
+
+  //----------
+  // CInstance interface
+
+  TraceState get_state() const override;
+  CInstance* resolve(std::string name) override;
+
+  void push_state() override;
+  void pop_state() override;
+  void swap_state() override;
+  void merge_state() override;
+
+  //----------
+
+  std::vector<CInstance*> parts;
+  CNodeField* node_field = nullptr;
+  CNodeUnion* node_union = nullptr;
 };
 
 //------------------------------------------------------------------------------

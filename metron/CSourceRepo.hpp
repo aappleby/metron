@@ -23,6 +23,7 @@ class CSourceRepo /* : public IContext maybe? */ {
   CSourceFile*    get_file(std::string_view absolute_path);
   CNodeClass*     get_class(std::string_view name);
   CNodeStruct*    get_struct(std::string_view name);
+  CNodeUnion*     get_union(std::string_view name);
   CNodeNamespace* get_namespace(std::string_view name);
   CNodeEnum*      get_enum(std::string_view name);
   CInstClass*     get_instance(std::string name);

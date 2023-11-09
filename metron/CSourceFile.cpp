@@ -6,6 +6,7 @@
 #include "metron/nodes/CNodeTemplate.hpp"
 #include "metron/nodes/CNodeConstructor.hpp"
 #include "metron/nodes/CNodeStruct.hpp"
+#include "metron/nodes/CNodeUnion.hpp"
 #include "metron/nodes/CNodeNamespace.hpp"
 #include "metron/nodes/CNodeTranslationUnit.hpp"
 
@@ -133,6 +134,8 @@ void CSourceFile::link() {
       all_classes.push_back(node_class);
     } else if (auto node_struct = n->as<CNodeStruct>()) {
       all_structs.push_back(node_struct);
+    } else if (auto node_union = n->as<CNodeUnion>()) {
+      all_unions.push_back(node_union);
     } else if (auto node_namespace = n->as<CNodeNamespace>()) {
       all_namespaces.push_back(node_namespace);
     } else if (auto node_enum = n->as<CNodeEnum>()) {
@@ -149,6 +152,8 @@ void CSourceFile::link() {
     } else if (auto node_class = n->as<CNodeClass>()) {
       collect_fields_and_methods(node_class, repo);
     } else if (auto node_struct = n->as<CNodeStruct>()) {
+      //node_struct->collect_fields_and_methods(repo);
+    } else if (auto node_union = n->as<CNodeUnion>()) {
       //node_struct->collect_fields_and_methods(repo);
     } else if (auto node_namespace = n->as<CNodeNamespace>()) {
       node_namespace->collect_fields_and_methods();

@@ -65,6 +65,15 @@ typedef union packed {
 } rv32_insn;
 
 module Module (
+  // output registers
+  output rv32_insn blah,
+  // tock() ports
+  input logic[31:0] tock_x
 );
   /*public:*/
+
+  always_comb begin : tock
+    blah.raw = tock_x;
+  end
+
 endmodule

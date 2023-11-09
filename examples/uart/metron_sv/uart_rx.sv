@@ -21,6 +21,13 @@ module uart_rx (
   parameter cycles_per_bit = 4;
 /*public:*/
 
+  initial begin
+    bit_delay = 0;
+    bit_count = 0;
+    data_out = 0;
+    checksum = 0;
+  end
+
   // Our output is valid once we've received 8 bits.
   always_comb begin : get_valid
     get_valid_ret = bit_count == 8;

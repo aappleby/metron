@@ -23,6 +23,8 @@ module uart_hello (
 /*public:*/
   initial begin
     $readmemh("examples/uart/message.hex", memory, 0, 511);
+    state = 0;
+    cursor = 0;
   end
 
   // The byte of data we want transmitted is always the one at the cursor.

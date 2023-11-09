@@ -9,6 +9,13 @@ template <int cycles_per_bit = 4>
 class uart_rx {
 public:
 
+  uart_rx() {
+    bit_delay = 0;
+    bit_count = 0;
+    data_out = 0;
+    checksum = 0;
+  }
+
   // Our output is valid once we've received 8 bits.
   logic<1> get_valid() const {
     return bit_count == 8;

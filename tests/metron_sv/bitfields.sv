@@ -55,7 +55,7 @@ typedef struct packed {
 } rv32_jtype;
 
 typedef union packed {
-  logic[31:0]  raw;
+  logic[31:0] raw;
   rv32_rtype r;
   rv32_itype i;
   rv32_stype s;
@@ -68,7 +68,7 @@ module Module (
   // output registers
   output rv32_insn blah,
   // tock() ports
-  input uint32_t tock_x
+  input logic[31:0] tock_x
 );
   /*public:*/
 

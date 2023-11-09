@@ -10,6 +10,8 @@ class uart_hello {
 public:
   uart_hello() {
     readmemh("examples/uart/message.hex", memory, 0, 511);
+    state = 0;
+    cursor = 0;
   }
 
   // The byte of data we want transmitted is always the one at the cursor.

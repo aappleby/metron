@@ -458,6 +458,19 @@ inline logic<WIDTH * DUPS> dup(const logic<WIDTH>& a) {
 
 //-----------------------------------------------------------------------------
 
+// FIXME make this work for non-logics
+
+/*
+template <int DST_WIDTH, int SRC_WIDTH>
+inline logic<DST_WIDTH> sign_extend(const uint64_t a) {
+  static_assert(DST_WIDTH >= SRC_WIDTH);
+
+  logic<1> sign = (a >> (SRC_WIDTH - 1)) & 1;
+
+  return cat(dup<DST_WIDTH - SRC_WIDTH>(sign), bx<SRC_WIDTH>(a));
+}
+*/
+
 template <int DST_WIDTH, int SRC_WIDTH>
 inline logic<DST_WIDTH> sign_extend(const logic<SRC_WIDTH> a) {
   static_assert(DST_WIDTH >= SRC_WIDTH);

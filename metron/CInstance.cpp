@@ -7,6 +7,7 @@
 #include "metron/nodes/CNodeDeclaration.hpp"
 #include "metron/nodes/CNodeExpression.hpp"
 #include "metron/nodes/CNodeField.hpp"
+#include "metron/nodes/CNodeCall.hpp"
 #include "metron/nodes/CNodeFieldExpression.hpp"
 #include "metron/nodes/CNodeFunction.hpp"
 #include "metron/nodes/CNodeIdentifier.hpp"
@@ -45,6 +46,15 @@ CInstance::~CInstance() {}
 //----------------------------------------
 
 CInstance* CInstance::resolve(CNode* node) {
+  if (auto node_call = node->as<CNodeCall>()) {
+    return resolve(node_call->node_args);
+  }
+
+  if (auto node_list = node->as<CNodeList>()) {
+    assert(node_list->items.size() == 1);
+    return resolve(node_list->items[0]);
+  }
+
   if (node->as<CNodeLValue>()) {
     return resolve(node->name);
   }

@@ -1,51 +1,17 @@
-// RISC-V SiMPLE SV -- data memory model
-// BSD 3-Clause License
-// (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
-//                Marek Materzok, University of Wrocław
-
-#ifndef EXAMPLE_DATA_MEMORY_H
-#define EXAMPLE_DATA_MEMORY_H
-
-#include "config.h"
-#include "constants.h"
 #include "metron/metron_tools.h"
 
-class example_data_memory {
- public:
-  logic<rv_config::DATA_BITS - 2> address;
-  logic<32> q;
-  logic<1> wren;
-  logic<4> byteena;
-  logic<32> data;
+// Using slice<>() to write to sub-sections of a variable should work.
+// FIXME This can break tracing....
 
- private:
-  /*#(* nomem2reg *)#*/
-  logic<32> mem[pow2(rv_config::DATA_BITS - 2)];
+class test_slice {
+public:
 
- public:
-  void tock() {
-    q = mem[address];
-    tick();
+  void tick(logic<8> addr, logic<4> mask, logic<32> wdata) {
+    if (mask[0]) slice< 7,  0, 32>(ram[addr]) = b8(wdata,  0);
+    if (mask[1]) slice<15,  8, 32>(ram[addr]) = b8(wdata,  8);
+    if (mask[2]) slice<23, 16, 32>(ram[addr]) = b8(wdata, 16);
+    if (mask[3]) slice<31, 24, 32>(ram[addr]) = b8(wdata, 24);
   }
 
- private:
-  void tick() {
-    if (wren) {
-      // doing this slightly differently from rvsimple so we don't have to do
-      // sub-array writes to mem.
-      logic<32> mask = 0;
-      if (byteena[0]) mask = mask | 0x000000FF;
-      if (byteena[1]) mask = mask | 0x0000FF00;
-      if (byteena[2]) mask = mask | 0x00FF0000;
-      if (byteena[3]) mask = mask | 0xFF000000;
-      mem[address] = (mem[address] & ~mask) | (data & mask);
-    }
-  }
-
- public:
-  example_data_memory(const char* filename = nullptr) {
-    if (filename) readmemh(filename, mem);
-  }
+  logic<32> ram[256];
 };
-
-#endif // EXAMPLE_DATA_MEMORY_H

@@ -271,6 +271,8 @@ CNodeField* resolve_field(CNodeStruct* node_struct, CNode* node_name) {
     return resolve_field(node_struct, node_suffix->node_lhs);
   }
 
+  dump_parse_tree(node_name);
+
   LOG_R("----------------------------------------\n");
   LOG_R("Don't know how to get field for %s\n", node_name->get_textstr().c_str());
   LOG_R("----------------------------------------\n");
@@ -305,6 +307,17 @@ CNodeField* resolve_field(CNodeClass* node_class, CNode* node_name) {
   if (auto node_suffix = node_name->as<CNodeSuffixExp>()) {
     return resolve_field(node_class, node_suffix->node_lhs);
   }
+
+  if (auto node_call = node_name->as<CNodeCall>()) {
+    return resolve_field(node_class, node_call->node_args);
+  }
+
+  if (auto node_list = node_name->as<CNodeList>()) {
+    assert(node_list->items.size() == 1);
+    return resolve_field(node_class, node_list->items[0]);
+  }
+
+  dump_parse_tree(node_name);
 
   LOG_R("----------------------------------------\n");
   LOG_R("Don't know how to get field for %s\n", node_name->get_textstr().c_str());
@@ -680,7 +693,20 @@ Err Emitter::emit_dup(CNodeCall* node) {
 //----------------------------------------
 
 Err Emitter::emit_slice(CNodeCall* node) {
-  return ERR("Not implemented");
+  Err err;
+
+  auto bitH = node->node_targs->items[0]->as<CNodeConstInt>()->value;
+  auto bitL = node->node_targs->items[1]->as<CNodeConstInt>()->value;
+
+  auto node_var = node->node_args->items[0];
+  cursor.tok_cursor = node_var->tok_begin();
+  err << emit_dispatch2(node_var);
+
+  err << cursor.emit_print("[%2d:%2d]", bitH, bitL);
+
+  cursor.tok_cursor = node->tok_end();
+
+  return err;
 }
 
 //----------------------------------------

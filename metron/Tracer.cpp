@@ -579,15 +579,45 @@ Err Tracer::trace(CNodeDefault* node) {
 
 //------------------------------------------------------------------------------
 
-Err Tracer::log_action(CInstance* inst, CNode* node, TraceAction action) {
+CInstance* walk_up_unions(CInstance* inst) {
+  if (inst->inst_parent) {
+    auto parent_union = walk_up_unions(inst->inst_parent);
+    if (parent_union) {
+      return parent_union;
+    }
+  }
+
+  if (inst->as<CInstUnion>()) {
+    return inst;
+  }
+
+  return nullptr;
+}
+
+//------------------------------------------------------------------------------
+
+Err Tracer::log_action2(CInstance* inst, CNode* node, TraceAction action) {
   Err err;
 
-  if (auto inst_struct = inst->as<CInstStruct>()) {
-    for (auto child : inst_struct->parts) {
-      err << log_action(child, node, action);
+  //----------------------------------------
+
+  if (auto inst_union = inst->as<CInstUnion>()) {
+    for (auto child : inst_union->parts) {
+      err << log_action2(child, node, action);
     }
     return err;
   }
+
+  //----------------------------------------
+
+  if (auto inst_struct = inst->as<CInstStruct>()) {
+    for (auto child : inst_struct->parts) {
+      err << log_action2(child, node, action);
+    }
+    return err;
+  }
+
+  //----------------------------------------
 
   if (auto inst_prim = inst->as<CInstPrim>()) {
     if (inst->name == "@return") {
@@ -629,6 +659,17 @@ Err Tracer::log_action(CInstance* inst, CNode* node, TraceAction action) {
 
   assert(false);
   return err;
+}
+
+//------------------------------------------------------------------------------
+
+Err Tracer::log_action(CInstance* inst, CNode* node, TraceAction action) {
+  if (auto parent_union = walk_up_unions(inst)) {
+    return log_action2(parent_union, node, action);
+  }
+  else {
+    return log_action2(inst, node, action);
+  }
 }
 
 //------------------------------------------------------------------------------

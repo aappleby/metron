@@ -293,7 +293,7 @@ TraceState CInstStruct::get_state() const {
 CInstance* CInstStruct::resolve(std::string name) {
   for (auto child : parts)
     if (child->name == name) return child;
-  return inst_parent ? inst_parent->resolve(name) : nullptr;
+  return nullptr;
 }
 
 //----------------------------------------
@@ -362,7 +362,7 @@ TraceState CInstUnion::get_state() const {
 CInstance* CInstUnion::resolve(std::string name) {
   for (auto child : parts)
     if (child->name == name) return child;
-  return inst_parent ? inst_parent->resolve(name) : nullptr;
+  return nullptr;
 }
 
 //----------------------------------------
@@ -467,36 +467,49 @@ CInstFunc::CInstFunc(std::string name, CInstance* inst_parent,
   auto repo = node_func->get_repo();
 
   for (auto param : node_func->params) {
-    auto type_struct = repo->get_struct(param->node_type->name);
-
-    if (type_struct) {
-      auto inst_field = new CInstStruct(param->name, this, nullptr, type_struct);
-      params.push_back(inst_field);
-    } else {
-      auto inst_field = new CInstPrim(param->name, this, nullptr);
-      params.push_back(inst_field);
+    if (auto type_struct = repo->get_struct(param->node_type->name)) {
+      auto inst_param = new CInstStruct(param->name, this, nullptr, type_struct);
+      params.push_back(inst_param);
+    }
+    else if (auto type_union = repo->get_union(param->node_type->name)) {
+      auto inst_param = new CInstUnion(param->name, this, nullptr, type_union);
+      params.push_back(inst_param);
+    }
+    else {
+      auto inst_param = new CInstPrim(param->name, this, nullptr);
+      params.push_back(inst_param);
     }
   }
 
   auto ret_type = node_func->node_type;
-  if (ret_type && ret_type->get_text() != "void") {
-    if (auto struct_type = ret_type->as<CNodeStructType>()) {
-      auto node_struct = repo->get_struct(struct_type->get_text());
-      auto inst = new CInstStruct("@return", this, nullptr, node_struct);
-      inst_return = inst;
-    } else if (auto builtin_type = ret_type->as<CNodeBuiltinType>()) {
-      auto inst = new CInstPrim("@return", this, nullptr);
-      inst_return = inst;
-    } else if (auto builtin_type = ret_type->as<CNodeTypedefType>()) {
-      auto inst = new CInstPrim("@return", this, nullptr);
-      inst_return = inst;
+  if (!ret_type) return;
+
+  if (auto builtin_type = ret_type->as<CNodeBuiltinType>()) {
+    if (builtin_type->node_name->get_text() == "void") {
+      return;
     }
-    else if (auto class_type = ret_type->as<CNodeClassType>()) {
-      assert(node_func->tag_noconvert());
-    }
-    else {
-      assert(false);
-    }
+  }
+
+  if (auto union_type = ret_type->as<CNodeUnionType>()) {
+    auto node_union = repo->get_union(union_type->node_name->get_text());
+    auto inst = new CInstUnion("@return", this, nullptr, node_union);
+    inst_return = inst;
+  } else if (auto struct_type = ret_type->as<CNodeStructType>()) {
+    auto node_struct = repo->get_struct(struct_type->node_name->get_text());
+    auto inst = new CInstStruct("@return", this, nullptr, node_struct);
+    inst_return = inst;
+  } else if (auto builtin_type = ret_type->as<CNodeBuiltinType>()) {
+    auto inst = new CInstPrim("@return", this, nullptr);
+    inst_return = inst;
+  } else if (auto builtin_type = ret_type->as<CNodeTypedefType>()) {
+    auto inst = new CInstPrim("@return", this, nullptr);
+    inst_return = inst;
+  }
+  else if (auto class_type = ret_type->as<CNodeClassType>()) {
+    assert(node_func->tag_noconvert());
+  }
+  else {
+    assert(false);
   }
 }
 

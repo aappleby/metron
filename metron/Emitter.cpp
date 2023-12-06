@@ -1276,8 +1276,12 @@ Err Emitter::emit(CNodeFunction* node) {
     err << (called_by_tick ? emit_task(node)
                            : emit_always_ff(node));
   } else if (node->method_type == MT_FUNC) {
-    err << (node->internal_callers.size() ? emit_func(node)
-                                          : emit_always_comb(node));
+    if (node->is_public) {
+      err << emit_always_comb(node);
+    }
+    else {
+      err << emit_func(node);
+    }
   } else {
     assert(false);
   }

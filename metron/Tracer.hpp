@@ -100,6 +100,7 @@ struct Tracer {
   Err trace(CNodeUsing* node);
 
   Err log_action(CInstance* inst, CNode* node, TraceAction action);
+  Err log_action2(CInstance* inst, CNode* node, TraceAction action);
 
   std::vector<CNodeFunction*> cstack;
   std::vector<CInstance*> istack;

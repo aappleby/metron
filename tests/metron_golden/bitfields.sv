@@ -65,7 +65,7 @@ typedef union packed {
 } rv32_insn;
 
 module Module (
-  // output registers
+  // output signals
   output rv32_insn blah,
   // tock() ports
   input logic[31:0] tock_x

@@ -695,14 +695,14 @@ Err Emitter::emit_dup(CNodeCall* node) {
 Err Emitter::emit_slice(CNodeCall* node) {
   Err err;
 
-  auto bitH = node->node_targs->items[0]->as<CNodeConstInt>()->value;
+  auto bitW = node->node_targs->items[0]->as<CNodeConstInt>()->value;
   auto bitL = node->node_targs->items[1]->as<CNodeConstInt>()->value;
 
   auto node_var = node->node_args->items[0];
   cursor.tok_cursor = node_var->tok_begin();
   err << emit_dispatch2(node_var);
 
-  err << cursor.emit_print("[%2d:%2d]", bitH, bitL);
+  err << cursor.emit_print("[%2d:%2d]", bitW + bitL - 1, bitL);
 
   cursor.tok_cursor = node->tok_end();
 

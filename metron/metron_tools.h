@@ -217,29 +217,32 @@ class logic {
 // Using this will probably break Metron's multiple-write detection, so... use
 // sparingly.
 
-template <int HI, int LO, int WIDTH, typename DST>
+template <int SLICE_WIDTH, int LO, int WIDTH>
 struct bitslice {
-  DST& self;
+  logic<WIDTH>& self;
 
-  bitslice(DST& s) : self(s) {}
+  typedef logic<WIDTH>::BASE DST;
+
+  bitslice(logic<WIDTH>& s) : self(s) {}
   bitslice(const bitslice& b) = delete;
   bitslice& operator=(const bitslice& b) = delete;
 
-  void operator=(logic<HI - LO + 1> x) {
-    int hi = HI;
+  void operator=(logic<SLICE_WIDTH> x) {
+    int hi = LO + SLICE_WIDTH - 1;
     int lo = LO;
     if (hi > WIDTH - 1) hi = WIDTH - 1;
 
     const DST mask = DST(-1ll) >> ((sizeof(DST) * 8) - (hi - lo + 1));
-    self = DST((self & ~(mask << LO)) | ((x & mask) << LO));
+    self.x = DST((self.x & ~(mask << LO)) | ((x & mask) << LO));
   }
 };
 
-template <int HI, int LO, int WIDTH>
-inline bitslice<HI, LO, WIDTH, typename logic<WIDTH>::BASE> slice(
-    logic<WIDTH>& x) {
-  return {x.x};
+template <int SLICE_WIDTH, int LO, int WIDTH>
+inline bitslice<SLICE_WIDTH, LO, WIDTH> slice(logic<WIDTH>& x) {
+  return x;
 }
+
+
 
 //------------------------------------------------------------------------------
 // Boolean operations applied to logics of the same size produce logics of the

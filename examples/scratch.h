@@ -129,11 +129,10 @@ public:
 
     logic<32> BC_result = execute(B_hpc, B_insn, BC_reg1, BC_reg2, BC_hpc);
 
-    /*
     //--------------------------------------------------------------------------
     // If both threads trigger PC swaps at once, the C one fires first.
 
-    rv32_hpc BA_hpc;
+    rv32_hpc BA_hpc = BC_hpc;
 
     if (CD_swap) {
       // If we're swapping threads, A is actually going to the HPC from reg1
@@ -233,11 +232,9 @@ public:
     reg_if.wren   = D_wren;
 
     tick(reset_in, AB_insn, BA_hpc, BC_addr, BC_result, CD_waddr, CD_wdata, CD_wren);
-    */
   }
 
   //----------------------------------------------------------------------------
-
 
 private:
 

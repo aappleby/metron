@@ -386,9 +386,9 @@ Err Tracer::trace(CNodeField* node) { return trace(node->node_decl); }
 Err Tracer::trace(CNodeFieldExpression* node) {
   Err err;
 
-  auto inst_dst = istack.back()->resolve(node);
-
-  err << log_action(inst_dst, node, ACT_READ);
+  if (auto inst_dst = istack.back()->resolve(node)) {
+    err << log_action(inst_dst, node, ACT_READ);
+  }
 
   return err;
 }
@@ -596,6 +596,29 @@ CInstance* walk_up_unions(CInstance* inst) {
 
 //------------------------------------------------------------------------------
 
+bool is_return(CInstance* inst) {
+  if (inst->name == "@return") return true;
+
+  if (inst->inst_parent) {
+    return is_return(inst->inst_parent);
+  }
+  else {
+    return false;
+  }
+}
+
+bool belongs_to_func(CInstance* inst) {
+  if (inst->inst_parent == nullptr) return false;
+
+  if (auto func = inst->inst_parent->as<CInstFunc>()) {
+    return true;
+  }
+  else {
+    return belongs_to_func(inst->inst_parent);
+  }
+}
+
+
 Err Tracer::log_action2(CInstance* inst, CNode* node, TraceAction action) {
   Err err;
 
@@ -630,7 +653,7 @@ Err Tracer::log_action2(CInstance* inst, CNode* node, TraceAction action) {
     auto func = node->ancestor<CNodeFunction>();
     assert(func);
 
-    if (!deep_trace) {
+    if (!deep_trace && !belongs_to_func(inst_prim)) {
       if (action == ACT_READ) {
         func->self_reads.insert(inst_prim);
       } else if (action == ACT_WRITE) {

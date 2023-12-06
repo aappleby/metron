@@ -78,6 +78,8 @@ Err collect_fields_and_methods(CNodeClass* node, CSourceRepo* repo) {
 
 //------------------------------------------------------------------------------
 
+void dump_lexeme(Lexeme& l);
+
 Err CSourceFile::init(CSourceRepo* _repo, const std::string& _filename,
                       const std::string& _filepath,
                       const std::string& _source_code, bool _use_utf8_bom) {
@@ -92,6 +94,13 @@ Err CSourceFile::init(CSourceRepo* _repo, const std::string& _filename,
 
   LOG("Lexing %s\n", filename.c_str());
   lexer.lex(context.source, context.lexemes);
+
+  /*
+  for (auto& t : context.lexemes) {
+    dump_lexeme(t);
+    LOG("\n");
+  }
+  */
 
   LOG("Tokenizing %s\n", filename.c_str());
   for (auto& t : context.lexemes) {

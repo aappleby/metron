@@ -678,6 +678,12 @@ Err Emitter::emit_dup(CNodeCall* node) {
 }
 
 //----------------------------------------
+
+Err Emitter::emit_slice(CNodeCall* node) {
+  return ERR("Not implemented");
+}
+
+//----------------------------------------
 // We don't actually "call" into submodules, so we can just comment this
 // call out and patch in the return type binding if needed.
 
@@ -728,11 +734,19 @@ Err Emitter::emit(CNodeCall* node) {
     if (func_id->name == "cat") return emit_cat(node);
     if (func_id->name == "dup") return emit_dup(node);
     if (func_id->name == "sra") return emit_sra(node);
+    if (func_id->name == "slice") return emit_slice(node);
 
     //----------
     // Not a special builtin call
 
     auto dst_func = src_class->get_function(func_id->get_text());
+
+    if (!dst_func) {
+      dump_parse_tree(node);
+      LOG_R("Don't know what to do with undeclared function %s\n", std::string(func_id->get_text()).c_str());
+      return ERR("Undeclared function");
+    }
+
     auto dst_params = dst_func->node_params;
     auto src_mtype = src_func->method_type;
     auto dst_mtype = dst_func->method_type;
@@ -1131,8 +1145,6 @@ Err Emitter::emit(CNodeExpStatement* node) {
 
 Err Emitter::emit(CNodeField* node) {
   Err err = check_at(node);
-
-  dump_parse_tree(node);
 
   //----------------------------------------
   // Ports don't go in the class body.
@@ -1580,6 +1592,11 @@ Err Emitter::emit_template_parameter_list(CNodeClass* node) {
   for (auto param : node_template->params) {
     err << cursor.start_line();
     err << cursor.emit_print("parameter ");
+
+    if (param->node_value == nullptr) {
+      return ERR("Template parameter has no default vaule!\n");
+    }
+
 
     cursor.tok_cursor = param->node_name->tok_begin();
     err << emit_dispatch2(param->node_name);

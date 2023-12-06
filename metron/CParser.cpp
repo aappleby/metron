@@ -151,7 +151,7 @@ struct TraceToken {
 template <StringParam lit>
 TokenSpan match_keyword(CContext& ctx, TokenSpan body) {
   static_assert(SST<c_keywords>::contains(lit.str_val));
-  if (!body.is_valid()) return body.fail();
+  if (!body.is_valid() || body.is_empty()) return body.fail();
   if (ctx.atom_cmp(*body.begin, LEX_KEYWORD) != 0) return body.fail();
   if (ctx.atom_cmp(*body.begin, lit.span()) != 0) return body.fail();
   return body.advance(1);
@@ -162,7 +162,7 @@ using cap_keyword = CaptureAnon<Ref<match_keyword<lit>>, CNodeKeyword>;
 
 template <StringParam lit>
 TokenSpan match_literal(CContext& ctx, TokenSpan body) {
-  if (!body.is_valid()) return body.fail();
+  if (!body.is_valid() || body.is_empty()) return body.fail();
   if (ctx.atom_cmp(*body.begin, lit.span()) != 0) return body.fail();
   return body.advance(1);
 }
@@ -173,6 +173,9 @@ TokenSpan match_literal(CContext& ctx, TokenSpan body) {
 // consecutive punctuator tokens, _and_ the punctuators can't have any
 // whitespace between them.
 
+// XXXXX this was a bad idea
+
+/*
 template <StringParam lit>
 inline TokenSpan match_punct(CContext& ctx, TokenSpan body) {
   if (!body.is_valid()) return body.fail();
@@ -195,6 +198,15 @@ inline TokenSpan match_punct(CContext& ctx, TokenSpan body) {
   body = body.advance(lit.str_len);
 
   return body;
+}
+*/
+
+template <StringParam lit>
+inline TokenSpan match_punct(CContext& ctx, TokenSpan body) {
+  if (!body.is_valid() || body.is_empty()) return body.fail();
+  if (ctx.atom_cmp(*body.begin, LEX_PUNCT) != 0) return body.fail();
+  if (ctx.atom_cmp(*body.begin, lit.span()) != 0) return body.fail();
+  return body.advance(1);
 }
 
 //------------------------------------------------------------------------------
@@ -556,7 +568,7 @@ TokenSpan match_ternary_op(CContext& ctx, TokenSpan body) {
 //----------------------------------------
 
 TokenSpan cap_binary_ops(CContext& ctx, TokenSpan body) {
-  matcheroni_assert(body.is_valid());
+  if (!body.is_valid() || body.is_empty()) return body.fail();
 
   if (ctx.atom_cmp(*body.begin, LEX_PUNCT)) {
     return body.fail();
@@ -1503,19 +1515,10 @@ TokenSpan match_typedef(CContext& ctx, TokenSpan body) {
 
 TokenSpan cap_assignment(CContext& ctx, TokenSpan body) {
 
-  using lvalue =
-  CaptureAnon<
-    Seq<
-      Tag<"name",       cap_any_identifier>,
-      Opt<Tag<"suffix", cap_index_list>>
-    >,
-    CNodeLValue
-  >;
-
   using pattern =
   CaptureAnon<
     Seq<
-      Tag<"lhs",  lvalue>,
+      Tag<"lhs",  Ref<cap_expression>>,
       Tag<"op",   cap_assignment_op>,
       Tag<"rhs",  Ref<cap_expression>>
     >,
@@ -1557,9 +1560,12 @@ TokenSpan match_statement(CContext& ctx, TokenSpan body) {
     statement_wrapper<Ref<cap_expression>>,
     statement_wrapper<CaptureAnon<Ref<match_declaration_exp>, CNodeDeclaration>>
 
-    // FIXME disallowing empty statements for now
-    //,
-    //cap_punct<";">
+    /*
+    CaptureAnon<
+      Tag<"semi", cap_punct<";">>,
+      CNodeExpStatement
+    >
+    */
   >;
   // clang-format on
   auto result = pattern::match(ctx, body);

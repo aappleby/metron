@@ -348,16 +348,18 @@ void CScope::dump() {
   }
 }
 
+#endif
+
 //----------------------------------------------------------------------------
 
-void Lexeme::dump_lexeme() const {
+void dump_lexeme(Lexeme& l) {
   const int span_len = 20;
   std::string dump = "";
 
-  if (type == LEX_BOF) dump = "<bof>";
-  if (type == LEX_EOF) dump = "<eof>";
+  if (l.type == LEX_BOF) dump = "<bof>";
+  if (l.type == LEX_EOF) dump = "<eof>";
 
-  for (auto c = text_begin; c < text_end; c++) {
+  for (auto c = l.text_begin; c < l.text_end; c++) {
     if      (*c == '\n') dump += "\\n";
     else if (*c == '\t') dump += "\\t";
     else if (*c == '\r') dump += "\\r";
@@ -372,16 +374,11 @@ void Lexeme::dump_lexeme() const {
   }
   while (dump.size() < span_len) dump += " ";
 
-  printf("r%04d c%02d i%02d ", row, col, indent);
-
-  utils::set_color(type_to_color());
-  printf("%-14.14s ", type_to_str());
-  utils::set_color(0);
-  printf("%s", dump.c_str());
-  utils::set_color(0);
+  LOG("r%04d c%02d i%02d ", l.row, l.col, l.indent);
+  LOG_C(l.type_to_color(), "%-14.14s ", l.type_to_str());
+  LOG("%s", dump.c_str());
 }
 
-#endif
 
 //------------------------------------------------------------------------------
 

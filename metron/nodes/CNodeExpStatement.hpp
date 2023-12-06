@@ -6,7 +6,7 @@
 
 struct CNodeExpStatement : public CNodeStatement {
   void init() {
-    node_exp = child("exp")->req<CNode>();
+    node_exp = child("exp")->opt<CNode>();
   }
 
   CNode* node_exp = nullptr;

@@ -192,7 +192,7 @@ int main_new(Options opts) {
   //exit(-1);
 
   sanity_check_parse_tree(repo);
-  dump_parse_tree(root_file->context.top_head);
+  //dump_parse_tree(root_file->context.top_head);
 
   //exit(-1);
 
@@ -266,7 +266,7 @@ int main_new(Options opts) {
     node_visitor gather_writes = [&](CNode* node) {
       if (any_writes) return;
       if (auto node_assignment = node->as<CNodeAssignment>()) {
-        auto lhs = node_assignment->child("lhs")->req<CNodeLValue>();
+        auto lhs = node_assignment->child("lhs")->req<CNode>();
         auto field = resolve_field(node->ancestor<CNodeClass>(), lhs);
         if (field) {
           current_func->self_writes2.insert(field);

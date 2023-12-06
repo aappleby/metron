@@ -467,9 +467,66 @@ TextSpan match_string(TextMatchContext& ctx, TextSpan body) {
 // 6.4.6 Punctuators
 
 TextSpan match_punct(TextMatchContext& ctx, TextSpan body) {
-  // We're just gonna match these one punct at a time
-  using punctuator = Charset<"-,;:!?.()[]{}*/&#%^+<=>|~">;
-  return punctuator::match(ctx, body);
+  // This was a bad idea.......
+  // XXXX We're just gonna match these one punct at a time
+  // XXXX using punctuator = Charset<"-,;:!?.()[]{}*/&#%^+<=>|~">;
+  // XXXX return punctuator::match(ctx, body);
+
+  using pattern = Oneof<
+    Lit<"...">,
+    Lit<"<<=">,
+    Lit<">>=">,
+
+    Lit<"--">,
+    Lit<"-=">,
+    Lit<"->">,
+    Lit<"!=">,
+    Lit<"*=">,
+    Lit<"/=">,
+    Lit<"&&">,
+    Lit<"&=">,
+    Lit<"##">,
+    Lit<"%=">,
+    Lit<"^=">,
+    Lit<"++">,
+    Lit<"+=">,
+    Lit<"<<">,
+    Lit<"<=">,
+    Lit<"==">,
+    Lit<">=">,
+    Lit<">>">,
+    Lit<"|=">,
+    Lit<"||">,
+    Lit<"::">, // This isn't in the C spec, but we need it because C++
+
+    Lit<"-">,
+    Lit<",">,
+    Lit<";">,
+    Lit<":">,
+    Lit<"!">,
+    Lit<"?">,
+    Lit<".">,
+    Lit<"(">,
+    Lit<")">,
+    Lit<"[">,
+    Lit<"]">,
+    Lit<"{">,
+    Lit<"}">,
+    Lit<"*">,
+    Lit<"/">,
+    Lit<"&">,
+    Lit<"#">,
+    Lit<"%">,
+    Lit<"^">,
+    Lit<"+">,
+    Lit<"<">,
+    Lit<"=">,
+    Lit<">">,
+    Lit<"|">,
+    Lit<"~">
+  >;
+
+  return pattern::match(ctx, body);
 }
 
 //------------------------------------------------------------------------------

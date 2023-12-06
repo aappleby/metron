@@ -203,25 +203,36 @@ Err Tracer::trace_children(CNode* node) {
 Err Tracer::trace(CNodeAssignment* node) {
   Err err;
 
-  auto rhs = node->child("rhs");
+  auto lhs = node->child("lhs");
   auto op = node->child("op");
-  auto lhs = node->child("lhs")->req<CNodeLValue>();
-  auto suffix = lhs->child("suffix");
+  auto rhs = node->child("rhs");
 
   err << trace_dispatch(rhs);
 
-  if (suffix) {
-    err << trace_dispatch(suffix);
-  }
+  //----------------------------------------
+  // LHS is suffix exp
 
-  auto inst_lhs = istack.back()->resolve(lhs->child("name"));
-  if (!inst_lhs) return err;
+  if (auto lhs_suffix_exp = lhs->as<CNodeSuffixExp>()) {
+    err << trace_dispatch(lhs->child("suffix"));
 
-  if (op->get_text() != "=" || suffix) {
+    auto inst_lhs = istack.back()->resolve(lhs);
+    assert(inst_lhs);
+
     err << log_action(inst_lhs, node, ACT_READ);
+    err << log_action(inst_lhs, node, ACT_WRITE);
   }
 
-  err << log_action(inst_lhs, node, ACT_WRITE);
+  //----------------------------------------
+  // LHS is not suffix exp
+
+  else {
+    auto inst_lhs = istack.back()->resolve(lhs);
+    if (!inst_lhs) return err;
+
+    err << log_action(inst_lhs, node, ACT_WRITE);
+  }
+
+  //----------------------------------------
 
   return err;
 }

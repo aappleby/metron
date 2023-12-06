@@ -128,6 +128,7 @@ struct Emitter {
   Err emit_cat(CNodeCall* node);
   Err emit_sra(CNodeCall* node);
   Err emit_dup(CNodeCall* node);
+  Err emit_slice(CNodeCall* node);
   Err emit_submod_call(CNodeCall* node);
 
 

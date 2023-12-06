@@ -33,8 +33,8 @@ struct CNodeBinaryExp : public CNodeExpression {};
 
 struct CNodePrefixExp : public CNodeExpression {
   void init() {
-    node_prefix = child("prefix");
-    node_rhs = child("rhs");
+    node_prefix = child("prefix")->req<CNode>();
+    node_rhs = child("rhs")->req<CNode>();
   }
   CNode* node_prefix;
   CNode* node_rhs;
@@ -42,8 +42,8 @@ struct CNodePrefixExp : public CNodeExpression {
 
 struct CNodeSuffixExp : public CNodeExpression {
   void init() {
-    node_lhs = child("lhs");
-    node_suffix = child("suffix");
+    node_lhs = child("lhs")->req<CNode>();
+    node_suffix = child("suffix")->req<CNode>();
   }
   CNode* node_lhs;
   CNode* node_suffix;

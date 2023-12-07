@@ -89,8 +89,8 @@ CInstance* CInstance::resolve(CNode* node) {
     return inst_parent->resolve(node);
   }
 
-  auto text = node->get_text();
-  LOG_R("Could not resolve %.*s\n", text.size(), text.data());
+  //auto text = node->get_text();
+  //LOG_R("Could not resolve %.*s\n", text.size(), text.data());
 
   return nullptr;
 }
@@ -187,7 +187,10 @@ bool CInstClass::check_port_directions(CInstClass* b) {
 
   // Mismatched port sizes (how?) are invalid.
   assert(a->ports.size() == b->ports.size());
-  if (a->ports.size() != b->ports.size()) return false;
+  if (a->ports.size() != b->ports.size()) {
+    LOG_R("Mismatched port sizes\n");
+    return false;
+  }
 
   for (int i = 0; i < a->ports.size(); i++) {
     auto pa = a->ports[i];
@@ -195,7 +198,10 @@ bool CInstClass::check_port_directions(CInstClass* b) {
 
     if (auto fa = pa->as<CInstFunc>()) {
       auto fb = pb->as<CInstFunc>();
-      if (!fa->check_port_directions(fb)) return false;
+      if (!fa->check_port_directions(fb)) {
+        fa->check_port_directions(fb);
+        return false;
+      }
       continue;
     }
 
@@ -522,6 +528,9 @@ bool CInstFunc::check_port_directions(CInstFunc* b) {
   bool ok = true;
 
   if (a->inst_return) {
+    auto qa = a->inst_return->get_state();
+    auto qb = b->inst_return->get_state();
+
     ok &= ::check_port_directions(a->inst_return->get_state(),
                                   b->inst_return->get_state());
   }

@@ -644,7 +644,8 @@ Err Tracer::log_action2(CInstance* inst, CNode* node, TraceAction action) {
 
   if (auto inst_prim = inst->as<CInstPrim>()) {
     if (inst->name == "@return") {
-      LOG("wat going on %d\n", action);
+      // FIXME wat going on
+      //LOG("wat going on %d\n", action);
       return err;
     }
 

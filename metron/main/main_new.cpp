@@ -45,6 +45,36 @@ void blah() {
   rv32_insn x;
 }
 
+
+template<typename T>
+using permute_callback = std::function<void(std::vector<T>&)>;
+
+template<typename T>
+void permute(std::vector<T>& a, permute_callback<T> pc) {
+  auto N = a.size();
+  std::vector<int> p(N + 1, 0);
+
+  pc(a);
+
+  int i = 1;
+  while (i < N) {
+    if (p[i] < i) {
+      int j = (i & 1) ? p[i] : 0;
+      std::swap(a[j], a[i]);
+
+      pc(a);
+
+      p[i]++;
+      i = 1;
+    }
+    else {
+      p[i] = 0;
+      i++;
+    }
+  }
+}
+
+
 //------------------------------------------------------------------------------
 
 MethodType get_method_type(CNodeFunction* node) {
@@ -291,6 +321,7 @@ int main_new(Options opts) {
       }
     }
 
+    /*
     for (auto file : repo.source_files) {
       for (auto node_class : file->all_classes) {
         for (auto node_func : node_class->all_functions) {
@@ -316,6 +347,7 @@ int main_new(Options opts) {
         }
       }
     }
+    */
 
     for (auto file : repo.source_files) {
       for (auto node_class : file->all_classes) {
@@ -416,14 +448,16 @@ int main_new(Options opts) {
         if (func_name.starts_with("tock")) continue;
         if (!node_func->is_public) continue;
 
-        LOG_B("Tracing %s\n", func_name.c_str());
-        auto inst_func = inst_class->resolve(func_name);
-        call_stack stack;
-        stack.push_back(node_func);
+        if (node_func->tag_noconvert()) {
+          //LOG_R("Not tracing top func %s\n", func_name.c_str());
+        }
+        else {
+          LOG_B("Tracing top func %s\n", func_name.c_str());
+        }
 
-        writes_are_bad = true;
-        err << node_func->trace(inst_func, stack);
-        writes_are_bad = false;
+        auto inst_func = inst_class->resolve(func_name);
+
+        err << tracer.start_trace(inst_func, node_func);
       }
       */
     }

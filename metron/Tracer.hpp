@@ -63,41 +63,24 @@ struct Tracer {
     reset();
     cstack.push_back(func);
     istack.push_back(inst);
-    return trace(func);
+    return trace_dispatch(func);
   }
 
   Err trace_dispatch(CNode* node);
   Err trace_children(CNode* node);
 
   Err trace(CNodeAssignment* node);
-  Err trace(CNodeBinaryExp* node);
   Err trace(CNodeCall* node);
-  Err trace(CNodeCase* node);
-  Err trace(CNodeCompound* node);
-  Err trace(CNodeConstructor* node);
-  Err trace(CNodeDeclaration* node);
-  Err trace(CNodeDefault* node);
-  Err trace(CNodeExpStatement* node);
-  Err trace(CNodeField* node);
   Err trace(CNodeFieldExpression* node);
   Err trace(CNodeFor* node);
-  Err trace(CNodeFunction* node);
   Err trace(CNodeIdentifier* node);
   Err trace(CNodeIdentifierExp* node);
   Err trace(CNodeIf* node);
-  Err trace(CNodeList* node);
-  Err trace(CNodeLValue* node);
-  Err trace(CNodeNamespace* node);
   Err trace(CNodePrefixExp* node);
-  Err trace(CNodePreproc* node);
   Err trace(CNodeQualifiedIdentifier* node);
   Err trace(CNodeReturn* node);
-  Err trace(CNodeStruct* node);
   Err trace(CNodeSuffixExp* node);
   Err trace(CNodeSwitch* node);
-  Err trace(CNodeTemplate* node);
-  Err trace(CNodeTypedef* node);
-  Err trace(CNodeUsing* node);
 
   Err log_action(CInstance* inst, CNode* node, TraceAction action);
   Err log_action2(CInstance* inst, CNode* node, TraceAction action);
@@ -116,4 +99,5 @@ struct Tracer {
   CInstance* root_inst = nullptr;
   bool deep_trace = false;
   bool writes_are_bad = false;
+  bool log_actions = false;
 };

@@ -16,6 +16,31 @@
 #include "metron/nodes/CNodeStruct.hpp"
 #include "metron/nodes/CNodeUnion.hpp"
 
+//------------------------------------------------------------------------------
+
+bool is_return(CInstance* inst) {
+  if (inst->name == "@return") return true;
+
+  if (inst->inst_parent) {
+    return is_return(inst->inst_parent);
+  }
+  else {
+    return false;
+  }
+}
+
+bool belongs_to_func(CInstance* inst) {
+  if (inst->inst_parent == nullptr) return false;
+
+  if (auto func = inst->inst_parent->as<CInstFunc>()) {
+    return true;
+  }
+  else {
+    return belongs_to_func(inst->inst_parent);
+  }
+}
+
+
 bool check_port_directions(TraceState sa, TraceState sb) {
   assert(sa >= TS_NONE || sa <= TS_REGISTER);
   assert(sa >= TS_NONE || sb <= TS_REGISTER);

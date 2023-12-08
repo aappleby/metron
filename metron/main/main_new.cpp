@@ -33,46 +33,8 @@ using namespace matcheroni;
 namespace fs = std::filesystem;
 
 CNodeField* resolve_field(CNodeClass* node_class, CNode* node_name);
-
-bool CNodeFunction::called_by_init() {
-  for (auto c : internal_callers) {
-    if (c->called_by_init()) return true;
-  }
-  return as<CNodeConstructor>() != nullptr;
-}
-
-void blah() {
-  rv32_insn x;
-}
-
-
-template<typename T>
-using permute_callback = std::function<void(std::vector<T>&)>;
-
-template<typename T>
-void permute(std::vector<T>& a, permute_callback<T> pc) {
-  auto N = a.size();
-  std::vector<int> p(N + 1, 0);
-
-  pc(a);
-
-  int i = 1;
-  while (i < N) {
-    if (p[i] < i) {
-      int j = (i & 1) ? p[i] : 0;
-      std::swap(a[j], a[i]);
-
-      pc(a);
-
-      p[i]++;
-      i = 1;
-    }
-    else {
-      p[i] = 0;
-      i++;
-    }
-  }
-}
+void sanity_check_parse_tree(CSourceRepo& repo);
+Err build_call_graph(CNodeClass* node, CSourceRepo* repo);
 
 
 //------------------------------------------------------------------------------
@@ -84,9 +46,11 @@ MethodType get_method_type(CNodeFunction* node) {
 
   auto result = MT_UNKNOWN;
 
+  /*
   if (node->all_writes.empty()) {
     return MT_FUNC;
   }
+  */
 
   for (auto c : node->internal_callers) {
     auto new_result = get_method_type(c);
@@ -119,81 +83,6 @@ MethodType get_method_type(CNodeFunction* node) {
 
 //------------------------------------------------------------------------------
 
-Err build_call_graph(CNodeClass* node, CSourceRepo* repo) {
-  Err err;
-
-  node_visitor link_callers = [&](CNode* child) {
-    auto call = child->as<CNodeCall>();
-    if (!call) return;
-
-    auto src_method = call->ancestor<CNodeFunction>();
-
-    auto func_name = call->child("func_name");
-
-    if (auto submod_path = func_name->as<CNodeFieldExpression>()) {
-      auto submod_field =
-          node->get_field(submod_path->child("field_path")->get_text());
-      auto submod_class = repo->get_class(submod_field->node_decl->node_type->name);
-      auto submod_func = submod_class->get_function(
-          submod_path->child("identifier")->get_text());
-
-      src_method->external_callees.insert(submod_func);
-      submod_func->external_callers.insert(src_method);
-    } else if (auto func_id = func_name->as<CNodeIdentifier>()) {
-      auto dst_method = node->get_function(func_id->get_text());
-      if (dst_method) {
-        src_method->internal_callees.insert(dst_method);
-        dst_method->internal_callers.insert(src_method);
-      }
-    }
-    else if(auto func_kw = func_name->as<CNodeKeyword>()) {
-      // builtin like sizeof(), nothing to do here
-    }
-    else {
-      dump_parse_tree(func_name);
-      assert(false);
-    }
-  };
-
-  if (node->constructor) {
-    visit_children(node->constructor, link_callers);
-  }
-
-  for (auto src_method : node->all_functions) {
-    visit_children(src_method, link_callers);
-  }
-
-  return err;
-}
-
-//------------------------------------------------------------------------------
-
-void sanity_check_parse_tree(CSourceRepo& repo) {
-  for (auto file : repo.source_files) {
-
-    // Sanity check that all node spans in the repo tightly contain their
-    // children
-    node_visitor check_span = [](CNode* n) {
-      if (n->child_head) {
-        auto text = n->get_text();
-        if (n->span.begin != n->child_head->span.begin) {
-          LOG("%.*s\n", text.size(), text.data());
-          assert(false);
-        }
-        if (n->span.end != n->child_tail->span.end) {
-          LOG("%.*s\n", text.size(), text.data());
-          assert(false);
-        }
-      }
-    };
-
-    visit_children(file->translation_unit, check_span);
-  }
-  LOG("\n");
-}
-
-//------------------------------------------------------------------------------
-
 int main_new(Options opts) {
   LOG_G("New parser!\n");
 
@@ -218,15 +107,8 @@ int main_new(Options opts) {
     file->link();
   }
 
-  //dump_repo(&repo);
-  //exit(-1);
-
   sanity_check_parse_tree(repo);
   //dump_parse_tree(root_file->context.top_head);
-
-  //exit(-1);
-
-  LOG("\n");
 
   //----------------------------------------
   // All modules are now in the library, we can resolve references to other
@@ -248,30 +130,6 @@ int main_new(Options opts) {
       top = c;
     }
   }
-  // assert(top);
-
-  //----------------------------------------
-
-  LOG_B("Building call graph\n");
-  for (auto file : repo.source_files) {
-    for (auto node_class : file->all_classes) {
-      err << build_call_graph(node_class, &repo);
-    }
-  }
-
-  for (auto file : repo.source_files) {
-    for (auto node_class : file->all_classes) {
-      for (auto node_func : node_class->all_functions) {
-        if (node_func->method_type != MT_FUNC && node_func->is_public &&
-            node_func->internal_callers.size()) {
-          LOG_R("Function %s is public and has internal callers\n",
-                node_func->name.c_str());
-          assert(false);
-        }
-        // err << node_class->build_call_graph(&repo);
-      }
-    }
-  }
 
   //----------------------------------------
 
@@ -285,105 +143,29 @@ int main_new(Options opts) {
   }
 
   //----------------------------------------
-  // Top methods that are not ticks or tocks must not write anything
 
-  // Collect all the writes for all functions but without tracing :/
-  {
-    bool any_writes = false;
-    CNode* written_field = nullptr;
-    CNodeFunction* current_func = nullptr;
-
-    node_visitor gather_writes = [&](CNode* node) {
-      if (any_writes) return;
-      if (auto node_assignment = node->as<CNodeAssignment>()) {
-        auto lhs = node_assignment->child("lhs")->req<CNode>();
-        auto field = resolve_field(node->ancestor<CNodeClass>(), lhs);
-        if (field) {
-          current_func->self_writes2.insert(field);
-        }
-      }
-    };
-
-    for (auto file : repo.source_files) {
-      for (auto node_class : file->all_classes) {
-        for (auto node_func : node_class->all_functions) {
-          current_func = node_func;
-          visit(node_func, gather_writes);
-        }
-      }
-    }
-
-    for (auto file : repo.source_files) {
-      for (auto node_class : file->all_classes) {
-        for (auto node_func : node_class->all_functions) {
-          node_func->collect_writes2();
-        }
-      }
-    }
-
-    /*
-    for (auto file : repo.source_files) {
-      for (auto node_class : file->all_classes) {
-        for (auto node_func : node_class->all_functions) {
-          LOG_R("Func %s\n", node_func->name.c_str());
-          LOG_INDENT();
-          for (auto node_field : node_func->self_writes2) {
-            LOG_R("Writes direct %s\n", node_field->name.c_str());
-          }
-          for (auto node_field : node_func->all_writes2) {
-            if (node_func->self_writes2.contains(node_field)) {
-            } else {
-              LOG_R("Writes indirect %s\n", node_field->name.c_str());
-            }
-          }
-          for (auto node_callee : node_func->internal_callees) {
-            LOG_R("Calls internal %s\n", node_callee->name.c_str());
-          }
-          for (auto node_callee : node_func->external_callees) {
-            LOG_R("Calls external %s\n", node_callee->name.c_str());
-          }
-
-          LOG_DEDENT();
-        }
-      }
-    }
-    */
-
-    for (auto file : repo.source_files) {
-      for (auto node_class : file->all_classes) {
-        for (auto node_func : node_class->all_functions) {
-          auto func_name = node_func->name;
-          if (!node_func->is_public) continue;
-          if (func_name.starts_with("tick")) continue;
-          if (func_name.starts_with("tock")) continue;
-
-          if (node_func->all_writes2.size()) {
-            LOG_R("Top-level func %s writes stuff and it shouldn't\n",
-                  func_name.c_str());
-            exit(-1);
-          }
-        }
-      }
+  LOG_B("Building call graph\n");
+  for (auto file : repo.source_files) {
+    for (auto node_class : file->all_classes) {
+      err << build_call_graph(node_class, &repo);
     }
   }
 
-  //----------------------------------------
-  // Check for ticks with return values
-
+  /*
   for (auto file : repo.source_files) {
     for (auto node_class : file->all_classes) {
       for (auto node_func : node_class->all_functions) {
-        auto func_name = node_func->name;
-        if (func_name.starts_with("tick")) {
-          if (node_func->has_return()) {
-            LOG_R("Tick %s has a return value and it shouldn't\n",
-                  func_name.c_str());
-            exit(-1);
-          }
+        if (node_func->method_type != MT_FUNC && node_func->is_public &&
+            node_func->internal_callers.size()) {
+          LOG_R("Function %s is public and has internal callers\n",
+                node_func->name.c_str());
+          assert(false);
         }
+        // err << node_class->build_call_graph(&repo);
       }
     }
   }
+  */
 
   //----------------------------------------
   // Trace
@@ -413,63 +195,15 @@ int main_new(Options opts) {
         err << tracer.start_trace(inst_func, node_func);
       }
 
-      // Trace tocks
       for (auto node_func : node_class->all_functions) {
         LOG_INDENT_SCOPE();
         auto func_name = node_func->name;
-        if (!func_name.starts_with("tock")) continue;
         if (!node_func->is_public) continue;
 
         LOG_B("Tracing %s\n", func_name.c_str());
         auto inst_func = inst_class->resolve(func_name);
 
         err << tracer.start_trace(inst_func, node_func);
-      }
-
-      // Trace ticks
-      for (auto node_func : node_class->all_functions) {
-        LOG_INDENT_SCOPE();
-        auto func_name = node_func->name;
-        if (!func_name.starts_with("tick")) continue;
-        if (!node_func->is_public) continue;
-
-        LOG_B("Tracing %s\n", func_name.c_str());
-        auto inst_func = inst_class->resolve(func_name);
-
-        err << tracer.start_trace(inst_func, node_func);
-      }
-
-      // Trace top functions
-      /*
-      for (auto node_func : node_class->all_functions) {
-        LOG_INDENT_SCOPE();
-        auto func_name = node_func->name;
-        if (func_name.starts_with("tick")) continue;
-        if (func_name.starts_with("tock")) continue;
-        if (!node_func->is_public) continue;
-
-        if (node_func->tag_noconvert()) {
-          //LOG_R("Not tracing top func %s\n", func_name.c_str());
-        }
-        else {
-          LOG_B("Tracing top func %s\n", func_name.c_str());
-        }
-
-        auto inst_func = inst_class->resolve(func_name);
-
-        err << tracer.start_trace(inst_func, node_func);
-      }
-      */
-    }
-  }
-
-  for (auto file : repo.source_files) {
-    for (auto c : file->all_classes) {
-      if (c->constructor) {
-        c->constructor->propagate_rw();
-      }
-      for (auto f : c->all_functions) {
-        f->propagate_rw();
       }
     }
   }
@@ -480,6 +214,107 @@ int main_new(Options opts) {
   }
 
   LOG_DEDENT();
+
+
+
+
+  //----------------------------------------
+  // Assign method types
+
+  for (auto file : repo.source_files) {
+    for (auto node_class : file->all_classes) {
+      for (auto node_func : node_class->all_functions) {
+        /*
+        LOG_G("func %s\n", node_func->name.c_str());
+
+        if (node_func->all_writes.empty()) {
+          node_func->set_type(MT_FUNC);
+        }
+        else {
+          for (auto write : node_func->all_writes) {
+            if (write->name.ends_with("_")) {
+              node_func->set_type(MT_TICK);
+              LOG_G("write state %s\n", write->name.c_str());
+            }
+            else {
+              node_func->set_type(MT_TOCK);
+              LOG_G("write signal %s\n", write->name.c_str());
+            }
+          }
+        }
+        */
+      }
+    }
+  }
+
+
+
+
+
+  //----------------------------------------
+  // Dump
+
+  LOG_B("\n");
+  LOG_B("========================================\n");
+  LOG_B("Repo dump\n\n");
+
+  dump_repo(&repo);
+
+  LOG_B("\n");
+  LOG_B("========================================\n");
+  LOG_B("Instance tree\n\n");
+
+  for (auto file : repo.source_files) {
+    for (auto inst_class : file->all_instances) {
+      LOG_B("Instance tree for %s\n",
+            inst_class->node_class->name.c_str());
+      LOG_INDENT();
+      dump_inst_tree(inst_class);
+      LOG_DEDENT();
+      LOG_B("\n");
+    }
+  }
+
+  LOG_B("\n");
+  LOG_B("========================================\n");
+  LOG_B("Call graphs\n\n");
+
+  for (auto file : repo.source_files) {
+    for (auto node_class : file->all_classes) {
+      LOG_B("Call graph for %s\n", node_class->name.c_str());
+      LOG_INDENT();
+      dump_call_graph(node_class);
+      LOG_DEDENT();
+      LOG("\n");
+    }
+  }
+
+  LOG("\n");
+
+#if 0
+
+  // assert(top);
+
+  //----------------------------------------
+  // Top methods that are not ticks or tocks must not write anything
+
+  //----------------------------------------
+  // Check for ticks with return values
+
+  for (auto file : repo.source_files) {
+    for (auto node_class : file->all_classes) {
+      for (auto node_func : node_class->all_functions) {
+        auto func_name = node_func->name;
+        if (func_name.starts_with("tick")) {
+          if (node_func->has_return()) {
+            LOG_R("Tick %s has a return value and it shouldn't\n",
+                  func_name.c_str());
+            exit(-1);
+          }
+        }
+      }
+    }
+  }
 
   //----------------------------------------
 
@@ -711,228 +546,10 @@ int main_new(Options opts) {
     }
   }
 
-#if 0
-  for (auto node_class : repo.all_classes) {
-
-    LOG_INDENT_SCOPE();
-    auto name = node_class->name;
-    LOG_G("Categorizing %s\n", name.c_str());
-
-    for (auto f : node_class->all_fields) {
-      auto fname = f->name;
-
-      if (!f->is_public) continue;
-
-      if (f->field_type == FT_INPUT) {
-        LOG_G("input signal %s\n", fname.c_str());
-        node_class->input_signals.push_back(f);
-      }
-      else if (f->field_type == FT_OUTPUT || f->field_type == FT_SIGNAL) {
-        LOG_G("output signal %s\n", fname.c_str());
-        node_class->output_signals.push_back(f);
-      }
-      else if (f->field_type == FT_REGISTER) {
-        LOG_G("output register f%s\n", fname.c_str());
-        node_class->output_registers.push_back(f);
-      }
-    }
-  }
-#endif
-
-#if 0
-  for (auto c : repo.all_classes) {
-    for (auto f : c->all_fields) {
-      if (f->node_decl->_type_class) {
-        f->field_type = FT_MODULE;
-      }
-    }
-  }
-
-  for (auto c : repo.all_classes) {
-    auto cname = c->name;
-    for (auto f : c->all_fields) {
-      auto fname = f->name;
-      if (f->field_type == FT_UNKNOWN) {
-        LOG_R("Field %.*s::%.*s has no type\n", cname.size(), cname.data(), fname.size(), fname.data());
-        assert(false);
-      }
-    }
-  }
-
-#endif
-
-  //========================================
-
-  LOG_B("Categorizing methods\n");
-
-#if 0
-  //----------------------------------------
-  // Everything called by a constructor is init.
-
-  for (auto c : repo.all_classes) {
-    if (auto f = c->constructor) {
-      f->set_type(MT_INIT);
-      f->visit_internal_callees([](CNodeFunction* f){
-        f->set_type(MT_INIT);
-      });
-    }
-  }
-
-  //----------------------------------------
-  // Methods named "tick" are ticks, etc.
-
-  for (auto c : repo.all_classes) {
-    for (auto f : c->all_functions) {
-      if (f->name.starts_with("tick")) f->set_type(MT_TICK);
-      if (f->name.starts_with("tock")) f->set_type(MT_TOCK);
-    }
-  }
-
-  //----------------------------------------
-  // Methods that only call funcs in the same module and don't write anything
-  // are funcs.
-
-  for (auto c : repo.all_classes) {
-    for (auto f : c->all_functions) {
-      // FIXME in init_chain, why wasn't the transitive write showing up in init1?
-      // because we're not tracing constructors yet
-      if (f->method_type == MT_UNKNOWN) {
-        if (f->all_writes.empty() && f->external_callees.empty()) f->set_type(MT_FUNC);
-      }
-    }
-  }
-
-  //----------------------------------------
-  // Methods that call funcs in other modules _must_ be tocks.
-
-  for (auto c : repo.all_classes) {
-    for (auto f : c->all_functions) {
-      if (f->external_callees.size()) f->set_type(MT_TOCK);
-    }
-  }
-
-  //----------------------------------------
-  // Methods that directly read or write arrays _must_ be ticks.
-
-#if 0
-  for (auto c : repo.all_classes) {
-    for (auto f : c->all_functions) {
-      for (auto r : f->self_reads)  if (r->is_array()) f->set_type(MT_TICK);
-      for (auto w : f->self_writes) if (w->is_array()) f->set_type(MT_TICK);
-    }
-  }
-#endif
-
-  //----------------------------------------
-  // Methods that directly write registers _must_ be ticks.
-
-#if 0
-  for (auto c : repo.all_classes) {
-    for (auto f : c->all_functions) {
-      for (auto w : f->self_writes) if (w->field_type == FT_REGISTER) f->set_type(MT_TICK);
-    }
-  }
-#endif
-
-  //----------------------------------------
-  // Everything else that's unassigned can be a tock? Sure?
-
-  for (auto c : repo.all_classes) {
-    for (auto f : c->all_functions) {
-      if (f->method_type == MT_UNKNOWN) f->set_type(MT_TOCK);
-    }
-  }
-
-  //----------------------------------------
-
-#if 0
-  for (auto c : repo.all_classes) {
-    for (auto f : c->all_functions) {
-      if (f->method_type == MT_INIT) continue;
-
-      bool self_writes_sig = false;
-      bool self_writes_reg = false;
-      bool all_writes_sig = false;
-      bool all_writes_reg = false;
-      bool all_writes_out = false;
-
-      for (auto w : f->self_writes) {
-        if (w->field_type == FT_SIGNAL)   self_writes_sig = true;
-        if (w->field_type == FT_REGISTER) self_writes_reg = true;
-      }
-
-      for (auto w : f->all_writes) {
-        if (w->field_type == FT_SIGNAL)   all_writes_sig = true;
-        if (w->field_type == FT_REGISTER) all_writes_reg = true;
-        if (w->field_type == FT_OUTPUT)   all_writes_out = true;
-      }
-
-      if (self_writes_sig && self_writes_reg) {
-        // Methods that directly write both signals and registers are invalid.
-        assert(false);
-      }
-      else if (self_writes_reg) {
-        f->set_type(MT_TICK);
-      }
-      else if (all_writes_reg || all_writes_sig || all_writes_out) {
-        f->set_type(MT_TOCK);
-      }
-      else {
-        f->set_type(MT_FUNC);
-      }
-    }
-  }
-#endif
-#endif
-
-  //----------------------------------------
-  // Methods categorized, we can assign emit types
-
-  //----------------------------------------
-  // Methods categorized, we can split up internal_callers
-
-  //----------------------------------------
-  // Methods categorized, now we can categorize the inputs of the methods.
-
-  //----------------------------------------
-  // Check for ticks with return values.
-
   //----------------------------------------
   // Done!
 
-  LOG_B("\n");
-  LOG_B(
-      "========================================================================"
-      "========\n");
-  LOG_B("Repo dump\n\n");
-
-  // repo.dump();
-
-  for (auto file : repo.source_files) {
-    for (auto inst_class : file->all_instances) {
-      LOG_B("Instance tree for %s\n",
-            inst_class->node_class->name.c_str());
-      LOG_INDENT();
-      dump_inst_tree(inst_class);
-      LOG_DEDENT();
-      LOG_B("\n");
-    }
-  }
-
-
-  for (auto file : repo.source_files) {
-    for (auto node_class : file->all_classes) {
-      LOG_B("Call graph for %s\n", node_class->name.c_str());
-      LOG_INDENT();
-      dump_call_graph(node_class);
-      LOG_DEDENT();
-      LOG("\n");
-    }
-  }
-
-  LOG_B(
-      "========================================================================"
-      "========\n");
+  LOG_B("========================================\n");
   LOG_B("Converting %s to SystemVerilog\n\n", opts.src_name.c_str());
 
   std::string out_string;
@@ -972,18 +589,133 @@ int main_new(Options opts) {
   }
   LOG("\n");
 
-  LOG_B(
-      "========================================================================"
-      "========\n");
+  LOG_B("========================================\n");
   LOG_B("Output:\n\n");
 
   LOG_G("%s\n", out_string.c_str());
 
-  LOG_B(
-      "========================================================================"
-      "========\n");
+  LOG_B("========================================\n");
 
   LOG("Done!\n");
+#endif
 
   return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+template<typename T>
+using permute_callback = std::function<void(std::vector<T>&)>;
+
+template<typename T>
+void permute(std::vector<T>& a, permute_callback<T> pc) {
+  auto N = a.size();
+  std::vector<int> p(N + 1, 0);
+
+  pc(a);
+
+  int i = 1;
+  while (i < N) {
+    if (p[i] < i) {
+      int j = (i & 1) ? p[i] : 0;
+      std::swap(a[j], a[i]);
+
+      pc(a);
+
+      p[i]++;
+      i = 1;
+    }
+    else {
+      p[i] = 0;
+      i++;
+    }
+  }
+}
+
+
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+
+Err build_call_graph(CNodeClass* node, CSourceRepo* repo) {
+  Err err;
+
+  node_visitor link_callers = [&](CNode* child) {
+    auto call = child->as<CNodeCall>();
+    if (!call) return;
+
+    auto src_method = call->ancestor<CNodeFunction>();
+
+    auto func_name = call->child("func_name");
+
+    if (auto submod_path = func_name->as<CNodeFieldExpression>()) {
+      auto submod_field =
+          node->get_field(submod_path->child("field_path")->get_text());
+      auto submod_class = repo->get_class(submod_field->node_decl->node_type->name);
+      auto submod_func = submod_class->get_function(
+          submod_path->child("identifier")->get_text());
+
+      src_method->external_callees.insert(submod_func);
+      submod_func->external_callers.insert(src_method);
+    } else if (auto func_id = func_name->as<CNodeIdentifier>()) {
+      auto dst_method = node->get_function(func_id->get_text());
+      if (dst_method) {
+        src_method->internal_callees.insert(dst_method);
+        dst_method->internal_callers.insert(src_method);
+      }
+    }
+    else if(auto func_kw = func_name->as<CNodeKeyword>()) {
+      // builtin like sizeof(), nothing to do here
+    }
+    else {
+      dump_parse_tree(func_name);
+      assert(false);
+    }
+  };
+
+  if (node->constructor) {
+    visit_children(node->constructor, link_callers);
+  }
+
+  for (auto src_method : node->all_functions) {
+    visit_children(src_method, link_callers);
+  }
+
+  return err;
+}
+
+//------------------------------------------------------------------------------
+
+void sanity_check_parse_tree(CSourceRepo& repo) {
+  for (auto file : repo.source_files) {
+
+    // Sanity check that all node spans in the repo tightly contain their
+    // children
+    node_visitor check_span = [](CNode* n) {
+      if (n->child_head) {
+        auto text = n->get_text();
+        if (n->span.begin != n->child_head->span.begin) {
+          LOG("%.*s\n", text.size(), text.data());
+          assert(false);
+        }
+        if (n->span.end != n->child_tail->span.end) {
+          LOG("%.*s\n", text.size(), text.data());
+          assert(false);
+        }
+      }
+    };
+
+    visit_children(file->translation_unit, check_span);
+  }
+  LOG("\n");
 }

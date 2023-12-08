@@ -51,7 +51,6 @@ Err collect_fields_and_methods(CNodeClass* node, CSourceRepo* repo) {
       if (auto constructor = child->as<CNodeConstructor>()) {
         assert(node->constructor == nullptr);
         node->constructor = constructor;
-        constructor->method_type = MT_INIT;
       } else {
         node->all_functions.push_back(n);
       }

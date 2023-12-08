@@ -22,7 +22,6 @@ enum MethodType {
   MT_TICK,
   MT_TOCK,
   MT_FUNC,
-  MT_TASK,
   MT_INVALID
 };
 

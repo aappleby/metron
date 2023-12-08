@@ -51,6 +51,8 @@ build obj/metron/CSourceRepo.o: compile_cpp metron/CSourceRepo.cpp
   includes = ${base_includes}
 build obj/metron/CToken.o: compile_cpp metron/CToken.cpp
   includes = ${base_includes}
+build obj/metron/Checker.o: compile_cpp metron/Checker.cpp
+  includes = ${base_includes}
 build obj/metron/Cursor.o: compile_cpp metron/Cursor.cpp
   includes = ${base_includes}
 build obj/metron/Dumper.o: compile_cpp metron/Dumper.cpp
@@ -69,6 +71,8 @@ build obj/metron/nodes/CNodeDeclaration.o: compile_cpp metron/nodes/CNodeDeclara
   includes = ${base_includes}
 build obj/metron/nodes/CNodeField.o: compile_cpp metron/nodes/CNodeField.cpp
   includes = ${base_includes}
+build obj/metron/nodes/CNodeFunction.o: compile_cpp metron/nodes/CNodeFunction.cpp
+  includes = ${base_includes}
 build obj/metron/nodes/CNodeStruct.o: compile_cpp metron/nodes/CNodeStruct.cpp
   includes = ${base_includes}
 build obj/metron/nodes/CNodeTranslationUnit.o: compile_cpp metron/nodes/CNodeTranslationUnit.cpp
@@ -81,7 +85,7 @@ build obj/symlinks/metrolib/metrolib/core/Utils.o: compile_cpp symlinks/metrolib
   includes = ${base_includes}
 build obj/symlinks/metrolib/metrolib/core/Err.o: compile_cpp symlinks/metrolib/metrolib/core/Err.cpp
   includes = ${base_includes}
-build bin/libmetron.a: c_library obj/metron/CContext.o obj/metron/CInstance.o obj/metron/CLexer.o obj/metron/CNode.o obj/metron/CParser.o obj/metron/CScope.o obj/metron/CSourceFile.o obj/metron/CSourceRepo.o obj/metron/CToken.o obj/metron/Cursor.o obj/metron/Dumper.o obj/metron/Emitter.o obj/metron/MtUtils.o obj/metron/Tracer.o obj/metron/metron_tools.o obj/metron/nodes/CNodeClass.o obj/metron/nodes/CNodeDeclaration.o obj/metron/nodes/CNodeField.o obj/metron/nodes/CNodeStruct.o obj/metron/nodes/CNodeTranslationUnit.o obj/metron/nodes/CNodeUnion.o obj/symlinks/metrolib/metrolib/core/Platform.o obj/symlinks/metrolib/metrolib/core/Utils.o obj/symlinks/metrolib/metrolib/core/Err.o
+build bin/libmetron.a: c_library obj/metron/CContext.o obj/metron/CInstance.o obj/metron/CLexer.o obj/metron/CNode.o obj/metron/CParser.o obj/metron/CScope.o obj/metron/CSourceFile.o obj/metron/CSourceRepo.o obj/metron/CToken.o obj/metron/Checker.o obj/metron/Cursor.o obj/metron/Dumper.o obj/metron/Emitter.o obj/metron/MtUtils.o obj/metron/Tracer.o obj/metron/metron_tools.o obj/metron/nodes/CNodeClass.o obj/metron/nodes/CNodeDeclaration.o obj/metron/nodes/CNodeField.o obj/metron/nodes/CNodeFunction.o obj/metron/nodes/CNodeStruct.o obj/metron/nodes/CNodeTranslationUnit.o obj/metron/nodes/CNodeUnion.o obj/symlinks/metrolib/metrolib/core/Platform.o obj/symlinks/metrolib/metrolib/core/Utils.o obj/symlinks/metrolib/metrolib/core/Err.o
   includes = ${base_includes}
 
 

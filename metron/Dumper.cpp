@@ -267,89 +267,6 @@ void dump_inst_tree(CInstance* inst) {
   }
 }
 
-#if 0
-//------------------------------------------------------------------------------
-
-void CNode::dump() const {
-  LOG_R("CNode::dump() : %s\n", typeid(*this).name());
-}
-
-void CNodePunct::dump() const override {
-  auto text = get_text();
-  LOG_B("CNodePunct \"%.*s\"\n", text.size(), text.data());
-}
-
-void CNodeNamespace::dump() const override {
-  LOG_G("Fields:\n");
-  LOG_INDENT_SCOPE();
-  for (auto n : all_fields) n->dump();
-}
-
-
-void CNodeEnum::dump() const override {
-  LOG_G("Enum %.*s\n", name.size(), name.data());
-}
-
-
-void CNodeDeclaration::dump() const override {
-  auto text = get_text();
-  LOG_G("Declaration `%.*s`\n", text.size(), text.data());
-}
-
-void CNodeAccess::dump() const override {
-  auto text = get_text();
-  LOG_B("CNodeAccess \"%.*s\"\n", text.size(), text.data());
-}
-
-//------------------------------------------------------------------------------
-
-void CNode::dump_tree(int max_depth) const {
-  NodeDumper d;
-  d.dump_parse_tree_recurse(*this, 0, max_depth);
-}
-
-//----------------------------------------------------------------------------
-
-void CScope::dump() {
-
-  LOG_G("class_types\n");
-  for (auto s : class_types) {
-    LOG("  ");
-    LOG_SPAN(s);
-    LOG("\n");
-  }
-
-  LOG_G("struct_types\n");
-  for (auto s : struct_types) {
-    LOG("  ");
-    LOG_SPAN(s);
-    LOG("\n");
-  }
-
-  LOG_G("union_types\n");
-  for (auto s : union_types) {
-    LOG("  ");
-    LOG_SPAN(s);
-    LOG("\n");
-  }
-
-  LOG_G("enum_types\n");
-  for (auto s : enum_types) {
-    LOG("  ");
-    LOG_SPAN(s);
-    LOG("\n");
-  }
-
-  LOG_G("typedef_types\n");
-  for (auto s : typedef_types) {
-    LOG("  ");
-    LOG_SPAN(s);
-    LOG("\n");
-  }
-}
-
-#endif
-
 //----------------------------------------------------------------------------
 
 void dump_lexeme(Lexeme& l) {
@@ -382,46 +299,40 @@ void dump_lexeme(Lexeme& l) {
 
 //------------------------------------------------------------------------------
 
-#if 0
-//------------------------------------------------------------------------------
+void dump_field(CNodeField* field) {
+  //LOG_G("Field: ");
+  //dump_decl(field->node_decl);
+  //LOG_G("\n");
 
-//------------------------------------------------------------------------------
+  LOG_A("Field %.*s : ", field->name.size(), field->name.data());
 
-void CNodeField::dump() const {
-  LOG_A("Field %.*s : ", name.size(), name.data());
+  if (field->node_decl->node_type->node_static) LOG_A("static ");
+  if (field->node_decl->node_type->node_const)  LOG_A("const ");
+  if (field->is_public)              LOG_A("public ");
+  if (field->node_decl->is_array())  LOG_A("array ");
 
-  if (node_decl->node_static) LOG_A("static ");
-  if (node_decl->node_const)  LOG_A("const ");
-  if (is_public)              LOG_A("public ");
-  if (node_decl->is_array())  LOG_A("array ");
-
-  if (parent_class) {
-    LOG_A("parent class %s ", parent_class->name.c_str());
+  if (auto field_class = field->get_type_class()) {
+    LOG_A("class %s", field_class->name.c_str());
   }
 
-  if (parent_struct) {
-    LOG_A("parent struct %s ", parent_struct->name.c_str());
+  else if (auto field_struct = field->get_type_struct()) {
+    LOG_A("struct %s", field_struct->name.c_str());
+  }
+  else {
+    LOG_A("%s", field->node_decl->node_type->get_textstr().c_str());
   }
 
-  if (node_decl->_type_class) {
-    LOG_A("type class %s ", node_decl->_type_class->name.c_str());
+  if (auto parent_class = field->ancestor<CNodeClass>()) {
+    LOG_A(", parent class %s ", parent_class->name.c_str());
   }
 
-  if (node_decl->_type_struct) {
-    LOG_A("type struct %s ", node_decl->_type_struct->name.c_str());
+  if (auto parent_struct = field->ancestor<CNodeStruct>()) {
+    LOG_A(", parent struct %s ", parent_struct->name.c_str());
   }
 
   LOG_A("\n");
-}
-
-//------------------------------------------------------------------------------
-
-// FIXME constructor needs to be in internal_callers
-
-void CNodeFunction::dump() const {
 
 }
-#endif
 
 //------------------------------------------------------------------------------
 
@@ -453,22 +364,6 @@ void dump_function(CNodeFunction* node) {
     LOG_INDENT_SCOPE();
     for (auto w : node->self_writes) {
       LOG_G("Directly writes %s : %s\n", w->path.c_str(), to_string(w->get_state()));
-    }
-  }
-
-  if (node->all_reads.size()) {
-    LOG_INDENT_SCOPE();
-    for (auto r : node->all_reads) {
-      if (node->self_reads.contains(r)) continue;
-      LOG_G("Indirectly reads  %s : %s\n", r->path.c_str(), to_string(r->get_state()));
-    }
-  }
-
-  if (node->all_writes.size()) {
-    LOG_INDENT_SCOPE();
-    for (auto w : node->all_writes) {
-      if (node->self_writes.contains(w)) continue;
-      LOG_G("Indirectly writes %s : %s\n", w->path.c_str(), to_string(w->get_state()));
     }
   }
 
@@ -511,8 +406,34 @@ void dump_function(CNodeFunction* node) {
 
 //------------------------------------------------------------------------------
 
+void dump_namespace(CNodeNamespace* node) {
+  LOG_G("Namespace %s\n", node->name.c_str());
+}
+
+//------------------------------------------------------------------------------
+
+void dump_enum(CNodeEnum* node) {
+  LOG_G("Enum %s\n", node->name.c_str());
+}
+
+//------------------------------------------------------------------------------
+
+/*
+std::vector<CNodeDeclaration*> all_modparams;
+std::vector<CNodeField*>       all_localparams;
+CNodeConstructor* constructor = nullptr;
+std::vector<CNodeFunction*>    all_functions;
+std::vector<CNodeField*>       all_fields;
+std::vector<CNodeEnum*>        all_enums;
+
+std::vector<CNodeField*> input_signals;
+std::vector<CNodeField*> output_signals;
+std::vector<CNodeField*> output_registers;
+*/
+
 void dump_class(CNodeClass* node) {
   LOG_B("Class %s, refcount %d\n", node->name.c_str(), node->refcount);
+  LOG_INDENT_SCOPE();
 
   if (node->all_modparams.size()) {
     LOG_G("Modparams\n");
@@ -534,10 +455,16 @@ void dump_class(CNodeClass* node) {
     dump_function(node->constructor);
   }
 
-  if (node->all_functions.size()) {
-    for (auto func : node->all_functions) {
-      dump_function(func);
-    }
+  for (auto func : node->all_functions) {
+    dump_function(func);
+  }
+
+  for (auto f : node->all_fields) {
+    dump_field(f);
+  }
+
+  for (auto e : node->all_enums) {
+    dump_enum(e);
   }
 }
 
@@ -567,14 +494,6 @@ void dump_decl(CNodeDeclaration* decl) {
 
 //------------------------------------------------------------------------------
 
-void dump_field(CNodeField* field) {
-  LOG_G("Field: ");
-  dump_decl(field->node_decl);
-  LOG_G("\n");
-}
-
-//------------------------------------------------------------------------------
-
 void dump_struct(CNodeStruct* node) {
   LOG_G("Struct %s\n", node->name.c_str());
   LOG_INDENT_SCOPE();
@@ -584,18 +503,6 @@ void dump_struct(CNodeStruct* node) {
       dump_field(f);
     }
   }
-}
-
-//------------------------------------------------------------------------------
-
-void dump_namespace(CNodeNamespace* node) {
-  LOG_G("Namespace %s\n", node->name.c_str());
-}
-
-//------------------------------------------------------------------------------
-
-void dump_enum(CNodeEnum* node) {
-  LOG_G("Enum %s\n", node->name.c_str());
 }
 
 //------------------------------------------------------------------------------
@@ -627,9 +534,6 @@ void dump_source_file(CSourceFile* file) {
 //------------------------------------------------------------------------------
 
 void dump_repo(CSourceRepo* repo) {
-  LOG_B("Repo dump:\n");
-  LOG_INDENT_SCOPE();
-
   for (auto s : repo->search_paths) {
     LOG_G("Search path `%s`\n", s.c_str());
   }
@@ -637,51 +541,7 @@ void dump_repo(CSourceRepo* repo) {
   for (auto file : repo->source_files) {
     dump_source_file(file);
   }
-
-  /*
-  {
-    LOG_G("Classes:\n");
-    LOG_INDENT_SCOPE();
-    for (auto n : all_classes) {
-      n->dump();
-      LOG("\n");
-    }
-    if (all_classes.empty()) LOG("\n");
-  }
-
-  {
-    LOG_G("Structs:\n");
-    LOG_INDENT_SCOPE();
-    for (auto n : all_structs) {
-      n->dump();
-      LOG("\n");
-    }
-    if (all_structs.empty()) LOG("\n");
-  }
-
-  {
-    LOG_G("Namespaces:\n");
-    LOG_INDENT_SCOPE();
-    for (auto n : all_namespaces) {
-      n->dump();
-      LOG("\n");
-    }
-    if (all_namespaces.empty()) LOG("\n");
-  }
-
-  {
-    LOG_G("Enums:\n");
-    LOG_INDENT_SCOPE();
-    for (auto n : all_enums) {
-      n->dump();
-      LOG("\n");
-    }
-    if (all_enums.empty()) LOG("\n");
-  }
-  */
 }
-
-
 
 //------------------------------------------------------------------------------
 

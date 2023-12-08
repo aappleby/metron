@@ -14,12 +14,7 @@
 #include "metron/nodes/CNodeField.hpp"
 #include "metron/nodes/CNodeFunction.hpp"
 #include "metron/nodes/CNodeEnum.hpp"
-#include "metron/nodes/CNodeDeclaration.hpp"
 
-struct CSourceRepo;
-struct CSourceFile;
-struct CInstance;
-struct CInstClass;
 struct CNodeField;
 struct CNodeFunction;
 struct CNodeDeclaration;
@@ -78,9 +73,6 @@ struct CNodeClass : public CNode {
 
   int refcount = 0;
 
-  std::vector<CNode*> ports;
-  std::vector<CNodeFunction*>    top_functions;
-
   CNodeConstructor* constructor = nullptr;
   std::vector<CNodeFunction*>    all_functions;
   std::vector<CNodeField*>       all_fields;
@@ -91,11 +83,6 @@ struct CNodeClass : public CNode {
   std::vector<CNodeField*> input_signals;
   std::vector<CNodeField*> output_signals;
   std::vector<CNodeField*> output_registers;
-
-  std::vector<CNodeField*> components;
-  std::vector<CNodeField*> private_signals;
-  std::vector<CNodeField*> private_registers;
-  std::vector<CNodeField*> dead_fields;
 };
 
 //==============================================================================

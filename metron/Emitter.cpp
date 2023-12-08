@@ -2449,8 +2449,6 @@ Err Emitter::emit_field_ports(CNodeField* f, bool is_output) {
 Err Emitter::emit_init(CNodeFunction* node) {
   Err err;
 
-  // FIXME not using node_init yet
-
   for (auto param : node->node_params) {
     auto decl = param->as<CNodeDeclaration>();
     if (!decl) continue;

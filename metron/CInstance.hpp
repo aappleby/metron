@@ -24,6 +24,9 @@ struct CNodeStruct;
 struct CNodeFunction;
 struct CNodeUnion;
 
+bool is_return(CInstance* inst);
+bool belongs_to_func(CInstance* inst);
+
 // FIXME - we need a call stack that stores (inst,func) tuples instead of just
 // func
 

@@ -42,147 +42,24 @@
 
 //------------------------------------------------------------------------------
 
-typedef std::function<void(CNodeStatement*)> statement_visitor;
-
-void visit_statements(CNode* node, statement_visitor visit_cb) {
-  assert(node);
-
-  if (auto node_compound = node->as<CNodeCompound>()) {
-    for (auto statement : node_compound->statements) {
-      visit_statements(statement, visit_cb);
-    }
-  }
-  else if (auto node_if = node->as<CNodeIf>()) {
-    if (node_if->node_then) visit_statements(node_if->node_then, visit_cb);
-    if (node_if->node_else) visit_statements(node_if->node_else, visit_cb);
-  }
-  else if (auto node_for = node->as<CNodeFor>()) {
-    visit_statements(node_for->child("body"), visit_cb);
-  }
-  else if (auto node_while = node->as<CNodeWhile>()) {
-    visit_statements(node_while->child("body"), visit_cb);
-  }
-  else if (auto node_dowhile = node->as<CNodeDoWhile>()) {
-    visit_statements(node_dowhile->child("body"), visit_cb);
-  }
-  else if (auto node_switch = node->as<CNodeSwitch>()) {
-    for (auto node_case : node_switch->node_body->items) {
-      visit_statements(node_case, visit_cb);
-    }
-  }
-  else if (auto node_case = node->as<CNodeCase>()) {
-    if (node_case->node_body) {
-      for (auto node_statement : node_case->node_body) {
-        visit_statements(node_statement, visit_cb);
-      }
-    }
-  }
-  else if (auto node_default = node->as<CNodeDefault>()) {
-    if (node_default->node_body) {
-      for (auto node_statement : node_default->node_body) {
-        visit_statements(node_statement, visit_cb);
-      }
-    }
-  }
-  else {
-    visit_cb(node->req<CNodeStatement>());
-  }
-}
-
-//------------------------------------------------------------------------------
-
-bool has_non_terminal_return(CNodeCompound* node_compound) {
-
-  bool hit_return = false;
-  bool bad_return = false;
-
-  statement_visitor visitor = [&](CNodeStatement* node) {
-    auto node_return = node->as<CNodeReturn>();
-    if (node_return) {
-      if (hit_return) bad_return = true;
-      hit_return = true;
-    }
-    else if (hit_return) {
-      bad_return = true;
-    }
-  };
-
-  visit_statements(node_compound, visitor);
-
-  return bad_return;
-}
-
-//------------------------------------------------------------------------------
-
-bool ends_with_break(CNode* node) {
-  if (!node) return false;
-  if (node->as<CNodeKeyword>() && node->get_text() == "break") return true;
-
-  if (auto node_compound = node->as<CNodeCompound>()) {
-    for (auto i = 0; i < node_compound->statements.size() - 1; i++) {
-      if (ends_with_break(node_compound->statements[i])) return false;
-    }
-    return ends_with_break(node_compound->statements.back());
-  }
-
-  if (auto node_if = node->as<CNodeIf>()) {
-    if (node_if->node_else == nullptr) return false;
-    return ends_with_break(node_if->node_then) &&
-           ends_with_break(node_if->node_else);
-  }
-
-  if (auto node_list = node->as<CNodeList>()) {
-    for (auto i = 0; i < node_list->items.size() - 1; i++) {
-      if (ends_with_break(node_list->items[i])) return false;
-    }
-    return ends_with_break(node_list->items.back());
-  }
-
-  if (auto node_expstatement = node->as<CNodeExpStatement>()) {
-    return ends_with_break(node_expstatement->node_exp);
-  }
-
-  return false;
-}
-
-//------------------------------------------------------------------------------
-
 Err Tracer::trace_dispatch(CNode* node) {
   if (node == nullptr) return Err();
-
-  if (auto n = node->as<CNodeBuiltinType>()) return Err();
-  if (auto n = node->as<CNodeConstInt>()) return Err();
-  if (auto n = node->as<CNodeConstString>()) return Err();
-  if (auto n = node->as<CNodePunct>()) return Err();
-  if (auto n = node->as<CNodeUsing>()) return Err();
-  if (auto n = node->as<CNodeKeyword>()) return Err();
+  if (node->tag_noconvert()) return Err();
 
   if (auto n = node->as<CNodeAssignment>()) return trace(n);
-  if (auto n = node->as<CNodeBinaryExp>()) return trace(n);
   if (auto n = node->as<CNodeCall>()) return trace(n);
-  if (auto n = node->as<CNodeCase>()) return trace(n);
-  if (auto n = node->as<CNodeCompound>()) return trace(n);
-  if (auto n = node->as<CNodeDeclaration>()) return trace(n);
-  if (auto n = node->as<CNodeDefault>()) return trace(n);
-  if (auto n = node->as<CNodeExpStatement>()) return trace(n);
-  if (auto n = node->as<CNodeField>()) return trace(n);
   if (auto n = node->as<CNodeFieldExpression>()) return trace(n);
   if (auto n = node->as<CNodeFor>()) return trace(n);
-  if (auto n = node->as<CNodeFunction>()) return trace(n);
   if (auto n = node->as<CNodeIdentifier>()) return trace(n);
   if (auto n = node->as<CNodeIdentifierExp>()) return trace(n);
   if (auto n = node->as<CNodeIf>()) return trace(n);
-  if (auto n = node->as<CNodeList>()) return trace(n);
-  if (auto n = node->as<CNodeLValue>()) return trace(n);
   if (auto n = node->as<CNodePrefixExp>()) return trace(n);
   if (auto n = node->as<CNodeQualifiedIdentifier>()) return trace(n);
   if (auto n = node->as<CNodeReturn>()) return trace(n);
   if (auto n = node->as<CNodeSuffixExp>()) return trace(n);
   if (auto n = node->as<CNodeSwitch>()) return trace(n);
 
-  LOG_R("Don't know how to trace a %s\n", typeid(*node).name());
-  assert(false);
-  return ERR("Don't know how to trace a %s\n", typeid(*node).name());
+  return trace_children(node);
 }
 
 //------------------------------------------------------------------------------
@@ -245,7 +122,7 @@ Err Tracer::trace(CNodeCall* node) {
 
   auto src_class = node->ancestor<CNodeClass>();
 
-  err << trace(node->node_args);
+  err << trace_dispatch(node->node_args);
 
   auto dst_name = node->node_name;
 
@@ -263,7 +140,7 @@ Err Tracer::trace(CNodeCall* node) {
     }
 
     if (deep_trace) {
-      err << trace(node_func);
+      err << trace_dispatch(node_func);
     }
 
     if (func_inst->inst_return) {
@@ -284,7 +161,7 @@ Err Tracer::trace(CNodeCall* node) {
       cstack.push_back(dst_func);
       istack.push_back(func_inst);
 
-      err << trace(dst_func);
+      err << trace_dispatch(dst_func);
 
       cstack.pop_back();
       istack.pop_back();
@@ -296,38 +173,17 @@ Err Tracer::trace(CNodeCall* node) {
 
 //------------------------------------------------------------------------------
 
-Err Tracer::trace(CNodeCompound* node) {
-  return trace_children(node);
-}
-
-//------------------------------------------------------------------------------
-
-Err Tracer::trace(CNodeDeclaration* node) {
-  return trace_dispatch(node->node_value);
-}
-
-//------------------------------------------------------------------------------
-
-Err Tracer::trace(CNodeBinaryExp* node) {
-  Err err;
-  err << trace_dispatch(node->child("lhs"));
-  err << trace_dispatch(node->child("rhs"));
-  return err;
-}
-
-//------------------------------------------------------------------------------
-
 Err Tracer::trace(CNodePrefixExp* node) {
   Err err;
 
   auto rhs = node->child("rhs");
+  auto op = node->child("prefix")->get_text();
+
   err << trace_dispatch(rhs);
 
-  auto op = node->child("prefix")->get_text();
   if (op == "++" || op == "--") {
     auto inst_rhs = istack.back()->resolve(rhs);
     if (inst_rhs) {
-      err << log_action(inst_rhs, node, ACT_READ);
       err << log_action(inst_rhs, node, ACT_WRITE);
     }
   }
@@ -342,23 +198,35 @@ Err Tracer::trace(CNodeSuffixExp* node) {
 
   auto lhs = node->child("lhs");
   auto suffix = node->child("suffix");
-
-  err << trace_dispatch(lhs);
+  auto op = suffix->get_text();
 
   if (auto array_suffix = suffix->as<CNodeList>()) {
-    err << trace(array_suffix);
+    err << trace_dispatch(array_suffix);
     return err;
   }
 
-  auto op = node->child("suffix")->get_text();
+  err << trace_dispatch(lhs);
+
   if (op == "++" || op == "--") {
     auto inst_lhs = istack.back()->resolve(lhs);
     if (inst_lhs) {
-      err << log_action(inst_lhs, node, ACT_READ);
       err << log_action(inst_lhs, node, ACT_WRITE);
     }
   }
 
+  return err;
+}
+
+//------------------------------------------------------------------------------
+// For statements do _not_ get traced in declaration order, as "step" comes
+// last.
+
+Err Tracer::trace(CNodeFor* node) {
+  Err err;
+  err << trace_dispatch(node->child("init"));
+  err << trace_dispatch(node->child("condition"));
+  err << trace_dispatch(node->child("body"));
+  err << trace_dispatch(node->child("step"));
   return err;
 }
 
@@ -373,16 +241,6 @@ Err Tracer::trace(CNodeIdentifierExp* node) {
 
 //------------------------------------------------------------------------------
 
-Err Tracer::trace(CNodeExpStatement* node) {
-  return trace_children(node);
-}
-
-//------------------------------------------------------------------------------
-
-Err Tracer::trace(CNodeField* node) { return trace(node->node_decl); }
-
-//------------------------------------------------------------------------------
-
 Err Tracer::trace(CNodeFieldExpression* node) {
   Err err;
 
@@ -391,29 +249,6 @@ Err Tracer::trace(CNodeFieldExpression* node) {
   }
 
   return err;
-}
-
-//------------------------------------------------------------------------------
-
-Err Tracer::trace(CNodeFor* node) {
-  Err err;
-  err << trace_dispatch(node->child("init"));
-  err << trace_dispatch(node->child("condition"));
-  err << trace_dispatch(node->child("body"));
-  err << trace_dispatch(node->child("step"));
-  return err;
-}
-
-//------------------------------------------------------------------------------
-
-Err Tracer::trace(CNodeFunction* node) {
-  if (node->tag_noconvert()) return Err();
-
-  if (has_non_terminal_return(node->node_body)) {
-    return ERR("Function has mid-block return");
-  }
-
-  return trace(node->node_body);
 }
 
 //------------------------------------------------------------------------------
@@ -464,18 +299,6 @@ Err Tracer::trace(CNodeIf* node) {
 
 //------------------------------------------------------------------------------
 
-Err Tracer::trace(CNodeList* node) {
-  return trace_children(node);
-}
-
-//------------------------------------------------------------------------------
-
-Err Tracer::trace(CNodeLValue* node) {
-  return trace_children(node);
-}
-
-//------------------------------------------------------------------------------
-
 Err Tracer::trace(CNodeQualifiedIdentifier* node) {
   Err err;
 
@@ -483,7 +306,7 @@ Err Tracer::trace(CNodeQualifiedIdentifier* node) {
   auto field = node->child("identifier")->name;
 
   if (auto node_namespace = repo->get_namespace(scope)) {
-    return trace(node_namespace->get_field(field));
+    return trace_dispatch(node_namespace->get_field(field));
   }
 
   if (auto node_enum = repo->get_enum(scope)) {
@@ -557,72 +380,19 @@ Err Tracer::trace(CNodeSwitch* node) {
 
 //------------------------------------------------------------------------------
 
-Err Tracer::trace(CNodeCase* node) {
-  if (node->node_body && !ends_with_break(node->node_body)) {
-    return ERR(
-        "All non-empty case statements must end with break (no fallthroughs)");
-  }
-
-  return trace(node->node_body);
-}
-
-//------------------------------------------------------------------------------
-
-Err Tracer::trace(CNodeDefault* node) {
-  if (node->node_body && !ends_with_break(node->node_body)) {
-    return ERR(
-        "All non-empty case statements must end with break (no fallthroughs)");
-  }
-
-  return trace(node->node_body);
-}
-
-//------------------------------------------------------------------------------
-
-CInstance* walk_up_unions(CInstance* inst) {
-  if (inst->inst_parent) {
-    auto parent_union = walk_up_unions(inst->inst_parent);
-    if (parent_union) {
-      return parent_union;
-    }
-  }
-
-  if (inst->as<CInstUnion>()) {
-    return inst;
-  }
-
-  return nullptr;
-}
-
-//------------------------------------------------------------------------------
-
-bool is_return(CInstance* inst) {
-  if (inst->name == "@return") return true;
-
-  if (inst->inst_parent) {
-    return is_return(inst->inst_parent);
-  }
-  else {
-    return false;
-  }
-}
-
-bool belongs_to_func(CInstance* inst) {
-  if (inst->inst_parent == nullptr) return false;
-
-  if (auto func = inst->inst_parent->as<CInstFunc>()) {
-    return true;
-  }
-  else {
-    return belongs_to_func(inst->inst_parent);
-  }
-}
-
-
 Err Tracer::log_action2(CInstance* inst, CNode* node, TraceAction action) {
   Err err;
 
   //----------------------------------------
+  // We can see CInstFunc when we trace a function declaration, we don't have
+  // to do anything here.
+
+  if (auto inst_func = inst->as<CInstFunc>()) {
+    return err;
+  }
+
+  //----------------------------------------
+  // An action on a union applies to all the parts of the union.
 
   if (auto inst_union = inst->as<CInstUnion>()) {
     for (auto child : inst_union->parts) {
@@ -632,6 +402,7 @@ Err Tracer::log_action2(CInstance* inst, CNode* node, TraceAction action) {
   }
 
   //----------------------------------------
+  // An action on a struct applies to all parts of the struct.
 
   if (auto inst_struct = inst->as<CInstStruct>()) {
     for (auto child : inst_struct->parts) {
@@ -641,6 +412,7 @@ Err Tracer::log_action2(CInstance* inst, CNode* node, TraceAction action) {
   }
 
   //----------------------------------------
+  // An action on a primitive gets logged and added to self_reads/writes
 
   if (auto inst_prim = inst->as<CInstPrim>()) {
     if (inst->name == "@return") {
@@ -667,15 +439,20 @@ Err Tracer::log_action2(CInstance* inst, CNode* node, TraceAction action) {
       return err;
     }
 
-    auto old_state = inst_prim->state_stack.back();
-    auto new_state = merge_action(old_state, action);
+    //----------
+    // Log action on primitive
 
-    inst_prim->state_stack.back() = new_state;
+    if (log_actions) {
+      auto old_state = inst_prim->state_stack.back();
+      auto new_state = merge_action(old_state, action);
 
-    if (new_state == TS_INVALID) {
-      LOG_R("Trace error: state went from %s to %s\n", to_string(old_state),
-            to_string(new_state));
-      err << ERR("Invalid context state\n");
+      inst_prim->state_stack.back() = new_state;
+
+      if (new_state == TS_INVALID) {
+        LOG_R("Trace error: state went from %s to %s\n", to_string(old_state),
+              to_string(new_state));
+        err << ERR("Invalid context state\n");
+      }
     }
 
     return err;
@@ -688,6 +465,25 @@ Err Tracer::log_action2(CInstance* inst, CNode* node, TraceAction action) {
 //------------------------------------------------------------------------------
 
 Err Tracer::log_action(CInstance* inst, CNode* node, TraceAction action) {
+
+  std::function<CInstance*(CInstance*)> walk_up_unions;
+
+  walk_up_unions = [&](CInstance* inst) -> CInstance* {
+    if (inst->inst_parent) {
+      auto parent_union = walk_up_unions(inst->inst_parent);
+      if (parent_union) {
+        return parent_union;
+      }
+    }
+
+    if (inst->as<CInstUnion>()) {
+      return inst;
+    }
+
+    return nullptr;
+  };
+
+
   if (auto parent_union = walk_up_unions(inst)) {
     return log_action2(parent_union, node, action);
   }

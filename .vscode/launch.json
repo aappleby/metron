@@ -13,14 +13,15 @@
         "-d",
         "-v",
         "-e",
-        "-i", "../pinwheel",
+        //"-i", "../pinwheel",
         //"-i", "examples/rvsimple/metron",
 
-        "-c", "examples/scratch.h",
+        //"-c", "examples/scratch.h",
 
-        //"-c", "pinwheel/soc/test_reg.h",
+        //"-c", "pinwheel/soc/pinwheel_soc.h",
 
-        //"-c", "tests/metron_good/plus_equals.h",
+        "-c", "tests/metron_good/counter.h",
+
         //"-c", "examples/uart/metron/uart_rx.h",
         //"-c", "examples/rvsimple/metron/alu_control.h",
         //"-c", "examples/gb_spu/metron/MetroBoySPU2.h",

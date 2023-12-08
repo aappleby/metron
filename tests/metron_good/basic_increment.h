@@ -13,14 +13,14 @@ public:
 private:
 
   void tick() {
-    my_reg1++;
-    ++my_reg2;
-    my_reg3--;
-    --my_reg4;
+    my_reg1_++;
+    ++my_reg2_;
+    my_reg3_--;
+    --my_reg4_;
   }
 
-  int my_reg1;
-  int my_reg2;
-  int my_reg3;
-  int my_reg4;
+  int my_reg1_;
+  int my_reg2_;
+  int my_reg3_;
+  int my_reg4_;
 };

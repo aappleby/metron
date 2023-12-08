@@ -13,12 +13,12 @@ class Submod {
 class Module {
  public:
   void tock() {
-    b = submod.tock_add_one(b);
-    c = submod.tock_add_one(c);
+    b = submod_.tock_add_one(b);
+    c = submod_.tock_add_one(c);
   }
 
  private:
   logic<8> b;
   logic<8> c;
-  Submod submod;
+  Submod submod_;
 };

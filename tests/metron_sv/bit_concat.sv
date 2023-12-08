@@ -3,9 +3,6 @@
 // Concatenating logics should produce logics with correct <N>
 
 module Module (
-  // output signals
-  output logic[5:0] sig1,
-  output logic[5:0] sig2
 );
 /*public:*/
 

@@ -8,7 +8,7 @@ class Module {
  public:
   logic<8> tock() {
     logic<8> result;
-    switch (my_reg) {
+    switch (my_reg_) {
       case 0:
         result = 10;
         break;
@@ -23,7 +23,7 @@ class Module {
   }
 
  private:
-  void tick() { my_reg = my_reg + 1; }
+  void tick() { my_reg_ = my_reg_ + 1; }
 
-  logic<8> my_reg;
+  logic<8> my_reg_;
 };

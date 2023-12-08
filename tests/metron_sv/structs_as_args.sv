@@ -12,8 +12,6 @@ typedef struct packed {
 module block_ram (
   // global clock
   input logic clock,
-  // output signals
-  output logic[31:0] data,
   // unshell() ports
   input tilelink_a unshell_tla,
   output logic[31:0] unshell_ret,
@@ -27,7 +25,7 @@ module block_ram (
   end
 
   always_ff @(posedge clock) begin : tick
-    data <= tick_tla.a_data;
+    data_ <= tick_tla.a_data;
   end
 
 endmodule

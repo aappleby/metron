@@ -6,7 +6,7 @@ class Module {
 public:
 
   logic<8> tock() {
-    logic<8> result = my_reg1 + my_reg2;
+    logic<8> result = my_reg1_ + my_reg2_;
     tick1();
     tick2();
     return result;
@@ -15,13 +15,13 @@ public:
 private:
 
   void tick1() {
-    my_reg1 = 0;
+    my_reg1_ = 0;
   }
 
   void tick2() {
-    my_reg2 = 1;
+    my_reg2_ = 1;
   }
 
-  logic<8> my_reg1;
-  logic<8> my_reg2;
+  logic<8> my_reg1_;
+  logic<8> my_reg2_;
 };

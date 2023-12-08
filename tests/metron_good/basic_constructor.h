@@ -6,16 +6,16 @@ class Module {
 public:
 
   Module() {
-    my_reg = 7;
+    my_reg_ = 7;
   }
 
   logic<8> get_reg() {
-    return my_reg;
+    return my_reg_;
   }
 
 private:
 
-  logic<8> my_reg;
+  logic<8> my_reg_;
 };
 
 /*#

@@ -50,24 +50,33 @@ struct CInstance {
   }
 
   template <typename T>
+  const T* as() const {
+    return dynamic_cast<const T*>(this);
+  }
+
+  template <typename T>
   T* ancestor() {
     if (auto self = as<T>()) return self;
     if (inst_parent) return inst_parent->ancestor<T>();
     return nullptr;
   }
 
-  CInstance* get_root() { return inst_parent ? inst_parent->get_root() : this; }
+  bool is_signal() const;
+  bool is_state() const;
+
   CInstance* resolve(CNode* node);
+
+  CInstance* get_root() { return inst_parent ? inst_parent->get_root() : this; }
 
   //----------
   // CInstance interface
 
-  virtual TraceState get_state() const = 0;
+  virtual TraceState get_trace_state() const = 0;
   virtual CInstance* resolve(std::string name) = 0;
 
-  virtual void push_state() = 0;
-  virtual void pop_state() = 0;
-  virtual void swap_state() = 0;
+  virtual void push_trace_state() = 0;
+  virtual void pop_trace_state() = 0;
+  virtual void swap_trace_state() = 0;
   virtual void merge_state() = 0;
 
   //----------
@@ -84,18 +93,20 @@ struct CInstClass : public CInstance {
   CInstClass(std::string name, CInstance* inst_parent, CNodeField* node_field,
              CNodeClass* node_class);
 
-  bool check_port_directions(CInstClass* b);
-
   //----------
   // CInstance interface
 
-  TraceState get_state() const override;
+  TraceState get_trace_state() const override;
   CInstance* resolve(std::string name) override;
 
-  void push_state() override;
-  void pop_state() override;
-  void swap_state() override;
+  void push_trace_state() override;
+  void pop_trace_state() override;
+  void swap_trace_state() override;
   void merge_state() override;
+
+  //----------
+
+  bool check_port_directions(CInstClass* b);
 
   //----------
 
@@ -115,12 +126,12 @@ struct CInstStruct : public CInstance {
   //----------
   // CInstance interface
 
-  TraceState get_state() const override;
+  TraceState get_trace_state() const override;
   CInstance* resolve(std::string name) override;
 
-  void push_state() override;
-  void pop_state() override;
-  void swap_state() override;
+  void push_trace_state() override;
+  void pop_trace_state() override;
+  void swap_trace_state() override;
   void merge_state() override;
 
   //----------
@@ -139,12 +150,12 @@ struct CInstUnion : public CInstance {
   //----------
   // CInstance interface
 
-  TraceState get_state() const override;
+  TraceState get_trace_state() const override;
   CInstance* resolve(std::string name) override;
 
-  void push_state() override;
-  void pop_state() override;
-  void swap_state() override;
+  void push_trace_state() override;
+  void pop_trace_state() override;
+  void swap_trace_state() override;
   void merge_state() override;
 
   //----------
@@ -162,12 +173,12 @@ struct CInstPrim : public CInstance {
   //----------
   // CInstance interface
 
-  TraceState get_state() const override;
+  TraceState get_trace_state() const override;
   CInstance* resolve(std::string name) override;
 
-  void push_state() override;
-  void pop_state() override;
-  void swap_state() override;
+  void push_trace_state() override;
+  void pop_trace_state() override;
+  void swap_trace_state() override;
   void merge_state() override;
 
   //----------
@@ -186,12 +197,12 @@ struct CInstFunc : public CInstance {
   //----------
   // CInstance interface
 
-  TraceState get_state() const override;
+  TraceState get_trace_state() const override;
   CInstance* resolve(std::string name) override;
 
-  void push_state() override;
-  void pop_state() override;
-  void swap_state() override;
+  void push_trace_state() override;
+  void pop_trace_state() override;
+  void swap_trace_state() override;
   void merge_state() override;
 
   //----------

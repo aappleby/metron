@@ -9,10 +9,10 @@ public:
   }
 private:
   void tick(logic<8> arg) {
-    my_reg = my_reg + arg;
+    my_reg_ = my_reg_ + arg;
   }
 
-  logic<8> my_reg;
+  logic<8> my_reg_;
 };
 
 
@@ -21,12 +21,12 @@ public:
 
   void tock() {
     if (1) {
-      submod.tock(72);
+      submod_.tock(72);
     }
     else {
-      submod.tock(36);
+      submod_.tock(36);
     }
   }
 
-  Submod submod;
+  Submod submod_;
 };

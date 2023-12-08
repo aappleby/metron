@@ -12,10 +12,10 @@ public:
 private:
 
   void tick() {
-    logic<1> temp = my_reg;
-    my_reg = 0;
-    my_reg = 1;
+    logic<1> temp = my_reg_;
+    my_reg_ = 0;
+    my_reg_ = 1;
   }
 
-  logic<1> my_reg;
+  logic<1> my_reg_;
 };

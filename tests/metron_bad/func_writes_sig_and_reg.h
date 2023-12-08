@@ -6,10 +6,10 @@ class Module {
  public:
 
   void update(logic<1> in, int lksjf) {
-    sig = reg + in;
-    reg = sig + in;
+    sig = reg_ + in;
+    reg_ = sig + in;
   }
 
   logic<1> sig;
-  logic<1> reg;
+  logic<1> reg_;
 };

@@ -7,8 +7,6 @@ typedef struct packed {
 } MyStruct1;
 
 module Module (
-  // output signals
-  output MyStruct1 my_struct1
 );
 /*public:*/
 

@@ -11,15 +11,6 @@
 `include "metron/metron_tools.sv"
 
 module example_data_memory (
-  // global clock
-  input logic clock,
-  // input signals
-  input logic[(rv_config::DATA_BITS - 2)-1:0] address,
-  input logic wren,
-  input logic[3:0] byteena,
-  input logic[31:0] data,
-  // output signals
-  output logic[31:0] q
 );
  /*public:*/
 
@@ -34,7 +25,7 @@ module example_data_memory (
   end
 
  /*private:*/
-  always_ff @(posedge clock) begin : tick
+  always_comb begin : tick
     if (wren) begin
       logic[31:0] mask;
       // doing this slightly differently from rvsimple so we don't have to do
@@ -44,7 +35,7 @@ module example_data_memory (
       if (byteena[1]) mask = mask | 32'h0000FF00;
       if (byteena[2]) mask = mask | 32'h00FF0000;
       if (byteena[3]) mask = mask | 32'hFF000000;
-      mem[address] <= (mem[address] & ~mask) | (data & mask);
+      mem[address] = (mem[address] & ~mask) | (data & mask);
     end
   end
 

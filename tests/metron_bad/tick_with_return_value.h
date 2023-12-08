@@ -6,10 +6,10 @@
 class Module {
  public:
   logic<2> tick() {
-    my_reg = my_reg + 1;
+    my_reg_ = my_reg_ + 1;
     return 8;
   }
 
  private:
-  logic<2> my_reg;
+  logic<2> my_reg_;
 };

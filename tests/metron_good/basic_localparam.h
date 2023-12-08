@@ -14,8 +14,8 @@ private:
   static const int my_val = 7;
 
   void tick() {
-    my_reg = my_reg + my_val;
+    my_reg_ = my_reg_ + my_val;
   }
 
-  logic<7> my_reg;
+  logic<7> my_reg_;
 };

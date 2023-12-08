@@ -11,7 +11,7 @@ public:
 
   logic<8> i_signal;
   logic<8> o_signal;
-  logic<8> o_reg;
+  logic<8> o_reg_;
 
   logic<8> tock(logic<8> i_param) {
     o_signal = i_signal + i_param;
@@ -22,7 +22,7 @@ public:
 private:
 
   void tick() {
-    o_reg = o_reg + o_signal;
+    o_reg_ = o_reg_ + o_signal;
   }
 };
 
@@ -30,21 +30,21 @@ class Module {
 public:
 
   void tock() {
-    submod.i_signal = 12;
-    logic<8> submod_return = submod.tock(13);
+    submod_.i_signal = 12;
+    logic<8> submod_return = submod_.tock(13);
     my_sig = submod_return + 3;
     tick();
   }
 
-  logic<8> my_reg;
+  logic<8> my_reg_;
 
 private:
 
   void tick() {
-    my_reg = my_reg + my_sig - 2;
+    my_reg_ = my_reg_ + my_sig - 2;
   }
 
   logic<8> my_sig;
 
-  Submod submod;
+  Submod submod_;
 };

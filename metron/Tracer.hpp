@@ -54,17 +54,13 @@ struct CSourceRepo;
 
 struct Tracer {
 
-  void reset() {
-    cstack.clear();
-    istack.clear();
-  }
+  Tracer(CSourceRepo* repo, CInstance* root_inst, bool deep_trace, bool log_actions);
 
-  Err start_trace(CInstance* inst, CNodeFunction* func) {
-    reset();
-    cstack.push_back(func);
-    istack.push_back(inst);
-    return trace_dispatch(func);
-  }
+  void reset();
+
+  Err start_trace(CInstance* inst, CNodeFunction* func);
+
+  bool in_constructor();
 
   Err trace_dispatch(CNode* node);
   Err trace_children(CNode* node);
@@ -88,16 +84,8 @@ struct Tracer {
   std::vector<CNodeFunction*> cstack;
   std::vector<CInstance*> istack;
 
-  bool in_constructor() {
-    for (int i = cstack.size() - 1; i >= 0; i--) {
-      if (cstack[i]->as<CNodeConstructor>()) return true;
-    }
-    return false;
-  }
-
-  CSourceRepo* repo = nullptr;
-  CInstance* root_inst = nullptr;
-  bool deep_trace = false;
-  bool writes_are_bad = false;
-  bool log_actions = false;
+  CSourceRepo* repo;
+  CInstance* root_inst;
+  bool deep_trace;
+  bool log_actions;
 };

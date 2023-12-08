@@ -13,9 +13,9 @@ class Module {
  private:
 
   void tick(logic<7> my_input) {
-    my_reg = my_reg + my_input;
+    my_reg_ = my_reg_ + my_input;
   }
 
-  logic<7> my_reg;
+  logic<7> my_reg_;
 };
 // clang-format on

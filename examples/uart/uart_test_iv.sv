@@ -63,7 +63,7 @@ module uart_test;
     reset = 0;
 
     #200;
-    wait (top.tx.get_idle_ret);
+    wait (top.tx_.get_idle_ret);
     #5
 
     $write("\n");

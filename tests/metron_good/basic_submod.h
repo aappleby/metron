@@ -12,18 +12,18 @@ public:
 private:
 
   void tick(int x) {
-    sub_reg = sub_reg + x;
+    sub_reg_ = sub_reg_ + x;
   }
 
-  logic<8> sub_reg;
+  logic<8> sub_reg_;
 };
 
 class Module {
 public:
 
   void tock(int x) {
-    submod.tock(x);
+    submod_.tock(x);
   }
 
-  Submod submod;
+  Submod submod_;
 };

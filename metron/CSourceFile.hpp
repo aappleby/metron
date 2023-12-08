@@ -43,8 +43,6 @@ class CSourceFile {
   std::vector<CNodeUnion*>     all_unions;
   std::vector<CNodeNamespace*> all_namespaces;
   std::vector<CNodeEnum*>      all_enums;
-
-  std::vector<CInstClass*>     all_instances;
 };
 
 //------------------------------------------------------------------------------

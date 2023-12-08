@@ -7,7 +7,7 @@ class Module {
 public:
 
   Module(const char* filename = "examples/uart/message.hex") {
-    readmemh(filename, data);
+    readmemh(filename, data_);
   }
 
   void tock(logic<10> addr_) {
@@ -15,15 +15,15 @@ public:
   }
 
   void tick() {
-    out = data[addr];
+    out_ = data_[addr];
   }
 
   logic<8> get_data() {
-    return out;
+    return out_;
   }
 
 private:
   logic<10> addr;
-  logic<8> data[data_len];
-  logic<8> out;
+  logic<8> data_[data_len];
+  logic<8> out_;
 };

@@ -68,7 +68,32 @@ CInstance::CInstance(std::string name, CInstance* inst_parent)
 
 CInstance::~CInstance() {}
 
+//------------------------------------------------------------------------------
+
+bool CInstance::is_signal() const {
+  if (this->as<CInstClass>()) return false;
+  if (this->as<CInstFunc>()) return false;
+  return !is_state();
+}
+
 //----------------------------------------
+
+bool CInstance::is_state() const {
+
+  if (this->as<CInstClass>()) return false;
+  if (this->as<CInstFunc>()) return false;
+
+  const CInstance* inst = this;
+  while (inst->inst_parent && !inst->inst_parent->as<CInstClass>()) {
+    inst = inst->inst_parent;
+  }
+
+  return inst->name.ends_with("_");
+
+  return false;
+}
+
+//------------------------------------------------------------------------------
 
 CInstance* CInstance::resolve(CNode* node) {
   if (auto node_call = node->as<CNodeCall>()) {
@@ -122,6 +147,46 @@ CInstance* CInstance::resolve(CNode* node) {
 
 // ##############################################################################
 // ##############################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // ##############################################################################
 // ##############################################################################
@@ -206,6 +271,45 @@ CInstClass::CInstClass(std::string name, CInstance* inst_parent,
 
 //------------------------------------------------------------------------------
 
+TraceState CInstClass::get_trace_state() const {
+  assert(false);
+  return TS_INVALID;
+}
+
+//----------------------------------------
+
+CInstance* CInstClass::resolve(std::string name) {
+  for (auto child : ports)
+    if (child->name == name) return child;
+  for (auto child : parts)
+    if (child->name == name) return child;
+  return inst_parent ? inst_parent->resolve(name) : nullptr;
+}
+
+//----------------------------------------
+
+void CInstClass::push_trace_state() {
+  for (auto child : ports) child->push_trace_state();
+  for (auto child : parts) child->push_trace_state();
+}
+
+void CInstClass::pop_trace_state() {
+  for (auto child : ports) child->pop_trace_state();
+  for (auto child : parts) child->pop_trace_state();
+}
+
+void CInstClass::swap_trace_state() {
+  for (auto child : ports) child->swap_trace_state();
+  for (auto child : parts) child->swap_trace_state();
+}
+
+void CInstClass::merge_state() {
+  for (auto child : ports) child->merge_state();
+  for (auto child : parts) child->merge_state();
+}
+
+//------------------------------------------------------------------------------
+
 bool CInstClass::check_port_directions(CInstClass* b) {
   auto a = this;
   LOG("Checking %s vs %s\n", a->path.c_str(), b->path.c_str());
@@ -230,54 +334,48 @@ bool CInstClass::check_port_directions(CInstClass* b) {
       continue;
     }
 
-    if (!::check_port_directions(pa->get_state(), pb->get_state()))
+    if (!::check_port_directions(pa->get_trace_state(), pb->get_trace_state()))
       return false;
   }
 
   return true;
 }
 
-//------------------------------------------------------------------------------
-
-TraceState CInstClass::get_state() const {
-  assert(false);
-  return TS_INVALID;
-}
-
-//----------------------------------------
-
-CInstance* CInstClass::resolve(std::string name) {
-  for (auto child : ports)
-    if (child->name == name) return child;
-  for (auto child : parts)
-    if (child->name == name) return child;
-  return inst_parent ? inst_parent->resolve(name) : nullptr;
-}
-
-//----------------------------------------
-
-void CInstClass::push_state() {
-  for (auto child : ports) child->push_state();
-  for (auto child : parts) child->push_state();
-}
-
-void CInstClass::pop_state() {
-  for (auto child : ports) child->pop_state();
-  for (auto child : parts) child->pop_state();
-}
-
-void CInstClass::swap_state() {
-  for (auto child : ports) child->swap_state();
-  for (auto child : parts) child->swap_state();
-}
-
-void CInstClass::merge_state() {
-  for (auto child : ports) child->merge_state();
-  for (auto child : parts) child->merge_state();
-}
-
 // ##############################################################################
 // ##############################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // ##############################################################################
 // ##############################################################################
@@ -311,10 +409,10 @@ CInstStruct::CInstStruct(std::string name, CInstance* inst_parent,
 
 //------------------------------------------------------------------------------
 
-TraceState CInstStruct::get_state() const {
+TraceState CInstStruct::get_trace_state() const {
   auto merged_state = TS_PENDING;
   for (auto child : parts) {
-    merged_state = merge_branch(merged_state, child->get_state());
+    merged_state = merge_branch(merged_state, child->get_trace_state());
   }
   return merged_state;
 }
@@ -329,16 +427,16 @@ CInstance* CInstStruct::resolve(std::string name) {
 
 //----------------------------------------
 
-void CInstStruct::push_state() {
-  for (auto child : parts) child->push_state();
+void CInstStruct::push_trace_state() {
+  for (auto child : parts) child->push_trace_state();
 }
 
-void CInstStruct::pop_state() {
-  for (auto child : parts) child->pop_state();
+void CInstStruct::pop_trace_state() {
+  for (auto child : parts) child->pop_trace_state();
 }
 
-void CInstStruct::swap_state() {
-  for (auto child : parts) child->swap_state();
+void CInstStruct::swap_trace_state() {
+  for (auto child : parts) child->swap_trace_state();
 }
 
 void CInstStruct::merge_state() {
@@ -347,6 +445,42 @@ void CInstStruct::merge_state() {
 
 // ##############################################################################
 // ##############################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // ##############################################################################
 // ##############################################################################
@@ -380,10 +514,10 @@ CInstUnion::CInstUnion(std::string name, CInstance* inst_parent,
 
 //------------------------------------------------------------------------------
 
-TraceState CInstUnion::get_state() const {
+TraceState CInstUnion::get_trace_state() const {
   auto merged_state = TS_PENDING;
   for (auto child : parts) {
-    merged_state = merge_branch(merged_state, child->get_state());
+    merged_state = merge_branch(merged_state, child->get_trace_state());
   }
   return merged_state;
 }
@@ -398,16 +532,16 @@ CInstance* CInstUnion::resolve(std::string name) {
 
 //----------------------------------------
 
-void CInstUnion::push_state() {
-  for (auto child : parts) child->push_state();
+void CInstUnion::push_trace_state() {
+  for (auto child : parts) child->push_trace_state();
 }
 
-void CInstUnion::pop_state() {
-  for (auto child : parts) child->pop_state();
+void CInstUnion::pop_trace_state() {
+  for (auto child : parts) child->pop_trace_state();
 }
 
-void CInstUnion::swap_state() {
-  for (auto child : parts) child->swap_state();
+void CInstUnion::swap_trace_state() {
+  for (auto child : parts) child->swap_trace_state();
 }
 
 void CInstUnion::merge_state() {
@@ -428,7 +562,7 @@ CInstPrim::CInstPrim(std::string name, CInstance* inst_parent,
 
 //----------------------------------------
 
-TraceState CInstPrim::get_state() const { return state_stack.back(); }
+TraceState CInstPrim::get_trace_state() const { return state_stack.back(); }
 
 //----------------------------------------
 
@@ -439,21 +573,21 @@ CInstance* CInstPrim::resolve(std::string name) {
 
 //----------------------------------------
 
-void CInstPrim::push_state() {
+void CInstPrim::push_trace_state() {
   assert(state_stack.size() > 0);
   state_stack.push_back(state_stack.back());
 }
 
 //----------------------------------------
 
-void CInstPrim::pop_state() {
+void CInstPrim::pop_trace_state() {
   assert(state_stack.size() > 0);
   state_stack.pop_back();
 }
 
 //----------------------------------------
 
-void CInstPrim::swap_state() {
+void CInstPrim::swap_trace_state() {
   assert(state_stack.size() >= 2);
 
   auto s = state_stack.size();
@@ -512,6 +646,10 @@ CInstFunc::CInstFunc(std::string name, CInstance* inst_parent,
     }
   }
 
+  // FIXME maybe we shouldn't be tracing return values? Calling a getter
+  // multiple times breaks tracing because the return value is written and read
+  // twice
+  /*
   auto ret_type = node_func->node_type;
   if (!ret_type) return;
 
@@ -542,6 +680,7 @@ CInstFunc::CInstFunc(std::string name, CInstance* inst_parent,
   else {
     assert(false);
   }
+  */
 }
 
 //----------------------------------------
@@ -553,16 +692,16 @@ bool CInstFunc::check_port_directions(CInstFunc* b) {
   bool ok = true;
 
   if (a->inst_return) {
-    auto qa = a->inst_return->get_state();
-    auto qb = b->inst_return->get_state();
+    auto qa = a->inst_return->get_trace_state();
+    auto qb = b->inst_return->get_trace_state();
 
-    ok &= ::check_port_directions(a->inst_return->get_state(),
-                                  b->inst_return->get_state());
+    ok &= ::check_port_directions(a->inst_return->get_trace_state(),
+                                  b->inst_return->get_trace_state());
   }
 
   for (int i = 0; i < a->params.size(); i++) {
-    ok &= ::check_port_directions(a->params[i]->get_state(),
-                                  b->params[i]->get_state());
+    ok &= ::check_port_directions(a->params[i]->get_trace_state(),
+                                  b->params[i]->get_trace_state());
   }
 
   return ok;
@@ -570,7 +709,7 @@ bool CInstFunc::check_port_directions(CInstFunc* b) {
 
 //----------------------------------------
 
-TraceState CInstFunc::get_state() const {
+TraceState CInstFunc::get_trace_state() const {
   assert(false);
   return TS_INVALID;
 }
@@ -586,19 +725,19 @@ CInstance* CInstFunc::resolve(std::string name) {
 
 //----------------------------------------
 
-void CInstFunc::push_state() {
-  for (auto p : params) p->push_state();
-  if (inst_return) inst_return->push_state();
+void CInstFunc::push_trace_state() {
+  for (auto p : params) p->push_trace_state();
+  if (inst_return) inst_return->push_trace_state();
 }
 
-void CInstFunc::pop_state() {
-  for (auto p : params) p->pop_state();
-  if (inst_return) inst_return->pop_state();
+void CInstFunc::pop_trace_state() {
+  for (auto p : params) p->pop_trace_state();
+  if (inst_return) inst_return->pop_trace_state();
 }
 
-void CInstFunc::swap_state() {
-  for (auto p : params) p->swap_state();
-  if (inst_return) inst_return->swap_state();
+void CInstFunc::swap_trace_state() {
+  for (auto p : params) p->swap_trace_state();
+  if (inst_return) inst_return->swap_trace_state();
 }
 
 void CInstFunc::merge_state() {

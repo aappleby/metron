@@ -11,17 +11,6 @@
 `include "metron/metron_tools.sv"
 
 module regfile (
-  // global clock
-  input logic clock,
-  // input signals
-  input logic write_enable,
-  input logic[4:0] rd_address,
-  input logic[4:0] rs1_address,
-  input logic[4:0] rs2_address,
-  input logic[31:0] rd_data,
-  // output signals
-  output logic[31:0] rs1_data,
-  output logic[31:0] rs2_data
 );
  /*public:*/
 
@@ -43,9 +32,9 @@ module regfile (
 
  /*private:*/
   // Write port for rd
-  always_ff @(posedge clock) begin : tick
+  always_comb begin : tick
     if (write_enable)
-      if (rd_address != 5'b0) _register[rd_address] <= rd_data;
+      if (rd_address != 5'b0) _register[rd_address] = rd_data;
   end
 endmodule
 

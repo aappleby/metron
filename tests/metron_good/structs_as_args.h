@@ -17,10 +17,10 @@ public:
   }
 
   void tick(tilelink_a tla) {
-    data = tla.a_data;
+    data_ = tla.a_data;
   }
 
-  logic<32> data;
+  logic<32> data_;
 };
 
 //------------------------------------------------------------------------------

@@ -10,19 +10,17 @@ module Submod (
 );
 /*public:*/
 
-  always_comb begin : tock
-    tick_x = tock_x;
-    /*tick(x);*/
+  always_ff @(posedge clock) begin : tock
+    tick(tock_x);
   end
 
 /*private:*/
 
-  always_ff @(posedge clock) begin : tick
-    sub_reg <= sub_reg + tick_x;
-  end
-  int tick_x;
+  task automatic tick(int x);
+    sub_reg_ <= sub_reg_ + x;
+  endtask
 
-  logic[7:0] sub_reg;
+  logic[7:0] sub_reg_;
 endmodule
 
 module Module (
@@ -34,15 +32,15 @@ module Module (
 /*public:*/
 
   always_comb begin : tock
-    submod_tock_x = tock_x;
-    /*submod.tock(x);*/
+    submod__tock_x = tock_x;
+    /*submod_.tock(x);*/
   end
 
-  Submod submod(
+  Submod submod_(
     // Global clock
     .clock(clock),
     // tock() ports
-    .tock_x(submod_tock_x)
+    .tock_x(submod__tock_x)
   );
-  int submod_tock_x;
+  int submod__tock_x;
 endmodule

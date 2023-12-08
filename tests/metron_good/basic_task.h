@@ -13,14 +13,14 @@ public:
 private:
 
   void tick() {
-    my_reg = my_reg + my_reg2 + 3;
+    my_reg_ = my_reg_ + my_reg2_ + 3;
     some_task2();
   }
 
   void some_task2() {
-    my_reg2 = my_reg2 + 3;
+    my_reg2_ = my_reg2_ + 3;
   }
 
-  logic<8> my_reg;
-  logic<8> my_reg2;
+  logic<8> my_reg_;
+  logic<8> my_reg2_;
 };

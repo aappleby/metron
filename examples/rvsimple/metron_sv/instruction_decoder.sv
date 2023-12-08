@@ -11,15 +11,6 @@
 `include "metron/metron_tools.sv"
 
 module instruction_decoder (
-  // input signals
-  input logic[31:0] inst,
-  // output signals
-  output logic[6:0] inst_opcode,
-  output logic[2:0] inst_funct3,
-  output logic[6:0] inst_funct7,
-  output logic[4:0] inst_rd,
-  output logic[4:0] inst_rs1,
-  output logic[4:0] inst_rs2
 );
  /*public:*/
 

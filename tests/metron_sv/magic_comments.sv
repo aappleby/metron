@@ -5,14 +5,12 @@
 
 module Module (
   // global clock
-  input logic clock,
-  // output registers
-  output int my_reg
+  input logic clock
 );
 /*public:*/
 
   always_ff @(posedge clock) begin : tick
-    my_reg <= my_reg + 1;
+    my_reg_ <= my_reg_ + 1;
   end
 
 

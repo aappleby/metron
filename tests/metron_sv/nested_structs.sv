@@ -14,10 +14,7 @@ typedef struct packed {
 
 module Module (
   // global clock
-  input logic clock,
-  // output registers
-  output OuterStruct r,
-  output OuterStruct s
+  input logic clock
 );
 /*public:*/
 
@@ -29,14 +26,14 @@ module Module (
   end
 
   always_ff @(posedge clock) begin : tick_func2
-    s.y.a <= 4;
-    s.y.b <= 5;
-    s.y.c <= 6;
+    s_.y.a <= 4;
+    s_.y.b <= 5;
+    s_.y.c <= 6;
   end
 
   always_ff @(posedge clock) begin : tick_func3
-    s.z.a <= 7;
-    s.z.b <= 8;
-    s.z.c <= 9;
+    s_.z.a <= 7;
+    s_.z.b <= 8;
+    s_.z.c <= 9;
   end
 endmodule

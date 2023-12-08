@@ -31,17 +31,17 @@ class TilelinkDevice {
 public:
 
   TilelinkDevice() {
-    test_reg = 0;
-    oe = 0;
+    test_reg_ = 0;
+    oe_ = 0;
   }
 
   tilelink_d tld;
   tilelink_a tla;
 
   void tock() {
-    if (oe) {
+    if (oe_) {
       tld.d_opcode = TL::AccessAckData;
-      tld.d_data   = test_reg;
+      tld.d_data   = test_reg_;
       tld.d_valid  = 1;
     }
     else {
@@ -59,16 +59,17 @@ public:
           dup<8>(tla.a_mask[1]),
           dup<8>(tla.a_mask[2]),
           dup<8>(tla.a_mask[3]));
-        test_reg = (test_reg & ~mask) | (tla.a_data & mask);
+        test_reg_ = (test_reg_ & ~mask) | (tla.a_data & mask);
+        oe_ = 0;
       } else if (tla.a_opcode == TL::Get) {
-        oe = 1;
+        oe_ = 1;
       }
     }
   }
 
 private:
-  logic<32> test_reg;
-  logic<1>  oe;
+  logic<32> test_reg_;
+  logic<1>  oe_;
 };
 
 //------------------------------------------------------------------------------
@@ -80,20 +81,20 @@ public:
   tilelink_d tld;
 
   TilelinkCPU() {
-    addr = 0x1234;
-    data = 0x4321;
+    addr_ = 0x1234;
+    data_ = 0x4321;
   }
 
   void tock() {
-    if (data & 1) {
+    if (data_ & 1) {
       tla.a_opcode  = TL::Get;
-      tla.a_address = addr;
+      tla.a_address = addr_;
       tla.a_mask    = 0b1111;
       tla.a_data    = DONTCARE;
       tla.a_valid   = 1;
     } else {
       tla.a_opcode  = TL::PutFullData;
-      tla.a_address = addr;
+      tla.a_address = addr_;
       tla.a_mask    = 0b1111;
       tla.a_data    = 0xDEADBEEF;
       tla.a_valid   = 1;
@@ -102,13 +103,13 @@ public:
 
   void tick() {
     if (tld.d_opcode == TL::AccessAckData && tld.d_valid) {
-      data = tld.d_data;
+      data_ = tld.d_data;
     }
   }
 
 private:
-  logic<32> addr;
-  logic<32> data;
+  logic<32> addr_;
+  logic<32> data_;
 };
 
 //------------------------------------------------------------------------------

@@ -16,7 +16,7 @@ class Module {
 public:
 
   OuterStruct r;
-  OuterStruct s;
+  OuterStruct s_;
 
   void tock_func1() {
     r.x.a = 1;
@@ -25,14 +25,14 @@ public:
   }
 
   void tick_func2() {
-    s.y.a = 4;
-    s.y.b = 5;
-    s.y.c = 6;
+    s_.y.a = 4;
+    s_.y.b = 5;
+    s_.y.c = 6;
   }
 
   void tick_func3() {
-    s.z.a = 7;
-    s.z.b = 8;
-    s.z.c = 9;
+    s_.z.a = 7;
+    s_.z.b = 8;
+    s_.z.c = 9;
   }
 };

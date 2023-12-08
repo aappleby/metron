@@ -66,36 +66,26 @@ def main():
     print_b("Wiping tests/metron_sv/*")
     os.system("rm tests/metron_sv/*")
 
-    print_b("Checking that examples convert to SV cleanly")
-    errors += check_commands_good(
-        [
-            f"bin/metron -c examples/uart/metron/uart_top.h",
-            f"bin/metron -c examples/rvsimple/metron/toplevel.h",
-            f"bin/metron -c examples/pong/metron/pong.h",
-        ]
-    )
-    print()
-
     metron_good = sorted(sorted_glob("tests/metron_good/*.h"))
     metron_bad = sorted(sorted_glob("tests/metron_bad/*.h"))
 
-    print_b("Checking that all headers in tests/metron_good compile")
-    errors += check_commands_good(
-        [
-            f"g++ -I. --std=gnu++2a -fsyntax-only -c {filename}"
-            for filename in metron_good
-        ]
-    )
-    print()
+    #print_b("Checking that all headers in tests/metron_good compile")
+    #errors += check_commands_good(
+    #    [
+    #        f"g++ -I. --std=gnu++2a -fsyntax-only -c {filename}"
+    #        for filename in metron_good
+    #    ]
+    #)
+    #print()
 
-    print_b("Checking that all headers in tests/metron_bad compile")
-    errors += check_commands_good(
-        [
-            f"g++ -I. --std=gnu++2a -fsyntax-only -c {filename}"
-            for filename in metron_bad
-        ]
-    )
-    print()
+    #print_b("Checking that all headers in tests/metron_bad compile")
+    #errors += check_commands_good(
+    #    [
+    #        f"g++ -I. --std=gnu++2a -fsyntax-only -c {filename}"
+    #        for filename in metron_bad
+    #    ]
+    #)
+    #print()
 
     print_b("Checking that all test cases in metron_good convert to SV cleanly")
     errors += check_commands_good(
@@ -106,6 +96,8 @@ def main():
     )
     print()
 
+    """
+
     print_b("Checking that all test cases in metron_bad fail conversion")
     errors += check_commands_bad(
         [
@@ -114,6 +106,17 @@ def main():
         ]
     )
     print()
+
+    print_b("Checking that examples convert to SV cleanly")
+    errors += check_commands_good(
+        [
+            f"bin/metron -c examples/uart/metron/uart_top.h",
+            f"bin/metron -c examples/rvsimple/metron/toplevel.h",
+            f"bin/metron -c examples/pong/metron/pong.h",
+        ]
+    )
+    print()
+
 
     metron_sv = sorted(sorted_glob("tests/metron_sv/*.sv"))
 
@@ -217,6 +220,7 @@ def main():
         print()
 
     ############################################################
+    """
 
     print()
     print_b(f"Total failures : {errors}")

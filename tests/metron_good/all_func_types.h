@@ -78,21 +78,21 @@ public:
 
   //----------
 
-  int my_reg1;
+  int my_reg1_;
   void tick_no_params() {
-    my_reg1 = my_reg1 + 1;
+    my_reg1_ = my_reg1_ + 1;
     tick_called_by_tick(func_called_by_tick(1));
   }
 
-  int my_reg2;
+  int my_reg2_;
   void tick_params(int x) {
-    my_reg2 = my_reg2 + x;
+    my_reg2_ = my_reg2_ + x;
   }
 
 private:
-  int my_reg3;
+  int my_reg3_;
   void tick_called_by_tick(int x) {
-    my_reg3 = my_reg3 + x;
+    my_reg3_ = my_reg3_ + x;
   }
 
   int func_called_by_tick(int x) {
@@ -106,9 +106,9 @@ public:
   }
 
 private:
-  int my_reg4;
+  int my_reg4_;
   void tick_private(int x) {
-    my_reg4 = my_reg4 + x;
+    my_reg4_ = my_reg4_ + x;
   }
 
 

@@ -42,6 +42,42 @@
 
 //------------------------------------------------------------------------------
 
+Tracer::Tracer(CSourceRepo* repo, CInstance* root_inst, bool deep_trace, bool log_actions)
+: repo(repo), root_inst(root_inst), deep_trace(deep_trace), log_actions(log_actions) {
+}
+
+void Tracer::reset() {
+  cstack.clear();
+  istack.clear();
+}
+
+
+Err Tracer::start_trace(CInstance* inst, CNodeFunction* func) {
+  reset();
+  cstack.push_back(func);
+  istack.push_back(inst);
+  Err err = trace_dispatch(func);
+
+  // If we're tracing a top-level function with a return value, pretend that
+  // the external environment reads that return value.
+  /*
+  if (auto inst_return = inst->resolve("@return")) {
+    err << log_action(inst_return, nullptr, ACT_READ);
+  }
+  */
+
+  return err;
+}
+
+bool Tracer::in_constructor() {
+  for (int i = cstack.size() - 1; i >= 0; i--) {
+    if (cstack[i]->as<CNodeConstructor>()) return true;
+  }
+  return false;
+}
+
+//------------------------------------------------------------------------------
+
 Err Tracer::trace_dispatch(CNode* node) {
   if (node == nullptr) return Err();
   if (node->tag_noconvert()) return Err();
@@ -288,9 +324,9 @@ Err Tracer::trace(CNodeIf* node) {
 
   err << trace_dispatch(node->child("condition"));
 
-  root_inst->push_state();
+  root_inst->push_trace_state();
   if (body_true) err << trace_dispatch(body_true);
-  root_inst->swap_state();
+  root_inst->swap_trace_state();
   if (body_false) err << trace_dispatch(body_false);
   root_inst->merge_state();
 
@@ -333,9 +369,11 @@ Err Tracer::trace(CNodeReturn* node) {
     err << trace_dispatch(node_value);
   }
 
+  /*
   auto inst_return = istack.back()->resolve("@return");
   assert(inst_return);
   err << log_action(inst_return, node, ACT_WRITE);
+  */
 
   return err;
 }
@@ -360,14 +398,14 @@ Err Tracer::trace(CNodeSwitch* node) {
 
     if (node_default) has_default = true;
 
-    root_inst->push_state();
+    root_inst->push_trace_state();
     case_count++;
     err << trace_dispatch(node_child);
-    root_inst->swap_state();
+    root_inst->swap_trace_state();
   }
 
   if (has_default) {
-    root_inst->pop_state();
+    root_inst->pop_trace_state();
     case_count--;
   }
 
@@ -382,6 +420,11 @@ Err Tracer::trace(CNodeSwitch* node) {
 
 Err Tracer::log_action2(CInstance* inst, CNode* node, TraceAction action) {
   Err err;
+
+  if (in_constructor()) {
+    // LOG_R("not recording action because we're inside init()\n");
+    return err;
+  }
 
   //----------------------------------------
   // We can see CInstFunc when we trace a function declaration, we don't have
@@ -415,28 +458,19 @@ Err Tracer::log_action2(CInstance* inst, CNode* node, TraceAction action) {
   // An action on a primitive gets logged and added to self_reads/writes
 
   if (auto inst_prim = inst->as<CInstPrim>()) {
-    if (inst->name == "@return") {
-      // FIXME wat going on
-      //LOG("wat going on %d\n", action);
-      return err;
-    }
-
     assert(action == ACT_READ || action == ACT_WRITE);
 
-    auto func = node->ancestor<CNodeFunction>();
-    assert(func);
+    if (node) {
+      auto func = node->ancestor<CNodeFunction>();
+      assert(func);
 
-    if (!deep_trace && !belongs_to_func(inst_prim)) {
-      if (action == ACT_READ) {
-        func->self_reads.insert(inst_prim);
-      } else if (action == ACT_WRITE) {
-        func->self_writes.insert(inst_prim);
+      if (!deep_trace && !belongs_to_func(inst_prim)) {
+        if (action == ACT_READ) {
+          func->self_reads.insert(inst_prim);
+        } else if (action == ACT_WRITE) {
+          func->self_writes.insert(inst_prim);
+        }
       }
-    }
-
-    if (in_constructor()) {
-      // LOG_R("not recording action because we're inside init()\n");
-      return err;
     }
 
     //----------

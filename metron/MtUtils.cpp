@@ -302,7 +302,6 @@ const char* to_string(MethodType f) {
     case MT_TICK:    return "MT_TICK";
     case MT_TOCK:    return "MT_TOCK";
     case MT_FUNC:    return "MT_FUNC";
-    case MT_INVALID: return "MT_INVALID";
     default:         return "???";
   }
 }

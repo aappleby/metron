@@ -26,7 +26,6 @@ class CSourceRepo /* : public IContext maybe? */ {
   CNodeUnion*     get_union(std::string_view name);
   CNodeNamespace* get_namespace(std::string_view name);
   CNodeEnum*      get_enum(std::string_view name);
-  CInstClass*     get_instance(std::string name);
 
   std::string resolve_filename(const std::string& filename);
   Err load_source(std::string filename, CSourceFile** out_source = nullptr);
@@ -34,7 +33,6 @@ class CSourceRepo /* : public IContext maybe? */ {
 
   std::set<std::string>     search_paths;
   std::vector<CSourceFile*> source_files;
-  //std::map<std::string, CSourceFile*> source_map;
 };
 
 //------------------------------------------------------------------------------

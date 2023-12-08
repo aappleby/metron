@@ -33,8 +33,12 @@ struct CNodeFunction : public CNode {
   void visit_internal_callers(func_visitor v);
   void visit_external_callers(func_visitor v);
 
+  void update_type();
+
   void set_type(MethodType new_type);
   bool needs_binding();
+
+  bool must_call_before(CNodeFunction* func);
 
   //----------------------------------------
 

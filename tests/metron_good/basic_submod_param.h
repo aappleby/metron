@@ -13,18 +13,18 @@ public:
 private:
 
   void tick() {
-    sub_reg = sub_reg + SOME_CONSTANT;
+    sub_reg_ = sub_reg_ + SOME_CONSTANT;
   }
 
-  logic<8> sub_reg;
+  logic<8> sub_reg_;
 };
 
 class Module {
 public:
 
   void tock() {
-    submod.tock();
+    submod_.tock();
   }
 
-  Submod<99> submod;
+  Submod<99> submod_;
 };

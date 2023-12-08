@@ -22,12 +22,6 @@ Back porch  [492-524]
 module Pong (
   // global clock
   input logic clock,
-  // output signals
-  output logic vga_hsync,
-  output logic vga_vsync,
-  output logic vga_R,
-  output logic vga_G,
-  output logic vga_B,
   // pix_x() ports
   output logic[9:0] pix_x_ret,
   // pix_y() ports
@@ -41,34 +35,34 @@ module Pong (
   //----------------------------------------
 
   initial begin
-    px = 0;
-    py = 0;
+    px_ = 0;
+    py_ = 0;
 
-    ball_x = 320;
-    ball_y = 240;
+    ball_x_ = 320;
+    ball_y_ = 240;
 
-    ball_dx = 1;
-    ball_dy = 1;
+    ball_dx_ = 1;
+    ball_dy_ = 1;
 
-    pad_x = 240;
-    pad_y = 400;
+    pad_x_ = 240;
+    pad_y_ = 400;
 
-    quad_a = 0;
-    quad_b = 0;
+    quad_a_ = 0;
+    quad_b_ = 0;
   end
 
   //----------------------------------------
 
-  always_comb begin : pix_x  pix_x_ret = px; end
-  always_comb begin : pix_y  pix_y_ret = py; end
+  always_comb begin : pix_x  pix_x_ret = px_; end
+  always_comb begin : pix_y  pix_y_ret = py_; end
 
   //----------------------------------------
 
   always_comb begin : tock_video
-    vga_hsync = !((px >= 656) && (py <= 751));
-    vga_vsync = !((py >= 490) && (py <= 491));
+    vga_hsync = !((px_ >= 656) && (py_ <= 751));
+    vga_vsync = !((py_ >= 490) && (py_ <= 491));
 
-    if ((px < 640) && (py < 480)) begin
+    if ((px_ < 640) && (py_ < 480)) begin
       vga_R = in_border() | in_paddle() | in_ball() | in_checker();
       vga_G = in_border() | in_paddle() | in_ball();
       vga_B = in_border() | in_paddle() | in_ball();
@@ -81,16 +75,14 @@ module Pong (
 
   //----------------------------------------
 
-  always_comb begin : tock_game
-    tick_in_quad_a = tock_game_in_quad_a;
-    tick_in_quad_b = tock_game_in_quad_b;
-    /*tick(in_quad_a, in_quad_b);*/
+  always_ff @(posedge clock) begin : tock_game
+    tick(tock_game_in_quad_a, tock_game_in_quad_b);
   end
 
   //----------------------------------------
 
  /*private:*/
-  always_ff @(posedge clock) begin : tick
+  task automatic tick(logic in_quad_a, logic in_quad_b);
     logic[9:0] new_px;
     logic[9:0] new_py;
     logic quad_dir;
@@ -101,8 +93,8 @@ module Pong (
     logic[9:0] new_ball_y;
     logic new_ball_dx;
     logic new_ball_dy;
-    new_px = px + 1;
-    new_py = py;
+    new_px = px_ + 1;
+    new_py = py_;
 
     //----------
     // Update screen coord
@@ -119,14 +111,14 @@ module Pong (
     //----------
     // Update quadrature encoder
 
-    quad_dir = quad_a[1] ^ quad_b[0];
-    quad_step = quad_a[1] ^ quad_a[0] ^ quad_b[1] ^ quad_b[0];
+    quad_dir = quad_a_[1] ^ quad_b_[0];
+    quad_step = quad_a_[1] ^ quad_a_[0] ^ quad_b_[1] ^ quad_b_[0];
 
-    new_pad_x = pad_x;
-    new_pad_y = pad_y;
+    new_pad_x = pad_x_;
+    new_pad_y = pad_y_;
 
     if (quad_step) begin
-      new_pad_x = pad_x + quad_dir ? 1 : 0;
+      new_pad_x = pad_x_ + quad_dir ? 1 : 0;
       if (new_pad_x < 120) new_pad_x = 120;
       if (new_pad_x > 520) new_pad_x = 520;
     end
@@ -134,76 +126,74 @@ module Pong (
     //----------
     // Update in_ball
 
-    new_ball_x = ball_x;
-    new_ball_y = ball_y;
-    new_ball_dx = ball_dx;
-    new_ball_dy = ball_dy;
+    new_ball_x = ball_x_;
+    new_ball_y = ball_y_;
+    new_ball_dx = ball_dx_;
+    new_ball_dy = ball_dy_;
 
     if (in_border() | in_paddle()) begin
-      if ((px == ball_x - 7) && (py == ball_y + 0)) new_ball_dx = 1;
-      if ((px == ball_x + 7) && (py == ball_y + 0)) new_ball_dx = 0;
-      if ((px == ball_x + 0) && (py == ball_y - 7)) new_ball_dy = 1;
-      if ((px == ball_x + 0) && (py == ball_y + 7)) new_ball_dy = 0;
+      if ((px_ == ball_x_ - 7) && (py_ == ball_y_ + 0)) new_ball_dx = 1;
+      if ((px_ == ball_x_ + 7) && (py_ == ball_y_ + 0)) new_ball_dx = 0;
+      if ((px_ == ball_x_ + 0) && (py_ == ball_y_ - 7)) new_ball_dy = 1;
+      if ((px_ == ball_x_ + 0) && (py_ == ball_y_ + 7)) new_ball_dy = 0;
     end
 
     if (new_px == 0 && new_py == 0) begin
-      new_ball_x = ball_x + (new_ball_dx ? 1 : -1);
-      new_ball_y = ball_y + (new_ball_dy ? 1 : -1);
+      new_ball_x = ball_x_ + (new_ball_dx ? 1 : -1);
+      new_ball_y = ball_y_ + (new_ball_dy ? 1 : -1);
     end
 
     //----------
     // Commit
 
-    px <= new_px;
-    py <= new_py;
+    px_ <= new_px;
+    py_ <= new_py;
 
-    pad_x <= new_pad_x;
-    pad_y <= new_pad_y;
+    pad_x_ <= new_pad_x;
+    pad_y_ <= new_pad_y;
 
-    ball_x <= new_ball_x;
-    ball_y <= new_ball_y;
+    ball_x_ <= new_ball_x;
+    ball_y_ <= new_ball_y;
 
-    ball_dx <= new_ball_dx;
-    ball_dy <= new_ball_dy;
+    ball_dx_ <= new_ball_dx;
+    ball_dy_ <= new_ball_dy;
 
-    quad_a <= quad_a << 1 | tick_in_quad_a;
-    quad_b <= quad_b << 1 | tick_in_quad_b;
-  end
-  logic tick_in_quad_a;
-  logic tick_in_quad_b;
+    quad_a_ <= quad_a_ << 1 | in_quad_a;
+    quad_b_ <= quad_b_ << 1 | in_quad_b;
+  endtask
 
   //----------------------------------------
 
   function logic in_border() /*const*/;
-    in_border = (px <= 7) || (px >= 633) || (py <= 7) || (py >= 473);
+    in_border = (px_ <= 7) || (px_ >= 633) || (py_ <= 7) || (py_ >= 473);
   endfunction
 
   function logic in_paddle() /*const*/;
-    in_paddle = (px >= pad_x - 63) && (px <= pad_x + 63) && (py >= pad_y - 3) &&
-           (py <= pad_y + 3);
+    in_paddle = (px_ >= pad_x_ - 63) && (px_ <= pad_x_ + 63) && (py_ >= pad_y_ - 3) &&
+           (py_ <= pad_y_ + 3);
   endfunction
 
   function logic in_ball() /*const*/;
-    in_ball = (px >= ball_x - 7) && (px <= ball_x + 7) && (py >= ball_y - 7) &&
-           (py <= ball_y + 7);
+    in_ball = (px_ >= ball_x_ - 7) && (px_ <= ball_x_ + 7) && (py_ >= ball_y_ - 7) &&
+           (py_ <= ball_y_ + 7);
   endfunction
 
-  function logic in_checker() /*const*/;  in_checker = px[3] ^ py[3]; endfunction
+  function logic in_checker() /*const*/;  in_checker = px_[3] ^ py_[3]; endfunction
 
-  logic[9:0] px;
-  logic[9:0] py;
+  logic[9:0] px_;
+  logic[9:0] py_;
 
-  logic[9:0] pad_x;
-  logic[9:0] pad_y;
+  logic[9:0] pad_x_;
+  logic[9:0] pad_y_;
 
-  logic[9:0] ball_x;
-  logic[9:0] ball_y;
+  logic[9:0] ball_x_;
+  logic[9:0] ball_y_;
 
-  logic ball_dx;
-  logic ball_dy;
+  logic ball_dx_;
+  logic ball_dy_;
 
-  logic[1:0] quad_a;
-  logic[1:0] quad_b;
+  logic[1:0] quad_a_;
+  logic[1:0] quad_b_;
 endmodule
 
 //------------------------------------------------------------------------------

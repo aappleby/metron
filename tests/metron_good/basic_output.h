@@ -6,7 +6,7 @@ class Module {
 public:
 
   logic<7> get_reg() const {
-    return my_reg;
+    return my_reg_;
   }
 
   void tock() {
@@ -17,8 +17,8 @@ public:
 private:
 
   void tick() {
-    my_reg = my_reg + 1;
+    my_reg_ = my_reg_ + 1;
   }
 
-  logic<7> my_reg;
+  logic<7> my_reg_;
 };

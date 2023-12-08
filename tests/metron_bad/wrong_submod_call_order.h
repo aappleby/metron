@@ -20,11 +20,11 @@ class Module {
 public:
 
   void tock() {
-    x.tick2();
-    x.tick1();
+    x_.tick2();
+    x_.tick1();
   }
 
 private:
 
-  Submod x;
+  Submod x_;
 };

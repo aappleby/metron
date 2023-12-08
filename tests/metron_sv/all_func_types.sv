@@ -3,17 +3,6 @@
 module Module (
   // global clock
   input logic clock,
-  // output signals
-  output int my_sig1,
-  output int my_sig2,
-  output int my_sig3,
-  output int my_sig4,
-  output int my_sig5a,
-  output int my_sig5b,
-  output int my_sig6a,
-  // output registers
-  output int my_reg1,
-  output int my_reg2,
   // func_no_params_return() ports
   output int func_no_params_return_ret,
   // func_params_return() ports
@@ -111,18 +100,18 @@ module Module (
   //----------
 
   always_ff @(posedge clock) begin : tick_no_params
-    my_reg1 <= my_reg1 + 1;
+    my_reg1_ <= my_reg1_ + 1;
     tick_called_by_tick(func_called_by_tick(1));
   end
 
   always_ff @(posedge clock) begin : tick_params
-    my_reg2 <= my_reg2 + tick_params_x;
+    my_reg2_ <= my_reg2_ + tick_params_x;
   end
 
 /*private:*/
-  int my_reg3;
+  int my_reg3_;
   task automatic tick_called_by_tick(int x);
-    my_reg3 <= my_reg3 + x;
+    my_reg3_ <= my_reg3_ + x;
   endtask
 
   function int func_called_by_tick(int x);
@@ -131,17 +120,15 @@ module Module (
 
 /*public:*/
 
-  always_comb begin : tock_only_calls_private_tick
-    tick_private_x = 17;
-    /*tick_private(17);*/
+  always_ff @(posedge clock) begin : tock_only_calls_private_tick
+    tick_private(17);
   end
 
 /*private:*/
-  int my_reg4;
-  always_ff @(posedge clock) begin : tick_private
-    my_reg4 <= my_reg4 + tick_private_x;
-  end
-  int tick_private_x;
+  int my_reg4_;
+  task automatic tick_private(int x);
+    my_reg4_ <= my_reg4_ + x;
+  endtask
 
 
 endmodule

@@ -25,22 +25,22 @@ private:
   }
 
   logic<8> public_func(logic<8> x) {
-    return my_reg1 + private_func(x);
+    return my_reg1_ + private_func(x);
   }
 
   void tick(int w) {
     private_task(private_func(w));
-    my_reg2 = my_reg2 + 1;
+    my_reg2_ = my_reg2_ + 1;
   }
 
   void private_task(logic<8> x) {
-    my_reg1 = my_reg1 + private_func(x);
+    my_reg1_ = my_reg1_ + private_func(x);
   }
 
   logic<8> private_func(logic<8> y) {
-    return my_reg1 + y;
+    return my_reg1_ + y;
   }
 
-  logic<8> my_reg1;
-  logic<8> my_reg2;
+  logic<8> my_reg1_;
+  logic<8> my_reg2_;
 };

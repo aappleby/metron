@@ -13,9 +13,9 @@ public:
 private:
 
   void tick(logic<8> val) {
-    my_reg = my_reg + val;
+    my_reg_ = my_reg_ + val;
   }
 
-  logic<8> my_reg;
+  logic<8> my_reg_;
 
 };

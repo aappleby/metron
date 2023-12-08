@@ -10,10 +10,10 @@ class Module {
 
  private:
   void tick() {
-    logic<1> x = reg;
-    reg = 1;
-    logic<1> y = reg;
+    logic<1> x = reg_;
+    reg_ = 1;
+    logic<1> y = reg_;
   }
 
-  logic<1> reg;
+  logic<1> reg_;
 };

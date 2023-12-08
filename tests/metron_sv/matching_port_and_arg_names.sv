@@ -4,11 +4,6 @@
 // function name.
 
 module Module (
-  // input signals
-  input int input_val,
-  // output signals
-  output int output1,
-  output int output2,
   // tock2() ports
   input int tock2_input_val
 );

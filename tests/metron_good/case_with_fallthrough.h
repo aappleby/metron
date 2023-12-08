@@ -8,7 +8,7 @@ public:
 
   logic<8> tock() {
     logic<8> result;
-    switch(my_reg) {
+    switch(my_reg_) {
       case 0: // can we stick comments in here?
       case 1:
       case 2:
@@ -30,8 +30,8 @@ public:
 private:
 
   void tick() {
-    my_reg = my_reg + 1;
+    my_reg_ = my_reg_ + 1;
   }
 
-  logic<8> my_reg;
+  logic<8> my_reg_;
 };

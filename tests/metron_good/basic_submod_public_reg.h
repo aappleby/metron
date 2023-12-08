@@ -9,12 +9,12 @@ public:
     tick();
   }
 
-  logic<8> sub_reg;
+  logic<8> sub_reg_;
 
 private:
 
   void tick() {
-    sub_reg = sub_reg + 1;
+    sub_reg_ = sub_reg_ + 1;
   }
 
 };
@@ -23,12 +23,12 @@ class Module {
 public:
 
   logic<8> get_submod_reg() const {
-    return submod.sub_reg;
+    return submod_.sub_reg_;
   }
 
   void tock() {
-    submod.tock();
+    submod_.tock();
   }
 
-  Submod submod;
+  Submod submod_;
 };

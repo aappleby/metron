@@ -9,7 +9,7 @@ class Module {
 public:
 
   Module(const char* filename = nullptr) {
-    if (filename) readmemh(filename, data);
+    if (filename) readmemh(filename, data_);
   }
 
   void tock(logic<10> new_addr) {
@@ -18,35 +18,35 @@ public:
   }
 
   logic<8> get_data() {
-    return out;
+    return out_;
   }
 
 private:
   void tick() {
-    out = data[addr];
+    out_ = data_[addr];
   }
 
   logic<10> addr;
-  logic<8> data[data_len];
-  logic<8> out;
+  logic<8> data_[data_len];
+  logic<8> out_;
 };
 
 //----------------------------------------
 
 class Top {
 public:
-  Top() : mod("examples/uart/message.hex"), derp(7) {
+  Top() : mod_("examples/uart/message.hex"), derp(7) {
   }
 
   void tock(logic<10> addr) {
-    mod.tock(addr);
+    mod_.tock(addr);
   }
 
   void tick() {
     //mod.tick();
   }
 
-  Module<7777, 8383> mod;
+  Module<7777, 8383> mod_;
   logic<10> derp;
 };
 

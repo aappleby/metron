@@ -23,6 +23,7 @@ struct CNodeKeyword;
 struct CNodeIdentifier;
 struct CNodeList;
 struct CNodeConstructor;
+struct CInstClass;
 
 //==============================================================================
 
@@ -73,12 +74,16 @@ struct CNodeClass : public CNode {
 
   int refcount = 0;
 
+  CInstClass* instance = nullptr;
+
   CNodeConstructor* constructor = nullptr;
   std::vector<CNodeFunction*>    all_functions;
   std::vector<CNodeField*>       all_fields;
   std::vector<CNodeDeclaration*> all_modparams;
   std::vector<CNodeField*>       all_localparams;
   std::vector<CNodeEnum*>        all_enums;
+
+  std::vector<CNodeFunction*>    sorted_functions;
 
   std::vector<CNodeField*> input_signals;
   std::vector<CNodeField*> output_signals;

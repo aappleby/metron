@@ -11,7 +11,7 @@ class Module {
 public:
 
   int my_sig;
-  int my_reg;
+  int my_reg_;
 
   int tock() {
     my_sig = MyPackage::foo + 1;
@@ -19,6 +19,6 @@ public:
   }
 
   void tick() {
-    my_reg = my_reg + MyPackage::foo;
+    my_reg_ = my_reg_ + MyPackage::foo;
   }
 };

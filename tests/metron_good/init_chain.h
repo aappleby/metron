@@ -16,41 +16,41 @@ public:
 private:
 
   void tick() {
-    reg1 = reg1 + 1;
-    reg2 = reg2 + 1;
-    reg3 = reg3 + 1;
-    reg4 = reg4 + 1;
-    reg5 = reg5 + 1;
+    reg1_ = reg1_ + 1;
+    reg2_ = reg2_ + 1;
+    reg3_ = reg3_ + 1;
+    reg4_ = reg4_ + 1;
+    reg5_ = reg5_ + 1;
   }
 
-  logic<8> reg1;
-  logic<8> reg2;
-  logic<8> reg3;
-  logic<8> reg4;
-  logic<8> reg5;
+  logic<8> reg1_;
+  logic<8> reg2_;
+  logic<8> reg3_;
+  logic<8> reg4_;
+  logic<8> reg5_;
 
   void init1() {
-    reg1 = 1;
+    reg1_ = 1;
     init2();
   }
 
   void init2() {
-    reg2 = 2;
+    reg2_ = 2;
     init3();
   }
 
   void init3() {
-    reg3 = 3;
+    reg3_ = 3;
     init4();
   }
 
   void init4() {
-    reg4 = 4;
+    reg4_ = 4;
     init5();
   }
 
   void init5() {
-    reg5 = 5;
+    reg5_ = 5;
   }
 
 };

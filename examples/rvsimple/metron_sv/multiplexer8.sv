@@ -11,18 +11,6 @@
 `include "metron/metron_tools.sv"
 
 module multiplexer8 (
-  // input signals
-  input logic[WIDTH-1:0] in0,
-  input logic[WIDTH-1:0] in1,
-  input logic[WIDTH-1:0] in2,
-  input logic[WIDTH-1:0] in3,
-  input logic[WIDTH-1:0] in4,
-  input logic[WIDTH-1:0] in5,
-  input logic[WIDTH-1:0] in6,
-  input logic[WIDTH-1:0] in7,
-  input logic[2:0] sel,
-  // output signals
-  output logic[WIDTH-1:0] out
 );
   parameter WIDTH = 32;
  /*public:*/

@@ -30,34 +30,34 @@ class Pong {
   //----------------------------------------
 
   Pong() {
-    px = 0;
-    py = 0;
+    px_ = 0;
+    py_ = 0;
 
-    ball_x = 320;
-    ball_y = 240;
+    ball_x_ = 320;
+    ball_y_ = 240;
 
-    ball_dx = 1;
-    ball_dy = 1;
+    ball_dx_ = 1;
+    ball_dy_ = 1;
 
-    pad_x = 240;
-    pad_y = 400;
+    pad_x_ = 240;
+    pad_y_ = 400;
 
-    quad_a = 0;
-    quad_b = 0;
+    quad_a_ = 0;
+    quad_b_ = 0;
   }
 
   //----------------------------------------
 
-  logic<10> pix_x() const { return px; }
-  logic<10> pix_y() const { return py; }
+  logic<10> pix_x() const { return px_; }
+  logic<10> pix_y() const { return py_; }
 
   //----------------------------------------
 
   void tock_video() {
-    vga_hsync = !((px >= 656) && (py <= 751));
-    vga_vsync = !((py >= 490) && (py <= 491));
+    vga_hsync = !((px_ >= 656) && (py_ <= 751));
+    vga_vsync = !((py_ >= 490) && (py_ <= 491));
 
-    if ((px < 640) && (py < 480)) {
+    if ((px_ < 640) && (py_ < 480)) {
       vga_R = in_border() | in_paddle() | in_ball() | in_checker();
       vga_G = in_border() | in_paddle() | in_ball();
       vga_B = in_border() | in_paddle() | in_ball();
@@ -78,8 +78,8 @@ class Pong {
 
  private:
   void tick(logic<1> in_quad_a, logic<1> in_quad_b) {
-    logic<10> new_px = px + 1;
-    logic<10> new_py = py;
+    logic<10> new_px = px_ + 1;
+    logic<10> new_py = py_;
 
     //----------
     // Update screen coord
@@ -96,14 +96,14 @@ class Pong {
     //----------
     // Update quadrature encoder
 
-    logic<1> quad_dir = quad_a[1] ^ quad_b[0];
-    logic<1> quad_step = quad_a[1] ^ quad_a[0] ^ quad_b[1] ^ quad_b[0];
+    logic<1> quad_dir = quad_a_[1] ^ quad_b_[0];
+    logic<1> quad_step = quad_a_[1] ^ quad_a_[0] ^ quad_b_[1] ^ quad_b_[0];
 
-    logic<10> new_pad_x = pad_x;
-    logic<10> new_pad_y = pad_y;
+    logic<10> new_pad_x = pad_x_;
+    logic<10> new_pad_y = pad_y_;
 
     if (quad_step) {
-      new_pad_x = pad_x + quad_dir ? 1 : 0;
+      new_pad_x = pad_x_ + quad_dir ? 1 : 0;
       if (new_pad_x < 120) new_pad_x = 120;
       if (new_pad_x > 520) new_pad_x = 520;
     }
@@ -111,74 +111,74 @@ class Pong {
     //----------
     // Update in_ball
 
-    logic<10> new_ball_x = ball_x;
-    logic<10> new_ball_y = ball_y;
-    logic<1> new_ball_dx = ball_dx;
-    logic<1> new_ball_dy = ball_dy;
+    logic<10> new_ball_x = ball_x_;
+    logic<10> new_ball_y = ball_y_;
+    logic<1> new_ball_dx = ball_dx_;
+    logic<1> new_ball_dy = ball_dy_;
 
     if (in_border() | in_paddle()) {
-      if ((px == ball_x - 7) && (py == ball_y + 0)) new_ball_dx = 1;
-      if ((px == ball_x + 7) && (py == ball_y + 0)) new_ball_dx = 0;
-      if ((px == ball_x + 0) && (py == ball_y - 7)) new_ball_dy = 1;
-      if ((px == ball_x + 0) && (py == ball_y + 7)) new_ball_dy = 0;
+      if ((px_ == ball_x_ - 7) && (py_ == ball_y_ + 0)) new_ball_dx = 1;
+      if ((px_ == ball_x_ + 7) && (py_ == ball_y_ + 0)) new_ball_dx = 0;
+      if ((px_ == ball_x_ + 0) && (py_ == ball_y_ - 7)) new_ball_dy = 1;
+      if ((px_ == ball_x_ + 0) && (py_ == ball_y_ + 7)) new_ball_dy = 0;
     }
 
     if (new_px == 0 && new_py == 0) {
-      new_ball_x = ball_x + (new_ball_dx ? 1 : -1);
-      new_ball_y = ball_y + (new_ball_dy ? 1 : -1);
+      new_ball_x = ball_x_ + (new_ball_dx ? 1 : -1);
+      new_ball_y = ball_y_ + (new_ball_dy ? 1 : -1);
     }
 
     //----------
     // Commit
 
-    px = new_px;
-    py = new_py;
+    px_ = new_px;
+    py_ = new_py;
 
-    pad_x = new_pad_x;
-    pad_y = new_pad_y;
+    pad_x_ = new_pad_x;
+    pad_y_ = new_pad_y;
 
-    ball_x = new_ball_x;
-    ball_y = new_ball_y;
+    ball_x_ = new_ball_x;
+    ball_y_ = new_ball_y;
 
-    ball_dx = new_ball_dx;
-    ball_dy = new_ball_dy;
+    ball_dx_ = new_ball_dx;
+    ball_dy_ = new_ball_dy;
 
-    quad_a = quad_a << 1 | in_quad_a;
-    quad_b = quad_b << 1 | in_quad_b;
+    quad_a_ = quad_a_ << 1 | in_quad_a;
+    quad_b_ = quad_b_ << 1 | in_quad_b;
   }
 
   //----------------------------------------
 
   logic<1> in_border() const {
-    return (px <= 7) || (px >= 633) || (py <= 7) || (py >= 473);
+    return (px_ <= 7) || (px_ >= 633) || (py_ <= 7) || (py_ >= 473);
   }
 
   logic<1> in_paddle() const {
-    return (px >= pad_x - 63) && (px <= pad_x + 63) && (py >= pad_y - 3) &&
-           (py <= pad_y + 3);
+    return (px_ >= pad_x_ - 63) && (px_ <= pad_x_ + 63) && (py_ >= pad_y_ - 3) &&
+           (py_ <= pad_y_ + 3);
   }
 
   logic<1> in_ball() const {
-    return (px >= ball_x - 7) && (px <= ball_x + 7) && (py >= ball_y - 7) &&
-           (py <= ball_y + 7);
+    return (px_ >= ball_x_ - 7) && (px_ <= ball_x_ + 7) && (py_ >= ball_y_ - 7) &&
+           (py_ <= ball_y_ + 7);
   }
 
-  logic<1> in_checker() const { return px[3] ^ py[3]; }
+  logic<1> in_checker() const { return px_[3] ^ py_[3]; }
 
-  logic<10> px;
-  logic<10> py;
+  logic<10> px_;
+  logic<10> py_;
 
-  logic<10> pad_x;
-  logic<10> pad_y;
+  logic<10> pad_x_;
+  logic<10> pad_y_;
 
-  logic<10> ball_x;
-  logic<10> ball_y;
+  logic<10> ball_x_;
+  logic<10> ball_y_;
 
-  logic<1> ball_dx;
-  logic<1> ball_dy;
+  logic<1> ball_dx_;
+  logic<1> ball_dy_;
 
-  logic<2> quad_a;
-  logic<2> quad_b;
+  logic<2> quad_a_;
+  logic<2> quad_b_;
 };
 
 //------------------------------------------------------------------------------

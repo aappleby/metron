@@ -12,12 +12,12 @@ public:
 private:
 
   void tick() {
-    my_reg = my_reg + some_func();
+    my_reg_ = my_reg_ + some_func();
   }
 
   logic<8> some_func() const {
     return 3;
   }
 
-  logic<8> my_reg;
+  logic<8> my_reg_;
 };

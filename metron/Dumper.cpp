@@ -356,14 +356,14 @@ void dump_function(CNodeFunction* node) {
   if (node->self_reads.size()) {
     LOG_INDENT_SCOPE();
     for (auto r : node->self_reads) {
-      LOG_G("Directly reads  %s : %s\n", r->path.c_str(), to_string(r->get_state()));
+      LOG_G("Directly reads  %s : %s\n", r->path.c_str(), to_string(r->get_trace_state()));
     }
   }
 
   if (node->self_writes.size()) {
     LOG_INDENT_SCOPE();
     for (auto w : node->self_writes) {
-      LOG_G("Directly writes %s : %s\n", w->path.c_str(), to_string(w->get_state()));
+      LOG_G("Directly writes %s : %s\n", w->path.c_str(), to_string(w->get_trace_state()));
     }
   }
 
@@ -557,51 +557,34 @@ void dump_call_graph(CNodeClass* node_class) {
     LOG_DEDENT();
   }
 
-  for (auto node_func : node_class->all_functions) {
-    if (node_func->internal_callers.size()) {
-      continue;
-    }
-    else {
-      LOG("Func %s\n", node_func->name.c_str());
-      LOG_INDENT();
-      dump_call_graph(node_func);
-      LOG_DEDENT();
-    }
+  for (auto node_func : node_class->sorted_functions) {
+    LOG("Func %s\n", node_func->name.c_str());
+    LOG_INDENT();
+    dump_call_graph(node_func);
+    LOG_DEDENT();
   }
   LOG_DEDENT();
 }
 
-
 void dump_call_graph(CNodeFunction* node_func) {
-  for (auto r : node_func->self_reads) {
-    LOG("Reads %s\n", r->path.c_str());
-  }
-  for (auto w : node_func->self_writes) {
-    LOG("Writes %s\n", w->path.c_str());
-  }
-
-  if (node_func->internal_callees.size()) {
-    for (auto c : node_func->internal_callees) {
-      auto func_name = c->name;
-      auto class_name = c->ancestor<CNodeClass>()->name;
-      LOG_T("%.*s::%.*s\n", class_name.size(), class_name.data(),
-            func_name.size(), func_name.data());
-      LOG_INDENT();
-      dump_call_graph(c);
-      LOG_DEDENT();
-    }
+  for (auto c : node_func->internal_callees) {
+    auto func_name = c->name;
+    auto class_name = c->ancestor<CNodeClass>()->name;
+    LOG_T("Calls internal %.*s::%.*s\n", class_name.size(), class_name.data(),
+          func_name.size(), func_name.data());
+    LOG_INDENT();
+    dump_call_graph(c);
+    LOG_DEDENT();
   }
 
-  if (node_func->external_callees.size()) {
-    for (auto c : node_func->external_callees) {
-      auto func_name = c->name;
-      auto class_name = c->ancestor<CNodeClass>()->name;
-      LOG_T("%.*s::%.*s\n", class_name.size(), class_name.data(),
-            func_name.size(), func_name.data());
-      LOG_INDENT();
-      dump_call_graph(c);
-      LOG_DEDENT();
-    }
+  for (auto c : node_func->external_callees) {
+    auto func_name = c->name;
+    auto class_name = c->ancestor<CNodeClass>()->name;
+    LOG_T("Calls external %.*s::%.*s\n", class_name.size(), class_name.data(),
+          func_name.size(), func_name.data());
+    LOG_INDENT();
+    dump_call_graph(c);
+    LOG_DEDENT();
   }
 }
 

@@ -16,19 +16,19 @@ public:
     my_sig = x;
   }
 
-  int my_reg1;
-  int my_reg2;
-  int my_reg3;
-  int my_reg4;
-  int my_reg5;
-  int my_reg6;
+  int my_reg1_;
+  int my_reg2_;
+  int my_reg3_;
+  int my_reg4_;
+  int my_reg5_;
+  int my_reg6_;
 
   void tick() {
-    my_reg1 += 22;
-    my_reg2  -= 22;
-    my_reg3   *= 22;
-    my_reg4 +=   22;
-    my_reg5 -=  22;
-    my_reg6 *= 22;
+    my_reg1_ += 22;
+    my_reg2_  -= 22;
+    my_reg3_   *= 22;
+    my_reg4_ +=   22;
+    my_reg5_ -=  22;
+    my_reg6_ *= 22;
   }
 };

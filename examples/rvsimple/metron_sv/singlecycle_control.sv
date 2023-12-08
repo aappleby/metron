@@ -11,19 +11,6 @@
 `include "metron/metron_tools.sv"
 
 module singlecycle_control (
-  // input signals
-  input logic[6:0] inst_opcode,
-  input logic take_branch,
-  // output signals
-  output logic pc_write_enable,
-  output logic regfile_write_enable,
-  output logic alu_operand_a_select,
-  output logic alu_operand_b_select,
-  output logic[1:0] alu_op_type,
-  output logic data_mem_read_enable,
-  output logic data_mem_write_enable,
-  output logic[2:0] reg_writeback_select,
-  output logic[1:0] next_pc_select
 );
  /*public:*/
 

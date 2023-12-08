@@ -21,8 +21,7 @@ enum MethodType {
   MT_INIT,
   MT_TICK,
   MT_TOCK,
-  MT_FUNC,
-  MT_INVALID
+  MT_FUNC
 };
 
 enum ContextType {

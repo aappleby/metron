@@ -11,18 +11,16 @@ module Module (
 );
 /*public:*/
 
-  always_comb begin : tock
-    tick_val = tock_val;
-    /*tick(val);*/
+  always_ff @(posedge clock) begin : tock
+    tick(tock_val);
   end
 
 /*private:*/
 
-  always_ff @(posedge clock) begin : tick
-    my_reg <= my_reg + tick_val;
-  end
-  logic[7:0] tick_val;
+  task automatic tick(logic[7:0] val);
+    my_reg_ <= my_reg_ + val;
+  endtask
 
-  logic[7:0] my_reg;
+  logic[7:0] my_reg_;
 
 endmodule

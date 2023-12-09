@@ -89,16 +89,6 @@ int main_new(Options opts) {
 
   //----------------------------------------
 
-  LOG_B("Instantiate individual classes\n");
-  for (auto file : repo.source_files) {
-    for (auto node_class : file->all_classes) {
-      node_class->instance = instantiate_class(
-        &repo, node_class->name, nullptr, nullptr, node_class, 1000);
-    }
-  }
-
-  //----------------------------------------
-
   LOG_B("Build call graph\n");
 
   for (auto file : repo.source_files) {
@@ -109,12 +99,15 @@ int main_new(Options opts) {
 
   //----------------------------------------
 
-  LOG_B("Shallow-trace individual classes to collect reads/writes\n");
+  LOG_B("Shallow-trace individual classes to collect reads/writes/calls\n");
 
   LOG_INDENT();
   for (auto file : repo.source_files) {
     for (auto node_class : file->all_classes) {
-      Tracer tracer(&repo, node_class->instance, /*deep_trace*/ false, /*log_actions*/ false);
+
+      auto class_instance = instantiate_class(&repo, node_class->name, nullptr, nullptr, node_class, 1000);
+
+      Tracer tracer(&repo, class_instance, /*deep_trace*/ false, /*log_actions*/ false);
 
       auto name = node_class->name;
       LOG_B("Tracing public methods in %.*s\n", int(name.size()), name.data());
@@ -124,8 +117,8 @@ int main_new(Options opts) {
         LOG_INDENT_SCOPE();
         auto func_name = node_func->name;
 
-        LOG_B("Tracing %s\n", func_name.c_str());
-        auto inst_func = node_class->instance->resolve(func_name);
+        LOG_S("Tracing %s\n", func_name.c_str());
+        auto inst_func = class_instance->resolve(func_name);
 
         err << tracer.start_trace(inst_func, node_func);
       }
@@ -135,8 +128,8 @@ int main_new(Options opts) {
         auto func_name = node_func->name;
         if (!node_func->is_public) continue;
 
-        LOG_B("Tracing %s\n", func_name.c_str());
-        auto inst_func = node_class->instance->resolve(func_name);
+        LOG_S("Tracing %s\n", func_name.c_str());
+        auto inst_func = class_instance->resolve(func_name);
 
         err << tracer.start_trace(inst_func, node_func);
       }
@@ -267,25 +260,137 @@ int main_new(Options opts) {
 
   //----------------------------------------
 
-  if (top) {
-    LOG_B("Deep-tracing top module\n");
-    LOG_INDENT();
+  /*
+  LOG_B("Instantiate individual classes\n");
+  for (auto file : repo.source_files) {
+    for (auto node_class : file->all_classes) {
+      node_class->instance = instantiate_class(
+        &repo, node_class->name, nullptr, nullptr, node_class, 1000);
+    }
+  }
+  */
 
-    for (auto f : top->sorted_functions) {
-      LOG_B("Tracing %s\n", f->name.c_str());
+  LOG_B("Deep-tracing modules\n");
+  LOG_INDENT();
+  for (auto file : repo.source_files) {
+    for (auto node_class : file->all_classes) {
+      LOG_B("Deep-tracing %s in sorted order\n", node_class->name.c_str());
+      LOG_INDENT_SCOPE();
 
-      Tracer tracer(&repo, top->instance, /*deep_trace*/ true, /*log_actions*/ true);
-      auto inst_func = top->instance->resolve(f->name);
-      err << tracer.start_trace(inst_func, f);
+      node_class->instance = instantiate_class(
+        &repo, node_class->name, nullptr, nullptr, node_class, 1000);
 
-      if (err.has_err()) {
-        LOG_R("Error during tracing\n");
-        return -1;
+      for (auto f : node_class->sorted_functions) {
+        LOG_S("Tracing %s\n", f->name.c_str());
+
+        Tracer tracer(&repo, node_class->instance, /*deep_trace*/ true, /*log_actions*/ true);
+        auto inst_func = node_class->instance->resolve(f->name);
+        err << tracer.start_trace(inst_func, f);
+
+        if (err.has_err()) {
+          LOG_R("Error during tracing\n");
+          return -1;
+        }
       }
     }
-
-    LOG_DEDENT();
   }
+  LOG_DEDENT();
+
+  //----------------------------------------
+
+  LOG_B("Categorizing fields\n");
+
+#if 1
+  for (auto file : repo.source_files) {
+    for (auto node_class : file->all_classes) {
+      auto inst_class = node_class->instance->as<CInstClass>();
+      assert(inst_class);
+
+      for (auto inst_child : inst_class->ports) {
+        if (auto inst_prim = inst_child->as<CInstPrim>()) {
+          auto field = inst_prim->node_field;
+          if (!field->is_public) continue;
+          if (field->node_decl->is_param())
+            continue;
+
+          switch (inst_prim->get_trace_state()) {
+            case TS_NONE:
+              break;
+            case TS_INPUT:
+              node_class->input_signals.push_back(field);
+              break;
+            case TS_OUTPUT:
+              node_class->output_signals.push_back(field);
+              break;
+            case TS_MAYBE:
+              node_class->output_registers.push_back(field);
+              break;
+            case TS_SIGNAL:
+              node_class->output_signals.push_back(field);
+              break;
+            case TS_REGISTER:
+              node_class->output_registers.push_back(field);
+              break;
+            case TS_INVALID:
+              assert(false);
+              break;
+            case TS_PENDING:
+              assert(false);
+              break;
+          }
+        }
+
+        auto inst_struct = inst_child->as<CInstStruct>();
+        auto inst_union  = inst_child->as<CInstUnion>();
+
+        if (inst_struct || inst_union) {
+          CNodeField* field = nullptr;
+          TraceState state = TS_INVALID;
+
+          if (inst_struct) {
+            field = inst_struct->node_field;
+            state = inst_struct->get_trace_state();
+          }
+
+          if (inst_union) {
+            field = inst_union->node_field;
+            state = inst_union->get_trace_state();
+          }
+
+          if (!field->is_public) continue;
+          if (field->node_decl->is_param())
+            continue;
+
+          switch (state) {
+            case TS_NONE:
+              break;
+            case TS_INPUT:
+              node_class->input_signals.push_back(field);
+              break;
+            case TS_OUTPUT:
+              node_class->output_signals.push_back(field);
+              break;
+            case TS_MAYBE:
+              node_class->output_registers.push_back(field);
+              break;
+            case TS_SIGNAL:
+              node_class->output_signals.push_back(field);
+              break;
+            case TS_REGISTER:
+              node_class->output_registers.push_back(field);
+              break;
+            case TS_INVALID:
+              assert(false);
+              break;
+            case TS_PENDING:
+              assert(false);
+              break;
+          }
+        }
+      }
+    }
+  }
+#endif
 
   //----------------------------------------
 

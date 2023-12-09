@@ -15,7 +15,7 @@
         "-e",
         //"-i", "../pinwheel",
         //"-c", "pinwheel/soc/pinwheel_soc.h",
-        "-c", "tests/metron_bad/too_many_breaks.h",
+        "-c", "tests/metron_good/counter.h",
         //"-c", "examples/uart/metron/uart_top.h",
         //"-c", "tests/metron_bad/case_without_break.h",
 

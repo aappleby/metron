@@ -10,6 +10,10 @@ endpackage
 module Module (
   // global clock
   input logic clock,
+  // output signals
+  output int my_sig,
+  // output registers
+  output int my_reg_,
   // tock() ports
   output int tock_ret
 );

@@ -12,6 +12,8 @@ typedef struct packed {
 module block_ram (
   // global clock
   input logic clock,
+  // output signals
+  output logic[31:0] data_,
   // unshell() ports
   input tilelink_a unshell_tla,
   output logic[31:0] unshell_ret,

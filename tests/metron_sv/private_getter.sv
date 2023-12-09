@@ -3,6 +3,8 @@
 // Private getter methods are OK
 
 module Module (
+  // output signals
+  output int my_sig,
   // tock() ports
   output int tock_ret
 );

@@ -117,27 +117,27 @@ def main():
 
     metron_sv = sorted(sorted_glob("tests/metron_sv/*.sv"))
 
-    #print_b("Checking that all converted files match their golden version, if present")
-    #errors += check_commands_good(
-    #    [
-    #        f"diff {filename} {filename.replace('_sv', '_golden')}"
-    #        for filename in metron_sv
-    #    ]
-    #)
-    #print()
+    print_b("Checking that all converted files match their golden version, if present")
+    errors += check_commands_good(
+        [
+            f"diff {filename} {filename.replace('_sv', '_golden')}"
+            for filename in metron_sv
+        ]
+    )
+    print()
 
     ################################################################################
     # These tests are skipped in basic mode
 
     if not options.basic:
-        #print_b("Checking that all converted files can be parsed by Verilator")
-        #errors += check_commands_good(
-        #    [
-        #        f"verilator -Wno-width -I. --lint-only {filename}"
-        #        for filename in metron_sv
-        #    ]
-        #)
-        #print()
+        print_b("Checking that all converted files can be parsed by Verilator")
+        errors += check_commands_good(
+            [
+                f"verilator -Wno-width -I. --lint-only {filename}"
+                for filename in metron_sv
+            ]
+        )
+        print()
 
         #if options.synth:
         #    print_b("Checking that all converted files can be synthesized by Yosys")

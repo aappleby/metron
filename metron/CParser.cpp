@@ -1350,7 +1350,7 @@ TokenSpan match_default(CContext& ctx, TokenSpan body) {
   return pattern::match(ctx, body);
 }
 
-using cap_default = CaptureAnon<Ref<match_default>, CNodeDefault>;
+using cap_default = CaptureAnon<Ref<match_default>, CNodeCase>;
 
 //------------------------------------------------------------------------------
 

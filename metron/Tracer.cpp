@@ -393,10 +393,10 @@ Err Tracer::trace(CNodeSwitch* node) {
     if (!node_child->child("body")) continue;
 
     auto node_case = node_child->as<CNodeCase>();
-    auto node_default = node_child->as<CNodeDefault>();
-    if (!node_case && !node_default) continue;
+    if (!node_case) continue;
 
-    if (node_default) has_default = true;
+    if (node_case->node_kwdefault) has_default = true;
+    
 
     root_inst->push_trace_state();
     case_count++;

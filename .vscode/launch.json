@@ -14,19 +14,11 @@
         "-v",
         "-e",
         //"-i", "../pinwheel",
-        //"-i", "examples/rvsimple/metron",
-
-        //"-c", "examples/pong/metron/pong.h",
-
         //"-c", "pinwheel/soc/pinwheel_soc.h",
-
-        "-c", "tests/metron_good/nested_structs.h",
-
+        "-c", "tests/metron_bad/too_many_breaks.h",
         //"-c", "examples/uart/metron/uart_top.h",
+        //"-c", "tests/metron_bad/case_without_break.h",
 
-        //"-c", "examples/rvsimple/metron/alu_control.h",
-        //"-c", "examples/gb_spu/metron/MetroBoySPU2.h",
-        //"-o", "examples/scratch.sv"
       ],
       "setupCommands": [
         { // Display content in STL containers pretty

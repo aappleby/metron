@@ -38,8 +38,15 @@ void CNodeFunction::update_type() {
   for (auto f : internal_callees) f->update_type();
   for (auto f : external_callees) f->update_type();
 
-  // If we're called by init(), we're an init and can't be anything else.
-  if (called_by_init()) {
+  // If we're a constructor, we're an init.
+  if (as<CNodeConstructor>()) {
+    set_type(MT_INIT);
+    return;
+  }
+
+  // If we're called by a constructor and we write something, we're an init and
+  // can't be anything else.
+  if (!self_writes.empty() && called_by_init()) {
     set_type(MT_INIT);
     return;
   }

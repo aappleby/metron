@@ -14,6 +14,7 @@
 #include "metron/nodes/CNodeAccess.hpp"
 #include "metron/nodes/CNodeAssignment.hpp"
 #include "metron/nodes/CNodeCall.hpp"
+#include "metron/nodes/CNodeSwitch.hpp"
 #include "metron/nodes/CNodeClass.hpp"
 #include "metron/nodes/CNodeDeclaration.hpp"
 #include "metron/nodes/CNodeEnum.hpp"
@@ -33,6 +34,8 @@ namespace fs = std::filesystem;
 CNodeField* resolve_field(CNodeClass* node_class, CNode* node_name);
 void sanity_check_parse_tree(CSourceRepo& repo);
 Err build_call_graph(CNodeClass* node, CSourceRepo* repo);
+bool has_non_terminal_return(CNodeCompound* node_compound);
+bool check_switch_breaks(CNodeSwitch* node);
 
 //------------------------------------------------------------------------------
 
@@ -153,16 +156,20 @@ int main_new(Options opts) {
 
   for (auto file : repo.source_files) {
     for (auto node_class : file->all_classes) {
-      if (node_class->constructor) node_class->constructor->set_type(MT_INIT);
 
       for (auto node_func : node_class->all_functions) {
         assert(node_func->method_type == MT_UNKNOWN);
       }
+
       for (auto node_func : node_class->all_functions) {
         if (node_func->is_public) node_func->update_type();
       }
+
+      if (node_class->constructor) node_class->constructor->update_type();
+
       for (auto node_func : node_class->all_functions) {
-        assert(node_func->method_type != MT_UNKNOWN);
+        if (node_func->method_type != MT_UNKNOWN) {
+        }
       }
     }
   }
@@ -179,6 +186,41 @@ int main_new(Options opts) {
           exit(-1);
         }
       }
+    }
+  }
+
+  //----------------------------------------
+
+  LOG_B("Check for multiple returns\n");
+
+  for (auto file : repo.source_files) {
+    for (auto node_class : file->all_classes) {
+      for (auto node_func : node_class->all_functions) {
+        if (node_func->node_body && has_non_terminal_return(node_func->node_body)) {
+          LOG_R("Function %s has non-terminal return\n", node_func->name.c_str());
+          exit(-1);
+        }
+      }
+    }
+  }
+
+  //----------------------------------------
+
+  LOG_B("Check for mid-block break\n");
+
+  for (auto file : repo.source_files) {
+    for (auto node_class : file->all_classes) {
+
+      node_visitor visit = [&](CNode* node) {
+        if (auto node_switch = node->as<CNodeSwitch>()) {
+          if (!check_switch_breaks(node_switch)) {
+            LOG_R("Switch has cases that do not end with break\n");
+            exit(-1);
+          }
+        }
+      };
+
+      visit_children(node_class, visit);
     }
   }
 

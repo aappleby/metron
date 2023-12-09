@@ -20,6 +20,8 @@ Err collect_fields_and_methods(CNodeClass* node, CSourceRepo* repo) {
   bool in_public_section = false;
 
   for (auto child : node->node_body->items) {
+    if (child->tag_noconvert()) continue;
+
     if (auto access = child->as<CNodeAccess>()) {
       in_public_section = child->get_text() == "public:";
       continue;

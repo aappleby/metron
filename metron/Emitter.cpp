@@ -431,7 +431,6 @@ Err Emitter::emit_dispatch(CNode* node) {
   if (auto n = node->as<CNodeConstant>()) return emit(n);
   if (auto n = node->as<CNodeConstructor>()) return emit(n);
   if (auto n = node->as<CNodeDeclaration>()) return emit(n);
-  if (auto n = node->as<CNodeDefault>()) return emit(n);
   if (auto n = node->as<CNodeEnum>()) return emit(n);
   if (auto n = node->as<CNodeExpStatement>()) return emit(n);
   if (auto n = node->as<CNodeField>()) return emit(n);
@@ -1515,7 +1514,7 @@ Err Emitter::emit(CNodeUnion* node) {
 Err Emitter::emit(CNodeSwitch* node) {
   Err err = check_at(node);
 
-  err << emit_replacement2(node->node_switch, "case");
+  err << emit_replacement2(node->node_kwswitch, "case");
   err << emit_dispatch2(node->node_cond);
 
   for (auto child : node->node_body) {
@@ -1540,49 +1539,43 @@ Err Emitter::emit(CNodeSwitch* node) {
 Err Emitter::emit(CNodeCase* node) {
   Err err = check_at(node);
 
-  err << skip_over2(node->node_case);
-  err << emit_dispatch2(node->node_cond);
+  if (node->node_kwcase) {
+    err << skip_over2(node->node_kwcase);
+    err << emit_dispatch2(node->node_cond);
 
-  if (auto node_list = node->node_body->opt<CNodeList>()) {
-    err << emit_dispatch2(node->node_colon);
+    if (auto node_list = node->node_body->opt<CNodeList>()) {
+      err << emit_dispatch2(node->node_colon);
 
-    if (node_list->items.size() == 1 && node_list->items[0]->as<CNodeCompound>()) {
-      err << emit_dispatch2(node->node_body);
+      if (node_list->items.size() == 1 && node_list->items[0]->as<CNodeCompound>()) {
+        err << emit_dispatch2(node->node_body);
+      }
+      else {
+        // FIXME Yosys breaks if we assign to structs inside a case block that's
+        // not wrapped in a begin/end
+        err << cursor.emit_print(" begin ");
+        err << emit_dispatch2(node->node_body);
+        err << cursor.emit_print(" end ");
+      }
     }
     else {
-      // FIXME Yosys breaks if we assign to structs inside a case block that's
-      // not wrapped in a begin/end
-      err << cursor.emit_print(" begin ");
-      err << emit_dispatch2(node->node_body);
-      err << cursor.emit_print(" end ");
+      err << emit_replacement2(node->node_colon, ",");
+    }
+  }
+  else if (node->node_kwdefault) {
+    err << emit_dispatch2(node->node_kwdefault);
+
+    if (node->node_body) {
+      err << emit_dispatch2(node->node_colon);
+      err << emit_dispatch(node->node_body);
+    }
+    else {
+      err << emit_replacement(node->node_colon, ",");
     }
   }
   else {
-    err << emit_replacement2(node->node_colon, ",");
+    assert(false);
   }
 
-  return err << check_done(node);
-}
-
-//------------------------------------------------------------------------------
-
-Err Emitter::emit(CNodeDefault* node) {
-
-  Err err = check_at(node);
-
-  auto node_default = node->child("default");
-  auto node_colon   = node->child("colon");
-  auto node_body    = node->child("body");
-
-  err << emit_dispatch2(node_default);
-
-  if (node_body) {
-    err << emit_dispatch2(node_colon);
-    err << emit_dispatch(node_body);
-  }
-  else {
-    err << emit_replacement(node_colon, ",");
-  }
 
   return err << check_done(node);
 }

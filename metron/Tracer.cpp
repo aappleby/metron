@@ -396,7 +396,7 @@ Err Tracer::trace(CNodeSwitch* node) {
     if (!node_case) continue;
 
     if (node_case->node_kwdefault) has_default = true;
-    
+
 
     root_inst->push_trace_state();
     case_count++;

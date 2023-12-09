@@ -105,9 +105,9 @@ int main_new(Options opts) {
   for (auto file : repo.source_files) {
     for (auto node_class : file->all_classes) {
 
-      auto class_instance = instantiate_class(&repo, node_class->name, nullptr, nullptr, node_class, 1000);
+      node_class->instance = instantiate_class(&repo, node_class->name, nullptr, nullptr, node_class, 1000);
 
-      Tracer tracer(&repo, class_instance, /*deep_trace*/ false, /*log_actions*/ false);
+      Tracer tracer(&repo, node_class->instance, /*deep_trace*/ false, /*log_actions*/ false);
 
       auto name = node_class->name;
       LOG_B("Tracing public methods in %.*s\n", int(name.size()), name.data());
@@ -118,7 +118,7 @@ int main_new(Options opts) {
         auto func_name = node_func->name;
 
         LOG_S("Tracing %s\n", func_name.c_str());
-        auto inst_func = class_instance->resolve(func_name);
+        auto inst_func = node_class->instance->resolve(func_name);
 
         err << tracer.start_trace(inst_func, node_func);
       }
@@ -129,7 +129,7 @@ int main_new(Options opts) {
         if (!node_func->is_public) continue;
 
         LOG_S("Tracing %s\n", func_name.c_str());
-        auto inst_func = class_instance->resolve(func_name);
+        auto inst_func = node_class->instance->resolve(func_name);
 
         err << tracer.start_trace(inst_func, node_func);
       }
@@ -142,6 +142,42 @@ int main_new(Options opts) {
   }
 
   LOG_DEDENT();
+
+  //----------------------------------------
+
+  LOG_B("Checking port compatibility\n");
+  LOG_INDENT();
+
+  for (auto file : repo.source_files) {
+    for (auto node_class : file->all_classes) {
+      LOG("Module %s\n", node_class->instance->name.c_str());
+      LOG_INDENT_SCOPE();
+      for (auto child : node_class->instance->parts) {
+        if (auto inst_a = child->as<CInstClass>()) {
+          auto inst_b = inst_a->node_class->instance;
+          assert(inst_b);
+          bool ports_ok = inst_a->check_port_directions(inst_b);
+          if (!ports_ok) {
+            LOG_R("-----\n");
+            dump_inst_tree(inst_a);
+            LOG_R("-----\n");
+            dump_inst_tree(inst_b);
+            LOG_R("-----\n");
+            err << ERR("Bad ports!\n");
+            exit(-1);
+          }
+        }
+      }
+    }
+  }
+  LOG_DEDENT();
+
+  for (auto file : repo.source_files) {
+    for (auto node_class : file->all_classes) {
+      //delete node_class->instance;
+      node_class->instance = nullptr;
+    }
+  }
 
   //----------------------------------------
 
@@ -259,16 +295,6 @@ int main_new(Options opts) {
   LOG_DEDENT();
 
   //----------------------------------------
-
-  /*
-  LOG_B("Instantiate individual classes\n");
-  for (auto file : repo.source_files) {
-    for (auto node_class : file->all_classes) {
-      node_class->instance = instantiate_class(
-        &repo, node_class->name, nullptr, nullptr, node_class, 1000);
-    }
-  }
-  */
 
   LOG_B("Deep-tracing modules\n");
   LOG_INDENT();
@@ -391,35 +417,6 @@ int main_new(Options opts) {
     }
   }
 #endif
-
-  //----------------------------------------
-
-  LOG_B("Checking port compatibility\n");
-  LOG_INDENT();
-
-  for (auto file : repo.source_files) {
-    for (auto node_class : file->all_classes) {
-      LOG("Module %s\n", node_class->instance->name.c_str());
-      LOG_INDENT_SCOPE();
-      for (auto child : node_class->instance->parts) {
-        if (auto inst_a = child->as<CInstClass>()) {
-          auto inst_b = inst_a->node_class->instance;
-          assert(inst_b);
-          bool ports_ok = inst_a->check_port_directions(inst_b);
-          if (!ports_ok) {
-            LOG_R("-----\n");
-            dump_inst_tree(inst_a);
-            LOG_R("-----\n");
-            dump_inst_tree(inst_b);
-            LOG_R("-----\n");
-            err << ERR("Bad ports!\n");
-            exit(-1);
-          }
-        }
-      }
-    }
-  }
-  LOG_DEDENT();
 
   //----------------------------------------
   // Dump

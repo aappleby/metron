@@ -12,6 +12,7 @@ module Module (
 );
 /*public:*/
 
+  MyStruct1 my_struct1;
   always_comb begin : tock
     // FIXME fix this later glarghbh
     //my_struct1 = {0};

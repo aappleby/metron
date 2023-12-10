@@ -22,13 +22,12 @@ module Module (
   // output registers
   output logic[7:0] a,
   output logic[7:0] b,
-  output logic[7:0] c,
-  output logic[7:0] a,
-  output logic[7:0] b,
   output logic[7:0] c
 );
 /*public:*/
 
+  OuterStruct r;
+  OuterStruct s_;
 
   always_comb begin : tock_func1
     r.x.a = 1;

@@ -32,5 +32,4 @@ module Module (
     endcase
   endtask
 
-  logic[7:0] my_reg_;
 endmodule

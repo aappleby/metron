@@ -14,9 +14,9 @@
         "-v",
         "-e",
         "-i", "../pinwheel",
-        //"-c", "examples/scratch.h",
+        "-c", "examples/scratch.h", "-o", "examples/scratch.sv",
         //"-c", "pinwheel/soc/pinwheel_soc.h",
-        "-c", "tests/metron_bad/multiple_submod_function_bindings.h",
+        //"-c", "tests/metron_bad/multiple_submod_function_bindings.h",
         //"-c", "examples/uart/metron/uart_top.h",
 
       ],

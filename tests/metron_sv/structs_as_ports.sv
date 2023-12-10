@@ -47,6 +47,8 @@ module TilelinkDevice (
     oe_ = 0;
   end
 
+  tilelink_d tld;
+  tilelink_a tla;
 
   always_comb begin : tock
     if (oe_) begin
@@ -101,6 +103,8 @@ module TilelinkCPU (
 );
 /*public:*/
 
+  tilelink_a tla;
+  tilelink_d tld;
 
   initial begin
     addr_ = 16'h1234;

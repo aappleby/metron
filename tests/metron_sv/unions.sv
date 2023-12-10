@@ -20,4 +20,5 @@ module Module (
     blah.b = tock_y;
   end
 
+  my_union blah;
 endmodule

@@ -1175,9 +1175,17 @@ Err Emitter::emit(CNodeField* node) {
   // Ports don't go in the class body.
   // FIXME should we disallow public components?
 
+  if (auto node_class = node->ancestor<CNodeClass>()) {
+    if (node_class->input_sigs.contains(node))  return err << skip_over(node);
+    if (node_class->output_sigs.contains(node)) return err << skip_over(node);
+    if (node_class->output_regs.contains(node)) return err << skip_over(node);
+  }
+
+  /*
   if (node->is_public && !node->is_component() && !node->node_decl->is_param()) {
     return err << skip_over(node);
   }
+  */
 
   if (node->is_component()) {
     return emit_component(node);

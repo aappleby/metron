@@ -23,5 +23,4 @@ module test_slice (
   end
 
 /*private:*/
-  logic[31:0] ram_[256];
 endmodule

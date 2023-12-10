@@ -14,7 +14,6 @@ module block_ram (
   input logic clock,
   // input signals
   input logic[31:0] a_data,
-  input logic[31:0] a_data,
   // output registers
   output logic[31:0] data_,
   // unshell() ports

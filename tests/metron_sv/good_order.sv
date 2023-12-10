@@ -19,6 +19,5 @@ module Module (
     my_reg_ <= 1;
   end
 
-  logic my_sig;
   logic my_reg_;
 endmodule

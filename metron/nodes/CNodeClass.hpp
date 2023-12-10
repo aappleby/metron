@@ -90,9 +90,9 @@ struct CNodeClass : public CNode {
   std::set<CInstance*> self_reads;
   std::set<CInstance*> self_writes;
 
-  std::vector<CNodeField*> input_sigs;
-  std::vector<CNodeField*> output_sigs;
-  std::vector<CNodeField*> output_regs;
+  std::set<CNodeField*> input_sigs;
+  std::set<CNodeField*> output_sigs;
+  std::set<CNodeField*> output_regs;
 };
 
 //==============================================================================

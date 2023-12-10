@@ -255,7 +255,7 @@ int main_new(Options opts) {
           //exit(-1);
         }
 
-        if (inst->is_sig() && inst->get_field()) node_class->input_sigs.push_back(inst->get_field());
+        if (inst->is_sig() && inst->get_field()) node_class->input_sigs.insert(inst->get_field());
       }
 
       // RW
@@ -264,8 +264,8 @@ int main_new(Options opts) {
         if (!node_class->self_writes.contains(inst)) continue;
         if (!inst->is_public()) continue;
 
-        if (inst->is_sig() && inst->get_field()) node_class->output_sigs.push_back(inst->get_field());
-        if (inst->is_reg( )&& inst->get_field()) node_class->output_regs.push_back(inst->get_field());
+        if (inst->is_sig() && inst->get_field()) node_class->output_sigs.insert(inst->get_field());
+        if (inst->is_reg( )&& inst->get_field()) node_class->output_regs.insert(inst->get_field());
       }
 
       // WO
@@ -278,8 +278,8 @@ int main_new(Options opts) {
           //exit(-1);
         }
 
-        if (inst->is_sig() && inst->get_field()) node_class->output_sigs.push_back(inst->get_field());
-        if (inst->is_reg() && inst->get_field()) node_class->output_regs.push_back(inst->get_field());
+        if (inst->is_sig() && inst->get_field()) node_class->output_sigs.insert(inst->get_field());
+        if (inst->is_reg() && inst->get_field()) node_class->output_regs.insert(inst->get_field());
       }
     }
   }

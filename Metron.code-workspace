@@ -85,7 +85,8 @@
 			"iostream": "cpp",
 			"numbers": "cpp",
 			"stdexcept": "cpp",
-			"cinttypes": "cpp"
+			"cinttypes": "cpp",
+			"*.ipp": "cpp"
 		},
 		"mesonbuild.configureOnOpen": false,
 	}

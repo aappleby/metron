@@ -76,4 +76,5 @@ module Module (
     blah.raw = tock_x;
   end
 
+  rv32_insn blah;
 endmodule

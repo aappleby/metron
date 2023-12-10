@@ -34,28 +34,28 @@ module Module (
   logic[7:0] reg4_;
   logic[7:0] reg5_;
 
-  function void init1();
+  task automatic init1();
     reg1_ = 1;
     init2();
-  endfunction
+  endtask
 
-  function void init2();
+  task automatic init2();
     reg2_ = 2;
     init3();
-  endfunction
+  endtask
 
-  function void init3();
+  task automatic init3();
     reg3_ = 3;
     init4();
-  endfunction
+  endtask
 
-  function void init4();
+  task automatic init4();
     reg4_ = 4;
     init5();
-  endfunction
+  endtask
 
-  function void init5();
+  task automatic init5();
     reg5_ = 5;
-  endfunction
+  endtask
 
 endmodule

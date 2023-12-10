@@ -42,8 +42,8 @@
 
 //------------------------------------------------------------------------------
 
-Tracer::Tracer(CSourceRepo* repo, CInstance* root_inst, bool deep_trace, bool log_actions)
-: repo(repo), root_inst(root_inst), deep_trace(deep_trace), log_actions(log_actions) {
+Tracer::Tracer(CSourceRepo* repo, CInstance* root_inst)
+: repo(repo), root_inst(root_inst) {
 }
 
 void Tracer::reset() {
@@ -52,19 +52,13 @@ void Tracer::reset() {
 }
 
 
-Err Tracer::start_trace(CInstance* inst, CNodeFunction* func) {
+Err Tracer::start_trace(CInstance* inst, CNodeFunction* func, Tracer::trace_cb callback, bool deep_trace) {
   reset();
+  this->callback = callback;
+  this->deep_trace = deep_trace;
   cstack.push_back(func);
   istack.push_back(inst);
   Err err = trace_dispatch(func);
-
-  // If we're tracing a top-level function with a return value, pretend that
-  // the external environment reads that return value.
-  /*
-  if (auto inst_return = inst->resolve("@return")) {
-    err << log_action(inst_return, nullptr, ACT_READ);
-  }
-  */
 
   return err;
 }
@@ -94,6 +88,10 @@ Err Tracer::trace_dispatch(CNode* node) {
   if (auto n = node->as<CNodeReturn>()) return trace(n);
   if (auto n = node->as<CNodeSuffixExp>()) return trace(n);
   if (auto n = node->as<CNodeSwitch>()) return trace(n);
+
+  if (auto n = node->as<CNodeFunction>()) {
+    return trace_dispatch(n->node_body);
+  }
 
   return trace_children(node);
 }
@@ -131,8 +129,8 @@ Err Tracer::trace(CNodeAssignment* node) {
     auto inst_lhs = istack.back()->resolve(lhs);
     assert(inst_lhs);
 
-    err << log_action(inst_lhs, node, ACT_READ);
-    err << log_action(inst_lhs, node, ACT_WRITE);
+    err << callback(inst_lhs, node, ACT_READ);
+    err << callback(inst_lhs, node, ACT_WRITE);
   }
 
   //----------------------------------------
@@ -142,7 +140,7 @@ Err Tracer::trace(CNodeAssignment* node) {
     auto inst_lhs = istack.back()->resolve(lhs);
     if (!inst_lhs) return err;
 
-    err << log_action(inst_lhs, node, ACT_WRITE);
+    err << callback(inst_lhs, node, ACT_WRITE);
   }
 
   //----------------------------------------
@@ -171,8 +169,9 @@ Err Tracer::trace(CNodeCall* node) {
     cstack.push_back(func_inst->node_func);
     istack.push_back(func_inst);
 
+    // We trace the params so we can catch multiple submod bindings
     for (auto child : func_inst->params) {
-      err << log_action(child, node, ACT_WRITE);
+      err << callback(child, node, ACT_WRITE);
     }
 
     if (deep_trace) {
@@ -180,7 +179,7 @@ Err Tracer::trace(CNodeCall* node) {
     }
 
     if (func_inst->inst_return) {
-      err << log_action(func_inst->inst_return, node, ACT_READ);
+      err << callback(func_inst->inst_return, node, ACT_READ);
     }
 
     cstack.pop_back();
@@ -197,7 +196,9 @@ Err Tracer::trace(CNodeCall* node) {
       cstack.push_back(dst_func);
       istack.push_back(func_inst);
 
-      err << trace_dispatch(dst_func);
+      if (deep_trace) {
+        err << trace_dispatch(dst_func);
+      }
 
       cstack.pop_back();
       istack.pop_back();
@@ -220,7 +221,7 @@ Err Tracer::trace(CNodePrefixExp* node) {
   if (op == "++" || op == "--") {
     auto inst_rhs = istack.back()->resolve(rhs);
     if (inst_rhs) {
-      err << log_action(inst_rhs, node, ACT_WRITE);
+      err << callback(inst_rhs, node, ACT_WRITE);
     }
   }
 
@@ -246,7 +247,7 @@ Err Tracer::trace(CNodeSuffixExp* node) {
   if (op == "++" || op == "--") {
     auto inst_lhs = istack.back()->resolve(lhs);
     if (inst_lhs) {
-      err << log_action(inst_lhs, node, ACT_WRITE);
+      err << callback(inst_lhs, node, ACT_WRITE);
     }
   }
 
@@ -270,7 +271,7 @@ Err Tracer::trace(CNodeFor* node) {
 
 Err Tracer::trace(CNodeIdentifierExp* node) {
   if (auto inst_field = istack.back()->resolve(node)) {
-    return log_action(inst_field, node, ACT_READ);
+    return callback(inst_field, node, ACT_READ);
   }
   return Err();
 }
@@ -281,7 +282,7 @@ Err Tracer::trace(CNodeFieldExpression* node) {
   Err err;
 
   if (auto inst_dst = istack.back()->resolve(node)) {
-    err << log_action(inst_dst, node, ACT_READ);
+    err << callback(inst_dst, node, ACT_READ);
   }
 
   return err;
@@ -290,8 +291,10 @@ Err Tracer::trace(CNodeFieldExpression* node) {
 //------------------------------------------------------------------------------
 
 Err Tracer::trace(CNodeIdentifier* node) {
+  if (istack.empty()) return Err();
+
   if (auto inst_field = istack.back()->resolve(node)) {
-    return log_action(inst_field, node, ACT_READ);
+    return callback(inst_field, node, ACT_READ);
   }
   return Err();
 }
@@ -369,12 +372,6 @@ Err Tracer::trace(CNodeReturn* node) {
     err << trace_dispatch(node_value);
   }
 
-  /*
-  auto inst_return = istack.back()->resolve("@return");
-  assert(inst_return);
-  err << log_action(inst_return, node, ACT_WRITE);
-  */
-
   return err;
 }
 
@@ -414,116 +411,6 @@ Err Tracer::trace(CNodeSwitch* node) {
   }
 
   return err;
-}
-
-//------------------------------------------------------------------------------
-
-Err Tracer::log_action2(CInstance* inst, CNode* node, TraceAction action) {
-  Err err;
-
-  if (in_constructor()) {
-    // LOG_R("not recording action because we're inside init()\n");
-    return err;
-  }
-
-  //----------------------------------------
-  // We can see CInstFunc when we trace a function declaration, we don't have
-  // to do anything here.
-
-  if (auto inst_func = inst->as<CInstFunc>()) {
-    return err;
-  }
-
-  //----------------------------------------
-  // An action on a union applies to all the parts of the union.
-
-  if (auto inst_union = inst->as<CInstUnion>()) {
-    for (auto child : inst_union->parts) {
-      err << log_action2(child, node, action);
-    }
-    return err;
-  }
-
-  //----------------------------------------
-  // An action on a struct applies to all parts of the struct.
-
-  if (auto inst_struct = inst->as<CInstStruct>()) {
-    for (auto child : inst_struct->parts) {
-      err << log_action2(child, node, action);
-    }
-    return err;
-  }
-
-  //----------------------------------------
-  // An action on a primitive gets logged and added to self_reads/writes
-
-  if (auto inst_prim = inst->as<CInstPrim>()) {
-    assert(action == ACT_READ || action == ACT_WRITE);
-
-    if (node) {
-      auto func = node->ancestor<CNodeFunction>();
-      assert(func);
-
-      if (!deep_trace && !belongs_to_func(inst_prim)) {
-        if (action == ACT_READ) {
-          func->self_reads.insert(inst_prim);
-        } else if (action == ACT_WRITE) {
-          func->self_writes.insert(inst_prim);
-        }
-      }
-    }
-
-    //----------
-    // Log action on primitive
-
-    if (log_actions) {
-      auto old_state = inst_prim->state_stack.back();
-      auto new_state = merge_action(old_state, action);
-
-      inst_prim->state_stack.back() = new_state;
-
-      if (new_state == TS_INVALID) {
-        LOG_R("Trace error: state went from %s to %s\n", to_string(old_state),
-              to_string(new_state));
-        err << ERR("Invalid context state\n");
-      }
-    }
-
-    return err;
-  }
-
-  assert(false);
-  return err;
-}
-
-//------------------------------------------------------------------------------
-
-Err Tracer::log_action(CInstance* inst, CNode* node, TraceAction action) {
-
-  std::function<CInstance*(CInstance*)> walk_up_unions;
-
-  walk_up_unions = [&](CInstance* inst) -> CInstance* {
-    if (inst->inst_parent) {
-      auto parent_union = walk_up_unions(inst->inst_parent);
-      if (parent_union) {
-        return parent_union;
-      }
-    }
-
-    if (inst->as<CInstUnion>()) {
-      return inst;
-    }
-
-    return nullptr;
-  };
-
-
-  if (auto parent_union = walk_up_unions(inst)) {
-    return log_action2(parent_union, node, action);
-  }
-  else {
-    return log_action2(inst, node, action);
-  }
 }
 
 //------------------------------------------------------------------------------

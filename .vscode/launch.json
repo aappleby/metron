@@ -13,11 +13,11 @@
         "-d",
         "-v",
         "-e",
-        //"-i", "../pinwheel",
+        "-i", "../pinwheel",
+        //"-c", "examples/scratch.h",
         //"-c", "pinwheel/soc/pinwheel_soc.h",
-        "-c", "tests/metron_good/input_signals.h",
+        "-c", "tests/metron_bad/multiple_submod_function_bindings.h",
         //"-c", "examples/uart/metron/uart_top.h",
-        //"-c", "tests/metron_bad/case_without_break.h",
 
       ],
       "setupCommands": [

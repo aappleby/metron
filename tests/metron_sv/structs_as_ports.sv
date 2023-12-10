@@ -31,9 +31,14 @@ module TilelinkDevice (
   // global clock
   input logic clock,
   // input signals
-  input tilelink_a tla,
+  input logic[2:0] a_opcode,
+  input logic[31:0] a_address,
+  input logic[31:0] a_data,
+  input logic a_valid,
   // output signals
-  output tilelink_d tld
+  output logic[2:0] d_opcode,
+  output logic[31:0] d_data,
+  output logic d_valid
 );
 /*public:*/
 
@@ -84,9 +89,15 @@ module TilelinkCPU (
   // global clock
   input logic clock,
   // input signals
-  input tilelink_d tld,
+  input logic[2:0] d_opcode,
+  input logic[31:0] d_data,
+  input logic d_valid,
   // output signals
-  output tilelink_a tla
+  output logic[2:0] a_opcode,
+  output logic[31:0] a_address,
+  output logic[3:0] a_mask,
+  output logic[31:0] a_data,
+  output logic a_valid
 );
 /*public:*/
 
@@ -145,22 +156,44 @@ module Top (
     // Global clock
     .clock(clock),
     // Input signals
-    .tld(cpu_tld),
+    .d_opcode(cpu_d_opcode),
+    .d_data(cpu_d_data),
+    .d_valid(cpu_d_valid),
     // Output signals
-    .tla(cpu_tla)
+    .a_opcode(cpu_a_opcode),
+    .a_address(cpu_a_address),
+    .a_mask(cpu_a_mask),
+    .a_data(cpu_a_data),
+    .a_valid(cpu_a_valid)
   );
-  tilelink_d cpu_tld;
-  tilelink_a cpu_tla;
+  logic[2:0] cpu_d_opcode;
+  logic[31:0] cpu_d_data;
+  logic cpu_d_valid;
+  logic[2:0] cpu_a_opcode;
+  logic[31:0] cpu_a_address;
+  logic[3:0] cpu_a_mask;
+  logic[31:0] cpu_a_data;
+  logic cpu_a_valid;
   TilelinkDevice dev(
     // Global clock
     .clock(clock),
     // Input signals
-    .tla(dev_tla),
+    .a_opcode(dev_a_opcode),
+    .a_address(dev_a_address),
+    .a_data(dev_a_data),
+    .a_valid(dev_a_valid),
     // Output signals
-    .tld(dev_tld)
+    .d_opcode(dev_d_opcode),
+    .d_data(dev_d_data),
+    .d_valid(dev_d_valid)
   );
-  tilelink_a dev_tla;
-  tilelink_d dev_tld;
+  logic[2:0] dev_a_opcode;
+  logic[31:0] dev_a_address;
+  logic[31:0] dev_a_data;
+  logic dev_a_valid;
+  logic[2:0] dev_d_opcode;
+  logic[31:0] dev_d_data;
+  logic dev_d_valid;
 endmodule
 
 //------------------------------------------------------------------------------

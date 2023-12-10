@@ -8,9 +8,10 @@ module Module (
   output int my_sig2,
   output int my_sig3,
   output int my_sig4,
+  output int my_sig6a,
   output int my_sig5a,
   output int my_sig5b,
-  output int my_sig6a,
+  output int my_sig6b,
   // output registers
   output int my_reg1_,
   output int my_reg2_,

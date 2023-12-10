@@ -24,7 +24,6 @@ struct CNodeStruct;
 struct CNodeFunction;
 struct CNodeUnion;
 
-bool is_return(CInstance* inst);
 bool belongs_to_func(CInstance* inst);
 
 // FIXME - we need a call stack that stores (inst,func) tuples instead of just
@@ -61,12 +60,17 @@ struct CInstance {
     return nullptr;
   }
 
-  bool is_signal() const;
-  bool is_state() const;
+  bool is_sig() const;
+  bool is_reg() const;
+  bool is_public() const;
+  bool is_array() const;
 
   CInstance* resolve(CNode* node);
 
   CInstance* get_root() { return inst_parent ? inst_parent->get_root() : this; }
+
+  CNodeClass* get_owner();
+  CNodeField* get_field();
 
   //----------
   // CInstance interface

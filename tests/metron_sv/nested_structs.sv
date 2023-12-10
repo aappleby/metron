@@ -15,9 +15,17 @@ typedef struct packed {
 module Module (
   // global clock
   input logic clock,
+  // output signals
+  output logic[7:0] a,
+  output logic[7:0] b,
+  output logic[7:0] c,
   // output registers
-  output OuterStruct r,
-  output OuterStruct s_
+  output logic[7:0] a,
+  output logic[7:0] b,
+  output logic[7:0] c,
+  output logic[7:0] a,
+  output logic[7:0] b,
+  output logic[7:0] c
 );
 /*public:*/
 

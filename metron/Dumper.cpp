@@ -418,19 +418,6 @@ void dump_enum(CNodeEnum* node) {
 
 //------------------------------------------------------------------------------
 
-/*
-std::vector<CNodeDeclaration*> all_modparams;
-std::vector<CNodeField*>       all_localparams;
-CNodeConstructor* constructor = nullptr;
-std::vector<CNodeFunction*>    all_functions;
-std::vector<CNodeField*>       all_fields;
-std::vector<CNodeEnum*>        all_enums;
-
-std::vector<CNodeField*> input_signals;
-std::vector<CNodeField*> output_signals;
-std::vector<CNodeField*> output_registers;
-*/
-
 void dump_class(CNodeClass* node) {
   LOG_B("Class %s, refcount %d\n", node->name.c_str(), node->refcount);
   LOG_INDENT_SCOPE();
@@ -450,6 +437,31 @@ void dump_class(CNodeClass* node) {
       LOG_G("%s\n", f->name.c_str());
     }
   }
+
+  if (node->input_sigs.size()) {
+    LOG_P("Input signals\n");
+    LOG_INDENT_SCOPE();
+    for (auto f : node->input_sigs) {
+      LOG_G("%s\n", f->name.c_str());
+    }
+  }
+
+  if (node->output_sigs.size()) {
+    LOG_P("Output signals\n");
+    LOG_INDENT_SCOPE();
+    for (auto f : node->output_sigs) {
+      LOG_G("%s\n", f->name.c_str());
+    }
+  }
+
+  if (node->output_regs.size()) {
+    LOG_P("Output registers\n");
+    LOG_INDENT_SCOPE();
+    for (auto f : node->output_regs) {
+      LOG_G("%s\n", f->name.c_str());
+    }
+  }
+
 
   if (node->constructor) {
     dump_function(node->constructor);

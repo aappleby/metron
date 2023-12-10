@@ -54,11 +54,13 @@ struct CSourceRepo;
 
 struct Tracer {
 
-  Tracer(CSourceRepo* repo, CInstance* root_inst, bool deep_trace, bool log_actions);
+  typedef std::function<Err(CInstance* inst, CNode* node, TraceAction action)> trace_cb;
+
+  Tracer(CSourceRepo* repo, CInstance* root_inst);
 
   void reset();
 
-  Err start_trace(CInstance* inst, CNodeFunction* func);
+  Err start_trace(CInstance* inst, CNodeFunction* func, trace_cb callback, bool deep_trace);
 
   bool in_constructor();
 
@@ -78,14 +80,14 @@ struct Tracer {
   Err trace(CNodeSuffixExp* node);
   Err trace(CNodeSwitch* node);
 
-  Err log_action(CInstance* inst, CNode* node, TraceAction action);
-  Err log_action2(CInstance* inst, CNode* node, TraceAction action);
+  //Err log_action(CInstance* inst, CNode* node, TraceAction action);
+  //Err log_action(CInstance* inst, CNode* node, TraceAction action);
 
   std::vector<CNodeFunction*> cstack;
   std::vector<CInstance*> istack;
 
   CSourceRepo* repo;
   CInstance* root_inst;
+  trace_cb callback;
   bool deep_trace;
-  bool log_actions;
 };

@@ -39,6 +39,97 @@ bool check_switch_breaks(CNodeSwitch* node);
 
 //------------------------------------------------------------------------------
 
+Err log_action2(CInstance* inst, CNode* node, TraceAction action) {
+  Err err;
+
+  //----------------------------------------
+  // We can see CInstFunc when we trace a function declaration, we don't have
+  // to do anything here.
+
+  /*
+  if (auto inst_func = inst->as<CInstFunc>()) {
+    dump_parse_tree(node);
+    err << log_action2(inst_func, node, action);
+    return err;
+  }
+  */
+
+  //----------------------------------------
+  // An action on a whole union applies to all parts of the union.
+
+  if (auto inst_union = inst->as<CInstUnion>()) {
+    for (auto child : inst_union->parts) {
+      err << log_action2(child, node, action);
+    }
+    return err;
+  }
+
+  //----------------------------------------
+  // An action on a whole struct applies to all parts of the struct.
+
+  if (auto inst_struct = inst->as<CInstStruct>()) {
+    for (auto child : inst_struct->parts) {
+      err << log_action2(child, node, action);
+    }
+    return err;
+  }
+
+  //----------------------------------------
+  // An action on a primitive gets logged
+
+  if (auto inst_prim = inst->as<CInstPrim>()) {
+    assert(action == ACT_READ || action == ACT_WRITE);
+
+    //----------
+    // Log action on primitive
+
+    auto old_state = inst_prim->state_stack.back();
+    auto new_state = merge_action(old_state, action);
+
+    inst_prim->state_stack.back() = new_state;
+
+    if (new_state == TS_INVALID) {
+      LOG_R("Trace error: state went from %s to %s\n", to_string(old_state),
+            to_string(new_state));
+      err << ERR("Invalid context state\n");
+    }
+
+    return err;
+  }
+
+  assert(false);
+  return err;
+}
+
+Err log_action(CInstance* inst, CNode* node, TraceAction action) {
+
+  // If the instance is part of a union, apply the action to the whole union.
+
+  std::function<CInstUnion*(CInstance*)> walk_up_unions;
+
+  walk_up_unions = [&](CInstance* inst) -> CInstUnion* {
+    if (inst->inst_parent) {
+      if (auto parent_union = walk_up_unions(inst->inst_parent)) {
+        return parent_union;
+      }
+    }
+
+    if (auto inst_union = inst->as<CInstUnion>()) {
+      return inst_union;
+    }
+
+    return nullptr;
+  };
+
+  if (auto inst_union = walk_up_unions(inst)) {
+    return log_action2(inst_union, node, action);
+  }
+
+  return log_action2(inst, node, action);
+}
+
+//------------------------------------------------------------------------------
+
 int main_new(Options opts) {
   LOG_G("New parser!\n");
 
@@ -99,49 +190,102 @@ int main_new(Options opts) {
 
   //----------------------------------------
 
-  LOG_B("Shallow-trace individual classes to collect reads/writes/calls\n");
-
-  LOG_INDENT();
   for (auto file : repo.source_files) {
     for (auto node_class : file->all_classes) {
+      LOG_S("Instantiating %s\n", node_class->name.c_str());
+      LOG_INDENT_SCOPE();
 
       node_class->instance = instantiate_class(&repo, node_class->name, nullptr, nullptr, node_class, 1000);
+    }
+  }
 
-      Tracer tracer(&repo, node_class->instance, /*deep_trace*/ false, /*log_actions*/ false);
+  for (auto file : repo.source_files) {
+    for (auto node_class : file->all_classes) {
+      LOG_S("Tracing %s\n", node_class->name.c_str());
+      LOG_INDENT_SCOPE();
 
-      auto name = node_class->name;
-      LOG_B("Tracing public methods in %.*s\n", int(name.size()), name.data());
+      Tracer tracer(&repo, node_class->instance);
+      CNodeFunction* node_func = nullptr;
 
-      // Trace constructors first
-      if (auto node_func = node_class->constructor) {
-        LOG_INDENT_SCOPE();
+      Tracer::trace_cb callback = [&](CInstance* inst, CNode* node, TraceAction action) {
+        if (inst->as<CInstFunc>()) return Err();
+
+        if (action == ACT_READ) {
+          assert(!inst->as<CInstClass>());
+          node_class->self_reads.insert(inst);
+          node_func->self_reads.insert(inst);
+        } else if (action == ACT_WRITE) {
+          node_class->self_writes.insert(inst);
+          node_func->self_writes.insert(inst);
+        }
+
+        return Err();
+      };
+
+      if (node_class->constructor) {
+        node_func = node_class->constructor;
         auto func_name = node_func->name;
-
-        LOG_S("Tracing %s\n", func_name.c_str());
         auto inst_func = node_class->instance->resolve(func_name);
-
-        err << tracer.start_trace(inst_func, node_func);
+        LOG_S("Tracing %s\n", func_name.c_str());
+        LOG_INDENT_SCOPE();
+        err << tracer.start_trace(inst_func, node_func, callback, /*deep_trace*/ false);
       }
 
-      for (auto node_func : node_class->all_functions) {
-        LOG_INDENT_SCOPE();
+      for (auto f : node_class->all_functions) {
+        node_func = f;
         auto func_name = node_func->name;
-        if (!node_func->is_public) continue;
-
-        LOG_S("Tracing %s\n", func_name.c_str());
         auto inst_func = node_class->instance->resolve(func_name);
+        LOG_S("Tracing %s.%s\n", node_class->name.c_str(), func_name.c_str());
+        LOG_INDENT_SCOPE();
+        err << tracer.start_trace(inst_func, node_func, callback, /*deep_trace*/ false);
+      }
 
-        err << tracer.start_trace(inst_func, node_func);
+      // RO
+      for (auto inst : node_class->self_reads) {
+        if (inst->get_owner() != node_class) continue;
+        if (node_class->self_writes.contains(inst)) continue;
+
+        if (!inst->is_public() && !inst->is_array()) {
+          LOG_Y("Private field %s is only read, never written!\n", inst->path.c_str());
+          //exit(-1);
+        }
+
+        if (inst->is_reg() && !inst->is_array()) {
+          LOG_Y("Register %s is only read, never written!\n", inst->path.c_str());
+          //exit(-1);
+        }
+
+        if (inst->is_sig() && inst->get_field()) node_class->input_sigs.push_back(inst->get_field());
+      }
+
+      // RW
+      for (auto inst : node_class->self_reads) {
+        if (inst->get_owner() != node_class) continue;
+        if (!node_class->self_writes.contains(inst)) continue;
+        if (!inst->is_public()) continue;
+
+        if (inst->is_sig() && inst->get_field()) node_class->output_sigs.push_back(inst->get_field());
+        if (inst->is_reg( )&& inst->get_field()) node_class->output_regs.push_back(inst->get_field());
+      }
+
+      // WO
+      for (auto inst : node_class->self_writes) {
+        if (inst->get_owner() != node_class) continue;
+        if (node_class->self_reads.contains(inst)) continue;
+
+        if (!inst->is_public()) {
+          LOG_Y("Private field %s is only written, never read!\n", inst->path.c_str());
+          //exit(-1);
+        }
+
+        if (inst->is_sig() && inst->get_field()) node_class->output_sigs.push_back(inst->get_field());
+        if (inst->is_reg() && inst->get_field()) node_class->output_regs.push_back(inst->get_field());
       }
     }
   }
 
-  if (err.has_err()) {
-    LOG_R("Error during tracing\n");
-    return -1;
-  }
 
-  LOG_DEDENT();
+#if 0
 
   //----------------------------------------
 
@@ -179,18 +323,24 @@ int main_new(Options opts) {
     }
   }
 
+#endif
+
   //----------------------------------------
 
   LOG_B("Assign method types\n");
+  LOG_INDENT();
 
   for (auto file : repo.source_files) {
     for (auto node_class : file->all_classes) {
+      LOG("Assigning method types for %s\n", node_class->name.c_str());
+      LOG_INDENT_SCOPE();
 
       for (auto node_func : node_class->all_functions) {
         assert(node_func->method_type == MT_UNKNOWN);
       }
 
       for (auto node_func : node_class->all_functions) {
+        LOG("Assigning method types for %s.%s\n", node_class->name.c_str(), node_func->name.c_str());
         if (node_func->is_public) node_func->update_type();
       }
 
@@ -202,6 +352,8 @@ int main_new(Options opts) {
       }
     }
   }
+
+  LOG_DEDENT();
 
   //----------------------------------------
 
@@ -263,26 +415,37 @@ int main_new(Options opts) {
       auto& af = node_class->all_functions;
       auto& sf = node_class->sorted_functions;
 
-      for (auto f : af) {
-        if (f->internal_callers.size()) continue;
+      std::vector<CNodeFunction*> top_funcs;
 
-        bool inserted = false;
-        for (auto it = sf.begin(); it != sf.end(); ++it) {
-          auto s = *it;
-          assert(f != s);
+      for (auto f : af) if (f->internal_callers.empty()) top_funcs.push_back(f);
 
-          auto f_before_s = f->must_call_before(s);
-          auto s_before_f = s->must_call_before(f);
-          assert(!f_before_s || !s_before_f);
-
-          if (f_before_s) {
-            inserted = true;
-            sf.insert(it, f);
+      while (top_funcs.size()) {
+        int head;
+        for (int i = 0; i < top_funcs.size(); i++) {
+          head = i;
+          for (int j = 0; j < top_funcs.size(); j++) {
+            if (i == j) continue;
+            auto a = top_funcs[i];
+            auto b = top_funcs[j];
+            auto a_before_b = a->must_call_before(b);
+            auto b_before_a = b->must_call_before(a);
+            if (b_before_a) {
+              head = -1;
+              break;
+            }
+          }
+          if (head != -1) {
+            auto f = top_funcs[head];
+            //LOG_S("Func %s goes next\n", f->name.c_str());
+            sf.push_back(f);
+            top_funcs.erase(top_funcs.begin() + head);
             break;
           }
         }
-
-        if (!inserted) sf.push_back(f);
+        if (head == -1) {
+          LOG_R("Top functions are unorderable\n");
+          exit(-1);
+        }
       }
 
       LOG_S("Call order for %s:\n", node_class->name.c_str());
@@ -303,120 +466,25 @@ int main_new(Options opts) {
       LOG_B("Deep-tracing %s in sorted order\n", node_class->name.c_str());
       LOG_INDENT_SCOPE();
 
-      node_class->instance = instantiate_class(
-        &repo, node_class->name, nullptr, nullptr, node_class, 1000);
+      Tracer tracer(&repo, node_class->instance);
 
-      for (auto f : node_class->sorted_functions) {
-        LOG_S("Tracing %s\n", f->name.c_str());
+      Tracer::trace_cb callback = [&](CInstance* inst, CNode* node, TraceAction action) {
+        return log_action(inst, node, action);
+      };
 
-        Tracer tracer(&repo, node_class->instance, /*deep_trace*/ true, /*log_actions*/ true);
-        auto inst_func = node_class->instance->resolve(f->name);
-        err << tracer.start_trace(inst_func, f);
-
-        if (err.has_err()) {
-          LOG_R("Error during tracing\n");
-          return -1;
-        }
+      for (auto node_func : node_class->sorted_functions) {
+        auto func_name = node_func->name;
+        auto inst_func = node_class->instance->resolve(func_name);
+        LOG_S("Deep-tracing %s.%s\n", node_class->name.c_str(), func_name.c_str());
+        LOG_INDENT_SCOPE();
+        err << tracer.start_trace(inst_func, node_func, callback, /*deep_trace*/ true);
       }
     }
   }
+
+  if (err) exit(-1);
+
   LOG_DEDENT();
-
-  //----------------------------------------
-
-  LOG_B("Categorizing fields\n");
-
-#if 1
-  for (auto file : repo.source_files) {
-    for (auto node_class : file->all_classes) {
-      auto inst_class = node_class->instance->as<CInstClass>();
-      assert(inst_class);
-
-      for (auto inst_child : inst_class->ports) {
-        if (auto inst_prim = inst_child->as<CInstPrim>()) {
-          auto field = inst_prim->node_field;
-          if (!field->is_public) continue;
-          if (field->node_decl->is_param())
-            continue;
-
-          switch (inst_prim->get_trace_state()) {
-            case TS_NONE:
-              break;
-            case TS_INPUT:
-              node_class->input_signals.push_back(field);
-              break;
-            case TS_OUTPUT:
-              node_class->output_signals.push_back(field);
-              break;
-            case TS_MAYBE:
-              node_class->output_registers.push_back(field);
-              break;
-            case TS_SIGNAL:
-              node_class->output_signals.push_back(field);
-              break;
-            case TS_REGISTER:
-              node_class->output_registers.push_back(field);
-              break;
-            case TS_INVALID:
-              assert(false);
-              break;
-            case TS_PENDING:
-              assert(false);
-              break;
-          }
-        }
-
-        auto inst_struct = inst_child->as<CInstStruct>();
-        auto inst_union  = inst_child->as<CInstUnion>();
-
-        if (inst_struct || inst_union) {
-          CNodeField* field = nullptr;
-          TraceState state = TS_INVALID;
-
-          if (inst_struct) {
-            field = inst_struct->node_field;
-            state = inst_struct->get_trace_state();
-          }
-
-          if (inst_union) {
-            field = inst_union->node_field;
-            state = inst_union->get_trace_state();
-          }
-
-          if (!field->is_public) continue;
-          if (field->node_decl->is_param())
-            continue;
-
-          switch (state) {
-            case TS_NONE:
-              break;
-            case TS_INPUT:
-              node_class->input_signals.push_back(field);
-              break;
-            case TS_OUTPUT:
-              node_class->output_signals.push_back(field);
-              break;
-            case TS_MAYBE:
-              node_class->output_registers.push_back(field);
-              break;
-            case TS_SIGNAL:
-              node_class->output_signals.push_back(field);
-              break;
-            case TS_REGISTER:
-              node_class->output_registers.push_back(field);
-              break;
-            case TS_INVALID:
-              assert(false);
-              break;
-            case TS_PENDING:
-              assert(false);
-              break;
-          }
-        }
-      }
-    }
-  }
-#endif
 
   //----------------------------------------
   // Dump
@@ -456,6 +524,8 @@ int main_new(Options opts) {
   }
 
   LOG("\n");
+
+#if 1
 
   //----------------------------------------
   // Done!
@@ -508,6 +578,10 @@ int main_new(Options opts) {
   LOG_B("========================================\n");
 
   LOG("Done!\n");
+
+#endif
+
+  LOG("");
 
   return 0;
 }

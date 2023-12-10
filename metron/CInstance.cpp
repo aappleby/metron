@@ -18,17 +18,6 @@
 
 //------------------------------------------------------------------------------
 
-bool is_return(CInstance* inst) {
-  if (inst->name == "@return") return true;
-
-  if (inst->inst_parent) {
-    return is_return(inst->inst_parent);
-  }
-  else {
-    return false;
-  }
-}
-
 bool belongs_to_func(CInstance* inst) {
   if (inst->inst_parent == nullptr) return false;
 
@@ -39,7 +28,6 @@ bool belongs_to_func(CInstance* inst) {
     return belongs_to_func(inst->inst_parent);
   }
 }
-
 
 bool check_port_directions(TraceState sa, TraceState sb) {
   assert(sa >= TS_NONE || sa <= TS_REGISTER);
@@ -70,15 +58,15 @@ CInstance::~CInstance() {}
 
 //------------------------------------------------------------------------------
 
-bool CInstance::is_signal() const {
+bool CInstance::is_sig() const {
   if (this->as<CInstClass>()) return false;
   if (this->as<CInstFunc>()) return false;
-  return !is_state();
+  return !is_reg();
 }
 
 //----------------------------------------
 
-bool CInstance::is_state() const {
+bool CInstance::is_reg() const {
 
   if (this->as<CInstClass>()) return false;
   if (this->as<CInstFunc>()) return false;
@@ -90,6 +78,24 @@ bool CInstance::is_state() const {
 
   return inst->name.ends_with("_");
 
+  return false;
+}
+
+//----------------------------------------
+
+bool CInstance::is_array() const {
+  if (auto inst_prim = this->as<CInstPrim>()) {
+    return inst_prim->node_field && inst_prim->node_field->is_array();
+  }
+  return false;
+}
+
+//----------------------------------------
+
+bool CInstance::is_public() const {
+  if (auto p = this->as<CInstPrim>())   return p->node_field && p->node_field->is_public;
+  if (auto s = this->as<CInstStruct>()) return s->node_field && s->node_field->is_public;
+  if (auto u = this->as<CInstUnion>())  return u->node_field && u->node_field->is_public;
   return false;
 }
 
@@ -142,6 +148,19 @@ CInstance* CInstance::resolve(CNode* node) {
   //auto text = node->get_text();
   //LOG_R("Could not resolve %.*s\n", text.size(), text.data());
 
+  return nullptr;
+}
+
+//------------------------------------------------------------------------------
+
+CNodeClass* CInstance::get_owner() {
+  return ancestor<CInstClass>()->node_class;
+}
+
+CNodeField* CInstance::get_field() {
+  if (auto p = this->as<CInstPrim>())   return p->node_field;
+  if (auto s = this->as<CInstStruct>()) return s->node_field;
+  if (auto u = this->as<CInstUnion>())  return u->node_field;
   return nullptr;
 }
 
@@ -211,6 +230,11 @@ CInstClass* instantiate_class(
     bool child_is_public = in_public_section && !child->tag_internal();
 
     if (auto node_field = child->as<CNodeField>()) {
+
+      if (node_field->node_decl->is_param()) {
+        continue;
+      }
+
       auto field_name = node_field->name;
 
       auto type_class = repo->get_class(node_field->node_decl->node_type->name);
@@ -551,6 +575,41 @@ void CInstUnion::merge_state() {
 // ##############################################################################
 // ##############################################################################
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // ##############################################################################
 // ##############################################################################
 
@@ -645,42 +704,6 @@ CInstFunc::CInstFunc(std::string name, CInstance* inst_parent,
       params.push_back(inst_param);
     }
   }
-
-  // FIXME maybe we shouldn't be tracing return values? Calling a getter
-  // multiple times breaks tracing because the return value is written and read
-  // twice
-  /*
-  auto ret_type = node_func->node_type;
-  if (!ret_type) return;
-
-  if (auto builtin_type = ret_type->as<CNodeBuiltinType>()) {
-    if (builtin_type->node_name->get_text() == "void") {
-      return;
-    }
-  }
-
-  if (auto union_type = ret_type->as<CNodeUnionType>()) {
-    auto node_union = repo->get_union(union_type->node_name->get_text());
-    auto inst = new CInstUnion("@return", this, nullptr, node_union);
-    inst_return = inst;
-  } else if (auto struct_type = ret_type->as<CNodeStructType>()) {
-    auto node_struct = repo->get_struct(struct_type->node_name->get_text());
-    auto inst = new CInstStruct("@return", this, nullptr, node_struct);
-    inst_return = inst;
-  } else if (auto builtin_type = ret_type->as<CNodeBuiltinType>()) {
-    auto inst = new CInstPrim("@return", this, nullptr);
-    inst_return = inst;
-  } else if (auto builtin_type = ret_type->as<CNodeTypedefType>()) {
-    auto inst = new CInstPrim("@return", this, nullptr);
-    inst_return = inst;
-  }
-  else if (auto class_type = ret_type->as<CNodeClassType>()) {
-    assert(node_func->tag_noconvert());
-  }
-  else {
-    assert(false);
-  }
-  */
 }
 
 //----------------------------------------

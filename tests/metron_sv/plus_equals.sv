@@ -3,6 +3,7 @@ module Metron (
   input logic clock,
   // output signals
   output int my_sig,
+  // output registers
   output int my_reg1_,
   output int my_reg2_,
   output int my_reg3_,

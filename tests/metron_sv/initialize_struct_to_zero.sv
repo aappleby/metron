@@ -8,7 +8,7 @@ typedef struct packed {
 
 module Module (
   // output signals
-  output MyStruct1 my_struct1
+  output logic[7:0] field
 );
 /*public:*/
 

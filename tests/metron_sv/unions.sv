@@ -7,7 +7,8 @@ typedef union packed {
 
 module Module (
   // output signals
-  output my_union blah,
+  output logic[31:0] a,
+  output logic[31:0] b,
   // tock() ports
   input logic[31:0] tock_x,
   input logic[31:0] tock_y

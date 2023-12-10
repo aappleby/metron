@@ -55,8 +55,8 @@ void CNodeFunction::update_type() {
 
   if (!self_writes.empty()) {
     for (auto w : self_writes) {
-      if      (w->is_state())  set_type(MT_TICK);
-      else if (w->is_signal()) set_type(MT_TOCK);
+      if      (w->is_reg())  set_type(MT_TICK);
+      else if (w->is_sig()) set_type(MT_TOCK);
       else                     assert(false);
     }
   }
@@ -177,13 +177,13 @@ bool CNodeFunction::must_call_before(CNodeFunction* func) {
 
   for (auto r : self_reads) {
     for (auto w : func->self_writes) {
-      if (r == w && r->is_state()) return true;
+      if (r == w && r->is_reg()) return true;
     }
   }
 
   for (auto w : self_writes) {
     for (auto r : func->self_reads) {
-      if (w == r && r->is_signal()) return true;
+      if (w == r && r->is_sig()) return true;
     }
   }
 

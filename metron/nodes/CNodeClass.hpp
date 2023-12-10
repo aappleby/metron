@@ -3,6 +3,7 @@
 #include <assert.h>
 
 #include <vector>
+#include <set>
 
 #include "metron/CNode.hpp"
 #include "metron/Cursor.hpp"
@@ -23,6 +24,7 @@ struct CNodeKeyword;
 struct CNodeIdentifier;
 struct CNodeList;
 struct CNodeConstructor;
+struct CInstance;
 struct CInstClass;
 
 //==============================================================================
@@ -85,9 +87,12 @@ struct CNodeClass : public CNode {
 
   std::vector<CNodeFunction*>    sorted_functions;
 
-  std::vector<CNodeField*> input_signals;
-  std::vector<CNodeField*> output_signals;
-  std::vector<CNodeField*> output_registers;
+  std::set<CInstance*> self_reads;
+  std::set<CInstance*> self_writes;
+
+  std::vector<CNodeField*> input_sigs;
+  std::vector<CNodeField*> output_sigs;
+  std::vector<CNodeField*> output_regs;
 };
 
 //==============================================================================

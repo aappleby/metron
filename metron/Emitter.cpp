@@ -2163,10 +2163,10 @@ Err Emitter::emit_component(CNodeField* node) {
     err << cursor.emit_print(".clock(clock),");
   }
 
-  if (component_class->input_signals.size()) {
+  if (component_class->input_sigs.size()) {
     err << cursor.start_line();
     err << cursor.emit_print("// Input signals");
-    for (auto f : component_class->input_signals) {
+    for (auto f : component_class->input_sigs) {
       auto port_name = f->name;
 
       err << cursor.start_line();
@@ -2177,20 +2177,20 @@ Err Emitter::emit_component(CNodeField* node) {
     }
   }
 
-  if (component_class->output_signals.size()) {
+  if (component_class->output_sigs.size()) {
     err << cursor.start_line();
     err << cursor.emit_print("// Output signals");
-    for (auto f : component_class->output_signals) {
+    for (auto f : component_class->output_sigs) {
       auto port_name = f->name;
       err << cursor.start_line();
       err << cursor.emit_print(".%s(%s_%s),", port_name.c_str(), field_name.c_str(), port_name.c_str());
     }
   }
 
-  if (component_class->output_registers.size()) {
+  if (component_class->output_regs.size()) {
     err << cursor.start_line();
     err << cursor.emit_print("// Output registers");
-    for (auto f : component_class->output_registers) {
+    for (auto f : component_class->output_regs) {
       auto port_name = f->name;
       err << cursor.start_line();
       err << cursor.emit_print(".%s(%s_%s),", port_name.c_str(), field_name.c_str(), port_name.c_str());
@@ -2291,8 +2291,8 @@ Err Emitter::emit_component(CNodeField* node) {
     }
   }
 
-  if (component_class->input_signals.size()) {
-    for (auto f : component_class->input_signals) {
+  if (component_class->input_sigs.size()) {
+    for (auto f : component_class->input_sigs) {
       auto port_name = f->name;
       err << cursor.start_line();
       err << emit_splice(f->child("decl")->child("type"));
@@ -2301,8 +2301,8 @@ Err Emitter::emit_component(CNodeField* node) {
     }
   }
 
-  if (component_class->output_signals.size()) {
-    for (auto f : component_class->output_signals) {
+  if (component_class->output_sigs.size()) {
+    for (auto f : component_class->output_sigs) {
       auto port_name = f->name;
       err << cursor.start_line();
       err << emit_splice(f->child("decl")->child("type"));
@@ -2311,8 +2311,8 @@ Err Emitter::emit_component(CNodeField* node) {
     }
   }
 
-  if (component_class->output_registers.size()) {
-    for (auto f : component_class->output_registers) {
+  if (component_class->output_regs.size()) {
+    for (auto f : component_class->output_regs) {
       auto port_name = f->name;
       err << cursor.start_line();
       err << emit_splice(f->child("decl")->child("type"));
@@ -2341,26 +2341,26 @@ Err Emitter::emit_module_ports(CNodeClass* node) {
     err << cursor.emit_print("input logic clock,");
   }
 
-  if (node->input_signals.size()) {
+  if (node->input_sigs.size()) {
     err << cursor.start_line();
     err << cursor.emit_print("// input signals");
-    for (auto f : node->input_signals) {
+    for (auto f : node->input_sigs) {
       err << emit_field_ports(f, false);
     }
   }
 
-  if (node->output_signals.size()) {
+  if (node->output_sigs.size()) {
     err << cursor.start_line();
     err << cursor.emit_print("// output signals");
-    for (auto f : node->output_signals) {
+    for (auto f : node->output_sigs) {
       err << emit_field_ports(f, true);
     }
   }
 
-  if (node->output_registers.size()) {
+  if (node->output_regs.size()) {
     err << cursor.start_line();
     err << cursor.emit_print("// output registers");
-    for (auto f : node->output_registers) {
+    for (auto f : node->output_regs) {
       err << emit_field_ports(f, true);
     }
   }

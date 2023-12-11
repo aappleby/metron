@@ -14,7 +14,7 @@ public:
 
     porta_dout = ram[porta_addr];
 
-    if (write) {
+    if (portb_write) {
       ram[portb_addr] = portb_data;
       portb_dout = portb_data;
     }

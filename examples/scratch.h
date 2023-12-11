@@ -1,16 +1,20 @@
 #include "metron/metron_tools.h"
 
-class alu_control {
+class Module {
  public:
-  logic<7> inst_funct7;
-  logic<5> op_funct;
 
- public:
-  void tock_alu_function() {
+  void tick(logic<16> addr) {
+    switch (addr) {
 
-    if (inst_funct7[5])
-      op_funct = 1;
-    else
-      op_funct = 2;
+      // metron didn't like the block without {}
+      case 0xFF1C: {
+        switch (1) {
+          case 0: break;
+        }
+        break;
+      }
+    }
   }
+
+  logic<8> data_out_;
 };

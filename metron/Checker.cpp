@@ -96,13 +96,18 @@ bool has_break(CNode* node) {
 //------------------------------------------------------------------------------
 
 bool check_ends_with_break(CNode* node) {
-  dump_parse_tree(node);
 
   if (node->as<CNodeKeyword>() && node->get_text() == "break") return true;
 
   if (auto node_compound = node->as<CNodeCompound>()) {
     for (auto i = 0; i < node_compound->statements.size() - 1; i++) {
-      if (has_break(node_compound->statements[i])) return false;
+      auto s = node_compound->statements[i];
+
+      // Break statements in a nested switch statement don't count as breaks
+      // for our current statement.
+      if (s->as<CNodeSwitch>()) continue;
+
+      if (has_break(s)) return false;
     }
     return check_ends_with_break(node_compound->statements.back());
   }
@@ -144,7 +149,9 @@ bool check_switch_breaks(CNodeSwitch* node_switch) {
 
     if (node_case->node_body) {
       // If a case has a body, it must end with a break.
-      if (!check_ends_with_break(node_case->node_body)) return false;
+      if (!check_ends_with_break(node_case->node_body)) {
+        return false;
+      }
     }
     else {
       // Fallthrough is OK, but it the last case does not have a body, then

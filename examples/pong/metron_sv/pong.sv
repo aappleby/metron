@@ -22,6 +22,12 @@ Back porch  [492-524]
 module Pong (
   // global clock
   input logic clock,
+  // output signals
+  output logic vga_hsync,
+  output logic vga_vsync,
+  output logic vga_R,
+  output logic vga_G,
+  output logic vga_B,
   // pix_x() ports
   output logic[9:0] pix_x_ret,
   // pix_y() ports

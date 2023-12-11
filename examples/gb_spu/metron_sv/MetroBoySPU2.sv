@@ -28,51 +28,51 @@ module MetroBoySPU2 (
     l = 0;
     r = 0;
 
-    if (s1_running && s1_env_vol) begin
+    if (s1_running_ && s1_env_vol_) begin
       logic s1_out;
       s1_out = 0;
-      case(s1_duty)
-        0:  begin s1_out = s1_phase < 1; /*break;*/ end
-        1:  begin s1_out = s1_phase < 2; /*break;*/ end
-        2:  begin s1_out = s1_phase < 4; /*break;*/ end
-        3:  begin s1_out = s1_phase < 6; /*break;*/ end
+      case(s1_duty_)
+        0:  begin s1_out = s1_phase_ < 1; /*break;*/ end
+        1:  begin s1_out = s1_phase_ < 2; /*break;*/ end
+        2:  begin s1_out = s1_phase_ < 4; /*break;*/ end
+        3:  begin s1_out = s1_phase_ < 6; /*break;*/ end
       endcase
-      if (mix_l1 && s1_out) l = l + s1_env_vol;
-      if (mix_r1 && s1_out) r = r + s1_env_vol;
+      if (mix_l1_ && s1_out) l = l + s1_env_vol_;
+      if (mix_r1_ && s1_out) r = r + s1_env_vol_;
     end
 
-    if (s2_running && s2_env_vol) begin
+    if (s2_running_ && s2_env_vol_) begin
       logic s2_out;
       s2_out = 0;
-      case(s2_duty)
-        0:  begin s2_out = s2_phase < 1; /*break;*/ end
-        1:  begin s2_out = s2_phase < 2; /*break;*/ end
-        2:  begin s2_out = s2_phase < 4; /*break;*/ end
-        3:  begin s2_out = s2_phase < 6; /*break;*/ end
+      case(s2_duty_)
+        0:  begin s2_out = s2_phase_ < 1; /*break;*/ end
+        1:  begin s2_out = s2_phase_ < 2; /*break;*/ end
+        2:  begin s2_out = s2_phase_ < 4; /*break;*/ end
+        3:  begin s2_out = s2_phase_ < 6; /*break;*/ end
       endcase
-      if (mix_l2 && s2_out) l = l + s2_env_vol;
-      if (mix_r2 && s2_out) r = r + s2_env_vol;
+      if (mix_l2_ && s2_out) l = l + s2_env_vol_;
+      if (mix_r2_ && s2_out) r = r + s2_env_vol_;
     end
 
-    if (s3_running && s3_power) begin
+    if (s3_running_ && s3_power_) begin
       logic[7:0] s3_sample;
       logic[3:0] s3_out;
-      s3_sample = s3_wave[s3_phase >> 1];
-      s3_out = (s3_phase & 1) ? 4'(s3_sample) : s3_sample[7:4];
-      s3_out = s3_out >> s3_volume_shift;
-      if (mix_l3) l = l + s3_out;
-      if (mix_r3) r = r + s3_out;
+      s3_sample = s3_wave_[s3_phase_ >> 1];
+      s3_out = (s3_phase_ & 1) ? 4'(s3_sample) : s3_sample[7:4];
+      s3_out = s3_out >> s3_volume_shift_;
+      if (mix_l3_) l = l + s3_out;
+      if (mix_r3_) r = r + s3_out;
     end
 
-    if (s4_running && s4_env_vol) begin
+    if (s4_running_ && s4_env_vol_) begin
       logic s4_out;
-      s4_out = s4_lfsr[15];
-      if (mix_l4 && s4_out) l = l + s4_env_vol;
-      if (mix_r4 && s4_out) r = r + s4_env_vol;
+      s4_out = s4_lfsr_[15];
+      if (mix_l4_ && s4_out) l = l + s4_env_vol_;
+      if (mix_r4_ && s4_out) r = r + s4_env_vol_;
     end
 
-    l = l * volume_l;
-    r = r * volume_r;
+    l = l * volume_l_;
+    r = r * volume_r_;
 
     out_l = l;
     out_r = r;
@@ -83,91 +83,91 @@ module MetroBoySPU2 (
   always_ff @(posedge clock) begin : tick
     if (tick_reset) begin
       int i;
-      spu_clock_old <= 0;
-      data_out <= 0;
+      spu_clock_old_ <= 0;
+      data_out_ <= 0;
 
-      s1_sweep_shift <= 0;
-      s1_sweep_dir <= 0;
-      s1_sweep_timer_init <= 0;
-      s1_len_timer_init <= 0;
-      s1_duty <= 0;
-      s1_env_timer_init <= 0;
-      s1_env_add <= 0;
-      s1_env_vol_init <= 0;
-      s1_freq_timer_init <= 0;
-      s1_len_en <= 0;
-      s1_trig <= 0;
-      s1_running <= 0;
-      s1_sweep_timer <= 0;
-      s1_sweep_freq <= 0;
-      s1_len_timer <= 0;
-      s1_env_vol <= 0;
-      s1_env_timer <= 0;
-      s1_freq_timer <= 0;
-      s1_phase <= 0;
+      s1_sweep_shift_ <= 0;
+      s1_sweep_dir_ <= 0;
+      s1_sweep_timer_init_ <= 0;
+      s1_len_timer_init_ <= 0;
+      s1_duty_ <= 0;
+      s1_env_timer_init_ <= 0;
+      s1_env_add_ <= 0;
+      s1_env_vol_init_ <= 0;
+      s1_freq_timer_init_ <= 0;
+      s1_len_en_ <= 0;
+      s1_trig_ <= 0;
+      s1_running_ <= 0;
+      s1_sweep_timer_ <= 0;
+      s1_sweep_freq_ <= 0;
+      s1_len_timer_ <= 0;
+      s1_env_vol_ <= 0;
+      s1_env_timer_ <= 0;
+      s1_freq_timer_ <= 0;
+      s1_phase_ <= 0;
 
-      s2_len_timer_init <= 0;
-      s2_duty <= 0;
-      s2_env_timer_init <= 0;
-      s2_env_add <= 0;
-      s2_env_vol_init <= 0;
-      s2_freq_timer_init <= 0;
-      s2_len_en <= 0;
-      s2_trig <= 0;
+      s2_len_timer_init_ <= 0;
+      s2_duty_ <= 0;
+      s2_env_timer_init_ <= 0;
+      s2_env_add_ <= 0;
+      s2_env_vol_init_ <= 0;
+      s2_freq_timer_init_ <= 0;
+      s2_len_en_ <= 0;
+      s2_trig_ <= 0;
 
-      s2_len_timer <= 0;
-      s2_running <= 0;
-      s2_env_timer <= 0;
-      s2_env_vol <= 0;
-      s2_freq_timer <= 0;
-      s2_phase <= 0;
+      s2_len_timer_ <= 0;
+      s2_running_ <= 0;
+      s2_env_timer_ <= 0;
+      s2_env_vol_ <= 0;
+      s2_freq_timer_ <= 0;
+      s2_phase_ <= 0;
 
-      s3_power <= 0;
-      s3_len_timer_init <= 0;
-      s3_volume_shift <= 0;
-      s3_freq_timer_init <= 0;
-      s3_len_en <= 0;
-      s3_trig <= 0;
+      s3_power_ <= 0;
+      s3_len_timer_init_ <= 0;
+      s3_volume_shift_ <= 0;
+      s3_freq_timer_init_ <= 0;
+      s3_len_en_ <= 0;
+      s3_trig_ <= 0;
 
-      s3_running <= 0;
-      s3_len_timer <= 0;
-      s3_freq_timer <= 0;
-      s3_phase <= 0;
+      s3_running_ <= 0;
+      s3_len_timer_ <= 0;
+      s3_freq_timer_ <= 0;
+      s3_phase_ <= 0;
 
       for (i = 0; i < 16; i = i + 1) begin
-        s3_wave[i] <= 0;
+        s3_wave_[i] <= 0;
       end
 
-      s4_len_timer_init <= 0;
-      s4_env_timer_init <= 0;
-      s4_env_add <= 0;
-      s4_env_vol_init <= 0;
-      s4_freq_timer_init <= 0;
-      s4_mode <= 0;
-      s4_shift <= 0;
-      s4_len_en <= 0;
-      s4_trig <= 0;
+      s4_len_timer_init_ <= 0;
+      s4_env_timer_init_ <= 0;
+      s4_env_add_ <= 0;
+      s4_env_vol_init_ <= 0;
+      s4_freq_timer_init_ <= 0;
+      s4_mode_ <= 0;
+      s4_shift_ <= 0;
+      s4_len_en_ <= 0;
+      s4_trig_ <= 0;
 
-      s4_running <= 0;
-      s4_len_timer <= 0;
-      s4_env_timer <= 0;
-      s4_env_vol <= 0;
-      s4_freq_timer <= 0;
-      s4_lfsr <= 0;
+      s4_running_ <= 0;
+      s4_len_timer_ <= 0;
+      s4_env_timer_ <= 0;
+      s4_env_vol_ <= 0;
+      s4_freq_timer_ <= 0;
+      s4_lfsr_ <= 0;
 
-      volume_l <= 0;
-      volume_r <= 0;
+      volume_l_ <= 0;
+      volume_r_ <= 0;
 
-      mix_r1 <= 0;
-      mix_r2 <= 0;
-      mix_r3 <= 0;
-      mix_r4 <= 0;
-      mix_l1 <= 0;
-      mix_l2 <= 0;
-      mix_l3 <= 0;
-      mix_l4 <= 0;
+      mix_r1_ <= 0;
+      mix_r2_ <= 0;
+      mix_r3_ <= 0;
+      mix_r4_ <= 0;
+      mix_l1_ <= 0;
+      mix_l2_ <= 0;
+      mix_l3_ <= 0;
+      mix_l4_ <= 0;
 
-      spu_power <= 0;
+      spu_power_ <= 0;
 
     end
     else begin
@@ -178,8 +178,8 @@ module MetroBoySPU2 (
       logic env_tick;
       logic lfsr_clock_old;
       logic lfsr_clock_new;
-      spu_clock_new = spu_clock_old + 1;
-      spu_tick = (~spu_clock_old) & (spu_clock_new);
+      spu_clock_new = spu_clock_old_ + 1;
+      spu_tick = (~spu_clock_old_) & (spu_clock_new);
 
       sweep_tick  = spu_tick[12];
       length_tick = spu_tick[11];
@@ -190,49 +190,49 @@ module MetroBoySPU2 (
 
       if (tick_read) begin
         case (tick_addr)
-          16'hFF10:  begin data_out <= {1'd1, s1_sweep_timer_init, s1_sweep_dir, s1_sweep_shift}; /*break;*/ end
-          16'hFF11:  begin data_out <= {s1_duty, s1_len_timer_init}; /*break;*/ end
-          16'hFF12:  begin data_out <= {s1_env_vol_init, s1_env_add, s1_env_timer_init}; /*break;*/ end
-          16'hFF13:  begin data_out <= 8'(s1_freq_timer_init); /*break;*/ end
-          16'hFF14:  begin data_out <= {s1_trig, s1_len_en, 3'b111, s1_freq_timer_init[10:8]}; /*break;*/ end
+          16'hFF10:  begin data_out_ <= {1'd1, s1_sweep_timer_init_, s1_sweep_dir_, s1_sweep_shift_}; /*break;*/ end
+          16'hFF11:  begin data_out_ <= {s1_duty_, s1_len_timer_init_}; /*break;*/ end
+          16'hFF12:  begin data_out_ <= {s1_env_vol_init_, s1_env_add_, s1_env_timer_init_}; /*break;*/ end
+          16'hFF13:  begin data_out_ <= 8'(s1_freq_timer_init_); /*break;*/ end
+          16'hFF14:  begin data_out_ <= {s1_trig_, s1_len_en_, 3'b111, s1_freq_timer_init_[10:8]}; /*break;*/ end
 
             //----------
 
-          16'hFF16:  begin data_out <= {s2_duty, s2_len_timer_init}; /*break;*/ end
-          16'hFF17:  begin data_out <= {s2_env_vol_init, s2_env_add, s2_env_timer_init}; /*break;*/ end
-          16'hFF18:  begin data_out <= 8'(s2_freq_timer_init); /*break;*/ end
-          16'hFF19:  begin data_out <= {s2_trig, s2_len_en, 3'b111, s2_freq_timer_init[10:8]}; /*break;*/ end
+          16'hFF16:  begin data_out_ <= {s2_duty_, s2_len_timer_init_}; /*break;*/ end
+          16'hFF17:  begin data_out_ <= {s2_env_vol_init_, s2_env_add_, s2_env_timer_init_}; /*break;*/ end
+          16'hFF18:  begin data_out_ <= 8'(s2_freq_timer_init_); /*break;*/ end
+          16'hFF19:  begin data_out_ <= {s2_trig_, s2_len_en_, 3'b111, s2_freq_timer_init_[10:8]}; /*break;*/ end
 
             //----------
 
-          16'hFF1A:  begin data_out <= {s3_power, 7'b1111111}; /*break;*/ end
-          16'hFF1B:  begin data_out <= s3_len_timer_init; /*break;*/ end
+          16'hFF1A:  begin data_out_ <= {s3_power_, 7'b1111111}; /*break;*/ end
+          16'hFF1B:  begin data_out_ <= s3_len_timer_init_; /*break;*/ end
 
           // metron didn't like the block without {}
           16'hFF1C: begin
-            case (s3_volume_shift)
-              0:  begin data_out <= 8'b01000000; /*break;*/ end
-              1:  begin data_out <= 8'b10000000; /*break;*/ end
-              2:  begin data_out <= 8'b11000000; /*break;*/ end
-              4:  begin data_out <= 8'b00000000; /*break;*/ end
+            case (s3_volume_shift_)
+              0:  begin data_out_ <= 8'b01000000; /*break;*/ end
+              1:  begin data_out_ <= 8'b10000000; /*break;*/ end
+              2:  begin data_out_ <= 8'b11000000; /*break;*/ end
+              4:  begin data_out_ <= 8'b00000000; /*break;*/ end
             endcase
             /*break;*/
           end
-          16'hFF1D:  begin data_out <= 8'(s3_freq_timer_init); /*break;*/ end
-          16'hFF1E:  begin data_out <= {s3_trig, s3_len_en, 3'b111, s3_freq_timer_init[10:8]}; /*break;*/ end
+          16'hFF1D:  begin data_out_ <= 8'(s3_freq_timer_init_); /*break;*/ end
+          16'hFF1E:  begin data_out_ <= {s3_trig_, s3_len_en_, 3'b111, s3_freq_timer_init_[10:8]}; /*break;*/ end
 
             //----------
 
-          16'hFF20:  begin data_out <= {2'b11, s4_len_timer_init}; /*break;*/ end
-          16'hFF21:  begin data_out <= {s4_env_vol_init, s4_env_add, s4_env_timer_init}; /*break;*/ end
-          16'hFF22:  begin data_out <= {s4_shift, s4_mode, s4_freq_timer_init}; /*break;*/ end
-          16'hFF23:  begin data_out <= {s4_trig, s4_len_en, 6'b111111}; /*break;*/ end
+          16'hFF20:  begin data_out_ <= {2'b11, s4_len_timer_init_}; /*break;*/ end
+          16'hFF21:  begin data_out_ <= {s4_env_vol_init_, s4_env_add_, s4_env_timer_init_}; /*break;*/ end
+          16'hFF22:  begin data_out_ <= {s4_shift_, s4_mode_, s4_freq_timer_init_}; /*break;*/ end
+          16'hFF23:  begin data_out_ <= {s4_trig_, s4_len_en_, 6'b111111}; /*break;*/ end
 
             //----------
 
-          16'hFF24:  begin data_out <= {1'd0, volume_l, 1'd0, volume_r}; /*break;*/ end
-          16'hFF25:  begin data_out <= {mix_l4, mix_l3, mix_l2, mix_l1, mix_r4, mix_r3, mix_r2, mix_r1}; /*break;*/ end
-          16'hFF26:  begin data_out <= {spu_power, 7'd0}; /*break;*/ end
+          16'hFF24:  begin data_out_ <= {1'd0, volume_l_, 1'd0, volume_r_}; /*break;*/ end
+          16'hFF25:  begin data_out_ <= {mix_l4_, mix_l3_, mix_l2_, mix_l1_, mix_r4_, mix_r3_, mix_r2_, mix_r1_}; /*break;*/ end
+          16'hFF26:  begin data_out_ <= {spu_power_, 7'd0}; /*break;*/ end
 
           // "default: break didn't work?"
           default: begin /*break;*/ end
@@ -242,94 +242,94 @@ module MetroBoySPU2 (
       //----------
       // s1 clock
 
-      if (s1_freq_timer == 11'b11111111111) begin
-        s1_phase <= s1_phase + 1;
-        s1_freq_timer <= s1_sweep_timer_init ? s1_sweep_freq : s1_freq_timer_init;
+      if (s1_freq_timer_ == 11'b11111111111) begin
+        s1_phase_ <= s1_phase_ + 1;
+        s1_freq_timer_ <= s1_sweep_timer_init_ ? s1_sweep_freq_ : s1_freq_timer_init_;
       end
       else begin
-        s1_freq_timer <= s1_freq_timer + 1;
+        s1_freq_timer_ <= s1_freq_timer_ + 1;
       end
 
       //----------
       // s1 length
 
-      if (length_tick && s1_running && s1_len_en) begin
-        if (s1_len_timer == 6'b111111) begin
-          s1_len_timer <= 0;
-          s1_running <= 0;
+      if (length_tick && s1_running_ && s1_len_en_) begin
+        if (s1_len_timer_ == 6'b111111) begin
+          s1_len_timer_ <= 0;
+          s1_running_ <= 0;
         end
         else begin
-          s1_len_timer <= s1_len_timer + 1;
+          s1_len_timer_ <= s1_len_timer_ + 1;
         end
       end
 
       //----------
       // s1 sweep
 
-      if (sweep_tick && s1_sweep_timer_init && s1_sweep_shift) begin
-        if (s1_sweep_timer) begin
-          s1_sweep_timer <= s1_sweep_timer - 1;
+      if (sweep_tick && s1_sweep_timer_init_ && s1_sweep_shift_) begin
+        if (s1_sweep_timer_) begin
+          s1_sweep_timer_ <= s1_sweep_timer_ - 1;
         end
         else begin
           logic[10:0] delta;
           logic[11:0] next_freq;
-          delta = s1_sweep_freq >> s1_sweep_shift;
-          next_freq = s1_sweep_freq + (s1_sweep_dir ? -delta : +delta);
-          if (next_freq > 2047) s1_running <= 0;
-          s1_sweep_timer <= s1_sweep_timer_init;
-          s1_sweep_freq <= next_freq;
+          delta = s1_sweep_freq_ >> s1_sweep_shift_;
+          next_freq = s1_sweep_freq_ + (s1_sweep_dir_ ? -delta : +delta);
+          if (next_freq > 2047) s1_running_ <= 0;
+          s1_sweep_timer_ <= s1_sweep_timer_init_;
+          s1_sweep_freq_ <= next_freq;
         end
       end
 
       //----------
       // s1 env
 
-      if (env_tick && s1_env_timer_init) begin
-        if (s1_env_timer) begin
-          s1_env_timer <= s1_env_timer - 1;
+      if (env_tick && s1_env_timer_init_) begin
+        if (s1_env_timer_) begin
+          s1_env_timer_ <= s1_env_timer_ - 1;
         end
         else begin
-          s1_env_timer <= s1_env_timer_init;
-          if (s1_env_add) begin if (s1_env_vol < 15) s1_env_vol <= s1_env_vol + 1; end
-          else            begin if (s1_env_vol >  0) s1_env_vol <= s1_env_vol - 1; end
+          s1_env_timer_ <= s1_env_timer_init_;
+          if (s1_env_add_) begin if (s1_env_vol_ < 15) s1_env_vol_ <= s1_env_vol_ + 1; end
+          else            begin if (s1_env_vol_ >  0) s1_env_vol_ <= s1_env_vol_ - 1; end
         end
       end
 
       //----------
       // s2 clock
 
-      if (s2_freq_timer == 12'h7FF) begin
-        s2_phase <= s2_phase + 1;
-        s2_freq_timer <= s2_freq_timer_init;
+      if (s2_freq_timer_ == 12'h7FF) begin
+        s2_phase_ <= s2_phase_ + 1;
+        s2_freq_timer_ <= s2_freq_timer_init_;
       end
       else begin
-        s2_freq_timer <= s2_freq_timer + 1;
+        s2_freq_timer_ <= s2_freq_timer_ + 1;
       end
 
       //----------
       // s2 length
 
-      if (length_tick && s2_running && s2_len_en) begin
-        if (s2_len_timer == 8'h3F) begin
-          s2_len_timer <= 0;
-          s2_running <= 0;
+      if (length_tick && s2_running_ && s2_len_en_) begin
+        if (s2_len_timer_ == 8'h3F) begin
+          s2_len_timer_ <= 0;
+          s2_running_ <= 0;
         end
         else begin
-          s2_len_timer <= s2_len_timer + 1;
+          s2_len_timer_ <= s2_len_timer_ + 1;
         end
       end
 
       //----------
       // s2 env
 
-      if (env_tick && s2_env_timer_init) begin
-        if (s2_env_timer) begin
-          s2_env_timer <= s2_env_timer - 1;
+      if (env_tick && s2_env_timer_init_) begin
+        if (s2_env_timer_) begin
+          s2_env_timer_ <= s2_env_timer_ - 1;
         end
         else begin
-          s2_env_timer <= s2_env_timer_init;
-          if (s2_env_add) begin if (s2_env_vol < 15) s2_env_vol <= s2_env_vol + 1; end
-          else            begin if (s2_env_vol >  0) s2_env_vol <= s2_env_vol - 1; end
+          s2_env_timer_ <= s2_env_timer_init_;
+          if (s2_env_add_) begin if (s2_env_vol_ < 15) s2_env_vol_ <= s2_env_vol_ + 1; end
+          else            begin if (s2_env_vol_ >  0) s2_env_vol_ <= s2_env_vol_ - 1; end
         end
       end
 
@@ -339,12 +339,12 @@ module MetroBoySPU2 (
       begin
         logic[4:0] next_phase;
         logic[10:0] next_timer;
-        next_phase = s3_phase;
-        next_timer = s3_freq_timer;
+        next_phase = s3_phase_;
+        next_timer = s3_freq_timer_;
 
         if (next_timer == 12'h7FF) begin
           next_phase = next_phase + 1;
-          next_timer = s3_freq_timer_init;
+          next_timer = s3_freq_timer_init_;
         end
         else begin
           next_timer = next_timer + 1;
@@ -352,143 +352,119 @@ module MetroBoySPU2 (
 
         if (next_timer == 12'h7FF) begin
           next_phase = next_phase + 1;
-          next_timer = s3_freq_timer_init;
+          next_timer = s3_freq_timer_init_;
         end
         else begin
           next_timer = next_timer + 1;
         end
 
-        s3_phase <= next_phase;
-        s3_freq_timer <= next_timer;
+        s3_phase_ <= next_phase;
+        s3_freq_timer_ <= next_timer;
       end
 
       //----------
       // s3 length
 
-      if (length_tick && s3_running && s3_len_en) begin
-        if (s3_len_timer == 8'hFF) begin
-          s3_len_timer <= 0;
-          s3_running <= 0;
+      if (length_tick && s3_running_ && s3_len_en_) begin
+        if (s3_len_timer_ == 8'hFF) begin
+          s3_len_timer_ <= 0;
+          s3_running_ <= 0;
         end
         else begin
-          s3_len_timer <= s3_len_timer + 1;
+          s3_len_timer_ <= s3_len_timer_ + 1;
         end
       end
 
       //----------
       // s4 lfsr
 
-      lfsr_clock_old = spu_clock_old[s4_shift + 1];
-      lfsr_clock_new = spu_clock_new[s4_shift + 1];
-
-      /*
-      logic<1> lfsr_clock_old = 0;
-      logic<1> lfsr_clock_new = 0;
-
-      switch(s4_shift) {
-        case 0 : { lfsr_clock_old = spu_clock_old[1 ]; lfsr_clock_new = spu_clock_new[1 ]; break; }
-        case 1 : { lfsr_clock_old = spu_clock_old[2 ]; lfsr_clock_new = spu_clock_new[2 ]; break; }
-        case 2 : { lfsr_clock_old = spu_clock_old[3 ]; lfsr_clock_new = spu_clock_new[3 ]; break; }
-        case 3 : { lfsr_clock_old = spu_clock_old[4 ]; lfsr_clock_new = spu_clock_new[4 ]; break; }
-        case 4 : { lfsr_clock_old = spu_clock_old[5 ]; lfsr_clock_new = spu_clock_new[5 ]; break; }
-        case 5 : { lfsr_clock_old = spu_clock_old[6 ]; lfsr_clock_new = spu_clock_new[6 ]; break; }
-        case 6 : { lfsr_clock_old = spu_clock_old[7 ]; lfsr_clock_new = spu_clock_new[7 ]; break; }
-        case 7 : { lfsr_clock_old = spu_clock_old[8 ]; lfsr_clock_new = spu_clock_new[8 ]; break; }
-        case 8 : { lfsr_clock_old = spu_clock_old[9 ]; lfsr_clock_new = spu_clock_new[9 ]; break; }
-        case 9 : { lfsr_clock_old = spu_clock_old[10]; lfsr_clock_new = spu_clock_new[10]; break; }
-        case 10: { lfsr_clock_old = spu_clock_old[11]; lfsr_clock_new = spu_clock_new[11]; break; }
-        case 11: { lfsr_clock_old = spu_clock_old[12]; lfsr_clock_new = spu_clock_new[12]; break; }
-        case 12: { lfsr_clock_old = spu_clock_old[13]; lfsr_clock_new = spu_clock_new[13]; break; }
-        case 13: { lfsr_clock_old = spu_clock_old[14]; lfsr_clock_new = spu_clock_new[14]; break; }
-        case 14: { lfsr_clock_old = spu_clock_old[15]; lfsr_clock_new = spu_clock_new[15]; break; }
-        case 15: { lfsr_clock_old = 0;                 lfsr_clock_new = 0;                 break; }
-      }
-      */
+      lfsr_clock_old = spu_clock_old_[s4_shift_ + 1];
+      lfsr_clock_new = spu_clock_new[s4_shift_ + 1];
 
       if ((lfsr_clock_old == 0) && (lfsr_clock_new == 1)) begin
-        if (s4_freq_timer) begin
-          s4_freq_timer <= s4_freq_timer - 1;
+        if (s4_freq_timer_) begin
+          s4_freq_timer_ <= s4_freq_timer_ - 1;
         end
         else begin
           logic new_bit;
-          new_bit = s4_lfsr[15] ^ s4_lfsr[14] ^ 1;
-          s4_lfsr <= {
-            s4_lfsr[14:9],
-            s4_mode ? new_bit : s4_lfsr[8],
-            8'(s4_lfsr),
+          new_bit = s4_lfsr_[15] ^ s4_lfsr_[14] ^ 1;
+          s4_lfsr_ <= {
+            s4_lfsr_[14:9],
+            s4_mode_ ? new_bit : s4_lfsr_[8],
+            8'(s4_lfsr_),
             new_bit};
-          s4_freq_timer <= s4_freq_timer_init;
+          s4_freq_timer_ <= s4_freq_timer_init_;
         end
       end
 
       //----------
       // s4 length
 
-      if (length_tick && s4_running && s4_len_en) begin
-        if (s4_len_timer == 8'h3F) begin
-          s4_len_timer <= 0;
-          s4_running <= 0;
+      if (length_tick && s4_running_ && s4_len_en_) begin
+        if (s4_len_timer_ == 8'h3F) begin
+          s4_len_timer_ <= 0;
+          s4_running_ <= 0;
         end
         else begin
-          s4_len_timer <= s4_len_timer + 1;
+          s4_len_timer_ <= s4_len_timer_ + 1;
         end
       end
 
       //----------
       // s4 env
 
-      if (env_tick && s4_env_timer_init) begin
-        if (s4_env_timer) begin
-          s4_env_timer <= s4_env_timer - 1;
+      if (env_tick && s4_env_timer_init_) begin
+        if (s4_env_timer_) begin
+          s4_env_timer_ <= s4_env_timer_ - 1;
         end
         else begin
-          s4_env_timer <= s4_env_timer_init;
-          if (s4_env_add) begin if (s4_env_vol < 15) s4_env_vol <= s4_env_vol + 1; end
-          else            begin if (s4_env_vol >  0) s4_env_vol <= s4_env_vol - 1; end
+          s4_env_timer_ <= s4_env_timer_init_;
+          if (s4_env_add_) begin if (s4_env_vol_ < 15) s4_env_vol_ <= s4_env_vol_ + 1; end
+          else            begin if (s4_env_vol_ >  0) s4_env_vol_ <= s4_env_vol_ - 1; end
         end
       end
 
       //----------
       // Triggers
 
-      if (s1_trig && (s1_env_vol_init || s1_env_add)) begin
-        s1_running     <= 1;
-        s1_len_timer   <= s1_len_timer_init;
-        s1_sweep_timer <= s1_sweep_timer_init;
-        s1_sweep_freq  <= s1_freq_timer_init;
-        s1_env_vol     <= s1_env_vol_init;
-        s1_env_timer   <= s1_env_timer_init;
-        s1_freq_timer  <= s1_freq_timer_init;
-        s1_phase       <= 0;
-        s1_trig        <= 0;
+      if (s1_trig_ && (s1_env_vol_init_ || s1_env_add_)) begin
+        s1_running_     <= 1;
+        s1_len_timer_   <= s1_len_timer_init_;
+        s1_sweep_timer_ <= s1_sweep_timer_init_;
+        s1_sweep_freq_  <= s1_freq_timer_init_;
+        s1_env_vol_     <= s1_env_vol_init_;
+        s1_env_timer_   <= s1_env_timer_init_;
+        s1_freq_timer_  <= s1_freq_timer_init_;
+        s1_phase_       <= 0;
+        s1_trig_        <= 0;
       end
 
-      if (s2_trig && (s2_env_vol_init || s2_env_add)) begin
-        s2_running    <= 1;
-        s2_len_timer  <= s2_len_timer_init;
-        s2_env_vol    <= s2_env_vol_init;
-        s2_env_timer  <= s2_env_timer_init;
-        s2_freq_timer <= s2_freq_timer_init;
-        s2_phase      <= 0;
-        s2_trig       <= 0;
+      if (s2_trig_ && (s2_env_vol_init_ || s2_env_add_)) begin
+        s2_running_    <= 1;
+        s2_len_timer_  <= s2_len_timer_init_;
+        s2_env_vol_    <= s2_env_vol_init_;
+        s2_env_timer_  <= s2_env_timer_init_;
+        s2_freq_timer_ <= s2_freq_timer_init_;
+        s2_phase_      <= 0;
+        s2_trig_       <= 0;
       end
 
-      if (s3_trig) begin
-        s3_running    <= 1;
-        s3_len_timer  <= s3_len_timer_init;
-        s3_freq_timer <= s3_freq_timer_init;
-        s3_phase      <= 0;
-        s3_trig       <= 0;
+      if (s3_trig_) begin
+        s3_running_    <= 1;
+        s3_len_timer_  <= s3_len_timer_init_;
+        s3_freq_timer_ <= s3_freq_timer_init_;
+        s3_phase_      <= 0;
+        s3_trig_       <= 0;
       end
 
-      if (s4_trig && (s4_env_vol_init || s4_env_add)) begin
-        s4_running    <= 1;
-        s4_len_timer  <= s4_len_timer_init;
-        s4_env_vol    <= s4_env_vol_init;
-        s4_env_timer  <= s4_env_timer_init;
-        s4_freq_timer <= s4_freq_timer_init;
-        s4_lfsr       <= 0;
-        s4_trig       <= 0;
+      if (s4_trig_ && (s4_env_vol_init_ || s4_env_add_)) begin
+        s4_running_    <= 1;
+        s4_len_timer_  <= s4_len_timer_init_;
+        s4_env_vol_    <= s4_env_vol_init_;
+        s4_env_timer_  <= s4_env_timer_init_;
+        s4_freq_timer_ <= s4_freq_timer_init_;
+        s4_lfsr_       <= 0;
+        s4_trig_       <= 0;
       end
 
       //----------
@@ -497,131 +473,131 @@ module MetroBoySPU2 (
       if (tick_write && tick_addr >= 16'hFF10 && tick_addr <= 16'hFF26) begin
         case (tick_addr)
           16'hFF10: begin
-            s1_sweep_shift      <= 3'(tick_data_in);
-            s1_sweep_dir        <= tick_data_in[3];
-            s1_sweep_timer_init <= tick_data_in[6:4];
+            s1_sweep_shift_      <= 3'(tick_data_in);
+            s1_sweep_dir_        <= tick_data_in[3];
+            s1_sweep_timer_init_ <= tick_data_in[6:4];
             /*break;*/
           end
           16'hFF11: begin
-            s1_len_timer_init <= 6'(tick_data_in);
-            s1_duty           <= tick_data_in[7:6];
+            s1_len_timer_init_ <= 6'(tick_data_in);
+            s1_duty_           <= tick_data_in[7:6];
             /*break;*/
           end
           16'hFF12: begin
-            s1_env_timer_init <= 3'(tick_data_in);
-            s1_env_add        <= tick_data_in[3];
-            s1_env_vol_init   <= tick_data_in[7:4];
+            s1_env_timer_init_ <= 3'(tick_data_in);
+            s1_env_add_        <= tick_data_in[3];
+            s1_env_vol_init_   <= tick_data_in[7:4];
             /*break;*/
           end
           16'hFF13: begin
-            s1_freq_timer_init <= {s1_freq_timer_init[10:8], tick_data_in};
+            s1_freq_timer_init_ <= {s1_freq_timer_init_[10:8], tick_data_in};
             /*break;*/
           end
           16'hFF14: begin
-            s1_freq_timer_init <= {3'(tick_data_in), 8'(s1_freq_timer_init)};
-            s1_len_en          <= tick_data_in[6];
-            s1_trig            <= tick_data_in[7];
+            s1_freq_timer_init_ <= {3'(tick_data_in), 8'(s1_freq_timer_init_)};
+            s1_len_en_          <= tick_data_in[6];
+            s1_trig_            <= tick_data_in[7];
             /*break;*/
           end
 
           //----------
 
           16'hFF16: begin
-            s2_len_timer_init <= 6'(tick_data_in);
-            s2_duty           <= tick_data_in[7:6];
+            s2_len_timer_init_ <= 6'(tick_data_in);
+            s2_duty_           <= tick_data_in[7:6];
             /*break;*/
           end
           16'hFF17: begin
-            s2_env_timer_init <= 3'(tick_data_in);
-            s2_env_add        <= tick_data_in[3];
-            s2_env_vol_init   <= tick_data_in[7:4];
+            s2_env_timer_init_ <= 3'(tick_data_in);
+            s2_env_add_        <= tick_data_in[3];
+            s2_env_vol_init_   <= tick_data_in[7:4];
             /*break;*/
           end
           16'hFF18: begin
-            s2_freq_timer_init <= {s2_freq_timer_init[10:8], tick_data_in};
+            s2_freq_timer_init_ <= {s2_freq_timer_init_[10:8], tick_data_in};
             /*break;*/
           end
           16'hFF19: begin
-            s2_freq_timer_init <= {3'(tick_data_in), 8'(s2_freq_timer_init)};
-            s2_len_en          <= tick_data_in[6];
-            s2_trig            <= tick_data_in[7];
+            s2_freq_timer_init_ <= {3'(tick_data_in), 8'(s2_freq_timer_init_)};
+            s2_len_en_          <= tick_data_in[6];
+            s2_trig_            <= tick_data_in[7];
             /*break;*/
           end
 
           //----------
 
           16'hFF1A: begin
-            s3_power <= tick_data_in[7];
+            s3_power_ <= tick_data_in[7];
             /*break;*/
           end
           16'hFF1B: begin
-            s3_len_timer_init <= 8'(tick_data_in);
+            s3_len_timer_init_ <= 8'(tick_data_in);
             /*break;*/
           end
           16'hFF1C: begin
             case (tick_data_in[6:5])
-              0:  begin s3_volume_shift <= 4; /*break;*/ end
-              1:  begin s3_volume_shift <= 0; /*break;*/ end
-              2:  begin s3_volume_shift <= 1; /*break;*/ end
-              3:  begin s3_volume_shift <= 2; /*break;*/ end
+              0:  begin s3_volume_shift_ <= 4; /*break;*/ end
+              1:  begin s3_volume_shift_ <= 0; /*break;*/ end
+              2:  begin s3_volume_shift_ <= 1; /*break;*/ end
+              3:  begin s3_volume_shift_ <= 2; /*break;*/ end
             endcase
             /*break;*/
           end
           16'hFF1D: begin
-            s3_freq_timer_init <= {s3_freq_timer_init[10:8], tick_data_in};
+            s3_freq_timer_init_ <= {s3_freq_timer_init_[10:8], tick_data_in};
             /*break;*/
           end
           16'hFF1E: begin
-            s3_freq_timer_init <= {3'(tick_data_in), 8'(s3_freq_timer_init)};
-            s3_len_en          <= tick_data_in[6];
-            s3_trig            <= tick_data_in[7];
+            s3_freq_timer_init_ <= {3'(tick_data_in), 8'(s3_freq_timer_init_)};
+            s3_len_en_          <= tick_data_in[6];
+            s3_trig_            <= tick_data_in[7];
             /*break;*/
           end
 
           //----------
 
           16'hFF20: begin
-            s4_len_timer_init <= 6'(tick_data_in);
+            s4_len_timer_init_ <= 6'(tick_data_in);
             /*break;*/
           end
           16'hFF21: begin
-            s4_env_timer_init <= 3'(tick_data_in);
-            s4_env_add        <= tick_data_in[3];
-            s4_env_vol_init   <= tick_data_in[7:4];
+            s4_env_timer_init_ <= 3'(tick_data_in);
+            s4_env_add_        <= tick_data_in[3];
+            s4_env_vol_init_   <= tick_data_in[7:4];
             /*break;*/
           end
           16'hFF22: begin
-            s4_freq_timer_init <= 3'(tick_data_in);
-            s4_mode            <= tick_data_in[3];
-            s4_shift           <= tick_data_in[7:4];
+            s4_freq_timer_init_ <= 3'(tick_data_in);
+            s4_mode_            <= tick_data_in[3];
+            s4_shift_           <= tick_data_in[7:4];
             /*break;*/
           end
           16'hFF23: begin
-            s4_len_en <= tick_data_in[6];
-            s4_trig   <= tick_data_in[7];
+            s4_len_en_ <= tick_data_in[6];
+            s4_trig_   <= tick_data_in[7];
             /*break;*/
           end
 
           //----------
 
           16'hFF24: begin
-            volume_r <= 3'(tick_data_in) + 1;
-            volume_l <= tick_data_in[6:4] + 1;
+            volume_r_ <= 3'(tick_data_in) + 1;
+            volume_l_ <= tick_data_in[6:4] + 1;
             /*break;*/
           end
           16'hFF25: begin
-            mix_r1 <= 1'(tick_data_in);
-            mix_r2 <= tick_data_in[1];
-            mix_r3 <= tick_data_in[2];
-            mix_r4 <= tick_data_in[3];
-            mix_l1 <= tick_data_in[4];
-            mix_l2 <= tick_data_in[5];
-            mix_l3 <= tick_data_in[6];
-            mix_l4 <= tick_data_in[7];
+            mix_r1_ <= 1'(tick_data_in);
+            mix_r2_ <= tick_data_in[1];
+            mix_r3_ <= tick_data_in[2];
+            mix_r4_ <= tick_data_in[3];
+            mix_l1_ <= tick_data_in[4];
+            mix_l2_ <= tick_data_in[5];
+            mix_l3_ <= tick_data_in[6];
+            mix_l4_ <= tick_data_in[7];
             /*break;*/
           end
           16'hFF26: begin
-            spu_power <= tick_data_in[7];
+            spu_power_ <= tick_data_in[7];
             /*break;*/
           end
           default: begin
@@ -634,75 +610,14 @@ module MetroBoySPU2 (
       // Wavetable writes
 
       if (tick_write && tick_addr >= 16'hFF30 && tick_addr <= 16'hFF3F) begin
-        s3_wave[tick_addr & 4'hF] <= tick_data_in;
+        s3_wave_[tick_addr & 4'hF] <= tick_data_in;
       end
 
-      spu_clock_old <= spu_clock_new;
+      spu_clock_old_ <= spu_clock_new;
     end
   end
 
   //----------------------------------------
-
-  /*
-  void dump(Dumper& d) const {
-    d("\002--------------SPU--------------\001\n");
-
-    const char* bar = "===============";
-
-    logic<4> s3_env_vol = 0;
-    switch (s3_volume_shift) {
-    case 0: s3_env_vol = 15; break;
-    case 1: s3_env_vol = 7; break;
-    case 2: s3_env_vol = 3; break;
-    case 4: s3_env_vol = 0; break;
-    }
-
-    d("s1 running %d\n", s1_running);
-    d("s2 running %d\n", s2_running);
-    d("s3 running %d\n", s3_running);
-    d("s4 running %d\n", s4_running);
-
-    d("s1 len %d\n", s1_len_timer);
-    d("s2 len %d\n", s2_len_timer);
-    d("s3 len %d\n", s3_len_timer);
-    d("s4 len %d\n", s4_len_timer);
-
-    d("s1 env timer %d\n", s1_env_timer);
-    d("s2 env timer %d\n", s2_env_timer);
-    d("s4 env timer %d\n", s4_env_timer);
-
-    d("s1 vol %2d %s\n", s1_env_vol, bar + 15 - s1_env_vol);
-    d("s2 vol %2d %s\n", s2_env_vol, bar + 15 - s2_env_vol);
-    d("s3 vol %2d %s\n", s3_env_vol, bar + 15 - s3_env_vol);
-    d("s4 vol %2d %s\n", s4_env_vol, bar + 15 - s4_env_vol);
-
-    d("s1 sweep timer %2d\n", s1_sweep_timer);
-    d("s1 sweep freq  %2d\n", s1_sweep_freq);
-
-    d("s1 freq timer %d\n", s1_freq_timer);
-    d("s2 freq timer %d\n", s2_freq_timer);
-    d("s3 freq timer %d\n", s3_freq_timer);
-    d("s4 freq timer %d\n", s4_freq_timer);
-
-    d("s1 phase %d\n", s1_phase);
-    d("s2 phase %d\n", s2_phase);
-    d("s3 phase %d\n", s3_phase);
-
-    d("s4 lfsr 0x%04x\n", s4_lfsr);
-
-    char buf[33];
-    for (int i = 0; i < 16; i++) {
-      logic<4> a = b4(s3_wave[i], 4);
-      logic<4> b = b4(s3_wave[i], 0);
-
-      buf[2 * i + 0] = a > 9 ? 'A' + a - 10 : '0' + a;
-      buf[2 * i + 1] = b > 9 ? 'B' + b - 10 : '0' + b;
-    }
-
-    buf[32] = 0;
-    d("[%s]\n", buf);
-  }
-  */
 
    // signals
    // signals
@@ -711,99 +626,99 @@ module MetroBoySPU2 (
 
 /*private:*/
 
-  logic[15:0] spu_clock_old;
-  logic[7:0]  data_out;
+  logic[15:0] spu_clock_old_;
+  logic[7:0]  data_out_;
 
   // Channel 1
 
-  /*NR10*/ logic[2:0]  s1_sweep_shift;
-  /*NR10*/ logic  s1_sweep_dir;
-  /*NR10*/ logic[2:0]  s1_sweep_timer_init;
-  /*NR11*/ logic[5:0]  s1_len_timer_init;
-  /*NR11*/ logic[1:0]  s1_duty;
-  /*NR12*/ logic[2:0]  s1_env_timer_init;
-  /*NR12*/ logic  s1_env_add;
-  /*NR12*/ logic[3:0]  s1_env_vol_init;
-  /*NR13*/ logic[10:0] s1_freq_timer_init;
-  /*NR14*/ logic  s1_len_en;
-  /*NR14*/ logic  s1_trig;
+  /*NR10*/ logic[2:0]  s1_sweep_shift_;
+  /*NR10*/ logic  s1_sweep_dir_;
+  /*NR10*/ logic[2:0]  s1_sweep_timer_init_;
+  /*NR11*/ logic[5:0]  s1_len_timer_init_;
+  /*NR11*/ logic[1:0]  s1_duty_;
+  /*NR12*/ logic[2:0]  s1_env_timer_init_;
+  /*NR12*/ logic  s1_env_add_;
+  /*NR12*/ logic[3:0]  s1_env_vol_init_;
+  /*NR13*/ logic[10:0] s1_freq_timer_init_;
+  /*NR14*/ logic  s1_len_en_;
+  /*NR14*/ logic  s1_trig_;
 
-  logic  s1_running;
-  logic[2:0]  s1_sweep_timer;
-  logic[10:0] s1_sweep_freq;
-  logic[5:0]  s1_len_timer;
-  logic[3:0]  s1_env_vol;
-  logic[2:0]  s1_env_timer;
-  logic[10:0] s1_freq_timer;
-  logic[2:0]  s1_phase;
+  logic  s1_running_;
+  logic[2:0]  s1_sweep_timer_;
+  logic[10:0] s1_sweep_freq_;
+  logic[5:0]  s1_len_timer_;
+  logic[3:0]  s1_env_vol_;
+  logic[2:0]  s1_env_timer_;
+  logic[10:0] s1_freq_timer_;
+  logic[2:0]  s1_phase_;
 
   // Channel 2
 
-  /*NR21*/ logic[5:0]  s2_len_timer_init;
-  /*NR21*/ logic[1:0]  s2_duty;
-  /*NR22*/ logic[2:0]  s2_env_timer_init;
-  /*NR22*/ logic  s2_env_add;
-  /*NR22*/ logic[3:0]  s2_env_vol_init;
-  /*NR23*/ logic[10:0] s2_freq_timer_init;
-  /*NR24*/ logic  s2_len_en;
-  /*NR24*/ logic  s2_trig;
+  /*NR21*/ logic[5:0]  s2_len_timer_init_;
+  /*NR21*/ logic[1:0]  s2_duty_;
+  /*NR22*/ logic[2:0]  s2_env_timer_init_;
+  /*NR22*/ logic  s2_env_add_;
+  /*NR22*/ logic[3:0]  s2_env_vol_init_;
+  /*NR23*/ logic[10:0] s2_freq_timer_init_;
+  /*NR24*/ logic  s2_len_en_;
+  /*NR24*/ logic  s2_trig_;
 
-  logic[5:0]  s2_len_timer;
-  logic  s2_running;
-  logic[2:0]  s2_env_timer;
-  logic[3:0]  s2_env_vol;
-  logic[10:0] s2_freq_timer;
-  logic[2:0]  s2_phase;
+  logic[5:0]  s2_len_timer_;
+  logic  s2_running_;
+  logic[2:0]  s2_env_timer_;
+  logic[3:0]  s2_env_vol_;
+  logic[10:0] s2_freq_timer_;
+  logic[2:0]  s2_phase_;
 
   // Channel 3
 
-  /*NR30*/ logic  s3_power;
-  /*NR31*/ logic[7:0]  s3_len_timer_init;
-  /*NR32*/ logic[2:0]  s3_volume_shift;
-  /*NR33*/ logic[10:0] s3_freq_timer_init;
-  /*NR34*/ logic  s3_len_en;
-  /*NR34*/ logic  s3_trig;
+  /*NR30*/ logic  s3_power_;
+  /*NR31*/ logic[7:0]  s3_len_timer_init_;
+  /*NR32*/ logic[2:0]  s3_volume_shift_;
+  /*NR33*/ logic[10:0] s3_freq_timer_init_;
+  /*NR34*/ logic  s3_len_en_;
+  /*NR34*/ logic  s3_trig_;
 
-  logic  s3_running;
-  logic[7:0]  s3_len_timer;
-  logic[10:0] s3_freq_timer;
-  logic[4:0]  s3_phase;
-  logic[7:0]  s3_wave[16];
+  logic  s3_running_;
+  logic[7:0]  s3_len_timer_;
+  logic[10:0] s3_freq_timer_;
+  logic[4:0]  s3_phase_;
+  logic[7:0]  s3_wave_[16];
 
   // Channel 4
 
-  /*NR41*/ logic[5:0]  s4_len_timer_init;
-  /*NR42*/ logic[2:0]  s4_env_timer_init;
-  /*NR42*/ logic  s4_env_add;
-  /*NR42*/ logic[3:0]  s4_env_vol_init;
-  /*NR43*/ logic[2:0]  s4_freq_timer_init;
-  /*NR43*/ logic  s4_mode;
-  /*NR43*/ logic[3:0]  s4_shift;
-  /*NR44*/ logic  s4_len_en;
-  /*NR44*/ logic  s4_trig;
+  /*NR41*/ logic[5:0]  s4_len_timer_init_;
+  /*NR42*/ logic[2:0]  s4_env_timer_init_;
+  /*NR42*/ logic  s4_env_add_;
+  /*NR42*/ logic[3:0]  s4_env_vol_init_;
+  /*NR43*/ logic[2:0]  s4_freq_timer_init_;
+  /*NR43*/ logic  s4_mode_;
+  /*NR43*/ logic[3:0]  s4_shift_;
+  /*NR44*/ logic  s4_len_en_;
+  /*NR44*/ logic  s4_trig_;
 
-  logic  s4_running;
-  logic[5:0]  s4_len_timer;
-  logic[2:0]  s4_env_timer;
-  logic[3:0]  s4_env_vol;
-  logic[2:0]  s4_freq_timer;
-  logic[15:0] s4_lfsr;
+  logic  s4_running_;
+  logic[5:0]  s4_len_timer_;
+  logic[2:0]  s4_env_timer_;
+  logic[3:0]  s4_env_vol_;
+  logic[2:0]  s4_freq_timer_;
+  logic[15:0] s4_lfsr_;
 
   // SPU Control Registers
 
-  /*NR50*/ logic[3:0]  volume_l;
-  /*NR50*/ logic[3:0]  volume_r;
+  /*NR50*/ logic[3:0]  volume_l_;
+  /*NR50*/ logic[3:0]  volume_r_;
 
-  /*NR51*/ logic  mix_r1;
-  /*NR51*/ logic  mix_r2;
-  /*NR51*/ logic  mix_r3;
-  /*NR51*/ logic  mix_r4;
-  /*NR51*/ logic  mix_l1;
-  /*NR51*/ logic  mix_l2;
-  /*NR51*/ logic  mix_l3;
-  /*NR51*/ logic  mix_l4;
+  /*NR51*/ logic  mix_r1_;
+  /*NR51*/ logic  mix_r2_;
+  /*NR51*/ logic  mix_r3_;
+  /*NR51*/ logic  mix_r4_;
+  /*NR51*/ logic  mix_l1_;
+  /*NR51*/ logic  mix_l2_;
+  /*NR51*/ logic  mix_l3_;
+  /*NR51*/ logic  mix_l4_;
 
-  /*NR52*/ logic  spu_power;
+  /*NR52*/ logic  spu_power_;
 
 endmodule
 

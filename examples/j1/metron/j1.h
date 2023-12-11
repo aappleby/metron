@@ -69,7 +69,6 @@ private:
     }
 
     // Compute the new value of T.
-    logic<16> st1 = dstack[dsp_];
     logic<16> rst0 = rstack[rsp_];
 
 
@@ -144,7 +143,7 @@ private:
       _ramWE & (b2(_st0, 14) == 0), // portb_write
       b16(st1));                       // portb_data
 
-    logic<1> _dstkW = is_lit | (opcode == OP_ALU & insn[7]);
+    _dstkW = is_lit | ((opcode == OP_ALU) & insn[7]);
 
     if (_dstkW) dstack[_dsp] = st0_;
     if (_rstkW) rstack[_rsp] = _rstkD;

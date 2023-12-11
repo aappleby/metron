@@ -88,9 +88,9 @@ def main():
     build_uart()
     build_rvsimple()
     # build_ibex()
-    #build_pong()
-    #build_j1()
-    #build_gb_spu()
+    build_pong()
+    #build_j1() FIXME still broken
+    build_gb_spu()
     print("Done!")
     outfile.close()
     outfile = None

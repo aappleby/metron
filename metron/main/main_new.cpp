@@ -410,7 +410,9 @@ int main_new(Options opts) {
       node_visitor visit = [&](CNode* node) {
         if (auto node_switch = node->as<CNodeSwitch>()) {
           if (!check_switch_breaks(node_switch)) {
+            dump_parse_tree(node_switch);
             LOG_R("Switch has cases that do not end with break\n");
+            check_switch_breaks(node_switch);
             exit(-1);
           }
         }

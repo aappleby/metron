@@ -238,3 +238,43 @@ build obj/examples/rvsimple/main_ref_vl.o: compile_cpp examples/rvsimple/main_re
   includes = ${base_includes} -I/usr/local/share/verilator/include -Igen/examples/rvsimple/reference_vl -Isymlinks/CLI11/include
 build bin/examples/rvsimple_ref: c_binary obj/verilated.o obj/verilated_threads.o gen/examples/rvsimple/reference_vl/Vtoplevel__ALL.o obj/examples/rvsimple/main_ref_vl.o bin/libmetron.a
   includes = ${base_includes} -I/usr/local/share/verilator/include -Igen/examples/rvsimple/reference_vl -Isymlinks/CLI11/include
+
+
+################################################################################
+# Compile bin/examples/pong
+
+build obj/examples/pong/main.o: compile_cpp examples/pong/main.cpp
+  includes = ${base_includes}
+  libraries = ${libraries} -lSDL2
+build bin/examples/pong: c_binary obj/examples/pong/main.o bin/libmetron.a
+  includes = ${base_includes}
+  libraries = ${libraries} -lSDL2
+
+
+################################################################################
+# Metronize examples/pong/metron -> examples/pong/metron_sv
+
+build examples/pong/metron_sv/pong.sv: metron examples/pong/metron/pong.h | bin/metron
+
+
+################################################################################
+# Metronize examples/gb_spu/metron -> examples/gb_spu/metron_sv
+
+build examples/gb_spu/metron_sv/MetroBoySPU2.sv: metron examples/gb_spu/metron/MetroBoySPU2.h | bin/metron
+
+
+################################################################################
+# Verilate examples/gb_spu/metron_sv/MetroBoySPU2.sv -> gen/examples/gb_spu/metron_vl
+
+build gen/examples/gb_spu/metron_vl/VMetroBoySPU2.mk gen/examples/gb_spu/metron_vl/VMetroBoySPU2.h: verilator examples/gb_spu/metron_sv/MetroBoySPU2.sv
+  includes = -Iexamples/gb_spu/metron_sv
+build gen/examples/gb_spu/metron_vl/VMetroBoySPU2__ALL.o: make gen/examples/gb_spu/metron_vl/VMetroBoySPU2.mk
+
+
+################################################################################
+# Compile bin/examples/gb_spu
+
+build obj/examples/gb_spu/gb_spu_main.o: compile_cpp examples/gb_spu/gb_spu_main.cpp | gen/examples/gb_spu/metron_vl/VMetroBoySPU2.h
+  includes = ${base_includes} -I/usr/local/share/verilator/include -Igen/examples/gb_spu
+build bin/examples/gb_spu: c_binary obj/verilated.o obj/verilated_threads.o gen/examples/gb_spu/metron_vl/VMetroBoySPU2__ALL.o obj/examples/gb_spu/gb_spu_main.o bin/libmetron.a
+  includes = ${base_includes} -I/usr/local/share/verilator/include -Igen/examples/gb_spu

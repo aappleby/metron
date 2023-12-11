@@ -139,32 +139,32 @@ def main():
         )
         print()
 
-        #if options.synth:
-        #    print_b("Checking that all converted files can be synthesized by Yosys")
-        #    errors += check_commands_good(
-        #        [
-        #            f"yosys -q -p 'read_verilog -I. -sv {filename}; dump; synth_ice40 -json /dev/null'"
-        #            for filename in metron_sv
-        #        ]
-        #    )
-        #else:
-        #    print_b("Checking that all converted files can be parsed by Yosys")
-        #    errors += check_commands_good(
-        #        [
-        #            f"yosys -q -p 'read_verilog -I. -sv {filename};'"
-        #            for filename in metron_sv
-        #        ]
-        #    )
-        #print()
+        if options.synth:
+            print_b("Checking that all converted files can be synthesized by Yosys")
+            errors += check_commands_good(
+                [
+                    f"yosys -q -p 'read_verilog -I. -sv {filename}; dump; synth_ice40 -json /dev/null'"
+                    for filename in metron_sv
+                ]
+            )
+        else:
+            print_b("Checking that all converted files can be parsed by Yosys")
+            errors += check_commands_good(
+                [
+                    f"yosys -q -p 'read_verilog -I. -sv {filename};'"
+                    for filename in metron_sv
+                ]
+            )
+        print()
 
-        #print_b("Checking that all converted files can be parsed by Icarus")
-        #errors += check_commands_good(
-        #    [
-        #        f"iverilog -g2012 -Wall -I. -o /dev/null {filename}"
-        #        for filename in metron_sv
-        #    ]
-        #)
-        #print()
+        print_b("Checking that all converted files can be parsed by Icarus")
+        errors += check_commands_good(
+            [
+                f"iverilog -g2012 -Wall -I. -o /dev/null {filename}"
+                for filename in metron_sv
+            ]
+        )
+        print()
 
         """
         print_b("Running misc bad commands")

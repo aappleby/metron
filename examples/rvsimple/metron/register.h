@@ -16,18 +16,18 @@ class single_register {
   logic<1> reset;
   logic<1> write_enable;
   logic<WIDTH> next;
-  logic<WIDTH> value;
+  logic<WIDTH> value_;
 
-  single_register() { value = INITIAL; }
+  single_register() { value_ = INITIAL; }
 
   void tock() { tick(); }
 
  private:
   void tick() {
     if (reset)
-      value = INITIAL;
+      value_ = INITIAL;
     else if (write_enable)
-      value = next;
+      value_ = next;
   }
 };
 

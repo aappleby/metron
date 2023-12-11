@@ -13,10 +13,10 @@ public:
     // call to it total per code path.
     int result;
     if (1) {
-      result = my_adder.add(my_counter.count, 7);
+      result = my_adder.add(my_counter.count_, 7);
     }
     else {
-      result = my_adder.add(23, my_counter.count);
+      result = my_adder.add(23, my_counter.count_);
     }
 
     // If we try to call it a second time, Metron will generate an error.

@@ -23,22 +23,19 @@ class VGAOut {
   logic<1> vga_G;
   logic<1> vga_B;
 
-  logic<10> px;
-  logic<10> py;
-
   logic<1> in_border() const {
-    return (px <= 7) || (px >= 633) || (py <= 7) || (py >= 473);
+    return (px_ <= 7) || (px_ >= 633) || (py_ <= 7) || (py_ >= 473);
   }
 
   logic<1> in_checker() const {
-    return px[3] ^ py[3];
+    return px_[3] ^ py_[3];
   }
 
   void update_video() {
-    vga_hsync = !((px >= 656) && (px <= 751));
-    vga_vsync = !((py >= 490) && (py <= 491));
+    vga_hsync = !((px_ >= 656) && (px_ <= 751));
+    vga_vsync = !((py_ >= 490) && (py_ <= 491));
 
-    if ((px < 640) && (py < 480)) {
+    if ((px_ < 640) && (py_ < 480)) {
       vga_R = in_border() | in_checker();
       vga_G = in_border();
       vga_B = in_border();
@@ -50,8 +47,8 @@ class VGAOut {
   }
 
   void update_counters() {
-    logic<10> new_px = px + 1;
-    logic<10> new_py = py;
+    logic<10> new_px = px_ + 1;
+    logic<10> new_py = py_;
 
     if (new_px == 800) {
       new_px = 0;
@@ -62,8 +59,11 @@ class VGAOut {
       new_py = 0;
     }
 
-    px = new_px;
-    py = new_py;
+    px_ = new_px;
+    py_ = new_py;
   }
 
+private:
+  logic<10> px_;
+  logic<10> py_;
 };

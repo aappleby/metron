@@ -3,16 +3,16 @@ public:
 
   // Tock methods can call pure functions.
   int get_signal1(int x) {
-    return reg1 + my_pure_func(x);
+    return reg1_ + my_pure_func(x);
   }
 
   // Tick methods can call pure functions.
   void update_reg() {
-    reg1 = my_pure_func(reg1);
+    reg1_ = my_pure_func(reg1_);
   }
 
 private:
-  int reg1;
+  int reg1_;
 
   // This pure function is called elsewhere in the module, so it would not be
   // added to the port list even if it were public.
@@ -53,17 +53,17 @@ public:
 
 class ModuleWithTask {
 public:
-  int reg1;
-  int reg2;
+  int reg1_;
+  int reg2_;
 
   // The top-level tick method will become an always_ff.
   void tick1() {
-    reg1 = reg1 + 1;
+    reg1_ = reg1_ + 1;
     tick2();
   }
 
   // Tick methods called by other tick methods will become tasks.
   void tick2() {
-    reg2 = reg2 + 1;
+    reg2_ = reg2_ + 1;
   }
 };

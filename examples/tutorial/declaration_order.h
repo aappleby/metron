@@ -1,3 +1,5 @@
+// FIXME this example is outdated
+
 // If we try to update mutually-dependent fields in one function, we'll hit an
 // error. Uncomment to see the error.
 
@@ -17,15 +19,15 @@ public:
 // This module declares "update_a" first.
 class Module2 {
 public:
-  int a;
+  int a_;
   int b;
 
   void update_a() {
-    a = b + 1;
+    a_ = b + 1;
   }
 
   void update_b() {
-    b = a + 1;
+    b = a_ + 1;
   }
 };
 
@@ -33,27 +35,27 @@ public:
 class Module3 {
 public:
   int a;
-  int b;
-
-  void update_b() {
-    b = a + 1;
-  }
+  int b_;
 
   void update_a() {
-    a = b + 1;
+    a = b_ + 1;
+  }
+
+  void update_b() {
+    b_ = a + 1;
   }
 };
 
 // This module uses temporaries to update both A and B in a single function
 class Module4 {
 public:
-  int a;
-  int b;
+  int a_;
+  int b_;
 
   void update() {
-    int old_a = a;
-    int old_b = b;
-    a = old_b + 1;
-    b = old_a + 1;
+    int old_a = a_;
+    int old_b = b_;
+    a_ = old_b + 1;
+    b_ = old_a + 1;
   }
 };

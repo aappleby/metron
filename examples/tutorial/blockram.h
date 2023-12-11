@@ -5,7 +5,7 @@
 class Blockram {
 public:
   Blockram() {
-    readmemh("blockram.hex", memory, 0, 255);
+    readmemh("blockram.hex", memory_, 0, 255);
   }
 
   logic<8> get_data() const {
@@ -14,15 +14,15 @@ public:
 
   void tick(logic<8> address, logic<1> write, logic<8> data_in) {
     if (write) {
-      memory[address] = data_in;
+      memory_[address] = data_in;
       data_out = data_in;
     }
     else {
-      data_out = memory[address];
+      data_out = memory_[address];
     }
   }
 
 private:
-  logic<8> memory[256];
+  logic<8> memory_[256];
   logic<8> data_out;
 };

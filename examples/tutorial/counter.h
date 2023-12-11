@@ -2,8 +2,8 @@
 
 class Counter {
 public:
-  int count;
+  int count_;
   void update() {
-    count++;
+    count_++;
   }
 };

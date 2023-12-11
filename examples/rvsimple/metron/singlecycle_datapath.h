@@ -53,7 +53,7 @@ class singlecycle_datapath {
  public:
   //----------------------------------------
 
-  void tock_pc() { pc = program_counter.value; }
+  void tock_pc() { pc = program_counter.value_; }
 
   //----------------------------------------
 
@@ -90,7 +90,7 @@ class singlecycle_datapath {
   void tock_mux_operand_a() {
     mux_operand_a.sel = alu_operand_a_select;
     mux_operand_a.in0 = regs.rs1_data;
-    mux_operand_a.in1 = program_counter.value;
+    mux_operand_a.in1 = program_counter.value_;
     mux_operand_a.tock();
   }
 
@@ -111,12 +111,12 @@ class singlecycle_datapath {
 
   void tock_adder_pc_plus_4() {
     adder_pc_plus_4.operand_a = b32(0x00000004);
-    adder_pc_plus_4.operand_b = program_counter.value;
+    adder_pc_plus_4.operand_b = program_counter.value_;
     adder_pc_plus_4.tock();
   }
 
   void tock_adder_pc_plus_immediate() {
-    adder_pc_plus_immediate.operand_a = program_counter.value;
+    adder_pc_plus_immediate.operand_a = program_counter.value_;
     adder_pc_plus_immediate.operand_b = igen.immediate;
     adder_pc_plus_immediate.tock();
   }

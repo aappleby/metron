@@ -13,15 +13,15 @@
 class example_text_memory {
  public:
   example_text_memory(const char* filename = nullptr) {
-    if (filename) readmemh(filename, mem);
+    if (filename) readmemh(filename, mem_);
   }
 
   logic<rv_config::TEXT_BITS - 2> address;
   logic<32> q;
-  void tock_q() { q = mem[address]; }
+  void tock_q() { q = mem_[address]; }
 
  private:
-  logic<32> mem[pow2(rv_config::TEXT_BITS - 2)];
+  logic<32> mem_[pow2(rv_config::TEXT_BITS - 2)];
 };
 
 #endif // EXAMPLE_TEXT_MEMORY_H

@@ -7,16 +7,16 @@ class Checksum {
 public:
 
   int get_checksum() const {
-    return sum;
+    return sum_;
   }
 
   int get_done() const {
-    return cursor == 256;
+    return cursor_ == 256;
   }
 
   void tock(int reset) {
     logic<8> data = ram.get_data();
-    ram.tick(cursor, 0, 0);
+    ram.tick(cursor_, 0, 0);
     tick(reset, data);
   }
 
@@ -24,19 +24,19 @@ private:
 
   void tick(int reset, logic<8> data) {
     if (reset) {
-      cursor = 0;
-      sum = 0;
+      cursor_ = 0;
+      sum_ = 0;
     }
     else {
-      if (cursor < 256) {
-        cursor = cursor + 1;
-        sum = sum + data;
+      if (cursor_ < 256) {
+        cursor_ = cursor_ + 1;
+        sum_ = sum_ + data;
       }
     }
   }
 
-  int cursor;
-  int sum;
+  int cursor_;
+  int sum_;
   Blockram ram;
 };
 

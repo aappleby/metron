@@ -105,15 +105,15 @@ def main():
     )
     print()
 
-    #print_b("Checking that examples convert to SV cleanly")
-    #errors += check_commands_good(
-    #    [
-    #        f"bin/metron -c examples/uart/metron/uart_top.h",
-    #        f"bin/metron -c examples/rvsimple/metron/toplevel.h",
-    #        f"bin/metron -c examples/pong/metron/pong.h",
-    #    ]
-    #)
-    #print()
+    print_b("Checking that examples convert to SV cleanly")
+    errors += check_commands_good(
+        [
+            f"bin/metron -c examples/uart/metron/uart_top.h",
+            f"bin/metron -c examples/rvsimple/metron/toplevel.h",
+            f"bin/metron -c examples/pong/metron/pong.h",
+        ]
+    )
+    print()
 
     metron_sv = sorted(sorted_glob("tests/metron_sv/*.sv"))
 

@@ -1,3 +1,5 @@
+// FIXME this example is outdated
+
 // By default, "sum" is an output signal assigned in always_comb.
 class Adder1 {
 public:
@@ -11,10 +13,10 @@ public:
 // we write to it.
 class Adder2 {
 public:
-  int sum;
+  int sum_;
   void add(int a, int b) {
-    int dummy = sum;
-    sum = a + b;
+    int dummy = sum_;
+    sum_ = a + b;
   }
 };
 
@@ -22,8 +24,8 @@ public:
 // same thing.
 class Adder3 {
 public:
-  int sum;
+  int sum_;
   void tick_add(int a, int b) {
-    sum = a + b;
+    sum_ = a + b;
   }
 };

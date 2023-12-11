@@ -1,8 +1,8 @@
 class NonBlockingAssignment {
 public:
-  int count;
+  int count_;
   void update() {
-    count = count + 1;
-    int dummy = count;
+    count_ = count_ + 1;
+    int dummy = count_;
   }
 };

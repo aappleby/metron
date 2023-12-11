@@ -16,46 +16,46 @@ public:
     l = 0;
     r = 0;
 
-    if (s1_running && s1_env_vol) {
+    if (s1_running_ && s1_env_vol_) {
       logic<1> s1_out = 0;
-      switch(s1_duty) {
-        case 0: s1_out = s1_phase < 1; break;
-        case 1: s1_out = s1_phase < 2; break;
-        case 2: s1_out = s1_phase < 4; break;
-        case 3: s1_out = s1_phase < 6; break;
+      switch(s1_duty_) {
+        case 0: s1_out = s1_phase_ < 1; break;
+        case 1: s1_out = s1_phase_ < 2; break;
+        case 2: s1_out = s1_phase_ < 4; break;
+        case 3: s1_out = s1_phase_ < 6; break;
       }
-      if (mix_l1 && s1_out) l = l + s1_env_vol;
-      if (mix_r1 && s1_out) r = r + s1_env_vol;
+      if (mix_l1_ && s1_out) l = l + s1_env_vol_;
+      if (mix_r1_ && s1_out) r = r + s1_env_vol_;
     }
 
-    if (s2_running && s2_env_vol) {
+    if (s2_running_ && s2_env_vol_) {
       logic<1> s2_out = 0;
-      switch(s2_duty) {
-        case 0: s2_out = s2_phase < 1; break;
-        case 1: s2_out = s2_phase < 2; break;
-        case 2: s2_out = s2_phase < 4; break;
-        case 3: s2_out = s2_phase < 6; break;
+      switch(s2_duty_) {
+        case 0: s2_out = s2_phase_ < 1; break;
+        case 1: s2_out = s2_phase_ < 2; break;
+        case 2: s2_out = s2_phase_ < 4; break;
+        case 3: s2_out = s2_phase_ < 6; break;
       }
-      if (mix_l2 && s2_out) l = l + s2_env_vol;
-      if (mix_r2 && s2_out) r = r + s2_env_vol;
+      if (mix_l2_ && s2_out) l = l + s2_env_vol_;
+      if (mix_r2_ && s2_out) r = r + s2_env_vol_;
     }
 
-    if (s3_running && s3_power) {
-      logic<8> s3_sample = s3_wave[s3_phase >> 1];
-      logic<4> s3_out = (s3_phase & 1) ? b4(s3_sample, 0) : b4(s3_sample, 4);
-      s3_out = s3_out >> s3_volume_shift;
-      if (mix_l3) l = l + s3_out;
-      if (mix_r3) r = r + s3_out;
+    if (s3_running_ && s3_power_) {
+      logic<8> s3_sample = s3_wave_[s3_phase_ >> 1];
+      logic<4> s3_out = (s3_phase_ & 1) ? b4(s3_sample, 0) : b4(s3_sample, 4);
+      s3_out = s3_out >> s3_volume_shift_;
+      if (mix_l3_) l = l + s3_out;
+      if (mix_r3_) r = r + s3_out;
     }
 
-    if (s4_running && s4_env_vol) {
-      logic<1> s4_out = b1(s4_lfsr, 15);
-      if (mix_l4 && s4_out) l = l + s4_env_vol;
-      if (mix_r4 && s4_out) r = r + s4_env_vol;
+    if (s4_running_ && s4_env_vol_) {
+      logic<1> s4_out = b1(s4_lfsr_, 15);
+      if (mix_l4_ && s4_out) l = l + s4_env_vol_;
+      if (mix_r4_ && s4_out) r = r + s4_env_vol_;
     }
 
-    l = l * volume_l;
-    r = r * volume_r;
+    l = l * volume_l_;
+    r = r * volume_r_;
 
     out_l = l;
     out_r = r;
@@ -65,96 +65,96 @@ public:
 
   void tick(logic<1> reset, logic<16> addr, logic<8> data_in, logic<1> read, logic<1> write) {
     if (reset) {
-      spu_clock_old = 0;
-      data_out = 0;
+      spu_clock_old_ = 0;
+      data_out_ = 0;
 
-      s1_sweep_shift = 0;
-      s1_sweep_dir = 0;
-      s1_sweep_timer_init = 0;
-      s1_len_timer_init = 0;
-      s1_duty = 0;
-      s1_env_timer_init = 0;
-      s1_env_add = 0;
-      s1_env_vol_init = 0;
-      s1_freq_timer_init = 0;
-      s1_len_en = 0;
-      s1_trig = 0;
-      s1_running = 0;
-      s1_sweep_timer = 0;
-      s1_sweep_freq = 0;
-      s1_len_timer = 0;
-      s1_env_vol = 0;
-      s1_env_timer = 0;
-      s1_freq_timer = 0;
-      s1_phase = 0;
+      s1_sweep_shift_ = 0;
+      s1_sweep_dir_ = 0;
+      s1_sweep_timer_init_ = 0;
+      s1_len_timer_init_ = 0;
+      s1_duty_ = 0;
+      s1_env_timer_init_ = 0;
+      s1_env_add_ = 0;
+      s1_env_vol_init_ = 0;
+      s1_freq_timer_init_ = 0;
+      s1_len_en_ = 0;
+      s1_trig_ = 0;
+      s1_running_ = 0;
+      s1_sweep_timer_ = 0;
+      s1_sweep_freq_ = 0;
+      s1_len_timer_ = 0;
+      s1_env_vol_ = 0;
+      s1_env_timer_ = 0;
+      s1_freq_timer_ = 0;
+      s1_phase_ = 0;
 
-      s2_len_timer_init = 0;
-      s2_duty = 0;
-      s2_env_timer_init = 0;
-      s2_env_add = 0;
-      s2_env_vol_init = 0;
-      s2_freq_timer_init = 0;
-      s2_len_en = 0;
-      s2_trig = 0;
+      s2_len_timer_init_ = 0;
+      s2_duty_ = 0;
+      s2_env_timer_init_ = 0;
+      s2_env_add_ = 0;
+      s2_env_vol_init_ = 0;
+      s2_freq_timer_init_ = 0;
+      s2_len_en_ = 0;
+      s2_trig_ = 0;
 
-      s2_len_timer = 0;
-      s2_running = 0;
-      s2_env_timer = 0;
-      s2_env_vol = 0;
-      s2_freq_timer = 0;
-      s2_phase = 0;
+      s2_len_timer_ = 0;
+      s2_running_ = 0;
+      s2_env_timer_ = 0;
+      s2_env_vol_ = 0;
+      s2_freq_timer_ = 0;
+      s2_phase_ = 0;
 
-      s3_power = 0;
-      s3_len_timer_init = 0;
-      s3_volume_shift = 0;
-      s3_freq_timer_init = 0;
-      s3_len_en = 0;
-      s3_trig = 0;
+      s3_power_ = 0;
+      s3_len_timer_init_ = 0;
+      s3_volume_shift_ = 0;
+      s3_freq_timer_init_ = 0;
+      s3_len_en_ = 0;
+      s3_trig_ = 0;
 
-      s3_running = 0;
-      s3_len_timer = 0;
-      s3_freq_timer = 0;
-      s3_phase = 0;
+      s3_running_ = 0;
+      s3_len_timer_ = 0;
+      s3_freq_timer_ = 0;
+      s3_phase_ = 0;
 
       for (int i = 0; i < 16; i++) {
-        s3_wave[i] = 0;
+        s3_wave_[i] = 0;
       }
 
-      s4_len_timer_init = 0;
-      s4_env_timer_init = 0;
-      s4_env_add = 0;
-      s4_env_vol_init = 0;
-      s4_freq_timer_init = 0;
-      s4_mode = 0;
-      s4_shift = 0;
-      s4_len_en = 0;
-      s4_trig = 0;
+      s4_len_timer_init_ = 0;
+      s4_env_timer_init_ = 0;
+      s4_env_add_ = 0;
+      s4_env_vol_init_ = 0;
+      s4_freq_timer_init_ = 0;
+      s4_mode_ = 0;
+      s4_shift_ = 0;
+      s4_len_en_ = 0;
+      s4_trig_ = 0;
 
-      s4_running = 0;
-      s4_len_timer = 0;
-      s4_env_timer = 0;
-      s4_env_vol = 0;
-      s4_freq_timer = 0;
-      s4_lfsr = 0;
+      s4_running_ = 0;
+      s4_len_timer_ = 0;
+      s4_env_timer_ = 0;
+      s4_env_vol_ = 0;
+      s4_freq_timer_ = 0;
+      s4_lfsr_ = 0;
 
-      volume_l = 0;
-      volume_r = 0;
+      volume_l_ = 0;
+      volume_r_ = 0;
 
-      mix_r1 = 0;
-      mix_r2 = 0;
-      mix_r3 = 0;
-      mix_r4 = 0;
-      mix_l1 = 0;
-      mix_l2 = 0;
-      mix_l3 = 0;
-      mix_l4 = 0;
+      mix_r1_ = 0;
+      mix_r2_ = 0;
+      mix_r3_ = 0;
+      mix_r4_ = 0;
+      mix_l1_ = 0;
+      mix_l2_ = 0;
+      mix_l3_ = 0;
+      mix_l4_ = 0;
 
-      spu_power = 0;
+      spu_power_ = 0;
 
     }
     else {
-      logic<16> spu_clock_new = spu_clock_old + 1;
-      logic<16> spu_tick = (~spu_clock_old) & (spu_clock_new);
+      logic<16> spu_clock_new = spu_clock_old_ + 1;
+      logic<16> spu_tick = (~spu_clock_old_) & (spu_clock_new);
 
       logic<1> sweep_tick  = b1(spu_tick, 12);
       logic<1> length_tick = b1(spu_tick, 11);
@@ -165,49 +165,49 @@ public:
 
       if (read) {
         switch (addr) {
-          case 0xFF10: data_out = cat(b1(1), s1_sweep_timer_init, s1_sweep_dir, s1_sweep_shift); break;
-          case 0xFF11: data_out = cat(s1_duty, s1_len_timer_init); break;
-          case 0xFF12: data_out = cat(s1_env_vol_init, s1_env_add, s1_env_timer_init); break;
-          case 0xFF13: data_out = b8(s1_freq_timer_init, 0); break;
-          case 0xFF14: data_out = cat(s1_trig, s1_len_en, b3(0b111), b3(s1_freq_timer_init, 8)); break;
+          case 0xFF10: data_out_ = cat(b1(1), s1_sweep_timer_init_, s1_sweep_dir_, s1_sweep_shift_); break;
+          case 0xFF11: data_out_ = cat(s1_duty_, s1_len_timer_init_); break;
+          case 0xFF12: data_out_ = cat(s1_env_vol_init_, s1_env_add_, s1_env_timer_init_); break;
+          case 0xFF13: data_out_ = b8(s1_freq_timer_init_, 0); break;
+          case 0xFF14: data_out_ = cat(s1_trig_, s1_len_en_, b3(0b111), b3(s1_freq_timer_init_, 8)); break;
 
             //----------
 
-          case 0xFF16: data_out = cat(s2_duty, s2_len_timer_init); break;
-          case 0xFF17: data_out = cat(s2_env_vol_init, s2_env_add, s2_env_timer_init); break;
-          case 0xFF18: data_out = b8(s2_freq_timer_init, 0); break;
-          case 0xFF19: data_out = cat(s2_trig, s2_len_en, b3(0b111), b3(s2_freq_timer_init, 8)); break;
+          case 0xFF16: data_out_ = cat(s2_duty_, s2_len_timer_init_); break;
+          case 0xFF17: data_out_ = cat(s2_env_vol_init_, s2_env_add_, s2_env_timer_init_); break;
+          case 0xFF18: data_out_ = b8(s2_freq_timer_init_, 0); break;
+          case 0xFF19: data_out_ = cat(s2_trig_, s2_len_en_, b3(0b111), b3(s2_freq_timer_init_, 8)); break;
 
             //----------
 
-          case 0xFF1A: data_out = cat(s3_power, b7(0b1111111)); break;
-          case 0xFF1B: data_out = s3_len_timer_init; break;
+          case 0xFF1A: data_out_ = cat(s3_power_, b7(0b1111111)); break;
+          case 0xFF1B: data_out_ = s3_len_timer_init_; break;
 
           // metron didn't like the block without {}
           case 0xFF1C: {
-            switch (s3_volume_shift) {
-              case 0: data_out = 0b01000000; break;
-              case 1: data_out = 0b10000000; break;
-              case 2: data_out = 0b11000000; break;
-              case 4: data_out = 0b00000000; break;
+            switch (s3_volume_shift_) {
+              case 0: data_out_ = 0b01000000; break;
+              case 1: data_out_ = 0b10000000; break;
+              case 2: data_out_ = 0b11000000; break;
+              case 4: data_out_ = 0b00000000; break;
             }
             break;
           }
-          case 0xFF1D: data_out = b8(s3_freq_timer_init, 0); break;
-          case 0xFF1E: data_out = cat(s3_trig, s3_len_en, b3(0b111), b3(s3_freq_timer_init, 8)); break;
+          case 0xFF1D: data_out_ = b8(s3_freq_timer_init_, 0); break;
+          case 0xFF1E: data_out_ = cat(s3_trig_, s3_len_en_, b3(0b111), b3(s3_freq_timer_init_, 8)); break;
 
             //----------
 
-          case 0xFF20: data_out = cat(b2(0b11), s4_len_timer_init); break;
-          case 0xFF21: data_out = cat(s4_env_vol_init, s4_env_add, s4_env_timer_init); break;
-          case 0xFF22: data_out = cat(s4_shift, s4_mode, s4_freq_timer_init); break;
-          case 0xFF23: data_out = cat(s4_trig, s4_len_en, b6(0b111111)); break;
+          case 0xFF20: data_out_ = cat(b2(0b11), s4_len_timer_init_); break;
+          case 0xFF21: data_out_ = cat(s4_env_vol_init_, s4_env_add_, s4_env_timer_init_); break;
+          case 0xFF22: data_out_ = cat(s4_shift_, s4_mode_, s4_freq_timer_init_); break;
+          case 0xFF23: data_out_ = cat(s4_trig_, s4_len_en_, b6(0b111111)); break;
 
             //----------
 
-          case 0xFF24: data_out = cat(b1(0), volume_l, b1(0), volume_r); break;
-          case 0xFF25: data_out = cat(mix_l4, mix_l3, mix_l2, mix_l1, mix_r4, mix_r3, mix_r2, mix_r1); break;
-          case 0xFF26: data_out = cat(spu_power, b7(0)); break;
+          case 0xFF24: data_out_ = cat(b1(0), volume_l_, b1(0), volume_r_); break;
+          case 0xFF25: data_out_ = cat(mix_l4_, mix_l3_, mix_l2_, mix_l1_, mix_r4_, mix_r3_, mix_r2_, mix_r1_); break;
+          case 0xFF26: data_out_ = cat(spu_power_, b7(0)); break;
 
           // "default: break didn't work?"
           default: { break; }
@@ -217,92 +217,92 @@ public:
       //----------
       // s1 clock
 
-      if (s1_freq_timer == 0b11111111111) {
-        s1_phase = s1_phase + 1;
-        s1_freq_timer = s1_sweep_timer_init ? s1_sweep_freq : s1_freq_timer_init;
+      if (s1_freq_timer_ == 0b11111111111) {
+        s1_phase_ = s1_phase_ + 1;
+        s1_freq_timer_ = s1_sweep_timer_init_ ? s1_sweep_freq_ : s1_freq_timer_init_;
       }
       else {
-        s1_freq_timer = s1_freq_timer + 1;
+        s1_freq_timer_ = s1_freq_timer_ + 1;
       }
 
       //----------
       // s1 length
 
-      if (length_tick && s1_running && s1_len_en) {
-        if (s1_len_timer == 0b111111) {
-          s1_len_timer = 0;
-          s1_running = 0;
+      if (length_tick && s1_running_ && s1_len_en_) {
+        if (s1_len_timer_ == 0b111111) {
+          s1_len_timer_ = 0;
+          s1_running_ = 0;
         }
         else {
-          s1_len_timer = s1_len_timer + 1;
+          s1_len_timer_ = s1_len_timer_ + 1;
         }
       }
 
       //----------
       // s1 sweep
 
-      if (sweep_tick && s1_sweep_timer_init && s1_sweep_shift) {
-        if (s1_sweep_timer) {
-          s1_sweep_timer = s1_sweep_timer - 1;
+      if (sweep_tick && s1_sweep_timer_init_ && s1_sweep_shift_) {
+        if (s1_sweep_timer_) {
+          s1_sweep_timer_ = s1_sweep_timer_ - 1;
         }
         else {
-          logic<11> delta = s1_sweep_freq >> s1_sweep_shift;
-          logic<12> next_freq = s1_sweep_freq + (s1_sweep_dir ? -delta : +delta);
-          if (next_freq > 2047) s1_running = 0;
-          s1_sweep_timer = s1_sweep_timer_init;
-          s1_sweep_freq = next_freq;
+          logic<11> delta = s1_sweep_freq_ >> s1_sweep_shift_;
+          logic<12> next_freq = s1_sweep_freq_ + (s1_sweep_dir_ ? -delta : +delta);
+          if (next_freq > 2047) s1_running_ = 0;
+          s1_sweep_timer_ = s1_sweep_timer_init_;
+          s1_sweep_freq_ = next_freq;
         }
       }
 
       //----------
       // s1 env
 
-      if (env_tick && s1_env_timer_init) {
-        if (s1_env_timer) {
-          s1_env_timer = s1_env_timer - 1;
+      if (env_tick && s1_env_timer_init_) {
+        if (s1_env_timer_) {
+          s1_env_timer_ = s1_env_timer_ - 1;
         }
         else {
-          s1_env_timer = s1_env_timer_init;
-          if (s1_env_add) { if (s1_env_vol < 15) s1_env_vol = s1_env_vol + 1; }
-          else            { if (s1_env_vol >  0) s1_env_vol = s1_env_vol - 1; }
+          s1_env_timer_ = s1_env_timer_init_;
+          if (s1_env_add_) { if (s1_env_vol_ < 15) s1_env_vol_ = s1_env_vol_ + 1; }
+          else            { if (s1_env_vol_ >  0) s1_env_vol_ = s1_env_vol_ - 1; }
         }
       }
 
       //----------
       // s2 clock
 
-      if (s2_freq_timer == 0x7FF) {
-        s2_phase = s2_phase + 1;
-        s2_freq_timer = s2_freq_timer_init;
+      if (s2_freq_timer_ == 0x7FF) {
+        s2_phase_ = s2_phase_ + 1;
+        s2_freq_timer_ = s2_freq_timer_init_;
       }
       else {
-        s2_freq_timer = s2_freq_timer + 1;
+        s2_freq_timer_ = s2_freq_timer_ + 1;
       }
 
       //----------
       // s2 length
 
-      if (length_tick && s2_running && s2_len_en) {
-        if (s2_len_timer == 0x3F) {
-          s2_len_timer = 0;
-          s2_running = 0;
+      if (length_tick && s2_running_ && s2_len_en_) {
+        if (s2_len_timer_ == 0x3F) {
+          s2_len_timer_ = 0;
+          s2_running_ = 0;
         }
         else {
-          s2_len_timer = s2_len_timer + 1;
+          s2_len_timer_ = s2_len_timer_ + 1;
         }
       }
 
       //----------
       // s2 env
 
-      if (env_tick && s2_env_timer_init) {
-        if (s2_env_timer) {
-          s2_env_timer = s2_env_timer - 1;
+      if (env_tick && s2_env_timer_init_) {
+        if (s2_env_timer_) {
+          s2_env_timer_ = s2_env_timer_ - 1;
         }
         else {
-          s2_env_timer = s2_env_timer_init;
-          if (s2_env_add) { if (s2_env_vol < 15) s2_env_vol = s2_env_vol + 1; }
-          else            { if (s2_env_vol >  0) s2_env_vol = s2_env_vol - 1; }
+          s2_env_timer_ = s2_env_timer_init_;
+          if (s2_env_add_) { if (s2_env_vol_ < 15) s2_env_vol_ = s2_env_vol_ + 1; }
+          else            { if (s2_env_vol_ >  0) s2_env_vol_ = s2_env_vol_ - 1; }
         }
       }
 
@@ -310,12 +310,12 @@ public:
       // s3 clock - we run this twice because s3's timer ticks at 2 mhz
 
       {
-        logic<5> next_phase = s3_phase;
-        logic<11> next_timer = s3_freq_timer;
+        logic<5> next_phase = s3_phase_;
+        logic<11> next_timer = s3_freq_timer_;
 
         if (next_timer == 0x7FF) {
           next_phase = next_phase + 1;
-          next_timer = s3_freq_timer_init;
+          next_timer = s3_freq_timer_init_;
         }
         else {
           next_timer = next_timer + 1;
@@ -323,142 +323,118 @@ public:
 
         if (next_timer == 0x7FF) {
           next_phase = next_phase + 1;
-          next_timer = s3_freq_timer_init;
+          next_timer = s3_freq_timer_init_;
         }
         else {
           next_timer = next_timer + 1;
         }
 
-        s3_phase = next_phase;
-        s3_freq_timer = next_timer;
+        s3_phase_ = next_phase;
+        s3_freq_timer_ = next_timer;
       }
 
       //----------
       // s3 length
 
-      if (length_tick && s3_running && s3_len_en) {
-        if (s3_len_timer == 0xFF) {
-          s3_len_timer = 0;
-          s3_running = 0;
+      if (length_tick && s3_running_ && s3_len_en_) {
+        if (s3_len_timer_ == 0xFF) {
+          s3_len_timer_ = 0;
+          s3_running_ = 0;
         }
         else {
-          s3_len_timer = s3_len_timer + 1;
+          s3_len_timer_ = s3_len_timer_ + 1;
         }
       }
 
       //----------
       // s4 lfsr
 
-      logic<1> lfsr_clock_old = spu_clock_old[s4_shift + 1];
-      logic<1> lfsr_clock_new = spu_clock_new[s4_shift + 1];
-
-      /*
-      logic<1> lfsr_clock_old = 0;
-      logic<1> lfsr_clock_new = 0;
-
-      switch(s4_shift) {
-        case 0 : { lfsr_clock_old = spu_clock_old[1 ]; lfsr_clock_new = spu_clock_new[1 ]; break; }
-        case 1 : { lfsr_clock_old = spu_clock_old[2 ]; lfsr_clock_new = spu_clock_new[2 ]; break; }
-        case 2 : { lfsr_clock_old = spu_clock_old[3 ]; lfsr_clock_new = spu_clock_new[3 ]; break; }
-        case 3 : { lfsr_clock_old = spu_clock_old[4 ]; lfsr_clock_new = spu_clock_new[4 ]; break; }
-        case 4 : { lfsr_clock_old = spu_clock_old[5 ]; lfsr_clock_new = spu_clock_new[5 ]; break; }
-        case 5 : { lfsr_clock_old = spu_clock_old[6 ]; lfsr_clock_new = spu_clock_new[6 ]; break; }
-        case 6 : { lfsr_clock_old = spu_clock_old[7 ]; lfsr_clock_new = spu_clock_new[7 ]; break; }
-        case 7 : { lfsr_clock_old = spu_clock_old[8 ]; lfsr_clock_new = spu_clock_new[8 ]; break; }
-        case 8 : { lfsr_clock_old = spu_clock_old[9 ]; lfsr_clock_new = spu_clock_new[9 ]; break; }
-        case 9 : { lfsr_clock_old = spu_clock_old[10]; lfsr_clock_new = spu_clock_new[10]; break; }
-        case 10: { lfsr_clock_old = spu_clock_old[11]; lfsr_clock_new = spu_clock_new[11]; break; }
-        case 11: { lfsr_clock_old = spu_clock_old[12]; lfsr_clock_new = spu_clock_new[12]; break; }
-        case 12: { lfsr_clock_old = spu_clock_old[13]; lfsr_clock_new = spu_clock_new[13]; break; }
-        case 13: { lfsr_clock_old = spu_clock_old[14]; lfsr_clock_new = spu_clock_new[14]; break; }
-        case 14: { lfsr_clock_old = spu_clock_old[15]; lfsr_clock_new = spu_clock_new[15]; break; }
-        case 15: { lfsr_clock_old = 0;                 lfsr_clock_new = 0;                 break; }
-      }
-      */
+      logic<1> lfsr_clock_old = spu_clock_old_[s4_shift_ + 1];
+      logic<1> lfsr_clock_new = spu_clock_new[s4_shift_ + 1];
 
       if ((lfsr_clock_old == 0) && (lfsr_clock_new == 1)) {
-        if (s4_freq_timer) {
-          s4_freq_timer = s4_freq_timer - 1;
+        if (s4_freq_timer_) {
+          s4_freq_timer_ = s4_freq_timer_ - 1;
         }
         else {
-          logic<1> new_bit = s4_lfsr[15] ^ s4_lfsr[14] ^ 1;
-          s4_lfsr = cat(
-            b6(s4_lfsr, 9),
-            s4_mode ? new_bit : s4_lfsr[8],
-            b8(s4_lfsr, 0),
+          logic<1> new_bit = s4_lfsr_[15] ^ s4_lfsr_[14] ^ 1;
+          s4_lfsr_ = cat(
+            b6(s4_lfsr_, 9),
+            s4_mode_ ? new_bit : s4_lfsr_[8],
+            b8(s4_lfsr_, 0),
             new_bit);
-          s4_freq_timer = s4_freq_timer_init;
+          s4_freq_timer_ = s4_freq_timer_init_;
         }
       }
 
       //----------
       // s4 length
 
-      if (length_tick && s4_running && s4_len_en) {
-        if (s4_len_timer == 0x3F) {
-          s4_len_timer = 0;
-          s4_running = 0;
+      if (length_tick && s4_running_ && s4_len_en_) {
+        if (s4_len_timer_ == 0x3F) {
+          s4_len_timer_ = 0;
+          s4_running_ = 0;
         }
         else {
-          s4_len_timer = s4_len_timer + 1;
+          s4_len_timer_ = s4_len_timer_ + 1;
         }
       }
 
       //----------
       // s4 env
 
-      if (env_tick && s4_env_timer_init) {
-        if (s4_env_timer) {
-          s4_env_timer = s4_env_timer - 1;
+      if (env_tick && s4_env_timer_init_) {
+        if (s4_env_timer_) {
+          s4_env_timer_ = s4_env_timer_ - 1;
         }
         else {
-          s4_env_timer = s4_env_timer_init;
-          if (s4_env_add) { if (s4_env_vol < 15) s4_env_vol = s4_env_vol + 1; }
-          else            { if (s4_env_vol >  0) s4_env_vol = s4_env_vol - 1; }
+          s4_env_timer_ = s4_env_timer_init_;
+          if (s4_env_add_) { if (s4_env_vol_ < 15) s4_env_vol_ = s4_env_vol_ + 1; }
+          else            { if (s4_env_vol_ >  0) s4_env_vol_ = s4_env_vol_ - 1; }
         }
       }
 
       //----------
       // Triggers
 
-      if (s1_trig && (s1_env_vol_init || s1_env_add)) {
-        s1_running     = 1;
-        s1_len_timer   = s1_len_timer_init;
-        s1_sweep_timer = s1_sweep_timer_init;
-        s1_sweep_freq  = s1_freq_timer_init;
-        s1_env_vol     = s1_env_vol_init;
-        s1_env_timer   = s1_env_timer_init;
-        s1_freq_timer  = s1_freq_timer_init;
-        s1_phase       = 0;
-        s1_trig        = 0;
+      if (s1_trig_ && (s1_env_vol_init_ || s1_env_add_)) {
+        s1_running_     = 1;
+        s1_len_timer_   = s1_len_timer_init_;
+        s1_sweep_timer_ = s1_sweep_timer_init_;
+        s1_sweep_freq_  = s1_freq_timer_init_;
+        s1_env_vol_     = s1_env_vol_init_;
+        s1_env_timer_   = s1_env_timer_init_;
+        s1_freq_timer_  = s1_freq_timer_init_;
+        s1_phase_       = 0;
+        s1_trig_        = 0;
       }
 
-      if (s2_trig && (s2_env_vol_init || s2_env_add)) {
-        s2_running    = 1;
-        s2_len_timer  = s2_len_timer_init;
-        s2_env_vol    = s2_env_vol_init;
-        s2_env_timer  = s2_env_timer_init;
-        s2_freq_timer = s2_freq_timer_init;
-        s2_phase      = 0;
-        s2_trig       = 0;
+      if (s2_trig_ && (s2_env_vol_init_ || s2_env_add_)) {
+        s2_running_    = 1;
+        s2_len_timer_  = s2_len_timer_init_;
+        s2_env_vol_    = s2_env_vol_init_;
+        s2_env_timer_  = s2_env_timer_init_;
+        s2_freq_timer_ = s2_freq_timer_init_;
+        s2_phase_      = 0;
+        s2_trig_       = 0;
       }
 
-      if (s3_trig) {
-        s3_running    = 1;
-        s3_len_timer  = s3_len_timer_init;
-        s3_freq_timer = s3_freq_timer_init;
-        s3_phase      = 0;
-        s3_trig       = 0;
+      if (s3_trig_) {
+        s3_running_    = 1;
+        s3_len_timer_  = s3_len_timer_init_;
+        s3_freq_timer_ = s3_freq_timer_init_;
+        s3_phase_      = 0;
+        s3_trig_       = 0;
       }
 
-      if (s4_trig && (s4_env_vol_init || s4_env_add)) {
-        s4_running    = 1;
-        s4_len_timer  = s4_len_timer_init;
-        s4_env_vol    = s4_env_vol_init;
-        s4_env_timer  = s4_env_timer_init;
-        s4_freq_timer = s4_freq_timer_init;
-        s4_lfsr       = 0;
-        s4_trig       = 0;
+      if (s4_trig_ && (s4_env_vol_init_ || s4_env_add_)) {
+        s4_running_    = 1;
+        s4_len_timer_  = s4_len_timer_init_;
+        s4_env_vol_    = s4_env_vol_init_;
+        s4_env_timer_  = s4_env_timer_init_;
+        s4_freq_timer_ = s4_freq_timer_init_;
+        s4_lfsr_       = 0;
+        s4_trig_       = 0;
       }
 
       //----------
@@ -467,131 +443,131 @@ public:
       if (write && addr >= 0xFF10 && addr <= 0xFF26) {
         switch (addr) {
           case 0xFF10: {
-            s1_sweep_shift      = b3(data_in, 0);
-            s1_sweep_dir        = b1(data_in, 3);
-            s1_sweep_timer_init = b3(data_in, 4);
+            s1_sweep_shift_      = b3(data_in, 0);
+            s1_sweep_dir_        = b1(data_in, 3);
+            s1_sweep_timer_init_ = b3(data_in, 4);
             break;
           }
           case 0xFF11: {
-            s1_len_timer_init = b6(data_in, 0);
-            s1_duty           = b2(data_in, 6);
+            s1_len_timer_init_ = b6(data_in, 0);
+            s1_duty_           = b2(data_in, 6);
             break;
           }
           case 0xFF12: {
-            s1_env_timer_init = b3(data_in, 0);
-            s1_env_add        = b1(data_in, 3);
-            s1_env_vol_init   = b4(data_in, 4);
+            s1_env_timer_init_ = b3(data_in, 0);
+            s1_env_add_        = b1(data_in, 3);
+            s1_env_vol_init_   = b4(data_in, 4);
             break;
           }
           case 0xFF13: {
-            s1_freq_timer_init = cat(b3(s1_freq_timer_init, 8), data_in);
+            s1_freq_timer_init_ = cat(b3(s1_freq_timer_init_, 8), data_in);
             break;
           }
           case 0xFF14: {
-            s1_freq_timer_init = cat(b3(data_in, 0), b8(s1_freq_timer_init, 0));
-            s1_len_en          = b1(data_in, 6);
-            s1_trig            = b1(data_in, 7);
+            s1_freq_timer_init_ = cat(b3(data_in, 0), b8(s1_freq_timer_init_, 0));
+            s1_len_en_          = b1(data_in, 6);
+            s1_trig_            = b1(data_in, 7);
             break;
           }
 
           //----------
 
           case 0xFF16: {
-            s2_len_timer_init = b6(data_in, 0);
-            s2_duty           = b2(data_in, 6);
+            s2_len_timer_init_ = b6(data_in, 0);
+            s2_duty_           = b2(data_in, 6);
             break;
           }
           case 0xFF17: {
-            s2_env_timer_init = b3(data_in, 0);
-            s2_env_add        = b1(data_in, 3);
-            s2_env_vol_init   = b4(data_in, 4);
+            s2_env_timer_init_ = b3(data_in, 0);
+            s2_env_add_        = b1(data_in, 3);
+            s2_env_vol_init_   = b4(data_in, 4);
             break;
           }
           case 0xFF18: {
-            s2_freq_timer_init = cat(b3(s2_freq_timer_init, 8), data_in);
+            s2_freq_timer_init_ = cat(b3(s2_freq_timer_init_, 8), data_in);
             break;
           }
           case 0xFF19: {
-            s2_freq_timer_init = cat(b3(data_in, 0), b8(s2_freq_timer_init, 0));
-            s2_len_en          = b1(data_in, 6);
-            s2_trig            = b1(data_in, 7);
+            s2_freq_timer_init_ = cat(b3(data_in, 0), b8(s2_freq_timer_init_, 0));
+            s2_len_en_          = b1(data_in, 6);
+            s2_trig_            = b1(data_in, 7);
             break;
           }
 
           //----------
 
           case 0xFF1A: {
-            s3_power = b1(data_in, 7);
+            s3_power_ = b1(data_in, 7);
             break;
           }
           case 0xFF1B: {
-            s3_len_timer_init = b8(data_in, 0);
+            s3_len_timer_init_ = b8(data_in, 0);
             break;
           }
           case 0xFF1C: {
             switch (b2(data_in, 5)) {
-              case 0: s3_volume_shift = 4; break;
-              case 1: s3_volume_shift = 0; break;
-              case 2: s3_volume_shift = 1; break;
-              case 3: s3_volume_shift = 2; break;
+              case 0: s3_volume_shift_ = 4; break;
+              case 1: s3_volume_shift_ = 0; break;
+              case 2: s3_volume_shift_ = 1; break;
+              case 3: s3_volume_shift_ = 2; break;
             }
             break;
           }
           case 0xFF1D: {
-            s3_freq_timer_init = cat(b3(s3_freq_timer_init, 8), data_in);
+            s3_freq_timer_init_ = cat(b3(s3_freq_timer_init_, 8), data_in);
             break;
           }
           case 0xFF1E: {
-            s3_freq_timer_init = cat(b3(data_in, 0), b8(s3_freq_timer_init, 0));
-            s3_len_en          = b1(data_in, 6);
-            s3_trig            = b1(data_in, 7);
+            s3_freq_timer_init_ = cat(b3(data_in, 0), b8(s3_freq_timer_init_, 0));
+            s3_len_en_          = b1(data_in, 6);
+            s3_trig_            = b1(data_in, 7);
             break;
           }
 
           //----------
 
           case 0xFF20: {
-            s4_len_timer_init = b6(data_in, 0);
+            s4_len_timer_init_ = b6(data_in, 0);
             break;
           }
           case 0xFF21: {
-            s4_env_timer_init = b3(data_in, 0);
-            s4_env_add        = b1(data_in, 3);
-            s4_env_vol_init   = b4(data_in, 4);
+            s4_env_timer_init_ = b3(data_in, 0);
+            s4_env_add_        = b1(data_in, 3);
+            s4_env_vol_init_   = b4(data_in, 4);
             break;
           }
           case 0xFF22: {
-            s4_freq_timer_init = b3(data_in, 0);
-            s4_mode            = b1(data_in, 3);
-            s4_shift           = b4(data_in, 4);
+            s4_freq_timer_init_ = b3(data_in, 0);
+            s4_mode_            = b1(data_in, 3);
+            s4_shift_           = b4(data_in, 4);
             break;
           }
           case 0xFF23: {
-            s4_len_en = b1(data_in, 6);
-            s4_trig   = b1(data_in, 7);
+            s4_len_en_ = b1(data_in, 6);
+            s4_trig_   = b1(data_in, 7);
             break;
           }
 
           //----------
 
           case 0xFF24: {
-            volume_r = b3(data_in, 0) + 1;
-            volume_l = b3(data_in, 4) + 1;
+            volume_r_ = b3(data_in, 0) + 1;
+            volume_l_ = b3(data_in, 4) + 1;
             break;
           }
           case 0xFF25: {
-            mix_r1 = b1(data_in, 0);
-            mix_r2 = b1(data_in, 1);
-            mix_r3 = b1(data_in, 2);
-            mix_r4 = b1(data_in, 3);
-            mix_l1 = b1(data_in, 4);
-            mix_l2 = b1(data_in, 5);
-            mix_l3 = b1(data_in, 6);
-            mix_l4 = b1(data_in, 7);
+            mix_r1_ = b1(data_in, 0);
+            mix_r2_ = b1(data_in, 1);
+            mix_r3_ = b1(data_in, 2);
+            mix_r4_ = b1(data_in, 3);
+            mix_l1_ = b1(data_in, 4);
+            mix_l2_ = b1(data_in, 5);
+            mix_l3_ = b1(data_in, 6);
+            mix_l4_ = b1(data_in, 7);
             break;
           }
           case 0xFF26: {
-            spu_power = b1(data_in, 7);
+            spu_power_ = b1(data_in, 7);
             break;
           }
           default: {
@@ -604,75 +580,14 @@ public:
       // Wavetable writes
 
       if (write && addr >= 0xFF30 && addr <= 0xFF3F) {
-        s3_wave[addr & 0xF] = data_in;
+        s3_wave_[addr & 0xF] = data_in;
       }
 
-      spu_clock_old = spu_clock_new;
+      spu_clock_old_ = spu_clock_new;
     }
   }
 
   //----------------------------------------
-
-  /*
-  void dump(Dumper& d) const {
-    d("\002--------------SPU--------------\001\n");
-
-    const char* bar = "===============";
-
-    logic<4> s3_env_vol = 0;
-    switch (s3_volume_shift) {
-    case 0: s3_env_vol = 15; break;
-    case 1: s3_env_vol = 7; break;
-    case 2: s3_env_vol = 3; break;
-    case 4: s3_env_vol = 0; break;
-    }
-
-    d("s1 running %d\n", s1_running);
-    d("s2 running %d\n", s2_running);
-    d("s3 running %d\n", s3_running);
-    d("s4 running %d\n", s4_running);
-
-    d("s1 len %d\n", s1_len_timer);
-    d("s2 len %d\n", s2_len_timer);
-    d("s3 len %d\n", s3_len_timer);
-    d("s4 len %d\n", s4_len_timer);
-
-    d("s1 env timer %d\n", s1_env_timer);
-    d("s2 env timer %d\n", s2_env_timer);
-    d("s4 env timer %d\n", s4_env_timer);
-
-    d("s1 vol %2d %s\n", s1_env_vol, bar + 15 - s1_env_vol);
-    d("s2 vol %2d %s\n", s2_env_vol, bar + 15 - s2_env_vol);
-    d("s3 vol %2d %s\n", s3_env_vol, bar + 15 - s3_env_vol);
-    d("s4 vol %2d %s\n", s4_env_vol, bar + 15 - s4_env_vol);
-
-    d("s1 sweep timer %2d\n", s1_sweep_timer);
-    d("s1 sweep freq  %2d\n", s1_sweep_freq);
-
-    d("s1 freq timer %d\n", s1_freq_timer);
-    d("s2 freq timer %d\n", s2_freq_timer);
-    d("s3 freq timer %d\n", s3_freq_timer);
-    d("s4 freq timer %d\n", s4_freq_timer);
-
-    d("s1 phase %d\n", s1_phase);
-    d("s2 phase %d\n", s2_phase);
-    d("s3 phase %d\n", s3_phase);
-
-    d("s4 lfsr 0x%04x\n", s4_lfsr);
-
-    char buf[33];
-    for (int i = 0; i < 16; i++) {
-      logic<4> a = b4(s3_wave[i], 4);
-      logic<4> b = b4(s3_wave[i], 0);
-
-      buf[2 * i + 0] = a > 9 ? 'A' + a - 10 : '0' + a;
-      buf[2 * i + 1] = b > 9 ? 'B' + b - 10 : '0' + b;
-    }
-
-    buf[32] = 0;
-    d("[%s]\n", buf);
-  }
-  */
 
   logic<9>  out_r; // signals
   logic<9>  out_l; // signals
@@ -681,99 +596,99 @@ public:
 
 private:
 
-  logic<16> spu_clock_old;
-  logic<8>  data_out;
+  logic<16> spu_clock_old_;
+  logic<8>  data_out_;
 
   // Channel 1
 
-  /*NR10*/ logic<3>  s1_sweep_shift;
-  /*NR10*/ logic<1>  s1_sweep_dir;
-  /*NR10*/ logic<3>  s1_sweep_timer_init;
-  /*NR11*/ logic<6>  s1_len_timer_init;
-  /*NR11*/ logic<2>  s1_duty;
-  /*NR12*/ logic<3>  s1_env_timer_init;
-  /*NR12*/ logic<1>  s1_env_add;
-  /*NR12*/ logic<4>  s1_env_vol_init;
-  /*NR13*/ logic<11> s1_freq_timer_init;
-  /*NR14*/ logic<1>  s1_len_en;
-  /*NR14*/ logic<1>  s1_trig;
+  /*NR10*/ logic<3>  s1_sweep_shift_;
+  /*NR10*/ logic<1>  s1_sweep_dir_;
+  /*NR10*/ logic<3>  s1_sweep_timer_init_;
+  /*NR11*/ logic<6>  s1_len_timer_init_;
+  /*NR11*/ logic<2>  s1_duty_;
+  /*NR12*/ logic<3>  s1_env_timer_init_;
+  /*NR12*/ logic<1>  s1_env_add_;
+  /*NR12*/ logic<4>  s1_env_vol_init_;
+  /*NR13*/ logic<11> s1_freq_timer_init_;
+  /*NR14*/ logic<1>  s1_len_en_;
+  /*NR14*/ logic<1>  s1_trig_;
 
-  logic<1>  s1_running;
-  logic<3>  s1_sweep_timer;
-  logic<11> s1_sweep_freq;
-  logic<6>  s1_len_timer;
-  logic<4>  s1_env_vol;
-  logic<3>  s1_env_timer;
-  logic<11> s1_freq_timer;
-  logic<3>  s1_phase;
+  logic<1>  s1_running_;
+  logic<3>  s1_sweep_timer_;
+  logic<11> s1_sweep_freq_;
+  logic<6>  s1_len_timer_;
+  logic<4>  s1_env_vol_;
+  logic<3>  s1_env_timer_;
+  logic<11> s1_freq_timer_;
+  logic<3>  s1_phase_;
 
   // Channel 2
 
-  /*NR21*/ logic<6>  s2_len_timer_init;
-  /*NR21*/ logic<2>  s2_duty;
-  /*NR22*/ logic<3>  s2_env_timer_init;
-  /*NR22*/ logic<1>  s2_env_add;
-  /*NR22*/ logic<4>  s2_env_vol_init;
-  /*NR23*/ logic<11> s2_freq_timer_init;
-  /*NR24*/ logic<1>  s2_len_en;
-  /*NR24*/ logic<1>  s2_trig;
+  /*NR21*/ logic<6>  s2_len_timer_init_;
+  /*NR21*/ logic<2>  s2_duty_;
+  /*NR22*/ logic<3>  s2_env_timer_init_;
+  /*NR22*/ logic<1>  s2_env_add_;
+  /*NR22*/ logic<4>  s2_env_vol_init_;
+  /*NR23*/ logic<11> s2_freq_timer_init_;
+  /*NR24*/ logic<1>  s2_len_en_;
+  /*NR24*/ logic<1>  s2_trig_;
 
-  logic<6>  s2_len_timer;
-  logic<1>  s2_running;
-  logic<3>  s2_env_timer;
-  logic<4>  s2_env_vol;
-  logic<11> s2_freq_timer;
-  logic<3>  s2_phase;
+  logic<6>  s2_len_timer_;
+  logic<1>  s2_running_;
+  logic<3>  s2_env_timer_;
+  logic<4>  s2_env_vol_;
+  logic<11> s2_freq_timer_;
+  logic<3>  s2_phase_;
 
   // Channel 3
 
-  /*NR30*/ logic<1>  s3_power;
-  /*NR31*/ logic<8>  s3_len_timer_init;
-  /*NR32*/ logic<3>  s3_volume_shift;
-  /*NR33*/ logic<11> s3_freq_timer_init;
-  /*NR34*/ logic<1>  s3_len_en;
-  /*NR34*/ logic<1>  s3_trig;
+  /*NR30*/ logic<1>  s3_power_;
+  /*NR31*/ logic<8>  s3_len_timer_init_;
+  /*NR32*/ logic<3>  s3_volume_shift_;
+  /*NR33*/ logic<11> s3_freq_timer_init_;
+  /*NR34*/ logic<1>  s3_len_en_;
+  /*NR34*/ logic<1>  s3_trig_;
 
-  logic<1>  s3_running;
-  logic<8>  s3_len_timer;
-  logic<11> s3_freq_timer;
-  logic<5>  s3_phase;
-  logic<8>  s3_wave[16];
+  logic<1>  s3_running_;
+  logic<8>  s3_len_timer_;
+  logic<11> s3_freq_timer_;
+  logic<5>  s3_phase_;
+  logic<8>  s3_wave_[16];
 
   // Channel 4
 
-  /*NR41*/ logic<6>  s4_len_timer_init;
-  /*NR42*/ logic<3>  s4_env_timer_init;
-  /*NR42*/ logic<1>  s4_env_add;
-  /*NR42*/ logic<4>  s4_env_vol_init;
-  /*NR43*/ logic<3>  s4_freq_timer_init;
-  /*NR43*/ logic<1>  s4_mode;
-  /*NR43*/ logic<4>  s4_shift;
-  /*NR44*/ logic<1>  s4_len_en;
-  /*NR44*/ logic<1>  s4_trig;
+  /*NR41*/ logic<6>  s4_len_timer_init_;
+  /*NR42*/ logic<3>  s4_env_timer_init_;
+  /*NR42*/ logic<1>  s4_env_add_;
+  /*NR42*/ logic<4>  s4_env_vol_init_;
+  /*NR43*/ logic<3>  s4_freq_timer_init_;
+  /*NR43*/ logic<1>  s4_mode_;
+  /*NR43*/ logic<4>  s4_shift_;
+  /*NR44*/ logic<1>  s4_len_en_;
+  /*NR44*/ logic<1>  s4_trig_;
 
-  logic<1>  s4_running;
-  logic<6>  s4_len_timer;
-  logic<3>  s4_env_timer;
-  logic<4>  s4_env_vol;
-  logic<3>  s4_freq_timer;
-  logic<16> s4_lfsr;
+  logic<1>  s4_running_;
+  logic<6>  s4_len_timer_;
+  logic<3>  s4_env_timer_;
+  logic<4>  s4_env_vol_;
+  logic<3>  s4_freq_timer_;
+  logic<16> s4_lfsr_;
 
   // SPU Control Registers
 
-  /*NR50*/ logic<4>  volume_l;
-  /*NR50*/ logic<4>  volume_r;
+  /*NR50*/ logic<4>  volume_l_;
+  /*NR50*/ logic<4>  volume_r_;
 
-  /*NR51*/ logic<1>  mix_r1;
-  /*NR51*/ logic<1>  mix_r2;
-  /*NR51*/ logic<1>  mix_r3;
-  /*NR51*/ logic<1>  mix_r4;
-  /*NR51*/ logic<1>  mix_l1;
-  /*NR51*/ logic<1>  mix_l2;
-  /*NR51*/ logic<1>  mix_l3;
-  /*NR51*/ logic<1>  mix_l4;
+  /*NR51*/ logic<1>  mix_r1_;
+  /*NR51*/ logic<1>  mix_r2_;
+  /*NR51*/ logic<1>  mix_r3_;
+  /*NR51*/ logic<1>  mix_r4_;
+  /*NR51*/ logic<1>  mix_l1_;
+  /*NR51*/ logic<1>  mix_l2_;
+  /*NR51*/ logic<1>  mix_l3_;
+  /*NR51*/ logic<1>  mix_l4_;
 
-  /*NR52*/ logic<1>  spu_power;
+  /*NR52*/ logic<1>  spu_power_;
 
 };
 
@@ -2343,7 +2258,7 @@ public:
 
     porta_dout = ram[porta_addr];
 
-    if (write) {
+    if (portb_write) {
       ram[portb_addr] = portb_data;
       portb_dout = portb_data;
     }
@@ -2361,10 +2276,10 @@ private:
 class J1 {
 public:
 
-  logic<1>  io_rd;
-  logic<1>  io_wr;
-  logic<16> io_addr;
-  logic<16> io_dout;
+  logic<1>  io_rd_;
+  logic<1>  io_wr_;
+  logic<16> io_addr_;
+  logic<16> io_dout_;
   logic<16> io_din;
 
   void tock(logic<1> sys_rst_i) {
@@ -2383,10 +2298,10 @@ private:
   logic<16> insn;
   logic<16> ramrd;
 
-  logic<13> pc;
-  logic<16> st0;
-  logic<5>  dsp;
-  logic<5>  rsp;
+  logic<13> pc_;
+  logic<16> st0_;
+  logic<5>  dsp_;
+  logic<5>  rsp_;
 
   //----------------------------------------
 
@@ -2415,7 +2330,7 @@ private:
 
     logic<3> opcode = b3(insn, 13);
     logic<1> is_lit = insn[15];
-    logic<16> st1 = dstack[dsp];
+    logic<16> st1 = dstack[dsp_];
 
     logic<4> st0sel;
     switch(b2(insn, 13)) {
@@ -2426,8 +2341,7 @@ private:
     }
 
     // Compute the new value of T.
-    logic<16> st1 = dstack[dsp];
-    logic<16> rst0 = rstack[rsp];
+    logic<16> rst0 = rstack[rsp_];
 
 
     if (is_lit) {
@@ -2435,95 +2349,95 @@ private:
     }
     else {
       switch (st0sel) {
-        case 0b0000: _st0 = st0; break;
+        case 0b0000: _st0 = st0_; break;
         case 0b0001: _st0 = st1; break;
-        case 0b0010: _st0 = st0 + st1; break;
-        case 0b0011: _st0 = st0 & st1; break;
-        case 0b0100: _st0 = st0 | st1; break;
-        case 0b0101: _st0 = st0 ^ st1; break;
-        case 0b0110: _st0 = ~st0; break;
-        case 0b0111: _st0 = dup<16>(b1(st1 == st0)); break;
-        case 0b1000: _st0 = dup<16>(b1(signed(st1) < signed(st0))); break;
-        case 0b1001: _st0 = st1 >> b4(st0); break;
-        case 0b1010: _st0 = st0 - 1; break;
+        case 0b0010: _st0 = st0_ + st1; break;
+        case 0b0011: _st0 = st0_ & st1; break;
+        case 0b0100: _st0 = st0_ | st1; break;
+        case 0b0101: _st0 = st0_ ^ st1; break;
+        case 0b0110: _st0 = ~st0_; break;
+        case 0b0111: _st0 = dup<16>(b1(st1 == st0_)); break;
+        case 0b1000: _st0 = dup<16>(b1(signed(st1) < signed(st0_))); break;
+        case 0b1001: _st0 = st1 >> b4(st0_); break;
+        case 0b1010: _st0 = st0_ - 1; break;
         case 0b1011: _st0 = rst0; break;
-        case 0b1100: _st0 = b2(st0, 14) ? io_din : ramrd; break;
-        case 0b1101: _st0 = st1 << b4(st0); break;
-        case 0b1110: _st0 = cat(rsp, b3(0), dsp); break;
-        case 0b1111: _st0 = dup<16>(b1(st1 < st0)); break;
+        case 0b1100: _st0 = b2(st0_, 14) ? io_din : ramrd; break;
+        case 0b1101: _st0 = st1 << b4(st0_); break;
+        case 0b1110: _st0 = cat(rsp_, b3(0), dsp_); break;
+        case 0b1111: _st0 = dup<16>(b1(st1 < st0_)); break;
         default:     _st0 = DONTCARE; break;
       }
     }
 
     if (is_lit) {
-      _dsp = dsp + 1;
-      _rsp = rsp;
+      _dsp = dsp_ + 1;
+      _rsp = rsp_;
       _rstkW = 0;
       _rstkD = _pc;
-      _pc = pc + 1;
+      _pc = pc_ + 1;
     }
     else if (opcode == OP_JUMP) {
-      _dsp = dsp;
-      _rsp = rsp;
+      _dsp = dsp_;
+      _rsp = rsp_;
       _rstkW = 0;
       _rstkD = _pc;
       _pc = b13(insn);
     }
     else if (opcode == OP_CJMP) {
       // predicated jump is like DROP
-      _dsp = dsp - 1;
-      _rsp = rsp;
+      _dsp = dsp_ - 1;
+      _rsp = rsp_;
       _rstkW = 0;
       _rstkD = _pc;
-      _pc = st0 ? b13(pc + 1) : b13(insn);
+      _pc = st0_ ? b13(pc_ + 1) : b13(insn);
     }
     else if (opcode == OP_CALL) {
-      _dsp = dsp;
-      _rsp = rsp + 1;
+      _dsp = dsp_;
+      _rsp = rsp_ + 1;
       _rstkW = 1;
-      _rstkD = cat(b15(pc + 1), b1(0));
+      _rstkD = cat(b15(pc_ + 1), b1(0));
       _pc = b13(insn);
     }
     else if (opcode == OP_ALU) {
-      _dsp = dsp + b2(insn, 0).as_signed();
-      _rsp = rsp + b2(insn, 2).as_signed();
+      _dsp = dsp_ + b2(insn, 0).as_signed();
+      _rsp = rsp_ + b2(insn, 2).as_signed();
       _rstkW = insn[6];
-      _rstkD = st0;
-      _pc = insn[12] ? b13(rst0, 1) : b13(pc + 1);
+      _rstkD = st0_;
+      _pc = insn[12] ? b13(rst0, 1) : b13(pc_ + 1);
     }
 
 
     logic<1> _ramWE = (opcode == OP_ALU) & op_store;
 
     dpram.tick(
-      b16(pc),                      // porta_addr
+      b16(pc_),                      // porta_addr
       b16(_st0, 1),                 // portb_addr
       _ramWE & (b2(_st0, 14) == 0), // portb_write
       b16(st1));                       // portb_data
 
-    logic<1> _dstkW = is_lit | (opcode == OP_ALU & insn[7]);
+    _dstkW = is_lit | ((opcode == OP_ALU) & insn[7]);
 
-    if (_dstkW) dstack[_dsp] = st0;
+    if (_dstkW) dstack[_dsp] = st0_;
     if (_rstkW) rstack[_rsp] = _rstkD;
 
     if (sys_rst_i) {
-      pc      = 0;
-      st0     = 0;
-      dsp     = 0;
-      rsp     = 0;
-      io_rd   = 0;
-      io_wr   = 0;
-      io_addr = 0;
-      io_dout = 0;
+      pc_      = 0;
+      st0_     = 0;
+      dsp_     = 0;
+      rsp_     = 0;
+      io_rd_   = 0;
+      io_wr_   = 0;
+      io_addr_ = 0;
+      io_dout_ = 0;
     } else {
-      pc  = _pc;
-      st0 = _st0;
-      dsp = _dsp;
-      rsp = _rsp;
-      io_rd   = (opcode == OP_ALU && (b4(insn,8) == 0xc));
-      io_wr   = opcode == OP_ALU && insn[5];
-      io_addr = b16(st0);
-      io_dout = dstack[dsp];
+      pc_  = _pc;
+      st0_ = _st0;
+      dsp_ = _dsp;
+      rsp_ = _rsp;
+      io_rd_   = (opcode == OP_ALU && (b4(insn,8) == 0xc));
+      io_wr_   = opcode == OP_ALU && insn[5];
+      io_addr_ = b16(st0_);
+      io_dout_ = dstack[dsp_];
     }
   }
 };
@@ -2560,34 +2474,34 @@ class Pong {
   //----------------------------------------
 
   Pong() {
-    px = 0;
-    py = 0;
+    px_ = 0;
+    py_ = 0;
 
-    ball_x = 320;
-    ball_y = 240;
+    ball_x_ = 320;
+    ball_y_ = 240;
 
-    ball_dx = 1;
-    ball_dy = 1;
+    ball_dx_ = 1;
+    ball_dy_ = 1;
 
-    pad_x = 240;
-    pad_y = 400;
+    pad_x_ = 240;
+    pad_y_ = 400;
 
-    quad_a = 0;
-    quad_b = 0;
+    quad_a_ = 0;
+    quad_b_ = 0;
   }
 
   //----------------------------------------
 
-  logic<10> pix_x() const { return px; }
-  logic<10> pix_y() const { return py; }
+  logic<10> pix_x() const { return px_; }
+  logic<10> pix_y() const { return py_; }
 
   //----------------------------------------
 
   void tock_video() {
-    vga_hsync = !((px >= 656) && (py <= 751));
-    vga_vsync = !((py >= 490) && (py <= 491));
+    vga_hsync = !((px_ >= 656) && (py_ <= 751));
+    vga_vsync = !((py_ >= 490) && (py_ <= 491));
 
-    if ((px < 640) && (py < 480)) {
+    if ((px_ < 640) && (py_ < 480)) {
       vga_R = in_border() | in_paddle() | in_ball() | in_checker();
       vga_G = in_border() | in_paddle() | in_ball();
       vga_B = in_border() | in_paddle() | in_ball();
@@ -2608,8 +2522,8 @@ class Pong {
 
  private:
   void tick(logic<1> in_quad_a, logic<1> in_quad_b) {
-    logic<10> new_px = px + 1;
-    logic<10> new_py = py;
+    logic<10> new_px = px_ + 1;
+    logic<10> new_py = py_;
 
     //----------
     // Update screen coord
@@ -2626,14 +2540,14 @@ class Pong {
     //----------
     // Update quadrature encoder
 
-    logic<1> quad_dir = quad_a[1] ^ quad_b[0];
-    logic<1> quad_step = quad_a[1] ^ quad_a[0] ^ quad_b[1] ^ quad_b[0];
+    logic<1> quad_dir = quad_a_[1] ^ quad_b_[0];
+    logic<1> quad_step = quad_a_[1] ^ quad_a_[0] ^ quad_b_[1] ^ quad_b_[0];
 
-    logic<10> new_pad_x = pad_x;
-    logic<10> new_pad_y = pad_y;
+    logic<10> new_pad_x = pad_x_;
+    logic<10> new_pad_y = pad_y_;
 
     if (quad_step) {
-      new_pad_x = pad_x + quad_dir ? 1 : 0;
+      new_pad_x = pad_x_ + quad_dir ? 1 : 0;
       if (new_pad_x < 120) new_pad_x = 120;
       if (new_pad_x > 520) new_pad_x = 520;
     }
@@ -2641,74 +2555,74 @@ class Pong {
     //----------
     // Update in_ball
 
-    logic<10> new_ball_x = ball_x;
-    logic<10> new_ball_y = ball_y;
-    logic<1> new_ball_dx = ball_dx;
-    logic<1> new_ball_dy = ball_dy;
+    logic<10> new_ball_x = ball_x_;
+    logic<10> new_ball_y = ball_y_;
+    logic<1> new_ball_dx = ball_dx_;
+    logic<1> new_ball_dy = ball_dy_;
 
     if (in_border() | in_paddle()) {
-      if ((px == ball_x - 7) && (py == ball_y + 0)) new_ball_dx = 1;
-      if ((px == ball_x + 7) && (py == ball_y + 0)) new_ball_dx = 0;
-      if ((px == ball_x + 0) && (py == ball_y - 7)) new_ball_dy = 1;
-      if ((px == ball_x + 0) && (py == ball_y + 7)) new_ball_dy = 0;
+      if ((px_ == ball_x_ - 7) && (py_ == ball_y_ + 0)) new_ball_dx = 1;
+      if ((px_ == ball_x_ + 7) && (py_ == ball_y_ + 0)) new_ball_dx = 0;
+      if ((px_ == ball_x_ + 0) && (py_ == ball_y_ - 7)) new_ball_dy = 1;
+      if ((px_ == ball_x_ + 0) && (py_ == ball_y_ + 7)) new_ball_dy = 0;
     }
 
     if (new_px == 0 && new_py == 0) {
-      new_ball_x = ball_x + (new_ball_dx ? 1 : -1);
-      new_ball_y = ball_y + (new_ball_dy ? 1 : -1);
+      new_ball_x = ball_x_ + (new_ball_dx ? 1 : -1);
+      new_ball_y = ball_y_ + (new_ball_dy ? 1 : -1);
     }
 
     //----------
     // Commit
 
-    px = new_px;
-    py = new_py;
+    px_ = new_px;
+    py_ = new_py;
 
-    pad_x = new_pad_x;
-    pad_y = new_pad_y;
+    pad_x_ = new_pad_x;
+    pad_y_ = new_pad_y;
 
-    ball_x = new_ball_x;
-    ball_y = new_ball_y;
+    ball_x_ = new_ball_x;
+    ball_y_ = new_ball_y;
 
-    ball_dx = new_ball_dx;
-    ball_dy = new_ball_dy;
+    ball_dx_ = new_ball_dx;
+    ball_dy_ = new_ball_dy;
 
-    quad_a = quad_a << 1 | in_quad_a;
-    quad_b = quad_b << 1 | in_quad_b;
+    quad_a_ = quad_a_ << 1 | in_quad_a;
+    quad_b_ = quad_b_ << 1 | in_quad_b;
   }
 
   //----------------------------------------
 
   logic<1> in_border() const {
-    return (px <= 7) || (px >= 633) || (py <= 7) || (py >= 473);
+    return (px_ <= 7) || (px_ >= 633) || (py_ <= 7) || (py_ >= 473);
   }
 
   logic<1> in_paddle() const {
-    return (px >= pad_x - 63) && (px <= pad_x + 63) && (py >= pad_y - 3) &&
-           (py <= pad_y + 3);
+    return (px_ >= pad_x_ - 63) && (px_ <= pad_x_ + 63) && (py_ >= pad_y_ - 3) &&
+           (py_ <= pad_y_ + 3);
   }
 
   logic<1> in_ball() const {
-    return (px >= ball_x - 7) && (px <= ball_x + 7) && (py >= ball_y - 7) &&
-           (py <= ball_y + 7);
+    return (px_ >= ball_x_ - 7) && (px_ <= ball_x_ + 7) && (py_ >= ball_y_ - 7) &&
+           (py_ <= ball_y_ + 7);
   }
 
-  logic<1> in_checker() const { return px[3] ^ py[3]; }
+  logic<1> in_checker() const { return px_[3] ^ py_[3]; }
 
-  logic<10> px;
-  logic<10> py;
+  logic<10> px_;
+  logic<10> py_;
 
-  logic<10> pad_x;
-  logic<10> pad_y;
+  logic<10> pad_x_;
+  logic<10> pad_y_;
 
-  logic<10> ball_x;
-  logic<10> ball_y;
+  logic<10> ball_x_;
+  logic<10> ball_y_;
 
-  logic<1> ball_dx;
-  logic<1> ball_dy;
+  logic<1> ball_dx_;
+  logic<1> ball_dy_;
 
-  logic<2> quad_a;
-  logic<2> quad_b;
+  logic<2> quad_a_;
+  logic<2> quad_b_;
 };
 
 //------------------------------------------------------------------------------
@@ -2899,7 +2813,7 @@ static const unsigned int DATA_BITS = 17;
 static const unsigned int DATA_WIDTH = (1 << DATA_BITS);
 static const unsigned int DATA_END = (DATA_BEGIN + DATA_WIDTH - 1);
 
-static const char* CODE_HEX = "add.code.vh";
+static const char* TEXT_HEX = "add.code.vh";
 static const char* DATA_HEX = "add.data.vh";
 
 };  // namespace rv_config
@@ -3193,11 +3107,11 @@ class example_data_memory {
 
  private:
   /*#(* nomem2reg *)#*/
-  logic<32> mem[pow2(rv_config::DATA_BITS - 2)];
+  logic<32> mem_[pow2(rv_config::DATA_BITS - 2)];
 
  public:
   void tock() {
-    q = mem[address];
+    q = mem_[address];
     tick();
   }
 
@@ -3205,19 +3119,19 @@ class example_data_memory {
   void tick() {
     if (wren) {
       // doing this slightly differently from rvsimple so we don't have to do
-      // sub-array writes to mem.
+      // sub-array writes to mem_.
       logic<32> mask = 0;
       if (byteena[0]) mask = mask | 0x000000FF;
       if (byteena[1]) mask = mask | 0x0000FF00;
       if (byteena[2]) mask = mask | 0x00FF0000;
       if (byteena[3]) mask = mask | 0xFF000000;
-      mem[address] = (mem[address] & ~mask) | (data & mask);
+      mem_[address] = (mem_[address] & ~mask) | (data & mask);
     }
   }
 
  public:
   example_data_memory(const char* filename = nullptr) {
-    if (filename) readmemh(filename, mem);
+    if (filename) readmemh(filename, mem_);
   }
 };
 
@@ -3283,15 +3197,15 @@ class example_data_memory_bus {
 class example_text_memory {
  public:
   example_text_memory(const char* filename = nullptr) {
-    if (filename) readmemh(filename, mem);
+    if (filename) readmemh(filename, mem_);
   }
 
   logic<rv_config::TEXT_BITS - 2> address;
   logic<32> q;
-  void tock_q() { q = mem[address]; }
+  void tock_q() { q = mem_[address]; }
 
  private:
-  logic<32> mem[pow2(rv_config::TEXT_BITS - 2)];
+  logic<32> mem_[pow2(rv_config::TEXT_BITS - 2)];
 };
 
 #endif // EXAMPLE_TEXT_MEMORY_H
@@ -3568,17 +3482,17 @@ class regfile {
 
  private:
   // 32 registers of 32-bit width
-  logic<32> _register[32];
+  logic<32> register_[32];
 
  public:
   // Read ports for rs1 and rs1
   void tock1() {
-    rs1_data = _register[rs1_address];
-    rs2_data = _register[rs2_address];
+    rs1_data = register_[rs1_address];
+    rs2_data = register_[rs2_address];
   }
 
   // Register x0 is always 0
-  regfile() { _register[0] = b32(0b0); }
+  regfile() { register_[0] = b32(0b0); }
 
   void tock() { tick(); }
 
@@ -3586,7 +3500,7 @@ class regfile {
   // Write port for rd
   void tick() {
     if (write_enable)
-      if (rd_address != b5(0b0)) _register[rd_address] = rd_data;
+      if (rd_address != b5(0b0)) register_[rd_address] = rd_data;
   }
 };
 
@@ -3609,18 +3523,18 @@ class single_register {
   logic<1> reset;
   logic<1> write_enable;
   logic<WIDTH> next;
-  logic<WIDTH> value;
+  logic<WIDTH> value_;
 
-  single_register() { value = INITIAL; }
+  single_register() { value_ = INITIAL; }
 
   void tock() { tick(); }
 
  private:
   void tick() {
     if (reset)
-      value = INITIAL;
+      value_ = INITIAL;
     else if (write_enable)
-      value = next;
+      value_ = next;
   }
 };
 
@@ -4027,7 +3941,7 @@ class singlecycle_datapath {
  public:
   //----------------------------------------
 
-  void tock_pc() { pc = program_counter.value; }
+  void tock_pc() { pc = program_counter.value_; }
 
   //----------------------------------------
 
@@ -4064,7 +3978,7 @@ class singlecycle_datapath {
   void tock_mux_operand_a() {
     mux_operand_a.sel = alu_operand_a_select;
     mux_operand_a.in0 = regs.rs1_data;
-    mux_operand_a.in1 = program_counter.value;
+    mux_operand_a.in1 = program_counter.value_;
     mux_operand_a.tock();
   }
 
@@ -4085,12 +3999,12 @@ class singlecycle_datapath {
 
   void tock_adder_pc_plus_4() {
     adder_pc_plus_4.operand_a = b32(0x00000004);
-    adder_pc_plus_4.operand_b = program_counter.value;
+    adder_pc_plus_4.operand_b = program_counter.value_;
     adder_pc_plus_4.tock();
   }
 
   void tock_adder_pc_plus_immediate() {
-    adder_pc_plus_immediate.operand_a = program_counter.value;
+    adder_pc_plus_immediate.operand_a = program_counter.value_;
     adder_pc_plus_immediate.operand_b = igen.immediate;
     adder_pc_plus_immediate.tock();
   }
@@ -4232,29 +4146,23 @@ class toplevel {
 #endif // TOPLEVEL_H
 #include "metron/metron_tools.h"
 
-class Submod {
-public:
-
-  void tick() {
-    y = y + 1;
-  }
-
-private:
-
-  int y;
-};
-
 class Module {
-public:
+ public:
 
-  void tock() {
-    x = 1;
-    s.tick();
+  void tick(logic<16> addr) {
+    switch (addr) {
+
+      // metron didn't like the block without {}
+      case 0xFF1C: {
+        switch (1) {
+          case 0: break;
+        }
+        break;
+      }
+    }
   }
 
-private:
-  int x;
-  Submod s;
+  logic<8> data_out_;
 };
 class Adder {
 public:
@@ -4269,10 +4177,10 @@ class Adder2 {
 public:
   int a;
   int b;
-  int sum;
+  int sum_;
 
   void add() {
-    sum = a + b;
+    sum_ = a + b;
   }
 };
 #include "metron/metron_tools.h"
@@ -4313,7 +4221,7 @@ private:
 class Blockram {
 public:
   Blockram() {
-    readmemh("blockram.hex", memory, 0, 255);
+    readmemh("blockram.hex", memory_, 0, 255);
   }
 
   logic<8> get_data() const {
@@ -4322,16 +4230,16 @@ public:
 
   void tick(logic<8> address, logic<1> write, logic<8> data_in) {
     if (write) {
-      memory[address] = data_in;
+      memory_[address] = data_in;
       data_out = data_in;
     }
     else {
-      data_out = memory[address];
+      data_out = memory_[address];
     }
   }
 
 private:
-  logic<8> memory[256];
+  logic<8> memory_[256];
   logic<8> data_out;
 };
 #include "metron/metron_tools.h"
@@ -4343,16 +4251,16 @@ class Checksum {
 public:
 
   int get_checksum() const {
-    return sum;
+    return sum_;
   }
 
   int get_done() const {
-    return cursor == 256;
+    return cursor_ == 256;
   }
 
   void tock(int reset) {
     logic<8> data = ram.get_data();
-    ram.tick(cursor, 0, 0);
+    ram.tick(cursor_, 0, 0);
     tick(reset, data);
   }
 
@@ -4360,23 +4268,25 @@ private:
 
   void tick(int reset, logic<8> data) {
     if (reset) {
-      cursor = 0;
-      sum = 0;
+      cursor_ = 0;
+      sum_ = 0;
     }
     else {
-      if (cursor < 256) {
-        cursor = cursor + 1;
-        sum = sum + data;
+      if (cursor_ < 256) {
+        cursor_ = cursor_ + 1;
+        sum_ = sum_ + data;
       }
     }
   }
 
-  int cursor;
-  int sum;
+  int cursor_;
+  int sum_;
   Blockram ram;
 };
 
 //------------------------------------------------------------------------------
+// FIXME this example is outdated
+
 // By default, "sum" is an output signal assigned in always_comb.
 class Adder1 {
 public:
@@ -4390,10 +4300,10 @@ public:
 // we write to it.
 class Adder2 {
 public:
-  int sum;
+  int sum_;
   void add(int a, int b) {
-    int dummy = sum;
-    sum = a + b;
+    int dummy = sum_;
+    sum_ = a + b;
   }
 };
 
@@ -4401,20 +4311,22 @@ public:
 // same thing.
 class Adder3 {
 public:
-  int sum;
+  int sum_;
   void tick_add(int a, int b) {
-    sum = a + b;
+    sum_ = a + b;
   }
 };
 // A very basic counter in plain C++, converted to Verilog using Metron.
 
 class Counter {
 public:
-  int count;
+  int count_;
   void update() {
-    count++;
+    count_++;
   }
 };
+// FIXME this example is outdated
+
 // If we try to update mutually-dependent fields in one function, we'll hit an
 // error. Uncomment to see the error.
 
@@ -4434,15 +4346,15 @@ public:
 // This module declares "update_a" first.
 class Module2 {
 public:
-  int a;
+  int a_;
   int b;
 
   void update_a() {
-    a = b + 1;
+    a_ = b + 1;
   }
 
   void update_b() {
-    b = a + 1;
+    b = a_ + 1;
   }
 };
 
@@ -4450,28 +4362,28 @@ public:
 class Module3 {
 public:
   int a;
-  int b;
-
-  void update_b() {
-    b = a + 1;
-  }
+  int b_;
 
   void update_a() {
-    a = b + 1;
+    a = b_ + 1;
+  }
+
+  void update_b() {
+    b_ = a + 1;
   }
 };
 
 // This module uses temporaries to update both A and B in a single function
 class Module4 {
 public:
-  int a;
-  int b;
+  int a_;
+  int b_;
 
   void update() {
-    int old_a = a;
-    int old_b = b;
-    a = old_b + 1;
-    b = old_a + 1;
+    int old_a = a_;
+    int old_b = b_;
+    a_ = old_b + 1;
+    b_ = old_a + 1;
   }
 };
 class ModuleWithPureFunction {
@@ -4479,16 +4391,16 @@ public:
 
   // Tock methods can call pure functions.
   int get_signal1(int x) {
-    return reg1 + my_pure_func(x);
+    return reg1_ + my_pure_func(x);
   }
 
   // Tick methods can call pure functions.
   void update_reg() {
-    reg1 = my_pure_func(reg1);
+    reg1_ = my_pure_func(reg1_);
   }
 
 private:
-  int reg1;
+  int reg1_;
 
   // This pure function is called elsewhere in the module, so it would not be
   // added to the port list even if it were public.
@@ -4529,26 +4441,26 @@ public:
 
 class ModuleWithTask {
 public:
-  int reg1;
-  int reg2;
+  int reg1_;
+  int reg2_;
 
   // The top-level tick method will become an always_ff.
   void tick1() {
-    reg1 = reg1 + 1;
+    reg1_ = reg1_ + 1;
     tick2();
   }
 
   // Tick methods called by other tick methods will become tasks.
   void tick2() {
-    reg2 = reg2 + 1;
+    reg2_ = reg2_ + 1;
   }
 };
 class NonBlockingAssignment {
 public:
-  int count;
+  int count_;
   void update() {
-    count = count + 1;
-    int dummy = count;
+    count_ = count_ + 1;
+    int dummy = count_;
   }
 };
 #include "adder.h"
@@ -4566,10 +4478,10 @@ public:
     // call to it total per code path.
     int result;
     if (1) {
-      result = my_adder.add(my_counter.count, 7);
+      result = my_adder.add(my_counter.count_, 7);
     }
     else {
-      result = my_adder.add(23, my_counter.count);
+      result = my_adder.add(23, my_counter.count_);
     }
 
     // If we try to call it a second time, Metron will generate an error.
@@ -4658,22 +4570,19 @@ class VGAOut {
   logic<1> vga_G;
   logic<1> vga_B;
 
-  logic<10> px;
-  logic<10> py;
-
   logic<1> in_border() const {
-    return (px <= 7) || (px >= 633) || (py <= 7) || (py >= 473);
+    return (px_ <= 7) || (px_ >= 633) || (py_ <= 7) || (py_ >= 473);
   }
 
   logic<1> in_checker() const {
-    return px[3] ^ py[3];
+    return px_[3] ^ py_[3];
   }
 
   void update_video() {
-    vga_hsync = !((px >= 656) && (px <= 751));
-    vga_vsync = !((py >= 490) && (py <= 491));
+    vga_hsync = !((px_ >= 656) && (px_ <= 751));
+    vga_vsync = !((py_ >= 490) && (py_ <= 491));
 
-    if ((px < 640) && (py < 480)) {
+    if ((px_ < 640) && (py_ < 480)) {
       vga_R = in_border() | in_checker();
       vga_G = in_border();
       vga_B = in_border();
@@ -4685,8 +4594,8 @@ class VGAOut {
   }
 
   void update_counters() {
-    logic<10> new_px = px + 1;
-    logic<10> new_py = py;
+    logic<10> new_px = px_ + 1;
+    logic<10> new_py = py_;
 
     if (new_px == 800) {
       new_px = 0;
@@ -4697,10 +4606,13 @@ class VGAOut {
       new_py = 0;
     }
 
-    px = new_px;
-    py = new_py;
+    px_ = new_px;
+    py_ = new_py;
   }
 
+private:
+  logic<10> px_;
+  logic<10> py_;
 };
 A simple UART-based testbench for Metron that exercises translation to
 SystemVerilog, simulation via Icarus, translation back to C via Verilator,
@@ -4723,22 +4635,25 @@ template <int repeat_msg = 0>
 class uart_hello {
 public:
   uart_hello() {
-    readmemh("examples/uart/message.hex", memory, 0, 511);
+    readmemh("examples/uart/message.hex", memory_, 0, 511);
+    state_ = 0;
+    cursor_ = 0;
   }
 
   // The byte of data we want transmitted is always the one at the cursor.
   logic<8> get_data() const {
-    return memory[cursor];
+    // FIXME why aren't we seeing "Directly reads uart_hello.memory_"?
+    return memory_[cursor_];
   }
 
   // True if we want to transmit a byte
   logic<1> get_request() const {
-    return state == SEND;
+    return state_ == SEND;
   }
 
   // True if we've transmitted the whole message.
   logic<1> get_done() const {
-    return state == DONE;
+    return state_ == DONE;
   }
 
   void tick(
@@ -4749,39 +4664,37 @@ public:
     // In reset we're always in WAIT state with the message cursor set to
     // the start of the message buffer.
     if (reset) {
-      state = WAIT;
-      cursor = 0;
+      state_ = WAIT;
+      cursor_ = 0;
     }
-
     else {
-
       // If we're waiting for the transmitter to be free and it's told us that
       // it's idle, go to SEND state.
-      if (state == WAIT && idle) {
-        state = SEND;
+      if (state_ == WAIT && idle) {
+        state_ = SEND;
       }
 
       // If we're currently sending a message and the transmitter is ready to
       // accept another byte,
-      else if (state == SEND && clear_to_send) {
+      else if (state_ == SEND && clear_to_send) {
         // either go to DONE state if we're about to send the last character of
         // the message
-        if (cursor == message_len - 1) {
-          state = DONE;
+        if (cursor_ == message_len - 1) {
+          state_ = DONE;
         }
 
         // or just advance the message cursor.
         else {
-          cursor = cursor + 1;
+          cursor_ = cursor_ + 1;
         }
       }
 
       // If we've finished transmitting, reset the message cursor and either go
       // back to WAIT state if we want to re-transmit or just stay in DONE
       // otherwise.
-      else if (state == DONE) {
-        cursor = 0;
-        if (repeat_msg) state = WAIT;
+      else if (state_ == DONE) {
+        cursor_ = 0;
+        if (repeat_msg) state_ = WAIT;
       }
     }
   }
@@ -4793,10 +4706,10 @@ private:
   static const int WAIT = 0; // Waiting for the transmitter to be free
   static const int SEND = 1; // Sending the message buffer
   static const int DONE = 2; // Message buffer sent
-  logic<2> state;            // One of the above states
+  logic<2> state_;            // One of the above states
 
-  logic<8> memory[512];      // The buffer preloaded with our message
-  logic<cursor_bits> cursor; // Index into the message buffer of the _next_ character to transmit
+  logic<8> memory_[512];      // The buffer preloaded with our message
+  logic<cursor_bits> cursor_; // Index into the message buffer of the _next_ character to transmit
 };
 
 //==============================================================================
@@ -4813,19 +4726,26 @@ template <int cycles_per_bit = 4>
 class uart_rx {
 public:
 
+  uart_rx() {
+    bit_delay_ = 0;
+    bit_count_ = 0;
+    data_out_ = 0;
+    checksum_ = 0;
+  }
+
   // Our output is valid once we've received 8 bits.
   logic<1> get_valid() const {
-    return bit_count == 8;
+    return bit_count_ == 8;
   }
 
   // The most recent data byte received.
   logic<8> get_data_out() const {
-    return data_out;
+    return data_out_;
   }
 
   // The checksum of all bytes received so far.
   logic<32> get_checksum() const {
-    return checksum;
+    return checksum_;
   }
 
   void tick(
@@ -4833,41 +4753,41 @@ public:
     logic<1> serial) // Serial input from the transmitter
   {
     if (reset) {
-      bit_delay = bit_delay_max;
-      bit_count = bit_count_max;
-      data_out = 0;
-      checksum = 0;
+      bit_delay_ = bit_delay_max;
+      bit_count_ = bit_count_max;
+      data_out_ = 0;
+      checksum_ = 0;
     }
     else {
 
       // If we're waiting for the next bit to arrive, keep waiting until our
       // bit delay counter runs out.
-      if (bit_delay < bit_delay_max) {
-        bit_delay = bit_delay + 1;
+      if (bit_delay_ < bit_delay_max) {
+        bit_delay_ = bit_delay_ + 1;
       }
 
       // We're done waiting for a bit. If we have bits left to receive, shift
       // them into the top of the output register.
-      else if (bit_count < bit_count_max) {
-        logic<8> new_output = (serial << 7) | (data_out >> 1);
+      else if (bit_count_ < bit_count_max) {
+        logic<8> new_output = (serial << 7) | (data_out_ >> 1);
 
         // If that was the last data bit, add the finished byte to our checksum.
-        if (bit_count == 7) {
-          checksum = checksum + new_output;
+        if (bit_count_ == 7) {
+          checksum_ = checksum_ + new_output;
         }
 
         // Move to the next bit and reset our delay counter.
-        bit_delay = 0;
-        bit_count = bit_count + 1;
-        data_out = new_output;
+        bit_delay_ = 0;
+        bit_count_ = bit_count_ + 1;
+        data_out_ = new_output;
       }
 
       // We're not waiting for a bit and we finished receiving the previous
       // byte. Wait for the serial line to go low, which signals the start of
       // the next byte.
       else if (serial == 0) {
-        bit_delay = 0;
-        bit_count = 0;
+        bit_delay_ = 0;
+        bit_count_ = 0;
       }
     }
   }
@@ -4876,20 +4796,20 @@ public:
   // We wait for cycles_per_bit cycles
   static const int bit_delay_width = clog2(cycles_per_bit);
   static const int bit_delay_max = cycles_per_bit - 1;
-  logic<bit_delay_width> bit_delay;
+  logic<bit_delay_width> bit_delay_;
 
   // Our serial data format is 8n1, which is short for "one start bit, 8 data
-  // bits, no parity bit, one stop bit". If bit_count == 1, we're only waiting
+  // bits, no parity bit, one stop bit". If bit_count_ == 1, we're only waiting
   // on the stop bit.
   static const int bit_count_max = 9;
   static const int bit_count_width = clog2(bit_count_max);
-  logic<bit_count_width> bit_count;
+  logic<bit_count_width> bit_count_;
 
   // The received byte
-  logic<8> data_out;
+  logic<8> data_out_;
 
   // The checksum of all bytes received so far.
-  logic<32> checksum;
+  logic<32> checksum_;
 };
 
 //==============================================================================
@@ -4911,53 +4831,53 @@ public:
 
   // The actual bit of data currently on the transmitter's output
   logic<1> get_serial() const {
-    return tx.get_serial();
+    return tx_.get_serial();
   }
 
   // Returns true if the receiver has a byte in its buffer
   logic<1> get_valid() const {
-    return rx.get_valid();
+    return rx_.get_valid();
   }
 
   // The next byte of data from the receiver
   logic<8> get_data_out() const {
-    return rx.get_data_out();
+    return rx_.get_data_out();
   }
 
   // True if the client has sent its message and the transmitter has finished
   // transmitting it.
   logic<1> get_done() const {
-    return hello.get_done() && tx.get_idle();
+    return hello_.get_done() && tx_.get_idle();
   }
 
   // Checksum of all the bytes received
   logic<32> get_checksum() const {
-    return rx.get_checksum();
+    return rx_.get_checksum();
   }
 
   void tock(logic<1> reset) {
     // Grab signals from our submodules before we tick them.
-    logic<8> data = hello.get_data();
-    logic<1> request = hello.get_request();
+    logic<8> data = hello_.get_data();
+    logic<1> request = hello_.get_request();
 
-    logic<1> serial = tx.get_serial();
-    logic<1> clear_to_send = tx.get_clear_to_send();
-    logic<1> idle = tx.get_idle();
+    logic<1> serial = tx_.get_serial();
+    logic<1> clear_to_send = tx_.get_clear_to_send();
+    logic<1> idle = tx_.get_idle();
 
     // Tick all submodules.
-    hello.tick(reset, clear_to_send, idle);
-    tx.tick(reset, data, request);
-    rx.tick(reset, serial);
+    hello_.tick(reset, clear_to_send, idle);
+    tx_.tick(reset, data, request);
+    rx_.tick(reset, serial);
   }
 
   //----------------------------------------
 private:
   // Our UART client that transmits our "hello world" test message
-  uart_hello<repeat_msg>  hello;
+  uart_hello<repeat_msg>  hello_;
   // The UART transmitter
-  uart_tx<cycles_per_bit> tx;
+  uart_tx<cycles_per_bit> tx_;
   // The UART receiver
-  uart_rx<cycles_per_bit> rx;
+  uart_rx<cycles_per_bit> rx_;
 };
 
 //==============================================================================
@@ -4974,63 +4894,63 @@ template <int cycles_per_bit = 4>
 class uart_tx {
 public:
   uart_tx() {
-    bit_delay = bit_delay_max;
-    bit_count = bit_count_max;
-    output_buffer = 0;
+    bit_delay_ = bit_delay_max;
+    bit_count_ = bit_count_max;
+    output_buffer_ = 0;
   }
 
   // The actual bit of data we're sending to the serial port.
   logic<1> get_serial() const {
-    return output_buffer & 1;
+    return output_buffer_ & 1;
   }
 
   // True if the transmitter is ready to accept another byte.
   logic<1> get_clear_to_send() const {
-    return ((bit_count == bit_count_done) && (bit_delay == bit_delay_max)) ||
-           (bit_count > bit_count_done);
+    return ((bit_count_ == bit_count_done) && (bit_delay_ == bit_delay_max)) ||
+           (bit_count_ > bit_count_done);
   }
 
   // True if the transmitter has sent the message plus the extra stop bits.
   logic<1> get_idle() const {
-    return (bit_count == bit_count_max) && (bit_delay == bit_delay_max);
+    return (bit_count_ == bit_count_max) && (bit_delay_ == bit_delay_max);
   }
 
   void tick(logic<1> reset, logic<8> send_data, logic<1> send_request) {
     if (reset) {
-      bit_delay = bit_delay_max;
-      bit_count = bit_count_max;
-      output_buffer = 0x1FF;
+      bit_delay_ = bit_delay_max;
+      bit_count_ = bit_count_max;
+      output_buffer_ = 0x1FF;
     }
 
     else {
       // If we've just sent a bit, wait for the delay to expire before sending
       // another.
-      if (bit_delay < bit_delay_max) {
-        bit_delay = bit_delay + 1;
+      if (bit_delay_ < bit_delay_max) {
+        bit_delay_ = bit_delay_ + 1;
       }
 
       // The bit delay is done. If we have more bits to send, shift our output
       // buffer over and append a stop bit.
-      else if (bit_count < bit_count_done) {
-        bit_delay = 0;
-        bit_count = bit_count + 1;
-        output_buffer = (output_buffer >> 1) | 0x100;
+      else if (bit_count_ < bit_count_done) {
+        bit_delay_ = 0;
+        bit_count_ = bit_count_ + 1;
+        output_buffer_ = (output_buffer_ >> 1) | 0x100;
       }
 
       // If we don't have any more bits to send, check for a new send request.
       else if (send_request) {
-        bit_delay = 0;
-        bit_count = 0;
+        bit_delay_ = 0;
+        bit_count_ = 0;
         // We shift the new byte left by one so that the low 0 bit in the output
         // buffer serves as the start bit for the next byte.
-        output_buffer = send_data << 1;
+        output_buffer_ = send_data << 1;
       }
 
       // If there was no send request, keep sending extra stop bits until we've
       // sent enough.
-      else if (bit_count < bit_count_max) {
-        bit_delay = 0;
-        bit_count = bit_count + 1;
+      else if (bit_count_ < bit_count_max) {
+        bit_delay_ = 0;
+        bit_count_ = bit_count_ + 1;
       }
     }
   }
@@ -5040,7 +4960,7 @@ private:
   // We wait {cycles_per_bit} cycles between sending bits.
   static const int bit_delay_width = clog2(cycles_per_bit);
   static const int bit_delay_max   = cycles_per_bit - 1;
-  logic<bit_delay_width> bit_delay;
+  logic<bit_delay_width> bit_delay_;
 
   // We send 1 start bit, 8 data bits, and 1 stop bit per byte = 10 bits per
   // byte total. We also send 7 additional stop bits between messages to
@@ -5050,11 +4970,11 @@ private:
   static const int extra_stop_bits = 7;
   static const int bit_count_width = clog2(10 + extra_stop_bits);
   static const int bit_count_max   = bit_count_done + extra_stop_bits;
-  logic<bit_count_width> bit_count;
+  logic<bit_count_width> bit_count_;
 
   // Our output buffer is 9 (not 8) bits wide so that the low bit can serve as
   // our start bit.
-  logic<9> output_buffer;
+  logic<9> output_buffer_;
 };
 
 //==============================================================================
@@ -5075,12 +4995,12 @@ class Module {
 
  private:
   void tick() {
-    logic<1> x = reg;
-    reg = 1;
-    logic<1> y = reg;
+    logic<1> x = reg_;
+    reg_ = 1;
+    logic<1> y = reg_;
   }
 
-  logic<1> reg;
+  logic<1> reg_;
 };
 #include "metron/metron_tools.h"
 
@@ -5123,7 +5043,7 @@ class Module {
  public:
   logic<8> tock() {
     logic<8> result;
-    switch (my_reg) {
+    switch (my_reg_) {
       case 0:  // can we stick comments in here?
       case 1:
       case 2:
@@ -5143,9 +5063,9 @@ class Module {
   }
 
  private:
-  void tick() { my_reg = my_reg + 1; }
+  void tick() { my_reg_ = my_reg_ + 1; }
 
-  logic<8> my_reg;
+  logic<8> my_reg_;
 };
 #include "metron/metron_tools.h"
 
@@ -5155,12 +5075,12 @@ class Module {
  public:
 
   void update(logic<1> in, int lksjf) {
-    sig = reg + in;
-    reg = sig + in;
+    sig = reg_ + in;
+    reg_ = sig + in;
   }
 
   logic<1> sig;
-  logic<1> reg;
+  logic<1> reg_;
 };
 #include "metron/metron_tools.h"
 
@@ -5201,7 +5121,7 @@ class Module {
  public:
   logic<8> tock() {
     logic<8> result;
-    switch (my_reg) {
+    switch (my_reg_) {
       case 0: {
         result = 10;
         break;
@@ -5218,9 +5138,9 @@ class Module {
   }
 
  private:
-  void tick() { my_reg = my_reg + 1; }
+  void tick() { my_reg_ = my_reg_ + 1; }
 
-  logic<8> my_reg;
+  logic<8> my_reg_;
 };
 #include "metron/metron_tools.h"
 
@@ -5288,12 +5208,12 @@ class Module {
 class Module {
  public:
   logic<2> tick() {
-    my_reg = my_reg + 1;
+    my_reg_ = my_reg_ + 1;
     return 8;
   }
 
  private:
-  logic<2> my_reg;
+  logic<2> my_reg_;
 };
 #include "metron/metron_tools.h"
 
@@ -5305,7 +5225,7 @@ class Module {
  public:
   logic<8> tock() {
     logic<8> result;
-    switch (my_reg) {
+    switch (my_reg_) {
       case 0:
         result = 10;
         break;
@@ -5320,9 +5240,45 @@ class Module {
   }
 
  private:
-  void tick() { my_reg = my_reg + 1; }
+  void tick() { my_reg_ = my_reg_ + 1; }
 
-  logic<8> my_reg;
+  logic<8> my_reg_;
+};
+#include "metron/metron_tools.h"
+
+// These ticks are invalid 'cause there's no valid order.
+
+class Module {
+public:
+
+  void update_a() {
+    a_ = b_ + 1;
+  }
+
+  void update_b() {
+    b_ = a_ + 1;
+  }
+
+  logic<32> a_;
+  logic<32> b_;
+};
+#include "metron/metron_tools.h"
+
+// These tocks are invalid 'cause there's no valid order.
+
+class Module {
+public:
+
+  void update_a() {
+    a = b + 1;
+  }
+
+  void update_b() {
+    b = a + 1;
+  }
+
+  logic<32> a;
+  logic<32> b;
 };
 #include "metron/metron_tools.h"
 
@@ -5435,21 +5391,21 @@ public:
 
   //----------
 
-  int my_reg1;
+  int my_reg1_;
   void tick_no_params() {
-    my_reg1 = my_reg1 + 1;
+    my_reg1_ = my_reg1_ + 1;
     tick_called_by_tick(func_called_by_tick(1));
   }
 
-  int my_reg2;
+  int my_reg2_;
   void tick_params(int x) {
-    my_reg2 = my_reg2 + x;
+    my_reg2_ = my_reg2_ + x;
   }
 
 private:
-  int my_reg3;
+  int my_reg3_;
   void tick_called_by_tick(int x) {
-    my_reg3 = my_reg3 + x;
+    my_reg3_ = my_reg3_ + x;
   }
 
   int func_called_by_tick(int x) {
@@ -5463,9 +5419,9 @@ public:
   }
 
 private:
-  int my_reg4;
+  int my_reg4_;
   void tick_private(int x) {
-    my_reg4 = my_reg4 + x;
+    my_reg4_ = my_reg4_ + x;
   }
 
 
@@ -5478,16 +5434,16 @@ class Module {
 public:
 
   Module() {
-    my_reg = 7;
+    my_reg_ = 7;
   }
 
   logic<8> get_reg() {
-    return my_reg;
+    return my_reg_;
   }
 
 private:
 
-  logic<8> my_reg;
+  logic<8> my_reg_;
 };
 
 /*#
@@ -5516,14 +5472,14 @@ public:
 private:
 
   void tick() {
-    my_reg = my_reg + some_func();
+    my_reg_ = my_reg_ + some_func();
   }
 
   logic<8> some_func() const {
     return 3;
   }
 
-  logic<8> my_reg;
+  logic<8> my_reg_;
 };
 #include "metron/metron_tools.h"
 
@@ -5540,16 +5496,16 @@ public:
 private:
 
   void tick() {
-    my_reg1++;
-    ++my_reg2;
-    my_reg3--;
-    --my_reg4;
+    my_reg1_++;
+    ++my_reg2_;
+    my_reg3_--;
+    --my_reg4_;
   }
 
-  int my_reg1;
-  int my_reg2;
-  int my_reg3;
-  int my_reg4;
+  int my_reg1_;
+  int my_reg2_;
+  int my_reg3_;
+  int my_reg4_;
 };
 #include "metron/metron_tools.h"
 
@@ -5566,10 +5522,10 @@ class Module {
  private:
 
   void tick(logic<7> my_input) {
-    my_reg = my_reg + my_input;
+    my_reg_ = my_reg_ + my_input;
   }
 
-  logic<7> my_reg;
+  logic<7> my_reg_;
 };
 // clang-format on
 #include "metron/metron_tools.h"
@@ -5621,10 +5577,10 @@ private:
   static const int my_val = 7;
 
   void tick() {
-    my_reg = my_reg + my_val;
+    my_reg_ = my_reg_ + my_val;
   }
 
-  logic<7> my_reg;
+  logic<7> my_reg_;
 };
 #include "metron/metron_tools.h"
 
@@ -5634,7 +5590,7 @@ class Module {
 public:
 
   logic<7> get_reg() const {
-    return my_reg;
+    return my_reg_;
   }
 
   void tock() {
@@ -5645,10 +5601,10 @@ public:
 private:
 
   void tick() {
-    my_reg = my_reg + 1;
+    my_reg_ = my_reg_ + 1;
   }
 
-  logic<7> my_reg;
+  logic<7> my_reg_;
 };
 #include "metron/metron_tools.h"
 
@@ -5665,10 +5621,10 @@ public:
 private:
 
   void tick() {
-    my_reg = my_reg + SOME_CONSTANT;
+    my_reg_ = my_reg_ + SOME_CONSTANT;
   }
 
-  logic<7> my_reg;
+  logic<7> my_reg_;
 };
 #include "metron/metron_tools.h"
 
@@ -5679,11 +5635,11 @@ public:
   void tock() {
     tick();
   }
-  logic<1> my_reg;
+  logic<1> my_reg_;
 
 private:
   void tick() {
-    my_reg = my_reg + 1;
+    my_reg_ = my_reg_ + 1;
   }
 };
 #include "metron/metron_tools.h"
@@ -5713,12 +5669,12 @@ public:
 private:
 
   void tick() {
-    logic<1> temp = my_reg;
-    my_reg = 0;
-    my_reg = 1;
+    logic<1> temp = my_reg_;
+    my_reg_ = 0;
+    my_reg_ = 1;
   }
 
-  logic<1> my_reg;
+  logic<1> my_reg_;
 };
 #include "metron/metron_tools.h"
 
@@ -5749,10 +5705,10 @@ public:
 private:
 
   void tick(int x) {
-    sub_reg = sub_reg + x;
+    sub_reg_ = sub_reg_ + x;
   }
 
-  logic<8> sub_reg;
+  logic<8> sub_reg_;
 };
 
 class Module {
@@ -5779,10 +5735,10 @@ public:
 private:
 
   void tick() {
-    sub_reg = sub_reg + SOME_CONSTANT;
+    sub_reg_ = sub_reg_ + SOME_CONSTANT;
   }
 
-  logic<8> sub_reg;
+  logic<8> sub_reg_;
 };
 
 class Module {
@@ -5805,12 +5761,12 @@ public:
     tick();
   }
 
-  logic<8> sub_reg;
+  logic<8> sub_reg_;
 
 private:
 
   void tick() {
-    sub_reg = sub_reg + 1;
+    sub_reg_ = sub_reg_ + 1;
   }
 
 };
@@ -5818,8 +5774,8 @@ private:
 class Module {
 public:
 
-  logic<8> get_submod_reg() const {
-    return submod.sub_reg;
+  logic<8> get_submodreg() const {
+    return submod.sub_reg_;
   }
 
   void tock() {
@@ -5844,18 +5800,18 @@ private:
   void tick(logic<2> selector) {
     switch(selector) {
       case 0: // comment
-        my_reg = 17; break;
+        my_reg_ = 17; break;
       case 1:  // comment
-        my_reg = 22; break;
-      case 2: my_reg = 30; break;
+        my_reg_ = 22; break;
+      case 2: my_reg_ = 30; break;
       case 3: // fallthrough
       case 4:
       case 5:
-      case 6: my_reg = 72; break;
+      case 6: my_reg_ = 72; break;
     }
   }
 
-  logic<8> my_reg;
+  logic<8> my_reg_;
 };
 #include "metron/metron_tools.h"
 
@@ -5872,16 +5828,16 @@ public:
 private:
 
   void tick() {
-    my_reg = my_reg + my_reg2 + 3;
+    my_reg_ = my_reg_ + my_reg2_ + 3;
     some_task2();
   }
 
   void some_task2() {
-    my_reg2 = my_reg2 + 3;
+    my_reg2_ = my_reg2_ + 3;
   }
 
-  logic<8> my_reg;
-  logic<8> my_reg2;
+  logic<8> my_reg_;
+  logic<8> my_reg2_;
 };
 #include "metron/metron_tools.h"
 
@@ -5904,11 +5860,11 @@ class Module {
 public:
 
   logic<20> tock() {
-    submodule.tock(1, 2);
-    return submodule.my_width + submodule.my_height;
+    submod.tock(1, 2);
+    return submod.my_width + submod.my_height;
   }
 
-  Submod<10,11> submodule;
+  Submod<10,11> submod;
 };
 #include "metron/metron_tools.h"
 
@@ -6203,6 +6159,81 @@ public:
 };
 #include "metron/metron_tools.h"
 
+// C structs with bit-size annotations become arrays of sized logic<>s.
+
+struct rv32_rtype {
+  uint32_t op  : 7;
+  uint32_t rd  : 5;
+  uint32_t f3  : 3;
+  uint32_t rs1 : 5;
+  uint32_t rs2 : 5;
+  uint32_t f7  : 7;
+};
+
+struct rv32_itype {
+  uint32_t op : 7;
+  uint32_t rd : 5;
+  uint32_t f3 : 3;
+  uint32_t rs1 : 5;
+  uint32_t imm_11_0 : 12;
+};
+
+struct rv32_stype {
+  uint32_t op : 7;
+  uint32_t imm_4_0 : 5;
+  uint32_t f3 : 3;
+  uint32_t rs1 : 5;
+  uint32_t rs2 : 5;
+  uint32_t imm_11_5 : 7;
+};
+
+struct rv32_btype {
+  uint32_t op : 7;
+  uint32_t imm_11 : 1;
+  uint32_t imm_4_1 : 4;
+  uint32_t f3 : 3;
+  uint32_t rs1 : 5;
+  uint32_t rs2 : 5;
+  uint32_t imm_10_5 : 6;
+  uint32_t imm_12 : 1;
+};
+
+struct rv32_utype {
+  uint32_t op : 7;
+  uint32_t rd : 5;
+  uint32_t imm_31_12 : 20;
+};
+
+struct rv32_jtype {
+  uint32_t op : 7;
+  uint32_t rd : 5;
+  uint32_t imm_19_12 : 8;
+  uint32_t imm_11 : 1;
+  uint32_t imm_10_1 : 10;
+  uint32_t imm_20: 1;
+};
+
+union rv32_insn {
+  logic<32> raw;
+  rv32_rtype r;
+  rv32_itype i;
+  rv32_stype s;
+  rv32_btype b;
+  rv32_utype u;
+  rv32_jtype j;
+};
+
+class Module {
+  public:
+
+  void tock(logic<32> x) {
+    blah.raw = x;
+  }
+
+  rv32_insn blah;
+};
+#include "metron/metron_tools.h"
+
 // All the combos of tasks/funcs should work from ticks and tocks.
 
 // Yosys bug - fails to parse if we pass constants between the functions
@@ -6228,24 +6259,24 @@ private:
   }
 
   logic<8> public_func(logic<8> x) {
-    return my_reg1 + private_func(x);
+    return my_reg1_ + private_func(x);
   }
 
   void tick(int w) {
     private_task(private_func(w));
-    my_reg2 = my_reg2 + 1;
+    my_reg2_ = my_reg2_ + 1;
   }
 
   void private_task(logic<8> x) {
-    my_reg1 = my_reg1 + private_func(x);
+    my_reg1_ = my_reg1_ + private_func(x);
   }
 
   logic<8> private_func(logic<8> y) {
-    return my_reg1 + y;
+    return my_reg1_ + y;
   }
 
-  logic<8> my_reg1;
-  logic<8> my_reg2;
+  logic<8> my_reg1_;
+  logic<8> my_reg2_;
 };
 #include "metron/metron_tools.h"
 
@@ -6282,10 +6313,10 @@ public:
 private:
 
   void tick(logic<8> val) {
-    my_reg = my_reg + val;
+    my_reg_ = my_reg_ + val;
   }
 
-  logic<8> my_reg;
+  logic<8> my_reg_;
 
 };
 #include "metron/metron_tools.h"
@@ -6298,7 +6329,7 @@ public:
 
   logic<8> tock() {
     logic<8> result;
-    switch(my_reg) {
+    switch(my_reg_) {
       case 0: // can we stick comments in here?
       case 1:
       case 2:
@@ -6320,10 +6351,10 @@ public:
 private:
 
   void tick() {
-    my_reg = my_reg + 1;
+    my_reg_ = my_reg_ + 1;
   }
 
-  logic<8> my_reg;
+  logic<8> my_reg_;
 };
 #include "metron/metron_tools.h"
 
@@ -6336,7 +6367,7 @@ class Module {
 public:
 
   Module(const char* filename = nullptr) {
-    if (filename) readmemh(filename, data);
+    if (filename) readmemh(filename, data_);
   }
 
   void tock(logic<10> new_addr) {
@@ -6345,35 +6376,35 @@ public:
   }
 
   logic<8> get_data() {
-    return out;
+    return out_;
   }
 
 private:
   void tick() {
-    out = data[addr];
+    out_ = data_[addr];
   }
 
   logic<10> addr;
-  logic<8> data[data_len];
-  logic<8> out;
+  logic<8> data_[data_len];
+  logic<8> out_;
 };
 
 //----------------------------------------
 
 class Top {
 public:
-  Top() : mod("examples/uart/message.hex"), derp(7) {
+  Top() : submod("examples/uart/message.hex"), derp(7) {
   }
 
   void tock(logic<10> addr) {
-    mod.tock(addr);
+    submod.tock(addr);
   }
 
   void tick() {
     //mod.tick();
   }
 
-  Module<7777, 8383> mod;
+  Module<7777, 8383> submod;
   logic<10> derp;
 };
 
@@ -6387,7 +6418,7 @@ class Module {
 public:
 
   Module(const char* filename = "examples/uart/message.hex") {
-    readmemh(filename, data);
+    readmemh(filename, data_);
   }
 
   void tock(logic<10> addr_) {
@@ -6395,17 +6426,56 @@ public:
   }
 
   void tick() {
-    out = data[addr];
+    out_ = data_[addr];
   }
 
   logic<8> get_data() {
-    return out;
+    return out_;
   }
 
 private:
   logic<10> addr;
-  logic<8> data[data_len];
-  logic<8> out;
+  logic<8> data_[data_len];
+  logic<8> out_;
+};
+#include "metron/metron_tools.h"
+
+// Members whose names have trailing underscores are states.
+// Members without trailing underscores are signals.
+// We should not require any other special annotations on our modules.
+
+class Module {
+public:
+
+  Module() {
+    counter_ = 0;
+  }
+
+  logic<1> get_even() {
+    return is_even;
+  }
+
+  void tock(logic<32> inc) {
+    is_even = (counter_ & 1) == 0;
+    update(inc);
+  }
+
+  void update(logic<32> inc) {
+    update2(inc);
+  }
+
+  void update2(logic<32> inc) {
+    counter_ = counter_ + inc;
+  }
+
+  logic<32> get_counter() {
+    return counter_;
+  }
+
+private:
+
+  logic<1>  is_even;
+  logic<32> counter_;
 };
 #include "metron/metron_tools.h"
 
@@ -6523,25 +6593,22 @@ class Module {
 };
 #include "metron/metron_tools.h"
 
-// Declaration order _matters_ - a tock() that reads a reg before the tick()
-// that writes it is OK.
-
 class Module {
 public:
 
   void tock() {
-    my_sig = my_reg;
+    my_sig = my_reg_;
     tick();
   }
 
 private:
 
   void tick() {
-    my_reg = 1;
+    my_reg_ = 1;
   }
 
   logic<1> my_sig;
-  logic<1> my_reg;
+  logic<1> my_reg_;
 };
 #include "metron/metron_tools.h"
 
@@ -6554,10 +6621,10 @@ public:
   }
 private:
   void tick(logic<8> arg) {
-    my_reg = my_reg + arg;
+    my_reg_ = my_reg_ + arg;
   }
 
-  logic<8> my_reg;
+  logic<8> my_reg_;
 };
 
 
@@ -6606,41 +6673,41 @@ public:
 private:
 
   void tick() {
-    reg1 = reg1 + 1;
-    reg2 = reg2 + 1;
-    reg3 = reg3 + 1;
-    reg4 = reg4 + 1;
-    reg5 = reg5 + 1;
+    reg1_ = reg1_ + 1;
+    reg2_ = reg2_ + 1;
+    reg3_ = reg3_ + 1;
+    reg4_ = reg4_ + 1;
+    reg5_ = reg5_ + 1;
   }
 
-  logic<8> reg1;
-  logic<8> reg2;
-  logic<8> reg3;
-  logic<8> reg4;
-  logic<8> reg5;
+  logic<8> reg1_;
+  logic<8> reg2_;
+  logic<8> reg3_;
+  logic<8> reg4_;
+  logic<8> reg5_;
 
   void init1() {
-    reg1 = 1;
+    reg1_ = 1;
     init2();
   }
 
   void init2() {
-    reg2 = 2;
+    reg2_ = 2;
     init3();
   }
 
   void init3() {
-    reg3 = 3;
+    reg3_ = 3;
     init4();
   }
 
   void init4() {
-    reg4 = 4;
+    reg4_ = 4;
     init5();
   }
 
   void init5() {
-    reg5 = 5;
+    reg5_ = 5;
   }
 
 };
@@ -6675,7 +6742,7 @@ public:
 
   logic<8> i_signal;
   logic<8> o_signal;
-  logic<8> o_reg;
+  logic<8> o_reg_;
 
   logic<8> tock(logic<8> i_param) {
     o_signal = i_signal + i_param;
@@ -6686,7 +6753,7 @@ public:
 private:
 
   void tick() {
-    o_reg = o_reg + o_signal;
+    o_reg_ = o_reg_ + o_signal;
   }
 };
 
@@ -6700,12 +6767,12 @@ public:
     tick();
   }
 
-  logic<8> my_reg;
+  logic<8> my_reg_;
 
 private:
 
   void tick() {
-    my_reg = my_reg + my_sig - 2;
+    my_reg_ = my_reg_ + my_sig - 2;
   }
 
   logic<8> my_sig;
@@ -6733,7 +6800,7 @@ class Module {
 public:
 
   void tick() {
-    my_reg = my_reg + 1;
+    my_reg_ = my_reg_ + 1;
   }
 
 /*#
@@ -6742,7 +6809,7 @@ public:
   end
 #*/
 
-  int my_reg;
+  int my_reg_;
 };
 #include "metron/metron_tools.h"
 
@@ -6782,7 +6849,7 @@ class Module {
 public:
 
   logic<8> tock() {
-    logic<8> result = my_reg1 + my_reg2;
+    logic<8> result = my_reg1_ + my_reg2_;
     tick1();
     tick2();
     return result;
@@ -6791,15 +6858,15 @@ public:
 private:
 
   void tick1() {
-    my_reg1 = 0;
+    my_reg1_ = 0;
   }
 
   void tick2() {
-    my_reg2 = 1;
+    my_reg2_ = 1;
   }
 
-  logic<8> my_reg1;
-  logic<8> my_reg2;
+  logic<8> my_reg1_;
+  logic<8> my_reg2_;
 };
 #include "metron/metron_tools.h"
 
@@ -6814,7 +6881,7 @@ class Module {
 public:
 
   int my_sig;
-  int my_reg;
+  int my_reg_;
 
   int tock() {
     my_sig = MyPackage::foo + 1;
@@ -6822,7 +6889,7 @@ public:
   }
 
   void tick() {
-    my_reg = my_reg + MyPackage::foo;
+    my_reg_ = my_reg_ + MyPackage::foo;
   }
 };
 #include "metron/metron_tools.h"
@@ -6843,7 +6910,7 @@ class Module {
 public:
 
   OuterStruct r;
-  OuterStruct s;
+  OuterStruct s_;
 
   void tock_func1() {
     r.x.a = 1;
@@ -6852,15 +6919,15 @@ public:
   }
 
   void tick_func2() {
-    s.y.a = 4;
-    s.y.b = 5;
-    s.y.c = 6;
+    s_.y.a = 4;
+    s_.y.b = 5;
+    s_.y.c = 6;
   }
 
   void tick_func3() {
-    s.z.a = 7;
-    s.z.b = 8;
-    s.z.c = 9;
+    s_.z.a = 7;
+    s_.z.b = 8;
+    s_.z.c = 9;
   }
 };
 #include "metron/metron_tools.h"
@@ -6897,6 +6964,20 @@ private:
 };
 #include "metron/metron_tools.h"
 
+class Module {
+  public:
+
+  logic<1> foo() {
+    /* metron_noconvert */ int x;
+    return 0;
+  }
+
+  /* metron_noconvert */ void akdslfkajsf(const char* skdfjlskdjf);
+  /* metron_noconvert */ size_t size_bytes();
+  /* metron_noconvert */ void debug_dump() { printf("Hello World %d\n", 1234); }
+};
+#include "metron/metron_tools.h"
+
 // Cramming various statements into one line should not break anything.
 
 class Module {
@@ -6904,9 +6985,9 @@ public:
 
   logic<8> test() { logic<8> a = 1; a = a + 7; return a; }
 
-  void tick() { if (my_reg & 1) my_reg = my_reg - 7; }
+  void tick() { if (my_reg_ & 1) my_reg_ = my_reg_ - 7; }
 
-  logic<8> my_reg;
+  logic<8> my_reg_;
 
 };
 class Metron {
@@ -6927,20 +7008,20 @@ public:
     my_sig = x;
   }
 
-  int my_reg1;
-  int my_reg2;
-  int my_reg3;
-  int my_reg4;
-  int my_reg5;
-  int my_reg6;
+  int my_reg1_;
+  int my_reg2_;
+  int my_reg3_;
+  int my_reg4_;
+  int my_reg5_;
+  int my_reg6_;
 
   void tick() {
-    my_reg1 += 22;
-    my_reg2  -= 22;
-    my_reg3   *= 22;
-    my_reg4 +=   22;
-    my_reg5 -=  22;
-    my_reg6 *= 22;
+    my_reg1_ += 22;
+    my_reg2_  -= 22;
+    my_reg3_   *= 22;
+    my_reg4_ +=   22;
+    my_reg5_ -=  22;
+    my_reg6_ *= 22;
   }
 };
 #include "metron/metron_tools.h"
@@ -6966,6 +7047,33 @@ private:
 };
 #include "metron/metron_tools.h"
 
+// A module should be able to have a noconvert-tagged method that returns a
+// pointer to its type
+
+class Module {
+public:
+  /* metron_noconvert */ Module* get_this();
+};
+#include "metron/metron_tools.h"
+
+// Using slice<>() to write to sub-sections of a variable should work.
+// FIXME This can break tracing....
+
+class test_slice {
+public:
+
+  void tick(logic<8> addr, logic<4> mask, logic<32> wdata) {
+    if (mask[0]) slice<8,  0>(ram_[addr]) = b8(wdata,  0);
+    if (mask[1]) slice<8,  8>(ram_[addr]) = b8(wdata,  8);
+    if (mask[2]) slice<8, 16>(ram_[addr]) = b8(wdata, 16);
+    if (mask[3]) slice<8, 24>(ram_[addr]) = b8(wdata, 24);
+  }
+
+private:
+  logic<32> ram_[256];
+};
+#include "metron/metron_tools.h"
+
 // Structs exist in both C++ and Verilog
 
 struct MyStruct1 {
@@ -6977,10 +7085,27 @@ public:
 
   MyStruct1 my_struct1;
 
+  MyStruct1 get_something() {
+    return my_struct1;
+  }
+
   logic<8> tock() {
     my_struct1.a = 1;
-    return 17;
+
+    // does not work in yosys
+    //return extract_field(my_struct1);
+    return 16;
   }
+
+private:
+
+  // does not work in yosys
+  /*
+  logic<8> extract_field(MyStruct1 m) {
+    return m.a;
+  }
+  */
+
 };
 #include "metron/metron_tools.h"
 
@@ -7001,10 +7126,10 @@ public:
   }
 
   void tick(tilelink_a tla) {
-    data = tla.a_data;
+    data_ = tla.a_data;
   }
 
-  logic<32> data;
+  logic<32> data_;
 };
 
 //------------------------------------------------------------------------------
@@ -7014,11 +7139,11 @@ public:
 // ...but they have to be public member variables because Yosys...
 
 namespace TL {
-  const int PutFullData = 0;
-  const int PutPartialData = 1;
-  const int Get = 4;
-  const int AccessAck = 0;
-  const int AccessAckData = 1;
+  static const int PutFullData = 0;
+  static const int PutPartialData = 1;
+  static const int Get = 4;
+  static const int AccessAck = 0;
+  static const int AccessAckData = 1;
 };
 
 struct tilelink_a {
@@ -7041,17 +7166,17 @@ class TilelinkDevice {
 public:
 
   TilelinkDevice() {
-    test_reg = 0;
-    oe = 0;
+    test_reg_ = 0;
+    oe_ = 0;
   }
 
   tilelink_d tld;
   tilelink_a tla;
 
   void tock() {
-    if (oe) {
+    if (oe_) {
       tld.d_opcode = TL::AccessAckData;
-      tld.d_data   = test_reg;
+      tld.d_data   = test_reg_;
       tld.d_valid  = 1;
     }
     else {
@@ -7069,16 +7194,17 @@ public:
           dup<8>(tla.a_mask[1]),
           dup<8>(tla.a_mask[2]),
           dup<8>(tla.a_mask[3]));
-        test_reg = (test_reg & ~mask) | (tla.a_data & mask);
+        test_reg_ = (test_reg_ & ~mask) | (tla.a_data & mask);
+        oe_ = 0;
       } else if (tla.a_opcode == TL::Get) {
-        oe = 1;
+        oe_ = 1;
       }
     }
   }
 
 private:
-  logic<32> test_reg;
-  logic<1>  oe;
+  logic<32> test_reg_;
+  logic<1>  oe_;
 };
 
 //------------------------------------------------------------------------------
@@ -7090,20 +7216,20 @@ public:
   tilelink_d tld;
 
   TilelinkCPU() {
-    addr = 0x1234;
-    data = 0x4321;
+    addr_ = 0x1234;
+    data_ = 0x4321;
   }
 
   void tock() {
-    if (data & 1) {
+    if (data_ & 1) {
       tla.a_opcode  = TL::Get;
-      tla.a_address = addr;
+      tla.a_address = addr_;
       tla.a_mask    = 0b1111;
       tla.a_data    = DONTCARE;
       tla.a_valid   = 1;
     } else {
       tla.a_opcode  = TL::PutFullData;
-      tla.a_address = addr;
+      tla.a_address = addr_;
       tla.a_mask    = 0b1111;
       tla.a_data    = 0xDEADBEEF;
       tla.a_valid   = 1;
@@ -7112,13 +7238,13 @@ public:
 
   void tick() {
     if (tld.d_opcode == TL::AccessAckData && tld.d_valid) {
-      data = tld.d_data;
+      data_ = tld.d_data;
     }
   }
 
 private:
-  logic<32> addr;
-  logic<32> data;
+  logic<32> addr_;
+  logic<32> data_;
 };
 
 //------------------------------------------------------------------------------
@@ -7216,34 +7342,20 @@ public:
 };
 #include "metron/metron_tools.h"
 
-// UTF-8 text files with a byte order mark should be supported.
-
-// From https://www.w3.org/2001/06/utf-8-test/UTF-8-demo.html:
-
-/*
-Runes:
-
-  ᚻᛖ ᚳᚹᚫᚦ ᚦᚫᛏ ᚻᛖ ᛒᚢᛞᛖ ᚩᚾ ᚦᚫᛗ ᛚᚪᚾᛞᛖ ᚾᚩᚱᚦᚹᛖᚪᚱᛞᚢᛗ ᚹᛁᚦ ᚦᚪ ᚹᛖᛥᚫ
-
-  (Old English, which transcribed into Latin reads 'He cwaeth that he
-  bude thaem lande northweardum with tha Westsae.' and means 'He said
-  that he lived in the northern land near the Western Sea.')
-*/
+union my_union {
+  logic<32> a;
+  logic<32> b;
+};
 
 class Module {
 public:
 
-  Module() {
-    my_reg = 7;
+  void tock(logic<32> x, logic<32> y) {
+    blah.a = x;
+    blah.b = y;
   }
 
-  logic<8> get_reg() {
-    return my_reg;
-  }
-
-private:
-
-  logic<8> my_reg;
+  my_union blah;
 };
 #include "metron/metron_tools.h"
 
@@ -7265,14 +7377,45 @@ class Module {
 public:
 
   Module() {
-    my_reg = 7;
+    my_reg_ = 7;
   }
 
   logic<8> get_reg() {
-    return my_reg;
+    return my_reg_;
   }
 
 private:
 
-  logic<8> my_reg;
+  logic<8> my_reg_;
+};
+#include "metron/metron_tools.h"
+
+// UTF-8 text files with a byte order mark should be supported.
+
+// From https://www.w3.org/2001/06/utf-8-test/UTF-8-demo.html:
+
+/*
+Runes:
+
+  ᚻᛖ ᚳᚹᚫᚦ ᚦᚫᛏ ᚻᛖ ᛒᚢᛞᛖ ᚩᚾ ᚦᚫᛗ ᛚᚪᚾᛞᛖ ᚾᚩᚱᚦᚹᛖᚪᚱᛞᚢᛗ ᚹᛁᚦ ᚦᚪ ᚹᛖᛥᚫ
+
+  (Old English, which transcribed into Latin reads 'He cwaeth that he
+  bude thaem lande northweardum with tha Westsae.' and means 'He said
+  that he lived in the northern land near the Western Sea.')
+*/
+
+class Module {
+public:
+
+  Module() {
+    my_reg_ = 7;
+  }
+
+  logic<8> get_reg() {
+    return my_reg_;
+  }
+
+private:
+
+  logic<8> my_reg_;
 };

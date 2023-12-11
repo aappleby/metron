@@ -3,16 +3,16 @@
 class Module {
 public:
   Module() {
-    counter = 0;
-    lfsr = 0xDEADBEEF;
+    counter_ = 0;
+    lfsr_ = 0xDEADBEEF;
   }
 
   logic<1> done() {
-    return counter >= 100;
+    return counter_ >= 100;
   }
 
   logic<32> result() {
-    return lfsr;
+    return lfsr_;
   }
 
   void tock() {
@@ -22,12 +22,12 @@ public:
 private:
 
   void tick() {
-    counter = counter + 1;
-    logic<1> next_bit = lfsr[31] ^ lfsr[21] ^ lfsr[1] ^ lfsr[0];
-    lfsr = cat(lfsr, next_bit);
+    counter_ = counter_ + 1;
+    logic<1> next_bit = lfsr_[31] ^ lfsr_[21] ^ lfsr_[1] ^ lfsr_[0];
+    lfsr_ = cat(lfsr_, next_bit);
   }
 
-  logic<32> counter;
-  logic<32> lfsr;
+  logic<32> counter_;
+  logic<32> lfsr_;
 
 };

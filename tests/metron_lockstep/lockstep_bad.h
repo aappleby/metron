@@ -6,15 +6,15 @@
 class Module {
 public:
   Module() {
-    counter = 0;
+    counter_ = 0;
   }
 
   logic<1> done() {
-    return counter >= 7;
+    return counter_ >= 7;
   }
 
   logic<32> result() {
-    logic<32> c = counter;
+    logic<32> c = counter_;
     /*#
     c = c + 1;
     #*/
@@ -28,9 +28,9 @@ public:
 private:
 
   void tick() {
-    counter = counter + 1;
+    counter_ = counter_ + 1;
   }
 
-  logic<32> counter;
+  logic<32> counter_;
 
 };

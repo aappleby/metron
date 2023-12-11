@@ -175,21 +175,20 @@ def main():
         )
         print()
 
-        #print_b("Running standalone tests")
-        #errors += check_commands_good(
-        #    [
-        #        "bin/tests/metron_test",
-        #        "bin/examples/uart",
-        #        "bin/examples/uart_vl",
-        #        "bin/examples/uart_iv",
-        #        "bin/examples/rvsimple",
-        #        "bin/examples/rvsimple_vl",
-        #        "bin/examples/rvsimple_ref",
-        #    ]
-        #)
-        #print()
+        print_b("Running standalone tests")
+        errors += check_commands_good(
+            [
+                "bin/tests/metron_test",
+                "bin/examples/uart",
+                "bin/examples/uart_vl",
+                "bin/examples/uart_iv",
+                "bin/examples/rvsimple",
+                "bin/examples/rvsimple_vl",
+                "bin/examples/rvsimple_ref",
+            ]
+        )
+        print()
 
-        """
         # Lockstep tests are slow because compiler...
         print_b("Testing lockstep simulations")
         errors += test_lockstep()
@@ -216,7 +215,6 @@ def main():
         errors += check_icarus_good(tools_good)
         errors += check_icarus_bad(icarus_bad)
         print()
-        """
 
     ############################################################
 

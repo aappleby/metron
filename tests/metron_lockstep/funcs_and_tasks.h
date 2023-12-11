@@ -5,18 +5,18 @@
 class Module {
 public:
   Module() {
-    my_reg = 0;
-    counter = 0;
+    my_reg_ = 0;
+    counter_ = 0;
   }
 
   logic<32> my_sig;
 
   logic<1> done() {
-    return counter > 1000;
+    return counter_ > 1000;
   }
 
   logic<32> result() {
-    return my_reg;
+    return my_reg_;
   }
 
   void tock() {
@@ -27,22 +27,22 @@ public:
 private:
 
   logic<32> private_func2(logic<8> x) {
-    return my_reg + private_func(51);
+    return my_reg_ + private_func(51);
   }
 
   void tick() {
     private_task(private_func(33));
-    counter = counter + 1;
+    counter_ = counter_ + 1;
   }
 
   void private_task(logic<32> x) {
-    my_reg = my_reg - private_func(17);
+    my_reg_ = my_reg_ - private_func(17);
   }
 
   logic<32> private_func(logic<32> y) {
-    return (my_reg >> 3) + y;
+    return (my_reg_ >> 3) + y;
   }
 
-  logic<32> my_reg;
-  logic<32> counter;
+  logic<32> my_reg_;
+  logic<32> counter_;
 };

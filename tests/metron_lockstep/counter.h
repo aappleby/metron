@@ -3,15 +3,15 @@
 class Module {
 public:
   Module() {
-    counter = 0;
+    counter_ = 0;
   }
 
   logic<1> done() {
-    return counter >= 100;
+    return counter_ >= 100;
   }
 
   logic<32> result() {
-    return counter;
+    return counter_;
   }
 
   void tock() {
@@ -21,9 +21,9 @@ public:
 private:
 
   void tick() {
-    counter = counter + 1;
+    counter_ = counter_ + 1;
   }
 
-  logic<32> counter;
+  logic<32> counter_;
 
 };

@@ -34,26 +34,26 @@ module Module (
   always_comb begin : tock
     logic[7:0] new_counter;
     // Two bindings should end up here.
-    submod2__add_two_a = tock_old_counter;
-    submod1__add_one_a = submod2__add_two_ret;
-    new_counter = submod1__add_one_ret;
+    submod2_add_two_a = tock_old_counter;
+    submod1_add_one_a = submod2_add_two_ret;
+    new_counter = submod1_add_one_ret;
     tock_ret = new_counter;
   end
 
 /*private:*/
 
-  Submod1 submod1_(
+  Submod1 submod1(
     // add_one() ports
-    .add_one_a(submod1__add_one_a),
-    .add_one_ret(submod1__add_one_ret)
+    .add_one_a(submod1_add_one_a),
+    .add_one_ret(submod1_add_one_ret)
   );
-  logic[7:0] submod1__add_one_a;
-  logic[7:0] submod1__add_one_ret;
-  Submod2 submod2_(
+  logic[7:0] submod1_add_one_a;
+  logic[7:0] submod1_add_one_ret;
+  Submod2 submod2(
     // add_two() ports
-    .add_two_a(submod2__add_two_a),
-    .add_two_ret(submod2__add_two_ret)
+    .add_two_a(submod2_add_two_a),
+    .add_two_ret(submod2_add_two_ret)
   );
-  logic[7:0] submod2__add_two_a;
-  logic[7:0] submod2__add_two_ret;
+  logic[7:0] submod2_add_two_a;
+  logic[7:0] submod2_add_two_ret;
 endmodule

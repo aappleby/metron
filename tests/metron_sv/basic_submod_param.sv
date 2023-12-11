@@ -9,17 +9,17 @@ module Submod (
   parameter SOME_CONSTANT = 6;
 /*public:*/
 
-  always_ff @(posedge clock) begin : tock
-    tick();
+  always_comb begin : tock
+    /*tick();*/
   end
 
 /*private:*/
 
-  task automatic tick();
-    sub_reg_ <= sub_reg_ + SOME_CONSTANT;
-  endtask
+  always_ff @(posedge clock) begin : tick
+    sub_reg <= sub_reg + SOME_CONSTANT;
+  end
 
-  logic[7:0] sub_reg_;
+  logic[7:0] sub_reg;
 endmodule
 
 module Module (
@@ -29,13 +29,13 @@ module Module (
 /*public:*/
 
   always_comb begin : tock
-    /*submod_.tock();*/
+    /*submod.tock();*/
   end
 
   Submod #(
     // Template Parameters
     .SOME_CONSTANT(99)
-  ) submod_(
+  ) submod(
     // Global clock
     .clock(clock)
   );

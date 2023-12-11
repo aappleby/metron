@@ -12,7 +12,7 @@ module Module (
 
   always_comb begin : tock
     logic[7:0] result;
-    result = my_reg1_ + my_reg2_;
+    result = my_reg1 + my_reg2;
     /*tick1();*/
     /*tick2();*/
     tock_ret = result;
@@ -21,13 +21,13 @@ module Module (
 /*private:*/
 
   always_ff @(posedge clock) begin : tick1
-    my_reg1_ <= 0;
+    my_reg1 <= 0;
   end
 
   always_ff @(posedge clock) begin : tick2
-    my_reg2_ <= 1;
+    my_reg2 <= 1;
   end
 
-  logic[7:0] my_reg1_;
-  logic[7:0] my_reg2_;
+  logic[7:0] my_reg1;
+  logic[7:0] my_reg2;
 endmodule

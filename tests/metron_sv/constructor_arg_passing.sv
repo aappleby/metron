@@ -18,7 +18,7 @@ module Module (
 
   parameter /*const char**/ filename = "";
   initial begin
-    if (filename) $readmemh(filename, data_);
+    if (filename) $readmemh(filename, data);
   end
 
   always_comb begin : tock
@@ -27,17 +27,17 @@ module Module (
   end
 
   always_comb begin : get_data
-    get_data_ret = out_;
+    get_data_ret = out;
   end
 
 /*private:*/
   always_ff @(posedge clock) begin : tick
-    out_ <= data_[addr];
+    out <= data[addr];
   end
 
   logic[9:0] addr;
-  logic[7:0] data_[data_len];
-  logic[7:0] out_;
+  logic[7:0] data[data_len];
+  logic[7:0] out;
 endmodule
 
 //----------------------------------------
@@ -53,11 +53,11 @@ module Top (
   end
 
   always_comb begin : tock
-    mod__tock_new_addr = tock_addr;
-    /*mod_.tock(addr);*/
+    mod_tock_new_addr = tock_addr;
+    /*mod.tock(addr);*/
   end
 
-  always_comb begin : tick
+  always_ff @(posedge clock) begin : tick
     //mod.tick();
   end
 
@@ -67,17 +67,16 @@ module Top (
     .blarp(8383),
     // Constructor Parameters
     .filename("examples/uart/message.hex")
-  ) mod_(
+  ) mod(
     // Global clock
     .clock(clock),
     // tock() ports
-    .tock_new_addr(mod__tock_new_addr),
+    .tock_new_addr(mod_tock_new_addr),
     // get_data() ports
-    .get_data_ret(mod__get_data_ret)
+    .get_data_ret(mod_get_data_ret)
   );
-  logic[9:0] mod__tock_new_addr;
-  logic[7:0] mod__get_data_ret;
-  logic[9:0] derp;
+  logic[9:0] mod_tock_new_addr;
+  logic[7:0] mod_get_data_ret;
 endmodule
 
 //----------------------------------------

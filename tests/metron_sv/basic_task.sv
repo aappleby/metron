@@ -18,14 +18,14 @@ module Module (
 /*private:*/
 
   always_ff @(posedge clock) begin : tick
-    my_reg_ <= my_reg_ + my_reg2_ + 3;
+    my_reg <= my_reg + my_reg2 + 3;
     some_task2();
   end
 
   task automatic some_task2();
-    my_reg2_ <= my_reg2_ + 3;
+    my_reg2 <= my_reg2 + 3;
   endtask
 
-  logic[7:0] my_reg_;
-  logic[7:0] my_reg2_;
+  logic[7:0] my_reg;
+  logic[7:0] my_reg2;
 endmodule

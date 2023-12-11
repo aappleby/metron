@@ -9,21 +9,21 @@ module Module (
 );
 /*public:*/
 
-  always_ff @(posedge clock) begin : tock
-    tick();
+  always_comb begin : tock
+    /*tick();*/
   end
 
 /*private:*/
 
-  task automatic tick();
-    my_reg1_ <= my_reg1_ + 1;
-    my_reg2_ <= my_reg2_ + 1;
-    my_reg3_ <= my_reg3_ - 1;
-    my_reg4_ <= my_reg4_ - 1;
-  endtask
+  always_ff @(posedge clock) begin : tick
+    my_reg1 <= my_reg1 + 1;
+    my_reg2 <= my_reg2 + 1;
+    my_reg3 <= my_reg3 - 1;
+    my_reg4 <= my_reg4 - 1;
+  end
 
-  int my_reg1_;
-  int my_reg2_;
-  int my_reg3_;
-  int my_reg4_;
+  int my_reg1;
+  int my_reg2;
+  int my_reg3;
+  int my_reg4;
 endmodule

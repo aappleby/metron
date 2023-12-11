@@ -8,19 +8,19 @@ module Module (
 );
 /*public:*/
 
-  always_ff @(posedge clock) begin : tock
-    tick();
+  always_comb begin : tock
+    /*tick();*/
   end
 
 /*private:*/
 
-  task automatic tick();
-    my_reg_ <= my_reg_ + some_func();
-  endtask
+  always_ff @(posedge clock) begin : tick
+    my_reg <= my_reg + some_func();
+  end
 
   function logic[7:0] some_func() /*const*/;
     some_func = 3;
   endfunction
 
-  logic[7:0] my_reg_;
+  logic[7:0] my_reg;
 endmodule

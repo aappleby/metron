@@ -9,15 +9,15 @@ module Module (
   parameter SOME_CONSTANT = 7;
 /*public:*/
 
-  always_ff @(posedge clock) begin : tock
-    tick();
+  always_comb begin : tock
+    /*tick();*/
   end
 
 /*private:*/
 
-  task automatic tick();
-    my_reg_ <= my_reg_ + SOME_CONSTANT;
-  endtask
+  always_ff @(posedge clock) begin : tick
+    my_reg <= my_reg + SOME_CONSTANT;
+  end
 
-  logic[6:0] my_reg_;
+  logic[6:0] my_reg;
 endmodule

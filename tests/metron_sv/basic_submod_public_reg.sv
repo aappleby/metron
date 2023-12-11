@@ -6,20 +6,20 @@ module Submod (
   // global clock
   input logic clock,
   // output registers
-  output logic[7:0] sub_reg_
+  output logic[7:0] sub_reg
 );
 /*public:*/
 
-  always_ff @(posedge clock) begin : tock
-    tick();
+  always_comb begin : tock
+    /*tick();*/
   end
 
 
 /*private:*/
 
-  task automatic tick();
-    sub_reg_ <= sub_reg_ + 1;
-  endtask
+  always_ff @(posedge clock) begin : tick
+    sub_reg <= sub_reg + 1;
+  end
 
 endmodule
 
@@ -32,18 +32,18 @@ module Module (
 /*public:*/
 
   always_comb begin : get_submod_reg
-    get_submod_reg_ret = submod__sub_reg_;
+    get_submod_reg_ret = submod_sub_reg;
   end
 
   always_comb begin : tock
-    /*submod_.tock();*/
+    /*submod.tock();*/
   end
 
-  Submod submod_(
+  Submod submod(
     // Global clock
     .clock(clock),
     // Output registers
-    .sub_reg_(submod__sub_reg_)
+    .sub_reg(submod_sub_reg)
   );
-  logic[7:0] submod__sub_reg_;
+  logic[7:0] submod_sub_reg;
 endmodule

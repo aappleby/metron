@@ -16,7 +16,7 @@ module Module (
 
   parameter /*const char**/ filename = "examples/uart/message.hex";
   initial begin
-    $readmemh(filename, data_);
+    $readmemh(filename, data);
   end
 
   always_comb begin : tock
@@ -24,15 +24,15 @@ module Module (
   end
 
   always_ff @(posedge clock) begin : tick
-    out_ <= data_[addr];
+    out <= data[addr];
   end
 
   always_comb begin : get_data
-    get_data_ret = out_;
+    get_data_ret = out;
   end
 
 /*private:*/
   logic[9:0] addr;
-  logic[7:0] data_[data_len];
-  logic[7:0] out_;
+  logic[7:0] data[data_len];
+  logic[7:0] out;
 endmodule

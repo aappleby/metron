@@ -111,6 +111,7 @@ build obj/tests/test_utils.o: compile_cpp tests/test_utils.cpp
   includes = ${base_includes}
 build bin/tests/metron_test: c_binary obj/tests/test_main.o obj/tests/test_logic.o obj/tests/test_utils.o bin/libmetron.a
   includes = ${base_includes}
+build tests/rv_tests/add.code.vh tests/rv_tests/addi.code.vh tests/rv_tests/and.code.vh tests/rv_tests/andi.code.vh tests/rv_tests/auipc.code.vh tests/rv_tests/benchmark.code.vh tests/rv_tests/beq.code.vh tests/rv_tests/bge.code.vh tests/rv_tests/bgeu.code.vh tests/rv_tests/blt.code.vh tests/rv_tests/bltu.code.vh tests/rv_tests/bne.code.vh tests/rv_tests/jal.code.vh tests/rv_tests/jalr.code.vh tests/rv_tests/lb.code.vh tests/rv_tests/lbu.code.vh tests/rv_tests/lh.code.vh tests/rv_tests/lhu.code.vh tests/rv_tests/lui.code.vh tests/rv_tests/lw.code.vh tests/rv_tests/or.code.vh tests/rv_tests/ori.code.vh tests/rv_tests/sb.code.vh tests/rv_tests/sh.code.vh tests/rv_tests/simple.code.vh tests/rv_tests/sll.code.vh tests/rv_tests/slli.code.vh tests/rv_tests/slt.code.vh tests/rv_tests/slti.code.vh tests/rv_tests/sltiu.code.vh tests/rv_tests/sltu.code.vh tests/rv_tests/sra.code.vh tests/rv_tests/srai.code.vh tests/rv_tests/srl.code.vh tests/rv_tests/srli.code.vh tests/rv_tests/sub.code.vh tests/rv_tests/sw.code.vh tests/rv_tests/xor.code.vh tests/rv_tests/xori.code.vh tests/rv_tests/add.data.vh tests/rv_tests/addi.data.vh tests/rv_tests/and.data.vh tests/rv_tests/andi.data.vh tests/rv_tests/auipc.data.vh tests/rv_tests/benchmark.data.vh tests/rv_tests/beq.data.vh tests/rv_tests/bge.data.vh tests/rv_tests/bgeu.data.vh tests/rv_tests/blt.data.vh tests/rv_tests/bltu.data.vh tests/rv_tests/bne.data.vh tests/rv_tests/jal.data.vh tests/rv_tests/jalr.data.vh tests/rv_tests/lb.data.vh tests/rv_tests/lbu.data.vh tests/rv_tests/lh.data.vh tests/rv_tests/lhu.data.vh tests/rv_tests/lui.data.vh tests/rv_tests/lw.data.vh tests/rv_tests/or.data.vh tests/rv_tests/ori.data.vh tests/rv_tests/sb.data.vh tests/rv_tests/sh.data.vh tests/rv_tests/simple.data.vh tests/rv_tests/sll.data.vh tests/rv_tests/slli.data.vh tests/rv_tests/slt.data.vh tests/rv_tests/slti.data.vh tests/rv_tests/sltiu.data.vh tests/rv_tests/sltu.data.vh tests/rv_tests/sra.data.vh tests/rv_tests/srai.data.vh tests/rv_tests/srl.data.vh tests/rv_tests/srli.data.vh tests/rv_tests/sub.data.vh tests/rv_tests/sw.data.vh tests/rv_tests/xor.data.vh tests/rv_tests/xori.data.vh: make tests/rv_tests/makefile | tests/rv_tests/add.S tests/rv_tests/addi.S tests/rv_tests/and.S tests/rv_tests/andi.S tests/rv_tests/auipc.S tests/rv_tests/benchmark.S tests/rv_tests/beq.S tests/rv_tests/bge.S tests/rv_tests/bgeu.S tests/rv_tests/blt.S tests/rv_tests/bltu.S tests/rv_tests/bne.S tests/rv_tests/jal.S tests/rv_tests/jalr.S tests/rv_tests/lb.S tests/rv_tests/lbu.S tests/rv_tests/lh.S tests/rv_tests/lhu.S tests/rv_tests/lui.S tests/rv_tests/lw.S tests/rv_tests/or.S tests/rv_tests/ori.S tests/rv_tests/sb.S tests/rv_tests/sh.S tests/rv_tests/simple.S tests/rv_tests/sll.S tests/rv_tests/slli.S tests/rv_tests/slt.S tests/rv_tests/slti.S tests/rv_tests/sltiu.S tests/rv_tests/sltu.S tests/rv_tests/sra.S tests/rv_tests/srai.S tests/rv_tests/srl.S tests/rv_tests/srli.S tests/rv_tests/sub.S tests/rv_tests/sw.S tests/rv_tests/xor.S tests/rv_tests/xori.S
 
 
 ################################################################################
@@ -166,3 +167,74 @@ build obj/examples/uart/uart_test_ice40.asc: nextpnr-ice40 obj/examples/uart/uar
   package = ct256
   pcf = examples/uart/ice40-hx8k-b-evn.pcf
 build obj/examples/uart/uart_test_ice40.bin: icepack obj/examples/uart/uart_test_ice40.asc
+
+
+################################################################################
+# Compile bin/examples/rvsimple
+
+build obj/examples/rvsimple/main.o: compile_cpp examples/rvsimple/main.cpp
+  includes = ${base_includes} -Isymlinks/CLI11/include
+build bin/examples/rvsimple: c_binary obj/examples/rvsimple/main.o bin/libmetron.a
+  includes = ${base_includes} -Isymlinks/CLI11/include
+
+
+################################################################################
+# Metronize examples/rvsimple/metron -> examples/rvsimple/metron_sv
+
+build examples/rvsimple/metron_sv/adder.sv: metron examples/rvsimple/metron/adder.h | bin/metron
+build examples/rvsimple/metron_sv/alu.sv: metron examples/rvsimple/metron/alu.h | bin/metron
+build examples/rvsimple/metron_sv/alu_control.sv: metron examples/rvsimple/metron/alu_control.h | bin/metron
+build examples/rvsimple/metron_sv/config.sv: metron examples/rvsimple/metron/config.h | bin/metron
+build examples/rvsimple/metron_sv/constants.sv: metron examples/rvsimple/metron/constants.h | bin/metron
+build examples/rvsimple/metron_sv/control_transfer.sv: metron examples/rvsimple/metron/control_transfer.h | bin/metron
+build examples/rvsimple/metron_sv/data_memory_interface.sv: metron examples/rvsimple/metron/data_memory_interface.h | bin/metron
+build examples/rvsimple/metron_sv/example_data_memory.sv: metron examples/rvsimple/metron/example_data_memory.h | bin/metron
+build examples/rvsimple/metron_sv/example_data_memory_bus.sv: metron examples/rvsimple/metron/example_data_memory_bus.h | bin/metron
+build examples/rvsimple/metron_sv/example_text_memory.sv: metron examples/rvsimple/metron/example_text_memory.h | bin/metron
+build examples/rvsimple/metron_sv/example_text_memory_bus.sv: metron examples/rvsimple/metron/example_text_memory_bus.h | bin/metron
+build examples/rvsimple/metron_sv/immediate_generator.sv: metron examples/rvsimple/metron/immediate_generator.h | bin/metron
+build examples/rvsimple/metron_sv/instruction_decoder.sv: metron examples/rvsimple/metron/instruction_decoder.h | bin/metron
+build examples/rvsimple/metron_sv/multiplexer2.sv: metron examples/rvsimple/metron/multiplexer2.h | bin/metron
+build examples/rvsimple/metron_sv/multiplexer4.sv: metron examples/rvsimple/metron/multiplexer4.h | bin/metron
+build examples/rvsimple/metron_sv/multiplexer8.sv: metron examples/rvsimple/metron/multiplexer8.h | bin/metron
+build examples/rvsimple/metron_sv/regfile.sv: metron examples/rvsimple/metron/regfile.h | bin/metron
+build examples/rvsimple/metron_sv/register.sv: metron examples/rvsimple/metron/register.h | bin/metron
+build examples/rvsimple/metron_sv/riscv_core.sv: metron examples/rvsimple/metron/riscv_core.h | bin/metron
+build examples/rvsimple/metron_sv/singlecycle_control.sv: metron examples/rvsimple/metron/singlecycle_control.h | bin/metron
+build examples/rvsimple/metron_sv/singlecycle_ctlpath.sv: metron examples/rvsimple/metron/singlecycle_ctlpath.h | bin/metron
+build examples/rvsimple/metron_sv/singlecycle_datapath.sv: metron examples/rvsimple/metron/singlecycle_datapath.h | bin/metron
+build examples/rvsimple/metron_sv/toplevel.sv: metron examples/rvsimple/metron/toplevel.h | bin/metron
+
+
+################################################################################
+# Verilate examples/rvsimple/metron_sv/toplevel.sv -> gen/examples/rvsimple/metron_vl
+
+build gen/examples/rvsimple/metron_vl/Vtoplevel.mk gen/examples/rvsimple/metron_vl/Vtoplevel.h: verilator examples/rvsimple/metron_sv/toplevel.sv
+  includes = -Iexamples/rvsimple/metron_sv
+build gen/examples/rvsimple/metron_vl/Vtoplevel__ALL.o: make gen/examples/rvsimple/metron_vl/Vtoplevel.mk
+
+
+################################################################################
+# Compile bin/examples/rvsimple_vl
+
+build obj/examples/rvsimple/main_vl.o: compile_cpp examples/rvsimple/main_vl.cpp | gen/examples/rvsimple/metron_vl/Vtoplevel.h
+  includes = ${base_includes} -I/usr/local/share/verilator/include -Igen/examples/rvsimple/metron_vl -Isymlinks/CLI11/include
+build bin/examples/rvsimple_vl: c_binary obj/verilated.o obj/verilated_threads.o gen/examples/rvsimple/metron_vl/Vtoplevel__ALL.o obj/examples/rvsimple/main_vl.o bin/libmetron.a
+  includes = ${base_includes} -I/usr/local/share/verilator/include -Igen/examples/rvsimple/metron_vl -Isymlinks/CLI11/include
+
+
+################################################################################
+# Verilate examples/rvsimple/reference_sv/toplevel.sv -> gen/examples/rvsimple/reference_vl
+
+build gen/examples/rvsimple/reference_vl/Vtoplevel.mk gen/examples/rvsimple/reference_vl/Vtoplevel.h: verilator examples/rvsimple/reference_sv/toplevel.sv
+  includes = -Iexamples/rvsimple/reference_sv
+build gen/examples/rvsimple/reference_vl/Vtoplevel__ALL.o: make gen/examples/rvsimple/reference_vl/Vtoplevel.mk
+
+
+################################################################################
+# Compile bin/examples/rvsimple_ref
+
+build obj/examples/rvsimple/main_ref_vl.o: compile_cpp examples/rvsimple/main_ref_vl.cpp | gen/examples/rvsimple/reference_vl/Vtoplevel.h
+  includes = ${base_includes} -I/usr/local/share/verilator/include -Igen/examples/rvsimple/reference_vl -Isymlinks/CLI11/include
+build bin/examples/rvsimple_ref: c_binary obj/verilated.o obj/verilated_threads.o gen/examples/rvsimple/reference_vl/Vtoplevel__ALL.o obj/examples/rvsimple/main_ref_vl.o bin/libmetron.a
+  includes = ${base_includes} -I/usr/local/share/verilator/include -Igen/examples/rvsimple/reference_vl -Isymlinks/CLI11/include

@@ -1,21 +1,16 @@
 #include "metron/metron_tools.h"
 
-class Module {
-public:
+class alu_control {
+ public:
+  logic<7> inst_funct7;
+  logic<5> op_funct;
 
-  void update(int x = 7) {
-    update_tock(x);
-    update_tick(x);
+ public:
+  void tock_alu_function() {
+
+    if (inst_funct7[5])
+      op_funct = 1;
+    else
+      op_funct = 2;
   }
-
-  void update_tock(int x) {
-    sig = x + 7;
-  }
-
-  void update_tick(int x) {
-    reg_ = x + 7;
-  }
-
-  int sig;
-  int reg_;
 };

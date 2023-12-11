@@ -12,6 +12,10 @@
 `include "metron/metron_tools.sv"
 
 module example_text_memory_bus (
+  // input signals
+  input logic[31:0] address,
+  // output signals
+  output logic[31:0] read_data
 );
  /*public:*/
 
@@ -24,7 +28,13 @@ module example_text_memory_bus (
     // Constructor Parameters
     .filename(filename)
   ) text_memory(
+    // Input signals
+    .address(text_memory_address),
+    // Output signals
+    .q(text_memory_q)
   );
+  logic[(rv_config::TEXT_BITS - 2)-1:0] text_memory_address;
+  logic[31:0] text_memory_q;
 
  /*public:*/
   always_comb begin : tock_read_data

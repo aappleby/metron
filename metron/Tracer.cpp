@@ -239,7 +239,7 @@ Err Tracer::trace(CNodeSuffixExp* node) {
 
   if (auto array_suffix = suffix->as<CNodeList>()) {
     err << trace_dispatch(array_suffix);
-    return err;
+    //return err;
   }
 
   err << trace_dispatch(lhs);

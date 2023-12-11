@@ -11,6 +11,11 @@
 `include "metron/metron_tools.sv"
 
 module adder (
+  // input signals
+  input logic[WIDTH-1:0] operand_a,
+  input logic[WIDTH-1:0] operand_b,
+  // output signals
+  output logic[WIDTH-1:0] result
 );
   parameter WIDTH = 32;
  /*public:*/

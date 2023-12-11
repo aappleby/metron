@@ -1,32 +1,18 @@
 `include "metron/metron_tools.sv"
 
-module Module (
-  // global clock
-  input logic clock,
+module alu_control (
   // output signals
-  output int sig,
-  // output registers
-  output int reg_,
-  // update() ports
-  input int update_x
+  output logic[4:0] op_funct
 );
-/*public:*/
+ /*public:*/
+  logic[6:0] inst_funct7;
 
-  always_comb begin : update
-    update_tock_x = update_x;
-    /*update_tock(x);*/
-    update_tick_x = update_x;
-    /*update_tick(x);*/
+ /*public:*/
+  always_comb begin : tock_alu_function
+
+    if (inst_funct7[5])
+      op_funct = 1;
+    else
+      op_funct = 2;
   end
-
-  always_comb begin : update_tock
-    sig = update_tock_x + 7;
-  end
-  int update_tock_x;
-
-  always_ff @(posedge clock) begin : update_tick
-    reg_ <= update_tick_x + 7;
-  end
-  int update_tick_x;
-
 endmodule

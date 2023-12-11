@@ -36,8 +36,8 @@ TestResults test_instruction(const char* test_name, const int reps,
   sprintf(code_filename, "tests/rv_tests/%s.code.vh", test_name);
   sprintf(data_filename, "tests/rv_tests/%s.data.vh", test_name);
 
-  auto& text = top.rootp->toplevel__DOT__text_memory_bus__DOT__text_memory__DOT__mem;
-  auto& data = top.rootp->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__mem;
+  auto& text = top.rootp->toplevel__DOT__text_memory_bus__DOT__text_memory__DOT__mem_;
+  auto& data = top.rootp->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__mem_;
 
   parse_hex(code_filename, &text, sizeof(text));
   parse_hex(data_filename, &data, sizeof(data));

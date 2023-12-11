@@ -11,22 +11,30 @@
 `include "metron/metron_tools.sv"
 
 module single_register (
+  // global clock
+  input logic clock,
+  // input signals
+  input logic reset,
+  input logic write_enable,
+  input logic[WIDTH-1:0] next,
+  // output registers
+  output logic[WIDTH-1:0] value_
 );
   parameter WIDTH = 32;
   parameter INITIAL = 0;
  /*public:*/
 
-  initial begin value = INITIAL; end
+  initial begin value_ = INITIAL; end
 
-  always_comb begin : tock  /*tick();*/ end
+  always_ff @(posedge clock) begin : tock  tick(); end
 
  /*private:*/
-  always_comb begin : tick
+  task automatic tick();
     if (reset)
-      value = INITIAL;
+      value_ <= INITIAL;
     else if (write_enable)
-      value = next;
-  end
+      value_ <= next;
+  endtask
 endmodule
 
 `endif // REGISTER_H

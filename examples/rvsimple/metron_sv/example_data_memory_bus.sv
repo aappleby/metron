@@ -12,6 +12,16 @@
 `include "metron/metron_tools.sv"
 
 module example_data_memory_bus (
+  // global clock
+  input logic clock,
+  // input signals
+  input logic[31:0] address,
+  input logic[31:0] write_data,
+  input logic[3:0] byte_enable,
+  input logic read_enable,
+  input logic write_enable,
+  // output signals
+  output logic[31:0] read_data
 );
  /*public:*/
        // in
@@ -30,7 +40,21 @@ module example_data_memory_bus (
     // Constructor Parameters
     .filename(filename)
   ) data_memory(
+    // Global clock
+    .clock(clock),
+    // Input signals
+    .address(data_memory_address),
+    .wren(data_memory_wren),
+    .byteena(data_memory_byteena),
+    .data(data_memory_data),
+    // Output signals
+    .q(data_memory_q)
   );
+  logic[(rv_config::DATA_BITS - 2)-1:0] data_memory_address;
+  logic data_memory_wren;
+  logic[3:0] data_memory_byteena;
+  logic[31:0] data_memory_data;
+  logic[31:0] data_memory_q;
 
  /*public:*/
   always_comb begin : tock

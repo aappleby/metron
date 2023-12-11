@@ -11,17 +11,21 @@
 `include "metron/metron_tools.sv"
 
 module example_text_memory (
+  // input signals
+  input logic[(rv_config::TEXT_BITS - 2)-1:0] address,
+  // output signals
+  output logic[31:0] q
 );
  /*public:*/
   parameter /*const char**/ filename = "";
   initial begin
-    if (filename) $readmemh(filename, mem);
+    if (filename) $readmemh(filename, mem_);
   end
 
-  always_comb begin : tock_q  q = mem[address]; end
+  always_comb begin : tock_q  q = mem_[address]; end
 
  /*private:*/
-  logic[31:0] mem[2**(rv_config::TEXT_BITS - 2)];
+  logic[31:0] mem_[2**(rv_config::TEXT_BITS - 2)];
 endmodule
 
 `endif // EXAMPLE_TEXT_MEMORY_H

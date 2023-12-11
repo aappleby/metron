@@ -23,8 +23,8 @@ class Module {
 public:
 
   void tock() {
-    submod_.tock();
+    submod.tock();
   }
 
-  Submod<99> submod_;
+  Submod<99> submod;
 };

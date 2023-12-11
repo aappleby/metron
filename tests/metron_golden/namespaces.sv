@@ -13,7 +13,7 @@ module Module (
   // output signals
   output int my_sig,
   // output registers
-  output int my_reg,
+  output int my_reg_,
   // tock() ports
   output int tock_ret
 );
@@ -26,6 +26,6 @@ module Module (
   end
 
   always_ff @(posedge clock) begin : tick
-    my_reg <= my_reg + MyPackage::foo;
+    my_reg_ <= my_reg_ + MyPackage::foo;
   end
 endmodule

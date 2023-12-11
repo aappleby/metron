@@ -36,23 +36,23 @@ module Module (
   logic[7:0] public_task_ret;
 
   function logic[7:0] public_func(logic[7:0] x);
-    public_func = my_reg1 + private_func(x);
+    public_func = my_reg1_ + private_func(x);
   endfunction
 
   always_ff @(posedge clock) begin : tick
     private_task(private_func(tick_w));
-    my_reg2 <= my_reg2 + 1;
+    my_reg2_ <= my_reg2_ + 1;
   end
   int tick_w;
 
   task automatic private_task(logic[7:0] x);
-    my_reg1 <= my_reg1 + private_func(x);
+    my_reg1_ <= my_reg1_ + private_func(x);
   endtask
 
   function logic[7:0] private_func(logic[7:0] y);
-    private_func = my_reg1 + y;
+    private_func = my_reg1_ + y;
   endfunction
 
-  logic[7:0] my_reg1;
-  logic[7:0] my_reg2;
+  logic[7:0] my_reg1_;
+  logic[7:0] my_reg2_;
 endmodule

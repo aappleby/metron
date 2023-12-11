@@ -14,7 +14,7 @@ module Submod (
   // output signals
   output logic[7:0] o_signal,
   // output registers
-  output logic[7:0] o_reg,
+  output logic[7:0] o_reg_,
   // tock() ports
   input logic[7:0] tock_i_param,
   output logic[7:0] tock_ret
@@ -31,7 +31,7 @@ module Submod (
 /*private:*/
 
   always_ff @(posedge clock) begin : tick
-    o_reg <= o_reg + o_signal;
+    o_reg_ <= o_reg_ + o_signal;
   end
 endmodule
 
@@ -39,7 +39,7 @@ module Module (
   // global clock
   input logic clock,
   // output registers
-  output logic[7:0] my_reg
+  output logic[7:0] my_reg_
 );
 /*public:*/
 
@@ -56,7 +56,7 @@ module Module (
 /*private:*/
 
   always_ff @(posedge clock) begin : tick
-    my_reg <= my_reg + my_sig - 2;
+    my_reg_ <= my_reg_ + my_sig - 2;
   end
 
   logic[7:0] my_sig;
@@ -69,7 +69,7 @@ module Module (
     // Output signals
     .o_signal(submod_o_signal),
     // Output registers
-    .o_reg(submod_o_reg),
+    .o_reg_(submod_o_reg_),
     // tock() ports
     .tock_i_param(submod_tock_i_param),
     .tock_ret(submod_tock_ret)
@@ -78,5 +78,5 @@ module Module (
   logic[7:0] submod_tock_ret;
   logic[7:0] submod_i_signal;
   logic[7:0] submod_o_signal;
-  logic[7:0] submod_o_reg;
+  logic[7:0] submod_o_reg_;
 endmodule

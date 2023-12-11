@@ -22,13 +22,13 @@ private:
 class Module {
 public:
 
-  logic<8> get_submod_reg() const {
-    return submod_.sub_reg_;
+  logic<8> get_submodreg() const {
+    return submod.sub_reg_;
   }
 
   void tock() {
-    submod_.tock();
+    submod.tock();
   }
 
-  Submod submod_;
+  Submod submod;
 };

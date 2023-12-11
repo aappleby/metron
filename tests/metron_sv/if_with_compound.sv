@@ -9,17 +9,15 @@ module Submod (
   input logic[7:0] tock_arg
 );
 /*public:*/
-  always_comb begin : tock
-    tick_arg = tock_arg;
-    /*tick(arg);*/
+  always_ff @(posedge clock) begin : tock
+    tick(tock_arg);
   end
 /*private:*/
-  always_ff @(posedge clock) begin : tick
-    my_reg <= my_reg + tick_arg;
-  end
-  logic[7:0] tick_arg;
+  task automatic tick(logic[7:0] arg);
+    my_reg_ <= my_reg_ + arg;
+  endtask
 
-  logic[7:0] my_reg;
+  logic[7:0] my_reg_;
 endmodule
 
 

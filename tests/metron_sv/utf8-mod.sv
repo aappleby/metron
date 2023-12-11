@@ -21,14 +21,14 @@ module Module (
 /*public:*/
 
   initial begin
-    my_reg = 7;
+    my_reg_ = 7;
   end
 
   always_comb begin : get_reg
-    get_reg_ret = my_reg;
+    get_reg_ret = my_reg_;
   end
 
 /*private:*/
 
-  logic[7:0] my_reg;
+  logic[7:0] my_reg_;
 endmodule

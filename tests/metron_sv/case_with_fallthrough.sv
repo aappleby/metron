@@ -13,7 +13,7 @@ module Module (
 
   always_comb begin : tock
     logic[7:0] result;
-    case(my_reg)
+    case(my_reg_)
       0, // can we stick comments in here?
       1,
       2:
@@ -35,8 +35,8 @@ module Module (
 /*private:*/
 
   always_ff @(posedge clock) begin : tick
-    my_reg <= my_reg + 1;
+    my_reg_ <= my_reg_ + 1;
   end
 
-  logic[7:0] my_reg;
+  logic[7:0] my_reg_;
 endmodule

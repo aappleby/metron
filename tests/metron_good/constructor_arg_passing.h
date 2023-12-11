@@ -35,18 +35,18 @@ private:
 
 class Top {
 public:
-  Top() : mod_("examples/uart/message.hex"), derp(7) {
+  Top() : submod("examples/uart/message.hex"), derp(7) {
   }
 
   void tock(logic<10> addr) {
-    mod_.tock(addr);
+    submod.tock(addr);
   }
 
   void tick() {
     //mod.tick();
   }
 
-  Module<7777, 8383> mod_;
+  Module<7777, 8383> submod;
   logic<10> derp;
 };
 

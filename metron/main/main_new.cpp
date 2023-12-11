@@ -246,6 +246,7 @@ int main_new(Options opts) {
       for (auto inst : node_class->self_reads) {
         if (inst->get_owner() != node_class) continue;
         if (node_class->self_writes.contains(inst)) continue;
+        if (!inst->is_public()) continue;
 
         if (!inst->is_public() && !inst->is_array()) {
           LOG_Y("Private field %s is only read, never written!\n", inst->path.c_str());
@@ -280,6 +281,7 @@ int main_new(Options opts) {
       for (auto inst : node_class->self_writes) {
         if (inst->get_owner() != node_class) continue;
         if (node_class->self_reads.contains(inst)) continue;
+        if (!inst->is_public()) continue;
 
         if (!inst->is_public()) {
           LOG_Y("Private field %s is only written, never read!\n", inst->path.c_str());

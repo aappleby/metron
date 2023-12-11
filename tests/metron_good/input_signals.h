@@ -30,8 +30,8 @@ class Module {
 public:
 
   void tock() {
-    submod_.i_signal = 12;
-    logic<8> submod_return = submod_.tock(13);
+    submod.i_signal = 12;
+    logic<8> submod_return = submod.tock(13);
     my_sig = submod_return + 3;
     tick();
   }
@@ -46,5 +46,5 @@ private:
 
   logic<8> my_sig;
 
-  Submod submod_;
+  Submod submod;
 };

@@ -1,8 +1,5 @@
 `include "metron/metron_tools.sv"
 
-// Declaration order _matters_ - a tock() that reads a reg before the tick()
-// that writes it is OK.
-
 module Module (
   // global clock
   input logic clock
@@ -10,16 +7,16 @@ module Module (
 /*public:*/
 
   always_comb begin : tock
-    my_sig = my_reg;
+    my_sig = my_reg_;
     /*tick();*/
   end
 
 /*private:*/
 
   always_ff @(posedge clock) begin : tick
-    my_reg <= 1;
+    my_reg_ <= 1;
   end
 
   logic my_sig;
-  logic my_reg;
+  logic my_reg_;
 endmodule

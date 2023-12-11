@@ -21,12 +21,12 @@ public:
 
   void tock() {
     if (1) {
-      submod_.tock(72);
+      submod.tock(72);
     }
     else {
-      submod_.tock(36);
+      submod.tock(36);
     }
   }
 
-  Submod submod_;
+  Submod submod;
 };

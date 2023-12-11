@@ -6,15 +6,15 @@ module Module (
   // global clock
   input logic clock,
   // output registers
-  output logic my_reg
+  output logic my_reg_
 );
 /*public:*/
-  always_comb begin : tock
-    /*tick();*/
+  always_ff @(posedge clock) begin : tock
+    tick();
   end
 
 /*private:*/
-  always_ff @(posedge clock) begin : tick
-    my_reg <= my_reg + 1;
-  end
+  task automatic tick();
+    my_reg_ <= my_reg_ + 1;
+  endtask
 endmodule

@@ -28,26 +28,26 @@ module Module (
 /*public:*/
 
   always_comb begin : tock
-    submodule_tock_dx = 1;
-    submodule_tock_dy = 2;
-    /*submodule.tock(1, 2);*/
-    tock_ret = submodule_my_width + submodule_my_height;
+    submod_tock_dx = 1;
+    submod_tock_dy = 2;
+    /*submod.tock(1, 2);*/
+    tock_ret = submod_my_width + submod_my_height;
   end
 
   Submod #(
     // Template Parameters
     .WIDTH(10),
     .HEIGHT(11)
-  ) submodule(
+  ) submod(
     // Output signals
-    .my_width(submodule_my_width),
-    .my_height(submodule_my_height),
+    .my_width(submod_my_width),
+    .my_height(submod_my_height),
     // tock() ports
-    .tock_dx(submodule_tock_dx),
-    .tock_dy(submodule_tock_dy)
+    .tock_dx(submod_tock_dx),
+    .tock_dy(submod_tock_dy)
   );
-  logic[10-1:0] submodule_tock_dx;
-  logic[11-1:0] submodule_tock_dy;
-  logic[10-1:0] submodule_my_width;
-  logic[11-1:0] submodule_my_height;
+  logic[10-1:0] submod_tock_dx;
+  logic[11-1:0] submod_tock_dy;
+  logic[10-1:0] submod_my_width;
+  logic[11-1:0] submod_my_height;
 endmodule

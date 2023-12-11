@@ -10,27 +10,25 @@ module Module (
 );
 /*public:*/
 
-  always_comb begin : tock
-    tick_selector = tock_selector;
-    /*tick(selector);*/
+  always_ff @(posedge clock) begin : tock
+    tick(tock_selector);
   end
 
 /*private:*/
 
-  always_ff @(posedge clock) begin : tick
-    case(tick_selector)
+  task automatic tick(logic[1:0] selector);
+    case(selector)
       0: // comment
-         begin my_reg <= 17; /*break;*/ end
+         begin my_reg_ <= 17; /*break;*/ end
       1:  // comment
-         begin my_reg <= 22; /*break;*/ end
-      2:  begin my_reg <= 30; /*break;*/ end
+         begin my_reg_ <= 22; /*break;*/ end
+      2:  begin my_reg_ <= 30; /*break;*/ end
       3, // fallthrough
       4,
       5,
-      6:  begin my_reg <= 72; /*break;*/ end
+      6:  begin my_reg_ <= 72; /*break;*/ end
     endcase
-  end
-  logic[1:0] tick_selector;
+  endtask
 
-  logic[7:0] my_reg;
+  logic[7:0] my_reg_;
 endmodule

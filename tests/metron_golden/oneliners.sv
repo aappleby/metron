@@ -6,7 +6,7 @@ module Module (
   // global clock
   input logic clock,
   // output registers
-  output logic[7:0] my_reg,
+  output logic[7:0] my_reg_,
   // test() ports
   output logic[7:0] test_ret
 );
@@ -15,7 +15,7 @@ module Module (
   always_comb begin : test
     logic[7:0] a; a = 1; a = a + 7; test_ret = a; end
 
-  always_ff @(posedge clock) begin : tick  if (my_reg & 1) my_reg <= my_reg - 7; end
+  always_ff @(posedge clock) begin : tick  if (my_reg_ & 1) my_reg_ <= my_reg_ - 7; end
 
 
 endmodule

@@ -3,12 +3,13 @@ module Metron (
   input logic clock,
   // output signals
   output int my_sig,
-  output int my_reg1,
-  output int my_reg2,
-  output int my_reg3,
-  output int my_reg4,
-  output int my_reg5,
-  output int my_reg6
+  // output registers
+  output int my_reg1_,
+  output int my_reg2_,
+  output int my_reg3_,
+  output int my_reg4_,
+  output int my_reg5_,
+  output int my_reg6_
 );
 /*public:*/
 
@@ -29,11 +30,11 @@ module Metron (
 
 
   always_ff @(posedge clock) begin : tick
-    my_reg1 <= my_reg1 + 22;
-    my_reg2  <= my_reg2 - 22;
-    my_reg3   <= my_reg3 * 22;
-    my_reg4 <= my_reg4 +   22;
-    my_reg5 <= my_reg5 -  22;
-    my_reg6 <= my_reg6 * 22;
+    my_reg1_ <= my_reg1_ + 22;
+    my_reg2_  <= my_reg2_ - 22;
+    my_reg3_   <= my_reg3_ * 22;
+    my_reg4_ <= my_reg4_ +   22;
+    my_reg5_ <= my_reg5_ -  22;
+    my_reg6_ <= my_reg6_ * 22;
   end
 endmodule

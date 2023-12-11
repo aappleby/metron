@@ -11,19 +11,19 @@ module Module (
 /*public:*/
 
   always_comb begin : get_reg
-    get_reg_ret = my_reg;
+    get_reg_ret = my_reg_;
   end
 
-  always_comb begin : tock
-    /*tick();*/
+  always_ff @(posedge clock) begin : tock
+    tick();
   end
 
 
 /*private:*/
 
-  always_ff @(posedge clock) begin : tick
-    my_reg <= my_reg + 1;
-  end
+  task automatic tick();
+    my_reg_ <= my_reg_ + 1;
+  endtask
 
-  logic[6:0] my_reg;
+  logic[6:0] my_reg_;
 endmodule

@@ -19,11 +19,11 @@ class Module {
 
   void tock() {
     if (1)
-      submod_.tock();
+      submod.tock();
     else
-      submod_.tock();
-    my_sig = submod_.my_sig;
+      submod.tock();
+    my_sig = submod.my_sig;
   }
 
-  Submod submod_;
+  Submod submod;
 };

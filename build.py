@@ -5,7 +5,6 @@
 import glob
 import ninja_syntax
 import sys
-import os
 from os import path
 
 obj_dir = "obj"
@@ -17,12 +16,9 @@ def sorted_glob(*args, **kwargs):
 
 base_includes = [
     "-I.",
-    #"-I/usr/local/share/verilator/include",
     "-Isymlinks",
     "-Isymlinks/metrolib",
     "-Isymlinks/matcheroni",
-    #"-Isymlinks/CLI11/include",
-    #"-Itests",
 ]
 
 metrolib_src = [
@@ -119,6 +115,7 @@ def metronize_dir(src_dir, src_top, dst_dir):
 
     return dst_paths
 
+# ------------------------------------------------------------------------------
 
 def verilate_dir(src_top, out_dir):
     """
@@ -146,6 +143,7 @@ def verilate_dir(src_top, out_dir):
 
     return (verilated_hdr, verilated_obj)
 
+# ------------------------------------------------------------------------------
 
 def cpp_binary(bin_name, src_files, src_objs=None, deps=None, link_deps=None, **kwargs):
     """
@@ -173,6 +171,7 @@ def cpp_binary(bin_name, src_files, src_objs=None, deps=None, link_deps=None, **
                 inputs=src_objs + link_deps,
                 variables=kwargs)
 
+# ------------------------------------------------------------------------------
 
 def cpp_library(lib_name, src_files, src_objs=None, deps=None, **kwargs):
     """
@@ -246,6 +245,8 @@ def build_metron_app():
 
 def build_metron_ems():
     divider("Emscripten")
+
+    # FIXME did we break emscripten compile?
 
     ################################################################################
     # Emscripten
@@ -480,7 +481,6 @@ def build_ibex():
 # ------------------------------------------------------------------------------
 # Pong
 
-
 def build_pong():
     mt_root = "examples/pong/metron"
     sv_root = "examples/pong/metron_sv"
@@ -497,20 +497,6 @@ def build_pong():
     metronized_src = metronize_dir(mt_root, "pong.h", sv_root)
 
 # ------------------------------------------------------------------------------
-
-
-""""
-# build benchmark_reference : run_always bin/examples/rvsimple/main_reference
-# build benchmark_generated : run_always bin/examples/rvsimple/main_generated
-# build benchmark_rtl : run_always bin/examples/rvsimple/main_rtl
-
-# build benchmark : phony benchmark_reference benchmark_generated benchmark_rtl
-
-# default bin/metron
-# default bin/examples/rvsimple/main_reference
-# default bin/examples/rvsimple/main_generated
-# default bin/examples/rvsimple/main_rtl
-"""
 
 if __name__ == "__main__":
     sys.exit(main())

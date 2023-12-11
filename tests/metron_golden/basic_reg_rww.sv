@@ -4,22 +4,17 @@
 
 module Module (
   // global clock
-  input logic clock
+  input logic clock,
+  // output registers
+  output logic my_reg_
 );
 /*public:*/
 
-  always_ff @(posedge clock) begin : tock
-    tick();
-  end
-
-/*private:*/
-
-  task automatic tick();
+  always_ff @(posedge clock) begin : tick
     logic temp;
     temp = my_reg_;
     my_reg_ <= 0;
     my_reg_ <= 1;
-  endtask
+  end
 
-  logic my_reg_;
 endmodule

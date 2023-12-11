@@ -1,15 +1,9 @@
 #include "metron/metron_tools.h"
 
-// Private const methods should turn into SV functions.
+// Methods that don't write anything should become functions.
 
 class Module {
 public:
-
-  void tock() {
-    tick();
-  }
-
-private:
 
   void tick() {
     my_reg_ = my_reg_ + some_func();

@@ -1,23 +1,21 @@
 `include "metron/metron_tools.sv"
 
+// Methods that don't write anything should become functions.
+
 module Module (
-  // tick() ports
-  input logic[15:0] tick_addr
+  // global clock
+  input logic clock,
+  // output registers
+  output logic[7:0] my_reg_
 );
- /*public:*/
+/*public:*/
 
-  always_comb begin : tick
-    case (tick_addr)
-
-      // metron didn't like the block without {}
-      16'hFF1C: begin
-        case (1)
-          0:  begin /*break;*/ end
-        endcase
-        /*break;*/
-      end
-    endcase
+  always_ff @(posedge clock) begin : tick
+    my_reg_ <= my_reg_ + some_func();
   end
 
-  logic[7:0] data_out_;
+  function logic[7:0] some_func() /*const*/;
+    some_func = 3;
+  endfunction
+
 endmodule

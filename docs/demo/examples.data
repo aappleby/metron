@@ -4159,23 +4159,20 @@ class toplevel {
 #endif // TOPLEVEL_H
 #include "metron/metron_tools.h"
 
+// Methods that don't write anything should become functions.
+
 class Module {
- public:
+public:
 
-  void tick(logic<16> addr) {
-    switch (addr) {
-
-      // metron didn't like the block without {}
-      case 0xFF1C: {
-        switch (1) {
-          case 0: break;
-        }
-        break;
-      }
-    }
+  void tick() {
+    my_reg_ = my_reg_ + some_func();
   }
 
-  logic<8> data_out_;
+  logic<8> some_func() const {
+    return 3;
+  }
+
+  logic<8> my_reg_;
 };
 class Adder {
 public:
@@ -5382,8 +5379,10 @@ private:
 
 public:
 
-  void tock_only_calls_private_tick() {
-    tick_private(17);
+  int my_sig6c;
+  void tock_calls_private_tick() {
+    my_sig6c = 17;
+    tick_private(my_sig6c);
   }
 
 private:
@@ -5428,16 +5427,10 @@ endmodule
 #*/
 #include "metron/metron_tools.h"
 
-// Private const methods should turn into SV functions.
+// Methods that don't write anything should become functions.
 
 class Module {
 public:
-
-  void tock() {
-    tick();
-  }
-
-private:
 
   void tick() {
     my_reg_ = my_reg_ + some_func();
@@ -5456,12 +5449,6 @@ private:
 
 class Module {
 public:
-
-  void tock() {
-    tick();
-  }
-
-private:
 
   void tick() {
     my_reg1_++;
@@ -5600,15 +5587,12 @@ private:
 
 class Module {
 public:
-  void tock() {
-    tick();
-  }
-  logic<1> my_reg_;
 
-private:
   void tick() {
     my_reg_ = my_reg_ + 1;
   }
+
+  logic<1> my_reg_;
 };
 #include "metron/metron_tools.h"
 
@@ -5629,12 +5613,6 @@ public:
 
 class Module {
 public:
-
-  void tock() {
-    tick();
-  }
-
-private:
 
   void tick() {
     logic<1> temp = my_reg_;

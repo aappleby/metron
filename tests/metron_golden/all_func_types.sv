@@ -11,6 +11,7 @@ module Module (
   output int my_sig5a,
   output int my_sig5b,
   output int my_sig6a,
+  output int my_sig6c,
   // output registers
   output int my_reg1_,
   output int my_reg2_,
@@ -131,15 +132,18 @@ module Module (
 
 /*public:*/
 
-  always_ff @(posedge clock) begin : tock_only_calls_private_tick
-    tick_private(17);
+  always_comb begin : tock_calls_private_tick
+    my_sig6c = 17;
+    tick_private_x = my_sig6c;
+    /*tick_private(my_sig6c);*/
   end
 
 /*private:*/
   int my_reg4_;
-  task automatic tick_private(int x);
-    my_reg4_ <= my_reg4_ + x;
-  endtask
+  always_ff @(posedge clock) begin : tick_private
+    my_reg4_ <= my_reg4_ + tick_private_x;
+  end
+  int tick_private_x;
 
 
 endmodule

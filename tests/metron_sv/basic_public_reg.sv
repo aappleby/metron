@@ -9,12 +9,9 @@ module Module (
   output logic my_reg_
 );
 /*public:*/
-  always_ff @(posedge clock) begin : tock
-    tick();
+
+  always_ff @(posedge clock) begin : tick
+    my_reg_ <= my_reg_ + 1;
   end
 
-/*private:*/
-  task automatic tick();
-    my_reg_ <= my_reg_ + 1;
-  endtask
 endmodule

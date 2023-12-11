@@ -5,12 +5,6 @@
 class Module {
 public:
 
-  void tock() {
-    tick();
-  }
-
-private:
-
   void tick() {
     logic<1> temp = my_reg_;
     my_reg_ = 0;

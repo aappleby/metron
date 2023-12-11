@@ -4,13 +4,10 @@
 
 class Module {
 public:
-  void tock() {
-    tick();
-  }
-  logic<1> my_reg_;
 
-private:
   void tick() {
     my_reg_ = my_reg_ + 1;
   }
+
+  logic<1> my_reg_;
 };

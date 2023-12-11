@@ -101,8 +101,10 @@ private:
 
 public:
 
-  void tock_only_calls_private_tick() {
-    tick_private(17);
+  int my_sig6c;
+  void tock_calls_private_tick() {
+    my_sig6c = 17;
+    tick_private(my_sig6c);
   }
 
 private:

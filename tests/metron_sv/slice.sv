@@ -6,8 +6,6 @@
 module test_slice (
   // global clock
   input logic clock,
-  // output registers
-  output logic[31:0] ram_,
   // tick() ports
   input logic[7:0] tick_addr,
   input logic[3:0] tick_mask,
@@ -23,4 +21,5 @@ module test_slice (
   end
 
 /*private:*/
+  logic[31:0] ram_[256];
 endmodule

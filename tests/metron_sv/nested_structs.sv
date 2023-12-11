@@ -16,18 +16,12 @@ module Module (
   // global clock
   input logic clock,
   // output signals
-  output logic[7:0] a,
-  output logic[7:0] b,
-  output logic[7:0] c,
+  output OuterStruct r,
   // output registers
-  output logic[7:0] a,
-  output logic[7:0] b,
-  output logic[7:0] c
+  output OuterStruct s_
 );
 /*public:*/
 
-  OuterStruct r;
-  OuterStruct s_;
 
   always_comb begin : tock_func1
     r.x.a = 1;

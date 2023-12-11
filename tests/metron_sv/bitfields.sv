@@ -66,7 +66,7 @@ typedef union packed {
 
 module Module (
   // output signals
-  output logic[31:0] raw,
+  output rv32_insn blah,
   // tock() ports
   input logic[31:0] tock_x
 );
@@ -76,5 +76,4 @@ module Module (
     blah.raw = tock_x;
   end
 
-  rv32_insn blah;
 endmodule

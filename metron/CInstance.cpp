@@ -153,6 +153,20 @@ CInstance* CInstance::resolve(CNode* node) {
 
 //------------------------------------------------------------------------------
 
+CInstance* CInstance::get_root() {
+  if (inst_parent && inst_parent->as<CInstUnion>()) {
+    return inst_parent->get_root();
+  }
+  else if (inst_parent && inst_parent->as<CInstStruct>()) {
+    return inst_parent->get_root();
+  }
+  else {
+    return this;
+  }
+}
+
+//------------------------------------------------------------------------------
+
 CNodeClass* CInstance::get_owner() {
   return ancestor<CInstClass>()->node_class;
 }

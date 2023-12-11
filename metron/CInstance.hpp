@@ -67,7 +67,9 @@ struct CInstance {
 
   CInstance* resolve(CNode* node);
 
-  CInstance* get_root() { return inst_parent ? inst_parent->get_root() : this; }
+  //CInstance* get_root2() { return inst_parent ? inst_parent->get_root2() : this; }
+
+  CInstance* get_root();
 
   CNodeClass* get_owner();
   CNodeField* get_field();

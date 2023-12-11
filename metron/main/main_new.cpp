@@ -210,6 +210,8 @@ int main_new(Options opts) {
       Tracer::trace_cb callback = [&](CInstance* inst, CNode* node, TraceAction action) {
         if (inst->as<CInstFunc>()) return Err();
 
+        inst = inst->get_root();
+
         if (action == ACT_READ) {
           assert(!inst->as<CInstClass>());
           node_class->self_reads.insert(inst);
@@ -255,7 +257,9 @@ int main_new(Options opts) {
           //exit(-1);
         }
 
-        if (inst->is_sig() && inst->get_field()) node_class->input_sigs.insert(inst->get_field());
+        if (inst->is_sig()) {
+          if (auto f = inst->get_root()->get_field()) node_class->input_sigs.insert(f);
+        }
       }
 
       // RW
@@ -264,8 +268,12 @@ int main_new(Options opts) {
         if (!node_class->self_writes.contains(inst)) continue;
         if (!inst->is_public()) continue;
 
-        if (inst->is_sig() && inst->get_field()) node_class->output_sigs.insert(inst->get_field());
-        if (inst->is_reg( )&& inst->get_field()) node_class->output_regs.insert(inst->get_field());
+        if (inst->is_sig()) {
+          if (auto f = inst->get_root()->get_field()) node_class->output_sigs.insert(f);
+        }
+        if (inst->is_reg() && !inst->is_array()) {
+          if (auto f = inst->get_root()->get_field()) node_class->output_regs.insert(f);
+        }
       }
 
       // WO
@@ -278,8 +286,13 @@ int main_new(Options opts) {
           //exit(-1);
         }
 
-        if (inst->is_sig() && inst->get_field()) node_class->output_sigs.insert(inst->get_field());
-        if (inst->is_reg() && inst->get_field()) node_class->output_regs.insert(inst->get_field());
+        if (inst->is_sig()) {
+          if (auto f = inst->get_root()->get_field()) node_class->output_sigs.insert(f);
+        }
+
+        if (inst->is_reg() && !inst->is_array()) {
+          if (auto f = inst->get_root()->get_field()) node_class->output_regs.insert(f);
+        }
       }
     }
   }

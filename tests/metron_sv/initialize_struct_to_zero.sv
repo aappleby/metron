@@ -8,11 +8,10 @@ typedef struct packed {
 
 module Module (
   // output signals
-  output logic[7:0] field
+  output MyStruct1 my_struct1
 );
 /*public:*/
 
-  MyStruct1 my_struct1;
   always_comb begin : tock
     // FIXME fix this later glarghbh
     //my_struct1 = {0};

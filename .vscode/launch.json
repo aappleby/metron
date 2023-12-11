@@ -17,7 +17,7 @@
         //"-c", "examples/scratch.h", "-o", "examples/scratch.sv",
         //"-c", "pinwheel/soc/pinwheel_soc.h",
         //"-c", "tests/metron_bad/multiple_submod_function_bindings.h",
-        "-c", "examples/gb_spu/metron/MetroBoySPU2.h",
+        "-c", "examples/j1/metron/j1.h",
 
       ],
       "setupCommands": [

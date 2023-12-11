@@ -2247,28 +2247,28 @@ struct prim_arbiter_fixed {
 class DPRam {
 public:
 
-  logic<16> porta_dout;
-  logic<16> portb_dout;
+  logic<16> porta_dout_;
+  logic<16> portb_dout_;
 
   void tick(
     logic<16> porta_addr,
     logic<16> portb_addr,
-    logic<1> portb_write,
+    logic<1>  portb_write,
     logic<16> portb_data) {
 
-    porta_dout = ram[porta_addr];
+    porta_dout_ = ram_[porta_addr];
 
     if (portb_write) {
-      ram[portb_addr] = portb_data;
-      portb_dout = portb_data;
+      ram_[portb_addr] = portb_data;
+      portb_dout_ = portb_data;
     }
     else {
-      portb_dout = ram[portb_addr];
+      portb_dout_ = ram_[portb_addr];
     }
   }
 
 private:
-  logic<16> ram[65536];
+  logic<16> ram_[65536];
 };
 #include "metron/metron_tools.h"
 #include "dpram.h"
@@ -2282,30 +2282,14 @@ public:
   logic<16> io_dout_;
   logic<16> io_din;
 
+  enum {
+    OP_JUMP = 0b000,
+    OP_CJMP = 0b001,
+    OP_CALL = 0b010,
+    OP_ALU  = 0b011,
+  };
+
   void tock(logic<1> sys_rst_i) {
-    tick(sys_rst_i);
-  }
-
-private:
-
-  // The RAM
-  DPRam dpram;
-
-  // The D and R stacks
-  logic<16> dstack[32];
-  logic<16> rstack[32];
-
-  logic<16> insn;
-  logic<16> ramrd;
-
-  logic<13> pc_;
-  logic<16> st0_;
-  logic<5>  dsp_;
-  logic<5>  rsp_;
-
-  //----------------------------------------
-
-  void tick(logic<1> sys_rst_i) {
     logic<5>  _dsp;
     logic<16> _st0;
     logic<1>  _dstkW;
@@ -2314,23 +2298,19 @@ private:
     logic<13> _pc;
     logic<5>  _rsp;
 
-    enum {
-      OP_JUMP = 0b000,
-      OP_CJMP = 0b001,
-      OP_CALL = 0b010,
-      OP_ALU  = 0b011,
-    };
+    logic<16> insn;
+    logic<16> ramrd;
 
-    insn = dpram.porta_dout;
-    ramrd = dpram.portb_dout;
+    insn = dpram.porta_dout_;
+    ramrd = dpram.portb_dout_;
 
-    logic<16> dd = b2(insn, 0).as_signed();
-    logic<16> rd = b2(insn, 2).as_signed();
+    logic<16> dd = sign_extend<16>(b2(insn, 0));
+    logic<16> rd = sign_extend<16>(b2(insn, 2));
     logic<1>  op_store = insn[5];
 
     logic<3> opcode = b3(insn, 13);
     logic<1> is_lit = insn[15];
-    logic<16> st1 = dstack[dsp_];
+    logic<16> st1 = dstack_[dsp_];
 
     logic<4> st0sel;
     switch(b2(insn, 13)) {
@@ -2341,8 +2321,7 @@ private:
     }
 
     // Compute the new value of T.
-    logic<16> rst0 = rstack[rsp_];
-
+    logic<16> rst0 = rstack_[rsp_];
 
     if (is_lit) {
       _st0 = cat(b1(0), b15(insn));
@@ -2399,8 +2378,8 @@ private:
       _pc = b13(insn);
     }
     else if (opcode == OP_ALU) {
-      _dsp = dsp_ + b2(insn, 0).as_signed();
-      _rsp = rsp_ + b2(insn, 2).as_signed();
+      _dsp = dsp_ + sign_extend<5>(b2(insn, 0));
+      _rsp = rsp_ + sign_extend<5>(b2(insn, 2));
       _rstkW = insn[6];
       _rstkD = st0_;
       _pc = insn[12] ? b13(rst0, 1) : b13(pc_ + 1);
@@ -2417,8 +2396,21 @@ private:
 
     _dstkW = is_lit | ((opcode == OP_ALU) & insn[7]);
 
-    if (_dstkW) dstack[_dsp] = st0_;
-    if (_rstkW) rstack[_rsp] = _rstkD;
+    tick(sys_rst_i, _pc, _st0, _dsp, _rsp, _dstkW, _rstkW, _rstkD, insn);
+  }
+
+  void tick(
+    logic<1> sys_rst_i,
+    logic<13> _pc,
+    logic<16> _st0,
+    logic<5>  _dsp,
+    logic<5>  _rsp,
+    logic<1> _dstkW,
+    logic<1> _rstkW,
+    logic<16> _rstkD,
+    logic<16> insn
+  ) {
+
 
     if (sys_rst_i) {
       pc_      = 0;
@@ -2430,16 +2422,37 @@ private:
       io_addr_ = 0;
       io_dout_ = 0;
     } else {
+      logic<3> opcode = b3(insn, 13);
+
+      io_rd_   = (opcode == OP_ALU && (b4(insn,8) == 0xc));
+      io_wr_   = opcode == OP_ALU && insn[5];
+      io_addr_ = b16(st0_);
+      io_dout_ = dstack_[dsp_];
+
+      if (_dstkW) dstack_[_dsp] = st0_;
+      if (_rstkW) rstack_[_rsp] = _rstkD;
+
       pc_  = _pc;
       st0_ = _st0;
       dsp_ = _dsp;
       rsp_ = _rsp;
-      io_rd_   = (opcode == OP_ALU && (b4(insn,8) == 0xc));
-      io_wr_   = opcode == OP_ALU && insn[5];
-      io_addr_ = b16(st0_);
-      io_dout_ = dstack[dsp_];
     }
   }
+
+private:
+
+  // The RAM
+  DPRam dpram;
+
+  // The D and R stacks
+  logic<16> dstack_[32];
+  logic<16> rstack_[32];
+
+  logic<13> pc_;
+  logic<16> st0_;
+  logic<5>  dsp_;
+  logic<5>  rsp_;
+
 };
 Verilated version of https://www.fpga4fun.com/PongGame.html
 #ifndef PONG_H

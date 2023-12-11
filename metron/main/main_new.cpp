@@ -89,6 +89,7 @@ Err log_action2(CInstance* inst, CNode* node, TraceAction action) {
     inst_prim->state_stack.back() = new_state;
 
     if (new_state == TS_INVALID) {
+      dump_parse_tree(node);
       LOG_R("Trace error: state went from %s to %s\n", to_string(old_state),
             to_string(new_state));
       err << ERR("Invalid context state\n");

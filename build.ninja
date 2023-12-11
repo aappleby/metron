@@ -351,6 +351,24 @@ build bin/examples/pong: c_binary obj/examples/pong/main.o bin/libmetron.a
 # Metronize examples/pong/metron -> examples/pong/metron_sv
 
 build examples/pong/metron_sv/pong.sv: metron examples/pong/metron/pong.h | bin/metron
+build gen/examples/j1/metron/j1.h.ok: check_cpp examples/j1/metron/j1.h
+  includes = ${base_includes}
+
+
+################################################################################
+# Compile bin/examples/j1
+
+build obj/examples/j1/main.o: compile_cpp examples/j1/main.cpp
+  includes = ${base_includes}
+build bin/examples/j1: c_binary obj/examples/j1/main.o bin/libmetron.a
+  includes = ${base_includes}
+
+
+################################################################################
+# Metronize examples/j1/metron -> examples/j1/metron_sv
+
+build examples/j1/metron_sv/dpram.sv: metron examples/j1/metron/dpram.h | bin/metron
+build examples/j1/metron_sv/j1.sv: metron examples/j1/metron/j1.h | bin/metron
 
 
 ################################################################################

@@ -8,12 +8,12 @@
 class Submod {
 public:
 
-  void tick1() { y = y + z; }
-  void tick2() { z = z + 1; }
+  void tick1() { y_ = y_ + z_; }
+  void tick2() { z_ = z_ + 1; }
 
 private:
-  int y;
-  int z;
+  int y_;
+  int z_;
 };
 
 class Module {
@@ -23,8 +23,6 @@ public:
     x.tick2();
     x.tick1();
   }
-
-private:
 
   Submod x;
 };

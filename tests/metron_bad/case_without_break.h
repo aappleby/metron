@@ -5,10 +5,10 @@
 
 class Module {
  public:
-  logic<8> tock() {
+  logic<8> tock(logic<8> in) {
     logic<8> result;
-    switch (my_reg_) {
-      case 0:  // can we stick comments in here?
+    switch (in) {
+      case 0:
       case 1:
       case 2:
         result = 10;
@@ -22,12 +22,6 @@ class Module {
         break;
     }
 
-    tick();
     return result;
   }
-
- private:
-  void tick() { my_reg_ = my_reg_ + 1; }
-
-  logic<8> my_reg_;
 };

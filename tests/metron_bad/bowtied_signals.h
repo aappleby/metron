@@ -8,8 +8,6 @@ class Module {
 
   void tock2() { sig2 = sig1; }
 
-  void tock3() { sig1 = 0; }
-
  private:
   logic<8> sig1;
   logic<8> sig2;

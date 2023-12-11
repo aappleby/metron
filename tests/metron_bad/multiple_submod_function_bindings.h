@@ -1,6 +1,6 @@
 #include "metron/metron_tools.h"
 
-// A submod function can only produce one value per tock(). Trying to use it
+// A submod function can only produce one value per cycle. Trying to use it
 // twice should be an error.
 
 // X Context tock_add_one had invalid state after trace

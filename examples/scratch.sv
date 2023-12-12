@@ -1,21 +1,28 @@
 `include "metron/metron_tools.sv"
 
-// Methods that don't write anything should become functions.
+// Tocks should be able to call private tasks and functions
+
+// FIXME task set_signal not getting called
 
 module Module (
-  // global clock
-  input logic clock,
-  // output registers
-  output logic[7:0] my_reg_
+  // output signals
+  output logic[7:0] my_signal
 );
 /*public:*/
 
-  always_ff @(posedge clock) begin : tick
-    my_reg_ <= my_reg_ + some_func();
+
+  always_comb begin : tock
+    set_signal(get_number());
   end
 
-  function logic[7:0] some_func() /*const*/;
-    some_func = 3;
+/*private:*/
+
+  function logic[7:0] get_number() /*const*/;
+    get_number = 7;
   endfunction
+
+  task automatic set_signal(logic[7:0] number);
+    my_signal = number;
+  endtask
 
 endmodule

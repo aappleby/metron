@@ -13,7 +13,8 @@ public:
 class Module {
 public:
 
-  logic<8> tock_bindings() const {
+  logic<8> tock_bindings_ret;
+  void tock_bindings() {
     logic<8> result;
     // Submod bindings should _not_ end up here.
 
@@ -29,7 +30,7 @@ public:
       }
     }
 
-    return result;
+    tock_bindings_ret = result;
   }
 
   Submod submod;

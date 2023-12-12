@@ -25,9 +25,10 @@ module Submod2 (
 endmodule
 
 module Module (
+  // output signals
+  output logic[7:0] tock_ret,
   // tock() ports
-  input logic[7:0] tock_old_counter,
-  output logic[7:0] tock_ret
+  input logic[7:0] tock_old_counter
 );
 /*public:*/
 

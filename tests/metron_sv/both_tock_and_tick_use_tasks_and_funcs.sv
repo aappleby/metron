@@ -17,27 +17,20 @@ module Module (
 
 
   always_comb begin : tock
-    logic[7:0] dummy;
-    public_task_x = public_func(tock_z);
-    dummy = public_task_ret;
+    public_task(public_func(tock_z));
     tick_w = tock_z;
     /*tick(z);*/
   end
 
-/*private:*/
-
-  // FIXME ok these aren't actually public anymore...
-
-  always_comb begin : public_task
-    my_sig = public_task_x + 7;
-    public_task_ret = 0;
-  end
-  logic[7:0] public_task_x;
-  logic[7:0] public_task_ret;
+  task automatic public_task(logic[7:0] x);
+    my_sig = x + 7;
+  endtask
 
   function logic[7:0] public_func(logic[7:0] x);
     public_func = my_reg1_ + private_func(x);
   endfunction
+
+/*private:*/
 
   always_ff @(posedge clock) begin : tick
     private_task(private_func(tick_w));

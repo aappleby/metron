@@ -5,9 +5,7 @@ module Module (
   input logic clock,
   // output signals
   output int my_sig1,
-  output int my_sig2,
   output int my_sig3,
-  output int my_sig4,
   output int my_sig5a,
   output int my_sig5b,
   output int my_sig6a,
@@ -20,20 +18,14 @@ module Module (
   // func_params_return() ports
   input int func_params_return_x,
   output int func_params_return_ret,
-  // tock_no_params_return() ports
-  output int tock_no_params_return_ret,
-  // tock_params_no_return() ports
-  input int tock_params_no_return_x,
-  // tock_params_return() ports
-  input int tock_params_return_x,
-  output int tock_params_return_ret,
+  // tock_params() ports
+  input int tock_params_x,
   // tock_calls_funcs1() ports
   input int tock_calls_funcs1_x,
   // tock_calls_funcs2() ports
   input int tock_calls_funcs2_x,
   // tock_calls_tock() ports
   input int tock_calls_tock_x,
-  output int tock_calls_tock_ret,
   // tick_params() ports
   input int tick_params_x
 );
@@ -58,26 +50,16 @@ module Module (
     func_params_return_ret = func_params_return_x + 1;
   end
 
-  always_comb begin : tock_no_params_no_return
+  always_comb begin : tock_no_params
     int x;
     my_sig1 = 12;
     x = my_sig1;
   end
 
-  always_comb begin : tock_no_params_return
-    my_sig2 = 12;
-    tock_no_params_return_ret = my_sig2;
-  end
-
-  always_comb begin : tock_params_no_return
+  always_comb begin : tock_params
     int y;
-    my_sig3 = 12 + tock_params_no_return_x;
+    my_sig3 = 12 + tock_params_x;
     y = my_sig3;
-  end
-
-  always_comb begin : tock_params_return
-    my_sig4 = 12 + tock_params_return_x;
-    tock_params_return_ret = my_sig4;
   end
 
   always_comb begin : tock_calls_funcs1
@@ -96,17 +78,14 @@ module Module (
 
   always_comb begin : tock_calls_tock
     my_sig6a = 12;
-    tock_called_by_tock_x = my_sig6a;
-    /*tock_called_by_tock(my_sig6a);*/
-    tock_calls_tock_ret = 0;
+    tock_called_by_tock(my_sig6a);
   end
 
 /*private:*/
   int my_sig6b;
-  always_comb begin : tock_called_by_tock
-    my_sig6b = tock_called_by_tock_x;
-  end
-  int tock_called_by_tock_x;
+  task automatic tock_called_by_tock(int x);
+    my_sig6b = x;
+  endtask
 /*public:*/
 
   //----------

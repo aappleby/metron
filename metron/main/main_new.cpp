@@ -37,6 +37,355 @@ Err build_call_graph(CNodeClass* node, CSourceRepo* repo);
 bool has_non_terminal_return(CNodeCompound* node_compound);
 bool check_switch_breaks(CNodeSwitch* node);
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//------------------------------------------------------------------------------
+
+bool assign_method_type(CNodeFunction* func) {
+  if (func->method_type != MT_UNKNOWN) return true;
+
+  bool any_callers = !func->internal_callers.empty();
+  bool any_callees = !func->internal_callees.empty();
+  bool ext_callees = !func->external_callees.empty();
+  bool has_return = func->has_return();
+  bool has_params = !func->params.empty();
+  bool self_writes_reg = false;
+  bool self_writes_sig = false;
+  bool tree_writes_reg = false;
+  bool tree_writes_sig = false;
+  bool calls_tick = false;
+  bool calls_tock = false;
+  bool calls_task = false;
+  bool calls_func = false;
+
+  for (auto w : func->self_writes) {
+    if      (w->is_reg()) self_writes_reg = true;
+    else if (w->is_sig()) self_writes_sig = true;
+    else                  assert(false);
+  }
+
+  for (auto w : func->tree_writes) {
+    if      (w->is_reg()) tree_writes_reg = true;
+    else if (w->is_sig()) tree_writes_sig = true;
+    else                  assert(false);
+  }
+
+  if (self_writes_reg && self_writes_sig) {
+    LOG_R("Function %s writes both registers and signals\n", func->name.c_str());
+    exit(-1);
+  }
+
+  if ((self_writes_reg || self_writes_sig) && has_return) {
+    LOG_R("Function %s writes something and has a return value\n", func->name.c_str());
+    exit(-1);
+  }
+
+  if ((tree_writes_reg || tree_writes_sig) && has_return) {
+    LOG_R("Function %s indirectly writes something and has a return value\n", func->name.c_str());
+    exit(-1);
+  }
+
+  for (auto c : func->internal_callees) {
+    assert(c->method_type != MT_ALWAYS_COMB);
+    assert(c->method_type != MT_ALWAYS_FF);
+    if (c->method_type == MT_TASK_FF)   calls_tick = true;
+    if (c->method_type == MT_TASK_COMB) calls_tock = true;
+    if (c->method_type == MT_FUNC)      calls_func = true;
+  }
+
+  //----------------------------------------
+  // Top-level functions can only be ALWAYS_FF or ALWAYS_COMB
+
+  if (!any_callers) {
+    if (self_writes_sig || tree_writes_sig || ext_callees) {
+      func->set_type(MT_ALWAYS_COMB);
+      return true;
+    }
+
+    if (!self_writes_reg && !self_writes_sig && !tree_writes_reg && !tree_writes_sig) {
+      func->set_type(MT_ALWAYS_COMB);
+      return true;
+    }
+
+    if (self_writes_reg || (tree_writes_reg && !tree_writes_sig)) {
+      func->set_type(MT_ALWAYS_FF);
+      return true;
+    }
+
+    assert(false);
+  }
+
+  //----------------------------------------
+  // Non-top-level functions
+
+  bool all_callers_are_comb = true;
+  for (auto c : func->internal_callers) {
+    all_callers_are_comb &= (c->method_type == MT_ALWAYS_COMB) || (c->method_type == MT_TASK_COMB);
+  }
+
+  if ((self_writes_reg || tree_writes_reg) && all_callers_are_comb) {
+    // This function lies on the ff side of the comb->ff boundary, it must be always_ff
+    func->set_type(MT_ALWAYS_FF);
+    return true;
+  }
+
+  // FIXME we really should splice in output params to tasks so that tasks
+  // can have returns
+
+  if (self_writes_reg) {
+    func->set_type(MT_TASK_FF);
+    return true;
+  }
+  else if (self_writes_sig) {
+    func->set_type(MT_TASK_COMB);
+    return true;
+  }
+  else if (tree_writes_reg && tree_writes_sig) {
+    func->set_type(MT_TASK_COMB);
+    return true;
+  }
+  else if (tree_writes_reg) {
+    func->set_type(MT_TASK_FF);
+    return true;
+  }
+  else if (tree_writes_sig) {
+    func->set_type(MT_TASK_COMB);
+    return true;
+  }
+  else {
+    func->set_type(MT_FUNC);
+    return true;
+  }
+
+  //----------------------------------------
+
+  /*
+  assert(!self_writes_sig && !self_writes_reg);
+
+  if (any_callees) {
+    bool called_by_comb = false;
+    bool called_by_ff = false;
+    for (auto f : func->internal_callers) {
+      if (f->method_type == MT_ALWAYS_COMB || f->method_type == MT_TASK_COMB) called_by_comb = true;
+      else if (f->method_type == MT_ALWAYS_FF || f->method_type == MT_TASK_FF) called_by_ff = true;
+      else assert(false);
+    }
+
+    bool calls_comb = false;
+    bool calls_ff = false;
+    for (auto f : func->internal_callees) {
+      assert(f->method_type != MT_ALWAYS_FF);
+      assert(f->method_type != MT_ALWAYS_COMB);
+
+      if (f->method_type == MT_TASK_COMB) calls_comb = true;
+      if (f->method_type == MT_TASK_FF) calls_ff = true;
+    }
+
+    if (calls_comb && calls_ff) {
+      assert(false);
+    }
+    else if (calls_comb) {
+      func->set_type(MT_TASK_COMB);
+      return true;
+    }
+    else if (calls_ff) {
+      if (called_by_comb) {
+        func->set_type(MT_ALWAYS_FF);
+      }
+      else {
+        func->set_type(MT_TASK_FF);
+      }
+      return true;
+    }
+  }
+  */
+
+  //----------------------------------------
+
+  return false;
+}
+
+//------------------------------------------------------------------------------
+
+/*
+  LOG_B("Check for ticks with return values\n");
+
+  for (auto file : repo.source_files) {
+    for (auto node_class : file->all_classes) {
+      for (auto node_func : node_class->all_functions) {
+        if (node_func->method_type == MT_ALWAYS_FF && node_func->has_return()) {
+          LOG_R("Tick method %s has a return value and it shouldn't\n", node_func->name.c_str());
+          exit(-1);
+        }
+        if (node_func->method_type == MT_TASK_FF && node_func->has_return()) {
+          LOG_R("Tick method %s has a return value and it shouldn't\n", node_func->name.c_str());
+          exit(-1);
+        }
+      }
+    }
+  }
+*/
+
+void assign_method_types(CNodeClass* node_class) {
+  LOG("Assigning method types for %s\n", node_class->name.c_str());
+  LOG_INDENT_SCOPE();
+
+  std::set<CNodeClass*> submod_classes;
+  for (auto f : node_class->all_fields) {
+    if (auto submod_class = f->get_type_class()) {
+      submod_classes.insert(submod_class);
+    }
+  }
+  for (auto c : submod_classes) assign_method_types(c);
+
+
+  auto& funcs = node_class->all_functions;
+
+  for (auto f : funcs) assert(f->method_type == MT_UNKNOWN);
+  if (node_class->constructor) assert(node_class->constructor->method_type == MT_UNKNOWN);
+
+  //----------
+
+  if (node_class->constructor) node_class->constructor->method_type = MT_INIT;
+
+  for (int i = 0; i < 100; i++) {
+    bool done = true;
+    for (auto f : funcs) done &= assign_method_type(f);
+    if (done) break;
+  }
+
+  //----------
+
+  bool bad = false;
+  for (auto f : funcs) {
+    if (f->internal_callers.empty()) {
+      if (f->method_type != MT_ALWAYS_COMB && f->method_type != MT_ALWAYS_FF) {
+        LOG_R("Top-level function %s is not always_*\n", f->name.c_str());
+        exit(-1);
+      }
+    }
+
+    if (f->method_type == MT_UNKNOWN) {
+      LOG_R("Couldn't categorize %s\n", f->name.c_str());
+      assign_method_type(f);
+      bad = true;
+    }
+
+    // All external callees must be always_comb or always_ff
+    if (!f->external_callees.empty()) {
+      for (auto c : f->external_callees) {
+        assert(c->method_type == MT_ALWAYS_COMB || c->method_type == MT_ALWAYS_FF);
+      }
+    }
+  }
+
+  assert(!bad);
+  LOG("Assigning method types for %s done\n", node_class->name.c_str());
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //------------------------------------------------------------------------------
 
 Err log_action2(CInstance* inst, CNode* node, TraceAction action) {
@@ -243,6 +592,10 @@ int main_new(Options opts) {
         err << tracer.start_trace(inst_func, node_func, callback, /*deep_trace*/ false);
       }
 
+      for (auto f : node_class->all_functions) {
+        f->propagate_rw();
+      }
+
       // RO
       for (auto inst : node_class->self_reads) {
         if (inst->get_owner() != node_class) continue;
@@ -346,45 +699,19 @@ int main_new(Options opts) {
   LOG_B("Assign method types\n");
   LOG_INDENT();
 
+  /*
   for (auto file : repo.source_files) {
     for (auto node_class : file->all_classes) {
       LOG("Assigning method types for %s\n", node_class->name.c_str());
       LOG_INDENT_SCOPE();
-
-      for (auto node_func : node_class->all_functions) {
-        assert(node_func->method_type == MT_UNKNOWN);
-      }
-
-      for (auto node_func : node_class->all_functions) {
-        LOG("Assigning method types for %s.%s\n", node_class->name.c_str(), node_func->name.c_str());
-        if (node_func->is_public) node_func->update_type();
-      }
-
-      if (node_class->constructor) node_class->constructor->update_type();
-
-      for (auto node_func : node_class->all_functions) {
-        if (node_func->method_type != MT_UNKNOWN) {
-        }
-      }
+      assign_method_types(node_class);
     }
   }
+  */
+
+  if (top) assign_method_types(top);
 
   LOG_DEDENT();
-
-  //----------------------------------------
-
-  LOG_B("Check for ticks with return values\n");
-
-  for (auto file : repo.source_files) {
-    for (auto node_class : file->all_classes) {
-      for (auto node_func : node_class->all_functions) {
-        if (node_func->method_type == MT_TICK && node_func->has_return()) {
-          LOG_R("Tick method %s has a return value and it shouldn't\n", node_func->name.c_str());
-          exit(-1);
-        }
-      }
-    }
-  }
 
   //----------------------------------------
 

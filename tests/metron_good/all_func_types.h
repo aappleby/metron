@@ -23,27 +23,15 @@ public:
   }
 
   int my_sig1;
-  void tock_no_params_no_return() {
+  void tock_no_params() {
     my_sig1 = 12;
     int x = my_sig1;
   }
 
-  int my_sig2;
-  int tock_no_params_return() {
-    my_sig2 = 12;
-    return my_sig2;
-  }
-
   int my_sig3;
-  void tock_params_no_return(int x) {
+  void tock_params(int x) {
     my_sig3 = 12 + x;
     int y = my_sig3;
-  }
-
-  int my_sig4;
-  int tock_params_return(int x) {
-    my_sig4 = 12 + x;
-    return my_sig4;
   }
 
   int my_sig5a;
@@ -63,10 +51,9 @@ private:
 public:
 
   int my_sig6a;
-  int tock_calls_tock(int x) {
+  void tock_calls_tock(int x) {
     my_sig6a = 12;
     tock_called_by_tock(my_sig6a);
-    return 0;
   }
 
 private:

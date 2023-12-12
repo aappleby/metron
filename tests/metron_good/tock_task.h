@@ -7,8 +7,10 @@ public:
 
   logic<8> my_signal;
 
-  int tock() {
-    return set_signal(get_number());
+  int tock_ret;
+  void tock() {
+    set_signal(get_number());
+    tock_ret = set_signal_ret;
   }
 
 private:
@@ -17,9 +19,10 @@ private:
     return 7;
   }
 
-  int set_signal(logic<8> number) {
+  int set_signal_ret;
+  void set_signal(logic<8> number) {
     my_signal = number;
-    return my_signal;
+    set_signal_ret = my_signal;
   }
 
 };

@@ -11,22 +11,19 @@ public:
   logic<8> my_sig;
 
   void tock(int z) {
-    logic<8> dummy = public_task(public_func(z));
+    public_task(public_func(z));
     tick(z);
   }
 
-private:
-
-  // FIXME ok these aren't actually public anymore...
-
-  logic<8> public_task(logic<8> x) {
+  void public_task(logic<8> x) {
     my_sig = x + 7;
-    return 0;
   }
 
   logic<8> public_func(logic<8> x) {
     return my_reg1_ + private_func(x);
   }
+
+private:
 
   void tick(int w) {
     private_task(private_func(w));

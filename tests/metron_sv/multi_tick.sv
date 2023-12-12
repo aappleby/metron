@@ -5,17 +5,15 @@
 module Module (
   // global clock
   input logic clock,
-  // tock() ports
-  output logic[7:0] tock_ret
+  // output signals
+  output logic[7:0] tock_result
 );
 /*public:*/
 
   always_comb begin : tock
-    logic[7:0] result;
-    result = my_reg1_ + my_reg2_;
+    tock_result = my_reg1_ + my_reg2_;
     /*tick1();*/
     /*tick2();*/
-    tock_ret = result;
   end
 
 /*private:*/

@@ -22,7 +22,7 @@ module Submod (
 endmodule
 
 module Module (
-  // tock() ports
+  // output signals
   output logic[19:0] tock_ret
 );
 /*public:*/

@@ -157,7 +157,7 @@ Err Emitter::emit(const char* fmt, ...) {
 
 bool class_needs_tick(CNodeClass* node_class) {
   for (auto f : node_class->all_functions) {
-    if (f->method_type == MT_TICK) return true;
+    if (f->method_type == MT_ALWAYS_FF) return true;
   }
 
   for (auto f : node_class->all_fields) {
@@ -172,7 +172,7 @@ bool class_needs_tick(CNodeClass* node_class) {
 
 bool class_needs_tock(CNodeClass* node_class) {
   for (auto f : node_class->all_functions) {
-    if (f->method_type == MT_TOCK) return true;
+    if (f->method_type == MT_ALWAYS_COMB) return true;
   }
 
   for (auto f : node_class->all_fields) {
@@ -548,7 +548,14 @@ Err Emitter::emit_format(CNode* node, const char* fmt, ...) {
 // Change "a += b" to "a = a + b", etc.
 
 bool in_tick(CNode* node) {
-  return node->ancestor<CNodeFunction>()->method_type == MT_TICK;
+  auto mt = node->ancestor<CNodeFunction>()->method_type;
+  return mt == MT_ALWAYS_FF || mt == MT_TASK_FF;
+}
+
+bool in_constructor(CNode* node) {
+  auto func = node->ancestor<CNodeFunction>();
+  if (func->as<CNodeConstructor>()) return true;
+  return func->called_by_constructor();
 }
 
 Err Emitter::emit(CNodeAssignment* node) {
@@ -557,6 +564,8 @@ Err Emitter::emit(CNodeAssignment* node) {
 
   // If we're in a tick, turn = into <=
   std::string assign = in_tick(node) && node_field ? "<=" : "=";
+
+  if (in_constructor(node)) assign = "=";
 
   if (node->node_op->get_text() == "=") {
     err << emit_format(node, "lhs _ ~op{%s} _ rhs", assign.c_str());
@@ -776,19 +785,26 @@ Err Emitter::emit(CNodeCall* node) {
     auto src_mtype = src_func->method_type;
     auto dst_mtype = dst_func->method_type;
 
-    if (dst_mtype == MT_INIT) return emit_default(node);
-    if (dst_mtype == MT_FUNC) return emit_default(node);
-    if (src_mtype == MT_TICK && dst_mtype == MT_TICK) return emit_default(node);
+    if (dst_mtype == MT_INIT)      return emit_default(node);
+    if (dst_mtype == MT_FUNC)      return emit_default(node);
+
+    if (dst_mtype == MT_TASK_COMB) {
+      return emit_default(node);
+    }
+
+    if (dst_mtype == MT_TASK_FF)   return emit_default(node);
 
     // FIXME: Exiting after doing this can't be right...
     // check tock_task.h
+    /*
     if (dst_mtype == MT_TOCK) {
       auto dst_name = dst_func->name;
       err << emit_replacement2(node, "%s_ret", dst_name.c_str());
       return err;
     }
+    */
 
-    if (src_mtype == MT_TOCK) {
+    if (src_mtype == MT_ALWAYS_COMB && (dst_mtype == MT_ALWAYS_FF || dst_mtype == MT_ALWAYS_COMB)) {
 
       // Emit writes to binding variables in place of the function arguments
       err << comment_out(node);
@@ -825,6 +841,8 @@ Err Emitter::emit(CNodeCall* node) {
       assert(arg == nullptr);
       return err << check_done(node);
     }
+
+    assert(false);
   }
 
   assert(false);
@@ -1245,7 +1263,7 @@ Err Emitter::emit(CNodeFieldExpression* node) {
     if (i == 0) {
       err << cursor.emit_print("_");
     }
-    else {
+  else {
       err << cursor.emit_print(".");
     }
   }
@@ -1259,41 +1277,15 @@ Err Emitter::emit(CNodeFieldExpression* node) {
 Err Emitter::emit(CNodeFunction* node) {
   Err err = check_at(node);
 
-  // FIXME this should happen somewhere else
-  bool called_by_init = false;
-  bool called_by_tick = false;
-  bool called_by_tock = false;
-  bool called_by_func = false;
-
-  node->visit_internal_callers([&](CNodeFunction* f) {
-    if (f->method_type == MT_INIT) called_by_init = true;
-    if (f->method_type == MT_TICK) called_by_tick = true;
-    if (f->method_type == MT_TOCK) called_by_tock = true;
-    if (f->method_type == MT_FUNC) called_by_func = true;
-  });
-
-  //----------
-
-  if (node->method_type == MT_INIT) {
-    err << (node->as<CNodeConstructor>() ? emit_init(node)
-                                         : emit_task(node));
-  } else if (node->method_type == MT_TOCK) {
-    err << emit_always_comb(node);
-  } else if (node->method_type == MT_TICK) {
-    err << (called_by_tick ? emit_task(node)
-                           : emit_always_ff(node));
-  } else if (node->method_type == MT_FUNC) {
-    if (node->is_public && node->internal_callers.empty()) {
-      err << emit_always_comb(node);
-    }
-    else {
-      err << emit_func(node);
-    }
-  } else {
-    assert(false);
+  switch(node->method_type) {
+    case MT_INIT:        err << emit_init(node); break;
+    case MT_ALWAYS_FF:   err << emit_always_ff(node); break;
+    case MT_ALWAYS_COMB: err << emit_always_comb(node); break;
+    case MT_TASK_FF:     err << emit_task(node); break;
+    case MT_TASK_COMB:   err << emit_task(node); break;
+    case MT_FUNC:        err << emit_func(node); break;
+    default:      assert(false); break;
   }
-
-  //----------
 
   if (node->needs_binding()) {
     err << emit_func_binding_vars(node);
@@ -1459,11 +1451,17 @@ Err Emitter::emit(CNodeReturn* node) {
 
   err << skip_over2(node->node_ret);
 
-  if (func->should_emit_as_task() || func->should_emit_as_func()) {
+  if (func->method_type == MT_ALWAYS_COMB) {
+    err << cursor.emit_print("%s_ret = ", fname.c_str());
+  }
+  else if (func->method_type == MT_FUNC) {
     err << cursor.emit_print("%s = ", fname.c_str());
   }
-  else {
+  else if (func->method_type == MT_TASK_COMB) {
     err << cursor.emit_print("%s_ret = ", fname.c_str());
+  }
+  else {
+    assert(false);
   }
 
   err << emit_dispatch2(node->node_val);
@@ -2415,10 +2413,14 @@ Err Emitter::emit_function_ports(CNodeFunction* f) {
   }
 
   if (rtype->get_text() != "void") {
+    LOG_R("Function %s should not have return value port\n", f->name.c_str());
+    exit(-1);
+    /*
     err << cursor.start_line();
     err << cursor.emit_print("output ");
     err << emit_splice(rtype);
     err << cursor.emit_print(" %s_ret,", fname.c_str());
+    */
   }
 
   return err;
@@ -2572,8 +2574,69 @@ Err Emitter::emit_func(CNodeFunction* node) {
 
 //------------------------------------------------------------------------------
 
+/*
+[000.005]  ▆ CNodeFunction =
+[000.006]  ┣━━╸▆ return_type : CNodeBuiltinType =
+[000.006]  ┃   ┣━━╸▆ name : CNodeIdentifier = "logic"
+[000.006]  ┃   ┗━━╸▆ template_args : CNodeList =
+[000.006]  ┃       ┣━━╸▆ ldelim : CNodePunct = "<"
+[000.006]  ┃       ┣━━╸▆ arg : CNodeConstInt = "8"
+[000.006]  ┃       ┗━━╸▆ rdelim : CNodePunct = ">"
+[000.006]  ┣━━╸▆ name : CNodeIdentifier = "public_task"
+[000.006]  ┣━━╸▆ params : CNodeList =
+[000.006]  ┃   ┣━━╸▆ ldelim : CNodePunct = "("
+[000.006]  ┃   ┣━━╸▆ decl : CNodeDeclaration =
+[000.006]  ┃   ┃   ┣━━╸▆ type : CNodeBuiltinType =
+[000.006]  ┃   ┃   ┃   ┣━━╸▆ name : CNodeIdentifier = "logic"
+[000.007]  ┃   ┃   ┃   ┗━━╸▆ template_args : CNodeList =
+[000.007]  ┃   ┃   ┃       ┣━━╸▆ ldelim : CNodePunct = "<"
+[000.007]  ┃   ┃   ┃       ┣━━╸▆ arg : CNodeConstInt = "8"
+[000.007]  ┃   ┃   ┃       ┗━━╸▆ rdelim : CNodePunct = ">"
+[000.007]  ┃   ┃   ┗━━╸▆ name : CNodeIdentifier = "x"
+[000.007]  ┃   ┣━━╸▆ CNodePunct = ","
+[000.007]  ┃   ┣━━╸▆ decl : CNodeDeclaration =
+[000.007]  ┃   ┃   ┣━━╸▆ type : CNodeBuiltinType =
+[000.007]  ┃   ┃   ┃   ┣━━╸▆ name : CNodeIdentifier = "logic"
+[000.007]  ┃   ┃   ┃   ┗━━╸▆ template_args : CNodeList =
+[000.007]  ┃   ┃   ┃       ┣━━╸▆ ldelim : CNodePunct = "<"
+[000.008]  ┃   ┃   ┃       ┣━━╸▆ arg : CNodeConstInt = "8"
+[000.008]  ┃   ┃   ┃       ┗━━╸▆ rdelim : CNodePunct = ">"
+[000.008]  ┃   ┃   ┗━━╸▆ name : CNodeIdentifier = "y"
+[000.008]  ┃   ┗━━╸▆ rdelim : CNodePunct = ")"
+[000.008]  ┗━━╸▆ body : CNodeCompound =
+*/
+
+Err Emitter::emit_params_with_return(CNodeFunction* node) {
+  Err err;
+  auto params = node->node_params;
+  auto param_count = params->items.size();
+
+  auto param_index = 0;
+  for (auto p : params) {
+    if (p->as<CNodePunct>()) {
+      err << emit_dispatch2(p);
+    }
+    else if (p->as<CNodeDeclaration>()) {
+      err << emit_dispatch2(p);
+      param_index++;
+    }
+    if (param_index == param_count) {
+      err << cursor.emit_print(", output ");
+      err << emit_splice(node->node_type);
+      err << cursor.emit_print(" ");
+      err << emit_splice(node->node_name);
+      err << cursor.emit_print("_ret");
+      param_index++;
+    }
+  }
+
+  return err;
+}
+
 Err Emitter::emit_task(CNodeFunction* node) {
   Err err;
+
+  //dump_parse_tree(node);
 
   err << cursor.emit_print("task automatic ");
 
@@ -2581,7 +2644,13 @@ Err Emitter::emit_task(CNodeFunction* node) {
 
   err << emit_dispatch2(node->node_name);
 
-  err << emit_dispatch(node->node_params);
+  if (node->has_return()) {
+    err << emit_params_with_return(node);
+  }
+  else {
+    err << emit_dispatch(node->node_params);
+  }
+
   err << cursor.emit_print(";");
   err << cursor.emit_gap();
 

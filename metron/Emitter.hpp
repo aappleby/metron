@@ -123,6 +123,7 @@ struct Emitter {
   Err emit_func(CNodeFunction* node);
   Err emit_task(CNodeFunction* node);
   Err emit_func_binding_vars(CNodeFunction* node);
+  Err emit_params_with_return(CNodeFunction* node);
 
   Err emit_cat(CNodeCall* node);
   Err emit_sra(CNodeCall* node);

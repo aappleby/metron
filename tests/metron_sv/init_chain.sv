@@ -4,29 +4,26 @@
 
 module Module (
   // global clock
-  input logic clock,
-  // tock() ports
-  output int tock_ret
+  input logic clock
 );
 /*public:*/
   initial begin
     init1();
   end
 
-  always_comb begin : tock
-    /*tick();*/
-    tock_ret = 0;
+  always_ff @(posedge clock) begin : tock
+    tick();
   end
 
 /*private:*/
 
-  always_ff @(posedge clock) begin : tick
+  task automatic tick();
     reg1_ <= reg1_ + 1;
     reg2_ <= reg2_ + 1;
     reg3_ <= reg3_ + 1;
     reg4_ <= reg4_ + 1;
     reg5_ <= reg5_ + 1;
-  end
+  endtask
 
   logic[7:0] reg1_;
   logic[7:0] reg2_;

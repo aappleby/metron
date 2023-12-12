@@ -6,31 +6,30 @@
 class Module {
 public:
 
-  logic<8> tock() {
-    logic<8> result;
+  logic<8> tock_result;
+  void tock() {
     switch(my_reg_) {
       case 0: // can we stick comments in here?
       case 1:
       case 2:
-        result = 10;
+        tock_result = 10;
         break;
       case 3: {
-        result = 20;
+        tock_result = 20;
         break;
       }
       default:
-        result = 30;
+        tock_result = 30;
         break;
     }
 
-    tick();
-    return result;
+    tick(tock_result);
   }
 
 private:
 
-  void tick() {
-    my_reg_ = my_reg_ + 1;
+  void tick(logic<8> inc) {
+    my_reg_ = my_reg_ + inc;
   }
 
   logic<8> my_reg_;

@@ -17,11 +17,13 @@ enum FieldType {
 };
 
 enum MethodType {
-  MT_UNKNOWN = 0,
+  MT_UNKNOWN,
   MT_INIT,
-  MT_TICK,
-  MT_TOCK,
-  MT_FUNC
+  MT_ALWAYS_COMB,
+  MT_ALWAYS_FF,
+  MT_TASK_COMB,
+  MT_TASK_FF,
+  MT_FUNC,
 };
 
 enum ContextType {
@@ -61,7 +63,7 @@ void mkdir_all(const std::vector<std::string>& full_path);
 FieldType trace_state_to_field_type(TraceState s);
 
 const char* to_string(FieldType f);
-const char* to_string(MethodType f);
+const char* to_string(MethodType p);
 const char* to_string(TraceAction f);
 const char* to_string(ContextType c);
 const char* to_string(TraceState f);

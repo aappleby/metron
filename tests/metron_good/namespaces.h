@@ -13,9 +13,10 @@ public:
   int my_sig;
   int my_reg_;
 
-  int tock() {
+  int tock_ret;
+  void tock() {
     my_sig = MyPackage::foo + 1;
-    return my_sig;
+    tock_ret = my_sig;
   }
 
   void tick() {

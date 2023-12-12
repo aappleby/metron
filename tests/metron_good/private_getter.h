@@ -7,9 +7,10 @@ public:
 
   int my_sig;
 
-  int tock() {
+  int tock_ret;
+  void tock() {
     my_sig = my_getter();
-    return my_sig;
+    tock_ret = my_sig;
   }
 
 private:

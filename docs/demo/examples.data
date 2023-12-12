@@ -4159,20 +4159,29 @@ class toplevel {
 #endif // TOPLEVEL_H
 #include "metron/metron_tools.h"
 
-// Methods that don't write anything should become functions.
+// Tocks should be able to call private tasks and functions
+
+// FIXME task set_signal not getting called
 
 class Module {
 public:
 
-  void tick() {
-    my_reg_ = my_reg_ + some_func();
+  logic<8> my_signal;
+
+  void tock() {
+    set_signal(get_number());
   }
 
-  logic<8> some_func() const {
-    return 3;
+private:
+
+  logic<8> get_number() const {
+    return 7;
   }
 
-  logic<8> my_reg_;
+  void set_signal(logic<8> number) {
+    my_signal = number;
+  }
+
 };
 class Adder {
 public:
@@ -5301,27 +5310,15 @@ public:
   }
 
   int my_sig1;
-  void tock_no_params_no_return() {
+  void tock_no_params() {
     my_sig1 = 12;
     int x = my_sig1;
   }
 
-  int my_sig2;
-  int tock_no_params_return() {
-    my_sig2 = 12;
-    return my_sig2;
-  }
-
   int my_sig3;
-  void tock_params_no_return(int x) {
+  void tock_params(int x) {
     my_sig3 = 12 + x;
     int y = my_sig3;
-  }
-
-  int my_sig4;
-  int tock_params_return(int x) {
-    my_sig4 = 12 + x;
-    return my_sig4;
   }
 
   int my_sig5a;
@@ -5341,10 +5338,9 @@ private:
 public:
 
   int my_sig6a;
-  int tock_calls_tock(int x) {
+  void tock_calls_tock(int x) {
     my_sig6a = 12;
     tock_called_by_tock(my_sig6a);
-    return 0;
   }
 
 private:
@@ -5766,9 +5762,8 @@ private:
 class Module {
 public:
 
-  int tock() {
+  void tock() {
     tick();
-    return 0;
   }
 
 private:
@@ -5805,26 +5800,13 @@ public:
 class Module {
 public:
 
-  logic<20> tock() {
+  logic<20> tock_ret;
+  void tock() {
     submod.tock(1, 2);
-    return submod.my_width + submod.my_height;
+    tock_ret = submod.my_width + submod.my_height;
   }
 
   Submod<10,11> submod;
-};
-#include "metron/metron_tools.h"
-
-// Tock methods can return values.
-
-class Module {
-public:
-
-  int my_sig;
-
-  int tock() {
-    my_sig = 7;
-    return my_sig;
-  }
 };
 #include "metron/metron_tools.h"
 
@@ -6191,22 +6173,19 @@ public:
   logic<8> my_sig;
 
   void tock(int z) {
-    logic<8> dummy = public_task(public_func(z));
+    public_task(public_func(z));
     tick(z);
   }
 
-private:
-
-  // FIXME ok these aren't actually public anymore...
-
-  logic<8> public_task(logic<8> x) {
+  void public_task(logic<8> x) {
     my_sig = x + 7;
-    return 0;
   }
 
   logic<8> public_func(logic<8> x) {
     return my_reg1_ + private_func(x);
   }
+
+private:
 
   void tick(int w) {
     private_task(private_func(w));
@@ -6273,31 +6252,30 @@ private:
 class Module {
 public:
 
-  logic<8> tock() {
-    logic<8> result;
+  logic<8> tock_result;
+  void tock() {
     switch(my_reg_) {
       case 0: // can we stick comments in here?
       case 1:
       case 2:
-        result = 10;
+        tock_result = 10;
         break;
       case 3: {
-        result = 20;
+        tock_result = 20;
         break;
       }
       default:
-        result = 30;
+        tock_result = 30;
         break;
     }
 
-    tick();
-    return result;
+    tick(tock_result);
   }
 
 private:
 
-  void tick() {
-    my_reg_ = my_reg_ + 1;
+  void tick(logic<8> inc) {
+    my_reg_ = my_reg_ + inc;
   }
 
   logic<8> my_reg_;
@@ -6611,9 +6589,8 @@ public:
     init1();
   }
 
-  int tock() {
+  void tock() {
     tick();
-    return 0;
   }
 
 private:
@@ -6690,10 +6667,11 @@ public:
   logic<8> o_signal;
   logic<8> o_reg_;
 
-  logic<8> tock(logic<8> i_param) {
+  logic<8> tock_ret;
+  void tock(logic<8> i_param) {
     o_signal = i_signal + i_param;
     tick();
-    return o_signal + 7;
+    tock_ret = o_signal + 7;
   }
 
 private:
@@ -6708,8 +6686,8 @@ public:
 
   void tock() {
     submod.i_signal = 12;
-    logic<8> submod_return = submod.tock(13);
-    my_sig = submod_return + 3;
+    submod.tock(13);
+    my_sig = submod.tock_ret + 3;
     tick();
   }
 
@@ -6794,11 +6772,11 @@ class Module {
 class Module {
 public:
 
-  logic<8> tock() {
-    logic<8> result = my_reg1_ + my_reg2_;
+  logic<8> tock_result;
+  void tock() {
+    tock_result = my_reg1_ + my_reg2_;
     tick1();
     tick2();
-    return result;
   }
 
 private:
@@ -6829,9 +6807,10 @@ public:
   int my_sig;
   int my_reg_;
 
-  int tock() {
+  int tock_ret;
+  void tock() {
     my_sig = MyPackage::foo + 1;
-    return my_sig;
+    tock_ret = my_sig;
   }
 
   void tick() {
@@ -6897,10 +6876,11 @@ public:
 class Module {
 public:
 
-  logic<8> tock(logic<8> old_counter) {
+  logic<8> tock_ret;
+  void tock(logic<8> old_counter) {
     // Two bindings should end up here.
     logic<8> new_counter = submod1.add_one(submod2.add_two(old_counter));
-    return new_counter;
+    tock_ret = new_counter;
   }
 
 private:
@@ -6979,9 +6959,10 @@ public:
 
   int my_sig;
 
-  int tock() {
+  int tock_ret;
+  void tock() {
     my_sig = my_getter();
-    return my_sig;
+    tock_ret = my_sig;
   }
 
 private:
@@ -7035,17 +7016,18 @@ public:
     return my_struct1;
   }
 
-  logic<8> tock() {
+  logic<8> tock_ret;
+  void tock() {
     my_struct1.a = 1;
 
-    // does not work in yosys
+    // FIXME does not work in yosys
     //return extract_field(my_struct1);
-    return 16;
+    tock_ret = 16;
   }
 
 private:
 
-  // does not work in yosys
+  // FIXME does not work in yosys
   /*
   logic<8> extract_field(MyStruct1 m) {
     return m.a;
@@ -7228,7 +7210,8 @@ public:
 class Module {
 public:
 
-  logic<8> tock_bindings() const {
+  logic<8> tock_bindings_ret;
+  void tock_bindings() {
     logic<8> result;
     // Submod bindings should _not_ end up here.
 
@@ -7244,7 +7227,7 @@ public:
       }
     }
 
-    return result;
+    tock_bindings_ret = result;
   }
 
   Submod submod;
@@ -7258,8 +7241,10 @@ public:
 
   logic<8> my_signal;
 
-  int tock() {
-    return set_signal(get_number());
+  int tock_ret;
+  void tock() {
+    set_signal(get_number());
+    tock_ret = set_signal_ret;
   }
 
 private:
@@ -7268,9 +7253,10 @@ private:
     return 7;
   }
 
-  int set_signal(logic<8> number) {
+  int set_signal_ret;
+  void set_signal(logic<8> number) {
     my_signal = number;
-    return my_signal;
+    set_signal_ret = my_signal;
   }
 
 };

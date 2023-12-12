@@ -1,17 +1,26 @@
 #include "metron/metron_tools.h"
 
-// Methods that don't write anything should become functions.
+// Tocks should be able to call private tasks and functions
+
+// FIXME task set_signal not getting called
 
 class Module {
 public:
 
-  void tick() {
-    my_reg_ = my_reg_ + some_func();
+  logic<8> my_signal;
+
+  void tock() {
+    set_signal(get_number());
   }
 
-  logic<8> some_func() const {
-    return 3;
+private:
+
+  logic<8> get_number() const {
+    return 7;
   }
 
-  logic<8> my_reg_;
+  void set_signal(logic<8> number) {
+    my_signal = number;
+  }
+
 };

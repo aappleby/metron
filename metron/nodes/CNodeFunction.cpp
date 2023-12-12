@@ -32,85 +32,12 @@ void CNodeFunction::init() {
 
 //------------------------------------------------------------------------------
 
-void CNodeFunction::update_type() {
-  if (method_type != MT_UNKNOWN) return;
-
-  for (auto f : internal_callees) f->update_type();
-  for (auto f : external_callees) f->update_type();
-
-  // If we're a constructor, we're an init.
-  if (as<CNodeConstructor>()) {
-    set_type(MT_INIT);
-    return;
+bool CNodeFunction::called_by_constructor() {
+  for (auto c : internal_callers) {
+    if (c->as<CNodeConstructor>()) return true;
+    if (c->called_by_constructor()) return true;
   }
-
-  // If we're called by a constructor and we write something, we're an init and
-  // can't be anything else.
-  if (!self_writes.empty() && called_by_init()) {
-    set_type(MT_INIT);
-    return;
-  }
-
-  // If we write a signal, we're a tock. If we write a state, we'rea tick.
-
-  if (!self_writes.empty()) {
-    for (auto w : self_writes) {
-      if      (w->is_reg())  set_type(MT_TICK);
-      else if (w->is_sig()) set_type(MT_TOCK);
-      else                     assert(false);
-    }
-  }
-
-  // If we call external methods, we're a tock.
-  if (external_callees.size()) {
-    set_type(MT_TOCK);
-  }
-
-  // If we call an internal tock, we're a tock.
-  for (auto f : internal_callees) {
-    if (f->method_type == MT_TOCK) set_type(MT_TOCK);
-  }
-
-  // If we're not categorized yet and we call an internal tick, we're a tick.
-  // Unless we have a return value, in which case we're a tock.
-  if (method_type == MT_UNKNOWN) {
-    for (auto f : internal_callees) {
-      if (f->method_type == MT_TICK) {
-        if (has_return()) {
-          set_type(MT_TOCK);
-        }
-        else {
-          set_type(MT_TICK);
-        }
-      }
-    }
-  }
-
-  // If we're still not categorized then we don't call any tocks or ticks - we're a func.
-  if (method_type == MT_UNKNOWN) {
-    for (auto f : internal_callees) {
-      assert (f->method_type == MT_FUNC);
-    }
-    set_type(MT_FUNC);
-  }
-}
-
-//------------------------------------------------------------------------------
-
-bool CNodeFunction::should_emit_as_task() {
-  bool called_by_tick = false;
-
-  visit_internal_callers([&](CNodeFunction* f) {
-    if (f->method_type == MT_TICK) called_by_tick = true;
-  });
-
-  return method_type == MT_TICK && called_by_tick;
-}
-
-//------------------------------------------------------------------------------
-
-bool CNodeFunction::should_emit_as_func() {
-  return method_type == MT_FUNC && internal_callers.size();
+  return false;
 }
 
 //------------------------------------------------------------------------------
@@ -153,6 +80,13 @@ void CNodeFunction::visit_external_callers(func_visitor v) {
 
 void CNodeFunction::set_type(MethodType new_type) {
   assert(method_type == MT_UNKNOWN || method_type == new_type);
+
+  /*
+  if (method_type == MT_UNKNOWN) {
+    printf("Method %s is a %s\n", name.c_str(), to_string(new_type));
+  }
+  */
+
   method_type = new_type;
 }
 
@@ -162,10 +96,10 @@ bool CNodeFunction::needs_binding() {
   bool needs_binding = false;
 
   for (auto caller : internal_callers) {
-    needs_binding |= method_type == MT_TICK && caller->method_type == MT_TOCK;
+    needs_binding |= caller->method_type == MT_ALWAYS_COMB && method_type == MT_ALWAYS_FF;
   }
 
-  needs_binding |= method_type == MT_TOCK && !internal_callers.empty();
+  //needs_binding |= method_type == MT_ALWAYS_COMB && !internal_callers.empty();
   return needs_binding;
 }
 
@@ -192,11 +126,14 @@ bool CNodeFunction::must_call_before(CNodeFunction* func) {
 
 //------------------------------------------------------------------------------
 
-bool CNodeFunction::called_by_init() {
-  for (auto c : internal_callers) {
-    if (c->called_by_init()) return true;
+void CNodeFunction::propagate_rw() {
+  for (auto f : internal_callees) {
+    f->propagate_rw();
+    tree_writes.insert(f->self_writes.begin(), f->self_writes.end());
+    tree_writes.insert(f->tree_writes.begin(), f->tree_writes.end());
+    tree_reads.insert (f->self_reads.begin(),  f->self_reads.end());
+    tree_reads.insert (f->tree_reads.begin(),  f->tree_reads.end());
   }
-  return as<CNodeConstructor>() != nullptr;
 }
 
 //------------------------------------------------------------------------------

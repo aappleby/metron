@@ -18,9 +18,10 @@ public:
 class Module {
 public:
 
-  logic<20> tock() {
+  logic<20> tock_ret;
+  void tock() {
     submod.tock(1, 2);
-    return submod.my_width + submod.my_height;
+    tock_ret = submod.my_width + submod.my_height;
   }
 
   Submod<10,11> submod;

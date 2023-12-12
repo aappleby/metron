@@ -360,10 +360,24 @@ void dump_function(CNodeFunction* node) {
     }
   }
 
+  if (node->tree_reads.size()) {
+    LOG_INDENT_SCOPE();
+    for (auto r : node->tree_reads) {
+      LOG_G("Indirectly reads  %s : %s\n", r->path.c_str(), to_string(r->get_trace_state()));
+    }
+  }
+
   if (node->self_writes.size()) {
     LOG_INDENT_SCOPE();
     for (auto w : node->self_writes) {
       LOG_G("Directly writes %s : %s\n", w->path.c_str(), to_string(w->get_trace_state()));
+    }
+  }
+
+  if (node->tree_writes.size()) {
+    LOG_INDENT_SCOPE();
+    for (auto w : node->tree_writes) {
+      LOG_G("Indirectly writes %s : %s\n", w->path.c_str(), to_string(w->get_trace_state()));
     }
   }
 

@@ -5,11 +5,11 @@
 class Module {
 public:
 
-  logic<8> tock() {
-    logic<8> result = my_reg1_ + my_reg2_;
+  logic<8> tock_result;
+  void tock() {
+    tock_result = my_reg1_ + my_reg2_;
     tick1();
     tick2();
-    return result;
   }
 
 private:

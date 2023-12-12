@@ -297,12 +297,14 @@ const char* to_string(FieldType f) {
 
 const char* to_string(MethodType f) {
   switch (f) {
-    case MT_UNKNOWN: return "MT_UNKNOWN";
-    case MT_INIT:    return "MT_INIT";
-    case MT_TICK:    return "MT_TICK";
-    case MT_TOCK:    return "MT_TOCK";
-    case MT_FUNC:    return "MT_FUNC";
-    default:         return "???";
+    case MT_UNKNOWN:     return "MT_UNKNOWN";
+    case MT_INIT:        return "MT_INIT";
+    case MT_ALWAYS_COMB: return "MT_ALWAYS_COMB";
+    case MT_ALWAYS_FF:   return "MT_ALWAYS_FF";
+    case MT_TASK_COMB:   return "MT_TASK_COMB";
+    case MT_TASK_FF:     return "MT_TASK_FF";
+    case MT_FUNC:        return "MT_FUNC";
+    default:             return "???";
   }
 }
 

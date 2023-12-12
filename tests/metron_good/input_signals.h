@@ -13,10 +13,11 @@ public:
   logic<8> o_signal;
   logic<8> o_reg_;
 
-  logic<8> tock(logic<8> i_param) {
+  logic<8> tock_ret;
+  void tock(logic<8> i_param) {
     o_signal = i_signal + i_param;
     tick();
-    return o_signal + 7;
+    tock_ret = o_signal + 7;
   }
 
 private:
@@ -31,8 +32,8 @@ public:
 
   void tock() {
     submod.i_signal = 12;
-    logic<8> submod_return = submod.tock(13);
-    my_sig = submod_return + 3;
+    submod.tock(13);
+    my_sig = submod.tock_ret + 3;
     tick();
   }
 

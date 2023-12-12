@@ -20,7 +20,7 @@ module Submod (
 endmodule
 
 module Module (
-  // tock_bindings() ports
+  // output signals
   output logic[7:0] tock_bindings_ret
 );
 /*public:*/

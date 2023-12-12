@@ -1649,9 +1649,6 @@ Err Emitter::emit_bit_extract(CNodeCall* node) {
       }
     }
 
-    // FIXME use the new emit thing here?
-
-
     if (!bare_width) err << cursor.emit_print("(");
     if (node_width)  err << emit_splice(node_width);
     else             err << cursor.emit_print("%d", width);
@@ -2014,7 +2011,6 @@ Err Emitter::emit_component(CNodeField* node) {
   //----------------------------------------
   // Component name
 
-  //err << cursor.emit_print(" ");
   err << emit_splice(node->node_decl->node_name);
 
   //----------------------------------------
@@ -2134,7 +2130,6 @@ Err Emitter::emit_component(CNodeField* node) {
 
   for (auto m : component_class->all_functions) {
     if (m->tag_noconvert()) continue;
-    //if (m->is_constructor()) continue;
     if (!m->is_public) continue;
     if (m->method_type == MT_INIT) continue;
     if (m->internal_callers.size()) continue;
@@ -2434,37 +2429,7 @@ Err Emitter::emit_func(CNodeFunction* node) {
 //------------------------------------------------------------------------------
 
 /*
-[000.005]  ▆ CNodeFunction =
-[000.006]  ┣━━╸▆ return_type : CNodeBuiltinType =
-[000.006]  ┃   ┣━━╸▆ name : CNodeIdentifier = "logic"
-[000.006]  ┃   ┗━━╸▆ template_args : CNodeList =
-[000.006]  ┃       ┣━━╸▆ ldelim : CNodePunct = "<"
-[000.006]  ┃       ┣━━╸▆ arg : CNodeConstInt = "8"
-[000.006]  ┃       ┗━━╸▆ rdelim : CNodePunct = ">"
-[000.006]  ┣━━╸▆ name : CNodeIdentifier = "public_task"
-[000.006]  ┣━━╸▆ params : CNodeList =
-[000.006]  ┃   ┣━━╸▆ ldelim : CNodePunct = "("
-[000.006]  ┃   ┣━━╸▆ decl : CNodeDeclaration =
-[000.006]  ┃   ┃   ┣━━╸▆ type : CNodeBuiltinType =
-[000.006]  ┃   ┃   ┃   ┣━━╸▆ name : CNodeIdentifier = "logic"
-[000.007]  ┃   ┃   ┃   ┗━━╸▆ template_args : CNodeList =
-[000.007]  ┃   ┃   ┃       ┣━━╸▆ ldelim : CNodePunct = "<"
-[000.007]  ┃   ┃   ┃       ┣━━╸▆ arg : CNodeConstInt = "8"
-[000.007]  ┃   ┃   ┃       ┗━━╸▆ rdelim : CNodePunct = ">"
-[000.007]  ┃   ┃   ┗━━╸▆ name : CNodeIdentifier = "x"
-[000.007]  ┃   ┣━━╸▆ CNodePunct = ","
-[000.007]  ┃   ┣━━╸▆ decl : CNodeDeclaration =
-[000.007]  ┃   ┃   ┣━━╸▆ type : CNodeBuiltinType =
-[000.007]  ┃   ┃   ┃   ┣━━╸▆ name : CNodeIdentifier = "logic"
-[000.007]  ┃   ┃   ┃   ┗━━╸▆ template_args : CNodeList =
-[000.007]  ┃   ┃   ┃       ┣━━╸▆ ldelim : CNodePunct = "<"
-[000.008]  ┃   ┃   ┃       ┣━━╸▆ arg : CNodeConstInt = "8"
-[000.008]  ┃   ┃   ┃       ┗━━╸▆ rdelim : CNodePunct = ">"
-[000.008]  ┃   ┃   ┗━━╸▆ name : CNodeIdentifier = "y"
-[000.008]  ┃   ┗━━╸▆ rdelim : CNodePunct = ")"
-[000.008]  ┗━━╸▆ body : CNodeCompound =
-*/
-
+// FIXME this is part of the task output param splicing, not ready yet.
 Err Emitter::emit_params_with_return(CNodeFunction* node) {
   Err err;
   auto params = node->node_params;
@@ -2491,6 +2456,7 @@ Err Emitter::emit_params_with_return(CNodeFunction* node) {
 
   return err;
 }
+*/
 
 Err Emitter::emit_task(CNodeFunction* node) {
   Err err;
@@ -2503,12 +2469,17 @@ Err Emitter::emit_task(CNodeFunction* node) {
 
   err << emit_dispatch2(node->node_name);
 
+  assert(!node->has_return());
+  err << emit_dispatch(node->node_params);
+
+  /*
   if (node->has_return()) {
     err << emit_params_with_return(node);
   }
   else {
     err << emit_dispatch(node->node_params);
   }
+  */
 
   err << cursor.emit_print(";");
   err << cursor.emit_gap();
@@ -2683,7 +2654,6 @@ Err Emitter::emit_replacement2(CNode* n, const char* fmt, ...) {
 
   return emit_replacement2(n, result);
 }
-
 
 //----------------------------------------
 

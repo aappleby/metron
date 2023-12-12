@@ -37,66 +37,6 @@ Err build_call_graph(CNodeClass* node, CSourceRepo* repo);
 bool has_non_terminal_return(CNodeCompound* node_compound);
 bool check_switch_breaks(CNodeSwitch* node);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //------------------------------------------------------------------------------
 
 bool assign_method_type(CNodeFunction* func) {
@@ -275,51 +215,6 @@ void assign_method_types(CNodeClass* node_class) {
   assert(!bad);
   LOG("Assigning method types for %s done\n", node_class->name.c_str());
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 //------------------------------------------------------------------------------
 
@@ -648,7 +543,6 @@ int main_new(Options opts) {
           }
           if (head != -1) {
             auto f = top_funcs[head];
-            //LOG_S("Func %s goes next\n", f->name.c_str());
             sf.push_back(f);
             top_funcs.erase(top_funcs.begin() + head);
             break;
@@ -737,10 +631,8 @@ int main_new(Options opts) {
 
   LOG("\n");
 
-#if 1
-
   //----------------------------------------
-  // Done!
+  // Prep done, time to emit!
 
   LOG_B("========================================\n");
   LOG_B("Converting %s to SystemVerilog\n\n", opts.src_name.c_str());
@@ -754,7 +646,6 @@ int main_new(Options opts) {
 
   if (err.has_err()) {
     LOG_R("Error during code generation\n");
-    // lib.teardown();
     return -1;
   }
 
@@ -791,24 +682,10 @@ int main_new(Options opts) {
 
   LOG("Done!\n");
 
-#endif
-
   LOG("");
 
   return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 //------------------------------------------------------------------------------
 
@@ -884,3 +761,5 @@ void sanity_check_parse_tree(CSourceRepo& repo) {
   }
   LOG_G("Parse tree is sane\n");
 }
+
+//------------------------------------------------------------------------------

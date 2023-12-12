@@ -176,113 +176,35 @@ bool assign_method_type(CNodeFunction* func) {
   //----------------------------------------
   // Non-top-level functions
 
-  bool all_callers_are_comb = true;
-  for (auto c : func->internal_callers) {
-    all_callers_are_comb &= (c->method_type == MT_ALWAYS_COMB) || (c->method_type == MT_TASK_COMB);
-  }
-
-  if ((self_writes_reg || tree_writes_reg) && all_callers_are_comb) {
-    // This function lies on the ff side of the comb->ff boundary, it must be always_ff
-    func->set_type(MT_ALWAYS_FF);
-    return true;
-  }
-
   // FIXME we really should splice in output params to tasks so that tasks
   // can have returns
 
-  if (self_writes_reg) {
-    func->set_type(MT_TASK_FF);
+  bool all_callers_are_comb = true;
+  bool any_callers_are_unknown = false;
+  for (auto c : func->internal_callers) {
+    all_callers_are_comb &= (c->method_type == MT_ALWAYS_COMB) || (c->method_type == MT_TASK_COMB);
+    any_callers_are_unknown = c->method_type == MT_UNKNOWN;
+  }
+
+  if (self_writes_reg || tree_writes_reg) {
+    if (any_callers_are_unknown) return false;
+
+    // If this function lies on the ff side of the comb->ff boundary, it must
+    // be always_ff.
+    func->set_type(all_callers_are_comb ? MT_ALWAYS_FF : MT_TASK_FF);
     return true;
   }
-  else if (self_writes_sig) {
+
+  if (self_writes_sig || tree_writes_sig) {
     func->set_type(MT_TASK_COMB);
     return true;
   }
-  else if (tree_writes_reg && tree_writes_sig) {
-    func->set_type(MT_TASK_COMB);
-    return true;
-  }
-  else if (tree_writes_reg) {
-    func->set_type(MT_TASK_FF);
-    return true;
-  }
-  else if (tree_writes_sig) {
-    func->set_type(MT_TASK_COMB);
-    return true;
-  }
-  else {
-    func->set_type(MT_FUNC);
-    return true;
-  }
 
-  //----------------------------------------
-
-  /*
-  assert(!self_writes_sig && !self_writes_reg);
-
-  if (any_callees) {
-    bool called_by_comb = false;
-    bool called_by_ff = false;
-    for (auto f : func->internal_callers) {
-      if (f->method_type == MT_ALWAYS_COMB || f->method_type == MT_TASK_COMB) called_by_comb = true;
-      else if (f->method_type == MT_ALWAYS_FF || f->method_type == MT_TASK_FF) called_by_ff = true;
-      else assert(false);
-    }
-
-    bool calls_comb = false;
-    bool calls_ff = false;
-    for (auto f : func->internal_callees) {
-      assert(f->method_type != MT_ALWAYS_FF);
-      assert(f->method_type != MT_ALWAYS_COMB);
-
-      if (f->method_type == MT_TASK_COMB) calls_comb = true;
-      if (f->method_type == MT_TASK_FF) calls_ff = true;
-    }
-
-    if (calls_comb && calls_ff) {
-      assert(false);
-    }
-    else if (calls_comb) {
-      func->set_type(MT_TASK_COMB);
-      return true;
-    }
-    else if (calls_ff) {
-      if (called_by_comb) {
-        func->set_type(MT_ALWAYS_FF);
-      }
-      else {
-        func->set_type(MT_TASK_FF);
-      }
-      return true;
-    }
-  }
-  */
-
-  //----------------------------------------
-
-  return false;
+  func->set_type(MT_FUNC);
+  return true;
 }
 
 //------------------------------------------------------------------------------
-
-/*
-  LOG_B("Check for ticks with return values\n");
-
-  for (auto file : repo.source_files) {
-    for (auto node_class : file->all_classes) {
-      for (auto node_func : node_class->all_functions) {
-        if (node_func->method_type == MT_ALWAYS_FF && node_func->has_return()) {
-          LOG_R("Tick method %s has a return value and it shouldn't\n", node_func->name.c_str());
-          exit(-1);
-        }
-        if (node_func->method_type == MT_TASK_FF && node_func->has_return()) {
-          LOG_R("Tick method %s has a return value and it shouldn't\n", node_func->name.c_str());
-          exit(-1);
-        }
-      }
-    }
-  }
-*/
 
 void assign_method_types(CNodeClass* node_class) {
   LOG("Assigning method types for %s\n", node_class->name.c_str());
@@ -308,7 +230,20 @@ void assign_method_types(CNodeClass* node_class) {
 
   for (int i = 0; i < 100; i++) {
     bool done = true;
-    for (auto f : funcs) done &= assign_method_type(f);
+
+    // We should get the same result regardless of assignment order.
+    // How can we test that?
+
+    for (int j = 0; j < funcs.size(); j++) {
+      done &= assign_method_type(funcs[j]);
+    }
+
+    /*
+    for (int j = funcs.size() - 1; j >= 0; j--) {
+      done &= assign_method_type(funcs[j]);
+    }
+    */
+
     if (done) break;
   }
 

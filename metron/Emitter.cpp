@@ -2413,14 +2413,10 @@ Err Emitter::emit_function_ports(CNodeFunction* f) {
   }
 
   if (rtype->get_text() != "void") {
-    LOG_R("Function %s should not have return value port\n", f->name.c_str());
-    exit(-1);
-    /*
     err << cursor.start_line();
     err << cursor.emit_print("output ");
     err << emit_splice(rtype);
     err << cursor.emit_print(" %s_ret,", fname.c_str());
-    */
   }
 
   return err;

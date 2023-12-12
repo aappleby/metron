@@ -26,17 +26,17 @@ module multiplexer4 (
   always_comb begin : tock
     case (sel)
       0:
-         begin out = in0;
-        /*break;*/ end
+        out = in0;
+        /*break;*/
       1:
-         begin out = in1;
-        /*break;*/ end
+        out = in1;
+        /*break;*/
       2:
-         begin out = in2;
-        /*break;*/ end
+        out = in2;
+        /*break;*/
       3:
-         begin out = in3;
-        /*break;*/ end
+        out = in3;
+        /*break;*/
       default:
         out = 'x;
         /*break;*/

@@ -39,17 +39,17 @@ module immediate_generator (
       OPCODE_LOAD_FP,
       OPCODE_OP_IMM,
       OPCODE_JALR: // I-type immediate
-         begin immediate = {{21 {inst[31]}}, inst[30:25], inst[24:20]}; /*break;*/ end
+        immediate = {{21 {inst[31]}}, inst[30:25], inst[24:20]}; /*break;*/
       OPCODE_STORE_FP,
       OPCODE_STORE: // S-type immediate
-         begin immediate = {{21 {inst[31]}}, inst[30:25], inst[11:7]}; /*break;*/ end
+        immediate = {{21 {inst[31]}}, inst[30:25], inst[11:7]}; /*break;*/
       OPCODE_BRANCH: // B-type immediate
-         begin immediate = {{20 {inst[31]}}, inst[7], inst[30:25], inst[11:8], 1'b0}; /*break;*/ end
+        immediate = {{20 {inst[31]}}, inst[7], inst[30:25], inst[11:8], 1'b0}; /*break;*/
       OPCODE_AUIPC,
       OPCODE_LUI: // U-type immediate
-         begin immediate = {inst[31], inst[30:20], inst[19:12], 12'b0}; /*break;*/ end
+        immediate = {inst[31], inst[30:20], inst[19:12], 12'b0}; /*break;*/
       OPCODE_JAL: // J-type immediate
-         begin immediate = {{12 {inst[31]}}, inst[19:12], inst[20], inst[30:25], inst[24:21], 1'b0}; /*break;*/ end
+        immediate = {{12 {inst[31]}}, inst[19:12], inst[20], inst[30:25], inst[24:21], 1'b0}; /*break;*/
       default: immediate = 32'b0; /*break;*/
     endcase
     // clang-format on

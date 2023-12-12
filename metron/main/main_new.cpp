@@ -327,18 +327,6 @@ Err log_action2(CInstance* inst, CNode* node, TraceAction action) {
   Err err;
 
   //----------------------------------------
-  // We can see CInstFunc when we trace a function declaration, we don't have
-  // to do anything here.
-
-  /*
-  if (auto inst_func = inst->as<CInstFunc>()) {
-    dump_parse_tree(node);
-    err << log_action2(inst_func, node, action);
-    return err;
-  }
-  */
-
-  //----------------------------------------
   // An action on a whole union applies to all parts of the union.
 
   if (auto inst_union = inst->as<CInstUnion>()) {
@@ -363,9 +351,6 @@ Err log_action2(CInstance* inst, CNode* node, TraceAction action) {
 
   if (auto inst_prim = inst->as<CInstPrim>()) {
     assert(action == ACT_READ || action == ACT_WRITE);
-
-    //----------
-    // Log action on primitive
 
     auto old_state = inst_prim->state_stack.back();
     auto new_state = merge_action(old_state, action);
@@ -406,11 +391,10 @@ Err log_action(CInstance* inst, CNode* node, TraceAction action) {
     return nullptr;
   };
 
-  if (auto inst_union = walk_up_unions(inst)) {
+  if (auto inst_union = walk_up_unions(inst))
     return log_action2(inst_union, node, action);
-  }
-
-  return log_action2(inst, node, action);
+  else
+    return log_action2(inst, node, action);
 }
 
 //------------------------------------------------------------------------------
@@ -588,65 +572,13 @@ int main_new(Options opts) {
     }
   }
 
-
-#if 0
-
   //----------------------------------------
 
-  LOG_B("Checking port compatibility\n");
-  LOG_INDENT();
-
-  for (auto file : repo.source_files) {
-    for (auto node_class : file->all_classes) {
-      LOG("Module %s\n", node_class->instance->name.c_str());
-      LOG_INDENT_SCOPE();
-      for (auto child : node_class->instance->parts) {
-        if (auto inst_a = child->as<CInstClass>()) {
-          auto inst_b = inst_a->node_class->instance;
-          assert(inst_b);
-          bool ports_ok = inst_a->check_port_directions(inst_b);
-          if (!ports_ok) {
-            LOG_R("-----\n");
-            dump_inst_tree(inst_a);
-            LOG_R("-----\n");
-            dump_inst_tree(inst_b);
-            LOG_R("-----\n");
-            err << ERR("Bad ports!\n");
-            exit(-1);
-          }
-        }
-      }
-    }
+  if (top) {
+    LOG_B("Assign method types\n");
+    LOG_INDENT_SCOPE();
+    assign_method_types(top);
   }
-  LOG_DEDENT();
-
-  for (auto file : repo.source_files) {
-    for (auto node_class : file->all_classes) {
-      //delete node_class->instance;
-      node_class->instance = nullptr;
-    }
-  }
-
-#endif
-
-  //----------------------------------------
-
-  LOG_B("Assign method types\n");
-  LOG_INDENT();
-
-  /*
-  for (auto file : repo.source_files) {
-    for (auto node_class : file->all_classes) {
-      LOG("Assigning method types for %s\n", node_class->name.c_str());
-      LOG_INDENT_SCOPE();
-      assign_method_types(node_class);
-    }
-  }
-  */
-
-  if (top) assign_method_types(top);
-
-  LOG_DEDENT();
 
   //----------------------------------------
 
@@ -877,37 +809,6 @@ int main_new(Options opts) {
 
 
 
-
-template<typename T>
-using permute_callback = std::function<void(std::vector<T>&)>;
-
-template<typename T>
-void permute(std::vector<T>& a, permute_callback<T> pc) {
-  auto N = a.size();
-  std::vector<int> p(N + 1, 0);
-
-  pc(a);
-
-  int i = 1;
-  while (i < N) {
-    if (p[i] < i) {
-      int j = (i & 1) ? p[i] : 0;
-      std::swap(a[j], a[i]);
-
-      pc(a);
-
-      p[i]++;
-      i = 1;
-    }
-    else {
-      p[i] = 0;
-      i++;
-    }
-  }
-}
-
-
-//------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
 

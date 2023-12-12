@@ -32,10 +32,10 @@ module MetroBoySPU2 (
       logic s1_out;
       s1_out = 0;
       case(s1_duty_)
-        0:  begin s1_out = s1_phase_ < 1; /*break;*/ end
-        1:  begin s1_out = s1_phase_ < 2; /*break;*/ end
-        2:  begin s1_out = s1_phase_ < 4; /*break;*/ end
-        3:  begin s1_out = s1_phase_ < 6; /*break;*/ end
+        0: s1_out = s1_phase_ < 1; /*break;*/
+        1: s1_out = s1_phase_ < 2; /*break;*/
+        2: s1_out = s1_phase_ < 4; /*break;*/
+        3: s1_out = s1_phase_ < 6; /*break;*/
       endcase
       if (mix_l1_ && s1_out) l = l + s1_env_vol_;
       if (mix_r1_ && s1_out) r = r + s1_env_vol_;
@@ -45,10 +45,10 @@ module MetroBoySPU2 (
       logic s2_out;
       s2_out = 0;
       case(s2_duty_)
-        0:  begin s2_out = s2_phase_ < 1; /*break;*/ end
-        1:  begin s2_out = s2_phase_ < 2; /*break;*/ end
-        2:  begin s2_out = s2_phase_ < 4; /*break;*/ end
-        3:  begin s2_out = s2_phase_ < 6; /*break;*/ end
+        0: s2_out = s2_phase_ < 1; /*break;*/
+        1: s2_out = s2_phase_ < 2; /*break;*/
+        2: s2_out = s2_phase_ < 4; /*break;*/
+        3: s2_out = s2_phase_ < 6; /*break;*/
       endcase
       if (mix_l2_ && s2_out) l = l + s2_env_vol_;
       if (mix_r2_ && s2_out) r = r + s2_env_vol_;
@@ -190,49 +190,49 @@ module MetroBoySPU2 (
 
       if (tick_read) begin
         case (tick_addr)
-          16'hFF10:  begin data_out_ <= {1'd1, s1_sweep_timer_init_, s1_sweep_dir_, s1_sweep_shift_}; /*break;*/ end
-          16'hFF11:  begin data_out_ <= {s1_duty_, s1_len_timer_init_}; /*break;*/ end
-          16'hFF12:  begin data_out_ <= {s1_env_vol_init_, s1_env_add_, s1_env_timer_init_}; /*break;*/ end
-          16'hFF13:  begin data_out_ <= 8'(s1_freq_timer_init_); /*break;*/ end
-          16'hFF14:  begin data_out_ <= {s1_trig_, s1_len_en_, 3'b111, s1_freq_timer_init_[10:8]}; /*break;*/ end
+          16'hFF10: data_out_ <= {1'd1, s1_sweep_timer_init_, s1_sweep_dir_, s1_sweep_shift_}; /*break;*/
+          16'hFF11: data_out_ <= {s1_duty_, s1_len_timer_init_}; /*break;*/
+          16'hFF12: data_out_ <= {s1_env_vol_init_, s1_env_add_, s1_env_timer_init_}; /*break;*/
+          16'hFF13: data_out_ <= 8'(s1_freq_timer_init_); /*break;*/
+          16'hFF14: data_out_ <= {s1_trig_, s1_len_en_, 3'b111, s1_freq_timer_init_[10:8]}; /*break;*/
 
             //----------
 
-          16'hFF16:  begin data_out_ <= {s2_duty_, s2_len_timer_init_}; /*break;*/ end
-          16'hFF17:  begin data_out_ <= {s2_env_vol_init_, s2_env_add_, s2_env_timer_init_}; /*break;*/ end
-          16'hFF18:  begin data_out_ <= 8'(s2_freq_timer_init_); /*break;*/ end
-          16'hFF19:  begin data_out_ <= {s2_trig_, s2_len_en_, 3'b111, s2_freq_timer_init_[10:8]}; /*break;*/ end
+          16'hFF16: data_out_ <= {s2_duty_, s2_len_timer_init_}; /*break;*/
+          16'hFF17: data_out_ <= {s2_env_vol_init_, s2_env_add_, s2_env_timer_init_}; /*break;*/
+          16'hFF18: data_out_ <= 8'(s2_freq_timer_init_); /*break;*/
+          16'hFF19: data_out_ <= {s2_trig_, s2_len_en_, 3'b111, s2_freq_timer_init_[10:8]}; /*break;*/
 
             //----------
 
-          16'hFF1A:  begin data_out_ <= {s3_power_, 7'b1111111}; /*break;*/ end
-          16'hFF1B:  begin data_out_ <= s3_len_timer_init_; /*break;*/ end
+          16'hFF1A: data_out_ <= {s3_power_, 7'b1111111}; /*break;*/
+          16'hFF1B: data_out_ <= s3_len_timer_init_; /*break;*/
 
           // metron didn't like the block without {}
           16'hFF1C: begin
             case (s3_volume_shift_)
-              0:  begin data_out_ <= 8'b01000000; /*break;*/ end
-              1:  begin data_out_ <= 8'b10000000; /*break;*/ end
-              2:  begin data_out_ <= 8'b11000000; /*break;*/ end
-              4:  begin data_out_ <= 8'b00000000; /*break;*/ end
+              0: data_out_ <= 8'b01000000; /*break;*/
+              1: data_out_ <= 8'b10000000; /*break;*/
+              2: data_out_ <= 8'b11000000; /*break;*/
+              4: data_out_ <= 8'b00000000; /*break;*/
             endcase
             /*break;*/
           end
-          16'hFF1D:  begin data_out_ <= 8'(s3_freq_timer_init_); /*break;*/ end
-          16'hFF1E:  begin data_out_ <= {s3_trig_, s3_len_en_, 3'b111, s3_freq_timer_init_[10:8]}; /*break;*/ end
+          16'hFF1D: data_out_ <= 8'(s3_freq_timer_init_); /*break;*/
+          16'hFF1E: data_out_ <= {s3_trig_, s3_len_en_, 3'b111, s3_freq_timer_init_[10:8]}; /*break;*/
 
             //----------
 
-          16'hFF20:  begin data_out_ <= {2'b11, s4_len_timer_init_}; /*break;*/ end
-          16'hFF21:  begin data_out_ <= {s4_env_vol_init_, s4_env_add_, s4_env_timer_init_}; /*break;*/ end
-          16'hFF22:  begin data_out_ <= {s4_shift_, s4_mode_, s4_freq_timer_init_}; /*break;*/ end
-          16'hFF23:  begin data_out_ <= {s4_trig_, s4_len_en_, 6'b111111}; /*break;*/ end
+          16'hFF20: data_out_ <= {2'b11, s4_len_timer_init_}; /*break;*/
+          16'hFF21: data_out_ <= {s4_env_vol_init_, s4_env_add_, s4_env_timer_init_}; /*break;*/
+          16'hFF22: data_out_ <= {s4_shift_, s4_mode_, s4_freq_timer_init_}; /*break;*/
+          16'hFF23: data_out_ <= {s4_trig_, s4_len_en_, 6'b111111}; /*break;*/
 
             //----------
 
-          16'hFF24:  begin data_out_ <= {1'd0, volume_l_, 1'd0, volume_r_}; /*break;*/ end
-          16'hFF25:  begin data_out_ <= {mix_l4_, mix_l3_, mix_l2_, mix_l1_, mix_r4_, mix_r3_, mix_r2_, mix_r1_}; /*break;*/ end
-          16'hFF26:  begin data_out_ <= {spu_power_, 7'd0}; /*break;*/ end
+          16'hFF24: data_out_ <= {1'd0, volume_l_, 1'd0, volume_r_}; /*break;*/
+          16'hFF25: data_out_ <= {mix_l4_, mix_l3_, mix_l2_, mix_l1_, mix_r4_, mix_r3_, mix_r2_, mix_r1_}; /*break;*/
+          16'hFF26: data_out_ <= {spu_power_, 7'd0}; /*break;*/
 
           // "default: break didn't work?"
           default: begin /*break;*/ end
@@ -536,10 +536,10 @@ module MetroBoySPU2 (
           end
           16'hFF1C: begin
             case (tick_data_in[6:5])
-              0:  begin s3_volume_shift_ <= 4; /*break;*/ end
-              1:  begin s3_volume_shift_ <= 0; /*break;*/ end
-              2:  begin s3_volume_shift_ <= 1; /*break;*/ end
-              3:  begin s3_volume_shift_ <= 2; /*break;*/ end
+              0: s3_volume_shift_ <= 4; /*break;*/
+              1: s3_volume_shift_ <= 0; /*break;*/
+              2: s3_volume_shift_ <= 1; /*break;*/
+              3: s3_volume_shift_ <= 2; /*break;*/
             endcase
             /*break;*/
           end

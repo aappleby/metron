@@ -225,13 +225,9 @@ CNodeField* resolve_field(CNodeClass* node_class, std::vector<CNode*> path) {
 
   auto f1 = resolve_field(node_class, front);
 
-  if (!f1) {
-    return f1;
-  }
+  if (!f1) return f1;
 
-  if (path.empty()) {
-    return f1;
-  }
+  if (path.empty()) return f1;
 
   if (auto c1 = repo->get_class(f1->node_decl->node_type->name)) {
     return resolve_field(c1, path);
@@ -359,8 +355,6 @@ bool is_bit_extract(CNodeCall* node) {
   }
   return false;
 }
-
-
 
 //==============================================================================
 
@@ -522,18 +516,6 @@ Err Emitter::emit_format(CNode* node, const char* fmt, ...) {
       }
       cursor.tok_cursor = child->tok_end();
 
-
-      /*
-      if (cursor.tok_cursor == child->tok_begin()) {
-        err << (skip ? skip_over(child) : emit_dispatch(child));
-      }
-      else {
-        if (!skip) err << emit_splice(child);
-      }
-      */
-
-
-
       skip = false;
     }
   }
@@ -658,27 +640,11 @@ Err Emitter::emit_cat(CNodeCall* node) {
 
 //----------------------------------------
 
-// [000.041]  ▆ rhs : CNodeCall =
-// [000.041]  ┣━━╸▆ func_name : CNodeIdentifier = "sra"
-// [000.041]  ┗━━╸▆ func_args : CNodeList =
-// [000.041]      ┣━━╸▆ ldelim : CNodePunct = "("
-// [000.041]      ┣━━╸▆ exp : CNodeIdentifier = "operand_a"
-// [000.041]      ┣━━╸▆ CNodePunct = ","
-// [000.041]      ┣━━╸▆ exp : CNodeCall =
-// [000.041]      ┃   ┣━━╸▆ func_name : CNodeIdentifier = "b5"
-// [000.041]      ┃   ┗━━╸▆ func_args : CNodeList =
-// [000.041]      ┃       ┣━━╸▆ ldelim : CNodePunct = "("
-// [000.041]      ┃       ┣━━╸▆ exp : CNodeIdentifier = "operand_b"
-// [000.041]      ┃       ┗━━╸▆ rdelim : CNodePunct = ")"
-// [000.041]      ┗━━╸▆ rdelim : CNodePunct = ")"
-
 Err Emitter::emit_sra(CNodeCall* node) {
   Err err;
   auto args = node->node_args->as<CNodeList>();
   auto lhs = args->items[0];
   auto rhs = args->items[1];
-
-  // "{($signed(} func_args[0] {) >>> } func_args[1] {)}" ?
 
   err << emit("($signed(@) >>> @)", lhs, rhs);
   err << skip_over(node);
@@ -793,16 +759,6 @@ Err Emitter::emit(CNodeCall* node) {
     }
 
     if (dst_mtype == MT_TASK_FF)   return emit_default(node);
-
-    // FIXME: Exiting after doing this can't be right...
-    // check tock_task.h
-    /*
-    if (dst_mtype == MT_TOCK) {
-      auto dst_name = dst_func->name;
-      err << emit_replacement2(node, "%s_ret", dst_name.c_str());
-      return err;
-    }
-    */
 
     if (src_mtype == MT_ALWAYS_COMB && (dst_mtype == MT_ALWAYS_FF || dst_mtype == MT_ALWAYS_COMB)) {
 
@@ -919,7 +875,6 @@ Err Emitter::emit(CNodeConstant* node) {
   // FIXME what was this for?
   // This was for forcing enum constants to the size of the enum type
   int size_cast = override_size.top();
-  // int size_cast = 0;
 
   // Count how many 's are in the number
   int spacer_count = 0;
@@ -948,8 +903,6 @@ Err Emitter::emit(CNodeConstant* node) {
     }
   }
 
-
-
   return err << check_done(node);
 }
 
@@ -970,14 +923,6 @@ Err Emitter::emit(CNodeDeclaration* node) {
 
   // Check for const char*
   if (node->is_param()) {
-    /*
-    if (node->node_type->name == "char") {
-      if (node->node_type->child("star")) {
-        return emit_replacement(node, "{{const char*}}");
-      }
-    }
-    */
-
     bool in_namespace = node->ancestor<CNodeNamespace>() != nullptr;
     bool in_function  = node->ancestor<CNodeFunction>() != nullptr;
     err << cursor.emit_print(in_namespace || in_function ? "parameter " : "localparam ");
@@ -1006,41 +951,6 @@ Err Emitter::emit(CNodeDeclaration* node) {
 
 //------------------------------------------------------------------------------
 
-/*
- ▆ CNodeEnum =
- ┣━━╸▆ enum : CNodeKeyword = "enum"
- ┣━━╸▆ class : CNodeKeyword = "class"
- ┣━━╸▆ name : CNodeIdentifier = "sized_enum"
- ┣━━╸▆ colon : CNodePunct = ":"
- ┣━━╸▆ base_type : CNodeBuiltinType =
- ┃   ┣━━╸▆ name : CNodeIdentifier = "logic"
- ┃   ┣━━╸▆ template_args : CNodeList =
- ┃   ┃   ┣━━╸▆ ldelim : CNodePunct = "<"
- ┃   ┃   ┣━━╸▆ arg : CNodeConstInt = "8"
- ┃   ┃   ┗━━╸▆ rdelim : CNodePunct = ">"
- ┃   ┗━━╸▆ scope : CNode =
- ┃       ┣━━╸▆ CNodePunct = "::"
- ┃       ┗━━╸▆ CNodeIdentifier = "BASE"
- ┣━━╸▆ body : CNodeList =
- ┃   ┣━━╸▆ ldelim : CNodePunct = "{"
- ┃   ┣━━╸▆ enumerator : CNodeEnumerator =
- ┃   ┃   ┣━━╸▆ name : CNodeIdentifier = "A8"
- ┃   ┃   ┣━━╸▆ eq : CNodePunct = "="
- ┃   ┃   ┗━━╸▆ value : CNodeConstInt = "0b01"
- ┃   ┣━━╸▆ comma : CNodePunct = ","
- ┃   ┣━━╸▆ enumerator : CNodeEnumerator =
- ┃   ┃   ┣━━╸▆ name : CNodeIdentifier = "B8"
- ┃   ┃   ┣━━╸▆ eq : CNodePunct = "="
- ┃   ┃   ┗━━╸▆ value : CNodeConstInt = "0x02"
- ┃   ┣━━╸▆ comma : CNodePunct = ","
- ┃   ┣━━╸▆ enumerator : CNodeEnumerator =
- ┃   ┃   ┣━━╸▆ name : CNodeIdentifier = "C8"
- ┃   ┃   ┣━━╸▆ eq : CNodePunct = "="
- ┃   ┃   ┗━━╸▆ value : CNodeConstInt = "3"
- ┃   ┗━━╸▆ rdelim : CNodePunct = "}"
- ┗━━╸▆ semi : CNodePunct = ";"
-*/
-
 Err Emitter::emit(CNodeEnum* node) {
   Err err = check_at(node);
 
@@ -1055,8 +965,6 @@ Err Emitter::emit(CNodeEnum* node) {
   if (!node->node_decl) {
     err << cursor.emit_print("typedef ");
   }
-
-  // "{typedef } enum _ ~class ~_ ~name ~_ ~colon ~_ base_type _ body _ decl _ [@name { }] semi"
 
   err << emit_dispatch2(node->node_enum);
   err << skip_over2(node->node_class);
@@ -1080,15 +988,8 @@ Err Emitter::emit(CNodeEnum* node) {
 
 //------------------------------------------------------------------------------
 
-// ▆ exp : CNodePrefixExp =
-// ┣━━╸▆ prefix : CNodePrefixOp = "++"
-// ┗━━╸▆ rhs : CNodeIdentifier = "my_reg2"
-
 Err Emitter::emit(CNodePrefixExp* node) {
   Err err = check_at(node);
-
-  // "rhs { = } rhs { + 1}"
-  // "{rhs} = {rhs} + 1"
 
   auto node_op = node->node_prefix;
   auto op = node_op->get_text();
@@ -1191,19 +1092,12 @@ Err Emitter::emit(CNodeField* node) {
 
   //----------------------------------------
   // Ports don't go in the class body.
-  // FIXME should we disallow public components?
 
   if (auto node_class = node->ancestor<CNodeClass>()) {
     if (node_class->input_sigs.contains(node))  return err << skip_over(node);
     if (node_class->output_sigs.contains(node)) return err << skip_over(node);
     if (node_class->output_regs.contains(node)) return err << skip_over(node);
   }
-
-  /*
-  if (node->is_public && !node->is_component() && !node->node_decl->is_param()) {
-    return err << skip_over(node);
-  }
-  */
 
   if (node->is_component()) {
     return emit_component(node);
@@ -1472,33 +1366,6 @@ Err Emitter::emit(CNodeReturn* node) {
 
 //------------------------------------------------------------------------------
 
-// struct MyStruct1 {
-//   logic<8> a;
-// };
-
-// typedef struct packed {
-//   logic[7:0] a;
-// } MyStruct1;
-
-
-//  ▆ CNodeStruct =
-//  ┣━━╸▆ struct : CNodeKeyword = "struct"
-//  ┣━━╸▆ name : CNodeIdentifier = "MyStruct1"
-//  ┣━━╸▆ body : CNodeList =
-//  ┃   ┣━━╸▆ ldelim : CNodePunct = "{"
-//  ┃   ┣━━╸▆ CNodeField =
-//  ┃   ┃   ┣━━╸▆ decl : CNodeDeclaration =
-//  ┃   ┃   ┃   ┣━━╸▆ type : CNodeBuiltinType =
-//  ┃   ┃   ┃   ┃   ┣━━╸▆ name : CNodeIdentifier = "logic"
-//  ┃   ┃   ┃   ┃   ┗━━╸▆ template_args : CNodeList =
-//  ┃   ┃   ┃   ┃       ┣━━╸▆ ldelim : CNodePunct = "<"
-//  ┃   ┃   ┃   ┃       ┣━━╸▆ arg : CNodeConstInt = "8"
-//  ┃   ┃   ┃   ┃       ┗━━╸▆ rdelim : CNodePunct = ">"
-//  ┃   ┃   ┃   ┗━━╸▆ name : CNodeIdentifier = "a"
-//  ┃   ┃   ┗━━╸▆ semi : CNodePunct = ";"
-//  ┃   ┗━━╸▆ rdelim : CNodePunct = "}"
-//  ┗━━╸▆ semi : CNodePunct = ";"
-
 Err Emitter::emit(CNodeStruct* node) {
   Err err = check_at(node);
 
@@ -1556,11 +1423,7 @@ Err Emitter::emit(CNodeCase* node) {
         err << emit_dispatch2(node->node_body);
       }
       else {
-        // FIXME Yosys breaks if we assign to structs inside a case block that's
-        // not wrapped in a begin/end
-        err << cursor.emit_print(" begin ");
         err << emit_dispatch2(node->node_body);
-        err << cursor.emit_print(" end ");
       }
     }
     else {

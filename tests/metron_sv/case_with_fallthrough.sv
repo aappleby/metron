@@ -16,8 +16,8 @@ module Module (
       0, // can we stick comments in here?
       1,
       2:
-         begin tock_result = 10;
-        /*break;*/ end
+        tock_result = 10;
+        /*break;*/
       3: begin
         tock_result = 20;
         /*break;*/

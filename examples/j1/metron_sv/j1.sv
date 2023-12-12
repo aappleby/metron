@@ -57,10 +57,10 @@ module J1 (
     st1 = dstack_[dsp_];
 
     case(insn[14:13])
-      0:   begin st0sel = 0; /*break;*/ end
-      1:   begin st0sel = 0; /*break;*/ end
-      2:   begin st0sel = 1; /*break;*/ end
-      3:   begin st0sel = insn[11:8]; /*break;*/ end
+      0:  st0sel = 0; /*break;*/
+      1:  st0sel = 0; /*break;*/
+      2:  st0sel = 1; /*break;*/
+      3:  st0sel = insn[11:8]; /*break;*/
     endcase
 
     // Compute the new value of T.
@@ -71,22 +71,22 @@ module J1 (
     end
     else begin
       case (st0sel)
-        4'b0000:  begin _st0 = st0_; /*break;*/ end
-        4'b0001:  begin _st0 = st1; /*break;*/ end
-        4'b0010:  begin _st0 = st0_ + st1; /*break;*/ end
-        4'b0011:  begin _st0 = st0_ & st1; /*break;*/ end
-        4'b0100:  begin _st0 = st0_ | st1; /*break;*/ end
-        4'b0101:  begin _st0 = st0_ ^ st1; /*break;*/ end
-        4'b0110:  begin _st0 = ~st0_; /*break;*/ end
-        4'b0111:  begin _st0 = {16 {1'(st1 == st0_)}}; /*break;*/ end
-        4'b1000:  begin _st0 = {16 {1'($signed(st1) < $signed(st0_))}}; /*break;*/ end
-        4'b1001:  begin _st0 = st1 >> 4'(st0_); /*break;*/ end
-        4'b1010:  begin _st0 = st0_ - 1; /*break;*/ end
-        4'b1011:  begin _st0 = rst0; /*break;*/ end
-        4'b1100:  begin _st0 = st0_[15:14] ? io_din : ramrd; /*break;*/ end
-        4'b1101:  begin _st0 = st1 << 4'(st0_); /*break;*/ end
-        4'b1110:  begin _st0 = {rsp_, 3'd0, dsp_}; /*break;*/ end
-        4'b1111:  begin _st0 = {16 {1'(st1 < st0_)}}; /*break;*/ end
+        4'b0000: _st0 = st0_; /*break;*/
+        4'b0001: _st0 = st1; /*break;*/
+        4'b0010: _st0 = st0_ + st1; /*break;*/
+        4'b0011: _st0 = st0_ & st1; /*break;*/
+        4'b0100: _st0 = st0_ | st1; /*break;*/
+        4'b0101: _st0 = st0_ ^ st1; /*break;*/
+        4'b0110: _st0 = ~st0_; /*break;*/
+        4'b0111: _st0 = {16 {1'(st1 == st0_)}}; /*break;*/
+        4'b1000: _st0 = {16 {1'($signed(st1) < $signed(st0_))}}; /*break;*/
+        4'b1001: _st0 = st1 >> 4'(st0_); /*break;*/
+        4'b1010: _st0 = st0_ - 1; /*break;*/
+        4'b1011: _st0 = rst0; /*break;*/
+        4'b1100: _st0 = st0_[15:14] ? io_din : ramrd; /*break;*/
+        4'b1101: _st0 = st1 << 4'(st0_); /*break;*/
+        4'b1110: _st0 = {rsp_, 3'd0, dsp_}; /*break;*/
+        4'b1111: _st0 = {16 {1'(st1 < st0_)}}; /*break;*/
         default:     _st0 = 'x; /*break;*/
       endcase
     end

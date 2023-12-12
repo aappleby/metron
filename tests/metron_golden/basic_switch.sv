@@ -19,14 +19,14 @@ module Module (
   task automatic tick(logic[1:0] selector);
     case(selector)
       0: // comment
-         begin my_reg_ <= 17; /*break;*/ end
+        my_reg_ <= 17; /*break;*/
       1:  // comment
-         begin my_reg_ <= 22; /*break;*/ end
-      2:  begin my_reg_ <= 30; /*break;*/ end
+        my_reg_ <= 22; /*break;*/
+      2: my_reg_ <= 30; /*break;*/
       3, // fallthrough
       4,
       5,
-      6:  begin my_reg_ <= 72; /*break;*/ end
+      6: my_reg_ <= 72; /*break;*/
     endcase
   endtask
 

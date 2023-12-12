@@ -24,11 +24,11 @@ module multiplexer2 (
   always_comb begin : tock
     case (sel)
       0:
-         begin out = in0;
-        /*break;*/ end
+        out = in0;
+        /*break;*/
       1:
-         begin out = in1;
-        /*break;*/ end
+        out = in1;
+        /*break;*/
       default:
         out = 'x;
         /*break;*/
